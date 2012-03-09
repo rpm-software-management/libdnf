@@ -1,0 +1,11 @@
+This is hawkey, library providing simplified C and Python API to libsolv
+[1]. Collaborators are welcome, contact Ales Kozumplik <akozumpl@redhat.com> for
+more information.
+
+Building for Fedora, from your checkout dir:
+mkdir build
+cd build/
+cmake ..
+make
+
+[1] https://github.com/openSUSE/libsolv
