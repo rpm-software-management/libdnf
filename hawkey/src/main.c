@@ -189,13 +189,13 @@ erase(Sack sack, const char *name)
 
     Goal goal = goal_create(sack);
     goal_erase(goal, packagelist_get(plist, 0));
-    packagelist_free(plist);
 
     if (goal_go(goal)) {
 	dump_goal_errors(goal);
 	goal_free(goal);
 	goto finish;
     }
+    packagelist_free(plist);
     plist = goal_list_erasures(goal);
     printf("erasure count: %d\n", packagelist_count(plist));
     for (int i = 0; i < packagelist_count(plist); ++i) {
