@@ -1,6 +1,9 @@
 #include <Python.h>
 
-#include "util.h"
+// libsolv
+#include "solv/util.h"
+
+// hawkey
 #include "src/query.h"
 #include "hawkey-pysys.h"
 #include "iutil-py.h"

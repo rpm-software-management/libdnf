@@ -1,13 +1,15 @@
 #include <assert.h>
 
-#include "bitmap.h"
-#include "evr.h"
-#include "util.h"
+// libsolv
+#include "solv/bitmap.h"
+#include "solv/evr.h"
+#include "solv/repo.h"
+#include "solv/solver.h"
+#include "solv/util.h"
 
+// hawkey
 #include "iutil.h"
 #include "query.h"
-#include "repo.h"
-#include "solver.h"
 
 #define BLOCK_SIZE 15
 

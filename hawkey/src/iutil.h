@@ -2,10 +2,10 @@
 #define IUTIL_H
 
 // libsolv
-#include "queue.h"
-#include "repo.h"
-#include "rules.h"
-#include "transaction.h"
+#include "solv/queue.h"
+#include "solv/repo.h"
+#include "solv/rules.h"
+#include "solv/transaction.h"
 
 // hawkey
 #include "packagelist.h"

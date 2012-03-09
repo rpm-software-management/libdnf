@@ -1,7 +1,8 @@
 #ifndef PACKAGE_H
 #define PACKAGE_H
 
-#include "solvable.h"
+// libsolv
+#include "solv/solvable.h"
 
 struct _Package {
     Id id;

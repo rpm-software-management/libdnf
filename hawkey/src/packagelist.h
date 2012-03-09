@@ -1,8 +1,10 @@
 #ifndef PACKAGELIST_H
 #define PACKAGELIST_H
 
-#include "queue.h"
+// libsolv
+#include "solv/queue.h"
 
+// hawkey
 #include "package.h"
 #include "sack.h"
 

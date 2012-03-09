@@ -1,9 +1,12 @@
 #ifndef SACK_H
 #define SACK_H
 
+// libsolv
+#include "solv/pool.h"
+
+// hawkey
 #include "frepo.h"
 #include "package.h"
-#include "pool.h"
 
 #define SYSTEM_REPO_NAME "@System"
 #define CMDLINE_REPO_NAME "@commandline"

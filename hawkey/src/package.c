@@ -1,8 +1,8 @@
 //libsolv
-#include "evr.h"
-#include "pool.h"
-#include "repo.h"
-#include "util.h"
+#include "solv/evr.h"
+#include "solv/pool.h"
+#include "solv/repo.h"
+#include "solv/util.h"
 
 // hawkey
 #include "iutil.h"

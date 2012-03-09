@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 // libsolv
-#include <util.h>
+#include <solv/util.h>
 
 // pyhawkey
 #include "iutil-py.h"

@@ -1,6 +1,7 @@
 #ifndef QUERY_H
 #define QUERY_H
 
+// hawkey
 #include "sack.h"
 #include "packagelist.h"
 

@@ -2,9 +2,9 @@
 #include <stdio.h>
 
 // libsolv
-#include "solver.h"
-#include "solverdebug.h"
-#include "util.h"
+#include "solv/solver.h"
+#include "solv/solverdebug.h"
+#include "solv/util.h"
 
 // hawkey
 #include "goal.h"

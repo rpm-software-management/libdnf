@@ -2,9 +2,9 @@
 #include <assert.h>
 
 // libsolv
-#include "repo_rpmdb.h"
-#include "solver.h"
-#include "util.h"
+#include "solv/repo_rpmdb.h"
+#include "solv/solver.h"
+#include "solv/util.h"
 
 // hawkey
 #include "frepo.h"

@@ -3,7 +3,7 @@
 #include <stddef.h>
 
 // libsolv
-#include "util.h"
+#include "solv/util.h"
 
 // hawkey
 #include "src/goal.h"

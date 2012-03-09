@@ -1,6 +1,7 @@
 #include <assert.h>
 
-#include "util.h"
+// libsolv
+#include "solv/util.h"
 
 #include "frepo.h"
 

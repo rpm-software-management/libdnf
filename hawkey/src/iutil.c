@@ -3,9 +3,9 @@
 #include <unistd.h>
 
 // libsolv
-#include "evr.h"
-#include "solver.h"
-#include "solverdebug.h"
+#include "solv/evr.h"
+#include "solv/solver.h"
+#include "solv/solverdebug.h"
 
 // hawkey
 #include "iutil.h"

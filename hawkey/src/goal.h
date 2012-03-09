@@ -2,8 +2,8 @@
 #define GOAL_H
 
 // libsolv
-#include "queue.h"
-#include "transaction.h"
+#include "solv/queue.h"
+#include "solv/transaction.h"
 
 // hawkey
 #include "package.h"

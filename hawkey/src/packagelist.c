@@ -1,10 +1,12 @@
 #include "assert.h"
 
-#include "pool.h"
-#include "repo.h"
-#include "queue.h"
-#include "util.h"
+// libsolv
+#include "solv/pool.h"
+#include "solv/repo.h"
+#include "solv/queue.h"
+#include "solv/util.h"
 
+// hawkey
 #include "packagelist.h"
 
 #define BLOCK_SIZE 31
