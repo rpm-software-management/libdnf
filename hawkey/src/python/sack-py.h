@@ -1,7 +1,7 @@
 #ifndef SACK_PY_H
 #define SACK_PY_H
 
-#include "api/sack.h"
+#include "src/sack.h"
 
 extern PyTypeObject sack_Type;
 

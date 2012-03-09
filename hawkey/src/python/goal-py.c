@@ -6,7 +6,7 @@
 #include "util.h"
 
 // hawkey
-#include "api/goal.h"
+#include "src/goal.h"
 
 // pyhawkey
 #include "goal-py.h"

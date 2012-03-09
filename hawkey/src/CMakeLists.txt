@@ -5,6 +5,9 @@ set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} --std=c99")
 set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} --std=c99")
 
 INCLUDE_DIRECTORIES(/home/akozumpl/libsolv/src)
+INCLUDE_DIRECTORIES(/home/akozumpl/libsolv/ext)
+# just because of solvversion.h:
+INCLUDE_DIRECTORIES(/home/akozumpl/libsolv/build/src)
 
 ADD_LIBRARY(libhawkey SHARED ${hawkey_SRCS})
 TARGET_LINK_LIBRARIES(libhawkey ${SOLV_LIBRARY} ${SOLVEXT_LIBRARY})
@@ -12,7 +15,8 @@ TARGET_LINK_LIBRARIES(libhawkey ${EXPAT_LIBRARY} ${ZLIB_LIBRARY} ${RPMDB_LIBRARY
 SET_TARGET_PROPERTIES(libhawkey PROPERTIES OUTPUT_NAME "hawkey")
 
 ADD_EXECUTABLE(main main.c)
-TARGET_LINK_LIBRARIES(main ${SOLV_LIBRARY}
+TARGET_LINK_LIBRARIES(main libhawkey
+			   ${SOLV_LIBRARY}
 			   ${SOLVEXT_LIBRARY}
 			   ${EXPAT_LIBRARY}
 			   ${ZLIB_LIBRARY}

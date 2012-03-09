@@ -1,7 +1,7 @@
 #ifndef PACKAGE_PY_H
 #define PACKAGE_PY_H
 
-#include "api/package.h"
+#include "src/package.h"
 
 extern PyTypeObject package_Type;
 

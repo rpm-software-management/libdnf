@@ -1,7 +1,7 @@
 #include <Python.h>
 
 // hawkey
-#include "api/query.h"
+#include "src/query.h"
 
 // pyhawkey
 #include "goal-py.h"

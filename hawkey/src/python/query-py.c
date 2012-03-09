@@ -1,7 +1,7 @@
 #include <Python.h>
 
 #include "util.h"
-#include "api/query.h"
+#include "src/query.h"
 #include "hawkey-pysys.h"
 #include "iutil-py.h"
 #include "package-py.h"
