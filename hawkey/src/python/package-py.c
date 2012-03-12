@@ -139,8 +139,9 @@ static PyGetSetDef package_getsetters[] = {
     {"location",  (getter)get_str_alloced, NULL, NULL,
      (void *)package_get_location},
     {"reponame",  (getter)get_str, NULL, NULL, (void *)package_get_reponame},
-    {"size", (getter)get_int, NULL, NULL, (void *)package_get_size},
     {"medianr", (getter)get_int, NULL, NULL, (void *)package_get_medianr},
+    {"rpmdbid", (getter)get_int, NULL, NULL, (void *)package_get_rpmdbid},
+    {"size", (getter)get_int, NULL, NULL, (void *)package_get_size},
     {NULL}			/* sentinel */
 };
 

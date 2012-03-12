@@ -1,3 +1,5 @@
+#include <assert.h>
+
 //libsolv
 #include "solv/evr.h"
 #include "solv/pool.h"
@@ -112,17 +114,26 @@ package_get_reponame(Package pkg)
 }
 
 int
-package_get_size(Package pkg)
-{
-    Solvable *s = get_solvable(pkg);
-    repo_internalize_trigger(s->repo);
-    return solvable_lookup_num(s, SOLVABLE_DOWNLOADSIZE, 0) * 1024;
-}
-
-int
 package_get_medianr(Package pkg)
 {
     Solvable *s = get_solvable(pkg);
     repo_internalize_trigger(s->repo);
     return solvable_lookup_num(s, SOLVABLE_MEDIANR, 0);
+}
+
+int
+package_get_rpmdbid(Package pkg)
+{
+    Solvable *s = get_solvable(pkg);
+    int idx = solvable_lookup_num(s, RPM_RPMDBID, 0);
+    assert(idx > 0);
+    return idx;
+}
+
+int
+package_get_size(Package pkg)
+{
+    Solvable *s = get_solvable(pkg);
+    repo_internalize_trigger(s->repo);
+    return solvable_lookup_num(s, SOLVABLE_DOWNLOADSIZE, 0) * 1024;
 }

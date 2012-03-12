@@ -25,7 +25,8 @@ const char* package_get_name(Package pkg);
 const char* package_get_arch(Package pkg);
 const char* package_get_evr(Package pkg);
 const char* package_get_reponame(Package pkg);
-int package_get_size(Package pkg);
 int package_get_medianr(Package pkg);
+int package_get_rpmdbid(Package pkg);
+int package_get_size(Package pkg);
 
 #endif

@@ -32,8 +32,9 @@ class Package(object):
         self.evr = self._package.evr
         self.reponame = self._package.reponame
         self.location = self._package.location
-        self.size = self._package.size
         self.medianr = self._package.medianr
+        self.rpmdbid = self._package.rpmdbid
+        self.size = self._package.size
 
     def __cmp__(self, pkg):
         return cmp(self._package, pkg._package)
