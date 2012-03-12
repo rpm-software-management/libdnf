@@ -127,36 +127,32 @@ describe_problem(_GoalObject *self, PyObject *index_obj)
 }
 
 static PyObject *
-list_erasures(_GoalObject *self, PyObject *unused)
+list_generic(_GoalObject *self, PackageList (*func)(Goal))
 {
-    PackageList plist = goal_list_erasures(self->goal);
+    PackageList plist = func(self->goal);
     PyObject *list;
 
     list = packagelist_to_pylist(plist, self->sack);
     packagelist_free(plist);
     return list;
+}
+
+static PyObject *
+list_erasures(_GoalObject *self, PyObject *unused)
+{
+    return list_generic(self, goal_list_erasures);
 }
 
 static PyObject *
 list_installs(_GoalObject *self, PyObject *unused)
 {
-    PackageList plist = goal_list_installs(self->goal);
-    PyObject *list;
-
-    list = packagelist_to_pylist(plist, self->sack);
-    packagelist_free(plist);
-    return list;
+    return list_generic(self, goal_list_installs);
 }
 
 static PyObject *
 list_upgrades(_GoalObject *self, PyObject *unused)
 {
-    PackageList plist = goal_list_upgrades(self->goal);
-    PyObject *list;
-
-    list = packagelist_to_pylist(plist, self->sack);
-    packagelist_free(plist);
-    return list;
+    return list_generic(self, goal_list_upgrades);
 }
 
 static PyObject *
