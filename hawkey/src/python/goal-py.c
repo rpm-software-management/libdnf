@@ -62,6 +62,16 @@ goal_init(_GoalObject *self, PyObject *args, PyObject *kwds)
 /* object methods */
 
 static PyObject *
+erase(_GoalObject *self, PyObject *pkgob)
+{
+    Package pkg = packageFromPyObject(pkgob);
+    if (pkg == NULL)
+	return NULL;
+    goal_erase(self->goal, pkg);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 install(_GoalObject *self, PyObject *pkgob)
 {
     Package pkg = packageFromPyObject(pkgob);
@@ -117,6 +127,17 @@ describe_problem(_GoalObject *self, PyObject *index_obj)
 }
 
 static PyObject *
+list_erasures(_GoalObject *self, PyObject *unused)
+{
+    PackageList plist = goal_list_erasures(self->goal);
+    PyObject *list;
+
+    list = packagelist_to_pylist(plist, self->sack);
+    packagelist_free(plist);
+    return list;
+}
+
+static PyObject *
 list_installs(_GoalObject *self, PyObject *unused)
 {
     PackageList plist = goal_list_installs(self->goal);
@@ -154,11 +175,13 @@ package_upgrades(_GoalObject *self, PyObject *pkg)
 }
 
 static struct PyMethodDef goal_methods[] = {
+    {"erase",		(PyCFunction)erase,		METH_O, NULL},
     {"install",		(PyCFunction)install,		METH_O, NULL},
     {"update",		(PyCFunction)update,		METH_O, NULL},
     {"go",		(PyCFunction)go,		METH_NOARGS, NULL},
     {"count_problems",	(PyCFunction)count_problems,	METH_NOARGS, NULL},
     {"describe_problem",(PyCFunction)describe_problem,	METH_O, NULL},
+    {"list_erasures",	(PyCFunction)list_erasures,	METH_NOARGS, NULL},
     {"list_installs",	(PyCFunction)list_installs,	METH_NOARGS, NULL},
     {"list_upgrades",	(PyCFunction)list_upgrades,	METH_NOARGS, NULL},
     {"package_upgrades",(PyCFunction)package_upgrades,	METH_O, NULL},

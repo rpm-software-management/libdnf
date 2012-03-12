@@ -106,11 +106,18 @@ class Sack(_hawkey.Sack):
             return Package(pkg)
 
 class Goal(_hawkey.Goal):
+    def erase(self, pkg):
+        return super(Goal, self).erase(pkg._package)
+
     def install(self, pkg):
         return super(Goal, self).install(pkg._package)
 
     def update(self, pkg):
         return super(Goal, self).update(pkg._package)
+
+    def list_erasures(self):
+        l = super(Goal, self).list_erasures()
+        return map(lambda p: self.sack.create_package(p), l)
 
     def list_installs(self):
         l = super(Goal, self).list_installs()
