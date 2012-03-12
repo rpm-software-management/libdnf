@@ -33,8 +33,11 @@ class Package(object):
         self.reponame = self._package.reponame
         self.location = self._package.location
         self.medianr = self._package.medianr
-        self.rpmdbid = self._package.rpmdbid
         self.size = self._package.size
+
+    @property
+    def rpmdbid(self):
+        return self._package.rpmdbid
 
     def __cmp__(self, pkg):
         return cmp(self._package, pkg._package)
