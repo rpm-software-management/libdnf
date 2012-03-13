@@ -280,7 +280,7 @@ sack_write_all_repos(Sack sack)
 	    perror(__func__);
 	    return 1;
 	}
-	repo_write(repo, fp, repo_write_stdkeyfilter, 0, 0);
+	repo_write(repo, fp);
 	fclose(fp);
     }
     return 0;
