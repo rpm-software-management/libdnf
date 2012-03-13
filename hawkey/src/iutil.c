@@ -41,7 +41,6 @@ job2transaction(Sack sack, Queue *job, Queue *errors)
 
     sack_make_provides_ready(sack);
     solv = solver_create(pool);
-    solver_set_flag(solv, SOLVER_FLAG_IGNORE_ALREADY_RECOMMENDED, 1);
     if (solver_solve(solv, job)) {
 	int i;
 	Id rule, source, target, dep;
