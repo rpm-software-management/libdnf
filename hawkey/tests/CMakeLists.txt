@@ -7,4 +7,4 @@ TARGET_LINK_LIBRARIES(test_sack
     ${EXPAT_LIBRARY}
     ${ZLIB_LIBRARY}
     ${RPMDB_LIBRARY})
-ADD_TEST(test_sack test_sack)
+ADD_TEST(test_sack test_sack "${CMAKE_CURRENT_SOURCE_DIR}/repos/")
