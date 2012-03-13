@@ -1,8 +1,5 @@
 SET (hawkey_SRCS
     frepo.c goal.c iutil.c package.c packagelist.c query.c sack.c)
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
-set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} --std=c99")
-set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} --std=c99")
 
 ADD_LIBRARY(libhawkey SHARED ${hawkey_SRCS})
 TARGET_LINK_LIBRARIES(libhawkey ${SOLV_LIBRARY} ${SOLVEXT_LIBRARY})
