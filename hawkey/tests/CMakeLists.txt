@@ -1,5 +1,8 @@
-ADD_EXECUTABLE(test_sack test_sack.c)
-TARGET_LINK_LIBRARIES(test_sack
+SET (hawkeytest_SRCS
+     test_main.c test_sack.c)
+
+ADD_EXECUTABLE(test_main ${hawkeytest_SRCS})
+TARGET_LINK_LIBRARIES(test_main
     libhawkey
     ${CHECK_LIBRARY}
     ${SOLV_LIBRARY}
@@ -7,4 +10,4 @@ TARGET_LINK_LIBRARIES(test_sack
     ${EXPAT_LIBRARY}
     ${ZLIB_LIBRARY}
     ${RPMDB_LIBRARY})
-ADD_TEST(test_sack test_sack "${CMAKE_CURRENT_SOURCE_DIR}/repos/")
+ADD_TEST(test_main test_main "${CMAKE_CURRENT_SOURCE_DIR}/repos/")

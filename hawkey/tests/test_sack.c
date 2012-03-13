@@ -7,18 +7,7 @@
 
 // hawkey
 #include "src/sack.h"
-
-struct TestGlobals_s {
-    char *repo_dir;
-};
-
-static struct TestGlobals_s test_globals;
-
-static void
-free_test_globals(struct TestGlobals_s *tg)
-{
-    solv_free(tg->repo_dir);
-}
+#include "testsys.h"
 
 START_TEST(test_sack_create)
 {
@@ -54,24 +43,4 @@ sack_suite(void)
     tcase_add_test(tc_core, test_repo_load);
     suite_add_tcase(s, tc_core);
     return s;
-}
-
-int
-main(int argc, const char **argv)
-{
-    if (argc != 2) {
-	fprintf(stderr, "synopsis: %s <repo_directory>\n", argv[0]);
-	exit(1);
-    }
-    test_globals.repo_dir = solv_strdup(argv[1]);
-
-    int number_failed;
-    Suite *s = sack_suite();
-    SRunner *sr = srunner_create(s);
-    srunner_run_all(sr, CK_NORMAL);
-    number_failed = srunner_ntests_failed(sr);
-    srunner_free(sr);
-
-    free_test_globals(&test_globals);
-    return (number_failed == 0) ? 0 : 1;
 }
