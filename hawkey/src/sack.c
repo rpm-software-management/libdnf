@@ -63,7 +63,7 @@ read_rpm_repo(Pool *pool)
     fn = solvcache_path(SYSTEM_REPO_NAME);
     fp = fopen(fn, "r");
     free(fn);
-    if (!fp || repo_add_solv(repo, fp)) {
+    if (!fp || repo_add_solv(repo, fp, 0)) {
 	printf("fetching rpmdb\n");
 	repo_add_rpmdb(repo, 0, 0, REPO_REUSE_REPODATA);
     } else {
@@ -88,7 +88,7 @@ read_yum_repo(Pool *pool, const char *name,
 
     if (fp) {
 	printf("using cached %s\n", name);
-	if (repo_add_solv(repo, fp)) {
+	if (repo_add_solv(repo, fp, 0)) {
 	    perror(__func__);
 	    return NULL;
 	}
