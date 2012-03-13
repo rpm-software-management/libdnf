@@ -198,6 +198,7 @@ static void
 filter_obsoleting(Query q, Map *res)
 {
     Pool *pool = q->sack->pool;
+    int obsprovides = pool_get_flag(pool, POOL_FLAG_OBSOLETEUSESPROVIDES);
     Id p, *pp;
     Solvable *s, *so;
     Map obsoleting;
@@ -216,8 +217,7 @@ filter_obsoleting(Query q, Map *res)
 	    FOR_PROVIDES(r, rr, *pp) {
 		assert(r != SYSTEMSOLVABLE);
 		so = pool_id2solvable(pool, r);
-		if (!pool->obsoleteusesprovides &&
-		    !pool_match_nevr(pool, so, *pp))
+		if (!obsprovides && !pool_match_nevr(pool, so, *pp))
 		    continue; /* only matching pkg names */
 		if (so->repo != pool->installed)
 		    continue;
