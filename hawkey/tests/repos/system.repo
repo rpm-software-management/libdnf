@@ -1,7 +1,7 @@
 =Ver: 2.0
 #
-=Pkg: foo 1 0 noarch
-=Prv: B = 1
+=Pkg: fool 1 3 noarch
+=Prv: fool <= 1-3
 =Pkg: penny 4 1 noarch
 =Prv: P = 3-3
 =Sum: in my eyes

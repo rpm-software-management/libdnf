@@ -14,7 +14,8 @@ setup(void)
     Sack sack = sack_create();
     Pool *pool = sack->pool;
     Repo *r = repo_create(pool, SYSTEM_REPO_NAME);
-    const char *repo = pool_tmpjoin(pool, test_globals.repo_dir, "system.repo", 0);
+    const char *repo = pool_tmpjoin(pool, test_globals.repo_dir,
+				    "system.repo", 0);
     FILE *fp = fopen(repo, "r");
 
     testcase_add_susetags(r,  fp, 0);
@@ -23,6 +24,21 @@ setup(void)
 
     fclose(fp);
     test_globals.sack = sack;
+}
+
+static void
+setup_with_updates(void)
+{
+    setup();
+    Pool *pool = test_globals.sack->pool;
+    Repo *r = repo_create(pool, "updates");
+    const char *repo = pool_tmpjoin(pool, test_globals.repo_dir,
+				    "updates.repo", 0);
+
+    FILE *fp = fopen(repo, "r");
+
+    testcase_add_susetags(r, fp, 0);
+    fclose(fp);
 }
 
 static void
@@ -101,16 +117,48 @@ START_TEST(test_query_anded)
 }
 END_TEST
 
+START_TEST(test_updates_sanity)
+{
+    Pool *pool = test_globals.sack->pool;
+    Repo *r = NULL;
+    int i;
+
+    FOR_REPOS(i, r)
+	if (!strcmp(r->name, "updates"))
+	    break;
+    fail_unless(r != NULL);
+    fail_unless(r->nsolvables == 1);
+}
+END_TEST
+
+START_TEST(test_updates)
+{
+    Query q = query_create(test_globals.sack);
+    query_filter_updates(q, 1);
+    fail_unless(count_results(q) == 1);
+    query_free(q);
+}
+END_TEST
+
 Suite *
 query_suite(void)
 {
     Suite *s = suite_create("Query");
-    TCase *tc_core = tcase_create("Core");
-    tcase_add_unchecked_fixture(tc_core, setup, teardown);
-    tcase_add_test(tc_core, test_query_sanity);
-    tcase_add_test(tc_core, test_query_repo);
-    tcase_add_test(tc_core, test_query_name);
-    tcase_add_test(tc_core, test_query_anded);
-    suite_add_tcase(s, tc_core);
+    TCase *tc;
+
+    tc = tcase_create("Core");
+    tcase_add_unchecked_fixture(tc, setup, teardown);
+    tcase_add_test(tc, test_query_sanity);
+    tcase_add_test(tc, test_query_repo);
+    tcase_add_test(tc, test_query_name);
+    tcase_add_test(tc, test_query_anded);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("Updates");
+    tcase_add_unchecked_fixture(tc, setup_with_updates, teardown);
+    tcase_add_test(tc, test_updates_sanity);
+    tcase_add_test(tc, test_updates);
+    suite_add_tcase(s, tc);
+
     return s;
 }
