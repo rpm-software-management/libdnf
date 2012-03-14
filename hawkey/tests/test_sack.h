@@ -5,4 +5,4 @@
 
 Suite *sack_suite(void);
 
-#endif
+#endif /* TEST_SACK_H */

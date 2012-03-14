@@ -2,7 +2,9 @@
 #
 =Pkg: foo 1 0 noarch
 =Prv: B = 1
-=Pkg: bar 3 1 noarch
-=Prv: B = 3
-=Pkg: bar 4 1 noarch
-=Prv: B = 3-3
+=Pkg: penny 4 1 noarch
+=Prv: P = 3-3
+=Sum: in my eyes
+=Pkg: penny-lib 4 1 x86_64
+=Prv: P-lib = 3-3
+=Sum: in my ears
