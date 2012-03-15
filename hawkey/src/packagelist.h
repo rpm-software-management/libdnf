@@ -30,7 +30,6 @@ void packagelist_free(PackageList plist);
 int packagelist_count(PackageList plist);
 Package packagelist_get(PackageList plist, int index);
 void packagelist_push(PackageList plist, Package pkg);
-Package packagelist_element(PackageList plist, int i);
 
 PackageListIter packagelist_iter_create(PackageList plist);
 void packagelist_iter_free(PackageListIter iter);

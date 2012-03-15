@@ -79,12 +79,6 @@ void packagelist_push(PackageList plist, Package pkg)
     plist->elements[plist->count++] = pkg;
 }
 
-Package
-packagelist_element(PackageList plist, int i)
-{
-    return plist->elements[i];
-}
-
 PackageListIter
 packagelist_iter_create(PackageList plist)
 {
@@ -105,5 +99,5 @@ packagelist_iter_next(PackageListIter iter)
 {
     if (++iter->i >= iter->plist->count)
 	return NULL;
-    return packagelist_element(iter->plist, iter->i);
+    return packagelist_get(iter->plist, iter->i);
 }
