@@ -100,6 +100,21 @@ START_TEST(test_updates)
 }
 END_TEST
 
+START_TEST(test_filter_latest)
+{
+    Query q = query_create(test_globals.sack);
+    query_filter(q, KN_PKG_NAME, FT_EQ, "fool");
+    query_filter_latest(q, 1);
+    PackageList plist = query_run(q);
+    fail_unless(packagelist_count(plist) == 1);
+    Package pkg = packagelist_get(plist, 0);
+    fail_if(strcmp(package_get_name(pkg), "fool"));
+    fail_if(strcmp(package_get_evr(pkg), "1-5"));
+    query_free(q);
+    packagelist_free(plist);
+}
+END_TEST
+
 Suite *
 query_suite(void)
 {
@@ -118,6 +133,7 @@ query_suite(void)
     tcase_add_unchecked_fixture(tc, setup_with_updates, teardown);
     tcase_add_test(tc, test_updates_sanity);
     tcase_add_test(tc, test_updates);
+    tcase_add_test(tc, test_filter_latest);
     suite_add_tcase(s, tc);
 
     return s;
