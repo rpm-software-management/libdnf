@@ -8,6 +8,9 @@
 // hawkey
 #include "testsys.h"
 
+/* define the global variable */
+struct TestGlobals_s test_globals;
+
 int
 load_repo(Pool *pool, const char *name, const char *path, int installed)
 {

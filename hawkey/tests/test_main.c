@@ -11,8 +11,6 @@
 #include "test_query.h"
 #include "test_sack.h"
 
-struct TestGlobals_s test_globals;
-
 static void
 init_test_globals(struct TestGlobals_s *tg, const char *repo_dir)
 {

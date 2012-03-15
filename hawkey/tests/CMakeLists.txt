@@ -2,6 +2,7 @@ SET (hawkeytest_SRCS
      test_goal.c test_main.c test_query.c test_sack.c
      testsys.c)
 
+ADD_LIBRARY(testsys SHARED testsys.c)
 ADD_EXECUTABLE(test_main ${hawkeytest_SRCS})
 TARGET_LINK_LIBRARIES(test_main
     libhawkey
