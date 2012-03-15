@@ -13,6 +13,9 @@ struct TestGlobals_s {
 /* global data used to pass values from fixtures to tests */
 extern struct TestGlobals_s test_globals;
 
+void setup(void);
+void setup_with_updates(void);
+void teardown(void);
 void dump_packagelist(PackageList plist);
 
 #endif /* TESTSYS_H */
