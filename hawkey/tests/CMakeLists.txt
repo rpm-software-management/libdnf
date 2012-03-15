@@ -12,3 +12,5 @@ TARGET_LINK_LIBRARIES(test_main
     ${ZLIB_LIBRARY}
     ${RPMDB_LIBRARY})
 ADD_TEST(test_main test_main "${CMAKE_CURRENT_SOURCE_DIR}/repos/")
+
+ADD_SUBDIRECTORY (python)
