@@ -318,11 +318,11 @@ query_run(Query q)
     assert(pool->installed);
     map_init(&m, pool->nsolvables);
     map_init(&res, pool->nsolvables);
-    MAPSETALL(&res);
+    map_setall(&res);
     for (i = 0; i < q->nfilters; ++i) {
 	struct _Filter *f = q->filters + i;
 
-	MAPZERO(&m);
+	map_empty(&m);
 	if (f->keyname == KN_PKG_PROVIDES) {
 	    filter_providers(q, f, &m);
 	} else if (f->keyname == KN_PKG_REPO) {
