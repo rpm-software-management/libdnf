@@ -7,6 +7,7 @@
 
 // hawkey
 #include "testsys.h"
+#include "test_goal.h"
 #include "test_query.h"
 #include "test_sack.h"
 
@@ -38,6 +39,7 @@ main(int argc, const char **argv)
 
     SRunner *sr = srunner_create(sack_suite());
     srunner_add_suite(sr, query_suite());
+    srunner_add_suite(sr, goal_suite());
     srunner_run_all(sr, CK_NORMAL);
     number_failed = srunner_ntests_failed(sr);
     srunner_free(sr);

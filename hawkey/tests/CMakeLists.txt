@@ -1,5 +1,5 @@
 SET (hawkeytest_SRCS
-     test_main.c test_query.c test_sack.c
+     test_goal.c test_main.c test_query.c test_sack.c
      testsys.c)
 
 ADD_EXECUTABLE(test_main ${hawkeytest_SRCS})

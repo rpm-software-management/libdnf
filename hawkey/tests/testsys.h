@@ -15,6 +15,7 @@ extern struct TestGlobals_s test_globals;
 
 void setup(void);
 void setup_with_updates(void);
+void setup_all(void);
 void teardown(void);
 void dump_packagelist(PackageList plist);
 

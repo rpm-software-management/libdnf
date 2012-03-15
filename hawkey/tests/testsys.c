@@ -41,6 +41,20 @@ setup_with_updates(void)
     fclose(fp);
 }
 
+void setup_all(void)
+{
+    setup_with_updates();
+    Pool *pool = test_globals.sack->pool;
+    Repo *r = repo_create(pool, "main");
+    const char *repo = pool_tmpjoin(pool, test_globals.repo_dir,
+				    "main.repo", 0);
+
+    FILE *fp = fopen(repo, "r");
+
+    testcase_add_susetags(r, fp, 0);
+    fclose(fp);
+}
+
 void
 teardown(void)
 {
