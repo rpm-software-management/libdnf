@@ -1,7 +1,7 @@
 #ifndef TESTSYS_H
 #define TESTSYS_H
 
-// libsolv
+// hawkey
 #include "src/packagelist.h"
 #include "src/sack.h"
 
@@ -13,6 +13,7 @@ struct TestGlobals_s {
 /* global data used to pass values from fixtures to tests */
 extern struct TestGlobals_s test_globals;
 
+int load_repo(Pool *pool, const char *name, const char *path, int installed);
 void setup(void);
 void setup_with_updates(void);
 void setup_all(void);

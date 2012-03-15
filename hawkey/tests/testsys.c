@@ -8,21 +8,31 @@
 // hawkey
 #include "testsys.h"
 
+int
+load_repo(Pool *pool, const char *name, const char *path, int installed)
+{
+    Repo *r = repo_create(pool, name);
+    FILE *fp = fopen(path, "r");
+
+    if (!fp)
+	return 1;
+    testcase_add_susetags(r,  fp, 0);
+    if (installed)
+	pool_set_installed(pool, r);
+    fclose(fp);
+    return 0;
+}
+
 void
 setup(void)
 {
     Sack sack = sack_create();
     Pool *pool = sack->pool;
-    Repo *r = repo_create(pool, SYSTEM_REPO_NAME);
-    const char *repo = pool_tmpjoin(pool, test_globals.repo_dir,
+    const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
 				    "system.repo", 0);
-    FILE *fp = fopen(repo, "r");
 
-    testcase_add_susetags(r,  fp, 0);
-    pool_set_installed(pool, r);
+    fail_if(load_repo(pool, SYSTEM_REPO_NAME, path, 1));
     fail_unless(pool->nsolvables == 5);
-
-    fclose(fp);
     test_globals.sack = sack;
 }
 
@@ -31,28 +41,19 @@ setup_with_updates(void)
 {
     setup();
     Pool *pool = test_globals.sack->pool;
-    Repo *r = repo_create(pool, "updates");
-    const char *repo = pool_tmpjoin(pool, test_globals.repo_dir,
+    const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
 				    "updates.repo", 0);
-
-    FILE *fp = fopen(repo, "r");
-
-    testcase_add_susetags(r, fp, 0);
-    fclose(fp);
+    fail_if(load_repo(pool, "updates", path, 0));
 }
 
 void setup_all(void)
 {
     setup_with_updates();
     Pool *pool = test_globals.sack->pool;
-    Repo *r = repo_create(pool, "main");
-    const char *repo = pool_tmpjoin(pool, test_globals.repo_dir,
+    const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
 				    "main.repo", 0);
 
-    FILE *fp = fopen(repo, "r");
-
-    testcase_add_susetags(r, fp, 0);
-    fclose(fp);
+    fail_if(load_repo(pool, "main", path, 0));
 }
 
 void
