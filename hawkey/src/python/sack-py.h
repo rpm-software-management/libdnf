@@ -9,4 +9,6 @@ extern PyTypeObject sack_Type;
 
 Sack sackFromPyObject(PyObject *o);
 
+PyObject *new_package(PyObject *sack, Id id);
+
 #endif // SACK_PY_H

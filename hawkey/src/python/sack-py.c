@@ -9,7 +9,36 @@
 typedef struct {
     PyObject_HEAD
     Sack sack;
+    PyObject *custom_package_class;
+    PyObject *custom_package_val;
 } _SackObject;
+
+PyObject *
+new_package(PyObject *sack, Id id)
+{
+    _SackObject *self;
+
+    if (!sackObject_Check(sack)) {
+	PyErr_SetString(PyExc_TypeError, "Expected a _hawkey.Sack object.");
+	return NULL;
+    }
+    self = (_SackObject*)sack;
+    PyObject *arglist;
+    if (self->custom_package_class || self->custom_package_val) {
+	arglist = Py_BuildValue("(Oi)O", sack, id, self->custom_package_val);
+    } else {
+	arglist = Py_BuildValue("((Oi))", sack, id);
+    }
+    if (arglist == NULL)
+	return NULL;
+    PyObject *package;
+    if (self->custom_package_class) {
+	package = PyObject_CallObject(self->custom_package_class, arglist);
+    } else {
+	package = PyObject_CallObject((PyObject*)&package_Type, arglist);
+    }
+    return package;
+}
 
 Sack
 sackFromPyObject(PyObject *o)
@@ -43,7 +72,33 @@ sack_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 	    return NULL;
 	}
     }
+    self->custom_package_class = NULL;
+    self->custom_package_val = NULL;
     return (PyObject *)self;
+}
+
+static int
+sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
+{
+    PyObject *custom_class = NULL;
+    PyObject *custom_val = NULL;
+
+    if (!PyArg_ParseTuple(args, "|OO", &custom_class, &custom_val))
+	return -1;
+    if (custom_class && custom_class != Py_None) {
+	if (!PyType_Check(custom_class)) {
+	    PyErr_SetString(PyExc_TypeError, "Expected a class object.");
+	    return -1;
+	}
+	Py_INCREF(custom_class);
+	self->custom_package_class = custom_class;
+    }
+    if (custom_val && custom_val != Py_None) {
+	Py_INCREF(custom_val);
+	self->custom_package_val = custom_val;
+
+    }
+    return 0;
 }
 
 /* getsetters */
@@ -70,6 +125,17 @@ create_cmdline_repo(_SackObject *self, PyObject *unused)
 }
 
 static PyObject *
+create_package(_SackObject *self, PyObject *solvable_id)
+{
+    Id id  = PyInt_AsLong(solvable_id);
+    if (id <= 0) {
+	PyErr_SetString(PyExc_TypeError, "Expected a positive integer.");
+	return NULL;
+    }
+    return new_package((PyObject*)self, id);
+}
+
+static PyObject *
 add_cmdline_rpm(_SackObject *self, PyObject *fn_obj)
 {
     Package cpkg;
@@ -83,7 +149,7 @@ add_cmdline_rpm(_SackObject *self, PyObject *fn_obj)
 	PyErr_SetString(PyExc_IOError, "Can not load an .rpm file");
 	return NULL;
     }
-    pkg = new_package((PyObject*)self, cpkg);
+    pkg = new_package((PyObject*)self, cpkg->id);
     package_free(cpkg);
     return pkg;
 }
@@ -114,6 +180,8 @@ write_all_repos(_SackObject *self, PyObject *unused)
 
 static struct PyMethodDef sack_methods[] = {
     {"create_cmdline_repo", (PyCFunction)create_cmdline_repo, METH_NOARGS,
+     NULL},
+    {"create_package", (PyCFunction)create_package, METH_O,
      NULL},
     {"add_cmdline_rpm", (PyCFunction)add_cmdline_rpm, METH_O,
      NULL},
@@ -163,7 +231,7 @@ PyTypeObject sack_Type = {
     0,				/* tp_descr_get */
     0,				/* tp_descr_set */
     0,				/* tp_dictoffset */
-    0,				/* tp_init */
+    (initproc)sack_init,	/* tp_init */
     0,				/* tp_alloc */
     sack_new,			/* tp_new */
     0,				/* tp_free */

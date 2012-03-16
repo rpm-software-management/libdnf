@@ -1,6 +1,6 @@
 #include "Python.h"
 #include "iutil-py.h"
-#include "package-py.h"
+#include "sack-py.h"
 
 PyObject *
 packagelist_to_pylist(PackageList plist, PyObject *sack)
@@ -17,7 +17,7 @@ packagelist_to_pylist(PackageList plist, PyObject *sack)
     retval = list;
     iter = packagelist_iter_create(plist);
     while ((cpkg = packagelist_iter_next(iter)) != NULL) {
-	package = new_package(sack, cpkg);
+	package = new_package(sack, cpkg->id);
 	if (package == NULL) {
 	    retval = NULL;
 	    break;

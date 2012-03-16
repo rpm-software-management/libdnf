@@ -17,24 +17,11 @@ typedef struct {
 
 Package packageFromPyObject(PyObject *o)
 {
-    if (!packageObject_Check(o)) {
+    if (!PyType_IsSubtype(o->ob_type, &package_Type)) {
 	PyErr_SetString(PyExc_TypeError, "Expected a Package object.");
 	return NULL;
     }
     return ((_PackageObject *)o)->package;
-}
-
-PyObject *new_package(PyObject *sack, Package cpkg)
-{
-    PyObject *package, *arglist;
-
-    arglist = Py_BuildValue("Oi", sack, cpkg->id);
-    if (arglist == NULL)
-	return NULL;
-    package = PyObject_CallObject((PyObject*)&package_Type, arglist);
-    Py_DECREF(arglist);
-
-    return package;
 }
 
 /* functions on the type */
@@ -67,8 +54,10 @@ package_init(_PackageObject *self, PyObject *args, PyObject *kwds)
     PyObject *sack;
     Sack csack;
 
-    if (!PyArg_ParseTuple(args, "O!i", &sack_Type, &sack, &id))
+    if (!PyArg_ParseTuple(args, "(O!i)", &sack_Type, &sack, &id)) {
+	printf("im failing here %p\n", args);
 	return -1;
+    }
     csack = sackFromPyObject(sack);
     if (csack == NULL)
 	return -1;
@@ -198,7 +187,7 @@ PyTypeObject package_Type = {
     0,				/*tp_getattro*/
     0,				/*tp_setattro*/
     0,				/*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,		/*tp_flags*/
+    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,	/*tp_flags*/
     "Package object",		/* tp_doc */
     0,				/* tp_traverse */
     0,				/* tp_clear */
