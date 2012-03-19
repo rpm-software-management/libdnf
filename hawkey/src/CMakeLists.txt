@@ -14,9 +14,4 @@ TARGET_LINK_LIBRARIES(main libhawkey
 			   ${ZLIB_LIBRARY}
 			   ${RPMDB_LIBRARY})
 
-ADD_DEFINITIONS(-DMD_REPO=\\"/home/akozumpl/tmp/md/repomd.xml\\")
-ADD_DEFINITIONS(-DMD_PRIMARY_XML=\\"/home/akozumpl/tmp/md/3fffacc6006d9b4782e57f3f11fcb44ab2a1abf6625e4afb4bf6a1e6475dd107-primary.xml.gz\\")
-ADD_DEFINITIONS(-DMD_REPO_UPDATES=\\"/home/akozumpl/tmp/md/updates/repomd.xml\\")
-ADD_DEFINITIONS(-DMD_PRIMARY_UPDATES_XML=\\"/home/akozumpl/tmp/md/updates/65e967d434400bdcf602da5013668367dae84032c31cb293792884e972a3452d-primary.xml.gz\\")
-
 ADD_SUBDIRECTORY(python)

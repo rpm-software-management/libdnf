@@ -1,5 +1,8 @@
-#include <stdio.h>
+#define _GNU_SOURCE
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <wordexp.h>
 
 // libsolv
 #include "solv/repo_rpmdb.h"
@@ -12,6 +15,8 @@
 #include "package.h"
 #include "query.h"
 #include "sack.h"
+
+#define CFG_FILE "~/.hawkey/main.config"
 
 static void execute_print(Query q, int show_obsoletes)
 {
@@ -299,36 +304,93 @@ finish:
     query_free(q);
 }
 
-static FRepo config_repo_fedora(void)
+static FRepo
+config_repo(const char *name, const char *md_repo, const char *md_primary_xml)
 {
     FRepo repo = frepo_create();
-    frepo_set_string(repo, NAME, "Fedora");
-    frepo_set_string(repo, REPOMD_FN, MD_REPO);
-    frepo_set_string(repo, PRIMARY_FN, MD_PRIMARY_XML);
+    frepo_set_string(repo, NAME, name);
+    frepo_set_string(repo, REPOMD_FN, md_repo);
+    frepo_set_string(repo, PRIMARY_FN, md_primary_xml);
     return repo;
 }
 
-static FRepo config_repo_updates(void)
+static void
+rtrim(char *str) {
+    int len = strlen(str);
+    if (len > 0 && str[len - 1] == '\n')
+	str[len - 1 ] = '\0';
+}
+
+int
+read_repopaths(char **md_repo, char **md_primary_xml,
+	       char **md_repo_updates, char **md_primary_updates_xml)
 {
-    FRepo repo = frepo_create();
-    frepo_set_string(repo, NAME, "updates");
-    frepo_set_string(repo, REPOMD_FN, MD_REPO_UPDATES);
-    frepo_set_string(repo, PRIMARY_FN, MD_PRIMARY_UPDATES_XML);
-    return repo;
+    wordexp_t word_vector;
+
+    *md_repo = *md_primary_xml = *md_repo_updates = *md_primary_updates_xml = NULL;
+
+    if (wordexp(CFG_FILE, &word_vector, 0))
+	return 1;
+    if (word_vector.we_wordc < 1) {
+	wordfree(&word_vector);
+	return 1;
+    }
+    const char *cfgpath = word_vector.we_wordv[0];
+    FILE *f = fopen(cfgpath, "r");
+    if (!f) {
+	wordfree(&word_vector);
+	return 1;
+    }
+    size_t size = 0;
+    if ((getline(md_repo, &size, f) < 0) ||
+	(getline(md_primary_xml, &size, f) < 0) ||
+	(getline(md_repo_updates, &size, f) < 0) ||
+	(getline(md_primary_updates_xml, &size, f) < 0)) {
+	solv_free(*md_repo);
+	solv_free(*md_primary_xml);
+	solv_free(*md_repo_updates);
+	solv_free(*md_primary_updates_xml);
+	fclose(f);
+	wordfree(&word_vector);
+	return 1;
+    }
+    fclose(f);
+    wordfree(&word_vector);
+    rtrim(*md_repo);
+    rtrim(*md_primary_xml);
+    rtrim(*md_repo_updates);
+    rtrim(*md_primary_updates_xml);
+    return 0;
 }
 
 int main(int argc, const char **argv)
 {
     Sack sack = sack_create();
     FRepo repo;
+    char *md_repo;
+    char *md_primary_xml;
+    char *md_repo_updates;
+    char *md_primary_updates_xml;
 
+    if (read_repopaths(&md_repo, &md_primary_xml, &md_repo_updates,
+		       &md_primary_updates_xml)) {
+	fprintf(stderr,
+		"This is hawkey testing hack, it needs a readable %s file "
+		"containing the following paths on separate lines:\n"
+		"<main repomd.xml path>\n"
+		"<main primary.xml.gz path>\n"
+		"<updates repomd.xml path>\n"
+		"<updates primary.xml.gz path>\n", CFG_FILE);
+	return 1;
+    }
+    /* rpmdb */
     sack_load_rpm_repo(sack);
     /* Fedora repo */
-    repo = config_repo_fedora();
+    repo = config_repo("Fedora", md_repo, md_primary_xml);
     sack_load_yum_repo(sack, repo);
     frepo_free(repo);
     /* Fedora updates repo */
-    repo = config_repo_updates();
+    repo = config_repo("updates", md_repo_updates, md_primary_updates_xml);
     sack_load_yum_repo(sack, repo);
     frepo_free(repo);
 
