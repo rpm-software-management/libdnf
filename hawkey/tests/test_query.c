@@ -21,7 +21,7 @@ START_TEST(test_query_sanity)
 {
     Sack sack = test_globals.sack;
     fail_unless(sack != NULL);
-    fail_unless(sack->pool->nsolvables == 5);
+    fail_unless(sack->pool->nsolvables == TEST_EXPECT_SYSTEM_NSOLVABLES);
     fail_unless(sack->pool->installed != NULL);
 
     Query query = query_create(sack);
@@ -37,7 +37,7 @@ START_TEST(test_query_repo)
     q = query_create(test_globals.sack);
     query_filter(q, KN_PKG_REPO, FT_EQ, SYSTEM_REPO_NAME);
 
-    fail_unless(count_results(q) == 3);
+    fail_unless(count_results(q) == TEST_EXPECT_SYSTEM_NSOLVABLES - 2);
 
     query_free(q);
 
@@ -87,7 +87,7 @@ START_TEST(test_updates_sanity)
 	if (!strcmp(r->name, "updates"))
 	    break;
     fail_unless(r != NULL);
-    fail_unless(r->nsolvables == 1);
+    fail_unless(r->nsolvables == TEST_EXPECT_UPDATES_NSOLVABLES);
 }
 END_TEST
 
@@ -95,7 +95,7 @@ START_TEST(test_updates)
 {
     Query q = query_create(test_globals.sack);
     query_filter_updates(q, 1);
-    fail_unless(count_results(q) == 1);
+    fail_unless(count_results(q) == TEST_EXPECT_UPDATES_NSOLVABLES);
     query_free(q);
 }
 END_TEST
@@ -112,6 +112,22 @@ START_TEST(test_filter_latest)
     fail_if(strcmp(package_get_evr(pkg), "1-5"));
     query_free(q);
     packagelist_free(plist);
+}
+END_TEST
+
+START_TEST(test_filter_latest2)
+{
+    Query q = query_create(test_globals.sack);
+    query_filter(q, KN_PKG_NAME, FT_EQ, "flying");
+    query_filter_latest(q, 1);
+    PackageList plist = query_run(q);
+    fail_unless(packagelist_count(plist) == 1);
+    Package pkg = packagelist_get(plist, 0);
+    fail_if(strcmp(package_get_name(pkg), "flying"));
+    fail_if(strcmp(package_get_evr(pkg), "3-0"));
+    query_free(q);
+    packagelist_free(plist);
+
 }
 END_TEST
 
@@ -134,6 +150,11 @@ query_suite(void)
     tcase_add_test(tc, test_updates_sanity);
     tcase_add_test(tc, test_updates);
     tcase_add_test(tc, test_filter_latest);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("Full");
+    tcase_add_unchecked_fixture(tc, setup_all, teardown);
+    tcase_add_test(tc, test_filter_latest2);
     suite_add_tcase(s, tc);
 
     return s;

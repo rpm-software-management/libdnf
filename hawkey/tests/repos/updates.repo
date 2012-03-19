@@ -2,3 +2,4 @@
 #
 =Pkg: fool 1 5 noarch
 =Prv: fool <= 1-5
+=Pkg: flying 3 0 noarch

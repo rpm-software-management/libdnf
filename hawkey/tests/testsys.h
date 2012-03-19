@@ -10,6 +10,10 @@ struct TestGlobals_s {
     Sack sack;
 };
 
+#define TEST_EXPECT_SYSTEM_NSOLVABLES 6
+#define TEST_EXPECT_MAIN_NSOLVABLES 5
+#define TEST_EXPECT_UPDATES_NSOLVABLES 2
+
 /* global data used to pass values from fixtures to tests */
 extern struct TestGlobals_s test_globals;
 

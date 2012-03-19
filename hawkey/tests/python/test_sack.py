@@ -15,7 +15,7 @@ class Sanity(unittest.TestCase):
     def test_load_rpm(self):
         sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         sack.load_rpm_repo()
-        self.assertEqual(sack.nsolvables, 5)
+        self.assertEqual(sack.nsolvables, hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
 
 class PackageWrapping(unittest.TestCase):
     repo_dir = None

@@ -3,6 +3,10 @@ import os
 import hawkey
 import _hawkey_test
 
+EXPECT_SYSTEM_NSOLVABLES = _hawkey_test.EXPECT_SYSTEM_NSOLVABLES
+EXPECT_MAIN_NSOLVABLES = _hawkey_test.EXPECT_MAIN_NSOLVABLES
+EXPECT_UPDATES_NSOLVABLES = _hawkey_test.EXPECT_UPDATES_NSOLVABLES
+
 class TestSack(hawkey.Sack):
     def __init__(self, repo_dir, PackageClass=None, package_userdata=None):
         super(TestSack, self).__init__(PackageClass, package_userdata)

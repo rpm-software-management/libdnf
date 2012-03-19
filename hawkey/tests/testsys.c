@@ -35,7 +35,6 @@ setup(void)
 				    "system.repo", 0);
 
     fail_if(load_repo(pool, SYSTEM_REPO_NAME, path, 1));
-    fail_unless(pool->nsolvables == 5);
     test_globals.sack = sack;
 }
 

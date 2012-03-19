@@ -174,7 +174,7 @@ filter_latest(Query q, Map *res)
 	/* now find the highest versioned package of those selected */
 	hp = i;
 	highest = pool_id2solvable(pool, hp);
-	for (j = 1; j < samename.count; ++j) {
+	for (j = 0; j < samename.count; ++j) {
 	    p = samename.elements[j];
 	    if (!MAPTST(res, p) || i == p)
 		continue; /* out already */
@@ -184,10 +184,9 @@ filter_latest(Query q, Map *res)
 		MAPCLR(res, hp);
 		hp = p;
 		highest = considered;
-	    } else if (cmp > 0) {
-		MAPCLR(res, p);
 	    } else {
-		assert(1); /* in theory this might happen too */
+		/* note this is taken also for the same version case */
+		MAPCLR(res, p);
 	    }
 	}
     }

@@ -37,7 +37,10 @@ START_TEST(test_goal_sanity)
 {
     Goal goal = goal_create(test_globals.sack);
     fail_if(goal == NULL);
-    fail_unless(test_globals.sack->pool->nsolvables == 10);
+    fail_unless(test_globals.sack->pool->nsolvables ==
+		TEST_EXPECT_SYSTEM_NSOLVABLES +
+		TEST_EXPECT_MAIN_NSOLVABLES +
+		TEST_EXPECT_UPDATES_NSOLVABLES);
     goal_free(goal);
 }
 END_TEST

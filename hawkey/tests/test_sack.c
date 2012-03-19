@@ -27,7 +27,7 @@ START_TEST(test_repo_load)
     FILE *fp = fopen(repo, "r");
 
     testcase_add_susetags(r,  fp, 0);
-    fail_unless(pool->nsolvables == 5);
+    fail_unless(pool->nsolvables == TEST_EXPECT_SYSTEM_NSOLVABLES);
 
     fclose(fp);
     sack_free(sack);

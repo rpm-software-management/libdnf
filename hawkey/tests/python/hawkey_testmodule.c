@@ -36,5 +36,10 @@ static struct PyMethodDef testmodule_methods[] = {
 PyMODINIT_FUNC
 init_hawkey_test(void)
 {
-    Py_InitModule("_hawkey_test", testmodule_methods);
+    PyObject *m = Py_InitModule("_hawkey_test", testmodule_methods);
+    if (!m)
+	return;
+    PyModule_AddIntConstant(m, "EXPECT_SYSTEM_NSOLVABLES", TEST_EXPECT_SYSTEM_NSOLVABLES);
+    PyModule_AddIntConstant(m, "EXPECT_MAIN_NSOLVABLES", TEST_EXPECT_MAIN_NSOLVABLES);
+    PyModule_AddIntConstant(m, "EXPECT_UPDATES_NSOLVABLES", TEST_EXPECT_UPDATES_NSOLVABLES);
 }
