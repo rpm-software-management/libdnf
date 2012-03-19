@@ -113,7 +113,7 @@ filter_repo(Query q, struct _Filter *f, Map *m)
 	    if (s->repo && s->repo->repoid == repoid)
 		MAPSET(m, i);
 	    break;
-	case FT_LT|FT_GT: /* i.e. not equal */
+	case FT_NEQ: /* i.e. not equal */
 	    if (s->repo && s->repo->repoid != repoid)
 		MAPSET(m, i);
 	    break;

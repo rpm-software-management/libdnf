@@ -56,5 +56,6 @@ init_hawkey(void)
     PyModule_AddIntConstant(m, "FT_EQ", FT_EQ);
     PyModule_AddIntConstant(m, "FT_LT", FT_LT);
     PyModule_AddIntConstant(m, "FT_GT", FT_GT);
+    PyModule_AddIntConstant(m, "FT_NEQ", FT_NEQ);
     PyModule_AddIntConstant(m, "FT_SUBSTR", FT_SUBSTR);
 }

@@ -18,7 +18,7 @@ QUERY_FT_MAP = {
     'eq' : _hawkey.FT_EQ,
     'gt' : _hawkey.FT_GT,
     'lt' : _hawkey.FT_LT,
-    'neq' : _hawkey.FT_LT | _hawkey.FT_GT,
+    'neq' : _hawkey.FT_NEQ,
     'gte' : _hawkey.FT_EQ | _hawkey.FT_GT,
     'lte' : _hawkey.FT_EQ | _hawkey.FT_LT,
     'substr'  : _hawkey.FT_SUBSTR,

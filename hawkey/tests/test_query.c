@@ -42,7 +42,7 @@ START_TEST(test_query_repo)
     query_free(q);
 
     q = query_create(test_globals.sack);
-    query_filter(q, KN_PKG_REPO, FT_LT|FT_GT, SYSTEM_REPO_NAME);
+    query_filter(q, KN_PKG_REPO, FT_NEQ, SYSTEM_REPO_NAME);
     fail_if(count_results(q));
 
     query_free(q);

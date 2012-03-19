@@ -90,7 +90,7 @@ static void search_filter_repos(Sack sack, const char *name) {
     Query q = query_create(sack);
 
     query_filter(q, KN_PKG_NAME, FT_EQ, name);
-    query_filter(q, KN_PKG_REPO, FT_LT|FT_GT, SYSTEM_REPO_NAME);
+    query_filter(q, KN_PKG_REPO, FT_NEQ, SYSTEM_REPO_NAME);
     execute_print(q, 0);
     query_free(q);
 }
@@ -146,7 +146,7 @@ static void updatables_query_name(Sack sack, const char *name)
 
     query_filter(q, KN_PKG_NAME, FT_EQ, name);
 #if 0 // must stil work if enabled
-    query_filter(q, KN_PKG_REPO, FT_LT|FT_GT, SYSTEM_REPO_NAME);
+    query_filter(q, KN_PKG_REPO, FT_NEQ, SYSTEM_REPO_NAME);
 #endif
     query_filter_updates(q, 1);
     execute_print(q, 0);
@@ -283,7 +283,7 @@ static void update_remote(Sack sack, const char *name)
     PackageList plist;
 
     query_filter(q, KN_PKG_NAME, FT_EQ, name);
-    query_filter(q, KN_PKG_REPO, FT_LT|FT_GT, SYSTEM_REPO_NAME);
+    query_filter(q, KN_PKG_REPO, FT_NEQ, SYSTEM_REPO_NAME);
     query_filter_latest(q, 1);
 
     plist = query_run(q);
