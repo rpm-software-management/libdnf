@@ -11,10 +11,17 @@
 #include "iutil.h"
 #include "query.h"
 
+struct _Goal {
+    Sack sack;
+    Queue job;
+    Queue problems;
+    Transaction *trans;
+};
+
 static PackageList
 list_results(Goal goal, Id type_filter)
 {
-    Pool *pool = goal->sack->pool;
+    Pool *pool = sack_pool(goal->sack);
     Queue transpkgs;
     Transaction *trans = goal->trans;
     PackageList plist;
@@ -57,18 +64,18 @@ int
 goal_erase(Goal goal, Package pkg)
 {
 #ifndef NDEBUG
-    Pool *pool = goal->sack->pool;
+    Pool *pool = sack_pool(goal->sack);
     assert(pool->installed &&
-	   pool_id2solvable(pool, pkg->id)->repo == pool->installed);
+	   pool_id2solvable(pool, package_id(pkg))->repo == pool->installed);
 #endif
-    queue_push2(&goal->job, SOLVER_SOLVABLE|SOLVER_ERASE, pkg->id);
+    queue_push2(&goal->job, SOLVER_SOLVABLE|SOLVER_ERASE, package_id(pkg));
     return 0;
 }
 
 int
 goal_install(Goal goal, Package new_pkg)
 {
-    queue_push2(&goal->job, SOLVER_SOLVABLE|SOLVER_INSTALL, new_pkg->id);
+    queue_push2(&goal->job, SOLVER_SOLVABLE|SOLVER_INSTALL, package_id(new_pkg));
     return 0;
 }
 
@@ -102,7 +109,7 @@ goal_go(Goal goal)
 	return 1;
 #if 0
     transaction_print(trans);
-    Pool *pool = goal->sack->pool;
+    Pool *pool = sack_pool(goal->sack);
     int i;
 
     for (i = 0; i < trans->steps.count; ++i) {
@@ -139,7 +146,7 @@ goal_count_problems(Goal goal)
 char *
 goal_describe_problem(Goal goal, unsigned i)
 {
-    Pool *pool = goal->sack->pool;
+    Pool *pool = sack_pool(goal->sack);
     Id *ps = goal->problems.elements;
 
     assert(goal->problems.count/4 > i);
@@ -167,12 +174,12 @@ goal_list_upgrades(Goal goal)
 Package
 goal_package_upgrades(Goal goal, Package pkg)
 {
-    Pool *pool = goal->sack->pool;
+    Pool *pool = sack_pool(goal->sack);
     Transaction *trans = goal->trans;
     Id p;
 
     assert(trans);
-    p = transaction_obs_pkg(trans, pkg->id);
+    p = transaction_obs_pkg(trans, package_id(pkg));
     assert(p); // todo: handle no upgrades case
     return package_create(pool, p);
 }

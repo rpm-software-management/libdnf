@@ -7,22 +7,7 @@
 // hawkey
 #include "package.h"
 #include "sack.h"
-
-struct _PackageList {
-    Package *elements;
-    int count;
-    int left;
-};
-
-typedef struct _PackageList * PackageList;
-
-struct _PackageListIter {
-    PackageList plist;
-    int i;
-    Package current_pkg;
-};
-
-typedef struct _PackageListIter * PackageListIter;
+#include "types.h"
 
 PackageList packagelist_create(void);
 PackageList packagelist_of_obsoletes(Sack sack, Package pkg);

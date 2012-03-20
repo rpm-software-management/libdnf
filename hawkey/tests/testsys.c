@@ -30,7 +30,7 @@ void
 setup(void)
 {
     Sack sack = sack_create();
-    Pool *pool = sack->pool;
+    Pool *pool = sack_pool(sack);
     const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
 				    "system.repo", 0);
 
@@ -42,7 +42,7 @@ void
 setup_with_updates(void)
 {
     setup();
-    Pool *pool = test_globals.sack->pool;
+    Pool *pool = sack_pool(test_globals.sack);
     const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
 				    "updates.repo", 0);
     fail_if(load_repo(pool, "updates", path, 0));
@@ -51,7 +51,7 @@ setup_with_updates(void)
 void setup_all(void)
 {
     setup_with_updates();
-    Pool *pool = test_globals.sack->pool;
+    Pool *pool = sack_pool(test_globals.sack);
     const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
 				    "main.repo", 0);
 

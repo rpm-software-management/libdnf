@@ -18,7 +18,7 @@
 
 #define CFG_FILE "~/.hawkey/main.config"
 
-static void execute_print(Query q, int show_obsoletes)
+static void execute_print(Sack sack, Query q, int show_obsoletes)
 {
     PackageList plist;
     PackageListIter iter;
@@ -32,7 +32,7 @@ static void execute_print(Query q, int show_obsoletes)
 	       nvra,
 	       package_get_reponame(pkg));
 	if (show_obsoletes) {
-	    PackageList olist = packagelist_of_obsoletes(q->sack, pkg);
+	    PackageList olist = packagelist_of_obsoletes(sack, pkg);
 	    PackageListIter oiter = packagelist_iter_create(olist);
 	    Package opkg;
 	    char *onvra;
@@ -59,7 +59,7 @@ static void execute_queue(Query q, Queue *job)
     plist = query_run(q);
     iter = packagelist_iter_create(plist);
     while ((pkg = packagelist_iter_next(iter)) != NULL) {
-	queue_push2(job, SOLVER_SOLVABLE|SOLVER_INSTALL, pkg->id);
+	queue_push2(job, SOLVER_SOLVABLE|SOLVER_INSTALL, package_id(pkg));
     }
     packagelist_iter_free(iter);
     packagelist_free(plist);
@@ -96,7 +96,7 @@ static void search_filter_repos(Sack sack, const char *name) {
 
     query_filter(q, KN_PKG_NAME, FT_EQ, name);
     query_filter(q, KN_PKG_REPO, FT_NEQ, SYSTEM_REPO_NAME);
-    execute_print(q, 0);
+    execute_print(sack, q, 0);
     query_free(q);
 }
 
@@ -107,7 +107,7 @@ static void search_anded(Sack sack, const char *name_substr,
 
     query_filter(q, KN_PKG_NAME, FT_SUBSTR, name_substr);
     query_filter(q, KN_PKG_SUMMARY, FT_SUBSTR, summary_substr);
-    execute_print(q, 0);
+    execute_print(sack, q, 0);
     query_free(q);
 }
 
@@ -117,7 +117,7 @@ static void search_provides(Sack sack, const char *name,
     Query q = query_create(sack);
 
     query_filter_provides(q, FT_GT, name, version);
-    execute_print(q, 0);
+    execute_print(sack, q, 0);
     query_free(q);
 }
 
@@ -154,7 +154,7 @@ static void updatables_query_name(Sack sack, const char *name)
     query_filter(q, KN_PKG_REPO, FT_NEQ, SYSTEM_REPO_NAME);
 #endif
     query_filter_updates(q, 1);
-    execute_print(q, 0);
+    execute_print(sack, q, 0);
     query_free(q);
 }
 
@@ -163,7 +163,7 @@ static void obsoletes(Sack sack)
     Query q = query_create(sack);
 
     query_filter_obsoleting(q, 1);
-    execute_print(q, 1);
+    execute_print(sack, q, 1);
     query_free(q);
 }
 
@@ -292,7 +292,7 @@ static void update_remote(Sack sack, const char *name)
     query_filter_latest(q, 1);
 
     plist = query_run(q);
-    if (plist->count == 0) {
+    if (packagelist_count(plist) == 0) {
 	printf("no updatables found\n");
 	goto finish;
     }

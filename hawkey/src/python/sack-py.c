@@ -106,7 +106,7 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 get_nsolvables(_SackObject *self, void *unused)
 {
-    return PyInt_FromLong(self->sack->pool->nsolvables);
+    return PyInt_FromLong(sack_pool(self->sack)->nsolvables);
 }
 
 
@@ -149,7 +149,7 @@ add_cmdline_rpm(_SackObject *self, PyObject *fn_obj)
 	PyErr_SetString(PyExc_IOError, "Can not load an .rpm file");
 	return NULL;
     }
-    pkg = new_package((PyObject*)self, cpkg->id);
+    pkg = new_package((PyObject*)self, package_id(cpkg));
     package_free(cpkg);
     return pkg;
 }

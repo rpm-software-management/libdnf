@@ -9,6 +9,18 @@
 // hawkey
 #include "packagelist.h"
 
+struct _PackageList {
+    Package *elements;
+    int count;
+    int left;
+};
+
+struct _PackageListIter {
+    PackageList plist;
+    int i;
+    Package current_pkg;
+};
+
 #define BLOCK_SIZE 31
 
 PackageList
@@ -25,12 +37,12 @@ PackageList
 packagelist_of_obsoletes(Sack sack, Package pkg)
 {
     PackageList plist = packagelist_create();
-    Pool *pool = pkg->pool;
+    Pool *pool = sack_pool(sack);
     Id *pp, r, rr;
     Solvable *s, *so;
     int obsprovides = pool_get_flag(pool, POOL_FLAG_OBSOLETEUSESPROVIDES);
 
-    s = pool_id2solvable(pool, pkg->id);
+    s = pool_id2solvable(pool, package_id(pkg));
     sack_make_provides_ready(sack);
     for (pp = s->repo->idarraydata + s->obsoletes; *pp; ++pp) {
 	FOR_PROVIDES(r, rr, *pp) {

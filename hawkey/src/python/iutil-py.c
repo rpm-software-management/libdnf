@@ -17,7 +17,7 @@ packagelist_to_pylist(PackageList plist, PyObject *sack)
     retval = list;
     iter = packagelist_iter_create(plist);
     while ((cpkg = packagelist_iter_next(iter)) != NULL) {
-	package = new_package(sack, cpkg->id);
+	package = new_package(sack, package_id(cpkg));
 	if (package == NULL) {
 	    retval = NULL;
 	    break;

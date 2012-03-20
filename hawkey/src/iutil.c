@@ -35,7 +35,7 @@ repo_internalize_trigger(Repo *repo)
 Transaction *
 job2transaction(Sack sack, Queue *job, Queue *errors)
 {
-    Pool *pool = sack->pool;
+    Pool *pool = sack_pool(sack);
     Solver *solv;
     Transaction *trans = NULL;
 
@@ -68,7 +68,7 @@ queue2plist(Sack sack, Queue *q, PackageList plist)
     int i;
 
     for (i = 0; i < q->count; ++i) {
-	s = pool_id2solvable(sack->pool, q->elements[i]);
+	s = pool_id2solvable(sack_pool(sack), q->elements[i]);
 	packagelist_push(plist, package_from_solvable(s));
     }
 }

@@ -21,8 +21,8 @@ START_TEST(test_query_sanity)
 {
     Sack sack = test_globals.sack;
     fail_unless(sack != NULL);
-    fail_unless(sack->pool->nsolvables == TEST_EXPECT_SYSTEM_NSOLVABLES);
-    fail_unless(sack->pool->installed != NULL);
+    fail_unless(sack_pool(sack)->nsolvables == TEST_EXPECT_SYSTEM_NSOLVABLES);
+    fail_unless(sack_pool(sack)->installed != NULL);
 
     Query query = query_create(sack);
     fail_unless(query != NULL);
@@ -79,7 +79,7 @@ END_TEST
 
 START_TEST(test_updates_sanity)
 {
-    Pool *pool = test_globals.sack->pool;
+    Pool *pool = sack_pool(test_globals.sack);
     Repo *r = NULL;
     int i;
 

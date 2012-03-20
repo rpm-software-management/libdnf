@@ -23,6 +23,11 @@
 #include "iutil.h"
 #include "sack.h"
 
+struct _Sack {
+    Pool *pool;
+    int provides_ready;
+};
+
 #define SOLVCACHE_PATH "/home/akozumpl/tmp/sapi"
 
 static Repo *
@@ -237,9 +242,9 @@ sack_load_rpm_repo(Sack sack)
 void sack_load_yum_repo(Sack sack, FRepo repo)
 {
     read_yum_repo(sack->pool,
-		  repo->name,
-		  repo->repomd_fn,
-		  repo->primary_fn);
+		  frepo_get_string(repo, NAME),
+		  frepo_get_string(repo, REPOMD_FN),
+		  frepo_get_string(repo, PRIMARY_FN));
     sack->provides_ready = 0;
 }
 
@@ -330,4 +335,10 @@ sack_same_names(Sack sack, Id name, Queue *same)
 	if (s->name == name)
 	    queue_push(same, p);
     }
+}
+
+Pool *
+sack_pool(Sack sack)
+{
+    return sack->pool;
 }

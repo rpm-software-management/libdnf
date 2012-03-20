@@ -20,7 +20,7 @@ py_load_repo(PyObject *unused, PyObject *args)
 	PyErr_SetString(PyExc_TypeError, "Expected a Sack object.");
 	return NULL;
     }
-    if (load_repo(csack->pool, name, path, installed)) {
+    if (load_repo(sack_pool(csack), name, path, installed)) {
 	PyErr_SetString(PyExc_IOError, "Can not load a testing repo.");
 	return NULL;
     }

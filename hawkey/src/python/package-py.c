@@ -63,7 +63,7 @@ package_init(_PackageObject *self, PyObject *args, PyObject *kwds)
 	return -1;
     self->sack = sack;
     Py_INCREF(self->sack);
-    self->package = package_create(csack->pool, id);
+    self->package = package_create(sack_pool(csack), id);
     return 0;
 }
 
@@ -81,7 +81,8 @@ package_py_cmp(_PackageObject *self, _PackageObject *other)
 static PyObject *
 package_str(_PackageObject *self)
 {
-    return PyString_FromFormat("<_hawkey.Package object, id: %d>", self->package->id);
+    return PyString_FromFormat("<_hawkey.Package object, id: %d>",
+			       package_id(self->package));
 }
 
 /* getsetters */

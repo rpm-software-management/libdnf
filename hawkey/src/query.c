@@ -11,6 +11,22 @@
 #include "iutil.h"
 #include "query.h"
 
+struct _Query {
+    Sack sack;
+    struct _Filter *filters;
+    int nfilters;
+    int updates; /* 1 for "only updates for installed packages" */
+    int latest; /* 1 for "only the latest version per arch" */
+    int obsoleting; /* 1 for "only those obsoleting installed packages" */
+};
+
+struct _Filter {
+    int filter_type;
+    int keyname;
+    char *match;
+    char *evr;
+};
+
 #define BLOCK_SIZE 15
 
 static int
@@ -58,7 +74,7 @@ type2relflags(int type)
 static void
 filter_dataiterator(Query q, struct _Filter *f, Map *m)
 {
-    Pool *pool = q->sack->pool;
+    Pool *pool = sack_pool(q->sack);
     Dataiterator di;
     int flags = type2flags(f->filter_type);
     Id keyname = keyname2id(f->keyname);
@@ -75,7 +91,7 @@ filter_dataiterator(Query q, struct _Filter *f, Map *m)
 static void
 filter_providers(Query q, struct _Filter *f, Map *m)
 {
-    Pool *pool = q->sack->pool;
+    Pool *pool = sack_pool(q->sack);
     Id id_n, id_evr, r, p, pp;
     int flags;
 
@@ -91,7 +107,7 @@ filter_providers(Query q, struct _Filter *f, Map *m)
 static void
 filter_repo(Query q, struct _Filter *f, Map *m)
 {
-    Pool *pool = q->sack->pool;
+    Pool *pool = sack_pool(q->sack);
     int i;
     Solvable *s;
     Repo *r;
@@ -127,7 +143,7 @@ static void
 filter_updates(Query q, Map *res)
 {
     Sack sack = q->sack;
-    Pool *pool = sack->pool;
+    Pool *pool = sack_pool(sack);
     int i;
     Map m;
     Queue job;
@@ -156,7 +172,7 @@ filter_updates(Query q, Map *res)
 static void
 filter_latest(Query q, Map *res)
 {
-    Pool *pool = q->sack->pool;
+    Pool *pool = sack_pool(q->sack);
     Queue samename;
     Id i, j, p, hp;
     Solvable *highest, *considered;
@@ -196,7 +212,7 @@ filter_latest(Query q, Map *res)
 static void
 filter_obsoleting(Query q, Map *res)
 {
-    Pool *pool = q->sack->pool;
+    Pool *pool = sack_pool(q->sack);
     int obsprovides = pool_get_flag(pool, POOL_FLAG_OBSOLETEUSESPROVIDES);
     Id p, *pp;
     Solvable *s, *so;
@@ -309,7 +325,7 @@ query_filter_obsoleting(Query q, int val)
 PackageList
 query_run(Query q)
 {
-    Pool *pool = q->sack->pool;
+    Pool *pool = sack_pool(q->sack);
     PackageList plist;
     Map res, m;
     int i;
@@ -357,7 +373,7 @@ query_run(Query q)
 static Solvable *
 find_package_by_name(Sack sack, const char *name, Queue *job)
 {
-    Pool *pool = sack->pool;
+    Pool *pool = sack_pool(sack);
     Id s_id = pool_str2id(pool, name, 0);
     Id p, pp;
 
@@ -410,7 +426,7 @@ sack_f_by_summary(Sack sack, const char *summary_substr)
     Queue q;
 
     queue_init(&q);
-    find_package_by_summary(sack->pool, summary_substr, &q);
+    find_package_by_summary(sack_pool(sack), summary_substr, &q);
     queue2plist(sack, &q, plist);
     queue_free(&q);
     return plist;

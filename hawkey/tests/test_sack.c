@@ -13,7 +13,7 @@ START_TEST(test_sack_create)
 {
     Sack sack = sack_create();
     fail_if(sack == NULL, NULL);
-    fail_if(sack->pool == NULL, NULL);
+    fail_if(sack_pool(sack) == NULL, NULL);
     sack_free(sack);
 }
 END_TEST
@@ -21,8 +21,8 @@ END_TEST
 START_TEST(test_repo_load)
 {
     Sack sack = sack_create();
-    Pool *pool = sack->pool;
-    Repo *r = repo_create(sack->pool, SYSTEM_REPO_NAME);
+    Pool *pool = sack_pool(sack);
+    Repo *r = repo_create(sack_pool(sack), SYSTEM_REPO_NAME);
     const char *repo = pool_tmpjoin(pool, test_globals.repo_dir, "system.repo", 0);
     FILE *fp = fopen(repo, "r");
 

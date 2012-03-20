@@ -4,15 +4,12 @@
 // libsolv
 #include "solv/solvable.h"
 
-struct _Package {
-    Id id;
-    Pool *pool;
-};
-
-typedef struct _Package * Package;
+// hawkey
+#include "types.h"
 
 // internal
 Package package_create(Pool *pool, Id id);
+Id package_id(Package pkg);
 Package package_from_solvable(Solvable *s);
 
 // public

@@ -165,7 +165,7 @@ package_upgrades(_GoalObject *self, PyObject *pkg)
     if (cpkg == NULL)
 	return NULL;
     cpkg_upgraded = goal_package_upgrades(self->goal, cpkg);
-    pkg_upgraded = new_package(self->sack, cpkg_upgraded->id);
+    pkg_upgraded = new_package(self->sack, package_id(cpkg_upgraded));
     package_free(cpkg_upgraded);
     return pkg_upgraded;
 }

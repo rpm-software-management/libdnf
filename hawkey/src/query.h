@@ -2,8 +2,9 @@
 #define QUERY_H
 
 // hawkey
-#include "sack.h"
 #include "packagelist.h"
+#include "sack.h"
+#include "types.h"
 
 enum _filter_type_e {
     FT_EQ	= (1 << 0),
@@ -23,24 +24,6 @@ enum _key_name_e {
     KN_PKG_UPDATES,
     KN_PKG_OBSOLETING
 };
-
-struct _Filter {
-    int filter_type;
-    int keyname;
-    char *match;
-    char *evr;
-};
-
-struct _Query {
-    Sack sack;
-    struct _Filter *filters;
-    int nfilters;
-    int updates; /* 1 for "only updates for installed packages" */
-    int latest; /* 1 for "only the latest version per arch" */
-    int obsoleting; /* 1 for "only those obsoleting installed packages" */
-};
-
-typedef struct _Query * Query;
 
 Query query_create(Sack sack);
 void query_free(Query q);

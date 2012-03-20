@@ -18,8 +18,8 @@ get_latest_pkg(Sack sack, const char *name)
     query_filter_latest(q, 1);
     PackageList plist = query_run(q);
     fail_unless(packagelist_count(plist) == 1);
-    Package pkg = package_create(sack->pool,
-				 packagelist_get(plist, 0)->id);
+    Package pkg = package_create(sack_pool(sack),
+				 package_id(packagelist_get(plist, 0)));
     query_free(q);
     packagelist_free(plist);
     return pkg;
@@ -37,7 +37,7 @@ START_TEST(test_goal_sanity)
 {
     Goal goal = goal_create(test_globals.sack);
     fail_if(goal == NULL);
-    fail_unless(test_globals.sack->pool->nsolvables ==
+    fail_unless(sack_pool(test_globals.sack)->nsolvables ==
 		TEST_EXPECT_SYSTEM_NSOLVABLES +
 		TEST_EXPECT_MAIN_NSOLVABLES +
 		TEST_EXPECT_UPDATES_NSOLVABLES);

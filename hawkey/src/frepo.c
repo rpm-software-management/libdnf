@@ -3,7 +3,14 @@
 // libsolv
 #include "solv/util.h"
 
+// hawkey
 #include "frepo.h"
+
+struct _FRepo {
+    char *name;
+    char *repomd_fn;
+    char *primary_fn;
+};
 
 FRepo
 frepo_create(void)

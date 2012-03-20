@@ -9,15 +9,7 @@
 #include "package.h"
 #include "packagelist.h"
 #include "sack.h"
-
-struct _Goal {
-    Sack sack;
-    Queue job;
-    Queue problems;
-    Transaction *trans;
-};
-
-typedef struct _Goal * Goal;
+#include "types.h"
 
 Goal goal_create(Sack sack);
 void goal_free(Goal goal);
