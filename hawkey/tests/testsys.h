@@ -7,7 +7,7 @@
 
 struct TestGlobals_s {
     char *repo_dir;
-    Sack sack;
+    HySack sack;
 };
 
 #define TEST_EXPECT_SYSTEM_NSOLVABLES 6
@@ -22,6 +22,6 @@ void setup(void);
 void setup_with_updates(void);
 void setup_all(void);
 void teardown(void);
-void dump_packagelist(PackageList plist);
+void dump_packagelist(HyPackageList plist);
 
 #endif /* TESTSYS_H */

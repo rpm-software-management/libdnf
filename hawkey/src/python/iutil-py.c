@@ -7,10 +7,10 @@
 #include "sack-py.h"
 
 PyObject *
-packagelist_to_pylist(PackageList plist, PyObject *sack)
+packagelist_to_pylist(HyPackageList plist, PyObject *sack)
 {
-    PackageListIter iter;
-    Package cpkg;
+    HyPackageListIter iter;
+    HyPackage cpkg;
     PyObject *package;
     PyObject *list;
     PyObject *retval;

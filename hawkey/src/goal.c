@@ -13,20 +13,20 @@
 #include "package_internal.h"
 #include "sack_internal.h"
 
-struct _Goal {
-    Sack sack;
+struct _HyGoal {
+    HySack sack;
     Queue job;
     Queue problems;
     Transaction *trans;
 };
 
-static PackageList
-list_results(Goal goal, Id type_filter)
+static HyPackageList
+list_results(HyGoal goal, Id type_filter)
 {
     Pool *pool = sack_pool(goal->sack);
     Queue transpkgs;
     Transaction *trans = goal->trans;
-    PackageList plist;
+    HyPackageList plist;
 
     assert(trans);
     queue_init(&transpkgs);
@@ -42,10 +42,10 @@ list_results(Goal goal, Id type_filter)
     return plist;
 }
 
-Goal
-goal_create(Sack sack)
+HyGoal
+goal_create(HySack sack)
 {
-    Goal goal = solv_calloc(1, sizeof(*goal));
+    HyGoal goal = solv_calloc(1, sizeof(*goal));
     goal->sack = sack;
     queue_init(&goal->job);
     queue_init(&goal->problems);
@@ -53,7 +53,7 @@ goal_create(Sack sack)
 }
 
 void
-goal_free(Goal goal)
+goal_free(HyGoal goal)
 {
     queue_free(&goal->problems);
     queue_free(&goal->job);
@@ -63,7 +63,7 @@ goal_free(Goal goal)
 }
 
 int
-goal_erase(Goal goal, Package pkg)
+goal_erase(HyGoal goal, HyPackage pkg)
 {
 #ifndef NDEBUG
     Pool *pool = sack_pool(goal->sack);
@@ -75,18 +75,18 @@ goal_erase(Goal goal, Package pkg)
 }
 
 int
-goal_install(Goal goal, Package new_pkg)
+goal_install(HyGoal goal, HyPackage new_pkg)
 {
     queue_push2(&goal->job, SOLVER_SOLVABLE|SOLVER_INSTALL, package_id(new_pkg));
     return 0;
 }
 
 int
-goal_update(Goal goal, Package new_pkg)
+goal_update(HyGoal goal, HyPackage new_pkg)
 {
-    Query q = query_create(goal->sack);
+    HyQuery q = query_create(goal->sack);
     const char *name = package_get_name(new_pkg);
-    PackageList installed;
+    HyPackageList installed;
     int count;
 
     query_filter(q, KN_PKG_NAME, FT_EQ, name);
@@ -102,7 +102,7 @@ goal_update(Goal goal, Package new_pkg)
 }
 
 int
-goal_go(Goal goal)
+goal_go(HyGoal goal)
 {
     Transaction *trans;
 
@@ -140,13 +140,13 @@ goal_go(Goal goal)
 }
 
 int
-goal_count_problems(Goal goal)
+goal_count_problems(HyGoal goal)
 {
     return (goal->problems.count/4);
 }
 
 char *
-goal_describe_problem(Goal goal, unsigned i)
+goal_describe_problem(HyGoal goal, unsigned i)
 {
     Pool *pool = sack_pool(goal->sack);
     Id *ps = goal->problems.elements;
@@ -155,26 +155,26 @@ goal_describe_problem(Goal goal, unsigned i)
     return problemruleinfo2str(pool, ps[i], ps[i+1], ps[i+2], ps[i+3]);
 }
 
-PackageList
-goal_list_erasures(Goal goal)
+HyPackageList
+goal_list_erasures(HyGoal goal)
 {
     return list_results(goal, SOLVER_TRANSACTION_ERASE);
 }
 
-PackageList
-goal_list_installs(Goal goal)
+HyPackageList
+goal_list_installs(HyGoal goal)
 {
     return list_results(goal, SOLVER_TRANSACTION_INSTALL);
 }
 
-PackageList
-goal_list_upgrades(Goal goal)
+HyPackageList
+goal_list_upgrades(HyGoal goal)
 {
     return list_results(goal, SOLVER_TRANSACTION_UPGRADE);
 }
 
-Package
-goal_package_upgrades(Goal goal, Package pkg)
+HyPackage
+goal_package_upgrades(HyGoal goal, HyPackage pkg)
 {
     Pool *pool = sack_pool(goal->sack);
     Transaction *trans = goal->trans;

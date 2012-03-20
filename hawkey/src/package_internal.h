@@ -3,13 +3,13 @@
 
 #include "package.h"
 
-struct _Package {
+struct _HyPackage {
     Id id;
     Pool *pool;
 };
 
-Package package_create(Pool *pool, Id id);
-static inline Id package_id(Package pkg) { return pkg->id; }
-Package package_from_solvable(Solvable *s);
+HyPackage package_create(Pool *pool, Id id);
+static inline Id package_id(HyPackage pkg) { return pkg->id; }
+HyPackage package_from_solvable(Solvable *s);
 
 #endif // PACKAGE_INTERNAL_H

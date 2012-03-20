@@ -8,17 +8,17 @@
 #include "types.h"
 
 // public
-void package_free(Package pkg);
-int package_cmp(Package pkg1, Package pkg2);
-int package_evr_cmp(Package pkg1, Package pkg2);
-char *package_get_location(Package pkg);
-char *package_get_nvra(Package pkg);
-const char* package_get_name(Package pkg);
-const char* package_get_arch(Package pkg);
-const char* package_get_evr(Package pkg);
-const char* package_get_reponame(Package pkg);
-int package_get_medianr(Package pkg);
-int package_get_rpmdbid(Package pkg);
-int package_get_size(Package pkg);
+void package_free(HyPackage pkg);
+int package_cmp(HyPackage pkg1, HyPackage pkg2);
+int package_evr_cmp(HyPackage pkg1, HyPackage pkg2);
+char *package_get_location(HyPackage pkg);
+char *package_get_nvra(HyPackage pkg);
+const char* package_get_name(HyPackage pkg);
+const char* package_get_arch(HyPackage pkg);
+const char* package_get_evr(HyPackage pkg);
+const char* package_get_reponame(HyPackage pkg);
+int package_get_medianr(HyPackage pkg);
+int package_get_rpmdbid(HyPackage pkg);
+int package_get_size(HyPackage pkg);
 
 #endif

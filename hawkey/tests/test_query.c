@@ -10,9 +10,9 @@
 #include "test_query.h"
 
 static int
-count_results(Query q)
+count_results(HyQuery q)
 {
-    PackageList plist = query_run(q);
+    HyPackageList plist = query_run(q);
     int ret = packagelist_count(plist);
     packagelist_free(plist);
     return ret;
@@ -20,12 +20,12 @@ count_results(Query q)
 
 START_TEST(test_query_sanity)
 {
-    Sack sack = test_globals.sack;
+    HySack sack = test_globals.sack;
     fail_unless(sack != NULL);
     fail_unless(sack_pool(sack)->nsolvables == TEST_EXPECT_SYSTEM_NSOLVABLES);
     fail_unless(sack_pool(sack)->installed != NULL);
 
-    Query query = query_create(sack);
+    HyQuery query = query_create(sack);
     fail_unless(query != NULL);
     query_free(query);
 }
@@ -33,7 +33,7 @@ END_TEST
 
 START_TEST(test_query_repo)
 {
-    Query q;
+    HyQuery q;
 
     q = query_create(test_globals.sack);
     query_filter(q, KN_PKG_REPO, FT_EQ, SYSTEM_REPO_NAME);
@@ -52,7 +52,7 @@ END_TEST
 
 START_TEST(test_query_name)
 {
-    Query q;
+    HyQuery q;
 
     q = query_create(test_globals.sack);
     query_filter(q, KN_PKG_NAME, FT_SUBSTR, "penny");
@@ -68,7 +68,7 @@ END_TEST
 
 START_TEST(test_query_anded)
 {
-    Query q;
+    HyQuery q;
 
     q = query_create(test_globals.sack);
     query_filter(q, KN_PKG_NAME, FT_SUBSTR, "penny");
@@ -94,7 +94,7 @@ END_TEST
 
 START_TEST(test_updates)
 {
-    Query q = query_create(test_globals.sack);
+    HyQuery q = query_create(test_globals.sack);
     query_filter_updates(q, 1);
     fail_unless(count_results(q) == TEST_EXPECT_UPDATES_NSOLVABLES);
     query_free(q);
@@ -103,12 +103,12 @@ END_TEST
 
 START_TEST(test_filter_latest)
 {
-    Query q = query_create(test_globals.sack);
+    HyQuery q = query_create(test_globals.sack);
     query_filter(q, KN_PKG_NAME, FT_EQ, "fool");
     query_filter_latest(q, 1);
-    PackageList plist = query_run(q);
+    HyPackageList plist = query_run(q);
     fail_unless(packagelist_count(plist) == 1);
-    Package pkg = packagelist_get(plist, 0);
+    HyPackage pkg = packagelist_get(plist, 0);
     fail_if(strcmp(package_get_name(pkg), "fool"));
     fail_if(strcmp(package_get_evr(pkg), "1-5"));
     query_free(q);
@@ -118,12 +118,12 @@ END_TEST
 
 START_TEST(test_filter_latest2)
 {
-    Query q = query_create(test_globals.sack);
+    HyQuery q = query_create(test_globals.sack);
     query_filter(q, KN_PKG_NAME, FT_EQ, "flying");
     query_filter_latest(q, 1);
-    PackageList plist = query_run(q);
+    HyPackageList plist = query_run(q);
     fail_unless(packagelist_count(plist) == 1);
-    Package pkg = packagelist_get(plist, 0);
+    HyPackage pkg = packagelist_get(plist, 0);
     fail_if(strcmp(package_get_name(pkg), "flying"));
     fail_if(strcmp(package_get_evr(pkg), "3-0"));
     query_free(q);
@@ -135,7 +135,7 @@ END_TEST
 Suite *
 query_suite(void)
 {
-    Suite *s = suite_create("Query");
+    Suite *s = suite_create("HyQuery");
     TCase *tc;
 
     tc = tcase_create("Core");

@@ -18,11 +18,11 @@
 
 #define CFG_FILE "~/.hawkey/main.config"
 
-static void execute_print(Sack sack, Query q, int show_obsoletes)
+static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
 {
-    PackageList plist;
-    PackageListIter iter;
-    Package pkg;
+    HyPackageList plist;
+    HyPackageListIter iter;
+    HyPackage pkg;
 
     plist = query_run(q);
     iter = packagelist_iter_create(plist);
@@ -32,9 +32,9 @@ static void execute_print(Sack sack, Query q, int show_obsoletes)
 	       nvra,
 	       package_get_reponame(pkg));
 	if (show_obsoletes) {
-	    PackageList olist = packagelist_of_obsoletes(sack, pkg);
-	    PackageListIter oiter = packagelist_iter_create(olist);
-	    Package opkg;
+	    HyPackageList olist = packagelist_of_obsoletes(sack, pkg);
+	    HyPackageListIter oiter = packagelist_iter_create(olist);
+	    HyPackage opkg;
 	    char *onvra;
 	    while ((opkg = packagelist_iter_next(oiter)) != NULL) {
 		onvra = package_get_nvra(opkg);
@@ -50,11 +50,11 @@ static void execute_print(Sack sack, Query q, int show_obsoletes)
     packagelist_free(plist);
 }
 
-static void execute_queue(Query q, Queue *job)
+static void execute_queue(HyQuery q, Queue *job)
 {
-    PackageList plist;
-    PackageListIter iter;
-    Package pkg;
+    HyPackageList plist;
+    HyPackageListIter iter;
+    HyPackage pkg;
 
     plist = query_run(q);
     iter = packagelist_iter_create(plist);
@@ -65,11 +65,11 @@ static void execute_queue(Query q, Queue *job)
     packagelist_free(plist);
 }
 
-static void search_and_print(Sack sack, const char *name)
+static void search_and_print(HySack sack, const char *name)
 {
-    Package pkg;
-    PackageList plist;
-    PackageListIter iter;
+    HyPackage pkg;
+    HyPackageList plist;
+    HyPackageListIter iter;
 
     plist = sack_f_by_name(sack, name);
     iter = packagelist_iter_create(plist);
@@ -91,8 +91,8 @@ static void search_and_print(Sack sack, const char *name)
     packagelist_free(plist);
 }
 
-static void search_filter_repos(Sack sack, const char *name) {
-    Query q = query_create(sack);
+static void search_filter_repos(HySack sack, const char *name) {
+    HyQuery q = query_create(sack);
 
     query_filter(q, KN_PKG_NAME, FT_EQ, name);
     query_filter(q, KN_PKG_REPO, FT_NEQ, SYSTEM_REPO_NAME);
@@ -100,10 +100,10 @@ static void search_filter_repos(Sack sack, const char *name) {
     query_free(q);
 }
 
-static void search_anded(Sack sack, const char *name_substr,
+static void search_anded(HySack sack, const char *name_substr,
 			 const char *summary_substr)
 {
-    Query q = query_create(sack);
+    HyQuery q = query_create(sack);
 
     query_filter(q, KN_PKG_NAME, FT_SUBSTR, name_substr);
     query_filter(q, KN_PKG_SUMMARY, FT_SUBSTR, summary_substr);
@@ -111,19 +111,19 @@ static void search_anded(Sack sack, const char *name_substr,
     query_free(q);
 }
 
-static void search_provides(Sack sack, const char *name,
+static void search_provides(HySack sack, const char *name,
 			    const char *version)
 {
-    Query q = query_create(sack);
+    HyQuery q = query_create(sack);
 
     query_filter_provides(q, FT_GT, name, version);
     execute_print(sack, q, 0);
     query_free(q);
 }
 
-static void resolve_install(Sack sack, const char *name)
+static void resolve_install(HySack sack, const char *name)
 {
-    Query q = query_create(sack);
+    HyQuery q = query_create(sack);
     Queue job;
 
     queue_init(&job);
@@ -136,7 +136,7 @@ static void resolve_install(Sack sack, const char *name)
     query_free(q);
 }
 
-static void updatables_query_all(Sack sack)
+static void updatables_query_all(HySack sack)
 {
     Queue job;
     queue_init(&job);
@@ -145,9 +145,9 @@ static void updatables_query_all(Sack sack)
     queue_free(&job);
 }
 
-static void updatables_query_name(Sack sack, const char *name)
+static void updatables_query_name(HySack sack, const char *name)
 {
-    Query q = query_create(sack);
+    HyQuery q = query_create(sack);
 
     query_filter(q, KN_PKG_NAME, FT_EQ, name);
 #if 0 // must stil work if enabled
@@ -158,9 +158,9 @@ static void updatables_query_name(Sack sack, const char *name)
     query_free(q);
 }
 
-static void obsoletes(Sack sack)
+static void obsoletes(HySack sack)
 {
-    Query q = query_create(sack);
+    HyQuery q = query_create(sack);
 
     query_filter_obsoleting(q, 1);
     execute_print(sack, q, 1);
@@ -168,7 +168,7 @@ static void obsoletes(Sack sack)
 }
 
 static void
-dump_goal_errors(Goal goal)
+dump_goal_errors(HyGoal goal)
 {
     for (int i = 0; i < goal_count_problems(goal); ++i) {
 	char *problem = goal_describe_problem(goal, i);
@@ -178,13 +178,13 @@ dump_goal_errors(Goal goal)
 }
 
 static void
-erase(Sack sack, const char *name)
+erase(HySack sack, const char *name)
 {
-    Query q = query_create(sack);
+    HyQuery q = query_create(sack);
     query_filter(q, KN_PKG_NAME, FT_EQ, name);
     query_filter(q, KN_PKG_REPO, FT_EQ, SYSTEM_REPO_NAME);
 
-    PackageList plist = query_run(q);
+    HyPackageList plist = query_run(q);
     if (packagelist_count(plist) < 1) {
 	printf("No installed package to erase found.\n");
 	goto finish;
@@ -192,7 +192,7 @@ erase(Sack sack, const char *name)
     if (packagelist_count(plist) > 1)
 	printf("(more than one updatables found, selecting the first one)\n");
 
-    Goal goal = goal_create(sack);
+    HyGoal goal = goal_create(sack);
     goal_erase(goal, packagelist_get(plist, 0));
 
     if (goal_go(goal)) {
@@ -204,7 +204,7 @@ erase(Sack sack, const char *name)
     plist = goal_list_erasures(goal);
     printf("erasure count: %d\n", packagelist_count(plist));
     for (int i = 0; i < packagelist_count(plist); ++i) {
-	Package pkg = packagelist_get(plist, i);
+	HyPackage pkg = packagelist_get(plist, i);
 	char *nvra = package_get_nvra(pkg);
 
 	printf("erasing %s\n", nvra);
@@ -217,9 +217,9 @@ erase(Sack sack, const char *name)
     query_free(q);
 }
 
-static void update(Sack sack, Package pkg)
+static void update(HySack sack, HyPackage pkg)
 {
-    Goal goal = goal_create(sack);
+    HyGoal goal = goal_create(sack);
 
     if (goal_update(goal, pkg)) {
 	printf("no package of that name installed, trying install\n");
@@ -231,13 +231,13 @@ static void update(Sack sack, Package pkg)
 	goto finish;
     }
     // handle upgrades
-    PackageList plist = goal_list_upgrades(goal);
+    HyPackageList plist = goal_list_upgrades(goal);
     printf("upgrade count: %d\n", packagelist_count(plist));
     for (int i = 0; i < packagelist_count(plist); ++i) {
-	Package pkg = packagelist_get(plist, i);
+	HyPackage pkg = packagelist_get(plist, i);
 	char *nvra = package_get_nvra(pkg);
 	char *location = package_get_location(pkg);
-	Package installed = goal_package_upgrades(goal, pkg);
+	HyPackage installed = goal_package_upgrades(goal, pkg);
 	char *nvra_installed = package_get_nvra(installed);
 
 	printf("upgrading: %s using %s\n", nvra, location);
@@ -254,7 +254,7 @@ static void update(Sack sack, Package pkg)
     plist = goal_list_installs(goal);
     printf("install count: %d\n", packagelist_count(plist));
     for (int i = 0; i < packagelist_count(plist); ++i) {
-	Package pkg = packagelist_get(plist, i);
+	HyPackage pkg = packagelist_get(plist, i);
 	char *nvra = package_get_nvra(pkg);
 	char *location = package_get_location(pkg);
 
@@ -270,9 +270,9 @@ static void update(Sack sack, Package pkg)
     goal_free(goal);
 }
 
-static void update_local(Sack sack, const char *fn)
+static void update_local(HySack sack, const char *fn)
 {
-    Package pkg;
+    HyPackage pkg;
 
     sack_create_cmdline_repo(sack);
     pkg = sack_add_cmdline_rpm(sack, fn);
@@ -282,10 +282,10 @@ static void update_local(Sack sack, const char *fn)
     }
 }
 
-static void update_remote(Sack sack, const char *name)
+static void update_remote(HySack sack, const char *name)
 {
-    Query q = query_create(sack);
-    PackageList plist;
+    HyQuery q = query_create(sack);
+    HyPackageList plist;
 
     query_filter(q, KN_PKG_NAME, FT_EQ, name);
     query_filter(q, KN_PKG_REPO, FT_NEQ, SYSTEM_REPO_NAME);
@@ -304,10 +304,10 @@ finish:
     query_free(q);
 }
 
-static FRepo
+static HyRepo
 config_repo(const char *name, const char *md_repo, const char *md_primary_xml)
 {
-    FRepo repo = frepo_create();
+    HyRepo repo = frepo_create();
     frepo_set_string(repo, NAME, name);
     frepo_set_string(repo, REPOMD_FN, md_repo);
     frepo_set_string(repo, PRIMARY_FN, md_primary_xml);
@@ -365,8 +365,8 @@ read_repopaths(char **md_repo, char **md_primary_xml,
 
 int main(int argc, const char **argv)
 {
-    Sack sack = sack_create();
-    FRepo repo;
+    HySack sack = sack_create();
+    HyRepo repo;
     char *md_repo;
     char *md_primary_xml;
     char *md_repo_updates;

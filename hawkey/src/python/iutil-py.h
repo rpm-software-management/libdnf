@@ -3,6 +3,6 @@
 
 #include "src/types.h"
 
-PyObject *packagelist_to_pylist(PackageList plist, PyObject *sack);
+PyObject *packagelist_to_pylist(HyPackageList plist, PyObject *sack);
 
 #endif // IUTIL_PY_H

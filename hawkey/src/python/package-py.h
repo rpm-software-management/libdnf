@@ -5,6 +5,6 @@
 
 extern PyTypeObject package_Type;
 
-Package packageFromPyObject(PyObject *o);
+HyPackage packageFromPyObject(PyObject *o);
 
 #endif // PACKAGE_PY_H

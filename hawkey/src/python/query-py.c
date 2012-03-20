@@ -13,7 +13,7 @@
 
 typedef struct {
     PyObject_HEAD
-    Query query;
+    HyQuery query;
     PyObject *sack;
 } _QueryObject;
 
@@ -43,7 +43,7 @@ static int
 query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
 {
     PyObject *sack;
-    Sack csack;
+    HySack csack;
 
     if (!PyArg_ParseTuple(args, "O!", &sack_Type, &sack))
 	return -1;
@@ -94,7 +94,7 @@ filter(_QueryObject *self, PyObject *args)
 static PyObject *
 run(_QueryObject *self, PyObject *unused)
 {
-    PackageList plist;
+    HyPackageList plist;
     PyObject *list;
 
     plist = query_run(self->query);

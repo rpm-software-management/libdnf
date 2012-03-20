@@ -11,22 +11,22 @@
 #include "sack.h"
 #include "types.h"
 
-Goal goal_create(Sack sack);
-void goal_free(Goal goal);
+HyGoal goal_create(HySack sack);
+void goal_free(HyGoal goal);
 
-int goal_erase(Goal goal, Package pkg);
-int goal_install(Goal goal, Package new_pkg);
-int goal_update(Goal goal, Package new_pkg);
-int goal_go(Goal goal);
+int goal_erase(HyGoal goal, HyPackage pkg);
+int goal_install(HyGoal goal, HyPackage new_pkg);
+int goal_update(HyGoal goal, HyPackage new_pkg);
+int goal_go(HyGoal goal);
 
 // problems
-int goal_count_problems(Goal goal);
-char *goal_describe_problem(Goal goal, unsigned i);
+int goal_count_problems(HyGoal goal);
+char *goal_describe_problem(HyGoal goal, unsigned i);
 
 // result processing
-PackageList goal_list_erasures(Goal goal);
-PackageList goal_list_installs(Goal goal);
-PackageList goal_list_upgrades(Goal goal);
-Package goal_package_upgrades(Goal goal, Package pkg);
+HyPackageList goal_list_erasures(HyGoal goal);
+HyPackageList goal_list_installs(HyGoal goal);
+HyPackageList goal_list_upgrades(HyGoal goal);
+HyPackage goal_package_upgrades(HyGoal goal, HyPackage pkg);
 
 #endif

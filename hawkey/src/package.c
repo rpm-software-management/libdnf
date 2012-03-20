@@ -11,15 +11,15 @@
 #include "package_internal.h"
 
 static Solvable *
-get_solvable(Package pkg)
+get_solvable(HyPackage pkg)
 {
     return pool_id2solvable(pkg->pool, pkg->id);
 }
 
-Package
+HyPackage
 package_create(Pool *pool, Id id)
 {
-    Package pkg;
+    HyPackage pkg;
 
     pkg = solv_calloc(1, sizeof(*pkg));
     pkg->pool = pool;
@@ -27,10 +27,10 @@ package_create(Pool *pool, Id id)
     return pkg;
 }
 
-Package
+HyPackage
 package_from_solvable(Solvable *s)
 {
-    Package pkg;
+    HyPackage pkg;
 
     if (!s)
 	return NULL;
@@ -41,13 +41,13 @@ package_from_solvable(Solvable *s)
 }
 
 void
-package_free(Package pkg)
+package_free(HyPackage pkg)
 {
     solv_free(pkg);
 }
 
 int
-package_cmp(Package pkg1, Package pkg2)
+package_cmp(HyPackage pkg1, HyPackage pkg2)
 {
     Pool *pool = pkg1->pool;
     Solvable *s1 = pool_id2solvable(pool, pkg1->id);
@@ -62,7 +62,7 @@ package_cmp(Package pkg1, Package pkg2)
 }
 
 int
-package_evr_cmp(Package pkg1, Package pkg2)
+package_evr_cmp(HyPackage pkg1, HyPackage pkg2)
 {
     Solvable *s1 = get_solvable(pkg1);
     Solvable *s2 = get_solvable(pkg2);
@@ -71,7 +71,7 @@ package_evr_cmp(Package pkg1, Package pkg2)
 }
 
 char *
-package_get_location(Package pkg)
+package_get_location(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
     repo_internalize_trigger(s->repo);
@@ -79,42 +79,42 @@ package_get_location(Package pkg)
 }
 
 char *
-package_get_nvra(Package pkg)
+package_get_nvra(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
     return solv_strdup(pool_solvable2str(pkg->pool, s));
 }
 
 const char*
-package_get_name(Package pkg)
+package_get_name(HyPackage pkg)
 {
     Pool *pool = pkg->pool;
     return pool_id2str(pool, get_solvable(pkg)->name);
 }
 
 const char*
-package_get_arch(Package pkg)
+package_get_arch(HyPackage pkg)
 {
     Pool *pool = pkg->pool;
     return pool_id2str(pool, get_solvable(pkg)->arch);
 }
 
 const char*
-package_get_evr(Package pkg)
+package_get_evr(HyPackage pkg)
 {
     Pool *pool = pkg->pool;
     return pool_id2str(pool, get_solvable(pkg)->evr);
 }
 
 const char*
-package_get_reponame(Package pkg)
+package_get_reponame(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
     return s->repo->name;
 }
 
 int
-package_get_medianr(Package pkg)
+package_get_medianr(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
     repo_internalize_trigger(s->repo);
@@ -122,7 +122,7 @@ package_get_medianr(Package pkg)
 }
 
 int
-package_get_rpmdbid(Package pkg)
+package_get_rpmdbid(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
     int idx = solvable_lookup_num(s, RPM_RPMDBID, 0);
@@ -131,7 +131,7 @@ package_get_rpmdbid(Package pkg)
 }
 
 int
-package_get_size(Package pkg)
+package_get_size(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
     repo_internalize_trigger(s->repo);

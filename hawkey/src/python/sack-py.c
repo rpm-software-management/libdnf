@@ -12,7 +12,7 @@
 
 typedef struct {
     PyObject_HEAD
-    Sack sack;
+    HySack sack;
     PyObject *custom_package_class;
     PyObject *custom_package_val;
 } _SackObject;
@@ -44,7 +44,7 @@ new_package(PyObject *sack, Id id)
     return package;
 }
 
-Sack
+HySack
 sackFromPyObject(PyObject *o)
 {
     if (!sackObject_Check(o)) {
@@ -142,7 +142,7 @@ create_package(_SackObject *self, PyObject *solvable_id)
 static PyObject *
 add_cmdline_rpm(_SackObject *self, PyObject *fn_obj)
 {
-    Package cpkg;
+    HyPackage cpkg;
     PyObject *pkg;
     const char *fn = PyString_AsString(fn_obj);
 
@@ -168,7 +168,7 @@ load_rpm_repo(_SackObject *self, PyObject *unused)
 static PyObject *
 load_yum_repo(_SackObject *self, PyObject *repo)
 {
-    FRepo frepo = frepoFromPyObject(repo);
+    HyRepo frepo = frepoFromPyObject(repo);
     if (frepo == NULL)
 	return NULL;
     sack_load_yum_repo(self->sack, frepo);

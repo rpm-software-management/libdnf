@@ -9,9 +9,9 @@ enum frepo_param_e {
     PRIMARY_FN
 };
 
-FRepo frepo_create(void);
-void frepo_set_string(FRepo repo, enum frepo_param_e which, const char *str_val);
-const char *frepo_get_string(FRepo repo, enum frepo_param_e which);
-void frepo_free(FRepo repo);
+HyRepo frepo_create(void);
+void frepo_set_string(HyRepo repo, enum frepo_param_e which, const char *str_val);
+const char *frepo_get_string(HyRepo repo, enum frepo_param_e which);
+void frepo_free(HyRepo repo);
 
 #endif // FREPO_H

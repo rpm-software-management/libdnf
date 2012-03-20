@@ -10,10 +10,10 @@
 
 typedef struct {
     PyObject_HEAD
-    FRepo frepo;
+    HyRepo frepo;
 } _RepoObject;
 
-FRepo frepoFromPyObject(PyObject *o)
+HyRepo frepoFromPyObject(PyObject *o)
 {
     if (!repoObject_Check(o)) {
 	PyErr_SetString(PyExc_TypeError, "Expected a Repo object.");

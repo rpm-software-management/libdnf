@@ -11,34 +11,34 @@
 #include "package_internal.h"
 #include "sack_internal.h"
 
-struct _PackageList {
-    Package *elements;
+struct _HyPackageList {
+    HyPackage *elements;
     int count;
     int left;
 };
 
-struct _PackageListIter {
-    PackageList plist;
+struct _HyPackageListIter {
+    HyPackageList plist;
     int i;
-    Package current_pkg;
+    HyPackage current_pkg;
 };
 
 #define BLOCK_SIZE 31
 
-PackageList
+HyPackageList
 packagelist_create(void)
 {
-    PackageList plist = solv_calloc(1, sizeof(*plist));
+    HyPackageList plist = solv_calloc(1, sizeof(*plist));
     return plist;
 }
 
 /**
  * List of installed obsoletes of the given package.
  */
-PackageList
-packagelist_of_obsoletes(Sack sack, Package pkg)
+HyPackageList
+packagelist_of_obsoletes(HySack sack, HyPackage pkg)
 {
-    PackageList plist = packagelist_create();
+    HyPackageList plist = packagelist_create();
     Pool *pool = sack_pool(sack);
     Id *pp, r, rr;
     Solvable *s, *so;
@@ -62,7 +62,7 @@ packagelist_of_obsoletes(Sack sack, Package pkg)
 }
 
 void
-packagelist_free(PackageList plist)
+packagelist_free(HyPackageList plist)
 {
     int i;
 
@@ -74,42 +74,42 @@ packagelist_free(PackageList plist)
 }
 
 int
-packagelist_count(PackageList plist)
+packagelist_count(HyPackageList plist)
 {
     return plist->count;
 }
 
-Package
-packagelist_get(PackageList plist, int index)
+HyPackage
+packagelist_get(HyPackageList plist, int index)
 {
     assert(index < plist->count);
     return plist->elements[index];
 }
 
-void packagelist_push(PackageList plist, Package pkg)
+void packagelist_push(HyPackageList plist, HyPackage pkg)
 {
     plist->elements = solv_extend(plist->elements, plist->count, 1,
 				  sizeof(pkg), BLOCK_SIZE);
     plist->elements[plist->count++] = pkg;
 }
 
-PackageListIter
-packagelist_iter_create(PackageList plist)
+HyPackageListIter
+packagelist_iter_create(HyPackageList plist)
 {
-    PackageListIter iter = solv_calloc(1, sizeof(*iter));
+    HyPackageListIter iter = solv_calloc(1, sizeof(*iter));
     iter->plist = plist;
     iter->i = -1;
     return iter;
 }
 
 void
-packagelist_iter_free(PackageListIter iter)
+packagelist_iter_free(HyPackageListIter iter)
 {
     solv_free(iter);
 }
 
-Package
-packagelist_iter_next(PackageListIter iter)
+HyPackage
+packagelist_iter_next(HyPackageListIter iter)
 {
     if (++iter->i >= iter->plist->count)
 	return NULL;

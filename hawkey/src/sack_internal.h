@@ -3,13 +3,13 @@
 
 #include "sack.h"
 
-struct _Sack {
+struct _HySack {
     Pool *pool;
     int provides_ready;
 };
 
-void sack_make_provides_ready(Sack sack);
-void sack_same_names(Sack sack, Id name, Queue *same);
-static inline Pool *sack_pool(Sack sack) { return sack->pool; }
+void sack_make_provides_ready(HySack sack);
+void sack_same_names(HySack sack, Id name, Queue *same);
+static inline Pool *sack_pool(HySack sack) { return sack->pool; }
 
 #endif // SACK_INTERNAL_H

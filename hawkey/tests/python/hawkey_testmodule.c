@@ -15,9 +15,9 @@ py_load_repo(PyObject *unused, PyObject *args)
     if (!PyArg_ParseTuple(args, "Ossi", &sack, &name, &path, &installed))
 	return NULL;
 
-    Sack csack = sackFromPyObject(sack);
+    HySack csack = sackFromPyObject(sack);
     if (csack == NULL) {
-	PyErr_SetString(PyExc_TypeError, "Expected a Sack object.");
+	PyErr_SetString(PyExc_TypeError, "Expected a HySack object.");
 	return NULL;
     }
     if (load_repo(sack_pool(csack), name, path, installed)) {

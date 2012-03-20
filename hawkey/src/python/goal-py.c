@@ -17,7 +17,7 @@
 
 typedef struct {
     PyObject_HEAD
-    Goal goal;
+    HyGoal goal;
     PyObject *sack;
 } _GoalObject;
 
@@ -47,7 +47,7 @@ static int
 goal_init(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *sack;
-    Sack csack;
+    HySack csack;
 
     if (!PyArg_ParseTuple(args, "O!", &sack_Type, &sack))
 	return -1;
@@ -65,7 +65,7 @@ goal_init(_GoalObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 erase(_GoalObject *self, PyObject *pkgob)
 {
-    Package pkg = packageFromPyObject(pkgob);
+    HyPackage pkg = packageFromPyObject(pkgob);
     if (pkg == NULL)
 	return NULL;
     goal_erase(self->goal, pkg);
@@ -75,7 +75,7 @@ erase(_GoalObject *self, PyObject *pkgob)
 static PyObject *
 install(_GoalObject *self, PyObject *pkgob)
 {
-    Package pkg = packageFromPyObject(pkgob);
+    HyPackage pkg = packageFromPyObject(pkgob);
     if (pkg == NULL)
 	return NULL;
     goal_install(self->goal, pkg);
@@ -85,7 +85,7 @@ install(_GoalObject *self, PyObject *pkgob)
 static PyObject *
 update(_GoalObject *self, PyObject *pkgob)
 {
-    Package pkg = packageFromPyObject(pkgob);
+    HyPackage pkg = packageFromPyObject(pkgob);
     int ret;
 
     if (pkg == NULL)
@@ -128,9 +128,9 @@ describe_problem(_GoalObject *self, PyObject *index_obj)
 }
 
 static PyObject *
-list_generic(_GoalObject *self, PackageList (*func)(Goal))
+list_generic(_GoalObject *self, HyPackageList (*func)(HyGoal))
 {
-    PackageList plist = func(self->goal);
+    HyPackageList plist = func(self->goal);
     PyObject *list;
 
     list = packagelist_to_pylist(plist, self->sack);
@@ -159,8 +159,8 @@ list_upgrades(_GoalObject *self, PyObject *unused)
 static PyObject *
 package_upgrades(_GoalObject *self, PyObject *pkg)
 {
-    Package cpkg = packageFromPyObject(pkg);
-    Package cpkg_upgraded;
+    HyPackage cpkg = packageFromPyObject(pkg);
+    HyPackage cpkg_upgraded;
     PyObject *pkg_upgraded;
 
     if (cpkg == NULL)

@@ -13,8 +13,8 @@
 #include "package_internal.h"
 #include "sack_internal.h"
 
-struct _Query {
-    Sack sack;
+struct _HyQuery {
+    HySack sack;
     struct _Filter *filters;
     int nfilters;
     int updates; /* 1 for "only updates for installed packages" */
@@ -74,7 +74,7 @@ type2relflags(int type)
 }
 
 static void
-filter_dataiterator(Query q, struct _Filter *f, Map *m)
+filter_dataiterator(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
     Dataiterator di;
@@ -91,7 +91,7 @@ filter_dataiterator(Query q, struct _Filter *f, Map *m)
 }
 
 static void
-filter_providers(Query q, struct _Filter *f, Map *m)
+filter_providers(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
     Id id_n, id_evr, r, p, pp;
@@ -107,7 +107,7 @@ filter_providers(Query q, struct _Filter *f, Map *m)
 }
 
 static void
-filter_repo(Query q, struct _Filter *f, Map *m)
+filter_repo(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
     int i;
@@ -142,9 +142,9 @@ filter_repo(Query q, struct _Filter *f, Map *m)
 }
 
 static void
-filter_updates(Query q, Map *res)
+filter_updates(HyQuery q, Map *res)
 {
-    Sack sack = q->sack;
+    HySack sack = q->sack;
     Pool *pool = sack_pool(sack);
     int i;
     Map m;
@@ -172,7 +172,7 @@ filter_updates(Query q, Map *res)
 }
 
 static void
-filter_latest(Query q, Map *res)
+filter_latest(HyQuery q, Map *res)
 {
     Pool *pool = sack_pool(q->sack);
     Queue samename;
@@ -212,7 +212,7 @@ filter_latest(Query q, Map *res)
 }
 
 static void
-filter_obsoleting(Query q, Map *res)
+filter_obsoleting(HyQuery q, Map *res)
 {
     Pool *pool = sack_pool(q->sack);
     int obsprovides = pool_get_flag(pool, POOL_FLAG_OBSOLETEUSESPROVIDES);
@@ -247,16 +247,16 @@ filter_obsoleting(Query q, Map *res)
     map_free(&obsoleting);
 }
 
-Query
-query_create(Sack sack)
+HyQuery
+query_create(HySack sack)
 {
-    Query q = solv_calloc(1, sizeof(*q));
+    HyQuery q = solv_calloc(1, sizeof(*q));
     q->sack = sack;
     return q;
 }
 
 void
-query_free(Query q)
+query_free(HyQuery q)
 {
     int i;
     for (i = 0; i < q->nfilters; ++i) {
@@ -268,7 +268,7 @@ query_free(Query q)
 }
 
 void
-query_filter(Query q, int keyname, int filter_type, const char *match)
+query_filter(HyQuery q, int keyname, int filter_type, const char *match)
 {
     struct _Filter filter = {
 	.filter_type = filter_type,
@@ -281,7 +281,7 @@ query_filter(Query q, int keyname, int filter_type, const char *match)
 }
 
 void
-query_filter_provides(Query q, int filter_type, const char *name, const char *evr)
+query_filter_provides(HyQuery q, int filter_type, const char *name, const char *evr)
 {
     struct _Filter filter = {
 	.filter_type = filter_type,
@@ -300,7 +300,7 @@ query_filter_provides(Query q, int filter_type, const char *name, const char *ev
  * This requires resolving and so makes the final query expensive.
  */
 void
-query_filter_updates(Query q, int val)
+query_filter_updates(HyQuery q, int val)
 {
     q->updates = val;
 }
@@ -309,7 +309,7 @@ query_filter_updates(Query q, int val)
  * Narrows to only the highest version of a package per arch.
  */
 void
-query_filter_latest(Query q, int val)
+query_filter_latest(HyQuery q, int val)
 {
     q->latest = val;
 }
@@ -319,16 +319,16 @@ query_filter_latest(Query q, int val)
  *
  */
 void
-query_filter_obsoleting(Query q, int val)
+query_filter_obsoleting(HyQuery q, int val)
 {
     q->obsoleting = val;
 }
 
-PackageList
-query_run(Query q)
+HyPackageList
+query_run(HyQuery q)
 {
     Pool *pool = sack_pool(q->sack);
-    PackageList plist;
+    HyPackageList plist;
     Map res, m;
     int i;
 
@@ -373,7 +373,7 @@ query_run(Query q)
  * FIXME: Currently only finds at most one result.
  */
 static Solvable *
-find_package_by_name(Sack sack, const char *name, Queue *job)
+find_package_by_name(HySack sack, const char *name, Queue *job)
 {
     Pool *pool = sack_pool(sack);
     Id s_id = pool_str2id(pool, name, 0);
@@ -409,10 +409,10 @@ find_package_by_summary(Pool *pool, const char *substr, Queue *qp)
     dataiterator_free(&di);
 }
 
-PackageList
-sack_f_by_name(Sack sack, const char *name)
+HyPackageList
+sack_f_by_name(HySack sack, const char *name)
 {
-    PackageList plist = packagelist_create();
+    HyPackageList plist = packagelist_create();
     Solvable *s;
 
     s = find_package_by_name(sack, name, NULL);
@@ -421,10 +421,10 @@ sack_f_by_name(Sack sack, const char *name)
     return plist;
 }
 
-PackageList
-sack_f_by_summary(Sack sack, const char *summary_substr)
+HyPackageList
+sack_f_by_summary(HySack sack, const char *summary_substr)
 {
-    PackageList plist = packagelist_create();
+    HyPackageList plist = packagelist_create();
     Queue q;
 
     queue_init(&q);

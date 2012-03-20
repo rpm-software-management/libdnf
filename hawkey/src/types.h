@@ -1,12 +1,12 @@
 #ifndef HY_TYPES_H
 #define HY_TYPES_H
 
-typedef struct _FRepo * FRepo; // can't call this Repo, nameclash libsolv
-typedef struct _Goal * Goal;
-typedef struct _Package * Package;
-typedef struct _PackageList * PackageList;
-typedef struct _PackageListIter * PackageListIter;
-typedef struct _Query * Query;
-typedef struct _Sack * Sack;
+typedef struct _HyRepo * HyRepo;
+typedef struct _HyGoal * HyGoal;
+typedef struct _HyPackage * HyPackage;
+typedef struct _HyPackageList * HyPackageList;
+typedef struct _HyPackageListIter * HyPackageListIter;
+typedef struct _HyQuery * HyQuery;
+typedef struct _HySack * HySack;
 
 #endif // HY_TYPES_H

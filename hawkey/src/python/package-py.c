@@ -16,11 +16,11 @@
 
 typedef struct {
     PyObject_HEAD
-    Package package;
+    HyPackage package;
     PyObject *sack;
 } _PackageObject;
 
-Package packageFromPyObject(PyObject *o)
+HyPackage packageFromPyObject(PyObject *o)
 {
     if (!PyType_IsSubtype(o->ob_type, &package_Type)) {
 	PyErr_SetString(PyExc_TypeError, "Expected a Package object.");
@@ -57,7 +57,7 @@ package_init(_PackageObject *self, PyObject *args, PyObject *kwds)
 {
     Id id;
     PyObject *sack;
-    Sack csack;
+    HySack csack;
 
     if (!PyArg_ParseTuple(args, "(O!i)", &sack_Type, &sack, &id)) {
 	printf("im failing here %p\n", args);
@@ -95,18 +95,18 @@ package_str(_PackageObject *self)
 static PyObject *
 get_int(_PackageObject *self, void *closure)
 {
-    int (*func)(Package);
-    func = (int (*)(Package))closure;
+    int (*func)(HyPackage);
+    func = (int (*)(HyPackage))closure;
     return PyInt_FromLong(func(self->package));
 }
 
 static PyObject *
 get_str(_PackageObject *self, void *closure)
 {
-    const char *(*func)(Package);
+    const char *(*func)(HyPackage);
     const char *cstr;
 
-    func = (const char *(*)(Package))closure;
+    func = (const char *(*)(HyPackage))closure;
     cstr = func(self->package);
     return PyString_FromString(cstr);
 }
@@ -114,11 +114,11 @@ get_str(_PackageObject *self, void *closure)
 static PyObject *
 get_str_alloced(_PackageObject *self, void *closure)
 {
-    char *(*func)(Package);
+    char *(*func)(HyPackage);
     char *cstr;
     PyObject *ret;
 
-    func = (char *(*)(Package))closure;
+    func = (char *(*)(HyPackage))closure;
     cstr = func(self->package);
     if (cstr == NULL)
 	return PyString_FromString("");
@@ -145,7 +145,7 @@ static PyGetSetDef package_getsetters[] = {
 static PyObject *
 evr_cmp(_PackageObject *self, PyObject *other)
 {
-    Package pkg2 = packageFromPyObject(other);
+    HyPackage pkg2 = packageFromPyObject(other);
     if (pkg2 == NULL)
 	return NULL;
     return PyInt_FromLong(package_evr_cmp(self->package, pkg2));
@@ -154,9 +154,9 @@ evr_cmp(_PackageObject *self, PyObject *other)
 static PyObject *
 obsoletes_list(_PackageObject *self, PyObject *unused)
 {
-    PackageList plist;
+    HyPackageList plist;
     PyObject *list;
-    Sack csack =  sackFromPyObject(self->sack);
+    HySack csack =  sackFromPyObject(self->sack);
 
     if (!csack)
 	return NULL;

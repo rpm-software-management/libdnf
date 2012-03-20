@@ -27,7 +27,7 @@
 #define SOLVCACHE_PATH "/home/akozumpl/tmp/sapi"
 
 static Repo *
-get_cmdline_repo(Sack sack)
+get_cmdline_repo(HySack sack)
 {
     Pool *pool = sack->pool;
     Repo *repo;
@@ -184,17 +184,17 @@ transaction2obs_map(Transaction *trans, Map *m)
     queue_free(&obsoleted);
 }
 
-Sack
+HySack
 sack_create(void)
 {
-    Sack sack = solv_calloc(1, sizeof(*sack));
+    HySack sack = solv_calloc(1, sizeof(*sack));
     sack->pool = pool_create();
     setarch(sack->pool);
     return sack;
 }
 
 void
-sack_free(Sack sack)
+sack_free(HySack sack)
 {
     pool_free(sack->pool);
     solv_free(sack);
@@ -204,7 +204,7 @@ sack_free(Sack sack)
  * Creates repo for command line rpms.
  */
 void
-sack_create_cmdline_repo(Sack sack)
+sack_create_cmdline_repo(HySack sack)
 {
     repo_create(sack->pool, CMDLINE_REPO_NAME);
 }
@@ -212,8 +212,8 @@ sack_create_cmdline_repo(Sack sack)
 /**
  * Adds the given .rpm file to the command line repo.
  */
-Package
-sack_add_cmdline_rpm(Sack sack, const char *fn)
+HyPackage
+sack_add_cmdline_rpm(HySack sack, const char *fn)
 {
     Repo *repo = get_cmdline_repo(sack);
     Id p;
@@ -229,13 +229,13 @@ sack_add_cmdline_rpm(Sack sack, const char *fn)
 }
 
 void
-sack_load_rpm_repo(Sack sack)
+sack_load_rpm_repo(HySack sack)
 {
     read_rpm_repo(sack->pool);
     sack->provides_ready = 0;
 }
 
-void sack_load_yum_repo(Sack sack, FRepo repo)
+void sack_load_yum_repo(HySack sack, HyRepo repo)
 {
     read_yum_repo(sack->pool,
 		  frepo_get_string(repo, NAME),
@@ -245,7 +245,7 @@ void sack_load_yum_repo(Sack sack, FRepo repo)
 }
 
 void
-sack_make_provides_ready(Sack sack)
+sack_make_provides_ready(HySack sack)
 {
     if (!sack->provides_ready) {
 	pool_addfileprovides(sack->pool);
@@ -255,7 +255,7 @@ sack_make_provides_ready(Sack sack)
 }
 
 int
-sack_write_all_repos(Sack sack)
+sack_write_all_repos(HySack sack)
 {
     Pool *pool = sack->pool;
     Repo *repo;
@@ -288,7 +288,7 @@ sack_write_all_repos(Sack sack)
 }
 
 void
-sack_solve(Sack sack, Queue *job, Map *res_map, int mode)
+sack_solve(HySack sack, Queue *job, Map *res_map, int mode)
 {
     Transaction *trans = job2transaction(sack, job, NULL);
 
@@ -320,7 +320,7 @@ sack_solve(Sack sack, Queue *job, Map *res_map, int mode)
 // internal
 
 void
-sack_same_names(Sack sack, Id name, Queue *same)
+sack_same_names(HySack sack, Id name, Queue *same)
 {
     Pool *pool = sack->pool;
     Id p, pp;

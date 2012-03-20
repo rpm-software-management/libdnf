@@ -35,7 +35,7 @@ repo_internalize_trigger(Repo *repo)
 }
 
 Transaction *
-job2transaction(Sack sack, Queue *job, Queue *errors)
+job2transaction(HySack sack, Queue *job, Queue *errors)
 {
     Pool *pool = sack_pool(sack);
     Solver *solv;
@@ -64,7 +64,7 @@ job2transaction(Sack sack, Queue *job, Queue *errors)
 }
 
 void
-queue2plist(Sack sack, Queue *q, PackageList plist)
+queue2plist(HySack sack, Queue *q, HyPackageList plist)
 {
     Solvable *s;
     int i;
