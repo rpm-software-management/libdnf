@@ -1,7 +1,7 @@
 #ifndef REPO_PY_H
 #define REPO_PY_H
 
-#include "src/frepo.h"
+#include "src/types.h"
 
 extern PyTypeObject repo_Type;
 

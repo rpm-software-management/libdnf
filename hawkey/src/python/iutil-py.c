@@ -2,6 +2,7 @@
 
 // hawkey
 #include "src/package_internal.h"
+#include "src/packagelist.h"
 #include "iutil-py.h"
 #include "sack-py.h"
 

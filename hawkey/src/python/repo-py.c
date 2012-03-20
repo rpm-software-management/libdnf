@@ -1,6 +1,10 @@
 #include <Python.h>
-
 #include <stdint.h>
+
+// hawkey
+#include "src/frepo.h"
+
+// pyhawkey
 #include "hawkey-pysys.h"
 #include "repo-py.h"
 

@@ -6,6 +6,7 @@
 
 // hawkey
 #include "src/package_internal.h"
+#include "src/packagelist.h"
 #include "src/sack_internal.h"
 
 // pyhawkey

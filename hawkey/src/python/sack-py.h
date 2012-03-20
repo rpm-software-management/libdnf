@@ -1,7 +1,8 @@
 #ifndef SACK_PY_H
 #define SACK_PY_H
 
-#include "src/sack.h"
+#include "solv/pooltypes.h"
+#include "src/types.h"
 
 extern PyTypeObject sack_Type;
 
