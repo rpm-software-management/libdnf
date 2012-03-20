@@ -10,6 +10,8 @@
 #include "goal.h"
 #include "iutil.h"
 #include "query.h"
+#include "package_internal.h"
+#include "sack_internal.h"
 
 struct _Goal {
     Sack sack;

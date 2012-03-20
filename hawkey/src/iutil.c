@@ -9,6 +9,8 @@
 
 // hawkey
 #include "iutil.h"
+#include "package_internal.h"
+#include "sack_internal.h"
 
 int
 is_readable_rpm(const char *fn)

@@ -21,12 +21,8 @@
 
 // hawkey
 #include "iutil.h"
-#include "sack.h"
-
-struct _Sack {
-    Pool *pool;
-    int provides_ready;
-};
+#include "package_internal.h"
+#include "sack_internal.h"
 
 #define SOLVCACHE_PATH "/home/akozumpl/tmp/sapi"
 
@@ -335,10 +331,4 @@ sack_same_names(Sack sack, Id name, Queue *same)
 	if (s->name == name)
 	    queue_push(same, p);
     }
-}
-
-Pool *
-sack_pool(Sack sack)
-{
-    return sack->pool;
 }

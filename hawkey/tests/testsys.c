@@ -6,6 +6,7 @@
 #include <solv/util.h>
 
 // hawkey
+#include "src/sack_internal.h"
 #include "testsys.h"
 
 /* define the global variable */

@@ -12,7 +12,7 @@
 // hawkey
 #include "frepo.h"
 #include "goal.h"
-#include "package.h"
+#include "package_internal.h"
 #include "query.h"
 #include "sack.h"
 

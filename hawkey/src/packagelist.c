@@ -8,6 +8,8 @@
 
 // hawkey
 #include "packagelist.h"
+#include "package_internal.h"
+#include "sack_internal.h"
 
 struct _PackageList {
     Package *elements;

@@ -6,6 +6,8 @@
 // hawkey
 #include "src/goal.h"
 #include "src/query.h"
+#include "src/package_internal.h"
+#include "src/sack_internal.h"
 #include "testsys.h"
 #include "test_goal.h"
 

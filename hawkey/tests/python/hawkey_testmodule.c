@@ -1,7 +1,7 @@
 #include <Python.h>
 
 // hawkey
-#include "src/sack.h"
+#include "src/sack_internal.h"
 #include "src/python/sack-py.h"
 #include "tests/testsys.h"
 

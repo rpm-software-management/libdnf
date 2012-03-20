@@ -7,11 +7,6 @@
 // hawkey
 #include "types.h"
 
-// internal
-Package package_create(Pool *pool, Id id);
-Id package_id(Package pkg);
-Package package_from_solvable(Solvable *s);
-
 // public
 void package_free(Package pkg);
 int package_cmp(Package pkg1, Package pkg2);

@@ -1,5 +1,9 @@
 #include "Python.h"
 
+// hawkey
+#include "src/package_internal.h"
+#include "src/sack_internal.h"
+
 // pyhawkey
 #include "hawkey-pysys.h"
 #include "package-py.h"

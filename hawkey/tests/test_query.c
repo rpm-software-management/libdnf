@@ -5,6 +5,7 @@
 
 // hawkey
 #include "src/query.h"
+#include "src/sack_internal.h"
 #include "testsys.h"
 #include "test_query.h"
 

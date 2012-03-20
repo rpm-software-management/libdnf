@@ -10,6 +10,8 @@
 // hawkey
 #include "iutil.h"
 #include "query.h"
+#include "package_internal.h"
+#include "sack_internal.h"
 
 struct _Query {
     Sack sack;

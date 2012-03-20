@@ -6,7 +6,7 @@
 #include <solv/testcase.h>
 
 // hawkey
-#include "src/sack.h"
+#include "src/sack_internal.h"
 #include "testsys.h"
 
 START_TEST(test_sack_create)

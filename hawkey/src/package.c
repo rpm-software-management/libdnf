@@ -8,12 +8,7 @@
 
 // hawkey
 #include "iutil.h"
-#include "package.h"
-
-struct _Package {
-    Id id;
-    Pool *pool;
-};
+#include "package_internal.h"
 
 static Solvable *
 get_solvable(Package pkg)
@@ -31,9 +26,6 @@ package_create(Pool *pool, Id id)
     pkg->id = id;
     return pkg;
 }
-
-Id
-package_id(Package pkg) { return pkg->id; }
 
 Package
 package_from_solvable(Solvable *s)

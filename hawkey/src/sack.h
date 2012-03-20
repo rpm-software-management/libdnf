@@ -21,9 +21,4 @@ void sack_load_yum_repo(Sack sack, FRepo repo);
 void sack_solve(Sack sack, Queue *job, Map *res_map, int mode);
 int sack_write_all_repos(Sack sack);
 
-// internal
-void sack_make_provides_ready(Sack sack);
-void sack_same_names(Sack sack, Id name, Queue *same);
-Pool *sack_pool(Sack sack);
-
-#endif
+#endif // SACK_H

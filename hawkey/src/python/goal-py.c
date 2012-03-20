@@ -7,6 +7,7 @@
 
 // hawkey
 #include "src/goal.h"
+#include "src/package_internal.h"
 
 // pyhawkey
 #include "goal-py.h"

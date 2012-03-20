@@ -1,4 +1,7 @@
 #include "Python.h"
+
+// hawkey
+#include "src/package_internal.h"
 #include "iutil-py.h"
 #include "sack-py.h"
 
