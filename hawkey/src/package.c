@@ -41,13 +41,13 @@ package_from_solvable(Solvable *s)
 }
 
 void
-package_free(HyPackage pkg)
+hy_package_free(HyPackage pkg)
 {
     solv_free(pkg);
 }
 
 int
-package_cmp(HyPackage pkg1, HyPackage pkg2)
+hy_package_cmp(HyPackage pkg1, HyPackage pkg2)
 {
     Pool *pool = pkg1->pool;
     Solvable *s1 = pool_id2solvable(pool, pkg1->id);
@@ -58,11 +58,11 @@ package_cmp(HyPackage pkg1, HyPackage pkg2)
 
    if (ret)
 	return ret;
-    return package_evr_cmp(pkg1, pkg2);
+    return hy_package_evr_cmp(pkg1, pkg2);
 }
 
 int
-package_evr_cmp(HyPackage pkg1, HyPackage pkg2)
+hy_package_evr_cmp(HyPackage pkg1, HyPackage pkg2)
 {
     Solvable *s1 = get_solvable(pkg1);
     Solvable *s2 = get_solvable(pkg2);
@@ -71,7 +71,7 @@ package_evr_cmp(HyPackage pkg1, HyPackage pkg2)
 }
 
 char *
-package_get_location(HyPackage pkg)
+hy_package_get_location(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
     repo_internalize_trigger(s->repo);
@@ -79,42 +79,42 @@ package_get_location(HyPackage pkg)
 }
 
 char *
-package_get_nvra(HyPackage pkg)
+hy_package_get_nvra(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
     return solv_strdup(pool_solvable2str(pkg->pool, s));
 }
 
 const char*
-package_get_name(HyPackage pkg)
+hy_package_get_name(HyPackage pkg)
 {
     Pool *pool = pkg->pool;
     return pool_id2str(pool, get_solvable(pkg)->name);
 }
 
 const char*
-package_get_arch(HyPackage pkg)
+hy_package_get_arch(HyPackage pkg)
 {
     Pool *pool = pkg->pool;
     return pool_id2str(pool, get_solvable(pkg)->arch);
 }
 
 const char*
-package_get_evr(HyPackage pkg)
+hy_package_get_evr(HyPackage pkg)
 {
     Pool *pool = pkg->pool;
     return pool_id2str(pool, get_solvable(pkg)->evr);
 }
 
 const char*
-package_get_reponame(HyPackage pkg)
+hy_package_get_reponame(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
     return s->repo->name;
 }
 
 int
-package_get_medianr(HyPackage pkg)
+hy_package_get_medianr(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
     repo_internalize_trigger(s->repo);
@@ -122,7 +122,7 @@ package_get_medianr(HyPackage pkg)
 }
 
 int
-package_get_rpmdbid(HyPackage pkg)
+hy_package_get_rpmdbid(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
     int idx = solvable_lookup_num(s, RPM_RPMDBID, 0);
@@ -131,7 +131,7 @@ package_get_rpmdbid(HyPackage pkg)
 }
 
 int
-package_get_size(HyPackage pkg)
+hy_package_get_size(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
     repo_internalize_trigger(s->repo);

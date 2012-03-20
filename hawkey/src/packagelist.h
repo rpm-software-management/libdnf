@@ -9,15 +9,15 @@
 #include "sack.h"
 #include "types.h"
 
-HyPackageList packagelist_create(void);
-HyPackageList packagelist_of_obsoletes(HySack sack, HyPackage pkg);
-void packagelist_free(HyPackageList plist);
-int packagelist_count(HyPackageList plist);
-HyPackage packagelist_get(HyPackageList plist, int index);
-void packagelist_push(HyPackageList plist, HyPackage pkg);
+HyPackageList hy_packagelist_create(void);
+HyPackageList hy_packagelist_of_obsoletes(HySack sack, HyPackage pkg);
+void hy_packagelist_free(HyPackageList plist);
+int hy_packagelist_count(HyPackageList plist);
+HyPackage hy_packagelist_get(HyPackageList plist, int index);
+void hy_packagelist_push(HyPackageList plist, HyPackage pkg);
 
-HyPackageListIter packagelist_iter_create(HyPackageList plist);
-void packagelist_iter_free(HyPackageListIter iter);
-HyPackage packagelist_iter_next(HyPackageListIter iter);
+HyPackageListIter hy_packagelist_iter_create(HyPackageList plist);
+void hy_packagelist_iter_free(HyPackageListIter iter);
+HyPackage hy_packagelist_iter_next(HyPackageListIter iter);
 
 #endif // PACKAGELIST_H

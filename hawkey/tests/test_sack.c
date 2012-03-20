@@ -11,16 +11,16 @@
 
 START_TEST(test_sack_create)
 {
-    HySack sack = sack_create();
+    HySack sack = hy_sack_create();
     fail_if(sack == NULL, NULL);
     fail_if(sack_pool(sack) == NULL, NULL);
-    sack_free(sack);
+    hy_sack_free(sack);
 }
 END_TEST
 
 START_TEST(test_repo_load)
 {
-    HySack sack = sack_create();
+    HySack sack = hy_sack_create();
     Pool *pool = sack_pool(sack);
     Repo *r = repo_create(sack_pool(sack), SYSTEM_REPO_NAME);
     const char *repo = pool_tmpjoin(pool, test_globals.repo_dir, "system.repo", 0);
@@ -30,7 +30,7 @@ START_TEST(test_repo_load)
     fail_unless(pool->nsolvables == TEST_EXPECT_SYSTEM_NSOLVABLES);
 
     fclose(fp);
-    sack_free(sack);
+    hy_sack_free(sack);
 }
 END_TEST
 

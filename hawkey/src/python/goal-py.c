@@ -37,7 +37,7 @@ static void
 goal_dealloc(_GoalObject *self)
 {
     if (self->goal)
-	goal_free(self->goal);
+	hy_goal_free(self->goal);
 
     Py_XDECREF(self->sack);
     Py_TYPE(self)->tp_free(self);
@@ -56,7 +56,7 @@ goal_init(_GoalObject *self, PyObject *args, PyObject *kwds)
 	return -1;
     self->sack = sack;
     Py_INCREF(self->sack); // sack has to kept around until we are
-    self->goal = goal_create(csack);
+    self->goal = hy_goal_create(csack);
     return 0;
 }
 
@@ -68,7 +68,7 @@ erase(_GoalObject *self, PyObject *pkgob)
     HyPackage pkg = packageFromPyObject(pkgob);
     if (pkg == NULL)
 	return NULL;
-    goal_erase(self->goal, pkg);
+    hy_goal_erase(self->goal, pkg);
     Py_RETURN_NONE;
 }
 
@@ -78,7 +78,7 @@ install(_GoalObject *self, PyObject *pkgob)
     HyPackage pkg = packageFromPyObject(pkgob);
     if (pkg == NULL)
 	return NULL;
-    goal_install(self->goal, pkg);
+    hy_goal_install(self->goal, pkg);
     Py_RETURN_NONE;
 }
 
@@ -90,7 +90,7 @@ update(_GoalObject *self, PyObject *pkgob)
 
     if (pkg == NULL)
 	return NULL;
-    ret = goal_update(self->goal, pkg);
+    ret = hy_goal_update(self->goal, pkg);
     if (!ret)
 	Py_RETURN_TRUE;
     Py_RETURN_FALSE;
@@ -99,7 +99,7 @@ update(_GoalObject *self, PyObject *pkgob)
 static PyObject *
 go(_GoalObject *self, PyObject *unused)
 {
-    int ret = goal_go(self->goal);
+    int ret = hy_goal_go(self->goal);
     if (!ret)
 	Py_RETURN_TRUE;
     Py_RETURN_FALSE;
@@ -108,7 +108,7 @@ go(_GoalObject *self, PyObject *unused)
 static PyObject *
 count_problems(_GoalObject *self, PyObject *unused)
 {
-    return PyInt_FromLong(goal_count_problems(self->goal));
+    return PyInt_FromLong(hy_goal_count_problems(self->goal));
 }
 
 static PyObject *
@@ -121,7 +121,7 @@ describe_problem(_GoalObject *self, PyObject *index_obj)
 	PyErr_SetString(PyExc_ValueError, "integer value expected");
 	return NULL;
     }
-    cstr = goal_describe_problem(self->goal, PyInt_AsLong(index_obj));
+    cstr = hy_goal_describe_problem(self->goal, PyInt_AsLong(index_obj));
     str = PyString_FromString(cstr);
     solv_free(cstr);
     return str;
@@ -134,26 +134,26 @@ list_generic(_GoalObject *self, HyPackageList (*func)(HyGoal))
     PyObject *list;
 
     list = packagelist_to_pylist(plist, self->sack);
-    packagelist_free(plist);
+    hy_packagelist_free(plist);
     return list;
 }
 
 static PyObject *
 list_erasures(_GoalObject *self, PyObject *unused)
 {
-    return list_generic(self, goal_list_erasures);
+    return list_generic(self, hy_goal_list_erasures);
 }
 
 static PyObject *
 list_installs(_GoalObject *self, PyObject *unused)
 {
-    return list_generic(self, goal_list_installs);
+    return list_generic(self, hy_goal_list_installs);
 }
 
 static PyObject *
 list_upgrades(_GoalObject *self, PyObject *unused)
 {
-    return list_generic(self, goal_list_upgrades);
+    return list_generic(self, hy_goal_list_upgrades);
 }
 
 static PyObject *
@@ -165,9 +165,9 @@ package_upgrades(_GoalObject *self, PyObject *pkg)
 
     if (cpkg == NULL)
 	return NULL;
-    cpkg_upgraded = goal_package_upgrades(self->goal, cpkg);
+    cpkg_upgraded = hy_goal_package_upgrades(self->goal, cpkg);
     pkg_upgraded = new_package(self->sack, package_id(cpkg_upgraded));
-    package_free(cpkg_upgraded);
+    hy_package_free(cpkg_upgraded);
     return pkg_upgraded;
 }
 

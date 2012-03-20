@@ -12,9 +12,9 @@
 static int
 count_results(HyQuery q)
 {
-    HyPackageList plist = query_run(q);
-    int ret = packagelist_count(plist);
-    packagelist_free(plist);
+    HyPackageList plist = hy_query_run(q);
+    int ret = hy_packagelist_count(plist);
+    hy_packagelist_free(plist);
     return ret;
 }
 
@@ -25,9 +25,9 @@ START_TEST(test_query_sanity)
     fail_unless(sack_pool(sack)->nsolvables == TEST_EXPECT_SYSTEM_NSOLVABLES);
     fail_unless(sack_pool(sack)->installed != NULL);
 
-    HyQuery query = query_create(sack);
+    HyQuery query = hy_query_create(sack);
     fail_unless(query != NULL);
-    query_free(query);
+    hy_query_free(query);
 }
 END_TEST
 
@@ -35,18 +35,18 @@ START_TEST(test_query_repo)
 {
     HyQuery q;
 
-    q = query_create(test_globals.sack);
-    query_filter(q, KN_PKG_REPO, FT_EQ, SYSTEM_REPO_NAME);
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, KN_PKG_REPO, FT_EQ, SYSTEM_REPO_NAME);
 
     fail_unless(count_results(q) == TEST_EXPECT_SYSTEM_NSOLVABLES - 2);
 
-    query_free(q);
+    hy_query_free(q);
 
-    q = query_create(test_globals.sack);
-    query_filter(q, KN_PKG_REPO, FT_NEQ, SYSTEM_REPO_NAME);
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, KN_PKG_REPO, FT_NEQ, SYSTEM_REPO_NAME);
     fail_if(count_results(q));
 
-    query_free(q);
+    hy_query_free(q);
 }
 END_TEST
 
@@ -54,15 +54,15 @@ START_TEST(test_query_name)
 {
     HyQuery q;
 
-    q = query_create(test_globals.sack);
-    query_filter(q, KN_PKG_NAME, FT_SUBSTR, "penny");
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, KN_PKG_NAME, FT_SUBSTR, "penny");
     fail_unless(count_results(q) == 2);
-    query_free(q);
+    hy_query_free(q);
 
-    q = query_create(test_globals.sack);
-    query_filter(q, KN_PKG_NAME, FT_EQ, "lane");
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, KN_PKG_NAME, FT_EQ, "lane");
     fail_if(count_results(q));
-    query_free(q);
+    hy_query_free(q);
 }
 END_TEST
 
@@ -70,11 +70,11 @@ START_TEST(test_query_anded)
 {
     HyQuery q;
 
-    q = query_create(test_globals.sack);
-    query_filter(q, KN_PKG_NAME, FT_SUBSTR, "penny");
-    query_filter(q, KN_PKG_SUMMARY, FT_SUBSTR, "ears");
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, KN_PKG_NAME, FT_SUBSTR, "penny");
+    hy_query_filter(q, KN_PKG_SUMMARY, FT_SUBSTR, "ears");
     fail_unless(count_results(q) == 1);
-    query_free(q);
+    hy_query_free(q);
 }
 END_TEST
 
@@ -94,40 +94,40 @@ END_TEST
 
 START_TEST(test_updates)
 {
-    HyQuery q = query_create(test_globals.sack);
-    query_filter_updates(q, 1);
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter_updates(q, 1);
     fail_unless(count_results(q) == TEST_EXPECT_UPDATES_NSOLVABLES);
-    query_free(q);
+    hy_query_free(q);
 }
 END_TEST
 
 START_TEST(test_filter_latest)
 {
-    HyQuery q = query_create(test_globals.sack);
-    query_filter(q, KN_PKG_NAME, FT_EQ, "fool");
-    query_filter_latest(q, 1);
-    HyPackageList plist = query_run(q);
-    fail_unless(packagelist_count(plist) == 1);
-    HyPackage pkg = packagelist_get(plist, 0);
-    fail_if(strcmp(package_get_name(pkg), "fool"));
-    fail_if(strcmp(package_get_evr(pkg), "1-5"));
-    query_free(q);
-    packagelist_free(plist);
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, KN_PKG_NAME, FT_EQ, "fool");
+    hy_query_filter_latest(q, 1);
+    HyPackageList plist = hy_query_run(q);
+    fail_unless(hy_packagelist_count(plist) == 1);
+    HyPackage pkg = hy_packagelist_get(plist, 0);
+    fail_if(strcmp(hy_package_get_name(pkg), "fool"));
+    fail_if(strcmp(hy_package_get_evr(pkg), "1-5"));
+    hy_query_free(q);
+    hy_packagelist_free(plist);
 }
 END_TEST
 
 START_TEST(test_filter_latest2)
 {
-    HyQuery q = query_create(test_globals.sack);
-    query_filter(q, KN_PKG_NAME, FT_EQ, "flying");
-    query_filter_latest(q, 1);
-    HyPackageList plist = query_run(q);
-    fail_unless(packagelist_count(plist) == 1);
-    HyPackage pkg = packagelist_get(plist, 0);
-    fail_if(strcmp(package_get_name(pkg), "flying"));
-    fail_if(strcmp(package_get_evr(pkg), "3-0"));
-    query_free(q);
-    packagelist_free(plist);
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, KN_PKG_NAME, FT_EQ, "flying");
+    hy_query_filter_latest(q, 1);
+    HyPackageList plist = hy_query_run(q);
+    fail_unless(hy_packagelist_count(plist) == 1);
+    HyPackage pkg = hy_packagelist_get(plist, 0);
+    fail_if(strcmp(hy_package_get_name(pkg), "flying"));
+    fail_if(strcmp(hy_package_get_evr(pkg), "3-0"));
+    hy_query_free(q);
+    hy_packagelist_free(plist);
 
 }
 END_TEST

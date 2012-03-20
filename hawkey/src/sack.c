@@ -185,7 +185,7 @@ transaction2obs_map(Transaction *trans, Map *m)
 }
 
 HySack
-sack_create(void)
+hy_sack_create(void)
 {
     HySack sack = solv_calloc(1, sizeof(*sack));
     sack->pool = pool_create();
@@ -194,7 +194,7 @@ sack_create(void)
 }
 
 void
-sack_free(HySack sack)
+hy_sack_free(HySack sack)
 {
     pool_free(sack->pool);
     solv_free(sack);
@@ -204,7 +204,7 @@ sack_free(HySack sack)
  * Creates repo for command line rpms.
  */
 void
-sack_create_cmdline_repo(HySack sack)
+hy_sack_create_cmdline_repo(HySack sack)
 {
     repo_create(sack->pool, CMDLINE_REPO_NAME);
 }
@@ -213,7 +213,7 @@ sack_create_cmdline_repo(HySack sack)
  * Adds the given .rpm file to the command line repo.
  */
 HyPackage
-sack_add_cmdline_rpm(HySack sack, const char *fn)
+hy_sack_add_cmdline_rpm(HySack sack, const char *fn)
 {
     Repo *repo = get_cmdline_repo(sack);
     Id p;
@@ -229,18 +229,18 @@ sack_add_cmdline_rpm(HySack sack, const char *fn)
 }
 
 void
-sack_load_rpm_repo(HySack sack)
+hy_sack_load_rpm_repo(HySack sack)
 {
     read_rpm_repo(sack->pool);
     sack->provides_ready = 0;
 }
 
-void sack_load_yum_repo(HySack sack, HyRepo repo)
+void hy_sack_load_yum_repo(HySack sack, HyRepo repo)
 {
     read_yum_repo(sack->pool,
-		  frepo_get_string(repo, NAME),
-		  frepo_get_string(repo, REPOMD_FN),
-		  frepo_get_string(repo, PRIMARY_FN));
+		  hy_repo_get_string(repo, NAME),
+		  hy_repo_get_string(repo, REPOMD_FN),
+		  hy_repo_get_string(repo, PRIMARY_FN));
     sack->provides_ready = 0;
 }
 
@@ -255,7 +255,7 @@ sack_make_provides_ready(HySack sack)
 }
 
 int
-sack_write_all_repos(HySack sack)
+hy_sack_write_all_repos(HySack sack)
 {
     Pool *pool = sack->pool;
     Repo *repo;
@@ -288,7 +288,7 @@ sack_write_all_repos(HySack sack)
 }
 
 void
-sack_solve(HySack sack, Queue *job, Map *res_map, int mode)
+hy_sack_solve(HySack sack, Queue *job, Map *res_map, int mode)
 {
     Transaction *trans = job2transaction(sack, job, NULL);
 

@@ -60,7 +60,7 @@ static void
 sack_dealloc(_SackObject *o)
 {
     if (o->sack)
-	sack_free(o->sack);
+	hy_sack_free(o->sack);
     Py_TYPE(o)->tp_free(o);
 }
 
@@ -70,7 +70,7 @@ sack_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     _SackObject *self = (_SackObject *)type->tp_alloc(type, 0);
 
     if (self) {
-	self->sack = sack_create();
+	self->sack = hy_sack_create();
 	if (self->sack == NULL) {
 	    Py_DECREF(self);
 	    return NULL;
@@ -124,7 +124,7 @@ static PyGetSetDef sack_getsetters[] = {
 static PyObject *
 create_cmdline_repo(_SackObject *self, PyObject *unused)
 {
-    sack_create_cmdline_repo(self->sack);
+    hy_sack_create_cmdline_repo(self->sack);
     Py_RETURN_NONE;
 }
 
@@ -148,20 +148,20 @@ add_cmdline_rpm(_SackObject *self, PyObject *fn_obj)
 
     if (fn == NULL)
 	return NULL;
-    cpkg = sack_add_cmdline_rpm(self->sack, fn);
+    cpkg = hy_sack_add_cmdline_rpm(self->sack, fn);
     if (cpkg == NULL) {
 	PyErr_SetString(PyExc_IOError, "Can not load an .rpm file");
 	return NULL;
     }
     pkg = new_package((PyObject*)self, package_id(cpkg));
-    package_free(cpkg);
+    hy_package_free(cpkg);
     return pkg;
 }
 
 static PyObject *
 load_rpm_repo(_SackObject *self, PyObject *unused)
 {
-    sack_load_rpm_repo(self->sack);
+    hy_sack_load_rpm_repo(self->sack);
     Py_RETURN_NONE;
 }
 
@@ -171,7 +171,7 @@ load_yum_repo(_SackObject *self, PyObject *repo)
     HyRepo frepo = frepoFromPyObject(repo);
     if (frepo == NULL)
 	return NULL;
-    sack_load_yum_repo(self->sack, frepo);
+    hy_sack_load_yum_repo(self->sack, frepo);
 
     Py_RETURN_NONE;
 }
@@ -179,7 +179,7 @@ load_yum_repo(_SackObject *self, PyObject *repo)
 static PyObject *
 write_all_repos(_SackObject *self, PyObject *unused)
 {
-    return PyInt_FromLong(sack_write_all_repos(self->sack));
+    return PyInt_FromLong(hy_sack_write_all_repos(self->sack));
 }
 
 static struct PyMethodDef sack_methods[] = {

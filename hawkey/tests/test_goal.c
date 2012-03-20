@@ -14,36 +14,36 @@
 HyPackage
 get_latest_pkg(HySack sack, const char *name)
 {
-    HyQuery q = query_create(sack);
-    query_filter(q, KN_PKG_NAME, FT_EQ, name);
-    query_filter(q, KN_PKG_REPO, FT_LT|FT_GT, SYSTEM_REPO_NAME);
-    query_filter_latest(q, 1);
-    HyPackageList plist = query_run(q);
-    fail_unless(packagelist_count(plist) == 1);
+    HyQuery q = hy_query_create(sack);
+    hy_query_filter(q, KN_PKG_NAME, FT_EQ, name);
+    hy_query_filter(q, KN_PKG_REPO, FT_LT|FT_GT, SYSTEM_REPO_NAME);
+    hy_query_filter_latest(q, 1);
+    HyPackageList plist = hy_query_run(q);
+    fail_unless(hy_packagelist_count(plist) == 1);
     HyPackage pkg = package_create(sack_pool(sack),
-				 package_id(packagelist_get(plist, 0)));
-    query_free(q);
-    packagelist_free(plist);
+				 package_id(hy_packagelist_get(plist, 0)));
+    hy_query_free(q);
+    hy_packagelist_free(plist);
     return pkg;
 }
 
 int
 size_and_free(HyPackageList plist)
 {
-    int c = packagelist_count(plist);
-    packagelist_free(plist);
+    int c = hy_packagelist_count(plist);
+    hy_packagelist_free(plist);
     return c;
 }
 
 START_TEST(test_goal_sanity)
 {
-    HyGoal goal = goal_create(test_globals.sack);
+    HyGoal goal = hy_goal_create(test_globals.sack);
     fail_if(goal == NULL);
     fail_unless(sack_pool(test_globals.sack)->nsolvables ==
 		TEST_EXPECT_SYSTEM_NSOLVABLES +
 		TEST_EXPECT_MAIN_NSOLVABLES +
 		TEST_EXPECT_UPDATES_NSOLVABLES);
-    goal_free(goal);
+    hy_goal_free(goal);
 }
 END_TEST
 
@@ -52,39 +52,39 @@ START_TEST(test_goal_update_impossible)
     HyPackage pkg = get_latest_pkg(test_globals.sack, "walrus");
     fail_if(pkg == NULL);
 
-    HyGoal goal = goal_create(test_globals.sack);
+    HyGoal goal = hy_goal_create(test_globals.sack);
     // can not try an update, walrus is not installed:
-    fail_unless(goal_update(goal, pkg));
-    package_free(pkg);
-    goal_free(goal);
+    fail_unless(hy_goal_update(goal, pkg));
+    hy_package_free(pkg);
+    hy_goal_free(goal);
 }
 END_TEST
 
 START_TEST(test_goal_install)
 {
     HyPackage pkg = get_latest_pkg(test_globals.sack, "walrus");
-    HyGoal goal = goal_create(test_globals.sack);
-    fail_if(goal_install(goal, pkg));
-    package_free(pkg);
-    fail_if(goal_go(goal));
-    fail_unless(size_and_free(goal_list_erasures(goal)) == 0);
-    fail_unless(size_and_free(goal_list_upgrades(goal)) == 0);
-    fail_unless(size_and_free(goal_list_installs(goal)) == 1);
-    goal_free(goal);
+    HyGoal goal = hy_goal_create(test_globals.sack);
+    fail_if(hy_goal_install(goal, pkg));
+    hy_package_free(pkg);
+    fail_if(hy_goal_go(goal));
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
+    hy_goal_free(goal);
 }
 END_TEST
 
 START_TEST(test_goal_upgrade)
 {
     HyPackage pkg = get_latest_pkg(test_globals.sack, "fool");
-    HyGoal goal = goal_create(test_globals.sack);
-    fail_if(goal_update(goal, pkg));
-    package_free(pkg);
-    fail_if(goal_go(goal));
-    fail_unless(size_and_free(goal_list_erasures(goal)) == 0);
-    fail_unless(size_and_free(goal_list_upgrades(goal)) == 1);
-    fail_unless(size_and_free(goal_list_installs(goal)) == 0);
-    goal_free(goal);
+    HyGoal goal = hy_goal_create(test_globals.sack);
+    fail_if(hy_goal_update(goal, pkg));
+    hy_package_free(pkg);
+    fail_if(hy_goal_go(goal));
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 1);
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
+    hy_goal_free(goal);
 }
 END_TEST
 

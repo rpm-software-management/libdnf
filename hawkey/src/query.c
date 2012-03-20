@@ -165,7 +165,7 @@ filter_updates(HyQuery q, Map *res)
 	    queue_push2(&job, SOLVER_SOLVABLE|SOLVER_UPDATE, i);
     }
 
-    sack_solve(sack, &job, &m, SOLVER_TRANSACTION_UPGRADE);
+    hy_sack_solve(sack, &job, &m, SOLVER_TRANSACTION_UPGRADE);
     map_and(res, &m);
     map_free(&m);
     queue_free(&job);
@@ -248,7 +248,7 @@ filter_obsoleting(HyQuery q, Map *res)
 }
 
 HyQuery
-query_create(HySack sack)
+hy_query_create(HySack sack)
 {
     HyQuery q = solv_calloc(1, sizeof(*q));
     q->sack = sack;
@@ -256,7 +256,7 @@ query_create(HySack sack)
 }
 
 void
-query_free(HyQuery q)
+hy_query_free(HyQuery q)
 {
     int i;
     for (i = 0; i < q->nfilters; ++i) {
@@ -268,7 +268,7 @@ query_free(HyQuery q)
 }
 
 void
-query_filter(HyQuery q, int keyname, int filter_type, const char *match)
+hy_query_filter(HyQuery q, int keyname, int filter_type, const char *match)
 {
     struct _Filter filter = {
 	.filter_type = filter_type,
@@ -281,7 +281,7 @@ query_filter(HyQuery q, int keyname, int filter_type, const char *match)
 }
 
 void
-query_filter_provides(HyQuery q, int filter_type, const char *name, const char *evr)
+hy_query_filter_provides(HyQuery q, int filter_type, const char *name, const char *evr)
 {
     struct _Filter filter = {
 	.filter_type = filter_type,
@@ -300,7 +300,7 @@ query_filter_provides(HyQuery q, int filter_type, const char *name, const char *
  * This requires resolving and so makes the final query expensive.
  */
 void
-query_filter_updates(HyQuery q, int val)
+hy_query_filter_updates(HyQuery q, int val)
 {
     q->updates = val;
 }
@@ -309,7 +309,7 @@ query_filter_updates(HyQuery q, int val)
  * Narrows to only the highest version of a package per arch.
  */
 void
-query_filter_latest(HyQuery q, int val)
+hy_query_filter_latest(HyQuery q, int val)
 {
     q->latest = val;
 }
@@ -319,13 +319,13 @@ query_filter_latest(HyQuery q, int val)
  *
  */
 void
-query_filter_obsoleting(HyQuery q, int val)
+hy_query_filter_obsoleting(HyQuery q, int val)
 {
     q->obsoleting = val;
 }
 
 HyPackageList
-query_run(HyQuery q)
+hy_query_run(HyQuery q)
 {
     Pool *pool = sack_pool(q->sack);
     HyPackageList plist;
@@ -355,10 +355,10 @@ query_run(HyQuery q)
 	filter_latest(q, &res);
     if (q->obsoleting)
 	filter_obsoleting(q, &res);
-    plist = packagelist_create();
+    plist = hy_packagelist_create();
     for (i = 1; i < pool->nsolvables; ++i)
 	if (MAPTST(&res, i))
-	    packagelist_push(plist, package_create(pool, i));
+	    hy_packagelist_push(plist, package_create(pool, i));
     map_free(&m);
     map_free(&res);
 
@@ -412,19 +412,19 @@ find_package_by_summary(Pool *pool, const char *substr, Queue *qp)
 HyPackageList
 sack_f_by_name(HySack sack, const char *name)
 {
-    HyPackageList plist = packagelist_create();
+    HyPackageList plist = hy_packagelist_create();
     Solvable *s;
 
     s = find_package_by_name(sack, name, NULL);
     if (s)
-	packagelist_push(plist, package_from_solvable(s));
+	hy_packagelist_push(plist, package_from_solvable(s));
     return plist;
 }
 
 HyPackageList
 sack_f_by_summary(HySack sack, const char *summary_substr)
 {
-    HyPackageList plist = packagelist_create();
+    HyPackageList plist = hy_packagelist_create();
     Queue q;
 
     queue_init(&q);

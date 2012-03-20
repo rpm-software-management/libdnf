@@ -13,14 +13,14 @@ struct _HyRepo {
 };
 
 HyRepo
-frepo_create(void)
+hy_repo_create(void)
 {
     HyRepo repo = solv_calloc(1, sizeof(*repo));
     return repo;
 }
 
 void
-frepo_set_string(HyRepo repo, enum frepo_param_e which, const char *str_val)
+hy_repo_set_string(HyRepo repo, enum frepo_param_e which, const char *str_val)
 {
     switch (which) {
     case NAME:
@@ -38,7 +38,7 @@ frepo_set_string(HyRepo repo, enum frepo_param_e which, const char *str_val)
 }
 
 const char *
-frepo_get_string(HyRepo repo, enum frepo_param_e which)
+hy_repo_get_string(HyRepo repo, enum frepo_param_e which)
 {
     switch(which) {
     case NAME:
@@ -54,7 +54,7 @@ frepo_get_string(HyRepo repo, enum frepo_param_e which)
 }
 
 void
-frepo_free(HyRepo repo)
+hy_repo_free(HyRepo repo)
 {
     solv_free(repo->name);
     solv_free(repo->repomd_fn);

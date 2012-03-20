@@ -46,7 +46,7 @@ static void
 package_dealloc(_PackageObject *self)
 {
     if (self->package)
-	package_free(self->package);
+	hy_package_free(self->package);
 
     Py_XDECREF(self->sack);
     Py_TYPE(self)->tp_free(self);
@@ -75,7 +75,7 @@ package_init(_PackageObject *self, PyObject *args, PyObject *kwds)
 int
 package_py_cmp(_PackageObject *self, _PackageObject *other)
 {
-    long cmp = package_cmp(self->package, other->package);
+    long cmp = hy_package_cmp(self->package, other->package);
     if (cmp > 0)
 	cmp = 1;
     else if (cmp < 0)
@@ -128,15 +128,15 @@ get_str_alloced(_PackageObject *self, void *closure)
 }
 
 static PyGetSetDef package_getsetters[] = {
-    {"name", (getter)get_str, NULL, NULL, (void *)package_get_name},
-    {"arch", (getter)get_str, NULL, NULL, (void *)package_get_arch},
-    {"evr",  (getter)get_str, NULL, NULL, (void *)package_get_evr},
+    {"name", (getter)get_str, NULL, NULL, (void *)hy_package_get_name},
+    {"arch", (getter)get_str, NULL, NULL, (void *)hy_package_get_arch},
+    {"evr",  (getter)get_str, NULL, NULL, (void *)hy_package_get_evr},
     {"location",  (getter)get_str_alloced, NULL, NULL,
-     (void *)package_get_location},
-    {"reponame",  (getter)get_str, NULL, NULL, (void *)package_get_reponame},
-    {"medianr", (getter)get_int, NULL, NULL, (void *)package_get_medianr},
-    {"rpmdbid", (getter)get_int, NULL, NULL, (void *)package_get_rpmdbid},
-    {"size", (getter)get_int, NULL, NULL, (void *)package_get_size},
+     (void *)hy_package_get_location},
+    {"reponame",  (getter)get_str, NULL, NULL, (void *)hy_package_get_reponame},
+    {"medianr", (getter)get_int, NULL, NULL, (void *)hy_package_get_medianr},
+    {"rpmdbid", (getter)get_int, NULL, NULL, (void *)hy_package_get_rpmdbid},
+    {"size", (getter)get_int, NULL, NULL, (void *)hy_package_get_size},
     {NULL}			/* sentinel */
 };
 
@@ -148,7 +148,7 @@ evr_cmp(_PackageObject *self, PyObject *other)
     HyPackage pkg2 = packageFromPyObject(other);
     if (pkg2 == NULL)
 	return NULL;
-    return PyInt_FromLong(package_evr_cmp(self->package, pkg2));
+    return PyInt_FromLong(hy_package_evr_cmp(self->package, pkg2));
 }
 
 static PyObject *
@@ -160,9 +160,9 @@ obsoletes_list(_PackageObject *self, PyObject *unused)
 
     if (!csack)
 	return NULL;
-    plist = packagelist_of_obsoletes(csack, self->package);
+    plist = hy_packagelist_of_obsoletes(csack, self->package);
     list = packagelist_to_pylist(plist, self->sack);
-    packagelist_free(plist);
+    hy_packagelist_free(plist);
     return list;
 }
 

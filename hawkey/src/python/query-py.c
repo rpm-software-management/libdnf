@@ -34,7 +34,7 @@ static void
 query_dealloc(_QueryObject *self)
 {
     if (self->query)
-	query_free(self->query);
+	hy_query_free(self->query);
     Py_XDECREF(self->sack);
     Py_TYPE(self)->tp_free(self);
 }
@@ -52,7 +52,7 @@ query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
 	return -1;
     self->sack = sack;
     Py_INCREF(self->sack);
-    self->query = query_create(csack);
+    self->query = hy_query_create(csack);
     return 0;
 }
 
@@ -78,16 +78,16 @@ filter(_QueryObject *self, PyObject *args)
 	}
 	val = PyInt_AsLong(match);
 	if (keyname == KN_PKG_LATEST)
-	    query_filter_latest(self->query, val);
+	    hy_query_filter_latest(self->query, val);
 	else if (keyname == KN_PKG_UPDATES)
-	    query_filter_updates(self->query, val);
+	    hy_query_filter_updates(self->query, val);
 	else
-	    query_filter_obsoleting(self->query, val);
+	    hy_query_filter_obsoleting(self->query, val);
 	Py_RETURN_NONE;
     }
     if ((cmatch = PyString_AsString(match)) == NULL)
 	return NULL;
-    query_filter(self->query, keyname, filtertype, cmatch);
+    hy_query_filter(self->query, keyname, filtertype, cmatch);
     Py_RETURN_NONE;
 }
 
@@ -97,9 +97,9 @@ run(_QueryObject *self, PyObject *unused)
     HyPackageList plist;
     PyObject *list;
 
-    plist = query_run(self->query);
+    plist = hy_query_run(self->query);
     list = packagelist_to_pylist(plist, self->sack);
-    packagelist_free(plist);
+    hy_packagelist_free(plist);
     return list;
 }
 

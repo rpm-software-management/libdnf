@@ -26,7 +26,7 @@ struct _HyPackageListIter {
 #define BLOCK_SIZE 31
 
 HyPackageList
-packagelist_create(void)
+hy_packagelist_create(void)
 {
     HyPackageList plist = solv_calloc(1, sizeof(*plist));
     return plist;
@@ -36,9 +36,9 @@ packagelist_create(void)
  * List of installed obsoletes of the given package.
  */
 HyPackageList
-packagelist_of_obsoletes(HySack sack, HyPackage pkg)
+hy_packagelist_of_obsoletes(HySack sack, HyPackage pkg)
 {
-    HyPackageList plist = packagelist_create();
+    HyPackageList plist = hy_packagelist_create();
     Pool *pool = sack_pool(sack);
     Id *pp, r, rr;
     Solvable *s, *so;
@@ -55,14 +55,14 @@ packagelist_of_obsoletes(HySack sack, HyPackage pkg)
 
 	    if (so->repo != pool->installed)
 		continue;
-	    packagelist_push(plist, package_create(pool, r));
+	    hy_packagelist_push(plist, package_create(pool, r));
 	}
     }
     return plist;
 }
 
 void
-packagelist_free(HyPackageList plist)
+hy_packagelist_free(HyPackageList plist)
 {
     int i;
 
@@ -74,19 +74,19 @@ packagelist_free(HyPackageList plist)
 }
 
 int
-packagelist_count(HyPackageList plist)
+hy_packagelist_count(HyPackageList plist)
 {
     return plist->count;
 }
 
 HyPackage
-packagelist_get(HyPackageList plist, int index)
+hy_packagelist_get(HyPackageList plist, int index)
 {
     assert(index < plist->count);
     return plist->elements[index];
 }
 
-void packagelist_push(HyPackageList plist, HyPackage pkg)
+void hy_packagelist_push(HyPackageList plist, HyPackage pkg)
 {
     plist->elements = solv_extend(plist->elements, plist->count, 1,
 				  sizeof(pkg), BLOCK_SIZE);
@@ -94,7 +94,7 @@ void packagelist_push(HyPackageList plist, HyPackage pkg)
 }
 
 HyPackageListIter
-packagelist_iter_create(HyPackageList plist)
+hy_packagelist_iter_create(HyPackageList plist)
 {
     HyPackageListIter iter = solv_calloc(1, sizeof(*iter));
     iter->plist = plist;
@@ -103,15 +103,15 @@ packagelist_iter_create(HyPackageList plist)
 }
 
 void
-packagelist_iter_free(HyPackageListIter iter)
+hy_packagelist_iter_free(HyPackageListIter iter)
 {
     solv_free(iter);
 }
 
 HyPackage
-packagelist_iter_next(HyPackageListIter iter)
+hy_packagelist_iter_next(HyPackageListIter iter)
 {
     if (++iter->i >= iter->plist->count)
 	return NULL;
-    return packagelist_get(iter->plist, iter->i);
+    return hy_packagelist_get(iter->plist, iter->i);
 }

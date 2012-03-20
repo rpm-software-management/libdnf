@@ -29,7 +29,7 @@ repo_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     _RepoObject *self = (_RepoObject *)type->tp_alloc(type, 0);
     if (self) {
-	self->frepo = frepo_create();
+	self->frepo = hy_repo_create();
 	if (self->frepo == NULL) {
 	    Py_DECREF(self);
 	    return NULL;
@@ -41,7 +41,7 @@ repo_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 static void
 repo_dealloc(_RepoObject *self)
 {
-    frepo_free(self->frepo);
+    hy_repo_free(self->frepo);
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -54,7 +54,7 @@ get_str(_RepoObject *self, void *closure)
     const char *str;
     PyObject *ret;
 
-    str = frepo_get_string(self->frepo, str_key);
+    str = hy_repo_get_string(self->frepo, str_key);
     if (str == NULL) {
 	ret = PyString_FromString("");
     } else {
@@ -72,7 +72,7 @@ set_str(_RepoObject *self, PyObject *value, void *closure)
     str_value = PyString_AsString(value);
     if (str_value == NULL)
 	return -1;
-    frepo_set_string(self->frepo, str_key, str_value);
+    hy_repo_set_string(self->frepo, str_key, str_value);
 
     return 0;
 }

@@ -25,16 +25,16 @@ enum _key_name_e {
     KN_PKG_OBSOLETING
 };
 
-HyQuery query_create(HySack sack);
-void query_free(HyQuery q);
-void query_filter(HyQuery q, int keyname, int filter_type, const char *match);
-void query_filter_provides(HyQuery q, int filter_type, const char *name,
+HyQuery hy_query_create(HySack sack);
+void hy_query_free(HyQuery q);
+void hy_query_filter(HyQuery q, int keyname, int filter_type, const char *match);
+void hy_query_filter_provides(HyQuery q, int filter_type, const char *name,
 			   const char *evr);
-void query_filter_updates(HyQuery q, int val);
-void query_filter_latest(HyQuery q, int val);
-void query_filter_obsoleting(HyQuery q, int val);
+void hy_query_filter_updates(HyQuery q, int val);
+void hy_query_filter_latest(HyQuery q, int val);
+void hy_query_filter_obsoleting(HyQuery q, int val);
 
-HyPackageList query_run(HyQuery q);
+HyPackageList hy_query_run(HyQuery q);
 
 // internal/deprecated
 

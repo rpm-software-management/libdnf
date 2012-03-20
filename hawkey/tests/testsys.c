@@ -30,7 +30,7 @@ load_repo(Pool *pool, const char *name, const char *path, int installed)
 void
 setup(void)
 {
-    HySack sack = sack_create();
+    HySack sack = hy_sack_create();
     Pool *pool = sack_pool(sack);
     const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
 				    "system.repo", 0);
@@ -62,16 +62,16 @@ void setup_all(void)
 void
 teardown(void)
 {
-    sack_free(test_globals.sack);
+    hy_sack_free(test_globals.sack);
     test_globals.sack = NULL;
 }
 
 void
 dump_packagelist(HyPackageList plist)
 {
-    for (int i = 0; i < packagelist_count(plist); ++i) {
-	HyPackage pkg = packagelist_get(plist, i);
-	char *nvra = package_get_nvra(pkg);
+    for (int i = 0; i < hy_packagelist_count(plist); ++i) {
+	HyPackage pkg = hy_packagelist_get(plist, i);
+	char *nvra = hy_package_get_nvra(pkg);
 	printf("\t%s\n", nvra);
 	solv_free(nvra);
     }

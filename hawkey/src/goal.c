@@ -30,20 +30,20 @@ list_results(HyGoal goal, Id type_filter)
 
     assert(trans);
     queue_init(&transpkgs);
-    plist = packagelist_create();
+    plist = hy_packagelist_create();
 
     for (int i = 0; i < trans->steps.count; ++i) {
 	Id p = trans->steps.elements[i];
 	Id type = transaction_type(trans, p, SOLVER_TRANSACTION_SHOW_ACTIVE);
 
 	if (type == type_filter)
-	    packagelist_push(plist, package_create(pool, p));
+	    hy_packagelist_push(plist, package_create(pool, p));
     }
     return plist;
 }
 
 HyGoal
-goal_create(HySack sack)
+hy_goal_create(HySack sack)
 {
     HyGoal goal = solv_calloc(1, sizeof(*goal));
     goal->sack = sack;
@@ -53,7 +53,7 @@ goal_create(HySack sack)
 }
 
 void
-goal_free(HyGoal goal)
+hy_goal_free(HyGoal goal)
 {
     queue_free(&goal->problems);
     queue_free(&goal->job);
@@ -63,7 +63,7 @@ goal_free(HyGoal goal)
 }
 
 int
-goal_erase(HyGoal goal, HyPackage pkg)
+hy_goal_erase(HyGoal goal, HyPackage pkg)
 {
 #ifndef NDEBUG
     Pool *pool = sack_pool(goal->sack);
@@ -75,34 +75,34 @@ goal_erase(HyGoal goal, HyPackage pkg)
 }
 
 int
-goal_install(HyGoal goal, HyPackage new_pkg)
+hy_goal_install(HyGoal goal, HyPackage new_pkg)
 {
     queue_push2(&goal->job, SOLVER_SOLVABLE|SOLVER_INSTALL, package_id(new_pkg));
     return 0;
 }
 
 int
-goal_update(HyGoal goal, HyPackage new_pkg)
+hy_goal_update(HyGoal goal, HyPackage new_pkg)
 {
-    HyQuery q = query_create(goal->sack);
-    const char *name = package_get_name(new_pkg);
+    HyQuery q = hy_query_create(goal->sack);
+    const char *name = hy_package_get_name(new_pkg);
     HyPackageList installed;
     int count;
 
-    query_filter(q, KN_PKG_NAME, FT_EQ, name);
-    query_filter(q, KN_PKG_REPO, FT_EQ, SYSTEM_REPO_NAME);
-    installed = query_run(q);
-    count = packagelist_count(installed);
-    packagelist_free(installed);
-    query_free(q);
+    hy_query_filter(q, KN_PKG_NAME, FT_EQ, name);
+    hy_query_filter(q, KN_PKG_REPO, FT_EQ, SYSTEM_REPO_NAME);
+    installed = hy_query_run(q);
+    count = hy_packagelist_count(installed);
+    hy_packagelist_free(installed);
+    hy_query_free(q);
 
     if (count)
-	return goal_install(goal, new_pkg);
+	return hy_goal_install(goal, new_pkg);
     return 1;
 }
 
 int
-goal_go(HyGoal goal)
+hy_goal_go(HyGoal goal)
 {
     Transaction *trans;
 
@@ -140,13 +140,13 @@ goal_go(HyGoal goal)
 }
 
 int
-goal_count_problems(HyGoal goal)
+hy_goal_count_problems(HyGoal goal)
 {
     return (goal->problems.count/4);
 }
 
 char *
-goal_describe_problem(HyGoal goal, unsigned i)
+hy_goal_describe_problem(HyGoal goal, unsigned i)
 {
     Pool *pool = sack_pool(goal->sack);
     Id *ps = goal->problems.elements;
@@ -156,25 +156,25 @@ goal_describe_problem(HyGoal goal, unsigned i)
 }
 
 HyPackageList
-goal_list_erasures(HyGoal goal)
+hy_goal_list_erasures(HyGoal goal)
 {
     return list_results(goal, SOLVER_TRANSACTION_ERASE);
 }
 
 HyPackageList
-goal_list_installs(HyGoal goal)
+hy_goal_list_installs(HyGoal goal)
 {
     return list_results(goal, SOLVER_TRANSACTION_INSTALL);
 }
 
 HyPackageList
-goal_list_upgrades(HyGoal goal)
+hy_goal_list_upgrades(HyGoal goal)
 {
     return list_results(goal, SOLVER_TRANSACTION_UPGRADE);
 }
 
 HyPackage
-goal_package_upgrades(HyGoal goal, HyPackage pkg)
+hy_goal_package_upgrades(HyGoal goal, HyPackage pkg)
 {
     Pool *pool = sack_pool(goal->sack);
     Transaction *trans = goal->trans;
