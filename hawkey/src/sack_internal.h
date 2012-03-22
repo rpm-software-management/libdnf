@@ -6,6 +6,7 @@
 struct _HySack {
     Pool *pool;
     int provides_ready;
+    char *cache_dir;
 };
 
 void sack_make_provides_ready(HySack sack);

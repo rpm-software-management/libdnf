@@ -393,6 +393,10 @@ int main(int argc, const char **argv)
     repo = config_repo("updates", md_repo_updates, md_primary_updates_xml);
     hy_sack_load_yum_repo(sack, repo);
     hy_repo_free(repo);
+    solv_free(md_repo);
+    solv_free(md_primary_xml);
+    solv_free(md_repo_updates);
+    solv_free(md_primary_updates_xml);
 
     if (argc == 2 && !strcmp(argv[1], "-u")) {
 	updatables_query_all(sack);

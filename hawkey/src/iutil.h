@@ -11,7 +11,12 @@
 #include "packagelist.h"
 #include "sack.h"
 
+/* filesystem utils */
 int is_readable_rpm(const char *fn);
+int mkcachedir(const char *path);
+char *this_username(void);
+
+/* libsolv utils */
 void repo_internalize_trigger(Repo *r);
 Transaction *job2transaction(HySack sack, Queue *job, Queue *errors);
 void queue2plist(HySack sack, Queue *q, HyPackageList plist);

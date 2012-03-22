@@ -24,7 +24,8 @@
 #include "package_internal.h"
 #include "sack_internal.h"
 
-#define SOLVCACHE_PATH "/home/akozumpl/tmp/sapi"
+#define DEFAULT_CACHE_ROOT "/var/cache/hawkey"
+#define DEFAULT_CACHE_USER "/var/tmp/hawkey"
 
 static Repo *
 get_cmdline_repo(HySack sack)
@@ -38,80 +39,6 @@ get_cmdline_repo(HySack sack)
 	    return repo;
     }
     return NULL;
-}
-
-static char *
-solvcache_path(const char *reponame)
-{
-    char *fn, *fnt;
-
-    fnt = solv_dupjoin(SOLVCACHE_PATH, "/", reponame);
-    fn = solv_dupjoin(fnt, ".solv", NULL);
-    free(fnt);
-
-    return fn;
-}
-
-static Repo *
-read_rpm_repo(Pool *pool)
-{
-    Repo *repo;
-    char *fn;
-    FILE *fp;
-
-    repo = repo_create(pool, SYSTEM_REPO_NAME);
-
-    fn = solvcache_path(SYSTEM_REPO_NAME);
-    fp = fopen(fn, "r");
-    free(fn);
-    if (!fp || repo_add_solv(repo, fp, 0)) {
-	printf("fetching rpmdb\n");
-	repo_add_rpmdb(repo, 0, 0, REPO_REUSE_REPODATA);
-    } else {
-	fclose(fp);
-	printf("using cached rpmdb\n");
-    }
-    pool_set_installed(pool, repo);
-
-    return repo;
-}
-
-static Repo *
-read_yum_repo(Pool *pool, const char *name,
-	      const char *md_repo_fn,
-	      const char *md_primary_fn)
-{
-    Repo *repo = repo_create(pool, name);
-    char *fn = solvcache_path(name);
-    FILE *fp = fopen(fn, "r");
-
-    free(fn);
-
-    if (fp) {
-	printf("using cached %s\n", name);
-	if (repo_add_solv(repo, fp, 0)) {
-	    perror(__func__);
-	    return NULL;
-	}
-	fclose(fp);
-    } else {
-	FILE *f_repo = fopen(md_repo_fn, "r");
-	FILE *f_primary = solv_xfopen(md_primary_fn, "r");
-
-	if (!(f_repo && f_primary)) {
-	    perror(__func__);
-	    return NULL;
-	}
-
-	printf("fetching %s\n", name);
-	repo_add_repomdxml(repo, f_repo, 0);
-	repo_add_rpmmd(repo, f_primary, 0, 0);
-
-	fclose(f_repo);
-	fclose(f_primary);
-    }
-
-    return repo;
 }
 
 static void
@@ -188,16 +115,35 @@ HySack
 hy_sack_create(void)
 {
     HySack sack = solv_calloc(1, sizeof(*sack));
+
     sack->pool = pool_create();
     setarch(sack->pool);
+
+    int is_reg_user = geteuid();
+    char *username = this_username();
+    if (is_reg_user)
+	sack->cache_dir = solv_dupjoin(DEFAULT_CACHE_USER, "/", username);
+    else
+	sack->cache_dir = solv_strdup(DEFAULT_CACHE_ROOT);
+    solv_free(username);
     return sack;
 }
 
 void
 hy_sack_free(HySack sack)
 {
+    solv_free(sack->cache_dir);
     pool_free(sack->pool);
     solv_free(sack);
+}
+
+char *
+hy_sack_solv_path(HySack sack, const char *reponame)
+{
+    if (reponame == NULL)
+	return solv_strdup(sack->cache_dir);
+    char *fn = solv_dupjoin(sack->cache_dir, "/", reponame);
+    return solv_dupappend(fn, ".solv", NULL);
 }
 
 /**
@@ -231,16 +177,58 @@ hy_sack_add_cmdline_rpm(HySack sack, const char *fn)
 void
 hy_sack_load_rpm_repo(HySack sack)
 {
-    read_rpm_repo(sack->pool);
+    Pool *pool = sack->pool;
+    Repo *repo;
+    char *fn;
+    FILE *fp;
+
+    repo = repo_create(pool, SYSTEM_REPO_NAME);
+
+    fn = hy_sack_solv_path(sack, SYSTEM_REPO_NAME);
+    fp = fopen(fn, "r");
+    free(fn);
+    if (!fp || repo_add_solv(repo, fp, 0)) {
+	printf("fetching rpmdb\n");
+	repo_add_rpmdb(repo, 0, 0, REPO_REUSE_REPODATA);
+    } else {
+	fclose(fp);
+	printf("using cached rpmdb\n");
+    }
+    pool_set_installed(pool, repo);
+
     sack->provides_ready = 0;
 }
 
-void hy_sack_load_yum_repo(HySack sack, HyRepo repo)
+void hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
 {
-    read_yum_repo(sack->pool,
-		  hy_repo_get_string(repo, NAME),
-		  hy_repo_get_string(repo, REPOMD_FN),
-		  hy_repo_get_string(repo, PRIMARY_FN));
+    Pool *pool = sack->pool;
+    const char *name = hy_repo_get_string(hrepo, NAME);
+    Repo *repo = repo_create(pool, name);
+    char *fn = hy_sack_solv_path(sack, name);
+    FILE *fp = fopen(fn, "r");
+
+    free(fn);
+
+    if (fp) {
+	printf("using cached %s\n", name);
+	if (repo_add_solv(repo, fp, 0))
+	    assert(0);
+	fclose(fp);
+    } else {
+	FILE *f_repo = fopen(hy_repo_get_string(hrepo, REPOMD_FN), "r");
+	FILE *f_primary = solv_xfopen(hy_repo_get_string(hrepo, PRIMARY_FN), "r");
+
+	if (!(f_repo && f_primary))
+	    assert(0);
+
+	printf("fetching %s\n", name);
+	repo_add_repomdxml(repo, f_repo, 0);
+	repo_add_rpmmd(repo, f_primary, 0, 0);
+
+	fclose(f_repo);
+	fclose(f_primary);
+    }
+
     sack->provides_ready = 0;
 }
 
@@ -261,6 +249,13 @@ hy_sack_write_all_repos(HySack sack)
     Repo *repo;
     int i;
 
+    char *dir = hy_sack_solv_path(sack, NULL);
+    int res = mkcachedir(dir);
+    solv_free(dir);
+    assert(res == 0);
+    if (res)
+	return res;
+
     FOR_REPOS(i, repo) {
 	struct stat st;
 	const char *name = repo->name;
@@ -268,7 +263,7 @@ hy_sack_write_all_repos(HySack sack)
 	if (!strcmp(name, CMDLINE_REPO_NAME))
 	    continue;
 
-	char *fn = solvcache_path(name);
+	char *fn = hy_sack_solv_path(sack, name);
 	if (!stat(fn, &st)) {
 	    free(fn);
 	    continue;

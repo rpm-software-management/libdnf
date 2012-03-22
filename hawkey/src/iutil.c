@@ -1,6 +1,9 @@
 #include <assert.h>
+#include <pwd.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 // libsolv
 #include "solv/evr.h"
@@ -11,6 +14,8 @@
 #include "iutil.h"
 #include "package_internal.h"
 #include "sack_internal.h"
+
+#define CACHEDIR_PERMISSIONS 0700
 
 int
 is_readable_rpm(const char *fn)
@@ -23,6 +28,34 @@ is_readable_rpm(const char *fn)
 	return 0;
 
     return 1;
+}
+
+int
+mkcachedir(const char *path)
+{
+    int ret = 1;
+    char *p = solv_strdup(path);
+    int len = strlen(p);
+
+    if (p[len-1] == '/')
+	p[len-1] = '\0';
+
+    if (access(p, X_OK)) {
+	*(strrchr(p, '/')) = '\0';
+	ret = mkcachedir(p);
+	ret |= mkdir(path, CACHEDIR_PERMISSIONS);
+    } else {
+	ret = 0;
+    }
+
+    solv_free(p);
+    return ret;
+}
+
+char *this_username(void)
+{
+    const struct passwd *pw = getpwuid(getuid());
+    return solv_strdup(pw->pw_name);
 }
 
 void
