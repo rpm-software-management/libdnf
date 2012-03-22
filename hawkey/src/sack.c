@@ -146,6 +146,13 @@ hy_sack_solv_path(HySack sack, const char *reponame)
     return solv_dupappend(fn, ".solv", NULL);
 }
 
+void
+hy_sack_set_cache_path(HySack sack, const char *path)
+{
+    solv_free(sack->cache_dir);
+    sack->cache_dir = solv_strdup(path);
+}
+
 /**
  * Creates repo for command line rpms.
  */

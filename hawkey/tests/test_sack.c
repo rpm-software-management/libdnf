@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <check.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,22 +28,6 @@ START_TEST(test_sack_create)
 }
 END_TEST
 
-START_TEST(test_repo_load)
-{
-    HySack sack = hy_sack_create();
-    Pool *pool = sack_pool(sack);
-    Repo *r = repo_create(sack_pool(sack), SYSTEM_REPO_NAME);
-    const char *repo = pool_tmpjoin(pool, test_globals.repo_dir, "system.repo", 0);
-    FILE *fp = fopen(repo, "r");
-
-    testcase_add_susetags(r,  fp, 0);
-    fail_unless(pool->nsolvables == TEST_EXPECT_SYSTEM_NSOLVABLES);
-
-    fclose(fp);
-    hy_sack_free(sack);
-}
-END_TEST
-
 START_TEST(test_sack_solv_path)
 {
     HySack sack = hy_sack_create();
@@ -58,15 +43,44 @@ START_TEST(test_sack_solv_path)
 }
 END_TEST
 
+START_TEST(test_repo_load)
+{
+    fail_unless(test_globals.sack->pool->nsolvables ==
+		TEST_EXPECT_SYSTEM_NSOLVABLES);
+}
+END_TEST
+
+START_TEST(test_write_all_repos)
+{
+    HySack sack = test_globals.sack;
+    char *tmpdir = solv_dupjoin(UNITTEST_DIR, "XXXXXX", NULL);
+    fail_if(mkdtemp(tmpdir) == NULL);
+    hy_sack_set_cache_path(sack, tmpdir);
+    fail_if(hy_sack_write_all_repos(sack));
+
+    fail_if(access(tmpdir, R_OK|W_OK|X_OK));
+    char *filename = solv_dupjoin(tmpdir, "@System.solv", NULL);
+    fail_if(access(tmpdir, R_OK|W_OK|X_OK));
+    solv_free(filename);
+    solv_free(tmpdir);
+}
+END_TEST
+
 Suite *
 sack_suite(void)
 {
     Suite *s = suite_create("HySack");
-    TCase *tc_core = tcase_create("Core");
-    tcase_add_test(tc_core, test_environment);
-    tcase_add_test(tc_core, test_sack_create);
-    tcase_add_test(tc_core, test_repo_load);
-    tcase_add_test(tc_core, test_sack_solv_path);
-    suite_add_tcase(s, tc_core);
+    TCase *tc = tcase_create("Core");
+    tcase_add_test(tc, test_environment);
+    tcase_add_test(tc, test_sack_create);
+    tcase_add_test(tc, test_sack_solv_path);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("Repos");
+    tcase_add_unchecked_fixture(tc, setup, teardown);
+    tcase_add_test(tc, test_repo_load);
+    tcase_add_test(tc, test_write_all_repos);
+    suite_add_tcase(s, tc);
+
     return s;
 }
