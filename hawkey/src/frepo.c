@@ -4,18 +4,20 @@
 #include "solv/util.h"
 
 // hawkey
-#include "frepo.h"
+#include "repo_internal.h"
 
-struct _HyRepo {
-    char *name;
-    char *repomd_fn;
-    char *primary_fn;
-};
+
+HyRepo hy_repo_link(HyRepo repo)
+{
+    repo->nrefs++;
+    return repo;
+}
 
 HyRepo
 hy_repo_create(void)
 {
     HyRepo repo = solv_calloc(1, sizeof(*repo));
+    repo->nrefs = 1;
     return repo;
 }
 
@@ -53,9 +55,14 @@ hy_repo_get_string(HyRepo repo, enum frepo_param_e which)
     return NULL;
 }
 
+#include <stdio.h>
+
 void
 hy_repo_free(HyRepo repo)
 {
+    if (--repo->nrefs > 0)
+	return;
+
     solv_free(repo->name);
     solv_free(repo->repomd_fn);
     solv_free(repo->primary_fn);

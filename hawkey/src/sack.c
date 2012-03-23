@@ -132,6 +132,17 @@ hy_sack_create(void)
 void
 hy_sack_free(HySack sack)
 {
+    Pool *pool = sack->pool;
+    Repo *repo;
+    int i;
+
+    FOR_REPOS(i, repo) {
+	HyRepo hrepo = repo->appdata;
+	if (hrepo == NULL)
+	    continue;
+	hy_repo_free(hrepo);
+    }
+
     solv_free(sack->cache_dir);
     pool_free(sack->pool);
     solv_free(sack);
@@ -236,6 +247,7 @@ void hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
 	fclose(f_primary);
     }
 
+    repo->appdata = hy_repo_link(hrepo);
     sack->provides_ready = 0;
 }
 
