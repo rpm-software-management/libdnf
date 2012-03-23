@@ -135,7 +135,7 @@ END_TEST
 Suite *
 query_suite(void)
 {
-    Suite *s = suite_create("HyQuery");
+    Suite *s = suite_create("Query");
     TCase *tc;
 
     tc = tcase_create("Core");

@@ -402,7 +402,7 @@ int main(int argc, const char **argv)
 	updatables_query_all(sack);
     } else if (argc == 2 && !strcmp(argv[1], "-o")) {
 	obsoletes(sack);
-    }  else if (argc == 2) {
+    } else if (argc == 2) {
 	search_and_print(sack, argv[1]);
     } else if (argc == 3 && !strcmp(argv[1], "-r")) {
 	search_filter_repos(sack, argv[2]);

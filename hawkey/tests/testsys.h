@@ -8,6 +8,7 @@
 struct TestGlobals_s {
     char *repo_dir;
     HySack sack;
+    char *tmpdir;
 };
 
 #define UNITTEST_DIR "/tmp/hawkey"

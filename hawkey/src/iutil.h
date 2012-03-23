@@ -11,6 +11,14 @@
 #include "packagelist.h"
 #include "sack.h"
 
+#define CHKSUM_BYTES 32
+
+/* crypto utils */
+int checksum_cmp(unsigned char *cs1, unsigned char *cs2);
+int checksum_fp(FILE *fp, unsigned char *out);
+int checksum_stat(FILE *fp, unsigned char *out);
+void checksum_dump(unsigned char *cs);
+
 /* filesystem utils */
 int is_readable_rpm(const char *fn);
 int mkcachedir(const char *path);

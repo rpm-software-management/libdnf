@@ -47,15 +47,20 @@ load_repo(Pool *pool, const char *name, const char *path, int installed)
 }
 
 void
+setup_empty_sack(void)
+{
+    test_globals.sack = hy_sack_create();
+}
+
+void
 setup(void)
 {
-    HySack sack = hy_sack_create();
-    Pool *pool = sack_pool(sack);
+    setup_empty_sack();
+    Pool *pool = sack_pool(test_globals.sack);
     const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
 				    "system.repo", 0);
 
     fail_if(load_repo(pool, SYSTEM_REPO_NAME, path, 1));
-    test_globals.sack = sack;
 }
 
 void

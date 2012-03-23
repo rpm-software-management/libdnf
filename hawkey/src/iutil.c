@@ -1,11 +1,14 @@
+#define _GNU_SOURCE
 #include <assert.h>
 #include <pwd.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
 // libsolv
+#include "solv/chksum.h"
 #include "solv/evr.h"
 #include "solv/solver.h"
 #include "solv/solverdebug.h"
@@ -15,7 +18,64 @@
 #include "package_internal.h"
 #include "sack_internal.h"
 
+#define CHKSUM_TYPE REPOKEY_TYPE_SHA256
+#define CHKSUM_IDENT "H000"
 #define CACHEDIR_PERMISSIONS 0700
+
+int
+checksum_cmp(unsigned char *cs1, unsigned char *cs2)
+{
+    return memcmp(cs1, cs2, CHKSUM_BYTES);
+}
+
+/* calls rewind(fp) before returning */
+int
+checksum_fp(FILE *fp, unsigned char *out)
+{
+    /* based on calc_checksum_fp in libsolv's solv.c */
+    char buf[4096];
+    void *h = solv_chksum_create(CHKSUM_TYPE);
+    int l;
+
+    solv_chksum_add(h, CHKSUM_IDENT, strlen(CHKSUM_IDENT));
+    while ((l = fread(buf, 1, sizeof(buf), fp)) > 0)
+	solv_chksum_add(h, buf, l);
+    rewind(fp);
+    solv_chksum_free(h, out);
+    return 0;
+}
+
+int
+checksum_stat(FILE *fp, unsigned char *out)
+{
+    assert(fp);
+
+    struct stat stat;
+    if (fstat(fileno(fp), &stat))
+	return 1;
+
+    /* based on calc_checksum_stat in libsolv's solv.c */
+    void *h = solv_chksum_create(CHKSUM_TYPE);
+    solv_chksum_add(h, CHKSUM_IDENT, strlen(CHKSUM_IDENT));
+    solv_chksum_add(h, &stat.st_dev, sizeof(stat.st_dev));
+    solv_chksum_add(h, &stat.st_ino, sizeof(stat.st_ino));
+    solv_chksum_add(h, &stat.st_size, sizeof(stat.st_size));
+    solv_chksum_add(h, &stat.st_mtime, sizeof(stat.st_mtime));
+    solv_chksum_free(h, out);
+    return 0;
+}
+
+void
+checksum_dump(unsigned char *cs)
+{
+    for (int i = 0; i < CHKSUM_BYTES; i+=4) {
+	printf("%02x%02x%02x%02x", cs[i], cs[i+1], cs[i+2], cs[i+3]);
+	if (i + 4 >= CHKSUM_BYTES)
+	    printf("\n");
+	else
+	    printf(" : ");
+    }
+}
 
 int
 is_readable_rpm(const char *fn)
