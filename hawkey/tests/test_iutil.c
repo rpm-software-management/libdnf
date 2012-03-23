@@ -35,8 +35,8 @@ START_TEST(test_checksum)
     /* take the first checksums */
     FILE *fp;
     fail_if((fp = fopen(new_file, "r")) == NULL);
-    fail_if(checksum_fp(fp, cs1));
-    fail_if(checksum_stat(fp, cs1_sum));
+    fail_if(checksum_fp(cs1, fp));
+    fail_if(checksum_stat(cs1_sum, fp));
     fclose(fp);
     /* the taken checksum are not zeros anymore */
     fail_if(checksum_cmp(cs1, cs2) == 0);
@@ -49,8 +49,8 @@ START_TEST(test_checksum)
 
     /* take the second checksums */
     fail_if((fp = fopen(new_file, "r")) == NULL);
-    fail_if(checksum_stat(fp, cs2));
-    fail_if(checksum_stat(fp, cs2_sum));
+    fail_if(checksum_stat(cs2, fp));
+    fail_if(checksum_stat(cs2_sum, fp));
     fclose(fp);
     fail_unless(checksum_cmp(cs1, cs2));
     fail_unless(checksum_cmp(cs1_sum, cs2_sum));
@@ -68,15 +68,15 @@ START_TEST(test_checksum_write_read)
     unsigned char cs_computed[CHKSUM_BYTES];
     unsigned char cs_read[CHKSUM_BYTES];
     FILE *fp = fopen(new_file, "r");
-    checksum_fp(fp, cs_computed);
+    checksum_fp(cs_computed, fp);
     // fails, file opened read-only:
-    fail_unless(checksum_write(fp, cs_computed) == 1);
+    fail_unless(checksum_write(cs_computed, fp) == 1);
     fclose(fp);
     fp = fopen(new_file, "r+");
-    fail_if(checksum_write(fp, cs_computed));
+    fail_if(checksum_write(cs_computed, fp));
     fclose(fp);
     fp = fopen(new_file, "r");
-    fail_if(checksum_read(fp, cs_read));
+    fail_if(checksum_read(cs_read, fp));
     fail_if(checksum_cmp(cs_computed, cs_read));
     fclose(fp);
 

@@ -30,7 +30,7 @@ checksum_cmp(const unsigned char *cs1, const unsigned char *cs2)
 
 /* calls rewind(fp) before returning */
 int
-checksum_fp(FILE *fp, unsigned char *out)
+checksum_fp(unsigned char *out, FILE *fp)
 {
     /* based on calc_checksum_fp in libsolv's solv.c */
     char buf[4096];
@@ -47,7 +47,7 @@ checksum_fp(FILE *fp, unsigned char *out)
 
 /* leaves fp at the end of file */
 int
-checksum_read(FILE *fp, unsigned char *csout)
+checksum_read(unsigned char *csout, FILE *fp)
 {
     if (fseek(fp, -32, SEEK_END) ||
 	fread(csout, CHKSUM_BYTES, 1, fp) != 1)
@@ -56,7 +56,7 @@ checksum_read(FILE *fp, unsigned char *csout)
 }
 
 int
-checksum_stat(FILE *fp, unsigned char *out)
+checksum_stat(unsigned char *out, FILE *fp)
 {
     assert(fp);
 
@@ -76,7 +76,7 @@ checksum_stat(FILE *fp, unsigned char *out)
 }
 
 /* moves fp to the end of file */
-int checksum_write(FILE *fp, const unsigned char *cs)
+int checksum_write(const unsigned char *cs, FILE *fp)
 {
     if (fseek(fp, 0, SEEK_END) ||
 	fwrite(cs, CHKSUM_BYTES, 1, fp) != 1)

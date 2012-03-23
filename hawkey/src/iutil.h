@@ -15,10 +15,10 @@
 
 /* crypto utils */
 int checksum_cmp(const unsigned char *cs1, const unsigned char *cs2);
-int checksum_fp(FILE *fp, unsigned char *out);
-int checksum_read(FILE *fp, unsigned char *csout);
-int checksum_stat(FILE *fp, unsigned char *out);
-int checksum_write(FILE *fp, const unsigned char *cs);
+int checksum_fp(unsigned char *out, FILE *fp);
+int checksum_read(unsigned char *csout, FILE *fp);
+int checksum_stat(unsigned char *out, FILE *fp);
+int checksum_write(const unsigned char *cs, FILE *fp);
 void checksum_dump(const unsigned char *cs);
 
 /* filesystem utils */
