@@ -6,15 +6,21 @@
 #include "test_iutil.h"
 #include "testsys.h"
 
+static void
+build_test_file(const char *filename)
+{
+    FILE *fp = fopen(filename, "w+");
+    fail_if(fp == NULL);
+    fail_unless(fwrite("empty", 5, 1, fp) == 1);
+    fclose(fp);
+}
+
 START_TEST(test_checksum)
 {
     /* create a new file, edit it a bit */
     char *new_file = solv_dupjoin(test_globals.tmpdir,
-				  "/test_stat_checksum", NULL);
-    FILE *fp = fopen(new_file, "w+");
-    fail_if(fp == NULL);
-    fail_unless(fwrite("empty", 5, 1, fp) == 1);
-    fclose(fp);
+				  "/test_checksum", NULL);
+    build_test_file(new_file);
 
     unsigned char cs1[CHKSUM_BYTES];
     unsigned char cs2[CHKSUM_BYTES];
@@ -27,6 +33,7 @@ START_TEST(test_checksum)
     fail_if(checksum_cmp(cs1, cs2)); // tests checksum_cmp
 
     /* take the first checksums */
+    FILE *fp;
     fail_if((fp = fopen(new_file, "r")) == NULL);
     fail_if(checksum_fp(fp, cs1));
     fail_if(checksum_stat(fp, cs1_sum));
@@ -52,12 +59,38 @@ START_TEST(test_checksum)
 }
 END_TEST
 
+START_TEST(test_checksum_write_read)
+{
+    char *new_file = solv_dupjoin(test_globals.tmpdir,
+				  "/test_checksum_write_read", NULL);
+    build_test_file(new_file);
+
+    unsigned char cs_computed[CHKSUM_BYTES];
+    unsigned char cs_read[CHKSUM_BYTES];
+    FILE *fp = fopen(new_file, "r");
+    checksum_fp(fp, cs_computed);
+    // fails, file opened read-only:
+    fail_unless(checksum_write(fp, cs_computed) == 1);
+    fclose(fp);
+    fp = fopen(new_file, "r+");
+    fail_if(checksum_write(fp, cs_computed));
+    fclose(fp);
+    fp = fopen(new_file, "r");
+    fail_if(checksum_read(fp, cs_read));
+    fail_if(checksum_cmp(cs_computed, cs_read));
+    fclose(fp);
+
+    solv_free(new_file);
+}
+END_TEST
+
 Suite *
 iutil_suite(void)
 {
     Suite *s = suite_create("iutil");
     TCase *tc = tcase_create("Main");
     tcase_add_test(tc, test_checksum);
+    tcase_add_test(tc, test_checksum_write_read);
     suite_add_tcase(s, tc);
 
     return s;

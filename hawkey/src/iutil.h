@@ -14,10 +14,12 @@
 #define CHKSUM_BYTES 32
 
 /* crypto utils */
-int checksum_cmp(unsigned char *cs1, unsigned char *cs2);
+int checksum_cmp(const unsigned char *cs1, const unsigned char *cs2);
 int checksum_fp(FILE *fp, unsigned char *out);
+int checksum_read(FILE *fp, unsigned char *csout);
 int checksum_stat(FILE *fp, unsigned char *out);
-void checksum_dump(unsigned char *cs);
+int checksum_write(FILE *fp, const unsigned char *cs);
+void checksum_dump(const unsigned char *cs);
 
 /* filesystem utils */
 int is_readable_rpm(const char *fn);

@@ -23,7 +23,7 @@
 #define CACHEDIR_PERMISSIONS 0700
 
 int
-checksum_cmp(unsigned char *cs1, unsigned char *cs2)
+checksum_cmp(const unsigned char *cs1, const unsigned char *cs2)
 {
     return memcmp(cs1, cs2, CHKSUM_BYTES);
 }
@@ -42,6 +42,16 @@ checksum_fp(FILE *fp, unsigned char *out)
 	solv_chksum_add(h, buf, l);
     rewind(fp);
     solv_chksum_free(h, out);
+    return 0;
+}
+
+/* leaves fp at the end of file */
+int
+checksum_read(FILE *fp, unsigned char *csout)
+{
+    if (fseek(fp, -32, SEEK_END) ||
+	fread(csout, CHKSUM_BYTES, 1, fp) != 1)
+	return 1;
     return 0;
 }
 
@@ -65,8 +75,17 @@ checksum_stat(FILE *fp, unsigned char *out)
     return 0;
 }
 
+/* moves fp to the end of file */
+int checksum_write(FILE *fp, const unsigned char *cs)
+{
+    if (fseek(fp, 0, SEEK_END) ||
+	fwrite(cs, CHKSUM_BYTES, 1, fp) != 1)
+	return 1;
+    return 0;
+}
+
 void
-checksum_dump(unsigned char *cs)
+checksum_dump(const unsigned char *cs)
 {
     for (int i = 0; i < CHKSUM_BYTES; i+=4) {
 	printf("%02x%02x%02x%02x", cs[i], cs[i+1], cs[i+2], cs[i+3]);
