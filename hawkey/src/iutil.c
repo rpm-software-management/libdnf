@@ -37,6 +37,7 @@ checksum_fp(unsigned char *out, FILE *fp)
     void *h = solv_chksum_create(CHKSUM_TYPE);
     int l;
 
+    rewind(fp);
     solv_chksum_add(h, CHKSUM_IDENT, strlen(CHKSUM_IDENT));
     while ((l = fread(buf, 1, sizeof(buf), fp)) > 0)
 	solv_chksum_add(h, buf, l);
@@ -45,16 +46,18 @@ checksum_fp(unsigned char *out, FILE *fp)
     return 0;
 }
 
-/* leaves fp at the end of file */
+/* calls rewind(fp) before returning */
 int
 checksum_read(unsigned char *csout, FILE *fp)
 {
     if (fseek(fp, -32, SEEK_END) ||
 	fread(csout, CHKSUM_BYTES, 1, fp) != 1)
 	return 1;
+    rewind(fp);
     return 0;
 }
 
+/* does not move the fp position */
 int
 checksum_stat(unsigned char *out, FILE *fp)
 {

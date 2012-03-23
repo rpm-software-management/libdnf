@@ -8,6 +8,7 @@ struct _HyRepo {
     char *name;
     char *repomd_fn;
     char *primary_fn;
+    int from_cache;
 };
 
 HyRepo hy_repo_link(HyRepo repo);

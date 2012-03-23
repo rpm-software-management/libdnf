@@ -28,6 +28,40 @@
 #define DEFAULT_CACHE_ROOT "/var/cache/hawkey"
 #define DEFAULT_CACHE_USER "/var/tmp/hawkey"
 
+static int
+can_use_rpmdb_cache(FILE *fp_cache)
+{
+    FILE *fp_rpmdb = fopen(SYSTEM_RPMDB, "r");
+    unsigned char cs_cache[CHKSUM_BYTES];
+    unsigned char cs_rpmdb[CHKSUM_BYTES];
+    int ret = 0;
+
+    if (fp_cache && fp_rpmdb && \
+	!checksum_read(cs_cache, fp_cache) && \
+	!checksum_stat(cs_rpmdb, fp_rpmdb) && \
+	!checksum_cmp(cs_cache, cs_rpmdb))
+	ret = 1;
+
+    if (fp_rpmdb)
+	fclose(fp_rpmdb);
+    return ret;
+}
+
+static int
+can_use_repomd_cache(FILE *fp_cache, FILE *fp_repomd)
+{
+    unsigned char cs_cache[CHKSUM_BYTES];
+    unsigned char cs_repomd[CHKSUM_BYTES];
+
+    if (fp_cache && fp_repomd && \
+	!checksum_read(cs_cache, fp_cache) && \
+	!checksum_fp(cs_repomd, fp_repomd) && \
+	!checksum_cmp(cs_cache, cs_repomd))
+	return 1;
+
+    return 0;
+}
+
 static Repo *
 get_cmdline_repo(HySack sack)
 {
@@ -197,24 +231,28 @@ void
 hy_sack_load_rpm_repo(HySack sack)
 {
     Pool *pool = sack->pool;
-    Repo *repo;
-    char *fn;
-    FILE *fp;
+    Repo *repo = repo_create(pool, SYSTEM_REPO_NAME);
+    char *cache_fn = hy_sack_solv_path(sack, SYSTEM_REPO_NAME);
+    FILE *cache_fp = fopen(cache_fn, "r");
+    HyRepo hrepo = hy_repo_create();
 
-    repo = repo_create(pool, SYSTEM_REPO_NAME);
-
-    fn = hy_sack_solv_path(sack, SYSTEM_REPO_NAME);
-    fp = fopen(fn, "r");
-    free(fn);
-    if (!fp || repo_add_solv(repo, fp, 0)) {
+    free(cache_fn);
+    hy_repo_set_string(hrepo, NAME, SYSTEM_REPO_NAME);
+    if (can_use_rpmdb_cache(cache_fp)) {
+	printf("using cached rpmdb\n");
+	if (repo_add_solv(repo, cache_fp, 0))
+	    assert(0);
+	hrepo->from_cache = 1;
+    } else {
 	printf("fetching rpmdb\n");
 	repo_add_rpmdb(repo, 0, 0, REPO_REUSE_REPODATA);
-    } else {
-	fclose(fp);
-	printf("using cached rpmdb\n");
+	hrepo->from_cache = 0;
     }
-    pool_set_installed(pool, repo);
 
+    if (cache_fp)
+	fclose(cache_fp);
+    pool_set_installed(pool, repo);
+    repo->appdata = hrepo;
     sack->provides_ready = 0;
 }
 
@@ -223,30 +261,34 @@ void hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
     Pool *pool = sack->pool;
     const char *name = hy_repo_get_string(hrepo, NAME);
     Repo *repo = repo_create(pool, name);
-    char *fn = hy_sack_solv_path(sack, name);
-    FILE *fp = fopen(fn, "r");
+    char *fn_cache = hy_sack_solv_path(sack, name);
 
-    free(fn);
+    FILE *fp_cache = fopen(fn_cache, "r");
+    FILE *fp_repomd = fopen(hy_repo_get_string(hrepo, REPOMD_FN), "r");
 
-    if (fp) {
+    if (can_use_repomd_cache(fp_cache, fp_repomd)) {
 	printf("using cached %s\n", name);
-	if (repo_add_solv(repo, fp, 0))
+	if (repo_add_solv(repo, fp_cache, 0))
 	    assert(0);
-	fclose(fp);
+	hrepo->from_cache = 1;
     } else {
-	FILE *f_repo = fopen(hy_repo_get_string(hrepo, REPOMD_FN), "r");
-	FILE *f_primary = solv_xfopen(hy_repo_get_string(hrepo, PRIMARY_FN), "r");
+	FILE *fp_primary = solv_xfopen(hy_repo_get_string(hrepo, PRIMARY_FN), "r");
 
-	if (!(f_repo && f_primary))
+	if (!(fp_repomd && fp_primary))
 	    assert(0);
 
 	printf("fetching %s\n", name);
-	repo_add_repomdxml(repo, f_repo, 0);
-	repo_add_rpmmd(repo, f_primary, 0, 0);
+	repo_add_repomdxml(repo, fp_repomd, 0);
+	repo_add_rpmmd(repo, fp_primary, 0, 0);
 
-	fclose(f_repo);
-	fclose(f_primary);
+	fclose(fp_primary);
+	hrepo->from_cache = 0;
     }
+    if (fp_cache)
+	fclose(fp_cache);
+    if (fp_repomd)
+	fclose(fp_repomd);
+    free(fn_cache);
 
     repo->appdata = hy_repo_link(hrepo);
     sack->provides_ready = 0;
@@ -277,26 +319,38 @@ hy_sack_write_all_repos(HySack sack)
 	return res;
 
     FOR_REPOS(i, repo) {
-	struct stat st;
 	const char *name = repo->name;
+	HyRepo hrepo = repo->appdata;
+	unsigned char checksum[CHKSUM_BYTES];
+	FILE *fp = NULL;
 
 	if (!strcmp(name, CMDLINE_REPO_NAME))
 	    continue;
+	if (hrepo && hrepo->from_cache)
+	    continue;
+
+	if (!strcmp(name, SYSTEM_REPO_NAME)) {
+	    if ((fp = fopen(SYSTEM_RPMDB, "r")) != NULL)
+		checksum_stat(checksum, fp);
+	} else if (hrepo) {
+	    if ((fp = fopen(hy_repo_get_string(hrepo, REPOMD_FN), "r")) != NULL)
+		checksum_fp(checksum, fp);
+	} else {
+	    assert(0);
+	}
+	if (fp)
+	    fclose(fp);
 
 	char *fn = hy_sack_solv_path(sack, name);
-	if (!stat(fn, &st)) {
-	    free(fn);
-	    continue;
-	}
-
-	printf("caching repo: %s\n", repo->name);
-	FILE *fp = fopen(fn, "w+x");
+	fp = fopen(fn, "w+");
 	free(fn);
+	printf("caching repo: %s\n", name);
 	if (!fp) {
 	    perror(__func__);
 	    return 1;
 	}
 	repo_write(repo, fp);
+	checksum_write(checksum, fp);
 	fclose(fp);
     }
     return 0;

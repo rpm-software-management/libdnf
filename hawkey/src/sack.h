@@ -10,6 +10,7 @@
 #include "types.h"
 
 #define SYSTEM_REPO_NAME "@System"
+#define SYSTEM_RPMDB "/var/lib/rpm/Packages"
 #define CMDLINE_REPO_NAME "@commandline"
 
 HySack hy_sack_create(void);
