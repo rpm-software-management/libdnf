@@ -22,6 +22,7 @@
 // hawkey
 #include "iutil.h"
 #include "package_internal.h"
+#include "repo_internal.h"
 #include "sack_internal.h"
 
 #define DEFAULT_CACHE_ROOT "/var/cache/hawkey"

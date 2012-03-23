@@ -22,7 +22,7 @@ hy_repo_create(void)
 }
 
 void
-hy_repo_set_string(HyRepo repo, enum frepo_param_e which, const char *str_val)
+hy_repo_set_string(HyRepo repo, enum hy_repo_param_e which, const char *str_val)
 {
     switch (which) {
     case NAME:
@@ -40,7 +40,7 @@ hy_repo_set_string(HyRepo repo, enum frepo_param_e which, const char *str_val)
 }
 
 const char *
-hy_repo_get_string(HyRepo repo, enum frepo_param_e which)
+hy_repo_get_string(HyRepo repo, enum hy_repo_param_e which)
 {
     switch(which) {
     case NAME:

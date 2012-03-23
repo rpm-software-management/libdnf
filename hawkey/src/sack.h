@@ -5,7 +5,7 @@
 #include "solv/pool.h"
 
 // hawkey
-#include "frepo.h"
+#include "repo.h"
 #include "package.h"
 #include "types.h"
 

@@ -10,7 +10,7 @@
 #include "solv/util.h"
 
 // hawkey
-#include "frepo.h"
+#include "repo.h"
 #include "goal.h"
 #include "package_internal.h"
 #include "query.h"

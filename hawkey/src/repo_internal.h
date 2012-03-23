@@ -1,7 +1,7 @@
 #ifndef REPO_INTERNAL_H
 #define REPO_INTERNAL_H
 
-#include "frepo.h"
+#include "repo.h"
 
 struct _HyRepo {
     int nrefs;

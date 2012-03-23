@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 // hawkey
-#include "src/frepo.h"
+#include "src/repo.h"
 
 // pyhawkey
 #include "hawkey-pysys.h"

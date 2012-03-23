@@ -1,5 +1,5 @@
 SET (hawkey_SRCS
-    frepo.c goal.c iutil.c package.c packagelist.c query.c sack.c)
+    repo.c goal.c iutil.c package.c packagelist.c query.c sack.c)
 
 ADD_LIBRARY(libhawkey SHARED ${hawkey_SRCS})
 TARGET_LINK_LIBRARIES(libhawkey ${SOLV_LIBRARY} ${SOLVEXT_LIBRARY})
