@@ -36,14 +36,14 @@ START_TEST(test_query_repo)
     HyQuery q;
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, KN_PKG_REPO, FT_EQ, SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_REPO, HY_EQ, SYSTEM_REPO_NAME);
 
     fail_unless(count_results(q) == TEST_EXPECT_SYSTEM_NSOLVABLES - 2);
 
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, KN_PKG_REPO, FT_NEQ, SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_REPO, HY_NEQ, SYSTEM_REPO_NAME);
     fail_if(count_results(q));
 
     hy_query_free(q);
@@ -55,12 +55,12 @@ START_TEST(test_query_name)
     HyQuery q;
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, KN_PKG_NAME, FT_SUBSTR, "penny");
+    hy_query_filter(q, HY_PKG_NAME, HY_SUBSTR, "penny");
     fail_unless(count_results(q) == 2);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, KN_PKG_NAME, FT_EQ, "lane");
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "lane");
     fail_if(count_results(q));
     hy_query_free(q);
 }
@@ -69,7 +69,7 @@ END_TEST
 START_TEST(test_query_glob)
 {
     HyQuery q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, KN_PKG_NAME, FT_GLOB, "pen*");
+    hy_query_filter(q, HY_PKG_NAME, HY_GLOB, "pen*");
     fail_unless(count_results(q) == 2);
     hy_query_free(q);
 }
@@ -78,12 +78,12 @@ END_TEST
 START_TEST(test_query_case)
 {
     HyQuery q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, KN_PKG_NAME, FT_EQ, "Penny-lib");
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "Penny-lib");
     fail_unless(count_results(q) == 0);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, KN_PKG_NAME, FT_EQ|HY_FF_ICASE, "Penny-lib");
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ|HY_ICASE, "Penny-lib");
     fail_unless(count_results(q) == 1);
     hy_query_free(q);
 }
@@ -94,8 +94,8 @@ START_TEST(test_query_anded)
     HyQuery q;
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, KN_PKG_NAME, FT_SUBSTR, "penny");
-    hy_query_filter(q, KN_PKG_SUMMARY, FT_SUBSTR, "ears");
+    hy_query_filter(q, HY_PKG_NAME, HY_SUBSTR, "penny");
+    hy_query_filter(q, HY_PKG_SUMMARY, HY_SUBSTR, "ears");
     fail_unless(count_results(q) == 1);
     hy_query_free(q);
 }
@@ -127,7 +127,7 @@ END_TEST
 START_TEST(test_filter_latest)
 {
     HyQuery q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, KN_PKG_NAME, FT_EQ, "fool");
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "fool");
     hy_query_filter_latest(q, 1);
     HyPackageList plist = hy_query_run(q);
     fail_unless(hy_packagelist_count(plist) == 1);
@@ -142,7 +142,7 @@ END_TEST
 START_TEST(test_filter_latest2)
 {
     HyQuery q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, KN_PKG_NAME, FT_EQ, "flying");
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "flying");
     hy_query_filter_latest(q, 1);
     HyPackageList plist = hy_query_run(q);
     fail_unless(hy_packagelist_count(plist) == 1);

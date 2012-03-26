@@ -15,8 +15,8 @@ HyPackage
 get_latest_pkg(HySack sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
-    hy_query_filter(q, KN_PKG_NAME, FT_EQ, name);
-    hy_query_filter(q, KN_PKG_REPO, FT_LT|FT_GT, SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
+    hy_query_filter(q, HY_PKG_REPO, HY_NEQ, SYSTEM_REPO_NAME);
     hy_query_filter_latest(q, 1);
     HyPackageList plist = hy_query_run(q);
     fail_unless(hy_packagelist_count(plist) == 1);

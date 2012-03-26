@@ -45,19 +45,19 @@ init_hawkey(void)
     PyModule_AddStringConstant(m, "SYSTEM_REPO_NAME", SYSTEM_REPO_NAME);
     PyModule_AddStringConstant(m, "CMDLINE_REPO_NAME", CMDLINE_REPO_NAME);
 
-    PyModule_AddIntConstant(m, "KN_PKG_NAME", KN_PKG_NAME);
-    PyModule_AddIntConstant(m, "KN_PKG_SUMMARY", KN_PKG_SUMMARY);
-    PyModule_AddIntConstant(m, "KN_PKG_REPO", KN_PKG_REPO);
-    PyModule_AddIntConstant(m, "KN_PKG_PROVIDES", KN_PKG_PROVIDES);
-    PyModule_AddIntConstant(m, "KN_PKG_LATEST", KN_PKG_LATEST);
-    PyModule_AddIntConstant(m, "KN_PKG_UPDATES", KN_PKG_UPDATES);
-    PyModule_AddIntConstant(m, "KN_PKG_OBSOLETING", KN_PKG_OBSOLETING);
+    PyModule_AddIntConstant(m, "PKG_NAME", HY_PKG_NAME);
+    PyModule_AddIntConstant(m, "PKG_SUMMARY", HY_PKG_SUMMARY);
+    PyModule_AddIntConstant(m, "PKG_REPO", HY_PKG_REPO);
+    PyModule_AddIntConstant(m, "PKG_PROVIDES", HY_PKG_PROVIDES);
+    PyModule_AddIntConstant(m, "PKG_LATEST", HY_PKG_LATEST);
+    PyModule_AddIntConstant(m, "PKG_UPDATES", HY_PKG_UPDATES);
+    PyModule_AddIntConstant(m, "PKG_OBSOLETING", HY_PKG_OBSOLETING);
 
-    PyModule_AddIntConstant(m, "ICASE", HY_FF_ICASE);
-    PyModule_AddIntConstant(m, "FT_EQ", FT_EQ);
-    PyModule_AddIntConstant(m, "FT_LT", FT_LT);
-    PyModule_AddIntConstant(m, "FT_GT", FT_GT);
-    PyModule_AddIntConstant(m, "FT_NEQ", FT_NEQ);
-    PyModule_AddIntConstant(m, "FT_SUBSTR", FT_SUBSTR);
-    PyModule_AddIntConstant(m, "FT_GLOB", FT_GLOB);
+    PyModule_AddIntConstant(m, "ICASE", HY_ICASE);
+    PyModule_AddIntConstant(m, "EQ", HY_EQ);
+    PyModule_AddIntConstant(m, "LT", HY_LT);
+    PyModule_AddIntConstant(m, "GT", HY_GT);
+    PyModule_AddIntConstant(m, "NEQ", HY_NEQ);
+    PyModule_AddIntConstant(m, "SUBSTR", HY_SUBSTR);
+    PyModule_AddIntConstant(m, "GLOB", HY_GLOB);
 }

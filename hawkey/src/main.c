@@ -94,8 +94,8 @@ static void search_and_print(HySack sack, const char *name)
 static void search_filter_repos(HySack sack, const char *name) {
     HyQuery q = hy_query_create(sack);
 
-    hy_query_filter(q, KN_PKG_NAME, FT_EQ, name);
-    hy_query_filter(q, KN_PKG_REPO, FT_NEQ, SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
+    hy_query_filter(q, HY_PKG_REPO, HY_NEQ, SYSTEM_REPO_NAME);
     execute_print(sack, q, 0);
     hy_query_free(q);
 }
@@ -105,8 +105,8 @@ static void search_anded(HySack sack, const char *name_substr,
 {
     HyQuery q = hy_query_create(sack);
 
-    hy_query_filter(q, KN_PKG_NAME, FT_SUBSTR, name_substr);
-    hy_query_filter(q, KN_PKG_SUMMARY, FT_SUBSTR, summary_substr);
+    hy_query_filter(q, HY_PKG_NAME, HY_SUBSTR, name_substr);
+    hy_query_filter(q, HY_PKG_SUMMARY, HY_SUBSTR, summary_substr);
     execute_print(sack, q, 0);
     hy_query_free(q);
 }
@@ -116,7 +116,7 @@ static void search_provides(HySack sack, const char *name,
 {
     HyQuery q = hy_query_create(sack);
 
-    hy_query_filter_provides(q, FT_GT, name, version);
+    hy_query_filter_provides(q, HY_GT, name, version);
     execute_print(sack, q, 0);
     hy_query_free(q);
 }
@@ -128,7 +128,7 @@ static void resolve_install(HySack sack, const char *name)
 
     queue_init(&job);
 
-    hy_query_filter(q, KN_PKG_NAME, FT_EQ, name);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
     execute_queue(q, &job);
     assert(job.count == 2); // XXX: the search mechanism for this case is broken.
     hy_sack_solve(sack, &job, NULL, 0);
@@ -149,9 +149,9 @@ static void updatables_query_name(HySack sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
 
-    hy_query_filter(q, KN_PKG_NAME, FT_EQ, name);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
 #if 0 // must stil work if enabled
-    hy_query_filter(q, KN_PKG_REPO, FT_NEQ, SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_REPO, HY_NEQ, SYSTEM_REPO_NAME);
 #endif
     hy_query_filter_updates(q, 1);
     execute_print(sack, q, 0);
@@ -181,8 +181,8 @@ static void
 erase(HySack sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
-    hy_query_filter(q, KN_PKG_NAME, FT_EQ, name);
-    hy_query_filter(q, KN_PKG_REPO, FT_EQ, SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
+    hy_query_filter(q, HY_PKG_REPO, HY_EQ, SYSTEM_REPO_NAME);
 
     HyPackageList plist = hy_query_run(q);
     if (hy_packagelist_count(plist) < 1) {
@@ -287,8 +287,8 @@ static void update_remote(HySack sack, const char *name)
     HyQuery q = hy_query_create(sack);
     HyPackageList plist;
 
-    hy_query_filter(q, KN_PKG_NAME, FT_EQ, name);
-    hy_query_filter(q, KN_PKG_REPO, FT_NEQ, SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
+    hy_query_filter(q, HY_PKG_REPO, HY_NEQ, SYSTEM_REPO_NAME);
     hy_query_filter_latest(q, 1);
 
     plist = hy_query_run(q);

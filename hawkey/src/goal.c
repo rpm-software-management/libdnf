@@ -89,8 +89,8 @@ hy_goal_update(HyGoal goal, HyPackage new_pkg)
     HyPackageList installed;
     int count;
 
-    hy_query_filter(q, KN_PKG_NAME, FT_EQ, name);
-    hy_query_filter(q, KN_PKG_REPO, FT_EQ, SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
+    hy_query_filter(q, HY_PKG_REPO, HY_EQ, SYSTEM_REPO_NAME);
     installed = hy_query_run(q);
     count = hy_packagelist_count(installed);
     hy_packagelist_free(installed);

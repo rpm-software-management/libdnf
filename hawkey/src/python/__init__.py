@@ -6,25 +6,24 @@ SYSTEM_REPO_NAME = _hawkey.SYSTEM_REPO_NAME
 CMDLINE_REPO_NAME = _hawkey.CMDLINE_REPO_NAME
 
 QUERY_KEYNAME_MAP = {
-    'name'    : _hawkey.KN_PKG_NAME,
-    'summary' : _hawkey.KN_PKG_SUMMARY,
-    'repo'    : _hawkey.KN_PKG_REPO,
-    'latest'  : _hawkey.KN_PKG_LATEST,
-    'updates' : _hawkey.KN_PKG_UPDATES,
-    'obsoleting' : _hawkey.KN_PKG_OBSOLETING
+    'name'    : _hawkey.PKG_NAME,
+    'summary' : _hawkey.PKG_SUMMARY,
+    'repo'    : _hawkey.PKG_REPO,
+    'latest'  : _hawkey.PKG_LATEST,
+    'updates' : _hawkey.PKG_UPDATES,
+    'obsoleting' : _hawkey.PKG_OBSOLETING
 }
 
 ICASE = _hawkey.ICASE
-
 QUERY_FT_MAP = {
-    'eq' : _hawkey.FT_EQ,
-    'gt' : _hawkey.FT_GT,
-    'lt' : _hawkey.FT_LT,
-    'neq' : _hawkey.FT_NEQ,
-    'gte' : _hawkey.FT_EQ | _hawkey.FT_GT,
-    'lte' : _hawkey.FT_EQ | _hawkey.FT_LT,
-    'substr'  : _hawkey.FT_SUBSTR,
-    'glob' : _hawkey.FT_GLOB,
+    'eq' : _hawkey.EQ,
+    'gt' : _hawkey.GT,
+    'lt' : _hawkey.LT,
+    'neq' : _hawkey.NEQ,
+    'gte' : _hawkey.EQ | _hawkey.GT,
+    'lte' : _hawkey.EQ | _hawkey.LT,
+    'substr'  : _hawkey.SUBSTR,
+    'glob' : _hawkey.GLOB,
 }
 
 Sack = _hawkey.Sack

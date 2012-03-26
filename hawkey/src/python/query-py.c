@@ -68,18 +68,18 @@ filter(_QueryObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "iiO", &keyname, &filtertype, &match))
 	return NULL;
-    if (keyname == KN_PKG_LATEST || keyname == KN_PKG_UPDATES ||
-	keyname == KN_PKG_OBSOLETING) {
+    if (keyname == HY_PKG_LATEST || keyname == HY_PKG_UPDATES ||
+	keyname == HY_PKG_OBSOLETING) {
 	long val;
 
-	if (!PyInt_Check(match) || filtertype != FT_EQ) {
+	if (!PyInt_Check(match) || filtertype != HY_EQ) {
 	    PyErr_SetString(PyExc_ValueError, "Invalid boolean filter query.");
 	    return NULL;
 	}
 	val = PyInt_AsLong(match);
-	if (keyname == KN_PKG_LATEST)
+	if (keyname == HY_PKG_LATEST)
 	    hy_query_filter_latest(self->query, val);
-	else if (keyname == KN_PKG_UPDATES)
+	else if (keyname == HY_PKG_UPDATES)
 	    hy_query_filter_updates(self->query, val);
 	else
 	    hy_query_filter_obsoleting(self->query, val);

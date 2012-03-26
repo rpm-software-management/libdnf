@@ -35,11 +35,11 @@ static int
 keyname2id(int keyname)
 {
     switch(keyname) {
-    case KN_PKG_NAME:
+    case HY_PKG_NAME:
 	return SOLVABLE_NAME;
-    case KN_PKG_ARCH:
+    case HY_PKG_ARCH:
 	return SOLVABLE_ARCH;
-    case KN_PKG_SUMMARY:
+    case HY_PKG_SUMMARY:
 	return SOLVABLE_SUMMARY;;
     default:
 	assert(0);
@@ -49,13 +49,13 @@ keyname2id(int keyname)
 static int
 type2flags(int type)
 {
-    type &= ~HY_FILTER_FLAG_MASK;
+    type &= ~HY_COMPARISON_FLAG_MASK;
     switch (type) {
-    case FT_EQ:
+    case HY_EQ:
 	return SEARCH_STRING;
-    case FT_SUBSTR:
+    case HY_SUBSTR:
 	return SEARCH_SUBSTRING;
-    case FT_GLOB:
+    case HY_GLOB:
 	return SEARCH_GLOB;
     default:
 	assert(0); // not implemented
@@ -66,11 +66,11 @@ static int
 type2relflags(int type)
 {
     int flags = 0;
-    if (type & FT_EQ)
+    if (type & HY_EQ)
 	flags |= REL_EQ;
-    if (type & FT_LT)
+    if (type & HY_LT)
 	flags |= REL_LT;
-    if (type & FT_GT)
+    if (type & HY_GT)
 	flags |= REL_GT;
     assert(flags);
     return flags;
@@ -84,7 +84,7 @@ filter_dataiterator(HyQuery q, struct _Filter *f, Map *m)
     int flags = type2flags(f->filter_type);
     Id keyname = keyname2id(f->keyname);
 
-    if (f->filter_type & HY_FF_ICASE)
+    if (f->filter_type & HY_ICASE)
 	flags |= SEARCH_NOCASE;
     dataiterator_init(&di, pool, 0, 0,
 		      keyname,
@@ -132,11 +132,11 @@ filter_repo(HyQuery q, struct _Filter *f, Map *m)
     for (i = 1; i < pool->nsolvables; ++i) {
 	s = pool_id2solvable(pool, i);
 	switch (f->filter_type) {
-	case FT_EQ:
+	case HY_EQ:
 	    if (s->repo && s->repo->repoid == repoid)
 		MAPSET(m, i);
 	    break;
-	case FT_NEQ: /* i.e. not equal */
+	case HY_NEQ: /* i.e. not equal */
 	    if (s->repo && s->repo->repoid != repoid)
 		MAPSET(m, i);
 	    break;
@@ -290,7 +290,7 @@ hy_query_filter_provides(HyQuery q, int filter_type, const char *name, const cha
 {
     struct _Filter filter = {
 	.filter_type = filter_type,
-	.keyname = KN_PKG_PROVIDES,
+	.keyname = HY_PKG_PROVIDES,
 	.match = solv_strdup(name),
 	.evr = solv_strdup(evr)
     };
@@ -345,9 +345,9 @@ hy_query_run(HyQuery q)
 	struct _Filter *f = q->filters + i;
 
 	map_empty(&m);
-	if (f->keyname == KN_PKG_PROVIDES) {
+	if (f->keyname == HY_PKG_PROVIDES) {
 	    filter_providers(q, f, &m);
-	} else if (f->keyname == KN_PKG_REPO) {
+	} else if (f->keyname == HY_PKG_REPO) {
 	    filter_repo(q, f, &m);
 	} else {
 	    filter_dataiterator(q, f, &m);
