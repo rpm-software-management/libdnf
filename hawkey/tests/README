@@ -1,7 +1,6 @@
 
 == The python/ directory ==
-It contains unit tests for the bindings-specific code. If it can be tested on
-the C level it shouldn't be here.
+It contains unit tests for the bindings-specific code.
 
 == The repos/ directory ==
 This directory contains sample package data for testing. The goal is to have as
