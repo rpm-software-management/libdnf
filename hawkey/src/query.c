@@ -131,13 +131,9 @@ filter_repo(HyQuery q, struct _Filter *f, Map *m)
 
     for (i = 1; i < pool->nsolvables; ++i) {
 	s = pool_id2solvable(pool, i);
-	switch (f->filter_type) {
+	switch (f->filter_type & ~HY_COMPARISON_FLAG_MASK) {
 	case HY_EQ:
 	    if (s->repo && s->repo->repoid == repoid)
-		MAPSET(m, i);
-	    break;
-	case HY_NEQ: /* i.e. not equal */
-	    if (s->repo && s->repo->repoid != repoid)
 		MAPSET(m, i);
 	    break;
 	default:
@@ -341,6 +337,7 @@ hy_query_run(HyQuery q)
     map_init(&m, pool->nsolvables);
     map_init(&res, pool->nsolvables);
     map_setall(&res);
+    MAPCLR(&res, SYSTEMSOLVABLE);
     for (i = 0; i < q->nfilters; ++i) {
 	struct _Filter *f = q->filters + i;
 
@@ -352,7 +349,10 @@ hy_query_run(HyQuery q)
 	} else {
 	    filter_dataiterator(q, f, &m);
 	}
-	map_and(&res, &m);
+	if (f->filter_type & HY_NOT)
+	    map_and_not(&res, &m);
+	else
+	    map_and(&res, &m);
     }
     if (q->updates)
 	filter_updates(q, &res);

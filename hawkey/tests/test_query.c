@@ -101,6 +101,17 @@ START_TEST(test_query_anded)
 }
 END_TEST
 
+START_TEST(test_query_neq)
+{
+    HyQuery q;
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_NEQ, "penny-lib");
+    fail_unless(count_results(q) == TEST_EXPECT_SYSTEM_PKGS - 1);
+    hy_query_free(q);
+}
+END_TEST
+
 START_TEST(test_updates_sanity)
 {
     Pool *pool = sack_pool(test_globals.sack);
@@ -169,6 +180,7 @@ query_suite(void)
     tcase_add_test(tc, test_query_glob);
     tcase_add_test(tc, test_query_case);
     tcase_add_test(tc, test_query_anded);
+    tcase_add_test(tc, test_query_neq);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Updates");
