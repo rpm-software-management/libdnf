@@ -54,6 +54,8 @@ type2flags(int type)
 	return SEARCH_STRING;
     case FT_SUBSTR:
 	return SEARCH_SUBSTRING;
+    case FT_GLOB:
+	return SEARCH_GLOB;
     default:
 	assert(0); // not implemented
     }

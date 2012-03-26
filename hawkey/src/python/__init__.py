@@ -22,6 +22,7 @@ QUERY_FT_MAP = {
     'gte' : _hawkey.FT_EQ | _hawkey.FT_GT,
     'lte' : _hawkey.FT_EQ | _hawkey.FT_LT,
     'substr'  : _hawkey.FT_SUBSTR,
+    'glob' : _hawkey.FT_GLOB,
 }
 
 Sack = _hawkey.Sack

@@ -4,14 +4,16 @@ import itertools
 def _construct_result(sack, patterns, ignore_case,
                       include_repo=None, exclude_repo=None,
                       updates_only=False, latest_only=False):
-    if set(itertools.chain.from_iterable(patterns)) & set("*[?"):
-        raise NotImplementedError("hawkey can not query glob patterns yet.")
     if ignore_case:
         print("warning: hawkey can not match case-insensitive yet, ignored.")
     queries = []
     for p in patterns:
         q = hawkey.Query(sack)
-        q.filter(name__eq=p)
+        # autodetect glob patterns
+        if set(p) & set("*[?"):
+            q.filter(name__glob=p)
+        else:
+            q.filter(name__eq=p)
         if include_repo:
             q.filter(repo__eq=include_repo)
         if exclude_repo:

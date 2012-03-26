@@ -66,6 +66,15 @@ START_TEST(test_query_name)
 }
 END_TEST
 
+START_TEST(test_query_glob)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, KN_PKG_NAME, FT_GLOB, "pen*");
+    fail_unless(count_results(q) == 2);
+    hy_query_free(q);
+}
+END_TEST
+
 START_TEST(test_query_anded)
 {
     HyQuery q;
@@ -143,6 +152,7 @@ query_suite(void)
     tcase_add_test(tc, test_query_sanity);
     tcase_add_test(tc, test_query_repo);
     tcase_add_test(tc, test_query_name);
+    tcase_add_test(tc, test_query_glob);
     tcase_add_test(tc, test_query_anded);
     suite_add_tcase(s, tc);
 

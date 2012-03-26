@@ -12,6 +12,7 @@ enum _filter_type_e {
     FT_GT	= (1 << 2),
     FT_NEQ	= FT_LT|FT_GT,
     FT_SUBSTR	= (1 << 3),
+    FT_GLOB     = (1 << 4)
 };
 
 enum _key_name_e {
