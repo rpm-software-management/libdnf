@@ -1,6 +1,12 @@
+
+== The python/ directory ==
+It contains unit tests for the bindings-specific code. If it can be tested on
+the C level it shouldn't be here.
+
+== The repos/ directory ==
 This directory contains sample package data for testing. The goal is to have as
-few packages as few packages as possible, ideally one or two per a specific
-testing role they can play:
+few packages as possible, ideally one or two per a specific testing role they
+can play:
 
 flying
 * installed at a version older than anything from repositories

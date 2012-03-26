@@ -53,6 +53,7 @@ init_hawkey(void)
     PyModule_AddIntConstant(m, "KN_PKG_UPDATES", KN_PKG_UPDATES);
     PyModule_AddIntConstant(m, "KN_PKG_OBSOLETING", KN_PKG_OBSOLETING);
 
+    PyModule_AddIntConstant(m, "ICASE", HY_FF_ICASE);
     PyModule_AddIntConstant(m, "FT_EQ", FT_EQ);
     PyModule_AddIntConstant(m, "FT_LT", FT_LT);
     PyModule_AddIntConstant(m, "FT_GT", FT_GT);
