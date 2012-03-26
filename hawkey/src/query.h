@@ -6,6 +6,11 @@
 #include "sack.h"
 #include "types.h"
 
+enum _hy_filter_flag_e {
+    HY_FF_ICASE  = 1 << 8,
+    HY_FILTER_FLAG_MASK = HY_FF_ICASE,
+};
+
 enum _filter_type_e {
     FT_EQ	= (1 << 0),
     FT_LT	= (1 << 1),

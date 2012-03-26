@@ -75,6 +75,20 @@ START_TEST(test_query_glob)
 }
 END_TEST
 
+START_TEST(test_query_case)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, KN_PKG_NAME, FT_EQ, "Penny-lib");
+    fail_unless(count_results(q) == 0);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, KN_PKG_NAME, FT_EQ|HY_FF_ICASE, "Penny-lib");
+    fail_unless(count_results(q) == 1);
+    hy_query_free(q);
+}
+END_TEST
+
 START_TEST(test_query_anded)
 {
     HyQuery q;
@@ -153,6 +167,7 @@ query_suite(void)
     tcase_add_test(tc, test_query_repo);
     tcase_add_test(tc, test_query_name);
     tcase_add_test(tc, test_query_glob);
+    tcase_add_test(tc, test_query_case);
     tcase_add_test(tc, test_query_anded);
     suite_add_tcase(s, tc);
 

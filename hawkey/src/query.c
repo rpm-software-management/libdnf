@@ -49,6 +49,7 @@ keyname2id(int keyname)
 static int
 type2flags(int type)
 {
+    type &= ~HY_FILTER_FLAG_MASK;
     switch (type) {
     case FT_EQ:
 	return SEARCH_STRING;
@@ -83,6 +84,8 @@ filter_dataiterator(HyQuery q, struct _Filter *f, Map *m)
     int flags = type2flags(f->filter_type);
     Id keyname = keyname2id(f->keyname);
 
+    if (f->filter_type & HY_FF_ICASE)
+	flags |= SEARCH_NOCASE;
     dataiterator_init(&di, pool, 0, 0,
 		      keyname,
 		      f->match,
