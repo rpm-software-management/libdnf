@@ -5,7 +5,7 @@ set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-strict-aliasing")
 set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fno-strict-aliasing")
 set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fno-strict-aliasing")
 
-SET (hawkey_COPIES __init__.py queries.py dbg.py)
+SET (hawkey_COPIES __init__.py dbg.py)
 FILE(COPY ${hawkey_COPIES} DESTINATION ./hawkey/)
 
 SET (hawkeymodule_SRCS
