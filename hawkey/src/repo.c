@@ -22,19 +22,19 @@ hy_repo_create(void)
 }
 
 void
-hy_repo_set_string(HyRepo repo, enum hy_repo_param_e which, const char *str_val)
+hy_repo_set_string(HyRepo repo, enum _hy_repo_param_e which, const char *str_val)
 {
     switch (which) {
-    case NAME:
+    case HY_REPO_NAME:
 	repo->name = solv_strdup(str_val);
 	break;
-    case REPOMD_FN:
+    case HY_REPO_MD_FN:
 	repo->repomd_fn = solv_strdup(str_val);
 	break;
-    case PRIMARY_FN:
+    case HY_REPO_PRIMARY_FN:
 	repo->primary_fn = solv_strdup(str_val);
 	break;
-    case FILELISTS_FN:
+    case HY_REPO_FILELISTS_FN:
 	repo->filelists_fn = solv_strdup(str_val);
 	break;
     default:
@@ -43,16 +43,16 @@ hy_repo_set_string(HyRepo repo, enum hy_repo_param_e which, const char *str_val)
 }
 
 const char *
-hy_repo_get_string(HyRepo repo, enum hy_repo_param_e which)
+hy_repo_get_string(HyRepo repo, enum _hy_repo_param_e which)
 {
     switch(which) {
-    case NAME:
+    case HY_REPO_NAME:
 	return repo->name;
-    case REPOMD_FN:
+    case HY_REPO_MD_FN:
 	return repo->repomd_fn;
-    case PRIMARY_FN:
+    case HY_REPO_PRIMARY_FN:
 	return repo->primary_fn;
-    case FILELISTS_FN:
+    case HY_REPO_FILELISTS_FN:
 	return repo->filelists_fn;
     default:
 	assert(0);

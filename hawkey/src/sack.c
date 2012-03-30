@@ -237,7 +237,7 @@ hy_sack_load_rpm_repo(HySack sack)
     HyRepo hrepo = hy_repo_create();
 
     free(cache_fn);
-    hy_repo_set_string(hrepo, NAME, SYSTEM_REPO_NAME);
+    hy_repo_set_string(hrepo, HY_REPO_NAME, SYSTEM_REPO_NAME);
     if (can_use_rpmdb_cache(cache_fp)) {
 	printf("using cached rpmdb\n");
 	if (repo_add_solv(repo, cache_fp, 0))
@@ -259,12 +259,12 @@ hy_sack_load_rpm_repo(HySack sack)
 void hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
 {
     Pool *pool = sack->pool;
-    const char *name = hy_repo_get_string(hrepo, NAME);
+    const char *name = hy_repo_get_string(hrepo, HY_REPO_NAME);
     Repo *repo = repo_create(pool, name);
     char *fn_cache = hy_sack_solv_path(sack, name);
 
     FILE *fp_cache = fopen(fn_cache, "r");
-    FILE *fp_repomd = fopen(hy_repo_get_string(hrepo, REPOMD_FN), "r");
+    FILE *fp_repomd = fopen(hy_repo_get_string(hrepo, HY_REPO_MD_FN), "r");
 
     if (can_use_repomd_cache(fp_cache, fp_repomd)) {
 	printf("using cached %s\n", name);
@@ -272,7 +272,7 @@ void hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
 	    assert(0);
 	hrepo->from_cache = 1;
     } else {
-	FILE *fp_primary = solv_xfopen(hy_repo_get_string(hrepo, PRIMARY_FN), "r");
+	FILE *fp_primary = solv_xfopen(hy_repo_get_string(hrepo, HY_REPO_PRIMARY_FN), "r");
 
 	if (!(fp_repomd && fp_primary))
 	    assert(0);
@@ -309,7 +309,7 @@ hy_sack_load_filelists(HySack sack)
 
 	if (hrepo == NULL)\
 	    continue;
-	fn = hy_repo_get_string(hrepo, FILELISTS_FN);
+	fn = hy_repo_get_string(hrepo, HY_REPO_FILELISTS_FN);
 	if (fn == NULL)
 	    continue;
 	fp = solv_xfopen(fn, "r");
@@ -361,7 +361,7 @@ hy_sack_write_all_repos(HySack sack)
 	    if ((fp = fopen(SYSTEM_RPMDB, "r")) != NULL)
 		checksum_stat(checksum, fp);
 	} else if (hrepo) {
-	    if ((fp = fopen(hy_repo_get_string(hrepo, REPOMD_FN), "r")) != NULL)
+	    if ((fp = fopen(hy_repo_get_string(hrepo, HY_REPO_MD_FN), "r")) != NULL)
 		checksum_fp(checksum, fp);
 	} else {
 	    assert(0);

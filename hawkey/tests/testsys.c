@@ -39,22 +39,22 @@ glob_for_repofiles(Pool *pool, const char *repo_name, const char *path)
     const char *tmpl;
     wordexp_t word_vector;
 
-    hy_repo_set_string(repo, NAME, repo_name);
+    hy_repo_set_string(repo, HY_REPO_NAME, repo_name);
 
     tmpl = pool_tmpjoin(pool, path, "/repomd.xml", NULL);
     if (wordexp(tmpl, &word_vector, 0) || word_vector.we_wordc < 1)
 	goto fail;
-    hy_repo_set_string(repo, REPOMD_FN, word_vector.we_wordv[0]);
+    hy_repo_set_string(repo, HY_REPO_MD_FN, word_vector.we_wordv[0]);
 
     tmpl = pool_tmpjoin(pool, path, "/*primary.xml.gz", NULL);
     if (wordexp(tmpl, &word_vector, WRDE_REUSE) || word_vector.we_wordc < 1)
 	goto fail;
-    hy_repo_set_string(repo, PRIMARY_FN, word_vector.we_wordv[0]);
+    hy_repo_set_string(repo, HY_REPO_PRIMARY_FN, word_vector.we_wordv[0]);
 
     tmpl = pool_tmpjoin(pool, path, "/*filelists.xml.gz", NULL);
     if (wordexp(tmpl, &word_vector, WRDE_REUSE) || word_vector.we_wordc < 1)
 	goto fail;
-    hy_repo_set_string(repo, FILELISTS_FN, word_vector.we_wordv[0]);
+    hy_repo_set_string(repo, HY_REPO_FILELISTS_FN, word_vector.we_wordv[0]);
     wordfree(&word_vector);
     return repo;
 

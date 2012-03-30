@@ -308,9 +308,9 @@ static HyRepo
 config_repo(const char *name, const char *md_repo, const char *md_primary_xml)
 {
     HyRepo repo = hy_repo_create();
-    hy_repo_set_string(repo, NAME, name);
-    hy_repo_set_string(repo, REPOMD_FN, md_repo);
-    hy_repo_set_string(repo, PRIMARY_FN, md_primary_xml);
+    hy_repo_set_string(repo, HY_REPO_NAME, name);
+    hy_repo_set_string(repo, HY_REPO_MD_FN, md_repo);
+    hy_repo_set_string(repo, HY_REPO_PRIMARY_FN, md_primary_xml);
     return repo;
 }
 
