@@ -34,8 +34,11 @@ hy_repo_set_string(HyRepo repo, enum hy_repo_param_e which, const char *str_val)
     case PRIMARY_FN:
 	repo->primary_fn = solv_strdup(str_val);
 	break;
+    case FILELISTS_FN:
+	repo->filelists_fn = solv_strdup(str_val);
+	break;
     default:
-	assert(1);
+	assert(0);
     }
 }
 
@@ -49,8 +52,10 @@ hy_repo_get_string(HyRepo repo, enum hy_repo_param_e which)
 	return repo->repomd_fn;
     case PRIMARY_FN:
 	return repo->primary_fn;
+    case FILELISTS_FN:
+	return repo->filelists_fn;
     default:
-	assert(1);
+	assert(0);
     }
     return NULL;
 }
@@ -66,5 +71,6 @@ hy_repo_free(HyRepo repo)
     solv_free(repo->name);
     solv_free(repo->repomd_fn);
     solv_free(repo->primary_fn);
+    solv_free(repo->filelists_fn);
     solv_free(repo);
 }

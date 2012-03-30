@@ -18,3 +18,11 @@ penny, penny-lib
 
 walrus
 * not installed, available in the main repo
+
+=== repos/yum ===
+
+To test loading of yum repos we need an actual yum repo. It currently consists
+of two packages ("mystery", "tour") and generated repodata. The specfiles are
+included, all the package payload is generated in them. To rebuild them:
+
+  rpmbuild -bb tour.spec

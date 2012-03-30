@@ -66,6 +66,40 @@ START_TEST(test_write_all_repos)
 }
 END_TEST
 
+START_TEST(test_yum_repo)
+{
+    HySack sack = test_globals.sack;
+    Pool *pool = sack->pool;
+
+    const char *repo_path = pool_tmpjoin(pool, test_globals.repo_dir,
+					 YUM_DIR_SUFFIX, NULL);
+    fail_if(access(repo_path, X_OK));
+    HyRepo repo = glob_for_repofiles(pool, "tfilenames", repo_path);
+    hy_sack_load_yum_repo(sack, repo);
+    fail_unless(pool->nsolvables ==
+		TEST_META_SOLVABLES_COUNT + TEST_EXPECT_YUM_NSOLVABLES);
+    hy_repo_free(repo);
+    fail_if(hy_sack_load_filelists(sack));
+
+    Dataiterator di;
+    int count;
+    Id last_found_solvable;
+    dataiterator_init(&di, pool, 0, 0, SOLVABLE_FILELIST, "/usr/bin/ste",
+		      SEARCH_STRING | SEARCH_FILES |SEARCH_COMPLETE_FILELIST);
+    for (count = 0; dataiterator_step(&di); ++count)
+	last_found_solvable = di.solvid;
+    fail_unless(count == 1);
+    dataiterator_free(&di);
+
+    dataiterator_init(&di, pool, 0, last_found_solvable, SOLVABLE_FILELIST, "/",
+		      SEARCH_STRINGSTART | SEARCH_FILES);
+    for (count = 0; dataiterator_step(&di); ++count)
+	fail_if(strncmp(di.kv.str, "/usr/bin/", strlen("/usr/bin/")));
+    fail_unless(count == 3);
+    dataiterator_free(&di);
+}
+END_TEST
+
 Suite *
 sack_suite(void)
 {
@@ -80,6 +114,11 @@ sack_suite(void)
     tcase_add_unchecked_fixture(tc, setup, teardown);
     tcase_add_test(tc, test_repo_load);
     tcase_add_test(tc, test_write_all_repos);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("YumRepo");
+    tcase_add_unchecked_fixture(tc, setup_empty_sack, teardown);
+    tcase_add_test(tc, test_yum_repo);
     suite_add_tcase(s, tc);
 
     return s;

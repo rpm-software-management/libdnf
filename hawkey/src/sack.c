@@ -294,6 +294,34 @@ void hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
     sack->provides_ready = 0;
 }
 
+int
+hy_sack_load_filelists(HySack sack)
+{
+    Pool *pool = sack->pool;
+    int ret = 0;
+    Repo *repo;
+    Id rid;
+
+    FOR_REPOS(rid, repo) {
+	HyRepo hrepo = repo->appdata;
+	const char *fn;
+	FILE *fp;
+
+	if (hrepo == NULL)\
+	    continue;
+	fn = hy_repo_get_string(hrepo, FILELISTS_FN);
+	if (fn == NULL)
+	    continue;
+	fp = solv_xfopen(fn, "r");
+	printf("%s\n", fn);
+	if (fp == NULL)
+	    continue;
+	ret |= repo_add_rpmmd(repo, fp, "FL", REPO_EXTEND_SOLVABLES);
+	fclose(fp);
+    }
+    return ret;
+}
+
 void
 sack_make_provides_ready(HySack sack)
 {

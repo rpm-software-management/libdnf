@@ -6,7 +6,8 @@
 enum hy_repo_param_e {
     NAME,
     REPOMD_FN,
-    PRIMARY_FN
+    PRIMARY_FN,
+    FILELISTS_FN
 };
 
 HyRepo hy_repo_create(void);

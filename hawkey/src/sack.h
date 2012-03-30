@@ -22,6 +22,7 @@ HyPackage hy_sack_add_cmdline_rpm(HySack sack, const char *fn);
 void hy_sack_load_rpm_repo(HySack sack);
 void hy_sack_load_yum_repo(HySack sack, HyRepo repo);
 void hy_sack_solve(HySack sack, Queue *job, Map *res_map, int mode);
+int hy_sack_load_filelists(HySack sack);
 int hy_sack_write_all_repos(HySack sack);
 
 #endif // SACK_H

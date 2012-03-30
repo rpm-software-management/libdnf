@@ -8,6 +8,7 @@ struct _HyRepo {
     char *name;
     char *repomd_fn;
     char *primary_fn;
+    char *filelists_fn;
     int from_cache;
 };
 
