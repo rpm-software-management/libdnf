@@ -40,23 +40,28 @@ keyname2id(int keyname)
     case HY_PKG_ARCH:
 	return SOLVABLE_ARCH;
     case HY_PKG_SUMMARY:
-	return SOLVABLE_SUMMARY;;
+	return SOLVABLE_SUMMARY;
+    case HY_PKG_FILE:
+	return SOLVABLE_FILELIST;
     default:
 	assert(0);
     }
 }
 
 static int
-type2flags(int type)
+type2flags(int type, int keyname)
 {
+    int ret = 0;
+    if (keyname == HY_PKG_FILE)
+	ret |= SEARCH_FILES | SEARCH_COMPLETE_FILELIST;
     type &= ~HY_COMPARISON_FLAG_MASK;
     switch (type) {
     case HY_EQ:
-	return SEARCH_STRING;
+	return ret | SEARCH_STRING;
     case HY_SUBSTR:
-	return SEARCH_SUBSTRING;
+	return ret | SEARCH_SUBSTRING;
     case HY_GLOB:
-	return SEARCH_GLOB;
+	return ret | SEARCH_GLOB;
     default:
 	assert(0); // not implemented
     }
@@ -81,8 +86,8 @@ filter_dataiterator(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
     Dataiterator di;
-    int flags = type2flags(f->filter_type);
     Id keyname = keyname2id(f->keyname);
+    int flags = type2flags(f->filter_type, f->keyname);
 
     if (f->filter_type & HY_ICASE)
 	flags |= SEARCH_NOCASE;
@@ -151,6 +156,7 @@ filter_updates(HyQuery q, Map *res)
     Map m;
     Queue job;
 
+    assert(pool->installed);
     sack_make_provides_ready(q->sack);
     map_init(&m, pool->nsolvables);
     queue_init(&job);
@@ -221,6 +227,7 @@ filter_obsoleting(HyQuery q, Map *res)
     Solvable *s, *so;
     Map obsoleting;
 
+    assert(pool->installed);
     map_init(&obsoleting, pool->nsolvables);
     sack_make_provides_ready(q->sack);
     for (p = 1; p < pool->nsolvables; ++p) {
@@ -333,7 +340,6 @@ hy_query_run(HyQuery q)
     Map res, m;
     int i;
 
-    assert(pool->installed);
     map_init(&m, pool->nsolvables);
     map_init(&res, pool->nsolvables);
     map_setall(&res);

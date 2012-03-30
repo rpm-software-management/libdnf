@@ -313,7 +313,6 @@ hy_sack_load_filelists(HySack sack)
 	if (fn == NULL)
 	    continue;
 	fp = solv_xfopen(fn, "r");
-	printf("%s\n", fn);
 	if (fp == NULL)
 	    continue;
 	ret |= repo_add_rpmmd(repo, fp, "FL", REPO_EXTEND_SOLVABLES);

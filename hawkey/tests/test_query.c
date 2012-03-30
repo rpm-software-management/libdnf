@@ -166,6 +166,26 @@ START_TEST(test_filter_latest2)
 }
 END_TEST
 
+START_TEST(test_filter_files)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_FILE, HY_EQ, "/etc/takeyouaway");
+    HyPackageList plist = hy_query_run(q);
+    fail_unless(hy_packagelist_count(plist) == 1);
+    HyPackage pkg = hy_packagelist_get(plist, 0);
+    fail_if(strcmp(hy_package_get_name(pkg), "tour"));
+    hy_packagelist_free(plist);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_FILE, HY_GLOB, "/usr/*");
+    plist = hy_query_run(q);
+    fail_unless(hy_packagelist_count(plist) == 2);
+    hy_packagelist_free(plist);
+    hy_query_free(q);
+}
+END_TEST
+
 Suite *
 query_suite(void)
 {
@@ -193,6 +213,11 @@ query_suite(void)
     tc = tcase_create("Full");
     tcase_add_unchecked_fixture(tc, setup_all, teardown);
     tcase_add_test(tc, test_filter_latest2);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("Filelists");
+    tcase_add_unchecked_fixture(tc, setup_yum, teardown);
+    tcase_add_test(tc, test_filter_files);
     suite_add_tcase(s, tc);
 
     return s;
