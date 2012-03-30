@@ -59,10 +59,8 @@ package_init(_PackageObject *self, PyObject *args, PyObject *kwds)
     PyObject *sack;
     HySack csack;
 
-    if (!PyArg_ParseTuple(args, "(O!i)", &sack_Type, &sack, &id)) {
-	printf("im failing here %p\n", args);
+    if (!PyArg_ParseTuple(args, "(O!i)", &sack_Type, &sack, &id))
 	return -1;
-    }
     csack = sackFromPyObject(sack);
     if (csack == NULL)
 	return -1;

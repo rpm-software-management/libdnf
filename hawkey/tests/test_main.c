@@ -40,6 +40,7 @@ main(int argc, const char **argv)
 	exit(1);
     }
     init_test_globals(&test_globals, argv[1]);
+    printf("Tests using directory: %s\n", test_globals.tmpdir);
 
     SRunner *sr = srunner_create(sack_suite());
     srunner_add_suite(sr, iutil_suite());

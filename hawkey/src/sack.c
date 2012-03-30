@@ -1,6 +1,6 @@
 #include <assert.h>
+#include <stdarg.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
@@ -122,8 +122,7 @@ transaction2map(Transaction *trans, Map *m)
 static void
 transaction2obs_map(Transaction *trans, Map *m)
 {
-    Pool *pool = trans->pool;
-    int i, j;
+    int i;
     Id p, type;
     Queue obsoleted;
 
@@ -135,24 +134,40 @@ transaction2obs_map(Transaction *trans, Map *m)
 				SOLVER_TRANSACTION_SHOW_OBSOLETES|
 				SOLVER_TRANSACTION_SHOW_MULTIINSTALL);
 	if (type == SOLVER_TRANSACTION_OBSOLETES) {
-	    printf("%s obsoletes\n", pool_solvid2str(pool, p));
 	    transaction_all_obs_pkgs(trans, p, &obsoleted);
 	    assert(obsoleted.count);
-	    for (j = 0; j < obsoleted.count; ++j) {
-		printf("\t%s\n", pool_solvid2str(pool, obsoleted.elements[j]));
-	    }
 	}
     }
     queue_free(&obsoleted);
+}
+
+static void
+log_cb(Pool *pool, void *cb_data, int type, const char *buf)
+{
+    HySack sack = cb_data;
+
+    if (sack->log_out == NULL) {
+	char *dir = hy_sack_solv_path(sack, NULL);
+	const char *fn = pool_tmpjoin(pool, dir, "/hawkey.log", NULL);
+	int res = mkcachedir(dir);
+
+	solv_free(dir);
+	assert(res == 0);
+	sack->log_out = fopen(fn, "a");
+	const char *msg = "log started\n";
+	fwrite(msg, strlen(msg), 1, sack->log_out);
+    }
+    fwrite(buf, strlen(buf), 1, sack->log_out);
 }
 
 HySack
 hy_sack_create(void)
 {
     HySack sack = solv_calloc(1, sizeof(*sack));
+    Pool *pool = pool_create();
 
-    sack->pool = pool_create();
-    setarch(sack->pool);
+    setarch(pool);
+    sack->pool = pool;
 
     int is_reg_user = geteuid();
     char *username = this_username();
@@ -161,6 +176,11 @@ hy_sack_create(void)
     else
 	sack->cache_dir = solv_strdup(DEFAULT_CACHE_ROOT);
     solv_free(username);
+
+    pool_setdebugcallback(pool, log_cb, sack);
+    pool_setdebugmask(pool, SOLV_ERROR | SOLV_FATAL | SOLV_WARN |
+		      HY_LL_INFO | HY_LL_ERROR);
+
     return sack;
 }
 
@@ -180,6 +200,11 @@ hy_sack_free(HySack sack)
 
     solv_free(sack->cache_dir);
     pool_free(sack->pool);
+    if (sack->log_out) {
+	const char *msg = "finished.\n";
+	fwrite(msg, strlen(msg), 1, sack->log_out);
+	fclose(sack->log_out);
+    }
     solv_free(sack);
 }
 
@@ -219,7 +244,7 @@ hy_sack_add_cmdline_rpm(HySack sack, const char *fn)
 
     assert(repo);
     if (!is_readable_rpm(fn)) {
-	printf("not a readable RPM file: %s, skipping\n", fn);
+	HY_LOG_ERROR("not a readable RPM file: %s, skipping\n", fn);
 	return NULL;
     }
     p = repo_add_rpm(repo, fn, REPO_REUSE_REPODATA|REPO_NO_INTERNALIZE);
@@ -239,12 +264,12 @@ hy_sack_load_rpm_repo(HySack sack)
     free(cache_fn);
     hy_repo_set_string(hrepo, HY_REPO_NAME, SYSTEM_REPO_NAME);
     if (can_use_rpmdb_cache(cache_fp)) {
-	printf("using cached rpmdb\n");
+	HY_LOG_INFO("using cached rpmdb\n");
 	if (repo_add_solv(repo, cache_fp, 0))
 	    assert(0);
 	hrepo->from_cache = 1;
     } else {
-	printf("fetching rpmdb\n");
+	HY_LOG_INFO("fetching rpmdb\n");
 	repo_add_rpmdb(repo, 0, 0, REPO_REUSE_REPODATA);
 	hrepo->from_cache = 0;
     }
@@ -267,7 +292,7 @@ void hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
     FILE *fp_repomd = fopen(hy_repo_get_string(hrepo, HY_REPO_MD_FN), "r");
 
     if (can_use_repomd_cache(fp_cache, fp_repomd)) {
-	printf("using cached %s\n", name);
+	HY_LOG_INFO("using cached %s\n", name);
 	if (repo_add_solv(repo, fp_cache, 0))
 	    assert(0);
 	hrepo->from_cache = 1;
@@ -277,7 +302,7 @@ void hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
 	if (!(fp_repomd && fp_primary))
 	    assert(0);
 
-	printf("fetching %s\n", name);
+	HY_LOG_INFO("fetching %s\n", name);
 	repo_add_repomdxml(repo, fp_repomd, 0);
 	repo_add_rpmmd(repo, fp_primary, 0, 0);
 
@@ -371,7 +396,7 @@ hy_sack_write_all_repos(HySack sack)
 	char *fn = hy_sack_solv_path(sack, name);
 	fp = fopen(fn, "w+");
 	free(fn);
-	printf("caching repo: %s\n", name);
+	HY_LOG_INFO("caching repo: %s\n", name);
 	if (!fp) {
 	    perror(__func__);
 	    return 1;
@@ -403,8 +428,8 @@ hy_sack_solve(HySack sack, Queue *job, Map *res_map, int mode)
 	    break;
 	}
     } else {
-	printf("(solver succeeded with %d step transaction. results ignored.)\n",
-	       trans->steps.count);
+	HY_LOG_INFO("(solver succeeded with %d step transaction. results ignored.)\n",
+		    trans->steps.count);
 #if 0
 	transaction_print(trans);
 #endif
@@ -414,6 +439,20 @@ hy_sack_solve(HySack sack, Queue *job, Map *res_map, int mode)
 }
 
 // internal
+
+void
+sack_log(HySack sack, int level, const char *format, ...)
+{
+    Pool *pool = sack_pool(sack);
+    char buf[1024];
+    va_list args;
+    const char *pref_format = pool_tmpjoin(pool, "hawkey: ", format, NULL);
+
+    va_start(args, format);
+    vsnprintf(buf, sizeof(buf), pref_format, args);
+    va_end(args);
+    POOL_DEBUG(level, buf);
+}
 
 void
 sack_same_names(HySack sack, Id name, Queue *same)

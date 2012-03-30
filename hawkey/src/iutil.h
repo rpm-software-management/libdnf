@@ -13,6 +13,13 @@
 
 #define CHKSUM_BYTES 32
 
+// log levels (see also SOLV_ERROR etc. in <solv/pool.h>)
+#define HY_LL_INFO  (1 << 20)
+#define HY_LL_ERROR (1 << 21)
+
+#define HY_LOG_INFO(...) sack_log(sack, HY_LL_INFO, __VA_ARGS__)
+#define HY_LOG_ERROR(...) sack_log(sack, HY_LL_ERROR, __VA_ARGS__)
+
 /* crypto utils */
 int checksum_cmp(const unsigned char *cs1, const unsigned char *cs2);
 int checksum_fp(unsigned char *out, FILE *fp);

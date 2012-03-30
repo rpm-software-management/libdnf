@@ -104,9 +104,7 @@ hy_goal_update(HyGoal goal, HyPackage new_pkg)
 int
 hy_goal_go(HyGoal goal)
 {
-    Transaction *trans;
-
-    trans = job2transaction(goal->sack, &goal->job, &goal->problems);
+    Transaction *trans = job2transaction(goal->sack, &goal->job, &goal->problems);
     if (trans == NULL)
 	return 1;
 #if 0
