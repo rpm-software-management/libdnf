@@ -350,7 +350,7 @@ hy_query_run(HyQuery q)
 	    filter_dataiterator(q, f, &m);
 	}
 	if (f->filter_type & HY_NOT)
-	    map_and_not(&res, &m);
+	    map_subtract(&res, &m);
 	else
 	    map_and(&res, &m);
     }
