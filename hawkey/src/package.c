@@ -113,6 +113,13 @@ hy_package_get_reponame(HyPackage pkg)
     return s->repo->name;
 }
 
+const char*
+hy_package_get_summary(HyPackage pkg)
+{
+    Solvable *s = get_solvable(pkg);
+    return solvable_lookup_str(s, SOLVABLE_SUMMARY);
+}
+
 int
 hy_package_get_medianr(HyPackage pkg)
 {

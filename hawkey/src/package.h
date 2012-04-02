@@ -17,6 +17,7 @@ const char* hy_package_get_name(HyPackage pkg);
 const char* hy_package_get_arch(HyPackage pkg);
 const char* hy_package_get_evr(HyPackage pkg);
 const char* hy_package_get_reponame(HyPackage pkg);
+const char* hy_package_get_summary(HyPackage pkg);
 int hy_package_get_medianr(HyPackage pkg);
 int hy_package_get_rpmdbid(HyPackage pkg);
 int hy_package_get_size(HyPackage pkg);

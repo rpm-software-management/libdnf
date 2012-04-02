@@ -66,9 +66,8 @@ hy_packagelist_free(HyPackageList plist)
 {
     int i;
 
-    for (i = 0; i < plist->count; ++i) {
-	solv_free(plist->elements[i]);
-    }
+    for (i = 0; i < plist->count; ++i)
+	hy_package_free(plist->elements[i]);
     solv_free(plist->elements);
     solv_free(plist);
 }
