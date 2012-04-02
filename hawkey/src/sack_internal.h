@@ -9,6 +9,7 @@
 struct _HySack {
     Pool *pool;
     int provides_ready;
+    int filelists_ready;
     char *cache_dir;
     FILE *log_out;
 };

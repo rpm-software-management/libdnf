@@ -78,9 +78,14 @@ set_str(_RepoObject *self, PyObject *value, void *closure)
 }
 
 static PyGetSetDef repo_getsetters[] = {
-    {"name", (getter)get_str, (setter)set_str, NULL, (void *)HY_REPO_NAME},
-    {"repomd_fn", (getter)get_str, (setter)set_str, NULL, (void *)HY_REPO_MD_FN},
-    {"primary_fn", (getter)get_str, (setter)set_str, NULL, (void *)HY_REPO_PRIMARY_FN},
+    {"name", (getter)get_str, (setter)set_str, NULL,
+     (void *)HY_REPO_NAME},
+    {"repomd_fn", (getter)get_str, (setter)set_str, NULL,
+     (void *)HY_REPO_MD_FN},
+    {"primary_fn", (getter)get_str, (setter)set_str, NULL,
+     (void *)HY_REPO_PRIMARY_FN},
+    {"filelists_fn", (getter)get_str, (setter)set_str, NULL,
+     (void *)HY_REPO_FILELISTS_FN},
     {NULL}			/* sentinel */
 };
 

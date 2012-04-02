@@ -327,12 +327,14 @@ hy_sack_load_filelists(HySack sack)
     Repo *repo;
     Id rid;
 
+    if (sack->filelists_ready)
+	return 0;
     FOR_REPOS(rid, repo) {
 	HyRepo hrepo = repo->appdata;
 	const char *fn;
 	FILE *fp;
 
-	if (hrepo == NULL)\
+	if (hrepo == NULL)
 	    continue;
 	fn = hy_repo_get_string(hrepo, HY_REPO_FILELISTS_FN);
 	if (fn == NULL)
@@ -343,6 +345,7 @@ hy_sack_load_filelists(HySack sack)
 	ret |= repo_add_rpmmd(repo, fp, "FL", REPO_EXTEND_SOLVABLES);
 	fclose(fp);
     }
+    sack->filelists_ready = 1;
     return ret;
 }
 

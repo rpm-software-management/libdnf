@@ -177,6 +177,12 @@ load_yum_repo(_SackObject *self, PyObject *repo)
 }
 
 static PyObject *
+load_filelists(_SackObject *self, PyObject *unused)
+{
+    return PyInt_FromLong(hy_sack_load_filelists(self->sack));
+}
+
+static PyObject *
 write_all_repos(_SackObject *self, PyObject *unused)
 {
     return PyInt_FromLong(hy_sack_write_all_repos(self->sack));
@@ -192,6 +198,8 @@ static struct PyMethodDef sack_methods[] = {
     {"load_rpm_repo", (PyCFunction)load_rpm_repo, METH_NOARGS,
      NULL},
     {"load_yum_repo", (PyCFunction)load_yum_repo, METH_O,
+     NULL},
+    {"load_filelists", (PyCFunction)load_filelists, METH_NOARGS,
      NULL},
     {"write_all_repos", (PyCFunction)write_all_repos, METH_NOARGS,
      NULL},
