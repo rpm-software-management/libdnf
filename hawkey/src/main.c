@@ -305,12 +305,14 @@ finish:
 }
 
 static HyRepo
-config_repo(const char *name, const char *md_repo, const char *md_primary_xml)
+config_repo(const char *name, const char *md_repo,
+	    const char *md_primary_xml, const char *md_filelists)
 {
     HyRepo repo = hy_repo_create();
     hy_repo_set_string(repo, HY_REPO_NAME, name);
     hy_repo_set_string(repo, HY_REPO_MD_FN, md_repo);
     hy_repo_set_string(repo, HY_REPO_PRIMARY_FN, md_primary_xml);
+    hy_repo_set_string(repo, HY_REPO_FILELISTS_FN, md_filelists);
     return repo;
 }
 
@@ -322,12 +324,14 @@ rtrim(char *str) {
 }
 
 int
-read_repopaths(char **md_repo, char **md_primary_xml,
-	       char **md_repo_updates, char **md_primary_updates_xml)
+read_repopaths(char **md_repo, char **md_primary_xml, char **md_filelists,
+	       char **md_repo_updates, char **md_primary_updates_xml,
+	       char **md_filelists_updates)
 {
     wordexp_t word_vector;
 
-    *md_repo = *md_primary_xml = *md_repo_updates = *md_primary_updates_xml = NULL;
+    *md_repo = *md_primary_xml = *md_filelists = *md_repo_updates = \
+	*md_primary_updates_xml = *md_filelists_updates = NULL;
 
     if (wordexp(CFG_FILE, &word_vector, 0))
 	return 1;
@@ -344,12 +348,16 @@ read_repopaths(char **md_repo, char **md_primary_xml,
     size_t size = 0;
     if ((getline(md_repo, &size, f) < 0) ||
 	(getline(md_primary_xml, &size, f) < 0) ||
+	(getline(md_filelists, &size, f) < 0) ||
 	(getline(md_repo_updates, &size, f) < 0) ||
-	(getline(md_primary_updates_xml, &size, f) < 0)) {
+	(getline(md_primary_updates_xml, &size, f) < 0) ||
+	(getline(md_filelists_updates, &size, f) < 0)) {
 	solv_free(*md_repo);
 	solv_free(*md_primary_xml);
+	solv_free(*md_filelists);
 	solv_free(*md_repo_updates);
 	solv_free(*md_primary_updates_xml);
+	solv_free(*md_filelists_updates);
 	fclose(f);
 	wordfree(&word_vector);
 	return 1;
@@ -358,8 +366,10 @@ read_repopaths(char **md_repo, char **md_primary_xml,
     wordfree(&word_vector);
     rtrim(*md_repo);
     rtrim(*md_primary_xml);
+    rtrim(*md_filelists);
     rtrim(*md_repo_updates);
     rtrim(*md_primary_updates_xml);
+    rtrim(*md_filelists_updates);
     return 0;
 }
 
@@ -369,34 +379,42 @@ int main(int argc, const char **argv)
     HyRepo repo;
     char *md_repo;
     char *md_primary_xml;
+    char *md_filelists;
     char *md_repo_updates;
     char *md_primary_updates_xml;
+    char *md_filelists_updates;
 
-    if (read_repopaths(&md_repo, &md_primary_xml, &md_repo_updates,
-		       &md_primary_updates_xml)) {
+
+    if (read_repopaths(&md_repo, &md_primary_xml, &md_filelists, &md_repo_updates,
+		       &md_primary_updates_xml, &md_filelists_updates)) {
 	fprintf(stderr,
 		"This is hawkey testing hack, it needs a readable %s file "
 		"containing the following paths on separate lines:\n"
 		"<main repomd.xml path>\n"
 		"<main primary.xml.gz path>\n"
+		"<main filelist.xml.gz path>\n"
 		"<updates repomd.xml path>\n"
-		"<updates primary.xml.gz path>\n", CFG_FILE);
+		"<updates primary.xml.gz path>\n"
+		"<updates filelists.xml.gz path>\n", CFG_FILE);
 	return 1;
     }
     /* rpmdb */
     hy_sack_load_rpm_repo(sack);
     /* Fedora repo */
-    repo = config_repo("Fedora", md_repo, md_primary_xml);
+    repo = config_repo("Fedora", md_repo, md_primary_xml, md_filelists);
     hy_sack_load_yum_repo(sack, repo);
     hy_repo_free(repo);
     /* Fedora updates repo */
-    repo = config_repo("updates", md_repo_updates, md_primary_updates_xml);
+    repo = config_repo("updates", md_repo_updates, md_primary_updates_xml,
+		       md_filelists_updates);
     hy_sack_load_yum_repo(sack, repo);
     hy_repo_free(repo);
     solv_free(md_repo);
     solv_free(md_primary_xml);
+    solv_free(md_filelists);
     solv_free(md_repo_updates);
     solv_free(md_primary_updates_xml);
+    solv_free(md_filelists_updates);
 
     if (argc == 2 && !strcmp(argv[1], "-u")) {
 	updatables_query_all(sack);
