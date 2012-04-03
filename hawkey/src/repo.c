@@ -7,10 +7,38 @@
 #include "repo_internal.h"
 
 
-HyRepo hy_repo_link(HyRepo repo)
+HyRepo
+hy_repo_link(HyRepo repo)
 {
     repo->nrefs++;
     return repo;
+}
+
+int
+hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state)
+{
+    switch (repo->state) {
+    case NEW:
+	if (new_state != LOADED && new_state != CACHED)
+	    return 1;
+	break;
+    case LOADED:
+	if (new_state == FL_CACHED)
+	    return 1;
+	break;
+    case CACHED:
+	if (new_state == FL_LOADED || new_state == FL_CACHED)
+	    break;
+	return 1;
+    case FL_LOADED:
+	if (new_state == FL_CACHED)
+	    break;
+	return 1;
+    default:
+	return 1;
+    }
+    repo->state = new_state;
+    return 0;
 }
 
 HyRepo
@@ -18,6 +46,7 @@ hy_repo_create(void)
 {
     HyRepo repo = solv_calloc(1, sizeof(*repo));
     repo->nrefs = 1;
+    repo->state = NEW;
     return repo;
 }
 

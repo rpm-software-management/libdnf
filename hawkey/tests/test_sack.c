@@ -8,6 +8,7 @@
 #include <solv/testcase.h>
 
 // hawkey
+#include "src/repo_internal.h"
 #include "src/sack_internal.h"
 #include "testsys.h"
 
@@ -54,14 +55,28 @@ END_TEST
 START_TEST(test_write_all_repos)
 {
     HySack sack = test_globals.sack;
+    Pool *pool = sack->pool;
     char *tmpdir = test_globals.tmpdir;
 
     hy_sack_set_cache_path(sack, tmpdir);
-    fail_if(hy_sack_write_all_repos(sack));
 
+    /* hy_sack_write_all repos needs HyRepo in every repo */
+    Repo *repo;
+    int i;
+    FOR_REPOS(i, repo)
+	if (!strcmp(repo->name, SYSTEM_REPO_NAME)) {
+	    repo->appdata = hy_repo_create();
+	}
+
+    fail_if(hy_sack_write_all_repos(sack));
     fail_if(access(tmpdir, R_OK|W_OK|X_OK));
     char *filename = solv_dupjoin(tmpdir, "/", "@System.solv");
+    fail_unless(access(filename, R_OK|W_OK));
+
+    ((HyRepo)repo->appdata)->state = LOADED;
+    fail_if(hy_sack_write_all_repos(sack));
     fail_if(access(filename, R_OK|W_OK));
+
     solv_free(filename);
 }
 END_TEST
