@@ -24,5 +24,6 @@ void hy_sack_load_yum_repo(HySack sack, HyRepo repo);
 void hy_sack_solve(HySack sack, Queue *job, Map *res_map, int mode);
 int hy_sack_load_filelists(HySack sack);
 int hy_sack_write_all_repos(HySack sack);
+int hy_sack_write_filelists(HySack sack);
 
 #endif // SACK_H

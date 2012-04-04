@@ -91,6 +91,15 @@ static void search_and_print(HySack sack, const char *name)
     hy_packagelist_free(plist);
 }
 
+static void
+search_filter_files(HySack sack, const char *name)
+{
+    HyQuery q = hy_query_create(sack);
+    hy_query_filter(q, HY_PKG_FILE, HY_EQ, name);
+    execute_print(sack, q, 0);
+    hy_query_free(q);
+}
+
 static void search_filter_repos(HySack sack, const char *name) {
     HyQuery q = hy_query_create(sack);
 
@@ -415,6 +424,7 @@ int main(int argc, const char **argv)
     solv_free(md_repo_updates);
     solv_free(md_primary_updates_xml);
     solv_free(md_filelists_updates);
+    hy_sack_write_all_repos(sack);
 
     if (argc == 2 && !strcmp(argv[1], "-u")) {
 	updatables_query_all(sack);
@@ -422,6 +432,10 @@ int main(int argc, const char **argv)
 	obsoletes(sack);
     } else if (argc == 2) {
 	search_and_print(sack, argv[1]);
+    } else if (argc == 3 && !strcmp(argv[1], "-f")) {
+	hy_sack_load_filelists(sack);
+	search_filter_files(sack, argv[2]);
+	hy_sack_write_filelists(sack);
     } else if (argc == 3 && !strcmp(argv[1], "-r")) {
 	search_filter_repos(sack, argv[2]);
     } else if (argc == 3 && !strcmp(argv[1], "-s")) {
@@ -440,7 +454,6 @@ int main(int argc, const char **argv)
 	search_provides(sack, argv[2], argv[3]);
     }
 
-    hy_sack_write_all_repos(sack);
     hy_sack_free(sack);
 
     return 0;

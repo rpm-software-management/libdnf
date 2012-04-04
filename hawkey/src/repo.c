@@ -7,6 +7,26 @@
 #include "repo_internal.h"
 
 
+// internal functions
+
+int
+hy_repo_can_load_filelists(HyRepo repo)
+{
+    return repo->state == LOADED || repo->state == CACHED;
+}
+
+int
+hy_repo_can_write(HyRepo repo)
+{
+    return repo->state == LOADED;
+}
+
+int
+hy_repo_can_write_filelists(HyRepo repo)
+{
+    return repo->state == FL_LOADED;
+}
+
 HyRepo
 hy_repo_link(HyRepo repo)
 {
@@ -40,6 +60,8 @@ hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state)
     repo->state = new_state;
     return 0;
 }
+
+// public functions
 
 HyRepo
 hy_repo_create(void)
