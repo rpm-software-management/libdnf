@@ -269,11 +269,11 @@ hy_sack_load_rpm_repo(HySack sack)
 	HY_LOG_INFO("using cached rpmdb\n");
 	if (repo_add_solv(repo, cache_fp, 0))
 	    assert(0);
-	new_state = CACHED;
+	new_state = _HY_LOADED_CACHE;
     } else {
 	HY_LOG_INFO("fetching rpmdb\n");
 	repo_add_rpmdb(repo, 0, 0, REPO_REUSE_REPODATA);
-	new_state = LOADED;
+	new_state = _HY_LOADED_FETCH;
     }
     int trans = hy_repo_transition(hrepo, new_state);
     assert(trans == 0); (void)trans;
@@ -299,7 +299,7 @@ void hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
 	HY_LOG_INFO("using cached %s\n", name);
 	if (repo_add_solv(repo, fp_cache, 0))
 	    assert(0);
-	new_state = CACHED;
+	new_state = _HY_LOADED_CACHE;
     } else {
 	FILE *fp_primary = solv_xfopen(hy_repo_get_string(hrepo, HY_REPO_PRIMARY_FN), "r");
 
@@ -311,7 +311,7 @@ void hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
 	repo_add_rpmmd(repo, fp_primary, 0, 0);
 
 	fclose(fp_primary);
-	new_state = LOADED;
+	new_state = _HY_LOADED_FETCH;
     }
     int trans = hy_repo_transition(hrepo, new_state);
     assert(trans == 0); (void)trans;
@@ -348,26 +348,30 @@ hy_sack_load_filelists(HySack sack)
 	fn = hy_repo_get_string(hrepo, HY_REPO_FILELISTS_FN);
 	if (fn == NULL)
 	    continue;
-	if (!hy_repo_can_load_filelists(hrepo)) {
-	    HY_LOG_INFO("%s: skipping %s (%d)\n", __func__, name, hrepo->state);
-	    continue;
-	}
 
 	char *fn_cache =  hy_sack_solv_path(sack, pool_tmpjoin(pool, name, "_FN", NULL));
 	if (!access(fn_cache, R_OK)) {
+	    if (hy_repo_transition(hrepo, _HY_FL_LOADED_CACHE)) {
+		HY_LOG_INFO("%s: skipping %s (%d)\n", __func__, name, hrepo->state);
+		solv_free(fn_cache);
+		continue;
+	    }
 	    HY_LOG_INFO("%s: using cache file: %s\n", __func__, fn_cache);
 	    fp = fopen(fn_cache, "r");
 	    ret_misc = repo_add_solv(repo, fp, REPO_EXTEND_SOLVABLES | REPO_REUSE_REPODATA);
 	    assert(ret_misc == 0);
 	    ret |= ret_misc;
 	    fclose(fp);
-	    ret_misc = hy_repo_transition(hrepo, FL_CACHED);
-	    assert(ret_misc == 0);
-	    ret |= ret_misc;
 	} else {
+	    if (hy_repo_transition(hrepo, _HY_FL_LOADED_FETCH)) {
+		HY_LOG_INFO("%s: skipping %s (%d)\n", __func__, name, hrepo->state);
+		solv_free(fn_cache);
+		continue;
+	    }
 	    fp = solv_xfopen(fn, "r");
 	    if (fp == NULL) {
 		HY_LOG_ERROR("%s: failed to open: %s\n", __func__, fn);
+		ret |= 1;
 		solv_free(fn_cache);
 		continue;
 	    }
@@ -382,10 +386,6 @@ hy_sack_load_filelists(HySack sack)
 		assert(previous_last == repo->nrepodata - 2);
 		hrepo->filenames_repodata = repo->nrepodata - 1;
 	    }
-
-	    ret_misc = hy_repo_transition(hrepo, FL_LOADED);
-	    assert(ret_misc == 0);
-	    ret |= ret_misc;
 	}
 	solv_free(fn_cache);
     }
@@ -428,12 +428,11 @@ hy_sack_write_all_repos(HySack sack)
 	if (!strcmp(name, CMDLINE_REPO_NAME))
 	    continue;
 	assert(hrepo);
-	if (!hy_repo_can_write(hrepo)) {
+
+	if (hy_repo_transition(hrepo, _HY_WRITTEN)) {
 	    HY_LOG_INFO("%s: skipping %s (%d)\n", __func__, name, hrepo->state);
 	    continue;
 	}
-	ret |= hy_repo_transition(hrepo, CACHED);
-	assert(ret == 0);
 
 	if (!strcmp(name, SYSTEM_REPO_NAME)) {
 	    if ((fp = fopen(SYSTEM_RPMDB, "r")) != NULL)
@@ -456,6 +455,7 @@ hy_sack_write_all_repos(HySack sack)
 	repo_write(repo, fp);
 	checksum_write(checksum, fp);
 	fclose(fp);
+	HY_LOG_INFO("hrepo upon leaving: %d\n", hrepo->state);
     }
     return ret;
 }
@@ -474,14 +474,10 @@ hy_sack_write_filelists(HySack sack)
 
 	if (hrepo == NULL)
 	    continue;
-	if (!hy_repo_can_write_filelists(hrepo)) {
+	if (hy_repo_transition(hrepo, _HY_FL_WRITTEN)) {
 	    HY_LOG_INFO("%s: skipping %s (%d)\n", __func__, name, hrepo->state);
 	    continue;
 	}
-	assert(hrepo->filenames_repodata);
-	int trans = hy_repo_transition(hrepo, FL_CACHED);
-	assert(trans == 0);
-	ret |= trans;
 
 	char *fn = hy_sack_solv_path(sack, pool_tmpjoin(pool, name, "_FN", NULL));
 	HY_LOG_INFO("%s: storing %s to: %s\n", __func__, repo->name, fn);

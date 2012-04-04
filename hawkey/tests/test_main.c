@@ -13,6 +13,7 @@
 #include "test_iutil.h"
 #include "test_query.h"
 #include "test_package.h"
+#include "test_repo.h"
 #include "test_sack.h"
 
 static void
@@ -45,6 +46,7 @@ main(int argc, const char **argv)
 
     SRunner *sr = srunner_create(sack_suite());
     srunner_add_suite(sr, iutil_suite());
+    srunner_add_suite(sr, repo_suite());
     srunner_add_suite(sr, package_suite());
     srunner_add_suite(sr, query_suite());
     srunner_add_suite(sr, goal_suite());

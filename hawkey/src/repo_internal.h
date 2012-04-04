@@ -8,11 +8,13 @@
 #include "repo.h"
 
 enum _hy_repo_state {
-    NEW,
-    LOADED,
-    CACHED,
-    FL_LOADED,
-    FL_CACHED,
+    _HY_NEW = 1,
+    _HY_LOADED_FETCH,
+    _HY_LOADED_CACHE,
+    _HY_WRITTEN,
+    _HY_FL_LOADED_FETCH,
+    _HY_FL_LOADED_CACHE,
+    _HY_FL_WRITTEN,
 };
 
 struct _HyRepo {
@@ -25,9 +27,6 @@ struct _HyRepo {
     Id filenames_repodata;
 };
 
-int hy_repo_can_load_filelists(HyRepo repo);
-int hy_repo_can_write(HyRepo repo);
-int hy_repo_can_write_filelists(HyRepo repo);
 HyRepo hy_repo_link(HyRepo repo);
 int hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state);
 

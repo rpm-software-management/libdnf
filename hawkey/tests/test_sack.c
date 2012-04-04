@@ -73,7 +73,7 @@ START_TEST(test_write_all_repos)
     char *filename = solv_dupjoin(tmpdir, "/", "@System.solv");
     fail_unless(access(filename, R_OK|W_OK));
 
-    ((HyRepo)repo->appdata)->state = LOADED;
+    ((HyRepo)repo->appdata)->state = _HY_LOADED_FETCH;
     fail_if(hy_sack_write_all_repos(sack));
     fail_if(access(filename, R_OK|W_OK));
 

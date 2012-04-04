@@ -9,24 +9,6 @@
 
 // internal functions
 
-int
-hy_repo_can_load_filelists(HyRepo repo)
-{
-    return repo->state == LOADED || repo->state == CACHED;
-}
-
-int
-hy_repo_can_write(HyRepo repo)
-{
-    return repo->state == LOADED;
-}
-
-int
-hy_repo_can_write_filelists(HyRepo repo)
-{
-    return repo->state == FL_LOADED;
-}
-
 HyRepo
 hy_repo_link(HyRepo repo)
 {
@@ -37,28 +19,23 @@ hy_repo_link(HyRepo repo)
 int
 hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state)
 {
-    switch (repo->state) {
-    case NEW:
-	if (new_state != LOADED && new_state != CACHED)
-	    return 1;
-	break;
-    case LOADED:
-	if (new_state == FL_CACHED)
-	    return 1;
-	break;
-    case CACHED:
-	if (new_state == FL_LOADED || new_state == FL_CACHED)
-	    break;
-	return 1;
-    case FL_LOADED:
-	if (new_state == FL_CACHED)
-	    break;
-	return 1;
+    int trans = repo->state << 8 | new_state;
+    switch (trans) {
+    case _HY_NEW << 8 | _HY_LOADED_FETCH:
+    case _HY_NEW << 8 | _HY_LOADED_CACHE:
+    case _HY_LOADED_FETCH << 8 | _HY_WRITTEN:
+    case _HY_LOADED_FETCH << 8 | _HY_FL_LOADED_FETCH:
+    case _HY_LOADED_FETCH << 8 | _HY_FL_LOADED_CACHE:
+    case _HY_LOADED_CACHE << 8 | _HY_FL_LOADED_FETCH:
+    case _HY_LOADED_CACHE << 8 | _HY_FL_LOADED_CACHE:
+    case _HY_WRITTEN << 8 | _HY_FL_LOADED_FETCH:
+    case _HY_WRITTEN << 8 | _HY_FL_LOADED_CACHE:
+    case _HY_FL_LOADED_FETCH << 8 | _HY_FL_WRITTEN:
+	repo->state = new_state;
+	return 0;
     default:
 	return 1;
     }
-    repo->state = new_state;
-    return 0;
 }
 
 // public functions
@@ -68,7 +45,7 @@ hy_repo_create(void)
 {
     HyRepo repo = solv_calloc(1, sizeof(*repo));
     repo->nrefs = 1;
-    repo->state = NEW;
+    repo->state = _HY_NEW;
     return repo;
 }
 
