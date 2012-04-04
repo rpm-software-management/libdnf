@@ -13,6 +13,7 @@ START_TEST(test_transition)
     fail_if(hy_repo_transition(hrepo, _HY_FL_LOADED_CACHE));
     fail_unless(hy_repo_transition(hrepo, _HY_FL_LOADED_CACHE));
     fail_unless(hy_repo_transition(hrepo, _HY_FL_WRITTEN));
+    hy_repo_free(hrepo);
 }
 END_TEST
 

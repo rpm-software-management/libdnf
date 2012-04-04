@@ -12,10 +12,11 @@
 #define SYSTEM_REPO_NAME "@System"
 #define SYSTEM_RPMDB "/var/lib/rpm/Packages"
 #define CMDLINE_REPO_NAME "@commandline"
+#define HY_EXT_FILENAMES "-filenames"
 
 HySack hy_sack_create(void);
 void hy_sack_free(HySack sack);
-char *hy_sack_solv_path(HySack sack, const char *reponame);
+char *hy_sack_solv_path(HySack sack, const char *reponame, const char *ext);
 void hy_sack_set_cache_path(HySack sack, const char *path);
 void hy_sack_create_cmdline_repo(HySack sack);
 HyPackage hy_sack_add_cmdline_rpm(HySack sack, const char *fn);

@@ -33,13 +33,17 @@ END_TEST
 START_TEST(test_sack_solv_path)
 {
     HySack sack = hy_sack_create();
-    char *path = hy_sack_solv_path(sack, NULL);
+    char *path = hy_sack_solv_path(sack, NULL, NULL);
     fail_if(strstr(path, "/var/tmp/hawkey/") == NULL);
     fail_unless(strlen(path) > strlen("/var/tmp/hawkey/"));
     solv_free(path);
 
-    path = hy_sack_solv_path(sack, "rain");
+    path = hy_sack_solv_path(sack, "rain", NULL);
     fail_if(strstr(path, "rain.solv") == NULL);
+    solv_free(path);
+
+    path = hy_sack_solv_path(sack, "rain", HY_EXT_FILENAMES);
+    fail_if(strstr(path, "rain-filenames.solvx") == NULL);
     solv_free(path);
     hy_sack_free(sack);
 }

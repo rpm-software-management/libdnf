@@ -147,7 +147,7 @@ log_cb(Pool *pool, void *cb_data, int type, const char *buf)
     HySack sack = cb_data;
 
     if (sack->log_out == NULL) {
-	char *dir = hy_sack_solv_path(sack, NULL);
+	char *dir = hy_sack_solv_path(sack, NULL, NULL);
 	const char *fn = pool_tmpjoin(pool, dir, "/hawkey.log", NULL);
 	int res = mkcachedir(dir);
 
@@ -210,11 +210,13 @@ hy_sack_free(HySack sack)
 }
 
 char *
-hy_sack_solv_path(HySack sack, const char *reponame)
+hy_sack_solv_path(HySack sack, const char *reponame, const char *ext)
 {
     if (reponame == NULL)
 	return solv_strdup(sack->cache_dir);
     char *fn = solv_dupjoin(sack->cache_dir, "/", reponame);
+    if (ext)
+	return solv_dupappend(fn, ext, ".solvx");
     return solv_dupappend(fn, ".solv", NULL);
 }
 
@@ -258,7 +260,7 @@ hy_sack_load_rpm_repo(HySack sack)
 {
     Pool *pool = sack->pool;
     Repo *repo = repo_create(pool, SYSTEM_REPO_NAME);
-    char *cache_fn = hy_sack_solv_path(sack, SYSTEM_REPO_NAME);
+    char *cache_fn = hy_sack_solv_path(sack, SYSTEM_REPO_NAME, NULL);
     FILE *cache_fp = fopen(cache_fn, "r");
     HyRepo hrepo = hy_repo_create();
     enum _hy_repo_state new_state;
@@ -289,7 +291,7 @@ void hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
     Pool *pool = sack->pool;
     const char *name = hy_repo_get_string(hrepo, HY_REPO_NAME);
     Repo *repo = repo_create(pool, name);
-    char *fn_cache = hy_sack_solv_path(sack, name);
+    char *fn_cache = hy_sack_solv_path(sack, name, NULL);
     enum _hy_repo_state new_state;
 
     FILE *fp_cache = fopen(fn_cache, "r");
@@ -349,7 +351,7 @@ hy_sack_load_filelists(HySack sack)
 	if (fn == NULL)
 	    continue;
 
-	char *fn_cache =  hy_sack_solv_path(sack, pool_tmpjoin(pool, name, "_FN", NULL));
+	char *fn_cache =  hy_sack_solv_path(sack, name, HY_EXT_FILENAMES);
 	if (!access(fn_cache, R_OK)) {
 	    if (hy_repo_transition(hrepo, _HY_FL_LOADED_CACHE)) {
 		HY_LOG_INFO("%s: skipping %s (%d)\n", __func__, name, hrepo->state);
@@ -412,7 +414,7 @@ hy_sack_write_all_repos(HySack sack)
     int i;
     int ret;
 
-    char *dir = hy_sack_solv_path(sack, NULL);
+    char *dir = hy_sack_solv_path(sack, NULL, NULL);
     ret = mkcachedir(dir);
     solv_free(dir);
     assert(ret == 0);
@@ -444,7 +446,7 @@ hy_sack_write_all_repos(HySack sack)
 	if (fp)
 	    fclose(fp);
 
-	char *fn = hy_sack_solv_path(sack, name);
+	char *fn = hy_sack_solv_path(sack, name, NULL);
 	fp = fopen(fn, "w+");
 	solv_free(fn);
 	HY_LOG_INFO("caching repo: %s\n", name);
@@ -455,7 +457,6 @@ hy_sack_write_all_repos(HySack sack)
 	repo_write(repo, fp);
 	checksum_write(checksum, fp);
 	fclose(fp);
-	HY_LOG_INFO("hrepo upon leaving: %d\n", hrepo->state);
     }
     return ret;
 }
@@ -479,7 +480,7 @@ hy_sack_write_filelists(HySack sack)
 	    continue;
 	}
 
-	char *fn = hy_sack_solv_path(sack, pool_tmpjoin(pool, name, "_FN", NULL));
+	char *fn = hy_sack_solv_path(sack, name, HY_EXT_FILENAMES);
 	HY_LOG_INFO("%s: storing %s to: %s\n", __func__, repo->name, fn);
 	FILE *fp = fopen(fn, "w+");
 	solv_free(fn);
