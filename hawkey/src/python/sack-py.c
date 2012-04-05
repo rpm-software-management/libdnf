@@ -188,6 +188,12 @@ write_all_repos(_SackObject *self, PyObject *unused)
     return PyInt_FromLong(hy_sack_write_all_repos(self->sack));
 }
 
+static PyObject *
+write_filelists(_SackObject *self, PyObject *unused)
+{
+    return PyInt_FromLong(hy_sack_write_filelists(self->sack));
+}
+
 static struct PyMethodDef sack_methods[] = {
     {"create_cmdline_repo", (PyCFunction)create_cmdline_repo, METH_NOARGS,
      NULL},
@@ -202,6 +208,8 @@ static struct PyMethodDef sack_methods[] = {
     {"load_filelists", (PyCFunction)load_filelists, METH_NOARGS,
      NULL},
     {"write_all_repos", (PyCFunction)write_all_repos, METH_NOARGS,
+     NULL},
+    {"write_filelists", (PyCFunction)write_filelists, METH_NOARGS,
      NULL},
     {NULL}                      /* sentinel */
 };
