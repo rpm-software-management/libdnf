@@ -5,6 +5,7 @@
 #include <solv/pooltypes.h>
 
 // hawkey
+#include "iutil.h"
 #include "repo.h"
 
 enum _hy_repo_state {
@@ -25,6 +26,7 @@ struct _HyRepo {
     char *filelists_fn;
     enum _hy_repo_state state;
     Id filenames_repodata;
+    unsigned char checksum[CHKSUM_BYTES];
 };
 
 HyRepo hy_repo_link(HyRepo repo);

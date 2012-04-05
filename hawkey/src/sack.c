@@ -29,33 +29,38 @@
 #define DEFAULT_CACHE_USER "/var/tmp/hawkey"
 
 static int
-can_use_rpmdb_cache(FILE *fp_cache)
+current_rpmdb_checksum(unsigned char csout[CHKSUM_BYTES])
 {
     FILE *fp_rpmdb = fopen(SYSTEM_RPMDB, "r");
-    unsigned char cs_cache[CHKSUM_BYTES];
-    unsigned char cs_rpmdb[CHKSUM_BYTES];
     int ret = 0;
 
-    if (fp_cache && fp_rpmdb && \
-	!checksum_read(cs_cache, fp_cache) && \
-	!checksum_stat(cs_rpmdb, fp_rpmdb) && \
-	!checksum_cmp(cs_cache, cs_rpmdb))
+    if (!fp_rpmdb || checksum_stat(csout, fp_rpmdb))
 	ret = 1;
-
     if (fp_rpmdb)
 	fclose(fp_rpmdb);
     return ret;
 }
 
 static int
-can_use_repomd_cache(FILE *fp_cache, FILE *fp_repomd)
+can_use_rpmdb_cache(FILE *fp_solv, unsigned char cs[CHKSUM_BYTES])
 {
     unsigned char cs_cache[CHKSUM_BYTES];
-    unsigned char cs_repomd[CHKSUM_BYTES];
 
-    if (fp_cache && fp_repomd && \
-	!checksum_read(cs_cache, fp_cache) && \
-	!checksum_fp(cs_repomd, fp_repomd) && \
+    if (fp_solv &&
+	!checksum_read(cs_cache, fp_solv) &&
+	!checksum_cmp(cs_cache, cs))
+	return 1;
+
+    return 0;
+}
+
+static int
+can_use_repomd_cache(FILE *fp_solv, unsigned char cs_repomd[CHKSUM_BYTES])
+{
+    unsigned char cs_cache[CHKSUM_BYTES];
+
+    if (fp_solv &&
+	!checksum_read(cs_cache, fp_solv) &&
 	!checksum_cmp(cs_cache, cs_repomd))
 	return 1;
 
@@ -264,10 +269,15 @@ hy_sack_load_rpm_repo(HySack sack)
     FILE *cache_fp = fopen(cache_fn, "r");
     HyRepo hrepo = hy_repo_create();
     enum _hy_repo_state new_state;
+    int ret;
 
     free(cache_fn);
     hy_repo_set_string(hrepo, HY_REPO_NAME, SYSTEM_REPO_NAME);
-    if (can_use_rpmdb_cache(cache_fp)) {
+
+    ret = current_rpmdb_checksum(hrepo->checksum);
+    assert(ret == 0); (void)ret;
+
+    if (can_use_rpmdb_cache(cache_fp, hrepo->checksum)) {
 	HY_LOG_INFO("using cached rpmdb\n");
 	if (repo_add_solv(repo, cache_fp, 0))
 	    assert(0);
@@ -297,7 +307,10 @@ void hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
     FILE *fp_cache = fopen(fn_cache, "r");
     FILE *fp_repomd = fopen(hy_repo_get_string(hrepo, HY_REPO_MD_FN), "r");
 
-    if (can_use_repomd_cache(fp_cache, fp_repomd)) {
+    assert(fp_repomd);
+    checksum_fp(hrepo->checksum, fp_repomd);
+
+    if (can_use_repomd_cache(fp_cache, hrepo->checksum)) {
 	HY_LOG_INFO("using cached %s\n", name);
 	if (repo_add_solv(repo, fp_cache, 0))
 	    assert(0);
@@ -344,6 +357,7 @@ hy_sack_load_filelists(HySack sack)
 	const char *fn;
 	FILE *fp;
 	int ret_misc;
+	int done = 0;
 
 	if (hrepo == NULL)
 	    continue;
@@ -352,44 +366,46 @@ hy_sack_load_filelists(HySack sack)
 	    continue;
 
 	char *fn_cache =  hy_sack_solv_path(sack, name, HY_EXT_FILENAMES);
-	if (!access(fn_cache, R_OK)) {
-	    if (hy_repo_transition(hrepo, _HY_FL_LOADED_CACHE)) {
+	fp = fopen(fn_cache, "r");
+	assert(hrepo->checksum);
+	if (can_use_repomd_cache(fp, hrepo->checksum)) {
+	    done = 1;
+	    if (hy_repo_transition(hrepo, _HY_FL_LOADED_CACHE))
 		HY_LOG_INFO("%s: skipping %s (%d)\n", __func__, name, hrepo->state);
-		solv_free(fn_cache);
-		continue;
-	    }
-	    HY_LOG_INFO("%s: using cache file: %s\n", __func__, fn_cache);
-	    fp = fopen(fn_cache, "r");
-	    ret_misc = repo_add_solv(repo, fp, REPO_EXTEND_SOLVABLES | REPO_REUSE_REPODATA);
-	    assert(ret_misc == 0);
-	    ret |= ret_misc;
-	    fclose(fp);
-	} else {
-	    if (hy_repo_transition(hrepo, _HY_FL_LOADED_FETCH)) {
-		HY_LOG_INFO("%s: skipping %s (%d)\n", __func__, name, hrepo->state);
-		solv_free(fn_cache);
-		continue;
-	    }
-	    fp = solv_xfopen(fn, "r");
-	    if (fp == NULL) {
-		HY_LOG_ERROR("%s: failed to open: %s\n", __func__, fn);
-		ret |= 1;
-		solv_free(fn_cache);
-		continue;
-	    }
-	    HY_LOG_INFO("%s: loading: %s\n", __func__, fn);
-
-	    int previous_last = repo->nrepodata - 1;
-	    ret_misc = repo_add_rpmmd(repo, fp, "FL", REPO_EXTEND_SOLVABLES);
-	    fclose(fp);
-	    assert(ret_misc == 0);
-	    ret |= ret_misc;
-	    if (!ret_misc) {
-		assert(previous_last == repo->nrepodata - 2);
-		hrepo->filenames_repodata = repo->nrepodata - 1;
+	    else {
+		HY_LOG_INFO("%s: using cache file: %s\n", __func__, fn_cache);
+		ret_misc = repo_add_solv(repo, fp, REPO_EXTEND_SOLVABLES | REPO_REUSE_REPODATA);
+		assert(ret_misc == 0);
+		ret |= ret_misc;
 	    }
 	}
 	solv_free(fn_cache);
+	if (fp)
+	    fclose(fp);
+	if (done)
+	    continue;
+
+	if (hy_repo_transition(hrepo, _HY_FL_LOADED_FETCH)) {
+	    HY_LOG_INFO("%s: skipping %s (%d)\n", __func__, name, hrepo->state);
+	    continue;
+	}
+	fp = solv_xfopen(fn, "r");
+	if (fp == NULL) {
+	    HY_LOG_ERROR("%s: failed to open: %s\n", __func__, fn);
+	    ret |= 1;
+	    continue;
+	}
+	HY_LOG_INFO("%s: loading: %s\n", __func__, fn);
+
+	int previous_last = repo->nrepodata - 1;
+	ret_misc = repo_add_rpmmd(repo, fp, "FL", REPO_EXTEND_SOLVABLES);
+	fclose(fp);
+	assert(ret_misc == 0);
+	ret |= ret_misc;
+	if (!ret_misc) {
+	    assert(previous_last == repo->nrepodata - 2);
+	    hrepo->filenames_repodata = repo->nrepodata - 1;
+	}
     }
     sack->provides_ready = 0;
     sack->filelists_ready = 1;
@@ -424,8 +440,6 @@ hy_sack_write_all_repos(HySack sack)
     FOR_REPOS(i, repo) {
 	const char *name = repo->name;
 	HyRepo hrepo = repo->appdata;
-	unsigned char checksum[CHKSUM_BYTES];
-	FILE *fp = NULL;
 
 	if (!strcmp(name, CMDLINE_REPO_NAME))
 	    continue;
@@ -435,19 +449,10 @@ hy_sack_write_all_repos(HySack sack)
 	    HY_LOG_INFO("%s: skipping %s (%d)\n", __func__, name, hrepo->state);
 	    continue;
 	}
-
-	if (!strcmp(name, SYSTEM_REPO_NAME)) {
-	    if ((fp = fopen(SYSTEM_RPMDB, "r")) != NULL)
-		checksum_stat(checksum, fp);
-	} else {
-	    if ((fp = fopen(hy_repo_get_string(hrepo, HY_REPO_MD_FN), "r")) != NULL)
-		checksum_fp(checksum, fp);
-	}
-	if (fp)
-	    fclose(fp);
+	assert(hrepo->checksum);
 
 	char *fn = hy_sack_solv_path(sack, name, NULL);
-	fp = fopen(fn, "w+");
+	FILE *fp = fopen(fn, "w+");
 	solv_free(fn);
 	HY_LOG_INFO("caching repo: %s\n", name);
 	if (!fp) {
@@ -455,7 +460,7 @@ hy_sack_write_all_repos(HySack sack)
 	    return 1;
 	}
 	repo_write(repo, fp);
-	checksum_write(checksum, fp);
+	checksum_write(hrepo->checksum, fp);
 	fclose(fp);
     }
     return ret;
@@ -480,13 +485,17 @@ hy_sack_write_filelists(HySack sack)
 	    continue;
 	}
 
-	char *fn = hy_sack_solv_path(sack, name, HY_EXT_FILENAMES);
-	HY_LOG_INFO("%s: storing %s to: %s\n", __func__, repo->name, fn);
-	FILE *fp = fopen(fn, "w+");
-	solv_free(fn);
+	assert(hrepo->filenames_repodata);
 	Repodata *data = repo_id2repodata(repo, hrepo->filenames_repodata);
+	char *fn = hy_sack_solv_path(sack, name, HY_EXT_FILENAMES);
+	FILE *fp = fopen(fn, "w+");
+	HY_LOG_INFO("%s: storing %s to: %s\n", __func__, repo->name, fn);
+	solv_free(fn);
 	assert(data);
+	assert(hrepo->checksum);
 	ret |= repodata_write(data, fp);
+	ret |= checksum_write(hrepo->checksum, fp);
+
 	fclose(fp);
     }
     return ret;
