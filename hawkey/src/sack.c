@@ -349,8 +349,6 @@ hy_sack_load_filelists(HySack sack)
     Repo *repo;
     Id rid;
 
-    if (sack->filelists_ready)
-	return 0;
     FOR_REPOS(rid, repo) {
 	HyRepo hrepo = repo->appdata;
 	const char *name = repo->name;
@@ -408,7 +406,6 @@ hy_sack_load_filelists(HySack sack)
 	}
     }
     sack->provides_ready = 0;
-    sack->filelists_ready = 1;
     return ret;
 }
 
