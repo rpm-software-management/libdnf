@@ -33,6 +33,7 @@ void setup_empty_sack(void);
 void setup(void);
 void setup_with_updates(void);
 void setup_all(void);
+void setup_yum_sack(HySack sack);
 void setup_yum(void);
 void teardown(void);
 

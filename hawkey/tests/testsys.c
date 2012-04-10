@@ -118,10 +118,8 @@ void setup_all(void)
     fail_if(load_repo(pool, "main", path, 0));
 }
 
-void setup_yum(void)
+void setup_yum_sack(HySack sack)
 {
-    setup_empty_sack();
-    HySack sack = test_globals.sack;
     Pool *pool = sack_pool(sack);
     const char *repo_path = pool_tmpjoin(pool, test_globals.repo_dir,
 					 YUM_DIR_SUFFIX, NULL);
@@ -132,6 +130,15 @@ void setup_yum(void)
     fail_unless(pool->nsolvables ==
 		TEST_META_SOLVABLES_COUNT + TEST_EXPECT_YUM_NSOLVABLES);
     hy_repo_free(repo);
+}
+
+void setup_yum(void)
+{
+    setup_empty_sack();
+    HySack sack = test_globals.sack;
+    setup_yum_sack(sack);
+
+    fail_if(hy_sack_write_all_repos(sack)); // the next setup_yum() will use the cache
     fail_if(hy_sack_load_filelists(sack));
 }
 

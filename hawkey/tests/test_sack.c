@@ -108,6 +108,39 @@ START_TEST(test_yum_repo)
 }
 END_TEST
 
+START_TEST(test_filelist_from_cache)
+{
+    HySack sack = test_globals.sack;
+    char *fn_solv = hy_sack_solv_path(sack, "tfilenames", HY_EXT_FILENAMES);
+
+    fail_if(hy_sack_write_filelists(sack));
+    fail_if(access(fn_solv, R_OK));
+
+    // create new sack, check it can work with the cached filenames OK
+    sack = hy_sack_create();
+    hy_sack_set_cache_path(sack, test_globals.tmpdir);
+    HY_LOG_INFO("created custom sack, loading yum\n");
+    setup_yum_sack(sack);
+    fail_if(hy_sack_load_filelists(sack));
+
+    Pool *pool = sack_pool(sack);
+    Dataiterator di;
+    int count;
+
+    dataiterator_init(&di, pool, 0, 0, SOLVABLE_FILELIST, "/usr/bin/ste",
+		      SEARCH_STRING | SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
+    for (count = 0; dataiterator_step(&di); ++count)
+	;
+    fail_unless(count == 1);
+    dataiterator_free(&di);
+    hy_sack_free(sack);
+
+    // remove the file so the remaining tests do no try to use it:
+    fail_if(unlink(fn_solv));
+    solv_free(fn_solv);
+}
+END_TEST
+
 Suite *
 sack_suite(void)
 {
@@ -127,6 +160,7 @@ sack_suite(void)
     tc = tcase_create("YumRepo");
     tcase_add_unchecked_fixture(tc, setup_yum, teardown);
     tcase_add_test(tc, test_yum_repo);
+    tcase_add_test(tc, test_filelist_from_cache);
     suite_add_tcase(s, tc);
 
     return s;

@@ -372,7 +372,7 @@ hy_sack_load_filelists(HySack sack)
 		HY_LOG_INFO("%s: skipping %s (%d)\n", __func__, name, hrepo->state);
 	    else {
 		HY_LOG_INFO("%s: using cache file: %s\n", __func__, fn_cache);
-		ret_misc = repo_add_solv(repo, fp, REPO_EXTEND_SOLVABLES | REPO_REUSE_REPODATA);
+		ret_misc = repo_add_solv(repo, fp, REPO_EXTEND_SOLVABLES);
 		assert(ret_misc == 0);
 		ret |= ret_misc;
 	    }
