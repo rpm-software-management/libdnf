@@ -10,6 +10,7 @@ struct _HySack {
     Pool *pool;
     int provides_ready;
     char *cache_dir;
+    Queue installonly;
     FILE *log_out;
 };
 

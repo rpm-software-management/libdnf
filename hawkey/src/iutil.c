@@ -158,6 +158,18 @@ job2transaction(HySack sack, Queue *job, Queue *errors)
 
     sack_make_provides_ready(sack);
     solv = solver_create(pool);
+
+    /* turn off implicit obsoletes for installonly packages */
+    if (sack->installonly.count) {
+	int i;
+	for (i = 0; i < sack->installonly.count; i++)
+	    queue_push2(job,
+                SOLVER_NOOBSOLETES|SOLVER_SOLVABLE_PROVIDES,
+                sack->installonly.elements[i]);
+        /* we should handle explicit obsoletes */
+        // solver_set_flag(solv, SOLVER_FLAG_KEEP_EXPLICIT_OBSOLETES, 1);
+    }
+
     if (solver_solve(solv, job)) {
 	int i;
 	Id rule, source, target, dep;
