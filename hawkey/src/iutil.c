@@ -143,7 +143,7 @@ char *this_username(void)
 void
 repo_internalize_trigger(Repo *repo)
 {
-    if (strcmp(repo->name, CMDLINE_REPO_NAME))
+    if (strcmp(repo->name, HY_CMDLINE_REPO_NAME))
 	return; /* this is only done for the cmdline repo, the ordinary ones get
 		   internalized immediately */
     repo_internalize(repo);

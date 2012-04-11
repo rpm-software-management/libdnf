@@ -42,8 +42,8 @@ init_hawkey(void)
     Py_INCREF(&repo_Type);
     PyModule_AddObject(m, "Repo", (PyObject *)&repo_Type);
 
-    PyModule_AddStringConstant(m, "SYSTEM_REPO_NAME", SYSTEM_REPO_NAME);
-    PyModule_AddStringConstant(m, "CMDLINE_REPO_NAME", CMDLINE_REPO_NAME);
+    PyModule_AddStringConstant(m, "SYSTEM_REPO_NAME", HY_SYSTEM_REPO_NAME);
+    PyModule_AddStringConstant(m, "CMDLINE_REPO_NAME", HY_CMDLINE_REPO_NAME);
 
     PyModule_AddIntConstant(m, "PKG_NAME", HY_PKG_NAME);
     PyModule_AddIntConstant(m, "PKG_SUMMARY", HY_PKG_SUMMARY);

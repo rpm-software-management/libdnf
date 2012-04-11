@@ -68,7 +68,7 @@ START_TEST(test_write_all_repos)
     Repo *repo;
     int i;
     FOR_REPOS(i, repo)
-	if (!strcmp(repo->name, SYSTEM_REPO_NAME)) {
+	if (!strcmp(repo->name, HY_SYSTEM_REPO_NAME)) {
 	    repo->appdata = hy_repo_create();
 	}
 

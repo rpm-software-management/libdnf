@@ -33,7 +33,7 @@
 static int
 current_rpmdb_checksum(unsigned char csout[CHKSUM_BYTES])
 {
-    FILE *fp_rpmdb = fopen(SYSTEM_RPMDB, "r");
+    FILE *fp_rpmdb = fopen(HY_SYSTEM_RPMDB, "r");
     int ret = 0;
 
     if (!fp_rpmdb || checksum_stat(csout, fp_rpmdb))
@@ -77,7 +77,7 @@ get_cmdline_repo(HySack sack)
     int repoid;
 
     FOR_REPOS(repoid, repo) {
-	if (!strcmp(repo->name, CMDLINE_REPO_NAME))
+	if (!strcmp(repo->name, HY_CMDLINE_REPO_NAME))
 	    return repo;
     }
     return NULL;
@@ -235,7 +235,7 @@ hy_sack_set_cache_path(HySack sack, const char *path)
 void
 hy_sack_create_cmdline_repo(HySack sack)
 {
-    repo_create(sack->pool, CMDLINE_REPO_NAME);
+    repo_create(sack->pool, HY_CMDLINE_REPO_NAME);
 }
 
 /**
@@ -261,15 +261,15 @@ void
 hy_sack_load_rpm_repo(HySack sack)
 {
     Pool *pool = sack->pool;
-    Repo *repo = repo_create(pool, SYSTEM_REPO_NAME);
-    char *cache_fn = hy_sack_solv_path(sack, SYSTEM_REPO_NAME, NULL);
+    Repo *repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
+    char *cache_fn = hy_sack_solv_path(sack, HY_SYSTEM_REPO_NAME, NULL);
     FILE *cache_fp = fopen(cache_fn, "r");
     HyRepo hrepo = hy_repo_create();
     enum _hy_repo_state new_state;
     int ret;
 
     free(cache_fn);
-    hy_repo_set_string(hrepo, HY_REPO_NAME, SYSTEM_REPO_NAME);
+    hy_repo_set_string(hrepo, HY_REPO_NAME, HY_SYSTEM_REPO_NAME);
 
     ret = current_rpmdb_checksum(hrepo->checksum);
     assert(ret == 0); (void)ret;
@@ -435,7 +435,7 @@ hy_sack_write_all_repos(HySack sack)
 	const char *name = repo->name;
 	HyRepo hrepo = repo->appdata;
 
-	if (!strcmp(name, CMDLINE_REPO_NAME))
+	if (!strcmp(name, HY_CMDLINE_REPO_NAME))
 	    continue;
 	assert(hrepo);
 
