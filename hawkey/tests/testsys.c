@@ -14,6 +14,7 @@
 #include <solv/util.h>
 
 // hawkey
+#include "src/iutil.h"
 #include "src/sack_internal.h"
 #include "testsys.h"
 
@@ -85,6 +86,7 @@ setup_empty_sack(void)
     HySack sack = hy_sack_create();
     test_globals.sack = sack;
     hy_sack_set_cache_path(sack, test_globals.tmpdir);
+    HY_LOG_INFO("HySack for UT created: %p", sack);
 }
 
 void

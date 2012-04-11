@@ -1,9 +1,11 @@
+#define _GNU_SOURCE
 #include <assert.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
+#include <time.h>
 #include <unistd.h>
 
 // libsolv
@@ -159,8 +161,8 @@ log_cb(Pool *pool, void *cb_data, int type, const char *buf)
 	solv_free(dir);
 	assert(res == 0);
 	sack->log_out = fopen(fn, "a");
-	const char *msg = "log started\n";
-	fwrite(msg, strlen(msg), 1, sack->log_out);
+	if (sack->log_out)
+	    HY_LOG_INFO("started.", sack);
     }
     fwrite(buf, strlen(buf), 1, sack->log_out);
     fflush(sack->log_out);
@@ -186,7 +188,6 @@ hy_sack_create(void)
     pool_setdebugcallback(pool, log_cb, sack);
     pool_setdebugmask(pool, SOLV_ERROR | SOLV_FATAL | SOLV_WARN |
 		      HY_LL_INFO | HY_LL_ERROR);
-
     return sack;
 }
 
@@ -203,14 +204,10 @@ hy_sack_free(HySack sack)
 	    continue;
 	hy_repo_free(hrepo);
     }
-
+    if (sack->log_out)
+	HY_LOG_INFO("finished.", sack);
     solv_free(sack->cache_dir);
     pool_free(sack->pool);
-    if (sack->log_out) {
-	const char *msg = "finished.\n";
-	fwrite(msg, strlen(msg), 1, sack->log_out);
-	fclose(sack->log_out);
-    }
     solv_free(sack);
 }
 
@@ -252,7 +249,7 @@ hy_sack_add_cmdline_rpm(HySack sack, const char *fn)
 
     assert(repo);
     if (!is_readable_rpm(fn)) {
-	HY_LOG_ERROR("not a readable RPM file: %s, skipping\n", fn);
+	HY_LOG_ERROR("not a readable RPM file: %s, skipping", fn);
 	return NULL;
     }
     p = repo_add_rpm(repo, fn, REPO_REUSE_REPODATA|REPO_NO_INTERNALIZE);
@@ -278,12 +275,12 @@ hy_sack_load_rpm_repo(HySack sack)
     assert(ret == 0); (void)ret;
 
     if (can_use_rpmdb_cache(cache_fp, hrepo->checksum)) {
-	HY_LOG_INFO("using cached rpmdb\n");
+	HY_LOG_INFO("using cached rpmdb");
 	if (repo_add_solv(repo, cache_fp, 0))
 	    assert(0);
 	new_state = _HY_LOADED_CACHE;
     } else {
-	HY_LOG_INFO("fetching rpmdb\n");
+	HY_LOG_INFO("fetching rpmdb");
 	repo_add_rpmdb(repo, 0, 0, REPO_REUSE_REPODATA);
 	new_state = _HY_LOADED_FETCH;
     }
@@ -311,7 +308,7 @@ void hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
     checksum_fp(hrepo->checksum, fp_repomd);
 
     if (can_use_repomd_cache(fp_cache, hrepo->checksum)) {
-	HY_LOG_INFO("using cached %s\n", name);
+	HY_LOG_INFO("using cached %s", name);
 	if (repo_add_solv(repo, fp_cache, 0))
 	    assert(0);
 	new_state = _HY_LOADED_CACHE;
@@ -321,7 +318,7 @@ void hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
 	if (!(fp_repomd && fp_primary))
 	    assert(0);
 
-	HY_LOG_INFO("fetching %s\n", name);
+	HY_LOG_INFO("fetching %s", name);
 	repo_add_repomdxml(repo, fp_repomd, 0);
 	repo_add_rpmmd(repo, fp_primary, 0, 0);
 
@@ -369,9 +366,9 @@ hy_sack_load_filelists(HySack sack)
 	if (can_use_repomd_cache(fp, hrepo->checksum)) {
 	    done = 1;
 	    if (hy_repo_transition(hrepo, _HY_FL_LOADED_CACHE))
-		HY_LOG_INFO("%s: skipping %s (%d)\n", __func__, name, hrepo->state);
+		HY_LOG_INFO("%s: skipping %s (%d)", __func__, name, hrepo->state);
 	    else {
-		HY_LOG_INFO("%s: using cache file: %s\n", __func__, fn_cache);
+		HY_LOG_INFO("%s: using cache file: %s", __func__, fn_cache);
 		ret_misc = repo_add_solv(repo, fp, REPO_EXTEND_SOLVABLES);
 		assert(ret_misc == 0);
 		ret |= ret_misc;
@@ -384,16 +381,16 @@ hy_sack_load_filelists(HySack sack)
 	    continue;
 
 	if (hy_repo_transition(hrepo, _HY_FL_LOADED_FETCH)) {
-	    HY_LOG_INFO("%s: skipping %s (%d)\n", __func__, name, hrepo->state);
+	    HY_LOG_INFO("%s: skipping %s (%d)", __func__, name, hrepo->state);
 	    continue;
 	}
 	fp = solv_xfopen(fn, "r");
 	if (fp == NULL) {
-	    HY_LOG_ERROR("%s: failed to open: %s\n", __func__, fn);
+	    HY_LOG_ERROR("%s: failed to open: %s", __func__, fn);
 	    ret |= 1;
 	    continue;
 	}
-	HY_LOG_INFO("%s: loading: %s\n", __func__, fn);
+	HY_LOG_INFO("%s: loading: %s", __func__, fn);
 
 	int previous_last = repo->nrepodata - 1;
 	ret_misc = repo_add_rpmmd(repo, fp, "FL", REPO_EXTEND_SOLVABLES);
@@ -443,7 +440,7 @@ hy_sack_write_all_repos(HySack sack)
 	assert(hrepo);
 
 	if (hy_repo_transition(hrepo, _HY_WRITTEN)) {
-	    HY_LOG_INFO("%s: skipping %s (%d)\n", __func__, name, hrepo->state);
+	    HY_LOG_INFO("%s: skipping %s (%d)", __func__, name, hrepo->state);
 	    continue;
 	}
 	assert(hrepo->checksum);
@@ -451,7 +448,7 @@ hy_sack_write_all_repos(HySack sack)
 	char *fn = hy_sack_solv_path(sack, name, NULL);
 	FILE *fp = fopen(fn, "w+");
 	solv_free(fn);
-	HY_LOG_INFO("caching repo: %s\n", name);
+	HY_LOG_INFO("caching repo: %s", name);
 	if (!fp) {
 	    perror(__func__);
 	    return 1;
@@ -478,7 +475,7 @@ hy_sack_write_filelists(HySack sack)
 	if (hrepo == NULL)
 	    continue;
 	if (hy_repo_transition(hrepo, _HY_FL_WRITTEN)) {
-	    HY_LOG_INFO("%s: skipping %s (%d)\n", __func__, name, hrepo->state);
+	    HY_LOG_INFO("%s: skipping %s (%d)", __func__, name, hrepo->state);
 	    continue;
 	}
 
@@ -486,7 +483,7 @@ hy_sack_write_filelists(HySack sack)
 	Repodata *data = repo_id2repodata(repo, hrepo->filenames_repodata);
 	char *fn = hy_sack_solv_path(sack, name, HY_EXT_FILENAMES);
 	FILE *fp = fopen(fn, "w+");
-	HY_LOG_INFO("%s: storing %s to: %s\n", __func__, repo->name, fn);
+	HY_LOG_INFO("%s: storing %s to: %s", __func__, repo->name, fn);
 	solv_free(fn);
 	assert(data);
 	assert(hrepo->checksum);
@@ -518,7 +515,7 @@ hy_sack_solve(HySack sack, Queue *job, Map *res_map, int mode)
 	    break;
 	}
     } else {
-	HY_LOG_INFO("(solver succeeded with %d step transaction. results ignored.)\n",
+	HY_LOG_INFO("(solver succeeded with %d step transaction. results ignored.)",
 		    trans->steps.count);
 #if 0
 	transaction_print(trans);
@@ -536,7 +533,14 @@ sack_log(HySack sack, int level, const char *format, ...)
     Pool *pool = sack_pool(sack);
     char buf[1024];
     va_list args;
-    const char *pref_format = pool_tmpjoin(pool, "hawkey: ", format, NULL);
+    time_t t = time(NULL);
+    struct tm tm;
+    char timestr[26];
+
+    localtime_r(&t, &tm);
+    strftime(timestr, 26, "%b-%d %H:%M:%S ", &tm);
+    const char *pref_format = pool_tmpjoin(pool, "hy: ", timestr, format);
+    pref_format = pool_tmpappend(pool, pref_format, "\n", NULL);
 
     va_start(args, format);
     vsnprintf(buf, sizeof(buf), pref_format, args);
