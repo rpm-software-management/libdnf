@@ -121,12 +121,14 @@ START_TEST(test_filelist_from_cache)
     hy_sack_set_cache_path(sack, test_globals.tmpdir);
     HY_LOG_INFO("created custom sack, loading yum\n");
     setup_yum_sack(sack);
+
+    int total_solvables = sack->pool->nsolvables;
     fail_if(hy_sack_load_filelists(sack));
+    fail_unless(total_solvables == sack->pool->nsolvables);
 
     Pool *pool = sack_pool(sack);
     Dataiterator di;
     int count;
-
     dataiterator_init(&di, pool, 0, 0, SOLVABLE_FILELIST, "/usr/bin/ste",
 		      SEARCH_STRING | SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
     for (count = 0; dataiterator_step(&di); ++count)
