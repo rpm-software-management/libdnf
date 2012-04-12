@@ -234,7 +234,7 @@ hy_sack_set_cache_path(HySack sack, const char *path)
 void
 hy_sack_set_installonly(HySack sack, const char **installonly)
 {
-    char *name;
+    const char *name;
     while ((name = *installonly++) != NULL)
 	queue_pushunique(&sack->installonly, pool_str2id(sack->pool, name, 1));
 }
