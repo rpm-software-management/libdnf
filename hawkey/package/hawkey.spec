@@ -3,7 +3,7 @@
 
 Name:		hawkey
 Version:	0.1
-Release:	3.%{gitrev}%{?dist}
+Release:	5.%{gitrev}%{?dist}
 Summary:	A Library providing simplified C and Python API to libsolv.
 Group:		Development/Libraries
 License:	none-yet
@@ -11,7 +11,8 @@ URL:		https://github.com/akozumpl/hawkey
 # git archive %{gitrev} --prefix=hawkey/ | xz > hawkey-%{gitrev}.tar.xz
 Source0:	hawkey-%{gitrev}.tar.xz
 BuildRequires:	libsolv-devel >= %{libsolv_version}
-BuildRequires:  cmake python2-devel
+BuildRequires:  cmake expat-devel rpm-devel zlib-devel check-devel
+BuildRequires: 	python2-devel
 Requires:	libsolv >= %{libsolv_version}
 
 %description
