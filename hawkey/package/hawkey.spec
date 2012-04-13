@@ -28,6 +28,7 @@ Development files for hawkey.
 %package -n python-hawkey
 Summary:	Python bindings for the hawkey library.
 Group:		Development/Languages
+Requires:	python
 
 %description -n python-hawkey
 Python bindings for the hawkey library.
