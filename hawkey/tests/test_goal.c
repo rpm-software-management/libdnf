@@ -81,9 +81,27 @@ START_TEST(test_goal_upgrade)
     fail_if(hy_goal_update(goal, pkg));
     hy_package_free(pkg);
     fail_if(hy_goal_go(goal));
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 1);
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
+    hy_goal_free(goal);
+}
+END_TEST
+
+START_TEST(test_goal_installonly)
+{
+    const char *installonly[] = {"fool", NULL};
+
+    HySack sack = test_globals.sack;
+    hy_sack_set_installonly(sack, installonly);
+    HyPackage pkg = get_latest_pkg(sack, "fool");
+    HyGoal goal = hy_goal_create(sack);
+    fail_if(hy_goal_update(goal, pkg));
+    hy_package_free(pkg);
+    fail_if(hy_goal_go(goal));
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
     hy_goal_free(goal);
 }
 END_TEST
@@ -100,6 +118,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_update_impossible);
     tcase_add_test(tc, test_goal_install);
     tcase_add_test(tc, test_goal_upgrade);
+    tcase_add_test(tc, test_goal_installonly);
     suite_add_tcase(s, tc);
 
     return s;

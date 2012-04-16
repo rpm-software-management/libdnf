@@ -18,6 +18,20 @@
 
 #define CFG_FILE "~/.hawkey/main.config"
 
+const char *installonly[] = {
+    "kernel",
+    "kernel-bigmem",
+    "kernel-enterprise",
+    "kernel-smp",
+    "kernel-modules",
+    "kernel-debug",
+    "kernel-unsupported",
+    "kernel-source",
+    "kernel-devel",
+    "kernel-PAE",
+    "kernel-PAE-debug",
+    NULL};
+
 static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
 {
     HyPackageList plist;
@@ -425,6 +439,7 @@ int main(int argc, const char **argv)
     solv_free(md_primary_updates_xml);
     solv_free(md_filelists_updates);
     hy_sack_write_all_repos(sack);
+    hy_sack_set_installonly(sack, installonly);
 
     if (argc == 2 && !strcmp(argv[1], "-u")) {
 	updatables_query_all(sack);
