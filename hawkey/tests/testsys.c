@@ -73,7 +73,7 @@ load_repo(Pool *pool, const char *name, const char *path, int installed)
 
     if (!fp)
 	return 1;
-    testcase_add_susetags(r,  fp, 0);
+    testcase_add_testtags(r,  fp, 0);
     if (installed)
 	pool_set_installed(pool, r);
     fclose(fp);
