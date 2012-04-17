@@ -283,10 +283,12 @@ what_updates(Pool *pool, Id pkg)
     Id p, pp;
     Solvable *updated, *s = pool_id2solvable(pool, pkg);
 
+    assert(pool->installed);
     assert(pool->whatprovides);
     FOR_PROVIDES(p, pp, s->name) {
 	updated = pool_id2solvable(pool, p);
-	if (pool->installed && updated->repo == pool->installed &&
+	if (updated->repo == pool->installed &&
+	    updated->name == s->name &&
 	    updated->arch == s->arch &&
 	    pool_evrcmp(pool, s->evr, updated->evr, EVRCMP_COMPARE) > 0)
 	    return p;
