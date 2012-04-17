@@ -107,6 +107,28 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
 
 /* getsetters */
 
+int
+set_installonly(_SackObject *self, PyObject *obj, void *unused)
+{
+    if (!PySequence_Check(obj)) {
+	PyErr_SetString(PyExc_AttributeError, "Expected a sequence.");
+	return -1;
+    }
+
+    const int len = PySequence_Length(obj);
+    const char *strings[len + 1];
+
+    for (int i = 0; i < len; ++i) {
+	strings[i] = PyString_AsString(PySequence_GetItem(obj, i));
+	if (strings[i] == NULL)
+	    return -1;
+    }
+    strings[len] = NULL;
+    hy_sack_set_installonly(self->sack, strings);
+
+    return 0;
+}
+
 static PyObject *
 get_nsolvables(_SackObject *self, void *unused)
 {
@@ -115,6 +137,7 @@ get_nsolvables(_SackObject *self, void *unused)
 
 
 static PyGetSetDef sack_getsetters[] = {
+    {"installonly", NULL, (setter)set_installonly, NULL, NULL},
     {"nsolvables", (getter)get_nsolvables, NULL, NULL, NULL},
     {NULL}			/* sentinel */
 };
