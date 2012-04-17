@@ -205,8 +205,10 @@ hy_sack_free(HySack sack)
 	    continue;
 	hy_repo_free(hrepo);
     }
-    if (sack->log_out)
+    if (sack->log_out) {
 	HY_LOG_INFO("finished.", sack);
+	fclose(sack->log_out);
+    }
     solv_free(sack->cache_dir);
     queue_free(&sack->installonly);
     pool_free(sack->pool);
