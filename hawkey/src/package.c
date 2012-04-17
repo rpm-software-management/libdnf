@@ -142,5 +142,5 @@ hy_package_get_size(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
     repo_internalize_trigger(s->repo);
-    return solvable_lookup_num(s, SOLVABLE_DOWNLOADSIZE, 0) * 1024;
+    return solvable_lookup_num(s, SOLVABLE_DOWNLOADSIZE, 0);
 }
