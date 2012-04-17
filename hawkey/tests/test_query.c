@@ -128,6 +128,9 @@ END_TEST
 
 START_TEST(test_updates)
 {
+    const char *installonly[] = {"fool", NULL};
+    hy_sack_set_installonly(test_globals.sack, installonly);
+
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter_updates(q, 1);
     fail_unless(count_results(q) == TEST_EXPECT_UPDATES_NSOLVABLES);

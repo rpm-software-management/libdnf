@@ -42,6 +42,11 @@ void hy_query_free(HyQuery q);
 void hy_query_filter(HyQuery q, int keyname, int filter_type, const char *match);
 void hy_query_filter_provides(HyQuery q, int filter_type, const char *name,
 			   const char *evr);
+/**
+ * Filter packages that are named same as an installed package but higher version.
+ *
+ * NOTE: this does not guerantee packages filtered in this way are installable.
+ */
 void hy_query_filter_updates(HyQuery q, int val);
 void hy_query_filter_latest(HyQuery q, int val);
 void hy_query_filter_obsoleting(HyQuery q, int val);

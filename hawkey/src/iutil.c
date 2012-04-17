@@ -272,6 +272,11 @@ problemruleinfo2str(Pool *pool, SolverRuleinfo type, Id source, Id target, Id de
   return solv_strdup(s);
 }
 
+/**
+ * Return id of an installed package with the same name as pkg and lower version.
+ *
+ * Or 0 if none such package is installed.
+ */
 Id
 what_updates(Pool *pool, Id pkg)
 {
@@ -282,6 +287,7 @@ what_updates(Pool *pool, Id pkg)
     FOR_PROVIDES(p, pp, s->name) {
 	updated = pool_id2solvable(pool, p);
 	if (pool->installed && updated->repo == pool->installed &&
+	    updated->arch == s->arch &&
 	    pool_evrcmp(pool, s->evr, updated->evr, EVRCMP_COMPARE) > 0)
 	    return p;
     }

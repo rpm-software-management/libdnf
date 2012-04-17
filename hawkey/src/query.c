@@ -154,28 +154,22 @@ filter_updates(HyQuery q, Map *res)
     Pool *pool = sack_pool(sack);
     int i;
     Map m;
-    Queue job;
 
     assert(pool->installed);
     sack_make_provides_ready(q->sack);
     map_init(&m, pool->nsolvables);
-    queue_init(&job);
     for (i = 1; i < pool->nsolvables; ++i) {
 	if (!MAPTST(res, i))
 	    continue;
 	Solvable *s = pool_id2solvable(pool, i);
-	if (s->repo != pool->installed) {
-	    Id p = what_updates(pool, i);
-	    if (p > 0)
-		queue_push2(&job, SOLVER_SOLVABLE|SOLVER_UPDATE, p);
-	} else
-	    queue_push2(&job, SOLVER_SOLVABLE|SOLVER_UPDATE, i);
+	if (s->repo == pool->installed)
+	    continue;
+	if (what_updates(pool, i) > 0)
+	    MAPSET(&m, i);
     }
 
-    hy_sack_solve(sack, &job, &m, SOLVER_TRANSACTION_UPGRADE);
     map_and(res, &m);
     map_free(&m);
-    queue_free(&job);
 }
 
 static void
