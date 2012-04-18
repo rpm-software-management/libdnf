@@ -560,8 +560,15 @@ sack_log(HySack sack, int level, const char *format, ...)
     POOL_DEBUG(level, buf);
 }
 
+/**
+ * Put all solvables named 'name' into the queue 'same'.
+ *
+ * Futher, if arch is nonzero only solvables with a matching arch are added to
+ * the queue.
+ *
+ */
 void
-sack_same_names(HySack sack, Id name, Queue *same)
+sack_same_names(HySack sack, Id name, Id arch, Queue *same)
 {
     Pool *pool = sack->pool;
     Id p, pp;
@@ -570,6 +577,7 @@ sack_same_names(HySack sack, Id name, Queue *same)
     FOR_PROVIDES(p, pp, name) {
 	Solvable *s = pool_id2solvable(pool, p);
 	if (s->name == name)
-	    queue_push(same, p);
+	    if (!arch || s->arch == arch)
+		queue_push(same, p);
     }
 }

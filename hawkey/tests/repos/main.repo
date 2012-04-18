@@ -7,6 +7,8 @@
 =Sum: in my eyes
 =Pkg: penny-lib 4 1 x86_64
 =Prv: P-lib = 3-3
+=Pkg: penny-lib 4 1 i686
+=Prv: P-lib = 3-3
 =Sum: in my ears
 =Pkg: walrus 2 5 noarch
 =Prv: walrus <= 2-5

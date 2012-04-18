@@ -169,6 +169,18 @@ START_TEST(test_filter_latest2)
 }
 END_TEST
 
+START_TEST(test_filter_latest_archs)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "penny-lib");
+    hy_query_filter_latest(q, 1);
+    HyPackageList plist = hy_query_run(q);
+    fail_unless(hy_packagelist_count(plist) == 2); /* both architectures */
+    hy_query_free(q);
+    hy_packagelist_free(plist);
+}
+END_TEST
+
 START_TEST(test_filter_files)
 {
     HyQuery q = hy_query_create(test_globals.sack);
@@ -216,6 +228,7 @@ query_suite(void)
     tc = tcase_create("Full");
     tcase_add_unchecked_fixture(tc, setup_all, teardown);
     tcase_add_test(tc, test_filter_latest2);
+    tcase_add_test(tc, test_filter_latest_archs);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Filelists");

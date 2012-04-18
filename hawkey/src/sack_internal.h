@@ -16,7 +16,7 @@ struct _HySack {
 
 void sack_make_provides_ready(HySack sack);
 void sack_log(HySack sack, int level, const char *format, ...);
-void sack_same_names(HySack sack, Id name, Queue *same);
+void sack_same_names(HySack sack, Id name, Id arch, Queue *same);
 static inline Pool *sack_pool(HySack sack) { return sack->pool; }
 
 #endif // SACK_INTERNAL_H

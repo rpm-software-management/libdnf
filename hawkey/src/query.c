@@ -179,7 +179,6 @@ filter_latest(HyQuery q, Map *res)
     Queue samename;
     Id i, j, p, hp;
     Solvable *highest, *considered;
-    Id name;
     int cmp;
 
     queue_init(&samename);
@@ -187,12 +186,11 @@ filter_latest(HyQuery q, Map *res)
 	if (!MAPTST(res, i))
 	    continue;
 
-	queue_empty(&samename);
-	name = pool_id2solvable(pool, i)->name;
-	sack_same_names(q->sack, name, &samename);
-	/* now find the highest versioned package of those selected */
 	hp = i;
 	highest = pool_id2solvable(pool, hp);
+	queue_empty(&samename);
+	sack_same_names(q->sack, highest->name, highest->arch, &samename);
+	/* now find the highest versioned package of those selected */
 	for (j = 0; j < samename.count; ++j) {
 	    p = samename.elements[j];
 	    if (!MAPTST(res, p) || i == p)

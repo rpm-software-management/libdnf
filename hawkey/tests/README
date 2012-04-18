@@ -16,6 +16,7 @@ fool
 
 penny, penny-lib
 * have summaries
+* penny-lib is architecture dependent
 
 walrus
 * not installed, available in the main repo
