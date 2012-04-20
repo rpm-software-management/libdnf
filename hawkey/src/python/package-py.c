@@ -88,6 +88,11 @@ package_str(_PackageObject *self)
 			       package_id(self->package));
 }
 
+long package_hash(_PackageObject *self)
+{
+    return package_id(self->package);
+}
+
 /* getsetters */
 
 static PyObject *
@@ -186,7 +191,7 @@ PyTypeObject package_Type = {
     0,				/*tp_as_number*/
     0,				/*tp_as_sequence*/
     0,				/*tp_as_mapping*/
-    0,				/*tp_hash */
+    (hashfunc)package_hash,	/*tp_hash */
     0,				/*tp_call*/
     (reprfunc)package_str,	/*tp_str*/
     0,				/*tp_getattro*/
