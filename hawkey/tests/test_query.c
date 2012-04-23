@@ -31,6 +31,19 @@ START_TEST(test_query_sanity)
 }
 END_TEST
 
+START_TEST(test_query_clear)
+{
+    HyQuery q;
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_NEQ, "fool");
+    hy_query_clear(q);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "fool");
+    fail_unless(count_results(q) == 1);
+    hy_query_free(q);
+}
+END_TEST
+
 START_TEST(test_query_repo)
 {
     HyQuery q;
@@ -210,6 +223,7 @@ query_suite(void)
     tc = tcase_create("Core");
     tcase_add_unchecked_fixture(tc, setup, teardown);
     tcase_add_test(tc, test_query_sanity);
+    tcase_add_test(tc, test_query_clear);
     tcase_add_test(tc, test_query_repo);
     tcase_add_test(tc, test_query_name);
     tcase_add_test(tc, test_query_glob);

@@ -59,6 +59,13 @@ query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
 /* object methods */
 
 static PyObject *
+clear(_QueryObject *self, PyObject *args)
+{
+    hy_query_clear(self->query);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 filter(_QueryObject *self, PyObject *args)
 {
     key_t keyname;
@@ -104,6 +111,8 @@ run(_QueryObject *self, PyObject *unused)
 }
 
 static struct PyMethodDef query_methods[] = {
+    {"clear", (PyCFunction)clear, METH_NOARGS,
+     NULL},
     {"filter", (PyCFunction)filter, METH_VARARGS,
      NULL},
     {"run", (PyCFunction)run, METH_NOARGS,

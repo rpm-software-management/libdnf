@@ -258,13 +258,20 @@ hy_query_create(HySack sack)
 void
 hy_query_free(HyQuery q)
 {
-    int i;
-    for (i = 0; i < q->nfilters; ++i) {
+    hy_query_clear(q);
+    solv_free(q);
+}
+
+void
+hy_query_clear(HyQuery q)
+{
+    for (int i = 0; i < q->nfilters; ++i) {
 	solv_free(q->filters[i].match);
 	solv_free(q->filters[i].evr);
     }
     solv_free(q->filters);
-    solv_free(q);
+    q->filters = NULL;
+    q->nfilters = 0;
 }
 
 void
