@@ -29,6 +29,3 @@ class Query(base.TestCase):
         self.assertEqual(q.count(), 0)
         q = hawkey.Query(self.sack).filter(hawkey.ICASE, name="FLYING")
         self.assertEqual(q.count(), 1)
-
-def suite(repo_dir):
-    return unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])

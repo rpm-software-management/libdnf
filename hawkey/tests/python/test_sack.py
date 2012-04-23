@@ -36,7 +36,3 @@ class PackageWrapping(base.TestCase):
         self.assertEqual(pkg.myval, 42)
         # the common attributes are working:
         self.assertEqual(pkg.name, "fool")
-
-def suite(repo_dir):
-    this_module = sys.modules[__name__]
-    return unittest.TestLoader().loadTestsFromModule(this_module)

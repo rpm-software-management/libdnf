@@ -20,6 +20,3 @@ class Package(base.TestCase):
     def test_str(self):
         self.assertEqual(str(self.pkg),
                          "flying-2-9.noarch")
-
-def suite(repo_dir):
-    return unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
