@@ -1,5 +1,5 @@
 .emacs.desktop*
 build/
 TAGS
-tests/python/*.pyc
+tests/python/tests/*.pyc
 tests/Testing
