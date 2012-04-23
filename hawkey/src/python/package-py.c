@@ -20,6 +20,8 @@ typedef struct {
     PyObject *sack;
 } _PackageObject;
 
+long package_hash(_PackageObject *self);
+
 HyPackage packageFromPyObject(PyObject *o)
 {
     if (!PyType_IsSubtype(o->ob_type, &package_Type)) {
@@ -82,10 +84,16 @@ package_py_cmp(_PackageObject *self, _PackageObject *other)
 }
 
 static PyObject *
+package_repr(_PackageObject *self)
+{
+    return PyString_FromFormat("<_hawkey.Package object, id: %ld>",
+			       package_hash(self));
+}
+
+static PyObject *
 package_str(_PackageObject *self)
 {
-    return PyString_FromFormat("<_hawkey.Package object, id: %d>",
-			       package_id(self->package));
+    return PyString_FromString(hy_package_get_nvra(self->package));
 }
 
 long package_hash(_PackageObject *self)
@@ -187,7 +195,7 @@ PyTypeObject package_Type = {
     0,				/*tp_getattr*/
     0,				/*tp_setattr*/
     (cmpfunc)package_py_cmp,	/*tp_compare*/
-    (reprfunc)package_str,	/*tp_repr*/
+    (reprfunc)package_repr,	/*tp_repr*/
     0,				/*tp_as_number*/
     0,				/*tp_as_sequence*/
     0,				/*tp_as_mapping*/

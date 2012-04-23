@@ -13,10 +13,12 @@ if __name__ == '__main__':
     repo_dir = sys.argv[2]
 
     import test_sack
+    import test_package
     import test_query
 
     all_suites = unittest.TestSuite()
     all_suites.addTests(test_sack.suite(repo_dir))
+    all_suites.addTests(test_package.suite(repo_dir))
     all_suites.addTests(test_query.suite(repo_dir))
     result = unittest.TextTestRunner().run(all_suites)
     sys.exit(0 if result.wasSuccessful() else 1)
