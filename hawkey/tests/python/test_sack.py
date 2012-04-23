@@ -1,12 +1,11 @@
 import sys
 import unittest
 
+import base
 import hawkey
 import hawkey.test
 
-class Sanity(unittest.TestCase):
-    repo_dir = None
-
+class Sanity(base.TestCase):
     def test_sanity(self):
         assert(self.repo_dir)
         sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
@@ -17,9 +16,7 @@ class Sanity(unittest.TestCase):
         sack.load_rpm_repo()
         self.assertEqual(sack.nsolvables, hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
 
-class PackageWrapping(unittest.TestCase):
-    repo_dir = None
-
+class PackageWrapping(base.TestCase):
     class MyPackage(hawkey.Package):
         def __init__(self, initobject, myval):
             super(PackageWrapping.MyPackage, self).__init__(initobject)
@@ -41,7 +38,5 @@ class PackageWrapping(unittest.TestCase):
         self.assertEqual(pkg.name, "fool")
 
 def suite(repo_dir):
-    Sanity.repo_dir = PackageWrapping.repo_dir = repo_dir
-    PackageWrapping.repo_dir = repo_dir
     this_module = sys.modules[__name__]
     return unittest.TestLoader().loadTestsFromModule(this_module)

@@ -1,12 +1,11 @@
 import sys
 import unittest
 
+import base
 import hawkey
 import hawkey.test
 
-class Query(unittest.TestCase):
-    repo_dir = None
-
+class Query(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         self.sack.load_rpm_repo()
@@ -32,5 +31,4 @@ class Query(unittest.TestCase):
         self.assertEqual(q.count(), 1)
 
 def suite(repo_dir):
-    Query.repo_dir = repo_dir
     return unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])

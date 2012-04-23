@@ -1,12 +1,11 @@
 import sys
 import unittest
 
+import base
 import hawkey
 import hawkey.test
 
-class Package(unittest.TestCase):
-    repo_dir = None
-
+class Package(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         self.sack.load_rpm_repo()
@@ -23,5 +22,4 @@ class Package(unittest.TestCase):
                          "flying-2-9.noarch")
 
 def suite(repo_dir):
-    Package.repo_dir = repo_dir
     return unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
