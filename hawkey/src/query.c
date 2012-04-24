@@ -25,7 +25,8 @@ struct _HyQuery {
 struct _Filter {
     int filter_type;
     int keyname;
-    char *match;
+    char **matches;
+    int nmatches;
     char *evr;
 };
 
@@ -81,6 +82,19 @@ type2relflags(int type)
     return flags;
 }
 
+static struct _Filter *
+query_add_filter(HyQuery q, int nmatches)
+{
+    struct _Filter filter = {
+	.matches = solv_calloc(nmatches, sizeof(char *)),
+	.nmatches = nmatches
+    };
+    q->filters = solv_extend(q->filters, q->nfilters, 1, sizeof(filter),
+			     BLOCK_SIZE);
+    q->filters[q->nfilters] = filter; /* structure assignment */
+    return q->filters + q->nfilters++;
+}
+
 static void
 filter_dataiterator(HyQuery q, struct _Filter *f, Map *m)
 {
@@ -91,13 +105,16 @@ filter_dataiterator(HyQuery q, struct _Filter *f, Map *m)
 
     if (f->filter_type & HY_ICASE)
 	flags |= SEARCH_NOCASE;
-    dataiterator_init(&di, pool, 0, 0,
-		      keyname,
-		      f->match,
-		      flags);
-    while (dataiterator_step(&di))
-	MAPSET(m, di.solvid);
-    dataiterator_free(&di);
+    /* do an OR over all matches: */
+    for (int i = 0; i < f->nmatches; ++i) {
+	dataiterator_init(&di, pool, 0, 0,
+			  keyname,
+			  f->matches[i],
+			  flags);
+	while (dataiterator_step(&di))
+	    MAPSET(m, di.solvid);
+	dataiterator_free(&di);
+    }
 }
 
 static void
@@ -107,8 +124,10 @@ filter_providers(HyQuery q, struct _Filter *f, Map *m)
     Id id_n, id_evr, r, p, pp;
     int flags;
 
+    assert(f->nmatches == 1);
+
     sack_make_provides_ready(q->sack);
-    id_n = pool_str2id(pool, f->match, 0);
+    id_n = pool_str2id(pool, f->matches[0], 0);
     id_evr = pool_str2id(pool, f->evr, 1);
     flags = type2relflags(f->filter_type);
     r = pool_rel2id(pool, id_n, id_evr, flags, 1);
@@ -125,8 +144,10 @@ filter_repo(HyQuery q, struct _Filter *f, Map *m)
     Repo *r;
     Id id, repoid = 0;
 
+    assert(f->nmatches == 1);
+
     FOR_REPOS(id, r) {
-	if (!strcmp(r->name, f->match)) {
+	if (!strcmp(r->name, f->matches[0])) {
 	    repoid = id;
 	    break;
 	}
@@ -266,8 +287,12 @@ void
 hy_query_clear(HyQuery q)
 {
     for (int i = 0; i < q->nfilters; ++i) {
-	solv_free(q->filters[i].match);
-	solv_free(q->filters[i].evr);
+	struct _Filter *filterp = q->filters + i;
+	for (int m = 0; m < filterp->nmatches; ++m)
+	    solv_free(filterp->matches[m]);
+	filterp->nmatches = 0;
+	solv_free(filterp->matches);
+	solv_free(filterp->evr);
     }
     solv_free(q->filters);
     q->filters = NULL;
@@ -277,28 +302,35 @@ hy_query_clear(HyQuery q)
 void
 hy_query_filter(HyQuery q, int keyname, int filter_type, const char *match)
 {
-    struct _Filter filter = {
-	.filter_type = filter_type,
-	.keyname = keyname,
-	.match = solv_strdup(match)
-    };
-    q->filters = solv_extend(q->filters, q->nfilters, 1, sizeof(filter),
-			     BLOCK_SIZE);
-    q->filters[q->nfilters++] = filter; /* structure assignment */
+    struct _Filter *filterp = query_add_filter(q, 1);
+    filterp->filter_type = filter_type;
+    filterp->keyname = keyname;
+    filterp->matches[0] = solv_strdup(match);
+}
+
+void
+hy_query_filter_in(HyQuery q, int keyname, int filter_type,
+		   const char **matches)
+{
+    const char **matchp = matches;
+    while (*matchp) matchp++;
+    const int count = matchp - matches;
+
+    struct _Filter *filterp = query_add_filter(q, count);
+    filterp->filter_type = filter_type;
+    filterp->keyname = keyname;
+    for (int i = 0; i < count; ++i)
+	filterp->matches[i] = solv_strdup(matches[i]);
 }
 
 void
 hy_query_filter_provides(HyQuery q, int filter_type, const char *name, const char *evr)
 {
-    struct _Filter filter = {
-	.filter_type = filter_type,
-	.keyname = HY_PKG_PROVIDES,
-	.match = solv_strdup(name),
-	.evr = solv_strdup(evr)
-    };
-    q->filters = solv_extend(q->filters, q->nfilters, 1, sizeof(filter),
-			     BLOCK_SIZE);
-    q->filters[q->nfilters++] = filter; /* structure assignment */
+    struct _Filter *filterp = query_add_filter(q, 1);
+    filterp->filter_type = filter_type;
+    filterp->keyname = HY_PKG_PROVIDES;
+    filterp->evr = solv_strdup(evr);
+    filterp->matches[0] = solv_strdup(name);
 }
 
 /**

@@ -125,6 +125,18 @@ START_TEST(test_query_neq)
 }
 END_TEST
 
+START_TEST(test_query_in)
+{
+    HyQuery q;
+    const char *namelist[] = {"penny", "fool", NULL};
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter_in(q, HY_PKG_NAME, HY_EQ, namelist);
+    fail_unless(count_results(q) == 2);
+    hy_query_free(q);
+}
+END_TEST
+
 START_TEST(test_updates_sanity)
 {
     Pool *pool = sack_pool(test_globals.sack);
@@ -230,6 +242,7 @@ query_suite(void)
     tcase_add_test(tc, test_query_case);
     tcase_add_test(tc, test_query_anded);
     tcase_add_test(tc, test_query_neq);
+    tcase_add_test(tc, test_query_in);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Updates");
