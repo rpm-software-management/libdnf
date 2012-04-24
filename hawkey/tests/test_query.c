@@ -137,6 +137,16 @@ START_TEST(test_query_in)
 }
 END_TEST
 
+START_TEST(test_query_fileprovides)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_FILE, HY_EQ, "/no/answers");
+    printf("returned results: %d\n", count_results(q));
+    fail_unless(count_results(q) == 1);
+    hy_query_free(q);
+}
+END_TEST
+
 START_TEST(test_updates_sanity)
 {
     Pool *pool = sack_pool(test_globals.sack);
@@ -243,6 +253,7 @@ query_suite(void)
     tcase_add_test(tc, test_query_anded);
     tcase_add_test(tc, test_query_neq);
     tcase_add_test(tc, test_query_in);
+    tcase_add_test(tc, test_query_fileprovides);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Updates");
