@@ -55,6 +55,9 @@ type2flags(int type, int keyname)
     int ret = 0;
     if (keyname == HY_PKG_FILE)
 	ret |= SEARCH_FILES | SEARCH_COMPLETE_FILELIST;
+    if (type & HY_ICASE)
+	ret |= SEARCH_NOCASE;
+
     type &= ~HY_COMPARISON_FLAG_MASK;
     switch (type) {
     case HY_EQ:
@@ -103,8 +106,6 @@ filter_dataiterator(HyQuery q, struct _Filter *f, Map *m)
     Id keyname = keyname2id(f->keyname);
     int flags = type2flags(f->filter_type, f->keyname);
 
-    if (f->filter_type & HY_ICASE)
-	flags |= SEARCH_NOCASE;
     /* do an OR over all matches: */
     for (int i = 0; i < f->nmatches; ++i) {
 	dataiterator_init(&di, pool, 0, 0,
