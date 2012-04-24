@@ -33,6 +33,9 @@ int is_readable_rpm(const char *fn);
 int mkcachedir(const char *path);
 char *this_username(void);
 
+/* misc utils */
+unsigned count_nullt_array(const char **a);
+
 /* libsolv utils */
 void repo_internalize_trigger(Repo *r);
 Transaction *job2transaction(HySack sack, Queue *job, Queue *errors);

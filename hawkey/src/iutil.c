@@ -140,6 +140,13 @@ char *this_username(void)
     return solv_strdup(pw->pw_name);
 }
 
+unsigned count_nullt_array(const char **a)
+{
+    const char **strp = a;
+    while (*strp) strp++;
+    return strp - a;
+}
+
 void
 repo_internalize_trigger(Repo *repo)
 {

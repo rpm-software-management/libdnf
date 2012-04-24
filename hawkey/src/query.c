@@ -312,9 +312,7 @@ void
 hy_query_filter_in(HyQuery q, int keyname, int filter_type,
 		   const char **matches)
 {
-    const char **matchp = matches;
-    while (*matchp) matchp++;
-    const int count = matchp - matches;
+    const unsigned count = count_nullt_array(matches);
 
     struct _Filter *filterp = query_add_filter(q, count);
     filterp->filter_type = filter_type;
