@@ -40,17 +40,14 @@ class Package(_hawkey.Package):
     def evr_lt(self, pkg):
         return self.evr_cmp(pkg) < 0
 
-class Query(object):
+class Query(_hawkey.Query):
     def __init__(self, sack):
-        self._query = _hawkey.Query(sack)
-        self.sack = sack
+        super(Query, self).__init__(sack)
         self.result = None
 
     def __iter__(self):
-        if not self.result:
-            self.result = self._query.run()
-        for p in self.result:
-            yield p
+        """ Iterate over (cached) query result. """
+        return iter(self.run())
 
     def _parse_filter_args(self, lst, dct):
         args = []
@@ -79,13 +76,17 @@ class Query(object):
                                  "in <key>__<comparison type>=<value> format")
         return args
 
-    def count(self):
+    def run(self):
+        """ Execute the query and cache the result. """
         if not self.result:
-            self.result = self._query.run()
-        return len(self.result)
+            self.result = super(Query, self).run()
+        return self.result
+
+    def count(self):
+        return len(self.run())
 
     def filter(self, *lst, **kwargs):
-        map(lambda arg_tuple: self._query.filter(*arg_tuple),
+        map(lambda arg_tuple: super(Query, self).filter(*arg_tuple),
             self._parse_filter_args(lst, kwargs))
         return self
 
