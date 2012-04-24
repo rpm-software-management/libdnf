@@ -141,7 +141,6 @@ START_TEST(test_query_fileprovides)
 {
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_FILE, HY_EQ, "/no/answers");
-    printf("returned results: %d\n", count_results(q));
     fail_unless(count_results(q) == 1);
     hy_query_free(q);
 }
