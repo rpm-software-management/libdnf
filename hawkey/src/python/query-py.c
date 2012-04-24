@@ -92,10 +92,28 @@ filter(_QueryObject *self, PyObject *args)
 	    hy_query_filter_obsoleting(self->query, val);
 	Py_RETURN_NONE;
     }
-    if ((cmatch = PyString_AsString(match)) == NULL)
-	return NULL;
-    hy_query_filter(self->query, keyname, filtertype, cmatch);
-    Py_RETURN_NONE;
+    if (PyString_Check(match)) {
+	cmatch = PyString_AsString(match);
+	hy_query_filter(self->query, keyname, filtertype, cmatch);
+	Py_RETURN_NONE;
+    }
+    if (PyList_Check(match)) {
+	const unsigned count = PyList_Size(match);
+	const char *matches[count + 1];
+	matches[count] = NULL;
+	for (int i = 0; i < count; ++i) {
+	    PyObject *item = PyList_GetItem(match, i);
+	    if (!PyString_Check(item)) {
+		PyErr_SetString(PyExc_TypeError, "Invalid match value.");
+		return NULL;
+	    }
+	    matches[i] = PyString_AsString(item);
+	}
+	hy_query_filter_in(self->query, keyname, filtertype, matches);
+	Py_RETURN_NONE;
+    }
+    PyErr_SetString(PyExc_TypeError, "Invalid filter's match value.");
+    return NULL;
 }
 
 static PyObject *

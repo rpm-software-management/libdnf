@@ -15,6 +15,10 @@ class Query(base.TestCase):
         q.filter(name__eq="flying")
         self.assertEqual(q.count(), 1)
 
+    def test_kwargs_check(self):
+        q = hawkey.Query(self.sack)
+        self.assertRaises(ValueError, q.filter, name="flying", updates="maracas")
+
     def test_kwargs(self):
         q = hawkey.Query(self.sack)
         # test combining several criteria
@@ -28,4 +32,20 @@ class Query(base.TestCase):
         q = hawkey.Query(self.sack).filter(name="FLYING")
         self.assertEqual(q.count(), 0)
         q = hawkey.Query(self.sack).filter(hawkey.ICASE, name="FLYING")
+        self.assertEqual(q.count(), 1)
+
+    def test_in(self):
+        q = hawkey.Query(self.sack)
+        q.filter(name__substr=["ool", "enny-li"])
+        self.assertEqual(q.count(), 2)
+
+class QueryUpdates(base.TestCase):
+    def setUp(self):
+        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack.load_rpm_repo()
+        self.sack.load_test_repo("updates", "updates.repo")
+
+    def test_updates(self):
+        q = hawkey.Query(self.sack)
+        q.filter(name="flying", updates=1)
         self.assertEqual(q.count(), 1)
