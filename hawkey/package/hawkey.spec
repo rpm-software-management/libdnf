@@ -1,9 +1,9 @@
-%global gitrev 0e6805c
-%global libsolv_version 0.0.0-7
+%global gitrev a7fafb2
+%global libsolv_version 0.0.0-8
 
 Name:		hawkey
-Version:	0.1
-Release:	6.%{gitrev}%{?dist}
+Version:	0.2.0
+Release:	4.%{gitrev}%{?dist}
 Summary:	A Library providing simplified C and Python API to libsolv.
 Group:		Development/Libraries
 License:	none-yet
@@ -21,6 +21,7 @@ A Library providing simplified C and Python API to libsolv
 %package devel
 Summary:	A Library providing simplified C and Python API to libsolv.
 Group:		Development/Libraries
+Requires:	hawkey%{?_isa} = %{version}-%{release}
 
 %description devel
 Development files for hawkey.
@@ -29,6 +30,7 @@ Development files for hawkey.
 Summary:	Python bindings for the hawkey library.
 Group:		Development/Languages
 Requires:	python
+Requires:	hawkey = %{version}-%{release}
 
 %description -n python-hawkey
 Python bindings for the hawkey library.
@@ -55,5 +57,9 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/*
 
 %changelog
+* Tue Apr 24 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.0-4.gita7fafb2%{?dist}
+- hy_query_filter_in()
+- Better unit test support.
+
 * Thu Apr 12 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.1-6.git0e6805c%{?dist}
 - Initial package.
