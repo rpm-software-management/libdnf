@@ -16,7 +16,7 @@
 
 HySack hy_sack_create(void);
 void hy_sack_free(HySack sack);
-char *hy_sack_solv_path(HySack sack, const char *reponame, const char *ext);
+char *hy_sack_give_cache_fn(HySack sack, const char *reponame, const char *ext);
 void hy_sack_set_cache_path(HySack sack, const char *path);
 void hy_sack_set_installonly(HySack sack, const char **installonly);
 void hy_sack_create_cmdline_repo(HySack sack);

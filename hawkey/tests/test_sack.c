@@ -30,19 +30,19 @@ START_TEST(test_sack_create)
 }
 END_TEST
 
-START_TEST(test_sack_solv_path)
+START_TEST(test_give_cache_fn)
 {
     HySack sack = hy_sack_create();
-    char *path = hy_sack_solv_path(sack, NULL, NULL);
+    char *path = hy_sack_give_cache_fn(sack, NULL, NULL);
     fail_if(strstr(path, "/var/tmp/hawkey/") == NULL);
     fail_unless(strlen(path) > strlen("/var/tmp/hawkey/"));
     solv_free(path);
 
-    path = hy_sack_solv_path(sack, "rain", NULL);
+    path = hy_sack_give_cache_fn(sack, "rain", NULL);
     fail_if(strstr(path, "rain.solv") == NULL);
     solv_free(path);
 
-    path = hy_sack_solv_path(sack, "rain", HY_EXT_FILENAMES);
+    path = hy_sack_give_cache_fn(sack, "rain", HY_EXT_FILENAMES);
     fail_if(strstr(path, "rain-filenames.solvx") == NULL);
     solv_free(path);
     hy_sack_free(sack);
@@ -111,7 +111,7 @@ END_TEST
 START_TEST(test_filelist_from_cache)
 {
     HySack sack = test_globals.sack;
-    char *fn_solv = hy_sack_solv_path(sack, "tfilenames", HY_EXT_FILENAMES);
+    char *fn_solv = hy_sack_give_cache_fn(sack, "tfilenames", HY_EXT_FILENAMES);
 
     fail_if(hy_sack_write_filelists(sack));
     fail_if(access(fn_solv, R_OK));
@@ -150,7 +150,7 @@ sack_suite(void)
     TCase *tc = tcase_create("Core");
     tcase_add_test(tc, test_environment);
     tcase_add_test(tc, test_sack_create);
-    tcase_add_test(tc, test_sack_solv_path);
+    tcase_add_test(tc, test_give_cache_fn);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Repos");
