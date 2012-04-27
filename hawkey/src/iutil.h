@@ -30,11 +30,12 @@ void checksum_dump(const unsigned char *cs);
 
 /* filesystem utils */
 int is_readable_rpm(const char *fn);
-int mkcachedir(const char *path);
+int mkcachedir(char *path);
 char *this_username(void);
 
 /* misc utils */
 unsigned count_nullt_array(const char **a);
+int str_endswith(const char *haystack, const char *needle);
 
 /* libsolv utils */
 void repo_internalize_trigger(Repo *r);

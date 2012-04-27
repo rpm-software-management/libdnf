@@ -4,8 +4,10 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <wordexp.h>
 
 // libsolv
 #include "solv/chksum.h"
@@ -21,6 +23,42 @@
 #define CHKSUM_TYPE REPOKEY_TYPE_SHA256
 #define CHKSUM_IDENT "H000"
 #define CACHEDIR_PERMISSIONS 0700
+
+static int
+glob_for_cachedir(char *path)
+{
+    int ret = 1;
+    if (!str_endswith(path, "XXXXXX"))
+	return ret;
+
+    wordexp_t word_vector;
+    char *p = solv_strdup(path);
+    const int len = strlen(p);
+    struct stat s;
+
+    ret = 2;
+    p[len-6] = '*';
+    p[len-5] = '\0';
+    if (wordexp(p, &word_vector, 0)) {
+	solv_free(p);
+	return ret;
+    }
+    for (int i = 0; i < word_vector.we_wordc; ++i) {
+	char *entry = word_vector.we_wordv[i];
+	if (stat(entry, &s))
+	    continue;
+	if (S_ISDIR(s.st_mode) &&
+	    s.st_uid == getuid()) {
+	    assert(strlen(path) == strlen(entry));
+	    strcpy(path, entry);
+	    ret = 0;
+	    break;
+	}
+    }
+    wordfree(&word_vector);
+    solv_free(p);
+    return ret;
+}
 
 int
 checksum_cmp(const unsigned char *cs1, const unsigned char *cs2)
@@ -112,10 +150,21 @@ is_readable_rpm(const char *fn)
     return 1;
 }
 
+/**
+ * Recursively create directory.
+ *
+ * If it is in the format accepted by mkdtemp() the function globs for a
+ * matching name and if not found it uses mkdtemp() to create the path. 'path'
+ * is modified in those two cases.
+ */
 int
-mkcachedir(const char *path)
+mkcachedir(char *path)
 {
     int ret = 1;
+
+    if (!glob_for_cachedir(path))
+	return 0;
+
     char *p = solv_strdup(path);
     int len = strlen(p);
 
@@ -125,7 +174,12 @@ mkcachedir(const char *path)
     if (access(p, X_OK)) {
 	*(strrchr(p, '/')) = '\0';
 	ret = mkcachedir(p);
-	ret |= mkdir(path, CACHEDIR_PERMISSIONS);
+	if (str_endswith(path, "XXXXXX")) {
+	    char *retptr = mkdtemp(path);
+	    if (retptr == NULL)
+		ret |= 1;
+	} else
+	    ret |= mkdir(path, CACHEDIR_PERMISSIONS);
     } else {
 	ret = 0;
     }
@@ -134,17 +188,30 @@ mkcachedir(const char *path)
     return ret;
 }
 
-char *this_username(void)
+char *
+this_username(void)
 {
     const struct passwd *pw = getpwuid(getuid());
     return solv_strdup(pw->pw_name);
 }
 
-unsigned count_nullt_array(const char **a)
+unsigned
+count_nullt_array(const char **a)
 {
     const char **strp = a;
     while (*strp) strp++;
     return strp - a;
+}
+
+int
+str_endswith(const char *haystack, const char *needle)
+{
+    const int lenh = strlen(haystack);
+    const int lenn = strlen(needle);
+
+    if (lenn > lenh)
+	return 0;
+    return strncmp(haystack + lenh - lenn, needle, lenn) == 0 ? 1 : 0;
 }
 
 void

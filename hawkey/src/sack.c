@@ -154,11 +154,9 @@ log_cb(Pool *pool, void *cb_data, int type, const char *buf)
     HySack sack = cb_data;
 
     if (sack->log_out == NULL) {
-	char *dir = hy_sack_give_cache_fn(sack, NULL, NULL);
-	const char *fn = pool_tmpjoin(pool, dir, "/hawkey.log", NULL);
-	int res = mkcachedir(dir);
+	int res = mkcachedir(sack->cache_dir);
+	const char *fn = pool_tmpjoin(pool, sack->cache_dir, "/hawkey.log", NULL);
 
-	solv_free(dir);
 	assert(res == 0);
 	sack->log_out = fopen(fn, "a");
 	if (sack->log_out)
@@ -177,13 +175,14 @@ hy_sack_create(void)
     setarch(pool);
     sack->pool = pool;
 
-    int is_reg_user = geteuid();
-    char *username = this_username();
-    if (is_reg_user)
-	sack->cache_dir = solv_dupjoin(DEFAULT_CACHE_USER, "/", username);
-    else
+    if (geteuid()) {
+	char *username = this_username();
+	char *path = pool_tmpjoin(pool, DEFAULT_CACHE_USER, "-", username);
+	path = pool_tmpappend(pool, path, "-", "XXXXXX");
+	sack->cache_dir = solv_strdup(path);
+	solv_free(username);
+    } else
 	sack->cache_dir = solv_strdup(DEFAULT_CACHE_ROOT);
-    solv_free(username);
     queue_init(&sack->installonly);
 
     pool_setdebugcallback(pool, log_cb, sack);
@@ -218,8 +217,7 @@ hy_sack_free(HySack sack)
 char *
 hy_sack_give_cache_fn(HySack sack, const char *reponame, const char *ext)
 {
-    if (reponame == NULL)
-	return solv_strdup(sack->cache_dir);
+    assert(reponame);
     char *fn = solv_dupjoin(sack->cache_dir, "/", reponame);
     if (ext)
 	return solv_dupappend(fn, ext, ".solvx");
@@ -436,9 +434,7 @@ hy_sack_write_all_repos(HySack sack)
     int i;
     int ret;
 
-    char *dir = hy_sack_give_cache_fn(sack, NULL, NULL);
-    ret = mkcachedir(dir);
-    solv_free(dir);
+    ret = mkcachedir(sack->cache_dir);
     assert(ret == 0);
     if (ret)
 	return ret;

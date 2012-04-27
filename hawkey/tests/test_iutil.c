@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
-#include "stdlib.h"
+#include <stdlib.h>
+#include <unistd.h>
 
 // hawkey
 #include "src/iutil.h"
@@ -84,6 +85,40 @@ START_TEST(test_checksum_write_read)
 }
 END_TEST
 
+START_TEST(test_mkcachedir)
+{
+    const char *workdir = test_globals.tmpdir;
+    char * dir;
+    fail_if(asprintf(&dir, "%s%s", workdir, "/mkcachedir/sub/deep") == -1);
+    fail_if(mkcachedir(dir));
+    fail_if(access(dir, R_OK|X_OK|W_OK));
+    free(dir);
+
+    fail_if(asprintf(&dir, "%s%s", workdir, "/mkcachedir/sub2/wd-XXXXXX") == -1);
+    fail_if(mkcachedir(dir));
+    fail_if(str_endswith(dir, "XXXXXX")); /* mkcache dir changed the Xs */
+    fail_if(access(dir, R_OK|X_OK|W_OK));
+
+    /* test the globbing capability of mkcachedir */
+    char *dir2;
+    fail_if(asprintf(&dir2, "%s%s", workdir, "/mkcachedir/sub2/wd-XXXXXX") == -1);
+    fail_if(mkcachedir(dir2));
+    fail_if(strcmp(dir, dir2)); /* mkcachedir should have arrived at the same name */
+
+    free(dir2);
+    free(dir);
+}
+END_TEST
+
+START_TEST(test_str_endswith)
+{
+    fail_unless(str_endswith("spinning", "ing"));
+    fail_unless(str_endswith("spinning", "spinning"));
+    fail_unless(str_endswith("", ""));
+    fail_if(str_endswith("aaa", "b"));
+}
+END_TEST
+
 Suite *
 iutil_suite(void)
 {
@@ -91,7 +126,8 @@ iutil_suite(void)
     TCase *tc = tcase_create("Main");
     tcase_add_test(tc, test_checksum);
     tcase_add_test(tc, test_checksum_write_read);
+    tcase_add_test(tc, test_mkcachedir);
+    tcase_add_test(tc, test_str_endswith);
     suite_add_tcase(s, tc);
-
     return s;
 }

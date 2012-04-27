@@ -33,12 +33,8 @@ END_TEST
 START_TEST(test_give_cache_fn)
 {
     HySack sack = hy_sack_create();
-    char *path = hy_sack_give_cache_fn(sack, NULL, NULL);
-    fail_if(strstr(path, "/var/tmp/hawkey/") == NULL);
-    fail_unless(strlen(path) > strlen("/var/tmp/hawkey/"));
-    solv_free(path);
 
-    path = hy_sack_give_cache_fn(sack, "rain", NULL);
+    char *path = hy_sack_give_cache_fn(sack, "rain", NULL);
     fail_if(strstr(path, "rain.solv") == NULL);
     solv_free(path);
 
