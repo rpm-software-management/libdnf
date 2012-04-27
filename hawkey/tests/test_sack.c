@@ -23,7 +23,7 @@ END_TEST
 
 START_TEST(test_sack_create)
 {
-    HySack sack = hy_sack_create();
+    HySack sack = hy_sack_create(NULL);
     fail_if(sack == NULL, NULL);
     fail_if(sack_pool(sack) == NULL, NULL);
     hy_sack_free(sack);
@@ -32,7 +32,7 @@ END_TEST
 
 START_TEST(test_give_cache_fn)
 {
-    HySack sack = hy_sack_create();
+    HySack sack = hy_sack_create(NULL);
 
     char *path = hy_sack_give_cache_fn(sack, "rain", NULL);
     fail_if(strstr(path, "rain.solv") == NULL);
@@ -57,8 +57,6 @@ START_TEST(test_write_all_repos)
     HySack sack = test_globals.sack;
     Pool *pool = sack->pool;
     char *tmpdir = test_globals.tmpdir;
-
-    hy_sack_set_cache_path(sack, tmpdir);
 
     /* hy_sack_write_all repos needs HyRepo in every repo */
     Repo *repo;
@@ -113,8 +111,7 @@ START_TEST(test_filelist_from_cache)
     fail_if(access(fn_solv, R_OK));
 
     // create new sack, check it can work with the cached filenames OK
-    sack = hy_sack_create();
-    hy_sack_set_cache_path(sack, test_globals.tmpdir);
+    sack = hy_sack_create(test_globals.tmpdir);
     HY_LOG_INFO("created custom sack, loading yum\n");
     setup_yum_sack(sack);
 

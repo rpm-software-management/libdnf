@@ -154,10 +154,8 @@ log_cb(Pool *pool, void *cb_data, int type, const char *buf)
     HySack sack = cb_data;
 
     if (sack->log_out == NULL) {
-	int res = mkcachedir(sack->cache_dir);
 	const char *fn = pool_tmpjoin(pool, sack->cache_dir, "/hawkey.log", NULL);
 
-	assert(res == 0);
 	sack->log_out = fopen(fn, "a");
 	if (sack->log_out)
 	    HY_LOG_INFO("started.", sack);
@@ -167,7 +165,7 @@ log_cb(Pool *pool, void *cb_data, int type, const char *buf)
 }
 
 HySack
-hy_sack_create(void)
+hy_sack_create(const char *cache_path)
 {
     HySack sack = solv_calloc(1, sizeof(*sack));
     Pool *pool = pool_create();
@@ -175,7 +173,9 @@ hy_sack_create(void)
     setarch(pool);
     sack->pool = pool;
 
-    if (geteuid()) {
+    if (cache_path != NULL) {
+	sack->cache_dir = solv_strdup(cache_path);
+    } else if (geteuid()) {
 	char *username = this_username();
 	char *path = pool_tmpjoin(pool, DEFAULT_CACHE_USER, "-", username);
 	path = pool_tmpappend(pool, path, "-", "XXXXXX");
@@ -183,6 +183,12 @@ hy_sack_create(void)
 	solv_free(username);
     } else
 	sack->cache_dir = solv_strdup(DEFAULT_CACHE_ROOT);
+    int ret = mkcachedir(sack->cache_dir);
+    assert(ret == 0);
+    if (ret) {
+	hy_sack_free(sack);
+	return NULL;
+    }
     queue_init(&sack->installonly);
 
     pool_setdebugcallback(pool, log_cb, sack);
@@ -222,13 +228,6 @@ hy_sack_give_cache_fn(HySack sack, const char *reponame, const char *ext)
     if (ext)
 	return solv_dupappend(fn, ext, ".solvx");
     return solv_dupappend(fn, ".solv", NULL);
-}
-
-void
-hy_sack_set_cache_path(HySack sack, const char *path)
-{
-    solv_free(sack->cache_dir);
-    sack->cache_dir = solv_strdup(path);
 }
 
 void
@@ -278,7 +277,7 @@ hy_sack_load_rpm_repo(HySack sack)
     enum _hy_repo_state new_state;
     int ret;
 
-    free(cache_fn);
+    solv_free(cache_fn);
     hy_repo_set_string(hrepo, HY_REPO_NAME, HY_SYSTEM_REPO_NAME);
 
     ret = current_rpmdb_checksum(hrepo->checksum);
@@ -432,12 +431,7 @@ hy_sack_write_all_repos(HySack sack)
     Pool *pool = sack->pool;
     Repo *repo;
     int i;
-    int ret;
-
-    ret = mkcachedir(sack->cache_dir);
-    assert(ret == 0);
-    if (ret)
-	return ret;
+    int ret = 0;
 
     FOR_REPOS(i, repo) {
 	const char *name = repo->name;

@@ -70,7 +70,7 @@ sack_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     _SackObject *self = (_SackObject *)type->tp_alloc(type, 0);
 
     if (self) {
-	self->sack = hy_sack_create();
+	self->sack = hy_sack_create(NULL);
 	if (self->sack == NULL) {
 	    Py_DECREF(self);
 	    return NULL;

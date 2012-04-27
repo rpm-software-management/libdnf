@@ -398,7 +398,7 @@ read_repopaths(char **md_repo, char **md_primary_xml, char **md_filelists,
 
 int main(int argc, const char **argv)
 {
-    HySack sack = hy_sack_create();
+    HySack sack = hy_sack_create(NULL);
     HyRepo repo;
     char *md_repo;
     char *md_primary_xml;

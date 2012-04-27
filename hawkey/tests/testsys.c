@@ -83,9 +83,8 @@ load_repo(Pool *pool, const char *name, const char *path, int installed)
 void
 setup_empty_sack(void)
 {
-    HySack sack = hy_sack_create();
+    HySack sack = hy_sack_create(test_globals.tmpdir);
     test_globals.sack = sack;
-    hy_sack_set_cache_path(sack, test_globals.tmpdir);
     HY_LOG_INFO("HySack for UT created: %p", sack);
 }
 
