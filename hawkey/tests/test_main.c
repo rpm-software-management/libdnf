@@ -3,6 +3,8 @@
 #include <check.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 // libsolv
 #include <solv/util.h>
@@ -19,7 +21,11 @@
 static void
 init_test_globals(struct TestGlobals_s *tg, const char *repo_dir)
 {
-    tg->repo_dir = solv_strdup(repo_dir);
+    int const len = strlen(repo_dir);
+    if (repo_dir[len -1] != '/')
+	tg->repo_dir = solv_dupjoin(repo_dir, "/", NULL);
+    else
+	tg->repo_dir = solv_strdup(repo_dir);
     tg->tmpdir = solv_dupjoin(UNITTEST_DIR, "XXXXXX", NULL);
     mkdtemp(tg->tmpdir);
     tg->sack = NULL;
@@ -36,9 +42,14 @@ int
 main(int argc, const char **argv)
 {
     int number_failed;
+    struct stat s;
 
     if (argc != 2) {
 	fprintf(stderr, "synopsis: %s <repo_directory>\n", argv[0]);
+	exit(1);
+    }
+    if (stat(argv[1], &s) || !S_ISDIR(s.st_mode)) {
+	fprintf(stderr, "can not read repos at '%s'.\n", argv[1]);
 	exit(1);
     }
     init_test_globals(&test_globals, argv[1]);
