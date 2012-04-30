@@ -23,7 +23,7 @@ END_TEST
 
 START_TEST(test_sack_create)
 {
-    HySack sack = hy_sack_create(NULL);
+    HySack sack = hy_sack_create(test_globals.tmpdir);
     fail_if(sack == NULL, NULL);
     fail_if(sack_pool(sack) == NULL, NULL);
     hy_sack_free(sack);
@@ -32,7 +32,7 @@ END_TEST
 
 START_TEST(test_give_cache_fn)
 {
-    HySack sack = hy_sack_create(NULL);
+    HySack sack = hy_sack_create(test_globals.tmpdir);
 
     char *path = hy_sack_give_cache_fn(sack, "rain", NULL);
     fail_if(strstr(path, "rain.solv") == NULL);

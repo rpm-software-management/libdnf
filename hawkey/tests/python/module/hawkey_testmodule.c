@@ -42,4 +42,5 @@ init_hawkey_test(void)
     PyModule_AddIntConstant(m, "EXPECT_SYSTEM_NSOLVABLES", TEST_EXPECT_SYSTEM_NSOLVABLES);
     PyModule_AddIntConstant(m, "EXPECT_MAIN_NSOLVABLES", TEST_EXPECT_MAIN_NSOLVABLES);
     PyModule_AddIntConstant(m, "EXPECT_UPDATES_NSOLVABLES", TEST_EXPECT_UPDATES_NSOLVABLES);
+    PyModule_AddStringConstant(m, "UNITTEST_DIR", UNITTEST_DIR);
 }

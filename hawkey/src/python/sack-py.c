@@ -70,14 +70,10 @@ sack_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     _SackObject *self = (_SackObject *)type->tp_alloc(type, 0);
 
     if (self) {
-	self->sack = hy_sack_create(NULL);
-	if (self->sack == NULL) {
-	    Py_DECREF(self);
-	    return NULL;
-	}
+	self->sack = NULL;
+	self->custom_package_class = NULL;
+	self->custom_package_val = NULL;
     }
-    self->custom_package_class = NULL;
-    self->custom_package_val = NULL;
     return (PyObject *)self;
 }
 
@@ -86,9 +82,13 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *custom_class = NULL;
     PyObject *custom_val = NULL;
+    const char *cachedir = NULL;
+    char *kwlist[] = {"cachedir", "pkgcls", "pkginitval", NULL};
 
-    if (!PyArg_ParseTuple(args, "|OO", &custom_class, &custom_val))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|sOO", kwlist,
+				     &cachedir, &custom_class, &custom_val))
 	return -1;
+    self->sack = hy_sack_create(cachedir);
     if (custom_class && custom_class != Py_None) {
 	if (!PyType_Check(custom_class)) {
 	    PyErr_SetString(PyExc_TypeError, "Expected a class object.");

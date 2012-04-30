@@ -26,7 +26,7 @@ init_test_globals(struct TestGlobals_s *tg, const char *repo_dir)
 	tg->repo_dir = solv_dupjoin(repo_dir, "/", NULL);
     else
 	tg->repo_dir = solv_strdup(repo_dir);
-    tg->tmpdir = solv_dupjoin(UNITTEST_DIR, "XXXXXX", NULL);
+    tg->tmpdir = solv_strdup(UNITTEST_DIR);
     mkdtemp(tg->tmpdir);
     tg->sack = NULL;
 }

@@ -11,7 +11,7 @@ struct TestGlobals_s {
     char *tmpdir;
 };
 
-#define UNITTEST_DIR "/tmp/hawkey"
+#define UNITTEST_DIR "/tmp/hawkeyXXXXXX"
 #define YUM_DIR_SUFFIX "yum/repodata/"
 #define TEST_META_SOLVABLES_COUNT 2
 #define TEST_EXPECT_SYSTEM_PKGS 4
