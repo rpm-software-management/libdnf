@@ -148,9 +148,10 @@ hy_goal_describe_problem(HyGoal goal, unsigned i)
 {
     Pool *pool = sack_pool(goal->sack);
     Id *ps = goal->problems.elements;
+    int i4 = i * 4;
 
-    assert(goal->problems.count/4 > i);
-    return problemruleinfo2str(pool, ps[i], ps[i+1], ps[i+2], ps[i+3]);
+    assert(goal->problems.count > i4);
+    return problemruleinfo2str(pool, ps[i4], ps[i4+1], ps[i4+2], ps[i4+3]);
 }
 
 HyPackageList
