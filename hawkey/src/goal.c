@@ -102,6 +102,13 @@ hy_goal_update(HyGoal goal, HyPackage new_pkg)
 }
 
 int
+hy_goal_upgrade_all(HyGoal goal)
+{
+    queue_push2(&goal->job, SOLVER_UPDATE|SOLVER_SOLVABLE_ALL, 0);
+    return 0;
+}
+
+int
 hy_goal_go(HyGoal goal)
 {
     Transaction *trans = job2transaction(goal->sack, &goal->job, &goal->problems);

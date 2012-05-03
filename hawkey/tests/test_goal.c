@@ -27,7 +27,7 @@ get_latest_pkg(HySack sack, const char *name)
     return pkg;
 }
 
-int
+static int
 size_and_free(HyPackageList plist)
 {
     int c = hy_packagelist_count(plist);
@@ -74,7 +74,7 @@ START_TEST(test_goal_install)
 }
 END_TEST
 
-START_TEST(test_goal_upgrade)
+START_TEST(test_goal_update)
 {
     HyPackage pkg = get_latest_pkg(test_globals.sack, "fool");
     HyGoal goal = hy_goal_create(test_globals.sack);
@@ -83,6 +83,32 @@ START_TEST(test_goal_upgrade)
     fail_if(hy_goal_go(goal));
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 1);
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
+    hy_goal_free(goal);
+}
+END_TEST
+
+
+START_TEST(test_goal_upgrade_all)
+{
+    HyGoal goal = hy_goal_create(test_globals.sack);
+    hy_goal_upgrade_all(goal);
+    fail_if(hy_goal_go(goal));
+
+    HyPackageList plist = hy_goal_list_erasures(goal);
+    fail_unless(hy_packagelist_count(plist) == 1);
+    HyPackage pkg = hy_packagelist_get(plist, 0);
+    fail_if(strcmp(hy_package_get_name(pkg), "penny"));
+    hy_packagelist_free(plist);
+
+    plist = hy_goal_list_upgrades(goal);
+    fail_unless(hy_packagelist_count(plist) == 2);
+    pkg = hy_packagelist_get(plist, 0);
+    fail_if(strcmp(hy_package_get_name(pkg), "fool"));
+    pkg = hy_packagelist_get(plist, 1);
+    fail_if(strcmp(hy_package_get_name(pkg), "flying"));
+    hy_packagelist_free(plist);
+
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
     hy_goal_free(goal);
 }
@@ -117,7 +143,8 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_sanity);
     tcase_add_test(tc, test_goal_update_impossible);
     tcase_add_test(tc, test_goal_install);
-    tcase_add_test(tc, test_goal_upgrade);
+    tcase_add_test(tc, test_goal_update);
+    tcase_add_test(tc, test_goal_upgrade_all);
     tcase_add_test(tc, test_goal_installonly);
     suite_add_tcase(s, tc);
 

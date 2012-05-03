@@ -97,6 +97,15 @@ update(_GoalObject *self, PyObject *pkgob)
 }
 
 static PyObject *
+upgrade_all(_GoalObject *self, PyObject *unused)
+{
+    int ret = hy_goal_upgrade_all(self->goal);
+    if (!ret)
+	Py_RETURN_TRUE;
+    Py_RETURN_FALSE;
+}
+
+static PyObject *
 go(_GoalObject *self, PyObject *unused)
 {
     int ret = hy_goal_go(self->goal);
@@ -175,6 +184,7 @@ static struct PyMethodDef goal_methods[] = {
     {"erase",		(PyCFunction)erase,		METH_O, NULL},
     {"install",		(PyCFunction)install,		METH_O, NULL},
     {"update",		(PyCFunction)update,		METH_O, NULL},
+    {"upgrade_all",	(PyCFunction)upgrade_all,	METH_NOARGS, NULL},
     {"go",		(PyCFunction)go,		METH_NOARGS, NULL},
     {"count_problems",	(PyCFunction)count_problems,	METH_NOARGS, NULL},
     {"describe_problem",(PyCFunction)describe_problem,	METH_O, NULL},
