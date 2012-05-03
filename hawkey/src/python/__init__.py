@@ -28,7 +28,11 @@ QUERY_FT_MAP = {
 }
 
 Sack = _hawkey.Sack
-Goal = _hawkey.Goal
+
+class Goal(_hawkey.Goal):
+    @property
+    def problems(self):
+        return [self.describe_problem(i) for i in range(0, self.count_problems())]
 
 class Package(_hawkey.Package):
     def evr_eq(self, pkg):
