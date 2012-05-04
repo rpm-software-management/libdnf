@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include <assert.h>
+#include <errno.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -302,18 +303,24 @@ hy_sack_load_rpm_repo(HySack sack)
     sack->provides_ready = 0;
 }
 
-void hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
+int
+hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
 {
+    int retval = 0;
     Pool *pool = sack->pool;
     const char *name = hy_repo_get_string(hrepo, HY_REPO_NAME);
     Repo *repo = repo_create(pool, name);
+    const char *fn_repomd = hy_repo_get_string(hrepo, HY_REPO_MD_FN);
     char *fn_cache = hy_sack_give_cache_fn(sack, name, NULL);
     enum _hy_repo_state new_state;
 
     FILE *fp_cache = fopen(fn_cache, "r");
-    FILE *fp_repomd = fopen(hy_repo_get_string(hrepo, HY_REPO_MD_FN), "r");
-
-    assert(fp_repomd);
+    FILE *fp_repomd = fopen(fn_repomd, "r");
+    if (fp_repomd == NULL) {
+	HY_LOG_ERROR("can not read repomd %s: %s", fn_repomd, strerror(errno));
+	retval = 1;
+	goto finish;
+    }
     checksum_fp(hrepo->checksum, fp_repomd);
 
     if (can_use_repomd_cache(fp_cache, hrepo->checksum)) {
@@ -337,14 +344,19 @@ void hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
     int trans = hy_repo_transition(hrepo, new_state);
     assert(trans == 0); (void)trans;
 
+ finish:
     if (fp_cache)
 	fclose(fp_cache);
     if (fp_repomd)
 	fclose(fp_repomd);
     free(fn_cache);
 
-    repo->appdata = hy_repo_link(hrepo);
-    sack->provides_ready = 0;
+    if (retval == 0) {
+	repo->appdata = hy_repo_link(hrepo);
+	sack->provides_ready = 0;
+    } else
+	repo_free(repo, 1);
+    return retval;
 }
 
 int

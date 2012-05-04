@@ -45,6 +45,18 @@ START_TEST(test_give_cache_fn)
 }
 END_TEST
 
+START_TEST(test_load_yum_repo_err)
+{
+    HySack sack = hy_sack_create(test_globals.tmpdir);
+    HyRepo repo = hy_repo_create();
+    hy_repo_set_string(repo, HY_REPO_NAME, "semolina");
+    hy_repo_set_string(repo, HY_REPO_MD_FN, "/non/existing");
+    fail_unless(hy_sack_load_yum_repo(sack, repo) == 1);
+    hy_repo_free(repo);
+    hy_sack_free(sack);
+}
+END_TEST
+
 START_TEST(test_repo_load)
 {
     fail_unless(test_globals.sack->pool->nsolvables ==
@@ -144,6 +156,7 @@ sack_suite(void)
     tcase_add_test(tc, test_environment);
     tcase_add_test(tc, test_sack_create);
     tcase_add_test(tc, test_give_cache_fn);
+    tcase_add_test(tc, test_load_yum_repo_err);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Repos");

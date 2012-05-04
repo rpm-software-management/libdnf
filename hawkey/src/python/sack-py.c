@@ -194,9 +194,16 @@ load_yum_repo(_SackObject *self, PyObject *repo)
     HyRepo frepo = frepoFromPyObject(repo);
     if (frepo == NULL)
 	return NULL;
-    hy_sack_load_yum_repo(self->sack, frepo);
-
-    Py_RETURN_NONE;
+    switch (hy_sack_load_yum_repo(self->sack, frepo)) {
+    case 0:
+	Py_RETURN_NONE;
+    case 1:
+	PyErr_SetString(PyExc_IOError, "Can not read repomd file.");
+	return NULL;
+    default:
+	PyErr_SetString(PyExc_RuntimeError, "load_yum_repo() failed.");
+	return NULL;
+    }
 }
 
 static PyObject *
