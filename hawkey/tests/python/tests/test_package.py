@@ -1,6 +1,3 @@
-import sys
-import unittest
-
 import base
 import hawkey
 import hawkey.test

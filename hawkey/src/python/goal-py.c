@@ -83,14 +83,24 @@ install(_GoalObject *self, PyObject *pkgob)
 }
 
 static PyObject *
-update(_GoalObject *self, PyObject *pkgob)
+update(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    HyPackage pkg = packageFromPyObject(pkgob);
+    PyObject *pkgob = NULL;
+    int check_later_version = 1;
+    char *kwlist[] = {"package", "check_later_version", NULL};
     int ret;
+    int flags = 0;
 
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i", kwlist,
+				     &pkgob, &check_later_version))
+	return NULL;
+    HyPackage pkg = packageFromPyObject(pkgob);
     if (pkg == NULL)
 	return NULL;
-    ret = hy_goal_update(self->goal, pkg);
+
+    if (check_later_version)
+	flags |= HY_CHECK_INSTALLED;
+    ret = hy_goal_update_flags(self->goal, pkg, flags);
     if (!ret)
 	Py_RETURN_TRUE;
     Py_RETURN_FALSE;
@@ -183,7 +193,8 @@ package_upgrades(_GoalObject *self, PyObject *pkg)
 static struct PyMethodDef goal_methods[] = {
     {"erase",		(PyCFunction)erase,		METH_O, NULL},
     {"install",		(PyCFunction)install,		METH_O, NULL},
-    {"update",		(PyCFunction)update,		METH_O, NULL},
+    {"update",		(PyCFunction)update,
+     METH_VARARGS | METH_KEYWORDS, NULL},
     {"upgrade_all",	(PyCFunction)upgrade_all,	METH_NOARGS, NULL},
     {"go",		(PyCFunction)go,		METH_NOARGS, NULL},
     {"count_problems",	(PyCFunction)count_problems,	METH_NOARGS, NULL},

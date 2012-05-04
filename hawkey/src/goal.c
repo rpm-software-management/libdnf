@@ -84,21 +84,30 @@ hy_goal_install(HyGoal goal, HyPackage new_pkg)
 int
 hy_goal_update(HyGoal goal, HyPackage new_pkg)
 {
-    HyQuery q = hy_query_create(goal->sack);
-    const char *name = hy_package_get_name(new_pkg);
-    HyPackageList installed;
-    int count;
+    return hy_goal_update_flags(goal, new_pkg, HY_CHECK_INSTALLED);
+}
 
-    hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
-    hy_query_filter(q, HY_PKG_REPO, HY_EQ, HY_SYSTEM_REPO_NAME);
-    installed = hy_query_run(q);
-    count = hy_packagelist_count(installed);
-    hy_packagelist_free(installed);
-    hy_query_free(q);
+int
+hy_goal_update_flags(HyGoal goal, HyPackage new_pkg, int flags)
+{
+    int count = 0;
 
-    if (count)
-	return hy_goal_install(goal, new_pkg);
-    return 1;
+    if (flags & HY_CHECK_INSTALLED) {
+	HyQuery q = hy_query_create(goal->sack);
+	const char *name = hy_package_get_name(new_pkg);
+	HyPackageList installed;
+
+	hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
+	hy_query_filter(q, HY_PKG_REPO, HY_EQ, HY_SYSTEM_REPO_NAME);
+	installed = hy_query_run(q);
+	count = hy_packagelist_count(installed);
+	hy_packagelist_free(installed);
+	hy_query_free(q);
+	if (!count)
+	    return 1;
+    }
+
+    return hy_goal_install(goal, new_pkg);
 }
 
 int

@@ -11,12 +11,17 @@
 #include "sack.h"
 #include "types.h"
 
+enum _hy_goal_flags {
+    HY_CHECK_INSTALLED = 1,
+};
+
 HyGoal hy_goal_create(HySack sack);
 void hy_goal_free(HyGoal goal);
 
 int hy_goal_erase(HyGoal goal, HyPackage pkg);
 int hy_goal_install(HyGoal goal, HyPackage new_pkg);
 int hy_goal_update(HyGoal goal, HyPackage new_pkg);
+int hy_goal_update_flags(HyGoal goal, HyPackage new_pkg, int flags);
 int hy_goal_upgrade_all(HyGoal goal);
 int hy_goal_go(HyGoal goal);
 
