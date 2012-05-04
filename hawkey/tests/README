@@ -1,6 +1,8 @@
 
 == The python/ directory ==
-It contains unit tests for the bindings-specific code.
+module/ contains the hawkey.test module used for testing Python bindings of hawkey and its Python clients.
+
+tests/ contains the unit tests themselves.
 
 == The repos/ directory ==
 This directory contains sample package data for testing. The goal is to have as
@@ -20,6 +22,9 @@ penny, penny-lib
 
 walrus
 * not installed, available in the main repo
+
+hello
+* depends on 'goodbye' which is not provided by anything else
 
 === repos/yum ===
 

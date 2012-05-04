@@ -114,6 +114,26 @@ START_TEST(test_goal_upgrade_all)
 }
 END_TEST
 
+START_TEST(test_goal_describe_problem)
+{
+    HySack sack = test_globals.sack;
+    HyPackage pkg = get_latest_pkg(sack, "hello");
+    HyGoal goal = hy_goal_create(sack);
+
+    hy_goal_install(goal, pkg);
+    fail_unless(hy_goal_go(goal));
+    fail_unless(hy_goal_count_problems(goal) > 0);
+
+    char *problem = hy_goal_describe_problem(goal, 0);
+    const char *expected = "nothing provides goodbye";
+    fail_if(strncmp(problem, expected, strlen(expected)));
+    solv_free(problem);
+
+    hy_package_free(pkg);
+    hy_goal_free(goal);
+}
+END_TEST
+
 START_TEST(test_goal_installonly)
 {
     const char *installonly[] = {"fool", NULL};
@@ -145,6 +165,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_install);
     tcase_add_test(tc, test_goal_update);
     tcase_add_test(tc, test_goal_upgrade_all);
+    tcase_add_test(tc, test_goal_describe_problem);
     tcase_add_test(tc, test_goal_installonly);
     suite_add_tcase(s, tc);
 
