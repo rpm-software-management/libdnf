@@ -88,8 +88,6 @@ hy_repo_get_string(HyRepo repo, enum _hy_repo_param_e which)
     return NULL;
 }
 
-#include <stdio.h>
-
 void
 hy_repo_free(HyRepo repo)
 {
