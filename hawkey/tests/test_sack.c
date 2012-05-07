@@ -10,6 +10,7 @@
 // hawkey
 #include "src/repo_internal.h"
 #include "src/sack_internal.h"
+#include "src/util.h"
 #include "testsys.h"
 
 START_TEST(test_environment)
@@ -36,11 +37,11 @@ START_TEST(test_give_cache_fn)
 
     char *path = hy_sack_give_cache_fn(sack, "rain", NULL);
     fail_if(strstr(path, "rain.solv") == NULL);
-    solv_free(path);
+    hy_free(path);
 
     path = hy_sack_give_cache_fn(sack, "rain", HY_EXT_FILENAMES);
     fail_if(strstr(path, "rain-filenames.solvx") == NULL);
-    solv_free(path);
+    hy_free(path);
     hy_sack_free(sack);
 }
 END_TEST
@@ -87,7 +88,7 @@ START_TEST(test_write_all_repos)
     fail_if(hy_sack_write_all_repos(sack));
     fail_if(access(filename, R_OK|W_OK));
 
-    solv_free(filename);
+    hy_free(filename);
 }
 END_TEST
 
@@ -144,7 +145,7 @@ START_TEST(test_filelist_from_cache)
 
     // remove the file so the remaining tests do no try to use it:
     fail_if(unlink(fn_solv));
-    solv_free(fn_solv);
+    hy_free(fn_solv);
 }
 END_TEST
 

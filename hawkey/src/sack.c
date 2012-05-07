@@ -349,7 +349,7 @@ hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
 	fclose(fp_cache);
     if (fp_repomd)
 	fclose(fp_repomd);
-    free(fn_cache);
+    solv_free(fn_cache);
 
     if (retval == 0) {
 	repo->appdata = hy_repo_link(hrepo);

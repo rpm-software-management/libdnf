@@ -7,7 +7,6 @@
 // libsolv
 #include "solv/repo_rpmdb.h"
 #include "solv/solver.h"
-#include "solv/util.h"
 
 // hawkey
 #include "repo.h"
@@ -15,6 +14,7 @@
 #include "package_internal.h"
 #include "query.h"
 #include "sack.h"
+#include "util.h"
 
 #define CFG_FILE "~/.hawkey/main.config"
 
@@ -53,12 +53,12 @@ static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
 	    while ((opkg = hy_packagelist_iter_next(oiter)) != NULL) {
 		onvra = hy_package_get_nvra(opkg);
 		printf("obsoleting: %s\n", onvra);
-		solv_free(onvra);
+		hy_free(onvra);
 	    }
 	    hy_packagelist_iter_free(oiter);
 	    hy_packagelist_free(olist);
 	}
-	solv_free(nvra);
+	hy_free(nvra);
     }
     hy_packagelist_iter_free(iter);
     hy_packagelist_free(plist);
@@ -99,7 +99,7 @@ static void search_and_print(HySack sack, const char *name)
     while ((pkg = hy_packagelist_iter_next(iter)) != NULL) {
 	char *nvra = hy_package_get_nvra(pkg);
        	printf("found package by summary: %s\n", nvra);
-	solv_free(nvra);
+	hy_free(nvra);
     }
     hy_packagelist_iter_free(iter);
     hy_packagelist_free(plist);
@@ -196,7 +196,7 @@ dump_goal_errors(HyGoal goal)
     for (int i = 0; i < hy_goal_count_problems(goal); ++i) {
 	char *problem = hy_goal_describe_problem(goal, i);
 	printf("%s\n", problem);
-	solv_free(problem);
+	hy_free(problem);
     }
 }
 
@@ -231,7 +231,7 @@ erase(HySack sack, const char *name)
 	char *nvra = hy_package_get_nvra(pkg);
 
 	printf("erasing %s\n", nvra);
-	solv_free(nvra);
+	hy_free(nvra);
     }
 
     hy_goal_free(goal);
@@ -267,10 +267,10 @@ static void update(HySack sack, HyPackage pkg)
 	printf("\tfrom: %s\n", nvra_installed);
 	printf("\tsize: %d kB\n", hy_package_get_size(pkg) / 1024);
 
-	solv_free(nvra_installed);
+	hy_free(nvra_installed);
 	hy_package_free(installed);
-	solv_free(location);
-	solv_free(nvra);
+	hy_free(location);
+	hy_free(nvra);
     }
     hy_packagelist_free(plist);
     // handle installs
@@ -284,8 +284,8 @@ static void update(HySack sack, HyPackage pkg)
 	printf("installing: %s using %s\n", nvra, location);
 	printf("\tsize: %d kB\n", hy_package_get_size(pkg) / 1024);
 
-	solv_free(location);
-	solv_free(nvra);
+	hy_free(location);
+	hy_free(nvra);
     }
     hy_packagelist_free(plist);
 
@@ -375,12 +375,12 @@ read_repopaths(char **md_repo, char **md_primary_xml, char **md_filelists,
 	(getline(md_repo_updates, &size, f) < 0) ||
 	(getline(md_primary_updates_xml, &size, f) < 0) ||
 	(getline(md_filelists_updates, &size, f) < 0)) {
-	solv_free(*md_repo);
-	solv_free(*md_primary_xml);
-	solv_free(*md_filelists);
-	solv_free(*md_repo_updates);
-	solv_free(*md_primary_updates_xml);
-	solv_free(*md_filelists_updates);
+	free(*md_repo);
+	free(*md_primary_xml);
+	free(*md_filelists);
+	free(*md_repo_updates);
+	free(*md_primary_updates_xml);
+	free(*md_filelists_updates);
 	fclose(f);
 	wordfree(&word_vector);
 	return 1;
@@ -432,12 +432,12 @@ int main(int argc, const char **argv)
 		       md_filelists_updates);
     hy_sack_load_yum_repo(sack, repo);
     hy_repo_free(repo);
-    solv_free(md_repo);
-    solv_free(md_primary_xml);
-    solv_free(md_filelists);
-    solv_free(md_repo_updates);
-    solv_free(md_primary_updates_xml);
-    solv_free(md_filelists_updates);
+    free(md_repo);
+    free(md_primary_xml);
+    free(md_filelists);
+    free(md_repo_updates);
+    free(md_primary_updates_xml);
+    free(md_filelists_updates);
     hy_sack_write_all_repos(sack);
     hy_sack_set_installonly(sack, installonly);
 

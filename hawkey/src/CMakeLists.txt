@@ -1,5 +1,5 @@
 SET (hawkey_SRCS
-    repo.c goal.c iutil.c package.c packagelist.c query.c sack.c)
+    repo.c goal.c iutil.c package.c packagelist.c query.c sack.c util.c)
 
 ADD_LIBRARY(libhawkey SHARED ${hawkey_SRCS})
 TARGET_LINK_LIBRARIES(libhawkey ${SOLV_LIBRARY} ${SOLVEXT_LIBRARY})
@@ -24,7 +24,8 @@ SET(HAWKEY_headers
     query.h
     repo.h
     sack.h
-    types.h)
+    types.h
+    util.h)
 
 IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
   SET (LIB_SUFFIX "64")

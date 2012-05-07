@@ -11,11 +11,11 @@
 // libsolv
 #include <solv/repo.h>
 #include <solv/testcase.h>
-#include <solv/util.h>
 
 // hawkey
 #include "src/iutil.h"
 #include "src/sack_internal.h"
+#include "src/util.h"
 #include "testsys.h"
 
 /* define the global variable */
@@ -29,7 +29,7 @@ dump_packagelist(HyPackageList plist)
 	HyPackage pkg = hy_packagelist_get(plist, i);
 	char *nvra = hy_package_get_nvra(pkg);
 	printf("\t%s\n", nvra);
-	solv_free(nvra);
+	hy_free(nvra);
     }
 }
 

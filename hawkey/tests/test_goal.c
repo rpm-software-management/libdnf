@@ -8,6 +8,7 @@
 #include "src/query.h"
 #include "src/package_internal.h"
 #include "src/sack_internal.h"
+#include "src/util.h"
 #include "testsys.h"
 #include "test_goal.h"
 
@@ -127,7 +128,7 @@ START_TEST(test_goal_describe_problem)
     char *problem = hy_goal_describe_problem(goal, 0);
     const char *expected = "nothing provides goodbye";
     fail_if(strncmp(problem, expected, strlen(expected)));
-    solv_free(problem);
+    hy_free(problem);
 
     hy_package_free(pkg);
     hy_goal_free(goal);
