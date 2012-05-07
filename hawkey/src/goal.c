@@ -84,7 +84,7 @@ hy_goal_install(HyGoal goal, HyPackage new_pkg)
 int
 hy_goal_update(HyGoal goal, HyPackage new_pkg)
 {
-    return hy_goal_update_flags(goal, new_pkg, HY_CHECK_INSTALLED);
+    return hy_goal_update_flags(goal, new_pkg, 0);
 }
 
 int

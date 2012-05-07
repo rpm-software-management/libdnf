@@ -86,19 +86,19 @@ static PyObject *
 update(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *pkgob = NULL;
-    int check_later_version = 1;
-    char *kwlist[] = {"package", "check_later_version", NULL};
+    int check_installed = 0;
+    char *kwlist[] = {"package", "check_installed", NULL};
     int ret;
     int flags = 0;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i", kwlist,
-				     &pkgob, &check_later_version))
+				     &pkgob, &check_installed))
 	return NULL;
     HyPackage pkg = packageFromPyObject(pkgob);
     if (pkg == NULL)
 	return NULL;
 
-    if (check_later_version)
+    if (check_installed)
 	flags |= HY_CHECK_INSTALLED;
     ret = hy_goal_update_flags(self->goal, pkg, flags);
     if (!ret)

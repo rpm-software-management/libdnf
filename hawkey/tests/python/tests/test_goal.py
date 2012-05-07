@@ -14,7 +14,9 @@ class Goal(base.TestCase):
         pkg = hawkey.Query(self.sack).filter(name="walrus").run()[0]
         # without checking versioning, the update is accepted:
         self.assertTrue(hawkey.Goal(self.sack).update(pkg,
-                                                      check_later_version=False))
+                                                      check_installed=False))
         # with the check it is not:
         self.assertFalse(hawkey.Goal(self.sack).update(pkg,
-                                                       check_later_version=True))
+                                                       check_installed=True))
+        # default value for check_installed is False:
+        self.assertTrue(hawkey.Goal(self.sack).update(pkg))

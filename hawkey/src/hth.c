@@ -244,7 +244,7 @@ static void update(HySack sack, HyPackage pkg)
 {
     HyGoal goal = hy_goal_create(sack);
 
-    if (hy_goal_update(goal, pkg)) {
+    if (hy_goal_update_flags(goal, pkg, HY_CHECK_INSTALLED)) {
 	printf("no package of that name installed, trying install\n");
 	hy_goal_install(goal, pkg);
     }
