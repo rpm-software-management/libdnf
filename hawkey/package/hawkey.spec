@@ -6,7 +6,7 @@ Version:	0.2.1
 Release:	1.git%{gitrev}%{?dist}
 Summary:	A Library providing simplified C and Python API to libsolv.
 Group:		Development/Libraries
-License:	none-yet
+License:	LGPLv2+
 URL:		https://github.com/akozumpl/hawkey
 # git archive %{gitrev} --prefix=hawkey/ | xz > hawkey-%{gitrev}.tar.xz
 Source0:	hawkey-%{gitrev}.tar.xz
