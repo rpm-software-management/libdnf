@@ -170,7 +170,7 @@ filter_repo(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
-filter_updates(HyQuery q, Map *res)
+filter_upgrades(HyQuery q, Map *res)
 {
     HySack sack = q->sack;
     Pool *pool = sack_pool(sack);
@@ -338,7 +338,7 @@ hy_query_filter_provides(HyQuery q, int filter_type, const char *name, const cha
  * This requires resolving and so makes the final query expensive.
  */
 void
-hy_query_filter_updates(HyQuery q, int val)
+hy_query_filter_upgrades(HyQuery q, int val)
 {
     q->updates = val;
 }
@@ -391,7 +391,7 @@ hy_query_run(HyQuery q)
 	    map_and(&res, &m);
     }
     if (q->updates)
-	filter_updates(q, &res);
+	filter_upgrades(q, &res);
     if (q->latest)
 	filter_latest(q, &res);
     if (q->obsoleting)

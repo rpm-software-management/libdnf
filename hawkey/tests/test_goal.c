@@ -55,7 +55,7 @@ START_TEST(test_goal_update_impossible)
 
     HyGoal goal = hy_goal_create(test_globals.sack);
     // can not try an update, walrus is not installed:
-    fail_unless(hy_goal_update_flags(goal, pkg, HY_CHECK_INSTALLED));
+    fail_unless(hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED));
     hy_package_free(pkg);
     hy_goal_free(goal);
 }
@@ -79,7 +79,7 @@ START_TEST(test_goal_update)
 {
     HyPackage pkg = get_latest_pkg(test_globals.sack, "fool");
     HyGoal goal = hy_goal_create(test_globals.sack);
-    fail_if(hy_goal_update_flags(goal, pkg, HY_CHECK_INSTALLED));
+    fail_if(hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED));
     hy_package_free(pkg);
     fail_if(hy_goal_go(goal));
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
@@ -143,7 +143,7 @@ START_TEST(test_goal_installonly)
     hy_sack_set_installonly(sack, installonly);
     HyPackage pkg = get_latest_pkg(sack, "fool");
     HyGoal goal = hy_goal_create(sack);
-    fail_if(hy_goal_update_flags(goal, pkg, HY_CHECK_INSTALLED));
+    fail_if(hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED));
     hy_package_free(pkg);
     fail_if(hy_goal_go(goal));
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);

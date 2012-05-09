@@ -82,13 +82,13 @@ hy_goal_install(HyGoal goal, HyPackage new_pkg)
 }
 
 int
-hy_goal_update(HyGoal goal, HyPackage new_pkg)
+hy_goal_upgrade_to(HyGoal goal, HyPackage new_pkg)
 {
-    return hy_goal_update_flags(goal, new_pkg, 0);
+    return hy_goal_upgrade_to_flags(goal, new_pkg, 0);
 }
 
 int
-hy_goal_update_flags(HyGoal goal, HyPackage new_pkg, int flags)
+hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags)
 {
     int count = 0;
 

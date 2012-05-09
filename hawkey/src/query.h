@@ -33,7 +33,7 @@ enum _hy_key_name_e {
     HY_PKG_REPO,
     HY_PKG_PROVIDES,
     HY_PKG_LATEST,
-    HY_PKG_UPDATES,
+    HY_PKG_UPGRADES,
     HY_PKG_OBSOLETING
 };
 
@@ -50,7 +50,7 @@ void hy_query_filter_provides(HyQuery q, int filter_type, const char *name,
  *
  * NOTE: this does not guerantee packages filtered in this way are installable.
  */
-void hy_query_filter_updates(HyQuery q, int val);
+void hy_query_filter_upgrades(HyQuery q, int val);
 void hy_query_filter_latest(HyQuery q, int val);
 void hy_query_filter_obsoleting(HyQuery q, int val);
 

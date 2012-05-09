@@ -11,7 +11,7 @@ QUERY_KEYNAME_MAP = {
     'file'    : _hawkey.PKG_FILE,
     'repo'    : _hawkey.PKG_REPO,
     'latest'  : _hawkey.PKG_LATEST,
-    'updates' : _hawkey.PKG_UPDATES,
+    'upgrades' : _hawkey.PKG_UPGRADES,
     'obsoleting' : _hawkey.PKG_OBSOLETING
 }
 

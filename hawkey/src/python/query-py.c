@@ -75,7 +75,7 @@ filter(_QueryObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "iiO", &keyname, &filtertype, &match))
 	return NULL;
-    if (keyname == HY_PKG_LATEST || keyname == HY_PKG_UPDATES ||
+    if (keyname == HY_PKG_LATEST || keyname == HY_PKG_UPGRADES ||
 	keyname == HY_PKG_OBSOLETING) {
 	long val;
 
@@ -86,8 +86,8 @@ filter(_QueryObject *self, PyObject *args)
 	val = PyInt_AsLong(match);
 	if (keyname == HY_PKG_LATEST)
 	    hy_query_filter_latest(self->query, val);
-	else if (keyname == HY_PKG_UPDATES)
-	    hy_query_filter_updates(self->query, val);
+	else if (keyname == HY_PKG_UPGRADES)
+	    hy_query_filter_upgrades(self->query, val);
 	else
 	    hy_query_filter_obsoleting(self->query, val);
 	Py_RETURN_NONE;

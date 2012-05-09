@@ -20,8 +20,8 @@ void hy_goal_free(HyGoal goal);
 
 int hy_goal_erase(HyGoal goal, HyPackage pkg);
 int hy_goal_install(HyGoal goal, HyPackage new_pkg);
-int hy_goal_update(HyGoal goal, HyPackage new_pkg);
-int hy_goal_update_flags(HyGoal goal, HyPackage new_pkg, int flags);
+int hy_goal_upgrade_to(HyGoal goal, HyPackage new_pkg);
+int hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags);
 int hy_goal_upgrade_all(HyGoal goal);
 int hy_goal_go(HyGoal goal);
 

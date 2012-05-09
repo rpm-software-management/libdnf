@@ -83,7 +83,7 @@ install(_GoalObject *self, PyObject *pkgob)
 }
 
 static PyObject *
-update(_GoalObject *self, PyObject *args, PyObject *kwds)
+upgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *pkgob = NULL;
     int check_installed = 0;
@@ -100,7 +100,7 @@ update(_GoalObject *self, PyObject *args, PyObject *kwds)
 
     if (check_installed)
 	flags |= HY_CHECK_INSTALLED;
-    ret = hy_goal_update_flags(self->goal, pkg, flags);
+    ret = hy_goal_upgrade_to_flags(self->goal, pkg, flags);
     if (!ret)
 	Py_RETURN_TRUE;
     Py_RETURN_FALSE;
@@ -193,7 +193,7 @@ package_upgrades(_GoalObject *self, PyObject *pkg)
 static struct PyMethodDef goal_methods[] = {
     {"erase",		(PyCFunction)erase,		METH_O, NULL},
     {"install",		(PyCFunction)install,		METH_O, NULL},
-    {"update",		(PyCFunction)update,
+    {"upgrade",		(PyCFunction)upgrade,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"upgrade_all",	(PyCFunction)upgrade_all,	METH_NOARGS, NULL},
     {"go",		(PyCFunction)go,		METH_NOARGS, NULL},

@@ -17,7 +17,7 @@ class Query(base.TestCase):
 
     def test_kwargs_check(self):
         q = hawkey.Query(self.sack)
-        self.assertRaises(ValueError, q.filter, name="flying", updates="maracas")
+        self.assertRaises(ValueError, q.filter, name="flying", upgrades="maracas")
 
     def test_kwargs(self):
         q = hawkey.Query(self.sack)
@@ -47,5 +47,5 @@ class QueryUpdates(base.TestCase):
 
     def test_updates(self):
         q = hawkey.Query(self.sack)
-        q.filter(name="flying", updates=1)
+        q.filter(name="flying", upgrades=1)
         self.assertEqual(q.count(), 1)

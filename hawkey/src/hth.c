@@ -176,7 +176,7 @@ static void updatables_query_name(HySack sack, const char *name)
 #if 0 // must stil work if enabled
     hy_query_filter(q, HY_PKG_REPO, HY_NEQ, HY_SYSTEM_REPO_NAME);
 #endif
-    hy_query_filter_updates(q, 1);
+    hy_query_filter_upgrades(q, 1);
     execute_print(sack, q, 0);
     hy_query_free(q);
 }
@@ -244,7 +244,7 @@ static void update(HySack sack, HyPackage pkg)
 {
     HyGoal goal = hy_goal_create(sack);
 
-    if (hy_goal_update_flags(goal, pkg, HY_CHECK_INSTALLED)) {
+    if (hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED)) {
 	printf("no package of that name installed, trying install\n");
 	hy_goal_install(goal, pkg);
     }
