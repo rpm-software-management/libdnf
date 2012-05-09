@@ -193,7 +193,7 @@ package_upgrades(_GoalObject *self, PyObject *pkg)
 static struct PyMethodDef goal_methods[] = {
     {"erase",		(PyCFunction)erase,		METH_O, NULL},
     {"install",		(PyCFunction)install,		METH_O, NULL},
-    {"upgrade",		(PyCFunction)upgrade,
+    {"upgrade_to",	(PyCFunction)upgrade,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"upgrade_all",	(PyCFunction)upgrade_all,	METH_NOARGS, NULL},
     {"go",		(PyCFunction)go,		METH_NOARGS, NULL},
