@@ -39,6 +39,14 @@ class Query(base.TestCase):
         q.filter(name__substr=["ool", "enny-li"])
         self.assertEqual(q.count(), 2)
 
+    def test_iteration(self):
+        q = hawkey.Query(self.sack)
+        q.filter(name__substr=["penny"])
+        self.assertEqual(q.count(), 2)
+        pkg1 = q[0]
+        pkg2 = q[1]
+        self.assertNotEqual(pkg1, pkg2)
+
 class QueryUpdates(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)

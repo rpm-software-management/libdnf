@@ -53,6 +53,9 @@ class Query(_hawkey.Query):
         """ Iterate over (cached) query result. """
         return iter(self.run())
 
+    def __getitem__(self, idx):
+        return self.run()[idx]
+
     def _parse_filter_args(self, lst, dct):
         args = []
         filter_flags = 0
