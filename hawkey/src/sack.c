@@ -193,7 +193,8 @@ hy_sack_create(const char *cache_path)
     queue_init(&sack->installonly);
 
     pool_setdebugcallback(pool, log_cb, sack);
-    pool_setdebugmask(pool, SOLV_ERROR | SOLV_FATAL | SOLV_WARN |
+    pool_setdebugmask(pool,
+		      SOLV_ERROR | SOLV_FATAL | SOLV_WARN | SOLV_DEBUG_RESULT |
 		      HY_LL_INFO | HY_LL_ERROR);
     return sack;
 }
