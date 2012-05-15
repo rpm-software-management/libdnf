@@ -28,6 +28,21 @@ get_latest_pkg(HySack sack, const char *name)
     return pkg;
 }
 
+HyPackage
+get_installed_pkg(HySack sack, const char *name)
+{
+    HyQuery q = hy_query_create(sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
+    hy_query_filter(q, HY_PKG_REPO, HY_EQ, HY_SYSTEM_REPO_NAME);
+    HyPackageList plist = hy_query_run(q);
+    fail_unless(hy_packagelist_count(plist) == 1);
+    HyPackage pkg = package_create(sack_pool(sack),
+				   package_id(hy_packagelist_get(plist, 0)));
+    hy_query_free(q);
+    hy_packagelist_free(plist);
+    return pkg;
+}
+
 static int
 size_and_free(HyPackageList plist)
 {
@@ -166,6 +181,35 @@ START_TEST(test_goal_no_reinstall)
 }
 END_TEST
 
+START_TEST(test_goal_erase_simple)
+{
+    HySack sack = test_globals.sack;
+    HyPackage pkg = get_installed_pkg(sack, "penny");
+    HyGoal goal = hy_goal_create(sack);
+    fail_if(hy_goal_erase(goal, pkg));
+    hy_package_free(pkg);
+    fail_if(hy_goal_go(goal));
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
+    hy_goal_free(goal);
+}
+END_TEST
+
+START_TEST(test_goal_erase_with_deps)
+{
+    HySack sack = test_globals.sack;
+    HyPackage pkg = get_installed_pkg(sack, "penny-lib");
+    HyGoal goal = hy_goal_create(sack);
+
+    fail_if(hy_goal_erase(goal, pkg));
+    hy_package_free(pkg);
+    // can not remove penny-lib, flying depends on it:
+    fail_unless(hy_goal_go(goal));
+    hy_goal_free(goal);
+}
+END_TEST
+
 Suite *
 goal_suite(void)
 {
@@ -182,6 +226,8 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_describe_problem);
     tcase_add_test(tc, test_goal_installonly);
     tcase_add_test(tc, test_goal_no_reinstall);
+    tcase_add_test(tc, test_goal_erase_simple);
+    tcase_add_test(tc, test_goal_erase_with_deps);
     suite_add_tcase(s, tc);
 
     return s;

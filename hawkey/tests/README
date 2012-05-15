@@ -5,9 +5,13 @@ module/ contains the hawkey.test module used for testing Python bindings of hawk
 tests/ contains the unit tests themselves.
 
 == The repos/ directory ==
-This directory contains sample package data for testing. The goal is to have as
-few packages as possible, ideally one or two per a specific testing role they
-can play:
+This directory contains sample package data for testing. It is crucial to
+maintain integrity of packages as described by the .repo files, for instance the
+same (equal NEVRA) package present in two different repos needs to keep the same
+provides and requires at both places.
+
+The goal is to have as few packages as possible, ideally one or two per a
+specific testing role they can play:
 
 flying
 * installed at a version older than anything from repositories
@@ -20,6 +24,7 @@ penny, penny-lib
 * have summaries
 * installed in the highest available version
 * penny-lib is architecture dependent
+* 'penny-lib' provides 'P-lib' that 'flying' needs, so it can not be removed by itself.
 
 walrus
 * not installed, available in the main repo

@@ -10,3 +10,4 @@
 =Prv: P-lib = 3-3
 =Sum: in my ears
 =Pkg: flying 2 9 noarch
+=Req: P-lib

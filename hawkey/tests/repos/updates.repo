@@ -4,3 +4,4 @@
 =Prv: fool <= 1-5
 =Obs: penny <= 4-1
 =Pkg: flying 3 0 noarch
+=Req: P-lib
