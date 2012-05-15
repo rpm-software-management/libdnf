@@ -64,21 +64,6 @@ static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
     hy_packagelist_free(plist);
 }
 
-static void execute_queue(HyQuery q, Queue *job)
-{
-    HyPackageList plist;
-    HyPackageListIter iter;
-    HyPackage pkg;
-
-    plist = hy_query_run(q);
-    iter = hy_packagelist_iter_create(plist);
-    while ((pkg = hy_packagelist_iter_next(iter)) != NULL) {
-	queue_push2(job, SOLVER_SOLVABLE|SOLVER_INSTALL, package_id(pkg));
-    }
-    hy_packagelist_iter_free(iter);
-    hy_packagelist_free(plist);
-}
-
 static void search_and_print(HySack sack, const char *name)
 {
     HyPackage pkg;
@@ -142,30 +127,6 @@ static void search_provides(HySack sack, const char *name,
     hy_query_filter_provides(q, HY_GT, name, version);
     execute_print(sack, q, 0);
     hy_query_free(q);
-}
-
-static void resolve_install(HySack sack, const char *name)
-{
-    HyQuery q = hy_query_create(sack);
-    Queue job;
-
-    queue_init(&job);
-
-    hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
-    execute_queue(q, &job);
-    assert(job.count == 2); // XXX: the search mechanism for this case is broken.
-    hy_sack_solve(sack, &job, NULL, 0);
-    queue_free(&job);
-    hy_query_free(q);
-}
-
-static void updatables_query_all(HySack sack)
-{
-    Queue job;
-    queue_init(&job);
-    queue_push2(&job, SOLVER_UPDATE|SOLVER_SOLVABLE_ALL, 0);
-    hy_sack_solve(sack, &job, NULL, 0);
-    queue_free(&job);
 }
 
 static void updatables_query_name(HySack sack, const char *name)
@@ -441,9 +402,7 @@ int main(int argc, const char **argv)
     hy_sack_write_all_repos(sack);
     hy_sack_set_installonly(sack, installonly);
 
-    if (argc == 2 && !strcmp(argv[1], "-u")) {
-	updatables_query_all(sack);
-    } else if (argc == 2 && !strcmp(argv[1], "-o")) {
+    if (argc == 2 && !strcmp(argv[1], "-o")) {
 	obsoletes(sack);
     } else if (argc == 2) {
 	search_and_print(sack, argv[1]);
@@ -453,8 +412,6 @@ int main(int argc, const char **argv)
 	hy_sack_write_filelists(sack);
     } else if (argc == 3 && !strcmp(argv[1], "-r")) {
 	search_filter_repos(sack, argv[2]);
-    } else if (argc == 3 && !strcmp(argv[1], "-s")) {
-	resolve_install(sack, argv[2]);
     } else if (argc == 3 && !strcmp(argv[1], "-u")) {
 	updatables_query_name(sack, argv[2]);
     } else if (argc == 3 && !strcmp(argv[1], "-ul")) {

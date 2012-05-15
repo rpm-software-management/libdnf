@@ -97,59 +97,6 @@ setarch(Pool *pool)
 }
 
 static void
-transaction2map(Transaction *trans, Map *m)
-{
-    Queue classes, pkgs;
-    int i;
-
-    queue_init(&classes);
-    queue_init(&pkgs);
-
-    transaction_classify(trans, 0, &classes);
-    for (i = 0; i < classes.count; i += 4) {
-	Id class = classes.elements[i];
-
-	switch (class) {
-	case SOLVER_TRANSACTION_UPGRADED:
-	    transaction_classify_pkgs(trans, 0, class,
-				      classes.elements[i+2],
-				      classes.elements[i+3], &pkgs);
-	    break;
-	default:
-	    break;
-	}
-    }
-    for (i = 0; i < pkgs.count; ++i) {
-	Id p = transaction_obs_pkg(trans, pkgs.elements[i]);
-	MAPSET(m, p);
-    }
-    queue_free(&classes);
-    queue_free(&pkgs);
-}
-
-static void
-transaction2obs_map(Transaction *trans, Map *m)
-{
-    int i;
-    Id p, type;
-    Queue obsoleted;
-
-    queue_init(&obsoleted);
-    for (i = 0; i < trans->steps.count; i++) {
-	p = trans->steps.elements[i];
-	type = transaction_type(trans, p,
-				SOLVER_TRANSACTION_SHOW_ACTIVE|
-				SOLVER_TRANSACTION_SHOW_OBSOLETES|
-				SOLVER_TRANSACTION_SHOW_MULTIINSTALL);
-	if (type == SOLVER_TRANSACTION_OBSOLETES) {
-	    transaction_all_obs_pkgs(trans, p, &obsoleted);
-	    assert(obsoleted.count);
-	}
-    }
-    queue_free(&obsoleted);
-}
-
-static void
 log_cb(Pool *pool, void *cb_data, int type, const char *buf)
 {
     HySack sack = cb_data;
@@ -508,36 +455,6 @@ hy_sack_write_filelists(HySack sack)
 	fclose(fp);
     }
     return ret;
-}
-
-void
-hy_sack_solve(HySack sack, Queue *job, Map *res_map, int mode)
-{
-    Transaction *trans = job2transaction(sack, job, NULL);
-
-    if (!trans) {
-	;
-    } else if (res_map) {
-	switch (mode) {
-	case SOLVER_TRANSACTION_UPGRADE:
-	    transaction2map(trans, res_map);
-	    break;
-	case SOLVER_TRANSACTION_OBSOLETES:
-	    transaction2obs_map(trans, res_map);
-	    break;
-	default:
-	    assert(0);
-	    break;
-	}
-    } else {
-	HY_LOG_INFO("(solver succeeded with %d step transaction. results ignored.)",
-		    trans->steps.count);
-#if 0
-	transaction_print(trans);
-#endif
-    }
-    if (trans)
-	transaction_free(trans);
 }
 
 // internal
