@@ -200,13 +200,22 @@ START_TEST(test_goal_erase_with_deps)
 {
     HySack sack = test_globals.sack;
     HyPackage pkg = get_installed_pkg(sack, "penny-lib");
-    HyGoal goal = hy_goal_create(sack);
 
-    fail_if(hy_goal_erase(goal, pkg));
-    hy_package_free(pkg);
-    // can not remove penny-lib, flying depends on it:
+    // by default can not remove penny-lib, flying depends on it:
+    HyGoal goal = hy_goal_create(sack);
+    hy_goal_erase(goal, pkg);
     fail_unless(hy_goal_go(goal));
     hy_goal_free(goal);
+
+    goal = hy_goal_create(sack);
+    hy_goal_erase(goal, pkg);
+    fail_if(hy_goal_go_flags(goal, HY_ALLOW_UNINSTALL));
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 2);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
+    hy_goal_free(goal);
+
+    hy_package_free(pkg);
 }
 END_TEST
 

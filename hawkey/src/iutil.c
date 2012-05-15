@@ -223,44 +223,6 @@ repo_internalize_trigger(Repo *repo)
     repo_internalize(repo);
 }
 
-Transaction *
-job2transaction(HySack sack, Queue *job, Queue *errors)
-{
-    Pool *pool = sack_pool(sack);
-    Solver *solv;
-    Transaction *trans = NULL;
-
-    sack_make_provides_ready(sack);
-    solv = solver_create(pool);
-
-    /* turn off implicit obsoletes for installonly packages */
-    for (int i = 0; i < sack->installonly.count; i++)
-	queue_push2(job, SOLVER_NOOBSOLETES|SOLVER_SOLVABLE_PROVIDES,
-		    sack->installonly.elements[i]);
-
-    /* installonly notwithstanding, process explicit obsoletes */
-    solver_set_flag(solv, SOLVER_FLAG_KEEP_EXPLICIT_OBSOLETES, 1);
-
-    if (solver_solve(solv, job)) {
-	int i;
-	Id rule, source, target, dep;
-	SolverRuleinfo type;
-	int problem_cnt = solver_problem_count(solv);
-
-	assert(errors);
-	for (i = 1; i <= problem_cnt; ++i) {
-	    rule = solver_findproblemrule(solv, i);
-	    type = solver_ruleinfo(solv, rule, &source, &target, &dep);
-	    queue_push2(errors, type, source);
-	    queue_push2(errors, target, dep);
-	}
-    } else
-	trans = solver_create_transaction(solv);
-
-    solver_free(solv);
-    return trans;
-}
-
 void
 queue2plist(HySack sack, Queue *q, HyPackageList plist)
 {

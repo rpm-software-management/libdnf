@@ -116,9 +116,18 @@ upgrade_all(_GoalObject *self, PyObject *unused)
 }
 
 static PyObject *
-go(_GoalObject *self, PyObject *unused)
+go(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    int ret = hy_goal_go(self->goal);
+    char *kwlist[] = {"allow_uninstall", NULL};
+    int allow_uninstall = 0;
+    int flags = 0;
+    int ret;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", kwlist, &allow_uninstall))
+	return NULL;
+    if (allow_uninstall)
+	flags |= HY_ALLOW_UNINSTALL;
+    ret = hy_goal_go_flags(self->goal, flags);
     if (!ret)
 	Py_RETURN_TRUE;
     Py_RETURN_FALSE;
@@ -196,7 +205,8 @@ static struct PyMethodDef goal_methods[] = {
     {"upgrade_to",	(PyCFunction)upgrade,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"upgrade_all",	(PyCFunction)upgrade_all,	METH_NOARGS, NULL},
-    {"go",		(PyCFunction)go,		METH_NOARGS, NULL},
+    {"go",		(PyCFunction)go,
+     METH_VARARGS | METH_KEYWORDS, NULL},
     {"count_problems",	(PyCFunction)count_problems,	METH_NOARGS, NULL},
     {"describe_problem",(PyCFunction)describe_problem,	METH_O, NULL},
     {"list_erasures",	(PyCFunction)list_erasures,	METH_NOARGS, NULL},
