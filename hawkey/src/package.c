@@ -22,6 +22,7 @@ package_create(Pool *pool, Id id)
     HyPackage pkg;
 
     pkg = solv_calloc(1, sizeof(*pkg));
+    pkg->nrefs = 1;
     pkg->pool = pool;
     pkg->id = id;
     return pkg;
@@ -30,20 +31,26 @@ package_create(Pool *pool, Id id)
 HyPackage
 package_from_solvable(Solvable *s)
 {
-    HyPackage pkg;
-
     if (!s)
 	return NULL;
-    pkg = solv_calloc(1, sizeof(*pkg));
-    pkg->pool = s->repo->pool;
-    pkg->id = s - s->repo->pool->solvables;
-    return pkg;
+
+    Id p = s - s->repo->pool->solvables;
+    return package_create(s->repo->pool, p);
 }
 
 void
 hy_package_free(HyPackage pkg)
 {
+    if (--pkg->nrefs > 0)
+	return;
     solv_free(pkg);
+}
+
+HyPackage
+hy_package_link(HyPackage pkg)
+{
+    pkg->nrefs++;
+    return pkg;
 }
 
 int

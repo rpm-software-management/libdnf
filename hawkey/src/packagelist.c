@@ -78,11 +78,29 @@ hy_packagelist_count(HyPackageList plist)
     return plist->count;
 }
 
+/**
+ * Returns the package at position 'index'.
+ *
+ * Borrows the caller packagelist's reference, caller shouldn't call
+ * hy_package_free().
+ */
 HyPackage
 hy_packagelist_get(HyPackageList plist, int index)
 {
     assert(index < plist->count);
     return plist->elements[index];
+}
+
+/**
+ * Returns the package at position 'index'.
+ *
+ * Gives caller a new reference to the package that can survive the
+ * packagelist. The returned package has to be freed via hy_package_free().
+ */
+HyPackage
+hy_packagelist_get_clone(HyPackageList plist, int index)
+{
+    return hy_package_link(hy_packagelist_get(plist, index));
 }
 
 void hy_packagelist_push(HyPackageList plist, HyPackage pkg)

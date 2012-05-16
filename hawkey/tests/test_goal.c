@@ -21,8 +21,7 @@ get_latest_pkg(HySack sack, const char *name)
     hy_query_filter_latest(q, 1);
     HyPackageList plist = hy_query_run(q);
     fail_unless(hy_packagelist_count(plist) == 1);
-    HyPackage pkg = package_create(sack_pool(sack),
-				 package_id(hy_packagelist_get(plist, 0)));
+    HyPackage pkg = hy_packagelist_get_clone(plist, 0);
     hy_query_free(q);
     hy_packagelist_free(plist);
     return pkg;
@@ -36,8 +35,7 @@ get_installed_pkg(HySack sack, const char *name)
     hy_query_filter(q, HY_PKG_REPO, HY_EQ, HY_SYSTEM_REPO_NAME);
     HyPackageList plist = hy_query_run(q);
     fail_unless(hy_packagelist_count(plist) == 1);
-    HyPackage pkg = package_create(sack_pool(sack),
-				   package_id(hy_packagelist_get(plist, 0)));
+    HyPackage pkg = hy_packagelist_get_clone(plist, 0);
     hy_query_free(q);
     hy_packagelist_free(plist);
     return pkg;

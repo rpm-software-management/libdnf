@@ -4,6 +4,7 @@
 #include "package.h"
 
 struct _HyPackage {
+    int nrefs;
     Id id;
     Pool *pool;
 };
