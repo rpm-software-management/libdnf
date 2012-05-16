@@ -14,10 +14,10 @@ struct TestGlobals_s {
 #define UNITTEST_DIR "/tmp/hawkeyXXXXXX"
 #define YUM_DIR_SUFFIX "yum/repodata/"
 #define TEST_META_SOLVABLES_COUNT 2
-#define TEST_EXPECT_SYSTEM_PKGS 4
+#define TEST_EXPECT_SYSTEM_PKGS 6
 #define TEST_EXPECT_SYSTEM_NSOLVABLES \
     (TEST_META_SOLVABLES_COUNT + TEST_EXPECT_SYSTEM_PKGS)
-#define TEST_EXPECT_MAIN_NSOLVABLES 7
+#define TEST_EXPECT_MAIN_NSOLVABLES 8
 #define TEST_EXPECT_UPDATES_NSOLVABLES 2
 #define TEST_EXPECT_YUM_NSOLVABLES 2
 
@@ -31,6 +31,7 @@ int load_repo(Pool *pool, const char *name, const char *path, int installed);
 /* fixtures */
 void setup_empty_sack(void);
 void setup(void);
+void setup_with_main(void);
 void setup_with_updates(void);
 void setup_all(void);
 void setup_yum_sack(HySack sack);

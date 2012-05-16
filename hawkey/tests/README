@@ -32,6 +32,9 @@ walrus
 hello
 * depends on 'goodbye' which is not provided by anything else
 
+jay
+* installed twice, not updatable from main.
+
 === repos/yum ===
 
 To test loading of yum repos we need an actual yum repo. It currently consists

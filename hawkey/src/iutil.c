@@ -309,13 +309,22 @@ problemruleinfo2str(Pool *pool, SolverRuleinfo type, Id source, Id target, Id de
 }
 
 /**
- * Return id of an installed package with the same name as pkg and lower version.
+ * Return id of a package that can be upgraded with pkg.
+ *
+ * The returned package fulfills the following criteria:
+ * :: it is installed
+ * :: has the same name and arch as pkg
+ * :: is of lower version than pkg.
+ * :: if there are multiple packages of that name return the highest version
+ *    (implying we won't claim we can upgrade an old package with an already
+ *    installed version, e.g kernel).
  *
  * Or 0 if none such package is installed.
  */
 Id
 what_updates(Pool *pool, Id pkg)
 {
+    Id l = 0, l_evr = 0;
     Id p, pp;
     Solvable *updated, *s = pool_id2solvable(pool, pkg);
 
@@ -323,11 +332,18 @@ what_updates(Pool *pool, Id pkg)
     assert(pool->whatprovides);
     FOR_PROVIDES(p, pp, s->name) {
 	updated = pool_id2solvable(pool, p);
-	if (updated->repo == pool->installed &&
-	    updated->name == s->name &&
-	    updated->arch == s->arch &&
-	    pool_evrcmp(pool, s->evr, updated->evr, EVRCMP_COMPARE) > 0)
-	    return p;
+	if (updated->repo != pool->installed ||
+	    updated->name != s->name ||
+	    updated->arch != s->arch)
+	    continue;
+	if (pool_evrcmp(pool, updated->evr, s->evr, EVRCMP_COMPARE) >= 0)
+	    // >= version installed, this pkg can not be used for upgrade
+	    return 0;
+	if (l == 0 ||
+	    pool_evrcmp(pool, updated->evr, l_evr, EVRCMP_COMPARE) > 0) {
+	    l = p;
+	    l_evr = s->evr;
+	}
     }
-    return 0;
+    return l;
 }

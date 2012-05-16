@@ -100,6 +100,16 @@ setup(void)
 }
 
 void
+setup_with_main(void)
+{
+    setup();
+    Pool *pool = sack_pool(test_globals.sack);
+    const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
+				    "main.repo", 0);
+    fail_if(load_repo(pool, "main", path, 0));
+}
+
+void
 setup_with_updates(void)
 {
     setup();

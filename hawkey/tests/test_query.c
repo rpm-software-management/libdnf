@@ -146,7 +146,7 @@ START_TEST(test_query_fileprovides)
 }
 END_TEST
 
-START_TEST(test_updates_sanity)
+START_TEST(test_upgrades_sanity)
 {
     Pool *pool = sack_pool(test_globals.sack);
     Repo *r = NULL;
@@ -160,7 +160,7 @@ START_TEST(test_updates_sanity)
 }
 END_TEST
 
-START_TEST(test_updates)
+START_TEST(test_upgrades)
 {
     const char *installonly[] = {"fool", NULL};
     hy_sack_set_installonly(test_globals.sack, installonly);
@@ -215,6 +215,20 @@ START_TEST(test_filter_latest_archs)
 }
 END_TEST
 
+START_TEST(test_upgrade_already_installed)
+{
+    /* if pkg is installed in two versions and the later is available in repos,
+       it shouldn't show as a possible update. */
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
+    hy_query_filter_upgrades(q, 1);
+    HyPackageList plist = hy_query_run(q);
+    fail_unless(hy_packagelist_count(plist) == 0);
+    hy_query_free(q);
+    hy_packagelist_free(plist);
+}
+END_TEST
+
 START_TEST(test_filter_files)
 {
     HyQuery q = hy_query_create(test_globals.sack);
@@ -257,9 +271,14 @@ query_suite(void)
 
     tc = tcase_create("Updates");
     tcase_add_unchecked_fixture(tc, setup_with_updates, teardown);
-    tcase_add_test(tc, test_updates_sanity);
-    tcase_add_test(tc, test_updates);
+    tcase_add_test(tc, test_upgrades_sanity);
+    tcase_add_test(tc, test_upgrades);
     tcase_add_test(tc, test_filter_latest);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("OnlyMain");
+    tcase_add_unchecked_fixture(tc, setup_with_main, teardown);
+    tcase_add_test(tc, test_upgrade_already_installed);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Full");

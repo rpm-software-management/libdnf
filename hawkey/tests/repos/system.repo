@@ -11,3 +11,5 @@
 =Sum: in my ears
 =Pkg: flying 2 9 noarch
 =Req: P-lib
+=Pkg: jay 6 0 x86_64
+=Pkg: jay 5 0 x86_64
