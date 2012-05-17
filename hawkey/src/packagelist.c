@@ -17,12 +17,6 @@ struct _HyPackageList {
     int left;
 };
 
-struct _HyPackageListIter {
-    HyPackageList plist;
-    int i;
-    HyPackage current_pkg;
-};
-
 #define BLOCK_SIZE 31
 
 HyPackageList
@@ -108,27 +102,4 @@ void hy_packagelist_push(HyPackageList plist, HyPackage pkg)
     plist->elements = solv_extend(plist->elements, plist->count, 1,
 				  sizeof(pkg), BLOCK_SIZE);
     plist->elements[plist->count++] = pkg;
-}
-
-HyPackageListIter
-hy_packagelist_iter_create(HyPackageList plist)
-{
-    HyPackageListIter iter = solv_calloc(1, sizeof(*iter));
-    iter->plist = plist;
-    iter->i = -1;
-    return iter;
-}
-
-void
-hy_packagelist_iter_free(HyPackageListIter iter)
-{
-    solv_free(iter);
-}
-
-HyPackage
-hy_packagelist_iter_next(HyPackageListIter iter)
-{
-    if (++iter->i >= iter->plist->count)
-	return NULL;
-    return hy_packagelist_get(iter->plist, iter->i);
 }

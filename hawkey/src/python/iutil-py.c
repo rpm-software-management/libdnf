@@ -9,18 +9,18 @@
 PyObject *
 packagelist_to_pylist(HyPackageList plist, PyObject *sack)
 {
-    HyPackageListIter iter;
     HyPackage cpkg;
     PyObject *package;
     PyObject *list;
     PyObject *retval;
+    const int count = hy_packagelist_count(plist);
 
     list = PyList_New(0);
     if (list == NULL)
 	return NULL;
     retval = list;
-    iter = hy_packagelist_iter_create(plist);
-    while ((cpkg = hy_packagelist_iter_next(iter)) != NULL) {
+    for (int i = 0; i < count; ++i) {
+	cpkg = hy_packagelist_get(plist, i);
 	package = new_package(sack, package_id(cpkg));
 	if (package == NULL) {
 	    retval = NULL;
@@ -31,7 +31,6 @@ packagelist_to_pylist(HyPackageList plist, PyObject *sack)
 	    break;
 	}
     }
-    hy_packagelist_iter_free(iter);
     if (retval)
 	return retval;
     /* return error */

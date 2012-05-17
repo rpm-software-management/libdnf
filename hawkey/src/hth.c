@@ -35,58 +35,53 @@ const char *installonly[] = {
 static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
 {
     HyPackageList plist;
-    HyPackageListIter iter;
-    HyPackage pkg;
 
     plist = hy_query_run(q);
-    iter = hy_packagelist_iter_create(plist);
-    while ((pkg = hy_packagelist_iter_next(iter)) != NULL) {
+    const int count = hy_packagelist_count(plist);
+    for (int i = 0; i < count; ++i) {
+	HyPackage pkg = hy_packagelist_get(plist, i);
 	char *nvra = hy_package_get_nvra(pkg);
 	printf("found package: %s [%s]\n",
 	       nvra,
 	       hy_package_get_reponame(pkg));
 	if (show_obsoletes) {
 	    HyPackageList olist = hy_packagelist_of_obsoletes(sack, pkg);
-	    HyPackageListIter oiter = hy_packagelist_iter_create(olist);
-	    HyPackage opkg;
-	    char *onvra;
-	    while ((opkg = hy_packagelist_iter_next(oiter)) != NULL) {
-		onvra = hy_package_get_nvra(opkg);
+	    const int ocount = hy_packagelist_count(olist);
+	    for (int j = 0; j < ocount; ++j) {
+		HyPackage opkg = hy_packagelist_get(olist, j);
+		char *onvra = hy_package_get_nvra(opkg);
 		printf("obsoleting: %s\n", onvra);
 		hy_free(onvra);
 	    }
-	    hy_packagelist_iter_free(oiter);
 	    hy_packagelist_free(olist);
 	}
 	hy_free(nvra);
     }
-    hy_packagelist_iter_free(iter);
     hy_packagelist_free(plist);
 }
 
 static void search_and_print(HySack sack, const char *name)
 {
-    HyPackage pkg;
     HyPackageList plist;
-    HyPackageListIter iter;
 
     plist = sack_f_by_name(sack, name);
-    iter = hy_packagelist_iter_create(plist);
-    while ((pkg = hy_packagelist_iter_next(iter)) != NULL)
+    int count = hy_packagelist_count(plist);
+    for (int i = 0; i < count; ++i) {
+	HyPackage pkg = hy_packagelist_get(plist, i);
        	printf("found package by name: (%s, %s, %s)\n", hy_package_get_name(pkg),
 	       hy_package_get_evr(pkg),
 	       hy_package_get_arch(pkg));
-    hy_packagelist_iter_free(iter);
+    }
     hy_packagelist_free(plist);
 
     plist = sack_f_by_summary(sack, name);
-    iter = hy_packagelist_iter_create(plist);
-    while ((pkg = hy_packagelist_iter_next(iter)) != NULL) {
+    count = hy_packagelist_count(plist);
+    for (int i = 0; i < count; ++i) {
+	HyPackage pkg = hy_packagelist_get(plist, i);
 	char *nvra = hy_package_get_nvra(pkg);
        	printf("found package by summary: %s\n", nvra);
 	hy_free(nvra);
     }
-    hy_packagelist_iter_free(iter);
     hy_packagelist_free(plist);
 }
 

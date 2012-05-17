@@ -17,8 +17,4 @@ HyPackage hy_packagelist_get(HyPackageList plist, int index);
 HyPackage hy_packagelist_get_clone(HyPackageList plist, int index);
 void hy_packagelist_push(HyPackageList plist, HyPackage pkg);
 
-HyPackageListIter hy_packagelist_iter_create(HyPackageList plist);
-void hy_packagelist_iter_free(HyPackageListIter iter);
-HyPackage hy_packagelist_iter_next(HyPackageListIter iter);
-
 #endif // PACKAGELIST_H
