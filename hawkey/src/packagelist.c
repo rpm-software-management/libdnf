@@ -75,14 +75,17 @@ hy_packagelist_count(HyPackageList plist)
 /**
  * Returns the package at position 'index'.
  *
+ * Returns NULL if the packagelist doesn't have enough elements for index.
+ *
  * Borrows the caller packagelist's reference, caller shouldn't call
  * hy_package_free().
  */
 HyPackage
 hy_packagelist_get(HyPackageList plist, int index)
 {
-    assert(index < plist->count);
-    return plist->elements[index];
+    if (index < plist->count)
+	return plist->elements[index];
+    return NULL;
 }
 
 /**
@@ -97,6 +100,11 @@ hy_packagelist_get_clone(HyPackageList plist, int index)
     return hy_package_link(hy_packagelist_get(plist, index));
 }
 
+/**
+ * Adds pkg at the end of plist.
+ *
+ * Assumes ownership of pkg and will free it during hy_packagelist_free().
+ */
 void hy_packagelist_push(HyPackageList plist, HyPackage pkg)
 {
     plist->elements = solv_extend(plist->elements, plist->count, 1,

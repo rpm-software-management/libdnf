@@ -1,5 +1,12 @@
 SET (hawkeytest_SRCS
-     test_goal.c test_iutil.c test_main.c test_package.c test_repo.c test_query.c test_sack.c
+     test_goal.c
+     test_iutil.c
+     test_main.c
+     test_package.c
+     test_packagelist.c
+     test_repo.c
+     test_query.c
+     test_sack.c
      testsys.c)
 
 ADD_LIBRARY(testsys SHARED testsys.c)

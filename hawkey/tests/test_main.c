@@ -15,6 +15,7 @@
 #include "test_iutil.h"
 #include "test_query.h"
 #include "test_package.h"
+#include "test_packagelist.h"
 #include "test_repo.h"
 #include "test_sack.h"
 
@@ -59,6 +60,7 @@ main(int argc, const char **argv)
     srunner_add_suite(sr, iutil_suite());
     srunner_add_suite(sr, repo_suite());
     srunner_add_suite(sr, package_suite());
+    srunner_add_suite(sr, packagelist_suite());
     srunner_add_suite(sr, query_suite());
     srunner_add_suite(sr, goal_suite());
     srunner_run_all(sr, CK_NORMAL);

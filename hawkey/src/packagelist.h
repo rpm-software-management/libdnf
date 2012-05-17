@@ -17,4 +17,7 @@ HyPackage hy_packagelist_get(HyPackageList plist, int index);
 HyPackage hy_packagelist_get_clone(HyPackageList plist, int index);
 void hy_packagelist_push(HyPackageList plist, HyPackage pkg);
 
+#define FOR_PACKAGELIST(pkg, pkglist, i)						\
+    for (i = 0; (pkg = hy_packagelist_get(pkglist, i++)) != NULL; )
+
 #endif // PACKAGELIST_H

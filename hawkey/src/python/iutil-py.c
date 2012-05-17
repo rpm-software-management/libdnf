@@ -13,14 +13,14 @@ packagelist_to_pylist(HyPackageList plist, PyObject *sack)
     PyObject *package;
     PyObject *list;
     PyObject *retval;
-    const int count = hy_packagelist_count(plist);
 
     list = PyList_New(0);
     if (list == NULL)
 	return NULL;
     retval = list;
-    for (int i = 0; i < count; ++i) {
-	cpkg = hy_packagelist_get(plist, i);
+
+    int i;
+    FOR_PACKAGELIST(cpkg, plist, i) {
 	package = new_package(sack, package_id(cpkg));
 	if (package == NULL) {
 	    retval = NULL;
