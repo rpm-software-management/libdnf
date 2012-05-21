@@ -1,5 +1,5 @@
 %global gitrev 6083b79
-%global libsolv_version 0.0.0-8
+%global libsolv_version 0.0.0-9
 
 Name:		hawkey
 Version:	0.2.3
