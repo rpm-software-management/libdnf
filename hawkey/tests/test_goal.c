@@ -12,7 +12,7 @@
 #include "testsys.h"
 #include "test_goal.h"
 
-HyPackage
+static HyPackage
 get_latest_pkg(HySack sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
@@ -27,7 +27,7 @@ get_latest_pkg(HySack sack, const char *name)
     return pkg;
 }
 
-HyPackage
+static HyPackage
 get_installed_pkg(HySack sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
@@ -84,6 +84,25 @@ START_TEST(test_goal_install)
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
+    hy_goal_free(goal);
+}
+END_TEST
+
+START_TEST(test_goal_install_multilib)
+{
+    // Tests installation of multilib package. The package is selected via
+    // install query, allowing the depsolver maximum influence on the selection.
+
+    HyQuery q = hy_query_create(test_globals.sack);
+    HyGoal goal = hy_goal_create(test_globals.sack);
+
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "semolina");
+    fail_if(hy_goal_install_query(goal, q));
+    fail_if(hy_goal_go(goal));
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
+    hy_query_free(q);
     hy_goal_free(goal);
 }
 END_TEST
@@ -228,6 +247,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_sanity);
     tcase_add_test(tc, test_goal_update_impossible);
     tcase_add_test(tc, test_goal_install);
+    tcase_add_test(tc, test_goal_install_multilib);
     tcase_add_test(tc, test_goal_update);
     tcase_add_test(tc, test_goal_upgrade_all);
     tcase_add_test(tc, test_goal_describe_problem);

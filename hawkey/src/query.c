@@ -9,7 +9,7 @@
 
 // hawkey
 #include "iutil.h"
-#include "query.h"
+#include "query_internal.h"
 #include "package_internal.h"
 #include "sack_internal.h"
 
@@ -406,7 +406,50 @@ hy_query_run(HyQuery q)
     return plist;
 }
 
-// internal/deprecated
+// internal
+static void
+filter_name2job(const HyQuery q, const struct _Filter *f, Queue *job)
+{
+    Pool *pool = sack_pool(q->sack);
+
+    assert(f->filter_type == HY_EQ);
+    sack_make_provides_ready(q->sack);
+    for (int i = 0; i < f->nmatches; ++i) {
+	const char *name = f->matches[i];
+	Id id = pool_str2id(pool, name, 0);
+	Id p, pp;
+
+	assert(id);
+	FOR_PROVIDES(p, pp, id) {
+	    Solvable *s = pool->solvables + p;
+	    if (s->name == id)
+		queue_push2(job, SOLVER_SOLVABLE_NAME, id);
+	}
+    }
+}
+
+int
+query2job(const HyQuery q, Queue *job, int solver_action)
+{
+    const int count = job->count;
+
+    for (int i = 0; i < q->nfilters; ++i) {
+	const struct _Filter *f = q->filters + i;
+	switch (f->keyname) {
+	case HY_PKG_NAME:
+	    filter_name2job(q, f, job);
+	    break;
+	default:
+	    assert(0);
+	}
+    }
+
+    for (int i = count; i < job->count; i += 2)
+	job->elements[i] |= solver_action;
+    return count == job->count;
+}
+
+// deprecated
 
 
 /** Finds package of the name 'name'.

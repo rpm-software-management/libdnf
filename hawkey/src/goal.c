@@ -9,7 +9,7 @@
 // hawkey
 #include "goal.h"
 #include "iutil.h"
-#include "query.h"
+#include "query_internal.h"
 #include "package_internal.h"
 #include "sack_internal.h"
 
@@ -115,6 +115,12 @@ hy_goal_erase(HyGoal goal, HyPackage pkg)
 }
 
 int
+hy_goal_erase_query(HyGoal goal, HyQuery query)
+{
+    return query2job(query, &goal->job, SOLVER_ERASE);
+}
+
+int
 hy_goal_install(HyGoal goal, HyPackage new_pkg)
 {
     queue_push2(&goal->job, SOLVER_SOLVABLE|SOLVER_INSTALL, package_id(new_pkg));
@@ -122,9 +128,28 @@ hy_goal_install(HyGoal goal, HyPackage new_pkg)
 }
 
 int
+hy_goal_install_query(HyGoal goal, HyQuery  query)
+{
+    return query2job(query, &goal->job, SOLVER_INSTALL);
+}
+
+int
+hy_goal_upgrade_all(HyGoal goal)
+{
+    queue_push2(&goal->job, SOLVER_UPDATE|SOLVER_SOLVABLE_ALL, 0);
+    return 0;
+}
+
+int
 hy_goal_upgrade_to(HyGoal goal, HyPackage new_pkg)
 {
     return hy_goal_upgrade_to_flags(goal, new_pkg, 0);
+}
+
+int
+hy_goal_upgrade_query(HyGoal goal, HyQuery query)
+{
+    return query2job(query, &goal->job, SOLVER_UPDATE);
 }
 
 int
@@ -148,13 +173,6 @@ hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags)
     }
 
     return hy_goal_install(goal, new_pkg);
-}
-
-int
-hy_goal_upgrade_all(HyGoal goal)
-{
-    queue_push2(&goal->job, SOLVER_UPDATE|SOLVER_SOLVABLE_ALL, 0);
-    return 0;
 }
 
 int
