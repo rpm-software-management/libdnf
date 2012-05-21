@@ -62,27 +62,17 @@ static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
 
 static void search_and_print(HySack sack, const char *name)
 {
-    HyPackageList plist;
+    HyQuery q = hy_query_create(sack);
 
-    plist = sack_f_by_name(sack, name);
-    int count = hy_packagelist_count(plist);
-    for (int i = 0; i < count; ++i) {
-	HyPackage pkg = hy_packagelist_get(plist, i);
-       	printf("found package by name: (%s, %s, %s)\n", hy_package_get_name(pkg),
-	       hy_package_get_evr(pkg),
-	       hy_package_get_arch(pkg));
-    }
-    hy_packagelist_free(plist);
+    printf("found packages by name:\n");
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
+    execute_print(sack, q, 0);
+    hy_query_clear(q);
 
-    plist = sack_f_by_summary(sack, name);
-    count = hy_packagelist_count(plist);
-    for (int i = 0; i < count; ++i) {
-	HyPackage pkg = hy_packagelist_get(plist, i);
-	char *nvra = hy_package_get_nvra(pkg);
-       	printf("found package by summary: %s\n", nvra);
-	hy_free(nvra);
-    }
-    hy_packagelist_free(plist);
+    printf("\nfound packages by substring of summary:\n");
+    hy_query_filter(q, HY_PKG_SUMMARY, HY_SUBSTR, name);
+    execute_print(sack, q, 0);
+    hy_query_free(q);
 }
 
 static void

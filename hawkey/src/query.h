@@ -56,9 +56,4 @@ void hy_query_filter_obsoleting(HyQuery q, int val);
 
 HyPackageList hy_query_run(HyQuery q);
 
-// internal/deprecated
-
-HyPackageList sack_f_by_name(HySack sack, const char *name);
-HyPackageList sack_f_by_summary(HySack sack, const char *summary_substr);
-
 #endif // QUERY_H
