@@ -14,6 +14,7 @@
 
 // hawkey
 #include "src/iutil.h"
+#include "src/query.h"
 #include "src/sack_internal.h"
 #include "src/util.h"
 #include "testsys.h"
@@ -78,6 +79,15 @@ load_repo(Pool *pool, const char *name, const char *path, int installed)
 	pool_set_installed(pool, r);
     fclose(fp);
     return 0;
+}
+
+int
+query_count_results(HyQuery query)
+{
+    HyPackageList plist = hy_query_run(query);
+    int ret = hy_packagelist_count(plist);
+    hy_packagelist_free(plist);
+    return ret;
 }
 
 void

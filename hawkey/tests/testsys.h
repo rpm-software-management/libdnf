@@ -27,6 +27,7 @@ extern struct TestGlobals_s test_globals;
 void dump_packagelist(HyPackageList plist);
 HyRepo glob_for_repofiles(Pool *pool, const char *repo_name, const char *path);
 int load_repo(Pool *pool, const char *name, const char *path, int installed);
+int query_count_results(HyQuery query);
 
 /* fixtures */
 void setup_empty_sack(void);

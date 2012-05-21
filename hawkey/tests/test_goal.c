@@ -102,6 +102,8 @@ START_TEST(test_goal_install_multilib)
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
+    // yet:
+    fail_unless(query_count_results(q) == 2);
     hy_query_free(q);
     hy_goal_free(goal);
 }
