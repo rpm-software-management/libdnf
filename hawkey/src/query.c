@@ -419,7 +419,8 @@ filter_name2job(const HyQuery q, const struct _Filter *f, Queue *job)
 	Id id = pool_str2id(pool, name, 0);
 	Id p, pp;
 
-	assert(id);
+	if (!id)
+	    continue;
 	FOR_PROVIDES(p, pp, id) {
 	    Solvable *s = pool->solvables + p;
 	    if (s->name == id)
