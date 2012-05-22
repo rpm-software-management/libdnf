@@ -17,6 +17,18 @@ typedef struct {
     PyObject *sack;
 } _QueryObject;
 
+int
+query_converter(PyObject *o, HyQuery *query_ptr)
+{
+    if (!PyType_IsSubtype(o->ob_type, &query_Type)) {
+	PyErr_SetString(PyExc_TypeError, "Expected a Query object.");
+	return 0;
+    }
+    *query_ptr = ((_QueryObject *)o)->query;
+
+    return 1;
+}
+
 /* functions on the type */
 
 static PyObject *

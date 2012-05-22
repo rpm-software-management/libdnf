@@ -22,13 +22,24 @@ typedef struct {
 
 long package_hash(_PackageObject *self);
 
-HyPackage packageFromPyObject(PyObject *o)
+HyPackage
+packageFromPyObject(PyObject *o)
 {
     if (!PyType_IsSubtype(o->ob_type, &package_Type)) {
 	PyErr_SetString(PyExc_TypeError, "Expected a Package object.");
 	return NULL;
     }
     return ((_PackageObject *)o)->package;
+}
+
+int
+package_converter(PyObject *o, HyPackage *pkg_ptr)
+{
+    HyPackage pkg = packageFromPyObject(o);
+    if (pkg == NULL)
+	return 0;
+    *pkg_ptr = pkg;
+    return 1;
 }
 
 /* functions on the type */

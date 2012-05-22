@@ -13,6 +13,7 @@
 #include "goal-py.h"
 #include "iutil-py.h"
 #include "package-py.h"
+#include "query-py.h"
 #include "sack-py.h"
 
 typedef struct {
@@ -20,6 +21,36 @@ typedef struct {
     HyGoal goal;
     PyObject *sack;
 } _GoalObject;
+
+int
+args_query_pkg_check(HyPackage pkg, HyQuery query)
+{
+    if (!(pkg || query)) {
+	PyErr_SetString(PyExc_ValueError,
+			"Requires a query or a package parameter.");
+	return 0;
+    }
+    if (pkg && query) {
+	PyErr_SetString(PyExc_ValueError,
+			"Does not accept both Query and Package arguments.");
+	return 0;
+    }
+    return 1;
+}
+
+int
+args_query_pkg_parse(PyObject *args, PyObject *kwds,
+		    HyPackage *pkg, HyQuery *query)
+{
+    char *kwlist[] = {"package", "query", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&O&", kwlist,
+				     package_converter, pkg,
+				     query_converter, query))
+	return 0;
+    if (!args_query_pkg_check(*pkg, *query))
+	return 0;
+    return 1;
+}
 
 /* functions on the type */
 
@@ -63,27 +94,67 @@ goal_init(_GoalObject *self, PyObject *args, PyObject *kwds)
 /* object methods */
 
 static PyObject *
-erase(_GoalObject *self, PyObject *pkgob)
+erase(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    HyPackage pkg = packageFromPyObject(pkgob);
-    if (pkg == NULL)
+    HyPackage pkg = NULL;
+    HyQuery query = NULL;
+    if (!args_query_pkg_parse(args, kwds, &pkg, &query))
 	return NULL;
-    hy_goal_erase(self->goal, pkg);
-    Py_RETURN_NONE;
+
+    int ret = pkg ? hy_goal_erase(self->goal, pkg) :
+	hy_goal_erase_query(self->goal, query);
+    if (ret)
+	Py_RETURN_FALSE;
+    Py_RETURN_TRUE;
 }
 
 static PyObject *
-install(_GoalObject *self, PyObject *pkgob)
+install(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    HyPackage pkg = packageFromPyObject(pkgob);
-    if (pkg == NULL)
+    HyPackage pkg = NULL;
+    HyQuery query = NULL;
+    if (!args_query_pkg_parse(args, kwds, &pkg, &query))
 	return NULL;
-    hy_goal_install(self->goal, pkg);
-    Py_RETURN_NONE;
+
+    int ret = pkg ? hy_goal_install(self->goal, pkg) :
+	hy_goal_install_query(self->goal, query);
+    if (ret)
+	Py_RETURN_FALSE;
+    Py_RETURN_TRUE;
 }
 
 static PyObject *
 upgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
+{
+    HyPackage pkg = NULL;
+    HyQuery query = NULL;
+    int check_installed = 0;
+    char *kwlist[] = {"package", "query", "check_installed", NULL};
+    int flags = 0;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&O&i", kwlist,
+				     package_converter, &pkg,
+				     query_converter, &query,
+				     &check_installed))
+	return NULL;
+    if (!args_query_pkg_check(pkg, query))
+	return NULL;
+    if (check_installed)
+	flags |= HY_CHECK_INSTALLED;
+    if (pkg) {
+	PyErr_SetString(PyExc_NotImplementedError,
+			"Selecting a package to be upgraded is not implemented.");
+	return NULL;
+    }
+
+    int ret = hy_goal_upgrade_query(self->goal, query);
+    if (ret)
+	Py_RETURN_FALSE;
+    Py_RETURN_TRUE;
+}
+
+static PyObject *
+upgrade_to(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *pkgob = NULL;
     int check_installed = 0;
@@ -200,9 +271,13 @@ package_upgrades(_GoalObject *self, PyObject *pkg)
 }
 
 static struct PyMethodDef goal_methods[] = {
-    {"erase",		(PyCFunction)erase,		METH_O, NULL},
-    {"install",		(PyCFunction)install,		METH_O, NULL},
-    {"upgrade_to",	(PyCFunction)upgrade,
+    {"erase",		(PyCFunction)erase,
+     METH_VARARGS | METH_KEYWORDS, NULL},
+    {"install",		(PyCFunction)install,
+     METH_VARARGS | METH_KEYWORDS, NULL},
+    {"upgrade",	        (PyCFunction)upgrade,
+     METH_VARARGS | METH_KEYWORDS, NULL},
+    {"upgrade_to",	(PyCFunction)upgrade_to,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"upgrade_all",	(PyCFunction)upgrade_all,	METH_NOARGS, NULL},
     {"go",		(PyCFunction)go,
