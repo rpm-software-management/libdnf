@@ -54,6 +54,16 @@ sackFromPyObject(PyObject *o)
     return ((_SackObject *)o)->sack;
 }
 
+int
+sack_converter(PyObject *o, HySack *sack_ptr)
+{
+    HySack sack = sackFromPyObject(o);
+    if (sack == NULL)
+	return 0;
+    *sack_ptr = sack;
+    return 1;
+}
+
 /* functions on the type */
 
 static void

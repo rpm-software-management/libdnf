@@ -1,4 +1,5 @@
 import os
+import os.path
 
 import hawkey
 import _hawkey_test
@@ -6,8 +7,10 @@ import _hawkey_test
 EXPECT_SYSTEM_NSOLVABLES = _hawkey_test.EXPECT_SYSTEM_NSOLVABLES
 EXPECT_MAIN_NSOLVABLES = _hawkey_test.EXPECT_MAIN_NSOLVABLES
 EXPECT_UPDATES_NSOLVABLES = _hawkey_test.EXPECT_UPDATES_NSOLVABLES
+EXPECT_YUM_NSOLVABLES = _hawkey_test.EXPECT_YUM_NSOLVABLES
 FIXED_ARCH = _hawkey_test.FIXED_ARCH
 UNITTEST_DIR = _hawkey_test.UNITTEST_DIR
+YUM_DIR_SUFFIX = _hawkey_test.YUM_DIR_SUFFIX
 
 class TestSack(hawkey.Sack):
     def __init__(self, repo_dir, PackageClass=None, package_userdata=None):
@@ -27,4 +30,6 @@ class TestSack(hawkey.Sack):
         _hawkey_test.load_repo(self, hawkey.SYSTEM_REPO_NAME, path, True)
 
     def load_yum_repo(self):
-        raise NotImplementedError("not implemented for unittests")
+        d = os.path.join(self.repo_dir, YUM_DIR_SUFFIX)
+        repo = _hawkey_test.glob_for_repofiles(self, "messerk", d)
+        super(TestSack, self).load_yum_repo(repo)

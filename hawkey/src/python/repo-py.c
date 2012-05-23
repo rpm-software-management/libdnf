@@ -22,6 +22,14 @@ HyRepo frepoFromPyObject(PyObject *o)
     return ((_RepoObject *)o)->frepo;
 }
 
+PyObject *repoToPyObject(HyRepo repo)
+{
+    _RepoObject *self = (_RepoObject *)repo_Type.tp_alloc(&repo_Type, 0);
+    if (self)
+	self->frepo = repo;
+    return (PyObject *)self;
+}
+
 /* functions on the type */
 
 static PyObject *

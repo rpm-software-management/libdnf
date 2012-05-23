@@ -16,6 +16,13 @@ class Sanity(base.TestCase):
         sack.load_rpm_repo()
         self.assertEqual(sack.nsolvables, hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
 
+    def test_load_yum(self):
+        sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        sack.load_rpm_repo()
+        sack.load_yum_repo()
+        self.assertEqual(sack.nsolvables, hawkey.test.EXPECT_YUM_NSOLVABLES +
+                         hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
+
 class PackageWrapping(base.TestCase):
     class MyPackage(hawkey.Package):
         def __init__(self, initobject, myval):

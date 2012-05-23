@@ -8,5 +8,6 @@ extern PyTypeObject repo_Type;
 #define repoObject_Check(v)	((v)->ob_type == &repo_Type)
 
 HyRepo frepoFromPyObject(PyObject *o);
+PyObject *repoToPyObject(HyRepo repo);
 
 #endif // REPO_PY_H
