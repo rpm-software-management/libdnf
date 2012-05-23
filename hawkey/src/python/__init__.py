@@ -28,6 +28,10 @@ QUERY_FT_MAP = {
     'glob' : _hawkey.GLOB,
 }
 
+CHKSUM_MD5 = _hawkey.CHKSUM_MD5
+CHKSUM_SHA1 = _hawkey.CHKSUM_SHA1
+CHKSUM_SHA256 = _hawkey.CHKSUM_SHA256
+
 Sack = _hawkey.Sack
 
 class Goal(_hawkey.Goal):
