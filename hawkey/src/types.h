@@ -9,4 +9,6 @@ typedef struct _HyPackageListIter * HyPackageListIter;
 typedef struct _HyQuery * HyQuery;
 typedef struct _HySack * HySack;
 
+typedef const unsigned char HyChecksum;
+
 #endif // HY_TYPES_H

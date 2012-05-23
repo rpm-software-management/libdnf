@@ -55,6 +55,10 @@ init_hawkey(void)
     PyModule_AddIntConstant(m, "PKG_UPGRADES", HY_PKG_UPGRADES);
     PyModule_AddIntConstant(m, "PKG_OBSOLETING", HY_PKG_OBSOLETING);
 
+    PyModule_AddIntConstant(m, "CHKSUM_MD5", HY_CHKSUM_MD5);
+    PyModule_AddIntConstant(m, "CHKSUM_SHA1", HY_CHKSUM_SHA1);
+    PyModule_AddIntConstant(m, "CHKSUM_SHA256", HY_CHKSUM_SHA256);
+
     PyModule_AddIntConstant(m, "ICASE", HY_ICASE);
     PyModule_AddIntConstant(m, "EQ", HY_EQ);
     PyModule_AddIntConstant(m, "LT", HY_LT);

@@ -106,6 +106,14 @@ hy_package_get_arch(HyPackage pkg)
     return pool_id2str(pool, get_solvable(pkg)->arch);
 }
 
+const unsigned char *
+hy_package_get_chksum(HyPackage pkg, int *type)
+{
+    Solvable *s = get_solvable(pkg);
+
+    return solvable_lookup_bin_checksum(s, SOLVABLE_CHECKSUM, type);
+}
+
 const char*
 hy_package_get_evr(HyPackage pkg)
 {

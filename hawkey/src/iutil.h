@@ -27,6 +27,7 @@ int checksum_read(unsigned char *csout, FILE *fp);
 int checksum_stat(unsigned char *out, FILE *fp);
 int checksum_write(const unsigned char *cs, FILE *fp);
 void checksum_dump(const unsigned char *cs);
+int checksum_type2length(int type);
 
 /* filesystem utils */
 int is_readable_rpm(const char *fn);

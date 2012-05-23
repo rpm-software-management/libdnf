@@ -5,6 +5,7 @@
 #include <solv/util.h>
 
 // hawkey
+#include "src/iutil.h"
 #include "src/package_internal.h"
 #include "src/packagelist.h"
 #include "src/sack_internal.h"
@@ -149,11 +150,21 @@ get_str_alloced(_PackageObject *self, void *closure)
     return ret;
 }
 
+static PyObject *
+get_chksum(_PackageObject *self, void *unused)
+{
+    int type;
+    HyChecksum *cs;
+    cs = hy_package_get_chksum(self->package, &type);
+    return Py_BuildValue("s#i", cs, checksum_type2length(type), type);
+}
+
 static PyGetSetDef package_getsetters[] = {
     {"location",  (getter)get_str_alloced, NULL, NULL,
      (void *)hy_package_get_location},
     {"name", (getter)get_str, NULL, NULL, (void *)hy_package_get_name},
     {"arch", (getter)get_str, NULL, NULL, (void *)hy_package_get_arch},
+    {"chksum", (getter)get_chksum, NULL, NULL, NULL},
     {"evr",  (getter)get_str, NULL, NULL, (void *)hy_package_get_evr},
     {"reponame",  (getter)get_str, NULL, NULL, (void *)hy_package_get_reponame},
     {"summary",  (getter)get_str, NULL, NULL, (void *)hy_package_get_summary},

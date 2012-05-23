@@ -138,6 +138,22 @@ checksum_dump(const unsigned char *cs)
 }
 
 int
+checksum_type2length(int type)
+{
+    switch(type) {
+    case HY_CHKSUM_MD5:
+	return 16;
+    case HY_CHKSUM_SHA1:
+	return 20;
+    case HY_CHKSUM_SHA256:
+	return 32;
+    default:
+	assert(0);
+	return -1;
+    }
+}
+
+int
 is_readable_rpm(const char *fn)
 {
     int len = strlen(fn);
