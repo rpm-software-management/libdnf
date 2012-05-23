@@ -93,7 +93,7 @@ query_count_results(HyQuery query)
 void
 setup_empty_sack(void)
 {
-    HySack sack = hy_sack_create(test_globals.tmpdir);
+    HySack sack = hy_sack_create(test_globals.tmpdir, NULL);
     test_globals.sack = sack;
     HY_LOG_INFO("HySack for UT created: %p", sack);
 }

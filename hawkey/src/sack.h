@@ -14,7 +14,7 @@
 #define HY_CMDLINE_REPO_NAME "@commandline"
 #define HY_EXT_FILENAMES "-filenames"
 
-HySack hy_sack_create(const char *cache_path);
+HySack hy_sack_create(const char *cache_path, const char *arch);
 void hy_sack_free(HySack sack);
 char *hy_sack_give_cache_fn(HySack sack, const char *reponame, const char *ext);
 void hy_sack_set_installonly(HySack sack, const char **installonly);

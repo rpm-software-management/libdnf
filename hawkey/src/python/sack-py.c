@@ -83,12 +83,14 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     PyObject *custom_class = NULL;
     PyObject *custom_val = NULL;
     const char *cachedir = NULL;
-    char *kwlist[] = {"cachedir", "pkgcls", "pkginitval", NULL};
+    const char *arch = NULL;
+    char *kwlist[] = {"cachedir", "arch", "pkgcls", "pkginitval", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|sOO", kwlist,
-				     &cachedir, &custom_class, &custom_val))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|ssOO", kwlist,
+				     &cachedir, &arch,
+				     &custom_class, &custom_val))
 	return -1;
-    self->sack = hy_sack_create(cachedir);
+    self->sack = hy_sack_create(cachedir, arch);
     if (custom_class && custom_class != Py_None) {
 	if (!PyType_Check(custom_class)) {
 	    PyErr_SetString(PyExc_TypeError, "Expected a class object.");

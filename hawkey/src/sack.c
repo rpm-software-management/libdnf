@@ -85,15 +85,21 @@ get_cmdline_repo(HySack sack)
 }
 
 static void
-setarch(Pool *pool)
+setarch(HySack sack, const char *arch)
 {
-  struct utsname un;
-  if (uname(&un))
-    {
-      perror(__func__);
-      exit(1);
+    Pool *pool = sack_pool(sack);
+    struct utsname un;
+
+    if (arch == NULL) {
+	if (uname(&un))
+	    {
+		perror(__func__);
+		exit(1);
+	    }
+	arch = un.machine;
     }
-  pool_setarch(pool, un.machine);
+    HY_LOG_INFO("Architecture is: %s", arch);
+    pool_setarch(pool, arch);
 }
 
 static void
@@ -106,19 +112,26 @@ log_cb(Pool *pool, void *cb_data, int type, const char *buf)
 
 	sack->log_out = fopen(fn, "a");
 	if (sack->log_out)
-	    HY_LOG_INFO("started.", sack);
+	    HY_LOG_INFO("Started...", sack);
     }
     fwrite(buf, strlen(buf), 1, sack->log_out);
     fflush(sack->log_out);
 }
 
+/**
+ * Creates a new package sack, the fundamental hawkey structure.
+ *
+ * If 'cache_path' is not NULL it is used to override the default filesystem
+ * location where hawkey will store its metadata cache and log file.
+ *
+ * 'arch' specifies the architecture. NULL value causes autodetection.
+ */
 HySack
-hy_sack_create(const char *cache_path)
+hy_sack_create(const char *cache_path, const char *arch)
 {
     HySack sack = solv_calloc(1, sizeof(*sack));
     Pool *pool = pool_create();
 
-    setarch(pool);
     sack->pool = pool;
 
     if (cache_path != NULL) {
@@ -131,18 +144,21 @@ hy_sack_create(const char *cache_path)
 	solv_free(username);
     } else
 	sack->cache_dir = solv_strdup(DEFAULT_CACHE_ROOT);
+
     int ret = mkcachedir(sack->cache_dir);
-    assert(ret == 0);
     if (ret) {
 	hy_sack_free(sack);
 	return NULL;
     }
     queue_init(&sack->installonly);
 
+    /* logging up after this*/
     pool_setdebugcallback(pool, log_cb, sack);
     pool_setdebugmask(pool,
 		      SOLV_ERROR | SOLV_FATAL | SOLV_WARN | SOLV_DEBUG_RESULT |
 		      HY_LL_INFO | HY_LL_ERROR);
+    setarch(sack, arch);
+
     return sack;
 }
 
@@ -160,7 +176,7 @@ hy_sack_free(HySack sack)
 	hy_repo_free(hrepo);
     }
     if (sack->log_out) {
-	HY_LOG_INFO("finished.", sack);
+	HY_LOG_INFO("Finished.", sack);
 	fclose(sack->log_out);
     }
     solv_free(sack->cache_dir);
