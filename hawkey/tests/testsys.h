@@ -13,6 +13,7 @@ struct TestGlobals_s {
 
 #define UNITTEST_DIR "/tmp/hawkeyXXXXXX"
 #define YUM_DIR_SUFFIX "yum/repodata/"
+#define TEST_FIXED_ARCH "x86_64"
 #define TEST_META_SOLVABLES_COUNT 2
 #define TEST_EXPECT_SYSTEM_PKGS 6
 #define TEST_EXPECT_SYSTEM_NSOLVABLES \

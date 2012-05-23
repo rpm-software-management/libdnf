@@ -6,12 +6,14 @@ import _hawkey_test
 EXPECT_SYSTEM_NSOLVABLES = _hawkey_test.EXPECT_SYSTEM_NSOLVABLES
 EXPECT_MAIN_NSOLVABLES = _hawkey_test.EXPECT_MAIN_NSOLVABLES
 EXPECT_UPDATES_NSOLVABLES = _hawkey_test.EXPECT_UPDATES_NSOLVABLES
+FIXED_ARCH = _hawkey_test.FIXED_ARCH
 UNITTEST_DIR = _hawkey_test.UNITTEST_DIR
 
 class TestSack(hawkey.Sack):
     def __init__(self, repo_dir, PackageClass=None, package_userdata=None):
         super(TestSack, self).__init__(
             cachedir=UNITTEST_DIR,
+            arch=FIXED_ARCH,
             pkgcls=PackageClass,
             pkginitval=package_userdata)
         self.repo_dir = repo_dir

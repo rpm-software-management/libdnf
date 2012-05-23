@@ -22,7 +22,6 @@
 /* define the global variable */
 struct TestGlobals_s test_globals;
 
-
 void
 dump_packagelist(HyPackageList plist)
 {
@@ -93,7 +92,7 @@ query_count_results(HyQuery query)
 void
 setup_empty_sack(void)
 {
-    HySack sack = hy_sack_create(test_globals.tmpdir, NULL);
+    HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH);
     test_globals.sack = sack;
     HY_LOG_INFO("HySack for UT created: %p", sack);
 }

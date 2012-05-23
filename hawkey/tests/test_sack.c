@@ -124,7 +124,7 @@ START_TEST(test_filelist_from_cache)
     fail_if(access(fn_solv, R_OK));
 
     // create new sack, check it can work with the cached filenames OK
-    sack = hy_sack_create(test_globals.tmpdir, NULL);
+    sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH);
     HY_LOG_INFO("created custom sack, loading yum\n");
     setup_yum_sack(sack);
 
