@@ -50,6 +50,11 @@ class Query(_hawkey.Query):
         super(Query, self).__init__(sack)
         self.result = None
 
+    def __add__(self, operand):
+        if not isinstance(operand, list):
+            raise TypeError("Only a list can be concatenated to a Query")
+        return self.run() + operand
+
     def __iter__(self):
         """ Iterate over (cached) query result. """
         return iter(self.run())
