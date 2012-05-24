@@ -2,6 +2,7 @@
 
 // hawkey
 #include "src/query.h"
+#include "src/util.h"
 
 // pyhawkey
 #include "goal-py.h"
@@ -10,10 +11,33 @@
 #include "query-py.h"
 #include "repo-py.h"
 
+static PyObject *
+py_chksum_name(PyObject *unused, PyObject *args)
+{
+    int i;
+    const char *name;
+
+    if (!PyArg_ParseTuple(args, "i", &i))
+	return NULL;
+    name = chksum_name(i);
+    if (name == NULL) {
+	PyErr_Format(PyExc_ValueError, "unrecognized chksum type: %d", i);
+	return NULL;
+    }
+
+    return PyString_FromString(name);
+}
+
+static struct PyMethodDef hawkey_methods[] = {
+    {"chksum_name",		(PyCFunction)py_chksum_name,
+     METH_VARARGS, NULL},
+    {NULL}				/* sentinel */
+};
+
 PyMODINIT_FUNC
 init_hawkey(void)
 {
-    PyObject *m = Py_InitModule("_hawkey", NULL);
+    PyObject *m = Py_InitModule("_hawkey", hawkey_methods);
     if (!m)
 	return;
     /* _hawkey.Sack */

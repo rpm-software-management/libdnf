@@ -32,7 +32,14 @@ CHKSUM_MD5 = _hawkey.CHKSUM_MD5
 CHKSUM_SHA1 = _hawkey.CHKSUM_SHA1
 CHKSUM_SHA256 = _hawkey.CHKSUM_SHA256
 
+_CHKSUM_TYPES = {
+    CHKSUM_MD5: 'md5',
+    CHKSUM_SHA1: 'sha1',
+    CHKSUM_SHA256: 'sha256'
+    }
+
 Sack = _hawkey.Sack
+chksum_name = _hawkey.chksum_name
 
 class Goal(_hawkey.Goal):
     @property

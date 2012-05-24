@@ -2,6 +2,7 @@
 #define PACKAGE_H
 
 // libsolv
+#include "solv/pool.h"
 #include "solv/solvable.h"
 
 // hawkey
