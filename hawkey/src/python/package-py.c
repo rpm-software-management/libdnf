@@ -156,7 +156,7 @@ get_chksum(_PackageObject *self, void *unused)
     int type;
     HyChecksum *cs;
     cs = hy_package_get_chksum(self->package, &type);
-    return Py_BuildValue("s#i", cs, checksum_type2length(type), type);
+    return Py_BuildValue("is#", type, cs, checksum_type2length(type));
 }
 
 static PyGetSetDef package_getsetters[] = {

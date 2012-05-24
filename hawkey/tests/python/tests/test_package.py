@@ -25,7 +25,7 @@ class WithYumRepo(base.TestCase):
         self.pkg = hawkey.Query(self.sack).filter(name="mystery")[0]
 
     def test_checksum(self):
-        (chksum, chksum_type) = self.pkg.chksum
+        (chksum_type, chksum) = self.pkg.chksum
         self.assertEqual(len(chksum), 32)
         self.assertEqual(chksum[0], '\xb2')
         self.assertEqual(chksum[31], '\x7a')
