@@ -10,23 +10,23 @@
 
 typedef struct {
     PyObject_HEAD
-    HyRepo frepo;
+    HyRepo repo;
 } _RepoObject;
 
-HyRepo frepoFromPyObject(PyObject *o)
+HyRepo repoFromPyObject(PyObject *o)
 {
     if (!repoObject_Check(o)) {
 	PyErr_SetString(PyExc_TypeError, "Expected a Repo object.");
 	return NULL;
     }
-    return ((_RepoObject *)o)->frepo;
+    return ((_RepoObject *)o)->repo;
 }
 
 PyObject *repoToPyObject(HyRepo repo)
 {
     _RepoObject *self = (_RepoObject *)repo_Type.tp_alloc(&repo_Type, 0);
     if (self)
-	self->frepo = repo;
+	self->repo = repo;
     return (PyObject *)self;
 }
 
@@ -37,8 +37,8 @@ repo_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     _RepoObject *self = (_RepoObject *)type->tp_alloc(type, 0);
     if (self) {
-	self->frepo = hy_repo_create();
-	if (self->frepo == NULL) {
+	self->repo = hy_repo_create();
+	if (self->repo == NULL) {
 	    Py_DECREF(self);
 	    return NULL;
 	}
@@ -49,7 +49,7 @@ repo_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 static void
 repo_dealloc(_RepoObject *self)
 {
-    hy_repo_free(self->frepo);
+    hy_repo_free(self->repo);
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -62,7 +62,7 @@ get_str(_RepoObject *self, void *closure)
     const char *str;
     PyObject *ret;
 
-    str = hy_repo_get_string(self->frepo, str_key);
+    str = hy_repo_get_string(self->repo, str_key);
     if (str == NULL) {
 	ret = PyString_FromString("");
     } else {
@@ -80,7 +80,7 @@ set_str(_RepoObject *self, PyObject *value, void *closure)
     str_value = PyString_AsString(value);
     if (str_value == NULL)
 	return -1;
-    hy_repo_set_string(self->frepo, str_key, str_value);
+    hy_repo_set_string(self->repo, str_key, str_value);
 
     return 0;
 }

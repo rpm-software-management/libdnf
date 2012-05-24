@@ -203,10 +203,10 @@ load_rpm_repo(_SackObject *self, PyObject *unused)
 static PyObject *
 load_yum_repo(_SackObject *self, PyObject *repo)
 {
-    HyRepo frepo = frepoFromPyObject(repo);
-    if (frepo == NULL)
+    HyRepo crepo = repoFromPyObject(repo);
+    if (crepo == NULL)
 	return NULL;
-    switch (hy_sack_load_yum_repo(self->sack, frepo)) {
+    switch (hy_sack_load_yum_repo(self->sack, crepo)) {
     case 0:
 	Py_RETURN_NONE;
     case 1:
