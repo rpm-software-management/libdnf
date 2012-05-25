@@ -137,10 +137,18 @@ START_TEST(test_filelist_from_cache)
     int count;
     dataiterator_init(&di, pool, 0, 0, SOLVABLE_FILELIST, "/usr/bin/ste",
 		      SEARCH_STRING | SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
-    for (count = 0; dataiterator_step(&di); ++count)
-	;
+    for (count = 0; dataiterator_step(&di); ++count) ;
     fail_unless(count == 1);
     dataiterator_free(&di);
+
+    /* test a file that isn't matched by repodata_filelistfilter_matches() in
+       libsolv */
+    dataiterator_init(&di, pool, 0, 0, SOLVABLE_FILELIST,
+		      "/usr/lib/python2.7/site-packages/today.pyc",
+		      SEARCH_STRING | SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
+    for (count = 0; dataiterator_step(&di); ++count) ;
+    fail_unless(count == 1);
+
     hy_sack_free(sack);
 
     // remove the file so the remaining tests do no try to use it:
