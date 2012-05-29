@@ -21,16 +21,23 @@ hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state)
 {
     int trans = repo->state << 8 | new_state;
     switch (trans) {
-    case _HY_NEW << 8 | _HY_LOADED_FETCH:
-    case _HY_NEW << 8 | _HY_LOADED_CACHE:
-    case _HY_LOADED_FETCH << 8 | _HY_WRITTEN:
-    case _HY_LOADED_FETCH << 8 | _HY_FL_LOADED_FETCH:
-    case _HY_LOADED_FETCH << 8 | _HY_FL_LOADED_CACHE:
-    case _HY_LOADED_CACHE << 8 | _HY_FL_LOADED_FETCH:
-    case _HY_LOADED_CACHE << 8 | _HY_FL_LOADED_CACHE:
-    case _HY_WRITTEN << 8 | _HY_FL_LOADED_FETCH:
-    case _HY_WRITTEN << 8 | _HY_FL_LOADED_CACHE:
-    case _HY_FL_LOADED_FETCH << 8 | _HY_FL_WRITTEN:
+    case _HY_NEW << 8		    | _HY_LOADED_FETCH:
+    case _HY_NEW << 8		    | _HY_LOADED_CACHE:
+    case _HY_LOADED_FETCH << 8	    | _HY_WRITTEN:
+    case _HY_LOADED_FETCH << 8	    | _HY_FL_LOADED_FETCH:
+    case _HY_LOADED_FETCH << 8	    | _HY_FL_LOADED_CACHE:
+    case _HY_LOADED_CACHE << 8	    | _HY_FL_LOADED_FETCH:
+    case _HY_LOADED_CACHE << 8	    | _HY_FL_LOADED_CACHE:
+    case _HY_WRITTEN << 8	    | _HY_FL_LOADED_FETCH:
+    case _HY_WRITTEN << 8	    | _HY_FL_LOADED_CACHE:
+    case _HY_FL_LOADED_FETCH << 8   | _HY_FL_WRITTEN:
+    case _HY_WRITTEN << 8	    | _HY_PST_LOADED_FETCH:
+    case _HY_WRITTEN << 8	    | _HY_PST_LOADED_CACHE:
+    case _HY_FL_LOADED_FETCH << 8   | _HY_PST_LOADED_FETCH:
+    case _HY_FL_LOADED_FETCH << 8   | _HY_PST_LOADED_CACHE:
+    case _HY_FL_WRITTEN << 8	    | _HY_PST_LOADED_FETCH:
+    case _HY_FL_WRITTEN << 8	    | _HY_PST_LOADED_CACHE:
+    case _HY_PST_LOADED_FETCH << 8  | _HY_PST_WRITTEN:
 	repo->state = new_state;
 	return 0;
     default:
@@ -65,6 +72,9 @@ hy_repo_set_string(HyRepo repo, enum _hy_repo_param_e which, const char *str_val
     case HY_REPO_FILELISTS_FN:
 	repo->filelists_fn = solv_strdup(str_val);
 	break;
+    case HY_REPO_PRESTO_FN:
+	repo->presto_fn = solv_strdup(str_val);
+	break;
     default:
 	assert(0);
     }
@@ -82,6 +92,8 @@ hy_repo_get_string(HyRepo repo, enum _hy_repo_param_e which)
 	return repo->primary_fn;
     case HY_REPO_FILELISTS_FN:
 	return repo->filelists_fn;
+    case HY_REPO_PRESTO_FN:
+	return repo->presto_fn;
     default:
 	assert(0);
     }
@@ -98,5 +110,6 @@ hy_repo_free(HyRepo repo)
     solv_free(repo->repomd_fn);
     solv_free(repo->primary_fn);
     solv_free(repo->filelists_fn);
+    solv_free(repo->presto_fn);
     solv_free(repo);
 }

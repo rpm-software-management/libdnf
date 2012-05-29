@@ -13,6 +13,7 @@
 #define HY_SYSTEM_RPMDB "/var/lib/rpm/Packages"
 #define HY_CMDLINE_REPO_NAME "@commandline"
 #define HY_EXT_FILENAMES "-filenames"
+#define HY_EXT_PRESTO "-presto"
 
 HySack hy_sack_create(const char *cache_path, const char *arch);
 void hy_sack_free(HySack sack);
@@ -23,6 +24,7 @@ HyPackage hy_sack_add_cmdline_rpm(HySack sack, const char *fn);
 void hy_sack_load_rpm_repo(HySack sack);
 int hy_sack_load_yum_repo(HySack sack, HyRepo repo);
 int hy_sack_load_filelists(HySack sack);
+int hy_sack_load_presto(HySack sack);
 int hy_sack_write_all_repos(HySack sack);
 int hy_sack_write_filelists(HySack sack);
 

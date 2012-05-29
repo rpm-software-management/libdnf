@@ -56,6 +56,12 @@ glob_for_repofiles(Pool *pool, const char *repo_name, const char *path)
     if (wordexp(tmpl, &word_vector, WRDE_REUSE) || word_vector.we_wordc < 1)
 	goto fail;
     hy_repo_set_string(repo, HY_REPO_FILELISTS_FN, word_vector.we_wordv[0]);
+
+    tmpl = pool_tmpjoin(pool, path, "/*prestodelta.xml.gz", NULL);
+    if (wordexp(tmpl, &word_vector, WRDE_REUSE) || word_vector.we_wordc < 1)
+	goto fail;
+    hy_repo_set_string(repo, HY_REPO_PRESTO_FN, word_vector.we_wordv[0]);
+
     wordfree(&word_vector);
     return repo;
 

@@ -8,6 +8,7 @@
 #include <solv/testcase.h>
 
 // hawkey
+#include "src/package_internal.h"
 #include "src/repo_internal.h"
 #include "src/sack_internal.h"
 #include "src/util.h"
@@ -157,6 +158,30 @@ START_TEST(test_filelist_from_cache)
 }
 END_TEST
 
+START_TEST(test_presto)
+{
+    HySack sack = test_globals.sack;
+    Pool *pool = sack_pool(sack);
+    Dataiterator di;
+
+    fail_if(hy_sack_load_presto(sack));
+    dataiterator_init(&di, pool, NULL, SOLVID_META, DELTA_PACKAGE_NAME, "tour",
+		      SEARCH_STRING);
+    dataiterator_prepend_keyname(&di, REPOSITORY_DELTAINFO);
+    fail_unless(dataiterator_step(&di));
+    dataiterator_setpos_parent(&di);
+    const char *attr;
+    attr = pool_lookup_str(pool, SOLVID_POS, DELTA_SEQ_NAME);
+    ck_assert_str_eq(attr, "tour");
+    attr = pool_lookup_str(pool, SOLVID_POS, DELTA_SEQ_EVR);
+    ck_assert_str_eq(attr, "4-5");
+    attr = pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_DIR);
+    ck_assert_str_eq(attr, "drpms");
+
+    dataiterator_free(&di);
+}
+END_TEST
+
 Suite *
 sack_suite(void)
 {
@@ -178,6 +203,7 @@ sack_suite(void)
     tcase_add_unchecked_fixture(tc, setup_yum, teardown);
     tcase_add_test(tc, test_yum_repo);
     tcase_add_test(tc, test_filelist_from_cache);
+    tcase_add_test(tc, test_presto);
     suite_add_tcase(s, tc);
 
     return s;

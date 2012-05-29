@@ -16,6 +16,9 @@ enum _hy_repo_state {
     _HY_FL_LOADED_FETCH,
     _HY_FL_LOADED_CACHE,
     _HY_FL_WRITTEN,
+    _HY_PST_LOADED_FETCH,
+    _HY_PST_LOADED_CACHE,
+    _HY_PST_WRITTEN,
 };
 
 struct _HyRepo {
@@ -24,8 +27,10 @@ struct _HyRepo {
     char *repomd_fn;
     char *primary_fn;
     char *filelists_fn;
+    char *presto_fn;
     enum _hy_repo_state state;
     Id filenames_repodata;
+    Id presto_repodata;
     unsigned char checksum[CHKSUM_BYTES];
 };
 

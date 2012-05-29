@@ -13,6 +13,7 @@
 #include "solv/pool.h"
 #include "solv/poolarch.h"
 #include "solv/repo.h"
+#include "solv/repo_deltainfoxml.h"
 #include "solv/repo_repomdxml.h"
 #include "solv/repo_rpmmd.h"
 #include "solv/repo_rpmdb.h"
@@ -385,6 +386,75 @@ hy_sack_load_filelists(HySack sack)
 	if (!ret_misc) {
 	    assert(previous_last == repo->nrepodata - 2);
 	    hrepo->filenames_repodata = repo->nrepodata - 1;
+	}
+    }
+    sack->provides_ready = 0;
+    return ret;
+}
+
+int
+hy_sack_load_presto(HySack sack)
+{
+    Pool *pool = sack->pool;
+    int ret = 0;
+    Repo *repo;
+    Id rid;
+
+    FOR_REPOS(rid, repo) {
+	HyRepo hrepo = repo->appdata;
+	const char *name = repo->name;
+	const char *fn;
+	FILE *fp;
+	int ret_misc;
+	int done = 0;
+
+	if (hrepo == NULL)
+	    continue;
+	fn = hy_repo_get_string(hrepo, HY_REPO_PRESTO_FN);
+	if (fn == NULL)
+	    continue;
+
+	char *fn_cache =  hy_sack_give_cache_fn(sack, name, HY_EXT_PRESTO);
+	fp = fopen(fn_cache, "r");
+	assert(hrepo->checksum);
+	if (can_use_repomd_cache(fp, hrepo->checksum)) {
+	    done = 1;
+	    if (hy_repo_transition(hrepo, _HY_PST_LOADED_CACHE))
+		HY_LOG_INFO("%s: skipping %s (%d)", __func__, name, hrepo->state);
+	    else {
+		HY_LOG_INFO("%s: using cache file: %s", __func__, fn_cache);
+		ret_misc = repo_add_solv(repo, fp, REPO_EXTEND_SOLVABLES);
+		assert(ret_misc == 0);
+		ret |= ret_misc;
+	    }
+	}
+	solv_free(fn_cache);
+	if (fp)
+	    fclose(fp);
+	if (done)
+	    continue;
+
+	if (hy_repo_transition(hrepo, _HY_PST_LOADED_FETCH)) {
+	    HY_LOG_INFO("%s: skipping %s (%d)", __func__, name, hrepo->state);
+	    continue;
+	}
+	fp = solv_xfopen(fn, "r");
+	if (fp == NULL) {
+	    HY_LOG_ERROR("%s: failed to open: %s", __func__, fn);
+	    ret |= 1;
+	    continue;
+	}
+	HY_LOG_INFO("%s: loading: %s", __func__, fn);
+
+	int previous_last = repo->nrepodata - 1;
+	ret_misc = repo_add_deltainfoxml(repo, fp, 0);
+	printf("%d\n", ret_misc);
+	fclose(fp);
+	assert(ret_misc == 0);
+	ret |= ret_misc;
+	if (!ret_misc) {
+	    assert(previous_last == repo->nrepodata - 2);
+	    hrepo->presto_repodata = repo->nrepodata - 1;
 	}
     }
     sack->provides_ready = 0;
