@@ -25,6 +25,7 @@ struct TestGlobals_s {
 /* global data used to pass values from fixtures to tests */
 extern struct TestGlobals_s test_globals;
 
+HyPackage by_name(HySack sack, const char *name);
 void dump_packagelist(HyPackageList plist);
 HyRepo glob_for_repofiles(Pool *pool, const char *repo_name, const char *path);
 int load_repo(Pool *pool, const char *name, const char *path, int installed);

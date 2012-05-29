@@ -159,3 +159,55 @@ hy_package_get_size(HyPackage pkg)
     repo_internalize_trigger(s->repo);
     return solvable_lookup_num(s, SOLVABLE_DOWNLOADSIZE, 0);
 }
+
+HyPackageDelta
+hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr)
+{
+    Pool *pool = pkg->pool;
+    Solvable *s = get_solvable(pkg);
+    HyPackageDelta delta = NULL;
+    Dataiterator di;
+    const char *name = hy_package_get_name(pkg);
+
+    dataiterator_init(&di, pool, s->repo, SOLVID_META, DELTA_PACKAGE_NAME, name,
+		      SEARCH_STRING);
+    dataiterator_prepend_keyname(&di, REPOSITORY_DELTAINFO);
+    while (dataiterator_step(&di)) {
+	dataiterator_setpos_parent(&di);
+	if (pool_lookup_id(pool, SOLVID_POS, DELTA_PACKAGE_EVR) != s->evr ||
+	    pool_lookup_id(pool, SOLVID_POS, DELTA_PACKAGE_ARCH) != s->arch)
+	    continue;
+	const char * base_evr = pool_id2str(pool, pool_lookup_id(pool, SOLVID_POS,
+								 DELTA_BASE_EVR));
+	if (strcmp(base_evr, from_evr))
+	    continue;
+
+	// we have the right delta info, set up HyPackageDelta and break out:
+	delta = solv_calloc(1, sizeof(*delta));
+	const char *loc = pool_tmpjoin(pool,
+				       pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_DIR),
+				       "/",
+				       pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_NAME));
+	loc = pool_tmpappend(pool, loc, "-", pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_EVR));
+	loc = pool_tmpappend(pool, loc, ".", pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_SUFFIX));
+	delta->location = solv_strdup(loc);
+
+	break;
+    }
+    dataiterator_free(&di);
+
+    return delta;
+}
+
+const char *
+hy_packagedelta_get_location(HyPackageDelta delta)
+{
+    return delta->location;
+}
+
+void
+hy_packagedelta_free(HyPackageDelta delta)
+{
+    solv_free(delta->location);
+    solv_free(delta);
+}

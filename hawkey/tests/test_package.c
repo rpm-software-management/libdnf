@@ -1,4 +1,4 @@
-//hawkey
+// hawkey
 #include "src/query.h"
 #include "testsys.h"
 #include "test_package.h"
@@ -61,6 +61,21 @@ START_TEST(test_checksums)
 }
 END_TEST
 
+START_TEST(test_presto)
+{
+    HySack sack = test_globals.sack;
+    HyPackage tour = by_name(sack, "tour");
+    fail_if(tour == NULL);
+    fail_if(hy_sack_load_presto(sack));
+
+    HyPackageDelta delta = hy_package_get_delta_from_evr(tour, "4-5");
+    const char *location = hy_packagedelta_get_location(delta);
+    ck_assert_str_eq(location, "drpms/tour-4-5_4-6.noarch.drpm");
+    hy_packagedelta_free(delta);
+    hy_package_free(tour);
+}
+END_TEST
+
 Suite *
 package_suite(void)
 {
@@ -76,6 +91,7 @@ package_suite(void)
     tc = tcase_create("WithRealRepo");
     tcase_add_unchecked_fixture(tc, setup_yum, teardown);
     tcase_add_test(tc, test_checksums);
+    tcase_add_test(tc, test_presto);
     suite_add_tcase(s, tc);
 
     return s;

@@ -448,7 +448,6 @@ hy_sack_load_presto(HySack sack)
 
 	int previous_last = repo->nrepodata - 1;
 	ret_misc = repo_add_deltainfoxml(repo, fp, 0);
-	printf("%d\n", ret_misc);
 	fclose(fp);
 	assert(ret_misc == 0);
 	ret |= ret_misc;

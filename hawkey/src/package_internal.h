@@ -9,6 +9,10 @@ struct _HyPackage {
     Pool *pool;
 };
 
+struct _HyPackageDelta {
+    char *location;
+};
+
 HyPackage package_create(Pool *pool, Id id);
 static inline Id package_id(HyPackage pkg) { return pkg->id; }
 HyPackage package_from_solvable(Solvable *s);

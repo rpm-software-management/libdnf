@@ -22,6 +22,19 @@
 /* define the global variable */
 struct TestGlobals_s test_globals;
 
+HyPackage
+by_name(HySack sack, const char *name)
+{
+    HyQuery q = hy_query_create(sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
+    HyPackageList plist = hy_query_run(q);
+    hy_query_free(q);
+    HyPackage pkg = hy_packagelist_get_clone(plist, 0);
+    hy_packagelist_free(plist);
+
+    return pkg;
+}
+
 void
 dump_packagelist(HyPackageList plist)
 {
