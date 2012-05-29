@@ -31,6 +31,10 @@ hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state)
     case _HY_WRITTEN << 8	    | _HY_FL_LOADED_FETCH:
     case _HY_WRITTEN << 8	    | _HY_FL_LOADED_CACHE:
     case _HY_FL_LOADED_FETCH << 8   | _HY_FL_WRITTEN:
+    case _HY_LOADED_FETCH << 8	    | _HY_PST_LOADED_FETCH:
+    case _HY_LOADED_FETCH << 8	    | _HY_PST_LOADED_CACHE:
+    case _HY_LOADED_CACHE << 8	    | _HY_PST_LOADED_FETCH:
+    case _HY_LOADED_CACHE << 8	    | _HY_PST_LOADED_CACHE:
     case _HY_WRITTEN << 8	    | _HY_PST_LOADED_FETCH:
     case _HY_WRITTEN << 8	    | _HY_PST_LOADED_CACHE:
     case _HY_FL_LOADED_FETCH << 8   | _HY_PST_LOADED_FETCH:

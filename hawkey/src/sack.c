@@ -542,6 +542,41 @@ hy_sack_write_filelists(HySack sack)
     return ret;
 }
 
+int
+hy_sack_write_presto(HySack sack)
+{
+    Pool *pool = sack->pool;
+    Repo *repo;
+    Id rid;
+    int ret = 0;
+
+    FOR_REPOS(rid, repo) {
+	HyRepo hrepo = repo->appdata;
+	const char *name = repo->name;
+
+	if (hrepo == NULL)
+	    continue;
+	if (hy_repo_transition(hrepo, _HY_PST_WRITTEN)) {
+	    HY_LOG_INFO("%s: skipping %s (%d)", __func__, name, hrepo->state);
+	    continue;
+	}
+
+	assert(hrepo->filenames_repodata);
+	Repodata *data = repo_id2repodata(repo, hrepo->presto_repodata);
+	char *fn = hy_sack_give_cache_fn(sack, name, HY_EXT_PRESTO);
+	FILE *fp = fopen(fn, "w+");
+	HY_LOG_INFO("%s: storing %s to: %s", __func__, repo->name, fn);
+	solv_free(fn);
+	assert(data);
+	assert(hrepo->checksum);
+	ret |= repodata_write(data, fp);
+	ret |= checksum_write(hrepo->checksum, fp);
+
+	fclose(fp);
+    }
+    return ret;
+}
+
 // internal
 
 void

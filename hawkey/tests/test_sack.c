@@ -158,13 +158,11 @@ START_TEST(test_filelist_from_cache)
 }
 END_TEST
 
-START_TEST(test_presto)
+static void
+check_prestoinfo(Pool *pool)
 {
-    HySack sack = test_globals.sack;
-    Pool *pool = sack_pool(sack);
     Dataiterator di;
 
-    fail_if(hy_sack_load_presto(sack));
     dataiterator_init(&di, pool, NULL, SOLVID_META, DELTA_PACKAGE_NAME, "tour",
 		      SEARCH_STRING);
     dataiterator_prepend_keyname(&di, REPOSITORY_DELTAINFO);
@@ -177,8 +175,37 @@ START_TEST(test_presto)
     ck_assert_str_eq(attr, "4-5");
     attr = pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_DIR);
     ck_assert_str_eq(attr, "drpms");
-
     dataiterator_free(&di);
+    return;
+}
+
+START_TEST(test_presto)
+{
+    HySack sack = test_globals.sack;
+
+    fail_if(hy_sack_load_presto(sack));
+    check_prestoinfo(sack_pool(sack));
+}
+END_TEST
+
+START_TEST(test_presto_save)
+{
+    HySack sack = test_globals.sack;
+    char *fn_solv = hy_sack_give_cache_fn(sack, "tfilenames", HY_EXT_PRESTO);
+
+    fail_if(hy_sack_load_presto(sack));
+    fail_if(hy_sack_write_presto(sack));
+    fail_if(access(fn_solv, R_OK));
+
+    sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH);
+    setup_yum_sack(sack);
+    fail_if(hy_sack_load_presto(sack));
+    check_prestoinfo(sack_pool(sack));
+
+    hy_sack_free(sack);
+    // remove the file so the remaining tests do no try to use it:
+    fail_if(unlink(fn_solv));
+    hy_free(fn_solv);
 }
 END_TEST
 
@@ -204,6 +231,7 @@ sack_suite(void)
     tcase_add_test(tc, test_yum_repo);
     tcase_add_test(tc, test_filelist_from_cache);
     tcase_add_test(tc, test_presto);
+    tcase_add_test(tc, test_presto_save);
     suite_add_tcase(s, tc);
 
     return s;

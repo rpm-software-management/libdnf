@@ -27,5 +27,6 @@ int hy_sack_load_filelists(HySack sack);
 int hy_sack_load_presto(HySack sack);
 int hy_sack_write_all_repos(HySack sack);
 int hy_sack_write_filelists(HySack sack);
+int hy_sack_write_presto(HySack sack);
 
 #endif // SACK_H
