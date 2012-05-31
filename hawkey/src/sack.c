@@ -561,7 +561,7 @@ hy_sack_write_presto(HySack sack)
 	    continue;
 	}
 
-	assert(hrepo->filenames_repodata);
+	assert(hrepo->presto_repodata);
 	Repodata *data = repo_id2repodata(repo, hrepo->presto_repodata);
 	char *fn = hy_sack_give_cache_fn(sack, name, HY_EXT_PRESTO);
 	FILE *fp = fopen(fn, "w+");

@@ -13,6 +13,7 @@
 // pyhawkey
 #include "iutil-py.h"
 #include "package-py.h"
+#include "packagedelta-py.h"
 #include "sack-py.h"
 
 typedef struct {
@@ -200,9 +201,23 @@ obsoletes_list(_PackageObject *self, PyObject *unused)
     return list;
 }
 
+static PyObject *
+get_delta_from_evr(_PackageObject *self, PyObject *evr_str)
+{
+    const char *evr = PyString_AsString(evr_str);
+    if (evr == NULL)
+	return NULL;
+    HyPackageDelta delta_c = hy_package_get_delta_from_evr(self->package, evr);
+    PyObject *delta = packageDeltaToPyObject(delta_c);
+    if (delta)
+	return delta;
+    Py_RETURN_NONE;
+}
+
 static struct PyMethodDef package_methods[] = {
     {"evr_cmp", (PyCFunction)evr_cmp, METH_O, NULL},
     {"obsoletes_list", (PyCFunction)obsoletes_list, METH_NOARGS, NULL},
+    {"get_delta_from_evr", (PyCFunction)get_delta_from_evr, METH_O, NULL},
     {NULL}                      /* sentinel */
 };
 

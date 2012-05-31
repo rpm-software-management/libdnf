@@ -94,10 +94,10 @@ static PyGetSetDef repo_getsetters[] = {
      (void *)HY_REPO_PRIMARY_FN},
     {"filelists_fn", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_FILELISTS_FN},
+    {"presto_fn", (getter)get_str, (setter)set_str, NULL,
+     (void *)HY_REPO_PRESTO_FN},
     {NULL}			/* sentinel */
 };
-
-/* object methods */
 
 PyTypeObject repo_Type = {
     PyObject_HEAD_INIT(NULL)

@@ -16,5 +16,6 @@ struct _HyPackageDelta {
 HyPackage package_create(Pool *pool, Id id);
 static inline Id package_id(HyPackage pkg) { return pkg->id; }
 HyPackage package_from_solvable(Solvable *s);
+HyPackageDelta delta_create(void);
 
 #endif // PACKAGE_INTERNAL_H

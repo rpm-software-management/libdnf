@@ -10,7 +10,14 @@ SET (hawkey_COPIES __init__.py dbg.py)
 FILE(COPY ${hawkey_COPIES} DESTINATION ./hawkey/)
 
 SET (hawkeymodule_SRCS
-    hawkeymodule.c goal-py.c iutil-py.c package-py.c sack-py.c query-py.c repo-py.c)
+    hawkeymodule.c
+    goal-py.c
+    iutil-py.c
+    package-py.c
+    packagedelta-py.c
+    sack-py.c
+    query-py.c
+    repo-py.c)
 
 ADD_LIBRARY(_hawkeymodule SHARED ${hawkeymodule_SRCS})
 SET_TARGET_PROPERTIES(_hawkeymodule PROPERTIES PREFIX "")

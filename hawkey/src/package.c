@@ -10,6 +10,7 @@
 #include "iutil.h"
 #include "package_internal.h"
 
+/* internal */
 static Solvable *
 get_solvable(HyPackage pkg)
 {
@@ -38,6 +39,12 @@ package_from_solvable(Solvable *s)
     return package_create(s->repo->pool, p);
 }
 
+HyPackageDelta
+delta_create(void) {
+    return solv_calloc(1, sizeof(HyPackageDelta*));
+}
+
+/* public */
 void
 hy_package_free(HyPackage pkg)
 {
@@ -183,7 +190,7 @@ hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr)
 	    continue;
 
 	// we have the right delta info, set up HyPackageDelta and break out:
-	delta = solv_calloc(1, sizeof(*delta));
+	delta = delta_create();
 	const char *loc = pool_tmpjoin(pool,
 				       pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_DIR),
 				       "/",
