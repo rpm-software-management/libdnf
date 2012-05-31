@@ -51,6 +51,36 @@ hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state)
     }
 }
 
+Id
+repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which)
+{
+    switch (which) {
+    case _HY_REPODATA_FILENAMES:
+	return repo->filenames_repodata;
+    case _HY_REPODATA_PRESTO:
+	return repo->presto_repodata;
+    default:
+	assert(0);
+	return 0;
+    }
+}
+
+void
+repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata)
+{
+    switch (which) {
+    case _HY_REPODATA_FILENAMES:
+	repo->filenames_repodata = repodata;
+	return;
+    case _HY_REPODATA_PRESTO:
+	repo->presto_repodata = repodata;
+	return;
+    default:
+	assert(0);
+	return;
+    }
+}
+
 // public functions
 
 HyRepo

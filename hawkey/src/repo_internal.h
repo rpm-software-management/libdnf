@@ -34,7 +34,14 @@ struct _HyRepo {
     unsigned char checksum[CHKSUM_BYTES];
 };
 
+enum _hy_repo_repodata {
+    _HY_REPODATA_FILENAMES,
+    _HY_REPODATA_PRESTO
+};
+
 HyRepo hy_repo_link(HyRepo repo);
 int hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state);
+Id repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which);
+void repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata);
 
 #endif // REPO_INTERNAL_H

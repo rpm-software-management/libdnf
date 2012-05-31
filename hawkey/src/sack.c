@@ -119,6 +119,123 @@ log_cb(Pool *pool, void *cb_data, int type, const char *buf)
     fflush(sack->log_out);
 }
 
+static int
+load_ext(HySack sack, int which_repodata,
+		 int new_state_fetched, int new_state_cached,
+		 const char *suffix, int which_filename,
+		 int (*cb)(Repo *, FILE *))
+{
+    Pool *pool = sack->pool;
+    int ret = 0;
+    Repo *repo;
+    Id rid;
+
+    FOR_REPOS(rid, repo) {
+	HyRepo hrepo = repo->appdata;
+	const char *name = repo->name;
+	const char *fn;
+	FILE *fp;
+	int ret_misc;
+	int done = 0;
+
+	if (hrepo == NULL)
+	    continue;
+	fn = hy_repo_get_string(hrepo, which_filename);
+	if (fn == NULL)
+	    continue;
+
+	char *fn_cache =  hy_sack_give_cache_fn(sack, name, suffix);
+	fp = fopen(fn_cache, "r");
+	assert(hrepo->checksum);
+	if (can_use_repomd_cache(fp, hrepo->checksum)) {
+	    done = 1;
+	    if (hy_repo_transition(hrepo, new_state_cached))
+		HY_LOG_INFO("%s: skipping %s (%d)", __func__, name, hrepo->state);
+	    else {
+		HY_LOG_INFO("%s: using cache file: %s", __func__, fn_cache);
+		ret_misc = repo_add_solv(repo, fp, REPO_EXTEND_SOLVABLES);
+		assert(ret_misc == 0);
+		ret |= ret_misc;
+	    }
+	}
+	solv_free(fn_cache);
+	if (fp)
+	    fclose(fp);
+	if (done)
+	    continue;
+
+	if (hy_repo_transition(hrepo, new_state_fetched)) {
+	    HY_LOG_INFO("%s: skipping %s (%d)", __func__, name, hrepo->state);
+	    continue;
+	}
+	fp = solv_xfopen(fn, "r");
+	if (fp == NULL) {
+	    HY_LOG_ERROR("%s: failed to open: %s", __func__, fn);
+	    ret |= 1;
+	    continue;
+	}
+	HY_LOG_INFO("%s: loading: %s", __func__, fn);
+
+	int previous_last = repo->nrepodata - 1;
+	ret_misc = cb(repo, fp);
+	fclose(fp);
+	assert(ret_misc == 0);
+	ret |= ret_misc;
+	if (!ret_misc) {
+	    assert(previous_last == repo->nrepodata - 2);
+	    repo_set_repodata(hrepo, which_repodata, repo->nrepodata - 1);
+	}
+    }
+    sack->provides_ready = 0;
+    return ret;
+}
+
+static int
+load_filelists_cb(Repo *repo, FILE *fp) {
+    return repo_add_rpmmd(repo, fp, "FL", REPO_EXTEND_SOLVABLES);
+}
+
+static int
+load_presto_cb(Repo *repo, FILE *fp) {
+    return repo_add_deltainfoxml(repo, fp, 0);
+}
+
+static int
+write_ext(HySack sack, int which_repodata, int new_state, const char *suffix)
+{
+    Pool *pool = sack->pool;
+    Repo *repo;
+    Id rid;
+    int ret = 0;
+
+    FOR_REPOS(rid, repo) {
+	HyRepo hrepo = repo->appdata;
+	const char *name = repo->name;
+
+	if (hrepo == NULL)
+	    continue;
+	if (hy_repo_transition(hrepo, new_state)) {
+	    HY_LOG_INFO("%s: skipping %s (%d)", __func__, name, hrepo->state);
+	    continue;
+	}
+
+	Id repodata = repo_get_repodata(hrepo, which_repodata);
+	assert(repodata);
+	Repodata *data = repo_id2repodata(repo, repodata);
+	char *fn = hy_sack_give_cache_fn(sack, name, suffix);
+	FILE *fp = fopen(fn, "w+");
+	HY_LOG_INFO("%s: storing %s to: %s", __func__, repo->name, fn);
+	solv_free(fn);
+	assert(data);
+	assert(hrepo->checksum);
+	ret |= repodata_write(data, fp);
+	ret |= checksum_write(hrepo->checksum, fp);
+
+	fclose(fp);
+    }
+    return ret;
+}
+
 /**
  * Creates a new package sack, the fundamental hawkey structure.
  *
@@ -325,139 +442,20 @@ hy_sack_load_yum_repo(HySack sack, HyRepo hrepo)
 }
 
 int
-hy_sack_load_filelists(HySack sack)
-{
-    Pool *pool = sack->pool;
-    int ret = 0;
-    Repo *repo;
-    Id rid;
-
-    FOR_REPOS(rid, repo) {
-	HyRepo hrepo = repo->appdata;
-	const char *name = repo->name;
-	const char *fn;
-	FILE *fp;
-	int ret_misc;
-	int done = 0;
-
-	if (hrepo == NULL)
-	    continue;
-	fn = hy_repo_get_string(hrepo, HY_REPO_FILELISTS_FN);
-	if (fn == NULL)
-	    continue;
-
-	char *fn_cache =  hy_sack_give_cache_fn(sack, name, HY_EXT_FILENAMES);
-	fp = fopen(fn_cache, "r");
-	assert(hrepo->checksum);
-	if (can_use_repomd_cache(fp, hrepo->checksum)) {
-	    done = 1;
-	    if (hy_repo_transition(hrepo, _HY_FL_LOADED_CACHE))
-		HY_LOG_INFO("%s: skipping %s (%d)", __func__, name, hrepo->state);
-	    else {
-		HY_LOG_INFO("%s: using cache file: %s", __func__, fn_cache);
-		ret_misc = repo_add_solv(repo, fp, REPO_EXTEND_SOLVABLES);
-		assert(ret_misc == 0);
-		ret |= ret_misc;
-	    }
-	}
-	solv_free(fn_cache);
-	if (fp)
-	    fclose(fp);
-	if (done)
-	    continue;
-
-	if (hy_repo_transition(hrepo, _HY_FL_LOADED_FETCH)) {
-	    HY_LOG_INFO("%s: skipping %s (%d)", __func__, name, hrepo->state);
-	    continue;
-	}
-	fp = solv_xfopen(fn, "r");
-	if (fp == NULL) {
-	    HY_LOG_ERROR("%s: failed to open: %s", __func__, fn);
-	    ret |= 1;
-	    continue;
-	}
-	HY_LOG_INFO("%s: loading: %s", __func__, fn);
-
-	int previous_last = repo->nrepodata - 1;
-	ret_misc = repo_add_rpmmd(repo, fp, "FL", REPO_EXTEND_SOLVABLES);
-	fclose(fp);
-	assert(ret_misc == 0);
-	ret |= ret_misc;
-	if (!ret_misc) {
-	    assert(previous_last == repo->nrepodata - 2);
-	    hrepo->filenames_repodata = repo->nrepodata - 1;
-	}
-    }
-    sack->provides_ready = 0;
-    return ret;
+hy_sack_load_filelists(HySack sack) {
+    return load_ext(sack, _HY_REPODATA_FILENAMES,
+		    _HY_FL_LOADED_FETCH, _HY_FL_LOADED_CACHE,
+		    HY_EXT_FILENAMES, HY_REPO_FILELISTS_FN,
+		    load_filelists_cb);
 }
 
 int
 hy_sack_load_presto(HySack sack)
 {
-    Pool *pool = sack->pool;
-    int ret = 0;
-    Repo *repo;
-    Id rid;
-
-    FOR_REPOS(rid, repo) {
-	HyRepo hrepo = repo->appdata;
-	const char *name = repo->name;
-	const char *fn;
-	FILE *fp;
-	int ret_misc;
-	int done = 0;
-
-	if (hrepo == NULL)
-	    continue;
-	fn = hy_repo_get_string(hrepo, HY_REPO_PRESTO_FN);
-	if (fn == NULL)
-	    continue;
-
-	char *fn_cache =  hy_sack_give_cache_fn(sack, name, HY_EXT_PRESTO);
-	fp = fopen(fn_cache, "r");
-	assert(hrepo->checksum);
-	if (can_use_repomd_cache(fp, hrepo->checksum)) {
-	    done = 1;
-	    if (hy_repo_transition(hrepo, _HY_PST_LOADED_CACHE))
-		HY_LOG_INFO("%s: skipping %s (%d)", __func__, name, hrepo->state);
-	    else {
-		HY_LOG_INFO("%s: using cache file: %s", __func__, fn_cache);
-		ret_misc = repo_add_solv(repo, fp, REPO_EXTEND_SOLVABLES);
-		assert(ret_misc == 0);
-		ret |= ret_misc;
-	    }
-	}
-	solv_free(fn_cache);
-	if (fp)
-	    fclose(fp);
-	if (done)
-	    continue;
-
-	if (hy_repo_transition(hrepo, _HY_PST_LOADED_FETCH)) {
-	    HY_LOG_INFO("%s: skipping %s (%d)", __func__, name, hrepo->state);
-	    continue;
-	}
-	fp = solv_xfopen(fn, "r");
-	if (fp == NULL) {
-	    HY_LOG_ERROR("%s: failed to open: %s", __func__, fn);
-	    ret |= 1;
-	    continue;
-	}
-	HY_LOG_INFO("%s: loading: %s", __func__, fn);
-
-	int previous_last = repo->nrepodata - 1;
-	ret_misc = repo_add_deltainfoxml(repo, fp, 0);
-	fclose(fp);
-	assert(ret_misc == 0);
-	ret |= ret_misc;
-	if (!ret_misc) {
-	    assert(previous_last == repo->nrepodata - 2);
-	    hrepo->presto_repodata = repo->nrepodata - 1;
-	}
-    }
-    sack->provides_ready = 0;
-    return ret;
+    return load_ext(sack, _HY_REPODATA_PRESTO,
+		    _HY_PST_LOADED_FETCH, _HY_PST_LOADED_CACHE,
+		    HY_EXT_PRESTO, HY_REPO_PRESTO_FN,
+		    load_presto_cb);
 }
 
 void
@@ -510,71 +508,15 @@ hy_sack_write_all_repos(HySack sack)
 int
 hy_sack_write_filelists(HySack sack)
 {
-    Pool *pool = sack->pool;
-    Repo *repo;
-    Id rid;
-    int ret = 0;
-
-    FOR_REPOS(rid, repo) {
-	HyRepo hrepo = repo->appdata;
-	const char *name = repo->name;
-
-	if (hrepo == NULL)
-	    continue;
-	if (hy_repo_transition(hrepo, _HY_FL_WRITTEN)) {
-	    HY_LOG_INFO("%s: skipping %s (%d)", __func__, name, hrepo->state);
-	    continue;
-	}
-
-	assert(hrepo->filenames_repodata);
-	Repodata *data = repo_id2repodata(repo, hrepo->filenames_repodata);
-	char *fn = hy_sack_give_cache_fn(sack, name, HY_EXT_FILENAMES);
-	FILE *fp = fopen(fn, "w+");
-	HY_LOG_INFO("%s: storing %s to: %s", __func__, repo->name, fn);
-	solv_free(fn);
-	assert(data);
-	assert(hrepo->checksum);
-	ret |= repodata_write(data, fp);
-	ret |= checksum_write(hrepo->checksum, fp);
-
-	fclose(fp);
-    }
-    return ret;
+    return write_ext(sack, _HY_REPODATA_FILENAMES,
+		     _HY_FL_WRITTEN, HY_EXT_FILENAMES);
 }
 
 int
 hy_sack_write_presto(HySack sack)
 {
-    Pool *pool = sack->pool;
-    Repo *repo;
-    Id rid;
-    int ret = 0;
-
-    FOR_REPOS(rid, repo) {
-	HyRepo hrepo = repo->appdata;
-	const char *name = repo->name;
-
-	if (hrepo == NULL)
-	    continue;
-	if (hy_repo_transition(hrepo, _HY_PST_WRITTEN)) {
-	    HY_LOG_INFO("%s: skipping %s (%d)", __func__, name, hrepo->state);
-	    continue;
-	}
-
-	assert(hrepo->presto_repodata);
-	Repodata *data = repo_id2repodata(repo, hrepo->presto_repodata);
-	char *fn = hy_sack_give_cache_fn(sack, name, HY_EXT_PRESTO);
-	FILE *fp = fopen(fn, "w+");
-	HY_LOG_INFO("%s: storing %s to: %s", __func__, repo->name, fn);
-	solv_free(fn);
-	assert(data);
-	assert(hrepo->checksum);
-	ret |= repodata_write(data, fp);
-	ret |= checksum_write(hrepo->checksum, fp);
-
-	fclose(fp);
-    }
-    return ret;
+    return write_ext(sack, _HY_REPODATA_PRESTO,
+		     _HY_PST_WRITTEN, HY_EXT_PRESTO);
 }
 
 // internal
