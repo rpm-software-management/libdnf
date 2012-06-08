@@ -16,7 +16,7 @@ START_TEST(test_iter_macro)
     hy_packagelist_push(plist, mock_package(11));
     hy_packagelist_push(plist, mock_package(12));
 
-    int i, max, count = 0;
+    int i, max = 0, count = 0;
     HyPackage pkg;
     FOR_PACKAGELIST(pkg, plist, i) {
 	count += 1;

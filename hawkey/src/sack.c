@@ -115,7 +115,8 @@ log_cb(Pool *pool, void *cb_data, int type, const char *buf)
 	if (sack->log_out)
 	    HY_LOG_INFO("Started...", sack);
     }
-    fwrite(buf, strlen(buf), 1, sack->log_out);
+    if (fwrite(buf, strlen(buf), 1, sack->log_out) < 1)
+	fprintf(stderr, "logging is broken!?\n");
     fflush(sack->log_out);
 }
 

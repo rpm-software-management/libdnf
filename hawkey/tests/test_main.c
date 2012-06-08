@@ -19,7 +19,7 @@
 #include "test_repo.h"
 #include "test_sack.h"
 
-static void
+static int
 init_test_globals(struct TestGlobals_s *tg, const char *repo_dir)
 {
     int const len = strlen(repo_dir);
@@ -28,8 +28,10 @@ init_test_globals(struct TestGlobals_s *tg, const char *repo_dir)
     else
 	tg->repo_dir = solv_strdup(repo_dir);
     tg->tmpdir = solv_strdup(UNITTEST_DIR);
-    mkdtemp(tg->tmpdir);
+    if (mkdtemp(tg->tmpdir) == NULL)
+	return 1;
     tg->sack = NULL;
+    return 0;
 }
 
 static void
@@ -53,7 +55,10 @@ main(int argc, const char **argv)
 	fprintf(stderr, "can not read repos at '%s'.\n", argv[1]);
 	exit(1);
     }
-    init_test_globals(&test_globals, argv[1]);
+    if (init_test_globals(&test_globals, argv[1])) {
+	fprintf(stderr, "failed initializing test engine.\n");
+	exit(1);
+    }
     printf("Tests using directory: %s\n", test_globals.tmpdir);
 
     SRunner *sr = srunner_create(sack_suite());

@@ -73,7 +73,7 @@ START_TEST(test_write_all_repos)
     char *tmpdir = test_globals.tmpdir;
 
     /* hy_sack_write_all repos needs HyRepo in every repo */
-    Repo *repo;
+    Repo *repo = NULL;
     int i;
     FOR_REPOS(i, repo)
 	if (!strcmp(repo->name, HY_SYSTEM_REPO_NAME)) {
@@ -99,12 +99,13 @@ START_TEST(test_yum_repo)
 
     Dataiterator di;
     int count;
-    Id last_found_solvable;
+    Id last_found_solvable = 0;
     dataiterator_init(&di, pool, 0, 0, SOLVABLE_FILELIST, "/usr/bin/ste",
 		      SEARCH_STRING | SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
     for (count = 0; dataiterator_step(&di); ++count)
 	last_found_solvable = di.solvid;
     fail_unless(count == 1);
+    fail_if(last_found_solvable == 0);
     dataiterator_free(&di);
 
     dataiterator_init(&di, pool, 0, last_found_solvable, SOLVABLE_FILELIST, "/",
