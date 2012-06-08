@@ -41,6 +41,20 @@ get_installed_pkg(HySack sack, const char *name)
     return pkg;
 }
 
+static HyPackage
+get_available_pkg(HySack sack, const char *name)
+{
+    HyQuery q = hy_query_create(sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
+    hy_query_filter(q, HY_PKG_REPO, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    HyPackageList plist = hy_query_run(q);
+    fail_unless(hy_packagelist_count(plist) == 1);
+    HyPackage pkg = hy_packagelist_get_clone(plist, 0);
+    hy_query_free(q);
+    hy_packagelist_free(plist);
+    return pkg;
+}
+
 static int
 size_and_free(HyPackageList plist)
 {
@@ -149,6 +163,35 @@ START_TEST(test_goal_upgrade_all)
 }
 END_TEST
 
+START_TEST(test_goal_downgrade)
+{
+    HySack sack = test_globals.sack;
+    HyPackage to_be_pkg = get_available_pkg(sack, "baby");
+    HyGoal goal = hy_goal_create(sack);
+
+    hy_goal_downgrade_to(goal, to_be_pkg);
+    fail_if(hy_goal_go(goal));
+
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
+
+    HyPackageList plist = hy_goal_list_downgrades(goal);
+    fail_unless(hy_packagelist_count(plist) == 1);
+
+    HyPackage pkg = hy_packagelist_get(plist, 0);
+    ck_assert_str_eq(hy_package_get_evr(pkg),
+		     "4.9-0");
+    HyPackage old_pkg = hy_goal_package_upgrades(goal, pkg);
+    ck_assert_str_eq(hy_package_get_evr(old_pkg),
+		     "5.0-0");
+    hy_package_free(old_pkg);
+    hy_packagelist_free(plist);
+
+    hy_goal_free(goal);
+    hy_package_free(to_be_pkg);
+}
+END_TEST
+
 START_TEST(test_goal_describe_problem)
 {
     HySack sack = test_globals.sack;
@@ -252,6 +295,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_install_multilib);
     tcase_add_test(tc, test_goal_update);
     tcase_add_test(tc, test_goal_upgrade_all);
+    tcase_add_test(tc, test_goal_downgrade);
     tcase_add_test(tc, test_goal_describe_problem);
     tcase_add_test(tc, test_goal_installonly);
     tcase_add_test(tc, test_goal_no_reinstall);

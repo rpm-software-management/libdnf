@@ -103,6 +103,12 @@ hy_goal_free(HyGoal goal)
 }
 
 int
+hy_goal_downgrade_to(HyGoal goal, HyPackage new_pkg)
+{
+    return hy_goal_install(goal, new_pkg);
+}
+
+int
 hy_goal_erase(HyGoal goal, HyPackage pkg)
 {
 #ifndef NDEBUG
@@ -253,6 +259,17 @@ hy_goal_list_upgrades(HyGoal goal)
     return list_results(goal, SOLVER_TRANSACTION_UPGRADE);
 }
 
+HyPackageList
+hy_goal_list_downgrades(HyGoal goal)
+{
+    return list_results(goal, SOLVER_TRANSACTION_DOWNGRADE);
+}
+
+/**
+ * Return the package upgraded or downgraded by 'pkg'.
+ *
+ * The returned package has to be freed via hy_package_free().
+ */
 HyPackage
 hy_goal_package_upgrades(HyGoal goal, HyPackage pkg)
 {

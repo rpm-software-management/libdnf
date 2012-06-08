@@ -22,6 +22,7 @@ enum _hy_goal_go_flags {
 HyGoal hy_goal_create(HySack sack);
 void hy_goal_free(HyGoal goal);
 
+int hy_goal_downgrade_to(HyGoal goal, HyPackage new_pkg);
 int hy_goal_erase(HyGoal goal, HyPackage pkg);
 int hy_goal_erase_query(HyGoal goal, HyQuery query);
 int hy_goal_install(HyGoal goal, HyPackage new_pkg);
@@ -41,6 +42,7 @@ char *hy_goal_describe_problem(HyGoal goal, unsigned i);
 HyPackageList hy_goal_list_erasures(HyGoal goal);
 HyPackageList hy_goal_list_installs(HyGoal goal);
 HyPackageList hy_goal_list_upgrades(HyGoal goal);
+HyPackageList hy_goal_list_downgrades(HyGoal goal);
 HyPackage hy_goal_package_upgrades(HyGoal goal, HyPackage pkg);
 
 #endif

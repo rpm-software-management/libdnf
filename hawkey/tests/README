@@ -35,6 +35,9 @@ hello
 jay
 * installed twice, not updatable from main.
 
+baby
+* installed at a version newer than anything available (downgrade testing)
+
 === repos/yum ===
 
 To test loading of yum repos we need an actual yum repo. It currently consists
