@@ -1,9 +1,9 @@
-%global gitrev 6083b79
-%global libsolv_version 0.0.0-9
+%global gitrev a10a9ad
+%global libsolv_version 0.0.0-11
 
 Name:		hawkey
-Version:	0.2.3
-Release:	1.git%{gitrev}%{?dist}
+Version:	0.2.4
+Release:	2.git%{gitrev}%{?dist}
 Summary:	A Library providing simplified C and Python API to libsolv.
 Group:		Development/Libraries
 License:	LGPLv2+
@@ -39,7 +39,7 @@ Python bindings for the hawkey library.
 %setup -q -n hawkey
 
 %build
-%cmake .
+%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .
 make %{?_smp_mflags}
 
 %install
@@ -57,6 +57,9 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/*
 
 %changelog
+* Fri Jun 8 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.4-2.git1f198aa{?dist}
+- Handling presto metadata.
+
 * Wed May 16 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.3-1.git6083b79{?dist}
 - Support libsolv's SOLVER_FLAGS_ALLOW_UNINSTALL.
 
