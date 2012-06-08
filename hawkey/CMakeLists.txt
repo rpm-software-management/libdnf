@@ -21,6 +21,8 @@ if (LIBSOLV_PATH)
 		       COMMAND cp ${LIBSOLV_PATH}/build/src/*.h ${LIBSOLV_PATH}/build/solv)
    ADD_CUSTOM_TARGET (generate_libsolv_includes ALL DEPENDS ${LIBSOLV_PATH}/build/solv)
 endif (LIBSOLV_PATH)
+
+SET (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 FIND_PACKAGE (EXPAT REQUIRED)
 FIND_PACKAGE (ZLIB REQUIRED)
 FIND_LIBRARY (RPMDB_LIBRARY NAMES rpmdb)
@@ -28,6 +30,9 @@ FIND_LIBRARY (SOLV_LIBRARY NAMES solv)
 FIND_LIBRARY (SOLVEXT_LIBRARY NAMES solvext)
 FIND_LIBRARY (CHECK_LIBRARY NAMES check)
 MESSAGE(STATUS "Using libsolv at ${SOLV_LIBRARY}")
+
+EXECUTE_PROCESS(COMMAND ${PYTHON_EXECUTABLE} -c "from sys import stdout; from distutils import sysconfig; stdout.write(sysconfig.get_python_lib(True))" OUTPUT_VARIABLE PYTHON_INSTALL_DIR)
+MESSAGE(STATUS "Python install dir is ${PYTHON_INSTALL_DIR}")
 
 # rpm:
 FIND_LIBRARY (RPMDB_LIBRARY NAMES rpmdb)

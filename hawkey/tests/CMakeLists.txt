@@ -9,7 +9,9 @@ SET (hawkeytest_SRCS
      test_sack.c
      testsys.c)
 
-ADD_LIBRARY(testsys SHARED testsys.c)
+ADD_LIBRARY(testsys STATIC testsys.c)
+SET_TARGET_PROPERTIES(testsys PROPERTIES COMPILE_FLAGS -fPIC)
+
 ADD_EXECUTABLE(test_main ${hawkeytest_SRCS})
 TARGET_LINK_LIBRARIES(test_main
     libhawkey
