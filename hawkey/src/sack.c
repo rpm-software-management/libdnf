@@ -324,11 +324,14 @@ hy_sack_set_installonly(HySack sack, const char **installonly)
 
 /**
  * Creates repo for command line rpms.
+ *
+ * Does nothing if one already created.
  */
 void
 hy_sack_create_cmdline_repo(HySack sack)
 {
-    repo_create(sack->pool, HY_CMDLINE_REPO_NAME);
+    if (get_cmdline_repo(sack) == NULL)
+	repo_create(sack->pool, HY_CMDLINE_REPO_NAME);
 }
 
 /**
