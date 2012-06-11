@@ -94,6 +94,17 @@ goal_init(_GoalObject *self, PyObject *args, PyObject *kwds)
 /* object methods */
 
 static PyObject *
+downgrade_to(_GoalObject *self, PyObject *pkg_obj)
+{
+    HyPackage pkg = packageFromPyObject(pkg_obj);
+    if (pkg == NULL)
+	return NULL;
+    if (hy_goal_downgrade_to(self->goal, pkg))
+	Py_RETURN_FALSE;
+    Py_RETURN_TRUE;
+}
+
+static PyObject *
 erase(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     HyPackage pkg = NULL;
@@ -217,7 +228,7 @@ describe_problem(_GoalObject *self, PyObject *index_obj)
     PyObject *str;
 
     if (!PyInt_Check(index_obj)) {
-	PyErr_SetString(PyExc_ValueError, "integer value expected");
+	PyErr_SetString(PyExc_TypeError, "An integer value expected.");
 	return NULL;
     }
     cstr = hy_goal_describe_problem(self->goal, PyInt_AsLong(index_obj));
@@ -250,6 +261,12 @@ list_installs(_GoalObject *self, PyObject *unused)
 }
 
 static PyObject *
+list_downgrades(_GoalObject *self, PyObject *unused)
+{
+    return list_generic(self, hy_goal_list_downgrades);
+}
+
+static PyObject *
 list_upgrades(_GoalObject *self, PyObject *unused)
 {
     return list_generic(self, hy_goal_list_upgrades);
@@ -271,6 +288,7 @@ package_obsoletes(_GoalObject *self, PyObject *pkg)
 }
 
 static struct PyMethodDef goal_methods[] = {
+    {"downgrade_to",	(PyCFunction)downgrade_to,	METH_O, NULL},
     {"erase",		(PyCFunction)erase,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"install",		(PyCFunction)install,
@@ -286,6 +304,7 @@ static struct PyMethodDef goal_methods[] = {
     {"describe_problem",(PyCFunction)describe_problem,	METH_O, NULL},
     {"list_erasures",	(PyCFunction)list_erasures,	METH_NOARGS, NULL},
     {"list_installs",	(PyCFunction)list_installs,	METH_NOARGS, NULL},
+    {"list_downgrades",	(PyCFunction)list_downgrades,	METH_NOARGS, NULL},
     {"list_upgrades",	(PyCFunction)list_upgrades,	METH_NOARGS, NULL},
     {"package_obsoletes",(PyCFunction)package_obsoletes,	METH_O, NULL},
     {NULL}                      /* sentinel */
