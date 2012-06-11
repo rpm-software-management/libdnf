@@ -271,7 +271,7 @@ hy_goal_list_downgrades(HyGoal goal)
  * The returned package has to be freed via hy_package_free().
  */
 HyPackage
-hy_goal_package_upgrades(HyGoal goal, HyPackage pkg)
+hy_goal_package_obsoletes(HyGoal goal, HyPackage pkg)
 {
     Pool *pool = sack_pool(goal->sack);
     Transaction *trans = goal->trans;

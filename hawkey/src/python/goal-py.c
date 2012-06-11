@@ -256,7 +256,7 @@ list_upgrades(_GoalObject *self, PyObject *unused)
 }
 
 static PyObject *
-package_upgrades(_GoalObject *self, PyObject *pkg)
+package_obsoletes(_GoalObject *self, PyObject *pkg)
 {
     HyPackage cpkg = packageFromPyObject(pkg);
     HyPackage cpkg_upgraded;
@@ -264,7 +264,7 @@ package_upgrades(_GoalObject *self, PyObject *pkg)
 
     if (cpkg == NULL)
 	return NULL;
-    cpkg_upgraded = hy_goal_package_upgrades(self->goal, cpkg);
+    cpkg_upgraded = hy_goal_package_obsoletes(self->goal, cpkg);
     pkg_upgraded = new_package(self->sack, package_id(cpkg_upgraded));
     hy_package_free(cpkg_upgraded);
     return pkg_upgraded;
@@ -287,7 +287,7 @@ static struct PyMethodDef goal_methods[] = {
     {"list_erasures",	(PyCFunction)list_erasures,	METH_NOARGS, NULL},
     {"list_installs",	(PyCFunction)list_installs,	METH_NOARGS, NULL},
     {"list_upgrades",	(PyCFunction)list_upgrades,	METH_NOARGS, NULL},
-    {"package_upgrades",(PyCFunction)package_upgrades,	METH_O, NULL},
+    {"package_obsoletes",(PyCFunction)package_obsoletes,	METH_O, NULL},
     {NULL}                      /* sentinel */
 };
 

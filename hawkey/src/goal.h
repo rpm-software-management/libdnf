@@ -43,6 +43,6 @@ HyPackageList hy_goal_list_erasures(HyGoal goal);
 HyPackageList hy_goal_list_installs(HyGoal goal);
 HyPackageList hy_goal_list_upgrades(HyGoal goal);
 HyPackageList hy_goal_list_downgrades(HyGoal goal);
-HyPackage hy_goal_package_upgrades(HyGoal goal, HyPackage pkg);
+HyPackage hy_goal_package_obsoletes(HyGoal goal, HyPackage pkg);
 
 #endif

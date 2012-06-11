@@ -206,7 +206,7 @@ static void update(HySack sack, HyPackage pkg)
 	HyPackage pkg = hy_packagelist_get(plist, i);
 	char *nvra = hy_package_get_nvra(pkg);
 	char *location = hy_package_get_location(pkg);
-	HyPackage installed = hy_goal_package_upgrades(goal, pkg);
+	HyPackage installed = hy_goal_package_obsoletes(goal, pkg);
 	char *nvra_installed = hy_package_get_nvra(installed);
 
 	printf("upgrading: %s using %s\n", nvra, location);
