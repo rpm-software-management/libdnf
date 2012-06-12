@@ -17,6 +17,7 @@ struct _HyQuery {
     HySack sack;
     struct _Filter *filters;
     int nfilters;
+    int downgrades; /* 1 for "only downgrades for installed packages" */
     int updates; /* 1 for "only updates for installed packages" */
     int latest; /* 1 for "only the latest version per arch" */
     int obsoleting; /* 1 for "only those obsoleting installed packages" */
@@ -170,7 +171,7 @@ filter_repo(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
-filter_upgrades(HyQuery q, Map *res)
+filter_updown(HyQuery q, int downgrade, Map *res)
 {
     HySack sack = q->sack;
     Pool *pool = sack_pool(sack);
@@ -186,7 +187,9 @@ filter_upgrades(HyQuery q, Map *res)
 	Solvable *s = pool_id2solvable(pool, i);
 	if (s->repo == pool->installed)
 	    continue;
-	if (what_updates(pool, i) > 0)
+	if (downgrade && what_downgrades(pool, i) > 0)
+	    MAPSET(&m, i);
+	else if (!downgrade && what_upgrades(pool, i) > 0)
 	    MAPSET(&m, i);
     }
 
@@ -338,6 +341,17 @@ hy_query_filter_provides(HyQuery q, int filter_type, const char *name, const cha
  * This requires resolving and so makes the final query expensive.
  */
 void
+hy_query_filter_downgrades(HyQuery q, int val)
+{
+    q->downgrades = val;
+}
+
+/**
+ * Narrows to only packages updating installed packages.
+ *
+ * This requires resolving and so makes the final query expensive.
+ */
+void
 hy_query_filter_upgrades(HyQuery q, int val)
 {
     q->updates = val;
@@ -390,8 +404,10 @@ hy_query_run(HyQuery q)
 	else
 	    map_and(&res, &m);
     }
+    if (q->downgrades)
+	filter_updown(q, 1, &res);
     if (q->updates)
-	filter_upgrades(q, &res);
+	filter_updown(q, 0, &res);
     if (q->latest)
 	filter_latest(q, &res);
     if (q->obsoleting)

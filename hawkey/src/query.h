@@ -33,6 +33,7 @@ enum _hy_key_name_e {
     HY_PKG_REPO,
     HY_PKG_PROVIDES,
     HY_PKG_LATEST,
+    HY_PKG_DOWNGRADES,
     HY_PKG_UPGRADES,
     HY_PKG_OBSOLETING
 };
@@ -45,6 +46,12 @@ void hy_query_filter_in(HyQuery q, int keyname, int filter_type,
 			const char **matches);
 void hy_query_filter_provides(HyQuery q, int filter_type, const char *name,
 			   const char *evr);
+/**
+ * Filter packages that are named same as an installed package but lower version.
+ *
+ * NOTE: this does not guerantee packages filtered in this way are installable.
+ */
+void hy_query_filter_downgrades(HyQuery q, int val);
 /**
  * Filter packages that are named same as an installed package but higher version.
  *

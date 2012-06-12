@@ -34,6 +34,7 @@ hello
 
 jay
 * installed twice, not updatable from main.
+* downgrade available from main.
 
 baby
 * installed at a version newer than anything available (downgrade testing)

@@ -327,7 +327,7 @@ problemruleinfo2str(Pool *pool, SolverRuleinfo type, Id source, Id target, Id de
 /**
  * Return id of a package that can be upgraded with pkg.
  *
- * The returned package fulfills the following criteria:
+ * The returned package Id fulfills the following criteria:
  * :: it is installed
  * :: has the same name and arch as pkg
  * :: is of lower version than pkg.
@@ -338,7 +338,7 @@ problemruleinfo2str(Pool *pool, SolverRuleinfo type, Id source, Id target, Id de
  * Or 0 if none such package is installed.
  */
 Id
-what_updates(Pool *pool, Id pkg)
+what_upgrades(Pool *pool, Id pkg)
 {
     Id l = 0, l_evr = 0;
     Id p, pp;
@@ -358,7 +358,47 @@ what_updates(Pool *pool, Id pkg)
 	if (l == 0 ||
 	    pool_evrcmp(pool, updated->evr, l_evr, EVRCMP_COMPARE) > 0) {
 	    l = p;
-	    l_evr = s->evr;
+	    l_evr = updated->evr;
+	}
+    }
+    return l;
+}
+
+/**
+ * Return id of a package that can be upgraded with pkg.
+ *
+ * The returned package Id fulfills the following criteria:
+ * :: it is installed
+ * :: has the same name and arch as pkg
+ * :: is of higher version than pkg.
+ * :: if there are multiple such packages return the lowest version (so we won't
+ *    claim we can downgrade a package when a lower version is already
+ *    installed)
+ *
+ * Or 0 if none such package is installed.
+ */
+Id
+what_downgrades(Pool *pool, Id pkg)
+{
+    Id l = 0, l_evr = 0;
+    Id p, pp;
+    Solvable *updated, *s = pool_id2solvable(pool, pkg);
+
+    assert(pool->installed);
+    assert(pool->whatprovides);
+    FOR_PROVIDES(p, pp, s->name) {
+	updated = pool_id2solvable(pool, p);
+	if (updated->repo != pool->installed ||
+	    updated->name != s->name ||
+	    updated->arch != s->arch)
+	    continue;
+	if (pool_evrcmp(pool, updated->evr, s->evr, EVRCMP_COMPARE) <= 0)
+	    // <= version installed, this pkg can not be used for downgrade
+	    return 0;
+	if (l == 0 ||
+	    pool_evrcmp(pool, updated->evr, l_evr, EVRCMP_COMPARE) < 0) {
+	    l = p;
+	    l_evr = updated->evr;
 	}
     }
     return l;

@@ -220,6 +220,20 @@ START_TEST(test_upgrade_already_installed)
 }
 END_TEST
 
+START_TEST(test_downgrade)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
+    hy_query_filter_downgrades(q, 1);
+    HyPackageList plist = hy_query_run(q);
+    fail_unless(hy_packagelist_count(plist) == 1);
+    HyPackage pkg = hy_packagelist_get(plist, 0);
+    ck_assert_str_eq(hy_package_get_evr(pkg), "4.9-0");
+    hy_query_free(q);
+    hy_packagelist_free(plist);
+}
+END_TEST
+
 START_TEST(test_filter_files)
 {
     HyQuery q = hy_query_create(test_globals.sack);
@@ -270,6 +284,7 @@ query_suite(void)
     tc = tcase_create("OnlyMain");
     tcase_add_unchecked_fixture(tc, setup_with_main, teardown);
     tcase_add_test(tc, test_upgrade_already_installed);
+    tcase_add_test(tc, test_downgrade);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Full");
