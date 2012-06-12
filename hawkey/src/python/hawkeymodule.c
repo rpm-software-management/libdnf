@@ -76,6 +76,7 @@ init_hawkey(void)
     PyModule_AddIntConstant(m, "PKG_REPO", HY_PKG_REPO);
     PyModule_AddIntConstant(m, "PKG_PROVIDES", HY_PKG_PROVIDES);
     PyModule_AddIntConstant(m, "PKG_LATEST", HY_PKG_LATEST);
+    PyModule_AddIntConstant(m, "PKG_DOWNGRADES", HY_PKG_DOWNGRADES);
     PyModule_AddIntConstant(m, "PKG_UPGRADES", HY_PKG_UPGRADES);
     PyModule_AddIntConstant(m, "PKG_OBSOLETING", HY_PKG_OBSOLETING);
 
