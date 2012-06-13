@@ -1,9 +1,9 @@
-%global gitrev a10a9ad
+%global gitrev 04ecf00
 %global libsolv_version 0.0.0-11
 
 Name:		hawkey
 Version:	0.2.4
-Release:	2.git%{gitrev}%{?dist}
+Release:	4.git%{gitrev}%{?dist}
 Summary:	A Library providing simplified C and Python API to libsolv.
 Group:		Development/Libraries
 License:	LGPLv2+
@@ -57,6 +57,9 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/*
 
 %changelog
+* Wed Jun 13 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.4-4.git04ecf00{?dist}
+- Downgrades.
+
 * Fri Jun 8 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.4-2.git1f198aa{?dist}
 - Handling presto metadata.
 
