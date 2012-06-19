@@ -3,23 +3,22 @@
 
 Name:		hawkey
 Version:	0.2.4
-Release:	4.git%{gitrev}%{?dist}
-Summary:	A Library providing simplified C and Python API to libsolv.
+Release:	5.git%{gitrev}%{?dist}
+Summary:	A Library providing simplified C and Python API to libsolv
 Group:		Development/Libraries
 License:	LGPLv2+
 URL:		https://github.com/akozumpl/hawkey
-# git archive %{gitrev} --prefix=hawkey/ | xz > hawkey-%{gitrev}.tar.xz
 Source0:	hawkey-%{gitrev}.tar.xz
 BuildRequires:	libsolv-devel >= %{libsolv_version}
-BuildRequires:  cmake expat-devel rpm-devel zlib-devel check-devel
-BuildRequires: 	python2 python2-devel
+BuildRequires:	cmake expat-devel rpm-devel zlib-devel check-devel
+BuildRequires:	python2 python2-devel
 Requires:	libsolv >= %{libsolv_version}
 
 %description
 A Library providing simplified C and Python API to libsolv
 
 %package devel
-Summary:	A Library providing simplified C and Python API to libsolv.
+Summary:	A Library providing simplified C and Python API to libsolv
 Group:		Development/Libraries
 Requires:	hawkey%{?_isa} = %{version}-%{release}
 
@@ -27,10 +26,10 @@ Requires:	hawkey%{?_isa} = %{version}-%{release}
 Development files for hawkey.
 
 %package -n python-hawkey
-Summary:	Python bindings for the hawkey library.
+Summary:	Python bindings for the hawkey library
 Group:		Development/Languages
 Requires:	python
-Requires:	hawkey = %{version}-%{release}
+Requires:	%{name}%{?_isa} = %{version}-%{release}
 
 %description -n python-hawkey
 Python bindings for the hawkey library.
@@ -46,17 +45,30 @@ make %{?_smp_mflags}
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 
+%post -p /sbin/ldconfig
+
+%postun -p /sbin/ldconfig
+
+%filter_provides_in %{python_sitearch}/.*\.so$
+%filter_setup
+
 %files
-%{_libdir}/libhawkey.so*
+%doc COPYING README.md
+%{_libdir}/libhawkey.so.*
 
 %files devel
+%doc COPYING
 %{_libdir}/libhawkey.so
 %_includedir/hawkey
 
 %files -n python-hawkey
+%doc COPYING
 %{python_sitearch}/*
 
 %changelog
+* Tue Jun 19 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.4-5.git04ecf00
+- Fix rpmlint issues.
+
 * Wed Jun 13 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.4-4.git04ecf00{?dist}
 - Downgrades.
 
