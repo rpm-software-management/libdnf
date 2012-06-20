@@ -3,7 +3,7 @@
 
 Name:		hawkey
 Version:	0.2.4
-Release:	5.git%{gitrev}%{?dist}
+Release:	6.git%{gitrev}%{?dist}
 Summary:	A Library providing simplified C and Python API to libsolv
 Group:		Development/Libraries
 License:	LGPLv2+
@@ -13,6 +13,12 @@ BuildRequires:	libsolv-devel >= %{libsolv_version}
 BuildRequires:	cmake expat-devel rpm-devel zlib-devel check-devel
 BuildRequires:	python2 python2-devel
 Requires:	libsolv >= %{libsolv_version}
+
+# prevent provides from nonstandard paths:
+%filter_provides_in %{python_sitearch}/.*\.so$
+# filter out _hawkey_testmodule.so DT_NEEDED _hawkeymodule.so:
+%filter_requires_in %{python_sitearch}/hawkey/test/.*\.so$
+%filter_setup
 
 %description
 A Library providing simplified C and Python API to libsolv
@@ -49,9 +55,6 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 %postun -p /sbin/ldconfig
 
-%filter_provides_in %{python_sitearch}/.*\.so$
-%filter_setup
-
 %files
 %doc COPYING README.md
 %{_libdir}/libhawkey.so.*
@@ -66,6 +69,9 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/*
 
 %changelog
+* Wed Jun 20 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.4-6.git04ecf00
+- Prevent requires in the hawkey.test .so.
+
 * Tue Jun 19 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.4-5.git04ecf00
 - Fix rpmlint issues.
 
