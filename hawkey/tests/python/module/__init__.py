@@ -12,13 +12,8 @@ FIXED_ARCH = _hawkey_test.FIXED_ARCH
 UNITTEST_DIR = _hawkey_test.UNITTEST_DIR
 YUM_DIR_SUFFIX = _hawkey_test.YUM_DIR_SUFFIX
 
-class TestSack(hawkey.Sack):
-    def __init__(self, repo_dir, PackageClass=None, package_userdata=None):
-        super(TestSack, self).__init__(
-            cachedir=UNITTEST_DIR,
-            arch=FIXED_ARCH,
-            pkgcls=PackageClass,
-            pkginitval=package_userdata)
+class TestSackMixin(object):
+    def __init__(self, repo_dir):
         self.repo_dir = repo_dir
 
     def load_test_repo(self, name, fn):
@@ -32,4 +27,13 @@ class TestSack(hawkey.Sack):
     def load_yum_repo(self):
         d = os.path.join(self.repo_dir, YUM_DIR_SUFFIX)
         repo = _hawkey_test.glob_for_repofiles(self, "messerk", d)
-        super(TestSack, self).load_yum_repo(repo)
+        super(TestSackMixin, self).load_yum_repo(repo)
+
+class TestSack(TestSackMixin, hawkey.Sack):
+    def __init__(self, repo_dir, PackageClass=None, package_userdata=None):
+        TestSackMixin.__init__(self, repo_dir)
+        hawkey.Sack.__init__(self,
+                             cachedir=UNITTEST_DIR,
+                             arch=FIXED_ARCH,
+                             pkgcls=PackageClass,
+                             pkginitval=package_userdata)
