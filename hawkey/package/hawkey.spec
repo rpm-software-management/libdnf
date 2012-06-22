@@ -3,16 +3,19 @@
 
 Name:		hawkey
 Version:	0.2.4
-Release:	6.git%{gitrev}%{?dist}
-Summary:	A Library providing simplified C and Python API to libsolv
-Group:		Development/Libraries
+Release:	7.git%{gitrev}%{?dist}
+Summary:	Library providing simplified C and Python API to libsolv
+Group:		System Environment/Libraries
 License:	LGPLv2+
 URL:		https://github.com/akozumpl/hawkey
+# git clone https://github.com/akozumpl/hawkey.git && cd hawkey && package/archive
 Source0:	hawkey-%{gitrev}.tar.xz
 BuildRequires:	libsolv-devel >= %{libsolv_version}
 BuildRequires:	cmake expat-devel rpm-devel zlib-devel check-devel
 BuildRequires:	python2 python2-devel
-Requires:	libsolv >= %{libsolv_version}
+# explicit dependency: libsolv occasionally goes through ABI changes without
+# bumping the .so number:
+Requires:	libsolv%{?_isa} >= %{libsolv_version}
 
 # prevent provides from nonstandard paths:
 %filter_provides_in %{python_sitearch}/.*\.so$
@@ -21,7 +24,7 @@ Requires:	libsolv >= %{libsolv_version}
 %filter_setup
 
 %description
-A Library providing simplified C and Python API to libsolv
+A Library providing simplified C and Python API to libsolv.
 
 %package devel
 Summary:	A Library providing simplified C and Python API to libsolv
@@ -34,7 +37,7 @@ Development files for hawkey.
 %package -n python-hawkey
 Summary:	Python bindings for the hawkey library
 Group:		Development/Languages
-Requires:	python
+Requires:	python2
 Requires:	%{name}%{?_isa} = %{version}-%{release}
 
 %description -n python-hawkey
@@ -60,15 +63,16 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{_libdir}/libhawkey.so.*
 
 %files devel
-%doc COPYING
 %{_libdir}/libhawkey.so
-%_includedir/hawkey
+%_includedir/hawkey/
 
 %files -n python-hawkey
-%doc COPYING
-%{python_sitearch}/*
+%{python_sitearch}/
 
 %changelog
+* Fri Jun 22 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.4-7.git04ecf00
+- More package review issues.
+
 * Wed Jun 20 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.4-6.git04ecf00
 - Prevent requires in the hawkey.test .so.
 
