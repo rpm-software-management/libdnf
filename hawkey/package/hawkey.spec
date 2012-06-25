@@ -3,7 +3,7 @@
 
 Name:		hawkey
 Version:	0.2.4
-Release:	7.git%{gitrev}%{?dist}
+Release:	8.git%{gitrev}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
@@ -37,7 +37,6 @@ Development files for hawkey.
 %package -n python-hawkey
 Summary:	Python bindings for the hawkey library
 Group:		Development/Languages
-Requires:	python2
 Requires:	%{name}%{?_isa} = %{version}-%{release}
 
 %description -n python-hawkey
@@ -70,6 +69,9 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
+* Mon Jun 25 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.4-8.git04ecf00
+- More package review issues.
+
 * Fri Jun 22 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.4-7.git04ecf00
 - More package review issues.
 
