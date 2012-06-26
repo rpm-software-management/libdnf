@@ -70,6 +70,20 @@ START_TEST(test_query_name)
 }
 END_TEST
 
+START_TEST(test_query_evr)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_EVR, HY_EQ, "5.1-0");
+    fail_unless(query_count_results(q) == 0);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_EVR, HY_EQ, "5.0-0");
+    fail_unless(query_count_results(q) == 1);
+    hy_query_free(q);
+}
+END_TEST
+
 START_TEST(test_query_glob)
 {
     HyQuery q = hy_query_create(test_globals.sack);
@@ -266,6 +280,7 @@ query_suite(void)
     tcase_add_test(tc, test_query_clear);
     tcase_add_test(tc, test_query_repo);
     tcase_add_test(tc, test_query_name);
+    tcase_add_test(tc, test_query_evr);
     tcase_add_test(tc, test_query_glob);
     tcase_add_test(tc, test_query_case);
     tcase_add_test(tc, test_query_anded);

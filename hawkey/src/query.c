@@ -41,6 +41,8 @@ keyname2id(int keyname)
 	return SOLVABLE_NAME;
     case HY_PKG_ARCH:
 	return SOLVABLE_ARCH;
+    case HY_PKG_EVR:
+	return SOLVABLE_EVR;
     case HY_PKG_SUMMARY:
 	return SOLVABLE_SUMMARY;
     case HY_PKG_FILE:

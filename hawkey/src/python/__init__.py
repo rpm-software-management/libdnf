@@ -8,6 +8,7 @@ CMDLINE_REPO_NAME = _hawkey.CMDLINE_REPO_NAME
 QUERY_KEYNAME_MAP = {
     'name'    : _hawkey.PKG_NAME,
     'arch'    : _hawkey.PKG_ARCH,
+    'evr'     : _hawkey.PKG_EVR,
     'summary' : _hawkey.PKG_SUMMARY,
     'file'    : _hawkey.PKG_FILE,
     'repo'    : _hawkey.PKG_REPO,
