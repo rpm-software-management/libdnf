@@ -132,6 +132,8 @@ get_str(_PackageObject *self, void *closure)
 
     func = (const char *(*)(HyPackage))closure;
     cstr = func(self->package);
+    if (cstr == NULL)
+	return PyString_FromString("");
     return PyString_FromString(cstr);
 }
 
@@ -152,11 +154,14 @@ get_str_alloced(_PackageObject *self, void *closure)
 }
 
 static PyObject *
-get_chksum(_PackageObject *self, void *unused)
+get_chksum(_PackageObject *self, void *closure)
 {
+    HyChecksum *(*func)(HyPackage, int *);
     int type;
     HyChecksum *cs;
-    cs = hy_package_get_chksum(self->package, &type);
+
+    func = (HyChecksum *(*)(HyPackage, int *))closure;
+    cs = func(self->package, &type);
     return Py_BuildValue("is#", type, cs, checksum_type2length(type));
 }
 
@@ -165,7 +170,9 @@ static PyGetSetDef package_getsetters[] = {
      (void *)hy_package_get_location},
     {"name", (getter)get_str, NULL, NULL, (void *)hy_package_get_name},
     {"arch", (getter)get_str, NULL, NULL, (void *)hy_package_get_arch},
-    {"chksum", (getter)get_chksum, NULL, NULL, NULL},
+    {"hdr_chksum", (getter)get_chksum, NULL, NULL,
+     (void *)hy_package_get_hdr_chksum},
+    {"chksum", (getter)get_chksum, NULL, NULL, (void *)hy_package_get_chksum},
     {"evr",  (getter)get_str, NULL, NULL, (void *)hy_package_get_evr},
     {"reponame",  (getter)get_str, NULL, NULL, (void *)hy_package_get_reponame},
     {"summary",  (getter)get_str, NULL, NULL, (void *)hy_package_get_summary},

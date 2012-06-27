@@ -121,6 +121,19 @@ hy_package_get_chksum(HyPackage pkg, int *type)
     return solvable_lookup_bin_checksum(s, SOLVABLE_CHECKSUM, type);
 }
 
+/**
+ * SHA1 checksum of the package's header.
+ *
+ * Only sane for packages in rpmdb.
+ */
+const unsigned char *
+hy_package_get_hdr_chksum(HyPackage pkg, int *type)
+{
+    Solvable *s = get_solvable(pkg);
+
+    return solvable_lookup_bin_checksum(s, SOLVABLE_HDRID, type);
+}
+
 const char*
 hy_package_get_evr(HyPackage pkg)
 {

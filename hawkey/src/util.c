@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 // hawkey
+#include "iutil.h"
 #include "package.h"
 #include "util.h"
 
@@ -25,4 +26,14 @@ chksum_name(int chksum_type)
     default:
 	return NULL;
     }
+}
+
+char *
+chksum_str(const unsigned char *chksum, int type)
+{
+    int length = checksum_type2length(type);
+    char *s = solv_malloc(2 * length + 1);
+    solv_bin2hex(chksum, length, s);
+
+    return s;
 }

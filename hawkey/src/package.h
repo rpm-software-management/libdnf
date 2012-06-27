@@ -23,6 +23,7 @@ const char *hy_package_get_name(HyPackage pkg);
 const char *hy_package_get_arch(HyPackage pkg);
 const unsigned char *hy_package_get_chksum(HyPackage pkg, int *type);
 const char *hy_package_get_evr(HyPackage pkg);
+const unsigned char *hy_package_get_hdr_chksum(HyPackage pkg, int *type);
 const char *hy_package_get_reponame(HyPackage pkg);
 const char *hy_package_get_summary(HyPackage pkg);
 int hy_package_get_medianr(HyPackage pkg);
