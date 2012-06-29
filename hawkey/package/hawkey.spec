@@ -12,7 +12,7 @@ URL:		https://github.com/akozumpl/hawkey
 Source0:	hawkey-%{gitrev}.tar.xz
 BuildRequires:	libsolv-devel >= %{libsolv_version}
 BuildRequires:	cmake expat-devel rpm-devel zlib-devel check-devel
-BuildRequires:	python2 python2-devel
+BuildRequires:	python2-devel
 # explicit dependency: libsolv occasionally goes through ABI changes without
 # bumping the .so number:
 Requires:	libsolv%{?_isa} >= %{libsolv_version}
@@ -50,7 +50,6 @@ Python bindings for the hawkey library.
 make %{?_smp_mflags}
 
 %install
-rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 
 %post -p /sbin/ldconfig
@@ -64,7 +63,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %files devel
 %{_libdir}/libhawkey.so
 %{_libdir}/pkgconfig/hawkey.pc
-%_includedir/hawkey/
+%{_includedir}/hawkey/
 
 %files -n python-hawkey
 %{python_sitearch}/
