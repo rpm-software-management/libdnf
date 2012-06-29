@@ -1,6 +1,10 @@
 #ifndef HY_GOAL_H
 #define HY_GOAL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* libsolv */
 #include "solv/queue.h"
 #include "solv/transaction.h"
@@ -44,5 +48,9 @@ HyPackageList hy_goal_list_installs(HyGoal goal);
 HyPackageList hy_goal_list_upgrades(HyGoal goal);
 HyPackageList hy_goal_list_downgrades(HyGoal goal);
 HyPackage hy_goal_package_obsoletes(HyGoal goal, HyPackage pkg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

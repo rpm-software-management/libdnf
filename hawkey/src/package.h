@@ -1,6 +1,10 @@
 #ifndef HY_PACKAGE_H
 #define HY_PACKAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* libsolv */
 #include "solv/pool.h"
 #include "solv/solvable.h"
@@ -33,5 +37,9 @@ int hy_package_get_size(HyPackage pkg);
 HyPackageDelta hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr);
 const char *hy_packagedelta_get_location(HyPackageDelta delta);
 void hy_packagedelta_free(HyPackageDelta delta);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,6 +1,10 @@
 #ifndef HY_QUERY_H
 #define HY_QUERY_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* hawkey */
 #include "packagelist.h"
 #include "sack.h"
@@ -63,5 +67,9 @@ void hy_query_filter_latest(HyQuery q, int val);
 void hy_query_filter_obsoleting(HyQuery q, int val);
 
 HyPackageList hy_query_run(HyQuery q);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* HY_QUERY_H */

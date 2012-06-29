@@ -9,6 +9,10 @@
 #include "package.h"
 #include "types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define HY_SYSTEM_REPO_NAME "@System"
 #define HY_SYSTEM_RPMDB "/var/lib/rpm/Packages"
 #define HY_CMDLINE_REPO_NAME "@commandline"
@@ -28,5 +32,9 @@ int hy_sack_load_presto(HySack sack);
 int hy_sack_write_all_repos(HySack sack);
 int hy_sack_write_filelists(HySack sack);
 int hy_sack_write_presto(HySack sack);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* HY_SACK_H */
