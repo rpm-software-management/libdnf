@@ -1,11 +1,11 @@
 #ifndef HY_GOAL_H
 #define HY_GOAL_H
 
-// libsolv
+/* libsolv */
 #include "solv/queue.h"
 #include "solv/transaction.h"
 
-// hawkey
+/* hawkey */
 #include "package.h"
 #include "packagelist.h"
 #include "sack.h"
@@ -34,11 +34,11 @@ int hy_goal_upgrade_query(HyGoal goal, HyQuery query);
 int hy_goal_go(HyGoal goal);
 int hy_goal_go_flags(HyGoal goal, int flags);
 
-// problems
+/* problems */
 int hy_goal_count_problems(HyGoal goal);
 char *hy_goal_describe_problem(HyGoal goal, unsigned i);
 
-// result processing
+/* result processing */
 HyPackageList hy_goal_list_erasures(HyGoal goal);
 HyPackageList hy_goal_list_installs(HyGoal goal);
 HyPackageList hy_goal_list_upgrades(HyGoal goal);

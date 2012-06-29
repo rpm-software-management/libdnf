@@ -1,10 +1,10 @@
 #ifndef HY_SACK_H
 #define HY_SACK_H
 
-// libsolv
+/* libsolv */
 #include "solv/pool.h"
 
-// hawkey
+/* hawkey */
 #include "repo.h"
 #include "package.h"
 #include "types.h"
@@ -29,4 +29,4 @@ int hy_sack_write_all_repos(HySack sack);
 int hy_sack_write_filelists(HySack sack);
 int hy_sack_write_presto(HySack sack);
 
-#endif // HY_SACK_H
+#endif /* HY_SACK_H */

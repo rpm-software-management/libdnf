@@ -1,18 +1,18 @@
 #ifndef HY_PACKAGE_H
 #define HY_PACKAGE_H
 
-// libsolv
+/* libsolv */
 #include "solv/pool.h"
 #include "solv/solvable.h"
 
-// hawkey
+/* hawkey */
 #include "types.h"
 
 #define HY_CHKSUM_MD5 REPOKEY_TYPE_MD5
 #define HY_CHKSUM_SHA1 REPOKEY_TYPE_SHA1
 #define HY_CHKSUM_SHA256 REPOKEY_TYPE_SHA256
 
-// public
+/* public */
 void hy_package_free(HyPackage pkg);
 HyPackage hy_package_link(HyPackage pkg);
 int hy_package_cmp(HyPackage pkg1, HyPackage pkg2);

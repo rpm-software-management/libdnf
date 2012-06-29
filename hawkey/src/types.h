@@ -12,4 +12,4 @@ typedef struct _HySack * HySack;
 
 typedef const unsigned char HyChecksum;
 
-#endif // HY_TYPES_H
+#endif /* HY_TYPES_H */
