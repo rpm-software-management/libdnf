@@ -1,5 +1,5 @@
-#ifndef REPO_H
-#define REPO_H
+#ifndef HY_REPO_H
+#define HY_REPO_H
 
 #include "types.h"
 
@@ -16,4 +16,4 @@ void hy_repo_set_string(HyRepo repo, enum _hy_repo_param_e which, const char *st
 const char *hy_repo_get_string(HyRepo repo, enum _hy_repo_param_e which);
 void hy_repo_free(HyRepo repo);
 
-#endif // REPO_H
+#endif // HY_REPO_H

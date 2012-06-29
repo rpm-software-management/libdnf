@@ -1,5 +1,5 @@
-#ifndef SACK_INTERNAL_H
-#define SACK_INTERNAL_H
+#ifndef HY_SACK_INTERNAL_H
+#define HY_SACK_INTERNAL_H
 
 #include <stdio.h>
 
@@ -19,4 +19,4 @@ void sack_log(HySack sack, int level, const char *format, ...);
 void sack_same_names(HySack sack, Id name, Id arch, Queue *same);
 static inline Pool *sack_pool(HySack sack) { return sack->pool; }
 
-#endif // SACK_INTERNAL_H
+#endif // HY_SACK_INTERNAL_H

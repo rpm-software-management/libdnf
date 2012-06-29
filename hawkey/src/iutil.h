@@ -1,5 +1,5 @@
-#ifndef IUTIL_H
-#define IUTIL_H
+#ifndef HY_IUTIL_H
+#define HY_IUTIL_H
 
 // libsolv
 #include "solv/queue.h"

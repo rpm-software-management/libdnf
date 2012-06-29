@@ -1,5 +1,5 @@
-#ifndef GOAL_H
-#define GOAL_H
+#ifndef HY_GOAL_H
+#define HY_GOAL_H
 
 // libsolv
 #include "solv/queue.h"

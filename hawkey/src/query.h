@@ -1,5 +1,5 @@
-#ifndef QUERY_H
-#define QUERY_H
+#ifndef HY_QUERY_H
+#define HY_QUERY_H
 
 // hawkey
 #include "packagelist.h"
@@ -64,4 +64,4 @@ void hy_query_filter_obsoleting(HyQuery q, int val);
 
 HyPackageList hy_query_run(HyQuery q);
 
-#endif // QUERY_H
+#endif // HY_QUERY_H

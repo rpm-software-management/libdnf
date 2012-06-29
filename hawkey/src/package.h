@@ -1,5 +1,5 @@
-#ifndef PACKAGE_H
-#define PACKAGE_H
+#ifndef HY_PACKAGE_H
+#define HY_PACKAGE_H
 
 // libsolv
 #include "solv/pool.h"

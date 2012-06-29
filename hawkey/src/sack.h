@@ -1,5 +1,5 @@
-#ifndef SACK_H
-#define SACK_H
+#ifndef HY_SACK_H
+#define HY_SACK_H
 
 // libsolv
 #include "solv/pool.h"
@@ -29,4 +29,4 @@ int hy_sack_write_all_repos(HySack sack);
 int hy_sack_write_filelists(HySack sack);
 int hy_sack_write_presto(HySack sack);
 
-#endif // SACK_H
+#endif // HY_SACK_H

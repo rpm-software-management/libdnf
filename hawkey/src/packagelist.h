@@ -1,5 +1,5 @@
-#ifndef PACKAGELIST_H
-#define PACKAGELIST_H
+#ifndef HY_PACKAGELIST_H
+#define HY_PACKAGELIST_H
 
 // libsolv
 #include "solv/queue.h"
@@ -20,4 +20,4 @@ void hy_packagelist_push(HyPackageList plist, HyPackage pkg);
 #define FOR_PACKAGELIST(pkg, pkglist, i)						\
     for (i = 0; (pkg = hy_packagelist_get(pkglist, i++)) != NULL; )
 
-#endif // PACKAGELIST_H
+#endif // HY_PACKAGELIST_H

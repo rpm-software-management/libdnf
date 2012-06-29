@@ -1,5 +1,5 @@
-#ifndef PACKAGE_INTERNAL_H
-#define PACKAGE_INTERNAL_H
+#ifndef HY_PACKAGE_INTERNAL_H
+#define HY_PACKAGE_INTERNAL_H
 
 #include "package.h"
 
@@ -18,4 +18,4 @@ static inline Id package_id(HyPackage pkg) { return pkg->id; }
 HyPackage package_from_solvable(Solvable *s);
 HyPackageDelta delta_create(void);
 
-#endif // PACKAGE_INTERNAL_H
+#endif // HY_PACKAGE_INTERNAL_H

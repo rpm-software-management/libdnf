@@ -1,5 +1,5 @@
-#ifndef REPO_INTERNAL_H
-#define REPO_INTERNAL_H
+#ifndef HY_REPO_INTERNAL_H
+#define HY_REPO_INTERNAL_H
 
 // libsolv
 #include <solv/pooltypes.h>
@@ -44,4 +44,4 @@ int hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state);
 Id repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which);
 void repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata);
 
-#endif // REPO_INTERNAL_H
+#endif // HY_REPO_INTERNAL_H
