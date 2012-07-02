@@ -143,28 +143,31 @@ static void
 filter_repo(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
-    int i;
+    int i, x;
     Solvable *s;
     Repo *r;
-    Id id, repoid = 0;
+    Id id, repoids[pool->nrepos];
 
-    assert(f->nmatches == 1);
-
+    x = 0;
     FOR_REPOS(id, r) {
-	if (!strcmp(r->name, f->matches[0])) {
-	    repoid = id;
-	    break;
+	repoids[x] = 0;
+	for (i = 0; i < f->nmatches; i++) {
+	    if (!strcmp(r->name, f->matches[i])) {
+		repoids[x] = id;
+		break;
+	    }
 	}
+	x++;
     }
-    if (!repoid)
-	return; /* select nothing  */
 
     for (i = 1; i < pool->nsolvables; ++i) {
 	s = pool_id2solvable(pool, i);
 	switch (f->filter_type & ~HY_COMPARISON_FLAG_MASK) {
 	case HY_EQ:
-	    if (s->repo && s->repo->repoid == repoid)
-		MAPSET(m, i);
+	    for (x = 0; x < pool->nrepos; x++) {
+		if (repoids[x] && s->repo && s->repo->repoid == repoids[x])
+		    MAPSET(m, i);
+	    }
 	    break;
 	default:
 	    assert(0);

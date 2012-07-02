@@ -268,6 +268,33 @@ START_TEST(test_filter_files)
 }
 END_TEST
 
+START_TEST(test_filter_reponames)
+{
+    HyQuery q;
+    const char *repolist[]  = {"main", "updates", NULL};
+    const char *repolist2[] = {"main",  NULL};
+    const char *repolist3[] = {"foo", "bar",  NULL};
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    printf("%d\n", query_count_results(q));
+    fail_unless(query_count_results(q) == 15);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist2);
+    printf("%d\n", query_count_results(q));
+    fail_unless(query_count_results(q) == 13);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist3);
+    printf("%d\n", query_count_results(q));
+    fail_unless(query_count_results(q) == 0);
+    hy_query_free(q);
+}
+END_TEST
+
 Suite *
 query_suite(void)
 {
@@ -306,6 +333,7 @@ query_suite(void)
     tcase_add_unchecked_fixture(tc, setup_all, teardown);
     tcase_add_test(tc, test_filter_latest2);
     tcase_add_test(tc, test_filter_latest_archs);
+    tcase_add_test(tc, test_filter_reponames);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Filelists");
