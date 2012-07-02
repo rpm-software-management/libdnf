@@ -16,8 +16,8 @@ enum _hy_repo_param_e {
 };
 
 HyRepo hy_repo_create(void);
-void hy_repo_set_string(HyRepo repo, enum _hy_repo_param_e which, const char *str_val);
-const char *hy_repo_get_string(HyRepo repo, enum _hy_repo_param_e which);
+void hy_repo_set_string(HyRepo repo, int which, const char *str_val);
+const char *hy_repo_get_string(HyRepo repo, int which);
 void hy_repo_free(HyRepo repo);
 
 #ifdef __cplusplus
