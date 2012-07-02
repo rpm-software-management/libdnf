@@ -277,19 +277,16 @@ START_TEST(test_filter_reponames)
 
     q = hy_query_create(test_globals.sack);
     hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
-    printf("%d\n", query_count_results(q));
     fail_unless(query_count_results(q) == 15);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
     hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist2);
-    printf("%d\n", query_count_results(q));
     fail_unless(query_count_results(q) == 13);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
     hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist3);
-    printf("%d\n", query_count_results(q));
     fail_unless(query_count_results(q) == 0);
     hy_query_free(q);
 }
