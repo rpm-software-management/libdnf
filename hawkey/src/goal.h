@@ -41,6 +41,7 @@ int hy_goal_go_flags(HyGoal goal, int flags);
 /* problems */
 int hy_goal_count_problems(HyGoal goal);
 char *hy_goal_describe_problem(HyGoal goal, unsigned i);
+int hy_goal_log_decisions(HyGoal goal);
 
 /* result processing */
 HyPackageList hy_goal_list_erasures(HyGoal goal);

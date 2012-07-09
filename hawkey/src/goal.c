@@ -239,6 +239,17 @@ hy_goal_describe_problem(HyGoal goal, unsigned i)
     return solv_strdup(problem);
 }
 
+/**
+ * Write all the solving decisions to the hawkey logfile.
+ */
+int
+hy_goal_log_decisions(HyGoal goal)
+{
+    assert(goal->solv);
+    solver_printdecisionq(goal->solv, SOLV_DEBUG_RESULT);
+    return 0;
+}
+
 HyPackageList
 hy_goal_list_erasures(HyGoal goal)
 {

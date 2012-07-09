@@ -238,6 +238,14 @@ describe_problem(_GoalObject *self, PyObject *index_obj)
 }
 
 static PyObject *
+log_decisions(_GoalObject *self, PyObject *unused)
+{
+    if (hy_goal_log_decisions(self->goal))
+	PyErr_SetString(PyExc_RuntimeError, "log_decisions() failed.");
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 list_generic(_GoalObject *self, HyPackageList (*func)(HyGoal))
 {
     HyPackageList plist = func(self->goal);
@@ -302,6 +310,7 @@ static struct PyMethodDef goal_methods[] = {
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"count_problems",	(PyCFunction)count_problems,	METH_NOARGS, NULL},
     {"describe_problem",(PyCFunction)describe_problem,	METH_O, NULL},
+    {"log_decisions",   (PyCFunction)log_decisions,	METH_NOARGS, NULL},
     {"list_erasures",	(PyCFunction)list_erasures,	METH_NOARGS, NULL},
     {"list_installs",	(PyCFunction)list_installs,	METH_NOARGS, NULL},
     {"list_downgrades",	(PyCFunction)list_downgrades,	METH_NOARGS, NULL},
