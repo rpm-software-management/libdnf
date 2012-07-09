@@ -16,48 +16,35 @@
 struct _HyGoal {
     HySack sack;
     Queue job;
-    Queue problems;
+    Solver *solv;
     Transaction *trans;
 };
 
-static Transaction *
-job2transaction(HySack sack, int flags, Queue *job, Queue *errors)
+static int
+solve(HyGoal goal, int flags)
 {
+    HySack sack = goal->sack;
     Pool *pool = sack_pool(sack);
-    Solver *solv;
-    Transaction *trans = NULL;
+    Solver *solv = solver_create(pool);
 
+    goal->solv = solv;
     sack_make_provides_ready(sack);
-    solv = solver_create(pool);
     if (flags & HY_ALLOW_UNINSTALL)
 	solver_set_flag(solv, SOLVER_FLAG_ALLOW_UNINSTALL, 1);
 
     /* turn off implicit obsoletes for installonly packages */
     for (int i = 0; i < sack->installonly.count; i++)
-	queue_push2(job, SOLVER_NOOBSOLETES|SOLVER_SOLVABLE_PROVIDES,
+	queue_push2(&goal->job, SOLVER_NOOBSOLETES|SOLVER_SOLVABLE_PROVIDES,
 		    sack->installonly.elements[i]);
 
     /* installonly notwithstanding, process explicit obsoletes */
     solver_set_flag(solv, SOLVER_FLAG_KEEP_EXPLICIT_OBSOLETES, 1);
 
-    if (solver_solve(solv, job)) {
-	int i;
-	Id rule, source, target, dep;
-	SolverRuleinfo type;
-	int problem_cnt = solver_problem_count(solv);
+    if (solver_solve(solv, &goal->job))
+	return 1;
 
-	assert(errors);
-	for (i = 1; i <= problem_cnt; ++i) {
-	    rule = solver_findproblemrule(solv, i);
-	    type = solver_ruleinfo(solv, rule, &source, &target, &dep);
-	    queue_push2(errors, type, source);
-	    queue_push2(errors, target, dep);
-	}
-    } else
-	trans = solver_create_transaction(solv);
-
-    solver_free(solv);
-    return trans;
+    goal->trans = solver_create_transaction(solv);
+    return 0;
 }
 
 static HyPackageList
@@ -88,17 +75,17 @@ hy_goal_create(HySack sack)
     HyGoal goal = solv_calloc(1, sizeof(*goal));
     goal->sack = sack;
     queue_init(&goal->job);
-    queue_init(&goal->problems);
     return goal;
 }
 
 void
 hy_goal_free(HyGoal goal)
 {
-    queue_free(&goal->problems);
-    queue_free(&goal->job);
     if (goal->trans)
 	transaction_free(goal->trans);
+    if (goal->solv)
+	solver_free(goal->solv);
+    queue_free(&goal->job);
     solv_free(goal);
 }
 
@@ -190,16 +177,17 @@ hy_goal_go(HyGoal goal)
 int
 hy_goal_go_flags(HyGoal goal, int flags)
 {
-    Transaction *trans = job2transaction(goal->sack, flags,
-					 &goal->job, &goal->problems);
-    if (trans == NULL)
+    assert(goal->solv == NULL); /* only allow goal_go() once */
+    if (solve(goal, flags))
 	return 1;
-#if 0
-    transaction_print(trans);
-    Pool *pool = sack_pool(goal->sack);
-    int i;
 
-    for (i = 0; i < trans->steps.count; ++i) {
+#if 0
+    Transaction *trans = goal->trans;
+    Pool *pool = sack_pool(goal->sack);
+
+    assert(trans);
+    transaction_print(trans);
+    for (int i = 0; i < trans->steps.count; ++i) {
 	Id p = trans->steps.elements[i];
 	Solvable *s = pool_id2solvable(pool, p);
 	Id type = transaction_type(trans, p, SOLVER_TRANSACTION_RPM_ONLY);
@@ -219,26 +207,36 @@ hy_goal_go_flags(HyGoal goal, int flags)
 	}
     }
 #endif
-
-    goal->trans = trans;
     return 0;
 }
 
 int
 hy_goal_count_problems(HyGoal goal)
 {
-    return (goal->problems.count/4);
+    assert(goal->solv);
+    return solver_problem_count(goal->solv);
 }
 
+/**
+ * String describing the encountered solving problem 'i'.
+ *
+ * Caller is responsible for freeing the returned string using hy_free().
+ */
 char *
 hy_goal_describe_problem(HyGoal goal, unsigned i)
 {
-    Pool *pool = sack_pool(goal->sack);
-    Id *ps = goal->problems.elements;
-    int i4 = i * 4;
+    const int count = hy_goal_count_problems(goal);
+    Id rid, source, target, dep;
+    SolverRuleinfo type;
 
-    assert(goal->problems.count > i4);
-    return problemruleinfo2str(pool, ps[i4], ps[i4+1], ps[i4+2], ps[i4+3]);
+    assert(i < count);
+    // this libsolv interface indexes from 1 (we do from 0), so:
+    rid = solver_findproblemrule(goal->solv, i + 1);
+    type = solver_ruleinfo(goal->solv, rid, &source, &target, &dep);
+
+    const char *problem = solver_problemruleinfo2str(goal->solv,
+						     type, source, target, dep);
+    return solv_strdup(problem);
 }
 
 HyPackageList

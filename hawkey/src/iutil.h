@@ -41,7 +41,6 @@ int str_endswith(const char *haystack, const char *needle);
 /* libsolv utils */
 void repo_internalize_trigger(Repo *r);
 void queue2plist(HySack sack, Queue *q, HyPackageList plist);
-char *problemruleinfo2str(Pool *pool, SolverRuleinfo type, Id source, Id target, Id dep);
 Id what_upgrades(Pool *pool, Id p);
 Id what_downgrades(Pool *pool, Id p);
 
