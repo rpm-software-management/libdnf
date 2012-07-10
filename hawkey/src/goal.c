@@ -245,7 +245,8 @@ hy_goal_describe_problem(HyGoal goal, unsigned i)
 int
 hy_goal_log_decisions(HyGoal goal)
 {
-    assert(goal->solv);
+    if (goal->solv == NULL)
+	return 1;
     solver_printdecisionq(goal->solv, SOLV_DEBUG_RESULT);
     return 0;
 }

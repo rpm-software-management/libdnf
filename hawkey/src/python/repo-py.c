@@ -102,7 +102,7 @@ static PyGetSetDef repo_getsetters[] = {
 PyTypeObject repo_Type = {
     PyObject_HEAD_INIT(NULL)
     0,				/*ob_size*/
-    "hawkey.Repo",		/*tp_name*/
+    "_hawkey.Repo",		/*tp_name*/
     sizeof(_RepoObject),	/*tp_basicsize*/
     0,				/*tp_itemsize*/
     (destructor) repo_dealloc,  /*tp_dealloc*/

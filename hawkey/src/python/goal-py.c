@@ -241,7 +241,7 @@ static PyObject *
 log_decisions(_GoalObject *self, PyObject *unused)
 {
     if (hy_goal_log_decisions(self->goal))
-	PyErr_SetString(PyExc_RuntimeError, "log_decisions() failed.");
+	PyErr_SetString(PyExc_ValueError, "log_decisions() failed.");
     Py_RETURN_NONE;
 }
 
