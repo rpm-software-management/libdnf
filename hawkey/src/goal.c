@@ -292,3 +292,17 @@ hy_goal_package_obsoletes(HyGoal goal, HyPackage pkg)
     assert(p); // todo: handle no upgrades case
     return package_create(pool, p);
 }
+
+int
+hy_goal_get_reason(HyGoal goal, HyPackage pkg)
+{
+    assert(goal->solv);
+    int reason = solver_describe_decision(goal->solv, package_id(pkg), NULL);
+
+    switch (reason) {
+    case SOLVER_REASON_RESOLVE_JOB:
+	return HY_REASON_USER;
+    default:
+	return HY_REASON_DEP;
+    }
+}

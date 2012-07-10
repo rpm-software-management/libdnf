@@ -28,6 +28,10 @@ penny, penny-lib
 
 walrus
 * not installed, available in the main repo
+* requires 'semolina'
+
+semolina
+* for multilib install testing
 
 hello
 * depends on 'goodbye' which is not provided by anything else

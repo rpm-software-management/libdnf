@@ -1,6 +1,7 @@
 #include <Python.h>
 
 // hawkey
+#include "src/goal.h"
 #include "src/query.h"
 #include "src/util.h"
 
@@ -92,4 +93,7 @@ init_hawkey(void)
     PyModule_AddIntConstant(m, "NEQ", HY_NEQ);
     PyModule_AddIntConstant(m, "SUBSTR", HY_SUBSTR);
     PyModule_AddIntConstant(m, "GLOB", HY_GLOB);
+
+    PyModule_AddIntConstant(m, "REASON_DEP", HY_REASON_DEP);
+    PyModule_AddIntConstant(m, "REASON_USER", HY_REASON_USER);
 }

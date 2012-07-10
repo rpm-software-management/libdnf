@@ -295,6 +295,17 @@ package_obsoletes(_GoalObject *self, PyObject *pkg)
     return pkg_upgraded;
 }
 
+static PyObject *
+get_reason(_GoalObject *self, PyObject *pkg)
+{
+    HyPackage cpkg = packageFromPyObject(pkg);
+
+    if (cpkg == NULL)
+	return NULL;
+    int reason = hy_goal_get_reason(self->goal, cpkg);
+    return PyInt_FromLong(reason);
+}
+
 static struct PyMethodDef goal_methods[] = {
     {"downgrade_to",	(PyCFunction)downgrade_to,	METH_O, NULL},
     {"erase",		(PyCFunction)erase,
@@ -308,14 +319,15 @@ static struct PyMethodDef goal_methods[] = {
     {"upgrade_all",	(PyCFunction)upgrade_all,	METH_NOARGS, NULL},
     {"go",		(PyCFunction)go,
      METH_VARARGS | METH_KEYWORDS, NULL},
-    {"count_problems",	(PyCFunction)count_problems,	METH_NOARGS, NULL},
-    {"describe_problem",(PyCFunction)describe_problem,	METH_O, NULL},
-    {"log_decisions",   (PyCFunction)log_decisions,	METH_NOARGS, NULL},
-    {"list_erasures",	(PyCFunction)list_erasures,	METH_NOARGS, NULL},
-    {"list_installs",	(PyCFunction)list_installs,	METH_NOARGS, NULL},
-    {"list_downgrades",	(PyCFunction)list_downgrades,	METH_NOARGS, NULL},
-    {"list_upgrades",	(PyCFunction)list_upgrades,	METH_NOARGS, NULL},
-    {"package_obsoletes",(PyCFunction)package_obsoletes,	METH_O, NULL},
+    {"count_problems",	(PyCFunction)count_problems,	METH_NOARGS,	NULL},
+    {"describe_problem",(PyCFunction)describe_problem,	METH_O,		NULL},
+    {"log_decisions",   (PyCFunction)log_decisions,	METH_NOARGS,	NULL},
+    {"list_erasures",	(PyCFunction)list_erasures,	METH_NOARGS,	NULL},
+    {"list_installs",	(PyCFunction)list_installs,	METH_NOARGS,	NULL},
+    {"list_downgrades",	(PyCFunction)list_downgrades,	METH_NOARGS,	NULL},
+    {"list_upgrades",	(PyCFunction)list_upgrades,	METH_NOARGS,	NULL},
+    {"package_obsoletes",(PyCFunction)package_obsoletes, METH_O,	NULL},
+    {"get_reason",	(PyCFunction)get_reason,	METH_O,		NULL},
     {NULL}                      /* sentinel */
 };
 

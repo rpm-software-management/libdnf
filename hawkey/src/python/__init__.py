@@ -43,6 +43,9 @@ _CHKSUM_TYPES = {
 Sack = _hawkey.Sack
 chksum_name = _hawkey.chksum_name
 
+REASON_DEP = _hawkey.REASON_DEP
+REASON_USER = _hawkey.REASON_USER
+
 class Goal(_hawkey.Goal):
     @property
     def problems(self):

@@ -23,6 +23,9 @@ enum _hy_goal_go_flags {
     HY_ALLOW_UNINSTALL = 1
 };
 
+#define HY_REASON_DEP 1
+#define HY_REASON_USER 2
+
 HyGoal hy_goal_create(HySack sack);
 void hy_goal_free(HyGoal goal);
 
@@ -49,6 +52,7 @@ HyPackageList hy_goal_list_installs(HyGoal goal);
 HyPackageList hy_goal_list_upgrades(HyGoal goal);
 HyPackageList hy_goal_list_downgrades(HyGoal goal);
 HyPackage hy_goal_package_obsoletes(HyGoal goal, HyPackage pkg);
+int hy_goal_get_reason(HyGoal goal, HyPackage pkg);
 
 #ifdef __cplusplus
 }

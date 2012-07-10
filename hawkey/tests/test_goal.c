@@ -98,7 +98,7 @@ START_TEST(test_goal_install)
     fail_if(hy_goal_go(goal));
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 2);
     hy_goal_free(goal);
 }
 END_TEST
@@ -190,6 +190,34 @@ START_TEST(test_goal_downgrade)
 
     hy_goal_free(goal);
     hy_package_free(to_be_pkg);
+}
+END_TEST
+
+START_TEST(test_goal_get_reason)
+{
+    HyPackage pkg = get_latest_pkg(test_globals.sack, "walrus");
+    HyGoal goal = hy_goal_create(test_globals.sack);
+    hy_goal_install(goal, pkg);
+    hy_package_free(pkg);
+    hy_goal_go(goal);
+
+    HyPackageList plist = hy_goal_list_installs(goal);
+    int i;
+    int set = 0;
+    FOR_PACKAGELIST(pkg, plist, i) {
+	if (!strcmp(hy_package_get_name(pkg), "walrus")) {
+	    set |= 1 << 0;
+	    fail_unless(hy_goal_get_reason(goal, pkg) == HY_REASON_USER);
+	}
+	if (!strcmp(hy_package_get_name(pkg), "semolina")) {
+	    set |= 1 << 1;
+	    fail_unless(hy_goal_get_reason(goal, pkg) == HY_REASON_DEP);
+	}
+    }
+    fail_unless(set == 3);
+
+    hy_packagelist_free(plist);
+    hy_goal_free(goal);
 }
 END_TEST
 
@@ -317,6 +345,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_update);
     tcase_add_test(tc, test_goal_upgrade_all);
     tcase_add_test(tc, test_goal_downgrade);
+    tcase_add_test(tc, test_goal_get_reason);
     tcase_add_test(tc, test_goal_describe_problem);
     tcase_add_test(tc, test_goal_log_decisions);
     tcase_add_test(tc, test_goal_installonly);
