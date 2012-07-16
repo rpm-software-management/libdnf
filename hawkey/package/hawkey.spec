@@ -1,8 +1,8 @@
-%global gitrev 042738b
-%global libsolv_version 0.0.0-12
+%global gitrev 76a5b8c
+%global libsolv_version 0.0.0-13
 
 Name:		hawkey
-Version:	0.2.5
+Version:	0.2.6
 Release:	1.git%{gitrev}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
@@ -69,6 +69,10 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
+* Mon Jul 16 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.6-1.git76a5b8c
+- Use libsolv-0.0.0-13.
+- hy_goal_get_reason().
+
 * Sun Jul 1 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.5-1.git042738b
 - Use libsolv-0.0.0-12.
 - Added hy_package_get_hdr_checkum().
