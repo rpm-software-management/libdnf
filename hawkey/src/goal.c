@@ -21,6 +21,15 @@ struct _HyGoal {
 };
 
 static int
+erase_flags2libsolv(int flags)
+{
+    int ret = 0;
+    if (flags & HY_CLEAN_DEPS)
+	ret |= SOLVER_CLEANDEPS;
+    return ret;
+}
+
+static int
 solve(HyGoal goal, int flags)
 {
     HySack sack = goal->sack;
@@ -98,19 +107,34 @@ hy_goal_downgrade_to(HyGoal goal, HyPackage new_pkg)
 int
 hy_goal_erase(HyGoal goal, HyPackage pkg)
 {
+    return hy_goal_erase_flags(goal, pkg, 0);
+}
+
+int
+hy_goal_erase_flags(HyGoal goal, HyPackage pkg, int flags)
+{
 #ifndef NDEBUG
     Pool *pool = sack_pool(goal->sack);
     assert(pool->installed &&
 	   pool_id2solvable(pool, package_id(pkg))->repo == pool->installed);
 #endif
-    queue_push2(&goal->job, SOLVER_SOLVABLE|SOLVER_ERASE, package_id(pkg));
+    int additional = erase_flags2libsolv(flags);
+    queue_push2(&goal->job, SOLVER_SOLVABLE|SOLVER_ERASE|additional,
+		package_id(pkg));
     return 0;
 }
 
 int
 hy_goal_erase_query(HyGoal goal, HyQuery query)
 {
-    return query2job(query, &goal->job, SOLVER_ERASE);
+    return hy_goal_erase_query_flags(goal, query, 0);
+}
+
+int
+hy_goal_erase_query_flags(HyGoal goal, HyQuery query, int flags)
+{
+    int additional = erase_flags2libsolv(flags);
+    return query2job(query, &goal->job, SOLVER_ERASE|additional);
 }
 
 int
@@ -166,6 +190,14 @@ hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags)
     }
 
     return hy_goal_install(goal, new_pkg);
+}
+
+int
+hy_goal_userinstalled(HyGoal goal, HyPackage pkg)
+{
+    queue_push2(&goal->job, SOLVER_SOLVABLE|SOLVER_USERINSTALLED,
+		package_id(pkg));
+    return 0;
 }
 
 int

@@ -40,15 +40,34 @@ args_query_pkg_check(HyPackage pkg, HyQuery query)
 
 int
 args_query_pkg_parse(PyObject *args, PyObject *kwds,
-		    HyPackage *pkg, HyQuery *query)
+		     HyPackage *pkg, HyQuery *query, int *flags, int flag_mask)
 {
-    char *kwlist[] = {"package", "query", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&O&", kwlist,
+    char *kwlist[] = {"package", "query", "clean_deps", "check_installed", NULL};
+    int clean_deps = 0, check_installed = 0;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&O&ii", kwlist,
 				     package_converter, pkg,
-				     query_converter, query))
+				     query_converter, query,
+				     &clean_deps, &check_installed))
 	return 0;
     if (!args_query_pkg_check(*pkg, *query))
 	return 0;
+    if (clean_deps) {
+	if (!(flag_mask & HY_CLEAN_DEPS)) {
+	    PyErr_SetString(PyExc_ValueError,
+			    "Does not accept clean_deps keyword") ;
+	    return 0;
+	}
+	*flags |= HY_CLEAN_DEPS;
+    }
+    if (check_installed) {
+	if  (!(flag_mask & HY_CHECK_INSTALLED)) {
+	    PyErr_SetString(PyExc_ValueError,
+			    "Does not accept check_installed keyword") ;
+	    return 0;
+	}
+	*flags |= HY_CHECK_INSTALLED;
+    }
+
     return 1;
 }
 
@@ -109,11 +128,12 @@ erase(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     HyPackage pkg = NULL;
     HyQuery query = NULL;
-    if (!args_query_pkg_parse(args, kwds, &pkg, &query))
+    int flags = 0;
+    if (!args_query_pkg_parse(args, kwds, &pkg, &query, &flags, HY_CLEAN_DEPS))
 	return NULL;
 
-    int ret = pkg ? hy_goal_erase(self->goal, pkg) :
-	hy_goal_erase_query(self->goal, query);
+    int ret = pkg ? hy_goal_erase_flags(self->goal, pkg, flags) :
+	hy_goal_erase_query_flags(self->goal, query, flags);
     if (ret)
 	Py_RETURN_FALSE;
     Py_RETURN_TRUE;
@@ -124,7 +144,7 @@ install(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     HyPackage pkg = NULL;
     HyQuery query = NULL;
-    if (!args_query_pkg_parse(args, kwds, &pkg, &query))
+    if (!args_query_pkg_parse(args, kwds, &pkg, &query, NULL, 0))
 	return NULL;
 
     int ret = pkg ? hy_goal_install(self->goal, pkg) :
@@ -139,25 +159,14 @@ upgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     HyPackage pkg = NULL;
     HyQuery query = NULL;
-    int check_installed = 0;
-    char *kwlist[] = {"package", "query", "check_installed", NULL};
-    int flags = 0;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&O&i", kwlist,
-				     package_converter, &pkg,
-				     query_converter, &query,
-				     &check_installed))
+    if (!args_query_pkg_parse(args, kwds, &pkg, &query, NULL, 0))
 	return NULL;
-    if (!args_query_pkg_check(pkg, query))
-	return NULL;
-    if (check_installed)
-	flags |= HY_CHECK_INSTALLED;
     if (pkg) {
 	PyErr_SetString(PyExc_NotImplementedError,
 			"Selecting a package to be upgraded is not implemented.");
 	return NULL;
     }
-
     int ret = hy_goal_upgrade_query(self->goal, query);
     if (ret)
 	Py_RETURN_FALSE;
@@ -167,21 +176,19 @@ upgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 upgrade_to(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    PyObject *pkgob = NULL;
-    int check_installed = 0;
-    char *kwlist[] = {"package", "check_installed", NULL};
+    HyPackage pkg = NULL;
+    HyQuery query = NULL;
     int ret;
     int flags = 0;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i", kwlist,
-				     &pkgob, &check_installed))
+    if (!args_query_pkg_parse(args, kwds, &pkg, &query,
+			      &flags, HY_CHECK_INSTALLED))
 	return NULL;
-    HyPackage pkg = packageFromPyObject(pkgob);
-    if (pkg == NULL)
+    if (query) {
+	PyErr_SetString(PyExc_NotImplementedError,
+			"Upgrading to a Query selection is not implemented.");
 	return NULL;
-
-    if (check_installed)
-	flags |= HY_CHECK_INSTALLED;
+    }
     ret = hy_goal_upgrade_to_flags(self->goal, pkg, flags);
     if (!ret)
 	Py_RETURN_TRUE;
@@ -192,6 +199,20 @@ static PyObject *
 upgrade_all(_GoalObject *self, PyObject *unused)
 {
     int ret = hy_goal_upgrade_all(self->goal);
+    if (!ret)
+	Py_RETURN_TRUE;
+    Py_RETURN_FALSE;
+}
+
+static PyObject *
+userinstalled(_GoalObject *self, PyObject *pkg)
+{
+    HyPackage cpkg = packageFromPyObject(pkg);
+    int ret;
+
+    if (cpkg == NULL)
+	return NULL;
+    ret = hy_goal_userinstalled(self->goal, cpkg);
     if (!ret)
 	Py_RETURN_TRUE;
     Py_RETURN_FALSE;
@@ -316,7 +337,8 @@ static struct PyMethodDef goal_methods[] = {
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"upgrade_to",	(PyCFunction)upgrade_to,
      METH_VARARGS | METH_KEYWORDS, NULL},
-    {"upgrade_all",	(PyCFunction)upgrade_all,	METH_NOARGS, NULL},
+    {"upgrade_all",	(PyCFunction)upgrade_all,	METH_NOARGS,	NULL},
+    {"userinstalled",	(PyCFunction)userinstalled,	METH_O,		NULL},
     {"go",		(PyCFunction)go,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"count_problems",	(PyCFunction)count_problems,	METH_NOARGS,	NULL},

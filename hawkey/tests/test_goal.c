@@ -330,6 +330,41 @@ START_TEST(test_goal_erase_with_deps)
 }
 END_TEST
 
+START_TEST(test_goal_erase_clean_deps)
+{
+    HySack sack = test_globals.sack;
+    HyPackage pkg = get_installed_pkg(sack, "flying");
+
+    // by default, leave dependencies alone:
+    HyGoal goal = hy_goal_create(sack);
+    hy_goal_erase(goal, pkg);
+    hy_goal_go(goal);
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
+    hy_goal_free(goal);
+
+    // allow deleting dependencies:
+    goal = hy_goal_create(sack);
+    hy_goal_erase_flags(goal, pkg, HY_CLEAN_DEPS);
+    fail_unless(hy_goal_go(goal) == 0);
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 2);
+    hy_goal_free(goal);
+
+    // test userinstalled specification:
+    HyPackage penny_pkg = get_installed_pkg(sack, "penny-lib");
+    goal = hy_goal_create(sack);
+    hy_goal_erase_flags(goal, pkg, HY_CLEAN_DEPS);
+    hy_goal_userinstalled(goal, penny_pkg);
+    // having the same solvable twice in a goal shouldn't break anything:
+    hy_goal_userinstalled(goal, pkg);
+    fail_unless(hy_goal_go(goal) == 0);
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
+    hy_goal_free(goal);
+    hy_package_free(penny_pkg);
+
+    hy_package_free(pkg);
+}
+END_TEST
+
 Suite *
 goal_suite(void)
 {
@@ -352,6 +387,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_no_reinstall);
     tcase_add_test(tc, test_goal_erase_simple);
     tcase_add_test(tc, test_goal_erase_with_deps);
+    tcase_add_test(tc, test_goal_erase_clean_deps);
     suite_add_tcase(s, tc);
 
     return s;
