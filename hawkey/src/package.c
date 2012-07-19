@@ -142,11 +142,23 @@ hy_package_get_hdr_chksum(HyPackage pkg, int *type)
     return solvable_lookup_bin_checksum(s, SOLVABLE_HDRID, type);
 }
 
+const char *
+hy_package_get_description(HyPackage pkg)
+{
+    return solvable_lookup_str(get_solvable(pkg), SOLVABLE_DESCRIPTION);
+}
+
 const char*
 hy_package_get_evr(HyPackage pkg)
 {
     Pool *pool = pkg->pool;
     return pool_id2str(pool, get_solvable(pkg)->evr);
+}
+
+const char *
+hy_package_get_license(HyPackage pkg)
+{
+    return solvable_lookup_str(get_solvable(pkg), SOLVABLE_LICENSE);
 }
 
 const char*
@@ -161,6 +173,12 @@ hy_package_get_summary(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
     return solvable_lookup_str(s, SOLVABLE_SUMMARY);
+}
+
+const char *
+hy_package_get_url(HyPackage pkg)
+{
+    return solvable_lookup_str(get_solvable(pkg), SOLVABLE_URL);
 }
 
 unsigned long long
