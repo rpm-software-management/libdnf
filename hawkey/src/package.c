@@ -17,6 +17,14 @@ get_solvable(HyPackage pkg)
     return pool_id2solvable(pkg->pool, pkg->id);
 }
 
+static unsigned long long
+lookup_num(HyPackage pkg, unsigned type)
+{
+    Solvable *s = get_solvable(pkg);
+    repo_internalize_trigger(s->repo);
+    return solvable_lookup_num(s, type, 0);
+}
+
 HyPackage
 package_create(Pool *pool, Id id)
 {
@@ -156,28 +164,35 @@ hy_package_get_summary(HyPackage pkg)
 }
 
 unsigned long long
+hy_package_get_buildtime(HyPackage pkg)
+{
+    return lookup_num(pkg, SOLVABLE_BUILDTIME);
+}
+
+unsigned long long
+hy_package_get_installtime(HyPackage pkg)
+{
+    return lookup_num(pkg, SOLVABLE_INSTALLTIME);
+}
+
+unsigned long long
 hy_package_get_medianr(HyPackage pkg)
 {
-    Solvable *s = get_solvable(pkg);
-    repo_internalize_trigger(s->repo);
-    return solvable_lookup_num(s, SOLVABLE_MEDIANR, 0);
+    return lookup_num(pkg, SOLVABLE_MEDIANR);
 }
 
 unsigned long long
 hy_package_get_rpmdbid(HyPackage pkg)
 {
-    Solvable *s = get_solvable(pkg);
-    int idx = solvable_lookup_num(s, RPM_RPMDBID, 0);
-    assert(idx > 0);
-    return idx;
+    unsigned long long ret = lookup_num(pkg, RPM_RPMDBID);
+    assert(ret > 0);
+    return ret;
 }
 
 unsigned long long
 hy_package_get_size(HyPackage pkg)
 {
-    Solvable *s = get_solvable(pkg);
-    repo_internalize_trigger(s->repo);
-    return solvable_lookup_num(s, SOLVABLE_DOWNLOADSIZE, 0);
+    return lookup_num(pkg, SOLVABLE_DOWNLOADSIZE);
 }
 
 HyPackageDelta

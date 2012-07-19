@@ -35,6 +35,17 @@ START_TEST(test_checksums)
 }
 END_TEST
 
+START_TEST(test_lookup_num)
+{
+    HyPackage pkg = by_name(test_globals.sack, "tour");
+    unsigned long long buildtime = hy_package_get_buildtime(pkg);
+    fail_unless(buildtime > 1330473600); // after 2012-02-29
+    fail_unless(buildtime < 1456704000); // before 2016-02-29
+
+    hy_package_free(pkg);
+}
+END_TEST
+
 START_TEST(test_presto)
 {
     HySack sack = test_globals.sack;
@@ -65,6 +76,7 @@ package_suite(void)
     tc = tcase_create("WithRealRepo");
     tcase_add_unchecked_fixture(tc, setup_yum, teardown);
     tcase_add_test(tc, test_checksums);
+    tcase_add_test(tc, test_lookup_num);
     tcase_add_test(tc, test_presto);
     suite_add_tcase(s, tc);
 
