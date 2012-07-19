@@ -117,11 +117,11 @@ long package_hash(_PackageObject *self)
 /* getsetters */
 
 static PyObject *
-get_int(_PackageObject *self, void *closure)
+get_num(_PackageObject *self, void *closure)
 {
-    int (*func)(HyPackage);
-    func = (int (*)(HyPackage))closure;
-    return PyInt_FromLong(func(self->package));
+    unsigned long long (*func)(HyPackage);
+    func = (unsigned long long (*)(HyPackage))closure;
+    return PyLong_FromUnsignedLongLong(func(self->package));
 }
 
 static PyObject *
@@ -180,9 +180,9 @@ static PyGetSetDef package_getsetters[] = {
     {"evr",  (getter)get_str, NULL, NULL, (void *)hy_package_get_evr},
     {"reponame",  (getter)get_str, NULL, NULL, (void *)hy_package_get_reponame},
     {"summary",  (getter)get_str, NULL, NULL, (void *)hy_package_get_summary},
-    {"medianr", (getter)get_int, NULL, NULL, (void *)hy_package_get_medianr},
-    {"rpmdbid", (getter)get_int, NULL, NULL, (void *)hy_package_get_rpmdbid},
-    {"size", (getter)get_int, NULL, NULL, (void *)hy_package_get_size},
+    {"medianr", (getter)get_num, NULL, NULL, (void *)hy_package_get_medianr},
+    {"rpmdbid", (getter)get_num, NULL, NULL, (void *)hy_package_get_rpmdbid},
+    {"size", (getter)get_num, NULL, NULL, (void *)hy_package_get_size},
     {NULL}			/* sentinel */
 };
 

@@ -219,7 +219,7 @@ static void update(HySack sack, HyPackage pkg)
 
 	printf("upgrading: %s using %s\n", nvra, location);
 	printf("\tfrom: %s\n", nvra_installed);
-	printf("\tsize: %d kB\n", hy_package_get_size(pkg) / 1024);
+	printf("\tsize: %lld kB\n", hy_package_get_size(pkg) / 1024);
 
 	hy_free(nvra_installed);
 	hy_package_free(installed);
@@ -236,7 +236,7 @@ static void update(HySack sack, HyPackage pkg)
 	char *location = hy_package_get_location(pkg);
 
 	printf("installing: %s using %s\n", nvra, location);
-	printf("\tsize: %d kB\n", hy_package_get_size(pkg) / 1024);
+	printf("\tsize: %lld kB\n", hy_package_get_size(pkg) / 1024);
 
 	hy_free(location);
 	hy_free(nvra);

@@ -155,7 +155,7 @@ hy_package_get_summary(HyPackage pkg)
     return solvable_lookup_str(s, SOLVABLE_SUMMARY);
 }
 
-int
+unsigned long long
 hy_package_get_medianr(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
@@ -163,7 +163,7 @@ hy_package_get_medianr(HyPackage pkg)
     return solvable_lookup_num(s, SOLVABLE_MEDIANR, 0);
 }
 
-int
+unsigned long long
 hy_package_get_rpmdbid(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
@@ -172,7 +172,7 @@ hy_package_get_rpmdbid(HyPackage pkg)
     return idx;
 }
 
-int
+unsigned long long
 hy_package_get_size(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);

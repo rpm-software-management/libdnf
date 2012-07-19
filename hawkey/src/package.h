@@ -30,9 +30,9 @@ const char *hy_package_get_evr(HyPackage pkg);
 const unsigned char *hy_package_get_hdr_chksum(HyPackage pkg, int *type);
 const char *hy_package_get_reponame(HyPackage pkg);
 const char *hy_package_get_summary(HyPackage pkg);
-int hy_package_get_medianr(HyPackage pkg);
-int hy_package_get_rpmdbid(HyPackage pkg);
-int hy_package_get_size(HyPackage pkg);
+unsigned long long hy_package_get_medianr(HyPackage pkg);
+unsigned long long hy_package_get_rpmdbid(HyPackage pkg);
+unsigned long long hy_package_get_size(HyPackage pkg);
 
 HyPackageDelta hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr);
 const char *hy_packagedelta_get_location(HyPackageDelta delta);
