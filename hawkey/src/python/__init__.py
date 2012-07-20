@@ -100,7 +100,10 @@ class Query(_hawkey.Query):
                 raise ValueError("unrecognized flag: %s" % flag)
             filter_flags |= flag
         for (k, match) in dct.items():
-            match = _encode(match)
+            if type(match) is list:
+                match = map(_encode, match)
+            else:
+                match = _encode(match)
             split = k.split("__", 1)
             if len(split) == 1:
                 args.append((QUERY_KEYNAME_MAP[split[0]],
