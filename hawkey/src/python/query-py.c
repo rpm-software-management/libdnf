@@ -120,7 +120,7 @@ filter(_QueryObject *self, PyObject *args)
 	for (int i = 0; i < count; ++i) {
 	    PyObject *item = PyList_GetItem(match, i);
 	    if (!PyString_Check(item)) {
-		PyErr_SetString(PyExc_TypeError, "Invalid match value.");
+		PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
 		return NULL;
 	    }
 	    matches[i] = PyString_AsString(item);
@@ -128,7 +128,7 @@ filter(_QueryObject *self, PyObject *args)
 	hy_query_filter_in(self->query, keyname, filtertype, matches);
 	Py_RETURN_NONE;
     }
-    PyErr_SetString(PyExc_TypeError, "Invalid filter's match value.");
+    PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
     return NULL;
 }
 

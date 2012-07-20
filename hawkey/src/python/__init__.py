@@ -46,6 +46,20 @@ chksum_name = _hawkey.chksum_name
 REASON_DEP = _hawkey.REASON_DEP
 REASON_USER = _hawkey.REASON_USER
 
+def _encode(obj):
+    """ Identity, except when obj is unicode then return a UTF-8 string.
+
+        This assumes UTF-8 is good enough for libsolv and always will be. Else
+        we'll have to deal with some encoding configuration.
+
+        Since we use this to match string queries, we have to enforce 'strict'
+        and potentially face exceptions rather than bizarre results. (Except
+        that as long as we stick to UTF-8 it never fails.)
+    """
+    if type(obj) is unicode:
+        return obj.encode('utf8', 'strict')
+    return obj
+
 class Goal(_hawkey.Goal):
     @property
     def problems(self):
@@ -86,6 +100,7 @@ class Query(_hawkey.Query):
                 raise ValueError("unrecognized flag: %s" % flag)
             filter_flags |= flag
         for (k, match) in dct.items():
+            match = _encode(match)
             split = k.split("__", 1)
             if len(split) == 1:
                 args.append((QUERY_KEYNAME_MAP[split[0]],

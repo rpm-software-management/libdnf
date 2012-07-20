@@ -15,6 +15,11 @@ class Query(base.TestCase):
         q.filter(name__eq="flying")
         self.assertEqual(q.count(), 1)
 
+    def test_unicode(self):
+        q = hawkey.Query(self.sack)
+        q.filter(name__eq=u"flying")
+        self.assertEqual(q.count(), 1)
+
     def test_kwargs_check(self):
         q = hawkey.Query(self.sack)
         self.assertRaises(ValueError, q.filter, name="flying", upgrades="maracas")
