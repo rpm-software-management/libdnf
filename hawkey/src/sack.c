@@ -473,7 +473,6 @@ hy_sack_load_yum_repo(HySack sack, HyRepo repo, int flags)
 {
     const int build_cache = flags & HY_BUILD_CACHE;
     int retval = load_yum_repo(sack, repo);
-    printf("after load: %d\n", repo->state_main);
     if (retval)
 	return retval;
     if (repo->state_main == _HY_LOADED_FETCH && build_cache) {

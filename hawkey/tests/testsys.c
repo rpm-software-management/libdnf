@@ -118,6 +118,17 @@ query_count_results(HyQuery query)
     return ret;
 }
 
+HyRepo
+repo_by_name(Pool *pool, const char *name)
+{
+    Repo *repo;
+    int rid;
+    FOR_REPOS(rid, repo)
+	if (!strcmp(repo->name, name))
+	    return repo->appdata;
+    return NULL;
+}
+
 void
 setup_empty_sack(void)
 {
@@ -167,13 +178,13 @@ void setup_all(void)
     fail_if(load_repo(pool, "main", path, 0));
 }
 
-void setup_yum_sack(HySack sack)
+void setup_yum_sack(HySack sack, const char *yum_repo_name)
 {
     Pool *pool = sack_pool(sack);
     const char *repo_path = pool_tmpjoin(pool, test_globals.repo_dir,
 					 YUM_DIR_SUFFIX, NULL);
     fail_if(access(repo_path, X_OK));
-    HyRepo repo = glob_for_repofiles(pool, "tfilenames", repo_path);
+    HyRepo repo = glob_for_repofiles(pool, yum_repo_name, repo_path);
 
     fail_if(hy_sack_load_yum_repo(sack, repo,
 				  HY_BUILD_CACHE |
@@ -188,7 +199,7 @@ void setup_yum(void)
 {
     setup_empty_sack();
     HySack sack = test_globals.sack;
-    setup_yum_sack(sack);
+    setup_yum_sack(sack, YUM_REPO_NAME);
 }
 
 void

@@ -59,6 +59,27 @@ START_TEST(test_load_yum_repo_err)
 }
 END_TEST
 
+START_TEST(test_yum_repo_written)
+{
+    HySack sack = hy_sack_create(test_globals.tmpdir, NULL);
+    Pool *pool = sack_pool(sack);
+    char *filename = hy_sack_give_cache_fn(sack, "test_sack_written", NULL);
+
+    fail_unless(access(filename, R_OK|W_OK));
+    setup_yum_sack(sack, "test_sack_written");
+
+    HyRepo repo = repo_by_name(pool, "test_sack_written");
+    fail_if(repo == NULL);
+    fail_unless(repo->state_main == _HY_WRITTEN);
+    fail_unless(repo->state_filelists == _HY_WRITTEN);
+    fail_unless(repo->state_presto == _HY_WRITTEN);
+    fail_if(access(filename, R_OK|W_OK));
+
+    hy_free(filename);
+    hy_sack_free(sack);
+}
+END_TEST
+
 START_TEST(test_repo_load)
 {
     fail_unless(test_globals.sack->pool->nsolvables ==
@@ -66,10 +87,9 @@ START_TEST(test_repo_load)
 }
 END_TEST
 
-START_TEST(test_yum_repo)
+static void
+check_filelist(Pool *pool)
 {
-    Pool *pool = sack_pool(test_globals.sack);
-
     Dataiterator di;
     int count;
     Id last_found_solvable = 0;
@@ -87,6 +107,37 @@ START_TEST(test_yum_repo)
 	fail_if(strncmp(di.kv.str, "/usr/bin/", strlen("/usr/bin/")));
     fail_unless(count == 3);
     dataiterator_free(&di);
+
+    dataiterator_init(&di, pool, 0, 0, SOLVABLE_FILELIST,
+		      "/usr/lib/python2.7/site-packages/tour/today.pyc",
+		      SEARCH_STRING | SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
+    for (count = 0; dataiterator_step(&di); ++count) ;
+    fail_unless(count == 1);
+}
+
+START_TEST(test_filelist)
+{
+    HySack sack = test_globals.sack;
+    HyRepo repo = repo_by_name(sack_pool(sack), YUM_REPO_NAME);
+    char *fn_solv = hy_sack_give_cache_fn(sack, YUM_REPO_NAME, HY_EXT_FILENAMES);
+
+    fail_unless(repo->state_filelists == _HY_WRITTEN);
+    fail_if(access(fn_solv, R_OK));
+    hy_free(fn_solv);
+
+    check_filelist(sack_pool(test_globals.sack));
+}
+END_TEST
+
+START_TEST(test_filelist_from_cache)
+{
+    HySack sack = hy_sack_create(test_globals.tmpdir, NULL);
+    setup_yum_sack(sack, YUM_REPO_NAME);
+
+    HyRepo repo = repo_by_name(sack_pool(sack), YUM_REPO_NAME);
+    fail_unless(repo->state_filelists == _HY_LOADED_CACHE);
+    check_filelist(sack_pool(sack));
+    hy_sack_free(sack);
 }
 END_TEST
 
@@ -114,8 +165,25 @@ check_prestoinfo(Pool *pool)
 START_TEST(test_presto)
 {
     HySack sack = test_globals.sack;
+    HyRepo repo = repo_by_name(sack_pool(sack), YUM_REPO_NAME);
+    char *fn_solv = hy_sack_give_cache_fn(sack, YUM_REPO_NAME, HY_EXT_PRESTO);
 
+    fail_if(access(fn_solv, R_OK));
+    fail_unless(repo->state_presto == _HY_WRITTEN);
+    hy_free(fn_solv);
     check_prestoinfo(sack_pool(sack));
+}
+END_TEST
+
+START_TEST(test_presto_from_cache)
+{
+    HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH);
+    setup_yum_sack(sack, YUM_REPO_NAME);
+
+    HyRepo repo = repo_by_name(sack_pool(sack), YUM_REPO_NAME);
+    fail_unless(repo->state_presto == _HY_LOADED_CACHE);
+    check_prestoinfo(sack_pool(sack));
+    hy_sack_free(sack);
 }
 END_TEST
 
@@ -128,6 +196,7 @@ sack_suite(void)
     tcase_add_test(tc, test_sack_create);
     tcase_add_test(tc, test_give_cache_fn);
     tcase_add_test(tc, test_load_yum_repo_err);
+    tcase_add_test(tc, test_yum_repo_written);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Repos");
@@ -137,8 +206,10 @@ sack_suite(void)
 
     tc = tcase_create("YumRepo");
     tcase_add_unchecked_fixture(tc, setup_yum, teardown);
-    tcase_add_test(tc, test_yum_repo);
+    tcase_add_test(tc, test_filelist);
+    tcase_add_test(tc, test_filelist_from_cache);
     tcase_add_test(tc, test_presto);
+    tcase_add_test(tc, test_presto_from_cache);
     suite_add_tcase(s, tc);
 
     return s;

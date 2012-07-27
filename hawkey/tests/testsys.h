@@ -13,6 +13,7 @@ struct TestGlobals_s {
 
 #define UNITTEST_DIR "/tmp/hawkeyXXXXXX"
 #define YUM_DIR_SUFFIX "yum/repodata/"
+#define YUM_REPO_NAME "nevermac"
 #define TEST_FIXED_ARCH "x86_64"
 #define TEST_META_SOLVABLES_COUNT 2
 #define TEST_EXPECT_SYSTEM_PKGS 7
@@ -31,6 +32,7 @@ HyRepo glob_for_repofiles(Pool *pool, const char *repo_name, const char *path);
 int load_repo(Pool *pool, const char *name, const char *path, int installed);
 int logfile_size(HySack sack);
 int query_count_results(HyQuery query);
+HyRepo repo_by_name(Pool *pool, const char *name);
 
 /* fixtures */
 void setup_empty_sack(void);
@@ -38,7 +40,7 @@ void setup(void);
 void setup_with_main(void);
 void setup_with_updates(void);
 void setup_all(void);
-void setup_yum_sack(HySack sack);
+void setup_yum_sack(HySack sack, const char *yum_repo_name);
 void setup_yum(void);
 void teardown(void);
 
