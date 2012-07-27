@@ -264,8 +264,6 @@ load_yum_repo(HySack sack, HyRepo hrepo)
     const char *fn_repomd = hy_repo_get_string(hrepo, HY_REPO_MD_FN);
     char *fn_cache = hy_sack_give_cache_fn(sack, name, NULL);
 
-    unsigned int now = solv_timems(0);
-
     FILE *fp_cache = fopen(fn_cache, "r");
     FILE *fp_repomd = fopen(fn_repomd, "r");
     if (fp_repomd == NULL) {
@@ -309,7 +307,6 @@ load_yum_repo(HySack sack, HyRepo hrepo)
 	sack->provides_ready = 0;
     } else
 	repo_free(repo, 1);
-    HY_LOG_INFO("load_yum_repo took %d ms", solv_timems(now));
     return retval;
 }
 
@@ -440,8 +437,6 @@ hy_sack_load_rpm_repo(HySack sack)
     enum _hy_repo_state new_state;
     int ret;
 
-    unsigned int now = solv_timems(0);
-
     solv_free(cache_fn);
     hy_repo_set_string(hrepo, HY_REPO_NAME, HY_SYSTEM_REPO_NAME);
 
@@ -465,7 +460,6 @@ hy_sack_load_rpm_repo(HySack sack)
     pool_set_installed(pool, repo);
     repo->appdata = hrepo;
     sack->provides_ready = 0;
-    HY_LOG_INFO("hy_sack_load_rpm_repo took %d ms", solv_timems(now));
 }
 
 int
@@ -503,12 +497,10 @@ hy_sack_load_yum_repo(HySack sack, HyRepo repo, int flags)
 int
 hy_sack_load_filelists(HySack sack, HyRepo do_repo)
 {
-    unsigned int now = solv_timems(0);
     int ret = load_ext(sack, do_repo, _HY_REPODATA_FILENAMES,
 		    _HY_FL_LOADED_FETCH, _HY_FL_LOADED_CACHE,
 		    HY_EXT_FILENAMES, HY_REPO_FILELISTS_FN,
 		    load_filelists_cb);
-    HY_LOG_INFO("hy_sack_load_filelists took %d ms", solv_timems(now));
     return ret;
 }
 
@@ -544,8 +536,6 @@ hy_sack_write_all_repos(HySack sack, HyRepo do_repo)
 	HyRepo hrepo = repo->appdata;
 	if (hrepo != do_repo)
 	    continue;
-	unsigned int now = solv_timems(0);
-
 	if (!strcmp(name, HY_CMDLINE_REPO_NAME))
 	    continue;
 	assert(hrepo);
@@ -568,7 +558,6 @@ hy_sack_write_all_repos(HySack sack, HyRepo do_repo)
 	checksum_write(hrepo->checksum, fp);
 	fclose(fp);
 	hrepo->state_main = _HY_WRITTEN;
-	HY_LOG_INFO("hy_sack_write_all_repos part: %d ms", solv_timems(now));
     }
     return ret;
 }
@@ -576,10 +565,8 @@ hy_sack_write_all_repos(HySack sack, HyRepo do_repo)
 int
 hy_sack_write_filelists(HySack sack, HyRepo do_repo)
 {
-    unsigned int now = solv_timems(0);
     int ret = write_ext(sack, do_repo, _HY_REPODATA_FILENAMES,
 		     _HY_FL_WRITTEN, HY_EXT_FILENAMES);
-    HY_LOG_INFO("hy_sack_write_filelists took %d ms", solv_timems(now));
     return ret;
 }
 
