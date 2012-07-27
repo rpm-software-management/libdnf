@@ -18,7 +18,7 @@
 
 #define CFG_FILE "~/.hawkey/main.config"
 
-const char *installonly[] = {
+static const char *installonly[] = {
     "kernel",
     "kernel-bigmem",
     "kernel-enterprise",
@@ -30,7 +30,8 @@ const char *installonly[] = {
     "kernel-devel",
     "kernel-PAE",
     "kernel-PAE-debug",
-    NULL};
+    NULL
+};
 
 static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
 {
@@ -300,7 +301,7 @@ rtrim(char *str) {
 	str[len - 1 ] = '\0';
 }
 
-int
+static int
 read_repopaths(char **md_repo, char **md_primary_xml, char **md_filelists,
 	       char **md_repo_updates, char **md_primary_updates_xml,
 	       char **md_filelists_updates)
@@ -350,6 +351,12 @@ read_repopaths(char **md_repo, char **md_primary_xml, char **md_filelists,
     return 0;
 }
 
+static int
+need_filelists(int argc, const char **argv)
+{
+    return argc == 3 && !strcmp(argv[1], "-f");
+}
+
 int main(int argc, const char **argv)
 {
     HySack sack = hy_sack_create(NULL, NULL);
@@ -377,14 +384,18 @@ int main(int argc, const char **argv)
     }
     /* rpmdb */
     hy_sack_load_rpm_repo(sack);
+
+    int load_flags = HY_BUILD_CACHE;
+    if (need_filelists(argc, argv))
+	load_flags |= HY_LOAD_FILELISTS;
     /* Fedora repo */
     repo = config_repo("Fedora", md_repo, md_primary_xml, md_filelists);
-    hy_sack_load_yum_repo(sack, repo);
+    hy_sack_load_yum_repo(sack, repo, load_flags);
     hy_repo_free(repo);
     /* Fedora updates repo */
     repo = config_repo("updates", md_repo_updates, md_primary_updates_xml,
 		       md_filelists_updates);
-    hy_sack_load_yum_repo(sack, repo);
+    hy_sack_load_yum_repo(sack, repo, load_flags);
     hy_repo_free(repo);
     free(md_repo);
     free(md_primary_xml);
@@ -392,7 +403,7 @@ int main(int argc, const char **argv)
     free(md_repo_updates);
     free(md_primary_updates_xml);
     free(md_filelists_updates);
-    hy_sack_write_all_repos(sack);
+
     hy_sack_set_installonly(sack, installonly);
 
     if (argc == 2 && !strcmp(argv[1], "-o")) {
@@ -400,9 +411,7 @@ int main(int argc, const char **argv)
     } else if (argc == 2) {
 	search_and_print(sack, argv[1]);
     } else if (argc == 3 && !strcmp(argv[1], "-f")) {
-	hy_sack_load_filelists(sack);
 	search_filter_files(sack, argv[2]);
-	hy_sack_write_filelists(sack);
     } else if (argc == 3 && !strcmp(argv[1], "-r")) {
 	search_filter_repos(sack, argv[2]);
     } else if (argc == 3 && !strcmp(argv[1], "-u")) {

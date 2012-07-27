@@ -51,7 +51,6 @@ START_TEST(test_presto)
     HySack sack = test_globals.sack;
     HyPackage tour = by_name(sack, "tour");
     fail_if(tour == NULL);
-    fail_if(hy_sack_load_presto(sack));
 
     HyPackageDelta delta = hy_package_get_delta_from_evr(tour, "4-5");
     const char *location = hy_packagedelta_get_location(delta);

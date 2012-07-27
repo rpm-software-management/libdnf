@@ -19,7 +19,7 @@ class Sanity(base.TestCase):
     def test_load_yum(self):
         sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         sack.load_rpm_repo()
-        sack.load_yum_repo()
+        sack.load_yum_repo(build_cache=True)
         self.assertEqual(sack.nsolvables, hawkey.test.EXPECT_YUM_NSOLVABLES +
                          hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
 

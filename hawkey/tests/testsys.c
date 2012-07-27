@@ -175,7 +175,10 @@ void setup_yum_sack(HySack sack)
     fail_if(access(repo_path, X_OK));
     HyRepo repo = glob_for_repofiles(pool, "tfilenames", repo_path);
 
-    hy_sack_load_yum_repo(sack, repo);
+    fail_if(hy_sack_load_yum_repo(sack, repo,
+				  HY_BUILD_CACHE |
+				  HY_LOAD_FILELISTS |
+				  HY_LOAD_PRESTO));
     fail_unless(pool->nsolvables ==
 		TEST_META_SOLVABLES_COUNT + TEST_EXPECT_YUM_NSOLVABLES);
     hy_repo_free(repo);
@@ -186,9 +189,6 @@ void setup_yum(void)
     setup_empty_sack();
     HySack sack = test_globals.sack;
     setup_yum_sack(sack);
-
-    fail_if(hy_sack_write_all_repos(sack)); // the next setup_yum() will use the cache
-    fail_if(hy_sack_load_filelists(sack));
 }
 
 void

@@ -24,10 +24,10 @@ class TestSackMixin(object):
         path = os.path.join(self.repo_dir, "system.repo")
         _hawkey_test.load_repo(self, hawkey.SYSTEM_REPO_NAME, path, True)
 
-    def load_yum_repo(self):
+    def load_yum_repo(self, **args):
         d = os.path.join(self.repo_dir, YUM_DIR_SUFFIX)
         repo = _hawkey_test.glob_for_repofiles(self, "messerk", d)
-        super(TestSackMixin, self).load_yum_repo(repo)
+        super(TestSackMixin, self).load_yum_repo(repo, **args)
 
 class TestSack(TestSackMixin, hawkey.Sack):
     def __init__(self, repo_dir, PackageClass=None, package_userdata=None):

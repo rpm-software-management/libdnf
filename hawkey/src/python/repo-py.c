@@ -30,6 +30,16 @@ PyObject *repoToPyObject(HyRepo repo)
     return (PyObject *)self;
 }
 
+int
+repo_converter(PyObject *o, HyRepo *repo_ptr)
+{
+    HyRepo repo = repoFromPyObject(o);
+    if (repo == NULL)
+	return 0;
+    *repo_ptr = repo;
+    return 1;
+}
+
 /* functions on the type */
 
 static PyObject *

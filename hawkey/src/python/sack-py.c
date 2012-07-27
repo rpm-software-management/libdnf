@@ -201,12 +201,25 @@ load_rpm_repo(_SackObject *self, PyObject *unused)
 }
 
 static PyObject *
-load_yum_repo(_SackObject *self, PyObject *repo)
+load_yum_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 {
-    HyRepo crepo = repoFromPyObject(repo);
-    if (crepo == NULL)
-	return NULL;
-    switch (hy_sack_load_yum_repo(self->sack, crepo)) {
+    char *kwlist[] = {"repo", "build_cache", "load_filelists", "load_presto",
+		      NULL};
+
+    HyRepo crepo = NULL;
+    int build_cache = 0, load_filelists = 0, load_presto = 0;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|iii", kwlist,
+				     repo_converter, &crepo,
+				     &build_cache, &load_filelists, &load_presto))
+	return 0;
+    int flags = 0;
+    if (build_cache)
+	flags |= HY_BUILD_CACHE;
+    if (load_filelists)
+	flags |= HY_LOAD_FILELISTS;
+    if (load_presto)
+	flags |= HY_LOAD_PRESTO;
+    switch (hy_sack_load_yum_repo(self->sack, crepo, flags)) {
     case 0:
 	Py_RETURN_NONE;
     case 1:
@@ -218,36 +231,6 @@ load_yum_repo(_SackObject *self, PyObject *repo)
     }
 }
 
-static PyObject *
-load_filelists(_SackObject *self, PyObject *unused)
-{
-    return PyInt_FromLong(hy_sack_load_filelists(self->sack));
-}
-
-static PyObject *
-load_presto(_SackObject *self, PyObject *unused)
-{
-    return PyInt_FromLong(hy_sack_load_presto(self->sack));
-}
-
-static PyObject *
-write_all_repos(_SackObject *self, PyObject *unused)
-{
-    return PyInt_FromLong(hy_sack_write_all_repos(self->sack));
-}
-
-static PyObject *
-write_filelists(_SackObject *self, PyObject *unused)
-{
-    return PyInt_FromLong(hy_sack_write_filelists(self->sack));
-}
-
-static PyObject *
-write_presto(_SackObject *self, PyObject *unused)
-{
-    return PyInt_FromLong(hy_sack_write_presto(self->sack));
-}
-
 static struct PyMethodDef sack_methods[] = {
     {"create_cmdline_repo", (PyCFunction)create_cmdline_repo, METH_NOARGS,
      NULL},
@@ -257,17 +240,7 @@ static struct PyMethodDef sack_methods[] = {
      NULL},
     {"load_rpm_repo", (PyCFunction)load_rpm_repo, METH_NOARGS,
      NULL},
-    {"load_yum_repo", (PyCFunction)load_yum_repo, METH_O,
-     NULL},
-    {"load_filelists", (PyCFunction)load_filelists, METH_NOARGS,
-     NULL},
-    {"load_presto", (PyCFunction)load_presto, METH_NOARGS,
-     NULL},
-    {"write_all_repos", (PyCFunction)write_all_repos, METH_NOARGS,
-     NULL},
-    {"write_filelists", (PyCFunction)write_filelists, METH_NOARGS,
-     NULL},
-    {"write_presto", (PyCFunction)write_presto, METH_NOARGS,
+    {"load_yum_repo", (PyCFunction)load_yum_repo, METH_VARARGS | METH_KEYWORDS,
      NULL},
     {NULL}                      /* sentinel */
 };
