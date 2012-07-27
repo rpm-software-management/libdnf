@@ -51,6 +51,24 @@ hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state)
     }
 }
 
+void
+repo_update_state(HyRepo repo, enum _hy_repo_repodata which,
+		  enum _hy_repo_state state)
+{
+    assert(state <= _HY_WRITTEN);
+    switch (which) {
+    case _HY_REPODATA_FILENAMES:
+	repo->state_filelists = state;
+	return;
+    case _HY_REPODATA_PRESTO:
+	repo->state_presto = state;
+	return;
+    default:
+	assert(0);
+    }
+    return;
+}
+
 Id
 repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which)
 {
@@ -89,6 +107,7 @@ hy_repo_create(void)
     HyRepo repo = solv_calloc(1, sizeof(*repo));
     repo->nrefs = 1;
     repo->state = _HY_NEW;
+    repo->state_main = repo->state_filelists = repo->state_presto = _HY_NEW;
     return repo;
 }
 
