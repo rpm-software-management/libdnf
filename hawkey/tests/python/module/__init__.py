@@ -1,5 +1,6 @@
 import os
 import os.path
+import tempfile
 
 import hawkey
 import _hawkey_test
@@ -11,6 +12,12 @@ EXPECT_YUM_NSOLVABLES = _hawkey_test.EXPECT_YUM_NSOLVABLES
 FIXED_ARCH = _hawkey_test.FIXED_ARCH
 UNITTEST_DIR = _hawkey_test.UNITTEST_DIR
 YUM_DIR_SUFFIX = _hawkey_test.YUM_DIR_SUFFIX
+
+cachedir = None
+# inititialize the dir once and share it for all sacks within a single run
+if cachedir is None:
+    cachedir = tempfile.mkdtemp(dir=os.path.dirname(UNITTEST_DIR),
+                                prefix='pyhawkey')
 
 class TestSackMixin(object):
     def __init__(self, repo_dir):
@@ -33,7 +40,7 @@ class TestSack(TestSackMixin, hawkey.Sack):
     def __init__(self, repo_dir, PackageClass=None, package_userdata=None):
         TestSackMixin.__init__(self, repo_dir)
         hawkey.Sack.__init__(self,
-                             cachedir=UNITTEST_DIR,
+                             cachedir=cachedir,
                              arch=FIXED_ARCH,
                              pkgcls=PackageClass,
                              pkginitval=package_userdata)
