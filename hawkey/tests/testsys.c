@@ -161,31 +161,37 @@ repo_by_name(Pool *pool, const char *name)
 }
 
 void
-setup(void)
+fixture_system_only(void)
 {
     HySack sack = create_ut_sack();
     fail_if(setup_with(sack, HY_SYSTEM_REPO_NAME, NULL));
 }
 
 void
-setup_with_main(void)
+fixture_with_main(void)
 {
     HySack sack = create_ut_sack();
     fail_if(setup_with(sack, HY_SYSTEM_REPO_NAME, "main", NULL));
 }
 
 void
-setup_with_updates(void)
+fixture_with_updates(void)
 {
     HySack sack = create_ut_sack();
     fail_if(setup_with(sack, HY_SYSTEM_REPO_NAME, "updates", NULL));
 }
 
 void
-setup_all(void)
+fixture_all(void)
 {
     HySack sack = create_ut_sack();
     fail_if(setup_with(sack, HY_SYSTEM_REPO_NAME, "main", "updates", NULL));
+}
+
+void fixture_yum(void)
+{
+    HySack sack = create_ut_sack();
+    setup_yum_sack(sack, YUM_REPO_NAME);
 }
 
 void setup_yum_sack(HySack sack, const char *yum_repo_name)
@@ -203,12 +209,6 @@ void setup_yum_sack(HySack sack, const char *yum_repo_name)
     fail_unless(pool->nsolvables ==
 		TEST_META_SOLVABLES_COUNT + TEST_EXPECT_YUM_NSOLVABLES);
     hy_repo_free(repo);
-}
-
-void setup_yum(void)
-{
-    HySack sack = create_ut_sack();
-    setup_yum_sack(sack, YUM_REPO_NAME);
 }
 
 void

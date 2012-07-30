@@ -35,12 +35,12 @@ int query_count_results(HyQuery query);
 HyRepo repo_by_name(Pool *pool, const char *name);
 
 /* fixtures */
-void setup(void);
-void setup_with_main(void);
-void setup_with_updates(void);
-void setup_all(void);
+void fixture_system_only(void);
+void fixture_with_main(void);
+void fixture_with_updates(void);
+void fixture_all(void);
+void fixture_yum(void);
 void setup_yum_sack(HySack sack, const char *yum_repo_name);
-void setup_yum(void);
 void teardown(void);
 
 #endif /* TESTSYS_H */

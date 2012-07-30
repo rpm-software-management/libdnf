@@ -200,12 +200,12 @@ sack_suite(void)
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Repos");
-    tcase_add_unchecked_fixture(tc, setup, teardown);
+    tcase_add_unchecked_fixture(tc, fixture_system_only, teardown);
     tcase_add_test(tc, test_repo_load);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("YumRepo");
-    tcase_add_unchecked_fixture(tc, setup_yum, teardown);
+    tcase_add_unchecked_fixture(tc, fixture_yum, teardown);
     tcase_add_test(tc, test_filelist);
     tcase_add_test(tc, test_filelist_from_cache);
     tcase_add_test(tc, test_presto);

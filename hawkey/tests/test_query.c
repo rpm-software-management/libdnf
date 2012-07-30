@@ -299,7 +299,7 @@ query_suite(void)
     TCase *tc;
 
     tc = tcase_create("Core");
-    tcase_add_unchecked_fixture(tc, setup, teardown);
+    tcase_add_unchecked_fixture(tc, fixture_system_only, teardown);
     tcase_add_test(tc, test_query_sanity);
     tcase_add_test(tc, test_query_clear);
     tcase_add_test(tc, test_query_repo);
@@ -314,27 +314,27 @@ query_suite(void)
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Updates");
-    tcase_add_unchecked_fixture(tc, setup_with_updates, teardown);
+    tcase_add_unchecked_fixture(tc, fixture_with_updates, teardown);
     tcase_add_test(tc, test_upgrades_sanity);
     tcase_add_test(tc, test_upgrades);
     tcase_add_test(tc, test_filter_latest);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("OnlyMain");
-    tcase_add_unchecked_fixture(tc, setup_with_main, teardown);
+    tcase_add_unchecked_fixture(tc, fixture_with_main, teardown);
     tcase_add_test(tc, test_upgrade_already_installed);
     tcase_add_test(tc, test_downgrade);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Full");
-    tcase_add_unchecked_fixture(tc, setup_all, teardown);
+    tcase_add_unchecked_fixture(tc, fixture_all, teardown);
     tcase_add_test(tc, test_filter_latest2);
     tcase_add_test(tc, test_filter_latest_archs);
     tcase_add_test(tc, test_filter_reponames);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Filelists");
-    tcase_add_unchecked_fixture(tc, setup_yum, teardown);
+    tcase_add_unchecked_fixture(tc, fixture_yum, teardown);
     tcase_add_test(tc, test_filter_files);
     suite_add_tcase(s, tc);
 

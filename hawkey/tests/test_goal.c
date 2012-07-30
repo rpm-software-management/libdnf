@@ -372,7 +372,7 @@ goal_suite(void)
     TCase *tc;
 
     tc = tcase_create("Core");
-    tcase_add_unchecked_fixture(tc, setup_all, teardown);
+    tcase_add_unchecked_fixture(tc, fixture_all, teardown);
     tcase_add_test(tc, test_goal_sanity);
     tcase_add_test(tc, test_goal_update_impossible);
     tcase_add_test(tc, test_goal_install);

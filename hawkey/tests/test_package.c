@@ -67,13 +67,13 @@ package_suite(void)
     TCase *tc;
 
     tc = tcase_create("Core");
-    tcase_add_unchecked_fixture(tc, setup, teardown);
+    tcase_add_unchecked_fixture(tc, fixture_system_only, teardown);
     tcase_add_test(tc, test_refcounting);
     tcase_add_test(tc, test_package_summary);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("WithRealRepo");
-    tcase_add_unchecked_fixture(tc, setup_yum, teardown);
+    tcase_add_unchecked_fixture(tc, fixture_yum, teardown);
     tcase_add_test(tc, test_checksums);
     tcase_add_test(tc, test_lookup_num);
     tcase_add_test(tc, test_presto);
