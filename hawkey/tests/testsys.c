@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <dirent.h>
 #include <errno.h>
+#include <stdarg.h>
 #include <unistd.h>
 #include <wordexp.h>
 #include <sys/stat.h>
@@ -21,6 +22,36 @@
 
 /* define the global variable */
 struct TestGlobals_s test_globals;
+
+static HySack
+create_ut_sack(void)
+{
+    HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH);
+    test_globals.sack = sack;
+    HY_LOG_INFO("HySack for UT created: %p", sack);
+    return sack;
+}
+
+static int
+setup_with(HySack sack, ...)
+{
+    Pool *pool = sack_pool(sack);
+    va_list names;
+    int ret = 0;
+
+    va_start(names, sack);
+    const char *name = va_arg(names, const char *);
+    while (name) {
+	const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
+					name, ".repo");
+	int installed = !strcmp(name, HY_SYSTEM_REPO_NAME);
+
+	ret |= load_repo(pool, name, path, installed);
+	name = va_arg(names, const char *);
+    }
+    va_end(names);
+    return ret;
+}
 
 HyPackage
 by_name(HySack sack, const char *name)
@@ -130,52 +161,31 @@ repo_by_name(Pool *pool, const char *name)
 }
 
 void
-setup_empty_sack(void)
-{
-    HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH);
-    test_globals.sack = sack;
-    HY_LOG_INFO("HySack for UT created: %p", sack);
-}
-
-void
 setup(void)
 {
-    setup_empty_sack();
-    Pool *pool = sack_pool(test_globals.sack);
-    const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
-				    "system.repo", 0);
-
-    fail_if(load_repo(pool, HY_SYSTEM_REPO_NAME, path, 1));
+    HySack sack = create_ut_sack();
+    fail_if(setup_with(sack, HY_SYSTEM_REPO_NAME, NULL));
 }
 
 void
 setup_with_main(void)
 {
-    setup();
-    Pool *pool = sack_pool(test_globals.sack);
-    const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
-				    "main.repo", 0);
-    fail_if(load_repo(pool, "main", path, 0));
+    HySack sack = create_ut_sack();
+    fail_if(setup_with(sack, HY_SYSTEM_REPO_NAME, "main", NULL));
 }
 
 void
 setup_with_updates(void)
 {
-    setup();
-    Pool *pool = sack_pool(test_globals.sack);
-    const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
-				    "updates.repo", 0);
-    fail_if(load_repo(pool, "updates", path, 0));
+    HySack sack = create_ut_sack();
+    fail_if(setup_with(sack, HY_SYSTEM_REPO_NAME, "updates", NULL));
 }
 
-void setup_all(void)
+void
+setup_all(void)
 {
-    setup_with_updates();
-    Pool *pool = sack_pool(test_globals.sack);
-    const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
-				    "main.repo", 0);
-
-    fail_if(load_repo(pool, "main", path, 0));
+    HySack sack = create_ut_sack();
+    fail_if(setup_with(sack, HY_SYSTEM_REPO_NAME, "main", "updates", NULL));
 }
 
 void setup_yum_sack(HySack sack, const char *yum_repo_name)
@@ -197,8 +207,7 @@ void setup_yum_sack(HySack sack, const char *yum_repo_name)
 
 void setup_yum(void)
 {
-    setup_empty_sack();
-    HySack sack = test_globals.sack;
+    HySack sack = create_ut_sack();
     setup_yum_sack(sack, YUM_REPO_NAME);
 }
 

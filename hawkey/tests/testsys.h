@@ -35,7 +35,6 @@ int query_count_results(HyQuery query);
 HyRepo repo_by_name(Pool *pool, const char *name);
 
 /* fixtures */
-void setup_empty_sack(void);
 void setup(void);
 void setup_with_main(void);
 void setup_with_updates(void);

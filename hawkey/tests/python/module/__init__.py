@@ -28,7 +28,7 @@ class TestSackMixin(object):
         _hawkey_test.load_repo(self, name, path, False)
 
     def load_rpm_repo(self):
-        path = os.path.join(self.repo_dir, "system.repo")
+        path = os.path.join(self.repo_dir, "@System.repo")
         _hawkey_test.load_repo(self, hawkey.SYSTEM_REPO_NAME, path, True)
 
     def load_yum_repo(self, **args):
