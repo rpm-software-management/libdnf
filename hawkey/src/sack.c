@@ -33,11 +33,7 @@
 #define DEFAULT_CACHE_USER "/var/tmp/hawkey"
 
 /* todo */
-int hy_sack_load_filelists(HySack sack, HyRepo do_repo);
-int hy_sack_load_presto(HySack sack, HyRepo do_repo);
 int hy_sack_write_all_repos(HySack sack, HyRepo do_repo);
-int hy_sack_write_filelists(HySack sack, HyRepo do_repo);
-int hy_sack_write_presto(HySack sack, HyRepo do_repo);
 
 static int
 current_rpmdb_checksum(unsigned char csout[CHKSUM_BYTES])
@@ -475,42 +471,31 @@ hy_sack_load_yum_repo(HySack sack, HyRepo repo, int flags)
 	    return retval;
     }
     if (flags & HY_LOAD_FILELISTS) {
-	retval = hy_sack_load_filelists(sack, repo);
+	retval = load_ext(sack, repo, _HY_REPODATA_FILENAMES,
+			  _HY_FL_LOADED_FETCH, _HY_FL_LOADED_CACHE,
+			  HY_EXT_FILENAMES, HY_REPO_FILELISTS_FN,
+			  load_filelists_cb);
 	if (retval)
 	    return retval;
 	if (repo->state_filelists == _HY_LOADED_FETCH && build_cache) {
-	    retval = hy_sack_write_filelists(sack, repo);
+	    retval = write_ext(sack, repo, _HY_REPODATA_FILENAMES,
+			       _HY_FL_WRITTEN, HY_EXT_FILENAMES);
 	    if (retval)
 		return retval;
 	}
     }
     if (flags & HY_LOAD_PRESTO) {
-	retval = hy_sack_load_presto(sack, repo);
+	retval = load_ext(sack, repo, _HY_REPODATA_PRESTO,
+			  _HY_PST_LOADED_FETCH, _HY_PST_LOADED_CACHE,
+			  HY_EXT_PRESTO, HY_REPO_PRESTO_FN,
+			  load_presto_cb);
 	if (retval)
 	    return retval;
 	if (repo->state_presto == _HY_LOADED_FETCH && build_cache)
-	    retval = hy_sack_write_presto(sack, repo);
+	    retval = write_ext(sack, repo, _HY_REPODATA_PRESTO,
+			       _HY_PST_WRITTEN, HY_EXT_PRESTO);
     }
     return retval;
-}
-
-int
-hy_sack_load_filelists(HySack sack, HyRepo do_repo)
-{
-    int ret = load_ext(sack, do_repo, _HY_REPODATA_FILENAMES,
-		    _HY_FL_LOADED_FETCH, _HY_FL_LOADED_CACHE,
-		    HY_EXT_FILENAMES, HY_REPO_FILELISTS_FN,
-		    load_filelists_cb);
-    return ret;
-}
-
-int
-hy_sack_load_presto(HySack sack, HyRepo do_repo)
-{
-    return load_ext(sack, do_repo, _HY_REPODATA_PRESTO,
-		    _HY_PST_LOADED_FETCH, _HY_PST_LOADED_CACHE,
-		    HY_EXT_PRESTO, HY_REPO_PRESTO_FN,
-		    load_presto_cb);
 }
 
 void
@@ -560,21 +545,6 @@ hy_sack_write_all_repos(HySack sack, HyRepo do_repo)
 	hrepo->state_main = _HY_WRITTEN;
     }
     return ret;
-}
-
-int
-hy_sack_write_filelists(HySack sack, HyRepo do_repo)
-{
-    int ret = write_ext(sack, do_repo, _HY_REPODATA_FILENAMES,
-		     _HY_FL_WRITTEN, HY_EXT_FILENAMES);
-    return ret;
-}
-
-int
-hy_sack_write_presto(HySack sack, HyRepo do_repo)
-{
-    return write_ext(sack, do_repo, _HY_REPODATA_PRESTO,
-		     _HY_PST_WRITTEN, HY_EXT_PRESTO);
 }
 
 // internal
