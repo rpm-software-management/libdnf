@@ -161,6 +161,8 @@ hy_repo_free(HyRepo repo)
     if (--repo->nrefs > 0)
 	return;
 
+    if (repo->libsolv_repo && repo->libsolv_repo->appdata)
+	repo->libsolv_repo->appdata = NULL;
     solv_free(repo->name);
     solv_free(repo->repomd_fn);
     solv_free(repo->primary_fn);

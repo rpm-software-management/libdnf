@@ -36,6 +36,7 @@ struct _HyRepo {
     Id filenames_repodata;
     Id presto_repodata;
     unsigned char checksum[CHKSUM_BYTES];
+    Repo *libsolv_repo;
 };
 
 enum _hy_repo_repodata {
