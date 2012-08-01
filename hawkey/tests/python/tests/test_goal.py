@@ -5,7 +5,7 @@ import hawkey.test
 class Goal(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
-        self.sack.load_rpm_repo()
+        self.sack.load_system_repo()
         self.sack.load_test_repo("main", "main.repo")
 
     def test_upgrade(self):

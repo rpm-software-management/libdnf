@@ -31,7 +31,13 @@ char *hy_sack_give_cache_fn(HySack sack, const char *reponame, const char *ext);
 void hy_sack_set_installonly(HySack sack, const char **installonly);
 void hy_sack_create_cmdline_repo(HySack sack);
 HyPackage hy_sack_add_cmdline_rpm(HySack sack, const char *fn);
-void hy_sack_load_rpm_repo(HySack sack);
+
+/**
+ * Load RPMDB, the system package database.
+ *
+ * @returns           0 on success, 1 on fatal error, -1 on cache write error.
+ */
+int hy_sack_load_system_repo(HySack sack, HyRepo repo, int flags);
 int hy_sack_load_yum_repo(HySack sack, HyRepo repo, int flags);
 
 #ifdef __cplusplus

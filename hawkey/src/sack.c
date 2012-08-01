@@ -428,41 +428,57 @@ hy_sack_add_cmdline_rpm(HySack sack, const char *fn)
     return package_create(sack->pool, p);
 }
 
-void
-hy_sack_load_rpm_repo(HySack sack)
+int
+hy_sack_load_system_repo(HySack sack, HyRepo hrepo, int flags)
 {
     Pool *pool = sack->pool;
-    Repo *repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
     char *cache_fn = hy_sack_give_cache_fn(sack, HY_SYSTEM_REPO_NAME, NULL);
     FILE *cache_fp = fopen(cache_fn, "r");
-    HyRepo hrepo = hy_repo_create();
-    enum _hy_repo_state new_state;
-    int ret;
+    int ret = 0;
 
     solv_free(cache_fn);
     hy_repo_set_string(hrepo, HY_REPO_NAME, HY_SYSTEM_REPO_NAME);
 
     ret = current_rpmdb_checksum(hrepo->checksum);
-    assert(ret == 0); (void)ret;
+    if (ret)
+	return 1;
 
+    Repo *repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
     if (can_use_rpmdb_cache(cache_fp, hrepo->checksum)) {
 	HY_LOG_INFO("using cached rpmdb");
-	if (repo_add_solv(repo, cache_fp, 0))
-	    assert(0);
-	new_state = _HY_LOADED_CACHE;
+	ret = repo_add_solv(repo, cache_fp, 0);
+	if (!ret)
+	    hrepo->state_main = _HY_LOADED_CACHE;
     } else {
 	HY_LOG_INFO("fetching rpmdb");
-	repo_add_rpmdb(repo, 0, 0, REPO_REUSE_REPODATA | RPM_ADD_WITH_HDRID);
-	new_state = _HY_LOADED_FETCH;
+	ret = repo_add_rpmdb(repo, 0, 0,
+			     REPO_REUSE_REPODATA | RPM_ADD_WITH_HDRID);
+	if (!ret)
+	    hrepo->state_main = _HY_LOADED_FETCH;
     }
-    int trans = hy_repo_transition(hrepo, new_state);
-    assert(trans == 0); (void)trans;
+    if (ret) {
+	repo_free(repo, 1);
+	return 1;
+    }
     if (cache_fp)
 	fclose(cache_fp);
+
+    /* we managed the hardest part, setup the bidirectional pointers etc. */
+    int trans = hy_repo_transition(hrepo, hrepo->state_main);
+    assert(trans == 0); (void)trans;
     pool_set_installed(pool, repo);
     repo->appdata = hrepo;
     hrepo->libsolv_repo = repo;
     sack->provides_ready = 0;
+
+    const int build_cache = flags & HY_BUILD_CACHE;
+    if (hrepo->state_main == _HY_LOADED_FETCH && build_cache) {
+	ret = write_main(sack, hrepo);
+	if (ret)
+	    return -1;
+    }
+
+    return 0;
 }
 
 int

@@ -116,18 +116,23 @@ hy_repo_set_string(HyRepo repo, int which, const char *str_val)
 {
     switch (which) {
     case HY_REPO_NAME:
+	solv_free(repo->name);
 	repo->name = solv_strdup(str_val);
 	break;
     case HY_REPO_MD_FN:
+	solv_free(repo->repomd_fn);
 	repo->repomd_fn = solv_strdup(str_val);
 	break;
     case HY_REPO_PRIMARY_FN:
+	solv_free(repo->primary_fn);
 	repo->primary_fn = solv_strdup(str_val);
 	break;
     case HY_REPO_FILELISTS_FN:
+	solv_free(repo->filelists_fn);
 	repo->filelists_fn = solv_strdup(str_val);
 	break;
     case HY_REPO_PRESTO_FN:
+	solv_free(repo->presto_fn);
 	repo->presto_fn = solv_strdup(str_val);
 	break;
     default:

@@ -13,12 +13,12 @@ class Sanity(base.TestCase):
 
     def test_load_rpm(self):
         sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
-        sack.load_rpm_repo()
+        sack.load_system_repo()
         self.assertEqual(sack.nsolvables, hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
 
     def test_load_yum(self):
         sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
-        sack.load_rpm_repo()
+        sack.load_system_repo()
         sack.load_yum_repo(build_cache=True)
         self.assertEqual(sack.nsolvables, hawkey.test.EXPECT_YUM_NSOLVABLES +
                          hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
@@ -34,7 +34,7 @@ class PackageWrapping(base.TestCase):
         sack = hawkey.test.TestSack(repo_dir=self.repo_dir,
                                     PackageClass=self.MyPackage,
                                     package_userdata=42)
-        sack.load_rpm_repo()
+        sack.load_system_repo()
         pkg = sack.create_package(2)
         # it is the correct type:
         self.assertIsInstance(pkg, self.MyPackage)

@@ -382,10 +382,12 @@ int main(int argc, const char **argv)
 		"<updates filelists.xml.gz path>\n", CFG_FILE);
 	return 1;
     }
-    /* rpmdb */
-    hy_sack_load_rpm_repo(sack);
-
     int load_flags = HY_BUILD_CACHE;
+    /* rpmdb */
+    repo = hy_repo_create();
+    hy_sack_load_system_repo(sack, repo, load_flags);
+    hy_repo_free(repo);
+
     if (need_filelists(argc, argv))
 	load_flags |= HY_LOAD_FILELISTS;
     /* Fedora repo */

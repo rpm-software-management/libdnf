@@ -194,10 +194,30 @@ add_cmdline_rpm(_SackObject *self, PyObject *fn_obj)
 }
 
 static PyObject *
-load_rpm_repo(_SackObject *self, PyObject *unused)
+load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 {
-    hy_sack_load_rpm_repo(self->sack);
-    Py_RETURN_NONE;
+    char *kwlist[] = {"repo", "build_cache", "load_filelists", "load_presto",
+		      NULL};
+
+    HyRepo crepo = NULL;
+    int build_cache = 0, unused_1 = 0, unused_2 = 0;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|iii", kwlist,
+				     repo_converter, &crepo,
+				     &build_cache, &unused_1, &unused_2))
+
+
+	return 0;
+
+    int flags = 0;
+    if (build_cache)
+	flags |= HY_BUILD_CACHE;
+    switch (hy_sack_load_system_repo(self->sack, crepo, flags)) {
+    case 0:
+	Py_RETURN_NONE;
+    default:
+	PyErr_SetString(PyExc_RuntimeError, "load_system_repo() failed.");
+	return NULL;
+    }
 }
 
 static PyObject *
@@ -212,6 +232,7 @@ load_yum_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 				     repo_converter, &crepo,
 				     &build_cache, &load_filelists, &load_presto))
 	return 0;
+
     int flags = 0;
     if (build_cache)
 	flags |= HY_BUILD_CACHE;
@@ -238,8 +259,8 @@ static struct PyMethodDef sack_methods[] = {
      NULL},
     {"add_cmdline_rpm", (PyCFunction)add_cmdline_rpm, METH_O,
      NULL},
-    {"load_rpm_repo", (PyCFunction)load_rpm_repo, METH_NOARGS,
-     NULL},
+    {"load_system_repo", (PyCFunction)load_system_repo,
+     METH_VARARGS | METH_KEYWORDS, NULL},
     {"load_yum_repo", (PyCFunction)load_yum_repo, METH_VARARGS | METH_KEYWORDS,
      NULL},
     {NULL}                      /* sentinel */

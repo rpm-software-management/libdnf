@@ -8,7 +8,7 @@ import hawkey.test
 class Query(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
-        self.sack.load_rpm_repo()
+        self.sack.load_system_repo()
 
     def test_sanity(self):
         q = hawkey.Query(self.sack)
@@ -59,7 +59,7 @@ class Query(base.TestCase):
 class QueryUpdates(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
-        self.sack.load_rpm_repo()
+        self.sack.load_system_repo()
         self.sack.load_test_repo("updates", "updates.repo")
 
     def test_updates(self):
