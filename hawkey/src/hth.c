@@ -253,7 +253,7 @@ static void update_local(HySack sack, const char *fn)
     HyPackage pkg;
 
     hy_sack_create_cmdline_repo(sack);
-    pkg = hy_sack_add_cmdline_rpm(sack, fn);
+    pkg = hy_sack_add_cmdline_package(sack, fn);
     if (pkg) {
 	update(sack, pkg);
 	hy_package_free(pkg);

@@ -413,7 +413,7 @@ hy_sack_create_cmdline_repo(HySack sack)
  * Adds the given .rpm file to the command line repo.
  */
 HyPackage
-hy_sack_add_cmdline_rpm(HySack sack, const char *fn)
+hy_sack_add_cmdline_package(HySack sack, const char *fn)
 {
     Repo *repo = get_cmdline_repo(sack);
     Id p;

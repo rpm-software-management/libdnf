@@ -175,7 +175,7 @@ create_package(_SackObject *self, PyObject *solvable_id)
 }
 
 static PyObject *
-add_cmdline_rpm(_SackObject *self, PyObject *fn_obj)
+add_cmdline_package(_SackObject *self, PyObject *fn_obj)
 {
     HyPackage cpkg;
     PyObject *pkg;
@@ -183,7 +183,7 @@ add_cmdline_rpm(_SackObject *self, PyObject *fn_obj)
 
     if (fn == NULL)
 	return NULL;
-    cpkg = hy_sack_add_cmdline_rpm(self->sack, fn);
+    cpkg = hy_sack_add_cmdline_package(self->sack, fn);
     if (cpkg == NULL) {
 	PyErr_SetString(PyExc_IOError, "Can not load an .rpm file");
 	return NULL;
@@ -257,7 +257,7 @@ static struct PyMethodDef sack_methods[] = {
      NULL},
     {"create_package", (PyCFunction)create_package, METH_O,
      NULL},
-    {"add_cmdline_rpm", (PyCFunction)add_cmdline_rpm, METH_O,
+    {"add_cmdline_package", (PyCFunction)add_cmdline_package, METH_O,
      NULL},
     {"load_system_repo", (PyCFunction)load_system_repo,
      METH_VARARGS | METH_KEYWORDS, NULL},
