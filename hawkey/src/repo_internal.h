@@ -9,17 +9,10 @@
 #include "repo.h"
 
 enum _hy_repo_state {
-    _HY_NEW = 1,
+    _HY_NEW,
     _HY_LOADED_FETCH,
     _HY_LOADED_CACHE,
-    _HY_WRITTEN,
-    /* those below will be removed */
-    _HY_FL_LOADED_FETCH,
-    _HY_FL_LOADED_CACHE,
-    _HY_FL_WRITTEN,
-    _HY_PST_LOADED_FETCH,
-    _HY_PST_LOADED_CACHE,
-    _HY_PST_WRITTEN,
+    _HY_WRITTEN
 };
 
 struct _HyRepo {
@@ -29,7 +22,6 @@ struct _HyRepo {
     char *primary_fn;
     char *filelists_fn;
     char *presto_fn;
-    enum _hy_repo_state state;
     enum _hy_repo_state state_main;
     enum _hy_repo_state state_filelists;
     enum _hy_repo_state state_presto;

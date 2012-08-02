@@ -367,7 +367,7 @@ int main(int argc, const char **argv)
     char *md_repo_updates;
     char *md_primary_updates_xml;
     char *md_filelists_updates;
-
+    int ret;
 
     if (read_repopaths(&md_repo, &md_primary_xml, &md_filelists, &md_repo_updates,
 		       &md_primary_updates_xml, &md_filelists_updates)) {
@@ -392,12 +392,14 @@ int main(int argc, const char **argv)
 	load_flags |= HY_LOAD_FILELISTS;
     /* Fedora repo */
     repo = config_repo("Fedora", md_repo, md_primary_xml, md_filelists);
-    hy_sack_load_yum_repo(sack, repo, load_flags);
+    ret = hy_sack_load_yum_repo(sack, repo, load_flags);
+    assert(ret == 0); (void)ret;
     hy_repo_free(repo);
     /* Fedora updates repo */
     repo = config_repo("updates", md_repo_updates, md_primary_updates_xml,
 		       md_filelists_updates);
-    hy_sack_load_yum_repo(sack, repo, load_flags);
+    ret = hy_sack_load_yum_repo(sack, repo, load_flags);
+    assert(ret == 0); (void)ret;
     hy_repo_free(repo);
     free(md_repo);
     free(md_primary_xml);

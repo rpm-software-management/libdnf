@@ -16,41 +16,6 @@ hy_repo_link(HyRepo repo)
     return repo;
 }
 
-int
-hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state)
-{
-    int trans = repo->state << 8 | new_state;
-    switch (trans) {
-    case _HY_NEW << 8		    | _HY_LOADED_FETCH:
-    case _HY_NEW << 8		    | _HY_LOADED_CACHE:
-    case _HY_LOADED_FETCH << 8	    | _HY_WRITTEN:
-    case _HY_LOADED_FETCH << 8	    | _HY_FL_LOADED_FETCH:
-    case _HY_LOADED_FETCH << 8	    | _HY_FL_LOADED_CACHE:
-    case _HY_LOADED_CACHE << 8	    | _HY_FL_LOADED_FETCH:
-    case _HY_LOADED_CACHE << 8	    | _HY_FL_LOADED_CACHE:
-    case _HY_WRITTEN << 8	    | _HY_FL_LOADED_FETCH:
-    case _HY_WRITTEN << 8	    | _HY_FL_LOADED_CACHE:
-    case _HY_FL_LOADED_FETCH << 8   | _HY_FL_WRITTEN:
-    case _HY_LOADED_FETCH << 8	    | _HY_PST_LOADED_FETCH:
-    case _HY_LOADED_FETCH << 8	    | _HY_PST_LOADED_CACHE:
-    case _HY_LOADED_CACHE << 8	    | _HY_PST_LOADED_FETCH:
-    case _HY_LOADED_CACHE << 8	    | _HY_PST_LOADED_CACHE:
-    case _HY_WRITTEN << 8	    | _HY_PST_LOADED_FETCH:
-    case _HY_WRITTEN << 8	    | _HY_PST_LOADED_CACHE:
-    case _HY_FL_LOADED_FETCH << 8   | _HY_PST_LOADED_FETCH:
-    case _HY_FL_LOADED_FETCH << 8   | _HY_PST_LOADED_CACHE:
-    case _HY_FL_LOADED_CACHE << 8   | _HY_PST_LOADED_FETCH:
-    case _HY_FL_LOADED_CACHE << 8   | _HY_PST_LOADED_CACHE:
-    case _HY_FL_WRITTEN << 8	    | _HY_PST_LOADED_FETCH:
-    case _HY_FL_WRITTEN << 8	    | _HY_PST_LOADED_CACHE:
-    case _HY_PST_LOADED_FETCH << 8  | _HY_PST_WRITTEN:
-	repo->state = new_state;
-	return 0;
-    default:
-	return 1;
-    }
-}
-
 void
 repo_update_state(HyRepo repo, enum _hy_repo_repodata which,
 		  enum _hy_repo_state state)
@@ -106,8 +71,6 @@ hy_repo_create(void)
 {
     HyRepo repo = solv_calloc(1, sizeof(*repo));
     repo->nrefs = 1;
-    repo->state = _HY_NEW;
-    repo->state_main = repo->state_filelists = repo->state_presto = _HY_NEW;
     return repo;
 }
 
