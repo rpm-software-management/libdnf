@@ -425,12 +425,14 @@ hy_query_run(HyQuery q)
 }
 
 // internal
-static void
+int
 filter_name2job(const HyQuery q, const struct _Filter *f, Queue *job)
 {
     Pool *pool = sack_pool(q->sack);
 
-    assert(f->filter_type == HY_EQ);
+    if (f->filter_type != HY_EQ)
+	return HY_E_QUERY;
+
     sack_make_provides_ready(q->sack);
     for (int i = 0; i < f->nmatches; ++i) {
 	const char *name = f->matches[i];
@@ -445,25 +447,38 @@ filter_name2job(const HyQuery q, const struct _Filter *f, Queue *job)
 		queue_push2(job, SOLVER_SOLVABLE_NAME, id);
 	}
     }
+    return 0;
 }
 
 int
 query2job(const HyQuery q, Queue *job, int solver_action)
 {
+    int ret = 0;
     const int count = job->count;
+    Queue job_query;
 
+    queue_init(&job_query);
     for (int i = 0; i < q->nfilters; ++i) {
 	const struct _Filter *f = q->filters + i;
 	switch (f->keyname) {
 	case HY_PKG_NAME:
-	    filter_name2job(q, f, job);
+	    ret = filter_name2job(q, f, &job_query);
 	    break;
 	default:
-	    assert(0);
+	    ret = HY_E_QUERY;
+	    break;
+	}
+	if (ret) {
+	    queue_free(&job_query);
+	    return ret;
 	}
     }
 
-    for (int i = count; i < job->count; i += 2)
-	job->elements[i] |= solver_action;
+    for (int i = count; i < job_query.count; i += 2)
+	queue_push2(job,
+		    job_query.elements[i] | solver_action,
+		    job_query.elements[i + 1]);
+    queue_free(&job_query);
+
     return count == job->count;
 }

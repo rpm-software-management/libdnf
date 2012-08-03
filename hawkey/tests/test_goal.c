@@ -124,6 +124,29 @@ START_TEST(test_goal_install_multilib)
 }
 END_TEST
 
+START_TEST(test_goal_install_query)
+{
+    // Test that using the hy_goal_*_query() methods returns HY_E_QUERY for
+    // queries invalid in this context.
+
+    HyGoal goal = hy_goal_create(test_globals.sack);
+    HyQuery q;
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "semolina");
+    hy_query_filter(q, HY_PKG_REPO, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    fail_unless(hy_goal_install_query(goal, q) == HY_E_QUERY);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_GT, "semolina");
+    fail_unless(hy_goal_erase_query(goal, q) == HY_E_QUERY);
+    hy_query_free(q);
+
+    hy_goal_free(goal);
+}
+END_TEST
+
 START_TEST(test_goal_update)
 {
     HyPackage pkg = get_latest_pkg(test_globals.sack, "fool");
@@ -377,6 +400,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_update_impossible);
     tcase_add_test(tc, test_goal_install);
     tcase_add_test(tc, test_goal_install_multilib);
+    tcase_add_test(tc, test_goal_install_query);
     tcase_add_test(tc, test_goal_update);
     tcase_add_test(tc, test_goal_upgrade_all);
     tcase_add_test(tc, test_goal_downgrade);
