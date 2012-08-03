@@ -523,5 +523,5 @@ query2job(const HyQuery q, Queue *job, int solver_action)
 		    job_query.elements[i + 1]);
     queue_free(&job_query);
 
-    return count == job->count;
+    return 0;
 }

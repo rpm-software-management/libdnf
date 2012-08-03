@@ -10,6 +10,7 @@
 #include "src/package_internal.h"
 
 // pyhawkey
+#include "exception-py.h"
 #include "goal-py.h"
 #include "iutil-py.h"
 #include "package-py.h"
@@ -22,7 +23,7 @@ typedef struct {
     PyObject *sack;
 } _GoalObject;
 
-int
+static int
 args_query_pkg_check(HyPackage pkg, HyQuery query)
 {
     if (!(pkg || query)) {
@@ -38,7 +39,7 @@ args_query_pkg_check(HyPackage pkg, HyQuery query)
     return 1;
 }
 
-int
+static int
 args_query_pkg_parse(PyObject *args, PyObject *kwds,
 		     HyPackage *pkg, HyQuery *query, int *flags, int flag_mask)
 {
@@ -69,6 +70,22 @@ args_query_pkg_parse(PyObject *args, PyObject *kwds,
     }
 
     return 1;
+}
+
+static PyObject *
+op_ret2exc(int ret)
+{
+    switch (ret) {
+    case 0:
+	Py_RETURN_NONE;
+    case HY_E_QUERY:
+	PyErr_SetString(HyExc_Query,
+			"Query unsupported in this context.");
+	return NULL;
+    default:
+	PyErr_SetString(HyExc_Exception, "Goal operation failed.");
+	return NULL;
+    }
 }
 
 /* functions on the type */
@@ -134,9 +151,7 @@ erase(_GoalObject *self, PyObject *args, PyObject *kwds)
 
     int ret = pkg ? hy_goal_erase_flags(self->goal, pkg, flags) :
 	hy_goal_erase_query_flags(self->goal, query, flags);
-    if (ret)
-	Py_RETURN_FALSE;
-    Py_RETURN_TRUE;
+    return op_ret2exc(ret);
 }
 
 static PyObject *
@@ -149,9 +164,7 @@ install(_GoalObject *self, PyObject *args, PyObject *kwds)
 
     int ret = pkg ? hy_goal_install(self->goal, pkg) :
 	hy_goal_install_query(self->goal, query);
-    if (ret)
-	Py_RETURN_FALSE;
-    Py_RETURN_TRUE;
+    return op_ret2exc(ret);
 }
 
 static PyObject *
@@ -168,9 +181,7 @@ upgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 	return NULL;
     }
     int ret = hy_goal_upgrade_query(self->goal, query);
-    if (ret)
-	Py_RETURN_FALSE;
-    Py_RETURN_TRUE;
+    return op_ret2exc(ret);
 }
 
 static PyObject *
@@ -190,18 +201,14 @@ upgrade_to(_GoalObject *self, PyObject *args, PyObject *kwds)
 	return NULL;
     }
     ret = hy_goal_upgrade_to_flags(self->goal, pkg, flags);
-    if (!ret)
-	Py_RETURN_TRUE;
-    Py_RETURN_FALSE;
+    return op_ret2exc(ret);
 }
 
 static PyObject *
 upgrade_all(_GoalObject *self, PyObject *unused)
 {
     int ret = hy_goal_upgrade_all(self->goal);
-    if (!ret)
-	Py_RETURN_TRUE;
-    Py_RETURN_FALSE;
+    return op_ret2exc(ret);
 }
 
 static PyObject *

@@ -40,6 +40,9 @@ _CHKSUM_TYPES = {
     CHKSUM_SHA256: 'sha256'
     }
 
+Exception = _hawkey.Exception
+QueryException = _hawkey.QueryException
+
 Sack = _hawkey.Sack
 chksum_name = _hawkey.chksum_name
 

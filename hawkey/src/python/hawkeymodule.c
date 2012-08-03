@@ -6,6 +6,7 @@
 #include "src/util.h"
 
 // pyhawkey
+#include "exception-py.h"
 #include "goal-py.h"
 #include "sack-py.h"
 #include "package-py.h"
@@ -41,6 +42,11 @@ init_hawkey(void)
     PyObject *m = Py_InitModule("_hawkey", hawkey_methods);
     if (!m)
 	return;
+    /* exceptions */
+    init_exceptions();
+    PyModule_AddObject(m, "Exception", HyExc_Exception);
+    PyModule_AddObject(m, "QueryException", HyExc_Query);
+
     /* _hawkey.Sack */
     if (PyType_Ready(&sack_Type) < 0)
 	return;
