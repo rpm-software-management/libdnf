@@ -126,6 +126,32 @@ END_TEST
 
 START_TEST(test_goal_install_query)
 {
+    HyGoal goal = hy_goal_create(test_globals.sack);
+    HyQuery q;
+
+    // test arch forcing
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "semolina");
+    hy_query_filter(q, HY_PKG_ARCH, HY_EQ, "i686");
+    fail_if(hy_goal_install_query(goal, q));
+    fail_if(hy_goal_go(goal));
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
+
+    HyPackageList plist = hy_goal_list_installs(goal);
+    fail_unless(hy_packagelist_count(plist), 1);
+    char *nvra = hy_package_get_nvra(hy_packagelist_get(plist, 0));
+    ck_assert_str_eq(nvra, "semolina-2-0.i686");
+    hy_free(nvra);
+    hy_packagelist_free(plist);
+
+    hy_query_free(q);
+    hy_goal_free(goal);
+}
+END_TEST
+
+START_TEST(test_goal_install_query_err)
+{
     // Test that using the hy_goal_*_query() methods returns HY_E_QUERY for
     // queries invalid in this context.
 
@@ -401,6 +427,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_install);
     tcase_add_test(tc, test_goal_install_multilib);
     tcase_add_test(tc, test_goal_install_query);
+    tcase_add_test(tc, test_goal_install_query_err);
     tcase_add_test(tc, test_goal_update);
     tcase_add_test(tc, test_goal_upgrade_all);
     tcase_add_test(tc, test_goal_downgrade);

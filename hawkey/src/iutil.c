@@ -239,6 +239,21 @@ repo_internalize_trigger(Repo *repo)
     repo_internalize(repo);
 }
 
+Id
+str2archid(Pool *pool, const char *arch)
+{
+    // originally from libsolv/examples/solv.c:str2archid()
+    Id id;
+    if (!*arch)
+	return 0;
+    id = pool_str2id(pool, arch, 0);
+    if (id == ARCH_SRC || id == ARCH_NOSRC || id == ARCH_NOARCH)
+	return id;
+    if (pool->id2arch && (id > pool->lastarch || !pool->id2arch[id]))
+	return 0;
+    return id;
+}
+
 void
 queue2plist(HySack sack, Queue *q, HyPackageList plist)
 {

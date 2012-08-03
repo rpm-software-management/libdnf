@@ -40,6 +40,7 @@ int str_endswith(const char *haystack, const char *needle);
 
 /* libsolv utils */
 void repo_internalize_trigger(Repo *r);
+Id str2archid(Pool *pool, const char *s);
 void queue2plist(HySack sack, Queue *q, HyPackageList plist);
 Id what_upgrades(Pool *pool, Id p);
 Id what_downgrades(Pool *pool, Id p);

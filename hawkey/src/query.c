@@ -425,7 +425,34 @@ hy_query_run(HyQuery q)
 }
 
 // internal
-int
+static int
+filter_arch2job(const HyQuery q, const struct _Filter *f, Queue *job)
+{
+    if (f->filter_type != HY_EQ)
+	return HY_E_QUERY;
+    if (f->nmatches != 1)
+	return HY_E_QUERY;
+    if (job->count < 2)
+	return HY_E_QUERY; // only apply arch if there's a name
+
+    Pool *pool = sack_pool(q->sack);
+    const char *arch = f->matches[0];
+    Id archid = str2archid(pool, arch);
+
+    if (archid == 0)
+	return HY_E_QUERY;
+    for (int i = 0; i < job->count; i += 2) {
+	Id dep;
+	assert(job->elements[i] == SOLVER_SOLVABLE_NAME);
+	dep = pool_rel2id(pool, job->elements[i + 1],
+			  archid, REL_ARCH, 1);
+	job->elements[i] |= SOLVER_SETARCH;
+	job->elements[i + 1] = dep;
+    }
+    return 0;
+}
+
+static int
 filter_name2job(const HyQuery q, const struct _Filter *f, Queue *job)
 {
     Pool *pool = sack_pool(q->sack);
@@ -464,14 +491,30 @@ query2job(const HyQuery q, Queue *job, int solver_action)
 	case HY_PKG_NAME:
 	    ret = filter_name2job(q, f, &job_query);
 	    break;
+	case HY_PKG_ARCH:
+	    break; // handled later
 	default:
 	    ret = HY_E_QUERY;
 	    break;
 	}
-	if (ret) {
-	    queue_free(&job_query);
-	    return ret;
-	}
+	if (ret)
+	    goto finish;
+    }
+
+    /* handle archs */
+    for (int i =0; i < q->nfilters; ++i) {
+	const struct _Filter *f = q->filters + i;
+	if (f->keyname != HY_PKG_ARCH)
+	    continue;
+	ret = filter_arch2job(q, f, &job_query);
+	if (ret)
+	    break;
+    }
+
+ finish:
+    if (ret) {
+	queue_free(&job_query);
+	return ret;
     }
 
     for (int i = count; i < job_query.count; i += 2)
