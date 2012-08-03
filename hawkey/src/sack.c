@@ -421,7 +421,7 @@ hy_sack_load_system_repo(HySack sack, HyRepo hrepo, int flags)
 
     ret = current_rpmdb_checksum(hrepo->checksum);
     if (ret)
-	return 1;
+	return HY_E_IO;
 
     Repo *repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
     if (can_use_rpmdb_cache(cache_fp, hrepo->checksum)) {
@@ -438,7 +438,7 @@ hy_sack_load_system_repo(HySack sack, HyRepo hrepo, int flags)
     }
     if (ret) {
 	repo_free(repo, 1);
-	return 1;
+	return HY_E_IO;
     }
     if (cache_fp)
 	fclose(cache_fp);
@@ -453,7 +453,7 @@ hy_sack_load_system_repo(HySack sack, HyRepo hrepo, int flags)
     if (hrepo->state_main == _HY_LOADED_FETCH && build_cache) {
 	ret = write_main(sack, hrepo);
 	if (ret)
-	    return -1;
+	    return HY_E_CACHE_WRITE;
     }
 
     return 0;

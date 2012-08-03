@@ -215,7 +215,7 @@ load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     case 0:
 	Py_RETURN_NONE;
     default:
-	PyErr_SetString(PyExc_RuntimeError, "load_system_repo() failed.");
+	PyErr_SetString(PyExc_IOError, "load_system_repo() failed.");
 	return NULL;
     }
 }
