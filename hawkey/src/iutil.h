@@ -45,4 +45,7 @@ void queue2plist(HySack sack, Queue *q, HyPackageList plist);
 Id what_upgrades(Pool *pool, Id p);
 Id what_downgrades(Pool *pool, Id p);
 
+/* debug utils */
+int dump_jobqueue(Pool *pool, Queue *job);
+
 #endif

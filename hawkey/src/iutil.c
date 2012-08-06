@@ -345,3 +345,11 @@ what_downgrades(Pool *pool, Id pkg)
     }
     return l;
 }
+
+int dump_jobqueue(Pool *pool, Queue *job)
+{
+    for (int i = 0; i < job->count; i+=2)
+	    printf("\t%s\n", pool_job2str(pool, job->elements[i],
+					  job->elements[i+1], 0));
+    return job->count;
+}
