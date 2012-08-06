@@ -25,6 +25,10 @@ packageDeltaToPyObject(HyPackageDelta delta)
 static PyObject *
 packageDelta_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
+    char *kwlist[] = {NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist))
+	return NULL;
+
     _PackageDeltaObject *self = (_PackageDeltaObject *)type->tp_alloc(type, 0);
     if (self)
 	self->delta = delta_create();

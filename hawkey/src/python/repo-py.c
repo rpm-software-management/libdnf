@@ -45,6 +45,10 @@ repo_converter(PyObject *o, HyRepo *repo_ptr)
 static PyObject *
 repo_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
+    char *kwlist[] = {NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist))
+	return NULL;
+
     _RepoObject *self = (_RepoObject *)type->tp_alloc(type, 0);
     if (self) {
 	self->repo = hy_repo_create();
