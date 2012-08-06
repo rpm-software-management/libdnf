@@ -409,36 +409,40 @@ hy_sack_add_cmdline_package(HySack sack, const char *fn)
 }
 
 int
-hy_sack_load_system_repo(HySack sack, HyRepo hrepo, int flags)
+hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
 {
     Pool *pool = sack->pool;
     char *cache_fn = hy_sack_give_cache_fn(sack, HY_SYSTEM_REPO_NAME, NULL);
     FILE *cache_fp = fopen(cache_fn, "r");
-    int ret = 0;
+    int rc, ret = 0;
+    HyRepo hrepo = a_hrepo ? a_hrepo : hy_repo_create();
 
     solv_free(cache_fn);
     hy_repo_set_string(hrepo, HY_REPO_NAME, HY_SYSTEM_REPO_NAME);
 
-    ret = current_rpmdb_checksum(hrepo->checksum);
-    if (ret)
-	return HY_E_IO;
+    rc = current_rpmdb_checksum(hrepo->checksum);
+    if (rc) {
+	ret = HY_E_IO;
+	goto finish;
+    }
 
     Repo *repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
     if (can_use_rpmdb_cache(cache_fp, hrepo->checksum)) {
 	HY_LOG_INFO("using cached rpmdb");
-	ret = repo_add_solv(repo, cache_fp, 0);
-	if (!ret)
+	rc = repo_add_solv(repo, cache_fp, 0);
+	if (!rc)
 	    hrepo->state_main = _HY_LOADED_CACHE;
     } else {
 	HY_LOG_INFO("fetching rpmdb");
-	ret = repo_add_rpmdb(repo, 0, 0,
-			     REPO_REUSE_REPODATA | RPM_ADD_WITH_HDRID);
-	if (!ret)
+	rc = repo_add_rpmdb(repo, 0, 0,
+			    REPO_REUSE_REPODATA | RPM_ADD_WITH_HDRID);
+	if (!rc)
 	    hrepo->state_main = _HY_LOADED_FETCH;
     }
-    if (ret) {
+    if (rc) {
 	repo_free(repo, 1);
-	return HY_E_IO;
+	ret = HY_E_IO;
+	goto finish;
     }
     if (cache_fp)
 	fclose(cache_fp);
@@ -451,12 +455,17 @@ hy_sack_load_system_repo(HySack sack, HyRepo hrepo, int flags)
 
     const int build_cache = flags & HY_BUILD_CACHE;
     if (hrepo->state_main == _HY_LOADED_FETCH && build_cache) {
-	ret = write_main(sack, hrepo);
-	if (ret)
-	    return HY_E_CACHE_WRITE;
+	rc = write_main(sack, hrepo);
+	if (rc) {
+	    ret = HY_E_CACHE_WRITE;
+	    goto finish;
+	}
     }
 
-    return 0;
+ finish:
+    if (a_hrepo == NULL)
+	hy_repo_free(hrepo);
+    return ret;
 }
 
 int

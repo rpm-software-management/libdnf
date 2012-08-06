@@ -42,8 +42,8 @@ HyPackage hy_sack_add_cmdline_package(HySack sack, const char *fn);
  * @returns           0 on success, HY_E_IO on fatal error,
  *		      HY_E_CACHE_WRITE on cache write error.
  */
-int hy_sack_load_system_repo(HySack sack, HyRepo repo, int flags);
-int hy_sack_load_yum_repo(HySack sack, HyRepo repo, int flags);
+int hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags);
+int hy_sack_load_yum_repo(HySack sack, HyRepo hrepo, int flags);
 
 #ifdef __cplusplus
 }

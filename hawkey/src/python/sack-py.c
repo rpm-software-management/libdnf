@@ -201,7 +201,7 @@ load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 
     HyRepo crepo = NULL;
     int build_cache = 0, unused_1 = 0, unused_2 = 0;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|iii", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&iii", kwlist,
 				     repo_converter, &crepo,
 				     &build_cache, &unused_1, &unused_2))
 

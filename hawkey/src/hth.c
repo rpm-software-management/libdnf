@@ -385,7 +385,7 @@ int main(int argc, const char **argv)
     int load_flags = HY_BUILD_CACHE;
     /* rpmdb */
     repo = hy_repo_create();
-    hy_sack_load_system_repo(sack, repo, load_flags);
+    hy_sack_load_system_repo(sack, NULL, load_flags);
     hy_repo_free(repo);
 
     if (need_filelists(argc, argv))
