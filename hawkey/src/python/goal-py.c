@@ -226,7 +226,7 @@ userinstalled(_GoalObject *self, PyObject *pkg)
 }
 
 static PyObject *
-go(_GoalObject *self, PyObject *args, PyObject *kwds)
+run(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     char *kwlist[] = {"allow_uninstall", NULL};
     int allow_uninstall = 0;
@@ -237,7 +237,7 @@ go(_GoalObject *self, PyObject *args, PyObject *kwds)
 	return NULL;
     if (allow_uninstall)
 	flags |= HY_ALLOW_UNINSTALL;
-    ret = hy_goal_go_flags(self->goal, flags);
+    ret = hy_goal_run_flags(self->goal, flags);
     if (!ret)
 	Py_RETURN_TRUE;
     Py_RETURN_FALSE;
@@ -346,7 +346,7 @@ static struct PyMethodDef goal_methods[] = {
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"upgrade_all",	(PyCFunction)upgrade_all,	METH_NOARGS,	NULL},
     {"userinstalled",	(PyCFunction)userinstalled,	METH_O,		NULL},
-    {"go",		(PyCFunction)go,
+    {"run",		(PyCFunction)run,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"count_problems",	(PyCFunction)count_problems,	METH_NOARGS,	NULL},
     {"describe_problem",(PyCFunction)describe_problem,	METH_O,		NULL},

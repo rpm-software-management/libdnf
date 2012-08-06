@@ -173,7 +173,7 @@ erase(HySack sack, const char *name)
     HyGoal goal = hy_goal_create(sack);
     hy_goal_erase(goal, hy_packagelist_get(plist, 0));
 
-    if (hy_goal_go(goal)) {
+    if (hy_goal_run(goal)) {
 	dump_goal_errors(goal);
 	hy_goal_free(goal);
 	goto finish;
@@ -203,7 +203,7 @@ static void update(HySack sack, HyPackage pkg)
 	printf("no package of that name installed, trying install\n");
 	hy_goal_install(goal, pkg);
     }
-    if (hy_goal_go(goal)) {
+    if (hy_goal_run(goal)) {
 	dump_goal_errors(goal);
 	// handle errors
 	goto finish;

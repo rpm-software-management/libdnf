@@ -95,7 +95,7 @@ START_TEST(test_goal_install)
     HyGoal goal = hy_goal_create(test_globals.sack);
     fail_if(hy_goal_install(goal, pkg));
     hy_package_free(pkg);
-    fail_if(hy_goal_go(goal));
+    fail_if(hy_goal_run(goal));
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 2);
@@ -113,7 +113,7 @@ START_TEST(test_goal_install_multilib)
 
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "semolina");
     fail_if(hy_goal_install_query(goal, q));
-    fail_if(hy_goal_go(goal));
+    fail_if(hy_goal_run(goal));
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
@@ -134,7 +134,7 @@ START_TEST(test_goal_install_query)
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "semolina");
     hy_query_filter(q, HY_PKG_ARCH, HY_EQ, "i686");
     fail_if(hy_goal_install_query(goal, q));
-    fail_if(hy_goal_go(goal));
+    fail_if(hy_goal_run(goal));
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
 
@@ -179,7 +179,7 @@ START_TEST(test_goal_update)
     HyGoal goal = hy_goal_create(test_globals.sack);
     fail_if(hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED));
     hy_package_free(pkg);
-    fail_if(hy_goal_go(goal));
+    fail_if(hy_goal_run(goal));
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 1);
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
@@ -192,7 +192,7 @@ START_TEST(test_goal_upgrade_all)
 {
     HyGoal goal = hy_goal_create(test_globals.sack);
     hy_goal_upgrade_all(goal);
-    fail_if(hy_goal_go(goal));
+    fail_if(hy_goal_run(goal));
 
     HyPackageList plist = hy_goal_list_erasures(goal);
     fail_unless(hy_packagelist_count(plist) == 1);
@@ -220,7 +220,7 @@ START_TEST(test_goal_downgrade)
     HyGoal goal = hy_goal_create(sack);
 
     hy_goal_downgrade_to(goal, to_be_pkg);
-    fail_if(hy_goal_go(goal));
+    fail_if(hy_goal_run(goal));
 
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
@@ -248,7 +248,7 @@ START_TEST(test_goal_get_reason)
     HyGoal goal = hy_goal_create(test_globals.sack);
     hy_goal_install(goal, pkg);
     hy_package_free(pkg);
-    hy_goal_go(goal);
+    hy_goal_run(goal);
 
     HyPackageList plist = hy_goal_list_installs(goal);
     int i;
@@ -277,7 +277,7 @@ START_TEST(test_goal_describe_problem)
     HyGoal goal = hy_goal_create(sack);
 
     hy_goal_install(goal, pkg);
-    fail_unless(hy_goal_go(goal));
+    fail_unless(hy_goal_run(goal));
     fail_unless(hy_goal_count_problems(goal) > 0);
 
     char *problem = hy_goal_describe_problem(goal, 0);
@@ -299,7 +299,7 @@ START_TEST(test_goal_log_decisions)
     hy_goal_install(goal, pkg);
     HY_LOG_INFO("--- decisions below --->");
     const int origsize = logfile_size(sack);
-    hy_goal_go(goal);
+    hy_goal_run(goal);
     hy_goal_log_decisions(goal);
     const int newsize = logfile_size(sack);
     // check something substantial was added to the logfile:
@@ -320,7 +320,7 @@ START_TEST(test_goal_installonly)
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED));
     hy_package_free(pkg);
-    fail_if(hy_goal_go(goal));
+    fail_if(hy_goal_run(goal));
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
@@ -335,7 +335,7 @@ START_TEST(test_goal_no_reinstall)
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_goal_install(goal, pkg));
     hy_package_free(pkg);
-    fail_if(hy_goal_go(goal));
+    fail_if(hy_goal_run(goal));
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
     hy_goal_free(goal);
 }
@@ -348,7 +348,7 @@ START_TEST(test_goal_erase_simple)
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_goal_erase(goal, pkg));
     hy_package_free(pkg);
-    fail_if(hy_goal_go(goal));
+    fail_if(hy_goal_run(goal));
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
@@ -364,12 +364,12 @@ START_TEST(test_goal_erase_with_deps)
     // by default can not remove penny-lib, flying depends on it:
     HyGoal goal = hy_goal_create(sack);
     hy_goal_erase(goal, pkg);
-    fail_unless(hy_goal_go(goal));
+    fail_unless(hy_goal_run(goal));
     hy_goal_free(goal);
 
     goal = hy_goal_create(sack);
     hy_goal_erase(goal, pkg);
-    fail_if(hy_goal_go_flags(goal, HY_ALLOW_UNINSTALL));
+    fail_if(hy_goal_run_flags(goal, HY_ALLOW_UNINSTALL));
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 2);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
@@ -387,14 +387,14 @@ START_TEST(test_goal_erase_clean_deps)
     // by default, leave dependencies alone:
     HyGoal goal = hy_goal_create(sack);
     hy_goal_erase(goal, pkg);
-    hy_goal_go(goal);
+    hy_goal_run(goal);
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
     hy_goal_free(goal);
 
     // allow deleting dependencies:
     goal = hy_goal_create(sack);
     hy_goal_erase_flags(goal, pkg, HY_CLEAN_DEPS);
-    fail_unless(hy_goal_go(goal) == 0);
+    fail_unless(hy_goal_run(goal) == 0);
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 2);
     hy_goal_free(goal);
 
@@ -405,7 +405,7 @@ START_TEST(test_goal_erase_clean_deps)
     hy_goal_userinstalled(goal, penny_pkg);
     // having the same solvable twice in a goal shouldn't break anything:
     hy_goal_userinstalled(goal, pkg);
-    fail_unless(hy_goal_go(goal) == 0);
+    fail_unless(hy_goal_run(goal) == 0);
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
     hy_goal_free(goal);
     hy_package_free(penny_pkg);

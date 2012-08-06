@@ -20,7 +20,7 @@ enum _hy_goal_op_flags {
     HY_CLEAN_DEPS	= 1 << 1
 };
 
-enum _hy_goal_go_flags {
+enum _hy_goal_run_flags {
     HY_ALLOW_UNINSTALL = 1
 };
 
@@ -52,8 +52,8 @@ int hy_goal_upgrade_to(HyGoal goal, HyPackage new_pkg);
 int hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags);
 int hy_goal_upgrade_query(HyGoal goal, HyQuery query);
 int hy_goal_userinstalled(HyGoal goal, HyPackage pkg);
-int hy_goal_go(HyGoal goal);
-int hy_goal_go_flags(HyGoal goal, int flags);
+int hy_goal_run(HyGoal goal);
+int hy_goal_run_flags(HyGoal goal, int flags);
 
 /* problems */
 int hy_goal_count_problems(HyGoal goal);

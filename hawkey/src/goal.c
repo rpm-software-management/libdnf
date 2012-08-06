@@ -201,13 +201,13 @@ hy_goal_userinstalled(HyGoal goal, HyPackage pkg)
 }
 
 int
-hy_goal_go(HyGoal goal)
+hy_goal_run(HyGoal goal)
 {
-    return hy_goal_go_flags(goal, 0);
+    return hy_goal_run_flags(goal, 0);
 }
 
 int
-hy_goal_go_flags(HyGoal goal, int flags)
+hy_goal_run_flags(HyGoal goal, int flags)
 {
     assert(goal->solv == NULL); /* only allow goal_go() once */
     if (solve(goal, flags))
