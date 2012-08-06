@@ -464,15 +464,9 @@ filter_name2job(const HyQuery q, const struct _Filter *f, Queue *job)
     for (int i = 0; i < f->nmatches; ++i) {
 	const char *name = f->matches[i];
 	Id id = pool_str2id(pool, name, 0);
-	Id p, pp;
 
-	if (!id)
-	    continue;
-	FOR_PROVIDES(p, pp, id) {
-	    Solvable *s = pool->solvables + p;
-	    if (s->name == id)
-		queue_push2(job, SOLVER_SOLVABLE_NAME, id);
-	}
+	if (id)
+	    queue_push2(job, SOLVER_SOLVABLE_NAME, id);
     }
     return 0;
 }
