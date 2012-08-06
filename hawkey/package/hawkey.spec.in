@@ -1,4 +1,4 @@
-%global gitrev 41b39ba
+%global gitrev e6734fb
 %global libsolv_version 0.0.0-13
 
 Name:		hawkey
@@ -69,6 +69,11 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
+* Mon Aug 6 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.8-1.gite6734fb
+- repo loading API changed, hy_sack_load_yum_repo() now accepts flags to build
+  cache, load filelists, etc.
+- fixed 843487: hawkey query.filter() ends with assertion.
+
 * Tue Jul 24 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.7-1.git41b39ba
 - Package description, license, url support.
 - python: Unicode fixes in Query.
