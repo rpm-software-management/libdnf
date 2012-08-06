@@ -175,11 +175,10 @@ END_TEST
 
 START_TEST(test_goal_install_query_two)
 {
-    // check that we can add two query installs to the Goal
+    // check that we can add and resolve two query installs to the Goal
     HyGoal goal = hy_goal_create(test_globals.sack);
     HyQuery q;
 
-    // test arch forcing
     q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "semolina");
     fail_if(hy_goal_install_query(goal, q));
