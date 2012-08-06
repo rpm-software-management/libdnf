@@ -145,7 +145,7 @@ hy_goal_install(HyGoal goal, HyPackage new_pkg)
 }
 
 int
-hy_goal_install_query(HyGoal goal, HyQuery  query)
+hy_goal_install_query(HyGoal goal, HyQuery query)
 {
     return query2job(query, &goal->job, SOLVER_INSTALL);
 }

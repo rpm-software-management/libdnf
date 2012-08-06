@@ -481,7 +481,6 @@ int
 query2job(const HyQuery q, Queue *job, int solver_action)
 {
     int ret = 0;
-    const int count = job->count;
     Queue job_query;
 
     queue_init(&job_query);
@@ -517,7 +516,7 @@ query2job(const HyQuery q, Queue *job, int solver_action)
 	return ret;
     }
 
-    for (int i = count; i < job_query.count; i += 2)
+    for (int i = 0; i < job_query.count; i += 2)
 	queue_push2(job,
 		    job_query.elements[i] | solver_action,
 		    job_query.elements[i + 1]);

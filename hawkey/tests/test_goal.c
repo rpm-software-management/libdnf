@@ -173,6 +173,32 @@ START_TEST(test_goal_install_query_err)
 }
 END_TEST
 
+START_TEST(test_goal_install_query_two)
+{
+    // check that we can add two query installs to the Goal
+    HyGoal goal = hy_goal_create(test_globals.sack);
+    HyQuery q;
+
+    // test arch forcing
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "semolina");
+    fail_if(hy_goal_install_query(goal, q));
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "walrus");
+    fail_if(hy_goal_install_query(goal, q));
+    hy_query_free(q);
+
+    fail_if(hy_goal_run(goal));
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 2);
+
+    hy_goal_free(goal);
+}
+END_TEST
+
 START_TEST(test_goal_update)
 {
     HyPackage pkg = get_latest_pkg(test_globals.sack, "fool");
@@ -428,6 +454,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_install_multilib);
     tcase_add_test(tc, test_goal_install_query);
     tcase_add_test(tc, test_goal_install_query_err);
+    tcase_add_test(tc, test_goal_install_query_two);
     tcase_add_test(tc, test_goal_update);
     tcase_add_test(tc, test_goal_upgrade_all);
     tcase_add_test(tc, test_goal_downgrade);
