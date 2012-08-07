@@ -3,6 +3,14 @@ This is hawkey, library providing simplified C and Python API to libsolv
 
 ## Building for Fedora
 
+Packages needed for the build (i.e. build requires):
+* check-devel
+* expat-devel
+* libsolv-devel
+* libsolv-tools
+* rpm-devel
+* zlib-devel
+
 From your checkout dir:
 
     mkdir build
