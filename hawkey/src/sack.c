@@ -409,6 +409,12 @@ hy_sack_add_cmdline_package(HySack sack, const char *fn)
 }
 
 int
+hy_sack_count(HySack sack)
+{
+    return sack_pool(sack)->nsolvables;
+}
+
+int
 hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
 {
     Pool *pool = sack->pool;

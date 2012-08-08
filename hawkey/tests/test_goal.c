@@ -68,7 +68,7 @@ START_TEST(test_goal_sanity)
 {
     HyGoal goal = hy_goal_create(test_globals.sack);
     fail_if(goal == NULL);
-    fail_unless(sack_pool(test_globals.sack)->nsolvables ==
+    fail_unless(hy_sack_count(test_globals.sack) ==
 		TEST_EXPECT_SYSTEM_NSOLVABLES +
 		TEST_EXPECT_MAIN_NSOLVABLES +
 		TEST_EXPECT_UPDATES_NSOLVABLES);

@@ -141,16 +141,8 @@ set_installonly(_SackObject *self, PyObject *obj, void *unused)
     return 0;
 }
 
-static PyObject *
-get_nsolvables(_SackObject *self, void *unused)
-{
-    return PyInt_FromLong(sack_pool(self->sack)->nsolvables);
-}
-
-
 static PyGetSetDef sack_getsetters[] = {
     {"installonly", NULL, (setter)set_installonly, NULL, NULL},
-    {"nsolvables", (getter)get_nsolvables, NULL, NULL, NULL},
     {NULL}			/* sentinel */
 };
 
@@ -252,7 +244,14 @@ load_yum_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     }
 }
 
-static struct PyMethodDef sack_methods[] = {
+static Py_ssize_t
+len(_SackObject *self)
+{
+    return hy_sack_count(self->sack);
+}
+
+static struct
+PyMethodDef sack_methods[] = {
     {"create_cmdline_repo", (PyCFunction)create_cmdline_repo, METH_NOARGS,
      NULL},
     {"create_package", (PyCFunction)create_package, METH_O,
@@ -264,6 +263,10 @@ static struct PyMethodDef sack_methods[] = {
     {"load_yum_repo", (PyCFunction)load_yum_repo, METH_VARARGS | METH_KEYWORDS,
      NULL},
     {NULL}                      /* sentinel */
+};
+
+PySequenceMethods sack_sequence = {
+    (lenfunc)len,		/* sq_length */
 };
 
 PyTypeObject sack_Type = {
@@ -279,7 +282,7 @@ PyTypeObject sack_Type = {
     0,				/*tp_compare*/
     0,				/*tp_repr*/
     0,				/*tp_as_number*/
-    0,				/*tp_as_sequence*/
+    &sack_sequence,		/*tp_as_sequence*/
     0,				/*tp_as_mapping*/
     0,				/*tp_hash */
     0,				/*tp_call*/

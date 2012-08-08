@@ -82,7 +82,7 @@ END_TEST
 
 START_TEST(test_repo_load)
 {
-    fail_unless(test_globals.sack->pool->nsolvables ==
+    fail_unless(hy_sack_count(test_globals.sack) ==
 		TEST_EXPECT_SYSTEM_NSOLVABLES);
 }
 END_TEST

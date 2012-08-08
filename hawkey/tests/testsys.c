@@ -206,7 +206,7 @@ void setup_yum_sack(HySack sack, const char *yum_repo_name)
 				  HY_BUILD_CACHE |
 				  HY_LOAD_FILELISTS |
 				  HY_LOAD_PRESTO));
-    fail_unless(pool->nsolvables ==
+    fail_unless(hy_sack_count(sack) ==
 		TEST_META_SOLVABLES_COUNT + TEST_EXPECT_YUM_NSOLVABLES);
     hy_repo_free(repo);
 }

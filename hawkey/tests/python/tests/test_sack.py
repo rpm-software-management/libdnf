@@ -9,18 +9,18 @@ class Sanity(base.TestCase):
     def test_sanity(self):
         assert(self.repo_dir)
         sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
-        self.assertEqual(sack.nsolvables, 2)
+        self.assertEqual(len(sack), 2)
 
     def test_load_rpm(self):
         sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         sack.load_system_repo()
-        self.assertEqual(sack.nsolvables, hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
+        self.assertEqual(len(sack), hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
 
     def test_load_yum(self):
         sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         sack.load_system_repo()
         sack.load_yum_repo(build_cache=True)
-        self.assertEqual(sack.nsolvables, hawkey.test.EXPECT_YUM_NSOLVABLES +
+        self.assertEqual(len(sack), hawkey.test.EXPECT_YUM_NSOLVABLES +
                          hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
 
 class PackageWrapping(base.TestCase):

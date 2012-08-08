@@ -21,7 +21,7 @@ START_TEST(test_query_sanity)
 {
     HySack sack = test_globals.sack;
     fail_unless(sack != NULL);
-    fail_unless(sack_pool(sack)->nsolvables == TEST_EXPECT_SYSTEM_NSOLVABLES);
+    fail_unless(hy_sack_count(sack) == TEST_EXPECT_SYSTEM_NSOLVABLES);
     fail_unless(sack_pool(sack)->installed != NULL);
 
     HyQuery query = hy_query_create(sack);
