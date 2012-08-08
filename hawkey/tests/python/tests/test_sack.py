@@ -9,7 +9,7 @@ class Sanity(base.TestCase):
     def test_sanity(self):
         assert(self.repo_dir)
         sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
-        self.assertEqual(len(sack), 2)
+        self.assertEqual(len(sack), 0)
 
     def test_load_rpm(self):
         sack = hawkey.test.TestSack(repo_dir=self.repo_dir)

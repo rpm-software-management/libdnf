@@ -50,7 +50,7 @@ START_TEST(test_query_repo)
     q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_REPO, HY_EQ, HY_SYSTEM_REPO_NAME);
 
-    fail_unless(query_count_results(q) == TEST_EXPECT_SYSTEM_NSOLVABLES - 2);
+    fail_unless(query_count_results(q) == TEST_EXPECT_SYSTEM_NSOLVABLES);
 
     hy_query_free(q);
 

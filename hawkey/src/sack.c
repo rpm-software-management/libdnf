@@ -411,7 +411,8 @@ hy_sack_add_cmdline_package(HySack sack, const char *fn)
 int
 hy_sack_count(HySack sack)
 {
-    return sack_pool(sack)->nsolvables;
+    // subtract two for meta solvable and system solvable, see pool_create()
+    return sack_pool(sack)->nsolvables - 2;
 }
 
 int
