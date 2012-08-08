@@ -9,6 +9,14 @@
 #include "testsys.h"
 #include "test_query.h"
 
+static int
+size_and_free(HyQuery query)
+{
+    int c = query_count_results(query);
+    hy_query_free(query);
+    return c;
+}
+
 START_TEST(test_query_sanity)
 {
     HySack sack = test_globals.sack;
@@ -139,6 +147,25 @@ START_TEST(test_query_in)
     hy_query_filter_in(q, HY_PKG_NAME, HY_EQ, namelist);
     fail_unless(query_count_results(q) == 2);
     hy_query_free(q);
+}
+END_TEST
+
+START_TEST(test_query_provides)
+{
+    HySack sack = test_globals.sack;
+    HyQuery q;
+
+    q = hy_query_create(sack);
+    hy_query_filter_provides(q, HY_LT, "fool", "2.0");
+    fail_unless(size_and_free(q) == 1);
+
+    q = hy_query_create(sack);
+    hy_query_filter_provides(q, HY_GT, "fool", "2.0");
+    fail_unless(size_and_free(q) == 0);
+
+    q = hy_query_create(sack);
+    hy_query_filter_provides(q, HY_EQ, "P", "3-3");
+    fail_unless(size_and_free(q) == 1);
 }
 END_TEST
 
@@ -310,6 +337,7 @@ query_suite(void)
     tcase_add_test(tc, test_query_anded);
     tcase_add_test(tc, test_query_neq);
     tcase_add_test(tc, test_query_in);
+    tcase_add_test(tc, test_query_provides);
     tcase_add_test(tc, test_query_fileprovides);
     suite_add_tcase(s, tc);
 
