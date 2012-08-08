@@ -128,7 +128,7 @@ class Query(_hawkey.Query):
 
     def run(self):
         """ Execute the query and cache the result. """
-        if not self.result:
+        if self.result is None:
             self.result = super(Query, self).run()
         return self.result
 
