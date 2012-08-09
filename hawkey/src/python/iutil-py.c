@@ -10,7 +10,6 @@ PyObject *
 packagelist_to_pylist(HyPackageList plist, PyObject *sack)
 {
     HyPackage cpkg;
-    PyObject *package;
     PyObject *list;
     PyObject *retval;
 
@@ -21,12 +20,15 @@ packagelist_to_pylist(HyPackageList plist, PyObject *sack)
 
     int i;
     FOR_PACKAGELIST(cpkg, plist, i) {
-	package = new_package(sack, package_id(cpkg));
+	PyObject *package = new_package(sack, package_id(cpkg));
 	if (package == NULL) {
 	    retval = NULL;
 	    break;
 	}
-	if (PyList_Append(list, package) == -1) {
+
+	int rc = PyList_Append(list, package);
+	Py_DECREF(package);
+	if (rc == -1) {
 	    retval = NULL;
 	    break;
 	}
