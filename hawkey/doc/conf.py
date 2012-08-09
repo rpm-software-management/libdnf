@@ -240,3 +240,9 @@ texinfo_documents = [
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
+
+rst_prolog = """
+.. default-domain:: py
+.. _libsolv: https://github.com/openSUSE/libsolv
+
+"""
