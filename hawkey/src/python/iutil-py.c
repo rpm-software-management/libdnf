@@ -37,3 +37,27 @@ packagelist_to_pylist(HyPackageList plist, PyObject *sack)
     Py_DECREF(list);
     return NULL;
 }
+
+PyObject *
+strlist_to_pylist(const char **slist)
+{
+    PyObject *list = PyList_New(0);
+    if (list == NULL)
+	return NULL;
+
+    for (const char **iter = slist; *iter; ++iter) {
+	PyObject *str = PyString_FromString(*iter);
+	if (str == NULL)
+	    goto err;
+	int rc = PyList_Append(list, str);
+	Py_DECREF(str);
+	if (rc == -1)
+	    goto err;
+    }
+    return list;
+
+ err:
+    Py_DECREF(list);
+    return NULL;
+}
+

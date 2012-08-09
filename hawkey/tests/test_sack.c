@@ -47,6 +47,20 @@ START_TEST(test_give_cache_fn)
 }
 END_TEST
 
+START_TEST(test_list_arches)
+{
+    HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH);
+    const char ** arches = hy_sack_list_arches(sack);
+
+    /* noarch, x86_64, i686, i586, i486, i386 */
+    fail_unless(count_nullt_array(arches), 6);
+    ck_assert_str_eq(arches[2], "i686");
+
+    hy_free(arches);
+    hy_sack_free(sack);
+}
+END_TEST
+
 START_TEST(test_load_yum_repo_err)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL);
@@ -195,6 +209,7 @@ sack_suite(void)
     tcase_add_test(tc, test_environment);
     tcase_add_test(tc, test_sack_create);
     tcase_add_test(tc, test_give_cache_fn);
+    tcase_add_test(tc, test_list_arches);
     tcase_add_test(tc, test_load_yum_repo_err);
     tcase_add_test(tc, test_yum_repo_written);
     suite_add_tcase(s, tc);

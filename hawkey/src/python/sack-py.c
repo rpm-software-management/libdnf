@@ -3,9 +3,11 @@
 // hawkey
 #include "src/package_internal.h"
 #include "src/sack_internal.h"
+#include "src/util.h"
 
 // pyhawkey
 #include "hawkey-pysys.h"
+#include "iutil-py.h"
 #include "package-py.h"
 #include "repo-py.h"
 #include "sack-py.h"
@@ -186,6 +188,20 @@ add_cmdline_package(_SackObject *self, PyObject *fn_obj)
 }
 
 static PyObject *
+list_arches(_SackObject *self, PyObject *unused)
+{
+    const char **arches = hy_sack_list_arches(self->sack);
+    PyObject *list;
+    if (!arches) {
+	PyErr_SetString(PyExc_RuntimeError, "Arches not initialized");
+	return NULL;
+    }
+    list = strlist_to_pylist(arches);
+    hy_free(arches);
+    return list;
+}
+
+static PyObject *
 load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 {
     char *kwlist[] = {"repo", "build_cache", "load_filelists", "load_presto",
@@ -257,6 +273,8 @@ PyMethodDef sack_methods[] = {
     {"create_package", (PyCFunction)create_package, METH_O,
      NULL},
     {"add_cmdline_package", (PyCFunction)add_cmdline_package, METH_O,
+     NULL},
+    {"list_arches", (PyCFunction)list_arches, METH_NOARGS,
      NULL},
     {"load_system_repo", (PyCFunction)load_system_repo,
      METH_VARARGS | METH_KEYWORDS, NULL},

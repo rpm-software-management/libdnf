@@ -369,6 +369,28 @@ hy_sack_give_cache_fn(HySack sack, const char *reponame, const char *ext)
     return solv_dupappend(fn, ".solv", NULL);
 }
 
+const char **
+hy_sack_list_arches(HySack sack)
+{
+    Pool *pool = sack_pool(sack);
+    const int BLOCK_SIZE = 31;
+    int c = 0;
+    const char **ss = NULL;
+
+    if (!(pool->id2arch && pool->lastarch))
+	return NULL;
+
+    for (Id id = 0; id <= pool->lastarch; ++id) {
+	if (!pool->id2arch[id])
+	    continue;
+	ss = solv_extend(ss, c, 1, sizeof(char*), BLOCK_SIZE);
+	ss[c++] = pool_id2str(pool, id);
+    }
+    ss = solv_extend(ss, c, 1, sizeof(char*), BLOCK_SIZE);
+    ss[c++] = NULL;
+    return ss;
+}
+
 void
 hy_sack_set_installonly(HySack sack, const char **installonly)
 {
