@@ -304,12 +304,13 @@ START_TEST(test_filter_reponames)
 
     q = hy_query_create(test_globals.sack);
     hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
-    fail_unless(query_count_results(q) == 15);
+    fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES \
+					+ TEST_EXPECT_UPDATES_NSOLVABLES);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
     hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist2);
-    fail_unless(query_count_results(q) == 13);
+    fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
