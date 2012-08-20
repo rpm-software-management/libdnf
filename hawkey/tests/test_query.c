@@ -178,6 +178,67 @@ START_TEST(test_query_fileprovides)
 }
 END_TEST
 
+START_TEST(test_query_requires)
+{
+    HyQuery q;
+    const char *repolist[] = {"main", NULL};
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_requires(q, HY_EQ, "P-lib", "1");
+    fail_unless(query_count_results(q) == 1);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_requires(q, HY_GT, "P-lib", "5");
+    fail_unless(query_count_results(q) == 1);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_requires(q, HY_LT, "P-lib", "0.1");
+    fail_unless(query_count_results(q) == 1);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_requires(q, HY_EQ, "semolina", NULL);
+    fail_unless(query_count_results(q) == 1);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_requires(q, HY_EQ|HY_LT, "semolina", "3.0");
+    fail_unless(query_count_results(q) == 1);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_requires(q, HY_GT, "semolina", "1.0");
+    fail_unless(query_count_results(q) == 1);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_requires(q, HY_NEQ, "semolina", NULL);
+    fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES-1);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_requires(q, HY_NEQ, "semolina", "2");
+    fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES-1);
+    hy_query_free(q);
+
+   q = hy_query_create(test_globals.sack);
+    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_requires(q, HY_NEQ, "semolina", "2.1");
+    fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES);
+    hy_query_free(q);
+}
+END_TEST
+
 START_TEST(test_upgrades_sanity)
 {
     Pool *pool = sack_pool(test_globals.sack);
@@ -353,6 +414,7 @@ query_suite(void)
     tcase_add_unchecked_fixture(tc, fixture_with_main, teardown);
     tcase_add_test(tc, test_upgrade_already_installed);
     tcase_add_test(tc, test_downgrade);
+    tcase_add_test(tc, test_query_requires);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Full");

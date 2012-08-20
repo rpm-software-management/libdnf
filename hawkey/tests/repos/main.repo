@@ -12,7 +12,7 @@
 =Sum: in my ears
 =Pkg: walrus 2 5 noarch
 =Prv: walrus <= 2-5
-=Req: semolina
+=Req: semolina = 2
 =Pkg: flying 3 0 noarch
 =Req: P-lib
 =Pkg: hello 1 1 noarch

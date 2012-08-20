@@ -140,6 +140,42 @@ filter_providers(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
+filter_requires(HyQuery q, struct _Filter *f, Map *m)
+{
+    assert(f->nmatches == 1);
+    Pool *pool = sack_pool(q->sack);
+    Id id = pool_str2id(pool, f->matches[0], 0);
+
+    if (id == STRID_NULL || id == STRID_EMPTY)
+	return;
+
+    if (f->evr) {
+        Id evr = pool_str2id(pool, f->evr, 1);
+        int flags = type2relflags(f->filter_type);
+        id = pool_rel2id(pool, id, evr, flags, 1);
+    }
+
+    Queue requires;
+    queue_init(&requires);
+    for (Id s_id = 1; s_id < pool->nsolvables; ++s_id) {
+	Solvable *s = pool_id2solvable(pool, s_id);
+
+	if (!solvable_lookup_idarray(s, SOLVABLE_REQUIRES, &requires))
+	    continue;
+
+	for (int x = 0; requires.count; x++) {
+	    Id r_id = queue_pop(&requires);
+	    if (pool_match_dep(pool, id, r_id)) {
+		MAPSET(m, s_id);
+		break;
+	    }
+	}
+	queue_empty(&requires);
+    }
+    queue_free(&requires);
+}
+
+static void
 filter_repo(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
@@ -337,6 +373,16 @@ hy_query_filter_provides(HyQuery q, int filter_type, const char *name, const cha
     filterp->matches[0] = solv_strdup(name);
 }
 
+void
+hy_query_filter_requires(HyQuery q, int filter_type, const char *name, const char *evr)
+{
+    struct _Filter *filterq = query_add_filter(q, 1);
+    filterq->filter_type = filter_type;
+    filterq->keyname = HY_PKG_REQUIRES;
+    filterq->evr = solv_strdup(evr);
+    filterq->matches[0] = solv_strdup(name);
+}
+
 /**
  * Narrows to only packages updating installed packages.
  *
@@ -396,6 +442,8 @@ hy_query_run(HyQuery q)
 	map_empty(&m);
 	if (f->keyname == HY_PKG_PROVIDES) {
 	    filter_providers(q, f, &m);
+	} else if (f->keyname == HY_PKG_REQUIRES) {
+	    filter_requires(q, f, &m);
 	} else if (f->keyname == HY_PKG_REPO) {
 	    filter_repo(q, f, &m);
 	} else {
