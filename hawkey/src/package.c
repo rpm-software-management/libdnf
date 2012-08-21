@@ -113,6 +113,28 @@ hy_package_get_nvra(HyPackage pkg)
     return solv_strdup(pool_solvable2str(pkg->pool, s));
 }
 
+char *
+hy_package_get_sourcerpm(HyPackage pkg)
+{
+    Pool *pool = pkg->pool;
+    Solvable *s = get_solvable(pkg);
+    const char *name = solvable_lookup_str(s, SOLVABLE_SOURCENAME);
+    const char *evr = solvable_lookup_str(s, SOLVABLE_SOURCEEVR);
+    const char *arch = solvable_lookup_str(s, SOLVABLE_SOURCEARCH);
+
+    /* if sourcename or sourceevr is NULL it is the same as that of the package */
+    if (name == NULL)
+	name = pool_id2str(pool, s->name);
+    if (evr == NULL)
+	evr = pool_id2str(pool, s->evr);
+
+    char *join = solv_dupjoin(name, "-", evr);
+    join = solv_dupappend(join, ".", arch);
+    join = solv_dupappend(join, ".rpm", NULL);
+
+    return join;
+}
+
 const char*
 hy_package_get_name(HyPackage pkg)
 {

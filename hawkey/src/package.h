@@ -24,6 +24,7 @@ int hy_package_cmp(HyPackage pkg1, HyPackage pkg2);
 int hy_package_evr_cmp(HyPackage pkg1, HyPackage pkg2);
 char *hy_package_get_location(HyPackage pkg);
 char *hy_package_get_nvra(HyPackage pkg);
+char *hy_package_get_sourcerpm(HyPackage pkg);
 const char *hy_package_get_name(HyPackage pkg);
 const char *hy_package_get_arch(HyPackage pkg);
 const unsigned char *hy_package_get_chksum(HyPackage pkg, int *type);
@@ -39,6 +40,7 @@ unsigned long long hy_package_get_rpmdbid(HyPackage pkg);
 unsigned long long hy_package_get_size(HyPackage pkg);
 unsigned long long hy_package_get_buildtime(HyPackage pkg);
 unsigned long long hy_package_get_installtime(HyPackage pkg);
+
 HyPackageDelta hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr);
 const char *hy_packagedelta_get_location(HyPackageDelta delta);
 void hy_packagedelta_free(HyPackageDelta delta);

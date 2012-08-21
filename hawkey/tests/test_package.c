@@ -1,5 +1,6 @@
 // hawkey
 #include "src/query.h"
+#include "src/util.h"
 #include "testsys.h"
 #include "test_package.h"
 
@@ -62,6 +63,23 @@ START_TEST(test_lookup_num)
 }
 END_TEST
 
+START_TEST(test_sourcerpm)
+{
+    HyPackage pkg = by_name(test_globals.sack, "tour");
+    char *sourcerpm = hy_package_get_sourcerpm(pkg);
+
+    ck_assert_str_eq(sourcerpm, "tour-4-6.src.rpm");
+    hy_free(sourcerpm);
+    hy_package_free(pkg);
+
+    pkg = by_name(test_globals.sack, "mystery");
+    sourcerpm = hy_package_get_sourcerpm(pkg);
+    ck_assert_str_eq(sourcerpm, "mmysteryt-19.67-1.src.rpm");
+    hy_free(sourcerpm);
+    hy_package_free(pkg);
+}
+END_TEST
+
 START_TEST(test_presto)
 {
     HySack sack = test_globals.sack;
@@ -93,6 +111,7 @@ package_suite(void)
     tcase_add_unchecked_fixture(tc, fixture_yum, teardown);
     tcase_add_test(tc, test_checksums);
     tcase_add_test(tc, test_lookup_num);
+    tcase_add_test(tc, test_sourcerpm);
     tcase_add_test(tc, test_presto);
     suite_add_tcase(s, tc);
 

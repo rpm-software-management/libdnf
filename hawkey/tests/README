@@ -50,3 +50,9 @@ of two packages ("mystery", "tour") and generated repodata. The specfiles are
 included, all the package payload is generated in them. To rebuild them:
 
   rpmbuild -bb tour.spec
+
+If things change in these packages the respective changes need to be made in the
+unit tests too for them to pass. A notable change is the hand-edited 'mystery'
+sourcerpm property, changed to:
+
+  <rpm:sourcerpm>mmysteryt-19.67-1.src.rpm</rpm:sourcerpm>
