@@ -30,3 +30,38 @@ class Goal(base.TestCase):
         query = hawkey.Query(self.sack).filter(repo="karma")
         goal = hawkey.Goal(self.sack)
         self.assertRaises(hawkey.QueryException, goal.erase, query=query);
+
+class Collector(object):
+    def __init__(self):
+        self.pkgs = set()
+
+    def new_solution_cb(self, goal):
+        self.pkgs.update(goal.list_installs())
+
+    def new_solution_cb_borked(self, goal):
+        """ Raises AttributeError. """
+        self.pkgs_borked.update(goal.list_erasures())
+
+class GoalRunAll(base.TestCase):
+    def setUp(self):
+        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack.load_system_repo()
+        self.sack.load_test_repo("greedy", "greedy.repo")
+        self.goal = hawkey.Goal(self.sack)
+
+    def test_cb(self):
+        pkg_a = base.by_name(self.sack, "A")
+        pkg_b = base.by_name(self.sack, "B")
+        pkg_c = base.by_name(self.sack, "C")
+        self.goal.install(pkg_a)
+
+        collector = Collector()
+        self.goal.run_all(collector.new_solution_cb)
+        self.assertItemsEqual(collector.pkgs, [pkg_a, pkg_b, pkg_c])
+
+    def test_cb_borked(self):
+        """ Check exceptions are propagated from the callback. """
+        self.goal.install(base.by_name(self.sack, "A"))
+        collector = Collector()
+        self.assertRaises(AttributeError,
+                          self.goal.run_all, collector.new_solution_cb_borked)

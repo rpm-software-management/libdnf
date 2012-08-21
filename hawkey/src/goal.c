@@ -82,7 +82,7 @@ list_results(HyGoal goal, Id type_filter)
     return plist;
 }
 
-int
+static int
 internal_solver_callback(struct _Solver *solv, void *data)
 {
     struct _SolutionCallback *s_cb = (struct _SolutionCallback*)data;

@@ -72,6 +72,38 @@ args_query_pkg_parse(PyObject *args, PyObject *kwds,
     return 1;
 }
 
+static int
+args_run_parse(PyObject *args, PyObject *kwds, int *flags, PyObject **callback_p)
+{
+    char *kwlist[] = {"callback", "allow_uninstall", NULL};
+    int allow_uninstall = 0;
+    PyObject *callback = NULL;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Oi", kwlist,
+				     &callback, &allow_uninstall))
+	return 0;
+
+    if (callback) {
+	if (!callback_p) {
+	    PyErr_SetString(PyExc_ValueError,
+			    "Does not accept a callback argument.");
+	    return 0;
+	}
+	if (!PyCallable_Check(callback)) {
+	    PyErr_SetString(PyExc_ValueError, "Must be a callable object.");
+	    return 0;
+	}
+	*callback_p = callback;
+    } else if (callback_p) {
+	PyErr_SetString(PyExc_ValueError, "Expected a callback argument.");
+	return 0;
+    }
+
+    if (allow_uninstall)
+	*flags |= HY_ALLOW_UNINSTALL;
+    return 1;
+}
+
 static PyObject *
 op_ret2exc(int ret)
 {
@@ -228,19 +260,57 @@ userinstalled(_GoalObject *self, PyObject *pkg)
 static PyObject *
 run(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    char *kwlist[] = {"allow_uninstall", NULL};
-    int allow_uninstall = 0;
     int flags = 0;
-    int ret;
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", kwlist, &allow_uninstall))
+    if (!args_run_parse(args, kwds, &flags, NULL))
 	return NULL;
-    if (allow_uninstall)
-	flags |= HY_ALLOW_UNINSTALL;
-    ret = hy_goal_run_flags(self->goal, flags);
+
+    int ret = hy_goal_run_flags(self->goal, flags);
     if (!ret)
 	Py_RETURN_TRUE;
     Py_RETURN_FALSE;
+}
+
+struct _PySolutionCallback {
+    PyObject *callback_tuple;
+    PyObject *callback;
+    int errors;
+};
+
+static int
+py_solver_callback(HyGoal goal, void *data)
+{
+    struct _PySolutionCallback *cb_s = (struct _PySolutionCallback*)data;
+
+    PyObject *ret = PyObject_CallObject(cb_s->callback, cb_s->callback_tuple);
+    if (ret)
+	Py_DECREF(ret);
+    else
+	cb_s->errors++;
+
+    return 0; /* solution_callback() result is ignored in libsolv */
+}
+
+static PyObject *
+run_all(_GoalObject *self, PyObject *args, PyObject *kwds)
+{
+    int flags = 0;
+    PyObject *callback = NULL;
+    if (!args_run_parse(args, kwds, &flags, &callback))
+	return NULL;
+
+    PyObject *callback_tuple = Py_BuildValue("(O)", self);
+    if (!callback_tuple)
+	return NULL;
+
+    struct _PySolutionCallback cb_s = {callback_tuple, callback, 0};
+    int ret = hy_goal_run_all_flags(self->goal, py_solver_callback, &cb_s,
+				    flags);
+    Py_DECREF(callback_tuple);
+    if (cb_s.errors > 0)
+	return NULL;
+    if (!ret)
+	Py_RETURN_FALSE;
+    Py_RETURN_TRUE;
 }
 
 static PyObject *
@@ -347,6 +417,8 @@ static struct PyMethodDef goal_methods[] = {
     {"upgrade_all",	(PyCFunction)upgrade_all,	METH_NOARGS,	NULL},
     {"userinstalled",	(PyCFunction)userinstalled,	METH_O,		NULL},
     {"run",		(PyCFunction)run,
+     METH_VARARGS | METH_KEYWORDS, NULL},
+    {"run_all",	(PyCFunction)run_all,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"count_problems",	(PyCFunction)count_problems,	METH_NOARGS,	NULL},
     {"describe_problem",(PyCFunction)describe_problem,	METH_O,		NULL},
