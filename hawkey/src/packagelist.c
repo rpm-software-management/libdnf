@@ -100,6 +100,15 @@ hy_packagelist_get_clone(HyPackageList plist, int index)
     return hy_package_link(hy_packagelist_get(plist, index));
 }
 
+int
+hy_packagelist_has(HyPackageList plist, HyPackage pkg)
+{
+    for (int i = 0; i < plist->count; ++i)
+	if (hy_package_identical(pkg, plist->elements[i]))
+	    return 1;
+    return 0;
+}
+
 /**
  * Adds pkg at the end of plist.
  *

@@ -19,6 +19,7 @@ void hy_packagelist_free(HyPackageList plist);
 int hy_packagelist_count(HyPackageList plist);
 HyPackage hy_packagelist_get(HyPackageList plist, int index);
 HyPackage hy_packagelist_get_clone(HyPackageList plist, int index);
+int hy_packagelist_has(HyPackageList plist, HyPackage pkg);
 void hy_packagelist_push(HyPackageList plist, HyPackage pkg);
 
 #define FOR_PACKAGELIST(pkg, pkglist, i)						\
