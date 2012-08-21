@@ -1,0 +1,8 @@
+=Ver: 2.0
+#
+=Pkg: A 1 0 noarch
+=Req: somereq
+=Pkg: B 1 0 noarch
+=Prv: somereq
+=Pkg: C 1 0 noarch
+=Prv: somereq

@@ -33,6 +33,7 @@ int query_count_results(HyQuery query);
 HyRepo repo_by_name(Pool *pool, const char *name);
 
 /* fixtures */
+void fixture_greedy_only(void);
 void fixture_system_only(void);
 void fixture_with_main(void);
 void fixture_with_updates(void);

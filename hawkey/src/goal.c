@@ -20,6 +20,12 @@ struct _HyGoal {
     Transaction *trans;
 };
 
+struct _SolutionCallback {
+    HyGoal goal;
+    hy_solution_callback callback;
+    void *callback_data;
+};
+
 static int
 erase_flags2libsolv(int flags)
 {
@@ -33,10 +39,8 @@ static int
 solve(HyGoal goal, int flags)
 {
     HySack sack = goal->sack;
-    Pool *pool = sack_pool(sack);
-    Solver *solv = solver_create(pool);
+    Solver *solv = goal->solv;
 
-    goal->solv = solv;
     sack_make_provides_ready(sack);
     if (flags & HY_ALLOW_UNINSTALL)
 	solver_set_flag(solv, SOLVER_FLAG_ALLOW_UNINSTALL, 1);
@@ -76,6 +80,21 @@ list_results(HyGoal goal, Id type_filter)
 	    hy_packagelist_push(plist, package_create(pool, p));
     }
     return plist;
+}
+
+int
+internal_solver_callback(struct _Solver *solv, void *data)
+{
+    struct _SolutionCallback *s_cb = (struct _SolutionCallback*)data;
+    HyGoal goal = s_cb->goal;
+
+    assert(goal->solv == solv);
+    assert(goal->trans == NULL);
+    goal->trans = solver_create_transaction(solv);
+    int ret = s_cb->callback(goal, s_cb->callback_data);
+    transaction_free(goal->trans);
+    goal->trans = NULL;
+    return ret;
 }
 
 HyGoal
@@ -209,13 +228,16 @@ hy_goal_run(HyGoal goal)
 int
 hy_goal_run_flags(HyGoal goal, int flags)
 {
-    assert(goal->solv == NULL); /* only allow goal_go() once */
+    Pool *pool = sack_pool(goal->sack);
+    Solver *solv = solver_create(pool);
+
+    assert(goal->solv == NULL); /* only allow goal_run() once */
+    goal->solv = solv;
     if (solve(goal, flags))
 	return 1;
 
 #if 0
     Transaction *trans = goal->trans;
-    Pool *pool = sack_pool(goal->sack);
 
     assert(trans);
     transaction_print(trans);
@@ -239,6 +261,29 @@ hy_goal_run_flags(HyGoal goal, int flags)
 	}
     }
 #endif
+    return 0;
+}
+
+int
+hy_goal_run_all(HyGoal goal, hy_solution_callback cb, void *cb_data)
+{
+    return hy_goal_run_all_flags(goal, cb, cb_data, 0);
+}
+
+int
+hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
+			 int flags)
+{
+    struct _SolutionCallback cb_tuple = {goal, cb, cb_data};
+    Pool *pool = sack_pool(goal->sack);
+    Solver *solv = solver_create(pool);
+
+    solv->solution_callback = internal_solver_callback;
+    solv->solution_callback_data = &cb_tuple;
+    assert(goal->solv == NULL); /* only allow goal_run() once */
+    goal->solv = solv;
+    if (solve(goal, flags))
+	return 1;
     return 0;
 }
 

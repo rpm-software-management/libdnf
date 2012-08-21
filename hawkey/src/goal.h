@@ -54,6 +54,9 @@ int hy_goal_upgrade_query(HyGoal goal, HyQuery query);
 int hy_goal_userinstalled(HyGoal goal, HyPackage pkg);
 int hy_goal_run(HyGoal goal);
 int hy_goal_run_flags(HyGoal goal, int flags);
+int hy_goal_run_all(HyGoal goal, hy_solution_callback cb, void *cb_data);
+int hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
+			     int flags);
 
 /* problems */
 int hy_goal_count_problems(HyGoal goal);

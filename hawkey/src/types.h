@@ -16,6 +16,8 @@ typedef struct _HySack * HySack;
 
 typedef const unsigned char HyChecksum;
 
+typedef int (*hy_solution_callback)(HyGoal goal, void *callback_data);
+
 #ifdef __cplusplus
 }
 #endif

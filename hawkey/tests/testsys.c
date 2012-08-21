@@ -161,6 +161,13 @@ repo_by_name(Pool *pool, const char *name)
 }
 
 void
+fixture_greedy_only(void)
+{
+    HySack sack = create_ut_sack();
+    fail_if(setup_with(sack, "greedy", NULL));
+}
+
+void
 fixture_system_only(void)
 {
     HySack sack = create_ut_sack();

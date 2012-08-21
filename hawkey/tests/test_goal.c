@@ -455,6 +455,63 @@ START_TEST(test_goal_erase_clean_deps)
 }
 END_TEST
 
+struct Solutions {
+    int solutions;
+    HyPackageList installs;
+};
+
+static struct Solutions *
+solutions_create(void)
+{
+    struct Solutions *solutions = solv_calloc(1, sizeof(struct Solutions));
+    solutions->installs = hy_packagelist_create();
+    return solutions;
+}
+
+static void
+solutions_free(struct Solutions *solutions)
+{
+    hy_packagelist_free(solutions->installs);
+    solv_free(solutions);
+}
+
+static int
+solution_cb(HyGoal goal, void *data)
+{
+    struct Solutions *solutions = (struct Solutions*)data;
+    solutions->solutions++;
+
+    HyPackageList new_installs = hy_goal_list_installs(goal);
+    HyPackage pkg;
+    int i;
+
+    FOR_PACKAGELIST(pkg, new_installs, i)
+	if (!hy_packagelist_has(solutions->installs, pkg))
+	    hy_packagelist_push(solutions->installs, hy_package_link(pkg));
+    hy_packagelist_free(new_installs);
+
+    return 0;
+}
+
+START_TEST(test_goal_run_all)
+{
+    HySack sack = test_globals.sack;
+    HyGoal goal = hy_goal_create(sack);
+    HyPackage pkg = get_available_pkg(sack, "A");
+
+    fail_if(hy_goal_install(goal, pkg));
+
+    struct Solutions *solutions = solutions_create();
+    hy_goal_run_all(goal, solution_cb, solutions);
+    fail_unless(solutions->solutions == 2);
+    fail_unless(hy_packagelist_count(solutions->installs) == 3);
+    solutions_free(solutions);
+
+    hy_goal_free(goal);
+    hy_package_free(pkg);
+}
+END_TEST
+
 Suite *
 goal_suite(void)
 {
@@ -482,6 +539,11 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_erase_simple);
     tcase_add_test(tc, test_goal_erase_with_deps);
     tcase_add_test(tc, test_goal_erase_clean_deps);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("Greedy");
+    tcase_add_unchecked_fixture(tc, fixture_greedy_only, teardown);
+    tcase_add_test(tc, test_goal_run_all);
     suite_add_tcase(s, tc);
 
     return s;
