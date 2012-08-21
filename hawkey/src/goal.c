@@ -42,6 +42,21 @@ solve(HyGoal goal, int flags)
     Solver *solv = goal->solv;
 
     sack_make_provides_ready(sack);
+    if (solver_solve(solv, &goal->job))
+	return 1;
+    goal->trans = solver_create_transaction(solv);
+    return 0;
+}
+
+static Solver *
+construct_solver(HyGoal goal, int flags)
+{
+    HySack sack = goal->sack;
+    Pool *pool = sack_pool(sack);
+    Solver *solv = solver_create(pool);
+
+    assert(goal->solv == NULL);
+
     if (flags & HY_ALLOW_UNINSTALL)
 	solver_set_flag(solv, SOLVER_FLAG_ALLOW_UNINSTALL, 1);
 
@@ -52,12 +67,8 @@ solve(HyGoal goal, int flags)
 
     /* installonly notwithstanding, process explicit obsoletes */
     solver_set_flag(solv, SOLVER_FLAG_KEEP_EXPLICIT_OBSOLETES, 1);
-
-    if (solver_solve(solv, &goal->job))
-	return 1;
-
-    goal->trans = solver_create_transaction(solv);
-    return 0;
+    goal->solv = solv;
+    return solv;
 }
 
 static HyPackageList
@@ -83,7 +94,7 @@ list_results(HyGoal goal, Id type_filter)
 }
 
 static int
-internal_solver_callback(struct _Solver *solv, void *data)
+internal_solver_callback(Solver *solv, void *data)
 {
     struct _SolutionCallback *s_cb = (struct _SolutionCallback*)data;
     HyGoal goal = s_cb->goal;
@@ -228,40 +239,8 @@ hy_goal_run(HyGoal goal)
 int
 hy_goal_run_flags(HyGoal goal, int flags)
 {
-    Pool *pool = sack_pool(goal->sack);
-    Solver *solv = solver_create(pool);
-
-    assert(goal->solv == NULL); /* only allow goal_run() once */
-    goal->solv = solv;
-    if (solve(goal, flags))
-	return 1;
-
-#if 0
-    Transaction *trans = goal->trans;
-
-    assert(trans);
-    transaction_print(trans);
-    for (int i = 0; i < trans->steps.count; ++i) {
-	Id p = trans->steps.elements[i];
-	Solvable *s = pool_id2solvable(pool, p);
-	Id type = transaction_type(trans, p, SOLVER_TRANSACTION_RPM_ONLY);
-	switch (type) {
-	case SOLVER_TRANSACTION_ERASE:
-	    printf("erasing id %d\n", p);
-	    break;
-	case SOLVER_TRANSACTION_INSTALL:
-	    printf("installing %d\n", p);
-	    printf("\t %s %s\n", s->repo->name,
-		   solvable_get_location(s, NULL));
-	    break;
-	default:
-	    printf("unrecognized type 0x%x for %d\n", type, p);
-	    printf("\t %s\n", pool_solvable2str(pool, s));
-	    break;
-	}
-    }
-#endif
-    return 0;
+    construct_solver(goal, flags);
+    return solve(goal, flags);
 }
 
 int
@@ -275,16 +254,12 @@ hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
 			 int flags)
 {
     struct _SolutionCallback cb_tuple = {goal, cb, cb_data};
-    Pool *pool = sack_pool(goal->sack);
-    Solver *solv = solver_create(pool);
+    Solver *solv = construct_solver(goal, flags);
 
     solv->solution_callback = internal_solver_callback;
     solv->solution_callback_data = &cb_tuple;
-    assert(goal->solv == NULL); /* only allow goal_run() once */
-    goal->solv = solv;
-    if (solve(goal, flags))
-	return 1;
-    return 0;
+
+    return solve(goal, flags);
 }
 
 int
