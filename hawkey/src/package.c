@@ -69,6 +69,12 @@ hy_package_link(HyPackage pkg)
 }
 
 int
+hy_package_identical(HyPackage pkg1, HyPackage pkg2)
+{
+    return pkg1->id == pkg2->id;
+}
+
+int
 hy_package_cmp(HyPackage pkg1, HyPackage pkg2)
 {
     Pool *pool = pkg1->pool;
@@ -78,7 +84,7 @@ hy_package_cmp(HyPackage pkg1, HyPackage pkg2)
     const char *name2 = pool_id2str(pool, s2->name);
     int ret = strcmp(name1, name2);
 
-   if (ret)
+    if (ret)
 	return ret;
     return hy_package_evr_cmp(pkg1, pkg2);
 }

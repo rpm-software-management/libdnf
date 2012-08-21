@@ -19,6 +19,7 @@ extern "C" {
 /* public */
 void hy_package_free(HyPackage pkg);
 HyPackage hy_package_link(HyPackage pkg);
+int hy_package_identical(HyPackage pkg1, HyPackage pkg2);
 int hy_package_cmp(HyPackage pkg1, HyPackage pkg2);
 int hy_package_evr_cmp(HyPackage pkg1, HyPackage pkg2);
 char *hy_package_get_location(HyPackage pkg);

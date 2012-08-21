@@ -20,6 +20,22 @@ START_TEST(test_package_summary)
 }
 END_TEST
 
+START_TEST(test_identical)
+{
+    HySack sack = test_globals.sack;
+    HyPackage pkg1 = by_name(sack, "penny-lib");
+    HyPackage pkg2 = by_name(sack, "flying");
+    HyPackage pkg3 = by_name(sack, "penny-lib");
+
+    fail_unless(hy_package_identical(pkg1, pkg3));
+    fail_if(hy_package_identical(pkg2, pkg3));
+
+    hy_package_free(pkg1);
+    hy_package_free(pkg2);
+    hy_package_free(pkg3);
+}
+END_TEST
+
 START_TEST(test_checksums)
 {
     HyPackage pkg = by_name(test_globals.sack, "mystery");
@@ -70,6 +86,7 @@ package_suite(void)
     tcase_add_unchecked_fixture(tc, fixture_system_only, teardown);
     tcase_add_test(tc, test_refcounting);
     tcase_add_test(tc, test_package_summary);
+    tcase_add_test(tc, test_identical);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("WithRealRepo");
