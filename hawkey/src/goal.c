@@ -349,12 +349,11 @@ int
 hy_goal_get_reason(HyGoal goal, HyPackage pkg)
 {
     assert(goal->solv);
-    int reason = solver_describe_decision(goal->solv, package_id(pkg), NULL);
+    Id info;
+    int reason = solver_describe_decision(goal->solv, package_id(pkg), &info);
 
-    switch (reason) {
-    case SOLVER_REASON_RESOLVE_JOB:
+    if (reason == SOLVER_REASON_UNIT_RULE &&
+	solver_ruleclass(goal->solv, info) == SOLVER_RULE_JOB)
 	return HY_REASON_USER;
-    default:
-	return HY_REASON_DEP;
-    }
+    return HY_REASON_DEP;
 }
