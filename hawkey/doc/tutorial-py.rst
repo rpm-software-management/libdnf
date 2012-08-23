@@ -243,13 +243,18 @@ matching package* for it and add that for installation. It saves user some
 deicsions like which version should be installed or what architecture (this gets
 very relevant with multiarch libraries).
 
-Think about the queries in this context more as a *specifiers* and less as
-*chain of filters*. Not all kinds of Query filters can used for Goal as when
-searching for a package. In fact in this context, currently only ``name`` and
-``arch`` filters are recognized, the others raise an error::
+Think about the queries in this context more as *specifiers* and less as *chain
+of filters*. Not all kinds of Query filters can used for Goal as when searching
+for a package. In fact in this context, currently only ``name`` and ``arch``
+filters are recognized, the others raise an error::
 
   >>> goal = hawkey.Goal(sack)
   >>> goal.install(query=hawkey.Query(sack).filter(name='spring', repo='fedora'))
   Traceback (most recent call last):
     File "<stdin>", line 1, in <module>
   _hawkey.QueryException: Query unsupported in this context.
+
+If you mean to install *all packages* matching an arbitrarily complex query,
+just use the method describe above::
+
+  >>> map(goal.install, q)
