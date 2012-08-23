@@ -1,8 +1,8 @@
-
-
 ************************
  python-hawkey Tutorial
 ************************
+
+.. contents::
 
 Setup
 =====
@@ -94,7 +94,6 @@ The strategy for using ``load_filelists=True`` is thus:
 
 * Use it if you are not sure.
 
-
 Building and Reusing the Repo Cache
 ===================================
 
@@ -132,13 +131,13 @@ Query is the means in hawkey of finding a package based on one or more criteria
 <https://docs.djangoproject.com/en/1.4/topics/db/queries/>`_, the main concepts being:
 
 * a fresh Query object matches all packages in the Sack and the selection is
-  gradually narrowed down by calls to :meth:`filter`
+  gradually narrowed down by calls to :meth:`Query.filter`
 
-* applying a :meth:`filter` does not start to evaluate the Query, i.e. the Query
-  is lazy. Query is only evaluated when we explicitly tell it to or when we
-  start to iterate it.
+* applying a :meth:`Query.filter` does not start to evaluate the Query, i.e. the
+  Query is lazy. Query is only evaluated when we explicitly tell it to or when
+  we start to iterate it.
 
-* use Python keyword arguments to :meth:`filter` to specify the filtering
+* use Python keyword arguments to :meth:`Query.filter` to specify the filtering
   criteria.
 
 For instance, let's say I want to find all installed packages which name ends
@@ -172,9 +171,85 @@ Or I want to find the latest version of all ``python`` packages the Sack knows o
   ... 
   python-2.7.3-6.fc17.x86_64
 
-Goals: "I want to install X, what are the deps I'm missing?"
-============================================================
+Resolving things with Goals
+===========================
+
+Many :class:`Sack` sessions culminate in bout of dependency resolving, that is
+answering a question along the lines of "I have a package X in a repository
+here, what other packages do I need to install/update to have X installed and
+all its dependencies recursively satisfied?" Suppose we want to install `the RTS
+game Spring <http://springrts.com/>`_. First let's locate the latest version of
+the package in repositories::
+
+  >>> q = hawkey.Query(sack).filter(name='spring', latest=True)
+  >>> pkg = hawkey.Query(sack).filter(name='spring', latest=True)[0]
+  >>> str(pkg)
+  'spring-88.0-2.fc17.x86_64'
+  >>> pkg.reponame
+  'fedora'
+
+Then build the :class:`Goal` object and tell it our goal is installing the
+``pkg``. Then we fire off the libsolv's dependency resolver by running the
+goal::
+
+  >>> g = hawkey.Goal(sack)
+  >>> g.install(pkg)
+  >>> g.run()
+  True
+
+``True`` as a return value here indicates that libsolv could find a solution to
+our goal. This is not always the case, there are plenty of situations when there
+is no solution, the most common one being a package should be installed but one
+of its dependnecies is missing from the sack.
+
+The three methods :meth:`Goal.list_installs`, :meth:`Goal.list_upgrades` and
+:meth:`Goal.list_erasures` can show which packages should be
+installed/upgraded/erased to satisfy the packaging goal we set out to achieve
+(the mapping of :func:`str` over the results below ensures human readable
+package names instead of numbers are presented)::
+
+  >>> map(str, g.list_installs())
+  ['spring-88.0-2.fc17.x86_64', 'spring-installer-20090316-10.fc17.x86_64', 'springlobby-0.139-3.fc17.x86_64', 'spring-maps-default-0.1-8.fc17.noarch', 'wxBase-2.8.12-4.fc17.x86_64', 'wxGTK-2.8.12-4.fc17.x86_64', 'rb_libtorrent-0.15.9-1.fc17.x86_64', 'GeoIP-1.4.8-2.1.fc17.x86_64']
+  >>> map(str, g.list_upgrades())
+  []
+  >>> map(str, g.list_erasures())
+  []
+
+So what does it tell us? That given the state of the given system and the given
+repository we used, 8 packages need to be installed,
+``spring-88.0-2.fc17.x86_64`` itself included. No packages need to be upgraded
+or erased.
 
 Query Installs
 --------------
+For certain very simple queries we can do installs directly without ever executing them::
 
+  >>> g = hawkey.Goal(sack)
+  >>> q = hawkey.Query(sack).filter(name='spring')
+  >>> g.install(query=q)
+  >>> g.run()
+  True
+  >>> map(str, g.list_installs())
+  ['spring-88.0-2.fc17.x86_64', 'spring-installer-20090316-10.fc17.x86_64', 'springlobby-0.139-3.fc17.x86_64', 'spring-maps-default-0.1-8.fc17.noarch', 'wxBase-2.8.12-4.fc17.x86_64', 'wxGTK-2.8.12-4.fc17.x86_64', 'rb_libtorrent-0.15.9-1.fc17.x86_64', 'GeoIP-1.4.8-2.1.fc17.x86_64']
+  >>> len(g.list_upgrades())
+  0
+  >>> len(g.list_erasures())
+  0
+
+Notice we arrived at the same result as before, when the query got iterated
+first. When a :class:`Query` is passed directly to :meth:`Goal.install` hawkey
+examines the query and without running it instructs libsolv to find *the best
+matching package* for it and add that for installation. It saves user some
+deicsions like which version should be installed or what architecture (this gets
+very relevant with multiarch libraries).
+
+Think about the queries in this context more as a *specifiers* and less as
+*chain of filters*. Not all kinds of Query filters can used for Goal as when
+searching for a package. In fact in this context, currently only ``name`` and
+``arch`` filters are recognized, the others raise an error::
+
+  >>> goal = hawkey.Goal(sack)
+  >>> goal.install(query=hawkey.Query(sack).filter(name='spring', repo='fedora'))
+  Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+  _hawkey.QueryException: Query unsupported in this context.
