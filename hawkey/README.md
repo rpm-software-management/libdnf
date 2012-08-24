@@ -20,6 +20,10 @@ From your checkout dir:
     cmake ..
     make
 
+To build the documentation, from the build/ directory:
+
+    make doc
+
 ## Building with a custom version of libsolv
 
 Libsolv is checked out at /home/akozumpl/libsolv, built at
