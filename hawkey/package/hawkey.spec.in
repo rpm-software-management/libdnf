@@ -1,9 +1,9 @@
-%global gitrev 8599c55
+%global gitrev efeb04c
 %global libsolv_version 0.0.0-17
 
 Name:		hawkey
 Version:	@VERSION@
-Release:	1.git%{gitrev}%{?dist}
+Release:	2.git%{gitrev}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
@@ -48,6 +48,7 @@ Python bindings for the hawkey library.
 %build
 %cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .
 make %{?_smp_mflags}
+make doc
 
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
@@ -64,11 +65,15 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{_libdir}/libhawkey.so
 %{_libdir}/pkgconfig/hawkey.pc
 %{_includedir}/hawkey/
+%{_mandir}/man1/hawkey.1.gz
 
 %files -n python-hawkey
 %{python_sitearch}/
 
 %changelog
+* Thu Aug 23 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.9-2.gitefeb04c
+- Add manpage.
+
 * Thu Aug 23 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.9-1.git8599c55
 - Finding all solutions in Goal.
 - hy_goal_reason() no longer depends on Fedora-specific hacks in libsolv.
