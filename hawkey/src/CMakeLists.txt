@@ -25,7 +25,8 @@ SET(HAWKEY_headers
     repo.h
     sack.h
     types.h
-    util.h)
+    util.h
+    version.h)
 
 IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
   SET (LIB_SUFFIX "64")

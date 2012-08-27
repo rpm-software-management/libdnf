@@ -48,7 +48,7 @@ Python bindings for the hawkey library.
 %build
 %cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .
 make %{?_smp_mflags}
-make doc
+make doc-man
 
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
