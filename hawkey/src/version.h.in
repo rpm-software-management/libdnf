@@ -1,0 +1,16 @@
+#ifndef HY_VERSION_H
+#define HY_VERSION_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define HY_VERSION_MAJOR @HAWKEY_MAJOR@
+#define HY_VERSION_MINOR @HAWKEY_MINOR@
+#define HY_VERSION_PATCH @HAWKEY_PATCH@
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* HY_VERSION_H */

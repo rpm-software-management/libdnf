@@ -4,6 +4,7 @@
 #include "src/goal.h"
 #include "src/query.h"
 #include "src/util.h"
+#include "src/version.h"
 
 // pyhawkey
 #include "exception-py.h"
@@ -72,6 +73,10 @@ init_hawkey(void)
 	return;
     Py_INCREF(&repo_Type);
     PyModule_AddObject(m, "Repo", (PyObject *)&repo_Type);
+
+    PyModule_AddIntConstant(m, "VERSION_MAJOR", HY_VERSION_MAJOR);
+    PyModule_AddIntConstant(m, "VERSION_MINOR", HY_VERSION_MINOR);
+    PyModule_AddIntConstant(m, "VERSION_PATCH", HY_VERSION_PATCH);
 
     PyModule_AddStringConstant(m, "SYSTEM_REPO_NAME", HY_SYSTEM_REPO_NAME);
     PyModule_AddStringConstant(m, "CMDLINE_REPO_NAME", HY_CMDLINE_REPO_NAME);
