@@ -43,6 +43,19 @@ START_TEST(test_query_clear)
 }
 END_TEST
 
+START_TEST(test_query_clone)
+{
+    const char *namelist[] = {"penny", "fool", NULL};
+    HyQuery q = hy_query_create(test_globals.sack);
+
+    hy_query_filter_in(q, HY_PKG_NAME, HY_EQ, namelist);
+    HyQuery clone = hy_query_clone(q);
+    hy_query_free(q);
+    fail_unless(query_count_results(clone) == 2);
+    hy_query_free(clone);
+}
+END_TEST
+
 START_TEST(test_query_repo)
 {
     HyQuery q;
@@ -391,6 +404,7 @@ query_suite(void)
     tcase_add_unchecked_fixture(tc, fixture_system_only, teardown);
     tcase_add_test(tc, test_query_sanity);
     tcase_add_test(tc, test_query_clear);
+    tcase_add_test(tc, test_query_clone);
     tcase_add_test(tc, test_query_repo);
     tcase_add_test(tc, test_query_name);
     tcase_add_test(tc, test_query_evr);

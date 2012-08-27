@@ -47,6 +47,7 @@ enum _hy_key_name_e {
 HyQuery hy_query_create(HySack sack);
 void hy_query_free(HyQuery q);
 void hy_query_clear(HyQuery q);
+HyQuery hy_query_clone(HyQuery q);
 void hy_query_filter(HyQuery q, int keyname, int filter_type, const char *match);
 void hy_query_filter_in(HyQuery q, int keyname, int filter_type,
 			const char **matches);

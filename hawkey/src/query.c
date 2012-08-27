@@ -93,7 +93,8 @@ query_add_filter(HyQuery q, int nmatches)
 {
     struct _Filter filter = {
 	.matches = solv_calloc(nmatches, sizeof(char *)),
-	.nmatches = nmatches
+	.nmatches = nmatches,
+	.evr = NULL
     };
     q->filters = solv_extend(q->filters, q->nfilters, 1, sizeof(filter),
 			     BLOCK_SIZE);
@@ -339,6 +340,30 @@ hy_query_clear(HyQuery q)
     solv_free(q->filters);
     q->filters = NULL;
     q->nfilters = 0;
+}
+
+HyQuery
+hy_query_clone(HyQuery q)
+{
+    HyQuery qn = hy_query_create(q->sack);
+
+    qn->downgrades = q->downgrades;
+    qn->updates = q->updates;
+    qn->latest = q->latest;
+    qn->obsoleting = q->obsoleting;
+
+    for (int i = 0; i < q->nfilters; ++i) {
+	struct _Filter *filterp = query_add_filter(qn, q->filters[i].nmatches);
+
+	filterp->filter_type = q->filters[i].filter_type;
+	filterp->keyname = q->filters[i].keyname;
+	for (int j = 0; j < q->filters[i].nmatches; ++j)
+	    filterp->matches[j] = solv_strdup(q->filters[i].matches[j]);
+	filterp->evr = solv_strdup(q->filters[i].evr);
+    }
+    assert(qn->nfilters == q->nfilters);
+
+    return qn;
 }
 
 void
