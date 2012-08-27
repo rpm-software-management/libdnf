@@ -7,8 +7,8 @@ Contents:
 .. toctree::
    :maxdepth: 1
 
+   faq
    tutorial-py
-   faq-py
 
 
 Indices and tables
