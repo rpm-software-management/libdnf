@@ -1,5 +1,5 @@
 ####################################
- Welcome to Hawkey's documentation!
+ Hawkey, the libsolv API Simplified
 ####################################
 
 Contents:
@@ -7,9 +7,9 @@ Contents:
 .. toctree::
    :maxdepth: 1
 
+   changes
    faq
    tutorial-py
-
 
 Indices and tables
 
