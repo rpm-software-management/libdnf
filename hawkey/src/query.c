@@ -465,13 +465,17 @@ hy_query_run(HyQuery q)
 	struct _Filter *f = q->filters + i;
 
 	map_empty(&m);
-	if (f->keyname == HY_PKG_PROVIDES) {
+	switch (f->keyname) {
+	case HY_PKG_PROVIDES:
 	    filter_providers(q, f, &m);
-	} else if (f->keyname == HY_PKG_REQUIRES) {
+	    break;
+	case HY_PKG_REQUIRES:
 	    filter_requires(q, f, &m);
-	} else if (f->keyname == HY_PKG_REPO) {
+	    break;
+	case HY_PKG_REPO:
 	    filter_repo(q, f, &m);
-	} else {
+	    break;
+	default:
 	    filter_dataiterator(q, f, &m);
 	}
 	if (f->filter_type & HY_NOT)
