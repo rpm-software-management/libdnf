@@ -6,8 +6,7 @@ class Package(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
-        q = hawkey.Query(self.sack)
-        q.filter(name__eq="flying")
+        q = hawkey.Query(self.sack).filter(name__eq="flying")
         self.pkg = list(q)[0]
 
     def test_repr(self):

@@ -102,10 +102,10 @@ class Query(_hawkey.Query):
     def __getitem__(self, idx):
         return self.run()[idx]
 
-    def _parse_filter_args(self, lst, dct):
+    def _parse_filter_args(self, flags, dct):
         args = []
         filter_flags = 0
-        for flag in lst:
+        for flag in flags:
             if not flag in [ICASE]:
                 raise ValueError("unrecognized flag: %s" % flag)
             filter_flags |= flag
@@ -143,8 +143,13 @@ class Query(_hawkey.Query):
         return len(self.run())
 
     def filter(self, *lst, **kwargs):
+        new_query = Query(self)
+        return new_query.filterm(*lst, **kwargs)
+
+    def filterm(self, *lst, **kwargs):
+        flags = set(lst)
         map(lambda arg_tuple: super(Query, self).filter(*arg_tuple),
-            self._parse_filter_args(lst, kwargs))
+            self._parse_filter_args(flags, kwargs))
         return self
 
     def provides(self, name, **kwargs):

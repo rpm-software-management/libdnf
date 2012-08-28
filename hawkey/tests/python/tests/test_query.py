@@ -12,16 +12,16 @@ class Query(base.TestCase):
 
     def test_sanity(self):
         q = hawkey.Query(self.sack)
-        q.filter(name__eq="flying")
+        q.filterm(name__eq="flying")
         self.assertEqual(q.count(), 1)
 
     def test_unicode(self):
         q = hawkey.Query(self.sack)
-        q.filter(name__eq=u"flying")
+        q.filterm(name__eq=u"flying")
         self.assertEqual(q.count(), 1)
 
         q = hawkey.Query(self.sack)
-        q.filter(name__eq=[u"flying", "penny"])
+        q.filterm(name__eq=[u"flying", "penny"])
         self.assertEqual(q.count(), 2)
 
     def test_kwargs_check(self):
@@ -31,11 +31,11 @@ class Query(base.TestCase):
     def test_kwargs(self):
         q = hawkey.Query(self.sack)
         # test combining several criteria
-        q.filter(name__glob="*enny*", summary__substr="eyes")
+        q.filterm(name__glob="*enny*", summary__substr="eyes")
         self.assertEqual(q.count(), 1)
         # test shortcutting for equality comparison type
         q = hawkey.Query(self.sack)
-        q.filter(name="flying")
+        q.filterm(name="flying")
         self.assertEqual(q.count(), 1)
         # test flags parsing
         q = hawkey.Query(self.sack).filter(name="FLYING")
@@ -45,23 +45,29 @@ class Query(base.TestCase):
 
     def test_in(self):
         q = hawkey.Query(self.sack)
-        q.filter(name__substr=["ool", "enny-li"])
+        q.filterm(name__substr=["ool", "enny-li"])
         self.assertEqual(q.count(), 2)
 
     def test_iteration(self):
         q = hawkey.Query(self.sack)
-        q.filter(name__substr=["penny"])
+        q.filterm(name__substr=["penny"])
         self.assertEqual(q.count(), 2)
         self.assertNotEqual(q[0], q[1])
 
     def test_clone(self):
         q = hawkey.Query(self.sack)
-        q.filter(name__substr=["penny"])
+        q.filterm(name__substr=["penny"])
         q_clone = hawkey.Query(q)
         del q
 
         self.assertEqual(q_clone.count(), 2)
         self.assertNotEqual(q_clone[0], q_clone[1])
+
+    def test_immutability(self):
+        q = hawkey.Query(self.sack).filter(name="jay")
+        q2 = q.filter(evr="5.0-0")
+        self.assertEqual(q.count(), 2)
+        self.assertEqual(q2.count(), 1)
 
 class QueryUpdates(base.TestCase):
     def setUp(self):
@@ -71,5 +77,5 @@ class QueryUpdates(base.TestCase):
 
     def test_updates(self):
         q = hawkey.Query(self.sack)
-        q.filter(name="flying", upgrades=1)
+        q.filterm(name="flying", upgrades=1)
         self.assertEqual(q.count(), 1)
