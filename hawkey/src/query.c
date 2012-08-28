@@ -183,9 +183,8 @@ filter_requires(HyQuery q, struct _Filter *f, Map *m)
     for (Id s_id = 1; s_id < pool->nsolvables; ++s_id) {
 	Solvable *s = pool_id2solvable(pool, s_id);
 
-	if (!solvable_lookup_idarray(s, SOLVABLE_REQUIRES, &requires))
-	    continue;
-
+	queue_empty(&requires);
+	solvable_lookup_idarray(s, SOLVABLE_REQUIRES, &requires);
 	for (int x = 0; requires.count; x++) {
 	    Id r_id = queue_pop(&requires);
 	    if (pool_match_dep(pool, id, r_id)) {
@@ -193,7 +192,6 @@ filter_requires(HyQuery q, struct _Filter *f, Map *m)
 		break;
 	    }
 	}
-	queue_empty(&requires);
     }
     queue_free(&requires);
 }
