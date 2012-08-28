@@ -84,8 +84,10 @@ class Package(_hawkey.Package):
         return self.evr_cmp(pkg) < 0
 
 class Query(_hawkey.Query):
-    def __init__(self, sack):
-        super(Query, self).__init__(sack)
+    def __init__(self, sack=None, query=None):
+        if sack is not None and query is not None:
+            raise ValueError("Accepts either a Sack or a Query.")
+        super(Query, self).__init__(sack or query) # accepts either
         self.result = None
 
     def __add__(self, operand):

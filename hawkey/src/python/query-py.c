@@ -54,24 +54,33 @@ query_dealloc(_QueryObject *self)
 static int
 query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
 {
-    PyObject *sack;
+    PyObject *sack_or_query;
     HySack csack;
 
-    if (!PyArg_ParseTuple(args, "O!", &sack_Type, &sack))
+    if (!PyArg_ParseTuple(args, "O", &sack_or_query))
 	return -1;
-    csack = sackFromPyObject(sack);
-    if (csack == NULL)
+    if (PyType_IsSubtype(sack_or_query->ob_type, &query_Type)) {
+	_QueryObject *query_obj = (_QueryObject*)sack_or_query;
+	self->sack = query_obj->sack;
+	self->query = hy_query_clone(query_obj->query);
+    } else if (sackObject_Check(sack_or_query)) {
+	csack = sackFromPyObject(sack_or_query);
+	assert(csack);
+	self->sack = sack_or_query;
+	self->query = hy_query_create(csack);
+    } else {
+	const char *msg = "Expected a _hawkey.Sack or a _hawkey.Query object.";
+	PyErr_SetString(PyExc_TypeError, msg);
 	return -1;
-    self->sack = sack;
+    }
     Py_INCREF(self->sack);
-    self->query = hy_query_create(csack);
     return 0;
 }
 
 /* object methods */
 
 static PyObject *
-clear(_QueryObject *self, PyObject *args)
+clear(_QueryObject *self, PyObject *unused)
 {
     hy_query_clear(self->query);
     Py_RETURN_NONE;

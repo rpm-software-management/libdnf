@@ -52,9 +52,16 @@ class Query(base.TestCase):
         q = hawkey.Query(self.sack)
         q.filter(name__substr=["penny"])
         self.assertEqual(q.count(), 2)
-        pkg1 = q[0]
-        pkg2 = q[1]
-        self.assertNotEqual(pkg1, pkg2)
+        self.assertNotEqual(q[0], q[1])
+
+    def test_clone(self):
+        q = hawkey.Query(self.sack)
+        q.filter(name__substr=["penny"])
+        q_clone = hawkey.Query(q)
+        del q
+
+        self.assertEqual(q_clone.count(), 2)
+        self.assertNotEqual(q_clone[0], q_clone[1])
 
 class QueryUpdates(base.TestCase):
     def setUp(self):
