@@ -100,7 +100,7 @@ START_TEST(test_query_evr)
 
     q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_EVR, HY_EQ, "5.0-0");
-    fail_unless(query_count_results(q) == 1);
+    fail_unless(query_count_results(q) == 2);
     hy_query_free(q);
 }
 END_TEST

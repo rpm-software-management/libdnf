@@ -17,8 +17,8 @@
 =Req: P-lib
 =Pkg: hello 1 1 noarch
 =Req: goodbye
-=Pkg: jay 6 0 x86_64
-=Pkg: jay 5 0 x86_64
+=Pkg: jay 6.0 0 x86_64
+=Pkg: jay 5.0 0 x86_64
 =Pkg: jay 4.9 0 x86_64
 =Pkg: semolina 2 0 x86_64
 =Pkg: semolina 2 0 i686
