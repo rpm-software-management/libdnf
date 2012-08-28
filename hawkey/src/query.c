@@ -123,19 +123,41 @@ filter_dataiterator(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
+filter_evr(HyQuery q, struct _Filter *f, Map *m)
+{
+    Pool *pool = sack_pool(q->sack);
+
+    for (int mi = 0; mi < f->nmatches; ++mi) {
+	Id match_evr = pool_str2id(pool, f->matches[mi], 1);
+
+	for (Id id = 1; id < pool->nsolvables; ++id) {
+	    Solvable *s = pool_id2solvable(pool, id);
+	    int cmp = pool_evrcmp(pool, s->evr, match_evr, EVRCMP_COMPARE);
+
+	    if ((cmp > 0 && f->filter_type & HY_GT) ||
+		(cmp < 0 && f->filter_type & HY_LT) ||
+		(cmp == 0 && f->filter_type & HY_EQ))
+		MAPSET(m, id);
+	}
+    }
+}
+
+static void
 filter_providers(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
-    Id id_n, id_evr, r, p, pp;
+    Id id, id_evr, r, p, pp;
     int flags;
 
     assert(f->nmatches == 1);
-
     sack_make_provides_ready(q->sack);
-    id_n = pool_str2id(pool, f->matches[0], 0);
+
+    id = pool_str2id(pool, f->matches[0], 0);
+    if (id == STRID_NULL || id == STRID_EMPTY)
+	return;
     id_evr = pool_str2id(pool, f->evr, 1);
     flags = type2relflags(f->filter_type);
-    r = pool_rel2id(pool, id_n, id_evr, flags, 1);
+    r = pool_rel2id(pool, id, id_evr, flags, 1);
     FOR_JOB_SELECT(p, pp, SOLVER_SOLVABLE_PROVIDES, r)
 	MAPSET(m, p);
 }
@@ -466,6 +488,9 @@ hy_query_run(HyQuery q)
 
 	map_empty(&m);
 	switch (f->keyname) {
+	case HY_PKG_EVR:
+	    filter_evr(q, f, &m);
+	    break;
 	case HY_PKG_PROVIDES:
 	    filter_providers(q, f, &m);
 	    break;
