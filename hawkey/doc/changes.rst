@@ -2,9 +2,9 @@
  API Changes
 *************
 
-This documents describes the API changes the library users should be aware of
-before upgrading to each respective version. It is a plan to have the amount of
-changes requiring changing the client code go to a minimum after the library
+This document describes the API changes the library users should be aware of
+before upgrading to each respective version. It is our plan to have the amount
+of changes requiring changing the client code go to a minimum after the library
 hits the 1.0.0 version.
 
 Changes in 0.2.10
