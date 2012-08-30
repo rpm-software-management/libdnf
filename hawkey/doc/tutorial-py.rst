@@ -171,6 +171,29 @@ Or I want to find the latest version of all ``python`` packages the Sack knows o
   ... 
   python-2.7.3-6.fc17.x86_64
 
+You can also test a :class:`Query` for its truth value. It will be true whenever
+the query matched at least one package::
+
+  >>> q = hawkey.Query(sack).filter(file='/boot/vmlinuz-3.3.4-5.fc17.x86_64')
+  >>> if q:
+  ...     print 'match'
+  ... 
+  match
+  >>> q = hawkey.Query(sack).filter(file='/booty/vmlinuz-3.3.4-5.fc17.x86_64')
+  >>> if q:
+  ...     print 'match'
+  ... 
+  >>> if not q:
+  ...     print 'no match'
+  ... 
+  no match
+
+.. NOTE::
+
+   If the Query hasn't been evaluated already then it is evaluated whenever it's
+   length is taken (either via ``len(q)`` or ``q.count()``), when it is tested for
+   truth and when it is explicitly evaluated with ``q.run()``.
+
 Resolving things with Goals
 ===========================
 

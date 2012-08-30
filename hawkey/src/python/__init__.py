@@ -102,6 +102,9 @@ class Query(_hawkey.Query):
     def __getitem__(self, idx):
         return self.run()[idx]
 
+    def __len__(self):
+        return len(self.run())
+
     def _parse_filter_args(self, flags, dct):
         args = []
         filter_flags = 0
@@ -140,7 +143,7 @@ class Query(_hawkey.Query):
         return self.result
 
     def count(self):
-        return len(self.run())
+        return len(self)
 
     def filter(self, *lst, **kwargs):
         new_query = Query(self)
