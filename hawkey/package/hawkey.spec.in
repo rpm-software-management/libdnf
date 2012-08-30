@@ -1,9 +1,9 @@
-%global gitrev efeb04c
+%global gitrev a198dea
 %global libsolv_version 0.0.0-17
 
 Name:		hawkey
 Version:	@VERSION@
-Release:	2.git%{gitrev}%{?dist}
+Release:	1.git%{gitrev}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
@@ -71,6 +71,12 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
+* Thu Aug 30 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.10-1.gita198dea
+- Query cloning.
+- Query: full version filtery is supported now.
+- py: query.filter() now returns a cloned Query.
+- py: len(query) and bool(query) now work as expected.
+
 * Thu Aug 23 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.9-2.gitefeb04c
 - Add manpage.
 
