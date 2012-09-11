@@ -13,6 +13,8 @@ FIXED_ARCH = _hawkey_test.FIXED_ARCH
 UNITTEST_DIR = _hawkey_test.UNITTEST_DIR
 YUM_DIR_SUFFIX = _hawkey_test.YUM_DIR_SUFFIX
 
+glob_for_repofiles = _hawkey_test.glob_for_repofiles
+
 cachedir = None
 # inititialize the dir once and share it for all sacks within a single run
 if cachedir is None:
@@ -33,7 +35,7 @@ class TestSackMixin(object):
 
     def load_yum_repo(self, **args):
         d = os.path.join(self.repo_dir, YUM_DIR_SUFFIX)
-        repo = _hawkey_test.glob_for_repofiles(self, "messerk", d)
+        repo = glob_for_repofiles(self, "messerk", d)
         super(TestSackMixin, self).load_yum_repo(repo, **args)
 
 class TestSack(TestSackMixin, hawkey.Sack):
