@@ -146,7 +146,7 @@ class Query(_hawkey.Query):
         return len(self)
 
     def filter(self, *lst, **kwargs):
-        new_query = Query(self)
+        new_query = Query(query=self)
         return new_query.filterm(*lst, **kwargs)
 
     def filterm(self, *lst, **kwargs):
