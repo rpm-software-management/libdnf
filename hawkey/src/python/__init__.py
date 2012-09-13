@@ -73,6 +73,12 @@ class Goal(_hawkey.Goal):
     def problems(self):
         return [self.describe_problem(i) for i in range(0, self.count_problems())]
 
+    def run(self, callback=None, **kwargs):
+        ret = super(Goal, self).run(**kwargs)
+        if callback:
+            callback(self)
+        return ret
+
 class Package(_hawkey.Package):
     def evr_eq(self, pkg):
         return self.evr_cmp(pkg) == 0

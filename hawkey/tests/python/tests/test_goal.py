@@ -33,14 +33,34 @@ class Goal(base.TestCase):
 
 class Collector(object):
     def __init__(self):
+        self.cnt = 0
+        self.erasures = set()
         self.pkgs = set()
 
     def new_solution_cb(self, goal):
+        self.cnt += 1
+        self.erasures.update(goal.list_erasures())
         self.pkgs.update(goal.list_installs())
 
     def new_solution_cb_borked(self, goal):
         """ Raises AttributeError. """
         self.pkgs_borked.update(goal.list_erasures())
+
+class GoalRun(base.TestCase):
+    def test_run_callback(self):
+        "Test goal.run() can use callback parameter just as well as run_all()"
+        sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        sack.load_system_repo()
+        sack.load_test_repo("main", "main.repo")
+
+        pkg = base.by_name(sack, "penny-lib")
+        goal = hawkey.Goal(sack)
+        goal.erase(pkg)
+        collector = Collector()
+        self.assertTrue(goal.run(allow_uninstall=True,
+                                 callback=collector.new_solution_cb))
+        self.assertEqual(collector.cnt, 1)
+        self.assertEqual(len(collector.erasures), 2)
 
 class GoalRunAll(base.TestCase):
     def setUp(self):
