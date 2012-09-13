@@ -502,7 +502,7 @@ START_TEST(test_goal_run_all)
     fail_if(hy_goal_install(goal, pkg));
 
     struct Solutions *solutions = solutions_create();
-    hy_goal_run_all(goal, solution_cb, solutions);
+    fail_if(hy_goal_run_all(goal, solution_cb, solutions));
     fail_unless(solutions->solutions == 2);
     fail_unless(hy_packagelist_count(solutions->installs) == 3);
     solutions_free(solutions);

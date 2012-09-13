@@ -56,7 +56,7 @@ class GoalRunAll(base.TestCase):
         self.goal.install(pkg_a)
 
         collector = Collector()
-        self.goal.run_all(collector.new_solution_cb)
+        self.assertTrue(self.goal.run_all(collector.new_solution_cb))
         self.assertItemsEqual(collector.pkgs, [pkg_a, pkg_b, pkg_c])
 
     def test_cb_borked(self):

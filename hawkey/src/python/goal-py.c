@@ -309,8 +309,8 @@ run_all(_GoalObject *self, PyObject *args, PyObject *kwds)
     if (cb_s.errors > 0)
 	return NULL;
     if (!ret)
-	Py_RETURN_FALSE;
-    Py_RETURN_TRUE;
+	Py_RETURN_TRUE;
+    Py_RETURN_FALSE;
 }
 
 static PyObject *
