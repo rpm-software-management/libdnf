@@ -44,9 +44,11 @@ init_hawkey(void)
     if (!m)
 	return;
     /* exceptions */
-    init_exceptions();
+    if (!init_exceptions())
+	return;
     PyModule_AddObject(m, "Exception", HyExc_Exception);
     PyModule_AddObject(m, "QueryException", HyExc_Query);
+    PyModule_AddObject(m, "RuntimeException", HyExc_Runtime);
 
     /* _hawkey.Sack */
     if (PyType_Ready(&sack_Type) < 0)

@@ -3,7 +3,8 @@
 
 extern PyObject *HyExc_Exception;
 extern PyObject *HyExc_Query;
+extern PyObject *HyExc_Runtime;
 
-void init_exceptions(void);
+int init_exceptions(void);
 
 #endif // EXCEPTION_PY_H

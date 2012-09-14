@@ -6,6 +6,7 @@
 #include "src/util.h"
 
 // pyhawkey
+#include "exception-py.h"
 #include "hawkey-pysys.h"
 #include "iutil-py.h"
 #include "package-py.h"
@@ -193,7 +194,7 @@ list_arches(_SackObject *self, PyObject *unused)
     const char **arches = hy_sack_list_arches(self->sack);
     PyObject *list;
     if (!arches) {
-	PyErr_SetString(PyExc_RuntimeError, "Arches not initialized");
+	PyErr_SetString(HyExc_Runtime, "Arches not initialized");
 	return NULL;
     }
     list = strlist_to_pylist(arches);
@@ -255,7 +256,7 @@ load_yum_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 	PyErr_SetString(PyExc_IOError, "Can not read repomd file.");
 	return NULL;
     default:
-	PyErr_SetString(PyExc_RuntimeError, "load_yum_repo() failed.");
+	PyErr_SetString(HyExc_Runtime, "load_yum_repo() failed.");
 	return NULL;
     }
 }
