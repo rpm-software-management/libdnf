@@ -88,6 +88,10 @@ class Query(base.TestCase):
         q2 = q.filter(evr="5.0-0")
         self.assertIsNone(q.result)
 
+    def test_version(self):
+        q = hawkey.Query(self.sack).filter(version__gte="5.0")
+        self.assertEqual(len(q), 3)
+
 class QueryUpdates(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
