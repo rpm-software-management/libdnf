@@ -42,6 +42,7 @@ jay
 
 baby
 * installed at a version newer than anything available (downgrade testing)
+* has epoch (testing evr parsing)
 
 === repos/yum ===
 

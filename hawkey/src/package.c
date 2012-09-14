@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdlib.h>
 
 //libsolv
 #include "solv/evr.h"
@@ -135,6 +136,24 @@ hy_package_get_sourcerpm(HyPackage pkg)
     return join;
 }
 
+char *
+hy_package_get_version(HyPackage pkg)
+{
+    char *e, *v, *r;
+
+    pool_version_split(package_pool(pkg), hy_package_get_evr(pkg), &e, &v, &r);
+    return solv_strdup(v);
+}
+
+char *
+hy_package_get_release(HyPackage pkg)
+{
+    char *e, *v, *r;
+
+    pool_version_split(package_pool(pkg), hy_package_get_evr(pkg), &e, &v, &r);
+    return solv_strdup(r);
+}
+
 const char*
 hy_package_get_name(HyPackage pkg)
 {
@@ -207,6 +226,21 @@ const char *
 hy_package_get_url(HyPackage pkg)
 {
     return solvable_lookup_str(get_solvable(pkg), SOLVABLE_URL);
+}
+
+unsigned long
+hy_package_get_epoch(HyPackage pkg)
+{
+    char *e, *v, *r, *endptr;
+    long int epoch = 0;
+
+    pool_version_split(package_pool(pkg), hy_package_get_evr(pkg), &e, &v, &r);
+    if (e) {
+	epoch = strtol(e, &endptr, 10);
+	assert(*endptr == '\0');
+    }
+
+    return epoch;
 }
 
 unsigned long long

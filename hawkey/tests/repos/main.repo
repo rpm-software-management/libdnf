@@ -22,4 +22,4 @@
 =Pkg: jay 4.9 0 x86_64
 =Pkg: semolina 2 0 x86_64
 =Pkg: semolina 2 0 i686
-=Pkg: baby 4.9 0 x86_64
+=Pkg: baby 1:4.9 3 x86_64

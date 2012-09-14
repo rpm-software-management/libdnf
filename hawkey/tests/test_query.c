@@ -100,7 +100,7 @@ START_TEST(test_query_evr)
 
     q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_EVR, HY_GT, "5.9-0");
-    fail_unless(query_count_results(q) == 1);
+    fail_unless(query_count_results(q) == 2);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
@@ -111,7 +111,7 @@ START_TEST(test_query_evr)
     const char *evrs[] = {"6.0-0", "2-9", "5.0-0", "0-100", NULL};
     q = hy_query_create(test_globals.sack);
     hy_query_filter_in(q, HY_PKG_EVR, HY_EQ, evrs);
-    fail_unless(query_count_results(q) == 4);
+    fail_unless(query_count_results(q) == 3);
     hy_query_free(q);
 }
 END_TEST

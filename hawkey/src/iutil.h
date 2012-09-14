@@ -37,6 +37,7 @@ char *this_username(void);
 /* misc utils */
 unsigned count_nullt_array(const char **a);
 int str_endswith(const char *haystack, const char *needle);
+char *pool_tmpdup(Pool *pool, const char *s);
 
 /* libsolv utils */
 void repo_internalize_trigger(Repo *r);
@@ -44,6 +45,10 @@ Id str2archid(Pool *pool, const char *s);
 void queue2plist(HySack sack, Queue *q, HyPackageList plist);
 Id what_upgrades(Pool *pool, Id p);
 Id what_downgrades(Pool *pool, Id p);
+
+/* package version utils */
+void pool_version_split(Pool *pool, const char *evr, char **epoch, char **version,
+			char **release);
 
 /* debug utils */
 int dump_jobqueue(Pool *pool, Queue *job);

@@ -230,6 +230,13 @@ str_endswith(const char *haystack, const char *needle)
     return strncmp(haystack + lenh - lenn, needle, lenn) == 0 ? 1 : 0;
 }
 
+char *
+pool_tmpdup(Pool *pool, const char *s)
+{
+    char *dup = pool_alloctmpspace(pool, strlen(s) + 1);
+    return strcpy(dup, s);
+}
+
 void
 repo_internalize_trigger(Repo *repo)
 {
@@ -344,6 +351,40 @@ what_downgrades(Pool *pool, Id pkg)
 	}
     }
     return l;
+}
+
+/**
+ * Split evr into its components.
+ *
+ * Believes blindly in 'evr' being well formed.
+ */
+void
+pool_version_split(Pool *pool, const char *evr_c, char **epoch, char **version,
+		   char **release)
+{
+    char *evr = pool_tmpdup(pool, evr_c);
+    char *e, *v, *r;
+
+    for (e = evr + 1; *e != ':' && *e != '-'; ++e)
+	;
+
+    if (*e == '-') {
+	*e = '\0';
+	v = evr;
+	r = e + 1;
+	e = NULL;
+    } else { /* *e == ':' */
+	*e = '\0';
+	v = e + 1;
+	e = evr;
+	for (r = v + 1; *r != '-'; ++r)
+	    ;
+	*r = '\0';
+	r++;
+    }
+    *epoch = e;
+    *version = v;
+    *release = r;
 }
 
 int dump_jobqueue(Pool *pool, Queue *job)

@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+// libsolv
+#include <solv/pool.h>
+
 // hawkey
 #include "src/iutil.h"
 #include "test_iutil.h"
@@ -119,6 +122,27 @@ START_TEST(test_str_endswith)
 }
 END_TEST
 
+START_TEST(test_version_split)
+{
+    Pool *pool = pool_create();
+    char evr[] = "1:5.9.3-8";
+    char *epoch, *version, *release;
+
+    pool_version_split(pool, evr, &epoch, &version, &release);
+    ck_assert_str_eq(epoch, "1");
+    ck_assert_str_eq(version, "5.9.3");
+    ck_assert_str_eq(release, "8");
+
+    char evr2[] = "8.0-9";
+    pool_version_split(pool, evr2, &epoch, &version, &release);
+    fail_unless(epoch == NULL);
+    ck_assert_str_eq(version, "8.0");
+    ck_assert_str_eq(release, "9");
+
+    pool_free(pool);
+}
+END_TEST
+
 Suite *
 iutil_suite(void)
 {
@@ -128,6 +152,7 @@ iutil_suite(void)
     tcase_add_test(tc, test_checksum_write_read);
     tcase_add_test(tc, test_mkcachedir);
     tcase_add_test(tc, test_str_endswith);
+    tcase_add_test(tc, test_version_split);
     suite_add_tcase(s, tc);
     return s;
 }

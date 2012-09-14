@@ -37,6 +37,40 @@ START_TEST(test_identical)
 }
 END_TEST
 
+START_TEST(test_versions)
+{
+    HySack sack = test_globals.sack;
+    unsigned epoch;
+    char *version, *release;
+    HyPackage pkg;
+
+    pkg = by_name(sack, "baby");
+    ck_assert_str_eq(hy_package_get_evr(pkg), "1:5.0-11");
+    epoch = hy_package_get_epoch(pkg);
+    fail_unless(epoch == 1);
+    version = hy_package_get_version(pkg);
+    ck_assert_str_eq(version, "5.0");
+    hy_free(version);
+    release = hy_package_get_release(pkg);
+    ck_assert_str_eq(release, "11");
+    hy_free(release);
+    hy_package_free(pkg);
+
+    pkg = by_name(sack, "jay");
+    // epoch missing if it's 0:
+    ck_assert_str_eq(hy_package_get_evr(pkg), "6.0-0");
+    epoch = hy_package_get_epoch(pkg);
+    fail_unless(epoch == 0);
+    version = hy_package_get_version(pkg);
+    ck_assert_str_eq(version, "6.0");
+    hy_free(version);
+    release = hy_package_get_release(pkg);
+    ck_assert_str_eq(release, "0");
+    hy_free(release);
+    hy_package_free(pkg);
+}
+END_TEST
+
 START_TEST(test_checksums)
 {
     HyPackage pkg = by_name(test_globals.sack, "mystery");
@@ -105,6 +139,7 @@ package_suite(void)
     tcase_add_test(tc, test_refcounting);
     tcase_add_test(tc, test_package_summary);
     tcase_add_test(tc, test_identical);
+    tcase_add_test(tc, test_versions);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("WithRealRepo");

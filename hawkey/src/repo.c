@@ -6,9 +6,6 @@
 // hawkey
 #include "repo_internal.h"
 
-
-// internal functions
-
 HyRepo
 hy_repo_link(HyRepo repo)
 {

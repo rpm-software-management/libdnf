@@ -271,10 +271,10 @@ START_TEST(test_goal_downgrade)
 
     HyPackage pkg = hy_packagelist_get(plist, 0);
     ck_assert_str_eq(hy_package_get_evr(pkg),
-		     "4.9-0");
+		     "1:4.9-3");
     HyPackage old_pkg = hy_goal_package_obsoletes(goal, pkg);
     ck_assert_str_eq(hy_package_get_evr(old_pkg),
-		     "5.0-0");
+		     "1:5.0-11");
     hy_package_free(old_pkg);
     hy_packagelist_free(plist);
 

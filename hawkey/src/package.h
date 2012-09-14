@@ -22,9 +22,13 @@ HyPackage hy_package_link(HyPackage pkg);
 int hy_package_identical(HyPackage pkg1, HyPackage pkg2);
 int hy_package_cmp(HyPackage pkg1, HyPackage pkg2);
 int hy_package_evr_cmp(HyPackage pkg1, HyPackage pkg2);
+
 char *hy_package_get_location(HyPackage pkg);
 char *hy_package_get_nvra(HyPackage pkg);
 char *hy_package_get_sourcerpm(HyPackage pkg);
+char *hy_package_get_version(HyPackage pkg);
+char *hy_package_get_release(HyPackage pkg);
+
 const char *hy_package_get_name(HyPackage pkg);
 const char *hy_package_get_arch(HyPackage pkg);
 const unsigned char *hy_package_get_chksum(HyPackage pkg, int *type);
@@ -35,6 +39,7 @@ const unsigned char *hy_package_get_hdr_chksum(HyPackage pkg, int *type);
 const char *hy_package_get_reponame(HyPackage pkg);
 const char *hy_package_get_summary(HyPackage pkg);
 const char *hy_package_get_url(HyPackage pkg);
+unsigned long hy_package_get_epoch(HyPackage pkg);
 unsigned long long hy_package_get_medianr(HyPackage pkg);
 unsigned long long hy_package_get_rpmdbid(HyPackage pkg);
 unsigned long long hy_package_get_size(HyPackage pkg);
