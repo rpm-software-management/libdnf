@@ -143,6 +143,63 @@ filter_evr(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
+filter_version(HyQuery q, struct _Filter *f, Map *m)
+{
+    Pool *pool = sack_pool(q->sack);
+
+    for (int mi = 0; mi < f->nmatches; ++mi) {
+	char *filter_vr = solv_dupjoin(f->matches[mi], "-0", NULL);
+
+	for (Id id = 1; id < pool->nsolvables; ++id) {
+	    char *e, *v, *r;
+	    Solvable *s = pool_id2solvable(pool, id);
+	    if (s->evr == ID_EMPTY)
+		continue;
+	    const char *evr = pool_id2str(pool, s->evr);
+
+	    pool_version_split(pool, evr, &e, &v, &r);
+	    char *vr = pool_tmpjoin(pool, v, "-0", NULL);
+	    int cmp = pool_evrcmp_str(pool, vr, filter_vr, EVRCMP_COMPARE);
+
+	    if ((cmp > 0 && f->filter_type & HY_GT) ||
+		(cmp < 0 && f->filter_type & HY_LT) ||
+		(cmp == 0 && f->filter_type & HY_EQ))
+		MAPSET(m, id);
+	}
+	solv_free(filter_vr);
+    }
+}
+
+static void
+filter_release(HyQuery q, struct _Filter *f, Map *m)
+{
+    Pool *pool = sack_pool(q->sack);
+
+    for (int mi = 0; mi < f->nmatches; ++mi) {
+	char *filter_vr = solv_dupjoin("0-", f->matches[mi], NULL);
+
+	for (Id id = 1; id < pool->nsolvables; ++id) {
+	    char *e, *v, *r;
+	    Solvable *s = pool_id2solvable(pool, id);
+	    if (s->evr == ID_EMPTY)
+		continue;
+	    const char *evr = pool_id2str(pool, s->evr);
+
+	    pool_version_split(pool, evr, &e, &v, &r);
+	    char *vr = pool_tmpjoin(pool, "0-", r, NULL);
+
+	    int cmp = pool_evrcmp_str(pool, vr, filter_vr, EVRCMP_COMPARE);
+
+	    if ((cmp > 0 && f->filter_type & HY_GT) ||
+		(cmp < 0 && f->filter_type & HY_LT) ||
+		(cmp == 0 && f->filter_type & HY_EQ))
+		MAPSET(m, id);
+	}
+	solv_free(filter_vr);
+    }
+}
+
+static void
 filter_providers(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
@@ -488,6 +545,12 @@ hy_query_run(HyQuery q)
 	switch (f->keyname) {
 	case HY_PKG_EVR:
 	    filter_evr(q, f, &m);
+	    break;
+	case HY_PKG_VERSION:
+	    filter_version(q, f, &m);
+	    break;
+	case HY_PKG_RELEASE:
+	    filter_release(q, f, &m);
 	    break;
 	case HY_PKG_PROVIDES:
 	    filter_providers(q, f, &m);

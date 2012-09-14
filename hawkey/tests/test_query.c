@@ -116,6 +116,44 @@ START_TEST(test_query_evr)
 }
 END_TEST
 
+START_TEST(test_query_version)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_VERSION, HY_EQ, "5.0");
+    fail_unless(query_count_results(q) == 2);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_VERSION, HY_GT, "5.2.1");
+    fail_unless(query_count_results(q) == 1);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_VERSION, HY_GT|HY_EQ, "5.");
+    fail_unless(query_count_results(q) == 3);
+    hy_query_free(q);
+}
+END_TEST
+
+START_TEST(test_query_release)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_RELEASE, HY_EQ, "11");
+    fail_unless(query_count_results(q) == 1);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_RELEASE, HY_GT, "9");
+    fail_unless(query_count_results(q) == 1);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_RELEASE, HY_GT|HY_EQ, "9");
+    fail_unless(query_count_results(q) == 2);
+    hy_query_free(q);
+}
+END_TEST
+
 START_TEST(test_query_glob)
 {
     HyQuery q = hy_query_create(test_globals.sack);
@@ -419,6 +457,8 @@ query_suite(void)
     tcase_add_test(tc, test_query_repo);
     tcase_add_test(tc, test_query_name);
     tcase_add_test(tc, test_query_evr);
+    tcase_add_test(tc, test_query_version);
+    tcase_add_test(tc, test_query_release);
     tcase_add_test(tc, test_query_glob);
     tcase_add_test(tc, test_query_case);
     tcase_add_test(tc, test_query_anded);
