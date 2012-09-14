@@ -85,3 +85,17 @@ class GoalRunAll(base.TestCase):
         collector = Collector()
         self.assertRaises(AttributeError,
                           self.goal.run_all, collector.new_solution_cb_borked)
+
+class Problems(base.TestCase):
+    def setUp(self):
+        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack.load_system_repo()
+        self.sack.load_test_repo("main", "main.repo")
+        self.goal = hawkey.Goal(self.sack)
+
+    def test_errors(self):
+        pkg = base.by_name(self.sack, "hello")
+        self.goal.install(pkg)
+        self.assertFalse(self.goal.run())
+        self.assertEqual(len(self.goal.problems), 1)
+        self.assertRaises(hawkey.RuntimeException, self.goal.list_erasures)

@@ -349,6 +349,10 @@ list_generic(_GoalObject *self, HyPackageList (*func)(HyGoal))
     HyPackageList plist = func(self->goal);
     PyObject *list;
 
+    if (!plist) {
+	PyErr_SetString(HyExc_Runtime, "Goal has not find any solution.");
+	return NULL;
+    }
     list = packagelist_to_pylist(plist, self->sack);
     hy_packagelist_free(plist);
     return list;

@@ -79,7 +79,8 @@ list_results(HyGoal goal, Id type_filter)
     Transaction *trans = goal->trans;
     HyPackageList plist;
 
-    assert(trans);
+    if (!trans)
+	return NULL;
     queue_init(&transpkgs);
     plist = hy_packagelist_create();
 
