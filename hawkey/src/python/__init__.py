@@ -1,4 +1,6 @@
 import _hawkey
+import collections
+import types
 
 VERSION_MAJOR = _hawkey.VERSION_MAJOR
 VERSION_MINOR = _hawkey.VERSION_MINOR
@@ -120,10 +122,10 @@ class Query(_hawkey.Query):
                 raise ValueError("unrecognized flag: %s" % flag)
             filter_flags |= flag
         for (k, match) in dct.items():
-            if type(match) is list:
-                match = map(_encode, match)
-            else:
+            if type(match) in types.StringTypes:
                 match = _encode(match)
+            elif isinstance(match, collections.Iterable):
+                match = map(_encode, match)
             split = k.split("__", 1)
             if len(split) == 1:
                 args.append((QUERY_KEYNAME_MAP[split[0]],

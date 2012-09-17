@@ -124,12 +124,12 @@ filter(_QueryObject *self, PyObject *args)
 	hy_query_filter(self->query, keyname, filtertype, cmatch);
 	Py_RETURN_NONE;
     }
-    if (PyList_Check(match)) {
-	const unsigned count = PyList_Size(match);
+    if (PySequence_Check(match)) {
+	const unsigned count = PySequence_Size(match);
 	const char *matches[count + 1];
 	matches[count] = NULL;
 	for (int i = 0; i < count; ++i) {
-	    PyObject *item = PyList_GetItem(match, i);
+	    PyObject *item = PySequence_GetItem(match, i);
 	    if (!PyString_Check(item)) {
 		PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
 		return NULL;

@@ -65,6 +65,11 @@ class Query(base.TestCase):
         q.filterm(name__substr=["ool", "enny-li"])
         self.assertEqual(q.count(), 2)
 
+    def test_in_set(self):
+        q = hawkey.Query(self.sack)
+        q.filterm(name__substr=set(["ool", "enny-li"]))
+        self.assertEqual(q.count(), 2)
+
     def test_iteration(self):
         q = hawkey.Query(self.sack)
         q.filterm(name__substr=["penny"])
