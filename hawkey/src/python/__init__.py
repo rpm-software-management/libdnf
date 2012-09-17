@@ -94,9 +94,7 @@ class Package(_hawkey.Package):
 
 class Query(_hawkey.Query):
     def __init__(self, sack=None, query=None):
-        if sack is not None and query is not None:
-            raise ValueError("Accepts either a Sack or a Query.")
-        super(Query, self).__init__(sack or query) # accepts either
+        super(Query, self).__init__(sack=sack, query=query)
         self.result = None
 
     def __add__(self, operand):

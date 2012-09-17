@@ -54,19 +54,21 @@ query_dealloc(_QueryObject *self)
 static int
 query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
 {
-    PyObject *sack_or_query;
-    HySack csack;
+    char *kwlist[] = {"sack", "query", NULL};
+    PyObject *sack;
+    PyObject *query;
 
-    if (!PyArg_ParseTuple(args, "O", &sack_or_query))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist, &sack, &query))
 	return -1;
-    if (PyType_IsSubtype(sack_or_query->ob_type, &query_Type)) {
-	_QueryObject *query_obj = (_QueryObject*)sack_or_query;
+
+    if (query && sack == Py_None && queryObject_Check(query)) {
+	_QueryObject *query_obj = (_QueryObject*)query;
 	self->sack = query_obj->sack;
 	self->query = hy_query_clone(query_obj->query);
-    } else if (sackObject_Check(sack_or_query)) {
-	csack = sackFromPyObject(sack_or_query);
+    } else if (sack && query == Py_None && sackObject_Check(sack)) {
+	HySack  csack = sackFromPyObject(sack);
 	assert(csack);
-	self->sack = sack_or_query;
+	self->sack = sack;
 	self->query = hy_query_create(csack);
     } else {
 	const char *msg = "Expected a _hawkey.Sack or a _hawkey.Query object.";

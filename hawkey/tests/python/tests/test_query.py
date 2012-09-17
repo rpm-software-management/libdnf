@@ -15,6 +15,10 @@ class Query(base.TestCase):
         q.filterm(name__eq="flying")
         self.assertEqual(q.count(), 1)
 
+    def test_creation_empty_sack(self):
+        s = hawkey.Sack()
+        q = hawkey.Query(s)
+
     def test_unicode(self):
         q = hawkey.Query(self.sack)
         q.filterm(name__eq=u"flying")
@@ -70,7 +74,7 @@ class Query(base.TestCase):
     def test_clone(self):
         q = hawkey.Query(self.sack)
         q.filterm(name__substr=["penny"])
-        q_clone = hawkey.Query(q)
+        q_clone = hawkey.Query(query=q)
         del q
 
         self.assertEqual(q_clone.count(), 2)
