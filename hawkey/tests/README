@@ -48,12 +48,18 @@ baby
 
 To test loading of yum repos we need an actual yum repo. It currently consists
 of two packages ("mystery", "tour") and generated repodata. The specfiles are
-included, all the package payload is generated in them. To rebuild them:
+included, all the package payload is generated in them. To rebuild them, e.g.:
 
   rpmbuild -bb tour.spec
 
 If things change in these packages the respective changes need to be made in the
-unit tests too for them to pass. A notable change is the hand-edited 'mystery'
-sourcerpm property, changed to:
+unit tests too for them to pass.
+
+The command to do the metadata rebuild from hawkey/tests/repos/yum:
+
+  createrepo --deltas --oldpackagedirs=../yum_oldrpms/ --no-database .
+
+There is a manual change done in the 'mystery' package's sourcerpm property, the
+line after editing is:
 
   <rpm:sourcerpm>mmysteryt-19.67-1.src.rpm</rpm:sourcerpm>
