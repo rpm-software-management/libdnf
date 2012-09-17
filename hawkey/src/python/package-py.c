@@ -187,6 +187,7 @@ static PyGetSetDef package_getsetters[] = {
      (void *)hy_package_get_description},
     {"evr",  (getter)get_str, NULL, NULL, (void *)hy_package_get_evr},
     {"license", (getter)get_str, NULL, NULL, (void *)hy_package_get_license},
+    {"packager",  (getter)get_str, NULL, NULL, (void *)hy_package_get_packager},
     {"reponame",  (getter)get_str, NULL, NULL, (void *)hy_package_get_reponame},
     {"summary",  (getter)get_str, NULL, NULL, (void *)hy_package_get_summary},
     {"url",  (getter)get_str, NULL, NULL, (void *)hy_package_get_url},

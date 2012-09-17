@@ -36,6 +36,7 @@ const char *hy_package_get_description(HyPackage pkg);
 const char *hy_package_get_evr(HyPackage pkg);
 const char *hy_package_get_license(HyPackage pkg);
 const unsigned char *hy_package_get_hdr_chksum(HyPackage pkg, int *type);
+const char *hy_package_get_packager(HyPackage pkg);
 const char *hy_package_get_reponame(HyPackage pkg);
 const char *hy_package_get_summary(HyPackage pkg);
 const char *hy_package_get_url(HyPackage pkg);

@@ -161,6 +161,12 @@ hy_package_get_name(HyPackage pkg)
     return pool_id2str(pool, get_solvable(pkg)->name);
 }
 
+const char *
+hy_package_get_packager(HyPackage pkg)
+{
+    return solvable_lookup_str(get_solvable(pkg), SOLVABLE_PACKAGER);
+}
+
 const char*
 hy_package_get_arch(HyPackage pkg)
 {

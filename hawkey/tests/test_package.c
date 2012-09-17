@@ -97,6 +97,14 @@ START_TEST(test_lookup_num)
 }
 END_TEST
 
+START_TEST(test_packager)
+{
+    HyPackage pkg = by_name(test_globals.sack, "tour");
+    ck_assert_str_eq(hy_package_get_packager(pkg), "roll up <roll@up.net>");
+    hy_package_free(pkg);
+}
+END_TEST
+
 START_TEST(test_sourcerpm)
 {
     HyPackage pkg = by_name(test_globals.sack, "tour");
@@ -146,6 +154,7 @@ package_suite(void)
     tcase_add_unchecked_fixture(tc, fixture_yum, teardown);
     tcase_add_test(tc, test_checksums);
     tcase_add_test(tc, test_lookup_num);
+    tcase_add_test(tc, test_packager);
     tcase_add_test(tc, test_sourcerpm);
     tcase_add_test(tc, test_presto);
     suite_add_tcase(s, tc);
