@@ -6,6 +6,7 @@
 #include "solv/util.h"
 
 // hawkey
+#include "src/errno.h"
 #include "src/goal.h"
 #include "src/package_internal.h"
 

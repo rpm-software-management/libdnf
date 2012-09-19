@@ -19,10 +19,6 @@ extern "C" {
 #define HY_EXT_FILENAMES "-filenames"
 #define HY_EXT_PRESTO "-presto"
 
-#define HY_E_CACHE_WRITE -1	// Cache write error
-#define HY_E_IO 2		// I/O error
-#define HY_E_QUERY 3		// Ill-formed Query.
-
 enum _hy_sack_repo_load_flags {
     HY_BUILD_CACHE	= 1 << 0,
     HY_LOAD_FILELISTS	= 1 << 1,

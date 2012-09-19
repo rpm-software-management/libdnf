@@ -8,6 +8,7 @@
 #include "solv/util.h"
 
 // hawkey
+#include "errno.h"
 #include "iutil.h"
 #include "query_internal.h"
 #include "package_internal.h"

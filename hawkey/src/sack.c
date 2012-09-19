@@ -24,6 +24,7 @@
 #include "solv/solverdebug.h"
 
 // hawkey
+#include "errno.h"
 #include "iutil.h"
 #include "package_internal.h"
 #include "repo_internal.h"

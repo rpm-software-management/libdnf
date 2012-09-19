@@ -4,6 +4,7 @@
 #include <solv/testcase.h>
 
 // hawkey
+#include "src/errno.h"
 #include "src/goal.h"
 #include "src/iutil.h"
 #include "src/query.h"
