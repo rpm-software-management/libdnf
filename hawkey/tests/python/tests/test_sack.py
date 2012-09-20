@@ -14,8 +14,8 @@ class Sanity(base.TestCase):
     def test_creation(self):
         sack = hawkey.Sack(arch="noarch")
         sack = hawkey.Sack(arch="x86_64")
-        self.assertRaises(hawkey.RuntimeException, hawkey.Sack, arch="")
-        self.assertRaises(hawkey.RuntimeException, hawkey.Sack, arch="play")
+        self.assertRaises(hawkey.ArchException, hawkey.Sack, arch="")
+        self.assertRaises(hawkey.ValueException, hawkey.Sack, arch="play")
 
     def test_load_rpm(self):
         sack = hawkey.test.TestSack(repo_dir=self.repo_dir)

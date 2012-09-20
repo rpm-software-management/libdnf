@@ -2,7 +2,9 @@
 #define EXCEPTION_PY_H
 
 extern PyObject *HyExc_Exception;
+extern PyObject *HyExc_Value;
 extern PyObject *HyExc_Query;
+extern PyObject *HyExc_Arch;
 extern PyObject *HyExc_Runtime;
 
 int init_exceptions(void);

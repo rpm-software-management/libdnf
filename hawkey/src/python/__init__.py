@@ -51,6 +51,8 @@ _CHKSUM_TYPES = {
 
 Exception = _hawkey.Exception
 QueryException = _hawkey.QueryException
+ValueException = _hawkey.ValueException
+ArchException = _hawkey.ArchException
 RuntimeException = _hawkey.RuntimeException
 
 Sack = _hawkey.Sack

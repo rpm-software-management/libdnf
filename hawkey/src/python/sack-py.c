@@ -112,7 +112,7 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
 			    "Failed creating working files for the Sack.");
 	    break;
 	case HY_E_ARCH:
-	    PyErr_SetString(HyExc_Runtime, "Unrecognized arch for the sack.");
+	    PyErr_SetString(HyExc_Arch, "Unrecognized arch for the sack.");
 	    break;
 	default:
 	    assert(0);
