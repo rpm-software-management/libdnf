@@ -7,6 +7,7 @@
 #include "solv/util.h"
 
 // hawkey
+#include "errno.h"
 #include "goal.h"
 #include "iutil.h"
 #include "query_internal.h"
@@ -216,8 +217,10 @@ hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags)
 	count = hy_packagelist_count(installed);
 	hy_packagelist_free(installed);
 	hy_query_free(q);
-	if (!count)
-	    return 1;
+	if (!count) {
+	    hy_errno = HY_E_VALIDATION;
+	    return HY_E_VALIDATION;
+	}
     }
 
     return hy_goal_install(goal, new_pkg);

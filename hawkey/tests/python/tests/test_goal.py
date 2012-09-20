@@ -26,10 +26,14 @@ class Goal(base.TestCase):
         # without checking versioning, the update is accepted:
         self.assertIsNone(hawkey.Goal(self.sack).upgrade(query=query));
 
-    def test_install_erase_err(self):
+    def test_install_query_err(self):
         query = hawkey.Query(self.sack).filter(repo="karma")
         goal = hawkey.Goal(self.sack)
         self.assertRaises(hawkey.QueryException, goal.erase, query=query);
+
+        query = hawkey.Query(self.sack).filter(name="semolina", arch="i666")
+        goal = hawkey.Goal(self.sack)
+        self.assertRaises(hawkey.ArchException, goal.install, query=query)
 
 class Collector(object):
     def __init__(self):

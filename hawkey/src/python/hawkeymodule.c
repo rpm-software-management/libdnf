@@ -51,6 +51,7 @@ init_hawkey(void)
     PyModule_AddObject(m, "QueryException", HyExc_Query);
     PyModule_AddObject(m, "ArchException", HyExc_Arch);
     PyModule_AddObject(m, "RuntimeException", HyExc_Runtime);
+    PyModule_AddObject(m, "ValidationException", HyExc_Validation);
 
     /* _hawkey.Sack */
     if (PyType_Ready(&sack_Type) < 0)

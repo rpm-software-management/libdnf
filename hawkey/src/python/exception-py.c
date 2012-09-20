@@ -6,6 +6,7 @@ PyObject *HyExc_Value = NULL;
 PyObject *HyExc_Query = NULL;
 PyObject *HyExc_Arch = NULL;
 PyObject *HyExc_Runtime = NULL;
+PyObject *HyExc_Validation = NULL;
 
 int
 init_exceptions(void)
@@ -38,6 +39,12 @@ init_exceptions(void)
      if (!HyExc_Runtime)
 	 return 0;
      Py_INCREF(HyExc_Runtime);
+
+     HyExc_Validation = PyErr_NewException("_hawkey.ValidationException",
+					HyExc_Exception, NULL);
+     if (!HyExc_Validation)
+	 return 0;
+     Py_INCREF(HyExc_Validation);
 
      return 1;
 }

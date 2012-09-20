@@ -5,10 +5,12 @@
 extern "C" {
 #endif
 
-#define HY_E_IO 1		// I/O error
-#define HY_E_CACHE_WRITE 2	// cache write error
-#define HY_E_QUERY 3		// ill-formed query
-#define HY_E_ARCH 4		// unknown arch
+#define HY_E_FAILED		1	// general runtime error
+#define HY_E_IO			2	// I/O error
+#define HY_E_CACHE_WRITE	3	// cache write error
+#define HY_E_QUERY		4	// ill-formed query
+#define HY_E_ARCH		5	// unknown arch
+#define HY_E_VALIDATION		6	// validation check failed
 
 extern __thread int hy_errno;
 

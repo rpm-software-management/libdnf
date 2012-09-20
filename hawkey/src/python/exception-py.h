@@ -6,6 +6,7 @@ extern PyObject *HyExc_Value;
 extern PyObject *HyExc_Query;
 extern PyObject *HyExc_Arch;
 extern PyObject *HyExc_Runtime;
+extern PyObject *HyExc_Validation;
 
 int init_exceptions(void);
 

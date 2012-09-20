@@ -604,7 +604,7 @@ filter_arch2job(const HyQuery q, const struct _Filter *f, Queue *job)
     Id archid = str2archid(pool, arch);
 
     if (archid == 0)
-	return HY_E_QUERY;
+	return HY_E_ARCH;
     for (int i = 0; i < job->count; i += 2) {
 	Id dep;
 	assert(job->elements[i] == SOLVER_SOLVABLE_NAME);
@@ -635,6 +635,11 @@ filter_name2job(const HyQuery q, const struct _Filter *f, Queue *job)
     return 0;
 }
 
+/**
+ * Build job queue from a Query.
+ *
+ * Returns 0 on success. Otherwise it returns non-zero and sets hy_errno.
+ */
 int
 query2job(const HyQuery q, Queue *job, int solver_action)
 {
@@ -670,6 +675,7 @@ query2job(const HyQuery q, Queue *job, int solver_action)
 
  finish:
     if (ret) {
+	hy_errno = ret;
 	queue_free(&job_query);
 	return ret;
     }

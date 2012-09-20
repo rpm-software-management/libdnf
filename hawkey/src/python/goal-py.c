@@ -108,12 +108,19 @@ args_run_parse(PyObject *args, PyObject *kwds, int *flags, PyObject **callback_p
 static PyObject *
 op_ret2exc(int ret)
 {
-    switch (ret) {
-    case 0:
+    if (!ret)
 	Py_RETURN_NONE;
+
+    switch (hy_get_errno()) {
     case HY_E_QUERY:
 	PyErr_SetString(HyExc_Query,
 			"Query unsupported in this context.");
+	return NULL;
+    case HY_E_ARCH:
+	PyErr_SetString(HyExc_Arch, "Used arch is unknown.");
+	return NULL;
+    case HY_E_VALIDATION:
+	PyErr_SetString(HyExc_Validation, "The validation check has failed.");
 	return NULL;
     default:
 	PyErr_SetString(HyExc_Exception, "Goal operation failed.");
