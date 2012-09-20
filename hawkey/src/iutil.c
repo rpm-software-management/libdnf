@@ -181,8 +181,11 @@ mkcachedir(char *path)
     if (!glob_for_cachedir(path))
 	return 0;
 
+    const int len = strlen(path);
+    if (len < 1 || path[0] != '/')
+	return 1; // only absolute pathnames are accepted
+
     char *p = solv_strdup(path);
-    int len = strlen(p);
 
     if (p[len-1] == '/')
 	p[len-1] = '\0';
