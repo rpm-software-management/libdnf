@@ -10,6 +10,7 @@ Contents:
    changes
    faq
    tutorial-py
+   reference-py
 
 Indices and tables
 
