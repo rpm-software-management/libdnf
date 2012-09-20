@@ -1,6 +1,7 @@
 #include "Python.h"
 
 // hawkey
+#include "src/errno.h"
 #include "src/package_internal.h"
 #include "src/sack_internal.h"
 #include "src/util.h"
@@ -104,6 +105,21 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
 				     &custom_class, &custom_val))
 	return -1;
     self->sack = hy_sack_create(cachedir, arch);
+    if (self->sack == NULL) {
+	switch (hy_get_errno()) {
+	case HY_E_IO:
+	    PyErr_SetString(PyExc_IOError,
+			    "Failed creating working files for the Sack.");
+	    break;
+	case HY_E_ARCH:
+	    PyErr_SetString(HyExc_Runtime, "Unrecognized arch for the sack.");
+	    break;
+	default:
+	    assert(0);
+	}
+	return -1;
+    }
+
     if (custom_class && custom_class != Py_None) {
 	if (!PyType_Check(custom_class)) {
 	    PyErr_SetString(PyExc_TypeError, "Expected a class object.");
@@ -252,7 +268,7 @@ load_yum_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     switch (hy_sack_load_yum_repo(self->sack, crepo, flags)) {
     case 0:
 	Py_RETURN_NONE;
-    case 1:
+    case HY_E_IO:
 	PyErr_SetString(PyExc_IOError, "Can not read repomd file.");
 	return NULL;
     default:

@@ -11,6 +11,12 @@ class Sanity(base.TestCase):
         sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         self.assertEqual(len(sack), 0)
 
+    def test_creation(self):
+        sack = hawkey.Sack(arch="noarch")
+        sack = hawkey.Sack(arch="x86_64")
+        self.assertRaises(hawkey.RuntimeException, hawkey.Sack, arch="")
+        self.assertRaises(hawkey.RuntimeException, hawkey.Sack, arch="play")
+
     def test_load_rpm(self):
         sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         sack.load_system_repo()

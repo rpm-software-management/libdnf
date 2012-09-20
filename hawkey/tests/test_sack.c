@@ -8,6 +8,7 @@
 #include <solv/testcase.h>
 
 // hawkey
+#include "src/errno.h"
 #include "src/package_internal.h"
 #include "src/repo_internal.h"
 #include "src/sack_internal.h"
@@ -25,10 +26,15 @@ END_TEST
 
 START_TEST(test_sack_create)
 {
+    fail_unless(hy_get_errno() == 0);
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL);
     fail_if(sack == NULL, NULL);
     fail_if(sack_pool(sack) == NULL, NULL);
     hy_sack_free(sack);
+
+    sack = hy_sack_create(test_globals.tmpdir, "");
+    fail_unless(sack == NULL);
+    fail_unless(hy_get_errno() == HY_E_ARCH);
 }
 END_TEST
 

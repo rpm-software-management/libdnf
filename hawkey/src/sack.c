@@ -86,7 +86,7 @@ get_cmdline_repo(HySack sack)
     return NULL;
 }
 
-static void
+int
 setarch(HySack sack, const char *arch)
 {
     Pool *pool = sack_pool(sack);
@@ -102,6 +102,19 @@ setarch(HySack sack, const char *arch)
     }
     HY_LOG_INFO("Architecture is: %s", arch);
     pool_setarch(pool, arch);
+    if (!strcmp(arch, "noarch"))
+	return 0; // noarch never fails
+
+    /* pool_setarch() doesn't tell us when it defaulted to 'noarch' but we
+       consider it a failure. the only way to find out is count the
+       architectures known to the Pool. */
+    int count = 0;
+    for (Id id = 0; id <= pool->lastarch; ++id)
+	if (pool->id2arch[id])
+	    count++;
+    if (count < 2)
+	return 1;
+    return 0;
 }
 
 static void
@@ -322,8 +335,8 @@ hy_sack_create(const char *cache_path, const char *arch)
 
     int ret = mkcachedir(sack->cache_dir);
     if (ret) {
-	hy_sack_free(sack);
-	return NULL;
+	hy_errno = HY_E_IO;
+	goto fail;
     }
     queue_init(&sack->installonly);
 
@@ -332,9 +345,16 @@ hy_sack_create(const char *cache_path, const char *arch)
     pool_setdebugmask(pool,
 		      SOLV_ERROR | SOLV_FATAL | SOLV_WARN | SOLV_DEBUG_RESULT |
 		      HY_LL_INFO | HY_LL_ERROR);
-    setarch(sack, arch);
+
+    if (setarch(sack, arch)) {
+	hy_errno = HY_E_ARCH;
+	goto fail;
+    }
 
     return sack;
+ fail:
+    hy_sack_free(sack);
+    return NULL;
 }
 
 void
