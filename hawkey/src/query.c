@@ -92,7 +92,13 @@ type2relflags(int type)
 static int
 valid_filter(int filter_type, int keyname)
 {
-    return 1;
+    filter_type &= ~HY_NOT; // hy_query_run always handles NOT
+    switch (filter_type) {
+    case HY_PKG_SOURCERPM:
+	return keyname == HY_EQ;
+    default:
+	return 1;
+    }
 }
 
 static struct _Filter *
@@ -203,6 +209,33 @@ filter_release(HyQuery q, struct _Filter *f, Map *m)
 		MAPSET(m, id);
 	}
 	solv_free(filter_vr);
+    }
+}
+
+static void
+filter_sourcerpm(HyQuery q, struct _Filter *f, Map *m)
+{
+    Pool *pool = sack_pool(q->sack);
+
+    for (int mi = 0; mi < f->nmatches; ++mi) {
+	const char *match = f->matches[mi];
+
+	for (Id id = 1; id < pool->nsolvables; ++id) {
+	    Solvable *s = pool_id2solvable(pool, id);
+
+	    const char *name = solvable_lookup_str(s, SOLVABLE_SOURCENAME);
+	    if (name == NULL)
+		name = pool_id2str(pool, s->name);
+	    if (!str_startswith(match, name)) // early check
+		continue;
+
+	    HyPackage pkg = package_create(pool, id);
+	    char *srcrpm = hy_package_get_sourcerpm(pkg);
+	    if (!strcmp(match, srcrpm))
+		MAPSET(m, id);
+	    solv_free(srcrpm);
+	    hy_package_free(pkg);
+	}
     }
 }
 
@@ -568,6 +601,9 @@ hy_query_run(HyQuery q)
 	    break;
 	case HY_PKG_RELEASE:
 	    filter_release(q, f, &m);
+	    break;
+	case HY_PKG_SOURCERPM:
+	    filter_sourcerpm(q, f, &m);
 	    break;
 	case HY_PKG_PROVIDES:
 	    filter_providers(q, f, &m);

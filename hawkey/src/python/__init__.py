@@ -13,17 +13,18 @@ SYSTEM_REPO_NAME = _hawkey.SYSTEM_REPO_NAME
 CMDLINE_REPO_NAME = _hawkey.CMDLINE_REPO_NAME
 
 QUERY_KEYNAME_MAP = {
-    'name'    : _hawkey.PKG_NAME,
-    'arch'    : _hawkey.PKG_ARCH,
-    'evr'     : _hawkey.PKG_EVR,
-    'version' : _hawkey.PKG_VERSION,
-    'release' : _hawkey.PKG_RELEASE,
-    'summary' : _hawkey.PKG_SUMMARY,
-    'file'    : _hawkey.PKG_FILE,
-    'repo'    : _hawkey.PKG_REPO,
-    'latest'  : _hawkey.PKG_LATEST,
+    'name'	: _hawkey.PKG_NAME,
+    'arch'	: _hawkey.PKG_ARCH,
+    'evr'	: _hawkey.PKG_EVR,
+    'version'	: _hawkey.PKG_VERSION,
+    'release'	: _hawkey.PKG_RELEASE,
+    'sourcerpm'	: _hawkey.PKG_SOURCERPM,
+    'summary'	: _hawkey.PKG_SUMMARY,
+    'file'	: _hawkey.PKG_FILE,
+    'repo'	: _hawkey.PKG_REPO,
+    'latest'	: _hawkey.PKG_LATEST,
     'downgrades' : _hawkey.PKG_DOWNGRADES,
-    'upgrades' : _hawkey.PKG_UPGRADES,
+    'upgrades'	: _hawkey.PKG_UPGRADES,
     'obsoleting' : _hawkey.PKG_OBSOLETING
 }
 

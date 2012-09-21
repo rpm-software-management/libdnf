@@ -418,6 +418,23 @@ START_TEST(test_filter_files)
 }
 END_TEST
 
+START_TEST(test_filter_sourcerpm)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    fail_unless(hy_query_filter(q, HY_PKG_SOURCERPM, HY_GT, "tour-4-6.src.rpm"));
+    fail_if(hy_query_filter(q, HY_PKG_SOURCERPM, HY_EQ, "tour-4-6.src.rpm"));
+    fail_unless(size_and_free(q) == 1);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_SOURCERPM, HY_EQ, "mmysteryt-19.67-1.src.rpm");
+    fail_unless(size_and_free(q) == 1);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_SOURCERPM, HY_EQ, "mystery-19.67-1.src.rpm");
+    fail_unless(size_and_free(q) == 0);
+}
+END_TEST
+
 START_TEST(test_filter_reponames)
 {
     HyQuery q;
@@ -492,6 +509,7 @@ query_suite(void)
     tc = tcase_create("Filelists");
     tcase_add_unchecked_fixture(tc, fixture_yum, teardown);
     tcase_add_test(tc, test_filter_files);
+    tcase_add_test(tc, test_filter_sourcerpm);
     suite_add_tcase(s, tc);
 
     return s;
