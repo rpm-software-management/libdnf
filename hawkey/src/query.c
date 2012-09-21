@@ -89,6 +89,12 @@ type2relflags(int type)
     return flags;
 }
 
+static int
+valid_filter(int filter_type, int keyname)
+{
+    return 1;
+}
+
 static struct _Filter *
 query_add_filter(HyQuery q, int nmatches)
 {
@@ -444,29 +450,37 @@ hy_query_clone(HyQuery q)
     return qn;
 }
 
-void
+int
 hy_query_filter(HyQuery q, int keyname, int filter_type, const char *match)
 {
+    if (!valid_filter(keyname, filter_type))
+	return 1;
+
     struct _Filter *filterp = query_add_filter(q, 1);
     filterp->filter_type = filter_type;
     filterp->keyname = keyname;
     filterp->matches[0] = solv_strdup(match);
+    return 0;
 }
 
-void
+int
 hy_query_filter_in(HyQuery q, int keyname, int filter_type,
 		   const char **matches)
 {
-    const unsigned count = count_nullt_array(matches);
+    if (!valid_filter(keyname, filter_type))
+	return 1;
 
+    const unsigned count = count_nullt_array(matches);
     struct _Filter *filterp = query_add_filter(q, count);
+
     filterp->filter_type = filter_type;
     filterp->keyname = keyname;
     for (int i = 0; i < count; ++i)
 	filterp->matches[i] = solv_strdup(matches[i]);
+    return 0;
 }
 
-void
+int
 hy_query_filter_provides(HyQuery q, int filter_type, const char *name, const char *evr)
 {
     struct _Filter *filterp = query_add_filter(q, 1);
@@ -474,9 +488,10 @@ hy_query_filter_provides(HyQuery q, int filter_type, const char *name, const cha
     filterp->keyname = HY_PKG_PROVIDES;
     filterp->evr = solv_strdup(evr);
     filterp->matches[0] = solv_strdup(name);
+    return 0;
 }
 
-void
+int
 hy_query_filter_requires(HyQuery q, int filter_type, const char *name, const char *evr)
 {
     struct _Filter *filterq = query_add_filter(q, 1);
@@ -484,6 +499,7 @@ hy_query_filter_requires(HyQuery q, int filter_type, const char *name, const cha
     filterq->keyname = HY_PKG_REQUIRES;
     filterq->evr = solv_strdup(evr);
     filterq->matches[0] = solv_strdup(name);
+    return 0;
 }
 
 /**

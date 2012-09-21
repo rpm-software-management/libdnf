@@ -50,12 +50,12 @@ HyQuery hy_query_create(HySack sack);
 void hy_query_free(HyQuery q);
 void hy_query_clear(HyQuery q);
 HyQuery hy_query_clone(HyQuery q);
-void hy_query_filter(HyQuery q, int keyname, int filter_type, const char *match);
-void hy_query_filter_in(HyQuery q, int keyname, int filter_type,
+int hy_query_filter(HyQuery q, int keyname, int filter_type, const char *match);
+int hy_query_filter_in(HyQuery q, int keyname, int filter_type,
 			const char **matches);
-void hy_query_filter_provides(HyQuery q, int filter_type, const char *name,
+int hy_query_filter_provides(HyQuery q, int filter_type, const char *name,
 			   const char *evr);
-void hy_query_filter_requires(HyQuery q, int filter_type, const char *name,
+int hy_query_filter_requires(HyQuery q, int filter_type, const char *name,
 			   const char *evr);
 
 /**

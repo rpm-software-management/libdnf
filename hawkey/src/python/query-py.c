@@ -11,6 +11,9 @@
 #include "query-py.h"
 #include "sack-py.h"
 
+// pyhawkey
+#include "exception-py.h"
+
 typedef struct {
     PyObject_HEAD
     HyQuery query;
@@ -121,7 +124,10 @@ filter(_QueryObject *self, PyObject *args)
     }
     if (PyString_Check(match)) {
 	cmatch = PyString_AsString(match);
-	hy_query_filter(self->query, keyname, filtertype, cmatch);
+	if (hy_query_filter(self->query, keyname, filtertype, cmatch)) {
+	    PyErr_SetString(HyExc_Query, "Invalid filter key or match type.");
+	    return NULL;
+	}
 	Py_RETURN_NONE;
     }
     if (PySequence_Check(match)) {
@@ -136,7 +142,10 @@ filter(_QueryObject *self, PyObject *args)
 	    }
 	    matches[i] = PyString_AsString(item);
 	}
-	hy_query_filter_in(self->query, keyname, filtertype, matches);
+	if (hy_query_filter_in(self->query, keyname, filtertype, matches)) {
+	    PyErr_SetString(HyExc_Query, "Invalid filter key or match type.");
+	    return NULL;
+	}
 	Py_RETURN_NONE;
     }
     PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
