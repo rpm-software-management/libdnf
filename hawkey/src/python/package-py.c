@@ -133,7 +133,7 @@ get_str(_PackageObject *self, void *closure)
     func = (const char *(*)(HyPackage))closure;
     cstr = func(self->package);
     if (cstr == NULL)
-	return PyString_FromString("");
+	Py_RETURN_NONE;
     return PyString_FromString(cstr);
 }
 
@@ -147,7 +147,7 @@ get_str_alloced(_PackageObject *self, void *closure)
     func = (char *(*)(HyPackage))closure;
     cstr = func(self->package);
     if (cstr == NULL)
-	return PyString_FromString("");
+	Py_RETURN_NONE;
     ret = PyString_FromString(cstr);
     solv_free(cstr);
     return ret;

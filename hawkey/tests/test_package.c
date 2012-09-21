@@ -71,6 +71,17 @@ START_TEST(test_versions)
 }
 END_TEST
 
+START_TEST(test_no_sourcerpm)
+{
+    HySack sack = test_globals.sack;
+    HyPackage pkg = by_name(sack, "baby");
+    char *src = hy_package_get_sourcerpm(pkg);
+
+    fail_unless(src == NULL);
+    hy_package_free(pkg);
+}
+END_TEST
+
 START_TEST(test_checksums)
 {
     HyPackage pkg = by_name(test_globals.sack, "mystery");
@@ -148,6 +159,7 @@ package_suite(void)
     tcase_add_test(tc, test_package_summary);
     tcase_add_test(tc, test_identical);
     tcase_add_test(tc, test_versions);
+    tcase_add_test(tc, test_no_sourcerpm);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("WithRealRepo");

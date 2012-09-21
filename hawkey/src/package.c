@@ -119,9 +119,13 @@ hy_package_get_sourcerpm(HyPackage pkg)
 {
     Pool *pool = pkg->pool;
     Solvable *s = get_solvable(pkg);
+    const char *arch = solvable_lookup_str(s, SOLVABLE_SOURCEARCH);
+
+    if (arch == NULL) // package has no sourcerpm
+	return NULL;
+
     const char *name = solvable_lookup_str(s, SOLVABLE_SOURCENAME);
     const char *evr = solvable_lookup_str(s, SOLVABLE_SOURCEEVR);
-    const char *arch = solvable_lookup_str(s, SOLVABLE_SOURCEARCH);
 
     /* if sourcename or sourceevr is NULL it is the same as that of the package */
     if (name == NULL)
