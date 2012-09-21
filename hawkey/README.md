@@ -60,7 +60,8 @@ where to import the built hawkey modules.
 
 ## More information
 
-Collaborators are welcome, contact Ales Kozumplik <akozumpl@redhat.com> with
+Collaborators are welcome, get in touch with me [2] to see how you can submit
 ideas and patches.
 
 [1] https://github.com/openSUSE/libsolv
+[2] https://github.com/akozumpl/dnf/wiki#wiki-Contact
