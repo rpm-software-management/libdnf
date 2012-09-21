@@ -13,7 +13,7 @@ Source0:	hawkey-%{gitrev}.tar.xz
 BuildRequires:	libsolv-devel >= %{libsolv_version}
 BuildRequires:	cmake expat-devel rpm-devel zlib-devel check-devel
 BuildRequires:	python2-devel
-BuildRequires:  python-sphinx
+BuildRequires:  python-nose python-sphinx
 # explicit dependency: libsolv occasionally goes through ABI changes without
 # bumping the .so number:
 Requires:	libsolv%{?_isa} >= %{libsolv_version}
@@ -50,6 +50,9 @@ Python bindings for the hawkey library.
 %cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .
 make %{?_smp_mflags}
 make doc-man
+
+%check
+make ARGS="-V" test
 
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
