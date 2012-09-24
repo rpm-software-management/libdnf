@@ -6,8 +6,9 @@
 // hawkey
 #include "src/query.h"
 #include "src/sack_internal.h"
-#include "testsys.h"
+#include "fixtures.h"
 #include "test_query.h"
+#include "testsys.h"
 
 static int
 size_and_free(HyQuery query)

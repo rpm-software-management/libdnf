@@ -13,6 +13,7 @@
 #include "src/repo_internal.h"
 #include "src/sack_internal.h"
 #include "src/util.h"
+#include "fixtures.h"
 #include "testsys.h"
 
 START_TEST(test_environment)

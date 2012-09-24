@@ -1,8 +1,9 @@
 // hawkey
 #include "src/query.h"
 #include "src/util.h"
-#include "testsys.h"
+#include "fixtures.h"
 #include "test_package.h"
+#include "testsys.h"
 
 START_TEST(test_refcounting)
 {

@@ -11,6 +11,7 @@
 #include "src/package_internal.h"
 #include "src/sack_internal.h"
 #include "src/util.h"
+#include "fixtures.h"
 #include "testsys.h"
 #include "test_goal.h"
 

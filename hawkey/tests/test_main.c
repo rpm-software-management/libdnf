@@ -10,7 +10,7 @@
 #include <solv/util.h>
 
 // hawkey
-#include "testsys.h"
+#include "fixtures.h"
 #include "test_goal.h"
 #include "test_iutil.h"
 #include "test_query.h"
@@ -18,6 +18,7 @@
 #include "test_packagelist.h"
 #include "test_repo.h"
 #include "test_sack.h"
+#include "testsys.h"
 
 static int
 init_test_globals(struct TestGlobals_s *tg, const char *repo_dir)
