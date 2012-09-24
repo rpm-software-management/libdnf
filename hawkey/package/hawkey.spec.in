@@ -1,9 +1,9 @@
-%global gitrev 0245875
+%global gitrev 687ceab
 %global libsolv_version 0.0.0-17
 
 Name:		hawkey
 Version:	@VERSION@
-Release:	3.git%{gitrev}%{?dist}
+Release:	4.git%{gitrev}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
@@ -75,6 +75,9 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
+* Mon Sep 22 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.11-4.git687ceab
+- py: hawkey.test should not depend on libcheck.so.
+
 * Fri Sep 21 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.11-1.git545a461
 - py: Goal.run_all() returns True if a solution was found. (RhBug: 856615)
 - py: Goal.run() accepts callback parameter too. (RhBug: 856615)
