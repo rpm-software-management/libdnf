@@ -231,7 +231,7 @@ filter_sourcerpm(HyQuery q, struct _Filter *f, Map *m)
 
 	    HyPackage pkg = package_create(pool, id);
 	    char *srcrpm = hy_package_get_sourcerpm(pkg);
-	    if (!strcmp(match, srcrpm))
+	    if (srcrpm && !strcmp(match, srcrpm))
 		MAPSET(m, id);
 	    solv_free(srcrpm);
 	    hy_package_free(pkg);
