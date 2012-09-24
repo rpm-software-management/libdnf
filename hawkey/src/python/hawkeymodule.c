@@ -31,9 +31,26 @@ py_chksum_name(PyObject *unused, PyObject *args)
     return PyString_FromString(name);
 }
 
+static PyObject *
+py_chksum_type(PyObject *unused, PyObject *str_o)
+{
+    const char *str = PyString_AsString(str_o);
+    if (str == NULL)
+	return NULL;
+
+    int type = chksum_type(str);
+    if (type == 0) {
+	PyErr_Format(PyExc_ValueError, "unrecognized chksum type: %s", str);
+	return NULL;
+    }
+    return PyInt_FromLong(type);
+}
+
 static struct PyMethodDef hawkey_methods[] = {
     {"chksum_name",		(PyCFunction)py_chksum_name,
-     METH_VARARGS, NULL},
+     METH_VARARGS,	NULL},
+    {"chksum_type",		(PyCFunction)py_chksum_type,
+     METH_O,		NULL},
     {NULL}				/* sentinel */
 };
 

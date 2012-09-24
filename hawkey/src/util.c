@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <strings.h>
 
 // hawkey
 #include "iutil.h"
@@ -26,6 +27,18 @@ chksum_name(int chksum_type)
     default:
 	return NULL;
     }
+}
+
+int
+chksum_type(const char *chksum_name)
+{
+    if (!strcasecmp(chksum_name, "md5"))
+	return HY_CHKSUM_MD5;
+    if (!strcasecmp(chksum_name, "sha1"))
+	return HY_CHKSUM_SHA1;
+    if (!strcasecmp(chksum_name, "sha256"))
+	return HY_CHKSUM_SHA256;
+    return 0;
 }
 
 char *

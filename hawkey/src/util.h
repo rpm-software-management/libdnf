@@ -7,6 +7,7 @@ extern "C" {
 
 void *hy_free(void *mem);
 const char *chksum_name(int chksum_type);
+int chksum_type(const char *chksum_name);
 char *chksum_str(const unsigned char *chksum, int type);
 
 #ifdef __cplusplus

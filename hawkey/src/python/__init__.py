@@ -58,6 +58,7 @@ RuntimeException = _hawkey.RuntimeException
 
 Sack = _hawkey.Sack
 chksum_name = _hawkey.chksum_name
+chksum_type = _hawkey.chksum_type
 
 REASON_DEP = _hawkey.REASON_DEP
 REASON_USER = _hawkey.REASON_USER
