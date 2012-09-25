@@ -215,7 +215,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'hawkey', u'Hawkey Documentation',
-     [u'Aleš Kozumplík'], 1)
+     [u'Aleš Kozumplík'], 3)
 ]
 
 # If true, show URL addresses after external links.

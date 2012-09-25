@@ -69,7 +69,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{_libdir}/libhawkey.so
 %{_libdir}/pkgconfig/hawkey.pc
 %{_includedir}/hawkey/
-%{_mandir}/man1/hawkey.1.gz
+%{_mandir}/man3/hawkey.3.gz
 
 %files -n python-hawkey
 %{python_sitearch}/
