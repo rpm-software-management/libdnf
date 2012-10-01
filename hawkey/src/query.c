@@ -90,12 +90,12 @@ type2relflags(int type)
 }
 
 static int
-valid_filter(int filter_type, int keyname)
+valid_filter(int keyname, int filter_type)
 {
     filter_type &= ~HY_NOT; // hy_query_run always handles NOT
-    switch (filter_type) {
+    switch (keyname) {
     case HY_PKG_SOURCERPM:
-	return keyname == HY_EQ;
+	return filter_type == HY_EQ;
     default:
 	return 1;
     }
