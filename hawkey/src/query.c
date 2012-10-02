@@ -38,8 +38,12 @@ static int
 keyname2id(int keyname)
 {
     switch(keyname) {
+    case HY_PKG_DESCRIPTION:
+	return SOLVABLE_DESCRIPTION;
     case HY_PKG_NAME:
 	return SOLVABLE_NAME;
+    case HY_PKG_URL:
+	return SOLVABLE_URL;
     case HY_PKG_ARCH:
 	return SOLVABLE_ARCH;
     case HY_PKG_EVR:

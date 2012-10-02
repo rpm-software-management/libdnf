@@ -31,6 +31,7 @@ enum _hy_comparison_type_e {
 
 enum _hy_key_name_e {
     HY_PKG_ARCH,
+    HY_PKG_DESCRIPTION,
     HY_PKG_EVR,
     HY_PKG_FILE,
     HY_PKG_NAME,
@@ -40,6 +41,7 @@ enum _hy_key_name_e {
     HY_PKG_REQUIRES,
     HY_PKG_SOURCERPM,
     HY_PKG_SUMMARY,
+    HY_PKG_URL,
     HY_PKG_VERSION
 };
 

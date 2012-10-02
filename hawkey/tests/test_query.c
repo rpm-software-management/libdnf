@@ -436,6 +436,14 @@ START_TEST(test_filter_sourcerpm)
 }
 END_TEST
 
+START_TEST(test_filter_description)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    fail_if(hy_query_filter(q, HY_PKG_DESCRIPTION, HY_SUBSTR, "mystery package"));
+    fail_unless(size_and_free(q) == 1);
+}
+END_TEST
+
 START_TEST(test_filter_reponames)
 {
     HyQuery q;
@@ -507,10 +515,11 @@ query_suite(void)
     tcase_add_test(tc, test_filter_reponames);
     suite_add_tcase(s, tc);
 
-    tc = tcase_create("Filelists");
+    tc = tcase_create("Filelists etc.");
     tcase_add_unchecked_fixture(tc, fixture_yum, teardown);
     tcase_add_test(tc, test_filter_files);
     tcase_add_test(tc, test_filter_sourcerpm);
+    tcase_add_test(tc, test_filter_description);
     suite_add_tcase(s, tc);
 
     return s;

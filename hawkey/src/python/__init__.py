@@ -13,7 +13,9 @@ SYSTEM_REPO_NAME = _hawkey.SYSTEM_REPO_NAME
 CMDLINE_REPO_NAME = _hawkey.CMDLINE_REPO_NAME
 
 QUERY_KEYNAME_MAP = {
+    'description' : _hawkey.PKG_DESCRIPTION,
     'name'	: _hawkey.PKG_NAME,
+    'url'	: _hawkey.PKG_URL,
     'arch'	: _hawkey.PKG_ARCH,
     'evr'	: _hawkey.PKG_EVR,
     'version'	: _hawkey.PKG_VERSION,
