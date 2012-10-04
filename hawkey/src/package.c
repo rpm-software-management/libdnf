@@ -241,16 +241,7 @@ hy_package_get_url(HyPackage pkg)
 unsigned long
 hy_package_get_epoch(HyPackage pkg)
 {
-    char *e, *v, *r, *endptr;
-    long int epoch = 0;
-
-    pool_version_split(package_pool(pkg), hy_package_get_evr(pkg), &e, &v, &r);
-    if (e) {
-	epoch = strtol(e, &endptr, 10);
-	assert(*endptr == '\0');
-    }
-
-    return epoch;
+    return pool_get_epoch(package_pool(pkg), hy_package_get_evr(pkg));
 }
 
 unsigned long long

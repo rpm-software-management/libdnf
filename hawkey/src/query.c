@@ -47,9 +47,13 @@ enum _match_type {
 
 static int
 key2match_type(int keyname) {
-    if (keyname == HY_PKG)
+    switch (keyname) {
+    case HY_PKG:
+    case HY_PKG_EPOCH:
 	return _HY_NUM;
-    return _HY_STR;
+    default:
+	return _HY_STR;
+    }
 }
 
 static int
@@ -183,6 +187,31 @@ filter_pkg(HyQuery q, struct _Filter *f, Map *m)
 {
     for (int mi = 0; mi < f->nmatches; ++mi)
 	MAPSET(m, f->matches[mi].num);
+}
+
+static void
+filter_epoch(HyQuery q, struct _Filter *f, Map *m)
+{
+    Pool *pool = sack_pool(q->sack);
+
+    for (int mi = 0; mi < f->nmatches; ++mi) {
+	unsigned long epoch = f->matches[mi].num;
+
+	for (Id id = 1; id < pool->nsolvables; ++id) {
+	    Solvable *s = pool_id2solvable(pool, id);
+	    if (s->evr == ID_EMPTY)
+		continue;
+
+	    const char *evr = pool_id2str(pool, s->evr);
+	    unsigned long pkg_epoch = pool_get_epoch(pool, evr);
+
+	    int filter_type = f->filter_type;
+	    if ((pkg_epoch > epoch && filter_type & HY_GT) ||
+		(pkg_epoch < epoch && filter_type & HY_LT) ||
+		(pkg_epoch == epoch && filter_type & HY_EQ))
+		MAPSET(m, id);
+	}
+    }
 }
 
 static void
@@ -695,6 +724,9 @@ hy_query_run(HyQuery q)
 	switch (f->keyname) {
 	case HY_PKG:
 	    filter_pkg(q, f, &m);
+	    break;
+	case HY_PKG_EPOCH:
+	    filter_epoch(q, f, &m);
 	    break;
 	case HY_PKG_EVR:
 	    filter_evr(q, f, &m);

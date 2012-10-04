@@ -367,6 +367,21 @@ what_downgrades(Pool *pool, Id pkg)
     return l;
 }
 
+unsigned long
+pool_get_epoch(Pool *pool, const char *evr)
+{
+    char *e, *v, *r, *endptr;
+    long int epoch = 0;
+
+    pool_version_split(pool, evr, &e, &v, &r);
+    if (e) {
+	epoch = strtol(e, &endptr, 10);
+	assert(*endptr == '\0');
+    }
+
+    return epoch;
+}
+
 /**
  * Split evr into its components.
  *

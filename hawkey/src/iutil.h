@@ -48,6 +48,7 @@ Id what_upgrades(Pool *pool, Id p);
 Id what_downgrades(Pool *pool, Id p);
 
 /* package version utils */
+unsigned long pool_get_epoch(Pool *pool, const char *evr);
 void pool_version_split(Pool *pool, const char *evr, char **epoch, char **version,
 			char **release);
 

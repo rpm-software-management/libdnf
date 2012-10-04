@@ -33,6 +33,7 @@ enum _hy_key_name_e {
     HY_PKG,
     HY_PKG_ARCH,
     HY_PKG_DESCRIPTION,
+    HY_PKG_EPOCH,
     HY_PKG_EVR,
     HY_PKG_FILE,
     HY_PKG_NAME,
