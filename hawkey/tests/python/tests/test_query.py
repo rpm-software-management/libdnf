@@ -97,6 +97,11 @@ class Query(base.TestCase):
         q2 = q.filter(evr="5.0-0")
         self.assertIsNone(q.result)
 
+    def test_epoch(self):
+        q = hawkey.Query(self.sack).filter(epoch__gt=4)
+        self.assertEqual(len(q), 1)
+        self.assertEqual(q[0].epoch, 6)
+
     def test_version(self):
         q = hawkey.Query(self.sack).filter(version__gte="5.0")
         self.assertEqual(len(q), 3)

@@ -130,6 +130,18 @@ filter(_QueryObject *self, PyObject *args)
 	}
 	Py_RETURN_NONE;
     }
+    if (PyInt_Check(match)) {
+	long val = PyInt_AsLong(match);
+	if (val > INT_MAX || val < INT_MIN) {
+	    PyErr_SetString(HyExc_Value, "Numeric argument out of range.");
+	    return NULL;
+	}
+	if (hy_query_filter_num(self->query, keyname, filtertype, val)) {
+	    PyErr_SetString(HyExc_Query, "Invalid filter key or match type.");
+	    return NULL;
+	}
+	Py_RETURN_NONE;
+    }
     if (PySequence_Check(match)) {
 	const unsigned count = PySequence_Size(match);
 	const char *matches[count + 1];

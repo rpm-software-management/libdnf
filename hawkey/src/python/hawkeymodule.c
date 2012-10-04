@@ -104,6 +104,7 @@ init_hawkey(void)
     PyModule_AddStringConstant(m, "CMDLINE_REPO_NAME", HY_CMDLINE_REPO_NAME);
 
     PyModule_AddIntConstant(m, "PKG_DESCRIPTION", HY_PKG_DESCRIPTION);
+    PyModule_AddIntConstant(m, "PKG_EPOCH", HY_PKG_EPOCH);
     PyModule_AddIntConstant(m, "PKG_NAME", HY_PKG_NAME);
     PyModule_AddIntConstant(m, "PKG_URL", HY_PKG_URL);
     PyModule_AddIntConstant(m, "PKG_ARCH", HY_PKG_ARCH);

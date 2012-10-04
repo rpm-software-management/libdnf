@@ -14,6 +14,7 @@ CMDLINE_REPO_NAME = _hawkey.CMDLINE_REPO_NAME
 
 QUERY_KEYNAME_MAP = {
     'description' : _hawkey.PKG_DESCRIPTION,
+    'epoch'	: _hawkey.PKG_EPOCH,
     'name'	: _hawkey.PKG_NAME,
     'url'	: _hawkey.PKG_URL,
     'arch'	: _hawkey.PKG_ARCH,

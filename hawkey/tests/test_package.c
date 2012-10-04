@@ -46,9 +46,9 @@ START_TEST(test_versions)
     HyPackage pkg;
 
     pkg = by_name(sack, "baby");
-    ck_assert_str_eq(hy_package_get_evr(pkg), "1:5.0-11");
+    ck_assert_str_eq(hy_package_get_evr(pkg), "6:5.0-11");
     epoch = hy_package_get_epoch(pkg);
-    fail_unless(epoch == 1);
+    fail_unless(epoch == 6);
     version = hy_package_get_version(pkg);
     ck_assert_str_eq(version, "5.0");
     hy_free(version);
