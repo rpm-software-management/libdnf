@@ -167,6 +167,7 @@ class Query(_hawkey.Query):
         return new_query.filterm(*lst, **kwargs)
 
     def filterm(self, *lst, **kwargs):
+        self.result = None
         flags = set(lst)
         map(lambda arg_tuple: super(Query, self).filter(*arg_tuple),
             self._parse_filter_args(flags, kwargs))
