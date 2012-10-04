@@ -24,15 +24,33 @@ struct _HyQuery {
     int obsoleting; /* 1 for "only those obsoleting installed packages" */
 };
 
+union _Match {
+    char *str;
+    int num;
+};
+
 struct _Filter {
     int filter_type;
     int keyname;
-    char **matches;
+    union _Match *matches;
     int nmatches;
     char *evr;
 };
 
+enum _match_type {
+    _HY_STR,
+    _HY_NUM
+};
+
 #define BLOCK_SIZE 15
+
+
+static int
+key2match_type(int keyname) {
+    if (keyname == HY_PKG)
+	return _HY_NUM;
+    return _HY_STR;
+}
 
 static int
 keyname2id(int keyname)
@@ -94,11 +112,31 @@ type2relflags(int type)
 }
 
 static int
-valid_filter(int keyname, int filter_type)
+valid_filter_str(int keyname, int filter_type)
 {
+    if (key2match_type(keyname) != _HY_STR)
+	return 0;
+
     filter_type &= ~HY_NOT; // hy_query_run always handles NOT
     switch (keyname) {
     case HY_PKG_SOURCERPM:
+	return filter_type == HY_EQ;
+    default:
+	return 1;
+    }
+}
+
+static int
+valid_filter_num(int keyname, int filter_type)
+{
+    if (key2match_type(keyname) != _HY_NUM)
+	return 0;
+    filter_type &= ~HY_NOT; // hy_query_run always handles NOT
+    if (filter_type & (HY_ICASE | HY_SUBSTR | HY_GLOB))
+	return 0;
+
+    switch (keyname) {
+    case HY_PKG:
 	return filter_type == HY_EQ;
     default:
 	return 1;
@@ -109,7 +147,7 @@ static struct _Filter *
 query_add_filter(HyQuery q, int nmatches)
 {
     struct _Filter filter = {
-	.matches = solv_calloc(nmatches, sizeof(char *)),
+	.matches = solv_calloc(nmatches, sizeof(union _Match *)),
 	.nmatches = nmatches,
 	.evr = NULL
     };
@@ -127,11 +165,12 @@ filter_dataiterator(HyQuery q, struct _Filter *f, Map *m)
     Id keyname = keyname2id(f->keyname);
     int flags = type2flags(f->filter_type, f->keyname);
 
+    assert(key2match_type(f->keyname) == _HY_STR);
     /* do an OR over all matches: */
     for (int i = 0; i < f->nmatches; ++i) {
 	dataiterator_init(&di, pool, 0, 0,
 			  keyname,
-			  f->matches[i],
+			  f->matches[i].str,
 			  flags);
 	while (dataiterator_step(&di))
 	    MAPSET(m, di.solvid);
@@ -140,12 +179,19 @@ filter_dataiterator(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
+filter_pkg(HyQuery q, struct _Filter *f, Map *m)
+{
+    for (int mi = 0; mi < f->nmatches; ++mi)
+	MAPSET(m, f->matches[mi].num);
+}
+
+static void
 filter_evr(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
-	Id match_evr = pool_str2id(pool, f->matches[mi], 1);
+	Id match_evr = pool_str2id(pool, f->matches[mi].str, 1);
 
 	for (Id id = 1; id < pool->nsolvables; ++id) {
 	    Solvable *s = pool_id2solvable(pool, id);
@@ -165,7 +211,7 @@ filter_version(HyQuery q, struct _Filter *f, Map *m)
     Pool *pool = sack_pool(q->sack);
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
-	char *filter_vr = solv_dupjoin(f->matches[mi], "-0", NULL);
+	char *filter_vr = solv_dupjoin(f->matches[mi].str, "-0", NULL);
 
 	for (Id id = 1; id < pool->nsolvables; ++id) {
 	    char *e, *v, *r;
@@ -193,7 +239,7 @@ filter_release(HyQuery q, struct _Filter *f, Map *m)
     Pool *pool = sack_pool(q->sack);
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
-	char *filter_vr = solv_dupjoin("0-", f->matches[mi], NULL);
+	char *filter_vr = solv_dupjoin("0-", f->matches[mi].str, NULL);
 
 	for (Id id = 1; id < pool->nsolvables; ++id) {
 	    char *e, *v, *r;
@@ -222,7 +268,7 @@ filter_sourcerpm(HyQuery q, struct _Filter *f, Map *m)
     Pool *pool = sack_pool(q->sack);
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
-	const char *match = f->matches[mi];
+	const char *match = f->matches[mi].str;
 
 	for (Id id = 1; id < pool->nsolvables; ++id) {
 	    Solvable *s = pool_id2solvable(pool, id);
@@ -253,7 +299,7 @@ filter_providers(HyQuery q, struct _Filter *f, Map *m)
     assert(f->nmatches == 1);
     sack_make_provides_ready(q->sack);
 
-    id = pool_str2id(pool, f->matches[0], 0);
+    id = pool_str2id(pool, f->matches[0].str, 0);
     if (id == STRID_NULL || id == STRID_EMPTY)
 	return;
     id_evr = pool_str2id(pool, f->evr, 1);
@@ -268,7 +314,7 @@ filter_requires(HyQuery q, struct _Filter *f, Map *m)
 {
     assert(f->nmatches == 1);
     Pool *pool = sack_pool(q->sack);
-    Id id = pool_str2id(pool, f->matches[0], 0);
+    Id id = pool_str2id(pool, f->matches[0].str, 0);
 
     if (id == STRID_NULL || id == STRID_EMPTY)
 	return;
@@ -310,7 +356,7 @@ filter_repo(HyQuery q, struct _Filter *f, Map *m)
 	ourids[id] = 0;
     FOR_REPOS(id, r) {
 	for (i = 0; i < f->nmatches; i++) {
-	    if (!strcmp(r->name, f->matches[i])) {
+	    if (!strcmp(r->name, f->matches[i].str)) {
 		ourids[id] = 1;
 		break;
 	    }
@@ -452,8 +498,9 @@ hy_query_clear(HyQuery q)
 {
     for (int i = 0; i < q->nfilters; ++i) {
 	struct _Filter *filterp = q->filters + i;
-	for (int m = 0; m < filterp->nmatches; ++m)
-	    solv_free(filterp->matches[m]);
+	if (key2match_type(filterp->keyname) == _HY_STR)
+	    for (int m = 0; m < filterp->nmatches; ++m)
+		solv_free(filterp->matches[m].str);
 	filterp->nmatches = 0;
 	solv_free(filterp->matches);
 	solv_free(filterp->evr);
@@ -479,7 +526,12 @@ hy_query_clone(HyQuery q)
 	filterp->filter_type = q->filters[i].filter_type;
 	filterp->keyname = q->filters[i].keyname;
 	for (int j = 0; j < q->filters[i].nmatches; ++j)
-	    filterp->matches[j] = solv_strdup(q->filters[i].matches[j]);
+	    if (key2match_type(filterp->keyname) == _HY_STR) {
+		char *copy = solv_strdup(q->filters[i].matches[j].str);
+		filterp->matches[j].str = copy;
+	    } else
+		filterp->matches[j].num = q->filters[i].matches[j].num;
+
 	filterp->evr = solv_strdup(q->filters[i].evr);
     }
     assert(qn->nfilters == q->nfilters);
@@ -490,13 +542,13 @@ hy_query_clone(HyQuery q)
 int
 hy_query_filter(HyQuery q, int keyname, int filter_type, const char *match)
 {
-    if (!valid_filter(keyname, filter_type))
+    if (!valid_filter_str(keyname, filter_type))
 	return 1;
 
     struct _Filter *filterp = query_add_filter(q, 1);
     filterp->filter_type = filter_type;
     filterp->keyname = keyname;
-    filterp->matches[0] = solv_strdup(match);
+    filterp->matches[0].str = solv_strdup(match);
     return 0;
 }
 
@@ -504,7 +556,7 @@ int
 hy_query_filter_in(HyQuery q, int keyname, int filter_type,
 		   const char **matches)
 {
-    if (!valid_filter(keyname, filter_type))
+    if (!valid_filter_str(keyname, filter_type))
 	return 1;
 
     const unsigned count = count_nullt_array(matches);
@@ -513,8 +565,52 @@ hy_query_filter_in(HyQuery q, int keyname, int filter_type,
     filterp->filter_type = filter_type;
     filterp->keyname = keyname;
     for (int i = 0; i < count; ++i)
-	filterp->matches[i] = solv_strdup(matches[i]);
+	filterp->matches[i].str = solv_strdup(matches[i]);
     return 0;
+}
+
+int
+hy_query_filter_num(HyQuery q, int keyname, int filter_type, int match)
+{
+    if (!valid_filter_num(keyname, filter_type))
+	return 1;
+
+    struct _Filter *filterp = query_add_filter(q, 1);
+    filterp->filter_type = filter_type;
+    filterp->keyname = keyname;
+    filterp->matches[0].num = match;
+    return 0;
+}
+
+int
+hy_query_filter_num_in(HyQuery q, int keyname, int filter_type, int nmatches,
+		       const int *matches)
+{
+    if (!valid_filter_num(keyname, filter_type))
+	return 1;
+
+    struct _Filter *filterp = query_add_filter(q, nmatches);
+
+    filterp->filter_type = filter_type;
+    filterp->keyname = keyname;
+    for (int i = 0; i < nmatches; ++i)
+	filterp->matches[i].num = matches[i];
+    return 0;
+}
+
+int
+hy_query_filter_package_in(HyQuery q, int filter_type, const HyPackageList plist)
+{
+    const unsigned count = hy_packagelist_count(plist);
+    int *matches = solv_calloc(count, sizeof(int));
+    int i, ret;
+    HyPackage pkg;
+
+    FOR_PACKAGELIST(pkg, plist, i)
+	matches[i] = package_id(pkg);
+    ret = hy_query_filter_num_in(q, HY_PKG, filter_type, count, matches);
+    solv_free(matches);
+    return ret;
 }
 
 int
@@ -524,7 +620,7 @@ hy_query_filter_provides(HyQuery q, int filter_type, const char *name, const cha
     filterp->filter_type = filter_type;
     filterp->keyname = HY_PKG_PROVIDES;
     filterp->evr = solv_strdup(evr);
-    filterp->matches[0] = solv_strdup(name);
+    filterp->matches[0].str = solv_strdup(name);
     return 0;
 }
 
@@ -535,7 +631,7 @@ hy_query_filter_requires(HyQuery q, int filter_type, const char *name, const cha
     filterq->filter_type = filter_type;
     filterq->keyname = HY_PKG_REQUIRES;
     filterq->evr = solv_strdup(evr);
-    filterq->matches[0] = solv_strdup(name);
+    filterq->matches[0].str = solv_strdup(name);
     return 0;
 }
 
@@ -597,6 +693,9 @@ hy_query_run(HyQuery q)
 
 	map_empty(&m);
 	switch (f->keyname) {
+	case HY_PKG:
+	    filter_pkg(q, f, &m);
+	    break;
 	case HY_PKG_EVR:
 	    filter_evr(q, f, &m);
 	    break;
@@ -656,7 +755,7 @@ filter_arch2job(const HyQuery q, const struct _Filter *f, Queue *job)
 	return HY_E_QUERY; // only apply arch if there's a name
 
     Pool *pool = sack_pool(q->sack);
-    const char *arch = f->matches[0];
+    const char *arch = f->matches[0].str;
     Id archid = str2archid(pool, arch);
 
     if (archid == 0)
@@ -682,7 +781,7 @@ filter_name2job(const HyQuery q, const struct _Filter *f, Queue *job)
 
     sack_make_provides_ready(q->sack);
     for (int i = 0; i < f->nmatches; ++i) {
-	const char *name = f->matches[i];
+	const char *name = f->matches[i].str;
 	Id id = pool_str2id(pool, name, 0);
 
 	if (id)

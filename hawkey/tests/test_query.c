@@ -213,6 +213,44 @@ START_TEST(test_query_in)
 }
 END_TEST
 
+START_TEST(test_query_pkg)
+{
+    HyPackageList plist;
+    HyQuery q, q2;
+
+    // setup
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
+    plist = hy_query_run(q);
+    hy_query_free(q);
+    fail_unless(hy_packagelist_count(plist), 2);
+
+    // use hy_query_filter_package_in():
+    q = hy_query_create(test_globals.sack);
+    // check validation works:
+    fail_unless(hy_query_filter_package_in(q, HY_GT, plist));
+    // add the filter:
+    fail_if(hy_query_filter_package_in(q, HY_EQ, plist));
+    hy_packagelist_free(plist);
+
+    // cloning must work
+    q2 = hy_query_clone(q);
+    fail_unless(query_count_results(q) == 2);
+    hy_query_free(q);
+
+    // filter on
+    hy_query_filter_latest(q2, 1);
+    plist = hy_query_run(q2);
+    fail_unless(hy_packagelist_count(plist) == 1);
+    char *nvra = hy_package_get_nvra(hy_packagelist_get(plist, 0));
+    ck_assert_str_eq(nvra, "jay-6.0-0.x86_64");
+    solv_free(nvra);
+
+    hy_packagelist_free(plist);
+    hy_query_free(q2);
+}
+END_TEST
+
 START_TEST(test_query_provides)
 {
     HySack sack = test_globals.sack;
@@ -490,6 +528,7 @@ query_suite(void)
     tcase_add_test(tc, test_query_anded);
     tcase_add_test(tc, test_query_neq);
     tcase_add_test(tc, test_query_in);
+    tcase_add_test(tc, test_query_pkg);
     tcase_add_test(tc, test_query_provides);
     tcase_add_test(tc, test_query_fileprovides);
     suite_add_tcase(s, tc);
