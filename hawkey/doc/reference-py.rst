@@ -24,7 +24,7 @@ exception is raised:
   control. ``hawkey.RuntimeException`` is generally used in this case.
 
 * ``hawkey.ValidationException`` is raised when a function call performs a
-  preliminar check before proceeding with the main operation and this check
+  preliminary check before proceeding with the main operation and this check
   fails.
 
 The class hierarchy for Hawkey exceptions is::
