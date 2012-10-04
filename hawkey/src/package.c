@@ -27,6 +27,12 @@ lookup_num(HyPackage pkg, unsigned type)
 }
 
 HyPackage
+package_clone(HyPackage pkg)
+{
+    return package_create(package_pool(pkg), package_id(pkg));
+}
+
+HyPackage
 package_create(Pool *pool, Id id)
 {
     HyPackage pkg;

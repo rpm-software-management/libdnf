@@ -143,6 +143,19 @@ filter(_QueryObject *self, PyObject *args)
 	Py_RETURN_NONE;
     }
     if (PySequence_Check(match)) {
+	if (keyname == HY_PKG) {
+	    HyPackageList plist = pylist_to_packagelist(match);
+	    if (plist == NULL)
+		return NULL;
+
+	    if (hy_query_filter_package_in(self->query, filtertype, plist)) {
+		PyErr_SetString(HyExc_Query, "Invalid filter key or match type.");
+		hy_packagelist_free(plist);
+		return NULL;
+	    }
+	    hy_packagelist_free(plist);
+	    Py_RETURN_NONE;
+	}
 	const unsigned count = PySequence_Size(match);
 	const char *matches[count + 1];
 	matches[count] = NULL;

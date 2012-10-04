@@ -4,6 +4,7 @@
 #include "src/package_internal.h"
 #include "src/packagelist.h"
 #include "iutil-py.h"
+#include "package-py.h"
 #include "sack-py.h"
 
 PyObject *
@@ -37,6 +38,31 @@ packagelist_to_pylist(HyPackageList plist, PyObject *sack)
 	return retval;
     /* return error */
     Py_DECREF(list);
+    return NULL;
+}
+
+HyPackageList
+pylist_to_packagelist(PyObject *sequence)
+{
+    HyPackageList plist = hy_packagelist_create();
+
+    assert(PySequence_Check(sequence));
+
+    const unsigned count = PySequence_Size(sequence);
+    for (int i = 0; i < count; ++i) {
+	PyObject *item = PySequence_GetItem(sequence, i);
+	if (item == NULL)
+	    goto fail;
+	HyPackage pkg = packageFromPyObject(item);
+	Py_DECREF(item);
+	if (pkg == NULL)
+	    goto fail;
+	hy_packagelist_push(plist, package_clone(pkg));
+    }
+
+    return plist;
+ fail:
+    hy_packagelist_free(plist);
     return NULL;
 }
 

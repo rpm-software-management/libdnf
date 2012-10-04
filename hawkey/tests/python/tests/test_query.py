@@ -106,6 +106,13 @@ class Query(base.TestCase):
         q = hawkey.Query(self.sack).filter(version__gte="5.0")
         self.assertEqual(len(q), 3)
 
+    def test_package_in(self):
+        pkgs = list(hawkey.Query(self.sack).filter(name=["flying", "penny"]))
+        q = hawkey.Query(self.sack).filter(pkg=pkgs)
+        self.assertEqual(len(q), 2)
+        q2 = q.filter(version__gt="3")
+        self.assertEqual(len(q2), 1)
+
 class QueryUpdates(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
