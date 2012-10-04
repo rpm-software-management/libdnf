@@ -274,7 +274,7 @@ PyTypeObject package_Type = {
     0,				/* tp_clear */
     0,				/* tp_richcompare */
     0,				/* tp_weaklistoffset */
-    PyObject_SelfIter,		/* tp_iter */
+    0,				/* tp_iter */
     0,                         	/* tp_iternext */
     package_methods,		/* tp_methods */
     0,				/* tp_members */
