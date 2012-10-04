@@ -150,7 +150,9 @@ set_installonly(_SackObject *self, PyObject *obj, void *unused)
     const char *strings[len + 1];
 
     for (int i = 0; i < len; ++i) {
-	strings[i] = PyString_AsString(PySequence_GetItem(obj, i));
+	PyObject *item = PySequence_GetItem(obj, i);
+	strings[i] = PyString_AsString(item);
+	Py_DECREF(item);
 	if (strings[i] == NULL)
 	    return -1;
     }

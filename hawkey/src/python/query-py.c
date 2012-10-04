@@ -165,6 +165,7 @@ filter(_QueryObject *self, PyObject *args)
 		PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
 		return NULL;
 	    }
+	    Py_DECREF(item);
 	    matches[i] = PyString_AsString(item);
 	}
 	if (hy_query_filter_in(self->query, keyname, filtertype, matches)) {
