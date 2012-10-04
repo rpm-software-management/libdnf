@@ -34,7 +34,7 @@ START_TEST(test_iter_macro)
 	count += 1;
 	max = i;
     }
-    fail_unless(max == 3);
+    fail_unless(max == 2);
     fail_unless(count == hy_packagelist_count(fixture_plist));
 }
 END_TEST

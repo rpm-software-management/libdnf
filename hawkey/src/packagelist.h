@@ -23,7 +23,7 @@ int hy_packagelist_has(HyPackageList plist, HyPackage pkg);
 void hy_packagelist_push(HyPackageList plist, HyPackage pkg);
 
 #define FOR_PACKAGELIST(pkg, pkglist, i)						\
-    for (i = 0; (pkg = hy_packagelist_get(pkglist, i++)) != NULL; )
+    for (i = 0; (pkg = hy_packagelist_get(pkglist, i)) != NULL; ++i)
 
 #ifdef __cplusplus
 }
