@@ -1,9 +1,9 @@
-%global gitrev 69b12a4
+%global gitrev 7fa7aa9
 %global libsolv_version 0.0.0-17
 
 Name:		hawkey
 Version:	@VERSION@
-Release:	1.git%{gitrev}%{?dist}
+Release:	2.git%{gitrev}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
@@ -76,7 +76,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
-* Fri Oct 5 2012 Aleš Kozumplík <ales@redhat.com> - 0.2.12-1.git69b12a4
+* Fri Oct 5 2012 Aleš Kozumplík <ales@redhat.com> - 0.2.12-2.git7fa7aa9
 - fix sigsegv in query.c:filter_sourcerpm().
 - doc: move the hawkey reference to man section 3.
 - query: filter by description or URL.
