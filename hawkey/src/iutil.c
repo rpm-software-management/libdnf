@@ -371,12 +371,14 @@ unsigned long
 pool_get_epoch(Pool *pool, const char *evr)
 {
     char *e, *v, *r, *endptr;
-    long int epoch = 0;
+    unsigned long epoch = 0;
 
     pool_version_split(pool, evr, &e, &v, &r);
     if (e) {
-	epoch = strtol(e, &endptr, 10);
+	long int converted = strtol(e, &endptr, 10);
+	assert(converted > 0);
 	assert(*endptr == '\0');
+	epoch = converted;
     }
 
     return epoch;

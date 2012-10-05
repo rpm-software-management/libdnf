@@ -244,7 +244,7 @@ hy_package_get_url(HyPackage pkg)
     return solvable_lookup_str(get_solvable(pkg), SOLVABLE_URL);
 }
 
-unsigned long
+unsigned long long
 hy_package_get_epoch(HyPackage pkg)
 {
     return pool_get_epoch(package_pool(pkg), hy_package_get_evr(pkg));
