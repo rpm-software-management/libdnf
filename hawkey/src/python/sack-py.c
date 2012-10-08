@@ -261,21 +261,23 @@ load_yum_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 	return 0;
 
     int flags = 0;
+    int ret = 0;
     if (build_cache)
 	flags |= HY_BUILD_CACHE;
     if (load_filelists)
 	flags |= HY_LOAD_FILELISTS;
     if (load_presto)
 	flags |= HY_LOAD_PRESTO;
-    switch (hy_sack_load_yum_repo(self->sack, crepo, flags)) {
+    if (hy_sack_load_yum_repo(self->sack, crepo, flags))
+	ret = hy_get_errno();
+    switch (ret) {
     case 0:
 	Py_RETURN_NONE;
     case HY_E_IO:
 	PyErr_SetString(PyExc_IOError, "Can not read repomd file.");
 	return NULL;
     default:
-	PyErr_SetString(HyExc_Runtime, "load_yum_repo() failed.");
-	return NULL;
+	return PyErr_Format(HyExc_Runtime, "load_yum_repo() failed: %d.", ret);
     }
 }
 

@@ -32,6 +32,12 @@ class Sanity(base.TestCase):
         self.assertEqual(len(sack), hawkey.test.EXPECT_YUM_NSOLVABLES +
                          hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
 
+    def test_failed_load(self):
+        sack = hawkey.Sack(cachedir=hawkey.test.cachedir)
+        repo = hawkey.Repo()
+        repo.name = "yeah"
+        self.assertRaises(IOError, sack.load_yum_repo, repo)
+
 class PackageWrapping(base.TestCase):
     class MyPackage(hawkey.Package):
         def __init__(self, initobject, myval):

@@ -74,7 +74,8 @@ START_TEST(test_load_yum_repo_err)
     HyRepo repo = hy_repo_create();
     hy_repo_set_string(repo, HY_REPO_NAME, "crabalocker");
     hy_repo_set_string(repo, HY_REPO_MD_FN, "/non/existing");
-    fail_unless(hy_sack_load_yum_repo(sack, repo, 0) == 1);
+    fail_unless(hy_sack_load_yum_repo(sack, repo, 0) == HY_E_FAILED);
+    fail_unless(hy_get_errno() == HY_E_IO);
     hy_repo_free(repo);
     hy_sack_free(sack);
 }
