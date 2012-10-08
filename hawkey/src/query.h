@@ -39,7 +39,7 @@ enum _hy_key_name_e {
     HY_PKG_NAME,
     HY_PKG_PROVIDES,
     HY_PKG_RELEASE,
-    HY_PKG_REPO,
+    HY_PKG_REPONAME,
     HY_PKG_REQUIRES,
     HY_PKG_SOURCERPM,
     HY_PKG_SUMMARY,

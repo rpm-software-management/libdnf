@@ -53,4 +53,23 @@ already).
 This change is towards a more conventional Python practice. Also, this leaves the
 empty string return value free to be used when it is actually the case.
 
+Changes in 0.2.13
+=================
 
+The Query key value used for filtering by the repo name is ``HY_PKG_REPONAME``
+now (was ``HY_PKG_REPO``). The old value was misleading.
+
+Python bindings
+---------------
+
+Similar change happened in Python, the following constructs::
+
+  q = q.filter(repo="updates")
+
+need to be changed to::
+
+  q = q.filter(reponame="updates")
+
+The old version this didn't allow using the same string to both construct the
+query and dynamically get the reponame attribute from the returned packages
+(used e.g. in DNF to search by user-specified criteria).

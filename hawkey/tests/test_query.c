@@ -62,14 +62,14 @@ START_TEST(test_query_repo)
     HyQuery q;
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_REPO, HY_EQ, HY_SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
 
     fail_unless(query_count_results(q) == TEST_EXPECT_SYSTEM_NSOLVABLES);
 
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_REPO, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     fail_if(query_count_results(q));
 
     hy_query_free(q);
@@ -295,55 +295,55 @@ START_TEST(test_query_requires)
     const char *repolist[] = {"main", NULL};
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist);
     hy_query_filter_requires(q, HY_EQ, "P-lib", "1");
     fail_unless(query_count_results(q) == 1);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist);
     hy_query_filter_requires(q, HY_GT, "P-lib", "5");
     fail_unless(query_count_results(q) == 1);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist);
     hy_query_filter_requires(q, HY_LT, "P-lib", "0.1");
     fail_unless(query_count_results(q) == 1);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist);
     hy_query_filter_requires(q, HY_EQ, "semolina", NULL);
     fail_unless(query_count_results(q) == 1);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist);
     hy_query_filter_requires(q, HY_EQ|HY_LT, "semolina", "3.0");
     fail_unless(query_count_results(q) == 1);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist);
     hy_query_filter_requires(q, HY_GT, "semolina", "1.0");
     fail_unless(query_count_results(q) == 1);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist);
     hy_query_filter_requires(q, HY_NEQ, "semolina", NULL);
     fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES-1);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist);
     hy_query_filter_requires(q, HY_NEQ, "semolina", "2");
     fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES-1);
     hy_query_free(q);
 
    q = hy_query_create(test_globals.sack);
-    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist);
     hy_query_filter_requires(q, HY_NEQ, "semolina", "2.1");
     fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES);
     hy_query_free(q);
@@ -500,18 +500,18 @@ START_TEST(test_filter_reponames)
     const char *repolist3[] = {"foo", "bar",  NULL};
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist);
+    hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist);
     fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES \
 					+ TEST_EXPECT_UPDATES_NSOLVABLES);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist2);
+    hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist2);
     fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter_in(q, HY_PKG_REPO, HY_EQ, repolist3);
+    hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist3);
     fail_unless(query_count_results(q) == 0);
     hy_query_free(q);
 }

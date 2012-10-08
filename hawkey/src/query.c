@@ -373,7 +373,7 @@ filter_requires(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
-filter_repo(HyQuery q, struct _Filter *f, Map *m)
+filter_reponame(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
     int i;
@@ -746,8 +746,8 @@ hy_query_run(HyQuery q)
 	case HY_PKG_REQUIRES:
 	    filter_requires(q, f, &m);
 	    break;
-	case HY_PKG_REPO:
-	    filter_repo(q, f, &m);
+	case HY_PKG_REPONAME:
+	    filter_reponame(q, f, &m);
 	    break;
 	default:
 	    filter_dataiterator(q, f, &m);

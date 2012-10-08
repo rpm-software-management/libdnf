@@ -20,7 +20,7 @@ get_latest_pkg(HySack sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
-    hy_query_filter(q, HY_PKG_REPO, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     hy_query_filter_latest(q, 1);
     HyPackageList plist = hy_query_run(q);
     fail_unless(hy_packagelist_count(plist) == 1);
@@ -35,7 +35,7 @@ get_installed_pkg(HySack sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
-    hy_query_filter(q, HY_PKG_REPO, HY_EQ, HY_SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
     HyPackageList plist = hy_query_run(q);
     fail_unless(hy_packagelist_count(plist) == 1);
     HyPackage pkg = hy_packagelist_get_clone(plist, 0);
@@ -49,7 +49,7 @@ get_available_pkg(HySack sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
-    hy_query_filter(q, HY_PKG_REPO, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     HyPackageList plist = hy_query_run(q);
     fail_unless(hy_packagelist_count(plist) == 1);
     HyPackage pkg = hy_packagelist_get_clone(plist, 0);
@@ -162,7 +162,7 @@ START_TEST(test_goal_install_query_err)
 
     q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "semolina");
-    hy_query_filter(q, HY_PKG_REPO, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     fail_unless(hy_goal_install_query(goal, q) == HY_E_QUERY);
     hy_query_free(q);
 

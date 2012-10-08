@@ -97,7 +97,7 @@ static void search_filter_repos(HySack sack, const char *name) {
     HyQuery q = hy_query_create(sack);
 
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
-    hy_query_filter(q, HY_PKG_REPO, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     execute_print(sack, q, 0);
     hy_query_free(q);
 }
@@ -129,7 +129,7 @@ static void updatables_query_name(HySack sack, const char *name)
 
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
 #if 0 // must stil work if enabled
-    hy_query_filter(q, HY_PKG_REPO, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
 #endif
     hy_query_filter_upgrades(q, 1);
     execute_print(sack, q, 0);
@@ -160,7 +160,7 @@ erase(HySack sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
-    hy_query_filter(q, HY_PKG_REPO, HY_EQ, HY_SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
 
     HyPackageList plist = hy_query_run(q);
     if (hy_packagelist_count(plist) < 1) {
@@ -266,7 +266,7 @@ static void update_remote(HySack sack, const char *name)
     HyPackageList plist;
 
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
-    hy_query_filter(q, HY_PKG_REPO, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    hy_query_filter(q, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     hy_query_filter_latest(q, 1);
 
     plist = hy_query_run(q);

@@ -27,7 +27,7 @@ class Goal(base.TestCase):
         self.assertIsNone(hawkey.Goal(self.sack).upgrade(query=query));
 
     def test_install_query_err(self):
-        query = hawkey.Query(self.sack).filter(repo="karma")
+        query = hawkey.Query(self.sack).filter(reponame="karma")
         goal = hawkey.Goal(self.sack)
         self.assertRaises(hawkey.QueryException, goal.erase, query=query);
 

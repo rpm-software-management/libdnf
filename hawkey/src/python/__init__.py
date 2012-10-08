@@ -25,7 +25,7 @@ QUERY_KEYNAME_MAP = {
     'sourcerpm'	: _hawkey.PKG_SOURCERPM,
     'summary'	: _hawkey.PKG_SUMMARY,
     'file'	: _hawkey.PKG_FILE,
-    'repo'	: _hawkey.PKG_REPO,
+    'reponame'	: _hawkey.PKG_REPONAME,
     'latest'	: _hawkey.PKG_LATEST,
     'downgrades' : _hawkey.PKG_DOWNGRADES,
     'upgrades'	: _hawkey.PKG_UPGRADES,
