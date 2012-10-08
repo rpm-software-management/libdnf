@@ -7,6 +7,7 @@ VERSION_MINOR = _hawkey.VERSION_MINOR
 VERSION_PATCH = _hawkey.VERSION_PATCH
 VERSION=u"%d.%d.%d" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 
+Package = _hawkey.Package
 Repo = _hawkey.Repo
 
 SYSTEM_REPO_NAME = _hawkey.SYSTEM_REPO_NAME
@@ -91,16 +92,6 @@ class Goal(_hawkey.Goal):
         if callback:
             callback(self)
         return ret
-
-class Package(_hawkey.Package):
-    def evr_eq(self, pkg):
-        return self.evr_cmp(pkg) == 0
-
-    def evr_gt(self, pkg):
-        return self.evr_cmp(pkg) > 0
-
-    def evr_lt(self, pkg):
-        return self.evr_cmp(pkg) < 0
 
 class Query(_hawkey.Query):
     def __init__(self, sack=None, query=None):

@@ -9,6 +9,9 @@ class Package(base.TestCase):
         q = hawkey.Query(self.sack).filter(name__eq="flying")
         self.pkg = list(q)[0]
 
+    def test_instance(self):
+        self.assertTrue(isinstance(self.pkg, hawkey.Package))
+
     def test_repr(self):
         self.assertRegexpMatches(repr(self.pkg),
                                  "<_hawkey.Package object, id: \d+>")

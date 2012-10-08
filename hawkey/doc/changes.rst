@@ -62,6 +62,9 @@ now (was ``HY_PKG_REPO``). The old value was misleading.
 Python bindings
 ---------------
 
+Query: filtering by repository with the reponame key
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Similar change happened in Python, the following constructs::
 
   q = q.filter(repo="updates")
@@ -70,6 +73,26 @@ need to be changed to::
 
   q = q.filter(reponame="updates")
 
-The old version this didn't allow using the same string to both construct the
+The old version of this didn't allow using the same string to both construct the
 query and dynamically get the reponame attribute from the returned packages
 (used e.g. in DNF to search by user-specified criteria).
+
+Package: removed methods for direct EVR comparison
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following will no longer work::
+
+  if pkg.evr_eq(some_other_pkg):
+      ...
+
+Instead use the result of ``pkg.evr_cmp``, for instance::
+
+  if pkg.evr_cmp(some_other_pkg) == 0:
+      ...
+
+This function compares only the EVR part of a package, not the name. Since it
+rarely make sense to compare versions of packages of different names, the
+following is suggested::
+
+  if pkg == some_other_pkg:
+      ...
