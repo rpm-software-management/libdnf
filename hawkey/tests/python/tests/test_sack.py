@@ -5,20 +5,11 @@ import base
 import hawkey
 import hawkey.test
 
-class Sanity(base.TestCase):
+class TestSackTest(base.TestCase):
     def test_sanity(self):
         assert(self.repo_dir)
         sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         self.assertEqual(len(sack), 0)
-
-    def test_creation(self):
-        sack = hawkey.Sack(arch="noarch")
-        sack = hawkey.Sack(arch="x86_64")
-        self.assertRaises(hawkey.ArchException, hawkey.Sack, arch="")
-        self.assertRaises(hawkey.ValueException, hawkey.Sack, arch="play")
-
-    def test_creation_dir(self):
-        self.assertRaises(IOError, hawkey.Sack, "")
 
     def test_load_rpm(self):
         sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
@@ -31,6 +22,20 @@ class Sanity(base.TestCase):
         sack.load_yum_repo(build_cache=True)
         self.assertEqual(len(sack), hawkey.test.EXPECT_YUM_NSOLVABLES +
                          hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
+
+    def test_cache_path(self):
+        sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.assertTrue(sack.cache_path.startswith("/tmp/pyhawkey"))
+
+class BasicTest(unittest.TestCase):
+    def test_creation(self):
+        sack = hawkey.Sack(arch="noarch")
+        sack = hawkey.Sack(arch="x86_64")
+        self.assertRaises(hawkey.ArchException, hawkey.Sack, arch="")
+        self.assertRaises(hawkey.ValueException, hawkey.Sack, arch="play")
+
+    def test_creation_dir(self):
+        self.assertRaises(IOError, hawkey.Sack, "")
 
     def test_failed_load(self):
         sack = hawkey.Sack(cachedir=hawkey.test.cachedir)

@@ -382,6 +382,12 @@ hy_sack_free(HySack sack)
     solv_free(sack);
 }
 
+const char *
+hy_sack_get_cache_path(HySack sack)
+{
+    return sack->cache_dir;
+}
+
 char *
 hy_sack_give_cache_fn(HySack sack, const char *reponame, const char *ext)
 {
