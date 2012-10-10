@@ -44,11 +44,11 @@ class WithYumRepo(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         self.sack.load_yum_repo()
-        self.pkg = hawkey.Query(self.sack).filter(name="mystery")[0]
+        self.pkg = hawkey.Query(self.sack).filter(name="mystery-devel")[0]
 
     def test_checksum(self):
         (chksum_type, chksum) = self.pkg.chksum
         self.assertEqual(len(chksum), 32)
-        self.assertEqual(chksum[0], '\xb2')
-        self.assertEqual(chksum[31], '\x7a')
+        self.assertEqual(chksum[0], '\x2e')
+        self.assertEqual(chksum[31], '\xf5')
         self.assertEqual(chksum_type, hawkey.CHKSUM_SHA256)

@@ -85,14 +85,14 @@ END_TEST
 
 START_TEST(test_checksums)
 {
-    HyPackage pkg = by_name(test_globals.sack, "mystery");
+    HyPackage pkg = by_name(test_globals.sack, "mystery-devel");
     int i;
     HyChecksum *csum = hy_package_get_chksum(pkg, &i);
     fail_unless(i == HY_CHKSUM_SHA256);
     // Check the first and last bytes. Those need to match against information
     // in primary.xml.gz.
-    fail_unless(csum[0] == 0xb2);
-    fail_unless(csum[31] == 0x7a);
+    fail_unless(csum[0] == 0x2e);
+    fail_unless(csum[31] == 0xf5);
 
     hy_package_free(pkg);
 }
@@ -126,9 +126,9 @@ START_TEST(test_sourcerpm)
     hy_free(sourcerpm);
     hy_package_free(pkg);
 
-    pkg = by_name(test_globals.sack, "mystery");
+    pkg = by_name(test_globals.sack, "mystery-devel");
     sourcerpm = hy_package_get_sourcerpm(pkg);
-    ck_assert_str_eq(sourcerpm, "mmysteryt-19.67-1.src.rpm");
+    ck_assert_str_eq(sourcerpm, "mystery-19.67-1.src.rpm");
     hy_free(sourcerpm);
     hy_package_free(pkg);
 }

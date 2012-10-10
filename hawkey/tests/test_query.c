@@ -475,11 +475,12 @@ START_TEST(test_filter_sourcerpm)
     fail_unless(size_and_free(q) == 1);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_SOURCERPM, HY_EQ, "mmysteryt-19.67-1.src.rpm");
+    hy_query_filter(q, HY_PKG_SOURCERPM, HY_EQ, "mystery-19.67-1.src.rpm");
     fail_unless(size_and_free(q) == 1);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_SOURCERPM, HY_EQ, "mystery-19.67-1.src.rpm");
+    hy_query_filter(q, HY_PKG_SOURCERPM, HY_EQ,
+		    "mystery-devel-19.67-1.noarch.rpm");
     fail_unless(size_and_free(q) == 0);
 }
 END_TEST
@@ -487,7 +488,8 @@ END_TEST
 START_TEST(test_filter_description)
 {
     HyQuery q = hy_query_create(test_globals.sack);
-    fail_if(hy_query_filter(q, HY_PKG_DESCRIPTION, HY_SUBSTR, "mystery package"));
+    fail_if(hy_query_filter(q, HY_PKG_DESCRIPTION, HY_SUBSTR,
+			    "Magical development files for mystery."));
     fail_unless(size_and_free(q) == 1);
 }
 END_TEST

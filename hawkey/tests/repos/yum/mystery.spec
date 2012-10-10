@@ -11,6 +11,13 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-hawkey
 %description
 Hawkey mystery package to test filelists handling.
 
+%package devel
+Summary:	Devel subpackage.
+Group:		Development/Libraries
+
+%description devel
+Magical development files for mystery.
+
 %prep
 
 %build
@@ -21,7 +28,7 @@ echo "thats an invitation" > %{buildroot}/%_bindir/my
 echo "make a reservation" > %{buildroot}/%_bindir/ste
 echo "step right this way" > %{buildroot}/%_bindir/ry
 
-%files
+%files devel
 %_bindir/my
 %_bindir/ste
 %_bindir/ry

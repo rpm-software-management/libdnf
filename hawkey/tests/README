@@ -58,8 +58,3 @@ unit tests too for them to pass.
 The command to do the metadata rebuild from hawkey/tests/repos/yum:
 
   createrepo --deltas --oldpackagedirs=../yum_oldrpms/ --no-database .
-
-There is a manual change done in the 'mystery' package's sourcerpm property, the
-line after editing is:
-
-  <rpm:sourcerpm>mmysteryt-19.67-1.src.rpm</rpm:sourcerpm>
