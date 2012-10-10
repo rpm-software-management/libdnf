@@ -286,8 +286,7 @@ static HyRepo
 config_repo(const char *name, const char *md_repo,
 	    const char *md_primary_xml, const char *md_filelists)
 {
-    HyRepo repo = hy_repo_create();
-    hy_repo_set_string(repo, HY_REPO_NAME, name);
+    HyRepo repo = hy_repo_create(name);
     hy_repo_set_string(repo, HY_REPO_MD_FN, md_repo);
     hy_repo_set_string(repo, HY_REPO_PRIMARY_FN, md_primary_xml);
     hy_repo_set_string(repo, HY_REPO_FILELISTS_FN, md_filelists);
@@ -384,7 +383,7 @@ int main(int argc, const char **argv)
     }
     int load_flags = HY_BUILD_CACHE;
     /* rpmdb */
-    repo = hy_repo_create();
+    repo = hy_repo_create(HY_SYSTEM_REPO_NAME);
     hy_sack_load_system_repo(sack, NULL, load_flags);
     hy_repo_free(repo);
 

@@ -45,19 +45,25 @@ repo_converter(PyObject *o, HyRepo *repo_ptr)
 static PyObject *
 repo_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist))
-	return NULL;
-
     _RepoObject *self = (_RepoObject *)type->tp_alloc(type, 0);
     if (self) {
-	self->repo = hy_repo_create();
+	self->repo = hy_repo_create("(default)");
 	if (self->repo == NULL) {
 	    Py_DECREF(self);
 	    return NULL;
 	}
     }
     return (PyObject *) self;
+}
+
+static int
+repo_init(_RepoObject *self, PyObject *args, PyObject *kwds)
+{
+    const char *name;
+    if (!PyArg_ParseTuple(args, "s", &name))
+	return -1;
+    hy_repo_set_string(self->repo, HY_REPO_NAME, name);
+    return 0;
 }
 
 static void
@@ -150,7 +156,7 @@ PyTypeObject repo_Type = {
     0,				/* tp_descr_get */
     0,				/* tp_descr_set */
     0,				/* tp_dictoffset */
-    0,				/* tp_init */
+    (initproc)repo_init,	/* tp_init */
     0,				/* tp_alloc */
     repo_new,			/* tp_new */
     0,				/* tp_free */

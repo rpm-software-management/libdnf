@@ -56,8 +56,21 @@ empty string return value free to be used when it is actually the case.
 Changes in 0.2.13
 =================
 
+Core
+----
+
+Query: key for reponame filtering
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 The Query key value used for filtering by the repo name is ``HY_PKG_REPONAME``
 now (was ``HY_PKG_REPO``). The old value was misleading.
+
+Repo initialization
+^^^^^^^^^^^^^^^^^^^
+
+``hy_repo_create()`` for Repo object initialization now needs to be passed a
+name of the repository.
+
 
 Python bindings
 ---------------
@@ -96,3 +109,16 @@ following is suggested::
 
   if pkg == some_other_pkg:
       ...
+
+Repo initialization
+^^^^^^^^^^^^^^^^^^^
+
+All instantiations of ``hawkey.Repo`` now must be given the name of the Repo. The
+following will now fail::
+
+  r = hawkey.Repo()
+  r.name = "fedora"
+
+Use this instead::
+
+  r = hawkey.Repo("fedora")

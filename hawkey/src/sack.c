@@ -467,10 +467,13 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
     char *cache_fn = hy_sack_give_cache_fn(sack, HY_SYSTEM_REPO_NAME, NULL);
     FILE *cache_fp = fopen(cache_fn, "r");
     int rc, ret = 0;
-    HyRepo hrepo = a_hrepo ? a_hrepo : hy_repo_create();
+    HyRepo hrepo = a_hrepo;
 
     solv_free(cache_fn);
-    hy_repo_set_string(hrepo, HY_REPO_NAME, HY_SYSTEM_REPO_NAME);
+    if (hrepo)
+	hy_repo_set_string(hrepo, HY_REPO_NAME, HY_SYSTEM_REPO_NAME);
+    else
+	hrepo = hy_repo_create(HY_SYSTEM_REPO_NAME);
 
     rc = current_rpmdb_checksum(hrepo->checksum);
     if (rc) {

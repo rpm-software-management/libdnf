@@ -64,10 +64,12 @@ repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata)
 // public functions
 
 HyRepo
-hy_repo_create(void)
+hy_repo_create(const char *name)
 {
+    assert(name);
     HyRepo repo = solv_calloc(1, sizeof(*repo));
     repo->nrefs = 1;
+    hy_repo_set_string(repo, HY_REPO_NAME, name);
     return repo;
 }
 

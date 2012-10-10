@@ -34,9 +34,9 @@ class Sanity(base.TestCase):
 
     def test_failed_load(self):
         sack = hawkey.Sack(cachedir=hawkey.test.cachedir)
-        repo = hawkey.Repo()
-        repo.name = "yeah"
+        repo = hawkey.Repo("name")
         self.assertRaises(IOError, sack.load_yum_repo, repo)
+        sack = hawkey.Sack()
 
 class PackageWrapping(base.TestCase):
     class MyPackage(hawkey.Package):

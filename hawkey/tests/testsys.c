@@ -43,11 +43,9 @@ dump_packagelist(HyPackageList plist)
 HyRepo
 glob_for_repofiles(Pool *pool, const char *repo_name, const char *path)
 {
-    HyRepo repo = hy_repo_create();
+    HyRepo repo = hy_repo_create(repo_name);
     const char *tmpl;
     wordexp_t word_vector;
-
-    hy_repo_set_string(repo, HY_REPO_NAME, repo_name);
 
     tmpl = pool_tmpjoin(pool, path, "/repomd.xml", NULL);
     if (wordexp(tmpl, &word_vector, 0) || word_vector.we_wordc < 1)
