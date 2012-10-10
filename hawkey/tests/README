@@ -58,3 +58,5 @@ unit tests too for them to pass.
 The command to do the metadata rebuild from hawkey/tests/repos/yum:
 
   createrepo --deltas --oldpackagedirs=../yum_oldrpms/ --no-database .
+
+Or use the 'recreate' script in the directory.
