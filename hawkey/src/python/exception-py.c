@@ -1,4 +1,9 @@
 #include <Python.h>
+
+// hawkey
+#include "src/errno.h"
+
+// pyhawkey
 #include "exception-py.h"
 
 PyObject *HyExc_Exception = NULL;
@@ -47,4 +52,24 @@ init_exceptions(void)
      Py_INCREF(HyExc_Validation);
 
      return 1;
+}
+
+int
+ret2e(int ret, const char *msg)
+{
+    PyObject *exctype = NULL;
+    switch (ret) {
+    case 0:
+	return 0;
+    case HY_E_FAILED:
+	exctype = HyExc_Runtime;
+	break;
+    default:
+	assert(0);
+	return 1;
+    }
+
+    assert(exctype);
+    PyErr_SetString(exctype, msg);
+    return 1;
 }

@@ -9,10 +9,11 @@
 // pyhawkey
 #include "exception-py.h"
 #include "goal-py.h"
-#include "sack-py.h"
 #include "package-py.h"
 #include "query-py.h"
 #include "repo-py.h"
+#include "sack-py.h"
+#include "selector-py.h"
 
 static PyObject *
 py_chksum_name(PyObject *unused, PyObject *args)
@@ -90,6 +91,11 @@ init_hawkey(void)
 	return;
     Py_INCREF(&query_Type);
     PyModule_AddObject(m, "Query", (PyObject *)&query_Type);
+    /* _hawkey.Selector */
+    if (PyType_Ready(&selector_Type) < 0)
+	return;
+    Py_INCREF(&selector_Type);
+    PyModule_AddObject(m, "Selector", (PyObject *)&selector_Type);
     /* _hawkey.Repo */
     if (PyType_Ready(&repo_Type) < 0)
 	return;

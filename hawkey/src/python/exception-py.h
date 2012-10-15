@@ -9,5 +9,6 @@ extern PyObject *HyExc_Runtime;
 extern PyObject *HyExc_Validation;
 
 int init_exceptions(void);
+int ret2e(int ret, const char *msg);
 
 #endif // EXCEPTION_PY_H

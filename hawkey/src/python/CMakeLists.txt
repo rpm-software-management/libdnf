@@ -21,7 +21,8 @@ SET (hawkeymodule_SRCS
     packagedelta-py.c
     query-py.c
     repo-py.c
-    sack-py.c)
+    sack-py.c
+    selector-py.c)
 
 ADD_LIBRARY(_hawkeymodule SHARED ${hawkeymodule_SRCS})
 SET_TARGET_PROPERTIES(_hawkeymodule PROPERTIES PREFIX "")

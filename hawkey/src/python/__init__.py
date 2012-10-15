@@ -9,6 +9,7 @@ VERSION=u"%d.%d.%d" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 
 Package = _hawkey.Package
 Repo = _hawkey.Repo
+Sack = _hawkey.Sack
 
 SYSTEM_REPO_NAME = _hawkey.SYSTEM_REPO_NAME
 CMDLINE_REPO_NAME = _hawkey.CMDLINE_REPO_NAME
@@ -61,7 +62,6 @@ ValueException = _hawkey.ValueException
 ArchException = _hawkey.ArchException
 RuntimeException = _hawkey.RuntimeException
 
-Sack = _hawkey.Sack
 chksum_name = _hawkey.chksum_name
 chksum_type = _hawkey.chksum_type
 
@@ -93,6 +93,37 @@ class Goal(_hawkey.Goal):
             callback(self)
         return ret
 
+def _parse_filter_args(flags, dct):
+    args = []
+    filter_flags = 0
+    for flag in flags:
+        if not flag in [ICASE]:
+            raise ValueError("unrecognized flag: %s" % flag)
+        filter_flags |= flag
+    for (k, match) in dct.items():
+        if type(match) in types.StringTypes:
+            match = _encode(match)
+        elif isinstance(match, collections.Iterable):
+            match = map(_encode, match)
+        split = k.split("__", 1)
+        if len(split) == 1:
+            args.append((QUERY_KEYNAME_MAP[split[0]],
+                         QUERY_FT_MAP["eq"]|filter_flags,
+                         match))
+        elif len(split) == 2:
+            (keyname, filter_type) = split
+            if not keyname in QUERY_KEYNAME_MAP:
+                raise ValueError("Unrecognized key name: %s" % keyname)
+            if not filter_type in QUERY_FT_MAP:
+                raise ValueError("Unrecognized filter type: %s" % filter_type)
+            args.append((QUERY_KEYNAME_MAP[keyname],
+                         QUERY_FT_MAP[filter_type]|filter_flags,
+                         match))
+        else:
+            raise ValueError("keyword arguments given to filter() need be "
+                             "in <key>__<comparison type>=<value> format")
+    return args
+
 class Query(_hawkey.Query):
     def __init__(self, sack=None, query=None):
         super(Query, self).__init__(sack=sack, query=query)
@@ -113,37 +144,6 @@ class Query(_hawkey.Query):
     def __len__(self):
         return len(self.run())
 
-    def _parse_filter_args(self, flags, dct):
-        args = []
-        filter_flags = 0
-        for flag in flags:
-            if not flag in [ICASE]:
-                raise ValueError("unrecognized flag: %s" % flag)
-            filter_flags |= flag
-        for (k, match) in dct.items():
-            if type(match) in types.StringTypes:
-                match = _encode(match)
-            elif isinstance(match, collections.Iterable):
-                match = map(_encode, match)
-            split = k.split("__", 1)
-            if len(split) == 1:
-                args.append((QUERY_KEYNAME_MAP[split[0]],
-                             QUERY_FT_MAP["eq"]|filter_flags,
-                             match))
-            elif len(split) == 2:
-                (keyname, filter_type) = split
-                if not keyname in QUERY_KEYNAME_MAP:
-                    raise ValueError("Unrecognized key name: %s" % keyname)
-                if not filter_type in QUERY_FT_MAP:
-                    raise ValueError("Unrecognized filter type: %s" % filter_type)
-                args.append((QUERY_KEYNAME_MAP[keyname],
-                             QUERY_FT_MAP[filter_type]|filter_flags,
-                             match))
-            else:
-                raise ValueError("keyword arguments given to filter() need be "
-                                 "in <key>__<comparison type>=<value> format")
-        return args
-
     def run(self):
         """ Execute the query and cache the result. """
         if self.result is None:
@@ -161,8 +161,14 @@ class Query(_hawkey.Query):
         self.result = None
         flags = set(lst)
         map(lambda arg_tuple: super(Query, self).filter(*arg_tuple),
-            self._parse_filter_args(flags, kwargs))
+            _parse_filter_args(flags, kwargs))
         return self
 
     def provides(self, name, **kwargs):
         raise NotImplementedError("hawkey.Query.provides is not implemented yet")
+
+class Selector(_hawkey.Selector):
+    def set(self, **kwargs):
+        map(lambda arg_tuple: super(Selector, self).set(*arg_tuple),
+            _parse_filter_args(set(), kwargs))
+        return self

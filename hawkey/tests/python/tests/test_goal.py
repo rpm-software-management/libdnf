@@ -21,19 +21,18 @@ class Goal(base.TestCase):
         # default value for check_installed is False:
         self.assertIsNone(hawkey.Goal(self.sack).upgrade_to(pkg))
 
-    def test_install_query(self):
-        query = hawkey.Query(self.sack).filter(name="walrus")
+    def test_install_selector(self):
+        sltr = hawkey.Selector(self.sack).set(name="walrus")
         # without checking versioning, the update is accepted:
-        self.assertIsNone(hawkey.Goal(self.sack).upgrade(query=query));
+        self.assertIsNone(hawkey.Goal(self.sack).upgrade(select=sltr));
 
-    def test_install_query_err(self):
-        query = hawkey.Query(self.sack).filter(reponame="karma")
-        goal = hawkey.Goal(self.sack)
-        self.assertRaises(hawkey.QueryException, goal.erase, query=query);
+    def test_install_selector_err(self):
+        sltr = hawkey.Selector(self.sack)
+        self.assertRaises(hawkey.RuntimeException, sltr.set, reponame="eapoe")
 
-        query = hawkey.Query(self.sack).filter(name="semolina", arch="i666")
+        sltr = hawkey.Selector(self.sack).set(name="semolina", arch="i666")
         goal = hawkey.Goal(self.sack)
-        self.assertRaises(hawkey.ArchException, goal.install, query=query)
+        self.assertRaises(hawkey.ArchException, goal.install, select=sltr)
 
 class Collector(object):
     def __init__(self):

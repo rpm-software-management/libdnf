@@ -15,7 +15,7 @@
 #include "goal-py.h"
 #include "iutil-py.h"
 #include "package-py.h"
-#include "query-py.h"
+#include "selector-py.h"
 #include "sack-py.h"
 
 typedef struct {
@@ -25,33 +25,33 @@ typedef struct {
 } _GoalObject;
 
 static int
-args_query_pkg_check(HyPackage pkg, HyQuery query)
+args_pkg_sltr_check(HyPackage pkg, HySelector sltr)
 {
-    if (!(pkg || query)) {
+    if (!(pkg || sltr)) {
 	PyErr_SetString(PyExc_ValueError,
-			"Requires a query or a package parameter.");
+			"Requires a Package or a Selector argument.");
 	return 0;
     }
-    if (pkg && query) {
+    if (pkg && sltr) {
 	PyErr_SetString(PyExc_ValueError,
-			"Does not accept both Query and Package arguments.");
+			"Does not accept both Package and Selector arguments.");
 	return 0;
     }
     return 1;
 }
 
 static int
-args_query_pkg_parse(PyObject *args, PyObject *kwds,
-		     HyPackage *pkg, HyQuery *query, int *flags, int flag_mask)
+args_pkg_sltr_parse(PyObject *args, PyObject *kwds,
+		     HyPackage *pkg, HySelector *sltr, int *flags, int flag_mask)
 {
-    char *kwlist[] = {"package", "query", "clean_deps", "check_installed", NULL};
+    char *kwlist[] = {"package", "select", "clean_deps", "check_installed", NULL};
     int clean_deps = 0, check_installed = 0;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&O&ii", kwlist,
 				     package_converter, pkg,
-				     query_converter, query,
+				     selector_converter, sltr,
 				     &clean_deps, &check_installed))
 	return 0;
-    if (!args_query_pkg_check(*pkg, *query))
+    if (!args_pkg_sltr_check(*pkg, *sltr))
 	return 0;
     if (clean_deps) {
 	if (!(flag_mask & HY_CLEAN_DEPS)) {
@@ -112,9 +112,9 @@ op_ret2exc(int ret)
 	Py_RETURN_NONE;
 
     switch (hy_get_errno()) {
-    case HY_E_QUERY:
-	PyErr_SetString(HyExc_Query,
-			"Query unsupported in this context.");
+    case HY_E_SELECTOR:
+	PyErr_SetString(HyExc_Value,
+			"Ill-formed Selector used for the operation.");
 	return NULL;
     case HY_E_ARCH:
 	PyErr_SetString(HyExc_Arch, "Used arch is unknown.");
@@ -136,6 +136,7 @@ goal_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     _GoalObject *self = (_GoalObject*)type->tp_alloc(type, 0);
     if (self) {
 	self->goal = NULL;
+	self->sack = NULL;
     }
     return (PyObject*)self;
 }
@@ -184,13 +185,13 @@ static PyObject *
 erase(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     HyPackage pkg = NULL;
-    HyQuery query = NULL;
+    HySelector sltr = NULL;
     int flags = 0;
-    if (!args_query_pkg_parse(args, kwds, &pkg, &query, &flags, HY_CLEAN_DEPS))
+    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, &flags, HY_CLEAN_DEPS))
 	return NULL;
 
     int ret = pkg ? hy_goal_erase_flags(self->goal, pkg, flags) :
-	hy_goal_erase_query_flags(self->goal, query, flags);
+	hy_goal_erase_selector_flags(self->goal, sltr, flags);
     return op_ret2exc(ret);
 }
 
@@ -198,12 +199,12 @@ static PyObject *
 install(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     HyPackage pkg = NULL;
-    HyQuery query = NULL;
-    if (!args_query_pkg_parse(args, kwds, &pkg, &query, NULL, 0))
+    HySelector sltr = NULL;
+    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, NULL, 0))
 	return NULL;
 
     int ret = pkg ? hy_goal_install(self->goal, pkg) :
-	hy_goal_install_query(self->goal, query);
+	hy_goal_install_selector(self->goal, sltr);
     return op_ret2exc(ret);
 }
 
@@ -211,16 +212,16 @@ static PyObject *
 upgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     HyPackage pkg = NULL;
-    HyQuery query = NULL;
+    HySelector sltr = NULL;
 
-    if (!args_query_pkg_parse(args, kwds, &pkg, &query, NULL, 0))
+    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, NULL, 0))
 	return NULL;
     if (pkg) {
 	PyErr_SetString(PyExc_NotImplementedError,
 			"Selecting a package to be upgraded is not implemented.");
 	return NULL;
     }
-    int ret = hy_goal_upgrade_query(self->goal, query);
+    int ret = hy_goal_upgrade_selector(self->goal, sltr);
     return op_ret2exc(ret);
 }
 
@@ -228,16 +229,16 @@ static PyObject *
 upgrade_to(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     HyPackage pkg = NULL;
-    HyQuery query = NULL;
+    HySelector sltr = NULL;
     int ret;
     int flags = 0;
 
-    if (!args_query_pkg_parse(args, kwds, &pkg, &query,
+    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr,
 			      &flags, HY_CHECK_INSTALLED))
 	return NULL;
-    if (query) {
+    if (sltr) {
 	PyErr_SetString(PyExc_NotImplementedError,
-			"Upgrading to a Query selection is not implemented.");
+			"Upgrading to a Selector spec is not implemented.");
 	return NULL;
     }
     ret = hy_goal_upgrade_to_flags(self->goal, pkg, flags);

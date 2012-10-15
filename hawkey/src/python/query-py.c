@@ -5,14 +5,14 @@
 
 // hawkey
 #include "src/query.h"
+
+// pyhawkey
+#include "exception-py.h"
 #include "hawkey-pysys.h"
 #include "iutil-py.h"
 #include "package-py.h"
 #include "query-py.h"
 #include "sack-py.h"
-
-// pyhawkey
-#include "exception-py.h"
 
 typedef struct {
     PyObject_HEAD
