@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <string.h>
 
 // libsolv
 #include "solv/bitmap.h"
@@ -24,26 +25,12 @@ struct _HyQuery {
     int obsoleting; /* 1 for "only those obsoleting installed packages" */
 };
 
-union _Match {
-    char *str;
-    int num;
-};
-
-struct _Filter {
-    int filter_type;
-    int keyname;
-    union _Match *matches;
-    int nmatches;
-    char *evr;
-};
-
 enum _match_type {
     _HY_STR,
     _HY_NUM
 };
 
 #define BLOCK_SIZE 15
-
 
 static int
 key2match_type(int keyname) {
@@ -147,14 +134,43 @@ valid_filter_num(int keyname, int filter_type)
     }
 }
 
+struct _Filter *
+filter_create(int nmatches)
+{
+    struct _Filter *f = solv_calloc(1, sizeof(struct _Filter *));
+    filter_reinit(f, nmatches);
+    return f;
+}
+
+void
+filter_reinit(struct _Filter *f, int nmatches)
+{
+    if (f->nmatches && key2match_type(f->keyname) == _HY_STR)
+	for (int m = 0; m < f->nmatches; ++m)
+	    solv_free(f->matches[m].str);
+    solv_free(f->matches);
+    if (nmatches > 0)
+	f->matches = solv_calloc(nmatches, sizeof(union _Match *));
+    else
+	f->matches = NULL;
+    f->nmatches = nmatches;
+    solv_free(f->evr);
+    f->evr = NULL;
+}
+
+void
+filter_free(struct _Filter *f)
+{
+    filter_reinit(f, 0);
+    solv_free(f);
+}
+
 static struct _Filter *
 query_add_filter(HyQuery q, int nmatches)
 {
-    struct _Filter filter = {
-	.matches = solv_calloc(nmatches, sizeof(union _Match *)),
-	.nmatches = nmatches,
-	.evr = NULL
-    };
+    struct _Filter filter;
+    memset(&filter, 0, sizeof(filter));
+    filter_reinit(&filter, nmatches);
     q->filters = solv_extend(q->filters, q->nfilters, 1, sizeof(filter),
 			     BLOCK_SIZE);
     q->filters[q->nfilters] = filter; /* structure assignment */
@@ -527,12 +543,7 @@ hy_query_clear(HyQuery q)
 {
     for (int i = 0; i < q->nfilters; ++i) {
 	struct _Filter *filterp = q->filters + i;
-	if (key2match_type(filterp->keyname) == _HY_STR)
-	    for (int m = 0; m < filterp->nmatches; ++m)
-		solv_free(filterp->matches[m].str);
-	filterp->nmatches = 0;
-	solv_free(filterp->matches);
-	solv_free(filterp->evr);
+	filter_reinit(filterp, 0);
     }
     solv_free(q->filters);
     q->filters = NULL;
