@@ -12,6 +12,7 @@ extern "C" {
 #define HY_E_ARCH		5	// unknown arch
 #define HY_E_VALIDATION		6	// validation check failed
 #define HY_E_LIBSOLV		7	// erorr propagated from libsolv
+#define HY_E_SELECTOR		8	// ill-specified selector
 
 extern __thread int hy_errno;
 

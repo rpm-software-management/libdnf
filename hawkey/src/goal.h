@@ -35,22 +35,18 @@ int hy_goal_erase(HyGoal goal, HyPackage pkg);
 int hy_goal_erase_flags(HyGoal goal, HyPackage pkg, int flags);
 
 /**
- * Erase packages matching query.
+ * Erase packages specified by the Selector.
  *
- * Note that not any Query is valid in this context. Also the matching is done
- * to find the best matches, not all matches, i.e. the packages selected for the
- * operation are in general not those same ones hy_query_run() would return.
- *
- * @returns	0 on success, HY_E_QUERY on invalid Query.
+ * @returns	0 on success, HY_E_SELECTOR for an invalid Selector.
  */
-int hy_goal_erase_query(HyGoal goal, HyQuery query);
-int hy_goal_erase_query_flags(HyGoal goal, HyQuery query, int flags);
+int hy_goal_erase_selector(HyGoal goal, HySelector sltr);
+int hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags);
 int hy_goal_install(HyGoal goal, HyPackage new_pkg);
-int hy_goal_install_query(HyGoal goal, HyQuery query);
+int hy_goal_install_selector(HyGoal goal, HySelector sltr);
 int hy_goal_upgrade_all(HyGoal goal);
 int hy_goal_upgrade_to(HyGoal goal, HyPackage new_pkg);
 int hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags);
-int hy_goal_upgrade_query(HyGoal goal, HyQuery query);
+int hy_goal_upgrade_selector(HyGoal goal, HySelector sltr);
 int hy_goal_userinstalled(HyGoal goal, HyPackage pkg);
 int hy_goal_run(HyGoal goal);
 int hy_goal_run_flags(HyGoal goal, int flags);

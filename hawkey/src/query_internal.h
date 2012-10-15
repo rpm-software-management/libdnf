@@ -21,6 +21,4 @@ struct _Filter *filter_create(int nmatches);
 void filter_reinit(struct _Filter *f, int nmatches);
 void filter_free(struct _Filter *f);
 
-int query2job(const HyQuery q, Queue *job, int solver_action);
-
 #endif // HY_QUERY_INTERNAL_H

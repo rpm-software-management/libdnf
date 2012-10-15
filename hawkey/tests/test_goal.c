@@ -7,9 +7,10 @@
 #include "src/errno.h"
 #include "src/goal.h"
 #include "src/iutil.h"
-#include "src/query.h"
 #include "src/package_internal.h"
+#include "src/query.h"
 #include "src/sack_internal.h"
+#include "src/selector.h"
 #include "src/util.h"
 #include "fixtures.h"
 #include "testsys.h"
@@ -110,32 +111,32 @@ START_TEST(test_goal_install_multilib)
     // Tests installation of multilib package. The package is selected via
     // install query, allowing the depsolver maximum influence on the selection.
 
-    HyQuery q = hy_query_create(test_globals.sack);
+    HySelector sltr = hy_selector_create(test_globals.sack);
     HyGoal goal = hy_goal_create(test_globals.sack);
 
-    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "semolina");
-    fail_if(hy_goal_install_query(goal, q));
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "semolina");
+    fail_if(hy_goal_install_selector(goal, sltr));
     fail_if(hy_goal_run(goal));
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
-    // yet:
-    fail_unless(query_count_results(q) == 2);
-    hy_query_free(q);
+    hy_selector_free(sltr);
     hy_goal_free(goal);
 }
 END_TEST
 
-START_TEST(test_goal_install_query)
+START_TEST(test_goal_install_selector)
 {
+    HySelector sltr;
     HyGoal goal = hy_goal_create(test_globals.sack);
-    HyQuery q;
 
     // test arch forcing
-    q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "semolina");
-    hy_query_filter(q, HY_PKG_ARCH, HY_EQ, "i686");
-    fail_if(hy_goal_install_query(goal, q));
+    sltr = hy_selector_create(test_globals.sack);
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "semolina");
+    hy_selector_set(sltr, HY_PKG_ARCH, HY_EQ, "i686");
+    fail_if(hy_goal_install_selector(goal, sltr));
+    hy_selector_free(sltr);
+
     fail_if(hy_goal_run(goal));
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
@@ -146,50 +147,53 @@ START_TEST(test_goal_install_query)
     ck_assert_str_eq(nvra, "semolina-2-0.i686");
     hy_free(nvra);
     hy_packagelist_free(plist);
-
-    hy_query_free(q);
     hy_goal_free(goal);
 }
 END_TEST
 
-START_TEST(test_goal_install_query_err)
+START_TEST(test_goal_install_selector_err)
 {
     // Test that using the hy_goal_*_query() methods returns HY_E_QUERY for
     // queries invalid in this context.
 
+    HySelector sltr;
     HyGoal goal = hy_goal_create(test_globals.sack);
-    HyQuery q;
 
-    q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "semolina");
-    hy_query_filter(q, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
-    fail_unless(hy_goal_install_query(goal, q) == HY_E_QUERY);
-    hy_query_free(q);
+    sltr = hy_selector_create(test_globals.sack);
+    hy_selector_set(sltr, HY_PKG_ARCH, HY_EQ, "i586");
+    fail_unless(hy_goal_install_selector(goal, sltr));
+    fail_unless(hy_get_errno() == HY_E_SELECTOR);
+    hy_selector_free(sltr);
 
-    q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_NAME, HY_GT, "semolina");
-    fail_unless(hy_goal_erase_query(goal, q) == HY_E_QUERY);
-    hy_query_free(q);
+    sltr = hy_selector_create(test_globals.sack);
+    hy_selector_set(sltr, HY_PKG_NAME, HY_GT, "semolina");
+    fail_unless(hy_goal_erase_selector(goal, sltr));
+    fail_unless(hy_get_errno() == HY_E_SELECTOR);
+    hy_selector_free(sltr);
+
+    sltr = hy_selector_create(test_globals.sack);
+    fail_unless(hy_selector_set(sltr, HY_REPO_NAME, HY_EQ, HY_SYSTEM_REPO_NAME));
+    hy_selector_free(sltr);
 
     hy_goal_free(goal);
 }
 END_TEST
 
-START_TEST(test_goal_install_query_two)
+START_TEST(test_goal_install_selector_two)
 {
-    // check that we can add and resolve two query installs to the Goal
+    // check that we can add and resolve two selector installs to the Goal
+    HySelector sltr;
     HyGoal goal = hy_goal_create(test_globals.sack);
-    HyQuery q;
 
-    q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "semolina");
-    fail_if(hy_goal_install_query(goal, q));
-    hy_query_free(q);
+    sltr = hy_selector_create(test_globals.sack);
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "semolina");
+    fail_if(hy_goal_install_selector(goal, sltr));
+    hy_selector_free(sltr);
 
-    q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "walrus");
-    fail_if(hy_goal_install_query(goal, q));
-    hy_query_free(q);
+    sltr = hy_selector_create(test_globals.sack);
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "walrus");
+    fail_if(hy_goal_install_selector(goal, sltr));
+    hy_selector_free(sltr);
 
     fail_if(hy_goal_run(goal));
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
@@ -200,13 +204,14 @@ START_TEST(test_goal_install_query_two)
 }
 END_TEST
 
-START_TEST(test_goal_install_query_nomatch)
+START_TEST(test_goal_install_selector_nomatch)
 {
+    HySelector sltr = hy_selector_create(test_globals.sack);
     HyGoal goal = hy_goal_create(test_globals.sack);
-    HyQuery q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "crabalocker");
-    fail_if(hy_goal_install_query(goal, q));
-    hy_query_free(q);
+
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "crabalocker");
+    fail_if(hy_goal_install_selector(goal, sltr));
+    hy_selector_free(sltr);
 
     fail_if(hy_goal_run(goal));
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
@@ -526,10 +531,10 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_update_impossible);
     tcase_add_test(tc, test_goal_install);
     tcase_add_test(tc, test_goal_install_multilib);
-    tcase_add_test(tc, test_goal_install_query);
-    tcase_add_test(tc, test_goal_install_query_err);
-    tcase_add_test(tc, test_goal_install_query_two);
-    tcase_add_test(tc, test_goal_install_query_nomatch);
+    tcase_add_test(tc, test_goal_install_selector);
+    tcase_add_test(tc, test_goal_install_selector_err);
+    tcase_add_test(tc, test_goal_install_selector_two);
+    tcase_add_test(tc, test_goal_install_selector_nomatch);
     tcase_add_test(tc, test_goal_update);
     tcase_add_test(tc, test_goal_upgrade_all);
     tcase_add_test(tc, test_goal_downgrade);

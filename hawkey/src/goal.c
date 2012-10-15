@@ -8,11 +8,12 @@
 
 // hawkey
 #include "errno.h"
-#include "goal.h"
+#include "goal_internal.h"
 #include "iutil.h"
-#include "query_internal.h"
 #include "package_internal.h"
+#include "query_internal.h"
 #include "sack_internal.h"
+#include "selector_internal.h"
 
 struct _HyGoal {
     HySack sack;
@@ -157,16 +158,16 @@ hy_goal_erase_flags(HyGoal goal, HyPackage pkg, int flags)
 }
 
 int
-hy_goal_erase_query(HyGoal goal, HyQuery query)
+hy_goal_erase_selector(HyGoal goal, HySelector sltr)
 {
-    return hy_goal_erase_query_flags(goal, query, 0);
+    return hy_goal_erase_selector_flags(goal, sltr, 0);
 }
 
 int
-hy_goal_erase_query_flags(HyGoal goal, HyQuery query, int flags)
+hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags)
 {
     int additional = erase_flags2libsolv(flags);
-    return query2job(query, &goal->job, SOLVER_ERASE|additional);
+    return sltr2job(sltr, &goal->job, SOLVER_ERASE|additional);
 }
 
 int
@@ -177,9 +178,9 @@ hy_goal_install(HyGoal goal, HyPackage new_pkg)
 }
 
 int
-hy_goal_install_query(HyGoal goal, HyQuery query)
+hy_goal_install_selector(HyGoal goal, HySelector sltr)
 {
-    return query2job(query, &goal->job, SOLVER_INSTALL);
+    return sltr2job(sltr, &goal->job, SOLVER_INSTALL);
 }
 
 int
@@ -196,9 +197,9 @@ hy_goal_upgrade_to(HyGoal goal, HyPackage new_pkg)
 }
 
 int
-hy_goal_upgrade_query(HyGoal goal, HyQuery query)
+hy_goal_upgrade_selector(HyGoal goal, HySelector sltr)
 {
-    return query2job(query, &goal->job, SOLVER_UPDATE);
+    return sltr2job(sltr, &goal->job, SOLVER_UPDATE);
 }
 
 int
@@ -360,4 +361,83 @@ hy_goal_get_reason(HyGoal goal, HyPackage pkg)
 	solver_ruleclass(goal->solv, info) == SOLVER_RULE_JOB)
 	return HY_REASON_USER;
     return HY_REASON_DEP;
+}
+
+// internal functions to translate Selector into libsolv Job
+
+static int
+filter_arch2job(HySack sack, const struct _Filter *f, Queue *job)
+{
+    if (f == NULL)
+	return 0; // it's OK when there's no arch spec
+
+    if (f->filter_type != HY_EQ)
+	return HY_E_SELECTOR;
+    assert(f->nmatches == 1);
+    if (job->count < 2)
+	return 0; // nothing to limit
+
+    Pool *pool = sack_pool(sack);
+    const char *arch = f->matches[0].str;
+    Id archid = str2archid(pool, arch);
+
+    if (archid == 0)
+	return HY_E_ARCH;
+    for (int i = 0; i < job->count; i += 2) {
+	Id dep;
+	assert(job->elements[i] == SOLVER_SOLVABLE_NAME);
+	dep = pool_rel2id(pool, job->elements[i + 1],
+			  archid, REL_ARCH, 1);
+	job->elements[i] |= SOLVER_SETARCH;
+	job->elements[i + 1] = dep;
+    }
+    return 0;
+}
+
+static int
+filter_name2job(HySack sack, const struct _Filter *f, Queue *job)
+{
+    if (f == NULL || f->filter_type != HY_EQ)
+	// no name in the selector is an error
+	return HY_E_SELECTOR;
+
+    Pool *pool = sack_pool(sack);
+    sack_make_provides_ready(sack);
+    assert(f->nmatches == 1);
+    const char *name = f->matches[0].str;
+    Id id = pool_str2id(pool, name, 0);
+    if (id)
+	queue_push2(job, SOLVER_SOLVABLE_NAME, id);
+    return 0;
+}
+
+/**
+ * Build job queue from a Query.
+ *
+ * Returns 0 on success. Otherwise it returns non-zero and sets hy_errno.
+ */
+int
+sltr2job(const HySelector sltr, Queue *job, int solver_action)
+{
+    int ret = 0;
+    Queue job_sltr;
+
+    queue_init(&job_sltr);
+    ret = filter_name2job(sltr->sack, sltr->f_name, &job_sltr);
+    if (ret)
+	goto finish;
+    ret = filter_arch2job(sltr->sack, sltr->f_arch, &job_sltr);
+    if (ret)
+	goto finish;
+
+    for (int i = 0; i < job_sltr.count; i += 2)
+ 	queue_push2(job,
+ 		    job_sltr.elements[i] | solver_action,
+ 		    job_sltr.elements[i + 1]);
+
+ finish:
+    if (ret)
+ 	hy_errno = ret;
+    queue_free(&job_sltr);
+    return ret;
 }

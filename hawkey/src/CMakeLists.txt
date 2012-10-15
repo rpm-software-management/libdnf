@@ -1,5 +1,14 @@
 SET (hawkey_SRCS
-    errno.c goal.c iutil.c package.c packagelist.c query.c repo.c sack.c util.c)
+    errno.c
+    goal.c
+    iutil.c
+    package.c
+    packagelist.c
+    query.c
+    repo.c
+    sack.c
+    selector.c
+    util.c)
 
 ADD_LIBRARY(libhawkey SHARED ${hawkey_SRCS})
 TARGET_LINK_LIBRARIES(libhawkey ${SOLV_LIBRARY} ${SOLVEXT_LIBRARY})
@@ -25,6 +34,7 @@ SET(HAWKEY_headers
     query.h
     repo.h
     sack.h
+    selector.h
     types.h
     util.h
     version.h)
