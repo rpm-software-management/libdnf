@@ -359,7 +359,16 @@ list_generic(_GoalObject *self, HyPackageList (*func)(HyGoal))
     PyObject *list;
 
     if (!plist) {
-	PyErr_SetString(HyExc_Runtime, "Goal has not find any solution.");
+	switch (hy_get_errno()) {
+	case HY_E_OP:
+	    PyErr_SetString(HyExc_Value, "Goal has not been run yet.");
+	    break;
+	case HY_E_NO_SOLUTION:
+	    PyErr_SetString(HyExc_Runtime, "Goal has not find a solution.");
+	    break;
+	default:
+	    assert(0);
+	}
 	return NULL;
     }
     list = packagelist_to_pylist(plist, self->sack);

@@ -8,16 +8,20 @@ python-hawkey Reference Manual
 Error handling
 ==============
 
-When an error or an unexpected event occurs during a hawkey routine, an
+When an error or an unexpected event occurs during a Hawkey routine, an
 exception is raised:
 
 * if it is a general error that could be common to other Python programs, one of
   the standard Python built-in exceptions is raised. For instance, ``IOError``
   and ``TypeError`` can be raised from Hawkey.
 
-* if the error is due to a Hawkey-specific value/parameter that was passed,
+* programming errors within Hawkey that cause unexpected or invalid states raise
+  the standard ``AssertionError``. These should be reported as bugs against
+  Hawkey.
+
+* programming errors due to incorrect use of the library usually produce
   ``hawkey.ValueException`` or one of its subclasses, ``QueryException`` (poorly
-  formed Query) or ``ArchException`` (unrecognized architecture), is used.
+  formed Query) or ``ArchException`` (unrecognized architecture).
 
 * sometimes there is a close call between blaming the error on an input
   parameter or on something else, beyond the programmer's

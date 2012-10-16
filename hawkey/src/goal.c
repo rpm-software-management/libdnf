@@ -81,8 +81,13 @@ list_results(HyGoal goal, Id type_filter)
     Transaction *trans = goal->trans;
     HyPackageList plist;
 
-    if (!trans)
+    if (!trans) {
+	if (!goal->solv)
+	    hy_errno = HY_E_OP;
+	else
+	    hy_errno = HY_E_NO_SOLUTION;
 	return NULL;
+   }
     queue_init(&transpkgs);
     plist = hy_packagelist_create();
 

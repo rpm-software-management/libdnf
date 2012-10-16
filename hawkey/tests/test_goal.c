@@ -92,6 +92,15 @@ START_TEST(test_goal_update_impossible)
 }
 END_TEST
 
+START_TEST(test_goal_list_err)
+{
+    HyGoal goal = hy_goal_create(test_globals.sack);
+    fail_unless(hy_goal_list_installs(goal) == NULL);
+    fail_unless(hy_get_errno() == HY_E_OP);
+    hy_goal_free(goal);
+}
+END_TEST
+
 START_TEST(test_goal_install)
 {
     HyPackage pkg = get_latest_pkg(test_globals.sack, "walrus");
@@ -326,6 +335,8 @@ START_TEST(test_goal_describe_problem)
 
     hy_goal_install(goal, pkg);
     fail_unless(hy_goal_run(goal));
+    fail_unless(hy_goal_list_installs(goal) == NULL);
+    fail_unless(hy_get_errno() == HY_E_NO_SOLUTION);
     fail_unless(hy_goal_count_problems(goal) > 0);
 
     char *problem = hy_goal_describe_problem(goal, 0);
@@ -529,6 +540,7 @@ goal_suite(void)
     tcase_add_unchecked_fixture(tc, fixture_all, teardown);
     tcase_add_test(tc, test_goal_sanity);
     tcase_add_test(tc, test_goal_update_impossible);
+    tcase_add_test(tc, test_goal_list_err);
     tcase_add_test(tc, test_goal_install);
     tcase_add_test(tc, test_goal_install_multilib);
     tcase_add_test(tc, test_goal_install_selector);

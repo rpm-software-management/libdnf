@@ -8,6 +8,10 @@ class Goal(base.TestCase):
         self.sack.load_system_repo()
         self.sack.load_test_repo("main", "main.repo")
 
+    def test_list_err(self):
+        goal = hawkey.Goal(self.sack)
+        self.assertRaises(hawkey.ValueException, goal.list_installs)
+
     def test_upgrade(self):
         # select the installed "fool":
         pkg = hawkey.Query(self.sack).filter(name="walrus")[0]

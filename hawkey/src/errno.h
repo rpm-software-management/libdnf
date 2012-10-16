@@ -13,6 +13,9 @@ extern "C" {
 #define HY_E_VALIDATION		6	// validation check failed
 #define HY_E_LIBSOLV		7	// erorr propagated from libsolv
 #define HY_E_SELECTOR		8	// ill-specified selector
+#define HY_E_OP			9	// client programming error
+#define HY_E_NO_SOLUTION	10	// goal found no solutions
+
 
 extern __thread int hy_errno;
 
