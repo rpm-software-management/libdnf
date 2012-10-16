@@ -53,8 +53,8 @@ already).
 This change is towards a more conventional Python practice. Also, this leaves the
 empty string return value free to be used when it is actually the case.
 
-Changes in 0.2.13
-=================
+Changes in 0.3.0
+================
 
 Core
 ----
@@ -70,6 +70,18 @@ Repo initialization
 
 ``hy_repo_create()`` for Repo object initialization now needs to be passed a
 name of the repository.
+
+.. _changes_query_installs:
+
+Query installs obsoleted
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+All Goal methods accepting Query as the means of selecting packages, such as
+``hy_goal_install_query()`` have been replaced with their Selector
+counterparts. Selector structures have been introduced for the particular
+purpose of specifying a package that best matches the given criteria and at the
+same time is suitable for installation. For a discussion of this decision see
+:ref:`rationale_selectors`.
 
 
 Python bindings
@@ -122,3 +134,23 @@ following will now fail::
 Use this instead::
 
   r = hawkey.Repo("fedora")
+
+Query installs obsoleted
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+See :ref:`changes_query_installs` in the C section. In Python Queries will no
+longer work as goal target specifiers, the following will fail::
+
+  q = hawkey.Query(sack)
+  q.filter(name="gimp")
+  goal.install(query=q)
+
+Instead use::
+
+  sltr = hawkey.Selector(sack)
+  sltr.set(name="gimp")
+  goal.install(select=sltr)
+
+Or a convenience notation::
+
+  goal.install(name="gimp")

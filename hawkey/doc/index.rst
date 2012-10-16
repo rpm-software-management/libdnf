@@ -11,6 +11,7 @@ Contents:
    faq
    tutorial-py
    reference-py
+   rationale
 
 Indices and tables
 
