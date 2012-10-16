@@ -19,6 +19,11 @@ class Query(base.TestCase):
         s = hawkey.Sack()
         q = hawkey.Query(s)
 
+    def test_exception(self):
+        q = hawkey.Query(self.sack)
+        self.assertRaises(hawkey.ValueException, q.filter, flying__eq="name")
+        self.assertRaises(hawkey.ValueException, q.filter, flying="name")
+
     def test_unicode(self):
         q = hawkey.Query(self.sack)
         q.filterm(name__eq=u"flying")

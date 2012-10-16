@@ -126,7 +126,7 @@ def _parse_filter_args(flags, dct):
     filter_flags = 0
     for flag in flags:
         if not flag in [ICASE]:
-            raise ValueError("unrecognized flag: %s" % flag)
+            raise ValueException("unrecognized flag: %s" % flag)
         filter_flags |= flag
     for (k, match) in dct.items():
         if type(match) in types.StringTypes:
@@ -135,21 +135,20 @@ def _parse_filter_args(flags, dct):
             match = map(_encode, match)
         split = k.split("__", 1)
         if len(split) == 1:
-            args.append((QUERY_KEYNAME_MAP[split[0]],
-                         QUERY_FT_MAP["eq"]|filter_flags,
-                         match))
+            keyname=split[0]
+            filter_type = "eq"
         elif len(split) == 2:
             (keyname, filter_type) = split
-            if not keyname in QUERY_KEYNAME_MAP:
-                raise ValueError("Unrecognized key name: %s" % keyname)
-            if not filter_type in QUERY_FT_MAP:
-                raise ValueError("Unrecognized filter type: %s" % filter_type)
-            args.append((QUERY_KEYNAME_MAP[keyname],
-                         QUERY_FT_MAP[filter_type]|filter_flags,
-                         match))
         else:
             raise ValueError("keyword arguments given to filter() need be "
                              "in <key>__<comparison type>=<value> format")
+        if not keyname in QUERY_KEYNAME_MAP:
+            raise ValueException("Unrecognized key name: %s" % keyname)
+        if not filter_type in QUERY_FT_MAP:
+            raise ValueException("Unrecognized filter type: %s" % filter_type)
+        args.append((QUERY_KEYNAME_MAP[keyname],
+                     QUERY_FT_MAP[filter_type]|filter_flags,
+                     match))
     return args
 
 class Query(_hawkey.Query):
