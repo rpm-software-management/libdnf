@@ -83,6 +83,22 @@ def _encode(obj):
     return obj
 
 class Goal(_hawkey.Goal):
+    _reserved_kw	= set(['package', 'select'])
+    _flag_kw		= set(['clean_deps', 'check_installed'])
+
+    def _auto_selector(fn):
+        def tweaked_fn(self, *args, **kwargs):
+            if args or self._reserved_kw & set(kwargs):
+                return fn(self, *args, **kwargs)
+
+            # only the flags and unrecognized keywords remained, construct a Selector
+            new_kwargs = {}
+            for flag in self._flag_kw & kwargs.viewkeys():
+                new_kwargs[flag] = kwargs.pop(flag)
+            new_kwargs['select'] = Selector(self.sack).set(**kwargs)
+            return fn(self, **new_kwargs)
+        return tweaked_fn
+
     @property
     def problems(self):
         return [self.describe_problem(i) for i in range(0, self.count_problems())]
@@ -92,6 +108,18 @@ class Goal(_hawkey.Goal):
         if callback:
             callback(self)
         return ret
+
+    @_auto_selector
+    def erase(self, *args, **kwargs):
+        super(Goal, self).erase(*args, **kwargs)
+
+    @_auto_selector
+    def install(self, *args, **kwargs):
+        super(Goal, self).install(*args, **kwargs)
+
+    @_auto_selector
+    def upgrade(self, *args, **kwargs):
+        super(Goal, self).upgrade(*args, **kwargs)
 
 def _parse_filter_args(flags, dct):
     args = []

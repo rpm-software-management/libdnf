@@ -26,6 +26,20 @@ class Goal(base.TestCase):
         # without checking versioning, the update is accepted:
         self.assertIsNone(hawkey.Goal(self.sack).upgrade(select=sltr));
 
+        goal = hawkey.Goal(self.sack)
+        goal.install(name="semolina")
+        goal.run()
+        self.assertEqual(str(goal.list_installs()[0]), 'semolina-2-0.x86_64')
+
+    def test_erase_selector(self):
+        """ Tests automatic Selector from keyword arguments, with special
+            keywords that don't become a part of the Selector.
+        """
+        goal = hawkey.Goal(self.sack)
+        goal.erase(clean_deps=True, name="flying")
+        goal.run()
+        self.assertEqual(len(goal.list_erasures()), 2)
+
     def test_install_selector_err(self):
         sltr = hawkey.Selector(self.sack)
         self.assertRaises(hawkey.RuntimeException, sltr.set, reponame="eapoe")
