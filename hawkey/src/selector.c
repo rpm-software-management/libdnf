@@ -27,7 +27,7 @@ valid_setting(int keyname, int cmp_type)
     switch (keyname) {
     case HY_PKG_ARCH:
     case HY_PKG_NAME:
-	return cmp_type == HY_EQ;
+	return (cmp_type == HY_EQ || cmp_type == HY_GLOB);
     default:
 	return 0;
     }

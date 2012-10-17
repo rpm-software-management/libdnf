@@ -40,6 +40,6 @@ about Query (`the unofficial C++ FAQ
 *Implementation note*: Selectors reflect the kind of specifications that can be
 directly translated into Libsolv jobs, without actually searching for a concrete
 package to put there. In other words, Selectors are specifically designed not to
-ever iterate over the package data like Queries do. While Hawkey mostly aims to
-hide any twists and complexities of the underlying library, in this case the
-combined reasons warrant a concession.
+iterate over the package data (with exceptions, like glob matching) like Queries
+do. While Hawkey mostly aims to hide any twists and complexities of the
+underlying library, in this case the combined reasons warrant a concession.

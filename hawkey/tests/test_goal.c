@@ -230,6 +230,21 @@ START_TEST(test_goal_install_selector_nomatch)
 }
 END_TEST
 
+START_TEST(test_goal_selector_glob)
+{
+    HySelector sltr = hy_selector_create(test_globals.sack);
+    HyGoal goal = hy_goal_create(test_globals.sack);
+
+    fail_if(hy_selector_set(sltr, HY_PKG_NAME, HY_GLOB, "*emolin*"));
+    fail_if(hy_goal_install_selector(goal, sltr));
+    fail_if(hy_goal_run(goal));
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
+
+    hy_goal_free(goal);
+    hy_selector_free(sltr);
+}
+END_TEST
+
 START_TEST(test_goal_update)
 {
     HyPackage pkg = get_latest_pkg(test_globals.sack, "fool");
@@ -547,6 +562,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_install_selector_err);
     tcase_add_test(tc, test_goal_install_selector_two);
     tcase_add_test(tc, test_goal_install_selector_nomatch);
+    tcase_add_test(tc, test_goal_selector_glob);
     tcase_add_test(tc, test_goal_update);
     tcase_add_test(tc, test_goal_upgrade_all);
     tcase_add_test(tc, test_goal_downgrade);

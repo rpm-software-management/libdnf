@@ -371,6 +371,15 @@ hy_goal_get_reason(HyGoal goal, HyPackage pkg)
 // internal functions to translate Selector into libsolv Job
 
 static int
+job_has(Queue *job, Id what, Id id)
+{
+    for (int i = 0; i < job->count; i += 2)
+	if (job->elements[i] == what && job->elements[i + 1] == id)
+	    return 1;
+    return 0;
+}
+
+static int
 filter_arch2job(HySack sack, const struct _Filter *f, Queue *job)
 {
     if (f == NULL)
@@ -402,17 +411,38 @@ filter_arch2job(HySack sack, const struct _Filter *f, Queue *job)
 static int
 filter_name2job(HySack sack, const struct _Filter *f, Queue *job)
 {
-    if (f == NULL || f->filter_type != HY_EQ)
+    if (f == NULL)
 	// no name in the selector is an error
 	return HY_E_SELECTOR;
+    assert(f->nmatches == 1);
+    sack_make_provides_ready(sack);
 
     Pool *pool = sack_pool(sack);
-    sack_make_provides_ready(sack);
-    assert(f->nmatches == 1);
     const char *name = f->matches[0].str;
-    Id id = pool_str2id(pool, name, 0);
-    if (id)
-	queue_push2(job, SOLVER_SOLVABLE_NAME, id);
+    Id id;
+    Dataiterator di;
+
+    switch (f->filter_type) {
+    case HY_EQ:
+	id = pool_str2id(pool, name, 0);
+	if (id)
+	    queue_push2(job, SOLVER_SOLVABLE_NAME, id);
+	break;
+    case HY_GLOB:
+	dataiterator_init(&di, pool, 0, 0, SOLVABLE_NAME, name, SEARCH_GLOB);
+	while (dataiterator_step(&di)) {
+	    assert(di.idp);
+	    id = *di.idp;
+	    if (job_has(job, SOLVABLE_NAME, id))
+		continue;
+	    queue_push2(job, SOLVER_SOLVABLE_NAME, id);
+	}
+	dataiterator_free(&di);
+	break;
+    default:
+	assert(0);
+	break;
+    }
     return 0;
 }
 
