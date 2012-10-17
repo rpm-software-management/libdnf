@@ -200,14 +200,14 @@ START_TEST(test_goal_install_selector_two)
     hy_selector_free(sltr);
 
     sltr = hy_selector_create(test_globals.sack);
-    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "walrus");
-    fail_if(hy_goal_install_selector(goal, sltr));
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "fool");
+    fail_if(hy_goal_upgrade_selector(goal, sltr));
     hy_selector_free(sltr);
 
     fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 2);
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 1);
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
 
     hy_goal_free(goal);
 }
