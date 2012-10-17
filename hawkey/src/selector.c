@@ -53,7 +53,7 @@ int
 hy_selector_set(HySelector sltr, int keyname, int cmp_type, const char *match)
 {
     if (!valid_setting(keyname, cmp_type))
-	return HY_E_FAILED;
+	return HY_E_SELECTOR;
 
     switch (keyname) {
     case HY_PKG_ARCH:
@@ -63,7 +63,7 @@ hy_selector_set(HySelector sltr, int keyname, int cmp_type, const char *match)
 	replace_filter(&sltr->f_name, keyname, cmp_type, match);
 	break;
     default:
-	return HY_E_FAILED;
+	return HY_E_SELECTOR;
     }
     return 0;
 }

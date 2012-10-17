@@ -46,7 +46,7 @@ class Goal(base.TestCase):
 
     def test_install_selector_err(self):
         sltr = hawkey.Selector(self.sack)
-        self.assertRaises(hawkey.RuntimeException, sltr.set, reponame="eapoe")
+        self.assertRaises(hawkey.ValueException, sltr.set, reponame="eapoe")
 
         sltr = hawkey.Selector(self.sack).set(name="semolina", arch="i666")
         goal = hawkey.Goal(self.sack)
