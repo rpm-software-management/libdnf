@@ -1,9 +1,9 @@
-%global gitrev 7fa7aa9
+%global gitrev afa7717
 %global libsolv_version 0.0.0-17
 
 Name:		hawkey
 Version:	@VERSION@
-Release:	2.git%{gitrev}%{?dist}
+Release:	1.git%{gitrev}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
@@ -76,6 +76,16 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
+* Wed Oct 17 2012 Aleš Kozumplík <ales@redhat.com> - 0.3.0-1.gitafa7717
+- API change: Query: repo filter is called REPONAME now, now just REPO.
+- python: isinstance check for hawkey.Package fails for package objects.
+- Simplification of archive script (tmlcoch)
+- API change: hy_repo_create() now takes the repo name as a parameter.
+- API change: Use Selector for what used to be "Query installs".
+- py: use general keyword arguments to Goal.install() etc. to construct a Selector.
+- goal: improve error reporting when Goal failed/was not executed.
+- selectors: glob matching the package name.
+
 * Fri Oct 5 2012 Aleš Kozumplík <ales@redhat.com> - 0.2.12-2.git7fa7aa9
 - fix sigsegv in query.c:filter_sourcerpm().
 - doc: move the hawkey reference to man section 3.
