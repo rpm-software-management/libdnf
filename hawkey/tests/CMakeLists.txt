@@ -8,6 +8,7 @@ SET (hawkeytest_SRCS
      test_repo.c
      test_query.c
      test_sack.c
+     test_util.c
      testsys.c)
 
 ADD_LIBRARY(testsys STATIC testsys.c)

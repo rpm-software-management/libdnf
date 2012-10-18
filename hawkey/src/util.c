@@ -1,7 +1,10 @@
+#include <assert.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <strings.h>
 
 // hawkey
+#include "errno.h"
 #include "iutil.h"
 #include "package.h"
 #include "util.h"
@@ -49,4 +52,52 @@ chksum_str(const unsigned char *chksum, int type)
     solv_bin2hex(chksum, length, s);
 
     return s;
+}
+
+int
+hy_split_nevra(const char *nevra, char **name, long int *epoch,
+	       char **version, char **release, char **arch)
+{
+    const int len = strlen(nevra);
+    assert(len > 0);
+
+    const char *m1 = NULL, *m2 = NULL, *m3;
+    const char *c;
+    for (c = nevra + len - 1; c > nevra; --c)
+	if (*c == '.') {
+	    m3 = c;
+	    break;
+	}
+    if (c == nevra)
+	return HY_E_OP;
+
+    for (; c > nevra; --c)
+	if (*c == '-') {
+	    if (m2 == NULL)
+		m2 = c;
+	    else if (m1 == NULL) {
+		m1 = c;
+		break;
+	    }
+	}
+    if (c == nevra)
+	return HY_E_OP;
+
+    *arch = solv_strdup(m3+1);
+    *name = hy_strndup(nevra, (m1 - nevra));
+    *release = hy_strndup(m2 + 1, (m3 - m2 - 1));
+
+    char *endptr;
+    long int converted;
+    errno = 0;
+    converted = strtol(m1 + 1, &endptr, 10);
+    if (!errno && *endptr == ':') {
+	*epoch = converted;
+	*version = hy_strndup(endptr + 1, (m2 - endptr - 1));
+    } else {
+	*epoch = 0;
+	*version = hy_strndup(m1 + 1, (m2 - m1 - 1));
+    }
+
+    return 0;
 }

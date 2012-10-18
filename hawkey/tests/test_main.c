@@ -18,6 +18,7 @@
 #include "test_packagelist.h"
 #include "test_repo.h"
 #include "test_sack.h"
+#include "test_util.h"
 #include "testsys.h"
 
 static int
@@ -68,6 +69,7 @@ main(int argc, const char **argv)
     srunner_add_suite(sr, package_suite());
     srunner_add_suite(sr, packagelist_suite());
     srunner_add_suite(sr, query_suite());
+    srunner_add_suite(sr, util_suite());
     srunner_add_suite(sr, goal_suite());
     srunner_run_all(sr, CK_NORMAL);
     number_failed = srunner_ntests_failed(sr);

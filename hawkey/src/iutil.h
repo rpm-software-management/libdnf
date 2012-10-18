@@ -39,6 +39,7 @@ unsigned count_nullt_array(const char **a);
 int str_endswith(const char *haystack, const char *needle);
 int str_startswith(const char *haystack, const char *needle);
 char *pool_tmpdup(Pool *pool, const char *s);
+char *hy_strndup(const char *s, size_t n);
 
 /* libsolv utils */
 void repo_internalize_trigger(Repo *r);

@@ -251,6 +251,19 @@ pool_tmpdup(Pool *pool, const char *s)
     return strcpy(dup, s);
 }
 
+/* can go once there is solv_strndup() */
+char *
+hy_strndup(const char *s, size_t n)
+{
+  if (!s)
+    return 0;
+
+  char *r = strndup(s, n);
+  if (!r)
+    solv_oom(0, n);
+  return r;
+}
+
 void
 repo_internalize_trigger(Repo *repo)
 {

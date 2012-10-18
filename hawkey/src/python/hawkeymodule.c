@@ -47,10 +47,30 @@ py_chksum_type(PyObject *unused, PyObject *str_o)
     return PyInt_FromLong(type);
 }
 
+PyObject *
+py_split_nevra(PyObject *unused, PyObject *nevra_o)
+{
+    const char *nevra = PyString_AsString(nevra_o);
+    if (nevra == NULL)
+	return NULL;
+    long epoch;
+    char *name, *version, *release, *arch;
+    if (ret2e(hy_split_nevra(nevra, &name, &epoch, &version, &release, &arch),
+	      "Failed parsing NEVRA."))
+	return NULL;
+
+    PyObject *ret = Py_BuildValue("slsss", name, epoch, version, release, arch);
+    if (ret == NULL)
+	return NULL;
+    return ret;
+}
+
 static struct PyMethodDef hawkey_methods[] = {
     {"chksum_name",		(PyCFunction)py_chksum_name,
      METH_VARARGS,	NULL},
     {"chksum_type",		(PyCFunction)py_chksum_type,
+     METH_O,		NULL},
+    {"split_nevra",		(PyCFunction)py_split_nevra,
      METH_O,		NULL},
     {NULL}				/* sentinel */
 };

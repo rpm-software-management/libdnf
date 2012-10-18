@@ -56,6 +56,9 @@ _CHKSUM_TYPES = {
     CHKSUM_SHA256: 'sha256'
     }
 
+REASON_DEP = _hawkey.REASON_DEP
+REASON_USER = _hawkey.REASON_USER
+
 Exception = _hawkey.Exception
 QueryException = _hawkey.QueryException
 ValueException = _hawkey.ValueException
@@ -65,8 +68,12 @@ RuntimeException = _hawkey.RuntimeException
 chksum_name = _hawkey.chksum_name
 chksum_type = _hawkey.chksum_type
 
-REASON_DEP = _hawkey.REASON_DEP
-REASON_USER = _hawkey.REASON_USER
+_NEVRA = collections.namedtuple("_NEVRA",
+                                ["name", "epoch", "version", "release", "arch"])
+
+def split_nevra(s):
+    t = _hawkey.split_nevra(s)
+    return _NEVRA(*t)
 
 def _encode(obj):
     """ Identity, except when obj is unicode then return a UTF-8 string.

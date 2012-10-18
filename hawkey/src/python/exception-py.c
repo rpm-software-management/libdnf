@@ -64,6 +64,7 @@ ret2e(int ret, const char *msg)
     case HY_E_FAILED:
 	exctype = HyExc_Runtime;
 	break;
+    case HY_E_OP:
     case HY_E_SELECTOR:
 	exctype = HyExc_Value;
 	break;
