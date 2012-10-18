@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <strings.h>
@@ -59,7 +58,8 @@ hy_split_nevra(const char *nevra, char **name, long int *epoch,
 	       char **version, char **release, char **arch)
 {
     const int len = strlen(nevra);
-    assert(len > 0);
+    if (len <= 0)
+	return HY_E_OP;
 
     const char *m1 = NULL, *m2 = NULL, *m3;
     const char *c;
