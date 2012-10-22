@@ -23,7 +23,7 @@ py_chksum_name(PyObject *unused, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "i", &i))
 	return NULL;
-    name = chksum_name(i);
+    name = hy_chksum_name(i);
     if (name == NULL) {
 	PyErr_Format(PyExc_ValueError, "unrecognized chksum type: %d", i);
 	return NULL;
@@ -39,7 +39,7 @@ py_chksum_type(PyObject *unused, PyObject *str_o)
     if (str == NULL)
 	return NULL;
 
-    int type = chksum_type(str);
+    int type = hy_chksum_type(str);
     if (type == 0) {
 	PyErr_Format(PyExc_ValueError, "unrecognized chksum type: %s", str);
 	return NULL;

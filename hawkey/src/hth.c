@@ -48,7 +48,7 @@ static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
 	if (strcmp(reponame, HY_SYSTEM_REPO_NAME) == 0) {
 	    int type;
 	    const unsigned char * hdrid = hy_package_get_hdr_chksum(pkg, &type);
-	    char *str = chksum_str(hdrid, type);
+	    char *str = hy_chksum_str(hdrid, type);
 
 	    printf("\tsha1 header id: %s\n", str);
 	    hy_free(str);

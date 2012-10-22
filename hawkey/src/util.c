@@ -17,7 +17,7 @@ hy_free(void *mem)
 }
 
 const char *
-chksum_name(int chksum_type)
+hy_chksum_name(int chksum_type)
 {
     switch (chksum_type) {
     case HY_CHKSUM_MD5:
@@ -32,7 +32,7 @@ chksum_name(int chksum_type)
 }
 
 int
-chksum_type(const char *chksum_name)
+hy_chksum_type(const char *chksum_name)
 {
     if (!strcasecmp(chksum_name, "md5"))
 	return HY_CHKSUM_MD5;
@@ -44,7 +44,7 @@ chksum_type(const char *chksum_name)
 }
 
 char *
-chksum_str(const unsigned char *chksum, int type)
+hy_chksum_str(const unsigned char *chksum, int type)
 {
     int length = checksum_type2length(type);
     char *s = solv_malloc(2 * length + 1);
