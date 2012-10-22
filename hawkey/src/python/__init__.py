@@ -2,19 +2,23 @@ import _hawkey
 import collections
 import types
 
-VERSION_MAJOR = _hawkey.VERSION_MAJOR
-VERSION_MINOR = _hawkey.VERSION_MINOR
-VERSION_PATCH = _hawkey.VERSION_PATCH
-VERSION=u"%d.%d.%d" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
+__all__ = [
+    # version info
+    'VERSION', 'VERSION_MAJOR', 'VERSION_MINOR', 'VERSION_PATCH',
+    # submodules
+    'test',
+    # constants
+    'CHKSUM_MD5', 'CHKSUM_SHA1', 'CHKSUM_SHA256', 'CMDLINE_REPO_NAME',
+    'SYSTEM_REPO_NAME', 'REASON_DEP', 'REASON_USER', 'ICASE',
+    # exceptions
+    'ArchException', 'Exception', 'QueryException', 'RuntimeException',
+    'ValueException',
+    # functions
+    'chksum_name', 'chksum_type', 'split_nevra',
+    # classes
+    'Goal', 'NEVRA', 'Package', 'Query', 'Repo', 'Sack', 'Selector']
 
-Package = _hawkey.Package
-Repo = _hawkey.Repo
-Sack = _hawkey.Sack
-
-SYSTEM_REPO_NAME = _hawkey.SYSTEM_REPO_NAME
-CMDLINE_REPO_NAME = _hawkey.CMDLINE_REPO_NAME
-
-QUERY_KEYNAME_MAP = {
+_QUERY_KEYNAME_MAP = {
     'pkg'	: _hawkey.PKG,
     'description' : _hawkey.PKG_DESCRIPTION,
     'epoch'	: _hawkey.PKG_EPOCH,
@@ -34,8 +38,7 @@ QUERY_KEYNAME_MAP = {
     'obsoleting' : _hawkey.PKG_OBSOLETING
 }
 
-ICASE = _hawkey.ICASE
-QUERY_FT_MAP = {
+_QUERY_FT_MAP = {
     'eq' : _hawkey.EQ,
     'gt' : _hawkey.GT,
     'lt' : _hawkey.LT,
@@ -46,18 +49,26 @@ QUERY_FT_MAP = {
     'glob' : _hawkey.GLOB,
 }
 
+VERSION_MAJOR = _hawkey.VERSION_MAJOR
+VERSION_MINOR = _hawkey.VERSION_MINOR
+VERSION_PATCH = _hawkey.VERSION_PATCH
+VERSION=u"%d.%d.%d" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
+
+SYSTEM_REPO_NAME = _hawkey.SYSTEM_REPO_NAME
+CMDLINE_REPO_NAME = _hawkey.CMDLINE_REPO_NAME
+
+ICASE = _hawkey.ICASE
+
 CHKSUM_MD5 = _hawkey.CHKSUM_MD5
 CHKSUM_SHA1 = _hawkey.CHKSUM_SHA1
 CHKSUM_SHA256 = _hawkey.CHKSUM_SHA256
 
-_CHKSUM_TYPES = {
-    CHKSUM_MD5: 'md5',
-    CHKSUM_SHA1: 'sha1',
-    CHKSUM_SHA256: 'sha256'
-    }
-
 REASON_DEP = _hawkey.REASON_DEP
 REASON_USER = _hawkey.REASON_USER
+
+Package = _hawkey.Package
+Repo = _hawkey.Repo
+Sack = _hawkey.Sack
 
 Exception = _hawkey.Exception
 QueryException = _hawkey.QueryException
@@ -68,6 +79,10 @@ RuntimeException = _hawkey.RuntimeException
 chksum_name = _hawkey.chksum_name
 chksum_type = _hawkey.chksum_type
 
+def split_nevra(s):
+    t = _hawkey.split_nevra(s)
+    return NEVRA(*t)
+
 _NEVRA = collections.namedtuple("_NEVRA",
                                 ["name", "epoch", "version", "release", "arch"])
 
@@ -76,24 +91,6 @@ class NEVRA(_NEVRA):
         return Query(sack).filter(
             name=self.name, epoch=self.epoch, version=self.version,
             release=self.release, arch=self.arch)
-
-def split_nevra(s):
-    t = _hawkey.split_nevra(s)
-    return NEVRA(*t)
-
-def _encode(obj):
-    """ Identity, except when obj is unicode then return a UTF-8 string.
-
-        This assumes UTF-8 is good enough for libsolv and always will be. Else
-        we'll have to deal with some encoding configuration.
-
-        Since we use this to match string queries, we have to enforce 'strict'
-        and potentially face exceptions rather than bizarre results. (Except
-        that as long as we stick to UTF-8 it never fails.)
-    """
-    if type(obj) is unicode:
-        return obj.encode('utf8', 'strict')
-    return obj
 
 class Goal(_hawkey.Goal):
     _reserved_kw	= set(['package', 'select'])
@@ -134,6 +131,20 @@ class Goal(_hawkey.Goal):
     def upgrade(self, *args, **kwargs):
         super(Goal, self).upgrade(*args, **kwargs)
 
+def _encode(obj):
+    """ Identity, except when obj is unicode then return a UTF-8 string.
+
+        This assumes UTF-8 is good enough for libsolv and always will be. Else
+        we'll have to deal with some encoding configuration.
+
+        Since we use this to match string queries, we have to enforce 'strict'
+        and potentially face exceptions rather than bizarre results. (Except
+        that as long as we stick to UTF-8 it never fails.)
+    """
+    if type(obj) is unicode:
+        return obj.encode('utf8', 'strict')
+    return obj
+
 def _parse_filter_args(flags, dct):
     args = []
     filter_flags = 0
@@ -155,12 +166,12 @@ def _parse_filter_args(flags, dct):
         else:
             raise ValueError("keyword arguments given to filter() need be "
                              "in <key>__<comparison type>=<value> format")
-        if not keyname in QUERY_KEYNAME_MAP:
+        if not keyname in _QUERY_KEYNAME_MAP:
             raise ValueException("Unrecognized key name: %s" % keyname)
-        if not filter_type in QUERY_FT_MAP:
+        if not filter_type in _QUERY_FT_MAP:
             raise ValueException("Unrecognized filter type: %s" % filter_type)
-        args.append((QUERY_KEYNAME_MAP[keyname],
-                     QUERY_FT_MAP[filter_type]|filter_flags,
+        args.append((_QUERY_KEYNAME_MAP[keyname],
+                     _QUERY_FT_MAP[filter_type]|filter_flags,
                      match))
     return args
 
