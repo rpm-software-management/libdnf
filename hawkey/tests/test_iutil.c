@@ -138,13 +138,13 @@ START_TEST(test_version_split)
     char evr[] = "1:5.9.3-8";
     char *epoch, *version, *release;
 
-    pool_version_split(pool, evr, &epoch, &version, &release);
+    pool_split_evr(pool, evr, &epoch, &version, &release);
     ck_assert_str_eq(epoch, "1");
     ck_assert_str_eq(version, "5.9.3");
     ck_assert_str_eq(release, "8");
 
     char evr2[] = "8.0-9";
-    pool_version_split(pool, evr2, &epoch, &version, &release);
+    pool_split_evr(pool, evr2, &epoch, &version, &release);
     fail_unless(epoch == NULL);
     ck_assert_str_eq(version, "8.0");
     ck_assert_str_eq(release, "9");

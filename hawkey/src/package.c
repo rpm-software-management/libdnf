@@ -151,7 +151,7 @@ hy_package_get_version(HyPackage pkg)
 {
     char *e, *v, *r;
 
-    pool_version_split(package_pool(pkg), hy_package_get_evr(pkg), &e, &v, &r);
+    pool_split_evr(package_pool(pkg), hy_package_get_evr(pkg), &e, &v, &r);
     return solv_strdup(v);
 }
 
@@ -160,7 +160,7 @@ hy_package_get_release(HyPackage pkg)
 {
     char *e, *v, *r;
 
-    pool_version_split(package_pool(pkg), hy_package_get_evr(pkg), &e, &v, &r);
+    pool_split_evr(package_pool(pkg), hy_package_get_evr(pkg), &e, &v, &r);
     return solv_strdup(r);
 }
 

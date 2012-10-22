@@ -386,7 +386,7 @@ pool_get_epoch(Pool *pool, const char *evr)
     char *e, *v, *r, *endptr;
     unsigned long epoch = 0;
 
-    pool_version_split(pool, evr, &e, &v, &r);
+    pool_split_evr(pool, evr, &e, &v, &r);
     if (e) {
 	long int converted = strtol(e, &endptr, 10);
 	assert(converted > 0);
@@ -400,10 +400,13 @@ pool_get_epoch(Pool *pool, const char *evr)
 /**
  * Split evr into its components.
  *
- * Believes blindly in 'evr' being well formed.
+ * Believes blindly in 'evr' being well formed. This could be implemented
+ * without 'pool' of course but either the caller would have to provide buffers
+ * to store the split pieces, or this would call strdup (which is more expensive
+ * than the pool temp space).
  */
 void
-pool_version_split(Pool *pool, const char *evr_c, char **epoch, char **version,
+pool_split_evr(Pool *pool, const char *evr_c, char **epoch, char **version,
 		   char **release)
 {
     char *evr = pool_tmpdup(pool, evr_c);

@@ -267,7 +267,7 @@ filter_version(HyQuery q, struct _Filter *f, Map *m)
 		continue;
 	    const char *evr = pool_id2str(pool, s->evr);
 
-	    pool_version_split(pool, evr, &e, &v, &r);
+	    pool_split_evr(pool, evr, &e, &v, &r);
 	    char *vr = pool_tmpjoin(pool, v, "-0", NULL);
 	    int cmp = pool_evrcmp_str(pool, vr, filter_vr, EVRCMP_COMPARE);
 
@@ -295,7 +295,7 @@ filter_release(HyQuery q, struct _Filter *f, Map *m)
 		continue;
 	    const char *evr = pool_id2str(pool, s->evr);
 
-	    pool_version_split(pool, evr, &e, &v, &r);
+	    pool_split_evr(pool, evr, &e, &v, &r);
 	    char *vr = pool_tmpjoin(pool, "0-", r, NULL);
 
 	    int cmp = pool_evrcmp_str(pool, vr, filter_vr, EVRCMP_COMPARE);
