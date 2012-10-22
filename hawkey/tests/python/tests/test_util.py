@@ -1,3 +1,4 @@
+import base
 import hawkey
 import unittest
 
@@ -21,3 +22,15 @@ class Util(unittest.TestCase):
         self.assertEqual(nevra.version, "1.2.3")
         self.assertEqual(nevra.release, "4.fc18")
         self.assertEqual(nevra.arch, "x86_64")
+
+class UtilWithSack(base.TestCase):
+    def setUp(self):
+        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack.load_system_repo()
+
+    def test_nevra_to_query(self):
+        nevra = hawkey.split_nevra("baby-6:5.0-11.x86_64")
+        q = nevra.to_query(self.sack)
+        self.assertLength(q, 1)
+        pkg = str(q[0])
+        self.assertEqual(pkg, "baby-6:5.0-11.x86_64")

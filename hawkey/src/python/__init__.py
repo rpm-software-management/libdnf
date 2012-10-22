@@ -71,9 +71,15 @@ chksum_type = _hawkey.chksum_type
 _NEVRA = collections.namedtuple("_NEVRA",
                                 ["name", "epoch", "version", "release", "arch"])
 
+class NEVRA(_NEVRA):
+    def to_query(self, sack):
+        return Query(sack).filter(
+            name=self.name, epoch=self.epoch, version=self.version,
+            release=self.release, arch=self.arch)
+
 def split_nevra(s):
     t = _hawkey.split_nevra(s)
-    return _NEVRA(*t)
+    return NEVRA(*t)
 
 def _encode(obj):
     """ Identity, except when obj is unicode then return a UTF-8 string.
