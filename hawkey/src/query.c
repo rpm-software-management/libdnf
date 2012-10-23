@@ -17,6 +17,7 @@
 
 struct _HyQuery {
     HySack sack;
+    Map *result;
     struct _Filter *filters;
     int nfilters;
     int downgrades; /* 1 for "only downgrades for installed packages" */
@@ -525,6 +526,80 @@ filter_obsoleting(HyQuery q, Map *res)
     map_free(&obsoleting);
 }
 
+static void
+compute(HyQuery q)
+{
+    Pool *pool = sack_pool(q->sack);
+    Map m;
+
+    q->result = solv_calloc(1, sizeof(Map));
+    map_init(q->result, pool->nsolvables);
+    map_setall(q->result);
+    MAPCLR(q->result, SYSTEMSOLVABLE);
+
+    map_init(&m, pool->nsolvables);
+    for (int i = 0; i < q->nfilters; ++i) {
+	struct _Filter *f = q->filters + i;
+
+	map_empty(&m);
+	switch (f->keyname) {
+	case HY_PKG:
+	    filter_pkg(q, f, &m);
+	    break;
+	case HY_PKG_EPOCH:
+	    filter_epoch(q, f, &m);
+	    break;
+	case HY_PKG_EVR:
+	    filter_evr(q, f, &m);
+	    break;
+	case HY_PKG_VERSION:
+	    filter_version(q, f, &m);
+	    break;
+	case HY_PKG_RELEASE:
+	    filter_release(q, f, &m);
+	    break;
+	case HY_PKG_SOURCERPM:
+	    filter_sourcerpm(q, f, &m);
+	    break;
+	case HY_PKG_PROVIDES:
+	    filter_providers(q, f, &m);
+	    break;
+	case HY_PKG_REQUIRES:
+	    filter_requires(q, f, &m);
+	    break;
+	case HY_PKG_REPONAME:
+	    filter_reponame(q, f, &m);
+	    break;
+	default:
+	    filter_dataiterator(q, f, &m);
+	}
+	if (f->filter_type & HY_NOT)
+	    map_subtract(q->result, &m);
+	else
+	    map_and(q->result, &m);
+    }
+    map_free(&m);
+    if (q->downgrades)
+	filter_updown(q, 1, q->result);
+    if (q->updates)
+	filter_updown(q, 0, q->result);
+    if (q->latest)
+	filter_latest(q, q->result);
+    if (q->obsoleting)
+	filter_obsoleting(q, q->result);
+}
+
+static void
+clear_result(HyQuery q)
+{
+    if (q->result) {
+	map_free(q->result);
+	solv_free(q->result);
+    }
+    q->result = NULL;
+}
+
+
 HyQuery
 hy_query_create(HySack sack)
 {
@@ -543,6 +618,7 @@ hy_query_free(HyQuery q)
 void
 hy_query_clear(HyQuery q)
 {
+    clear_result(q);
     for (int i = 0; i < q->nfilters; ++i) {
 	struct _Filter *filterp = q->filters + i;
 	filter_reinit(filterp, 0);
@@ -586,6 +662,7 @@ hy_query_filter(HyQuery q, int keyname, int filter_type, const char *match)
 {
     if (!valid_filter_str(keyname, filter_type))
 	return 1;
+    clear_result(q);
 
     struct _Filter *filterp = query_add_filter(q, 1);
     filterp->filter_type = filter_type;
@@ -600,6 +677,7 @@ hy_query_filter_in(HyQuery q, int keyname, int filter_type,
 {
     if (!valid_filter_str(keyname, filter_type))
 	return 1;
+    clear_result(q);
 
     const unsigned count = count_nullt_array(matches);
     struct _Filter *filterp = query_add_filter(q, count);
@@ -616,6 +694,7 @@ hy_query_filter_num(HyQuery q, int keyname, int filter_type, int match)
 {
     if (!valid_filter_num(keyname, filter_type))
 	return 1;
+    clear_result(q);
 
     struct _Filter *filterp = query_add_filter(q, 1);
     filterp->filter_type = filter_type;
@@ -630,6 +709,7 @@ hy_query_filter_num_in(HyQuery q, int keyname, int filter_type, int nmatches,
 {
     if (!valid_filter_num(keyname, filter_type))
 	return 1;
+    clear_result(q);
 
     struct _Filter *filterp = query_add_filter(q, nmatches);
 
@@ -648,6 +728,7 @@ hy_query_filter_package_in(HyQuery q, int filter_type, const HyPackageList plist
     int i, ret;
     HyPackage pkg;
 
+    clear_result(q);
     FOR_PACKAGELIST(pkg, plist, i)
 	matches[i] = package_id(pkg);
     ret = hy_query_filter_num_in(q, HY_PKG, filter_type, count, matches);
@@ -659,6 +740,8 @@ int
 hy_query_filter_provides(HyQuery q, int filter_type, const char *name, const char *evr)
 {
     struct _Filter *filterp = query_add_filter(q, 1);
+
+    clear_result(q);
     filterp->filter_type = filter_type;
     filterp->keyname = HY_PKG_PROVIDES;
     filterp->evr = solv_strdup(evr);
@@ -670,6 +753,8 @@ int
 hy_query_filter_requires(HyQuery q, int filter_type, const char *name, const char *evr)
 {
     struct _Filter *filterq = query_add_filter(q, 1);
+
+    clear_result(q);
     filterq->filter_type = filter_type;
     filterq->keyname = HY_PKG_REQUIRES;
     filterq->evr = solv_strdup(evr);
@@ -685,6 +770,7 @@ hy_query_filter_requires(HyQuery q, int filter_type, const char *name, const cha
 void
 hy_query_filter_downgrades(HyQuery q, int val)
 {
+    clear_result(q);
     q->downgrades = val;
 }
 
@@ -696,6 +782,7 @@ hy_query_filter_downgrades(HyQuery q, int val)
 void
 hy_query_filter_upgrades(HyQuery q, int val)
 {
+    clear_result(q);
     q->updates = val;
 }
 
@@ -705,6 +792,7 @@ hy_query_filter_upgrades(HyQuery q, int val)
 void
 hy_query_filter_latest(HyQuery q, int val)
 {
+    clear_result(q);
     q->latest = val;
 }
 
@@ -715,6 +803,7 @@ hy_query_filter_latest(HyQuery q, int val)
 void
 hy_query_filter_obsoleting(HyQuery q, int val)
 {
+    clear_result(q);
     q->obsoleting = val;
 }
 
@@ -722,68 +811,12 @@ HyPackageList
 hy_query_run(HyQuery q)
 {
     Pool *pool = sack_pool(q->sack);
-    HyPackageList plist;
-    Map res, m;
-    int i;
+    HyPackageList plist = hy_packagelist_create();
 
-    map_init(&m, pool->nsolvables);
-    map_init(&res, pool->nsolvables);
-    map_setall(&res);
-    MAPCLR(&res, SYSTEMSOLVABLE);
-    for (i = 0; i < q->nfilters; ++i) {
-	struct _Filter *f = q->filters + i;
-
-	map_empty(&m);
-	switch (f->keyname) {
-	case HY_PKG:
-	    filter_pkg(q, f, &m);
-	    break;
-	case HY_PKG_EPOCH:
-	    filter_epoch(q, f, &m);
-	    break;
-	case HY_PKG_EVR:
-	    filter_evr(q, f, &m);
-	    break;
-	case HY_PKG_VERSION:
-	    filter_version(q, f, &m);
-	    break;
-	case HY_PKG_RELEASE:
-	    filter_release(q, f, &m);
-	    break;
-	case HY_PKG_SOURCERPM:
-	    filter_sourcerpm(q, f, &m);
-	    break;
-	case HY_PKG_PROVIDES:
-	    filter_providers(q, f, &m);
-	    break;
-	case HY_PKG_REQUIRES:
-	    filter_requires(q, f, &m);
-	    break;
-	case HY_PKG_REPONAME:
-	    filter_reponame(q, f, &m);
-	    break;
-	default:
-	    filter_dataiterator(q, f, &m);
-	}
-	if (f->filter_type & HY_NOT)
-	    map_subtract(&res, &m);
-	else
-	    map_and(&res, &m);
-    }
-    if (q->downgrades)
-	filter_updown(q, 1, &res);
-    if (q->updates)
-	filter_updown(q, 0, &res);
-    if (q->latest)
-	filter_latest(q, &res);
-    if (q->obsoleting)
-	filter_obsoleting(q, &res);
-    plist = hy_packagelist_create();
-    for (i = 1; i < pool->nsolvables; ++i)
-	if (MAPTST(&res, i))
+    if (!q->result)
+	compute(q);
+    for (int i = 1; i < pool->nsolvables; ++i)
+	if (MAPTST(q->result, i))
 	    hy_packagelist_push(plist, package_create(pool, i));
-    map_free(&m);
-    map_free(&res);
-
     return plist;
 }
