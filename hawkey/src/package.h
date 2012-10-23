@@ -6,8 +6,8 @@ extern "C" {
 #endif
 
 /* libsolv */
-#include "solv/pool.h"
-#include "solv/solvable.h"
+#include <solv/pool.h>
+#include <solv/solvable.h>
 
 /* hawkey */
 #include "types.h"

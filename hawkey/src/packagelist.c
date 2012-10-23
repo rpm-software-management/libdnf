@@ -1,10 +1,10 @@
 #include "assert.h"
 
 // libsolv
-#include "solv/pool.h"
-#include "solv/repo.h"
-#include "solv/queue.h"
-#include "solv/util.h"
+#include <solv/pool.h>
+#include <solv/repo.h>
+#include <solv/queue.h>
+#include <solv/util.h>
 
 // hawkey
 #include "packagelist.h"

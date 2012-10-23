@@ -10,10 +10,10 @@
 #include <wordexp.h>
 
 // libsolv
-#include "solv/chksum.h"
-#include "solv/evr.h"
-#include "solv/solver.h"
-#include "solv/solverdebug.h"
+#include <solv/chksum.h>
+#include <solv/evr.h>
+#include <solv/solver.h>
+#include <solv/solverdebug.h>
 
 // hawkey
 #include "iutil.h"

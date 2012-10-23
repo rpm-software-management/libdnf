@@ -2,10 +2,10 @@
 #define HY_IUTIL_H
 
 // libsolv
-#include "solv/queue.h"
-#include "solv/repo.h"
-#include "solv/rules.h"
-#include "solv/transaction.h"
+#include <solv/queue.h>
+#include <solv/repo.h>
+#include <solv/rules.h>
+#include <solv/transaction.h>
 
 // hawkey
 #include "packagelist.h"

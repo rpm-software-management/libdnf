@@ -3,7 +3,7 @@
 #include <stddef.h>
 
 // libsolv
-#include "solv/util.h"
+#include <solv/util.h>
 
 // hawkey
 #include "src/errno.h"

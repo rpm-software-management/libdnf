@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 /* libsolv */
-#include "solv/queue.h"
+#include <solv/queue.h>
 
 /* hawkey */
 #include "package.h"

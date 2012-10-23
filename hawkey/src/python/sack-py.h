@@ -1,7 +1,10 @@
 #ifndef SACK_PY_H
 #define SACK_PY_H
 
-#include "solv/pooltypes.h"
+// libsolv
+#include <solv/pooltypes.h>
+
+// hawkey
 #include "src/types.h"
 
 extern PyTypeObject sack_Type;

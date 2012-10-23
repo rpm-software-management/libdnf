@@ -6,8 +6,8 @@ extern "C" {
 #endif
 
 /* libsolv */
-#include "solv/queue.h"
-#include "solv/transaction.h"
+#include <solv/queue.h>
+#include <solv/transaction.h>
 
 /* hawkey */
 #include "package.h"

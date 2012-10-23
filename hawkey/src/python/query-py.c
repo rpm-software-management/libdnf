@@ -1,7 +1,7 @@
 #include <Python.h>
 
 // libsolv
-#include "solv/util.h"
+#include <solv/util.h>
 
 // hawkey
 #include "src/query.h"

@@ -2,7 +2,7 @@
 #define HY_SACK_H
 
 /* libsolv */
-#include "solv/pool.h"
+#include <solv/pool.h>
 
 /* hawkey */
 #include "repo.h"

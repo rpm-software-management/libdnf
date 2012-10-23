@@ -2,10 +2,10 @@
 #include <stdlib.h>
 
 //libsolv
-#include "solv/evr.h"
-#include "solv/pool.h"
-#include "solv/repo.h"
-#include "solv/util.h"
+#include <solv/evr.h>
+#include <solv/pool.h>
+#include <solv/repo.h>
+#include <solv/util.h>
 
 // hawkey
 #include "iutil.h"

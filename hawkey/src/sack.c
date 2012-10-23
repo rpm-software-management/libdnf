@@ -10,18 +10,18 @@
 #include <unistd.h>
 
 // libsolv
-#include "solv/pool.h"
-#include "solv/poolarch.h"
-#include "solv/repo.h"
-#include "solv/repo_deltainfoxml.h"
-#include "solv/repo_repomdxml.h"
-#include "solv/repo_rpmmd.h"
-#include "solv/repo_rpmdb.h"
-#include "solv/repo_solv.h"
-#include "solv/repo_write.h"
-#include "solv/solv_xfopen.h"
-#include "solv/solver.h"
-#include "solv/solverdebug.h"
+#include <solv/pool.h>
+#include <solv/poolarch.h>
+#include <solv/repo.h>
+#include <solv/repo_deltainfoxml.h>
+#include <solv/repo_repomdxml.h>
+#include <solv/repo_rpmmd.h>
+#include <solv/repo_rpmdb.h>
+#include <solv/repo_solv.h>
+#include <solv/repo_write.h>
+#include <solv/solv_xfopen.h>
+#include <solv/solver.h>
+#include <solv/solverdebug.h>
 
 // hawkey
 #include "errno.h"

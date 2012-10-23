@@ -5,8 +5,8 @@
 #include <wordexp.h>
 
 // libsolv
-#include "solv/repo_rpmdb.h"
-#include "solv/solver.h"
+#include <solv/repo_rpmdb.h>
+#include <solv/solver.h>
 
 // hawkey
 #include "repo.h"

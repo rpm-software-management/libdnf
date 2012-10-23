@@ -2,11 +2,11 @@
 #include <string.h>
 
 // libsolv
-#include "solv/bitmap.h"
-#include "solv/evr.h"
-#include "solv/repo.h"
-#include "solv/solver.h"
-#include "solv/util.h"
+#include <solv/bitmap.h>
+#include <solv/evr.h>
+#include <solv/repo.h>
+#include <solv/solver.h>
+#include <solv/util.h>
 
 // hawkey
 #include "errno.h"
