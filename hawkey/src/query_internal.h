@@ -9,9 +9,16 @@ union _Match {
     int num;
 };
 
+enum _match_type {
+    _HY_VOID,
+    _HY_STR,
+    _HY_NUM
+};
+
 struct _Filter {
     int filter_type;
     int keyname;
+    int match_type;
     union _Match *matches;
     int nmatches;
     char *evr;

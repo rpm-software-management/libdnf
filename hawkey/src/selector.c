@@ -17,6 +17,7 @@ replace_filter(struct _Filter **fp, int keyname, int cmp_type, const char *match
     struct _Filter *f = *fp;
 
     f->keyname = keyname;
+    f->match_type = _HY_STR;
     f->filter_type = cmp_type;
     f->matches[0].str = solv_strdup(match);
 }
