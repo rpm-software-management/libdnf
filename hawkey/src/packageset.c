@@ -21,8 +21,8 @@ static const unsigned char _BitCountLookup[256] =
     B6(0), B6(1), B6(1), B6(2)
 };
 
-static int
-map_index2pos(Map *map, unsigned index)
+static Id
+map_index2id(Map *map, unsigned index)
 {
     unsigned char *ti = map->map;
     unsigned char *end = ti + map->size;
@@ -36,7 +36,7 @@ map_index2pos(Map *map, unsigned index)
 	    ti++;
 	    continue;
 	}
-	int total = (ti - map->map) << 3;
+	Id total = (ti - map->map) << 3;
 	for (unsigned char byte = *ti ; !(byte & 0x01); byte >>= 1)
 	    ++total;
 	return total;
@@ -83,10 +83,10 @@ hy_packageset_count(HyPackageSet pset)
 HyPackage
 hy_packageset_get_clone(HyPackageSet pset, int index)
 {
-    int pos = map_index2pos(&pset->map, index);
-    if (pos < 0)
+    Id id = map_index2id(&pset->map, index);
+    if (id < 0)
 	return NULL;
-    return package_create(sack_pool(pset->sack), pos);
+    return package_create(sack_pool(pset->sack), id);
 }
 
 int
