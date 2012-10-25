@@ -8,6 +8,7 @@ extern "C" {
 #include "types.h"
 
 HyPackageSet hy_packageset_create(HySack sack);
+HyPackageSet hy_packageset_clone(HyPackageSet pset);
 void hy_packageset_free(HyPackageSet pset);
 void hy_packageset_add(HyPackageSet pset, HyPackage pkg);
 unsigned hy_packageset_count(HyPackageSet pset);

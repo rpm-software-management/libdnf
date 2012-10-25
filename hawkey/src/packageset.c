@@ -53,6 +53,15 @@ hy_packageset_create(HySack sack)
     return pset;
 }
 
+HyPackageSet
+hy_packageset_clone(HyPackageSet pset)
+{
+    HyPackageSet new = solv_malloc(sizeof(*new));
+    memcpy(new, pset, sizeof(*pset));
+    map_init_clone(&new->map, &pset->map);
+    return new;
+}
+
 void
 hy_packageset_free(HyPackageSet pset)
 {
