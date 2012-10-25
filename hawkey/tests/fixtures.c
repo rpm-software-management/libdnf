@@ -42,6 +42,12 @@ setup_with(HySack sack, ...)
 }
 
 void
+fixture_empty(void)
+{
+    create_ut_sack();
+}
+
+void
 fixture_greedy_only(void)
 {
     HySack sack = create_ut_sack();

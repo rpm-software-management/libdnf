@@ -548,7 +548,7 @@ END_TEST
 Suite *
 goal_suite(void)
 {
-    Suite *s = suite_create("HyGoal");
+    Suite *s = suite_create("Goal");
     TCase *tc;
 
     tc = tcase_create("Core");

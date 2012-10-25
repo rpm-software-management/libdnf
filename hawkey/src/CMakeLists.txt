@@ -4,6 +4,7 @@ SET (hawkey_SRCS
     iutil.c
     package.c
     packagelist.c
+    packageset.c
     query.c
     repo.c
     sack.c
@@ -31,6 +32,7 @@ SET(HAWKEY_headers
     goal.h
     package.h
     packagelist.h
+    packageset.h
     query.h
     repo.h
     sack.h

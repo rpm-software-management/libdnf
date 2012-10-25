@@ -18,5 +18,9 @@ void sack_make_provides_ready(HySack sack);
 void sack_log(HySack sack, int level, const char *format, ...);
 void sack_same_names(HySack sack, Id name, Id arch, Queue *same);
 static inline Pool *sack_pool(HySack sack) { return sack->pool; }
+static inline Id sack_last_solvable(HySack sack)
+{
+    return sack_pool(sack)->nsolvables - 1;
+}
 
 #endif // HY_SACK_INTERNAL_H
