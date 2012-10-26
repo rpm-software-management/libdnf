@@ -133,6 +133,7 @@ init_hawkey(void)
     PyModule_AddIntConstant(m, "PKG_DESCRIPTION", HY_PKG_DESCRIPTION);
     PyModule_AddIntConstant(m, "PKG_EPOCH", HY_PKG_EPOCH);
     PyModule_AddIntConstant(m, "PKG_NAME", HY_PKG_NAME);
+    PyModule_AddIntConstant(m, "PKG_OBSOLETES", HY_PKG_OBSOLETES);
     PyModule_AddIntConstant(m, "PKG_URL", HY_PKG_URL);
     PyModule_AddIntConstant(m, "PKG_ARCH", HY_PKG_ARCH);
     PyModule_AddIntConstant(m, "PKG_EVR", HY_PKG_EVR);

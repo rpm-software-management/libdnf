@@ -23,6 +23,7 @@ _QUERY_KEYNAME_MAP = {
     'description' : _hawkey.PKG_DESCRIPTION,
     'epoch'	: _hawkey.PKG_EPOCH,
     'name'	: _hawkey.PKG_NAME,
+    'obsoletes'	: _hawkey.PKG_OBSOLETES,
     'url'	: _hawkey.PKG_URL,
     'arch'	: _hawkey.PKG_ARCH,
     'evr'	: _hawkey.PKG_EVR,
@@ -153,7 +154,9 @@ def _parse_filter_args(flags, dct):
             raise ValueException("unrecognized flag: %s" % flag)
         filter_flags |= flag
     for (k, match) in dct.items():
-        if type(match) in types.StringTypes:
+        if isinstance(match, Query):
+            pass
+        elif type(match) in types.StringTypes:
             match = _encode(match)
         elif isinstance(match, collections.Iterable):
             match = map(_encode, match)

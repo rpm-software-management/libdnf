@@ -5,6 +5,7 @@
 
 // hawkey
 #include "src/packagelist.h"
+#include "src/packageset.h"
 #include "src/query.h"
 
 // pyhawkey
@@ -21,15 +22,23 @@ typedef struct {
     PyObject *sack;
 } _QueryObject;
 
-int
-query_converter(PyObject *o, HyQuery *query_ptr)
+HyQuery
+queryFromPyObject(PyObject *o)
 {
     if (!PyType_IsSubtype(o->ob_type, &query_Type)) {
 	PyErr_SetString(PyExc_TypeError, "Expected a Query object.");
-	return 0;
+	return NULL;
     }
-    *query_ptr = ((_QueryObject *)o)->query;
+    return ((_QueryObject *)o)->query;
+}
 
+int
+query_converter(PyObject *o, HyQuery *query_ptr)
+{
+    HyQuery query = queryFromPyObject(o);
+    if (query == NULL)
+	return 0;
+    *query_ptr = query;
     return 1;
 }
 
@@ -93,6 +102,15 @@ clear(_QueryObject *self, PyObject *unused)
 }
 
 static PyObject *
+raise_bad_filter(void)
+{
+    PyErr_SetString(HyExc_Query, "Invalid filter key or match type.");
+    return NULL;
+}
+
+
+
+static PyObject *
 filter(_QueryObject *self, PyObject *args)
 {
     key_t keyname;
@@ -125,10 +143,8 @@ filter(_QueryObject *self, PyObject *args)
     }
     if (PyString_Check(match)) {
 	cmatch = PyString_AsString(match);
-	if (hy_query_filter(self->query, keyname, filtertype, cmatch)) {
-	    PyErr_SetString(HyExc_Query, "Invalid filter key or match type.");
-	    return NULL;
-	}
+	if (hy_query_filter(self->query, keyname, filtertype, cmatch))
+	    return raise_bad_filter();
 	Py_RETURN_NONE;
     }
     if (PyInt_Check(match)) {
@@ -137,10 +153,21 @@ filter(_QueryObject *self, PyObject *args)
 	    PyErr_SetString(HyExc_Value, "Numeric argument out of range.");
 	    return NULL;
 	}
-	if (hy_query_filter_num(self->query, keyname, filtertype, val)) {
-	    PyErr_SetString(HyExc_Query, "Invalid filter key or match type.");
-	    return NULL;
-	}
+	if (hy_query_filter_num(self->query, keyname, filtertype, val))
+	    return raise_bad_filter();
+	Py_RETURN_NONE;
+    }
+    if (queryObject_Check(match)) {
+	if (filtertype != HY_EQ)
+	    return raise_bad_filter();
+
+	HyQuery target = queryFromPyObject(match);
+	HyPackageSet pset = hy_query_run_set(target);
+	int ret = hy_query_filter_rel_package_in(self->query, keyname, pset);
+
+	hy_packageset_free(pset);
+	if (ret)
+	    return raise_bad_filter();
 	Py_RETURN_NONE;
     }
     if (PySequence_Check(match)) {
