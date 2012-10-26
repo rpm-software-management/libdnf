@@ -162,8 +162,8 @@ END_TEST
 
 START_TEST(test_goal_install_selector_err)
 {
-    // Test that using the hy_goal_*_query() methods returns HY_E_QUERY for
-    // queries invalid in this context.
+    // Test that using the hy_goal_*_selector() methods returns an error for
+    // selectors invalid in this context.
 
     HySelector sltr;
     HyGoal goal = hy_goal_create(test_globals.sack);

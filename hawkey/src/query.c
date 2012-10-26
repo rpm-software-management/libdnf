@@ -756,7 +756,7 @@ int
 hy_query_filter(HyQuery q, int keyname, int filter_type, const char *match)
 {
     if (!valid_filter_str(keyname, filter_type))
-	return 1;
+	return HY_E_QUERY;
     clear_result(q);
 
     struct _Filter *filterp = query_add_filter(q, 1);
@@ -772,7 +772,7 @@ hy_query_filter_in(HyQuery q, int keyname, int filter_type,
 		   const char **matches)
 {
     if (!valid_filter_str(keyname, filter_type))
-	return 1;
+	return HY_E_QUERY;
     clear_result(q);
 
     const unsigned count = count_nullt_array(matches);
@@ -790,7 +790,7 @@ int
 hy_query_filter_num(HyQuery q, int keyname, int filter_type, int match)
 {
     if (!valid_filter_num(keyname, filter_type))
-	return 1;
+	return HY_E_QUERY;
     clear_result(q);
 
     struct _Filter *filterp = query_add_filter(q, 1);
@@ -806,7 +806,7 @@ hy_query_filter_num_in(HyQuery q, int keyname, int filter_type, int nmatches,
 		       const int *matches)
 {
     if (!valid_filter_num(keyname, filter_type))
-	return 1;
+	return HY_E_QUERY;
     clear_result(q);
 
     struct _Filter *filterp = query_add_filter(q, nmatches);
@@ -867,7 +867,7 @@ int
 hy_query_filter_rel_package_in(HyQuery q, int keyname, const HyPackageSet pset)
 {
     if (!valid_filter_pkg(keyname))
-	return HY_E_OP;
+	return HY_E_QUERY;
     clear_result(q);
 
     struct _Filter *filterp = query_add_filter(q, 1);
