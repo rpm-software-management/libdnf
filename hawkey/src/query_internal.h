@@ -5,14 +5,16 @@
 #include "query.h"
 
 union _Match {
+    HyPackageSet pset;
     char *str;
     int num;
 };
 
 enum _match_type {
     _HY_VOID,
+    _HY_NUM,
+    _HY_PKG,
     _HY_STR,
-    _HY_NUM
 };
 
 struct _Filter {

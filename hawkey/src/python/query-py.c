@@ -4,6 +4,7 @@
 #include <solv/util.h>
 
 // hawkey
+#include "src/packagelist.h"
 #include "src/query.h"
 
 // pyhawkey

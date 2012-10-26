@@ -13,6 +13,8 @@
 #include "iutil.h"
 #include "query_internal.h"
 #include "package_internal.h"
+#include "packagelist.h"
+#include "packageset_internal.h"
 #include "sack_internal.h"
 
 struct _HyQuery {
@@ -33,6 +35,16 @@ match_type_num(int keyname) {
     switch (keyname) {
     case HY_PKG:
     case HY_PKG_EPOCH:
+	return 1;
+    default:
+	return 0;
+    }
+}
+
+static int
+match_type_pkg(int keyname) {
+    switch (keyname) {
+    case HY_PKG_OBSOLETES:
 	return 1;
     default:
 	return 0;
@@ -153,6 +165,14 @@ valid_filter_num(int keyname, int filter_type)
     }
 }
 
+static int
+valid_filter_pkg(int keyname)
+{
+    if (!match_type_pkg(keyname))
+	return 0;
+    return 1;
+}
+
 struct _Filter *
 filter_create(int nmatches)
 {
@@ -164,9 +184,17 @@ filter_create(int nmatches)
 void
 filter_reinit(struct _Filter *f, int nmatches)
 {
-    if (f->nmatches && f->match_type == _HY_STR)
-	for (int m = 0; m < f->nmatches; ++m)
+    for (int m = 0; m < f->nmatches; ++m)
+	switch (f->match_type) {
+	case _HY_PKG:
+	    hy_packageset_free(f->matches[m].pset);
+	    break;
+	case _HY_STR:
 	    solv_free(f->matches[m].str);
+	    break;
+	default:
+	    break;
+	}
     solv_free(f->matches);
     f->match_type = _HY_VOID;
     if (nmatches > 0)
@@ -174,8 +202,7 @@ filter_reinit(struct _Filter *f, int nmatches)
     else
 	f->matches = NULL;
     f->nmatches = nmatches;
-    solv_free(f->evr);
-    f->evr = NULL;
+    f->evr = solv_free(f->evr);
 }
 
 void
@@ -352,6 +379,38 @@ filter_sourcerpm(HyQuery q, struct _Filter *f, Map *m)
 		MAPSET(m, id);
 	    solv_free(srcrpm);
 	    hy_package_free(pkg);
+	}
+    }
+}
+
+static void
+filter_obsoletes(HyQuery q, struct _Filter *f, Map *m)
+{
+    Pool *pool = sack_pool(q->sack);
+    int obsprovides = pool_get_flag(pool, POOL_FLAG_OBSOLETEUSESPROVIDES);
+    Map *target;
+
+    assert(f->match_type == _HY_PKG);
+    assert(f->nmatches == 1);
+    target = packageset_get_map(f->matches[0].pset);
+    sack_make_provides_ready(q->sack);
+    for (Id p = 1; p < pool->nsolvables; ++p) {
+	Solvable *s = pool_id2solvable(pool, p);
+	if (!s->repo)
+	    continue;
+	for (Id *r_id = s->repo->idarraydata + s->obsoletes; *r_id; ++r_id) {
+	    Id r, rr;
+
+	    FOR_PROVIDES(r, rr, *r_id) {
+		if (!MAPTST(target, r))
+		    continue;
+		assert(r != SYSTEMSOLVABLE);
+		Solvable *so = pool_id2solvable(pool, r);
+		if (!obsprovides && !pool_match_nevr(pool, so, *r_id))
+		    continue; /* only matching pkg names */
+		MAPSET(m, p);
+		break;
+	    }
 	}
     }
 }
@@ -580,6 +639,9 @@ compute(HyQuery q)
 	case HY_PKG_SOURCERPM:
 	    filter_sourcerpm(q, f, &m);
 	    break;
+	case HY_PKG_OBSOLETES:
+	    filter_obsoletes(q, f, &m);
+	    break;
 	case HY_PKG_PROVIDES:
 	    filter_providers(q, f, &m);
 	    break;
@@ -664,14 +726,20 @@ hy_query_clone(HyQuery q)
 	filterp->keyname = q->filters[i].keyname;
 	filterp->match_type = q->filters[i].match_type;
 	for (int j = 0; j < q->filters[i].nmatches; ++j) {
-	    char *copy;
+	    char *str_copy;
+	    HyPackageSet pset;
+
 	    switch (filterp->match_type) {
-	    case _HY_STR:
-		copy = solv_strdup(q->filters[i].matches[j].str);
-		filterp->matches[j].str = copy;
-		break;
 	    case _HY_NUM:
 		filterp->matches[j].num = q->filters[i].matches[j].num;
+		break;
+	    case _HY_PKG:
+		pset = q->filters[i].matches[j].pset;
+		filterp->matches[j].pset = hy_packageset_clone(pset);
+		break;
+	    case _HY_STR:
+		str_copy = solv_strdup(q->filters[i].matches[j].str);
+		filterp->matches[j].str = str_copy;
 		break;
 	    default:
 		assert(0);
@@ -795,6 +863,21 @@ hy_query_filter_requires(HyQuery q, int filter_type, const char *name, const cha
     return 0;
 }
 
+int
+hy_query_filter_rel_package_in(HyQuery q, int keyname, const HyPackageSet pset)
+{
+    if (!valid_filter_pkg(keyname))
+	return HY_E_OP;
+    clear_result(q);
+
+    struct _Filter *filterp = query_add_filter(q, 1);
+    filterp->filter_type = HY_EQ;
+    filterp->keyname = keyname;
+    filterp->match_type = _HY_PKG;
+    filterp->matches[0].pset = hy_packageset_clone(pset);
+    return 0;
+}
+
 /**
  * Narrows to only packages updating installed packages.
  *
@@ -852,4 +935,12 @@ hy_query_run(HyQuery q)
 	if (MAPTST(q->result, i))
 	    hy_packagelist_push(plist, package_create(pool, i));
     return plist;
+}
+
+HyPackageSet
+hy_query_run_set(HyQuery q)
+{
+    if (!q->result)
+	compute(q);
+    return packageset_from_bitmap(q->sack, q->result);
 }

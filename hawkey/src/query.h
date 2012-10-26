@@ -6,8 +6,6 @@ extern "C" {
 #endif
 
 /* hawkey */
-#include "packagelist.h"
-#include "sack.h"
 #include "types.h"
 
 HyQuery hy_query_create(HySack sack);
@@ -27,6 +25,8 @@ int hy_query_filter_provides(HyQuery q, int filter_type, const char *name,
 			     const char *evr);
 int hy_query_filter_requires(HyQuery q, int filter_type, const char *name,
 			     const char *evr);
+int hy_query_filter_rel_package_in(HyQuery q, int keyname,
+				   const HyPackageSet pset);
 
 /**
  * Filter packages that are named same as an installed package but lower version.
@@ -44,6 +44,8 @@ void hy_query_filter_latest(HyQuery q, int val);
 void hy_query_filter_obsoleting(HyQuery q, int val);
 
 HyPackageList hy_query_run(HyQuery q);
+HyPackageSet hy_query_run_set(HyQuery q);
+
 
 #ifdef __cplusplus
 }

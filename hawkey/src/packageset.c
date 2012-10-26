@@ -4,7 +4,7 @@
 
 // hawkey
 #include "package_internal.h"
-#include "packageset.h"
+#include "packageset_internal.h"
 #include "sack_internal.h"
 
 struct _HyPackageSet {
@@ -45,11 +45,27 @@ map_index2id(Map *map, unsigned index)
 }
 
 HyPackageSet
+packageset_from_bitmap(HySack sack, Map *m)
+{
+    HyPackageSet pset = solv_calloc(1, sizeof(*pset));
+    pset->sack = sack;
+    map_init_clone(&pset->map, m);
+    return pset;
+}
+
+
+Map *
+packageset_get_map(HyPackageSet pset)
+{
+    return &pset->map;
+}
+
+HyPackageSet
 hy_packageset_create(HySack sack)
 {
     HyPackageSet pset = solv_calloc(1, sizeof(*pset));
-    map_init(&pset->map, hy_sack_count(sack));
     pset->sack = sack;
+    map_init(&pset->map, hy_sack_count(sack));
     return pset;
 }
 

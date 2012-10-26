@@ -5,6 +5,7 @@
 
 // hawkey
 #include "src/query.h"
+#include "src/packageset.h"
 #include "src/sack_internal.h"
 #include "fixtures.h"
 #include "test_query.h"
@@ -494,6 +495,25 @@ START_TEST(test_filter_description)
 }
 END_TEST
 
+START_TEST(test_filter_obsoletes)
+{
+    HySack sack = test_globals.sack;
+    HyQuery q = hy_query_create(sack);
+    HyPackageSet pset = hy_packageset_create(sack); // empty
+
+    fail_if(hy_query_filter_rel_package_in(q, HY_PKG_OBSOLETES, pset));
+    fail_unless(query_count_results(q) == 0);
+    hy_query_clear(q);
+
+    hy_packageset_add(pset, by_name(sack, "penny"));
+    hy_query_filter_rel_package_in(q, HY_PKG_OBSOLETES, pset);
+    fail_unless(query_count_results(q) == 1);
+
+    hy_query_free(q);
+    hy_packageset_free(pset);
+}
+END_TEST
+
 START_TEST(test_filter_reponames)
 {
     HyQuery q;
@@ -564,6 +584,7 @@ query_suite(void)
     tcase_add_unchecked_fixture(tc, fixture_all, teardown);
     tcase_add_test(tc, test_filter_latest2);
     tcase_add_test(tc, test_filter_latest_archs);
+    tcase_add_test(tc, test_filter_obsoletes);
     tcase_add_test(tc, test_filter_reponames);
     suite_add_tcase(s, tc);
 
