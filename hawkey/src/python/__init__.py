@@ -39,7 +39,7 @@ _QUERY_KEYNAME_MAP = {
     'obsoleting' : _hawkey.PKG_OBSOLETING
 }
 
-_QUERY_FT_MAP = {
+_QUERY_CMP_MAP = {
     'eq' : _hawkey.EQ,
     'gt' : _hawkey.GT,
     'lt' : _hawkey.LT,
@@ -163,18 +163,18 @@ def _parse_filter_args(flags, dct):
         split = k.split("__", 1)
         if len(split) == 1:
             keyname=split[0]
-            filter_type = "eq"
+            cmp_type = "eq"
         elif len(split) == 2:
-            (keyname, filter_type) = split
+            (keyname, cmp_type) = split
         else:
             raise ValueError("keyword arguments given to filter() need be "
                              "in <key>__<comparison type>=<value> format")
         if not keyname in _QUERY_KEYNAME_MAP:
             raise ValueException("Unrecognized key name: %s" % keyname)
-        if not filter_type in _QUERY_FT_MAP:
-            raise ValueException("Unrecognized filter type: %s" % filter_type)
+        if not cmp_type in _QUERY_CMP_MAP:
+            raise ValueException("Unrecognized filter type: %s" % cmp_type)
         args.append((_QUERY_KEYNAME_MAP[keyname],
-                     _QUERY_FT_MAP[filter_type]|filter_flags,
+                     _QUERY_CMP_MAP[cmp_type]|filter_flags,
                      match))
     return args
 

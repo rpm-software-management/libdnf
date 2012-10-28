@@ -18,7 +18,7 @@ enum _match_type {
 };
 
 struct _Filter {
-    int filter_type;
+    int cmp_type;
     int keyname;
     int match_type;
     union _Match *matches;

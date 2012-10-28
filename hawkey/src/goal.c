@@ -385,7 +385,7 @@ filter_arch2job(HySack sack, const struct _Filter *f, Queue *job)
     if (f == NULL)
 	return 0; // it's OK when there's no arch spec
 
-    if (f->filter_type != HY_EQ)
+    if (f->cmp_type != HY_EQ)
 	return HY_E_SELECTOR;
     assert(f->nmatches == 1);
     if (job->count < 2)
@@ -422,7 +422,7 @@ filter_name2job(HySack sack, const struct _Filter *f, Queue *job)
     Id id;
     Dataiterator di;
 
-    switch (f->filter_type) {
+    switch (f->cmp_type) {
     case HY_EQ:
 	id = pool_str2id(pool, name, 0);
 	if (id)
