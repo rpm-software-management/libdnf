@@ -122,8 +122,7 @@ filter(_QueryObject *self, PyObject *args)
 	return NULL;
     if (keyname == HY_PKG_LATEST ||
 	keyname == HY_PKG_DOWNGRADES ||
-	keyname == HY_PKG_UPGRADES ||
-	keyname == HY_PKG_OBSOLETING) {
+	keyname == HY_PKG_UPGRADES) {
 	long val;
 
 	if (!PyInt_Check(match) || cmp_type != HY_EQ) {
@@ -135,10 +134,8 @@ filter(_QueryObject *self, PyObject *args)
 	    hy_query_filter_latest(self->query, val);
 	else if (keyname == HY_PKG_DOWNGRADES)
 	    hy_query_filter_downgrades(self->query, val);
-	else if (keyname == HY_PKG_UPGRADES)
-	    hy_query_filter_upgrades(self->query, val);
 	else
-	    hy_query_filter_obsoleting(self->query, val);
+	    hy_query_filter_upgrades(self->query, val);
 	Py_RETURN_NONE;
     }
     if (PyString_Check(match)) {

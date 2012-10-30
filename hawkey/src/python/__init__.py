@@ -36,7 +36,6 @@ _QUERY_KEYNAME_MAP = {
     'latest'	: _hawkey.PKG_LATEST,
     'downgrades' : _hawkey.PKG_DOWNGRADES,
     'upgrades'	: _hawkey.PKG_UPGRADES,
-    'obsoleting' : _hawkey.PKG_OBSOLETING
 }
 
 _QUERY_CMP_MAP = {

@@ -39,7 +39,6 @@ void hy_query_filter_downgrades(HyQuery q, int val);
  */
 void hy_query_filter_upgrades(HyQuery q, int val);
 void hy_query_filter_latest(HyQuery q, int val);
-void hy_query_filter_obsoleting(HyQuery q, int val);
 
 HyPackageList hy_query_run(HyQuery q);
 HyPackageSet hy_query_run_set(HyQuery q);

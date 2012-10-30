@@ -9,10 +9,11 @@
 #include <solv/solver.h>
 
 // hawkey
-#include "repo.h"
 #include "goal.h"
 #include "package_internal.h"
+#include "packageset.h"
 #include "query.h"
+#include "repo.h"
 #include "sack.h"
 #include "util.h"
 
@@ -139,8 +140,13 @@ static void updatables_query_name(HySack sack, const char *name)
 static void obsoletes(HySack sack)
 {
     HyQuery q = hy_query_create(sack);
+    hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    HyPackageSet installed_pkgs = hy_query_run_set(q);
+    hy_query_free(q);
 
-    hy_query_filter_obsoleting(q, 1);
+    q = hy_query_create(sack);
+    hy_query_filter_package_in(q, HY_PKG_OBSOLETES, HY_EQ, installed_pkgs);
+    hy_packageset_free(installed_pkgs);
     execute_print(sack, q, 1);
     hy_query_free(q);
 }

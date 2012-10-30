@@ -25,7 +25,6 @@ struct _HyQuery {
     int downgrades; /* 1 for "only downgrades for installed packages" */
     int updates; /* 1 for "only updates for installed packages" */
     int latest; /* 1 for "only the latest version per arch" */
-    int obsoleting; /* 1 for "only those obsoleting installed packages" */
 };
 
 #define BLOCK_SIZE 15
@@ -571,43 +570,6 @@ filter_latest(HyQuery q, Map *res)
 }
 
 static void
-filter_obsoleting(HyQuery q, Map *res)
-{
-    Pool *pool = sack_pool(q->sack);
-    int obsprovides = pool_get_flag(pool, POOL_FLAG_OBSOLETEUSESPROVIDES);
-    Id p, *pp;
-    Solvable *s, *so;
-    Map obsoleting;
-
-    assert(pool->installed);
-    map_init(&obsoleting, pool->nsolvables);
-    sack_make_provides_ready(q->sack);
-    for (p = 1; p < pool->nsolvables; ++p) {
-	if (!MAPTST(res, p))
-	    continue;
-	s = pool_id2solvable(pool, p);
-	if (!s->repo)
-	    continue;
-	for (pp = s->repo->idarraydata + s->obsoletes; *pp; ++pp) {
-	    Id r, rr;
-
-	    FOR_PROVIDES(r, rr, *pp) {
-		assert(r != SYSTEMSOLVABLE);
-		so = pool_id2solvable(pool, r);
-		if (!obsprovides && !pool_match_nevr(pool, so, *pp))
-		    continue; /* only matching pkg names */
-		if (so->repo != pool->installed)
-		    continue;
-		MAPSET(&obsoleting, p);
-		break;
-	    }
-	}
-    }
-    map_and(res, &obsoleting);
-    map_free(&obsoleting);
-}
-
-static void
 compute(HyQuery q)
 {
     Pool *pool = sack_pool(q->sack);
@@ -675,8 +637,6 @@ compute(HyQuery q)
 	filter_updown(q, 0, q->result);
     if (q->latest)
 	filter_latest(q, q->result);
-    if (q->obsoleting)
-	filter_obsoleting(q, q->result);
 }
 
 static void
@@ -725,7 +685,6 @@ hy_query_clone(HyQuery q)
     qn->downgrades = q->downgrades;
     qn->updates = q->updates;
     qn->latest = q->latest;
-    qn->obsoleting = q->obsoleting;
 
     for (int i = 0; i < q->nfilters; ++i) {
 	struct _Filter *filterp = query_add_filter(qn, q->filters[i].nmatches);
@@ -903,17 +862,6 @@ hy_query_filter_latest(HyQuery q, int val)
 {
     clear_result(q);
     q->latest = val;
-}
-
-/**
- * Narrows to only the packages obsoleting installed packages.
- *
- */
-void
-hy_query_filter_obsoleting(HyQuery q, int val)
-{
-    clear_result(q);
-    q->obsoleting = val;
 }
 
 HyPackageList

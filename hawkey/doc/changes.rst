@@ -168,3 +168,17 @@ instance::
   hy_query_filter_package_in(q, HY_PKG_OBSOLETES, HY_EQ, pset)
 
 only leaves the pacakges obsoleting a package in ``pset`` a part of the result.
+
+Removed hy_query_filter_obsoleting()
+------------------------------------
+
+The new version of ``hy_query_filter_package_in()`` handles this now, see above.
+
+In Python, the following is no longer supported::
+
+  q = query.filter(obsoleting=1)
+
+The equivalent new syntax is::
+
+  installed = hawkey.Query(sack).filter(reponame=SYSTEM_REPO_NAME)
+  q = query.filter(obsoletes=installed)
