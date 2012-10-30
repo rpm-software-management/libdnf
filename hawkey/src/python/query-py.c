@@ -79,7 +79,7 @@ query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
 	self->sack = query_obj->sack;
 	self->query = hy_query_clone(query_obj->query);
     } else if (sack && query == Py_None && sackObject_Check(sack)) {
-	HySack  csack = sackFromPyObject(sack);
+	HySack csack = sackFromPyObject(sack);
 	assert(csack);
 	self->sack = sack;
 	self->query = hy_query_create(csack);
@@ -158,12 +158,10 @@ filter(_QueryObject *self, PyObject *args)
 	Py_RETURN_NONE;
     }
     if (queryObject_Check(match)) {
-	if (filtertype != HY_EQ)
-	    return raise_bad_filter();
-
 	HyQuery target = queryFromPyObject(match);
 	HyPackageSet pset = hy_query_run_set(target);
-	int ret = hy_query_filter_rel_package_in(self->query, keyname, pset);
+	int ret = hy_query_filter_package_in(self->query, keyname,
+					     filtertype, pset);
 
 	hy_packageset_free(pset);
 	if (ret)
@@ -171,34 +169,40 @@ filter(_QueryObject *self, PyObject *args)
 	Py_RETURN_NONE;
     }
     if (PySequence_Check(match)) {
-	if (keyname == HY_PKG) {
-	    HyPackageList plist = pylist_to_packagelist(match);
-	    if (plist == NULL)
-		return NULL;
+	switch (keyname) {
+	case HY_PKG:
+	case HY_PKG_OBSOLETES: {
+	    HySack sack = sackFromPyObject(self->sack);
+	    assert(sack);
+	    HyPackageSet pset = pyseq_to_packageset(match, sack);
 
-	    if (hy_query_filter_package_in(self->query, filtertype, plist)) {
-		PyErr_SetString(HyExc_Query, "Invalid filter key or match type.");
-		hy_packagelist_free(plist);
+	    if (pset == NULL)
 		return NULL;
-	    }
-	    hy_packagelist_free(plist);
-	    Py_RETURN_NONE;
+	    int ret = hy_query_filter_package_in(self->query, keyname,
+						 filtertype, pset);
+	    hy_packageset_free(pset);
+	    if (ret)
+		return raise_bad_filter();
+
+	    break;
 	}
-	const unsigned count = PySequence_Size(match);
-	const char *matches[count + 1];
-	matches[count] = NULL;
-	for (int i = 0; i < count; ++i) {
-	    PyObject *item = PySequence_GetItem(match, i);
-	    if (!PyString_Check(item)) {
-		PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
-		return NULL;
+	default: {
+	    const unsigned count = PySequence_Size(match);
+	    const char *matches[count + 1];
+	    matches[count] = NULL;
+	    for (int i = 0; i < count; ++i) {
+		PyObject *item = PySequence_GetItem(match, i);
+		if (!PyString_Check(item)) {
+		    PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
+		    return NULL;
+		}
+		Py_DECREF(item);
+		matches[i] = PyString_AsString(item);
 	    }
-	    Py_DECREF(item);
-	    matches[i] = PyString_AsString(item);
+	    if (hy_query_filter_in(self->query, keyname, filtertype, matches))
+		return raise_bad_filter();
+	    break;
 	}
-	if (hy_query_filter_in(self->query, keyname, filtertype, matches)) {
-	    PyErr_SetString(HyExc_Query, "Invalid filter key or match type.");
-	    return NULL;
 	}
 	Py_RETURN_NONE;
     }

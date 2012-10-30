@@ -3,6 +3,7 @@
 // hawkey
 #include "src/package_internal.h"
 #include "src/packagelist.h"
+#include "src/packageset.h"
 #include "iutil-py.h"
 #include "package-py.h"
 #include "sack-py.h"
@@ -42,7 +43,7 @@ packagelist_to_pylist(HyPackageList plist, PyObject *sack)
 }
 
 HyPackageList
-pylist_to_packagelist(PyObject *sequence)
+pyseq_to_packagelist(PyObject *sequence)
 {
     HyPackageList plist = hy_packagelist_create();
 
@@ -65,6 +66,31 @@ pylist_to_packagelist(PyObject *sequence)
     hy_packagelist_free(plist);
     return NULL;
 }
+
+HyPackageSet
+pyseq_to_packageset(PyObject *sequence, HySack sack)
+{
+    HyPackageSet pset = hy_packageset_create(sack);
+    assert(PySequence_Check(sequence));
+
+    const unsigned count = PySequence_Size(sequence);
+    for (int i = 0; i < count; ++i) {
+	PyObject *item = PySequence_GetItem(sequence, i);
+	if (item == NULL)
+	    goto fail;
+	HyPackage pkg = packageFromPyObject(item);
+	Py_DECREF(item);
+	if (pkg == NULL)
+	    goto fail;
+	hy_packageset_add(pset, package_clone(pkg));
+    }
+
+    return pset;
+ fail:
+    hy_packageset_free(pset);
+    return NULL;
+}
+
 
 PyObject *
 strlist_to_pylist(const char **slist)

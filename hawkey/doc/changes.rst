@@ -154,3 +154,17 @@ Instead use::
 Or a convenience notation::
 
   goal.install(name="gimp")
+
+Changes in 0.3.1
+================
+
+Query: ``hy_query_filter_package_in()`` takes a new parameter
+-------------------------------------------------------------
+
+``keyname`` parameter was added to the function signature. The new parameter
+allows filtering by a specific relation to the resulting packages, for
+instance::
+
+  hy_query_filter_package_in(q, HY_PKG_OBSOLETES, HY_EQ, pset)
+
+only leaves the pacakges obsoleting a package in ``pset`` a part of the result.

@@ -434,10 +434,25 @@ pool_split_evr(Pool *pool, const char *evr_c, char **epoch, char **version,
     *release = r;
 }
 
-int dump_jobqueue(Pool *pool, Queue *job)
+int
+dump_jobqueue(Pool *pool, Queue *job)
 {
     for (int i = 0; i < job->count; i+=2)
 	    printf("\t%s\n", pool_job2str(pool, job->elements[i],
 					  job->elements[i+1], 0));
     return job->count;
+}
+
+int
+dump_map(Pool *pool, Map *m)
+{
+    unsigned c = 0;
+    printf("(size: %d) ", m->size);
+    for (Id id = 0; id < m->size << 3; ++id)
+	if (MAPTST(m, id)) {
+	    c++;
+	    printf("%d:", id);
+	}
+    printf("\n");
+    return c;
 }

@@ -226,23 +226,23 @@ END_TEST
 
 START_TEST(test_query_pkg)
 {
-    HyPackageList plist;
+    HyPackageSet pset;
     HyQuery q, q2;
 
     // setup
     q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
-    plist = hy_query_run(q);
+    pset = hy_query_run_set(q);
     hy_query_free(q);
-    fail_unless(hy_packagelist_count(plist), 2);
+    fail_unless(hy_packageset_count(pset), 2);
 
     // use hy_query_filter_package_in():
     q = hy_query_create(test_globals.sack);
     // check validation works:
-    fail_unless(hy_query_filter_package_in(q, HY_GT, plist));
+    fail_unless(hy_query_filter_package_in(q, HY_PKG, HY_GT, pset));
     // add the filter:
-    fail_if(hy_query_filter_package_in(q, HY_EQ, plist));
-    hy_packagelist_free(plist);
+    fail_if(hy_query_filter_package_in(q, HY_PKG, HY_EQ, pset));
+    hy_packageset_free(pset);
 
     // cloning must work
     q2 = hy_query_clone(q);
@@ -251,13 +251,15 @@ START_TEST(test_query_pkg)
 
     // filter on
     hy_query_filter_latest(q2, 1);
-    plist = hy_query_run(q2);
-    fail_unless(hy_packagelist_count(plist) == 1);
-    char *nvra = hy_package_get_nvra(hy_packagelist_get(plist, 0));
+    pset = hy_query_run_set(q2);
+    fail_unless(hy_packageset_count(pset) == 1);
+    HyPackage pkg = hy_packageset_get_clone(pset, 0);
+    char *nvra = hy_package_get_nvra(pkg);
     ck_assert_str_eq(nvra, "jay-6.0-0.x86_64");
     solv_free(nvra);
+    hy_package_free(pkg);
 
-    hy_packagelist_free(plist);
+    hy_packageset_free(pset);
     hy_query_free(q2);
 }
 END_TEST
@@ -501,12 +503,12 @@ START_TEST(test_filter_obsoletes)
     HyQuery q = hy_query_create(sack);
     HyPackageSet pset = hy_packageset_create(sack); // empty
 
-    fail_if(hy_query_filter_rel_package_in(q, HY_PKG_OBSOLETES, pset));
+    fail_if(hy_query_filter_package_in(q, HY_PKG_OBSOLETES, HY_EQ, pset));
     fail_unless(query_count_results(q) == 0);
     hy_query_clear(q);
 
     hy_packageset_add(pset, by_name(sack, "penny"));
-    hy_query_filter_rel_package_in(q, HY_PKG_OBSOLETES, pset);
+    hy_query_filter_package_in(q, HY_PKG_OBSOLETES, HY_EQ, pset);
     fail_unless(query_count_results(q) == 1);
 
     hy_query_free(q);

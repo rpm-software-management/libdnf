@@ -7,6 +7,7 @@
 // hawkey
 #include "packageset.h"
 
+unsigned map_count(Map *m);
 HyPackageSet packageset_from_bitmap(HySack sack, Map *m);
 Map *packageset_get_map(HyPackageSet pset);
 

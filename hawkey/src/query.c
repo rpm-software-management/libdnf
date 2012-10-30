@@ -33,7 +33,6 @@ struct _HyQuery {
 static int
 match_type_num(int keyname) {
     switch (keyname) {
-    case HY_PKG:
     case HY_PKG_EPOCH:
 	return 1;
     default:
@@ -44,6 +43,7 @@ match_type_num(int keyname) {
 static int
 match_type_pkg(int keyname) {
     switch (keyname) {
+    case HY_PKG:
     case HY_PKG_OBSOLETES:
 	return 1;
     default:
@@ -166,11 +166,11 @@ valid_filter_num(int keyname, int cmp_type)
 }
 
 static int
-valid_filter_pkg(int keyname)
+valid_filter_pkg(int keyname, int cmp_type)
 {
     if (!match_type_pkg(keyname))
 	return 0;
-    return 1;
+    return cmp_type == HY_EQ;
 }
 
 struct _Filter *
@@ -250,8 +250,11 @@ filter_dataiterator(HyQuery q, struct _Filter *f, Map *m)
 static void
 filter_pkg(HyQuery q, struct _Filter *f, Map *m)
 {
-    for (int mi = 0; mi < f->nmatches; ++mi)
-	MAPSET(m, f->matches[mi].num);
+    assert(f->nmatches == 1);
+    assert(f->match_type == _HY_PKG);
+
+    map_free(m);
+    map_init_clone(m, packageset_get_map(f->matches[0].pset));
 }
 
 static void
@@ -820,19 +823,19 @@ hy_query_filter_num_in(HyQuery q, int keyname, int cmp_type, int nmatches,
 }
 
 int
-hy_query_filter_package_in(HyQuery q, int cmp_type, const HyPackageList plist)
+hy_query_filter_package_in(HyQuery q, int keyname, int cmp_type,
+			   const HyPackageSet pset)
 {
-    const unsigned count = hy_packagelist_count(plist);
-    int *matches = solv_calloc(count, sizeof(int));
-    int i, ret;
-    HyPackage pkg;
-
+    if (!valid_filter_pkg(keyname, cmp_type))
+	return HY_E_QUERY;
     clear_result(q);
-    FOR_PACKAGELIST(pkg, plist, i)
-	matches[i] = package_id(pkg);
-    ret = hy_query_filter_num_in(q, HY_PKG, cmp_type, count, matches);
-    solv_free(matches);
-    return ret;
+
+    struct _Filter *filterp = query_add_filter(q, 1);
+    filterp->cmp_type = cmp_type;
+    filterp->keyname = keyname;
+    filterp->match_type = _HY_PKG;
+    filterp->matches[0].pset = hy_packageset_clone(pset);
+    return 0;
 }
 
 int
@@ -860,21 +863,6 @@ hy_query_filter_requires(HyQuery q, int cmp_type, const char *name, const char *
     filterq->match_type = _HY_STR;
     filterq->evr = solv_strdup(evr);
     filterq->matches[0].str = solv_strdup(name);
-    return 0;
-}
-
-int
-hy_query_filter_rel_package_in(HyQuery q, int keyname, const HyPackageSet pset)
-{
-    if (!valid_filter_pkg(keyname))
-	return HY_E_QUERY;
-    clear_result(q);
-
-    struct _Filter *filterp = query_add_filter(q, 1);
-    filterp->cmp_type = HY_EQ;
-    filterp->keyname = keyname;
-    filterp->match_type = _HY_PKG;
-    filterp->matches[0].pset = hy_packageset_clone(pset);
     return 0;
 }
 

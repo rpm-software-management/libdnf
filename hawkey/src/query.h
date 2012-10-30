@@ -19,14 +19,12 @@ int hy_query_filter_num(HyQuery q, int keyname, int cmp_type,
 			int match);
 int hy_query_filter_num_in(HyQuery q, int keyname, int cmp_type, int nmatches,
 			   const int *matches);
-int hy_query_filter_package_in(HyQuery q, int cmp_type,
-			       const HyPackageList plist);
+int hy_query_filter_package_in(HyQuery q, int keyname, int cmp_type,
+			       const HyPackageSet pset);
 int hy_query_filter_provides(HyQuery q, int cmp_type, const char *name,
 			     const char *evr);
 int hy_query_filter_requires(HyQuery q, int cmp_type, const char *name,
 			     const char *evr);
-int hy_query_filter_rel_package_in(HyQuery q, int keyname,
-				   const HyPackageSet pset);
 
 /**
  * Filter packages that are named same as an installed package but lower version.

@@ -44,6 +44,19 @@ map_index2id(Map *map, unsigned index)
     return -1;
 }
 
+unsigned
+map_count(Map *m)
+{
+    unsigned char *ti = m->map;
+    unsigned char *end = ti + m->size;
+    unsigned c = 0;
+
+    while (ti < end)
+	c += _BitCountLookup[*ti++];
+
+    return c;
+}
+
 HyPackageSet
 packageset_from_bitmap(HySack sack, Map *m)
 {
@@ -65,7 +78,7 @@ hy_packageset_create(HySack sack)
 {
     HyPackageSet pset = solv_calloc(1, sizeof(*pset));
     pset->sack = sack;
-    map_init(&pset->map, hy_sack_count(sack));
+    map_init(&pset->map, sack_pool(sack)->nsolvables);
     return pset;
 }
 
@@ -95,14 +108,7 @@ hy_packageset_add(HyPackageSet pset, HyPackage pkg)
 unsigned
 hy_packageset_count(HyPackageSet pset)
 {
-    unsigned char *ti = pset->map.map;
-    unsigned char *end = ti + pset->map.size;
-    unsigned c = 0;
-
-    while (ti < end)
-	c += _BitCountLookup[*ti++];
-
-    return c;
+    return map_count(&pset->map);
 }
 
 HyPackage
