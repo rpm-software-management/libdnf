@@ -96,6 +96,21 @@ START_TEST(test_get)
     hy_package_free(pkg0);
     hy_package_free(pkg9);
     hy_package_free(pkg_max);
+
+    HyPackage pkg8 = package_create(sack_pool(sack), 8);
+    HyPackage pkg11 = package_create(sack_pool(sack), 11);
+    hy_packageset_add(pset, pkg8);
+    hy_packageset_add(pset, pkg11);
+    pkg8 = hy_packageset_get_clone(pset, 1);
+    pkg9 = hy_packageset_get_clone(pset, 2);
+    pkg11 = hy_packageset_get_clone(pset, 3);
+    fail_unless(package_id(pkg8) == 8);
+    fail_unless(package_id(pkg9) == 9);
+    fail_unless(package_id(pkg11) == 11);
+
+    hy_package_free(pkg8);
+    hy_package_free(pkg9);
+    hy_package_free(pkg11);
 }
 END_TEST
 

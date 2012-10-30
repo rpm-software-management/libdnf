@@ -36,10 +36,16 @@ map_index2id(Map *map, unsigned index)
 	    ti++;
 	    continue;
 	}
-	Id total = (ti - map->map) << 3;
-	for (unsigned char byte = *ti ; !(byte & 0x01); byte >>= 1)
-	    ++total;
-	return total;
+	Id id = (ti - map->map) << 3;
+
+	index++;
+	for (unsigned char byte = *ti; index; byte >>= 1) {
+	    if ((byte & 0x01))
+		index--;
+	    if (index)
+		id++;
+	}
+	return id;
     }
     return -1;
 }
