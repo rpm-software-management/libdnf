@@ -114,11 +114,11 @@ static PyObject *
 filter(_QueryObject *self, PyObject *args)
 {
     key_t keyname;
-    int filtertype;
+    int cmp_type;
     PyObject *match;
     const char *cmatch;
 
-    if (!PyArg_ParseTuple(args, "iiO", &keyname, &filtertype, &match))
+    if (!PyArg_ParseTuple(args, "iiO", &keyname, &cmp_type, &match))
 	return NULL;
     if (keyname == HY_PKG_LATEST ||
 	keyname == HY_PKG_DOWNGRADES ||
@@ -126,7 +126,7 @@ filter(_QueryObject *self, PyObject *args)
 	keyname == HY_PKG_OBSOLETING) {
 	long val;
 
-	if (!PyInt_Check(match) || filtertype != HY_EQ) {
+	if (!PyInt_Check(match) || cmp_type != HY_EQ) {
 	    PyErr_SetString(PyExc_ValueError, "Invalid boolean filter query.");
 	    return NULL;
 	}
@@ -143,7 +143,7 @@ filter(_QueryObject *self, PyObject *args)
     }
     if (PyString_Check(match)) {
 	cmatch = PyString_AsString(match);
-	if (hy_query_filter(self->query, keyname, filtertype, cmatch))
+	if (hy_query_filter(self->query, keyname, cmp_type, cmatch))
 	    return raise_bad_filter();
 	Py_RETURN_NONE;
     }
@@ -153,7 +153,7 @@ filter(_QueryObject *self, PyObject *args)
 	    PyErr_SetString(HyExc_Value, "Numeric argument out of range.");
 	    return NULL;
 	}
-	if (hy_query_filter_num(self->query, keyname, filtertype, val))
+	if (hy_query_filter_num(self->query, keyname, cmp_type, val))
 	    return raise_bad_filter();
 	Py_RETURN_NONE;
     }
@@ -161,7 +161,7 @@ filter(_QueryObject *self, PyObject *args)
 	HyQuery target = queryFromPyObject(match);
 	HyPackageSet pset = hy_query_run_set(target);
 	int ret = hy_query_filter_package_in(self->query, keyname,
-					     filtertype, pset);
+					     cmp_type, pset);
 
 	hy_packageset_free(pset);
 	if (ret)
@@ -179,7 +179,7 @@ filter(_QueryObject *self, PyObject *args)
 	    if (pset == NULL)
 		return NULL;
 	    int ret = hy_query_filter_package_in(self->query, keyname,
-						 filtertype, pset);
+						 cmp_type, pset);
 	    hy_packageset_free(pset);
 	    if (ret)
 		return raise_bad_filter();
@@ -199,7 +199,7 @@ filter(_QueryObject *self, PyObject *args)
 		Py_DECREF(item);
 		matches[i] = PyString_AsString(item);
 	    }
-	    if (hy_query_filter_in(self->query, keyname, filtertype, matches))
+	    if (hy_query_filter_in(self->query, keyname, cmp_type, matches))
 		return raise_bad_filter();
 	    break;
 	}
