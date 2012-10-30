@@ -169,8 +169,8 @@ instance::
 
 only leaves the pacakges obsoleting a package in ``pset`` a part of the result.
 
-Removed hy_query_filter_obsoleting()
-------------------------------------
+Removed ``hy_query_filter_obsoleting()``
+----------------------------------------
 
 The new version of ``hy_query_filter_package_in()`` handles this now, see above.
 
