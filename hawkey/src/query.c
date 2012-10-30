@@ -616,7 +616,13 @@ compute(HyQuery q)
     q->result = solv_calloc(1, sizeof(Map));
     map_init(q->result, pool->nsolvables);
     map_setall(q->result);
+    MAPCLR(q->result, 0);
     MAPCLR(q->result, SYSTEMSOLVABLE);
+
+    // make sure the odd bits are cleared:
+    unsigned total_bits = q->result->size << 3;
+    for (int i = pool->nsolvables; i < total_bits; ++i)
+	MAPCLR(q->result, i);
 
     map_init(&m, pool->nsolvables);
     for (int i = 0; i < q->nfilters; ++i) {
@@ -678,9 +684,8 @@ clear_result(HyQuery q)
 {
     if (q->result) {
 	map_free(q->result);
-	solv_free(q->result);
+	q->result = solv_free(q->result);
     }
-    q->result = NULL;
 }
 
 

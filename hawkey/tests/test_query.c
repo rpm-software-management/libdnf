@@ -32,6 +32,20 @@ START_TEST(test_query_sanity)
 }
 END_TEST
 
+START_TEST(test_query_run_set_sanity)
+{
+    HySack sack = test_globals.sack;
+    HyQuery q = hy_query_create(sack);
+    HyPackageSet pset = hy_query_run_set(q);
+
+    // make sure we are testing with some odd bits in the underlying map:
+    fail_unless(TEST_EXPECT_SYSTEM_NSOLVABLES % 8);
+    fail_unless(hy_packageset_count(pset) == TEST_EXPECT_SYSTEM_NSOLVABLES);
+    hy_packageset_free(pset);
+    hy_query_free(q);
+}
+END_TEST
+
 START_TEST(test_query_clear)
 {
     HyQuery q;
@@ -550,6 +564,7 @@ query_suite(void)
     tc = tcase_create("Core");
     tcase_add_unchecked_fixture(tc, fixture_system_only, teardown);
     tcase_add_test(tc, test_query_sanity);
+    tcase_add_test(tc, test_query_run_set_sanity);
     tcase_add_test(tc, test_query_clear);
     tcase_add_test(tc, test_query_clone);
     tcase_add_test(tc, test_query_repo);
