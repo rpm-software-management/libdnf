@@ -34,6 +34,7 @@ _QUERY_KEYNAME_MAP = {
     'file'	: _hawkey.PKG_FILE,
     'reponame'	: _hawkey.PKG_REPONAME,
     'latest'	: _hawkey.PKG_LATEST,
+    'empty'	: _hawkey.PKG_EMPTY,
     'downgrades' : _hawkey.PKG_DOWNGRADES,
     'upgrades'	: _hawkey.PKG_UPGRADES,
 }

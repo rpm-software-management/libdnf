@@ -22,6 +22,7 @@ typedef int (*hy_solution_callback)(HyGoal goal, void *callback_data);
 
 enum _hy_key_name_e {
     HY_PKG,
+    HY_PKG_ALL,
     HY_PKG_ARCH,
     HY_PKG_DESCRIPTION,
     HY_PKG_EPOCH,

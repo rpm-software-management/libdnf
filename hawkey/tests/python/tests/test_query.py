@@ -48,7 +48,8 @@ class Query(base.TestCase):
 
     def test_kwargs_check(self):
         q = hawkey.Query(self.sack)
-        self.assertRaises(ValueError, q.filter, name="flying", upgrades="maracas")
+        self.assertRaises(hawkey.ValueException, q.filter,
+                          name="flying", upgrades="maracas")
 
     def test_kwargs(self):
         q = hawkey.Query(self.sack)
@@ -101,6 +102,12 @@ class Query(base.TestCase):
         self.assertIsNone(q.result)
         q2 = q.filter(evr="5.0-0")
         self.assertIsNone(q.result)
+
+    def test_empty(self):
+        q = hawkey.Query(self.sack).filter(empty=True)
+        self.assertLength(q, 0)
+        q = hawkey.Query(self.sack)
+        self.assertRaises(hawkey.ValueException, q.filter, empty=False)
 
     def test_epoch(self):
         q = hawkey.Query(self.sack).filter(epoch__gt=4)

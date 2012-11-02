@@ -72,6 +72,15 @@ START_TEST(test_query_clone)
 }
 END_TEST
 
+START_TEST(test_query_empty)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    fail_if(hy_query_filter_empty(q));
+    fail_unless(query_count_results(q) == 0);
+    hy_query_free(q);
+}
+END_TEST
+
 START_TEST(test_query_repo)
 {
     HyQuery q;
@@ -567,6 +576,7 @@ query_suite(void)
     tcase_add_test(tc, test_query_run_set_sanity);
     tcase_add_test(tc, test_query_clear);
     tcase_add_test(tc, test_query_clone);
+    tcase_add_test(tc, test_query_empty);
     tcase_add_test(tc, test_query_repo);
     tcase_add_test(tc, test_query_name);
     tcase_add_test(tc, test_query_evr);

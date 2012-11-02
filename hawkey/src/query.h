@@ -13,6 +13,7 @@ void hy_query_free(HyQuery q);
 void hy_query_clear(HyQuery q);
 HyQuery hy_query_clone(HyQuery q);
 int hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match);
+int hy_query_filter_empty(HyQuery q);
 int hy_query_filter_in(HyQuery q, int keyname, int cmp_type,
 			const char **matches);
 int hy_query_filter_num(HyQuery q, int keyname, int cmp_type,

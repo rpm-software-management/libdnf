@@ -257,6 +257,16 @@ filter_pkg(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
+filter_all(HyQuery q, struct _Filter *f, Map *m)
+{
+    assert(f->nmatches == 1);
+    assert(f->match_type == _HY_NUM);
+    assert(f->cmp_type == HY_EQ);
+    assert(f->matches[0].num == -1);
+    // just leaves m empty
+}
+
+static void
 filter_epoch(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
@@ -595,6 +605,9 @@ compute(HyQuery q)
 	case HY_PKG:
 	    filter_pkg(q, f, &m);
 	    break;
+	case HY_PKG_ALL:
+	    filter_all(q, f, &m);
+	    break;
 	case HY_PKG_EPOCH:
 	    filter_epoch(q, f, &m);
 	    break;
@@ -731,6 +744,17 @@ hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
     filterp->keyname = keyname;
     filterp->match_type = _HY_STR;
     filterp->matches[0].str = solv_strdup(match);
+    return 0;
+}
+
+int
+hy_query_filter_empty(HyQuery q)
+{
+    struct _Filter *filterp = query_add_filter(q, 1);
+    filterp->cmp_type = HY_EQ;
+    filterp->keyname = HY_PKG_ALL;
+    filterp->match_type = _HY_NUM;
+    filterp->matches[0].num = -1;
     return 0;
 }
 

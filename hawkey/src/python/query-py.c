@@ -120,17 +120,24 @@ filter(_QueryObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "iiO", &keyname, &cmp_type, &match))
 	return NULL;
-    if (keyname == HY_PKG_LATEST ||
-	keyname == HY_PKG_DOWNGRADES ||
+    if (keyname == HY_PKG_DOWNGRADES ||
+	keyname == HY_PKG_EMPTY ||
+	keyname == HY_PKG_LATEST ||
 	keyname == HY_PKG_UPGRADES) {
 	long val;
 
 	if (!PyInt_Check(match) || cmp_type != HY_EQ) {
-	    PyErr_SetString(PyExc_ValueError, "Invalid boolean filter query.");
+	    PyErr_SetString(HyExc_Value, "Invalid boolean filter query.");
 	    return NULL;
 	}
 	val = PyInt_AsLong(match);
-	if (keyname == HY_PKG_LATEST)
+	if (keyname == HY_PKG_EMPTY) {
+	    if (!val) {
+		PyErr_SetString(HyExc_Value, "Invalid boolean filter query.");
+		return NULL;
+	    }
+	    hy_query_filter_empty(self->query);
+	} else if (keyname == HY_PKG_LATEST)
 	    hy_query_filter_latest(self->query, val);
 	else if (keyname == HY_PKG_DOWNGRADES)
 	    hy_query_filter_downgrades(self->query, val);
