@@ -1,5 +1,6 @@
 // hawkey
 #include "src/query.h"
+#include "src/reldep.h"
 #include "src/util.h"
 #include "fixtures.h"
 #include "test_package.h"
@@ -83,6 +84,25 @@ START_TEST(test_no_sourcerpm)
 }
 END_TEST
 
+START_TEST(test_get_requires)
+{
+    HySack sack = test_globals.sack;
+    HyPackage pkg = by_name(sack, "flying");
+    HyReldepList reldeplist = hy_package_get_requires(pkg);
+
+    fail_unless(hy_reldeplist_count(reldeplist) == 1);
+    HyReldep reldep = hy_reldeplist_get_clone(reldeplist, 0);
+
+    char *depstr = hy_reldep_str(reldep);
+    ck_assert_str_eq(depstr, "P-lib >= 3");
+    hy_free(depstr);
+
+    hy_reldep_free(reldep);
+    hy_reldeplist_free(reldeplist);
+    hy_package_free(pkg);
+}
+END_TEST
+
 START_TEST(test_checksums)
 {
     HyPackage pkg = by_name(test_globals.sack, "mystery-devel");
@@ -161,6 +181,7 @@ package_suite(void)
     tcase_add_test(tc, test_identical);
     tcase_add_test(tc, test_versions);
     tcase_add_test(tc, test_no_sourcerpm);
+    tcase_add_test(tc, test_get_requires);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("WithRealRepo");

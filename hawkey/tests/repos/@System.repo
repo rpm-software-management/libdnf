@@ -10,7 +10,7 @@
 =Prv: P-lib = 3-3
 =Sum: in my ears
 =Pkg: flying 2 9 noarch
-=Req: P-lib
+=Req: P-lib >= 3
 =Pkg: jay 6.0 0 x86_64
 =Pkg: jay 5.0 0 x86_64
 =Pkg: baby 6:5.0 11 x86_64

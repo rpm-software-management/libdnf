@@ -6,6 +6,7 @@ SET (hawkey_SRCS
     packagelist.c
     packageset.c
     query.c
+    reldep.c
     repo.c
     sack.c
     selector.c
@@ -34,6 +35,7 @@ SET(HAWKEY_headers
     packagelist.h
     packageset.h
     query.h
+    reldep.h
     repo.h
     sack.h
     selector.h

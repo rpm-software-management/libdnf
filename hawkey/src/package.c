@@ -10,6 +10,7 @@
 // hawkey
 #include "iutil.h"
 #include "package_internal.h"
+#include "reldep_internal.h"
 
 /* internal */
 static Solvable *
@@ -280,6 +281,23 @@ unsigned long long
 hy_package_get_size(HyPackage pkg)
 {
     return lookup_num(pkg, SOLVABLE_DOWNLOADSIZE);
+}
+
+HyReldepList
+hy_package_get_requires(HyPackage pkg)
+{
+    Pool *pool = package_pool(pkg);
+    Solvable *s = get_solvable(pkg);
+    HyReldepList reldeplist;
+    Queue requires;
+
+    queue_init(&requires);
+    solvable_lookup_idarray(s, SOLVABLE_REQUIRES, &requires);
+    for (int i = 0; i < requires.count; ++i)
+	reldeplist = reldeplist_from_queue(pool, requires);
+
+    queue_free(&requires);
+    return reldeplist;
 }
 
 HyPackageDelta
