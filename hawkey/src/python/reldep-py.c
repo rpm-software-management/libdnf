@@ -28,6 +28,16 @@ new_reldep(PyObject *sack, Id r_id)
     return reldep;
 }
 
+HyReldep
+reldepFromPyObject(PyObject *o)
+{
+    if (!PyType_IsSubtype(o->ob_type, &reldep_Type)) {
+	PyErr_SetString(PyExc_TypeError, "Expected a Reldep object.");
+	return NULL;
+    }
+    return ((_ReldepObject*)o)->reldep;
+}
+
 static Id reldep_hash(_ReldepObject *self);
 
 static PyObject *

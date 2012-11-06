@@ -14,6 +14,7 @@
 #include "iutil-py.h"
 #include "package-py.h"
 #include "query-py.h"
+#include "reldep-py.h"
 #include "sack-py.h"
 
 typedef struct {
@@ -108,8 +109,6 @@ raise_bad_filter(void)
     return NULL;
 }
 
-
-
 static PyObject *
 filter(_QueryObject *self, PyObject *args)
 {
@@ -169,6 +168,13 @@ filter(_QueryObject *self, PyObject *args)
 
 	hy_packageset_free(pset);
 	if (ret)
+	    return raise_bad_filter();
+	Py_RETURN_NONE;
+    }
+    if (reldepObject_Check(match)) {
+	HyReldep reldep = reldepFromPyObject(match);
+	if (cmp_type != HY_EQ ||
+	    hy_query_filter_reldep(self->query, keyname, reldep))
 	    return raise_bad_filter();
 	Py_RETURN_NONE;
     }

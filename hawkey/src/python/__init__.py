@@ -24,6 +24,7 @@ _QUERY_KEYNAME_MAP = {
     'epoch'	: _hawkey.PKG_EPOCH,
     'name'	: _hawkey.PKG_NAME,
     'obsoletes'	: _hawkey.PKG_OBSOLETES,
+    'provides'	: _hawkey.PKG_PROVIDES,
     'url'	: _hawkey.PKG_URL,
     'arch'	: _hawkey.PKG_ARCH,
     'evr'	: _hawkey.PKG_EVR,

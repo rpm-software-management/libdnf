@@ -131,6 +131,16 @@ class Query(base.TestCase):
         q.filterm(latest=True)
         self.assertEqual(len(q), 1)
 
+    def test_reldep(self):
+        flying = base.by_name(self.sack, "flying")
+        requires = flying.requires
+        q = hawkey.Query(self.sack).filter(provides=requires[0])
+        self.assertEqual(len(q), 1)
+        self.assertEqual(str(q[0]), "penny-lib-4-1.x86_64")
+
+        self.assertRaises(hawkey.QueryException, q.filter,
+                          provides__gt=requires[0])
+
 class QueryUpdates(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
