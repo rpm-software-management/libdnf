@@ -69,6 +69,7 @@ REASON_USER = _hawkey.REASON_USER
 
 Package = _hawkey.Package
 Repo = _hawkey.Repo
+Reldep = _hawkey.Reldep
 Sack = _hawkey.Sack
 
 Exception = _hawkey.Exception

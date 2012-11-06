@@ -1,6 +1,10 @@
 #ifndef HY_RELDEP_INTERNAL_H
 #define HY_RELDEP_INTERNAL_H
 
+// libsolv
+#include <solv/pool.h>
+
+// hawkey
 #include "reldep.h"
 
 HyReldep reldep_create(Pool *pool, Id r_id);

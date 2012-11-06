@@ -4,8 +4,10 @@
 #include "src/package_internal.h"
 #include "src/packagelist.h"
 #include "src/packageset.h"
+#include "src/reldep_internal.h"
 #include "iutil-py.h"
 #include "package-py.h"
+#include "reldep-py.h"
 #include "sack-py.h"
 
 PyObject *
@@ -115,3 +117,31 @@ strlist_to_pylist(const char **slist)
     return NULL;
 }
 
+PyObject *
+reldeplist_to_pylist(const HyReldepList reldeplist, PyObject *sack)
+{
+    PyObject *list;
+    list = PyList_New(0);
+    if (list == NULL)
+	return NULL;
+
+    const int count = hy_reldeplist_count(reldeplist);
+    for (int i = 0; i < count; ++i) {
+	HyReldep creldep = hy_reldeplist_get_clone(reldeplist,  i);
+	PyObject *reldep = new_reldep(sack, reldep_id(creldep));
+
+	hy_reldep_free(creldep);
+	if (reldep == NULL)
+	    goto fail;
+
+	int rc = PyList_Append(list, reldep);
+	Py_DECREF(reldep);
+	if (rc == -1)
+	    goto fail;
+    }
+
+    return list;
+ fail:
+    Py_DECREF(list);
+    return NULL;
+}

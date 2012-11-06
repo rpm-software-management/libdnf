@@ -8,6 +8,7 @@
 #include "src/iutil.h"
 #include "src/package_internal.h"
 #include "src/packagelist.h"
+#include "src/reldep.h"
 #include "src/sack_internal.h"
 
 // pyhawkey
@@ -125,6 +126,18 @@ get_num(_PackageObject *self, void *closure)
 }
 
 static PyObject *
+get_reldep(_PackageObject *self, void *closure)
+{
+    HyReldepList (*func)(HyPackage) = (HyReldepList (*)(HyPackage))closure;
+    HyReldepList reldeplist = func(self->package);
+    assert(reldeplist);
+    PyObject *list = reldeplist_to_pylist(reldeplist, self->sack);
+    hy_reldeplist_free(reldeplist);
+
+    return list;
+}
+
+static PyObject *
 get_str(_PackageObject *self, void *closure)
 {
     const char *(*func)(HyPackage);
@@ -198,6 +211,8 @@ static PyGetSetDef package_getsetters[] = {
     {"medianr", (getter)get_num, NULL, NULL, (void *)hy_package_get_medianr},
     {"rpmdbid", (getter)get_num, NULL, NULL, (void *)hy_package_get_rpmdbid},
     {"size", (getter)get_num, NULL, NULL, (void *)hy_package_get_size},
+    {"requires",  (getter)get_reldep, NULL, NULL,
+     (void *)hy_package_get_requires},
     {NULL}			/* sentinel */
 };
 

@@ -11,6 +11,7 @@
 #include "goal-py.h"
 #include "package-py.h"
 #include "query-py.h"
+#include "reldep-py.h"
 #include "repo-py.h"
 #include "sack-py.h"
 #include "selector-py.h"
@@ -111,6 +112,11 @@ init_hawkey(void)
 	return;
     Py_INCREF(&query_Type);
     PyModule_AddObject(m, "Query", (PyObject *)&query_Type);
+    /* _hawkey.Reldep */
+    if (PyType_Ready(&reldep_Type) < 0)
+	return;
+    Py_INCREF(&reldep_Type);
+    PyModule_AddObject(m, "Reldep", (PyObject *)&reldep_Type);
     /* _hawkey.Selector */
     if (PyType_Ready(&selector_Type) < 0)
 	return;

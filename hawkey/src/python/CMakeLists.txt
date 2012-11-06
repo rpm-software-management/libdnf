@@ -21,6 +21,7 @@ SET (hawkeymodule_SRCS
     packagedelta-py.c
     query-py.c
     repo-py.c
+    reldep-py.c
     sack-py.c
     selector-py.c)
 
