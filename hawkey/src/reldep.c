@@ -27,6 +27,12 @@ reldep_create(Pool *pool, Id r_id)
     return reldep;
 }
 
+Id
+reldep_id(HyReldep reldep)
+{
+    return reldep->r_id;
+}
+
 HyReldepList
 reldeplist_from_queue(Pool *pool, Queue h)
 {
@@ -40,6 +46,12 @@ void
 hy_reldep_free(HyReldep reldep)
 {
     solv_free(reldep);
+}
+
+HyReldep
+hy_reldep_clone(HyReldep reldep)
+{
+    return reldep_create(reldep->pool, reldep->r_id);
 }
 
 char

@@ -6,6 +6,7 @@
 // hawkey
 #include "src/query.h"
 #include "src/packageset.h"
+#include "src/reldep.h"
 #include "src/sack_internal.h"
 #include "fixtures.h"
 #include "test_query.h"
@@ -473,6 +474,25 @@ START_TEST(test_downgrade)
 }
 END_TEST
 
+START_TEST(test_query_reldep)
+{
+    HySack sack = test_globals.sack;
+    HyPackage flying = by_name(sack, "flying");
+
+    HyReldepList reldeplist = hy_package_get_requires(flying);
+    HyReldep reldep = hy_reldeplist_get_clone(reldeplist, 0);
+
+    HyQuery q = hy_query_create(test_globals.sack);
+    fail_if(hy_query_filter_reldep(q, HY_PKG_PROVIDES, reldep));
+    fail_unless(query_count_results(q) == 3);
+
+    hy_reldep_free(reldep);
+    hy_reldeplist_free(reldeplist);
+    hy_package_free(flying);
+    hy_query_free(q);
+}
+END_TEST
+
 START_TEST(test_filter_files)
 {
     HyQuery q = hy_query_create(test_globals.sack);
@@ -600,10 +620,11 @@ query_suite(void)
     tcase_add_test(tc, test_filter_latest);
     suite_add_tcase(s, tc);
 
-    tc = tcase_create("OnlyMain");
+    tc = tcase_create("Main");
     tcase_add_unchecked_fixture(tc, fixture_with_main, teardown);
     tcase_add_test(tc, test_upgrade_already_installed);
     tcase_add_test(tc, test_downgrade);
+    tcase_add_test(tc, test_query_reldep);
     tcase_add_test(tc, test_query_requires);
     suite_add_tcase(s, tc);
 

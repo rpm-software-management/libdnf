@@ -15,6 +15,7 @@
 #include "package_internal.h"
 #include "packagelist.h"
 #include "packageset_internal.h"
+#include "reldep_internal.h"
 #include "sack_internal.h"
 
 struct _HyQuery {
@@ -44,6 +45,16 @@ match_type_pkg(int keyname) {
     switch (keyname) {
     case HY_PKG:
     case HY_PKG_OBSOLETES:
+	return 1;
+    default:
+	return 0;
+    }
+}
+
+static int
+match_type_reldep(int keyname) {
+    switch (keyname) {
+    case HY_PKG_PROVIDES:
 	return 1;
     default:
 	return 0;
@@ -172,6 +183,14 @@ valid_filter_pkg(int keyname, int cmp_type)
     return cmp_type == HY_EQ;
 }
 
+static int
+valid_filter_reldep(int keyname)
+{
+    if (!match_type_reldep(keyname))
+	return 0;
+    return 1;
+}
+
 struct _Filter *
 filter_create(int nmatches)
 {
@@ -190,6 +209,9 @@ filter_reinit(struct _Filter *f, int nmatches)
 	    break;
 	case _HY_STR:
 	    solv_free(f->matches[m].str);
+	    break;
+	case _HY_RELDEP:
+	    hy_reldep_free(f->matches[m].reldep);
 	    break;
 	default:
 	    break;
@@ -428,7 +450,21 @@ filter_obsoletes(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
-filter_providers(HyQuery q, struct _Filter *f, Map *m)
+filter_provides_reldep(HyQuery q, struct _Filter *f, Map *m)
+{
+    Pool *pool = sack_pool(q->sack);
+    Id r_id = reldep_id(f->matches[0].reldep);
+    Id p, pp;
+
+    assert(f->nmatches == 1);
+    sack_make_provides_ready(q->sack);
+
+    FOR_PROVIDES(p, pp, r_id)
+	MAPSET(m, p);
+}
+
+static void
+filter_provides_str(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
     Id id, id_evr, r, p, pp;
@@ -627,7 +663,12 @@ compute(HyQuery q)
 	    filter_obsoletes(q, f, &m);
 	    break;
 	case HY_PKG_PROVIDES:
-	    filter_providers(q, f, &m);
+	    if (f->match_type == _HY_RELDEP)
+		filter_provides_reldep(q, f, &m);
+	    else {
+		assert(f->match_type == _HY_STR);
+		filter_provides_str(q, f, &m);
+	    }
 	    break;
 	case HY_PKG_REQUIRES:
 	    filter_requires(q, f, &m);
@@ -708,6 +749,7 @@ hy_query_clone(HyQuery q)
 	for (int j = 0; j < q->filters[i].nmatches; ++j) {
 	    char *str_copy;
 	    HyPackageSet pset;
+	    HyReldep reldep;
 
 	    switch (filterp->match_type) {
 	    case _HY_NUM:
@@ -716,6 +758,10 @@ hy_query_clone(HyQuery q)
 	    case _HY_PKG:
 		pset = q->filters[i].matches[j].pset;
 		filterp->matches[j].pset = hy_packageset_clone(pset);
+		break;
+	    case _HY_RELDEP:
+		reldep = q->filters[i].matches[j].reldep;
+		filterp->matches[j].reldep = hy_reldep_clone(reldep);
 		break;
 	    case _HY_STR:
 		str_copy = solv_strdup(q->filters[i].matches[j].str);
@@ -823,6 +869,21 @@ hy_query_filter_package_in(HyQuery q, int keyname, int cmp_type,
     filterp->keyname = keyname;
     filterp->match_type = _HY_PKG;
     filterp->matches[0].pset = hy_packageset_clone(pset);
+    return 0;
+}
+
+int
+hy_query_filter_reldep(HyQuery q, int keyname, const HyReldep reldep)
+{
+    if (!valid_filter_reldep(keyname))
+	return HY_E_QUERY;
+    clear_result(q);
+
+    struct _Filter *filterp = query_add_filter(q, 1);
+    filterp->cmp_type = HY_EQ;
+    filterp->keyname = keyname;
+    filterp->match_type = _HY_RELDEP;
+    filterp->matches[0].reldep = hy_reldep_clone(reldep);
     return 0;
 }
 

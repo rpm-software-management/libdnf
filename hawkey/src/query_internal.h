@@ -5,15 +5,17 @@
 #include "query.h"
 
 union _Match {
-    HyPackageSet pset;
-    char *str;
     int num;
+    HyPackageSet pset;
+    HyReldep reldep;
+    char *str;
 };
 
 enum _match_type {
     _HY_VOID,
     _HY_NUM,
     _HY_PKG,
+    _HY_RELDEP,
     _HY_STR,
 };
 
