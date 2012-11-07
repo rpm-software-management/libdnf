@@ -154,6 +154,22 @@ checksum_type2length(int type)
 }
 
 int
+checksumt_l2h(int type)
+{
+    switch (type) {
+    case REPOKEY_TYPE_MD5:
+	return HY_CHKSUM_MD5;
+    case REPOKEY_TYPE_SHA1:
+	return 	HY_CHKSUM_SHA1;
+    case REPOKEY_TYPE_SHA256:
+	return HY_CHKSUM_SHA256;
+    default:
+	assert(0);
+	return 0;
+    }
+}
+
+int
 is_readable_rpm(const char *fn)
 {
     int len = strlen(fn);

@@ -28,6 +28,10 @@ typedef int (*hy_solution_callback)(HyGoal goal, void *callback_data);
 #define HY_EXT_FILENAMES "-filenames"
 #define HY_EXT_PRESTO "-presto"
 
+#define HY_CHKSUM_MD5		1
+#define HY_CHKSUM_SHA1		2
+#define HY_CHKSUM_SHA256	3
+
 enum _hy_key_name_e {
     HY_PKG,
     HY_PKG_ALL,

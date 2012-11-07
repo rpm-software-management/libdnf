@@ -5,15 +5,8 @@
 extern "C" {
 #endif
 
-// libsolv
-#include <solv/pool.h>
-
 // hawkey
 #include "types.h"
-
-#define HY_CHKSUM_MD5 REPOKEY_TYPE_MD5
-#define HY_CHKSUM_SHA1 REPOKEY_TYPE_SHA1
-#define HY_CHKSUM_SHA256 REPOKEY_TYPE_SHA256
 
 /* public */
 void hy_package_free(HyPackage pkg);

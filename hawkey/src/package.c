@@ -189,8 +189,11 @@ const unsigned char *
 hy_package_get_chksum(HyPackage pkg, int *type)
 {
     Solvable *s = get_solvable(pkg);
+    const unsigned char* ret;
 
-    return solvable_lookup_bin_checksum(s, SOLVABLE_CHECKSUM, type);
+    ret = solvable_lookup_bin_checksum(s, SOLVABLE_CHECKSUM, type);
+    *type = checksumt_l2h(*type);
+    return ret;
 }
 
 /**
@@ -202,8 +205,11 @@ const unsigned char *
 hy_package_get_hdr_chksum(HyPackage pkg, int *type)
 {
     Solvable *s = get_solvable(pkg);
+    const unsigned char *ret;
 
-    return solvable_lookup_bin_checksum(s, SOLVABLE_HDRID, type);
+    ret = solvable_lookup_bin_checksum(s, SOLVABLE_HDRID, type);
+    *type = checksumt_l2h(*type);
+    return ret;
 }
 
 const char *
