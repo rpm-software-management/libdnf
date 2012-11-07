@@ -27,6 +27,22 @@ lookup_num(HyPackage pkg, unsigned type)
     return solvable_lookup_num(s, type, 0);
 }
 
+static HyReldepList
+reldeps_for(HyPackage pkg, Id type)
+{
+    Pool *pool = package_pool(pkg);
+    Solvable *s = get_solvable(pkg);
+    HyReldepList reldeplist;
+    Queue q;
+
+    queue_init(&q);
+    solvable_lookup_idarray(s, type, &q);
+    reldeplist = reldeplist_from_queue(pool, q);
+
+    queue_free(&q);
+    return reldeplist;
+}
+
 HyPackage
 package_clone(HyPackage pkg)
 {
@@ -290,19 +306,15 @@ hy_package_get_size(HyPackage pkg)
 }
 
 HyReldepList
+hy_package_get_obsoletes(HyPackage pkg)
+{
+    return reldeps_for(pkg, SOLVABLE_OBSOLETES);
+}
+
+HyReldepList
 hy_package_get_requires(HyPackage pkg)
 {
-    Pool *pool = package_pool(pkg);
-    Solvable *s = get_solvable(pkg);
-    HyReldepList reldeplist;
-    Queue requires;
-
-    queue_init(&requires);
-    solvable_lookup_idarray(s, SOLVABLE_REQUIRES, &requires);
-    reldeplist = reldeplist_from_queue(pool, requires);
-
-    queue_free(&requires);
-    return reldeplist;
+    return reldeps_for(pkg, SOLVABLE_REQUIRES);
 }
 
 HyPackageDelta
