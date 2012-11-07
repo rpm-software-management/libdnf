@@ -1,6 +1,11 @@
 #ifndef HY_PACKAGE_INTERNAL_H
 #define HY_PACKAGE_INTERNAL_H
 
+// libsolv
+#include <solv/pool.h>
+#include <solv/solvable.h>
+
+// hawkey
 #include "package.h"
 
 struct _HyPackage {

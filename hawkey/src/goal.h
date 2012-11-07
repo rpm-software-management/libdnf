@@ -5,14 +5,7 @@
 extern "C" {
 #endif
 
-/* libsolv */
-#include <solv/queue.h>
-#include <solv/transaction.h>
-
-/* hawkey */
-#include "package.h"
-#include "packagelist.h"
-#include "sack.h"
+// hawkey
 #include "types.h"
 
 enum _hy_goal_op_flags {

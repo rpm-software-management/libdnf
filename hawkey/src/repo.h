@@ -1,11 +1,12 @@
 #ifndef HY_REPO_H
 #define HY_REPO_H
 
-#include "types.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// hawkey
+#include "types.h"
 
 enum _hy_repo_param_e {
     HY_REPO_NAME,

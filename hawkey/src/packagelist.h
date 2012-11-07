@@ -5,12 +5,7 @@
 extern "C" {
 #endif
 
-/* libsolv */
-#include <solv/queue.h>
-
-/* hawkey */
-#include "package.h"
-#include "sack.h"
+// hawkey
 #include "types.h"
 
 HyPackageList hy_packagelist_create(void);

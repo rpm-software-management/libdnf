@@ -9,6 +9,7 @@
 #include "src/errno.h"
 #include "src/goal.h"
 #include "src/package_internal.h"
+#include "src/packagelist.h"
 
 // pyhawkey
 #include "exception-py.h"

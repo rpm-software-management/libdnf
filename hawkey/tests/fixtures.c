@@ -3,6 +3,7 @@
 #include <unistd.h>
 
 // hawkey
+#include "src/repo.h"
 #include "src/iutil.h"
 #include "src/sack_internal.h"
 #include "fixtures.h"

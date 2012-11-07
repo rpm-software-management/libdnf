@@ -1,6 +1,9 @@
 #ifndef TESTSYS_H
 #define TESTSYS_H
 
+// libsolv
+#include <solv/pool.h>
+
 // hawkey
 #include "src/packagelist.h"
 #include "src/sack.h"

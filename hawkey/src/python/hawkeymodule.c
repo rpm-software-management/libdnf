@@ -2,7 +2,9 @@
 
 // hawkey
 #include "src/goal.h"
+#include "src/package.h"
 #include "src/query.h"
+#include "src/types.h"
 #include "src/util.h"
 #include "src/version.h"
 

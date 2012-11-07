@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+// hawkey
 #include "types.h"
 
 HyPackageSet hy_packageset_create(HySack sack);

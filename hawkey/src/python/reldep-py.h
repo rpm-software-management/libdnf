@@ -1,6 +1,10 @@
 #ifndef RELDEP_PY_H
 #define RELDEP_PY_H
 
+// libsolv
+#include <solv/pooltypes.h>
+
+// hawkey
 #include "src/types.h"
 
 extern PyTypeObject reldep_Type;

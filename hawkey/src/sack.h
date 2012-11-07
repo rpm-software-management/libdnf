@@ -1,23 +1,12 @@
 #ifndef HY_SACK_H
 #define HY_SACK_H
 
-/* libsolv */
-#include <solv/pool.h>
-
-/* hawkey */
-#include "repo.h"
-#include "package.h"
-#include "types.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define HY_SYSTEM_REPO_NAME "@System"
-#define HY_SYSTEM_RPMDB "/var/lib/rpm/Packages"
-#define HY_CMDLINE_REPO_NAME "@commandline"
-#define HY_EXT_FILENAMES "-filenames"
-#define HY_EXT_PRESTO "-presto"
+// hawkey
+#include "types.h"
 
 enum _hy_sack_repo_load_flags {
     HY_BUILD_CACHE	= 1 << 0,

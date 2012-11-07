@@ -1,4 +1,5 @@
 // hawkey
+#include "src/package.h"
 #include "src/query.h"
 #include "src/reldep.h"
 #include "src/util.h"

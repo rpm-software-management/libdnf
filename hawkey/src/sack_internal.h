@@ -3,6 +3,9 @@
 
 #include <stdio.h>
 
+// libsolv
+#include <solv/pool.h>
+
 // hawkey
 #include "sack.h"
 

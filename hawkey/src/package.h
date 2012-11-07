@@ -5,11 +5,10 @@
 extern "C" {
 #endif
 
-/* libsolv */
+// libsolv
 #include <solv/pool.h>
-#include <solv/solvable.h>
 
-/* hawkey */
+// hawkey
 #include "types.h"
 
 #define HY_CHKSUM_MD5 REPOKEY_TYPE_MD5

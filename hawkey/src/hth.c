@@ -11,6 +11,8 @@
 // hawkey
 #include "goal.h"
 #include "package_internal.h"
+#include "package.h"
+#include "packagelist.h"
 #include "packageset.h"
 #include "query.h"
 #include "repo.h"

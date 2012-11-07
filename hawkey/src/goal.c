@@ -4,6 +4,7 @@
 // libsolv
 #include <solv/solver.h>
 #include <solv/solverdebug.h>
+#include <solv/transaction.h>
 #include <solv/util.h>
 
 // hawkey

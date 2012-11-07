@@ -8,6 +8,7 @@
 #include "src/goal.h"
 #include "src/iutil.h"
 #include "src/package_internal.h"
+#include "src/repo.h"
 #include "src/query.h"
 #include "src/sack_internal.h"
 #include "src/selector.h"

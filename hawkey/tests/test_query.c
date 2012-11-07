@@ -5,6 +5,7 @@
 
 // hawkey
 #include "src/query.h"
+#include "src/package.h"
 #include "src/packageset.h"
 #include "src/reldep.h"
 #include "src/sack_internal.h"

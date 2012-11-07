@@ -11,7 +11,9 @@
 #include <solv/testcase.h>
 
 // hawkey
+#include "src/package.h"
 #include "src/query.h"
+#include "src/repo.h"
 #include "src/sack_internal.h"
 #include "src/util.h"
 #include "testsys.h"
