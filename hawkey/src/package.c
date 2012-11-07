@@ -293,8 +293,7 @@ hy_package_get_requires(HyPackage pkg)
 
     queue_init(&requires);
     solvable_lookup_idarray(s, SOLVABLE_REQUIRES, &requires);
-    for (int i = 0; i < requires.count; ++i)
-	reldeplist = reldeplist_from_queue(pool, requires);
+    reldeplist = reldeplist_from_queue(pool, requires);
 
     queue_free(&requires);
     return reldeplist;

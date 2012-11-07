@@ -103,6 +103,18 @@ START_TEST(test_get_requires)
 }
 END_TEST
 
+START_TEST(test_get_more_requires)
+{
+    HySack sack = test_globals.sack;
+    HyPackage pkg = by_name(sack, "walrus");
+    HyReldepList reldeplist = hy_package_get_requires(pkg);
+
+    fail_unless(hy_reldeplist_count(reldeplist) == 2);
+    hy_reldeplist_free(reldeplist);
+    hy_package_free(pkg);
+}
+END_TEST
+
 START_TEST(test_checksums)
 {
     HyPackage pkg = by_name(test_globals.sack, "mystery-devel");
@@ -181,7 +193,12 @@ package_suite(void)
     tcase_add_test(tc, test_identical);
     tcase_add_test(tc, test_versions);
     tcase_add_test(tc, test_no_sourcerpm);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("Requires");
+    tcase_add_unchecked_fixture(tc, fixture_with_main, teardown);
     tcase_add_test(tc, test_get_requires);
+    tcase_add_test(tc, test_get_more_requires);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("WithRealRepo");
