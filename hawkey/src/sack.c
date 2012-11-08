@@ -184,7 +184,7 @@ load_ext(HySack sack, HyRepo hrepo, int which_repodata,
     assert(ret == 0);
     if (ret == 0) {
 	repo_update_state(hrepo, which_repodata, _HY_LOADED_FETCH);
-	assert(previous_last == repo->nrepodata - 2);
+	assert(previous_last == repo->nrepodata - 2); (void)previous_last;
 	repo_set_repodata(hrepo, which_repodata, repo->nrepodata - 1);
     }
  finish:

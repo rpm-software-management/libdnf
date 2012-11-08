@@ -61,7 +61,7 @@ hy_split_nevra(const char *nevra, char **name, long int *epoch,
     if (len <= 0)
 	return HY_E_OP;
 
-    const char *m1 = NULL, *m2 = NULL, *m3;
+    const char *m1 = NULL, *m2 = NULL, *m3 = NULL;
     const char *c;
     for (c = nevra + len - 1; c > nevra; --c)
 	if (*c == '.') {

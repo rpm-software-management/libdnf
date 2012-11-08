@@ -104,6 +104,7 @@ keyname2id(int keyname)
 	return SOLVABLE_FILELIST;
     default:
 	assert(0);
+	return 0;
     }
 }
 
@@ -126,6 +127,7 @@ type2flags(int type, int keyname)
 	return ret | SEARCH_GLOB;
     default:
 	assert(0); // not implemented
+	return 0;
     }
 }
 

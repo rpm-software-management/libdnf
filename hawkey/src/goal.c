@@ -288,11 +288,14 @@ hy_goal_count_problems(HyGoal goal)
 char *
 hy_goal_describe_problem(HyGoal goal, unsigned i)
 {
-    const int count = hy_goal_count_problems(goal);
     Id rid, source, target, dep;
     SolverRuleinfo type;
 
-    assert(i < count);
+    if (i >= hy_goal_count_problems(goal)) {
+	hy_errno = HY_E_OP;
+	return NULL;
+    }
+
     // this libsolv interface indexes from 1 (we do from 0), so:
     rid = solver_findproblemrule(goal->solv, i + 1);
     type = solver_ruleinfo(goal->solv, rid, &source, &target, &dep);
