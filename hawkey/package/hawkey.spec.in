@@ -1,9 +1,9 @@
-%global gitrev afa7717
+%global gitrev 6f9df85
 %global libsolv_version 0.0.0-17
 
 Name:		hawkey
 Version:	@VERSION@
-Release:	1.git%{gitrev}%{?dist}
+Release:	2.git%{gitrev}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
@@ -76,6 +76,21 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
+* Wed Nov 8 2012 Aleš Kozumplík <ales@redhat.com> - 0.3.1-2.git6f9df85
+- py: add __all__ to the hawkey module.
+- API cleanup: give checksumming functions the 'hy_' prefix.
+- Add HyPackageSet.
+- Make hy_query_filter_package_in() general enough to handle the relations too.
+- Py: filter by relation and a set of target packages.
+- remove: hy_query_filter_obsoleting().
+- query: implement an empty Query filter.
+- Add the reldep objects, reldep containers, and hy_package_get_requires(). (RhBug:847006)
+- Query: filter provides by reldeps. (RhBug:847006)
+- cleanup header files inclusions.
+- py: fix memory leak package_str().
+- hy_package_get_obsoletes().
+- Query: filter with ORed reldep lists.
+
 * Wed Oct 17 2012 Aleš Kozumplík <ales@redhat.com> - 0.3.0-1.gitafa7717
 - API change: Query: repo filter is called REPONAME now, now just REPO.
 - python: isinstance check for hawkey.Package fails for package objects.
