@@ -26,35 +26,6 @@ hy_packagelist_create(void)
     return plist;
 }
 
-/**
- * List of installed obsoletes of the given package.
- */
-HyPackageList
-hy_packagelist_of_obsoletes(HySack sack, HyPackage pkg)
-{
-    HyPackageList plist = hy_packagelist_create();
-    Pool *pool = sack_pool(sack);
-    Id *pp, r, rr;
-    Solvable *s, *so;
-    int obsprovides = pool_get_flag(pool, POOL_FLAG_OBSOLETEUSESPROVIDES);
-
-    s = pool_id2solvable(pool, package_id(pkg));
-    sack_make_provides_ready(sack);
-    for (pp = s->repo->idarraydata + s->obsoletes; *pp; ++pp) {
-	FOR_PROVIDES(r, rr, *pp) {
-	    assert(r != SYSTEMSOLVABLE);
-	    so = pool_id2solvable(pool, r);
-	    if (!obsprovides && !pool_match_nevr(pool, so, *pp))
-		continue; /* only matching pkg names */
-
-	    if (so->repo != pool->installed)
-		continue;
-	    hy_packagelist_push(plist, package_create(pool, r));
-	}
-    }
-    return plist;
-}
-
 void
 hy_packagelist_free(HyPackageList plist)
 {

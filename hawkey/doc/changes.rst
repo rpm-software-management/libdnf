@@ -182,3 +182,15 @@ The equivalent new syntax is::
 
   installed = hawkey.Query(sack).filter(reponame=SYSTEM_REPO_NAME)
   q = query.filter(obsoletes=installed)
+
+Changes in 0.3.2
+================
+
+Removed ``hy_packagelist_of_obsoletes``.
+----------------------------------------
+
+The function was not systematic. Same result is achieved by obtaining obsoleting
+reldeps from a package and then trying to find the installed packages that
+provide it. In Python::
+
+  q = hawkey.Query(sack).filter(reponame=SYSTEM_REPO_NAME, provides=pkg.obsoletes)

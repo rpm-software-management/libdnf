@@ -15,6 +15,7 @@
 #include "packagelist.h"
 #include "packageset.h"
 #include "query.h"
+#include "reldep.h"
 #include "repo.h"
 #include "sack.h"
 #include "util.h"
@@ -57,7 +58,12 @@ static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
 	    hy_free(str);
 	}
 	if (show_obsoletes) {
-	    HyPackageList olist = hy_packagelist_of_obsoletes(sack, pkg);
+	    HyReldepList obsoletes = hy_package_get_obsoletes(pkg);
+	    HyQuery qobs = hy_query_create(sack);
+
+	    hy_query_filter(qobs, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+	    hy_query_filter_reldep_in(qobs, HY_PKG_PROVIDES, obsoletes);
+	    HyPackageList olist = hy_query_run(qobs);
 	    const int ocount = hy_packagelist_count(olist);
 	    for (int j = 0; j < ocount; ++j) {
 		HyPackage opkg = hy_packagelist_get(olist, j);
@@ -66,6 +72,8 @@ static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
 		hy_free(onvra);
 	    }
 	    hy_packagelist_free(olist);
+	    hy_query_free(qobs);
+	    hy_reldeplist_free(obsoletes);
 	}
 	hy_free(nvra);
     }

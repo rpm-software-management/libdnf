@@ -233,21 +233,6 @@ evr_cmp(_PackageObject *self, PyObject *other)
 }
 
 static PyObject *
-obsoletes_list(_PackageObject *self, PyObject *unused)
-{
-    HyPackageList plist;
-    PyObject *list;
-    HySack csack =  sackFromPyObject(self->sack);
-
-    if (!csack)
-	return NULL;
-    plist = hy_packagelist_of_obsoletes(csack, self->package);
-    list = packagelist_to_pylist(plist, self->sack);
-    hy_packagelist_free(plist);
-    return list;
-}
-
-static PyObject *
 get_delta_from_evr(_PackageObject *self, PyObject *evr_str)
 {
     const char *evr = PyString_AsString(evr_str);
@@ -262,7 +247,6 @@ get_delta_from_evr(_PackageObject *self, PyObject *evr_str)
 
 static struct PyMethodDef package_methods[] = {
     {"evr_cmp", (PyCFunction)evr_cmp, METH_O, NULL},
-    {"obsoletes_list", (PyCFunction)obsoletes_list, METH_NOARGS, NULL},
     {"get_delta_from_evr", (PyCFunction)get_delta_from_evr, METH_O, NULL},
     {NULL}                      /* sentinel */
 };

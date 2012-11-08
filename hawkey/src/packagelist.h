@@ -9,7 +9,6 @@ extern "C" {
 #include "types.h"
 
 HyPackageList hy_packagelist_create(void);
-HyPackageList hy_packagelist_of_obsoletes(HySack sack, HyPackage pkg);
 void hy_packagelist_free(HyPackageList plist);
 int hy_packagelist_count(HyPackageList plist);
 HyPackage hy_packagelist_get(HyPackageList plist, int index);
