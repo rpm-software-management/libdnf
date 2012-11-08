@@ -453,14 +453,14 @@ static void
 filter_provides_reldep(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
-    Id r_id = reldep_id(f->matches[0].reldep);
     Id p, pp;
 
-    assert(f->nmatches == 1);
     sack_make_provides_ready(q->sack);
-
-    FOR_PROVIDES(p, pp, r_id)
-	MAPSET(m, p);
+    for (int i = 0; i < f->nmatches; ++i) {
+	Id r_id = reldep_id(f->matches[i].reldep);
+	FOR_PROVIDES(p, pp, r_id)
+	    MAPSET(m, p);
+    }
 }
 
 static void
@@ -884,6 +884,24 @@ hy_query_filter_reldep(HyQuery q, int keyname, const HyReldep reldep)
     filterp->keyname = keyname;
     filterp->match_type = _HY_RELDEP;
     filterp->matches[0].reldep = hy_reldep_clone(reldep);
+    return 0;
+}
+
+int
+hy_query_filter_reldep_in(HyQuery q, int keyname, const HyReldepList reldeplist)
+{
+    if (!valid_filter_reldep(keyname))
+	return HY_E_QUERY;
+    clear_result(q);
+
+    const int nmatches = hy_reldeplist_count(reldeplist);
+    struct _Filter *filterp = query_add_filter(q, nmatches);
+    filterp->cmp_type = HY_EQ;
+    filterp->keyname = keyname;
+    filterp->match_type = _HY_RELDEP;
+
+    for (int i = 0; i < nmatches; ++i)
+	filterp->matches[i].reldep = hy_reldeplist_get_clone(reldeplist, i);
     return 0;
 }
 

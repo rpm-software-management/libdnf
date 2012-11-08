@@ -141,6 +141,12 @@ class Query(base.TestCase):
         self.assertRaises(hawkey.QueryException, q.filter,
                           provides__gt=requires[0])
 
+    def test_reldep_list(self):
+        self.sack.load_test_repo("updates", "updates.repo")
+        fool = base.by_name_repo(self.sack, "fool", "updates")
+        q = hawkey.Query(self.sack).filter(provides=fool.obsoletes)
+        self.assertEqual(str(q.run()[0]), "penny-4-1.noarch")
+
 class QueryUpdates(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)

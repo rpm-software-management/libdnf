@@ -10,3 +10,6 @@ class TestCase(unittest.TestCase):
 
 def by_name(sack, name):
     return hawkey.Query(sack).filter(name=name)[0]
+
+def by_name_repo(sack, name, repo):
+    return hawkey.Query(sack).filter(name=name, reponame=repo)[0]

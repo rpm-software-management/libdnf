@@ -72,8 +72,8 @@ pyseq_to_packagelist(PyObject *sequence)
 HyPackageSet
 pyseq_to_packageset(PyObject *sequence, HySack sack)
 {
-    HyPackageSet pset = hy_packageset_create(sack);
     assert(PySequence_Check(sequence));
+    HyPackageSet pset = hy_packageset_create(sack);
 
     const unsigned count = PySequence_Size(sequence);
     for (int i = 0; i < count; ++i) {
@@ -93,6 +93,29 @@ pyseq_to_packageset(PyObject *sequence, HySack sack)
     return NULL;
 }
 
+HyReldepList
+pyseq_to_reldeplist(PyObject *sequence, HySack sack)
+{
+    assert(PySequence_Check(sequence));
+    HyReldepList reldeplist = hy_reldeplist_create(sack);
+
+    const unsigned count = PySequence_Size(sequence);
+    for (int i = 0; i < count; ++i) {
+	PyObject *item = PySequence_GetItem(sequence, i);
+	if (item == NULL)
+	    goto fail;
+	HyReldep reldep = reldepFromPyObject(item);
+	Py_DECREF(item);
+	if (reldep == NULL)
+	    goto fail;
+	hy_reldeplist_add(reldeplist, reldep);
+    }
+
+    return reldeplist;
+ fail:
+    hy_reldeplist_free(reldeplist);
+    return NULL;
+}
 
 PyObject *
 strlist_to_pylist(const char **slist)
