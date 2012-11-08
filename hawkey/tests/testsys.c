@@ -31,6 +31,20 @@ by_name(HySack sack, const char *name)
     return pkg;
 }
 
+HyPackage
+by_name_repo(HySack sack, const char *name, const char *repo)
+{
+    HyQuery q = hy_query_create(sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
+    hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, repo);
+    HyPackageList plist = hy_query_run(q);
+    hy_query_free(q);
+    HyPackage pkg = hy_packagelist_get_clone(plist, 0);
+    hy_packagelist_free(plist);
+
+    return pkg;
+}
+
 void
 dump_packagelist(HyPackageList plist)
 {

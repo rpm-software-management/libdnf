@@ -17,6 +17,7 @@
 #include "test_package.h"
 #include "test_packagelist.h"
 #include "test_packageset.h"
+#include "test_reldep.h"
 #include "test_repo.h"
 #include "test_sack.h"
 #include "test_util.h"
@@ -67,6 +68,7 @@ main(int argc, const char **argv)
     SRunner *sr = srunner_create(sack_suite());
     srunner_add_suite(sr, iutil_suite());
     srunner_add_suite(sr, util_suite());
+    srunner_add_suite(sr, reldep_suite());
     srunner_add_suite(sr, repo_suite());
     srunner_add_suite(sr, package_suite());
     srunner_add_suite(sr, packagelist_suite());

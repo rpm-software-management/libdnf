@@ -6,6 +6,7 @@ SET (hawkeytest_SRCS
      test_package.c
      test_packagelist.c
      test_packageset.c
+     test_reldep.c
      test_repo.c
      test_query.c
      test_sack.c

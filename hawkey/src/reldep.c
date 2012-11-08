@@ -6,6 +6,7 @@
 
 // hawkey
 #include "reldep_internal.h"
+#include "sack_internal.h"
 
 struct _HyReldep {
     Pool *pool;
@@ -61,11 +62,26 @@ char
     return solv_strdup(str);
 }
 
+HyReldepList
+hy_reldeplist_create(HySack sack)
+{
+    HyReldepList reldeplist = solv_calloc(1, sizeof(*reldeplist));
+    reldeplist->pool = sack_pool(sack);
+    queue_init(&reldeplist->queue);
+    return reldeplist;
+}
+
 void
 hy_reldeplist_free(HyReldepList reldeplist)
 {
     queue_free(&reldeplist->queue);
     solv_free(reldeplist);
+}
+
+void
+hy_reldeplist_add(HyReldepList reldeplist, HyReldep reldep)
+{
+    queue_push(&reldeplist->queue, reldep->r_id);
 }
 
 int

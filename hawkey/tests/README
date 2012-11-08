@@ -18,7 +18,7 @@ flying
 
 fool
 * installed version available from main repo, updates repo contains a newer version
-* the updates version obsoletes "penny"
+* the updates version obsoletes two packages
 
 penny, penny-lib
 * have summaries
@@ -28,7 +28,7 @@ penny, penny-lib
 
 walrus
 * not installed, available in the main repo
-* requires 'semolina'
+* requires two packages
 
 semolina
 * for multilib install testing

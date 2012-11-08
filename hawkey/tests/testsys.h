@@ -19,6 +19,7 @@
 #define TEST_EXPECT_YUM_NSOLVABLES 2
 
 HyPackage by_name(HySack sack, const char *name);
+HyPackage by_name_repo(HySack sack, const char *name, const char *repo);
 void dump_packagelist(HyPackageList plist);
 HyRepo glob_for_repofiles(Pool *pool, const char *repo_name, const char *path);
 int load_repo(Pool *pool, const char *name, const char *path, int installed);
