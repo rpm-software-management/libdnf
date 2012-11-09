@@ -40,6 +40,34 @@ class Package(base.TestCase):
         self.assertEqual(d[pkg2], 2)
         self.assertEqual(len(d), 2)
 
+class PackageCmp(base.TestCase):
+    def setUp(self):
+        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack.load_system_repo()
+        self.sack.load_test_repo("main", "main.repo")
+
+    def test_cmp(self):
+        pkg1 = base.by_name_repo(self.sack, "fool", hawkey.SYSTEM_REPO_NAME)
+        pkg2 = base.by_name_repo(self.sack, "fool", "main")
+        # if nevra matches the packages are equal:
+        self.assertEqual(pkg1, pkg2)
+
+        # if the name doesn't match they are not equal:
+        pkg2 = base.by_name_repo(self.sack, "hello", "main")
+        self.assertNotEqual(pkg1, pkg2)
+
+        # if nevr matches, but not arch, they are not equal:
+        pkg1 = hawkey.split_nevra("semolina-2-0.x86_64").to_query(self.sack)[0]
+        pkg2 = hawkey.split_nevra("semolina-2-0.i686").to_query(self.sack)[0]
+        self.assertNotEqual(pkg1, pkg2)
+        # however evr_cmp compares only the evr part:
+        self.assertEqual(pkg1.evr_cmp(pkg2), 0)
+
+        pkg1 = hawkey.split_nevra("jay-6.0-0.x86_64").to_query(self.sack)[0]
+        pkg2 = hawkey.split_nevra("jay-5.0-0.x86_64").to_query(self.sack)[0]
+        self.assertLess(pkg2, pkg1)
+        self.assertGreater(pkg1.evr_cmp(pkg2), 0)
+
 class WithYumRepo(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
