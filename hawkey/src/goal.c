@@ -330,6 +330,12 @@ hy_goal_list_installs(HyGoal goal)
 }
 
 HyPackageList
+hy_goal_list_reinstalls(HyGoal goal)
+{
+    return list_results(goal, SOLVER_TRANSACTION_REINSTALL);
+}
+
+HyPackageList
 hy_goal_list_upgrades(HyGoal goal)
 {
     return list_results(goal, SOLVER_TRANSACTION_UPGRADE);

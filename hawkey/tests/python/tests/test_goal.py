@@ -52,6 +52,20 @@ class Goal(base.TestCase):
         goal = hawkey.Goal(self.sack)
         self.assertRaises(hawkey.ArchException, goal.install, select=sltr)
 
+    def test_reinstall(self):
+        inst = base.by_name_repo(self.sack, "fool", hawkey.SYSTEM_REPO_NAME)
+        avail = base.by_name_repo(self.sack, "fool", "main")
+        goal = hawkey.Goal(self.sack)
+        goal.erase(inst)
+        goal.install(avail)
+        self.assertTrue(goal.run())
+        self.assertLength(goal.list_erasures(), 0)
+        self.assertLength(goal.list_installs(), 0)
+        self.assertLength(goal.list_reinstalls(), 1)
+        reinstall = goal.list_reinstalls()[0]
+        obsoleted = goal.package_obsoletes(reinstall)
+        self.assertEqual(str(obsoleted), "fool-1-3.noarch")
+
 class Collector(object):
     def __init__(self):
         self.cnt = 0

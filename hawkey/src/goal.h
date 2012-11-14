@@ -55,6 +55,7 @@ int hy_goal_log_decisions(HyGoal goal);
 /* result processing */
 HyPackageList hy_goal_list_erasures(HyGoal goal);
 HyPackageList hy_goal_list_installs(HyGoal goal);
+HyPackageList hy_goal_list_reinstalls(HyGoal goal);
 HyPackageList hy_goal_list_upgrades(HyGoal goal);
 HyPackageList hy_goal_list_downgrades(HyGoal goal);
 HyPackage hy_goal_package_obsoletes(HyGoal goal, HyPackage pkg);
