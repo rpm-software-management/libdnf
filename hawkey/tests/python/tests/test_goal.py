@@ -56,7 +56,6 @@ class Goal(base.TestCase):
         inst = base.by_name_repo(self.sack, "fool", hawkey.SYSTEM_REPO_NAME)
         avail = base.by_name_repo(self.sack, "fool", "main")
         goal = hawkey.Goal(self.sack)
-        goal.erase(inst)
         goal.install(avail)
         self.assertTrue(goal.run())
         self.assertLength(goal.list_erasures(), 0)
