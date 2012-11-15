@@ -1,9 +1,9 @@
-%global gitrev 6f9df85
+%global gitrev e883549
 %global libsolv_version 0.0.0-17
 
 Name:		hawkey
 Version:	@VERSION@
-Release:	2.git%{gitrev}%{?dist}
+Release:	1.git%{gitrev}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
@@ -76,7 +76,11 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
-* Wed Nov 8 2012 Aleš Kozumplík <ales@redhat.com> - 0.3.1-2.git6f9df85
+* Thu Nov 15 2012 Aleš Kozumplík <ales@redhat.com> - 0.3.2-1.gite883549
+- fix: hy_package_cmp() shouldn't compare packages of different arch equal.
+- Goal: support reinstalls.
+
+* Thu Nov 8 2012 Aleš Kozumplík <ales@redhat.com> - 0.3.1-2.git6f9df85
 - py: add __all__ to the hawkey module.
 - API cleanup: give checksumming functions the 'hy_' prefix.
 - Add HyPackageSet.
