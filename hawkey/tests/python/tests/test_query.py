@@ -167,3 +167,12 @@ class QueryUpdates(base.TestCase):
         o = hawkey.Query(self.sack).filter(obsoletes=q)
         self.assertLength(o, 1)
         self.assertEqual(str(o[0]), 'fool-1-5.noarch')
+
+    def test_subquery_evaluated(self):
+        q = hawkey.Query(self.sack).filter(name="penny")
+        self.assertFalse(q.evaluated)
+        self.assertIsNone(q.result)
+        o = hawkey.Query(self.sack).filter(obsoletes=q)
+        self.assertTrue(q.evaluated)
+        self.assertIsInstance(q.result, list)
+        self.assertLength(o, 1)

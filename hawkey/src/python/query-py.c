@@ -6,7 +6,7 @@
 // hawkey
 #include "src/packagelist.h"
 #include "src/packageset.h"
-#include "src/query.h"
+#include "src/query_internal.h"
 #include "src/reldep.h"
 
 // pyhawkey
@@ -93,6 +93,20 @@ query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
     Py_INCREF(self->sack);
     return 0;
 }
+
+/* object attributes */
+
+static PyObject *
+get_evaluated(_QueryObject *self, void *unused)
+{
+    HyQuery q = self->query;
+    return PyBool_FromLong((long)q->result);
+}
+
+static PyGetSetDef query_getsetters[] = {
+    {"evaluated",  (getter)get_evaluated, NULL, NULL, NULL},
+    {NULL}			/* sentinel */
+};
 
 /* object methods */
 
@@ -288,7 +302,7 @@ PyTypeObject query_Type = {
     0,                         	/* tp_iternext */
     query_methods,		/* tp_methods */
     0,				/* tp_members */
-    0,				/* tp_getset */
+    query_getsetters,		/* tp_getset */
     0,				/* tp_base */
     0,				/* tp_dict */
     0,				/* tp_descr_get */

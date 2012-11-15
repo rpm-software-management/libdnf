@@ -2,7 +2,6 @@
 #include <string.h>
 
 // libsolv
-#include <solv/bitmap.h>
 #include <solv/evr.h>
 #include <solv/repo.h>
 #include <solv/solver.h>
@@ -17,16 +16,6 @@
 #include "packageset_internal.h"
 #include "reldep_internal.h"
 #include "sack_internal.h"
-
-struct _HyQuery {
-    HySack sack;
-    Map *result;
-    struct _Filter *filters;
-    int nfilters;
-    int downgrades; /* 1 for "only downgrades for installed packages" */
-    int updates; /* 1 for "only updates for installed packages" */
-    int latest; /* 1 for "only the latest version per arch" */
-};
 
 #define BLOCK_SIZE 15
 

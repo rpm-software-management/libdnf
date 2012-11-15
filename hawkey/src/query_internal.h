@@ -1,6 +1,9 @@
 #ifndef HY_QUERY_INTERNAL_H
 #define HY_QUERY_INTERNAL_H
 
+// libsolv
+#include <solv/bitmap.h>
+
 // hawkey
 #include "query.h"
 
@@ -26,6 +29,16 @@ struct _Filter {
     union _Match *matches;
     int nmatches;
     char *evr;
+};
+
+struct _HyQuery {
+    HySack sack;
+    Map *result;
+    struct _Filter *filters;
+    int nfilters;
+    int downgrades; /* 1 for "only downgrades for installed packages" */
+    int updates; /* 1 for "only updates for installed packages" */
+    int latest; /* 1 for "only the latest version per arch" */
 };
 
 struct _Filter *filter_create(int nmatches);

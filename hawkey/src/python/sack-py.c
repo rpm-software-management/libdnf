@@ -138,7 +138,7 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
 
 /* getsetters */
 
-static PyObject*
+static PyObject *
 get_cache_path(_SackObject *self, void *unused)
 {
     const char *cstr = hy_sack_get_cache_path(self->sack);

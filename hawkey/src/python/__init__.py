@@ -183,7 +183,7 @@ def _parse_filter_args(flags, dct):
 class Query(_hawkey.Query):
     def __init__(self, sack=None, query=None):
         super(Query, self).__init__(sack=sack, query=query)
-        self.result = None
+        self._result = None
 
     def __add__(self, operand):
         if not isinstance(operand, list):
@@ -200,21 +200,31 @@ class Query(_hawkey.Query):
     def __len__(self):
         return len(self.run())
 
-    def run(self):
-        """ Execute the query and cache the result. """
-        if self.result is None:
-            self.result = super(Query, self).run()
-        return self.result
-
     def count(self):
         return len(self)
+
+    @property
+    def result(self):
+        assert((self._result is None) or self.evaluated)
+        if not self._result and self.evaluated:
+            self._result = super(Query, self).run()
+        return self._result
+
+    def run(self):
+        """ Execute the query and cache the result.
+
+            This does not force re-evaluation unless neccessary, run() checks
+            that.
+        """
+        self._result = super(Query, self).run()
+        return self._result
 
     def filter(self, *lst, **kwargs):
         new_query = Query(query=self)
         return new_query.filterm(*lst, **kwargs)
 
     def filterm(self, *lst, **kwargs):
-        self.result = None
+        self._result = None
         flags = set(lst)
         map(lambda arg_tuple: super(Query, self).filter(*arg_tuple),
             _parse_filter_args(flags, kwargs))
