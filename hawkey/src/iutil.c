@@ -321,7 +321,8 @@ queue2plist(HySack sack, Queue *q, HyPackageList plist)
  *
  * The returned package Id fulfills the following criteria:
  * :: it is installed
- * :: has the same name and arch as pkg
+ * :: has the same name as pkg (note that the arch can change, RPM lets you
+ *    upgrade foo.noarch with foo.x86_64)
  * :: is of lower version than pkg.
  * :: if there are multiple packages of that name return the highest version
  *    (implying we won't claim we can upgrade an old package with an already
@@ -341,8 +342,7 @@ what_upgrades(Pool *pool, Id pkg)
     FOR_PROVIDES(p, pp, s->name) {
 	updated = pool_id2solvable(pool, p);
 	if (updated->repo != pool->installed ||
-	    updated->name != s->name ||
-	    updated->arch != s->arch)
+	    updated->name != s->name)
 	    continue;
 	if (pool_evrcmp(pool, updated->evr, s->evr, EVRCMP_COMPARE) >= 0)
 	    // >= version installed, this pkg can not be used for upgrade

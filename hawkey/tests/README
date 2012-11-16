@@ -15,6 +15,7 @@ specific testing role they can play:
 
 flying
 * installed at a version older than anything from repositories
+* there's one updated version with different arch than the installed
 
 fool
 * installed version available from main repo, updates repo contains a newer version

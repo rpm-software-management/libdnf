@@ -425,7 +425,7 @@ START_TEST(test_filter_latest2)
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "flying");
     hy_query_filter_latest(q, 1);
     HyPackageList plist = hy_query_run(q);
-    fail_unless(hy_packagelist_count(plist) == 1);
+    fail_unless(hy_packagelist_count(plist) == 2);
     HyPackage pkg = hy_packagelist_get(plist, 0);
     fail_if(strcmp(hy_package_get_name(pkg), "flying"));
     fail_if(strcmp(hy_package_get_evr(pkg), "3-0"));

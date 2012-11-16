@@ -6,3 +6,5 @@
 =Obs: baby = 6:4.8-3
 =Pkg: flying 3 0 noarch
 =Req: P-lib
+=Pkg: flying 3.1 0 x86_64
+=Req: P-lib
