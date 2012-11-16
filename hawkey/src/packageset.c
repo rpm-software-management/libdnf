@@ -1,3 +1,5 @@
+#include <assert.h>
+
 // libsolv
 #include <solv/bitmap.h>
 #include <solv/util.h>
@@ -22,21 +24,35 @@ static const unsigned char _BitCountLookup[256] =
 };
 
 static Id
-map_index2id(Map *map, unsigned index)
+map_index2id(Map *map, unsigned index, Id previous)
 {
     unsigned char *ti = map->map;
     unsigned char *end = ti + map->size;
     int enabled;
+    Id id;
+
+    if (previous >= 0) {
+	ti += previous >> 3;
+	unsigned char byte = *ti; // byte with the previous match
+	byte >>= (previous & 7) + 1; // shift away all previous 1 bits
+	enabled = _BitCountLookup[byte]; // are there any 1 bits left?
+
+	for (id = previous + 1; enabled; byte >>= 1, id++)
+	    if (byte & 0x01)
+		return id;
+	index = 0; // we are looking for the immediately following index
+	ti++;
+    }
 
     while (ti < end) {
 	enabled = _BitCountLookup[*ti];
 
-	if (index >= enabled) {
+	if (index >= enabled ){
 	    index -= enabled;
 	    ti++;
 	    continue;
 	}
-	Id id = (ti - map->map) << 3;
+	id = (ti - map->map) << 3;
 
 	index++;
 	for (unsigned char byte = *ti; index; byte >>= 1) {
@@ -48,6 +64,14 @@ map_index2id(Map *map, unsigned index)
 	return id;
     }
     return -1;
+}
+
+Id
+packageset_get_pkgid(HyPackageSet pset, int index, Id previous)
+{
+    Id id = map_index2id(&pset->map, index, previous);
+    assert(id >= 0);
+    return id;
 }
 
 unsigned
@@ -71,7 +95,6 @@ packageset_from_bitmap(HySack sack, Map *m)
     map_init_clone(&pset->map, m);
     return pset;
 }
-
 
 Map *
 packageset_get_map(HyPackageSet pset)
@@ -120,7 +143,7 @@ hy_packageset_count(HyPackageSet pset)
 HyPackage
 hy_packageset_get_clone(HyPackageSet pset, int index)
 {
-    Id id = map_index2id(&pset->map, index);
+    Id id = map_index2id(&pset->map, index, -1);
     if (id < 0)
 	return NULL;
     return package_create(sack_pool(pset->sack), id);

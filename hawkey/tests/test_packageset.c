@@ -1,6 +1,6 @@
 // hawkey
 #include "src/package_internal.h"
-#include "src/packageset.h"
+#include "src/packageset_internal.h"
 #include "src/sack_internal.h"
 #include "fixtures.h"
 #include "test_packageset.h"
@@ -79,7 +79,7 @@ START_TEST(test_has)
 }
 END_TEST
 
-START_TEST(test_get)
+START_TEST(test_get_clone)
 {
     HySack sack = test_globals.sack;
     int max = sack_last_solvable(sack);
@@ -114,16 +114,47 @@ START_TEST(test_get)
 }
 END_TEST
 
+START_TEST(test_get_pkgid)
+{
+    HySack sack = test_globals.sack;
+    int max = sack_last_solvable(sack);
+
+    // add some more packages
+    HyPackage pkg;
+    pkg = package_create(sack_pool(sack), 7);
+    hy_packageset_add(pset, pkg);
+    pkg = package_create(sack_pool(sack), 8);
+    hy_packageset_add(pset, pkg);
+    pkg = package_create(sack_pool(sack), 15);
+    hy_packageset_add(pset, pkg);
+
+    Id id = -1;
+    id = packageset_get_pkgid(pset, 0, id);
+    fail_unless(id == 0);
+    id = packageset_get_pkgid(pset, 1, id);
+    fail_unless(id == 7);
+    id = packageset_get_pkgid(pset, 2, id);
+    fail_unless(id == 8);
+    id = packageset_get_pkgid(pset, 3, id);
+    fail_unless(id == 9);
+    id = packageset_get_pkgid(pset, 4, id);
+    fail_unless(id == 15);
+    id = packageset_get_pkgid(pset, 5, id);
+    fail_unless(id == max);
+}
+END_TEST
+
 Suite *
 packageset_suite(void)
 {
     Suite *s = suite_create("PackageSet");
 
     TCase *tc = tcase_create("Core");
-    tcase_add_unchecked_fixture(tc, packageset_fixture, packageset_teardown);
+    tcase_add_checked_fixture(tc, packageset_fixture, packageset_teardown);
     tcase_add_test(tc, test_clone);
     tcase_add_test(tc, test_has);
-    tcase_add_test(tc, test_get);
+    tcase_add_test(tc, test_get_clone);
+    tcase_add_test(tc, test_get_pkgid);
     suite_add_tcase(s, tc);
 
     return s;
