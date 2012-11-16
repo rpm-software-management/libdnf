@@ -5,7 +5,7 @@
 
 // hawkey
 #include "src/packagelist.h"
-#include "src/packageset.h"
+#include "src/packageset_internal.h"
 #include "src/query_internal.h"
 #include "src/reldep.h"
 
@@ -252,12 +252,12 @@ filter(_QueryObject *self, PyObject *args)
 static PyObject *
 run(_QueryObject *self, PyObject *unused)
 {
-    HyPackageList plist;
+    HyPackageSet pset;
     PyObject *list;
 
-    plist = hy_query_run(self->query);
-    list = packagelist_to_pylist(plist, self->sack);
-    hy_packagelist_free(plist);
+    pset = hy_query_run_set(self->query);
+    list = packageset_to_pylist(pset, self->sack);
+    hy_packageset_free(pset);
     return list;
 }
 

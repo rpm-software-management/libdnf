@@ -3,7 +3,7 @@
 // hawkey
 #include "src/package_internal.h"
 #include "src/packagelist.h"
-#include "src/packageset.h"
+#include "src/packageset_internal.h"
 #include "src/reldep_internal.h"
 #include "iutil-py.h"
 #include "package-py.h"
@@ -40,6 +40,33 @@ packagelist_to_pylist(HyPackageList plist, PyObject *sack)
     if (retval)
 	return retval;
     /* return error */
+    Py_DECREF(list);
+    return NULL;
+}
+
+PyObject *
+packageset_to_pylist(HyPackageSet pset, PyObject *sack)
+{
+    PyObject *list = PyList_New(0);
+    if (list == NULL)
+	return NULL;
+
+    const int count = hy_packageset_count(pset);
+    Id id = -1;
+    for (int i = 0; i < count; ++i) {
+	id = packageset_get_pkgid(pset, i, id);
+	PyObject *package = new_package(sack, id);
+	if (package == NULL)
+	    goto fail;
+
+	int rc = PyList_Append(list, package);
+	Py_DECREF(package);
+	if (rc == -1)
+	    goto fail;
+    }
+
+    return list;
+ fail:
     Py_DECREF(list);
     return NULL;
 }
@@ -143,8 +170,7 @@ strlist_to_pylist(const char **slist)
 PyObject *
 reldeplist_to_pylist(const HyReldepList reldeplist, PyObject *sack)
 {
-    PyObject *list;
-    list = PyList_New(0);
+    PyObject *list = PyList_New(0);
     if (list == NULL)
 	return NULL;
 
