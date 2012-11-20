@@ -203,6 +203,14 @@ hy_goal_upgrade_to(HyGoal goal, HyPackage new_pkg)
 }
 
 int
+hy_goal_upgrade_to_selector(HyGoal goal, HySelector sltr)
+{
+    if (sltr->f_evr == NULL)
+	return sltr2job(sltr, &goal->job, SOLVER_UPDATE);
+    return sltr2job(sltr, &goal->job, SOLVER_INSTALL);
+}
+
+int
 hy_goal_upgrade_selector(HyGoal goal, HySelector sltr)
 {
     return sltr2job(sltr, &goal->job, SOLVER_UPDATE);
@@ -395,12 +403,8 @@ filter_arch2job(HySack sack, const struct _Filter *f, Queue *job)
     if (f == NULL)
 	return 0; // it's OK when there's no arch spec
 
-    if (f->cmp_type != HY_EQ)
-	return HY_E_SELECTOR;
+    assert(f->cmp_type == HY_EQ);
     assert(f->nmatches == 1);
-    if (job->count < 2)
-	return 0; // nothing to limit
-
     Pool *pool = sack_pool(sack);
     const char *arch = f->matches[0].str;
     Id archid = str2archid(pool, arch);
@@ -409,10 +413,32 @@ filter_arch2job(HySack sack, const struct _Filter *f, Queue *job)
 	return HY_E_ARCH;
     for (int i = 0; i < job->count; i += 2) {
 	Id dep;
-	assert(job->elements[i] == SOLVER_SOLVABLE_NAME);
+	assert(job->elements[i] & SOLVER_SOLVABLE_NAME);
 	dep = pool_rel2id(pool, job->elements[i + 1],
 			  archid, REL_ARCH, 1);
 	job->elements[i] |= SOLVER_SETARCH;
+	job->elements[i + 1] = dep;
+    }
+    return 0;
+}
+
+static int
+filter_evr2job(HySack sack, const struct _Filter *f, Queue *job)
+{
+    if (f == NULL)
+	return 0; // it's OK when there's no evr spec
+
+    assert(f->cmp_type == HY_EQ);
+    assert(f->nmatches == 1);
+
+    Pool *pool = sack_pool(sack);
+    Id evr = pool_str2id(pool, f->matches[0].str, 1);
+    for (int i = 0; i < job->count; i += 2) {
+	Id dep;
+	assert(job->elements[i] & SOLVER_SOLVABLE_NAME);
+	dep = pool_rel2id(pool, job->elements[i + 1],
+			  evr, REL_EQ, 1);
+	job->elements[i] |= SOLVER_SETEVR;
 	job->elements[i + 1] = dep;
     }
     return 0;
@@ -472,6 +498,9 @@ sltr2job(const HySelector sltr, Queue *job, int solver_action)
     if (ret)
 	goto finish;
     ret = filter_arch2job(sltr->sack, sltr->f_arch, &job_sltr);
+    if (ret)
+	goto finish;
+    ret = filter_evr2job(sltr->sack, sltr->f_evr, &job_sltr);
     if (ret)
 	goto finish;
 

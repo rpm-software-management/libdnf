@@ -238,9 +238,8 @@ upgrade_to(_GoalObject *self, PyObject *args, PyObject *kwds)
 			      &flags, HY_CHECK_INSTALLED))
 	return NULL;
     if (sltr) {
-	PyErr_SetString(PyExc_NotImplementedError,
-			"Upgrading to a Selector spec is not implemented.");
-	return NULL;
+	ret = hy_goal_upgrade_to_selector(self->goal, sltr);
+	return op_ret2exc(ret);
     }
     ret = hy_goal_upgrade_to_flags(self->goal, pkg, flags);
     return op_ret2exc(ret);

@@ -246,6 +246,33 @@ START_TEST(test_goal_selector_glob)
 }
 END_TEST
 
+START_TEST(test_goal_selector_upgrade)
+{
+    HySelector sltr = hy_selector_create(test_globals.sack);
+    HyGoal goal = hy_goal_create(test_globals.sack);
+
+    fail_if(hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "pilchard"));
+    fail_if(hy_selector_set(sltr, HY_PKG_EVR, HY_EQ, "1.2.4-2"));
+    fail_if(hy_goal_upgrade_to_selector(goal, sltr));
+    fail_if(hy_goal_run(goal));
+    HyPackageList plist = hy_goal_list_upgrades(goal);
+    fail_unless(hy_packagelist_count(plist) == 1);
+    assert_nevra_eq(hy_packagelist_get(plist, 0), "pilchard-1.2.4-2.x86_64");
+    hy_packagelist_free(plist);
+    hy_goal_free(goal);
+    hy_selector_free(sltr);
+
+    sltr = hy_selector_create(test_globals.sack);
+    goal = hy_goal_create(test_globals.sack);
+    fail_if(hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "pilchard"));
+    fail_if(hy_goal_upgrade_to_selector(goal, sltr));
+    fail_if(hy_goal_run(goal));
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 2);
+    hy_goal_free(goal);
+    hy_selector_free(sltr);
+}
+END_TEST
+
 START_TEST(test_goal_update)
 {
     HyPackage pkg = get_latest_pkg(test_globals.sack, "fool");
@@ -274,11 +301,16 @@ START_TEST(test_goal_upgrade_all)
     hy_packagelist_free(plist);
 
     plist = hy_goal_list_upgrades(goal);
-    fail_unless(hy_packagelist_count(plist) == 2);
+    fail_unless(hy_packagelist_count(plist) == 4);
     pkg = hy_packagelist_get(plist, 0);
-    fail_if(strcmp(hy_package_get_name(pkg), "fool"));
+    ck_assert_str_eq(hy_package_get_name(pkg), "fool");
     pkg = hy_packagelist_get(plist, 1);
-    fail_if(strcmp(hy_package_get_name(pkg), "flying"));
+    ck_assert_str_eq(hy_package_get_name(pkg), "flying");
+    pkg = hy_packagelist_get(plist, 2);
+    ck_assert_str_eq(hy_package_get_name(pkg), "pilchard");
+    pkg = hy_packagelist_get(plist, 3);
+    ck_assert_str_eq(hy_package_get_name(pkg), "pilchard");
+
     hy_packagelist_free(plist);
 
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
@@ -564,6 +596,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_install_selector_two);
     tcase_add_test(tc, test_goal_install_selector_nomatch);
     tcase_add_test(tc, test_goal_selector_glob);
+    tcase_add_test(tc, test_goal_selector_upgrade);
     tcase_add_test(tc, test_goal_update);
     tcase_add_test(tc, test_goal_upgrade_all);
     tcase_add_test(tc, test_goal_downgrade);

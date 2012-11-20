@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+#include <check.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -13,6 +14,14 @@
 #include "src/sack_internal.h"
 #include "src/util.h"
 #include "testsys.h"
+
+void
+assert_nevra_eq(HyPackage pkg, const char *nevra)
+{
+    char *pkg_nevra = hy_package_get_nvra(pkg);
+    ck_assert_str_eq(pkg_nevra, nevra);
+    solv_free(pkg_nevra);
+}
 
 HyPackage
 by_name(HySack sack, const char *name)

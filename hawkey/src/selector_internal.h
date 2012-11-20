@@ -6,6 +6,7 @@
 struct _HySelector {
     HySack sack;
     struct _Filter *f_arch;
+    struct _Filter *f_evr;
     struct _Filter *f_name;
 };
 

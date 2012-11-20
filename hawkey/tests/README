@@ -34,6 +34,9 @@ walrus
 semolina
 * for multilib install testing
 
+pilchard
+* for selector upgrade testing
+
 hello
 * depends on 'goodbye' which is not provided by anything else
 
