@@ -2,7 +2,7 @@
 #define TESTSYS_H
 
 // libsolv
-#include <solv/pool.h>
+#include <solv/pooltypes.h>
 
 // hawkey
 #include "src/packagelist.h"
@@ -21,8 +21,6 @@
 HyPackage by_name(HySack sack, const char *name);
 HyPackage by_name_repo(HySack sack, const char *name, const char *repo);
 void dump_packagelist(HyPackageList plist);
-HyRepo glob_for_repofiles(Pool *pool, const char *repo_name, const char *path);
-int load_repo(Pool *pool, const char *name, const char *path, int installed);
 int logfile_size(HySack sack);
 int query_count_results(HyQuery query);
 HyRepo repo_by_name(Pool *pool, const char *name);

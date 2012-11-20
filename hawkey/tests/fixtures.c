@@ -7,6 +7,7 @@
 #include "src/iutil.h"
 #include "src/sack_internal.h"
 #include "fixtures.h"
+#include "testshared.h"
 #include "testsys.h"
 
 /* define the global variable */

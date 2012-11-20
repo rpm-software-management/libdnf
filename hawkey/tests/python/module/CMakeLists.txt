@@ -13,7 +13,7 @@ ADD_LIBRARY(testmodule SHARED ${testmodule_SRCS})
 SET_TARGET_PROPERTIES(testmodule PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(testmodule PROPERTIES OUTPUT_NAME "_hawkey_testmodule")
 TARGET_LINK_LIBRARIES(testmodule _hawkeymodule
-				 testsys
+				 testshared
 				 ${PYTHON_LIBRARY})
 
 # copy the whole package under hawkey/test so 'import hawkey.test' works as expected:
