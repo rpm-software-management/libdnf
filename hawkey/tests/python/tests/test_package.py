@@ -68,7 +68,7 @@ class PackageCmp(base.TestCase):
         self.assertLess(pkg2, pkg1)
         self.assertGreater(pkg1.evr_cmp(pkg2), 0)
 
-class WithYumRepo(base.TestCase):
+class Checksums(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         self.sack.load_yum_repo()
@@ -80,3 +80,10 @@ class WithYumRepo(base.TestCase):
         self.assertEqual(chksum[0], '\x2e')
         self.assertEqual(chksum[31], '\xf5')
         self.assertEqual(chksum_type, hawkey.CHKSUM_SHA256)
+
+    def test_checksum_fail(self):
+        sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        sack.load_system_repo()
+        pkg = base.by_name(sack, "fool")
+        self.assertRaises(AttributeError, lambda: pkg.chksum)
+        self.assertRaises(AttributeError, lambda: pkg.hdr_chksum)

@@ -178,7 +178,7 @@ get_chksum(_PackageObject *self, void *closure)
 
     func = (HyChecksum *(*)(HyPackage, int *))closure;
     cs = func(self->package, &type);
-    if (type == 0) {
+    if (cs == 0) {
 	PyErr_SetString(PyExc_AttributeError, "No such checksum.");
 	return NULL;
     }

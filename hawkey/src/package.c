@@ -214,7 +214,8 @@ hy_package_get_chksum(HyPackage pkg, int *type)
     const unsigned char* ret;
 
     ret = solvable_lookup_bin_checksum(s, SOLVABLE_CHECKSUM, type);
-    *type = checksumt_l2h(*type);
+    if (ret)
+	*type = checksumt_l2h(*type);
     return ret;
 }
 
@@ -230,7 +231,8 @@ hy_package_get_hdr_chksum(HyPackage pkg, int *type)
     const unsigned char *ret;
 
     ret = solvable_lookup_bin_checksum(s, SOLVABLE_HDRID, type);
-    *type = checksumt_l2h(*type);
+    if (ret)
+	*type = checksumt_l2h(*type);
     return ret;
 }
 

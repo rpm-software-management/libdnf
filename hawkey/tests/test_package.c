@@ -116,6 +116,20 @@ START_TEST(test_get_more_requires)
 }
 END_TEST
 
+START_TEST(test_chksum_fail)
+{
+    HySack sack = test_globals.sack;
+    HyPackage pkg = by_name(sack, "walrus");
+    int type;
+
+    const unsigned char *chksum = hy_package_get_chksum(pkg, &type);
+    fail_unless(chksum == NULL);
+    chksum = hy_package_get_hdr_chksum(pkg, &type);
+    fail_unless(chksum == NULL);
+    hy_package_free(pkg);
+}
+END_TEST
+
 START_TEST(test_checksums)
 {
     HyPackage pkg = by_name(test_globals.sack, "mystery-devel");
@@ -200,6 +214,7 @@ package_suite(void)
     tcase_add_unchecked_fixture(tc, fixture_with_main, teardown);
     tcase_add_test(tc, test_get_requires);
     tcase_add_test(tc, test_get_more_requires);
+    tcase_add_test(tc, test_chksum_fail);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("WithRealRepo");
