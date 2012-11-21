@@ -137,7 +137,7 @@ hy_package_get_location(HyPackage pkg)
 }
 
 char *
-hy_package_get_nvra(HyPackage pkg)
+hy_package_get_nevra(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
     return solv_strdup(pool_solvable2str(pkg->pool, s));

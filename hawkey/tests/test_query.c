@@ -279,7 +279,7 @@ START_TEST(test_query_pkg)
     pset = hy_query_run_set(q2);
     fail_unless(hy_packageset_count(pset) == 1);
     HyPackage pkg = hy_packageset_get_clone(pset, 0);
-    char *nvra = hy_package_get_nvra(pkg);
+    char *nvra = hy_package_get_nevra(pkg);
     ck_assert_str_eq(nvra, "jay-6.0-0.x86_64");
     solv_free(nvra);
     hy_package_free(pkg);

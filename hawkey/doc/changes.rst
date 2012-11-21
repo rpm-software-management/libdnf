@@ -194,3 +194,12 @@ reldeps from a package and then trying to find the installed packages that
 provide it. In Python::
 
   q = hawkey.Query(sack).filter(reponame=SYSTEM_REPO_NAME, provides=pkg.obsoletes)
+
+Changes in 0.3.3
+================
+
+Renamed ``hy_package_get_nvra`` to ``hy_package_get_nevra``
+-----------------------------------------------------------
+
+The old name was by error, the functionality has not changed: this function has
+always returned the full NEVRA, skipping the epoch part when it's 0.

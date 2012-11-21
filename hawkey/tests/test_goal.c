@@ -153,7 +153,7 @@ START_TEST(test_goal_install_selector)
 
     HyPackageList plist = hy_goal_list_installs(goal);
     fail_unless(hy_packagelist_count(plist), 1);
-    char *nvra = hy_package_get_nvra(hy_packagelist_get(plist, 0));
+    char *nvra = hy_package_get_nevra(hy_packagelist_get(plist, 0));
     ck_assert_str_eq(nvra, "semolina-2-0.i686");
     hy_free(nvra);
     hy_packagelist_free(plist);

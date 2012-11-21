@@ -45,7 +45,7 @@ static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
     const int count = hy_packagelist_count(plist);
     for (int i = 0; i < count; ++i) {
 	HyPackage pkg = hy_packagelist_get(plist, i);
-	char *nvra = hy_package_get_nvra(pkg);
+	char *nvra = hy_package_get_nevra(pkg);
 	const char *reponame = hy_package_get_reponame(pkg);
 
 	printf("found package: %s [%s]\n", nvra, reponame);
@@ -67,7 +67,7 @@ static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
 	    const int ocount = hy_packagelist_count(olist);
 	    for (int j = 0; j < ocount; ++j) {
 		HyPackage opkg = hy_packagelist_get(olist, j);
-		char *onvra = hy_package_get_nvra(opkg);
+		char *onvra = hy_package_get_nevra(opkg);
 		printf("obsoleting: %s\n", onvra);
 		hy_free(onvra);
 	    }
@@ -199,7 +199,7 @@ erase(HySack sack, const char *name)
     printf("erasure count: %d\n", hy_packagelist_count(plist));
     for (int i = 0; i < hy_packagelist_count(plist); ++i) {
 	HyPackage pkg = hy_packagelist_get(plist, i);
-	char *nvra = hy_package_get_nvra(pkg);
+	char *nvra = hy_package_get_nevra(pkg);
 
 	printf("erasing %s\n", nvra);
 	hy_free(nvra);
@@ -229,10 +229,10 @@ static void update(HySack sack, HyPackage pkg)
     printf("upgrade count: %d\n", hy_packagelist_count(plist));
     for (int i = 0; i < hy_packagelist_count(plist); ++i) {
 	HyPackage pkg = hy_packagelist_get(plist, i);
-	char *nvra = hy_package_get_nvra(pkg);
+	char *nvra = hy_package_get_nevra(pkg);
 	char *location = hy_package_get_location(pkg);
 	HyPackage installed = hy_goal_package_obsoletes(goal, pkg);
-	char *nvra_installed = hy_package_get_nvra(installed);
+	char *nvra_installed = hy_package_get_nevra(installed);
 
 	printf("upgrading: %s using %s\n", nvra, location);
 	printf("\tfrom: %s\n", nvra_installed);
@@ -249,7 +249,7 @@ static void update(HySack sack, HyPackage pkg)
     printf("install count: %d\n", hy_packagelist_count(plist));
     for (int i = 0; i < hy_packagelist_count(plist); ++i) {
 	HyPackage pkg = hy_packagelist_get(plist, i);
-	char *nvra = hy_package_get_nvra(pkg);
+	char *nvra = hy_package_get_nevra(pkg);
 	char *location = hy_package_get_location(pkg);
 
 	printf("installing: %s using %s\n", nvra, location);

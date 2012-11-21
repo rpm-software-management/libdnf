@@ -18,7 +18,7 @@
 void
 assert_nevra_eq(HyPackage pkg, const char *nevra)
 {
-    char *pkg_nevra = hy_package_get_nvra(pkg);
+    char *pkg_nevra = hy_package_get_nevra(pkg);
     ck_assert_str_eq(pkg_nevra, nevra);
     solv_free(pkg_nevra);
 }
@@ -55,7 +55,7 @@ dump_packagelist(HyPackageList plist)
 {
     for (int i = 0; i < hy_packagelist_count(plist); ++i) {
 	HyPackage pkg = hy_packagelist_get(plist, i);
-	char *nvra = hy_package_get_nvra(pkg);
+	char *nvra = hy_package_get_nevra(pkg);
 	printf("\t%s\n", nvra);
 	hy_free(nvra);
     }

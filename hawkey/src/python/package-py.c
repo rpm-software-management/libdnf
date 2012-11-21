@@ -107,7 +107,7 @@ package_repr(_PackageObject *self)
 static PyObject *
 package_str(_PackageObject *self)
 {
-    char *cstr = hy_package_get_nvra(self->package);
+    char *cstr = hy_package_get_nevra(self->package);
     PyObject *ret = PyString_FromString(cstr);
     solv_free(cstr);
     return ret;
