@@ -4,7 +4,7 @@
 #include "src/sack_internal.h"
 #include "src/python/repo-py.h"
 #include "src/python/sack-py.h"
-#include "tests/testsys.h"
+#include "tests/testshared.h"
 
 static PyObject *
 py_load_repo(PyObject *unused, PyObject *args)
@@ -55,10 +55,14 @@ init_hawkey_test(void)
     PyObject *m = Py_InitModule("_hawkey_test", testmodule_methods);
     if (!m)
 	return;
-    PyModule_AddIntConstant(m, "EXPECT_SYSTEM_NSOLVABLES", TEST_EXPECT_SYSTEM_NSOLVABLES);
-    PyModule_AddIntConstant(m, "EXPECT_MAIN_NSOLVABLES", TEST_EXPECT_MAIN_NSOLVABLES);
-    PyModule_AddIntConstant(m, "EXPECT_UPDATES_NSOLVABLES", TEST_EXPECT_UPDATES_NSOLVABLES);
-    PyModule_AddIntConstant(m, "EXPECT_YUM_NSOLVABLES", TEST_EXPECT_YUM_NSOLVABLES);
+    PyModule_AddIntConstant(m, "EXPECT_SYSTEM_NSOLVABLES",
+			    TEST_EXPECT_SYSTEM_NSOLVABLES);
+    PyModule_AddIntConstant(m, "EXPECT_MAIN_NSOLVABLES",
+			    TEST_EXPECT_MAIN_NSOLVABLES);
+    PyModule_AddIntConstant(m, "EXPECT_UPDATES_NSOLVABLES",
+			    TEST_EXPECT_UPDATES_NSOLVABLES);
+    PyModule_AddIntConstant(m, "EXPECT_YUM_NSOLVABLES",
+			    TEST_EXPECT_YUM_NSOLVABLES);
     PyModule_AddStringConstant(m, "FIXED_ARCH", TEST_FIXED_ARCH);
     PyModule_AddStringConstant(m, "UNITTEST_DIR", UNITTEST_DIR);
     PyModule_AddStringConstant(m, "YUM_DIR_SUFFIX", YUM_DIR_SUFFIX);
