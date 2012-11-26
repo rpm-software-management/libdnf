@@ -100,8 +100,15 @@ package_py_cmp(_PackageObject *self, _PackageObject *other)
 static PyObject *
 package_repr(_PackageObject *self)
 {
-    return PyString_FromFormat("<_hawkey.Package object, id: %ld>",
-			       package_hash(self));
+    HyPackage pkg = self->package;
+    char *nevra = hy_package_get_nevra(pkg);
+    PyObject *repr;
+
+    repr = PyString_FromFormat("<hawkey.Package object id %ld, %s, %s>",
+			       package_hash(self), nevra,
+			       hy_package_get_reponame(pkg));
+    solv_free(nevra);
+    return repr;
 }
 
 static PyObject *

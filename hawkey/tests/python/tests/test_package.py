@@ -13,8 +13,8 @@ class Package(base.TestCase):
         self.assertTrue(isinstance(self.pkg, hawkey.Package))
 
     def test_repr(self):
-        self.assertRegexpMatches(repr(self.pkg),
-                                 "<_hawkey.Package object, id: \d+>")
+        regexp = "<hawkey.Package object id \d+, flying-2-9\.noarch, @System>"
+        self.assertRegexpMatches(repr(self.pkg), regexp)
 
     def test_str(self):
         self.assertEqual(str(self.pkg),

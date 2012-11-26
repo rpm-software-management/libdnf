@@ -203,3 +203,20 @@ Renamed ``hy_package_get_nvra`` to ``hy_package_get_nevra``
 
 The old name was by error, the functionality has not changed: this function has
 always returned the full NEVRA, skipping the epoch part when it's 0.
+
+Changes in 0.3.4
+================
+
+Python bindings
+---------------
+
+``pkg.__repr__()`` is more verbose now
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, ``repr(pkg)`` would yield for instance ``<_hawkey.Package object,
+id: 5>``. Now more complete information is present, including the package's
+NEVRA and repository: ``<hawkey.Package object id 5, foo-2-9\.noarch,
+@System>``.
+
+Also notice that the representation now mentions the final ``hawkey.Package``
+type, not ``_hawkey.Package``. Note that these are currently the same.
