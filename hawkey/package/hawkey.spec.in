@@ -1,4 +1,4 @@
-%global gitrev e883549
+%global gitrev 4e41b7f
 %global libsolv_version 0.0.0-17
 
 Name:		hawkey
@@ -76,6 +76,16 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
+* Mon Nov 26 2012 Aleš Kozumplík <ales@redhat.com> - 0.3.3-1.git4e41b7f
+- Python: improve Query result caching (uses the C facility now).
+- packageset: add internal function for getting elements with a hint.
+- Python, performance: Query.run() internally uses a set for the results instead of a list.
+- Query: fix selecting upgrades for packages of changing architecture.
+- Goal: add upgrade_to_selector() (EVR specs in selectors)
+- checksums: do not assert() when the pkg hasn't got the asked checksum. (RhBug:878823)
+- API change: rename: hy_package_get_nvra() -> hy_package_get_nevra().
+- Goal: support distupgrade of all packages.
+
 * Thu Nov 15 2012 Aleš Kozumplík <ales@redhat.com> - 0.3.2-1.gite883549
 - fix: hy_package_cmp() shouldn't compare packages of different arch equal.
 - Goal: support reinstalls.
