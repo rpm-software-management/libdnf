@@ -138,6 +138,13 @@ hy_goal_free(HyGoal goal)
 }
 
 int
+hy_goal_distupgrade_all(HyGoal goal)
+{
+    queue_push2(&goal->job, SOLVER_DISTUPGRADE|SOLVER_SOLVABLE_ALL, 0);
+    return 0;
+}
+
+int
 hy_goal_downgrade_to(HyGoal goal, HyPackage new_pkg)
 {
     return hy_goal_install(goal, new_pkg);

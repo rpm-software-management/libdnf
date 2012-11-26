@@ -172,6 +172,13 @@ goal_init(_GoalObject *self, PyObject *args, PyObject *kwds)
 /* object methods */
 
 static PyObject *
+distupgrade_all(_GoalObject *self, PyObject *unused)
+{
+    int ret = hy_goal_distupgrade_all(self->goal);
+    return op_ret2exc(ret);
+}
+
+static PyObject *
 downgrade_to(_GoalObject *self, PyObject *pkg_obj)
 {
     HyPackage pkg = packageFromPyObject(pkg_obj);
@@ -433,6 +440,7 @@ get_reason(_GoalObject *self, PyObject *pkg)
 }
 
 static struct PyMethodDef goal_methods[] = {
+    {"distupgrade_all",	(PyCFunction)distupgrade_all,	METH_NOARGS,	NULL},
     {"downgrade_to",	(PyCFunction)downgrade_to,	METH_O, NULL},
     {"erase",		(PyCFunction)erase,
      METH_VARARGS | METH_KEYWORDS, NULL},

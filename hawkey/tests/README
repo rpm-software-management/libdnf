@@ -45,7 +45,7 @@ jay
 * downgrade available from main.
 
 baby
-* installed at a version newer than anything available (downgrade testing)
+* installed at a version newer than anything available (downgrade, distupgrade testing)
 * has epoch (testing evr parsing)
 
 === repos/yum ===

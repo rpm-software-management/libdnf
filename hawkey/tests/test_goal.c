@@ -521,6 +521,28 @@ START_TEST(test_goal_erase_clean_deps)
 }
 END_TEST
 
+START_TEST(test_goal_distupgrade_all)
+{
+    HyGoal goal = hy_goal_create(test_globals.sack);
+    fail_if(hy_goal_distupgrade_all(goal));
+    fail_if(hy_goal_run(goal));
+
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
+
+    HyPackageList plist = hy_goal_list_upgrades(goal);
+    fail_unless(hy_packagelist_count(plist) == 1);
+    assert_nevra_eq(hy_packagelist_get(plist, 0), "flying-3-0.noarch");
+    hy_packagelist_free(plist);
+
+    plist = hy_goal_list_downgrades(goal);
+    fail_unless(hy_packagelist_count(plist) == 1);
+    assert_nevra_eq(hy_packagelist_get(plist, 0), "baby-6:4.9-3.x86_64");
+    hy_packagelist_free(plist);
+    hy_goal_free(goal);
+}
+END_TEST
+
 struct Solutions {
     int solutions;
     HyPackageList installs;
@@ -608,6 +630,11 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_erase_simple);
     tcase_add_test(tc, test_goal_erase_with_deps);
     tcase_add_test(tc, test_goal_erase_clean_deps);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("Main");
+    tcase_add_unchecked_fixture(tc, fixture_with_main, teardown);
+    tcase_add_test(tc, test_goal_distupgrade_all);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Greedy");

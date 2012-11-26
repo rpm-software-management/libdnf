@@ -23,6 +23,7 @@ enum _hy_goal_run_flags {
 HyGoal hy_goal_create(HySack sack);
 void hy_goal_free(HyGoal goal);
 
+int hy_goal_distupgrade_all(HyGoal goal);
 int hy_goal_downgrade_to(HyGoal goal, HyPackage new_pkg);
 int hy_goal_erase(HyGoal goal, HyPackage pkg);
 int hy_goal_erase_flags(HyGoal goal, HyPackage pkg, int flags);
