@@ -5,11 +5,13 @@ This is hawkey, library providing simplified C and Python API to libsolv
 
 Packages needed for the build (i.e. build requires):
 * check-devel
+* cmake
 * expat-devel
 * gcc
 * libsolv-devel
 * libsolv-tools
 * python-devel
+* python-nose
 * rpm-devel
 * zlib-devel
 
