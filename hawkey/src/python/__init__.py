@@ -1,5 +1,7 @@
 import _hawkey
 import collections
+import operator
+import re
 import types
 
 __all__ = [
@@ -16,7 +18,7 @@ __all__ = [
     # functions
     'chksum_name', 'chksum_type', 'split_nevra',
     # classes
-    'Goal', 'NEVRA', 'Package', 'Query', 'Repo', 'Sack', 'Selector']
+    'Goal', 'NEVRA', 'Package', 'Query', 'Repo', 'Sack', 'Selector', 'Subject']
 
 _QUERY_KEYNAME_MAP = {
     'pkg'	: _hawkey.PKG,
@@ -238,3 +240,101 @@ class Selector(_hawkey.Selector):
         map(lambda arg_tuple: super(Selector, self).set(*arg_tuple),
             _parse_filter_args(set(), kwargs))
         return self
+
+FORM_NEVRA	= re.compile("""(?P<name>[.\-S]+)-\
+(?P<epoch>E)?(?P<version>[.S]+)-\
+(?P<release>[.S]+)\.(?P<arch>S)$""")
+FORM_NEVR	= re.compile("""(?P<name>[.\-S]+)-\
+(?P<epoch>E)?(?P<version>[.S]+)-(?P<release>[.S]+)$""")
+FORM_NEV	= re.compile("""(?P<name>[.\-S]+)-\
+(?P<epoch>E)?(?P<version>[.S]+)$""")
+FORM_NA		= re.compile("""(?P<name>[.\-S]+).(?P<arch>S)$""")
+FORM_NAME	= re.compile("""(?P<name>[.\-S]+)$""")
+FORM_ALL	= [FORM_NEVRA, FORM_NEVR, FORM_NEV, FORM_NA, FORM_NAME]
+
+class Token(object):
+    def __init__(self, content, epoch=False):
+        self.content = content
+        self.epoch = epoch
+
+    def __repr__(self):
+        if self.epoch:
+            return "<%s:>" % self.content
+        elif self.content == '.':
+            return "<.>"
+        elif self.content == '-':
+            return "<->"
+        else:
+            return self.content
+
+    def __str__(self):
+        if self.epoch:
+            return "%s:" % self.content
+        return self.content
+
+    def abbr(self):
+        if self.epoch:
+            return "E"
+        elif self.content in ('.', '-'):
+            return self.content
+        else:
+            return "S"
+
+class Subject(object):
+    def __init__(self, pattern, form=FORM_ALL):
+        self.pat = pattern
+        if type(form) is type(FORM_NEVRA):
+            self.forms = [form]
+        else:
+            self.forms = form[:]
+        self._tokenize()
+
+    @staticmethod
+    def _is_int(s):
+        return Subject._to_int(s) is not None
+
+    @staticmethod
+    def _throw_tokens(pattern):
+        current = ""
+        for c in pattern:
+            if c in (".", "-"):
+                yield Token(current)
+                yield Token(c)
+                current = ""
+                continue
+            if c == ":" and Subject._is_int(current):
+                yield Token(current, epoch=True)
+                current = ""
+                continue
+            current += c
+        yield Token(current)
+
+    @staticmethod
+    def _to_int(s):
+        try:
+            return int(s)
+        except (ValueError, TypeError):
+            return None
+
+    def _backmap(self, abbr, match, group):
+        start = match.start(group)
+        end = match.end(group)
+        merged = "".join(map(str, self.tokens[start:end]))
+        if group == 'epoch':
+            return self._to_int(merged[:-1])
+        return merged
+
+    def _tokenize(self):
+        self.tokens = list(self._throw_tokens(self.pat))
+
+    default_nevra=NEVRA(name=None, epoch=None, version=None, release=None,
+                        arch=None)
+    def possibilities(self):
+        abbr = "".join(map(operator.methodcaller('abbr'), self.tokens))
+        for pat in self.forms:
+            match = pat.match(abbr)
+            if match is None:
+                continue
+            yield self.default_nevra._replace(**
+                {key:self._backmap(abbr, match, key)
+                 for key in match.groupdict()})
