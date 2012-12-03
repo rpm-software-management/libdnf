@@ -338,3 +338,14 @@ class Subject(object):
             yield self.default_nevra._replace(**
                 {key:self._backmap(abbr, match, key)
                  for key in match.groupdict()})
+
+    def real_possibilities(self, sack):
+        existing_arches = sack.list_arches()
+        for nevra in self.possibilities():
+            if nevra.name is not None:
+                if not sack._knows(sack, nevra.name, only_names=True):
+                    continue
+            if nevra.arch is not None:
+                if nevra.arch not in existing_arches:
+                    continue
+            yield nevra

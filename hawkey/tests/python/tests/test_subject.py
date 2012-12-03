@@ -1,6 +1,5 @@
 import base
 import hawkey
-import unittest
 
 INP_FOF="four-of-fish-8:3.6.9-11.fc100.x86_64"
 INP_FOF_NOEPOCH="four-of-fish-3.6.9-11.fc100.x86_64"
@@ -90,3 +89,33 @@ class SubjectTest(base.TestCase):
                 name='four-of-fish-3.6.9-11.fc100.x86_64', epoch=None,
                 version=None, release=None, arch=None))
         self.assertRaises(StopIteration, nevras.next)
+
+class SubjectRealPossibilitiesTest(base.TestCase):
+    def setUp(self):
+        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack.load_system_repo()
+        self.sack.load_test_repo("main", "main.repo")
+        self.sack.load_test_repo("updates", "updates.repo")
+
+    def test_none(self):
+        subj = hawkey.Subject(INP_FOF_NOEPOCH)
+        ret = list(subj.real_possibilities(self.sack))
+        self.assertLength(ret, 0)
+
+    def test_nevra(self):
+        subj = hawkey.Subject("pilchard-1.2.4-1.x86_64")
+        possibilities = subj.real_possibilities(self.sack)
+        nevra = possibilities.next()
+        self.assertEqual(nevra, hawkey.NEVRA(name='pilchard', epoch=None,
+                                             version='1.2.4', release='1',
+                                             arch='x86_64'))
+        nevra = possibilities.next()
+        self.assertEqual(nevra, hawkey.NEVRA(name='pilchard', epoch=None,
+                                             version='1.2.4', release='1.x86_64',
+                                             arch=None))
+        self.assertRaises(StopIteration, possibilities.next)
+
+    def test_wrong_arch(self):
+        subj = hawkey.Subject("pilchard-1.2.4-1.ppc64")
+        ret = list(subj.real_possibilities(self.sack))
+        self.assertLength(ret, 1)

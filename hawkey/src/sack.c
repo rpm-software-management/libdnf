@@ -604,6 +604,26 @@ sack_log(HySack sack, int level, const char *format, ...)
     POOL_DEBUG(level, buf);
 }
 
+int
+sack_knows(HySack sack, const char *str, int only_names)
+{
+    Pool *pool = sack_pool(sack);
+    Id provide = pool_str2id(pool, str, 0);
+    if (provide == 0)
+	return 0;
+
+    sack_make_provides_ready(sack);
+    Id p, pp;
+    FOR_PROVIDES(p, pp, provide) {
+	Solvable *s = pool_id2solvable(pool, p);
+	if (!only_names)
+	    return 1;
+	if (s->name == provide)
+	    return 1;
+    }
+    return 0;
+}
+
 /**
  * Put all solvables named 'name' into the queue 'same'.
  *

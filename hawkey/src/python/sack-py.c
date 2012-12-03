@@ -180,6 +180,20 @@ static PyGetSetDef sack_getsetters[] = {
 /* object methods */
 
 static PyObject *
+_knows(PyObject *unused, PyObject *args, PyObject *kwds)
+{
+    HySack sack;
+    const char *name;
+    int only_names = 0;
+
+    char *kwlist[] = {"sack", "name", "only_names", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&s|i", kwlist,
+				     sack_converter, &sack, &name, &only_names))
+	return 0;
+    return PyInt_FromLong(sack_knows(sack, name, only_names));
+}
+
+static PyObject *
 create_cmdline_repo(_SackObject *self, PyObject *unused)
 {
     hy_sack_create_cmdline_repo(self->sack);
@@ -299,6 +313,8 @@ len(_SackObject *self)
 
 static struct
 PyMethodDef sack_methods[] = {
+    {"_knows",		(PyCFunction)_knows, METH_KEYWORDS|METH_VARARGS,
+     NULL},
     {"create_cmdline_repo", (PyCFunction)create_cmdline_repo, METH_NOARGS,
      NULL},
     {"create_package", (PyCFunction)create_package, METH_O,
