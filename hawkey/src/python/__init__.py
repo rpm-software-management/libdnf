@@ -252,6 +252,9 @@ FORM_NA		= re.compile("""(?P<name>[.\-S]+).(?P<arch>S)$""")
 FORM_NAME	= re.compile("""(?P<name>[.\-S]+)$""")
 FORM_ALL	= [FORM_NEVRA, FORM_NEVR, FORM_NEV, FORM_NA, FORM_NAME]
 
+def _is_glob_pattern(pattern):
+    return set(pattern) & set("*[?")
+
 class Token(object):
     def __init__(self, content, epoch=False):
         self.content = content
@@ -339,13 +342,20 @@ class Subject(object):
                 {key:self._backmap(abbr, match, key)
                  for key in match.groupdict()})
 
-    def real_possibilities(self, sack):
+    def real_possibilities(self, sack, allow_globs=False):
+        def should_check(val):
+            if val is None:
+                return False
+            if allow_globs and _is_glob_pattern(val):
+                return False
+            return True
+
         existing_arches = sack.list_arches()
         for nevra in self.possibilities():
-            if nevra.name is not None:
+            if should_check(nevra.name):
                 if not sack._knows(sack, nevra.name, only_names=True):
                     continue
-            if nevra.arch is not None:
+            if should_check(nevra.arch):
                 if nevra.arch not in existing_arches:
                     continue
             yield nevra

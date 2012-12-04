@@ -119,3 +119,8 @@ class SubjectRealPossibilitiesTest(base.TestCase):
         subj = hawkey.Subject("pilchard-1.2.4-1.ppc64")
         ret = list(subj.real_possibilities(self.sack))
         self.assertLength(ret, 1)
+
+    def test_globs(self):
+        subj = hawkey.Subject("*-1.2.4-1.x86_64")
+        ret = list(subj.real_possibilities(self.sack, allow_globs=True))
+        self.assertLength(ret, 5)
