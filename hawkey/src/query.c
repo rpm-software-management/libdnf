@@ -765,6 +765,10 @@ hy_query_clone(HyQuery q)
 	filterp->evr = solv_strdup(q->filters[i].evr);
     }
     assert(qn->nfilters == q->nfilters);
+    if (q->result) {
+	qn->result = solv_calloc(1, sizeof(Map));
+	map_init_clone(qn->result, q->result);
+    }
 
     return qn;
 }

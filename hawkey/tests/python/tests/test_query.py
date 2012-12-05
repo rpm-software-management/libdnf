@@ -91,6 +91,15 @@ class Query(base.TestCase):
         self.assertEqual(q_clone.count(), 2)
         self.assertNotEqual(q_clone[0], q_clone[1])
 
+    def test_clone_with_evaluation(self):
+        q = hawkey.Query(self.sack)
+        q.filterm(name__substr="penny")
+        q.run()
+        q_clone = hawkey.Query(query=q)
+        del q
+        self.assertTrue(q_clone.evaluated)
+        self.assertLength(q_clone.result, 2)
+
     def test_immutability(self):
         q = hawkey.Query(self.sack).filter(name="jay")
         q2 = q.filter(evr="5.0-0")
