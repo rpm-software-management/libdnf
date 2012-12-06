@@ -8,6 +8,8 @@ extern "C" {
 /* hawkey */
 #include "types.h"
 
+HyReldep hy_reldep_create(HySack sack, int cmp_type, const char *name,
+			  const char *evr);
 void hy_reldep_free(HyReldep reldep);
 HyReldep hy_reldep_clone(HyReldep reldep);
 char *hy_reldep_str(HyReldep reldep);

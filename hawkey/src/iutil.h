@@ -44,6 +44,7 @@ char *pool_tmpdup(Pool *pool, const char *s);
 char *hy_strndup(const char *s, size_t n);
 
 /* libsolv utils */
+int cmptype2relflags(int type);
 void repo_internalize_trigger(Repo *r);
 Id str2archid(Pool *pool, const char *s);
 void queue2plist(HySack sack, Queue *q, HyPackageList plist);

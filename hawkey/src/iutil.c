@@ -280,6 +280,20 @@ hy_strndup(const char *s, size_t n)
   return r;
 }
 
+int
+cmptype2relflags(int type)
+{
+    int flags = 0;
+    if (type & HY_EQ)
+	flags |= REL_EQ;
+    if (type & HY_LT)
+	flags |= REL_LT;
+    if (type & HY_GT)
+	flags |= REL_GT;
+    assert(flags);
+    return flags;
+}
+
 void
 repo_internalize_trigger(Repo *repo)
 {

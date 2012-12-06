@@ -121,20 +121,6 @@ type2flags(int type, int keyname)
 }
 
 static int
-type2relflags(int type)
-{
-    int flags = 0;
-    if (type & HY_EQ)
-	flags |= REL_EQ;
-    if (type & HY_LT)
-	flags |= REL_LT;
-    if (type & HY_GT)
-	flags |= REL_GT;
-    assert(flags);
-    return flags;
-}
-
-static int
 valid_filter_str(int keyname, int cmp_type)
 {
     if (!match_type_str(keyname))
@@ -468,7 +454,7 @@ filter_provides_str(HyQuery q, struct _Filter *f, Map *m)
     if (id == STRID_NULL || id == STRID_EMPTY)
 	return;
     id_evr = pool_str2id(pool, f->evr, 1);
-    flags = type2relflags(f->cmp_type);
+    flags = cmptype2relflags(f->cmp_type);
     r = pool_rel2id(pool, id, id_evr, flags, 1);
     FOR_JOB_SELECT(p, pp, SOLVER_SOLVABLE_PROVIDES, r)
 	MAPSET(m, p);
@@ -486,7 +472,7 @@ filter_requires(HyQuery q, struct _Filter *f, Map *m)
 
     if (f->evr) {
         Id evr = pool_str2id(pool, f->evr, 1);
-        int flags = type2relflags(f->cmp_type);
+        int flags = cmptype2relflags(f->cmp_type);
         id = pool_rel2id(pool, id, evr, flags, 1);
     }
 

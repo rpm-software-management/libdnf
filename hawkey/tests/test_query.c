@@ -494,6 +494,21 @@ START_TEST(test_query_reldep)
 }
 END_TEST
 
+START_TEST(test_query_reldep_arbitrary)
+{
+    HySack sack = test_globals.sack;
+    HyQuery query = hy_query_create(sack);
+    HyReldep reldep = hy_reldep_create(sack, HY_GT, "P-lib", "3-0");
+
+    fail_if(reldep == NULL);
+    hy_query_filter_reldep(query, HY_PKG_PROVIDES, reldep);
+    fail_unless(query_count_results(query) == 3);
+
+    hy_reldep_free(reldep);
+    hy_query_free(query);
+}
+END_TEST
+
 START_TEST(test_filter_files)
 {
     HyQuery q = hy_query_create(test_globals.sack);
@@ -626,6 +641,7 @@ query_suite(void)
     tcase_add_test(tc, test_upgrade_already_installed);
     tcase_add_test(tc, test_downgrade);
     tcase_add_test(tc, test_query_reldep);
+    tcase_add_test(tc, test_query_reldep_arbitrary);
     tcase_add_test(tc, test_query_requires);
     suite_add_tcase(s, tc);
 

@@ -5,6 +5,7 @@
 #include <solv/util.h>
 
 // hawkey
+#include "iutil.h"
 #include "reldep_internal.h"
 #include "sack_internal.h"
 
@@ -41,6 +42,25 @@ reldeplist_from_queue(Pool *pool, Queue h)
     reldeplist->pool = pool;
     queue_init_clone(&reldeplist->queue, &h);
     return reldeplist;
+}
+
+HyReldep
+hy_reldep_create(HySack sack, int cmp_type, const char *name, const char *evr)
+{
+    Pool *pool = sack_pool(sack);
+    Id id = pool_str2id(pool, name, 0);
+
+    if (id == STRID_NULL || id == STRID_EMPTY)
+	// stop right there, this will never match anything.
+	return NULL;
+
+    if (evr) {
+	assert(cmp_type);
+        Id ievr = pool_str2id(pool, evr, 1);
+        int flags = cmptype2relflags(cmp_type);
+        id = pool_rel2id(pool, id, ievr, flags, 1);
+    }
+    return reldep_create(pool, id);
 }
 
 void

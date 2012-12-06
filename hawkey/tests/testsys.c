@@ -61,6 +61,14 @@ dump_packagelist(HyPackageList plist)
     }
 }
 
+void
+dump_query_results(HyQuery query)
+{
+    HyPackageList plist = hy_query_run(query);
+    dump_packagelist(plist);
+    hy_packagelist_free(plist);
+}
+
 int
 logfile_size(HySack sack)
 {
