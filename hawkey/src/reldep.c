@@ -22,7 +22,6 @@ struct _HyReldepList {
 HyReldep
 reldep_create(Pool *pool, Id r_id)
 {
-    assert(ISRELDEP(r_id));
     HyReldep reldep = solv_calloc(1, sizeof(*reldep));
     reldep->pool = pool;
     reldep->r_id = r_id;
@@ -45,7 +44,7 @@ reldeplist_from_queue(Pool *pool, Queue h)
 }
 
 HyReldep
-hy_reldep_create(HySack sack, int cmp_type, const char *name, const char *evr)
+hy_reldep_create(HySack sack, const char *name, int cmp_type, const char *evr)
 {
     Pool *pool = sack_pool(sack);
     Id id = pool_str2id(pool, name, 0);

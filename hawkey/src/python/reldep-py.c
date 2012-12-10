@@ -18,14 +18,30 @@ typedef struct {
     PyObject *sack;
 } _ReldepObject;
 
+static _ReldepObject *
+reldep_new_core(PyTypeObject *type, PyObject *sack)
+{
+    _ReldepObject *self = (_ReldepObject*)type->tp_alloc(type, 0);
+    if (self == NULL)
+	return NULL;
+    self->reldep = NULL;
+    self->sack = sack;
+    Py_INCREF(self->sack);
+    return self;
+}
+
 PyObject *
 new_reldep(PyObject *sack, Id r_id)
 {
-    PyObject *arglist = Py_BuildValue("Oi", sack, r_id);
-    if (arglist == NULL)
+    HySack csack = sackFromPyObject(sack);
+    if (csack == NULL)
 	return NULL;
-    PyObject *reldep = PyObject_CallObject((PyObject*)&reldep_Type, arglist);
-    return reldep;
+
+    _ReldepObject *self = reldep_new_core(&reldep_Type, sack);
+    if (self == NULL)
+	return NULL;
+    self->reldep = reldep_create(sack_pool(csack), r_id);
+    return (PyObject*)self;
 }
 
 HyReldep
@@ -43,22 +59,38 @@ static Id reldep_hash(_ReldepObject *self);
 static PyObject *
 reldep_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    PyObject *sack;
-    Id id;
-    HySack csack;
-    if (!PyArg_ParseTuple(args, "O!i", &sack_Type, &sack, &id))
+    PyObject *sack = PyTuple_GetItem(args, 0);
+    if (sack == NULL) {
+	PyErr_SetString(PyExc_ValueError,
+			"Expected a Sack object as the first argument.");
+    }
+    if (!sackObject_Check(sack)) {
+	PyErr_SetString(PyExc_TypeError,
+			"Expected a Sack object as the first argument.");
 	return NULL;
-    csack = sackFromPyObject(sack);
-    if (csack == NULL)
-	return NULL;
+    }
+    return (PyObject *)reldep_new_core(type, sack);
+}
 
-    _ReldepObject *self = (_ReldepObject*)type->tp_alloc(type, 0);
-    if (self == NULL)
-	return NULL;
-    self->reldep = reldep_create(sack_pool(csack), id);
-    self->sack = sack;
-    Py_INCREF(self->sack);
-    return (PyObject*)self;
+static int
+reldep_init(_ReldepObject *self, PyObject *args, PyObject *kwds)
+{
+    PyObject *sack;
+    int cmp_type = 0;
+    const char *name, *evr = NULL;
+    if (!PyArg_ParseTuple(args, "O!s|is", &sack_Type, &sack, &name, &cmp_type,
+			  &evr))
+	return -1;
+    HySack csack = sackFromPyObject(sack);
+    if (csack == NULL)
+	return -1;
+
+    self->reldep = hy_reldep_create(csack, name, cmp_type, evr);
+    if (self->reldep == NULL) {
+	PyErr_Format(HyExc_Value, "No such reldep: %s", name);
+	return -1;
+    }
+    return 0;
 }
 
 static void
@@ -131,7 +163,7 @@ PyTypeObject reldep_Type = {
     0,				/* tp_descr_get */
     0,				/* tp_descr_set */
     0,				/* tp_dictoffset */
-    0,				/* tp_init */
+    (initproc)reldep_init,	/* tp_init */
     0,				/* tp_alloc */
     reldep_new,			/* tp_new */
     0,				/* tp_free */

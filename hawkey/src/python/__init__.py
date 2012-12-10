@@ -1,5 +1,6 @@
 import _hawkey
 import collections
+import itertools
 import operator
 import re
 import types
@@ -42,6 +43,15 @@ _QUERY_KEYNAME_MAP = {
     'upgrades'	: _hawkey.PKG_UPGRADES,
 }
 
+_CMP_MAP = {
+    '=' : _hawkey.EQ,
+    '>' : _hawkey.GT,
+    '<' : _hawkey.LT,
+    '!=' : _hawkey.NEQ,
+    '>=' : _hawkey.EQ | _hawkey.GT,
+    '<=' : _hawkey.EQ | _hawkey.LT,
+    }
+
 _QUERY_CMP_MAP = {
     'eq' : _hawkey.EQ,
     'gt' : _hawkey.GT,
@@ -51,7 +61,7 @@ _QUERY_CMP_MAP = {
     'lte' : _hawkey.EQ | _hawkey.LT,
     'substr'  : _hawkey.SUBSTR,
     'glob' : _hawkey.GLOB,
-}
+    }
 
 VERSION_MAJOR = _hawkey.VERSION_MAJOR
 VERSION_MINOR = _hawkey.VERSION_MINOR
@@ -72,7 +82,6 @@ REASON_USER = _hawkey.REASON_USER
 
 Package = _hawkey.Package
 Repo = _hawkey.Repo
-Reldep = _hawkey.Reldep
 Sack = _hawkey.Sack
 
 Exception = _hawkey.Exception
@@ -96,6 +105,28 @@ class NEVRA(_NEVRA):
         return Query(sack).filter(
             name=self.name, epoch=self.epoch, version=self.version,
             release=self.release, arch=self.arch)
+
+def _translate_args(reldep):
+    rel_signs = set(''.join(_CMP_MAP.keys()))
+    escaped_signs = ''.join(map(re.escape, rel_signs))
+    regex = re.compile('([^%s\s]+)(?:\s*([%s]+)\s*([^%s\s]+))?$' % \
+                           tuple([escaped_signs]*3))
+    match = regex.match(reldep)
+    if match:
+        groups = match.groups()
+        return groups
+    return None
+
+class Reldep(_hawkey.Reldep):
+    def __init__(self, sack, reldep_str):
+        split = _translate_args(reldep_str)
+        if split is None:
+            raise ValueException("Not a valid reldep: %s" % reldep_str)
+        (name, cmp_type, evr) = split
+        if cmp_type is None:
+            super(Reldep, self).__init__(sack, name)
+        else:
+            super(Reldep, self).__init__(sack, name, _CMP_MAP[cmp_type], evr)
 
 class Goal(_hawkey.Goal):
     _reserved_kw	= set(['package', 'select'])

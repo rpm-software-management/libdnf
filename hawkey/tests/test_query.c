@@ -498,7 +498,7 @@ START_TEST(test_query_reldep_arbitrary)
 {
     HySack sack = test_globals.sack;
     HyQuery query = hy_query_create(sack);
-    HyReldep reldep = hy_reldep_create(sack, HY_GT, "P-lib", "3-0");
+    HyReldep reldep = hy_reldep_create(sack, "P-lib", HY_GT, "3-0");
 
     fail_if(reldep == NULL);
     hy_query_filter_reldep(query, HY_PKG_PROVIDES, reldep);
