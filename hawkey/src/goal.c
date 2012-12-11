@@ -9,7 +9,7 @@
 
 // hawkey
 #include "errno.h"
-#include "goal_internal.h"
+#include "goal.h"
 #include "iutil.h"
 #include "package_internal.h"
 #include "query_internal.h"
@@ -116,6 +116,171 @@ internal_solver_callback(Solver *solv, void *data)
     goal->trans = NULL;
     return ret;
 }
+
+// internal functions to translate Selector into libsolv Job
+
+static int
+job_has(Queue *job, Id what, Id id)
+{
+    for (int i = 0; i < job->count; i += 2)
+	if (job->elements[i] == what && job->elements[i + 1] == id)
+	    return 1;
+    return 0;
+}
+
+static int
+filter_arch2job(HySack sack, const struct _Filter *f, Queue *job)
+{
+    if (f == NULL)
+	return 0;
+
+    assert(f->cmp_type == HY_EQ);
+    assert(f->nmatches == 1);
+    Pool *pool = sack_pool(sack);
+    const char *arch = f->matches[0].str;
+    Id archid = str2archid(pool, arch);
+
+    if (archid == 0)
+	return HY_E_ARCH;
+    for (int i = 0; i < job->count; i += 2) {
+	Id dep;
+	assert(job->elements[i] & SOLVER_SOLVABLE_NAME);
+	dep = pool_rel2id(pool, job->elements[i + 1],
+			  archid, REL_ARCH, 1);
+	job->elements[i] |= SOLVER_SETARCH;
+	job->elements[i + 1] = dep;
+    }
+    return 0;
+}
+
+static int
+filter_evr2job(HySack sack, const struct _Filter *f, Queue *job)
+{
+    if (f == NULL)
+	return 0;
+
+    assert(f->cmp_type == HY_EQ);
+    assert(f->nmatches == 1);
+
+    Pool *pool = sack_pool(sack);
+    Id evr = pool_str2id(pool, f->matches[0].str, 1);
+    for (int i = 0; i < job->count; i += 2) {
+	Id dep;
+	assert(job->elements[i] & SOLVER_SOLVABLE_NAME);
+	dep = pool_rel2id(pool, job->elements[i + 1],
+			  evr, REL_EQ, 1);
+	job->elements[i] |= SOLVER_SETEVR;
+	job->elements[i + 1] = dep;
+    }
+    return 0;
+}
+
+static int
+filter_name2job(HySack sack, const struct _Filter *f, Queue *job)
+{
+    if (f == NULL)
+	return 0;
+    assert(f->nmatches == 1);
+
+    Pool *pool = sack_pool(sack);
+    const char *name = f->matches[0].str;
+    Id id;
+    Dataiterator di;
+
+    switch (f->cmp_type) {
+    case HY_EQ:
+	id = pool_str2id(pool, name, 0);
+	if (id)
+	    queue_push2(job, SOLVER_SOLVABLE_NAME, id);
+	break;
+    case HY_GLOB:
+	dataiterator_init(&di, pool, 0, 0, SOLVABLE_NAME, name, SEARCH_GLOB);
+	while (dataiterator_step(&di)) {
+	    assert(di.idp);
+	    id = *di.idp;
+	    if (job_has(job, SOLVABLE_NAME, id))
+		continue;
+	    queue_push2(job, SOLVER_SOLVABLE_NAME, id);
+	}
+	dataiterator_free(&di);
+	break;
+    default:
+	assert(0);
+	return 1;
+    }
+    return 0;
+}
+
+static int
+filter_provides2job(HySack sack, const struct _Filter *f, Queue *job)
+{
+    if (f == NULL)
+	return 0;
+    assert(f->nmatches == 1);
+
+    Pool *pool = sack_pool(sack);
+    const char *provide = f->matches[0].str;
+    Id id;
+
+    switch (f->cmp_type) {
+    case HY_EQ:
+	id = pool_str2id(pool, provide, 0);
+	if (id)
+	    queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
+	break;
+    default:
+	assert(0);
+	return 1;
+    }
+    return 0;
+}
+
+/**
+ * Build job queue from a Query.
+ *
+ * Returns 0 on success. Otherwise it returns non-zero and sets hy_errno.
+ */
+static int
+sltr2job(const HySelector sltr, Queue *job, int solver_action)
+{
+    HySack sack = selector_sack(sltr);
+    int ret = 0;
+    Queue job_sltr;
+
+    queue_init(&job_sltr);
+    if (sltr->f_name == NULL && sltr->f_provides == NULL) {
+	// no name or provides in the selector is an error
+	ret = HY_E_SELECTOR;
+	goto finish;
+    }
+
+    sack_make_provides_ready(sack);
+    ret = filter_name2job(sack, sltr->f_name, &job_sltr);
+    if (ret)
+	goto finish;
+    ret = filter_provides2job(sack, sltr->f_provides, &job_sltr);
+    if (ret)
+	goto finish;
+    ret = filter_arch2job(sack, sltr->f_arch, &job_sltr);
+    if (ret)
+	goto finish;
+    ret = filter_evr2job(sack, sltr->f_evr, &job_sltr);
+    if (ret)
+	goto finish;
+
+    for (int i = 0; i < job_sltr.count; i += 2)
+ 	queue_push2(job,
+ 		    job_sltr.elements[i] | solver_action,
+ 		    job_sltr.elements[i + 1]);
+
+ finish:
+    if (ret)
+ 	hy_errno = ret;
+    queue_free(&job_sltr);
+    return ret;
+}
+
+// public functions
 
 HyGoal
 hy_goal_create(HySack sack)
@@ -391,167 +556,4 @@ hy_goal_get_reason(HyGoal goal, HyPackage pkg)
 	solver_ruleclass(goal->solv, info) == SOLVER_RULE_JOB)
 	return HY_REASON_USER;
     return HY_REASON_DEP;
-}
-
-// internal functions to translate Selector into libsolv Job
-
-static int
-job_has(Queue *job, Id what, Id id)
-{
-    for (int i = 0; i < job->count; i += 2)
-	if (job->elements[i] == what && job->elements[i + 1] == id)
-	    return 1;
-    return 0;
-}
-
-static int
-filter_arch2job(HySack sack, const struct _Filter *f, Queue *job)
-{
-    if (f == NULL)
-	return 0;
-
-    assert(f->cmp_type == HY_EQ);
-    assert(f->nmatches == 1);
-    Pool *pool = sack_pool(sack);
-    const char *arch = f->matches[0].str;
-    Id archid = str2archid(pool, arch);
-
-    if (archid == 0)
-	return HY_E_ARCH;
-    for (int i = 0; i < job->count; i += 2) {
-	Id dep;
-	assert(job->elements[i] & SOLVER_SOLVABLE_NAME);
-	dep = pool_rel2id(pool, job->elements[i + 1],
-			  archid, REL_ARCH, 1);
-	job->elements[i] |= SOLVER_SETARCH;
-	job->elements[i + 1] = dep;
-    }
-    return 0;
-}
-
-static int
-filter_evr2job(HySack sack, const struct _Filter *f, Queue *job)
-{
-    if (f == NULL)
-	return 0;
-
-    assert(f->cmp_type == HY_EQ);
-    assert(f->nmatches == 1);
-
-    Pool *pool = sack_pool(sack);
-    Id evr = pool_str2id(pool, f->matches[0].str, 1);
-    for (int i = 0; i < job->count; i += 2) {
-	Id dep;
-	assert(job->elements[i] & SOLVER_SOLVABLE_NAME);
-	dep = pool_rel2id(pool, job->elements[i + 1],
-			  evr, REL_EQ, 1);
-	job->elements[i] |= SOLVER_SETEVR;
-	job->elements[i + 1] = dep;
-    }
-    return 0;
-}
-
-static int
-filter_name2job(HySack sack, const struct _Filter *f, Queue *job)
-{
-    if (f == NULL)
-	return 0;
-    assert(f->nmatches == 1);
-
-    Pool *pool = sack_pool(sack);
-    const char *name = f->matches[0].str;
-    Id id;
-    Dataiterator di;
-
-    switch (f->cmp_type) {
-    case HY_EQ:
-	id = pool_str2id(pool, name, 0);
-	if (id)
-	    queue_push2(job, SOLVER_SOLVABLE_NAME, id);
-	break;
-    case HY_GLOB:
-	dataiterator_init(&di, pool, 0, 0, SOLVABLE_NAME, name, SEARCH_GLOB);
-	while (dataiterator_step(&di)) {
-	    assert(di.idp);
-	    id = *di.idp;
-	    if (job_has(job, SOLVABLE_NAME, id))
-		continue;
-	    queue_push2(job, SOLVER_SOLVABLE_NAME, id);
-	}
-	dataiterator_free(&di);
-	break;
-    default:
-	assert(0);
-	return 1;
-    }
-    return 0;
-}
-
-static int
-filter_provides2job(HySack sack, const struct _Filter *f, Queue *job)
-{
-    if (f == NULL)
-	return 0;
-    assert(f->nmatches == 1);
-
-    Pool *pool = sack_pool(sack);
-    const char *provide = f->matches[0].str;
-    Id id;
-
-    switch (f->cmp_type) {
-    case HY_EQ:
-	id = pool_str2id(pool, provide, 0);
-	if (id)
-	    queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
-	break;
-    default:
-	assert(0);
-	return 1;
-    }
-    return 0;
-}
-
-/**
- * Build job queue from a Query.
- *
- * Returns 0 on success. Otherwise it returns non-zero and sets hy_errno.
- */
-int
-sltr2job(const HySelector sltr, Queue *job, int solver_action)
-{
-    HySack sack = selector_sack(sltr);
-    int ret = 0;
-    Queue job_sltr;
-
-    queue_init(&job_sltr);
-    if (sltr->f_name == NULL && sltr->f_provides == NULL) {
-	// no name or provides in the selector is an error
-	ret = HY_E_SELECTOR;
-	goto finish;
-    }
-
-    sack_make_provides_ready(sack);
-    ret = filter_name2job(sack, sltr->f_name, &job_sltr);
-    if (ret)
-	goto finish;
-    ret = filter_provides2job(sack, sltr->f_provides, &job_sltr);
-    if (ret)
-	goto finish;
-    ret = filter_arch2job(sack, sltr->f_arch, &job_sltr);
-    if (ret)
-	goto finish;
-    ret = filter_evr2job(sack, sltr->f_evr, &job_sltr);
-    if (ret)
-	goto finish;
-
-    for (int i = 0; i < job_sltr.count; i += 2)
- 	queue_push2(job,
- 		    job_sltr.elements[i] | solver_action,
- 		    job_sltr.elements[i + 1]);
-
- finish:
-    if (ret)
- 	hy_errno = ret;
-    queue_free(&job_sltr);
-    return ret;
 }
