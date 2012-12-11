@@ -124,3 +124,11 @@ class SubjectRealPossibilitiesTest(base.TestCase):
         subj = hawkey.Subject("*-1.2.4-1.x86_64")
         ret = list(subj.real_possibilities(self.sack, allow_globs=True))
         self.assertLength(ret, 5)
+
+    def test_reldep(self):
+        subj = hawkey.Subject("P-lib")
+        self.assertRaises(StopIteration, subj.real_possibilities(self.sack).next)
+        reldeps = subj.reldep_possibilities_real(self.sack)
+        reldep = reldeps.next()
+        self.assertEqual(str(reldep), "P-lib")
+        self.assertRaises(StopIteration, reldeps.next)

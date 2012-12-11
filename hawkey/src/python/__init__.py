@@ -323,6 +323,10 @@ class Subject(object):
             self.forms = form[:]
         self._tokenize()
 
+    @property
+    def _abbr(self):
+        return "".join(map(operator.methodcaller('abbr'), self.tokens))
+
     @staticmethod
     def _is_int(s):
         return Subject._to_int(s) is not None
@@ -364,7 +368,7 @@ class Subject(object):
     default_nevra=NEVRA(name=None, epoch=None, version=None, release=None,
                         arch=None)
     def possibilities(self):
-        abbr = "".join(map(operator.methodcaller('abbr'), self.tokens))
+        abbr = self._abbr
         for pat in self.forms:
             match = pat.match(abbr)
             if match is None:
@@ -390,3 +394,9 @@ class Subject(object):
                 if nevra.arch not in existing_arches:
                     continue
             yield nevra
+
+    def reldep_possibilities_real(self, sack):
+        abbr = self._abbr
+        if FORM_NAME.match(abbr):
+            if sack._knows(sack, self.pat):
+                yield Reldep(sack, self.pat)
