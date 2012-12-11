@@ -28,6 +28,7 @@ valid_setting(int keyname, int cmp_type)
     switch (keyname) {
     case HY_PKG_ARCH:
     case HY_PKG_EVR:
+    case HY_PKG_PROVIDES:
 	return cmp_type == HY_EQ;
     case HY_PKG_NAME:
 	return (cmp_type == HY_EQ || cmp_type == HY_GLOB);
@@ -50,6 +51,7 @@ hy_selector_free(HySelector sltr)
     filter_free(sltr->f_arch);
     filter_free(sltr->f_evr);
     filter_free(sltr->f_name);
+    filter_free(sltr->f_provides);
     solv_free(sltr);
 }
 
@@ -67,7 +69,14 @@ hy_selector_set(HySelector sltr, int keyname, int cmp_type, const char *match)
 	replace_filter(&sltr->f_evr, keyname, cmp_type, match);
 	break;
     case HY_PKG_NAME:
+	if (sltr->f_provides)
+	    return HY_E_SELECTOR;
 	replace_filter(&sltr->f_name, keyname, cmp_type, match);
+	break;
+    case HY_PKG_PROVIDES:
+	if (sltr->f_name)
+	    return HY_E_SELECTOR;
+	replace_filter(&sltr->f_provides, keyname, cmp_type, match);
 	break;
     default:
 	return HY_E_SELECTOR;

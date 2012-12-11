@@ -408,7 +408,7 @@ static int
 filter_arch2job(HySack sack, const struct _Filter *f, Queue *job)
 {
     if (f == NULL)
-	return 0; // it's OK when there's no arch spec
+	return 0;
 
     assert(f->cmp_type == HY_EQ);
     assert(f->nmatches == 1);
@@ -433,7 +433,7 @@ static int
 filter_evr2job(HySack sack, const struct _Filter *f, Queue *job)
 {
     if (f == NULL)
-	return 0; // it's OK when there's no evr spec
+	return 0;
 
     assert(f->cmp_type == HY_EQ);
     assert(f->nmatches == 1);
@@ -455,10 +455,8 @@ static int
 filter_name2job(HySack sack, const struct _Filter *f, Queue *job)
 {
     if (f == NULL)
-	// no name in the selector is an error
-	return HY_E_SELECTOR;
+	return 0;
     assert(f->nmatches == 1);
-    sack_make_provides_ready(sack);
 
     Pool *pool = sack_pool(sack);
     const char *name = f->matches[0].str;
@@ -484,7 +482,31 @@ filter_name2job(HySack sack, const struct _Filter *f, Queue *job)
 	break;
     default:
 	assert(0);
+	return 1;
+    }
+    return 0;
+}
+
+static int
+filter_provides2job(HySack sack, const struct _Filter *f, Queue *job)
+{
+    if (f == NULL)
+	return 0;
+    assert(f->nmatches == 1);
+
+    Pool *pool = sack_pool(sack);
+    const char *provide = f->matches[0].str;
+    Id id;
+
+    switch (f->cmp_type) {
+    case HY_EQ:
+	id = pool_str2id(pool, provide, 0);
+	if (id)
+	    queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
 	break;
+    default:
+	assert(0);
+	return 1;
     }
     return 0;
 }
@@ -497,17 +519,28 @@ filter_name2job(HySack sack, const struct _Filter *f, Queue *job)
 int
 sltr2job(const HySelector sltr, Queue *job, int solver_action)
 {
+    HySack sack = selector_sack(sltr);
     int ret = 0;
     Queue job_sltr;
 
     queue_init(&job_sltr);
-    ret = filter_name2job(sltr->sack, sltr->f_name, &job_sltr);
+    if (sltr->f_name == NULL && sltr->f_provides == NULL) {
+	// no name or provides in the selector is an error
+	ret = HY_E_SELECTOR;
+	goto finish;
+    }
+
+    sack_make_provides_ready(sack);
+    ret = filter_name2job(sack, sltr->f_name, &job_sltr);
     if (ret)
 	goto finish;
-    ret = filter_arch2job(sltr->sack, sltr->f_arch, &job_sltr);
+    ret = filter_provides2job(sack, sltr->f_provides, &job_sltr);
     if (ret)
 	goto finish;
-    ret = filter_evr2job(sltr->sack, sltr->f_evr, &job_sltr);
+    ret = filter_arch2job(sack, sltr->f_arch, &job_sltr);
+    if (ret)
+	goto finish;
+    ret = filter_evr2job(sack, sltr->f_evr, &job_sltr);
     if (ret)
 	goto finish;
 

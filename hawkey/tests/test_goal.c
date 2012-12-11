@@ -273,7 +273,24 @@ START_TEST(test_goal_selector_upgrade)
 }
 END_TEST
 
-START_TEST(test_goal_update)
+START_TEST(test_goal_selector_upgrade_provides)
+{
+    HySelector sltr = hy_selector_create(test_globals.sack);
+    HyGoal goal = hy_goal_create(test_globals.sack);
+
+    fail_if(hy_selector_set(sltr, HY_PKG_PROVIDES, HY_EQ, "fool"));
+    fail_if(hy_goal_upgrade_selector(goal, sltr));
+    hy_selector_free(sltr);
+
+    fail_if(hy_goal_run(goal));
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 1);
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
+    hy_goal_free(goal);
+}
+END_TEST
+
+START_TEST(test_goal_upgrade)
 {
     HyPackage pkg = get_latest_pkg(test_globals.sack, "fool");
     HyGoal goal = hy_goal_create(test_globals.sack);
@@ -619,7 +636,8 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_install_selector_nomatch);
     tcase_add_test(tc, test_goal_selector_glob);
     tcase_add_test(tc, test_goal_selector_upgrade);
-    tcase_add_test(tc, test_goal_update);
+    tcase_add_test(tc, test_goal_selector_upgrade_provides);
+    tcase_add_test(tc, test_goal_upgrade);
     tcase_add_test(tc, test_goal_upgrade_all);
     tcase_add_test(tc, test_goal_downgrade);
     tcase_add_test(tc, test_goal_get_reason);
