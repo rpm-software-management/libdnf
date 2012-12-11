@@ -367,7 +367,7 @@ class Subject(object):
 
     default_nevra=NEVRA(name=None, epoch=None, version=None, release=None,
                         arch=None)
-    def possibilities(self):
+    def nevra_possibilities(self):
         abbr = self._abbr
         for pat in self.forms:
             match = pat.match(abbr)
@@ -377,7 +377,7 @@ class Subject(object):
                 {key:self._backmap(abbr, match, key)
                  for key in match.groupdict()})
 
-    def real_possibilities(self, sack, allow_globs=False):
+    def nevra_possibilities_real(self, sack, allow_globs=False):
         def should_check(val):
             if val is None:
                 return False
@@ -386,7 +386,7 @@ class Subject(object):
             return True
 
         existing_arches = sack.list_arches()
-        for nevra in self.possibilities():
+        for nevra in self.nevra_possibilities():
             if should_check(nevra.name):
                 if not sack._knows(sack, nevra.name, only_names=True):
                     continue
