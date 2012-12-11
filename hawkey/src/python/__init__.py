@@ -107,20 +107,22 @@ class NEVRA(_NEVRA):
             name=self.name, epoch=self.epoch, version=self.version,
             release=self.release, arch=self.arch)
 
-def _translate_args(reldep):
-    rel_signs = set(''.join(_CMP_MAP.keys()))
-    escaped_signs = ''.join(map(re.escape, rel_signs))
-    regex = re.compile('([^%s\s]+)(?:\s*([%s]+)\s*([^%s\s]+))?$' % \
-                           tuple([escaped_signs]*3))
-    match = regex.match(reldep)
-    if match:
-        groups = match.groups()
-        return groups
-    return None
-
 class Reldep(_hawkey.Reldep):
+    _rel_signs = set(''.join(_CMP_MAP.keys()))
+    _escaped_signs = ''.join(map(re.escape, _rel_signs))
+    _reldep_regexp = re.compile('([^%s\s]+)(?:\s*([%s]+)\s*([^%s\s]+))?$' % \
+                                    tuple([_escaped_signs]*3))
+
+    @staticmethod
+    def _translate_args(reldep):
+        match = Reldep._reldep_regexp.match(reldep)
+        if match:
+            groups = match.groups()
+            return groups
+        return None
+
     def __init__(self, sack, reldep_str):
-        split = _translate_args(reldep_str)
+        split = self._translate_args(reldep_str)
         if split is None:
             raise ValueException("Not a valid reldep: %s" % reldep_str)
         (name, cmp_type, evr) = split
