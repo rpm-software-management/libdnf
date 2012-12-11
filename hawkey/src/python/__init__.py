@@ -13,6 +13,7 @@ __all__ = [
     # constants
     'CHKSUM_MD5', 'CHKSUM_SHA1', 'CHKSUM_SHA256', 'CMDLINE_REPO_NAME',
     'SYSTEM_REPO_NAME', 'REASON_DEP', 'REASON_USER', 'ICASE',
+    'FORM_NEVRA', 'FORM_NEVR', 'FORM_NEV', 'FORM_NA', 'FORM_NAME', 'FORM_ALL',
     # exceptions
     'ArchException', 'Exception', 'QueryException', 'RuntimeException',
     'ValueException',
@@ -286,7 +287,7 @@ FORM_ALL	= [FORM_NEVRA, FORM_NEVR, FORM_NEV, FORM_NA, FORM_NAME]
 def _is_glob_pattern(pattern):
     return set(pattern) & set("*[?")
 
-class Token(object):
+class _Token(object):
     def __init__(self, content, epoch=False):
         self.content = content
         self.epoch = epoch
@@ -336,16 +337,16 @@ class Subject(object):
         current = ""
         for c in pattern:
             if c in (".", "-"):
-                yield Token(current)
-                yield Token(c)
+                yield _Token(current)
+                yield _Token(c)
                 current = ""
                 continue
             if c == ":" and Subject._is_int(current):
-                yield Token(current, epoch=True)
+                yield _Token(current, epoch=True)
                 current = ""
                 continue
             current += c
-        yield Token(current)
+        yield _Token(current)
 
     @staticmethod
     def _to_int(s):
