@@ -55,6 +55,7 @@ class SubjectTest(base.TestCase):
                                       version=None, release=None, arch='i686'))
 
     def test_combined(self):
+        """ Test we get all the possible NEVRA parses. """
         subj = hawkey.Subject(INP_FOF)
         nevras = subj.nevra_possibilities()
         # the epoch in INP_FOF nicely limits the nevra_possibilities:
@@ -78,16 +79,16 @@ class SubjectTest(base.TestCase):
                                                      epoch=None, version='3.6.9',
                                                      release='11.fc100.x86_64',
                                                      arch=None))
-        self.assertEqual(nevras.next(), hawkey.NEVRA(name='four-of-fish-3.6.9',
-                                                     epoch=None,
-                                                     version='11.fc100.x86_64',
-                                                     release=None, arch=None))
         self.assertEqual(nevras.next(), hawkey.NEVRA(
                 name='four-of-fish-3.6.9-11.fc100', epoch=None, version=None,
                 release=None, arch='x86_64'))
         self.assertEqual(nevras.next(), hawkey.NEVRA(
                 name='four-of-fish-3.6.9-11.fc100.x86_64', epoch=None,
                 version=None, release=None, arch=None))
+        self.assertEqual(nevras.next(), hawkey.NEVRA(name='four-of-fish-3.6.9',
+                                                     epoch=None,
+                                                     version='11.fc100.x86_64',
+                                                     release=None, arch=None))
         self.assertRaises(StopIteration, nevras.next)
 
 class SubjectRealPossibilitiesTest(base.TestCase):
@@ -114,6 +115,16 @@ class SubjectRealPossibilitiesTest(base.TestCase):
                                              version='1.2.4', release='1.x86_64',
                                              arch=None))
         self.assertRaises(StopIteration, nevra_possibilities.next)
+
+    def test_dash(self):
+        """ Test that if a dash is present in otherwise simple subject, we take
+            it as a name as the first guess.
+        """
+        subj = hawkey.Subject("penny-lib")
+        nevra = subj.nevra_possibilities_real(self.sack).next()
+        self.assertEqual(nevra, hawkey.NEVRA(name='penny-lib', epoch=None,
+                                             version=None, release=None,
+                                             arch=None))
 
     def test_wrong_arch(self):
         subj = hawkey.Subject("pilchard-1.2.4-1.ppc64")

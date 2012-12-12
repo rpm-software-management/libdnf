@@ -282,9 +282,9 @@ FORM_NEVR	= re.compile("""(?P<name>[.\-S]+)-\
 (?P<epoch>E)?(?P<version>[.S]+)-(?P<release>[.S]+)$""")
 FORM_NEV	= re.compile("""(?P<name>[.\-S]+)-\
 (?P<epoch>E)?(?P<version>[.S]+)$""")
-FORM_NA		= re.compile("""(?P<name>[.\-S]+).(?P<arch>S)$""")
+FORM_NA		= re.compile("""(?P<name>[.\-S]+)\.(?P<arch>S)$""")
 FORM_NAME	= re.compile("""(?P<name>[.\-S]+)$""")
-FORM_ALL	= [FORM_NEVRA, FORM_NEVR, FORM_NEV, FORM_NA, FORM_NAME]
+FORM_ALL	= [FORM_NEVRA, FORM_NEVR, FORM_NA, FORM_NAME, FORM_NEV]
 
 def _is_glob_pattern(pattern):
     return set(pattern) & set("*[?")
