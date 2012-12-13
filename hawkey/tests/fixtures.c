@@ -77,6 +77,13 @@ fixture_with_updates(void)
 }
 
 void
+fixture_with_vendor(void)
+{
+    HySack sack = create_ut_sack();
+    fail_if(setup_with(sack, HY_SYSTEM_REPO_NAME, "vendor", NULL));
+}
+
+void
 fixture_all(void)
 {
     HySack sack = create_ut_sack();

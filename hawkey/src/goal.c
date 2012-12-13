@@ -70,6 +70,8 @@ construct_solver(HyGoal goal, int flags)
 
     /* installonly notwithstanding, process explicit obsoletes */
     solver_set_flag(solv, SOLVER_FLAG_KEEP_EXPLICIT_OBSOLETES, 1);
+    /* no vendor locking */
+    solver_set_flag(solv, SOLVER_FLAG_ALLOW_VENDORCHANGE, 1);
     goal->solv = solv;
     return solv;
 }

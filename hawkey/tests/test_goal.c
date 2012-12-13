@@ -617,6 +617,30 @@ START_TEST(test_goal_run_all)
 }
 END_TEST
 
+START_TEST(test_goal_update_vendor)
+{
+    HySack sack = test_globals.sack;
+    HyGoal goal = hy_goal_create(sack);
+    HySelector sltr = hy_selector_create(sack);
+
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "fool");
+    fail_if(hy_goal_upgrade_selector(goal, sltr));
+    hy_selector_free(sltr);
+
+    /* hy_goal_upgrade_all(goal); */
+    fail_if(hy_goal_run(goal));
+
+    HyPackageList plist = hy_goal_list_installs(goal);
+    fail_unless(hy_packagelist_count(plist) == 1);
+    hy_packagelist_free(plist);
+
+    plist = hy_goal_list_erasures(goal);
+    fail_unless(hy_packagelist_count(plist) == 1);
+    hy_packagelist_free(plist);
+    hy_goal_free(goal);
+}
+END_TEST
+
 Suite *
 goal_suite(void)
 {
@@ -658,6 +682,11 @@ goal_suite(void)
     tc = tcase_create("Greedy");
     tcase_add_unchecked_fixture(tc, fixture_greedy_only, teardown);
     tcase_add_test(tc, test_goal_run_all);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("Vendor");
+    tcase_add_unchecked_fixture(tc, fixture_with_vendor, teardown);
+    tcase_add_test(tc, test_goal_update_vendor);
     suite_add_tcase(s, tc);
 
     return s;

@@ -48,6 +48,9 @@ baby
 * installed at a version newer than anything available (downgrade, distupgrade testing)
 * has epoch (testing evr parsing)
 
+foolish-grin
+* in the "vendor" repo, for testing vendor change
+
 === repos/yum ===
 
 To test loading of yum repos we need an actual yum repo. It currently consists
