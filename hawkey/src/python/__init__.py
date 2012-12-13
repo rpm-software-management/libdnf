@@ -389,6 +389,7 @@ class Subject(object):
             return True
 
         existing_arches = sack.list_arches()
+        existing_arches.append('src')
         for nevra in self.nevra_possibilities():
             if should_check(nevra.name):
                 if not sack._knows(sack, nevra.name, only_names=True):
