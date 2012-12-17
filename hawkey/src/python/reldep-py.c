@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <Python.h>
 
 // libsolv
@@ -106,8 +107,13 @@ reldep_dealloc(_ReldepObject *self)
 static PyObject *
 reldep_repr(_ReldepObject *self)
 {
-    return PyString_FromFormat("<_hawkey.Reldep object, id: %x>",
-			       reldep_hash(self));
+    long hash = reldep_hash(self);
+    if (PyErr_Occurred()) {
+	assert(hash == -1);
+	PyErr_Clear();
+	return PyString_FromString("<_hawkey.Reldep object, INVALID value>");
+    }
+    return PyString_FromFormat("<_hawkey.Reldep object, id: %lx>", hash);
 }
 
 static PyObject *
@@ -123,6 +129,10 @@ reldep_str(_ReldepObject *self)
 static Id
 reldep_hash(_ReldepObject *self)
 {
+    if (self->reldep == NULL) {
+	PyErr_SetString(HyExc_Value, "Invalid Reldep has no hash.");
+	return -1;
+    }
     return reldep_id(self->reldep);
 }
 
