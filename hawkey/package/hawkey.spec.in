@@ -1,4 +1,4 @@
-%global gitrev 4e41b7f
+%global gitrev b3fcf21
 %global libsolv_version 0.0.0-17
 
 Name:		hawkey
@@ -76,6 +76,15 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
+* Mon Dec 17 2012 Aleš Kozumplík <ales@redhat.com> - 0.3.4-1.gitb3fcf21
+- Subject: infrastructure for discovering NEVRA explanations of what user's input meant.
+- fix: cloning an evaluated Query should copy the result set too.
+- Reldeps: creating custom-specified reldeps (name, evr).
+- Goal: accept a selector targeting a provide.
+- delete goal_internal.h, not needed.
+- Goal: give the solver SOLVER_FLAG_ALLOW_VENDORCHANGE (RhBug:885646)
+- fix crash when hash for an invalid Reldep is requested.
+
 * Mon Nov 26 2012 Aleš Kozumplík <ales@redhat.com> - 0.3.3-1.git4e41b7f
 - Python: improve Query result caching (uses the C facility now).
 - packageset: add internal function for getting elements with a hint.
