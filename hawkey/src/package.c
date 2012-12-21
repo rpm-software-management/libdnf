@@ -146,27 +146,8 @@ hy_package_get_nevra(HyPackage pkg)
 char *
 hy_package_get_sourcerpm(HyPackage pkg)
 {
-    Pool *pool = pkg->pool;
     Solvable *s = get_solvable(pkg);
-    const char *arch = solvable_lookup_str(s, SOLVABLE_SOURCEARCH);
-
-    if (arch == NULL) // package has no sourcerpm
-	return NULL;
-
-    const char *name = solvable_lookup_str(s, SOLVABLE_SOURCENAME);
-    const char *evr = solvable_lookup_str(s, SOLVABLE_SOURCEEVR);
-
-    /* if sourcename or sourceevr is NULL it is the same as that of the package */
-    if (name == NULL)
-	name = pool_id2str(pool, s->name);
-    if (evr == NULL)
-	evr = pool_id2str(pool, s->evr);
-
-    char *join = solv_dupjoin(name, "-", evr);
-    join = solv_dupappend(join, ".", arch);
-    join = solv_dupappend(join, ".rpm", NULL);
-
-    return join;
+    return solv_strdup(solvable_lookup_sourcepkg(s));
 }
 
 char *
