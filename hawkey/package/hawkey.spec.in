@@ -76,6 +76,9 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
+* Fri Dec 21 2012 Aleš Kozumplík <ales@redhat.com> - 0.3.5-1.gitd735540
+- Move to libsolv-0.2.3 (suit minor API change there)
+
 * Mon Dec 17 2012 Aleš Kozumplík <ales@redhat.com> - 0.3.4-1.gitb3fcf21
 - Subject: infrastructure for discovering NEVRA explanations of what user's input meant.
 - fix: cloning an evaluated Query should copy the result set too.
