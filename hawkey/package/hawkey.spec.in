@@ -1,9 +1,9 @@
-%global gitrev b3fcf21
+%global gitrev f981c48
 %global libsolv_version 0.2.3
 
 Name:		hawkey
 Version:	@VERSION@
-Release:	1.git%{gitrev}%{?dist}
+Release:	3.git%{gitrev}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
@@ -76,6 +76,9 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
+* Thu Jan 3 2013 Aleš Kozumplík <ales@redhat.com> - 0.3.5-3.gitf981c48
+- Rebuild with proper git revision.
+
 * Fri Dec 21 2012 Aleš Kozumplík <ales@redhat.com> - 0.3.5-1.gitd735540
 - Move to libsolv-0.2.3 (suit minor API change there)
 
@@ -137,7 +140,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 - py: Query: make sure filterm() clears the result cache.
 - py: fix: memory leaks with PySequence_GetItem().
 
-* Mon Sep 22 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.11-4.git687ceab
+* Sat Sep 22 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.11-4.git687ceab
 - py: hawkey.test should not depend on libcheck.so.
 
 * Fri Sep 21 2012 Aleš Kozumplík <akozumpl@redhat.com> - 0.2.11-1.git545a461
