@@ -68,6 +68,12 @@ construct_solver(HyGoal goal, int flags)
 	queue_push2(&goal->job, SOLVER_NOOBSOLETES|SOLVER_SOLVABLE_PROVIDES,
 		    sack->installonly.elements[i]);
 
+    /* apply the excludes */
+    if (sack->excludes)
+	for (int i = 1; i < pool->nsolvables; ++i)
+	    if (MAPTST(sack->excludes, i))
+		queue_push2(&goal->job, SOLVER_SOLVABLE|SOLVER_LOCK, i);
+
     /* installonly notwithstanding, process explicit obsoletes */
     solver_set_flag(solv, SOLVER_FLAG_KEEP_EXPLICIT_OBSOLETES, 1);
     /* no vendor locking */

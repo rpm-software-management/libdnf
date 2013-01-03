@@ -8,6 +8,7 @@
 #include "src/goal.h"
 #include "src/iutil.h"
 #include "src/package_internal.h"
+#include "src/packageset.h"
 #include "src/repo.h"
 #include "src/query.h"
 #include "src/sack_internal.h"
@@ -331,6 +332,25 @@ START_TEST(test_goal_upgrade_all)
     hy_packagelist_free(plist);
 
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
+    hy_goal_free(goal);
+}
+END_TEST
+
+START_TEST(test_goal_upgrade_all_excludes)
+{
+    HySack sack = test_globals.sack;
+    HyQuery q = hy_query_create_flags(sack, HY_IGNORE_EXCLUDES);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "pilchard");
+
+    HyPackageSet pset = hy_query_run_set(q);
+    hy_sack_add_excludes(sack, pset);
+    hy_packageset_free(pset);
+    hy_query_free(q);
+
+    HyGoal goal = hy_goal_create(sack);
+    hy_goal_upgrade_all(goal);
+    hy_goal_run(goal);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 2);
     hy_goal_free(goal);
 }
 END_TEST
@@ -663,6 +683,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_selector_upgrade_provides);
     tcase_add_test(tc, test_goal_upgrade);
     tcase_add_test(tc, test_goal_upgrade_all);
+    tcase_add_test(tc, test_goal_upgrade_all_excludes);
     tcase_add_test(tc, test_goal_downgrade);
     tcase_add_test(tc, test_goal_get_reason);
     tcase_add_test(tc, test_goal_describe_problem);
