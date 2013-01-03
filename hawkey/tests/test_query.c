@@ -600,6 +600,29 @@ START_TEST(test_filter_reponames)
 }
 END_TEST
 
+START_TEST(test_excluded)
+{
+    HySack sack = test_globals.sack;
+    HyQuery q = hy_query_create_flags(sack, HY_IGNORE_EXCLUDES);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
+
+    HyPackageSet pset = hy_query_run_set(q);
+    hy_sack_add_excludes(sack, pset);
+    hy_packageset_free(pset);
+    hy_query_free(q);
+
+    q = hy_query_create_flags(sack, 0);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
+    fail_unless(query_count_results(q) == 0);
+    hy_query_free(q);
+
+    q = hy_query_create_flags(sack, HY_IGNORE_EXCLUDES);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
+    fail_unless(query_count_results(q) > 0);
+    hy_query_free(q);
+}
+END_TEST
+
 Suite *
 query_suite(void)
 {
@@ -658,6 +681,11 @@ query_suite(void)
     tcase_add_test(tc, test_filter_files);
     tcase_add_test(tc, test_filter_sourcerpm);
     tcase_add_test(tc, test_filter_description);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("Excluding");
+    tcase_add_unchecked_fixture(tc, fixture_with_main, teardown);
+    tcase_add_test(tc, test_excluded);
     suite_add_tcase(s, tc);
 
     return s;

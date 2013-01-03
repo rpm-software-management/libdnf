@@ -603,6 +603,8 @@ compute(HyQuery q)
     map_setall(q->result);
     MAPCLR(q->result, 0);
     MAPCLR(q->result, SYSTEMSOLVABLE);
+    if (q->sack->excludes && !(q->flags & HY_IGNORE_EXCLUDES))
+	map_subtract(q->result, q->sack->excludes);
 
     // make sure the odd bits are cleared:
     unsigned total_bits = q->result->size << 3;
@@ -683,8 +685,15 @@ clear_result(HyQuery q)
 HyQuery
 hy_query_create(HySack sack)
 {
+    return hy_query_create_flags(sack, 0);
+}
+
+HyQuery
+hy_query_create_flags(HySack sack, int flags)
+{
     HyQuery q = solv_calloc(1, sizeof(*q));
     q->sack = sack;
+    q->flags = flags;
     return q;
 }
 
@@ -713,6 +722,7 @@ hy_query_clone(HyQuery q)
 {
     HyQuery qn = hy_query_create(q->sack);
 
+    qn->flags = q->flags;
     qn->downgrades = q->downgrades;
     qn->updates = q->updates;
     qn->latest = q->latest;

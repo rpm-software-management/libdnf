@@ -33,6 +33,7 @@ struct _Filter {
 
 struct _HyQuery {
     HySack sack;
+    int flags;
     Map *result;
     struct _Filter *filters;
     int nfilters;

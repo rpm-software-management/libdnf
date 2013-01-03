@@ -23,6 +23,7 @@ void hy_sack_set_installonly(HySack sack, const char **installonly);
 void hy_sack_create_cmdline_repo(HySack sack);
 HyPackage hy_sack_add_cmdline_package(HySack sack, const char *fn);
 int hy_sack_count(HySack sack);
+void hy_sack_add_excludes(HySack sack, HyPackageSet pset);
 
 /**
  * Load RPMDB, the system package database.

@@ -8,7 +8,12 @@ extern "C" {
 /* hawkey */
 #include "types.h"
 
+enum _hy_query_flags {
+    HY_IGNORE_EXCLUDES	= 1 << 0
+};
+
 HyQuery hy_query_create(HySack sack);
+HyQuery hy_query_create_flags(HySack sack, int flags);
 void hy_query_free(HyQuery q);
 void hy_query_clear(HyQuery q);
 HyQuery hy_query_clone(HyQuery q);

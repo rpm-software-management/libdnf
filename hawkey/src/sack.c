@@ -27,6 +27,8 @@
 #include "errno.h"
 #include "iutil.h"
 #include "package_internal.h"
+#include "packageset_internal.h"
+#include "query.h"
 #include "repo_internal.h"
 #include "sack_internal.h"
 
@@ -378,6 +380,11 @@ hy_sack_free(HySack sack)
     }
     solv_free(sack->cache_dir);
     queue_free(&sack->installonly);
+
+    if (sack->excludes) {
+	map_free(sack->excludes);
+	solv_free(sack->excludes);
+    }
     pool_free(sack->pool);
     solv_free(sack);
 }
@@ -464,6 +471,22 @@ hy_sack_count(HySack sack)
 {
     // subtract two for meta solvable and system solvable, see pool_create()
     return sack_pool(sack)->nsolvables - 2;
+}
+
+void
+hy_sack_add_excludes(HySack sack, HyPackageSet pset)
+{
+    Pool *pool = sack_pool(sack);
+    Map *excl = sack->excludes;
+    Map *nexcl = packageset_get_map(pset);
+
+    if (excl == NULL) {
+	excl = solv_calloc(1, sizeof(Map));
+	map_init(excl, pool->nsolvables);
+	sack->excludes = excl;
+    }
+    assert(excl->size >= nexcl->size);
+    map_or(excl, nexcl);
 }
 
 int
