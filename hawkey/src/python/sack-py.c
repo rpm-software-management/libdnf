@@ -3,6 +3,7 @@
 // hawkey
 #include "src/errno.h"
 #include "src/package_internal.h"
+#include "src/packageset.h"
 #include "src/sack_internal.h"
 #include "src/util.h"
 
@@ -231,6 +232,20 @@ add_cmdline_package(_SackObject *self, PyObject *fn_obj)
 }
 
 static PyObject *
+add_excludes(_SackObject *self, PyObject *seq)
+{
+    if (!PySequence_Check(seq)) {
+	PyErr_SetString(PyExc_TypeError, "Expected a sequence.");
+	return NULL;
+    }
+    HySack sack = self->sack;
+    HyPackageSet pset = pyseq_to_packageset(seq, sack);
+    hy_sack_add_excludes(sack, pset);
+    hy_packageset_free(pset);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 list_arches(_SackObject *self, PyObject *unused)
 {
     const char **arches = hy_sack_list_arches(self->sack);
@@ -320,6 +335,8 @@ PyMethodDef sack_methods[] = {
     {"create_package", (PyCFunction)create_package, METH_O,
      NULL},
     {"add_cmdline_package", (PyCFunction)add_cmdline_package, METH_O,
+     NULL},
+    {"add_excludes", (PyCFunction)add_excludes, METH_O,
      NULL},
     {"list_arches", (PyCFunction)list_arches, METH_NOARGS,
      NULL},
