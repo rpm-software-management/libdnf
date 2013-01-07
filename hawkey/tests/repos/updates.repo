@@ -8,6 +8,8 @@
 =Req: P-lib
 =Pkg: flying 3.1 0 x86_64
 =Req: P-lib
+=Pkg: flying 3.2 0 noarch
+=Req: P-lib >= 3-4
 =Pkg: pilchard 1.2.4 1 i686
 =Pkg: pilchard 1.2.4 1 x86_64
 =Pkg: pilchard 1.2.4 2 x86_64

@@ -165,7 +165,7 @@ class QueryUpdates(base.TestCase):
     def test_updates(self):
         q = hawkey.Query(self.sack)
         q.filterm(name="flying", upgrades=1)
-        self.assertEqual(q.count(), 2)
+        self.assertEqual(q.count(), 3)
 
     def test_obsoletes(self):
         q = hawkey.Query(self.sack).filter(name="penny")

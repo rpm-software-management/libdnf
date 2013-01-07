@@ -561,6 +561,22 @@ START_TEST(test_goal_erase_clean_deps)
 }
 END_TEST
 
+START_TEST(test_goal_forcebest)
+{
+    HySack sack = test_globals.sack;
+    HyGoal goal = hy_goal_create(sack);
+    HySelector sltr = hy_selector_create(sack);
+
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "flying");
+    hy_goal_upgrade_selector(goal, sltr);
+    fail_unless(hy_goal_run_flags(goal, HY_FORCE_BEST));
+    fail_unless(hy_goal_count_problems(goal) == 1);
+
+    hy_selector_free(sltr);
+    hy_goal_free(goal);
+}
+END_TEST
+
 START_TEST(test_goal_distupgrade_all)
 {
     HyGoal goal = hy_goal_create(test_globals.sack);
@@ -696,6 +712,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_erase_simple);
     tcase_add_test(tc, test_goal_erase_with_deps);
     tcase_add_test(tc, test_goal_erase_clean_deps);
+    tcase_add_test(tc, test_goal_forcebest);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Main");

@@ -428,7 +428,11 @@ START_TEST(test_filter_latest2)
     fail_unless(hy_packagelist_count(plist) == 2);
     HyPackage pkg = hy_packagelist_get(plist, 0);
     fail_if(strcmp(hy_package_get_name(pkg), "flying"));
-    fail_if(strcmp(hy_package_get_evr(pkg), "3-0"));
+    fail_if(strcmp(hy_package_get_evr(pkg), "3.1-0"));
+    pkg = hy_packagelist_get(plist, 1);
+    fail_if(strcmp(hy_package_get_name(pkg), "flying"));
+    fail_if(strcmp(hy_package_get_evr(pkg), "3.2-0"));
+
     hy_query_free(q);
     hy_packagelist_free(plist);
 

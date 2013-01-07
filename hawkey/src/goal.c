@@ -39,7 +39,7 @@ erase_flags2libsolv(int flags)
 }
 
 static int
-solve(HyGoal goal, int flags)
+solve(HyGoal goal)
 {
     HySack sack = goal->sack;
     Solver *solv = goal->solv;
@@ -57,22 +57,28 @@ construct_solver(HyGoal goal, int flags)
     HySack sack = goal->sack;
     Pool *pool = sack_pool(sack);
     Solver *solv = solver_create(pool);
+    Queue *job = &goal->job;
 
     assert(goal->solv == NULL);
 
     if (flags & HY_ALLOW_UNINSTALL)
 	solver_set_flag(solv, SOLVER_FLAG_ALLOW_UNINSTALL, 1);
 
+    /* apply forcebest */
+    if (flags & HY_FORCE_BEST)
+	for (int i = 0; i < job->count; i += 2)
+	    job->elements[i] |= SOLVER_FORCEBEST;
+
     /* turn off implicit obsoletes for installonly packages */
     for (int i = 0; i < sack->installonly.count; i++)
-	queue_push2(&goal->job, SOLVER_NOOBSOLETES|SOLVER_SOLVABLE_PROVIDES,
+	queue_push2(job, SOLVER_NOOBSOLETES|SOLVER_SOLVABLE_PROVIDES,
 		    sack->installonly.elements[i]);
 
     /* apply the excludes */
     if (sack->excludes)
 	for (int i = 1; i < pool->nsolvables; ++i)
 	    if (MAPTST(sack->excludes, i))
-		queue_push2(&goal->job, SOLVER_SOLVABLE|SOLVER_LOCK, i);
+		queue_push2(job, SOLVER_SOLVABLE|SOLVER_LOCK, i);
 
     /* installonly notwithstanding, process explicit obsoletes */
     solver_set_flag(solv, SOLVER_FLAG_KEEP_EXPLICIT_OBSOLETES, 1);
@@ -439,7 +445,7 @@ int
 hy_goal_run_flags(HyGoal goal, int flags)
 {
     construct_solver(goal, flags);
-    return solve(goal, flags);
+    return solve(goal);
 }
 
 int
@@ -458,7 +464,7 @@ hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
     solv->solution_callback = internal_solver_callback;
     solv->solution_callback_data = &cb_tuple;
 
-    return solve(goal, flags);
+    return solve(goal);
 }
 
 int
