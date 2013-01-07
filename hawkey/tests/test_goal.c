@@ -468,6 +468,9 @@ START_TEST(test_goal_installonly)
     fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
+
+    // bring sack back to the original state (for CK_FORK=no runs):
+    hy_sack_set_installonly(sack, NULL);
     hy_goal_free(goal);
 }
 END_TEST

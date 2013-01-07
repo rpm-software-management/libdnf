@@ -431,6 +431,9 @@ void
 hy_sack_set_installonly(HySack sack, const char **installonly)
 {
     const char *name;
+    queue_empty(&sack->installonly);
+    if (installonly == NULL)
+	return;
     while ((name = *installonly++) != NULL)
 	queue_pushunique(&sack->installonly, pool_str2id(sack->pool, name, 1));
 }
