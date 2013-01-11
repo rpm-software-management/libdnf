@@ -83,13 +83,12 @@ END_TEST
 START_TEST(test_yum_repo_written)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL);
-    Pool *pool = sack_pool(sack);
     char *filename = hy_sack_give_cache_fn(sack, "test_sack_written", NULL);
 
     fail_unless(access(filename, R_OK|W_OK));
     setup_yum_sack(sack, "test_sack_written");
 
-    HyRepo repo = repo_by_name(pool, "test_sack_written");
+    HyRepo repo = hrepo_by_name(sack, "test_sack_written");
     fail_if(repo == NULL);
     fail_unless(repo->state_main == _HY_WRITTEN);
     fail_unless(repo->state_filelists == _HY_WRITTEN);
@@ -139,7 +138,7 @@ check_filelist(Pool *pool)
 START_TEST(test_filelist)
 {
     HySack sack = test_globals.sack;
-    HyRepo repo = repo_by_name(sack_pool(sack), YUM_REPO_NAME);
+    HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
     char *fn_solv = hy_sack_give_cache_fn(sack, YUM_REPO_NAME, HY_EXT_FILENAMES);
 
     fail_unless(repo->state_filelists == _HY_WRITTEN);
@@ -155,7 +154,7 @@ START_TEST(test_filelist_from_cache)
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL);
     setup_yum_sack(sack, YUM_REPO_NAME);
 
-    HyRepo repo = repo_by_name(sack_pool(sack), YUM_REPO_NAME);
+    HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
     fail_unless(repo->state_filelists == _HY_LOADED_CACHE);
     check_filelist(sack_pool(sack));
     hy_sack_free(sack);
@@ -186,7 +185,7 @@ check_prestoinfo(Pool *pool)
 START_TEST(test_presto)
 {
     HySack sack = test_globals.sack;
-    HyRepo repo = repo_by_name(sack_pool(sack), YUM_REPO_NAME);
+    HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
     char *fn_solv = hy_sack_give_cache_fn(sack, YUM_REPO_NAME, HY_EXT_PRESTO);
 
     fail_if(access(fn_solv, R_OK));
@@ -201,7 +200,7 @@ START_TEST(test_presto_from_cache)
     HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH);
     setup_yum_sack(sack, YUM_REPO_NAME);
 
-    HyRepo repo = repo_by_name(sack_pool(sack), YUM_REPO_NAME);
+    HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
     fail_unless(repo->state_presto == _HY_LOADED_CACHE);
     check_prestoinfo(sack_pool(sack));
     hy_sack_free(sack);

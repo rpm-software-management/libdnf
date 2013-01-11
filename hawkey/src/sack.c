@@ -74,20 +74,6 @@ can_use_repomd_cache(FILE *fp_solv, unsigned char cs_repomd[CHKSUM_BYTES])
     return 0;
 }
 
-static Repo *
-get_cmdline_repo(HySack sack)
-{
-    Pool *pool = sack->pool;
-    Repo *repo;
-    int repoid;
-
-    FOR_REPOS(repoid, repo) {
-	if (!strcmp(repo->name, HY_CMDLINE_REPO_NAME))
-	    return repo;
-    }
-    return NULL;
-}
-
 int
 setarch(HySack sack, const char *arch)
 {
@@ -446,7 +432,7 @@ hy_sack_set_installonly(HySack sack, const char **installonly)
 void
 hy_sack_create_cmdline_repo(HySack sack)
 {
-    if (get_cmdline_repo(sack) == NULL)
+    if (repo_by_name(sack, HY_CMDLINE_REPO_NAME) == NULL)
 	repo_create(sack->pool, HY_CMDLINE_REPO_NAME);
 }
 
@@ -456,7 +442,7 @@ hy_sack_create_cmdline_repo(HySack sack)
 HyPackage
 hy_sack_add_cmdline_package(HySack sack, const char *fn)
 {
-    Repo *repo = get_cmdline_repo(sack);
+    Repo *repo = repo_by_name(sack, HY_CMDLINE_REPO_NAME);
     Id p;
 
     assert(repo);

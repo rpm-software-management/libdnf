@@ -294,6 +294,30 @@ cmptype2relflags(int type)
     return flags;
 }
 
+Repo *
+repo_by_name(HySack sack, const char *name)
+{
+    Pool *pool = sack_pool(sack);
+    Repo *repo;
+    int repoid;
+
+    FOR_REPOS(repoid, repo) {
+	if (!strcmp(repo->name, name))
+	    return repo;
+    }
+    return NULL;
+}
+
+HyRepo
+hrepo_by_name(HySack sack, const char *name)
+{
+    Repo *repo = repo_by_name(sack, name);
+
+    if (repo)
+	return repo->appdata;
+    return NULL;
+}
+
 void
 repo_internalize_trigger(Repo *repo)
 {

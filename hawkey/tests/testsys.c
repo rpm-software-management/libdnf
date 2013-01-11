@@ -87,14 +87,3 @@ query_count_results(HyQuery query)
     hy_packagelist_free(plist);
     return ret;
 }
-
-HyRepo
-repo_by_name(Pool *pool, const char *name)
-{
-    Repo *repo;
-    int rid;
-    FOR_REPOS(rid, repo)
-	if (!strcmp(repo->name, name))
-	    return repo->appdata;
-    return NULL;
-}
