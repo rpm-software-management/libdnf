@@ -336,48 +336,6 @@ START_TEST(test_goal_upgrade_all)
 }
 END_TEST
 
-START_TEST(test_goal_upgrade_all_excludes)
-{
-    HySack sack = test_globals.sack;
-    HyQuery q = hy_query_create_flags(sack, HY_IGNORE_EXCLUDES);
-    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "pilchard");
-
-    HyPackageSet pset = hy_query_run_set(q);
-    hy_sack_add_excludes(sack, pset);
-    hy_packageset_free(pset);
-    hy_query_free(q);
-
-    HyGoal goal = hy_goal_create(sack);
-    hy_goal_upgrade_all(goal);
-    hy_goal_run(goal);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 2);
-    hy_goal_free(goal);
-
-    hy_sack_set_excludes(sack, NULL);
-}
-END_TEST
-
-START_TEST(test_goal_upgrade_disabled_repo)
-{
-    HySack sack = test_globals.sack;
-    HyGoal goal = hy_goal_create(sack);
-
-    hy_goal_upgrade_all(goal);
-    hy_goal_run(goal);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 4);
-    hy_goal_free(goal);
-
-    hy_sack_repo_enabled(sack, "updates", 0);
-    goal = hy_goal_create(sack);
-    hy_goal_upgrade_all(goal);
-    hy_goal_run(goal);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 1);
-    hy_goal_free(goal);
-
-    hy_sack_repo_enabled(sack, "updates", 1);
-}
-END_TEST
-
 START_TEST(test_goal_downgrade)
 {
     HySack sack = test_globals.sack;
@@ -473,27 +431,6 @@ START_TEST(test_goal_log_decisions)
     fail_unless(newsize - origsize > 3000);
 
     hy_package_free(pkg);
-    hy_goal_free(goal);
-}
-END_TEST
-
-START_TEST(test_goal_installonly)
-{
-    const char *installonly[] = {"fool", NULL};
-
-    HySack sack = test_globals.sack;
-    hy_sack_set_installonly(sack, installonly);
-    HyPackage pkg = get_latest_pkg(sack, "fool");
-    HyGoal goal = hy_goal_create(sack);
-    fail_if(hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED));
-    hy_package_free(pkg);
-    fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
-
-    // bring sack back to the original state (for CK_FORK=no runs):
-    hy_sack_set_installonly(sack, NULL);
     hy_goal_free(goal);
 }
 END_TEST
@@ -596,6 +533,63 @@ START_TEST(test_goal_forcebest)
     fail_unless(hy_goal_count_problems(goal) == 1);
 
     hy_selector_free(sltr);
+    hy_goal_free(goal);
+}
+END_TEST
+
+START_TEST(test_goal_installonly)
+{
+    const char *installonly[] = {"fool", NULL};
+
+    HySack sack = test_globals.sack;
+    hy_sack_set_installonly(sack, installonly);
+    HyPackage pkg = get_latest_pkg(sack, "fool");
+    HyGoal goal = hy_goal_create(sack);
+    fail_if(hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED));
+    hy_package_free(pkg);
+    fail_if(hy_goal_run(goal));
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
+
+    hy_goal_free(goal);
+}
+END_TEST
+
+START_TEST(test_goal_upgrade_all_excludes)
+{
+    HySack sack = test_globals.sack;
+    HyQuery q = hy_query_create_flags(sack, HY_IGNORE_EXCLUDES);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "pilchard");
+
+    HyPackageSet pset = hy_query_run_set(q);
+    hy_sack_add_excludes(sack, pset);
+    hy_packageset_free(pset);
+    hy_query_free(q);
+
+    HyGoal goal = hy_goal_create(sack);
+    hy_goal_upgrade_all(goal);
+    hy_goal_run(goal);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 2);
+    hy_goal_free(goal);
+}
+END_TEST
+
+START_TEST(test_goal_upgrade_disabled_repo)
+{
+    HySack sack = test_globals.sack;
+    HyGoal goal = hy_goal_create(sack);
+
+    hy_goal_upgrade_all(goal);
+    hy_goal_run(goal);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 4);
+    hy_goal_free(goal);
+
+    hy_sack_repo_enabled(sack, "updates", 0);
+    goal = hy_goal_create(sack);
+    hy_goal_upgrade_all(goal);
+    hy_goal_run(goal);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 1);
     hy_goal_free(goal);
 }
 END_TEST
@@ -725,18 +719,23 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_selector_upgrade_provides);
     tcase_add_test(tc, test_goal_upgrade);
     tcase_add_test(tc, test_goal_upgrade_all);
-    tcase_add_test(tc, test_goal_upgrade_all_excludes);
-    tcase_add_test(tc, test_goal_upgrade_disabled_repo);
     tcase_add_test(tc, test_goal_downgrade);
     tcase_add_test(tc, test_goal_get_reason);
     tcase_add_test(tc, test_goal_describe_problem);
     tcase_add_test(tc, test_goal_log_decisions);
-    tcase_add_test(tc, test_goal_installonly);
     tcase_add_test(tc, test_goal_no_reinstall);
     tcase_add_test(tc, test_goal_erase_simple);
     tcase_add_test(tc, test_goal_erase_with_deps);
     tcase_add_test(tc, test_goal_erase_clean_deps);
     tcase_add_test(tc, test_goal_forcebest);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("ModifiesSackState");
+    tcase_add_unchecked_fixture(tc, fixture_all, teardown);
+    tcase_add_checked_fixture(tc, fixture_reset, NULL);
+    tcase_add_test(tc, test_goal_installonly);
+    tcase_add_test(tc, test_goal_upgrade_all_excludes);
+    tcase_add_test(tc, test_goal_upgrade_disabled_repo);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Main");

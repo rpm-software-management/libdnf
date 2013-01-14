@@ -624,8 +624,6 @@ START_TEST(test_excluded)
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
     fail_unless(query_count_results(q) > 0);
     hy_query_free(q);
-
-    hy_sack_set_excludes(sack, NULL);
 }
 END_TEST
 
@@ -649,8 +647,6 @@ START_TEST(test_disabled_repo)
     q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
     fail_unless(size_and_free(q) == 2);
-
-    hy_sack_repo_enabled(sack, "main", 1);
 }
 END_TEST
 
@@ -716,6 +712,7 @@ query_suite(void)
 
     tc = tcase_create("Excluding");
     tcase_add_unchecked_fixture(tc, fixture_with_main, teardown);
+    tcase_add_checked_fixture(tc, fixture_reset, NULL);
     tcase_add_test(tc, test_excluded);
     tcase_add_test(tc, test_disabled_repo);
     suite_add_tcase(s, tc);

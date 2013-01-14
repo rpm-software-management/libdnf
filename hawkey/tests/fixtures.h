@@ -21,6 +21,7 @@ void fixture_with_updates(void);
 void fixture_with_vendor(void);
 void fixture_all(void);
 void fixture_yum(void);
+void fixture_reset(void);
 void setup_yum_sack(HySack sack, const char *yum_repo_name);
 void teardown(void);
 

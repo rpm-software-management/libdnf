@@ -96,6 +96,15 @@ void fixture_yum(void)
     setup_yum_sack(sack, YUM_REPO_NAME);
 }
 
+void fixture_reset(void)
+{
+    HySack sack = test_globals.sack;
+    hy_sack_set_installonly(sack, NULL);
+    hy_sack_set_excludes(sack, NULL);
+    hy_sack_repo_enabled(sack, "main", 1);
+    hy_sack_repo_enabled(sack, "updates", 1);
+}
+
 void setup_yum_sack(HySack sack, const char *yum_repo_name)
 {
     Pool *pool = sack_pool(sack);
