@@ -4,6 +4,7 @@
 #include "src/errno.h"
 #include "src/package_internal.h"
 #include "src/packageset.h"
+#include "src/repo.h"
 #include "src/sack_internal.h"
 #include "src/util.h"
 
@@ -67,6 +68,17 @@ sack_converter(PyObject *o, HySack *sack_ptr)
 	return 0;
     *sack_ptr = sack;
     return 1;
+}
+
+/* helpers */
+static PyObject *
+repo_enabled(_SackObject *self, PyObject *reponame, int enabled)
+{
+    char *cname = PyString_AsString(reponame);
+    if (cname == NULL)
+	return NULL;
+    hy_sack_repo_enabled(self->sack, cname, enabled);
+    Py_RETURN_NONE;
 }
 
 /* functions on the type */
@@ -148,7 +160,7 @@ get_cache_path(_SackObject *self, void *unused)
     return PyString_FromString(cstr);
 }
 
-int
+static int
 set_installonly(_SackObject *self, PyObject *obj, void *unused)
 {
     if (!PySequence_Check(obj)) {
@@ -246,6 +258,18 @@ add_excludes(_SackObject *self, PyObject *seq)
 }
 
 static PyObject *
+disable_repo(_SackObject *self, PyObject *reponame)
+{
+    return repo_enabled(self, reponame, 0);
+}
+
+static PyObject *
+enable_repo(_SackObject *self, PyObject *reponame)
+{
+    return repo_enabled(self, reponame, 1);
+}
+
+static PyObject *
 list_arches(_SackObject *self, PyObject *unused)
 {
     const char **arches = hy_sack_list_arches(self->sack);
@@ -337,6 +361,10 @@ PyMethodDef sack_methods[] = {
     {"add_cmdline_package", (PyCFunction)add_cmdline_package, METH_O,
      NULL},
     {"add_excludes", (PyCFunction)add_excludes, METH_O,
+     NULL},
+    {"disable_repo", (PyCFunction)disable_repo, METH_O,
+     NULL},
+    {"enable_repo", (PyCFunction)enable_repo, METH_O,
      NULL},
     {"list_arches", (PyCFunction)list_arches, METH_NOARGS,
      NULL},

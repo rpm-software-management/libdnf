@@ -156,6 +156,14 @@ class Query(base.TestCase):
         q = hawkey.Query(self.sack).filter(provides=fool.obsoletes)
         self.assertEqual(str(q.run()[0]), "penny-4-1.noarch")
 
+    def test_disabled_repo(self):
+        self.sack.disable_repo(hawkey.SYSTEM_REPO_NAME)
+        q = hawkey.Query(self.sack).filter(name="jay")
+        self.assertLength(q.run(), 0)
+        self.sack.enable_repo(hawkey.SYSTEM_REPO_NAME)
+        q = hawkey.Query(self.sack).filter(name="jay")
+        self.assertLength(q.run(), 2)
+
 class QueryUpdates(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
