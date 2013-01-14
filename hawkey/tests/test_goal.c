@@ -352,6 +352,29 @@ START_TEST(test_goal_upgrade_all_excludes)
     hy_goal_run(goal);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 2);
     hy_goal_free(goal);
+
+    hy_sack_set_excludes(sack, NULL);
+}
+END_TEST
+
+START_TEST(test_goal_upgrade_disabled_repo)
+{
+    HySack sack = test_globals.sack;
+    HyGoal goal = hy_goal_create(sack);
+
+    hy_goal_upgrade_all(goal);
+    hy_goal_run(goal);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 4);
+    hy_goal_free(goal);
+
+    hy_sack_repo_enabled(sack, "updates", 0);
+    goal = hy_goal_create(sack);
+    hy_goal_upgrade_all(goal);
+    hy_goal_run(goal);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 1);
+    hy_goal_free(goal);
+
+    hy_sack_repo_enabled(sack, "updates", 1);
 }
 END_TEST
 
@@ -703,6 +726,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_upgrade);
     tcase_add_test(tc, test_goal_upgrade_all);
     tcase_add_test(tc, test_goal_upgrade_all_excludes);
+    tcase_add_test(tc, test_goal_upgrade_disabled_repo);
     tcase_add_test(tc, test_goal_downgrade);
     tcase_add_test(tc, test_goal_get_reason);
     tcase_add_test(tc, test_goal_describe_problem);

@@ -74,7 +74,33 @@ can_use_repomd_cache(FILE *fp_solv, unsigned char cs_repomd[CHKSUM_BYTES])
     return 0;
 }
 
-int
+static Map *
+free_map_fully(Map *m)
+{
+    if (m) {
+	map_free(m);
+	solv_free(m);
+    }
+    return NULL;
+}
+
+static void
+recompute_excludes(HySack sack)
+{
+    sack->excludes = free_map_fully(sack->excludes);
+    if (sack->pkg_excludes) {
+	sack->excludes = solv_calloc(1, sizeof(Map));
+	map_init_clone(sack->excludes, sack->pkg_excludes);
+
+	if (sack->repo_excludes)
+	    map_or(sack->excludes, sack->repo_excludes);
+    } else if (sack->repo_excludes) {
+	sack->excludes = solv_calloc(1, sizeof(Map));
+	map_init_clone(sack->excludes, sack->repo_excludes);
+    }
+}
+
+static int
 setarch(HySack sack, const char *arch)
 {
     Pool *pool = sack_pool(sack);
@@ -181,14 +207,16 @@ load_ext(HySack sack, HyRepo hrepo, int which_repodata,
 }
 
 static int
-load_filelists_cb(Repo *repo, FILE *fp) {
+load_filelists_cb(Repo *repo, FILE *fp)
+{
     if (repo_add_rpmmd(repo, fp, "FL", REPO_EXTEND_SOLVABLES))
 	return HY_E_LIBSOLV;
     return 0;
 }
 
 static int
-load_presto_cb(Repo *repo, FILE *fp) {
+load_presto_cb(Repo *repo, FILE *fp)
+{
     if (repo_add_deltainfoxml(repo, fp, 0))
 	return HY_E_LIBSOLV;
     return 0;
@@ -367,10 +395,9 @@ hy_sack_free(HySack sack)
     solv_free(sack->cache_dir);
     queue_free(&sack->installonly);
 
-    if (sack->excludes) {
-	map_free(sack->excludes);
-	solv_free(sack->excludes);
-    }
+    free_map_fully(sack->excludes);
+    free_map_fully(sack->pkg_excludes);
+    free_map_fully(sack->repo_excludes);
     pool_free(sack->pool);
     solv_free(sack);
 }
@@ -466,22 +493,66 @@ void
 hy_sack_add_excludes(HySack sack, HyPackageSet pset)
 {
     Pool *pool = sack_pool(sack);
-    Map *excl = sack->excludes;
+    Map *excl = sack->pkg_excludes;
     Map *nexcl = packageset_get_map(pset);
 
     if (excl == NULL) {
 	excl = solv_calloc(1, sizeof(Map));
 	map_init(excl, pool->nsolvables);
-	sack->excludes = excl;
+	sack->pkg_excludes = excl;
     }
     assert(excl->size >= nexcl->size);
     map_or(excl, nexcl);
+    recompute_excludes(sack);
+}
+
+void
+hy_sack_set_excludes(HySack sack, HyPackageSet pset)
+{
+    sack->pkg_excludes = free_map_fully(sack->pkg_excludes);
+
+    if (pset) {
+        Map *nexcl = packageset_get_map(pset);
+
+	sack->pkg_excludes = solv_calloc(1, sizeof(Map));
+	map_init_clone(sack->pkg_excludes, nexcl);
+    }
+    recompute_excludes(sack);
+}
+
+int
+hy_sack_repo_enabled(HySack sack, const char *reponame, int enabled)
+{
+    Pool *pool = sack_pool(sack);
+    Repo *repo = repo_by_name(sack, reponame);
+    Map *excl = sack->repo_excludes;
+
+    if (repo == NULL)
+	return HY_E_OP;
+    if (excl == NULL) {
+	excl = solv_calloc(1, sizeof(Map));
+	map_init(excl, pool->nsolvables);
+	sack->repo_excludes = excl;
+    }
+    repo->disabled = !enabled;
+    sack->provides_ready = 0;
+
+    Id p;
+    Solvable *s;
+    if (repo->disabled)
+	FOR_REPO_SOLVABLES(repo, p, s)
+	    MAPSET(sack->repo_excludes, p);
+    else
+	FOR_REPO_SOLVABLES(repo, p, s)
+	    MAPCLR(sack->repo_excludes, p);
+    recompute_excludes(sack);
+    return 0;
 }
 
 int
 hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
 {
-    Pool *pool = sack->pool;
+    Pool *pool = sack_pool(sack);
     char *cache_fn = hy_sack_give_cache_fn(sack, HY_SYSTEM_REPO_NAME, NULL);
     FILE *cache_fp = fopen(cache_fn, "r");
     int rc, ret = 0;

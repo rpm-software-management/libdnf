@@ -75,9 +75,9 @@ construct_solver(HyGoal goal, int flags)
 		    sack->installonly.elements[i]);
 
     /* apply the excludes */
-    if (sack->excludes)
+    if (sack->pkg_excludes)
 	for (int i = 1; i < pool->nsolvables; ++i)
-	    if (MAPTST(sack->excludes, i))
+	    if (MAPTST(sack->pkg_excludes, i))
 		queue_push2(job, SOLVER_SOLVABLE|SOLVER_LOCK, i);
 
     /* installonly notwithstanding, process explicit obsoletes */

@@ -15,7 +15,9 @@ struct _HySack {
     char *cache_dir;
     Queue installonly;
     FILE *log_out;
-    Map* excludes;
+    Map *pkg_excludes;
+    Map *repo_excludes;
+    Map *excludes;
 };
 
 void sack_make_provides_ready(HySack sack);
