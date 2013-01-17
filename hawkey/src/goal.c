@@ -9,7 +9,7 @@
 
 // hawkey
 #include "errno.h"
-#include "goal.h"
+#include "goal_internal.h"
 #include "iutil.h"
 #include "package_internal.h"
 #include "query_internal.h"
@@ -254,7 +254,7 @@ filter_provides2job(HySack sack, const struct _Filter *f, Queue *job)
  *
  * Returns 0 on success. Otherwise it returns non-zero and sets hy_errno.
  */
-static int
+int
 sltr2job(const HySelector sltr, Queue *job, int solver_action)
 {
     HySack sack = selector_sack(sltr);

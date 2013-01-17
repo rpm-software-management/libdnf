@@ -10,6 +10,7 @@
 
 // hawkey
 #include "src/package.h"
+#include "src/package_internal.h"
 #include "src/query.h"
 #include "src/sack_internal.h"
 #include "src/util.h"
@@ -55,8 +56,9 @@ dump_packagelist(HyPackageList plist)
 {
     for (int i = 0; i < hy_packagelist_count(plist); ++i) {
 	HyPackage pkg = hy_packagelist_get(plist, i);
+	Solvable *s = pool_id2solvable(package_pool(pkg), package_id(pkg));
 	char *nvra = hy_package_get_nevra(pkg);
-	printf("\t%s\n", nvra);
+	printf("\t%s (%s)\n", nvra, s->repo->name);
 	hy_free(nvra);
     }
 }

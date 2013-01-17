@@ -1,8 +1,5 @@
 #include <check.h>
 
-// libsolv
-#include <solv/testcase.h>
-
 // hawkey
 #include "src/errno.h"
 #include "src/goal.h"

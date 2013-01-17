@@ -20,6 +20,7 @@
 #include "test_reldep.h"
 #include "test_repo.h"
 #include "test_sack.h"
+#include "test_selector.h"
 #include "test_util.h"
 #include "testsys.h"
 
@@ -74,6 +75,7 @@ main(int argc, const char **argv)
     srunner_add_suite(sr, packagelist_suite());
     srunner_add_suite(sr, packageset_suite());
     srunner_add_suite(sr, query_suite());
+    srunner_add_suite(sr, selector_suite());
     srunner_add_suite(sr, goal_suite());
     srunner_run_all(sr, CK_NORMAL);
     number_failed = srunner_ntests_failed(sr);

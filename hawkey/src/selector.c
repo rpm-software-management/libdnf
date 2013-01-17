@@ -1,9 +1,14 @@
 // libsolv
+#include <solv/solver.h>
 #include <solv/util.h>
 
 // hawkey
 #include "errno.h"
+#include "goal_internal.h"
+#include "package_internal.h"
+#include "packagelist.h"
 #include "query_internal.h"
+#include "sack_internal.h"
 #include "selector_internal.h"
 
 static void
@@ -82,4 +87,22 @@ hy_selector_set(HySelector sltr, int keyname, int cmp_type, const char *match)
 	return HY_E_SELECTOR;
     }
     return 0;
+}
+
+HyPackageList
+hy_selector_matches(HySelector sltr)
+{
+    Pool *pool = sack_pool(selector_sack(sltr));
+    Queue job;
+
+    queue_init(&job);
+    sltr2job(sltr, &job, 0);
+    Id p, pp;
+    HyPackageList plist = hy_packagelist_create();
+
+    for (int i = 0; i < job.count; i += 2)
+	FOR_JOB_SELECT(p, pp, job.elements[0], job.elements[1])
+	    hy_packagelist_push(plist, package_create(pool, p));
+    queue_free(&job);
+    return plist;
 }
