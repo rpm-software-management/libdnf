@@ -1,10 +1,12 @@
 #include <Python.h>
 
 // hawkey
+#include "src/packagelist.h"
 #include "src/selector.h"
 
 // pyhawkey
 #include "exception-py.h"
+#include "iutil-py.h"
 #include "sack-py.h"
 #include "selector-py.h"
 
@@ -65,6 +67,15 @@ selector_dealloc(_SelectorObject *self)
 }
 
 static PyObject *
+matches(_SelectorObject *self, PyObject *args)
+{
+    HyPackageList plist = hy_selector_matches(self->sltr);
+    PyObject *list = packagelist_to_pylist(plist, self->sack);
+    hy_packagelist_free(plist);
+    return list;
+}
+
+static PyObject *
 set(_SelectorObject *self, PyObject *args)
 {
     key_t keyname;
@@ -80,6 +91,8 @@ set(_SelectorObject *self, PyObject *args)
 }
 
 static struct PyMethodDef selector_methods[] = {
+    {"matches", (PyCFunction)matches, METH_NOARGS,
+     NULL},
     {"set", (PyCFunction)set, METH_VARARGS,
      NULL},
     {NULL}                      /* sentinel */
