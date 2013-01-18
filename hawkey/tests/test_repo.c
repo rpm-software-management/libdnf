@@ -3,7 +3,7 @@
 
 // hawkey
 #include "src/repo_internal.h"
-#include "test_repo.h"
+#include "test_suites.h"
 
 START_TEST(test_strings)
 {

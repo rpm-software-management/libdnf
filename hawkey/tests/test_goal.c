@@ -13,7 +13,7 @@
 #include "src/util.h"
 #include "fixtures.h"
 #include "testsys.h"
-#include "test_goal.h"
+#include "test_suites.h"
 
 static HyPackage
 get_latest_pkg(HySack sack, const char *name)

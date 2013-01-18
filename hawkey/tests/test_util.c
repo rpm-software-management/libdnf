@@ -4,6 +4,7 @@
 // hawkey
 #include "src/errno.h"
 #include "src/util.h"
+#include "test_suites.h"
 
 START_TEST(test_split_nevra)
 {

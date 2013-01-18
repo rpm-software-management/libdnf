@@ -3,7 +3,7 @@
 #include "src/reldep.h"
 #include "src/sack.h"
 #include "fixtures.h"
-#include "test_reldep.h"
+#include "test_suites.h"
 #include "testsys.h"
 
 START_TEST(test_reldeplist_add)

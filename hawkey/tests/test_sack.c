@@ -15,6 +15,7 @@
 #include "src/util.h"
 #include "fixtures.h"
 #include "testsys.h"
+#include "test_suites.h"
 
 START_TEST(test_environment)
 {

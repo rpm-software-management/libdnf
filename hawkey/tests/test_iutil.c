@@ -8,7 +8,7 @@
 // hawkey
 #include "src/iutil.h"
 #include "fixtures.h"
-#include "test_iutil.h"
+#include "test_suites.h"
 
 static void
 build_test_file(const char *filename)

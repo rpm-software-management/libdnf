@@ -2,7 +2,7 @@
 #include "src/selector.h"
 #include "fixtures.h"
 #include "testsys.h"
-#include "test_selector.h"
+#include "test_suites.h"
 
 START_TEST(test_sltr_matching)
 {

@@ -1,7 +1,7 @@
 // hawkey
 #include "src/package_internal.h"
 #include "src/packagelist.h"
-#include "test_packagelist.h"
+#include "test_suites.h"
 
 static HyPackage
 mock_package(Id id)

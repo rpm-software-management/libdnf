@@ -3,7 +3,7 @@
 #include "src/packageset_internal.h"
 #include "src/sack_internal.h"
 #include "fixtures.h"
-#include "test_packageset.h"
+#include "test_suites.h"
 
 static HyPackageSet pset;
 

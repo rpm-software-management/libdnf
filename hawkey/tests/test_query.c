@@ -10,7 +10,7 @@
 #include "src/reldep.h"
 #include "src/sack_internal.h"
 #include "fixtures.h"
-#include "test_query.h"
+#include "test_suites.h"
 #include "testsys.h"
 
 static int

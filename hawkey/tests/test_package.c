@@ -4,7 +4,7 @@
 #include "src/reldep.h"
 #include "src/util.h"
 #include "fixtures.h"
-#include "test_package.h"
+#include "test_suites.h"
 #include "testsys.h"
 
 START_TEST(test_refcounting)

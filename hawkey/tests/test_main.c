@@ -11,17 +11,7 @@
 
 // hawkey
 #include "fixtures.h"
-#include "test_goal.h"
-#include "test_iutil.h"
-#include "test_query.h"
-#include "test_package.h"
-#include "test_packagelist.h"
-#include "test_packageset.h"
-#include "test_reldep.h"
-#include "test_repo.h"
-#include "test_sack.h"
-#include "test_selector.h"
-#include "test_util.h"
+#include "test_suites.h"
 #include "testsys.h"
 
 static int
