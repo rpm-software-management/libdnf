@@ -1,9 +1,9 @@
-%global gitrev f981c48
+%global gitrev c8365fa
 %global libsolv_version 0.2.3
 
 Name:		hawkey
 Version:	@VERSION@
-Release:	3.git%{gitrev}%{?dist}
+Release:	1.git%{gitrev}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
@@ -76,6 +76,13 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
+* Fri Jan 18 2013 Aleš Kozumplík <ales@redhat.com> - 0.3.6-1.gitc8365fa
+- excludes: Query respects the exclude list. (related RhBug:884617)
+- excludes: apply excludes in Goal. (related RhBug:884617)
+- goal: support forcebest flag. (related RhBug:882211)
+- disabling/enabling entire repositories.
+- selector: preview possibly matched packages with hy_selector_matches(). (related RhBug:882851)
+
 * Thu Jan 3 2013 Aleš Kozumplík <ales@redhat.com> - 0.3.5-3.gitf981c48
 - Rebuild with proper git revision.
 
