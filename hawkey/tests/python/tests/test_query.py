@@ -170,10 +170,15 @@ class QueryUpdates(base.TestCase):
         self.sack.load_system_repo()
         self.sack.load_test_repo("updates", "updates.repo")
 
-    def test_updates(self):
+    def test_updates_noarch(self):
         q = hawkey.Query(self.sack)
         q.filterm(name="flying", upgrades=1)
         self.assertEqual(q.count(), 3)
+
+    def test_updates_arch(self):
+        q = hawkey.Query(self.sack)
+        pilchard = q.filter(name="dog", upgrades=True)
+        self.assertItemsEqual(map(str, pilchard.run()), ['dog-1-2.x86_64'])
 
     def test_obsoletes(self):
         q = hawkey.Query(self.sack).filter(name="penny")

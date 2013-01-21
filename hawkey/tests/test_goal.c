@@ -316,7 +316,7 @@ START_TEST(test_goal_upgrade_all)
     hy_packagelist_free(plist);
 
     plist = hy_goal_list_upgrades(goal);
-    fail_unless(hy_packagelist_count(plist) == 4);
+    fail_unless(hy_packagelist_count(plist) == 5);
     pkg = hy_packagelist_get(plist, 0);
     ck_assert_str_eq(hy_package_get_name(pkg), "fool");
     pkg = hy_packagelist_get(plist, 1);
@@ -325,6 +325,8 @@ START_TEST(test_goal_upgrade_all)
     ck_assert_str_eq(hy_package_get_name(pkg), "pilchard");
     pkg = hy_packagelist_get(plist, 3);
     ck_assert_str_eq(hy_package_get_name(pkg), "pilchard");
+    pkg = hy_packagelist_get(plist, 4);
+    ck_assert_str_eq(hy_package_get_name(pkg), "dog");
 
     hy_packagelist_free(plist);
 
@@ -567,7 +569,7 @@ START_TEST(test_goal_upgrade_all_excludes)
     HyGoal goal = hy_goal_create(sack);
     hy_goal_upgrade_all(goal);
     hy_goal_run(goal);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 2);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 3);
     hy_goal_free(goal);
 }
 END_TEST
@@ -579,7 +581,7 @@ START_TEST(test_goal_upgrade_disabled_repo)
 
     hy_goal_upgrade_all(goal);
     hy_goal_run(goal);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 4);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 5);
     hy_goal_free(goal);
 
     hy_sack_repo_enabled(sack, "updates", 0);

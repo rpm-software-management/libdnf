@@ -13,3 +13,5 @@
 =Pkg: pilchard 1.2.4 1 i686
 =Pkg: pilchard 1.2.4 1 x86_64
 =Pkg: pilchard 1.2.4 2 x86_64
+=Pkg: dog 1 2 i686
+=Pkg: dog 1 2 x86_64

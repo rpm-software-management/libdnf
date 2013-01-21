@@ -359,8 +359,14 @@ queue2plist(HySack sack, Queue *q, HyPackageList plist)
  *
  * The returned package Id fulfills the following criteria:
  * :: it is installed
- * :: has the same name as pkg (note that the arch can change, RPM lets you
- *    upgrade foo.noarch with foo.x86_64)
+ * :: has the same name as pkg
+ * :: arch of the installed pkg is upgradable to the new pkg. In RPM world that
+ *    roughly means: if both pacakges are colored (contains ELF binaries and was
+ *    built with internal dependency generator), they are not upgradable to each
+ *    other (i.e. i386 package can not be upgraded to x86_64, neither the other
+ *    way round). If one of them is noarch and the other one colored then the
+ *    pkg is upgradable (i.e. one can upgrade .noarch to .x86_64 and then again
+ *    to a new version that is .noarch)
  * :: is of lower version than pkg.
  * :: if there are multiple packages of that name return the highest version
  *    (implying we won't claim we can upgrade an old package with an already
@@ -381,6 +387,10 @@ what_upgrades(Pool *pool, Id pkg)
 	updated = pool_id2solvable(pool, p);
 	if (updated->repo != pool->installed ||
 	    updated->name != s->name)
+	    continue;
+	if (updated->arch != s->arch &&
+	    updated->arch != ARCH_NOARCH &&
+	    s->arch != ARCH_NOARCH)
 	    continue;
 	if (pool_evrcmp(pool, updated->evr, s->evr, EVRCMP_COMPARE) >= 0)
 	    // >= version installed, this pkg can not be used for upgrade

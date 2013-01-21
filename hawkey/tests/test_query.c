@@ -399,7 +399,7 @@ START_TEST(test_upgrades)
 
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter_upgrades(q, 1);
-    fail_unless(query_count_results(q) == TEST_EXPECT_UPDATES_NSOLVABLES);
+    fail_unless(query_count_results(q) == TEST_EXPECT_UPDATES_NSOLVABLES - 1);
     hy_query_free(q);
 }
 END_TEST
