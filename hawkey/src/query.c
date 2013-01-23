@@ -57,6 +57,7 @@ match_type_str(int keyname) {
     case HY_PKG_DESCRIPTION:
     case HY_PKG_EVR:
     case HY_PKG_FILE:
+    case HY_PKG_LOCATION:
     case HY_PKG_NAME:
     case HY_PKG_PROVIDES:
     case HY_PKG_RELEASE:
@@ -66,7 +67,6 @@ match_type_str(int keyname) {
     case HY_PKG_SUMMARY:
     case HY_PKG_URL:
     case HY_PKG_VERSION:
-    case HY_PKG_LOCATION:
 	return 1;
     default:
 	return 0;
@@ -129,8 +129,8 @@ valid_filter_str(int keyname, int cmp_type)
 
     cmp_type &= ~HY_NOT; // hy_query_run always handles NOT
     switch (keyname) {
-    case HY_PKG_SOURCERPM:
     case HY_PKG_LOCATION:
+    case HY_PKG_SOURCERPM:
 	return cmp_type == HY_EQ;
     default:
 	return 1;
