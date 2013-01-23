@@ -172,6 +172,27 @@ START_TEST(test_query_version)
 }
 END_TEST
 
+START_TEST(test_query_location)
+{
+     HyQuery q = hy_query_create(test_globals.sack);
+    fail_unless(hy_query_filter(q, HY_PKG_LOCATION, HY_GT,
+				"tour-4-6.noarch.rpm"));
+    fail_if(hy_query_filter(q, HY_PKG_LOCATION, HY_EQ,
+			    "tour-4-6.noarch.rpm"));
+    fail_unless(size_and_free(q) == 1);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_LOCATION, HY_EQ,
+		    "mystery-devel-19.67-1.noarch.rpm");
+    fail_unless(size_and_free(q) == 1);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_LOCATION, HY_EQ,
+		    "mystery-19.67-1.src.rpm");
+    fail_unless(size_and_free(q) == 0);
+}
+END_TEST
+
 START_TEST(test_query_release)
 {
     HyQuery q = hy_query_create(test_globals.sack);
@@ -708,6 +729,7 @@ query_suite(void)
     tcase_add_test(tc, test_filter_files);
     tcase_add_test(tc, test_filter_sourcerpm);
     tcase_add_test(tc, test_filter_description);
+    tcase_add_test(tc, test_query_location);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Excluding");

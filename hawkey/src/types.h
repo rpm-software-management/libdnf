@@ -49,7 +49,8 @@ enum _hy_key_name_e {
     HY_PKG_SOURCERPM,
     HY_PKG_SUMMARY,
     HY_PKG_URL,
-    HY_PKG_VERSION
+    HY_PKG_VERSION,
+    HY_PKG_LOCATION
 };
 
 enum _hy_comparison_type_e {

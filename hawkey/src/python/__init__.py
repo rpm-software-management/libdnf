@@ -33,6 +33,7 @@ _QUERY_KEYNAME_MAP = {
     'arch'	: _hawkey.PKG_ARCH,
     'evr'	: _hawkey.PKG_EVR,
     'version'	: _hawkey.PKG_VERSION,
+    'location'	: _hawkey.PKG_LOCATION,
     'release'	: _hawkey.PKG_RELEASE,
     'sourcerpm'	: _hawkey.PKG_SOURCERPM,
     'summary'	: _hawkey.PKG_SUMMARY,

@@ -66,6 +66,7 @@ match_type_str(int keyname) {
     case HY_PKG_SUMMARY:
     case HY_PKG_URL:
     case HY_PKG_VERSION:
+    case HY_PKG_LOCATION:
 	return 1;
     default:
 	return 0;
@@ -129,6 +130,7 @@ valid_filter_str(int keyname, int cmp_type)
     cmp_type &= ~HY_NOT; // hy_query_run always handles NOT
     switch (keyname) {
     case HY_PKG_SOURCERPM:
+    case HY_PKG_LOCATION:
 	return cmp_type == HY_EQ;
     default:
 	return 1;
@@ -528,6 +530,26 @@ filter_reponame(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
+filter_location(HyQuery q, struct _Filter *f, Map *m)
+{
+    Pool *pool = sack_pool(q->sack);
+
+    for (int mi = 0; mi < f->nmatches; ++mi) {
+	const char *match = f->matches[mi].str;
+
+	for (Id id = 1; id < pool->nsolvables; ++id) {
+	    Solvable *s = pool_id2solvable(pool, id);
+
+	    const char *location = solvable_get_location(s, NULL);
+	    if (location == NULL)
+		continue;
+	    if (!strcmp(match, location))
+		MAPSET(m, id);
+	}
+    }
+}
+
+static void
 filter_updown(HyQuery q, int downgrade, Map *res)
 {
     HySack sack = q->sack;
@@ -654,6 +676,9 @@ compute(HyQuery q)
 	    break;
 	case HY_PKG_REPONAME:
 	    filter_reponame(q, f, &m);
+	    break;
+	case HY_PKG_LOCATION:
+	    filter_location(q, f, &m);
 	    break;
 	default:
 	    filter_dataiterator(q, f, &m);
