@@ -1,5 +1,6 @@
 import base
 import hawkey
+import hawkey.test
 
 INP_FOF="four-of-fish-8:3.6.9-11.fc100.x86_64"
 INP_FOF_NOEPOCH="four-of-fish-3.6.9-11.fc100.x86_64"
@@ -75,16 +76,16 @@ class SubjectTest(base.TestCase):
                                                      epoch=None, version='3.6.9',
                                                      release='11.fc100',
                                                      arch='x86_64'))
-        self.assertEqual(nevras.next(), hawkey.NEVRA(name='four-of-fish',
-                                                     epoch=None, version='3.6.9',
-                                                     release='11.fc100.x86_64',
-                                                     arch=None))
         self.assertEqual(nevras.next(), hawkey.NEVRA(
                 name='four-of-fish-3.6.9-11.fc100', epoch=None, version=None,
                 release=None, arch='x86_64'))
         self.assertEqual(nevras.next(), hawkey.NEVRA(
                 name='four-of-fish-3.6.9-11.fc100.x86_64', epoch=None,
                 version=None, release=None, arch=None))
+        self.assertEqual(nevras.next(), hawkey.NEVRA(name='four-of-fish',
+                                                     epoch=None, version='3.6.9',
+                                                     release='11.fc100.x86_64',
+                                                     arch=None))
         self.assertEqual(nevras.next(), hawkey.NEVRA(name='four-of-fish-3.6.9',
                                                      epoch=None,
                                                      version='11.fc100.x86_64',
@@ -123,6 +124,14 @@ class SubjectRealPossibilitiesTest(base.TestCase):
         subj = hawkey.Subject("penny-lib")
         nevra = subj.nevra_possibilities_real(self.sack).next()
         self.assertEqual(nevra, hawkey.NEVRA(name='penny-lib', epoch=None,
+                                             version=None, release=None,
+                                             arch=None))
+
+    def test_two_dashes(self):
+        """ Even two dashes can happen, make sure they can still form a name. """
+        subj = hawkey.Subject("penny-lib-devel")
+        nevra = subj.nevra_possibilities_real(self.sack).next()
+        self.assertEqual(nevra, hawkey.NEVRA(name='penny-lib-devel', epoch=None,
                                              version=None, release=None,
                                              arch=None))
 

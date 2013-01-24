@@ -10,6 +10,7 @@
 =Pkg: penny-lib 4 1 i686
 =Prv: P-lib = 3-3
 =Sum: in my ears
+=Pkg: penny-lib-devel 4 1 x86_64
 =Pkg: walrus 2 5 noarch
 =Prv: walrus <= 2-5
 =Req: semolina = 2
