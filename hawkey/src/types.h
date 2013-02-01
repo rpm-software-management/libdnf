@@ -70,6 +70,9 @@ enum _hy_comparison_type_e {
 
     /* part 4: frequently used combinations */
     HY_NEQ	= HY_EQ | HY_NOT,
+
+    /* part 5: additional flags, not necessarily used for queries */
+    HY_NAME_ONLY = (1 << 16),
 };
 
 #ifdef __cplusplus

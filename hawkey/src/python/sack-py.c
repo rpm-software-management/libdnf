@@ -197,13 +197,19 @@ _knows(PyObject *unused, PyObject *args, PyObject *kwds)
 {
     HySack sack;
     const char *name;
-    int only_names = 0;
+    int name_only = 0, icase = 0;
 
-    char *kwlist[] = {"sack", "name", "only_names", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&s|i", kwlist,
-				     sack_converter, &sack, &name, &only_names))
+    char *kwlist[] = {"sack", "name", "name_only", "icase", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&s|ii", kwlist,
+				     sack_converter, &sack, &name, &name_only,
+				     &icase))
 	return 0;
-    return PyInt_FromLong(sack_knows(sack, name, only_names));
+    int flags = 0;
+    if (name_only)
+	flags |= HY_NAME_ONLY;
+    if (icase)
+	flags |= HY_ICASE;
+    return PyInt_FromLong(sack_knows(sack, name, flags));
 }
 
 static PyObject *

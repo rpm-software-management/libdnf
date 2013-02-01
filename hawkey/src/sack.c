@@ -687,23 +687,38 @@ sack_log(HySack sack, int level, const char *format, ...)
 }
 
 int
-sack_knows(HySack sack, const char *str, int only_names)
+sack_knows(HySack sack, const char *str, int flags)
 {
     Pool *pool = sack_pool(sack);
-    Id provide = pool_str2id(pool, str, 0);
-    if (provide == 0)
-	return 0;
 
-    sack_make_provides_ready(sack);
-    Id p, pp;
-    FOR_PROVIDES(p, pp, provide) {
-	Solvable *s = pool_id2solvable(pool, p);
-	if (!only_names)
-	    return 1;
-	if (s->name == provide)
-	    return 1;
+    assert((flags & ~(HY_ICASE|HY_NAME_ONLY)) == 0);
+
+    if (flags & HY_ICASE) {
+	Dataiterator di;
+	Id key = (flags & HY_NAME_ONLY) ? SOLVABLE_NAME : SOLVABLE_PROVIDES;
+	int ret = 0;
+
+	dataiterator_init(&di, pool, 0, 0, key, str, SEARCH_STRING|SEARCH_NOCASE);
+	if (dataiterator_step(&di))
+	    ret = 1;
+	dataiterator_free(&di);
+	return ret;
+    } else {
+	Id provide = pool_str2id(pool, str, 0);
+	if (provide == 0)
+	    return 0;
+
+	sack_make_provides_ready(sack);
+	Id p, pp;
+	FOR_PROVIDES(p, pp, provide) {
+	    Solvable *s = pool_id2solvable(pool, p);
+	    if (!(flags & HY_NAME_ONLY))
+		return 1;
+	    if (s->name == provide)
+		return 1;
+	}
+	return 0;
     }
-    return 0;
 }
 
 /**

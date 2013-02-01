@@ -381,7 +381,7 @@ class Subject(object):
                 {key:self._backmap(abbr, match, key)
                  for key in match.groupdict()})
 
-    def nevra_possibilities_real(self, sack, allow_globs=False):
+    def nevra_possibilities_real(self, sack, allow_globs=False, icase=False):
         def should_check(val):
             if val is None:
                 return False
@@ -393,15 +393,15 @@ class Subject(object):
         existing_arches.append('src')
         for nevra in self.nevra_possibilities():
             if should_check(nevra.name):
-                if not sack._knows(sack, nevra.name, only_names=True):
+                if not sack._knows(sack, nevra.name, name_only=True, icase=icase):
                     continue
             if should_check(nevra.arch):
                 if nevra.arch not in existing_arches:
                     continue
             yield nevra
 
-    def reldep_possibilities_real(self, sack):
+    def reldep_possibilities_real(self, sack, icase=False):
         abbr = self._abbr
         if FORM_NAME.match(abbr):
-            if sack._knows(sack, self.pat):
+            if sack._knows(sack, self.pat, icase=icase):
                 yield Reldep(sack, self.pat)

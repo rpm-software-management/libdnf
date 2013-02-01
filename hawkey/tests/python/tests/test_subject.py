@@ -152,3 +152,8 @@ class SubjectRealPossibilitiesTest(base.TestCase):
         reldep = reldeps.next()
         self.assertEqual(str(reldep), "P-lib")
         self.assertRaises(StopIteration, reldeps.next)
+
+    def test_icase(self):
+        subj = hawkey.Subject("penny-lib-DEVEL")
+        nevra = subj.nevra_possibilities_real(self.sack, icase=True).next()
+        self.assertEqual(nevra.name, "penny-lib-DEVEL")
