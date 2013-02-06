@@ -198,3 +198,14 @@ class QueryUpdates(base.TestCase):
         self.assertTrue(q.evaluated)
         self.assertIsInstance(q.result, list)
         self.assertLength(o, 1)
+
+class TestQuerySubclass(base.TestCase):
+    class CustomQuery(hawkey.Query):
+        pass
+
+    def test_instance(self):
+        sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        q = self.CustomQuery(sack)
+        self.assertIsInstance(q, self.CustomQuery)
+        q = q.filter(name="pepper")
+        self.assertIsInstance(q, self.CustomQuery)
