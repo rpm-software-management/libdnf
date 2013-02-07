@@ -113,7 +113,7 @@ reldep_repr(_ReldepObject *self)
 	PyErr_Clear();
 	return PyString_FromString("<_hawkey.Reldep object, INVALID value>");
     }
-    return PyString_FromFormat("<_hawkey.Reldep object, id: %lx>", hash);
+    return PyString_FromFormat("<_hawkey.Reldep object, id: %lu>", hash);
 }
 
 static PyObject *
