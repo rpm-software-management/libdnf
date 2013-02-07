@@ -153,6 +153,7 @@ init_hawkey(void)
     PyModule_AddIntConstant(m, "PKG_FILE", HY_PKG_FILE);
     PyModule_AddIntConstant(m, "PKG_REPONAME", HY_PKG_REPONAME);
     PyModule_AddIntConstant(m, "PKG_PROVIDES", HY_PKG_PROVIDES);
+    PyModule_AddIntConstant(m, "PKG_REQUIRES", HY_PKG_REQUIRES);
     PyModule_AddIntConstant(m, "PKG_EMPTY", HY_PKG_EMPTY);
     PyModule_AddIntConstant(m, "PKG_LATEST", HY_PKG_LATEST);
     PyModule_AddIntConstant(m, "PKG_DOWNGRADES", HY_PKG_DOWNGRADES);

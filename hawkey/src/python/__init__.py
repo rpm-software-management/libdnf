@@ -29,6 +29,7 @@ _QUERY_KEYNAME_MAP = {
     'name'	: _hawkey.PKG_NAME,
     'obsoletes'	: _hawkey.PKG_OBSOLETES,
     'provides'	: _hawkey.PKG_PROVIDES,
+    'requires'	: _hawkey.PKG_REQUIRES,
     'url'	: _hawkey.PKG_URL,
     'arch'	: _hawkey.PKG_ARCH,
     'evr'	: _hawkey.PKG_EVR,

@@ -44,6 +44,7 @@ static int
 match_type_reldep(int keyname) {
     switch (keyname) {
     case HY_PKG_PROVIDES:
+    case HY_PKG_REQUIRES:
 	return 1;
     default:
 	return 0;
@@ -74,8 +75,8 @@ match_type_str(int keyname) {
 }
 
 
-static int
-keyname2id(int keyname)
+static Id
+di_keyname2id(int keyname)
 {
     switch(keyname) {
     case HY_PKG_DESCRIPTION:
@@ -92,6 +93,18 @@ keyname2id(int keyname)
 	return SOLVABLE_SUMMARY;
     case HY_PKG_FILE:
 	return SOLVABLE_FILELIST;
+    default:
+	assert(0);
+	return 0;
+    }
+}
+
+static Id
+reldep_keyname2id(int keyname)
+{
+    switch(keyname) {
+    case HY_PKG_REQUIRES:
+	return SOLVABLE_REQUIRES;
     default:
 	assert(0);
 	return 0;
@@ -231,7 +244,7 @@ filter_dataiterator(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
     Dataiterator di;
-    Id keyname = keyname2id(f->keyname);
+    Id keyname = di_keyname2id(f->keyname);
     int flags = type2flags(f->cmp_type, f->keyname);
 
     assert(f->match_type == _HY_STR);
@@ -443,6 +456,34 @@ filter_provides_reldep(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
+filter_rco_reldep(HyQuery q, struct _Filter *f, Map *m)
+{
+    Pool *pool = sack_pool(q->sack);
+    Id rco_key = reldep_keyname2id(f->keyname);
+    Queue rco;
+
+    queue_init(&rco);
+    for (int i = 0; i < f->nmatches; ++i) {
+	Id r_id = reldep_id(f->matches[i].reldep);
+
+	for (Id s_id = 1; s_id < pool->nsolvables; ++s_id) {
+	    Solvable *s = pool_id2solvable(pool, s_id);
+
+	    queue_init(&rco);
+	    solvable_lookup_idarray(s, rco_key, &rco);
+	    for (int j = 0; j < rco.count; ++j) {
+		Id r_id2 = rco.elements[j];
+
+		if (pool_match_dep(pool, r_id, r_id2)) {
+		    MAPSET(m, s_id);
+		    break;
+		}
+	    }
+	}
+    }
+}
+
+static void
 filter_provides_str(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
@@ -463,7 +504,7 @@ filter_provides_str(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
-filter_requires(HyQuery q, struct _Filter *f, Map *m)
+filter_requires_str(HyQuery q, struct _Filter *f, Map *m)
 {
     assert(f->nmatches == 1);
     Pool *pool = sack_pool(q->sack);
@@ -672,7 +713,12 @@ compute(HyQuery q)
 	    }
 	    break;
 	case HY_PKG_REQUIRES:
-	    filter_requires(q, f, &m);
+	    if (f->match_type == _HY_RELDEP)
+		filter_rco_reldep(q, f, &m);
+	    else {
+		assert(f->match_type == _HY_STR);
+		filter_requires_str(q, f, &m);
+	    }
 	    break;
 	case HY_PKG_REPONAME:
 	    filter_reponame(q, f, &m);
