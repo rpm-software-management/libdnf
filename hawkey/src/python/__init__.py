@@ -24,6 +24,7 @@ __all__ = [
 
 _QUERY_KEYNAME_MAP = {
     'pkg'	: _hawkey.PKG,
+    'conflicts' : _hawkey.PKG_CONFLICTS,
     'description' : _hawkey.PKG_DESCRIPTION,
     'epoch'	: _hawkey.PKG_EPOCH,
     'name'	: _hawkey.PKG_NAME,

@@ -43,6 +43,8 @@ match_type_pkg(int keyname) {
 static int
 match_type_reldep(int keyname) {
     switch (keyname) {
+    case HY_PKG_CONFLICTS:
+    case HY_PKG_OBSOLETES:
     case HY_PKG_PROVIDES:
     case HY_PKG_REQUIRES:
 	return 1;
@@ -103,6 +105,10 @@ static Id
 reldep_keyname2id(int keyname)
 {
     switch(keyname) {
+    case HY_PKG_CONFLICTS:
+	return SOLVABLE_CONFLICTS;
+    case HY_PKG_OBSOLETES:
+	return SOLVABLE_OBSOLETES;
     case HY_PKG_REQUIRES:
 	return SOLVABLE_REQUIRES;
     default:
@@ -458,6 +464,8 @@ filter_provides_reldep(HyQuery q, struct _Filter *f, Map *m)
 static void
 filter_rco_reldep(HyQuery q, struct _Filter *f, Map *m)
 {
+    assert(f->match_type = _HY_RELDEP);
+
     Pool *pool = sack_pool(q->sack);
     Id rco_key = reldep_keyname2id(f->keyname);
     Queue rco;
@@ -469,7 +477,7 @@ filter_rco_reldep(HyQuery q, struct _Filter *f, Map *m)
 	for (Id s_id = 1; s_id < pool->nsolvables; ++s_id) {
 	    Solvable *s = pool_id2solvable(pool, s_id);
 
-	    queue_init(&rco);
+	    queue_empty(&rco);
 	    solvable_lookup_idarray(s, rco_key, &rco);
 	    for (int j = 0; j < rco.count; ++j) {
 		Id r_id2 = rco.elements[j];
@@ -481,6 +489,7 @@ filter_rco_reldep(HyQuery q, struct _Filter *f, Map *m)
 	    }
 	}
     }
+    queue_free(&rco);
 }
 
 static void
@@ -686,6 +695,9 @@ compute(HyQuery q)
 	case HY_PKG_ALL:
 	    filter_all(q, f, &m);
 	    break;
+	case HY_PKG_CONFLICTS:
+	    filter_rco_reldep(q, f, &m);
+	    break;
 	case HY_PKG_EPOCH:
 	    filter_epoch(q, f, &m);
 	    break;
@@ -702,7 +714,12 @@ compute(HyQuery q)
 	    filter_sourcerpm(q, f, &m);
 	    break;
 	case HY_PKG_OBSOLETES:
-	    filter_obsoletes(q, f, &m);
+	    if (f->match_type == _HY_RELDEP)
+		filter_rco_reldep(q, f, &m);
+	    else {
+		assert(f->match_type == _HY_PKG);
+		filter_obsoletes(q, f, &m);
+	    }
 	    break;
 	case HY_PKG_PROVIDES:
 	    if (f->match_type == _HY_RELDEP)

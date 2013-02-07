@@ -169,6 +169,7 @@ class TestQueryAllRepos(base.TestCase):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
         self.sack.load_test_repo("main", "main.repo")
+        self.sack.load_test_repo("updates", "updates.repo")
 
     def test_requires(self):
         reldep = hawkey.Reldep(self.sack, "semolina = 2")
@@ -178,6 +179,11 @@ class TestQueryAllRepos(base.TestCase):
         reldep = hawkey.Reldep(self.sack, "semolina > 1.0")
         q = hawkey.Query(self.sack).filter(requires=reldep)
         self.assertItemsEqual(map(str, q.run()), ['walrus-2-5.noarch'])
+
+    def test_obsoletes(self):
+        reldep = hawkey.Reldep(self.sack, "penny < 4-0")
+        q = hawkey.Query(self.sack).filter(obsoletes=reldep)
+        self.assertItemsEqual(map(str, q.run()), ['fool-1-5.noarch'])
 
 class QueryUpdates(base.TestCase):
     def setUp(self):

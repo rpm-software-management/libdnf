@@ -391,10 +391,24 @@ START_TEST(test_query_requires)
     fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES-1);
     hy_query_free(q);
 
-   q = hy_query_create(test_globals.sack);
+    q = hy_query_create(test_globals.sack);
     hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist);
     hy_query_filter_requires(q, HY_NEQ, "semolina", "2.1");
     fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES);
+    hy_query_free(q);
+}
+END_TEST
+
+START_TEST(test_query_conflicts)
+{
+    HySack sack = test_globals.sack;
+    HyQuery q = hy_query_create(sack);
+    HyReldep reldep = hy_reldep_create(sack, "custard", HY_GT|HY_EQ, "1.0.1");
+
+    fail_unless(reldep != NULL);
+    hy_query_filter_reldep(q, HY_PKG_CONFLICTS, reldep);
+    fail_unless(query_count_results(q) == 1);
+    hy_reldep_free(reldep);
     hy_query_free(q);
 }
 END_TEST
@@ -714,6 +728,7 @@ query_suite(void)
     tcase_add_test(tc, test_query_reldep);
     tcase_add_test(tc, test_query_reldep_arbitrary);
     tcase_add_test(tc, test_query_requires);
+    tcase_add_test(tc, test_query_conflicts);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Full");
