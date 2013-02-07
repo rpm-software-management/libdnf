@@ -221,8 +221,12 @@ static PyGetSetDef package_getsetters[] = {
     {"medianr", (getter)get_num, NULL, NULL, (void *)hy_package_get_medianr},
     {"rpmdbid", (getter)get_num, NULL, NULL, (void *)hy_package_get_rpmdbid},
     {"size", (getter)get_num, NULL, NULL, (void *)hy_package_get_size},
+    {"conflicts",  (getter)get_reldep, NULL, NULL,
+     (void *)hy_package_get_conflicts},
     {"obsoletes",  (getter)get_reldep, NULL, NULL,
      (void *)hy_package_get_obsoletes},
+    {"provides",  (getter)get_reldep, NULL, NULL,
+     (void *)hy_package_get_provides},
     {"requires",  (getter)get_reldep, NULL, NULL,
      (void *)hy_package_get_requires},
     {NULL}			/* sentinel */

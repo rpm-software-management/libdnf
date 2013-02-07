@@ -2,7 +2,7 @@ import base
 import hawkey
 import hawkey.test
 
-class Package(base.TestCase):
+class PackageTest(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
@@ -40,7 +40,11 @@ class Package(base.TestCase):
         self.assertEqual(d[pkg2], 2)
         self.assertEqual(len(d), 2)
 
-class PackageCmp(base.TestCase):
+    def test_conflicts(self):
+        pkg = base.by_name(self.sack, 'dog')
+        self.assertItemsEqual(map(str, pkg.conflicts), ('custard = 1.1',))
+
+class PackageCmpTest(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
@@ -68,7 +72,7 @@ class PackageCmp(base.TestCase):
         self.assertLess(pkg2, pkg1)
         self.assertGreater(pkg1.evr_cmp(pkg2), 0)
 
-class Checksums(base.TestCase):
+class ChecksumsTest(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         self.sack.load_yum_repo()

@@ -39,7 +39,9 @@ unsigned long long hy_package_get_size(HyPackage pkg);
 unsigned long long hy_package_get_buildtime(HyPackage pkg);
 unsigned long long hy_package_get_installtime(HyPackage pkg);
 
+HyReldepList hy_package_get_conflicts(HyPackage pkg);
 HyReldepList hy_package_get_obsoletes(HyPackage pkg);
+HyReldepList hy_package_get_provides(HyPackage pkg);
 HyReldepList hy_package_get_requires(HyPackage pkg);
 
 HyPackageDelta hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr);

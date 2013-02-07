@@ -295,9 +295,21 @@ hy_package_get_size(HyPackage pkg)
 }
 
 HyReldepList
+hy_package_get_conflicts(HyPackage pkg)
+{
+    return reldeps_for(pkg, SOLVABLE_CONFLICTS);
+}
+
+HyReldepList
 hy_package_get_obsoletes(HyPackage pkg)
 {
     return reldeps_for(pkg, SOLVABLE_OBSOLETES);
+}
+
+HyReldepList
+hy_package_get_provides(HyPackage pkg)
+{
+    return reldeps_for(pkg, SOLVABLE_PROVIDES);
 }
 
 HyReldepList
