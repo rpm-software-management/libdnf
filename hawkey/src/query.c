@@ -513,40 +513,6 @@ filter_provides_str(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
-filter_requires_str(HyQuery q, struct _Filter *f, Map *m)
-{
-    assert(f->nmatches == 1);
-    Pool *pool = sack_pool(q->sack);
-    Id id = pool_str2id(pool, f->matches[0].str, 0);
-
-    if (id == STRID_NULL || id == STRID_EMPTY)
-	return;
-
-    if (f->evr) {
-        Id evr = pool_str2id(pool, f->evr, 1);
-        int flags = cmptype2relflags(f->cmp_type);
-        id = pool_rel2id(pool, id, evr, flags, 1);
-    }
-
-    Queue requires;
-    queue_init(&requires);
-    for (Id s_id = 1; s_id < pool->nsolvables; ++s_id) {
-	Solvable *s = pool_id2solvable(pool, s_id);
-
-	queue_empty(&requires);
-	solvable_lookup_idarray(s, SOLVABLE_REQUIRES, &requires);
-	for (int x = 0; requires.count; x++) {
-	    Id r_id = queue_pop(&requires);
-	    if (pool_match_dep(pool, id, r_id)) {
-		MAPSET(m, s_id);
-		break;
-	    }
-	}
-    }
-    queue_free(&requires);
-}
-
-static void
 filter_reponame(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
@@ -730,12 +696,8 @@ compute(HyQuery q)
 	    }
 	    break;
 	case HY_PKG_REQUIRES:
-	    if (f->match_type == _HY_RELDEP)
-		filter_rco_reldep(q, f, &m);
-	    else {
-		assert(f->match_type == _HY_STR);
-		filter_requires_str(q, f, &m);
-	    }
+	    assert(f->match_type == _HY_RELDEP);
+	    filter_rco_reldep(q, f, &m);
 	    break;
 	case HY_PKG_REPONAME:
 	    filter_reponame(q, f, &m);
@@ -1001,15 +963,19 @@ hy_query_filter_provides(HyQuery q, int cmp_type, const char *name, const char *
 int
 hy_query_filter_requires(HyQuery q, int cmp_type, const char *name, const char *evr)
 {
-    struct _Filter *filterq = query_add_filter(q, 1);
-
-    clear_result(q);
-    filterq->cmp_type = cmp_type;
-    filterq->keyname = HY_PKG_REQUIRES;
-    filterq->match_type = _HY_STR;
-    filterq->evr = solv_strdup(evr);
-    filterq->matches[0].str = solv_strdup(name);
-    return 0;
+    /* convert to a reldep filter. the trick is handling negation right (it gets
+    resolved in compute(), we just have to make sure to store it in the
+    filter. */
+    int not_neg = cmp_type & ~HY_NOT;
+    HyReldep reldep = hy_reldep_create(q->sack, name, not_neg, evr);
+    int rc;
+    if (reldep) {
+	rc = hy_query_filter_reldep(q, HY_PKG_REQUIRES, reldep);
+	hy_reldep_free(reldep);
+	q->filters[q->nfilters - 1].cmp_type = cmp_type;
+    } else
+	rc = hy_query_filter_empty(q);
+    return rc;
 }
 
 /**
