@@ -33,6 +33,7 @@ valid_setting(int keyname, int cmp_type)
     switch (keyname) {
     case HY_PKG_ARCH:
     case HY_PKG_EVR:
+    case HY_PKG_VERSION:
     case HY_PKG_PROVIDES:
 	return cmp_type == HY_EQ;
     case HY_PKG_NAME:
@@ -71,6 +72,7 @@ hy_selector_set(HySelector sltr, int keyname, int cmp_type, const char *match)
 	replace_filter(&sltr->f_arch, keyname, cmp_type, match);
 	break;
     case HY_PKG_EVR:
+    case HY_PKG_VERSION:
 	replace_filter(&sltr->f_evr, keyname, cmp_type, match);
 	break;
     case HY_PKG_NAME:

@@ -178,12 +178,13 @@ filter_evr2job(HySack sack, const struct _Filter *f, Queue *job)
 
     Pool *pool = sack_pool(sack);
     Id evr = pool_str2id(pool, f->matches[0].str, 1);
+    Id constr = f->keyname == HY_PKG_VERSION ? SOLVER_SETEV : SOLVER_SETEVR;
     for (int i = 0; i < job->count; i += 2) {
 	Id dep;
 	assert(job->elements[i] & SOLVER_SOLVABLE_NAME);
 	dep = pool_rel2id(pool, job->elements[i + 1],
 			  evr, REL_EQ, 1);
-	job->elements[i] |= SOLVER_SETEVR;
+	job->elements[i] |= constr;
 	job->elements[i + 1] = dep;
     }
     return 0;
