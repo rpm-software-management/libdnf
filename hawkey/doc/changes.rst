@@ -220,3 +220,26 @@ NEVRA and repository: ``<hawkey.Package object id 5, foo-2-9\.noarch,
 
 Also notice that the representation now mentions the final ``hawkey.Package``
 type, not ``_hawkey.Package``. Note that these are currently the same.
+
+Changes in 0.3.8
+================
+
+Python bindings
+---------------
+
+Forms recognized by ``Subject`` are no longer an instance-scope setting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It became necessary to differentiate between the default forms used by
+``subject.nevra_possibilities()`` and
+``subject.nevra_possibilities_real()``. Therefore there is little sense in
+setting the default form for an entire ``Subejct`` instance. The following
+code::
+
+  subj = hawkey.Subject("input", form=hawkey.FORM_NEVRA)
+  result = list(subj.nevra_possibilities())
+
+is thus replaced by::
+
+  subj = hawkey.Subject("input")
+  result = list(subj.nevra_possibilities(form=hawkey.FORM_NEVRA))

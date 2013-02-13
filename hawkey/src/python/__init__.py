@@ -287,7 +287,11 @@ FORM_NEV	= re.compile("""(?P<name>[.\-S]+)-\
 (?P<epoch>E)?(?P<version>[.S]+)$""")
 FORM_NA		= re.compile("""(?P<name>[.\-S]+)\.(?P<arch>S)$""")
 FORM_NAME	= re.compile("""(?P<name>[.\-S]+)$""")
-FORM_ALL	= [FORM_NEVRA, FORM_NA, FORM_NAME, FORM_NEVR, FORM_NEV]
+
+# most specific to least
+FORMS_MOST_SPEC	= [FORM_NEVRA, FORM_NEVR, FORM_NEV, FORM_NA, FORM_NAME]
+# what the user most probably means
+FORMS_REAL	= [FORM_NA, FORM_NAME, FORM_NEVRA, FORM_NEVR, FORM_NEV]
 
 def _is_glob_pattern(pattern):
     return set(pattern) & set("*[?")
@@ -321,17 +325,20 @@ class _Token(object):
             return "S"
 
 class Subject(object):
-    def __init__(self, pattern, form=FORM_ALL):
+    def __init__(self, pattern):
         self.pat = pattern
-        if type(form) is type(FORM_NEVRA):
-            self.forms = [form]
-        else:
-            self.forms = form[:]
         self._tokenize()
 
     @property
     def _abbr(self):
         return "".join(map(operator.methodcaller('abbr'), self.tokens))
+
+    @staticmethod
+    def _listify_form(form):
+        if type(form) is type(FORM_NEVRA):
+            return [form]
+        else:
+            return form[:]
 
     @staticmethod
     def _is_int(s):
@@ -373,9 +380,11 @@ class Subject(object):
 
     default_nevra=NEVRA(name=None, epoch=None, version=None, release=None,
                         arch=None)
-    def nevra_possibilities(self):
+
+    def nevra_possibilities(self, form=FORMS_MOST_SPEC):
         abbr = self._abbr
-        for pat in self.forms:
+        forms = self._listify_form(form)
+        for pat in forms:
             match = pat.match(abbr)
             if match is None:
                 continue
@@ -383,7 +392,8 @@ class Subject(object):
                 {key:self._backmap(abbr, match, key)
                  for key in match.groupdict()})
 
-    def nevra_possibilities_real(self, sack, allow_globs=False, icase=False):
+    def nevra_possibilities_real(self, sack, allow_globs=False, icase=False,
+                                 form=FORMS_REAL):
         def should_check(val):
             if val is None:
                 return False
@@ -393,7 +403,7 @@ class Subject(object):
 
         existing_arches = sack.list_arches()
         existing_arches.append('src')
-        for nevra in self.nevra_possibilities():
+        for nevra in self.nevra_possibilities(form=form):
             if should_check(nevra.name):
                 if not sack._knows(sack, nevra.name, name_only=True, icase=icase):
                     continue
