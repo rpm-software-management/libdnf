@@ -111,13 +111,15 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     PyObject *custom_val = NULL;
     const char *cachedir = NULL;
     const char *arch = NULL;
-    char *kwlist[] = {"cachedir", "arch", "pkgcls", "pkginitval", NULL};
+    const char *rootdir = NULL;
+    char *kwlist[] = {"cachedir", "arch", "rootdir",
+		      "pkgcls", "pkginitval", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|ssOO", kwlist,
-				     &cachedir, &arch,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|sssOO", kwlist,
+				     &cachedir, &arch, &rootdir,
 				     &custom_class, &custom_val))
 	return -1;
-    self->sack = hy_sack_create(cachedir, arch);
+    self->sack = hy_sack_create(cachedir, arch, rootdir);
     if (self->sack == NULL) {
 	switch (hy_get_errno()) {
 	case HY_E_IO:

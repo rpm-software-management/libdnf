@@ -14,7 +14,8 @@ enum _hy_sack_repo_load_flags {
     HY_LOAD_PRESTO	= 1 << 2
 };
 
-HySack hy_sack_create(const char *cache_path, const char *arch);
+HySack hy_sack_create(const char *cache_path, const char *arch,
+		      const char *rootdir);
 void hy_sack_free(HySack sack);
 const char *hy_sack_get_cache_path(HySack sack);
 char *hy_sack_give_cache_fn(HySack sack, const char *reponame, const char *ext);

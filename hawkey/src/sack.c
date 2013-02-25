@@ -36,9 +36,10 @@
 #define DEFAULT_CACHE_USER "/var/tmp/hawkey"
 
 static int
-current_rpmdb_checksum(unsigned char csout[CHKSUM_BYTES])
+current_rpmdb_checksum(Pool *pool, unsigned char csout[CHKSUM_BYTES])
 {
-    FILE *fp_rpmdb = fopen(HY_SYSTEM_RPMDB, "r");
+    const char *fn = pool_prepend_rootdir_tmp(pool, HY_SYSTEM_RPMDB);
+    FILE *fp_rpmdb = fopen(fn, "r");
     int ret = 0;
 
     if (!fp_rpmdb || checksum_stat(csout, fp_rpmdb))
@@ -331,13 +332,15 @@ load_yum_repo(HySack sack, HyRepo hrepo)
  * location where hawkey will store its metadata cache and log file.
  *
  * 'arch' specifies the architecture. NULL value causes autodetection.
+ * 'rootdir' is the installroot. NULL means the current root, '/'.
  */
 HySack
-hy_sack_create(const char *cache_path, const char *arch)
+hy_sack_create(const char *cache_path, const char *arch, const char *rootdir)
 {
     HySack sack = solv_calloc(1, sizeof(*sack));
     Pool *pool = pool_create();
 
+    pool_set_rootdir(pool, rootdir);
     sack->pool = pool;
 
     if (cache_path != NULL) {
@@ -564,7 +567,7 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
     else
 	hrepo = hy_repo_create(HY_SYSTEM_REPO_NAME);
 
-    rc = current_rpmdb_checksum(hrepo->checksum);
+    rc = current_rpmdb_checksum(pool, hrepo->checksum);
     if (rc) {
 	ret = HY_E_IO;
 	goto finish;
@@ -578,7 +581,8 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
 	    hrepo->state_main = _HY_LOADED_CACHE;
     } else {
 	HY_LOG_INFO("fetching rpmdb");
-	rc = repo_add_rpmdb(repo, 0, REPO_REUSE_REPODATA | RPM_ADD_WITH_HDRID);
+	rc = repo_add_rpmdb(repo, 0, REPO_REUSE_REPODATA | RPM_ADD_WITH_HDRID |
+			    REPO_USE_ROOTDIR);
 	if (!rc)
 	    hrepo->state_main = _HY_LOADED_FETCH;
     }

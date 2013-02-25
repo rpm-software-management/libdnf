@@ -374,7 +374,7 @@ need_filelists(int argc, const char **argv)
 
 int main(int argc, const char **argv)
 {
-    HySack sack = hy_sack_create(NULL, NULL);
+    HySack sack = hy_sack_create(NULL, NULL, NULL);
     HyRepo repo;
     char *md_repo;
     char *md_primary_xml;

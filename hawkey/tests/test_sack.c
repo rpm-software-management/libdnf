@@ -29,12 +29,12 @@ END_TEST
 START_TEST(test_sack_create)
 {
     fail_unless(hy_get_errno() == 0);
-    HySack sack = hy_sack_create(test_globals.tmpdir, NULL);
+    HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL);
     fail_if(sack == NULL, NULL);
     fail_if(sack_pool(sack) == NULL, NULL);
     hy_sack_free(sack);
 
-    sack = hy_sack_create(test_globals.tmpdir, "");
+    sack = hy_sack_create(test_globals.tmpdir, "", NULL);
     fail_unless(sack == NULL);
     fail_unless(hy_get_errno() == HY_E_ARCH);
 }
@@ -42,7 +42,7 @@ END_TEST
 
 START_TEST(test_give_cache_fn)
 {
-    HySack sack = hy_sack_create(test_globals.tmpdir, NULL);
+    HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL);
 
     char *path = hy_sack_give_cache_fn(sack, "rain", NULL);
     fail_if(strstr(path, "rain.solv") == NULL);
@@ -57,7 +57,7 @@ END_TEST
 
 START_TEST(test_list_arches)
 {
-    HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH);
+    HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH, NULL);
     const char ** arches = hy_sack_list_arches(sack);
 
     /* noarch, x86_64, i686, i586, i486, i386 */
@@ -71,7 +71,7 @@ END_TEST
 
 START_TEST(test_load_yum_repo_err)
 {
-    HySack sack = hy_sack_create(test_globals.tmpdir, NULL);
+    HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL);
     HyRepo repo = hy_repo_create("crabalocker");
     hy_repo_set_string(repo, HY_REPO_MD_FN, "/non/existing");
     fail_unless(hy_sack_load_yum_repo(sack, repo, 0) == HY_E_FAILED);
@@ -83,7 +83,7 @@ END_TEST
 
 START_TEST(test_yum_repo_written)
 {
-    HySack sack = hy_sack_create(test_globals.tmpdir, NULL);
+    HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL);
     char *filename = hy_sack_give_cache_fn(sack, "test_sack_written", NULL);
 
     fail_unless(access(filename, R_OK|W_OK));
@@ -152,7 +152,7 @@ END_TEST
 
 START_TEST(test_filelist_from_cache)
 {
-    HySack sack = hy_sack_create(test_globals.tmpdir, NULL);
+    HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL);
     setup_yum_sack(sack, YUM_REPO_NAME);
 
     HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
@@ -198,7 +198,7 @@ END_TEST
 
 START_TEST(test_presto_from_cache)
 {
-    HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH);
+    HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH, NULL);
     setup_yum_sack(sack, YUM_REPO_NAME);
 
     HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
