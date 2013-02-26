@@ -378,6 +378,10 @@ class Subject(object):
     def _tokenize(self):
         self.tokens = list(self._throw_tokens(self.pat))
 
+    @property
+    def pattern(self):
+        return self.pat
+
     default_nevra=NEVRA(name=None, epoch=None, version=None, release=None,
                         arch=None)
 
