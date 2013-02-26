@@ -224,6 +224,23 @@ type, not ``_hawkey.Package``. Note that these are currently the same.
 Changes in 0.3.8
 ================
 
+Core
+----
+
+New parameter ``rootdir`` to ``hy_sack_create()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``hy_sack_create()`` now accepts third argument, ``rootdir``. This can be used
+to tell Hawkey that we are intending to do transactions in a changeroot, not in
+the current root. It effectively makes use of the RPM database found under
+``rootdir``. To make your code compile in 0.3.8 without changing functionality, change::
+
+    HySack sack = hy_sack_create(cachedir, arch);
+
+to::
+
+    HySack sack = hy_sack_create(cachedir, arch, NULL);
+
 Python bindings
 ---------------
 
