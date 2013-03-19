@@ -15,7 +15,8 @@ struct TestGlobals_s test_globals;
 static HySack
 create_ut_sack(void)
 {
-    HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH, NULL);
+    HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH, NULL,
+				 HY_MAKE_CACHE_DIR);
     test_globals.sack = sack;
     HY_LOG_INFO("HySack for UT created: %p", sack);
     return sack;

@@ -336,7 +336,8 @@ load_yum_repo(HySack sack, HyRepo hrepo)
  * 'rootdir' is the installroot. NULL means the current root, '/'.
  */
 HySack
-hy_sack_create(const char *cache_path, const char *arch, const char *rootdir)
+hy_sack_create(const char *cache_path, const char *arch, const char *rootdir,
+	       int flags)
 {
     HySack sack = solv_calloc(1, sizeof(*sack));
     Pool *pool = pool_create();
@@ -355,10 +356,13 @@ hy_sack_create(const char *cache_path, const char *arch, const char *rootdir)
     } else
 	sack->cache_dir = solv_strdup(DEFAULT_CACHE_ROOT);
 
-    int ret = mkcachedir(sack->cache_dir);
-    if (ret) {
-	hy_errno = HY_E_IO;
-	goto fail;
+    int ret;
+    if (flags & HY_MAKE_CACHE_DIR) {
+	ret = mkcachedir(sack->cache_dir);
+	if (ret) {
+	    hy_errno = HY_E_IO;
+	    goto fail;
+	}
     }
     queue_init(&sack->installonly);
 

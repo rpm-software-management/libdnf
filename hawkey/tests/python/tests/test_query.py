@@ -16,7 +16,7 @@ class TestQuery(base.TestCase):
         self.assertEqual(q.count(), 1)
 
     def test_creation_empty_sack(self):
-        s = hawkey.Sack()
+        s = hawkey.Sack(make_cache_dir=True)
         q = hawkey.Query(s)
 
     def test_exception(self):

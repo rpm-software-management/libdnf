@@ -260,3 +260,35 @@ is thus replaced by::
 
   subj = hawkey.Subject("input")
   result = list(subj.nevra_possibilities(form=hawkey.FORM_NEVRA))
+
+Changes in 0.3.9
+================
+
+Core
+----
+
+``hy_sack_create()`` now accepts fourth argument, ``flags``, introduced to
+modify the sack behavior with boolean flags. Currently only one flag is
+supported, ``HY_MAKE_CACHE_DIR``, which causes the cache directory to be created
+if it doesn't exist yet. To preserve the previous behavior, change the
+following::
+
+    HySack sack = hy_sack_create(cachedir, arch, rootdir);
+
+into::
+
+    HySack sack = hy_sack_create(cachedir, arch, rootdir, HY_MAKE_CACHE_DIR);
+
+
+Python bindings
+---------------
+
+A new sack by default no longer automatically creates the cache directory. To
+get the old behavior, append ``make_cache_dir=True`` to the Sack's constructor
+arguments, that is change the following::
+
+    sack = hawkey.Sack(...)
+
+to::
+
+    sack = hawkey.Sack(..., make_cache_dir=True)

@@ -39,10 +39,12 @@ class TestSackMixin(object):
         super(TestSackMixin, self).load_yum_repo(repo, **args)
 
 class TestSack(TestSackMixin, hawkey.Sack):
-    def __init__(self, repo_dir, PackageClass=None, package_userdata=None):
+    def __init__(self, repo_dir, PackageClass=None, package_userdata=None,
+                 make_cache_dir=True):
         TestSackMixin.__init__(self, repo_dir)
         hawkey.Sack.__init__(self,
                              cachedir=cachedir,
                              arch=FIXED_ARCH,
                              pkgcls=PackageClass,
-                             pkginitval=package_userdata)
+                             pkginitval=package_userdata,
+                             make_cache_dir=make_cache_dir)

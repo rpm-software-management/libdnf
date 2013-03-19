@@ -8,6 +8,10 @@ extern "C" {
 // hawkey
 #include "types.h"
 
+enum _hy_sack_sack_create_flags {
+    HY_MAKE_CACHE_DIR = 1 << 0
+};
+
 enum _hy_sack_repo_load_flags {
     HY_BUILD_CACHE	= 1 << 0,
     HY_LOAD_FILELISTS	= 1 << 1,
@@ -15,7 +19,7 @@ enum _hy_sack_repo_load_flags {
 };
 
 HySack hy_sack_create(const char *cache_path, const char *arch,
-		      const char *rootdir);
+		      const char *rootdir, int flags);
 void hy_sack_free(HySack sack);
 const char *hy_sack_get_cache_path(HySack sack);
 char *hy_sack_give_cache_fn(HySack sack, const char *reponame, const char *ext);

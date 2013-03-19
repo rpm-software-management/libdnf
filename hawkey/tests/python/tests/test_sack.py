@@ -1,3 +1,4 @@
+import os
 import sys
 import unittest
 
@@ -29,13 +30,17 @@ class TestSackTest(base.TestCase):
 
 class BasicTest(unittest.TestCase):
     def test_creation(self):
-        sack = hawkey.Sack(arch="noarch")
-        sack = hawkey.Sack(arch="x86_64")
+        hawkey.Sack(arch="noarch")
+        hawkey.Sack(arch="x86_64")
         self.assertRaises(hawkey.ArchException, hawkey.Sack, arch="")
         self.assertRaises(hawkey.ValueException, hawkey.Sack, arch="play")
 
     def test_creation_dir(self):
-        self.assertRaises(IOError, hawkey.Sack, "")
+        sack = hawkey.Sack()
+        self.assertFalse(os.access(sack.cache_path, os.F_OK))
+        sack = hawkey.Sack(make_cache_dir=True)
+        self.assertTrue(os.access(sack.cache_path, os.F_OK))
+        self.assertRaises(IOError, hawkey.Sack, "", make_cache_dir=True)
 
     def test_failed_load(self):
         sack = hawkey.Sack(cachedir=hawkey.test.cachedir)
