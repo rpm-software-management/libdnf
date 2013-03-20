@@ -159,9 +159,9 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
 /* getsetters */
 
 static PyObject *
-get_cache_path(_SackObject *self, void *unused)
+get_cache_dir(_SackObject *self, void *unused)
 {
-    const char *cstr = hy_sack_get_cache_path(self->sack);
+    const char *cstr = hy_sack_get_cache_dir(self->sack);
     if (cstr == NULL)
 	Py_RETURN_NONE;
     return PyString_FromString(cstr);
@@ -192,7 +192,7 @@ set_installonly(_SackObject *self, PyObject *obj, void *unused)
 }
 
 static PyGetSetDef sack_getsetters[] = {
-    {"cache_path",	(getter)get_cache_path, NULL, NULL, NULL},
+    {"cache_path",	(getter)get_cache_dir, NULL, NULL, NULL},
     {"installonly",	NULL, (setter)set_installonly, NULL, NULL},
     {NULL}			/* sentinel */
 };

@@ -267,6 +267,9 @@ Changes in 0.3.9
 Core
 ----
 
+Flags for ``hy_sack_create``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 ``hy_sack_create()`` now accepts fourth argument, ``flags``, introduced to
 modify the sack behavior with boolean flags. Currently only one flag is
 supported, ``HY_MAKE_CACHE_DIR``, which causes the cache directory to be created
@@ -279,9 +282,17 @@ into::
 
     HySack sack = hy_sack_create(cachedir, arch, rootdir, HY_MAKE_CACHE_DIR);
 
+``hy_sack_get_cache_path`` is renamed to ``hy_sack_get_cache_dir``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Update your code by mechanically replacing the name.
+
 
 Python bindings
 ---------------
+
+``make_cache_dir`` for Sack's constructor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A new sack by default no longer automatically creates the cache directory. To
 get the old behavior, append ``make_cache_dir=True`` to the Sack's constructor
@@ -292,3 +303,9 @@ arguments, that is change the following::
 to::
 
     sack = hawkey.Sack(..., make_cache_dir=True)
+
+
+``cache_path`` property of ``Sack`` renamed to ``cache_dir``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Reflects the similar change in C API.

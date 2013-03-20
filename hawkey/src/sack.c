@@ -411,7 +411,7 @@ hy_sack_free(HySack sack)
 }
 
 const char *
-hy_sack_get_cache_path(HySack sack)
+hy_sack_get_cache_dir(HySack sack)
 {
     return sack->cache_dir;
 }
