@@ -54,6 +54,7 @@ int hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
 int hy_goal_count_problems(HyGoal goal);
 char *hy_goal_describe_problem(HyGoal goal, unsigned i);
 int hy_goal_log_decisions(HyGoal goal);
+int hy_goal_write_debugdata(HyGoal goal);
 
 /* result processing */
 HyPackageList hy_goal_list_erasures(HyGoal goal);

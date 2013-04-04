@@ -4,6 +4,7 @@
 // libsolv
 #include <solv/solver.h>
 #include <solv/solverdebug.h>
+#include <solv/testcase.h>
 #include <solv/transaction.h>
 #include <solv/util.h>
 
@@ -509,6 +510,18 @@ hy_goal_log_decisions(HyGoal goal)
     if (goal->solv == NULL)
 	return 1;
     solver_printdecisionq(goal->solv, SOLV_DEBUG_RESULT);
+    return 0;
+}
+
+int
+hy_goal_write_debugdata(HyGoal goal)
+{
+    Solver *solv = goal->solv;
+    if (solv == NULL)
+	return HY_E_OP;
+    int flags = TESTCASE_RESULT_TRANSACTION | TESTCASE_RESULT_PROBLEMS;
+    if (!testcase_write(solv, "./debugdata", flags, NULL, NULL))
+	return HY_E_IO;
     return 0;
 }
 

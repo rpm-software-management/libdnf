@@ -363,6 +363,15 @@ log_decisions(_GoalObject *self, PyObject *unused)
 }
 
 static PyObject *
+write_debugdata(_GoalObject *self, PyObject *unused)
+{
+    int ret = hy_goal_write_debugdata(self->goal);
+    if (ret2e(ret, "write_debugdata() failed"))
+	return NULL;
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 list_generic(_GoalObject *self, HyPackageList (*func)(HyGoal))
 {
     HyPackageList plist = func(self->goal);
@@ -462,6 +471,7 @@ static struct PyMethodDef goal_methods[] = {
     {"count_problems",	(PyCFunction)count_problems,	METH_NOARGS,	NULL},
     {"describe_problem",(PyCFunction)describe_problem,	METH_O,		NULL},
     {"log_decisions",   (PyCFunction)log_decisions,	METH_NOARGS,	NULL},
+    {"write_debugdata", (PyCFunction)write_debugdata,	METH_NOARGS,	NULL},
     {"list_erasures",	(PyCFunction)list_erasures,	METH_NOARGS,	NULL},
     {"list_installs",	(PyCFunction)list_installs,	METH_NOARGS,	NULL},
     {"list_reinstalls",	(PyCFunction)list_reinstalls,	METH_NOARGS,	NULL},
