@@ -35,8 +35,9 @@ system repo* (in Fedora it is the RPM database). To load it::
   >>> len(sack)
   1683
 
-Hawkey always knows the name of every repository. Repositories loaded from Yum
-are named by the user, the system repostiroy is always called ``@System``.
+Hawkey always knows the name of every repository. Names of repositories loaded
+from Yum metadata are chosen by the client and the system repostiroy is always
+called ``@System``.
 
 Loading Yum Repositories
 ========================
@@ -52,8 +53,7 @@ files. Structures used for passing the information to hawkey are the hawkey
 ``/home/akozumpl/tmp/repodata``. We can then load the metadata into hawkey::
 
   >>> path = "/home/akozumpl/tmp/repodata/%s"
-  >>> repo = hawkey.Repo()
-  >>> repo.name = "experimental"
+  >>> repo = hawkey.Repo("experimental")
   >>> repo.repomd_fn = path % "repomd.xml"
   >>> repo.primary_fn = path % "f7753a2636cc89d70e8aaa1f3c08413ab78462ca9f48fd55daf6dedf9ab0d5db-primary.xml.gz"
   >>> repo.filelists_fn = path % "0261e25e8411f4f5e930a70fa249b8afd5e86bb9087d7739b55be64b76d8a7f6-filelists.xml.gz"
@@ -107,6 +107,7 @@ time you plan to use the same repo for more than one Sack (which is at least
 every time your hawkey program is run). To do that use ``build_cache=True`` with
 :func:`load_yum_repo` and :func:`load_system_repo`::
 
+  >>> sack = hawkey.Sack(make_cache_dir=True)
   >>> sack.load_system_repo(build_cache=True)
 
 By default, Hawkey creates ``@System.cache`` under the
@@ -143,9 +144,7 @@ Query is the means in hawkey of finding a package based on one or more criteria
 For instance, let's say I want to find all installed packages which name ends
 with ``gtk``::
 
-  >>> q = hawkey.Query(sack)
-  >>> q.filter(repo=hawkey.SYSTEM_REPO_NAME, name__glob='*gtk')
-  <hawkey.Query object at 0x7fa477e73320>
+  >>> q = hawkey.Query(sack).filter(reponame=hawkey.SYSTEM_REPO_NAME, name__glob='*gtk')
   >>> for pkg in q:
   ...     print str(pkg)
   ... 
@@ -164,8 +163,7 @@ with ``gtk``::
 Or I want to find the latest version of all ``python`` packages the Sack knows of::
 
   >>> q.clear()
-  >>> q.filter(name='python', latest=True)
-  <hawkey.Query object at 0x7fa477e73460>
+  >>> q = q.filter(name='python', latest=True)
   >>> for pkg in q:
   ...     print str(pkg)
   ... 
@@ -197,7 +195,7 @@ the query matched at least one package::
 Resolving things with Goals
 ===========================
 
-Many :class:`Sack` sessions culminate in bout of dependency resolving, that is
+Many :class:`Sack` sessions culminate in a bout of dependency resolving, that is
 answering a question along the lines of "I have a package X in a repository
 here, what other packages do I need to install/update to have X installed and
 all its dependencies recursively satisfied?" Suppose we want to install `the RTS
@@ -243,13 +241,16 @@ repository we used, 8 packages need to be installed,
 ``spring-88.0-2.fc17.x86_64`` itself included. No packages need to be upgraded
 or erased.
 
-Query Installs
---------------
-For certain very simple queries we can do installs directly without ever executing them::
+Selector Installs
+-----------------
+
+For certain simple and commonly used queries we can do installs
+directly. Instead of executing a query however we instantiate and pass the
+:meth:`Goal.install` method a :class:`Selector`:
 
   >>> g = hawkey.Goal(sack)
-  >>> q = hawkey.Query(sack).filter(name='spring')
-  >>> g.install(query=q)
+  >>> sltr = hawkey.Selector(sack).set(name='emacs-nox')
+  >>> g.install(select=sltr)
   >>> g.run()
   True
   >>> map(str, g.list_installs())
@@ -259,25 +260,16 @@ For certain very simple queries we can do installs directly without ever executi
   >>> len(g.list_erasures())
   0
 
-Notice we arrived at the same result as before, when the query got iterated
-first. When a :class:`Query` is passed directly to :meth:`Goal.install` hawkey
-examines the query and without running it instructs libsolv to find *the best
-matching package* for it and add that for installation. It saves user some
-deicsions like which version should be installed or what architecture (this gets
-very relevant with multiarch libraries).
+Notice we arrived at the same result as before, when a query was constructed and
+iterated first. What :class:`Selector` does when passed to :meth:`Goal.install`
+is tell hawkey to examine its settings and without evaluating it as a
+:class:`Query` it instructs libsolv to find *the best matching package* for it
+and add that for installation. It saves user some deicsions like which version
+should be installed or what architecture (this gets very relevant with multiarch
+libraries).
 
-Think about the queries in this context more as *specifiers* and less as *chain
-of filters*. Not all kinds of Query filters can used for Goal as when searching
-for a package. In fact in this context, currently only ``name`` and ``arch``
-filters are recognized, the others raise an error::
-
-  >>> goal = hawkey.Goal(sack)
-  >>> goal.install(query=hawkey.Query(sack).filter(name='spring', repo='fedora'))
-  Traceback (most recent call last):
-    File "<stdin>", line 1, in <module>
-  _hawkey.QueryException: Query unsupported in this context.
-
-If you mean to install *all packages* matching an arbitrarily complex query,
-just use the method describe above::
+So Selectors usually only install a single package. If you mean to install *all
+packages* matching an arbitrarily complex query, just use the method describe
+above::
 
   >>> map(goal.install, q)
