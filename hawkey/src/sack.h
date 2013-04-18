@@ -21,6 +21,7 @@ enum _hy_sack_repo_load_flags {
 HySack hy_sack_create(const char *cache_path, const char *arch,
 		      const char *rootdir, int flags);
 void hy_sack_free(HySack sack);
+int hy_sack_evr_cmp(HySack sack, const char *evr1, const char *evr2);
 const char *hy_sack_get_cache_dir(HySack sack);
 char *hy_sack_give_cache_fn(HySack sack, const char *reponame, const char *ext);
 const char **hy_sack_list_arches(HySack sack);

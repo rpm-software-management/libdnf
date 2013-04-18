@@ -210,7 +210,7 @@ _knows(PyObject *unused, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&s|ii", kwlist,
 				     sack_converter, &sack, &name, &name_only,
 				     &icase))
-	return 0;
+	return NULL;
     int flags = 0;
     if (name_only)
 	flags |= HY_NAME_ONLY;
@@ -218,6 +218,18 @@ _knows(PyObject *unused, PyObject *args, PyObject *kwds)
 	flags |= HY_ICASE;
     return PyInt_FromLong(sack_knows(sack, name, flags));
 }
+
+static PyObject *
+evr_cmp(_SackObject *self, PyObject *args)
+{
+    const char *evr1 = NULL, *evr2 = NULL;
+
+    if (!PyArg_ParseTuple(args, "ss", &evr1, &evr2))
+	return NULL;
+    int cmp = hy_sack_evr_cmp(self->sack, evr1, evr2);
+    return PyInt_FromLong(cmp);
+}
+
 
 static PyObject *
 create_cmdline_repo(_SackObject *self, PyObject *unused)
@@ -366,6 +378,8 @@ len(_SackObject *self)
 static struct
 PyMethodDef sack_methods[] = {
     {"_knows",		(PyCFunction)_knows, METH_KEYWORDS|METH_VARARGS,
+     NULL},
+    {"evr_cmp",		(PyCFunction)evr_cmp, METH_VARARGS,
      NULL},
     {"create_cmdline_repo", (PyCFunction)create_cmdline_repo, METH_NOARGS,
      NULL},

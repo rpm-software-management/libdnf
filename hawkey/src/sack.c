@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 // libsolv
+#include <solv/evr.h>
 #include <solv/pool.h>
 #include <solv/poolarch.h>
 #include <solv/repo.h>
@@ -408,6 +409,12 @@ hy_sack_free(HySack sack)
     free_map_fully(sack->repo_excludes);
     pool_free(sack->pool);
     solv_free(sack);
+}
+
+int
+hy_sack_evr_cmp(HySack sack, const char *evr1, const char *evr2)
+{
+    return pool_evrcmp_str(sack_pool(sack), evr1, evr2, EVRCMP_COMPARE);
 }
 
 const char *

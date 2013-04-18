@@ -50,7 +50,7 @@ py_chksum_type(PyObject *unused, PyObject *str_o)
     return PyInt_FromLong(type);
 }
 
-PyObject *
+static PyObject *
 py_split_nevra(PyObject *unused, PyObject *nevra_o)
 {
     const char *nevra = PyString_AsString(nevra_o);

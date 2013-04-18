@@ -48,10 +48,17 @@ class BasicTest(unittest.TestCase):
         self.assertRaises(IOError, sack.load_yum_repo, repo)
         sack = hawkey.Sack()
 
-class PackageWrapping(base.TestCase):
+    def test_evr_cmp(self):
+        sack = hawkey.Sack()
+        self.assertEqual(sack.evr_cmp("3:3.10-4", "3:3.10-4"), 0)
+        self.assertLess(sack.evr_cmp("3.10-4", "3.10-5"), 0)
+        self.assertGreater(sack.evr_cmp("3.11-4", "3.10-5"), 0)
+        self.assertGreater(sack.evr_cmp("1:3.10-4", "3.10-5"), 0)
+
+class PackageWrappingTest(base.TestCase):
     class MyPackage(hawkey.Package):
         def __init__(self, initobject, myval):
-            super(PackageWrapping.MyPackage, self).__init__(initobject)
+            super(PackageWrappingTest.MyPackage, self).__init__(initobject)
             self.initobject = initobject
             self.myval = myval
 
