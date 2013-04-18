@@ -349,6 +349,10 @@ describe_problem(_GoalObject *self, PyObject *index_obj)
 	return NULL;
     }
     cstr = hy_goal_describe_problem(self->goal, PyInt_AsLong(index_obj));
+    if (cstr == NULL) {
+	PyErr_SetString(PyExc_ValueError, "Index out of range.");
+	return NULL;
+    }
     str = PyString_FromString(cstr);
     solv_free(cstr);
     return str;

@@ -133,3 +133,4 @@ class Problems(base.TestCase):
         self.assertFalse(self.goal.run())
         self.assertEqual(len(self.goal.problems), 1)
         self.assertRaises(hawkey.RuntimeException, self.goal.list_erasures)
+        self.assertRaises(ValueError, self.goal.describe_problem, 1);
