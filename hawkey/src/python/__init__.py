@@ -105,6 +105,18 @@ _NEVRA = collections.namedtuple("_NEVRA",
                                 ["name", "epoch", "version", "release", "arch"])
 
 class NEVRA(_NEVRA):
+    __slots__ = ()
+
+    def evr_cmp(self, other, sack):
+        return sack.evr_cmp(self.evr, other.evr)
+
+    @property
+    def evr(self):
+        fmt= "%(epoch)d:%(version)s-%(release)s"
+        if self.epoch is None:
+            fmt = "%(version)s-%(release)s"
+        return fmt % vars(self)
+
     def to_query(self, sack):
         return Query(sack).filter(
             name=self.name, epoch=self.epoch, version=self.version,
