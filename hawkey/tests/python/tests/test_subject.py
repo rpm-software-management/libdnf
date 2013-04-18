@@ -129,6 +129,13 @@ class SubjectRealPossibilitiesTest(base.TestCase):
                                              version=None, release=None,
                                              arch=None))
 
+    def test_dash_version(self):
+        subj = hawkey.Subject("penny-lib-4")
+        nevra = subj.nevra_possibilities_real(self.sack).next()
+        self.assertEqual(nevra, hawkey.NEVRA(name="penny-lib", epoch=None,
+                                             version='4', release=None,
+                                             arch=None))
+
     def test_two_dashes(self):
         """ Even two dashes can happen, make sure they can still form a name. """
         subj = hawkey.Subject("penny-lib-devel")

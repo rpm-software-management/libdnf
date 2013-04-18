@@ -291,7 +291,7 @@ FORM_NAME	= re.compile("""(?P<name>[.\-S]+)$""")
 # most specific to least
 FORMS_MOST_SPEC	= [FORM_NEVRA, FORM_NEVR, FORM_NEV, FORM_NA, FORM_NAME]
 # what the user most probably means
-FORMS_REAL	= [FORM_NA, FORM_NAME, FORM_NEVRA, FORM_NEVR, FORM_NEV]
+FORMS_REAL	= [FORM_NA, FORM_NAME, FORM_NEVRA, FORM_NEV, FORM_NEVR]
 
 def _is_glob_pattern(pattern):
     return set(pattern) & set("*[?")
