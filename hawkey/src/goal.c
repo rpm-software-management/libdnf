@@ -109,7 +109,16 @@ list_results(HyGoal goal, Id type_filter)
 
     for (int i = 0; i < trans->steps.count; ++i) {
 	Id p = trans->steps.elements[i];
-	Id type = transaction_type(trans, p, SOLVER_TRANSACTION_SHOW_ACTIVE);
+	Id type;
+
+	switch (type_filter) {
+	case SOLVER_TRANSACTION_OBSOLETED:
+	    type =  transaction_type(trans, p, SOLVER_TRANSACTION_SHOW_OBSOLETES);
+	    break;
+	default:
+	    type  = transaction_type(trans, p, SOLVER_TRANSACTION_SHOW_ACTIVE);
+	    break;
+	}
 
 	if (type == type_filter)
 	    hy_packagelist_push(plist, package_create(pool, p));
@@ -538,6 +547,12 @@ hy_goal_list_installs(HyGoal goal)
 }
 
 HyPackageList
+hy_goal_list_obsoletes(HyGoal goal)
+{
+    return list_results(goal, SOLVER_TRANSACTION_OBSOLETED);
+}
+
+HyPackageList
 hy_goal_list_reinstalls(HyGoal goal)
 {
     return list_results(goal, SOLVER_TRANSACTION_REINSTALL);
@@ -553,6 +568,24 @@ HyPackageList
 hy_goal_list_downgrades(HyGoal goal)
 {
     return list_results(goal, SOLVER_TRANSACTION_DOWNGRADE);
+}
+
+HyPackageList
+hy_goal_package_all_obsoletes(HyGoal goal, HyPackage pkg)
+{
+    HySack sack = goal->sack;
+    Transaction *trans = goal->trans;
+    Queue obsoletes;
+    HyPackageList plist = hy_packagelist_create();
+
+    assert(trans);
+    queue_init(&obsoletes);
+
+    transaction_all_obs_pkgs(trans, package_id(pkg), &obsoletes);
+    queue2plist(sack, &obsoletes, plist);
+
+    queue_free(&obsoletes);
+    return plist;
 }
 
 /**

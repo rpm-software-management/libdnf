@@ -412,6 +412,12 @@ list_installs(_GoalObject *self, PyObject *unused)
 }
 
 static PyObject *
+list_obsoletes(_GoalObject *self, PyObject *unused)
+{
+    return list_generic(self, hy_goal_list_obsoletes);
+}
+
+static PyObject *
 list_reinstalls(_GoalObject *self, PyObject *unused)
 {
     return list_generic(self, hy_goal_list_reinstalls);
@@ -427,6 +433,19 @@ static PyObject *
 list_upgrades(_GoalObject *self, PyObject *unused)
 {
     return list_generic(self, hy_goal_list_upgrades);
+}
+
+static PyObject *
+package_all_obsoletes(_GoalObject *self, PyObject *pkg)
+{
+    HyPackage cpkg = packageFromPyObject(pkg);
+
+    if (cpkg == NULL)
+	return NULL;
+    HyPackageList plist = hy_goal_package_all_obsoletes(self->goal, cpkg);
+    PyObject *list = packagelist_to_pylist(plist, self->sack);
+    hy_packagelist_free(plist);
+    return list;
 }
 
 static PyObject *
@@ -478,9 +497,12 @@ static struct PyMethodDef goal_methods[] = {
     {"write_debugdata", (PyCFunction)write_debugdata,	METH_NOARGS,	NULL},
     {"list_erasures",	(PyCFunction)list_erasures,	METH_NOARGS,	NULL},
     {"list_installs",	(PyCFunction)list_installs,	METH_NOARGS,	NULL},
+    {"list_obsoletes",	(PyCFunction)list_obsoletes,	METH_NOARGS,	NULL},
     {"list_reinstalls",	(PyCFunction)list_reinstalls,	METH_NOARGS,	NULL},
     {"list_downgrades",	(PyCFunction)list_downgrades,	METH_NOARGS,	NULL},
     {"list_upgrades",	(PyCFunction)list_upgrades,	METH_NOARGS,	NULL},
+    {"package_all_obsoletes",(PyCFunction)package_all_obsoletes,
+     METH_O, NULL},
     {"package_obsoletes",(PyCFunction)package_obsoletes, METH_O,	NULL},
     {"get_reason",	(PyCFunction)get_reason,	METH_O,		NULL},
     {NULL}                      /* sentinel */

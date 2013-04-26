@@ -315,10 +315,25 @@ START_TEST(test_goal_upgrade_all)
     fail_if(strcmp(hy_package_get_name(pkg), "penny"));
     hy_packagelist_free(plist);
 
+    plist = hy_goal_list_obsoletes(goal);
+    fail_unless(hy_packagelist_count(plist) == 1);
+    pkg = hy_packagelist_get(plist, 0);
+    fail_if(strcmp(hy_package_get_name(pkg), "penny"));
+    hy_packagelist_free(plist);
+
     plist = hy_goal_list_upgrades(goal);
     fail_unless(hy_packagelist_count(plist) == 5);
     pkg = hy_packagelist_get(plist, 0);
     ck_assert_str_eq(hy_package_get_name(pkg), "fool");
+
+    // see all obsoletes of fool:
+    HyPackageList plist_obs = hy_goal_package_all_obsoletes(goal, pkg);
+    pkg = hy_packagelist_get(plist_obs, 0);
+    ck_assert_str_eq(hy_package_get_name(pkg), "fool");
+    pkg = hy_packagelist_get(plist_obs, 1);
+    ck_assert_str_eq(hy_package_get_name(pkg), "penny");
+    hy_packagelist_free(plist_obs);
+
     pkg = hy_packagelist_get(plist, 1);
     ck_assert_str_eq(hy_package_get_name(pkg), "flying");
     pkg = hy_packagelist_get(plist, 2);
