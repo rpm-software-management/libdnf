@@ -1,4 +1,5 @@
 #include <check.h>
+#include <stdarg.h>
 
 // hawkey
 #include "src/errno.h"
@@ -303,6 +304,24 @@ START_TEST(test_goal_upgrade)
 END_TEST
 
 
+static void
+assert_list_names(HyPackageList plist, ...)
+{
+    va_list names;
+    char *name;
+    int count = hy_packagelist_count(plist), i = 0;
+
+    va_start(names, plist);
+    while ((name = va_arg(names, char *)) != NULL) {
+	if (i >= count)
+	    fail("assert_list_names(): list too short");
+	HyPackage pkg = hy_packagelist_get(plist, i++);
+	ck_assert_str_eq(hy_package_get_name(pkg), name);
+    }
+    fail_unless(i == count, "assert_list_names(): too many items in the list");
+    va_end(names);
+}
+
 START_TEST(test_goal_upgrade_all)
 {
     HyGoal goal = hy_goal_create(test_globals.sack);
@@ -310,39 +329,22 @@ START_TEST(test_goal_upgrade_all)
     fail_if(hy_goal_run(goal));
 
     HyPackageList plist = hy_goal_list_erasures(goal);
-    fail_unless(hy_packagelist_count(plist) == 1);
-    HyPackage pkg = hy_packagelist_get(plist, 0);
-    fail_if(strcmp(hy_package_get_name(pkg), "penny"));
+    assert_list_names(plist, "penny", NULL);
     hy_packagelist_free(plist);
 
     plist = hy_goal_list_obsoletes(goal);
-    fail_unless(hy_packagelist_count(plist) == 1);
-    pkg = hy_packagelist_get(plist, 0);
-    fail_if(strcmp(hy_package_get_name(pkg), "penny"));
+    assert_list_names(plist, "penny", NULL);
     hy_packagelist_free(plist);
 
     plist = hy_goal_list_upgrades(goal);
-    fail_unless(hy_packagelist_count(plist) == 5);
-    pkg = hy_packagelist_get(plist, 0);
-    ck_assert_str_eq(hy_package_get_name(pkg), "fool");
+    assert_list_names(plist, "fool", "flying", "pilchard", "pilchard", "dog",
+		      NULL);
 
     // see all obsoletes of fool:
+    HyPackage pkg = hy_packagelist_get(plist, 0);
     HyPackageList plist_obs = hy_goal_package_all_obsoletes(goal, pkg);
-    pkg = hy_packagelist_get(plist_obs, 0);
-    ck_assert_str_eq(hy_package_get_name(pkg), "fool");
-    pkg = hy_packagelist_get(plist_obs, 1);
-    ck_assert_str_eq(hy_package_get_name(pkg), "penny");
+    assert_list_names(plist_obs, "fool", "penny", NULL);
     hy_packagelist_free(plist_obs);
-
-    pkg = hy_packagelist_get(plist, 1);
-    ck_assert_str_eq(hy_package_get_name(pkg), "flying");
-    pkg = hy_packagelist_get(plist, 2);
-    ck_assert_str_eq(hy_package_get_name(pkg), "pilchard");
-    pkg = hy_packagelist_get(plist, 3);
-    ck_assert_str_eq(hy_package_get_name(pkg), "pilchard");
-    pkg = hy_packagelist_get(plist, 4);
-    ck_assert_str_eq(hy_package_get_name(pkg), "dog");
-
     hy_packagelist_free(plist);
 
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
