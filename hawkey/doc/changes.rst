@@ -313,10 +313,10 @@ Reflects the similar change in C API.
 Changes in 0.3.11
 =================
 
+.. _0_3_11_core-label:
+
 Core
 ----
-
-.. _hy_goal_package_obsoletes-label:
 
 ``hy_goal_package_obsoletes()`` removed, ``hy_goal_list_obsoleted_by_package()`` provided instead
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -328,10 +328,22 @@ obsolete). Use ``hy_goal_list_obsoleted_by_package()`` instead, to see the
 complete set of packages that inclusion of the given package in an RPM
 transaction will cause to be removed.
 
+``hy_goal_list_erasures()`` does not report obsoletes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In other words, ``hy_goal_list_erasures()`` and ``hy_goal_list_obsoleted()``
+return disjoint sets.
+
+
 Python bindings
 ---------------
 
-``Goal.package_obsoletes()`` removed, ``Goal.obsoleted_by_package`` provided instead
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Directly reflecting the :ref:`core changes <0_3_11_core-label>`. In particular,
+instead of::
 
-See the explanation :ref:`above <hy_goal_package_obsoletes-label>`.
+    obsoleted_pkg = goal.package_obsoletes(pkg)
+
+use::
+
+    obsoleted = goal.obsoleted_by_package(pkg) # list
+    obsoleted_pkg = obsoleted[0]

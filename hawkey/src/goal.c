@@ -90,7 +90,7 @@ construct_solver(HyGoal goal, int flags)
 }
 
 static HyPackageList
-list_results(HyGoal goal, Id type_filter)
+list_results(HyGoal goal, Id type_filter1, Id type_filter2)
 {
     Pool *pool = sack_pool(goal->sack);
     Queue transpkgs;
@@ -111,16 +111,18 @@ list_results(HyGoal goal, Id type_filter)
 	Id p = trans->steps.elements[i];
 	Id type;
 
-	switch (type_filter) {
+	switch (type_filter1) {
 	case SOLVER_TRANSACTION_OBSOLETED:
 	    type =  transaction_type(trans, p, SOLVER_TRANSACTION_SHOW_OBSOLETES);
 	    break;
 	default:
-	    type  = transaction_type(trans, p, SOLVER_TRANSACTION_SHOW_ACTIVE);
+	    type  = transaction_type(trans, p, SOLVER_TRANSACTION_SHOW_ACTIVE|
+				     SOLVER_TRANSACTION_SHOW_ALL|
+				     SOLVER_TRANSACTION_SHOW_OBSOLETES);
 	    break;
 	}
 
-	if (type == type_filter)
+	if (type == type_filter1 || (type_filter2 && type == type_filter2))
 	    hy_packagelist_push(plist, package_create(pool, p));
     }
     return plist;
@@ -537,37 +539,38 @@ hy_goal_write_debugdata(HyGoal goal)
 HyPackageList
 hy_goal_list_erasures(HyGoal goal)
 {
-    return list_results(goal, SOLVER_TRANSACTION_ERASE);
+    return list_results(goal, SOLVER_TRANSACTION_ERASE, 0);
 }
 
 HyPackageList
 hy_goal_list_installs(HyGoal goal)
 {
-    return list_results(goal, SOLVER_TRANSACTION_INSTALL);
+    return list_results(goal, SOLVER_TRANSACTION_INSTALL,
+			SOLVER_TRANSACTION_OBSOLETES);
 }
 
 HyPackageList
 hy_goal_list_obsoleted(HyGoal goal)
 {
-    return list_results(goal, SOLVER_TRANSACTION_OBSOLETED);
+    return list_results(goal, SOLVER_TRANSACTION_OBSOLETED, 0);
 }
 
 HyPackageList
 hy_goal_list_reinstalls(HyGoal goal)
 {
-    return list_results(goal, SOLVER_TRANSACTION_REINSTALL);
+    return list_results(goal, SOLVER_TRANSACTION_REINSTALL, 0);
 }
 
 HyPackageList
 hy_goal_list_upgrades(HyGoal goal)
 {
-    return list_results(goal, SOLVER_TRANSACTION_UPGRADE);
+    return list_results(goal, SOLVER_TRANSACTION_UPGRADE, 0);
 }
 
 HyPackageList
 hy_goal_list_downgrades(HyGoal goal)
 {
-    return list_results(goal, SOLVER_TRANSACTION_DOWNGRADE);
+    return list_results(goal, SOLVER_TRANSACTION_DOWNGRADE, 0);
 }
 
 HyPackageList

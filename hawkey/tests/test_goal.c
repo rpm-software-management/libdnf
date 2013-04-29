@@ -205,7 +205,8 @@ START_TEST(test_goal_install_selector_two)
     hy_selector_free(sltr);
 
     fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_obsoleted(goal)) == 1);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 1);
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
 
@@ -284,7 +285,8 @@ START_TEST(test_goal_selector_upgrade_provides)
     fail_if(hy_goal_run(goal));
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 1);
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_obsoleted(goal)) == 1);
     hy_goal_free(goal);
 }
 END_TEST
@@ -296,7 +298,8 @@ START_TEST(test_goal_upgrade)
     fail_if(hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED));
     hy_package_free(pkg);
     fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_obsoleted(goal)) == 1);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 1);
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
     hy_goal_free(goal);
@@ -329,8 +332,7 @@ START_TEST(test_goal_upgrade_all)
     fail_if(hy_goal_run(goal));
 
     HyPackageList plist = hy_goal_list_erasures(goal);
-    assert_list_names(plist, "penny", NULL);
-    hy_packagelist_free(plist);
+    fail_unless(size_and_free(plist) == 0);
 
     plist = hy_goal_list_obsoleted(goal);
     assert_list_names(plist, "penny", NULL);
@@ -709,8 +711,10 @@ START_TEST(test_goal_update_vendor)
     hy_packagelist_free(plist);
 
     plist = hy_goal_list_erasures(goal);
-    fail_unless(hy_packagelist_count(plist) == 1);
-    hy_packagelist_free(plist);
+    fail_unless(size_and_free(plist) == 0);
+    plist = hy_goal_list_obsoleted(goal);
+    fail_unless(size_and_free(plist) == 1);
+
     hy_goal_free(goal);
 }
 END_TEST
