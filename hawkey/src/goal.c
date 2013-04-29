@@ -588,24 +588,6 @@ hy_goal_package_all_obsoletes(HyGoal goal, HyPackage pkg)
     return plist;
 }
 
-/**
- * Return the package upgraded or downgraded by 'pkg'.
- *
- * The returned package has to be freed via hy_package_free().
- */
-HyPackage
-hy_goal_package_obsoletes(HyGoal goal, HyPackage pkg)
-{
-    Pool *pool = sack_pool(goal->sack);
-    Transaction *trans = goal->trans;
-    Id p;
-
-    assert(trans);
-    p = transaction_obs_pkg(trans, package_id(pkg));
-    assert(p); // todo: handle no upgrades case
-    return package_create(pool, p);
-}
-
 int
 hy_goal_get_reason(HyGoal goal, HyPackage pkg)
 {

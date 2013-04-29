@@ -62,8 +62,8 @@ class Goal(base.TestCase):
         self.assertLength(goal.list_installs(), 0)
         self.assertLength(goal.list_reinstalls(), 1)
         reinstall = goal.list_reinstalls()[0]
-        obsoleted = goal.package_obsoletes(reinstall)
-        self.assertEqual(str(obsoleted), "fool-1-3.noarch")
+        obsoleted = goal.package_all_obsoletes(reinstall)
+        self.assertItemsEqual(map(str, obsoleted), ("fool-1-3.noarch", ))
 
 class Collector(object):
     def __init__(self):

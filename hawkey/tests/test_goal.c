@@ -370,10 +370,12 @@ START_TEST(test_goal_downgrade)
     HyPackage pkg = hy_packagelist_get(plist, 0);
     ck_assert_str_eq(hy_package_get_evr(pkg),
 		     "6:4.9-3");
-    HyPackage old_pkg = hy_goal_package_obsoletes(goal, pkg);
+    HyPackageList obsoleted = hy_goal_package_all_obsoletes(goal, pkg);
+    fail_unless(hy_packagelist_count(obsoleted) == 1);
+    HyPackage old_pkg = hy_packagelist_get(obsoleted, 0);
     ck_assert_str_eq(hy_package_get_evr(old_pkg),
 		     "6:5.0-11");
-    hy_package_free(old_pkg);
+    hy_packagelist_free(obsoleted);
     hy_packagelist_free(plist);
 
     hy_goal_free(goal);

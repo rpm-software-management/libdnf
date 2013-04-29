@@ -231,7 +231,8 @@ static void update(HySack sack, HyPackage pkg)
 	HyPackage pkg = hy_packagelist_get(plist, i);
 	char *nvra = hy_package_get_nevra(pkg);
 	char *location = hy_package_get_location(pkg);
-	HyPackage installed = hy_goal_package_obsoletes(goal, pkg);
+	HyPackageList obsoleted = hy_goal_package_all_obsoletes(goal, pkg);
+	HyPackage installed = hy_packagelist_get(obsoleted, 0);
 	char *nvra_installed = hy_package_get_nevra(installed);
 
 	printf("upgrading: %s using %s\n", nvra, location);
@@ -239,7 +240,7 @@ static void update(HySack sack, HyPackage pkg)
 	printf("\tsize: %lld kB\n", hy_package_get_size(pkg) / 1024);
 
 	hy_free(nvra_installed);
-	hy_package_free(installed);
+	hy_packagelist_free(obsoleted);
 	hy_free(location);
 	hy_free(nvra);
     }

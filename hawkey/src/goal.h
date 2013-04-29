@@ -64,7 +64,6 @@ HyPackageList hy_goal_list_reinstalls(HyGoal goal);
 HyPackageList hy_goal_list_upgrades(HyGoal goal);
 HyPackageList hy_goal_list_downgrades(HyGoal goal);
 HyPackageList hy_goal_package_all_obsoletes(HyGoal goal, HyPackage pkg);
-HyPackage hy_goal_package_obsoletes(HyGoal goal, HyPackage pkg);
 int hy_goal_get_reason(HyGoal goal, HyPackage pkg);
 
 #ifdef __cplusplus

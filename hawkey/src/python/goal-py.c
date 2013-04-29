@@ -449,21 +449,6 @@ package_all_obsoletes(_GoalObject *self, PyObject *pkg)
 }
 
 static PyObject *
-package_obsoletes(_GoalObject *self, PyObject *pkg)
-{
-    HyPackage cpkg = packageFromPyObject(pkg);
-    HyPackage cpkg_upgraded;
-    PyObject *pkg_upgraded;
-
-    if (cpkg == NULL)
-	return NULL;
-    cpkg_upgraded = hy_goal_package_obsoletes(self->goal, cpkg);
-    pkg_upgraded = new_package(self->sack, package_id(cpkg_upgraded));
-    hy_package_free(cpkg_upgraded);
-    return pkg_upgraded;
-}
-
-static PyObject *
 get_reason(_GoalObject *self, PyObject *pkg)
 {
     HyPackage cpkg = packageFromPyObject(pkg);
@@ -503,7 +488,6 @@ static struct PyMethodDef goal_methods[] = {
     {"list_upgrades",	(PyCFunction)list_upgrades,	METH_NOARGS,	NULL},
     {"package_all_obsoletes",(PyCFunction)package_all_obsoletes,
      METH_O, NULL},
-    {"package_obsoletes",(PyCFunction)package_obsoletes, METH_O,	NULL},
     {"get_reason",	(PyCFunction)get_reason,	METH_O,		NULL},
     {NULL}                      /* sentinel */
 };
