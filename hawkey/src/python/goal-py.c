@@ -436,13 +436,13 @@ list_upgrades(_GoalObject *self, PyObject *unused)
 }
 
 static PyObject *
-package_all_obsoletes(_GoalObject *self, PyObject *pkg)
+obsoleted_by_package(_GoalObject *self, PyObject *pkg)
 {
     HyPackage cpkg = packageFromPyObject(pkg);
 
     if (cpkg == NULL)
 	return NULL;
-    HyPackageList plist = hy_goal_package_all_obsoletes(self->goal, cpkg);
+    HyPackageList plist = hy_goal_list_obsoleted_by_package(self->goal, cpkg);
     PyObject *list = packagelist_to_pylist(plist, self->sack);
     hy_packagelist_free(plist);
     return list;
@@ -486,7 +486,7 @@ static struct PyMethodDef goal_methods[] = {
     {"list_reinstalls",	(PyCFunction)list_reinstalls,	METH_NOARGS,	NULL},
     {"list_downgrades",	(PyCFunction)list_downgrades,	METH_NOARGS,	NULL},
     {"list_upgrades",	(PyCFunction)list_upgrades,	METH_NOARGS,	NULL},
-    {"package_all_obsoletes",(PyCFunction)package_all_obsoletes,
+    {"obsoleted_by_package",(PyCFunction)obsoleted_by_package,
      METH_O, NULL},
     {"get_reason",	(PyCFunction)get_reason,	METH_O,		NULL},
     {NULL}                      /* sentinel */

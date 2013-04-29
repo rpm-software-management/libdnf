@@ -63,7 +63,7 @@ HyPackageList hy_goal_list_obsoletes(HyGoal goal);
 HyPackageList hy_goal_list_reinstalls(HyGoal goal);
 HyPackageList hy_goal_list_upgrades(HyGoal goal);
 HyPackageList hy_goal_list_downgrades(HyGoal goal);
-HyPackageList hy_goal_package_all_obsoletes(HyGoal goal, HyPackage pkg);
+HyPackageList hy_goal_list_obsoleted_by_package(HyGoal goal, HyPackage pkg);
 int hy_goal_get_reason(HyGoal goal, HyPackage pkg);
 
 #ifdef __cplusplus

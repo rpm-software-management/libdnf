@@ -231,7 +231,7 @@ static void update(HySack sack, HyPackage pkg)
 	HyPackage pkg = hy_packagelist_get(plist, i);
 	char *nvra = hy_package_get_nevra(pkg);
 	char *location = hy_package_get_location(pkg);
-	HyPackageList obsoleted = hy_goal_package_all_obsoletes(goal, pkg);
+	HyPackageList obsoleted = hy_goal_list_obsoleted_by_package(goal, pkg);
 	HyPackage installed = hy_packagelist_get(obsoleted, 0);
 	char *nvra_installed = hy_package_get_nevra(installed);
 

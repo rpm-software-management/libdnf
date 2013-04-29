@@ -571,7 +571,7 @@ hy_goal_list_downgrades(HyGoal goal)
 }
 
 HyPackageList
-hy_goal_package_all_obsoletes(HyGoal goal, HyPackage pkg)
+hy_goal_list_obsoleted_by_package(HyGoal goal, HyPackage pkg)
 {
     HySack sack = goal->sack;
     Transaction *trans = goal->trans;

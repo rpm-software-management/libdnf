@@ -309,3 +309,29 @@ to::
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Reflects the similar change in C API.
+
+Changes in 0.3.11
+=================
+
+Core
+----
+
+.. _hy_goal_package_obsoletes-label:
+
+``hy_goal_package_obsoletes()`` removed, ``hy_goal_list_obsoleted_by_package()`` provided instead
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``hy_goal_package_obsoletes()`` was flawed in that it only returned a single
+obsoleted package (in general, package can obsolete arbitrary number of packages
+and upgrade a package of the same name which is also reported as an
+obsolete). Use ``hy_goal_list_obsoleted_by_package()`` instead, to see the
+complete set of packages that inclusion of the given package in an RPM
+transaction will cause to be removed.
+
+Python bindings
+---------------
+
+``Goal.package_obsoletes()`` removed, ``Goal.obsoleted_by_package`` provided instead
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+See the explanation :ref:`above <hy_goal_package_obsoletes-label>`.

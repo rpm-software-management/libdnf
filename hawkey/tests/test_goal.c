@@ -342,7 +342,7 @@ START_TEST(test_goal_upgrade_all)
 
     // see all obsoletes of fool:
     HyPackage pkg = hy_packagelist_get(plist, 0);
-    HyPackageList plist_obs = hy_goal_package_all_obsoletes(goal, pkg);
+    HyPackageList plist_obs = hy_goal_list_obsoleted_by_package(goal, pkg);
     assert_list_names(plist_obs, "fool", "penny", NULL);
     hy_packagelist_free(plist_obs);
     hy_packagelist_free(plist);
@@ -370,7 +370,7 @@ START_TEST(test_goal_downgrade)
     HyPackage pkg = hy_packagelist_get(plist, 0);
     ck_assert_str_eq(hy_package_get_evr(pkg),
 		     "6:4.9-3");
-    HyPackageList obsoleted = hy_goal_package_all_obsoletes(goal, pkg);
+    HyPackageList obsoleted = hy_goal_list_obsoleted_by_package(goal, pkg);
     fail_unless(hy_packagelist_count(obsoleted) == 1);
     HyPackage old_pkg = hy_packagelist_get(obsoleted, 0);
     ck_assert_str_eq(hy_package_get_evr(old_pkg),
