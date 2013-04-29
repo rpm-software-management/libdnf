@@ -547,7 +547,7 @@ hy_goal_list_installs(HyGoal goal)
 }
 
 HyPackageList
-hy_goal_list_obsoletes(HyGoal goal)
+hy_goal_list_obsoleted(HyGoal goal)
 {
     return list_results(goal, SOLVER_TRANSACTION_OBSOLETED);
 }

@@ -332,7 +332,7 @@ START_TEST(test_goal_upgrade_all)
     assert_list_names(plist, "penny", NULL);
     hy_packagelist_free(plist);
 
-    plist = hy_goal_list_obsoletes(goal);
+    plist = hy_goal_list_obsoleted(goal);
     assert_list_names(plist, "penny", NULL);
     hy_packagelist_free(plist);
 

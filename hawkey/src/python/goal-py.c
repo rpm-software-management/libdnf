@@ -412,9 +412,9 @@ list_installs(_GoalObject *self, PyObject *unused)
 }
 
 static PyObject *
-list_obsoletes(_GoalObject *self, PyObject *unused)
+list_obsoleted(_GoalObject *self, PyObject *unused)
 {
-    return list_generic(self, hy_goal_list_obsoletes);
+    return list_generic(self, hy_goal_list_obsoleted);
 }
 
 static PyObject *
@@ -482,7 +482,7 @@ static struct PyMethodDef goal_methods[] = {
     {"write_debugdata", (PyCFunction)write_debugdata,	METH_NOARGS,	NULL},
     {"list_erasures",	(PyCFunction)list_erasures,	METH_NOARGS,	NULL},
     {"list_installs",	(PyCFunction)list_installs,	METH_NOARGS,	NULL},
-    {"list_obsoletes",	(PyCFunction)list_obsoletes,	METH_NOARGS,	NULL},
+    {"list_obsoleted",	(PyCFunction)list_obsoleted,	METH_NOARGS,	NULL},
     {"list_reinstalls",	(PyCFunction)list_reinstalls,	METH_NOARGS,	NULL},
     {"list_downgrades",	(PyCFunction)list_downgrades,	METH_NOARGS,	NULL},
     {"list_upgrades",	(PyCFunction)list_upgrades,	METH_NOARGS,	NULL},
