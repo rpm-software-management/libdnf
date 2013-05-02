@@ -44,11 +44,19 @@ int hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags);
 int hy_goal_upgrade_selector(HyGoal goal, HySelector sltr);
 int hy_goal_upgrade_to_selector(HyGoal goal, HySelector sltr);
 int hy_goal_userinstalled(HyGoal goal, HyPackage pkg);
+
+/* introspecting the requests */
+int hy_goal_req_has_distupgrade_all(HyGoal goal);
+int hy_goal_req_has_erase(HyGoal goal);
+int hy_goal_req_has_upgrade_all(HyGoal goal);
+int hy_goal_req_length(HyGoal goal);
+
+/* resolving the goal */
 int hy_goal_run(HyGoal goal);
 int hy_goal_run_flags(HyGoal goal, int flags);
 int hy_goal_run_all(HyGoal goal, hy_solution_callback cb, void *cb_data);
 int hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
-			     int flags);
+			  int flags);
 
 /* problems */
 int hy_goal_count_problems(HyGoal goal);

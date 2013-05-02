@@ -2,7 +2,7 @@ import base
 import hawkey
 import hawkey.test
 
-class Goal(base.TestCase):
+class GoalTest(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
@@ -64,6 +64,24 @@ class Goal(base.TestCase):
         reinstall = goal.list_reinstalls()[0]
         obsoleted = goal.obsoleted_by_package(reinstall)
         self.assertItemsEqual(map(str, obsoleted), ("fool-1-3.noarch", ))
+
+    def test_req(self):
+        goal = hawkey.Goal(self.sack)
+        self.assertEqual(goal.req_length(), 0)
+        self.assertFalse(goal.req_has_erase())
+        sltr = hawkey.Selector(self.sack).set(name="jay")
+        goal.erase(select=sltr)
+        self.assertEqual(goal.req_length(), 1)
+        self.assertTrue(goal.req_has_erase())
+
+        goal = hawkey.Goal(self.sack)
+        goal.upgrade_to(select=sltr)
+        self.assertFalse(goal.req_has_erase())
+
+        goal = hawkey.Goal(self.sack)
+        pkg = hawkey.Query(self.sack).filter(name="dog")[0]
+        goal.erase(pkg, clean_deps=True)
+        self.assertTrue(goal.req_has_erase())
 
 class Collector(object):
     def __init__(self):

@@ -40,6 +40,29 @@ erase_flags2libsolv(int flags)
 }
 
 static int
+goal_has(HyGoal goal, Id needle)
+{
+    Id n_select = needle & SOLVER_SELECTMASK;
+    Id n_job = needle & SOLVER_JOBMASK;
+    Queue job = goal->job;
+
+    // needle contains nothing else but job and select:
+    assert((n_select | n_job) == needle);
+
+    for (int i = 0; i < job.count; i+= 2) {
+	Id what = job.elements[i];
+	if (n_select) {
+	    if (needle == (what & (SOLVER_JOBMASK | SOLVER_SELECTMASK)))
+		return 1;
+	} else {
+	    if (n_job == (what & SOLVER_JOBMASK))
+		return 1;
+	}
+    }
+    return 0;
+}
+
+static int
 solve(HyGoal goal)
 {
     HySack sack = goal->sack;
@@ -446,6 +469,29 @@ hy_goal_userinstalled(HyGoal goal, HyPackage pkg)
     queue_push2(&goal->job, SOLVER_SOLVABLE|SOLVER_USERINSTALLED,
 		package_id(pkg));
     return 0;
+}
+
+int
+hy_goal_req_has_distupgrade_all(HyGoal goal)
+{
+    return goal_has(goal, SOLVER_DISTUPGRADE|SOLVER_SOLVABLE_ALL);
+}
+
+int
+hy_goal_req_has_erase(HyGoal goal)
+{
+    return goal_has(goal, SOLVER_ERASE);
+}
+
+int
+hy_goal_req_has_upgrade_all(HyGoal goal)
+{
+    return goal_has(goal, SOLVER_UPDATE|SOLVER_SOLVABLE_ALL);
+}
+
+int hy_goal_req_length(HyGoal goal)
+{
+    return goal->job.count / 2;
 }
 
 int

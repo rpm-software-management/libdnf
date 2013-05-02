@@ -277,6 +277,30 @@ userinstalled(_GoalObject *self, PyObject *pkg)
 }
 
 static PyObject *
+req_has_distupgrade_all(_GoalObject *self, PyObject *unused)
+{
+    return PyBool_FromLong(hy_goal_req_has_distupgrade_all(self->goal));
+}
+
+static PyObject *
+req_has_erase(_GoalObject *self, PyObject *unused)
+{
+    return PyBool_FromLong(hy_goal_req_has_erase(self->goal));
+}
+
+static PyObject *
+req_has_upgrade_all(_GoalObject *self, PyObject *unused)
+{
+    return PyBool_FromLong(hy_goal_req_has_upgrade_all(self->goal));
+}
+
+static PyObject *
+req_length(_GoalObject *self, PyObject *unused)
+{
+    return PyLong_FromLong(hy_goal_req_length(self->goal));
+}
+
+static PyObject *
 run(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     int flags = 0;
@@ -472,6 +496,12 @@ static struct PyMethodDef goal_methods[] = {
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"upgrade_all",	(PyCFunction)upgrade_all,	METH_NOARGS,	NULL},
     {"userinstalled",	(PyCFunction)userinstalled,	METH_O,		NULL},
+    {"req_has_distupgrade_all",	(PyCFunction)req_has_distupgrade_all,
+     METH_NOARGS,	NULL},
+    {"req_has_erase",	(PyCFunction)req_has_erase,	METH_NOARGS,	NULL},
+    {"req_has_upgrade_all", (PyCFunction)req_has_upgrade_all,
+     METH_NOARGS,	NULL},
+    {"req_length",	(PyCFunction)req_length,	METH_NOARGS,	NULL},
     {"run",		(PyCFunction)run,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"run_all",	(PyCFunction)run_all,
