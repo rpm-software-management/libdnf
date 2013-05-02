@@ -1,4 +1,4 @@
-%global gitrev 1d51b83
+%global gitrev ffe0dac
 %global libsolv_version 0.3.0
 
 Name:		hawkey
@@ -76,6 +76,19 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
+* Thu May 2 2013 Aleš Kozumplík <ales@redhat.com> - 0.3.11-1.gitffe0dac
+- obsoletes: do not report obsoleted packages in hy_goal_list_erasures(). (Ales Kozumplik)
+- rename: goal: list_obsoletes -> list_obsoleted. (Ales Kozumplik)
+- rename: hy_goal_package_all_obsoletes() -> hy_goal_list_obsoleted_by_package(). (Ales Kozumplik)
+- apichange: remove: hy_goal_package_obsoletes(). (Ales Kozumplik)
+- tests: simplify test_goal_upgrade_all() somehwat. (Ales Kozumplik)
+- goal: add ability to list all of the package's and transaction's obsoletes. (Ales Kozumplik)
+- py: allow directly comparing NEVRAs by their EVRs. (RhBug:953203) (Ales Kozumplik)
+- add hy_sack_evr_cmp(). (Ales Kozumplik)
+- py: fix SIGSEGV in unchecked hy_goal_describe_problem() call. (Ales Kozumplik)
+- doc: update the Tutorial for the current version of the API. (Ales Kozumplik)
+- subject parsing: recognize "pyton-hawkey" is a name in "python-hawkey-0.3.10". (Ales Kozumplik)
+
 * Mon Apr 8 2013 Aleš Kozumplík <ales@redhat.com> - 0.3.10-1.git1d51b83
 - hy_goal_write_debugdata() (Ales Kozumplik)
 
