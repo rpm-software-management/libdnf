@@ -193,7 +193,7 @@ filter_arch2job(HySack sack, const struct _Filter *f, Queue *job)
 	return HY_E_ARCH;
     for (int i = 0; i < job->count; i += 2) {
 	Id dep;
-	assert(job->elements[i] & SOLVER_SOLVABLE_NAME);
+	assert((job->elements[i] & SOLVER_SELECTMASK) == SOLVER_SOLVABLE_NAME);
 	dep = pool_rel2id(pool, job->elements[i + 1],
 			  archid, REL_ARCH, 1);
 	job->elements[i] |= SOLVER_SETARCH;
@@ -216,7 +216,7 @@ filter_evr2job(HySack sack, const struct _Filter *f, Queue *job)
     Id constr = f->keyname == HY_PKG_VERSION ? SOLVER_SETEV : SOLVER_SETEVR;
     for (int i = 0; i < job->count; i += 2) {
 	Id dep;
-	assert(job->elements[i] & SOLVER_SOLVABLE_NAME);
+	assert((job->elements[i] & SOLVER_SELECTMASK) == SOLVER_SOLVABLE_NAME);
 	dep = pool_rel2id(pool, job->elements[i + 1],
 			  evr, REL_EQ, 1);
 	job->elements[i] |= constr;
