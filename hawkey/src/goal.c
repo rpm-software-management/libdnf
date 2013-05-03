@@ -95,7 +95,7 @@ construct_solver(HyGoal goal, int flags)
 
     /* turn off implicit obsoletes for installonly packages */
     for (int i = 0; i < sack->installonly.count; i++)
-	queue_push2(job, SOLVER_NOOBSOLETES|SOLVER_SOLVABLE_PROVIDES,
+	queue_push2(job, SOLVER_MULTIVERSION|SOLVER_SOLVABLE_PROVIDES,
 		    sack->installonly.elements[i]);
 
     /* apply the excludes */
