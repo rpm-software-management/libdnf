@@ -1,4 +1,4 @@
-%global gitrev ffe0dac
+%global gitrev 60cc1cc
 %global libsolv_version 0.3.0
 
 Name:		hawkey
@@ -76,6 +76,11 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
+* Mon May 13 2013 Aleš Kozumplík <ales@redhat.com> - 0.3.12-1.git60cc1cc
+- goal: fix assertions about the job queue when translating selectors. (Ales Kozumplik)
+- SOLVER_NOOBSOLETES is SOLVER_MULTIVERSION. (Ales Kozumplik)
+- goal: testing number of requests and presence of certain kinds of requests. (Ales Kozumplik)
+
 * Thu May 2 2013 Aleš Kozumplík <ales@redhat.com> - 0.3.11-1.gitffe0dac
 - obsoletes: do not report obsoleted packages in hy_goal_list_erasures(). (Ales Kozumplik)
 - rename: goal: list_obsoletes -> list_obsoleted. (Ales Kozumplik)
