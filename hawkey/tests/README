@@ -21,6 +21,7 @@ flying
 fool
 * installed version available from main repo, updates repo contains a newer version
 * the updates version obsoletes two packages
+* installonly testing
 
 penny, penny-lib
 * have summaries
