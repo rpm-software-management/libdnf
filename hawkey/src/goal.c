@@ -104,8 +104,6 @@ construct_solver(HyGoal goal, int flags)
 	    if (MAPTST(sack->pkg_excludes, i))
 		queue_push2(job, SOLVER_SOLVABLE|SOLVER_LOCK, i);
 
-    /* installonly notwithstanding, process explicit obsoletes */
-    solver_set_flag(solv, SOLVER_FLAG_KEEP_EXPLICIT_OBSOLETES, 1);
     /* no vendor locking */
     solver_set_flag(solv, SOLVER_FLAG_ALLOW_VENDORCHANGE, 1);
     goal->solv = solv;
