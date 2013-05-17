@@ -151,6 +151,77 @@ log_cb(Pool *pool, void *cb_data, int type, const char *buf)
     }
 }
 
+static void
+queue_di_icase(Pool *pool, Queue *queue, const char *str, int key)
+{
+    Dataiterator di;
+
+    dataiterator_init(&di, pool, 0, 0, key, str, SEARCH_STRING|SEARCH_NOCASE);
+    if (dataiterator_step(&di))
+	queue_push(queue, di.solvid);
+    dataiterator_free(&di);
+    return;
+}
+
+static void
+queue_pkg_name(HySack sack, Queue *queue, const char *provide, int flags)
+{
+    Pool *pool = sack_pool(sack);
+    if (flags & HY_ICASE) {
+	queue_di_icase(pool, queue, provide, SOLVABLE_NAME);
+	return;
+    }
+
+    Id id = pool_str2id(pool, provide, 0);
+    if (id == 0)
+	return;
+    sack_make_provides_ready(sack);
+    Id p, pp;
+    FOR_PROVIDES(p, pp, id) {
+	Solvable *s = pool_id2solvable(pool, p);
+	if (s->name == id)
+	    queue_push(queue, p);
+    }
+    return;
+}
+
+static void
+queue_provides(HySack sack, Queue *queue, const char *provide, int flags)
+{
+    Pool *pool = sack_pool(sack);
+    if (flags & HY_ICASE) {
+	queue_di_icase(pool, queue, provide, SOLVABLE_PROVIDES);
+	return;
+    }
+
+    Id id = pool_str2id(pool, provide, 0);
+    if (id == 0)
+	return;
+    sack_make_provides_ready(sack);
+    Id p, pp;
+    FOR_PROVIDES(p, pp, id)
+	queue_push(queue, p);
+    return;
+}
+
+static void
+queue_filter_version(HySack sack, Queue *queue, const char *version)
+{
+    Pool *pool = sack_pool(sack);
+    int j = 0;
+    for (int i = 0; i < queue->count; ++i) {
+	Id p = queue->elements[i];
+	Solvable *s = pool_id2solvable(pool, p);
+	char *e, *v, *r;
+	const char *evr = pool_id2str(pool, s->evr);
+
+	pool_split_evr(pool, evr, &e, &v, &r);
+	if (!strcmp(v, version))
+	    queue->elements[j++] = p;
+    }
+    queue_truncate(queue, j);
+}
+
 static int
 load_ext(HySack sack, HyRepo hrepo, int which_repodata,
 	 const char *suffix, int which_filename,
@@ -703,38 +774,25 @@ sack_log(HySack sack, int level, const char *format, ...)
 }
 
 int
-sack_knows(HySack sack, const char *str, int flags)
+sack_knows(HySack sack, const char *name, const char *version, int flags)
 {
-    Pool *pool = sack_pool(sack);
+    Queue *q = solv_malloc(sizeof(*q));
+    int ret;
 
     assert((flags & ~(HY_ICASE|HY_NAME_ONLY)) == 0);
-
-    if (flags & HY_ICASE) {
-	Dataiterator di;
-	Id key = (flags & HY_NAME_ONLY) ? SOLVABLE_NAME : SOLVABLE_PROVIDES;
-	int ret = 0;
-
-	dataiterator_init(&di, pool, 0, 0, key, str, SEARCH_STRING|SEARCH_NOCASE);
-	if (dataiterator_step(&di))
-	    ret = 1;
-	dataiterator_free(&di);
-	return ret;
-    } else {
-	Id provide = pool_str2id(pool, str, 0);
-	if (provide == 0)
-	    return 0;
-
-	sack_make_provides_ready(sack);
-	Id p, pp;
-	FOR_PROVIDES(p, pp, provide) {
-	    Solvable *s = pool_id2solvable(pool, p);
-	    if (!(flags & HY_NAME_ONLY))
-		return 1;
-	    if (s->name == provide)
-		return 1;
-	}
-	return 0;
+    queue_init(q);
+    if ((flags & HY_NAME_ONLY) == 0)
+	queue_provides(sack, q, name, flags);
+    else {
+	queue_pkg_name(sack, q, name, flags);
+	if (version != NULL)
+	    queue_filter_version(sack, q, version);
     }
+
+    ret = q->count > 0;
+    queue_free(q);
+    solv_free(q);
+    return ret;
 }
 
 /**

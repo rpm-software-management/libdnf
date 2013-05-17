@@ -166,3 +166,7 @@ class SubjectRealPossibilitiesTest(base.TestCase):
         subj = hawkey.Subject("penny-lib-DEVEL")
         nevra = subj.nevra_possibilities_real(self.sack, icase=True).next()
         self.assertEqual(nevra.name, "penny-lib-DEVEL")
+
+    def test_nonexistent_version(self):
+        subj = hawkey.Subject("penny-5")
+        self.assertLength(list(subj.nevra_possibilities_real(self.sack)), 0)

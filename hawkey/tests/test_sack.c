@@ -219,11 +219,19 @@ START_TEST(test_sack_knows)
 {
     HySack sack = test_globals.sack;
 
-    fail_if(sack_knows(sack, "penny-lib-DEVEL", 0));
-    fail_unless(sack_knows(sack, "penny-lib-DEVEL", HY_ICASE|HY_NAME_ONLY));
+    fail_if(sack_knows(sack, "penny-lib-DEVEL", NULL, 0));
+    fail_unless(sack_knows(sack, "penny-lib-DEVEL", NULL, HY_ICASE|HY_NAME_ONLY));
 
-    fail_if(sack_knows(sack, "P", HY_NAME_ONLY));
-    fail_unless(sack_knows(sack, "P", 0));
+    fail_if(sack_knows(sack, "P", NULL, HY_NAME_ONLY));
+    fail_unless(sack_knows(sack, "P", NULL, 0));
+}
+END_TEST
+
+START_TEST(test_sack_knows_version)
+{
+    HySack sack = test_globals.sack;
+    fail_unless(sack_knows(sack, "penny", "4", HY_NAME_ONLY));
+    fail_if(sack_knows(sack, "penny", "5", HY_NAME_ONLY));
 }
 END_TEST
 
@@ -256,6 +264,7 @@ sack_suite(void)
     tc = tcase_create("SackKnows");
     tcase_add_unchecked_fixture(tc, fixture_all, teardown);
     tcase_add_test(tc, test_sack_knows);
+    tcase_add_test(tc, test_sack_knows_version);
     suite_add_tcase(s, tc);
 
     return s;

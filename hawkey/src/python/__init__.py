@@ -421,7 +421,8 @@ class Subject(object):
         existing_arches.append('src')
         for nevra in self.nevra_possibilities(form=form):
             if should_check(nevra.name):
-                if not sack._knows(sack, nevra.name, name_only=True, icase=icase):
+                if not sack._knows(sack, nevra.name, nevra.version,
+                                   name_only=True, icase=icase):
                     continue
             if should_check(nevra.arch):
                 if nevra.arch not in existing_arches:
