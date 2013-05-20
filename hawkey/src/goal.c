@@ -19,7 +19,7 @@
 
 struct _HyGoal {
     HySack sack;
-    Queue job;
+    Queue staging;
     Solver *solv;
     Transaction *trans;
 };
@@ -44,7 +44,7 @@ goal_has(HyGoal goal, Id needle)
 {
     Id n_select = needle & SOLVER_SELECTMASK;
     Id n_job = needle & SOLVER_JOBMASK;
-    Queue job = goal->job;
+    Queue job = goal->staging;
 
     // needle contains nothing else but job and select:
     assert((n_select | n_job) == needle);
@@ -63,27 +63,36 @@ goal_has(HyGoal goal, Id needle)
 }
 
 static int
-solve(HyGoal goal)
+solve(HyGoal goal, Queue *job)
 {
     HySack sack = goal->sack;
     Solver *solv = goal->solv;
 
+    if (goal->trans) {
+	transaction_free(goal->trans);
+	goal->trans = NULL;
+    }
+
     sack_make_provides_ready(sack);
-    if (solver_solve(solv, &goal->job))
+    if (solver_solve(solv, job))
 	return 1;
     goal->trans = solver_create_transaction(solv);
     return 0;
 }
 
-static Solver *
+static Queue *
 construct_solver(HyGoal goal, int flags)
 {
     HySack sack = goal->sack;
     Pool *pool = sack_pool(sack);
     Solver *solv = solver_create(pool);
-    Queue *job = &goal->job;
+    Queue *job = solv_malloc(sizeof(*job));
 
-    assert(goal->solv == NULL);
+    queue_init_clone(job, &goal->staging);
+    if (goal->solv) {
+	solver_free(goal->solv);
+	goal->solv = NULL;
+    }
 
     if (flags & HY_ALLOW_UNINSTALL)
 	solver_set_flag(solv, SOLVER_FLAG_ALLOW_UNINSTALL, 1);
@@ -107,7 +116,7 @@ construct_solver(HyGoal goal, int flags)
     /* no vendor locking */
     solver_set_flag(solv, SOLVER_FLAG_ALLOW_VENDORCHANGE, 1);
     goal->solv = solv;
-    return solv;
+    return job;
 }
 
 static HyPackageList
@@ -335,7 +344,7 @@ hy_goal_create(HySack sack)
 {
     HyGoal goal = solv_calloc(1, sizeof(*goal));
     goal->sack = sack;
-    queue_init(&goal->job);
+    queue_init(&goal->staging);
     return goal;
 }
 
@@ -346,14 +355,14 @@ hy_goal_free(HyGoal goal)
 	transaction_free(goal->trans);
     if (goal->solv)
 	solver_free(goal->solv);
-    queue_free(&goal->job);
+    queue_free(&goal->staging);
     solv_free(goal);
 }
 
 int
 hy_goal_distupgrade_all(HyGoal goal)
 {
-    queue_push2(&goal->job, SOLVER_DISTUPGRADE|SOLVER_SOLVABLE_ALL, 0);
+    queue_push2(&goal->staging, SOLVER_DISTUPGRADE|SOLVER_SOLVABLE_ALL, 0);
     return 0;
 }
 
@@ -378,7 +387,7 @@ hy_goal_erase_flags(HyGoal goal, HyPackage pkg, int flags)
 	   pool_id2solvable(pool, package_id(pkg))->repo == pool->installed);
 #endif
     int additional = erase_flags2libsolv(flags);
-    queue_push2(&goal->job, SOLVER_SOLVABLE|SOLVER_ERASE|additional,
+    queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_ERASE|additional,
 		package_id(pkg));
     return 0;
 }
@@ -393,26 +402,26 @@ int
 hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags)
 {
     int additional = erase_flags2libsolv(flags);
-    return sltr2job(sltr, &goal->job, SOLVER_ERASE|additional);
+    return sltr2job(sltr, &goal->staging, SOLVER_ERASE|additional);
 }
 
 int
 hy_goal_install(HyGoal goal, HyPackage new_pkg)
 {
-    queue_push2(&goal->job, SOLVER_SOLVABLE|SOLVER_INSTALL, package_id(new_pkg));
+    queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_INSTALL, package_id(new_pkg));
     return 0;
 }
 
 int
 hy_goal_install_selector(HyGoal goal, HySelector sltr)
 {
-    return sltr2job(sltr, &goal->job, SOLVER_INSTALL);
+    return sltr2job(sltr, &goal->staging, SOLVER_INSTALL);
 }
 
 int
 hy_goal_upgrade_all(HyGoal goal)
 {
-    queue_push2(&goal->job, SOLVER_UPDATE|SOLVER_SOLVABLE_ALL, 0);
+    queue_push2(&goal->staging, SOLVER_UPDATE|SOLVER_SOLVABLE_ALL, 0);
     return 0;
 }
 
@@ -426,14 +435,14 @@ int
 hy_goal_upgrade_to_selector(HyGoal goal, HySelector sltr)
 {
     if (sltr->f_evr == NULL)
-	return sltr2job(sltr, &goal->job, SOLVER_UPDATE);
-    return sltr2job(sltr, &goal->job, SOLVER_INSTALL);
+	return sltr2job(sltr, &goal->staging, SOLVER_UPDATE);
+    return sltr2job(sltr, &goal->staging, SOLVER_INSTALL);
 }
 
 int
 hy_goal_upgrade_selector(HyGoal goal, HySelector sltr)
 {
-    return sltr2job(sltr, &goal->job, SOLVER_UPDATE);
+    return sltr2job(sltr, &goal->staging, SOLVER_UPDATE);
 }
 
 int
@@ -464,7 +473,7 @@ hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags)
 int
 hy_goal_userinstalled(HyGoal goal, HyPackage pkg)
 {
-    queue_push2(&goal->job, SOLVER_SOLVABLE|SOLVER_USERINSTALLED,
+    queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_USERINSTALLED,
 		package_id(pkg));
     return 0;
 }
@@ -489,7 +498,7 @@ hy_goal_req_has_upgrade_all(HyGoal goal)
 
 int hy_goal_req_length(HyGoal goal)
 {
-    return goal->job.count / 2;
+    return goal->staging.count / 2;
 }
 
 int
@@ -501,8 +510,11 @@ hy_goal_run(HyGoal goal)
 int
 hy_goal_run_flags(HyGoal goal, int flags)
 {
-    construct_solver(goal, flags);
-    return solve(goal);
+    Queue *job = construct_solver(goal, flags);
+    int ret = solve(goal, job);
+    queue_free(job);
+    solv_free(job);
+    return ret;
 }
 
 int
@@ -516,12 +528,17 @@ hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
 			 int flags)
 {
     struct _SolutionCallback cb_tuple = {goal, cb, cb_data};
-    Solver *solv = construct_solver(goal, flags);
+    Queue *job = construct_solver(goal, flags);
+    Solver *solv = goal->solv;
 
     solv->solution_callback = internal_solver_callback;
     solv->solution_callback_data = &cb_tuple;
 
-    return solve(goal);
+    int ret = solve(goal, job);
+    queue_free(job);
+    solv_free(job);
+
+    return ret;
 }
 
 int

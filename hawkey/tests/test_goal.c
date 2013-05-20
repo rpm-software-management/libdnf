@@ -24,7 +24,8 @@ get_latest_pkg(HySack sack, const char *name)
     hy_query_filter(q, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     hy_query_filter_latest(q, 1);
     HyPackageList plist = hy_query_run(q);
-    fail_unless(hy_packagelist_count(plist) == 1);
+    fail_unless(hy_packagelist_count(plist) == 1,
+		"get_latest_pkg() failed finding '%s'.", name);
     HyPackage pkg = hy_packagelist_get_clone(plist, 0);
     hy_query_free(q);
     hy_packagelist_free(plist);
@@ -659,6 +660,29 @@ START_TEST(test_goal_distupgrade_all)
 }
 END_TEST
 
+START_TEST(test_goal_rerun)
+{
+    HySack sack = test_globals.sack;
+    HyGoal goal = hy_goal_create(sack);
+    HyPackage pkg = get_latest_pkg(sack, "walrus");
+
+    hy_goal_install(goal, pkg);
+    fail_if(hy_goal_run(goal));
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 2);
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
+    hy_package_free(pkg);
+
+    // add an erase:
+    pkg = get_installed_pkg(sack, "dog");
+    hy_goal_erase(goal, pkg);
+    fail_if(hy_goal_run(goal));
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 2);
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
+    hy_package_free(pkg);
+    hy_goal_free(goal);
+}
+END_TEST
+
 struct Solutions {
     int solutions;
     HyPackageList installs;
@@ -787,6 +811,7 @@ goal_suite(void)
     tc = tcase_create("Main");
     tcase_add_unchecked_fixture(tc, fixture_with_main, teardown);
     tcase_add_test(tc, test_goal_distupgrade_all);
+    tcase_add_test(tc, test_goal_rerun);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Greedy");
