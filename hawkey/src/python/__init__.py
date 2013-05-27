@@ -115,7 +115,7 @@ class NEVRA(_NEVRA):
         fmt= "%(epoch)d:%(version)s-%(release)s"
         if self.epoch is None:
             fmt = "%(version)s-%(release)s"
-        return fmt % vars(self)
+        return fmt % self._asdict()
 
     def to_query(self, sack):
         return Query(sack).filter(
