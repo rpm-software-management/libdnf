@@ -17,6 +17,7 @@ int hy_package_cmp(HyPackage pkg1, HyPackage pkg2);
 int hy_package_evr_cmp(HyPackage pkg1, HyPackage pkg2);
 
 char *hy_package_get_location(HyPackage pkg);
+const char *hy_package_get_baseurl(HyPackage pkg);
 char *hy_package_get_nevra(HyPackage pkg);
 char *hy_package_get_sourcerpm(HyPackage pkg);
 char *hy_package_get_version(HyPackage pkg);

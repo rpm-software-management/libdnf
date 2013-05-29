@@ -195,6 +195,8 @@ get_chksum(_PackageObject *self, void *closure)
 static PyGetSetDef package_getsetters[] = {
     {"location",  (getter)get_str_alloced, NULL, NULL,
      (void *)hy_package_get_location},
+    {"baseurl",  (getter)get_str, NULL, NULL,
+     (void *)hy_package_get_baseurl},
     {"sourcerpm",  (getter)get_str_alloced, NULL, NULL,
      (void *)hy_package_get_sourcerpm},
     {"version",  (getter)get_str_alloced, NULL, NULL,

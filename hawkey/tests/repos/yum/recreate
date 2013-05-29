@@ -3,5 +3,5 @@
 THISDIR=$(readlink -f $(dirname $0))
 cd $THISDIR
 git rm -rf repodata/ drpms/
-createrepo --deltas --oldpackagedirs=../yum_oldrpms/ --no-database .
+createrepo --deltas --oldpackagedirs=../yum_oldrpms/ --no-database --baseurl blah .
 git add repodata/ drpms/

@@ -91,3 +91,12 @@ class ChecksumsTest(base.TestCase):
         pkg = base.by_name(sack, "fool")
         self.assertRaises(AttributeError, lambda: pkg.chksum)
         self.assertRaises(AttributeError, lambda: pkg.hdr_chksum)
+
+class BaseurlTest(base.TestCase):
+    def setUp(self):
+        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack.load_yum_repo()
+        self.pkg = hawkey.Query(self.sack).filter(name="mystery-devel")[0]
+
+    def test_baseurl(self):
+        self.assertEqual(self.pkg.baseurl, 'blah')

@@ -143,6 +143,13 @@ hy_package_get_location(HyPackage pkg)
     return solv_strdup(solvable_get_location(s, NULL));
 }
 
+const char *
+hy_package_get_baseurl(HyPackage pkg)
+{
+    Solvable *s = get_solvable(pkg);
+    return solvable_lookup_str(s, SOLVABLE_MEDIABASE);
+}
+
 char *
 hy_package_get_nevra(HyPackage pkg)
 {
