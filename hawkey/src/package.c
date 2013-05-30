@@ -298,7 +298,9 @@ hy_package_get_rpmdbid(HyPackage pkg)
 unsigned long long
 hy_package_get_size(HyPackage pkg)
 {
-    return lookup_num(pkg, SOLVABLE_DOWNLOADSIZE);
+    unsigned type = hy_package_installed(pkg) ? SOLVABLE_INSTALLSIZE :
+						SOLVABLE_DOWNLOADSIZE;
+    return lookup_num(pkg, type);
 }
 
 HyReldepList
