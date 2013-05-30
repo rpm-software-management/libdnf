@@ -99,6 +99,13 @@ hy_package_identical(HyPackage pkg1, HyPackage pkg2)
 }
 
 int
+hy_package_installed(HyPackage pkg)
+{
+    Solvable *s = get_solvable(pkg);
+    return (pkg->pool->installed == s->repo);
+}
+
+int
 hy_package_cmp(HyPackage pkg1, HyPackage pkg2)
 {
     Pool *pool = pkg1->pool;

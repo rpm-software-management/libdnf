@@ -12,6 +12,7 @@ extern "C" {
 void hy_package_free(HyPackage pkg);
 HyPackage hy_package_link(HyPackage pkg);
 int hy_package_identical(HyPackage pkg1, HyPackage pkg2);
+int hy_package_installed(HyPackage pkg);
 int hy_package_cmp(HyPackage pkg1, HyPackage pkg2);
 int hy_package_evr_cmp(HyPackage pkg1, HyPackage pkg2);
 
