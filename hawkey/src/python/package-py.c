@@ -128,6 +128,14 @@ long package_hash(_PackageObject *self)
 /* getsetters */
 
 static PyObject *
+get_bool(_PackageObject *self, void *closure)
+{
+    unsigned long (*func)(HyPackage);
+    func = (unsigned long (*)(HyPackage))closure;
+    return PyBool_FromLong(func(self->package));
+}
+
+static PyObject *
 get_num(_PackageObject *self, void *closure)
 {
     unsigned long long (*func)(HyPackage);
@@ -220,6 +228,7 @@ static PyGetSetDef package_getsetters[] = {
     {"buildtime", (getter)get_num, NULL, NULL, (void *)hy_package_get_buildtime},
     {"installtime", (getter)get_num, NULL, NULL,
      (void *)hy_package_get_installtime},
+    {"installed", (getter)get_bool, NULL, NULL, (void *)hy_package_installed},
     {"medianr", (getter)get_num, NULL, NULL, (void *)hy_package_get_medianr},
     {"rpmdbid", (getter)get_num, NULL, NULL, (void *)hy_package_get_rpmdbid},
     {"size", (getter)get_num, NULL, NULL, (void *)hy_package_get_size},
