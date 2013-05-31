@@ -156,6 +156,21 @@ START_TEST(test_lookup_num)
 }
 END_TEST
 
+START_TEST(test_installed)
+{
+    HyPackage pkg1 = by_name_repo(test_globals.sack, "penny-lib", "main");
+    HyPackage pkg2 = by_name_repo(test_globals.sack,
+				  "penny-lib", HY_SYSTEM_REPO_NAME);
+    int installed1 = hy_package_installed(pkg1);
+    int installed2 = hy_package_installed(pkg2);
+    fail_unless(installed1 == 0);
+    fail_unless(installed2 == 1);
+
+    hy_package_free(pkg1);
+    hy_package_free(pkg2);
+}
+
+END_TEST
 START_TEST(test_packager)
 {
     HyPackage pkg = by_name(test_globals.sack, "tour");
@@ -215,6 +230,7 @@ package_suite(void)
     tcase_add_test(tc, test_get_requires);
     tcase_add_test(tc, test_get_more_requires);
     tcase_add_test(tc, test_chksum_fail);
+    tcase_add_test(tc, test_installed);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("WithRealRepo");
