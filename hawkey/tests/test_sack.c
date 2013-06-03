@@ -139,6 +139,7 @@ check_filelist(Pool *pool)
 		      SEARCH_STRING | SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
     for (count = 0; dataiterator_step(&di); ++count) ;
     fail_unless(count == 1);
+    dataiterator_free(&di);
 }
 
 START_TEST(test_filelist)
