@@ -28,7 +28,7 @@ extern "C" {
 enum _hy_errors_e {
     HY_E_FAILED		= 1,	// general runtime error
     HY_E_OP,			// client programming error
-    HY_E_LIBSOLV,		// erorr propagated from libsolv
+    HY_E_LIBSOLV,		// error propagated from libsolv
     HY_E_IO,			// I/O error
     HY_E_CACHE_WRITE,		// cache write error
     HY_E_QUERY,			// ill-formed query

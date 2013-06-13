@@ -58,13 +58,13 @@ int hy_query_filter_requires(HyQuery q, int cmp_type, const char *name,
 /**
  * Filter packages that are named same as an installed package but lower version.
  *
- * NOTE: this does not guerantee packages filtered in this way are installable.
+ * NOTE: this does not guarantee packages filtered in this way are installable.
  */
 void hy_query_filter_downgrades(HyQuery q, int val);
 /**
  * Filter packages that are named same as an installed package but higher version.
  *
- * NOTE: this does not guerantee packages filtered in this way are installable.
+ * NOTE: this does not guarantee packages filtered in this way are installable.
  */
 void hy_query_filter_upgrades(HyQuery q, int val);
 void hy_query_filter_latest(HyQuery q, int val);
