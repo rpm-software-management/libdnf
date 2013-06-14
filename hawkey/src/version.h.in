@@ -9,6 +9,12 @@ extern "C" {
 #define HY_VERSION_MINOR @HAWKEY_MINOR@
 #define HY_VERSION_PATCH @HAWKEY_PATCH@
 
+#define HY_VERSION_CHECK(major,minor,patch)    \
+    (HY_VERSION_MAJOR > (major) || \
+     (HY_VERSION_MAJOR == (major) && HY_VERSION_MINOR > (minor)) || \
+     (HY_VERSION_MAJOR == (major) && HY_VERSION_MINOR == (minor) && \
+      HY_VERSION_PATCH >= (patch)))
+
 #ifdef __cplusplus
 }
 #endif
