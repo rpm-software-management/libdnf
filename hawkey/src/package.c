@@ -32,6 +32,8 @@
 #include "package_internal.h"
 #include "reldep_internal.h"
 
+#define BLOCK_SIZE 31
+
 /* internal */
 static Solvable *
 get_solvable(HyPackage pkg)
@@ -352,6 +354,26 @@ HyReldepList
 hy_package_get_requires(HyPackage pkg)
 {
     return reldeps_for(pkg, SOLVABLE_REQUIRES);
+}
+
+HyStringArray
+hy_package_get_files(HyPackage pkg)
+{
+    Pool *pool = package_pool(pkg);
+    Solvable *s = get_solvable(pkg);
+    Dataiterator di;
+    int len = 0;
+    HyStringArray strs = solv_extend(0, 0, 1, sizeof(char*), BLOCK_SIZE);
+
+    dataiterator_init(&di, pool, s->repo, pkg->id, SOLVABLE_FILELIST, NULL,
+		      SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
+    while (dataiterator_step(&di)) {
+	strs[len++] = solv_strdup(di.kv.str);
+	strs = solv_extend(strs, len, 1, sizeof(char*), BLOCK_SIZE);
+    }
+    dataiterator_free(&di);
+    strs[len++] = NULL;
+    return strs;
 }
 
 HyPackageDelta

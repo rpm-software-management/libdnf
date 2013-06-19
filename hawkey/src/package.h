@@ -66,6 +66,8 @@ HyReldepList hy_package_get_obsoletes(HyPackage pkg);
 HyReldepList hy_package_get_provides(HyPackage pkg);
 HyReldepList hy_package_get_requires(HyPackage pkg);
 
+HyStringArray hy_package_get_files(HyPackage pkg);
+
 HyPackageDelta hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr);
 const char *hy_packagedelta_get_location(HyPackageDelta delta);
 void hy_packagedelta_free(HyPackageDelta delta);

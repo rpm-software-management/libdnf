@@ -10,6 +10,7 @@ SET (hawkey_SRCS
     repo.c
     sack.c
     selector.c
+    stringarray.c
     util.c)
 
 ADD_LIBRARY(libhawkey SHARED ${hawkey_SRCS})

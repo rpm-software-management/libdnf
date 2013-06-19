@@ -18,24 +18,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef HY_UTIL_H
-#define HY_UTIL_H
+#ifndef HY_STRINGARRAY_H
+#define HY_STRINGARRAY_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void *hy_free(void *mem);
-void *hy_free_strs(char **strs);
-const char *hy_chksum_name(int chksum_type);
-int hy_chksum_type(const char *chksum_name);
-char *hy_chksum_str(const unsigned char *chksum, int type);
+#include "types.h"
 
-int hy_split_nevra(const char *nevra, char **name, long int *epoch,
-		   char **version, char **release, char **arch);
+void hy_stringarray_free(HyStringArray strs);
+
+#define FOR_STRINGARRAY(str, strs, i)							\
+    for (i = 0, str = strs[0]; str; str = strs[++i])
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* HY_UTIL_H */
+#endif /* HY_STRINGARRAY_H */

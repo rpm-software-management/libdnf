@@ -22,6 +22,7 @@
 #include "src/package.h"
 #include "src/query.h"
 #include "src/reldep.h"
+#include "src/stringarray.h"
 #include "src/util.h"
 #include "fixtures.h"
 #include "test_suites.h"
@@ -101,6 +102,21 @@ START_TEST(test_no_sourcerpm)
     char *src = hy_package_get_sourcerpm(pkg);
 
     fail_unless(src == NULL);
+    hy_package_free(pkg);
+}
+END_TEST
+
+START_TEST(test_get_files)
+{
+    HySack sack = test_globals.sack;
+    HyPackage pkg = by_name(sack, "fool");
+    HyStringArray files = hy_package_get_files(pkg);
+    char *f;
+    int i;
+
+    FOR_STRINGARRAY(f, files, i)
+	ck_assert_str_eq(f, "/no/answers");
+    hy_stringarray_free(files);
     hy_package_free(pkg);
 }
 END_TEST
@@ -243,6 +259,7 @@ package_suite(void)
     tcase_add_test(tc, test_identical);
     tcase_add_test(tc, test_versions);
     tcase_add_test(tc, test_no_sourcerpm);
+    tcase_add_test(tc, test_get_files);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Requires");

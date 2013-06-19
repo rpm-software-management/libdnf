@@ -37,6 +37,7 @@ typedef struct _HyReldep * HyReldep;
 typedef struct _HyReldepList * HyReldepList;
 typedef struct _HySack * HySack;
 typedef struct _HySelector * HySelector;
+typedef char ** HyStringArray;
 
 typedef const unsigned char HyChecksum;
 
