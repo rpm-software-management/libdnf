@@ -64,6 +64,10 @@ class PackageTest(base.TestCase):
         pkg = base.by_name(self.sack, 'dog')
         self.assertItemsEqual(map(str, pkg.conflicts), ('custard = 1.1',))
 
+    def test_files(self):
+        pkg = base.by_name(self.sack, 'fool')
+        self.assertSequenceEqual(pkg.files, ('/no/answers',))
+
 class PackageCmpTest(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)

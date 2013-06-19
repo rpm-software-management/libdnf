@@ -30,6 +30,7 @@
 #include "src/packagelist.h"
 #include "src/reldep.h"
 #include "src/sack_internal.h"
+#include "src/stringarray.h"
 
 // pyhawkey
 #include "iutil-py.h"
@@ -205,6 +206,20 @@ get_str_alloced(_PackageObject *self, void *closure)
 }
 
 static PyObject *
+get_str_array(_PackageObject *self, void *closure)
+{
+    HyStringArray (*func)(HyPackage);
+    HyStringArray strs;
+
+    func = (HyStringArray (*)(HyPackage))closure;
+    strs = func(self->package);
+    PyObject *list = strlist_to_pylist((const char **)strs);
+    hy_stringarray_free(strs);
+
+    return list;
+}
+
+static PyObject *
 get_chksum(_PackageObject *self, void *closure)
 {
     HyChecksum *(*func)(HyPackage, int *);
@@ -221,10 +236,12 @@ get_chksum(_PackageObject *self, void *closure)
 }
 
 static PyGetSetDef package_getsetters[] = {
+    {"baseurl",	(getter)get_str, NULL, NULL,
+     (void *)hy_package_get_baseurl},
+    {"files",	(getter)get_str_array, NULL, NULL,
+     (void *)hy_package_get_files},
     {"location",  (getter)get_str_alloced, NULL, NULL,
      (void *)hy_package_get_location},
-    {"baseurl",  (getter)get_str, NULL, NULL,
-     (void *)hy_package_get_baseurl},
     {"sourcerpm",  (getter)get_str_alloced, NULL, NULL,
      (void *)hy_package_get_sourcerpm},
     {"version",  (getter)get_str_alloced, NULL, NULL,
