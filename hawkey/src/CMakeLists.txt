@@ -42,6 +42,7 @@ SET(HAWKEY_headers
     selector.h
     types.h
     util.h
+    stringarray.h
     version.h)
 
 IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
