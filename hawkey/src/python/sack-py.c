@@ -347,13 +347,10 @@ load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     int flags = 0;
     if (build_cache)
 	flags |= HY_BUILD_CACHE;
-    switch (hy_sack_load_system_repo(self->sack, crepo, flags)) {
-    case 0:
-	Py_RETURN_NONE;
-    default:
-	PyErr_SetString(PyExc_IOError, "load_system_repo() failed.");
+    if (ret2e(hy_sack_load_system_repo(self->sack, crepo, flags),
+	      "load_system_repo() failed."))
 	return NULL;
-    }
+    Py_RETURN_NONE;
 }
 
 static PyObject *
