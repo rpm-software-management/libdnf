@@ -1,9 +1,9 @@
-%global gitrev 15db39f
+%global gitrev 78b3aa0
 %global libsolv_version 0.3.0
 
 Name:		hawkey
 Version:	@VERSION@
-Release:	2.git%{gitrev}%{?dist}
+Release:	1.git%{gitrev}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
@@ -76,6 +76,23 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
+* Mon Jun 24 2013 Aleš Kozumplík <ales@redhat.com> - 0.3.14-1.git78b3aa0
+- tests: test_get_files(): test against a package with files outside /usr/bin and /etc. (Ales Kozumplik)
+- py: simplify exception throwing in load_system_repo(). (Ales Kozumplik)
+- Install stringarray.h so client programs can use hy_stringarray_free() (Richard Hughes)
+- py: bindings for package.files. (Ales Kozumplik)
+- add hy_package_get_files. (Ales Kozumplik)
+- Fix three trivial comment mis-spellings (Richard Hughes)
+- Set required python version to 2 (Richard Hughes)
+- Add a HY_VERSION_CHECK macro (Richard Hughes)
+- packaging: add license information to every file. (Ales Kozumplik)
+- py: add 'installed' property to hawkey.Package (Panu Matilainen)
+- tests: add test-case for hy_package_installed() (Panu Matilainen)
+- Add .baseurl getter to Python and C APIs. (Zdenek Pavlas)
+- tests: fix a memory leak revealed by libsolv commit 0804020. (Ales Kozumplik)
+- Return the installed size for installed packages in hy_package_get_size() (Panu Matilainen)
+- Add a function for determining whether HyPackage is installed or not (Panu Matilainen)
+
 * Mon May 27 2013 Aleš Kozumplík <ales@redhat.com> - 0.3.13-2.git15db39f
 - goal: running the same Goal instance twice or more. (Ales Kozumplik)
 - sack._knows can now determine if a particular 'name-version' sounds familiar. (Ales Kozumplik)
