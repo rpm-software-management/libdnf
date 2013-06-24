@@ -32,6 +32,8 @@ struct _HyPackage {
     int nrefs;
     Id id;
     Pool *pool;
+    void *userdata;
+    HyUserdataDestroy destroy_func;
 };
 
 struct _HyPackageDelta {

@@ -37,6 +37,27 @@ START_TEST(test_refcounting)
 }
 END_TEST
 
+static int ran_destroy_func = 0;
+
+static void
+destroy_func (void *userdata)
+{
+    fail_unless(userdata == 0xdeadbeef);
+    ran_destroy_func++;
+}
+
+START_TEST(test_userdata)
+{
+    HyPackage pkg = by_name(test_globals.sack, "penny-lib");
+    fail_unless(pkg != NULL);
+    hy_package_set_userdata(pkg, 0xdeadbeef, destroy_func);
+    fail_unless(hy_package_get_userdata(pkg) == 0xdeadbeef);
+    fail_unless(ran_destroy_func == 0);
+    hy_package_free(pkg);
+    fail_unless(ran_destroy_func == 1);
+}
+END_TEST
+
 START_TEST(test_package_summary)
 {
     HyPackage pkg = by_name(test_globals.sack, "penny-lib");
@@ -259,6 +280,7 @@ package_suite(void)
     tc = tcase_create("Core");
     tcase_add_unchecked_fixture(tc, fixture_system_only, teardown);
     tcase_add_test(tc, test_refcounting);
+    tcase_add_test(tc, test_userdata);
     tcase_add_test(tc, test_package_summary);
     tcase_add_test(tc, test_identical);
     tcase_add_test(tc, test_versions);

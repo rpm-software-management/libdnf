@@ -104,6 +104,8 @@ hy_package_free(HyPackage pkg)
 {
     if (--pkg->nrefs > 0)
 	return;
+    if (pkg->destroy_func)
+	pkg->destroy_func(pkg->userdata);
     solv_free(pkg);
 }
 
@@ -112,6 +114,21 @@ hy_package_link(HyPackage pkg)
 {
     pkg->nrefs++;
     return pkg;
+}
+
+void *
+hy_package_get_userdata(HyPackage pkg)
+{
+    return pkg->userdata;
+}
+
+void
+hy_package_set_userdata(HyPackage pkg, void *userdata, HyUserdataDestroy destroy_func)
+{
+    if (pkg->destroy_func)
+	pkg->destroy_func(pkg->userdata);
+    pkg->userdata = userdata;
+    pkg->destroy_func = destroy_func;
 }
 
 int
