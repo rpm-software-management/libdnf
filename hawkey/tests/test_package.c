@@ -42,7 +42,7 @@ static int ran_destroy_func = 0;
 static void
 destroy_func (void *userdata)
 {
-    fail_unless(userdata == 0xdeadbeef);
+    fail_unless(userdata == (void *) 0xdeadbeef);
     ran_destroy_func++;
 }
 
@@ -50,8 +50,8 @@ START_TEST(test_userdata)
 {
     HyPackage pkg = by_name(test_globals.sack, "penny-lib");
     fail_unless(pkg != NULL);
-    hy_package_set_userdata(pkg, 0xdeadbeef, destroy_func);
-    fail_unless(hy_package_get_userdata(pkg) == 0xdeadbeef);
+    hy_package_set_userdata(pkg, (void *) 0xdeadbeef, destroy_func);
+    fail_unless(hy_package_get_userdata(pkg) == (void *) 0xdeadbeef);
     fail_unless(ran_destroy_func == 0);
     hy_package_free(pkg);
     fail_unless(ran_destroy_func == 1);
