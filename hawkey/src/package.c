@@ -400,6 +400,166 @@ hy_package_get_files(HyPackage pkg)
     return strs;
 }
 
+static Id
+find_update(Pool *pool, HyPackage pkg)
+{
+    Dataiterator di;
+    Id p, pp, evr;
+    Id retval = 0;
+    Solvable *is = NULL;
+    Solvable *s = get_solvable(pkg);
+
+    /* this is slow, don't do this ever time! */
+    sack_make_provides_ready(pkg->sack);
+
+    /* first find installed package for the range */
+    FOR_PROVIDES(p, pp, s->name) {
+        Solvable *iscand = pool->solvables + p;
+        if (iscand->name != s->name || iscand->arch != s->arch)
+            continue;
+        if (!is || pool_evrcmp(pool, is->evr, iscand->evr, EVRCMP_COMPARE) < 0)
+            is = iscand;
+    }
+
+    dataiterator_init(&di, pool, 0, 0, UPDATE_COLLECTION_NAME,
+                      pool_id2str(pool, s->name), SEARCH_STRING);
+    dataiterator_prepend_keyname(&di, UPDATE_COLLECTION);
+    while (dataiterator_step(&di)) {
+        dataiterator_setpos_parent(&di);
+        if (pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_ARCH) != s->arch)
+            continue;
+        evr = pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_EVR);
+        if (!evr)
+            continue;
+        /* not newer than already installed */
+        if (is && pool_evrcmp(pool, is->evr, evr, EVRCMP_COMPARE) >= 0)
+            continue;
+        if (pool_evrcmp(pool, s->evr, evr, EVRCMP_COMPARE) > 0)
+            continue;
+        retval = di.solvid;
+        break;
+    }
+    dataiterator_free(&di);
+    return retval;
+}
+
+const char *
+hy_package_get_update_severity(HyPackage pkg)
+{
+    const char *tmp;
+    Id p;
+    Pool *pool = package_pool(pkg);
+
+    p = find_update(pool, pkg);
+    if (!p)
+        return NULL;
+
+    /* libsolv calls the <update status="stable"> a patch SOLVABLE_PATCHCATEGORY
+     * and the <severity>foo</severity> an UPDATE_SEVERITY; we only use the
+     * former in Fedora now, although we did support the latter at some stage */
+    tmp = pool_lookup_str(pool, p, UPDATE_SEVERITY);
+    if (!tmp)
+        tmp = pool_lookup_str(pool, p, SOLVABLE_PATCHCATEGORY);
+    return tmp;
+}
+
+const char *
+hy_package_get_update_name(HyPackage pkg)
+{
+    const char *tmp;
+    Id p;
+    Pool *pool = package_pool(pkg);
+
+    p = find_update(pool, pkg);
+    if (!p)
+        return NULL;
+
+    /* libsolve 'helpfully' prepends "patch:" to the update name, remove it */
+    tmp = pool_lookup_str(pool, p, SOLVABLE_NAME);
+    if (!tmp)
+        return NULL;
+    if (strncmp(tmp, "patch:", 6) == 0)
+        tmp += 6;
+
+    return tmp;
+}
+
+const char *
+hy_package_get_update_description(HyPackage pkg)
+{
+    Id p;
+    Pool *pool = package_pool(pkg);
+
+    p = find_update(pool, pkg);
+    if (!p)
+        return NULL;
+
+    return pool_lookup_str(pool, p, SOLVABLE_DESCRIPTION);
+}
+
+unsigned long long
+hy_package_get_update_issued(HyPackage pkg)
+{
+    Id p;
+    Pool *pool = package_pool(pkg);
+
+    p = find_update(pool, pkg);
+    if (!p)
+        return 0;
+
+    /* libsolv does not distiguish between issued and updated */
+    return pool_lookup_num(pool, p, SOLVABLE_BUILDTIME, 0);
+}
+
+HyStringArray
+hy_package_get_update_urls(HyPackage pkg, const char *type)
+{
+    const char *type_tmp;
+    const char *url_tmp;
+    Dataiterator di;
+    HyStringArray strs;
+    Id p;
+    int len = 0;
+    Pool *pool = package_pool(pkg);
+
+    p = find_update(pool, pkg);
+    if (!p)
+        return NULL;
+
+    strs = solv_extend(0, 0, 1, sizeof(char*), BLOCK_SIZE);
+    dataiterator_init(&di, pool, 0, p, UPDATE_REFERENCE, 0, 0);
+    while (dataiterator_step(&di)) {
+        dataiterator_setpos(&di);
+        type_tmp = pool_lookup_str(pool, SOLVID_POS, UPDATE_REFERENCE_TYPE);
+        url_tmp = pool_lookup_str(pool, SOLVID_POS, UPDATE_REFERENCE_HREF);
+        if (!url_tmp || !type_tmp || strcmp (type_tmp, type) != 0)
+                continue;
+        strs[len++] = solv_strdup(di.kv.str);
+        strs = solv_extend(strs, len, 1, sizeof(char*), BLOCK_SIZE);
+    }
+    strs[len++] = NULL;
+    dataiterator_free(&di);
+    return strs;
+}
+
+HyStringArray
+hy_package_get_update_urls_bugzilla(HyPackage pkg)
+{
+    return hy_package_get_update_urls(pkg, "bugzilla");
+}
+
+HyStringArray
+hy_package_get_update_urls_cve(HyPackage pkg)
+{
+    return hy_package_get_update_urls(pkg, "cve");
+}
+
+HyStringArray
+hy_package_get_update_urls_vendor(HyPackage pkg)
+{
+    return hy_package_get_update_urls(pkg, "vendor");
+}
+
 HyPackageDelta
 hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr)
 {

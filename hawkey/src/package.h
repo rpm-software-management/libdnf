@@ -67,6 +67,13 @@ HyReldepList hy_package_get_provides(HyPackage pkg);
 HyReldepList hy_package_get_requires(HyPackage pkg);
 
 HyStringArray hy_package_get_files(HyPackage pkg);
+const char *hy_package_get_update_severity(HyPackage pkg);
+const char *hy_package_get_update_name(HyPackage pkg);
+const char *hy_package_get_update_description(HyPackage pkg);
+unsigned long long hy_package_get_update_issued(HyPackage pkg);
+HyStringArray hy_package_get_update_urls_bugzilla(HyPackage pkg);
+HyStringArray hy_package_get_update_urls_cve(HyPackage pkg);
+HyStringArray hy_package_get_update_urls_vendor(HyPackage pkg);
 
 typedef void (*HyUserdataDestroy) (void *userdata);
 void *hy_package_get_userdata(HyPackage pkg);
