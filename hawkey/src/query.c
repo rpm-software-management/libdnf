@@ -425,7 +425,7 @@ filter_sourcerpm(HyQuery q, struct _Filter *f, Map *m)
 	    if (!str_startswith(match, name)) // early check
 		continue;
 
-	    HyPackage pkg = package_create(pool, id);
+	    HyPackage pkg = package_create(q->sack, id);
 	    char *srcrpm = hy_package_get_sourcerpm(pkg);
 	    if (srcrpm && !strcmp(match, srcrpm))
 		MAPSET(m, id);
@@ -1042,7 +1042,7 @@ hy_query_run(HyQuery q)
 	compute(q);
     for (int i = 1; i < pool->nsolvables; ++i)
 	if (MAPTST(q->result, i))
-	    hy_packagelist_push(plist, package_create(pool, i));
+	    hy_packagelist_push(plist, package_create(q->sack, i));
     return plist;
 }
 

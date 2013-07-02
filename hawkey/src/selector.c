@@ -114,7 +114,8 @@ hy_selector_set(HySelector sltr, int keyname, int cmp_type, const char *match)
 HyPackageList
 hy_selector_matches(HySelector sltr)
 {
-    Pool *pool = sack_pool(selector_sack(sltr));
+    HySack sack = selector_sack(sltr);
+    Pool *pool = sack_pool(sack);
     Queue job;
 
     queue_init(&job);
@@ -124,7 +125,7 @@ hy_selector_matches(HySelector sltr)
 
     for (int i = 0; i < job.count; i += 2)
 	FOR_JOB_SELECT(p, pp, job.elements[0], job.elements[1])
-	    hy_packagelist_push(plist, package_create(pool, p));
+	    hy_packagelist_push(plist, package_create(sack, p));
     queue_free(&job);
     return plist;
 }

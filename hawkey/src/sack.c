@@ -585,7 +585,7 @@ hy_sack_add_cmdline_package(HySack sack, const char *fn)
     }
     p = repo_add_rpm(repo, fn, REPO_REUSE_REPODATA|REPO_NO_INTERNALIZE);
     sack->provides_ready = 0;    /* triggers internalizing later */
-    return package_create(sack->pool, p);
+    return package_create(sack, p);
 }
 
 int

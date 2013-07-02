@@ -29,6 +29,7 @@
 
 // hawkey
 #include "iutil.h"
+#include "sack_internal.h"
 #include "package_internal.h"
 #include "reldep_internal.h"
 
@@ -38,7 +39,13 @@
 static Solvable *
 get_solvable(HyPackage pkg)
 {
-    return pool_id2solvable(pkg->pool, pkg->id);
+    return pool_id2solvable(package_pool(pkg), pkg->id);
+}
+
+Pool *
+package_pool(HyPackage pkg)
+{
+    return sack_pool(pkg->sack);
 }
 
 static unsigned long long
@@ -68,29 +75,29 @@ reldeps_for(HyPackage pkg, Id type)
 HyPackage
 package_clone(HyPackage pkg)
 {
-    return package_create(package_pool(pkg), package_id(pkg));
+    return package_create(package_sack(pkg), package_id(pkg));
 }
 
 HyPackage
-package_create(Pool *pool, Id id)
+package_create(HySack sack, Id id)
 {
     HyPackage pkg;
 
     pkg = solv_calloc(1, sizeof(*pkg));
     pkg->nrefs = 1;
-    pkg->pool = pool;
+    pkg->sack = sack;
     pkg->id = id;
     return pkg;
 }
 
 HyPackage
-package_from_solvable(Solvable *s)
+package_from_solvable(HySack sack, Solvable *s)
 {
     if (!s)
 	return NULL;
 
     Id p = s - s->repo->pool->solvables;
-    return package_create(s->repo->pool, p);
+    return package_create(sack, p);
 }
 
 HyPackageDelta
@@ -141,13 +148,13 @@ int
 hy_package_installed(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
-    return (pkg->pool->installed == s->repo);
+    return (package_pool(pkg)->installed == s->repo);
 }
 
 int
 hy_package_cmp(HyPackage pkg1, HyPackage pkg2)
 {
-    Pool *pool = pkg1->pool;
+    Pool *pool = package_pool(pkg1);
     Solvable *s1 = pool_id2solvable(pool, pkg1->id);
     Solvable *s2 = pool_id2solvable(pool, pkg2->id);
     const char *str1 = pool_id2str(pool, s1->name);
@@ -171,7 +178,7 @@ hy_package_evr_cmp(HyPackage pkg1, HyPackage pkg2)
     Solvable *s1 = get_solvable(pkg1);
     Solvable *s2 = get_solvable(pkg2);
 
-    return pool_evrcmp(pkg1->pool, s1->evr, s2->evr, EVRCMP_COMPARE);
+    return pool_evrcmp(package_pool(pkg1), s1->evr, s2->evr, EVRCMP_COMPARE);
 }
 
 char *
@@ -193,7 +200,7 @@ char *
 hy_package_get_nevra(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
-    return solv_strdup(pool_solvable2str(pkg->pool, s));
+    return solv_strdup(pool_solvable2str(package_pool(pkg), s));
 }
 
 char *
@@ -224,7 +231,7 @@ hy_package_get_release(HyPackage pkg)
 const char*
 hy_package_get_name(HyPackage pkg)
 {
-    Pool *pool = pkg->pool;
+    Pool *pool = package_pool(pkg);
     return pool_id2str(pool, get_solvable(pkg)->name);
 }
 
@@ -237,7 +244,7 @@ hy_package_get_packager(HyPackage pkg)
 const char*
 hy_package_get_arch(HyPackage pkg)
 {
-    Pool *pool = pkg->pool;
+    Pool *pool = package_pool(pkg);
     return pool_id2str(pool, get_solvable(pkg)->arch);
 }
 
@@ -279,7 +286,7 @@ hy_package_get_description(HyPackage pkg)
 const char*
 hy_package_get_evr(HyPackage pkg)
 {
-    Pool *pool = pkg->pool;
+    Pool *pool = package_pool(pkg);
     return pool_id2str(pool, get_solvable(pkg)->evr);
 }
 
@@ -396,7 +403,7 @@ hy_package_get_files(HyPackage pkg)
 HyPackageDelta
 hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr)
 {
-    Pool *pool = pkg->pool;
+    Pool *pool = package_pool(pkg);
     Solvable *s = get_solvable(pkg);
     HyPackageDelta delta = NULL;
     Dataiterator di;

@@ -103,7 +103,7 @@ package_init(_PackageObject *self, PyObject *args, PyObject *kwds)
 	return -1;
     self->sack = sack;
     Py_INCREF(self->sack);
-    self->package = package_create(sack_pool(csack), id);
+    self->package = package_create(csack, id);
     return 0;
 }
 

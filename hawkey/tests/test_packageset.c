@@ -33,10 +33,10 @@ packageset_fixture(void)
     fixture_all();
 
     HySack sack = test_globals.sack;
-    HyPackage pkg0 = package_create(sack_pool(sack), 0);
-    HyPackage pkg9 = package_create(sack_pool(sack), 9);
+    HyPackage pkg0 = package_create(sack, 0);
+    HyPackage pkg9 = package_create(sack, 9);
     int max = sack_last_solvable(sack);
-    HyPackage pkg_max = package_create(sack_pool(sack), max);
+    HyPackage pkg_max = package_create(sack, max);
 
     // init the global var
     pset = hy_packageset_create(sack);
@@ -59,8 +59,8 @@ START_TEST(test_clone)
     HySack sack = test_globals.sack;
     HyPackageSet pset2 = hy_packageset_clone(pset);
 
-    HyPackage pkg8 = package_create(sack_pool(sack), 8);
-    HyPackage pkg9 = package_create(sack_pool(sack), 9);
+    HyPackage pkg8 = package_create(sack, 8);
+    HyPackage pkg9 = package_create(sack, 9);
 
     fail_if(hy_packageset_has(pset2, pkg8));
     fail_unless(hy_packageset_has(pset2, pkg9));
@@ -74,13 +74,13 @@ END_TEST
 START_TEST(test_has)
 {
     HySack sack = test_globals.sack;
-    HyPackage pkg0 = package_create(sack_pool(sack), 0);
-    HyPackage pkg9 = package_create(sack_pool(sack), 9);
-    HyPackage pkg_max = package_create(sack_pool(sack), sack_last_solvable(sack));
+    HyPackage pkg0 = package_create(sack, 0);
+    HyPackage pkg9 = package_create(sack, 9);
+    HyPackage pkg_max = package_create(sack, sack_last_solvable(sack));
 
-    HyPackage pkg7 = package_create(sack_pool(sack), 7);
-    HyPackage pkg8 = package_create(sack_pool(sack), 8);
-    HyPackage pkg15 = package_create(sack_pool(sack), 15);
+    HyPackage pkg7 = package_create(sack, 7);
+    HyPackage pkg8 = package_create(sack, 8);
+    HyPackage pkg15 = package_create(sack, 15);
 
     fail_unless(hy_packageset_has(pset, pkg0));
     fail_unless(hy_packageset_has(pset, pkg9));
@@ -117,8 +117,8 @@ START_TEST(test_get_clone)
     hy_package_free(pkg9);
     hy_package_free(pkg_max);
 
-    HyPackage pkg8 = package_create(sack_pool(sack), 8);
-    HyPackage pkg11 = package_create(sack_pool(sack), 11);
+    HyPackage pkg8 = package_create(sack, 8);
+    HyPackage pkg11 = package_create(sack, 11);
     hy_packageset_add(pset, pkg8);
     hy_packageset_add(pset, pkg11);
     pkg8 = hy_packageset_get_clone(pset, 1);
@@ -141,11 +141,11 @@ START_TEST(test_get_pkgid)
 
     // add some more packages
     HyPackage pkg;
-    pkg = package_create(sack_pool(sack), 7);
+    pkg = package_create(sack, 7);
     hy_packageset_add(pset, pkg);
-    pkg = package_create(sack_pool(sack), 8);
+    pkg = package_create(sack, 8);
     hy_packageset_add(pset, pkg);
-    pkg = package_create(sack_pool(sack), 15);
+    pkg = package_create(sack, 15);
     hy_packageset_add(pset, pkg);
 
     Id id = -1;

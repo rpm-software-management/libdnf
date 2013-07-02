@@ -142,7 +142,6 @@ construct_solver(HyGoal goal, int flags)
 static HyPackageList
 list_results(HyGoal goal, Id type_filter1, Id type_filter2)
 {
-    Pool *pool = sack_pool(goal->sack);
     Queue transpkgs;
     Transaction *trans = goal->trans;
     HyPackageList plist;
@@ -173,7 +172,7 @@ list_results(HyGoal goal, Id type_filter1, Id type_filter2)
 	}
 
 	if (type == type_filter1 || (type_filter2 && type == type_filter2))
-	    hy_packagelist_push(plist, package_create(pool, p));
+	    hy_packagelist_push(plist, package_create(goal->sack, p));
     }
     return plist;
 }

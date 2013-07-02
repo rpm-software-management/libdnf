@@ -370,7 +370,7 @@ queue2plist(HySack sack, Queue *q, HyPackageList plist)
 
     for (i = 0; i < q->count; ++i) {
 	s = pool_id2solvable(sack_pool(sack), q->elements[i]);
-	hy_packagelist_push(plist, package_from_solvable(s));
+	hy_packagelist_push(plist, package_from_solvable(sack, s));
     }
 }
 

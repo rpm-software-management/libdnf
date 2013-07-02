@@ -166,7 +166,7 @@ hy_packageset_get_clone(HyPackageSet pset, int index)
     Id id = map_index2id(&pset->map, index, -1);
     if (id < 0)
 	return NULL;
-    return package_create(sack_pool(pset->sack), id);
+    return package_create(pset->sack, id);
 }
 
 int

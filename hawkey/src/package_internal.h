@@ -31,7 +31,7 @@
 struct _HyPackage {
     int nrefs;
     Id id;
-    Pool *pool;
+    HySack sack;
     void *userdata;
     HyUserdataDestroy destroy_func;
 };
@@ -41,10 +41,11 @@ struct _HyPackageDelta {
 };
 
 HyPackage package_clone(HyPackage pkg);
-HyPackage package_create(Pool *pool, Id id);
+HyPackage package_create(HySack sack, Id id);
 static inline Id package_id(HyPackage pkg) { return pkg->id; }
-static inline Pool *package_pool(HyPackage pkg) { return pkg->pool; }
-HyPackage package_from_solvable(Solvable *s);
+Pool *package_pool(HyPackage pkg);
+static inline HySack package_sack(HyPackage pkg) { return pkg->sack; }
+HyPackage package_from_solvable(HySack sack, Solvable *s);
 HyPackageDelta delta_create(void);
 
 #endif // HY_PACKAGE_INTERNAL_H
