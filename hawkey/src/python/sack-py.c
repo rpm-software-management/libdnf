@@ -67,6 +67,7 @@ new_package(PyObject *sack, Id id)
     } else {
 	package = PyObject_CallObject((PyObject*)&package_Type, arglist);
     }
+    Py_DECREF(arglist);
     return package;
 }
 
