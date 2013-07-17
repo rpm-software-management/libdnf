@@ -1,4 +1,4 @@
-%global gitrev 78b3aa0
+%global gitrev 996cd40
 %global libsolv_version 0.3.0
 
 Name:		hawkey
@@ -76,6 +76,11 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
+
+* Wed Jul 17 2013 Aleš Kozumplík <ales@redhat.com> - 0.3.15-1.git996cd40
+- py: fix memory leak in sack-py.c:new_package (Ales Kozumplik)
+- rebuild the package, the previous version does not correspond to an existing commit.
+
 * Mon Jun 24 2013 Aleš Kozumplík <ales@redhat.com> - 0.3.14-1.git78b3aa0
 - tests: test_get_files(): test against a package with files outside /usr/bin and /etc. (Ales Kozumplik)
 - py: simplify exception throwing in load_system_repo(). (Ales Kozumplik)
