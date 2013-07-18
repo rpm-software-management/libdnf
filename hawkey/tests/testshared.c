@@ -55,6 +55,11 @@ glob_for_repofiles(Pool *pool, const char *repo_name, const char *path)
 	goto fail;
     hy_repo_set_string(repo, HY_REPO_PRESTO_FN, word_vector.we_wordv[0]);
 
+    tmpl = pool_tmpjoin(pool, path, "/*updateinfo.xml.gz", NULL);
+    if (wordexp(tmpl, &word_vector, WRDE_REUSE) || word_vector.we_wordc < 1)
+	goto fail;
+    hy_repo_set_string(repo, HY_REPO_UPDATEINFO_FN, word_vector.we_wordv[0]);
+
     wordfree(&word_vector);
     return repo;
 

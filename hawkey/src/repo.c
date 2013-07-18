@@ -45,6 +45,9 @@ repo_update_state(HyRepo repo, enum _hy_repo_repodata which,
     case _HY_REPODATA_PRESTO:
 	repo->state_presto = state;
 	return;
+    case _HY_REPODATA_UPDATEINFO:
+	repo->state_updateinfo = state;
+	return;
     default:
 	assert(0);
     }
@@ -59,6 +62,8 @@ repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which)
 	return repo->filenames_repodata;
     case _HY_REPODATA_PRESTO:
 	return repo->presto_repodata;
+    case _HY_REPODATA_UPDATEINFO:
+	return repo->updateinfo_repodata;
     default:
 	assert(0);
 	return 0;
@@ -74,6 +79,9 @@ repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata)
 	return;
     case _HY_REPODATA_PRESTO:
 	repo->presto_repodata = repodata;
+	return;
+    case _HY_REPODATA_UPDATEINFO:
+	repo->updateinfo_repodata = repodata;
 	return;
     default:
 	assert(0);
@@ -117,6 +125,10 @@ hy_repo_set_string(HyRepo repo, int which, const char *str_val)
 	solv_free(repo->presto_fn);
 	repo->presto_fn = solv_strdup(str_val);
 	break;
+    case HY_REPO_UPDATEINFO_FN:
+	solv_free(repo->updateinfo_fn);
+	repo->updateinfo_fn = solv_strdup(str_val);
+	break;
     default:
 	assert(0);
     }
@@ -136,6 +148,8 @@ hy_repo_get_string(HyRepo repo, int which)
 	return repo->filelists_fn;
     case HY_REPO_PRESTO_FN:
 	return repo->presto_fn;
+    case HY_REPO_UPDATEINFO_FN:
+	return repo->updateinfo_fn;
     default:
 	assert(0);
     }

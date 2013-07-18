@@ -42,18 +42,22 @@ struct _HyRepo {
     char *primary_fn;
     char *filelists_fn;
     char *presto_fn;
+    char *updateinfo_fn;
     enum _hy_repo_state state_main;
     enum _hy_repo_state state_filelists;
     enum _hy_repo_state state_presto;
+    enum _hy_repo_state state_updateinfo;
     Id filenames_repodata;
     Id presto_repodata;
+    Id updateinfo_repodata;
     unsigned char checksum[CHKSUM_BYTES];
     Repo *libsolv_repo;
 };
 
 enum _hy_repo_repodata {
     _HY_REPODATA_FILENAMES,
-    _HY_REPODATA_PRESTO
+    _HY_REPODATA_PRESTO,
+    _HY_REPODATA_UPDATEINFO
 };
 
 HyRepo hy_repo_link(HyRepo repo);

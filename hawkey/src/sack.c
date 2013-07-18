@@ -36,6 +36,7 @@
 #include <solv/repo.h>
 #include <solv/repo_deltainfoxml.h>
 #include <solv/repo_repomdxml.h>
+#include <solv/repo_updateinfoxml.h>
 #include <solv/repo_rpmmd.h>
 #include <solv/repo_rpmdb.h>
 #include <solv/repo_solv.h>
@@ -312,6 +313,14 @@ static int
 load_presto_cb(Repo *repo, FILE *fp)
 {
     if (repo_add_deltainfoxml(repo, fp, 0))
+	return HY_E_LIBSOLV;
+    return 0;
+}
+
+static int
+load_updateinfo_cb(Repo *repo, FILE *fp)
+{
+    if (repo_add_updateinfoxml(repo, fp, 0))
 	return HY_E_LIBSOLV;
     return 0;
 }
@@ -762,6 +771,13 @@ hy_sack_load_yum_repo(HySack sack, HyRepo repo, int flags)
 	    goto finish;
 	if (repo->state_presto == _HY_LOADED_FETCH && build_cache)
 	    retval = write_ext(sack, repo, _HY_REPODATA_PRESTO, HY_EXT_PRESTO);
+    }
+    if (flags & HY_LOAD_UPDATEINFO) {
+	retval = load_ext(sack, repo, _HY_REPODATA_UPDATEINFO,
+			  HY_EXT_UPDATEINFO, HY_REPO_UPDATEINFO_FN,
+			  load_updateinfo_cb);
+	if (retval)
+	    goto finish;
     }
  finish:
     if (retval) {

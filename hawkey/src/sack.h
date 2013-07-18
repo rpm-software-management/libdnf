@@ -35,7 +35,8 @@ enum _hy_sack_sack_create_flags {
 enum _hy_sack_repo_load_flags {
     HY_BUILD_CACHE	= 1 << 0,
     HY_LOAD_FILELISTS	= 1 << 1,
-    HY_LOAD_PRESTO	= 1 << 2
+    HY_LOAD_PRESTO	= 1 << 2,
+    HY_LOAD_UPDATEINFO	= 1 << 3
 };
 
 HySack hy_sack_create(const char *cache_path, const char *arch,

@@ -137,6 +137,7 @@ void setup_yum_sack(HySack sack, const char *yum_repo_name)
     fail_if(hy_sack_load_yum_repo(sack, repo,
 				  HY_BUILD_CACHE |
 				  HY_LOAD_FILELISTS |
+				  HY_LOAD_UPDATEINFO |
 				  HY_LOAD_PRESTO));
     fail_unless(hy_sack_count(sack) == TEST_EXPECT_YUM_NSOLVABLES);
     hy_repo_free(repo);

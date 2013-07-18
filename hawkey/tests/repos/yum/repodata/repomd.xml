@@ -33,4 +33,10 @@
   <size>883</size>
   <open-size>2352</open-size>
 </data>
+<data type="updateinfo">
+  <checksum type="sha256">d4da087881909fc614788002db1ecd918840a733b951363eaf86b4c37667b2ff</checksum>
+  <open-checksum type="sha256">e05cfe3d6116a9cf16ed0d9e1c9d2293d7d0d5f0c1187222dcdf62c1acefe410</open-checksum>
+  <location xml:base="blah" href="repodata/updateinfo.xml.gz"/>
+  <timestamp>1284438472</timestamp>
+</data>
 </repomd>
