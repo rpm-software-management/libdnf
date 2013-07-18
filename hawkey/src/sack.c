@@ -591,8 +591,19 @@ hy_sack_add_cmdline_package(HySack sack, const char *fn)
 int
 hy_sack_count(HySack sack)
 {
-    // subtract two for meta solvable and system solvable, see pool_create()
-    return sack_pool(sack)->nsolvables - 2;
+    const char *tmp;
+    int cnt = 0;
+    int i;
+    Pool *pool = sack_pool(sack);
+    Solvable *s;
+
+    for (i = 2; i < pool->nsolvables; i++) {
+	s = pool->solvables + i;
+	tmp = pool_id2str(pool, s->name);
+	if (s->repo && strncmp(tmp, "patch:", 6) != 0)
+	    cnt++;
+    }
+    return cnt;
 }
 
 void
