@@ -417,7 +417,9 @@ find_update(Pool *pool, HyPackage pkg)
         Solvable *iscand = pool->solvables + p;
         if (iscand->name != s->name || iscand->arch != s->arch)
             continue;
-        if (!is || pool_evrcmp(pool, is->evr, iscand->evr, EVRCMP_COMPARE) < 0)
+        if (iscand->repo != pool->installed)
+            continue;
+        if (!is || pool_evrcmp(pool, is->evr, iscand->evr, EVRCMP_COMPARE) > 0)
             is = iscand;
     }
 
