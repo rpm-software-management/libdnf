@@ -169,5 +169,6 @@ hy_repo_free(HyRepo repo)
     solv_free(repo->primary_fn);
     solv_free(repo->filelists_fn);
     solv_free(repo->presto_fn);
+    solv_free(repo->updateinfo_fn);
     solv_free(repo);
 }
