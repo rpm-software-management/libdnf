@@ -212,7 +212,7 @@ START_TEST(test_get_updateinfo)
     HySack sack = test_globals.sack;
     HyPackage pkg = by_name(sack, "tour");
 
-    fail_unless(strcmp(hy_package_get_update_severity(pkg), "bugfix") == 0);
+    fail_unless(hy_package_get_update_severity(pkg) == HY_UPDATE_SEVERITY_BUGFIX);
     fail_unless(strcmp(hy_package_get_update_name(pkg), "FEDORA-2008-9969") == 0);
     fail_unless(strcmp(hy_package_get_update_description(pkg), "An example update to the tour package.") == 0);
 

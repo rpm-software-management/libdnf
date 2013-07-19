@@ -443,7 +443,27 @@ find_update(Pool *pool, HyPackage pkg)
     return retval;
 }
 
-const char *
+static HyUpdateSeverity
+update_severity_to_enum (const char *severity)
+{
+    if (severity == NULL)
+        return HY_UPDATE_SEVERITY_UNKNOWN;
+    if (!strcmp (severity, "bugfix"))
+        return HY_UPDATE_SEVERITY_BUGFIX;
+    if (!strcmp (severity, "low"))
+        return HY_UPDATE_SEVERITY_LOW;
+    if (!strcmp (severity, "enhancement"))
+        return HY_UPDATE_SEVERITY_ENHANCEMENT;
+    if (!strcmp (severity, "normal"))
+        return HY_UPDATE_SEVERITY_NORMAL;
+    if (!strcmp (severity, "important"))
+        return HY_UPDATE_SEVERITY_IMPORTANT;
+    if (!strcmp (severity, "security"))
+        return HY_UPDATE_SEVERITY_SECURITY;
+    return HY_UPDATE_SEVERITY_UNKNOWN;
+}
+
+HyUpdateSeverity
 hy_package_get_update_severity(HyPackage pkg)
 {
     const char *tmp;
@@ -452,7 +472,7 @@ hy_package_get_update_severity(HyPackage pkg)
 
     p = find_update(pool, pkg);
     if (!p)
-        return NULL;
+        return HY_UPDATE_SEVERITY_UNKNOWN;
 
     /* libsolv calls the <update status="stable"> a patch SOLVABLE_PATCHCATEGORY
      * and the <severity>foo</severity> an UPDATE_SEVERITY; we only use the
@@ -460,7 +480,7 @@ hy_package_get_update_severity(HyPackage pkg)
     tmp = pool_lookup_str(pool, p, UPDATE_SEVERITY);
     if (!tmp)
         tmp = pool_lookup_str(pool, p, SOLVABLE_PATCHCATEGORY);
-    return tmp;
+    return update_severity_to_enum (tmp);
 }
 
 const char *

@@ -28,6 +28,16 @@ extern "C" {
 // hawkey
 #include "types.h"
 
+typedef enum {
+	HY_UPDATE_SEVERITY_SECURITY,	/* ordered by rough importance */
+	HY_UPDATE_SEVERITY_IMPORTANT,
+	HY_UPDATE_SEVERITY_BUGFIX,
+	HY_UPDATE_SEVERITY_NORMAL,
+	HY_UPDATE_SEVERITY_ENHANCEMENT,
+	HY_UPDATE_SEVERITY_LOW,
+	HY_UPDATE_SEVERITY_UNKNOWN,
+} HyUpdateSeverity;
+
 /* public */
 void hy_package_free(HyPackage pkg);
 HyPackage hy_package_link(HyPackage pkg);
@@ -67,7 +77,7 @@ HyReldepList hy_package_get_provides(HyPackage pkg);
 HyReldepList hy_package_get_requires(HyPackage pkg);
 
 HyStringArray hy_package_get_files(HyPackage pkg);
-const char *hy_package_get_update_severity(HyPackage pkg);
+HyUpdateSeverity hy_package_get_update_severity(HyPackage pkg);
 const char *hy_package_get_update_name(HyPackage pkg);
 const char *hy_package_get_update_description(HyPackage pkg);
 unsigned long long hy_package_get_update_issued(HyPackage pkg);
