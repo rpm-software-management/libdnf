@@ -36,6 +36,7 @@ enum _hy_errors_e {
     HY_E_VALIDATION,		// validation check failed
     HY_E_SELECTOR,		// ill-specified selector
     HY_E_NO_SOLUTION,		// goal found no solutions
+    HY_E_NO_CAPABILITY,	// the capability was not available
 };
 
 extern __thread int hy_errno;

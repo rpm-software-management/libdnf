@@ -257,7 +257,7 @@ load_ext(HySack sack, HyRepo hrepo, int which_repodata,
 
     if (fn == NULL) {
 	HY_LOG_ERROR("load_ext(): no %d string for %s", which_filename, name);
-	return HY_E_FAILED;
+	return HY_E_NO_CAPABILITY;
     }
 
     char *fn_cache =  hy_sack_give_cache_fn(sack, name, suffix);
@@ -754,6 +754,11 @@ hy_sack_load_yum_repo(HySack sack, HyRepo repo, int flags)
 	retval = load_ext(sack, repo, _HY_REPODATA_FILENAMES,
 			  HY_EXT_FILENAMES, HY_REPO_FILELISTS_FN,
 			  load_filelists_cb);
+	/* allow missing files */
+	if (retval == HY_E_NO_CAPABILITY) {
+	    HY_LOG_INFO("no filelists metadata available for %s", repo->name);
+	    retval = 0;
+	}
 	if (retval)
 	    goto finish;
 	if (repo->state_filelists == _HY_LOADED_FETCH && build_cache) {
@@ -767,6 +772,11 @@ hy_sack_load_yum_repo(HySack sack, HyRepo repo, int flags)
 	retval = load_ext(sack, repo, _HY_REPODATA_PRESTO,
 			  HY_EXT_PRESTO, HY_REPO_PRESTO_FN,
 			  load_presto_cb);
+	/* allow missing files */
+	if (retval == HY_E_NO_CAPABILITY) {
+	    HY_LOG_INFO("no presto metadata available for %s", repo->name);
+	    retval = 0;
+	}
 	if (retval)
 	    goto finish;
 	if (repo->state_presto == _HY_LOADED_FETCH && build_cache)
@@ -776,6 +786,11 @@ hy_sack_load_yum_repo(HySack sack, HyRepo repo, int flags)
 	retval = load_ext(sack, repo, _HY_REPODATA_UPDATEINFO,
 			  HY_EXT_UPDATEINFO, HY_REPO_UPDATEINFO_FN,
 			  load_updateinfo_cb);
+	/* allow missing files */
+	if (retval == HY_E_NO_CAPABILITY) {
+	    HY_LOG_INFO("no updateinfo available for %s", repo->name);
+	    retval = 0;
+	}
 	if (retval)
 	    goto finish;
     }
