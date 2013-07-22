@@ -1,4 +1,4 @@
-%global gitrev 996cd40
+%global gitrev 4e79abc
 %global libsolv_version 0.3.0
 
 Name:		hawkey
@@ -76,6 +76,15 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{python_sitearch}/
 
 %changelog
+
+* Mon Jul 22 2013 Aleš Kozumplík <ales@redhat.com> - 0.3.16-1.git4e79abc
+- Correctly find the installed package when looking for updates (Richard Hughes)
+- Change the hy_package_get_update_severity() API to return an enum value (Richard Hughes)
+- Do not enforce all repos load all kinds of specified metadata (Richard Hughes)
+- Fix a tiny memory leak introduced in 68ebca4a80aec636d30a9fd4fb9aa2d9bf9a8eca (Richard Hughes)
+- Add methods to get details about package updates (Richard Hughes)
+- Add updateinfo support to hawkey, using the existing parser in libsolv (Richard Hughes)
+- Do not count updates when counting the number of packages in a sack (Richard Hughes)
 
 * Wed Jul 17 2013 Aleš Kozumplík <ales@redhat.com> - 0.3.15-1.git996cd40
 - py: fix memory leak in sack-py.c:new_package (Ales Kozumplik)
