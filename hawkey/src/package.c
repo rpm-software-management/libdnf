@@ -317,9 +317,21 @@ hy_package_get_url(HyPackage pkg)
 }
 
 unsigned long long
+hy_package_get_downloadsize(HyPackage pkg)
+{
+    return lookup_num(pkg, SOLVABLE_DOWNLOADSIZE);
+}
+
+unsigned long long
 hy_package_get_epoch(HyPackage pkg)
 {
     return pool_get_epoch(package_pool(pkg), hy_package_get_evr(pkg));
+}
+
+unsigned long long
+hy_package_get_installsize(HyPackage pkg)
+{
+    return lookup_num(pkg, SOLVABLE_INSTALLSIZE);
 }
 
 unsigned long long

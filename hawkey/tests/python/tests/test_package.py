@@ -116,6 +116,11 @@ class ChecksumsTest(base.TestCase):
         self.assertRaises(AttributeError, lambda: pkg.chksum)
         self.assertRaises(AttributeError, lambda: pkg.hdr_chksum)
 
+    def test_sizes(self):
+        pkg = base.by_name(self.sack, "mystery-devel")
+        self.assertEqual(pkg.installsize, 59)
+        self.assertEqual(pkg.downloadsize, 2329)
+
 class BaseurlTest(base.TestCase):
     def setUp(self):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
