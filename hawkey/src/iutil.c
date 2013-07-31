@@ -20,6 +20,7 @@
 
 #define _GNU_SOURCE
 #include <assert.h>
+#include <fcntl.h>
 #include <pwd.h>
 #include <string.h>
 #include <unistd.h>
@@ -36,10 +37,12 @@
 #include <solv/solverdebug.h>
 
 // hawkey
+#include "errno.h"
 #include "iutil.h"
 #include "package_internal.h"
 #include "sack_internal.h"
 
+#define BUF_BLOCK 4096
 #define CHKSUM_TYPE REPOKEY_TYPE_SHA256
 #define CHKSUM_IDENT "H000"
 #define CACHEDIR_PERMISSIONS 0700
@@ -256,6 +259,36 @@ count_nullt_array(const char **a)
     const char **strp = a;
     while (*strp) strp++;
     return strp - a;
+}
+
+char *
+read_whole_file(const char *path)
+{
+    int fd = open(path, O_RDONLY);
+    int size = BUF_BLOCK + 1, total = 0, ret;
+    char *contents = solv_malloc(size), *p = contents;
+
+    while ((ret = read(fd, p, BUF_BLOCK))) {
+	if (ret < 0) {
+	    hy_errno = HY_E_IO;
+	    goto finish;
+	}
+	total += ret;
+	if (total + BUF_BLOCK >= size) {
+	    size += BUF_BLOCK;
+	    contents = solv_realloc(contents, size);
+	}
+	p = contents + total;
+    }
+    contents[total] = '\0';
+
+ finish:
+    close(fd);
+    if (ret < 0) {
+	solv_free(contents);
+	return NULL;
+    }
+    return contents;
 }
 
 int

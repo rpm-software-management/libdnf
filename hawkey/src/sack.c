@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
@@ -56,6 +57,11 @@
 
 #define DEFAULT_CACHE_ROOT "/var/cache/hawkey"
 #define DEFAULT_CACHE_USER "/var/tmp/hawkey"
+
+enum _hy_sack_cpu_flags {
+    ARM_NEON = 1 << 0,
+    ARM_HFP  = 1 << 1
+};
 
 static int
 current_rpmdb_checksum(Pool *pool, unsigned char csout[CHKSUM_BYTES])
@@ -107,6 +113,31 @@ free_map_fully(Map *m)
     return NULL;
 }
 
+static int
+parse_cpu_flags(int *flags, const char *section)
+{
+    char *cpuinfo = read_whole_file("/proc/cpuinfo");
+    if (cpuinfo == NULL)
+	return hy_get_errno();
+
+    char *features = strstr(cpuinfo, section);
+    if (features != NULL) {
+	char *saveptr;
+	features = strtok_r(features, "\n", &saveptr);
+	char *tok = strtok_r(features, " ", &saveptr);
+	while (tok) {
+	    if (!strcmp(tok, "neon"))
+		*flags |= ARM_NEON;
+	    else if (!strcmp(tok, "vfpv3"))
+		*flags |= ARM_HFP;
+	    tok = strtok_r(NULL, " ", &saveptr);
+	}
+    }
+
+    solv_free(cpuinfo);
+    return 0;
+}
+
 static void
 recompute_excludes(HySack sack)
 {
@@ -130,13 +161,24 @@ setarch(HySack sack, const char *arch)
     struct utsname un;
 
     if (arch == NULL) {
-	if (uname(&un))
-	    {
-		HY_LOG_ERROR("setarch failed(): %s", strerror(errno));
+	if (uname(&un)) {
+	    HY_LOG_ERROR("setarch failed(): %s", strerror(errno));
+	    return HY_E_FAILED;
+	}
+	arch = un.machine;
+	if (!strcmp(arch, "armv7l")) {
+	    int flags = 0;
+	    if (parse_cpu_flags(&flags, "Features")) {
+		HY_LOG_ERROR("parse_cpu_flags() failed in setarch().");
 		return HY_E_FAILED;
 	    }
-	arch = un.machine;
+	    if (flags & (ARM_NEON | ARM_HFP))
+		strcpy(un.machine, "armv7hnl");
+	    else if (flags & ARM_HFP)
+		strcpy(un.machine, "armv7hl");
+	}
     }
+
     HY_LOG_INFO("Architecture is: %s", arch);
     pool_setarch(pool, arch);
     if (!strcmp(arch, "noarch"))
