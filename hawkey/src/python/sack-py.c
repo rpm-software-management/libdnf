@@ -375,8 +375,10 @@ load_yum_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 	flags |= HY_LOAD_FILELISTS;
     if (load_presto)
 	flags |= HY_LOAD_PRESTO;
+    Py_BEGIN_ALLOW_THREADS;
     if (hy_sack_load_yum_repo(self->sack, crepo, flags))
 	ret = hy_get_errno();
+    Py_END_ALLOW_THREADS;
     switch (ret) {
     case 0:
 	Py_RETURN_NONE;
