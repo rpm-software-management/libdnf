@@ -786,6 +786,23 @@ START_TEST(test_goal_update_vendor)
 }
 END_TEST
 
+START_TEST(test_goal_forcebest_arches)
+{
+    HySack sack = test_globals.sack;
+    HyGoal goal = hy_goal_create(sack);
+    HySelector sltr = hy_selector_create(sack);
+
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "gun");
+    fail_if(hy_goal_upgrade_selector(goal, sltr));
+    fail_if(hy_goal_run_flags(goal, HY_FORCE_BEST));
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
+
+    hy_selector_free(sltr);
+    hy_goal_free(goal);
+}
+END_TEST
+
 Suite *
 goal_suite(void)
 {
@@ -842,6 +859,11 @@ goal_suite(void)
     tc = tcase_create("Vendor");
     tcase_add_unchecked_fixture(tc, fixture_with_vendor, teardown);
     tcase_add_test(tc, test_goal_update_vendor);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("Forcebest");
+    tcase_add_unchecked_fixture(tc, fixture_with_forcebest, teardown);
+    tcase_add_test(tc, test_goal_forcebest_arches);
     suite_add_tcase(s, tc);
 
     return s;

@@ -135,6 +135,8 @@ construct_solver(HyGoal goal, int flags)
 
     /* no vendor locking */
     solver_set_flag(solv, SOLVER_FLAG_ALLOW_VENDORCHANGE, 1);
+    /* no arch change for forcebest */
+    solver_set_flag(solv, SOLVER_FLAG_BEST_OBEY_POLICY, 1);
     goal->solv = solv;
     return job;
 }

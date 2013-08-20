@@ -53,6 +53,10 @@ baby
 foolish-grin
 * in the "vendor" repo, for testing vendor change
 
+gun
+* installed only in the i686 version
+* testing forcebest/arches interaction
+
 === repos/yum ===
 
 To test loading of yum repos we need an actual yum repo. It currently consists
