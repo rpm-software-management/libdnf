@@ -1,9 +1,9 @@
-%global gitrev 1e5a593
+%global gitrev 0e5506a
 %global libsolv_version 0.3.0
 
 Name:		hawkey
 Version:	@VERSION@
-Release:	2.git%{gitrev}%{?dist}
+Release:	1.git%{gitrev}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
@@ -77,7 +77,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 %changelog
 
-* Wed Jul 31 2013 Aleš Kozumplík <ales@redhat.com> - 0.3.16-2.git1e5a593
+* Wed Jul 31 2013 Aleš Kozumplík <ales@redhat.com> - 0.4.0-1.git0e5506a
 - Detect the variant of armv7l. (RhBug:915269) (Ales Kozumplik)
 - add package.downloadsize and package.installsize. (Ales Kozumplik)
 
