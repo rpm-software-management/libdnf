@@ -38,6 +38,8 @@
 #include "packagedelta-py.h"
 #include "sack-py.h"
 
+#include "pycomp.h"
+
 typedef struct {
     PyObject_HEAD
     HyPackage package;
@@ -107,15 +109,55 @@ package_init(_PackageObject *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-int
-package_py_cmp(_PackageObject *self, _PackageObject *other)
+PyObject *
+package_py_cmp(PyObject *self, PyObject *other, int op)
 {
-    long cmp = hy_package_cmp(self->package, other->package);
-    if (cmp > 0)
-	cmp = 1;
-    else if (cmp < 0)
-	cmp = -1;
-    return cmp;
+    HyPackage self_package, other_package;
+
+    if (!package_converter(self, &self_package) ||
+        !package_converter(other, &other_package)) {
+        return NULL;
+    }
+
+    long cmp = hy_package_cmp(self_package, other_package);
+
+    if (cmp == 0) {
+        switch (op) {
+            case Py_LT: // <
+            case Py_NE: // !=
+            case Py_GT: // >
+                return Py_False;
+            case Py_EQ: // ==
+            case Py_LE: // <=
+            case Py_GE: // >=
+                return Py_True;
+        }
+    }
+    else if (cmp < 0) {
+        switch (op) {
+            case Py_LT: // <
+            case Py_LE: // <=
+            case Py_NE: // !=
+                return Py_True;
+            case Py_GT: // >
+            case Py_EQ: // ==
+            case Py_GE: // >=
+                return Py_False;
+        }
+    }
+    else {
+        switch (op) {
+            case Py_LT: // <
+            case Py_LE: // <=
+            case Py_EQ: // ==
+                return Py_False;
+            case Py_NE: // !=
+            case Py_GT: // >
+            case Py_GE: // >=
+                return Py_True;
+        }
+    }
+    return Py_NotImplemented;
 }
 
 static PyObject *
@@ -232,7 +274,17 @@ get_chksum(_PackageObject *self, void *closure)
 	PyErr_SetString(PyExc_AttributeError, "No such checksum.");
 	return NULL;
     }
-    return Py_BuildValue("is#", type, cs, checksum_type2length(type));
+
+    PyObject *res;
+    int checksum_length = checksum_type2length(type);
+
+#if PY_MAJOR_VERSION < 3
+    res = Py_BuildValue("is#", type, cs, checksum_length);
+#else
+    res = Py_BuildValue("iy#", type, cs, checksum_length);
+#endif
+
+    return res;
 }
 
 static PyGetSetDef package_getsetters[] = {
@@ -315,8 +367,7 @@ static struct PyMethodDef package_methods[] = {
 };
 
 PyTypeObject package_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,				/*ob_size*/
+    PyVarObject_HEAD_INIT(NULL, 0)
     "_hawkey.Package",		/*tp_name*/
     sizeof(_PackageObject),	/*tp_basicsize*/
     0,				/*tp_itemsize*/
@@ -324,7 +375,7 @@ PyTypeObject package_Type = {
     0,				/*tp_print*/
     0,				/*tp_getattr*/
     0,				/*tp_setattr*/
-    (cmpfunc)package_py_cmp,	/*tp_compare*/
+    0,				/*tp_compare*/
     (reprfunc)package_repr,	/*tp_repr*/
     0,				/*tp_as_number*/
     0,				/*tp_as_sequence*/
@@ -339,7 +390,7 @@ PyTypeObject package_Type = {
     "Package object",		/* tp_doc */
     0,				/* tp_traverse */
     0,				/* tp_clear */
-    0,				/* tp_richcompare */
+    (richcmpfunc) package_py_cmp,	/* tp_richcompare */
     0,				/* tp_weaklistoffset */
     0,				/* tp_iter */
     0,                         	/* tp_iternext */

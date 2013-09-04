@@ -18,7 +18,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-import base
+from __future__ import absolute_import
+from sys import version_info as python_version
+
+from . import base
 import hawkey
 import hawkey.test
 
@@ -82,37 +85,37 @@ class SubjectTest(base.TestCase):
         subj = hawkey.Subject(INP_FOF)
         nevras = subj.nevra_possibilities()
         # the epoch in INP_FOF nicely limits the nevra_possibilities:
-        self.assertEqual(nevras.next(), hawkey.NEVRA(name='four-of-fish', epoch=8,
+        self.assertEqual(next(nevras), hawkey.NEVRA(name='four-of-fish', epoch=8,
                                                      version='3.6.9',
                                                      release='11.fc100',
                                                      arch='x86_64'))
-        self.assertEqual(nevras.next(), hawkey.NEVRA(name='four-of-fish', epoch=8,
+        self.assertEqual(next(nevras), hawkey.NEVRA(name='four-of-fish', epoch=8,
                                                      version='3.6.9',
                                                      release='11.fc100.x86_64',
                                                      arch=None))
-        self.assertRaises(StopIteration, nevras.next)
+        self.assertRaises(StopIteration, next, nevras)
 
         subj = hawkey.Subject(INP_FOF_NOEPOCH)
         nevras = subj.nevra_possibilities()
-        self.assertEqual(nevras.next(), hawkey.NEVRA(name='four-of-fish',
+        self.assertEqual(next(nevras), hawkey.NEVRA(name='four-of-fish',
                                                      epoch=None, version='3.6.9',
                                                      release='11.fc100',
                                                      arch='x86_64'))
-        self.assertEqual(nevras.next(), hawkey.NEVRA(name='four-of-fish',
+        self.assertEqual(next(nevras), hawkey.NEVRA(name='four-of-fish',
                                                      epoch=None, version='3.6.9',
                                                      release='11.fc100.x86_64',
                                                      arch=None))
-        self.assertEqual(nevras.next(), hawkey.NEVRA(name='four-of-fish-3.6.9',
+        self.assertEqual(next(nevras), hawkey.NEVRA(name='four-of-fish-3.6.9',
                                                      epoch=None,
                                                      version='11.fc100.x86_64',
                                                      release=None, arch=None))
-        self.assertEqual(nevras.next(), hawkey.NEVRA(
+        self.assertEqual(next(nevras), hawkey.NEVRA(
                 name='four-of-fish-3.6.9-11.fc100', epoch=None, version=None,
                 release=None, arch='x86_64'))
-        self.assertEqual(nevras.next(), hawkey.NEVRA(
+        self.assertEqual(next(nevras), hawkey.NEVRA(
                 name='four-of-fish-3.6.9-11.fc100.x86_64', epoch=None,
                 version=None, release=None, arch=None))
-        self.assertRaises(StopIteration, nevras.next)
+        self.assertRaises(StopIteration, next, nevras)
 
 class SubjectRealPossibilitiesTest(base.TestCase):
     def setUp(self):
@@ -129,29 +132,31 @@ class SubjectRealPossibilitiesTest(base.TestCase):
     def test_nevra(self):
         subj = hawkey.Subject("pilchard-1.2.4-1.x86_64")
         nevra_possibilities = subj.nevra_possibilities_real(self.sack)
-        nevra = nevra_possibilities.next()
+        nevra = next(nevra_possibilities)
+            
         self.assertEqual(nevra, hawkey.NEVRA(name='pilchard', epoch=None,
                                              version='1.2.4', release='1',
                                              arch='x86_64'))
-        nevra = nevra_possibilities.next()
+        nevra = next(nevra_possibilities)
         self.assertEqual(nevra, hawkey.NEVRA(name='pilchard', epoch=None,
                                              version='1.2.4', release='1.x86_64',
                                              arch=None))
-        self.assertRaises(StopIteration, nevra_possibilities.next)
+        self.assertRaises(StopIteration, next, nevra_possibilities)
 
     def test_dash(self):
         """ Test that if a dash is present in otherwise simple subject, we take
             it as a name as the first guess.
         """
         subj = hawkey.Subject("penny-lib")
-        nevra = subj.nevra_possibilities_real(self.sack).next()
+        nevra = next(subj.nevra_possibilities_real(self.sack))
         self.assertEqual(nevra, hawkey.NEVRA(name='penny-lib', epoch=None,
                                              version=None, release=None,
                                              arch=None))
 
     def test_dash_version(self):
         subj = hawkey.Subject("penny-lib-4")
-        nevra = subj.nevra_possibilities_real(self.sack).next()
+        
+        nevra = next(subj.nevra_possibilities_real(self.sack))
         self.assertEqual(nevra, hawkey.NEVRA(name="penny-lib", epoch=None,
                                              version='4', release=None,
                                              arch=None))
@@ -159,7 +164,7 @@ class SubjectRealPossibilitiesTest(base.TestCase):
     def test_two_dashes(self):
         """ Even two dashes can happen, make sure they can still form a name. """
         subj = hawkey.Subject("penny-lib-devel")
-        nevra = subj.nevra_possibilities_real(self.sack).next()
+        nevra = next(subj.nevra_possibilities_real(self.sack))
         self.assertEqual(nevra, hawkey.NEVRA(name='penny-lib-devel', epoch=None,
                                              version=None, release=None,
                                              arch=None))
@@ -176,15 +181,15 @@ class SubjectRealPossibilitiesTest(base.TestCase):
 
     def test_reldep(self):
         subj = hawkey.Subject("P-lib")
-        self.assertRaises(StopIteration, subj.nevra_possibilities_real(self.sack).next)
+        self.assertRaises(StopIteration, next, subj.nevra_possibilities_real(self.sack))
         reldeps = subj.reldep_possibilities_real(self.sack)
-        reldep = reldeps.next()
+        reldep = next(reldeps)
         self.assertEqual(str(reldep), "P-lib")
-        self.assertRaises(StopIteration, reldeps.next)
+        self.assertRaises(StopIteration, next, reldeps)
 
     def test_icase(self):
         subj = hawkey.Subject("penny-lib-DEVEL")
-        nevra = subj.nevra_possibilities_real(self.sack, icase=True).next()
+        nevra = next(subj.nevra_possibilities_real(self.sack, icase=True))
         self.assertEqual(nevra.name, "penny-lib-DEVEL")
 
     def test_nonexistent_version(self):

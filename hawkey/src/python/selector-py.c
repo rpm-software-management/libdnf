@@ -30,6 +30,8 @@
 #include "sack-py.h"
 #include "selector-py.h"
 
+#include "pycomp.h"
+
 typedef struct {
     PyObject_HEAD
     HySelector sltr;
@@ -119,8 +121,7 @@ static struct PyMethodDef selector_methods[] = {
 };
 
 PyTypeObject selector_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,				/*ob_size*/
+    PyVarObject_HEAD_INIT(NULL, 0)
     "_hawkey.Selector",		/*tp_name*/
     sizeof(_SelectorObject),	/*tp_basicsize*/
     0,				/*tp_itemsize*/

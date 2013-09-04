@@ -39,6 +39,8 @@
 #include "selector-py.h"
 #include "sack-py.h"
 
+#include "pycomp.h"
+
 typedef struct {
     PyObject_HEAD
     HyGoal goal;
@@ -548,8 +550,7 @@ static struct PyMemberDef goal_members[] = {
 };
 
 PyTypeObject goal_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,				/*ob_size*/
+    PyVarObject_HEAD_INIT(NULL, 0)
     "_hawkey.Goal",		/*tp_name*/
     sizeof(_GoalObject),	/*tp_basicsize*/
     0,				/*tp_itemsize*/

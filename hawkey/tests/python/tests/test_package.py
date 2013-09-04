@@ -18,7 +18,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-import base
+from __future__ import absolute_import
+from sys import version_info as python_version
+
+from . import base
 import hawkey
 import hawkey.test
 
@@ -62,7 +65,7 @@ class PackageTest(base.TestCase):
 
     def test_conflicts(self):
         pkg = base.by_name(self.sack, 'dog')
-        self.assertItemsEqual(map(str, pkg.conflicts), ('custard = 1.1',))
+        self.assertItemsEqual(list(map(str, pkg.conflicts)), ('custard = 1.1',))
 
     def test_files(self):
         pkg = base.by_name(self.sack, 'fool')
@@ -105,8 +108,12 @@ class ChecksumsTest(base.TestCase):
     def test_checksum(self):
         (chksum_type, chksum) = self.pkg.chksum
         self.assertEqual(len(chksum), 32)
-        self.assertEqual(chksum[0], '\x2e')
-        self.assertEqual(chksum[31], '\xf5')
+        if python_version.major < 3:
+            self.assertEqual(chksum[0], b'\x2e')
+            self.assertEqual(chksum[31], b'\xf5')
+        else:
+            self.assertEqual(chksum[0], 0x2e)
+            self.assertEqual(chksum[31], 0xf5)
         self.assertEqual(chksum_type, hawkey.CHKSUM_SHA256)
 
     def test_checksum_fail(self):

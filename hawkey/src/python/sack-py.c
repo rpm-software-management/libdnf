@@ -36,6 +36,8 @@
 #include "repo-py.h"
 #include "sack-py.h"
 
+#include "pycomp.h"
+
 typedef struct {
     PyObject_HEAD
     HySack sack;
@@ -95,10 +97,15 @@ sack_converter(PyObject *o, HySack *sack_ptr)
 static PyObject *
 repo_enabled(_SackObject *self, PyObject *reponame, int enabled)
 {
-    char *cname = PyString_AsString(reponame);
-    if (cname == NULL)
-	return NULL;
+    PyObject *tmp_py_str = NULL;
+    char *cname = pycomp_get_string(reponame, tmp_py_str);
+
+    if (cname == NULL) {
+        Py_XDECREF(tmp_py_str);
+        return NULL;
+    }
     hy_sack_repo_enabled(self->sack, cname, enabled);
+    Py_XDECREF(tmp_py_str);
     Py_RETURN_NONE;
 }
 
@@ -198,16 +205,24 @@ set_installonly(_SackObject *self, PyObject *obj, void *unused)
 
     const int len = PySequence_Length(obj);
     const char *strings[len + 1];
+    PyObject *tmp_py_str[len];
 
     for (int i = 0; i < len; ++i) {
 	PyObject *item = PySequence_GetItem(obj, i);
-	strings[i] = PyString_AsString(item);
+        tmp_py_str[i] = NULL;
+        strings[i] = NULL;
+        if (PyUnicode_Check(item) || PyString_Check(item)) {
+            strings[i] = pycomp_get_string(item, tmp_py_str[i]);
+        }
 	Py_DECREF(item);
-	if (strings[i] == NULL)
-	    return -1;
+	if (strings[i] == NULL) {
+            pycomp_free_tmp_array(tmp_py_str, i);
+            return -1;
+        }
     }
     strings[len] = NULL;
     hy_sack_set_installonly(self->sack, strings);
+    pycomp_free_tmp_array(tmp_py_str, len - 1);
 
     return 0;
 }
@@ -428,8 +443,7 @@ PySequenceMethods sack_sequence = {
 };
 
 PyTypeObject sack_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,				/*ob_size*/
+    PyVarObject_HEAD_INIT(NULL, 0)
     "_hawkey.Sack",		/*tp_name*/
     sizeof(_SackObject),	/*tp_basicsize*/
     0,				/*tp_itemsize*/

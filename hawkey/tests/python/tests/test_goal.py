@@ -18,7 +18,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-import base
+from __future__ import absolute_import
+
+from . import base
 import hawkey
 import hawkey.test
 
@@ -83,7 +85,7 @@ class GoalTest(base.TestCase):
         self.assertLength(goal.list_reinstalls(), 1)
         reinstall = goal.list_reinstalls()[0]
         obsoleted = goal.obsoleted_by_package(reinstall)
-        self.assertItemsEqual(map(str, obsoleted), ("fool-1-3.noarch", ))
+        self.assertItemsEqual(list(map(str, obsoleted)), ("fool-1-3.noarch", ))
 
     def test_req(self):
         goal = hawkey.Goal(self.sack)
@@ -150,6 +152,7 @@ class GoalRunAll(base.TestCase):
         collector = Collector()
         self.assertTrue(self.goal.run_all(collector.new_solution_cb))
         self.assertItemsEqual(collector.pkgs, [pkg_a, pkg_b, pkg_c])
+
 
     def test_cb_borked(self):
         """ Check exceptions are propagated from the callback. """

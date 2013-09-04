@@ -38,6 +38,8 @@
 #include "sack-py.h"
 #include "selector-py.h"
 
+#include "pycomp.h"
+
 static PyObject *
 py_chksum_name(PyObject *unused, PyObject *args)
 {
@@ -58,11 +60,16 @@ py_chksum_name(PyObject *unused, PyObject *args)
 static PyObject *
 py_chksum_type(PyObject *unused, PyObject *str_o)
 {
-    const char *str = PyString_AsString(str_o);
-    if (str == NULL)
-	return NULL;
+    PyObject *tmp_py_str = NULL;
+    const char *str = pycomp_get_string(str_o, tmp_py_str);
 
+    if (str == NULL) {
+        Py_XDECREF(tmp_py_str);
+        return NULL;
+    }
     int type = hy_chksum_type(str);
+    Py_XDECREF(tmp_py_str);
+
     if (type == 0) {
 	PyErr_Format(PyExc_ValueError, "unrecognized chksum type: %s", str);
 	return NULL;
@@ -73,13 +80,20 @@ py_chksum_type(PyObject *unused, PyObject *str_o)
 static PyObject *
 py_split_nevra(PyObject *unused, PyObject *nevra_o)
 {
-    const char *nevra = PyString_AsString(nevra_o);
-    if (nevra == NULL)
-	return NULL;
+    PyObject *tmp_py_str = NULL;
+    const char *nevra = pycomp_get_string(nevra_o, tmp_py_str);
+
+    if (nevra == NULL) {
+        Py_XDECREF(tmp_py_str);
+        return NULL;
+    }
     long epoch;
     char *name, *version, *release, *arch;
-    if (ret2e(hy_split_nevra(nevra, &name, &epoch, &version, &release, &arch),
-	      "Failed parsing NEVRA."))
+
+    int split_nevra_ret = hy_split_nevra(nevra, &name, &epoch, &version, &release, &arch);
+    Py_XDECREF(tmp_py_str); // release memory after unicode string conversion
+
+    if (ret2e(split_nevra_ret, "Failed parsing NEVRA."))
 	return NULL;
 
     PyObject *ret = Py_BuildValue("slsss", name, epoch, version, release, arch);
@@ -98,15 +112,16 @@ static struct PyMethodDef hawkey_methods[] = {
     {NULL}				/* sentinel */
 };
 
-PyMODINIT_FUNC
-init_hawkey(void)
+PYCOMP_MOD_INIT(_hawkey)
 {
-    PyObject *m = Py_InitModule("_hawkey", hawkey_methods);
+    PyObject *m;
+    PYCOMP_MOD_DEF(m, "_hawkey", hawkey_methods)
+
     if (!m)
-	return;
+        return PYCOMP_MOD_ERROR_VAL;
     /* exceptions */
     if (!init_exceptions())
-	return;
+        return PYCOMP_MOD_ERROR_VAL;
     PyModule_AddObject(m, "Exception", HyExc_Exception);
     PyModule_AddObject(m, "ValueException", HyExc_Value);
     PyModule_AddObject(m, "QueryException", HyExc_Query);
@@ -116,37 +131,37 @@ init_hawkey(void)
 
     /* _hawkey.Sack */
     if (PyType_Ready(&sack_Type) < 0)
-	return;
+        return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&sack_Type);
     PyModule_AddObject(m, "Sack", (PyObject *)&sack_Type);
     /* _hawkey.Goal */
     if (PyType_Ready(&goal_Type) < 0)
-	return;
+        return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&goal_Type);
     PyModule_AddObject(m, "Goal", (PyObject *)&goal_Type);
     /* _hawkey.Package */
     if (PyType_Ready(&package_Type) < 0)
-	return;
+        return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&package_Type);
     PyModule_AddObject(m, "Package", (PyObject *)&package_Type);
     /* _hawkey.Query */
     if (PyType_Ready(&query_Type) < 0)
-	return;
+        return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&query_Type);
     PyModule_AddObject(m, "Query", (PyObject *)&query_Type);
     /* _hawkey.Reldep */
     if (PyType_Ready(&reldep_Type) < 0)
-	return;
+        return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&reldep_Type);
     PyModule_AddObject(m, "Reldep", (PyObject *)&reldep_Type);
     /* _hawkey.Selector */
     if (PyType_Ready(&selector_Type) < 0)
-	return;
+        return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&selector_Type);
     PyModule_AddObject(m, "Selector", (PyObject *)&selector_Type);
     /* _hawkey.Repo */
     if (PyType_Ready(&repo_Type) < 0)
-	return;
+        return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&repo_Type);
     PyModule_AddObject(m, "Repo", (PyObject *)&repo_Type);
 
@@ -194,4 +209,6 @@ init_hawkey(void)
 
     PyModule_AddIntConstant(m, "REASON_DEP", HY_REASON_DEP);
     PyModule_AddIntConstant(m, "REASON_USER", HY_REASON_USER);
+
+    return PYCOMP_MOD_SUCCESS_VAL(m);
 }

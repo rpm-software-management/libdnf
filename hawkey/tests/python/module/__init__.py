@@ -18,12 +18,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
+from __future__ import absolute_import
+
 import os
 import os.path
 import tempfile
 
 import hawkey
-import _hawkey_test
+from . import _hawkey_test
 
 EXPECT_SYSTEM_NSOLVABLES = _hawkey_test.EXPECT_SYSTEM_NSOLVABLES
 EXPECT_MAIN_NSOLVABLES = _hawkey_test.EXPECT_MAIN_NSOLVABLES

@@ -1,5 +1,12 @@
-FIND_PACKAGE (PythonLibs)
-FIND_PACKAGE (PythonInstDir REQUIRED)
+if (${PYTHON_DESIRED} STREQUAL "2")
+    FIND_PACKAGE (PythonLibs 2)
+    SET(TEST_MODULE_NAME "_hawkey_testmodule")
+else()
+    FIND_PACKAGE(PythonLibs 3.0)
+    SET(TEST_MODULE_NAME "_hawkey_test")
+endif()
+
+
 INCLUDE_DIRECTORIES (${PYTHON_INCLUDE_PATH})
 
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-strict-aliasing")
@@ -11,7 +18,7 @@ SET (testmodule_SRCS
 
 ADD_LIBRARY(testmodule SHARED ${testmodule_SRCS})
 SET_TARGET_PROPERTIES(testmodule PROPERTIES PREFIX "")
-SET_TARGET_PROPERTIES(testmodule PROPERTIES OUTPUT_NAME "_hawkey_testmodule")
+SET_TARGET_PROPERTIES(testmodule PROPERTIES OUTPUT_NAME ${TEST_MODULE_NAME})
 TARGET_LINK_LIBRARIES(testmodule _hawkeymodule
 				 testshared
 				 ${PYTHON_LIBRARY})

@@ -18,11 +18,15 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
+from sys import version_info as python_version
 import unittest
 import hawkey
 
 class Version(unittest.TestCase):
     def test_version(self):
-        self.assertIsInstance(hawkey.VERSION, unicode)
+        if python_version.major < 3:
+            self.assertIsInstance(hawkey.VERSION, unicode)
+        else:
+            self.assertIsInstance(hawkey.VERSION, str)
         self.assertGreaterEqual(len(hawkey.VERSION), 5)
         self.assertEqual(hawkey.VERSION.count('.'), 2)

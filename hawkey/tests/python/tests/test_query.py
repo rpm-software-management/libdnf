@@ -18,10 +18,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
+from __future__ import absolute_import
+
 import sys
 import unittest
 
-import base
+from . import base
 import hawkey
 import hawkey.test
 
@@ -194,16 +196,16 @@ class TestQueryAllRepos(base.TestCase):
     def test_requires(self):
         reldep = hawkey.Reldep(self.sack, "semolina = 2")
         q = hawkey.Query(self.sack).filter(requires=reldep)
-        self.assertItemsEqual(map(str, q.run()), ['walrus-2-5.noarch'])
+        self.assertItemsEqual(list(map(str, q.run())), ['walrus-2-5.noarch'])
 
         reldep = hawkey.Reldep(self.sack, "semolina > 1.0")
         q = hawkey.Query(self.sack).filter(requires=reldep)
-        self.assertItemsEqual(map(str, q.run()), ['walrus-2-5.noarch'])
+        self.assertItemsEqual(list(map(str, q.run())), ['walrus-2-5.noarch'])
 
     def test_obsoletes(self):
         reldep = hawkey.Reldep(self.sack, "penny < 4-0")
         q = hawkey.Query(self.sack).filter(obsoletes=reldep)
-        self.assertItemsEqual(map(str, q.run()), ['fool-1-5.noarch'])
+        self.assertItemsEqual(list(map(str, q.run())), ['fool-1-5.noarch'])
 
 class QueryUpdates(base.TestCase):
     def setUp(self):
@@ -219,7 +221,7 @@ class QueryUpdates(base.TestCase):
     def test_updates_arch(self):
         q = hawkey.Query(self.sack)
         pilchard = q.filter(name="dog", upgrades=True)
-        self.assertItemsEqual(map(str, pilchard.run()), ['dog-1-2.x86_64'])
+        self.assertItemsEqual(list(map(str, pilchard.run())), ['dog-1-2.x86_64'])
 
     def test_obsoletes(self):
         q = hawkey.Query(self.sack).filter(name="penny")

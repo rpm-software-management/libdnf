@@ -33,8 +33,9 @@ FIND_LIBRARY (SOLVEXT_LIBRARY NAMES solvext)
 FIND_LIBRARY (CHECK_LIBRARY NAMES check)
 MESSAGE(STATUS "Using libsolv at ${SOLV_LIBRARY}")
 
-EXECUTE_PROCESS(COMMAND ${PYTHON_EXECUTABLE} -c "from sys import stdout; from distutils import sysconfig; stdout.write(sysconfig.get_python_lib(True))" OUTPUT_VARIABLE PYTHON_INSTALL_DIR)
-MESSAGE(STATUS "Python install dir is ${PYTHON_INSTALL_DIR}")
+if (NOT PYTHON_DESIRED)
+    set (PYTHON_DESIRED "2")
+endif()
 
 # rpm:
 FIND_LIBRARY (RPMDB_LIBRARY NAMES rpmdb)

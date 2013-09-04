@@ -33,6 +33,8 @@
 #include "sack-py.h"
 #include "reldep-py.h"
 
+#include "pycomp.h"
+
 typedef struct {
     PyObject_HEAD
     HyReldep reldep;
@@ -157,8 +159,7 @@ reldep_hash(_ReldepObject *self)
 }
 
 PyTypeObject reldep_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,				/*ob_size*/
+    PyVarObject_HEAD_INIT(NULL, 0)
     "_hawkey.Reldep",		/*tp_name*/
     sizeof(_ReldepObject),	/*tp_basicsize*/
     0,				/*tp_itemsize*/

@@ -28,6 +28,8 @@
 #include "hawkey-pysys.h"
 #include "repo-py.h"
 
+#include "pycomp.h"
+
 typedef struct {
     PyObject_HEAD
     HyRepo repo;
@@ -115,12 +117,15 @@ static int
 set_str(_RepoObject *self, PyObject *value, void *closure)
 {
     intptr_t str_key = (intptr_t)closure;
-    const char *str_value;
+    PyObject *tmp_py_str = NULL;
+    const char *str_value = pycomp_get_string(value, tmp_py_str);
 
-    str_value = PyString_AsString(value);
-    if (str_value == NULL)
-	return -1;
+    if (str_value == NULL) {
+        Py_XDECREF(tmp_py_str);
+        return -1;
+    }
     hy_repo_set_string(self->repo, str_key, str_value);
+    Py_XDECREF(tmp_py_str);
 
     return 0;
 }
@@ -140,8 +145,7 @@ static PyGetSetDef repo_getsetters[] = {
 };
 
 PyTypeObject repo_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,				/*ob_size*/
+    PyVarObject_HEAD_INIT(NULL, 0)
     "_hawkey.Repo",		/*tp_name*/
     sizeof(_RepoObject),	/*tp_basicsize*/
     0,				/*tp_itemsize*/

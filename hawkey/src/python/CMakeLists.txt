@@ -1,6 +1,18 @@
-FIND_PACKAGE (PythonLibs 2)
-FIND_PACKAGE (PythonInterp 2 REQUIRED)
-FIND_PACKAGE (PythonInstDir 2 REQUIRED)
+if (${PYTHON_DESIRED} STREQUAL "2")
+    message("Building for python2")
+    FIND_PACKAGE (PythonLibs 2)
+    FIND_PACKAGE (PythonInterp 2 REQUIRED)
+    SET(HAWKEY_MODULE_NAME "_hawkeymodule")
+else()
+    message("Building for python3")
+    SET(Python_ADDITIONAL_VERSIONS 3.3)
+    FIND_PACKAGE(PythonLibs 3.0)
+    FIND_PACKAGE(PythonInterp 3.0 REQUIRED)
+    SET(HAWKEY_MODULE_NAME "_hawkey")
+endif()
+
+EXECUTE_PROCESS(COMMAND ${PYTHON_EXECUTABLE} -c "from sys import stdout; from distutils import sysconfig; stdout.write(sysconfig.get_python_lib(True))" OUTPUT_VARIABLE PYTHON_INSTALL_DIR)
+
 INCLUDE_DIRECTORIES (${PYTHON_INCLUDE_PATH})
 
 MESSAGE(STATUS "Python install dir is ${PYTHON_INSTALL_DIR}")
@@ -23,10 +35,12 @@ SET (hawkeymodule_SRCS
     repo-py.c
     reldep-py.c
     sack-py.c
-    selector-py.c)
+    selector-py.c
+    pycomp.c)
 
 ADD_LIBRARY(_hawkeymodule SHARED ${hawkeymodule_SRCS})
 SET_TARGET_PROPERTIES(_hawkeymodule PROPERTIES PREFIX "")
+SET_TARGET_PROPERTIES(_hawkeymodule PROPERTIES OUTPUT_NAME ${HAWKEY_MODULE_NAME})
 SET_TARGET_PROPERTIES(_hawkeymodule PROPERTIES LIBRARY_OUTPUT_DIRECTORY "./hawkey")
 TARGET_LINK_LIBRARIES(_hawkeymodule libhawkey ${SOLV_LIBRARY} ${SOLVEXT_LIBRARY})
 TARGET_LINK_LIBRARIES(_hawkeymodule ${PYTHON_LIBRARY})

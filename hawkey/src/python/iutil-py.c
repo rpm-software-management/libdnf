@@ -30,6 +30,8 @@
 #include "reldep-py.h"
 #include "sack-py.h"
 
+#include "pycomp.h"
+
 PyObject *
 packagelist_to_pylist(HyPackageList plist, PyObject *sack)
 {

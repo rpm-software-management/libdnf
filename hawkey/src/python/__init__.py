@@ -18,7 +18,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-import _hawkey
+from __future__ import absolute_import
+from sys import version_info as python_version
+
+from . import _hawkey
 import collections
 import itertools
 import operator
@@ -177,7 +180,7 @@ class Goal(_hawkey.Goal):
 
             # only the flags and unrecognized keywords remained, construct a Selector
             new_kwargs = {}
-            for flag in self._flag_kw & kwargs.viewkeys():
+            for flag in self._flag_kw & set(kwargs):
                 new_kwargs[flag] = kwargs.pop(flag)
             new_kwargs['select'] = Selector(self.sack).set(**kwargs)
             return fn(self, **new_kwargs)
@@ -215,7 +218,7 @@ def _encode(obj):
         and potentially face exceptions rather than bizarre results. (Except
         that as long as we stick to UTF-8 it never fails.)
     """
-    if type(obj) is unicode:
+    if python_version.major < 3 and isinstance(obj, unicode):
         return obj.encode('utf8', 'strict')
     return obj
 
@@ -229,10 +232,12 @@ def _parse_filter_args(flags, dct):
     for (k, match) in dct.items():
         if isinstance(match, Query):
             pass
-        elif type(match) in types.StringTypes:
+        elif python_version.major < 3 and isinstance(match, basestring):
+            match = _encode(match)
+        elif python_version.major >= 3 and isinstance(match, str):
             match = _encode(match)
         elif isinstance(match, collections.Iterable):
-            match = map(_encode, match)
+            match = list(map(_encode, match))
         split = k.split("__", 1)
         if len(split) == 1:
             keyname=split[0]
@@ -297,8 +302,8 @@ class Query(_hawkey.Query):
     def filterm(self, *lst, **kwargs):
         self._result = None
         flags = set(lst)
-        map(lambda arg_tuple: super(Query, self).filter(*arg_tuple),
-            _parse_filter_args(flags, kwargs))
+        for arg_tuple in _parse_filter_args(flags, kwargs):
+            super(Query, self).filter(*arg_tuple)
         return self
 
     def provides(self, name, **kwargs):
@@ -306,8 +311,8 @@ class Query(_hawkey.Query):
 
 class Selector(_hawkey.Selector):
     def set(self, **kwargs):
-        map(lambda arg_tuple: super(Selector, self).set(*arg_tuple),
-            _parse_filter_args(set(), kwargs))
+        for arg_tuple in _parse_filter_args(set(), kwargs):
+            super(Selector, self).set(*arg_tuple)
         return self
 
 FORM_NEVRA	= re.compile("""(?P<name>[.\-S]+)-\

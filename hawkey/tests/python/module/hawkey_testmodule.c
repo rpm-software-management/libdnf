@@ -26,6 +26,8 @@
 #include "src/python/sack-py.h"
 #include "tests/testshared.h"
 
+#include "src/python/pycomp.h"
+
 static PyObject *
 py_load_repo(PyObject *unused, PyObject *args)
 {
@@ -69,12 +71,12 @@ static struct PyMethodDef testmodule_methods[] = {
     {NULL}				/* sentinel */
 };
 
-PyMODINIT_FUNC
-init_hawkey_test(void)
+PYCOMP_MOD_INIT(_hawkey_test)
 {
-    PyObject *m = Py_InitModule("_hawkey_test", testmodule_methods);
+    PyObject *m;
+    PYCOMP_MOD_DEF(m, "_hawkey_test", testmodule_methods);
     if (!m)
-	return;
+	return PYCOMP_MOD_ERROR_VAL;
     PyModule_AddIntConstant(m, "EXPECT_SYSTEM_NSOLVABLES",
 			    TEST_EXPECT_SYSTEM_NSOLVABLES);
     PyModule_AddIntConstant(m, "EXPECT_MAIN_NSOLVABLES",
@@ -86,4 +88,6 @@ init_hawkey_test(void)
     PyModule_AddStringConstant(m, "FIXED_ARCH", TEST_FIXED_ARCH);
     PyModule_AddStringConstant(m, "UNITTEST_DIR", UNITTEST_DIR);
     PyModule_AddStringConstant(m, "YUM_DIR_SUFFIX", YUM_DIR_SUFFIX);
+
+    return PYCOMP_MOD_SUCCESS_VAL(m);
 }

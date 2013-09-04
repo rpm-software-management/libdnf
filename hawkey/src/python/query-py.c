@@ -38,6 +38,8 @@
 #include "reldep-py.h"
 #include "sack-py.h"
 
+#include "pycomp.h"
+
 typedef struct {
     PyObject_HEAD
     HyQuery query;
@@ -179,11 +181,15 @@ filter(_QueryObject *self, PyObject *args)
 	    hy_query_filter_upgrades(self->query, val);
 	Py_RETURN_NONE;
     }
-    if (PyString_Check(match)) {
-	cmatch = PyString_AsString(match);
-	if (hy_query_filter(self->query, keyname, cmp_type, cmatch))
-	    return raise_bad_filter();
-	Py_RETURN_NONE;
+    if (PyUnicode_Check(match) || PyString_Check(match)) {
+        PyObject *tmp_py_str = NULL;
+        cmatch = pycomp_get_string(match, tmp_py_str);
+        int query_filter_ret = hy_query_filter(self->query, keyname, cmp_type, cmatch);
+        Py_XDECREF(tmp_py_str);
+
+        if (query_filter_ret)
+            return raise_bad_filter();
+        Py_RETURN_NONE;
     }
     if (PyInt_Check(match)) {
 	long val = PyInt_AsLong(match);
@@ -252,16 +258,23 @@ filter(_QueryObject *self, PyObject *args)
 	const unsigned count = PySequence_Size(match);
 	const char *matches[count + 1];
 	matches[count] = NULL;
+        PyObject *tmp_py_strs[count];
 	for (int i = 0; i < count; ++i) {
 	    PyObject *item = PySequence_GetItem(match, i);
-	    if (!PyString_Check(item)) {
-		PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
-		return NULL;
-	    }
-	    Py_DECREF(item);
-	    matches[i] = PyString_AsString(item);
-	}
-	if (hy_query_filter_in(self->query, keyname, cmp_type, matches))
+            tmp_py_strs[i] = NULL;
+            if (PyUnicode_Check(item) || PyString_Check(item)) {
+                matches[i] = pycomp_get_string(item, tmp_py_strs[i]);
+                Py_DECREF(item);
+            } else {
+                PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
+                pycomp_free_tmp_array(tmp_py_strs, i);
+                return NULL;
+            }
+        }
+        int filter_in_ret = hy_query_filter_in(self->query, keyname, cmp_type, matches);
+        pycomp_free_tmp_array(tmp_py_strs, count - 1);
+
+	if (filter_in_ret)
 	    return raise_bad_filter();
 	break;
     }
@@ -292,8 +305,7 @@ static struct PyMethodDef query_methods[] = {
 };
 
 PyTypeObject query_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,				/*ob_size*/
+    PyVarObject_HEAD_INIT(NULL, 0)
     "_hawkey.Query",		/*tp_name*/
     sizeof(_QueryObject),	/*tp_basicsize*/
     0,				/*tp_itemsize*/

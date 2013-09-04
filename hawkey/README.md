@@ -10,8 +10,8 @@ Packages needed for the build (i.e. build requires):
 * gcc
 * libsolv-devel
 * libsolv-tools
-* python-devel
-* python-nose
+* python-devel (or python3-devel for Python 3 build)
+* python-nose (or python3-nose for Python 3 build)
 * rpm-devel
 * zlib-devel
 
@@ -19,7 +19,7 @@ From your checkout dir:
 
     mkdir build
     cd build/
-    cmake ..
+    cmake .. # add '-DPYTHON_DESIRED="3"' option for Python 3 build
     make
 
 To build the documentation, from the build/ directory:

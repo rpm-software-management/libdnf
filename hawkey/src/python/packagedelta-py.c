@@ -26,6 +26,8 @@
 // pyhawkey
 #include "packagedelta-py.h"
 
+#include "pycomp.h"
+
 typedef struct {
     PyObject_HEAD
     HyPackageDelta delta;
@@ -84,8 +86,7 @@ static PyGetSetDef packageDelta_getsetters[] = {
 /* type */
 
 PyTypeObject packageDelta_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,				/*ob_size*/
+    PyVarObject_HEAD_INIT(NULL, 0)
     "_hawkey.PackageDelta",	/*tp_name*/
     sizeof(_PackageDeltaObject),	/*tp_basicsize*/
     0,				/*tp_itemsize*/

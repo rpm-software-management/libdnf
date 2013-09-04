@@ -18,6 +18,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
+from sys import version_info as python_version
+
 import hawkey
 import os.path
 import unittest
@@ -27,6 +29,14 @@ class TestCase(unittest.TestCase):
 
     def assertLength(self, collection, length):
         return self.assertEqual(len(collection), length)
+
+    def assertItemsEqual(self, item1, item2):
+        # assertItemsEqual renamed in Python3
+        if python_version.major < 3:
+            super(TestCase, self).assertItemsEqual(item1, item2)
+        else:
+            super(TestCase, self).assertCountEqual(item1, item2)
+
 
 def by_name(sack, name):
     return hawkey.Query(sack).filter(name=name)[0]
