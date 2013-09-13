@@ -109,56 +109,53 @@ package_init(_PackageObject *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
+#define TEST_COND(cond) \
+    ((cond) ? Py_True : Py_False)
+
 PyObject *
-package_py_cmp(PyObject *self, PyObject *other, int op)
+package_py_richcompare(PyObject *self, PyObject *other, int op)
 {
+    PyObject *v;
     HyPackage self_package, other_package;
 
     if (!package_converter(self, &self_package) ||
         !package_converter(other, &other_package)) {
+        if(PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError))
+            PyErr_Clear();
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    long result = hy_package_cmp(self_package, other_package);
+
+    switch (op) {
+    case Py_EQ:
+        v = TEST_COND(result == 0);
+        break;
+    case Py_NE:
+        v = TEST_COND(result != 0);
+        break;
+    case Py_LE:
+        v = TEST_COND(result <= 0);
+        break;
+    case Py_GE:
+        v = TEST_COND(result >= 0);
+        break;
+    case Py_LT:
+        v = TEST_COND(result == -1);
+        break;
+    case Py_GT:
+        v = TEST_COND(result == 1);
+        break;
+    default:
+        PyErr_BadArgument();
         return NULL;
     }
-
-    long cmp = hy_package_cmp(self_package, other_package);
-
-    if (cmp == 0) {
-        switch (op) {
-            case Py_LT: // <
-            case Py_NE: // !=
-            case Py_GT: // >
-                return Py_False;
-            case Py_EQ: // ==
-            case Py_LE: // <=
-            case Py_GE: // >=
-                return Py_True;
-        }
-    }
-    else if (cmp < 0) {
-        switch (op) {
-            case Py_LT: // <
-            case Py_LE: // <=
-            case Py_NE: // !=
-                return Py_True;
-            case Py_GT: // >
-            case Py_EQ: // ==
-            case Py_GE: // >=
-                return Py_False;
-        }
-    }
-    else {
-        switch (op) {
-            case Py_LT: // <
-            case Py_LE: // <=
-            case Py_EQ: // ==
-                return Py_False;
-            case Py_NE: // !=
-            case Py_GT: // >
-            case Py_GE: // >=
-                return Py_True;
-        }
-    }
-    return Py_NotImplemented;
+    Py_INCREF(v);
+    return v;
 }
+
+#undef TEST_COND
 
 static PyObject *
 package_repr(_PackageObject *self)
@@ -390,7 +387,7 @@ PyTypeObject package_Type = {
     "Package object",		/* tp_doc */
     0,				/* tp_traverse */
     0,				/* tp_clear */
-    (richcmpfunc) package_py_cmp,	/* tp_richcompare */
+    (richcmpfunc) package_py_richcompare,	/* tp_richcompare */
     0,				/* tp_weaklistoffset */
     0,				/* tp_iter */
     0,                         	/* tp_iternext */

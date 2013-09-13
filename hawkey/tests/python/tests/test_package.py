@@ -76,16 +76,16 @@ class PackageCmpTest(base.TestCase):
         self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
         self.sack.load_test_repo("main", "main.repo")
+        self.pkg1 = base.by_name_repo(self.sack, "fool", hawkey.SYSTEM_REPO_NAME)
 
     def test_cmp(self):
-        pkg1 = base.by_name_repo(self.sack, "fool", hawkey.SYSTEM_REPO_NAME)
         pkg2 = base.by_name_repo(self.sack, "fool", "main")
         # if nevra matches the packages are equal:
-        self.assertEqual(pkg1, pkg2)
+        self.assertEqual(self.pkg1, pkg2)
 
         # if the name doesn't match they are not equal:
         pkg2 = base.by_name_repo(self.sack, "hello", "main")
-        self.assertNotEqual(pkg1, pkg2)
+        self.assertNotEqual(self.pkg1, pkg2)
 
         # if nevr matches, but not arch, they are not equal:
         pkg1 = hawkey.split_nevra("semolina-2-0.x86_64").to_query(self.sack)[0]
@@ -98,6 +98,15 @@ class PackageCmpTest(base.TestCase):
         pkg2 = hawkey.split_nevra("jay-5.0-0.x86_64").to_query(self.sack)[0]
         self.assertLess(pkg2, pkg1)
         self.assertGreater(pkg1.evr_cmp(pkg2), 0)
+
+    def test_cmp_fail(self):
+        # should not throw TypeError
+        self.assertNotEqual(self.pkg1, "hawkey-package")
+        self.assertNotEqual(self.pkg1, self.sack)
+    
+        if python_version.major > 3:
+            self.assertRaises(TypeError, lambda: self.pkg1 <= "hawkey-package")
+
 
 class ChecksumsTest(base.TestCase):
     def setUp(self):
