@@ -6,7 +6,7 @@ else()
     SET(TEST_MODULE_NAME "_hawkey_test")
 endif()
 
-
+FIND_PACKAGE(PythonInstDir)
 INCLUDE_DIRECTORIES (${PYTHON_INCLUDE_PATH})
 
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-strict-aliasing")
