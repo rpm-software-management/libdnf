@@ -462,6 +462,7 @@ load_yum_repo(HySack sack, HyRepo hrepo)
 
     if (retval == 0) {
 	repo->appdata = hy_repo_link(hrepo);
+        repo->subpriority = -hrepo->cost;
 	hrepo->libsolv_repo = repo;
 	sack->provides_ready = 0;
     } else
@@ -762,6 +763,7 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
     /* we managed the hardest part, setup the bidirectional pointers etc. */
     pool_set_installed(pool, repo);
     repo->appdata = hrepo;
+    repo->subpriority = -hrepo->cost;
     hrepo->libsolv_repo = repo;
     sack->provides_ready = 0;
 

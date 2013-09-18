@@ -36,6 +36,7 @@ enum _hy_repo_state {
 };
 
 struct _HyRepo {
+    int cost;
     int nrefs;
     char *name;
     char *repomd_fn;

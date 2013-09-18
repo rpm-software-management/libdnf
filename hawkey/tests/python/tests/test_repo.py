@@ -29,3 +29,11 @@ class Package(unittest.TestCase):
         self.assertRaises(TypeError, hawkey.Repo);
         self.assertRaises(TypeError, hawkey.Repo, 3)
         self.assertRaises(TypeError, hawkey.Repo, rain="pouring")
+
+    def test_cost_assignment(self):
+        r = hawkey.Repo("fog", cost=500)
+        self.assertEqual(500, r.cost)
+        r.cost = 300
+        self.assertEqual(300, r.cost)
+        r2 = hawkey.Repo("blizzard")
+        self.assertEqual(1000, r2.cost)

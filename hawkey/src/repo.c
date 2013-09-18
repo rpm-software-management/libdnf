@@ -101,6 +101,20 @@ hy_repo_create(const char *name)
     return repo;
 }
 
+int
+hy_repo_get_cost(HyRepo repo)
+{
+    return repo->cost;
+}
+
+void
+hy_repo_set_cost(HyRepo repo, int value)
+{
+    repo->cost = value;
+    if (repo->libsolv_repo)
+        repo->libsolv_repo->subpriority = -value;
+}
+
 void
 hy_repo_set_string(HyRepo repo, int which, const char *str_val)
 {

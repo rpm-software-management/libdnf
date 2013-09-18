@@ -82,9 +82,13 @@ static int
 repo_init(_RepoObject *self, PyObject *args, PyObject *kwds)
 {
     const char *name;
-    if (!PyArg_ParseTuple(args, "s", &name))
-	return -1;
+    int cost = 1000;
+    static char *kwlist[] = {"name", "cost", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|i", kwlist,
+                                     &name, &cost))
+        return -1;
     hy_repo_set_string(self->repo, HY_REPO_NAME, name);
+    hy_repo_set_cost(self->repo, cost);
     return 0;
 }
 
@@ -130,6 +134,22 @@ set_str(_RepoObject *self, PyObject *value, void *closure)
     return 0;
 }
 
+static PyObject *
+get_cost(_RepoObject *self, void *closure)
+{
+    return PyInt_FromLong(hy_repo_get_cost(self->repo));
+}
+
+static int
+set_cost(_RepoObject *self, PyObject *value, void *closure)
+{
+    long cost = PyInt_AsLong(value);
+    if (cost > INT_MAX || cost < INT_MIN)
+        return -1;
+    hy_repo_set_cost(self->repo, cost);
+    return 0;
+}
+
 static PyGetSetDef repo_getsetters[] = {
     {"name", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_NAME},
@@ -141,6 +161,8 @@ static PyGetSetDef repo_getsetters[] = {
      (void *)HY_REPO_FILELISTS_FN},
     {"presto_fn", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_PRESTO_FN},
+    {"cost", (getter)get_cost, (setter)set_cost, "cost of repository",
+     NULL},
     {NULL}			/* sentinel */
 };
 

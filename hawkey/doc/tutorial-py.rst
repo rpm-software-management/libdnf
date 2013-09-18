@@ -36,7 +36,7 @@ system repo* (in Fedora it is the RPM database). To load it::
   1683
 
 Hawkey always knows the name of every repository. Names of repositories loaded
-from Yum metadata are chosen by the client and the system repostiroy is always
+from Yum metadata are chosen by the client and the system repository is always
 called ``@System``.
 
 Loading Yum Repositories

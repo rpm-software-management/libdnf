@@ -23,6 +23,8 @@
 
 // hawkey
 #include "src/repo_internal.h"
+#include "fixtures.h"
+#include "testshared.h"
 #include "test_suites.h"
 
 START_TEST(test_strings)
@@ -37,12 +39,29 @@ START_TEST(test_strings)
 }
 END_TEST
 
+START_TEST(test_cost)
+{
+    HySack sack = test_globals.sack;
+    HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
+    hy_repo_set_cost(repo, 700);
+    fail_unless(repo->libsolv_repo != NULL);
+    fail_unless(700 == hy_repo_get_cost(repo));
+    int subpriority = -700;
+    fail_unless(repo->libsolv_repo->subpriority == subpriority);
+}
+END_TEST
+
 Suite *
 repo_suite(void)
 {
     Suite *s = suite_create("Repo");
     TCase *tc = tcase_create("Core");
     tcase_add_test(tc, test_strings);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("Cost");
+    tcase_add_unchecked_fixture(tc, fixture_yum, teardown);
+    tcase_add_test(tc, test_cost);
     suite_add_tcase(s, tc);
 
     return s;
