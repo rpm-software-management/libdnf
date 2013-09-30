@@ -1,4 +1,4 @@
-%global gitrev 6f35513
+%global gitrev 4c51f65
 %global libsolv_version 0.3.0
 
 Name:		hawkey
@@ -108,6 +108,10 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+
+* Mon Sep 30 2013 Aleš Kozumplík <ales@redhat.com> - 0.4.2-1.git4c51f65
+- Goal: excluding and then installing results in incomprehenisble problem desc. (RhBug:995459) (Ales Kozumplik)
+- added support of cost option in repos (Jan Silhan)
 
 * Mon Sep 16 2013 Aleš Kozumplík <ales@redhat.com> - 0.4.1-1.git6f35513
 - spec file also generates python3-hawkey rpm (Jan Silhan)
