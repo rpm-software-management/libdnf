@@ -658,6 +658,35 @@ START_TEST(test_goal_upgrade_disabled_repo)
 }
 END_TEST
 
+START_TEST(test_goal_describe_problem_excludes)
+{
+    HySack sack = test_globals.sack;
+
+    HyQuery q = hy_query_create_flags(sack, HY_IGNORE_EXCLUDES);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "semolina");
+    HyPackageSet pset = hy_query_run_set(q);
+    hy_sack_add_excludes(sack, pset);
+    hy_packageset_free(pset);
+    hy_query_free(q);
+
+    HyGoal goal = hy_goal_create(sack);
+    HySelector sltr = hy_selector_create(sack);
+
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "semolina");
+    hy_goal_install_selector(goal, sltr);
+    hy_selector_free(sltr);
+
+    fail_unless(hy_goal_run(goal));
+    fail_unless(hy_goal_count_problems(goal) > 0);
+
+    char *problem = hy_goal_describe_problem(goal, 0);
+    ck_assert_str_eq(problem, "The package is excluded: semolina-2-0.i686");
+    hy_free(problem);
+
+    hy_goal_free(goal);
+}
+END_TEST
+
 START_TEST(test_goal_distupgrade_all)
 {
     HyGoal goal = hy_goal_create(test_globals.sack);
@@ -843,6 +872,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_installonly_upgrade_all);
     tcase_add_test(tc, test_goal_upgrade_all_excludes);
     tcase_add_test(tc, test_goal_upgrade_disabled_repo);
+    tcase_add_test(tc, test_goal_describe_problem_excludes);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Main");
