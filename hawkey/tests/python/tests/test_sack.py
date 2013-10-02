@@ -31,23 +31,23 @@ import hawkey.test
 class TestSackTest(base.TestCase):
     def test_sanity(self):
         assert(self.repo_dir)
-        sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        sack = base.TestSack(repo_dir=self.repo_dir)
         self.assertEqual(len(sack), 0)
 
     def test_load_rpm(self):
-        sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        sack = base.TestSack(repo_dir=self.repo_dir)
         sack.load_system_repo()
         self.assertEqual(len(sack), hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
 
     def test_load_yum(self):
-        sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        sack = base.TestSack(repo_dir=self.repo_dir)
         sack.load_system_repo()
         sack.load_yum_repo(build_cache=True)
         self.assertEqual(len(sack), hawkey.test.EXPECT_YUM_NSOLVABLES +
                          hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
 
     def test_cache_path(self):
-        sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        sack = base.TestSack(repo_dir=self.repo_dir)
         self.assertTrue(sack.cache_path.startswith("/tmp/pyhawkey"))
 
 class BasicTest(unittest.TestCase):
@@ -65,7 +65,7 @@ class BasicTest(unittest.TestCase):
         self.assertRaises(IOError, hawkey.Sack, "", make_cache_dir=True)
 
     def test_failed_load(self):
-        sack = hawkey.Sack(cachedir=hawkey.test.cachedir)
+        sack = hawkey.Sack(cachedir=base.cachedir)
         repo = hawkey.Repo("name")
         self.assertRaises(IOError, sack.load_yum_repo, repo)
         sack = hawkey.Sack()
@@ -85,7 +85,7 @@ class PackageWrappingTest(base.TestCase):
             self.myval = myval
 
     def test_wrapping(self):
-        sack = hawkey.test.TestSack(repo_dir=self.repo_dir,
+        sack = base.TestSack(repo_dir=self.repo_dir,
                                     PackageClass=self.MyPackage,
                                     package_userdata=42)
         sack.load_system_repo()

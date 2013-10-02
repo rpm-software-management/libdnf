@@ -19,14 +19,13 @@
 #
 
 from __future__ import absolute_import
-
 from . import base
+
 import hawkey
-import hawkey.test
 
 class GoalTest(base.TestCase):
     def setUp(self):
-        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
         self.sack.load_test_repo("main", "main.repo")
 
@@ -123,7 +122,7 @@ class Collector(object):
 class GoalRun(base.TestCase):
     def test_run_callback(self):
         "Test goal.run() can use callback parameter just as well as run_all()"
-        sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        sack = base.TestSack(repo_dir=self.repo_dir)
         sack.load_system_repo()
         sack.load_test_repo("main", "main.repo")
 
@@ -138,7 +137,7 @@ class GoalRun(base.TestCase):
 
 class GoalRunAll(base.TestCase):
     def setUp(self):
-        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
         self.sack.load_test_repo("greedy", "greedy.repo")
         self.goal = hawkey.Goal(self.sack)
@@ -163,7 +162,7 @@ class GoalRunAll(base.TestCase):
 
 class Problems(base.TestCase):
     def setUp(self):
-        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
         self.sack.load_test_repo("main", "main.repo")
         self.goal = hawkey.Goal(self.sack)

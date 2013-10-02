@@ -19,11 +19,10 @@
 #
 
 from __future__ import absolute_import
+from . import base
 from sys import version_info as python_version
 
-from . import base
 import hawkey
-import hawkey.test
 
 INP_FOF="four-of-fish-8:3.6.9-11.fc100.x86_64"
 INP_FOF_NOEPOCH="four-of-fish-3.6.9-11.fc100.x86_64"
@@ -119,7 +118,7 @@ class SubjectTest(base.TestCase):
 
 class SubjectRealPossibilitiesTest(base.TestCase):
     def setUp(self):
-        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
         self.sack.load_test_repo("main", "main.repo")
         self.sack.load_test_repo("updates", "updates.repo")
@@ -133,7 +132,7 @@ class SubjectRealPossibilitiesTest(base.TestCase):
         subj = hawkey.Subject("pilchard-1.2.4-1.x86_64")
         nevra_possibilities = subj.nevra_possibilities_real(self.sack)
         nevra = next(nevra_possibilities)
-            
+
         self.assertEqual(nevra, hawkey.NEVRA(name='pilchard', epoch=None,
                                              version='1.2.4', release='1',
                                              arch='x86_64'))
@@ -155,7 +154,7 @@ class SubjectRealPossibilitiesTest(base.TestCase):
 
     def test_dash_version(self):
         subj = hawkey.Subject("penny-lib-4")
-        
+
         nevra = next(subj.nevra_possibilities_real(self.sack))
         self.assertEqual(nevra, hawkey.NEVRA(name="penny-lib", epoch=None,
                                              version='4', release=None,

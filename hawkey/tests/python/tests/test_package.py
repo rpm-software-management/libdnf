@@ -19,15 +19,14 @@
 #
 
 from __future__ import absolute_import
+from . import base
 from sys import version_info as python_version
 
-from . import base
 import hawkey
-import hawkey.test
 
 class PackageTest(base.TestCase):
     def setUp(self):
-        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
         q = hawkey.Query(self.sack).filter(name__eq="flying")
         self.pkg = list(q)[0]
@@ -73,7 +72,7 @@ class PackageTest(base.TestCase):
 
 class PackageCmpTest(base.TestCase):
     def setUp(self):
-        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
         self.sack.load_test_repo("main", "main.repo")
         self.pkg1 = base.by_name_repo(self.sack, "fool", hawkey.SYSTEM_REPO_NAME)
@@ -103,14 +102,14 @@ class PackageCmpTest(base.TestCase):
         # should not throw TypeError
         self.assertNotEqual(self.pkg1, "hawkey-package")
         self.assertNotEqual(self.pkg1, self.sack)
-    
+
         if python_version.major > 3:
             self.assertRaises(TypeError, lambda: self.pkg1 <= "hawkey-package")
 
 
 class ChecksumsTest(base.TestCase):
     def setUp(self):
-        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
         self.sack.load_yum_repo()
         self.pkg = hawkey.Query(self.sack).filter(name="mystery-devel")[0]
 
@@ -126,7 +125,7 @@ class ChecksumsTest(base.TestCase):
         self.assertEqual(chksum_type, hawkey.CHKSUM_SHA256)
 
     def test_checksum_fail(self):
-        sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        sack = base.TestSack(repo_dir=self.repo_dir)
         sack.load_system_repo()
         pkg = base.by_name(sack, "fool")
         self.assertRaises(AttributeError, lambda: pkg.chksum)
@@ -139,7 +138,7 @@ class ChecksumsTest(base.TestCase):
 
 class BaseurlTest(base.TestCase):
     def setUp(self):
-        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
         self.sack.load_yum_repo()
         self.pkg = hawkey.Query(self.sack).filter(name="mystery-devel")[0]
 

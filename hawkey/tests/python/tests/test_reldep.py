@@ -19,14 +19,13 @@
 #
 
 from __future__ import absolute_import
-
 from . import base
+
 import hawkey
-import hawkey.test
 
 class Reldep(base.TestCase):
     def setUp(self):
-        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
 
     def test_basic(self):

@@ -19,17 +19,15 @@
 #
 
 from __future__ import absolute_import
+from . import base
 
+import hawkey
 import sys
 import unittest
 
-from . import base
-import hawkey
-import hawkey.test
-
 class TestQuery(base.TestCase):
     def setUp(self):
-        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
 
     def test_sanity(self):
@@ -188,7 +186,7 @@ class TestQuery(base.TestCase):
 
 class TestQueryAllRepos(base.TestCase):
     def setUp(self):
-        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
         self.sack.load_test_repo("main", "main.repo")
         self.sack.load_test_repo("updates", "updates.repo")
@@ -209,7 +207,7 @@ class TestQueryAllRepos(base.TestCase):
 
 class QueryUpdates(base.TestCase):
     def setUp(self):
-        self.sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
         self.sack.load_test_repo("updates", "updates.repo")
 
@@ -247,7 +245,7 @@ class TestQuerySubclass(base.TestCase):
         pass
 
     def test_instance(self):
-        sack = hawkey.test.TestSack(repo_dir=self.repo_dir)
+        sack = base.TestSack(repo_dir=self.repo_dir)
         q = self.CustomQuery(sack)
         self.assertIsInstance(q, self.CustomQuery)
         q = q.filter(name="pepper")

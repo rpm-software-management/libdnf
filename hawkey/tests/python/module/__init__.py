@@ -19,13 +19,10 @@
 #
 
 from __future__ import absolute_import
-
-import os
-import os.path
-import tempfile
+from . import _hawkey_test
 
 import hawkey
-from . import _hawkey_test
+import os
 
 EXPECT_SYSTEM_NSOLVABLES = _hawkey_test.EXPECT_SYSTEM_NSOLVABLES
 EXPECT_MAIN_NSOLVABLES = _hawkey_test.EXPECT_MAIN_NSOLVABLES
@@ -36,12 +33,6 @@ UNITTEST_DIR = _hawkey_test.UNITTEST_DIR
 YUM_DIR_SUFFIX = _hawkey_test.YUM_DIR_SUFFIX
 
 glob_for_repofiles = _hawkey_test.glob_for_repofiles
-
-cachedir = None
-# inititialize the dir once and share it for all sacks within a single run
-if cachedir is None:
-    cachedir = tempfile.mkdtemp(dir=os.path.dirname(UNITTEST_DIR),
-                                prefix='pyhawkey')
 
 class TestSackMixin(object):
     def __init__(self, repo_dir):
@@ -54,19 +45,3 @@ class TestSackMixin(object):
     def load_system_repo(self, *args, **kwargs):
         path = os.path.join(self.repo_dir, "@System.repo")
         _hawkey_test.load_repo(self, hawkey.SYSTEM_REPO_NAME, path, True)
-
-    def load_yum_repo(self, **args):
-        d = os.path.join(self.repo_dir, YUM_DIR_SUFFIX)
-        repo = glob_for_repofiles(self, "messerk", d)
-        super(TestSackMixin, self).load_yum_repo(repo, **args)
-
-class TestSack(TestSackMixin, hawkey.Sack):
-    def __init__(self, repo_dir, PackageClass=None, package_userdata=None,
-                 make_cache_dir=True):
-        TestSackMixin.__init__(self, repo_dir)
-        hawkey.Sack.__init__(self,
-                             cachedir=cachedir,
-                             arch=FIXED_ARCH,
-                             pkgcls=PackageClass,
-                             pkginitval=package_userdata,
-                             make_cache_dir=make_cache_dir)
