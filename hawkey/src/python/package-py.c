@@ -347,11 +347,15 @@ evr_cmp(_PackageObject *self, PyObject *other)
 static PyObject *
 get_delta_from_evr(_PackageObject *self, PyObject *evr_str)
 {
-    const char *evr = PyString_AsString(evr_str);
-    if (evr == NULL)
-	return NULL;
+    PyObject *tmp_py_str = NULL;
+    const char *evr = pycomp_get_string(evr_str, tmp_py_str);
+    if (evr == NULL) {
+        Py_XDECREF(tmp_py_str);
+        return NULL;
+    }
     HyPackageDelta delta_c = hy_package_get_delta_from_evr(self->package, evr);
     PyObject *delta = packageDeltaToPyObject(delta_c);
+    Py_XDECREF(tmp_py_str);
     if (delta)
 	return delta;
     Py_RETURN_NONE;
