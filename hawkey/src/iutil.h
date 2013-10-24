@@ -63,6 +63,7 @@ int str_endswith(const char *haystack, const char *needle);
 int str_startswith(const char *haystack, const char *needle);
 char *pool_tmpdup(Pool *pool, const char *s);
 char *hy_strndup(const char *s, size_t n);
+Id running_kernel(HySack sack);
 
 /* libsolv utils */
 int cmptype2relflags(int type);

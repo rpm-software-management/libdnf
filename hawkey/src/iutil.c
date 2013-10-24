@@ -21,12 +21,14 @@
 #define _GNU_SOURCE
 #include <assert.h>
 #include <fcntl.h>
+#include <glob.h>
 #include <pwd.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <sys/utsname.h>
 #include <sys/types.h>
 #include <wordexp.h>
 
@@ -40,6 +42,8 @@
 #include "errno.h"
 #include "iutil.h"
 #include "package_internal.h"
+#include "packageset_internal.h"
+#include "query.h"
 #include "sack_internal.h"
 
 #define BUF_BLOCK 4096
@@ -331,6 +335,38 @@ hy_strndup(const char *s, size_t n)
   if (!r)
     solv_oom(0, n);
   return r;
+}
+
+Id
+running_kernel(HySack sack)
+{
+    Pool *pool = sack_pool(sack);
+    struct utsname un;
+    glob_t g;
+
+    uname(&un);
+    char *glob_exp = pool_tmpjoin(pool, "/boot/vmlinuz-*", un.release, "*");
+    int ret = glob(glob_exp, GLOB_NOSORT, NULL, &g);
+    if (ret == GLOB_NOSPACE)
+	solv_oom(0, 0);
+    if (ret == GLOB_NOMATCH)
+	return -1;
+
+    Id kernel_id = -1;
+    sack_make_provides_ready(sack);
+    for (int i = 0; i < g.gl_pathc; ++i) {
+	const char *fn = g.gl_pathv[i];
+	HyQuery q = hy_query_create(sack);
+	hy_query_filter(q, HY_PKG_FILE, HY_EQ, fn);
+	HyPackageSet pset = hy_query_run_set(q);
+	kernel_id = packageset_get_pkgid(pset, 0, -1);
+	hy_packageset_free(pset);
+	hy_query_free(q);
+	if (kernel_id >= 0)
+	    break;
+    }
+    globfree(&g);
+    return kernel_id;
 }
 
 int
