@@ -72,7 +72,7 @@ by_name_repo(HySack sack, const char *name, const char *repo)
 }
 
 void
-dump_packagelist(HyPackageList plist)
+dump_packagelist(HyPackageList plist, int free)
 {
     for (int i = 0; i < hy_packagelist_count(plist); ++i) {
 	HyPackage pkg = hy_packagelist_get(plist, i);
@@ -81,14 +81,15 @@ dump_packagelist(HyPackageList plist)
 	printf("\t%s (%s)\n", nvra, s->repo->name);
 	hy_free(nvra);
     }
+    if (free)
+	hy_packagelist_free(plist);
 }
 
 void
 dump_query_results(HyQuery query)
 {
     HyPackageList plist = hy_query_run(query);
-    dump_packagelist(plist);
-    hy_packagelist_free(plist);
+    dump_packagelist(plist, 1);
 }
 
 int
