@@ -82,6 +82,26 @@ goal_has(HyGoal goal, Id needle)
     return 0;
 }
 
+static Solver *
+reinit_solver(HyGoal goal, int flags)
+{
+    Pool *pool = sack_pool(goal->sack);
+    Solver *solv = solver_create(pool);
+
+    if (goal->solv)
+	solver_free(goal->solv);
+    goal->solv = solv;
+
+    if (flags & HY_ALLOW_UNINSTALL)
+	solver_set_flag(solv, SOLVER_FLAG_ALLOW_UNINSTALL, 1);
+    /* no vendor locking */
+    solver_set_flag(solv, SOLVER_FLAG_ALLOW_VENDORCHANGE, 1);
+    /* no arch change for forcebest */
+    solver_set_flag(solv, SOLVER_FLAG_BEST_OBEY_POLICY, 1);
+
+    return solv;
+}
+
 static int
 solve(HyGoal goal, Queue *job)
 {
@@ -101,21 +121,14 @@ solve(HyGoal goal, Queue *job)
 }
 
 static Queue *
-construct_solver(HyGoal goal, int flags)
+construct_job(HyGoal goal, int flags)
 {
     HySack sack = goal->sack;
     Pool *pool = sack_pool(sack);
-    Solver *solv = solver_create(pool);
     Queue *job = solv_malloc(sizeof(*job));
 
+    reinit_solver(goal, flags);
     queue_init_clone(job, &goal->staging);
-    if (goal->solv) {
-	solver_free(goal->solv);
-	goal->solv = NULL;
-    }
-
-    if (flags & HY_ALLOW_UNINSTALL)
-	solver_set_flag(solv, SOLVER_FLAG_ALLOW_UNINSTALL, 1);
 
     /* apply forcebest */
     if (flags & HY_FORCE_BEST)
@@ -133,11 +146,6 @@ construct_solver(HyGoal goal, int flags)
 	    if (MAPTST(sack->pkg_excludes, i))
 		queue_push2(job, SOLVER_SOLVABLE|SOLVER_LOCK, i);
 
-    /* no vendor locking */
-    solver_set_flag(solv, SOLVER_FLAG_ALLOW_VENDORCHANGE, 1);
-    /* no arch change for forcebest */
-    solver_set_flag(solv, SOLVER_FLAG_BEST_OBEY_POLICY, 1);
-    goal->solv = solv;
     return job;
 }
 
@@ -531,7 +539,7 @@ hy_goal_run(HyGoal goal)
 int
 hy_goal_run_flags(HyGoal goal, int flags)
 {
-    Queue *job = construct_solver(goal, flags);
+    Queue *job = construct_job(goal, flags);
     int ret = solve(goal, job);
     queue_free(job);
     solv_free(job);
@@ -549,7 +557,7 @@ hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
 			 int flags)
 {
     struct _SolutionCallback cb_tuple = {goal, cb, cb_data};
-    Queue *job = construct_solver(goal, flags);
+    Queue *job = construct_job(goal, flags);
     Solver *solv = goal->solv;
 
     solv->solution_callback = internal_solver_callback;
