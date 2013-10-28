@@ -18,10 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#define _GNU_SOURCE
+
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 // libsolv
+#include <solv/evr.h>
 #include <solv/solver.h>
 #include <solv/solverdebug.h>
 #include <solv/testcase.h>
@@ -82,6 +86,79 @@ goal_has(HyGoal goal, Id needle)
     return 0;
 }
 
+static void
+same_name_subqueue(Pool *pool, Queue *in, Queue *out)
+{
+    Id el = queue_pop(in);
+    Id name = pool_id2solvable(pool, el)->name;
+    queue_empty(out);
+    queue_push(out, el);
+    while (in->count &&
+	   pool_id2solvable(pool, in->elements[in->count - 1])->name == name)
+	// reverses the order so packages are sorted by descending version
+	queue_push(out, queue_pop(in));
+}
+
+static int
+sort_packages(const void *ap, const void *bp, void *poolp)
+{
+    Id a = *(Id*)ap;
+    Id b = *(Id*)bp;
+    Pool *pool = (Pool*) poolp;
+    Solvable *sa = pool_id2solvable(pool, a);
+    Solvable *sb = pool_id2solvable(pool, b);
+
+    /* if the names are different sort them differently, particular order does
+       not matter as long as it's consistent. */
+    int name_diff = sa->name - sb->name;
+    if (name_diff)
+	return name_diff;
+
+    return pool_evrcmp(pool, sa->evr, sb->evr, EVRCMP_COMPARE);
+}
+
+static int
+limit_installonly_packages(HyGoal goal, Solver *solv, Queue *job)
+{
+    HySack sack = goal->sack;
+    Queue *onlies = &sack->installonly;
+    Pool *pool = sack_pool(sack);
+    int reresolve = 0;
+
+    for (int i = 0; i < onlies->count; ++i) {
+	Id p, pp;
+	Queue q;
+	queue_init(&q);
+
+	FOR_PROVIDES(p, pp, onlies->elements[i])
+	    if (solver_get_decisionlevel(solv, p) > 0)
+		queue_push(&q, p);
+	if (q.count <= sack->installonly_limit) {
+	    queue_free(&q);
+	    continue;
+	}
+	qsort_r(q.elements, q.count, sizeof(q.elements[0]), sort_packages, pool);
+	Queue same_names;
+	queue_init(&same_names);
+	while (q.count > 0) {
+	    same_name_subqueue(pool, &q, &same_names);
+	    if (same_names.count <= sack->installonly_limit)
+		continue;
+	    reresolve = 1;
+	    for (int j = 0; j < same_names.count; ++j) {
+		Id id  = same_names.elements[j];
+		Id action = SOLVER_ERASE;
+		if (j < sack->installonly_limit)
+		    action = SOLVER_INSTALL;
+		queue_push2(job, action | SOLVER_SOLVABLE, id);
+	    }
+	}
+	queue_free(&same_names);
+	queue_free(&q);
+    }
+    return reresolve;
+}
+
 static int
 internal_solver_callback(Solver *solv, void *data)
 {
@@ -139,6 +216,13 @@ solve(HyGoal goal, Queue *job, int flags, hy_solution_callback user_cb,
 
     if (solver_solve(solv, job))
 	return 1;
+    // either allow solutions callback or installonlies, both at the same time
+    // are not supported
+    if (!user_cb && limit_installonly_packages(goal, solv, job)) {
+	solv = reinit_solver(goal, flags);
+	if (solver_solve(goal->solv, job))
+	    return 1;
+    }
     goal->trans = solver_create_transaction(solv);
     return 0;
 }

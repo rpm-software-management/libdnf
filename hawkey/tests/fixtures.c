@@ -54,7 +54,8 @@ setup_with(HySack sack, ...)
     while (name) {
 	const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
 					name, ".repo");
-	int installed = !strcmp(name, HY_SYSTEM_REPO_NAME);
+	int installed = !strncmp(name, HY_SYSTEM_REPO_NAME,
+				 strlen(HY_SYSTEM_REPO_NAME));
 
 	ret |= load_repo(pool, name, path, installed);
 	name = va_arg(names, const char *);
@@ -74,6 +75,13 @@ fixture_greedy_only(void)
 {
     HySack sack = create_ut_sack();
     fail_if(setup_with(sack, "greedy", NULL));
+}
+
+void
+fixture_installonly(void)
+{
+    HySack sack = create_ut_sack();
+    fail_if(setup_with(sack, "@System-k", "installonly", NULL));
 }
 
 void
@@ -127,7 +135,7 @@ void fixture_yum(void)
 void fixture_reset(void)
 {
     HySack sack = test_globals.sack;
-    hy_sack_set_installonly(sack, NULL);
+    hy_sack_set_installonly(sack, NULL, 0);
     hy_sack_set_excludes(sack, NULL);
     hy_sack_repo_enabled(sack, "main", 1);
     hy_sack_repo_enabled(sack, "updates", 1);

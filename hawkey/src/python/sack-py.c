@@ -221,7 +221,9 @@ set_installonly(_SackObject *self, PyObject *obj, void *unused)
         }
     }
     strings[len] = NULL;
-    hy_sack_set_installonly(self->sack, strings);
+
+    HySack sack = self->sack;
+    hy_sack_set_installonly(sack, strings, sack->installonly_limit);
     pycomp_free_tmp_array(tmp_py_str, len - 1);
 
     return 0;

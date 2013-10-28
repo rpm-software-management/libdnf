@@ -583,7 +583,7 @@ START_TEST(test_goal_installonly)
     const char *installonly[] = {"fool", NULL};
 
     HySack sack = test_globals.sack;
-    hy_sack_set_installonly(sack, installonly);
+    hy_sack_set_installonly(sack, installonly, 2);
     HyPackage pkg = get_latest_pkg(sack, "fool");
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED));
@@ -603,7 +603,7 @@ START_TEST(test_goal_installonly_upgrade_all)
     HySack sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
 
-    hy_sack_set_installonly(sack, installonly);
+    hy_sack_set_installonly(sack, installonly, 2);
 
     hy_goal_upgrade_all(goal);
     fail_if(hy_goal_run(goal));
@@ -789,6 +789,23 @@ START_TEST(test_goal_run_all)
 }
 END_TEST
 
+START_TEST(test_goal_installonly_limit)
+{
+    const char *installonly[] = {"k", NULL};
+    HySack sack = test_globals.sack;
+    hy_sack_set_installonly(sack, installonly, 3);
+
+    HyGoal goal = hy_goal_create(sack);
+    hy_goal_upgrade_all(goal);
+    fail_if(hy_goal_run_flags(goal, 0));
+
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 2);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
+    hy_goal_free(goal);
+}
+END_TEST
+
 START_TEST(test_goal_update_vendor)
 {
     HySack sack = test_globals.sack;
@@ -884,6 +901,12 @@ goal_suite(void)
     tc = tcase_create("Greedy");
     tcase_add_unchecked_fixture(tc, fixture_greedy_only, teardown);
     tcase_add_test(tc, test_goal_run_all);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("Installonly");
+    tcase_add_unchecked_fixture(tc, fixture_installonly, teardown);
+    tcase_add_checked_fixture(tc, fixture_reset, NULL);
+    tcase_add_test(tc, test_goal_installonly_limit);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Vendor");

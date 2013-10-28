@@ -34,6 +34,7 @@ struct _HySack {
     int provides_ready;
     char *cache_dir;
     Queue installonly;
+    int installonly_limit;
     FILE *log_out;
     Map *pkg_excludes;
     Map *repo_excludes;

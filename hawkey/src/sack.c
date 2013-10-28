@@ -599,9 +599,11 @@ hy_sack_list_arches(HySack sack)
 }
 
 void
-hy_sack_set_installonly(HySack sack, const char **installonly)
+hy_sack_set_installonly(HySack sack, const char **installonly, int limit)
 {
     const char *name;
+
+    sack->installonly_limit = limit;
     queue_empty(&sack->installonly);
     if (installonly == NULL)
 	return;
