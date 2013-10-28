@@ -54,6 +54,11 @@ struct _SolutionCallback {
     void *callback_data;
 };
 
+struct InstallonliesSortCallback {
+    Pool *pool;
+    Id running_kernel;
+};
+
 static int
 erase_flags2libsolv(int flags)
 {
@@ -100,11 +105,12 @@ same_name_subqueue(Pool *pool, Queue *in, Queue *out)
 }
 
 static int
-sort_packages(const void *ap, const void *bp, void *poolp)
+sort_packages(const void *ap, const void *bp, void *s_cb)
 {
     Id a = *(Id*)ap;
     Id b = *(Id*)bp;
-    Pool *pool = (Pool*) poolp;
+    Pool *pool = ((struct InstallonliesSortCallback*) s_cb)->pool;
+    Id kernel = ((struct InstallonliesSortCallback*) s_cb)->running_kernel;
     Solvable *sa = pool_id2solvable(pool, a);
     Solvable *sb = pool_id2solvable(pool, b);
 
@@ -113,6 +119,11 @@ sort_packages(const void *ap, const void *bp, void *poolp)
     int name_diff = sa->name - sb->name;
     if (name_diff)
 	return name_diff;
+    /* same name, if one is the running kernel put it last */
+    if (a == kernel)
+	return 1;
+    if (b == kernel)
+	return -1;
 
     return pool_evrcmp(pool, sa->evr, sb->evr, EVRCMP_COMPARE);
 }
@@ -137,7 +148,9 @@ limit_installonly_packages(HyGoal goal, Solver *solv, Queue *job)
 	    queue_free(&q);
 	    continue;
 	}
-	qsort_r(q.elements, q.count, sizeof(q.elements[0]), sort_packages, pool);
+
+	struct InstallonliesSortCallback s_cb = {pool, sack_running_kernel(sack)};
+	qsort_r(q.elements, q.count, sizeof(q.elements[0]), sort_packages, &s_cb);
 	Queue same_names;
 	queue_init(&same_names);
 	while (q.count > 0) {

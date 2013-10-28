@@ -29,9 +29,13 @@
 // hawkey
 #include "sack.h"
 
+typedef Id(*running_kernel_fn_t)(HySack);
+
 struct _HySack {
     Pool *pool;
     int provides_ready;
+    Id running_kernel;
+    running_kernel_fn_t running_kernel_fn;
     char *cache_dir;
     Queue installonly;
     int installonly_limit;
@@ -42,6 +46,7 @@ struct _HySack {
 };
 
 void sack_make_provides_ready(HySack sack);
+Id sack_running_kernel(HySack sack);
 void sack_log(HySack sack, int level, const char *format, ...);
 int sack_knows(HySack sack, const char *name, const char *version, int flags);
 void sack_same_names(HySack sack, Id name, Id arch, Queue *same);

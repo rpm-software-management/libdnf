@@ -80,6 +80,30 @@ get_available_pkg(HySack sack, const char *name)
     return pkg;
 }
 
+/* make Sack think we are unable to determine the running kernel */
+static Id
+mock_running_kernel_no(HySack sack)
+{
+    return -1;
+}
+
+/* make Sack think k-1-1 is the running kernel */
+static Id
+mock_running_kernel(HySack sack)
+{
+    HyQuery q = hy_query_create(sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "k");
+    hy_query_filter(q, HY_PKG_EVR, HY_EQ, "1-1");
+    HyPackageList plist = hy_query_run(q);
+    fail_unless(hy_packagelist_count(plist) == 1);
+    HyPackage pkg = hy_packagelist_get_clone(plist, 0);
+    hy_query_free(q);
+    hy_packagelist_free(plist);
+    Id id = package_id(pkg);
+    hy_package_free(pkg);
+    return id;
+}
+
 static int
 size_and_free(HyPackageList plist)
 {
@@ -794,12 +818,41 @@ START_TEST(test_goal_installonly_limit)
     const char *installonly[] = {"k", NULL};
     HySack sack = test_globals.sack;
     hy_sack_set_installonly(sack, installonly, 3);
+    sack->running_kernel_fn = mock_running_kernel_no;
 
     HyGoal goal = hy_goal_create(sack);
     hy_goal_upgrade_all(goal);
     fail_if(hy_goal_run_flags(goal, 0));
 
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 2);
+    HyPackageList erasures = hy_goal_list_erasures(goal);
+    fail_unless(hy_packagelist_count(erasures) == 2);
+    assert_nevra_eq(hy_packagelist_get(erasures, 0), "k-1-0.x86_64");
+    assert_nevra_eq(hy_packagelist_get(erasures, 1), "k-1-1.x86_64");
+    hy_packagelist_free(erasures);
+
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
+    hy_goal_free(goal);
+}
+END_TEST
+
+START_TEST(test_goal_installonly_limit_running_kernel)
+{
+    const char *installonly[] = {"k", NULL};
+    HySack sack = test_globals.sack;
+    hy_sack_set_installonly(sack, installonly, 3);
+    sack->running_kernel_fn = mock_running_kernel;
+
+    HyGoal goal = hy_goal_create(sack);
+    hy_goal_upgrade_all(goal);
+    fail_if(hy_goal_run_flags(goal, 0));
+
+    HyPackageList erasures = hy_goal_list_erasures(goal);
+    fail_unless(hy_packagelist_count(erasures) == 2);
+    assert_nevra_eq(hy_packagelist_get(erasures, 0), "k-1-0.x86_64");
+    assert_nevra_eq(hy_packagelist_get(erasures, 1), "k-2-0.x86_64");
+    hy_packagelist_free(erasures);
+
     fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
     fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
     hy_goal_free(goal);
@@ -907,6 +960,7 @@ goal_suite(void)
     tcase_add_unchecked_fixture(tc, fixture_installonly, teardown);
     tcase_add_checked_fixture(tc, fixture_reset, NULL);
     tcase_add_test(tc, test_goal_installonly_limit);
+    tcase_add_test(tc, test_goal_installonly_limit_running_kernel);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Vendor");

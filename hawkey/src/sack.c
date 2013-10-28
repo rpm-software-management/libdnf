@@ -488,6 +488,8 @@ hy_sack_create(const char *cache_path, const char *arch, const char *rootdir,
 
     pool_set_rootdir(pool, rootdir);
     sack->pool = pool;
+    sack->running_kernel = -1;
+    sack->running_kernel_fn = running_kernel;
 
     if (cache_path != NULL) {
 	sack->cache_dir = solv_strdup(cache_path);
@@ -848,6 +850,8 @@ hy_sack_load_yum_repo(HySack sack, HyRepo repo, int flags)
     return 0;
 }
 
+// internal to hawkey
+
 void
 sack_make_provides_ready(HySack sack)
 {
@@ -858,7 +862,14 @@ sack_make_provides_ready(HySack sack)
     }
 }
 
-// internal
+Id
+sack_running_kernel(HySack sack)
+{
+    if (sack->running_kernel >= 0)
+	return sack->running_kernel;
+    sack->running_kernel = sack->running_kernel_fn(sack);
+    return sack->running_kernel;
+}
 
 void
 sack_log(HySack sack, int level, const char *format, ...)
