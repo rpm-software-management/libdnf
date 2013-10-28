@@ -82,6 +82,21 @@ goal_has(HyGoal goal, Id needle)
     return 0;
 }
 
+static int
+internal_solver_callback(Solver *solv, void *data)
+{
+    struct _SolutionCallback *s_cb = (struct _SolutionCallback*)data;
+    HyGoal goal = s_cb->goal;
+
+    assert(goal->solv == solv);
+    assert(goal->trans == NULL);
+    goal->trans = solver_create_transaction(solv);
+    int ret = s_cb->callback(goal, s_cb->callback_data);
+    transaction_free(goal->trans);
+    goal->trans = NULL;
+    return ret;
+}
+
 static Solver *
 reinit_solver(HyGoal goal, int flags)
 {
@@ -103,17 +118,25 @@ reinit_solver(HyGoal goal, int flags)
 }
 
 static int
-solve(HyGoal goal, Queue *job)
+solve(HyGoal goal, Queue *job, int flags, hy_solution_callback user_cb,
+      void * user_cb_data)
 {
     HySack sack = goal->sack;
-    Solver *solv = goal->solv;
+    struct _SolutionCallback cb_tuple;
 
+    sack_make_provides_ready(sack);
     if (goal->trans) {
 	transaction_free(goal->trans);
 	goal->trans = NULL;
     }
 
-    sack_make_provides_ready(sack);
+    Solver *solv = reinit_solver(goal, flags);
+    if (user_cb) {
+	cb_tuple = (struct _SolutionCallback){goal, user_cb, user_cb_data};
+	solv->solution_callback = internal_solver_callback;
+	solv->solution_callback_data = &cb_tuple;
+    }
+
     if (solver_solve(solv, job))
 	return 1;
     goal->trans = solver_create_transaction(solv);
@@ -127,7 +150,6 @@ construct_job(HyGoal goal, int flags)
     Pool *pool = sack_pool(sack);
     Queue *job = solv_malloc(sizeof(*job));
 
-    reinit_solver(goal, flags);
     queue_init_clone(job, &goal->staging);
 
     /* apply forcebest */
@@ -147,6 +169,13 @@ construct_job(HyGoal goal, int flags)
 		queue_push2(job, SOLVER_SOLVABLE|SOLVER_LOCK, i);
 
     return job;
+}
+
+static void
+free_job(Queue *job)
+{
+    queue_free(job);
+    solv_free(job);
 }
 
 static HyPackageList
@@ -185,21 +214,6 @@ list_results(HyGoal goal, Id type_filter1, Id type_filter2)
 	    hy_packagelist_push(plist, package_create(goal->sack, p));
     }
     return plist;
-}
-
-static int
-internal_solver_callback(Solver *solv, void *data)
-{
-    struct _SolutionCallback *s_cb = (struct _SolutionCallback*)data;
-    HyGoal goal = s_cb->goal;
-
-    assert(goal->solv == solv);
-    assert(goal->trans == NULL);
-    goal->trans = solver_create_transaction(solv);
-    int ret = s_cb->callback(goal, s_cb->callback_data);
-    transaction_free(goal->trans);
-    goal->trans = NULL;
-    return ret;
 }
 
 // internal functions to translate Selector into libsolv Job
@@ -539,11 +553,7 @@ hy_goal_run(HyGoal goal)
 int
 hy_goal_run_flags(HyGoal goal, int flags)
 {
-    Queue *job = construct_job(goal, flags);
-    int ret = solve(goal, job);
-    queue_free(job);
-    solv_free(job);
-    return ret;
+    return hy_goal_run_all_flags(goal, NULL, NULL, flags);
 }
 
 int
@@ -554,19 +564,11 @@ hy_goal_run_all(HyGoal goal, hy_solution_callback cb, void *cb_data)
 
 int
 hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
-			 int flags)
+		      int flags)
 {
-    struct _SolutionCallback cb_tuple = {goal, cb, cb_data};
     Queue *job = construct_job(goal, flags);
-    Solver *solv = goal->solv;
-
-    solv->solution_callback = internal_solver_callback;
-    solv->solution_callback_data = &cb_tuple;
-
-    int ret = solve(goal, job);
-    queue_free(job);
-    solv_free(job);
-
+    int ret = solve(goal, job, flags, cb, cb_data);
+    free_job(job);
     return ret;
 }
 
