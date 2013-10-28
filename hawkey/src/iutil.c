@@ -596,6 +596,15 @@ dump_jobqueue(Pool *pool, Queue *job)
     return job->count;
 }
 
+
+int
+dump_solvables_queue(Pool *pool, Queue *q)
+{
+    for (int i = 0; i < q->count; ++i)
+	printf("%s\n", pool_solvid2str(pool, q->elements[i]));
+    return q->count;
+}
+
 int
 dump_map(Pool *pool, Map *m)
 {

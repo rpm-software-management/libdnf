@@ -82,6 +82,7 @@ void pool_split_evr(Pool *pool, const char *evr, char **epoch, char **version,
 
 /* debug utils */
 int dump_jobqueue(Pool *pool, Queue *job);
+int dump_solvables_queue(Pool *pool, Queue *q);
 int dump_map(Pool *pool, Map *m);
 
 #endif
