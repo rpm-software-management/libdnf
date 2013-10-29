@@ -756,8 +756,8 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
 	    hrepo->state_main = _HY_LOADED_CACHE;
     } else {
 	HY_LOG_INFO("fetching rpmdb");
-	rc = repo_add_rpmdb(repo, 0, REPO_REUSE_REPODATA | RPM_ADD_WITH_HDRID |
-			    REPO_USE_ROOTDIR);
+	int flags = REPO_REUSE_REPODATA | RPM_ADD_WITH_HDRID | REPO_USE_ROOTDIR;
+	rc = repo_add_rpmdb_reffp(repo, cache_fp, flags);
 	if (!rc)
 	    hrepo->state_main = _HY_LOADED_FETCH;
     }
