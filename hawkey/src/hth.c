@@ -444,7 +444,8 @@ int main(int argc, const char **argv)
     free(md_primary_updates_xml);
     free(md_filelists_updates);
 
-    hy_sack_set_installonly(sack, installonly, 3);
+    hy_sack_set_installonly(sack, installonly);
+    hy_sack_set_installonly_limit(sack, 3);
 
     if (argc == 2 && !strcmp(argv[1], "-o")) {
 	obsoletes(sack);

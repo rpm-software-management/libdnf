@@ -607,7 +607,8 @@ START_TEST(test_goal_installonly)
     const char *installonly[] = {"fool", NULL};
 
     HySack sack = test_globals.sack;
-    hy_sack_set_installonly(sack, installonly, 2);
+    hy_sack_set_installonly(sack, installonly);
+    hy_sack_set_installonly_limit(sack, 2);
     HyPackage pkg = get_latest_pkg(sack, "fool");
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED));
@@ -627,7 +628,8 @@ START_TEST(test_goal_installonly_upgrade_all)
     HySack sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
 
-    hy_sack_set_installonly(sack, installonly, 2);
+    hy_sack_set_installonly(sack, installonly);
+    hy_sack_set_installonly_limit(sack, 2);
 
     hy_goal_upgrade_all(goal);
     fail_if(hy_goal_run(goal));
@@ -817,7 +819,8 @@ START_TEST(test_goal_installonly_limit)
 {
     const char *installonly[] = {"k", NULL};
     HySack sack = test_globals.sack;
-    hy_sack_set_installonly(sack, installonly, 3);
+    hy_sack_set_installonly(sack, installonly);
+    hy_sack_set_installonly_limit(sack, 3);
     sack->running_kernel_fn = mock_running_kernel_no;
 
     HyGoal goal = hy_goal_create(sack);
@@ -840,7 +843,8 @@ START_TEST(test_goal_installonly_limit_running_kernel)
 {
     const char *installonly[] = {"k", NULL};
     HySack sack = test_globals.sack;
-    hy_sack_set_installonly(sack, installonly, 3);
+    hy_sack_set_installonly(sack, installonly);
+    hy_sack_set_installonly_limit(sack, 3);
     sack->running_kernel_fn = mock_running_kernel;
 
     HyGoal goal = hy_goal_create(sack);

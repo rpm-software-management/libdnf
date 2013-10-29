@@ -135,7 +135,8 @@ void fixture_yum(void)
 void fixture_reset(void)
 {
     HySack sack = test_globals.sack;
-    hy_sack_set_installonly(sack, NULL, 0);
+    hy_sack_set_installonly(sack, NULL);
+    hy_sack_set_installonly_limit(sack, 0);
     hy_sack_set_excludes(sack, NULL);
     hy_sack_repo_enabled(sack, "main", 1);
     hy_sack_repo_enabled(sack, "updates", 1);

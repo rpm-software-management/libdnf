@@ -450,7 +450,7 @@ END_TEST
 START_TEST(test_upgrades)
 {
     const char *installonly[] = {"fool", NULL};
-    hy_sack_set_installonly(test_globals.sack, installonly, 0);
+    hy_sack_set_installonly(test_globals.sack, installonly);
 
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter_upgrades(q, 1);

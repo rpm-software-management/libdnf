@@ -223,15 +223,26 @@ set_installonly(_SackObject *self, PyObject *obj, void *unused)
     strings[len] = NULL;
 
     HySack sack = self->sack;
-    hy_sack_set_installonly(sack, strings, sack->installonly_limit);
+    hy_sack_set_installonly(sack, strings);
     pycomp_free_tmp_array(tmp_py_str, len - 1);
 
+    return 0;
+}
+
+static int
+set_installonly_limit(_SackObject *self, PyObject *obj, void *unused)
+{
+    int limit = (int)PyLong_AsLong(obj);
+    if (PyErr_Occurred())
+	return -1;
+    hy_sack_set_installonly_limit(self->sack, limit);
     return 0;
 }
 
 static PyGetSetDef sack_getsetters[] = {
     {"cache_path",	(getter)get_cache_dir, NULL, NULL, NULL},
     {"installonly",	NULL, (setter)set_installonly, NULL, NULL},
+    {"installonly_limit",	NULL, (setter)set_installonly_limit, NULL, NULL},
     {NULL}			/* sentinel */
 };
 
