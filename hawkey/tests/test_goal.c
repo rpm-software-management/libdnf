@@ -53,20 +53,6 @@ get_latest_pkg(HySack sack, const char *name)
 }
 
 static HyPackage
-get_installed_pkg(HySack sack, const char *name)
-{
-    HyQuery q = hy_query_create(sack);
-    hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
-    hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-    HyPackageList plist = hy_query_run(q);
-    fail_unless(hy_packagelist_count(plist) == 1);
-    HyPackage pkg = hy_packagelist_get_clone(plist, 0);
-    hy_query_free(q);
-    hy_packagelist_free(plist);
-    return pkg;
-}
-
-static HyPackage
 get_available_pkg(HySack sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
@@ -506,7 +492,7 @@ END_TEST
 START_TEST(test_goal_erase_simple)
 {
     HySack sack = test_globals.sack;
-    HyPackage pkg = get_installed_pkg(sack, "penny");
+    HyPackage pkg = by_name_repo(sack, "penny", HY_SYSTEM_REPO_NAME);
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_goal_erase(goal, pkg));
     hy_package_free(pkg);
@@ -519,7 +505,7 @@ END_TEST
 START_TEST(test_goal_erase_with_deps)
 {
     HySack sack = test_globals.sack;
-    HyPackage pkg = get_installed_pkg(sack, "penny-lib");
+    HyPackage pkg = by_name_repo(sack, "penny-lib", HY_SYSTEM_REPO_NAME);
 
     // by default can not remove penny-lib, flying depends on it:
     HyGoal goal = hy_goal_create(sack);
@@ -540,7 +526,7 @@ END_TEST
 START_TEST(test_goal_erase_clean_deps)
 {
     HySack sack = test_globals.sack;
-    HyPackage pkg = get_installed_pkg(sack, "flying");
+    HyPackage pkg = by_name_repo(sack, "flying", HY_SYSTEM_REPO_NAME);
 
     // by default, leave dependencies alone:
     HyGoal goal = hy_goal_create(sack);
@@ -557,7 +543,7 @@ START_TEST(test_goal_erase_clean_deps)
     hy_goal_free(goal);
 
     // test userinstalled specification:
-    HyPackage penny_pkg = get_installed_pkg(sack, "penny-lib");
+    HyPackage penny_pkg = by_name_repo(sack, "penny-lib", HY_SYSTEM_REPO_NAME);
     goal = hy_goal_create(sack);
     hy_goal_erase_flags(goal, pkg, HY_CLEAN_DEPS);
     hy_goal_userinstalled(goal, penny_pkg);
@@ -727,7 +713,7 @@ START_TEST(test_goal_rerun)
     hy_package_free(pkg);
 
     // add an erase:
-    pkg = get_installed_pkg(sack, "dog");
+    pkg = by_name_repo(sack, "dog", HY_SYSTEM_REPO_NAME);
     hy_goal_erase(goal, pkg);
     fail_if(hy_goal_run(goal));
     assert_iueo(goal, 2, 0, 1, 0);
