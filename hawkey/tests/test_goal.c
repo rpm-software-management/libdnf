@@ -586,7 +586,7 @@ START_TEST(test_goal_installonly)
     fail_if(hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED));
     hy_package_free(pkg);
     fail_if(hy_goal_run(goal));
-    assert_iueo(goal, 1, 0, 0, 1);
+    assert_iueo(goal, 1, 0, 1, 0);
     hy_goal_free(goal);
 }
 END_TEST
@@ -603,13 +603,13 @@ START_TEST(test_goal_installonly_upgrade_all)
     hy_goal_upgrade_all(goal);
     fail_if(hy_goal_run(goal));
 
-    HyPackageList plist = hy_goal_list_obsoleted(goal);
+    HyPackageList plist = hy_goal_list_erasures(goal);
     assert_list_names(plist, "penny", NULL);
     hy_packagelist_free(plist);
     plist = hy_goal_list_installs(goal);
     assert_list_names(plist, "fool", NULL);
     hy_packagelist_free(plist);
-    assert_iueo(goal, 1, 4, 0, 1);
+    assert_iueo(goal, 1, 4, 1, 0);
 
     hy_goal_free(goal);
 }
