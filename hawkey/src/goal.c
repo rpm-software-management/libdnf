@@ -188,7 +188,7 @@ internal_solver_callback(Solver *solv, void *data)
 }
 
 static Solver *
-reinit_solver(HyGoal goal, int flags)
+init_solver(HyGoal goal, int flags)
 {
     Pool *pool = sack_pool(goal->sack);
     Solver *solv = solver_create(pool);
@@ -220,7 +220,7 @@ solve(HyGoal goal, Queue *job, int flags, hy_solution_callback user_cb,
 	goal->trans = NULL;
     }
 
-    Solver *solv = reinit_solver(goal, flags);
+    Solver *solv = init_solver(goal, flags);
     if (user_cb) {
 	cb_tuple = (struct _SolutionCallback){goal, user_cb, user_cb_data};
 	solv->solution_callback = internal_solver_callback;
@@ -231,11 +231,9 @@ solve(HyGoal goal, Queue *job, int flags, hy_solution_callback user_cb,
 	return 1;
     // either allow solutions callback or installonlies, both at the same time
     // are not supported
-    if (!user_cb && limit_installonly_packages(goal, solv, job)) {
-	solv = reinit_solver(goal, flags);
-	if (solver_solve(goal->solv, job))
+    if (!user_cb && limit_installonly_packages(goal, solv, job))
+	if (solver_solve(solv, job))
 	    return 1;
-    }
     goal->trans = solver_create_transaction(solv);
     return 0;
 }
