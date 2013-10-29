@@ -112,6 +112,16 @@ size_and_free(HyPackageList plist)
     return c;
 }
 
+/* assert on installed-upgraded-erased-obsoleted numbers */
+static void
+assert_iueo(HyGoal goal, int i, int u, int e, int o)
+{
+    fail_unless(size_and_free(hy_goal_list_installs(goal)) == i);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == u);
+    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == e);
+    fail_unless(size_and_free(hy_goal_list_obsoleted(goal)) == o);
+}
+
 START_TEST(test_goal_sanity)
 {
     HyGoal goal = hy_goal_create(test_globals.sack);
@@ -153,9 +163,7 @@ START_TEST(test_goal_install)
     fail_if(hy_goal_install(goal, pkg));
     hy_package_free(pkg);
     fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 2);
+    assert_iueo(goal, 2, 0, 0, 0);
     hy_goal_free(goal);
 }
 END_TEST
@@ -171,9 +179,7 @@ START_TEST(test_goal_install_multilib)
     hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "semolina");
     fail_if(hy_goal_install_selector(goal, sltr));
     fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
+    assert_iueo(goal, 1, 0, 0, 0);
     hy_selector_free(sltr);
     hy_goal_free(goal);
 }
@@ -192,11 +198,9 @@ START_TEST(test_goal_install_selector)
     hy_selector_free(sltr);
 
     fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
+    assert_iueo(goal, 1, 0, 0, 0);
 
     HyPackageList plist = hy_goal_list_installs(goal);
-    fail_unless(hy_packagelist_count(plist), 1);
     char *nvra = hy_package_get_nevra(hy_packagelist_get(plist, 0));
     ck_assert_str_eq(nvra, "semolina-2-0.i686");
     hy_free(nvra);
@@ -250,10 +254,7 @@ START_TEST(test_goal_install_selector_two)
     hy_selector_free(sltr);
 
     fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_obsoleted(goal)) == 1);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 1);
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
+    assert_iueo(goal, 1, 1, 0, 1);
 
     hy_goal_free(goal);
 }
@@ -269,9 +270,7 @@ START_TEST(test_goal_install_selector_nomatch)
     hy_selector_free(sltr);
 
     fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
+    assert_iueo(goal, 0, 0, 0, 0);
     hy_goal_free(goal);
 }
 END_TEST
@@ -284,7 +283,7 @@ START_TEST(test_goal_selector_glob)
     fail_if(hy_selector_set(sltr, HY_PKG_NAME, HY_GLOB, "*emolin*"));
     fail_if(hy_goal_install_selector(goal, sltr));
     fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
+    assert_iueo(goal, 1, 0, 0, 0);
 
     hy_goal_free(goal);
     hy_selector_free(sltr);
@@ -312,7 +311,7 @@ START_TEST(test_goal_selector_upgrade)
     fail_if(hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "pilchard"));
     fail_if(hy_goal_upgrade_to_selector(goal, sltr));
     fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 2);
+    assert_iueo(goal, 0, 2, 0, 0);
     hy_goal_free(goal);
     hy_selector_free(sltr);
 }
@@ -328,10 +327,7 @@ START_TEST(test_goal_selector_upgrade_provides)
     hy_selector_free(sltr);
 
     fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 1);
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_obsoleted(goal)) == 1);
+    assert_iueo(goal, 0, 1, 0, 1);
     hy_goal_free(goal);
 }
 END_TEST
@@ -343,14 +339,10 @@ START_TEST(test_goal_upgrade)
     fail_if(hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED));
     hy_package_free(pkg);
     fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_obsoleted(goal)) == 1);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 1);
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
+    assert_iueo(goal, 0, 1, 0, 1);
     hy_goal_free(goal);
 }
 END_TEST
-
 
 static void
 assert_list_names(HyPackageList plist, ...)
@@ -407,9 +399,7 @@ START_TEST(test_goal_downgrade)
 
     hy_goal_downgrade_to(goal, to_be_pkg);
     fail_if(hy_goal_run(goal));
-
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
+    assert_iueo(goal, 0, 0, 0, 0);
 
     HyPackageList plist = hy_goal_list_downgrades(goal);
     fail_unless(hy_packagelist_count(plist) == 1);
@@ -508,7 +498,7 @@ START_TEST(test_goal_no_reinstall)
     fail_if(hy_goal_install(goal, pkg));
     hy_package_free(pkg);
     fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
+    assert_iueo(goal, 0, 0, 0, 0);
     hy_goal_free(goal);
 }
 END_TEST
@@ -521,9 +511,7 @@ START_TEST(test_goal_erase_simple)
     fail_if(hy_goal_erase(goal, pkg));
     hy_package_free(pkg);
     fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
+    assert_iueo(goal, 0, 0, 1, 0);
     hy_goal_free(goal);
 }
 END_TEST
@@ -542,9 +530,7 @@ START_TEST(test_goal_erase_with_deps)
     goal = hy_goal_create(sack);
     hy_goal_erase(goal, pkg);
     fail_if(hy_goal_run_flags(goal, HY_ALLOW_UNINSTALL));
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 2);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
+    assert_iueo(goal, 0, 0, 2, 0);
     hy_goal_free(goal);
 
     hy_package_free(pkg);
@@ -560,14 +546,14 @@ START_TEST(test_goal_erase_clean_deps)
     HyGoal goal = hy_goal_create(sack);
     hy_goal_erase(goal, pkg);
     hy_goal_run(goal);
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
+    assert_iueo(goal, 0, 0, 1, 0);
     hy_goal_free(goal);
 
     // allow deleting dependencies:
     goal = hy_goal_create(sack);
     hy_goal_erase_flags(goal, pkg, HY_CLEAN_DEPS);
     fail_unless(hy_goal_run(goal) == 0);
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 2);
+    assert_iueo(goal, 0, 0, 2, 0);
     hy_goal_free(goal);
 
     // test userinstalled specification:
@@ -578,7 +564,7 @@ START_TEST(test_goal_erase_clean_deps)
     // having the same solvable twice in a goal shouldn't break anything:
     hy_goal_userinstalled(goal, pkg);
     fail_unless(hy_goal_run(goal) == 0);
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
+    assert_iueo(goal, 0, 0, 1, 0);
     hy_goal_free(goal);
     hy_package_free(penny_pkg);
 
@@ -614,10 +600,7 @@ START_TEST(test_goal_installonly)
     fail_if(hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED));
     hy_package_free(pkg);
     fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_obsoleted(goal)) == 1);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
-
+    assert_iueo(goal, 1, 0, 0, 1);
     hy_goal_free(goal);
 }
 END_TEST
@@ -640,7 +623,7 @@ START_TEST(test_goal_installonly_upgrade_all)
     plist = hy_goal_list_installs(goal);
     assert_list_names(plist, "fool", NULL);
     hy_packagelist_free(plist);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 4);
+    assert_iueo(goal, 1, 4, 0, 1);
 
     hy_goal_free(goal);
 }
@@ -679,7 +662,7 @@ START_TEST(test_goal_upgrade_disabled_repo)
     goal = hy_goal_create(sack);
     hy_goal_upgrade_all(goal);
     hy_goal_run(goal);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 1);
+    assert_iueo(goal, 0, 1, 0, 0);
     hy_goal_free(goal);
 }
 END_TEST
@@ -719,11 +702,8 @@ START_TEST(test_goal_distupgrade_all)
     fail_if(hy_goal_distupgrade_all(goal));
     fail_if(hy_goal_run(goal));
 
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
-
+    assert_iueo(goal, 0, 1, 0, 0);
     HyPackageList plist = hy_goal_list_upgrades(goal);
-    fail_unless(hy_packagelist_count(plist) == 1);
     assert_nevra_eq(hy_packagelist_get(plist, 0), "flying-3-0.noarch");
     hy_packagelist_free(plist);
 
@@ -743,16 +723,14 @@ START_TEST(test_goal_rerun)
 
     hy_goal_install(goal, pkg);
     fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 2);
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 0);
+    assert_iueo(goal, 2, 0, 0, 0);
     hy_package_free(pkg);
 
     // add an erase:
     pkg = get_installed_pkg(sack, "dog");
     hy_goal_erase(goal, pkg);
     fail_if(hy_goal_run(goal));
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 2);
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == 1);
+    assert_iueo(goal, 2, 0, 1, 0);
     hy_package_free(pkg);
     hy_goal_free(goal);
 }
@@ -827,14 +805,12 @@ START_TEST(test_goal_installonly_limit)
     hy_goal_upgrade_all(goal);
     fail_if(hy_goal_run_flags(goal, 0));
 
+    assert_iueo(goal, 1, 0, 2, 0);
     HyPackageList erasures = hy_goal_list_erasures(goal);
-    fail_unless(hy_packagelist_count(erasures) == 2);
     assert_nevra_eq(hy_packagelist_get(erasures, 0), "k-1-0.x86_64");
     assert_nevra_eq(hy_packagelist_get(erasures, 1), "k-1-1.x86_64");
     hy_packagelist_free(erasures);
 
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
     hy_goal_free(goal);
 }
 END_TEST
@@ -851,14 +827,12 @@ START_TEST(test_goal_installonly_limit_running_kernel)
     hy_goal_upgrade_all(goal);
     fail_if(hy_goal_run_flags(goal, 0));
 
+    assert_iueo(goal, 1, 0, 2, 0);
     HyPackageList erasures = hy_goal_list_erasures(goal);
-    fail_unless(hy_packagelist_count(erasures) == 2);
     assert_nevra_eq(hy_packagelist_get(erasures, 0), "k-1-0.x86_64");
     assert_nevra_eq(hy_packagelist_get(erasures, 1), "k-2-0.x86_64");
     hy_packagelist_free(erasures);
 
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 1);
     hy_goal_free(goal);
 }
 END_TEST
@@ -875,15 +849,7 @@ START_TEST(test_goal_update_vendor)
 
     /* hy_goal_upgrade_all(goal); */
     fail_if(hy_goal_run(goal));
-
-    HyPackageList plist = hy_goal_list_installs(goal);
-    fail_unless(hy_packagelist_count(plist) == 1);
-    hy_packagelist_free(plist);
-
-    plist = hy_goal_list_erasures(goal);
-    fail_unless(size_and_free(plist) == 0);
-    plist = hy_goal_list_obsoleted(goal);
-    fail_unless(size_and_free(plist) == 1);
+    assert_iueo(goal, 1, 0, 0, 1);
 
     hy_goal_free(goal);
 }
@@ -898,8 +864,7 @@ START_TEST(test_goal_forcebest_arches)
     hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "gun");
     fail_if(hy_goal_upgrade_selector(goal, sltr));
     fail_if(hy_goal_run_flags(goal, HY_FORCE_BEST));
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == 0);
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == 0);
+    assert_iueo(goal, 0, 0, 0, 0);
 
     hy_selector_free(sltr);
     hy_goal_free(goal);
