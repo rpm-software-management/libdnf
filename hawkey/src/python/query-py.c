@@ -158,7 +158,7 @@ filter(_QueryObject *self, PyObject *args)
 	return NULL;
     if (keyname == HY_PKG_DOWNGRADES ||
 	keyname == HY_PKG_EMPTY ||
-	keyname == HY_PKG_LATEST ||
+	keyname == HY_PKG_LATEST_PER_ARCH ||
 	keyname == HY_PKG_UPGRADES) {
 	long val;
 
@@ -173,8 +173,8 @@ filter(_QueryObject *self, PyObject *args)
 		return NULL;
 	    }
 	    hy_query_filter_empty(self->query);
-	} else if (keyname == HY_PKG_LATEST)
-	    hy_query_filter_latest(self->query, val);
+	} else if (keyname == HY_PKG_LATEST_PER_ARCH)
+	    hy_query_filter_latest_per_arch(self->query, val);
 	else if (keyname == HY_PKG_DOWNGRADES)
 	    hy_query_filter_downgrades(self->query, val);
 	else

@@ -181,7 +181,7 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "PKG_EPOCH", HY_PKG_EPOCH);
     PyModule_AddIntConstant(m, "PKG_EVR", HY_PKG_EVR);
     PyModule_AddIntConstant(m, "PKG_FILE", HY_PKG_FILE);
-    PyModule_AddIntConstant(m, "PKG_LATEST", HY_PKG_LATEST);
+    PyModule_AddIntConstant(m, "PKG_LATEST_PER_ARCH", HY_PKG_LATEST_PER_ARCH);
     PyModule_AddIntConstant(m, "PKG_LOCATION", HY_PKG_LOCATION);
     PyModule_AddIntConstant(m, "PKG_NAME", HY_PKG_NAME);
     PyModule_AddIntConstant(m, "PKG_OBSOLETES", HY_PKG_OBSOLETES);

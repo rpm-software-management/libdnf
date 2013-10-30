@@ -159,7 +159,7 @@ class TestQuery(base.TestCase):
     def test_repeated(self):
         q = hawkey.Query(self.sack).filter(name="jay")
         q.run()
-        q.filterm(latest=True)
+        q.filterm(latest_per_arch=True)
         self.assertEqual(len(q), 1)
 
     def test_reldep(self):

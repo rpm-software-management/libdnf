@@ -316,7 +316,7 @@ START_TEST(test_query_pkg)
     hy_query_free(q);
 
     // filter on
-    hy_query_filter_latest(q2, 1);
+    hy_query_filter_latest_per_arch(q2, 1);
     pset = hy_query_run_set(q2);
     fail_unless(hy_packageset_count(pset) == 1);
     HyPackage pkg = hy_packageset_get_clone(pset, 0);
@@ -463,7 +463,7 @@ START_TEST(test_filter_latest)
 {
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "fool");
-    hy_query_filter_latest(q, 1);
+    hy_query_filter_latest_per_arch(q, 1);
     HyPackageList plist = hy_query_run(q);
     fail_unless(hy_packagelist_count(plist) == 1);
     HyPackage pkg = hy_packagelist_get(plist, 0);
@@ -478,7 +478,7 @@ START_TEST(test_filter_latest2)
 {
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "flying");
-    hy_query_filter_latest(q, 1);
+    hy_query_filter_latest_per_arch(q, 1);
     HyPackageList plist = hy_query_run(q);
     fail_unless(hy_packagelist_count(plist) == 2);
     HyPackage pkg = hy_packagelist_get(plist, 0);
@@ -498,7 +498,7 @@ START_TEST(test_filter_latest_archs)
 {
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "penny-lib");
-    hy_query_filter_latest(q, 1);
+    hy_query_filter_latest_per_arch(q, 1);
     HyPackageList plist = hy_query_run(q);
     fail_unless(hy_packagelist_count(plist) == 2); /* both architectures */
     hy_query_free(q);

@@ -304,7 +304,7 @@ static void update_remote(HySack sack, const char *name)
 
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
     hy_query_filter(q, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
-    hy_query_filter_latest(q, 1);
+    hy_query_filter_latest_per_arch(q, 1);
 
     plist = hy_query_run(q);
     if (hy_packagelist_count(plist) == 0) {

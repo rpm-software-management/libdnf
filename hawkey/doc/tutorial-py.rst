@@ -163,7 +163,7 @@ with ``gtk``::
 Or I want to find the latest version of all ``python`` packages the Sack knows of::
 
   >>> q.clear()
-  >>> q = q.filter(name='python', latest=True)
+  >>> q = q.filter(name='python', latest_per_arch=True)
   >>> for pkg in q:
   ...     print str(pkg)
   ... 
@@ -202,8 +202,8 @@ all its dependencies recursively satisfied?" Suppose we want to install `the RTS
 game Spring <http://springrts.com/>`_. First let's locate the latest version of
 the package in repositories::
 
-  >>> q = hawkey.Query(sack).filter(name='spring', latest=True)
-  >>> pkg = hawkey.Query(sack).filter(name='spring', latest=True)[0]
+  >>> q = hawkey.Query(sack).filter(name='spring', latest_per_arch=True)
+  >>> pkg = hawkey.Query(sack).filter(name='spring', latest_per_arch=True)[0]
   >>> str(pkg)
   'spring-88.0-2.fc17.x86_64'
   >>> pkg.reponame

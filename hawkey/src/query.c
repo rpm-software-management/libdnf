@@ -1035,7 +1035,7 @@ hy_query_filter_upgrades(HyQuery q, int val)
  * Narrows to only the highest version of a package per arch.
  */
 void
-hy_query_filter_latest(HyQuery q, int val)
+hy_query_filter_latest_per_arch(HyQuery q, int val)
 {
     clear_result(q);
     q->latest = val;

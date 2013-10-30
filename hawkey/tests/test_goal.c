@@ -42,7 +42,7 @@ get_latest_pkg(HySack sack, const char *name)
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
     hy_query_filter(q, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
-    hy_query_filter_latest(q, 1);
+    hy_query_filter_latest_per_arch(q, 1);
     HyPackageList plist = hy_query_run(q);
     fail_unless(hy_packagelist_count(plist) == 1,
 		"get_latest_pkg() failed finding '%s'.", name);
