@@ -20,6 +20,7 @@
 
 from __future__ import absolute_import
 from . import base
+from hawkey import NEVRA
 from sys import version_info as python_version
 
 import hawkey
@@ -39,21 +40,21 @@ class SubjectTest(base.TestCase):
         subj = hawkey.Subject(INP_FOF)
         result = list(subj.nevra_possibilities(form=hawkey.FORM_NEVRA))
         self.assertLength(result, 1)
-        self.assertEqual(result[0], hawkey.NEVRA(name='four-of-fish', epoch=8,
+        self.assertEqual(result[0], NEVRA(name='four-of-fish', epoch=8,
                                                  version='3.6.9',
                                                  release='11.fc100',
                                                  arch='x86_64'))
 
         subj = hawkey.Subject(INP_FOF_NOEPOCH)
         result = list(subj.nevra_possibilities(form=hawkey.FORM_NEVRA))
-        self.assertEqual(result[0], hawkey.NEVRA(name='four-of-fish', epoch=None,
+        self.assertEqual(result[0], NEVRA(name='four-of-fish', epoch=None,
                                                  version='3.6.9',
                                                  release='11.fc100',
                                                  arch='x86_64'))
 
     def test_nevr(self):
         subj = hawkey.Subject(INP_FOF)
-        expect = hawkey.NEVRA(name='four-of-fish', epoch=8, version='3.6.9',
+        expect = NEVRA(name='four-of-fish', epoch=8, version='3.6.9',
                               release='11.fc100.x86_64', arch=None)
         self.assertEqual(list(subj.nevra_possibilities(form=hawkey.FORM_NEVR))[0],
                          expect)
@@ -68,7 +69,7 @@ class SubjectTest(base.TestCase):
         nevra_possibilities = list(subj.nevra_possibilities(form=hawkey.FORM_NEV))
         self.assertLength(nevra_possibilities, 1)
         self.assertEqual(nevra_possibilities[0],
-                         hawkey.NEVRA(name='four-of-fish', epoch=8,
+                         NEVRA(name='four-of-fish', epoch=8,
                                       version='3.6.9', release=None, arch=None))
 
     def test_na(self):
@@ -76,7 +77,7 @@ class SubjectTest(base.TestCase):
         nevra_possibilities = list(subj.nevra_possibilities(form=hawkey.FORM_NA))
         self.assertLength(nevra_possibilities, 1)
         self.assertEqual(nevra_possibilities[0],
-                         hawkey.NEVRA(name='four-of-fish-3.6.9', epoch=None,
+                         NEVRA(name='four-of-fish-3.6.9', epoch=None,
                                       version=None, release=None, arch='i686'))
 
     def test_combined(self):
@@ -84,11 +85,11 @@ class SubjectTest(base.TestCase):
         subj = hawkey.Subject(INP_FOF)
         nevras = subj.nevra_possibilities()
         # the epoch in INP_FOF nicely limits the nevra_possibilities:
-        self.assertEqual(next(nevras), hawkey.NEVRA(name='four-of-fish', epoch=8,
+        self.assertEqual(next(nevras), NEVRA(name='four-of-fish', epoch=8,
                                                      version='3.6.9',
                                                      release='11.fc100',
                                                      arch='x86_64'))
-        self.assertEqual(next(nevras), hawkey.NEVRA(name='four-of-fish', epoch=8,
+        self.assertEqual(next(nevras), NEVRA(name='four-of-fish', epoch=8,
                                                      version='3.6.9',
                                                      release='11.fc100.x86_64',
                                                      arch=None))
@@ -96,22 +97,22 @@ class SubjectTest(base.TestCase):
 
         subj = hawkey.Subject(INP_FOF_NOEPOCH)
         nevras = subj.nevra_possibilities()
-        self.assertEqual(next(nevras), hawkey.NEVRA(name='four-of-fish',
+        self.assertEqual(next(nevras), NEVRA(name='four-of-fish',
                                                      epoch=None, version='3.6.9',
                                                      release='11.fc100',
                                                      arch='x86_64'))
-        self.assertEqual(next(nevras), hawkey.NEVRA(name='four-of-fish',
+        self.assertEqual(next(nevras), NEVRA(name='four-of-fish',
                                                      epoch=None, version='3.6.9',
                                                      release='11.fc100.x86_64',
                                                      arch=None))
-        self.assertEqual(next(nevras), hawkey.NEVRA(name='four-of-fish-3.6.9',
+        self.assertEqual(next(nevras), NEVRA(name='four-of-fish-3.6.9',
                                                      epoch=None,
                                                      version='11.fc100.x86_64',
                                                      release=None, arch=None))
-        self.assertEqual(next(nevras), hawkey.NEVRA(
+        self.assertEqual(next(nevras), NEVRA(
                 name='four-of-fish-3.6.9-11.fc100', epoch=None, version=None,
                 release=None, arch='x86_64'))
-        self.assertEqual(next(nevras), hawkey.NEVRA(
+        self.assertEqual(next(nevras), NEVRA(
                 name='four-of-fish-3.6.9-11.fc100.x86_64', epoch=None,
                 version=None, release=None, arch=None))
         self.assertRaises(StopIteration, next, nevras)
@@ -133,11 +134,11 @@ class SubjectRealPossibilitiesTest(base.TestCase):
         nevra_possibilities = subj.nevra_possibilities_real(self.sack)
         nevra = next(nevra_possibilities)
 
-        self.assertEqual(nevra, hawkey.NEVRA(name='pilchard', epoch=None,
+        self.assertEqual(nevra, NEVRA(name='pilchard', epoch=None,
                                              version='1.2.4', release='1',
                                              arch='x86_64'))
         nevra = next(nevra_possibilities)
-        self.assertEqual(nevra, hawkey.NEVRA(name='pilchard', epoch=None,
+        self.assertEqual(nevra, NEVRA(name='pilchard', epoch=None,
                                              version='1.2.4', release='1.x86_64',
                                              arch=None))
         self.assertRaises(StopIteration, next, nevra_possibilities)
@@ -148,7 +149,7 @@ class SubjectRealPossibilitiesTest(base.TestCase):
         """
         subj = hawkey.Subject("penny-lib")
         nevra = next(subj.nevra_possibilities_real(self.sack))
-        self.assertEqual(nevra, hawkey.NEVRA(name='penny-lib', epoch=None,
+        self.assertEqual(nevra, NEVRA(name='penny-lib', epoch=None,
                                              version=None, release=None,
                                              arch=None))
 
@@ -156,7 +157,7 @@ class SubjectRealPossibilitiesTest(base.TestCase):
         subj = hawkey.Subject("penny-lib-4")
 
         nevra = next(subj.nevra_possibilities_real(self.sack))
-        self.assertEqual(nevra, hawkey.NEVRA(name="penny-lib", epoch=None,
+        self.assertEqual(nevra, NEVRA(name="penny-lib", epoch=None,
                                              version='4', release=None,
                                              arch=None))
 
@@ -164,7 +165,7 @@ class SubjectRealPossibilitiesTest(base.TestCase):
         """ Even two dashes can happen, make sure they can still form a name. """
         subj = hawkey.Subject("penny-lib-devel")
         nevra = next(subj.nevra_possibilities_real(self.sack))
-        self.assertEqual(nevra, hawkey.NEVRA(name='penny-lib-devel', epoch=None,
+        self.assertEqual(nevra, NEVRA(name='penny-lib-devel', epoch=None,
                                              version=None, release=None,
                                              arch=None))
 
@@ -177,9 +178,9 @@ class SubjectRealPossibilitiesTest(base.TestCase):
         subj = hawkey.Subject("*-1.2.4-1.x86_64")
         nevras = list(subj.nevra_possibilities_real(self.sack, allow_globs=True))
         self.assertEqual(
-            [hawkey.NEVRA(name='*', epoch=None, version='1.2.4',
+            [NEVRA(name='*', epoch=None, version='1.2.4',
                           release='1', arch='x86_64'),
-             hawkey.NEVRA(name='*', epoch=None, version='1.2.4',
+             NEVRA(name='*', epoch=None, version='1.2.4',
                           release='1.x86_64', arch=None)],
             nevras)
 
@@ -187,9 +188,9 @@ class SubjectRealPossibilitiesTest(base.TestCase):
         subj = hawkey.Subject("pilchard-1.*-1.x86_64")
         nevras = list(subj.nevra_possibilities_real(self.sack, allow_globs=True))
         self.assertEqual(
-            [hawkey.NEVRA(name='pilchard', epoch=None, version='1.*',
+            [NEVRA(name='pilchard', epoch=None, version='1.*',
                           release='1', arch='x86_64'),
-             hawkey.NEVRA(name='pilchard', epoch=None, version='1.*',
+             NEVRA(name='pilchard', epoch=None, version='1.*',
                           release='1.x86_64', arch=None)],
             nevras)
 
