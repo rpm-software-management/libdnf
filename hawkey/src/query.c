@@ -19,6 +19,7 @@
  */
 
 #include <assert.h>
+#include <fnmatch.h>
 #include <string.h>
 
 // libsolv
@@ -355,9 +356,11 @@ static void
 filter_version(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
+    int cmp_type = f->cmp_type;
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
-	char *filter_vr = solv_dupjoin(f->matches[mi].str, "-0", NULL);
+	const char *match = f->matches[mi].str;
+	char *filter_vr = solv_dupjoin(match, "-0", NULL);
 
 	for (Id id = 1; id < pool->nsolvables; ++id) {
 	    char *e, *v, *r;
@@ -367,12 +370,18 @@ filter_version(HyQuery q, struct _Filter *f, Map *m)
 	    const char *evr = pool_id2str(pool, s->evr);
 
 	    pool_split_evr(pool, evr, &e, &v, &r);
+
+	    if (cmp_type == HY_GLOB) {
+		if (fnmatch(match, v, 0))
+		    continue;
+		MAPSET(m, id);
+	    }
+
 	    char *vr = pool_tmpjoin(pool, v, "-0", NULL);
 	    int cmp = pool_evrcmp_str(pool, vr, filter_vr, EVRCMP_COMPARE);
-
-	    if ((cmp > 0 && f->cmp_type & HY_GT) ||
-		(cmp < 0 && f->cmp_type & HY_LT) ||
-		(cmp == 0 && f->cmp_type & HY_EQ))
+	    if ((cmp > 0 && cmp_type & HY_GT) ||
+		(cmp < 0 && cmp_type & HY_LT) ||
+		(cmp == 0 && cmp_type & HY_EQ))
 		MAPSET(m, id);
 	}
 	solv_free(filter_vr);
