@@ -446,7 +446,7 @@ class Subject(object):
         existing_arches.append('src')
         for nevra in self.nevra_possibilities(form=form):
             if should_check(nevra.name):
-                if not sack._knows(sack, nevra.name, nevra.version,
+                if not sack._knows(nevra.name, nevra.version,
                                    name_only=True, icase=icase):
                     continue
             if should_check(nevra.arch):
@@ -457,5 +457,5 @@ class Subject(object):
     def reldep_possibilities_real(self, sack, icase=False):
         abbr = self._abbr
         if FORM_NAME.match(abbr):
-            if sack._knows(sack, self.pat, icase=icase):
+            if sack._knows(self.pat, icase=icase):
                 yield Reldep(sack, self.pat)

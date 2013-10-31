@@ -45,6 +45,8 @@ class TestCase(unittest.TestCase):
         else:
             super(TestCase, self).assertCountEqual(item1, item2)
 
+skip = unittest.skip
+
 class TestSack(hawkey.test.TestSackMixin, hawkey.Sack):
     def __init__(self, repo_dir, PackageClass=None, package_userdata=None,
                  make_cache_dir=True):

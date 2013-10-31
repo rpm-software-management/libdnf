@@ -249,24 +249,26 @@ static PyGetSetDef sack_getsetters[] = {
 /* object methods */
 
 static PyObject *
-_knows(PyObject *unused, PyObject *args, PyObject *kwds)
+_knows(_SackObject *self, PyObject *args, PyObject *kwds)
 {
-    HySack sack;
     const char *name;
     const char *version = NULL;
-    int name_only = 0, icase = 0;
+    int name_only = 0, icase = 0, glob = 0;
 
-    char *kwlist[] = {"sack", "name", "version", "name_only", "icase", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&s|zii", kwlist,
-				     sack_converter, &sack, &name, &version,
-				     &name_only, &icase))
+    char *kwlist[] = {"name", "version", "name_only", "icase", "glob",
+		      NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|ziii", kwlist,
+				     &name, &version, &name_only, &icase))
 	return NULL;
+
     int flags = 0;
     if (name_only)
 	flags |= HY_NAME_ONLY;
     if (icase)
 	flags |= HY_ICASE;
-    return PyInt_FromLong(sack_knows(sack, name, version, flags));
+    if (glob)
+	flags |= HY_GLOB;
+    return PyInt_FromLong(sack_knows(self->sack, name, version, flags));
 }
 
 static PyObject *
