@@ -258,7 +258,7 @@ _knows(_SackObject *self, PyObject *args, PyObject *kwds)
     char *kwlist[] = {"name", "version", "name_only", "icase", "glob",
 		      NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|ziii", kwlist,
-				     &name, &version, &name_only, &icase))
+				     &name, &version, &name_only, &icase, &glob))
 	return NULL;
 
     int flags = 0;

@@ -435,21 +435,35 @@ class Subject(object):
 
     def nevra_possibilities_real(self, sack, allow_globs=False, icase=False,
                                  form=FORMS_REAL):
-        def should_check(val):
+        def should_check_arch(val):
             if val is None:
                 return False
             if allow_globs and _is_glob_pattern(val):
+                # filtering by a globbed arch is not supported by sack._knows()
                 return False
             return True
+
+        def filter_version(version):
+            if version is None:
+                return None
+            if allow_globs and _is_glob_pattern(version):
+                # filtering by a globbed version is not supported by sack._knows()
+                return None
+            return version
 
         existing_arches = sack.list_arches()
         existing_arches.append('src')
         for nevra in self.nevra_possibilities(form=form):
-            if should_check(nevra.name):
-                if not sack._knows(nevra.name, nevra.version,
-                                   name_only=True, icase=icase):
+            if nevra.name is not None:
+                name = nevra.name
+                # do not enable globbing unless necessary, it gets expensive
+                glob = bool(allow_globs and _is_glob_pattern(name))
+                version = filter_version(nevra.version)
+                if not sack._knows(name, version, name_only=True,
+                                   icase=icase, glob=glob):
                     continue
-            if should_check(nevra.arch):
+
+            if should_check_arch(nevra.arch):
                 if nevra.arch not in existing_arches:
                     continue
             yield nevra

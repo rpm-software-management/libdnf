@@ -175,8 +175,23 @@ class SubjectRealPossibilitiesTest(base.TestCase):
 
     def test_globs(self):
         subj = hawkey.Subject("*-1.2.4-1.x86_64")
-        ret = list(subj.nevra_possibilities_real(self.sack, allow_globs=True))
-        self.assertLength(ret, 5)
+        nevras = list(subj.nevra_possibilities_real(self.sack, allow_globs=True))
+        self.assertEqual(
+            [hawkey.NEVRA(name='*', epoch=None, version='1.2.4',
+                          release='1', arch='x86_64'),
+             hawkey.NEVRA(name='*', epoch=None, version='1.2.4',
+                          release='1.x86_64', arch=None)],
+            nevras)
+
+    def test_version_glob(self):
+        subj = hawkey.Subject("pilchard-1.*-1.x86_64")
+        nevras = list(subj.nevra_possibilities_real(self.sack, allow_globs=True))
+        self.assertEqual(
+            [hawkey.NEVRA(name='pilchard', epoch=None, version='1.*',
+                          release='1', arch='x86_64'),
+             hawkey.NEVRA(name='pilchard', epoch=None, version='1.*',
+                          release='1.x86_64', arch=None)],
+            nevras)
 
     def test_reldep(self):
         subj = hawkey.Subject("P-lib")
