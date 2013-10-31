@@ -215,12 +215,18 @@ log_cb(Pool *pool, void *cb_data, int type, const char *buf)
 }
 
 static void
-queue_di_icase(Pool *pool, Queue *queue, const char *str, int key)
+queue_di(Pool *pool, Queue *queue, const char *str, int di_key, int flags)
 {
     Dataiterator di;
+    int di_flags = SEARCH_STRING;
 
-    dataiterator_init(&di, pool, 0, 0, key, str, SEARCH_STRING|SEARCH_NOCASE);
-    if (dataiterator_step(&di))
+    if (flags & HY_ICASE)
+	di_flags |= SEARCH_NOCASE;
+    if (flags & HY_GLOB)
+	di_flags |= SEARCH_GLOB;
+
+    dataiterator_init(&di, pool, 0, 0, di_key, str, di_flags);
+    while (dataiterator_step(&di))
 	queue_push(queue, di.solvid);
     dataiterator_free(&di);
     return;
@@ -230,21 +236,20 @@ static void
 queue_pkg_name(HySack sack, Queue *queue, const char *provide, int flags)
 {
     Pool *pool = sack_pool(sack);
-    if (flags & HY_ICASE) {
-	queue_di_icase(pool, queue, provide, SOLVABLE_NAME);
+    if (!flags) {
+	Id id = pool_str2id(pool, provide, 0);
+	if (id == 0)
+	    return;
+	Id p, pp;
+	FOR_PROVIDES(p, pp, id) {
+	    Solvable *s = pool_id2solvable(pool, p);
+	    if (s->name == id)
+		queue_push(queue, p);
+	}
 	return;
     }
 
-    Id id = pool_str2id(pool, provide, 0);
-    if (id == 0)
-	return;
-    sack_make_provides_ready(sack);
-    Id p, pp;
-    FOR_PROVIDES(p, pp, id) {
-	Solvable *s = pool_id2solvable(pool, p);
-	if (s->name == id)
-	    queue_push(queue, p);
-    }
+    queue_di(pool, queue, provide, SOLVABLE_NAME, flags);
     return;
 }
 
@@ -252,18 +257,17 @@ static void
 queue_provides(HySack sack, Queue *queue, const char *provide, int flags)
 {
     Pool *pool = sack_pool(sack);
-    if (flags & HY_ICASE) {
-	queue_di_icase(pool, queue, provide, SOLVABLE_PROVIDES);
+    if (!flags) {
+	Id id = pool_str2id(pool, provide, 0);
+	if (id == 0)
+	    return;
+	Id p, pp;
+	FOR_PROVIDES(p, pp, id)
+	    queue_push(queue, p);
 	return;
     }
 
-    Id id = pool_str2id(pool, provide, 0);
-    if (id == 0)
-	return;
-    sack_make_provides_ready(sack);
-    Id p, pp;
-    FOR_PROVIDES(p, pp, id)
-	queue_push(queue, p);
+    queue_di(pool, queue, provide, SOLVABLE_PROVIDES, flags);
     return;
 }
 
@@ -902,16 +906,19 @@ sack_knows(HySack sack, const char *name, const char *version, int flags)
 {
     Queue *q = solv_malloc(sizeof(*q));
     int ret;
+    int name_only = flags & HY_NAME_ONLY;
 
-    assert((flags & ~(HY_ICASE|HY_NAME_ONLY)) == 0);
+    assert((flags & ~(HY_ICASE|HY_NAME_ONLY|HY_GLOB)) == 0);
     queue_init(q);
-    if ((flags & HY_NAME_ONLY) == 0)
-	queue_provides(sack, q, name, flags);
-    else {
+    sack_make_provides_ready(sack);
+    flags &= ~HY_NAME_ONLY;
+
+    if (name_only) {
 	queue_pkg_name(sack, q, name, flags);
 	if (version != NULL)
 	    queue_filter_version(sack, q, version);
-    }
+    } else
+	queue_provides(sack, q, name, flags);
 
     ret = q->count > 0;
     queue_free(q);

@@ -248,6 +248,15 @@ START_TEST(test_sack_knows)
 }
 END_TEST
 
+START_TEST(test_sack_knows_glob)
+{
+    HySack sack = test_globals.sack;
+    fail_if(sack_knows(sack, "penny-l*", "4", HY_NAME_ONLY));
+    fail_unless(sack_knows(sack, "penny-l*", "4", HY_NAME_ONLY|HY_GLOB));
+    fail_if(sack_knows(sack, "penny-l*1", "4", HY_NAME_ONLY|HY_GLOB));
+}
+END_TEST
+
 START_TEST(test_sack_knows_version)
 {
     HySack sack = test_globals.sack;
@@ -285,6 +294,7 @@ sack_suite(void)
     tc = tcase_create("SackKnows");
     tcase_add_unchecked_fixture(tc, fixture_all, teardown);
     tcase_add_test(tc, test_sack_knows);
+    tcase_add_test(tc, test_sack_knows_glob);
     tcase_add_test(tc, test_sack_knows_version);
     suite_add_tcase(s, tc);
 
