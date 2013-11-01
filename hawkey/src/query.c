@@ -626,7 +626,7 @@ filter_latest(HyQuery q, Map *res)
 {
     Pool *pool = sack_pool(q->sack);
     Queue samename;
-    Id i, j, p, hp;
+    Id i, j, p, hp, arch;
     Solvable *highest, *considered;
     int cmp;
 
@@ -638,7 +638,11 @@ filter_latest(HyQuery q, Map *res)
 	hp = i;
 	highest = pool_id2solvable(pool, hp);
 	queue_empty(&samename);
-	sack_same_names(q->sack, highest->name, highest->arch, &samename);
+	if (q->latest_per_arch)
+	    arch = highest->arch;
+	else
+	    arch = 0;
+	sack_same_names(q->sack, highest->name, arch, &samename);
 	/* now find the highest versioned package of those selected */
 	for (j = 0; j < samename.count; ++j) {
 	    p = samename.elements[j];
@@ -805,6 +809,7 @@ hy_query_clone(HyQuery q)
     qn->downgrades = q->downgrades;
     qn->updates = q->updates;
     qn->latest = q->latest;
+    qn->latest_per_arch = q->latest_per_arch;
 
     for (int i = 0; i < q->nfilters; ++i) {
 	struct _Filter *filterp = query_add_filter(qn, q->filters[i].nmatches);
@@ -1038,6 +1043,18 @@ void
 hy_query_filter_latest_per_arch(HyQuery q, int val)
 {
     clear_result(q);
+    q->latest_per_arch = 1;
+    q->latest = val;
+}
+
+/**
+ * Narrows to only the highest version of a package.
+ */
+void
+hy_query_filter_latest(HyQuery q, int val)
+{
+    clear_result(q);
+    q->latest_per_arch = 0;
     q->latest = val;
 }
 

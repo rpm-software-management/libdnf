@@ -55,6 +55,7 @@ _QUERY_KEYNAME_MAP = {
     'epoch'	  : _hawkey.PKG_EPOCH,
     'evr'	  : _hawkey.PKG_EVR,
     'file'	  : _hawkey.PKG_FILE,
+    'latest'	  : _hawkey.PKG_LATEST,
     'latest_per_arch': _hawkey.PKG_LATEST_PER_ARCH,
     'location'	  : _hawkey.PKG_LOCATION,
     'name'	  : _hawkey.PKG_NAME,

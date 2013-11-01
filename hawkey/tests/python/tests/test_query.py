@@ -162,6 +162,14 @@ class TestQuery(base.TestCase):
         q.filterm(latest_per_arch=True)
         self.assertEqual(len(q), 1)
 
+    def test_latest(self):
+        q = hawkey.Query(self.sack).filter(name="pilchard")
+        q.run()
+        q.filterm(latest_per_arch=True)
+        self.assertEqual(len(q), 2)
+        q.filterm(latest=True)
+        self.assertEqual(len(q), 1)
+
     def test_reldep(self):
         flying = base.by_name(self.sack, "flying")
         requires = flying.requires
