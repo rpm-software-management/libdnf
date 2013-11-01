@@ -137,7 +137,7 @@ set_str(_RepoObject *self, PyObject *value, void *closure)
 static PyObject *
 get_cost(_RepoObject *self, void *closure)
 {
-    return PyInt_FromLong(hy_repo_get_cost(self->repo));
+    return PyLong_FromLong(hy_repo_get_cost(self->repo));
 }
 
 static int

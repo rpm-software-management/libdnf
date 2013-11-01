@@ -74,7 +74,7 @@ py_chksum_type(PyObject *unused, PyObject *str_o)
 	PyErr_Format(PyExc_ValueError, "unrecognized chksum type: %s", str);
 	return NULL;
     }
-    return PyInt_FromLong(type);
+    return PyLong_FromLong(type);
 }
 
 static PyObject *

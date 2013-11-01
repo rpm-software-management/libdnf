@@ -341,7 +341,7 @@ evr_cmp(_PackageObject *self, PyObject *other)
     HyPackage pkg2 = packageFromPyObject(other);
     if (pkg2 == NULL)
 	return NULL;
-    return PyInt_FromLong(hy_package_evr_cmp(self->package, pkg2));
+    return PyLong_FromLong(hy_package_evr_cmp(self->package, pkg2));
 }
 
 static PyObject *

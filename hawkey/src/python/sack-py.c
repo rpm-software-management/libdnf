@@ -268,7 +268,7 @@ _knows(_SackObject *self, PyObject *args, PyObject *kwds)
 	flags |= HY_ICASE;
     if (glob)
 	flags |= HY_GLOB;
-    return PyInt_FromLong(sack_knows(self->sack, name, version, flags));
+    return PyLong_FromLong(sack_knows(self->sack, name, version, flags));
 }
 
 static PyObject *
@@ -279,7 +279,7 @@ evr_cmp(_SackObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "ss", &evr1, &evr2))
 	return NULL;
     int cmp = hy_sack_evr_cmp(self->sack, evr1, evr2);
-    return PyInt_FromLong(cmp);
+    return PyLong_FromLong(cmp);
 }
 
 

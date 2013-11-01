@@ -381,7 +381,7 @@ run_all(_GoalObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 count_problems(_GoalObject *self, PyObject *unused)
 {
-    return PyInt_FromLong(hy_goal_count_problems(self->goal));
+    return PyLong_FromLong(hy_goal_count_problems(self->goal));
 }
 
 static PyObject *
@@ -502,7 +502,7 @@ get_reason(_GoalObject *self, PyObject *pkg)
     if (cpkg == NULL)
 	return NULL;
     int reason = hy_goal_get_reason(self->goal, cpkg);
-    return PyInt_FromLong(reason);
+    return PyLong_FromLong(reason);
 }
 
 static struct PyMethodDef goal_methods[] = {

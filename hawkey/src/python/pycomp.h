@@ -25,7 +25,6 @@
 
 // Python 3 and newer types compatibility
 #if PY_MAJOR_VERSION >= 3
-    #define PyInt_FromLong PyLong_FromLong
     #define PyInt_Check PyLong_Check
     #define PyString_FromString PyUnicode_FromString
     #define PyString_FromFormat PyUnicode_FromFormat
