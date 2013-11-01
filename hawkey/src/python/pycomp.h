@@ -29,7 +29,6 @@
     #define PyString_FromString PyUnicode_FromString
     #define PyString_FromFormat PyUnicode_FromFormat
     #define PyString_Check PyBytes_Check
-    #define PyString_AsString PyBytes_AsString
 #endif
 
 // uniform way to define Python 2 and Python 3 modules
