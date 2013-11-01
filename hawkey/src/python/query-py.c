@@ -167,7 +167,7 @@ filter(_QueryObject *self, PyObject *args)
 	    PyErr_SetString(HyExc_Value, "Invalid boolean filter query.");
 	    return NULL;
 	}
-	val = PyInt_AsLong(match);
+	val = PyLong_AsLong(match);
 	if (keyname == HY_PKG_EMPTY) {
 	    if (!val) {
 		PyErr_SetString(HyExc_Value, "Invalid boolean filter query.");
@@ -195,7 +195,7 @@ filter(_QueryObject *self, PyObject *args)
         Py_RETURN_NONE;
     }
     if (PyInt_Check(match)) {
-	long val = PyInt_AsLong(match);
+	long val = PyLong_AsLong(match);
 	if (val > INT_MAX || val < INT_MIN) {
 	    PyErr_SetString(HyExc_Value, "Numeric argument out of range.");
 	    return NULL;

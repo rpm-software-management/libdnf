@@ -394,7 +394,7 @@ describe_problem(_GoalObject *self, PyObject *index_obj)
 	PyErr_SetString(PyExc_TypeError, "An integer value expected.");
 	return NULL;
     }
-    cstr = hy_goal_describe_problem(self->goal, PyInt_AsLong(index_obj));
+    cstr = hy_goal_describe_problem(self->goal, PyLong_AsLong(index_obj));
     if (cstr == NULL) {
 	PyErr_SetString(PyExc_ValueError, "Index out of range.");
 	return NULL;

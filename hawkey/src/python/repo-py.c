@@ -143,7 +143,7 @@ get_cost(_RepoObject *self, void *closure)
 static int
 set_cost(_RepoObject *self, PyObject *value, void *closure)
 {
-    long cost = PyInt_AsLong(value);
+    long cost = PyLong_AsLong(value);
     if (cost > INT_MAX || cost < INT_MIN)
         return -1;
     hy_repo_set_cost(self->repo, cost);

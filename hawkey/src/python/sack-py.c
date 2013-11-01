@@ -293,7 +293,7 @@ create_cmdline_repo(_SackObject *self, PyObject *unused)
 static PyObject *
 create_package(_SackObject *self, PyObject *solvable_id)
 {
-    Id id  = PyInt_AsLong(solvable_id);
+    Id id  = PyLong_AsLong(solvable_id);
     if (id <= 0) {
 	PyErr_SetString(PyExc_TypeError, "Expected a positive integer.");
 	return NULL;
