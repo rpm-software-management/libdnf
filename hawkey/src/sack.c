@@ -206,7 +206,7 @@ log_cb(Pool *pool, void *cb_data, int level, const char *buf)
 
 	sack->log_out = fopen(fn, "a");
 	if (sack->log_out)
-	    HY_LOG_INFO("Started...", sack);
+	    HY_LOG_INFO("Started.", sack);
     }
     if (!sack->log_out)
 	return;
@@ -353,6 +353,9 @@ load_ext(HySack sack, HyRepo hrepo, int which_repodata,
 	repo_set_repodata(hrepo, which_repodata, repo->nrepodata - 1);
     }
  finish:
+    if (ret)
+	HY_LOG_ERROR("load_ext(...%d....) has failed: %d", which_repodata, ret);
+
     sack->provides_ready = 0;
     return ret;
 }
@@ -427,6 +430,8 @@ write_ext(HySack sack, HyRepo hrepo, int which_repodata, const char *suffix)
     fclose(fp);
     if (ret == 0)
 	repo_update_state(hrepo, which_repodata, _HY_WRITTEN);
+    else
+	HY_LOG_ERROR("write_ext(...%d....) has failed: %d", which_repodata, ret);
     return ret;
 }
 
@@ -440,6 +445,7 @@ load_yum_repo(HySack sack, HyRepo hrepo)
     const char *fn_repomd = hy_repo_get_string(hrepo, HY_REPO_MD_FN);
     char *fn_cache = hy_sack_give_cache_fn(sack, name, NULL);
 
+    FILE *fp_primary = NULL;
     FILE *fp_cache = fopen(fn_cache, "r");
     FILE *fp_repomd = fopen(fn_repomd, "r");
     if (fp_repomd == NULL) {
@@ -452,18 +458,24 @@ load_yum_repo(HySack sack, HyRepo hrepo)
     assert(hrepo->state_main == _HY_NEW);
     if (can_use_repomd_cache(fp_cache, hrepo->checksum)) {
 	HY_LOG_INFO("using cached %s", name);
-	if (repo_add_solv(repo, fp_cache, 0))
-	    assert(0);
+	if (repo_add_solv(repo, fp_cache, 0)) {
+	    HY_LOG_ERROR("repo_add_solv() has failed.");
+	    retval = HY_E_LIBSOLV;
+	    goto finish;
+	}
 	hrepo->state_main = _HY_LOADED_CACHE;
     } else {
-	FILE *fp_primary = solv_xfopen(hy_repo_get_string(hrepo, HY_REPO_PRIMARY_FN), "r");
-	assert(fp_repomd && fp_primary);
+	fp_primary = solv_xfopen(hy_repo_get_string(hrepo, HY_REPO_PRIMARY_FN),
+				 "r");
+	assert(fp_primary);
 
 	HY_LOG_INFO("fetching %s", name);
-	repo_add_repomdxml(repo, fp_repomd, 0);
-	repo_add_rpmmd(repo, fp_primary, 0, 0);
-
-	fclose(fp_primary);
+	if (repo_add_repomdxml(repo, fp_repomd, 0) || \
+	    repo_add_rpmmd(repo, fp_primary, 0, 0)) {
+	    HY_LOG_ERROR("repo_add_repomdxml/rpmmd() has failed.");
+	    retval = HY_E_LIBSOLV;
+	    goto finish;
+	}
 	hrepo->state_main = _HY_LOADED_FETCH;
     }
 
@@ -472,6 +484,8 @@ load_yum_repo(HySack sack, HyRepo hrepo)
 	fclose(fp_cache);
     if (fp_repomd)
 	fclose(fp_repomd);
+    if (fp_primary)
+	fclose(fp_primary);
     solv_free(fn_cache);
 
     if (retval == 0) {
