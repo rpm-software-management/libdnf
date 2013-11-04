@@ -347,3 +347,34 @@ use::
 
     obsoleted = goal.obsoleted_by_package(pkg) # list
     obsoleted_pkg = obsoleted[0]
+
+Changes in 0.4.5
+=================
+
+Core
+----
+
+Query: ``hy_query_filter_latest()`` now filter latest packages ignoring architecture
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For old function behaviour use new function ``hy_query_filter_latest_per_arch()``
+
+Python bindings
+---------------
+
+In Python's :class:`Query` option ``latest`` in :meth:`Query.filter` now filter
+only the latest packages ignoring architecture. The original semantics for filtering
+latest packages for each arch is now available via ``latest_per_arch`` option.
+
+For example there are these packages in sack::
+
+  glibc-2.17-4.fc19.x86_64
+  glibc-2.16-24.fc18.x86_64
+  glibc-2.16-24.fc18.i686
+
+  >>> q = hawkey.Query(self.sack).filter(name="glibc")
+  >>> map(str, q.filter(latest=True))
+  ['glibc-2.17-4.fc19.x86_64']
+
+  >>> map(str, q.filter(latest_per_arch=True))
+  ['glibc-2.17-4.fc19.x86_64', 'glibc-2.16-24.fc18.i686']
