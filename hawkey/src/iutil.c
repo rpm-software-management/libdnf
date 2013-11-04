@@ -265,6 +265,27 @@ count_nullt_array(const char **a)
     return strp - a;
 }
 
+const char *
+ll_name(int level)
+{
+    switch (level) {
+    case SOLV_FATAL:
+	return "LFATAL";
+    case SOLV_ERROR:
+	return "LSERROR";
+    case SOLV_WARN:
+	return "LSWARN";
+    case SOLV_DEBUG_RESULT:
+	return "LSRESULT";
+    case HY_LL_ERROR:
+	return "ERROR";
+    case HY_LL_INFO:
+	return "INFO";
+    default:
+	return "(level?)";
+    }
+}
+
 char *
 read_whole_file(const char *path)
 {

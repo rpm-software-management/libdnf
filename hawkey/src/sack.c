@@ -197,7 +197,7 @@ setarch(HySack sack, const char *arch)
 }
 
 static void
-log_cb(Pool *pool, void *cb_data, int type, const char *buf)
+log_cb(Pool *pool, void *cb_data, int level, const char *buf)
 {
     HySack sack = cb_data;
 
@@ -208,10 +208,20 @@ log_cb(Pool *pool, void *cb_data, int type, const char *buf)
 	if (sack->log_out)
 	    HY_LOG_INFO("Started...", sack);
     }
-    if (sack->log_out) {
-	fwrite(buf, strlen(buf), 1, sack->log_out);
-	fflush(sack->log_out);
-    }
+    if (!sack->log_out)
+	return;
+
+    time_t t = time(NULL);
+    struct tm tm;
+    char timestr[26];
+
+    localtime_r(&t, &tm);
+    strftime(timestr, 26, "%b-%d %H:%M:%S ", &tm);
+    const char *pref = pool_tmpjoin(pool, ll_name(level), " ", timestr);
+    pref = pool_tmpjoin(pool, pref, buf, NULL);
+
+    fwrite(pref, strlen(pref), 1, sack->log_out);
+    fflush(sack->log_out);
 }
 
 static void
@@ -886,17 +896,11 @@ sack_log(HySack sack, int level, const char *format, ...)
     Pool *pool = sack_pool(sack);
     char buf[1024];
     va_list args;
-    time_t t = time(NULL);
-    struct tm tm;
-    char timestr[26];
+    const char *format_nl = pool_tmpjoin(pool, format, "\n", NULL);
 
-    localtime_r(&t, &tm);
-    strftime(timestr, 26, "%b-%d %H:%M:%S ", &tm);
-    const char *pref_format = pool_tmpjoin(pool, "hy: ", timestr, format);
-    pref_format = pool_tmpappend(pool, pref_format, "\n", NULL);
-
+    /* add a newline and forward everything to the pool logging */
     va_start(args, format);
-    vsnprintf(buf, sizeof(buf), pref_format, args);
+    vsnprintf(buf, sizeof(buf), format_nl, args);
     va_end(args);
     POOL_DEBUG(level, buf);
 }

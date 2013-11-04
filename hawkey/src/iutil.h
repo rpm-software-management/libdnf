@@ -58,6 +58,7 @@ char *this_username(void);
 
 /* misc utils */
 unsigned count_nullt_array(const char **a);
+const char *ll_name(int level);
 char *read_whole_file(const char *path);
 int str_endswith(const char *haystack, const char *needle);
 int str_startswith(const char *haystack, const char *needle);
