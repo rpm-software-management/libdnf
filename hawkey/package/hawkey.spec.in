@@ -1,4 +1,4 @@
-%global gitrev 513440a
+%global gitrev 9ed6fca
 %global libsolv_version 0.4.0
 
 Name:		hawkey
@@ -106,6 +106,23 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+
+* Fri Nov 8 2013 Aleš Kozumplík <ales@redhat.com> - 0.4.5-1
+- goal: installonly_limit = 0 means it is disabled. (Ales Kozumplik)
+- written API changes for Query filter latest option (RhBug:1025650) (Jan Silhan)
+- tests: superfluous query.run() calls. (Ales Kozumplik)
+- removed define PyString_AsString in pycomp.h (Jan Silhan)
+- replaced PyInt_FromLong with PyLong_FromLong (Jan Silhan)
+- replaced PyInt_AsLong with PyLongAs_Long (Jan Silhan)
+- added latest to query ignoring architectures (Jan Silhan)
+- renamed hy_query_filter_latest to hy_query_filter_latest_per_arch (Jan Silhan)
+- logging: additional logging output on repo loading errors. (Ales Kozumplik)
+- logging: refactor and add a loglevel. (Ales Kozumplik)
+- queries: allow glob matching in query. (Ales Kozumplik)
+- tests: slightly simplify test_subject.py. (Ales Kozumplik)
+- subject: yield correct results when globbing over a version. (Ales Kozumplik)
+- subject: globbing for sack._knows. (Ales Kozumplik)
+- py: subject: sack._knows doesn't need to take sack. (Ales Kozumplik)
 
 * Tue Oct 29 2013 Aleš Kozumplík <ales@redhat.com> - 0.4.4-1
 - With the current libsolv there's no need to reinit solver for re-resolving. (Ales Kozumplik)
