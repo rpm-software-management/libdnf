@@ -801,6 +801,26 @@ START_TEST(test_goal_installonly_limit)
 }
 END_TEST
 
+START_TEST(test_goal_installonly_limit_disabled)
+{
+    // test that setting limit to 0 does not cause all intallonlies to be
+    // uninstalled
+    const char *installonly[] = {"k", NULL};
+    HySack sack = test_globals.sack;
+    hy_sack_set_installonly(sack, installonly);
+    hy_sack_set_installonly_limit(sack, 0);
+    sack->running_kernel_fn = mock_running_kernel_no;
+
+    HyGoal goal = hy_goal_create(sack);
+    hy_goal_upgrade_all(goal);
+    fail_if(hy_goal_run_flags(goal, 0));
+
+    assert_iueo(goal, 1, 0, 0, 0);
+    hy_goal_free(goal);
+}
+END_TEST
+
+
 START_TEST(test_goal_installonly_limit_running_kernel)
 {
     const char *installonly[] = {"k", NULL};
@@ -915,6 +935,7 @@ goal_suite(void)
     tcase_add_unchecked_fixture(tc, fixture_installonly, teardown);
     tcase_add_checked_fixture(tc, fixture_reset, NULL);
     tcase_add_test(tc, test_goal_installonly_limit);
+    tcase_add_test(tc, test_goal_installonly_limit_disabled);
     tcase_add_test(tc, test_goal_installonly_limit_running_kernel);
     suite_add_tcase(s, tc);
 

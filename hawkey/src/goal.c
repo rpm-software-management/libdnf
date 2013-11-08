@@ -132,6 +132,9 @@ static int
 limit_installonly_packages(HyGoal goal, Solver *solv, Queue *job)
 {
     HySack sack = goal->sack;
+    if (!sack->installonly_limit)
+	return 0;
+
     Queue *onlies = &sack->installonly;
     Pool *pool = sack_pool(sack);
     int reresolve = 0;

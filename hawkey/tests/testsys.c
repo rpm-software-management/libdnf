@@ -92,6 +92,17 @@ dump_query_results(HyQuery query)
     dump_packagelist(plist, 1);
 }
 
+void
+dump_goal_results(HyGoal goal)
+{
+    printf("installs:\n");
+    dump_packagelist(hy_goal_list_installs(goal), 1);
+    printf("upgrades:\n");
+    dump_packagelist(hy_goal_list_upgrades(goal), 1);
+    printf("erasures:\n");
+    dump_packagelist(hy_goal_list_erasures(goal), 1);
+}
+
 int
 logfile_size(HySack sack)
 {
