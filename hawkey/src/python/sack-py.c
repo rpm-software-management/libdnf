@@ -382,8 +382,12 @@ load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     int flags = 0;
     if (build_cache)
 	flags |= HY_BUILD_CACHE;
-    if (ret2e(hy_sack_load_system_repo(self->sack, crepo, flags),
-	      "load_system_repo() failed."))
+
+    int ret = hy_sack_load_system_repo(self->sack, crepo, flags);
+    if (ret == HY_E_CACHE_WRITE) {
+	PyErr_SetString(PyExc_IOError, "Failed writing the cache.");
+	return NULL;
+    } else if (ret2e(ret, "load_system_repo() failed."))
 	return NULL;
     Py_RETURN_NONE;
 }
