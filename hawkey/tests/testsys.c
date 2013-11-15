@@ -29,6 +29,7 @@
 #include <solv/util.h>
 
 // hawkey
+#include "src/goal.h"
 #include "src/package.h"
 #include "src/package_internal.h"
 #include "src/query.h"
