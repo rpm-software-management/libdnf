@@ -995,6 +995,30 @@ hy_query_filter_provides(HyQuery q, int cmp_type, const char *name, const char *
 }
 
 int
+hy_query_filter_provides_in(HyQuery q, char **reldep_strs)
+{
+    int cmp_type;
+    char *name = NULL;
+    char *evr = NULL;
+    HyReldep reldep;
+    HyReldepList reldeplist = hy_reldeplist_create(q->sack);
+    for (int i = 0; reldep_strs[i] != NULL; ++i) {
+	if (parse_reldep_str(reldep_strs[i], &name, &evr, &cmp_type) == -1) {
+	    hy_reldeplist_free(reldeplist);
+	    return HY_E_QUERY;
+	}
+	reldep = hy_reldep_create(q->sack, name, cmp_type, evr);
+	hy_reldeplist_add(reldeplist, reldep);
+	hy_reldep_free(reldep);
+	solv_free(name);
+	solv_free(evr);
+    }
+    hy_query_filter_reldep_in(q, HY_PKG_PROVIDES, reldeplist);
+    hy_reldeplist_free(reldeplist);
+    return 0;
+}
+
+int
 hy_query_filter_requires(HyQuery q, int cmp_type, const char *name, const char *evr)
 {
     /* convert to a reldep filter. the trick is handling negation right (it gets

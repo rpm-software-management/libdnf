@@ -2,6 +2,7 @@
 #
 =Pkg: fool 1 5 noarch
 =Prv: fool <= 1-5
+=Prv: fool-lib = 3.3
 =Obs: penny <= 4-1
 =Obs: baby = 6:4.8-3
 =Pkg: flying 3 0 noarch

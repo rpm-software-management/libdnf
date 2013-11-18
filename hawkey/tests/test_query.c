@@ -349,6 +349,27 @@ START_TEST(test_query_provides)
 }
 END_TEST
 
+START_TEST(test_query_provides_in)
+{
+    HyPackage pkg;
+    HyPackageList plist;
+    char* pkg_names[] = { "P", "fool <= 2.0", "fool-lib > 3-3", NULL };
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter_provides_in(q, pkg_names);
+    plist = hy_query_run(q);
+    pkg = hy_packagelist_get(plist, 0);
+    ck_assert_str_eq(hy_package_get_name(pkg), "fool");
+    ck_assert_str_eq(hy_package_get_evr(pkg), "1-3");
+    pkg = hy_packagelist_get(plist, 1);
+    ck_assert_str_eq(hy_package_get_name(pkg), "penny");
+    pkg = hy_packagelist_get(plist, 2);
+    ck_assert_str_eq(hy_package_get_name(pkg), "fool");
+    ck_assert_str_eq(hy_package_get_evr(pkg), "1-5");
+    ck_assert_int_eq(size_and_free(q), 3);
+    hy_packagelist_free(plist);
+}
+END_TEST
+
 START_TEST(test_query_fileprovides)
 {
     HyQuery q = hy_query_create(test_globals.sack);
@@ -739,6 +760,7 @@ query_suite(void)
     tcase_add_test(tc, test_upgrades_sanity);
     tcase_add_test(tc, test_upgrades);
     tcase_add_test(tc, test_filter_latest);
+    tcase_add_test(tc, test_query_provides_in);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Main");

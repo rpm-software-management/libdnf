@@ -52,6 +52,7 @@ int hy_query_filter_reldep_in(HyQuery q, int keyname,
 			      const HyReldepList reldeplist);
 int hy_query_filter_provides(HyQuery q, int cmp_type, const char *name,
 			     const char *evr);
+int hy_query_filter_provides_in(HyQuery q, char **reldep_strs);
 int hy_query_filter_requires(HyQuery q, int cmp_type, const char *name,
 			     const char *evr);
 
