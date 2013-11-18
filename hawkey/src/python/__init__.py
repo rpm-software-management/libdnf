@@ -109,6 +109,7 @@ REASON_DEP = _hawkey.REASON_DEP
 REASON_USER = _hawkey.REASON_USER
 
 Package = _hawkey.Package
+Reldep = _hawkey.Reldep
 Repo = _hawkey.Repo
 Sack = _hawkey.Sack
 
@@ -145,30 +146,6 @@ class NEVRA(_NEVRA):
         return Query(sack).filter(
             name=self.name, epoch=self.epoch, version=self.version,
             release=self.release, arch=self.arch)
-
-class Reldep(_hawkey.Reldep):
-    _rel_signs = set(''.join(_CMP_MAP.keys()))
-    _escaped_signs = ''.join(map(re.escape, _rel_signs))
-    _reldep_regexp = re.compile('([^%s\s]+)(?:\s*([%s]+)\s*([^%s\s]+))?$' % \
-                                    tuple([_escaped_signs]*3))
-
-    @staticmethod
-    def _translate_args(reldep):
-        match = Reldep._reldep_regexp.match(reldep)
-        if match:
-            groups = match.groups()
-            return groups
-        return None
-
-    def __init__(self, sack, reldep_str):
-        split = self._translate_args(reldep_str)
-        if split is None:
-            raise ValueException("Not a valid reldep: %s" % reldep_str)
-        (name, cmp_type, evr) = split
-        if cmp_type is None:
-            super(Reldep, self).__init__(sack, name)
-        else:
-            super(Reldep, self).__init__(sack, name, _CMP_MAP[cmp_type], evr)
 
 class Goal(_hawkey.Goal):
     _reserved_kw	= set(['package', 'select'])

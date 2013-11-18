@@ -27,6 +27,7 @@
 // hawkey
 #include "src/reldep_internal.h"
 #include "src/sack_internal.h"
+#include "src/iutil.h"
 
 // pyhawkey
 #include "exception-py.h"
@@ -100,15 +101,22 @@ reldep_init(_ReldepObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *sack;
     int cmp_type = 0;
-    const char *name, *evr = NULL;
-    if (!PyArg_ParseTuple(args, "O!s|is", &sack_Type, &sack, &name, &cmp_type,
-			  &evr))
+    const char *reldep_str = NULL;
+    char *name, *evr = NULL;
+    if (!PyArg_ParseTuple(args, "O!s", &sack_Type, &sack, &reldep_str))
 	return -1;
     HySack csack = sackFromPyObject(sack);
     if (csack == NULL)
 	return -1;
 
+    if (parse_reldep_str(reldep_str, &name, &evr, &cmp_type) == -1) {
+	PyErr_Format(HyExc_Value, "Wrong reldep format: %s", reldep_str);
+	return -1;
+    }
+
     self->reldep = hy_reldep_create(csack, name, cmp_type, evr);
+    solv_free(name);
+    solv_free(evr);
     if (self->reldep == NULL) {
 	PyErr_Format(HyExc_Value, "No such reldep: %s", name);
 	return -1;
