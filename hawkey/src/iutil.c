@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <glob.h>
 #include <pwd.h>
+#include <regex.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -37,6 +38,7 @@
 #include <solv/evr.h>
 #include <solv/solver.h>
 #include <solv/solverdebug.h>
+#include <solv/util.h>
 
 // hawkey
 #include "errno.h"
@@ -638,4 +640,87 @@ dump_map(Pool *pool, Map *m)
 	}
     printf("\n");
     return c;
+}
+
+static int
+copy_str_from_subexpr(char** target, const char* source,
+    regmatch_t* matches, int i)
+{
+    int subexpr_len = matches[i].rm_eo - matches[i].rm_so;
+    if (subexpr_len == 0)
+	return -1;
+    *target = solv_malloc(sizeof(char*) * (subexpr_len + 1));
+    strncpy(*target, &(source[matches[i].rm_so]), subexpr_len);
+    (*target)[subexpr_len] = '\0';
+    return 0;
+}
+
+static int
+get_cmp_flags(int *cmp_type, const char* source,
+    regmatch_t* matches, int i)
+{
+    int subexpr_len = matches[i].rm_eo - matches[i].rm_so;
+    const char *match_start = &(source[matches[i].rm_so]);
+    if (subexpr_len == 2) {
+	if (strncmp(match_start, "!=", 2) == 0)
+	    *cmp_type |= HY_NEQ;
+	else if (strncmp(match_start, "<=", 2) == 0) {
+	    *cmp_type |= HY_LT;
+	    *cmp_type |= HY_EQ;
+	}
+	else if (strncmp(match_start, ">=", 2) == 0) {
+	    *cmp_type |= HY_GT;
+	    *cmp_type |= HY_EQ;
+	}
+	else
+	    return -1;
+    } else if (subexpr_len == 1) {
+	if (*match_start == '<')
+	    *cmp_type |= HY_LT;
+	else if (*match_start == '>')
+	    *cmp_type |= HY_GT;
+	else if (*match_start == '=')
+	    *cmp_type |= HY_EQ;
+	else
+	    return -1;
+    } else
+	return -1;
+    return 0;
+}
+
+/**
+ * Copies parsed name and evr from reldep_str. If reldep_str is valid
+ * returns 0, otherwise returns -1. When parsing is successful, name
+ * and evr strings need to be freed after usage.
+ */
+int
+parse_reldep_str(const char *reldep_str, char **name, char **evr,
+    int *cmp_type)
+{
+    regex_t reg;
+    const char *regex =
+        "^(\\S*)\\s*(<=|>=|!=|<|>|=)?\\s*([-:0-9.]*)$";
+    regmatch_t matches[5];
+    *cmp_type = 0;
+    int ret = 0;
+
+    regcomp(&reg, regex, REG_EXTENDED);
+
+    if(regexec(&reg, reldep_str, 6, matches, 0) == 0) {
+	if (copy_str_from_subexpr(name, reldep_str, matches, 1) == -1)
+	    ret = -1;
+	// without comparator and evr
+	else if ((matches[2].rm_eo - matches[2].rm_so) == 0 &&
+	    (matches[3].rm_eo - matches[3].rm_so) == 0)
+	    ret = 0;
+	else if (get_cmp_flags(cmp_type, reldep_str, matches, 2) == -1 ||
+	    copy_str_from_subexpr(evr, reldep_str, matches, 3) == -1) {
+	    solv_free(*name);
+	    ret = -1;
+	}
+    } else
+	ret = -1;
+
+    regfree(&reg);
+    return ret;
 }

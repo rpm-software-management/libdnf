@@ -81,6 +81,10 @@ unsigned long pool_get_epoch(Pool *pool, const char *evr);
 void pool_split_evr(Pool *pool, const char *evr, char **epoch, char **version,
 			char **release);
 
+/* reldep utils */
+int parse_reldep_str(const char *nevra, char **name,
+	char **evr, int *cmp_type);
+
 /* debug utils */
 int dump_jobqueue(Pool *pool, Queue *job);
 int dump_solvables_queue(Pool *pool, Queue *q);
