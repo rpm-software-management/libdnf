@@ -619,13 +619,7 @@ hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr)
 
 	// we have the right delta info, set up HyPackageDelta and break out:
 	delta = delta_create();
-	const char *loc = pool_tmpjoin(pool,
-				       pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_DIR),
-				       "/",
-				       pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_NAME));
-	loc = pool_tmpappend(pool, loc, "-", pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_EVR));
-	loc = pool_tmpappend(pool, loc, ".", pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_SUFFIX));
-	delta->location = solv_strdup(loc);
+	delta->location = solv_strdup(pool_lookup_deltalocation(pool, SOLVID_POS, 0));
 
 	break;
     }
