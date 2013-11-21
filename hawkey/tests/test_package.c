@@ -300,6 +300,8 @@ START_TEST(test_presto)
     HyPackageDelta delta = hy_package_get_delta_from_evr(tour, "4-5");
     const char *location = hy_packagedelta_get_location(delta);
     ck_assert_str_eq(location, "drpms/tour-4-5_4-6.noarch.drpm");
+    const char *baseurl = hy_packagedelta_get_baseurl(delta);
+    fail_unless(baseurl == NULL);
     hy_packagedelta_free(delta);
     hy_package_free(tour);
 }

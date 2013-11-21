@@ -93,6 +93,7 @@ void hy_package_set_userdata(HyPackage pkg, void *userdata, HyUserdataDestroy de
 
 HyPackageDelta hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr);
 const char *hy_packagedelta_get_location(HyPackageDelta delta);
+const char *hy_packagedelta_get_baseurl(HyPackageDelta delta);
 void hy_packagedelta_free(HyPackageDelta delta);
 
 #ifdef __cplusplus

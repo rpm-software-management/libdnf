@@ -80,6 +80,8 @@ get_str(_PackageDeltaObject *self, void *closure)
 static PyGetSetDef packageDelta_getsetters[] = {
     {"location", (getter)get_str, NULL, NULL,
      (void *)hy_packagedelta_get_location},
+    {"baseurl", (getter)get_str, NULL, NULL,
+     (void *)hy_packagedelta_get_baseurl},
     {NULL}			/* sentinel */
 };
 

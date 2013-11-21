@@ -620,6 +620,7 @@ hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr)
 	// we have the right delta info, set up HyPackageDelta and break out:
 	delta = delta_create();
 	delta->location = solv_strdup(pool_lookup_deltalocation(pool, SOLVID_POS, 0));
+	delta->baseurl = solv_strdup(pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_BASE));
 
 	break;
     }
@@ -634,9 +635,16 @@ hy_packagedelta_get_location(HyPackageDelta delta)
     return delta->location;
 }
 
+const char *
+hy_packagedelta_get_baseurl(HyPackageDelta delta)
+{
+    return delta->baseurl;
+}
+
 void
 hy_packagedelta_free(HyPackageDelta delta)
 {
     solv_free(delta->location);
+    solv_free(delta->baseurl);
     solv_free(delta);
 }
