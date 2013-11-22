@@ -32,6 +32,7 @@
 #include "exception-py.h"
 #include "goal-py.h"
 #include "package-py.h"
+#include "packagedelta-py.h"
 #include "query-py.h"
 #include "reldep-py.h"
 #include "repo-py.h"
@@ -144,6 +145,11 @@ PYCOMP_MOD_INIT(_hawkey)
         return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&package_Type);
     PyModule_AddObject(m, "Package", (PyObject *)&package_Type);
+    /* _hawkey.PackageDelta */
+    if (PyType_Ready(&packageDelta_Type) < 0)
+        return PYCOMP_MOD_ERROR_VAL;
+    Py_INCREF(&package_Type);
+    PyModule_AddObject(m, "PackageDelta", (PyObject *)&packageDelta_Type);
     /* _hawkey.Query */
     if (PyType_Ready(&query_Type) < 0)
         return PYCOMP_MOD_ERROR_VAL;
