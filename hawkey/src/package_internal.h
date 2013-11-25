@@ -39,6 +39,7 @@ struct _HyPackage {
 struct _HyPackageDelta {
     char *location;
     char *baseurl;
+    unsigned long long downloadsize;
 };
 
 HyPackage package_clone(HyPackage pkg);

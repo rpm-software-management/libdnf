@@ -621,6 +621,7 @@ hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr)
 	delta = delta_create();
 	delta->location = solv_strdup(pool_lookup_deltalocation(pool, SOLVID_POS, 0));
 	delta->baseurl = solv_strdup(pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_BASE));
+	delta->downloadsize = pool_lookup_num(pool, SOLVID_POS, DELTA_DOWNLOADSIZE, 0);
 
 	break;
     }
@@ -639,6 +640,12 @@ const char *
 hy_packagedelta_get_baseurl(HyPackageDelta delta)
 {
     return delta->baseurl;
+}
+
+unsigned long long
+hy_packagedelta_get_downloadsize(HyPackageDelta delta)
+{
+    return delta->downloadsize;
 }
 
 void

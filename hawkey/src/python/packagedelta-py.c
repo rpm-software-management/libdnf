@@ -77,11 +77,21 @@ get_str(_PackageDeltaObject *self, void *closure)
     return PyString_FromString(cstr);
 }
 
+static PyObject *
+get_num(_PackageDeltaObject *self, void *closure)
+{
+    unsigned long long (*func)(HyPackageDelta);
+    func = (unsigned long long (*)(HyPackageDelta))closure;
+    return PyLong_FromUnsignedLongLong(func(self->delta));
+}
+
 static PyGetSetDef packageDelta_getsetters[] = {
     {"location", (getter)get_str, NULL, NULL,
      (void *)hy_packagedelta_get_location},
     {"baseurl", (getter)get_str, NULL, NULL,
      (void *)hy_packagedelta_get_baseurl},
+    {"downloadsize", (getter)get_num, NULL, NULL,
+     (void *)hy_packagedelta_get_downloadsize},
     {NULL}			/* sentinel */
 };
 
