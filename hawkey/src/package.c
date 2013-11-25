@@ -102,7 +102,8 @@ package_from_solvable(HySack sack, Solvable *s)
 
 HyPackageDelta
 delta_create(void) {
-    return solv_calloc(1, sizeof(HyPackageDelta*));
+    HyPackageDelta delta = solv_calloc(1, sizeof(*delta));
+    return delta;
 }
 
 /* public */
