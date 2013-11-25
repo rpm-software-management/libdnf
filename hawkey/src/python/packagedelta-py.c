@@ -22,6 +22,7 @@
 
 // hawkey
 #include "src/package_internal.h"
+#include "src/iutil.h"
 
 // pyhawkey
 #include "packagedelta-py.h"
@@ -85,6 +86,32 @@ get_num(_PackageDeltaObject *self, void *closure)
     return PyLong_FromUnsignedLongLong(func(self->delta));
 }
 
+static PyObject *
+get_chksum(_PackageDeltaObject *self, void *closure)
+{
+    HyChecksum *(*func)(HyPackageDelta, int *);
+    int type;
+    HyChecksum *cs;
+
+    func = (HyChecksum *(*)(HyPackageDelta, int *))closure;
+    cs = func(self->delta, &type);
+    if (cs == 0) {
+	PyErr_SetString(PyExc_AttributeError, "No such checksum.");
+	return NULL;
+    }
+
+    PyObject *res;
+    int checksum_length = checksum_type2length(type);
+
+#if PY_MAJOR_VERSION < 3
+    res = Py_BuildValue("is#", type, cs, checksum_length);
+#else
+    res = Py_BuildValue("iy#", type, cs, checksum_length);
+#endif
+
+    return res;
+}
+
 static PyGetSetDef packageDelta_getsetters[] = {
     {"location", (getter)get_str, NULL, NULL,
      (void *)hy_packagedelta_get_location},
@@ -92,6 +119,8 @@ static PyGetSetDef packageDelta_getsetters[] = {
      (void *)hy_packagedelta_get_baseurl},
     {"downloadsize", (getter)get_num, NULL, NULL,
      (void *)hy_packagedelta_get_downloadsize},
+    {"chksum", (getter)get_chksum, NULL, NULL,
+    (void *)hy_packagedelta_get_chksum},
     {NULL}			/* sentinel */
 };
 

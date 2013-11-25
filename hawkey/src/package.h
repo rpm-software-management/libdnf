@@ -95,6 +95,7 @@ HyPackageDelta hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr
 const char *hy_packagedelta_get_location(HyPackageDelta delta);
 const char *hy_packagedelta_get_baseurl(HyPackageDelta delta);
 unsigned long long hy_packagedelta_get_downloadsize(HyPackageDelta delta);
+const unsigned char *hy_packagedelta_get_chksum(HyPackageDelta delta, int *type);
 void hy_packagedelta_free(HyPackageDelta delta);
 
 #ifdef __cplusplus

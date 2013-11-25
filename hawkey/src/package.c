@@ -602,6 +602,8 @@ hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr)
     Solvable *s = get_solvable(pkg);
     HyPackageDelta delta = NULL;
     Dataiterator di;
+    Id checksum_type;
+    const unsigned char *checksum;
     const char *name = hy_package_get_name(pkg);
 
     dataiterator_init(&di, pool, s->repo, SOLVID_META, DELTA_PACKAGE_NAME, name,
@@ -622,6 +624,11 @@ hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr)
 	delta->location = solv_strdup(pool_lookup_deltalocation(pool, SOLVID_POS, 0));
 	delta->baseurl = solv_strdup(pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_BASE));
 	delta->downloadsize = pool_lookup_num(pool, SOLVID_POS, DELTA_DOWNLOADSIZE, 0);
+	checksum = pool_lookup_bin_checksum(pool, SOLVID_POS, DELTA_CHECKSUM, &checksum_type);
+	if (checksum) {
+	    delta->checksum_type = checksumt_l2h(checksum_type);
+	    delta->checksum = solv_memdup((void*)checksum, checksum_type2length(delta->checksum_type));
+	}
 
 	break;
     }
@@ -648,10 +655,19 @@ hy_packagedelta_get_downloadsize(HyPackageDelta delta)
     return delta->downloadsize;
 }
 
+const unsigned char *
+hy_packagedelta_get_chksum(HyPackageDelta delta, int *type)
+{
+    if (type)
+	*type = delta->checksum_type;
+    return delta->checksum;
+}
+
 void
 hy_packagedelta_free(HyPackageDelta delta)
 {
     solv_free(delta->location);
     solv_free(delta->baseurl);
+    solv_free(delta->checksum);
     solv_free(delta);
 }

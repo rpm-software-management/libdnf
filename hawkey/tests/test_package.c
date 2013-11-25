@@ -304,6 +304,10 @@ START_TEST(test_presto)
     fail_unless(baseurl == NULL);
     unsigned long long size = hy_packagedelta_get_downloadsize(delta);
     ck_assert_int_eq(size, 3173);
+    int type;
+    HyChecksum *csum = hy_packagedelta_get_chksum(delta, &type);
+    fail_unless(type == HY_CHKSUM_SHA256);
+    fail_if(memcmp(csum, "\x8a\x5a\xfd\x4e\x08\xe9\xa3\x9a\xe3\xca\x9a\x2b\x49\xa0\xf8\x99\xa9\x70\x25\x26\x1d\x90\xff\xae\x14\x62\x06\x16\x86\x5b\x80\x7c", 32));
     hy_packagedelta_free(delta);
     hy_package_free(tour);
 }
