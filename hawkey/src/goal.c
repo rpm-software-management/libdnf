@@ -105,6 +105,30 @@ same_name_subqueue(Pool *pool, Queue *in, Queue *out)
 }
 
 static int
+can_depend_on(Pool *pool, Solvable *sa, Id b)
+{
+    // return 0 iff a does not depend on anything from b
+    Queue requires;
+    int ret = 1;
+
+    queue_init(&requires);
+    solvable_lookup_idarray(sa, SOLVABLE_REQUIRES, &requires);
+    for (int i = 0; i < requires.count; ++i) {
+	Id req_dep = requires.elements[i];
+	Id p, pp;
+
+	FOR_PROVIDES(p, pp, req_dep)
+	    if (p == b)
+		goto done;
+    }
+
+    ret = 0;
+ done:
+    queue_free(&requires);
+    return ret;
+}
+
+static int
 sort_packages(const void *ap, const void *bp, void *s_cb)
 {
     Id a = *(Id*)ap;
@@ -119,11 +143,14 @@ sort_packages(const void *ap, const void *bp, void *s_cb)
     int name_diff = sa->name - sb->name;
     if (name_diff)
 	return name_diff;
-    /* same name, if one is the running kernel put it last */
-    if (a == kernel)
-	return 1;
-    if (b == kernel)
-	return -1;
+
+    /* same name, if one is/depends on the running kernel put it last */
+    if (kernel >= 0) {
+	if (a == kernel || can_depend_on(pool, sa, kernel))
+	    return 1;
+	if (b == kernel || can_depend_on(pool, sb, kernel))
+	    return -1;
+    }
 
     return pool_evrcmp(pool, sa->evr, sb->evr, EVRCMP_COMPARE);
 }

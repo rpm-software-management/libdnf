@@ -791,7 +791,7 @@ START_TEST(test_goal_installonly_limit)
     hy_goal_upgrade_all(goal);
     fail_if(hy_goal_run_flags(goal, 0));
 
-    assert_iueo(goal, 1, 0, 2, 0);
+    assert_iueo(goal, 1, 1, 2, 0); // k-m is just upgraded
     HyPackageList erasures = hy_goal_list_erasures(goal);
     assert_nevra_eq(hy_packagelist_get(erasures, 0), "k-1-0.x86_64");
     assert_nevra_eq(hy_packagelist_get(erasures, 1), "k-1-1.x86_64");
@@ -815,7 +815,7 @@ START_TEST(test_goal_installonly_limit_disabled)
     hy_goal_upgrade_all(goal);
     fail_if(hy_goal_run_flags(goal, 0));
 
-    assert_iueo(goal, 1, 0, 0, 0);
+    assert_iueo(goal, 1, 1, 0, 0);
     hy_goal_free(goal);
 }
 END_TEST
@@ -833,10 +833,35 @@ START_TEST(test_goal_installonly_limit_running_kernel)
     hy_goal_upgrade_all(goal);
     fail_if(hy_goal_run_flags(goal, 0));
 
-    assert_iueo(goal, 1, 0, 2, 0);
+    assert_iueo(goal, 1, 1, 2, 0);
     HyPackageList erasures = hy_goal_list_erasures(goal);
     assert_nevra_eq(hy_packagelist_get(erasures, 0), "k-1-0.x86_64");
     assert_nevra_eq(hy_packagelist_get(erasures, 1), "k-2-0.x86_64");
+    hy_packagelist_free(erasures);
+
+    hy_goal_free(goal);
+}
+END_TEST
+
+START_TEST(test_goal_installonly_limit_with_modules)
+{
+    // most complex installonly test case, includes the k-m packages
+    const char *installonly[] = {"k", "k-m", NULL};
+    HySack sack = test_globals.sack;
+    hy_sack_set_installonly(sack, installonly);
+    hy_sack_set_installonly_limit(sack, 3);
+    sack->running_kernel_fn = mock_running_kernel;
+
+    HyGoal goal = hy_goal_create(sack);
+    hy_goal_upgrade_all(goal);
+    fail_if(hy_goal_run_flags(goal, 0));
+
+    assert_iueo(goal, 2, 0, 4, 0);
+    HyPackageList erasures = hy_goal_list_erasures(goal);
+    assert_nevra_eq(hy_packagelist_get(erasures, 0), "k-1-0.x86_64");
+    assert_nevra_eq(hy_packagelist_get(erasures, 1), "k-m-1-0.x86_64");
+    assert_nevra_eq(hy_packagelist_get(erasures, 2), "k-2-0.x86_64");
+    assert_nevra_eq(hy_packagelist_get(erasures, 3), "k-m-2-0.x86_64");
     hy_packagelist_free(erasures);
 
     hy_goal_free(goal);
@@ -937,6 +962,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_installonly_limit);
     tcase_add_test(tc, test_goal_installonly_limit_disabled);
     tcase_add_test(tc, test_goal_installonly_limit_running_kernel);
+    tcase_add_test(tc, test_goal_installonly_limit_with_modules);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Vendor");

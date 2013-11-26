@@ -1,6 +1,14 @@
 =Ver: 2.0
 #
 =Pkg: k 1 0 x86_64
-=Pkg: k 2 0 x86_64
-=Pkg: k 3 0 x86_64
+=Pkg: k-m 1 0 x86_64
+=Req: k = 1-0
 =Pkg: k 1 1 x86_64
+=Pkg: k-m 1 1 x86_64
+=Req: k = 1-1
+=Pkg: k 2 0 x86_64
+=Pkg: k-m 2 0 x86_64
+=Req: k = 2-0
+=Pkg: k 3 0 x86_64
+=Pkg: k-m 3 0 x86_64
+=Req: k = 3-0
