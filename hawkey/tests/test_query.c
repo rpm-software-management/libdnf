@@ -365,7 +365,7 @@ START_TEST(test_query_provides_in)
     pkg = hy_packagelist_get(plist, 2);
     ck_assert_str_eq(hy_package_get_name(pkg), "fool");
     ck_assert_str_eq(hy_package_get_evr(pkg), "1-5");
-    ck_assert_int_eq(size_and_free(q), 3);
+    fail_unless(size_and_free(q) == 3);
     hy_packagelist_free(plist);
 }
 END_TEST
