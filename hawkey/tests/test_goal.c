@@ -434,6 +434,28 @@ START_TEST(test_goal_get_reason)
 }
 END_TEST
 
+START_TEST(test_goal_get_reason_selector)
+{
+
+    HySelector sltr = hy_selector_create(test_globals.sack);
+    HyGoal goal = hy_goal_create(test_globals.sack);
+
+    fail_if(hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "walrus"));
+    fail_if(hy_goal_install_selector(goal, sltr));
+    hy_selector_free(sltr);
+
+    fail_if(hy_goal_run(goal));
+
+    HyPackageList plist = hy_goal_list_installs(goal);
+    fail_unless(hy_packagelist_count(plist) == 2);
+    HyPackage pkg = hy_packagelist_get(plist, 0);
+    fail_unless(hy_goal_get_reason(goal, pkg) == HY_REASON_USER);
+
+    hy_packagelist_free(plist);
+    hy_goal_free(goal);
+}
+END_TEST
+
 START_TEST(test_goal_describe_problem)
 {
     HySack sack = test_globals.sack;
@@ -926,6 +948,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_upgrade_all);
     tcase_add_test(tc, test_goal_downgrade);
     tcase_add_test(tc, test_goal_get_reason);
+    tcase_add_test(tc, test_goal_get_reason_selector);
     tcase_add_test(tc, test_goal_describe_problem);
     tcase_add_test(tc, test_goal_log_decisions);
     tcase_add_test(tc, test_goal_no_reinstall);

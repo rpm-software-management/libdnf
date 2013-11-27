@@ -837,7 +837,8 @@ hy_goal_get_reason(HyGoal goal, HyPackage pkg)
     Id info;
     int reason = solver_describe_decision(goal->solv, package_id(pkg), &info);
 
-    if (reason == SOLVER_REASON_UNIT_RULE &&
+    if ((reason == SOLVER_REASON_UNIT_RULE ||
+	 reason == SOLVER_REASON_RESOLVE_JOB) &&
 	solver_ruleclass(goal->solv, info) == SOLVER_RULE_JOB)
 	return HY_REASON_USER;
     return HY_REASON_DEP;
