@@ -1,7 +1,15 @@
 =Ver: 2.0
 #
+=Pkg: baby 6:4.9 3 x86_64
+=Pkg: flying 3 0 noarch
+=Req: P-lib
 =Pkg: fool 1 3 noarch
 =Prv: fool <= 1-3
+=Pkg: hello 1 1 noarch
+=Req: goodbye
+=Pkg: jay 4.9 0 x86_64
+=Pkg: jay 5.0 0 x86_64
+=Pkg: jay 6.0 0 x86_64
 =Pkg: penny 4 1 noarch
 =Prv: P = 3-3
 =Sum: in my eyes
@@ -11,17 +19,9 @@
 =Prv: P-lib = 3-3
 =Sum: in my ears
 =Pkg: penny-lib-devel 4 1 x86_64
+=Pkg: semolina 2 0 x86_64
+=Pkg: semolina 2 0 i686
 =Pkg: walrus 2 5 noarch
 =Prv: walrus <= 2-5
 =Req: semolina = 2
 =Req: fool
-=Pkg: flying 3 0 noarch
-=Req: P-lib
-=Pkg: hello 1 1 noarch
-=Req: goodbye
-=Pkg: jay 6.0 0 x86_64
-=Pkg: jay 5.0 0 x86_64
-=Pkg: jay 4.9 0 x86_64
-=Pkg: semolina 2 0 x86_64
-=Pkg: semolina 2 0 i686
-=Pkg: baby 6:4.9 3 x86_64

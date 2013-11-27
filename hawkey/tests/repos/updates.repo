@@ -1,5 +1,9 @@
 =Ver: 2.0
 #
+=Pkg: dog 1 2 i686
+=Con: custard = 1.2
+=Pkg: dog 1 2 x86_64
+=Con: custard = 1.2
 =Pkg: fool 1 5 noarch
 =Prv: fool <= 1-5
 =Prv: fool-lib = 3.3
@@ -14,10 +18,6 @@
 =Pkg: pilchard 1.2.4 1 i686
 =Pkg: pilchard 1.2.4 1 x86_64
 =Pkg: pilchard 1.2.4 2 x86_64
-=Pkg: dog 1 2 i686
-=Con: custard = 1.2
-=Pkg: dog 1 2 x86_64
-=Con: custard = 1.2
 =Pkg: walrus 2 6 noarch
 =Prv: walrus <= 2-5
 =Req: semolina = 2

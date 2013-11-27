@@ -362,11 +362,11 @@ START_TEST(test_goal_upgrade_all)
     hy_packagelist_free(plist);
 
     plist = hy_goal_list_upgrades(goal);
-    assert_list_names(plist, "fool", "flying", "pilchard", "pilchard", "dog",
+    assert_list_names(plist, "dog", "flying", "fool", "pilchard", "pilchard",
 		      NULL);
 
     // see all obsoletes of fool:
-    HyPackage pkg = hy_packagelist_get(plist, 0);
+    HyPackage pkg = hy_packagelist_get(plist, 2);
     HyPackageList plist_obs = hy_goal_list_obsoleted_by_package(goal, pkg);
     assert_list_names(plist_obs, "fool", "penny", NULL);
     hy_packagelist_free(plist_obs);

@@ -96,4 +96,4 @@ class PackageWrappingTest(base.TestCase):
         # it received userdata:
         self.assertEqual(pkg.myval, 42)
         # the common attributes are working:
-        self.assertEqual(pkg.name, "fool")
+        self.assertEqual(pkg.name, "baby")

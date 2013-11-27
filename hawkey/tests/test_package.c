@@ -103,11 +103,11 @@ START_TEST(test_versions)
 
     pkg = by_name(sack, "jay");
     // epoch missing if it's 0:
-    ck_assert_str_eq(hy_package_get_evr(pkg), "6.0-0");
+    ck_assert_str_eq(hy_package_get_evr(pkg), "5.0-0");
     epoch = hy_package_get_epoch(pkg);
     fail_unless(epoch == 0);
     version = hy_package_get_version(pkg);
-    ck_assert_str_eq(version, "6.0");
+    ck_assert_str_eq(version, "5.0");
     hy_free(version);
     release = hy_package_get_release(pkg);
     ck_assert_str_eq(release, "0");
