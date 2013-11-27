@@ -202,11 +202,13 @@ class TestQueryAllRepos(base.TestCase):
     def test_requires(self):
         reldep = hawkey.Reldep(self.sack, "semolina = 2")
         q = hawkey.Query(self.sack).filter(requires=reldep)
-        self.assertItemsEqual(list(map(str, q.run())), ['walrus-2-5.noarch'])
+        self.assertItemsEqual(list(map(str, q.run())),
+                              ['walrus-2-5.noarch', 'walrus-2-6.noarch'])
 
         reldep = hawkey.Reldep(self.sack, "semolina > 1.0")
         q = hawkey.Query(self.sack).filter(requires=reldep)
-        self.assertItemsEqual(list(map(str, q.run())), ['walrus-2-5.noarch'])
+        self.assertItemsEqual(list(map(str, q.run())),
+                              ['walrus-2-5.noarch', 'walrus-2-6.noarch'])
 
     def test_obsoletes(self):
         reldep = hawkey.Reldep(self.sack, "penny < 4-0")

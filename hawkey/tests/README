@@ -30,7 +30,7 @@ penny, penny-lib
 * 'penny-lib' provides 'P-lib' that 'flying' needs, so it can not be removed by itself.
 
 walrus
-* not installed, available in the main repo
+* not installed, available in the main repo, update available in updates
 * requires two packages
 
 semolina

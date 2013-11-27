@@ -18,3 +18,7 @@
 =Con: custard = 1.2
 =Pkg: dog 1 2 x86_64
 =Con: custard = 1.2
+=Pkg: walrus 2 6 noarch
+=Prv: walrus <= 2-5
+=Req: semolina = 2
+=Req: fool
