@@ -354,10 +354,9 @@ get_delta_from_evr(_PackageObject *self, PyObject *evr_str)
         return NULL;
     }
     HyPackageDelta delta_c = hy_package_get_delta_from_evr(self->package, evr);
-    PyObject *delta = packageDeltaToPyObject(delta_c);
     Py_XDECREF(tmp_py_str);
-    if (delta)
-	return delta;
+    if (delta_c)
+	return packageDeltaToPyObject(delta_c);
     Py_RETURN_NONE;
 }
 
