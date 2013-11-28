@@ -37,26 +37,12 @@ typedef struct {
 PyObject *
 packageDeltaToPyObject(HyPackageDelta delta)
 {
-    _PackageDeltaObject *self = (_PackageDeltaObject *)packageDelta_Type.
-	tp_alloc(&packageDelta_Type, 0);
+    _PackageDeltaObject *self = PyObject_New(_PackageDeltaObject, &packageDelta_Type);
     self->delta = delta;
     return (PyObject *)self;
 }
 
 /* functions on the type */
-
-static PyObject *
-packageDelta_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
-{
-    char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist))
-	return NULL;
-
-    _PackageDeltaObject *self = (_PackageDeltaObject *)type->tp_alloc(type, 0);
-    if (self)
-	self->delta = delta_create();
-    return (PyObject *) self;
-}
 
 static void
 packageDelta_dealloc(_PackageDeltaObject *self)
@@ -166,7 +152,7 @@ PyTypeObject packageDelta_Type = {
     0,				/* tp_dictoffset */
     0,				/* tp_init */
     0,				/* tp_alloc */
-    packageDelta_new,		/* tp_new */
+    0,		                /* tp_new */
     0,				/* tp_free */
     0,				/* tp_is_gc */
 };
