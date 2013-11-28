@@ -348,7 +348,7 @@ static PyObject *
 get_delta_from_evr(_PackageObject *self, PyObject *evr_str)
 {
     PyObject *tmp_py_str = NULL;
-    const char *evr = pycomp_get_string(evr_str, tmp_py_str);
+    const char *evr = pycomp_get_string(evr_str, &tmp_py_str);
     if (evr == NULL) {
         Py_XDECREF(tmp_py_str);
         return NULL;

@@ -122,7 +122,7 @@ set_str(_RepoObject *self, PyObject *value, void *closure)
 {
     intptr_t str_key = (intptr_t)closure;
     PyObject *tmp_py_str = NULL;
-    const char *str_value = pycomp_get_string(value, tmp_py_str);
+    const char *str_value = pycomp_get_string(value, &tmp_py_str);
 
     if (str_value == NULL) {
         Py_XDECREF(tmp_py_str);

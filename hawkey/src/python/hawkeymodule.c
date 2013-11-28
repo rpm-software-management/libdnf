@@ -62,7 +62,7 @@ static PyObject *
 py_chksum_type(PyObject *unused, PyObject *str_o)
 {
     PyObject *tmp_py_str = NULL;
-    const char *str = pycomp_get_string(str_o, tmp_py_str);
+    const char *str = pycomp_get_string(str_o, &tmp_py_str);
 
     if (str == NULL) {
         Py_XDECREF(tmp_py_str);
@@ -82,7 +82,7 @@ static PyObject *
 py_split_nevra(PyObject *unused, PyObject *nevra_o)
 {
     PyObject *tmp_py_str = NULL;
-    const char *nevra = pycomp_get_string(nevra_o, tmp_py_str);
+    const char *nevra = pycomp_get_string(nevra_o, &tmp_py_str);
 
     if (nevra == NULL) {
         Py_XDECREF(tmp_py_str);

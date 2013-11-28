@@ -25,10 +25,10 @@
  * you need to call Py_XDECREF(tmp_py_str) after usage of returned string
  */
 char *
-pycomp_get_string_from_unicode(PyObject *str_u, PyObject *tmp_py_str)
+pycomp_get_string_from_unicode(PyObject *str_u, PyObject **tmp_py_str)
 {
-    tmp_py_str = PyUnicode_AsUTF8String(str_u);
-    return PyBytes_AsString(tmp_py_str);
+    *tmp_py_str = PyUnicode_AsUTF8String(str_u);
+    return PyBytes_AsString(*tmp_py_str);
 }
 
 /**
@@ -36,7 +36,7 @@ pycomp_get_string_from_unicode(PyObject *str_u, PyObject *tmp_py_str)
  * you need to call Py_XDECREF(tmp_py_str) after usage of returned string
  */
 char *
-pycomp_get_string(PyObject *str, PyObject *tmp_py_str)
+pycomp_get_string(PyObject *str, PyObject **tmp_py_str)
 {
     char *res = NULL;
     if (PyUnicode_Check(str)) {

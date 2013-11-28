@@ -98,7 +98,7 @@ static PyObject *
 repo_enabled(_SackObject *self, PyObject *reponame, int enabled)
 {
     PyObject *tmp_py_str = NULL;
-    char *cname = pycomp_get_string(reponame, tmp_py_str);
+    char *cname = pycomp_get_string(reponame, &tmp_py_str);
 
     if (cname == NULL) {
         Py_XDECREF(tmp_py_str);
@@ -212,7 +212,7 @@ set_installonly(_SackObject *self, PyObject *obj, void *unused)
         tmp_py_str[i] = NULL;
         strings[i] = NULL;
         if (PyUnicode_Check(item) || PyString_Check(item)) {
-            strings[i] = pycomp_get_string(item, tmp_py_str[i]);
+            strings[i] = pycomp_get_string(item, &tmp_py_str[i]);
         }
 	Py_DECREF(item);
 	if (strings[i] == NULL) {
@@ -307,7 +307,7 @@ add_cmdline_package(_SackObject *self, PyObject *fn_obj)
     HyPackage cpkg;
     PyObject *pkg;
     PyObject *tmp_py_str = NULL;
-    const char *fn = pycomp_get_string(fn_obj, tmp_py_str);
+    const char *fn = pycomp_get_string(fn_obj, &tmp_py_str);
 
     if (fn == NULL) {
         Py_XDECREF(tmp_py_str);

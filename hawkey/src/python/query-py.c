@@ -186,7 +186,7 @@ filter(_QueryObject *self, PyObject *args)
     }
     if (PyUnicode_Check(match) || PyString_Check(match)) {
         PyObject *tmp_py_str = NULL;
-        cmatch = pycomp_get_string(match, tmp_py_str);
+        cmatch = pycomp_get_string(match, &tmp_py_str);
         int query_filter_ret = hy_query_filter(self->query, keyname, cmp_type, cmatch);
         Py_XDECREF(tmp_py_str);
 
@@ -266,7 +266,7 @@ filter(_QueryObject *self, PyObject *args)
 	    PyObject *item = PySequence_GetItem(match, i);
             tmp_py_strs[i] = NULL;
             if (PyUnicode_Check(item) || PyString_Check(item)) {
-                matches[i] = pycomp_get_string(item, tmp_py_strs[i]);
+                matches[i] = pycomp_get_string(item, &tmp_py_strs[i]);
                 Py_DECREF(item);
             } else {
                 PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
