@@ -75,6 +75,8 @@ get_str(_PackageDeltaObject *self, void *closure)
 
     func = (const char *(*)(HyPackageDelta))closure;
     cstr = func(self->delta);
+    if (cstr == NULL)
+	Py_RETURN_NONE;
     return PyString_FromString(cstr);
 }
 
