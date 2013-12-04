@@ -1,5 +1,5 @@
-%global gitrev 9ed6fca
-%global libsolv_version 0.4.0
+%global gitrev 6df2dad
+%global libsolv_version 0.4.0-2
 
 Name:		hawkey
 Version:	@VERSION@
@@ -107,6 +107,30 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+
+* Wed Dec 4 2013  Aleš Kozumplík <ales@redhat.com> - 0.4.6-1
+- remove: packageDelta_new (Zdenek Pavlas)
+- get_delta_from_evr(): create the python object only when delta exists (Zdenek Pavlas)
+- fix pycomp_get_string(), pycomp_get_string_from_unicode() (Zdenek Pavlas)
+- fix get_str() in packagedelta-py (Zdenek Pavlas)
+- fix: spec: running tests in python3 after build (Jan Silhan)
+- tests: order packages in .repo files by name. (Ales Kozumplik)
+- fix: goal: reason for installing when more packages are available to a selector. (Ales Kozumplik)
+- tests: add a package that is not installed yet available in main, updates. (Ales Kozumplik)
+- add hy_packagedelta_get_chksum() (Zdenek Pavlas)
+- add hy_packagedelta_get_downloadsize() (Zdenek Pavlas)
+- add hy_packagedelta_get_baseurl() (Zdenek Pavlas)
+- test_query_provides_in: avoid ck_assert_int_eq() as it evaluates args twice (Zdenek Pavlas)
+- installonlies: fix sorting packages depending on the running kernel. (Ales Kozumplik)
+- use pool_lookup_deltalocation() (Zdenek Pavlas)
+- initialize _hawkey.PackageDelta type (Zdenek Pavlas)
+- delta_create(): fix the sizeof() (Zdenek Pavlas)
+- parse_reldep_str(): fix buffer overflow (Zdenek Pavlas)
+- string reldep parsing using parse_reldep_str (Jan Silhan)
+- added hy_query_filter_provides_in function (RhBug:1019168) (Jan Silhan)
+- added parse_reldep_str function (Jan Silhan)
+- fix: py: abort() from python when writing the system .solv cache fails. (Ales Kozumplik)
+- fix forgotten include causing a compiler warning in testsys.c. (Ales Kozumplik)
 
 * Fri Nov 8 2013 Aleš Kozumplík <ales@redhat.com> - 0.4.5-1
 - goal: installonly_limit = 0 means it is disabled. (Ales Kozumplik)
