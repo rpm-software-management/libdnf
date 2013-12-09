@@ -106,6 +106,15 @@ class PackageCmpTest(base.TestCase):
         if python_version.major > 3:
             self.assertRaises(TypeError, lambda: self.pkg1 <= "hawkey-package")
 
+    def test_cmp_lt(self):
+        greater_package = base.by_name_repo(self.sack, "hello", "main")
+
+        self.assertLess(self.pkg1, greater_package)
+
+    def test_cmp_gt(self):
+        less_package = base.by_name_repo(self.sack, "baby", "main")
+
+        self.assertGreater(self.pkg1, less_package)
 
 class ChecksumsTest(base.TestCase):
     def setUp(self):

@@ -142,10 +142,10 @@ package_py_richcompare(PyObject *self, PyObject *other, int op)
         v = TEST_COND(result >= 0);
         break;
     case Py_LT:
-        v = TEST_COND(result == -1);
+        v = TEST_COND(result < 0);
         break;
     case Py_GT:
-        v = TEST_COND(result == 1);
+        v = TEST_COND(result > 0);
         break;
     default:
         PyErr_BadArgument();
