@@ -370,6 +370,19 @@ START_TEST(test_query_provides_in)
 }
 END_TEST
 
+START_TEST(test_query_provides_in_not_found)
+{
+    HyPackageList plist;
+    char* provides[] = { "thisisnotgoingtoexist", NULL };
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter_provides_in(q, provides);
+    plist = hy_query_run(q);
+    fail_unless(hy_packagelist_count(plist) == 0);
+    hy_packagelist_free(plist);
+    hy_query_free(q);
+}
+END_TEST
+
 START_TEST(test_query_fileprovides)
 {
     HyQuery q = hy_query_create(test_globals.sack);
@@ -761,6 +774,7 @@ query_suite(void)
     tcase_add_test(tc, test_upgrades);
     tcase_add_test(tc, test_filter_latest);
     tcase_add_test(tc, test_query_provides_in);
+    tcase_add_test(tc, test_query_provides_in_not_found);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Main");

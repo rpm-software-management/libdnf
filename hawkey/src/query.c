@@ -1008,7 +1008,8 @@ hy_query_filter_provides_in(HyQuery q, char **reldep_strs)
 	    return HY_E_QUERY;
 	}
 	reldep = hy_reldep_create(q->sack, name, cmp_type, evr);
-	hy_reldeplist_add(reldeplist, reldep);
+	if (reldep)
+	    hy_reldeplist_add(reldeplist, reldep);
 	hy_reldep_free(reldep);
 	solv_free(name);
 	solv_free(evr);
