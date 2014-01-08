@@ -943,25 +943,3 @@ sack_knows(HySack sack, const char *name, const char *version, int flags)
     solv_free(q);
     return ret;
 }
-
-/**
- * Put all solvables named 'name' into the queue 'same'.
- *
- * Futher, if arch is nonzero only solvables with a matching arch are added to
- * the queue.
- *
- */
-void
-sack_same_names(HySack sack, Id name, Id arch, Queue *same)
-{
-    Pool *pool = sack->pool;
-    Id p, pp;
-
-    sack_make_provides_ready(sack);
-    FOR_PROVIDES(p, pp, name) {
-	Solvable *s = pool_id2solvable(pool, p);
-	if (s->name == name)
-	    if (!arch || s->arch == arch)
-		queue_push(same, p);
-    }
-}

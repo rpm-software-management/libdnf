@@ -215,7 +215,7 @@ class TestQueryAllRepos(base.TestCase):
         q = hawkey.Query(self.sack).filter(obsoletes=reldep)
         self.assertItemsEqual(list(map(str, q.run())), ['fool-1-5.noarch'])
 
-class QueryUpdates(base.TestCase):
+class TestQueryUpdates(base.TestCase):
     def setUp(self):
         self.sack = base.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
@@ -249,6 +249,18 @@ class QueryUpdates(base.TestCase):
         self.assertTrue(q.evaluated)
         self.assertIsInstance(q.result, list)
         self.assertLength(o, 1)
+
+class TestOddArch(base.TestCase):
+    def setUp(self):
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
+        self.sack.load_test_repo("ppc", "ppc.repo")
+
+    def test_latest(self):
+        q = hawkey.Query(self.sack).filter(latest=True)
+        self.assertEqual(len(q), 1)
+
+        q = hawkey.Query(self.sack).filter(latest_per_arch=True)
+        self.assertEqual(len(q), 1)
 
 class TestQuerySubclass(base.TestCase):
     class CustomQuery(hawkey.Query):

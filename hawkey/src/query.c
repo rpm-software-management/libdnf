@@ -621,44 +621,80 @@ filter_updown(HyQuery q, int downgrade, Map *res)
     map_free(&m);
 }
 
+static int
+filter_latest_sortcmp(const void *ap, const void *bp, void *dp)
+{
+    Pool *pool = dp;
+    Solvable *sa = pool->solvables + *(Id *)ap;
+    Solvable *sb = pool->solvables + *(Id *)ap;
+    int r;
+    r = sa->name - sb->name;
+    if (r)
+        return r;
+    return *(Id *)ap - *(Id *)bp;
+}
+
+static int
+filter_latest_sortcmp_byarch(const void *ap, const void *bp, void *dp)
+{
+    Pool *pool = dp;
+    Solvable *sa = pool->solvables + *(Id *)ap;
+    Solvable *sb = pool->solvables + *(Id *)bp;
+    int r;
+    r = sa->name - sb->name;
+    if (r)
+        return r;
+    r = sa->arch - sb->arch;
+    if (r)
+        return r;
+    return *(Id *)ap - *(Id *)bp;
+}
+
 static void
 filter_latest(HyQuery q, Map *res)
 {
     Pool *pool = sack_pool(q->sack);
     Queue samename;
-    Id i, j, p, hp, arch;
-    Solvable *highest, *considered;
-    int cmp;
 
     queue_init(&samename);
-    for (i = 1; i < pool->nsolvables; ++i) {
-	if (!MAPTST(res, i))
-	    continue;
+    for (int i = 1; i < pool->nsolvables; ++i)
+        if (MAPTST(res, i))
+            queue_push(&samename, i);
 
-	hp = i;
-	highest = pool_id2solvable(pool, hp);
-	queue_empty(&samename);
-	if (q->latest_per_arch)
-	    arch = highest->arch;
-	else
-	    arch = 0;
-	sack_same_names(q->sack, highest->name, arch, &samename);
-	/* now find the highest versioned package of those selected */
-	for (j = 0; j < samename.count; ++j) {
-	    p = samename.elements[j];
-	    if (!MAPTST(res, p) || i == p)
-		continue; /* out already */
-	    considered = pool_id2solvable(pool, p);
-	    cmp = pool_evrcmp(pool, highest->evr, considered->evr, EVRCMP_COMPARE);
-	    if (cmp < 0) { /* new highest found */
-		MAPCLR(res, hp);
-		hp = p;
-		highest = considered;
-	    } else {
-		/* note this is taken also for the same version case */
-		MAPCLR(res, p);
-	    }
-	}
+    if (samename.count < 2) {
+	queue_free(&samename);
+        return;
+    }
+
+    if (q->latest_per_arch)
+        solv_sort(samename.elements, samename.count, sizeof(Id),
+		  filter_latest_sortcmp_byarch, pool);
+    else
+        solv_sort(samename.elements, samename.count, sizeof(Id),
+		  filter_latest_sortcmp, pool);
+
+    Solvable *considered, *highest = 0;
+    Id hp = 0;
+
+    for (int i = 0; i < samename.count; ++i) {
+        Id p = samename.elements[i];
+        considered = pool->solvables + p;
+        if (!highest || highest->name != considered->name ||
+            (q->latest_per_arch && highest->arch != considered->arch)) {
+            /* start of a new block */
+            hp = p;
+            highest = considered;
+            continue;
+        }
+        if (pool_evrcmp(pool,highest->evr, considered->evr, EVRCMP_COMPARE) < 0) {
+            /* new highest found */
+            MAPCLR(res, hp);
+            hp = p;
+            highest = considered;
+        } else {
+            /* note this is taken also for the same version case */
+            MAPCLR(res, p);
+        }
     }
     queue_free(&samename);
 }
