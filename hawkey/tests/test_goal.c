@@ -813,10 +813,11 @@ START_TEST(test_goal_installonly_limit)
     hy_goal_upgrade_all(goal);
     fail_if(hy_goal_run_flags(goal, 0));
 
-    assert_iueo(goal, 1, 1, 2, 0); // k-m is just upgraded
+    assert_iueo(goal, 1, 1, 3, 0); // k-m is just upgraded
     HyPackageList erasures = hy_goal_list_erasures(goal);
     assert_nevra_eq(hy_packagelist_get(erasures, 0), "k-1-0.x86_64");
-    assert_nevra_eq(hy_packagelist_get(erasures, 1), "k-1-1.x86_64");
+    assert_nevra_eq(hy_packagelist_get(erasures, 1), "k-freak-1-0-1-0.x86_64");
+    assert_nevra_eq(hy_packagelist_get(erasures, 2), "k-1-1.x86_64");
     hy_packagelist_free(erasures);
 
     hy_goal_free(goal);
@@ -855,10 +856,11 @@ START_TEST(test_goal_installonly_limit_running_kernel)
     hy_goal_upgrade_all(goal);
     fail_if(hy_goal_run_flags(goal, 0));
 
-    assert_iueo(goal, 1, 1, 2, 0);
+    assert_iueo(goal, 1, 1, 3, 0);
     HyPackageList erasures = hy_goal_list_erasures(goal);
     assert_nevra_eq(hy_packagelist_get(erasures, 0), "k-1-0.x86_64");
-    assert_nevra_eq(hy_packagelist_get(erasures, 1), "k-2-0.x86_64");
+    assert_nevra_eq(hy_packagelist_get(erasures, 1), "k-freak-1-0-1-0.x86_64");
+    assert_nevra_eq(hy_packagelist_get(erasures, 2), "k-2-0.x86_64");
     hy_packagelist_free(erasures);
 
     hy_goal_free(goal);
@@ -878,12 +880,13 @@ START_TEST(test_goal_installonly_limit_with_modules)
     hy_goal_upgrade_all(goal);
     fail_if(hy_goal_run_flags(goal, 0));
 
-    assert_iueo(goal, 2, 0, 4, 0);
+    assert_iueo(goal, 2, 0, 5, 0);
     HyPackageList erasures = hy_goal_list_erasures(goal);
     assert_nevra_eq(hy_packagelist_get(erasures, 0), "k-1-0.x86_64");
     assert_nevra_eq(hy_packagelist_get(erasures, 1), "k-m-1-0.x86_64");
-    assert_nevra_eq(hy_packagelist_get(erasures, 2), "k-2-0.x86_64");
-    assert_nevra_eq(hy_packagelist_get(erasures, 3), "k-m-2-0.x86_64");
+    assert_nevra_eq(hy_packagelist_get(erasures, 2), "k-freak-1-0-1-0.x86_64");
+    assert_nevra_eq(hy_packagelist_get(erasures, 3), "k-2-0.x86_64");
+    assert_nevra_eq(hy_packagelist_get(erasures, 4), "k-m-2-0.x86_64");
     hy_packagelist_free(erasures);
 
     hy_goal_free(goal);

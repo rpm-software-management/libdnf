@@ -261,9 +261,13 @@ solve(HyGoal goal, Queue *job, int flags, hy_solution_callback user_cb,
 	return 1;
     // either allow solutions callback or installonlies, both at the same time
     // are not supported
-    if (!user_cb && limit_installonly_packages(goal, solv, job))
+    if (!user_cb && limit_installonly_packages(goal, solv, job)) {
+	// allow erasing non-installonly packages that depend on a kernel about
+	// to be erased
+	solver_set_flag(solv, SOLVER_FLAG_ALLOW_UNINSTALL, 1);
 	if (solver_solve(solv, job))
 	    return 1;
+    }
     goal->trans = solver_create_transaction(solv);
     return 0;
 }

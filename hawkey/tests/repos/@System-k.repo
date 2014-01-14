@@ -3,6 +3,8 @@
 =Pkg: k 1 0 x86_64
 =Pkg: k-m 1 0 x86_64
 =Req: k = 1-0
+=Pkg: k-freak-1-0 1 0 x86_64
+=Req: k = 1-0
 =Pkg: k 1 1 x86_64
 =Pkg: k-m 1 1 x86_64
 =Req: k = 1-1
