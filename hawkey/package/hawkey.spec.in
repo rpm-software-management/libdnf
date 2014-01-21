@@ -1,4 +1,4 @@
-%global gitrev e9a7b79
+%global gitrev 7890cf9
 %global libsolv_version 0.4.0-2
 
 Name:		hawkey
@@ -107,6 +107,10 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+
+* Tue Jan 21 2014  Aleš Kozumplík <ales@redhat.com> - 0.4.8-1
+- installonlies: erase packages depending on a kernel to be erased. (RhBug:1033881) (Ales Kozumplik)
+- fix: latest_per_arch on incompatible arches. (RhBug:1049226) (Ales Kozumplik)
 
 * Tue Dec 17 2013  Aleš Kozumplík <ales@redhat.com> - 0.4.7-1
 - Fix malfunction of Package.__lt__ and Package.__gt__ (RhBug:1014963) (Radek Holy)
