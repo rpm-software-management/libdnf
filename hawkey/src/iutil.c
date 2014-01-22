@@ -699,7 +699,7 @@ parse_reldep_str(const char *reldep_str, char **name, char **evr,
 {
     regex_t reg;
     const char *regex =
-        "^(\\S*)\\s*(<=|>=|!=|<|>|=)?\\s*([-:0-9.]*)$";
+        "^(\\S*)\\s*(<=|>=|!=|<|>|=)?\\s*(.*)$";
     regmatch_t matches[6];
     *cmp_type = 0;
     int ret = 0;
