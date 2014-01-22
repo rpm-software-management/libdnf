@@ -86,6 +86,7 @@ main(int argc, const char **argv)
     srunner_add_suite(sr, packageset_suite());
     srunner_add_suite(sr, query_suite());
     srunner_add_suite(sr, selector_suite());
+    srunner_add_suite(sr, subject_suite());
     srunner_add_suite(sr, goal_suite());
     srunner_run_all(sr, CK_NORMAL);
     number_failed = srunner_ntests_failed(sr);

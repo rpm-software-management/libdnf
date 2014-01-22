@@ -12,6 +12,8 @@ SET (hawkey_SRCS
     sack.c
     selector.c
     stringarray.c
+    subject.c
+    subject_internal.c
     util.c)
 
 ADD_LIBRARY(libhawkey SHARED ${hawkey_SRCS})
@@ -42,6 +44,7 @@ SET(HAWKEY_headers
     repo.h
     sack.h
     selector.h
+    subject.h
     types.h
     util.h
     stringarray.h

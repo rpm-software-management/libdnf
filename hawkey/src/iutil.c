@@ -24,7 +24,6 @@
 #include <glob.h>
 #include <pwd.h>
 #include <regex.h>
-#include <string.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,6 +45,7 @@
 #include "package_internal.h"
 #include "packageset_internal.h"
 #include "query.h"
+#include "reldep.h"
 #include "sack_internal.h"
 
 #define BUF_BLOCK 4096
@@ -642,7 +642,7 @@ dump_map(Pool *pool, Map *m)
     return c;
 }
 
-static int
+int
 copy_str_from_subexpr(char** target, const char* source,
     regmatch_t* matches, int i)
 {
@@ -723,4 +723,17 @@ parse_reldep_str(const char *reldep_str, char **name, char **evr,
 
     regfree(&reg);
     return ret;
+}
+
+HyReldep
+reldep_from_str(HySack sack, const char *reldep_str)
+{
+    char *name, *evr = NULL;
+    int cmp_type = 0;
+    if (parse_reldep_str(reldep_str, &name, &evr, &cmp_type) == -1)
+	return NULL;
+    HyReldep reldep = hy_reldep_create(sack, name, cmp_type, evr);
+    solv_free(name);
+    solv_free(evr);
+    return reldep;
 }

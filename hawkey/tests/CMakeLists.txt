@@ -11,6 +11,7 @@ SET (hawkeytest_SRCS
      test_query.c
      test_sack.c
      test_selector.c
+     test_subject.c
      test_util.c
      testshared.c
      testsys.c)
