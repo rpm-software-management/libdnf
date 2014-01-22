@@ -33,12 +33,6 @@ HyForm HY_FORMS_MOST_SPEC[] = {
 HyForm HY_FORMS_REAL[] = {
     HY_FORM_NA, HY_FORM_NAME, HY_FORM_NEVRA, HY_FORM_NEV, HY_FORM_NEVR, -1 };
 
-enum poss_type {
-    TYPE_NEVRA,
-    TYPE_RELDEP_NEW,
-    TYPE_RELDEP_END
-};
-
 static inline int
 is_glob_pattern(char *str)
 {

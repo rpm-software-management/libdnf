@@ -146,11 +146,16 @@ HyQuery
 hy_nevra_to_query(HyNevra nevra, HySack sack)
 {
     HyQuery query = hy_query_create(sack);
-    hy_query_filter(query, HY_PKG_NAME, HY_EQ, nevra->name);
-    hy_query_filter_num(query, HY_PKG_EPOCH, HY_EQ, nevra->epoch);
-    hy_query_filter(query, HY_PKG_VERSION, HY_EQ, nevra->version);
-    hy_query_filter(query, HY_PKG_RELEASE, HY_EQ, nevra->release);
-    hy_query_filter(query, HY_PKG_ARCH, HY_EQ, nevra->arch);
+    if (nevra->name != NULL)
+	hy_query_filter(query, HY_PKG_NAME, HY_EQ, nevra->name);
+    if (nevra->epoch != -1)
+	hy_query_filter_num(query, HY_PKG_EPOCH, HY_EQ, nevra->epoch);
+    if (nevra->version != NULL)
+	hy_query_filter(query, HY_PKG_VERSION, HY_EQ, nevra->version);
+    if (nevra->release != NULL)
+	hy_query_filter(query, HY_PKG_RELEASE, HY_EQ, nevra->release);
+    if (nevra->arch != NULL)
+	hy_query_filter(query, HY_PKG_ARCH, HY_EQ, nevra->arch);
     return query;
 }
 

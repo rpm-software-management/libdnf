@@ -56,6 +56,18 @@ queryFromPyObject(PyObject *o)
     return ((_QueryObject *)o)->query;
 }
 
+PyObject *
+queryToPyObject(HyQuery query, PyObject *sack)
+{
+    _QueryObject *self = (_QueryObject *)query_Type.tp_alloc(&query_Type, 0);
+    if (self) {
+	self->query = query;
+	self->sack = sack;
+	Py_INCREF(sack);
+    }
+    return (PyObject *)self;
+}
+
 int
 query_converter(PyObject *o, HyQuery *query_ptr)
 {

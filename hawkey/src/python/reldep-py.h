@@ -33,5 +33,6 @@ extern PyTypeObject reldep_Type;
 
 PyObject *new_reldep(PyObject *sack, Id r_id);
 HyReldep reldepFromPyObject(PyObject *o);
+PyObject *reldepToPyObject(HyReldep reldep);
 
 #endif // RELDEP_PY_H

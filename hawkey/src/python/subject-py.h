@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2013 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -18,26 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef QUERY_PY_H
-#define QUERY_PY_H
+#ifndef SUBJECT_PY_H
+#define SUBJECT_PY_H
 
+#include "src/subject.h"
 #include "src/types.h"
 
-/* additional Query constants only used in the bindings */
-enum py_key_name_e {
-    HY_PKG_DOWNGRADES = 100,
-    HY_PKG_EMPTY,
-    HY_PKG_LATEST_PER_ARCH,
-    HY_PKG_LATEST,
-    HY_PKG_UPGRADES
-};
+extern PyTypeObject subject_Type;
 
-extern PyTypeObject query_Type;
-
-#define queryObject_Check(o)	PyObject_TypeCheck(o, &query_Type)
-
-HyQuery queryFromPyObject(PyObject *o);
-PyObject *queryToPyObject(HyQuery query, PyObject *sack);
-int query_converter(PyObject *o, HyQuery *query_ptr);
-
-#endif // QUERY_PY_H
+#endif

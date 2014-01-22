@@ -31,11 +31,6 @@ INP_FOF_NEV="four-of-fish-8:3.6.9"
 INP_FOF_NA="four-of-fish-3.6.9.i686"
 
 class SubjectTest(base.TestCase):
-    def test_tokenizer(self):
-        subj = hawkey.Subject(INP_FOF)
-        rejoin = "".join(map(str, subj.tokens))
-        self.assertEqual(rejoin, INP_FOF)
-
     def test_nevra(self):
         subj = hawkey.Subject(INP_FOF)
         result = list(subj.nevra_possibilities(form=hawkey.FORM_NEVRA))
@@ -79,6 +74,18 @@ class SubjectTest(base.TestCase):
         self.assertEqual(nevra_possibilities[0],
                          NEVRA(name='four-of-fish-3.6.9', epoch=None,
                                       version=None, release=None, arch='i686'))
+
+    def test_custom_list(self):
+        subj = hawkey.Subject(INP_FOF)
+        result = list(subj.nevra_possibilities(form=[hawkey.FORM_NEVRA,
+            hawkey.FORM_NEVR]))
+        self.assertLength(result, 2)
+        self.assertEqual(result[0], NEVRA(name='four-of-fish', epoch=8,
+                                                 version='3.6.9',
+                                                 release='11.fc100',
+                                                 arch='x86_64'))
+        self.assertEqual(result[1], NEVRA(name='four-of-fish', epoch=8, version='3.6.9',
+                              release='11.fc100.x86_64', arch=None))
 
     def test_combined(self):
         """ Test we get all the possible NEVRA parses. """
@@ -143,6 +150,12 @@ class SubjectRealPossibilitiesTest(base.TestCase):
                                              arch=None))
         self.assertRaises(StopIteration, next, nevra_possibilities)
 
+    def test_nevra_toquery(self):
+        subj = hawkey.Subject("pilchard-1.2.4-1.x86_64")
+        nevra_possibilities = subj.nevra_possibilities_real(self.sack)
+        nevra = next(nevra_possibilities)
+        self.assertEqual(len(nevra.to_query(self.sack)), 1)
+
     def test_dash(self):
         """ Test that if a dash is present in otherwise simple subject, we take
             it as a name as the first guess.
@@ -200,6 +213,11 @@ class SubjectRealPossibilitiesTest(base.TestCase):
         reldeps = subj.reldep_possibilities_real(self.sack)
         reldep = next(reldeps)
         self.assertEqual(str(reldep), "P-lib")
+        self.assertRaises(StopIteration, next, reldeps)
+
+    def test_reldep_fail(self):
+        subj = hawkey.Subject("Package not exist")
+        reldeps = subj.reldep_possibilities_real(self.sack)
         self.assertRaises(StopIteration, next, reldeps)
 
     def test_reldep_flags(self):

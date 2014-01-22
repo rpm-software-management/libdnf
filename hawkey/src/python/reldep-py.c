@@ -97,6 +97,15 @@ reldep_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     return (PyObject *)reldep_new_core(type, sack);
 }
 
+PyObject *
+reldepToPyObject(HyReldep reldep)
+{
+    _ReldepObject *self = (_ReldepObject *)reldep_Type.tp_alloc(&reldep_Type, 0);
+    if (self)
+	self->reldep = reldep;
+    return (PyObject *)self;
+}
+
 static int
 reldep_init(_ReldepObject *self, PyObject *args, PyObject *kwds)
 {

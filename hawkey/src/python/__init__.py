@@ -99,6 +99,12 @@ VERSION=u"%d.%d.%d" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 SYSTEM_REPO_NAME = _hawkey.SYSTEM_REPO_NAME
 CMDLINE_REPO_NAME = _hawkey.CMDLINE_REPO_NAME
 
+FORM_NEVRA  = _hawkey.FORM_NEVRA
+FORM_NEVR   = _hawkey.FORM_NEVR
+FORM_NEV    = _hawkey.FORM_NEV
+FORM_NA     = _hawkey.FORM_NA
+FORM_NAME   = _hawkey.FORM_NAME
+
 ICASE = _hawkey.ICASE
 
 CHKSUM_MD5 = _hawkey.CHKSUM_MD5
@@ -126,26 +132,10 @@ def split_nevra(s):
     t = _hawkey.split_nevra(s)
     return NEVRA(*t)
 
-_NEVRA = collections.namedtuple("_NEVRA",
-                                ["name", "epoch", "version", "release", "arch"])
-
-class NEVRA(_NEVRA):
-    __slots__ = ()
-
-    def evr_cmp(self, other, sack):
-        return sack.evr_cmp(self.evr, other.evr)
-
-    @property
-    def evr(self):
-        fmt= "%(epoch)d:%(version)s-%(release)s"
-        if self.epoch is None:
-            fmt = "%(version)s-%(release)s"
-        return fmt % self._asdict()
-
+class NEVRA(_hawkey.NEVRA):
     def to_query(self, sack):
-        return Query(sack).filter(
-            name=self.name, epoch=self.epoch, version=self.version,
-            release=self.release, arch=self.arch)
+        _hawkey_query = super(NEVRA, self).to_query(sack)
+        return Query(query=_hawkey_query)
 
 class Goal(_hawkey.Goal):
     _reserved_kw	= set(['package', 'select'])
@@ -293,191 +283,15 @@ class Selector(_hawkey.Selector):
             super(Selector, self).set(*arg_tuple)
         return self
 
-FORM_NEVRA	= re.compile("""(?P<name>[.\-S]+)-\
-(?P<epoch>E)?(?P<version>[.S]+)-\
-(?P<release>[.S]+)\.(?P<arch>S)$""")
-FORM_NEVR	= re.compile("""(?P<name>[.\-S]+)-\
-(?P<epoch>E)?(?P<version>[.S]+)-(?P<release>[.S]+)$""")
-FORM_NEV	= re.compile("""(?P<name>[.\-S]+)-\
-(?P<epoch>E)?(?P<version>[.S]+)$""")
-FORM_NA		= re.compile("""(?P<name>[.\-S]+)\.(?P<arch>S)$""")
-FORM_NAME	= re.compile("""(?P<name>[.\-S]+)$""")
-FORM_FULL_RELDEP = re.compile("""(?P<name>.+)(?P<cmp>C)(?P<version>.+)""")
+class Subject(_hawkey.Subject):
+    def __init__(self, *args, **kwargs):
+        super(Subject, self).__init__(*args, **kwargs)
 
-# most specific to least
-FORMS_MOST_SPEC	= [FORM_NEVRA, FORM_NEVR, FORM_NEV, FORM_NA, FORM_NAME]
-# what the user most probably means
-FORMS_REAL	= [FORM_NA, FORM_NAME, FORM_NEVRA, FORM_NEV, FORM_NEVR]
+    def nevra_possibilities(self, *args, **kwargs):
+        for nevra in super(Subject, self).nevra_possibilities(*args, **kwargs):
+            yield NEVRA(nevra=nevra)
 
-def _is_glob_pattern(pattern):
-    return set(pattern) & set("*[?")
-
-class _Token(object):
-    def __init__(self, content, epoch=False, cmp_flag=False):
-        self.content = content
-        self.epoch = epoch
-        self.cmp_flag = cmp_flag
-
-    def __repr__(self):
-        if self.epoch:
-            return "<%s:>" % self.content
-        elif self.cmp_flag:
-            return self.content
-        elif self.content == '.':
-            return "<.>"
-        elif self.content == '-':
-            return "<->"
-        else:
-            return self.content
-
-    def __str__(self):
-        if self.epoch:
-            return "%s:" % self.content
-        return self.content
-
-    def abbr(self):
-        if self.epoch:
-            return "E"
-        elif self.cmp_flag:
-            return "C"
-        elif self.content in ('.', '-'):
-            return self.content
-        else:
-            return "S"
-
-class Subject(object):
-
-    CMP_FLAG_CHARS = set('<=> ')
-
-    def __init__(self, pattern):
-        self.pat = pattern
-        self._tokenize()
-
-    @property
-    def _abbr(self):
-        return "".join(map(operator.methodcaller('abbr'), self.tokens))
-
-    @staticmethod
-    def _listify_form(form):
-        if type(form) is type(FORM_NEVRA):
-            return [form]
-        else:
-            return form[:]
-
-    @staticmethod
-    def _is_int(s):
-        return Subject._to_int(s) is not None
-
-    @staticmethod
-    def _is_cmp_flag(s):
-        return Subject.CMP_FLAG_CHARS & set(s)
-
-    @staticmethod
-    def _throw_tokens(pattern):
-        current = ""
-        for c in pattern:
-            if c in (".", "-"):
-                yield _Token(current)
-                yield _Token(c)
-                current = ""
-                continue
-            if c == ":" and Subject._is_int(current):
-                yield _Token(current, epoch=True)
-                current = ""
-                continue
-
-            c_is_cmp_flag = c in Subject.CMP_FLAG_CHARS
-            if Subject._is_cmp_flag(current):
-                if not c_is_cmp_flag:
-                    yield  _Token(current, cmp_flag=True)
-                    current = ''
-            elif c_is_cmp_flag:
-                yield _Token(current)
-                current = ''
-
-            current += c
-        yield _Token(current)
-
-    @staticmethod
-    def _to_int(s):
-        try:
-            return int(s)
-        except (ValueError, TypeError):
-            return None
-
-    def _backmap(self, match, group):
-        start = match.start(group)
-        end = match.end(group)
-        merged = "".join(map(str, self.tokens[start:end]))
-        if group == 'epoch':
-            return self._to_int(merged[:-1])
-        return merged
-
-    def _tokenize(self):
-        self.tokens = list(self._throw_tokens(self.pat))
-
-    @property
-    def pattern(self):
-        return self.pat
-
-    default_nevra=NEVRA(name=None, epoch=None, version=None, release=None,
-                        arch=None)
-
-    def nevra_possibilities(self, form=FORMS_MOST_SPEC):
-        abbr = self._abbr
-        forms = self._listify_form(form)
-        for pat in forms:
-            match = pat.match(abbr)
-            if match is None:
-                continue
-            yield self.default_nevra._replace(**
-                {key:self._backmap(match, key)
-                 for key in match.groupdict()})
-
-    def nevra_possibilities_real(self, sack, allow_globs=False, icase=False,
-                                 form=FORMS_REAL):
-        def should_check_arch(val):
-            if val is None:
-                return False
-            if allow_globs and _is_glob_pattern(val):
-                # filtering by a globbed arch is not supported by sack._knows()
-                return False
-            return True
-
-        def filter_version(version):
-            if version is None:
-                return None
-            if allow_globs and _is_glob_pattern(version):
-                # filtering by a globbed version is not supported by sack._knows()
-                return None
-            return version
-
-        existing_arches = sack.list_arches()
-        existing_arches.append('src')
-        for nevra in self.nevra_possibilities(form=form):
-            if nevra.name is not None:
-                name = nevra.name
-                # do not enable globbing unless necessary, it gets expensive
-                glob = bool(allow_globs and _is_glob_pattern(name))
-                version = filter_version(nevra.version)
-                if not sack._knows(name, version, name_only=True,
-                                   icase=icase, glob=glob):
-                    continue
-
-            if should_check_arch(nevra.arch):
-                if nevra.arch not in existing_arches:
-                    continue
-            yield nevra
-
-    def reldep_possibilities_real(self, sack, icase=False):
-        abbr = self._abbr
-
-        if FORM_NAME.match(abbr):
-            if sack._knows(self.pat, icase=icase):
-                yield Reldep(sack, self.pat)
-
-        match = FORM_FULL_RELDEP.match(abbr)
-        if match:
-            name = self._backmap(match, 'name')
-            if sack._knows(name, icase=icase):
-                yield Reldep(sack, self.pat)
+    def nevra_possibilities_real(self, *args, **kwargs):
+        poss = super(Subject, self).nevra_possibilities_real(*args, **kwargs)
+        for nevra in poss:
+            yield NEVRA(nevra=nevra)

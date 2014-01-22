@@ -23,6 +23,12 @@
 #ifndef HY_SUBJECT_INTERNAL_H
 #define HY_SUBJECT_INTERNAL_H
 
+enum poss_type {
+    TYPE_NEVRA,
+    TYPE_RELDEP_NEW,
+    TYPE_RELDEP_END
+};
+
 extern const char *nevra_form_regex[];
 
 int nevra_possibility(char *nevra_str, int re, HyNevra nevra);

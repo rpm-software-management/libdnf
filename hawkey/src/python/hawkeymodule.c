@@ -24,6 +24,7 @@
 #include "src/goal.h"
 #include "src/package.h"
 #include "src/query.h"
+#include "src/subject.h"
 #include "src/types.h"
 #include "src/util.h"
 #include "src/version.h"
@@ -31,13 +32,16 @@
 // pyhawkey
 #include "exception-py.h"
 #include "goal-py.h"
+#include "nevra-py.h"
 #include "package-py.h"
 #include "packagedelta-py.h"
+#include "possibilities-py.h"
 #include "query-py.h"
 #include "reldep-py.h"
 #include "repo-py.h"
 #include "sack-py.h"
 #include "selector-py.h"
+#include "subject-py.h"
 
 #include "pycomp.h"
 
@@ -170,6 +174,27 @@ PYCOMP_MOD_INIT(_hawkey)
         return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&repo_Type);
     PyModule_AddObject(m, "Repo", (PyObject *)&repo_Type);
+    /* _hawkey.NEVRA */
+    if (PyType_Ready(&nevra_Type) < 0)
+	return PYCOMP_MOD_ERROR_VAL;
+    Py_INCREF(&nevra_Type);
+    PyModule_AddObject(m, "NEVRA", (PyObject *)&nevra_Type);
+    /* _hawkey.Subject */
+    if (PyType_Ready(&subject_Type) < 0)
+	return PYCOMP_MOD_ERROR_VAL;
+    Py_INCREF(&subject_Type);
+    PyModule_AddObject(m, "Subject", (PyObject *)&subject_Type);
+    /* _hawkey._Possibilities */
+    possibilities_Type.tp_new = PyType_GenericNew;
+    if (PyType_Ready(&possibilities_Type) < 0)
+	return PYCOMP_MOD_ERROR_VAL;
+    Py_INCREF(&possibilities_Type);
+
+    PyModule_AddIntConstant(m, "FORM_NEVRA", HY_FORM_NEVRA);
+    PyModule_AddIntConstant(m, "FORM_NEVR", HY_FORM_NEVR);
+    PyModule_AddIntConstant(m, "FORM_NEV", HY_FORM_NEV);
+    PyModule_AddIntConstant(m, "FORM_NA", HY_FORM_NA);
+    PyModule_AddIntConstant(m, "FORM_NAME", HY_FORM_NAME);
 
     PyModule_AddIntConstant(m, "VERSION_MAJOR", HY_VERSION_MAJOR);
     PyModule_AddIntConstant(m, "VERSION_MINOR", HY_VERSION_MINOR);
