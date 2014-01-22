@@ -66,3 +66,6 @@ class Reldep(base.TestCase):
         q = hawkey.Query(self.sack).filter(provides=reldep)
         self.assertLength(q, 1)
         self.assertEqual(str(q[0]), "penny-lib-4-1.x86_64")
+
+    def test_not_crash(self):
+        self.assertRaises(ValueError, hawkey.Reldep)

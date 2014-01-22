@@ -87,6 +87,7 @@ reldep_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if (sack == NULL) {
 	PyErr_SetString(PyExc_ValueError,
 			"Expected a Sack object as the first argument.");
+	return NULL;
     }
     if (!sackObject_Check(sack)) {
 	PyErr_SetString(PyExc_TypeError,
