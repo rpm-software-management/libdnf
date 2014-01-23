@@ -281,13 +281,13 @@ START_TEST(test_goal_selector_upgrade)
     HySelector sltr = hy_selector_create(test_globals.sack);
     HyGoal goal = hy_goal_create(test_globals.sack);
 
-    fail_if(hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "pilchard"));
-    fail_if(hy_selector_set(sltr, HY_PKG_EVR, HY_EQ, "1.2.4-2"));
+    fail_if(hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "dog"));
+    fail_if(hy_selector_set(sltr, HY_PKG_EVR, HY_EQ, "1-2"));
     fail_if(hy_goal_upgrade_to_selector(goal, sltr));
     fail_if(hy_goal_run(goal));
     HyPackageList plist = hy_goal_list_upgrades(goal);
     fail_unless(hy_packagelist_count(plist) == 1);
-    assert_nevra_eq(hy_packagelist_get(plist, 0), "pilchard-1.2.4-2.x86_64");
+    assert_nevra_eq(hy_packagelist_get(plist, 0), "dog-1-2.x86_64");
     hy_packagelist_free(plist);
     hy_goal_free(goal);
     hy_selector_free(sltr);
