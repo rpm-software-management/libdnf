@@ -289,6 +289,7 @@ static PyGetSetDef package_getsetters[] = {
      (void *)hy_package_get_baseurl},
     {"files",	(getter)get_str_array, NULL, NULL,
      (void *)hy_package_get_files},
+    {"hdr_end", (getter)get_num, NULL, NULL, (void *)hy_package_get_hdr_end},
     {"location",  (getter)get_str_alloced, NULL, NULL,
      (void *)hy_package_get_location},
     {"sourcerpm",  (getter)get_str_alloced, NULL, NULL,

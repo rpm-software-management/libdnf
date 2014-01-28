@@ -66,6 +66,7 @@ const char *hy_package_get_summary(HyPackage pkg);
 const char *hy_package_get_url(HyPackage pkg);
 unsigned long long hy_package_get_downloadsize(HyPackage pkg);
 unsigned long long hy_package_get_epoch(HyPackage pkg);
+unsigned long long hy_package_get_hdr_end(HyPackage pkg);
 unsigned long long hy_package_get_installsize(HyPackage pkg);
 unsigned long long hy_package_get_medianr(HyPackage pkg);
 unsigned long long hy_package_get_rpmdbid(HyPackage pkg);

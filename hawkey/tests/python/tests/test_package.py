@@ -145,7 +145,9 @@ class ChecksumsTest(base.TestCase):
         self.assertEqual(pkg.installsize, 59)
         self.assertEqual(pkg.downloadsize, 2329)
 
-class BaseurlTest(base.TestCase):
+class FullPropertiesTest(base.TestCase):
+    """Tests properties as seen in a real primary.xml."""
+
     def setUp(self):
         self.sack = base.TestSack(repo_dir=self.repo_dir)
         self.sack.load_yum_repo()
@@ -153,3 +155,6 @@ class BaseurlTest(base.TestCase):
 
     def test_baseurl(self):
         self.assertEqual(self.pkg.baseurl, 'blah')
+
+    def test_hdr_end(self):
+        self.assertEqual(self.pkg.hdr_end, 2081)

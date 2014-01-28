@@ -330,6 +330,12 @@ hy_package_get_epoch(HyPackage pkg)
 }
 
 unsigned long long
+hy_package_get_hdr_end(HyPackage pkg)
+{
+    return lookup_num(pkg, SOLVABLE_HEADEREND);
+}
+
+unsigned long long
 hy_package_get_installsize(HyPackage pkg)
 {
     return lookup_num(pkg, SOLVABLE_INSTALLSIZE);
