@@ -38,6 +38,7 @@
 #include "iutil.h"
 #include "package_internal.h"
 #include "query_internal.h"
+#include "reldep_internal.h"
 #include "sack_internal.h"
 #include "selector_internal.h"
 
@@ -446,21 +447,10 @@ filter_provides2job(HySack sack, const struct _Filter *f, Queue *job)
     if (f == NULL)
 	return 0;
     assert(f->nmatches == 1);
+    assert(f->match_type == _HY_RELDEP);
 
-    Pool *pool = sack_pool(sack);
-    const char *provide = f->matches[0].str;
-    Id id;
-
-    switch (f->cmp_type) {
-    case HY_EQ:
-	id = pool_str2id(pool, provide, 0);
-	if (id)
-	    queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
-	break;
-    default:
-	assert(0);
-	return 1;
-    }
+    Id r_id = reldep_id(f->matches[0].reldep);
+    queue_push2(job, SOLVER_SOLVABLE_PROVIDES, r_id);
     return 0;
 }
 

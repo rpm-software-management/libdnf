@@ -305,14 +305,26 @@ END_TEST
 
 START_TEST(test_goal_selector_upgrade_provides)
 {
-    HySelector sltr = hy_selector_create(test_globals.sack);
-    HyGoal goal = hy_goal_create(test_globals.sack);
+    HySack sack = test_globals.sack;
+    HySelector sltr = hy_selector_create(sack);
+    HyGoal goal = hy_goal_create(sack);
 
     fail_if(hy_selector_set(sltr, HY_PKG_PROVIDES, HY_EQ, "fool"));
     fail_if(hy_goal_upgrade_selector(goal, sltr));
     hy_selector_free(sltr);
 
     fail_if(hy_goal_run(goal));
+    assert_iueo(goal, 0, 1, 0, 1);
+    hy_goal_free(goal);
+
+    sltr = hy_selector_create(sack);
+    goal = hy_goal_create(sack);
+    fail_if(hy_selector_set(sltr, HY_PKG_PROVIDES, HY_EQ, "fool > 1-3"));
+    fail_if(hy_goal_upgrade_selector(goal, sltr));
+    hy_selector_free(sltr);
+
+    fail_if(hy_goal_run(goal));
+    hy_goal_write_debugdata(goal);
     assert_iueo(goal, 0, 1, 0, 1);
     hy_goal_free(goal);
 }
