@@ -302,6 +302,7 @@ FORM_NEV	= re.compile("""(?P<name>[.\-S]+)-\
 (?P<epoch>E)?(?P<version>[.S]+)$""")
 FORM_NA		= re.compile("""(?P<name>[.\-S]+)\.(?P<arch>S)$""")
 FORM_NAME	= re.compile("""(?P<name>[.\-S]+)$""")
+FORM_FULL_RELDEP = re.compile("""(?P<name>.+)(?P<cmp>C)(?P<version>.+)""")
 
 # most specific to least
 FORMS_MOST_SPEC	= [FORM_NEVRA, FORM_NEVR, FORM_NEV, FORM_NA, FORM_NAME]
@@ -312,13 +313,16 @@ def _is_glob_pattern(pattern):
     return set(pattern) & set("*[?")
 
 class _Token(object):
-    def __init__(self, content, epoch=False):
+    def __init__(self, content, epoch=False, cmp_flag=False):
         self.content = content
         self.epoch = epoch
+        self.cmp_flag = cmp_flag
 
     def __repr__(self):
         if self.epoch:
             return "<%s:>" % self.content
+        elif self.cmp_flag:
+            return self.content
         elif self.content == '.':
             return "<.>"
         elif self.content == '-':
@@ -334,12 +338,17 @@ class _Token(object):
     def abbr(self):
         if self.epoch:
             return "E"
+        elif self.cmp_flag:
+            return "C"
         elif self.content in ('.', '-'):
             return self.content
         else:
             return "S"
 
 class Subject(object):
+
+    CMP_FLAG_CHARS = set('<=> ')
+
     def __init__(self, pattern):
         self.pat = pattern
         self._tokenize()
@@ -360,6 +369,10 @@ class Subject(object):
         return Subject._to_int(s) is not None
 
     @staticmethod
+    def _is_cmp_flag(s):
+        return Subject.CMP_FLAG_CHARS & set(s)
+
+    @staticmethod
     def _throw_tokens(pattern):
         current = ""
         for c in pattern:
@@ -372,6 +385,16 @@ class Subject(object):
                 yield _Token(current, epoch=True)
                 current = ""
                 continue
+
+            c_is_cmp_flag = c in Subject.CMP_FLAG_CHARS
+            if Subject._is_cmp_flag(current):
+                if not c_is_cmp_flag:
+                    yield  _Token(current, cmp_flag=True)
+                    current = ''
+            elif c_is_cmp_flag:
+                yield _Token(current)
+                current = ''
+
             current += c
         yield _Token(current)
 
@@ -382,7 +405,7 @@ class Subject(object):
         except (ValueError, TypeError):
             return None
 
-    def _backmap(self, abbr, match, group):
+    def _backmap(self, match, group):
         start = match.start(group)
         end = match.end(group)
         merged = "".join(map(str, self.tokens[start:end]))
@@ -408,7 +431,7 @@ class Subject(object):
             if match is None:
                 continue
             yield self.default_nevra._replace(**
-                {key:self._backmap(abbr, match, key)
+                {key:self._backmap(match, key)
                  for key in match.groupdict()})
 
     def nevra_possibilities_real(self, sack, allow_globs=False, icase=False,
@@ -448,6 +471,13 @@ class Subject(object):
 
     def reldep_possibilities_real(self, sack, icase=False):
         abbr = self._abbr
+
         if FORM_NAME.match(abbr):
             if sack._knows(self.pat, icase=icase):
+                yield Reldep(sack, self.pat)
+
+        match = FORM_FULL_RELDEP.match(abbr)
+        if match:
+            name = self._backmap(match, 'name')
+            if sack._knows(name, icase=icase):
                 yield Reldep(sack, self.pat)

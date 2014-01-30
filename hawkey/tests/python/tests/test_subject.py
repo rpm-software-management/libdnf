@@ -202,6 +202,19 @@ class SubjectRealPossibilitiesTest(base.TestCase):
         self.assertEqual(str(reldep), "P-lib")
         self.assertRaises(StopIteration, next, reldeps)
 
+    def test_reldep_flags(self):
+        subj = hawkey.Subject('fool <= 1-3')
+        self.assertRaises(StopIteration, next,
+                          subj.nevra_possibilities_real(self.sack))
+        reldeps = subj.reldep_possibilities_real(self.sack)
+        reldep = next(reldeps)
+        self.assertEqual(str(reldep), "fool <= 1-3")
+        self.assertRaises(StopIteration, next, reldeps)
+
+        subj = hawkey.Subject('meanwhile <= 1-3')
+        reldeps = subj.reldep_possibilities_real(self.sack)
+        self.assertRaises(StopIteration, next, reldeps)
+
     def test_icase(self):
         subj = hawkey.Subject("penny-lib-DEVEL")
         nevra = next(subj.nevra_possibilities_real(self.sack, icase=True))
