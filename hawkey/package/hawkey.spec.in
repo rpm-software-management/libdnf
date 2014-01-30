@@ -1,4 +1,4 @@
-%global gitrev 7890cf9
+%global gitrev 20392bc
 %global libsolv_version 0.4.0-2
 
 Name:		hawkey
@@ -107,6 +107,16 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+
+* Thu Jan 30 2014 Aleš Kozumplík <ales@redhat.com> - 0.4.9-1
+- selectors: allow selecting provides with full Reldep string. (Ales Kozumplik)
+- subject: work with full reldeps (containing the CMP flags). (Ales Kozumplik)
+- package: hy_package_get_hdr_end(). (Ales Kozumplik)
+- added subject C API (Jan Silhan)
+- added nevra C API (Jan Silhan)
+- fix not accepting numeric version in reldep (RhBug:1052961) (Jan Silhan)
+- fix Reldep inicialization without sack crash (RhBug:1052947) (Jan Silhan)
+- tests: make test_goal_selector_upgrade() less assuming. (Ales Kozumplik)
 
 * Tue Jan 21 2014  Aleš Kozumplík <ales@redhat.com> - 0.4.8-1
 - installonlies: erase packages depending on a kernel to be erased. (RhBug:1033881) (Ales Kozumplik)
