@@ -19,6 +19,7 @@
  */
 
 #include <stdlib.h>
+#include "reldep.h"
 #include "sack_internal.h"
 #include "subject.h"
 #include "subject_internal.h"
@@ -148,11 +149,14 @@ int hy_possibilities_next_reldep(HyPossibilities iter, HyReldep *out_reldep)
     if (iter->type != TYPE_RELDEP_NEW)
 	return -1;
     iter->type = TYPE_RELDEP_END;
-    HyNevra nevra = hy_nevra_create();
-    int ret = nevra_possibility(iter->subject, HY_FORM_NAME, nevra);
-    hy_nevra_free(nevra);
-    if (ret == 0 && sack_knows(iter->sack, iter->subject, NULL, iter->flags)) {
-	*out_reldep = reldep_from_str(iter->sack, iter->subject);
+    char *name, *evr = NULL;
+    int cmp_type = 0;
+    if (parse_reldep_str(iter->subject, &name, &evr, &cmp_type) == -1)
+	return -1;
+    if (sack_knows(iter->sack, name, NULL, iter->flags)) {
+	*out_reldep = hy_reldep_create(iter->sack, name, cmp_type, evr);
+	solv_free(name);
+	solv_free(evr);
 	if (out_reldep == NULL)
 	    return -1;
 	return 0;
