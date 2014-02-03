@@ -238,9 +238,6 @@ static struct PyMethodDef nevra_methods[] = {
     {NULL}                      /* sentinel */
 };
 
-#define TEST_COND(cond) \
-    ((cond) ? Py_True : Py_False)
-
 static PyObject *
 nevra_richcompare(PyObject *self, PyObject *other, int op)
 {
@@ -284,8 +281,6 @@ nevra_richcompare(PyObject *self, PyObject *other, int op)
     Py_INCREF(v);
     return v;
 }
-
-#undef TEST_COND
 
 static PyObject *
 iter(_NevraObject *self)

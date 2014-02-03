@@ -23,6 +23,9 @@
 
 #include "src/types.h"
 
+#define TEST_COND(cond) \
+    ((cond) ? Py_True : Py_False)
+
 PyObject *packagelist_to_pylist(HyPackageList plist, PyObject *sack);
 PyObject *packageset_to_pylist(HyPackageSet pset, PyObject *sack);
 HyPackageList pyseq_to_packagelist(PyObject *sequence);

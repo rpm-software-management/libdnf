@@ -109,9 +109,6 @@ package_init(_PackageObject *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-#define TEST_COND(cond) \
-    ((cond) ? Py_True : Py_False)
-
 PyObject *
 package_py_richcompare(PyObject *self, PyObject *other, int op)
 {
@@ -154,8 +151,6 @@ package_py_richcompare(PyObject *self, PyObject *other, int op)
     Py_INCREF(v);
     return v;
 }
-
-#undef TEST_COND
 
 static PyObject *
 package_repr(_PackageObject *self)
