@@ -164,21 +164,21 @@ nevra_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
     PyObject *form = NULL;
     char *kwlist[] = { "sack", "allow_globs", "icase", "form", NULL };
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|iiO", kwlist,
-    &sack_Type, &sack, &allow_globs, &icase, &form))
-    return NULL;
+	&sack_Type, &sack, &allow_globs, &icase, &form))
+	return NULL;
     csack = sackFromPyObject(sack);
     if (csack == NULL)
-    return NULL;
+	return NULL;
     HyForm *cforms = NULL;
     if (form != NULL) {
-    cforms = fill_form(form);
-    if (cforms == NULL)
-        return NULL;
+	cforms = fill_form(form);
+	if (cforms == NULL)
+	    return NULL;
     }
     if (icase)
-    flags |= HY_ICASE;
+	flags |= HY_ICASE;
     if (allow_globs)
-    flags |= HY_GLOB;
+	flags |= HY_GLOB;
 
     HyPossibilities iter = hy_subject_nevra_possibilities_real(self->pattern,
     cforms, csack, flags);
