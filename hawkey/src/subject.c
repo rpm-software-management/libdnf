@@ -52,7 +52,6 @@ filter_real(HyNevra nevra, HySack sack, int flags)
     flags |= HY_NAME_ONLY;
     int allow_glob = flags & HY_GLOB;
     char *version = nevra->version;
-    const char **existing_arches;
     if (nevra->name != NULL && !(allow_glob && is_glob_pattern(nevra->version))) {
 	if (allow_glob && is_glob_pattern(nevra->version))
 	    version = NULL;
@@ -64,7 +63,7 @@ filter_real(HyNevra nevra, HySack sack, int flags)
     if (nevra->arch != NULL && !(allow_glob && is_glob_pattern(nevra->arch))) {
 	if (strcmp(nevra->arch, "src") == 0)
 	    return 1;
-	existing_arches = hy_sack_list_arches(sack);
+	const char **existing_arches = hy_sack_list_arches(sack);
 	int ret = 0;
 	for (int i = 0; existing_arches[i] != NULL; ++i) {
 	    if (strcmp(nevra->arch, existing_arches[i]) == 0) {
@@ -151,7 +150,7 @@ int hy_possibilities_next_reldep(HyPossibilities iter, HyReldep *out_reldep)
 	*out_reldep = hy_reldep_create(iter->sack, name, cmp_type, evr);
 	solv_free(name);
 	solv_free(evr);
-	if (out_reldep == NULL)
+	if (*out_reldep == NULL)
 	    return -1;
 	return 0;
     }
