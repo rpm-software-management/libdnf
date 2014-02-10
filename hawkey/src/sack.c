@@ -22,6 +22,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -389,23 +390,36 @@ write_main(HySack sack, HyRepo hrepo)
 {
     Repo *repo = hrepo->libsolv_repo;
     const char *name = repo->name;
+    char *fn = hy_sack_give_cache_fn(sack, name, NULL);
+    char *tmp_fn_templ = solv_dupjoin(fn, ".XXXXXX", NULL);
+    int tmp_fd  = mkstemp(tmp_fn_templ);
+    int retval = 0;
 
     HY_LOG_INFO("caching repo: %s", name);
-    assert(strcmp(name, HY_CMDLINE_REPO_NAME));
-    assert(hrepo->checksum);
 
-    char *fn = hy_sack_give_cache_fn(sack, name, NULL);
-    FILE *fp = fopen(fn, "w+");
-    solv_free(fn);
+    if (tmp_fd < 0) {
+	HY_LOG_ERROR("write_main() can not create temporary file.");
+	retval = HY_E_IO;
+	goto done;
+    }
+
+    FILE *fp = fdopen(tmp_fd, "w+");
     if (!fp) {
-	HY_LOG_ERROR("write_main() failed on %s: %s", fn, strerror(errno));
-	return HY_E_IO;
+	HY_LOG_ERROR("write_main() failed opening tmp file: %s", strerror(errno));
+	retval = HY_E_IO;
+	goto done;
     }
     repo_write(repo, fp);
     checksum_write(hrepo->checksum, fp);
     fclose(fp);
-    hrepo->state_main = _HY_WRITTEN;
-    return 0;
+
+    retval = mv(sack, tmp_fn_templ, fn);
+    if (!retval)
+	hrepo->state_main = _HY_WRITTEN;
+ done:
+    solv_free(tmp_fn_templ);
+    solv_free(fn);
+    return retval;
 }
 
 static int
@@ -419,19 +433,33 @@ write_ext(HySack sack, HyRepo hrepo, int which_repodata, const char *suffix)
     assert(repodata);
     Repodata *data = repo_id2repodata(repo, repodata);
     char *fn = hy_sack_give_cache_fn(sack, name, suffix);
-    FILE *fp = fopen(fn, "w+");
-    HY_LOG_INFO("%s: storing %s to: %s", __func__, repo->name, fn);
-    solv_free(fn);
-    assert(data);
-    assert(hrepo->checksum);
+    char *tmp_fn_templ = solv_dupjoin(fn, ".XXXXXX", NULL);
+    int tmp_fd = mkstemp(tmp_fn_templ);
+
+    if (tmp_fd < 0) {
+	HY_LOG_ERROR("write_ext() can not create temporary file.");
+	ret = HY_E_IO;
+	goto done;
+    }
+    FILE *fp = fdopen(tmp_fd, "w+");
+
+    HY_LOG_INFO("%s: storing %s to: %s", __func__, repo->name, tmp_fn_templ);
     ret |= repodata_write(data, fp);
     ret |= checksum_write(hrepo->checksum, fp);
-
     fclose(fp);
+
+    if (ret) {
+	HY_LOG_ERROR("write_ext(%d) has failed: %d", which_repodata, ret);
+	goto done;
+    }
+
+    ret = mv(sack, tmp_fn_templ, fn);
     if (ret == 0)
 	repo_update_state(hrepo, which_repodata, _HY_WRITTEN);
-    else
-	HY_LOG_ERROR("write_ext(...%d....) has failed: %d", which_repodata, ret);
+
+ done:
+    solv_free(tmp_fn_templ);
+    solv_free(fn);
     return ret;
 }
 

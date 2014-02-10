@@ -56,6 +56,7 @@ int checksumt_l2h(int type);
 /* filesystem utils */
 int is_readable_rpm(const char *fn);
 int mkcachedir(char *path);
+int mv(HySack sack, const char *old, const char *new);
 char *this_username(void);
 
 /* misc utils */

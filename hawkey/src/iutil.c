@@ -20,6 +20,7 @@
 
 #define _GNU_SOURCE
 #include <assert.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <glob.h>
 #include <pwd.h>
@@ -52,6 +53,14 @@
 #define CHKSUM_TYPE REPOKEY_TYPE_SHA256
 #define CHKSUM_IDENT "H000"
 #define CACHEDIR_PERMISSIONS 0700
+
+static mode_t
+get_umask(void)
+{
+    mode_t mask = umask(0);
+    umask(mask);
+    return mask;
+}
 
 static int
 glob_for_cachedir(char *path)
@@ -250,6 +259,22 @@ mkcachedir(char *path)
 
     solv_free(p);
     return ret;
+}
+
+int
+mv(HySack sack, const char *old, const char *new)
+{
+    if (rename(old, new)) {
+	HY_LOG_ERROR("mv() failed renaming %s to %s: %s", old, new,
+		     strerror(errno));
+	return HY_E_IO;
+    }
+    if (chmod(new, 0666 & ~get_umask())) {
+	HY_LOG_ERROR("mv() failed setting perms on %s: %s", new,
+		     strerror(errno));
+	return HY_E_IO;
+    }
+    return 0;
 }
 
 char *
