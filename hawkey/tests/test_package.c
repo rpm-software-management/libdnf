@@ -313,6 +313,20 @@ START_TEST(test_presto)
 }
 END_TEST
 
+START_TEST(test_get_files_cmdline)
+{
+    HySack sack = test_globals.sack;
+
+    HyPackage pkg = by_name(sack, "tour");
+    HyStringArray files;
+
+    files = hy_package_get_files(pkg);
+    fail_unless(hy_stringarray_length(files) == 6);
+    hy_stringarray_free(files);
+    hy_package_free(pkg);
+}
+END_TEST
+
 Suite *
 package_suite(void)
 {
@@ -346,6 +360,11 @@ package_suite(void)
     tcase_add_test(tc, test_packager);
     tcase_add_test(tc, test_sourcerpm);
     tcase_add_test(tc, test_presto);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("WithCmdlinePackage");
+    tcase_add_unchecked_fixture(tc, fixture_cmdline_only, teardown);
+    tcase_add_test(tc, test_get_files_cmdline);
     suite_add_tcase(s, tc);
 
     return s;

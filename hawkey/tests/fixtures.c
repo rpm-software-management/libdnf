@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 // hawkey
+#include "src/package.h"
 #include "src/repo.h"
 #include "src/iutil.h"
 #include "src/sack_internal.h"
@@ -62,6 +63,17 @@ setup_with(HySack sack, ...)
     }
     va_end(names);
     return ret;
+}
+
+void fixture_cmdline_only(void)
+{
+    HySack sack = create_ut_sack();
+    Pool *pool = sack_pool(sack);
+    hy_sack_create_cmdline_repo(sack);
+    const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
+				    "yum/tour-4-6.noarch.rpm", NULL);
+    HyPackage pkg = hy_sack_add_cmdline_package(sack, path);
+    hy_package_free(pkg);
 }
 
 void

@@ -33,6 +33,7 @@ struct TestGlobals_s {
 /* global data used to pass values from fixtures to tests */
 extern struct TestGlobals_s test_globals;
 
+void fixture_cmdline_only(void);
 void fixture_empty(void);
 void fixture_greedy_only(void);
 void fixture_installonly(void);

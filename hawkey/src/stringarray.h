@@ -28,6 +28,7 @@ extern "C" {
 #include "types.h"
 
 void hy_stringarray_free(HyStringArray strs);
+int hy_stringarray_length(HyStringArray strs);
 
 #define FOR_STRINGARRAY(str, strs, i)							\
     for (i = 0, str = strs[0]; str; str = strs[++i])

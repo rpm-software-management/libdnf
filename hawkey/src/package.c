@@ -408,6 +408,7 @@ hy_package_get_files(HyPackage pkg)
     int len = 0;
     HyStringArray strs = solv_extend(0, 0, 1, sizeof(char*), BLOCK_SIZE);
 
+    repo_internalize_trigger(s->repo);
     dataiterator_init(&di, pool, s->repo, pkg->id, SOLVABLE_FILELIST, NULL,
 		      SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
     while (dataiterator_step(&di)) {

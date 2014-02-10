@@ -34,3 +34,14 @@ hy_stringarray_free(HyStringArray strs)
 	solv_free(str);
     solv_free(strs);
 }
+
+int
+hy_stringarray_length(HyStringArray strs)
+{
+    int i;
+    char *str;
+
+    FOR_STRINGARRAY(str, strs, i)
+	++i;
+    return i;
+}
