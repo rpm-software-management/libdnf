@@ -944,7 +944,7 @@ sack_log(HySack sack, int level, const char *format, ...)
     va_start(args, format);
     vsnprintf(buf, sizeof(buf), format_nl, args);
     va_end(args);
-    POOL_DEBUG(level, buf);
+    POOL_DEBUG(level, "%s", buf);
 }
 
 int
