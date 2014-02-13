@@ -409,9 +409,13 @@ write_main(HySack sack, HyRepo hrepo)
 	retval = HY_E_IO;
 	goto done;
     }
-    repo_write(repo, fp);
-    checksum_write(hrepo->checksum, fp);
+    retval = repo_write(repo, fp);
+    retval |= checksum_write(hrepo->checksum, fp);
     fclose(fp);
+    if (retval) {
+	HY_LOG_ERROR("write_main() failed writing data: %", retval);
+	goto done;
+    }
 
     retval = mv(sack, tmp_fn_templ, fn);
     if (!retval)
