@@ -420,7 +420,10 @@ write_main(HySack sack, HyRepo hrepo)
     retval = mv(sack, tmp_fn_templ, fn);
     if (!retval)
 	hrepo->state_main = _HY_WRITTEN;
+
  done:
+    if (retval && tmp_fd >= 0)
+	unlink(tmp_fn_templ);
     solv_free(tmp_fn_templ);
     solv_free(fn);
     return retval;
@@ -462,6 +465,8 @@ write_ext(HySack sack, HyRepo hrepo, int which_repodata, const char *suffix)
 	repo_update_state(hrepo, which_repodata, _HY_WRITTEN);
 
  done:
+    if (ret && tmp_fd >=0 )
+	unlink(tmp_fn_templ);
     solv_free(tmp_fn_templ);
     solv_free(fn);
     return ret;
