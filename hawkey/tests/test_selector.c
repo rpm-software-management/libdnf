@@ -51,6 +51,20 @@ START_TEST(test_sltr_reponame)
 }
 END_TEST
 
+START_TEST(test_sltr_reponame_nonexistent)
+{
+    HySelector sltr = hy_selector_create(test_globals.sack);
+
+    fail_if(hy_selector_set(sltr, HY_PKG_NAME, HY_GLOB, "*"));
+    fail_if(hy_selector_set(sltr, HY_PKG_REPONAME, HY_EQ, "non-existent"));
+    HyPackageList plist = hy_selector_matches(sltr);
+    fail_unless(hy_packagelist_count(plist) == 0);
+
+    hy_packagelist_free(plist);
+    hy_selector_free(sltr);
+}
+END_TEST
+
 START_TEST(test_sltr_version)
 {
     HySelector sltr = hy_selector_create(test_globals.sack);
@@ -74,6 +88,7 @@ selector_suite(void)
     tcase_add_unchecked_fixture(tc, fixture_all, teardown);
     tcase_add_test(tc, test_sltr_matching);
     tcase_add_test(tc, test_sltr_reponame);
+    tcase_add_test(tc, test_sltr_reponame_nonexistent);
     tcase_add_test(tc, test_sltr_version);
 
     suite_add_tcase(s, tc);
