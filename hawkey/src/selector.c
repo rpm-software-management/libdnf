@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -19,6 +19,7 @@
  */
 
 // libsolv
+#include <solv/selection.h>
 #include <solv/solver.h>
 #include <solv/util.h>
 
@@ -61,6 +62,7 @@ valid_setting(int keyname, int cmp_type)
     switch (keyname) {
     case HY_PKG_ARCH:
     case HY_PKG_EVR:
+    case HY_PKG_REPONAME:
     case HY_PKG_VERSION:
     case HY_PKG_PROVIDES:
 	return cmp_type == HY_EQ;
@@ -86,6 +88,7 @@ hy_selector_free(HySelector sltr)
     filter_free(sltr->f_evr);
     filter_free(sltr->f_name);
     filter_free(sltr->f_provides);
+    filter_free(sltr->f_reponame);
     solv_free(sltr);
 }
 
@@ -114,6 +117,9 @@ hy_selector_set(HySelector sltr, int keyname, int cmp_type, const char *match)
 	    return HY_E_SELECTOR;
 	replace_filter(sack, &sltr->f_provides, keyname, cmp_type, match);
 	break;
+    case HY_PKG_REPONAME:
+        replace_filter(sack, &sltr->f_reponame, keyname, cmp_type, match);
+        break;
     default:
 	return HY_E_SELECTOR;
     }
@@ -125,16 +131,19 @@ hy_selector_matches(HySelector sltr)
 {
     HySack sack = selector_sack(sltr);
     Pool *pool = sack_pool(sack);
-    Queue job;
+    Queue job, solvables;
 
     queue_init(&job);
     sltr2job(sltr, &job, 0);
-    Id p, pp;
-    HyPackageList plist = hy_packagelist_create();
 
-    for (int i = 0; i < job.count; i += 2)
-	FOR_JOB_SELECT(p, pp, job.elements[0], job.elements[1])
-	    hy_packagelist_push(plist, package_create(sack, p));
+    queue_init(&solvables);
+    selection_solvables(pool, &job, &solvables);
+
+    HyPackageList plist = hy_packagelist_create();
+    for (int i = 0; i < solvables.count; i++)
+        hy_packagelist_push(plist, package_create(sack, solvables.elements[i]));
+
+    queue_free(&solvables);
     queue_free(&job);
     return plist;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -26,6 +26,7 @@
 
 // libsolv
 #include <solv/evr.h>
+#include <solv/selection.h>
 #include <solv/solver.h>
 #include <solv/solverdebug.h>
 #include <solv/testcase.h>
@@ -454,6 +455,32 @@ filter_provides2job(HySack sack, const struct _Filter *f, Queue *job)
     return 0;
 }
 
+static int
+filter_reponame2job(HySack sack, const struct _Filter *f, Queue *job)
+{
+    Queue repo_sel;
+    Id i;
+    Repo *repo;
+
+    if (f == NULL)
+        return 0;
+
+    assert(f->cmp_type == HY_EQ);
+    assert(f->nmatches == 1);
+
+    queue_init(&repo_sel);
+    Pool *pool = sack_pool(sack);
+    FOR_REPOS(i, repo)
+        if (!strcmp(f->matches[0].str, repo->name)) {
+            queue_push2(&repo_sel, SOLVER_SOLVABLE_REPO | SOLVER_SETREPO, repo->repoid);
+        }
+
+    selection_filter(pool, job, &repo_sel);
+
+    queue_free(&repo_sel);
+    return 0;
+}
+
 /**
  * Build job queue from a Query.
  *
@@ -486,6 +513,9 @@ sltr2job(const HySelector sltr, Queue *job, int solver_action)
     ret = filter_evr2job(sack, sltr->f_evr, &job_sltr);
     if (ret)
 	goto finish;
+    ret = filter_reponame2job(sack, sltr->f_reponame, &job_sltr);
+    if (ret)
+        goto finish;
 
     for (int i = 0; i < job_sltr.count; i += 2)
  	queue_push2(job,

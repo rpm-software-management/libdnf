@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -29,6 +29,7 @@ struct _HySelector {
     struct _Filter *f_evr;
     struct _Filter *f_name;
     struct _Filter *f_provides;
+    struct _Filter *f_reponame;
 };
 
 static inline HySack selector_sack(HySelector sltr) { return sltr->sack; }
