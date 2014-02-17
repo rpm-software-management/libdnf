@@ -1,4 +1,4 @@
-%global gitrev 20392bc
+%global gitrev 8d6af87
 %global libsolv_version 0.4.0-2
 
 Name:		hawkey
@@ -107,6 +107,20 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+
+* Mon Feb 17 2014 Radek Holý <rholy@redhat.com> - 0.4.10-1
+- tests: add a negative test for reponame. (Radek Holy)
+- Add reponame into selector. (Radek Holy)
+- write_main() and write_ext(): even on error do not leave the temporary file behind. (Ales Kozumplik)
+- write_main() should do a better job erroring out on write errors. (Ales Kozumplik)
+- Fix vsnprintf SIGSEGV passing "%s" with no va_list args to pool_debug. (RhBug:1064459) (Ales Kozumplik)
+- Save the cache atomically. (RhBug:1047087) (Ales Kozumplik)
+- package: call repo_internalize_trigger in get_files() (RhBug:1062703) (Ales Kozumplik)
+- fixed reldep pointer NULL comparison (Jan Silhan)
+- fixed indentation in subject-py.c (Jan Silhan)
+- moved TEST_COND macro to iutil-py.h (Jan Silhan)
+- moved subject and nevra from python to C (Jan Silhan)
+- subject in C: work with full reldeps (Jan Silhan)
 
 * Thu Jan 30 2014 Aleš Kozumplík <ales@redhat.com> - 0.4.9-1
 - selectors: allow selecting provides with full Reldep string. (Ales Kozumplik)
