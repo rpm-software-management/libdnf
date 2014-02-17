@@ -411,7 +411,7 @@ write_main(HySack sack, HyRepo hrepo)
     }
     retval = repo_write(repo, fp);
     retval |= checksum_write(hrepo->checksum, fp);
-    fclose(fp);
+    retval |= fclose(fp);
     if (retval) {
 	HY_LOG_ERROR("write_main() failed writing data: %", retval);
 	goto done;
@@ -453,7 +453,7 @@ write_ext(HySack sack, HyRepo hrepo, int which_repodata, const char *suffix)
     HY_LOG_INFO("%s: storing %s to: %s", __func__, repo->name, tmp_fn_templ);
     ret |= repodata_write(data, fp);
     ret |= checksum_write(hrepo->checksum, fp);
-    fclose(fp);
+    ret |= fclose(fp);
 
     if (ret) {
 	HY_LOG_ERROR("write_ext(%d) has failed: %d", which_repodata, ret);
