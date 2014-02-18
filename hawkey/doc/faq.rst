@@ -10,7 +10,7 @@ Getting Started
 How do I build it?
 ------------------
 
-See `README.md <https://github.com/akozumpl/hawkey/tree/master/README.md>`_.
+See the `README <https://github.com/akozumpl/hawkey/tree/master/README.rst>`_.
 
 Are there examples using hawkey?
 --------------------------------

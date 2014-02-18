@@ -89,7 +89,7 @@ popd
 %postun -p /sbin/ldconfig
 
 %files
-%doc COPYING README.md
+%doc COPYING README.rst
 %{_libdir}/libhawkey.so.*
 
 %files devel
