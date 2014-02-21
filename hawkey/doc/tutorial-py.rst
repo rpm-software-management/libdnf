@@ -221,7 +221,7 @@ goal::
 ``True`` as a return value here indicates that libsolv could find a solution to
 our goal. This is not always the case, there are plenty of situations when there
 is no solution, the most common one being a package should be installed but one
-of its dependnecies is missing from the sack.
+of its dependencies is missing from the sack.
 
 The three methods :meth:`Goal.list_installs`, :meth:`Goal.list_upgrades` and
 :meth:`Goal.list_erasures` can show which packages should be
@@ -264,7 +264,7 @@ Notice we arrived at the same result as before, when a query was constructed and
 iterated first. What :class:`Selector` does when passed to :meth:`Goal.install`
 is tell hawkey to examine its settings and without evaluating it as a
 :class:`Query` it instructs libsolv to find *the best matching package* for it
-and add that for installation. It saves user some deicsions like which version
+and add that for installation. It saves user some decisions like which version
 should be installed or what architecture (this gets very relevant with multiarch
 libraries).
 
