@@ -241,3 +241,10 @@ class SubjectRealPossibilitiesTest(base.TestCase):
     def test_nonexistent_version(self):
         subj = hawkey.Subject("penny-5")
         self.assertLength(list(subj.nevra_possibilities_real(self.sack)), 0)
+
+    def test_glob_arches(self):
+        subj = hawkey.Subject("pilchard-1.2.3-1.*6*")
+        nevras = list(subj.nevra_possibilities_real(self.sack, allow_globs=True))
+        self.assertLength(nevras, 2)
+        self.assertEqual(nevras[0].arch, "*6*")
+        self.assertEqual(nevras[1].arch, None)

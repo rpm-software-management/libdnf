@@ -299,6 +299,39 @@ START_TEST(nevra_real_dash)
 }
 END_TEST
 
+START_TEST(glob_arch)
+{
+    HyNevra nevra;
+    HySubject subject = hy_subject_create("dog-1-2.i?86");
+    HyPossibilities iter = hy_subject_nevra_possibilities_real(subject, NULL,
+	test_globals.sack, HY_GLOB);
+    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
+    ck_assert_str_eq(nevra->arch, "i?86");
+    hy_nevra_free(nevra);
+    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
+    fail_unless(nevra->arch == NULL);
+    hy_nevra_free(nevra);
+    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), -1);
+    hy_possibilities_free(iter);
+    hy_subject_free(subject);
+}
+END_TEST
+
+START_TEST(glob_arch_fail)
+{
+    HyNevra nevra;
+    HySubject subject = hy_subject_create("dog-1-2.i*77");
+    HyPossibilities iter = hy_subject_nevra_possibilities_real(subject, NULL,
+	test_globals.sack, HY_GLOB);
+    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
+    fail_unless(nevra->arch == NULL);
+    hy_nevra_free(nevra);
+    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), -1);
+    hy_possibilities_free(iter);
+    hy_subject_free(subject);
+}
+END_TEST
+
 
 Suite *
 subject_suite(void)
@@ -322,6 +355,8 @@ subject_suite(void)
     tcase_add_test(tc, nevra_real_none);
     tcase_add_test(tc, nevra_real);
     tcase_add_test(tc, nevra_real_dash);
+    tcase_add_test(tc, glob_arch);
+    tcase_add_test(tc, glob_arch_fail);
     suite_add_tcase(s, tc);
 
     return s;

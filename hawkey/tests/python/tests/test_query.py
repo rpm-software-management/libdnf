@@ -231,6 +231,14 @@ class TestQueryUpdates(base.TestCase):
         pilchard = q.filter(name="dog", upgrades=True)
         self.assertItemsEqual(list(map(str, pilchard.run())), ['dog-1-2.x86_64'])
 
+    def test_glob_arch(self):
+        q = hawkey.Query(self.sack)
+        pilchard = q.filter(name="pilchard", version="1.2.4", release="1",
+                            arch__glob="*6*")
+        res = list(map(str, pilchard.run()))
+        self.assertItemsEqual(res, ["pilchard-1.2.4-1.x86_64",
+                              "pilchard-1.2.4-1.i686"])
+
     def test_obsoletes(self):
         q = hawkey.Query(self.sack).filter(name="penny")
         o = hawkey.Query(self.sack)

@@ -19,6 +19,7 @@
  */
 
 #include <stdlib.h>
+#include <fnmatch.h>
 #include "reldep.h"
 #include "sack_internal.h"
 #include "subject.h"
@@ -47,34 +48,58 @@ is_glob_pattern(char *str)
 }
 
 static inline int
-filter_real(HyNevra nevra, HySack sack, int flags)
+is_real_name(HyNevra nevra, HySack sack, int flags)
 {
     flags |= HY_NAME_ONLY;
-    int allow_glob = flags & HY_GLOB;
+    int glob_version = (flags & HY_GLOB) && is_glob_pattern(nevra->version);
     char *version = nevra->version;
-    if (nevra->name != NULL && !(allow_glob && is_glob_pattern(nevra->version))) {
-	if (allow_glob && is_glob_pattern(nevra->version))
-	    version = NULL;
-	if (!is_glob_pattern(nevra->name))
-	    flags &= ~HY_GLOB;
-	if (sack_knows(sack, nevra->name, version, flags) == 0)
-	    return 0;
-    }
-    if (nevra->arch != NULL && !(allow_glob && is_glob_pattern(nevra->arch))) {
-	if (strcmp(nevra->arch, "src") == 0)
-	    return 1;
-	const char **existing_arches = hy_sack_list_arches(sack);
-	int ret = 0;
-	for (int i = 0; existing_arches[i] != NULL; ++i) {
-	    if (strcmp(nevra->arch, existing_arches[i]) == 0) {
-		ret = 1;
-		break;
-	}
-	}
-	solv_free(existing_arches);
-	return ret;
-    }
+    if (nevra->name == NULL && !glob_version)
+	return 1;
+    if (glob_version)
+	version = NULL;
+    if (!is_glob_pattern(nevra->name))
+	flags &= ~HY_GLOB;
+    if (sack_knows(sack, nevra->name, version, flags) == 0)
+	return 0;
     return 1;
+}
+
+static inline int
+arch_exist(char *arch, const char *existing_arch, int is_glob)
+{
+    if (is_glob) {
+	if (fnmatch(arch, existing_arch, 0) == 0)
+	    return 1;
+	return 0;
+    }
+    if (strcmp(arch, existing_arch) == 0)
+	return 1;
+    return 0;
+}
+
+static inline int
+is_real_arch(HyNevra nevra, HySack sack, int flags)
+{
+    int check_glob = (flags & HY_GLOB) && is_glob_pattern(nevra->arch);
+    if (nevra->arch == NULL)
+	return 1;
+    if (arch_exist(nevra->arch, "src", check_glob))
+	return 1;
+    const char **existing_arches = hy_sack_list_arches(sack);
+    int ret = 0;
+    for (int i = 0; existing_arches[i] != NULL; ++i) {
+	if ((ret = arch_exist(nevra->arch, existing_arches[i], check_glob)))
+	    break;
+    }
+    solv_free(existing_arches);
+    return ret;
+}
+
+static inline int
+filter_real(HyNevra nevra, HySack sack, int flags)
+{
+    return is_real_name(nevra, sack, flags) &&
+	is_real_arch(nevra, sack, flags);
 }
 
 HySubject
