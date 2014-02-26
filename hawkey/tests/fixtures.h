@@ -38,6 +38,7 @@ void fixture_empty(void);
 void fixture_greedy_only(void);
 void fixture_installonly(void);
 void fixture_system_only(void);
+void fixture_with_change(void);
 void fixture_with_forcebest(void);
 void fixture_with_main(void);
 void fixture_with_updates(void);

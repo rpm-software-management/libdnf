@@ -939,6 +939,22 @@ START_TEST(test_goal_forcebest_arches)
 }
 END_TEST
 
+START_TEST(test_goal_change)
+{
+    // test that changes are handled like reinstalls
+
+    HySack sack = test_globals.sack;
+    HyGoal goal = hy_goal_create(sack);
+
+    hy_goal_upgrade_all(goal);
+
+    fail_if(hy_goal_run(goal));
+    assert_iueo(goal, 0, 1, 0, 0);
+    fail_unless(size_and_free(hy_goal_list_reinstalls(goal)) == 1);
+    hy_goal_free(goal);
+}
+END_TEST
+
 Suite *
 goal_suite(void)
 {
@@ -1011,6 +1027,11 @@ goal_suite(void)
     tc = tcase_create("Forcebest");
     tcase_add_unchecked_fixture(tc, fixture_with_forcebest, teardown);
     tcase_add_test(tc, test_goal_forcebest_arches);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("Change");
+    tcase_add_unchecked_fixture(tc, fixture_with_change, teardown);
+    tcase_add_test(tc, test_goal_change);
     suite_add_tcase(s, tc);
 
     return s;

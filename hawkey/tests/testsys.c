@@ -79,7 +79,7 @@ dump_packagelist(HyPackageList plist, int free)
 	HyPackage pkg = hy_packagelist_get(plist, i);
 	Solvable *s = pool_id2solvable(package_pool(pkg), package_id(pkg));
 	char *nvra = hy_package_get_nevra(pkg);
-	printf("\t%s (%s)\n", nvra, s->repo->name);
+	printf("\t%s @%s\n", nvra, s->repo->name);
 	hy_free(nvra);
     }
     if (free)
@@ -102,6 +102,8 @@ dump_goal_results(HyGoal goal)
     dump_packagelist(hy_goal_list_upgrades(goal), 1);
     printf("erasures:\n");
     dump_packagelist(hy_goal_list_erasures(goal), 1);
+    printf("reinstalls:\n");
+    dump_packagelist(hy_goal_list_reinstalls(goal), 1);
 }
 
 int

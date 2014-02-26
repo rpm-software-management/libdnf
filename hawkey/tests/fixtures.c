@@ -104,6 +104,13 @@ fixture_system_only(void)
 }
 
 void
+fixture_with_change(void)
+{
+    HySack sack = create_ut_sack();
+    fail_if(setup_with(sack, HY_SYSTEM_REPO_NAME, "change", NULL));
+}
+
+void
 fixture_with_forcebest(void)
 {
     HySack sack = create_ut_sack();

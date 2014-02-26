@@ -322,9 +322,11 @@ list_results(HyGoal goal, Id type_filter1, Id type_filter2)
 	else
 	    hy_errno = HY_E_NO_SOLUTION;
 	return NULL;
-   }
+    }
     queue_init(&transpkgs);
     plist = hy_packagelist_create();
+    const int common_mode = SOLVER_TRANSACTION_SHOW_OBSOLETES |
+	SOLVER_TRANSACTION_CHANGE_IS_REINSTALL;
 
     for (int i = 0; i < trans->steps.count; ++i) {
 	Id p = trans->steps.elements[i];
@@ -332,12 +334,12 @@ list_results(HyGoal goal, Id type_filter1, Id type_filter2)
 
 	switch (type_filter1) {
 	case SOLVER_TRANSACTION_OBSOLETED:
-	    type =  transaction_type(trans, p, SOLVER_TRANSACTION_SHOW_OBSOLETES);
+	    type =  transaction_type(trans, p, common_mode);
 	    break;
 	default:
-	    type  = transaction_type(trans, p, SOLVER_TRANSACTION_SHOW_ACTIVE|
-				     SOLVER_TRANSACTION_SHOW_ALL|
-				     SOLVER_TRANSACTION_SHOW_OBSOLETES);
+	    type  = transaction_type(trans, p, common_mode |
+				     SOLVER_TRANSACTION_SHOW_ACTIVE|
+				     SOLVER_TRANSACTION_SHOW_ALL);
 	    break;
 	}
 

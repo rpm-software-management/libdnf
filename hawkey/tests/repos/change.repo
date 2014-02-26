@@ -1,0 +1,8 @@
+=Ver: 2.0
+#
+=Pkg: flying 3 0 noarch
+=Req: P-lib = 3-4
+=Pkg: penny-lib 4 1 x86_64
+=Vnd: PerfectlyLoud
+=Sum: in my ears
+=Prv: P-lib = 3-4
