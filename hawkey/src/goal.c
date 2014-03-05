@@ -561,6 +561,20 @@ hy_goal_distupgrade_all(HyGoal goal)
 }
 
 int
+hy_goal_distupgrade(HyGoal goal, HyPackage new_pkg)
+{
+    queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_DISTUPGRADE,
+	package_id(new_pkg));
+    return 0;
+}
+
+int
+hy_goal_distupgrade_selector(HyGoal goal, HySelector sltr)
+{
+    return sltr2job(sltr, &goal->staging, SOLVER_DISTUPGRADE);
+}
+
+int
 hy_goal_downgrade_to(HyGoal goal, HyPackage new_pkg)
 {
     return hy_goal_install(goal, new_pkg);

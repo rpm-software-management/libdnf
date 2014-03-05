@@ -45,6 +45,8 @@ HyGoal hy_goal_create(HySack sack);
 void hy_goal_free(HyGoal goal);
 
 int hy_goal_distupgrade_all(HyGoal goal);
+int hy_goal_distupgrade(HyGoal goal, HyPackage new_pkg);
+int hy_goal_distupgrade_selector(HyGoal goal, HySelector);
 int hy_goal_downgrade_to(HyGoal goal, HyPackage new_pkg);
 int hy_goal_erase(HyGoal goal, HyPackage pkg);
 int hy_goal_erase_flags(HyGoal goal, HyPackage pkg, int flags);

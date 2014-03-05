@@ -735,6 +735,60 @@ START_TEST(test_goal_distupgrade_all)
 }
 END_TEST
 
+START_TEST(test_goal_distupgrade_selector_upgrade)
+{
+    HyGoal goal = hy_goal_create(test_globals.sack);
+    HySelector sltr = hy_selector_create(test_globals.sack);
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "flying");
+    fail_if(hy_goal_distupgrade_selector(goal, sltr));
+    fail_if(hy_goal_run(goal));
+
+    assert_iueo(goal, 0, 1, 0, 0);
+    HyPackageList plist = hy_goal_list_upgrades(goal);
+    assert_nevra_eq(hy_packagelist_get(plist, 0), "flying-3-0.noarch");
+
+    hy_packagelist_free(plist);
+    hy_goal_free(goal);
+    hy_selector_free(sltr);
+}
+END_TEST
+
+START_TEST(test_goal_distupgrade_selector_downgrade)
+{
+    HyGoal goal = hy_goal_create(test_globals.sack);
+    HySelector sltr = hy_selector_create(test_globals.sack);
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "baby");
+    fail_if(hy_goal_distupgrade_selector(goal, sltr));
+    fail_if(hy_goal_run(goal));
+
+    assert_iueo(goal, 0, 0, 0, 0);
+    HyPackageList plist = hy_goal_list_downgrades(goal);
+    fail_unless(hy_packagelist_count(plist) == 1);
+    assert_nevra_eq(hy_packagelist_get(plist, 0), "baby-6:4.9-3.x86_64");
+
+    hy_packagelist_free(plist);
+    hy_goal_free(goal);
+    hy_selector_free(sltr);
+}
+END_TEST
+
+START_TEST(test_goal_distupgrade_selector_nothing)
+{
+    HyGoal goal = hy_goal_create(test_globals.sack);
+    HySelector sltr = hy_selector_create(test_globals.sack);
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "P-lib");
+    fail_if(hy_goal_distupgrade_selector(goal, sltr));
+    fail_if(hy_goal_run(goal));
+
+    assert_iueo(goal, 0, 0, 0, 0);
+    HyPackageList plist = hy_goal_list_downgrades(goal);
+    fail_unless(hy_packagelist_count(plist) == 0);
+    hy_packagelist_free(plist);
+    hy_goal_free(goal);
+    hy_selector_free(sltr);
+}
+END_TEST
+
 START_TEST(test_goal_rerun)
 {
     HySack sack = test_globals.sack;
@@ -1002,6 +1056,9 @@ goal_suite(void)
     tc = tcase_create("Main");
     tcase_add_unchecked_fixture(tc, fixture_with_main, teardown);
     tcase_add_test(tc, test_goal_distupgrade_all);
+    tcase_add_test(tc, test_goal_distupgrade_selector_upgrade);
+    tcase_add_test(tc, test_goal_distupgrade_selector_downgrade);
+    tcase_add_test(tc, test_goal_distupgrade_selector_nothing);
     tcase_add_test(tc, test_goal_rerun);
     suite_add_tcase(s, tc);
 
