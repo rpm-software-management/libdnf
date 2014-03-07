@@ -27,6 +27,7 @@ extern "C" {
 
 typedef enum _HyForm HyForm;
 typedef struct _HyAdvisory * HyAdvisory;
+typedef struct _HyAdvisoryList * HyAdvisoryList;
 typedef struct _HyRepo * HyRepo;
 typedef struct _HyGoal * HyGoal;
 typedef struct _HyNevra * HyNevra;

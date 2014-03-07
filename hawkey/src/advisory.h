@@ -44,6 +44,10 @@ const char *hy_advisory_get_rights(HyAdvisory advisory);
 unsigned long long hy_advisory_get_updated(HyAdvisory advisory);
 HyStringArray hy_advisory_get_filenames(HyAdvisory advisory);
 
+void hy_advisorylist_free(HyAdvisoryList advisorylist);
+int hy_advisorylist_count(HyAdvisoryList advisorylist);
+HyAdvisory hy_advisorylist_get_clone(HyAdvisoryList advisorylist, int index);
+
 #ifdef __cplusplus
 }
 #endif

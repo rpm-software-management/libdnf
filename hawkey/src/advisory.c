@@ -35,6 +35,11 @@ struct _HyAdvisory {
     Id a_id;
 };
 
+struct _HyAdvisoryList {
+    Pool *pool;
+    Queue queue;
+};
+
 /* internal */
 HyAdvisory
 advisory_create(Pool *pool, Id a_id)
@@ -43,6 +48,22 @@ advisory_create(Pool *pool, Id a_id)
     advisory->pool = pool;
     advisory->a_id = a_id;
     return advisory;
+}
+
+HyAdvisoryList
+advisorylist_create(Pool *pool)
+{
+    HyAdvisoryList advisorylist = solv_calloc(1, sizeof(*advisorylist));
+    advisorylist->pool = pool;
+    queue_init(&advisorylist->queue);
+    return advisorylist;
+}
+
+void
+advisorylist_add(HyAdvisoryList advisorylist, HyAdvisory advisory)
+{
+    assert(advisory->pool == advisorylist->pool);
+    queue_push(&advisorylist->queue, advisory->a_id);
 }
 
 /* public */
@@ -127,4 +148,24 @@ hy_advisory_get_filenames(HyAdvisory advisory)
     dataiterator_free(&di);
     strs[len++] = NULL;
     return strs;
+}
+
+void
+hy_advisorylist_free(HyAdvisoryList advisorylist)
+{
+    queue_free(&advisorylist->queue);
+    solv_free(advisorylist);
+}
+
+int
+hy_advisorylist_count(HyAdvisoryList advisorylist)
+{
+    return advisorylist->queue.count;
+}
+
+HyAdvisory
+hy_advisorylist_get_clone(HyAdvisoryList advisorylist, int index)
+{
+    Id a_id = advisorylist->queue.elements[index];
+    return advisory_create(advisorylist->pool, a_id);
 }

@@ -31,4 +31,7 @@
 
 HyAdvisory advisory_create(Pool *pool, Id a_id);
 
+HyAdvisoryList advisorylist_create(Pool *pool);
+void advisorylist_add(HyAdvisoryList advisorylist, HyAdvisory advisory);
+
 #endif // HY_ADVISORY_INTERNAL_H
