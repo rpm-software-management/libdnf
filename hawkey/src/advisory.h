@@ -18,17 +18,34 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef HY_ADVISORY_INTERNAL_H
-#define HY_ADVISORY_INTERNAL_H
+#ifndef HY_ADVISORY_H
+#define HY_ADVISORY_H
 
-// libsolv
-#include <solv/pool.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// hawkey
-#include "advisory.h"
+/* hawkey */
+#include "types.h"
 
-#define SOLVABLE_NAME_ADVISORY_PREFIX "patch:"
+typedef enum {
+	HY_ADVISORY_UNKNOWN,	/* ordered by rough importance */
+	HY_ADVISORY_SECURITY,
+	HY_ADVISORY_BUGFIX,
+	HY_ADVISORY_ENHANCEMENT
+} HyAdvisoryType;
 
-HyAdvisory advisory_create(Pool *pool, Id a_id);
+void hy_advisory_free(HyAdvisory advisory);
+const char *hy_advisory_get_title(HyAdvisory advisory);
+const char *hy_advisory_get_id(HyAdvisory advisory);
+HyAdvisoryType hy_advisory_get_type(HyAdvisory advisory);
+const char *hy_advisory_get_description(HyAdvisory advisory);
+const char *hy_advisory_get_rights(HyAdvisory advisory);
+unsigned long long hy_advisory_get_updated(HyAdvisory advisory);
+HyStringArray hy_advisory_get_filenames(HyAdvisory advisory);
 
-#endif // HY_ADVISORY_INTERNAL_H
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* HY_ADVISORY_H */

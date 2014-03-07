@@ -1,0 +1,130 @@
+/*
+ * Copyright (C) 2014 Red Hat, Inc.
+ *
+ * Licensed under the GNU Lesser General Public License Version 2.1
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+#include <assert.h>
+
+//libsolv
+#include <solv/repo.h>
+#include <solv/util.h>
+
+// hawkey
+#include "advisory_internal.h"
+#include "iutil.h"
+
+#define FILENAME_BLOCK 15
+
+struct _HyAdvisory {
+    Pool *pool;
+    Id a_id;
+};
+
+/* internal */
+HyAdvisory
+advisory_create(Pool *pool, Id a_id)
+{
+    HyAdvisory advisory = solv_calloc(1, sizeof(*advisory));
+    advisory->pool = pool;
+    advisory->a_id = a_id;
+    return advisory;
+}
+
+/* public */
+void
+hy_advisory_free(HyAdvisory advisory)
+{
+    solv_free(advisory);
+}
+
+const char *
+hy_advisory_get_title(HyAdvisory advisory)
+{
+    return pool_lookup_str(advisory->pool, advisory->a_id, SOLVABLE_SUMMARY);
+}
+
+const char *
+hy_advisory_get_id(HyAdvisory advisory)
+{
+    const char *id;
+
+    id = pool_lookup_str(advisory->pool, advisory->a_id, SOLVABLE_NAME);
+    assert(str_startswith(id, SOLVABLE_NAME_ADVISORY_PREFIX));
+    //remove the prefix
+    id += strlen(SOLVABLE_NAME_ADVISORY_PREFIX);
+
+    return id;
+}
+
+HyAdvisoryType
+hy_advisory_get_type(HyAdvisory advisory)
+{
+    const char *type;
+    type = pool_lookup_str(advisory->pool, advisory->a_id, SOLVABLE_PATCHCATEGORY);
+
+    if (type == NULL)
+	return HY_ADVISORY_UNKNOWN;
+    if (!strcmp (type, "bugfix"))
+	return HY_ADVISORY_BUGFIX;
+    if (!strcmp (type, "enhancement"))
+	return HY_ADVISORY_ENHANCEMENT;
+    if (!strcmp (type, "security"))
+	return HY_ADVISORY_SECURITY;
+    return HY_ADVISORY_UNKNOWN;
+}
+
+const char *
+hy_advisory_get_description(HyAdvisory advisory)
+{
+    return pool_lookup_str(advisory->pool, advisory->a_id, SOLVABLE_DESCRIPTION);
+}
+
+const char *
+hy_advisory_get_rights(HyAdvisory advisory)
+{
+    return pool_lookup_str(advisory->pool, advisory->a_id, UPDATE_RIGHTS);
+}
+
+unsigned long long
+hy_advisory_get_updated(HyAdvisory advisory)
+{
+    return pool_lookup_num(advisory->pool, advisory->a_id, SOLVABLE_BUILDTIME, 0);
+}
+
+HyStringArray
+hy_advisory_get_filenames(HyAdvisory advisory)
+{
+    Dataiterator di;
+    const char *filename;
+    int len = 0;
+    HyStringArray strs = solv_extend(0, 0, 1, sizeof(char*), FILENAME_BLOCK);
+
+    dataiterator_init(&di, advisory->pool, 0, advisory->a_id, UPDATE_COLLECTION, 0, 0);
+    while (dataiterator_step(&di)) {
+	dataiterator_setpos(&di);
+	filename = pool_lookup_str(advisory->pool, SOLVID_POS, UPDATE_COLLECTION_FILENAME);
+	if (!filename)
+	    continue;
+
+	strs[len++] = solv_strdup(filename);
+	strs = solv_extend(strs, len, 1, sizeof(char*), FILENAME_BLOCK);
+    }
+    dataiterator_free(&di);
+    strs[len++] = NULL;
+    return strs;
+}

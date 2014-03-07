@@ -1,4 +1,5 @@
 SET (hawkey_SRCS
+    advisory.c
     errno.c
     goal.c
     iutil.c
@@ -33,6 +34,7 @@ TARGET_LINK_LIBRARIES(hth libhawkey
 ADD_SUBDIRECTORY(python)
 
 SET(HAWKEY_headers
+    advisory.h
     errno.h
     goal.h
     nevra.h

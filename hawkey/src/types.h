@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -26,6 +26,7 @@ extern "C" {
 #endif
 
 typedef enum _HyForm HyForm;
+typedef struct _HyAdvisory * HyAdvisory;
 typedef struct _HyRepo * HyRepo;
 typedef struct _HyGoal * HyGoal;
 typedef struct _HyNevra * HyNevra;
