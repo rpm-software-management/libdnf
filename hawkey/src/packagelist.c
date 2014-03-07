@@ -34,7 +34,6 @@
 struct _HyPackageList {
     HyPackage *elements;
     int count;
-    int left;
 };
 
 #define BLOCK_SIZE 31
