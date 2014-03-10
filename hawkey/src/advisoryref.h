@@ -41,6 +41,10 @@ const char *hy_advisoryref_get_id(HyAdvisoryRef advisoryref);
 const char *hy_advisoryref_get_title(HyAdvisoryRef advisoryref);
 const char *hy_advisoryref_get_url(HyAdvisoryRef advisoryref);
 
+void hy_advisoryreflist_free(HyAdvisoryRefList reflist);
+int hy_advisoryreflist_count(HyAdvisoryRefList reflist);
+HyAdvisoryRef hy_advisoryreflist_get_clone(HyAdvisoryRefList reflist, int index);
+
 #ifdef __cplusplus
 }
 #endif

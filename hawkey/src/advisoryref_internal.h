@@ -28,5 +28,9 @@
 #include "advisoryref.h"
 
 HyAdvisoryRef advisoryref_create(Pool *pool, Id a_id, int index);
+HyAdvisoryRef advisoryref_clone(HyAdvisoryRef advisoryref);
+
+HyAdvisoryRefList advisoryreflist_create();
+void advisoryreflist_add(HyAdvisoryRefList reflist, HyAdvisoryRef advisoryref);
 
 #endif // HY_ADVISORYREF_INTERNAL_H

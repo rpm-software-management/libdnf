@@ -25,10 +25,17 @@
 // hawkey
 #include "advisoryref_internal.h"
 
+#define REFERENCE_BLOCK 3
+
 struct _HyAdvisoryRef {
     Pool *pool;
     Id a_id;
     int index;
+};
+
+struct _HyAdvisoryRefList {
+    HyAdvisoryRef *refs;
+    int nrefs;
 };
 
 /* internal */
@@ -40,6 +47,30 @@ advisoryref_create(Pool *pool, Id a_id, int index)
     ref->a_id = a_id;
     ref->index = index;
     return ref;
+}
+
+HyAdvisoryRef
+advisoryref_clone(HyAdvisoryRef advisoryref)
+{
+    return advisoryref_create(advisoryref->pool, advisoryref->a_id, advisoryref->index);
+}
+
+HyAdvisoryRefList
+advisoryreflist_create()
+{
+    HyAdvisoryRefList reflist = solv_calloc(1, sizeof(*reflist));
+    reflist->nrefs = 0;
+    reflist->refs = solv_extend(
+	0, reflist->nrefs, 0, sizeof(HyAdvisoryRef), REFERENCE_BLOCK);
+    return reflist;
+}
+
+void
+advisoryreflist_add(HyAdvisoryRefList reflist, HyAdvisoryRef advisoryref)
+{
+    reflist->refs = solv_extend(
+	reflist->refs, reflist->nrefs, 1, sizeof(advisoryref), REFERENCE_BLOCK);
+    reflist->refs[reflist->nrefs++] = advisoryref_clone(advisoryref);
 }
 
 /* public */
@@ -102,4 +133,26 @@ const char *
 hy_advisoryref_get_url(HyAdvisoryRef advisoryref)
 {
     return advisoryref_get_str(advisoryref, UPDATE_REFERENCE_HREF);
+}
+
+void
+hy_advisoryreflist_free(HyAdvisoryRefList reflist)
+{
+    for(int i = 0; i < hy_advisoryreflist_count(reflist); i++) {
+	hy_advisoryref_free(reflist->refs[i]);
+    }
+    solv_free(reflist->refs);
+    solv_free(reflist);
+}
+
+int
+hy_advisoryreflist_count(HyAdvisoryRefList reflist)
+{
+    return reflist->nrefs;
+}
+
+HyAdvisoryRef
+hy_advisoryreflist_get_clone(HyAdvisoryRefList reflist, int index)
+{
+    return advisoryref_clone(reflist->refs[index]);
 }

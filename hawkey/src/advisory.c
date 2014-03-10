@@ -26,6 +26,7 @@
 
 // hawkey
 #include "advisory_internal.h"
+#include "advisoryref_internal.h"
 #include "iutil.h"
 
 #define FILENAME_BLOCK 15
@@ -148,6 +149,26 @@ hy_advisory_get_filenames(HyAdvisory advisory)
     dataiterator_free(&di);
     strs[len++] = NULL;
     return strs;
+}
+
+HyAdvisoryRefList
+hy_advisory_get_references(HyAdvisory advisory)
+{
+    Dataiterator di;
+    HyAdvisoryRef ref;
+    Pool *pool = advisory->pool;
+    Id a_id = advisory->a_id;
+    HyAdvisoryRefList reflist = advisoryreflist_create();
+
+    dataiterator_init(&di, pool, 0, a_id, UPDATE_REFERENCE, 0, 0);
+    for (int index = 0; dataiterator_step(&di); index++) {
+	ref = advisoryref_create(pool, a_id, index);
+	advisoryreflist_add(reflist, ref);
+	hy_advisoryref_free(ref);
+    }
+    dataiterator_free(&di);
+
+    return reflist;
 }
 
 void
