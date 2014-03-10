@@ -1,5 +1,6 @@
 SET (hawkey_SRCS
     advisory.c
+    advisoryref.c
     errno.c
     goal.c
     iutil.c
@@ -35,6 +36,7 @@ ADD_SUBDIRECTORY(python)
 
 SET(HAWKEY_headers
     advisory.h
+    advisoryref.h
     errno.h
     goal.h
     nevra.h
