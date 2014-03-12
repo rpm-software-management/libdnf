@@ -42,6 +42,6 @@ hy_stringarray_length(HyStringArray strs)
     char *str;
 
     FOR_STRINGARRAY(str, strs, i)
-	++i;
+        ;
     return i;
 }
