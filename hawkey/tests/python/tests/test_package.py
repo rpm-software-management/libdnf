@@ -154,7 +154,7 @@ class FullPropertiesTest(base.TestCase):
         self.pkg = hawkey.Query(self.sack).filter(name="mystery-devel")[0]
 
     def test_baseurl(self):
-        self.assertEqual(self.pkg.baseurl, 'blah')
+        self.assertEqual(self.pkg.baseurl, 'disagree')
 
     def test_hdr_end(self):
         self.assertEqual(self.pkg.hdr_end, 2081)
