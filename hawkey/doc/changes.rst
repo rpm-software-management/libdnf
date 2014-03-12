@@ -250,7 +250,7 @@ Forms recognized by ``Subject`` are no longer an instance-scope setting
 It became necessary to differentiate between the default forms used by
 ``subject.nevra_possibilities()`` and
 ``subject.nevra_possibilities_real()``. Therefore there is little sense in
-setting the default form for an entire ``Subejct`` instance. The following
+setting the default form for an entire ``Subject`` instance. The following
 code::
 
   subj = hawkey.Subject("input", form=hawkey.FORM_NEVRA)
@@ -378,3 +378,25 @@ For example there are these packages in sack::
 
   >>> map(str, q.filter(latest_per_arch=True))
   ['glibc-2.17-4.fc19.x86_64', 'glibc-2.16-24.fc18.i686']
+
+Changes in 0.4.13
+=================
+
+Core
+----
+
+Deprecated ``hy_package_get_update_*``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The functions were deprecated because there can be multiple advisories referring
+to a single package. Please use the new function ``hy_package_get_advisories()``
+which returns all these advisories. New functions ``hy_advisory_get_*`` provide
+the data retrieved by the deprecated functions.
+
+The only exception is the ``hy_package_get_update_severity()`` which will be
+dropped without any replacement. However advisory types and severities are
+distinguished from now and the type is accessible via ``hy_advisory_get_type()``.
+Thus enum ``HyUpdateSeverity`` was also deprecated. A new ``HyAdvisoryType``
+should be used instead.
+
+The old functions will be dropped after 2014-07-07.

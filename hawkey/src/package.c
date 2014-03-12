@@ -459,6 +459,8 @@ hy_package_get_advisories(HyPackage pkg, int cmp_type)
 }
 
 static HyAdvisory
+// deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
+// than in 0.4.15, use hy_package_get_advisories instead
 find_update(Pool *pool, HyPackage pkg)
 {
     Id p, pp;
@@ -497,6 +499,8 @@ find_update(Pool *pool, HyPackage pkg)
     return advisory;
 }
 
+// deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
+// than in 0.4.15, use HyAdvisoryType instead
 static HyUpdateSeverity
 update_severity_to_enum (const char *severity)
 {
@@ -517,6 +521,8 @@ update_severity_to_enum (const char *severity)
     return HY_UPDATE_SEVERITY_UNKNOWN;
 }
 
+// deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
+// than in 0.4.15, use hy_advisory_get_type instead
 HyUpdateSeverity
 hy_package_get_update_severity(HyPackage pkg)
 {
@@ -539,6 +545,8 @@ hy_package_get_update_severity(HyPackage pkg)
     return update_severity_to_enum (tmp);
 }
 
+// deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
+// than in 0.4.15, use hy_advisory_get_id instead
 const char *
 hy_package_get_update_name(HyPackage pkg)
 {
@@ -556,6 +564,8 @@ hy_package_get_update_name(HyPackage pkg)
     return tmp;
 }
 
+// deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
+// than in 0.4.15, use hy_advisory_get_description instead
 const char *
 hy_package_get_update_description(HyPackage pkg)
 {
@@ -573,6 +583,8 @@ hy_package_get_update_description(HyPackage pkg)
     return tmp;
 }
 
+// deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
+// than in 0.4.15, use hy_advisory_get_updated instead
 unsigned long long
 hy_package_get_update_issued(HyPackage pkg)
 {
@@ -591,6 +603,8 @@ hy_package_get_update_issued(HyPackage pkg)
     return tmp;
 }
 
+// deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
+// than in 0.4.15, use hy_advisory_get_references instead
 HyStringArray
 hy_package_get_update_urls(HyPackage pkg, HyAdvisoryRefType type)
 {
@@ -628,18 +642,24 @@ hy_package_get_update_urls(HyPackage pkg, HyAdvisoryRefType type)
     return strs;
 }
 
+// deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
+// than in 0.4.15, use hy_advisory_get_references instead
 HyStringArray
 hy_package_get_update_urls_bugzilla(HyPackage pkg)
 {
     return hy_package_get_update_urls(pkg, HY_REFERENCE_BUGZILLA);
 }
 
+// deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
+// than in 0.4.15, use hy_advisory_get_references instead
 HyStringArray
 hy_package_get_update_urls_cve(HyPackage pkg)
 {
     return hy_package_get_update_urls(pkg, HY_REFERENCE_CVE);
 }
 
+// deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
+// than in 0.4.15, use hy_advisory_get_references instead
 HyStringArray
 hy_package_get_update_urls_vendor(HyPackage pkg)
 {
