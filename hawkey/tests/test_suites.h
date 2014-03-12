@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -23,6 +23,7 @@
 
 #include <check.h>
 
+Suite *advisory_suite(void);
 Suite *goal_suite(void);
 Suite *iutil_suite(void);
 Suite *package_suite(void);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -88,6 +88,7 @@ main(int argc, const char **argv)
     srunner_add_suite(sr, selector_suite());
     srunner_add_suite(sr, subject_suite());
     srunner_add_suite(sr, goal_suite());
+    srunner_add_suite(sr, advisory_suite());
     srunner_run_all(sr, CK_NORMAL);
     number_failed = srunner_ntests_failed(sr);
     srunner_free(sr);
