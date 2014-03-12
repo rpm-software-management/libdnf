@@ -42,6 +42,12 @@ struct _HyAdvisoryList {
 };
 
 /* internal */
+Id
+advisory_id(HyAdvisory advisory)
+{
+    return advisory->a_id;
+}
+
 HyAdvisory
 advisory_create(Pool *pool, Id a_id)
 {

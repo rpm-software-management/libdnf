@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -80,6 +80,7 @@ HyReldepList hy_package_get_provides(HyPackage pkg);
 HyReldepList hy_package_get_requires(HyPackage pkg);
 
 HyStringArray hy_package_get_files(HyPackage pkg);
+HyAdvisoryList hy_package_get_advisories(HyPackage pkg, int cmp_type);
 HyUpdateSeverity hy_package_get_update_severity(HyPackage pkg);
 const char *hy_package_get_update_name(HyPackage pkg);
 const char *hy_package_get_update_description(HyPackage pkg);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -28,6 +28,8 @@
 #include <solv/util.h>
 
 // hawkey
+#include "advisory_internal.h"
+#include "advisoryref.h"
 #include "iutil.h"
 #include "sack_internal.h"
 #include "package_internal.h"
@@ -420,14 +422,51 @@ hy_package_get_files(HyPackage pkg)
     return strs;
 }
 
-static Id
-find_update(Pool *pool, HyPackage pkg)
+HyAdvisoryList
+hy_package_get_advisories(HyPackage pkg, int cmp_type)
 {
     Dataiterator di;
-    Id p, pp, evr;
-    Id retval = 0;
-    Solvable *is = NULL;
+    Id evr;
+    int cmp;
+    HyAdvisory advisory;
+    Pool *pool = package_pool(pkg);
+    HyAdvisoryList advisorylist = advisorylist_create(pool);
     Solvable *s = get_solvable(pkg);
+
+    dataiterator_init(&di, pool, 0, 0, UPDATE_COLLECTION_NAME,
+                      pool_id2str(pool, s->name), SEARCH_STRING);
+    dataiterator_prepend_keyname(&di, UPDATE_COLLECTION);
+    while (dataiterator_step(&di)) {
+        dataiterator_setpos_parent(&di);
+        if (pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_ARCH) != s->arch)
+            continue;
+        evr = pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_EVR);
+        if (!evr)
+            continue;
+
+	cmp = pool_evrcmp(pool, evr, s->evr, EVRCMP_COMPARE);
+	if ((cmp > 0 && (cmp_type & HY_GT)) ||
+	    (cmp < 0 && (cmp_type & HY_LT)) ||
+	    (cmp == 0 && (cmp_type & HY_EQ))) {
+	    advisory = advisory_create(pool, di.solvid);
+	    advisorylist_add(advisorylist, advisory);
+	    hy_advisory_free(advisory);
+	    dataiterator_skip_solvable(&di);
+	}
+    }
+    dataiterator_free(&di);
+    return advisorylist;
+}
+
+static HyAdvisory
+find_update(Pool *pool, HyPackage pkg)
+{
+    Id p, pp;
+    HyPackage ipkg;
+    HyAdvisoryList advisorylist;
+    Solvable *s = get_solvable(pkg);
+    Solvable *is = NULL;
+    HyAdvisory advisory = NULL;
 
     /* this is slow, don't do this ever time! */
     sack_make_provides_ready(pkg->sack);
@@ -443,26 +482,19 @@ find_update(Pool *pool, HyPackage pkg)
             is = iscand;
     }
 
-    dataiterator_init(&di, pool, 0, 0, UPDATE_COLLECTION_NAME,
-                      pool_id2str(pool, s->name), SEARCH_STRING);
-    dataiterator_prepend_keyname(&di, UPDATE_COLLECTION);
-    while (dataiterator_step(&di)) {
-        dataiterator_setpos_parent(&di);
-        if (pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_ARCH) != s->arch)
-            continue;
-        evr = pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_EVR);
-        if (!evr)
-            continue;
-        /* not newer than already installed */
-        if (is && pool_evrcmp(pool, is->evr, evr, EVRCMP_COMPARE) >= 0)
-            continue;
-        if (pool_evrcmp(pool, s->evr, evr, EVRCMP_COMPARE) > 0)
-            continue;
-        retval = di.solvid;
-        break;
+    if (is && pool_evrcmp(pool, is->evr, s->evr, EVRCMP_COMPARE) >= 0) {
+	ipkg = package_from_solvable(pkg->sack, is);
+	advisorylist = hy_package_get_advisories(ipkg, HY_GT);
+	hy_package_free(ipkg);
+    } else
+	advisorylist = hy_package_get_advisories(pkg, HY_GT|HY_EQ);
+
+    if (hy_advisorylist_count(advisorylist)) {
+	advisory = hy_advisorylist_get_clone(advisorylist, 0);
     }
-    dataiterator_free(&di);
-    return retval;
+    hy_advisorylist_free(advisorylist);
+
+    return advisory;
 }
 
 static HyUpdateSeverity
@@ -489,19 +521,21 @@ HyUpdateSeverity
 hy_package_get_update_severity(HyPackage pkg)
 {
     const char *tmp;
-    Id p;
+    HyAdvisory advisory;
     Pool *pool = package_pool(pkg);
 
-    p = find_update(pool, pkg);
-    if (!p)
+    advisory = find_update(pool, pkg);
+    if (!advisory)
         return HY_UPDATE_SEVERITY_UNKNOWN;
 
     /* libsolv calls the <update status="stable"> a patch SOLVABLE_PATCHCATEGORY
      * and the <severity>foo</severity> an UPDATE_SEVERITY; we only use the
      * former in Fedora now, although we did support the latter at some stage */
-    tmp = pool_lookup_str(pool, p, UPDATE_SEVERITY);
+    tmp = pool_lookup_str(pool, advisory_id(advisory), UPDATE_SEVERITY);
     if (!tmp)
-        tmp = pool_lookup_str(pool, p, SOLVABLE_PATCHCATEGORY);
+	tmp = pool_lookup_str(pool, advisory_id(advisory), SOLVABLE_PATCHCATEGORY);
+
+    hy_advisory_free(advisory);
     return update_severity_to_enum (tmp);
 }
 
@@ -509,97 +543,107 @@ const char *
 hy_package_get_update_name(HyPackage pkg)
 {
     const char *tmp;
-    Id p;
+    HyAdvisory advisory;
     Pool *pool = package_pool(pkg);
 
-    p = find_update(pool, pkg);
-    if (!p)
+    advisory = find_update(pool, pkg);
+    if (!advisory)
         return NULL;
 
-    /* libsolve 'helpfully' prepends "patch:" to the update name, remove it */
-    tmp = pool_lookup_str(pool, p, SOLVABLE_NAME);
-    if (!tmp)
-        return NULL;
-    if (strncmp(tmp, "patch:", 6) == 0)
-        tmp += 6;
+    tmp = hy_advisory_get_id(advisory);
 
+    hy_advisory_free(advisory);
     return tmp;
 }
 
 const char *
 hy_package_get_update_description(HyPackage pkg)
 {
-    Id p;
+    const char *tmp;
+    HyAdvisory advisory;
     Pool *pool = package_pool(pkg);
 
-    p = find_update(pool, pkg);
-    if (!p)
+    advisory = find_update(pool, pkg);
+    if (!advisory)
         return NULL;
 
-    return pool_lookup_str(pool, p, SOLVABLE_DESCRIPTION);
+    tmp = hy_advisory_get_description(advisory);
+
+    hy_advisory_free(advisory);
+    return tmp;
 }
 
 unsigned long long
 hy_package_get_update_issued(HyPackage pkg)
 {
-    Id p;
+    unsigned long long tmp;
+    HyAdvisory advisory;
     Pool *pool = package_pool(pkg);
 
-    p = find_update(pool, pkg);
-    if (!p)
+    advisory = find_update(pool, pkg);
+    if (!advisory)
         return 0;
 
     /* libsolv does not distiguish between issued and updated */
-    return pool_lookup_num(pool, p, SOLVABLE_BUILDTIME, 0);
+    tmp = hy_advisory_get_updated(advisory);
+
+    hy_advisory_free(advisory);
+    return tmp;
 }
 
 HyStringArray
-hy_package_get_update_urls(HyPackage pkg, const char *type)
+hy_package_get_update_urls(HyPackage pkg, HyAdvisoryRefType type)
 {
-    const char *type_tmp;
+    HyAdvisoryRefType type_tmp;
     const char *url_tmp;
-    Dataiterator di;
     HyStringArray strs;
-    Id p;
+    HyAdvisory advisory;
+    HyAdvisoryRef advisoryref;
+    HyAdvisoryRefList reflist;
     int len = 0;
     Pool *pool = package_pool(pkg);
 
-    p = find_update(pool, pkg);
-    if (!p)
+    advisory = find_update(pool, pkg);
+    if (!advisory)
         return NULL;
 
+    reflist = hy_advisory_get_references(advisory);
+    hy_advisory_free(advisory);
+
     strs = solv_extend(0, 0, 1, sizeof(char*), BLOCK_SIZE);
-    dataiterator_init(&di, pool, 0, p, UPDATE_REFERENCE, 0, 0);
-    while (dataiterator_step(&di)) {
-        dataiterator_setpos(&di);
-        type_tmp = pool_lookup_str(pool, SOLVID_POS, UPDATE_REFERENCE_TYPE);
-        url_tmp = pool_lookup_str(pool, SOLVID_POS, UPDATE_REFERENCE_HREF);
-        if (!url_tmp || !type_tmp || strcmp (type_tmp, type) != 0)
+    for (int i = 0; i < hy_advisoryreflist_count(reflist); i++) {
+	advisoryref = hy_advisoryreflist_get_clone(reflist, i);
+	type_tmp = hy_advisoryref_get_type(advisoryref);
+	url_tmp = hy_advisoryref_get_url(advisoryref);
+	hy_advisoryref_free(advisoryref);
+	if (!url_tmp || type_tmp != type)
                 continue;
-        strs[len++] = solv_strdup(di.kv.str);
+
+	strs[len++] = solv_strdup(url_tmp);
         strs = solv_extend(strs, len, 1, sizeof(char*), BLOCK_SIZE);
     }
+
     strs[len++] = NULL;
-    dataiterator_free(&di);
+    hy_advisoryreflist_free(reflist);
     return strs;
 }
 
 HyStringArray
 hy_package_get_update_urls_bugzilla(HyPackage pkg)
 {
-    return hy_package_get_update_urls(pkg, "bugzilla");
+    return hy_package_get_update_urls(pkg, HY_REFERENCE_BUGZILLA);
 }
 
 HyStringArray
 hy_package_get_update_urls_cve(HyPackage pkg)
 {
-    return hy_package_get_update_urls(pkg, "cve");
+    return hy_package_get_update_urls(pkg, HY_REFERENCE_CVE);
 }
 
 HyStringArray
 hy_package_get_update_urls_vendor(HyPackage pkg)
 {
-    return hy_package_get_update_urls(pkg, "vendor");
+    return hy_package_get_update_urls(pkg, HY_REFERENCE_VENDOR);
 }
 
 HyPackageDelta

@@ -29,6 +29,7 @@
 
 #define SOLVABLE_NAME_ADVISORY_PREFIX "patch:"
 
+Id advisory_id(HyAdvisory advisory);
 HyAdvisory advisory_create(Pool *pool, Id a_id);
 
 HyAdvisoryList advisorylist_create(Pool *pool);

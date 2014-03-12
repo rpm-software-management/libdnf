@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -19,6 +19,7 @@
  */
 
 // hawkey
+#include "src/advisory.h"
 #include "src/package.h"
 #include "src/query.h"
 #include "src/reldep.h"
@@ -206,6 +207,44 @@ START_TEST(test_get_files)
 }
 END_TEST
 
+START_TEST(test_get_advisories)
+{
+    HyAdvisoryList advisories;
+    HyAdvisory advisory;
+    HySack sack = test_globals.sack;
+    HyPackage pkg = by_name(sack, "tour");
+
+    advisories = hy_package_get_advisories(pkg, HY_GT);
+    fail_unless(advisories != NULL);
+    ck_assert_int_eq(hy_advisorylist_count(advisories), 1);
+    advisory = hy_advisorylist_get_clone(advisories, 0);
+    ck_assert_str_eq(hy_advisory_get_id(advisory), "FEDORA-2008-9969");
+    hy_advisory_free(advisory);
+    hy_advisorylist_free(advisories);
+    hy_package_free(pkg);
+}
+END_TEST
+
+START_TEST(test_get_advisories_none)
+{
+    HyAdvisoryList advisories;
+    HySack sack = test_globals.sack;
+    HyPackage pkg = by_name(sack, "mystery-devel");
+
+    advisories = hy_package_get_advisories(pkg, HY_GT|HY_EQ);
+    fail_unless(advisories != NULL);
+    ck_assert_int_eq(hy_advisorylist_count(advisories), 0);
+    hy_advisorylist_free(advisories);
+
+    advisories = hy_package_get_advisories(pkg, HY_LT|HY_EQ);
+    fail_unless(advisories != NULL);
+    ck_assert_int_eq(hy_advisorylist_count(advisories), 0);
+    hy_advisorylist_free(advisories);
+
+    hy_package_free(pkg);
+}
+END_TEST
+
 START_TEST(test_get_updateinfo)
 {
     HyStringArray urls;
@@ -355,6 +394,8 @@ package_suite(void)
     tcase_add_unchecked_fixture(tc, fixture_yum, teardown);
     tcase_add_test(tc, test_checksums);
     tcase_add_test(tc, test_get_files);
+    tcase_add_test(tc, test_get_advisories);
+    tcase_add_test(tc, test_get_advisories_none);
     tcase_add_test(tc, test_get_updateinfo);
     tcase_add_test(tc, test_lookup_num);
     tcase_add_test(tc, test_packager);
