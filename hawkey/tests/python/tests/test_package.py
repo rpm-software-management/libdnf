@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2012-2013 Red Hat, Inc.
+# Copyright (C) 2012-2014 Red Hat, Inc.
 #
 # Licensed under the GNU Lesser General Public License Version 2.1
 #
@@ -23,6 +23,25 @@ from . import base
 from sys import version_info as python_version
 
 import hawkey
+
+class AdvisoriesTest(base.TestCase):
+    """Tests related to packages and updateinfo metadata."""
+
+    def setUp(self):
+        """Prepare the test fixture."""
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
+        self.sack.load_yum_repo(load_updateinfo=True)
+
+    def test(self):
+        pkg = hawkey.Query(self.sack).filter(name='tour')[0]
+        advisories = pkg.get_advisories(hawkey.GT)
+        self.assertEqual(len(advisories), 1)
+        self.assertEqual(advisories[0].id, 'FEDORA-2008-9969')
+
+    def test_noadvisory(self):
+        pkg = hawkey.Query(self.sack).filter(name='mystery-devel')[0]
+        advisories = pkg.get_advisories(hawkey.GT | hawkey.EQ)
+        self.assertEqual(len(advisories), 0)
 
 class PackageTest(base.TestCase):
     def setUp(self):

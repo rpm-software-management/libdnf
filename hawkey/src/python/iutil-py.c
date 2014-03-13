@@ -21,11 +21,13 @@
 #include "Python.h"
 
 // hawkey
+#include "src/advisory.h"
 #include "src/advisoryref.h"
 #include "src/package_internal.h"
 #include "src/packagelist.h"
 #include "src/packageset_internal.h"
 #include "src/reldep_internal.h"
+#include "advisory-py.h"
 #include "advisoryref-py.h"
 #include "iutil-py.h"
 #include "package-py.h"
@@ -33,6 +35,36 @@
 #include "sack-py.h"
 
 #include "pycomp.h"
+
+PyObject *
+advisorylist_to_pylist(const HyAdvisoryList advisorylist, PyObject *sack)
+{
+    HyAdvisory cadvisory;
+    PyObject *advisory;
+
+    PyObject *list = PyList_New(0);
+    if (list == NULL)
+	return NULL;
+
+    const int count = hy_advisorylist_count(advisorylist);
+    for (int i = 0; i < count; ++i) {
+	cadvisory = hy_advisorylist_get_clone(advisorylist,  i);
+	advisory = advisoryToPyObject(cadvisory, sack);
+
+	if (advisory == NULL)
+	    goto fail;
+
+	int rc = PyList_Append(list, advisory);
+	Py_DECREF(advisory);
+	if (rc == -1)
+	    goto fail;
+    }
+
+    return list;
+ fail:
+    Py_DECREF(list);
+    return NULL;
+}
 
 PyObject *
 advisoryreflist_to_pylist(const HyAdvisoryRefList advisoryreflist, PyObject *sack)

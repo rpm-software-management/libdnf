@@ -106,6 +106,9 @@ FORM_NA     = _hawkey.FORM_NA
 FORM_NAME   = _hawkey.FORM_NAME
 
 ICASE = _hawkey.ICASE
+EQ = _hawkey.EQ
+LT = _hawkey.LT
+GT = _hawkey.GT
 
 CHKSUM_MD5 = _hawkey.CHKSUM_MD5
 CHKSUM_SHA1 = _hawkey.CHKSUM_SHA1

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -25,6 +25,7 @@
 #include <solv/util.h>
 
 // hawkey
+#include "src/advisory.h"
 #include "src/iutil.h"
 #include "src/package_internal.h"
 #include "src/packagelist.h"
@@ -356,9 +357,27 @@ get_delta_from_evr(_PackageObject *self, PyObject *evr_str)
     Py_RETURN_NONE;
 }
 
+static PyObject *
+get_advisories(_PackageObject *self, PyObject *args)
+{
+    int cmp_type;
+    HyAdvisoryList advisories;
+    PyObject *list;
+
+    if (!PyArg_ParseTuple(args, "i", &cmp_type))
+	return NULL;
+
+    advisories = hy_package_get_advisories(self->package, cmp_type);
+    list = advisorylist_to_pylist(advisories, self->sack);
+    hy_advisorylist_free(advisories);
+
+    return list;
+}
+
 static struct PyMethodDef package_methods[] = {
     {"evr_cmp", (PyCFunction)evr_cmp, METH_O, NULL},
     {"get_delta_from_evr", (PyCFunction)get_delta_from_evr, METH_O, NULL},
+    {"get_advisories", (PyCFunction)get_advisories, METH_VARARGS, NULL},
     {NULL}                      /* sentinel */
 };
 
