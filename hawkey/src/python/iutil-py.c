@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -21,16 +21,50 @@
 #include "Python.h"
 
 // hawkey
+#include "src/advisoryref.h"
 #include "src/package_internal.h"
 #include "src/packagelist.h"
 #include "src/packageset_internal.h"
 #include "src/reldep_internal.h"
+#include "advisoryref-py.h"
 #include "iutil-py.h"
 #include "package-py.h"
 #include "reldep-py.h"
 #include "sack-py.h"
 
 #include "pycomp.h"
+
+PyObject *
+advisoryreflist_to_pylist(const HyAdvisoryRefList advisoryreflist, PyObject *sack)
+{
+    HyAdvisoryRef cadvisoryref;
+    PyObject *advisoryref;
+
+    PyObject *list = PyList_New(0);
+    if (list == NULL)
+	return NULL;
+
+    const int count = hy_advisoryreflist_count(advisoryreflist);
+    for (int i = 0; i < count; ++i) {
+	cadvisoryref = hy_advisoryreflist_get_clone(advisoryreflist,  i);
+	advisoryref = advisoryrefToPyObject(cadvisoryref, sack);
+
+	if (advisoryref == NULL) {
+	    hy_advisoryref_free(cadvisoryref);
+	    goto fail;
+	}
+
+	int rc = PyList_Append(list, advisoryref);
+	Py_DECREF(advisoryref);
+	if (rc == -1)
+	    goto fail;
+    }
+
+    return list;
+ fail:
+    Py_DECREF(list);
+    return NULL;
+}
 
 PyObject *
 packagelist_to_pylist(HyPackageList plist, PyObject *sack)

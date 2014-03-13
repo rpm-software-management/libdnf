@@ -21,6 +21,7 @@
 #include <Python.h>
 
 // hawkey
+#include "src/advisory.h"
 #include "src/advisoryref.h"
 #include "src/goal.h"
 #include "src/package.h"
@@ -31,6 +32,7 @@
 #include "src/version.h"
 
 // pyhawkey
+#include "advisory-py.h"
 #include "advisoryref-py.h"
 #include "exception-py.h"
 #include "goal-py.h"
@@ -141,6 +143,11 @@ PYCOMP_MOD_INIT(_hawkey)
         return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&sack_Type);
     PyModule_AddObject(m, "Sack", (PyObject *)&sack_Type);
+    /* _hawkey.Advisory */
+    if (PyType_Ready(&advisory_Type) < 0)
+	return PYCOMP_MOD_ERROR_VAL;
+    Py_INCREF(&advisory_Type);
+    PyModule_AddObject(m, "Advisory", (PyObject *)&advisory_Type);
     /* _hawkey.AdvisoryRef */
     if (PyType_Ready(&advisoryref_Type) < 0)
 	return PYCOMP_MOD_ERROR_VAL;
@@ -248,6 +255,11 @@ PYCOMP_MOD_INIT(_hawkey)
 
     PyModule_AddIntConstant(m, "REASON_DEP", HY_REASON_DEP);
     PyModule_AddIntConstant(m, "REASON_USER", HY_REASON_USER);
+
+    PyModule_AddIntConstant(m, "ADVISORY_UNKNOWN", HY_ADVISORY_UNKNOWN);
+    PyModule_AddIntConstant(m, "ADVISORY_SECURITY", HY_ADVISORY_SECURITY);
+    PyModule_AddIntConstant(m, "ADVISORY_BUGFIX", HY_ADVISORY_BUGFIX);
+    PyModule_AddIntConstant(m, "ADVISORY_ENHANCEMENT", HY_ADVISORY_ENHANCEMENT);
 
     PyModule_AddIntConstant(m, "REFERENCE_UNKNOWN", HY_REFERENCE_UNKNOWN);
     PyModule_AddIntConstant(m, "REFERENCE_BUGZILLA", HY_REFERENCE_BUGZILLA);

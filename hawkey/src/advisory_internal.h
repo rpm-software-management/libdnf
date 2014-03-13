@@ -31,6 +31,7 @@
 
 Id advisory_id(HyAdvisory advisory);
 HyAdvisory advisory_create(Pool *pool, Id a_id);
+int advisory_identical(HyAdvisory left, HyAdvisory right);
 
 HyAdvisoryList advisorylist_create(Pool *pool);
 void advisorylist_add(HyAdvisoryList advisorylist, HyAdvisory advisory);

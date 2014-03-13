@@ -57,6 +57,12 @@ advisory_create(Pool *pool, Id a_id)
     return advisory;
 }
 
+int
+advisory_identical(HyAdvisory left, HyAdvisory right)
+{
+    return left->a_id == right->a_id;
+}
+
 HyAdvisoryList
 advisorylist_create(Pool *pool)
 {

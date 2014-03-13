@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 Red Hat, Inc.
+ * Copyright (C) 2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -18,21 +18,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef IUTIL_PY_H
-#define IUTIL_PY_H
+#ifndef ADVISORY_PY_H
+#define ADVISORY_PY_H
 
-#include "src/types.h"
+extern PyTypeObject advisory_Type;
 
-#define TEST_COND(cond) \
-    ((cond) ? Py_True : Py_False)
+PyObject * advisoryToPyObject(HyAdvisory advisory, PyObject *sack);
 
-PyObject *advisoryreflist_to_pylist(const HyAdvisoryRefList advisoryreflist, PyObject *sack);
-PyObject *packagelist_to_pylist(HyPackageList plist, PyObject *sack);
-PyObject *packageset_to_pylist(HyPackageSet pset, PyObject *sack);
-HyPackageList pyseq_to_packagelist(PyObject *sequence);
-HyPackageSet pyseq_to_packageset(PyObject *sequence, HySack sack);
-HyReldepList pyseq_to_reldeplist(PyObject *sequence, HySack sack);
-PyObject *strlist_to_pylist(const char **slist);
-PyObject *reldeplist_to_pylist(const HyReldepList reldeplist, PyObject *sack);
-
-#endif // IUTIL_PY_H
+#endif
