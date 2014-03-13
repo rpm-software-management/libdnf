@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -396,13 +396,14 @@ static PyObject *
 load_yum_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 {
     char *kwlist[] = {"repo", "build_cache", "load_filelists", "load_presto",
-		      NULL};
+		      "load_updateinfo", NULL};
 
     HyRepo crepo = NULL;
-    int build_cache = 0, load_filelists = 0, load_presto = 0;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|iii", kwlist,
+    int build_cache = 0, load_filelists = 0, load_presto = 0, load_updateinfo = 0;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|iiii", kwlist,
 				     repo_converter, &crepo,
-				     &build_cache, &load_filelists, &load_presto))
+				     &build_cache, &load_filelists,
+				     &load_presto, &load_updateinfo))
 	return 0;
 
     int flags = 0;
@@ -413,6 +414,8 @@ load_yum_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 	flags |= HY_LOAD_FILELISTS;
     if (load_presto)
 	flags |= HY_LOAD_PRESTO;
+    if (load_updateinfo)
+        flags |= HY_LOAD_UPDATEINFO;
     Py_BEGIN_ALLOW_THREADS;
     if (hy_sack_load_yum_repo(self->sack, crepo, flags))
 	ret = hy_get_errno();
