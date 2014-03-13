@@ -24,6 +24,7 @@
 #include <check.h>
 
 Suite *advisory_suite(void);
+Suite *advisoryref_suite(void);
 Suite *goal_suite(void);
 Suite *iutil_suite(void);
 Suite *package_suite(void);

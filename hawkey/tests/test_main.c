@@ -89,6 +89,7 @@ main(int argc, const char **argv)
     srunner_add_suite(sr, subject_suite());
     srunner_add_suite(sr, goal_suite());
     srunner_add_suite(sr, advisory_suite());
+    srunner_add_suite(sr, advisoryref_suite());
     srunner_run_all(sr, CK_NORMAL);
     number_failed = srunner_ntests_failed(sr);
     srunner_free(sr);
