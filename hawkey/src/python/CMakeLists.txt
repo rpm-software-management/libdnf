@@ -24,6 +24,7 @@ SET (hawkey_COPIES __init__.py dbg.py)
 FILE(COPY ${hawkey_COPIES} DESTINATION ./hawkey/)
 
 SET (hawkeymodule_SRCS
+    advisoryref-py.c
     exception-py.c
     goal-py.c
     hawkeymodule.c

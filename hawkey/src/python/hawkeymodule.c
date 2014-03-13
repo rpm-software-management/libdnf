@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -21,6 +21,7 @@
 #include <Python.h>
 
 // hawkey
+#include "src/advisoryref.h"
 #include "src/goal.h"
 #include "src/package.h"
 #include "src/query.h"
@@ -30,6 +31,7 @@
 #include "src/version.h"
 
 // pyhawkey
+#include "advisoryref-py.h"
 #include "exception-py.h"
 #include "goal-py.h"
 #include "nevra-py.h"
@@ -139,6 +141,11 @@ PYCOMP_MOD_INIT(_hawkey)
         return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&sack_Type);
     PyModule_AddObject(m, "Sack", (PyObject *)&sack_Type);
+    /* _hawkey.AdvisoryRef */
+    if (PyType_Ready(&advisoryref_Type) < 0)
+	return PYCOMP_MOD_ERROR_VAL;
+    Py_INCREF(&advisoryref_Type);
+    PyModule_AddObject(m, "AdvisoryRef", (PyObject *)&advisoryref_Type);
     /* _hawkey.Goal */
     if (PyType_Ready(&goal_Type) < 0)
         return PYCOMP_MOD_ERROR_VAL;
@@ -241,6 +248,11 @@ PYCOMP_MOD_INIT(_hawkey)
 
     PyModule_AddIntConstant(m, "REASON_DEP", HY_REASON_DEP);
     PyModule_AddIntConstant(m, "REASON_USER", HY_REASON_USER);
+
+    PyModule_AddIntConstant(m, "REFERENCE_UNKNOWN", HY_REFERENCE_UNKNOWN);
+    PyModule_AddIntConstant(m, "REFERENCE_BUGZILLA", HY_REFERENCE_BUGZILLA);
+    PyModule_AddIntConstant(m, "REFERENCE_CVE", HY_REFERENCE_CVE);
+    PyModule_AddIntConstant(m, "REFERENCE_VENDOR", HY_REFERENCE_VENDOR);
 
     return PYCOMP_MOD_SUCCESS_VAL(m);
 }

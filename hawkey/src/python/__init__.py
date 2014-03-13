@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2012-2013 Red Hat, Inc.
+# Copyright (C) 2012-2014 Red Hat, Inc.
 #
 # Licensed under the GNU Lesser General Public License Version 2.1
 #
@@ -113,6 +113,11 @@ CHKSUM_SHA256 = _hawkey.CHKSUM_SHA256
 
 REASON_DEP = _hawkey.REASON_DEP
 REASON_USER = _hawkey.REASON_USER
+
+REFERENCE_UNKNOWN = _hawkey.REFERENCE_UNKNOWN
+REFERENCE_BUGZILLA = _hawkey.REFERENCE_BUGZILLA
+REFERENCE_CVE = _hawkey.REFERENCE_CVE
+REFERENCE_VENDOR = _hawkey.REFERENCE_VENDOR
 
 Package = _hawkey.Package
 Reldep = _hawkey.Reldep

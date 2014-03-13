@@ -55,6 +55,12 @@ advisoryref_clone(HyAdvisoryRef advisoryref)
     return advisoryref_create(advisoryref->pool, advisoryref->a_id, advisoryref->index);
 }
 
+int
+advisoryref_identical(HyAdvisoryRef left, HyAdvisoryRef right)
+{
+    return (left->a_id == right->a_id) && (left->index == right->index);
+}
+
 HyAdvisoryRefList
 advisoryreflist_create()
 {

@@ -18,20 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef HY_ADVISORYREF_INTERNAL_H
-#define HY_ADVISORYREF_INTERNAL_H
-
-// libsolv
-#include <solv/pool.h>
+#ifndef ADVISORYREF_PY_H
+#define ADVISORYREF_PY_H
 
 // hawkey
-#include "advisoryref.h"
+#include "src/types.h"
 
-HyAdvisoryRef advisoryref_create(Pool *pool, Id a_id, int index);
-HyAdvisoryRef advisoryref_clone(HyAdvisoryRef advisoryref);
-int advisoryref_identical(HyAdvisoryRef left, HyAdvisoryRef right);
+extern PyTypeObject advisoryref_Type;
 
-HyAdvisoryRefList advisoryreflist_create();
-void advisoryreflist_add(HyAdvisoryRefList reflist, HyAdvisoryRef advisoryref);
+PyObject *advisoryrefToPyObject(HyAdvisoryRef advisoryref, PyObject *sack);
 
-#endif // HY_ADVISORYREF_INTERNAL_H
+#endif // ADVISORYREF_PY_H
