@@ -1,4 +1,4 @@
-%global gitrev fc24328
+%global gitrev f5edea1
 %global libsolv_version 0.4.0-2
 
 Name:		hawkey
@@ -107,6 +107,13 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+
+* Fri Mar 14 2014 Jan Silhan <jsilhan@redhat.com> - 0.4.12-1
+- Fix hy_stringarray_length. (Radek Holy)
+- tests: bring tests/repos/yum/recreate to a workable state again. (Ales Kozumplik)
+- added distupgrade function (Related:963710) (Jan Silhan)
+- remove: _HyPackageList.left. (Ales Kozumplik)
+- goal: track changes (as reinstalls) (RhBug:1068982) (Ales Kozumplik)
 
 * Mon Feb 24 2014 Aleš Kozumplik <akozumpl@redhat.com> - 0.4.11-1
 - fixed typos in tutorial-py.rst (Jan Silhan)
