@@ -238,7 +238,8 @@ queue_di(Pool *pool, Queue *queue, const char *str, int di_key, int flags)
 
     dataiterator_init(&di, pool, 0, 0, di_key, str, di_flags);
     while (dataiterator_step(&di))
-	queue_push(queue, di.solvid);
+        if (is_package(pool, pool_id2solvable(pool, di.solvid)))
+            queue_push(queue, di.solvid);
     dataiterator_free(&di);
     return;
 }
@@ -252,7 +253,7 @@ queue_pkg_name(HySack sack, Queue *queue, const char *provide, int flags)
 	if (id == 0)
 	    return;
 	Id p, pp;
-	FOR_PROVIDES(p, pp, id) {
+	FOR_PKG_PROVIDES(p, pp, id) {
 	    Solvable *s = pool_id2solvable(pool, p);
 	    if (s->name == id)
 		queue_push(queue, p);
@@ -273,7 +274,7 @@ queue_provides(HySack sack, Queue *queue, const char *provide, int flags)
 	if (id == 0)
 	    return;
 	Id p, pp;
-	FOR_PROVIDES(p, pp, id)
+	FOR_PKG_PROVIDES(p, pp, id)
 	    queue_push(queue, p);
 	return;
     }

@@ -101,4 +101,11 @@ int dump_jobqueue(Pool *pool, Queue *job);
 int dump_solvables_queue(Pool *pool, Queue *q);
 int dump_map(Pool *pool, Map *m);
 
+/* loop over all package providers of d */
+#define FOR_PKG_PROVIDES(v, vp, d)                                      \
+    FOR_PROVIDES(v, vp, d)                                              \
+        if (!is_package(pool, pool_id2solvable(pool, v)))               \
+            continue;                                                   \
+        else
+
 #endif
