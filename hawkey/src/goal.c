@@ -173,7 +173,7 @@ limit_installonly_packages(HyGoal goal, Solver *solv, Queue *job)
 	Queue q;
 	queue_init(&q);
 
-	FOR_PROVIDES(p, pp, onlies->elements[i])
+	FOR_PKG_PROVIDES(p, pp, onlies->elements[i])
 	    if (solver_get_decisionlevel(solv, p) > 0)
 		queue_push(&q, p);
 	if (q.count <= sack->installonly_limit) {
