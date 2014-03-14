@@ -429,6 +429,8 @@ filter_name2job(HySack sack, const struct _Filter *f, Queue *job)
     case HY_GLOB:
 	dataiterator_init(&di, pool, 0, 0, SOLVABLE_NAME, name, SEARCH_GLOB);
 	while (dataiterator_step(&di)) {
+	    if (!is_package(pool, pool_id2solvable(pool, di.solvid)))
+	        continue;
 	    assert(di.idp);
 	    id = *di.idp;
 	    if (job_has(job, SOLVABLE_NAME, id))
