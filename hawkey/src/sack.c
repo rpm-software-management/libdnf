@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -717,18 +717,13 @@ hy_sack_add_cmdline_package(HySack sack, const char *fn)
 int
 hy_sack_count(HySack sack)
 {
-    const char *tmp;
     int cnt = 0;
-    int i;
+    Id p;
     Pool *pool = sack_pool(sack);
-    Solvable *s;
 
-    for (i = 2; i < pool->nsolvables; i++) {
-	s = pool->solvables + i;
-	tmp = pool_id2str(pool, s->name);
-	if (s->repo && strncmp(tmp, "patch:", 6) != 0)
+    FOR_POOL_SOLVABLES(p)
+        if (is_package(pool, pool_id2solvable(pool, p)))
 	    cnt++;
-    }
     return cnt;
 }
 
