@@ -493,7 +493,7 @@ filter_provides_reldep(HyQuery q, struct _Filter *f, Map *m)
 static void
 filter_rco_reldep(HyQuery q, struct _Filter *f, Map *m)
 {
-    assert(f->match_type = _HY_RELDEP);
+    assert(f->match_type == _HY_RELDEP);
 
     Pool *pool = sack_pool(q->sack);
     Id rco_key = reldep_keyname2id(f->keyname);
