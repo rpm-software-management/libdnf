@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -703,13 +703,13 @@ static void
 compute(HyQuery q)
 {
     Pool *pool = sack_pool(q->sack);
+    Id solvid;
     Map m;
 
     q->result = solv_calloc(1, sizeof(Map));
     map_init(q->result, pool->nsolvables);
-    map_setall(q->result);
-    MAPCLR(q->result, 0);
-    MAPCLR(q->result, SYSTEMSOLVABLE);
+    FOR_PKG_SOLVABLES(solvid)
+        map_set(q->result, solvid);
     if (q->sack->excludes && !(q->flags & HY_IGNORE_EXCLUDES))
 	map_subtract(q->result, q->sack->excludes);
 

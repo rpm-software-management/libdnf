@@ -108,4 +108,11 @@ int dump_map(Pool *pool, Map *m);
             continue;                                                   \
         else
 
+/* loop over all package solvables */
+#define FOR_PKG_SOLVABLES(p)                                            \
+    FOR_POOL_SOLVABLES(p)                                               \
+        if (!is_package(pool, pool_id2solvable(pool, p)))               \
+            continue;                                                   \
+        else
+
 #endif

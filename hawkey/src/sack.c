@@ -722,9 +722,8 @@ hy_sack_count(HySack sack)
     Id p;
     Pool *pool = sack_pool(sack);
 
-    FOR_POOL_SOLVABLES(p)
-        if (is_package(pool, pool_id2solvable(pool, p)))
-	    cnt++;
+    FOR_PKG_SOLVABLES(p)
+        cnt++;
     return cnt;
 }
 
