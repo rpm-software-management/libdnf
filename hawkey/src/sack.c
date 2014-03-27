@@ -67,9 +67,19 @@ enum _hy_sack_cpu_flags {
 static int
 current_rpmdb_checksum(Pool *pool, unsigned char csout[CHKSUM_BYTES])
 {
-    const char *fn = pool_prepend_rootdir_tmp(pool, HY_SYSTEM_RPMDB);
-    FILE *fp_rpmdb = fopen(fn, "r");
+    const char *rpmdb_prefix_paths[] = { "/var/lib/rpm/Packages",
+					 "/usr/share/rpm/Packages" };
+    unsigned int i;
+    const char *fn;
+    FILE *fp_rpmdb = NULL;
     int ret = 0;
+
+    for (i = 0; i < sizeof(rpmdb_prefix_paths)/sizeof(*rpmdb_prefix_paths); i++) {
+	fn = pool_prepend_rootdir_tmp(pool, rpmdb_prefix_paths[i]);
+	fp_rpmdb = fopen(fn, "r");
+	if (fp_rpmdb)
+	    break;
+    }
 
     if (!fp_rpmdb || checksum_stat(csout, fp_rpmdb))
 	ret = 1;
