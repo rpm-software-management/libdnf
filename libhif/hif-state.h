@@ -50,12 +50,18 @@ struct _HifState
 
 /**
  * HifStateStatus:
- * @HIF_STATE_STATUS_UNKNOWN:		Unknown status
+ * @HIF_STATE_STATUS_UNKNOWN:			Unknown status
+ * @HIF_STATE_STATUS_DOWNLOAD_PACKAGES:		Downloading packages
+ * @HIF_STATE_STATUS_DOWNLOAD_METADATA:		Downloading metadata
+ * @HIF_STATE_STATUS_LOADING_CACHE:		Loading cache
  *
  * The error code.
  **/
 typedef enum {
-	HIF_STATE_STATUS_UNKNOWN,	/* Since: 0.1.0 */
+	HIF_STATE_STATUS_UNKNOWN,			/* Since: 0.1.0 */
+	HIF_STATE_STATUS_DOWNLOAD_PACKAGES	= 8,	/* Since: 0.1.0 */
+	HIF_STATE_STATUS_DOWNLOAD_METADATA	= 20,	/* Since: 0.1.0 */
+	HIF_STATE_STATUS_LOADING_CACHE		= 27,	/* Since: 0.1.0 */
 	/*< private >*/
 	HIF_STATE_STATUS_LAST
 } HifStateStatus;

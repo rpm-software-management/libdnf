@@ -30,18 +30,24 @@
 
 /**
  * HifError:
- * @HIF_ERROR_FAILED:			Failed with a non-specific error
- * @HIF_ERROR_INTERNAL_ERROR:		Something horrible happened
- * @HIF_ERROR_CANNOT_GET_LOCK:		Cannot get lock for action
- * @HIF_ERROR_CANCELLED:		The action was cancelled
+ * @HIF_ERROR_FAILED:				Failed with a non-specific error
+ * @HIF_ERROR_INTERNAL_ERROR:			Something horrible happened
+ * @HIF_ERROR_CANNOT_GET_LOCK:			Cannot get lock for action
+ * @HIF_ERROR_CANCELLED:			The action was cancelled
+ * @HIF_ERROR_SOURCE_NOT_AVAILABLE:		The source is not available
+ * @HIF_ERROR_CANNOT_FETCH_SOURCE:		Cannot fetch a software source
+ * @HIF_ERROR_CANNOT_WRITE_SOURCE_CONFIG:	Cannot write a repo config file
  *
  * The error code.
  **/
 typedef enum {
-	HIF_ERROR_FAILED,		/* Since: 0.1.0 */
-	HIF_ERROR_INTERNAL_ERROR,	/* Since: 0.1.0 */
-	HIF_ERROR_CANNOT_GET_LOCK,	/* Since: 0.1.0 */
-	HIF_ERROR_CANCELLED,		/* Since: 0.1.0 */
+	HIF_ERROR_FAILED,			/* Since: 0.1.0 */
+	HIF_ERROR_INTERNAL_ERROR,		/* Since: 0.1.0 */
+	HIF_ERROR_CANNOT_GET_LOCK,		/* Since: 0.1.0 */
+	HIF_ERROR_CANCELLED,			/* Since: 0.1.0 */
+	HIF_ERROR_SOURCE_NOT_AVAILABLE,		/* Since: 0.1.0 */
+	HIF_ERROR_CANNOT_FETCH_SOURCE,		/* Since: 0.1.0 */
+	HIF_ERROR_CANNOT_WRITE_SOURCE_CONFIG,	/* Since: 0.1.0 */
 	/*< private >*/
 	HIF_ERROR_LAST
 } HifError;

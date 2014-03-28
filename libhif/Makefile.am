@@ -53,6 +53,8 @@ libhif_include_HEADERS =					\
 libhif_la_SOURCES =						\
 	hif-lock.c						\
 	hif-lock.h						\
+	hif-package.c						\
+	hif-package.h						\
 	hif-source.c						\
 	hif-source.h						\
 	hif-state.c						\
@@ -83,6 +85,7 @@ check_PROGRAMS =						\
 	hif-self-test
 hif_self_test_SOURCES =						\
 	hif-lock.c						\
+	hif-package.c						\
 	hif-source.c						\
 	hif-state.c						\
 	hif-utils.c						\
