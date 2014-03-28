@@ -5,7 +5,7 @@ INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir)
 INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
 endif
 
-AM_CPPFLAGS =							\
+SHARED_CPPFLAGS =						\
 	$(GLIB_CFLAGS)						\
 	$(HAWKEY_CFLAGS)					\
 	-I$(top_srcdir)/libhif					\
@@ -51,6 +51,8 @@ libhif_include_HEADERS =					\
 	hif-version.h
 
 libhif_la_SOURCES =						\
+	hif-lock.c						\
+	hif-lock.h						\
 	hif-source.c						\
 	hif-source.h						\
 	hif-utils.c						\
@@ -71,16 +73,24 @@ libhif_la_LDFLAGS =						\
 
 libhif_la_CFLAGS =						\
 	$(WARNINGFLAGS_C)
+libhif_la_CPPFLAGS =						\
+	$(SHARED_CPPFLAGS)					\
+	-DPIDFILE=\""/var/run/hif"\"
 
 check_PROGRAMS =						\
 	hif-self-test
 hif_self_test_SOURCES =						\
+	hif-lock.c						\
+	hif-source.c						\
+	hif-utils.c						\
 	hif-self-test.c
 hif_self_test_LDADD =						\
 	$(HAWKEY_LIBS)						\
-	$(GLIB_LIBS)						\
-	$(lib_LTLIBRARIES)
+	$(GLIB_LIBS)
 hif_self_test_CFLAGS = $(WARNINGFLAGS_C)
+hif_self_test_CPPFLAGS =					\
+	$(SHARED_CPPFLAGS)					\
+	-DPIDFILE=\""/tmp/hif"\"
 
 TESTS = hif-self-test
 
@@ -92,7 +102,7 @@ introspection_sources =						\
 
 Hif-1.0.gir: libhif.la
 Hif_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0
-Hif_1_0_gir_CFLAGS = $(AM_CPPFLAGS)
+Hif_1_0_gir_CFLAGS = $(SHARED_CPPFLAGS)
 Hif_1_0_gir_SCANNERFLAGS = --identifier-prefix=Hif \
 				--symbol-prefix=hif_ \
 				--warn-all \

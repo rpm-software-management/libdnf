@@ -28,8 +28,19 @@
 
 #include <glib.h>
 
+/**
+ * HifError:
+ * @HIF_ERROR_FAILED:			Failed with a non-specific error
+ * @HIF_ERROR_INTERNAL_ERROR:		Something horrible happened
+ * @HIF_ERROR_CANNOT_GET_LOCK:		Cannot get lock for action
+ *
+ * The error code.
+ **/
 typedef enum {
-	HIF_ERROR_FAILED,
+	HIF_ERROR_FAILED,		/* Since: 0.1.0 */
+	HIF_ERROR_INTERNAL_ERROR,	/* Since: 0.1.0 */
+	HIF_ERROR_CANNOT_GET_LOCK,	/* Since: 0.1.0 */
+	/*< private >*/
 	HIF_ERROR_LAST
 } HifError;
 

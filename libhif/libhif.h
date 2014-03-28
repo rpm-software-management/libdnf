@@ -24,6 +24,7 @@
 
 #define __LIBHIF_H_INSIDE__
 
+#include <hif-lock.h>
 #include <hif-source.h>
 #include <hif-utils.h>
 #include <hif-version.h>
