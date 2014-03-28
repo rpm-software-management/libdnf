@@ -1,0 +1,66 @@
+%define alphatag                #ALPHATAG#
+
+Summary:   Simple package manager built on top of hawkey and librepo
+Name:      libhif
+Version:   #VERSION#
+Release:   0.#BUILD#%{?alphatag}%{?dist}
+License:   LGPLv2+
+URL:       http://people.freedesktop.org/~hughsient/libhif/
+Source0:   http://people.freedesktop.org/~hughsient/libhif/releases/libhif-%{version}.tar.xz
+
+BuildRequires: glib2-devel >= 2.16.1
+BuildRequires: libtool
+BuildRequires: docbook-utils
+BuildRequires: gtk-doc
+BuildRequires: gobject-introspection-devel
+BuildRequires: gperf
+
+%description
+This library provides a simple interface to hawkey and librepo and is currently
+used by PackageKit and rpm-ostree.
+
+%package devel
+Summary: GLib Libraries and headers for libhif
+Requires: %{name}%{?_isa} = %{version}-%{release}
+
+%description devel
+GLib headers and libraries for libhif.
+
+%prep
+%setup -q -n libhif-%{version}
+
+%build
+%configure \
+        --enable-gtk-doc \
+        --disable-static \
+        --disable-silent-rules \
+        --disable-dependency-tracking
+
+make %{?_smp_mflags}
+
+%install
+make install DESTDIR=$RPM_BUILD_ROOT
+
+rm -f $RPM_BUILD_ROOT%{_libdir}/libhif*.la
+
+%post -p /sbin/ldconfig
+
+%postun -p /sbin/ldconfig
+
+%files
+%doc README.md AUTHORS NEWS COPYING
+%{_libdir}/libhif.so.1*
+%{_libdir}/girepository-1.0/*.typelib
+
+%files devel
+%{_libdir}/libhif.so
+%{_libdir}/pkgconfig/libhif.pc
+%dir %{_includedir}/libhif
+%{_includedir}/libhif/*.h
+%{_datadir}/gtk-doc
+%{_datadir}/gir-1.0/*.gir
+
+%changelog
+* #LONGDATE# Richard Hughes <richard@hughsie.com> #VERSION#-0.#BUILD##ALPHATAG#
+- Update from git
+

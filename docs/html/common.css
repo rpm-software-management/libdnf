@@ -1,0 +1,102 @@
+/*  common.css - MoinMoin Default Styles
+
+    Copyright (c) 2001, 2002, 2003 by Jürgen Hermann
+*/
+
+/* content styles */
+
+html {
+	background-color: white;
+	color: black;
+}
+
+h2 {
+	font-size: 1.6em;
+}
+
+h3 {
+	font-size: 1.3em;
+}
+
+h4, h5, h6 {
+	font-size: 1em;
+}
+
+li p {
+	margin: .2em 0;
+}
+
+li.gap {
+    margin-top: 8pt;
+}
+
+a img {
+	border: 0;
+}
+
+img.drawing {
+	border: 0;
+}
+
+dt {
+	font-weight: bold;
+}
+
+pre {
+	padding: .5em;
+    white-space: pre-wrap;
+}
+
+body {
+	margin-top: 2em;
+	margin-left: 5%;
+	margin-right: 5%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	color: #2b5e82;
+}
+
+a:link {
+	background-color: inherit;
+  	color: #2b5e82;
+}
+
+a:visited {
+	background-color: inherit;
+  	color: #52188b;
+}
+
+pre {
+	border: 1px solid #CBCBCB;
+	background-color: #FFF8ED;
+	color: black;
+}
+
+hr {
+	clear: both;
+	border-style: none;
+	background-color: #CBCBCB;
+	color: #CBCBCB;
+}
+
+p.footer {
+	color: #000000;
+	text-align: center;
+	font-size: 9px;
+}
+
+table {
+	border: 0;
+	width: 100%;
+}
+.center {
+	text-align: center;
+}
+div.nav a {
+	border-right: 1px solid black;
+	padding-right: 4px;
+}
+div.nav :last-child {
+	border-right: none;
+}
