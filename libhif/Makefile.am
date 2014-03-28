@@ -53,6 +53,8 @@ libhif_include_HEADERS =					\
 libhif_la_SOURCES =						\
 	hif-source.c						\
 	hif-source.h						\
+	hif-utils.c						\
+	hif-utils.h						\
 	hif-version.h
 
 CLEANFILES = $(BUILT_SOURCES)

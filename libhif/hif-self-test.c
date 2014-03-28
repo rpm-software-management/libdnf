@@ -21,9 +21,11 @@
 
 #include "config.h"
 
-#include <glib.h>
+#include <glib-object.h>
+#include <hawkey/errno.h>
 
 #include "hif-source.h"
+#include "hif-utils.h"
 
 #if 0
 /**
@@ -56,6 +58,30 @@ ch_test_source_func (void)
 	g_object_unref (source);
 }
 
+static void
+hif_utils_func (void)
+{
+	GError *error = NULL;
+	gboolean ret;
+
+	/* success */
+	ret = hif_rc_to_gerror (0, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	/* failure */
+	ret = hif_rc_to_gerror (HY_E_LIBSOLV, &error);
+	g_assert_error (error, HIF_ERROR, HIF_ERROR_FAILED);
+	g_assert (!ret);
+	g_clear_error (&error);
+
+	/* new error enum */
+	ret = hif_rc_to_gerror (999, &error);
+	g_assert_error (error, HIF_ERROR, HIF_ERROR_FAILED);
+	g_assert (!ret);
+	g_clear_error (&error);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -66,6 +92,7 @@ main (int argc, char **argv)
 
 	/* tests go here */
 	g_test_add_func ("/libhif/source", ch_test_source_func);
+	g_test_add_func ("/libhif/utils", hif_utils_func);
 
 	return g_test_run ();
 }
