@@ -7,6 +7,6 @@ Name: libhif
 Description: Simple package manager interface using hawkey and librepo
 Version: @VERSION@
 Requires: glib-2.0, gobject-2.0
-Libs: -L${libdir} -llibhif
+Libs: -L${libdir} -lhif
 Cflags: -I${includedir}/libhif
 
