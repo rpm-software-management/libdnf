@@ -799,6 +799,36 @@ hif_utils_func (void)
 	g_clear_error (&error);
 }
 
+static void
+hif_context_func (void)
+{
+	GError *error = NULL;
+	HifContext *ctx;
+	gboolean ret;
+
+	ctx = hif_context_new ();
+	ret = hif_context_setup (ctx, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	g_assert_cmpstr (hif_context_get_base_arch (ctx), !=, NULL);
+	g_assert_cmpstr (hif_context_get_os_info (ctx), !=, NULL);
+	g_assert_cmpstr (hif_context_get_arch_info (ctx), !=, NULL);
+	g_assert_cmpstr (hif_context_get_release_ver (ctx), !=, NULL);
+	g_assert_cmpstr (hif_context_get_cache_dir (ctx), ==, NULL);
+	g_assert_cmpstr (hif_context_get_repo_dir (ctx), ==, NULL);
+	g_assert (hif_context_get_check_disk_space (ctx));
+	g_assert (hif_context_get_check_transaction (ctx));
+	g_assert (!hif_context_get_keep_cache (ctx));
+
+	hif_context_set_cache_dir (ctx, "/var");
+	hif_context_set_repo_dir (ctx, "/etc");
+	g_assert_cmpstr (hif_context_get_cache_dir (ctx), ==, "/var");
+	g_assert_cmpstr (hif_context_get_repo_dir (ctx), ==, "/etc");
+
+	g_object_unref (ctx);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -808,6 +838,7 @@ main (int argc, char **argv)
 	g_log_set_fatal_mask (NULL, G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL);
 
 	/* tests go here */
+	g_test_add_func ("/libhif/context", hif_context_func);
 	g_test_add_func ("/libhif/lock", hif_lock_func);
 	g_test_add_func ("/libhif/lock[threads]", hif_lock_threads_func);
 	g_test_add_func ("/libhif/source", ch_test_source_func);

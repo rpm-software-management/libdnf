@@ -59,26 +59,40 @@ struct _HifContextClass
 	void (*_hif_reserved8)	(void);
 };
 
-GType		 hif_context_get_type		(void);
-HifContext	*hif_context_new		(void);
+GType		 hif_context_get_type			(void);
+HifContext	*hif_context_new			(void);
 
 /* getters */
-const gchar	*hif_context_get_repo_dir	(HifContext	*context);
-const gchar	*hif_context_get_base_arch	(HifContext	*context);
-const gchar	*hif_context_get_release_ver	(HifContext	*context);
-const gchar	*hif_context_get_cache_dir	(HifContext	*context);
+const gchar	*hif_context_get_repo_dir		(HifContext	*context);
+const gchar	*hif_context_get_base_arch		(HifContext	*context);
+const gchar	*hif_context_get_os_info		(HifContext	*context);
+const gchar	*hif_context_get_arch_info		(HifContext	*context);
+const gchar	*hif_context_get_release_ver		(HifContext	*context);
+const gchar	*hif_context_get_cache_dir		(HifContext	*context);
+const gchar	*hif_context_get_rpm_verbosity		(HifContext	*context);
+gboolean	 hif_context_get_check_disk_space	(HifContext	*context);
+gboolean	 hif_context_get_check_transaction	(HifContext	*context);
+gboolean	 hif_context_get_keep_cache		(HifContext	*context);
 
 /* setters */
-void		 hif_context_set_repo_dir	(HifContext	*context,
-						 const gchar	*repo_dir);
-void		 hif_context_set_base_arch	(HifContext	*context,
-						 const gchar	*base_arch);
-void		 hif_context_set_release_ver	(HifContext	*context,
-						 const gchar	*release_ver);
-void		 hif_context_set_cache_dir	(HifContext	*context,
-						 const gchar	*cache_dir);
+void		 hif_context_set_repo_dir		(HifContext	*context,
+							 const gchar	*repo_dir);
+void		 hif_context_set_release_ver		(HifContext	*context,
+							 const gchar	*release_ver);
+void		 hif_context_set_cache_dir		(HifContext	*context,
+							 const gchar	*cache_dir);
+void		 hif_context_set_rpm_verbosity		(HifContext	*context,
+							 const gchar	*rpm_verbosity);
+void		 hif_context_set_check_disk_space	(HifContext	*context,
+							 gboolean	 check_disk_space);
+void		 hif_context_set_check_transaction	(HifContext	*context,
+							 gboolean	 check_transaction);
+void		 hif_context_set_keep_cache		(HifContext	*context,
+							 gboolean	 keep_cache);
 
 /* object methods */
+gboolean	 hif_context_setup			(HifContext	*context,
+							 GError		**error);
 
 G_END_DECLS
 
