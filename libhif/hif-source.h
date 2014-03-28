@@ -31,6 +31,7 @@
 #include <hawkey/repo.h>
 #include <hawkey/package.h>
 
+#include "hif-context.h"
 #include "hif-state.h"
 
 #define HIF_TYPE_SOURCE			(hif_source_get_type())
@@ -115,7 +116,7 @@ void		 hif_source_set_id		(HifSource		*source,
 						 const gchar		*id);
 
 /* object methods */
-gboolean	 hif_source_parse		(GKeyFile		*config,
+gboolean	 hif_source_parse		(HifContext		*context,
 						 GPtrArray		*sources,
 						 const gchar		*filename,
 						 GError			**error);

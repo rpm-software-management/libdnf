@@ -37,6 +37,9 @@ typedef struct _HifContextPrivate	HifContextPrivate;
 struct _HifContextPrivate
 {
 	gchar			*repo_dir;
+	gchar			*base_arch;
+	gchar			*release_ver;
+	gchar			*cache_dir;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (HifContext, hif_context, G_TYPE_OBJECT)
@@ -53,6 +56,9 @@ hif_context_finalize (GObject *object)
 	HifContextPrivate *priv = GET_PRIVATE (context);
 
 	g_free (priv->repo_dir);
+	g_free (priv->base_arch);
+	g_free (priv->release_ver);
+	g_free (priv->cache_dir);
 
 	G_OBJECT_CLASS (hif_context_parent_class)->finalize (object);
 }
@@ -93,11 +99,62 @@ hif_context_get_repo_dir (HifContext *context)
 }
 
 /**
+ * hif_context_get_base_arch:
+ * @context: a #HifContext instance.
+ *
+ * Gets the context ID.
+ *
+ * Returns: the context ID, e.g. "fedora-updates"
+ *
+ * Since: 0.1.0
+ **/
+const gchar *
+hif_context_get_base_arch (HifContext *context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	return priv->base_arch;
+}
+
+/**
+ * hif_context_get_release_ver:
+ * @context: a #HifContext instance.
+ *
+ * Gets the context ID.
+ *
+ * Returns: the context ID, e.g. "fedora-updates"
+ *
+ * Since: 0.1.0
+ **/
+const gchar *
+hif_context_get_release_ver (HifContext *context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	return priv->release_ver;
+}
+
+/**
+ * hif_context_get_cache_dir:
+ * @context: a #HifContext instance.
+ *
+ * Gets the context ID.
+ *
+ * Returns: the context ID, e.g. "fedora-updates"
+ *
+ * Since: 0.1.0
+ **/
+const gchar *
+hif_context_get_cache_dir (HifContext *context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	return priv->cache_dir;
+}
+
+/**
  * hif_context_set_repo_dir:
  * @context: a #HifContext instance.
- * @repo_dir: the ID, e.g. "fedora-updates"
+ * @repo_dir: the repodir, e.g. "/etc/yum.repos.d"
  *
- * Sets the context ID.
+ * Sets the repo directory.
  *
  * Since: 0.1.0
  **/
@@ -108,6 +165,58 @@ hif_context_set_repo_dir (HifContext *context, const gchar *repo_dir)
 	g_free (priv->repo_dir);
 	priv->repo_dir = g_strdup (repo_dir);
 }
+
+/**
+ * hif_context_set_base_arch:
+ * @context: a #HifContext instance.
+ * @base_arch: the base_arch, e.g. "i386"
+ *
+ * Sets the base architecture.
+ *
+ * Since: 0.1.0
+ **/
+void
+hif_context_set_base_arch (HifContext *context, const gchar *repo_dir)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	g_free (priv->repo_dir);
+	priv->repo_dir = g_strdup (repo_dir);
+}
+
+/**
+ * hif_context_set_release_ver:
+ * @context: a #HifContext instance.
+ * @release_ver: the release version, e.g. "20"
+ *
+ * Sets the release version.
+ *
+ * Since: 0.1.0
+ **/
+void
+hif_context_set_release_ver (HifContext *context, const gchar *release_ver)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	g_free (priv->release_ver);
+	priv->release_ver = g_strdup (release_ver);
+}
+
+/**
+ * hif_context_set_cache_dir:
+ * @context: a #HifContext instance.
+ * @cache_dir: the cachedir, e.g. "/var/cache/PackageKit"
+ *
+ * Sets the cache directory.
+ *
+ * Since: 0.1.0
+ **/
+void
+hif_context_set_cache_dir (HifContext *context, const gchar *cache_dir)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	g_free (priv->cache_dir);
+	priv->repo_dir = g_strdup (cache_dir);
+}
+
 
 /**
  * hif_context_new:

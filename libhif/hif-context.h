@@ -64,10 +64,19 @@ HifContext	*hif_context_new		(void);
 
 /* getters */
 const gchar	*hif_context_get_repo_dir	(HifContext	*context);
+const gchar	*hif_context_get_base_arch	(HifContext	*context);
+const gchar	*hif_context_get_release_ver	(HifContext	*context);
+const gchar	*hif_context_get_cache_dir	(HifContext	*context);
 
 /* setters */
 void		 hif_context_set_repo_dir	(HifContext	*context,
 						 const gchar	*repo_dir);
+void		 hif_context_set_base_arch	(HifContext	*context,
+						 const gchar	*base_arch);
+void		 hif_context_set_release_ver	(HifContext	*context,
+						 const gchar	*release_ver);
+void		 hif_context_set_cache_dir	(HifContext	*context,
+						 const gchar	*cache_dir);
 
 /* object methods */
 

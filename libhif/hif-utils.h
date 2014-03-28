@@ -44,6 +44,7 @@
  * @HIF_ERROR_UNFINISHED_TRANSACTION:		An unfinished transaction exists
  * @HIF_ERROR_GPG_SIGNATURE_INVALID:		GPG signature was bad
  * @HIF_ERROR_FILE_INVALID:			File was invalid or could not be read
+ * @HIF_ERROR_SOURCE_NOT_FOUND:			Source was not found
  *
  * The error code.
  **/
@@ -62,6 +63,7 @@ typedef enum {
 	HIF_ERROR_UNFINISHED_TRANSACTION,	/* Since: 0.1.0 */
 	HIF_ERROR_GPG_SIGNATURE_INVALID,	/* Since: 0.1.0 */
 	HIF_ERROR_FILE_INVALID,			/* Since: 0.1.0 */
+	HIF_ERROR_SOURCE_NOT_FOUND,		/* Since: 0.1.0 */
 	/*< private >*/
 	HIF_ERROR_LAST
 } HifError;

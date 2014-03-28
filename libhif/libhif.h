@@ -29,6 +29,7 @@
 #include <hif-keyring.h>
 #include <hif-lock.h>
 #include <hif-package.h>
+#include <hif-repos.h>
 #include <hif-rpmts.h>
 #include <hif-sack.h>
 #include <hif-source.h>

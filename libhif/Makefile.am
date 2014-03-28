@@ -61,6 +61,8 @@ libhif_la_SOURCES =						\
 	hif-lock.h						\
 	hif-package.c						\
 	hif-package.h						\
+	hif-repos.c						\
+	hif-repos.h						\
 	hif-rpmts.c						\
 	hif-rpmts.h						\
 	hif-sack.c						\
@@ -94,6 +96,7 @@ libhif_la_CPPFLAGS =						\
 check_PROGRAMS =						\
 	hif-self-test
 hif_self_test_SOURCES =						\
+	hif-context.c						\
 	hif-lock.c						\
 	hif-package.c						\
 	hif-source.c						\
@@ -112,8 +115,8 @@ TESTS = hif-self-test
 
 if HAVE_INTROSPECTION
 introspection_sources =						\
-	hif-source.c						\
-	hif-source.h						\
+	hif-context.c						\
+	hif-context.h						\
 	hif-version.h
 
 Hif-1.0.gir: libhif.la

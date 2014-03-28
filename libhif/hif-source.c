@@ -565,7 +565,7 @@ out:
  * Since: 0.1.0
  **/
 gboolean
-hif_source_parse (GKeyFile *config,
+hif_source_parse (HifContext *context,
 		  GPtrArray *sources,
 		  const gchar *filename,
 		  GError **error)
@@ -574,9 +574,6 @@ hif_source_parse (GKeyFile *config,
 	gboolean has_enabled;
 	gboolean is_enabled;
 	gboolean ret = TRUE;
-	gchar *basearch = NULL;
-	gchar *fedora_release = NULL;
-	gchar *cache_dir = NULL;
 	gchar **repos = NULL;
 	GKeyFile *keyfile;
 	guint64 val;
@@ -588,17 +585,6 @@ hif_source_parse (GKeyFile *config,
 		ret = FALSE;
 		goto out;
 	}
-
-	/* get common things */
-	basearch = g_key_file_get_string (config,
-					  HIF_CONFIG_GROUP_NAME,
-					  "BaseArch", NULL);
-	fedora_release = g_key_file_get_string (config,
-						HIF_CONFIG_GROUP_NAME,
-						"ReleaseVersion", NULL);
-	cache_dir = g_key_file_get_string (config,
-					   HIF_CONFIG_GROUP_NAME,
-					   "CacheDir", NULL);
 
 	/* save all the repos listed in the file */
 	repos = g_key_file_get_groups (keyfile, NULL);
@@ -629,7 +615,8 @@ hif_source_parse (GKeyFile *config,
 		priv->keyfile = g_key_file_ref (keyfile);
 		priv->filename = g_strdup (filename);
 		priv->id = g_strdup (repos[i]);
-		priv->location = g_build_filename (cache_dir, repos[i], NULL);
+		priv->location = g_build_filename (hif_context_get_cache_dir (context),
+						   repos[i], NULL);
 		priv->location_tmp = g_strdup_printf ("%s.tmp", priv->location);
 		priv->packages = g_build_filename (priv->location, "packages", NULL);
 		priv->packages_tmp = g_build_filename (priv->location_tmp, "packages", NULL);
@@ -647,8 +634,12 @@ hif_source_parse (GKeyFile *config,
 		priv->gpgcheck = (val == 1) ? 1 : 0;
 
 		// FIXME: don't hardcode
-		priv->urlvars = lr_urlvars_set (priv->urlvars, "releasever", fedora_release);
-		priv->urlvars = lr_urlvars_set (priv->urlvars, "basearch", basearch);
+		priv->urlvars = lr_urlvars_set (priv->urlvars,
+						"releasever",
+						hif_context_get_release_ver (context));
+		priv->urlvars = lr_urlvars_set (priv->urlvars,
+						"basearch",
+						hif_context_get_base_arch (context));
 		ret = lr_handle_setopt (priv->repo_handle, error, LRO_VARSUB, priv->urlvars);
 		if (!ret)
 			goto out;
@@ -657,9 +648,6 @@ hif_source_parse (GKeyFile *config,
 		g_ptr_array_add (sources, source);
 	}
 out:
-	g_free (basearch);
-	g_free (cache_dir);
-	g_free (fedora_release);
 	g_strfreev (repos);
 	if (keyfile != NULL)
 		g_key_file_unref (keyfile);
