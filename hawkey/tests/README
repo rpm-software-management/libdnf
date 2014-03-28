@@ -55,6 +55,7 @@ foolish-grin
 
 gun
 * installed only in the i686 version
+* higher version of x86_64 arch is available in "vendor" repo (distupgrade doesn't replace it)
 * testing forcebest/arches interaction
 
 === repos/yum ===

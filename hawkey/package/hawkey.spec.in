@@ -1,5 +1,5 @@
 %global gitrev 428a977
-%global libsolv_version 0.6.0-0
+%global libsolv_version 0.6.1-0
 
 Name:		hawkey
 Version:	@VERSION@

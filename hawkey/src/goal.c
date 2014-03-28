@@ -233,6 +233,10 @@ init_solver(HyGoal goal, int flags)
 	solver_set_flag(solv, SOLVER_FLAG_ALLOW_UNINSTALL, 1);
     /* no vendor locking */
     solver_set_flag(solv, SOLVER_FLAG_ALLOW_VENDORCHANGE, 1);
+
+    /* don't erase packages that are no longer in repo during distupgrade */
+    solver_set_flag(solv, SOLVER_FLAG_KEEP_ORPHANS, 1);
+
     /* no arch change for forcebest */
     solver_set_flag(solv, SOLVER_FLAG_BEST_OBEY_POLICY, 1);
 
