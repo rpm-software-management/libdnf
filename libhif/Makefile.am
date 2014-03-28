@@ -47,8 +47,21 @@ lib_LTLIBRARIES =						\
 
 libhif_includedir = $(includedir)/libhif
 libhif_include_HEADERS =					\
+	hif-context.h						\
+	hif-db.h						\
+	hif-goal.h						\
+	hif-keyring.h						\
+	hif-lock.h						\
+	hif-package.h						\
+	hif-repos.h						\
+	hif-rpmts.h						\
+	hif-sack.h						\
+	hif-source.h						\
+	hif-state.h						\
+	hif-utils.h						\
+	hif-version.h						\
 	libhif.h						\
-	hif-version.h
+	libhif-private.h
 
 libhif_la_SOURCES =						\
 	hif-context.c						\

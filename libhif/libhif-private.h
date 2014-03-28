@@ -19,14 +19,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef __LIBHIF_H
-#define __LIBHIF_H
+#ifndef __LIBHIF_PRIVATE_H
+#define __LIBHIF_PRIVATE_H
 
-#define __LIBHIF_H_INSIDE__
+#define __LIBHIF_PRIVATE_H_INSIDE__
 
-#include <hif-context.h>
-#include <hif-version.h>
+#include <libhif.h>
 
-#undef __LIBHIF_H_INSIDE__
+#include <hif-db.h>
+#include <hif-goal.h>
+#include <hif-keyring.h>
+#include <hif-lock.h>
+#include <hif-package.h>
+#include <hif-repos.h>
+#include <hif-rpmts.h>
+#include <hif-sack.h>
+#include <hif-source.h>
+#include <hif-state.h>
+#include <hif-utils.h>
 
-#endif /* __LIBHIF_H */
+#undef __LIBHIF_PRIVATE_H_INSIDE__
+
+#endif /* __LIBHIF_PRIVATE_H */
