@@ -51,6 +51,8 @@ libhif_include_HEADERS =					\
 	hif-version.h
 
 libhif_la_SOURCES =						\
+	hif-goal.c						\
+	hif-goal.h						\
 	hif-lock.c						\
 	hif-lock.h						\
 	hif-package.c						\

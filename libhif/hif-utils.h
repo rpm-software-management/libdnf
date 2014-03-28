@@ -37,6 +37,9 @@
  * @HIF_ERROR_SOURCE_NOT_AVAILABLE:		The source is not available
  * @HIF_ERROR_CANNOT_FETCH_SOURCE:		Cannot fetch a software source
  * @HIF_ERROR_CANNOT_WRITE_SOURCE_CONFIG:	Cannot write a repo config file
+ * @HIF_ERROR_PACKAGE_CONFLICTS:		Package conflict exists
+ * @HIF_ERROR_NO_PACKAGES_TO_UPDATE:		No packages to update
+ * @HIF_ERROR_PACKAGE_INSTALL_BLOCKED:		Package install was blocked
  *
  * The error code.
  **/
@@ -48,6 +51,9 @@ typedef enum {
 	HIF_ERROR_SOURCE_NOT_AVAILABLE,		/* Since: 0.1.0 */
 	HIF_ERROR_CANNOT_FETCH_SOURCE,		/* Since: 0.1.0 */
 	HIF_ERROR_CANNOT_WRITE_SOURCE_CONFIG,	/* Since: 0.1.0 */
+	HIF_ERROR_PACKAGE_CONFLICTS,		/* Since: 0.1.0 */
+	HIF_ERROR_NO_PACKAGES_TO_UPDATE,	/* Since: 0.1.0 */
+	HIF_ERROR_PACKAGE_INSTALL_BLOCKED,	/* Since: 0.1.0 */
 	/*< private >*/
 	HIF_ERROR_LAST
 } HifError;
