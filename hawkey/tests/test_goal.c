@@ -102,10 +102,10 @@ size_and_free(HyPackageList plist)
 static void
 assert_iueo(HyGoal goal, int i, int u, int e, int o)
 {
-    fail_unless(size_and_free(hy_goal_list_installs(goal)) == i);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal)) == u);
-    fail_unless(size_and_free(hy_goal_list_erasures(goal)) == e);
-    fail_unless(size_and_free(hy_goal_list_obsoleted(goal)) == o);
+    ck_assert_int_eq(size_and_free(hy_goal_list_installs(goal)), i);
+    ck_assert_int_eq(size_and_free(hy_goal_list_upgrades(goal)), u);
+    ck_assert_int_eq(size_and_free(hy_goal_list_erasures(goal)), e);
+    ck_assert_int_eq(size_and_free(hy_goal_list_obsoleted(goal)), o);
 }
 
 START_TEST(test_goal_sanity)
