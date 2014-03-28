@@ -53,6 +53,8 @@ libhif_include_HEADERS =					\
 libhif_la_SOURCES =						\
 	hif-context.c						\
 	hif-context.h						\
+	hif-db.c						\
+	hif-db.h						\
 	hif-goal.c						\
 	hif-goal.h						\
 	hif-keyring.c						\

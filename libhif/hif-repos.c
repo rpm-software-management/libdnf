@@ -396,6 +396,7 @@ hif_repos_setup_watch (HifRepos *repos)
 
 /**
  * hif_repos_new:
+ * @context: A #HifContext instance
  *
  * Creates a new #HifRepos.
  *
