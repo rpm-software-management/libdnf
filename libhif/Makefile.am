@@ -55,6 +55,8 @@ libhif_la_SOURCES =						\
 	hif-lock.h						\
 	hif-source.c						\
 	hif-source.h						\
+	hif-state.c						\
+	hif-state.h						\
 	hif-utils.c						\
 	hif-utils.h						\
 	hif-version.h
@@ -82,6 +84,7 @@ check_PROGRAMS =						\
 hif_self_test_SOURCES =						\
 	hif-lock.c						\
 	hif-source.c						\
+	hif-state.c						\
 	hif-utils.c						\
 	hif-self-test.c
 hif_self_test_LDADD =						\

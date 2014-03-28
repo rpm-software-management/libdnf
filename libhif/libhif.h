@@ -26,6 +26,7 @@
 
 #include <hif-lock.h>
 #include <hif-source.h>
+#include <hif-state.h>
 #include <hif-utils.h>
 #include <hif-version.h>
 
