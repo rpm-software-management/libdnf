@@ -7,6 +7,7 @@ endif
 
 AM_CPPFLAGS =							\
 	$(GLIB_CFLAGS)						\
+	$(HAWKEY_CFLAGS)					\
 	-I$(top_srcdir)/libhif					\
 	-I$(top_builddir)/libhif				\
 	-I.							\
@@ -57,6 +58,7 @@ libhif_la_SOURCES =						\
 CLEANFILES = $(BUILT_SOURCES)
 
 libhif_la_LIBADD =						\
+	$(HAWKEY_LIBS)						\
 	$(GLIB_LIBS)
 
 libhif_la_LDFLAGS =						\
@@ -73,6 +75,7 @@ check_PROGRAMS =						\
 hif_self_test_SOURCES =						\
 	hif-self-test.c
 hif_self_test_LDADD =						\
+	$(HAWKEY_LIBS)						\
 	$(GLIB_LIBS)						\
 	$(lib_LTLIBRARIES)
 hif_self_test_CFLAGS = $(WARNINGFLAGS_C)

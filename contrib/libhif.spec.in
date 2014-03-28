@@ -13,7 +13,10 @@ BuildRequires: libtool
 BuildRequires: docbook-utils
 BuildRequires: gtk-doc
 BuildRequires: gobject-introspection-devel
-BuildRequires: gperf
+BuildRequires: hawkey-devel >= 0.4.6
+BuildRequires: rpm-devel >= 4.11.0
+BuildRequires: librepo-devel >= 1.1.5
+BuildRequires: libsolv-devel
 
 %description
 This library provides a simple interface to hawkey and librepo and is currently

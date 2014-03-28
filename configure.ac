@@ -89,6 +89,7 @@ fi
 AC_SUBST(WARNINGFLAGS_C)
 
 PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.16.1 gio-2.0 gobject-2.0 gthread-2.0)
+PKG_CHECK_MODULES(HAWKEY, hawkey >= 0.4.6 librepo >= 0.1.5 rpm >= 4.11.0)
 
 AC_CONFIG_FILES([
 Makefile
