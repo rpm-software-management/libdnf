@@ -24,6 +24,7 @@
 
 #define __LIBHIF_H_INSIDE__
 
+#include <hif-context.h>
 #include <hif-goal.h>
 #include <hif-keyring.h>
 #include <hif-lock.h>
