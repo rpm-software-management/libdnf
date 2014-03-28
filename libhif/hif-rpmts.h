@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -19,21 +19,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef __LIBHIF_H
-#define __LIBHIF_H
+#if !defined (__LIBHIF_H) && !defined (HIF_COMPILATION)
+#error "Only <libhif.h> can be included directly."
+#endif
 
-#define __LIBHIF_H_INSIDE__
+#ifndef __HIF_RPMTS_H
+#define __HIF_RPMTS_H
 
-#include <hif-goal.h>
-#include <hif-lock.h>
-#include <hif-package.h>
-#include <hif-rpmts.h>
-#include <hif-source.h>
-#include <hif-state.h>
-#include <hif-utils.h>
-#include <hif-version.h>
+#include <glib.h>
+#include <rpm/rpmts.h>
+#include <hawkey/package.h>
 
-#undef __LIBHIF_H_INSIDE__
+gboolean	 hif_rpmts_add_install_filename	(rpmts		 ts,
+						 const gchar	*filename,
+						 gboolean	 allow_untrusted,
+						 gboolean	 is_update,
+						 GError		**error);
+gboolean	 hif_rpmts_add_remove_pkg	(rpmts		 ts,
+						 HyPackage	 pkg,
+						 GError		**error);
+gboolean	 hif_rpmts_look_for_problems	(rpmts		 ts,
+						 GError		**error);
 
-#endif /* __LIBHIF_H */
-
+#endif /* __HIF_RPMTS_H */

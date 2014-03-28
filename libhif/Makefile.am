@@ -57,6 +57,8 @@ libhif_la_SOURCES =						\
 	hif-lock.h						\
 	hif-package.c						\
 	hif-package.h						\
+	hif-rpmts.c						\
+	hif-rpmts.h						\
 	hif-source.c						\
 	hif-source.h						\
 	hif-state.c						\

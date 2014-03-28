@@ -40,6 +40,8 @@
  * @HIF_ERROR_PACKAGE_CONFLICTS:		Package conflict exists
  * @HIF_ERROR_NO_PACKAGES_TO_UPDATE:		No packages to update
  * @HIF_ERROR_PACKAGE_INSTALL_BLOCKED:		Package install was blocked
+ * @HIF_ERROR_FILE_NOT_FOUND:			File was not found
+ * @HIF_ERROR_UNFINISHED_TRANSACTION:		An unfinished transaction exists
  *
  * The error code.
  **/
@@ -54,6 +56,8 @@ typedef enum {
 	HIF_ERROR_PACKAGE_CONFLICTS,		/* Since: 0.1.0 */
 	HIF_ERROR_NO_PACKAGES_TO_UPDATE,	/* Since: 0.1.0 */
 	HIF_ERROR_PACKAGE_INSTALL_BLOCKED,	/* Since: 0.1.0 */
+	HIF_ERROR_FILE_NOT_FOUND,		/* Since: 0.1.0 */
+	HIF_ERROR_UNFINISHED_TRANSACTION,	/* Since: 0.1.0 */
 	/*< private >*/
 	HIF_ERROR_LAST
 } HifError;
