@@ -73,6 +73,7 @@ const gchar	*hif_context_get_rpm_verbosity		(HifContext	*context);
 gboolean	 hif_context_get_check_disk_space	(HifContext	*context);
 gboolean	 hif_context_get_check_transaction	(HifContext	*context);
 gboolean	 hif_context_get_keep_cache		(HifContext	*context);
+guint		 hif_context_get_cache_age		(HifContext	*context);
 
 /* setters */
 void		 hif_context_set_repo_dir		(HifContext	*context,
@@ -89,6 +90,8 @@ void		 hif_context_set_check_transaction	(HifContext	*context,
 							 gboolean	 check_transaction);
 void		 hif_context_set_keep_cache		(HifContext	*context,
 							 gboolean	 keep_cache);
+void		 hif_context_set_cache_age		(HifContext	*context,
+							 guint		 cache_age);
 
 /* object methods */
 gboolean	 hif_context_setup			(HifContext	*context,

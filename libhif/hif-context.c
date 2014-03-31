@@ -46,6 +46,7 @@ struct _HifContextPrivate
 	gchar			*os_info;
 	gchar			*arch_info;
 	gchar			*rpm_verbosity;
+	gboolean		 cache_age;
 	gboolean		 check_disk_space;
 	gboolean		 check_transaction;
 	gboolean		 keep_cache;
@@ -269,6 +270,23 @@ hif_context_get_keep_cache (HifContext *context)
 }
 
 /**
+ * hif_context_get_cache_age:
+ * @context: a #HifContext instance.
+ *
+ * Gets the maximum cache age.
+ *
+ * Returns: cache age in seconds
+ *
+ * Since: 0.1.0
+ **/
+guint
+hif_context_get_cache_age (HifContext *context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	return priv->cache_age;
+}
+
+/**
  * hif_context_set_repo_dir:
  * @context: a #HifContext instance.
  * @repo_dir: the repodir, e.g. "/etc/yum.repos.d"
@@ -382,6 +400,22 @@ hif_context_set_keep_cache (HifContext *context, gboolean keep_cache)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	priv->keep_cache = keep_cache;
+}
+
+/**
+ * hif_context_set_cache_age:
+ * @context: a #HifContext instance.
+ * @cache_age: Maximum cache age in seconds
+ *
+ * Sets the maximum cache age.
+ *
+ * Since: 0.1.0
+ **/
+void
+hif_context_set_cache_age (HifContext *context, guint cache_age)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	priv->cache_age = cache_age;
 }
 
 /**
