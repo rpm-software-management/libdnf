@@ -635,7 +635,7 @@ out:
 /**
  * hif_package_download:
  * @pkg: a #HyPackage instance.
- * @directory: destination directory.
+ * @directory: destination directory, or %NULL for the cachedir.
  * @state: the #HifState.
  * @error: a #GError or %NULL..
  *
@@ -654,4 +654,50 @@ hif_package_download (HyPackage pkg,
 	HifSource *src;
 	src = hif_package_get_source (pkg);
 	return hif_source_download_package (src, pkg, directory, state, error);
+}
+
+/**
+ * hif_package_array_download:
+ * @packages: an array of packages.
+ * @directory: destination directory, or %NULL for the cachedir.
+ * @state: the #HifState.
+ * @error: a #GError or %NULL..
+ *
+ * Downloads an array of packages.
+ *
+ * Returns: %TRUE for success
+ *
+ * Since: 0.1.0
+ */
+gboolean
+hif_package_array_download (GPtrArray *packages,
+			    const gchar *directory,
+			    HifState *state,
+			    GError **error)
+{
+	HifState *state_local;
+	HyPackage pkg;
+	gboolean ret = TRUE;
+	gchar *tmp;
+	guint i;
+
+	/* download any package that is not currently installed */
+	hif_state_set_number_steps (state, packages->len);
+	for (i = 0; i < packages->len; i++) {
+		pkg = g_ptr_array_index (packages, i);
+		state_local = hif_state_get_child (state);
+		tmp = hif_package_download (pkg, NULL, state_local, error);
+		if (tmp == NULL) {
+			ret = FALSE;
+			goto out;
+		}
+		g_free (tmp);
+
+		/* done */
+		ret = hif_state_done (state, error);
+		if (!ret)
+			goto out;
+	}
+out:
+	return ret;
 }

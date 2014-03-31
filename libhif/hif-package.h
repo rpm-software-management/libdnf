@@ -63,4 +63,9 @@ gboolean	 hif_package_check_filename		(HyPackage	 pkg,
 							 gboolean	*valid,
 							 GError		**error);
 
+gboolean	 hif_package_array_download		(GPtrArray	*packages,
+							 const gchar	*directory,
+							 HifState	*state,
+							 GError		**error);
+
 #endif /* __HIF_PACKAGE_H */
