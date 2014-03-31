@@ -43,6 +43,7 @@ struct _HifContextPrivate
 	gchar			*base_arch;
 	gchar			*release_ver;
 	gchar			*cache_dir;
+	gchar			*solv_dir;
 	gchar			*os_info;
 	gchar			*arch_info;
 	gchar			*rpm_verbosity;
@@ -70,6 +71,7 @@ hif_context_finalize (GObject *object)
 	g_free (priv->base_arch);
 	g_free (priv->release_ver);
 	g_free (priv->cache_dir);
+	g_free (priv->solv_dir);
 	g_free (priv->rpm_verbosity);
 	g_free (priv->os_info);
 	g_free (priv->arch_info);
@@ -170,9 +172,9 @@ hif_context_get_arch_info (HifContext *context)
  * hif_context_get_release_ver:
  * @context: a #HifContext instance.
  *
- * Gets the context ID.
+ * Gets the release version.
  *
- * Returns: the context ID, e.g. "fedora-updates"
+ * Returns: the version, e.g. "20"
  *
  * Since: 0.1.0
  **/
@@ -187,9 +189,9 @@ hif_context_get_release_ver (HifContext *context)
  * hif_context_get_cache_dir:
  * @context: a #HifContext instance.
  *
- * Gets the context ID.
+ * Gets the cache dir to use for metadata files.
  *
- * Returns: the context ID, e.g. "fedora-updates"
+ * Returns: fully specified path
  *
  * Since: 0.1.0
  **/
@@ -198,6 +200,23 @@ hif_context_get_cache_dir (HifContext *context)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	return priv->cache_dir;
+}
+
+/**
+ * hif_context_get_solv_dir:
+ * @context: a #HifContext instance.
+ *
+ * Gets the solve cache directory.
+ *
+ * Returns: fully specified path
+ *
+ * Since: 0.1.0
+ **/
+const gchar *
+hif_context_get_solv_dir (HifContext *context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	return priv->solv_dir;
 }
 
 /**
@@ -353,6 +372,23 @@ hif_context_set_cache_dir (HifContext *context, const gchar *cache_dir)
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	g_free (priv->cache_dir);
 	priv->cache_dir = g_strdup (cache_dir);
+}
+
+/**
+ * hif_context_set_solv_dir:
+ * @context: a #HifContext instance.
+ * @solv_dir: the solve cache, e.g. "/var/cache/PackageKit/hawkey"
+ *
+ * Sets the solve cache directory.
+ *
+ * Since: 0.1.0
+ **/
+void
+hif_context_set_solv_dir (HifContext *context, const gchar *solv_dir)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	g_free (priv->solv_dir);
+	priv->solv_dir = g_strdup (solv_dir);
 }
 
 /**

@@ -69,6 +69,7 @@ const gchar	*hif_context_get_os_info		(HifContext	*context);
 const gchar	*hif_context_get_arch_info		(HifContext	*context);
 const gchar	*hif_context_get_release_ver		(HifContext	*context);
 const gchar	*hif_context_get_cache_dir		(HifContext	*context);
+const gchar	*hif_context_get_solv_dir		(HifContext	*context);
 const gchar	*hif_context_get_rpm_verbosity		(HifContext	*context);
 gboolean	 hif_context_get_check_disk_space	(HifContext	*context);
 gboolean	 hif_context_get_check_transaction	(HifContext	*context);
@@ -83,6 +84,8 @@ void		 hif_context_set_release_ver		(HifContext	*context,
 							 const gchar	*release_ver);
 void		 hif_context_set_cache_dir		(HifContext	*context,
 							 const gchar	*cache_dir);
+void		 hif_context_set_solv_dir		(HifContext	*context,
+							 const gchar	*solv_dir);
 void		 hif_context_set_rpm_verbosity		(HifContext	*context,
 							 const gchar	*rpm_verbosity);
 void		 hif_context_set_check_disk_space	(HifContext	*context,
