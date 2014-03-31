@@ -49,6 +49,7 @@ struct _HifContextPrivate
 	gboolean		 cache_age;
 	gboolean		 check_disk_space;
 	gboolean		 check_transaction;
+	gboolean		 only_trusted;
 	gboolean		 keep_cache;
 };
 
@@ -270,6 +271,23 @@ hif_context_get_keep_cache (HifContext *context)
 }
 
 /**
+ * hif_context_get_only_trusted:
+ * @context: a #HifContext instance.
+ *
+ * Gets if only trusted packages can be installed.
+ *
+ * Returns: %TRUE if only trusted packages are allowed
+ *
+ * Since: 0.1.0
+ **/
+gboolean
+hif_context_get_only_trusted (HifContext *context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	return priv->only_trusted;
+}
+
+/**
  * hif_context_get_cache_age:
  * @context: a #HifContext instance.
  *
@@ -400,6 +418,22 @@ hif_context_set_keep_cache (HifContext *context, gboolean keep_cache)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	priv->keep_cache = keep_cache;
+}
+
+/**
+ * hif_context_set_only_trusted:
+ * @context: a #HifContext instance.
+ * @only_trusted: %TRUE keep the packages after installing or updating
+ *
+ * Enables or disables the requirement of trusted packages.
+ *
+ * Since: 0.1.0
+ **/
+void
+hif_context_set_only_trusted (HifContext *context, gboolean only_trusted)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	priv->only_trusted = only_trusted;
 }
 
 /**
