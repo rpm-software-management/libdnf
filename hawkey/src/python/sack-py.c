@@ -316,7 +316,7 @@ add_cmdline_package(_SackObject *self, PyObject *fn_obj)
     cpkg = hy_sack_add_cmdline_package(self->sack, fn);
     Py_XDECREF(tmp_py_str);
     if (cpkg == NULL) {
-	PyErr_SetString(PyExc_IOError, "Can not load an .rpm file");
+	PyErr_Format(PyExc_IOError, "Can not load RPM file: %s.", fn);
 	return NULL;
     }
     pkg = new_package((PyObject*)self, package_id(cpkg));
