@@ -66,6 +66,7 @@ libhif_include_HEADERS =					\
 libhif_la_SOURCES =						\
 	hif-context.c						\
 	hif-context.h						\
+	hif-context-private.h					\
 	hif-db.c						\
 	hif-db.h						\
 	hif-goal.c						\
@@ -111,18 +112,26 @@ libhif_la_CPPFLAGS =						\
 check_PROGRAMS =						\
 	hif-self-test
 hif_self_test_SOURCES =						\
-	hif-context.c						\
-	hif-lock.c						\
-	hif-package.c						\
-	hif-source.c						\
-	hif-state.c						\
-	hif-utils.c						\
+	$(libhif_la_SOURCES)					\
 	hif-self-test.c
 hif_self_test_LDADD =						\
 	$(HAWKEY_LIBS)						\
 	$(GLIB_LIBS)
 hif_self_test_CFLAGS = $(WARNINGFLAGS_C)
 hif_self_test_CPPFLAGS =					\
+	$(SHARED_CPPFLAGS)					\
+	-DPIDFILE=\""/tmp/hif"\"
+
+noinst_PROGRAMS =						\
+	hif-cmd
+hif_cmd_SOURCES =						\
+	hif-cmd.c
+hif_cmd_LDADD =							\
+	$(GLIB_LIBS)						\
+	$(HAWKEY_LIBS)						\
+	libhif.la
+hif_cmd_CFLAGS = $(WARNINGFLAGS_C)
+hif_cmd_CPPFLAGS =						\
 	$(SHARED_CPPFLAGS)					\
 	-DPIDFILE=\""/tmp/hif"\"
 

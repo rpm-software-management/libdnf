@@ -27,6 +27,7 @@
 #define __HIF_CONTEXT_H
 
 #include <glib-object.h>
+#include <gio/gio.h>
 
 #define HIF_TYPE_CONTEXT		(hif_context_get_type())
 #define HIF_CONTEXT(obj)		(G_TYPE_CHECK_INSTANCE_CAST((obj), HIF_TYPE_CONTEXT, HifContext))
@@ -101,6 +102,25 @@ void		 hif_context_set_cache_age		(HifContext	*context,
 
 /* object methods */
 gboolean	 hif_context_setup			(HifContext	*context,
+							 GCancellable	*cancellable,
+							 GError		**error);
+gboolean	 hif_context_install			(HifContext	*context,
+							 const gchar	*name,
+							 GError		**error);
+gboolean	 hif_context_remove			(HifContext	*context,
+							 const gchar	*name,
+							 GError		**error);
+gboolean	 hif_context_update			(HifContext	*context,
+							 const gchar	*name,
+							 GError		**error);
+gboolean	 hif_context_repo_enable		(HifContext	*context,
+							 const gchar	*repo_id,
+							 GError		**error);
+gboolean	 hif_context_repo_disable		(HifContext	*context,
+							 const gchar	*repo_id,
+							 GError		**error);
+gboolean	 hif_context_run			(HifContext	*context,
+							 GCancellable	*cancellable,
 							 GError		**error);
 
 G_END_DECLS

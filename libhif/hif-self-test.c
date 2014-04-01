@@ -810,7 +810,9 @@ hif_context_func (void)
 	gboolean ret;
 
 	ctx = hif_context_new ();
-	ret = hif_context_setup (ctx, &error);
+	hif_context_set_solv_dir (ctx, "/tmp/hawkey");
+	hif_context_set_repo_dir (ctx, "/tmp");
+	ret = hif_context_setup (ctx, NULL, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 
@@ -819,7 +821,8 @@ hif_context_func (void)
 	g_assert_cmpstr (hif_context_get_arch_info (ctx), !=, NULL);
 	g_assert_cmpstr (hif_context_get_release_ver (ctx), !=, NULL);
 	g_assert_cmpstr (hif_context_get_cache_dir (ctx), ==, NULL);
-	g_assert_cmpstr (hif_context_get_repo_dir (ctx), ==, NULL);
+	g_assert_cmpstr (hif_context_get_repo_dir (ctx), ==, "/tmp");
+	g_assert_cmpstr (hif_context_get_solv_dir (ctx), ==, "/tmp/hawkey");
 	g_assert (hif_context_get_check_disk_space (ctx));
 	g_assert (hif_context_get_check_transaction (ctx));
 	g_assert (!hif_context_get_keep_cache (ctx));

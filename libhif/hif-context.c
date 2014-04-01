@@ -34,6 +34,7 @@
 #include <rpm/rpmlib.h>
 
 #include "hif-context.h"
+#include "hif-context-private.h"
 #include "hif-utils.h"
 
 typedef struct _HifContextPrivate	HifContextPrivate;
@@ -535,6 +536,7 @@ out:
 /**
  * hif_context_setup:
  * @context: a #HifContext instance.
+ * @cancellable: A #GCancellable or %NULL
  * @error: A #GError or %NULL
  *
  * Sets up the context ready for use
@@ -544,7 +546,9 @@ out:
  * Since: 0.1.0
  **/
 gboolean
-hif_context_setup (HifContext *context, GError **error)
+hif_context_setup (HifContext *context,
+		   GCancellable *cancellable,
+		   GError **error)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	const gchar *value;
@@ -587,6 +591,170 @@ hif_context_setup (HifContext *context, GError **error)
 		goto out;
 out:
 	return ret;
+}
+
+/**
+ * hif_context_run:
+ * @context: a #HifContext instance.
+ * @cancellable: A #GCancellable or %NULL
+ * @error: A #GError or %NULL
+ *
+ * Runs the context installing or removing packages as required
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.1.0
+ **/
+gboolean
+hif_context_run (HifContext *context, GCancellable *cancellable, GError **error)
+{
+	g_set_error_literal (error,
+			     HIF_ERROR,
+			     HIF_ERROR_INTERNAL_ERROR,
+			     "Not supported");
+	return FALSE;
+}
+
+/**
+ * hif_context_install:
+ * @context: a #HifContext instance.
+ * @name: A package or group name, e.g. "firefox" or "@gnome-desktop"
+ * @error: A #GError or %NULL
+ *
+ * Finds a remote package and marks it to be installed.
+ *
+ * If multiple packages are available then only the newest package is installed.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.1.0
+ **/
+gboolean
+hif_context_install (HifContext *context, const gchar *name, GError **error)
+{
+	g_set_error_literal (error,
+			     HIF_ERROR,
+			     HIF_ERROR_INTERNAL_ERROR,
+			     "Not supported");
+	return FALSE;
+}
+
+/**
+ * hif_context_remove:
+ * @context: a #HifContext instance.
+ * @name: A package or group name, e.g. "firefox" or "@gnome-desktop"
+ * @error: A #GError or %NULL
+ *
+ * Finds an installed package and marks it to be removed.
+ *
+ * If multiple packages are available then only the oldest package is removed.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.1.0
+ **/
+gboolean
+hif_context_remove (HifContext *context, const gchar *name, GError **error)
+{
+	g_set_error_literal (error,
+			     HIF_ERROR,
+			     HIF_ERROR_INTERNAL_ERROR,
+			     "Not supported");
+	return FALSE;
+}
+
+/**
+ * hif_context_update:
+ * @context: a #HifContext instance.
+ * @name: A package or group name, e.g. "firefox" or "@gnome-desktop"
+ * @error: A #GError or %NULL
+ *
+ * Finds an installed and remote package and marks it to be updated.
+ *
+ * If multiple packages are available then the newest package is updated to.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.1.0
+ **/
+gboolean
+hif_context_update (HifContext *context, const gchar *name, GError **error)
+{
+	g_set_error_literal (error,
+			     HIF_ERROR,
+			     HIF_ERROR_INTERNAL_ERROR,
+			     "Not supported");
+	return FALSE;
+}
+
+/**
+ * hif_context_repo_enable:
+ * @context: a #HifContext instance.
+ * @repo_id: A repo_id, e.g. "fedora-rawhide"
+ * @error: A #GError or %NULL
+ *
+ * Enables a specific repo.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.1.0
+ **/
+gboolean
+hif_context_repo_enable (HifContext *context,
+			 const gchar *repo_id,
+			 GError **error)
+{
+	g_set_error_literal (error,
+			     HIF_ERROR,
+			     HIF_ERROR_INTERNAL_ERROR,
+			     "Not supported");
+	return FALSE;
+}
+
+/**
+ * hif_context_repo_disable:
+ * @context: a #HifContext instance.
+ * @repo_id: A repo_id, e.g. "fedora-rawhide"
+ * @error: A #GError or %NULL
+ *
+ * Disables a specific repo.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.1.0
+ **/
+gboolean
+hif_context_repo_disable (HifContext *context,
+			  const gchar *repo_id,
+			  GError **error)
+{
+	g_set_error_literal (error,
+			     HIF_ERROR,
+			     HIF_ERROR_INTERNAL_ERROR,
+			     "Not supported");
+	return FALSE;
+}
+
+/**
+ * hif_context_commit:
+ * @context: a #HifContext instance.
+ * @state: A #HifState
+ * @error: A #GError or %NULL
+ *
+ * Commits a context.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.1.0
+ **/
+gboolean
+hif_context_commit (HifContext *context, HifState *state, GError **error)
+{
+	g_set_error_literal (error,
+			     HIF_ERROR,
+			     HIF_ERROR_INTERNAL_ERROR,
+			     "Not supported");
+	return FALSE;
 }
 
 /**
