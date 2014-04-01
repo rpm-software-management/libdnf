@@ -94,7 +94,7 @@ typedef enum {
 } HifSourceKind;
 
 GType		 hif_source_get_type		(void);
-HifSource	*hif_source_new			(void);
+HifSource	*hif_source_new			(HifContext		*context);
 
 /* getters */
 const gchar	*hif_source_get_id		(HifSource		*source);
@@ -114,16 +114,30 @@ gboolean	 hif_source_is_supported	(HifSource		*source);
 /* setters */
 void		 hif_source_set_id		(HifSource		*source,
 						 const gchar		*id);
+void		 hif_source_set_location	(HifSource		*source,
+						 const gchar		*location);
+void		 hif_source_set_location_tmp	(HifSource		*source,
+						 const gchar		*location_tmp);
+void		 hif_source_set_filename	(HifSource		*source,
+						 const gchar		*filename);
+void		 hif_source_set_packages	(HifSource		*source,
+						 const gchar		*packages);
+void		 hif_source_set_packages_tmp	(HifSource		*source,
+						 const gchar		*packages_tmp);
+void		 hif_source_set_enabled		(HifSource		*source,
+						 gboolean		 enabled);
+void		 hif_source_set_cost		(HifSource		*source,
+						 guint			 cost);
+void		 hif_source_set_kind		(HifSource		*source,
+						 HifSourceKind		 kind);
+void		 hif_source_set_gpgcheck	(HifSource		*source,
+						 gboolean		 gpgcheck);
+void		 hif_source_set_keyfile		(HifSource		*source,
+						 GKeyFile		*keyfile);
+gboolean	 hif_source_setup		(HifSource		*source,
+						 GError			**error);
 
 /* object methods */
-gboolean	 hif_source_parse		(HifContext		*context,
-						 GPtrArray		*sources,
-						 const gchar		*filename,
-						 GError			**error);
-gboolean	 hif_source_add_media		(GPtrArray		*sources,
-						 const gchar		*mount_point,
-						 guint			 idx,
-						 GError			**error);
 gboolean	 hif_source_check		(HifSource		*source,
 						 guint			 permissible_cache_age,
 						 HifState		*state,

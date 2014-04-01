@@ -61,6 +61,7 @@ struct _HifSourcePrivate
 	gint64		 timestamp_generated;	/* µs */
 	gint64		 timestamp_modified;	/* µs */
 	GKeyFile	*keyfile;
+	HifContext	*context;
 	HifSourceKind	 kind;
 	HyRepo		 repo;
 	LrHandle	*repo_handle;
@@ -90,6 +91,7 @@ hif_source_finalize (GObject *object)
 	g_free (priv->location);
 	g_free (priv->packages);
 	g_free (priv->packages_tmp);
+	g_object_unref (priv->context);
 	if (priv->repo_result != NULL)
 		lr_result_free (priv->repo_result);
 	if (priv->repo_handle != NULL)
@@ -108,6 +110,10 @@ hif_source_finalize (GObject *object)
 static void
 hif_source_init (HifSource *source)
 {
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	priv->cost = 1000;
+	priv->repo_handle = lr_handle_init ();
+	priv->repo_result = lr_result_init ();
 }
 
 /**
@@ -417,240 +423,232 @@ hif_source_set_id (HifSource *source, const gchar *id)
 	priv->id = g_strdup (id);
 }
 
-
 /**
- * hif_load_multiline_key_file:
+ * hif_source_set_location:
+ * @source: a #HifSource instance.
+ * @location: the path
+ *
+ * Sets the source location and the default packages path.
+ *
+ * Since: 0.1.0
  **/
-static GKeyFile *
-hif_load_multiline_key_file (const gchar *filename, GError **error)
+void
+hif_source_set_location (HifSource *source, const gchar *location)
 {
-	gboolean ret;
-	gchar *data = NULL;
-	gchar **lines = NULL;
-	GKeyFile *file = NULL;
-	gsize len;
-	GString *string = NULL;
-	guint i;
-
-	/* load file */
-	ret = g_file_get_contents (filename, &data, &len, error);
-	if (!ret)
-		goto out;
-
-	/* split into lines */
-	string = g_string_new ("");
-	lines = g_strsplit (data, "\n", -1);
-	for (i = 0; lines[i] != NULL; i++) {
-		/* if a line starts with whitespace, then append it on
-		 * the previous line */
-		g_strdelimit (lines[i], "\t", ' ');
-		if (lines[i][0] == ' ' && string->len > 0) {
-			g_string_set_size (string, string->len - 1);
-			g_string_append_printf (string,
-						";%s\n",
-						g_strchug (lines[i]));
-		} else {
-			g_string_append_printf (string,
-						"%s\n",
-						lines[i]);
-		}
-	}
-
-	/* remove final newline */
-	if (string->len > 0)
-		g_string_set_size (string, string->len - 1);
-
-	/* load modified lines */
-	file = g_key_file_new ();
-	ret = g_key_file_load_from_data (file,
-					 string->str,
-					 -1,
-					 G_KEY_FILE_KEEP_COMMENTS,
-					 error);
-	if (!ret) {
-		g_key_file_free (file);
-		file = NULL;
-		goto out;
-	}
-out:
-	if (string != NULL)
-		g_string_free (string, TRUE);
-	g_free (data);
-	g_strfreev (lines);
-	return file;
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	g_free (priv->location);
+	g_free (priv->packages);
+	priv->location = g_strdup (location);
+	priv->packages = g_build_filename (location, "packages", NULL);
 }
 
 /**
- * hif_source_add_media:
+ * hif_source_set_location_tmp:
+ * @source: a #HifSource instance.
+ * @location_tmp: the temp path
  *
- * Adds media repos.
+ * Sets the source location for temporary files and the default packages path.
  *
- * Returns: %TRUE for success, %FALSE otherwise
+ * Since: 0.1.0
+ **/
+void
+hif_source_set_location_tmp (HifSource *source, const gchar *location_tmp)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	g_free (priv->location_tmp);
+	g_free (priv->packages_tmp);
+	priv->location_tmp = g_strdup (location_tmp);
+	priv->packages_tmp = g_build_filename (location_tmp, "packages", NULL);
+}
+
+/**
+ * hif_source_set_filename:
+ * @source: a #HifSource instance.
+ * @filename: the filename path
+ *
+ * Sets the source backing filename.
+ *
+ * Since: 0.1.0
+ **/
+void
+hif_source_set_filename (HifSource *source, const gchar *filename)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	g_free (priv->filename);
+	priv->filename = g_strdup (filename);
+}
+
+/**
+ * hif_source_set_packages:
+ * @source: a #HifSource instance.
+ * @packages: the path to the package files
+ *
+ * Sets the source package location, typically ending in "Packages" or "packages".
+ *
+ * Since: 0.1.0
+ **/
+void
+hif_source_set_packages (HifSource *source, const gchar *packages)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	g_free (priv->packages);
+	priv->packages = g_strdup (packages);
+}
+
+/**
+ * hif_source_set_packages_tmp:
+ * @source: a #HifSource instance.
+ * @packages_tmp: the path to the temporary package files
+ *
+ * Sets the source package location for temporary files.
+ *
+ * Since: 0.1.0
+ **/
+void
+hif_source_set_packages_tmp (HifSource *source, const gchar *packages_tmp)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	g_free (priv->packages_tmp);
+	priv->packages_tmp = g_strdup (packages_tmp);
+}
+
+/**
+ * hif_source_set_enabled:
+ * @source: a #HifSource instance.
+ * @enabled: if the source is enabled
+ *
+ * Sets the source enabled state.
+ *
+ * Since: 0.1.0
+ **/
+void
+hif_source_set_enabled (HifSource *source, gboolean enabled)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	priv->enabled = enabled;
+}
+
+/**
+ * hif_source_set_cost:
+ * @source: a #HifSource instance.
+ * @cost: the source cost
+ *
+ * Sets the source cost, where 1000 is the default.
+ *
+ * Since: 0.1.0
+ **/
+void
+hif_source_set_cost (HifSource *source, guint cost)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	priv->cost = cost;
+}
+
+/**
+ * hif_source_set_kind:
+ * @source: a #HifSource instance.
+ * @kind: the #HifSourceKind
+ *
+ * Sets the source kind.
+ *
+ * Since: 0.1.0
+ **/
+void
+hif_source_set_kind (HifSource *source, HifSourceKind kind)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	priv->kind = kind;
+}
+
+/**
+ * hif_source_set_gpgcheck:
+ * @source: a #HifSource instance.
+ * @gpgcheck: if the source should be signed
+ *
+ * Sets the source signed status.
+ *
+ * Since: 0.1.0
+ **/
+void
+hif_source_set_gpgcheck (HifSource *source, gboolean gpgcheck)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	priv->gpgcheck = gpgcheck;
+}
+
+/**
+ * hif_source_set_keyfile:
+ * @source: a #HifSource instance.
+ * @keyfile: the #GKeyFile
+ *
+ * Sets the source keyfile used to create the source.
+ *
+ * Since: 0.1.0
+ **/
+void
+hif_source_set_keyfile (HifSource *source, GKeyFile *keyfile)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	if (priv->keyfile != NULL)
+		g_key_file_unref (priv->keyfile);
+	priv->keyfile = g_key_file_ref (keyfile);
+}
+
+/**
+ * hif_source_setup:
+ * @source: a #HifSource instance.
+ * @error: a #GError or %NULL
+ *
+ * Sets up the source ready for use.
+ *
+ * Returns: %TRUE for success
  *
  * Since: 0.1.0
  **/
 gboolean
-hif_source_add_media (GPtrArray *sources,
-		      const gchar *mount_point,
-		      guint idx,
-		      GError **error)
+hif_source_setup (HifSource *source, GError **error)
 {
-	GKeyFile *treeinfo;
-	HifSourcePrivate *priv;
-	HifSource *source;
+	HifSourcePrivate *priv = GET_PRIVATE (source);
 	gboolean ret = TRUE;
 	gchar *basearch = NULL;
 	gchar *release = NULL;
-	gchar *treeinfo_fn;
 
-	/* get common things */
-	treeinfo_fn = g_build_filename (mount_point, ".treeinfo", NULL);
-	treeinfo = g_key_file_new ();
-	ret = g_key_file_load_from_file (treeinfo, treeinfo_fn, 0, error);
-	if (!ret)
-		goto out;
-	basearch = g_key_file_get_string (treeinfo, "general", "arch", error);
+	basearch = g_key_file_get_string (priv->keyfile, "general", "arch", NULL);
+	if (basearch == NULL)
+		basearch = g_strdup (hif_context_get_base_arch (priv->context));
 	if (basearch == NULL) {
 		ret = FALSE;
+		g_set_error_literal (error,
+				     HIF_ERROR,
+				     HIF_ERROR_INTERNAL_ERROR,
+				     "basearch not set");
 		goto out;
 	}
-	release = g_key_file_get_string (treeinfo, "general", "version", error);
-	if (release == NULL) {
+	release = g_key_file_get_string (priv->keyfile, "general", "version", NULL);
+	if (release == NULL)
+		release = g_strdup (hif_context_get_release_ver (priv->context));
+	if (basearch == NULL) {
 		ret = FALSE;
+		g_set_error_literal (error,
+				     HIF_ERROR,
+				     HIF_ERROR_INTERNAL_ERROR,
+				     "releasever not set");
 		goto out;
 	}
-
-	/* create read-only location */
-	source = hif_source_new ();
-	priv = GET_PRIVATE (source);
-	priv->enabled = TRUE;
-	priv->kind = HIF_SOURCE_KIND_MEDIA;
-	priv->cost = 100;
-	priv->keyfile = g_key_file_ref (treeinfo);
-	if (idx == 0)
-		priv->id = g_strdup ("media");
-	else
-		priv->id = g_strdup_printf ("media-%i", idx);
-	priv->location = g_strdup (mount_point);
-	priv->packages = g_build_filename (priv->location, "packages", NULL);
-	priv->repo_handle = lr_handle_init ();
+	ret = lr_handle_setopt (priv->repo_handle, error, LRO_USERAGENT, "PackageKit-hawkey");
+	if (!ret)
+		goto out;
 	ret = lr_handle_setopt (priv->repo_handle, error, LRO_REPOTYPE, LR_YUMREPO);
 	if (!ret)
 		goto out;
-	priv->repo_result = lr_result_init ();
-	priv->gpgcheck = TRUE;
 	priv->urlvars = lr_urlvars_set (priv->urlvars, "releasever", release);
 	priv->urlvars = lr_urlvars_set (priv->urlvars, "basearch", basearch);
 	ret = lr_handle_setopt (priv->repo_handle, error, LRO_VARSUB, priv->urlvars);
 	if (!ret)
 		goto out;
-
-	g_debug ("added source %s", priv->id);
-	g_ptr_array_add (sources, source);
 out:
 	g_free (basearch);
 	g_free (release);
-	g_free (treeinfo_fn);
-	g_key_file_unref (treeinfo);
-	return ret;
-}
-
-/**
- * hif_source_parse:
- *
- * Parses a filename and creates #HifSources
- *
- * Returns: %TRUE for success, %FALSE otherwise
- *
- * Since: 0.1.0
- **/
-gboolean
-hif_source_parse (HifContext *context,
-		  GPtrArray *sources,
-		  const gchar *filename,
-		  GError **error)
-{
-	HifSourcePrivate *priv;
-	gboolean has_enabled;
-	gboolean is_enabled;
-	gboolean ret = TRUE;
-	gchar **repos = NULL;
-	GKeyFile *keyfile;
-	guint64 val;
-	guint i;
-
-	/* load non-standard keyfile */
-	keyfile = hif_load_multiline_key_file (filename, error);
-	if (keyfile == NULL) {
-		ret = FALSE;
-		goto out;
-	}
-
-	/* save all the repos listed in the file */
-	repos = g_key_file_get_groups (keyfile, NULL);
-	for (i = 0; repos[i] != NULL; i++) {
-		HifSource *source;
-
-		/* enabled isn't a required key */
-		has_enabled = g_key_file_has_key (keyfile,
-						  repos[i],
-						  "enabled",
-						  NULL);
-		if (has_enabled) {
-			is_enabled = g_key_file_get_boolean (keyfile,
-							     repos[i],
-							     "enabled",
-							     NULL);
-		} else {
-			is_enabled = TRUE;
-		}
-
-		source = hif_source_new ();
-		priv = GET_PRIVATE (source);
-		priv->enabled = is_enabled;
-		priv->kind = HIF_SOURCE_KIND_REMOTE;
-		priv->cost = g_key_file_get_integer (keyfile, repos[i], "cost", NULL);
-		if (priv->cost == 0)
-			priv->cost = 1000;
-		priv->keyfile = g_key_file_ref (keyfile);
-		priv->filename = g_strdup (filename);
-		priv->id = g_strdup (repos[i]);
-		priv->location = g_build_filename (hif_context_get_cache_dir (context),
-						   repos[i], NULL);
-		priv->location_tmp = g_strdup_printf ("%s.tmp", priv->location);
-		priv->packages = g_build_filename (priv->location, "packages", NULL);
-		priv->packages_tmp = g_build_filename (priv->location_tmp, "packages", NULL);
-		priv->repo_handle = lr_handle_init ();
-		ret = lr_handle_setopt (priv->repo_handle, error, LRO_REPOTYPE, LR_YUMREPO);
-		if (!ret)
-			goto out;
-		ret = lr_handle_setopt (priv->repo_handle, error, LRO_USERAGENT, "PackageKit-hawkey");
-		if (!ret)
-			goto out;
-		priv->repo_result = lr_result_init ();
-
-		//FIXME: only set if a gpgkry is also set?
-		val = g_key_file_get_uint64 (priv->keyfile, priv->id, "gpgcheck", NULL);
-		priv->gpgcheck = (val == 1) ? 1 : 0;
-
-		// FIXME: don't hardcode
-		priv->urlvars = lr_urlvars_set (priv->urlvars,
-						"releasever",
-						hif_context_get_release_ver (context));
-		priv->urlvars = lr_urlvars_set (priv->urlvars,
-						"basearch",
-						hif_context_get_base_arch (context));
-		ret = lr_handle_setopt (priv->repo_handle, error, LRO_VARSUB, priv->urlvars);
-		if (!ret)
-			goto out;
-
-		g_debug ("added source %s\t%s", filename, repos[i]);
-		g_ptr_array_add (sources, source);
-	}
-out:
-	g_strfreev (repos);
-	if (keyfile != NULL)
-		g_key_file_unref (keyfile);
 	return ret;
 }
 
@@ -1448,6 +1446,7 @@ out:
 
 /**
  * hif_source_new:
+ * @context: A #HifContext instance
  *
  * Creates a new #HifSource.
  *
@@ -1456,9 +1455,12 @@ out:
  * Since: 0.1.0
  **/
 HifSource *
-hif_source_new (void)
+hif_source_new (HifContext *context)
 {
 	HifSource *source;
+	HifSourcePrivate *priv;
 	source = g_object_new (HIF_TYPE_SOURCE, NULL);
+	priv = GET_PRIVATE (source);
+	priv->context = g_object_ref (context);
 	return HIF_SOURCE (source);
 }

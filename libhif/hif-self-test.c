@@ -195,8 +195,11 @@ static void
 ch_test_source_func (void)
 {
 	HifSource *source;
-	source = hif_source_new ();
+	HifContext *context;
+	context = hif_context_new ();
+	source = hif_source_new (context);
 	g_object_unref (source);
+	g_object_unref (context);
 }
 
 static guint _allow_cancel_updates = 0;

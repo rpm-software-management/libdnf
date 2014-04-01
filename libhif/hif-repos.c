@@ -138,10 +138,62 @@ hif_repos_class_init (HifReposClass *klass)
 }
 
 /**
+ * hif_repos_add_media:
+ **/
+static gboolean
+hif_repos_add_media (HifRepos *repos,
+		     const gchar *mount_point,
+		     guint idx,
+		     GError **error)
+{
+	GKeyFile *treeinfo;
+	HifReposPrivate *priv = hif_repos_get_instance_private (repos);
+	HifSource *source;
+	gboolean ret = TRUE;
+	gchar *tmp;
+	gchar *packages = NULL;
+	gchar *treeinfo_fn;
+
+	/* get common things */
+	treeinfo_fn = g_build_filename (mount_point, ".treeinfo", NULL);
+	treeinfo = g_key_file_new ();
+	ret = g_key_file_load_from_file (treeinfo, treeinfo_fn, 0, error);
+	if (!ret)
+		goto out;
+
+	/* create read-only location */
+	source = hif_source_new (priv->context);
+	hif_source_set_enabled (source, TRUE);
+	hif_source_set_gpgcheck (source, TRUE);
+	hif_source_set_kind (source, HIF_SOURCE_KIND_MEDIA);
+	hif_source_set_cost (source, 100);
+	hif_source_set_keyfile (source, treeinfo);
+	if (idx == 0) {
+		hif_source_set_id (source, "media");
+	} else {
+		tmp = g_strdup_printf ("media-%i", idx);
+		hif_source_set_id (source, tmp);
+		g_free (tmp);
+	}
+	hif_source_set_location (source, mount_point);
+	ret = hif_source_setup (source, error);
+	if (!ret)
+		goto out;
+
+	g_debug ("added source %s", hif_source_get_id (source));
+	g_ptr_array_add (priv->sources, source);
+out:
+	g_free (packages);
+	g_free (treeinfo_fn);
+	g_key_file_unref (treeinfo);
+	return ret;
+}
+
+/**
  * hif_repos_add_sack_from_mount_point:
  */
 static gboolean
-hif_repos_add_sack_from_mount_point (GPtrArray *sources,
+hif_repos_add_sack_from_mount_point (HifRepos *repos,
 				     const gchar *root,
 				     guint *idx,
 				     GError **error)
@@ -159,7 +211,7 @@ hif_repos_add_sack_from_mount_point (GPtrArray *sources,
 		goto out;
 
 	/* add the repodata/repomd.xml as a source */
-	ret = hif_source_add_media (sources, root, *idx, error);
+	ret = hif_repos_add_media (repos, root, *idx, error);
 	if (!ret)
 		goto out;
 	(*idx)++;
@@ -172,7 +224,7 @@ out:
  * hif_repos_get_sources_removable:
  */
 static gboolean
-hif_repos_get_sources_removable (GPtrArray *sources, GError **error)
+hif_repos_get_sources_removable (HifRepos *repos, GError **error)
 {
 	GList *mounts;
 	GList *l;
@@ -187,7 +239,7 @@ hif_repos_get_sources_removable (GPtrArray *sources, GError **error)
 			continue;
 		if (g_strcmp0 (g_unix_mount_get_fs_type (e), "iso9660") != 0)
 			continue;
-		ret = hif_repos_add_sack_from_mount_point (sources,
+		ret = hif_repos_add_sack_from_mount_point (repos,
 							   g_unix_mount_get_mount_path (e),
 							   &idx,
 							   error);
@@ -213,6 +265,144 @@ hi_repos_source_cost_fn (gconstpointer a, gconstpointer b)
 	if (hif_source_get_cost (src_a) > hif_source_get_cost (src_b))
 		return 1;
 	return 0;
+}
+
+/**
+ * hif_repos_load_multiline_key_file:
+ **/
+static GKeyFile *
+hif_repos_load_multiline_key_file (const gchar *filename, GError **error)
+{
+	gboolean ret;
+	gchar *data = NULL;
+	gchar **lines = NULL;
+	GKeyFile *file = NULL;
+	gsize len;
+	GString *string = NULL;
+	guint i;
+
+	/* load file */
+	ret = g_file_get_contents (filename, &data, &len, error);
+	if (!ret)
+		goto out;
+
+	/* split into lines */
+	string = g_string_new ("");
+	lines = g_strsplit (data, "\n", -1);
+	for (i = 0; lines[i] != NULL; i++) {
+		/* if a line starts with whitespace, then append it on
+		 * the previous line */
+		g_strdelimit (lines[i], "\t", ' ');
+		if (lines[i][0] == ' ' && string->len > 0) {
+			g_string_set_size (string, string->len - 1);
+			g_string_append_printf (string,
+						";%s\n",
+						g_strchug (lines[i]));
+		} else {
+			g_string_append_printf (string,
+						"%s\n",
+						lines[i]);
+		}
+	}
+
+	/* remove final newline */
+	if (string->len > 0)
+		g_string_set_size (string, string->len - 1);
+
+	/* load modified lines */
+	file = g_key_file_new ();
+	ret = g_key_file_load_from_data (file,
+					 string->str,
+					 -1,
+					 G_KEY_FILE_KEEP_COMMENTS,
+					 error);
+	if (!ret) {
+		g_key_file_free (file);
+		file = NULL;
+		goto out;
+	}
+out:
+	if (string != NULL)
+		g_string_free (string, TRUE);
+	g_free (data);
+	g_strfreev (lines);
+	return file;
+}
+
+/**
+ * hif_repos_source_parse:
+ **/
+static gboolean
+hif_repos_source_parse (HifRepos *repos,
+			const gchar *filename,
+			GError **error)
+{
+	HifReposPrivate *priv = hif_repos_get_instance_private (repos);
+	gboolean has_enabled;
+	gboolean is_enabled;
+	gboolean ret = TRUE;
+	gchar **groups = NULL;
+	gchar *tmp;
+	GKeyFile *keyfile;
+	guint64 val;
+	guint i;
+	guint cost;
+
+	/* load non-standard keyfile */
+	keyfile = hif_repos_load_multiline_key_file (filename, error);
+	if (keyfile == NULL) {
+		ret = FALSE;
+		goto out;
+	}
+
+	/* save all the repos listed in the file */
+	groups = g_key_file_get_groups (keyfile, NULL);
+	for (i = 0; groups[i] != NULL; i++) {
+		HifSource *source;
+
+		/* enabled isn't a required key */
+		has_enabled = g_key_file_has_key (keyfile,
+						  groups[i],
+						  "enabled",
+						  NULL);
+		if (has_enabled) {
+			is_enabled = g_key_file_get_boolean (keyfile,
+							     groups[i],
+							     "enabled",
+							     NULL);
+		} else {
+			is_enabled = TRUE;
+		}
+
+		source = hif_source_new (priv->context);
+		hif_source_set_enabled (source, is_enabled);
+		hif_source_set_kind (source, HIF_SOURCE_KIND_REMOTE);
+		cost = g_key_file_get_integer (keyfile, groups[i], "cost", NULL);
+		if (cost != 0)
+			hif_source_set_cost (source, cost);
+		hif_source_set_keyfile (source, keyfile);
+		hif_source_set_filename (source, filename);
+		hif_source_set_id (source, groups[i]);
+		tmp = g_build_filename (hif_context_get_cache_dir (priv->context),
+					groups[i], NULL);
+		hif_source_set_location (source, tmp);
+		g_free (tmp);
+		tmp = g_strdup_printf ("%s.tmp", hif_source_get_location (source));
+		hif_source_set_location_tmp (source, tmp);
+		g_free (tmp);
+
+		//FIXME: only set if a gpgkey is also set?
+		val = g_key_file_get_uint64 (keyfile, groups[i], "gpgcheck", NULL);
+		hif_source_set_gpgcheck (source, val == 1 ? TRUE : FALSE);
+
+		g_debug ("added source %s\t%s", filename, groups[i]);
+		g_ptr_array_add (priv->sources, source);
+	}
+out:
+	g_strfreev (groups);
+	if (keyfile != NULL)
+		g_key_file_unref (keyfile);
+	return ret;
 }
 
 /**
@@ -244,14 +434,14 @@ hif_repos_refresh (HifRepos *repos, GError **error)
 		if (!g_str_has_suffix (file, ".repo"))
 			continue;
 		path_tmp = g_build_filename (repo_path, file, NULL);
-		ret = hif_source_parse (priv->context, priv->sources, path_tmp, error);
+		ret = hif_repos_source_parse (repos, path_tmp, error);
 		g_free (path_tmp);
 		if (!ret)
 			goto out;
 	}
 
 	/* add any DVD sources */
-	ret = hif_repos_get_sources_removable (priv->sources, error);
+	ret = hif_repos_get_sources_removable (repos, error);
 	if (!ret)
 		goto out;
 
@@ -373,12 +563,18 @@ hif_repos_directory_changed_cb (GFileMonitor *monitor_,
 static void
 hif_repos_setup_watch (HifRepos *repos)
 {
+	const gchar *repo_dir;
 	GError *error = NULL;
 	GFile *file_repos = NULL;
 	HifReposPrivate *priv = hif_repos_get_instance_private (repos);
 
 	/* setup a file monitor on the repos directory */
-	file_repos = g_file_new_for_path (hif_context_get_repo_dir (priv->context));
+	repo_dir = hif_context_get_repo_dir (priv->context);
+	if (repo_dir == NULL) {
+		g_warning ("no repodir set");
+		return;
+	}
+	file_repos = g_file_new_for_path (repo_dir);
 	priv->monitor_repos = g_file_monitor_directory (file_repos,
 							G_FILE_MONITOR_NONE,
 							NULL,
