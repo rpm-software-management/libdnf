@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -161,6 +161,8 @@ static PyGetSetDef repo_getsetters[] = {
      (void *)HY_REPO_FILELISTS_FN},
     {"presto_fn", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_PRESTO_FN},
+    {"updateinfo_fn", (getter)get_str, (setter)set_str, NULL,
+     (void *)HY_REPO_UPDATEINFO_FN},
     {"cost", (getter)get_cost, (setter)set_cost, "cost of repository",
      NULL},
     {NULL}			/* sentinel */
