@@ -31,9 +31,9 @@
 #include <solv/transaction.h>
 
 // hawkey
+#include "advisory_internal.h"
 #include "packagelist.h"
 #include "sack.h"
-#include "update_internal.h"
 
 #define CHKSUM_BYTES 32
 
@@ -81,7 +81,7 @@ Id what_upgrades(Pool *pool, Id p);
 Id what_downgrades(Pool *pool, Id p);
 static inline int is_package(Pool *pool, Solvable *s)
 {
-    return !str_startswith(pool_id2str(pool, s->name), SOLVABLE_NAME_UPDATE_PREFIX);
+    return !str_startswith(pool_id2str(pool, s->name), SOLVABLE_NAME_ADVISORY_PREFIX);
 }
 
 /* package version utils */
