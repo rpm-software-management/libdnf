@@ -621,6 +621,32 @@ filter_updown(HyQuery q, int downgrade, Map *res)
     map_free(&m);
 }
 
+static void
+filter_updown_able(HyQuery q, int downgradable, Map *res)
+{
+    Id p, what;
+    Solvable *s;
+    Map m;
+    Pool *pool = sack_pool(q->sack);
+
+    assert(pool->installed);
+    sack_make_provides_ready(q->sack);
+    map_init(&m, pool->nsolvables);
+    FOR_PKG_SOLVABLES(p) {
+	s = pool_id2solvable(pool, p);
+	if (s->repo == pool->installed)
+	    continue;
+
+	what = downgradable ? what_downgrades(pool, p) :
+			      what_upgrades(pool, p);
+	if (what != 0 && map_tst(res, what))
+	    map_set(&m, what);
+    }
+
+    map_and(res, &m);
+    map_free(&m);
+}
+
 static int
 filter_latest_sortcmp(const void *ap, const void *bp, void *dp)
 {
@@ -783,8 +809,12 @@ compute(HyQuery q)
 	    map_and(q->result, &m);
     }
     map_free(&m);
+    if (q->downgradable)
+	filter_updown_able(q, 1, q->result);
     if (q->downgrades)
 	filter_updown(q, 1, q->result);
+    if (q->updatable)
+	filter_updown_able(q, 0, q->result);
     if (q->updates)
 	filter_updown(q, 0, q->result);
     if (q->latest)
@@ -842,7 +872,9 @@ hy_query_clone(HyQuery q)
     HyQuery qn = hy_query_create(q->sack);
 
     qn->flags = q->flags;
+    qn->downgradable = q->downgradable;
     qn->downgrades = q->downgrades;
+    qn->updatable = q->updatable;
     qn->updates = q->updates;
     qn->latest = q->latest;
     qn->latest_per_arch = q->latest_per_arch;
@@ -1074,6 +1106,16 @@ hy_query_filter_requires(HyQuery q, int cmp_type, const char *name, const char *
 }
 
 /**
+ * Narrows to only those installed packages for which there is a downgrading package.
+ */
+void
+hy_query_filter_downgradable(HyQuery q, int val)
+{
+    clear_result(q);
+    q->downgradable = val;
+}
+
+/**
  * Narrows to only packages updating installed packages.
  *
  * This requires resolving and so makes the final query expensive.
@@ -1083,6 +1125,16 @@ hy_query_filter_downgrades(HyQuery q, int val)
 {
     clear_result(q);
     q->downgrades = val;
+}
+
+/**
+ * Narrows to only those installed packages for which there is an updating package.
+ */
+void
+hy_query_filter_upgradable(HyQuery q, int val)
+{
+    clear_result(q);
+    q->updatable = val;
 }
 
 /**

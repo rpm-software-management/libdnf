@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -57,7 +57,9 @@ struct _HyQuery {
     Map *result;
     struct _Filter *filters;
     int nfilters;
+    int downgradable; /* 1 for "only downgradable installed packages" */
     int downgrades; /* 1 for "only downgrades for installed packages" */
+    int updatable; /* 1 for "only updatable installed packages" */
     int updates; /* 1 for "only updates for installed packages" */
     int latest; /* 1 for "only the latest version" */
     int latest_per_arch; /* 1 for "only the latest version per arch" */

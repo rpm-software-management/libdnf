@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -57,11 +57,25 @@ int hy_query_filter_requires(HyQuery q, int cmp_type, const char *name,
 			     const char *evr);
 
 /**
+ * Filter packages that are installed and have higher version than other not
+ * installed packages that are named same.
+ *
+ * NOTE: this does not guarantee packages filtered in this way are downgradable.
+ */
+void hy_query_filter_downgradable(HyQuery q, int val);
+/**
  * Filter packages that are named same as an installed package but lower version.
  *
  * NOTE: this does not guarantee packages filtered in this way are installable.
  */
 void hy_query_filter_downgrades(HyQuery q, int val);
+/**
+ * Filter packages that are installed and have lower version than other not
+ * installed packages that are named same.
+ *
+ * NOTE: this does not guarantee packages filtered in this way are upgradable.
+ */
+void hy_query_filter_upgradable(HyQuery q, int val);
 /**
  * Filter packages that are named same as an installed package but higher version.
  *

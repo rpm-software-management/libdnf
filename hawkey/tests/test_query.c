@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -493,6 +493,15 @@ START_TEST(test_upgrades)
 }
 END_TEST
 
+START_TEST(test_upgradable)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter_upgradable(q, 1);
+    ck_assert_int_eq(query_count_results(q), 5);
+    hy_query_free(q);
+}
+END_TEST
+
 START_TEST(test_filter_latest)
 {
     HyQuery q = hy_query_create(test_globals.sack);
@@ -565,6 +574,15 @@ START_TEST(test_downgrade)
     ck_assert_str_eq(hy_package_get_evr(pkg), "4.9-0");
     hy_query_free(q);
     hy_packagelist_free(plist);
+}
+END_TEST
+
+START_TEST(test_downgradable)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter_downgradable(q, 1);
+    ck_assert_int_eq(query_count_results(q), 2);
+    hy_query_free(q);
 }
 END_TEST
 
@@ -772,6 +790,7 @@ query_suite(void)
     tcase_add_unchecked_fixture(tc, fixture_with_updates, teardown);
     tcase_add_test(tc, test_upgrades_sanity);
     tcase_add_test(tc, test_upgrades);
+    tcase_add_test(tc, test_upgradable);
     tcase_add_test(tc, test_filter_latest);
     tcase_add_test(tc, test_query_provides_in);
     tcase_add_test(tc, test_query_provides_in_not_found);
@@ -781,6 +800,7 @@ query_suite(void)
     tcase_add_unchecked_fixture(tc, fixture_with_main, teardown);
     tcase_add_test(tc, test_upgrade_already_installed);
     tcase_add_test(tc, test_downgrade);
+    tcase_add_test(tc, test_downgradable);
     tcase_add_test(tc, test_query_reldep);
     tcase_add_test(tc, test_query_reldep_arbitrary);
     tcase_add_test(tc, test_query_requires);
