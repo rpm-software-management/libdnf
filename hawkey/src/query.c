@@ -1116,9 +1116,7 @@ hy_query_filter_downgradable(HyQuery q, int val)
 }
 
 /**
- * Narrows to only packages updating installed packages.
- *
- * This requires resolving and so makes the final query expensive.
+ * Narrows to only packages downgrading installed packages.
  */
 void
 hy_query_filter_downgrades(HyQuery q, int val)
@@ -1139,8 +1137,6 @@ hy_query_filter_upgradable(HyQuery q, int val)
 
 /**
  * Narrows to only packages updating installed packages.
- *
- * This requires resolving and so makes the final query expensive.
  */
 void
 hy_query_filter_upgrades(HyQuery q, int val)
