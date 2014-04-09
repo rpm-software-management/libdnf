@@ -397,6 +397,16 @@ load_updateinfo_cb(Repo *repo, FILE *fp)
 }
 
 static int
+repo_is_one_piece(Repo *repo)
+{
+    int i;
+    for (i = repo->start; i < repo->end; i++)
+	if (repo->pool->solvables[i].repo != repo)
+	    return 0;
+    return 1;
+}
+
+static int
 write_main(HySack sack, HyRepo hrepo)
 {
     Repo *repo = hrepo->libsolv_repo;
@@ -426,6 +436,20 @@ write_main(HySack sack, HyRepo hrepo)
     if (retval) {
 	HY_LOG_ERROR("write_main() failed writing data: %", retval);
 	goto done;
+    }
+
+    if (repo_is_one_piece(repo)) {
+	fp = fopen(tmp_fn_templ, "r");
+	if (fp) {
+	    repo_empty(repo, 1);
+	    retval = repo_add_solv(repo, fp, 0);
+	    fclose(fp);
+	    if (retval) {
+		/* this is pretty fatal */
+		HY_LOG_ERROR("write_main() failed to re-load written solv file");
+		goto done;
+	    }
+	}
     }
 
     retval = mv(sack, tmp_fn_templ, fn);
@@ -469,6 +493,17 @@ write_ext(HySack sack, HyRepo hrepo, int which_repodata, const char *suffix)
     if (ret) {
 	HY_LOG_ERROR("write_ext(%d) has failed: %d", which_repodata, ret);
 	goto done;
+    }
+
+    if (repo_is_one_piece(repo)) {
+	fp = fopen(tmp_fn_templ, "r");
+	if (fp) {
+	    repodata_extend_block(data, repo->start, repo->end - repo->start);
+	    data->state = REPODATA_LOADING;
+	    repo_add_solv(repo, fp, REPO_USE_LOADING | REPO_EXTEND_SOLVABLES);
+	    data->state = REPODATA_AVAILABLE;
+	    fclose(fp);
+	}
     }
 
     ret = mv(sack, tmp_fn_templ, fn);
