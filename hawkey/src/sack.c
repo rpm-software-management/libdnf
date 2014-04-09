@@ -332,9 +332,13 @@ load_ext(HySack sack, HyRepo hrepo, int which_repodata,
     fp = fopen(fn_cache, "r");
     assert(hrepo->checksum);
     if (can_use_repomd_cache(fp, hrepo->checksum)) {
+	int flags = REPO_EXTEND_SOLVABLES;
+	/* do not pollute the main pool with directory component ids */
+	if (which_repodata == _HY_REPODATA_FILENAMES)
+	    flags |= REPO_LOCALPOOL;
 	done = 1;
 	HY_LOG_INFO("%s: using cache file: %s", __func__, fn_cache);
-	ret = repo_add_solv(repo, fp, REPO_EXTEND_SOLVABLES);
+	ret = repo_add_solv(repo, fp, flags);
 	assert(ret == 0);
 	if (ret)
 	    ret = HY_E_LIBSOLV;
@@ -439,6 +443,7 @@ write_main(HySack sack, HyRepo hrepo)
     }
 
     if (repo_is_one_piece(repo)) {
+	/* switch over to written solv file activate paging */
 	fp = fopen(tmp_fn_templ, "r");
 	if (fp) {
 	    repo_empty(repo, 1);
@@ -496,11 +501,16 @@ write_ext(HySack sack, HyRepo hrepo, int which_repodata, const char *suffix)
     }
 
     if (repo_is_one_piece(repo)) {
+	/* switch over to written solv file activate paging */
 	fp = fopen(tmp_fn_templ, "r");
 	if (fp) {
+	    int flags = REPO_USE_LOADING | REPO_EXTEND_SOLVABLES;
+	    /* do not pollute the main pool with directory component ids */
+	    if (which_repodata == _HY_REPODATA_FILENAMES)
+		flags |= REPO_LOCALPOOL;
 	    repodata_extend_block(data, repo->start, repo->end - repo->start);
 	    data->state = REPODATA_LOADING;
-	    repo_add_solv(repo, fp, REPO_USE_LOADING | REPO_EXTEND_SOLVABLES);
+	    repo_add_solv(repo, fp, flags);
 	    data->state = REPODATA_AVAILABLE;
 	    fclose(fp);
 	}
