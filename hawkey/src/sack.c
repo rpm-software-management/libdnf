@@ -342,8 +342,10 @@ load_ext(HySack sack, HyRepo hrepo, int which_repodata,
 	assert(ret == 0);
 	if (ret)
 	    ret = HY_E_LIBSOLV;
-	else
+	else {
 	    repo_update_state(hrepo, which_repodata, _HY_LOADED_CACHE);
+	    repo_set_repodata(hrepo, which_repodata, repo->nrepodata - 1);
+	}
     }
     solv_free(fn_cache);
     if (fp)
