@@ -53,6 +53,7 @@ struct _HyRepo {
     Id updateinfo_repodata;
     unsigned char checksum[CHKSUM_BYTES];
     Repo *libsolv_repo;
+    int load_flags;
 };
 
 enum _hy_repo_repodata {

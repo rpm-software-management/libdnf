@@ -413,7 +413,7 @@ repo_is_one_piece(Repo *repo)
 }
 
 static int
-write_main(HySack sack, HyRepo hrepo)
+write_main(HySack sack, HyRepo hrepo, int switchtosolv)
 {
     Repo *repo = hrepo->libsolv_repo;
     const char *name = repo->name;
@@ -444,7 +444,7 @@ write_main(HySack sack, HyRepo hrepo)
 	goto done;
     }
 
-    if (repo_is_one_piece(repo)) {
+    if (switchtosolv && repo_is_one_piece(repo)) {
 	/* switch over to written solv file activate paging */
 	fp = fopen(tmp_fn_templ, "r");
 	if (fp) {
@@ -858,6 +858,7 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
 	hy_repo_set_string(hrepo, HY_REPO_NAME, HY_SYSTEM_REPO_NAME);
     else
 	hrepo = hy_repo_create(HY_SYSTEM_REPO_NAME);
+    hrepo->load_flags = flags;
 
     rc = current_rpmdb_checksum(pool, hrepo->checksum);
     if (rc) {
@@ -895,7 +896,7 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
 
     const int build_cache = flags & HY_BUILD_CACHE;
     if (hrepo->state_main == _HY_LOADED_FETCH && build_cache) {
-	rc = write_main(sack, hrepo);
+	rc = write_main(sack, hrepo, 1);
 	if (rc) {
 	    ret = HY_E_CACHE_WRITE;
 	    goto finish;
@@ -915,8 +916,9 @@ hy_sack_load_yum_repo(HySack sack, HyRepo repo, int flags)
     int retval = load_yum_repo(sack, repo);
     if (retval)
 	goto finish;
+    repo->load_flags = flags;
     if (repo->state_main == _HY_LOADED_FETCH && build_cache) {
-	retval = write_main(sack, repo);
+	retval = write_main(sack, repo, 1);
 	if (retval)
 	    goto finish;
     }
@@ -974,11 +976,92 @@ hy_sack_load_yum_repo(HySack sack, HyRepo repo, int flags)
 
 // internal to hawkey
 
+static void
+rewrite_repos(HySack sack, Queue *addedfileprovides, Queue *addedfileprovides_inst)
+{
+    Pool *pool = sack_pool(sack);
+    int i, j;
+
+    /* initialize map with not-inst set */
+    Map providedids;
+    map_init(&providedids, pool->ss.nstrings);
+    for (j = 0; j < addedfileprovides->count; j++) 
+	MAPSET(&providedids, addedfileprovides->elements[j]);
+
+    Queue fileprovidesq;
+    queue_init(&fileprovidesq);
+    
+    Repo *repo;
+    FOR_REPOS(i, repo) {
+	HyRepo hrepo = repo->appdata;
+	if (!hrepo)
+	    continue;
+	if (!(hrepo->load_flags & HY_BUILD_CACHE))
+	    continue;
+	/* check if only the first repodata contains package data and all the
+         * others are extensions */
+	for (j = 1; j < repo->nrepodata; j++) {
+	    if (j == hrepo->filenames_repodata || j == hrepo->presto_repodata || j == hrepo->updateinfo_repodata) {
+		if (j == 1)
+		    break;
+	    } else if (j != 1) {
+	        break;
+	    }
+	}
+	if (j < 2 || j != repo->nrepodata)
+	    continue;
+	/* now check if the repo already contains all of our file provides */
+	Queue *addedq = repo == pool->installed && addedfileprovides_inst ? addedfileprovides_inst : addedfileprovides;
+	if (!addedq->count)
+	    continue;
+	Repodata *data = repo_id2repodata(repo, 1);
+	queue_empty(&fileprovidesq);
+	if (repodata_lookup_idarray(data, SOLVID_META, REPOSITORY_ADDEDFILEPROVIDES, &fileprovidesq)) {
+	    if (addedq == addedfileprovides_inst) {
+		/* switch over to inst set */
+                for (j = 0; j < addedfileprovides->count; j++) 
+                    MAPCLR(&providedids, addedfileprovides->elements[j]);
+                for (j = 0; j < addedq->count; j++) 
+                    MAPSET(&providedids, addedq->elements[j]);
+	    }
+	    /* count the set bits */
+	    int cnt = 0;
+	    for (j = 0; j < fileprovidesq.count; j++) 
+		if (MAPTST(&providedids, fileprovidesq.elements[j]))
+		    cnt++;
+	    if (addedq == addedfileprovides_inst) {
+		/* switch back to normal set */
+                for (j = 0; j < addedq->count; j++) 
+                    MAPCLR(&providedids, addedq->elements[j]);
+                for (j = 0; j < addedfileprovides->count; j++) 
+                    MAPSET(&providedids, addedfileprovides->elements[j]);
+	    }
+	    if (cnt == addedq->count)
+		continue;	/* nothing new added */
+	}
+	repodata_set_idarray(data, SOLVID_META, REPOSITORY_ADDEDFILEPROVIDES, addedq);
+	repodata_internalize(data);
+	/* re-write main data */
+	/* XXX: replace this horrible hack when we have something sane in libsolv */
+	int oldnrepodata = repo->nrepodata;
+	repo->nrepodata = 2;
+	write_main(sack, hrepo, 0);
+	repo->nrepodata = oldnrepodata;
+    }
+    queue_free(&fileprovidesq);
+}
+
 void
 sack_make_provides_ready(HySack sack)
 {
     if (!sack->provides_ready) {
-	pool_addfileprovides(sack->pool);
+	Queue addedfileprovides;
+	Queue addedfileprovides_inst;
+	queue_init(&addedfileprovides);
+	queue_init(&addedfileprovides_inst);
+	pool_addfileprovides_queue(sack->pool, &addedfileprovides, &addedfileprovides_inst);
+        if (addedfileprovides.count || addedfileprovides_inst.count)
+	    rewrite_repos(sack, &addedfileprovides, &addedfileprovides_inst);
 	pool_createwhatprovides(sack->pool);
 	sack->provides_ready = 1;
     }
