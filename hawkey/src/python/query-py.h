@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -25,10 +25,12 @@
 
 /* additional Query constants only used in the bindings */
 enum py_key_name_e {
-    HY_PKG_DOWNGRADES = 100,
+    HY_PKG_DOWNGRADABLE = 100,
+    HY_PKG_DOWNGRADES,
     HY_PKG_EMPTY,
     HY_PKG_LATEST_PER_ARCH,
     HY_PKG_LATEST,
+    HY_PKG_UPGRADABLE,
     HY_PKG_UPGRADES
 };
 

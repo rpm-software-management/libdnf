@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2012-2013 Red Hat, Inc.
+# Copyright (C) 2012-2014 Red Hat, Inc.
 #
 # Licensed under the GNU Lesser General Public License Version 2.1
 #
@@ -215,11 +215,23 @@ class TestQueryAllRepos(base.TestCase):
         q = hawkey.Query(self.sack).filter(obsoletes=reldep)
         self.assertItemsEqual(list(map(str, q.run())), ['fool-1-5.noarch'])
 
+    def test_downgradable(self):
+        query = hawkey.Query(self.sack).filter(downgradable=True)
+        self.assertEqual({str(pkg) for pkg in query},
+                         {'baby-6:5.0-11.x86_64', 'jay-5.0-0.x86_64'})
+
 class TestQueryUpdates(base.TestCase):
     def setUp(self):
         self.sack = base.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
         self.sack.load_test_repo("updates", "updates.repo")
+
+    def test_upgradable(self):
+        query = hawkey.Query(self.sack).filter(upgradable=True)
+        self.assertEqual({str(pkg) for pkg in query},
+                         {'dog-1-1.x86_64', 'flying-2-9.noarch',
+                          'fool-1-3.noarch', 'pilchard-1.2.3-1.i686',
+                          'pilchard-1.2.3-1.x86_64'})
 
     def test_updates_noarch(self):
         q = hawkey.Query(self.sack)

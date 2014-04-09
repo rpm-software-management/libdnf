@@ -221,6 +221,7 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "PKG_ARCH", HY_PKG_ARCH);
     PyModule_AddIntConstant(m, "PKG_CONFLICTS", HY_PKG_CONFLICTS);
     PyModule_AddIntConstant(m, "PKG_DESCRIPTION", HY_PKG_DESCRIPTION);
+    PyModule_AddIntConstant(m, "PKG_DOWNGRADABLE", HY_PKG_DOWNGRADABLE);
     PyModule_AddIntConstant(m, "PKG_DOWNGRADES", HY_PKG_DOWNGRADES);
     PyModule_AddIntConstant(m, "PKG_EMPTY", HY_PKG_EMPTY);
     PyModule_AddIntConstant(m, "PKG_EPOCH", HY_PKG_EPOCH);
@@ -237,6 +238,7 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "PKG_REQUIRES", HY_PKG_REQUIRES);
     PyModule_AddIntConstant(m, "PKG_SOURCERPM", HY_PKG_SOURCERPM);
     PyModule_AddIntConstant(m, "PKG_SUMMARY", HY_PKG_SUMMARY);
+    PyModule_AddIntConstant(m, "PKG_UPGRADABLE", HY_PKG_UPGRADABLE);
     PyModule_AddIntConstant(m, "PKG_UPGRADES", HY_PKG_UPGRADES);
     PyModule_AddIntConstant(m, "PKG_URL", HY_PKG_URL);
     PyModule_AddIntConstant(m, "PKG_VERSION", HY_PKG_VERSION);
