@@ -976,17 +976,33 @@ hy_sack_load_yum_repo(HySack sack, HyRepo repo, int flags)
 
 // internal to hawkey
 
+// return true if q1 is a superset of q2
+// only works if there are no duplicates both in q1 and q2
+// the map parameter must point to an empty map that can hold all ids
+// (it is also returned empty)
+static int
+is_superset(Queue *q1, Queue *q2, Map *m)
+{
+    int i, cnt = 0;
+    for (i = 0; i < q2->count; i++) 
+        MAPSET(m, q2->elements[i]);
+    for (i = 0; i < q1->count; i++) 
+	if (MAPTST(m, q1->elements[i]))
+	    cnt++;
+    for (i = 0; i < q2->count; i++) 
+        MAPCLR(m, q2->elements[i]);
+    return cnt == q2->count;
+}
+
+
 static void
 rewrite_repos(HySack sack, Queue *addedfileprovides, Queue *addedfileprovides_inst)
 {
     Pool *pool = sack_pool(sack);
     int i, j;
 
-    /* initialize map with not-inst set */
     Map providedids;
     map_init(&providedids, pool->ss.nstrings);
-    for (j = 0; j < addedfileprovides->count; j++) 
-	MAPSET(&providedids, addedfileprovides->elements[j]);
 
     Queue fileprovidesq;
     queue_init(&fileprovidesq);
@@ -1017,31 +1033,12 @@ rewrite_repos(HySack sack, Queue *addedfileprovides, Queue *addedfileprovides_in
 	Repodata *data = repo_id2repodata(repo, 1);
 	queue_empty(&fileprovidesq);
 	if (repodata_lookup_idarray(data, SOLVID_META, REPOSITORY_ADDEDFILEPROVIDES, &fileprovidesq)) {
-	    if (addedq == addedfileprovides_inst) {
-		/* switch over to inst set */
-                for (j = 0; j < addedfileprovides->count; j++) 
-                    MAPCLR(&providedids, addedfileprovides->elements[j]);
-                for (j = 0; j < addedq->count; j++) 
-                    MAPSET(&providedids, addedq->elements[j]);
-	    }
-	    /* count the set bits */
-	    int cnt = 0;
-	    for (j = 0; j < fileprovidesq.count; j++) 
-		if (MAPTST(&providedids, fileprovidesq.elements[j]))
-		    cnt++;
-	    if (addedq == addedfileprovides_inst) {
-		/* switch back to normal set */
-                for (j = 0; j < addedq->count; j++) 
-                    MAPCLR(&providedids, addedq->elements[j]);
-                for (j = 0; j < addedfileprovides->count; j++) 
-                    MAPSET(&providedids, addedfileprovides->elements[j]);
-	    }
-	    if (cnt == addedq->count)
-		continue;	/* nothing new added */
+	    if (is_superset(&fileprovidesq, addedq, &providedids))
+		continue;
 	}
 	repodata_set_idarray(data, SOLVID_META, REPOSITORY_ADDEDFILEPROVIDES, addedq);
 	repodata_internalize(data);
-	/* re-write main data */
+	/* re-write main data only */
 	/* XXX: replace this horrible hack when we have something sane in libsolv */
 	int oldnrepodata = repo->nrepodata;
 	repo->nrepodata = 2;
@@ -1049,6 +1046,7 @@ rewrite_repos(HySack sack, Queue *addedfileprovides, Queue *addedfileprovides_in
 	repo->nrepodata = oldnrepodata;
     }
     queue_free(&fileprovidesq);
+    map_free(&providedids);
 }
 
 void
