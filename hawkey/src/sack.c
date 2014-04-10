@@ -984,12 +984,12 @@ static int
 is_superset(Queue *q1, Queue *q2, Map *m)
 {
     int i, cnt = 0;
-    for (i = 0; i < q2->count; i++) 
+    for (i = 0; i < q2->count; i++)
         MAPSET(m, q2->elements[i]);
-    for (i = 0; i < q1->count; i++) 
+    for (i = 0; i < q1->count; i++)
 	if (MAPTST(m, q1->elements[i]))
 	    cnt++;
-    for (i = 0; i < q2->count; i++) 
+    for (i = 0; i < q2->count; i++)
         MAPCLR(m, q2->elements[i]);
     return cnt == q2->count;
 }
@@ -1006,7 +1006,7 @@ rewrite_repos(HySack sack, Queue *addedfileprovides, Queue *addedfileprovides_in
 
     Queue fileprovidesq;
     queue_init(&fileprovidesq);
-    
+
     Repo *repo;
     FOR_REPOS(i, repo) {
 	HyRepo hrepo = repo->appdata;
@@ -1017,7 +1017,8 @@ rewrite_repos(HySack sack, Queue *addedfileprovides, Queue *addedfileprovides_in
 	/* check if only the first repodata contains package data and all the
          * others are extensions */
 	for (j = 1; j < repo->nrepodata; j++) {
-	    if (j == hrepo->filenames_repodata || j == hrepo->presto_repodata || j == hrepo->updateinfo_repodata) {
+	    if (j == hrepo->filenames_repodata || j == hrepo->presto_repodata ||
+		j == hrepo->updateinfo_repodata) {
 		if (j == 1)
 		    break;
 	    } else if (j != 1) {
@@ -1027,21 +1028,25 @@ rewrite_repos(HySack sack, Queue *addedfileprovides, Queue *addedfileprovides_in
 	if (j < 2 || j != repo->nrepodata)
 	    continue;
 	/* now check if the repo already contains all of our file provides */
-	Queue *addedq = repo == pool->installed && addedfileprovides_inst ? addedfileprovides_inst : addedfileprovides;
+	Queue *addedq = repo == pool->installed && addedfileprovides_inst ?
+	    addedfileprovides_inst : addedfileprovides;
 	if (!addedq->count)
 	    continue;
 	Repodata *data = repo_id2repodata(repo, 1);
 	queue_empty(&fileprovidesq);
-	if (repodata_lookup_idarray(data, SOLVID_META, REPOSITORY_ADDEDFILEPROVIDES, &fileprovidesq)) {
+	if (repodata_lookup_idarray(data, SOLVID_META,
+				    REPOSITORY_ADDEDFILEPROVIDES,
+				    &fileprovidesq)) {
 	    if (is_superset(&fileprovidesq, addedq, &providedids))
 		continue;
 	}
-	repodata_set_idarray(data, SOLVID_META, REPOSITORY_ADDEDFILEPROVIDES, addedq);
+	repodata_set_idarray(data, SOLVID_META,
+			     REPOSITORY_ADDEDFILEPROVIDES, addedq);
 	repodata_internalize(data);
 	/* re-write main data only */
-	/* XXX: replace this horrible hack when we have something sane in libsolv */
 	int oldnrepodata = repo->nrepodata;
 	repo->nrepodata = 2;
+	HY_LOG_INFO("rewriting repo: %s", repo->name);
 	write_main(sack, hrepo, 0);
 	repo->nrepodata = oldnrepodata;
     }
