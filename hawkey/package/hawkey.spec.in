@@ -1,5 +1,5 @@
-%global gitrev f5edea1
-%global libsolv_version 0.4.0-2
+%global gitrev a0fafad
+%global libsolv_version 0.6.0-0
 
 Name:		hawkey
 Version:	@VERSION@
@@ -107,6 +107,43 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+
+* Fri Apr 11 2014 Jan Silhan <jsilhan@redhat.com> - 0.4.13-1
+- Add forgotten queue_free()s from bd3a2ae. (Ales Kozumplik)
+- cosmetic: some cleanups of 0e4327c. (Ales Kozumplik)
+- refactor rewrite_repos function (Michael Schroeder)
+- rewrite repos after calling addfileprovides (Michael Schroe
+- also set the repodata id if an extension is loaded from the
+- call hy_repo_link when setting the appdata of the system re
+- use REPO_LOCALPOOL when loading the filelist extension (Mic
+- switch over to the written solv files to save memory (Micha
+- py: add downgradable and upgradable kwargs to _hawkey.Query
+- Fix comments in query.c (Radek Holy)
+- Add hy_query_filter_downgradable and hy_query_filter_upgrad
+- tests: py: add tests for _hawkey.AdvisoryRef type. (Radek H
+- tests: py: add tests for hawkey.Advisory type. (Radek Holy)
+- py: add _hawkey.Package.get_advisories method. (Radek Holy)
+- py: add _hawkey.Advisory type. (Radek Holy)
+- py: add _hawkey.AdvisoryRef type. (Radek Holy)
+- tests: add tests for advisoryref object. (Radek Holy)
+- tests: add tests for advisory object. (Radek Holy)
+- api change: deprecate hy_package_get_update_*. (Radek Holy)
+- Add hy_package_get_advisories method. (Radek Holy)
+- Add advisoryreflist object. (Radek Holy)
+- Add advisoryref object. (Radek Holy)
+- Add advisorylist object. (Radek Holy)
+- Add advisory object. (Radek Holy)
+- Rename SOLVABLE_NAME_UPDATE_PREFIX to SOLVABLE_NAME_ADVISOR
+- sack: Also look in /usr/share/rpm for Packages (Colin Walte
+- py: add load_updateinfo kwarg to _hawkey.Sack.load_yum_repo
+- py: add _hawkey.Repo.updateinfo_fn getsetter. (Radek Holy)
+- py: more detailed error string in Sack.add_cmdline_package(
+- Fix hy_query_run to list only packages. (Radek Holy)
+- Fix goal to add only packages if name glob selector is give
+- Fix hy_goal_run_all_flags to resolve only package installon
+- Fix sack_knows to check packages only. (Radek Holy)
+- Add is_package function. (Radek Holy)
+- Fix typo in filter_rco_reldep's assertion. (Radek Holy)
 
 * Fri Mar 14 2014 Jan Silhan <jsilhan@redhat.com> - 0.4.12-1
 - Fix hy_stringarray_length. (Radek Holy)
