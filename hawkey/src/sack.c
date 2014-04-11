@@ -996,7 +996,8 @@ is_superset(Queue *q1, Queue *q2, Map *m)
 
 
 static void
-rewrite_repos(HySack sack, Queue *addedfileprovides, Queue *addedfileprovides_inst)
+rewrite_repos(HySack sack, Queue *addedfileprovides,
+	      Queue *addedfileprovides_inst)
 {
     Pool *pool = sack_pool(sack);
     int i, j;
@@ -1062,9 +1063,12 @@ sack_make_provides_ready(HySack sack)
 	Queue addedfileprovides_inst;
 	queue_init(&addedfileprovides);
 	queue_init(&addedfileprovides_inst);
-	pool_addfileprovides_queue(sack->pool, &addedfileprovides, &addedfileprovides_inst);
+	pool_addfileprovides_queue(sack->pool, &addedfileprovides,
+				   &addedfileprovides_inst);
         if (addedfileprovides.count || addedfileprovides_inst.count)
 	    rewrite_repos(sack, &addedfileprovides, &addedfileprovides_inst);
+	queue_free(&addedfileprovides);
+	queue_free(&addedfileprovides_inst);
 	pool_createwhatprovides(sack->pool);
 	sack->provides_ready = 1;
     }
