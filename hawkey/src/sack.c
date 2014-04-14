@@ -332,7 +332,10 @@ load_ext(HySack sack, HyRepo hrepo, int which_repodata,
     fp = fopen(fn_cache, "r");
     assert(hrepo->checksum);
     if (can_use_repomd_cache(fp, hrepo->checksum)) {
-	int flags = REPO_EXTEND_SOLVABLES;
+	int flags = 0;
+	/* the updateinfo is not a real extension */
+	if (which_repodata != _HY_REPODATA_UPDATEINFO)
+	    flags |= REPO_EXTEND_SOLVABLES;
 	/* do not pollute the main pool with directory component ids */
 	if (which_repodata == _HY_REPODATA_FILENAMES)
 	    flags |= REPO_LOCALPOOL;
@@ -471,6 +474,29 @@ write_main(HySack sack, HyRepo hrepo, int switchtosolv)
     return retval;
 }
 
+/* this filter makes sure only the updateinfo repodata is written */
+static int
+write_ext_updateinfo_filter(Repo *repo, Repokey *key, void *kfdata)
+{
+    Repodata *data = kfdata;
+    if (key->name == 1 && key->size != data->repodataid)
+	return -1;
+    return repo_write_stdkeyfilter(repo, key, 0);
+}
+
+static int
+write_ext_updateinfo(HyRepo hrepo, Repodata *data, FILE *fp)
+{
+    Repo *repo = hrepo->libsolv_repo;
+    int oldstart = repo->start;
+    repo->start = hrepo->main_end;
+    repo->nsolvables -= hrepo->main_nsolvables;
+    int res = repo_write_filtered(repo, fp, write_ext_updateinfo_filter, data, 0);
+    repo->start = oldstart;
+    repo->nsolvables += hrepo->main_nsolvables;
+    return res;
+}
+
 static int
 write_ext(HySack sack, HyRepo hrepo, int which_repodata, const char *suffix)
 {
@@ -493,7 +519,10 @@ write_ext(HySack sack, HyRepo hrepo, int which_repodata, const char *suffix)
     FILE *fp = fdopen(tmp_fd, "w+");
 
     HY_LOG_INFO("%s: storing %s to: %s", __func__, repo->name, tmp_fn_templ);
-    ret |= repodata_write(data, fp);
+    if (which_repodata != _HY_REPODATA_UPDATEINFO)
+	ret |= repodata_write(data, fp);
+    else
+	ret |= write_ext_updateinfo(hrepo, data, fp);
     ret |= checksum_write(hrepo->checksum, fp);
     ret |= fclose(fp);
 
@@ -502,7 +531,7 @@ write_ext(HySack sack, HyRepo hrepo, int which_repodata, const char *suffix)
 	goto done;
     }
 
-    if (repo_is_one_piece(repo)) {
+    if (repo_is_one_piece(repo) && which_repodata != _HY_REPODATA_UPDATEINFO) {
 	/* switch over to written solv file activate paging */
 	fp = fopen(tmp_fn_templ, "r");
 	if (fp) {
@@ -903,6 +932,10 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
 	}
     }
 
+    hrepo->main_nsolvables = repo->nsolvables;
+    hrepo->main_nrepodata = repo->nrepodata;
+    hrepo->main_end = repo->end;
+
  finish:
     if (a_hrepo == NULL)
 	hy_repo_free(hrepo);
@@ -922,6 +955,9 @@ hy_sack_load_yum_repo(HySack sack, HyRepo repo, int flags)
 	if (retval)
 	    goto finish;
     }
+    repo->main_nsolvables = repo->libsolv_repo->nsolvables;
+    repo->main_nrepodata = repo->libsolv_repo->nrepodata;
+    repo->main_end = repo->libsolv_repo->end;
     if (flags & HY_LOAD_FILELISTS) {
 	retval = load_ext(sack, repo, _HY_REPODATA_FILENAMES,
 			  HY_EXT_FILENAMES, HY_REPO_FILELISTS_FN,
@@ -954,6 +990,8 @@ hy_sack_load_yum_repo(HySack sack, HyRepo repo, int flags)
 	if (repo->state_presto == _HY_LOADED_FETCH && build_cache)
 	    retval = write_ext(sack, repo, _HY_REPODATA_PRESTO, HY_EXT_PRESTO);
     }
+    /* updateinfo must come *after* all other extensions, as it is not a real
+       extension, but contains a new set of packages */
     if (flags & HY_LOAD_UPDATEINFO) {
 	retval = load_ext(sack, repo, _HY_REPODATA_UPDATEINFO,
 			  HY_EXT_UPDATEINFO, HY_REPO_UPDATEINFO_FN,
@@ -965,6 +1003,8 @@ hy_sack_load_yum_repo(HySack sack, HyRepo repo, int flags)
 	}
 	if (retval)
 	    goto finish;
+	if (repo->state_updateinfo == _HY_LOADED_FETCH && build_cache)
+	    retval = write_ext(sack, repo, _HY_REPODATA_UPDATEINFO, HY_EXT_UPDATEINFO);
     }
  finish:
     if (retval) {
@@ -1000,7 +1040,7 @@ rewrite_repos(HySack sack, Queue *addedfileprovides,
 	      Queue *addedfileprovides_inst)
 {
     Pool *pool = sack_pool(sack);
-    int i, j;
+    int i;
 
     Map providedids;
     map_init(&providedids, pool->ss.nstrings);
@@ -1015,18 +1055,7 @@ rewrite_repos(HySack sack, Queue *addedfileprovides,
 	    continue;
 	if (!(hrepo->load_flags & HY_BUILD_CACHE))
 	    continue;
-	/* check if only the first repodata contains package data and all the
-         * others are extensions */
-	for (j = 1; j < repo->nrepodata; j++) {
-	    if (j == hrepo->filenames_repodata || j == hrepo->presto_repodata ||
-		j == hrepo->updateinfo_repodata) {
-		if (j == 1)
-		    break;
-	    } else if (j != 1) {
-	        break;
-	    }
-	}
-	if (j < 2 || j != repo->nrepodata)
+	if (hrepo->main_nrepodata < 2)
 	    continue;
 	/* now check if the repo already contains all of our file provides */
 	Queue *addedq = repo == pool->installed && addedfileprovides_inst ?
@@ -1046,10 +1075,16 @@ rewrite_repos(HySack sack, Queue *addedfileprovides,
 	repodata_internalize(data);
 	/* re-write main data only */
 	int oldnrepodata = repo->nrepodata;
-	repo->nrepodata = 2;
+	int oldnsolvables = repo->nsolvables;
+	int oldend = repo->end;
+	repo->nrepodata = hrepo->main_nrepodata;
+	repo->nsolvables = hrepo->main_nsolvables;
+	repo->end = hrepo->main_end;
 	HY_LOG_INFO("rewriting repo: %s", repo->name);
 	write_main(sack, hrepo, 0);
 	repo->nrepodata = oldnrepodata;
+	repo->nsolvables = oldnsolvables;
+	repo->end = oldend;
     }
     queue_free(&fileprovidesq);
     map_free(&providedids);

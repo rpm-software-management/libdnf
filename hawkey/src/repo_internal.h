@@ -54,6 +54,10 @@ struct _HyRepo {
     unsigned char checksum[CHKSUM_BYTES];
     Repo *libsolv_repo;
     int load_flags;
+    /* the following three elements are needed for repo rewriting */
+    int main_nsolvables;
+    int main_nrepodata;
+    int main_end;
 };
 
 enum _hy_repo_repodata {
