@@ -167,7 +167,7 @@ instance::
 
   hy_query_filter_package_in(q, HY_PKG_OBSOLETES, HY_EQ, pset)
 
-only leaves the pacakges obsoleting a package in ``pset`` a part of the result.
+only leaves the packages obsoleting a package in ``pset`` a part of the result.
 
 Removed ``hy_query_filter_obsoleting()``
 ----------------------------------------
