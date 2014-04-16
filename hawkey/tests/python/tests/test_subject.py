@@ -136,6 +136,11 @@ class SubjectRealPossibilitiesTest(base.TestCase):
         ret = list(subj.nevra_possibilities_real(self.sack))
         self.assertLength(ret, 0)
 
+    def test_nevra_fail(self):
+        subj = hawkey.Subject("p*4-1*")
+        ret = list(subj.nevra_possibilities_real(self.sack))
+        self.assertLength(ret, 0)
+
     def test_nevra(self):
         subj = hawkey.Subject("pilchard-1.2.4-1.x86_64")
         nevra_possibilities = subj.nevra_possibilities_real(self.sack)

@@ -757,6 +757,50 @@ START_TEST(test_disabled_repo)
 }
 END_TEST
 
+START_TEST(test_query_nevra_glob)
+{
+    HySack sack = test_globals.sack;
+    HyQuery q;
+    HyPackageList plist;
+
+    q = hy_query_create(sack);
+    hy_query_filter(q, HY_PKG_NEVRA, HY_GLOB, "p*4-1*");
+    plist = hy_query_run(q);
+
+    ck_assert_int_eq(hy_packagelist_count(plist), 2);
+    HyPackage pkg1 = hy_packagelist_get(plist, 0);
+    HyPackage pkg2 = hy_packagelist_get(plist, 1);
+    char *nevra1 = hy_package_get_nevra(pkg1);
+    char *nevra2 = hy_package_get_nevra(pkg2);
+    ck_assert_str_eq(nevra1, "penny-4-1.noarch");
+    ck_assert_str_eq(nevra2, "penny-lib-4-1.x86_64");
+    solv_free(nevra1);
+    solv_free(nevra2);
+    hy_packagelist_free(plist);
+    hy_query_free(q);
+}
+END_TEST
+
+START_TEST(test_query_nevra)
+{
+    HySack sack = test_globals.sack;
+    HyQuery q;
+    HyPackageList plist;
+
+    q = hy_query_create(sack);
+    hy_query_filter(q, HY_PKG_NEVRA, HY_EQ, "penny-4-1.noarch");
+    plist = hy_query_run(q);
+
+    ck_assert_int_eq(hy_packagelist_count(plist), 1);
+    HyPackage pkg1 = hy_packagelist_get(plist, 0);
+    char *nevra1 = hy_package_get_nevra(pkg1);
+    ck_assert_str_eq(nevra1, "penny-4-1.noarch");
+    solv_free(nevra1);
+    hy_packagelist_free(plist);
+    hy_query_free(q);
+}
+END_TEST
+
 Suite *
 query_suite(void)
 {
@@ -784,6 +828,8 @@ query_suite(void)
     tcase_add_test(tc, test_query_pkg);
     tcase_add_test(tc, test_query_provides);
     tcase_add_test(tc, test_query_fileprovides);
+    tcase_add_test(tc, test_query_nevra);
+    tcase_add_test(tc, test_query_nevra_glob);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Updates");

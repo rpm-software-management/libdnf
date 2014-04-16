@@ -71,6 +71,7 @@ enum _hy_key_name_e {
     HY_PKG_EVR,
     HY_PKG_FILE,
     HY_PKG_NAME,
+    HY_PKG_NEVRA,
     HY_PKG_OBSOLETES,
     HY_PKG_PROVIDES,
     HY_PKG_RELEASE,

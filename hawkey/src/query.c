@@ -83,6 +83,7 @@ match_type_str(int keyname) {
     case HY_PKG_FILE:
     case HY_PKG_LOCATION:
     case HY_PKG_NAME:
+    case HY_PKG_NEVRA:
     case HY_PKG_PROVIDES:
     case HY_PKG_RELEASE:
     case HY_PKG_REPONAME:
@@ -595,6 +596,25 @@ filter_location(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
+filter_nevra(HyQuery q, struct _Filter *f, Map *m)
+{
+    Pool *pool = sack_pool(q->sack);
+    int fn_flags = (HY_ICASE & f->cmp_type) ? FNM_CASEFOLD : 0;
+    char *nevra_pattern = f->matches[0].str;
+
+    for (Id id = 1; id < pool->nsolvables; ++id) {
+	Solvable* s = pool_id2solvable(pool, id);
+	const char* nevra = pool_solvable2str(pool, s);
+	if (!(HY_GLOB & f->cmp_type)) {
+	    if (strcmp(nevra_pattern, nevra) == 0)
+		MAPSET(m, id);
+	} else if (fnmatch(nevra_pattern, nevra, fn_flags) == 0) {
+	    MAPSET(m, id);
+	}
+    }
+}
+
+static void
 filter_updown(HyQuery q, int downgrade, Map *res)
 {
     HySack sack = q->sack;
@@ -764,6 +784,9 @@ compute(HyQuery q)
 	    break;
 	case HY_PKG_EVR:
 	    filter_evr(q, f, &m);
+	    break;
+	case HY_PKG_NEVRA:
+	    filter_nevra(q, f, &m);
 	    break;
 	case HY_PKG_VERSION:
 	    filter_version(q, f, &m);
