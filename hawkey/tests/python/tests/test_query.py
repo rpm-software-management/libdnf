@@ -156,6 +156,11 @@ class TestQuery(base.TestCase):
         q2 = q.filter(version__gt="3")
         self.assertEqual(len(q2), 1)
 
+    def test_nevra_match(self):
+        query = hawkey.Query(self.sack).filter(nevra__glob="*lib*64")
+        self.assertEqual(len(query), 1)
+        self.assertEqual(str(query[0]), 'penny-lib-4-1.x86_64')
+
     def test_repeated(self):
         q = hawkey.Query(self.sack).filter(name="jay")
         q.filterm(latest_per_arch=True)

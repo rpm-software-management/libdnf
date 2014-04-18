@@ -60,6 +60,7 @@ _QUERY_KEYNAME_MAP = {
     'latest_per_arch': _hawkey.PKG_LATEST_PER_ARCH,
     'location'	  : _hawkey.PKG_LOCATION,
     'name'	  : _hawkey.PKG_NAME,
+    'nevra'       : _hawkey.PKG_NEVRA,
     'obsoletes'	  : _hawkey.PKG_OBSOLETES,
     'provides'	  : _hawkey.PKG_PROVIDES,
     'release'	  : _hawkey.PKG_RELEASE,
