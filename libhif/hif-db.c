@@ -52,9 +52,8 @@ struct _HifDbPrivate
 	HifContext		*context;
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (HifDb, hif_db, G_TYPE_OBJECT)
-
-#define GET_PRIVATE(o) (hif_db_get_instance_private (o))
+G_DEFINE_TYPE (HifDb, hif_db, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), HIF_TYPE_DB, HifDbPrivate))
 
 /**
  * hif_db_finalize:
@@ -86,6 +85,7 @@ hif_db_class_init (HifDbClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = hif_db_finalize;
+	g_type_class_add_private (klass, sizeof (HifDbPrivate));
 }
 
 

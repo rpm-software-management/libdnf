@@ -55,9 +55,8 @@ struct _HifContextPrivate
 	gboolean		 keep_cache;
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (HifContext, hif_context, G_TYPE_OBJECT)
-
-#define GET_PRIVATE(o) (hif_context_get_instance_private (o))
+G_DEFINE_TYPE (HifContext, hif_context, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), HIF_TYPE_CONTEXT, HifContextPrivate))
 
 /**
  * hif_context_finalize:
@@ -99,6 +98,7 @@ hif_context_class_init (HifContextClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = hif_context_finalize;
+	g_type_class_add_private (klass, sizeof (HifContextPrivate));
 }
 
 /**
