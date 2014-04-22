@@ -43,24 +43,6 @@
 #include "hif-utils.h"
 
 /**
- * hif_goal_is_upgrade_package:
- */
-gboolean
-hif_goal_is_upgrade_package (HyGoal goal, HyPackage package)
-{
-	guint i;
-	HyPackageList pkglist;
-	HyPackage pkg;
-
-	pkglist = hy_goal_list_upgrades (goal);
-	FOR_PACKAGELIST(pkg, pkglist, i) {
-		if (hy_package_cmp (pkg, package) == 0)
-			return TRUE;
-	}
-	return FALSE;
-}
-
-/**
  * hif_goal_depsolve:
  */
 gboolean

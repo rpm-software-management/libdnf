@@ -45,6 +45,9 @@ const gchar	*hif_package_get_id			(HyPackage	 pkg);
 guint32		 hif_package_get_info			(HyPackage	 pkg);
 void		 hif_package_set_info			(HyPackage	 pkg,
 							 guint32	 info);
+guint32		 hif_package_get_status			(HyPackage	 pkg);
+void		 hif_package_set_status			(HyPackage	 pkg,
+							 guint32	 status);
 gboolean	 hif_package_get_user_action		(HyPackage	 pkg);
 void		 hif_package_set_user_action		(HyPackage	 pkg,
 							 gboolean	 user_action);

@@ -54,6 +54,7 @@ typedef struct {
 	gchar		*description;
 	gchar		*package_id;
 	guint32		 info;
+	guint32		 status;
 	HifSource	*src;
 } HifPackagePrivate;
 
@@ -414,6 +415,26 @@ hif_package_get_info (HyPackage pkg)
 }
 
 /**
+ * hif_package_get_status:
+ * @pkg: a #HyPackage instance.
+ *
+ * Gets the status flags assigned to the package.
+ *
+ * Returns: 32bit info flags
+ *
+ * Since: 0.1.0
+ */
+guint32
+hif_package_get_status (HyPackage pkg)
+{
+	HifPackagePrivate *priv;
+	priv = hy_package_get_userdata (pkg);
+	if (priv == NULL)
+		return G_MAXUINT32;
+	return priv->status;
+}
+
+/**
  * hif_package_set_info:
  * @pkg: a #HyPackage instance.
  * @info: the info flags.
@@ -430,6 +451,25 @@ hif_package_set_info (HyPackage pkg, guint32 info)
 	if (priv == NULL)
 		return;
 	priv->info = info;
+}
+
+/**
+ * hif_package_set_status:
+ * @pkg: a #HyPackage instance.
+ * @status: the status flags.
+ *
+ * Sets the status flags for the package.
+ *
+ * Since: 0.1.0
+ */
+void
+hif_package_set_status (HyPackage pkg, guint32 status)
+{
+	HifPackagePrivate *priv;
+	priv = hif_package_get_priv (pkg);
+	if (priv == NULL)
+		return;
+	priv->status = status;
 }
 
 /**
