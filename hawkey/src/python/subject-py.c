@@ -119,7 +119,7 @@ forms_from_int(PyObject *num)
 static HyForm *
 fill_form(PyObject *o)
 {
-    HyForm *cforms;
+    HyForm *cforms = NULL;
     if (PyList_Check(o))
 	cforms = forms_from_list(o);
     else if (PyInt_Check(o))
