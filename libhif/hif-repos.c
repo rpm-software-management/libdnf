@@ -56,9 +56,8 @@ enum {
 
 static guint signals[SIGNAL_LAST] = { 0 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (HifRepos, hif_repos, G_TYPE_OBJECT)
-
-#define GET_PRIVATE(o) (hif_repos_get_instance_private (o))
+G_DEFINE_TYPE (HifRepos, hif_repos, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), HIF_TYPE_REPOS, HifReposPrivate))
 
 /**
  * hif_repos_finalize:
@@ -84,7 +83,7 @@ hif_repos_finalize (GObject *object)
 static void
 hif_repos_invalidate (HifRepos *repos)
 {
-	HifReposPrivate *priv = hif_repos_get_instance_private (repos);
+	HifReposPrivate *priv = GET_PRIVATE (repos);
 	priv->loaded = FALSE;
 	g_ptr_array_set_size (priv->sources, 0);
 }
@@ -135,6 +134,7 @@ hif_repos_class_init (HifReposClass *klass)
 			      G_TYPE_NONE, 0);
 
 	object_class->finalize = hif_repos_finalize;
+	g_type_class_add_private (klass, sizeof (HifReposPrivate));
 }
 
 /**
@@ -147,7 +147,7 @@ hif_repos_add_media (HifRepos *repos,
 		     GError **error)
 {
 	GKeyFile *treeinfo;
-	HifReposPrivate *priv = hif_repos_get_instance_private (repos);
+	HifReposPrivate *priv = GET_PRIVATE (repos);
 	HifSource *source;
 	gboolean ret = TRUE;
 	gchar *tmp;
@@ -337,7 +337,7 @@ hif_repos_source_parse (HifRepos *repos,
 			const gchar *filename,
 			GError **error)
 {
-	HifReposPrivate *priv = hif_repos_get_instance_private (repos);
+	HifReposPrivate *priv = GET_PRIVATE (repos);
 	gboolean has_enabled;
 	gboolean is_enabled;
 	gboolean ret = TRUE;
@@ -412,7 +412,7 @@ static gboolean
 hif_repos_refresh (HifRepos *repos, GError **error)
 {
 	GDir *dir = NULL;
-	HifReposPrivate *priv = hif_repos_get_instance_private (repos);
+	HifReposPrivate *priv = GET_PRIVATE (repos);
 	const gchar *file;
 	const gchar *repo_path;
 	gboolean ret = TRUE;
@@ -462,7 +462,7 @@ out:
 gboolean
 hif_repos_has_removable (HifRepos *repos)
 {
-	HifReposPrivate *priv = hif_repos_get_instance_private (repos);
+	HifReposPrivate *priv = GET_PRIVATE (repos);
 	HifSource *src;
 	guint i;
 
@@ -484,7 +484,7 @@ GPtrArray *
 hif_repos_get_sources (HifRepos *repos, GError **error)
 {
 	GPtrArray *sources = NULL;
-	HifReposPrivate *priv = hif_repos_get_instance_private (repos);
+	HifReposPrivate *priv = GET_PRIVATE (repos);
 	gboolean ret;
 
 	g_return_val_if_fail (HIF_IS_REPOS (repos), NULL);
@@ -509,7 +509,7 @@ out:
 HifSource *
 hif_repos_get_source_by_id (HifRepos *repos, const gchar *id, GError **error)
 {
-	HifReposPrivate *priv = hif_repos_get_instance_private (repos);
+	HifReposPrivate *priv = GET_PRIVATE (repos);
 	HifSource *src = NULL;
 	HifSource *tmp;
 	gboolean ret;
@@ -566,7 +566,7 @@ hif_repos_setup_watch (HifRepos *repos)
 	const gchar *repo_dir;
 	GError *error = NULL;
 	GFile *file_repos = NULL;
-	HifReposPrivate *priv = hif_repos_get_instance_private (repos);
+	HifReposPrivate *priv = GET_PRIVATE (repos);
 
 	/* setup a file monitor on the repos directory */
 	repo_dir = hif_context_get_repo_dir (priv->context);
@@ -606,7 +606,7 @@ hif_repos_new (HifContext *context)
 	HifReposPrivate *priv;
 	HifRepos *repos;
 	repos = g_object_new (HIF_TYPE_REPOS, NULL);
-	priv = hif_repos_get_instance_private (repos);
+	priv = GET_PRIVATE (repos);
 	priv->context = g_object_ref (context);
 	hif_repos_setup_watch (repos);
 	return HIF_REPOS (repos);
