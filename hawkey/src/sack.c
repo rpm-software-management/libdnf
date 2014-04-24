@@ -422,12 +422,13 @@ write_main(HySack sack, HyRepo hrepo, int switchtosolv)
 {
     Repo *repo = hrepo->libsolv_repo;
     const char *name = repo->name;
+    const char *chksum = pool_checksum_str(sack_pool(sack), hrepo->checksum);
     char *fn = hy_sack_give_cache_fn(sack, name, NULL);
     char *tmp_fn_templ = solv_dupjoin(fn, ".XXXXXX", NULL);
     int tmp_fd  = mkstemp(tmp_fn_templ);
     int retval = 0;
 
-    HY_LOG_INFO("caching repo: %s", name);
+    HY_LOG_INFO("caching repo: %s (0x%s)", name, chksum);
 
     if (tmp_fd < 0) {
 	HY_LOG_ERROR("write_main() can not create temporary file.");
@@ -583,7 +584,8 @@ load_yum_repo(HySack sack, HyRepo hrepo)
 
     assert(hrepo->state_main == _HY_NEW);
     if (can_use_repomd_cache(fp_cache, hrepo->checksum)) {
-	HY_LOG_INFO("using cached %s", name);
+	const char *chksum = pool_checksum_str(pool, hrepo->checksum);
+	HY_LOG_INFO("using cached %s (0x%s)", name, chksum);
 	if (repo_add_solv(repo, fp_cache, 0)) {
 	    HY_LOG_ERROR("repo_add_solv() has failed.");
 	    retval = HY_E_LIBSOLV;
@@ -899,7 +901,8 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
 
     Repo *repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
     if (can_use_rpmdb_cache(cache_fp, hrepo->checksum)) {
-	HY_LOG_INFO("using cached rpmdb");
+	const char *chksum = pool_checksum_str(pool, hrepo->checksum);
+	HY_LOG_INFO("using cached rpmdb (0x%s)", chksum);
 	rc = repo_add_solv(repo, cache_fp, 0);
 	if (!rc)
 	    hrepo->state_main = _HY_LOADED_CACHE;

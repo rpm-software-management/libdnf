@@ -53,6 +53,7 @@ int checksum_write(const unsigned char *cs, FILE *fp);
 void checksum_dump(const unsigned char *cs);
 int checksum_type2length(int type);
 int checksumt_l2h(int type);
+const char *pool_checksum_str(Pool *pool, const unsigned char *chksum);
 
 /* filesystem utils */
 int is_readable_rpm(const char *fn);

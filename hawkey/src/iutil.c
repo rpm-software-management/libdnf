@@ -207,6 +207,13 @@ checksumt_l2h(int type)
     }
 }
 
+const char *
+pool_checksum_str(Pool *pool, const unsigned char *chksum)
+{
+    int length = checksum_type2length(checksumt_l2h(CHKSUM_TYPE));
+    return pool_bin2hex(pool, chksum, length);
+}
+
 int
 is_readable_rpm(const char *fn)
 {
