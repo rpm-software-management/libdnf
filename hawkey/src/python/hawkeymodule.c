@@ -60,7 +60,7 @@ detect_arch(PyObject *unused, PyObject *args)
 }
 
 static PyObject *
-py_chksum_name(PyObject *unused, PyObject *args)
+chksum_name(PyObject *unused, PyObject *args)
 {
     int i;
     const char *name;
@@ -77,7 +77,7 @@ py_chksum_name(PyObject *unused, PyObject *args)
 }
 
 static PyObject *
-py_chksum_type(PyObject *unused, PyObject *str_o)
+chksum_type(PyObject *unused, PyObject *str_o)
 {
     PyObject *tmp_py_str = NULL;
     const char *str = pycomp_get_string(str_o, &tmp_py_str);
@@ -97,7 +97,7 @@ py_chksum_type(PyObject *unused, PyObject *str_o)
 }
 
 static PyObject *
-py_split_nevra(PyObject *unused, PyObject *nevra_o)
+split_nevra(PyObject *unused, PyObject *nevra_o)
 {
     PyObject *tmp_py_str = NULL;
     const char *nevra = pycomp_get_string(nevra_o, &tmp_py_str);
@@ -122,13 +122,13 @@ py_split_nevra(PyObject *unused, PyObject *nevra_o)
 }
 
 static struct PyMethodDef hawkey_methods[] = {
-    {"chksum_name",		(PyCFunction)py_chksum_name,
+    {"chksum_name",		(PyCFunction)chksum_name,
      METH_VARARGS,	NULL},
-    {"chksum_type",		(PyCFunction)py_chksum_type,
+    {"chksum_type",		(PyCFunction)chksum_type,
      METH_O,		NULL},
     {"detect_arch",		(PyCFunction)detect_arch,
      METH_NOARGS,	NULL},
-    {"split_nevra",		(PyCFunction)py_split_nevra,
+    {"split_nevra",		(PyCFunction)split_nevra,
      METH_O,		NULL},
     {NULL}				/* sentinel */
 };
