@@ -27,7 +27,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/utsname.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -55,15 +54,11 @@
 #include "query.h"
 #include "repo_internal.h"
 #include "sack_internal.h"
+#include "util.h"
 #include "version.h"
 
 #define DEFAULT_CACHE_ROOT "/var/cache/hawkey"
 #define DEFAULT_CACHE_USER "/var/tmp/hawkey"
-
-enum _hy_sack_cpu_flags {
-    ARM_NEON = 1 << 0,
-    ARM_HFP  = 1 << 1
-};
 
 static int
 current_rpmdb_checksum(Pool *pool, unsigned char csout[CHKSUM_BYTES])
@@ -125,31 +120,6 @@ free_map_fully(Map *m)
     return NULL;
 }
 
-static int
-parse_cpu_flags(int *flags, const char *section)
-{
-    char *cpuinfo = read_whole_file("/proc/cpuinfo");
-    if (cpuinfo == NULL)
-	return hy_get_errno();
-
-    char *features = strstr(cpuinfo, section);
-    if (features != NULL) {
-	char *saveptr;
-	features = strtok_r(features, "\n", &saveptr);
-	char *tok = strtok_r(features, " ", &saveptr);
-	while (tok) {
-	    if (!strcmp(tok, "neon"))
-		*flags |= ARM_NEON;
-	    else if (!strcmp(tok, "vfpv3"))
-		*flags |= ARM_HFP;
-	    tok = strtok_r(NULL, " ", &saveptr);
-	}
-    }
-
-    solv_free(cpuinfo);
-    return 0;
-}
-
 static void
 recompute_excludes(HySack sack)
 {
@@ -167,34 +137,27 @@ recompute_excludes(HySack sack)
 }
 
 static int
-setarch(HySack sack, const char *arch)
+setarch(HySack sack, const char *req_arch)
 {
+    int ret = 0;
     Pool *pool = sack_pool(sack);
-    struct utsname un;
 
+    const char *arch = req_arch;
+    char *detected = NULL;
     if (arch == NULL) {
-	if (uname(&un)) {
-	    HY_LOG_ERROR("setarch failed(): %s", strerror(errno));
-	    return HY_E_FAILED;
+	ret = hy_detect_arch(&detected);
+	if (ret) {
+	    HY_LOG_ERROR("hy_detect_arch() failed: %d", ret);
+	    return ret;
 	}
-	arch = un.machine;
-	if (!strcmp(arch, "armv7l")) {
-	    int flags = 0;
-	    if (parse_cpu_flags(&flags, "Features")) {
-		HY_LOG_ERROR("parse_cpu_flags() failed in setarch().");
-		return HY_E_FAILED;
-	    }
-	    if (flags & (ARM_NEON | ARM_HFP))
-		strcpy(un.machine, "armv7hnl");
-	    else if (flags & ARM_HFP)
-		strcpy(un.machine, "armv7hl");
-	}
+	arch = detected;
     }
 
     HY_LOG_INFO("Architecture is: %s", arch);
     pool_setarch(pool, arch);
     if (!strcmp(arch, "noarch"))
-	return 0; // noarch never fails
+	// noarch never fails
+	goto done;
 
     /* pool_setarch() doesn't tell us when it defaulted to 'noarch' but we
        consider it a failure. the only way to find out is count the
@@ -204,8 +167,11 @@ setarch(HySack sack, const char *arch)
 	if (pool->id2arch[id])
 	    count++;
     if (count < 2)
-	return HY_E_FAILED;
-    return 0;
+	ret = HY_E_FAILED;
+
+ done:
+    solv_free(detected);
+    return ret;
 }
 
 static void

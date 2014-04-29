@@ -26,6 +26,17 @@
 #include "src/util.h"
 #include "test_suites.h"
 
+START_TEST(test_detect_arch)
+{
+    char *arch;
+    int ret = hy_detect_arch(&arch);
+    int len = strlen(arch);
+    ck_assert_int_gt(len, 0);
+    ck_assert_int_eq(ret, 0);
+    hy_free(arch);
+}
+END_TEST
+
 START_TEST(test_split_nevra)
 {
     int ret;
@@ -79,6 +90,7 @@ util_suite(void)
 {
     Suite *s = suite_create("util");
     TCase *tc = tcase_create("Main");
+    tcase_add_test(tc, test_detect_arch);
     tcase_add_test(tc, test_split_nevra);
     suite_add_tcase(s, tc);
 

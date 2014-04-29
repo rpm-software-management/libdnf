@@ -142,6 +142,7 @@ RuntimeException = _hawkey.RuntimeException
 
 chksum_name = _hawkey.chksum_name
 chksum_type = _hawkey.chksum_type
+detect_arch = _hawkey.detect_arch
 
 def split_nevra(s):
     t = _hawkey.split_nevra(s)

@@ -50,6 +50,16 @@
 #include "pycomp.h"
 
 static PyObject *
+detect_arch(PyObject *unused, PyObject *args)
+{
+    char *arch;
+
+    if (ret2e(hy_detect_arch(&arch), "Failed detecting architecture."))
+	return NULL;
+    return PyString_FromString(arch);
+}
+
+static PyObject *
 py_chksum_name(PyObject *unused, PyObject *args)
 {
     int i;
@@ -116,6 +126,8 @@ static struct PyMethodDef hawkey_methods[] = {
      METH_VARARGS,	NULL},
     {"chksum_type",		(PyCFunction)py_chksum_type,
      METH_O,		NULL},
+    {"detect_arch",		(PyCFunction)detect_arch,
+     METH_NOARGS,	NULL},
     {"split_nevra",		(PyCFunction)py_split_nevra,
      METH_O,		NULL},
     {NULL}				/* sentinel */

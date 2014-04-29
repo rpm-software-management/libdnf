@@ -18,9 +18,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#define _GNU_SOURCE
 #include <errno.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
+#include <sys/utsname.h>
 
 // hawkey
 #include "errno.h"
@@ -28,10 +30,39 @@
 #include "package.h"
 #include "util.h"
 
+enum _hy_sack_cpu_flags {
+    ARM_NEON = 1 << 0,
+    ARM_HFP  = 1 << 1
+};
+
+static int
+parse_cpu_flags(int *flags, const char *section)
+{
+    char *cpuinfo = read_whole_file("/proc/cpuinfo");
+    if (cpuinfo == NULL)
+	return hy_get_errno();
+
+    char *features = strstr(cpuinfo, section);
+    if (features != NULL) {
+	char *saveptr;
+	features = strtok_r(features, "\n", &saveptr);
+	char *tok = strtok_r(features, " ", &saveptr);
+	while (tok) {
+	    if (!strcmp(tok, "neon"))
+		*flags |= ARM_NEON;
+	    else if (!strcmp(tok, "vfpv3"))
+		*flags |= ARM_HFP;
+	    tok = strtok_r(NULL, " ", &saveptr);
+	}
+    }
+
+    solv_free(cpuinfo);
+    return 0;
+}
+
 void *
 hy_free(void *mem)
 {
-    /* currently does exactly what solv_free() does: */
     free(mem);
     return 0;
 }
@@ -72,6 +103,32 @@ hy_chksum_str(const unsigned char *chksum, int type)
 
     return s;
 }
+
+#define MAX_ARCH_LENGTH 64
+
+int
+hy_detect_arch(char **arch)
+{
+    struct utsname un;
+
+    if (uname(&un))
+	return HY_E_FAILED;
+
+    if (!strcmp(un.machine, "armv7l")) {
+	int flags = 0;
+	int ret = parse_cpu_flags(&flags, "Features");
+	if (ret)
+	    return ret;
+	if (flags & (ARM_NEON | ARM_HFP))
+	    strcpy(un.machine, "armv7hnl");
+	else if (flags & ARM_HFP)
+	    strcpy(un.machine, "armv7hl");
+    }
+    *arch = solv_strdup(un.machine);
+    return 0;
+}
+
+#undef MAX_ARCH_LENGTH
 
 int
 hy_split_nevra(const char *nevra, char **name, long int *epoch,
