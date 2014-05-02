@@ -23,10 +23,6 @@ from sys import version_info as python_version
 
 from . import _hawkey
 import collections
-import itertools
-import operator
-import re
-import types
 
 __all__ = [
     # version info
