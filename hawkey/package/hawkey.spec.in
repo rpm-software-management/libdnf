@@ -1,4 +1,4 @@
-%global gitrev a0fafad
+%global gitrev 428a977
 %global libsolv_version 0.6.0-0
 
 Name:		hawkey
@@ -107,6 +107,16 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+
+* Fri May 2 2014 Aleš Kozumplik <ales@redhat.com> - 0.4.14-1
+- py: cosmetic: drop py_ prefixes from static functions in hawkeymodule.c. (Ales Kozumplik)
+- Expose hy_arch_detect(). (Ales Kozumplik)
+- fixed clang warning of uninitialized variable (Jan Silhan)
+- doc: fixed typo (Jan Silhan)
+- logging: log checksums of written/loaded repositories. (RhBug:1071404) (Ales Kozumplik)
+- logging hawkey version number. (Ales Kozumplik)
+- implement updateinfo caching (Michael Schroeder)
+- cosmetic: fixed sliced changelog lines in spec file (Jan Silhan)
 
 * Fri Apr 11 2014 Jan Silhan <jsilhan@redhat.com> - 0.4.13-1
 - Add forgotten queue_free()s from bd3a2ae. (Ales Kozumplik)
