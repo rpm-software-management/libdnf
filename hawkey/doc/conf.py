@@ -11,13 +11,15 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
-import hawkey
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
+
+import os
+import re
+
+_dirname = os.path.dirname(__file__)
 
 # -- General configuration -----------------------------------------------------
 
@@ -49,7 +51,22 @@ copyright = u'2012, Red Hat'
 # built documents.
 #
 # The short X.Y version.
-version = hawkey.VERSION
+
+def version_readout():
+    def submatch(sub, in_str):
+        pat = re.compile('SET\(HAWKEY_%s "(\d+)"\)' % sub)
+        return pat.match(in_str).group(1)
+
+    fn = os.path.join(_dirname, '../VERSION.cmake')
+    with open(fn) as f:
+        lines = f.readlines()
+
+    major = submatch('MAJOR', lines[0])
+    minor = submatch('MINOR', lines[1])
+    patch = submatch('PATCH', lines[2])
+    return (major, minor, patch)
+
+version = '%s.%s.%s' % version_readout()
 # The full version, including alpha/beta/rc tags.
 release = '%s-1' % version
 
