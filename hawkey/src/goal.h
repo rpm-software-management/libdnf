@@ -91,6 +91,7 @@ HyPackageList hy_goal_list_erasures(HyGoal goal);
 HyPackageList hy_goal_list_installs(HyGoal goal);
 HyPackageList hy_goal_list_obsoleted(HyGoal goal);
 HyPackageList hy_goal_list_reinstalls(HyGoal goal);
+HyPackageList hy_goal_list_unneeded(HyGoal goal);
 HyPackageList hy_goal_list_upgrades(HyGoal goal);
 HyPackageList hy_goal_list_downgrades(HyGoal goal);
 HyPackageList hy_goal_list_obsoleted_by_package(HyGoal goal, HyPackage pkg);

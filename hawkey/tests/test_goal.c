@@ -98,6 +98,23 @@ size_and_free(HyPackageList plist)
     return c;
 }
 
+static void
+userinstalled(HySack sack, HyGoal goal, const char *name)
+{
+    HyQuery q = hy_query_create(sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
+    hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    HyPackageList plist = hy_query_run(q);
+    HyPackage pkg;
+    int i;
+
+    FOR_PACKAGELIST(pkg, plist, i)
+	hy_goal_userinstalled(goal, pkg);
+
+    hy_packagelist_free(plist);
+    hy_query_free(q);
+}
+
 /* assert on installed-upgraded-erased-obsoleted numbers */
 static void
 assert_iueo(HyGoal goal, int i, int u, int e, int o)
@@ -839,6 +856,32 @@ START_TEST(test_goal_rerun)
 }
 END_TEST
 
+START_TEST(test_goal_unneeded)
+{
+    HySack sack = test_globals.sack;
+    HyGoal goal = hy_goal_create(sack);
+
+    userinstalled(sack, goal, "baby");
+    userinstalled(sack, goal, "dog");
+    userinstalled(sack, goal, "fool");
+    userinstalled(sack, goal, "gun");
+    userinstalled(sack, goal, "jay");
+    userinstalled(sack, goal, "penny");
+    userinstalled(sack, goal, "pilchard");
+    hy_goal_run(goal);
+
+    HyPackageList plist = hy_goal_list_unneeded(goal);
+    ck_assert_int_eq(hy_packagelist_count(plist), 2);
+    HyPackage pkg = hy_packagelist_get(plist, 0);
+    assert_nevra_eq(pkg, "flying-2-9.noarch");
+    pkg = hy_packagelist_get(plist, 1);
+    assert_nevra_eq(pkg, "penny-lib-4-1.x86_64");
+    hy_packagelist_free(plist);
+
+    hy_goal_free(goal);
+}
+END_TEST
+
 struct Solutions {
     int solutions;
     HyPackageList installs;
@@ -1090,6 +1133,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_distupgrade_selector_downgrade);
     tcase_add_test(tc, test_goal_distupgrade_selector_nothing);
     tcase_add_test(tc, test_goal_rerun);
+    tcase_add_test(tc, test_goal_unneeded);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Greedy");

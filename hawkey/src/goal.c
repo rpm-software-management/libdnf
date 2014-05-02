@@ -847,6 +847,20 @@ hy_goal_list_reinstalls(HyGoal goal)
 }
 
 HyPackageList
+hy_goal_list_unneeded(HyGoal goal)
+{
+    HyPackageList plist = hy_packagelist_create();
+    Queue q;
+    Solver *solv = goal->solv;
+
+    queue_init(&q);
+    solver_get_unneeded(solv, &q, 0);
+    queue2plist(goal->sack, &q, plist);
+    queue_free(&q);
+    return plist;
+}
+
+HyPackageList
 hy_goal_list_upgrades(HyGoal goal)
 {
     return list_results(goal, SOLVER_TRANSACTION_UPGRADE, 0);
