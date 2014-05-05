@@ -39,16 +39,18 @@ const char *
 pycomp_get_string(PyObject *str, PyObject **tmp_py_str)
 {
     char *res = NULL;
-    if (PyUnicode_Check(str)) {
+    if (PyUnicode_Check(str))
         res = pycomp_get_string_from_unicode(str, tmp_py_str);
 #if PY_MAJOR_VERSION < 3
-    } else if (PyString_Check(str)) {
+    else if (PyString_Check(str))
         res = PyString_AsString(str);
-    }
+    else
+	PyErr_SetString(PyExc_TypeError, "Expected a string or a unicode object");
 #else
-    } else if (PyBytes_Check(str)) {
+    else if (PyBytes_Check(str))
         res = PyBytes_AsString(str);
-    }
+    else
+	PyErr_SetString(PyExc_TypeError, "Expected a string or a unicode object");
 #endif
 
     return res;

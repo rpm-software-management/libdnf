@@ -37,3 +37,10 @@ class Package(unittest.TestCase):
         self.assertEqual(300, r.cost)
         r2 = hawkey.Repo("blizzard")
         self.assertEqual(1000, r2.cost)
+
+    def test_str_assignment(self):
+        r = hawkey.Repo('fog')
+        with self.assertRaises(TypeError):
+            r.repomd_fn = 3
+        r.repomd_fn = 'rain'
+        self.assertEqual(r.repomd_fn, 'rain')
