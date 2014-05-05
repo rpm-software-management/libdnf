@@ -56,6 +56,7 @@ int checksumt_l2h(int type);
 const char *pool_checksum_str(Pool *pool, const unsigned char *chksum);
 
 /* filesystem utils */
+char *abspath(const char *path);
 int is_readable_rpm(const char *fn);
 int mkcachedir(char *path);
 int mv(HySack sack, const char *old, const char *new);

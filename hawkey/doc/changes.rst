@@ -400,3 +400,30 @@ Thus enum ``HyUpdateSeverity`` was also deprecated. A new ``HyAdvisoryType``
 should be used instead.
 
 The old functions will be dropped after 2014-07-07.
+
+Changes in 0.4.15
+=================
+
+.. _0_4_15_core-label:
+
+Core
+----
+
+``hy_goal_write_debugdata()`` takes a directory parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``hy_goal_write_debugdata()`` has a new `const char *dir` argument to communicate the target directory for the debugging data. The old call::
+
+    hy_goal_write_debugdata(goal);
+
+should be changed to achieve the same behavior to::
+
+    hy_goal_write_debugdata(goal, "./debugdata");
+
+Python bindings
+---------------
+
+``Goal.write_debugdata()`` takes a directory parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Analogus to :ref:`core changes <0_4_15_core-label>`.

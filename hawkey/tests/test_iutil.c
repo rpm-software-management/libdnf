@@ -26,6 +26,7 @@
 #include <solv/pool.h>
 
 // hawkey
+#include "src/util.h"
 #include "src/iutil.h"
 #include "fixtures.h"
 #include "test_suites.h"
@@ -38,6 +39,18 @@ build_test_file(const char *filename)
     fail_unless(fwrite("empty", 5, 1, fp) == 1);
     fclose(fp);
 }
+
+START_TEST(test_abspath)
+{
+    char *abs = abspath("/cus/tard");
+    ck_assert_str_eq(abs, "/cus/tard");
+    hy_free(abs);
+
+    abs = abspath("cus/tard");
+    ck_assert_int_eq(abs[0], '/');
+    hy_free(abs);
+}
+END_TEST
 
 START_TEST(test_checksum)
 {
@@ -178,6 +191,7 @@ iutil_suite(void)
 {
     Suite *s = suite_create("iutil");
     TCase *tc = tcase_create("Main");
+    tcase_add_test(tc, test_abspath);
     tcase_add_test(tc, test_checksum);
     tcase_add_test(tc, test_checksum_write_read);
     tcase_add_test(tc, test_mkcachedir);

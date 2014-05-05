@@ -341,7 +341,6 @@ START_TEST(test_goal_selector_upgrade_provides)
     hy_selector_free(sltr);
 
     fail_if(hy_goal_run(goal));
-    hy_goal_write_debugdata(goal);
     assert_iueo(goal, 0, 1, 0, 1);
     hy_goal_free(goal);
 }

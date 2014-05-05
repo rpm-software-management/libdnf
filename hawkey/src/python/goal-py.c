@@ -426,9 +426,18 @@ log_decisions(_GoalObject *self, PyObject *unused)
 }
 
 static PyObject *
-write_debugdata(_GoalObject *self, PyObject *unused)
+write_debugdata(_GoalObject *self, PyObject *dir_str)
 {
-    int ret = hy_goal_write_debugdata(self->goal);
+    PyObject *tmp_py_str = NULL;
+    char *dir = pycomp_get_string(dir_str, &tmp_py_str);
+
+    if (dir == NULL) {
+	Py_XDECREF(tmp_py_str);
+	return NULL;
+    }
+
+    int ret = hy_goal_write_debugdata(self->goal, dir);
+    Py_XDECREF(tmp_py_str);
     if (ret2e(ret, "write_debugdata() failed"))
 	return NULL;
     Py_RETURN_NONE;
@@ -552,7 +561,7 @@ static struct PyMethodDef goal_methods[] = {
     {"count_problems",	(PyCFunction)count_problems,	METH_NOARGS,	NULL},
     {"describe_problem",(PyCFunction)describe_problem,	METH_O,		NULL},
     {"log_decisions",   (PyCFunction)log_decisions,	METH_NOARGS,	NULL},
-    {"write_debugdata", (PyCFunction)write_debugdata,	METH_NOARGS,	NULL},
+    {"write_debugdata", (PyCFunction)write_debugdata,	METH_O,		NULL},
     {"list_erasures",	(PyCFunction)list_erasures,	METH_NOARGS,	NULL},
     {"list_installs",	(PyCFunction)list_installs,	METH_NOARGS,	NULL},
     {"list_obsoleted",	(PyCFunction)list_obsoleted,	METH_NOARGS,	NULL},

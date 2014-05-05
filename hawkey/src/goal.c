@@ -42,6 +42,7 @@
 #include "reldep_internal.h"
 #include "sack_internal.h"
 #include "selector_internal.h"
+#include "util.h"
 
 struct _HyGoal {
     HySack sack;
@@ -810,13 +811,21 @@ hy_goal_log_decisions(HyGoal goal)
 }
 
 int
-hy_goal_write_debugdata(HyGoal goal)
+hy_goal_write_debugdata(HyGoal goal, const char *dir)
 {
+    HySack sack = goal->sack;
     Solver *solv = goal->solv;
     if (solv == NULL)
 	return HY_E_OP;
+
     int flags = TESTCASE_RESULT_TRANSACTION | TESTCASE_RESULT_PROBLEMS;
-    if (!testcase_write(solv, "./debugdata", flags, NULL, NULL))
+    char *absdir = abspath(dir);
+    if (absdir == NULL)
+	return hy_errno;
+    HY_LOG_INFO("writing solver debugdata to %s", absdir);
+    int ret = testcase_write(solv, absdir, flags, NULL, NULL);
+    hy_free(absdir);
+    if (!ret)
 	return HY_E_IO;
     return 0;
 }

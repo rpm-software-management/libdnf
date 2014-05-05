@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <glob.h>
+#include <linux/limits.h>
 #include <pwd.h>
 #include <regex.h>
 #include <unistd.h>
@@ -212,6 +213,27 @@ pool_checksum_str(Pool *pool, const unsigned char *chksum)
 {
     int length = checksum_type2length(checksumt_l2h(CHKSUM_TYPE));
     return pool_bin2hex(pool, chksum, length);
+}
+
+char *
+abspath(const char *path)
+{
+    const int len = strlen(path);
+    if (len <= 1) {
+	hy_errno = HY_E_OP;
+	return NULL;
+    }
+
+    if (path[0] == '/')
+	return solv_strdup(path);
+
+    char cwd[PATH_MAX];
+    if (!getcwd(cwd, PATH_MAX)) {
+	hy_errno = HY_E_FAILED;
+	return NULL;
+    }
+
+    return solv_dupjoin(cwd, "/", path);
 }
 
 int
