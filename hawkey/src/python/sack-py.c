@@ -98,7 +98,7 @@ static PyObject *
 repo_enabled(_SackObject *self, PyObject *reponame, int enabled)
 {
     PyObject *tmp_py_str = NULL;
-    char *cname = pycomp_get_string(reponame, &tmp_py_str);
+    const char *cname = pycomp_get_string(reponame, &tmp_py_str);
 
     if (cname == NULL) {
         Py_XDECREF(tmp_py_str);

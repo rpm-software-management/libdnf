@@ -56,8 +56,7 @@
         PyObject_HEAD_INIT(type) size,
 #endif
 
-char *pycomp_get_string(PyObject *str_o, PyObject **tmp_py_str);
-char *pycomp_get_string_from_unicode(PyObject *str_o, PyObject **tmp_py_str);
+const char *pycomp_get_string(PyObject *str_o, PyObject **tmp_py_str);
 void pycomp_free_tmp_array(PyObject **tmp_py_strs, int count);
 
 #endif // PYCOMP_H

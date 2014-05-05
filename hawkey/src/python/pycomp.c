@@ -24,7 +24,7 @@
  * unicode string in Python 2/3 to c string converter,
  * you need to call Py_XDECREF(tmp_py_str) after usage of returned string
  */
-char *
+static char *
 pycomp_get_string_from_unicode(PyObject *str_u, PyObject **tmp_py_str)
 {
     *tmp_py_str = PyUnicode_AsUTF8String(str_u);
@@ -35,7 +35,7 @@ pycomp_get_string_from_unicode(PyObject *str_u, PyObject **tmp_py_str)
  * bytes, basic string or unicode string in Python 2/3 to c string converter,
  * you need to call Py_XDECREF(tmp_py_str) after usage of returned string
  */
-char *
+const char *
 pycomp_get_string(PyObject *str, PyObject **tmp_py_str)
 {
     char *res = NULL;

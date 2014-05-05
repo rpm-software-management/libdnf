@@ -429,7 +429,7 @@ static PyObject *
 write_debugdata(_GoalObject *self, PyObject *dir_str)
 {
     PyObject *tmp_py_str = NULL;
-    char *dir = pycomp_get_string(dir_str, &tmp_py_str);
+    const char *dir = pycomp_get_string(dir_str, &tmp_py_str);
 
     if (dir == NULL) {
 	Py_XDECREF(tmp_py_str);
