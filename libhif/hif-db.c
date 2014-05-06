@@ -42,6 +42,8 @@
 
 #include "config.h"
 
+#include <libgsystem.h>
+
 #include "hif-db.h"
 #include "hif-package.h"
 #include "hif-utils.h"
@@ -215,8 +217,8 @@ hif_db_set_string (HifDb *db,
 		   GError **error)
 {
 	gboolean ret = FALSE;
-	gchar *index_dir = NULL;
-	gchar *index_file = NULL;
+	gs_free gchar *index_dir = NULL;
+	gs_free gchar *index_file = NULL;
 
 	g_return_val_if_fail (HIF_IS_DB (db), FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
@@ -245,8 +247,6 @@ hif_db_set_string (HifDb *db,
 	
 	ret = TRUE;
 out:
-	g_free (index_dir);
-	g_free (index_file);
 	return ret;
 }
 

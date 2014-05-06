@@ -53,7 +53,7 @@ expand_content_files=
 # Only needed if you are using gtkdoc-scangobj to dynamically query widget
 # signals and properties.
 AM_CPPFLAGS =						\
-	$(GLIB_CFLAGS)					\
+	$(LIBHIF_DEPS_CFLAGS)					\
 	-I$(top_builddir)/libhif			\
 	-I$(top_srcdir)/libhif				\
 	$(NULL)
@@ -61,7 +61,7 @@ AM_CPPFLAGS =						\
 AS_LIBS = $(top_builddir)/libhif/libhif.la
 
 GTKDOC_LIBS =						\
-	$(GLIB_LIBS)					\
+	$(LIBHIF_DEPS_LIBS)					\
 	$(AS_LIBS)
 
 # This includes the standard gtk-doc make rules, copied by gtkdocize.

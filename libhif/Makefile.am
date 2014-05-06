@@ -6,8 +6,7 @@ INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
 endif
 
 SHARED_CPPFLAGS =						\
-	$(GLIB_CFLAGS)						\
-	$(HAWKEY_CFLAGS)					\
+	$(LIBHIF_DEPS_CFLAGS)					\
 	-I$(top_srcdir)/libhif					\
 	-I$(top_builddir)/libhif				\
 	-I.							\
@@ -93,9 +92,7 @@ libhif_la_SOURCES =						\
 
 CLEANFILES = $(BUILT_SOURCES)
 
-libhif_la_LIBADD =						\
-	$(HAWKEY_LIBS)						\
-	$(GLIB_LIBS)
+libhif_la_LIBADD = $(LIBHIF_DEPS_LIBS)						
 
 libhif_la_LDFLAGS =						\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
@@ -114,9 +111,7 @@ check_PROGRAMS =						\
 hif_self_test_SOURCES =						\
 	$(libhif_la_SOURCES)					\
 	hif-self-test.c
-hif_self_test_LDADD =						\
-	$(HAWKEY_LIBS)						\
-	$(GLIB_LIBS)
+hif_self_test_LDADD = $(LIBHIF_DEPS_LIBS)
 hif_self_test_CFLAGS = $(WARNINGFLAGS_C)
 hif_self_test_CPPFLAGS =					\
 	$(SHARED_CPPFLAGS)					\
@@ -127,8 +122,7 @@ noinst_PROGRAMS =						\
 hif_cmd_SOURCES =						\
 	hif-cmd.c
 hif_cmd_LDADD =							\
-	$(GLIB_LIBS)						\
-	$(HAWKEY_LIBS)						\
+	$(LIBHIF_DEPS_LIBS)						\
 	libhif.la
 hif_cmd_CFLAGS = $(WARNINGFLAGS_C)
 hif_cmd_CPPFLAGS =						\

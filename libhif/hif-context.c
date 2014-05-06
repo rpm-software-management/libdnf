@@ -32,6 +32,7 @@
 #include "config.h"
 
 #include <rpm/rpmlib.h>
+#include <libgsystem.h>
 
 #include "hif-context.h"
 #include "hif-context-private.h"
@@ -496,8 +497,8 @@ static gboolean
 hif_context_set_os_release (HifContext *context, GError **error)
 {
 	gboolean ret = FALSE;
-	gchar *contents = NULL;
-	gchar *version = NULL;
+	gs_free gchar *contents = NULL;
+	gs_free gchar *version = NULL;
 	GKeyFile *key_file = NULL;
 	GString *str = NULL;
 
@@ -527,8 +528,6 @@ out:
 		g_key_file_free (key_file);
 	if (str != NULL)
 		g_string_free (str, TRUE);
-	g_free (version);
-	g_free (contents);
 	return ret;
 }
 
