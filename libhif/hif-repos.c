@@ -479,6 +479,8 @@ hif_repos_has_removable (HifRepos *repos)
 
 /**
  * hif_repos_get_sources:
+ *
+ * Returns: (transfer container) (element-type HifSource): Array of sources
  */
 GPtrArray *
 hif_repos_get_sources (HifRepos *repos, GError **error)
