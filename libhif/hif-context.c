@@ -495,24 +495,22 @@ hif_context_set_cache_age (HifContext *context, guint cache_age)
 static gboolean
 hif_context_set_os_release (HifContext *context, GError **error)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	gchar *contents = NULL;
 	gchar *version = NULL;
 	GKeyFile *key_file = NULL;
 	GString *str = NULL;
 
 	/* make a valid GKeyFile from the .ini data by prepending a header */
-	ret = g_file_get_contents ("/etc/os-release", &contents, NULL, NULL);
-	if (!ret)
+	if (!g_file_get_contents ("/etc/os-release", &contents, NULL, error))
 		goto out;
 	str = g_string_new (contents);
 	g_string_prepend (str, "[os-release]\n");
 	key_file = g_key_file_new ();
-	ret = g_key_file_load_from_data (key_file,
-					 str->str, -1,
-					 G_KEY_FILE_NONE,
-					 error);
-	if (!ret)
+	if (!g_key_file_load_from_data (key_file,
+					str->str, -1,
+					G_KEY_FILE_NONE,
+					error))
 		goto out;
 
 	/* get keys */
@@ -523,6 +521,7 @@ hif_context_set_os_release (HifContext *context, GError **error)
 	if (version == NULL)
 		goto out;
 	hif_context_set_release_ver (context, version);
+	ret = TRUE;
 out:
 	if (key_file != NULL)
 		g_key_file_free (key_file);
