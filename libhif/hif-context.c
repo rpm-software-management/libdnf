@@ -32,9 +32,20 @@
 #include "config.h"
 
 #include <rpm/rpmlib.h>
+#include <rpm/rpmts.h>
+
+#include <hawkey/query.h>
+#include <hawkey/packagelist.h>
 
 #include "hif-context.h"
 #include "hif-context-private.h"
+#include "hif-db.h"
+#include "hif-goal.h"
+#include "hif-keyring.h"
+#include "hif-package.h"
+#include "hif-repos.h"
+#include "hif-sack.h"
+#include "hif-state.h"
 #include "hif-utils.h"
 
 typedef struct _HifContextPrivate	HifContextPrivate;
@@ -49,11 +60,22 @@ struct _HifContextPrivate
 	gchar			*arch_info;
 	gchar			*install_root;
 	gchar			*rpm_verbosity;
+	gchar			**native_arches;
 	gboolean		 cache_age;
 	gboolean		 check_disk_space;
 	gboolean		 check_transaction;
 	gboolean		 only_trusted;
 	gboolean		 keep_cache;
+
+	/* used to implement a transaction */
+	GPtrArray		*sources;
+	HifDb			*db;
+	HifRepos		*repos;
+	HifState		*state;		/* used for setup() and run() */
+	HyGoal			 goal;
+	HySack			 sack;
+	rpmKeyring		 keyring;
+	rpmts			 ts;
 };
 
 G_DEFINE_TYPE (HifContext, hif_context, G_TYPE_OBJECT)
@@ -77,6 +99,22 @@ hif_context_finalize (GObject *object)
 	g_free (priv->install_root);
 	g_free (priv->os_info);
 	g_free (priv->arch_info);
+	g_strfreev (priv->native_arches);
+	g_object_unref (priv->state);
+
+	rpmtsFree (priv->ts);
+	rpmKeyringFree (priv->keyring);
+
+	if (priv->db != NULL)
+		g_object_unref (priv->db);
+	if (priv->repos != NULL)
+		g_object_unref (priv->repos);
+	if (priv->sources != NULL)
+		g_ptr_array_unref (priv->sources);
+	if (priv->goal != NULL)
+		hy_goal_free (priv->goal);
+	if (priv->sack != NULL)
+		hy_sack_free (priv->sack);
 
 	G_OBJECT_CLASS (hif_context_parent_class)->finalize (object);
 }
@@ -91,6 +129,7 @@ hif_context_init (HifContext *context)
 	priv->install_root = g_strdup ("/");
 	priv->check_disk_space = TRUE;
 	priv->check_transaction = TRUE;
+	priv->state = hif_state_new ();
 }
 
 /**
@@ -571,6 +610,51 @@ out:
 }
 
 /**
+ * hif_context_setup_sack:
+ **/
+static gboolean
+hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
+{
+	gboolean ret;
+	gint rc;
+	HifContextPrivate *priv = GET_PRIVATE (context);
+
+	/* create empty sack */
+	priv->sack = hy_sack_create (priv->solv_dir, NULL, NULL, HY_MAKE_CACHE_DIR);
+	if (priv->sack == NULL) {
+		ret = FALSE;
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_INTERNAL_ERROR,
+			     "failed to create sack cache");
+		goto out;
+	}
+
+	/* add installed packages */
+	rc = hy_sack_load_system_repo (priv->sack, NULL, HY_BUILD_CACHE);
+	ret = hif_rc_to_gerror (rc, error);
+	if (!ret) {
+		g_prefix_error (error, "Failed to load system repo: ");
+		goto out;
+	}
+
+	/* creates repo for command line rpms */
+	hy_sack_create_cmdline_repo (priv->sack);
+
+	/* add remote */
+	ret = hif_sack_add_sources (priv->sack,
+				    priv->sources,
+				    priv->cache_age,
+				    HIF_SACK_ADD_FLAG_FILELISTS,
+				    state,
+				    error);
+	if (!ret)
+		goto out;
+out:
+	return ret;
+}
+
+/**
  * hif_context_setup:
  * @context: a #HifContext instance.
  * @cancellable: A #GCancellable or %NULL
@@ -591,6 +675,20 @@ hif_context_setup (HifContext *context,
 	const gchar *value;
 	gboolean ret = TRUE;
 	gint retval;
+
+	/* check essential things are set */
+	if (priv->solv_dir == NULL) {
+		ret = FALSE;
+		g_set_error_literal (error,
+				     HIF_ERROR,
+				     HIF_ERROR_INTERNAL_ERROR,
+				     "solv_dir not set");
+		goto out;
+	}
+
+	/* connect if set */
+	if (cancellable != NULL)
+		hif_state_set_cancellable (priv->state, cancellable);
 
 	retval = rpmReadConfigFiles (NULL, NULL);
 	if (retval != 0) {
@@ -622,10 +720,29 @@ hif_context_setup (HifContext *context,
 	}
 	priv->base_arch = g_strdup (value);
 
+	/* setup native arches */
+	priv->native_arches = g_new0 (gchar *, 3);
+	priv->native_arches[0] = g_strdup (priv->arch_info);
+	priv->native_arches[1] = g_strdup ("noarch");
+
 	/* get info from OS release file */
 	ret = hif_context_set_os_release (context, error);
 	if (!ret)
 		goto out;
+
+	/* setup RPM */
+	priv->ts = rpmtsCreate ();
+	priv->keyring = rpmtsGetKeyring (priv->ts, 1);
+	priv->db = hif_db_new (context);
+	priv->repos = hif_repos_new (context);
+	priv->sources = hif_repos_get_sources (priv->repos, error);
+
+	/* set up sack */
+	hif_state_reset (priv->state);
+	ret = hif_context_setup_sack (context, priv->state, error);
+	if (!ret)
+		goto out;
+	priv->goal = hy_goal_create (priv->sack);
 out:
 	return ret;
 }
@@ -645,6 +762,13 @@ out:
 gboolean
 hif_context_run (HifContext *context, GCancellable *cancellable, GError **error)
 {
+	HifContextPrivate *priv = GET_PRIVATE (context);
+
+	/* connect if set */
+	hif_state_reset (priv->state);
+	if (cancellable != NULL)
+		hif_state_set_cancellable (priv->state, cancellable);
+
 	g_set_error_literal (error,
 			     HIF_ERROR,
 			     HIF_ERROR_INTERNAL_ERROR,
@@ -669,11 +793,30 @@ hif_context_run (HifContext *context, GCancellable *cancellable, GError **error)
 gboolean
 hif_context_install (HifContext *context, const gchar *name, GError **error)
 {
-	g_set_error_literal (error,
-			     HIF_ERROR,
-			     HIF_ERROR_INTERNAL_ERROR,
-			     "Not supported");
-	return FALSE;
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	HyPackageList pkglist;
+	HyPackage pkg;
+	HyQuery query;
+	guint i;
+
+	/* find a newest remote package to install */
+	query = hy_query_create (priv->sack);
+	hy_query_filter_latest_per_arch (query, TRUE);
+	hy_query_filter_in (query, HY_PKG_ARCH, HY_EQ,
+			    (const gchar **) priv->native_arches);
+	hy_query_filter (query, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+	hy_query_filter (query, HY_PKG_ARCH, HY_NEQ, "src");
+	hy_query_filter (query, HY_PKG_NAME, HY_EQ, name);
+	pkglist = hy_query_run (query);
+
+	/* add each package */
+	FOR_PACKAGELIST(pkg, pkglist, i) {
+		hif_package_set_user_action (pkg, TRUE);
+		hy_goal_install (priv->goal, pkg);
+	}
+	hy_packagelist_free (pkglist);
+	hy_query_free (query);
+	return TRUE;
 }
 
 /**
@@ -693,11 +836,28 @@ hif_context_install (HifContext *context, const gchar *name, GError **error)
 gboolean
 hif_context_remove (HifContext *context, const gchar *name, GError **error)
 {
-	g_set_error_literal (error,
-			     HIF_ERROR,
-			     HIF_ERROR_INTERNAL_ERROR,
-			     "Not supported");
-	return FALSE;
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	HyPackageList pkglist;
+	HyPackage pkg;
+	HyQuery query;
+	guint i;
+
+	/* find a newest remote package to install */
+	query = hy_query_create (priv->sack);
+	hy_query_filter_latest_per_arch (query, TRUE);
+	hy_query_filter (query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+	hy_query_filter (query, HY_PKG_ARCH, HY_NEQ, "src");
+	hy_query_filter (query, HY_PKG_NAME, HY_EQ, name);
+	pkglist = hy_query_run (query);
+
+	/* add each package */
+	FOR_PACKAGELIST(pkg, pkglist, i) {
+		hif_package_set_user_action (pkg, TRUE);
+		hy_goal_erase (priv->goal, pkg);
+	}
+	hy_packagelist_free (pkglist);
+	hy_query_free (query);
+	return TRUE;
 }
 
 /**
@@ -717,11 +877,69 @@ hif_context_remove (HifContext *context, const gchar *name, GError **error)
 gboolean
 hif_context_update (HifContext *context, const gchar *name, GError **error)
 {
-	g_set_error_literal (error,
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	HyPackageList pkglist;
+	HyPackage pkg;
+	HyQuery query;
+	guint i;
+
+	/* find a newest remote package to install */
+	query = hy_query_create (priv->sack);
+	hy_query_filter_latest_per_arch (query, TRUE);
+	hy_query_filter_in (query, HY_PKG_ARCH, HY_EQ,
+			    (const gchar **) priv->native_arches);
+	hy_query_filter (query, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+	hy_query_filter (query, HY_PKG_NAME, HY_EQ, name);
+	pkglist = hy_query_run (query);
+
+	/* add each package */
+	FOR_PACKAGELIST(pkg, pkglist, i) {
+		hif_package_set_user_action (pkg, TRUE);
+		hy_goal_upgrade_to (priv->goal, pkg);
+	}
+	hy_packagelist_free (pkglist);
+	hy_query_free (query);
+	return TRUE;
+}
+
+/**
+ * hif_context_repo_set_data:
+ **/
+static gboolean
+hif_context_repo_set_data (HifContext *context,
+			   const gchar *repo_id,
+			   gboolean enabled,
+			   GError **error)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	HifSource *src = NULL;
+	HifSource *src_tmp;
+	gboolean ret = TRUE;
+	guint i;
+
+	/* find a source with a matching ID */
+	for (i = 0; i < priv->sources->len; i++) {
+		src_tmp = g_ptr_array_index (priv->sources, i);
+		if (g_strcmp0 (hif_source_get_id (src_tmp), repo_id) == 0) {
+			src = src_tmp;
+			break;
+		}
+	}
+
+	/* nothing found */
+	if (src == NULL) {
+		ret = FALSE;
+		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_INTERNAL_ERROR,
-			     "Not supported");
-	return FALSE;
+			     "repo %s not found", repo_id);
+		goto out;
+	}
+
+	/* this is runtime only */
+	hif_source_set_enabled (src, enabled);
+out:
+	return ret;
 }
 
 /**
@@ -732,6 +950,8 @@ hif_context_update (HifContext *context, const gchar *name, GError **error)
  *
  * Enables a specific repo.
  *
+ * This must be done before hif_context_setup() is called.
+ *
  * Returns: %TRUE for success, %FALSE otherwise
  *
  * Since: 0.1.0
@@ -741,11 +961,7 @@ hif_context_repo_enable (HifContext *context,
 			 const gchar *repo_id,
 			 GError **error)
 {
-	g_set_error_literal (error,
-			     HIF_ERROR,
-			     HIF_ERROR_INTERNAL_ERROR,
-			     "Not supported");
-	return FALSE;
+	return hif_context_repo_set_data (context, repo_id, TRUE, error);
 }
 
 /**
@@ -756,6 +972,8 @@ hif_context_repo_enable (HifContext *context,
  *
  * Disables a specific repo.
  *
+ * This must be done before hif_context_setup() is called.
+ *
  * Returns: %TRUE for success, %FALSE otherwise
  *
  * Since: 0.1.0
@@ -765,11 +983,7 @@ hif_context_repo_disable (HifContext *context,
 			  const gchar *repo_id,
 			  GError **error)
 {
-	g_set_error_literal (error,
-			     HIF_ERROR,
-			     HIF_ERROR_INTERNAL_ERROR,
-			     "Not supported");
-	return FALSE;
+	return hif_context_repo_set_data (context, repo_id, FALSE, error);
 }
 
 /**
