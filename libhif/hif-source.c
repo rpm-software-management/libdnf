@@ -85,7 +85,6 @@ hif_source_finalize (GObject *object)
 
 	g_free (priv->id);
 	g_free (priv->filename);
-	g_free (priv->id);
 	g_free (priv->location_tmp);
 	g_free (priv->location);
 	g_free (priv->packages);
