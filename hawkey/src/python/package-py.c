@@ -221,7 +221,7 @@ get_str(_PackageObject *self, void *closure)
     cstr = func(self->package);
     if (cstr == NULL)
 	Py_RETURN_NONE;
-    return PyString_FromString(cstr);
+    return PyUnicode_FromString(cstr);
 }
 
 static PyObject *
@@ -235,7 +235,7 @@ get_str_alloced(_PackageObject *self, void *closure)
     cstr = func(self->package);
     if (cstr == NULL)
 	Py_RETURN_NONE;
-    ret = PyString_FromString(cstr);
+    ret = PyUnicode_FromString(cstr);
     solv_free(cstr);
     return ret;
 }

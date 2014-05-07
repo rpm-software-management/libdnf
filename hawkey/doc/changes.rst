@@ -427,3 +427,8 @@ Python bindings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Analogus to :ref:`core changes <0_4_15_core-label>`.
+
+Package: string attributes are represented by Unicode object
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Attributes ``baseurl``, ``location``, ``sourcerpm``, ``version``, ``release``, ``name``, ``arch``, ``description``, ``evr``, ``license``, ``packager``, ``reponame``, ``summary`` and ``url`` of Package object return Unicode string.
