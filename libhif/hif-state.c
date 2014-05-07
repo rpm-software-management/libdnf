@@ -422,7 +422,10 @@ hif_state_set_cancellable (HifState *state, GCancellable *cancellable)
 {
 	HifStatePrivate *priv = GET_PRIVATE (state);
 	g_return_if_fail (priv->cancellable == NULL);
-	priv->cancellable = g_object_ref (cancellable);
+	if (priv->cancellable != NULL)
+		g_clear_object (&priv->cancellable);
+	if (cancellable != NULL)
+		priv->cancellable = g_object_ref (cancellable);
 }
 
 /**
