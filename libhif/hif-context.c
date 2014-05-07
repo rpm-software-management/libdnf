@@ -47,6 +47,7 @@ struct _HifContextPrivate
 	gchar			*solv_dir;
 	gchar			*os_info;
 	gchar			*arch_info;
+	gchar			*install_root;
 	gchar			*rpm_verbosity;
 	gboolean		 cache_age;
 	gboolean		 check_disk_space;
@@ -73,6 +74,7 @@ hif_context_finalize (GObject *object)
 	g_free (priv->cache_dir);
 	g_free (priv->solv_dir);
 	g_free (priv->rpm_verbosity);
+	g_free (priv->install_root);
 	g_free (priv->os_info);
 	g_free (priv->arch_info);
 
@@ -86,6 +88,7 @@ static void
 hif_context_init (HifContext *context)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
+	priv->install_root = g_strdup ("/");
 	priv->check_disk_space = TRUE;
 	priv->check_transaction = TRUE;
 }
@@ -235,6 +238,23 @@ hif_context_get_rpm_verbosity (HifContext *context)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	return priv->rpm_verbosity;
+}
+
+/**
+ * hif_context_get_install_root:
+ * @context: a #HifContext instance.
+ *
+ * Gets the install root, by default "/".
+ *
+ * Returns: the install root, e.g. "/tmp/snapshot"
+ *
+ * Since: 0.1.0
+ **/
+const gchar *
+hif_context_get_install_root (HifContext *context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	return priv->install_root;
 }
 
 /**
@@ -407,6 +427,23 @@ hif_context_set_rpm_verbosity (HifContext *context, const gchar *rpm_verbosity)
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	g_free (priv->rpm_verbosity);
 	priv->rpm_verbosity = g_strdup (rpm_verbosity);
+}
+
+/**
+ * hif_context_set_install_root:
+ * @context: a #HifContext instance.
+ * @install_root: the install root, e.g. "/"
+ *
+ * Sets the install root to use for installing and removal.
+ *
+ * Since: 0.1.0
+ **/
+void
+hif_context_set_install_root (HifContext *context, const gchar *install_root)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	g_free (priv->install_root);
+	priv->install_root = g_strdup (install_root);
 }
 
 /**

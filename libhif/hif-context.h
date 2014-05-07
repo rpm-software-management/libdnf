@@ -72,6 +72,7 @@ const gchar	*hif_context_get_release_ver		(HifContext	*context);
 const gchar	*hif_context_get_cache_dir		(HifContext	*context);
 const gchar	*hif_context_get_solv_dir		(HifContext	*context);
 const gchar	*hif_context_get_rpm_verbosity		(HifContext	*context);
+const gchar	*hif_context_get_install_root		(HifContext	*context);
 gboolean	 hif_context_get_check_disk_space	(HifContext	*context);
 gboolean	 hif_context_get_check_transaction	(HifContext	*context);
 gboolean	 hif_context_get_keep_cache		(HifContext	*context);
@@ -89,6 +90,8 @@ void		 hif_context_set_solv_dir		(HifContext	*context,
 							 const gchar	*solv_dir);
 void		 hif_context_set_rpm_verbosity		(HifContext	*context,
 							 const gchar	*rpm_verbosity);
+void		 hif_context_set_install_root		(HifContext	*context,
+							 const gchar	*install_root);
 void		 hif_context_set_check_disk_space	(HifContext	*context,
 							 gboolean	 check_disk_space);
 void		 hif_context_set_check_transaction	(HifContext	*context,
