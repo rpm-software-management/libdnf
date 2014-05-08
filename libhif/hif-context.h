@@ -49,6 +49,8 @@ struct _HifContext
 struct _HifContextClass
 {
 	GObjectClass		parent_class;
+	void			(*invalidate)		(HifContext	*context,
+							 const gchar	*message);
 	/*< private >*/
 	void (*_hif_reserved1)	(void);
 	void (*_hif_reserved2)	(void);

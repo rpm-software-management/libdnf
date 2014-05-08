@@ -62,6 +62,10 @@ typedef enum {
 	HIF_STATE_STATUS_DOWNLOAD_PACKAGES	= 8,	/* Since: 0.1.0 */
 	HIF_STATE_STATUS_DOWNLOAD_METADATA	= 20,	/* Since: 0.1.0 */
 	HIF_STATE_STATUS_LOADING_CACHE		= 27,	/* Since: 0.1.0 */
+	HIF_STATE_STATUS_TEST_COMMIT		= 15,	/* Since: 0.1.0 */
+	HIF_STATE_STATUS_REQUEST		= 17,	/* Since: 0.1.0 */
+	HIF_STATE_STATUS_REMOVE			= 6,	/* Since: 0.1.0 */
+	HIF_STATE_STATUS_INSTALL		= 9,	/* Since: 0.1.0 */
 	/*< private >*/
 	HIF_STATE_STATUS_LAST
 } HifStateStatus;

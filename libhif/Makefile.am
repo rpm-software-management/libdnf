@@ -59,6 +59,7 @@ libhif_include_HEADERS =					\
 	hif-sack.h						\
 	hif-source.h						\
 	hif-state.h						\
+	hif-transaction.h					\
 	hif-utils.h						\
 	hif-version.h						\
 	libhif.h						\
@@ -86,6 +87,8 @@ libhif_la_SOURCES =						\
 	hif-sack.h						\
 	hif-source.c						\
 	hif-source.h						\
+	hif-transaction.c					\
+	hif-transaction.h					\
 	hif-state.c						\
 	hif-state.h						\
 	hif-utils.c						\

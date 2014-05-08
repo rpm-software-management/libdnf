@@ -32,7 +32,6 @@
 #include "config.h"
 
 #include <rpm/rpmlib.h>
-#include <rpm/rpmts.h>
 
 #include <hawkey/query.h>
 #include <hawkey/packagelist.h>
@@ -43,6 +42,7 @@
 #include "hif-goal.h"
 #include "hif-keyring.h"
 #include "hif-package.h"
+#include "hif-transaction.h"
 #include "hif-repos.h"
 #include "hif-sack.h"
 #include "hif-state.h"
@@ -66,17 +66,22 @@ struct _HifContextPrivate
 	gboolean		 check_transaction;
 	gboolean		 only_trusted;
 	gboolean		 keep_cache;
+	HifTransaction		*transaction;
 
 	/* used to implement a transaction */
 	GPtrArray		*sources;
-	HifDb			*db;
 	HifRepos		*repos;
 	HifState		*state;		/* used for setup() and run() */
 	HyGoal			 goal;
 	HySack			 sack;
-	rpmKeyring		 keyring;
-	rpmts			 ts;
 };
+
+enum {
+	SIGNAL_INVALIDATE,
+	SIGNAL_LAST
+};
+
+static guint signals [SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE (HifContext, hif_context, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), HIF_TYPE_CONTEXT, HifContextPrivate))
@@ -100,13 +105,9 @@ hif_context_finalize (GObject *object)
 	g_free (priv->os_info);
 	g_free (priv->arch_info);
 	g_strfreev (priv->native_arches);
+	g_object_unref (priv->transaction);
 	g_object_unref (priv->state);
 
-	rpmtsFree (priv->ts);
-	rpmKeyringFree (priv->keyring);
-
-	if (priv->db != NULL)
-		g_object_unref (priv->db);
 	if (priv->repos != NULL)
 		g_object_unref (priv->repos);
 	if (priv->sources != NULL)
@@ -140,6 +141,14 @@ hif_context_class_init (HifContextClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = hif_context_finalize;
+
+	signals [SIGNAL_INVALIDATE] =
+		g_signal_new ("invalidate",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (HifContextClass, invalidate),
+			      NULL, NULL, g_cclosure_marshal_VOID__STRING,
+			      G_TYPE_NONE, 1, G_TYPE_STRING);
+
 	g_type_class_add_private (klass, sizeof (HifContextPrivate));
 }
 
@@ -731,11 +740,12 @@ hif_context_setup (HifContext *context,
 		goto out;
 
 	/* setup RPM */
-	priv->ts = rpmtsCreate ();
-	priv->keyring = rpmtsGetKeyring (priv->ts, 1);
-	priv->db = hif_db_new (context);
 	priv->repos = hif_repos_new (context);
 	priv->sources = hif_repos_get_sources (priv->repos, error);
+	priv->transaction = hif_transaction_new (context);
+	hif_transaction_set_sources (priv->transaction, priv->sources);
+	hif_transaction_set_flags (priv->transaction,
+				   HIF_TRANSACTION_FLAG_ONLY_TRUSTED);
 
 	/* set up sack */
 	hif_state_reset (priv->state);
@@ -992,7 +1002,7 @@ hif_context_repo_disable (HifContext *context,
  * @state: A #HifState
  * @error: A #GError or %NULL
  *
- * Commits a context.
+ * Commits a context, which applies changes to the live system.
  *
  * Returns: %TRUE for success, %FALSE otherwise
  *
@@ -1001,11 +1011,33 @@ hif_context_repo_disable (HifContext *context,
 gboolean
 hif_context_commit (HifContext *context, HifState *state, GError **error)
 {
-	g_set_error_literal (error,
-			     HIF_ERROR,
-			     HIF_ERROR_INTERNAL_ERROR,
-			     "Not supported");
-	return FALSE;
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	gboolean ret;
+
+	/* run the transaction */
+	ret = hif_transaction_commit (priv->transaction,
+				      priv->goal,
+				      state,
+				      error);
+	if (!ret)
+		goto out;
+out:
+	return ret;
+}
+
+/**
+ * hif_context_invalidate:
+ * @context: a #HifContext instance.
+ * @message: the reason for invalidating
+ *
+ * Emits a signal which signals that the context is invalid.
+ *
+ * Since: 0.1.0
+ **/
+void
+hif_context_invalidate (HifContext *context, const gchar *message)
+{
+	g_signal_emit (context, signals [SIGNAL_INVALIDATE], 0, message);
 }
 
 /**

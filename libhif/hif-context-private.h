@@ -32,6 +32,8 @@
 gboolean	 hif_context_commit			(HifContext	*context,
 							 HifState	*state,
 							 GError		**error);
+void		 hif_context_invalidate			(HifContext	*context,
+							 const gchar	*message);
 
 G_END_DECLS
 

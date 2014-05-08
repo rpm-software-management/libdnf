@@ -64,6 +64,8 @@ typedef enum {
 	HIF_ERROR_GPG_SIGNATURE_INVALID		= 30,	/* Since: 0.1.0 */
 	HIF_ERROR_FILE_INVALID			= 38,	/* Since: 0.1.0 */
 	HIF_ERROR_SOURCE_NOT_FOUND		= 19,	/* Since: 0.1.0 */
+	HIF_ERROR_FAILED_CONFIG_PARSING		= 24,	/* Since: 0.1.0 */
+	HIF_ERROR_PACKAGE_NOT_FOUND		= 8,	/* Since: 0.1.0 */
 	/*< private >*/
 	HIF_ERROR_LAST
 } HifError;

@@ -37,6 +37,7 @@
 #include <hif-sack.h>
 #include <hif-source.h>
 #include <hif-state.h>
+#include <hif-transaction.h>
 #include <hif-utils.h>
 
 #undef __LIBHIF_PRIVATE_H_INSIDE__
