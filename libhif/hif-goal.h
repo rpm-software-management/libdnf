@@ -33,5 +33,7 @@
 
 gboolean	 hif_goal_depsolve			(HyGoal		 goal,
 							 GError		**error);
+GPtrArray	*hif_goal_get_packages			(HyGoal		 goal,
+							 ...);
 
 #endif /* __HIF_GOAL_H */

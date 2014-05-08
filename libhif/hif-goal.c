@@ -128,3 +128,78 @@ out:
 		g_string_free (string, TRUE);
 	return ret;
 }
+
+/**
+ * hif_goal_get_packages:
+ */
+GPtrArray *
+hif_goal_get_packages (HyGoal goal, ...)
+{
+	GPtrArray *array;
+	HyPackageList pkglist;
+	HyPackage pkg;
+	gint info_tmp;
+	guint i;
+	guint j;
+	va_list args;
+
+	/* process the valist */
+	va_start (args, goal);
+	array = g_ptr_array_new ();
+	for (j = 0;; j++) {
+		info_tmp = va_arg (args, gint);
+		if (info_tmp == -1)
+			break;
+		switch (info_tmp) {
+		case HIF_PACKAGE_INFO_REMOVE:
+			pkglist = hy_goal_list_erasures (goal);
+			FOR_PACKAGELIST(pkg, pkglist, i) {
+				hif_package_set_status (pkg, info_tmp);
+				g_ptr_array_add (array, pkg);
+			}
+			break;
+		case HIF_PACKAGE_INFO_INSTALL:
+			pkglist = hy_goal_list_installs (goal);
+			FOR_PACKAGELIST(pkg, pkglist, i) {
+				hif_package_set_status (pkg, info_tmp);
+				g_ptr_array_add (array, pkg);
+			}
+			break;
+		case HIF_PACKAGE_INFO_OBSOLETE:
+			pkglist = hy_goal_list_obsoleted (goal);
+			FOR_PACKAGELIST(pkg, pkglist, i) {
+				hif_package_set_status (pkg, info_tmp);
+				g_ptr_array_add (array, pkg);
+			}
+			break;
+		case HIF_PACKAGE_INFO_REINSTALL:
+			pkglist = hy_goal_list_reinstalls (goal);
+			FOR_PACKAGELIST(pkg, pkglist, i) {
+				hif_package_set_status (pkg, HIF_PACKAGE_INFO_INSTALL);
+				g_ptr_array_add (array, pkg);
+			}
+			break;
+		case HIF_PACKAGE_INFO_UPDATE:
+			pkglist = hy_goal_list_upgrades (goal);
+			FOR_PACKAGELIST(pkg, pkglist, i) {
+				hif_package_set_status (pkg, info_tmp);
+				g_ptr_array_add (array, pkg);
+			}
+			break;
+		case HIF_PACKAGE_INFO_DOWNGRADE:
+			pkglist = hy_goal_list_downgrades (goal);
+			FOR_PACKAGELIST(pkg, pkglist, i) {
+				hif_package_set_status (pkg, HIF_PACKAGE_INFO_INSTALL);
+				g_ptr_array_add (array, pkg);
+			}
+			break;
+		default:
+			g_assert_not_reached ();
+		}
+
+
+		/* end of the list */
+	}
+	va_end (args);
+	return array;
+}
