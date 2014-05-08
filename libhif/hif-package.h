@@ -32,6 +32,21 @@
 
 #include "hif-source.h"
 
+/**
+ * HifPackageInfo:
+ **/
+typedef enum {
+	HIF_PACKAGE_INFO_UNKNOWN			= 0,
+	HIF_PACKAGE_INFO_UPDATE				= 11,
+	HIF_PACKAGE_INFO_INSTALL			= 12,
+	HIF_PACKAGE_INFO_REMOVE				= 13,
+	HIF_PACKAGE_INFO_OBSOLETE			= 15,
+	HIF_PACKAGE_INFO_REINSTALL			= 19,
+	HIF_PACKAGE_INFO_DOWNGRADE			= 20,
+	/*< private >*/
+	HIF_PACKAGE_INFO_LAST
+} HifPackageInfo;
+
 HifSource	*hif_package_get_source			(HyPackage	 pkg);
 void		 hif_package_set_source			(HyPackage	 pkg,
 							 HifSource	*src);
@@ -42,9 +57,9 @@ const gchar	*hif_package_get_origin			(HyPackage	 pkg);
 void		 hif_package_set_origin			(HyPackage	 pkg,
 							 const gchar	*origin);
 const gchar	*hif_package_get_id			(HyPackage	 pkg);
-guint32		 hif_package_get_info			(HyPackage	 pkg);
+HifPackageInfo	 hif_package_get_info			(HyPackage	 pkg);
 void		 hif_package_set_info			(HyPackage	 pkg,
-							 guint32	 info);
+							 HifPackageInfo	 info);
 guint32		 hif_package_get_status			(HyPackage	 pkg);
 void		 hif_package_set_status			(HyPackage	 pkg,
 							 guint32	 status);

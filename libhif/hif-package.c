@@ -53,7 +53,7 @@ typedef struct {
 	gchar		*origin;
 	gchar		*description;
 	gchar		*package_id;
-	guint32		 info;
+	HifPackageInfo	 info;
 	guint32		 status;
 	HifSource	*src;
 } HifPackagePrivate;
@@ -404,13 +404,13 @@ hif_package_get_source (HyPackage pkg)
  *
  * Since: 0.1.0
  **/
-guint32
+HifPackageInfo
 hif_package_get_info (HyPackage pkg)
 {
 	HifPackagePrivate *priv;
 	priv = hy_package_get_userdata (pkg);
 	if (priv == NULL)
-		return G_MAXUINT32;
+		return HIF_PACKAGE_INFO_UNKNOWN;
 	return priv->info;
 }
 
@@ -444,7 +444,7 @@ hif_package_get_status (HyPackage pkg)
  * Since: 0.1.0
  **/
 void
-hif_package_set_info (HyPackage pkg, guint32 info)
+hif_package_set_info (HyPackage pkg, HifPackageInfo info)
 {
 	HifPackagePrivate *priv;
 	priv = hif_package_get_priv (pkg);
