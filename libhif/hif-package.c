@@ -54,7 +54,7 @@ typedef struct {
 	gchar		*description;
 	gchar		*package_id;
 	HifPackageInfo	 info;
-	guint32		 status;
+	HifPackageInfo	 action;
 	HifSource	*src;
 } HifPackagePrivate;
 
@@ -398,9 +398,9 @@ hif_package_get_source (HyPackage pkg)
  * hif_package_get_info:
  * @pkg: a #HyPackage instance.
  *
- * Gets the info flags assigned to the package.
+ * Gets the info enum assigned to the package.
  *
- * Returns: 32bit info flags
+ * Returns: #HifPackageInfo value
  *
  * Since: 0.1.0
  **/
@@ -415,23 +415,23 @@ hif_package_get_info (HyPackage pkg)
 }
 
 /**
- * hif_package_get_status:
+ * hif_package_get_action:
  * @pkg: a #HyPackage instance.
  *
- * Gets the status flags assigned to the package.
+ * Gets the action assigned to the package, i.e. what is going to be performed.
  *
- * Returns: 32bit info flags
+ * Returns: a #HifPackageInfo
  *
  * Since: 0.1.0
  */
-guint32
-hif_package_get_status (HyPackage pkg)
+HifPackageInfo
+hif_package_get_action (HyPackage pkg)
 {
 	HifPackagePrivate *priv;
 	priv = hy_package_get_userdata (pkg);
 	if (priv == NULL)
-		return G_MAXUINT32;
-	return priv->status;
+		return HIF_PACKAGE_INFO_UNKNOWN;
+	return priv->action;
 }
 
 /**
@@ -454,22 +454,22 @@ hif_package_set_info (HyPackage pkg, HifPackageInfo info)
 }
 
 /**
- * hif_package_set_status:
+ * hif_package_set_action:
  * @pkg: a #HyPackage instance.
- * @status: the status flags.
+ * @action: the #HifPackageInfo for the package.
  *
- * Sets the status flags for the package.
+ * Sets the action for the package, i.e. what is going to be performed.
  *
  * Since: 0.1.0
  */
 void
-hif_package_set_status (HyPackage pkg, guint32 status)
+hif_package_set_action (HyPackage pkg, HifPackageInfo action)
 {
 	HifPackagePrivate *priv;
 	priv = hif_package_get_priv (pkg);
 	if (priv == NULL)
 		return;
-	priv->status = status;
+	priv->action = action;
 }
 
 /**

@@ -40,6 +40,7 @@ typedef enum {
 	HIF_PACKAGE_INFO_UPDATE				= 11,
 	HIF_PACKAGE_INFO_INSTALL			= 12,
 	HIF_PACKAGE_INFO_REMOVE				= 13,
+	HIF_PACKAGE_INFO_CLEANUP			= 14,
 	HIF_PACKAGE_INFO_OBSOLETE			= 15,
 	HIF_PACKAGE_INFO_REINSTALL			= 19,
 	HIF_PACKAGE_INFO_DOWNGRADE			= 20,
@@ -60,9 +61,9 @@ const gchar	*hif_package_get_id			(HyPackage	 pkg);
 HifPackageInfo	 hif_package_get_info			(HyPackage	 pkg);
 void		 hif_package_set_info			(HyPackage	 pkg,
 							 HifPackageInfo	 info);
-guint32		 hif_package_get_status			(HyPackage	 pkg);
-void		 hif_package_set_status			(HyPackage	 pkg,
-							 guint32	 status);
+HifPackageInfo	 hif_package_get_action			(HyPackage	 pkg);
+void		 hif_package_set_action			(HyPackage	 pkg,
+							 HifPackageInfo	 action);
 gboolean	 hif_package_get_user_action		(HyPackage	 pkg);
 void		 hif_package_set_user_action		(HyPackage	 pkg,
 							 gboolean	 user_action);
