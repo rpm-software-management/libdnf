@@ -52,7 +52,7 @@ get_pattern(_SubjectObject *self, void *closure)
 {
     if (self->pattern == NULL)
 	Py_RETURN_NONE;
-    return PyString_FromString(self->pattern);
+    return PyUnicode_FromString(self->pattern);
 }
 
 static PyGetSetDef subject_getsetters[] = {
@@ -80,10 +80,13 @@ subject_dealloc(_SubjectObject *self)
 static int
 subject_init(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
-    char *pattern = NULL;
-    if (!PyArg_ParseTuple(args, "s", &pattern))
+    PyObject *py_pattern = NULL;
+    PyObject *tmp_py_str = NULL;
+    if (!PyArg_ParseTuple(args, "O", &py_pattern))
 	return -1;
+    const char * pattern = pycomp_get_string(py_pattern, &tmp_py_str);
     self->pattern = solv_strdup(pattern);
+    Py_XDECREF(tmp_py_str);
     return 0;
 }
 
