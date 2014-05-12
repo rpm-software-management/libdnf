@@ -102,6 +102,7 @@ HyReldep reldep_from_str(HySack sack, const char *reldep_str);
 int dump_jobqueue(Pool *pool, Queue *job);
 int dump_solvables_queue(Pool *pool, Queue *q);
 int dump_map(Pool *pool, Map *m);
+const char *id2nevra(Pool *pool, Id id);
 
 /* loop over all package providers of d */
 #define FOR_PKG_PROVIDES(v, vp, d)                                      \

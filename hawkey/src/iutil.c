@@ -420,6 +420,7 @@ running_kernel(HySack sack)
     Pool *pool = sack_pool(sack);
     struct utsname un;
     glob_t g;
+    Id kernel_id = -1;
 
     uname(&un);
     char *glob_exp = pool_tmpjoin(pool, "/boot/vmlinuz-*", un.release, "*");
@@ -427,21 +428,30 @@ running_kernel(HySack sack)
     if (ret == GLOB_NOSPACE)
 	solv_oom(0, 0);
     if (ret == GLOB_NOMATCH)
-	return -1;
+	goto done;
 
-    Id kernel_id = -1;
     sack_make_provides_ready(sack);
     for (int i = 0; i < g.gl_pathc; ++i) {
 	const char *fn = g.gl_pathv[i];
 	HyQuery q = hy_query_create(sack);
 	hy_query_filter(q, HY_PKG_FILE, HY_EQ, fn);
 	HyPackageSet pset = hy_query_run_set(q);
+	if (hy_packageset_count(pset) < 1) {
+	    hy_packageset_free(pset);
+	    continue;
+	}
 	kernel_id = packageset_get_pkgid(pset, 0, -1);
 	hy_packageset_free(pset);
 	hy_query_free(q);
 	if (kernel_id >= 0)
 	    break;
     }
+    if (kernel_id >= 0)
+	HY_LOG_INFO("running_kernel(): %s.", id2nevra(pool, kernel_id));
+    else
+	HY_LOG_INFO("running_kernel(): running kernel not matched to a package.");
+
+ done:
     globfree(&g);
     return kernel_id;
 }
@@ -689,6 +699,13 @@ dump_map(Pool *pool, Map *m)
 	}
     printf("\n");
     return c;
+}
+
+const char *
+id2nevra(Pool *pool, Id id)
+{
+    Solvable *s = pool_id2solvable(pool, id);
+    return pool_solvable2str(pool, s);
 }
 
 int
