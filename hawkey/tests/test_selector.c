@@ -20,6 +20,7 @@
 
 // hawkey
 #include "src/selector.h"
+#include "src/errno.h"
 #include "fixtures.h"
 #include "testsys.h"
 #include "test_suites.h"
@@ -33,6 +34,15 @@ START_TEST(test_sltr_matching)
     fail_unless(hy_packagelist_count(plist) == 2);
 
     hy_packagelist_free(plist);
+    hy_selector_free(sltr);
+}
+END_TEST
+
+START_TEST(test_sltr_provides)
+{
+    HySelector sltr = hy_selector_create(test_globals.sack);
+    ck_assert_int_eq(hy_selector_set(sltr, HY_PKG_PROVIDES, HY_EQ, "*"),
+		     HY_E_SELECTOR);
     hy_selector_free(sltr);
 }
 END_TEST
@@ -87,6 +97,7 @@ selector_suite(void)
 
     tcase_add_unchecked_fixture(tc, fixture_all, teardown);
     tcase_add_test(tc, test_sltr_matching);
+    tcase_add_test(tc, test_sltr_provides);
     tcase_add_test(tc, test_sltr_reponame);
     tcase_add_test(tc, test_sltr_reponame_nonexistent);
     tcase_add_test(tc, test_sltr_version);

@@ -33,7 +33,7 @@
 #include "sack_internal.h"
 #include "selector_internal.h"
 
-static void
+static int
 replace_filter(HySack sack, struct _Filter **fp, int keyname, int cmp_type,
 	       const char *match)
 {
@@ -48,12 +48,19 @@ replace_filter(HySack sack, struct _Filter **fp, int keyname, int cmp_type,
     f->cmp_type = cmp_type;
     if (keyname == HY_PKG_PROVIDES) {
 	f->match_type = _HY_RELDEP;
-	f->matches[0].reldep = reldep_from_str(sack, match);
-	return;
+	HyReldep reldep = reldep_from_str(sack, match);
+	if (reldep == NULL) {
+	    filter_free(*fp);
+	    *fp = NULL;
+	    return HY_E_SELECTOR;
+	}
+	f->matches[0].reldep = reldep;
+	return 0;
     }
 
     f->match_type = _HY_STR;
     f->matches[0].str = solv_strdup(match);
+    return 0;
 }
 
 static int
@@ -101,29 +108,23 @@ hy_selector_set(HySelector sltr, int keyname, int cmp_type, const char *match)
 
     switch (keyname) {
     case HY_PKG_ARCH:
-	replace_filter(sack, &sltr->f_arch, keyname, cmp_type, match);
-	break;
+	return replace_filter(sack, &sltr->f_arch, keyname, cmp_type, match);
     case HY_PKG_EVR:
     case HY_PKG_VERSION:
-	replace_filter(sack, &sltr->f_evr, keyname, cmp_type, match);
-	break;
+	return replace_filter(sack, &sltr->f_evr, keyname, cmp_type, match);
     case HY_PKG_NAME:
 	if (sltr->f_provides)
 	    return HY_E_SELECTOR;
-	replace_filter(sack, &sltr->f_name, keyname, cmp_type, match);
-	break;
+	return replace_filter(sack, &sltr->f_name, keyname, cmp_type, match);
     case HY_PKG_PROVIDES:
 	if (sltr->f_name)
 	    return HY_E_SELECTOR;
-	replace_filter(sack, &sltr->f_provides, keyname, cmp_type, match);
-	break;
+	return replace_filter(sack, &sltr->f_provides, keyname, cmp_type, match);
     case HY_PKG_REPONAME:
-        replace_filter(sack, &sltr->f_reponame, keyname, cmp_type, match);
-        break;
+        return replace_filter(sack, &sltr->f_reponame, keyname, cmp_type, match);
     default:
 	return HY_E_SELECTOR;
     }
-    return 0;
 }
 
 HyPackageList
