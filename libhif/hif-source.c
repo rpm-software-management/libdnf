@@ -766,7 +766,7 @@ hif_source_check (HifSource *source,
 	}
 
 	/* Yum metadata */
-	hif_state_action_start (state, HIF_STATE_STATUS_LOADING_CACHE, NULL);
+	hif_state_action_start (state, HIF_STATE_ACTION_LOADING_CACHE, NULL);
 	urls[0] = priv->location;
 	ret = lr_handle_setopt (priv->repo_handle, error, LRO_URLS, urls);
 	if (!ret)
@@ -1120,7 +1120,7 @@ hif_source_update (HifSource *source,
 		goto out;
 	lr_result_clear (priv->repo_result);
 	hif_state_action_start (state_local,
-				HIF_STATE_STATUS_DOWNLOAD_METADATA, NULL);
+				HIF_STATE_ACTION_DOWNLOAD_METADATA, NULL);
 	ret = lr_handle_perform (priv->repo_handle,
 				 priv->repo_result,
 				 &error_local);
@@ -1401,7 +1401,7 @@ hif_source_download_package (HifSource *source,
 	checksum = hy_package_get_chksum (pkg, &checksum_type);
 	checksum_str = hy_chksum_str (checksum, checksum_type);
 	hif_state_action_start (state,
-				HIF_STATE_STATUS_DOWNLOAD_PACKAGES,
+				HIF_STATE_ACTION_DOWNLOAD_PACKAGES,
 				hif_package_get_id (pkg));
 	ret = lr_download_package (priv->repo_handle,
 				  hy_package_get_location (pkg),

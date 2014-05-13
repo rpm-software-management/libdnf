@@ -109,9 +109,9 @@ struct _HifStatePrivate
 	gulong			 notify_speed_child_id;
 	gulong			 allow_cancel_child_id;
 	gulong			 percentage_child_id;
-	HifStateStatus		 action;
-	HifStateStatus		 last_action;
-	HifStateStatus		 child_action;
+	HifStateAction		 action;
+	HifStateAction		 last_action;
+	HifStateAction		 child_action;
 	HifState		*child;
 	HifState		*parent;
 	GPtrArray		*lock_ids;
@@ -176,8 +176,8 @@ hif_state_init (HifState *state)
 	HifStatePrivate *priv = GET_PRIVATE (state);
 	priv->allow_cancel = TRUE;
 	priv->allow_cancel_child = TRUE;
-	priv->action = HIF_STATE_STATUS_UNKNOWN;
-	priv->last_action = HIF_STATE_STATUS_UNKNOWN;
+	priv->action = HIF_STATE_ACTION_UNKNOWN;
+	priv->last_action = HIF_STATE_ACTION_UNKNOWN;
 	priv->timer = g_timer_new ();
 	priv->lock_ids = g_ptr_array_new ();
 	priv->report_progress = TRUE;
@@ -626,7 +626,7 @@ hif_state_set_percentage (HifState *state, guint percentage)
 	}
 
 	/* automatically cancel any action */
-	if (percentage == 100 && priv->action != HIF_STATE_STATUS_UNKNOWN)
+	if (percentage == 100 && priv->action != HIF_STATE_ACTION_UNKNOWN)
 		hif_state_action_stop (state);
 
 	/* speed no longer valid */
@@ -689,13 +689,13 @@ hif_state_get_percentage (HifState *state)
  * Since: 0.1.0
  **/
 gboolean
-hif_state_action_start (HifState *state, HifStateStatus action, const gchar *action_hint)
+hif_state_action_start (HifState *state, HifStateAction action, const gchar *action_hint)
 {
 	HifStatePrivate *priv = GET_PRIVATE (state);
 
 	/* ignore this */
-	if (action == HIF_STATE_STATUS_UNKNOWN) {
-		g_warning ("cannot set action HIF_STATE_STATUS_UNKNOWN");
+	if (action == HIF_STATE_ACTION_UNKNOWN) {
+		g_warning ("cannot set action HIF_STATE_ACTION_UNKNOWN");
 		return FALSE;
 	}
 
@@ -733,11 +733,11 @@ hif_state_action_start (HifState *state, HifStateStatus action, const gchar *act
 void
 hif_state_set_package_progress (HifState *state,
 				const gchar *package_id,
-				HifStateStatus action,
+				HifStateAction action,
 				guint percentage)
 {
 	g_return_if_fail (package_id != NULL);
-	g_return_if_fail (action != HIF_STATE_STATUS_UNKNOWN);
+	g_return_if_fail (action != HIF_STATE_ACTION_UNKNOWN);
 	g_return_if_fail (percentage <= 100);
 
 	/* just emit */
@@ -762,14 +762,14 @@ hif_state_action_stop (HifState *state)
 	HifStatePrivate *priv = GET_PRIVATE (state);
 
 	/* nothing ever set */
-	if (priv->action == HIF_STATE_STATUS_UNKNOWN) {
-		g_debug ("cannot unset action HIF_STATE_STATUS_UNKNOWN");
+	if (priv->action == HIF_STATE_ACTION_UNKNOWN) {
+		g_debug ("cannot unset action HIF_STATE_ACTION_UNKNOWN");
 		return FALSE;
 	}
 
 	/* pop and reset */
 	priv->action = priv->last_action;
-	priv->last_action = HIF_STATE_STATUS_UNKNOWN;
+	priv->last_action = HIF_STATE_ACTION_UNKNOWN;
 	if (priv->action_hint != NULL) {
 		g_free (priv->action_hint);
 		priv->action_hint = NULL;
@@ -807,7 +807,7 @@ hif_state_get_action_hint (HifState *state)
  *
  * Since: 0.1.0
  **/
-HifStateStatus
+HifStateAction
 hif_state_get_action (HifState *state)
 {
 	HifStatePrivate *priv = GET_PRIVATE (state);
@@ -899,7 +899,7 @@ hif_state_child_allow_cancel_changed_cb (HifState *child, gboolean allow_cancel,
  **/
 static void
 hif_state_child_action_changed_cb (HifState *child,
-				   HifStateStatus action,
+				   HifStateAction action,
 				   const gchar *action_hint,
 				   HifState *state)
 {
@@ -917,7 +917,7 @@ hif_state_child_action_changed_cb (HifState *child,
 static void
 hif_state_child_package_progress_changed_cb (HifState *child,
 					     const gchar *package_id,
-					     HifStateStatus action,
+					     HifStateAction action,
 					     guint progress,
 					     HifState *state)
 {

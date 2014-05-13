@@ -222,7 +222,7 @@ hif_state_test_allow_cancel_changed_cb (HifState *state, gboolean allow_cancel, 
 }
 
 static void
-hif_state_test_action_changed_cb (HifState *state, HifStateStatus action, gpointer data)
+hif_state_test_action_changed_cb (HifState *state, HifStateAction action, gpointer data)
 {
 	_action_updates++;
 }
@@ -230,7 +230,7 @@ hif_state_test_action_changed_cb (HifState *state, HifStateStatus action, gpoint
 static void
 hif_state_test_package_progress_changed_cb (HifState *state,
 					    const gchar *package_id,
-					    HifStateStatus action,
+					    HifStateAction action,
 					    guint percentage,
 					    gpointer data)
 {
@@ -238,9 +238,9 @@ hif_state_test_package_progress_changed_cb (HifState *state,
 	_package_progress_updates++;
 }
 
-#define HIF_STATE_STATUS_DOWNLOAD	1
-#define HIF_STATE_STATUS_DEP_RESOLVE	2
-#define HIF_STATE_STATUS_LOADING_CACHE	3
+#define HIF_STATE_ACTION_DOWNLOAD	1
+#define HIF_STATE_ACTION_DEP_RESOLVE	2
+#define HIF_STATE_ACTION_LOADING_CACHE	3
 
 static void
 hif_state_func (void)
@@ -259,7 +259,7 @@ hif_state_func (void)
 	g_signal_connect (state, "package-progress-changed", G_CALLBACK (hif_state_test_package_progress_changed_cb), NULL);
 
 	g_assert (hif_state_get_allow_cancel (state));
-	g_assert_cmpint (hif_state_get_action (state), ==, HIF_STATE_STATUS_UNKNOWN);
+	g_assert_cmpint (hif_state_get_action (state), ==, HIF_STATE_ACTION_UNKNOWN);
 
 	hif_state_set_allow_cancel (state, TRUE);
 	g_assert (hif_state_get_allow_cancel (state));
@@ -272,11 +272,11 @@ hif_state_func (void)
 	g_assert (!hif_state_action_stop (state));
 
 	/* repeated */
-	g_assert (hif_state_action_start (state, HIF_STATE_STATUS_DOWNLOAD, NULL));
-	g_assert (!hif_state_action_start (state, HIF_STATE_STATUS_DOWNLOAD, NULL));
-	g_assert_cmpint (hif_state_get_action (state), ==, HIF_STATE_STATUS_DOWNLOAD);
+	g_assert (hif_state_action_start (state, HIF_STATE_ACTION_DOWNLOAD, NULL));
+	g_assert (!hif_state_action_start (state, HIF_STATE_ACTION_DOWNLOAD, NULL));
+	g_assert_cmpint (hif_state_get_action (state), ==, HIF_STATE_ACTION_DOWNLOAD);
 	g_assert (hif_state_action_stop (state));
-	g_assert_cmpint (hif_state_get_action (state), ==, HIF_STATE_STATUS_UNKNOWN);
+	g_assert_cmpint (hif_state_get_action (state), ==, HIF_STATE_ACTION_UNKNOWN);
 	g_assert_cmpint (_action_updates, ==, 2);
 
 	ret = hif_state_set_number_steps (state, 5);
@@ -294,7 +294,7 @@ hif_state_func (void)
 	ret = hif_state_done (state, NULL);
 	hif_state_set_package_progress (state,
 					"hal;0.0.1;i386;fedora",
-					HIF_STATE_STATUS_DOWNLOAD,
+					HIF_STATE_ACTION_DOWNLOAD,
 					50);
 	g_assert (hif_state_done (state, NULL));
 
@@ -345,7 +345,7 @@ hif_state_child_func (void)
 	/* set parent state */
 	g_debug ("setting: depsolving-conflicts");
 	hif_state_action_start (state,
-				HIF_STATE_STATUS_DEP_RESOLVE,
+				HIF_STATE_ACTION_DEP_RESOLVE,
 				"hal;0.1.0-1;i386;fedora");
 
 	/* now test with a child */
@@ -354,7 +354,7 @@ hif_state_child_func (void)
 
 	/* check child inherits parents action */
 	g_assert_cmpint (hif_state_get_action (child), ==,
-			 HIF_STATE_STATUS_DEP_RESOLVE);
+			 HIF_STATE_ACTION_DEP_RESOLVE);
 
 	/* set child non-cancellable */
 	hif_state_set_allow_cancel (child, FALSE);
@@ -365,15 +365,15 @@ hif_state_child_func (void)
 
 	/* CHILD UPDATE */
 	g_debug ("setting: loading-rpmdb");
-	g_assert (hif_state_action_start (child, HIF_STATE_STATUS_LOADING_CACHE, NULL));
+	g_assert (hif_state_action_start (child, HIF_STATE_ACTION_LOADING_CACHE, NULL));
 	g_assert_cmpint (hif_state_get_action (child), ==,
-			 HIF_STATE_STATUS_LOADING_CACHE);
+			 HIF_STATE_ACTION_LOADING_CACHE);
 
 	g_debug ("child update #1");
 	ret = hif_state_done (child, NULL);
 	hif_state_set_package_progress (child,
 					"hal;0.0.1;i386;fedora",
-					HIF_STATE_STATUS_DOWNLOAD,
+					HIF_STATE_ACTION_DOWNLOAD,
 					50);
 
 	g_assert_cmpint (_updates, ==, 2);
@@ -383,21 +383,21 @@ hif_state_child_func (void)
 	/* child action */
 	g_debug ("setting: downloading");
 	g_assert (hif_state_action_start (child,
-					  HIF_STATE_STATUS_DOWNLOAD,
+					  HIF_STATE_ACTION_DOWNLOAD,
 					  NULL));
 	g_assert_cmpint (hif_state_get_action (child), ==,
-			 HIF_STATE_STATUS_DOWNLOAD);
+			 HIF_STATE_ACTION_DOWNLOAD);
 
 	/* CHILD UPDATE */
 	g_debug ("child update #2");
 	ret = hif_state_done (child, NULL);
 
 	g_assert_cmpint (hif_state_get_action (state), ==,
-			 HIF_STATE_STATUS_DEP_RESOLVE);
+			 HIF_STATE_ACTION_DEP_RESOLVE);
 	g_assert (hif_state_action_stop (state));
 	g_assert (!hif_state_action_stop (state));
 	g_assert_cmpint (hif_state_get_action (state), ==,
-			 HIF_STATE_STATUS_UNKNOWN);
+			 HIF_STATE_ACTION_UNKNOWN);
 	g_assert_cmpint (_action_updates, ==, 6);
 
 	g_assert_cmpint (_updates, ==, 3);
@@ -691,7 +691,7 @@ hif_state_finished_func (void)
 
 	hif_state_set_allow_cancel (state, FALSE);
 	hif_state_action_start (state,
-				HIF_STATE_STATUS_LOADING_CACHE, "/");
+				HIF_STATE_ACTION_LOADING_CACHE, "/");
 
 	state_local = hif_state_get_child (state);
 	hif_state_set_report_progress (state_local, FALSE);

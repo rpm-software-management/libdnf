@@ -627,7 +627,7 @@ hif_transaction_ts_progress_cb (const void *arg,
 
 		hif_state_set_package_progress (priv->state,
 						hif_package_get_id (pkg),
-						HIF_STATE_STATUS_INSTALL,
+						HIF_STATE_ACTION_INSTALL,
 						percentage);
 		break;
 
@@ -662,7 +662,7 @@ hif_transaction_ts_progress_cb (const void *arg,
 		}
 		hif_state_set_package_progress (priv->state,
 						hif_package_get_id (pkg),
-						HIF_STATE_STATUS_REMOVE,
+						HIF_STATE_ACTION_REMOVE,
 						percentage);
 		break;
 
@@ -1124,7 +1124,7 @@ hif_transaction_commit (HifTransaction *transaction,
 			goto out;
 	}
 
-	hif_state_action_start (state, HIF_STATE_STATUS_REQUEST, NULL);
+	hif_state_action_start (state, HIF_STATE_ACTION_REQUEST, NULL);
 
 	/* get verbosity from the config file */
 	tmp = hif_context_get_rpm_verbosity (priv->context);
@@ -1245,7 +1245,7 @@ hif_transaction_commit (HifTransaction *transaction,
 	if (hif_context_get_check_transaction (priv->context)) {
 		g_debug ("running test transaction");
 		hif_state_action_start (state,
-					HIF_STATE_STATUS_TEST_COMMIT,
+					HIF_STATE_ACTION_TEST_COMMIT,
 					NULL);
 		priv->state = hif_state_get_child (state);
 		priv->step = HIF_TRANSACTION_STEP_IGNORE;

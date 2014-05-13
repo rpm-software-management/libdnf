@@ -106,7 +106,7 @@ hif_sack_add_source (HySack sack,
 
 	/* load solv */
 	g_debug ("Loading repo %s", hif_source_get_id (src));
-	hif_state_action_start (state, HIF_STATE_STATUS_LOADING_CACHE, NULL);
+	hif_state_action_start (state, HIF_STATE_ACTION_LOADING_CACHE, NULL);
 	rc = hy_sack_load_yum_repo (sack, hif_source_get_repo (src), flags_hy);
 	if (rc == HY_E_FAILED)
 		rc = hy_get_errno ();

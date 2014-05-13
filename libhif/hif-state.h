@@ -41,34 +41,38 @@
 G_BEGIN_DECLS
 
 typedef struct _HifState		HifState;
-typedef struct _HifStateClass	HifStateClass;
+typedef struct _HifStateClass		HifStateClass;
 
 struct _HifState
 {
-	GObject			parent;
+	GObject				parent;
 };
 
 /**
- * HifStateStatus:
- * @HIF_STATE_STATUS_UNKNOWN:			Unknown status
- * @HIF_STATE_STATUS_DOWNLOAD_PACKAGES:		Downloading packages
- * @HIF_STATE_STATUS_DOWNLOAD_METADATA:		Downloading metadata
- * @HIF_STATE_STATUS_LOADING_CACHE:		Loading cache
+ * HifStateAction:
+ * @HIF_STATE_ACTION_UNKNOWN:			Unknown status
+ * @HIF_STATE_ACTION_DOWNLOAD_PACKAGES:		Downloading packages
+ * @HIF_STATE_ACTION_DOWNLOAD_METADATA:		Downloading metadata
+ * @HIF_STATE_ACTION_LOADING_CACHE:		Loading cache
+ * @HIF_STATE_ACTION_TEST_COMMIT:		Testing transaction
+ * @HIF_STATE_ACTION_REQUEST:			Requesting data
+ * @HIF_STATE_ACTION_REMOVE:			Removing packages
+ * @HIF_STATE_ACTION_INSTALL:			Installing packages
  *
- * The error code.
+ * The action enum code.
  **/
 typedef enum {
-	HIF_STATE_STATUS_UNKNOWN,			/* Since: 0.1.0 */
-	HIF_STATE_STATUS_DOWNLOAD_PACKAGES	= 8,	/* Since: 0.1.0 */
-	HIF_STATE_STATUS_DOWNLOAD_METADATA	= 20,	/* Since: 0.1.0 */
-	HIF_STATE_STATUS_LOADING_CACHE		= 27,	/* Since: 0.1.0 */
-	HIF_STATE_STATUS_TEST_COMMIT		= 15,	/* Since: 0.1.0 */
-	HIF_STATE_STATUS_REQUEST		= 17,	/* Since: 0.1.0 */
-	HIF_STATE_STATUS_REMOVE			= 6,	/* Since: 0.1.0 */
-	HIF_STATE_STATUS_INSTALL		= 9,	/* Since: 0.1.0 */
+	HIF_STATE_ACTION_UNKNOWN,			/* Since: 0.1.0 */
+	HIF_STATE_ACTION_DOWNLOAD_PACKAGES	= 8,	/* Since: 0.1.0 */
+	HIF_STATE_ACTION_DOWNLOAD_METADATA	= 20,	/* Since: 0.1.0 */
+	HIF_STATE_ACTION_LOADING_CACHE		= 27,	/* Since: 0.1.0 */
+	HIF_STATE_ACTION_TEST_COMMIT		= 15,	/* Since: 0.1.0 */
+	HIF_STATE_ACTION_REQUEST		= 17,	/* Since: 0.1.0 */
+	HIF_STATE_ACTION_REMOVE			= 6,	/* Since: 0.1.0 */
+	HIF_STATE_ACTION_INSTALL		= 9,	/* Since: 0.1.0 */
 	/*< private >*/
-	HIF_STATE_STATUS_LAST
-} HifStateStatus;
+	HIF_STATE_ACTION_LAST
+} HifStateAction;
 
 struct _HifStateClass
 {
@@ -78,11 +82,11 @@ struct _HifStateClass
 	void		(* allow_cancel_changed)	(HifState	*state,
 							 gboolean	 allow_cancel);
 	void		(* action_changed)		(HifState	*state,
-							 HifStateStatus	 action,
+							 HifStateAction	 action,
 							 const gchar	*action_hint);
 	void		(* package_progress_changed)	(HifState	*state,
 							 const gchar	*package_id,
-							 HifStateStatus	 action,
+							 HifStateAction	 action,
 							 guint		 percentage);
 	/*< private >*/
 	void (*_hif_reserved1)	(void);
@@ -108,7 +112,7 @@ HifState	*hif_state_new				(void);
 
 /* getters */
 guint		 hif_state_get_percentage		(HifState		*state);
-HifStateStatus	 hif_state_get_action			(HifState		*state);
+HifStateAction	 hif_state_get_action			(HifState		*state);
 const gchar	*hif_state_get_action_hint		(HifState		*state);
 GCancellable	*hif_state_get_cancellable		(HifState		*state);
 gboolean	 hif_state_get_allow_cancel		(HifState		*state);
@@ -134,13 +138,13 @@ gboolean	 hif_state_set_percentage		(HifState		*state,
 							 guint			 percentage);
 void		 hif_state_set_package_progress		(HifState		*state,
 							 const gchar		*package_id,
-							 HifStateStatus		 action,
+							 HifStateAction		 action,
 							 guint			 percentage);
 
 /* object methods */
 HifState	*hif_state_get_child			(HifState		*state);
 gboolean	 hif_state_action_start			(HifState		*state,
-							 HifStateStatus		 action,
+							 HifStateAction		 action,
 							 const gchar		*action_hint);
 gboolean	 hif_state_action_stop			(HifState		*state);
 gboolean	 hif_state_check			(HifState		*state,
