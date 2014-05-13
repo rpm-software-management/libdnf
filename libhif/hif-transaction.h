@@ -66,6 +66,13 @@ struct _HifTransactionClass
 	void (*_hif_reserved8)	(void);
 };
 
+/**
+ * HifTransactionFlag:
+ * @HIF_TRANSACTION_FLAG_NONE:			No flags
+ * @HIF_TRANSACTION_FLAG_ONLY_TRUSTED:		Only install trusted packages
+ *
+ * The transaction flags.
+ **/
 typedef enum {
 	HIF_TRANSACTION_FLAG_NONE,
 	HIF_TRANSACTION_FLAG_ONLY_TRUSTED,
@@ -81,7 +88,7 @@ guint64		 hif_transaction_get_flags		(HifTransaction	*transaction);
 
 /* setters */
 void		 hif_transaction_set_sources		(HifTransaction	*transaction,
-							 GPtrArray	*repos);
+							 GPtrArray	*sources);
 void		 hif_transaction_set_uid		(HifTransaction	*transaction,
 							 guint		 uid);
 void		 hif_transaction_set_flags		(HifTransaction	*transaction,

@@ -1056,6 +1056,7 @@ out:
 /**
  * hif_transaction_commit:
  * @transaction: a #HifTransaction instance.
+ * @goal: A #HyGoal
  * @state: A #HifState
  * @error: A #GError or %NULL
  *
@@ -1345,6 +1346,7 @@ out:
 
 /**
  * hif_transaction_new:
+ * @context: a #HifContext instance.
  *
  * Creates a new #HifTransaction.
  *

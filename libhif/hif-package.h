@@ -34,6 +34,16 @@
 
 /**
  * HifPackageInfo:
+ * @HIF_PACKAGE_INFO_UNKNOWN:			Unknown state
+ * @HIF_PACKAGE_INFO_UPDATE:			Package update
+ * @HIF_PACKAGE_INFO_INSTALL:			Package install
+ * @HIF_PACKAGE_INFO_REMOVE:			Package remove
+ * @HIF_PACKAGE_INFO_CLEANUP:			Package cleanup
+ * @HIF_PACKAGE_INFO_OBSOLETE:			Package obsolete
+ * @HIF_PACKAGE_INFO_REINSTALL:			Package re-install
+ * @HIF_PACKAGE_INFO_DOWNGRADE:			Package downgrade
+ *
+ * The info enum code.
  **/
 typedef enum {
 	HIF_PACKAGE_INFO_UNKNOWN			= 0,

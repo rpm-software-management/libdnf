@@ -45,6 +45,8 @@
  * @HIF_ERROR_GPG_SIGNATURE_INVALID:		GPG signature was bad
  * @HIF_ERROR_FILE_INVALID:			File was invalid or could not be read
  * @HIF_ERROR_SOURCE_NOT_FOUND:			Source was not found
+ * @HIF_ERROR_FAILED_CONFIG_PARSING:		Configuration could not be read
+ * @HIF_ERROR_PACKAGE_NOT_FOUND:		Package was not found
  *
  * The error code.
  **/
