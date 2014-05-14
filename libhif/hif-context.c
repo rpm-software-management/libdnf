@@ -326,6 +326,23 @@ hif_context_get_native_arches (HifContext *context)
 }
 
 /**
+ * hif_context_get_sources:
+ * @context: a #HifContext instance.
+ *
+ * Gets the sources used by the transaction.
+ *
+ * Returns: (transfer none): the source list
+ *
+ * Since: 0.1.0
+ **/
+GPtrArray *
+hif_context_get_sources (HifContext *context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	return priv->sources;
+}
+
+/**
  * hif_context_get_check_disk_space:
  * @context: a #HifContext instance.
  *

@@ -34,6 +34,7 @@ gboolean	 hif_context_commit			(HifContext	*context,
 							 GError		**error);
 void		 hif_context_invalidate			(HifContext	*context,
 							 const gchar	*message);
+GPtrArray	*hif_context_get_sources		(HifContext	*context);
 
 G_END_DECLS
 
