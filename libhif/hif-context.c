@@ -309,6 +309,23 @@ hif_context_get_install_root (HifContext *context)
 }
 
 /**
+ * hif_context_get_native_arches:
+ * @context: a #HifContext instance.
+ *
+ * Gets the native architectures, by default "noarch" and "i386".
+ *
+ * Returns: (transfer none): the native architectures
+ *
+ * Since: 0.1.0
+ **/
+const gchar **
+hif_context_get_native_arches (HifContext *context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	return (const gchar **) priv->native_arches;
+}
+
+/**
  * hif_context_get_check_disk_space:
  * @context: a #HifContext instance.
  *

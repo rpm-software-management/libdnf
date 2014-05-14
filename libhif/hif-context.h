@@ -75,6 +75,7 @@ const gchar	*hif_context_get_cache_dir		(HifContext	*context);
 const gchar	*hif_context_get_solv_dir		(HifContext	*context);
 const gchar	*hif_context_get_rpm_verbosity		(HifContext	*context);
 const gchar	*hif_context_get_install_root		(HifContext	*context);
+const gchar	**hif_context_get_native_arches		(HifContext	*context);
 gboolean	 hif_context_get_check_disk_space	(HifContext	*context);
 gboolean	 hif_context_get_check_transaction	(HifContext	*context);
 gboolean	 hif_context_get_keep_cache		(HifContext	*context);
