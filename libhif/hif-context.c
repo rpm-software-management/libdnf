@@ -67,6 +67,7 @@ struct _HifContextPrivate
 	gboolean		 only_trusted;
 	gboolean		 keep_cache;
 	HifTransaction		*transaction;
+	GFileMonitor		*monitor_rpmdb;
 
 	/* used to implement a transaction */
 	GPtrArray		*sources;
@@ -116,6 +117,8 @@ hif_context_finalize (GObject *object)
 		hy_goal_free (priv->goal);
 	if (priv->sack != NULL)
 		hy_sack_free (priv->sack);
+	if (priv->monitor_rpmdb != NULL)
+		g_object_unref (priv->monitor_rpmdb);
 
 	G_OBJECT_CLASS (hif_context_parent_class)->finalize (object);
 }
@@ -619,14 +622,40 @@ out:
 }
 
 /**
+ * hif_context_rpmdb_changed_cb:
+ **/
+static void
+hif_context_rpmdb_changed_cb (GFileMonitor *monitor_,
+			      GFile *file, GFile *other_file,
+			      GFileMonitorEvent event_type,
+			      HifContext *context)
+{
+	hif_context_invalidate (context, "rpmdb changed");
+}
+
+/**
  * hif_context_setup_sack:
  **/
 static gboolean
 hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 {
+	GFile *file_rpmdb = NULL;
+	HifContextPrivate *priv = GET_PRIVATE (context);
 	gboolean ret;
 	gint rc;
-	HifContextPrivate *priv = GET_PRIVATE (context);
+
+	/* setup a file monitor on the rpmdb */
+	file_rpmdb = g_file_new_for_path ("/var/lib/rpm/Packages");
+	priv->monitor_rpmdb = g_file_monitor_file (file_rpmdb,
+						   G_FILE_MONITOR_NONE,
+						   NULL,
+						   error);
+	if (priv->monitor_rpmdb == NULL) {
+		ret = FALSE;
+		goto out;
+	}
+	g_signal_connect (priv->monitor_rpmdb, "changed",
+			  G_CALLBACK (hif_context_rpmdb_changed_cb), context);
 
 	/* create empty sack */
 	priv->sack = hy_sack_create (priv->solv_dir, NULL, NULL, HY_MAKE_CACHE_DIR);
@@ -660,6 +689,8 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 	if (!ret)
 		goto out;
 out:
+	if (file_rpmdb != NULL)
+		g_object_unref (file_rpmdb);
 	return ret;
 }
 
