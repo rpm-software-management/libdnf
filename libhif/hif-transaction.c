@@ -291,13 +291,13 @@ out:
 #endif
 
 /**
- * pk_backend_transaction_check_untrusted:
+ * hif_transaction_check_untrusted:
  */
 static gboolean
-pk_backend_transaction_check_untrusted (rpmKeyring keyring,
-					GPtrArray *sources,
-					HyGoal goal,
-					GError **error)
+hif_transaction_check_untrusted (rpmKeyring keyring,
+				 GPtrArray *sources,
+				 HyGoal goal,
+				 GError **error)
 {
 	const gchar *filename;
 	gboolean ret = TRUE;
@@ -1241,10 +1241,10 @@ hif_transaction_commit (HifTransaction *transaction,
 
 	/* find any packages without valid GPG signatures */
 	if ((priv->flags & HIF_TRANSACTION_FLAG_ONLY_TRUSTED) > 0) {
-		ret = pk_backend_transaction_check_untrusted (priv->keyring,
-							      priv->sources,
-							      goal,
-							      error);
+		ret = hif_transaction_check_untrusted (priv->keyring,
+						       priv->sources,
+						       goal,
+						       error);
 		if (!ret)
 			goto out;
 	}
