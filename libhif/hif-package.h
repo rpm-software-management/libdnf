@@ -80,6 +80,7 @@ void		 hif_package_set_user_action		(HyPackage	 pkg,
 gboolean	 hif_package_is_gui			(HyPackage	 pkg);
 gboolean	 hif_package_is_devel			(HyPackage	 pkg);
 gboolean	 hif_package_is_downloaded		(HyPackage	 pkg);
+gboolean	 hif_package_is_installonly		(HyPackage	 pkg);
 const gchar	*hif_package_get_pkgid			(HyPackage	 pkg);
 const gchar	*hif_package_get_nevra			(HyPackage	 pkg);
 const gchar	*hif_package_get_description		(HyPackage	 pkg);

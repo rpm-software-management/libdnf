@@ -431,6 +431,39 @@ hif_context_get_cache_age (HifContext *context)
 }
 
 /**
+ * hif_context_get_installonly_pkgs:
+ * @context: a #HifContext instance.
+ *
+ * Gets the packages that are allowed to be installed more than once.
+ *
+ * Returns: (transfer none): array of package names
+ */
+const gchar **
+hif_context_get_installonly_pkgs (HifContext *context)
+{
+	static const gchar *installonly_pkgs[] = { "kernel",
+						   "installonlypkg(kernel)",
+						   "installonlypkg(kernel-module)",
+						   "installonlypkg(vm)",
+						    NULL };
+	return installonly_pkgs;
+}
+
+/**
+ * hif_context_get_installonly_limit:
+ * @context: a #HifContext instance.
+ *
+ * Gets the maximum number of packages for installonly packages
+ *
+ * Returns: integer value
+ */
+guint
+hif_context_get_installonly_limit (HifContext *context)
+{
+	return 3;
+}
+
+/**
  * hif_context_set_repo_dir:
  * @context: a #HifContext instance.
  * @repo_dir: the repodir, e.g. "/etc/yum.repos.d"
@@ -688,6 +721,8 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 			     "failed to create sack cache");
 		goto out;
 	}
+	hy_sack_set_installonly (priv->sack, hif_context_get_installonly_pkgs (context));
+	hy_sack_set_installonly_limit (priv->sack, hif_context_get_installonly_limit (context));
 
 	/* add installed packages */
 	rc = hy_sack_load_system_repo (priv->sack, NULL, HY_BUILD_CACHE);
@@ -971,7 +1006,10 @@ hif_context_update (HifContext *context, const gchar *name, GError **error)
 	/* add each package */
 	FOR_PACKAGELIST(pkg, pkglist, i) {
 		hif_package_set_user_action (pkg, TRUE);
-		hy_goal_upgrade_to (priv->goal, pkg);
+		if (hif_package_is_installonly (pkg))
+			hy_goal_install (priv->goal, pkg);
+		else
+			hy_goal_upgrade_to (priv->goal, pkg);
 	}
 	hy_packagelist_free (pkglist);
 	hy_query_free (query);

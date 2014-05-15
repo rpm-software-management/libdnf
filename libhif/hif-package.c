@@ -42,6 +42,7 @@
 #include <hawkey/util.h>
 #include <librepo/librepo.h>
 
+#include "hif-context.h"
 #include "hif-package.h"
 #include "hif-utils.h"
 
@@ -593,6 +594,30 @@ hif_package_is_downloaded (HyPackage pkg)
 		return FALSE;
 	}
 	return g_file_test (filename, G_FILE_TEST_EXISTS);
+}
+
+/**
+ * hif_package_is_installonly:
+ * @pkg: a #HyPackage instance.
+ *
+ * Returns: %TRUE if the package can be installed more than once
+ *
+ * Since: 0.1.0
+ */
+gboolean
+hif_package_is_installonly (HyPackage pkg)
+{
+	const gchar **installonly_pkgs;
+	const gchar *pkg_name;
+	guint i;
+
+	installonly_pkgs = hif_context_get_installonly_pkgs (NULL);
+	pkg_name = hy_package_get_name (pkg);
+	for (i = 0; installonly_pkgs[i] != NULL; i++) {
+		if (g_strcmp0 (pkg_name, installonly_pkgs[i]) == 0)
+			return TRUE;
+	}
+	return FALSE;
 }
 
 /**
