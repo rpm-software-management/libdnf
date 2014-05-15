@@ -85,6 +85,7 @@ HifTransaction	*hif_transaction_new			(HifContext	*context);
 
 /* getters */
 guint64		 hif_transaction_get_flags		(HifTransaction	*transaction);
+GPtrArray	*hif_transaction_get_remote_pkgs	(HifTransaction	*transaction);
 
 /* setters */
 void		 hif_transaction_set_sources		(HifTransaction	*transaction,
@@ -95,6 +96,13 @@ void		 hif_transaction_set_flags		(HifTransaction	*transaction,
 							 guint64	 flags);
 
 /* object methods */
+gboolean	 hif_transaction_depsolve		(HifTransaction	*transaction,
+							 HyGoal		 goal,
+							 HifState	*state,
+							 GError		**error);
+gboolean	 hif_transaction_download		(HifTransaction	*transaction,
+							 HifState	*state,
+							 GError		**error);
 gboolean	 hif_transaction_commit			(HifTransaction	*transaction,
 							 HyGoal		 goal,
 							 HifState	*state,

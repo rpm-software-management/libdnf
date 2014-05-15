@@ -76,6 +76,7 @@ struct _HifTransactionPrivate
 	GPtrArray		*remove;
 	GPtrArray		*remove_helper;
 	GPtrArray		*install;
+	GPtrArray		*pkgs_to_download;
 	guint64			 flags;
 };
 
@@ -91,6 +92,7 @@ hif_transaction_finalize (GObject *object)
 	HifTransaction *transaction = HIF_TRANSACTION (object);
 	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
 
+	g_ptr_array_unref (priv->pkgs_to_download);
 	g_object_unref (priv->context);
 	g_timer_destroy (priv->timer);
 	rpmKeyringFree (priv->keyring);
@@ -120,6 +122,7 @@ hif_transaction_init (HifTransaction *transaction)
 	priv->ts = rpmtsCreate ();
 	priv->keyring = rpmtsGetKeyring (priv->ts, 1);
 	priv->timer = g_timer_new ();
+	priv->pkgs_to_download = g_ptr_array_new_with_free_func ((GDestroyNotify) hy_package_free);
 }
 
 /**
@@ -149,6 +152,26 @@ hif_transaction_get_flags (HifTransaction *transaction)
 {
 	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
 	return priv->flags;
+}
+
+/**
+ * hif_transaction_get_remote_pkgs:
+ * @transaction: a #HifTransaction instance.
+ *
+ * Gets the packages that will be downloaded in hif_transaction_download().
+ *
+ * The hif_transaction_depsolve() function must have been called before this
+ * function will return sensible results.
+ *
+ * Returns: (transfer none): the list of packages
+ *
+ * Since: 0.1.0
+ **/
+GPtrArray *
+hif_transaction_get_remote_pkgs (HifTransaction *transaction)
+{
+	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
+	return priv->pkgs_to_download;
 }
 
 /**
@@ -1050,6 +1073,107 @@ hif_transaction_write_yumdb (HifTransaction *transaction,
 	if (!ret)
 		goto out;
 out:
+	return ret;
+}
+
+/**
+ * hif_transaction_download:
+ * @transaction: a #HifTransaction instance.
+ * @goal: A #HyGoal
+ * @state: A #HifState
+ * @error: A #GError or %NULL
+ *
+ * Downloads all the packages needed for a transaction.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.1.0
+ **/
+gboolean
+hif_transaction_download (HifTransaction *transaction,
+			  HifState *state,
+			  GError **error)
+{
+	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
+	gboolean ret;
+
+	/* just download the list */
+	ret = hif_package_array_download (priv->pkgs_to_download,
+					  NULL,
+					  state,
+					  error);
+	if (!ret)
+		goto out;
+out:
+	return ret;
+}
+
+/**
+ * hif_transaction_depsolve:
+ * @transaction: a #HifTransaction instance.
+ * @state: A #HifState
+ * @error: A #GError or %NULL
+ *
+ * Depsolves the transaction.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.1.0
+ **/
+gboolean
+hif_transaction_depsolve (HifTransaction *transaction,
+			  HyGoal goal,
+			  HifState *state,
+			  GError **error)
+{
+	GPtrArray *packages = NULL;
+	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
+	HyPackage pkg;
+	gboolean ret;
+	gboolean valid;
+	guint i;
+
+	/* depsolve */
+	ret = hif_goal_depsolve (goal, error);
+	if (!ret)
+		goto out;
+
+	/* find a list of all the packages we have to download */
+	g_ptr_array_set_size (priv->pkgs_to_download, 0);
+	packages = hif_goal_get_packages (goal,
+					  HIF_PACKAGE_INFO_INSTALL,
+					  HIF_PACKAGE_INFO_REINSTALL,
+					  HIF_PACKAGE_INFO_DOWNGRADE,
+					  HIF_PACKAGE_INFO_UPDATE,
+					  -1);
+	for (i = 0; i < packages->len; i++) {
+		pkg = g_ptr_array_index (packages, i);
+
+		/* get correct package source */
+		ret = hif_transaction_ensure_source (priv->sources, pkg, error);
+		if (!ret)
+			goto out;
+
+		/* this is a local file */
+		if (g_strcmp0 (hy_package_get_reponame (pkg),
+			       HY_CMDLINE_REPO_NAME) == 0) {
+			continue;
+		}
+
+		/* check package exists and checksum is okay */
+		ret = hif_package_check_filename (pkg, &valid, error);
+		if (!ret)
+			goto out;
+
+		/* package needs to be downloaded */
+		if (!valid) {
+			g_ptr_array_add (priv->pkgs_to_download,
+					 hy_package_link (pkg));
+		}
+	}
+out:
+	if (packages != NULL)
+		g_ptr_array_unref (packages);
 	return ret;
 }
 
