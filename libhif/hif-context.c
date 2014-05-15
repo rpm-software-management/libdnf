@@ -344,6 +344,23 @@ hif_context_get_sources (HifContext *context)
 }
 
 /**
+ * hif_context_get_transaction:
+ * @context: a #HifContext instance.
+ *
+ * Gets the transaction used by the transaction.
+ *
+ * Returns: (transfer none): the HifTransaction object
+ *
+ * Since: 0.1.0
+ **/
+HifTransaction *
+hif_context_get_transaction (HifContext *context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	return priv->transaction;
+}
+
+/**
  * hif_context_get_check_disk_space:
  * @context: a #HifContext instance.
  *

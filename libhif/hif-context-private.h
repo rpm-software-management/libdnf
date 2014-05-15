@@ -28,6 +28,7 @@
 
 #include "hif-context.h"
 #include "hif-state.h"
+#include "hif-transaction.h"
 
 gboolean	 hif_context_commit			(HifContext	*context,
 							 HifState	*state,
@@ -35,6 +36,8 @@ gboolean	 hif_context_commit			(HifContext	*context,
 void		 hif_context_invalidate			(HifContext	*context,
 							 const gchar	*message);
 GPtrArray	*hif_context_get_sources		(HifContext	*context);
+
+HifTransaction	*hif_context_get_transaction		(HifContext	*context);
 
 G_END_DECLS
 
