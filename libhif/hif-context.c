@@ -35,6 +35,7 @@
 
 #include <hawkey/query.h>
 #include <hawkey/packagelist.h>
+#include <librepo/librepo.h>
 
 #include "hif-context.h"
 #include "hif-context-private.h"
@@ -1175,5 +1176,6 @@ hif_context_new (void)
 {
 	HifContext *context;
 	context = g_object_new (HIF_TYPE_CONTEXT, NULL);
+	lr_global_init ();
 	return HIF_CONTEXT (context);
 }
