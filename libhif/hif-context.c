@@ -673,23 +673,9 @@ hif_context_rpmdb_changed_cb (GFileMonitor *monitor_,
 static gboolean
 hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 {
-	GFile *file_rpmdb = NULL;
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	gboolean ret;
 	gint rc;
-
-	/* setup a file monitor on the rpmdb */
-	file_rpmdb = g_file_new_for_path ("/var/lib/rpm/Packages");
-	priv->monitor_rpmdb = g_file_monitor_file (file_rpmdb,
-						   G_FILE_MONITOR_NONE,
-						   NULL,
-						   error);
-	if (priv->monitor_rpmdb == NULL) {
-		ret = FALSE;
-		goto out;
-	}
-	g_signal_connect (priv->monitor_rpmdb, "changed",
-			  G_CALLBACK (hif_context_rpmdb_changed_cb), context);
 
 	/* create empty sack */
 	priv->sack = hy_sack_create (priv->solv_dir, NULL, NULL, HY_MAKE_CACHE_DIR);
@@ -723,8 +709,6 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 	if (!ret)
 		goto out;
 out:
-	if (file_rpmdb != NULL)
-		g_object_unref (file_rpmdb);
 	return ret;
 }
 
@@ -746,6 +730,7 @@ hif_context_setup (HifContext *context,
 		   GError **error)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
+	GFile *file_rpmdb = NULL;
 	const gchar *value;
 	gboolean ret = TRUE;
 	gint retval;
@@ -812,6 +797,19 @@ hif_context_setup (HifContext *context,
 	hif_transaction_set_flags (priv->transaction,
 				   HIF_TRANSACTION_FLAG_ONLY_TRUSTED);
 
+	/* setup a file monitor on the rpmdb */
+	file_rpmdb = g_file_new_for_path ("/var/lib/rpm/Packages");
+	priv->monitor_rpmdb = g_file_monitor_file (file_rpmdb,
+						   G_FILE_MONITOR_NONE,
+						   NULL,
+						   error);
+	if (priv->monitor_rpmdb == NULL) {
+		ret = FALSE;
+		goto out;
+	}
+	g_signal_connect (priv->monitor_rpmdb, "changed",
+			  G_CALLBACK (hif_context_rpmdb_changed_cb), context);
+
 	/* set up sack */
 	hif_state_reset (priv->state);
 	ret = hif_context_setup_sack (context, priv->state, error);
@@ -819,6 +817,8 @@ hif_context_setup (HifContext *context,
 		goto out;
 	priv->goal = hy_goal_create (priv->sack);
 out:
+	if (file_rpmdb != NULL)
+		g_object_unref (file_rpmdb);
 	return ret;
 }
 
