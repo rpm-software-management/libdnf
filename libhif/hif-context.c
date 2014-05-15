@@ -106,9 +106,10 @@ hif_context_finalize (GObject *object)
 	g_free (priv->os_info);
 	g_free (priv->arch_info);
 	g_strfreev (priv->native_arches);
-	g_object_unref (priv->transaction);
 	g_object_unref (priv->state);
 
+	if (priv->transaction != NULL)
+		g_object_unref (priv->transaction);
 	if (priv->repos != NULL)
 		g_object_unref (priv->repos);
 	if (priv->sources != NULL)
