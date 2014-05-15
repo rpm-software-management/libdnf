@@ -892,17 +892,64 @@ gboolean
 hif_context_run (HifContext *context, GCancellable *cancellable, GError **error)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
+	HifState *state_local;
+	gboolean ret;
 
 	/* connect if set */
 	hif_state_reset (priv->state);
 	if (cancellable != NULL)
 		hif_state_set_cancellable (priv->state, cancellable);
 
-	g_set_error_literal (error,
-			     HIF_ERROR,
-			     HIF_ERROR_INTERNAL_ERROR,
-			     "Not supported");
-	return FALSE;
+	ret = hif_state_set_steps (priv->state, error,
+				   5,	/* depsolve */
+				   50,	/* download */
+				   45,	/* commit */
+				   -1);
+	if (!ret)
+		goto out;
+
+	/* depsolve */
+	state_local = hif_state_get_child (priv->state);
+	ret = hif_transaction_depsolve (priv->transaction,
+					priv->goal,
+					state_local,
+					error);
+	if (!ret)
+		goto out;
+
+	/* this section done */
+	ret = hif_state_done (priv->state, error);
+	if (!ret)
+		goto out;
+
+	/* download */
+	state_local = hif_state_get_child (priv->state);
+	ret = hif_transaction_download (priv->transaction,
+					state_local,
+					error);
+	if (!ret)
+		goto out;
+
+	/* this section done */
+	ret = hif_state_done (priv->state, error);
+	if (!ret)
+		goto out;
+
+	/* commit set up transaction */
+	state_local = hif_state_get_child (priv->state);
+	ret = hif_transaction_commit (priv->transaction,
+				      priv->goal,
+				      state_local,
+				      error);
+	if (!ret)
+		goto out;
+
+	/* this section done */
+	ret = hif_state_done (priv->state, error);
+	if (!ret)
+		goto out;
+out:
+	return ret;
 }
 
 /**
