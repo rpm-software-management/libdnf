@@ -435,6 +435,7 @@ running_kernel(HySack sack)
 	const char *fn = g.gl_pathv[i];
 	HyQuery q = hy_query_create(sack);
 	hy_query_filter(q, HY_PKG_FILE, HY_EQ, fn);
+	hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
 	HyPackageSet pset = hy_query_run_set(q);
 	if (hy_packageset_count(pset) < 1) {
 	    hy_packageset_free(pset);
