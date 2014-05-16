@@ -763,6 +763,9 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 				    error);
 	if (!ret)
 		goto out;
+
+	/* create goal */
+	priv->goal = hy_goal_create (priv->sack);
 out:
 	return ret;
 }
@@ -864,13 +867,6 @@ hif_context_setup (HifContext *context,
 	}
 	g_signal_connect (priv->monitor_rpmdb, "changed",
 			  G_CALLBACK (hif_context_rpmdb_changed_cb), context);
-
-	/* set up sack */
-	hif_state_reset (priv->state);
-	ret = hif_context_setup_sack (context, priv->state, error);
-	if (!ret)
-		goto out;
-	priv->goal = hy_goal_create (priv->sack);
 out:
 	if (file_rpmdb != NULL)
 		g_object_unref (file_rpmdb);
@@ -974,7 +970,16 @@ hif_context_install (HifContext *context, const gchar *name, GError **error)
 	HyPackageList pkglist;
 	HyPackage pkg;
 	HyQuery query;
+	gboolean ret = TRUE;
 	guint i;
+
+	/* create sack and add sources */
+	if (priv->sack == NULL) {
+		hif_state_reset (priv->state);
+		ret = hif_context_setup_sack (context, priv->state, error);
+		if (!ret)
+			goto out;
+	}
 
 	/* find a newest remote package to install */
 	query = hy_query_create (priv->sack);
@@ -993,7 +998,8 @@ hif_context_install (HifContext *context, const gchar *name, GError **error)
 	}
 	hy_packagelist_free (pkglist);
 	hy_query_free (query);
-	return TRUE;
+out:
+	return ret;
 }
 
 /**
@@ -1017,7 +1023,16 @@ hif_context_remove (HifContext *context, const gchar *name, GError **error)
 	HyPackageList pkglist;
 	HyPackage pkg;
 	HyQuery query;
+	gboolean ret = TRUE;
 	guint i;
+
+	/* create sack and add sources */
+	if (priv->sack == NULL) {
+		hif_state_reset (priv->state);
+		ret = hif_context_setup_sack (context, priv->state, error);
+		if (!ret)
+			goto out;
+	}
 
 	/* find a newest remote package to install */
 	query = hy_query_create (priv->sack);
@@ -1034,7 +1049,8 @@ hif_context_remove (HifContext *context, const gchar *name, GError **error)
 	}
 	hy_packagelist_free (pkglist);
 	hy_query_free (query);
-	return TRUE;
+out:
+	return ret;
 }
 
 /**
@@ -1058,7 +1074,16 @@ hif_context_update (HifContext *context, const gchar *name, GError **error)
 	HyPackageList pkglist;
 	HyPackage pkg;
 	HyQuery query;
+	gboolean ret = TRUE;
 	guint i;
+
+	/* create sack and add sources */
+	if (priv->sack == NULL) {
+		hif_state_reset (priv->state);
+		ret = hif_context_setup_sack (context, priv->state, error);
+		if (!ret)
+			goto out;
+	}
 
 	/* find a newest remote package to install */
 	query = hy_query_create (priv->sack);
@@ -1079,7 +1104,8 @@ hif_context_update (HifContext *context, const gchar *name, GError **error)
 	}
 	hy_packagelist_free (pkglist);
 	hy_query_free (query);
-	return TRUE;
+out:
+	return ret;
 }
 
 /**
