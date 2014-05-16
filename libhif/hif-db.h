@@ -28,6 +28,7 @@
 
 #include <glib-object.h>
 #include <hawkey/package.h>
+#include <hawkey/packagelist.h>
 
 #include "hif-context.h"
 
@@ -86,6 +87,10 @@ gboolean	 hif_db_remove			(HifDb		*db,
 gboolean	 hif_db_remove_all		(HifDb		*db,
 						 HyPackage	 package,
 						 GError		**error);
+void		 hif_db_ensure_origin_pkg	(HifDb		*db,
+						 HyPackage	 pkg);
+void		 hif_db_ensure_origin_pkglist	(HifDb		*db,
+						 HyPackageList	 pkglist);
 
 G_END_DECLS
 

@@ -388,6 +388,59 @@ out:
 }
 
 /**
+ * hif_db_ensure_origin_pkg:
+ * @db: a #HifDb instance.
+ * @pkg: A package to set
+ *
+ * Sets the repo origin on a package if not already set.
+ *
+ * Since: 0.1.0
+ */
+void
+hif_db_ensure_origin_pkg (HifDb *db, HyPackage pkg)
+{
+	gchar *tmp;
+	GError *error = NULL;
+
+	/* already set */
+	if (hif_package_get_origin (pkg) != NULL)
+		return;
+	if (!hy_package_installed (pkg))
+		return;
+
+	/* set from the database if available */
+	tmp = hif_db_get_string (db, pkg, "from_repo", &error);
+	if (tmp == NULL) {
+		g_debug ("no origin for %s: %s",
+			 hif_package_get_id (pkg),
+			 error->message);
+		g_error_free (error);
+	} else {
+		hif_package_set_origin (pkg, tmp);
+	}
+	g_free (tmp);
+}
+
+/**
+ * hif_db_ensure_origin_pkglist:
+ * @db: a #HifDb instance.
+ * @pkglist: A package list to set
+ *
+ * Sets the repo origin on several package if not already set.
+ *
+ * Since: 0.1.0
+ */
+void
+hif_db_ensure_origin_pkglist (HifDb *db, HyPackageList pkglist)
+{
+	HyPackage pkg;
+	gint i;
+
+	FOR_PACKAGELIST(pkg, pkglist, i)
+		hif_db_ensure_origin_pkg (db, pkg);
+}
+
+/**
  * hif_db_new:
  * @context: a #HifContext instance.
  *
