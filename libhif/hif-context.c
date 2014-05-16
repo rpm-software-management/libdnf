@@ -136,6 +136,7 @@ hif_context_init (HifContext *context)
 	priv->check_disk_space = TRUE;
 	priv->check_transaction = TRUE;
 	priv->state = hif_state_new ();
+	priv->cache_age = 60 * 60 * 24 * 7; /* 1 week */
 }
 
 /**
