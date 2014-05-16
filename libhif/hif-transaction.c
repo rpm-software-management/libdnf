@@ -1217,13 +1217,44 @@ out:
 }
 
 /**
+ * hif_transaction_reset:
+ */
+static void
+hif_transaction_reset (HifTransaction *transaction)
+{
+	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
+
+	/* reset */
+	priv->child = NULL;
+	g_ptr_array_set_size (priv->pkgs_to_download, 0);
+	rpmtsEmpty (priv->ts);
+	rpmtsSetNotifyCallback (priv->ts, NULL, NULL);
+
+	/* clear */
+	if (priv->install != NULL) {
+		g_ptr_array_unref (priv->install);
+		priv->install = NULL;
+	}
+	if (priv->remove != NULL) {
+		g_ptr_array_unref (priv->remove);
+		priv->remove = NULL;
+	}
+	if (priv->remove_helper != NULL) {
+		g_ptr_array_unref (priv->remove_helper);
+		priv->remove_helper = NULL;
+	}
+}
+
+/**
  * hif_transaction_commit:
  * @transaction: a #HifTransaction instance.
  * @goal: A #HyGoal
  * @state: A #HifState
  * @error: A #GError or %NULL
  *
- * Commits a transaction.
+ * Commits a transaction by installing and removing packages.
+ *
+ * NOTE: If this fails, you need to call hif_transaction_depsolve() again.
  *
  * Returns: %TRUE for success, %FALSE otherwise
  *
@@ -1501,6 +1532,7 @@ hif_transaction_commit (HifTransaction *transaction,
 	if (!ret)
 		goto out;
 out:
+	hif_transaction_reset (transaction);
 	hif_state_release_locks (state);
 	return ret;
 }
