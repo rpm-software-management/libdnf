@@ -32,6 +32,7 @@
 #include <hawkey/goal.h>
 
 #include "hif-context.h"
+#include "hif-db.h"
 #include "hif-state.h"
 #include "hif-repos.h"
 
@@ -86,6 +87,7 @@ HifTransaction	*hif_transaction_new			(HifContext	*context);
 /* getters */
 guint64		 hif_transaction_get_flags		(HifTransaction	*transaction);
 GPtrArray	*hif_transaction_get_remote_pkgs	(HifTransaction	*transaction);
+HifDb		*hif_transaction_get_db			(HifTransaction	*transaction);
 
 /* setters */
 void		 hif_transaction_set_sources		(HifTransaction	*transaction,

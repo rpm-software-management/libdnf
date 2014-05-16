@@ -175,6 +175,23 @@ hif_transaction_get_remote_pkgs (HifTransaction *transaction)
 }
 
 /**
+ * hif_transaction_get_db:
+ * @transaction: a #HifTransaction instance.
+ *
+ * Gets the database instance used for this transaction.
+ *
+ * Returns: (transfer none): the #HifDb
+ *
+ * Since: 0.1.0
+ **/
+HifDb *
+hif_transaction_get_db (HifTransaction *transaction)
+{
+	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
+	return priv->db;
+}
+
+/**
  * hif_transaction_set_sources:
  * @transaction: a #HifTransaction instance.
  * @sources: the sources to use with the transaction
