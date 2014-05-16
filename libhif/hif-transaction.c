@@ -290,8 +290,11 @@ hif_transaction_ensure_source (HifTransaction *transaction,
 	g_set_error (error,
 		     HIF_ERROR,
 		     HIF_ERROR_INTERNAL_ERROR,
-		     "Failed to ensure %s as source not found",
-		     hy_package_get_name (pkg));
+		     "Failed to ensure %s as source %s not "
+		     "found (%i sources loaded)",
+		     hy_package_get_name (pkg),
+		     hy_package_get_reponame (pkg),
+		     priv->sources->len);
 out:
 	return ret;
 }
