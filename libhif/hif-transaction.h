@@ -109,6 +109,12 @@ gboolean	 hif_transaction_commit			(HifTransaction	*transaction,
 							 HyGoal		 goal,
 							 HifState	*state,
 							 GError		**error);
+gboolean	 hif_transaction_ensure_source		(HifTransaction *transaction,
+							 HyPackage	 pkg,
+							 GError		**error);
+gboolean	 hif_transaction_ensure_source_list	(HifTransaction *transaction,
+							 HyPackageList	 pkglist,
+							 GError		**error);
 
 G_END_DECLS
 

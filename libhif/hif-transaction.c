@@ -243,11 +243,23 @@ hif_transaction_set_flags (HifTransaction *transaction, guint64 flags)
 
 /**
  * hif_transaction_ensure_source:
+ * @transaction: a #HifTransaction instance.
+ * @pkg: A #HyPackage
+ * @error: A #GError or %NULL
+ *
+ * Ensures the #HifSource is set on the #HyPackage if not already set.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.1.0
  */
-static gboolean
-hif_transaction_ensure_source (GPtrArray *sources, HyPackage pkg, GError **error)
+gboolean
+hif_transaction_ensure_source (HifTransaction *transaction,
+			       HyPackage pkg,
+			       GError **error)
 {
 	HifSource *src;
+	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
 	char *location;
 	gboolean ret = TRUE;
 	guint i;
@@ -264,8 +276,8 @@ hif_transaction_ensure_source (GPtrArray *sources, HyPackage pkg, GError **error
 	/* get repo */
 	if (hy_package_installed (pkg))
 		goto out;
-	for (i = 0; i < sources->len; i++) {
-		src = g_ptr_array_index (sources, i);
+	for (i = 0; i < priv->sources->len; i++) {
+		src = g_ptr_array_index (priv->sources, i);
 		if (g_strcmp0 (hy_package_get_reponame (pkg),
 			       hif_source_get_id (src)) == 0) {
 			hif_package_set_source (pkg, src);
@@ -284,12 +296,20 @@ out:
 	return ret;
 }
 
-#if 0
 /**
  * hif_transaction_ensure_source_list:
+ * @transaction: a #HifTransaction instance.
+ * @pkglist: A #HyPackageList
+ * @error: A #GError or %NULL
+ *
+ * Ensures the #HifSource is set on the #HyPackageList if not already set.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.1.0
  */
-static gboolean
-hif_transaction_ensure_source_list (GPtrArray *sources,
+gboolean
+hif_transaction_ensure_source_list (HifTransaction *transaction,
 				    HyPackageList pkglist,
 				    GError **error)
 {
@@ -298,29 +318,28 @@ hif_transaction_ensure_source_list (GPtrArray *sources,
 	HyPackage pkg;
 
 	FOR_PACKAGELIST(pkg, pkglist, i) {
-		ret = hif_transaction_ensure_source (sources, pkg, error);
+		ret = hif_transaction_ensure_source (transaction, pkg, error);
 		if (!ret)
 			goto out;
 	}
 out:
 	return ret;
 }
-#endif
 
 /**
  * hif_transaction_check_untrusted:
  */
 static gboolean
-hif_transaction_check_untrusted (rpmKeyring keyring,
-				 GPtrArray *sources,
+hif_transaction_check_untrusted (HifTransaction *transaction,
 				 HyGoal goal,
 				 GError **error)
 {
+	GPtrArray *install;
+	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
+	HyPackage pkg;
 	const gchar *filename;
 	gboolean ret = TRUE;
-	GPtrArray *install;
 	guint i;
-	HyPackage pkg;
 
 	/* find a list of all the packages we might have to download */
 	install = hif_goal_get_packages (goal,
@@ -337,7 +356,7 @@ hif_transaction_check_untrusted (rpmKeyring keyring,
 		pkg = g_ptr_array_index (install, i);
 
 		/* ensure the filename is set */
-		ret = hif_transaction_ensure_source (sources, pkg, error);
+		ret = hif_transaction_ensure_source (transaction, pkg, error);
 		if (!ret) {
 			g_prefix_error (error, "Failed to check untrusted: ");
 			goto out;
@@ -356,7 +375,7 @@ hif_transaction_check_untrusted (rpmKeyring keyring,
 		}
 
 		/* check file */
-		ret = hif_keyring_check_untrusted_file (keyring,
+		ret = hif_keyring_check_untrusted_file (priv->keyring,
 							filename,
 							error);
 		if (!ret)
@@ -1049,7 +1068,7 @@ hif_transaction_write_yumdb (HifTransaction *transaction,
 					    priv->remove->len);
 	for (i = 0; i < priv->remove->len; i++) {
 		pkg = g_ptr_array_index (priv->remove, i);
-		ret = hif_transaction_ensure_source (priv->sources, pkg, error);
+		ret = hif_transaction_ensure_source (transaction, pkg, error);
 		if (!ret)
 			goto out;
 		ret = hif_db_remove_all (priv->db,
@@ -1167,7 +1186,7 @@ hif_transaction_depsolve (HifTransaction *transaction,
 		pkg = g_ptr_array_index (packages, i);
 
 		/* get correct package source */
-		ret = hif_transaction_ensure_source (priv->sources, pkg, error);
+		ret = hif_transaction_ensure_source (transaction, pkg, error);
 		if (!ret)
 			goto out;
 
@@ -1258,8 +1277,7 @@ hif_transaction_commit (HifTransaction *transaction,
 
 	/* find any packages without valid GPG signatures */
 	if ((priv->flags & HIF_TRANSACTION_FLAG_ONLY_TRUSTED) > 0) {
-		ret = hif_transaction_check_untrusted (priv->keyring,
-						       priv->sources,
+		ret = hif_transaction_check_untrusted (transaction,
 						       goal,
 						       error);
 		if (!ret)
@@ -1302,8 +1320,7 @@ hif_transaction_commit (HifTransaction *transaction,
 	for (i = 0; i < priv->install->len; i++) {
 
 		pkg = g_ptr_array_index (priv->install, i);
-		ret = hif_transaction_ensure_source (priv->sources,
-						 pkg, error);
+		ret = hif_transaction_ensure_source (transaction, pkg, error);
 		if (!ret)
 			goto out;
 
