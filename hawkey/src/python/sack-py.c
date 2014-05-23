@@ -437,8 +437,17 @@ len(_SackObject *self)
     return hy_sack_count(self->sack);
 }
 
+static PyObject *
+deepcopy(_SackObject *self, PyObject *args, PyObject *kwds)
+{
+    PyErr_SetString(PyExc_NotImplementedError, "sack can't be deepcopied");
+    return NULL;
+}
+
 static struct
 PyMethodDef sack_methods[] = {
+    {"__deepcopy__", (PyCFunction)deepcopy, METH_KEYWORDS|METH_VARARGS,
+     NULL},
     {"_knows",		(PyCFunction)_knows, METH_KEYWORDS|METH_VARARGS,
      NULL},
     {"evr_cmp",		(PyCFunction)evr_cmp, METH_VARARGS,
