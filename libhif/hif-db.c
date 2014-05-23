@@ -42,6 +42,8 @@
 
 #include "config.h"
 
+#include <libgsystem.h>
+
 #include "hif-db.h"
 #include "hif-package.h"
 #include "hif-utils.h"
@@ -152,7 +154,6 @@ out:
 gchar *
 hif_db_get_string (HifDb *db, HyPackage package, const gchar *key, GError **error)
 {
-	gboolean ret;
 	gchar *filename = NULL;
 	gchar *index_dir = NULL;
 	gchar *value = NULL;
@@ -176,8 +177,7 @@ hif_db_get_string (HifDb *db, HyPackage package, const gchar *key, GError **erro
 	filename = g_build_filename (index_dir, key, NULL);
 
 	/* check it exists */
-	ret = g_file_test (filename, G_FILE_TEST_EXISTS);
-	if (!ret) {
+	if (!g_file_test (filename, G_FILE_TEST_EXISTS)) {
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_FAILED,
@@ -187,8 +187,7 @@ hif_db_get_string (HifDb *db, HyPackage package, const gchar *key, GError **erro
 	}
 
 	/* get value */
-	ret = g_file_get_contents (filename, &value, NULL, error);
-	if (!ret)
+	if (!g_file_get_contents (filename, &value, NULL, error))
 		goto out;
 out:
 	g_free (index_dir);
@@ -217,9 +216,9 @@ hif_db_set_string (HifDb *db,
 		   const gchar *value,
 		   GError **error)
 {
-	gboolean ret = TRUE;
-	gchar *index_dir = NULL;
-	gchar *index_file = NULL;
+	gboolean ret = FALSE;
+	gs_free gchar *index_dir = NULL;
+	gs_free gchar *index_file = NULL;
 
 	g_return_val_if_fail (HIF_IS_DB (db), FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
@@ -230,7 +229,6 @@ hif_db_set_string (HifDb *db,
 	/* create the index directory */
 	index_dir = hif_db_get_dir_for_package (package);
 	if (index_dir == NULL) {
-		ret = FALSE;
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_FAILED,
@@ -238,19 +236,17 @@ hif_db_set_string (HifDb *db,
 			     hif_package_get_id (package));
 		goto out;
 	}
-	ret = hif_db_create_dir (index_dir, error);
-	if (!ret)
+	if (!hif_db_create_dir (index_dir, error))
 		goto out;
 
 	/* write the value */
 	index_file = g_build_filename (index_dir, key, NULL);
 	g_debug ("writing %s to %s", value, index_file);
-	ret = g_file_set_contents (index_file, value, -1, error);
-	if (!ret)
+	if (!g_file_set_contents (index_file, value, -1, error))
 		goto out;
+	
+	ret = TRUE;
 out:
-	g_free (index_dir);
-	g_free (index_file);
 	return ret;
 }
 
