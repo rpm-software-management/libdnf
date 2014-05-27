@@ -4,7 +4,7 @@
 if (${PYTHON_DESIRED} STREQUAL "2")
     SET(SPHINX_BUILD_NAME "sphinx-build")
 else()
-    SET(SPHINX_BUILD_NAME "sphinx-build-3.3")
+    SET(SPHINX_BUILD_NAME "sphinx-build-3")
 endif()
 
 ADD_CUSTOM_TARGET (doc-html
