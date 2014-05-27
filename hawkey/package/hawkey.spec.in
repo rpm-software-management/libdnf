@@ -1,4 +1,4 @@
-%global gitrev 428a977
+%global gitrev a56916e
 %global libsolv_version 0.6.1-1
 
 Name:		hawkey
@@ -107,6 +107,29 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+
+* Tue May 27 2014 Aleš Kozumplik <ales@redhat.com> - 0.4.16-1
+- py3: use sphinx-build-3 (which doesn't encode the minor py version) (RhBug:1098098) (Ales Kozumplik)
+- tests: fix test_list_arches(), there's new architectures listed now. (Ales Kozumplik)
+- doc: packaging: add license block to each .rst. (Ales Kozumplik)
+- Subject: accepts/returns pattern in unicode (Related: RhBug:1092777) (Jan Silhan)
+- fix kernel detection by being more strict what we look for. (RhBug:1087534) (Ales Kozumplik)
+- [kernel] look for the installed kernel in @System. (Ales Kozumplik)
+- fix: sigsegv when wrong reldep is passed to selector as a provide. (Ales Kozumplik)
+- .gitignore: __pycache__ (Ales Kozumplik)
+- installonlies: log the discovered running kernel. (Ales Kozumplik)
+- py: Package: all string attributes are in Unicode (RhBug:1093887) (Jan Silhan)
+- py: fix: certain string assignments should raise TypeError, never SystemError. (Ales Kozumplik)
+- cleanup: tweak declarations in pycomp.h. (Ales Kozumplik)
+- goal: hy_goal_write_debugdata() takes target dir parameter. (Ales Kozumplik)
+- iutil.c: simplify queue2plist() implementation. (Ales Kozumplik)
+- Goal: listing unneeded packages. (Ales Kozumplik)
+- doc: make the documentation generation independent of hawkey the python module. (Ales Kozumplik)
+- removed unused imports (Jan Silhan)
+- distro-sync doesn't replace arch (RhBug:1054909) (Jan Silhan)
+- replaced deprecated fail_unless with ck_assert_int_eq (Jan Silhan)
+- added python bindings to nevra attribute filter (Jan Silhan)
+- added nevra filter flag to query C API (Jan Silhan)
 
 * Fri May 2 2014 Aleš Kozumplik <ales@redhat.com> - 0.4.14-1
 - py: cosmetic: drop py_ prefixes from static functions in hawkeymodule.c. (Ales Kozumplik)
