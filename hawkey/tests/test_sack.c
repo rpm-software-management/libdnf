@@ -83,9 +83,9 @@ START_TEST(test_list_arches)
 				 HY_MAKE_CACHE_DIR);
     const char ** arches = hy_sack_list_arches(sack);
 
-    /* noarch, x86_64, i686, i586, i486, i386 */
-    fail_unless(count_nullt_array(arches), 6);
-    ck_assert_str_eq(arches[2], "i686");
+    /* noarch, x86_64, athlon, i686, i586, i486, i386 */
+    fail_unless(count_nullt_array(arches), 7);
+    ck_assert_str_eq(arches[3], "i686");
 
     hy_free(arches);
     hy_sack_free(sack);

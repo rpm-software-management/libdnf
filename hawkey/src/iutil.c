@@ -666,6 +666,14 @@ dump_jobqueue(Pool *pool, Queue *job)
     return job->count;
 }
 
+int
+dump_nullt_array(const char **a)
+{
+    const char **strp = a;
+    while (*strp)
+	printf("%s\n", *strp++);
+    return strp - a;
+}
 
 int
 dump_solvables_queue(Pool *pool, Queue *q)
