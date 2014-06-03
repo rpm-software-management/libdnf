@@ -37,6 +37,7 @@
 #include <hawkey/packagelist.h>
 #include <librepo/librepo.h>
 
+#include "hif-cleanup.h"
 #include "hif-context.h"
 #include "hif-context-private.h"
 #include "hif-db.h"
@@ -670,25 +671,22 @@ hif_context_set_cache_age (HifContext *context, guint cache_age)
 static gboolean
 hif_context_set_os_release (HifContext *context, GError **error)
 {
-	gboolean ret;
-	gchar *contents = NULL;
-	gchar *version = NULL;
-	GKeyFile *key_file = NULL;
-	GString *str = NULL;
+	_cleanup_free gchar *contents = NULL;
+	_cleanup_free gchar *version = NULL;
+	_cleanup_free_string GString *str = NULL;
+	_cleanup_unref_keyfile GKeyFile *key_file = NULL;
 
 	/* make a valid GKeyFile from the .ini data by prepending a header */
-	ret = g_file_get_contents ("/etc/os-release", &contents, NULL, NULL);
-	if (!ret)
-		goto out;
+	if (!g_file_get_contents ("/etc/os-release", &contents, NULL, NULL))
+		return FALSE;
 	str = g_string_new (contents);
 	g_string_prepend (str, "[os-release]\n");
 	key_file = g_key_file_new ();
-	ret = g_key_file_load_from_data (key_file,
+	if (!g_key_file_load_from_data (key_file,
 					 str->str, -1,
 					 G_KEY_FILE_NONE,
-					 error);
-	if (!ret)
-		goto out;
+					 error))
+		return FALSE;
 
 	/* get keys */
 	version = g_key_file_get_string (key_file,
@@ -696,16 +694,9 @@ hif_context_set_os_release (HifContext *context, GError **error)
 					 "VERSION_ID",
 					 error);
 	if (version == NULL)
-		goto out;
+		return FALSE;
 	hif_context_set_release_ver (context, version);
-out:
-	if (key_file != NULL)
-		g_key_file_free (key_file);
-	if (str != NULL)
-		g_string_free (str, TRUE);
-	g_free (version);
-	g_free (contents);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -733,22 +724,20 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 	/* create empty sack */
 	priv->sack = hy_sack_create (priv->solv_dir, NULL, NULL, HY_MAKE_CACHE_DIR);
 	if (priv->sack == NULL) {
-		ret = FALSE;
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_INTERNAL_ERROR,
 			     "failed to create sack cache");
-		goto out;
+		return FALSE;
 	}
 	hy_sack_set_installonly (priv->sack, hif_context_get_installonly_pkgs (context));
 	hy_sack_set_installonly_limit (priv->sack, hif_context_get_installonly_limit (context));
 
 	/* add installed packages */
 	rc = hy_sack_load_system_repo (priv->sack, NULL, HY_BUILD_CACHE);
-	ret = hif_rc_to_gerror (rc, error);
-	if (!ret) {
+	if (!hif_rc_to_gerror (rc, error)) {
 		g_prefix_error (error, "Failed to load system repo: ");
-		goto out;
+		return FALSE;
 	}
 
 	/* creates repo for command line rpms */
@@ -762,12 +751,11 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 				    state,
 				    error);
 	if (!ret)
-		goto out;
+		return FALSE;
 
 	/* create goal */
 	priv->goal = hy_goal_create (priv->sack);
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -788,33 +776,28 @@ hif_context_setup (HifContext *context,
 		   GError **error)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
-	GFile *file_rpmdb = NULL;
 	const gchar *value;
-	gboolean ret = TRUE;
-	gint retval;
+	_cleanup_unref_object GFile *file_rpmdb = NULL;
 
 	/* check essential things are set */
 	if (priv->solv_dir == NULL) {
-		ret = FALSE;
 		g_set_error_literal (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "solv_dir not set");
-		goto out;
+		return FALSE;
 	}
 
 	/* connect if set */
 	if (cancellable != NULL)
 		hif_state_set_cancellable (priv->state, cancellable);
 
-	retval = rpmReadConfigFiles (NULL, NULL);
-	if (retval != 0) {
-		ret = FALSE;
+	if (rpmReadConfigFiles (NULL, NULL) != 0) {
 		g_set_error_literal (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "failed to read rpm config files");
-		goto out;
+		return FALSE;
 	}
 
 	/* get info from RPM */
@@ -843,9 +826,8 @@ hif_context_setup (HifContext *context,
 	priv->native_arches[1] = g_strdup ("noarch");
 
 	/* get info from OS release file */
-	ret = hif_context_set_os_release (context, error);
-	if (!ret)
-		goto out;
+	if (!hif_context_set_os_release (context, error))
+		return FALSE;
 
 	/* setup RPM */
 	priv->repos = hif_repos_new (context);
@@ -861,16 +843,11 @@ hif_context_setup (HifContext *context,
 						   G_FILE_MONITOR_NONE,
 						   NULL,
 						   error);
-	if (priv->monitor_rpmdb == NULL) {
-		ret = FALSE;
-		goto out;
-	}
+	if (priv->monitor_rpmdb == NULL)
+		return FALSE;
 	g_signal_connect (priv->monitor_rpmdb, "changed",
 			  G_CALLBACK (hif_context_rpmdb_changed_cb), context);
-out:
-	if (file_rpmdb != NULL)
-		g_object_unref (file_rpmdb);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -903,7 +880,7 @@ hif_context_run (HifContext *context, GCancellable *cancellable, GError **error)
 				   45,	/* commit */
 				   -1);
 	if (!ret)
-		goto out;
+		return FALSE;
 
 	/* depsolve */
 	state_local = hif_state_get_child (priv->state);
@@ -912,12 +889,11 @@ hif_context_run (HifContext *context, GCancellable *cancellable, GError **error)
 					state_local,
 					error);
 	if (!ret)
-		goto out;
+		return FALSE;
 
 	/* this section done */
-	ret = hif_state_done (priv->state, error);
-	if (!ret)
-		goto out;
+	if (!hif_state_done (priv->state, error))
+		return FALSE;
 
 	/* download */
 	state_local = hif_state_get_child (priv->state);
@@ -925,12 +901,11 @@ hif_context_run (HifContext *context, GCancellable *cancellable, GError **error)
 					state_local,
 					error);
 	if (!ret)
-		goto out;
+		return FALSE;
 
 	/* this section done */
-	ret = hif_state_done (priv->state, error);
-	if (!ret)
-		goto out;
+	if (!hif_state_done (priv->state, error))
+		return FALSE;
 
 	/* commit set up transaction */
 	state_local = hif_state_get_child (priv->state);
@@ -939,14 +914,10 @@ hif_context_run (HifContext *context, GCancellable *cancellable, GError **error)
 				      state_local,
 				      error);
 	if (!ret)
-		goto out;
+		return FALSE;
 
 	/* this section done */
-	ret = hif_state_done (priv->state, error);
-	if (!ret)
-		goto out;
-out:
-	return ret;
+	return hif_state_done (priv->state, error);
 }
 
 /**
@@ -978,7 +949,7 @@ hif_context_install (HifContext *context, const gchar *name, GError **error)
 		hif_state_reset (priv->state);
 		ret = hif_context_setup_sack (context, priv->state, error);
 		if (!ret)
-			goto out;
+			return FALSE;
 	}
 
 	/* find a newest remote package to install */
@@ -998,8 +969,7 @@ hif_context_install (HifContext *context, const gchar *name, GError **error)
 	}
 	hy_packagelist_free (pkglist);
 	hy_query_free (query);
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1031,7 +1001,7 @@ hif_context_remove (HifContext *context, const gchar *name, GError **error)
 		hif_state_reset (priv->state);
 		ret = hif_context_setup_sack (context, priv->state, error);
 		if (!ret)
-			goto out;
+			return FALSE;
 	}
 
 	/* find a newest remote package to install */
@@ -1049,8 +1019,7 @@ hif_context_remove (HifContext *context, const gchar *name, GError **error)
 	}
 	hy_packagelist_free (pkglist);
 	hy_query_free (query);
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1082,7 +1051,7 @@ hif_context_update (HifContext *context, const gchar *name, GError **error)
 		hif_state_reset (priv->state);
 		ret = hif_context_setup_sack (context, priv->state, error);
 		if (!ret)
-			goto out;
+			return FALSE;
 	}
 
 	/* find a newest remote package to install */
@@ -1104,8 +1073,7 @@ hif_context_update (HifContext *context, const gchar *name, GError **error)
 	}
 	hy_packagelist_free (pkglist);
 	hy_query_free (query);
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1120,7 +1088,6 @@ hif_context_repo_set_data (HifContext *context,
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	HifSource *src = NULL;
 	HifSource *src_tmp;
-	gboolean ret = TRUE;
 	guint i;
 
 	/* find a source with a matching ID */
@@ -1134,18 +1101,16 @@ hif_context_repo_set_data (HifContext *context,
 
 	/* nothing found */
 	if (src == NULL) {
-		ret = FALSE;
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_INTERNAL_ERROR,
 			     "repo %s not found", repo_id);
-		goto out;
+		return FALSE;
 	}
 
 	/* this is runtime only */
 	hif_source_set_enabled (src, enabled);
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1208,17 +1173,12 @@ gboolean
 hif_context_commit (HifContext *context, HifState *state, GError **error)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
-	gboolean ret;
 
 	/* run the transaction */
-	ret = hif_transaction_commit (priv->transaction,
-				      priv->goal,
-				      state,
-				      error);
-	if (!ret)
-		goto out;
-out:
-	return ret;
+	return hif_transaction_commit (priv->transaction,
+				       priv->goal,
+				       state,
+				       error);
 }
 
 /**

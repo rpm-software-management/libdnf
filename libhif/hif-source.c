@@ -42,6 +42,7 @@
 #include <hawkey/util.h>
 #include <librepo/librepo.h>
 
+#include "hif-cleanup.h"
 #include "hif-source.h"
 #include "hif-package.h"
 #include "hif-utils.h"
@@ -225,28 +226,24 @@ gchar *
 hif_source_get_description (HifSource *source)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
-	gchar *substituted = NULL;
-	gchar *tmp;
+	_cleanup_free gchar *tmp;
 
 	/* is DVD */
 	if (priv->kind == HIF_SOURCE_KIND_MEDIA) {
 		tmp = g_key_file_get_string (priv->keyfile, "general", "name", NULL);
 		if (tmp == NULL)
-			goto out;
+			return NULL;
 	} else {
 		tmp = g_key_file_get_string (priv->keyfile,
 					     hif_source_get_id (source),
 					     "name",
 					     NULL);
 		if (tmp == NULL)
-			goto out;
+			return NULL;
 	}
 
 	/* have to substitute things like $releasever and $basearch */
-	substituted = hif_source_substitute (source, tmp);
-out:
-	g_free (tmp);
-	return substituted;
+	return hif_source_substitute (source, tmp);
 }
 
 /**
@@ -608,47 +605,36 @@ gboolean
 hif_source_setup (HifSource *source, GError **error)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
-	gboolean ret = TRUE;
-	gchar *basearch = NULL;
-	gchar *release = NULL;
+	_cleanup_free gchar *basearch = NULL;
+	_cleanup_free gchar *release = NULL;
 
 	basearch = g_key_file_get_string (priv->keyfile, "general", "arch", NULL);
 	if (basearch == NULL)
 		basearch = g_strdup (hif_context_get_base_arch (priv->context));
 	if (basearch == NULL) {
-		ret = FALSE;
 		g_set_error_literal (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "basearch not set");
-		goto out;
+		return FALSE;
 	}
 	release = g_key_file_get_string (priv->keyfile, "general", "version", NULL);
 	if (release == NULL)
 		release = g_strdup (hif_context_get_release_ver (priv->context));
-	if (basearch == NULL) {
-		ret = FALSE;
+	if (release == NULL) {
 		g_set_error_literal (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "releasever not set");
-		goto out;
+		return FALSE;
 	}
-	ret = lr_handle_setopt (priv->repo_handle, error, LRO_USERAGENT, "PackageKit-hawkey");
-	if (!ret)
-		goto out;
-	ret = lr_handle_setopt (priv->repo_handle, error, LRO_REPOTYPE, LR_YUMREPO);
-	if (!ret)
-		goto out;
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_USERAGENT, "PackageKit-hawkey"))
+		return FALSE;
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_REPOTYPE, LR_YUMREPO))
+		return FALSE;
 	priv->urlvars = lr_urlvars_set (priv->urlvars, "releasever", release);
 	priv->urlvars = lr_urlvars_set (priv->urlvars, "basearch", basearch);
-	ret = lr_handle_setopt (priv->repo_handle, error, LRO_VARSUB, priv->urlvars);
-	if (!ret)
-		goto out;
-out:
-	g_free (basearch);
-	g_free (release);
-	return ret;
+	return lr_handle_setopt (priv->repo_handle, error, LRO_VARSUB, priv->urlvars);
 }
 
 /**
@@ -696,10 +682,9 @@ static gboolean
 hif_source_set_timestamp_modified (HifSource *source, GError **error)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
-	gboolean ret = TRUE;
-	gchar *filename;
-	GFile *file;
-	GFileInfo *info;
+	_cleanup_free gchar *filename;
+	_cleanup_unref_object GFile *file;
+	_cleanup_unref_object GFileInfo *info;
 
 	filename = g_build_filename (priv->location, "repodata", "repomd.xml", NULL);
 	file = g_file_new_for_path (filename);
@@ -709,20 +694,13 @@ hif_source_set_timestamp_modified (HifSource *source, GError **error)
 				  G_FILE_QUERY_INFO_NONE,
 				  NULL,
 				  error);
-	if (info == NULL) {
-		ret = FALSE;
-		goto out;
-	}
+	if (info == NULL)
+		return FALSE;
 	priv->timestamp_modified = g_file_info_get_attribute_uint64 (info,
 					G_FILE_ATTRIBUTE_TIME_MODIFIED) * G_USEC_PER_SEC;
 	priv->timestamp_modified += g_file_info_get_attribute_uint32 (info,
 					G_FILE_ATTRIBUTE_TIME_MODIFIED_USEC);
-out:
-	g_free (filename);
-	g_object_unref (file);
-	if (info != NULL)
-		g_object_unref (info);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -752,56 +730,48 @@ hif_source_check (HifSource *source,
 					 "updateinfo",
 					 NULL};
 	const gchar *tmp;
-	gboolean ret = TRUE;
-	GError *error_local = NULL;
+	gboolean ret;
 	LrYumRepo *yum_repo;
 	const gchar *urls[] = { "", NULL };
 	gint64 age_of_data; /* in seconds */
+	_cleanup_free_error GError *error_local = NULL;
 
 	/* has the media repo vanished? */
 	if (priv->kind == HIF_SOURCE_KIND_MEDIA &&
 	    !g_file_test (priv->location, G_FILE_TEST_EXISTS)) {
 		priv->enabled = FALSE;
-		goto out;
+		return TRUE;
 	}
 
 	/* Yum metadata */
 	hif_state_action_start (state, HIF_STATE_ACTION_LOADING_CACHE, NULL);
 	urls[0] = priv->location;
-	ret = lr_handle_setopt (priv->repo_handle, error, LRO_URLS, urls);
-	if (!ret)
-		goto out;
-	ret = lr_handle_setopt (priv->repo_handle, error, LRO_LOCAL, TRUE);
-	if (!ret)
-		goto out;
-	ret = lr_handle_setopt (priv->repo_handle, error, LRO_CHECKSUM, TRUE);
-	if (!ret)
-		goto out;
-	ret = lr_handle_setopt (priv->repo_handle, error, LRO_YUMDLIST, download_list);
-	if (!ret)
-		goto out;
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_URLS, urls))
+		return FALSE;
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_LOCAL, TRUE))
+		return FALSE;
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_CHECKSUM, TRUE))
+		return FALSE;
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_YUMDLIST, download_list))
+		return FALSE;
 	lr_result_clear (priv->repo_result);
-	ret = lr_handle_perform (priv->repo_handle, priv->repo_result, &error_local);
-	if (!ret) {
+	if (!lr_handle_perform (priv->repo_handle, priv->repo_result, &error_local)) {
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_INTERNAL_ERROR,
 			     "repodata %s was not complete: %s",
 			     priv->id, error_local->message);
-		g_error_free (error_local);
-		goto out;
+		return FALSE;
 	}
 
 	/* get the metadata file locations */
-	ret = lr_result_getinfo (priv->repo_result, &error_local, LRR_YUM_REPO, &yum_repo);
-	if (!ret) {
+	if (!lr_result_getinfo (priv->repo_result, &error_local, LRR_YUM_REPO, &yum_repo)) {
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_INTERNAL_ERROR,
 			     "failed to get yum-repo: %s",
 			     error_local->message);
-		g_error_free (error_local);
-		goto out;
+		return FALSE;
 	}
 
 	/* get timestamp */
@@ -813,24 +783,21 @@ hif_source_check (HifSource *source,
 			     HIF_ERROR_INTERNAL_ERROR,
 			     "failed to get timestamp: %s",
 			     error_local->message);
-		g_error_free (error_local);
-		goto out;
+		return FALSE;
 	}
 
 	/* check metadata age */
 	if (permissible_cache_age != G_MAXUINT) {
-		ret = hif_source_set_timestamp_modified (source, error);
-		if (!ret)
-			goto out;
+		if (!hif_source_set_timestamp_modified (source, error))
+			return FALSE;
 		age_of_data = (g_get_real_time () - priv->timestamp_modified) / G_USEC_PER_SEC;
 		if (age_of_data > permissible_cache_age) {
-			ret = FALSE;
 			g_set_error (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "cache too old: %"G_GINT64_FORMAT" > %i",
 				     age_of_data, permissible_cache_age);
-			goto out;
+			return FALSE;
 		}
 	}
 
@@ -846,8 +813,7 @@ hif_source_check (HifSource *source,
 	tmp = lr_yum_repo_path (yum_repo, "updateinfo");
 	if (tmp != NULL)
 		hy_repo_set_string (priv->repo, HY_REPO_UPDATEINFO_FN, tmp);
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -858,44 +824,34 @@ out:
 static gboolean
 hif_source_remove_contents (const gchar *directory)
 {
-	gboolean ret = FALSE;
-	GDir *dir;
-	GError *error = NULL;
 	const gchar *filename;
-	gchar *src;
-	gint retval;
+	_cleanup_close_dir GDir *dir;
+	_cleanup_free_error GError *error = NULL;
 
 	/* try to open */
 	dir = g_dir_open (directory, 0, &error);
 	if (dir == NULL) {
 		g_warning ("cannot open directory: %s", error->message);
-		g_error_free (error);
-		goto out;
+		return FALSE;
 	}
 
 	/* find each */
 	while ((filename = g_dir_read_name (dir))) {
+		_cleanup_free gchar *src = NULL;
 		src = g_build_filename (directory, filename, NULL);
-		ret = g_file_test (src, G_FILE_TEST_IS_DIR);
-		if (ret) {
+		if (g_file_test (src, G_FILE_TEST_IS_DIR)) {
 			g_debug ("directory %s found in %s, deleting", filename, directory);
 			/* recurse, but should be only 1 level deep */
 			hif_source_remove_contents (src);
-			retval = g_remove (src);
-			if (retval != 0)
+			if (g_remove (src) != 0)
 				g_warning ("failed to delete %s", src);
 		} else {
 			g_debug ("file found in %s, deleting", directory);
-			retval = g_unlink (src);
-			if (retval != 0)
+			if (g_unlink (src) != 0)
 				g_warning ("failed to delete %s", src);
 		}
-		g_free (src);
 	}
-	g_dir_close (dir);
-	ret = TRUE;
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -913,20 +869,18 @@ gboolean
 hif_source_clean (HifSource *source, GError **error)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
-	gboolean ret;
 
 	if (!g_file_test (priv->location, G_FILE_TEST_EXISTS))
 		return TRUE;
-
-	ret = hif_source_remove_contents (priv->location);
-	if (!ret) {
+	if (!hif_source_remove_contents (priv->location)) {
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_INTERNAL_ERROR,
 			     "Failed to remove %s",
 			     priv->location);
+		return FALSE;
 	}
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -951,53 +905,47 @@ static gboolean
 hif_source_set_keyfile_data (HifSource *source, GError **error)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
-	gchar *pwd = NULL;
-	gchar *str = NULL;
-	gchar *usr = NULL;
-	gchar **baseurls;
-	gboolean ret;
+	_cleanup_free gchar *pwd = NULL;
+	_cleanup_free gchar *str = NULL;
+	_cleanup_free gchar *usr = NULL;
+	_cleanup_free_strv gchar **baseurls;
 
 	/* baseurl is optional */
 	baseurls = g_key_file_get_string_list (priv->keyfile, priv->id, "baseurl", NULL, NULL);
-	ret = lr_handle_setopt (priv->repo_handle, error, LRO_URLS, baseurls);
-	if (!ret)
-		goto out;
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_URLS, baseurls))
+		return FALSE;
 	g_strfreev (baseurls);
 
 	/* mirrorlist is optional */
 	str = g_key_file_get_string (priv->keyfile, priv->id, "mirrorlist", NULL);
-	ret = lr_handle_setopt (priv->repo_handle, error, LRO_MIRRORLIST, str);
-	if (!ret)
-		goto out;
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_MIRRORLIST, str))
+		return FALSE;
 	g_free (str);
 
 	/* metalink is optional */
 	str = g_key_file_get_string (priv->keyfile, priv->id, "metalink", NULL);
-	ret = lr_handle_setopt (priv->repo_handle, error, LRO_METALINKURL, str);
-	if (!ret)
-		goto out;
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_METALINKURL, str))
+		return FALSE;
 	g_free (str);
 
 	/* gpgcheck is optional */
 	// FIXME: https://github.com/Tojaj/librepo/issues/16
 	//ret = lr_handle_setopt (priv->repo_handle, error, LRO_GPGCHECK, priv->gpgcheck == 1 ? 1 : 0);
 	//if (!ret)
-	//	goto out;
+	//	return FALSE;
 
 	/* proxy is optional */
 	str = g_key_file_get_string (priv->keyfile, priv->id, "proxy", NULL);
-	ret = lr_handle_setopt (priv->repo_handle, error, LRO_PROXY, str);
-	if (!ret)
-		goto out;
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_PROXY, str))
+		return FALSE;
 	g_free (str);
 
 	/* both parts of the proxy auth are optional */
 	usr = g_key_file_get_string (priv->keyfile, priv->id, "proxy_username", NULL);
 	pwd = g_key_file_get_string (priv->keyfile, priv->id, "proxy_password", NULL);
 	str = hif_source_get_username_password_string (usr, pwd);
-	ret = lr_handle_setopt (priv->repo_handle, error, LRO_PROXYUSERPWD, str);
-	if (!ret)
-		goto out;
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_PROXYUSERPWD, str))
+		return FALSE;
 	g_free (usr);
 	g_free (pwd);
 	g_free (str);
@@ -1006,14 +954,9 @@ hif_source_set_keyfile_data (HifSource *source, GError **error)
 	usr = g_key_file_get_string (priv->keyfile, priv->id, "username", NULL);
 	pwd = g_key_file_get_string (priv->keyfile, priv->id, "password", NULL);
 	str = hif_source_get_username_password_string (usr, pwd);
-	ret = lr_handle_setopt (priv->repo_handle, error, LRO_USERPWD, str);
-	if (!ret)
-		goto out;
-out:
-	g_free (usr);
-	g_free (pwd);
-	g_free (str);
-	return ret;
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_USERPWD, str))
+		return FALSE;
+	return TRUE;
 //gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$basearch
 }
 
@@ -1036,12 +979,12 @@ hif_source_update (HifSource *source,
 		   HifState *state,
 		   GError **error)
 {
-	GError *error_local = NULL;
 	HifSourcePrivate *priv = GET_PRIVATE (source);
 	HifState *state_local;
 	gboolean ret;
 	gint rc;
 	gint64 timestamp_new = 0;
+	_cleanup_free_error GError *error_local = NULL;
 
 	/* take lock */
 	ret = hif_state_take_lock (state,
@@ -1130,7 +1073,6 @@ hif_source_update (HifSource *source,
 			     HIF_ERROR_CANNOT_FETCH_SOURCE,
 			     "cannot update repo: %s",
 			     error_local->message);
-		g_error_free (error_local);
 		goto out;
 	}
 
@@ -1143,7 +1085,6 @@ hif_source_update (HifSource *source,
 			     HIF_ERROR_INTERNAL_ERROR,
 			     "failed to get timestamp: %s",
 			     error_local->message);
-		g_error_free (error_local);
 		goto out;
 	}
 	if ((flags & HIF_SOURCE_UPDATE_FLAG_FORCE) == 0 ||
@@ -1229,18 +1170,16 @@ hif_source_set_data (HifSource *source,
 		     GError **error)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
-	gboolean ret;
-	gchar *data = NULL;
+	_cleanup_free gchar *data = NULL;
 
 	/* cannot change DVD contents */
 	if (priv->kind == HIF_SOURCE_KIND_MEDIA) {
-		ret = FALSE;
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_CANNOT_WRITE_SOURCE_CONFIG,
 			     "Cannot set repo parameter %s=%s on read-only media",
 			     parameter, value);
-		goto out;
+		return FALSE;
 	}
 
 	/* save change to keyfile and dump updated file to disk */
@@ -1249,16 +1188,9 @@ hif_source_set_data (HifSource *source,
 			       parameter,
 			       value);
 	data = g_key_file_to_data (priv->keyfile, NULL, error);
-	if (data == NULL) {
-		ret = FALSE;
-		goto out;
-	}
-	ret = g_file_set_contents (priv->filename, data, -1, error);
-	if (!ret)
-		goto out;
-out:
-	g_free (data);
-	return ret;
+	if (data == NULL)
+		return FALSE;
+	return g_file_set_contents (priv->filename, data, -1, error);
 }
 
 /**
@@ -1295,28 +1227,19 @@ hif_source_copy_package (HyPackage pkg,
 			 HifState *state,
 			 GError **error)
 {
-	GFile *file_dest;
-	GFile *file_source;
-	gboolean ret;
-	gchar *basename = NULL;
-	gchar *dest = NULL;
+	_cleanup_free gchar *basename = NULL;
+	_cleanup_free gchar *dest = NULL;
+	_cleanup_unref_object GFile *file_dest;
+	_cleanup_unref_object GFile *file_source;
 
 	/* copy the file with progress */
 	file_source = g_file_new_for_path (hif_package_get_filename (pkg));
 	basename = g_path_get_basename (hy_package_get_location (pkg));
 	dest = g_build_filename (directory, basename, NULL);
 	file_dest = g_file_new_for_path (dest);
-	ret = g_file_copy (file_source, file_dest, G_FILE_COPY_NONE,
-			   hif_state_get_cancellable (state),
-			   hif_source_copy_progress_cb, state, error);
-	if (!ret)
-		goto out;
-out:
-	g_object_unref (file_source);
-	g_object_unref (file_dest);
-	g_free (basename);
-	g_free (dest);
-	return ret;
+	return g_file_copy (file_source, file_dest, G_FILE_COPY_NONE,
+			    hif_state_get_cancellable (state),
+			    hif_source_copy_progress_cb, state, error);
 }
 
 /**
@@ -1340,23 +1263,21 @@ hif_source_download_package (HifSource *source,
 			     HifState *state,
 			     GError **error)
 {
-	GError *error_local = NULL;
 	HifSourcePrivate *priv = GET_PRIVATE (source);
 	char *checksum_str = NULL;
 	const unsigned char *checksum;
 	gboolean ret;
-	gchar *basename = NULL;
-	gchar *directory_slash;
 	gchar *loc = NULL;
-	gint rc;
 	int checksum_type;
+	_cleanup_free_error GError *error_local = NULL;
+	_cleanup_free gchar *basename = NULL;
+	_cleanup_free gchar *directory_slash;
 
 	/* if nothing specified then use cachedir */
 	if (directory == NULL) {
 		directory_slash = g_build_filename (priv->packages, "/", NULL);
 		if (!g_file_test (directory_slash, G_FILE_TEST_EXISTS)) {
-			rc = g_mkdir (directory_slash, 0755);
-			if (rc != 0) {
+			if (g_mkdir (directory_slash, 0755) != 0) {
 				g_set_error (error,
 					     HIF_ERROR,
 					     HIF_ERROR_INTERNAL_ERROR,
@@ -1375,15 +1296,13 @@ hif_source_download_package (HifSource *source,
 	/* is a local repo, i.e. we just need to copy */
 	if (priv->keyfile == NULL) {
 		hif_package_set_source (pkg, source);
-		ret = hif_source_copy_package (pkg, directory, state, error);
-		if (!ret)
+		if (!hif_source_copy_package (pkg, directory, state, error))
 			goto out;
 		goto done;
 	}
 
 	/* setup the repo remote */
-	ret = hif_source_set_keyfile_data (source, error);
-	if (!ret)
+	if (!hif_source_set_keyfile_data (source, error))
 		goto out;
 	ret = lr_handle_setopt (priv->repo_handle, error,
 				LRO_PROGRESSDATA, state);
@@ -1426,7 +1345,6 @@ hif_source_download_package (HifSource *source,
 				     hy_package_get_location (pkg),
 				     directory_slash,
 				     error_local->message);
-			g_error_free (error_local);
 			goto out;
 		}
 	}
@@ -1438,8 +1356,6 @@ out:
 	lr_handle_setopt (priv->repo_handle, NULL, LRO_PROGRESSCB, NULL);
 	lr_handle_setopt (priv->repo_handle, NULL, LRO_PROGRESSDATA, 0xdeadbeef);
 	hy_free (checksum_str);
-	g_free (basename);
-	g_free (directory_slash);
 	return loc;
 }
 

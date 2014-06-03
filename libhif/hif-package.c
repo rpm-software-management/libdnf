@@ -42,6 +42,7 @@
 #include <hawkey/util.h>
 #include <librepo/librepo.h>
 
+#include "hif-cleanup.h"
 #include "hif-context.h"
 #include "hif-package.h"
 #include "hif-utils.h"
@@ -89,7 +90,6 @@ const gchar *
 hif_package_get_filename (HyPackage pkg)
 {
 	HifPackagePrivate *priv;
-	gchar *basename;
 
 	priv = hy_package_get_userdata (pkg);
 	if (priv == NULL)
@@ -106,11 +106,11 @@ hif_package_get_filename (HyPackage pkg)
 							   hy_package_get_location (pkg),
 							   NULL);
 		} else {
+			_cleanup_free gchar *basename;
 			basename = g_path_get_basename (hy_package_get_location (pkg));
 			priv->filename = g_build_filename (hif_source_get_packages (priv->src),
 							   basename,
 							   NULL);
-			g_free (basename);
 		}
 	}
 
@@ -220,7 +220,7 @@ hif_package_get_id (HyPackage pkg)
 {
 	HifPackagePrivate *priv;
 	const gchar *reponame;
-	gchar *reponame_tmp = NULL;
+	_cleanup_free gchar *reponame_tmp = NULL;
 
 	priv = hif_package_get_priv (pkg);
 	if (priv == NULL)
@@ -246,7 +246,6 @@ hif_package_get_id (HyPackage pkg)
 						hy_package_get_arch (pkg),
 						reponame);
 out:
-	g_free (reponame_tmp);
 	return priv->package_id;
 }
 
@@ -742,27 +741,21 @@ hif_package_array_download (GPtrArray *packages,
 {
 	HifState *state_local;
 	HyPackage pkg;
-	gboolean ret = TRUE;
-	gchar *tmp;
 	guint i;
 
 	/* download any package that is not currently installed */
 	hif_state_set_number_steps (state, packages->len);
 	for (i = 0; i < packages->len; i++) {
+		_cleanup_free gchar *tmp = NULL;
 		pkg = g_ptr_array_index (packages, i);
 		state_local = hif_state_get_child (state);
 		tmp = hif_package_download (pkg, NULL, state_local, error);
-		if (tmp == NULL) {
-			ret = FALSE;
-			goto out;
-		}
-		g_free (tmp);
+		if (tmp == NULL)
+			return FALSE;
 
 		/* done */
-		ret = hif_state_done (state, error);
-		if (!ret)
-			goto out;
+		if (!hif_state_done (state, error))
+			return FALSE;
 	}
-out:
-	return ret;
+	return TRUE;
 }

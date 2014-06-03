@@ -82,6 +82,7 @@
 
 #include "config.h"
 
+#include "hif-cleanup.h"
 #include "hif-state.h"
 #include "hif-utils.h"
 
@@ -341,7 +342,6 @@ hif_state_take_lock (HifState *state,
 		     GError **error)
 {
 	HifStatePrivate *priv = GET_PRIVATE (state);
-	gboolean ret = TRUE;
 	guint lock_id = 0;
 
 	/* no custom handler */
@@ -349,17 +349,14 @@ hif_state_take_lock (HifState *state,
 				 lock_type,
 				 lock_mode,
 				 error);
-	if (lock_id == 0) {
-		ret = FALSE;
-		goto out;
-	}
+	if (lock_id == 0)
+		return FALSE;
 
 	/* add the lock to an array so we can release on completion */
 	g_debug ("adding lock %i", lock_id);
 	g_ptr_array_add (priv->lock_ids,
 			 GUINT_TO_POINTER (lock_id));
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -550,7 +547,6 @@ gboolean
 hif_state_release_locks (HifState *state)
 {
 	HifStatePrivate *priv = GET_PRIVATE (state);
-	gboolean ret = TRUE;
 	guint i;
 	guint lock_id;
 
@@ -562,15 +558,11 @@ hif_state_release_locks (HifState *state)
 	for (i = 0; i < priv->lock_ids->len; i++) {
 		lock_id = GPOINTER_TO_UINT (g_ptr_array_index (priv->lock_ids, i));
 		g_debug ("releasing lock %i", lock_id);
-		ret = hif_lock_release (priv->lock,
-					lock_id,
-					NULL);
-		if (!ret)
-			goto out;
+		if (!hif_lock_release (priv->lock, lock_id, NULL))
+			return FALSE;
 	}
 	g_ptr_array_set_size (priv->lock_ids, 0);
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -589,24 +581,21 @@ gboolean
 hif_state_set_percentage (HifState *state, guint percentage)
 {
 	HifStatePrivate *priv = GET_PRIVATE (state);
-	gboolean ret = FALSE;
 
 	/* do we care */
-	if (!priv->report_progress) {
-		ret = TRUE;
-		goto out;
-	}
+	if (!priv->report_progress)
+		return TRUE;
 
 	/* is it the same */
 	if (percentage == priv->last_percentage)
-		goto out;
+		return FALSE;
 
 	/* is it invalid */
 	if (percentage > 100) {
 		hif_state_print_parent_chain (state, 0);
 		g_warning ("percentage %i%% is invalid on %p!",
 			   percentage, state);
-		goto out;
+		return FALSE;
 	}
 
 	/* is it less */
@@ -616,7 +605,7 @@ hif_state_set_percentage (HifState *state, guint percentage)
 			g_warning ("percentage should not go down from %i to %i on %p!",
 				   priv->last_percentage, percentage, state);
 		}
-		goto out;
+		return FALSE;
 	}
 
 	/* we're done, so we're not preventing cancellation anymore */
@@ -635,9 +624,8 @@ hif_state_set_percentage (HifState *state, guint percentage)
 
 	/* release locks? */
 	if (percentage == 100) {
-		ret = hif_state_release_locks (state);
-		if (!ret)
-			goto out;
+		if (!hif_state_release_locks (state))
+			return FALSE;
 	}
 
 	/* save */
@@ -647,9 +635,7 @@ hif_state_set_percentage (HifState *state, guint percentage)
 	g_signal_emit (state, signals [SIGNAL_PERCENTAGE_CHANGED], 0, percentage);
 
 	/* success */
-	ret = TRUE;
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -940,15 +926,12 @@ gboolean
 hif_state_reset (HifState *state)
 {
 	HifStatePrivate *priv = GET_PRIVATE (state);
-	gboolean ret = TRUE;
 
 	g_return_val_if_fail (HIF_IS_STATE (state), FALSE);
 
 	/* do we care */
-	if (!priv->report_progress) {
-		ret = TRUE;
-		goto out;
-	}
+	if (!priv->report_progress)
+		return TRUE;
 
 	/* reset values */
 	priv->steps = 0;
@@ -1000,8 +983,7 @@ hif_state_reset (HifState *state)
 	g_free (priv->step_profile);
 	priv->step_data = NULL;
 	priv->step_profile = NULL;
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1037,10 +1019,8 @@ hif_state_get_child (HifState *state)
 	g_return_val_if_fail (HIF_IS_STATE (state), NULL);
 
 	/* do we care */
-	if (!priv->report_progress) {
-		child = state;
-		goto out;
-	}
+	if (!priv->report_progress)
+		return state;
 
 	/* already set child */
 	if (priv->child != NULL) {
@@ -1099,7 +1079,6 @@ hif_state_get_child (HifState *state)
 	/* set the profile state */
 	hif_state_set_enable_profile (child,
 				      priv->enable_profile);
-out:
 	return child;
 }
 
@@ -1123,28 +1102,23 @@ gboolean
 hif_state_set_number_steps_real (HifState *state, guint steps, const gchar *strloc)
 {
 	HifStatePrivate *priv = GET_PRIVATE (state);
-	gboolean ret = FALSE;
 
 	g_return_val_if_fail (state != NULL, FALSE);
 
 	/* nothing to do for 0 steps */
-	if (steps == 0) {
-		ret = TRUE;
-		goto out;
-	}
+	if (steps == 0)
+		return TRUE;
 
 	/* do we care */
-	if (!priv->report_progress) {
-		ret = TRUE;
-		goto out;
-	}
+	if (!priv->report_progress)
+		return TRUE;
 
 	/* did we call done on a state that did not have a size set? */
 	if (priv->steps != 0) {
 		g_warning ("steps already set to %i, can't set %i! [%s]",
 			     priv->steps, steps, strloc);
 		hif_state_print_parent_chain (state, 0);
-		goto out;
+		return FALSE;
 	}
 
 	/* set id */
@@ -1159,9 +1133,7 @@ hif_state_set_number_steps_real (HifState *state, guint steps, const gchar *strl
 	priv->steps = steps;
 
 	/* success */
-	ret = TRUE;
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1190,16 +1162,13 @@ hif_state_set_steps_real (HifState *state, GError **error, const gchar *strloc, 
 	guint i;
 	gint value_temp;
 	guint total;
-	gboolean ret = FALSE;
 
 	g_return_val_if_fail (state != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* do we care */
-	if (!priv->report_progress) {
-		ret = TRUE;
-		goto out;
-	}
+	if (!priv->report_progress)
+		return TRUE;
 
 	/* we must set at least one thing */
 	total = value;
@@ -1221,18 +1190,17 @@ hif_state_set_steps_real (HifState *state, GError **error, const gchar *strloc, 
 			     HIF_ERROR_INTERNAL_ERROR,
 			     "percentage not 100: %i",
 			     total);
-		goto out;
+		return FALSE;
 	}
 
 	/* set step number */
-	ret = hif_state_set_number_steps_real (state, i+1, strloc);
-	if (!ret) {
+	if (!hif_state_set_number_steps_real (state, i+1, strloc)) {
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_INTERNAL_ERROR,
 			     "failed to set number steps: %i",
 			     i+1);
-		goto out;
+		return FALSE;
 	}
 
 	/* save this data */
@@ -1253,9 +1221,7 @@ hif_state_set_steps_real (HifState *state, GError **error, const gchar *strloc, 
 	va_end (args);
 
 	/* success */
-	ret = TRUE;
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1322,7 +1288,6 @@ gboolean
 hif_state_check (HifState *state, GError **error)
 {
 	HifStatePrivate *priv = GET_PRIVATE (state);
-	gboolean ret = TRUE;
 
 	g_return_val_if_fail (state != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -1333,11 +1298,9 @@ hif_state_check (HifState *state, GError **error)
 				     HIF_ERROR,
 				     HIF_ERROR_CANCELLED,
 				     "cancelled by user action");
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1356,7 +1319,6 @@ gboolean
 hif_state_done_real (HifState *state, GError **error, const gchar *strloc)
 {
 	HifStatePrivate *priv = GET_PRIVATE (state);
-	gboolean ret;
 	gdouble elapsed;
 	gfloat percentage;
 
@@ -1364,13 +1326,12 @@ hif_state_done_real (HifState *state, GError **error, const gchar *strloc)
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check */
-	ret = hif_state_check (state, error);
-	if (!ret)
-		goto out;
+	if (!hif_state_check (state, error))
+		return FALSE;
 
 	/* do we care */
 	if (!priv->report_progress)
-		goto out;
+		return TRUE;
 
 	/* did we call done on a state that did not have a size set? */
 	if (priv->steps == 0) {
@@ -1378,8 +1339,7 @@ hif_state_done_real (HifState *state, GError **error, const gchar *strloc)
 			     "done on a state %p that did not have a size set! [%s]",
 			     state, strloc);
 		hif_state_print_parent_chain (state, 0);
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* check the interval was too big in allow_cancel false mode */
@@ -1403,8 +1363,7 @@ hif_state_done_real (HifState *state, GError **error, const gchar *strloc)
 		g_set_error (error, HIF_ERROR, HIF_ERROR_INTERNAL_ERROR,
 			     "already at 100%% state [%s]", strloc);
 		hif_state_print_parent_chain (state, 0);
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* is child not at 100%? */
@@ -1414,7 +1373,6 @@ hif_state_done_real (HifState *state, GError **error, const gchar *strloc)
 			g_print ("child is at %i/%i steps and parent done [%s]\n",
 				 child_priv->current, child_priv->steps, strloc);
 			hif_state_print_parent_chain (priv->child, 0);
-			ret = TRUE;
 			/* do not abort, as we want to clean this up */
 		}
 	}
@@ -1445,8 +1403,7 @@ hif_state_done_real (HifState *state, GError **error, const gchar *strloc)
 	/* reset child if it exists */
 	if (priv->child != NULL)
 		hif_state_reset (priv->child);
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1465,27 +1422,24 @@ gboolean
 hif_state_finished_real (HifState *state, GError **error, const gchar *strloc)
 {
 	HifStatePrivate *priv = GET_PRIVATE (state);
-	gboolean ret;
 
 	g_return_val_if_fail (state != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check */
-	ret = hif_state_check (state, error);
-	if (!ret)
-		goto out;
+	if (!hif_state_check (state, error))
+		return FALSE;
 
 	/* is already at 100%? */
 	if (priv->current == priv->steps)
-		goto out;
+		return TRUE;
 
 	/* all done */
 	priv->current = priv->steps;
 
 	/* set new percentage */
 	hif_state_set_percentage (state, 100);
-out:
-	return ret;
+	return TRUE;
 }
 
 /**

@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2013-2014 Richard Hughes <richard@hughsie.com>
  *
  * Most of this code was taken from Zif, libzif/zif-transaction.c
  *
@@ -38,6 +38,7 @@
 #include <rpm/rpmlib.h>
 #include <rpm/rpmts.h>
 
+#include "hif-cleanup.h"
 #include "hif-keyring.h"
 #include "hif-utils.h"
 
@@ -59,13 +60,13 @@ hif_keyring_add_public_key (rpmKeyring keyring,
 			    GError **error)
 {
 	gboolean ret = TRUE;
-	gchar *data = NULL;
 	gint rc;
 	gsize len;
 	pgpArmor armor;
 	pgpDig dig = NULL;
 	rpmPubkey pubkey = NULL;
 	uint8_t *pkt = NULL;
+	_cleanup_free gchar *data = NULL;
 
 	/* ignore symlinks and directories */
 	if (!g_file_test (filename, G_FILE_TEST_IS_REGULAR))
@@ -149,7 +150,6 @@ out:
 		rpmPubkeyFree (pubkey);
 	if (dig != NULL)
 		pgpFreeDig (dig);
-	g_free (data);
 	return ret;
 }
 
@@ -167,30 +167,24 @@ out:
 gboolean
 hif_keyring_add_public_keys (rpmKeyring keyring, GError **error)
 {
-	const gchar *filename;
 	const gchar *gpg_dir = "/etc/pki/rpm-gpg";
 	gboolean ret = TRUE;
-	gchar *path_tmp;
-	GDir *dir;
+	_cleanup_close_dir GDir *dir;
 
 	/* search all the public key files */
 	dir = g_dir_open (gpg_dir, 0, error);
-	if (dir == NULL) {
-		ret = FALSE;
-		goto out;
-	}
+	if (dir == NULL)
+		return FALSE;
 	do {
+		const gchar *filename;
+		_cleanup_free gchar *path_tmp = NULL;
 		filename = g_dir_read_name (dir);
 		if (filename == NULL)
 			break;
 		path_tmp = g_build_filename (gpg_dir, filename, NULL);
 		ret = hif_keyring_add_public_key (keyring, path_tmp, error);
-		g_free (path_tmp);
 	} while (ret);
-out:
-	if (dir != NULL)
-		g_dir_close (dir);
-	return ret;
+	return TRUE;
 }
 
 /**

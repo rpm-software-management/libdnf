@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2013-2014 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -39,6 +39,7 @@
 #include <rpm/rpmlog.h>
 #include <rpm/rpmdb.h>
 
+#include "hif-cleanup.h"
 #include "hif-rpmts.h"
 #include "hif-utils.h"
 
@@ -66,7 +67,6 @@ hif_rpmts_add_install_filename (rpmts ts,
 	gint res;
 	Header hdr;
 	FD_t fd;
-	gboolean ret = FALSE;
 
 	/* open this */
 	fd = Fopen (filename, "r.ufdio");
@@ -90,14 +90,14 @@ hif_rpmts_add_install_filename (rpmts ts,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "signature does not verify for %s",
 				     filename);
-			goto out;
+			return FALSE;
 		default:
 			g_set_error (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "failed to open (generic error): %s",
 				     filename);
-			goto out;
+			return FALSE;
 		}
 	} else {
 		switch (res) {
@@ -109,35 +109,35 @@ hif_rpmts_add_install_filename (rpmts ts,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "failed to verify key for %s",
 				     filename);
-			goto out;
+			return FALSE;
 		case RPMRC_NOKEY:
 			g_set_error (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "public key unavailable for %s",
 				     filename);
-			goto out;
+			return FALSE;
 		case RPMRC_NOTFOUND:
 			g_set_error (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "signature not found for %s",
 				     filename);
-			goto out;
+			return FALSE;
 		case RPMRC_FAIL:
 			g_set_error (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "signature does not verify for %s",
 				     filename);
-			goto out;
+			return FALSE;
 		default:
 			g_set_error (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "failed to open (generic error): %s",
 				     filename);
-			goto out;
+			return FALSE;
 		}
 	}
 
@@ -153,11 +153,9 @@ hif_rpmts_add_install_filename (rpmts ts,
 			     HIF_ERROR_INTERNAL_ERROR,
 			     "failed to add install element: %s [%i]",
 			     filename, res);
-		goto out;
+		return FALSE;
 	}
-	ret = TRUE;
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -256,11 +254,11 @@ gboolean
 hif_rpmts_look_for_problems (rpmts ts, GError **error)
 {
 	gboolean ret = TRUE;
-	GString *string = NULL;
 	rpmProblem prob;
 	rpmpsi psi;
 	rpmps probs = NULL;
 	gchar *msg;
+	_cleanup_free_string GString *string = NULL;
 
 	/* get a list of problems */
 	probs = rpmtsProblems (ts);
@@ -299,8 +297,6 @@ hif_rpmts_look_for_problems (rpmts ts, GError **error)
 			     HIF_ERROR_INTERNAL_ERROR,
 			     "Error running transaction and no problems were reported!");
 out:
-	if (string != NULL)
-		g_string_free (string, TRUE);
 	rpmpsFree (probs);
 	return ret;
 }
@@ -342,10 +338,10 @@ hif_rpmts_log_handler_cb (rpmlogRec rec, rpmlogCallbackData data)
 static Header
 hif_rpmts_find_package (rpmts ts, HyPackage pkg, GError **error)
 {
-	GString *rpm_error = NULL;
 	Header hdr = NULL;
 	rpmdbMatchIterator iter;
 	unsigned int recOffset;
+	_cleanup_free_string GString *rpm_error = NULL;
 
 	/* find package by db-id */
 	recOffset = hy_package_get_rpmdbid (pkg);
@@ -380,8 +376,6 @@ hif_rpmts_find_package (rpmts ts, HyPackage pkg, GError **error)
 	headerLink (hdr);
 out:
 	rpmlogSetCallback (NULL, NULL);
-	if (rpm_error != NULL)
-		g_string_free (rpm_error, TRUE);
 	if (iter != NULL)
 		rpmdbFreeIterator (iter);
 	return hdr;

@@ -42,6 +42,7 @@
 
 #include "config.h"
 
+#include "hif-cleanup.h"
 #include "hif-db.h"
 #include "hif-package.h"
 #include "hif-utils.h"
@@ -95,22 +96,16 @@ hif_db_class_init (HifDbClass *klass)
 static gboolean
 hif_db_create_dir (const gchar *dir, GError **error)
 {
-	GFile *file = NULL;
-	gboolean ret = TRUE;
+	_cleanup_unref_object GFile *file = NULL;
 
 	/* already exists */
-	ret = g_file_test (dir, G_FILE_TEST_IS_DIR);
-	if (ret)
-		goto out;
+	if (g_file_test (dir, G_FILE_TEST_IS_DIR))
+		return FALSE;
 
 	/* need to create */
 	g_debug ("creating %s", dir);
 	file = g_file_new_for_path (dir);
-	ret = g_file_make_directory_with_parents (file, NULL, error);
-out:
-	if (file != NULL)
-		g_object_unref (file);
-	return ret;
+	return g_file_make_directory_with_parents (file, NULL, error);
 }
 
 /**
@@ -120,20 +115,17 @@ static gchar *
 hif_db_get_dir_for_package (HyPackage package)
 {
 	const gchar *pkgid;
-	gchar *dir = NULL;
 
 	pkgid = hif_package_get_pkgid (package);
 	if (pkgid == NULL)
-		goto out;
-	dir = g_strdup_printf ("/var/lib/yum/yumdb/%c/%s-%s-%s-%s-%s",
-			       hy_package_get_name (package)[0],
-			       pkgid,
-			       hy_package_get_name (package),
-			       hy_package_get_version (package),
-			       hy_package_get_release (package),
-			       hy_package_get_arch (package));
-out:
-	return dir;
+		return NULL;
+	return g_strdup_printf ("/var/lib/yum/yumdb/%c/%s-%s-%s-%s-%s",
+				hy_package_get_name (package)[0],
+				pkgid,
+				hy_package_get_name (package),
+				hy_package_get_version (package),
+				hy_package_get_release (package),
+				hy_package_get_arch (package));
 }
 
 /**
@@ -152,10 +144,9 @@ out:
 gchar *
 hif_db_get_string (HifDb *db, HyPackage package, const gchar *key, GError **error)
 {
-	gboolean ret;
-	gchar *filename = NULL;
-	gchar *index_dir = NULL;
 	gchar *value = NULL;
+	_cleanup_free gchar *filename = NULL;
+	_cleanup_free gchar *index_dir = NULL;
 
 	g_return_val_if_fail (HIF_IS_DB (db), NULL);
 	g_return_val_if_fail (package != NULL, NULL);
@@ -170,29 +161,24 @@ hif_db_get_string (HifDb *db, HyPackage package, const gchar *key, GError **erro
 			     HIF_ERROR_FAILED,
 			     "cannot create index for %s",
 			     hif_package_get_id (package));
-		goto out;
+		return NULL;
 	}
 
 	filename = g_build_filename (index_dir, key, NULL);
 
 	/* check it exists */
-	ret = g_file_test (filename, G_FILE_TEST_EXISTS);
-	if (!ret) {
+	if (!g_file_test (filename, G_FILE_TEST_EXISTS)) {
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_FAILED,
 			     "%s key not found",
 			     filename);
-		goto out;
+		return NULL;
 	}
 
 	/* get value */
-	ret = g_file_get_contents (filename, &value, NULL, error);
-	if (!ret)
-		goto out;
-out:
-	g_free (index_dir);
-	g_free (filename);
+	if (!g_file_get_contents (filename, &value, NULL, error))
+		return NULL;
 	return value;
 }
 
@@ -217,9 +203,8 @@ hif_db_set_string (HifDb *db,
 		   const gchar *value,
 		   GError **error)
 {
-	gboolean ret = TRUE;
-	gchar *index_dir = NULL;
-	gchar *index_file = NULL;
+	_cleanup_free gchar *index_dir = NULL;
+	_cleanup_free gchar *index_file = NULL;
 
 	g_return_val_if_fail (HIF_IS_DB (db), FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
@@ -230,28 +215,20 @@ hif_db_set_string (HifDb *db,
 	/* create the index directory */
 	index_dir = hif_db_get_dir_for_package (package);
 	if (index_dir == NULL) {
-		ret = FALSE;
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_FAILED,
 			     "cannot create index for %s",
 			     hif_package_get_id (package));
-		goto out;
+		return FALSE;
 	}
-	ret = hif_db_create_dir (index_dir, error);
-	if (!ret)
-		goto out;
+	if (!hif_db_create_dir (index_dir, error))
+		return FALSE;
 
 	/* write the value */
 	index_file = g_build_filename (index_dir, key, NULL);
 	g_debug ("writing %s to %s", value, index_file);
-	ret = g_file_set_contents (index_file, value, -1, error);
-	if (!ret)
-		goto out;
-out:
-	g_free (index_dir);
-	g_free (index_file);
-	return ret;
+	return g_file_set_contents (index_file, value, -1, error);
 }
 
 /**
@@ -273,10 +250,9 @@ hif_db_remove (HifDb *db,
 	       const gchar *key,
 	       GError **error)
 {
-	gboolean ret = TRUE;
-	gchar *index_dir = NULL;
-	gchar *index_file = NULL;
-	GFile *file = NULL;
+	_cleanup_free gchar *index_dir = NULL;
+	_cleanup_free gchar *index_file = NULL;
+	_cleanup_unref_object GFile *file = NULL;
 
 	g_return_val_if_fail (HIF_IS_DB (db), FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
@@ -286,27 +262,19 @@ hif_db_remove (HifDb *db,
 	/* create the index directory */
 	index_dir = hif_db_get_dir_for_package (package);
 	if (index_dir == NULL) {
-		ret = FALSE;
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_FAILED,
 			     "cannot create index for %s",
 			     hif_package_get_id (package));
-		goto out;
+		return FALSE;
 	}
 
 	/* delete the value */
 	g_debug ("deleting %s from %s", key, index_dir);
 	index_file = g_build_filename (index_dir, key, NULL);
 	file = g_file_new_for_path (index_file);
-	ret = g_file_delete (file, NULL, error);
-	if (!ret)
-		goto out;
-out:
-	if (file != NULL)
-		g_object_unref (file);
-	g_free (index_dir);
-	return ret;
+	return g_file_delete (file, NULL, error);
 }
 
 /**
@@ -324,13 +292,10 @@ out:
 gboolean
 hif_db_remove_all (HifDb *db, HyPackage package, GError **error)
 {
-	gboolean ret = TRUE;
-	gchar *index_dir = NULL;
-	gchar *index_file = NULL;
-	GFile *file_tmp;
-	GFile *file_directory = NULL;
-	GDir *dir = NULL;
 	const gchar *filename;
+	_cleanup_close_dir GDir *dir = NULL;
+	_cleanup_free gchar *index_dir = NULL;
+	_cleanup_unref_object GFile *file_directory = NULL;
 
 	g_return_val_if_fail (HIF_IS_DB (db), FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
@@ -339,52 +304,42 @@ hif_db_remove_all (HifDb *db, HyPackage package, GError **error)
 	/* get the folder */
 	index_dir = hif_db_get_dir_for_package (package);
 	if (index_dir == NULL) {
-		ret = FALSE;
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_FAILED,
 			     "cannot create index for %s",
 			     hif_package_get_id (package));
-		goto out;
+		return FALSE;
 	}
-	ret = g_file_test (index_dir, G_FILE_TEST_IS_DIR);
-	if (!ret) {
+	if (!g_file_test (index_dir, G_FILE_TEST_IS_DIR)) {
 		g_debug ("Nothing to delete in %s", index_dir);
-		ret = TRUE;
-		goto out;
+		return TRUE;
 	}
 
 	/* open */
 	dir = g_dir_open (index_dir, 0, error);
 	if (dir == NULL)
-		goto out;
+		return FALSE;
 
 	/* delete each one */
 	filename = g_dir_read_name (dir);
 	while (filename != NULL) {
+		_cleanup_free gchar *index_file;
+		_cleanup_unref_object GFile *file_tmp;
+
 		index_file = g_build_filename (index_dir, filename, NULL);
 		file_tmp = g_file_new_for_path (index_file);
 
 		/* delete, ignoring error */
 		g_debug ("deleting %s from %s", filename, index_dir);
-		ret = g_file_delete (file_tmp, NULL, NULL);
-		if (!ret)
+		if (!g_file_delete (file_tmp, NULL, NULL))
 			g_debug ("failed to delete %s", filename);
-		g_object_unref (file_tmp);
-		g_free (index_file);
 		filename = g_dir_read_name (dir);
 	}
 
 	/* now delete the directory */
 	file_directory = g_file_new_for_path (index_dir);
-	ret = g_file_delete (file_directory, NULL, error);
-	if (!ret)
-		goto out;
-out:
-	if (file_directory != NULL)
-		g_object_unref (file_directory);
-	g_free (index_dir);
-	return ret;
+	return g_file_delete (file_directory, NULL, error);
 }
 
 /**
@@ -399,8 +354,8 @@ out:
 void
 hif_db_ensure_origin_pkg (HifDb *db, HyPackage pkg)
 {
-	gchar *tmp;
-	GError *error = NULL;
+	_cleanup_free_error GError *error = NULL;
+	_cleanup_free gchar *tmp = NULL;
 
 	/* already set */
 	if (hif_package_get_origin (pkg) != NULL)
@@ -414,11 +369,9 @@ hif_db_ensure_origin_pkg (HifDb *db, HyPackage pkg)
 		g_debug ("no origin for %s: %s",
 			 hif_package_get_id (pkg),
 			 error->message);
-		g_error_free (error);
 	} else {
 		hif_package_set_origin (pkg, tmp);
 	}
-	g_free (tmp);
 }
 
 /**

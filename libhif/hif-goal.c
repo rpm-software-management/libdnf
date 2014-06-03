@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2013-2014 Richard Hughes <richard@hughsie.com>
  *
  * Most of this code was taken from Zif, libzif/zif-transaction.c
  *
@@ -38,6 +38,7 @@
 #include <hawkey/packagelist.h>
 #include <hawkey/util.h>
 
+#include "hif-cleanup.h"
 #include "hif-goal.h"
 #include "hif-package.h"
 #include "hif-utils.h"
@@ -49,18 +50,16 @@ gboolean
 hif_goal_depsolve (HyGoal goal, GError **error)
 {
 	HyPackage pkg;
-	gboolean ret = TRUE;
 	gchar *tmp;
 	gint cnt;
 	gint j;
 	gint rc;
 	guint i;
-	GString *string = NULL;
 	HyPackageList pkglist;
+	_cleanup_free_string GString *string = NULL;
 
 	rc = hy_goal_run_flags (goal, HY_ALLOW_UNINSTALL);
 	if (rc) {
-		ret = FALSE;
 		string = g_string_new ("Could not depsolve transaction; ");
 		cnt = hy_goal_count_problems (goal);
 		if (cnt == 1)
@@ -77,23 +76,21 @@ hif_goal_depsolve (HyGoal goal, GError **error)
 				     HIF_ERROR,
 				     HIF_ERROR_PACKAGE_CONFLICTS,
 				     string->str);
-		goto out;
+		return FALSE;
 	}
 
 	/* anything to do? */
 	if (hy_goal_req_length (goal) == 0) {
-		ret = FALSE;
 		g_set_error_literal (error,
 				     HIF_ERROR,
 				     HIF_ERROR_NO_PACKAGES_TO_UPDATE,
 				     "The transaction was empty");
-		goto out;
+		return FALSE;
 	}
 
 	/* prevent downgrades */
 	pkglist = hy_goal_list_downgrades (goal);
 	if (hy_packagelist_count (pkglist) > 0) {
-		ret = FALSE;
 		string = g_string_new ("Downgrading packages is prevented by policy; ");
 		FOR_PACKAGELIST(pkg, pkglist, i) {
 			g_string_append_printf (string, "%s, ",
@@ -104,13 +101,12 @@ hif_goal_depsolve (HyGoal goal, GError **error)
 				     HIF_ERROR,
 				     HIF_ERROR_PACKAGE_INSTALL_BLOCKED,
 				     string->str);
-		goto out;
+		return FALSE;
 	}
 
 	/* prevent re-installs */
 	pkglist = hy_goal_list_reinstalls (goal);
 	if (hy_packagelist_count (pkglist) > 0) {
-		ret = FALSE;
 		string = g_string_new ("Reinstalling packages is prevented by policy; ");
 		FOR_PACKAGELIST(pkg, pkglist, i) {
 			g_string_append_printf (string, "%s, ",
@@ -121,12 +117,9 @@ hif_goal_depsolve (HyGoal goal, GError **error)
 				     HIF_ERROR,
 				     HIF_ERROR_PACKAGE_INSTALL_BLOCKED,
 				     string->str);
-		goto out;
+		return FALSE;
 	}
-out:
-	if (string != NULL)
-		g_string_free (string, TRUE);
-	return ret;
+	return TRUE;
 }
 
 /**

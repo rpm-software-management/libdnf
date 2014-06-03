@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "hif-cleanup.h"
 #include "hif-utils.h"
 
 #define HIF_ERROR_INVALID_ARGUMENTS	0
@@ -82,9 +83,9 @@ hif_cmd_add (GPtrArray *array,
 	     const gchar *description,
 	     HifUtilPrivateCb callback)
 {
-	gchar **names;
 	guint i;
 	HifUtilItem *item;
+	_cleanup_free_strv gchar **names = NULL;
 
 	g_return_if_fail (name != NULL);
 	g_return_if_fail (description != NULL);
@@ -105,7 +106,6 @@ hif_cmd_add (GPtrArray *array,
 		item->callback = callback;
 		g_ptr_array_add (array, item);
 	}
-	g_strfreev (names);
 }
 
 /**
@@ -160,18 +160,15 @@ hif_cmd_get_descriptions (GPtrArray *array)
 static gboolean
 hif_cmd_run (HifUtilPrivate *priv, const gchar *command, gchar **values, GError **error)
 {
-	gboolean ret = FALSE;
 	guint i;
 	HifUtilItem *item;
-	GString *string;
+	_cleanup_free_string GString *string = NULL;
 
 	/* find command */
 	for (i = 0; i < priv->cmd_array->len; i++) {
 		item = g_ptr_array_index (priv->cmd_array, i);
-		if (g_strcmp0 (item->name, command) == 0) {
-			ret = item->callback (priv, values, error);
-			goto out;
-		}
+		if (g_strcmp0 (item->name, command) == 0)
+			return item->callback (priv, values, error);
 	}
 
 	/* not found */
@@ -184,9 +181,7 @@ hif_cmd_run (HifUtilPrivate *priv, const gchar *command, gchar **values, GError 
 					item->arguments ? item->arguments : "");
 	}
 	g_set_error_literal (error, HIF_ERROR, HIF_ERROR_NO_SUCH_CMD, string->str);
-	g_string_free (string, TRUE);
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -195,35 +190,25 @@ out:
 static gboolean
 hif_cmd_install (HifUtilPrivate *priv, gchar **values, GError **error)
 {
-	gboolean ret = TRUE;
 	guint i;
 
 	if (g_strv_length (values) < 1) {
-		ret = FALSE;
 		g_set_error_literal (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INVALID_ARGUMENTS,
 				     "Not enough arguments, "
 				     "expected package or group name");
-		goto out;
+		return FALSE;
 	}
 
 	/* install each package */
-	ret = hif_context_setup (priv->context, NULL, error);
-	if (!ret)
-		goto out;
+	if (!hif_context_setup (priv->context, NULL, error))
+		return FALSE;
 	for (i = 0; values[i] != NULL; i++) {
-		ret = hif_context_install (priv->context,
-					   values[i],
-					   error);
-		if (!ret)
-			goto out;
+		if (!hif_context_install (priv->context, values[i], error))
+			return FALSE;
 	}
-	ret = hif_context_run (priv->context, NULL, error);
-	if (!ret)
-		goto out;
-out:
-	return ret;
+	return hif_context_run (priv->context, NULL, error);
 }
 
 /**
@@ -232,35 +217,25 @@ out:
 static gboolean
 hif_cmd_remove (HifUtilPrivate *priv, gchar **values, GError **error)
 {
-	gboolean ret = TRUE;
 	guint i;
 
 	if (g_strv_length (values) < 1) {
-		ret = FALSE;
 		g_set_error_literal (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INVALID_ARGUMENTS,
 				     "Not enough arguments, "
 				     "expected package or group name");
-		goto out;
+		return FALSE;
 	}
 
 	/* remove each package */
-	ret = hif_context_setup (priv->context, NULL, error);
-	if (!ret)
-		goto out;
+	if (!hif_context_setup (priv->context, NULL, error))
+		return FALSE;
 	for (i = 0; values[i] != NULL; i++) {
-		ret = hif_context_remove (priv->context,
-					  values[i],
-					  error);
-		if (!ret)
-			goto out;
+		if (!hif_context_remove (priv->context, values[i], error))
+			return FALSE;
 	}
-	ret = hif_context_run (priv->context, NULL, error);
-	if (!ret)
-		goto out;
-out:
-	return ret;
+	return hif_context_run (priv->context, NULL, error);
 }
 
 /**
@@ -269,35 +244,25 @@ out:
 static gboolean
 hif_cmd_update (HifUtilPrivate *priv, gchar **values, GError **error)
 {
-	gboolean ret = TRUE;
 	guint i;
 
 	if (g_strv_length (values) < 1) {
-		ret = FALSE;
 		g_set_error_literal (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INVALID_ARGUMENTS,
 				     "Not enough arguments, "
 				     "expected package or group name");
-		goto out;
+		return FALSE;
 	}
 
 	/* update each package */
-	ret = hif_context_setup (priv->context, NULL, error);
-	if (!ret)
-		goto out;
+	if (!hif_context_setup (priv->context, NULL, error))
+		return FALSE;
 	for (i = 0; values[i] != NULL; i++) {
-		ret = hif_context_update (priv->context,
-					  values[i],
-					  error);
-		if (!ret)
-			goto out;
+		if (!hif_context_update (priv->context, values[i], error))
+			return FALSE;
 	}
-	ret = hif_context_run (priv->context, NULL, error);
-	if (!ret)
-		goto out;
-out:
-	return ret;
+	return hif_context_run (priv->context, NULL, error);
 }
 
 /**
@@ -319,9 +284,6 @@ main (int argc, char *argv[])
 	gboolean ret;
 	gboolean verbose = FALSE;
 	gboolean version = FALSE;
-	gchar *cmd_descriptions = NULL;
-	gchar *filter = NULL;
-	GError *error = NULL;
 	guint retval = 1;
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
@@ -330,6 +292,9 @@ main (int argc, char *argv[])
 			"Show version", NULL },
 		{ NULL}
 	};
+	_cleanup_free_error GError *error = NULL;
+	_cleanup_free gchar *cmd_descriptions = NULL;
+	_cleanup_free gchar *filter = NULL;
 
 	setlocale (LC_ALL, "");
 
@@ -364,7 +329,6 @@ main (int argc, char *argv[])
 	ret = g_option_context_parse (priv->option_context, &argc, &argv, &error);
 	if (!ret) {
 		g_print ("Failed to parse arguments: %s\n", error->message);
-		g_error_free (error);
 		goto out;
 	}
 
@@ -403,7 +367,6 @@ main (int argc, char *argv[])
 		} else {
 			g_print ("%s\n", error->message);
 		}
-		g_error_free (error);
 		goto out;
 	}
 
@@ -419,8 +382,6 @@ out:
 		g_option_context_free (priv->option_context);
 		g_free (priv);
 	}
-	g_free (filter);
-	g_free (cmd_descriptions);
 	return retval;
 }
 

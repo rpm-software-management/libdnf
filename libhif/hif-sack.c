@@ -34,6 +34,7 @@
 
 #include <hawkey/errno.h>
 
+#include "hif-cleanup.h"
 #include "hif-sack.h"
 #include "hif-utils.h"
 
@@ -60,7 +61,7 @@ hif_sack_add_source (HySack sack,
 				   95, /* load solv */
 				   -1);
 	if (!ret)
-		goto out;
+		return FALSE;
 
 	/* check repo */
 	state_local = hif_state_get_child (state);
@@ -81,22 +82,20 @@ hif_sack_add_source (HySack sack,
 			if (g_error_matches (error_local,
 					     HIF_ERROR,
 					     HIF_ERROR_CANNOT_FETCH_SOURCE)) {
-				ret = TRUE;
 				g_warning ("Skipping refresh of %s: %s",
 					   hif_source_get_id (src),
 					   error_local->message);
 				g_error_free (error_local);
-			} else {
-				g_propagate_error (error, error_local);
+				return TRUE;
 			}
-			goto out;
+			g_propagate_error (error, error_local);
+			return FALSE;
 		}
 	}
 
 	/* done */
-	ret = hif_state_done (state, error);
-	if (!ret)
-		goto out;
+	if (!hif_state_done (state, error))
+		return FALSE;
 
 	/* only load what's required */
 	if ((flags & HIF_SACK_ADD_FLAG_FILELISTS) > 0)
@@ -110,19 +109,14 @@ hif_sack_add_source (HySack sack,
 	rc = hy_sack_load_yum_repo (sack, hif_source_get_repo (src), flags_hy);
 	if (rc == HY_E_FAILED)
 		rc = hy_get_errno ();
-	ret = hif_rc_to_gerror (rc, error);
-	if (!ret) {
+	if (!hif_rc_to_gerror (rc, error)) {
 		g_prefix_error (error, "Failed to load repo %s: ",
 				hif_source_get_id (src));
-		goto out;
+		return FALSE;
 	}
 
 	/* done */
-	ret = hif_state_done (state, error);
-	if (!ret)
-		goto out;
-out:
-	return ret;
+	return hif_state_done (state, error);
 }
 
 /**
@@ -136,7 +130,7 @@ hif_sack_add_sources (HySack sack,
 		      HifState *state,
 		      GError **error)
 {
-	gboolean ret = TRUE;
+	gboolean ret;
 	guint cnt = 0;
 	guint i;
 	HifSource *src;
@@ -164,16 +158,13 @@ hif_sack_add_sources (HySack sack,
 					   state_local,
 					   error);
 		if (!ret)
-			goto out;
+			return FALSE;
 
 		/* done */
-		ret = hif_state_done (state, error);
-		if (!ret)
-			goto out;
+		if (!hif_state_done (state, error))
+			return FALSE;
 	}
 
 	/* success */
-	ret = TRUE;
-out:
-	return ret;
+	return TRUE;
 }

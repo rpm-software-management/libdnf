@@ -36,6 +36,7 @@
 
 #include <gio/gio.h>
 
+#include "hif-cleanup.h"
 #include "hif-lock.h"
 #include "hif-utils.h"
 
@@ -222,10 +223,10 @@ static guint
 hif_lock_get_pid (HifLock *lock, const gchar *filename, GError **error)
 {
 	gboolean ret;
-	GError *error_local = NULL;
-	guint64 pid = 0;
-	gchar *contents = NULL;
+	guint64 pid;
 	gchar *endptr = NULL;
+	_cleanup_free_error GError *error_local = NULL;
+	_cleanup_free gchar *contents = NULL;
 
 	g_return_val_if_fail (HIF_IS_LOCK (lock), FALSE);
 
@@ -236,7 +237,7 @@ hif_lock_get_pid (HifLock *lock, const gchar *filename, GError **error)
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "lock file not present");
-		goto out;
+		return 0;
 	}
 
 	/* get contents */
@@ -247,8 +248,7 @@ hif_lock_get_pid (HifLock *lock, const gchar *filename, GError **error)
 			     HIF_ERROR_INTERNAL_ERROR,
 			     "lock file not set: %s",
 			     error_local->message);
-		g_error_free (error_local);
-		goto out;
+		return 0;
 	}
 
 	/* convert to int */
@@ -258,19 +258,15 @@ hif_lock_get_pid (HifLock *lock, const gchar *filename, GError **error)
 	if (contents == endptr) {
 		g_set_error (error, HIF_ERROR, HIF_ERROR_INTERNAL_ERROR,
 			     "failed to parse pid: %s", contents);
-		pid = 0;
-		goto out;
+		return 0;
 	}
 
 	/* too large */
 	if (pid > G_MAXUINT) {
 		g_set_error (error, HIF_ERROR, HIF_ERROR_INTERNAL_ERROR,
 			     "pid too large %" G_GUINT64_FORMAT, pid);
-		pid = 0;
-		goto out;
+		return 0;
 	}
-out:
-	g_free (contents);
 	return (guint) pid;
 }
 
@@ -296,22 +292,17 @@ static gchar *
 hif_lock_get_cmdline_for_pid (guint pid)
 {
 	gboolean ret;
-	gchar *filename = NULL;
-	gchar *data = NULL;
-	gchar *cmdline = NULL;
-	GError *error = NULL;
+	_cleanup_free_error GError *error = NULL;
+	_cleanup_free gchar *data = NULL;
+	_cleanup_free gchar *filename = NULL;
 
 	/* find the cmdline */
 	filename = g_strdup_printf ("/proc/%i/cmdline", pid);
 	ret = g_file_get_contents (filename, &data, NULL, &error);
-	if (ret) {
-		cmdline = g_strdup_printf ("%s (%i)", data, pid);
-	} else {
-		g_warning ("failed to get cmdline: %s", error->message);
-		cmdline = g_strdup_printf ("unknown (%i)", pid);
-	}
-	g_free (data);
-	return cmdline;
+	if (ret)
+		return g_strdup_printf ("%s (%i)", data, pid);
+	g_warning ("failed to get cmdline: %s", error->message);
+	return g_strdup_printf ("unknown (%i)", pid);
 }
 
 /**
@@ -371,16 +362,16 @@ hif_lock_take (HifLock *lock,
 	       HifLockMode mode,
 	       GError **error)
 {
-	GError *error_local = NULL;
 	HifLockItem *item;
 	HifLockPrivate *priv = GET_PRIVATE (lock);
 	gboolean ret;
-	gchar *cmdline = NULL;
-	gchar *filename = NULL;
-	gchar *pid_filename = NULL;
-	gchar *pid_text = NULL;
 	guint id = 0;
 	guint pid;
+	_cleanup_free_error GError *error_local = NULL;
+	_cleanup_free gchar *cmdline = NULL;
+	_cleanup_free gchar *filename = NULL;
+	_cleanup_free gchar *pid_filename = NULL;
+	_cleanup_free gchar *pid_text = NULL;
 
 	g_return_val_if_fail (HIF_IS_LOCK (lock), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -434,18 +425,13 @@ hif_lock_take (HifLock *lock,
 
 		/* create file with our process ID */
 		pid_text = g_strdup_printf ("%i", getpid ());
-		ret = g_file_set_contents (filename,
-					   pid_text,
-					   -1,
-					   &error_local);
-		if (!ret) {
+		if (!g_file_set_contents (filename, pid_text, -1, &error_local)) {
 			g_set_error (error,
 				     HIF_ERROR,
 				     HIF_ERROR_CANNOT_GET_LOCK,
 				     "failed to obtain lock '%s': %s",
 				     hif_lock_type_to_string (type),
 				     error_local->message);
-			g_error_free (error_local);
 			goto out;
 		}
 	}
@@ -481,11 +467,6 @@ hif_lock_take (HifLock *lock,
 out:
 	/* unlock other threads */
 	g_mutex_unlock (&priv->mutex);
-
-	g_free (pid_text);
-	g_free (pid_filename);
-	g_free (filename);
-	g_free (cmdline);
 	return id;
 }
 
@@ -504,12 +485,12 @@ out:
 gboolean
 hif_lock_release (HifLock *lock, guint id, GError **error)
 {
-	GError *error_local = NULL;
-	GFile *file = NULL;
 	HifLockItem *item;
 	HifLockPrivate *priv = GET_PRIVATE (lock);
 	gboolean ret = FALSE;
-	gchar *filename = NULL;
+	_cleanup_free_error GError *error_local = NULL;
+	_cleanup_free gchar *filename = NULL;
+	_cleanup_unref_object GFile *file = NULL;
 
 	g_return_val_if_fail (HIF_IS_LOCK (lock), FALSE);
 	g_return_val_if_fail (id != 0, FALSE);
@@ -561,7 +542,6 @@ hif_lock_release (HifLock *lock, guint id, GError **error)
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "failed to write: %s",
 				     error_local->message);
-			g_error_free (error_local);
 			goto out;
 		}
 	}
@@ -578,9 +558,6 @@ hif_lock_release (HifLock *lock, guint id, GError **error)
 out:
 	/* unlock other threads */
 	g_mutex_unlock (&priv->mutex);
-	if (file != NULL)
-		g_object_unref (file);
-	g_free (filename);
 	return ret;
 }
 
@@ -597,13 +574,9 @@ out:
 void
 hif_lock_release_noerror (HifLock *lock, guint id)
 {
-	gboolean ret;
-	GError *error = NULL;
-	ret = hif_lock_release (lock, id, &error);
-	if (!ret) {
+	_cleanup_free_error GError *error = NULL;
+	if (!hif_lock_release (lock, id, &error))
 		g_warning ("Handled locally: %s", error->message);
-		g_error_free (error);
-	}
 }
 /**
  * hif_lock_new:

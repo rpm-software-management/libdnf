@@ -24,6 +24,7 @@
 #include <glib-object.h>
 #include <hawkey/errno.h>
 
+#include "hif-cleanup.h"
 #include "hif-lock.h"
 #include "hif-source.h"
 #include "hif-state.h"

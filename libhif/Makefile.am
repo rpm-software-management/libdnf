@@ -66,6 +66,7 @@ libhif_include_HEADERS =					\
 	libhif-private.h
 
 libhif_la_SOURCES =						\
+	hif-cleanup.h						\
 	hif-context.c						\
 	hif-context.h						\
 	hif-context-private.h					\

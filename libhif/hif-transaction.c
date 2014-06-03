@@ -39,6 +39,7 @@
 #include <hawkey/sack.h>
 #include <hawkey/util.h>
 
+#include "hif-cleanup.h"
 #include "hif-context-private.h"
 #include "hif-db.h"
 #include "hif-goal.h"
@@ -261,7 +262,6 @@ hif_transaction_ensure_source (HifTransaction *transaction,
 	HifSource *src;
 	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
 	char *location;
-	gboolean ret = TRUE;
 	guint i;
 
 	/* this is a local file */
@@ -270,23 +270,22 @@ hif_transaction_ensure_source (HifTransaction *transaction,
 		location = hy_package_get_location (pkg);
 		hif_package_set_filename (pkg, location);
 		hy_free (location);
-		goto out;
+		return TRUE;
 	}
 
 	/* get repo */
 	if (hy_package_installed (pkg))
-		goto out;
+		return TRUE;
 	for (i = 0; i < priv->sources->len; i++) {
 		src = g_ptr_array_index (priv->sources, i);
 		if (g_strcmp0 (hy_package_get_reponame (pkg),
 			       hif_source_get_id (src)) == 0) {
 			hif_package_set_source (pkg, src);
-			goto out;
+			return TRUE;
 		}
 	}
 
 	/* not found */
-	ret = FALSE;
 	g_set_error (error,
 		     HIF_ERROR,
 		     HIF_ERROR_INTERNAL_ERROR,
@@ -295,8 +294,7 @@ hif_transaction_ensure_source (HifTransaction *transaction,
 		     hy_package_get_name (pkg),
 		     hy_package_get_reponame (pkg),
 		     priv->sources->len);
-out:
-	return ret;
+	return FALSE;
 }
 
 /**
@@ -316,17 +314,14 @@ hif_transaction_ensure_source_list (HifTransaction *transaction,
 				    HyPackageList pkglist,
 				    GError **error)
 {
-	gboolean ret = TRUE;
 	guint i;
 	HyPackage pkg;
 
 	FOR_PACKAGELIST(pkg, pkglist, i) {
-		ret = hif_transaction_ensure_source (transaction, pkg, error);
-		if (!ret)
-			goto out;
+		if (!hif_transaction_ensure_source (transaction, pkg, error))
+			return FALSE;
 	}
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -337,12 +332,12 @@ hif_transaction_check_untrusted (HifTransaction *transaction,
 				 HyGoal goal,
 				 GError **error)
 {
-	GPtrArray *install;
 	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
 	HyPackage pkg;
 	const gchar *filename;
 	gboolean ret = TRUE;
 	guint i;
+	_cleanup_unref_ptrarray GPtrArray *install;
 
 	/* find a list of all the packages we might have to download */
 	install = hif_goal_get_packages (goal,
@@ -352,29 +347,27 @@ hif_transaction_check_untrusted (HifTransaction *transaction,
 					 HIF_PACKAGE_INFO_UPDATE,
 					 -1);
 	if (install->len == 0)
-		goto out;
+		return FALSE;
 
 	/* find any packages in untrusted repos */
 	for (i = 0; i < install->len; i++) {
 		pkg = g_ptr_array_index (install, i);
 
 		/* ensure the filename is set */
-		ret = hif_transaction_ensure_source (transaction, pkg, error);
-		if (!ret) {
+		if (!hif_transaction_ensure_source (transaction, pkg, error)) {
 			g_prefix_error (error, "Failed to check untrusted: ");
-			goto out;
+			return FALSE;
 		}
 
 		/* find the location of the local file */
 		filename = hif_package_get_filename (pkg);
 		if (filename == NULL) {
-			ret = FALSE;
 			g_set_error (error,
 				     HIF_ERROR,
 				     HIF_ERROR_FILE_NOT_FOUND,
 				     "Downloaded file for %s not found",
 				     hy_package_get_name (pkg));
-			goto out;
+			return FALSE;
 		}
 
 		/* check file */
@@ -382,11 +375,9 @@ hif_transaction_check_untrusted (HifTransaction *transaction,
 							filename,
 							error);
 		if (!ret)
-			goto out;
+			return FALSE;
 	}
-out:
-	g_ptr_array_unref (install);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -556,13 +547,13 @@ hif_transaction_ts_progress_cb (const void *arg,
 	const char *filename = (const char *) key;
 	const gchar *name = NULL;
 	gboolean ret;
-	GError *error_local = NULL;
 	guint percentage;
 	guint speed;
 	Header hdr = (Header) arg;
 	HyPackage pkg;
 	HifPackageInfo action;
 	void *rc = NULL;
+	_cleanup_free_error GError *error_local = NULL;
 
 	if (hdr != NULL)
 		name = headerGetString (hdr, RPMTAG_NAME);
@@ -752,7 +743,6 @@ hif_transaction_ts_progress_cb (const void *arg,
 		if (!ret) {
 			g_warning ("state increment failed: %s",
 				   error_local->message);
-			g_error_free (error_local);
 		}
 		break;
 
@@ -806,29 +796,26 @@ hif_transaction_delete_packages (HifTransaction *transaction,
 				 HifState *state,
 				 GError **error)
 {
-	GFile *file;
 	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
 	HifState *state_local;
 	HyPackage pkg;
 	const gchar *filename;
 	const gchar *cachedir;
 	guint i;
-	guint ret = TRUE;
 
 	/* nothing to delete? */
 	if (priv->install->len == 0)
-		goto out;
+		return TRUE;
 
 	/* get the cachedir so we only delete packages in the actual
 	 * cache, not local-install packages */
 	cachedir = hif_context_get_cache_dir (priv->context);
 	if (cachedir == NULL) {
-		ret = FALSE;
 		g_set_error_literal (error,
 				     HIF_ERROR,
 				     HIF_ERROR_FAILED_CONFIG_PARSING,
 				     "Failed to get value for CacheDir");
-		goto out;
+		return FALSE;
 	}
 
 	/* delete each downloaded file */
@@ -840,20 +827,17 @@ hif_transaction_delete_packages (HifTransaction *transaction,
 		/* don't delete files not in the repo */
 		filename = hif_package_get_filename (pkg);
 		if (g_str_has_prefix (filename, cachedir)) {
+			_cleanup_unref_object GFile *file;
 			file = g_file_new_for_path (filename);
-			ret = g_file_delete (file, NULL, error);
-			g_object_unref (file);
-			if (!ret)
-				goto out;
+			if (!g_file_delete (file, NULL, error))
+				return FALSE;
 		}
 
 		/* done */
-		ret = hif_state_done (state_local, error);
-		if (!ret)
-			goto out;
+		if (!hif_state_done (state_local, error))
+			return FALSE;
 	}
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -871,14 +855,12 @@ hif_transaction_convert_to_system_repo (HifTransaction *transaction,
 	HyQuery query = NULL;
 	HySack sack;
 	const gchar *cachedir;
-	gboolean ret;
 	gint rc;
 
 	/* load installed packages */
 	cachedir = hif_context_get_cache_dir (priv->context);
 	sack = hy_sack_create (cachedir, NULL, NULL, HY_MAKE_CACHE_DIR);
 	if (sack == NULL) {
-		ret = FALSE;
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_INTERNAL_ERROR,
@@ -888,8 +870,7 @@ hif_transaction_convert_to_system_repo (HifTransaction *transaction,
 
 	/* add installed packages */
 	rc = hy_sack_load_system_repo (sack, NULL, HY_BUILD_CACHE);
-	ret = hif_rc_to_gerror (rc, error);
-	if (!ret) {
+	if (!hif_rc_to_gerror (rc, error)) {
 		g_prefix_error (error, "Failed to load system repo: ");
 		goto out;
 	}
@@ -1062,7 +1043,7 @@ hif_transaction_write_yumdb (HifTransaction *transaction,
 				   100 - steps_auto,	/* install */
 				   -1);
 	if (!ret)
-		goto out;
+		return FALSE;
 
 	/* remove all the old entries */
 	state_local = hif_state_get_child (state);
@@ -1073,21 +1054,19 @@ hif_transaction_write_yumdb (HifTransaction *transaction,
 		pkg = g_ptr_array_index (priv->remove, i);
 		ret = hif_transaction_ensure_source (transaction, pkg, error);
 		if (!ret)
-			goto out;
+			return FALSE;
 		ret = hif_db_remove_all (priv->db,
 					 pkg,
 					 error);
 		if (!ret)
-			goto out;
-		ret = hif_state_done (state_local, error);
-		if (!ret)
-			goto out;
+			return FALSE;
+		if (!hif_state_done (state_local, error))
+			return FALSE;
 	}
 
 	/* this section done */
-	ret = hif_state_done (state, error);
-	if (!ret)
-		goto out;
+	if (!hif_state_done (state, error))
+		return FALSE;
 
 	/* add all the new entries */
 	if (priv->install->len > 0)
@@ -1101,18 +1080,13 @@ hif_transaction_write_yumdb (HifTransaction *transaction,
 								state_loop,
 								error);
 		if (!ret)
-			goto out;
-		ret = hif_state_done (state_local, error);
-		if (!ret)
-			goto out;
+			return FALSE;
+		if (!hif_state_done (state_local, error))
+			return FALSE;
 	}
 
 	/* this section done */
-	ret = hif_state_done (state, error);
-	if (!ret)
-		goto out;
-out:
-	return ret;
+	return hif_state_done (state, error);
 }
 
 /**
@@ -1134,17 +1108,12 @@ hif_transaction_download (HifTransaction *transaction,
 			  GError **error)
 {
 	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
-	gboolean ret;
 
 	/* just download the list */
-	ret = hif_package_array_download (priv->pkgs_to_download,
-					  NULL,
-					  state,
-					  error);
-	if (!ret)
-		goto out;
-out:
-	return ret;
+	return hif_package_array_download (priv->pkgs_to_download,
+					   NULL,
+					   state,
+					   error);
 }
 
 /**
@@ -1165,17 +1134,17 @@ hif_transaction_depsolve (HifTransaction *transaction,
 			  HifState *state,
 			  GError **error)
 {
-	GPtrArray *packages = NULL;
 	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
 	HyPackage pkg;
 	gboolean ret;
 	gboolean valid;
 	guint i;
+	_cleanup_unref_ptrarray GPtrArray *packages = NULL;
 
 	/* depsolve */
 	ret = hif_goal_depsolve (goal, error);
 	if (!ret)
-		goto out;
+		return FALSE;
 
 	/* find a list of all the packages we have to download */
 	g_ptr_array_set_size (priv->pkgs_to_download, 0);
@@ -1191,7 +1160,7 @@ hif_transaction_depsolve (HifTransaction *transaction,
 		/* get correct package source */
 		ret = hif_transaction_ensure_source (transaction, pkg, error);
 		if (!ret)
-			goto out;
+			return FALSE;
 
 		/* this is a local file */
 		if (g_strcmp0 (hy_package_get_reponame (pkg),
@@ -1202,7 +1171,7 @@ hif_transaction_depsolve (HifTransaction *transaction,
 		/* check package exists and checksum is okay */
 		ret = hif_package_check_filename (pkg, &valid, error);
 		if (!ret)
-			goto out;
+			return FALSE;
 
 		/* package needs to be downloaded */
 		if (!valid) {
@@ -1210,10 +1179,7 @@ hif_transaction_depsolve (HifTransaction *transaction,
 					 hy_package_link (pkg));
 		}
 	}
-out:
-	if (packages != NULL)
-		g_ptr_array_unref (packages);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1305,7 +1271,6 @@ hif_transaction_commit (HifTransaction *transaction,
 		goto out;
 
 	/* import all GPG keys */
-	ret = hif_keyring_add_public_keys (priv->keyring, error);
 	if (!ret)
 		goto out;
 
