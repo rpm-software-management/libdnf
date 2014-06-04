@@ -96,7 +96,7 @@ hif_db_class_init (HifDbClass *klass)
 static gboolean
 hif_db_create_dir (const gchar *dir, GError **error)
 {
-	_cleanup_unref_object GFile *file = NULL;
+	_cleanup_object_unref_ GFile *file = NULL;
 
 	/* already exists */
 	if (g_file_test (dir, G_FILE_TEST_IS_DIR))
@@ -145,8 +145,8 @@ gchar *
 hif_db_get_string (HifDb *db, HyPackage package, const gchar *key, GError **error)
 {
 	gchar *value = NULL;
-	_cleanup_free gchar *filename = NULL;
-	_cleanup_free gchar *index_dir = NULL;
+	_cleanup_free_ gchar *filename = NULL;
+	_cleanup_free_ gchar *index_dir = NULL;
 
 	g_return_val_if_fail (HIF_IS_DB (db), NULL);
 	g_return_val_if_fail (package != NULL, NULL);
@@ -203,8 +203,8 @@ hif_db_set_string (HifDb *db,
 		   const gchar *value,
 		   GError **error)
 {
-	_cleanup_free gchar *index_dir = NULL;
-	_cleanup_free gchar *index_file = NULL;
+	_cleanup_free_ gchar *index_dir = NULL;
+	_cleanup_free_ gchar *index_file = NULL;
 
 	g_return_val_if_fail (HIF_IS_DB (db), FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
@@ -250,9 +250,9 @@ hif_db_remove (HifDb *db,
 	       const gchar *key,
 	       GError **error)
 {
-	_cleanup_free gchar *index_dir = NULL;
-	_cleanup_free gchar *index_file = NULL;
-	_cleanup_unref_object GFile *file = NULL;
+	_cleanup_free_ gchar *index_dir = NULL;
+	_cleanup_free_ gchar *index_file = NULL;
+	_cleanup_object_unref_ GFile *file = NULL;
 
 	g_return_val_if_fail (HIF_IS_DB (db), FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
@@ -293,9 +293,9 @@ gboolean
 hif_db_remove_all (HifDb *db, HyPackage package, GError **error)
 {
 	const gchar *filename;
-	_cleanup_close_dir GDir *dir = NULL;
-	_cleanup_free gchar *index_dir = NULL;
-	_cleanup_unref_object GFile *file_directory = NULL;
+	_cleanup_dir_close_ GDir *dir = NULL;
+	_cleanup_free_ gchar *index_dir = NULL;
+	_cleanup_object_unref_ GFile *file_directory = NULL;
 
 	g_return_val_if_fail (HIF_IS_DB (db), FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
@@ -324,8 +324,8 @@ hif_db_remove_all (HifDb *db, HyPackage package, GError **error)
 	/* delete each one */
 	filename = g_dir_read_name (dir);
 	while (filename != NULL) {
-		_cleanup_free gchar *index_file;
-		_cleanup_unref_object GFile *file_tmp;
+		_cleanup_free_ gchar *index_file;
+		_cleanup_object_unref_ GFile *file_tmp;
 
 		index_file = g_build_filename (index_dir, filename, NULL);
 		file_tmp = g_file_new_for_path (index_file);
@@ -354,8 +354,8 @@ hif_db_remove_all (HifDb *db, HyPackage package, GError **error)
 void
 hif_db_ensure_origin_pkg (HifDb *db, HyPackage pkg)
 {
-	_cleanup_free_error GError *error = NULL;
-	_cleanup_free gchar *tmp = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *tmp = NULL;
 
 	/* already set */
 	if (hif_package_get_origin (pkg) != NULL)

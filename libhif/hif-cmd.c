@@ -85,7 +85,7 @@ hif_cmd_add (GPtrArray *array,
 {
 	guint i;
 	HifUtilItem *item;
-	_cleanup_free_strv gchar **names = NULL;
+	_cleanup_strv_free_ gchar **names = NULL;
 
 	g_return_if_fail (name != NULL);
 	g_return_if_fail (description != NULL);
@@ -162,7 +162,7 @@ hif_cmd_run (HifUtilPrivate *priv, const gchar *command, gchar **values, GError 
 {
 	guint i;
 	HifUtilItem *item;
-	_cleanup_free_string GString *string = NULL;
+	_cleanup_string_free_ GString *string = NULL;
 
 	/* find command */
 	for (i = 0; i < priv->cmd_array->len; i++) {
@@ -292,9 +292,9 @@ main (int argc, char *argv[])
 			"Show version", NULL },
 		{ NULL}
 	};
-	_cleanup_free_error GError *error = NULL;
-	_cleanup_free gchar *cmd_descriptions = NULL;
-	_cleanup_free gchar *filter = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *cmd_descriptions = NULL;
+	_cleanup_free_ gchar *filter = NULL;
 
 	setlocale (LC_ALL, "");
 

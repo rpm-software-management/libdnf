@@ -226,7 +226,7 @@ gchar *
 hif_source_get_description (HifSource *source)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
-	_cleanup_free gchar *tmp;
+	_cleanup_free_ gchar *tmp;
 
 	/* is DVD */
 	if (priv->kind == HIF_SOURCE_KIND_MEDIA) {
@@ -605,8 +605,8 @@ gboolean
 hif_source_setup (HifSource *source, GError **error)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
-	_cleanup_free gchar *basearch = NULL;
-	_cleanup_free gchar *release = NULL;
+	_cleanup_free_ gchar *basearch = NULL;
+	_cleanup_free_ gchar *release = NULL;
 
 	basearch = g_key_file_get_string (priv->keyfile, "general", "arch", NULL);
 	if (basearch == NULL)
@@ -682,9 +682,9 @@ static gboolean
 hif_source_set_timestamp_modified (HifSource *source, GError **error)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
-	_cleanup_free gchar *filename;
-	_cleanup_unref_object GFile *file;
-	_cleanup_unref_object GFileInfo *info;
+	_cleanup_free_ gchar *filename;
+	_cleanup_object_unref_ GFile *file;
+	_cleanup_object_unref_ GFileInfo *info;
 
 	filename = g_build_filename (priv->location, "repodata", "repomd.xml", NULL);
 	file = g_file_new_for_path (filename);
@@ -734,7 +734,7 @@ hif_source_check (HifSource *source,
 	LrYumRepo *yum_repo;
 	const gchar *urls[] = { "", NULL };
 	gint64 age_of_data; /* in seconds */
-	_cleanup_free_error GError *error_local = NULL;
+	_cleanup_error_free_ GError *error_local = NULL;
 
 	/* has the media repo vanished? */
 	if (priv->kind == HIF_SOURCE_KIND_MEDIA &&
@@ -825,8 +825,8 @@ static gboolean
 hif_source_remove_contents (const gchar *directory)
 {
 	const gchar *filename;
-	_cleanup_close_dir GDir *dir;
-	_cleanup_free_error GError *error = NULL;
+	_cleanup_dir_close_ GDir *dir;
+	_cleanup_error_free_ GError *error = NULL;
 
 	/* try to open */
 	dir = g_dir_open (directory, 0, &error);
@@ -837,7 +837,7 @@ hif_source_remove_contents (const gchar *directory)
 
 	/* find each */
 	while ((filename = g_dir_read_name (dir))) {
-		_cleanup_free gchar *src = NULL;
+		_cleanup_free_ gchar *src = NULL;
 		src = g_build_filename (directory, filename, NULL);
 		if (g_file_test (src, G_FILE_TEST_IS_DIR)) {
 			g_debug ("directory %s found in %s, deleting", filename, directory);
@@ -905,10 +905,10 @@ static gboolean
 hif_source_set_keyfile_data (HifSource *source, GError **error)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
-	_cleanup_free gchar *pwd = NULL;
-	_cleanup_free gchar *str = NULL;
-	_cleanup_free gchar *usr = NULL;
-	_cleanup_free_strv gchar **baseurls;
+	_cleanup_free_ gchar *pwd = NULL;
+	_cleanup_free_ gchar *str = NULL;
+	_cleanup_free_ gchar *usr = NULL;
+	_cleanup_strv_free_ gchar **baseurls;
 
 	/* baseurl is optional */
 	baseurls = g_key_file_get_string_list (priv->keyfile, priv->id, "baseurl", NULL, NULL);
@@ -984,7 +984,7 @@ hif_source_update (HifSource *source,
 	gboolean ret;
 	gint rc;
 	gint64 timestamp_new = 0;
-	_cleanup_free_error GError *error_local = NULL;
+	_cleanup_error_free_ GError *error_local = NULL;
 
 	/* take lock */
 	ret = hif_state_take_lock (state,
@@ -1170,7 +1170,7 @@ hif_source_set_data (HifSource *source,
 		     GError **error)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
-	_cleanup_free gchar *data = NULL;
+	_cleanup_free_ gchar *data = NULL;
 
 	/* cannot change DVD contents */
 	if (priv->kind == HIF_SOURCE_KIND_MEDIA) {
@@ -1227,10 +1227,10 @@ hif_source_copy_package (HyPackage pkg,
 			 HifState *state,
 			 GError **error)
 {
-	_cleanup_free gchar *basename = NULL;
-	_cleanup_free gchar *dest = NULL;
-	_cleanup_unref_object GFile *file_dest;
-	_cleanup_unref_object GFile *file_source;
+	_cleanup_free_ gchar *basename = NULL;
+	_cleanup_free_ gchar *dest = NULL;
+	_cleanup_object_unref_ GFile *file_dest;
+	_cleanup_object_unref_ GFile *file_source;
 
 	/* copy the file with progress */
 	file_source = g_file_new_for_path (hif_package_get_filename (pkg));
@@ -1269,9 +1269,9 @@ hif_source_download_package (HifSource *source,
 	gboolean ret;
 	gchar *loc = NULL;
 	int checksum_type;
-	_cleanup_free_error GError *error_local = NULL;
-	_cleanup_free gchar *basename = NULL;
-	_cleanup_free gchar *directory_slash;
+	_cleanup_error_free_ GError *error_local = NULL;
+	_cleanup_free_ gchar *basename = NULL;
+	_cleanup_free_ gchar *directory_slash;
 
 	/* if nothing specified then use cachedir */
 	if (directory == NULL) {

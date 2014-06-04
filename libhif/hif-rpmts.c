@@ -258,7 +258,7 @@ hif_rpmts_look_for_problems (rpmts ts, GError **error)
 	rpmpsi psi;
 	rpmps probs = NULL;
 	gchar *msg;
-	_cleanup_free_string GString *string = NULL;
+	_cleanup_string_free_ GString *string = NULL;
 
 	/* get a list of problems */
 	probs = rpmtsProblems (ts);
@@ -341,7 +341,7 @@ hif_rpmts_find_package (rpmts ts, HyPackage pkg, GError **error)
 	Header hdr = NULL;
 	rpmdbMatchIterator iter;
 	unsigned int recOffset;
-	_cleanup_free_string GString *rpm_error = NULL;
+	_cleanup_string_free_ GString *rpm_error = NULL;
 
 	/* find package by db-id */
 	recOffset = hy_package_get_rpmdbid (pkg);

@@ -106,7 +106,7 @@ hif_package_get_filename (HyPackage pkg)
 							   hy_package_get_location (pkg),
 							   NULL);
 		} else {
-			_cleanup_free gchar *basename;
+			_cleanup_free_ gchar *basename;
 			basename = g_path_get_basename (hy_package_get_location (pkg));
 			priv->filename = g_build_filename (hif_source_get_packages (priv->src),
 							   basename,
@@ -220,7 +220,7 @@ hif_package_get_id (HyPackage pkg)
 {
 	HifPackagePrivate *priv;
 	const gchar *reponame;
-	_cleanup_free gchar *reponame_tmp = NULL;
+	_cleanup_free_ gchar *reponame_tmp = NULL;
 
 	priv = hif_package_get_priv (pkg);
 	if (priv == NULL)
@@ -746,7 +746,7 @@ hif_package_array_download (GPtrArray *packages,
 	/* download any package that is not currently installed */
 	hif_state_set_number_steps (state, packages->len);
 	for (i = 0; i < packages->len; i++) {
-		_cleanup_free gchar *tmp = NULL;
+		_cleanup_free_ gchar *tmp = NULL;
 		pkg = g_ptr_array_index (packages, i);
 		state_local = hif_state_get_child (state);
 		tmp = hif_package_download (pkg, NULL, state_local, error);

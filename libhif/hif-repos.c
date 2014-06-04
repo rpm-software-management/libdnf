@@ -149,9 +149,9 @@ hif_repos_add_media (HifRepos *repos,
 {
 	HifReposPrivate *priv = GET_PRIVATE (repos);
 	HifSource *source;
-	_cleanup_free gchar *packages = NULL;
-	_cleanup_free gchar *treeinfo_fn;
-	_cleanup_unref_keyfile GKeyFile *treeinfo;
+	_cleanup_free_ gchar *packages = NULL;
+	_cleanup_free_ gchar *treeinfo_fn;
+	_cleanup_keyfile_unref_ GKeyFile *treeinfo;
 
 	/* get common things */
 	treeinfo_fn = g_build_filename (mount_point, ".treeinfo", NULL);
@@ -169,7 +169,7 @@ hif_repos_add_media (HifRepos *repos,
 	if (idx == 0) {
 		hif_source_set_id (source, "media");
 	} else {
-		_cleanup_free gchar *tmp;
+		_cleanup_free_ gchar *tmp;
 		tmp = g_strdup_printf ("media-%i", idx);
 		hif_source_set_id (source, tmp);
 	}
@@ -193,7 +193,7 @@ hif_repos_add_sack_from_mount_point (HifRepos *repos,
 {
 	const gchar *id = ".treeinfo";
 	gboolean exists;
-	_cleanup_free gchar *treeinfo_fn;
+	_cleanup_free_ gchar *treeinfo_fn;
 
 	/* check if any installed media is an install disk */
 	treeinfo_fn = g_build_filename (root, id, NULL);
@@ -266,9 +266,9 @@ hif_repos_load_multiline_key_file (const gchar *filename, GError **error)
 	gboolean ret;
 	gsize len;
 	guint i;
-	_cleanup_free gchar *data = NULL;
-	_cleanup_free_string GString *string = NULL;
-	_cleanup_free_strv gchar **lines = NULL;
+	_cleanup_free_ gchar *data = NULL;
+	_cleanup_string_free_ GString *string = NULL;
+	_cleanup_strv_free_ gchar **lines = NULL;
 
 	/* load file */
 	if (!g_file_get_contents (filename, &data, &len, error))
@@ -328,7 +328,7 @@ hif_repos_source_parse_id (HifRepos *repos,
 	gchar *tmp;
 	guint64 val;
 	guint cost;
-	_cleanup_unref_object HifSource *source;
+	_cleanup_object_unref_ HifSource *source;
 
 	/* enabled isn't a required key */
 	has_enabled = g_key_file_has_key (keyfile,
@@ -385,8 +385,8 @@ hif_repos_source_parse (HifRepos *repos,
 {
 	gboolean ret = TRUE;
 	guint i;
-	_cleanup_free_strv gchar **groups = NULL;
-	_cleanup_unref_keyfile GKeyFile *keyfile;
+	_cleanup_strv_free_ gchar **groups = NULL;
+	_cleanup_keyfile_unref_ GKeyFile *keyfile;
 
 	/* load non-standard keyfile */
 	keyfile = hif_repos_load_multiline_key_file (filename, error);
@@ -416,7 +416,7 @@ hif_repos_refresh (HifRepos *repos, GError **error)
 	HifReposPrivate *priv = GET_PRIVATE (repos);
 	const gchar *file;
 	const gchar *repo_path;
-	_cleanup_close_dir GDir *dir = NULL;
+	_cleanup_dir_close_ GDir *dir = NULL;
 
 	/* no longer loaded */
 	hif_repos_invalidate (repos);
@@ -429,7 +429,7 @@ hif_repos_refresh (HifRepos *repos, GError **error)
 
 	/* find all the .repo files */
 	while ((file = g_dir_read_name (dir)) != NULL) {
-		_cleanup_free gchar *path_tmp = NULL;
+		_cleanup_free_ gchar *path_tmp = NULL;
 		if (!g_str_has_suffix (file, ".repo"))
 			continue;
 		path_tmp = g_build_filename (repo_path, file, NULL);
@@ -549,8 +549,8 @@ hif_repos_setup_watch (HifRepos *repos)
 {
 	HifReposPrivate *priv = GET_PRIVATE (repos);
 	const gchar *repo_dir;
-	_cleanup_free_error GError *error = NULL;
-	_cleanup_unref_object GFile *file_repos = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GFile *file_repos = NULL;
 
 	/* setup a file monitor on the repos directory */
 	repo_dir = hif_context_get_repo_dir (priv->context);

@@ -225,8 +225,8 @@ hif_lock_get_pid (HifLock *lock, const gchar *filename, GError **error)
 	gboolean ret;
 	guint64 pid;
 	gchar *endptr = NULL;
-	_cleanup_free_error GError *error_local = NULL;
-	_cleanup_free gchar *contents = NULL;
+	_cleanup_error_free_ GError *error_local = NULL;
+	_cleanup_free_ gchar *contents = NULL;
 
 	g_return_val_if_fail (HIF_IS_LOCK (lock), FALSE);
 
@@ -292,9 +292,9 @@ static gchar *
 hif_lock_get_cmdline_for_pid (guint pid)
 {
 	gboolean ret;
-	_cleanup_free_error GError *error = NULL;
-	_cleanup_free gchar *data = NULL;
-	_cleanup_free gchar *filename = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *data = NULL;
+	_cleanup_free_ gchar *filename = NULL;
 
 	/* find the cmdline */
 	filename = g_strdup_printf ("/proc/%i/cmdline", pid);
@@ -367,11 +367,11 @@ hif_lock_take (HifLock *lock,
 	gboolean ret;
 	guint id = 0;
 	guint pid;
-	_cleanup_free_error GError *error_local = NULL;
-	_cleanup_free gchar *cmdline = NULL;
-	_cleanup_free gchar *filename = NULL;
-	_cleanup_free gchar *pid_filename = NULL;
-	_cleanup_free gchar *pid_text = NULL;
+	_cleanup_error_free_ GError *error_local = NULL;
+	_cleanup_free_ gchar *cmdline = NULL;
+	_cleanup_free_ gchar *filename = NULL;
+	_cleanup_free_ gchar *pid_filename = NULL;
+	_cleanup_free_ gchar *pid_text = NULL;
 
 	g_return_val_if_fail (HIF_IS_LOCK (lock), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -488,9 +488,9 @@ hif_lock_release (HifLock *lock, guint id, GError **error)
 	HifLockItem *item;
 	HifLockPrivate *priv = GET_PRIVATE (lock);
 	gboolean ret = FALSE;
-	_cleanup_free_error GError *error_local = NULL;
-	_cleanup_free gchar *filename = NULL;
-	_cleanup_unref_object GFile *file = NULL;
+	_cleanup_error_free_ GError *error_local = NULL;
+	_cleanup_free_ gchar *filename = NULL;
+	_cleanup_object_unref_ GFile *file = NULL;
 
 	g_return_val_if_fail (HIF_IS_LOCK (lock), FALSE);
 	g_return_val_if_fail (id != 0, FALSE);
@@ -574,7 +574,7 @@ out:
 void
 hif_lock_release_noerror (HifLock *lock, guint id)
 {
-	_cleanup_free_error GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 	if (!hif_lock_release (lock, id, &error))
 		g_warning ("Handled locally: %s", error->message);
 }

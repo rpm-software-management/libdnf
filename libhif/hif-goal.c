@@ -56,7 +56,7 @@ hif_goal_depsolve (HyGoal goal, GError **error)
 	gint rc;
 	guint i;
 	HyPackageList pkglist;
-	_cleanup_free_string GString *string = NULL;
+	_cleanup_string_free_ GString *string = NULL;
 
 	rc = hy_goal_run_flags (goal, HY_ALLOW_UNINSTALL);
 	if (rc) {

@@ -337,7 +337,7 @@ hif_transaction_check_untrusted (HifTransaction *transaction,
 	const gchar *filename;
 	gboolean ret = TRUE;
 	guint i;
-	_cleanup_unref_ptrarray GPtrArray *install;
+	_cleanup_ptrarray_unref_ GPtrArray *install;
 
 	/* find a list of all the packages we might have to download */
 	install = hif_goal_get_packages (goal,
@@ -553,7 +553,7 @@ hif_transaction_ts_progress_cb (const void *arg,
 	HyPackage pkg;
 	HifPackageInfo action;
 	void *rc = NULL;
-	_cleanup_free_error GError *error_local = NULL;
+	_cleanup_error_free_ GError *error_local = NULL;
 
 	if (hdr != NULL)
 		name = headerGetString (hdr, RPMTAG_NAME);
@@ -827,7 +827,7 @@ hif_transaction_delete_packages (HifTransaction *transaction,
 		/* don't delete files not in the repo */
 		filename = hif_package_get_filename (pkg);
 		if (g_str_has_prefix (filename, cachedir)) {
-			_cleanup_unref_object GFile *file;
+			_cleanup_object_unref_ GFile *file;
 			file = g_file_new_for_path (filename);
 			if (!g_file_delete (file, NULL, error))
 				return FALSE;
@@ -1139,7 +1139,7 @@ hif_transaction_depsolve (HifTransaction *transaction,
 	gboolean ret;
 	gboolean valid;
 	guint i;
-	_cleanup_unref_ptrarray GPtrArray *packages = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *packages = NULL;
 
 	/* depsolve */
 	ret = hif_goal_depsolve (goal, error);

@@ -66,7 +66,7 @@ hif_keyring_add_public_key (rpmKeyring keyring,
 	pgpDig dig = NULL;
 	rpmPubkey pubkey = NULL;
 	uint8_t *pkt = NULL;
-	_cleanup_free gchar *data = NULL;
+	_cleanup_free_ gchar *data = NULL;
 
 	/* ignore symlinks and directories */
 	if (!g_file_test (filename, G_FILE_TEST_IS_REGULAR))
@@ -169,7 +169,7 @@ hif_keyring_add_public_keys (rpmKeyring keyring, GError **error)
 {
 	const gchar *gpg_dir = "/etc/pki/rpm-gpg";
 	gboolean ret = TRUE;
-	_cleanup_close_dir GDir *dir;
+	_cleanup_dir_close_ GDir *dir;
 
 	/* search all the public key files */
 	dir = g_dir_open (gpg_dir, 0, error);
@@ -177,7 +177,7 @@ hif_keyring_add_public_keys (rpmKeyring keyring, GError **error)
 		return FALSE;
 	do {
 		const gchar *filename;
-		_cleanup_free gchar *path_tmp = NULL;
+		_cleanup_free_ gchar *path_tmp = NULL;
 		filename = g_dir_read_name (dir);
 		if (filename == NULL)
 			break;

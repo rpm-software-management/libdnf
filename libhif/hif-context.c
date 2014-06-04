@@ -671,10 +671,10 @@ hif_context_set_cache_age (HifContext *context, guint cache_age)
 static gboolean
 hif_context_set_os_release (HifContext *context, GError **error)
 {
-	_cleanup_free gchar *contents = NULL;
-	_cleanup_free gchar *version = NULL;
-	_cleanup_free_string GString *str = NULL;
-	_cleanup_unref_keyfile GKeyFile *key_file = NULL;
+	_cleanup_free_ gchar *contents = NULL;
+	_cleanup_free_ gchar *version = NULL;
+	_cleanup_string_free_ GString *str = NULL;
+	_cleanup_keyfile_unref_ GKeyFile *key_file = NULL;
 
 	/* make a valid GKeyFile from the .ini data by prepending a header */
 	if (!g_file_get_contents ("/etc/os-release", &contents, NULL, NULL))
@@ -777,7 +777,7 @@ hif_context_setup (HifContext *context,
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	const gchar *value;
-	_cleanup_unref_object GFile *file_rpmdb = NULL;
+	_cleanup_object_unref_ GFile *file_rpmdb = NULL;
 
 	/* check essential things are set */
 	if (priv->solv_dir == NULL) {
