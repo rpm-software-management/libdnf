@@ -905,28 +905,29 @@ static gboolean
 hif_source_set_keyfile_data (HifSource *source, GError **error)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
+	_cleanup_free_ gchar *metalink = NULL;
+	_cleanup_free_ gchar *mirrorlist = NULL;
+	_cleanup_free_ gchar *proxy = NULL;
 	_cleanup_free_ gchar *pwd = NULL;
-	_cleanup_free_ gchar *str = NULL;
 	_cleanup_free_ gchar *usr = NULL;
+	_cleanup_free_ gchar *usr_pwd = NULL;
+	_cleanup_free_ gchar *usr_pwd_proxy = NULL;
 	_cleanup_strv_free_ gchar **baseurls;
 
 	/* baseurl is optional */
 	baseurls = g_key_file_get_string_list (priv->keyfile, priv->id, "baseurl", NULL, NULL);
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_URLS, baseurls))
 		return FALSE;
-	g_strfreev (baseurls);
 
 	/* mirrorlist is optional */
-	str = g_key_file_get_string (priv->keyfile, priv->id, "mirrorlist", NULL);
-	if (!lr_handle_setopt (priv->repo_handle, error, LRO_MIRRORLIST, str))
+	mirrorlist = g_key_file_get_string (priv->keyfile, priv->id, "mirrorlist", NULL);
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_MIRRORLIST, mirrorlist))
 		return FALSE;
-	g_free (str);
 
 	/* metalink is optional */
-	str = g_key_file_get_string (priv->keyfile, priv->id, "metalink", NULL);
-	if (!lr_handle_setopt (priv->repo_handle, error, LRO_METALINKURL, str))
+	metalink = g_key_file_get_string (priv->keyfile, priv->id, "metalink", NULL);
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_METALINKURL, metalink))
 		return FALSE;
-	g_free (str);
 
 	/* gpgcheck is optional */
 	// FIXME: https://github.com/Tojaj/librepo/issues/16
@@ -935,26 +936,22 @@ hif_source_set_keyfile_data (HifSource *source, GError **error)
 	//	return FALSE;
 
 	/* proxy is optional */
-	str = g_key_file_get_string (priv->keyfile, priv->id, "proxy", NULL);
-	if (!lr_handle_setopt (priv->repo_handle, error, LRO_PROXY, str))
+	proxy = g_key_file_get_string (priv->keyfile, priv->id, "proxy", NULL);
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_PROXY, proxy))
 		return FALSE;
-	g_free (str);
 
 	/* both parts of the proxy auth are optional */
 	usr = g_key_file_get_string (priv->keyfile, priv->id, "proxy_username", NULL);
 	pwd = g_key_file_get_string (priv->keyfile, priv->id, "proxy_password", NULL);
-	str = hif_source_get_username_password_string (usr, pwd);
-	if (!lr_handle_setopt (priv->repo_handle, error, LRO_PROXYUSERPWD, str))
+	usr_pwd_proxy = hif_source_get_username_password_string (usr, pwd);
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_PROXYUSERPWD, usr_pwd_proxy))
 		return FALSE;
-	g_free (usr);
-	g_free (pwd);
-	g_free (str);
 
 	/* both parts of the HTTP auth are optional */
 	usr = g_key_file_get_string (priv->keyfile, priv->id, "username", NULL);
 	pwd = g_key_file_get_string (priv->keyfile, priv->id, "password", NULL);
-	str = hif_source_get_username_password_string (usr, pwd);
-	if (!lr_handle_setopt (priv->repo_handle, error, LRO_USERPWD, str))
+	usr_pwd = hif_source_get_username_password_string (usr, pwd);
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_USERPWD, usr_pwd))
 		return FALSE;
 	return TRUE;
 //gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$basearch
