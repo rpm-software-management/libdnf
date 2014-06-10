@@ -5,7 +5,7 @@ Name:      libhif
 Version:   #VERSION#
 Release:   0.#BUILD#%{?alphatag}%{?dist}
 License:   LGPLv2+
-URL:       http://people.freedesktop.org/~hughsient/libhif/
+URL:       https://github.com/hughsie/libhif
 Source0:   http://people.freedesktop.org/~hughsient/libhif/releases/libhif-%{version}.tar.xz
 
 BuildRequires: glib2-devel >= 2.16.1

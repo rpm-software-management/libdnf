@@ -1,1 +1,17 @@
+Version 0.1.0
+~~~~~~~~~~~~~
+Released: 2014-06-10
 
+Notes:
+ - This is the first release of a simple library that uses librepo and hawkey
+   to do some high level package management tasks.
+ - libhif is not 100% API or ABI stable yet.
+
+New Features:
+ - Add HifContext as a high level operation (Richard Hughes)
+
+Bugfixes:
+ - Add several g-i annotations (Colin Walters)
+ - Correctly set the cleanup status (Kalev Lember)
+ - Fix a crash when using hif_source_set_keyfile_data() (Richard Hughes)
+ - Use GLib version macros to pin to 2.36 by default (Colin Walters)
