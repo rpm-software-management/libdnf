@@ -291,8 +291,11 @@ hif_state_func (void)
 	g_assert_cmpint (_last_percent, ==, 20);
 
 	ret = hif_state_done (state, NULL);
+	g_assert (ret);
 	ret = hif_state_done (state, NULL);
+	g_assert (ret);
 	ret = hif_state_done (state, NULL);
+	g_assert (ret);
 	hif_state_set_package_progress (state,
 					"hal;0.0.1;i386;fedora",
 					HIF_STATE_ACTION_DOWNLOAD,
@@ -340,6 +343,7 @@ hif_state_child_func (void)
 	g_debug ("parent update #1");
 	ret = hif_state_done (state, NULL);
 
+	g_assert (ret);
 	g_assert ((_updates == 1));
 	g_assert ((_last_percent == 50));
 
@@ -372,6 +376,7 @@ hif_state_child_func (void)
 
 	g_debug ("child update #1");
 	ret = hif_state_done (child, NULL);
+	g_assert (ret);
 	hif_state_set_package_progress (child,
 					"hal;0.0.1;i386;fedora",
 					HIF_STATE_ACTION_DOWNLOAD,
@@ -393,6 +398,7 @@ hif_state_child_func (void)
 	g_debug ("child update #2");
 	ret = hif_state_done (child, NULL);
 
+	g_assert (ret);
 	g_assert_cmpint (hif_state_get_action (state), ==,
 			 HIF_STATE_ACTION_DEP_RESOLVE);
 	g_assert (hif_state_action_stop (state));
@@ -514,6 +520,7 @@ hif_state_non_equal_steps_func (void)
 				   25,
 				   75,
 				   -1);
+	g_assert (ret);
 
 	/* start child */
 	g_usleep (25 * 10 * 1000);
