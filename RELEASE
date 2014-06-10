@@ -5,7 +5,7 @@ Release Notes
 git shortlog libhif_0_1_0.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 0.1.0
+Version 0.1.1
 ~~~~~~~~~~~~~
 Released: 2014-xx-xx
 
@@ -20,8 +20,8 @@ Bugfixes:
 
 4. Commit changes in git:
 
-git commit -a -m "Release version 0.1.0"
-git tag -s -f -m "Release 0.1.0" libhif_0_1_0
+git commit -a -m "Release version 0.1.1"
+git tag -s -f -m "Release 0.1.0" libhif_0_1_1
 <gpg password>
 git push --tags
 git push
@@ -30,7 +30,7 @@ git push
 
 6. Upload tarball to:
 
-scp *.tar.* hughsient@people.freedesktop.org:~/public_html/libhif/releases
+scp *.tar.* hughsient@people.freedesktop.org:~/public_html/releases
 
 7. Do post release version bump in configure.ac
 
