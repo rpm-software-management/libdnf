@@ -274,15 +274,11 @@ hif_lock_get_pid (HifLock *lock, const gchar *filename, GError **error)
  * hif_lock_get_filename_for_type:
  **/
 static gchar *
-hif_lock_get_filename_for_type (HifLock *lock,
-				HifLockType type,
-				GError **error)
+hif_lock_get_filename_for_type (HifLock *lock, HifLockType type)
 {
-	gchar *filename = NULL;
-	filename = g_strdup_printf ("%s-%s.lock",
-				    PIDFILE,
-				    hif_lock_type_to_string (type));
-	return filename;
+	return g_strdup_printf ("%s-%s.lock",
+				PIDFILE,
+				hif_lock_type_to_string (type));
 }
 
 /**
@@ -391,14 +387,8 @@ hif_lock_take (HifLock *lock,
 	/* create a lock file for process locks */
 	if (item == NULL && mode == HIF_LOCK_MODE_PROCESS) {
 
-		/* get the lock filename */
-		filename = hif_lock_get_filename_for_type (lock,
-							   type,
-							   error);
-		if (filename == NULL)
-			goto out;
-
-		/* does file already exists? */
+		/* does lock file already exists? */
+		filename = hif_lock_get_filename_for_type (lock, type);
 		if (g_file_test (filename, G_FILE_TEST_EXISTS)) {
 
 			/* check the pid is still valid */
@@ -488,9 +478,6 @@ hif_lock_release (HifLock *lock, guint id, GError **error)
 	HifLockItem *item;
 	HifLockPrivate *priv = GET_PRIVATE (lock);
 	gboolean ret = FALSE;
-	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_free_ gchar *filename = NULL;
-	_cleanup_object_unref_ GFile *file = NULL;
 
 	g_return_val_if_fail (HIF_IS_LOCK (lock), FALSE);
 	g_return_val_if_fail (id != 0, FALSE);
@@ -525,15 +512,12 @@ hif_lock_release (HifLock *lock, guint id, GError **error)
 	/* delete file for process locks */
 	if (item->refcount == 0 &&
 	    item->mode == HIF_LOCK_MODE_PROCESS) {
-
-		/* get the lock filename */
-		filename = hif_lock_get_filename_for_type (lock,
-							   item->type,
-							   error);
-		if (filename == NULL)
-			goto out;
+		_cleanup_error_free_ GError *error_local = NULL;
+		_cleanup_free_ gchar *filename = NULL;
+		_cleanup_object_unref_ GFile *file = NULL;
 
 		/* unlink */
+		filename = hif_lock_get_filename_for_type (lock, item->type);
 		file = g_file_new_for_path (filename);
 		ret = g_file_delete (file, NULL, &error_local);
 		if (!ret) {
