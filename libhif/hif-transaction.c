@@ -1377,7 +1377,7 @@ hif_transaction_commit (HifTransaction *transaction,
 
 	/* add anything that gets obsoleted to a helper array which is used to
 	 * map removed packages auto-added by rpm to actual HyPackage's */
-	priv->remove_helper = g_ptr_array_new ();
+	priv->remove_helper = g_ptr_array_new_with_free_func ((GDestroyNotify) hy_package_free);
 	for (i = 0; i < priv->install->len; i++) {
 		pkg = g_ptr_array_index (priv->install, i);
 		is_update = hif_package_get_action (pkg) == HIF_PACKAGE_INFO_UPDATE;
@@ -1385,8 +1385,9 @@ hif_transaction_commit (HifTransaction *transaction,
 			continue;
 		pkglist = hy_goal_list_obsoleted_by_package (goal, pkg);
 		FOR_PACKAGELIST(pkg_tmp, pkglist, j) {
-			g_ptr_array_add (priv->remove_helper, pkg);
-			hif_package_set_action (pkg, HIF_PACKAGE_INFO_CLEANUP);
+			g_ptr_array_add (priv->remove_helper,
+			                 hy_package_link (pkg_tmp));
+			hif_package_set_action (pkg_tmp, HIF_PACKAGE_INFO_CLEANUP);
 		}
 		hy_packagelist_free (pkglist);
 	}
