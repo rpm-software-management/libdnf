@@ -722,7 +722,7 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 	gint rc;
 
 	/* create empty sack */
-	priv->sack = hy_sack_create (priv->solv_dir, NULL, NULL, HY_MAKE_CACHE_DIR);
+	priv->sack = hy_sack_create (priv->solv_dir, NULL, hif_context_get_install_root (context), HY_MAKE_CACHE_DIR);
 	if (priv->sack == NULL) {
 		g_set_error (error,
 			     HIF_ERROR,

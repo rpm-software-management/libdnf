@@ -859,7 +859,7 @@ hif_transaction_convert_to_system_repo (HifTransaction *transaction,
 
 	/* load installed packages */
 	cachedir = hif_context_get_cache_dir (priv->context);
-	sack = hy_sack_create (cachedir, NULL, NULL, HY_MAKE_CACHE_DIR);
+	sack = hy_sack_create (cachedir, NULL, hif_context_get_install_root (priv->context), HY_MAKE_CACHE_DIR);
 	if (sack == NULL) {
 		g_set_error (error,
 			     HIF_ERROR,
