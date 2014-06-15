@@ -741,6 +741,15 @@ hif_context_rpmdb_changed_cb (GFileMonitor *monitor_,
 	hif_context_invalidate (context, "rpmdb changed");
 }
 
+/* A heuristic; check whether /usr exists in the install root */
+static gboolean
+have_existing_install (HifContext *context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	_cleanup_free_ gchar *usr_path = g_build_filename (priv->install_root, "usr", NULL);
+	return g_file_test (usr_path, G_FILE_TEST_IS_DIR);
+}
+
 /**
  * hif_context_setup_sack:
  **/
@@ -764,10 +773,12 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 	hy_sack_set_installonly_limit (priv->sack, hif_context_get_installonly_limit (context));
 
 	/* add installed packages */
-	rc = hy_sack_load_system_repo (priv->sack, NULL, HY_BUILD_CACHE);
-	if (!hif_rc_to_gerror (rc, error)) {
-		g_prefix_error (error, "Failed to load system repo: ");
-		return FALSE;
+	if (have_existing_install (context)) {
+		rc = hy_sack_load_system_repo (priv->sack, NULL, HY_BUILD_CACHE);
+		if (!hif_rc_to_gerror (rc, error)) {
+			g_prefix_error (error, "Failed to load system repo: ");
+			return FALSE;
+		}
 	}
 
 	/* creates repo for command line rpms */
