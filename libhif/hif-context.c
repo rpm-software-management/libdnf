@@ -750,6 +750,7 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	gboolean ret;
 	gint rc;
+	_cleanup_free_ char *usr_path = g_build_filename (hif_context_get_install_root (context), "usr", NULL);
 
 	/* create empty sack */
 	priv->sack = hy_sack_create (priv->solv_dir, NULL, hif_context_get_install_root (context), HY_MAKE_CACHE_DIR);
@@ -764,10 +765,12 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 	hy_sack_set_installonly_limit (priv->sack, hif_context_get_installonly_limit (context));
 
 	/* add installed packages */
-	rc = hy_sack_load_system_repo (priv->sack, NULL, HY_BUILD_CACHE);
-	if (!hif_rc_to_gerror (rc, error)) {
-		g_prefix_error (error, "Failed to load system repo: ");
-		return FALSE;
+	if (g_file_test (usr_path, G_FILE_TEST_IS_DIR))  {
+		rc = hy_sack_load_system_repo (priv->sack, NULL, HY_BUILD_CACHE);
+		if (!hif_rc_to_gerror (rc, error)) {
+			g_prefix_error (error, "Failed to load system repo: ");
+			return FALSE;
+		}
 	}
 
 	/* creates repo for command line rpms */
