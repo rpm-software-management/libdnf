@@ -39,6 +39,10 @@ GPtrArray	*hif_context_get_sources		(HifContext	*context);
 
 HifTransaction	*hif_context_get_transaction		(HifContext	*context);
 
+HySack   	 hif_context_get_sack			(HifContext	*context);
+
+HyGoal  	 hif_context_get_goal			(HifContext	*context);
+
 G_END_DECLS
 
 #endif /* __HIF_CONTEXT_PRIVATE_H */
