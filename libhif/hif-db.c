@@ -100,7 +100,7 @@ hif_db_create_dir (const gchar *dir, GError **error)
 
 	/* already exists */
 	if (g_file_test (dir, G_FILE_TEST_IS_DIR))
-		return FALSE;
+		return TRUE;
 
 	/* need to create */
 	g_debug ("creating %s", dir);

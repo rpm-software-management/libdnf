@@ -335,7 +335,6 @@ hif_transaction_check_untrusted (HifTransaction *transaction,
 	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
 	HyPackage pkg;
 	const gchar *filename;
-	gboolean ret = TRUE;
 	guint i;
 	_cleanup_ptrarray_unref_ GPtrArray *install;
 
@@ -347,7 +346,7 @@ hif_transaction_check_untrusted (HifTransaction *transaction,
 					 HIF_PACKAGE_INFO_UPDATE,
 					 -1);
 	if (install->len == 0)
-		return FALSE;
+		return TRUE;
 
 	/* find any packages in untrusted repos */
 	for (i = 0; i < install->len; i++) {
@@ -371,10 +370,9 @@ hif_transaction_check_untrusted (HifTransaction *transaction,
 		}
 
 		/* check file */
-		ret = hif_keyring_check_untrusted_file (priv->keyring,
+		if (!hif_keyring_check_untrusted_file (priv->keyring,
 							filename,
-							error);
-		if (!ret)
+							error))
 			return FALSE;
 	}
 	return TRUE;
