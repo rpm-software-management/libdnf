@@ -1,3 +1,15 @@
+Version 0.1.1
+~~~~~~~~~~~~~
+Released: 2014-06-23
+
+New Features:
+ - Only add system repository if it exists (Colin Walters)
+
+Bugfixes:
+ - Add private accessors for goal/sack (Colin Walters)
+ - Fix a potential crash when removing software (Richard Hughes)
+ - Pass install root to hawkey (Colin Walters)
+
 Version 0.1.0
 ~~~~~~~~~~~~~
 Released: 2014-06-10
