@@ -75,6 +75,10 @@ class BasicTest(unittest.TestCase):
         self.assertRaises(IOError, sack.load_yum_repo, repo)
         sack = hawkey.Sack()
 
+    def test_unicoded_cachedir(self):
+        # does not raise UnicodeEncodeError
+        hawkey.Sack(cachedir=u"unicod\xe9")
+
     def test_evr_cmp(self):
         sack = hawkey.Sack()
         self.assertEqual(sack.evr_cmp("3:3.10-4", "3:3.10-4"), 0)
