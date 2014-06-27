@@ -870,7 +870,7 @@ START_TEST(test_goal_unneeded)
     hy_goal_run(goal);
 
     HyPackageList plist = hy_goal_list_unneeded(goal);
-    ck_assert_int_eq(hy_packagelist_count(plist), 2);
+    ck_assert_int_eq(hy_packagelist_count(plist), 4);
     HyPackage pkg = hy_packagelist_get(plist, 0);
     assert_nevra_eq(pkg, "flying-2-9.noarch");
     pkg = hy_packagelist_get(plist, 1);
@@ -1080,6 +1080,18 @@ START_TEST(test_goal_change)
 }
 END_TEST
 
+START_TEST(test_cmdline_file_provides)
+{
+    HySack sack = test_globals.sack;
+    HyGoal goal = hy_goal_create(sack);
+
+    hy_goal_upgrade_all(goal);
+    ck_assert(!hy_goal_run_flags(goal, HY_FORCE_BEST));
+    assert_iueo(goal, 0, 1, 0, 0);
+    hy_goal_free(goal);
+}
+END_TEST
+
 Suite *
 goal_suite(void)
 {
@@ -1162,6 +1174,11 @@ goal_suite(void)
     tc = tcase_create("Change");
     tcase_add_unchecked_fixture(tc, fixture_with_change, teardown);
     tcase_add_test(tc, test_goal_change);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("Cmdline");
+    tcase_add_unchecked_fixture(tc, fixture_with_cmdline, teardown);
+    tcase_add_test(tc, test_cmdline_file_provides);
     suite_add_tcase(s, tc);
 
     return s;

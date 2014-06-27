@@ -65,15 +65,22 @@ setup_with(HySack sack, ...)
     return ret;
 }
 
-void fixture_cmdline_only(void)
+static
+void add_cmdline(HySack sack)
 {
-    HySack sack = create_ut_sack();
     Pool *pool = sack_pool(sack);
     hy_sack_create_cmdline_repo(sack);
     const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
 				    "yum/tour-4-6.noarch.rpm", NULL);
     HyPackage pkg = hy_sack_add_cmdline_package(sack, path);
     hy_package_free(pkg);
+}
+
+void
+fixture_cmdline_only(void)
+{
+    HySack sack = create_ut_sack();
+    add_cmdline(sack);
 }
 
 void
@@ -108,6 +115,14 @@ fixture_with_change(void)
 {
     HySack sack = create_ut_sack();
     fail_if(setup_with(sack, HY_SYSTEM_REPO_NAME, "change", NULL));
+}
+
+void
+fixture_with_cmdline(void)
+{
+    HySack sack = create_ut_sack();
+    fail_if(setup_with(sack, HY_SYSTEM_REPO_NAME, NULL));
+    add_cmdline(sack);
 }
 
 void

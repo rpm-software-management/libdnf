@@ -19,3 +19,7 @@
 =Pkg: penny-lib 4 1 x86_64
 =Prv: P-lib = 3-3
 =Sum: in my ears
+=Pkg: pigs 4 0 noarch
+=Req: /usr/bin/away
+=Pkg: tour 4 0 noarch
+=Prv: /usr/bin/away

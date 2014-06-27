@@ -26,6 +26,8 @@
 #include <solv/testcase.h>
 
 // hawkey
+#include "src/repo.h"
+#include "src/repo_internal.h"
 #include "testshared.h"
 
 HyRepo
@@ -72,7 +74,11 @@ glob_for_repofiles(Pool *pool, const char *repo_name, const char *path)
 int
 load_repo(Pool *pool, const char *name, const char *path, int installed)
 {
+    HyRepo hrepo = hy_repo_create(name);
     Repo *r = repo_create(pool, name);
+    hrepo->libsolv_repo = r;
+    r->appdata = hrepo;
+
     FILE *fp = fopen(path, "r");
 
     if (!fp)

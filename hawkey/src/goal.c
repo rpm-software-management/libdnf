@@ -40,6 +40,7 @@
 #include "package_internal.h"
 #include "query_internal.h"
 #include "reldep_internal.h"
+#include "repo_internal.h"
 #include "sack_internal.h"
 #include "selector_internal.h"
 #include "util.h"
@@ -251,6 +252,7 @@ solve(HyGoal goal, Queue *job, int flags, hy_solution_callback user_cb,
     HySack sack = goal->sack;
     struct _SolutionCallback cb_tuple;
 
+    repo_internalize_all_trigger(sack_pool(sack));
     sack_make_provides_ready(sack);
     if (goal->trans) {
 	transaction_free(goal->trans);

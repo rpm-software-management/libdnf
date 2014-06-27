@@ -34,6 +34,27 @@ hy_repo_link(HyRepo repo)
 }
 
 void
+repo_internalize_all_trigger(Pool *pool)
+{
+    int i;
+    Repo *repo;
+
+    FOR_REPOS(i, repo)
+	repo_internalize_trigger(repo);
+}
+
+void
+repo_internalize_trigger(Repo * repo)
+{
+    HyRepo hrepo = repo->appdata;
+    assert(hrepo->libsolv_repo == repo);
+    if (!hrepo->needs_internalizing)
+	return;
+    hrepo->needs_internalizing = 0;
+    repo_internalize(repo);
+}
+
+void
 repo_update_state(HyRepo repo, enum _hy_repo_repodata which,
 		  enum _hy_repo_state state)
 {

@@ -660,8 +660,6 @@ hy_sack_free(HySack sack)
 
     FOR_REPOS(i, repo) {
 	HyRepo hrepo = repo->appdata;
-	if (hrepo == NULL)
-	    continue;
 	hy_repo_free(hrepo);
     }
     if (sack->log_out) {
@@ -748,8 +746,15 @@ hy_sack_set_installonly_limit(HySack sack, int limit)
 void
 hy_sack_create_cmdline_repo(HySack sack)
 {
-    if (repo_by_name(sack, HY_CMDLINE_REPO_NAME) == NULL)
-	repo_create(sack->pool, HY_CMDLINE_REPO_NAME);
+    HyRepo hrepo = hrepo_by_name(sack, HY_CMDLINE_REPO_NAME);
+    if (hrepo)
+	return;
+
+    hrepo = hy_repo_create(HY_CMDLINE_REPO_NAME);
+    Repo *repo = repo_create(sack_pool(sack), HY_CMDLINE_REPO_NAME);
+    repo->appdata = hrepo;
+    hrepo->libsolv_repo = repo;
+    hrepo->needs_internalizing = 1;
 }
 
 /**

@@ -76,7 +76,6 @@ Id running_kernel(HySack sack);
 int cmptype2relflags(int type);
 Repo *repo_by_name(HySack sack, const char *name);
 HyRepo hrepo_by_name(HySack sack, const char *name);
-void repo_internalize_trigger(Repo *r);
 Id str2archid(Pool *pool, const char *s);
 void queue2plist(HySack sack, Queue *q, HyPackageList plist);
 Id what_upgrades(Pool *pool, Id p);

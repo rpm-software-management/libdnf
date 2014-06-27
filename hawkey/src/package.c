@@ -34,6 +34,7 @@
 #include "sack_internal.h"
 #include "package_internal.h"
 #include "reldep_internal.h"
+#include "repo_internal.h"
 
 #define BLOCK_SIZE 31
 

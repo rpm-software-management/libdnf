@@ -36,7 +36,9 @@ enum _hy_repo_state {
 };
 
 struct _HyRepo {
+    Repo *libsolv_repo;
     int cost;
+    int needs_internalizing;
     int nrefs;
     char *name;
     char *repomd_fn;
@@ -52,7 +54,6 @@ struct _HyRepo {
     Id presto_repodata;
     Id updateinfo_repodata;
     unsigned char checksum[CHKSUM_BYTES];
-    Repo *libsolv_repo;
     int load_flags;
     /* the following three elements are needed for repo rewriting */
     int main_nsolvables;
@@ -68,6 +69,8 @@ enum _hy_repo_repodata {
 
 HyRepo hy_repo_link(HyRepo repo);
 int hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state);
+void repo_internalize_all_trigger(Pool *pool);
+void repo_internalize_trigger(Repo *r);
 void repo_update_state(HyRepo repo, enum _hy_repo_repodata which,
 		       enum _hy_repo_state state);
 Id repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which);

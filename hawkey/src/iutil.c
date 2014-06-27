@@ -482,15 +482,6 @@ hrepo_by_name(HySack sack, const char *name)
     return NULL;
 }
 
-void
-repo_internalize_trigger(Repo *repo)
-{
-    if (strcmp(repo->name, HY_CMDLINE_REPO_NAME))
-	return; /* this is only done for the cmdline repo, the ordinary ones get
-		   internalized immediately */
-    repo_internalize(repo);
-}
-
 Id
 str2archid(Pool *pool, const char *arch)
 {
