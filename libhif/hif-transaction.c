@@ -607,24 +607,19 @@ hif_transaction_ts_progress_cb (const void *arg,
 
 	case RPMCALLBACK_UNINST_START:
 
-		/* invalid? */
-		if (filename == NULL) {
-			g_debug ("no filename set in uninst-start with total %i",
-				 (gint32) total);
-			priv->step = HIF_TRANSACTION_STEP_WRITING;
-			break;
-		}
-
 		/* find pkg */
-		pkg = hif_find_pkg_from_name (priv->remove, name);
-		if (pkg != NULL)
-			pkg = hif_find_pkg_from_name (priv->remove_helper, name);
-		if (pkg == NULL) {
+		pkg = hif_find_pkg_from_header (priv->remove, hdr);
+		if (pkg == NULL && filename != NULL) {
 			pkg = hif_find_pkg_from_filename_suffix (priv->remove,
 								 filename);
 		}
+		if (pkg == NULL && name != NULL)
+			pkg = hif_find_pkg_from_name (priv->remove, name);
+		if (pkg == NULL && name != NULL)
+			pkg = hif_find_pkg_from_name (priv->remove_helper, name);
 		if (pkg == NULL) {
-			g_debug ("cannot find %s", filename);
+			g_warning ("cannot find %s in uninst-start", name);
+			priv->step = HIF_TRANSACTION_STEP_WRITING;
 			break;
 		}
 
@@ -708,12 +703,18 @@ hif_transaction_ts_progress_cb (const void *arg,
 		if (pkg == NULL && name != NULL)
 			pkg = hif_find_pkg_from_name (priv->remove_helper, name);
 		if (pkg == NULL) {
-			g_warning ("cannot find %s", name);
+			g_warning ("cannot find %s in uninst-progress", name);
 			break;
 		}
+
+		/* map to correct action code */
+		action = hif_package_get_action (pkg);
+		if (action == HIF_STATE_ACTION_UNKNOWN)
+			action = HIF_STATE_ACTION_REMOVE;
+
 		hif_state_set_package_progress (priv->state,
 						hif_package_get_id (pkg),
-						HIF_STATE_ACTION_REMOVE,
+						action,
 						percentage);
 		break;
 
