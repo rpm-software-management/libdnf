@@ -62,7 +62,7 @@ struct _HifState
  * The action enum code.
  **/
 typedef enum {
-	HIF_STATE_ACTION_UNKNOWN,			/* Since: 0.1.0 */
+	HIF_STATE_ACTION_UNKNOWN		= 0,	/* Since: 0.1.0 */
 	HIF_STATE_ACTION_DOWNLOAD_PACKAGES	= 8,	/* Since: 0.1.0 */
 	HIF_STATE_ACTION_DOWNLOAD_METADATA	= 20,	/* Since: 0.1.0 */
 	HIF_STATE_ACTION_LOADING_CACHE		= 27,	/* Since: 0.1.0 */
@@ -70,6 +70,10 @@ typedef enum {
 	HIF_STATE_ACTION_REQUEST		= 17,	/* Since: 0.1.0 */
 	HIF_STATE_ACTION_REMOVE			= 6,	/* Since: 0.1.0 */
 	HIF_STATE_ACTION_INSTALL		= 9,	/* Since: 0.1.0 */
+	HIF_STATE_ACTION_UPDATE			= 10,	/* Since: 0.1.2 */
+	HIF_STATE_ACTION_CLEANUP		= 11,	/* Since: 0.1.2 */
+	HIF_STATE_ACTION_OBSOLETE		= 12,	/* Since: 0.1.2 */
+	HIF_STATE_ACTION_QUERY			= 4,	/* Since: 0.1.2 */
 	/*< private >*/
 	HIF_STATE_ACTION_LAST
 } HifStateAction;

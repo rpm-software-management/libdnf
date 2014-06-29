@@ -56,7 +56,7 @@ typedef struct {
 	gchar		*description;
 	gchar		*package_id;
 	HifPackageInfo	 info;
-	HifPackageInfo	 action;
+	HifStateAction	 action;
 	HifSource	*src;
 } HifPackagePrivate;
 
@@ -420,17 +420,17 @@ hif_package_get_info (HyPackage pkg)
  *
  * Gets the action assigned to the package, i.e. what is going to be performed.
  *
- * Returns: a #HifPackageInfo
+ * Returns: a #HifStateAction
  *
  * Since: 0.1.0
  */
-HifPackageInfo
+HifStateAction
 hif_package_get_action (HyPackage pkg)
 {
 	HifPackagePrivate *priv;
 	priv = hy_package_get_userdata (pkg);
 	if (priv == NULL)
-		return HIF_PACKAGE_INFO_UNKNOWN;
+		return HIF_STATE_ACTION_UNKNOWN;
 	return priv->action;
 }
 
@@ -456,14 +456,14 @@ hif_package_set_info (HyPackage pkg, HifPackageInfo info)
 /**
  * hif_package_set_action:
  * @pkg: a #HyPackage instance.
- * @action: the #HifPackageInfo for the package.
+ * @action: the #HifStateAction for the package.
  *
  * Sets the action for the package, i.e. what is going to be performed.
  *
  * Since: 0.1.0
  */
 void
-hif_package_set_action (HyPackage pkg, HifPackageInfo action)
+hif_package_set_action (HyPackage pkg, HifStateAction action)
 {
 	HifPackagePrivate *priv;
 	priv = hif_package_get_priv (pkg);

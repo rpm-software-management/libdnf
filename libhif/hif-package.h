@@ -31,6 +31,7 @@
 #include <hawkey/package.h>
 
 #include "hif-source.h"
+#include "hif-state.h"
 
 /**
  * HifPackageInfo:
@@ -71,9 +72,9 @@ const gchar	*hif_package_get_id			(HyPackage	 pkg);
 HifPackageInfo	 hif_package_get_info			(HyPackage	 pkg);
 void		 hif_package_set_info			(HyPackage	 pkg,
 							 HifPackageInfo	 info);
-HifPackageInfo	 hif_package_get_action			(HyPackage	 pkg);
+HifStateAction	 hif_package_get_action			(HyPackage	 pkg);
 void		 hif_package_set_action			(HyPackage	 pkg,
-							 HifPackageInfo	 action);
+							 HifStateAction	 action);
 gboolean	 hif_package_get_user_action		(HyPackage	 pkg);
 void		 hif_package_set_user_action		(HyPackage	 pkg,
 							 gboolean	 user_action);

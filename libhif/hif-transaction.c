@@ -549,7 +549,7 @@ hif_transaction_ts_progress_cb (const void *arg,
 	guint speed;
 	Header hdr = (Header) arg;
 	HyPackage pkg;
-	HifPackageInfo action;
+	HifStateAction action;
 	void *rc = NULL;
 	_cleanup_error_free_ GError *error_local = NULL;
 
@@ -593,8 +593,8 @@ hif_transaction_ts_progress_cb (const void *arg,
 
 		/* map to correct action code */
 		action = hif_package_get_action (pkg);
-		if (action == HIF_PACKAGE_INFO_UNKNOWN)
-			action = HIF_PACKAGE_INFO_INSTALL;
+		if (action == HIF_STATE_ACTION_UNKNOWN)
+			action = HIF_STATE_ACTION_INSTALL;
 
 		/* install start */
 		priv->step = HIF_TRANSACTION_STEP_WRITING;
@@ -630,8 +630,8 @@ hif_transaction_ts_progress_cb (const void *arg,
 
 		/* map to correct action code */
 		action = hif_package_get_action (pkg);
-		if (action == HIF_PACKAGE_INFO_UNKNOWN)
-			action = HIF_PACKAGE_INFO_REMOVE;
+		if (action == HIF_STATE_ACTION_UNKNOWN)
+			action = HIF_STATE_ACTION_REMOVE;
 
 		/* remove start */
 		priv->step = HIF_TRANSACTION_STEP_WRITING;
@@ -1324,7 +1324,7 @@ hif_transaction_commit (HifTransaction *transaction,
 		/* add the install */
 		filename = hif_package_get_filename (pkg);
 		allow_untrusted = (priv->flags & HIF_TRANSACTION_FLAG_ONLY_TRUSTED) == 0;
-		is_update = hif_package_get_action (pkg) == HIF_PACKAGE_INFO_UPDATE;
+		is_update = hif_package_get_action (pkg) == HIF_STATE_ACTION_UPDATE;
 		ret = hif_rpmts_add_install_filename (priv->ts,
 						      filename,
 						      allow_untrusted,
@@ -1370,7 +1370,7 @@ hif_transaction_commit (HifTransaction *transaction,
 		pkg_tmp = hif_find_pkg_from_name (priv->install,
 						  hy_package_get_name (pkg));
 		if (pkg_tmp != NULL)
-			hif_package_set_action (pkg, HIF_PACKAGE_INFO_CLEANUP);
+			hif_package_set_action (pkg, HIF_STATE_ACTION_CLEANUP);
 	}
 
 	/* add anything that gets obsoleted to a helper array which is used to
@@ -1378,14 +1378,14 @@ hif_transaction_commit (HifTransaction *transaction,
 	priv->remove_helper = g_ptr_array_new_with_free_func ((GDestroyNotify) hy_package_free);
 	for (i = 0; i < priv->install->len; i++) {
 		pkg = g_ptr_array_index (priv->install, i);
-		is_update = hif_package_get_action (pkg) == HIF_PACKAGE_INFO_UPDATE;
+		is_update = hif_package_get_action (pkg) == HIF_STATE_ACTION_UPDATE;
 		if (!is_update)
 			continue;
 		pkglist = hy_goal_list_obsoleted_by_package (goal, pkg);
 		FOR_PACKAGELIST(pkg_tmp, pkglist, j) {
 			g_ptr_array_add (priv->remove_helper,
 			                 hy_package_link (pkg_tmp));
-			hif_package_set_action (pkg_tmp, HIF_PACKAGE_INFO_CLEANUP);
+			hif_package_set_action (pkg_tmp, HIF_STATE_ACTION_CLEANUP);
 		}
 		hy_packagelist_free (pkglist);
 	}

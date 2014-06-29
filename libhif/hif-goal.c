@@ -147,42 +147,42 @@ hif_goal_get_packages (HyGoal goal, ...)
 		case HIF_PACKAGE_INFO_REMOVE:
 			pkglist = hy_goal_list_erasures (goal);
 			FOR_PACKAGELIST(pkg, pkglist, i) {
-				hif_package_set_action (pkg, info_tmp);
+				hif_package_set_action (pkg, HIF_STATE_ACTION_REMOVE);
 				g_ptr_array_add (array, pkg);
 			}
 			break;
 		case HIF_PACKAGE_INFO_INSTALL:
 			pkglist = hy_goal_list_installs (goal);
 			FOR_PACKAGELIST(pkg, pkglist, i) {
-				hif_package_set_action (pkg, info_tmp);
+				hif_package_set_action (pkg, HIF_STATE_ACTION_INSTALL);
 				g_ptr_array_add (array, pkg);
 			}
 			break;
 		case HIF_PACKAGE_INFO_OBSOLETE:
 			pkglist = hy_goal_list_obsoleted (goal);
 			FOR_PACKAGELIST(pkg, pkglist, i) {
-				hif_package_set_action (pkg, info_tmp);
+				hif_package_set_action (pkg, HIF_STATE_ACTION_OBSOLETE);
 				g_ptr_array_add (array, pkg);
 			}
 			break;
 		case HIF_PACKAGE_INFO_REINSTALL:
 			pkglist = hy_goal_list_reinstalls (goal);
 			FOR_PACKAGELIST(pkg, pkglist, i) {
-				hif_package_set_action (pkg, HIF_PACKAGE_INFO_INSTALL);
+				hif_package_set_action (pkg, HIF_STATE_ACTION_INSTALL);
 				g_ptr_array_add (array, pkg);
 			}
 			break;
 		case HIF_PACKAGE_INFO_UPDATE:
 			pkglist = hy_goal_list_upgrades (goal);
 			FOR_PACKAGELIST(pkg, pkglist, i) {
-				hif_package_set_action (pkg, info_tmp);
+				hif_package_set_action (pkg, HIF_STATE_ACTION_UPDATE);
 				g_ptr_array_add (array, pkg);
 			}
 			break;
 		case HIF_PACKAGE_INFO_DOWNGRADE:
 			pkglist = hy_goal_list_downgrades (goal);
 			FOR_PACKAGELIST(pkg, pkglist, i) {
-				hif_package_set_action (pkg, HIF_PACKAGE_INFO_INSTALL);
+				hif_package_set_action (pkg, HIF_STATE_ACTION_INSTALL);
 				g_ptr_array_add (array, pkg);
 			}
 			break;
