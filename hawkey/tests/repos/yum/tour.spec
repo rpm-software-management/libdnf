@@ -8,6 +8,7 @@ Distribution: Hawkey test suite.
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-hawkey
 Packager: roll up <roll@up.net>
+%global __requires_exclude_from ^%{python_sitelib}/.*$
 
 %description
 Hawkey tour package to test filelists handling.

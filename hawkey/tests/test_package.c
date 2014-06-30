@@ -330,6 +330,10 @@ START_TEST(test_sourcerpm)
 }
 END_TEST
 
+#define TOUR_45_46_DRPM_CHKSUM "\xc3\xc3\xd5\x72\xa4\x6b"\
+    "\x1a\x66\x90\x6d\x42\xca\x17\x63\xef\x36\x20\xf7\x02"\
+    "\x58\xaa\xac\x4c\x14\xbf\x46\x3e\xd5\x37\x16\xd4\x44"
+
 START_TEST(test_presto)
 {
     HySack sack = test_globals.sack;
@@ -342,11 +346,11 @@ START_TEST(test_presto)
     const char *baseurl = hy_packagedelta_get_baseurl(delta);
     fail_unless(baseurl == NULL);
     unsigned long long size = hy_packagedelta_get_downloadsize(delta);
-    ck_assert_int_eq(size, 3173);
+    ck_assert_int_eq(size, 3132);
     int type;
     HyChecksum *csum = hy_packagedelta_get_chksum(delta, &type);
     fail_unless(type == HY_CHKSUM_SHA256);
-    fail_if(memcmp(csum, "\x8a\x5a\xfd\x4e\x08\xe9\xa3\x9a\xe3\xca\x9a\x2b\x49\xa0\xf8\x99\xa9\x70\x25\x26\x1d\x90\xff\xae\x14\x62\x06\x16\x86\x5b\x80\x7c", 32));
+    ck_assert(!memcmp(csum, TOUR_45_46_DRPM_CHKSUM, 32));
     hy_packagedelta_free(delta);
     hy_package_free(tour);
 }
