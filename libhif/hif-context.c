@@ -818,6 +818,7 @@ hif_context_setup (HifContext *context,
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	const gchar *value;
+	_cleanup_free_ char *rpmdb_path = NULL;
 	_cleanup_object_unref_ GFile *file_rpmdb = NULL;
 
 	/* check essential things are set */
@@ -879,7 +880,8 @@ hif_context_setup (HifContext *context,
 				   HIF_TRANSACTION_FLAG_ONLY_TRUSTED);
 
 	/* setup a file monitor on the rpmdb */
-	file_rpmdb = g_file_new_for_path ("/var/lib/rpm/Packages");
+	rpmdb_path = g_build_filename (priv->install_root, "var/lib/rpm/Packages", NULL);
+	file_rpmdb = g_file_new_for_path (rpmdb_path);
 	priv->monitor_rpmdb = g_file_monitor_file (file_rpmdb,
 						   G_FILE_MONITOR_NONE,
 						   NULL,
