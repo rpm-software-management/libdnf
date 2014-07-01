@@ -243,7 +243,6 @@ filter_reinit(struct _Filter *f, int nmatches)
     else
 	f->matches = NULL;
     f->nmatches = nmatches;
-    f->evr = solv_free(f->evr);
 }
 
 void
@@ -523,26 +522,6 @@ filter_rco_reldep(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
-filter_provides_str(HyQuery q, struct _Filter *f, Map *m)
-{
-    Pool *pool = sack_pool(q->sack);
-    Id id, id_evr, r, p, pp;
-    int flags;
-
-    assert(f->nmatches == 1);
-    sack_make_provides_ready(q->sack);
-
-    id = pool_str2id(pool, f->matches[0].str, 0);
-    if (id == STRID_NULL || id == STRID_EMPTY)
-	return;
-    id_evr = pool_str2id(pool, f->evr, 1);
-    flags = cmptype2relflags(f->cmp_type);
-    r = pool_rel2id(pool, id, id_evr, flags, 1);
-    FOR_JOB_SELECT(p, pp, SOLVER_SOLVABLE_PROVIDES, r)
-	MAPSET(m, p);
-}
-
-static void
 filter_reponame(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = sack_pool(q->sack);
@@ -806,12 +785,8 @@ compute(HyQuery q)
 	    }
 	    break;
 	case HY_PKG_PROVIDES:
-	    if (f->match_type == _HY_RELDEP)
-		filter_provides_reldep(q, f, &m);
-	    else {
-		assert(f->match_type == _HY_STR);
-		filter_provides_str(q, f, &m);
-	    }
+	    assert(f->match_type == _HY_RELDEP);
+	    filter_provides_reldep(q, f, &m);
 	    break;
 	case HY_PKG_REQUIRES:
 	    assert(f->match_type == _HY_RELDEP);
@@ -933,7 +908,6 @@ hy_query_clone(HyQuery q)
 		assert(0);
 	    }
 	}
-	filterp->evr = solv_strdup(q->filters[i].evr);
     }
     assert(qn->nfilters == q->nfilters);
     if (q->result) {
@@ -951,12 +925,29 @@ hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
 	return HY_E_QUERY;
     clear_result(q);
 
-    struct _Filter *filterp = query_add_filter(q, 1);
-    filterp->cmp_type = cmp_type;
-    filterp->keyname = keyname;
-    filterp->match_type = _HY_STR;
-    filterp->matches[0].str = solv_strdup(match);
-    return 0;
+    switch (keyname) {
+    case HY_PKG_CONFLICTS:
+    case HY_PKG_OBSOLETES:
+    case HY_PKG_PROVIDES:
+    case HY_PKG_REQUIRES: {
+	HySack sack = query_sack(q);
+	HyReldep reldep = reldep_from_str(sack, match);
+
+	if (reldep == NULL)
+	    return HY_E_QUERY;
+	int ret = hy_query_filter_reldep(q, keyname, reldep);
+	hy_reldep_free(reldep);
+	return ret;
+    }
+    default: {
+	struct _Filter *filterp = query_add_filter(q, 1);
+	filterp->cmp_type = cmp_type;
+	filterp->keyname = keyname;
+	filterp->match_type = _HY_STR;
+	filterp->matches[0].str = solv_strdup(match);
+	return 0;
+    }
+    }
 }
 
 int
@@ -1072,17 +1063,14 @@ hy_query_filter_reldep_in(HyQuery q, int keyname, const HyReldepList reldeplist)
 }
 
 int
-hy_query_filter_provides(HyQuery q, int cmp_type, const char *name, const char *evr)
+hy_query_filter_provides(HyQuery q, int cmp_type, const char *name,
+			 const char *evr)
 {
-    struct _Filter *filterp = query_add_filter(q, 1);
-
-    clear_result(q);
-    filterp->cmp_type = cmp_type;
-    filterp->keyname = HY_PKG_PROVIDES;
-    filterp->match_type = _HY_STR;
-    filterp->evr = solv_strdup(evr);
-    filterp->matches[0].str = solv_strdup(name);
-    return 0;
+    HyReldep reldep = hy_reldep_create(query_sack(q), name, cmp_type, evr);
+    assert(reldep);
+    int ret = hy_query_filter_reldep(q, HY_PKG_PROVIDES, reldep);
+    hy_reldep_free(reldep);
+    return ret;
 }
 
 int

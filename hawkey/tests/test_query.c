@@ -586,6 +586,21 @@ START_TEST(test_downgradable)
 }
 END_TEST
 
+START_TEST(test_query_provides_str)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_PROVIDES, HY_EQ, "pilchard");
+    ck_assert_int_eq(query_count_results(q), 2);
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_PROVIDES, HY_EQ, "fool = 1-2");
+    ck_assert_int_eq(query_count_results(q), 2);
+    hy_query_free(q);
+
+}
+END_TEST
+
 START_TEST(test_query_reldep)
 {
     HySack sack = test_globals.sack;
@@ -847,6 +862,7 @@ query_suite(void)
     tcase_add_test(tc, test_upgrade_already_installed);
     tcase_add_test(tc, test_downgrade);
     tcase_add_test(tc, test_downgradable);
+    tcase_add_test(tc, test_query_provides_str);
     tcase_add_test(tc, test_query_reldep);
     tcase_add_test(tc, test_query_reldep_arbitrary);
     tcase_add_test(tc, test_query_requires);
