@@ -610,7 +610,7 @@ hy_sack_create(const char *cache_path, const char *arch, const char *rootdir,
 
     pool_set_rootdir(pool, rootdir);
     sack->pool = pool;
-    sack->running_kernel = -1;
+    sack->running_kernel_id = -1;
     sack->running_kernel_fn = running_kernel;
 
     if (cache_path != NULL) {
@@ -686,6 +686,15 @@ const char *
 hy_sack_get_cache_dir(HySack sack)
 {
     return sack->cache_dir;
+}
+
+HyPackage
+hy_sack_get_running_kernel(HySack sack)
+{
+    Id id = sack_running_kernel(sack);
+    if (id < 0)
+	return NULL;
+    return package_create(sack, id);
 }
 
 char *
@@ -1088,10 +1097,10 @@ sack_make_provides_ready(HySack sack)
 Id
 sack_running_kernel(HySack sack)
 {
-    if (sack->running_kernel >= 0)
-	return sack->running_kernel;
-    sack->running_kernel = sack->running_kernel_fn(sack);
-    return sack->running_kernel;
+    if (sack->running_kernel_id >= 0)
+	return sack->running_kernel_id;
+    sack->running_kernel_id = sack->running_kernel_fn(sack);
+    return sack->running_kernel_id;
 }
 
 void

@@ -282,6 +282,18 @@ evr_cmp(_SackObject *self, PyObject *args)
     return PyLong_FromLong(cmp);
 }
 
+static PyObject *
+get_running_kernel(_SackObject *self, PyObject *unused)
+{
+    HySack sack = self->sack;
+    HyPackage cpkg = hy_sack_get_running_kernel(sack);
+
+    if (cpkg == NULL)
+	Py_RETURN_NONE;
+    PyObject *pkg = new_package((PyObject*)self, package_id(cpkg));
+    hy_package_free(cpkg);
+    return pkg;
+}
 
 static PyObject *
 create_cmdline_repo(_SackObject *self, PyObject *unused)
@@ -451,6 +463,8 @@ PyMethodDef sack_methods[] = {
     {"_knows",		(PyCFunction)_knows, METH_KEYWORDS|METH_VARARGS,
      NULL},
     {"evr_cmp",		(PyCFunction)evr_cmp, METH_VARARGS,
+     NULL},
+    {"get_running_kernel", (PyCFunction)get_running_kernel, METH_NOARGS,
      NULL},
     {"create_cmdline_repo", (PyCFunction)create_cmdline_repo, METH_NOARGS,
      NULL},

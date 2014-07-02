@@ -34,7 +34,7 @@ typedef Id(*running_kernel_fn_t)(HySack);
 struct _HySack {
     Pool *pool;
     int provides_ready;
-    Id running_kernel;
+    Id running_kernel_id;
     running_kernel_fn_t running_kernel_fn;
     char *cache_dir;
     Queue installonly;
