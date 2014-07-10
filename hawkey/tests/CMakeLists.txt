@@ -1,6 +1,7 @@
 SET (hawkeytest_SRCS
      fixtures.c
      test_advisory.c
+     test_advisorypkg.c
      test_advisoryref.c
      test_goal.c
      test_iutil.c
