@@ -454,6 +454,20 @@ Attributes ``baseurl``, ``location``, ``sourcerpm``, ``version``, ``release``, `
 Changes in 0.4.18
 =================
 
+Core
+----
+
+Deprecated ``hy_advisory_get_filenames``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The function was deprecated because we need more information about packages
+listed in an advisory than just file names. Please use the new function
+``hy_advisory_get_packages()`` in combination with
+``hy_advisorypkg_get_string()`` to obtain the data originally provided by the
+deprecated function.
+
+The old function will be dropped after 2014-10-15 AND no sooner than in 0.4.21.
+
 Python bindings
 ---------------
 
