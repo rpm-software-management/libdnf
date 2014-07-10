@@ -94,28 +94,6 @@ unsigned long long hy_packagedelta_get_downloadsize(HyPackageDelta delta);
 const unsigned char *hy_packagedelta_get_chksum(HyPackageDelta delta, int *type);
 void hy_packagedelta_free(HyPackageDelta delta);
 
-// deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
-// than in 0.4.15, use hy_advisory_get_type instead
-HyUpdateSeverity hy_package_get_update_severity(HyPackage pkg);
-// deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
-// than in 0.4.15, use hy_advisory_get_id instead
-const char *hy_package_get_update_name(HyPackage pkg);
-// deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
-// than in 0.4.15, use hy_advisory_get_description instead
-const char *hy_package_get_update_description(HyPackage pkg);
-// deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
-// than in 0.4.15, use hy_advisory_get_updated instead
-unsigned long long hy_package_get_update_issued(HyPackage pkg);
-// deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
-// than in 0.4.15, use hy_advisory_get_references instead
-HyStringArray hy_package_get_update_urls_bugzilla(HyPackage pkg);
-// deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
-// than in 0.4.15, use hy_advisory_get_references instead
-HyStringArray hy_package_get_update_urls_cve(HyPackage pkg);
-// deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
-// than in 0.4.15, use hy_advisory_get_references instead
-HyStringArray hy_package_get_update_urls_vendor(HyPackage pkg);
-
 #ifdef __cplusplus
 }
 #endif

@@ -245,40 +245,6 @@ START_TEST(test_get_advisories_none)
 }
 END_TEST
 
-START_TEST(test_get_updateinfo)
-{
-    HyStringArray urls;
-    HySack sack = test_globals.sack;
-    HyPackage pkg = by_name(sack, "tour");
-
-    fail_unless(hy_package_get_update_severity(pkg) == HY_UPDATE_SEVERITY_BUGFIX);
-    fail_unless(strcmp(hy_package_get_update_name(pkg), "FEDORA-2008-9969") == 0);
-    fail_unless(strcmp(hy_package_get_update_description(pkg), "An example update to the tour package.") == 0);
-
-    /* test getting update URLs */
-    urls = hy_package_get_update_urls_bugzilla(pkg);
-    fail_unless(urls != NULL);
-    fail_unless(urls[0] != NULL);
-    fail_unless(urls[1] == NULL);
-    fail_unless(strcmp(urls[0], "https://bugzilla.redhat.com/show_bug.cgi?id=472090") == 0);
-    hy_stringarray_free(urls);
-
-    urls = hy_package_get_update_urls_cve(pkg);
-    fail_unless(urls != NULL);
-    fail_unless(urls[0] != NULL);
-    fail_unless(urls[1] == NULL);
-    fail_unless(strcmp(urls[0], "https://bugzilla.gnome.com/show_bug.cgi?id=472091") == 0);
-    hy_stringarray_free(urls);
-
-    urls = hy_package_get_update_urls_vendor(pkg);
-    fail_unless(urls != NULL);
-    fail_unless(urls[0] == NULL);
-    hy_stringarray_free(urls);
-
-    hy_package_free(pkg);
-}
-END_TEST
-
 START_TEST(test_lookup_num)
 {
     HyPackage pkg = by_name(test_globals.sack, "tour");
@@ -400,7 +366,6 @@ package_suite(void)
     tcase_add_test(tc, test_get_files);
     tcase_add_test(tc, test_get_advisories);
     tcase_add_test(tc, test_get_advisories_none);
-    tcase_add_test(tc, test_get_updateinfo);
     tcase_add_test(tc, test_lookup_num);
     tcase_add_test(tc, test_packager);
     tcase_add_test(tc, test_sourcerpm);
