@@ -35,6 +35,11 @@ typedef struct {
     HyRepo repo;
 } _RepoObject;
 
+typedef struct {
+    int (*getter)(HyRepo);
+    void (*setter)(HyRepo, int);
+} IntGetSetter;
+
 HyRepo repoFromPyObject(PyObject *o)
 {
     if (!repoObject_Check(o)) {
@@ -102,6 +107,24 @@ repo_dealloc(_RepoObject *self)
 /* getsetters */
 
 static PyObject *
+get_int(_RepoObject *self, void *closure)
+{
+    IntGetSetter *functions = (IntGetSetter*)closure;
+    return PyLong_FromLong(functions->getter(self->repo));
+}
+
+static int
+set_int(_RepoObject *self, PyObject *value, void *closure)
+{
+    IntGetSetter *functions = (IntGetSetter*)closure;
+    long num = PyLong_AsLong(value);
+    if (num > INT_MAX || num < INT_MIN)
+        return -1;
+    functions->setter(self->repo, num);
+    return 0;
+}
+
+static PyObject *
 get_str(_RepoObject *self, void *closure)
 {
     int str_key = (intptr_t)closure;
@@ -134,25 +157,15 @@ set_str(_RepoObject *self, PyObject *value, void *closure)
     return 0;
 }
 
-static PyObject *
-get_cost(_RepoObject *self, void *closure)
-{
-    return PyLong_FromLong(hy_repo_get_cost(self->repo));
-}
-
-static int
-set_cost(_RepoObject *self, PyObject *value, void *closure)
-{
-    long cost = PyLong_AsLong(value);
-    if (cost > INT_MAX || cost < INT_MIN)
-        return -1;
-    hy_repo_set_cost(self->repo, cost);
-    return 0;
-}
-
 static PyGetSetDef repo_getsetters[] = {
+    {"cost", (getter)get_int, (setter)set_int, "repository cost",
+     (void *)&(IntGetSetter){hy_repo_get_cost,
+			     hy_repo_set_cost}},
     {"name", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_NAME},
+    {"priority", (getter)get_int, (setter)set_int, "repository priority",
+     (void *)&(IntGetSetter){hy_repo_get_priority,
+			     hy_repo_set_priority}},
     {"repomd_fn", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_MD_FN},
     {"primary_fn", (getter)get_str, (setter)set_str, NULL,
@@ -163,8 +176,6 @@ static PyGetSetDef repo_getsetters[] = {
      (void *)HY_REPO_PRESTO_FN},
     {"updateinfo_fn", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_UPDATEINFO_FN},
-    {"cost", (getter)get_cost, (setter)set_cost, "cost of repository",
-     NULL},
     {NULL}			/* sentinel */
 };
 

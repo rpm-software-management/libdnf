@@ -34,6 +34,15 @@ hy_repo_link(HyRepo repo)
 }
 
 void
+repo_finalize_init(HyRepo hrepo, Repo *repo)
+{
+    repo->appdata = hy_repo_link(hrepo);
+    repo->subpriority = -hrepo->cost;
+    repo->priority = hrepo->priority;
+    hrepo->libsolv_repo = repo;
+}
+
+void
 repo_internalize_all_trigger(Pool *pool)
 {
     int i;
@@ -128,12 +137,26 @@ hy_repo_get_cost(HyRepo repo)
     return repo->cost;
 }
 
+int
+hy_repo_get_priority(HyRepo repo)
+{
+    return repo->priority;
+}
+
 void
 hy_repo_set_cost(HyRepo repo, int value)
 {
     repo->cost = value;
     if (repo->libsolv_repo)
         repo->libsolv_repo->subpriority = -value;
+}
+
+void
+hy_repo_set_priority(HyRepo repo, int value)
+{
+    repo->priority = value;
+    if (repo->libsolv_repo)
+        repo->libsolv_repo->priority = value;
 }
 
 void

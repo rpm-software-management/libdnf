@@ -40,6 +40,7 @@ struct _HyRepo {
     int cost;
     int needs_internalizing;
     int nrefs;
+    int priority;
     char *name;
     char *repomd_fn;
     char *primary_fn;
@@ -69,6 +70,8 @@ enum _hy_repo_repodata {
 
 HyRepo hy_repo_link(HyRepo repo);
 int hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state);
+
+void repo_finalize_init(HyRepo hrepo, Repo *repo);
 void repo_internalize_all_trigger(Pool *pool);
 void repo_internalize_trigger(Repo *r);
 void repo_update_state(HyRepo repo, enum _hy_repo_repodata which,
