@@ -26,5 +26,9 @@
 
 HyAdvisoryPkg advisorypkg_create();
 void advisorypkg_set_string(HyAdvisoryPkg advisorypkg, int which, const char* str_val);
+HyAdvisoryPkg advisorypkg_clone(HyAdvisoryPkg advisorypkg);
+
+HyAdvisoryPkgList advisorypkglist_create();
+void advisorypkglist_add(HyAdvisoryPkgList pkglist, HyAdvisoryPkg advisorypkg);
 
 #endif // HY_ADVISORYPKG_INTERNAL_H

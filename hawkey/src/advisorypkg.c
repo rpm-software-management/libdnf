@@ -24,11 +24,18 @@
 // hawkey
 #include "advisorypkg_internal.h"
 
+#define PACKAGE_BLOCK 15
+
 struct _HyAdvisoryPkg {
     char *name;
     char *evr;
     char *arch;
     char *filename;
+};
+
+struct _HyAdvisoryPkgList {
+    HyAdvisoryPkg *pkgs;
+    int npkgs;
 };
 
 /* internal */
@@ -64,6 +71,39 @@ advisorypkg_set_string(HyAdvisoryPkg advisorypkg, int which, const char* str_val
     *attr = solv_strdup(str_val);
 }
 
+HyAdvisoryPkg
+advisorypkg_clone(HyAdvisoryPkg advisorypkg)
+{
+    HyAdvisoryPkg clone = advisorypkg_create();
+    advisorypkg_set_string(clone, HY_ADVISORYPKG_NAME,
+	    hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_NAME));
+    advisorypkg_set_string(clone, HY_ADVISORYPKG_EVR,
+	    hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_EVR));
+    advisorypkg_set_string(clone, HY_ADVISORYPKG_ARCH,
+	    hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_ARCH));
+    advisorypkg_set_string(clone, HY_ADVISORYPKG_FILENAME,
+	    hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_FILENAME));
+    return clone;
+}
+
+HyAdvisoryPkgList
+advisorypkglist_create()
+{
+    HyAdvisoryPkgList pkglist = solv_calloc(1, sizeof(*pkglist));
+    pkglist->npkgs = 0;
+    pkglist->pkgs = solv_extend(
+	0, pkglist->npkgs, 0, sizeof(HyAdvisoryPkg), PACKAGE_BLOCK);
+    return pkglist;
+}
+
+void
+advisorypkglist_add(HyAdvisoryPkgList pkglist, HyAdvisoryPkg advisorypkg)
+{
+    pkglist->pkgs = solv_extend(
+	    pkglist->pkgs, pkglist->npkgs, 1, sizeof(advisorypkg), PACKAGE_BLOCK);
+    pkglist->pkgs[pkglist->npkgs++] = advisorypkg_clone(advisorypkg);
+}
+
 /* public */
 void
 hy_advisorypkg_free(HyAdvisoryPkg advisorypkg)
@@ -79,4 +119,26 @@ const char *
 hy_advisorypkg_get_string(HyAdvisoryPkg advisorypkg, int which)
 {
     return *get_string(advisorypkg, which);
+}
+
+void
+hy_advisorypkglist_free(HyAdvisoryPkgList pkglist)
+{
+    for(int i = 0; i < hy_advisorypkglist_count(pkglist); i++) {
+	hy_advisorypkg_free(pkglist->pkgs[i]);
+    }
+    solv_free(pkglist->pkgs);
+    solv_free(pkglist);
+}
+
+int
+hy_advisorypkglist_count(HyAdvisoryPkgList pkglist)
+{
+    return pkglist->npkgs;
+}
+
+HyAdvisoryPkg
+hy_advisorypkglist_get_clone(HyAdvisoryPkgList pkglist, int index)
+{
+    return advisorypkg_clone(pkglist->pkgs[index]);
 }

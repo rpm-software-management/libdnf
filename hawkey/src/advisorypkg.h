@@ -38,6 +38,10 @@ enum _hy_advisorypkg_param_e {
 void hy_advisorypkg_free(HyAdvisoryPkg advisorypkg);
 const char *hy_advisorypkg_get_string(HyAdvisoryPkg advisorypkg, int which);
 
+void hy_advisorypkglist_free(HyAdvisoryPkgList pkglist);
+int hy_advisorypkglist_count(HyAdvisoryPkgList pkglist);
+HyAdvisoryPkg hy_advisorypkglist_get_clone(HyAdvisoryPkgList pkglist, int index);
+
 #ifdef __cplusplus
 }
 #endif
