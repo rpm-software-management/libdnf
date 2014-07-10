@@ -484,3 +484,13 @@ use::
   r.cost = 30
 
 Also previously when no ``cost`` was given it defaulted to 1000. Now the default is 0. Both these aspects were present by mistake and the new interface is consistent with the C library.
+
+Deprecated ``_hawkey.Advisory.filenames``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The attribute was deprecated because the underlying C function was also
+deprecated. Please use the new attribute ``packages`` and the attribute
+``filename`` of the returned objects to obtain the data originally provided by
+the deprecated attribute.
+
+The old attribute will be dropped after 2014-10-15 AND no sooner than in 0.4.21.
