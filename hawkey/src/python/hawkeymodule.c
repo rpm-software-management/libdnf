@@ -22,6 +22,7 @@
 
 // hawkey
 #include "src/advisory.h"
+#include "src/advisorypkg.h"
 #include "src/advisoryref.h"
 #include "src/goal.h"
 #include "src/package.h"
@@ -33,6 +34,7 @@
 
 // pyhawkey
 #include "advisory-py.h"
+#include "advisorypkg-py.h"
 #include "advisoryref-py.h"
 #include "exception-py.h"
 #include "goal-py.h"
@@ -160,6 +162,11 @@ PYCOMP_MOD_INIT(_hawkey)
 	return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&advisory_Type);
     PyModule_AddObject(m, "Advisory", (PyObject *)&advisory_Type);
+    /* _hawkey.AdvisoryPkg */
+    if (PyType_Ready(&advisorypkg_Type) < 0)
+	return PYCOMP_MOD_ERROR_VAL;
+    Py_INCREF(&advisorypkg_Type);
+    PyModule_AddObject(m, "AdvisoryPkg", (PyObject *)&advisorypkg_Type);
     /* _hawkey.AdvisoryRef */
     if (PyType_Ready(&advisoryref_Type) < 0)
 	return PYCOMP_MOD_ERROR_VAL;

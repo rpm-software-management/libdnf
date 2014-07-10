@@ -86,6 +86,16 @@ advisorypkg_clone(HyAdvisoryPkg advisorypkg)
     return clone;
 }
 
+int
+advisorypkg_identical(HyAdvisoryPkg left, HyAdvisoryPkg right)
+{
+    return
+	strcmp(left->name, right->name) &&
+	strcmp(left->evr, right->evr) &&
+	strcmp(left->arch, right->arch) &&
+	strcmp(left->filename, right->filename);
+}
+
 HyAdvisoryPkgList
 advisorypkglist_create()
 {

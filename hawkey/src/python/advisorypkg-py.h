@@ -18,18 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef HY_ADVISORYPKG_INTERNAL_H
-#define HY_ADVISORYPKG_INTERNAL_H
+#ifndef ADVISORYPKG_PY_H
+#define ADVISORYPKG_PY_H
 
 // hawkey
-#include "advisorypkg.h"
+#include "src/types.h"
 
-HyAdvisoryPkg advisorypkg_create();
-void advisorypkg_set_string(HyAdvisoryPkg advisorypkg, int which, const char* str_val);
-HyAdvisoryPkg advisorypkg_clone(HyAdvisoryPkg advisorypkg);
-int advisorypkg_identical(HyAdvisoryPkg left, HyAdvisoryPkg right);
+extern PyTypeObject advisorypkg_Type;
 
-HyAdvisoryPkgList advisorypkglist_create();
-void advisorypkglist_add(HyAdvisoryPkgList pkglist, HyAdvisoryPkg advisorypkg);
+PyObject *advisorypkgToPyObject(HyAdvisoryPkg advisorypkg);
 
-#endif // HY_ADVISORYPKG_INTERNAL_H
+#endif // ADVISORYPKG_PY_H

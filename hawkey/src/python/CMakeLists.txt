@@ -25,6 +25,7 @@ FILE(COPY ${hawkey_COPIES} DESTINATION ./hawkey/)
 
 SET (hawkeymodule_SRCS
     advisory-py.c
+    advisorypkg-py.c
     advisoryref-py.c
     exception-py.c
     goal-py.c
