@@ -23,6 +23,7 @@
 
 // hawkey
 #include "src/advisory_internal.h"
+#include "src/advisorypkg.h"
 #include "src/advisoryref.h"
 #include "src/stringarray.h"
 
@@ -161,6 +162,24 @@ get_datetime(_AdvisoryObject *self, void *closure)
 }
 
 static PyObject *
+get_advisorypkg_list(_AdvisoryObject *self, void *closure)
+{
+    HyAdvisoryPkgList (*func)(HyAdvisory);
+    HyAdvisoryPkgList advisorypkgs;
+    PyObject *list;
+
+    func = (HyAdvisoryPkgList (*)(HyAdvisory))closure;
+    advisorypkgs = func(self->advisory);
+    if (advisorypkgs == NULL)
+	Py_RETURN_NONE;
+
+    list = advisorypkglist_to_pylist(advisorypkgs);
+    hy_advisorypkglist_free(advisorypkgs);
+
+    return list;
+}
+
+static PyObject *
 get_str_array(_AdvisoryObject *self, void *closure)
 {
     HyStringArray (*func)(HyAdvisory);
@@ -203,6 +222,7 @@ static PyGetSetDef advisory_getsetters[] = {
     {"description", (getter)get_str, NULL, NULL, (void *)hy_advisory_get_description},
     {"rights", (getter)get_str, NULL, NULL, (void *)hy_advisory_get_rights},
     {"updated", (getter)get_datetime, NULL, NULL, (void *)hy_advisory_get_updated},
+    {"packages", (getter)get_advisorypkg_list, NULL, NULL, (void *)hy_advisory_get_packages},
     {"filenames", (getter)get_str_array, NULL, NULL, (void *)hy_advisory_get_filenames},
     {"references", (getter)get_advisoryref_list, NULL, NULL, (void *)hy_advisory_get_references},
     {NULL}                      /* sentinel */

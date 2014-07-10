@@ -22,12 +22,14 @@
 
 // hawkey
 #include "src/advisory.h"
+#include "src/advisorypkg.h"
 #include "src/advisoryref.h"
 #include "src/package_internal.h"
 #include "src/packagelist.h"
 #include "src/packageset_internal.h"
 #include "src/reldep_internal.h"
 #include "advisory-py.h"
+#include "advisorypkg-py.h"
 #include "advisoryref-py.h"
 #include "iutil-py.h"
 #include "package-py.h"
@@ -56,6 +58,38 @@ advisorylist_to_pylist(const HyAdvisoryList advisorylist, PyObject *sack)
 
 	int rc = PyList_Append(list, advisory);
 	Py_DECREF(advisory);
+	if (rc == -1)
+	    goto fail;
+    }
+
+    return list;
+ fail:
+    Py_DECREF(list);
+    return NULL;
+}
+
+PyObject *
+advisorypkglist_to_pylist(const HyAdvisoryPkgList advisorypkglist)
+{
+    HyAdvisoryPkg cadvisorypkg;
+    PyObject *advisorypkg;
+
+    PyObject *list = PyList_New(0);
+    if (list == NULL)
+	return NULL;
+
+    const int count = hy_advisorypkglist_count(advisorypkglist);
+    for (int i = 0; i < count; ++i) {
+	cadvisorypkg = hy_advisorypkglist_get_clone(advisorypkglist,  i);
+	advisorypkg = advisorypkgToPyObject(cadvisorypkg);
+
+	if (advisorypkg == NULL) {
+	    hy_advisorypkg_free(cadvisorypkg);
+	    goto fail;
+	}
+
+	int rc = PyList_Append(list, advisorypkg);
+	Py_DECREF(advisorypkg);
 	if (rc == -1)
 	    goto fail;
     }

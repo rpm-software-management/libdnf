@@ -50,6 +50,10 @@ class Test(base.TestCase):
     def test_description(self):
         self.assertEqual(self.advisory.description, 'An example update to the tour package.')
 
+    def test_packages(self):
+        filenames = [apkg.filename for apkg in self.advisory.packages]
+        self.assertEqual(filenames, ['tour.noarch.rpm'])
+
     def test_filenames(self):
         self.assertEqual(self.advisory.filenames, ['tour.noarch.rpm'])
 
