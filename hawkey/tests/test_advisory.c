@@ -21,6 +21,7 @@
 
 // hawkey
 #include "src/advisory.h"
+#include "src/advisorypkg.h"
 #include "src/advisoryref.h"
 #include "src/package.h"
 #include "src/stringarray.h"
@@ -92,6 +93,21 @@ START_TEST(test_updated)
 }
 END_TEST
 
+START_TEST(test_packages)
+{
+    HyAdvisoryPkgList pkglist = hy_advisory_get_packages(advisory);
+
+    ck_assert_int_eq(hy_advisorypkglist_count(pkglist), 1);
+    HyAdvisoryPkg package = hy_advisorypkglist_get_clone(pkglist, 0);
+    ck_assert_str_eq(
+	    hy_advisorypkg_get_string(package, HY_ADVISORYPKG_FILENAME),
+	    "tour.noarch.rpm");
+    hy_advisorypkg_free(package);
+
+    hy_advisorypkglist_free(pkglist);
+}
+END_TEST
+
 START_TEST(test_filenames)
 {
     HyStringArray filenames = hy_advisory_get_filenames(advisory);
@@ -138,6 +154,7 @@ advisory_suite(void)
     tcase_add_test(tc, test_description);
     tcase_add_test(tc, test_rights);
     tcase_add_test(tc, test_updated);
+    tcase_add_test(tc, test_packages);
     tcase_add_test(tc, test_filenames);
     tcase_add_test(tc, test_refs);
     suite_add_tcase(s, tc);

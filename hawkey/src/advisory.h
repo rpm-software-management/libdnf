@@ -42,6 +42,7 @@ HyAdvisoryType hy_advisory_get_type(HyAdvisory advisory);
 const char *hy_advisory_get_description(HyAdvisory advisory);
 const char *hy_advisory_get_rights(HyAdvisory advisory);
 unsigned long long hy_advisory_get_updated(HyAdvisory advisory);
+HyAdvisoryPkgList hy_advisory_get_packages(HyAdvisory advisory);
 HyStringArray hy_advisory_get_filenames(HyAdvisory advisory);
 HyAdvisoryRefList hy_advisory_get_references(HyAdvisory advisory);
 

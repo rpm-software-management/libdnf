@@ -26,6 +26,7 @@
 
 // hawkey
 #include "advisory_internal.h"
+#include "advisorypkg_internal.h"
 #include "advisoryref_internal.h"
 #include "iutil.h"
 
@@ -140,26 +141,58 @@ hy_advisory_get_updated(HyAdvisory advisory)
     return pool_lookup_num(advisory->pool, advisory->a_id, SOLVABLE_BUILDTIME, 0);
 }
 
+HyAdvisoryPkgList
+hy_advisory_get_packages(HyAdvisory advisory)
+{
+    Dataiterator di;
+    HyAdvisoryPkg pkg;
+    Pool *pool = advisory->pool;
+    Id a_id = advisory->a_id;
+    HyAdvisoryPkgList pkglist = advisorypkglist_create();
+
+    dataiterator_init(&di, pool, 0, a_id, UPDATE_COLLECTION, 0, 0);
+    while (dataiterator_step(&di)) {
+	dataiterator_setpos(&di);
+	pkg = advisorypkg_create();
+	advisorypkg_set_string(pkg, HY_ADVISORYPKG_NAME,
+		pool_lookup_str(pool, SOLVID_POS, UPDATE_COLLECTION_NAME));
+	advisorypkg_set_string(pkg, HY_ADVISORYPKG_EVR,
+		pool_lookup_str(pool, SOLVID_POS, UPDATE_COLLECTION_EVR));
+	advisorypkg_set_string(pkg, HY_ADVISORYPKG_ARCH,
+		pool_lookup_str(pool, SOLVID_POS, UPDATE_COLLECTION_ARCH));
+	advisorypkg_set_string(pkg, HY_ADVISORYPKG_FILENAME,
+		pool_lookup_str(pool, SOLVID_POS, UPDATE_COLLECTION_FILENAME));
+	advisorypkglist_add(pkglist, pkg);
+	hy_advisorypkg_free(pkg);
+    }
+    dataiterator_free(&di);
+
+    return pkglist;
+}
+
 HyStringArray
 hy_advisory_get_filenames(HyAdvisory advisory)
 {
-    Dataiterator di;
-    const char *filename;
+    HyAdvisoryPkg advisorypkg;
+    char *filename;
     int len = 0;
     HyStringArray strs = solv_extend(0, 0, 1, sizeof(char*), FILENAME_BLOCK);
+    HyAdvisoryPkgList pkglist = hy_advisory_get_packages(advisory);
 
-    dataiterator_init(&di, advisory->pool, 0, advisory->a_id, UPDATE_COLLECTION, 0, 0);
-    while (dataiterator_step(&di)) {
-	dataiterator_setpos(&di);
-	filename = pool_lookup_str(advisory->pool, SOLVID_POS, UPDATE_COLLECTION_FILENAME);
+    for (int i = 0; i < hy_advisorypkglist_count(pkglist); i++) {
+	advisorypkg = hy_advisorypkglist_get_clone(pkglist, i);
+	filename = solv_strdup(
+		hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_FILENAME));
+	hy_advisorypkg_free(advisorypkg);
 	if (!filename)
 	    continue;
 
-	strs[len++] = solv_strdup(filename);
+	strs[len++] = filename;
 	strs = solv_extend(strs, len, 1, sizeof(char*), FILENAME_BLOCK);
     }
-    dataiterator_free(&di);
+
     strs[len++] = NULL;
+    hy_advisorypkglist_free(pkglist);
     return strs;
 }
 
