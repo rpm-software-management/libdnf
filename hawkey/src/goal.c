@@ -416,6 +416,24 @@ filter_evr2job(HySack sack, const struct _Filter *f, Queue *job)
 }
 
 static int
+filter_file2job(HySack sack, const struct _Filter *f, Queue *job)
+{
+    if (f == NULL)
+	return 0;
+    assert(f->nmatches == 1);
+
+    const char *file = f->matches[0].str;
+    Pool *pool = sack_pool(sack);
+    
+    int flags = f->cmp_type & HY_GLOB ? SELECTION_GLOB : 0;
+    if (f->cmp_type & HY_GLOB)
+	flags |= SELECTION_NOCASE;
+    if (selection_make(pool, job, file, flags | SELECTION_FILELIST) == 0)
+	return 1;
+    return 0;
+}
+
+static int
 filter_name2job(HySack sack, const struct _Filter *f, Queue *job)
 {
     if (f == NULL)
@@ -505,14 +523,17 @@ sltr2job(const HySelector sltr, Queue *job, int solver_action)
     Queue job_sltr;
 
     queue_init(&job_sltr);
-    if (sltr->f_name == NULL && sltr->f_provides == NULL) {
-	// no name or provides in the selector is an error
+    if (sltr->f_name == NULL && sltr->f_provides == NULL && sltr->f_file == NULL) {
+	// no name or provides or file in the selector is an error
 	ret = HY_E_SELECTOR;
 	goto finish;
     }
 
     sack_make_provides_ready(sack);
     ret = filter_name2job(sack, sltr->f_name, &job_sltr);
+    if (ret)
+	goto finish;
+    ret = filter_file2job(sack, sltr->f_file, &job_sltr);
     if (ret)
 	goto finish;
     ret = filter_provides2job(sack, sltr->f_provides, &job_sltr);

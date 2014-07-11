@@ -75,6 +75,8 @@ valid_setting(int keyname, int cmp_type)
 	return cmp_type == HY_EQ;
     case HY_PKG_NAME:
 	return (cmp_type == HY_EQ || cmp_type == HY_GLOB);
+    case HY_PKG_FILE:
+	return 1;
     default:
 	return 0;
     }
@@ -93,6 +95,7 @@ hy_selector_free(HySelector sltr)
 {
     filter_free(sltr->f_arch);
     filter_free(sltr->f_evr);
+    filter_free(sltr->f_file);
     filter_free(sltr->f_name);
     filter_free(sltr->f_provides);
     filter_free(sltr->f_reponame);
@@ -113,15 +116,19 @@ hy_selector_set(HySelector sltr, int keyname, int cmp_type, const char *match)
     case HY_PKG_VERSION:
 	return replace_filter(sack, &sltr->f_evr, keyname, cmp_type, match);
     case HY_PKG_NAME:
-	if (sltr->f_provides)
+	if (sltr->f_provides || sltr->f_file)
 	    return HY_E_SELECTOR;
 	return replace_filter(sack, &sltr->f_name, keyname, cmp_type, match);
     case HY_PKG_PROVIDES:
-	if (sltr->f_name)
+	if (sltr->f_name || sltr->f_file)
 	    return HY_E_SELECTOR;
 	return replace_filter(sack, &sltr->f_provides, keyname, cmp_type, match);
     case HY_PKG_REPONAME:
         return replace_filter(sack, &sltr->f_reponame, keyname, cmp_type, match);
+    case HY_PKG_FILE:
+	if (sltr->f_name || sltr->f_provides)
+	    return HY_E_SELECTOR;
+	return replace_filter(sack, &sltr->f_file, keyname, cmp_type, match);
     default:
 	return HY_E_SELECTOR;
     }

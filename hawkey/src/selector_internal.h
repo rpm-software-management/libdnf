@@ -27,6 +27,7 @@ struct _HySelector {
     HySack sack;
     struct _Filter *f_arch;
     struct _Filter *f_evr;
+    struct _Filter *f_file;
     struct _Filter *f_name;
     struct _Filter *f_provides;
     struct _Filter *f_reponame;

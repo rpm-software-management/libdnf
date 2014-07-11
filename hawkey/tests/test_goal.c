@@ -346,6 +346,24 @@ START_TEST(test_goal_selector_upgrade_provides)
 }
 END_TEST
 
+START_TEST(test_goal_install_selector_file)
+{
+    HySack sack = test_globals.sack;
+    HySelector sltr = hy_selector_create(sack);
+    HyGoal goal = hy_goal_create(sack);
+    fail_if(hy_selector_set(sltr, HY_PKG_FILE, HY_EQ|HY_GLOB, "/*/answers"));
+    fail_if(hy_goal_erase_selector(goal, sltr));
+    fail_if(hy_goal_run(goal));
+    assert_iueo(goal, 0, 0, 1, 0);
+    HyPackageList plist = hy_goal_list_erasures(goal);
+    HyPackage pkg = hy_packagelist_get(plist, 0);
+    ck_assert_str_eq("fool", hy_package_get_name(pkg));
+    hy_selector_free(sltr);
+    hy_packagelist_free(plist);
+    hy_goal_free(goal);
+}
+END_TEST
+
 START_TEST(test_goal_upgrade)
 {
     HyPackage pkg = get_latest_pkg(test_globals.sack, "fool");
@@ -1143,6 +1161,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_distupgrade_selector_upgrade);
     tcase_add_test(tc, test_goal_distupgrade_selector_downgrade);
     tcase_add_test(tc, test_goal_distupgrade_selector_nothing);
+    tcase_add_test(tc, test_goal_install_selector_file);
     tcase_add_test(tc, test_goal_rerun);
     tcase_add_test(tc, test_goal_unneeded);
     suite_add_tcase(s, tc);
