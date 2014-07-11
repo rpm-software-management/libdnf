@@ -50,9 +50,11 @@ hy_nevra_create()
 static inline int
 string_cmp(const char *s1, const char *s2)
 {
-    if (s1 == NULL)
+    if (s1 == NULL) {
+	if (s2 == NULL)
+	    return 0;
 	return -1;
-    else if (s2 == NULL)
+    } else if (s2 == NULL)
 	return 1;
     return strcmp(s1, s2);
 }
@@ -67,11 +69,9 @@ hy_nevra_cmp(HyNevra nevra1, HyNevra nevra2)
 	return -1;
     else if (nevra1->epoch > nevra2->epoch)
 	return 1;
-    else
-	return 0;
     for (int i = 0; i < 4; ++i) {
 	ret = string_cmp(nevra1_strs[i], nevra2_strs[i]);
-	if (ret)
+	if (ret != 0)
 	    return ret;
     }
     return 0;

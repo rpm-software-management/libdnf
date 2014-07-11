@@ -51,7 +51,35 @@ START_TEST(nevra1)
     ck_assert_str_eq(hy_nevra_get_string(nevra, HY_NEVRA_RELEASE), "11.fc100");
     ck_assert_str_eq(hy_nevra_get_string(nevra, HY_NEVRA_ARCH), "x86_64");
 
+    // NEVRA comparison tests
+    HyNevra nevra2 = hy_nevra_create();
+    hy_nevra_set_epoch(nevra2, 8);
+    hy_nevra_set_string(nevra2, HY_NEVRA_NAME, "four-of-fish");
+    hy_nevra_set_string(nevra2, HY_NEVRA_VERSION, "3.6.9");
+    hy_nevra_set_string(nevra2, HY_NEVRA_RELEASE, "11.fc100");
+    hy_nevra_set_string(nevra2, HY_NEVRA_ARCH, "x86_64");
+    ck_assert_int_eq(hy_nevra_cmp(nevra, nevra2), 0);
+
+    hy_nevra_set_epoch(nevra2, 3);
+    ck_assert_int_gt(hy_nevra_cmp(nevra, nevra2), 0);
+
+    hy_nevra_set_epoch(nevra2, 11);
+    ck_assert_int_lt(hy_nevra_cmp(nevra, nevra2), 0);
+
+    hy_nevra_set_epoch(nevra2, 8);
+    hy_nevra_set_string(nevra2, HY_NEVRA_VERSION, "7.0");
+    ck_assert_int_lt(hy_nevra_cmp(nevra, nevra2), 0);
+
+    hy_nevra_set_epoch(nevra2, 8);
+    hy_nevra_set_string(nevra2, HY_NEVRA_VERSION, NULL);
+    ck_assert_int_gt(hy_nevra_cmp(nevra, nevra2), 0);
+
+    hy_nevra_set_epoch(nevra2, 8);
+    hy_nevra_set_string(nevra, HY_NEVRA_VERSION, NULL);
+    ck_assert_int_eq(hy_nevra_cmp(nevra, nevra2), 0);
+
     hy_nevra_free(nevra);
+    hy_nevra_free(nevra2);
 }
 END_TEST
 
