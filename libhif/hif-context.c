@@ -1005,6 +1005,14 @@ hif_context_install (HifContext *context, const gchar *name, GError **error)
 	hy_query_filter (query, HY_PKG_NAME, HY_EQ, name);
 	pkglist = hy_query_run (query);
 
+	if (hy_packagelist_count (pkglist) == 0) {
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_PACKAGE_NOT_FOUND,
+			     "No package '%s' found", name);
+		return FALSE;
+	}
+
 	/* add each package */
 	FOR_PACKAGELIST(pkg, pkglist, i) {
 		hif_package_set_user_action (pkg, TRUE);
