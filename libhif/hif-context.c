@@ -905,6 +905,14 @@ hif_context_setup (HifContext *context,
 		return FALSE;
 	g_signal_connect (priv->monitor_rpmdb, "changed",
 			  G_CALLBACK (hif_context_rpmdb_changed_cb), context);
+
+	/* create sack and add sources */
+	if (priv->sack == NULL) {
+		hif_state_reset (priv->state);
+		if (!hif_context_setup_sack (context, priv->state, error))
+			return FALSE;
+	}
+
 	return TRUE;
 }
 
