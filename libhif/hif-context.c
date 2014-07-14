@@ -1016,6 +1016,7 @@ hif_context_install (HifContext *context, const gchar *name, GError **error)
 	/* add each package */
 	FOR_PACKAGELIST(pkg, pkglist, i) {
 		hif_package_set_user_action (pkg, TRUE);
+		g_debug ("adding %s-%s to goal", hy_package_get_name (pkg), hy_package_get_evr (pkg));
 		hy_goal_install (priv->goal, pkg);
 	}
 	hy_packagelist_free (pkglist);

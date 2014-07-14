@@ -1153,6 +1153,7 @@ hif_transaction_depsolve (HifTransaction *transaction,
 					  HIF_PACKAGE_INFO_DOWNGRADE,
 					  HIF_PACKAGE_INFO_UPDATE,
 					  -1);
+	g_debug ("Goal has %u packages", packages->len);
 	for (i = 0; i < packages->len; i++) {
 		pkg = g_ptr_array_index (packages, i);
 
