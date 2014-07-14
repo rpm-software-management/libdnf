@@ -394,6 +394,21 @@ hif_context_get_goal (HifContext	*context)
 }
 
 /**
+ * hif_context_get_state:
+ * @context: a #HifContext instance.
+ *
+ * Returns: (transfer none): the HifState object
+ *
+ * Since: 0.1.0
+ **/
+HifState*
+hif_context_get_state (HifContext	*context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	return priv->state;
+}
+
+/**
  * hif_context_get_check_disk_space:
  * @context: a #HifContext instance.
  *
@@ -818,6 +833,7 @@ hif_context_setup (HifContext *context,
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	const gchar *value;
+	_cleanup_free_ char *rpmdb_path = NULL;
 	_cleanup_object_unref_ GFile *file_rpmdb = NULL;
 
 	/* check essential things are set */
@@ -879,7 +895,8 @@ hif_context_setup (HifContext *context,
 				   HIF_TRANSACTION_FLAG_ONLY_TRUSTED);
 
 	/* setup a file monitor on the rpmdb */
-	file_rpmdb = g_file_new_for_path ("/var/lib/rpm/Packages");
+	rpmdb_path = g_build_filename (priv->install_root, "var/lib/rpm/Packages", NULL);
+	file_rpmdb = g_file_new_for_path (rpmdb_path);
 	priv->monitor_rpmdb = g_file_monitor_file (file_rpmdb,
 						   G_FILE_MONITOR_NONE,
 						   NULL,
@@ -888,6 +905,14 @@ hif_context_setup (HifContext *context,
 		return FALSE;
 	g_signal_connect (priv->monitor_rpmdb, "changed",
 			  G_CALLBACK (hif_context_rpmdb_changed_cb), context);
+
+	/* create sack and add sources */
+	if (priv->sack == NULL) {
+		hif_state_reset (priv->state);
+		if (!hif_context_setup_sack (context, priv->state, error))
+			return FALSE;
+	}
+
 	return TRUE;
 }
 
@@ -1003,9 +1028,18 @@ hif_context_install (HifContext *context, const gchar *name, GError **error)
 	hy_query_filter (query, HY_PKG_NAME, HY_EQ, name);
 	pkglist = hy_query_run (query);
 
+	if (hy_packagelist_count (pkglist) == 0) {
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_PACKAGE_NOT_FOUND,
+			     "No package '%s' found", name);
+		return FALSE;
+	}
+
 	/* add each package */
 	FOR_PACKAGELIST(pkg, pkglist, i) {
 		hif_package_set_user_action (pkg, TRUE);
+		g_debug ("adding %s-%s to goal", hy_package_get_name (pkg), hy_package_get_evr (pkg));
 		hy_goal_install (priv->goal, pkg);
 	}
 	hy_packagelist_free (pkglist);

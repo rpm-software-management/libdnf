@@ -706,7 +706,7 @@ hif_source_set_timestamp_modified (HifSource *source, GError **error)
 /**
  * hif_source_check:
  * @source: a #HifSource instance.
- * @permissible_cache_age: The oldest cache age allowed in seconds
+ * @permissible_cache_age: The oldest cache age allowed in seconds (wall clock time); Pass %G_MAXUINT to ignore
  * @state: a #HifState instance.
  * @error: a #GError or %NULL.
  *
@@ -916,17 +916,17 @@ hif_source_set_keyfile_data (HifSource *source, GError **error)
 
 	/* baseurl is optional */
 	baseurls = g_key_file_get_string_list (priv->keyfile, priv->id, "baseurl", NULL, NULL);
-	if (!lr_handle_setopt (priv->repo_handle, error, LRO_URLS, baseurls))
+	if (baseurls && !lr_handle_setopt (priv->repo_handle, error, LRO_URLS, baseurls))
 		return FALSE;
 
 	/* mirrorlist is optional */
 	mirrorlist = g_key_file_get_string (priv->keyfile, priv->id, "mirrorlist", NULL);
-	if (!lr_handle_setopt (priv->repo_handle, error, LRO_MIRRORLIST, mirrorlist))
+	if (mirrorlist && !lr_handle_setopt (priv->repo_handle, error, LRO_MIRRORLIST, mirrorlist))
 		return FALSE;
 
 	/* metalink is optional */
 	metalink = g_key_file_get_string (priv->keyfile, priv->id, "metalink", NULL);
-	if (!lr_handle_setopt (priv->repo_handle, error, LRO_METALINKURL, metalink))
+	if (metalink && !lr_handle_setopt (priv->repo_handle, error, LRO_METALINKURL, metalink))
 		return FALSE;
 
 	/* gpgcheck is optional */
@@ -1068,7 +1068,8 @@ hif_source_update (HifSource *source,
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_CANNOT_FETCH_SOURCE,
-			     "cannot update repo: %s",
+			     "cannot update repo '%s': %s",
+			     hif_source_get_id (source),
 			     error_local->message);
 		goto out;
 	}
