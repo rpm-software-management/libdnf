@@ -706,7 +706,7 @@ hif_source_set_timestamp_modified (HifSource *source, GError **error)
 /**
  * hif_source_check:
  * @source: a #HifSource instance.
- * @permissible_cache_age: The oldest cache age allowed in seconds
+ * @permissible_cache_age: The oldest cache age allowed in seconds (wall clock time); Pass %G_MAXUINT to ignore
  * @state: a #HifState instance.
  * @error: a #GError or %NULL.
  *
