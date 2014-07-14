@@ -394,6 +394,21 @@ hif_context_get_goal (HifContext	*context)
 }
 
 /**
+ * hif_context_get_state:
+ * @context: a #HifContext instance.
+ *
+ * Returns: (transfer none): the HifState object
+ *
+ * Since: 0.1.0
+ **/
+HifState*
+hif_context_get_state (HifContext	*context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	return priv->state;
+}
+
+/**
  * hif_context_get_check_disk_space:
  * @context: a #HifContext instance.
  *

@@ -43,6 +43,8 @@ HySack   	 hif_context_get_sack			(HifContext	*context);
 
 HyGoal  	 hif_context_get_goal			(HifContext	*context);
 
+HifState* 	 hif_context_get_state			(HifContext	*context);
+
 G_END_DECLS
 
 #endif /* __HIF_CONTEXT_PRIVATE_H */
