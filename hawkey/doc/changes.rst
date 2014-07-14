@@ -374,7 +374,7 @@ Core
 Query: ``hy_query_filter_latest()`` now filter latest packages ignoring architecture
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For old function behaviour use new function ``hy_query_filter_latest_per_arch()``
+For old function behavior use new function ``hy_query_filter_latest_per_arch()``
 
 Python bindings
 ---------------
@@ -411,7 +411,7 @@ which returns all these advisories. New functions ``hy_advisory_get_*`` provide
 the data retrieved by the deprecated functions.
 
 The only exception is the ``hy_package_get_update_severity()`` which will be
-dropped without any replacement. However advisory types and severities are
+dropped without any replacement. However advisory types and severity levels are
 distinguished from now and the type is accessible via ``hy_advisory_get_type()``.
 Thus enum ``HyUpdateSeverity`` was also deprecated. A new ``HyAdvisoryType``
 should be used instead.
@@ -443,9 +443,30 @@ Python bindings
 ``Goal.write_debugdata()`` takes a directory parameter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Analogus to :ref:`core changes <0_4_15_core-label>`.
+Analogous to :ref:`core changes <0_4_15_core-label>`.
 
 Package: string attributes are represented by Unicode object
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Attributes ``baseurl``, ``location``, ``sourcerpm``, ``version``, ``release``, ``name``, ``arch``, ``description``, ``evr``, ``license``, ``packager``, ``reponame``, ``summary`` and ``url`` of Package object return Unicode string.
+
+
+Changes in 0.4.18
+=================
+
+Python bindings
+---------------
+
+``Repo()`` does not accept ``cost`` keyword argument
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Instead of::
+
+  r = hawkey.Repo('name', cost=30)
+
+use::
+
+  r = hawkey.Repo('name')
+  r.cost = 30
+
+Also previously when no ``cost`` was given it defaulted to 1000. Now the default is 0. Both these aspects were present by mistake and the new interface is consistent with the C library.

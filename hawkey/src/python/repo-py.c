@@ -87,13 +87,9 @@ static int
 repo_init(_RepoObject *self, PyObject *args, PyObject *kwds)
 {
     const char *name;
-    int cost = 1000;
-    static char *kwlist[] = {"name", "cost", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|i", kwlist,
-                                     &name, &cost))
-        return -1;
+    if (!PyArg_ParseTuple(args, "s", &name))
+	return -1;
     hy_repo_set_string(self->repo, HY_REPO_NAME, name);
-    hy_repo_set_cost(self->repo, cost);
     return 0;
 }
 
