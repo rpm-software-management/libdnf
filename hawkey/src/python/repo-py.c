@@ -114,8 +114,12 @@ set_int(_RepoObject *self, PyObject *value, void *closure)
 {
     IntGetSetter *functions = (IntGetSetter*)closure;
     long num = PyLong_AsLong(value);
-    if (num > INT_MAX || num < INT_MIN)
+    if (PyErr_Occurred())
+    	return -1;
+    if (num > INT_MAX || num < INT_MIN) {
+	PyErr_SetString(PyExc_ValueError, "Value in the integer range expected.");
         return -1;
+    }
     functions->setter(self->repo, num);
     return 0;
 }

@@ -18,9 +18,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
+import hawkey
 import unittest
 
-import hawkey
 
 class Package(unittest.TestCase):
     def test_create(self):
@@ -34,8 +34,11 @@ class Package(unittest.TestCase):
         r = hawkey.Repo("fog")
         r.cost = 300
         self.assertEqual(300, r.cost)
+
         r2 = hawkey.Repo("blizzard")
         self.assertEqual(0, r2.cost)
+        with self.assertRaises(TypeError):
+            r2.cost = '4'
 
     def test_str_assignment(self):
         r = hawkey.Repo('fog')
