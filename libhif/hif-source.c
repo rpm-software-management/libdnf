@@ -1068,7 +1068,8 @@ hif_source_update (HifSource *source,
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_CANNOT_FETCH_SOURCE,
-			     "cannot update repo: %s",
+			     "cannot update repo '%s': %s",
+			     hif_source_get_id (source),
 			     error_local->message);
 		goto out;
 	}
