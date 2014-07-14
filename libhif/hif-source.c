@@ -916,17 +916,17 @@ hif_source_set_keyfile_data (HifSource *source, GError **error)
 
 	/* baseurl is optional */
 	baseurls = g_key_file_get_string_list (priv->keyfile, priv->id, "baseurl", NULL, NULL);
-	if (!lr_handle_setopt (priv->repo_handle, error, LRO_URLS, baseurls))
+	if (baseurls && !lr_handle_setopt (priv->repo_handle, error, LRO_URLS, baseurls))
 		return FALSE;
 
 	/* mirrorlist is optional */
 	mirrorlist = g_key_file_get_string (priv->keyfile, priv->id, "mirrorlist", NULL);
-	if (!lr_handle_setopt (priv->repo_handle, error, LRO_MIRRORLIST, mirrorlist))
+	if (mirrorlist && !lr_handle_setopt (priv->repo_handle, error, LRO_MIRRORLIST, mirrorlist))
 		return FALSE;
 
 	/* metalink is optional */
 	metalink = g_key_file_get_string (priv->keyfile, priv->id, "metalink", NULL);
-	if (!lr_handle_setopt (priv->repo_handle, error, LRO_METALINKURL, metalink))
+	if (metalink && !lr_handle_setopt (priv->repo_handle, error, LRO_METALINKURL, metalink))
 		return FALSE;
 
 	/* gpgcheck is optional */
