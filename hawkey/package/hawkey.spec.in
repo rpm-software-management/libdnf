@@ -1,4 +1,4 @@
-%global gitrev eafbe0a
+%global gitrev 4f4bf92
 %global libsolv_version 0.6.4-0
 
 Name:		hawkey
@@ -107,6 +107,25 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+
+* Wed Jul 16 2014 Aleš Kozumplik <ales@redhat.com> - 0.4.18-1
+- api change: py: deprecate _hawkey.Advisory.filenames. (Radek Holy)
+- api change: drop deprecated hy_package_get_update_*. (Radek Holy)
+- api change: deprecate hy_advisory_get_filenames. (Radek Holy)
+- tests: py: add tests for _hawkey.AdvisoryPkg type. (Radek Holy)
+- py: add _hawkey.Advisory.packages attribute. (Radek Holy)
+- py: add _hawkey.AdvisoryPkg type. (Radek Holy)
+- tests: add tests for advisorypkg object. (Radek Holy)
+- Add hy_advisory_get_packages method. (Radek Holy)
+- Add advisorypkglist object. (Radek Holy)
+- Add advisorypkg object. (Radek Holy)
+- selector: added file filter (Related: RhBug:1100946) (Jan Silhan)
+- priorities: change the meaning of the setting---lower number=better prio. (Ales Kozumplik)
+- py: better error checking in repo-py.c:set_int(). (Ales Kozumplik)
+- py: api: hawkey.Repo() does not accept cost keyword arg. (Ales Kozumplik)
+- fix: nevra: hy_nevra_cmp (Jan Silhan)
+- repos: priorities. (Ales Kozumplik)
+- py3: Sack: accepts unicoded cachedir (Related: RhBug:1108908) (Jan Silhan)
 
 * Thu Jul 3 2014  Aleš Kozumplik <ales@redhat.com> - 0.4.17-1
 - sack: add a public function to get the running kernel package. (Ales Kozumplik)
