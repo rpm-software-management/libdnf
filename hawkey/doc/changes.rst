@@ -21,10 +21,21 @@
 
 .. contents::
 
-This document describes the API changes the library users should be aware of
-before upgrading to each respective version. It is our plan to have the amount
-of changes requiring changing the client code go to a minimum after the library
-hits the 1.0.0 version.
+Introduction
+============
+
+This document describes the API changes the library users should be aware of before upgrading to each respective version. It is our plan to have the amount of changes requiring changing the client code go to a minimum after the library hits the 1.0.0 version.
+
+Depracated API items (classes, methods, etc.) are designated as such in this document. The first release where support for such items can be dropped entirely must be issued at *least five months* after the issue of the release that announced the deprecation and at the same time have, relatively to the deprecating release, either:
+
+* a higher major version number, or
+* a higher minor version number, or
+* a patchlevel number that is *by at least five* greater.
+
+These criteria are likely to tighten in the future as hawkey matures.
+
+Actual changes in the API are then announced in this document as well. ABI changes including changes in functions' parameter counts or types or removal of public symbols from ``libhawkey`` imply an increase in the library's SONAME version.
+
 
 Changes in 0.2.10
 =================
