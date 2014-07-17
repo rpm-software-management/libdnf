@@ -1,3 +1,22 @@
+Version 0.1.2
+~~~~~~~~~~~~~
+Released: 2014-07-17
+
+Notes:
+
+New Features:
+ - Add HifContext accessor in -private for HifState (Colin Walters)
+ - Improve rpm callback handling for packages in the cleanup state (Kalev Lember)
+
+Bugfixes:
+ - Add name of failing repository (Colin Walters)
+ - Create an initial sack in HifContext (Colin Walters)
+ - Error if we can't find any package matching provided name (Colin Walters)
+ - Fix a mixup of HifStateAction and HifPackageInfo (Kalev Lember)
+ - Only set librepo option if value is set (Colin Walters)
+ - Respect install root for rpmdb Packages monitor (Colin Walters)
+ - Update Makefile.am (Elan Ruusamäe)
+
 Version 0.1.1
 ~~~~~~~~~~~~~
 Released: 2014-06-23
