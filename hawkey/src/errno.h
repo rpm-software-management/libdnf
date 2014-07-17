@@ -40,7 +40,6 @@ enum _hy_errors_e {
 };
 
 extern __thread int hy_errno;
-extern __thread char hy_err_str[256];
 
 int hy_get_errno(void);
 
