@@ -47,7 +47,7 @@
 #include <solv/solverdebug.h>
 
 // hawkey
-#include "errno.h"
+#include "errno_internal.h"
 #include "iutil.h"
 #include "package_internal.h"
 #include "packageset_internal.h"
@@ -326,7 +326,7 @@ load_ext(HySack sack, HyRepo hrepo, int which_repodata,
 
     fp = solv_xfopen(fn, "r");
     if (fp == NULL) {
-	HY_LOG_ERROR("%s: failed to open: %s", __func__, fn);
+	HY_LOG_ERROR(format_err_str("Failed to open: %s.", fn));
 	ret = HY_E_IO;
 	goto finish;
     }
@@ -397,14 +397,16 @@ write_main(HySack sack, HyRepo hrepo, int switchtosolv)
     HY_LOG_INFO("caching repo: %s (0x%s)", name, chksum);
 
     if (tmp_fd < 0) {
-	HY_LOG_ERROR("write_main() can not create temporary file.");
+	HY_LOG_ERROR(format_err_str("Can not create temporary file: %s.",
+				    tmp_fn_templ));
 	retval = HY_E_IO;
 	goto done;
     }
 
     FILE *fp = fdopen(tmp_fd, "w+");
     if (!fp) {
-	HY_LOG_ERROR("write_main() failed opening tmp file: %s", strerror(errno));
+	HY_LOG_ERROR(format_err_str("Failed opening tmp file: %s.",
+				    strerror(errno)));
 	retval = HY_E_IO;
 	goto done;
     }
@@ -481,7 +483,8 @@ write_ext(HySack sack, HyRepo hrepo, int which_repodata, const char *suffix)
     int tmp_fd = mkstemp(tmp_fn_templ);
 
     if (tmp_fd < 0) {
-	HY_LOG_ERROR("write_ext() can not create temporary file.");
+	HY_LOG_ERROR(format_err_str("Can not create temporary file: %s.",
+				    tmp_fn_templ));
 	ret = HY_E_IO;
 	goto done;
     }
@@ -542,7 +545,8 @@ load_yum_repo(HySack sack, HyRepo hrepo)
     FILE *fp_cache = fopen(fn_cache, "r");
     FILE *fp_repomd = fopen(fn_repomd, "r");
     if (fp_repomd == NULL) {
-	HY_LOG_ERROR("can not read repomd %s: %s", fn_repomd, strerror(errno));
+	HY_LOG_ERROR(format_err_str("Can not read file %s: %s.",
+				    fn_repomd, strerror(errno)));
 	retval = HY_E_IO;
 	goto finish;
     }
@@ -626,6 +630,8 @@ hy_sack_create(const char *cache_path, const char *arch, const char *rootdir,
     if (flags & HY_MAKE_CACHE_DIR) {
 	ret = mkcachedir(sack->cache_dir);
 	if (ret) {
+	    HY_LOG_ERROR(format_err_str("Failed creating cachedir: %s.",
+					sack->cache_dir));
 	    hy_errno = HY_E_IO;
 	    goto fail;
 	}
@@ -873,6 +879,7 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
 
     rc = current_rpmdb_checksum(pool, hrepo->checksum);
     if (rc) {
+	format_err_str("Failed calculating RPMDB checksum.");
 	ret = HY_E_IO;
 	goto finish;
     }
@@ -893,6 +900,7 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
     }
     if (rc) {
 	repo_free(repo, 1);
+	format_err_str("Failed loading RPMDB.");
 	ret = HY_E_IO;
 	goto finish;
     }

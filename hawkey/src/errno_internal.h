@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -18,34 +18,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef HY_ERRNO_H
-#define HY_ERRNO_H
+#ifndef HY_ERRNO_INTERNAL_H
+#define HY_ERRNO_INTERNAL_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+// hawkey
+#include "errno.h"
 
-enum _hy_errors_e {
-    HY_E_FAILED		= 1,	// general runtime error
-    HY_E_OP,			// client programming error
-    HY_E_LIBSOLV,		// error propagated from libsolv
-    HY_E_IO,			// I/O error
-    HY_E_CACHE_WRITE,		// cache write error
-    HY_E_QUERY,			// ill-formed query
-    HY_E_ARCH,			// unknown arch
-    HY_E_VALIDATION,		// validation check failed
-    HY_E_SELECTOR,		// ill-specified selector
-    HY_E_NO_SOLUTION,		// goal found no solutions
-    HY_E_NO_CAPABILITY,		// the capability was not available
-};
+const char *format_err_str(const char *format, ...);
+const char *get_err_str(void);
 
-extern __thread int hy_errno;
-extern __thread char hy_err_str[256];
-
-int hy_get_errno(void);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* HY_ERRNO_H */
+#endif // HY_ERRNO_INTERNAL_H

@@ -41,7 +41,7 @@
 #include <solv/util.h>
 
 // hawkey
-#include "errno.h"
+#include "errno_internal.h"
 #include "iutil.h"
 #include "package_internal.h"
 #include "packageset_internal.h"
@@ -293,13 +293,13 @@ int
 mv(HySack sack, const char *old, const char *new)
 {
     if (rename(old, new)) {
-	HY_LOG_ERROR("mv() failed renaming %s to %s: %s", old, new,
-		     strerror(errno));
+	HY_LOG_ERROR(format_err_str("Failed renaming %s to %s: %s", old, new,
+				    strerror(errno)));
 	return HY_E_IO;
     }
     if (chmod(new, 0666 & ~get_umask())) {
-	HY_LOG_ERROR("mv() failed setting perms on %s: %s", new,
-		     strerror(errno));
+	HY_LOG_ERROR(format_err_str("Failed setting perms on %s: %s", new,
+				    strerror(errno)));
 	return HY_E_IO;
     }
     return 0;

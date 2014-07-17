@@ -437,15 +437,9 @@ load_yum_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     if (hy_sack_load_yum_repo(self->sack, crepo, flags))
 	ret = hy_get_errno();
     Py_END_ALLOW_THREADS;
-    switch (ret) {
-    case 0:
-	Py_RETURN_NONE;
-    case HY_E_IO:
-	PyErr_SetString(PyExc_IOError, "Can not read repomd file.");
+    if (ret2e(ret, "Can not load Yum repo."))
 	return NULL;
-    default:
-	return PyErr_Format(HyExc_Runtime, "load_yum_repo() failed: %d.", ret);
-    }
+    Py_RETURN_NONE;
 }
 
 static Py_ssize_t

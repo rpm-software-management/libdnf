@@ -18,10 +18,33 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <stdarg.h>
+#include <stdio.h>
+
 // hawkey
-#include "errno.h"
+#include "errno_internal.h"
+
+#define ERR_BUFFER_LENGTH 256
 
 __thread int hy_errno = 0;
+__thread char hy_err_str[ERR_BUFFER_LENGTH] = "\0";
+
+const char *
+format_err_str(const char *format, ...)
+{
+    va_list args;
+
+    va_start(args, format);
+    vsnprintf(hy_err_str, ERR_BUFFER_LENGTH, format, args);
+    va_end(args);
+    return hy_err_str;
+}
+
+const char *
+get_err_str(void)
+{
+    return hy_err_str;
+}
 
 /**
  * Get the Hawkey errno value.

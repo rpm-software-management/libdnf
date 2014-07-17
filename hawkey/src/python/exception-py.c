@@ -21,7 +21,7 @@
 #include <Python.h>
 
 // hawkey
-#include "src/errno.h"
+#include "src/errno_internal.h"
 
 // pyhawkey
 #include "exception-py.h"
@@ -84,15 +84,23 @@ ret2e(int ret, const char *msg)
     case HY_E_FAILED:
 	exctype = HyExc_Runtime;
 	break;
-    case HY_E_IO:
+    case HY_E_IO: {
+	const char *description = get_err_str();
+
 	exctype = PyExc_IOError;
+	if (strlen(description) > 0)
+	    msg = description;
 	break;
+    }
     case HY_E_OP:
     case HY_E_SELECTOR:
 	exctype = HyExc_Value;
 	break;
     default:
+	// try to end it quickly
 	assert(0);
+	// or fallback to an internal-error exception
+	PyErr_SetString(PyExc_AssertionError, msg);
 	return 1;
     }
 

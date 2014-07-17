@@ -21,6 +21,7 @@
 #define _GNU_SOURCE
 
 #include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -34,7 +35,7 @@
 #include <solv/util.h>
 
 // hawkey
-#include "errno.h"
+#include "errno_internal.h"
 #include "goal_internal.h"
 #include "iutil.h"
 #include "package_internal.h"
@@ -848,8 +849,11 @@ hy_goal_write_debugdata(HyGoal goal, const char *dir)
     HY_LOG_INFO("writing solver debugdata to %s", absdir);
     int ret = testcase_write(solv, absdir, flags, NULL, NULL);
     hy_free(absdir);
-    if (!ret)
+    if (!ret) {
+	format_err_str("Failed writing debugdata to %s: %s.", absdir,
+		       strerror(errno));
 	return HY_E_IO;
+    }
     return 0;
 }
 
