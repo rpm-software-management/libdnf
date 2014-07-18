@@ -27,7 +27,7 @@
 #define ERR_BUFFER_LENGTH 256
 
 __thread int hy_errno = 0;
-__thread char hy_err_str[ERR_BUFFER_LENGTH] = "\0";
+static __thread char hy_err_str[ERR_BUFFER_LENGTH];
 
 const char *
 format_err_str(const char *format, ...)
