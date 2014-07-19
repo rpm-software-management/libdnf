@@ -200,7 +200,7 @@ hif_repos_add_sack_from_mount_point (HifRepos *repos,
 	exists = g_file_test (treeinfo_fn, G_FILE_TEST_EXISTS);
 	g_debug ("checking %s for %s: %s", root, id, exists ? "yes" : "no");
 	if (!exists)
-		return FALSE;
+		return TRUE;
 
 	/* add the repodata/repomd.xml as a source */
 	if (!hif_repos_add_media (repos, root, *idx, error))
