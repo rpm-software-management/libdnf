@@ -505,3 +505,16 @@ deprecated. Please use the new attribute ``packages`` and the attribute
 the deprecated attribute.
 
 The old attribute will be dropped after 2014-10-15 AND no sooner than in 0.4.21.
+
+
+Changes in 0.4.19
+=================
+
+Python bindings
+---------------
+
+Advisory attributes in Unicode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+All string attributes of ``Advisory`` and ``AdvisoryRef`` objects (except the
+deprecated ``filenames`` attribute) are Unicode objects now.

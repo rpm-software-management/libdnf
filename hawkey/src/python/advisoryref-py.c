@@ -140,7 +140,7 @@ get_str(_AdvisoryRefObject *self, void *closure)
     cstr = func(self->advisoryref);
     if (cstr == NULL)
 	Py_RETURN_NONE;
-    return PyString_FromString(cstr);
+    return PyUnicode_FromString(cstr);
 }
 
 static PyGetSetDef advisoryref_getsetters[] = {

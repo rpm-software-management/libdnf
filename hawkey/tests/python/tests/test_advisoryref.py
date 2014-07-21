@@ -21,6 +21,7 @@
 """Tests of the _hawkey.AdvisoryRef class."""
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 from . import base
 
 import hawkey

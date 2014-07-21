@@ -36,7 +36,7 @@ class AdvisoriesTest(base.TestCase):
         pkg = hawkey.Query(self.sack).filter(name='tour')[0]
         advisories = pkg.get_advisories(hawkey.GT)
         self.assertEqual(len(advisories), 1)
-        self.assertEqual(advisories[0].id, 'FEDORA-2008-9969')
+        self.assertEqual(advisories[0].id, u'FEDORA-2008-9969')
 
     def test_noadvisory(self):
         pkg = hawkey.Query(self.sack).filter(name='mystery-devel')[0]

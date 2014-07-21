@@ -133,7 +133,7 @@ get_str(_AdvisoryObject *self, void *closure)
     cstr = func(self->advisory);
     if (cstr == NULL)
 	Py_RETURN_NONE;
-    return PyString_FromString(cstr);
+    return PyUnicode_FromString(cstr);
 }
 
 static PyObject *

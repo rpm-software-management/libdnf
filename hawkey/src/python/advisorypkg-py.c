@@ -122,7 +122,7 @@ get_attr(_AdvisoryPkgObject *self, void *closure)
     str = hy_advisorypkg_get_string(self->advisorypkg, str_key);
     if (str == NULL)
 	Py_RETURN_NONE;
-    return PyString_FromString(str);
+    return PyUnicode_FromString(str);
 }
 
 static PyGetSetDef advisorypkg_getsetters[] = {
