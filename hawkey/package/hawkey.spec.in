@@ -1,4 +1,4 @@
-%global gitrev 4f4bf92
+%global gitrev d4995bb
 %global libsolv_version 0.6.4-1
 
 Name:		hawkey
@@ -107,6 +107,15 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+
+* Mon Jul 28 2014 Aleš Kozumplik <ales@redhat.com> - 0.4.19-1
+- packaging: bump the SONAME as there are dropped API calls. (Ales Kozumplik)
+- Support package splitting via obsoletes. (RhBug:1107973) (Ales Kozumplik)
+- api change: py: convert Advisory, AdvisoryRef and AdvisoryPkg attributes to Unicode. (Radek Holy)
+- hy_err_str: it's best to make it static. (Ales Kozumplik)
+- Hide hy_err_str from errno.h (Ales Kozumplik)
+- py: detailed error reporting. (Ales Kozumplik)
+- doc: deprecation policy. (Ales Kozumplik)
 
 * Wed Jul 16 2014 Aleš Kozumplik <ales@redhat.com> - 0.4.18-1
 - api change: py: deprecate _hawkey.Advisory.filenames. (Radek Holy)
