@@ -759,7 +759,7 @@ START_TEST(test_disabled_repo)
     fail_unless(size_and_free(q) == 1);
     q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
-    fail_unless(size_and_free(q) == 5);
+    ck_assert_int_eq(size_and_free(q), 5);
 
     hy_sack_repo_enabled(sack, "main", 0);
 
@@ -768,7 +768,7 @@ START_TEST(test_disabled_repo)
     fail_unless(size_and_free(q) == 0);
     q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
-    fail_unless(size_and_free(q) == 2);
+    ck_assert_int_eq(size_and_free(q), 2);
 }
 END_TEST
 
