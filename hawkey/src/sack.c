@@ -134,12 +134,14 @@ sack_recompute_considered(HySack sack)
     } else
 	map_grow(pool->considered, pool->nsolvables);
 
-    // considered = all - repo_excludes - pkg_excludes
+    // considered = (all - repo_excludes - pkg_excludes) and pkg_includes
     map_setall(pool->considered);
     if (sack->repo_excludes)
 	map_subtract(pool->considered, sack->repo_excludes);
     if (sack->pkg_excludes)
 	map_subtract(pool->considered, sack->pkg_excludes);
+    if (sack->pkg_includes)
+	map_and(pool->considered, sack->pkg_includes);
     sack->considered_uptodate = 1;
 }
 

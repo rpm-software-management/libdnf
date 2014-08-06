@@ -41,6 +41,7 @@ struct _HySack {
     int installonly_limit;
     FILE *log_out;
     Map *pkg_excludes;
+    Map *pkg_includes;
     Map *repo_excludes;
     int considered_uptodate;
 };
