@@ -42,13 +42,14 @@ struct _HySack {
     FILE *log_out;
     Map *pkg_excludes;
     Map *repo_excludes;
-    Map *excludes;
+    int considered_uptodate;
 };
 
 void sack_make_provides_ready(HySack sack);
 Id sack_running_kernel(HySack sack);
 void sack_log(HySack sack, int level, const char *format, ...);
 int sack_knows(HySack sack, const char *name, const char *version, int flags);
+void sack_recompute_considered(HySack sack);
 static inline Pool *sack_pool(HySack sack) { return sack->pool; }
 static inline Id sack_last_solvable(HySack sack)
 {

@@ -735,8 +735,11 @@ compute(HyQuery q)
     map_init(q->result, pool->nsolvables);
     FOR_PKG_SOLVABLES(solvid)
         map_set(q->result, solvid);
-    if (q->sack->excludes && !(q->flags & HY_IGNORE_EXCLUDES))
-	map_subtract(q->result, q->sack->excludes);
+    if (!(q->flags & HY_IGNORE_EXCLUDES)) {
+	sack_recompute_considered(q->sack);
+	if (pool->considered)
+	    map_and(q->result, pool->considered);
+    }
 
     // make sure the odd bits are cleared:
     unsigned total_bits = q->result->size << 3;

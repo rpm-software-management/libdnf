@@ -286,7 +286,6 @@ static Queue *
 construct_job(HyGoal goal, int flags)
 {
     HySack sack = goal->sack;
-    Pool *pool = sack_pool(sack);
     Queue *job = solv_malloc(sizeof(*job));
 
     queue_init_clone(job, &goal->staging);
@@ -302,10 +301,7 @@ construct_job(HyGoal goal, int flags)
 		    sack->installonly.elements[i]);
 
     /* apply the excludes */
-    if (sack->pkg_excludes)
-	for (int i = 1; i < pool->nsolvables; ++i)
-	    if (MAPTST(sack->pkg_excludes, i))
-		queue_push2(job, SOLVER_SOLVABLE|SOLVER_LOCK, i);
+    sack_recompute_considered(sack);
 
     return job;
 }
@@ -783,7 +779,6 @@ hy_goal_count_problems(HyGoal goal)
 char *
 hy_goal_describe_problem(HyGoal goal, unsigned i)
 {
-    Pool *pool = sack_pool(goal->sack);
     Id rid, source, target, dep;
     SolverRuleinfo type;
 
@@ -795,27 +790,6 @@ hy_goal_describe_problem(HyGoal goal, unsigned i)
     // this libsolv interface indexes from 1 (we do from 0), so:
     rid = solver_findproblemrule(goal->solv, i + 1);
     type = solver_ruleinfo(goal->solv, rid, &source, &target, &dep);
-    if (type == SOLVER_RULE_JOB) {
-	/* no dependency conflict, check if an exclusion job rule
-	 * is causing trouble */
-	Queue q;
-
-	queue_init(&q);
-	solver_findallproblemrules(goal->solv, i + 1, &q);
-	for (int i = 0; i < q.count; i++) {
-	    Id what, how;
-
-	    if (solver_ruleclass(goal->solv, q.elements[i]) != SOLVER_RULE_JOB)
-		continue;
-	    how = solver_rule2job(goal->solv, q.elements[i], &what);
-	    if ((how & SOLVER_JOBMASK) != SOLVER_LOCK)
-		continue;
-	    queue_free(&q);
-	    return solv_strdup(pool_tmpjoin(pool, "The package is excluded: ",
-					    pool_solvid2str(pool, what), NULL));
-	}
-	queue_free(&q);
-    }
 
     const char *problem = solver_problemruleinfo2str(goal->solv,
 						     type, source, target, dep);

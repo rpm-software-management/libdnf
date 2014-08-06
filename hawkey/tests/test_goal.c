@@ -743,7 +743,7 @@ START_TEST(test_goal_describe_problem_excludes)
     fail_unless(hy_goal_count_problems(goal) > 0);
 
     char *problem = hy_goal_describe_problem(goal, 0);
-    ck_assert_str_eq(problem, "The package is excluded: semolina-2-0.i686");
+    ck_assert_str_eq(problem, "package semolina-2-0.x86_64 is not installable");
     hy_free(problem);
 
     hy_goal_free(goal);
