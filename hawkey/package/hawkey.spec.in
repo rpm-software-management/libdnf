@@ -1,4 +1,4 @@
-%global gitrev d4995bb
+%global gitrev ef6ffd4
 %global libsolv_version 0.6.4-1
 
 Name:		hawkey
@@ -107,6 +107,11 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+
+* Tue Aug 12 2014 Aleš Kozumplik <ales@redhat.com> - 0.5.0-1
+- sack: include directive support added (Related:RhBug:1055910) (Jan Silhan)
+- sack: using pool->considered instead of SOLVER_LOCK for excludes (RhBug:1099342) (Jan Silhan)
+- cosmetic: replaced fail_unless with ck_assert_int_eq (Jan Silhan)
 
 * Mon Jul 28 2014 Aleš Kozumplik <ales@redhat.com> - 0.4.19-1
 - packaging: bump the SONAME as there are dropped API calls. (Ales Kozumplik)
