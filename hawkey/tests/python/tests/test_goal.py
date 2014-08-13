@@ -57,7 +57,7 @@ class GoalTest(base.TestCase):
     def test_install_selector(self):
         sltr = hawkey.Selector(self.sack).set(name="walrus")
         # without checking versioning, the update is accepted:
-        self.assertIsNone(hawkey.Goal(self.sack).upgrade(select=sltr));
+        self.assertIsNone(hawkey.Goal(self.sack).upgrade(select=sltr))
 
         goal = hawkey.Goal(self.sack)
         goal.install(name="semolina")
