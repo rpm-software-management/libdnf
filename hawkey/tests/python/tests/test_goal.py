@@ -46,6 +46,14 @@ class GoalTest(base.TestCase):
         # default value for check_installed is False:
         self.assertIsNone(hawkey.Goal(self.sack).upgrade_to(pkg))
 
+    def test_empty_selector(self):
+        sltr = hawkey.Selector(self.sack)
+        goal = hawkey.Goal(self.sack)
+        # does not raise ValueException
+        goal.install(select=sltr)
+        goal.run()
+        self.assertEqual(goal.list_installs(), [])
+
     def test_install_selector(self):
         sltr = hawkey.Selector(self.sack).set(name="walrus")
         # without checking versioning, the update is accepted:

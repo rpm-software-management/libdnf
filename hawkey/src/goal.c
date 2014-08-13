@@ -518,11 +518,15 @@ sltr2job(const HySelector sltr, Queue *job, int solver_action)
     HySack sack = selector_sack(sltr);
     int ret = 0;
     Queue job_sltr;
+    int any_opt_filter = sltr->f_arch || sltr->f_evr || sltr->f_reponame;
+    int any_req_filter = sltr->f_name || sltr->f_provides || sltr->f_file;
 
     queue_init(&job_sltr);
-    if (sltr->f_name == NULL && sltr->f_provides == NULL && sltr->f_file == NULL) {
-	// no name or provides or file in the selector is an error
-	ret = HY_E_SELECTOR;
+
+    if (!any_req_filter) {
+	if (any_opt_filter)
+	    // no name or provides or file in the selector is an error
+	    ret = HY_E_SELECTOR;
 	goto finish;
     }
 

@@ -228,7 +228,6 @@ START_TEST(test_goal_install_selector_err)
 
     sltr = hy_selector_create(test_globals.sack);
     hy_selector_set(sltr, HY_PKG_NAME, HY_GT, "semolina");
-    fail_unless(hy_goal_erase_selector(goal, sltr));
     fail_unless(hy_get_errno() == HY_E_SELECTOR);
     hy_selector_free(sltr);
 
