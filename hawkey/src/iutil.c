@@ -185,6 +185,8 @@ checksum_type2length(int type)
 	return 20;
     case HY_CHKSUM_SHA256:
 	return 32;
+    case HY_CHKSUM_SHA512:
+	return 64;
     default:
 	assert(0);
 	return -1;
@@ -201,6 +203,8 @@ checksumt_l2h(int type)
 	return 	HY_CHKSUM_SHA1;
     case REPOKEY_TYPE_SHA256:
 	return HY_CHKSUM_SHA256;
+    case REPOKEY_TYPE_SHA512:
+	return HY_CHKSUM_SHA512;
     default:
 	assert(0);
 	return 0;

@@ -266,6 +266,7 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "CHKSUM_MD5", HY_CHKSUM_MD5);
     PyModule_AddIntConstant(m, "CHKSUM_SHA1", HY_CHKSUM_SHA1);
     PyModule_AddIntConstant(m, "CHKSUM_SHA256", HY_CHKSUM_SHA256);
+    PyModule_AddIntConstant(m, "CHKSUM_SHA512", HY_CHKSUM_SHA512);
 
     PyModule_AddIntConstant(m, "ICASE", HY_ICASE);
     PyModule_AddIntConstant(m, "EQ", HY_EQ);

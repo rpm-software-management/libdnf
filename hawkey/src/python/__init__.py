@@ -30,8 +30,8 @@ __all__ = [
     # submodules
     'test',
     # constants
-    'CHKSUM_MD5', 'CHKSUM_SHA1', 'CHKSUM_SHA256', 'CMDLINE_REPO_NAME',
-    'SYSTEM_REPO_NAME', 'REASON_DEP', 'REASON_USER', 'ICASE',
+    'CHKSUM_MD5', 'CHKSUM_SHA1', 'CHKSUM_SHA256', 'CHKSUM_SHA512', 'ICASE',
+    'CMDLINE_REPO_NAME', 'SYSTEM_REPO_NAME', 'REASON_DEP', 'REASON_USER',
     'FORM_NEVRA', 'FORM_NEVR', 'FORM_NEV', 'FORM_NA', 'FORM_NAME', 'FORM_ALL',
     # exceptions
     'ArchException', 'Exception', 'QueryException', 'RuntimeException',
@@ -112,6 +112,7 @@ GT = _hawkey.GT
 CHKSUM_MD5 = _hawkey.CHKSUM_MD5
 CHKSUM_SHA1 = _hawkey.CHKSUM_SHA1
 CHKSUM_SHA256 = _hawkey.CHKSUM_SHA256
+CHKSUM_SHA512 = _hawkey.CHKSUM_SHA512
 
 REASON_DEP = _hawkey.REASON_DEP
 REASON_USER = _hawkey.REASON_USER
