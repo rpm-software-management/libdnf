@@ -35,6 +35,11 @@ class Reldep(base.TestCase):
         reldep = requires[0]
         self.assertEqual(str(reldep), "P-lib >= 3")
 
+    def test_unicode(self):
+        reldep_str = u"\u0159 >= 3"
+        self.assertRaises(hawkey.ValueException, hawkey.Reldep, self.sack,
+                          reldep_str)
+
     def test_custom_creation(self):
         reldep_str = "P-lib >= 3"
         reldep = hawkey.Reldep(self.sack, reldep_str)
