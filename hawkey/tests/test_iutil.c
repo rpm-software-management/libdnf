@@ -182,6 +182,12 @@ START_TEST(test_version_split)
     ck_assert_str_eq(version, "8.0");
     ck_assert_str_eq(release, "9");
 
+    char evr3[] = "1.4";
+    pool_split_evr(pool, evr3, &epoch, &version, &release);
+    fail_unless(epoch == NULL);
+    ck_assert_str_eq(version, "1.4");
+    fail_unless(release == NULL);
+
     pool_free(pool);
 }
 END_TEST

@@ -630,7 +630,7 @@ pool_split_evr(Pool *pool, const char *evr_c, char **epoch, char **version,
     char *evr = pool_tmpdup(pool, evr_c);
     char *e, *v, *r;
 
-    for (e = evr + 1; *e != ':' && *e != '-'; ++e)
+    for (e = evr + 1; *e != ':' && *e != '-' && *e != '\0'; ++e)
 	;
 
     if (*e == '-') {
@@ -638,6 +638,10 @@ pool_split_evr(Pool *pool, const char *evr_c, char **epoch, char **version,
 	v = evr;
 	r = e + 1;
 	e = NULL;
+    } else if (*e == '\0') {
+	v = evr;
+	e = NULL;
+	r = NULL;
     } else { /* *e == ':' */
 	*e = '\0';
 	v = e + 1;
