@@ -194,75 +194,83 @@ packageset_to_pylist(HyPackageSet pset, PyObject *sack)
 }
 
 HyPackageList
-pyseq_to_packagelist(PyObject *sequence)
+pyseq_to_packagelist(PyObject *obj)
 {
+    PyObject *sequence = PySequence_Fast(obj, "Expected a sequence.");
+    if (sequence == NULL)
+	return NULL;
     HyPackageList plist = hy_packagelist_create();
-
-    assert(PySequence_Check(sequence));
 
     const unsigned count = PySequence_Size(sequence);
     for (int i = 0; i < count; ++i) {
-	PyObject *item = PySequence_GetItem(sequence, i);
+	PyObject *item = PySequence_Fast_GET_ITEM(sequence, i);
 	if (item == NULL)
 	    goto fail;
 	HyPackage pkg = packageFromPyObject(item);
-	Py_DECREF(item);
 	if (pkg == NULL)
 	    goto fail;
 	hy_packagelist_push(plist, package_clone(pkg));
     }
 
+    Py_DECREF(sequence);
     return plist;
  fail:
     hy_packagelist_free(plist);
+    Py_DECREF(sequence);
     return NULL;
 }
 
 HyPackageSet
-pyseq_to_packageset(PyObject *sequence, HySack sack)
+pyseq_to_packageset(PyObject *obj, HySack sack)
 {
-    assert(PySequence_Check(sequence));
+    PyObject *sequence = PySequence_Fast(obj, "Expected a sequence.");
+    if (sequence == NULL)
+	return NULL;
     HyPackageSet pset = hy_packageset_create(sack);
 
     const unsigned count = PySequence_Size(sequence);
     for (int i = 0; i < count; ++i) {
-	PyObject *item = PySequence_GetItem(sequence, i);
+	PyObject *item = PySequence_Fast_GET_ITEM(sequence, i);
 	if (item == NULL)
 	    goto fail;
 	HyPackage pkg = packageFromPyObject(item);
-	Py_DECREF(item);
 	if (pkg == NULL)
 	    goto fail;
 	hy_packageset_add(pset, package_clone(pkg));
     }
 
+    Py_DECREF(sequence);
     return pset;
  fail:
     hy_packageset_free(pset);
+    Py_DECREF(sequence);
     return NULL;
 }
 
 HyReldepList
-pyseq_to_reldeplist(PyObject *sequence, HySack sack)
+pyseq_to_reldeplist(PyObject *obj, HySack sack)
 {
-    assert(PySequence_Check(sequence));
+    PyObject *sequence = PySequence_Fast(obj, "Expected a sequence.");
+    if (sequence == NULL)
+	return NULL;
     HyReldepList reldeplist = hy_reldeplist_create(sack);
 
     const unsigned count = PySequence_Size(sequence);
     for (int i = 0; i < count; ++i) {
-	PyObject *item = PySequence_GetItem(sequence, i);
+	PyObject *item = PySequence_Fast_GET_ITEM(sequence, i);
 	if (item == NULL)
 	    goto fail;
 	HyReldep reldep = reldepFromPyObject(item);
-	Py_DECREF(item);
 	if (reldep == NULL)
 	    goto fail;
 	hy_reldeplist_add(reldeplist, reldep);
     }
 
+    Py_DECREF(sequence);
     return reldeplist;
  fail:
     hy_reldeplist_free(reldeplist);
+    Py_DECREF(sequence);
     return NULL;
 }
 

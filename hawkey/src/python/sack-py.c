@@ -344,12 +344,10 @@ add_cmdline_package(_SackObject *self, PyObject *fn_obj)
 static PyObject *
 add_excludes(_SackObject *self, PyObject *seq)
 {
-    if (!PySequence_Check(seq)) {
-	PyErr_SetString(PyExc_TypeError, "Expected a sequence.");
-	return NULL;
-    }
     HySack sack = self->sack;
     HyPackageSet pset = pyseq_to_packageset(seq, sack);
+    if (pset == NULL)
+	return NULL;
     hy_sack_add_excludes(sack, pset);
     hy_packageset_free(pset);
     Py_RETURN_NONE;
@@ -358,12 +356,10 @@ add_excludes(_SackObject *self, PyObject *seq)
 static PyObject *
 add_includes(_SackObject *self, PyObject *seq)
 {
-    if (!PySequence_Check(seq)) {
-	PyErr_SetString(PyExc_TypeError, "Expected a sequence.");
-	return NULL;
-    }
     HySack sack = self->sack;
     HyPackageSet pset = pyseq_to_packageset(seq, sack);
+    if (pset == NULL)
+	return NULL;
     hy_sack_add_includes(sack, pset);
     hy_packageset_free(pset);
     Py_RETURN_NONE;

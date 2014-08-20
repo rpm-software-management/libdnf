@@ -240,10 +240,6 @@ filter(_QueryObject *self, PyObject *args)
 	    return raise_bad_filter();
 	Py_RETURN_NONE;
     }
-    if (!PySequence_Check(match)) {
-	PyErr_SetString(PyExc_TypeError, "Invalid filter match type.");
-	return NULL;
-    }
     // match is a sequence now:
     switch (keyname) {
     case HY_PKG:
@@ -276,23 +272,27 @@ filter(_QueryObject *self, PyObject *args)
 	break;
     }
     default: {
-	const unsigned count = PySequence_Size(match);
+	PyObject *seq = PySequence_Fast(match, "Expected a sequence.");
+	if (seq == NULL)
+	    return NULL;
+	const unsigned count = PySequence_Size(seq);
 	const char *matches[count + 1];
 	matches[count] = NULL;
         PyObject *tmp_py_strs[count];
 	for (int i = 0; i < count; ++i) {
-	    PyObject *item = PySequence_GetItem(match, i);
+	    PyObject *item = PySequence_Fast_GET_ITEM(seq, i);
             tmp_py_strs[i] = NULL;
             if (PyUnicode_Check(item) || PyString_Check(item)) {
                 matches[i] = pycomp_get_string(item, &tmp_py_strs[i]);
-                Py_DECREF(item);
             } else {
                 PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
                 pycomp_free_tmp_array(tmp_py_strs, i);
+                Py_DECREF(seq);
                 return NULL;
             }
         }
         int filter_in_ret = hy_query_filter_in(self->query, keyname, cmp_type, matches);
+        Py_DECREF(seq);
         pycomp_free_tmp_array(tmp_py_strs, count - 1);
 
 	if (filter_in_ret)
