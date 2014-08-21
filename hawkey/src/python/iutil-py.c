@@ -193,33 +193,6 @@ packageset_to_pylist(HyPackageSet pset, PyObject *sack)
     return NULL;
 }
 
-HyPackageList
-pyseq_to_packagelist(PyObject *obj)
-{
-    PyObject *sequence = PySequence_Fast(obj, "Expected a sequence.");
-    if (sequence == NULL)
-	return NULL;
-    HyPackageList plist = hy_packagelist_create();
-
-    const unsigned count = PySequence_Size(sequence);
-    for (int i = 0; i < count; ++i) {
-	PyObject *item = PySequence_Fast_GET_ITEM(sequence, i);
-	if (item == NULL)
-	    goto fail;
-	HyPackage pkg = packageFromPyObject(item);
-	if (pkg == NULL)
-	    goto fail;
-	hy_packagelist_push(plist, package_clone(pkg));
-    }
-
-    Py_DECREF(sequence);
-    return plist;
- fail:
-    hy_packagelist_free(plist);
-    Py_DECREF(sequence);
-    return NULL;
-}
-
 HyPackageSet
 pyseq_to_packageset(PyObject *obj, HySack sack)
 {
