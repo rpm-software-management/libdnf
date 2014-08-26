@@ -34,11 +34,11 @@ Building the documentation, from the build/ directory::
 Building from a libsolv checkout
 ================================
 
-Libsolv is checked out at ``/home/akozumpl/libsolv``, build dir is at ``/home/akozumpl/libsolv/build``::
+Libsolv is checked out at ``/home/<user>/libsolv``, build dir is at ``/home/<user>/libsolv/build``::
 
     mkdir build
     cd build/
-    cmake -D LIBSOLV_PATH="/home/akozumpl/libsolv/" ..
+    cmake -D LIBSOLV_PATH="/home/<user>/libsolv/" ..
     make
 
 Tests
@@ -62,6 +62,6 @@ The PYTHONPATH is unfortunately needed as the Python test suite needs to know wh
 Documentation
 =============
 
-See the `hawkey documentation page <http://akozumpl.github.io/hawkey/>`_.
+See the `hawkey documentation page <http://rpm-software-management.github.io/hawkey/>`_.
 
-Information internal to the hawkey development is maintained on a `github wiki <https://github.com/akozumpl/dnf/wiki#wiki-Contact>`_.
+Information internal to the hawkey development is maintained on a `github wiki <https://github.com/rpm-software-management/dnf/wiki#wiki-Contact>`_.
