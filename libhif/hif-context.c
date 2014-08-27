@@ -889,6 +889,8 @@ hif_context_setup (HifContext *context,
 	/* setup RPM */
 	priv->repos = hif_repos_new (context);
 	priv->sources = hif_repos_get_sources (priv->repos, error);
+	if (priv->sources == NULL)
+		return FALSE;
 	priv->transaction = hif_transaction_new (context);
 	hif_transaction_set_sources (priv->transaction, priv->sources);
 	hif_transaction_set_flags (priv->transaction,
