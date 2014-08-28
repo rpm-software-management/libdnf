@@ -767,8 +767,20 @@ have_existing_install (HifContext *context)
 
 /**
  * hif_context_setup_sack:
+ * @context: a #HifContext instance.
+ * @state: A #HifState
+ * @error: A #GError or %NULL
+ *
+ * Sets up the internal sack ready for use -- note, this is called automatically
+ * when you use hif_context_install(), hif_context_remove() or
+ * hif_context_update(), although you may want to call this manually to control
+ * the HifState children with correct percentage completion.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.1.3
  **/
-static gboolean
+gboolean
 hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
@@ -820,7 +832,11 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
  * @cancellable: A #GCancellable or %NULL
  * @error: A #GError or %NULL
  *
- * Sets up the context ready for use
+ * Sets up the context ready for use.
+ *
+ * This function will not do significant amounts of i/o or download new
+ * metadata. Use hif_context_setup_sack() if you want to populate the internal
+ * sack as well.
  *
  * Returns: %TRUE for success, %FALSE otherwise
  *
@@ -907,13 +923,6 @@ hif_context_setup (HifContext *context,
 		return FALSE;
 	g_signal_connect (priv->monitor_rpmdb, "changed",
 			  G_CALLBACK (hif_context_rpmdb_changed_cb), context);
-
-	/* create sack and add sources */
-	if (priv->sack == NULL) {
-		hif_state_reset (priv->state);
-		if (!hif_context_setup_sack (context, priv->state, error))
-			return FALSE;
-	}
 
 	return TRUE;
 }

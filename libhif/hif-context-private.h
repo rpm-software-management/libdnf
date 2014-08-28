@@ -30,6 +30,9 @@
 #include "hif-state.h"
 #include "hif-transaction.h"
 
+gboolean	 hif_context_setup_sack			(HifContext	*context,
+							 HifState	*state,
+							 GError		**error);
 gboolean	 hif_context_commit			(HifContext	*context,
 							 HifState	*state,
 							 GError		**error);
