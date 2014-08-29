@@ -1003,8 +1003,8 @@ hif_source_update (HifSource *source,
 
 	/* set state */
 	ret = hif_state_set_steps (state, error,
-				   50, /* download */
-				   50, /* check */
+				   95, /* download */
+				   5, /* check */
 				   -1);
 	if (!ret)
 		goto out;
