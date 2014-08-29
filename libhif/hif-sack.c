@@ -86,7 +86,7 @@ hif_sack_add_source (HySack sack,
 					   hif_source_get_id (src),
 					   error_local->message);
 				g_error_free (error_local);
-				return TRUE;
+				return hif_state_finished (state, error);
 			}
 			g_propagate_error (error, error_local);
 			return FALSE;
