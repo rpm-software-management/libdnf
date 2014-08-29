@@ -1024,7 +1024,7 @@ hif_source_update (HifSource *source,
 
 	/* ensure exists */
 	if (!g_file_test (priv->location_tmp, G_FILE_TEST_EXISTS)) {
-		rc = g_mkdir (priv->location_tmp, 0755);
+		rc = g_mkdir_with_parents (priv->location_tmp, 0755);
 		if (rc != 0) {
 			ret = FALSE;
 			g_set_error (error,
