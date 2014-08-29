@@ -1085,7 +1085,7 @@ hif_source_update (HifSource *source,
 			     error_local->message);
 		goto out;
 	}
-	if ((flags & HIF_SOURCE_UPDATE_FLAG_FORCE) == 0 ||
+	if ((flags & HIF_SOURCE_UPDATE_FLAG_FORCE) == 0 &&
 	    timestamp_new < priv->timestamp_generated) {
 		g_debug ("fresh metadata was older than what we have, ignoring");
 		if (!hif_state_finished (state, error))
