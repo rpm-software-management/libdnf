@@ -1157,7 +1157,7 @@ out:
  * @value: the UTF8 value.
  * @error: A #GError or %NULL
  *
- * Sets data on the source, which involves saving a new .repo file.
+ * Sets data on the source.
  *
  * Returns: %TRUE for success, %FALSE otherwise
  *
@@ -1170,23 +1170,37 @@ hif_source_set_data (HifSource *source,
 		     GError **error)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
+	g_key_file_set_string (priv->keyfile, priv->id, parameter, value);
+	return TRUE;
+}
+
+/**
+ * hif_source_commit:
+ * @source: a #HifSource instance.
+ * @error: A #GError or %NULL
+ *
+ * Commits data on the source, which involves saving a new .repo file.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.1.4
+ **/
+gboolean
+hif_source_commit (HifSource *source, GError **error)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
 	_cleanup_free_ gchar *data = NULL;
 
 	/* cannot change DVD contents */
 	if (priv->kind == HIF_SOURCE_KIND_MEDIA) {
-		g_set_error (error,
-			     HIF_ERROR,
-			     HIF_ERROR_CANNOT_WRITE_SOURCE_CONFIG,
-			     "Cannot set repo parameter %s=%s on read-only media",
-			     parameter, value);
+		g_set_error_literal (error,
+				     HIF_ERROR,
+				     HIF_ERROR_CANNOT_WRITE_SOURCE_CONFIG,
+				     "Cannot commit to read-only media");
 		return FALSE;
 	}
 
-	/* save change to keyfile and dump updated file to disk */
-	g_key_file_set_string (priv->keyfile,
-			       priv->id,
-			       parameter,
-			       value);
+	/* dump updated file to disk */
 	data = g_key_file_to_data (priv->keyfile, NULL, error);
 	if (data == NULL)
 		return FALSE;

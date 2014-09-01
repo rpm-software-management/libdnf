@@ -152,6 +152,8 @@ gboolean	 hif_source_set_data		(HifSource		*source,
 						 const gchar		*parameter,
 						 const gchar		*value,
 						 GError			**error);
+gboolean	 hif_source_commit		(HifSource		*source,
+						 GError			**error);
 gchar		*hif_source_download_package	(HifSource		*source,
 						 HyPackage		 pkg,
 						 const gchar		*directory,
