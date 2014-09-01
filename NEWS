@@ -1,3 +1,13 @@
+Version 0.1.3
+~~~~~~~~~~~~~
+Released: 2014-09-01
+
+Bugfixes:
+ - Add an error path for when the sources are not valid (Richard Hughes)
+ - Do not call hif_context_setup_sack() automatically (Richard Hughes)
+ - Don't error out for missing treeinfo files (Kalev Lember)
+ - Fix a logic error to fix refreshing with HIF_SOURCE_UPDATE_FLAG_FORCE (Richard Hughes)
+
 Version 0.1.2
 ~~~~~~~~~~~~~
 Released: 2014-07-17
