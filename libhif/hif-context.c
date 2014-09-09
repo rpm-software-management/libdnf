@@ -805,6 +805,30 @@ have_existing_install (HifContext *context)
 }
 
 /**
+ * hif_context_get_real_path:
+ *
+ * Resolves paths like ../../Desktop/bar.rpm to /home/hughsie/Desktop/bar.rpm
+ **/
+static gchar *
+hif_context_get_real_path (const gchar *path)
+{
+	gchar *real = NULL;
+	char *temp;
+
+	/* don't trust realpath one little bit */
+	if (path == NULL)
+		return NULL;
+
+	/* glibc allocates us a buffer to try and fix some brain damage */
+	temp = realpath (path, NULL);
+	if (temp == NULL)
+		return NULL;
+	real = g_strdup (temp);
+	free (temp);
+	return real;
+}
+
+/**
  * hif_context_setup_sack:
  * @context: a #HifContext instance.
  * @state: A #HifState
@@ -825,9 +849,13 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	gboolean ret;
 	gint rc;
+	_cleanup_free_ gchar *solv_dir_real = NULL;
 
 	/* create empty sack */
-	priv->sack = hy_sack_create (priv->solv_dir, NULL, hif_context_get_install_root (context), HY_MAKE_CACHE_DIR);
+	solv_dir_real = hif_context_get_real_path (priv->solv_dir);
+	priv->sack = hy_sack_create (solv_dir_real, NULL,
+				     priv->install_root,
+				     HY_MAKE_CACHE_DIR);
 	if (priv->sack == NULL) {
 		g_set_error (error,
 			     HIF_ERROR,
