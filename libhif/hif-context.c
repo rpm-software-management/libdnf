@@ -860,7 +860,8 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_INTERNAL_ERROR,
-			     "failed to create sack cache");
+			     "failed to create sack cache in %s for %s",
+			     priv->solv_dir, priv->install_root);
 		return FALSE;
 	}
 	hy_sack_set_installonly (priv->sack, hif_context_get_installonly_pkgs (context));

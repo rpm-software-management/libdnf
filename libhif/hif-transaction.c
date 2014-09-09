@@ -863,7 +863,9 @@ hif_transaction_convert_to_system_repo (HifTransaction *transaction,
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_INTERNAL_ERROR,
-			     "failed to create sack cache");
+			     "failed to create sack cache [convert] in %s for %s",
+			     cachedir,
+			     hif_context_get_install_root (priv->context));
 		goto out;
 	}
 
