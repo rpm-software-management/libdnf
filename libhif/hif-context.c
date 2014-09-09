@@ -895,6 +895,24 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 }
 
 /**
+ * hif_context_ensure_exists:
+ **/
+static gboolean
+hif_context_ensure_exists (const gchar *directory, GError **error)
+{
+	if (g_file_test (directory, G_FILE_TEST_EXISTS))
+		return TRUE;
+	if (g_mkdir_with_parents (directory, 0700) != 0) {
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_INTERNAL_ERROR,
+			     "Failed to create: %s", directory);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * hif_context_setup:
  * @context: a #HifContext instance.
  * @cancellable: A #GCancellable or %NULL
@@ -920,10 +938,6 @@ hif_context_setup (HifContext *context,
 	_cleanup_free_ char *rpmdb_path = NULL;
 	_cleanup_object_unref_ GFile *file_rpmdb = NULL;
 
-	/* set lock dir */
-	if (priv->lock_dir != NULL)
-		hif_lock_set_lock_dir (priv->lock, priv->lock_dir);
-
 	/* check essential things are set */
 	if (priv->solv_dir == NULL) {
 		g_set_error_literal (error,
@@ -931,6 +945,29 @@ hif_context_setup (HifContext *context,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "solv_dir not set");
 		return FALSE;
+	}
+
+	/* ensure directories exist */
+	if (priv->repo_dir != NULL) {
+		if (!hif_context_ensure_exists (priv->repo_dir, error))
+			return FALSE;
+	}
+	if (priv->cache_dir != NULL) {
+		if (!hif_context_ensure_exists (priv->cache_dir, error))
+			return FALSE;
+	}
+	if (priv->solv_dir != NULL) {
+		if (!hif_context_ensure_exists (priv->solv_dir, error))
+			return FALSE;
+	}
+	if (priv->lock_dir != NULL) {
+		hif_lock_set_lock_dir (priv->lock, priv->lock_dir);
+		if (!hif_context_ensure_exists (priv->lock_dir, error))
+			return FALSE;
+	}
+	if (priv->install_root != NULL) {
+		if (!hif_context_ensure_exists (priv->install_root, error))
+			return FALSE;
 	}
 
 	/* connect if set */
