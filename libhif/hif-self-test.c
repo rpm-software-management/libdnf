@@ -72,6 +72,7 @@ hif_lock_func (void)
 	GError *error = NULL;
 
 	lock = hif_lock_new ();
+	hif_lock_set_lock_dir (lock, "/tmp");
 	g_assert (lock != NULL);
 	g_signal_connect (lock, "state-changed",
 			  G_CALLBACK (hif_lock_state_changed_cb), NULL);

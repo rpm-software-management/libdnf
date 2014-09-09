@@ -111,8 +111,7 @@ libhif_la_LDFLAGS =						\
 libhif_la_CFLAGS =						\
 	$(WARNINGFLAGS_C)
 libhif_la_CPPFLAGS =						\
-	$(SHARED_CPPFLAGS)					\
-	-DPIDFILE=\""/var/run/hif"\"
+	$(SHARED_CPPFLAGS)
 
 check_PROGRAMS =						\
 	hif-self-test
@@ -124,8 +123,7 @@ hif_self_test_LDADD =						\
 	$(GLIB_LIBS)
 hif_self_test_CFLAGS = $(WARNINGFLAGS_C)
 hif_self_test_CPPFLAGS =					\
-	$(SHARED_CPPFLAGS)					\
-	-DPIDFILE=\""/tmp/hif"\"
+	$(SHARED_CPPFLAGS)
 
 noinst_PROGRAMS =						\
 	hif-cmd
@@ -137,8 +135,7 @@ hif_cmd_LDADD =							\
 	libhif.la
 hif_cmd_CFLAGS = $(WARNINGFLAGS_C)
 hif_cmd_CPPFLAGS =						\
-	$(SHARED_CPPFLAGS)					\
-	-DPIDFILE=\""/tmp/hif"\"
+	$(SHARED_CPPFLAGS)
 
 TESTS = hif-self-test
 

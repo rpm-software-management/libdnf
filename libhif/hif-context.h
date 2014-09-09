@@ -73,6 +73,7 @@ const gchar	*hif_context_get_arch_info		(HifContext	*context);
 const gchar	*hif_context_get_release_ver		(HifContext	*context);
 const gchar	*hif_context_get_cache_dir		(HifContext	*context);
 const gchar	*hif_context_get_solv_dir		(HifContext	*context);
+const gchar	*hif_context_get_lock_dir		(HifContext	*context);
 const gchar	*hif_context_get_rpm_verbosity		(HifContext	*context);
 const gchar	*hif_context_get_install_root		(HifContext	*context);
 const gchar	**hif_context_get_native_arches		(HifContext	*context);
@@ -93,6 +94,8 @@ void		 hif_context_set_cache_dir		(HifContext	*context,
 							 const gchar	*cache_dir);
 void		 hif_context_set_solv_dir		(HifContext	*context,
 							 const gchar	*solv_dir);
+void		 hif_context_set_lock_dir		(HifContext	*context,
+							 const gchar	*lock_dir);
 void		 hif_context_set_rpm_verbosity		(HifContext	*context,
 							 const gchar	*rpm_verbosity);
 void		 hif_context_set_install_root		(HifContext	*context,

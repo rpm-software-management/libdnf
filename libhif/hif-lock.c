@@ -45,6 +45,7 @@ struct _HifLockPrivate
 {
 	GMutex			 mutex;
 	GPtrArray		*item_array; /* of HifLockItem */
+	gchar			*lock_dir;
 };
 
 typedef struct {
@@ -88,6 +89,7 @@ hif_lock_finalize (GObject *object)
 		}
 	}
 	g_ptr_array_unref (priv->item_array);
+	g_free (priv->lock_dir);
 
 	G_OBJECT_CLASS (hif_lock_parent_class)->finalize (object);
 }
@@ -100,6 +102,7 @@ hif_lock_init (HifLock *lock)
 {
 	HifLockPrivate *priv = GET_PRIVATE (lock);
 	priv->item_array = g_ptr_array_new_with_free_func (g_free);
+	priv->lock_dir = g_strdup ("/var/run");
 }
 
 /**
@@ -276,8 +279,9 @@ hif_lock_get_pid (HifLock *lock, const gchar *filename, GError **error)
 static gchar *
 hif_lock_get_filename_for_type (HifLock *lock, HifLockType type)
 {
-	return g_strdup_printf ("%s-%s.lock",
-				PIDFILE,
+	HifLockPrivate *priv = GET_PRIVATE (lock);
+	return g_strdup_printf ("%s/hif-%s.lock",
+				priv->lock_dir,
 				hif_lock_type_to_string (type));
 }
 
@@ -299,6 +303,24 @@ hif_lock_get_cmdline_for_pid (guint pid)
 		return g_strdup_printf ("%s (%i)", data, pid);
 	g_warning ("failed to get cmdline: %s", error->message);
 	return g_strdup_printf ("unknown (%i)", pid);
+}
+
+/**
+ * hif_lock_set_lock_dir:
+ * @lock: a #HifLock instance.
+ * @lock_dir: the directory to use for lock files
+ *
+ * Sets the directory to use for lock files.
+ *
+ * Since: 0.1.4
+ **/
+void
+hif_lock_set_lock_dir (HifLock *lock, const gchar *lock_dir)
+{
+	HifLockPrivate *priv = GET_PRIVATE (lock);
+	g_return_if_fail (HIF_IS_LOCK (lock));
+	g_free (priv->lock_dir);
+	priv->lock_dir = g_strdup (lock_dir);
 }
 
 /**

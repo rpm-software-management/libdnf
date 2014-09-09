@@ -98,6 +98,8 @@ HifLock		*hif_lock_new			(void);
 
 /* getters */
 guint		 hif_lock_get_state		(HifLock	*lock);
+void		 hif_lock_set_lock_dir		(HifLock	*lock,
+						 const gchar	*lock_dir);
 
 /* object methods */
 guint		 hif_lock_take			(HifLock	*lock,

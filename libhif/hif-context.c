@@ -58,6 +58,7 @@ struct _HifContextPrivate
 	gchar			*release_ver;
 	gchar			*cache_dir;
 	gchar			*solv_dir;
+	gchar			*lock_dir;
 	gchar			*os_info;
 	gchar			*arch_info;
 	gchar			*install_root;
@@ -68,6 +69,7 @@ struct _HifContextPrivate
 	gboolean		 check_transaction;
 	gboolean		 only_trusted;
 	gboolean		 keep_cache;
+	HifLock			*lock;
 	HifTransaction		*transaction;
 	GFileMonitor		*monitor_rpmdb;
 
@@ -103,11 +105,13 @@ hif_context_finalize (GObject *object)
 	g_free (priv->release_ver);
 	g_free (priv->cache_dir);
 	g_free (priv->solv_dir);
+	g_free (priv->lock_dir);
 	g_free (priv->rpm_verbosity);
 	g_free (priv->install_root);
 	g_free (priv->os_info);
 	g_free (priv->arch_info);
 	g_strfreev (priv->native_arches);
+	g_object_unref (priv->lock);
 	g_object_unref (priv->state);
 
 	if (priv->transaction != NULL)
@@ -137,6 +141,7 @@ hif_context_init (HifContext *context)
 	priv->check_disk_space = TRUE;
 	priv->check_transaction = TRUE;
 	priv->state = hif_state_new ();
+	priv->lock = hif_lock_new ();
 	priv->cache_age = 60 * 60 * 24 * 7; /* 1 week */
 }
 
@@ -276,6 +281,23 @@ hif_context_get_solv_dir (HifContext *context)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	return priv->solv_dir;
+}
+
+/**
+ * hif_context_get_lock_dir:
+ * @context: a #HifContext instance.
+ *
+ * Gets the lock directory.
+ *
+ * Returns: fully specified path
+ *
+ * Since: 0.1.4
+ **/
+const gchar *
+hif_context_get_lock_dir (HifContext *context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	return priv->lock_dir;
 }
 
 /**
@@ -597,6 +619,23 @@ hif_context_set_solv_dir (HifContext *context, const gchar *solv_dir)
 }
 
 /**
+ * hif_context_set_lock_dir:
+ * @context: a #HifContext instance.
+ * @lock_dir: the solve cache, e.g. "/var/run"
+ *
+ * Sets the lock directory.
+ *
+ * Since: 0.1.4
+ **/
+void
+hif_context_set_lock_dir (HifContext *context, const gchar *lock_dir)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	g_free (priv->lock_dir);
+	priv->lock_dir = g_strdup (lock_dir);
+}
+
+/**
  * hif_context_set_rpm_verbosity:
  * @context: a #HifContext instance.
  * @rpm_verbosity: the verbosity string, e.g. "info"
@@ -851,6 +890,10 @@ hif_context_setup (HifContext *context,
 	const gchar *value;
 	_cleanup_free_ char *rpmdb_path = NULL;
 	_cleanup_object_unref_ GFile *file_rpmdb = NULL;
+
+	/* set lock dir */
+	if (priv->lock_dir != NULL)
+		hif_lock_set_lock_dir (priv->lock, priv->lock_dir);
 
 	/* check essential things are set */
 	if (priv->solv_dir == NULL) {
