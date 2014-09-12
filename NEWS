@@ -1,3 +1,15 @@
+Version 0.1.4
+~~~~~~~~~~~~~
+Released: 2014-09-12
+
+New Features:
+ - Add hif_source_commit() so we don't rewrite the file for each change (Richard Hughes)
+ - Allow setting the default lock directory (Richard Hughes)
+
+Bugfixes:
+ - Ensure all the required directories exist when setting up the context (Richard Hughes)
+ - Use a real path for hy_sack_create() (Richard Hughes)
+
 Version 0.1.3
 ~~~~~~~~~~~~~
 Released: 2014-09-01
