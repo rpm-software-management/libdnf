@@ -71,14 +71,16 @@ struct _HifTransactionClass
  * HifTransactionFlag:
  * @HIF_TRANSACTION_FLAG_NONE:			No flags
  * @HIF_TRANSACTION_FLAG_ONLY_TRUSTED:		Only install trusted packages
+ * @HIF_TRANSACTION_FLAG_ALLOW_REINSTALL:	Allow package reinstallation
+ * @HIF_TRANSACTION_FLAG_ALLOW_DOWNGRADE:	Allow package downrades
  *
  * The transaction flags.
  **/
 typedef enum {
-	HIF_TRANSACTION_FLAG_NONE,
-	HIF_TRANSACTION_FLAG_ONLY_TRUSTED,
-	/*< private >*/
-	HIF_TRANSACTION_FLAG_LAST,
+	HIF_TRANSACTION_FLAG_NONE				= 0,
+	HIF_TRANSACTION_FLAG_ONLY_TRUSTED		= 1 << 0,
+	HIF_TRANSACTION_FLAG_ALLOW_REINSTALL	= 1 << 1,
+	HIF_TRANSACTION_FLAG_ALLOW_DOWNGRADE	= 1 << 2,
 } HifTransactionFlag;
 
 GType		 hif_transaction_get_type		(void);

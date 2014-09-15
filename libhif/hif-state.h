@@ -58,6 +58,9 @@ struct _HifState
  * @HIF_STATE_ACTION_REQUEST:			Requesting data
  * @HIF_STATE_ACTION_REMOVE:			Removing packages
  * @HIF_STATE_ACTION_INSTALL:			Installing packages
+ * @HIF_STATE_ACTION_UPDATE:			Updating packages
+ * $HIF_STATE_ACTION_REINSTALL:			Reinstall packages
+ * @HIF_STATE_ACTION_DOWNGRADE:			Downgrading packages
  *
  * The action enum code.
  **/
@@ -73,6 +76,8 @@ typedef enum {
 	HIF_STATE_ACTION_UPDATE			= 10,	/* Since: 0.1.2 */
 	HIF_STATE_ACTION_CLEANUP		= 11,	/* Since: 0.1.2 */
 	HIF_STATE_ACTION_OBSOLETE		= 12,	/* Since: 0.1.2 */
+	HIF_STATE_ACTION_REINSTALL		= 13,	/* Since: 0.1.6 */
+	HIF_STATE_ACTION_DOWNGRADE		= 14,	/* Since: 0.1.6 */
 	HIF_STATE_ACTION_QUERY			= 4,	/* Since: 0.1.2 */
 	/*< private >*/
 	HIF_STATE_ACTION_LAST
