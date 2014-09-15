@@ -1328,7 +1328,8 @@ hif_transaction_commit (HifTransaction *transaction,
 		/* add the install */
 		filename = hif_package_get_filename (pkg);
 		allow_untrusted = (priv->flags & HIF_TRANSACTION_FLAG_ONLY_TRUSTED) == 0;
-		is_update = hif_package_get_action (pkg) == HIF_STATE_ACTION_UPDATE;
+		is_update = hif_package_get_action (pkg) == HIF_STATE_ACTION_UPDATE ||
+			    hif_package_get_action (pkg) == HIF_STATE_ACTION_DOWNGRADE;
 		ret = hif_rpmts_add_install_filename (priv->ts,
 						      filename,
 						      allow_untrusted,
@@ -1382,7 +1383,8 @@ hif_transaction_commit (HifTransaction *transaction,
 	priv->remove_helper = g_ptr_array_new_with_free_func ((GDestroyNotify) hy_package_free);
 	for (i = 0; i < priv->install->len; i++) {
 		pkg = g_ptr_array_index (priv->install, i);
-		is_update = hif_package_get_action (pkg) == HIF_STATE_ACTION_UPDATE;
+		is_update = hif_package_get_action (pkg) == HIF_STATE_ACTION_UPDATE ||
+			    hif_package_get_action (pkg) == HIF_STATE_ACTION_DOWNGRADE;
 		if (!is_update)
 			continue;
 		pkglist = hy_goal_list_obsoleted_by_package (goal, pkg);
@@ -1431,6 +1433,10 @@ hif_transaction_commit (HifTransaction *transaction,
 	/* filter diskspace */
 	if (!hif_context_get_check_disk_space (priv->context))
 		problems_filter += RPMPROB_FILTER_DISKSPACE;
+	if (priv->flags & HIF_TRANSACTION_FLAG_ALLOW_REINSTALL)
+		problems_filter += RPMPROB_FILTER_REPLACEPKG;
+	if (priv->flags & HIF_TRANSACTION_FLAG_ALLOW_DOWNGRADE)
+		problems_filter += RPMPROB_FILTER_OLDPACKAGE;
 
 	/* run the transaction */
 	priv->state = hif_state_get_child (state);
