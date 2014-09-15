@@ -536,7 +536,9 @@ hif_package_is_gui (HyPackage pkg)
 		reldep = hy_reldeplist_get_clone (reldeplist, idx);
 		tmp = hy_reldep_str (reldep);
 		if (g_strstr_len (tmp, -1, "libgtk") != NULL ||
-		    g_strstr_len (tmp, -1, "libkde") != NULL) {
+		    g_strstr_len (tmp, -1, "libQt5Gui.so") != NULL ||
+		    g_strstr_len (tmp, -1, "libQtGui.so") != NULL ||
+		    g_strstr_len (tmp, -1, "libqt-mt.so") != NULL) {
 			ret = TRUE;
 		}
 		free (tmp);
