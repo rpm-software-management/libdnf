@@ -99,14 +99,15 @@ hif_package_get_filename (HyPackage pkg)
 
 	/* default cache filename location */
 	if (priv->filename == NULL && priv->src != NULL) {
-		/* do not strip the path for media sources as we're using this
-		 * directly rather than copying into the cachedir */
-		if (hif_source_get_kind (priv->src) == HIF_SOURCE_KIND_MEDIA) {
-			priv->filename = g_build_filename (hif_source_get_location (priv->src),
-							   hy_package_get_location (pkg),
-							   NULL);
-		} else {
+		priv->filename = g_build_filename (hif_source_get_location (priv->src),
+						   hy_package_get_location (pkg),
+						   NULL);
+		/* set the filename to cachedir for non-local sources */
+		if (!hif_source_is_local (priv->src) ||
+				!g_file_test (priv->filename, G_FILE_TEST_EXISTS))
+		{
 			_cleanup_free_ gchar *basename;
+			g_free (priv->filename);
 			basename = g_path_get_basename (hy_package_get_location (pkg));
 			priv->filename = g_build_filename (hif_source_get_packages (priv->src),
 							   basename,

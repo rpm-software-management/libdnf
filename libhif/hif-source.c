@@ -38,6 +38,7 @@
 
 #include "config.h"
 
+#include <strings.h>
 #include <glib/gstdio.h>
 #include <hawkey/util.h>
 #include <librepo/librepo.h>
@@ -46,6 +47,9 @@
 #include "hif-source.h"
 #include "hif-package.h"
 #include "hif-utils.h"
+
+#define LOCAL_URL_PREFIX "file://"
+#define LOCAL_URL_PREFIX_LEN 7
 
 typedef struct _HifSourcePrivate	HifSourcePrivate;
 struct _HifSourcePrivate
@@ -350,6 +354,43 @@ hif_source_is_devel (HifSource *source)
 	if (g_str_has_suffix (priv->id, "-development"))
 		return TRUE;
 	return FALSE;
+}
+
+/**
+ * hif_source_is_local:
+ * @source: a #HifSource instance.
+ *
+ * Returns: %TRUE if the source is a repo on local filesystem
+ *
+ * Since: 0.1.6
+ **/
+gboolean
+hif_source_is_local (HifSource *source)
+{
+	gboolean res = FALSE;
+	gchar **baseurls;
+	gchar *url;
+
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	if (priv->keyfile == NULL ||
+			hif_source_get_kind (source) == HIF_SOURCE_KIND_MEDIA)
+		res = TRUE;
+	else if (g_key_file_has_key (priv->keyfile, priv->id, "baseurl", NULL) &&
+			!g_key_file_has_key (priv->keyfile, priv->id, "mirrorlist", NULL) &&
+			!g_key_file_has_key (priv->keyfile, priv->id, "metalink", NULL))
+	{
+		baseurls = g_key_file_get_string_list (priv->keyfile,
+				priv->id, "baseurl", NULL, NULL);
+		if (baseurls && *baseurls) {
+			url = lr_prepend_url_protocol (*baseurls);
+			if (strncasecmp (url, LOCAL_URL_PREFIX, LOCAL_URL_PREFIX_LEN) == 0) {
+				res = TRUE;
+			}
+			g_free (url);
+		}
+		g_strfreev (baseurls);
+	}
+	return res;
 }
 
 /**
@@ -1308,7 +1349,7 @@ hif_source_download_package (HifSource *source,
 	}
 
 	/* is a local repo, i.e. we just need to copy */
-	if (priv->keyfile == NULL) {
+	if (hif_source_is_local (source)) {
 		hif_package_set_source (pkg, source);
 		if (!hif_source_copy_package (pkg, directory, state, error))
 			goto out;
@@ -1316,8 +1357,10 @@ hif_source_download_package (HifSource *source,
 	}
 
 	/* setup the repo remote */
-	if (!hif_source_set_keyfile_data (source, error))
+	if (priv->keyfile != NULL &&
+			!hif_source_set_keyfile_data (source, error))
 		goto out;
+
 	ret = lr_handle_setopt (priv->repo_handle, error,
 				LRO_PROGRESSDATA, state);
 	if (!ret)
