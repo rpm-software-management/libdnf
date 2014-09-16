@@ -38,6 +38,7 @@
 
 #include "config.h"
 
+#include <strings.h>
 #include <glib/gstdio.h>
 #include <hawkey/util.h>
 #include <librepo/librepo.h>
@@ -349,6 +350,43 @@ hif_source_is_devel (HifSource *source)
 		return TRUE;
 	if (g_str_has_suffix (priv->id, "-development"))
 		return TRUE;
+	return FALSE;
+}
+
+/**
+ * hif_source_is_local:
+ * @source: a #HifSource instance.
+ *
+ * Returns: %TRUE if the source is a repo on local filesystem
+ *
+ * Since: 0.1.6
+ **/
+gboolean
+hif_source_is_local (HifSource *source)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+
+	/* media */
+	if (priv->keyfile == NULL ||
+	    hif_source_get_kind (source) == HIF_SOURCE_KIND_MEDIA) {
+		return TRUE;
+	}
+
+	/* file:// */
+	if (g_key_file_has_key (priv->keyfile, priv->id, "baseurl", NULL) &&
+	    !g_key_file_has_key (priv->keyfile, priv->id, "mirrorlist", NULL) &&
+	    !g_key_file_has_key (priv->keyfile, priv->id, "metalink", NULL)) {
+		_cleanup_strv_free_ gchar **baseurls = NULL;
+		baseurls = g_key_file_get_string_list (priv->keyfile,
+						       priv->id, "baseurl",
+						       NULL, NULL);
+		if (baseurls != NULL && baseurls[0] != NULL) {
+			_cleanup_free_ gchar *url = NULL;
+			url = lr_prepend_url_protocol (baseurls[0]);
+			if (strncasecmp (url, "file://", 7) == 0)
+				return TRUE;
+		}
+	}
 	return FALSE;
 }
 
@@ -1308,7 +1346,7 @@ hif_source_download_package (HifSource *source,
 	}
 
 	/* is a local repo, i.e. we just need to copy */
-	if (priv->keyfile == NULL) {
+	if (hif_source_is_local (source)) {
 		hif_package_set_source (pkg, source);
 		if (!hif_source_copy_package (pkg, directory, state, error))
 			goto out;
@@ -1316,8 +1354,10 @@ hif_source_download_package (HifSource *source,
 	}
 
 	/* setup the repo remote */
-	if (!hif_source_set_keyfile_data (source, error))
+	if (priv->keyfile != NULL &&
+			!hif_source_set_keyfile_data (source, error))
 		goto out;
+
 	ret = lr_handle_setopt (priv->repo_handle, error,
 				LRO_PROGRESSDATA, state);
 	if (!ret)
