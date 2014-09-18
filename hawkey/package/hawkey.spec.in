@@ -1,4 +1,4 @@
-%global gitrev ef6ffd4
+%global gitrev c3207af
 %global libsolv_version 0.6.4-1
 
 Name:		hawkey
@@ -107,6 +107,17 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+
+* Thu Sep 18 2014 Aleš Kozumplik <ales@redhat.com> - 0.5.1-1
+- pool_split_evr() assert if we hit unexpected data. (Related:RhBug:1141634) (Ales Kozumplik)
+- README: changed references to new repo location (Jan Silhan)
+- iutil-py: removed pyseq_to_packagelist function (Jan Silhan)
+- improved performance of python sequence iteration (RhBug:1109554) (Jan Silhan)
+- reldep: constructor accepts unicode strings (RhBug:1124968) (Jan Silhan)
+- Fix pool_split_evr's handling of EVRs without releases. (Radek Holy)
+- added sha512 support (RhBug:1082658) (Jan Silhan)
+- cosmetic: removed unneeded semicolon (Jan Silhan)
+- goal: does not raise exception on empty selector (Related:RhBug:1127206) (Jan Silhan)
 
 * Tue Aug 12 2014 Aleš Kozumplik <ales@redhat.com> - 0.5.0-1
 - sack: include directive support added (Related:RhBug:1055910) (Jan Silhan)
