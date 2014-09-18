@@ -647,7 +647,7 @@ pool_split_evr(Pool *pool, const char *evr_c, char **epoch, char **version,
 	v = e + 1;
 	e = evr;
 	for (r = v + 1; *r != '-'; ++r)
-	    ;
+	    assert(*r);
 	*r = '\0';
 	r++;
     }
