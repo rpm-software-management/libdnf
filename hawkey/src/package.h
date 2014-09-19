@@ -77,9 +77,13 @@ unsigned long long hy_package_get_buildtime(HyPackage pkg);
 unsigned long long hy_package_get_installtime(HyPackage pkg);
 
 HyReldepList hy_package_get_conflicts(HyPackage pkg);
+HyReldepList hy_package_get_enhances(HyPackage pkg);
 HyReldepList hy_package_get_obsoletes(HyPackage pkg);
 HyReldepList hy_package_get_provides(HyPackage pkg);
+HyReldepList hy_package_get_recommends(HyPackage pkg);
 HyReldepList hy_package_get_requires(HyPackage pkg);
+HyReldepList hy_package_get_suggests(HyPackage pkg);
+HyReldepList hy_package_get_supplements(HyPackage pkg);
 HyStringArray hy_package_get_files(HyPackage pkg);
 HyAdvisoryList hy_package_get_advisories(HyPackage pkg, int cmp_type);
 

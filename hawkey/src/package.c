@@ -384,6 +384,12 @@ hy_package_get_conflicts(HyPackage pkg)
 }
 
 HyReldepList
+hy_package_get_enhances(HyPackage pkg)
+{
+    return reldeps_for(pkg, SOLVABLE_ENHANCES);
+}
+
+HyReldepList
 hy_package_get_obsoletes(HyPackage pkg)
 {
     return reldeps_for(pkg, SOLVABLE_OBSOLETES);
@@ -396,9 +402,27 @@ hy_package_get_provides(HyPackage pkg)
 }
 
 HyReldepList
+hy_package_get_recommends(HyPackage pkg)
+{
+    return reldeps_for(pkg, SOLVABLE_RECOMMENDS);
+}
+
+HyReldepList
 hy_package_get_requires(HyPackage pkg)
 {
     return reldeps_for(pkg, SOLVABLE_REQUIRES);
+}
+
+HyReldepList
+hy_package_get_suggests(HyPackage pkg)
+{
+    return reldeps_for(pkg, SOLVABLE_SUGGESTS);
+}
+
+HyReldepList
+hy_package_get_supplements(HyPackage pkg)
+{
+    return reldeps_for(pkg, SOLVABLE_SUPPLEMENTS);
 }
 
 HyStringArray

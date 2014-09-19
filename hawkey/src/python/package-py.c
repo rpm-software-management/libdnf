@@ -321,12 +321,20 @@ static PyGetSetDef package_getsetters[] = {
     {"size", (getter)get_num, NULL, NULL, (void *)hy_package_get_size},
     {"conflicts",  (getter)get_reldep, NULL, NULL,
      (void *)hy_package_get_conflicts},
+    {"enhances",  (getter)get_reldep, NULL, NULL,
+     (void *)hy_package_get_enhances},
     {"obsoletes",  (getter)get_reldep, NULL, NULL,
      (void *)hy_package_get_obsoletes},
     {"provides",  (getter)get_reldep, NULL, NULL,
      (void *)hy_package_get_provides},
+    {"recommends",  (getter)get_reldep, NULL, NULL,
+     (void *)hy_package_get_recommends},
     {"requires",  (getter)get_reldep, NULL, NULL,
      (void *)hy_package_get_requires},
+    {"suggests",  (getter)get_reldep, NULL, NULL,
+     (void *)hy_package_get_suggests},
+    {"supplements",  (getter)get_reldep, NULL, NULL,
+     (void *)hy_package_get_supplements},
     {NULL}			/* sentinel */
 };
 
