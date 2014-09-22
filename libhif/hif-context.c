@@ -912,6 +912,8 @@ hif_context_ensure_exists (const gchar *directory, GError **error)
 	return TRUE;
 }
 
+#define MAX_NATIVE_ARCHES	12
+
 /**
  * hif_context_setup:
  * @context: a #HifContext instance.
@@ -935,8 +937,39 @@ hif_context_setup (HifContext *context,
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	const gchar *value;
+	guint i;
+	guint j;
 	_cleanup_free_ char *rpmdb_path = NULL;
 	_cleanup_object_unref_ GFile *file_rpmdb = NULL;
+
+	/* data taken from https://github.com/rpm-software-management/dnf/blob/master/dnf/arch.py */
+	const struct {
+		const gchar	*base;
+		const gchar	*native[MAX_NATIVE_ARCHES];
+	} arch_map[] =  {
+		{ "aarch64",	{ "aarch64", NULL } },
+		{ "alpha",	{ "alpha", "alphaev4", "alphaev45", "alphaev5",
+				  "alphaev56", "alphaev6", "alphaev67",
+				  "alphaev68", "alphaev7", "alphapca56", NULL } },
+		{ "arm",	{ "armv5tejl", "armv5tel", "armv6l", "armv7l", NULL } },
+		{ "armhfp",	{ "armv7hl", "armv7hnl", NULL } },
+		{ "i386",	{ "i386", "athlon", "geode", "i386",
+				  "i486", "i586", "i686", NULL } },
+		{ "ia64",	{ "ia64", NULL } },
+		{ "noarch",	{ "noarch", NULL } },
+		{ "ppc",	{ "ppc", NULL } },
+		{ "ppc64",	{ "ppc64", "ppc64iseries", "ppc64p7",
+				  "ppc64pseries", NULL } },
+		{ "ppc64le",	{ "ppc64le", NULL } },
+		{ "s390",	{ "s390", NULL } },
+		{ "s390x",	{ "s390x", NULL } },
+		{ "sh3",	{ "sh3", NULL } },
+		{ "sh4",	{ "sh4", "sh4a", NULL } },
+		{ "sparc",	{ "sparc", "sparc64", "sparc64v", "sparcv8",
+				  "sparcv9", "sparcv9v", NULL } },
+		{ "x86_64",	{ "x86_64", "amd64", "ia32e", NULL } },
+		{ NULL,		{ NULL } }
+	};
 
 	/* check essential things are set */
 	if (priv->solv_dir == NULL) {
@@ -987,25 +1020,27 @@ hif_context_setup (HifContext *context,
 	priv->os_info = g_strdup (value);
 	rpmGetArchInfo (&value, NULL);
 	priv->arch_info = g_strdup (value);
-	if (g_strcmp0 (value, "i486") == 0 ||
-	    g_strcmp0 (value, "i586") == 0 ||
-	    g_strcmp0 (value, "i686") == 0) {
-		value = "i386";
-	} else if (g_strcmp0 (value, "armv7l") == 0 ||
-		   g_strcmp0 (value, "armv6l") == 0 ||
-		   g_strcmp0 (value, "armv5tejl") == 0 ||
-		   g_strcmp0 (value, "armv5tel") == 0) {
-		value = "arm";
-	} else if (g_strcmp0 (value, "armv7hnl") == 0 ||
-		 g_strcmp0 (value, "armv7hl") == 0) {
-		value = "armhfp";
-	}
-	priv->base_arch = g_strdup (value);
 
-	/* setup native arches */
-	priv->native_arches = g_new0 (gchar *, 3);
-	priv->native_arches[0] = g_strdup (priv->arch_info);
-	priv->native_arches[1] = g_strdup ("noarch");
+	/* find the base architecture */
+	for (i = 0; arch_map[i].base != NULL && priv->base_arch == NULL; i++) {
+		for (j = 0; arch_map[i].native[j] != NULL; j++) {
+			if (g_strcmp0 (arch_map[i].native[j], value) == 0) {
+				priv->base_arch = g_strdup (arch_map[i].base);
+				break;
+			}
+		}
+	}
+
+	/* find all the native archs */
+	priv->native_arches = g_new0 (gchar *, MAX_NATIVE_ARCHES);
+	for (i = 0; arch_map[i].base != NULL; i++) {
+		if (g_strcmp0 (arch_map[i].base, priv->base_arch) == 0) {
+			for (j = 0; arch_map[i].native[j] != NULL; j++)
+				priv->native_arches[j] = g_strdup (arch_map[i].native[j]);
+			priv->native_arches[j++] = g_strdup ("noarch");
+			break;
+		}
+	}
 
 	/* get info from OS release file */
 	if (!hif_context_set_os_release (context, error))
