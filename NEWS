@@ -1,3 +1,11 @@
+Version 0.1.5
+~~~~~~~~~~~~~
+Released: 2014-09-22
+
+Bugfixes:
+ - Add all native architectures for ARM and i386 (Richard Hughes)
+ - Check for libQtGui rather than libkde* to detect GUI apps (Kevin Kofler)
+
 Version 0.1.4
 ~~~~~~~~~~~~~
 Released: 2014-09-12
