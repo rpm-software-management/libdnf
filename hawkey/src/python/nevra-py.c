@@ -149,7 +149,7 @@ nevra_dealloc(_NevraObject *self)
 static int
 nevra_init(_NevraObject *self, PyObject *args, PyObject *kwds)
 {
-    char *name, *version = NULL, *release = NULL, *arch = NULL;
+    char *name = NULL, *version = NULL, *release = NULL, *arch = NULL;
     PyObject *epoch_o = NULL;
     HyNevra cnevra = NULL;
 
