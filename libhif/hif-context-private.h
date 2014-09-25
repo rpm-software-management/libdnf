@@ -27,6 +27,7 @@
 #define __HIF_CONTEXT_PRIVATE_H
 
 #include "hif-context.h"
+#include "hif-repos.h"
 #include "hif-state.h"
 #include "hif-transaction.h"
 
@@ -38,6 +39,9 @@ gboolean	 hif_context_commit			(HifContext	*context,
 							 GError		**error);
 void		 hif_context_invalidate			(HifContext	*context,
 							 const gchar	*message);
+
+HifRepos	*hif_context_get_repos			(HifContext	*context);
+
 GPtrArray	*hif_context_get_sources		(HifContext	*context);
 
 HifTransaction	*hif_context_get_transaction		(HifContext	*context);

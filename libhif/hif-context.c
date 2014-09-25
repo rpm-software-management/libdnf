@@ -352,6 +352,22 @@ hif_context_get_native_arches (HifContext *context)
 }
 
 /**
+ * hif_context_get_repos:
+ * @context: a #HifContext instance.
+ *
+ * Gets the repositories loader used by the transaction.
+ *
+ * Returns: (transfer none): the repositories loader
+ *
+ * Since: 0.1.6
+ **/
+HifRepos *hif_context_get_repos (HifContext	*context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	return priv->repos;
+}
+
+/**
  * hif_context_get_sources:
  * @context: a #HifContext instance.
  *
