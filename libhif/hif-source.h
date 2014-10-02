@@ -108,6 +108,7 @@ gboolean	 hif_source_get_gpgcheck	(HifSource		*source);
 gchar		*hif_source_get_description	(HifSource		*source);
 HyRepo		 hif_source_get_repo		(HifSource		*source);
 gboolean	 hif_source_is_devel		(HifSource		*source);
+gboolean	 hif_source_is_local		(HifSource		*source);
 gboolean	 hif_source_is_source		(HifSource		*source);
 gboolean	 hif_source_is_supported	(HifSource		*source);
 

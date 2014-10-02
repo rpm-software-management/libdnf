@@ -87,38 +87,6 @@ hif_goal_depsolve (HyGoal goal, GError **error)
 				     "The transaction was empty");
 		return FALSE;
 	}
-
-	/* prevent downgrades */
-	pkglist = hy_goal_list_downgrades (goal);
-	if (hy_packagelist_count (pkglist) > 0) {
-		string = g_string_new ("Downgrading packages is prevented by policy; ");
-		FOR_PACKAGELIST(pkg, pkglist, i) {
-			g_string_append_printf (string, "%s, ",
-						hif_package_get_id (pkg));
-		}
-		g_string_truncate (string, string->len - 2);
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     HIF_ERROR_PACKAGE_INSTALL_BLOCKED,
-				     string->str);
-		return FALSE;
-	}
-
-	/* prevent re-installs */
-	pkglist = hy_goal_list_reinstalls (goal);
-	if (hy_packagelist_count (pkglist) > 0) {
-		string = g_string_new ("Reinstalling packages is prevented by policy; ");
-		FOR_PACKAGELIST(pkg, pkglist, i) {
-			g_string_append_printf (string, "%s, ",
-						hif_package_get_id (pkg));
-		}
-		g_string_truncate (string, string->len - 2);
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     HIF_ERROR_PACKAGE_INSTALL_BLOCKED,
-				     string->str);
-		return FALSE;
-	}
 	return TRUE;
 }
 
@@ -168,7 +136,7 @@ hif_goal_get_packages (HyGoal goal, ...)
 		case HIF_PACKAGE_INFO_REINSTALL:
 			pkglist = hy_goal_list_reinstalls (goal);
 			FOR_PACKAGELIST(pkg, pkglist, i) {
-				hif_package_set_action (pkg, HIF_STATE_ACTION_INSTALL);
+				hif_package_set_action (pkg, HIF_STATE_ACTION_REINSTALL);
 				g_ptr_array_add (array, pkg);
 			}
 			break;
@@ -182,7 +150,7 @@ hif_goal_get_packages (HyGoal goal, ...)
 		case HIF_PACKAGE_INFO_DOWNGRADE:
 			pkglist = hy_goal_list_downgrades (goal);
 			FOR_PACKAGELIST(pkg, pkglist, i) {
-				hif_package_set_action (pkg, HIF_STATE_ACTION_INSTALL);
+				hif_package_set_action (pkg, HIF_STATE_ACTION_DOWNGRADE);
 				g_ptr_array_add (array, pkg);
 			}
 			break;

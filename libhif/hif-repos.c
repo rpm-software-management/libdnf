@@ -31,14 +31,19 @@
  * See also: #HifSource
  */
 
+#include <strings.h>
 #include "config.h"
 
 #include <gio/gunixmounts.h>
+#include <librepo/util.h>
 
 #include "hif-cleanup.h"
 #include "hif-package.h"
 #include "hif-repos.h"
 #include "hif-utils.h"
+
+#define LOCAL_URL_PREFIX "file://"
+#define LOCAL_URL_PREFIX_LEN 7
 
 typedef struct _HifReposPrivate	HifReposPrivate;
 struct _HifReposPrivate
@@ -353,10 +358,27 @@ hif_repos_source_parse_id (HifRepos *repos,
 	hif_source_set_keyfile (source, keyfile);
 	hif_source_set_filename (source, filename);
 	hif_source_set_id (source, id);
-	tmp = g_build_filename (hif_context_get_cache_dir (priv->context),
-				id, NULL);
-	hif_source_set_location (source, tmp);
-	g_free (tmp);
+
+	if (hif_source_is_local (source)) {
+		gchar **baseurls = NULL;
+		gchar *url = NULL;
+		baseurls = g_key_file_get_string_list (keyfile, id, "baseurl", NULL, NULL);
+		if (baseurls && *baseurls) {
+			url = lr_prepend_url_protocol (*baseurls);
+			if (strncasecmp (url, LOCAL_URL_PREFIX, LOCAL_URL_PREFIX_LEN) == 0) {
+				hif_source_set_location (source, url + LOCAL_URL_PREFIX_LEN);
+			}
+			g_free (url);
+		}
+		g_strfreev (baseurls);
+	}
+	if (hif_source_get_location (source) == NULL) {
+		tmp = g_build_filename (hif_context_get_cache_dir (priv->context),
+					id, NULL);
+		hif_source_set_location (source, tmp);
+		g_free (tmp);
+	}
+
 	tmp = g_strdup_printf ("%s.tmp", hif_source_get_location (source));
 	hif_source_set_location_tmp (source, tmp);
 	g_free (tmp);
