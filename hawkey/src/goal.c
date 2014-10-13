@@ -421,7 +421,7 @@ filter_file2job(HySack sack, const struct _Filter *f, Queue *job)
 
     const char *file = f->matches[0].str;
     Pool *pool = sack_pool(sack);
-    
+
     int flags = f->cmp_type & HY_GLOB ? SELECTION_GLOB : 0;
     if (f->cmp_type & HY_GLOB)
 	flags |= SELECTION_NOCASE;
@@ -474,10 +474,33 @@ filter_provides2job(HySack sack, const struct _Filter *f, Queue *job)
     if (f == NULL)
 	return 0;
     assert(f->nmatches == 1);
-    assert(f->match_type == _HY_RELDEP);
 
-    Id r_id = reldep_id(f->matches[0].reldep);
-    queue_push2(job, SOLVER_SOLVABLE_PROVIDES, r_id);
+    Pool *pool = sack_pool(sack);
+    const char *name = f->matches[0].str;
+    Id id;
+    Dataiterator di;
+
+    switch (f->cmp_type) {
+    case HY_EQ:
+	id = reldep_id(f->matches[0].reldep);
+	queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
+	break;
+    case HY_GLOB:
+	dataiterator_init(&di, pool, 0, 0, SOLVABLE_PROVIDES, name, SEARCH_GLOB);
+	while (dataiterator_step(&di)) {
+	    if (is_package(pool, pool_id2solvable(pool, di.solvid)))
+		break;
+	}
+	assert(di.idp);
+	id = *di.idp;
+	if (!job_has(job, SOLVABLE_PROVIDES, id))
+	    queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
+	dataiterator_free(&di);
+	break;
+    default:
+	assert(0);
+	return 1;
+    }
     return 0;
 }
 

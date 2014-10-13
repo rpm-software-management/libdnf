@@ -46,7 +46,7 @@ replace_filter(HySack sack, struct _Filter **fp, int keyname, int cmp_type,
 
     f->keyname = keyname;
     f->cmp_type = cmp_type;
-    if (keyname == HY_PKG_PROVIDES) {
+    if (keyname == HY_PKG_PROVIDES && cmp_type != HY_GLOB) {
 	f->match_type = _HY_RELDEP;
 	HyReldep reldep = reldep_from_str(sack, match);
 	if (reldep == NULL) {
@@ -71,8 +71,8 @@ valid_setting(int keyname, int cmp_type)
     case HY_PKG_EVR:
     case HY_PKG_REPONAME:
     case HY_PKG_VERSION:
-    case HY_PKG_PROVIDES:
 	return cmp_type == HY_EQ;
+    case HY_PKG_PROVIDES:
     case HY_PKG_NAME:
 	return (cmp_type == HY_EQ || cmp_type == HY_GLOB);
     case HY_PKG_FILE:

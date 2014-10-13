@@ -47,6 +47,18 @@ START_TEST(test_sltr_provides)
 }
 END_TEST
 
+START_TEST(test_sltr_provides_glob)
+{
+    HySelector sltr = hy_selector_create(test_globals.sack);
+    fail_if(hy_selector_set(sltr, HY_PKG_PROVIDES, HY_GLOB, "*alru*"));
+    HyPackageList plist = hy_selector_matches(sltr);
+    fail_unless(hy_packagelist_count(plist) == 2);
+
+    hy_packagelist_free(plist);
+    hy_selector_free(sltr);
+}
+END_TEST
+
 START_TEST(test_sltr_reponame)
 {
     HySelector sltr = hy_selector_create(test_globals.sack);
@@ -98,6 +110,7 @@ selector_suite(void)
     tcase_add_unchecked_fixture(tc, fixture_all, teardown);
     tcase_add_test(tc, test_sltr_matching);
     tcase_add_test(tc, test_sltr_provides);
+    tcase_add_test(tc, test_sltr_provides_glob);
     tcase_add_test(tc, test_sltr_reponame);
     tcase_add_test(tc, test_sltr_reponame_nonexistent);
     tcase_add_test(tc, test_sltr_version);
