@@ -946,8 +946,6 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
 	ret = HY_E_IO;
 	goto finish;
     }
-    if (cache_fp)
-	fclose(cache_fp);
 
     repo_finalize_init(hrepo, repo);
     pool_set_installed(pool, repo);
@@ -968,6 +966,8 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
     sack->considered_uptodate = 0;
 
  finish:
+    if (cache_fp)
+	fclose(cache_fp);
     if (a_hrepo == NULL)
 	hy_repo_free(hrepo);
     return ret;

@@ -849,12 +849,12 @@ hy_goal_write_debugdata(HyGoal goal, const char *dir)
 	return hy_errno;
     HY_LOG_INFO("writing solver debugdata to %s", absdir);
     int ret = testcase_write(solv, absdir, flags, NULL, NULL);
-    hy_free(absdir);
     if (!ret) {
 	format_err_str("Failed writing debugdata to %s: %s.", absdir,
 		       strerror(errno));
 	return HY_E_IO;
     }
+    hy_free(absdir);
     return 0;
 }
 
