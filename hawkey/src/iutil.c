@@ -188,7 +188,6 @@ checksum_type2length(int type)
     case HY_CHKSUM_SHA512:
 	return 64;
     default:
-	assert(0);
 	return -1;
     }
 }

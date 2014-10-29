@@ -102,6 +102,8 @@ char *
 hy_chksum_str(const unsigned char *chksum, int type)
 {
     int length = checksum_type2length(type);
+    if (length==-1)
+	return NULL;
     char *s = solv_malloc(2 * length + 1);
     solv_bin2hex(chksum, length, s);
 

@@ -518,3 +518,17 @@ Advisory attributes in Unicode
 
 All string attributes of ``Advisory`` and ``AdvisoryRef`` objects (except the
 deprecated ``filenames`` attribute) are Unicode objects now.
+
+
+Changes in 0.5.2
+=================
+
+Core
+----
+
+``hy_chksum_str`` returns NULL
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, the function ``hy_chksum_str`` would cause a segmentation fault when it was used
+with incorrect type value. Now it correctly returns NULL if type parameter does not correspond
+to any of expected values.
