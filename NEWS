@@ -1,3 +1,16 @@
+Version 0.1.6
+~~~~~~~~~~~~~
+Released: 2014-11-10
+
+New Features:
+ - Add support for package reinstallation and downgrade (Michal Minar)
+ - Copy the vendor cache if present (Richard Hughes)
+
+Bugfixes:
+ - Allow to get repo loader out of context (Michal Minar)
+ - Ensure created directories are world-readable (Richard Hughes)
+ - Support local repositories (Michal Minar)
+
 Version 0.1.5
 ~~~~~~~~~~~~~
 Released: 2014-09-22
