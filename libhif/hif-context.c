@@ -956,7 +956,7 @@ hif_context_ensure_exists (const gchar *directory, GError **error)
 {
 	if (g_file_test (directory, G_FILE_TEST_EXISTS))
 		return TRUE;
-	if (g_mkdir_with_parents (directory, 0700) != 0) {
+	if (g_mkdir_with_parents (directory, 0755) != 0) {
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_INTERNAL_ERROR,
@@ -977,7 +977,7 @@ hif_utils_copy_files (const gchar *src, const gchar *dest, GError **error)
 	_cleanup_dir_close_ GDir *dir = NULL;
 
 	/* create destination directory */
-	rc = g_mkdir_with_parents (dest, 0700);
+	rc = g_mkdir_with_parents (dest, 0755);
 	if (rc < 0) {
 		g_set_error (error,
 			     HIF_ERROR,
