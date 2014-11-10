@@ -58,6 +58,8 @@ struct _HifContextPrivate
 	gchar			*release_ver;
 	gchar			*cache_dir;
 	gchar			*solv_dir;
+	gchar			*vendor_cache_dir;
+	gchar			*vendor_solv_dir;
 	gchar			*lock_dir;
 	gchar			*os_info;
 	gchar			*arch_info;
@@ -105,6 +107,8 @@ hif_context_finalize (GObject *object)
 	g_free (priv->release_ver);
 	g_free (priv->cache_dir);
 	g_free (priv->solv_dir);
+	g_free (priv->vendor_cache_dir);
+	g_free (priv->vendor_solv_dir);
 	g_free (priv->lock_dir);
 	g_free (priv->rpm_verbosity);
 	g_free (priv->install_root);
@@ -635,6 +639,40 @@ hif_context_set_solv_dir (HifContext *context, const gchar *solv_dir)
 }
 
 /**
+ * hif_context_set_vendor_cache_dir:
+ * @context: a #HifContext instance.
+ * @vendor_cache_dir: the cachedir, e.g. "/usr/share/PackageKit/metadata"
+ *
+ * Sets the vendor cache directory.
+ *
+ * Since: 0.1.6
+ **/
+void
+hif_context_set_vendor_cache_dir (HifContext *context, const gchar *vendor_cache_dir)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	g_free (priv->vendor_cache_dir);
+	priv->vendor_cache_dir = g_strdup (vendor_cache_dir);
+}
+
+/**
+ * hif_context_set_vendor_solv_dir:
+ * @context: a #HifContext instance.
+ * @vendor_solv_dir: the solve cache, e.g. "/usr/share/PackageKit/hawkey"
+ *
+ * Sets the vendor solve cache directory.
+ *
+ * Since: 0.1.6
+ **/
+void
+hif_context_set_vendor_solv_dir (HifContext *context, const gchar *vendor_solv_dir)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	g_free (priv->vendor_solv_dir);
+	priv->vendor_solv_dir = g_strdup (vendor_solv_dir);
+}
+
+/**
  * hif_context_set_lock_dir:
  * @context: a #HifContext instance.
  * @lock_dir: the solve cache, e.g. "/var/run"
@@ -928,6 +966,132 @@ hif_context_ensure_exists (const gchar *directory, GError **error)
 	return TRUE;
 }
 
+/**
+ * hif_utils_copy_files:
+ */
+static gboolean
+hif_utils_copy_files (const gchar *src, const gchar *dest, GError **error)
+{
+	const gchar *tmp;
+	gint rc;
+	_cleanup_dir_close_ GDir *dir = NULL;
+
+	/* create destination directory */
+	rc = g_mkdir_with_parents (dest, 0700);
+	if (rc < 0) {
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_FAILED,
+			     "failed to create %s", dest);
+		return FALSE;
+	}
+
+	/* copy files */
+	dir = g_dir_open (src, 0, error);
+	if (dir == NULL)
+		return FALSE;
+	while ((tmp = g_dir_read_name (dir)) != NULL) {
+		_cleanup_free_ gchar *path_src = NULL;
+		_cleanup_free_ gchar *path_dest = NULL;
+		path_src = g_build_filename (src, tmp, NULL);
+		path_dest = g_build_filename (dest, tmp, NULL);
+		if (g_file_test (path_src, G_FILE_TEST_IS_DIR)) {
+			if (!hif_utils_copy_files (path_src, path_dest, error))
+				return FALSE;
+		} else {
+			_cleanup_object_unref_ GFile *file_src = NULL;
+			_cleanup_object_unref_ GFile *file_dest = NULL;
+			file_src = g_file_new_for_path (path_src);
+			file_dest = g_file_new_for_path (path_dest);
+			if (!g_file_copy (file_src, file_dest,
+					  G_FILE_COPY_NONE,
+					  NULL, NULL, NULL,
+					  error))
+				return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+/**
+ * hif_context_copy_vendor_cache:
+ *
+ * The vendor cache is typically structured like this:
+ * /usr/share/PackageKit/metadata/fedora/repodata/primary.xml.gz
+ * /usr/share/PackageKit/metadata/updates/repodata/primary.xml.gz
+ **/
+static gboolean
+hif_context_copy_vendor_cache (HifContext *context, GError **error)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	HifSource *src;
+	const gchar *id;
+	guint i;
+
+	/* not set, or does not exists */
+	if (priv->vendor_cache_dir == NULL)
+		return TRUE;
+	if (!g_file_test (priv->vendor_cache_dir, G_FILE_TEST_EXISTS))
+		return TRUE;
+
+	/* test each enabled repo in turn */
+	for (i = 0; i < priv->sources->len; i++) {
+		_cleanup_free_ gchar *path = NULL;
+		_cleanup_free_ gchar *path_vendor = NULL;
+		src = g_ptr_array_index (priv->sources, i);
+		if (!hif_source_get_enabled (src))
+			continue;
+
+		/* does the repo already exist */
+		id = hif_source_get_id (src);
+		path = g_build_filename (priv->cache_dir, id, NULL);
+		if (g_file_test (path, G_FILE_TEST_EXISTS))
+			continue;
+
+		/* copy the files */
+		path_vendor = g_build_filename (priv->vendor_cache_dir, id, NULL);
+		if (!g_file_test (path_vendor, G_FILE_TEST_EXISTS))
+			continue;
+		g_debug ("copying files from %s to %s", path_vendor, path);
+		if (!hif_utils_copy_files (path_vendor, path, error))
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
+ * hif_context_copy_vendor_solv:
+ *
+ * The solv cache is typically structured like this:
+ * /usr/share/PackageKit/hawkey/@System.solv
+ * /usr/share/PackageKit/hawkey/fedora-filenames.solvx
+ **/
+static gboolean
+hif_context_copy_vendor_solv (HifContext *context, GError **error)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	_cleanup_free_ gchar *system_db = NULL;
+
+	/* not set, or does not exists */
+	if (priv->vendor_solv_dir == NULL)
+		return TRUE;
+	if (!g_file_test (priv->vendor_solv_dir, G_FILE_TEST_EXISTS))
+		return TRUE;
+
+	/* already exists */
+	system_db = g_build_filename (priv->solv_dir, "@System.solv", NULL);
+	if (g_file_test (system_db, G_FILE_TEST_EXISTS))
+		return TRUE;
+
+	/* copy all the files */
+	g_debug ("copying files from %s to %s", priv->vendor_solv_dir, priv->solv_dir);
+	if (!hif_utils_copy_files (priv->vendor_solv_dir, priv->solv_dir, error))
+		return FALSE;
+
+	return TRUE;
+}
+
 #define MAX_NATIVE_ARCHES	12
 
 /**
@@ -1083,6 +1247,12 @@ hif_context_setup (HifContext *context,
 		return FALSE;
 	g_signal_connect (priv->monitor_rpmdb, "changed",
 			  G_CALLBACK (hif_context_rpmdb_changed_cb), context);
+
+	/* copy any vendor distributed cached metadata */
+	if (!hif_context_copy_vendor_cache (context, error))
+		return FALSE;
+	if (!hif_context_copy_vendor_solv (context, error))
+		return FALSE;
 
 	return TRUE;
 }

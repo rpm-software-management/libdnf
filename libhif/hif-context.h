@@ -94,6 +94,10 @@ void		 hif_context_set_cache_dir		(HifContext	*context,
 							 const gchar	*cache_dir);
 void		 hif_context_set_solv_dir		(HifContext	*context,
 							 const gchar	*solv_dir);
+void		 hif_context_set_vendor_cache_dir	(HifContext	*context,
+							 const gchar	*vendor_cache_dir);
+void		 hif_context_set_vendor_solv_dir	(HifContext	*context,
+							 const gchar	*vendor_solv_dir);
 void		 hif_context_set_lock_dir		(HifContext	*context,
 							 const gchar	*lock_dir);
 void		 hif_context_set_rpm_verbosity		(HifContext	*context,
