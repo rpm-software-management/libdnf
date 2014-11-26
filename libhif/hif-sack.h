@@ -38,6 +38,7 @@
  * @HIF_SACK_ADD_FLAG_FILELISTS:		Add the filelists
  * @HIF_SACK_ADD_FLAG_UPDATEINFO:		Add the updateinfo
  * @HIF_SACK_ADD_FLAG_REMOTE:			Use remote sources
+ * @HIF_SACK_ADD_FLAG_UNAVAILABLE:		Add sources that are unavailable
  *
  * The error code.
  **/
@@ -46,6 +47,7 @@ typedef enum {
 	HIF_SACK_ADD_FLAG_FILELISTS		= 1,
 	HIF_SACK_ADD_FLAG_UPDATEINFO		= 2,
 	HIF_SACK_ADD_FLAG_REMOTE		= 4,
+	HIF_SACK_ADD_FLAG_UNAVAILABLE		= 8,
 	/*< private >*/
 	HIF_SACK_ADD_FLAG_LAST
 } HifSackAddFlags;

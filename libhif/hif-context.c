@@ -1039,7 +1039,7 @@ hif_context_copy_vendor_cache (HifContext *context, GError **error)
 		_cleanup_free_ gchar *path = NULL;
 		_cleanup_free_ gchar *path_vendor = NULL;
 		src = g_ptr_array_index (priv->sources, i);
-		if (!hif_source_get_enabled (src))
+		if (hif_source_get_enabled (src) == HIF_SOURCE_ENABLED_NONE)
 			continue;
 
 		/* does the repo already exist */
@@ -1498,7 +1498,7 @@ hif_context_update (HifContext *context, const gchar *name, GError **error)
 static gboolean
 hif_context_repo_set_data (HifContext *context,
 			   const gchar *repo_id,
-			   gboolean enabled,
+			   HifSourceEnabled enabled,
 			   GError **error)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
@@ -1548,7 +1548,9 @@ hif_context_repo_enable (HifContext *context,
 			 const gchar *repo_id,
 			 GError **error)
 {
-	return hif_context_repo_set_data (context, repo_id, TRUE, error);
+	return hif_context_repo_set_data (context, repo_id,
+					  HIF_SOURCE_ENABLED_PACKAGES |
+					  HIF_SOURCE_ENABLED_METADATA, error);
 }
 
 /**
@@ -1570,7 +1572,8 @@ hif_context_repo_disable (HifContext *context,
 			  const gchar *repo_id,
 			  GError **error)
 {
-	return hif_context_repo_set_data (context, repo_id, FALSE, error);
+	return hif_context_repo_set_data (context, repo_id,
+					  HIF_SOURCE_ENABLED_NONE, error);
 }
 
 /**

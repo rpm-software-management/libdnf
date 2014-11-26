@@ -835,6 +835,12 @@ hif_repos_func (void)
 	src = hif_repos_get_source_by_id (repos, "bumblebee", &error);
 	g_assert_no_error (error);
 	g_assert (src != NULL);
+
+	/* load repos that should be metadata enabled automatically */
+	src = hif_repos_get_source_by_id (repos, "redhat", &error);
+	g_assert_no_error (error);
+	g_assert (src != NULL);
+	g_assert_cmpint (hif_source_get_enabled (src), ==, HIF_SOURCE_ENABLED_METADATA);
 }
 
 static void

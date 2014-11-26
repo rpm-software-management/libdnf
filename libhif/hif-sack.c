@@ -139,7 +139,7 @@ hif_sack_add_sources (HySack sack,
 	/* count the enabled sources */
 	for (i = 0; i < sources->len; i++) {
 		src = g_ptr_array_index (sources, i);
-		if (hif_source_get_enabled (src))
+		if (hif_source_get_enabled (src) != HIF_SOURCE_ENABLED_NONE)
 			cnt++;
 	}
 
@@ -147,8 +147,14 @@ hif_sack_add_sources (HySack sack,
 	hif_state_set_number_steps (state, cnt);
 	for (i = 0; i < sources->len; i++) {
 		src = g_ptr_array_index (sources, i);
-		if (!hif_source_get_enabled (src))
+		if (hif_source_get_enabled (src) == HIF_SOURCE_ENABLED_NONE)
 			continue;
+
+		/* only allow metadata-only sources if FLAG_UNAVAILABLE is set */
+		if (hif_source_get_enabled (src) == HIF_SOURCE_ENABLED_METADATA) {
+			if ((flags & HIF_SACK_ADD_FLAG_UNAVAILABLE) == 0)
+				continue;
+		}
 
 		state_local = hif_state_get_child (state);
 		ret = hif_sack_add_source (sack,

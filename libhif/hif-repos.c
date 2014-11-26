@@ -163,7 +163,7 @@ hif_repos_add_media (HifRepos *repos,
 
 	/* create read-only location */
 	source = hif_source_new (priv->context);
-	hif_source_set_enabled (source, TRUE);
+	hif_source_set_enabled (source, HIF_SOURCE_ENABLED_PACKAGES);
 	hif_source_set_gpgcheck (source, TRUE);
 	hif_source_set_kind (source, HIF_SOURCE_KIND_MEDIA);
 	hif_source_set_cost (source, 100);
@@ -334,8 +334,7 @@ hif_repos_source_parse_id (HifRepos *repos,
 			   GError **error)
 {
 	HifReposPrivate *priv = GET_PRIVATE (repos);
-	gboolean has_enabled;
-	gboolean is_enabled;
+	HifSourceEnabled enabled = 0;
 	gboolean ret = TRUE;
 	gchar *tmp;
 	guint64 val;
@@ -343,21 +342,26 @@ hif_repos_source_parse_id (HifRepos *repos,
 	_cleanup_object_unref_ HifSource *source;
 
 	/* enabled isn't a required key */
-	has_enabled = g_key_file_has_key (keyfile,
-					  id,
-					  "enabled",
-					  NULL);
-	if (has_enabled) {
-		is_enabled = g_key_file_get_boolean (keyfile,
-						     id,
-						     "enabled",
-						     NULL);
+	if (g_key_file_has_key (keyfile, id, "enabled", NULL)) {
+		if (g_key_file_get_boolean (keyfile, id, "enabled", NULL))
+			enabled |= HIF_SOURCE_ENABLED_PACKAGES;
 	} else {
-		is_enabled = TRUE;
+		enabled |= HIF_SOURCE_ENABLED_PACKAGES;
+	}
+
+	/* enabled_metadata isn't a required key */
+	if (g_key_file_has_key (keyfile, id, "enabled_metadata", NULL)) {
+		if (g_key_file_get_boolean (keyfile, id, "enabled_metadata", NULL))
+			enabled |= HIF_SOURCE_ENABLED_METADATA;
+	} else {
+		_cleanup_free_ gchar *basename = NULL;
+		basename = g_path_get_basename (filename);
+		if (g_strcmp0 (basename, "redhat.repo") == 0)
+			enabled |= HIF_SOURCE_ENABLED_METADATA;
 	}
 
 	source = hif_source_new (priv->context);
-	hif_source_set_enabled (source, is_enabled);
+	hif_source_set_enabled (source, enabled);
 	hif_source_set_kind (source, HIF_SOURCE_KIND_REMOTE);
 	cost = g_key_file_get_integer (keyfile, id, "cost", NULL);
 	if (cost != 0)

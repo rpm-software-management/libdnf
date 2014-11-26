@@ -51,7 +51,7 @@
 typedef struct _HifSourcePrivate	HifSourcePrivate;
 struct _HifSourcePrivate
 {
-	gboolean	 enabled;
+	HifSourceEnabled enabled;
 	gboolean	 gpgcheck;
 	guint		 cost;
 	gchar		*filename;	/* /etc/yum.repos.d/updates.repo */
@@ -253,11 +253,11 @@ hif_source_get_description (HifSource *source)
  *
  * Gets if the source is enabled.
  *
- * Returns: %TRUE if enabled
+ * Returns: %HIF_SOURCE_ENABLED_PACKAGES if enabled
  *
  * Since: 0.1.0
  **/
-gboolean
+HifSourceEnabled
 hif_source_get_enabled (HifSource *source)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
@@ -508,6 +508,7 @@ void
 hif_source_set_filename (HifSource *source, const gchar *filename)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
+
 	g_free (priv->filename);
 	priv->filename = g_strdup (filename);
 }
@@ -556,10 +557,15 @@ hif_source_set_packages_tmp (HifSource *source, const gchar *packages_tmp)
  * Since: 0.1.0
  **/
 void
-hif_source_set_enabled (HifSource *source, gboolean enabled)
+hif_source_set_enabled (HifSource *source, HifSourceEnabled enabled)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
+
 	priv->enabled = enabled;
+
+	/* packages implies metadata */
+	if (priv->enabled & HIF_SOURCE_ENABLED_PACKAGES)
+		priv->enabled |= HIF_SOURCE_ENABLED_METADATA;
 }
 
 /**
@@ -777,7 +783,7 @@ hif_source_check (HifSource *source,
 	/* has the media repo vanished? */
 	if (priv->kind == HIF_SOURCE_KIND_MEDIA &&
 	    !g_file_test (priv->location, G_FILE_TEST_EXISTS)) {
-		priv->enabled = FALSE;
+		priv->enabled = HIF_SOURCE_ENABLED_NONE;
 		return TRUE;
 	}
 
