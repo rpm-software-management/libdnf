@@ -23,14 +23,15 @@
 
 #include <glib-object.h>
 #include <hawkey/errno.h>
+#include <stdlib.h>
 
 #include "hif-cleanup.h"
 #include "hif-lock.h"
+#include "hif-repos.h"
 #include "hif-source.h"
 #include "hif-state.h"
 #include "hif-utils.h"
 
-#if 0
 /**
  * cd_test_get_filename:
  **/
@@ -51,7 +52,6 @@ out:
 	g_free (path);
 	return full;
 }
-#endif
 
 static guint _hif_lock_state_changed = 0;
 
@@ -812,6 +812,32 @@ hif_utils_func (void)
 }
 
 static void
+hif_repos_func (void)
+{
+	GError *error = NULL;
+	HifSource *src;
+	gboolean ret;
+	_cleanup_free_ gchar *repos_dir = NULL;
+	_cleanup_object_unref_ HifContext *ctx = NULL;
+	_cleanup_object_unref_ HifRepos *repos = NULL;
+
+	/* set up local context */
+	ctx = hif_context_new ();
+	repos_dir = hif_test_get_filename ("yum.repos.d");
+	hif_context_set_repo_dir (ctx, repos_dir);
+	hif_context_set_solv_dir (ctx, "/tmp");
+	ret = hif_context_setup (ctx, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	/* load repos that need keyfile fixes */
+	repos = hif_repos_new (ctx);
+	src = hif_repos_get_source_by_id (repos, "bumblebee", &error);
+	g_assert_no_error (error);
+	g_assert (src != NULL);
+}
+
+static void
 hif_context_func (void)
 {
 	GError *error = NULL;
@@ -853,6 +879,7 @@ main (int argc, char **argv)
 	g_log_set_fatal_mask (NULL, G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL);
 
 	/* tests go here */
+	g_test_add_func ("/libhif/repos", hif_repos_func);
 	g_test_add_func ("/libhif/context", hif_context_func);
 	g_test_add_func ("/libhif/lock", hif_lock_func);
 	g_test_add_func ("/libhif/lock[threads]", hif_lock_threads_func);

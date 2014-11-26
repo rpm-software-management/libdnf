@@ -1,0 +1,18 @@
+[bumblebee]
+name=bumblebee for fedora Linux $releasever - $basearch - Base
+baseurl=
+	http://install.linux.ncsu.edu/pub/yum/itecs/public/bumblebee/fedora$releasever/
+failovermethod=priority
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-bumblebeepublic
+
+[bumblebee-source]
+name=bumblebee for fedora Linux $releasever - $basearch - Source
+baseurl=
+	http://install.linux.ncsu.edu/pub/yum/itecs/public/bumblebee/fedora$releasever/SRPMS
+failovermethod=priority
+enabled=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-bumblebeepublic
+gpgcheck=1
+

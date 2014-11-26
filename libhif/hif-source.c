@@ -383,7 +383,7 @@ hif_source_is_local (HifSource *source)
 		if (baseurls != NULL && baseurls[0] != NULL) {
 			_cleanup_free_ gchar *url = NULL;
 			url = lr_prepend_url_protocol (baseurls[0]);
-			if (strncasecmp (url, "file://", 7) == 0)
+			if (url != NULL && strncasecmp (url, "file://", 7) == 0)
 				return TRUE;
 		}
 	}

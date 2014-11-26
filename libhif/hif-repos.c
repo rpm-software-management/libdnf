@@ -280,18 +280,28 @@ hif_repos_load_multiline_key_file (const gchar *filename, GError **error)
 	string = g_string_new ("");
 	lines = g_strsplit (data, "\n", -1);
 	for (i = 0; lines[i] != NULL; i++) {
+
+		/* convert tabs to spaces */
+		g_strdelimit (lines[i], "\t", ' ');
+
 		/* if a line starts with whitespace, then append it on
 		 * the previous line */
-		g_strdelimit (lines[i], "\t", ' ');
 		if (lines[i][0] == ' ' && string->len > 0) {
+
+			/* remove old newline from previous line */
 			g_string_set_size (string, string->len - 1);
-			g_string_append_printf (string,
-						";%s\n",
-						g_strchug (lines[i]));
+
+			/* whitespace strip this new line */
+			g_strchug (lines[i]);
+
+			/* only add a ';' if we have anything after the '=' */
+			if (string->str[string->len - 1] == '=') {
+				g_string_append_printf (string, "%s\n", lines[i]);
+			} else {
+				g_string_append_printf (string, ";%s\n", lines[i]);
+			}
 		} else {
-			g_string_append_printf (string,
-						"%s\n",
-						lines[i]);
+			g_string_append_printf (string, "%s\n", lines[i]);
 		}
 	}
 
