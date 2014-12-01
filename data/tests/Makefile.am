@@ -1,4 +1,5 @@
 test_files =								\
+	yum.repos.d/local.repo						\
 	yum.repos.d/redhat.repo						\
 	yum.repos.d/bumblebee.repo
 

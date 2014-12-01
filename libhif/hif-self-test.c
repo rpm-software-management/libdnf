@@ -26,6 +26,7 @@
 #include <stdlib.h>
 
 #include "hif-cleanup.h"
+#include "hif-context-private.h"
 #include "hif-lock.h"
 #include "hif-repos.h"
 #include "hif-source.h"
@@ -816,6 +817,7 @@ hif_repos_func (void)
 {
 	GError *error = NULL;
 	HifSource *src;
+	HifState *state;
 	gboolean ret;
 	_cleanup_free_ gchar *repos_dir = NULL;
 	_cleanup_object_unref_ HifContext *ctx = NULL;
@@ -830,17 +832,48 @@ hif_repos_func (void)
 	g_assert_no_error (error);
 	g_assert (ret);
 
+	/* use this as a throw-away */
+	state = hif_context_get_state (ctx);
+
 	/* load repos that need keyfile fixes */
 	repos = hif_repos_new (ctx);
 	src = hif_repos_get_source_by_id (repos, "bumblebee", &error);
 	g_assert_no_error (error);
 	g_assert (src != NULL);
+	g_assert_cmpint (hif_source_get_kind (src), ==, HIF_SOURCE_KIND_REMOTE);
 
 	/* load repos that should be metadata enabled automatically */
 	src = hif_repos_get_source_by_id (repos, "redhat", &error);
 	g_assert_no_error (error);
 	g_assert (src != NULL);
 	g_assert_cmpint (hif_source_get_enabled (src), ==, HIF_SOURCE_ENABLED_METADATA);
+	g_assert_cmpint (hif_source_get_kind (src), ==, HIF_SOURCE_KIND_REMOTE);
+
+	/* load local metadata repo */
+	src = hif_repos_get_source_by_id (repos, "local", &error);
+	g_assert_no_error (error);
+	g_assert (src != NULL);
+	g_assert_cmpint (hif_source_get_enabled (src), ==, HIF_SOURCE_ENABLED_METADATA |
+							   HIF_SOURCE_ENABLED_PACKAGES);
+	g_assert_cmpint (hif_source_get_kind (src), ==, HIF_SOURCE_KIND_LOCAL);
+
+	/* try to clean local repo */
+	ret = hif_source_clean (src, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	/* try to refresh local repo */
+	hif_state_reset (state);
+	ret = hif_source_update (src, HIF_SOURCE_UPDATE_FLAG_NONE, state, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	/* try to check local repo that will not exist */
+	hif_state_reset (state);
+	ret = hif_source_check (src, 1, state, &error);
+	g_assert_error (error, HIF_ERROR, HIF_ERROR_INTERNAL_ERROR);
+	g_assert (!ret);
+	g_clear_error (&error);
 }
 
 static void

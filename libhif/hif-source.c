@@ -357,7 +357,7 @@ hif_source_is_devel (HifSource *source)
  * hif_source_is_local:
  * @source: a #HifSource instance.
  *
- * Returns: %TRUE if the source is a repo on local filesystem
+ * Returns: %TRUE if the source is a repo on local or media filesystem
  *
  * Since: 0.1.6
  **/
@@ -366,27 +366,11 @@ hif_source_is_local (HifSource *source)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
 
-	/* media */
-	if (priv->keyfile == NULL ||
-	    hif_source_get_kind (source) == HIF_SOURCE_KIND_MEDIA) {
+	/* media or local */
+	if (priv->kind == HIF_SOURCE_KIND_MEDIA ||
+	    priv->kind == HIF_SOURCE_KIND_LOCAL)
 		return TRUE;
-	}
 
-	/* file:// */
-	if (g_key_file_has_key (priv->keyfile, priv->id, "baseurl", NULL) &&
-	    !g_key_file_has_key (priv->keyfile, priv->id, "mirrorlist", NULL) &&
-	    !g_key_file_has_key (priv->keyfile, priv->id, "metalink", NULL)) {
-		_cleanup_strv_free_ gchar **baseurls = NULL;
-		baseurls = g_key_file_get_string_list (priv->keyfile,
-						       priv->id, "baseurl",
-						       NULL, NULL);
-		if (baseurls != NULL && baseurls[0] != NULL) {
-			_cleanup_free_ gchar *url = NULL;
-			url = lr_prepend_url_protocol (baseurls[0]);
-			if (url != NULL && strncasecmp (url, "file://", 7) == 0)
-				return TRUE;
-		}
-	}
 	return FALSE;
 }
 
@@ -635,6 +619,113 @@ hif_source_set_keyfile (HifSource *source, GKeyFile *keyfile)
 }
 
 /**
+ * hif_source_get_username_password_string:
+ */
+static gchar *
+hif_source_get_username_password_string (const gchar *user, const gchar *pass)
+{
+	if (user == NULL && pass == NULL)
+		return NULL;
+	if (user != NULL && pass == NULL)
+		return g_strdup (user);
+	if (user == NULL && pass != NULL)
+		return g_strdup_printf (":%s", pass);
+	return g_strdup_printf ("%s:%s", user, pass);
+}
+
+/**
+ * hif_source_set_keyfile_data:
+ */
+static gboolean
+hif_source_set_keyfile_data (HifSource *source, GError **error)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	guint cost;
+	_cleanup_free_ gchar *metalink = NULL;
+	_cleanup_free_ gchar *mirrorlist = NULL;
+	_cleanup_free_ gchar *proxy = NULL;
+	_cleanup_free_ gchar *pwd = NULL;
+	_cleanup_free_ gchar *usr = NULL;
+	_cleanup_free_ gchar *usr_pwd = NULL;
+	_cleanup_free_ gchar *usr_pwd_proxy = NULL;
+	_cleanup_strv_free_ gchar **baseurls;
+
+	g_debug ("setting keyfile data for %s", priv->id);
+
+	/* cost is optional */
+	cost = g_key_file_get_integer (priv->keyfile, priv->id, "cost", NULL);
+	if (cost != 0)
+		hif_source_set_cost (source, cost);
+
+	/* baseurl is optional */
+	baseurls = g_key_file_get_string_list (priv->keyfile, priv->id, "baseurl", NULL, NULL);
+	if (baseurls && !lr_handle_setopt (priv->repo_handle, error, LRO_URLS, baseurls))
+		return FALSE;
+
+	/* mirrorlist is optional */
+	mirrorlist = g_key_file_get_string (priv->keyfile, priv->id, "mirrorlist", NULL);
+	if (mirrorlist && !lr_handle_setopt (priv->repo_handle, error, LRO_MIRRORLIST, mirrorlist))
+		return FALSE;
+
+	/* metalink is optional */
+	metalink = g_key_file_get_string (priv->keyfile, priv->id, "metalink", NULL);
+	if (metalink && !lr_handle_setopt (priv->repo_handle, error, LRO_METALINKURL, metalink))
+		return FALSE;
+
+	/* file:// */
+	if (baseurls != NULL && baseurls[0] != NULL &&
+	    mirrorlist == NULL && metalink == NULL) {
+		_cleanup_free_ gchar *url = NULL;
+		url = lr_prepend_url_protocol (baseurls[0]);
+		if (url != NULL && strncasecmp (url, "file://", 7) == 0) {
+			priv->kind = HIF_SOURCE_KIND_LOCAL;
+			hif_source_set_location (source, url + 7);
+		}
+	}
+
+	/* set location if currently unset */
+	if (priv->location == NULL) {
+		_cleanup_free_ gchar *tmp = NULL;
+		tmp = g_build_filename (hif_context_get_cache_dir (priv->context),
+					priv->id, NULL);
+		hif_source_set_location (source, tmp);
+	}
+
+	/* set temp location for remote repos */
+	if (priv->kind == HIF_SOURCE_KIND_REMOTE) {
+		_cleanup_free_ gchar *tmp = NULL;
+		tmp = g_strdup_printf ("%s.tmp", priv->location);
+		hif_source_set_location_tmp (source, tmp);
+	}
+
+	//FIXME: if a gpgkey is also set: https://github.com/Tojaj/librepo/issues/16
+	priv->gpgcheck = g_key_file_get_boolean (priv->keyfile, priv->id,
+						 "gpgcheck", NULL);
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_GPGCHECK, priv->gpgcheck))
+		return FALSE;
+
+	/* proxy is optional */
+	proxy = g_key_file_get_string (priv->keyfile, priv->id, "proxy", NULL);
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_PROXY, proxy))
+		return FALSE;
+
+	/* both parts of the proxy auth are optional */
+	usr = g_key_file_get_string (priv->keyfile, priv->id, "proxy_username", NULL);
+	pwd = g_key_file_get_string (priv->keyfile, priv->id, "proxy_password", NULL);
+	usr_pwd_proxy = hif_source_get_username_password_string (usr, pwd);
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_PROXYUSERPWD, usr_pwd_proxy))
+		return FALSE;
+
+	/* both parts of the HTTP auth are optional */
+	usr = g_key_file_get_string (priv->keyfile, priv->id, "username", NULL);
+	pwd = g_key_file_get_string (priv->keyfile, priv->id, "password", NULL);
+	usr_pwd = hif_source_get_username_password_string (usr, pwd);
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_USERPWD, usr_pwd))
+		return FALSE;
+	return TRUE;
+}
+
+/**
  * hif_source_setup:
  * @source: a #HifSource instance.
  * @error: a #GError or %NULL
@@ -678,7 +769,9 @@ hif_source_setup (HifSource *source, GError **error)
 		return FALSE;
 	priv->urlvars = lr_urlvars_set (priv->urlvars, "releasever", release);
 	priv->urlvars = lr_urlvars_set (priv->urlvars, "basearch", basearch);
-	return lr_handle_setopt (priv->repo_handle, error, LRO_VARSUB, priv->urlvars);
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_VARSUB, priv->urlvars))
+		return FALSE;
+	return hif_source_set_keyfile_data (source, error);
 }
 
 /**
@@ -914,6 +1007,11 @@ hif_source_clean (HifSource *source, GError **error)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
 
+	/* do not clean media or local repos */
+	if (priv->kind == HIF_SOURCE_KIND_MEDIA ||
+	    priv->kind == HIF_SOURCE_KIND_LOCAL)
+		return TRUE;
+
 	if (!g_file_test (priv->location, G_FILE_TEST_EXISTS))
 		return TRUE;
 	if (!hif_source_remove_contents (priv->location)) {
@@ -925,80 +1023,6 @@ hif_source_clean (HifSource *source, GError **error)
 		return FALSE;
 	}
 	return TRUE;
-}
-
-/**
- * hif_source_get_username_password_string:
- */
-static gchar *
-hif_source_get_username_password_string (const gchar *user, const gchar *pass)
-{
-	if (user == NULL && pass == NULL)
-		return NULL;
-	if (user != NULL && pass == NULL)
-		return g_strdup (user);
-	if (user == NULL && pass != NULL)
-		return g_strdup_printf (":%s", pass);
-	return g_strdup_printf ("%s:%s", user, pass);
-}
-
-/**
- * hif_source_set_keyfile_data:
- */
-static gboolean
-hif_source_set_keyfile_data (HifSource *source, GError **error)
-{
-	HifSourcePrivate *priv = GET_PRIVATE (source);
-	_cleanup_free_ gchar *metalink = NULL;
-	_cleanup_free_ gchar *mirrorlist = NULL;
-	_cleanup_free_ gchar *proxy = NULL;
-	_cleanup_free_ gchar *pwd = NULL;
-	_cleanup_free_ gchar *usr = NULL;
-	_cleanup_free_ gchar *usr_pwd = NULL;
-	_cleanup_free_ gchar *usr_pwd_proxy = NULL;
-	_cleanup_strv_free_ gchar **baseurls;
-
-	/* baseurl is optional */
-	baseurls = g_key_file_get_string_list (priv->keyfile, priv->id, "baseurl", NULL, NULL);
-	if (baseurls && !lr_handle_setopt (priv->repo_handle, error, LRO_URLS, baseurls))
-		return FALSE;
-
-	/* mirrorlist is optional */
-	mirrorlist = g_key_file_get_string (priv->keyfile, priv->id, "mirrorlist", NULL);
-	if (mirrorlist && !lr_handle_setopt (priv->repo_handle, error, LRO_MIRRORLIST, mirrorlist))
-		return FALSE;
-
-	/* metalink is optional */
-	metalink = g_key_file_get_string (priv->keyfile, priv->id, "metalink", NULL);
-	if (metalink && !lr_handle_setopt (priv->repo_handle, error, LRO_METALINKURL, metalink))
-		return FALSE;
-
-	/* gpgcheck is optional */
-	// FIXME: https://github.com/Tojaj/librepo/issues/16
-	//ret = lr_handle_setopt (priv->repo_handle, error, LRO_GPGCHECK, priv->gpgcheck == 1 ? 1 : 0);
-	//if (!ret)
-	//	return FALSE;
-
-	/* proxy is optional */
-	proxy = g_key_file_get_string (priv->keyfile, priv->id, "proxy", NULL);
-	if (!lr_handle_setopt (priv->repo_handle, error, LRO_PROXY, proxy))
-		return FALSE;
-
-	/* both parts of the proxy auth are optional */
-	usr = g_key_file_get_string (priv->keyfile, priv->id, "proxy_username", NULL);
-	pwd = g_key_file_get_string (priv->keyfile, priv->id, "proxy_password", NULL);
-	usr_pwd_proxy = hif_source_get_username_password_string (usr, pwd);
-	if (!lr_handle_setopt (priv->repo_handle, error, LRO_PROXYUSERPWD, usr_pwd_proxy))
-		return FALSE;
-
-	/* both parts of the HTTP auth are optional */
-	usr = g_key_file_get_string (priv->keyfile, priv->id, "username", NULL);
-	pwd = g_key_file_get_string (priv->keyfile, priv->id, "password", NULL);
-	usr_pwd = hif_source_get_username_password_string (usr, pwd);
-	if (!lr_handle_setopt (priv->repo_handle, error, LRO_USERPWD, usr_pwd))
-		return FALSE;
-	return TRUE;
-//gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$basearch
 }
 
 /**
@@ -1027,6 +1051,29 @@ hif_source_update (HifSource *source,
 	gint64 timestamp_new = 0;
 	_cleanup_error_free_ GError *error_local = NULL;
 
+	/* cannot change DVD contents */
+	if (priv->kind == HIF_SOURCE_KIND_MEDIA) {
+		g_set_error_literal (error,
+				     HIF_ERROR,
+				     HIF_ERROR_SOURCE_NOT_AVAILABLE,
+				     "Cannot update read-only source");
+		return FALSE;
+	}
+
+	/* do not refresh local repos */
+	if (priv->kind == HIF_SOURCE_KIND_LOCAL)
+		return TRUE;
+
+	/* this needs to be set */
+	if (priv->location_tmp == NULL) {
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_INTERNAL_ERROR,
+			     "location_tmp not set for %s",
+			     priv->id);
+		return FALSE;
+	}
+
 	/* take lock */
 	ret = hif_state_take_lock (state,
 				   HIF_LOCK_TYPE_METADATA,
@@ -1034,16 +1081,6 @@ hif_source_update (HifSource *source,
 				   error);
 	if (!ret)
 		goto out;
-
-	/* cannot change DVD contents */
-	if (priv->kind == HIF_SOURCE_KIND_MEDIA) {
-		ret = FALSE;
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     HIF_ERROR_SOURCE_NOT_AVAILABLE,
-				     "Cannot update read-only source");
-		goto out;
-	}
 
 	/* set state */
 	ret = hif_state_set_steps (state, error,
@@ -1086,9 +1123,6 @@ hif_source_update (HifSource *source,
 		goto out;
 	ret = lr_handle_setopt (priv->repo_handle, error,
 				LRO_DESTDIR, priv->location_tmp);
-	if (!ret)
-		goto out;
-	ret = hif_source_set_keyfile_data (source, error);
 	if (!ret)
 		goto out;
 
@@ -1358,11 +1392,6 @@ hif_source_download_package (HifSource *source,
 			goto out;
 		goto done;
 	}
-
-	/* setup the repo remote */
-	if (priv->keyfile != NULL &&
-			!hif_source_set_keyfile_data (source, error))
-		goto out;
 
 	ret = lr_handle_setopt (priv->repo_handle, error,
 				LRO_PROGRESSDATA, state);

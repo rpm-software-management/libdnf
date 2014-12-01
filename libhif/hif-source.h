@@ -83,12 +83,14 @@ typedef enum {
  * HifSourceKind:
  * @HIF_SOURCE_KIND_REMOTE:			A remote repo
  * @HIF_SOURCE_KIND_MEDIA:			A media repo, e.g. a DVD
+ * @HIF_SOURCE_KIND_LOCAL:			A local repo, e.g. file://
  *
  * The source kind.
  **/
 typedef enum {
 	HIF_SOURCE_KIND_REMOTE,
 	HIF_SOURCE_KIND_MEDIA,
+	HIF_SOURCE_KIND_LOCAL,
 	/*< private >*/
 	HIF_SOURCE_KIND_LAST
 } HifSourceKind;

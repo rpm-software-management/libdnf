@@ -335,10 +335,6 @@ hif_repos_source_parse_id (HifRepos *repos,
 {
 	HifReposPrivate *priv = GET_PRIVATE (repos);
 	HifSourceEnabled enabled = 0;
-	gboolean ret = TRUE;
-	gchar *tmp;
-	guint64 val;
-	guint cost;
 	_cleanup_object_unref_ HifSource *source;
 
 	/* enabled isn't a required key */
@@ -363,42 +359,12 @@ hif_repos_source_parse_id (HifRepos *repos,
 	source = hif_source_new (priv->context);
 	hif_source_set_enabled (source, enabled);
 	hif_source_set_kind (source, HIF_SOURCE_KIND_REMOTE);
-	cost = g_key_file_get_integer (keyfile, id, "cost", NULL);
-	if (cost != 0)
-		hif_source_set_cost (source, cost);
 	hif_source_set_keyfile (source, keyfile);
 	hif_source_set_filename (source, filename);
 	hif_source_set_id (source, id);
 
-	if (hif_source_is_local (source)) {
-		_cleanup_strv_free_ gchar **baseurls = NULL;
-		baseurls = g_key_file_get_string_list (keyfile, id, "baseurl", NULL, NULL);
-		if (baseurls != NULL && baseurls[0] != NULL) {
-			_cleanup_free_ gchar *url = NULL;
-			url = lr_prepend_url_protocol (baseurls[0]);
-			if (strncasecmp (url, "file://", 7) == 0) {
-				hif_source_set_location (source, url + 7);
-			}
-		}
-	}
-	if (hif_source_get_location (source) == NULL) {
-		tmp = g_build_filename (hif_context_get_cache_dir (priv->context),
-					id, NULL);
-		hif_source_set_location (source, tmp);
-		g_free (tmp);
-	}
-
-	tmp = g_strdup_printf ("%s.tmp", hif_source_get_location (source));
-	hif_source_set_location_tmp (source, tmp);
-	g_free (tmp);
-
-	//FIXME: only set if a gpgkey is also set?
-	val = g_key_file_get_uint64 (keyfile, id, "gpgcheck", NULL);
-	hif_source_set_gpgcheck (source, val == 1 ? TRUE : FALSE);
-
 	/* set up the repo ready for use */
-	ret = hif_source_setup (source, error);
-	if (!ret)
+	if (!hif_source_setup (source, error))
 		return FALSE;
 
 	g_debug ("added source %s\t%s", filename, id);
