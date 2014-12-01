@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "hif-cleanup.h"
+#include "hif-context-private.h"
 #include "hif-utils.h"
 
 #define HIF_ERROR_INVALID_ARGUMENTS	0
@@ -239,6 +240,116 @@ hif_cmd_remove (HifUtilPrivate *priv, gchar **values, GError **error)
 }
 
 /**
+ * hif_cmd_refresh_source:
+ **/
+static gboolean
+hif_cmd_refresh_source (HifUtilPrivate *priv, HifSource *src, HifState *state, GError **error)
+{
+	HifState *state_local;
+	gboolean ret;
+	_cleanup_error_free_ GError *error_local = NULL;
+
+	/* set steps */
+	if (!hif_state_set_steps (state, error, 50, 50, -1))
+		return FALSE;
+
+	/* check source */
+	state_local = hif_state_get_child (state);
+	g_print ("Checking %s\n", hif_source_get_id (src));
+	ret = hif_source_check (src, 60 * 60, state_local, &error_local);
+	if (ret)
+		return hif_state_finished (state, error);
+
+	/* done */
+	if (!hif_state_done (state, error))
+		return FALSE;
+
+	/* print error to console and continue */
+	g_print ("Failed to check %s: %s\n",
+		 hif_source_get_id (src),
+		 error_local->message);
+	g_clear_error (&error_local);
+	if (!hif_state_finished (state_local, error))
+		return FALSE;
+
+	/* actually update source */
+	state_local = hif_state_get_child (state);
+	g_print ("Updating %s\n", hif_source_get_id (src));
+	if (!hif_source_update (src, HIF_SOURCE_UPDATE_FLAG_NONE,
+				state_local, &error_local)) {
+		if (g_error_matches (error_local,
+				     HIF_ERROR,
+				     HIF_ERROR_CANNOT_FETCH_SOURCE)) {
+			g_print ("Skipping repo: %s\n", error_local->message);
+			return hif_state_finished (state, error);
+		}
+		g_propagate_error (error, error_local);
+		return FALSE;
+	}
+
+	/* done */
+	return hif_state_done (state, error);
+}
+
+/**
+ * hif_cmd_refresh:
+ **/
+static gboolean
+hif_cmd_refresh (HifUtilPrivate *priv, gchar **values, GError **error)
+{
+	GPtrArray *sources;
+	HifSource *src;
+	HifState *state;
+	HifState *state_local;
+	guint i;
+
+	if (!hif_context_setup (priv->context, NULL, error))
+		return FALSE;
+
+	/* check and refresh each source in turn */
+	sources = hif_context_get_sources (priv->context);
+	state = hif_context_get_state (priv->context);
+	hif_state_set_number_steps (state, sources->len);
+	for (i = 0; i < sources->len; i++) {
+		src = g_ptr_array_index (sources, i);
+		state_local = hif_state_get_child (state);
+		if (!hif_cmd_refresh_source (priv, src, state_local, error))
+			return FALSE;
+		if (!hif_state_done (state, error))
+			return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * hif_cmd_clean:
+ **/
+static gboolean
+hif_cmd_clean (HifUtilPrivate *priv, gchar **values, GError **error)
+{
+	GPtrArray *sources;
+	HifSource *src;
+	HifState *state;
+	guint i;
+
+	if (!hif_context_setup (priv->context, NULL, error))
+		return FALSE;
+
+	/* clean each source in turn */
+	sources = hif_context_get_sources (priv->context);
+	state = hif_context_get_state (priv->context);
+	hif_state_set_number_steps (state, sources->len);
+	for (i = 0; i < sources->len; i++) {
+		src = g_ptr_array_index (sources, i);
+		if (!hif_source_clean (src, error))
+			return FALSE;
+		if (!hif_state_done (state, error))
+			return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * hif_cmd_update:
  **/
 static gboolean
@@ -315,6 +426,14 @@ main (int argc, char *argv[])
 		     "update", "[pkgname]",
 		     "Update a package or group name",
 		     hif_cmd_update);
+	hif_cmd_add (priv->cmd_array,
+		     "refresh", "[force]",
+		     "Refresh all the metadata",
+		     hif_cmd_refresh);
+	hif_cmd_add (priv->cmd_array,
+		     "clean", NULL,
+		     "Clean all the metadata",
+		     hif_cmd_clean);
 
 	/* sort by command name */
 	g_ptr_array_sort (priv->cmd_array,
