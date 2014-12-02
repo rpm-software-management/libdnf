@@ -63,6 +63,7 @@ struct _HifSourcePrivate
 	gint64		 timestamp_generated;	/* µs */
 	gint64		 timestamp_modified;	/* µs */
 	GKeyFile	*keyfile;
+	GHashTable	*filenames_md;	/* key:filename */
 	HifContext	*context;
 	HifSourceKind	 kind;
 	HyRepo		 repo;
@@ -91,6 +92,7 @@ hif_source_finalize (GObject *object)
 	g_free (priv->location);
 	g_free (priv->packages);
 	g_free (priv->packages_tmp);
+	g_hash_table_unref (priv->filenames_md);
 	g_object_unref (priv->context);
 	if (priv->repo_result != NULL)
 		lr_result_free (priv->repo_result);
@@ -114,6 +116,8 @@ hif_source_init (HifSource *source)
 	priv->cost = 1000;
 	priv->repo_handle = lr_handle_init ();
 	priv->repo_result = lr_result_init ();
+	priv->filenames_md = g_hash_table_new_full (g_str_hash, g_str_equal,
+						    g_free, g_free);
 }
 
 /**
@@ -853,7 +857,6 @@ hif_source_set_timestamp_modified (HifSource *source, GError **error)
  *
  * Since: 0.1.0
  **/
-
 gboolean
 hif_source_check (HifSource *source,
 		  guint permissible_cache_age,
@@ -942,15 +945,52 @@ hif_source_check (HifSource *source,
 	priv->repo = hy_repo_create (priv->id);
 	hy_repo_set_string (priv->repo, HY_REPO_MD_FN, yum_repo->repomd);
 	tmp = lr_yum_repo_path (yum_repo, "primary");
-	if (tmp != NULL)
+	if (tmp != NULL) {
 		hy_repo_set_string (priv->repo, HY_REPO_PRIMARY_FN, tmp);
+		g_hash_table_insert (priv->filenames_md,
+				     g_strdup ("primary"),
+				     g_strdup (tmp));
+	}
 	tmp = lr_yum_repo_path (yum_repo, "filelists");
-	if (tmp != NULL)
+	if (tmp != NULL) {
 		hy_repo_set_string (priv->repo, HY_REPO_FILELISTS_FN, tmp);
+		g_hash_table_insert (priv->filenames_md,
+				     g_strdup ("filelists"),
+				     g_strdup (tmp));
+	}
 	tmp = lr_yum_repo_path (yum_repo, "updateinfo");
-	if (tmp != NULL)
+	if (tmp != NULL) {
 		hy_repo_set_string (priv->repo, HY_REPO_UPDATEINFO_FN, tmp);
+		g_hash_table_insert (priv->filenames_md,
+				     g_strdup ("updateinfo"),
+				     g_strdup (tmp));
+	}
+	tmp = lr_yum_repo_path (yum_repo, "group");
+	if (tmp != NULL) {
+		g_hash_table_insert (priv->filenames_md,
+				     g_strdup ("group"),
+				     g_strdup (tmp));
+	}
 	return TRUE;
+}
+
+/**
+ * hif_source_get_filename_md:
+ * @source: a #HifSource instance.
+ * @md_kind: The file kind, e.g. "primary" or "updateinfo"
+ *
+ * Gets the filename used for a source data kind.
+ *
+ * Returns: the full path to the data file, %NULL otherwise
+ *
+ * Since: 0.1.7
+ **/
+const gchar *
+hif_source_get_filename_md (HifSource *source, const gchar *md_kind)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	g_return_val_if_fail (md_kind != NULL, NULL);
+	return g_hash_table_lookup (priv->filenames_md, md_kind);
 }
 
 /**
