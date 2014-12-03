@@ -921,6 +921,7 @@ hif_transaction_write_yumdb_install_item (HifTransaction *transaction,
 
 	/* set steps */
 	hif_state_set_number_steps (state, 5);
+	hif_state_set_allow_cancel (state, FALSE);
 
 	/* need to find the HyPackage in the rpmdb, not the remote one that we
 	 * just installed */
@@ -1443,6 +1444,7 @@ hif_transaction_commit (HifTransaction *transaction,
 	priv->step = HIF_TRANSACTION_STEP_STARTED;
 	rpmtsSetFlags (priv->ts, RPMTRANS_FLAG_NONE);
 	g_debug ("Running actual transaction");
+	hif_state_set_allow_cancel (state, FALSE);
 	rc = rpmtsRun (priv->ts, NULL, problems_filter);
 	if (rc < 0) {
 		ret = FALSE;
