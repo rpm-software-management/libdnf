@@ -1114,6 +1114,10 @@ hif_source_update (HifSource *source,
 		return FALSE;
 	}
 
+	/* ensure we set the values from the keyfile */
+	if (!hif_source_set_keyfile_data (source, error))
+		return FALSE;
+
 	/* take lock */
 	ret = hif_state_take_lock (state,
 				   HIF_LOCK_TYPE_METADATA,
