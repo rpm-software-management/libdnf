@@ -312,6 +312,8 @@ hif_cmd_refresh (HifUtilPrivate *priv, gchar **values, GError **error)
 	hif_state_set_number_steps (state, sources->len);
 	for (i = 0; i < sources->len; i++) {
 		src = g_ptr_array_index (sources, i);
+		if (hif_source_get_enabled (src) == HIF_SOURCE_ENABLED_NONE)
+			continue;
 		state_local = hif_state_get_child (state);
 		if (!hif_cmd_refresh_source (priv, src, state_local, error))
 			return FALSE;
