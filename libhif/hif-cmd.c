@@ -182,7 +182,7 @@ hif_cmd_run (HifUtilPrivate *priv, const gchar *command, gchar **values, GError 
 					item->arguments ? item->arguments : "");
 	}
 	g_set_error_literal (error, HIF_ERROR, HIF_ERROR_NO_SUCH_CMD, string->str);
-	return TRUE;
+	return FALSE;
 }
 
 /**
