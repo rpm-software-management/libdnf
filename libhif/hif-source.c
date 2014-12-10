@@ -39,11 +39,14 @@
 #include "config.h"
 
 #include <strings.h>
+#include <fcntl.h>
 #include <glib/gstdio.h>
 #include <hawkey/util.h>
 #include <librepo/librepo.h>
+#include <rpm/rpmts.h>
 
 #include "hif-cleanup.h"
+#include "hif-keyring.h"
 #include "hif-source.h"
 #include "hif-package.h"
 #include "hif-utils.h"
@@ -53,6 +56,7 @@ struct _HifSourcePrivate
 {
 	HifSourceEnabled enabled;
 	gboolean	 gpgcheck;
+	gchar		*gpgkey;
 	guint		 cost;
 	gchar		*filename;	/* /etc/yum.repos.d/updates.repo */
 	gchar		*id;
@@ -88,6 +92,7 @@ hif_source_finalize (GObject *object)
 
 	g_free (priv->id);
 	g_free (priv->filename);
+	g_free (priv->gpgkey);
 	g_free (priv->location_tmp);
 	g_free (priv->location);
 	g_free (priv->packages);
@@ -702,7 +707,9 @@ hif_source_set_keyfile_data (HifSource *source, GError **error)
 		hif_source_set_location_tmp (source, tmp);
 	}
 
-	//FIXME: if a gpgkey is also set: https://github.com/Tojaj/librepo/issues/16
+	/* gpgkey is optional for gpgcheck=1 */
+	g_free (priv->gpgkey);
+	priv->gpgkey = g_key_file_get_string (priv->keyfile, priv->id, "gpgkey", NULL);
 	priv->gpgcheck = g_key_file_get_boolean (priv->keyfile, priv->id,
 						 "gpgcheck", NULL);
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_GPGCHECK, priv->gpgcheck))
@@ -769,6 +776,11 @@ hif_source_setup (HifSource *source, GError **error)
 	}
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_USERAGENT, "PackageKit-hawkey"))
 		return FALSE;
+#if LR_VERSION_CHECK(1,7,5)
+	if (!lr_handle_setopt (priv->repo_handle, error,
+			       LRO_GNUPGHOMEDIR, HIF_KEYRING_GNUPG_HOME_DIR))
+		return FALSE;
+#endif
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_REPOTYPE, LR_YUMREPO))
 		return FALSE;
 	priv->urlvars = lr_urlvars_set (priv->urlvars, "releasever", release);
@@ -1066,6 +1078,62 @@ hif_source_clean (HifSource *source, GError **error)
 }
 
 /**
+ * hif_source_import_public_key:
+ **/
+static gboolean
+hif_source_import_public_key (HifSource *source, const gchar *fn, GError **error)
+{
+	gboolean ret;
+	rpmKeyring keyring;
+	rpmts ts;
+
+	/* then import to rpmdb */
+	ts = rpmtsCreate ();
+	keyring = rpmtsGetKeyring (ts, 1);
+	ret = hif_keyring_add_public_key (keyring, fn, error);
+	rpmKeyringFree (keyring);
+	rpmtsFree (ts);
+	return ret;
+}
+
+/**
+ * hif_source_download_import_public_key:
+ **/
+static gboolean
+hif_source_download_import_public_key (HifSource *source, GError **error)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	int fd;
+	_cleanup_free_ gchar *repomd_pub = NULL;
+
+	/* does this file already exist */
+	repomd_pub = g_build_filename (priv->location_tmp, "repomd.pub", NULL);
+	if (g_file_test (repomd_pub, G_FILE_TEST_EXISTS))
+		return hif_source_import_public_key (source, repomd_pub, error);
+
+	/* download to known location */
+	g_debug ("Downloading %s to %s", priv->gpgkey, repomd_pub);
+	fd = g_open (repomd_pub, O_CLOEXEC | O_CREAT | O_RDWR, 0774);
+	if (fd < 0) {
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_INTERNAL_ERROR,
+			     "Failed to open %s: %i",
+			     repomd_pub, fd);
+		return FALSE;
+	}
+	if (!lr_download_url (priv->repo_handle, priv->gpgkey, fd, error)) {
+		g_close (fd, NULL);
+		return FALSE;
+	}
+	if (!g_close (fd, error))
+		return FALSE;
+
+	/* import found key */
+	return hif_source_import_public_key (source, repomd_pub, error);
+}
+
+/**
  * hif_source_update:
  * @source: a #HifSource instance.
  * @flags: #HifSourceUpdateFlags, e.g. %HIF_SOURCE_UPDATE_FLAG_FORCE
@@ -1158,6 +1226,14 @@ hif_source_update (HifSource *source,
 				     "Failed to create %s", priv->location_tmp);
 			goto out;
 		}
+	}
+
+	/* download and import public key */
+	if (priv->gpgkey != NULL && g_str_has_prefix (priv->gpgkey, "https://") &&
+	    (flags & HIF_SOURCE_UPDATE_FLAG_IMPORT_PUBKEY) > 0) {
+		ret = hif_source_download_import_public_key (source, error);
+		if (!ret)
+			goto out;
 	}
 
 	g_debug ("Attempting to update %s", priv->id);

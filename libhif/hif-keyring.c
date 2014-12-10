@@ -37,6 +37,7 @@
 #include <glib.h>
 #include <rpm/rpmlib.h>
 #include <rpm/rpmts.h>
+#include <librepo/librepo.h>
 
 #include "hif-cleanup.h"
 #include "hif-keyring.h"
@@ -72,6 +73,11 @@ hif_keyring_add_public_key (rpmKeyring keyring,
 	if (!g_file_test (filename, G_FILE_TEST_IS_REGULAR))
 		goto out;
 	if (g_file_test (filename, G_FILE_TEST_IS_SYMLINK))
+		goto out;
+
+	/* first import to librepo */
+	ret = lr_gpg_import_key (filename, HIF_KEYRING_GNUPG_HOME_DIR, error);
+	if (!ret)
 		goto out;
 
 	/* get data */
@@ -158,7 +164,7 @@ out:
  * @keyring: a #rpmKeyring instance.
  * @error: a #GError or %NULL.
  *
- * Adds all installed public keys to the keyring.
+ * Adds all installed public keys to the RPM and shared keyring.
  *
  * Returns: %TRUE for success, %FALSE otherwise
  *

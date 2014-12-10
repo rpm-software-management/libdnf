@@ -275,7 +275,7 @@ hif_cmd_refresh_source (HifUtilPrivate *priv, HifSource *src, HifState *state, G
 	/* actually update source */
 	state_local = hif_state_get_child (state);
 	g_print ("Updating %s\n", hif_source_get_id (src));
-	if (!hif_source_update (src, HIF_SOURCE_UPDATE_FLAG_NONE,
+	if (!hif_source_update (src, HIF_SOURCE_UPDATE_FLAG_IMPORT_PUBKEY,
 				state_local, &error_local)) {
 		if (g_error_matches (error_local,
 				     HIF_ERROR,

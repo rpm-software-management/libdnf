@@ -30,6 +30,8 @@
 
 #include <rpm/rpmkeyring.h>
 
+#define HIF_KEYRING_GNUPG_HOME_DIR		"/var/lib/rpm/gnupg"
+
 gboolean	 hif_keyring_add_public_key	(rpmKeyring		 keyring,
 						 const gchar		*filename,
 						 GError			**error);
