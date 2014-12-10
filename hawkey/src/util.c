@@ -32,7 +32,8 @@
 
 enum _hy_sack_cpu_flags {
     ARM_NEON = 1 << 0,
-    ARM_HFP  = 1 << 1
+    ARM_VFP3  = 1 << 1,
+    ARM_VFP  = 1 << 2
 };
 
 static int
@@ -51,7 +52,9 @@ parse_cpu_flags(int *flags, const char *section)
 	    if (!strcmp(tok, "neon"))
 		*flags |= ARM_NEON;
 	    else if (!strcmp(tok, "vfpv3"))
-		*flags |= ARM_HFP;
+		*flags |= ARM_VFP3;
+	    else if (!strcmp(tok, "vfp"))
+		*flags |= ARM_VFP;
 	    tok = strtok_r(NULL, " ", &saveptr);
 	}
     }
@@ -120,14 +123,22 @@ hy_detect_arch(char **arch)
     if (uname(&un))
 	return HY_E_FAILED;
 
+    if (!strcmp(un.machine, "armv6l")) {
+	int flags = 0;
+	int ret = parse_cpu_flags(&flags, "Features");
+	if (ret)
+	    return ret;
+	if (flags & ARM_VFP)
+	    strcpy(un.machine, "armv6hl");
+    }
     if (!strcmp(un.machine, "armv7l")) {
 	int flags = 0;
 	int ret = parse_cpu_flags(&flags, "Features");
 	if (ret)
 	    return ret;
-	if (flags & (ARM_NEON | ARM_HFP))
+	if (flags & (ARM_NEON | ARM_VFP3))
 	    strcpy(un.machine, "armv7hnl");
-	else if (flags & ARM_HFP)
+	else if (flags & ARM_VFP3)
 	    strcpy(un.machine, "armv7hl");
     }
     *arch = solv_strdup(un.machine);
