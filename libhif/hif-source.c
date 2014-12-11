@@ -983,6 +983,11 @@ hif_source_check (HifSource *source,
 				     g_strdup ("group"),
 				     g_strdup (tmp));
 	}
+
+	/* ensure we reset the values from the keyfile */
+	if (!hif_source_set_keyfile_data (source, error))
+		return FALSE;
+
 	return TRUE;
 }
 
