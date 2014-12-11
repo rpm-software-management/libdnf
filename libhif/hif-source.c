@@ -783,6 +783,8 @@ hif_source_setup (HifSource *source, GError **error)
 #endif
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_REPOTYPE, LR_YUMREPO))
 		return FALSE;
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_INTERRUPTIBLE, FALSE))
+		return FALSE;
 	priv->urlvars = lr_urlvars_set (priv->urlvars, "releasever", release);
 	priv->urlvars = lr_urlvars_set (priv->urlvars, "basearch", basearch);
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_VARSUB, priv->urlvars))
