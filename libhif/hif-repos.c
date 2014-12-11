@@ -88,7 +88,6 @@ hif_repos_invalidate (HifRepos *repos)
 {
 	HifReposPrivate *priv = GET_PRIVATE (repos);
 	priv->loaded = FALSE;
-	g_ptr_array_set_size (priv->sources, 0);
 }
 
 /**
@@ -417,6 +416,7 @@ hif_repos_refresh (HifRepos *repos, GError **error)
 
 	/* no longer loaded */
 	hif_repos_invalidate (repos);
+	g_ptr_array_set_size (priv->sources, 0);
 
 	/* open dir */
 	repo_path = hif_context_get_repo_dir (priv->context);
