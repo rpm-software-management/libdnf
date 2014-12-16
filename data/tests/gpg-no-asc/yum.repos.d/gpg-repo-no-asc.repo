@@ -1,0 +1,6 @@
+[gpg-repo-no-asc]
+name=Repo GPG checking enabled but no .asc file present in repo
+baseurl=file://$testdatadir/gpg-no-asc/
+enabled=1
+repo_gpgcheck=1
+gpgkey=file://$testdatadir/gpgkey/signing_key.pub

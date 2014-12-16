@@ -877,7 +877,7 @@ hif_repos_func (void)
 	/* try to check local repo that will not exist */
 	hif_state_reset (state);
 	ret = hif_source_check (src, 1, state, &error);
-	g_assert_error (error, HIF_ERROR, HIF_ERROR_INTERNAL_ERROR);
+	g_assert_error (error, HIF_ERROR, HIF_ERROR_SOURCE_NOT_AVAILABLE);
 	g_assert (!ret);
 	g_clear_error (&error);
 }
@@ -915,16 +915,178 @@ hif_context_func (void)
 	g_object_unref (ctx);
 }
 
+static void
+hif_repos_gpg_no_pubkey_func (void)
+{
+	gboolean ret;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *repos_dir = NULL;
+	_cleanup_object_unref_ HifContext *ctx = NULL;
+	_cleanup_object_unref_ HifRepos *repos = NULL;
+
+	/* set up local context */
+	ctx = hif_context_new ();
+	repos_dir = hif_test_get_filename ("gpg-no-pubkey");
+	hif_context_set_repo_dir (ctx, repos_dir);
+	hif_context_set_solv_dir (ctx, "/tmp");
+	ret = hif_context_setup (ctx, NULL, &error);
+	g_assert_error (error, HIF_ERROR, HIF_ERROR_FILE_INVALID);
+	g_assert (!ret);
+}
+
+static void
+hif_repos_gpg_no_asc_func (void)
+{
+	HifRepos *repos;
+	HifSource *src;
+	gboolean ret;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *repos_dir = NULL;
+	_cleanup_object_unref_ HifContext *ctx = NULL;
+	_cleanup_object_unref_ HifState *state = NULL;
+	_cleanup_object_unref_ HifLock *lock = NULL;
+
+	lock = hif_lock_new ();
+	hif_lock_set_lock_dir (lock, "/tmp");
+
+	/* set up local context */
+	ctx = hif_context_new ();
+	repos_dir = hif_test_get_filename ("gpg-no-asc/yum.repos.d");
+	hif_context_set_repo_dir (ctx, repos_dir);
+	hif_context_set_solv_dir (ctx, "/tmp");
+	ret = hif_context_setup (ctx, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	/* get the source with no repomd.xml.asc */
+	repos = hif_context_get_repos (ctx);
+	src = hif_repos_get_source_by_id (repos, "gpg-repo-no-asc", &error);
+	g_assert_no_error (error);
+	g_assert (src != NULL);
+
+	/* check, which should fail as no local repomd.xml.asc exists */
+	state = hif_state_new ();
+//FIXME: https://github.com/Tojaj/librepo/issues/38
+//	ret = hif_source_check (src, G_MAXUINT, state, &error);
+//	g_assert_error (error, HIF_ERROR, HIF_ERROR_INTERNAL_ERROR);
+//	g_assert (!ret);
+//	g_clear_error (&error);
+
+	/* update, which should fail as no *remote* repomd.xml.asc exists */
+	hif_state_reset (state);
+	ret = hif_source_update (src,
+				 HIF_SOURCE_UPDATE_FLAG_FORCE |
+				 HIF_SOURCE_UPDATE_FLAG_SIMULATE,
+				 state, &error);
+	g_assert_error (error, HIF_ERROR, HIF_ERROR_CANNOT_FETCH_SOURCE);
+	g_assert (!ret);
+	g_clear_error (&error);
+}
+
+static void
+hif_repos_gpg_wrong_asc_func (void)
+{
+	HifRepos *repos;
+	HifSource *src;
+	gboolean ret;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *repos_dir = NULL;
+	_cleanup_object_unref_ HifContext *ctx = NULL;
+	_cleanup_object_unref_ HifState *state = NULL;
+	_cleanup_object_unref_ HifLock *lock = NULL;
+
+	lock = hif_lock_new ();
+	hif_lock_set_lock_dir (lock, "/tmp");
+
+	/* set up local context */
+	ctx = hif_context_new ();
+	repos_dir = hif_test_get_filename ("gpg-wrong-asc/yum.repos.d");
+	hif_context_set_repo_dir (ctx, repos_dir);
+	hif_context_set_solv_dir (ctx, "/tmp");
+	ret = hif_context_setup (ctx, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	/* get the source with the *wrong* remote repomd.xml.asc */
+	repos = hif_context_get_repos (ctx);
+	src = hif_repos_get_source_by_id (repos, "gpg-repo-wrong-asc", &error);
+	g_assert_no_error (error);
+	g_assert (src != NULL);
+
+	/* update, which should fail as the repomd.xml.asc key is wrong */
+	state = hif_state_new ();
+	ret = hif_source_update (src,
+				 HIF_SOURCE_UPDATE_FLAG_FORCE |
+				 HIF_SOURCE_UPDATE_FLAG_SIMULATE,
+				 state, &error);
+	g_assert_error (error, HIF_ERROR, HIF_ERROR_CANNOT_FETCH_SOURCE);
+	g_assert (!ret);
+	g_clear_error (&error);
+}
+
+static void
+hif_repos_gpg_asc_func (void)
+{
+	HifRepos *repos;
+	HifSource *src;
+	gboolean ret;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *repos_dir = NULL;
+	_cleanup_object_unref_ HifContext *ctx = NULL;
+	_cleanup_object_unref_ HifState *state = NULL;
+	_cleanup_object_unref_ HifLock *lock = NULL;
+
+	lock = hif_lock_new ();
+	hif_lock_set_lock_dir (lock, "/tmp");
+
+	/* set up local context */
+	ctx = hif_context_new ();
+	repos_dir = hif_test_get_filename ("gpg-asc/yum.repos.d");
+	hif_context_set_repo_dir (ctx, repos_dir);
+	hif_context_set_solv_dir (ctx, "/tmp");
+	ret = hif_context_setup (ctx, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	/* get the source with no repomd.xml.asc */
+	repos = hif_context_get_repos (ctx);
+	src = hif_repos_get_source_by_id (repos, "gpg-repo-asc", &error);
+	g_assert_no_error (error);
+	g_assert (src != NULL);
+
+	/* check, which should fail as there's no gnupg homedir with the key */
+	state = hif_state_new ();
+	ret = hif_source_check (src, G_MAXUINT, state, &error);
+	g_assert_error (error, HIF_ERROR, HIF_ERROR_SOURCE_NOT_AVAILABLE);
+	g_assert (!ret);
+	g_clear_error (&error);
+
+	/* update, which should pass as a valid remote repomd.xml.asc exists */
+	hif_state_reset (state);
+	ret = hif_source_update (src,
+				 HIF_SOURCE_UPDATE_FLAG_FORCE |
+				 HIF_SOURCE_UPDATE_FLAG_SIMULATE,
+				 state, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+}
+
 int
 main (int argc, char **argv)
 {
+	g_setenv ("G_MESSAGES_DEBUG", "all", FALSE);
+
 	g_test_init (&argc, &argv, NULL);
 
 	/* only critical and error are fatal */
 	g_log_set_fatal_mask (NULL, G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL);
 
 	/* tests go here */
+	g_test_add_func ("/libhif/repos{gpg-asc}", hif_repos_gpg_asc_func);
+	g_test_add_func ("/libhif/repos{gpg-wrong-asc}", hif_repos_gpg_wrong_asc_func);
+	g_test_add_func ("/libhif/repos{gpg-no-asc}", hif_repos_gpg_no_asc_func);
 	g_test_add_func ("/libhif/repos", hif_repos_func);
+	g_test_add_func ("/libhif/repos{gpg-no-pubkey}", hif_repos_gpg_no_pubkey_func);
 	g_test_add_func ("/libhif/context", hif_context_func);
 	g_test_add_func ("/libhif/lock", hif_lock_func);
 	g_test_add_func ("/libhif/lock[threads]", hif_lock_threads_func);

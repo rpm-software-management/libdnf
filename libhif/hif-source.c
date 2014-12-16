@@ -737,7 +737,8 @@ hif_source_set_keyfile_data (HifSource *source, GError **error)
 		_cleanup_free_ gchar *url = NULL;
 		url = lr_prepend_url_protocol (baseurls[0]);
 		if (url != NULL && strncasecmp (url, "file://", 7) == 0) {
-			priv->kind = HIF_SOURCE_KIND_LOCAL;
+			if (g_strstr_len (url, -1, "$testdatadir") == NULL)
+				priv->kind = HIF_SOURCE_KIND_LOCAL;
 			hif_source_set_location (source, url + 7);
 		}
 	}
@@ -762,7 +763,13 @@ hif_source_set_keyfile_data (HifSource *source, GError **error)
 
 	/* gpgkey is optional for gpgcheck=1, but required for repo_gpgcheck=1 */
 	g_free (priv->gpgkey);
-	priv->gpgkey = g_key_file_get_string (priv->keyfile, priv->id, "gpgkey", NULL);
+{
+	//FIXME: https://github.com/Tojaj/librepo/issues/37
+	_cleanup_free_ gchar *tmp = NULL;
+	tmp = g_key_file_get_string (priv->keyfile, priv->id, "gpgkey", NULL);
+	if (tmp != NULL)
+		priv->gpgkey = hif_source_substitute (source, tmp);
+}
 	priv->gpgcheck_pkgs = g_key_file_get_boolean (priv->keyfile, priv->id,
 							  "gpgcheck", NULL);
 	priv->gpgcheck_md = g_key_file_get_boolean (priv->keyfile, priv->id,
@@ -976,7 +983,7 @@ hif_source_check (HifSource *source,
 	if (!lr_handle_perform (priv->repo_handle, priv->repo_result, &error_local)) {
 		g_set_error (error,
 			     HIF_ERROR,
-			     HIF_ERROR_INTERNAL_ERROR,
+			     HIF_ERROR_SOURCE_NOT_AVAILABLE,
 			     "repodata %s was not complete: %s",
 			     priv->id, error_local->message);
 		return FALSE;
@@ -1279,6 +1286,7 @@ hif_source_update (HifSource *source,
 	if (priv->gpgcheck_md &&
 	    (g_str_has_prefix (priv->gpgkey, "https://") ||
 	     g_str_has_prefix (priv->gpgkey, "file://"))) {
+		g_debug ("importing public key %s", priv->gpgkey);
 		ret = hif_source_download_import_public_key (source, error);
 		if (!ret)
 			goto out;

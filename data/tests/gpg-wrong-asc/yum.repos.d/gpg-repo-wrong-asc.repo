@@ -1,0 +1,6 @@
+[gpg-repo-wrong-asc]
+name=Repo GPG checking enabled but no .asc signed using the wrong key
+baseurl=file://$testdatadir/gpg-wrong-asc/
+enabled=1
+repo_gpgcheck=1
+gpgkey=file://$testdatadir/gpgkey/signing_key.pub
