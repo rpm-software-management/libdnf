@@ -812,6 +812,7 @@ hif_source_setup (HifSource *source, GError **error)
 	HifSourcePrivate *priv = GET_PRIVATE (source);
 	_cleanup_free_ gchar *basearch = NULL;
 	_cleanup_free_ gchar *release = NULL;
+	_cleanup_free_ gchar *testdatadir = NULL;
 
 	basearch = g_key_file_get_string (priv->keyfile, "general", "arch", NULL);
 	if (basearch == NULL)
@@ -841,6 +842,8 @@ hif_source_setup (HifSource *source, GError **error)
 		return FALSE;
 	priv->urlvars = lr_urlvars_set (priv->urlvars, "releasever", release);
 	priv->urlvars = lr_urlvars_set (priv->urlvars, "basearch", basearch);
+	testdatadir = hif_realpath (TESTDATADIR);
+	priv->urlvars = lr_urlvars_set (priv->urlvars, "testdatadir", testdatadir);
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_VARSUB, priv->urlvars))
 		return FALSE;
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_GNUPGHOMEDIR, priv->keyring))
