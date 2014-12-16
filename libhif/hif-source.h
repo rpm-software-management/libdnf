@@ -70,6 +70,7 @@ struct _HifSourceClass
  * @HIF_SOURCE_UPDATE_FLAG_NONE:		No flags set
  * @HIF_SOURCE_UPDATE_FLAG_FORCE:		Force the source to be updated
  * @HIF_SOURCE_UPDATE_FLAG_IMPORT_PUBKEY:	Import the source public key to librpm if possible
+ * @HIF_SOURCE_UPDATE_FLAG_SIMULATE:		Do not actually update the source
  *
  * The update flags.
  **/
@@ -77,6 +78,7 @@ typedef enum {
 	HIF_SOURCE_UPDATE_FLAG_NONE		= 0,
 	HIF_SOURCE_UPDATE_FLAG_FORCE		= 1,
 	HIF_SOURCE_UPDATE_FLAG_IMPORT_PUBKEY	= 2,
+	HIF_SOURCE_UPDATE_FLAG_SIMULATE		= 4,
 	/*< private >*/
 	HIF_SOURCE_UPDATE_FLAG_LAST
 } HifSourceUpdateFlags;

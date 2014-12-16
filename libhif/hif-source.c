@@ -1327,6 +1327,13 @@ hif_source_update (HifSource *source,
 		goto out;
 	}
 
+	/* only simulate */
+	if (flags & HIF_SOURCE_UPDATE_FLAG_SIMULATE) {
+		g_debug ("simulating, so not switching to new metadata");
+		ret = hif_remove_recursive (priv->location_tmp, error);
+		goto out;
+	}
+
 	/* move the packages directory from the old cache to the new cache */
 	if (g_file_test (priv->packages, G_FILE_TEST_EXISTS)) {
 		rc = g_rename (priv->packages, priv->packages_tmp);
