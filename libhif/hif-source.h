@@ -125,6 +125,7 @@ HifSourceEnabled hif_source_get_enabled		(HifSource		*source);
 guint		 hif_source_get_cost		(HifSource		*source);
 HifSourceKind	 hif_source_get_kind		(HifSource		*source);
 gboolean	 hif_source_get_gpgcheck	(HifSource		*source);
+gboolean	 hif_source_get_gpgcheck_md	(HifSource		*source);
 gchar		*hif_source_get_description	(HifSource		*source);
 const gchar	*hif_source_get_filename_md	(HifSource		*source,
 						 const gchar		*md_kind);
@@ -154,7 +155,9 @@ void		 hif_source_set_cost		(HifSource		*source,
 void		 hif_source_set_kind		(HifSource		*source,
 						 HifSourceKind		 kind);
 void		 hif_source_set_gpgcheck	(HifSource		*source,
-						 gboolean		 gpgcheck);
+						 gboolean		 gpgcheck_pkgs);
+void		 hif_source_set_gpgcheck_md	(HifSource		*source,
+						 gboolean		 gpgcheck_md);
 void		 hif_source_set_keyfile		(HifSource		*source,
 						 GKeyFile		*keyfile);
 gboolean	 hif_source_setup		(HifSource		*source,

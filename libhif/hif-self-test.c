@@ -841,6 +841,8 @@ hif_repos_func (void)
 	g_assert_no_error (error);
 	g_assert (src != NULL);
 	g_assert_cmpint (hif_source_get_kind (src), ==, HIF_SOURCE_KIND_REMOTE);
+	g_assert (hif_source_get_gpgcheck (src));
+	g_assert (!hif_source_get_gpgcheck_md (src));
 
 	/* load repos that should be metadata enabled automatically */
 	src = hif_repos_get_source_by_id (repos, "redhat", &error);
@@ -848,6 +850,8 @@ hif_repos_func (void)
 	g_assert (src != NULL);
 	g_assert_cmpint (hif_source_get_enabled (src), ==, HIF_SOURCE_ENABLED_METADATA);
 	g_assert_cmpint (hif_source_get_kind (src), ==, HIF_SOURCE_KIND_REMOTE);
+	g_assert (!hif_source_get_gpgcheck (src));
+	g_assert (!hif_source_get_gpgcheck_md (src));
 
 	/* load local metadata repo */
 	src = hif_repos_get_source_by_id (repos, "local", &error);
@@ -856,6 +860,8 @@ hif_repos_func (void)
 	g_assert_cmpint (hif_source_get_enabled (src), ==, HIF_SOURCE_ENABLED_METADATA |
 							   HIF_SOURCE_ENABLED_PACKAGES);
 	g_assert_cmpint (hif_source_get_kind (src), ==, HIF_SOURCE_KIND_LOCAL);
+	g_assert (!hif_source_get_gpgcheck (src));
+	g_assert (!hif_source_get_gpgcheck_md (src));
 
 	/* try to clean local repo */
 	ret = hif_source_clean (src, &error);

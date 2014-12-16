@@ -55,7 +55,8 @@ typedef struct _HifSourcePrivate	HifSourcePrivate;
 struct _HifSourcePrivate
 {
 	HifSourceEnabled enabled;
-	gboolean	 gpgcheck;
+	gboolean	 gpgcheck_md;
+	gboolean	 gpgcheck_pkgs;
 	gchar		*gpgkey;
 	guint		 cost;
 	gchar		*filename;	/* /etc/yum.repos.d/updates.repo */
@@ -311,7 +312,7 @@ hif_source_get_kind (HifSource *source)
  * hif_source_get_gpgcheck:
  * @source: a #HifSource instance.
  *
- * Gets if the source is signed.
+ * Gets if the packages should be signed.
  *
  * Returns: %TRUE if packages should be signed
  *
@@ -321,7 +322,24 @@ gboolean
 hif_source_get_gpgcheck (HifSource *source)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
-	return priv->gpgcheck;
+	return priv->gpgcheck_pkgs;
+}
+
+/**
+ * hif_source_get_gpgcheck_md:
+ * @source: a #HifSource instance.
+ *
+ * Gets if the metadata should be signed.
+ *
+ * Returns: %TRUE if metadata should be signed
+ *
+ * Since: 0.1.7
+ **/
+gboolean
+hif_source_get_gpgcheck_md (HifSource *source)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	return priv->gpgcheck_md;
 }
 
 /**
@@ -596,17 +614,33 @@ hif_source_set_kind (HifSource *source, HifSourceKind kind)
 /**
  * hif_source_set_gpgcheck:
  * @source: a #HifSource instance.
- * @gpgcheck: if the source should be signed
+ * @gpgcheck_pkgs: if the source packages should be signed
  *
  * Sets the source signed status.
  *
  * Since: 0.1.0
  **/
 void
-hif_source_set_gpgcheck (HifSource *source, gboolean gpgcheck)
+hif_source_set_gpgcheck (HifSource *source, gboolean gpgcheck_pkgs)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
-	priv->gpgcheck = gpgcheck;
+	priv->gpgcheck_pkgs = gpgcheck_pkgs;
+}
+
+/**
+ * hif_source_set_gpgcheck_md:
+ * @source: a #HifSource instance.
+ * @gpgcheck_md: if the source metadata should be signed
+ *
+ * Sets the metadata signed status.
+ *
+ * Since: 0.1.7
+ **/
+void
+hif_source_set_gpgcheck_md (HifSource *source, gboolean gpgcheck_md)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	priv->gpgcheck_md = gpgcheck_md;
 }
 
 /**
@@ -707,12 +741,21 @@ hif_source_set_keyfile_data (HifSource *source, GError **error)
 		hif_source_set_location_tmp (source, tmp);
 	}
 
-	/* gpgkey is optional for gpgcheck=1 */
+	/* gpgkey is optional for gpgcheck=1, but required for repo_gpgcheck=1 */
 	g_free (priv->gpgkey);
 	priv->gpgkey = g_key_file_get_string (priv->keyfile, priv->id, "gpgkey", NULL);
-	priv->gpgcheck = g_key_file_get_boolean (priv->keyfile, priv->id,
-						 "gpgcheck", NULL);
-	if (!lr_handle_setopt (priv->repo_handle, error, LRO_GPGCHECK, priv->gpgcheck))
+	priv->gpgcheck_pkgs = g_key_file_get_boolean (priv->keyfile, priv->id,
+							  "gpgcheck", NULL);
+	priv->gpgcheck_md = g_key_file_get_boolean (priv->keyfile, priv->id,
+							  "repo_gpgcheck", NULL);
+	if (priv->gpgcheck_md && priv->gpgkey == NULL) {
+		g_set_error_literal (error,
+				     HIF_ERROR,
+				     HIF_ERROR_FILE_INVALID,
+				     "gpgkey not set, yet repo_gpgcheck=1");
+		return FALSE;
+	}
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_GPGCHECK, priv->gpgcheck_md))
 		return FALSE;
 
 	/* proxy is optional */
