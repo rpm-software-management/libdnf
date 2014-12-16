@@ -69,7 +69,7 @@ struct _HifSourceClass
  * HifSourceUpdateFlags:
  * @HIF_SOURCE_UPDATE_FLAG_NONE:		No flags set
  * @HIF_SOURCE_UPDATE_FLAG_FORCE:		Force the source to be updated
- * @HIF_SOURCE_UPDATE_FLAG_IMPORT_PUBKEY:	Autoimport the public key where possible
+ * @HIF_SOURCE_UPDATE_FLAG_IMPORT_PUBKEY:	Import the source public key to librpm if possible
  *
  * The update flags.
  **/

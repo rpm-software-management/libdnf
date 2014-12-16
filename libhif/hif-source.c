@@ -65,6 +65,10 @@ struct _HifSourcePrivate
 	gchar		*location_tmp;	/* /var/cache/PackageKit/metadata/fedora.tmp */
 	gchar		*packages;	/* /var/cache/PackageKit/metadata/fedora/packages */
 	gchar		*packages_tmp;	/* /var/cache/PackageKit/metadata/fedora.tmp/packages */
+	gchar		*keyring;	/* /var/cache/PackageKit/metadata/fedora/gpgdir */
+	gchar		*keyring_tmp;	/* /var/cache/PackageKit/metadata/fedora.tmp/gpgdir */
+	gchar		*pubkey;	/* /var/cache/PackageKit/metadata/fedora/repomd.pub */
+	gchar		*pubkey_tmp;	/* /var/cache/PackageKit/metadata/fedora.tmp/repomd.pub */
 	gint64		 timestamp_generated;	/* µs */
 	gint64		 timestamp_modified;	/* µs */
 	GKeyFile	*keyfile;
@@ -98,6 +102,10 @@ hif_source_finalize (GObject *object)
 	g_free (priv->location);
 	g_free (priv->packages);
 	g_free (priv->packages_tmp);
+	g_free (priv->keyring);
+	g_free (priv->keyring_tmp);
+	g_free (priv->pubkey);
+	g_free (priv->pubkey_tmp);
 	g_hash_table_unref (priv->filenames_md);
 	g_object_unref (priv->context);
 	if (priv->repo_result != NULL)
@@ -483,8 +491,12 @@ hif_source_set_location (HifSource *source, const gchar *location)
 	HifSourcePrivate *priv = GET_PRIVATE (source);
 	g_free (priv->location);
 	g_free (priv->packages);
-	priv->location = g_strdup (location);
+	g_free (priv->keyring);
+	g_free (priv->pubkey);
+	priv->location = hif_source_substitute (source, location);
 	priv->packages = g_build_filename (location, "packages", NULL);
+	priv->keyring = g_build_filename (location, "gpgdir", NULL);
+	priv->pubkey = g_build_filename (location, "repomd.pub", NULL);
 }
 
 /**
@@ -502,8 +514,12 @@ hif_source_set_location_tmp (HifSource *source, const gchar *location_tmp)
 	HifSourcePrivate *priv = GET_PRIVATE (source);
 	g_free (priv->location_tmp);
 	g_free (priv->packages_tmp);
-	priv->location_tmp = g_strdup (location_tmp);
+	g_free (priv->keyring_tmp);
+	g_free (priv->pubkey_tmp);
+	priv->location_tmp = hif_source_substitute (source, location_tmp);
 	priv->packages_tmp = g_build_filename (location_tmp, "packages", NULL);
+	priv->keyring_tmp = g_build_filename (location_tmp, "gpgdir", NULL);
+	priv->pubkey_tmp = g_build_filename (location_tmp, "repomd.pub", NULL);
 }
 
 /**
@@ -819,11 +835,6 @@ hif_source_setup (HifSource *source, GError **error)
 	}
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_USERAGENT, "PackageKit-hawkey"))
 		return FALSE;
-#if LR_VERSION_CHECK(1,7,5)
-	if (!lr_handle_setopt (priv->repo_handle, error,
-			       LRO_GNUPGHOMEDIR, HIF_KEYRING_GNUPG_HOME_DIR))
-		return FALSE;
-#endif
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_REPOTYPE, LR_YUMREPO))
 		return FALSE;
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_INTERRUPTIBLE, FALSE))
@@ -831,6 +842,8 @@ hif_source_setup (HifSource *source, GError **error)
 	priv->urlvars = lr_urlvars_set (priv->urlvars, "releasever", release);
 	priv->urlvars = lr_urlvars_set (priv->urlvars, "basearch", basearch);
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_VARSUB, priv->urlvars))
+		return FALSE;
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_GNUPGHOMEDIR, priv->keyring))
 		return FALSE;
 	return hif_source_set_keyfile_data (source, error);
 }
@@ -1128,11 +1141,14 @@ hif_source_clean (HifSource *source, GError **error)
 }
 
 /**
- * hif_source_import_public_key:
+ * hif_source_add_public_key:
+ *
+ * This imports a repodata public key into the default librpm keyring
  **/
 static gboolean
-hif_source_import_public_key (HifSource *source, const gchar *fn, GError **error)
+hif_source_add_public_key (HifSource *source, GError **error)
 {
+	HifSourcePrivate *priv = GET_PRIVATE (source);
 	gboolean ret;
 	rpmKeyring keyring;
 	rpmts ts;
@@ -1140,7 +1156,7 @@ hif_source_import_public_key (HifSource *source, const gchar *fn, GError **error
 	/* then import to rpmdb */
 	ts = rpmtsCreate ();
 	keyring = rpmtsGetKeyring (ts, 1);
-	ret = hif_keyring_add_public_key (keyring, fn, error);
+	ret = hif_keyring_add_public_key (keyring, priv->pubkey_tmp, error);
 	rpmKeyringFree (keyring);
 	rpmtsFree (ts);
 	return ret;
@@ -1154,22 +1170,35 @@ hif_source_download_import_public_key (HifSource *source, GError **error)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
 	int fd;
-	_cleanup_free_ gchar *repomd_pub = NULL;
 
 	/* does this file already exist */
-	repomd_pub = g_build_filename (priv->location_tmp, "repomd.pub", NULL);
-	if (g_file_test (repomd_pub, G_FILE_TEST_EXISTS))
-		return hif_source_import_public_key (source, repomd_pub, error);
+	if (g_file_test (priv->pubkey_tmp, G_FILE_TEST_EXISTS))
+		return lr_gpg_import_key (priv->pubkey_tmp, priv->keyring_tmp, error);
+
+	/* create the gpgdir location */
+	if (g_mkdir_with_parents (priv->keyring_tmp, 0755) != 0) {
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_INTERNAL_ERROR,
+			     "Failed to create %s",
+			     priv->keyring_tmp);
+		return FALSE;
+	}
+
+	/* set the keyring location */
+	if (!lr_handle_setopt (priv->repo_handle, error,
+			       LRO_GNUPGHOMEDIR, priv->keyring_tmp))
+		return FALSE;
 
 	/* download to known location */
-	g_debug ("Downloading %s to %s", priv->gpgkey, repomd_pub);
-	fd = g_open (repomd_pub, O_CLOEXEC | O_CREAT | O_RDWR, 0774);
+	g_debug ("Downloading %s to %s", priv->gpgkey, priv->pubkey_tmp);
+	fd = g_open (priv->pubkey_tmp, O_CLOEXEC | O_CREAT | O_RDWR, 0774);
 	if (fd < 0) {
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_INTERNAL_ERROR,
 			     "Failed to open %s: %i",
-			     repomd_pub, fd);
+			     priv->pubkey_tmp, fd);
 		return FALSE;
 	}
 	if (!lr_download_url (priv->repo_handle, priv->gpgkey, fd, error)) {
@@ -1180,7 +1209,7 @@ hif_source_download_import_public_key (HifSource *source, GError **error)
 		return FALSE;
 
 	/* import found key */
-	return hif_source_import_public_key (source, repomd_pub, error);
+	return lr_gpg_import_key (priv->pubkey_tmp, priv->keyring_tmp, error);
 }
 
 /**
@@ -1279,9 +1308,18 @@ hif_source_update (HifSource *source,
 	}
 
 	/* download and import public key */
-	if (priv->gpgkey != NULL && g_str_has_prefix (priv->gpgkey, "https://") &&
-	    (flags & HIF_SOURCE_UPDATE_FLAG_IMPORT_PUBKEY) > 0) {
+	if (priv->gpgcheck_md &&
+	    (g_str_has_prefix (priv->gpgkey, "https://") ||
+	     g_str_has_prefix (priv->gpgkey, "file://"))) {
 		ret = hif_source_download_import_public_key (source, error);
+		if (!ret)
+			goto out;
+	}
+
+	/* do we autoimport this into librpm */
+	if (priv->gpgcheck_md &&
+	    (flags & HIF_SOURCE_UPDATE_FLAG_IMPORT_PUBKEY) > 0) {
+		ret = hif_source_add_public_key (source, error);
 		if (!ret)
 			goto out;
 	}
@@ -1372,7 +1410,11 @@ hif_source_update (HifSource *source,
 		goto out;
 	}
 	ret = lr_handle_setopt (priv->repo_handle, error,
-				LRO_DESTDIR, priv->location_tmp);
+				LRO_DESTDIR, priv->location);
+	if (!ret)
+		goto out;
+	ret = lr_handle_setopt (priv->repo_handle, error,
+				LRO_GNUPGHOMEDIR, priv->keyring);
 	if (!ret)
 		goto out;
 
