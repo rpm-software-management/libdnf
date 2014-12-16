@@ -77,5 +77,6 @@ typedef enum {
 GQuark		 hif_error_quark		(void);
 gboolean	 hif_rc_to_gerror		(gint			 rc,
 						 GError			**error);
+gchar		*hif_realpath			(const gchar		*path);
 
 #endif /* __HIF_UTILS_H */

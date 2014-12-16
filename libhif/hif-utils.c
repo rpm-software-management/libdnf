@@ -32,6 +32,7 @@
 #  include <config.h>
 #endif
 
+#include <stdlib.h>
 #include <hawkey/errno.h>
 
 #include "hif-cleanup.h"
@@ -136,4 +137,33 @@ hif_rc_to_gerror (gint rc, GError **error)
 		break;
 	}
 	return FALSE;
+}
+
+/**
+ * hif_realpath:
+ * @path: A relative path, e.g. "../../data/test"
+ *
+ * Converts relative paths to absolute ones.
+ *
+ * Returns: a new path, or %NULL
+ *
+ * Since: 0.1.7
+ **/
+gchar *
+hif_realpath (const gchar *path)
+{
+	gchar *real = NULL;
+	char *temp;
+
+	/* don't trust realpath one little bit */
+	if (path == NULL)
+		return NULL;
+
+	/* glibc allocates us a buffer to try and fix some brain damage */
+	temp = realpath (path, NULL);
+	if (temp == NULL)
+		return NULL;
+	real = g_strdup (temp);
+	free (temp);
+	return real;
 }
