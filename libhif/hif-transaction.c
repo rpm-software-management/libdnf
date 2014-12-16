@@ -334,7 +334,7 @@ hif_transaction_check_untrusted (HifTransaction *transaction,
 {
 	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
 	HyPackage pkg;
-	const gchar *filename;
+	const gchar *fn;
 	guint i;
 	_cleanup_ptrarray_unref_ GPtrArray *install;
 
@@ -350,6 +350,8 @@ hif_transaction_check_untrusted (HifTransaction *transaction,
 
 	/* find any packages in untrusted repos */
 	for (i = 0; i < install->len; i++) {
+		GError *error_local = NULL;
+		HifSource *src;
 		pkg = g_ptr_array_index (install, i);
 
 		/* ensure the filename is set */
@@ -359,8 +361,8 @@ hif_transaction_check_untrusted (HifTransaction *transaction,
 		}
 
 		/* find the location of the local file */
-		filename = hif_package_get_filename (pkg);
-		if (filename == NULL) {
+		fn = hif_package_get_filename (pkg);
+		if (fn == NULL) {
 			g_set_error (error,
 				     HIF_ERROR,
 				     HIF_ERROR_FILE_NOT_FOUND,
@@ -370,10 +372,34 @@ hif_transaction_check_untrusted (HifTransaction *transaction,
 		}
 
 		/* check file */
-		if (!hif_keyring_check_untrusted_file (priv->keyring,
-							filename,
-							error))
-			return FALSE;
+		if (!hif_keyring_check_untrusted_file (priv->keyring, fn, &error_local)) {
+
+			/* probably an i/o error */
+			if (!g_error_matches (error_local,
+					      HIF_ERROR,
+					      HIF_ERROR_GPG_SIGNATURE_INVALID)) {
+				g_propagate_error (error, error_local);
+				return FALSE;
+			}
+
+			/* if the source is signed this is ALWAYS an error */
+			src = hif_package_get_source (pkg);
+			if (src != NULL && hif_source_get_gpgcheck (src)) {
+				g_propagate_error (error, error_local);
+				return FALSE;
+			}
+
+			/* we can only install signed packages in this mode */
+			if ((priv->flags & HIF_TRANSACTION_FLAG_ONLY_TRUSTED) > 0) {
+				g_propagate_error (error, error_local);
+				return FALSE;
+			}
+
+			/* we can install unsigned packages */
+			g_debug ("ignoring as allow-untrusted: %s",
+				 error_local->message);
+			g_clear_error (&error_local);
+		}
 	}
 	return TRUE;
 }
@@ -1278,13 +1304,9 @@ hif_transaction_commit (HifTransaction *transaction,
 		goto out;
 
 	/* find any packages without valid GPG signatures */
-	if ((priv->flags & HIF_TRANSACTION_FLAG_ONLY_TRUSTED) > 0) {
-		ret = hif_transaction_check_untrusted (transaction,
-						       goal,
-						       error);
-		if (!ret)
-			goto out;
-	}
+	ret = hif_transaction_check_untrusted (transaction, goal, error);
+	if (!ret)
+		goto out;
 
 	hif_state_action_start (state, HIF_STATE_ACTION_REQUEST, NULL);
 

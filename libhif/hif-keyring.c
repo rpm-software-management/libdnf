@@ -274,7 +274,7 @@ hif_keyring_check_untrusted_file (rpmKeyring keyring,
 	if (rc != 0) {
 		g_set_error (error,
 			     HIF_ERROR,
-			     HIF_ERROR_GPG_SIGNATURE_INVALID,
+			     HIF_ERROR_FILE_INVALID,
 			     "failed to parse digest header for %s",
 			     filename);
 		goto out;
