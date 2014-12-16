@@ -752,9 +752,12 @@ hif_source_set_keyfile_data (HifSource *source, GError **error)
 
 	/* set temp location for remote repos */
 	if (priv->kind == HIF_SOURCE_KIND_REMOTE) {
-		_cleanup_free_ gchar *tmp = NULL;
-		tmp = g_strdup_printf ("%s.tmp", priv->location);
-		hif_source_set_location_tmp (source, tmp);
+		_cleanup_string_free_ GString *tmp = NULL;
+		tmp = g_string_new (priv->location);
+		if (tmp->str[tmp->len - 1] == '/')
+			g_string_truncate (tmp, tmp->len - 1);
+		g_string_append (tmp, ".tmp");
+		hif_source_set_location_tmp (source, tmp->str);
 	}
 
 	/* gpgkey is optional for gpgcheck=1, but required for repo_gpgcheck=1 */
