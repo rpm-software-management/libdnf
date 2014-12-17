@@ -944,6 +944,8 @@ hif_source_check (HifSource *source,
 					 "filelists",
 					 "group",
 					 "updateinfo",
+					 "appstream",
+					 "appstream-icons",
 					 NULL};
 	const gchar *tmp;
 	gboolean ret;
@@ -1045,6 +1047,18 @@ hif_source_check (HifSource *source,
 	if (tmp != NULL) {
 		g_hash_table_insert (priv->filenames_md,
 				     g_strdup ("group"),
+				     g_strdup (tmp));
+	}
+	tmp = lr_yum_repo_path (yum_repo, "appstream");
+	if (tmp != NULL) {
+		g_hash_table_insert (priv->filenames_md,
+				     g_strdup ("appstream"),
+				     g_strdup (tmp));
+	}
+	tmp = lr_yum_repo_path (yum_repo, "appstream-icons");
+	if (tmp != NULL) {
+		g_hash_table_insert (priv->filenames_md,
+				     g_strdup ("appstream-icons"),
 				     g_strdup (tmp));
 	}
 
