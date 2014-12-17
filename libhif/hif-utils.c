@@ -33,6 +33,7 @@
 #endif
 
 #include <stdlib.h>
+#include <glib/gstdio.h>
 #include <hawkey/errno.h>
 
 #include "hif-cleanup.h"
@@ -166,4 +167,64 @@ hif_realpath (const gchar *path)
 	real = g_strdup (temp);
 	free (temp);
 	return real;
+}
+
+/**
+ * hif_remove_recursive:
+ * @directory: A directory path
+ * @error: A #GError, or %NULL
+ *
+ * Removes a directory and its contents. Use with care.
+ *
+ * Returns: %FALSE if an error was set
+ *
+ * Since: 0.1.7
+ **/
+gboolean
+hif_remove_recursive (const gchar *directory, GError **error)
+{
+	const gchar *filename;
+	_cleanup_dir_close_ GDir *dir;
+	_cleanup_error_free_ GError *error_local = NULL;
+
+	/* try to open */
+	dir = g_dir_open (directory, 0, &error_local);
+	if (dir == NULL) {
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_INTERNAL_ERROR,
+			     "cannot open directory %s: %s",
+			     directory, error_local->message);
+		return FALSE;
+	}
+
+	/* find each */
+	while ((filename = g_dir_read_name (dir))) {
+		_cleanup_free_ gchar *src = NULL;
+		src = g_build_filename (directory, filename, NULL);
+		if (g_file_test (src, G_FILE_TEST_IS_DIR)) {
+			if (!hif_remove_recursive (src, error))
+				return FALSE;
+		} else {
+			g_debug ("deleting file %s", src);
+			if (g_unlink (src) != 0) {
+				g_set_error (error,
+					     HIF_ERROR,
+					     HIF_ERROR_INTERNAL_ERROR,
+					     "failed to unlink %s", src);
+				return FALSE;
+			}
+		}
+	}
+
+	/* remove directory */
+	g_debug ("deleting directory %s", directory);
+	if (g_remove (directory) != 0) {
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_INTERNAL_ERROR,
+			     "failed to remove %s", directory);
+		return FALSE;
+	}
+	return TRUE;
 }

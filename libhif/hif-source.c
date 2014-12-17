@@ -1069,44 +1069,6 @@ hif_source_get_filename_md (HifSource *source, const gchar *md_kind)
 }
 
 /**
- * hif_source_remove_contents:
- *
- * Does not remove the directory itself, only the contents.
- **/
-static gboolean
-hif_source_remove_contents (const gchar *directory)
-{
-	const gchar *filename;
-	_cleanup_dir_close_ GDir *dir;
-	_cleanup_error_free_ GError *error = NULL;
-
-	/* try to open */
-	dir = g_dir_open (directory, 0, &error);
-	if (dir == NULL) {
-		g_warning ("cannot open directory: %s", error->message);
-		return FALSE;
-	}
-
-	/* find each */
-	while ((filename = g_dir_read_name (dir))) {
-		_cleanup_free_ gchar *src = NULL;
-		src = g_build_filename (directory, filename, NULL);
-		if (g_file_test (src, G_FILE_TEST_IS_DIR)) {
-			g_debug ("directory %s found in %s, deleting", filename, directory);
-			/* recurse, but should be only 1 level deep */
-			hif_source_remove_contents (src);
-			if (g_remove (src) != 0)
-				g_warning ("failed to delete %s", src);
-		} else {
-			g_debug ("file found in %s, deleting", directory);
-			if (g_unlink (src) != 0)
-				g_warning ("failed to delete %s", src);
-		}
-	}
-	return TRUE;
-}
-
-/**
  * hif_source_clean:
  * @source: a #HifSource instance.
  * @error: a #GError or %NULL.
@@ -1129,14 +1091,8 @@ hif_source_clean (HifSource *source, GError **error)
 
 	if (!g_file_test (priv->location, G_FILE_TEST_EXISTS))
 		return TRUE;
-	if (!hif_source_remove_contents (priv->location)) {
-		g_set_error (error,
-			     HIF_ERROR,
-			     HIF_ERROR_INTERNAL_ERROR,
-			     "Failed to remove %s",
-			     priv->location);
+	if (!hif_remove_recursive (priv->location, error))
 		return FALSE;
-	}
 	return TRUE;
 }
 
@@ -1283,28 +1239,20 @@ hif_source_update (HifSource *source,
 
 	/* remove the temporary space if it already exists */
 	if (g_file_test (priv->location_tmp, G_FILE_TEST_EXISTS)) {
-		ret = hif_source_remove_contents (priv->location_tmp);
-		if (!ret) {
-			g_set_error (error,
-				     HIF_ERROR,
-				     HIF_ERROR_INTERNAL_ERROR,
-				     "Failed to remove %s",
-				     priv->location_tmp);
+		ret = hif_remove_recursive (priv->location_tmp, error);
+		if (!ret)
 			goto out;
-		}
 	}
 
 	/* ensure exists */
-	if (!g_file_test (priv->location_tmp, G_FILE_TEST_EXISTS)) {
-		rc = g_mkdir_with_parents (priv->location_tmp, 0755);
-		if (rc != 0) {
-			ret = FALSE;
-			g_set_error (error,
-				     HIF_ERROR,
-				     HIF_ERROR_INTERNAL_ERROR,
-				     "Failed to create %s", priv->location_tmp);
-			goto out;
-		}
+	rc = g_mkdir_with_parents (priv->location_tmp, 0755);
+	if (rc != 0) {
+		ret = FALSE;
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_INTERNAL_ERROR,
+			     "Failed to create %s", priv->location_tmp);
+		goto out;
 	}
 
 	/* download and import public key */
