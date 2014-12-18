@@ -763,13 +763,7 @@ hif_source_set_keyfile_data (HifSource *source, GError **error)
 
 	/* gpgkey is optional for gpgcheck=1, but required for repo_gpgcheck=1 */
 	g_free (priv->gpgkey);
-{
-	//FIXME: https://github.com/Tojaj/librepo/issues/37
-	_cleanup_free_ gchar *tmp = NULL;
-	tmp = g_key_file_get_string (priv->keyfile, priv->id, "gpgkey", NULL);
-	if (tmp != NULL)
-		priv->gpgkey = hif_source_substitute (source, tmp);
-}
+	priv->gpgkey = g_key_file_get_string (priv->keyfile, priv->id, "gpgkey", NULL);
 	priv->gpgcheck_pkgs = g_key_file_get_boolean (priv->keyfile, priv->id,
 							  "gpgcheck", NULL);
 	priv->gpgcheck_md = g_key_file_get_boolean (priv->keyfile, priv->id,

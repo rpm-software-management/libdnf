@@ -966,11 +966,10 @@ hif_repos_gpg_no_asc_func (void)
 
 	/* check, which should fail as no local repomd.xml.asc exists */
 	state = hif_state_new ();
-//FIXME: https://github.com/Tojaj/librepo/issues/38
-//	ret = hif_source_check (src, G_MAXUINT, state, &error);
-//	g_assert_error (error, HIF_ERROR, HIF_ERROR_INTERNAL_ERROR);
-//	g_assert (!ret);
-//	g_clear_error (&error);
+	ret = hif_source_check (src, G_MAXUINT, state, &error);
+	g_assert_error (error, HIF_ERROR, HIF_ERROR_SOURCE_NOT_AVAILABLE);
+	g_assert (!ret);
+	g_clear_error (&error);
 
 	/* update, which should fail as no *remote* repomd.xml.asc exists */
 	hif_state_reset (state);
