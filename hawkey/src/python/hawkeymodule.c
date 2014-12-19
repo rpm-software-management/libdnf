@@ -273,6 +273,7 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "LT", HY_LT);
     PyModule_AddIntConstant(m, "GT", HY_GT);
     PyModule_AddIntConstant(m, "NEQ", HY_NEQ);
+    PyModule_AddIntConstant(m, "NOT", HY_NOT);
     PyModule_AddIntConstant(m, "SUBSTR", HY_SUBSTR);
     PyModule_AddIntConstant(m, "GLOB", HY_GLOB);
 

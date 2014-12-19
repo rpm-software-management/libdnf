@@ -197,6 +197,12 @@ class TestQuery(base.TestCase):
         q = hawkey.Query(self.sack).filter(name="jay")
         self.assertLength(q.run(), 2)
 
+    def test_multiple_flags(self):
+        q = hawkey.Query(self.sack).filter(name__glob__not=["p*", "j*"])
+        self.assertItemsEqual(list(map(lambda p: p.name, q.run())),
+                              ['baby', 'dog', 'flying', 'fool', 'gun', 'tour'])
+
+
 class TestQueryAllRepos(base.TestCase):
     def setUp(self):
         self.sack = base.TestSack(repo_dir=self.repo_dir)

@@ -23,6 +23,8 @@ from sys import version_info as python_version
 
 from . import _hawkey
 import collections
+import functools
+import operator
 
 __all__ = [
     # version info
@@ -84,6 +86,7 @@ _QUERY_CMP_MAP = {
     'gt' : _hawkey.GT,
     'lt' : _hawkey.LT,
     'neq' : _hawkey.NEQ,
+    'not': _hawkey.NOT,
     'gte' : _hawkey.EQ | _hawkey.GT,
     'lte' : _hawkey.EQ | _hawkey.LT,
     'substr'  : _hawkey.SUBSTR,
@@ -220,21 +223,22 @@ def _parse_filter_args(flags, dct):
             match = _encode(match)
         elif isinstance(match, collections.Iterable):
             match = list(map(_encode, match))
-        split = k.split("__", 1)
+        split = k.split("__")
+        keyname = split[0]
         if len(split) == 1:
-            keyname=split[0]
-            cmp_type = "eq"
-        elif len(split) == 2:
-            (keyname, cmp_type) = split
+            cmp_types = ["eq"]
         else:
-            raise ValueError("keyword arguments given to filter() need be "
-                             "in <key>__<comparison type>=<value> format")
+            cmp_types = split[1:]
         if not keyname in _QUERY_KEYNAME_MAP:
             raise ValueException("Unrecognized key name: %s" % keyname)
-        if not cmp_type in _QUERY_CMP_MAP:
-            raise ValueException("Unrecognized filter type: %s" % cmp_type)
+        for cmp_type in cmp_types:
+            if not cmp_type in _QUERY_CMP_MAP:
+                raise ValueException("Unrecognized filter type: %s" % cmp_type)
+
+        mapped_types = map(_QUERY_CMP_MAP.__getitem__, cmp_types)
+        item_flags = functools.reduce(operator.or_, mapped_types, filter_flags)
         args.append((_QUERY_KEYNAME_MAP[keyname],
-                     _QUERY_CMP_MAP[cmp_type]|filter_flags,
+                     item_flags,
                      match))
     return args
 

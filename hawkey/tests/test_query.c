@@ -816,6 +816,22 @@ START_TEST(test_query_nevra)
 }
 END_TEST
 
+START_TEST(test_query_multiple_flags)
+{
+    HySack sack = test_globals.sack;
+    HyQuery q;
+    HyPackageList plist;
+
+    q = hy_query_create(sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_NOT | HY_GLOB, "p*");
+    plist = hy_query_run(q);
+
+    ck_assert_int_eq(hy_packagelist_count(plist), 8);
+    hy_packagelist_free(plist);
+    hy_query_free(q);
+}
+END_TEST
+
 Suite *
 query_suite(void)
 {
@@ -845,6 +861,7 @@ query_suite(void)
     tcase_add_test(tc, test_query_fileprovides);
     tcase_add_test(tc, test_query_nevra);
     tcase_add_test(tc, test_query_nevra_glob);
+    tcase_add_test(tc, test_query_multiple_flags);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Updates");
