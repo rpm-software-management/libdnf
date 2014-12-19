@@ -1,3 +1,26 @@
+Version 0.1.7
+~~~~~~~~~~~~~
+Released: 2014-12-19
+
+Notes:
+ - librepo >= 1.7.11 is now required
+
+New Features:
+ - Add HIF_SOURCE_UPDATE_FLAG_SIMULATE (Richard Hughes)
+ - Add a large number of GPG tests (Richard Hughes)
+ - Add hif_source_get_filename_md() (Richard Hughes)
+ - Add the concept of metadata-only software sources (Richard Hughes)
+ - Support appstream and appstream-icons metadata types (Richard Hughes)
+
+Bugfixes:
+ - Automatically import public keys into the librepo keyring (Richard Hughes)
+ - Call hif_state_set_allow_cancel() when the state is uncancellable (Richard Hughes)
+ - Correctly update sources with baseurls ending with a slash (Richard Hughes)
+ - Don't unref the HifSource when invalidating as this is not threadsafe (Richard Hughes)
+ - Fix crash when parsing the bumblebee.repo file (Richard Hughes)
+ - Improve handling of local metadata (Richard Hughes)
+ - Only set LRO_GPGCHECK when repo_gpgcheck=1 (Richard Hughes)
+
 Version 0.1.6
 ~~~~~~~~~~~~~
 Released: 2014-11-10
