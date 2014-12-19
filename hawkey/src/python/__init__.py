@@ -44,68 +44,68 @@ __all__ = [
     'Goal', 'NEVRA', 'Package', 'Query', 'Repo', 'Sack', 'Selector', 'Subject']
 
 _QUERY_KEYNAME_MAP = {
-    'pkg'	  : _hawkey.PKG,
-    'arch'	  : _hawkey.PKG_ARCH,
-    'conflicts'   : _hawkey.PKG_CONFLICTS,
-    'description' : _hawkey.PKG_DESCRIPTION,
+    'pkg': _hawkey.PKG,
+    'arch': _hawkey.PKG_ARCH,
+    'conflicts': _hawkey.PKG_CONFLICTS,
+    'description': _hawkey.PKG_DESCRIPTION,
     'downgradable': _hawkey.PKG_DOWNGRADABLE,
-    'downgrades'  : _hawkey.PKG_DOWNGRADES,
-    'empty'	  : _hawkey.PKG_EMPTY,
-    'epoch'	  : _hawkey.PKG_EPOCH,
-    'evr'	  : _hawkey.PKG_EVR,
-    'file'	  : _hawkey.PKG_FILE,
-    'latest'	  : _hawkey.PKG_LATEST,
+    'downgrades': _hawkey.PKG_DOWNGRADES,
+    'empty': _hawkey.PKG_EMPTY,
+    'epoch': _hawkey.PKG_EPOCH,
+    'evr': _hawkey.PKG_EVR,
+    'file': _hawkey.PKG_FILE,
+    'latest': _hawkey.PKG_LATEST,
     'latest_per_arch': _hawkey.PKG_LATEST_PER_ARCH,
-    'location'	  : _hawkey.PKG_LOCATION,
-    'name'	  : _hawkey.PKG_NAME,
-    'nevra'       : _hawkey.PKG_NEVRA,
-    'obsoletes'	  : _hawkey.PKG_OBSOLETES,
-    'provides'	  : _hawkey.PKG_PROVIDES,
-    'release'	  : _hawkey.PKG_RELEASE,
-    'reponame'	  : _hawkey.PKG_REPONAME,
-    'requires'	  : _hawkey.PKG_REQUIRES,
-    'sourcerpm'	  : _hawkey.PKG_SOURCERPM,
-    'summary'	  : _hawkey.PKG_SUMMARY,
-    'upgradable'  : _hawkey.PKG_UPGRADABLE,
-    'upgrades'	  : _hawkey.PKG_UPGRADES,
-    'url'	  : _hawkey.PKG_URL,
-    'version'	  : _hawkey.PKG_VERSION,
+    'location': _hawkey.PKG_LOCATION,
+    'name': _hawkey.PKG_NAME,
+    'nevra': _hawkey.PKG_NEVRA,
+    'obsoletes': _hawkey.PKG_OBSOLETES,
+    'provides': _hawkey.PKG_PROVIDES,
+    'release': _hawkey.PKG_RELEASE,
+    'reponame': _hawkey.PKG_REPONAME,
+    'requires': _hawkey.PKG_REQUIRES,
+    'sourcerpm': _hawkey.PKG_SOURCERPM,
+    'summary': _hawkey.PKG_SUMMARY,
+    'upgradable': _hawkey.PKG_UPGRADABLE,
+    'upgrades': _hawkey.PKG_UPGRADES,
+    'url': _hawkey.PKG_URL,
+    'version': _hawkey.PKG_VERSION,
 }
 
 _CMP_MAP = {
-    '=' : _hawkey.EQ,
-    '>' : _hawkey.GT,
-    '<' : _hawkey.LT,
-    '!=' : _hawkey.NEQ,
-    '>=' : _hawkey.EQ | _hawkey.GT,
-    '<=' : _hawkey.EQ | _hawkey.LT,
-    }
+    '=': _hawkey.EQ,
+    '>': _hawkey.GT,
+    '<': _hawkey.LT,
+    '!=': _hawkey.NEQ,
+    '>=': _hawkey.EQ | _hawkey.GT,
+    '<=': _hawkey.EQ | _hawkey.LT,
+}
 
 _QUERY_CMP_MAP = {
-    'eq' : _hawkey.EQ,
-    'gt' : _hawkey.GT,
-    'lt' : _hawkey.LT,
-    'neq' : _hawkey.NEQ,
+    'eq': _hawkey.EQ,
+    'gt': _hawkey.GT,
+    'lt': _hawkey.LT,
+    'neq': _hawkey.NEQ,
     'not': _hawkey.NOT,
-    'gte' : _hawkey.EQ | _hawkey.GT,
-    'lte' : _hawkey.EQ | _hawkey.LT,
-    'substr'  : _hawkey.SUBSTR,
-    'glob' : _hawkey.GLOB,
-    }
+    'gte': _hawkey.EQ | _hawkey.GT,
+    'lte': _hawkey.EQ | _hawkey.LT,
+    'substr': _hawkey.SUBSTR,
+    'glob': _hawkey.GLOB,
+}
 
 VERSION_MAJOR = _hawkey.VERSION_MAJOR
 VERSION_MINOR = _hawkey.VERSION_MINOR
 VERSION_PATCH = _hawkey.VERSION_PATCH
-VERSION=u"%d.%d.%d" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
+VERSION = u"%d.%d.%d" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 
 SYSTEM_REPO_NAME = _hawkey.SYSTEM_REPO_NAME
 CMDLINE_REPO_NAME = _hawkey.CMDLINE_REPO_NAME
 
-FORM_NEVRA  = _hawkey.FORM_NEVRA
-FORM_NEVR   = _hawkey.FORM_NEVR
-FORM_NEV    = _hawkey.FORM_NEV
-FORM_NA     = _hawkey.FORM_NA
-FORM_NAME   = _hawkey.FORM_NAME
+FORM_NEVRA = _hawkey.FORM_NEVRA
+FORM_NEVR = _hawkey.FORM_NEVR
+FORM_NEV = _hawkey.FORM_NEV
+FORM_NA = _hawkey.FORM_NA
+FORM_NAME = _hawkey.FORM_NAME
 
 ICASE = _hawkey.ICASE
 EQ = _hawkey.EQ
@@ -145,25 +145,30 @@ chksum_name = _hawkey.chksum_name
 chksum_type = _hawkey.chksum_type
 detect_arch = _hawkey.detect_arch
 
+
 def split_nevra(s):
     t = _hawkey.split_nevra(s)
     return NEVRA(*t)
 
+
 class NEVRA(_hawkey.NEVRA):
+
     def to_query(self, sack):
         _hawkey_query = super(NEVRA, self).to_query(sack)
         return Query(query=_hawkey_query)
 
+
 class Goal(_hawkey.Goal):
-    _reserved_kw	= set(['package', 'select'])
-    _flag_kw		= set(['clean_deps', 'check_installed'])
+    _reserved_kw = set(['package', 'select'])
+    _flag_kw = set(['clean_deps', 'check_installed'])
 
     def _auto_selector(fn):
         def tweaked_fn(self, *args, **kwargs):
             if args or self._reserved_kw & set(kwargs):
                 return fn(self, *args, **kwargs)
 
-            # only the flags and unrecognized keywords remained, construct a Selector
+            # only the flags and unrecognized keywords remained, construct a
+            # Selector
             new_kwargs = {}
             for flag in self._flag_kw & set(kwargs):
                 new_kwargs[flag] = kwargs.pop(flag)
@@ -193,6 +198,7 @@ class Goal(_hawkey.Goal):
     def upgrade(self, *args, **kwargs):
         super(Goal, self).upgrade(*args, **kwargs)
 
+
 def _encode(obj):
     """ Identity, except when obj is unicode then return a UTF-8 string.
 
@@ -206,6 +212,7 @@ def _encode(obj):
     if python_version.major < 3 and isinstance(obj, unicode):
         return obj.encode('utf8', 'strict')
     return obj
+
 
 def _parse_filter_args(flags, dct):
     args = []
@@ -242,7 +249,9 @@ def _parse_filter_args(flags, dct):
                      match))
     return args
 
+
 class Query(_hawkey.Query):
+
     def __init__(self, sack=None, query=None):
         super(Query, self).__init__(sack=sack, query=query)
         self._result = None
@@ -293,15 +302,20 @@ class Query(_hawkey.Query):
         return self
 
     def provides(self, name, **kwargs):
-        raise NotImplementedError("hawkey.Query.provides is not implemented yet")
+        raise NotImplementedError(
+            "hawkey.Query.provides is not implemented yet")
+
 
 class Selector(_hawkey.Selector):
+
     def set(self, **kwargs):
         for arg_tuple in _parse_filter_args(set(), kwargs):
             super(Selector, self).set(*arg_tuple)
         return self
 
+
 class Subject(_hawkey.Subject):
+
     def __init__(self, *args, **kwargs):
         super(Subject, self).__init__(*args, **kwargs)
 
