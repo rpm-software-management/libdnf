@@ -1209,8 +1209,6 @@ hif_context_setup (HifContext *context,
 		return FALSE;
 	priv->transaction = hif_transaction_new (context);
 	hif_transaction_set_sources (priv->transaction, priv->sources);
-	hif_transaction_set_flags (priv->transaction,
-				   HIF_TRANSACTION_FLAG_ONLY_TRUSTED);
 
 	/* setup a file monitor on the rpmdb */
 	rpmdb_path = g_build_filename (priv->install_root, "var/lib/rpm/Packages", NULL);
