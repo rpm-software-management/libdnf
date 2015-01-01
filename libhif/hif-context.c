@@ -32,6 +32,7 @@
 #include "config.h"
 
 #include <rpm/rpmlib.h>
+#include <rpm/rpmmacro.h>
 
 #include <hawkey/query.h>
 #include <hawkey/packagelist.h>
@@ -74,6 +75,7 @@ struct _HifContextPrivate
 	HifLock			*lock;
 	HifTransaction		*transaction;
 	GFileMonitor		*monitor_rpmdb;
+	GHashTable              *override_macros;
 
 	/* used to implement a transaction */
 	GPtrArray		*sources;
@@ -117,6 +119,7 @@ hif_context_finalize (GObject *object)
 	g_strfreev (priv->native_arches);
 	g_object_unref (priv->lock);
 	g_object_unref (priv->state);
+	g_hash_table_unref (priv->override_macros);
 
 	if (priv->transaction != NULL)
 		g_object_unref (priv->transaction);
@@ -147,6 +150,8 @@ hif_context_init (HifContext *context)
 	priv->state = hif_state_new ();
 	priv->lock = hif_lock_new ();
 	priv->cache_age = 60 * 60 * 24 * 7; /* 1 week */
+	priv->override_macros = g_hash_table_new_full (g_str_hash, g_str_equal,
+						       g_free, g_free);
 }
 
 /**
@@ -1068,6 +1073,27 @@ hif_context_copy_vendor_solv (HifContext *context, GError **error)
 	return TRUE;
 }
 
+/**
+ * hif_context_set_rpm_macro:
+ * @context: a #HifContext instance.
+ * @key: Variable name
+ * @value: Variable value
+ *
+ * Override an RPM macro definition.  This is useful for
+ * "_install_langs" and other macros that control aspects of the
+ * installation.
+ *
+ * Since: 0.1.9
+ **/
+void
+hif_context_set_rpm_macro (HifContext	*context,
+			   const gchar	*key,
+			   const gchar  *value)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	g_hash_table_replace (priv->override_macros, g_strdup (key), g_strdup (value));
+}
+
 #define MAX_NATIVE_ARCHES	12
 
 /**
@@ -1095,6 +1121,9 @@ hif_context_setup (HifContext *context,
 	const gchar *value;
 	guint i;
 	guint j;
+	GHashTableIter hashiter;
+	gpointer hashkey, hashval;
+	_cleanup_string_free_ GString *buf = NULL;
 	_cleanup_free_ char *rpmdb_path = NULL;
 	_cleanup_object_unref_ GFile *file_rpmdb = NULL;
 
@@ -1169,6 +1198,20 @@ hif_context_setup (HifContext *context,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "failed to read rpm config files");
 		return FALSE;
+	}
+
+	buf = g_string_new ("");
+	g_hash_table_iter_init (&hashiter, priv->override_macros);
+	while (g_hash_table_iter_next (&hashiter, &hashkey, &hashval)) {
+		g_string_assign (buf, "%define ");
+		g_string_append (buf, (gchar*)hashkey);
+		g_string_append_c (buf, ' ');
+		g_string_append (buf, (gchar*)hashval);
+		/* Calling expand with %define (ignoring the return
+		 * value) is apparently the way to change the global
+		 * macro context.
+		 */
+		free (rpmExpand (buf->str, NULL));
 	}
 
 	/* get info from RPM */
