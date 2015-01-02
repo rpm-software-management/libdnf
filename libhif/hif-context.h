@@ -115,6 +115,10 @@ void		 hif_context_set_only_trusted		(HifContext	*context,
 void		 hif_context_set_cache_age		(HifContext	*context,
 							 guint		 cache_age);
 
+void		 hif_context_set_rpm_macro		(HifContext	*context,
+							 const gchar	*key,
+							 const gchar    *value);
+
 /* object methods */
 gboolean	 hif_context_setup			(HifContext	*context,
 							 GCancellable	*cancellable,
