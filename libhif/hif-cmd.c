@@ -398,7 +398,17 @@ main (int argc, char *argv[])
 	gboolean verbose = FALSE;
 	gboolean version = FALSE;
 	guint retval = 1;
+	_cleanup_free_ gchar *opt_root = NULL;
+	_cleanup_free_ gchar *opt_reposdir = NULL;
+	_cleanup_free_ gchar *opt_cachedir = NULL;
+
 	const GOptionEntry options[] = {
+		{ "reposdir", 0, 0, G_OPTION_ARG_STRING, &opt_reposdir,
+			"Directory for yum repository files", NULL },
+		{ "root", 0, 0, G_OPTION_ARG_STRING, &opt_root,
+			"Installation root", NULL },
+		{ "cachedir", 0, 0, G_OPTION_ARG_STRING, &opt_cachedir,
+			"Directory for caches", NULL },
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
 			"Show extra debugging information", NULL },
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &version,
@@ -453,11 +463,34 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
+	if (!opt_reposdir)
+		opt_reposdir = g_strdup ("/etc/yum.repos.d");
+
 	/* add filter if specified */
 	priv->context = hif_context_new ();
-	hif_context_set_repo_dir (priv->context, "/etc/yum.repos.d");
-	hif_context_set_cache_dir (priv->context, "/var/cache/PackageKit/metadata/");
-	hif_context_set_solv_dir (priv->context, "/var/cache/PackageKit/hawkey/");
+	if (opt_root) {
+		hif_context_set_install_root (priv->context, opt_root);
+		if (!opt_cachedir) {
+			g_print ("Must specify --cachedir when using --root\n");
+			goto out;
+		}
+	} else if (!opt_cachedir)
+		opt_cachedir = g_strdup ("/var/cache/PackageKit"); 
+
+	{
+		_cleanup_free_ char *metadatadir =
+			g_build_filename (opt_cachedir, "metadata", NULL);
+		_cleanup_free_ char *solvdir =
+			g_build_filename (opt_cachedir, "hawkey", NULL);
+		_cleanup_free_ char *lockdir =
+			g_build_filename (opt_cachedir, "lock", NULL);
+		hif_context_set_cache_dir (priv->context, metadatadir);
+		hif_context_set_solv_dir (priv->context, solvdir);
+		hif_context_set_lock_dir (priv->context, lockdir);
+	}
+
+	hif_context_set_repo_dir (priv->context, opt_reposdir);
+
 	hif_context_set_check_disk_space (priv->context, TRUE);
 	hif_context_set_check_transaction (priv->context, TRUE);
 	hif_context_set_keep_cache (priv->context, FALSE);
