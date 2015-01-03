@@ -1253,17 +1253,19 @@ hif_context_setup (HifContext *context,
 	priv->transaction = hif_transaction_new (context);
 	hif_transaction_set_sources (priv->transaction, priv->sources);
 
-	/* setup a file monitor on the rpmdb */
-	rpmdb_path = g_build_filename (priv->install_root, "var/lib/rpm/Packages", NULL);
-	file_rpmdb = g_file_new_for_path (rpmdb_path);
-	priv->monitor_rpmdb = g_file_monitor_file (file_rpmdb,
-						   G_FILE_MONITOR_NONE,
-						   NULL,
-						   error);
-	if (priv->monitor_rpmdb == NULL)
-		return FALSE;
-	g_signal_connect (priv->monitor_rpmdb, "changed",
-			  G_CALLBACK (hif_context_rpmdb_changed_cb), context);
+	/* setup a file monitor on the rpmdb, if we're operating on the native / */
+	if (g_strcmp0 (priv->install_root, "/") != 0) {
+		rpmdb_path = g_build_filename (priv->install_root, "var/lib/rpm/Packages", NULL);
+		file_rpmdb = g_file_new_for_path (rpmdb_path);
+		priv->monitor_rpmdb = g_file_monitor_file (file_rpmdb,
+							   G_FILE_MONITOR_NONE,
+							   NULL,
+							   error);
+		if (priv->monitor_rpmdb == NULL)
+			return FALSE;
+		g_signal_connect (priv->monitor_rpmdb, "changed",
+				  G_CALLBACK (hif_context_rpmdb_changed_cb), context);
+	}
 
 	/* copy any vendor distributed cached metadata */
 	if (!hif_context_copy_vendor_cache (context, error))
