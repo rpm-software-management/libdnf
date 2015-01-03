@@ -40,6 +40,7 @@
 
 #include <strings.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <glib/gstdio.h>
 #include <hawkey/util.h>
 #include <librepo/librepo.h>
@@ -1224,9 +1225,22 @@ hif_source_update (HifSource *source,
 		return FALSE;
 	}
 
-	/* do not refresh local repos */
-	if (priv->kind == HIF_SOURCE_KIND_LOCAL)
+	/* Just verify existence for local */
+	if (priv->kind == HIF_SOURCE_KIND_LOCAL) {
+		struct stat stbuf;
+		if (stat (priv->location, &stbuf) != 0) {
+			int errsv = errno;
+			g_set_error (error, HIF_ERROR,
+				     HIF_ERROR_SOURCE_NOT_AVAILABLE,
+				     "Failed to read directory '%s': %s",
+				     priv->location,
+				     g_strerror (errsv));
+			return FALSE;
+		}
+
+		/* Otherwise, don't refresh local repos */
 		return TRUE;
+	}
 
 	/* this needs to be set */
 	if (priv->location_tmp == NULL) {
