@@ -50,6 +50,7 @@ libhif_include_HEADERS =					\
 	hif-context.h						\
 	hif-db.h						\
 	hif-goal.h						\
+	hif-hawkey.h						\
 	hif-keyring.h						\
 	hif-lock.h						\
 	hif-package.h						\

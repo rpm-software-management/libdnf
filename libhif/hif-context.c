@@ -898,7 +898,7 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 	/* add installed packages */
 	if (have_existing_install (context)) {
 		rc = hy_sack_load_system_repo (priv->sack, NULL, HY_BUILD_CACHE);
-		if (!hif_rc_to_gerror (rc, error)) {
+		if (!hif_error_set_from_hawkey (rc, error)) {
 			g_prefix_error (error, "Failed to load system repo: ");
 			return FALSE;
 		}

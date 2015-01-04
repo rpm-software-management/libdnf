@@ -791,18 +791,18 @@ hif_utils_func (void)
 	gboolean ret;
 
 	/* success */
-	ret = hif_rc_to_gerror (0, &error);
+	ret = hif_error_set_from_hawkey (0, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 
 	/* failure */
-	ret = hif_rc_to_gerror (HY_E_LIBSOLV, &error);
+	ret = hif_error_set_from_hawkey (HY_E_LIBSOLV, &error);
 	g_assert_error (error, HIF_ERROR, HIF_ERROR_FAILED);
 	g_assert (!ret);
 	g_clear_error (&error);
 
 	/* new error enum */
-	ret = hif_rc_to_gerror (999, &error);
+	ret = hif_error_set_from_hawkey (999, &error);
 	g_assert_error (error, HIF_ERROR, HIF_ERROR_FAILED);
 	g_assert (!ret);
 	g_clear_error (&error);

@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2015 Colin Walters <walters@verbum.org>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -19,28 +19,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef __LIBHIF_H
-#define __LIBHIF_H
+#if !defined (__LIBHIF_H) && !defined (HIF_COMPILATION)
+#error "Only <libhif.h> can be included directly."
+#endif
 
-#define __LIBHIF_H_INSIDE__
+#ifndef __HIF_HAWKEY_UTILS_
+#define __HIF_HAWKEY_UTILS_H
 
-#include <hif-context.h>
-#include <hif-db.h>
-#include <hif-goal.h>
-#include <hif-hawkey.h>
-#include <hif-keyring.h>
-#include <hif-lock.h>
-#include <hif-package.h>
-#include <hif-repos.h>
-#include <hif-rpmts.h>
-#include <hif-sack.h>
-#include <hif-source.h>
-#include <hif-state.h>
-#include <hif-transaction.h>
-#include <hif-types.h>
-#include <hif-utils.h>
-#include <hif-version.h>
+#include <gio/gio.h>
+#include <hawkey/util.h>
 
-#undef __LIBHIF_H_INSIDE__
+gboolean	 hif_error_set_from_hawkey	(int rc,
+						 GError			**error);
 
-#endif /* __LIBHIF_H */
+#endif /* __HIF_HAWKEY_UTILS_H */

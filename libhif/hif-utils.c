@@ -37,6 +37,7 @@
 #include <hawkey/errno.h>
 
 #include "hif-cleanup.h"
+#include "libhif.h"
 #include "hif-utils.h"
 
 /**
@@ -56,7 +57,7 @@ hif_error_quark (void)
 }
 
 /**
- * hif_rc_to_gerror:
+ * hif_error_set_from_hawkey:
  * @rc: A hawkey return code value
  * @error: A #GError, or %NULL
  *
@@ -65,7 +66,7 @@ hif_error_quark (void)
  * Returns: %FALSE if an error was set
  */
 gboolean
-hif_rc_to_gerror (gint rc, GError **error)
+hif_error_set_from_hawkey (gint rc, GError **error)
 {
 	if (rc == 0)
 		return TRUE;
