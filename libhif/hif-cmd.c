@@ -28,7 +28,7 @@
 #include <string.h>
 
 #include "hif-cleanup.h"
-#include "hif-context-private.h"
+#include "libhif.h"
 #include "hif-utils.h"
 
 #define HIF_ERROR_INVALID_ARGUMENTS	0

@@ -22,7 +22,7 @@
 /**
  * SECTION:hif-repos
  * @short_description: An object for loading several #HifSource objects.
- * @include: libhif-private.h
+ * @include: libhif.h
  * @stability: Stable
  *
  * This object can create #HifSource objects from either DVD media or from .repo

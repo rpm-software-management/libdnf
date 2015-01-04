@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2015 Colin Walters <walters@verbum.org>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -19,27 +19,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef __LIBHIF_PRIVATE_H
-#define __LIBHIF_PRIVATE_H
 
-#define __LIBHIF_PRIVATE_H_INSIDE__
+#if !defined (__LIBHIF_H) && !defined (HIF_COMPILATION)
+#error "Only <libhif.h> can be included directly."
+#endif
 
-#include <libhif.h>
+#ifndef __HIF_TYPES_H
+#define __HIF_TYPES_H
 
-#include <hif-context-private.h>
-#include <hif-db.h>
-#include <hif-goal.h>
-#include <hif-keyring.h>
-#include <hif-lock.h>
-#include <hif-package.h>
-#include <hif-repos.h>
-#include <hif-rpmts.h>
-#include <hif-sack.h>
-#include <hif-source.h>
-#include <hif-state.h>
-#include <hif-transaction.h>
-#include <hif-utils.h>
+#include <gio/gio.h>
 
-#undef __LIBHIF_PRIVATE_H_INSIDE__
+typedef struct _HifContext		HifContext;
+typedef struct _HifDb                   HifDb;
+typedef struct _HifTransaction		HifTransaction;
+typedef struct _HifRepos		HifRepos;
+typedef struct _HifSource		HifSource;
+typedef struct _HifState		HifState;
 
-#endif /* __LIBHIF_PRIVATE_H */
+#endif
+

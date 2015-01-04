@@ -25,6 +25,19 @@
 #define __LIBHIF_H_INSIDE__
 
 #include <hif-context.h>
+#include <hif-db.h>
+#include <hif-goal.h>
+#include <hif-keyring.h>
+#include <hif-lock.h>
+#include <hif-package.h>
+#include <hif-repos.h>
+#include <hif-rpmts.h>
+#include <hif-sack.h>
+#include <hif-source.h>
+#include <hif-state.h>
+#include <hif-transaction.h>
+#include <hif-types.h>
+#include <hif-utils.h>
 #include <hif-version.h>
 
 #undef __LIBHIF_H_INSIDE__

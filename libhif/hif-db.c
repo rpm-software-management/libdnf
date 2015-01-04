@@ -22,7 +22,7 @@
 /**
  * SECTION:hif-db
  * @short_description: An extra 'database' to store details about packages
- * @include: libhif-private.h
+ * @include: libhif.h
  * @stability: Unstable
  *
  * #HifDb is a simple flat file 'database' for stroring details about

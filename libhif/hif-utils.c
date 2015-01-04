@@ -22,7 +22,7 @@
 /**
  * SECTION:hif-utils
  * @short_description: Helper functions for libhif
- * @include: libhif-private.h
+ * @include: libhif.h
  * @stability: Unstable
  *
  * These functions are used internally in libhif for various things.

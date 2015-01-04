@@ -29,6 +29,7 @@
 #include <glib-object.h>
 #include <gio/gio.h>
 
+#include "hif-types.h"
 #include "hif-lock.h"
 
 #define HIF_TYPE_STATE			(hif_state_get_type())
@@ -40,7 +41,6 @@
 
 G_BEGIN_DECLS
 
-typedef struct _HifState		HifState;
 typedef struct _HifStateClass		HifStateClass;
 
 struct _HifState
@@ -172,10 +172,12 @@ gboolean	 hif_state_finished_real		(HifState		*state,
 gboolean	 hif_state_reset			(HifState		*state);
 void		 hif_state_set_enable_profile		(HifState		*state,
 							 gboolean		 enable_profile);
+#ifndef __GI_SCANNER__
 gboolean	 hif_state_take_lock			(HifState		*state,
 							 HifLockType		 lock_type,
 							 HifLockMode		 lock_mode,
 							 GError			**error);
+#endif
 gboolean	 hif_state_release_locks		(HifState		*state);
 
 G_END_DECLS

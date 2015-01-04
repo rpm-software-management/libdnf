@@ -24,7 +24,7 @@
 /**
  * SECTION:hif-goal
  * @short_description: Helper methods for dealing with rpm transactions.
- * @include: libhif-private.h
+ * @include: libhif.h
  * @stability: Unstable
  *
  * These methods make it easier to deal with rpm transactions.

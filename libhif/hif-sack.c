@@ -22,7 +22,7 @@
 /**
  * SECTION:hif-sack
  * @short_description: Object representing a remote sack.
- * @include: libhif-private.h
+ * @include: libhif.h
  * @stability: Unstable
  *
  * Sacks are remote repositories of packages.

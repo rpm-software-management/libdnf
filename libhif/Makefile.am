@@ -48,7 +48,6 @@ lib_LTLIBRARIES =						\
 libhif_includedir = $(includedir)/libhif
 libhif_include_HEADERS =					\
 	hif-context.h						\
-	hif-context-private.h					\
 	hif-db.h						\
 	hif-goal.h						\
 	hif-keyring.h						\
@@ -60,16 +59,15 @@ libhif_include_HEADERS =					\
 	hif-source.h						\
 	hif-state.h						\
 	hif-transaction.h					\
+	hif-types.h						\
 	hif-utils.h						\
 	hif-version.h						\
-	libhif.h						\
-	libhif-private.h
+	libhif.h
 
 libhif_la_SOURCES =						\
 	hif-cleanup.h						\
 	hif-context.c						\
 	hif-context.h						\
-	hif-context-private.h					\
 	hif-db.c						\
 	hif-db.h						\
 	hif-goal.c						\
@@ -143,6 +141,8 @@ if HAVE_INTROSPECTION
 introspection_sources =						\
 	hif-context.c						\
 	hif-context.h						\
+	hif-state.h						\
+	hif-state.c						\
 	hif-version.h
 
 Hif-1.0.gir: libhif.la

@@ -1,8 +1,8 @@
 AC_PREREQ(2.63)
 
 m4_define([hif_major_version], [0])
-m4_define([hif_minor_version], [1])
-m4_define([hif_micro_version], [8])
+m4_define([hif_minor_version], [2])
+m4_define([hif_micro_version], [0])
 m4_define([hif_version],
           [hif_major_version.hif_minor_version.hif_micro_version])
 

@@ -41,7 +41,6 @@
 
 G_BEGIN_DECLS
 
-typedef struct _HifDb		HifDb;
 typedef struct _HifDbClass	HifDbClass;
 
 struct _HifDb

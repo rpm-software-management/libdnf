@@ -26,8 +26,12 @@
 #ifndef __HIF_CONTEXT_H
 #define __HIF_CONTEXT_H
 
-#include <glib-object.h>
-#include <gio/gio.h>
+#include "hif-types.h"
+
+#ifndef __GI_SCANNER__
+#include <hawkey/goal.h>
+#include <hawkey/sack.h>
+#endif
 
 #define HIF_TYPE_CONTEXT		(hif_context_get_type())
 #define HIF_CONTEXT(obj)		(G_TYPE_CHECK_INSTANCE_CAST((obj), HIF_TYPE_CONTEXT, HifContext))
@@ -38,7 +42,6 @@
 
 G_BEGIN_DECLS
 
-typedef struct _HifContext		HifContext;
 typedef struct _HifContextClass		HifContextClass;
 
 struct _HifContext
@@ -85,6 +88,14 @@ gboolean	 hif_context_get_only_trusted		(HifContext	*context);
 guint		 hif_context_get_cache_age		(HifContext	*context);
 guint		 hif_context_get_installonly_limit	(HifContext	*context);
 const gchar	*hif_context_get_http_proxy		(HifContext	*context);
+#ifndef __GI_SCANNER__
+HifRepos	*hif_context_get_repos			(HifContext	*context);
+GPtrArray	*hif_context_get_sources		(HifContext	*context);
+HifTransaction	*hif_context_get_transaction		(HifContext	*context);
+HySack   	 hif_context_get_sack			(HifContext	*context);
+HyGoal  	 hif_context_get_goal			(HifContext	*context);
+#endif
+HifState* 	 hif_context_get_state			(HifContext	*context);
 
 /* setters */
 void		 hif_context_set_repo_dir		(HifContext	*context,
@@ -126,6 +137,14 @@ void             hif_context_set_http_proxy		(HifContext	*context,
 gboolean	 hif_context_setup			(HifContext	*context,
 							 GCancellable	*cancellable,
 							 GError		**error);
+gboolean	 hif_context_setup_sack			(HifContext	*context,
+							 HifState	*state,
+							 GError		**error);
+gboolean	 hif_context_commit			(HifContext	*context,
+							 HifState	*state,
+							 GError		**error);
+void		 hif_context_invalidate			(HifContext	*context,
+							 const gchar	*message);
 gboolean	 hif_context_install			(HifContext	*context,
 							 const gchar	*name,
 							 GError		**error);

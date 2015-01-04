@@ -26,11 +26,7 @@
 #include <stdlib.h>
 
 #include "hif-cleanup.h"
-#include "hif-context-private.h"
-#include "hif-lock.h"
-#include "hif-repos.h"
-#include "hif-source.h"
-#include "hif-state.h"
+#include "libhif.h"
 #include "hif-utils.h"
 
 /**

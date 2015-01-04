@@ -40,14 +40,7 @@
 #include <hawkey/util.h>
 
 #include "hif-cleanup.h"
-#include "hif-context-private.h"
-#include "hif-db.h"
-#include "hif-goal.h"
-#include "hif-keyring.h"
-#include "hif-package.h"
-#include "hif-rpmts.h"
-#include "hif-state.h"
-#include "hif-transaction.h"
+#include "libhif.h"
 #include "hif-utils.h"
 
 typedef enum {
