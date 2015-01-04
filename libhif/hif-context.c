@@ -67,6 +67,7 @@ struct _HifContextPrivate
 	gchar			*install_root;
 	gchar			*rpm_verbosity;
 	gchar			**native_arches;
+	gchar			*http_proxy;
 	gboolean		 cache_age;
 	gboolean		 check_disk_space;
 	gboolean		 check_transaction;
@@ -116,6 +117,7 @@ hif_context_finalize (GObject *object)
 	g_free (priv->install_root);
 	g_free (priv->os_info);
 	g_free (priv->arch_info);
+	g_free (priv->http_proxy);
 	g_strfreev (priv->native_arches);
 	g_object_unref (priv->lock);
 	g_object_unref (priv->state);
@@ -1092,6 +1094,41 @@ hif_context_set_rpm_macro (HifContext	*context,
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	g_hash_table_replace (priv->override_macros, g_strdup (key), g_strdup (value));
+}
+
+
+/**
+ * hif_context_get_http_proxy:
+ * @context: a #HifContext instance.
+ *
+ * Returns: the HTTP proxy; none is configured by default.
+ *
+ * Since: 0.1.9
+ **/
+const gchar *
+hif_context_get_http_proxy (HifContext *context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	return priv->http_proxy;
+}
+
+/**
+ * hif_context_set_http_proxy:
+ * @context: a #HifContext instance.
+ * @proxyurl: Proxy URL
+ *
+ * Set the HTTP proxy used by default.  Per-source configuration will
+ * override.
+ *
+ * Since: 0.1.9
+ **/
+void
+hif_context_set_http_proxy (HifContext	*context,
+			    const gchar    *proxyurl)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	g_free (priv->http_proxy);
+	priv->http_proxy = g_strdup (proxyurl);
 }
 
 #define MAX_NATIVE_ARCHES	12
