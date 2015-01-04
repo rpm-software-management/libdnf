@@ -63,23 +63,22 @@ GTK_DOC_CHECK(1.9)
 
 CC_CHECK_FLAGS_APPEND([WARNINGFLAGS_C], [CFLAGS], [\
 	-Wall \
+	-Werror=declaration-after-statement \
+	-Werror=missing-prototypes -Werror=implicit-function-declaration \
+	-Werror=pointer-arith -Werror=init-self -Werror=format-security \
+	-Werror=format=2 -Werror=missing-include-dirs \
 	-Wcast-align -Wno-uninitialized \
 	-Wmissing-declarations \
 	-Wredundant-decls \
-	-Wpointer-arith \
 	-Wcast-align \
 	-Wwrite-strings \
-	-Winit-self \
 	-Wreturn-type \
 	-Wformat-nonliteral \
-	-Wformat-security \
-	-Wmissing-include-dirs \
 	-Wmissing-format-attribute \
 	-Wsign-compare \
 	-Wtype-limits \
 	-Wuninitialized \
 	-Waggregate-return \
-	-Wdeclaration-after-statement \
 	-Wshadow \
 	-Winline \
 	-fno-strict-aliasing \
