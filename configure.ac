@@ -61,33 +61,29 @@ AM_PROG_CC_C_O
 # set up gtk-doc
 GTK_DOC_CHECK(1.9)
 
-if test "$GCC" = "yes"; then
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wall"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wcast-align -Wno-uninitialized"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wmissing-declarations"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wredundant-decls"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wpointer-arith"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wcast-align"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wwrite-strings"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Winit-self"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wreturn-type"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wformat-nonliteral"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wformat-security"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wmissing-include-dirs"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wmissing-format-attribute"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wsign-compare"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wtype-limits"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wuninitialized"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Waggregate-return"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wdeclaration-after-statement"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wshadow"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Winline"
-
-dnl Now, flags that control behavior	
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -fno-strict-aliasing"
-else
-	WARNINGFLAGS_C=""
-fi
+CC_CHECK_FLAGS_APPEND([WARNINGFLAGS_C], [CFLAGS], [\
+	-Wall \
+	-Wcast-align -Wno-uninitialized \
+	-Wmissing-declarations \
+	-Wredundant-decls \
+	-Wpointer-arith \
+	-Wcast-align \
+	-Wwrite-strings \
+	-Winit-self \
+	-Wreturn-type \
+	-Wformat-nonliteral \
+	-Wformat-security \
+	-Wmissing-include-dirs \
+	-Wmissing-format-attribute \
+	-Wsign-compare \
+	-Wtype-limits \
+	-Wuninitialized \
+	-Waggregate-return \
+	-Wdeclaration-after-statement \
+	-Wshadow \
+	-Winline \
+	-fno-strict-aliasing \
+])
 AC_SUBST(WARNINGFLAGS_C)
 
 PKG_CHECK_MODULES(GLIB, gio-unix-2.0 >= 2.36.0)
