@@ -39,7 +39,7 @@
 #include <rpm/rpmts.h>
 
 #include "hif-cleanup.h"
-#include "hif-keyring.h"
+#include "libhif.h"
 #include "hif-utils.h"
 
 /**

@@ -72,9 +72,6 @@ typedef enum {
 	HIF_ERROR_LAST
 } HifError;
 
-#define HIF_ERROR				(hif_error_quark ())
-
-GQuark		 hif_error_quark		(void);
 gchar		*hif_realpath			(const gchar		*path);
 gboolean	 hif_remove_recursive		(const gchar		*directory,
 						 GError			**error);

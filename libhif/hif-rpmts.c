@@ -40,7 +40,7 @@
 #include <rpm/rpmdb.h>
 
 #include "hif-cleanup.h"
-#include "hif-rpmts.h"
+#include "libhif.h"
 #include "hif-utils.h"
 
 /**

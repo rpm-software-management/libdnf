@@ -37,7 +37,7 @@
 #include <gio/gio.h>
 
 #include "hif-cleanup.h"
-#include "hif-lock.h"
+#include "libhif.h"
 #include "hif-utils.h"
 
 typedef struct _HifLockPrivate	HifLockPrivate;

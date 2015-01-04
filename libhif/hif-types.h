@@ -36,5 +36,8 @@ typedef struct _HifRepos		HifRepos;
 typedef struct _HifSource		HifSource;
 typedef struct _HifState		HifState;
 
+#define HIF_ERROR			(hif_error_quark ())
+GQuark		 hif_error_quark	(void);
+
 #endif
 
