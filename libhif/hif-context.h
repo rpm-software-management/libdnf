@@ -84,6 +84,7 @@ gboolean	 hif_context_get_keep_cache		(HifContext	*context);
 gboolean	 hif_context_get_only_trusted		(HifContext	*context);
 guint		 hif_context_get_cache_age		(HifContext	*context);
 guint		 hif_context_get_installonly_limit	(HifContext	*context);
+const gchar	*hif_context_get_http_proxy		(HifContext	*context);
 
 /* setters */
 void		 hif_context_set_repo_dir		(HifContext	*context,
@@ -118,6 +119,8 @@ void		 hif_context_set_cache_age		(HifContext	*context,
 void		 hif_context_set_rpm_macro		(HifContext	*context,
 							 const gchar	*key,
 							 const gchar    *value);
+void             hif_context_set_http_proxy		(HifContext	*context,
+							 const gchar    *proxyurl);
 
 /* object methods */
 gboolean	 hif_context_setup			(HifContext	*context,

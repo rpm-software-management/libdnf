@@ -780,6 +780,8 @@ hif_source_set_keyfile_data (HifSource *source, GError **error)
 
 	/* proxy is optional */
 	proxy = g_key_file_get_string (priv->keyfile, priv->id, "proxy", NULL);
+	if (proxy == NULL)
+		proxy = g_strdup (hif_context_get_http_proxy (priv->context));
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_PROXY, proxy))
 		return FALSE;
 
