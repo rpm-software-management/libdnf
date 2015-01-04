@@ -442,39 +442,6 @@ hif_source_is_source (HifSource *source)
 }
 
 /**
- * hif_source_is_supported:
- * @source: a #HifSource instance.
- *
- * Returns: %TRUE if the source is supported
- *
- * Since: 0.1.0
- **/
-gboolean
-hif_source_is_supported (HifSource *source)
-{
-	HifSourcePrivate *priv = GET_PRIVATE (source);
-	guint i;
-	const gchar *valid[] = { "fedora",
-				 "fedora-debuginfo",
-				 "fedora-source",
-				 "rawhide",
-				 "rawhide-debuginfo",
-				 "rawhide-source",
-				 "updates",
-				 "updates-debuginfo",
-				 "updates-source",
-				 "updates-testing",
-				 "updates-testing-debuginfo",
-				 "updates-testing-source",
-				 NULL };
-	for (i = 0; valid[i] != NULL; i++) {
-		if (g_strcmp0 (priv->id, valid[i]) == 0)
-			return TRUE;
-	}
-	return FALSE;
-}
-
-/**
  * hif_source_set_id:
  * @source: a #HifSource instance.
  * @id: the ID, e.g. "fedora-updates"

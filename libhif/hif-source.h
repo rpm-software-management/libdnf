@@ -137,7 +137,6 @@ HyRepo		 hif_source_get_repo		(HifSource		*source);
 gboolean	 hif_source_is_devel		(HifSource		*source);
 gboolean	 hif_source_is_local		(HifSource		*source);
 gboolean	 hif_source_is_source		(HifSource		*source);
-gboolean	 hif_source_is_supported	(HifSource		*source);
 
 /* setters */
 void		 hif_source_set_id		(HifSource		*source,
