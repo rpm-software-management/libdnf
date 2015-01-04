@@ -33,10 +33,41 @@
 #include "config.h"
 
 #include <hawkey/errno.h>
+#include <hawkey/query.h>
+#include <hawkey/packageset.h>
 
 #include "hif-cleanup.h"
 #include "hif-sack.h"
 #include "hif-utils.h"
+
+static void
+process_excludes (HySack sack,
+		  HifSource *src)
+{
+	gchar **excludes = hif_source_get_exclude_packages (src);
+	gchar **iter;
+	
+	if (!excludes)
+		return;
+
+	for (iter = excludes; *iter; iter++) {
+		const char *name = *iter;
+		HyQuery query;
+		HyPackageSet pkgset;
+
+		query = hy_query_create (sack);
+		hy_query_filter_latest_per_arch (query, TRUE);
+		hy_query_filter (query, HY_PKG_REPONAME, HY_EQ, hif_source_get_id (src));
+		hy_query_filter (query, HY_PKG_ARCH, HY_NEQ, "src");
+		hy_query_filter (query, HY_PKG_NAME, HY_EQ, name);
+		pkgset = hy_query_run_set (query);
+
+		hy_sack_add_excludes (sack, pkgset);
+
+		hy_query_free (query);
+		hy_packageset_free (pkgset);
+	}
+}
 
 /**
  * hif_sack_add_source:
@@ -114,6 +145,8 @@ hif_sack_add_source (HySack sack,
 				hif_source_get_id (src));
 		return FALSE;
 	}
+
+	process_excludes (sack, src);
 
 	/* done */
 	return hif_state_done (state, error);

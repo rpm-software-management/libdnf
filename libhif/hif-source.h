@@ -126,6 +126,7 @@ const gchar	*hif_source_get_packages	(HifSource		*source);
 HifSourceEnabled hif_source_get_enabled		(HifSource		*source);
 guint		 hif_source_get_cost		(HifSource		*source);
 HifSourceKind	 hif_source_get_kind		(HifSource		*source);
+gchar          **hif_source_get_exclude_packages(HifSource		*source);
 gboolean	 hif_source_get_gpgcheck	(HifSource		*source);
 gboolean	 hif_source_get_gpgcheck_md	(HifSource		*source);
 gchar		*hif_source_get_description	(HifSource		*source);

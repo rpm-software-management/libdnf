@@ -58,6 +58,7 @@ struct _HifSourcePrivate
 	gboolean	 gpgcheck_md;
 	gboolean	 gpgcheck_pkgs;
 	gchar		*gpgkey;
+	gchar          **exclude_packages;
 	guint		 cost;
 	gchar		*filename;	/* /etc/yum.repos.d/updates.repo */
 	gchar		*id;
@@ -98,6 +99,7 @@ hif_source_finalize (GObject *object)
 	g_free (priv->id);
 	g_free (priv->filename);
 	g_free (priv->gpgkey);
+	g_strfreev (priv->exclude_packages);
 	g_free (priv->location_tmp);
 	g_free (priv->location);
 	g_free (priv->packages);
@@ -314,6 +316,21 @@ hif_source_get_kind (HifSource *source)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
 	return priv->kind;
+}
+
+/**
+ * hif_source_get_exclude_packages:
+ * @source: a #HifSource instance.
+ *
+ * Returns: (transfer none) (array zero-terminated=1): Packages which should be excluded
+ *
+ * Since: 0.1.9
+ **/
+gchar **
+hif_source_get_exclude_packages	(HifSource *source)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	return priv->exclude_packages;
 }
 
 /**
@@ -703,6 +720,7 @@ hif_source_set_keyfile_data (HifSource *source, GError **error)
 	_cleanup_free_ gchar *metalink = NULL;
 	_cleanup_free_ gchar *mirrorlist = NULL;
 	_cleanup_free_ gchar *proxy = NULL;
+	_cleanup_free_ gchar *exclude_string = NULL;
 	_cleanup_free_ gchar *pwd = NULL;
 	_cleanup_free_ gchar *usr = NULL;
 	_cleanup_free_ gchar *usr_pwd = NULL;
@@ -777,6 +795,11 @@ hif_source_set_keyfile_data (HifSource *source, GError **error)
 	}
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_GPGCHECK, priv->gpgcheck_md))
 		return FALSE;
+
+	exclude_string = g_key_file_get_string (priv->keyfile, priv->id, "exclude", NULL);
+	if (exclude_string) {
+		priv->exclude_packages = g_strsplit (exclude_string, " ", -1);
+	}
 
 	/* proxy is optional */
 	proxy = g_key_file_get_string (priv->keyfile, priv->id, "proxy", NULL);
