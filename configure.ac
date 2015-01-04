@@ -81,8 +81,10 @@ if test "$GCC" = "yes"; then
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Waggregate-return"
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wdeclaration-after-statement"
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wshadow"
-	WARNINGFLAGS_C="$WARNINGFLAGS_C -Wno-strict-aliasing"
 	WARNINGFLAGS_C="$WARNINGFLAGS_C -Winline"
+
+dnl Now, flags that control behavior	
+	WARNINGFLAGS_C="$WARNINGFLAGS_C -fno-strict-aliasing"
 else
 	WARNINGFLAGS_C=""
 fi
