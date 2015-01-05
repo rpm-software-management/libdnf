@@ -131,7 +131,9 @@ gboolean	 hif_source_get_gpgcheck_md	(HifSource		*source);
 gchar		*hif_source_get_description	(HifSource		*source);
 const gchar	*hif_source_get_filename_md	(HifSource		*source,
 						 const gchar		*md_kind);
+#ifndef __GI_SCANNER__
 HyRepo		 hif_source_get_repo		(HifSource		*source);
+#endif
 gboolean	 hif_source_is_devel		(HifSource		*source);
 gboolean	 hif_source_is_local		(HifSource		*source);
 gboolean	 hif_source_is_source		(HifSource		*source);
@@ -182,11 +184,13 @@ gboolean	 hif_source_set_data		(HifSource		*source,
 						 GError			**error);
 gboolean	 hif_source_commit		(HifSource		*source,
 						 GError			**error);
+#ifndef __GI_SCANNER__
 gchar		*hif_source_download_package	(HifSource		*source,
 						 HyPackage		 pkg,
 						 const gchar		*directory,
 						 HifState		*state,
 						 GError			**error);
+#endif
 
 G_END_DECLS
 

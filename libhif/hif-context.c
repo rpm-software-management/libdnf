@@ -375,7 +375,7 @@ HifRepos *hif_context_get_repos (HifContext	*context)
  *
  * Gets the sources used by the transaction.
  *
- * Returns: (transfer none): the source list
+ * Returns: (transfer none) (element-type HifSource): the source list
  *
  * Since: 0.1.0
  **/
