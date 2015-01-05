@@ -39,16 +39,7 @@
 #include <librepo/librepo.h>
 
 #include "hif-cleanup.h"
-#include "hif-context.h"
-#include "hif-context-private.h"
-#include "hif-db.h"
-#include "hif-goal.h"
-#include "hif-keyring.h"
-#include "hif-package.h"
-#include "hif-transaction.h"
-#include "hif-repos.h"
-#include "hif-sack.h"
-#include "hif-state.h"
+#include "libhif.h"
 #include "hif-utils.h"
 
 typedef struct _HifContextPrivate	HifContextPrivate;
@@ -866,7 +857,7 @@ have_existing_install (HifContext *context)
 }
 
 /**
- * hif_context_setup_sack:
+ * hif_context_setup_sack: (skip)
  * @context: a #HifContext instance.
  * @state: A #HifState
  * @error: A #GError or %NULL
@@ -907,7 +898,7 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 	/* add installed packages */
 	if (have_existing_install (context)) {
 		rc = hy_sack_load_system_repo (priv->sack, NULL, HY_BUILD_CACHE);
-		if (!hif_rc_to_gerror (rc, error)) {
+		if (!hif_error_set_from_hawkey (rc, error)) {
 			g_prefix_error (error, "Failed to load system repo: ");
 			return FALSE;
 		}
@@ -1633,7 +1624,7 @@ hif_context_repo_disable (HifContext *context,
 }
 
 /**
- * hif_context_commit:
+ * hif_context_commit: (skip)
  * @context: a #HifContext instance.
  * @state: A #HifState
  * @error: A #GError or %NULL

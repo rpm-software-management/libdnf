@@ -40,14 +40,7 @@
 #include <hawkey/util.h>
 
 #include "hif-cleanup.h"
-#include "hif-context-private.h"
-#include "hif-db.h"
-#include "hif-goal.h"
-#include "hif-keyring.h"
-#include "hif-package.h"
-#include "hif-rpmts.h"
-#include "hif-state.h"
-#include "hif-transaction.h"
+#include "libhif.h"
 #include "hif-utils.h"
 
 typedef enum {
@@ -897,7 +890,7 @@ hif_transaction_convert_to_system_repo (HifTransaction *transaction,
 
 	/* add installed packages */
 	rc = hy_sack_load_system_repo (sack, NULL, HY_BUILD_CACHE);
-	if (!hif_rc_to_gerror (rc, error)) {
+	if (!hif_error_set_from_hawkey (rc, error)) {
 		g_prefix_error (error, "Failed to load system repo: ");
 		goto out;
 	}

@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2015 Colin Walters <walters@verbum.org>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -19,39 +19,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+
 #if !defined (__LIBHIF_H) && !defined (HIF_COMPILATION)
 #error "Only <libhif.h> can be included directly."
 #endif
 
-#ifndef __HIF_CONTEXT_PRIVATE_H
-#define __HIF_CONTEXT_PRIVATE_H
+#ifndef __HIF_TYPES_H
+#define __HIF_TYPES_H
 
-#include "hif-context.h"
-#include "hif-repos.h"
-#include "hif-state.h"
-#include "hif-transaction.h"
+#include <gio/gio.h>
 
-gboolean	 hif_context_setup_sack			(HifContext	*context,
-							 HifState	*state,
-							 GError		**error);
-gboolean	 hif_context_commit			(HifContext	*context,
-							 HifState	*state,
-							 GError		**error);
-void		 hif_context_invalidate			(HifContext	*context,
-							 const gchar	*message);
+typedef struct _HifContext		HifContext;
+typedef struct _HifDb                   HifDb;
+typedef struct _HifTransaction		HifTransaction;
+typedef struct _HifRepos		HifRepos;
+typedef struct _HifSource		HifSource;
+typedef struct _HifState		HifState;
 
-HifRepos	*hif_context_get_repos			(HifContext	*context);
+#define HIF_ERROR			(hif_error_quark ())
+GQuark		 hif_error_quark	(void);
 
-GPtrArray	*hif_context_get_sources		(HifContext	*context);
+#endif
 
-HifTransaction	*hif_context_get_transaction		(HifContext	*context);
-
-HySack   	 hif_context_get_sack			(HifContext	*context);
-
-HyGoal  	 hif_context_get_goal			(HifContext	*context);
-
-HifState* 	 hif_context_get_state			(HifContext	*context);
-
-G_END_DECLS
-
-#endif /* __HIF_CONTEXT_PRIVATE_H */

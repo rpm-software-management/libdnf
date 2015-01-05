@@ -24,7 +24,7 @@
 /**
  * SECTION:hif-state
  * @short_description: Progress reporting
- * @include: libhif-private.h
+ * @include: libhif.h
  * @stability: Unstable
  *
  * Objects can use hif_state_set_percentage() if the absolute percentage

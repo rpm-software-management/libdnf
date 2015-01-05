@@ -45,7 +45,6 @@
 
 G_BEGIN_DECLS
 
-typedef struct _HifTransaction		HifTransaction;
 typedef struct _HifTransactionClass	HifTransactionClass;
 
 struct _HifTransaction

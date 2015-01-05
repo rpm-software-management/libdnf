@@ -28,7 +28,7 @@
 /**
  * SECTION:hif-source
  * @short_description: Object representing a remote source.
- * @include: libhif-private.h
+ * @include: libhif.h
  * @stability: Unstable
  *
  * Sources are remote repositories of packages.
@@ -47,9 +47,7 @@
 #include <rpm/rpmts.h>
 
 #include "hif-cleanup.h"
-#include "hif-keyring.h"
-#include "hif-source.h"
-#include "hif-package.h"
+#include "libhif.h"
 #include "hif-utils.h"
 
 typedef struct _HifSourcePrivate	HifSourcePrivate;

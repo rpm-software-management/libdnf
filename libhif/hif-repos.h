@@ -43,7 +43,6 @@
 
 G_BEGIN_DECLS
 
-typedef struct _HifRepos		HifRepos;
 typedef struct _HifReposClass	HifReposClass;
 
 struct _HifRepos

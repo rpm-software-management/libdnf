@@ -24,7 +24,7 @@
 /**
  * SECTION:hif-lock
  * @short_description: Lock the package system.
- * @include: libhif-private.h
+ * @include: libhif.h
  * @stability: Unstable
  *
  * This object either works per-thread or per-system with a configured lock file.
@@ -37,7 +37,7 @@
 #include <gio/gio.h>
 
 #include "hif-cleanup.h"
-#include "hif-lock.h"
+#include "libhif.h"
 #include "hif-utils.h"
 
 typedef struct _HifLockPrivate	HifLockPrivate;

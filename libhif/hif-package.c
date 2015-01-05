@@ -21,7 +21,7 @@
 /**
  * SECTION:hif-goal
  * @short_description: Helper methods for dealing with hawkey packages.
- * @include: libhif-private.h
+ * @include: libhif.h
  * @stability: Unstable
  *
  * These methods make it easier to get and set extra data on a package.
@@ -43,8 +43,7 @@
 #include <librepo/librepo.h>
 
 #include "hif-cleanup.h"
-#include "hif-context.h"
-#include "hif-package.h"
+#include "libhif.h"
 #include "hif-utils.h"
 
 typedef struct {
