@@ -144,6 +144,8 @@ introspection_sources =						\
 	hif-context.h						\
 	hif-state.h						\
 	hif-state.c						\
+	hif-source.h						\
+	hif-source.c						\
 	hif-version.h
 
 Hif-1.0.gir: libhif.la
