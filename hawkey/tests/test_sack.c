@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2015 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -49,13 +49,14 @@ END_TEST
 START_TEST(test_sack_create)
 {
     fail_unless(hy_get_errno() == 0);
-    HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL,
+    HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
 				 HY_MAKE_CACHE_DIR);
     fail_if(sack == NULL, NULL);
     fail_if(sack_pool(sack) == NULL, NULL);
     hy_sack_free(sack);
 
-    sack = hy_sack_create(test_globals.tmpdir, "", NULL, HY_MAKE_CACHE_DIR);
+    sack = hy_sack_create(test_globals.tmpdir, "", NULL, NULL,
+			  HY_MAKE_CACHE_DIR);
     fail_unless(sack == NULL);
     fail_unless(hy_get_errno() == HY_E_ARCH);
 }
@@ -63,7 +64,7 @@ END_TEST
 
 START_TEST(test_give_cache_fn)
 {
-    HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL,
+    HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
 				 HY_MAKE_CACHE_DIR);
 
     char *path = hy_sack_give_cache_fn(sack, "rain", NULL);
@@ -80,7 +81,7 @@ END_TEST
 START_TEST(test_list_arches)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH, NULL,
-				 HY_MAKE_CACHE_DIR);
+				 NULL, HY_MAKE_CACHE_DIR);
     const char ** arches = hy_sack_list_arches(sack);
 
     /* noarch, x86_64, athlon, i686, i586, i486, i386 */
@@ -94,7 +95,7 @@ END_TEST
 
 START_TEST(test_load_yum_repo_err)
 {
-    HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL,
+    HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
 				 HY_MAKE_CACHE_DIR);
     HyRepo repo = hy_repo_create("crabalocker");
     hy_repo_set_string(repo, HY_REPO_MD_FN, "/non/existing");
@@ -107,7 +108,7 @@ END_TEST
 
 START_TEST(test_yum_repo_written)
 {
-    HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL,
+    HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
 				 HY_MAKE_CACHE_DIR);
     char *filename = hy_sack_give_cache_fn(sack, "test_sack_written", NULL);
 
@@ -178,7 +179,7 @@ END_TEST
 
 START_TEST(test_filelist_from_cache)
 {
-    HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL,
+    HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
 				 HY_MAKE_CACHE_DIR);
     setup_yum_sack(sack, YUM_REPO_NAME);
 
@@ -226,7 +227,7 @@ END_TEST
 START_TEST(test_presto_from_cache)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH, NULL,
-				 HY_MAKE_CACHE_DIR);
+				 NULL, HY_MAKE_CACHE_DIR);
     setup_yum_sack(sack, YUM_REPO_NAME);
 
     HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);

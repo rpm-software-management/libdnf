@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 Red Hat, Inc.
+ * Copyright (C) 2012-2015 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -189,7 +189,10 @@ log_cb(Pool *pool, void *cb_data, int level, const char *buf)
     HySack sack = cb_data;
 
     if (sack->log_out == NULL) {
-	const char *fn = pool_tmpjoin(pool, sack->cache_dir, "/hawkey.log", NULL);
+	const char *fn = sack->log_file;
+
+	if (!sack->log_file)
+	    fn = pool_tmpjoin(pool, sack->cache_dir, "/hawkey.log", NULL);
 
 	sack->log_out = fopen(fn, "a");
 	if (sack->log_out)
@@ -614,7 +617,7 @@ load_yum_repo(HySack sack, HyRepo hrepo)
  */
 HySack
 hy_sack_create(const char *cache_path, const char *arch, const char *rootdir,
-	       int flags)
+	       const char* log_file, int flags)
 {
     HySack sack = solv_calloc(1, sizeof(*sack));
     Pool *pool = pool_create();
@@ -624,6 +627,8 @@ hy_sack_create(const char *cache_path, const char *arch, const char *rootdir,
     sack->running_kernel_id = -1;
     sack->running_kernel_fn = running_kernel;
     sack->considered_uptodate = 1;
+    if (log_file)
+	sack->log_file = solv_strdup(log_file);
 
     if (cache_path != NULL) {
 	sack->cache_dir = solv_strdup(cache_path);
@@ -681,6 +686,7 @@ hy_sack_free(HySack sack)
 	fclose(sack->log_out);
     }
     solv_free(sack->cache_dir);
+    solv_free(sack->log_file);
     queue_free(&sack->installonly);
 
     free_map_fully(sack->pkg_excludes);

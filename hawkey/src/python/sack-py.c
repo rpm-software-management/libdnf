@@ -140,24 +140,30 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     const char *cachedir = NULL;
     const char *arch = NULL;
     const char *rootdir = NULL;
+    const char *logfile = NULL;
     PyObject *tmp_py_str = NULL;
+    PyObject *tmp2_py_str = NULL;
     PyObject *cachedir_py = NULL;
+    PyObject *logfile_py = NULL;
     int make_cache_dir = 0;
-    char *kwlist[] = {"cachedir", "arch", "rootdir",
+    char *kwlist[] = {"cachedir", "arch", "rootdir", "logfile",
 		      "pkgcls", "pkginitval", "make_cache_dir", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OssOOi", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OssOOOi", kwlist,
 				     &cachedir_py, &arch, &rootdir,
-				     &custom_class, &custom_val,
+				     &logfile_py, &custom_class, &custom_val,
 				     &make_cache_dir))
 	return -1;
     if (cachedir_py != NULL)
 	cachedir = pycomp_get_string(cachedir_py, &tmp_py_str);
+    if (logfile_py != NULL)
+	logfile = pycomp_get_string(logfile_py, &tmp2_py_str);
     int flags = 0;
     if (make_cache_dir)
 	flags |= HY_MAKE_CACHE_DIR;
-    self->sack = hy_sack_create(cachedir, arch, rootdir, flags);
+    self->sack = hy_sack_create(cachedir, arch, rootdir, logfile, flags);
     Py_XDECREF(tmp_py_str);
+    Py_XDECREF(tmp2_py_str);
     if (self->sack == NULL) {
 	switch (hy_get_errno()) {
 	case HY_E_IO:

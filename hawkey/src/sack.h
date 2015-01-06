@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2015 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -39,8 +39,8 @@ enum _hy_sack_repo_load_flags {
     HY_LOAD_UPDATEINFO	= 1 << 3
 };
 
-HySack hy_sack_create(const char *cache_path, const char *arch,
-		      const char *rootdir, int flags);
+HySack hy_sack_create(const char *cachedir, const char *arch, const char *rootdir,
+		      const char* logfile, int flags);
 void hy_sack_free(HySack sack);
 int hy_sack_evr_cmp(HySack sack, const char *evr1, const char *evr2);
 const char *hy_sack_get_cache_dir(HySack sack);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2015 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -37,7 +37,7 @@ static HySack
 create_ut_sack(void)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH, NULL,
-				 HY_MAKE_CACHE_DIR);
+				 NULL, HY_MAKE_CACHE_DIR);
     test_globals.sack = sack;
     HY_LOG_INFO("HySack for UT created: %p", sack);
     return sack;

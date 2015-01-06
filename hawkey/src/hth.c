@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2015 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -395,7 +395,7 @@ need_filelists(int argc, const char **argv)
 
 int main(int argc, const char **argv)
 {
-    HySack sack = hy_sack_create(NULL, NULL, NULL, HY_MAKE_CACHE_DIR);
+    HySack sack = hy_sack_create(NULL, NULL, NULL, NULL, HY_MAKE_CACHE_DIR);
     HyRepo repo;
     char *md_repo;
     char *md_primary_xml;

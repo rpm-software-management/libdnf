@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2012-2015 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -37,6 +37,7 @@ struct _HySack {
     Id running_kernel_id;
     running_kernel_fn_t running_kernel_fn;
     char *cache_dir;
+    char *log_file;
     Queue installonly;
     int installonly_limit;
     FILE *log_out;
