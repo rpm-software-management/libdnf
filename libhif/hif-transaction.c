@@ -1293,6 +1293,7 @@ hif_transaction_commit (HifTransaction *transaction,
 		goto out;
 
 	/* import all GPG keys */
+	ret = hif_keyring_add_public_keys (priv->keyring, error);
 	if (!ret)
 		goto out;
 
