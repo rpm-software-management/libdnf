@@ -96,14 +96,22 @@ hif_db_create_dir (const gchar *dir, GError **error)
  * hif_db_get_dir_for_package:
  **/
 static gchar *
-hif_db_get_dir_for_package (HyPackage package)
+hif_db_get_dir_for_package (HifDb *db, HyPackage package)
 {
 	const gchar *pkgid;
+	HifDbPrivate *priv = GET_PRIVATE (db);
+	const gchar *instroot;
 
 	pkgid = hif_package_get_pkgid (package);
 	if (pkgid == NULL)
 		return NULL;
-	return g_strdup_printf ("/var/lib/yum/yumdb/%c/%s-%s-%s-%s-%s",
+
+	instroot = hif_context_get_install_root (priv->context);
+	if (g_strcmp0 (instroot, "/") == 0)
+		instroot = "";
+
+	return g_strdup_printf ("%s/var/lib/yum/yumdb/%c/%s-%s-%s-%s-%s",
+				instroot,
 				hy_package_get_name (package)[0],
 				pkgid,
 				hy_package_get_name (package),
@@ -138,7 +146,7 @@ hif_db_get_string (HifDb *db, HyPackage package, const gchar *key, GError **erro
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* get file contents */
-	index_dir = hif_db_get_dir_for_package (package);
+	index_dir = hif_db_get_dir_for_package (db, package);
 	if (index_dir == NULL) {
 		g_set_error (error,
 			     HIF_ERROR,
@@ -197,7 +205,7 @@ hif_db_set_string (HifDb *db,
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* create the index directory */
-	index_dir = hif_db_get_dir_for_package (package);
+	index_dir = hif_db_get_dir_for_package (db, package);
 	if (index_dir == NULL) {
 		g_set_error (error,
 			     HIF_ERROR,
@@ -244,7 +252,7 @@ hif_db_remove (HifDb *db,
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* create the index directory */
-	index_dir = hif_db_get_dir_for_package (package);
+	index_dir = hif_db_get_dir_for_package (db, package);
 	if (index_dir == NULL) {
 		g_set_error (error,
 			     HIF_ERROR,
@@ -286,7 +294,7 @@ hif_db_remove_all (HifDb *db, HyPackage package, GError **error)
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get the folder */
-	index_dir = hif_db_get_dir_for_package (package);
+	index_dir = hif_db_get_dir_for_package (db, package);
 	if (index_dir == NULL) {
 		g_set_error (error,
 			     HIF_ERROR,
