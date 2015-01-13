@@ -1,5 +1,5 @@
 ..
-  Copyright (C) 2014  Red Hat, Inc.
+  Copyright (C) 2014-2015  Red Hat, Inc.
 
   This copyrighted material is made available to anyone wishing to use,
   modify, copy, or redistribute it subject to the terms and conditions of
@@ -22,37 +22,36 @@ python-hawkey Reference Manual
 .. contents::
 
 
-Error handling
-==============
+Introduction
+============
 
-When an error or an unexpected event occurs during a Hawkey routine, an
-exception is raised:
+This reference manual describes Python API to the library. For a quick start
+take a look at :doc:`tutorial-py`. To be sure that you are familiar with our
+deprecation policy, see :doc:`changes`.
 
-* if it is a general error that could be common to other Python programs, one of
-  the standard Python built-in exceptions is raised. For instance, ``IOError``
-  and ``TypeError`` can be raised from Hawkey.
+.. NOTE::
 
-* programming errors within Hawkey that cause unexpected or invalid states raise
-  the standard ``AssertionError``. These should be reported as bugs against
-  Hawkey.
+  The API consists of exactly those elements described in this document, items
+  not documented here can change from release to release. Opening a `bugzilla`_
+  if certain needed functionality is not exposed is the right thing to do.
 
-* programming errors due to incorrect use of the library usually produce
-  ``hawkey.ValueException`` or one of its subclasses, ``QueryException`` (poorly
-  formed Query) or ``ArchException`` (unrecognized architecture).
+.. WARNING::
 
-* sometimes there is a close call between blaming the error on an input
-  parameter or on something else, beyond the programmer's
-  control. ``hawkey.RuntimeException`` is generally used in this case.
+  The manual is not complete yet - the features are being added incrementally
+  these days.
 
-* ``hawkey.ValidationException`` is raised when a function call performs a
-  preliminary check before proceeding with the main operation and this check
-  fails.
 
-The class hierarchy for Hawkey exceptions is::
+Contents
+========
 
-  +-- hawkey.Exception
-       +-- hawkey.ValueException
-       |    +-- hawkey.QueryException
-       |    +-- hawkey.ArchException
-       +-- hawkey.RuntimeException
-       +-- hawkey.ValidationException
+API Documentation Contents
+
+.. toctree::
+  :maxdepth: 2
+
+  reference-py-sack
+  reference-py-errors
+
+Indices:
+
+* :ref:`genindex`

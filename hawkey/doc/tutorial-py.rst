@@ -1,5 +1,5 @@
 ..
-  Copyright (C) 2014  Red Hat, Inc.
+  Copyright (C) 2014-2015  Red Hat, Inc.
 
   This copyrighted material is made available to anyone wishing to use,
   modify, copy, or redistribute it subject to the terms and conditions of
@@ -20,6 +20,12 @@
 ************************
 
 .. contents::
+
+.. IMPORTANT::
+
+  Please consult every usage of the library with :doc:`reference-py` to be sure
+  what are you doing. The examples mentioned here are supposed to be as simple
+  as possible and may ignore some minor corner cases.
 
 Setup
 =====
@@ -81,6 +87,8 @@ files. Structures used for passing the information to hawkey are the hawkey
 The number of packages in the Sack will increase by the number of packages found
 in the repository (two in this case, it is an experimental repo after all).
 
+.. _case_for_loading_the_filelists-label:
+
 Case for Loading the Filelists
 ==============================
 
@@ -111,6 +119,8 @@ The strategy for using ``load_filelists=True`` is thus:
 
 * Use it if you are not sure.
 
+.. _building_and_reusing_the_repo_cache-label:
+
 Building and Reusing the Repo Cache
 ===================================
 
@@ -122,7 +132,7 @@ milliseconds, using the solv files reduces repo load times from seconds to tens
 of milliseconds. It is thus a good idea to write and use the solv files every
 time you plan to use the same repo for more than one Sack (which is at least
 every time your hawkey program is run). To do that use ``build_cache=True`` with
-:func:`load_yum_repo` and :func:`load_system_repo`::
+:meth:`~.Sack.load_yum_repo` and :meth:`~.Sack.load_system_repo`::
 
   >>> sack = hawkey.Sack(make_cache_dir=True)
   >>> sack.load_system_repo(build_cache=True)
@@ -212,8 +222,8 @@ the query matched at least one package::
 Resolving things with Goals
 ===========================
 
-Many :class:`Sack` sessions culminate in a bout of dependency resolving, that is
-answering a question along the lines of "I have a package X in a repository
+Many :class:`~.Sack` sessions culminate in a bout of dependency resolving, that
+is answering a question along the lines of "I have a package X in a repository
 here, what other packages do I need to install/update to have X installed and
 all its dependencies recursively satisfied?" Suppose we want to install `the RTS
 game Spring <http://springrts.com/>`_. First let's locate the latest version of

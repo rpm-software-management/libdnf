@@ -44,7 +44,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Hawkey'
-copyright = u'2012-2014, Red Hat, Licensed under GPLv2+'
+copyright = u'2012-2015, Red Hat, Licensed under GPLv2+'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -262,5 +262,6 @@ texinfo_documents = [
 rst_prolog = """
 .. default-domain:: py
 .. _libsolv: https://github.com/openSUSE/libsolv
+.. _bugzilla: https://bugzilla.redhat.com/enter_bug.cgi?product=Fedora&component=hawkey
 
 """

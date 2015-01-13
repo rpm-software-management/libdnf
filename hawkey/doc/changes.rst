@@ -1,5 +1,5 @@
 ..
-  Copyright (C) 2014  Red Hat, Inc.
+  Copyright (C) 2014-2015  Red Hat, Inc.
 
   This copyrighted material is made available to anyone wishing to use,
   modify, copy, or redistribute it subject to the terms and conditions of
@@ -323,8 +323,8 @@ Python bindings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A new sack by default no longer automatically creates the cache directory. To
-get the old behavior, append ``make_cache_dir=True`` to the Sack's constructor
-arguments, that is change the following::
+get the old behavior, append ``make_cache_dir=True`` to the
+:meth:`.Sack.__init__` arguments, that is change the following::
 
     sack = hawkey.Sack(...)
 
