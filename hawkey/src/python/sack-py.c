@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 Red Hat, Inc.
+ * Copyright (C) 2012-2015 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -245,7 +245,7 @@ set_installonly_limit(_SackObject *self, PyObject *obj, void *unused)
 }
 
 static PyGetSetDef sack_getsetters[] = {
-    {"cache_path",	(getter)get_cache_dir, NULL, NULL, NULL},
+    {"cache_dir",	(getter)get_cache_dir, NULL, NULL, NULL},
     {"installonly",	NULL, (setter)set_installonly, NULL, NULL},
     {"installonly_limit",	NULL, (setter)set_installonly_limit, NULL, NULL},
     {NULL}			/* sentinel */

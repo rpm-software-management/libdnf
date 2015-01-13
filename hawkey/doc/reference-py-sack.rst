@@ -29,7 +29,7 @@
 
   Sacks cannot be deeply copied.
 
-  .. attribute:: cache_path
+  .. attribute:: cache_dir
 
     A read-only string property giving the path to the location where a
     metadata cache and log file are stored.

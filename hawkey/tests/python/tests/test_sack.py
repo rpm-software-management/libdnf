@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2012-2013 Red Hat, Inc.
+# Copyright (C) 2012-2015 Red Hat, Inc.
 #
 # Licensed under the GNU Lesser General Public License Version 2.1
 #
@@ -47,9 +47,9 @@ class TestSackTest(base.TestCase):
         self.assertEqual(len(sack), hawkey.test.EXPECT_YUM_NSOLVABLES +
                          hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
 
-    def test_cache_path(self):
+    def test_cache_dir(self):
         sack = base.TestSack(repo_dir=self.repo_dir)
-        self.assertTrue(sack.cache_path.startswith("/tmp/pyhawkey"))
+        self.assertTrue(sack.cache_dir.startswith("/tmp/pyhawkey"))
 
 class BasicTest(unittest.TestCase):
     def test_creation(self):
@@ -64,9 +64,9 @@ class BasicTest(unittest.TestCase):
 
     def test_creation_dir(self):
         sack = hawkey.Sack()
-        self.assertFalse(os.access(sack.cache_path, os.F_OK))
+        self.assertFalse(os.access(sack.cache_dir, os.F_OK))
         sack = hawkey.Sack(make_cache_dir=True)
-        self.assertTrue(os.access(sack.cache_path, os.F_OK))
+        self.assertTrue(os.access(sack.cache_dir, os.F_OK))
         self.assertRaises(IOError, hawkey.Sack, "", make_cache_dir=True)
 
     def test_failed_load(self):

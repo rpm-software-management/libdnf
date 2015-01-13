@@ -532,3 +532,15 @@ Core
 Previously, the function ``hy_chksum_str`` would cause a segmentation fault when it was used
 with incorrect type value. Now it correctly returns NULL if type parameter does not correspond
 to any of expected values.
+
+
+Changes in 0.5.3
+================
+
+Python bindings
+---------------
+
+``cache_path`` property of ``Sack`` renamed to ``cache_dir``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This change was already announced but it actually never happened.
