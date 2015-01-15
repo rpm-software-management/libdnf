@@ -46,8 +46,8 @@
     number of packages can be installed.
 
   .. method:: __init__(\
-    cachedir=_CACHEDIR, arch=_ARCH, rootdir=_ROOTDIR, logfile=_LOGFILE, \
-    pkgcls=hawkey.Package, pkginitval=None, make_cache_dir=False)
+    cachedir=_CACHEDIR, arch=_ARCH, rootdir=_ROOTDIR, pkgcls=hawkey.Package, \
+    pkginitval=None, make_cache_dir=False, logfile=_LOGFILE)
 
     Initialize the sack with a default cache directory, log file location set
     to ``hawkey.log`` in the cache directory, an automatically detected
@@ -60,8 +60,6 @@
 
     `rootdir` is a string giving a path to an installroot.
 
-    `logfile` is a string giving a path of a log file location.
-
     `pkgcls` is a class of packages retrieved from the sack. The class'
     ``__init__`` method must accept two arguments. The first argument is a tuple
     of the sack and the ID of the package. The second argument is the
@@ -71,6 +69,8 @@
     `make_cache_dir` is a boolean that specifies whether the cache should be
     used to speedup loading of repositories or not (see
     :ref:`\building_and_reusing_the_repo_cache-label`).
+
+    `logfile` is a string giving a path of a log file location.
 
   .. method:: add_cmdline_package(filename)
 
