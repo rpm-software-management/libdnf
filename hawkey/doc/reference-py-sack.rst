@@ -32,7 +32,7 @@
   .. attribute:: cache_dir
 
     A read-only string property giving the path to the location where a
-    metadata cache and log file are stored.
+    metadata cache is stored.
 
   .. attribute:: installonly
 
@@ -46,23 +46,27 @@
     number of packages can be installed.
 
   .. method:: __init__(\
-    cachedir=None, arch=_ARCH, rootdir=_ROOTDIR, pkgcls=hawkey.Package, \
-    pkginitval=None, make_cache_dir=False)
+    cachedir=_CACHEDIR, arch=_ARCH, rootdir=_ROOTDIR, logfile=_LOGFILE, \
+    pkgcls=hawkey.Package, pkginitval=None, make_cache_dir=False)
 
-    Initialize sack with a default cache and log directory, an automatically
-    detected architecture and the current root ("/") as an installroot. The
-    cache is disabled by default.
+    Initialize the sack with a default cache directory, log file location set
+    to ``hawkey.log`` in the cache directory, an automatically detected
+    architecture and the current root (``/``) as an installroot. The cache is
+    disabled by default.
 
-    `cachedir` is a string giving a path of a cache and log file location.
+    `cachedir` is a string giving a path of a cache location.
 
     `arch` is a string specifying an architecture.
 
     `rootdir` is a string giving a path to an installroot.
 
+    `logfile` is a string giving a path of a log file location.
+
     `pkgcls` is a class of packages retrieved from the sack. The class'
     ``__init__`` method must accept two arguments. The first argument is a tuple
     of the sack and the ID of the package. The second argument is the
-    `pkginitval` argument. `pkginitval` cannot be ``None`` if `pkgcls` is given.
+    `pkginitval` argument. `pkginitval` cannot be ``None`` if `pkgcls` is
+    specified.
 
     `make_cache_dir` is a boolean that specifies whether the cache should be
     used to speedup loading of repositories or not (see

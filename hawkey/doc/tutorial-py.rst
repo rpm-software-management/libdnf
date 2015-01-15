@@ -147,8 +147,8 @@ this will be completely transparent to you:
   >>> s2 = hawkey.Sack()
   >>> s2.load_system_repo()
 
-By the way, the cache directory also contains a logfile with some boring
-debugging information.
+By the way, the cache directory (if not set otherwise) also contains a logfile
+with some boring debugging information.
 
 Queries
 =======
