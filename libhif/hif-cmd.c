@@ -247,6 +247,7 @@ hif_cmd_refresh_source (HifUtilPrivate *priv, HifSource *src, HifState *state, G
 {
 	HifState *state_local;
 	gboolean ret;
+	guint cache_age;
 	_cleanup_error_free_ GError *error_local = NULL;
 
 	/* set steps */
@@ -256,7 +257,8 @@ hif_cmd_refresh_source (HifUtilPrivate *priv, HifSource *src, HifState *state, G
 	/* check source */
 	state_local = hif_state_get_child (state);
 	g_print ("Checking %s\n", hif_source_get_id (src));
-	ret = hif_source_check (src, 60 * 60, state_local, &error_local);
+	cache_age = hif_context_get_cache_age (priv->context);
+	ret = hif_source_check (src, cache_age, state_local, &error_local);
 	if (ret)
 		return hif_state_finished (state, error);
 
