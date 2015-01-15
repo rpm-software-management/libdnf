@@ -999,6 +999,8 @@ hif_source_check (HifSource *source,
 		return FALSE;
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_YUMDLIST, download_list))
 		return FALSE;
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_MIRRORLIST, NULL))
+		return FALSE;
 	lr_result_clear (priv->repo_result);
 	if (!lr_handle_perform (priv->repo_handle, priv->repo_result, &error_local)) {
 		g_set_error (error,
