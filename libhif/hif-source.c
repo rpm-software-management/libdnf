@@ -967,6 +967,8 @@ hif_source_check (HifSource *source,
 	urls[0] = priv->location;
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_URLS, urls))
 		return FALSE;
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_DESTDIR, priv->location))
+		return FALSE;
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_LOCAL, TRUE))
 		return FALSE;
 	if (!lr_handle_setopt (priv->repo_handle, error, LRO_CHECKSUM, TRUE))
