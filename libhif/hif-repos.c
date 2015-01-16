@@ -46,7 +46,7 @@ typedef struct _HifReposPrivate	HifReposPrivate;
 struct _HifReposPrivate
 {
 	GFileMonitor		*monitor_repos;
-	HifContext		*context;
+	HifContext		*context;	/* weak reference */
 	GPtrArray		*sources;
 	GVolumeMonitor		*volume_monitor;
 	gboolean		 loaded;
@@ -73,7 +73,6 @@ hif_repos_finalize (GObject *object)
 
 	if (priv->monitor_repos != NULL)
 		g_object_unref (priv->monitor_repos);
-	g_object_unref (priv->context);
 	g_object_unref (priv->volume_monitor);
 	g_ptr_array_unref (priv->sources);
 
@@ -586,7 +585,8 @@ hif_repos_new (HifContext *context)
 	HifRepos *repos;
 	repos = g_object_new (HIF_TYPE_REPOS, NULL);
 	priv = GET_PRIVATE (repos);
-	priv->context = g_object_ref (context);
+	priv->context = context;
+	g_object_add_weak_pointer (G_OBJECT (priv->context), (void **) &priv->context);
 	hif_repos_setup_watch (repos);
 	return HIF_REPOS (repos);
 }
