@@ -1478,9 +1478,6 @@ hif_transaction_commit (HifTransaction *transaction,
 	if (!ret)
 		goto out;
 
-	/* all sacks are invalid now */
-	hif_context_invalidate (priv->context, "transaction performed");
-
 	/* write to the yumDB */
 	state_local = hif_state_get_child (state);
 	ret = hif_transaction_write_yumdb (transaction,
@@ -1503,6 +1500,9 @@ hif_transaction_commit (HifTransaction *transaction,
 		if (!ret)
 			goto out;
 	}
+
+	/* all sacks are invalid now */
+	hif_context_invalidate (priv->context, "transaction performed");
 
 	/* this section done */
 	ret = hif_state_done (state, error);
