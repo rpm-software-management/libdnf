@@ -1456,11 +1456,11 @@ hif_transaction_commit (HifTransaction *transaction,
 
 	/* filter diskspace */
 	if (!hif_context_get_check_disk_space (priv->context))
-		problems_filter += RPMPROB_FILTER_DISKSPACE;
+		problems_filter |= RPMPROB_FILTER_DISKSPACE;
 	if (priv->flags & HIF_TRANSACTION_FLAG_ALLOW_REINSTALL)
-		problems_filter += RPMPROB_FILTER_REPLACEPKG;
+		problems_filter |= RPMPROB_FILTER_REPLACEPKG;
 	if (priv->flags & HIF_TRANSACTION_FLAG_ALLOW_DOWNGRADE)
-		problems_filter += RPMPROB_FILTER_OLDPACKAGE;
+		problems_filter |= RPMPROB_FILTER_OLDPACKAGE;
 
 	/* run the transaction */
 	priv->state = hif_state_get_child (state);
