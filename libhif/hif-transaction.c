@@ -56,7 +56,7 @@ struct _HifTransactionPrivate
 	HifDb			*db;
 	rpmKeyring		 keyring;
 	rpmts			 ts;
-	HifContext		*context;
+	HifContext		*context;	/* weak reference */
 	GPtrArray		*sources;
 	guint			 uid;
 
@@ -87,7 +87,6 @@ hif_transaction_finalize (GObject *object)
 	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
 
 	g_ptr_array_unref (priv->pkgs_to_download);
-	g_object_unref (priv->context);
 	g_timer_destroy (priv->timer);
 	rpmKeyringFree (priv->keyring);
 	rpmtsFree (priv->ts);
@@ -1524,7 +1523,8 @@ hif_transaction_new (HifContext *context)
 	HifTransactionPrivate *priv;
 	transaction = g_object_new (HIF_TYPE_TRANSACTION, NULL);
 	priv = GET_PRIVATE (transaction);
-	priv->context = g_object_ref (context);
+	priv->context = context;
+	g_object_add_weak_pointer (G_OBJECT (priv->context), (void **) &priv->context);
 	priv->db = hif_db_new (context);
 	return HIF_TRANSACTION (transaction);
 }

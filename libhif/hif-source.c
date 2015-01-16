@@ -73,7 +73,7 @@ struct _HifSourcePrivate
 	gint64		 timestamp_modified;	/* µs */
 	GKeyFile	*keyfile;
 	GHashTable	*filenames_md;	/* key:filename */
-	HifContext	*context;
+	HifContext	*context;	/* weak reference */
 	HifSourceKind	 kind;
 	HyRepo		 repo;
 	LrHandle	*repo_handle;
@@ -108,7 +108,6 @@ hif_source_finalize (GObject *object)
 	g_free (priv->pubkey);
 	g_free (priv->pubkey_tmp);
 	g_hash_table_unref (priv->filenames_md);
-	g_object_unref (priv->context);
 	if (priv->repo_result != NULL)
 		lr_result_free (priv->repo_result);
 	if (priv->repo_handle != NULL)
@@ -1695,6 +1694,7 @@ hif_source_new (HifContext *context)
 	HifSourcePrivate *priv;
 	source = g_object_new (HIF_TYPE_SOURCE, NULL);
 	priv = GET_PRIVATE (source);
-	priv->context = g_object_ref (context);
+	priv->context = context;
+	g_object_add_weak_pointer (G_OBJECT (priv->context), (void **) &priv->context);
 	return HIF_SOURCE (source);
 }
