@@ -859,23 +859,31 @@ hif_transaction_delete_packages (HifTransaction *transaction,
 }
 
 /**
- * hif_transaction_convert_to_system_repo:
+ * hif_transaction_write_yumdb_install_item:
  **/
-static HyPackage
-hif_transaction_convert_to_system_repo (HifTransaction *transaction,
-					HyPackage pkg,
-					HifState *state,
-					GError **error)
+static gboolean
+hif_transaction_write_yumdb_install_item (HifTransaction *transaction,
+					  HyPackage pkg,
+					  HifState *state,
+					  GError **error)
 {
 	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
 	HyPackageList pkglist = NULL;
 	HyPackage pkg_installed = NULL;
 	HyQuery query = NULL;
 	HySack sack;
+	const gchar *reason;
+	gboolean ret;
+	gchar *tmp;
 	const gchar *cachedir;
 	gint rc;
 
-	/* load installed packages */
+	/* set steps */
+	hif_state_set_number_steps (state, 5);
+	hif_state_set_allow_cancel (state, FALSE);
+
+	/* need to find the HyPackage in the rpmdb, not the remote one that we
+	 * just installed */
 	cachedir = hif_context_get_cache_dir (priv->context);
 	sack = hy_sack_create (cachedir, NULL, hif_context_get_install_root (priv->context), HY_MAKE_CACHE_DIR);
 	if (sack == NULL) {
@@ -885,6 +893,7 @@ hif_transaction_convert_to_system_repo (HifTransaction *transaction,
 			     "failed to create sack cache [convert] in %s for %s",
 			     cachedir,
 			     hif_context_get_install_root (priv->context));
+		ret = FALSE;
 		goto out;
 	}
 
@@ -892,6 +901,7 @@ hif_transaction_convert_to_system_repo (HifTransaction *transaction,
 	rc = hy_sack_load_system_repo (sack, NULL, HY_BUILD_CACHE);
 	if (!hif_error_set_from_hawkey (rc, error)) {
 		g_prefix_error (error, "Failed to load system repo: ");
+		ret = FALSE;
 		goto out;
 	}
 
@@ -909,50 +919,12 @@ hif_transaction_convert_to_system_repo (HifTransaction *transaction,
 			     "Failed to find installed version of %s [%i]",
 			     hy_package_get_name (pkg),
 			     hy_packagelist_count (pkglist));
+		ret = FALSE;
 		goto out;
 	}
 
 	/* success */
 	pkg_installed = hy_package_link (hy_packagelist_get (pkglist, 0));
-out:
-	if (query != NULL)
-		hy_query_free (query);
-	if (pkglist != NULL)
-		hy_packagelist_free (pkglist);
-	return pkg_installed;
-}
-
-/**
- * hif_transaction_write_yumdb_install_item:
- **/
-static gboolean
-hif_transaction_write_yumdb_install_item (HifTransaction *transaction,
-					  HyPackage pkg,
-					  HifState *state,
-					  GError **error)
-{
-	HifState *state_local;
-	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
-	HyPackage pkg_installed = NULL;
-	const gchar *reason;
-	gboolean ret;
-	gchar *tmp;
-
-	/* set steps */
-	hif_state_set_number_steps (state, 5);
-	hif_state_set_allow_cancel (state, FALSE);
-
-	/* need to find the HyPackage in the rpmdb, not the remote one that we
-	 * just installed */
-	state_local = hif_state_get_child (state);
-	pkg_installed = hif_transaction_convert_to_system_repo (transaction,
-								pkg,
-								state_local,
-								error);
-	if (pkg_installed == NULL) {
-		ret = FALSE;
-		goto out;
-	}
 
 	/* this section done */
 	ret = hif_state_done (state, error);
@@ -1024,6 +996,12 @@ hif_transaction_write_yumdb_install_item (HifTransaction *transaction,
 out:
 	if (pkg_installed != NULL)
 		hy_package_free (pkg_installed);
+	if (pkglist != NULL)
+		hy_packagelist_free (pkglist);
+	if (query != NULL)
+		hy_query_free (query);
+	if (sack != NULL)
+		hy_sack_free (sack);
 	return ret;
 }
 
