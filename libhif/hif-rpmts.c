@@ -64,6 +64,7 @@ hif_rpmts_add_install_filename (rpmts ts,
 				gboolean is_update,
 				GError **error)
 {
+	gboolean ret = TRUE;
 	gint res;
 	Header hdr;
 	FD_t fd;
@@ -74,7 +75,6 @@ hif_rpmts_add_install_filename (rpmts ts,
 				  fd,
 				  filename,
 				  &hdr);
-	Fclose (fd);
 
 	/* be less strict when we're allowing untrusted transactions */
 	if (allow_untrusted) {
@@ -85,59 +85,66 @@ hif_rpmts_add_install_filename (rpmts ts,
 		case RPMRC_OK:
 			break;
 		case RPMRC_FAIL:
+			ret = FALSE;
 			g_set_error (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "signature does not verify for %s",
 				     filename);
-			return FALSE;
+			goto out;
 		default:
+			ret = FALSE;
 			g_set_error (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "failed to open (generic error): %s",
 				     filename);
-			return FALSE;
+			goto out;
 		}
 	} else {
 		switch (res) {
 		case RPMRC_OK:
 			break;
 		case RPMRC_NOTTRUSTED:
+			ret = FALSE;
 			g_set_error (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "failed to verify key for %s",
 				     filename);
-			return FALSE;
+			goto out;
 		case RPMRC_NOKEY:
+			ret = FALSE;
 			g_set_error (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "public key unavailable for %s",
 				     filename);
-			return FALSE;
+			goto out;
 		case RPMRC_NOTFOUND:
+			ret = FALSE;
 			g_set_error (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "signature not found for %s",
 				     filename);
-			return FALSE;
+			goto out;
 		case RPMRC_FAIL:
+			ret = FALSE;
 			g_set_error (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "signature does not verify for %s",
 				     filename);
-			return FALSE;
+			goto out;
 		default:
+			ret = FALSE;
 			g_set_error (error,
 				     HIF_ERROR,
 				     HIF_ERROR_INTERNAL_ERROR,
 				     "failed to open (generic error): %s",
 				     filename);
-			return FALSE;
+			goto out;
 		}
 	}
 
@@ -148,14 +155,18 @@ hif_rpmts_add_install_filename (rpmts ts,
 				      is_update,
 				      NULL);
 	if (res != 0) {
+		ret = FALSE;
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_INTERNAL_ERROR,
 			     "failed to add install element: %s [%i]",
 			     filename, res);
-		return FALSE;
+		goto out;
 	}
-	return TRUE;
+out:
+	Fclose (fd);
+	headerFree (hdr);
+	return ret;
 }
 
 /**
