@@ -213,6 +213,42 @@ hif_cmd_install (HifUtilPrivate *priv, gchar **values, GError **error)
 }
 
 /**
+ * hif_cmd_reinstall:
+ **/
+static gboolean
+hif_cmd_reinstall (HifUtilPrivate *priv, gchar **values, GError **error)
+{
+	guint i;
+	HifTransaction *transaction;
+
+	if (g_strv_length (values) < 1) {
+		g_set_error_literal (error,
+				     HIF_ERROR,
+				     HIF_ERROR_INVALID_ARGUMENTS,
+				     "Not enough arguments, "
+				     "expected package or group name");
+		return FALSE;
+	}
+
+	/* install each package */
+	if (!hif_context_setup (priv->context, NULL, error))
+		return FALSE;
+
+	/* relax duplicate checking */
+	transaction = hif_context_get_transaction (priv->context);
+	hif_transaction_set_flags (transaction, HIF_TRANSACTION_FLAG_ALLOW_REINSTALL);
+
+	/* reinstall each package */
+	for (i = 0; values[i] != NULL; i++) {
+		if (!hif_context_remove (priv->context, values[i], error))
+			return FALSE;
+		if (!hif_context_install (priv->context, values[i], error))
+			return FALSE;
+	}
+	return hif_context_run (priv->context, NULL, error);
+}
+
+/**
  * hif_cmd_remove:
  **/
 static gboolean
@@ -432,6 +468,10 @@ main (int argc, char *argv[])
 		     "install", "[pkgname]",
 		     "Install a package or group name",
 		     hif_cmd_install);
+	hif_cmd_add (priv->cmd_array,
+		     "reinstall", "[pkgname]",
+		     "Reinstall a package or group name",
+		     hif_cmd_reinstall);
 	hif_cmd_add (priv->cmd_array,
 		     "remove", "[pkgname]",
 		     "Remove a package or group name",
