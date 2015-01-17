@@ -73,6 +73,7 @@ struct _HifContextPrivate
 	gboolean		 keep_cache;
 	HifLock			*lock;
 	HifTransaction		*transaction;
+	GThread			*transaction_thread;
 	GFileMonitor		*monitor_rpmdb;
 
 	/* used to implement a transaction */
@@ -389,10 +390,38 @@ hif_context_get_sources (HifContext *context)
 }
 
 /**
+ * hif_context_ensure_transaction:
+ **/
+static void
+hif_context_ensure_transaction (HifContext *context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+
+	/* create if not yet created */
+	if (priv->transaction == NULL) {
+		priv->transaction = hif_transaction_new (context);
+		priv->transaction_thread = g_thread_self ();
+		hif_transaction_set_sources (priv->transaction, priv->sources);
+		hif_transaction_set_flags (priv->transaction,
+					   HIF_TRANSACTION_FLAG_ONLY_TRUSTED);
+		return;
+	}
+
+	/* check the transaction is not being used from a different thread */
+	if (priv->transaction_thread != g_thread_self ())
+		g_warning ("transaction being re-used by a different thread!");
+}
+
+/**
  * hif_context_get_transaction:
  * @context: a #HifContext instance.
  *
  * Gets the transaction used by the transaction.
+ *
+ * IMPORTANT: This function cannot be used if #HifContext is being re-used by
+ * different threads, even if threads are run one at a time. If you're doing
+ * this, just create a HifTransaction for each thread rather than using the
+ * context version.
  *
  * Returns: (transfer none): the HifTransaction object
  *
@@ -402,6 +431,8 @@ HifTransaction *
 hif_context_get_transaction (HifContext *context)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
+	/* ensure transaction exists */
+	hif_context_ensure_transaction (context);
 	return priv->transaction;
 }
 
@@ -1207,10 +1238,6 @@ hif_context_setup (HifContext *context,
 	priv->sources = hif_repos_get_sources (priv->repos, error);
 	if (priv->sources == NULL)
 		return FALSE;
-	priv->transaction = hif_transaction_new (context);
-	hif_transaction_set_sources (priv->transaction, priv->sources);
-	hif_transaction_set_flags (priv->transaction,
-				   HIF_TRANSACTION_FLAG_ONLY_TRUSTED);
 
 	/* setup a file monitor on the rpmdb */
 	rpmdb_path = g_build_filename (priv->install_root, "var/lib/rpm/Packages", NULL);
@@ -1251,6 +1278,9 @@ hif_context_run (HifContext *context, GCancellable *cancellable, GError **error)
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	HifState *state_local;
 	gboolean ret;
+
+	/* ensure transaction exists */
+	hif_context_ensure_transaction (context);
 
 	/* connect if set */
 	hif_state_reset (priv->state);
@@ -1568,6 +1598,9 @@ gboolean
 hif_context_commit (HifContext *context, HifState *state, GError **error)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
+
+	/* ensure transaction exists */
+	hif_context_ensure_transaction (context);
 
 	/* run the transaction */
 	return hif_transaction_commit (priv->transaction,
