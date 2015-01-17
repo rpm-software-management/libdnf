@@ -1246,6 +1246,7 @@ hif_transaction_commit (HifTransaction *transaction,
 	HyPackage pkg;
 	HyPackage pkg_tmp;
 	rpmprobFilterFlags problems_filter = 0;
+	rpmtransFlags rpmts_flags = RPMTRANS_FLAG_NONE;
 	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
 
 	/* take lock */
@@ -1432,10 +1433,13 @@ hif_transaction_commit (HifTransaction *transaction,
 	if (priv->flags & HIF_TRANSACTION_FLAG_ALLOW_DOWNGRADE)
 		problems_filter |= RPMPROB_FILTER_OLDPACKAGE;
 
+	if (priv->flags & HIF_TRANSACTION_FLAG_NODOCS)
+		rpmts_flags |= RPMTRANS_FLAG_NODOCS;
+
 	/* run the transaction */
 	priv->state = hif_state_get_child (state);
 	priv->step = HIF_TRANSACTION_STEP_STARTED;
-	rpmtsSetFlags (priv->ts, RPMTRANS_FLAG_NONE);
+	rpmtsSetFlags (priv->ts, rpmts_flags);
 	g_debug ("Running actual transaction");
 	hif_state_set_allow_cancel (state, FALSE);
 	rc = rpmtsRun (priv->ts, NULL, problems_filter);
