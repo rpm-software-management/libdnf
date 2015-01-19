@@ -61,8 +61,9 @@ struct _HifState
  * @HIF_STATE_ACTION_UPDATE:			Updating packages
  * @HIF_STATE_ACTION_CLEANUP:			Cleaning packages
  * @HIF_STATE_ACTION_OBSOLETE:			Obsoleting packages
- * $HIF_STATE_ACTION_REINSTALL:			Reinstall packages
+ * @HIF_STATE_ACTION_REINSTALL:			Reinstall packages
  * @HIF_STATE_ACTION_DOWNGRADE:			Downgrading packages
+ * @HIF_STATE_ACTION_QUERY:			Querying for results
  *
  * The action enum code.
  **/
