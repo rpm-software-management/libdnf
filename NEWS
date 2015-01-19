@@ -1,3 +1,19 @@
+Version 0.1.8
+~~~~~~~~~~~~~
+Released: 2015-01-19
+
+Notes:
+ - This release fixes several bugs in 0.1.7 which could lead to offline updates
+   not working and general instability when installing and removing packages.
+ - Affected users are recommended to do either "yum update libhif" or to update
+   to the fixed package by clicking on the URL and then using gnome-software.
+
+Bugfixes:
+ - Do not attempt to read from a closed file descriptor (Richard Hughes)
+ - Do not download the mirrorlists when checking for updates (Richard Hughes)
+ - Don't use hif_context_get_transaction() from multiple threads (Richard Hughes)
+ - Ensure HifContext can be finalised to prevent rpmdb index corruption (Richard Hughes)
+
 Version 0.1.7
 ~~~~~~~~~~~~~
 Released: 2014-12-19

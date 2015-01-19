@@ -7,7 +7,7 @@ git shortlog libhif_0_1_7.. | grep -i -v trivial | grep -v Merge > NEWS.new
 --------------------------------------------------------------------------------
 Version 0.1.8
 ~~~~~~~~~~~~~
-Released: 2014-xx-xx
+Released: 2015-xx-xx
 
 Notes:
 
