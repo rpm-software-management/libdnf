@@ -1274,7 +1274,7 @@ hif_source_update (HifSource *source,
 		ret = FALSE;
 		g_set_error (error,
 			     HIF_ERROR,
-			     HIF_ERROR_INTERNAL_ERROR,
+			     HIF_ERROR_CANNOT_WRITE_SOURCE_CONFIG,
 			     "Failed to create %s", priv->location_tmp);
 		goto out;
 	}
