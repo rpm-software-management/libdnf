@@ -980,6 +980,12 @@ hif_repos_gpg_no_asc_func (void)
 				 HIF_SOURCE_UPDATE_FLAG_FORCE |
 				 HIF_SOURCE_UPDATE_FLAG_SIMULATE,
 				 state, &error);
+	if (g_error_matches (error,
+			     HIF_ERROR,
+			     HIF_ERROR_CANNOT_WRITE_SOURCE_CONFIG)) {
+		g_debug ("skipping tests: %s", error->message);
+		return;
+	}
 	g_assert_error (error, HIF_ERROR, HIF_ERROR_CANNOT_FETCH_SOURCE);
 	g_assert (!ret);
 	g_clear_error (&error);
@@ -1021,6 +1027,12 @@ hif_repos_gpg_wrong_asc_func (void)
 				 HIF_SOURCE_UPDATE_FLAG_FORCE |
 				 HIF_SOURCE_UPDATE_FLAG_SIMULATE,
 				 state, &error);
+	if (g_error_matches (error,
+			     HIF_ERROR,
+			     HIF_ERROR_CANNOT_WRITE_SOURCE_CONFIG)) {
+		g_debug ("skipping tests: %s", error->message);
+		return;
+	}
 	g_assert_error (error, HIF_ERROR, HIF_ERROR_CANNOT_FETCH_SOURCE);
 	g_assert (!ret);
 	g_clear_error (&error);
@@ -1069,6 +1081,12 @@ hif_repos_gpg_asc_func (void)
 				 HIF_SOURCE_UPDATE_FLAG_FORCE |
 				 HIF_SOURCE_UPDATE_FLAG_SIMULATE,
 				 state, &error);
+	if (g_error_matches (error,
+			     HIF_ERROR,
+			     HIF_ERROR_CANNOT_WRITE_SOURCE_CONFIG)) {
+		g_debug ("skipping tests: %s", error->message);
+		return;
+	}
 	g_assert_no_error (error);
 	g_assert (ret);
 }
