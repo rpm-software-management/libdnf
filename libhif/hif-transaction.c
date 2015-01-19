@@ -256,6 +256,16 @@ hif_transaction_ensure_source (HifTransaction *transaction,
 	char *location;
 	guint i;
 
+	/* not set yet */
+	if (priv->sources == NULL) {
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_INTERNAL_ERROR,
+			     "Sources not set when trying to ensure package %s",
+			     hy_package_get_name (pkg));
+		return FALSE;
+	}
+
 	/* this is a local file */
 	if (g_strcmp0 (hy_package_get_reponame (pkg),
 		       HY_CMDLINE_REPO_NAME) == 0) {
