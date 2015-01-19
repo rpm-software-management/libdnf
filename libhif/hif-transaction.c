@@ -1016,7 +1016,6 @@ hif_transaction_write_yumdb (HifTransaction *transaction,
 /**
  * hif_transaction_download:
  * @transaction: a #HifTransaction instance.
- * @goal: A #HyGoal
  * @state: A #HifState
  * @error: A #GError or %NULL
  *
@@ -1043,6 +1042,7 @@ hif_transaction_download (HifTransaction *transaction,
 /**
  * hif_transaction_depsolve:
  * @transaction: a #HifTransaction instance.
+ * @goal: A #HyGoal
  * @state: A #HifState
  * @error: A #GError or %NULL
  *
