@@ -624,6 +624,16 @@ hif_transaction_ts_progress_cb (const void *arg,
 		if (action == HIF_STATE_ACTION_UNKNOWN)
 			action = HIF_STATE_ACTION_INSTALL;
 
+		/* set the pkgid if not already set */
+		if (hif_package_get_pkgid (pkg) == NULL) {
+			const gchar *pkgid;
+			pkgid = headerGetString (hdr, RPMTAG_SHA1HEADER);
+			if (pkgid != NULL) {
+				g_debug ("setting %s pkgid %s", name, pkgid);
+				hif_package_set_pkgid (pkg, pkgid);
+			}
+		}
+
 		/* install start */
 		priv->step = HIF_TRANSACTION_STEP_WRITING;
 		priv->child = hif_state_get_child (priv->state);
@@ -869,6 +879,9 @@ hif_transaction_delete_packages (HifTransaction *transaction,
 
 /**
  * hif_transaction_write_yumdb_install_item:
+ *
+ * We've used hif_package_set_pkgid() when running the transaction so we can
+ * avoid the lookup in the rpmdb.
  **/
 static gboolean
 hif_transaction_write_yumdb_install_item (HifTransaction *transaction,
@@ -877,141 +890,44 @@ hif_transaction_write_yumdb_install_item (HifTransaction *transaction,
 					  GError **error)
 {
 	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
-	HyPackageList pkglist = NULL;
-	HyPackage pkg_installed = NULL;
-	HyQuery query = NULL;
-	HySack sack;
-	const gchar *reason;
-	gboolean ret;
-	gchar *tmp;
-	const gchar *cachedir;
-	gint rc;
+	const gchar *tmp;
+	_cleanup_free_ gchar *euid = NULL;
 
-	/* set steps */
-	hif_state_set_number_steps (state, 5);
-	hif_state_set_allow_cancel (state, FALSE);
-
-	/* need to find the HyPackage in the rpmdb, not the remote one that we
-	 * just installed */
-	cachedir = hif_context_get_cache_dir (priv->context);
-	sack = hy_sack_create (cachedir, NULL, hif_context_get_install_root (priv->context), HY_MAKE_CACHE_DIR);
-	if (sack == NULL) {
+	/* should be set by hif_transaction_ts_progress_cb () */
+	if (hif_package_get_pkgid (pkg) == NULL) {
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_INTERNAL_ERROR,
-			     "failed to create sack cache [convert] in %s for %s",
-			     cachedir,
-			     hif_context_get_install_root (priv->context));
-		ret = FALSE;
-		goto out;
+			     "no yumdb entry for %s as no pkgid",
+			     hif_package_get_id (pkg));
+		return FALSE;
 	}
 
-	/* add installed packages */
-	rc = hy_sack_load_system_repo (sack, NULL, HY_BUILD_CACHE);
-	if (!hif_error_set_from_hawkey (rc, error)) {
-		g_prefix_error (error, "Failed to load system repo: ");
-		ret = FALSE;
-		goto out;
-	}
-
-	/* find exact package */
-	query = hy_query_create (sack);
-	hy_query_filter (query, HY_PKG_NAME, HY_EQ, hy_package_get_name (pkg));
-	hy_query_filter (query, HY_PKG_EVR, HY_EQ, hy_package_get_evr (pkg));
-	hy_query_filter (query, HY_PKG_ARCH, HY_EQ, hy_package_get_arch (pkg));
-	hy_query_filter (query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-	pkglist = hy_query_run (query);
-	if (hy_packagelist_count (pkglist) != 1) {
-		g_set_error (error,
-			     HIF_ERROR,
-			     HIF_ERROR_PACKAGE_NOT_FOUND,
-			     "Failed to find installed version of %s [%i]",
-			     hy_package_get_name (pkg),
-			     hy_packagelist_count (pkglist));
-		ret = FALSE;
-		goto out;
-	}
-
-	/* success */
-	pkg_installed = hy_package_link (hy_packagelist_get (pkglist, 0));
-
-	/* this section done */
-	ret = hif_state_done (state, error);
-	if (!ret)
-		goto out;
+	/* uncancellable */
+	hif_state_set_allow_cancel (state, FALSE);
 
 	/* set the repo this came from */
-	ret = hif_db_set_string (priv->db,
-				 pkg_installed,
-				 "from_repo",
-				 hy_package_get_reponame (pkg),
-				 error);
-	if (!ret)
-		goto out;
-
-	/* this section done */
-	ret = hif_state_done (state, error);
-	if (!ret)
-		goto out;
+	tmp = hy_package_get_reponame (pkg);
+	if (!hif_db_set_string (priv->db, pkg, "from_repo", tmp, error))
+		return FALSE;
 
 	/* write euid */
-	tmp = g_strdup_printf ("%i", priv->uid);
-	ret = hif_db_set_string (priv->db,
-				 pkg_installed,
-				 "installed_by",
-				 tmp,
-				 error);
-	g_free (tmp);
-	if (!ret)
-		goto out;
-
-	/* this section done */
-	ret = hif_state_done (state, error);
-	if (!ret)
-		goto out;
+	euid = g_strdup_printf ("%i", priv->uid);
+	if (!hif_db_set_string (priv->db, pkg, "installed_by", euid, error))
+		return FALSE;
 
 	/* set the correct reason */
 	if (hif_package_get_user_action (pkg)) {
-		reason = "user";
+		if (!hif_db_set_string (priv->db, pkg, "reason", "user", error))
+			return FALSE;
 	} else {
-		reason = "dep";
+		if (!hif_db_set_string (priv->db, pkg, "reason", "dep", error))
+			return FALSE;
 	}
-	ret = hif_db_set_string (priv->db,
-				 pkg_installed,
-				 "reason",
-				 reason,
-				 error);
-	if (!ret)
-		goto out;
-
-	/* this section done */
-	ret = hif_state_done (state, error);
-	if (!ret)
-		goto out;
 
 	/* set the correct release */
-	ret = hif_db_set_string (priv->db,
-				 pkg_installed,
-				 "releasever",
-				 hif_context_get_release_ver (priv->context),
-				 error);
-	if (!ret)
-		goto out;
-
-	/* this section done */
-	ret = hif_state_done (state, error);
-	if (!ret)
-		goto out;
-out:
-	if (pkg_installed != NULL)
-		hy_package_free (pkg_installed);
-	if (pkglist != NULL)
-		hy_packagelist_free (pkglist);
-	if (query != NULL)
-		hy_query_free (query);
-	if (sack != NULL)
-		hy_sack_free (sack);
-	return ret;
+	tmp = hif_context_get_release_ver (priv->context);
+	return hif_db_set_string (priv->db, pkg, "releasever", tmp, error);
 }
 
 /**
