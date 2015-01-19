@@ -32,6 +32,7 @@
 #endif
 
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -187,6 +188,27 @@ hif_package_get_pkgid (HyPackage pkg)
 	priv->checksum_str = hy_chksum_str (checksum, checksum_type);
 out:
 	return priv->checksum_str;
+}
+
+/**
+ * hif_package_set_pkgid:
+ * @pkg: a #HyPackage instance.
+ * @pkgid: pkgid, e.g. "e6e3b2b10c1ef1033769147dbd1bf851c7de7699"
+ *
+ * Sets the package pkgid, which is the SHA hash of the package header.
+ *
+ * Since: 0.1.8
+ **/
+void
+hif_package_set_pkgid (HyPackage pkg, const gchar *pkgid)
+{
+	HifPackagePrivate *priv;
+	g_return_if_fail (pkgid != NULL);
+	priv = hif_package_get_priv (pkg);
+	if (priv == NULL)
+		return;
+	hy_free (priv->checksum_str);
+	priv->checksum_str = strdup (pkgid);
 }
 
 /**
