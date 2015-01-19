@@ -951,6 +951,8 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 		return FALSE;
 
 	/* create goal */
+	if (priv->goal != NULL)
+		hy_goal_free (priv->goal);
 	priv->goal = hy_goal_create (priv->sack);
 	return TRUE;
 }
@@ -1328,6 +1330,10 @@ hif_context_run (HifContext *context, GCancellable *cancellable, GError **error)
 				      error);
 	if (!ret)
 		return FALSE;
+
+	/* this sack is no longer valid */
+	hy_sack_free (priv->sack);
+	priv->sack = NULL;
 
 	/* this section done */
 	return hif_state_done (priv->state, error);
