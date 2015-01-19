@@ -166,6 +166,7 @@ hif_lock_threads_func (void)
 
 	/* take in master thread */
 	lock = hif_lock_new ();
+	hif_lock_set_lock_dir (lock, "/tmp");
 	lock_id = hif_lock_take (lock,
 				 HIF_LOCK_TYPE_REPO,
 				 HIF_LOCK_MODE_PROCESS,
@@ -736,6 +737,11 @@ hif_state_locking_func (void)
 	gboolean ret;
 	GError *error = NULL;
 	HifState *state;
+	HifLock *lock;
+
+	/* set, as is singleton */
+	lock = hif_lock_new ();
+	hif_lock_set_lock_dir (lock, "/tmp");
 
 	state = hif_state_new ();
 
@@ -756,6 +762,7 @@ hif_state_locking_func (void)
 	g_assert (ret);
 
 	g_object_unref (state);
+	g_object_unref (lock);
 }
 
 static void
