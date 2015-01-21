@@ -71,6 +71,7 @@ struct _HifSourcePrivate
 	gchar		*pubkey_tmp;	/* /var/cache/PackageKit/metadata/fedora.tmp/repomd.pub */
 	gint64		 timestamp_generated;	/* µs */
 	gint64		 timestamp_modified;	/* µs */
+	GError          *last_check_error;
 	GKeyFile	*keyfile;
 	GHashTable	*filenames_md;	/* key:filename */
 	HifContext	*context;	/* weak reference */
@@ -913,24 +914,11 @@ hif_source_set_timestamp_modified (HifSource *source, GError **error)
 	return TRUE;
 }
 
-/**
- * hif_source_check:
- * @source: a #HifSource instance.
- * @permissible_cache_age: The oldest cache age allowed in seconds (wall clock time); Pass %G_MAXUINT to ignore
- * @state: a #HifState instance.
- * @error: a #GError or %NULL.
- *
- * Checks the source.
- *
- * Returns: %TRUE for success, %FALSE otherwise
- *
- * Since: 0.1.0
- **/
-gboolean
-hif_source_check (HifSource *source,
-		  guint permissible_cache_age,
-		  HifState *state,
-		  GError **error)
+static gboolean
+hif_source_check_internal (HifSource *source,
+			   guint permissible_cache_age,
+			   HifState *state,
+			   GError **error)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
 	const gchar *download_list[] = { "primary",
@@ -1080,6 +1068,37 @@ hif_source_check (HifSource *source,
 
 	return TRUE;
 }
+
+/**
+ * hif_source_check:
+ * @source: a #HifSource instance.
+ * @permissible_cache_age: The oldest cache age allowed in seconds (wall clock time); Pass %G_MAXUINT to ignore
+ * @state: a #HifState instance.
+ * @error: a #GError or %NULL.
+ *
+ * Checks the source.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.1.0
+ **/
+gboolean
+hif_source_check  (HifSource *source,
+		   guint permissible_cache_age,
+		   HifState *state,
+		   GError **error)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	g_clear_error (&priv->last_check_error);
+	if (!hif_source_check_internal (source, permissible_cache_age, state,
+					&priv->last_check_error)) {
+		if (error)
+			*error = g_error_copy (priv->last_check_error);
+		return FALSE;
+	}
+	return TRUE;
+}
+
 
 /**
  * hif_source_get_filename_md:
@@ -1237,18 +1256,13 @@ hif_source_update (HifSource *source,
 
 	/* Just verify existence for local */
 	if (priv->kind == HIF_SOURCE_KIND_LOCAL) {
-		struct stat stbuf;
-		if (stat (priv->location, &stbuf) != 0) {
-			int errsv = errno;
-			g_set_error (error, HIF_ERROR,
-				     HIF_ERROR_SOURCE_NOT_AVAILABLE,
-				     "Failed to read directory '%s': %s",
-				     priv->location,
-				     g_strerror (errsv));
+		if (priv->last_check_error) {
+			if (error) 
+				*error = g_error_copy (priv->last_check_error);
 			return FALSE;
 		}
-
-		/* Otherwise, don't refresh local repos */
+		/* If we didn't have an error in check, don't refresh
+		   local repos */
 		return TRUE;
 	}
 
