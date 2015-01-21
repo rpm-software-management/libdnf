@@ -450,6 +450,21 @@ hif_context_get_sack (HifContext	*context)
 }
 
 /**
+ * hif_context_get_goal: (skip)
+ * @context: a #HifContext instance.
+ *
+ * Returns: (transfer none): the HyGoal object
+ *
+ * Since: 0.1.0
+ **/
+HyGoal
+hif_context_get_goal (HifContext	*context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	return priv->goal;
+}
+
+/**
  * hif_context_get_state:
  * @context: a #HifContext instance.
  *
