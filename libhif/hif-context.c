@@ -400,8 +400,6 @@ hif_context_ensure_transaction (HifContext *context)
 		priv->transaction = hif_transaction_new (context);
 		priv->transaction_thread = g_thread_self ();
 		hif_transaction_set_sources (priv->transaction, priv->sources);
-		hif_transaction_set_flags (priv->transaction,
-					   HIF_TRANSACTION_FLAG_ONLY_TRUSTED);
 		return;
 	}
 
