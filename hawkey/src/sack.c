@@ -627,6 +627,7 @@ hy_sack_create(const char *cache_path, const char *arch, const char *rootdir,
     sack->running_kernel_id = -1;
     sack->running_kernel_fn = running_kernel;
     sack->considered_uptodate = 1;
+    sack->cmdline_repo_created = 0;
     if (log_file)
 	sack->log_file = solv_strdup(log_file);
 
@@ -772,15 +773,17 @@ hy_sack_set_installonly_limit(HySack sack, int limit)
  * Creates repo for command line rpms.
  *
  * Does nothing if one already created.
+ *
+ * deprecated in 0.5.3, eligible for dropping after 2015-06-23 AND no sooner
+ * than in 0.5.8
  */
 void
 hy_sack_create_cmdline_repo(HySack sack)
 {
-    HyRepo hrepo = hrepo_by_name(sack, HY_CMDLINE_REPO_NAME);
-    if (hrepo)
+    if (sack->cmdline_repo_created)
 	return;
 
-    hrepo = hy_repo_create(HY_CMDLINE_REPO_NAME);
+    HyRepo hrepo = hy_repo_create(HY_CMDLINE_REPO_NAME);
     Repo *repo = repo_create(sack_pool(sack), HY_CMDLINE_REPO_NAME);
     repo->appdata = hrepo;
     hrepo->libsolv_repo = repo;
@@ -793,6 +796,7 @@ hy_sack_create_cmdline_repo(HySack sack)
 HyPackage
 hy_sack_add_cmdline_package(HySack sack, const char *fn)
 {
+    hy_sack_create_cmdline_repo(sack);
     Repo *repo = repo_by_name(sack, HY_CMDLINE_REPO_NAME);
     Id p;
 

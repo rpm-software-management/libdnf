@@ -553,15 +553,29 @@ to::
 
     HySack sack = hy_sack_create(cachedir, arch, rootdir, NULL, 0);
 
+Deprecated ``hy_create_cmdline_repo()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The function will be removed since `hy_add_cmdline_package` creates cmdline repository automatically.
+
+The function will be dropped after 2015-06-23 AND no sooner than in 0.5.8.
+
 Python bindings
 ---------------
 
 New optional parameter ``logfile`` to ``Sack`` constructor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This addition lets user specify log file path from :meth:`.Sack.__init__`
+This addition lets user specify log file path from :meth:`Sack.__init__`
 
 ``cache_path`` property of ``Sack`` renamed to ``cache_dir``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This change was already announced but it actually never happened.
+
+Deprecated ``Sack`` method ``create_cmdline_repo()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The method will be removed since :meth:`Sack.add_cmdline_package` creates cmdline repository automatically.
+
+The method will be dropped after 2015-06-23 AND no sooner than in 0.5.8.

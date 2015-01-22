@@ -74,8 +74,7 @@
 
   .. method:: add_cmdline_package(filename)
 
-    Add a package to a command line repository and return it. The package is
-    specified as a string `filename` of an RPM file
+    Add a package to a command line repository and return it. The package is specified as a string `filename` of an RPM file. The command line repository will be automatically created if doesn't exist already. It could be referenced later by `@commandline` name.
 
   .. method:: add_excludes(packages)
 
@@ -91,11 +90,6 @@
     conjunction with exclude and doesn't override it. So, if you both include
     and exclude the same package, the package is considered excluded no matter
     of the order.
-
-  .. method:: create_cmdline_repo()
-
-    Create a command line repository for packages specified by names of RPM
-    files. If a repo is already created, the method does nothing.
 
   .. method:: disable_repo(name)
 

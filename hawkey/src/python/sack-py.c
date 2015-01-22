@@ -306,6 +306,8 @@ get_running_kernel(_SackObject *self, PyObject *unused)
     return pkg;
 }
 
+// deprecated in 0.5.3, eligible for dropping after 2015-06-23 AND no sooner
+// than in 0.5.8
 static PyObject *
 create_cmdline_repo(_SackObject *self, PyObject *unused)
 {

@@ -69,7 +69,6 @@ static
 void add_cmdline(HySack sack)
 {
     Pool *pool = sack_pool(sack);
-    hy_sack_create_cmdline_repo(sack);
     const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
 				    "yum/tour-4-6.noarch.rpm", NULL);
     HyPackage pkg = hy_sack_add_cmdline_package(sack, path);
