@@ -960,7 +960,22 @@ hif_source_check (HifSource *source,
 	if (priv->kind == HIF_SOURCE_KIND_MEDIA &&
 	    !g_file_test (priv->location, G_FILE_TEST_EXISTS)) {
 		priv->enabled = HIF_SOURCE_ENABLED_NONE;
-		return TRUE;
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_SOURCE_NOT_AVAILABLE,
+			     "%s was not found", priv->location);
+		return FALSE;
+	}
+
+	/* has the local repo vanished? */
+	if (priv->kind == HIF_SOURCE_KIND_LOCAL &&
+	    !g_file_test (priv->location, G_FILE_TEST_EXISTS)) {
+		priv->enabled = HIF_SOURCE_ENABLED_NONE;
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_SOURCE_NOT_AVAILABLE,
+			     "%s was not found", priv->location);
+		return FALSE;
 	}
 
 	/* Yum metadata */
