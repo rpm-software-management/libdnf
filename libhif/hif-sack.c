@@ -124,6 +124,13 @@ hif_sack_add_source (HySack sack,
 		}
 	}
 
+	/* checking disabled the repo */
+	if (hif_source_get_enabled (src) == HIF_SOURCE_ENABLED_NONE) {
+		g_debug ("Skipping %s as repo no longer enabled",
+			 hif_source_get_id (src));
+		return hif_state_finished (state, error);
+	}
+
 	/* done */
 	if (!hif_state_done (state, error))
 		return FALSE;
