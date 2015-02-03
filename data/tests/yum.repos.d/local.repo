@@ -1,6 +1,6 @@
 [local]
 name=Local
-baseurl=file:///tmp/repo
+baseurl=file:///tmp
 enabled=1
 gpgcheck=0
 metadata_expire=0

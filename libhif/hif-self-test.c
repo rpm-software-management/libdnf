@@ -878,8 +878,9 @@ hif_repos_func (void)
 	/* try to refresh local repo */
 	hif_state_reset (state);
 	ret = hif_source_update (src, HIF_SOURCE_UPDATE_FLAG_NONE, state, &error);
-	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_error (error, HIF_ERROR, HIF_ERROR_CANNOT_FETCH_SOURCE);
+	g_assert (!ret);
+	g_clear_error (&error);
 
 	/* try to check local repo that will not exist */
 	hif_state_reset (state);

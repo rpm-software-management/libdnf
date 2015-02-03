@@ -1235,18 +1235,15 @@ hif_source_update (HifSource *source,
 	gint64 timestamp_new = 0;
 	_cleanup_error_free_ GError *error_local = NULL;
 
-	/* cannot change DVD contents */
-	if (priv->kind == HIF_SOURCE_KIND_MEDIA) {
+	/* cannot change DVD or local contents */
+	if (priv->kind == HIF_SOURCE_KIND_MEDIA ||
+	    priv->kind == HIF_SOURCE_KIND_LOCAL) {
 		g_set_error_literal (error,
 				     HIF_ERROR,
-				     HIF_ERROR_SOURCE_NOT_AVAILABLE,
+				     HIF_ERROR_CANNOT_FETCH_SOURCE,
 				     "Cannot update read-only source");
 		return FALSE;
 	}
-
-	/* do not refresh local repos */
-	if (priv->kind == HIF_SOURCE_KIND_LOCAL)
-		return TRUE;
 
 	/* this needs to be set */
 	if (priv->location_tmp == NULL) {
