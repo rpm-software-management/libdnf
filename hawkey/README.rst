@@ -62,6 +62,6 @@ The PYTHONPATH is unfortunately needed as the Python test suite needs to know wh
 Documentation
 =============
 
-See the `hawkey documentation page <http://rpm-software-management.github.io/hawkey/>`_.
+See the `hawkey documentation page <http://hawkey.readthedocs.org>`_.
 
 Information internal to the hawkey development is maintained on a `github wiki <https://github.com/rpm-software-management/dnf/wiki#wiki-Contact>`_.
