@@ -760,6 +760,8 @@ hif_source_set_keyfile_data (HifSource *source, GError **error)
 	}
 
 	/* set location if currently unset */
+	if (!lr_handle_setopt (priv->repo_handle, error, LRO_LOCAL, FALSE))
+		return FALSE;
 	if (priv->location == NULL) {
 		_cleanup_free_ gchar *tmp = NULL;
 		tmp = g_build_filename (hif_context_get_cache_dir (priv->context),
@@ -1592,7 +1594,11 @@ hif_source_download_package (HifSource *source,
 	int checksum_type;
 	_cleanup_error_free_ GError *error_local = NULL;
 	_cleanup_free_ gchar *basename = NULL;
-	_cleanup_free_ gchar *directory_slash;
+	_cleanup_free_ gchar *directory_slash = NULL;
+
+	/* ensure we reset the values from the keyfile */
+	if (!hif_source_set_keyfile_data (source, error))
+		return NULL;
 
 	/* if nothing specified then use cachedir */
 	if (directory == NULL) {
