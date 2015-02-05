@@ -910,9 +910,16 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 
 	/* create empty sack */
 	solv_dir_real = hif_realpath (priv->solv_dir);
+#ifdef BUILDOPT_HAWKEY_SACK_CREATE2	
+	priv->sack = hy_sack_create (solv_dir_real, NULL,
+				     priv->install_root,
+				     NULL,
+				     HY_MAKE_CACHE_DIR);
+#else
 	priv->sack = hy_sack_create (solv_dir_real, NULL,
 				     priv->install_root,
 				     HY_MAKE_CACHE_DIR);
+#endif
 	if (priv->sack == NULL) {
 		g_set_error (error,
 			     HIF_ERROR,
