@@ -30,10 +30,15 @@
 #include <rpm/rpmts.h>
 #include <hawkey/package.h>
 
+typedef enum {
+	HIF_RPMTS_FLAG_ALLOW_UNTRUSTED = (1 << 0),
+	HIF_RPMTS_FLAG_IS_UPDATE = (1 << 1),
+	HIF_RPMTS_FLAG_OSTREE_MODE = (1 << 2)
+} HifRpmTsFlags;
+
 gboolean	 hif_rpmts_add_install_filename	(rpmts		 ts,
 						 const gchar	*filename,
-						 gboolean	 allow_untrusted,
-						 gboolean	 is_update,
+						 HifRpmTsFlags   flags,
 						 GError		**error);
 gboolean	 hif_rpmts_add_remove_pkg	(rpmts		 ts,
 						 HyPackage	 pkg,
