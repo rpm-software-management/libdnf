@@ -21,6 +21,8 @@
 #ifndef HY_TYPES_H
 #define HY_TYPES_H
 
+#include <glib.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -42,7 +44,7 @@ typedef struct _HyGoal * HyGoal;
 typedef struct _HyNevra * HyNevra;
 typedef struct _HyPackage * HyPackage;
 typedef struct _HyPackageDelta * HyPackageDelta;
-typedef struct _HyPackageList * HyPackageList;
+typedef GPtrArray * HyPackageList;
 typedef struct _HyPackageListIter * HyPackageListIter;
 typedef struct _HyPackageSet * HyPackageSet;
 typedef struct _HyPossibilities * HyPossibilities;

@@ -26,40 +26,32 @@
 #include <solv/queue.h>
 #include <solv/util.h>
 
+// GLib
+#include <glib.h>
+
 // hawkey
 #include "packagelist.h"
 #include "package_internal.h"
 #include "sack_internal.h"
 
-struct _HyPackageList {
-    HyPackage *elements;
-    int count;
-};
-
-#define BLOCK_SIZE 31
-
 HyPackageList
 hy_packagelist_create(void)
 {
-    HyPackageList plist = solv_calloc(1, sizeof(*plist));
-    return plist;
+    return (HyPackageList)g_ptr_array_new_with_free_func ((GDestroyNotify)hy_package_free);
 }
 
 void
 hy_packagelist_free(HyPackageList plist)
 {
-    int i;
-
-    for (i = 0; i < plist->count; ++i)
-	hy_package_free(plist->elements[i]);
-    solv_free(plist->elements);
-    solv_free(plist);
+    GPtrArray *a = (GPtrArray*)plist;
+    g_ptr_array_unref(a);
 }
 
 int
 hy_packagelist_count(HyPackageList plist)
 {
-    return plist->count;
+    GPtrArray *a = (GPtrArray*)plist;
+    return a->len;
 }
 
 /**
@@ -73,8 +65,9 @@ hy_packagelist_count(HyPackageList plist)
 HyPackage
 hy_packagelist_get(HyPackageList plist, int index)
 {
-    if (index < plist->count)
-	return plist->elements[index];
+    GPtrArray *a = (GPtrArray*)plist;
+    if (index < a->len)
+	return a->pdata[index];
     return NULL;
 }
 
@@ -93,8 +86,9 @@ hy_packagelist_get_clone(HyPackageList plist, int index)
 int
 hy_packagelist_has(HyPackageList plist, HyPackage pkg)
 {
-    for (int i = 0; i < plist->count; ++i)
-	if (hy_package_identical(pkg, plist->elements[i]))
+    GPtrArray *a = (GPtrArray*)plist;
+    for (int i = 0; i < a->len; ++i)
+	if (hy_package_identical(pkg, a->pdata[i]))
 	    return 1;
     return 0;
 }
@@ -106,7 +100,6 @@ hy_packagelist_has(HyPackageList plist, HyPackage pkg)
  */
 void hy_packagelist_push(HyPackageList plist, HyPackage pkg)
 {
-    plist->elements = solv_extend(plist->elements, plist->count, 1,
-				  sizeof(pkg), BLOCK_SIZE);
-    plist->elements[plist->count++] = pkg;
+    GPtrArray *a = (GPtrArray*)plist;
+    g_ptr_array_add(a, pkg);
 }
