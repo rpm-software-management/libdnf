@@ -59,7 +59,7 @@ parse_cpu_flags(int *flags, const char *section)
 	}
     }
 
-    solv_free(cpuinfo);
+    g_free(cpuinfo);
     return 0;
 }
 

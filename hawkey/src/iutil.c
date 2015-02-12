@@ -40,6 +40,9 @@
 #include <solv/solverdebug.h>
 #include <solv/util.h>
 
+// glib
+#include <glib.h>
+
 // hawkey
 #include "errno_internal.h"
 #include "iutil.h"
@@ -347,31 +350,10 @@ ll_name(int level)
 char *
 read_whole_file(const char *path)
 {
-    int fd = open(path, O_RDONLY);
-    int size = BUF_BLOCK + 1, total = 0, ret;
-    char *contents = solv_malloc(size), *p = contents;
-
-    while ((ret = read(fd, p, BUF_BLOCK))) {
-	if (ret < 0) {
-	    hy_errno = HY_E_IO;
-	    goto finish;
-	}
-	total += ret;
-	if (total + BUF_BLOCK >= size) {
-	    size += BUF_BLOCK;
-	    contents = solv_realloc(contents, size);
-	}
-	p = contents + total;
-    }
-    contents[total] = '\0';
-
- finish:
-    close(fd);
-    if (ret < 0) {
-	solv_free(contents);
-	return NULL;
-    }
-    return contents;
+  char *contents = NULL;
+  if (!g_file_get_contents (path, &contents, NULL, NULL))
+    return NULL;
+  return contents;
 }
 
 int
