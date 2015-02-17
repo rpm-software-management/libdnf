@@ -378,6 +378,29 @@ START_TEST(test_goal_install_selector_file)
 }
 END_TEST
 
+START_TEST(test_goal_install_optional)
+{
+    HySelector sltr;
+    HyGoal goal = hy_goal_create(test_globals.sack);
+
+    // test optional selector installation
+    sltr = hy_selector_create(test_globals.sack);
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "hello");
+    fail_if(hy_goal_install_selector_optional(goal, sltr));
+    fail_if(hy_goal_run(goal));
+    hy_selector_free(sltr);
+    assert_iueo(goal, 0, 0, 0, 0);
+
+    // test optional package installation
+    HyPackage pkg = get_latest_pkg(test_globals.sack, "hello");
+    fail_if(hy_goal_install_optional(goal, pkg));
+    fail_if(hy_goal_run(goal));
+    assert_iueo(goal, 0, 0, 0, 0);
+    hy_package_free(pkg);
+    hy_goal_free(goal);
+}
+END_TEST
+
 START_TEST(test_goal_upgrade)
 {
     HyPackage pkg = get_latest_pkg(test_globals.sack, "fool");
@@ -1141,6 +1164,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_install_selector_err);
     tcase_add_test(tc, test_goal_install_selector_two);
     tcase_add_test(tc, test_goal_install_selector_nomatch);
+    tcase_add_test(tc, test_goal_install_optional);
     tcase_add_test(tc, test_goal_selector_glob);
     tcase_add_test(tc, test_goal_selector_provides_glob);
     tcase_add_test(tc, test_goal_selector_upgrade);

@@ -64,6 +64,12 @@ class GoalTest(base.TestCase):
         goal.run()
         self.assertEqual(str(goal.list_installs()[0]), 'semolina-2-0.x86_64')
 
+    def test_install_selector_weak(self):
+        sltr = hawkey.Selector(self.sack).set(name='hello')
+        goal = hawkey.Goal(self.sack)
+        goal.install(select=sltr, optional=True)
+        self.assertTrue(goal.run())
+
     def test_erase_selector(self):
         """ Tests automatic Selector from keyword arguments, with special
             keywords that don't become a part of the Selector.

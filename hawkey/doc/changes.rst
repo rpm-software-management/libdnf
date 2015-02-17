@@ -579,3 +579,16 @@ Deprecated ``Sack`` method ``create_cmdline_repo()``
 The method will be removed since :meth:`Sack.add_cmdline_package` creates cmdline repository automatically.
 
 The method will be dropped after 2015-06-23 AND no sooner than in 0.5.8.
+
+
+Changes in 0.5.4
+================
+
+Python bindings
+---------------
+
+Goal: ``install()`` takes a new optional parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If the ``optional`` parameter is set to ``True``, hawkey silently skips packages that can not
+be installed.

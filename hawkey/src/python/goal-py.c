@@ -67,12 +67,14 @@ static int
 args_pkg_sltr_parse(PyObject *args, PyObject *kwds,
 		     HyPackage *pkg, HySelector *sltr, int *flags, int flag_mask)
 {
-    char *kwlist[] = {"package", "select", "clean_deps", "check_installed", NULL};
-    int clean_deps = 0, check_installed = 0;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&O&ii", kwlist,
+    char *kwlist[] = {"package", "select", "clean_deps", "check_installed",
+		      "optional", NULL};
+    int clean_deps = 0, check_installed = 0, optional = 0;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&O&iii", kwlist,
 				     package_converter, pkg,
 				     selector_converter, sltr,
-				     &clean_deps, &check_installed))
+				     &clean_deps, &check_installed,
+				     &optional))
 	return 0;
     if (!args_pkg_sltr_check(*pkg, *sltr))
 	return 0;
@@ -92,7 +94,14 @@ args_pkg_sltr_parse(PyObject *args, PyObject *kwds,
 	}
 	*flags |= HY_CHECK_INSTALLED;
     }
-
+    if (optional) {
+	if  (!(flag_mask & HY_WEAK_SOLV)) {
+	    PyErr_SetString(PyExc_ValueError,
+			    "Does not accept optional keyword");
+	    return 0;
+	}
+	*flags |= HY_WEAK_SOLV;
+    }
     return 1;
 }
 
@@ -246,11 +255,18 @@ install(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     HyPackage pkg = NULL;
     HySelector sltr = NULL;
-    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, NULL, 0))
+    int flags = 0;
+    int ret = 0;
+    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, &flags, HY_WEAK_SOLV))
 	return NULL;
 
-    int ret = pkg ? hy_goal_install(self->goal, pkg) :
-	hy_goal_install_selector(self->goal, sltr);
+    if (flags & HY_WEAK_SOLV) {
+	ret = pkg ? hy_goal_install_optional(self->goal, pkg) :
+	    hy_goal_install_selector_optional(self->goal, sltr);
+    } else {
+	ret = pkg ? hy_goal_install(self->goal, pkg) :
+	    hy_goal_install_selector(self->goal, sltr);
+    }
     return op_ret2exc(ret);
 }
 

@@ -675,9 +675,23 @@ hy_goal_install(HyGoal goal, HyPackage new_pkg)
 }
 
 int
+hy_goal_install_optional(HyGoal goal, HyPackage new_pkg)
+{
+    queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_INSTALL|SOLVER_WEAK,
+		package_id(new_pkg));
+    return 0;
+}
+
+int
 hy_goal_install_selector(HyGoal goal, HySelector sltr)
 {
     return sltr2job(sltr, &goal->staging, SOLVER_INSTALL);
+}
+
+int
+hy_goal_install_selector_optional(HyGoal goal, HySelector sltr)
+{
+    return sltr2job(sltr, &goal->staging, SOLVER_INSTALL|SOLVER_WEAK);
 }
 
 int

@@ -30,7 +30,8 @@ extern "C" {
 
 enum _hy_goal_op_flags {
     HY_CHECK_INSTALLED	= 1 << 0,
-    HY_CLEAN_DEPS	= 1 << 1
+    HY_CLEAN_DEPS	= 1 << 1,
+    HY_WEAK_SOLV	= 1 << 2
 };
 
 enum _hy_goal_run_flags {
@@ -59,7 +60,9 @@ int hy_goal_erase_flags(HyGoal goal, HyPackage pkg, int flags);
 int hy_goal_erase_selector(HyGoal goal, HySelector sltr);
 int hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags);
 int hy_goal_install(HyGoal goal, HyPackage new_pkg);
+int hy_goal_install_optional(HyGoal goal, HyPackage new_pkg);
 int hy_goal_install_selector(HyGoal goal, HySelector sltr);
+int hy_goal_install_selector_optional(HyGoal goal, HySelector sltr);
 int hy_goal_upgrade_all(HyGoal goal);
 int hy_goal_upgrade_to(HyGoal goal, HyPackage new_pkg);
 int hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags);
