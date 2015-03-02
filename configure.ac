@@ -93,7 +93,7 @@ PKG_CHECK_MODULES(HAWKEY, hawkey >= 0.4.6 librepo >= 1.7.11 rpm >= 4.11.0)
 AC_MSG_CHECKING([For hawkey 0.5.3 ABI break])
 AC_TRY_COMPILE([#include <stdlib.h>
 #include <hawkey/sack.h>],
-               [hy_sack_create(0, NULL, NULL, NULL); return 0;],
+               [hy_sack_create(NULL, NULL, NULL, 0); return 0;],
                [AC_MSG_RESULT([no]); BUILDOPT_HAWKEY_SACK_CREATE2=0],
                [AC_MSG_RESULT([yes]); BUILDOPT_HAWKEY_SACK_CREATE2=1])
 AC_DEFINE_UNQUOTED(BUILDOPT_HAWKEY_SACK_CREATE2, $BUILDOPT_HAWKEY_SACK_CREATE2, [Hawkey ABI change])
