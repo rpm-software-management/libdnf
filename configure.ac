@@ -89,6 +89,16 @@ PKG_CHECK_MODULES(GLIB, gio-unix-2.0 >= 2.36.0)
 GLIB_CFLAGS="$GLIB_CFLAGS -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_36 -DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_36"
 PKG_CHECK_MODULES(HAWKEY, hawkey >= 0.4.6 librepo >= 1.7.11 rpm >= 4.11.0)
 
+# Hawkey ABI change in 0.5.3
+AC_MSG_CHECKING([For hawkey 0.5.3 ABI break])
+AC_TRY_COMPILE([#include <stdlib.h>
+#include <hawkey/sack.h>],
+               [hy_sack_create(0, NULL, NULL, NULL); return 0;],
+               [AC_MSG_RESULT([no]); BUILDOPT_HAWKEY_SACK_CREATE2=0],
+               [AC_MSG_RESULT([yes]); BUILDOPT_HAWKEY_SACK_CREATE2=1])
+AC_DEFINE_UNQUOTED(BUILDOPT_HAWKEY_SACK_CREATE2, $BUILDOPT_HAWKEY_SACK_CREATE2, [Hawkey ABI change])
+AC_PATH_PROG([XSLTPROC], [xsltproc])
+
 AC_CONFIG_FILES([
 Makefile
 libhif/Makefile

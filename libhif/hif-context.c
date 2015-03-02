@@ -911,7 +911,7 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 
 	/* create empty sack */
 	solv_dir_real = hif_realpath (priv->solv_dir);
-#if HY_VERSION_CHECK(0,5,3)
+#if BUILDOPT_HAWKEY_SACK_CREATE2
 	priv->sack = hy_sack_create (solv_dir_real, NULL,
 				     priv->install_root,
 				     NULL,
