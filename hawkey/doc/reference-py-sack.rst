@@ -74,7 +74,7 @@
 
   .. method:: add_cmdline_package(filename)
 
-    Add a package to a command line repository and return it. The package is specified as a string `filename` of an RPM file. The command line repository will be automatically created if doesn't exist already. It could be referenced later by `@commandline` name.
+    Add a package to a command line repository and return it. The package is specified as a string `filename` of an RPM file. The command line repository will be automatically created if doesn't exist already. It could be referenced later by :const:`hawkey.CMDLINE_REPO_NAME` name.
 
   .. method:: add_excludes(packages)
 
@@ -120,9 +120,10 @@
     Load the information about the packages in the system repository (in Fedora
     it is the RPM database) into the sack. This makes the dependency solving
     aware of the already installed packages. The system repository is always
-    called ``@System``. The information is not written to the cache by default.
+    set to :const:`hawkey.SYSTEM_REPO_NAME`. The information is not written to
+    the cache by default.
 
-    `repo` is an optional :class:`Repo` object that represents the system
+    `repo` is an optional :class:`.Repo` object that represents the system
     repository. The object is updated during the loading.
 
     `build_cache` is a boolean that specifies whether the information should be
@@ -132,19 +133,22 @@
     repo, build_cache=False, load_filelists=False, load_presto=False, \
     load_updateinfo=False)
 
-    Load the metadata of packages that can be obtained from different sources
-    into the sack. This makes the dependency solving aware of these packages.
+    Load the information about the packages in a :class:`.Repo` into the sack.
+    This makes the dependency solving aware of these packages. The information
+    is not written to the cache by default.
 
-    `repo` is a :class:`Repo` object providing valid readable paths to the Yum
-    metadata XML files that specify the sources of the packages. The object is
-    updated during the loading.
+    `repo` is the :class:`.Repo` object to be processed. At least its
+    :attr:`.Repo.repomd_fn` must be set. If the cache has to be updated,
+    :attr:`.Repo.primary_fn` is needed too. Some information about the loading
+    process and some results of it are written into the internal state of the
+    repository object.
 
     `build_cache` is a boolean that specifies whether the information should be
     written to the cache (see :ref:`\building_and_reusing_the_repo_cache-label`).
 
     `load_filelists`, `load_presto` and `load_updateinfo` are booleans that
-    specify whether the ``<hash>filelists.xml.gz``, ``<hash>prestodelta.xml.gz``
-    and ``<hash>updateinfo.xml.gz`` files of the repository should be processed.
+    specify whether the :attr:`.Repo.filelists_fn`, :attr:`.Repo.presto_fn` and
+    :attr:`.Repo.updateinfo_fn` files of the repository should be processed.
     These files may contain information needed for dependency solving,
     downloading or querying of some packages. Enable it if you are not sure (see
     :ref:`\case_for_loading_the_filelists-label`).

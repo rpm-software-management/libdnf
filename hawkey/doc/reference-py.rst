@@ -51,6 +51,7 @@ API Documentation Contents
 
   reference-py-sack
   reference-py-errors
+  reference-py-repo
 
 Indices:
 

@@ -153,8 +153,8 @@ following is suggested::
 Repo initialization
 ^^^^^^^^^^^^^^^^^^^
 
-All instantiations of ``hawkey.Repo`` now must be given the name of the Repo. The
-following will now fail::
+All instantiations of :class:`hawkey.Repo` now must be given the name of the
+Repo. The following will now fail::
 
   r = hawkey.Repo()
   r.name = "fedora"
@@ -566,7 +566,7 @@ Python bindings
 New optional parameter ``logfile`` to ``Sack`` constructor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This addition lets user specify log file path from :meth:`Sack.__init__`
+This addition lets user specify log file path from :meth:`.Sack.__init__`
 
 ``cache_path`` property of ``Sack`` renamed to ``cache_dir``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -576,7 +576,7 @@ This change was already announced but it actually never happened.
 Deprecated ``Sack`` method ``create_cmdline_repo()``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The method will be removed since :meth:`Sack.add_cmdline_package` creates cmdline repository automatically.
+The method will be removed since :meth:`.Sack.add_cmdline_package` creates cmdline repository automatically.
 
 The method will be dropped after 2015-06-23 AND no sooner than in 0.5.8.
 

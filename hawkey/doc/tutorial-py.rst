@@ -60,7 +60,7 @@ system repo* (in Fedora it is the RPM database). To load it::
 
 Hawkey always knows the name of every repository. Names of repositories loaded
 from Yum metadata are chosen by the client and the system repository is always
-called ``@System``.
+set to :const:`hawkey.SYSTEM_REPO_NAME`.
 
 Loading Yum Repositories
 ========================
@@ -72,7 +72,7 @@ possibilities are FTP server, NFS mount, DVD distribution media, etc.). Hawkey
 does not provide any means to discover and obtain the metadata locally: it is up
 to the client to provide valid readable paths to the Yum metadata XML
 files. Structures used for passing the information to hawkey are the hawkey
-:class:`Repos <Repo>`. Suppose we somehow obtained the metadata and placed it in
+:class:`Repos <hawkey.Repo>`. Suppose we somehow obtained the metadata and placed it in
 ``/home/akozumpl/tmp/repodata``. We can then load the metadata into hawkey::
 
   >>> path = "/home/akozumpl/tmp/repodata/%s"
@@ -92,7 +92,7 @@ in the repository (two in this case, it is an experimental repo after all).
 Case for Loading the Filelists
 ==============================
 
-What the ``load_filelists=True`` argument to ``load_yum_repo()`` above does is
+What the ``load_filelists=True`` argument to :meth:`~hawkey.Sack.load_yum_repo` above does is
 instruct hawkey to process the ``<hash>filelists.xml.gz`` file we passed in and
 which contains structured list of absolute paths to all files of all packages
 within the repo. This information can be used for two purposes:
