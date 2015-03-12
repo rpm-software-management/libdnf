@@ -1,5 +1,5 @@
 ..
-  Copyright (C) 2014-2015  Red Hat, Inc.
+  Copyright (C) 2015  Red Hat, Inc.
 
   This copyrighted material is made available to anyone wishing to use,
   modify, copy, or redistribute it subject to the terms and conditions of
@@ -15,45 +15,14 @@
   License and may only be used or replicated with the express permission of
   Red Hat, Inc.
 
-******************************
-python-hawkey Reference Manual
-******************************
+**********************
+Module level constants
+**********************
 
-.. contents::
+.. data:: hawkey.CMDLINE_REPO_NAME
 
+  The string name of the command line repository.
 
-Introduction
-============
+.. data:: hawkey.SYSTEM_REPO_NAME
 
-This reference manual describes Python API to the library. For a quick start
-take a look at :doc:`tutorial-py`. To be sure that you are familiar with our
-deprecation policy, see :doc:`changes`.
-
-.. NOTE::
-
-  The API consists of exactly those elements described in this document, items
-  not documented here can change from release to release. Opening a `bugzilla`_
-  if certain needed functionality is not exposed is the right thing to do.
-
-.. WARNING::
-
-  The manual is not complete yet - the features are being added incrementally
-  these days.
-
-
-Contents
-========
-
-API Documentation Contents
-
-.. toctree::
-  :maxdepth: 2
-
-  reference-py-sack
-  reference-py-errors
-  reference-py-constants
-  reference-py-repo
-
-Indices:
-
-* :ref:`genindex`
+  The string name of the system repository.
