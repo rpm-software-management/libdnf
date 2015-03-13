@@ -430,25 +430,23 @@ hy_package_get_supplements(HyPackage pkg)
     return reldeps_for(pkg, SOLVABLE_SUPPLEMENTS);
 }
 
-HyStringArray
+gchar **
 hy_package_get_files(HyPackage pkg)
 {
     Pool *pool = package_pool(pkg);
     Solvable *s = get_solvable(pkg);
     Dataiterator di;
-    int len = 0;
-    HyStringArray strs = solv_extend(0, 0, 1, sizeof(char*), BLOCK_SIZE);
+    GPtrArray *ret = g_ptr_array_new();
 
     repo_internalize_trigger(s->repo);
     dataiterator_init(&di, pool, s->repo, pkg->id, SOLVABLE_FILELIST, NULL,
 		      SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
     while (dataiterator_step(&di)) {
-	strs[len++] = solv_strdup(di.kv.str);
-	strs = solv_extend(strs, len, 1, sizeof(char*), BLOCK_SIZE);
+	g_ptr_array_add(ret, g_strdup(di.kv.str));
     }
     dataiterator_free(&di);
-    strs[len++] = NULL;
-    return strs;
+    g_ptr_array_add(ret, NULL);
+    return (gchar**)g_ptr_array_free (ret, FALSE);
 }
 
 HyAdvisoryList

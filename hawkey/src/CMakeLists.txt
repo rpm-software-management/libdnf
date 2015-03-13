@@ -14,7 +14,6 @@ SET (hawkey_SRCS
     repo.c
     sack.c
     selector.c
-    stringarray.c
     subject.c
     subject_internal.c
     util.c)
@@ -54,7 +53,6 @@ SET(HAWKEY_headers
     subject.h
     types.h
     util.h
-    stringarray.h
     version.h)
 
 IF (CMAKE_SIZEOF_VOID_P MATCHES "8")

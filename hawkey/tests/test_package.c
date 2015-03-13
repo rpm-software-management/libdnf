@@ -28,7 +28,6 @@
 #include "src/query.h"
 #include "src/reldep.h"
 #include "src/sack_internal.h"
-#include "src/stringarray.h"
 #include "src/util.h"
 #include "fixtures.h"
 #include "test_suites.h"
@@ -198,14 +197,14 @@ START_TEST(test_get_files)
     HySack sack = test_globals.sack;
 
     HyPackage pkg = by_name(sack, "tour");
-    HyStringArray files = hy_package_get_files(pkg);
-    char *f;
-    int i;
+    gchar **files = hy_package_get_files(pkg);
+    int i = 0;
+    char **iter;
 
-    FOR_STRINGARRAY(f, files, i)
-	;
-    fail_unless(i == 6);
-    hy_stringarray_free(files);
+    for (iter = files; iter && *iter; iter++)
+        i++;
+    g_assert_cmpint(i, ==, 6);
+    g_strfreev(files);
     hy_package_free(pkg);
 }
 END_TEST
@@ -364,11 +363,11 @@ START_TEST(test_get_files_cmdline)
     HySack sack = test_globals.sack;
 
     HyPackage pkg = by_name(sack, "tour");
-    HyStringArray files;
+    gchar **files;
 
     files = hy_package_get_files(pkg);
-    fail_unless(hy_stringarray_length(files) == 6);
-    hy_stringarray_free(files);
+    g_assert_cmpint (6, ==, g_strv_length(files));
+    g_strfreev(files);
     hy_package_free(pkg);
 }
 END_TEST

@@ -31,7 +31,6 @@
 #include "src/packagelist.h"
 #include "src/reldep.h"
 #include "src/sack_internal.h"
-#include "src/stringarray.h"
 
 // pyhawkey
 #include "iutil-py.h"
@@ -243,13 +242,13 @@ get_str_alloced(_PackageObject *self, void *closure)
 static PyObject *
 get_str_array(_PackageObject *self, void *closure)
 {
-    HyStringArray (*func)(HyPackage);
-    HyStringArray strs;
+    gchar ** (*func)(HyPackage);
+    gchar ** strv;
 
-    func = (HyStringArray (*)(HyPackage))closure;
-    strs = func(self->package);
-    PyObject *list = strlist_to_pylist((const char **)strs);
-    hy_stringarray_free(strs);
+    func = (gchar **(*)(HyPackage))closure;
+    strv = func(self->package);
+    PyObject *list = strlist_to_pylist((const char **)strv);
+    g_strfreev(strv);
 
     return list;
 }

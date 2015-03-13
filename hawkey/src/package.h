@@ -27,6 +27,7 @@ extern "C" {
 
 // hawkey
 #include "types.h"
+#include <glib.h>
 
 // deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
 // than in 0.4.15, use HyAdvisoryType instead

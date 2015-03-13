@@ -24,7 +24,6 @@
 #include "src/advisorypkg.h"
 #include "src/advisoryref.h"
 #include "src/package.h"
-#include "src/stringarray.h"
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"

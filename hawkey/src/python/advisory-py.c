@@ -25,7 +25,7 @@
 #include "src/advisory_internal.h"
 #include "src/advisorypkg.h"
 #include "src/advisoryref.h"
-#include "src/stringarray.h"
+#include "src/package.h"
 
 // pyhawkey
 #include "advisory-py.h"
