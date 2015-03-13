@@ -55,9 +55,6 @@ class Test(base.TestCase):
         filenames = [apkg.filename for apkg in self.advisory.packages]
         self.assertEqual(filenames, ['tour.noarch.rpm'])
 
-    def test_filenames(self):
-        self.assertEqual(self.advisory.filenames, ['tour.noarch.rpm'])
-
     def test_id(self):
         self.assertEqual(self.advisory.id, 'FEDORA-2008-9969')
 

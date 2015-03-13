@@ -170,34 +170,6 @@ hy_advisory_get_packages(HyAdvisory advisory)
     return pkglist;
 }
 
-// deprecated in 0.4.18, eligible for dropping after 2014-10-15 AND no sooner
-// than in 0.4.21, use hy_advisorypkg_get_string instead
-HyStringArray
-hy_advisory_get_filenames(HyAdvisory advisory)
-{
-    HyAdvisoryPkg advisorypkg;
-    char *filename;
-    int len = 0;
-    HyStringArray strs = solv_extend(0, 0, 1, sizeof(char*), FILENAME_BLOCK);
-    HyAdvisoryPkgList pkglist = hy_advisory_get_packages(advisory);
-
-    for (int i = 0; i < hy_advisorypkglist_count(pkglist); i++) {
-	advisorypkg = hy_advisorypkglist_get_clone(pkglist, i);
-	filename = solv_strdup(
-		hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_FILENAME));
-	hy_advisorypkg_free(advisorypkg);
-	if (!filename)
-	    continue;
-
-	strs[len++] = filename;
-	strs = solv_extend(strs, len, 1, sizeof(char*), FILENAME_BLOCK);
-    }
-
-    strs[len++] = NULL;
-    hy_advisorypkglist_free(pkglist);
-    return strs;
-}
-
 HyAdvisoryRefList
 hy_advisory_get_references(HyAdvisory advisory)
 {

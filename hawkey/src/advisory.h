@@ -49,10 +49,6 @@ void hy_advisorylist_free(HyAdvisoryList advisorylist);
 int hy_advisorylist_count(HyAdvisoryList advisorylist);
 HyAdvisory hy_advisorylist_get_clone(HyAdvisoryList advisorylist, int index);
 
-// deprecated in 0.4.18, eligible for dropping after 2014-10-15 AND no sooner
-// than in 0.4.21, use hy_advisorypkg_get_string instead
-HyStringArray hy_advisory_get_filenames(HyAdvisory advisory);
-
 #ifdef __cplusplus
 }
 #endif

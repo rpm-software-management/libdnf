@@ -180,24 +180,6 @@ get_advisorypkg_list(_AdvisoryObject *self, void *closure)
 }
 
 static PyObject *
-get_str_array(_AdvisoryObject *self, void *closure)
-{
-    HyStringArray (*func)(HyAdvisory);
-    HyStringArray strs;
-    PyObject *list;
-
-    func = (HyStringArray (*)(HyAdvisory))closure;
-    strs = func(self->advisory);
-    if (strs == NULL)
-	Py_RETURN_NONE;
-
-    list = strlist_to_pylist((const char **)strs);
-    hy_stringarray_free(strs);
-
-    return list;
-}
-
-static PyObject *
 get_advisoryref_list(_AdvisoryObject *self, void *closure)
 {
     HyAdvisoryRefList (*func)(HyAdvisory);
@@ -223,9 +205,6 @@ static PyGetSetDef advisory_getsetters[] = {
     {"rights", (getter)get_str, NULL, NULL, (void *)hy_advisory_get_rights},
     {"updated", (getter)get_datetime, NULL, NULL, (void *)hy_advisory_get_updated},
     {"packages", (getter)get_advisorypkg_list, NULL, NULL, (void *)hy_advisory_get_packages},
-    // deprecated in 0.4.18, eligible for dropping after 2014-10-15 AND no sooner
-    // than in 0.4.21, use packages instead
-    {"filenames", (getter)get_str_array, NULL, NULL, (void *)hy_advisory_get_filenames},
     {"references", (getter)get_advisoryref_list, NULL, NULL, (void *)hy_advisory_get_references},
     {NULL}                      /* sentinel */
 };
