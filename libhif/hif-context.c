@@ -64,6 +64,7 @@ struct _HifContextPrivate
 	gboolean		 check_disk_space;
 	gboolean		 check_transaction;
 	gboolean		 only_trusted;
+	gboolean		 enable_yumdb;
 	gboolean		 keep_cache;
 	HifLock			*lock;
 	HifTransaction		*transaction;
@@ -142,6 +143,7 @@ hif_context_init (HifContext *context)
 	priv->install_root = g_strdup ("/");
 	priv->check_disk_space = TRUE;
 	priv->check_transaction = TRUE;
+	priv->enable_yumdb = TRUE;
 	priv->state = hif_state_new ();
 	priv->lock = hif_lock_new ();
 	priv->cache_age = 60 * 60 * 24 * 7; /* 1 week */
@@ -549,6 +551,21 @@ hif_context_get_only_trusted (HifContext *context)
 }
 
 /**
+ * hif_context_get_yumdb_enabled:
+ * @context: a #HifContext instance.
+ *
+ * Returns: %TRUE if yum database is enabled
+ *
+ * Since: 0.1.9
+ **/
+gboolean
+hif_context_get_yumdb_enabled (HifContext *context)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	return priv->enable_yumdb;
+}
+
+/**
  * hif_context_get_cache_age:
  * @context: a #HifContext instance.
  *
@@ -813,6 +830,24 @@ hif_context_set_only_trusted (HifContext *context, gboolean only_trusted)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	priv->only_trusted = only_trusted;
+}
+
+
+/**
+ * hif_context_set_yumdb_enabled:
+ * @context: a #HifContext instance.
+ * @enable_yumdb: %FALSE to disable yum database (default is %TRUE)
+ *
+ * Enables or disables writing the yum database.
+ *
+ * Since: 0.1.9
+ **/
+void
+hif_context_set_yumdb_enabled (HifContext	*context,
+			       gboolean	 enable_yumdb)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	priv->enable_yumdb = enable_yumdb;
 }
 
 /**
