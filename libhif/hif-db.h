@@ -65,6 +65,9 @@ struct _HifDbClass
 GType		 hif_db_get_type		(void);
 HifDb		*hif_db_new			(HifContext	*context);
 
+void		 hif_db_set_enabled		(HifDb          *db,
+						 gboolean        enabled);
+
 /* getters */
 gchar		*hif_db_get_string		(HifDb		*db,
 						 HyPackage	 package,

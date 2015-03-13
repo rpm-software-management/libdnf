@@ -1456,5 +1456,7 @@ hif_transaction_new (HifContext *context)
 	priv->context = context;
 	g_object_add_weak_pointer (G_OBJECT (priv->context), (void **) &priv->context);
 	priv->db = hif_db_new (context);
+	/* Propagate db enablement */
+	hif_db_set_enabled (priv->db, hif_context_get_yumdb_enabled (context));
 	return HIF_TRANSACTION (transaction);
 }

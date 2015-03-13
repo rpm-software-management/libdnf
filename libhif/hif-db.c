@@ -51,6 +51,7 @@ typedef struct _HifDbPrivate	HifDbPrivate;
 struct _HifDbPrivate
 {
 	HifContext		*context;	/* weak reference */
+	gboolean                 enabled;
 };
 
 G_DEFINE_TYPE (HifDb, hif_db, G_TYPE_OBJECT)
@@ -195,6 +196,7 @@ hif_db_set_string (HifDb *db,
 		   const gchar *value,
 		   GError **error)
 {
+	HifDbPrivate *priv = GET_PRIVATE (db);
 	_cleanup_free_ gchar *index_dir = NULL;
 	_cleanup_free_ gchar *index_file = NULL;
 
@@ -203,6 +205,9 @@ hif_db_set_string (HifDb *db,
 	g_return_val_if_fail (key != NULL, FALSE);
 	g_return_val_if_fail (value != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	if (!priv->enabled)
+		return TRUE;
 
 	/* create the index directory */
 	index_dir = hif_db_get_dir_for_package (db, package);
@@ -242,6 +247,7 @@ hif_db_remove (HifDb *db,
 	       const gchar *key,
 	       GError **error)
 {
+	HifDbPrivate *priv = GET_PRIVATE (db);
 	_cleanup_free_ gchar *index_dir = NULL;
 	_cleanup_free_ gchar *index_file = NULL;
 	_cleanup_object_unref_ GFile *file = NULL;
@@ -250,6 +256,9 @@ hif_db_remove (HifDb *db,
 	g_return_val_if_fail (package != NULL, FALSE);
 	g_return_val_if_fail (key != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	if (!priv->enabled)
+		return TRUE;
 
 	/* create the index directory */
 	index_dir = hif_db_get_dir_for_package (db, package);
@@ -284,6 +293,7 @@ hif_db_remove (HifDb *db,
 gboolean
 hif_db_remove_all (HifDb *db, HyPackage package, GError **error)
 {
+	HifDbPrivate *priv = GET_PRIVATE (db);
 	const gchar *filename;
 	_cleanup_dir_close_ GDir *dir = NULL;
 	_cleanup_free_ gchar *index_dir = NULL;
@@ -292,6 +302,9 @@ hif_db_remove_all (HifDb *db, HyPackage package, GError **error)
 	g_return_val_if_fail (HIF_IS_DB (db), FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	if (!priv->enabled)
+		return TRUE;
 
 	/* get the folder */
 	index_dir = hif_db_get_dir_for_package (db, package);
@@ -405,4 +418,22 @@ hif_db_new (HifContext *context)
 	priv->context = context;
 	g_object_add_weak_pointer (G_OBJECT (priv->context), (void **) &priv->context);
 	return HIF_DB (db);
+}
+
+/**
+ * hif_db_set_enabled:
+ * @db: a #HifDb instance.
+ * @enabled: If %FALSE, disable writes
+ *
+ * If @enabled is %FALSE, makes every API call to change the database
+ * a no-op.
+ *
+ * Since: 0.2.0
+ **/
+void
+hif_db_set_enabled (HifDb          *db,
+		    gboolean        enabled)
+{
+	HifDbPrivate *priv = GET_PRIVATE (db);
+	priv->enabled = enabled;
 }
