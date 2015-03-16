@@ -675,3 +675,40 @@ to::
     goal.actions | hawkey.UPGRADE_ALL
 
 respectively
+
+
+Changes in 0.6.2
+================
+
+Core
+----
+
+The ``hy_advisory_get_filenames()`` API call, the corresponding Python
+property ``filenames`` of class :class:`Advisory` are removed.
+Instead, iterate over ``hy_advisory_get_packages()`` with
+``hy_advisorypkg_get_string()`` and ``HY_ADVISORYPKG_FILENAME``.  No
+known hawkey API consumers were using this call.
+
+Hawkey now has a dependency on GLib.  Aside from the above
+``hy_advisory_get_filenames()`` call, the Python API is fully
+preserved.  The C API has minor changes, but the goal is to avoid
+causing a significant amount of porting work for existing consumers.
+
+The ``hy_package_get_files`` API call now returns a ``char **``,
+allocated via `g_malloc`.  Free with `g_strfreev`.
+
+The ``HyStringArray`` type is removed, as nothing now uses it.
+
+:class:`HyPackageList` is now just a :class:`GPtrArray`, though
+the existing API is converted into wrappers.  Notably, this means
+you can now use ``g_ptr_array_unref()``.
+
+
+Python bindings
+---------------
+
+Aside from the one change below, the Python bindings should be
+unaffected by the C API changes.
+
+Advisory: The ``filename`` property is removed along with the C API
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
