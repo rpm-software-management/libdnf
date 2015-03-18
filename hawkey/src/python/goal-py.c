@@ -108,13 +108,15 @@ args_pkg_sltr_parse(PyObject *args, PyObject *kwds,
 static int
 args_run_parse(PyObject *args, PyObject *kwds, int *flags, PyObject **callback_p)
 {
-    char *kwlist[] = {"callback", "allow_uninstall", "force_best", NULL};
+    char *kwlist[] = {"callback", "allow_uninstall", "force_best", "verify", NULL};
     int allow_uninstall = 0;
     int force_best = 0;
+    int verify = 0;
     PyObject *callback = NULL;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Oii", kwlist,
-				     &callback, &allow_uninstall, &force_best))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Oiii", kwlist,
+				     &callback, &allow_uninstall, &force_best,
+                                     &verify))
 	return 0;
 
     if (callback) {
@@ -137,6 +139,8 @@ args_run_parse(PyObject *args, PyObject *kwds, int *flags, PyObject **callback_p
 	*flags |= HY_ALLOW_UNINSTALL;
     if (force_best)
 	*flags |= HY_FORCE_BEST;
+    if (verify)
+	*flags |= HY_VERIFY;
     return 1;
 }
 

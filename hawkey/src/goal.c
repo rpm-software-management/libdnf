@@ -300,6 +300,9 @@ construct_job(HyGoal goal, int flags)
 	queue_push2(job, SOLVER_MULTIVERSION|SOLVER_SOLVABLE_PROVIDES,
 		    sack->installonly.elements[i]);
 
+    if (flags & HY_VERIFY)
+        queue_push2(job, SOLVER_VERIFY|SOLVER_SOLVABLE_ALL, 0);
+
     /* apply the excludes */
     sack_recompute_considered(sack);
 
