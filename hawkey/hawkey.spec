@@ -1,15 +1,14 @@
-%global gitrev a687e3f580ae67d4a88b5f5fd0d8da101f031475
 %global libsolv_version 0.6.4-1
 
 Name:		hawkey
-Version:	@VERSION@
-Release:	1%{?dist}
+Version:	0.5.3
+Release:	2%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
 URL:		https://github.com/rpm-software-management/%{name}
-# git clone https://github.com/rpm-software-management/hawkey.git && cd hawkey && package/archive
-Source0:	https://github.com/rpm-software-management/%{name}/archive/%{gitrev}/%{name}-%{gitrev}.tar.gz
+# git clone https://github.com/rpm-software-management/hawkey.git && cd hawkey &&  tito build --tgz --test
+Source0:	https://github.com/rpm-software-management/%{name}/archive/%{name}-%{version}.tar.gz
 BuildRequires:	libsolv-devel >= %{libsolv_version}
 BuildRequires:	cmake expat-devel rpm-devel zlib-devel check-devel
 Requires:	libsolv%{?_isa} >= %{libsolv_version}
@@ -56,7 +55,7 @@ Requires:	%{name}%{?_isa} = %{version}-%{release}
 Python 3 bindings for the hawkey library.
 
 %prep
-%setup -q -n %{name}-%{gitrev}
+%setup -q -n %{name}-%{version}
 
 rm -rf py3
 mkdir ../py3
