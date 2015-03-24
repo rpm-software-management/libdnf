@@ -110,6 +110,13 @@ fixture_system_only(void)
 }
 
 void
+fixture_verify(void)
+{
+    HySack sack = create_ut_sack();
+    fail_if(setup_with(sack, "@System-broken", NULL));
+}
+
+void
 fixture_with_change(void)
 {
     HySack sack = create_ut_sack();

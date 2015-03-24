@@ -679,6 +679,30 @@ START_TEST(test_goal_forcebest)
 }
 END_TEST
 
+START_TEST(test_goal_verify)
+{
+    HySack sack = test_globals.sack;
+    HyGoal goal = hy_goal_create(sack);
+
+    fail_unless(hy_goal_run_flags(goal, HY_VERIFY));
+    fail_unless(hy_goal_list_installs(goal) == NULL);
+    fail_unless(hy_get_errno() == HY_E_NO_SOLUTION);
+    fail_unless(hy_goal_count_problems(goal) == 2);
+
+    char *expected;
+    char *problem;
+    problem = hy_goal_describe_problem(goal, 0);
+    expected = "nothing provides missing-dep needed by missing-1-0.x86_64";
+    fail_if(strncmp(problem, expected, strlen(expected)));
+    problem = hy_goal_describe_problem(goal, 1);
+    expected = "package conflict-1-0.x86_64 conflicts with ok provided by ok-1-0.x86_64";
+    fail_if(strncmp(problem, expected, strlen(expected)));
+    hy_free(problem);
+
+    hy_goal_free(goal);
+}
+END_TEST
+
 START_TEST(test_goal_installonly)
 {
     const char *installonly[] = {"fool", NULL};
@@ -1237,6 +1261,11 @@ goal_suite(void)
     tc = tcase_create("Cmdline");
     tcase_add_unchecked_fixture(tc, fixture_with_cmdline, teardown);
     tcase_add_test(tc, test_cmdline_file_provides);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("Verify");
+    tcase_add_unchecked_fixture(tc, fixture_verify, teardown);
+    tcase_add_test(tc, test_goal_verify);
     suite_add_tcase(s, tc);
 
     return s;

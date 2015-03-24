@@ -1,0 +1,9 @@
+=Ver: 2.0
+#
+=Pkg: ok 1 0 x86_64
+=Pkg: missing 1 0 x86_64
+=Req: missing-dep
+=Pkg: conflict 1 0 x86_64
+=Con: ok
+=Pkg: dup 1 1 x86_64
+=Pkg: dup 2 1 x86_64
