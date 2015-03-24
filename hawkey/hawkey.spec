@@ -7,7 +7,7 @@ Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
 URL:		https://github.com/rpm-software-management/%{name}
-# git clone https://github.com/rpm-software-management/hawkey.git && cd hawkey &&  tito build --tgz --test
+# git clone https://github.com/rpm-software-management/hawkey.git && cd hawkey && tito build --tgz
 Source0:	https://github.com/rpm-software-management/%{name}/archive/%{name}-%{version}.tar.gz
 BuildRequires:	libsolv-devel >= %{libsolv_version}
 BuildRequires:	cmake expat-devel rpm-devel zlib-devel check-devel
