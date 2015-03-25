@@ -1,0 +1,45 @@
+#!/usr/bin/python 
+
+# Run the appropriate version of nosetests, setting PYTHONPATH
+# to point to our just built libraries.  Also use xunit output,
+# parsing the result to ensure we actually ran some tests.
+# (There is a bug somewhere in at least some versions of the build
+#  process that results in no tests run)
+
+import os
+import sys
+import subprocess
+import xml.etree.ElementTree as ET
+
+def fatal(msg):
+    sys.stderr.write(msg + '\n')
+    sys.exit(1)
+
+childenv = dict(os.environ)
+childenv['PYTHONPATH'] = '${CMAKE_BINARY_DIR}/src/python'
+subprocess.check_call(['nosetests-${PYTHON_MAJOR_DOT_MINOR_VERSION}',
+                       '--with-xunit', '--xunit-file=xunit.xml',
+                       '-s', '-v', '${CMAKE_CURRENT_SOURCE_DIR}'],
+                      env=childenv)
+xunit_root = ET.parse('xunit.xml').getroot()
+found_testsuite = False
+
+def validate_testsuite_ran_tests(elt):
+    ntests = int(elt.attrib['tests'])
+    if ntests == 0:
+        fatal("run_nosetests found no tests in {0}".format('${CMAKE_CURRENT_SOURCE_DIR}'))
+
+if xunit_root.tag == 'testsuite':
+    validate_testsuite_ran_tests(xunit_root)
+    found_testsuite = True
+else:
+    child = xunit_root.find('testsuite')
+    if child is not None:
+        validate_testsuite_ran_tests(child)
+        found_testsuite = True
+if not found_testsuite:
+    fatal("run_nosetests failed to find 'testsuite' in xunit.xml")
+
+sys.exit(0)
+
+    
