@@ -43,12 +43,76 @@
 #include "libhif.h"
 #include "hif-utils.h"
 
+typedef struct {
+    const char *desc;
+    rpmsenseFlags sense;
+    rpmTagVal tag;
+    rpmTagVal progtag;
+    rpmTagVal flagtag;
+} KnownRpmScriptKind;
+
+static const KnownRpmScriptKind known_scripts[] = {
+    { "%prein", 0,
+	RPMTAG_PREIN, RPMTAG_PREINPROG, RPMTAG_PREINFLAGS },
+    { "%preun", 0,
+	RPMTAG_PREUN, RPMTAG_PREUNPROG, RPMTAG_PREUNFLAGS },
+    { "%post", 0,
+	RPMTAG_POSTIN, RPMTAG_POSTINPROG, RPMTAG_POSTINFLAGS },
+    { "%postun", 0,
+	RPMTAG_POSTUN, RPMTAG_POSTUNPROG, RPMTAG_POSTUNFLAGS },
+    { "%pretrans", 0,
+	RPMTAG_PRETRANS, RPMTAG_PRETRANSPROG, RPMTAG_PRETRANSFLAGS },
+    { "%posttrans", 0,
+	RPMTAG_POSTTRANS, RPMTAG_POSTTRANSPROG, RPMTAG_POSTTRANSFLAGS },
+    { "%triggerprein", RPMSENSE_TRIGGERPREIN,
+	RPMTAG_TRIGGERPREIN, 0, 0 },
+    { "%triggerun", RPMSENSE_TRIGGERUN,
+	RPMTAG_TRIGGERUN, 0, 0 },
+    { "%triggerin", RPMSENSE_TRIGGERIN,
+	RPMTAG_TRIGGERIN, 0, 0 },
+    { "%triggerpostun", RPMSENSE_TRIGGERPOSTUN,
+	RPMTAG_TRIGGERPOSTUN, 0, 0 },
+    { "%verify", 0,
+	RPMTAG_VERIFYSCRIPT, RPMTAG_VERIFYSCRIPTPROG, RPMTAG_VERIFYSCRIPTFLAGS},
+};
+
+/*
+ * We can't install arbitrary RPM packages, as they may have embedded
+ * Lua, or %pre/%post scripts that mutate files in place.  That would
+ * corrupt the object store.
+ */
+static gboolean
+check_package_is_ostree_layerable (Header      hdr,
+				   const char *filename,
+				   GError    **error)
+{
+  gboolean ret = FALSE;
+  guint i;
+  
+  for (i = 0; i < G_N_ELEMENTS (known_scripts); i++)
+    {
+      rpmTagVal tagval = known_scripts[i].tag;
+      rpmTagVal progtagval = known_scripts[i].progtag;
+
+      if (headerIsEntry (hdr, tagval) || headerIsEntry (hdr, progtagval))
+        {
+          g_set_error (error, G_IO_ERROR, G_IO_ERROR_FAILED,
+                       "Package '%s' has possibly unsafe script of type '%s'",
+                       filename, known_scripts[i].desc);
+          goto out;
+        }
+    }
+
+  ret = TRUE;
+ out:
+  return ret;
+}
+
 /**
  * hif_rpmts_add_install_filename:
  * @ts: a #rpmts instance.
  * @filename: the package.
- * @allow_untrusted: is we can add untrusted packages.
- * @is_update: if the package is an update.
+ * @flags: Flags
  * @error: a #GError or %NULL..
  *
  * Add to the transaction a package to be installed.
@@ -60,8 +124,7 @@
 gboolean
 hif_rpmts_add_install_filename (rpmts ts,
 				const gchar *filename,
-				gboolean allow_untrusted,
-				gboolean is_update,
+				HifRpmTsFlags  flags,
 				GError **error)
 {
 	gboolean ret = TRUE;
@@ -77,7 +140,7 @@ hif_rpmts_add_install_filename (rpmts ts,
 				  &hdr);
 
 	/* be less strict when we're allowing untrusted transactions */
-	if (allow_untrusted) {
+	if (flags & HIF_RPMTS_FLAG_ALLOW_UNTRUSTED) {
 		switch (res) {
 		case RPMRC_NOKEY:
 		case RPMRC_NOTFOUND:
@@ -148,11 +211,17 @@ hif_rpmts_add_install_filename (rpmts ts,
 		}
 	}
 
+	if ((flags & HIF_RPMTS_FLAG_OSTREE_MODE) > 0) {
+		ret = check_package_is_ostree_layerable (hdr, filename, error);
+		if (!ret)
+			goto out;
+	}
+
 	/* add to the transaction */
 	res = rpmtsAddInstallElement (ts,
 				      hdr,
 				      (fnpyKey) filename,
-				      is_update,
+				      (flags & HIF_RPMTS_FLAG_IS_UPDATE) > 0,
 				      NULL);
 	if (res != 0) {
 		ret = FALSE;

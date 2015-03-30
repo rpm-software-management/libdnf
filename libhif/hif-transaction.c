@@ -1159,7 +1159,6 @@ hif_transaction_commit (HifTransaction *transaction,
 {
 	const gchar *filename;
 	const gchar *tmp;
-	gboolean allow_untrusted;
 	gboolean is_update;
 	gboolean ret = FALSE;
 	gint rc;
@@ -1240,7 +1239,7 @@ hif_transaction_commit (HifTransaction *transaction,
 		hif_state_set_number_steps (state_local,
 					    priv->install->len);
 	for (i = 0; i < priv->install->len; i++) {
-
+		HifRpmTsFlags hifrpmtsflags = 0;
 		pkg = g_ptr_array_index (priv->install, i);
 		ret = hif_transaction_ensure_source (transaction, pkg, error);
 		if (!ret)
@@ -1248,13 +1247,20 @@ hif_transaction_commit (HifTransaction *transaction,
 
 		/* add the install */
 		filename = hif_package_get_filename (pkg);
-		allow_untrusted = (priv->flags & HIF_TRANSACTION_FLAG_ONLY_TRUSTED) == 0;
-		is_update = hif_package_get_action (pkg) == HIF_STATE_ACTION_UPDATE ||
-			    hif_package_get_action (pkg) == HIF_STATE_ACTION_DOWNGRADE;
+
+		if ((priv->flags & HIF_TRANSACTION_FLAG_ONLY_TRUSTED) == 0)
+			hifrpmtsflags |= HIF_RPMTS_FLAG_ALLOW_UNTRUSTED;
+
+		if (hif_package_get_action (pkg) == HIF_STATE_ACTION_UPDATE ||
+		    hif_package_get_action (pkg) == HIF_STATE_ACTION_DOWNGRADE)
+			hifrpmtsflags |= HIF_RPMTS_FLAG_IS_UPDATE;
+
+		if (priv->flags & HIF_TRANSACTION_FLAG_OSTREE_MODE)
+			hifrpmtsflags |= HIF_RPMTS_FLAG_OSTREE_MODE;
+
 		ret = hif_rpmts_add_install_filename (priv->ts,
 						      filename,
-						      allow_untrusted,
-						      is_update,
+						      hifrpmtsflags,
 						      error);
 		if (!ret)
 			goto out;
@@ -1361,6 +1367,9 @@ hif_transaction_commit (HifTransaction *transaction,
 
 	if (priv->flags & HIF_TRANSACTION_FLAG_NODOCS)
 		rpmts_flags |= RPMTRANS_FLAG_NODOCS;
+
+	if (priv->flags & HIF_TRANSACTION_FLAG_OSTREE_MODE)
+		rpmts_flags |= (_noTransScripts | _noTransTriggers);
 
 	/* run the transaction */
 	priv->state = hif_state_get_child (state);
