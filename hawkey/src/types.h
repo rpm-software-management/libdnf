@@ -25,7 +25,12 @@
 extern "C" {
 #endif
 
+#ifdef __cplusplus
+enum _HyForm :short ;
+#else
 typedef enum _HyForm HyForm;
+#endif
+
 typedef struct _HyAdvisory * HyAdvisory;
 typedef struct _HyAdvisoryList * HyAdvisoryList;
 typedef struct _HyAdvisoryPkg * HyAdvisoryPkg;

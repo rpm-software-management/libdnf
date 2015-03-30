@@ -32,7 +32,11 @@
 extern "C" {
 #endif
 
+#ifdef __cplusplus
+enum _HyForm :short {
+#else
 enum _HyForm {
+#endif
     HY_FORM_NEVRA = 1,
     HY_FORM_NEVR,
     HY_FORM_NEV,
