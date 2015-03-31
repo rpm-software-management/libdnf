@@ -1,8 +1,8 @@
 %global libsolv_version 0.6.4-1
 
 Name:		hawkey
-Version:	0.5.3
-Release:	2%{?dist}
+Version:	0.5.4
+Release:	1%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
@@ -106,6 +106,17 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+* Tue Mar 31 2015 Michal Luscon <mluscon@redhat.com> 0.5.4-1
+- setup tito to bump version in VERSION.cmake (Michal Luscon)
+- initialize to use tito (Michal Luscon)
+- prepare repo for tito build system (Michal Luscon)
+- New version 0.5.4 (Michal Luscon)
+- goal: implement methods for optional installation (RhBug:1167881) (Michal Luscon)
+- setup tito to bump version in VERSION.cmake (Michal Luscon)
+- initialize to use tito (Michal Luscon)
+- prepare repo for tito build system (Michal Luscon)
+- New version 0.5.4 (Michal Luscon)
+- goal: implement methods for optional installation (RhBug:1167881) (Michal Luscon)
 
 * Mon Feb 23 2015 Jan Silhan <jsilhan@redhat.com> - 0.5.3-2
 - bumped release to be greater than f21 release
