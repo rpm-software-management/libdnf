@@ -188,3 +188,18 @@ class Problems(base.TestCase):
         self.assertEqual(len(self.goal.problems), 1)
         self.assertRaises(hawkey.RuntimeException, self.goal.list_erasures)
         self.assertRaises(ValueError, self.goal.describe_problem, 1);
+
+class Verify(base.TestCase):
+    def setUp(self):
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
+        self.sack.load_test_repo(hawkey.SYSTEM_REPO_NAME, "@System-broken.repo")
+        self.goal = hawkey.Goal(self.sack)
+
+    def test_verify(self):
+        self.assertTrue(self.goal.run(verify=True))
+        self.assertEqual(len(self.goal.list_installs()), 0)
+        self.assertEqual(len(self.goal.problems), 2)
+        self.assertEqual(self.goal.problems[0],
+            "nothing provides missing-dep needed by missing-1-0.x86_64")
+        self.assertEqual(self.goal.problems[1],
+            "package conflict-1-0.x86_64 conflicts with ok provided by ok-1-0.x86_64")
