@@ -52,7 +52,7 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/libhif*.la
 
 %files
 %doc README.md AUTHORS NEWS COPYING
-%{_libdir}/libhif.so.1*
+%{_libdir}/libhif.so.2*
 %{_libdir}/girepository-1.0/*.typelib
 
 %files devel

@@ -44,8 +44,8 @@ m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 # - If the interface is the same as the previous version, but bugs are
 #   fixed, change:
 #      REVISION += 1
-LT_CURRENT=1
-LT_REVISION=6
+LT_CURRENT=2
+LT_REVISION=0
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
