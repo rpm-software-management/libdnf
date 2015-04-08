@@ -1,3 +1,39 @@
+Version 0.2.0
+~~~~~~~~~~~~~
+Released: 2015-04-08
+
+New Features:
+ - Add a few more commandline arguments (Colin Walters)
+ - Add API to disable hifdb (yumdb) (Colin Walters)
+ - Add API to override rpm macro (Colin Walters)
+ - Add API to set global HTTP proxy (Colin Walters)
+ - Add 'reinstall' command to hif-cmd (Richard Hughes)
+ - Add support for the "exclude" element in repo files (Colin Walters)
+ - Add transaction flag to disable documentation (Colin Walters)
+ - Make everything that was -private be public (Colin Walters)
+
+Bugfixes:
+ - Adapt to hawkey 0.5.3 API break (Colin Walters, Giuseppe Scrivano)
+ - Add HifSource to introspection set (Colin Walters)
+ - Do not attempt to read from a closed file descriptor (Richard Hughes)
+ - Do not download the mirrorlists when checking for updates (Richard Hughes)
+ - Don't default to forcing trusted only (Colin Walters)
+ - Don't set up file monitor on rpmdb if we're using an installroot (Colin Walters)
+ - Don't use hif_context_get_transaction() from multiple threads (Richard Hughes)
+ - Ensure HifContext can be finalised to prevent rpmdb index corruption (Richard Hughes)
+ - Ensure the mirror list is set before trying to download packages (Richard Hughes)
+ - Ensure the sack is freed when using hif_transaction_write_yumdb_install_item() (Richard Hughes)
+ - Fix some small memory leaks (Richard Hughes)
+ - Fix potential segfault when when depsolving (Richard Hughes)
+ - Honor context install root for the HifDb (Colin Walters)
+ - If the enabled local source does not exist do not add it to the sack (Richard Hughes)
+ - Invalidate the sack when succesfully calling hif_context_run() (Richard Hughes)
+ - Make a selected set of compiler warnings into hard errors (Colin Walters)
+ - Only invalidate the context after the yumdb has been written (Richard Hughes)
+ - Set LRO_DESTDIR before using librepo to check the source (Richard Hughes)
+ - Use -fno-strict-aliasing by default (Colin Walters)
+ - Use the HY_VERSION_CHECK macro to avoid adding additional configure checks (Richard Hughes)
+
 Version 0.1.7
 ~~~~~~~~~~~~~
 Released: 2014-12-19
