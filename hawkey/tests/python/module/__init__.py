@@ -38,9 +38,9 @@ class TestSackMixin(object):
     def __init__(self, repo_dir):
         self.repo_dir = repo_dir
 
-    def load_test_repo(self, name, fn):
+    def load_test_repo(self, name, fn, system=False):
         path = os.path.join(self.repo_dir, fn)
-        _hawkey_test.load_repo(self, name, path, False)
+        _hawkey_test.load_repo(self, name, path, system)
 
     def load_system_repo(self, *args, **kwargs):
         path = os.path.join(self.repo_dir, "@System.repo")

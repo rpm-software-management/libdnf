@@ -192,12 +192,11 @@ class Problems(base.TestCase):
 class Verify(base.TestCase):
     def setUp(self):
         self.sack = base.TestSack(repo_dir=self.repo_dir)
-        self.sack.load_test_repo(hawkey.SYSTEM_REPO_NAME, "@System-broken.repo")
+        self.sack.load_test_repo(hawkey.SYSTEM_REPO_NAME, "@System-broken.repo", True)
         self.goal = hawkey.Goal(self.sack)
 
     def test_verify(self):
-        self.assertTrue(self.goal.run(verify=True))
-        self.assertEqual(len(self.goal.list_installs()), 0)
+        self.assertFalse(self.goal.run(verify=True))
         self.assertEqual(len(self.goal.problems), 2)
         self.assertEqual(self.goal.problems[0],
             "nothing provides missing-dep needed by missing-1-0.x86_64")
