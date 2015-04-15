@@ -1272,6 +1272,7 @@ hif_transaction_commit (HifTransaction *transaction,
 
 	/* add things to remove */
 	priv->remove = hif_goal_get_packages (goal,
+					      HIF_PACKAGE_INFO_OBSOLETE,
 					      HIF_PACKAGE_INFO_REMOVE,
 					      -1);
 	for (i = 0; i < priv->remove->len; i++) {
