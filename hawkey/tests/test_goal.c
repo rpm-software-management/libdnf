@@ -694,6 +694,7 @@ START_TEST(test_goal_verify)
     problem = hy_goal_describe_problem(goal, 0);
     expected = "nothing provides missing-dep needed by missing-1-0.x86_64";
     fail_if(strncmp(problem, expected, strlen(expected)));
+    hy_free(problem);
     problem = hy_goal_describe_problem(goal, 1);
     expected = "package conflict-1-0.x86_64 conflicts with ok provided by ok-1-0.x86_64";
     fail_if(strncmp(problem, expected, strlen(expected)));
