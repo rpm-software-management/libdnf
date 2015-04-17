@@ -253,6 +253,9 @@ solve(HyGoal goal, Queue *job, int flags, hy_solution_callback user_cb,
     HySack sack = goal->sack;
     struct _SolutionCallback cb_tuple;
 
+    /* apply the excludes */
+    sack_recompute_considered(sack);
+
     repo_internalize_all_trigger(sack_pool(sack));
     sack_make_provides_ready(sack);
     if (goal->trans) {
@@ -302,9 +305,6 @@ construct_job(HyGoal goal, int flags)
 
     if (flags & HY_VERIFY)
         queue_push2(job, SOLVER_VERIFY|SOLVER_SOLVABLE_ALL, 0);
-
-    /* apply the excludes */
-    sack_recompute_considered(sack);
 
     return job;
 }
@@ -556,6 +556,7 @@ sltr2job(const HySelector sltr, Queue *job, int solver_action)
 	goto finish;
     }
 
+    sack_recompute_considered(sack);
     sack_make_provides_ready(sack);
     ret = filter_name2job(sack, sltr->f_name, &job_sltr);
     if (ret)

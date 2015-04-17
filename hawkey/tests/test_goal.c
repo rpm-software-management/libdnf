@@ -805,7 +805,7 @@ START_TEST(test_goal_describe_problem_excludes)
     fail_unless(hy_goal_count_problems(goal) > 0);
 
     char *problem = hy_goal_describe_problem(goal, 0);
-    ck_assert_str_eq(problem, "package semolina-2-0.x86_64 is not installable");
+    ck_assert_str_eq(problem, "package semolina does not exist");
     hy_free(problem);
 
     hy_goal_free(goal);
@@ -824,6 +824,29 @@ START_TEST(test_goal_distupgrade_all)
     hy_packagelist_free(plist);
 
     plist = hy_goal_list_downgrades(goal);
+    fail_unless(hy_packagelist_count(plist) == 1);
+    assert_nevra_eq(hy_packagelist_get(plist, 0), "baby-6:4.9-3.x86_64");
+    hy_packagelist_free(plist);
+    hy_goal_free(goal);
+}
+END_TEST
+
+START_TEST(test_goal_distupgrade_all_excludes)
+{
+    HyQuery q = hy_query_create_flags(test_globals.sack, HY_IGNORE_EXCLUDES);
+    hy_query_filter_provides(q, HY_GT|HY_EQ, "flying", "0");
+    HyPackageSet pset = hy_query_run_set(q);
+    hy_sack_add_excludes(test_globals.sack, pset);
+    hy_packageset_free(pset);
+    hy_query_free(q);
+
+    HyGoal goal = hy_goal_create(test_globals.sack);
+    fail_if(hy_goal_distupgrade_all(goal));
+    fail_if(hy_goal_run(goal));
+
+    assert_iueo(goal, 0, 0, 0, 0);
+
+    HyPackageList plist = hy_goal_list_downgrades(goal);
     fail_unless(hy_packagelist_count(plist) == 1);
     assert_nevra_eq(hy_packagelist_get(plist, 0), "baby-6:4.9-3.x86_64");
     hy_packagelist_free(plist);
@@ -1228,6 +1251,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_install_selector_file);
     tcase_add_test(tc, test_goal_rerun);
     tcase_add_test(tc, test_goal_unneeded);
+    tcase_add_test(tc, test_goal_distupgrade_all_excludes);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Greedy");

@@ -142,6 +142,7 @@ sack_recompute_considered(HySack sack)
 	map_subtract(pool->considered, sack->pkg_excludes);
     if (sack->pkg_includes)
 	map_and(pool->considered, sack->pkg_includes);
+    pool_createwhatprovides(sack->pool);
     sack->considered_uptodate = 1;
 }
 
