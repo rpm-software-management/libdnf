@@ -192,8 +192,6 @@ START_TEST(test_get_files)
 {
     HySack sack = test_globals.sack;
 
-    //sack_make_provides_ready(sack);
-
     HyPackage pkg = by_name(sack, "tour");
     HyStringArray files = hy_package_get_files(pkg);
     char *f;
