@@ -740,6 +740,13 @@ hif_package_download (HyPackage pkg,
 {
 	HifSource *src;
 	src = hif_package_get_source (pkg);
+	if (src == NULL) {
+		g_set_error_literal (error,
+				     HIF_ERROR,
+				     HIF_ERROR_INTERNAL_ERROR,
+				     "package source is unset");
+		return NULL;
+	}
 	return hif_source_download_package (src, pkg, directory, state, error);
 }
 
