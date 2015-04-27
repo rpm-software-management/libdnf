@@ -30,7 +30,7 @@ class AdvisoriesTest(base.TestCase):
     def setUp(self):
         """Prepare the test fixture."""
         self.sack = base.TestSack(repo_dir=self.repo_dir)
-        self.sack.load_yum_repo(load_updateinfo=True)
+        self.sack.load_repo(load_updateinfo=True)
 
     def test(self):
         pkg = hawkey.Query(self.sack).filter(name='tour')[0]
@@ -138,7 +138,7 @@ class PackageCmpTest(base.TestCase):
 class ChecksumsTest(base.TestCase):
     def setUp(self):
         self.sack = base.TestSack(repo_dir=self.repo_dir)
-        self.sack.load_yum_repo()
+        self.sack.load_repo()
         self.pkg = hawkey.Query(self.sack).filter(name="mystery-devel")[0]
 
     def test_checksum(self):
@@ -169,7 +169,7 @@ class FullPropertiesTest(base.TestCase):
 
     def setUp(self):
         self.sack = base.TestSack(repo_dir=self.repo_dir)
-        self.sack.load_yum_repo()
+        self.sack.load_repo()
         self.pkg = hawkey.Query(self.sack).filter(name="mystery-devel")[0]
 
     def test_baseurl(self):

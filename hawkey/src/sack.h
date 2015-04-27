@@ -65,7 +65,11 @@ int hy_sack_repo_enabled(HySack sack, const char *reponame, int enabled);
  *		      HY_E_CACHE_WRITE on cache write error.
  */
 int hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags);
+
+// deprecated in 0.5.5, eligible for dropping after 2015-10-27 AND no sooner
+// than in 0.5.8, use hy_advisorypkg_get_string instead
 int hy_sack_load_yum_repo(HySack sack, HyRepo hrepo, int flags);
+int hy_sack_load_repo(HySack sack, HyRepo hrepo, int flags);
 
 #ifdef __cplusplus
 }

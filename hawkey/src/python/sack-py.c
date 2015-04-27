@@ -428,7 +428,7 @@ load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
-load_yum_repo(_SackObject *self, PyObject *args, PyObject *kwds)
+load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 {
     char *kwlist[] = {"repo", "build_cache", "load_filelists", "load_presto",
 		      "load_updateinfo", NULL};
@@ -452,10 +452,10 @@ load_yum_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     if (load_updateinfo)
         flags |= HY_LOAD_UPDATEINFO;
     Py_BEGIN_ALLOW_THREADS;
-    if (hy_sack_load_yum_repo(self->sack, crepo, flags))
+    if (hy_sack_load_repo(self->sack, crepo, flags))
 	ret = hy_get_errno();
     Py_END_ALLOW_THREADS;
-    if (ret2e(ret, "Can not load Yum repo."))
+    if (ret2e(ret, "Can not load repo."))
 	return NULL;
     Py_RETURN_NONE;
 }
@@ -501,7 +501,9 @@ PyMethodDef sack_methods[] = {
      NULL},
     {"load_system_repo", (PyCFunction)load_system_repo,
      METH_VARARGS | METH_KEYWORDS, NULL},
-    {"load_yum_repo", (PyCFunction)load_yum_repo, METH_VARARGS | METH_KEYWORDS,
+    {"load_repo", (PyCFunction)load_repo, METH_VARARGS | METH_KEYWORDS,
+     NULL},
+    {"load_yum_repo", (PyCFunction)load_repo, METH_VARARGS | METH_KEYWORDS,
      NULL},
     {NULL}                      /* sentinel */
 };

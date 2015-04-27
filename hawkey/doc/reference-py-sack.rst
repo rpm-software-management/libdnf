@@ -138,7 +138,7 @@ Sack---The fundamental hawkey structure
     `build_cache` is a boolean that specifies whether the information should be
     written to the cache (see :ref:`\building_and_reusing_the_repo_cache-label`).
 
-  .. method:: load_yum_repo(\
+  .. method:: load_repo(\
     repo, build_cache=False, load_filelists=False, load_presto=False, \
     load_updateinfo=False)
 

@@ -58,19 +58,19 @@ system repo* (in Fedora it is the RPM database). To load it::
   >>> len(sack)
   1683
 
-Hawkey always knows the name of every repository. Names of repositories loaded
-from Yum metadata are chosen by the client and the system repository is always
-set to :const:`hawkey.SYSTEM_REPO_NAME`.
+Hawkey always knows the name of every repository. The system repository is always
+set to :const:`hawkey.SYSTEM_REPO_NAME`. and the client is responsible for naming
+the available repository metadata.
 
-Loading Yum Repositories
-========================
+Loading Repositories
+====================
 
 Let's be honest here: all the fun in packaging comes from packages you haven't
 installed yet. Information about them, their *metadata*, can be obtained from
 different sources and typically they are downloaded from an HTTP mirror (another
 possibilities are FTP server, NFS mount, DVD distribution media, etc.). Hawkey
 does not provide any means to discover and obtain the metadata locally: it is up
-to the client to provide valid readable paths to the Yum metadata XML
+to the client to provide valid readable paths to the repository metadata XML
 files. Structures used for passing the information to hawkey are the hawkey
 :class:`Repos <hawkey.Repo>`. Suppose we somehow obtained the metadata and placed it in
 ``/home/akozumpl/tmp/repodata``. We can then load the metadata into hawkey::
@@ -80,7 +80,7 @@ files. Structures used for passing the information to hawkey are the hawkey
   >>> repo.repomd_fn = path % "repomd.xml"
   >>> repo.primary_fn = path % "f7753a2636cc89d70e8aaa1f3c08413ab78462ca9f48fd55daf6dedf9ab0d5db-primary.xml.gz"
   >>> repo.filelists_fn = path % "0261e25e8411f4f5e930a70fa249b8afd5e86bb9087d7739b55be64b76d8a7f6-filelists.xml.gz"
-  >>> sack.load_yum_repo(repo, load_filelists=True)
+  >>> sack.load_repo(repo, load_filelists=True)
   >>> len(sack)
   1685
 
@@ -92,7 +92,7 @@ in the repository (two in this case, it is an experimental repo after all).
 Case for Loading the Filelists
 ==============================
 
-What the ``load_filelists=True`` argument to :meth:`~hawkey.Sack.load_yum_repo` above does is
+What the ``load_filelists=True`` argument to :meth:`~hawkey.Sack.load_repo` above does is
 instruct hawkey to process the ``<hash>filelists.xml.gz`` file we passed in and
 which contains structured list of absolute paths to all files of all packages
 within the repo. This information can be used for two purposes:
@@ -132,7 +132,7 @@ milliseconds, using the solv files reduces repo load times from seconds to tens
 of milliseconds. It is thus a good idea to write and use the solv files every
 time you plan to use the same repo for more than one Sack (which is at least
 every time your hawkey program is run). To do that use ``build_cache=True`` with
-:meth:`~.Sack.load_yum_repo` and :meth:`~.Sack.load_system_repo`::
+:meth:`~.Sack.load_repo` and :meth:`~.Sack.load_system_repo`::
 
   >>> sack = hawkey.Sack(make_cache_dir=True)
   >>> sack.load_system_repo(build_cache=True)

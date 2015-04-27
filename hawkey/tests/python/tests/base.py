@@ -58,10 +58,10 @@ class TestSack(hawkey.test.TestSackMixin, hawkey.Sack):
                              pkginitval=package_userdata,
                              make_cache_dir=make_cache_dir)
 
-    def load_yum_repo(self, **kwargs):
+    def load_repo(self, **kwargs):
         d = os.path.join(self.repo_dir, hawkey.test.YUM_DIR_SUFFIX)
         repo = hawkey.test.glob_for_repofiles(self, "messerk", d)
-        super(TestSack, self).load_yum_repo(repo, **kwargs)
+        super(TestSack, self).load_repo(repo, **kwargs)
 
 def by_name(sack, name):
     return hawkey.Query(sack).filter(name=name)[0]

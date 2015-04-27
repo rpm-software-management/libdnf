@@ -93,20 +93,20 @@ START_TEST(test_list_arches)
 }
 END_TEST
 
-START_TEST(test_load_yum_repo_err)
+START_TEST(test_load_repo_err)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
 				 HY_MAKE_CACHE_DIR);
     HyRepo repo = hy_repo_create("crabalocker");
     hy_repo_set_string(repo, HY_REPO_MD_FN, "/non/existing");
-    fail_unless(hy_sack_load_yum_repo(sack, repo, 0) == HY_E_FAILED);
+    fail_unless(hy_sack_load_repo(sack, repo, 0) == HY_E_FAILED);
     fail_unless(hy_get_errno() == HY_E_IO);
     hy_repo_free(repo);
     hy_sack_free(sack);
 }
 END_TEST
 
-START_TEST(test_yum_repo_written)
+START_TEST(test_repo_written)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
 				 HY_MAKE_CACHE_DIR);
@@ -275,8 +275,8 @@ sack_suite(void)
     tcase_add_test(tc, test_sack_create);
     tcase_add_test(tc, test_give_cache_fn);
     tcase_add_test(tc, test_list_arches);
-    tcase_add_test(tc, test_load_yum_repo_err);
-    tcase_add_test(tc, test_yum_repo_written);
+    tcase_add_test(tc, test_load_repo_err);
+    tcase_add_test(tc, test_repo_written);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Repos");

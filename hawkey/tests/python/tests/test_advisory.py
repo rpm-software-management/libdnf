@@ -45,7 +45,7 @@ class Test(base.TestCase):
     def setUp(self):
         """Prepare the test fixture."""
         sack = base.TestSack(repo_dir=self.repo_dir)
-        sack.load_yum_repo(load_updateinfo=True)
+        sack.load_repo(load_updateinfo=True)
         self.advisory = find_advisory(sack, 'FEDORA-2008-9969')
 
     def test_description(self):

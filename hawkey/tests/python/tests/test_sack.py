@@ -43,7 +43,7 @@ class TestSackTest(base.TestCase):
     def test_load_yum(self):
         sack = base.TestSack(repo_dir=self.repo_dir)
         sack.load_system_repo()
-        sack.load_yum_repo(build_cache=True)
+        sack.load_repo(build_cache=True)
         self.assertEqual(len(sack), hawkey.test.EXPECT_YUM_NSOLVABLES +
                          hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
 
@@ -72,7 +72,7 @@ class BasicTest(unittest.TestCase):
     def test_failed_load(self):
         sack = hawkey.Sack(cachedir=base.cachedir)
         repo = hawkey.Repo("name")
-        self.assertRaises(IOError, sack.load_yum_repo, repo)
+        self.assertRaises(IOError, sack.load_repo, repo)
         sack = hawkey.Sack()
 
     def test_unicoded_cachedir(self):

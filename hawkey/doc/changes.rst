@@ -592,3 +592,27 @@ Goal: ``install()`` takes a new optional parameter
 
 If the ``optional`` parameter is set to ``True``, hawkey silently skips packages that can not
 be installed.
+
+
+Changes in 0.5.5
+================
+
+Core
+----
+
+Renamed ``hy_sack_load_yum_repo`` to ``hy_sack_load_repo``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Hawkey is package manager agnostic and the ``yum`` phrase could be misleading.
+
+The function will be dropped after 2015-10-27 AND no sooner than in 0.5.8.
+
+Python bindings
+---------------
+
+Sack method `load_yum_repo` has been renamed to :meth:`.Sack.load_repo`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Hawkey is package manager agnostic and the ``yum`` phrase could be misleading.
+
+The method will be dropped after 2015-10-27 AND no sooner than in 0.5.8.
