@@ -101,6 +101,15 @@
     Enable the repository identified by a string *name*. Packages in that
     repository can be fetched by Queries or Selectors.
 
+  .. warning:: Execution of :meth:`add_excludes`, :meth:`add_includes`,
+               :meth:`disable_repo` or :meth:`enable_repo` methods could cause
+               inconsistent results in previously evaluated :class:`.Query`,
+               :class:`.Selector` or :class:`.Goal`. The rule of thumb is
+               to exclude/include packages, enable/disable repositories at first and
+               then do actual computing using :class:`.Query`, :class:`.Selector`
+               or :class:`.Goal`. For more details see 
+               `developer discussion <https://github.com/rpm-software-management/hawkey/pull/87>`_.
+
   .. method:: evr_cmp(evr1, evr2)
 
     Compare two EVR strings and return a negative integer if *evr1* < *evr2*,
