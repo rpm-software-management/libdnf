@@ -16,7 +16,7 @@
   Red Hat, Inc.
 
 *******************************************
-``Sack``---The fundamental hawkey structure
+Sack---The fundamental hawkey structure
 *******************************************
 
 .. class:: hawkey.Sack
