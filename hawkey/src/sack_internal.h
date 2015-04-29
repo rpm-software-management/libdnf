@@ -44,7 +44,6 @@ struct _HySack {
     Map *pkg_excludes;
     Map *pkg_includes;
     Map *repo_excludes;
-    int considered_uptodate;
     int cmdline_repo_created;
 };
 
