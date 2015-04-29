@@ -1,7 +1,7 @@
 %global libsolv_version 0.6.4-1
 
 Name:		hawkey
-Version:	0.5.4
+Version:	0.5.5
 Release:	1%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
@@ -106,6 +106,28 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+* Wed Apr 29 2015 Michal Luscon <mluscon@redhat.com> 0.5.5-1
+- get rid of yum references (Jan Silhan)
+- sack: force recomputing excludes (Jan Silhan)
+- doc: cosmetic: made Sack headline more readable (Jan Silhan)
+- doc: sack: warning about using excludes, includes, disabling and enabling
+  repos (Jan Silhan)
+- cosmetic: removed commented code (Jan Silhan)
+- sack: calls reinitiate provides after changing considered map (RhBug:1099342)
+  (Jan Silhan)
+- fixed memleak from d8f2ca7 (Jan Silhan)
+- doc: add to CMDLINE_REPO_NAME and SYSTEM_REPO_NAME the Python API reference
+  manual. (Radek Holy)
+- doc: add Repo to the Python API reference manual. (Radek Holy)
+- updated load_test_repo() to be able to load non-standard system repo (Michael
+  Mraka)
+- python tests for goal.run(verify=True) (Michael Mraka)
+- test for HY_VERIFY flag (Michael Mraka)
+- introduced verify option for goal.run() (Michael Mraka)
+- AUTHORS: fixed name (Michael Mraka)
+- AUTHORS: added 3 Michaels (Jan Silhan)
+- Build for x86_64, correction for C++ (Michal Ruprich)
+
 * Tue Mar 31 2015 Michal Luscon <mluscon@redhat.com> 0.5.4-1
 - setup tito to bump version in VERSION.cmake (Michal Luscon)
 - initialize to use tito (Michal Luscon)
