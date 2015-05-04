@@ -55,6 +55,7 @@ struct _HyQuery {
     int flags;
     Map *result;
     struct _Filter *filters;
+    int applied;
     int nfilters;
     int downgradable; /* 1 for "only downgradable installed packages" */
     int downgrades; /* 1 for "only downgrades for installed packages" */

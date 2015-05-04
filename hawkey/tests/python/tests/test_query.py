@@ -202,6 +202,11 @@ class TestQuery(base.TestCase):
         self.assertItemsEqual(list(map(lambda p: p.name, q.run())),
                               ['baby', 'dog', 'flying', 'fool', 'gun', 'tour'])
 
+    def test_apply(self):
+        q = hawkey.Query(self.sack).filter(name__glob__not="p*").apply()
+        res = q.filter(name__glob__not="j*").run()
+        self.assertItemsEqual(list(map(lambda p: p.name, res)),
+                              ['baby', 'dog', 'flying', 'fool', 'gun', 'tour'])
 
 class TestQueryAllRepos(base.TestCase):
     def setUp(self):

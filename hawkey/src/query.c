@@ -725,28 +725,57 @@ filter_latest(HyQuery q, Map *res)
 }
 
 static void
-compute(HyQuery q)
+clear_filters(HyQuery q)
+{
+    for (int i = 0; i < q->nfilters; ++i) {
+        struct _Filter *filterp = q->filters + i;
+        filter_reinit(filterp, 0);
+    }
+    solv_free(q->filters);
+    q->filters = NULL;
+    q->nfilters = 0;
+    q->downgradable = 0;
+    q->downgrades = 0;
+    q->updatable = 0;
+    q->updates = 0;
+    q->latest = 0;
+    q->latest_per_arch = 0;
+}
+
+static void
+init_result(HyQuery q)
 {
     Pool *pool = sack_pool(q->sack);
     Id solvid;
-    Map m;
 
     q->result = solv_calloc(1, sizeof(Map));
     map_init(q->result, pool->nsolvables);
     FOR_PKG_SOLVABLES(solvid)
         map_set(q->result, solvid);
     if (!(q->flags & HY_IGNORE_EXCLUDES)) {
-	sack_recompute_considered(q->sack);
-	if (pool->considered)
-	    map_and(q->result, pool->considered);
+        sack_recompute_considered(q->sack);
+        if (pool->considered)
+            map_and(q->result, pool->considered);
     }
 
     // make sure the odd bits are cleared:
     unsigned total_bits = q->result->size << 3;
     for (int i = pool->nsolvables; i < total_bits; ++i)
-	MAPCLR(q->result, i);
+        MAPCLR(q->result, i);
+}
 
+void
+hy_query_apply(HyQuery q)
+{
+    Pool *pool = sack_pool(q->sack);
+    Map m;
+
+    if (q->applied)
+        return;
+    if (!q->result)
+        init_result(q);
     map_init(&m, pool->nsolvables);
+    assert(m.size == q->result->size);
     for (int i = 0; i < q->nfilters; ++i) {
 	struct _Filter *f = q->filters + i;
 
@@ -820,17 +849,10 @@ compute(HyQuery q)
 	filter_updown(q, 0, q->result);
     if (q->latest)
 	filter_latest(q, q->result);
-}
 
-static void
-clear_result(HyQuery q)
-{
-    if (q->result) {
-	map_free(q->result);
-	q->result = solv_free(q->result);
-    }
+    q->applied = 1;
+    clear_filters(q);
 }
-
 
 HyQuery
 hy_query_create(HySack sack)
@@ -857,14 +879,11 @@ hy_query_free(HyQuery q)
 void
 hy_query_clear(HyQuery q)
 {
-    clear_result(q);
-    for (int i = 0; i < q->nfilters; ++i) {
-	struct _Filter *filterp = q->filters + i;
-	filter_reinit(filterp, 0);
+    if (q->result) {
+        map_free(q->result);
+        q->result = solv_free(q->result);
     }
-    solv_free(q->filters);
-    q->filters = NULL;
-    q->nfilters = 0;
+    clear_filters(q);
 }
 
 HyQuery
@@ -879,6 +898,7 @@ hy_query_clone(HyQuery q)
     qn->updates = q->updates;
     qn->latest = q->latest;
     qn->latest_per_arch = q->latest_per_arch;
+    qn->applied = q->applied;
 
     for (int i = 0; i < q->nfilters; ++i) {
 	struct _Filter *filterp = query_add_filter(qn, q->filters[i].nmatches);
@@ -926,7 +946,7 @@ hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
 {
     if (!valid_filter_str(keyname, cmp_type))
 	return HY_E_QUERY;
-    clear_result(q);
+    q->applied = 0;
 
     switch (keyname) {
     case HY_PKG_CONFLICTS:
@@ -970,7 +990,7 @@ hy_query_filter_in(HyQuery q, int keyname, int cmp_type,
 {
     if (!valid_filter_str(keyname, cmp_type))
 	return HY_E_QUERY;
-    clear_result(q);
+    q->applied = 0;
 
     const unsigned count = count_nullt_array(matches);
     struct _Filter *filterp = query_add_filter(q, count);
@@ -988,7 +1008,7 @@ hy_query_filter_num(HyQuery q, int keyname, int cmp_type, int match)
 {
     if (!valid_filter_num(keyname, cmp_type))
 	return HY_E_QUERY;
-    clear_result(q);
+    q->applied = 0;
 
     struct _Filter *filterp = query_add_filter(q, 1);
     filterp->cmp_type = cmp_type;
@@ -1004,7 +1024,7 @@ hy_query_filter_num_in(HyQuery q, int keyname, int cmp_type, int nmatches,
 {
     if (!valid_filter_num(keyname, cmp_type))
 	return HY_E_QUERY;
-    clear_result(q);
+    q->applied = 0;
 
     struct _Filter *filterp = query_add_filter(q, nmatches);
 
@@ -1022,7 +1042,7 @@ hy_query_filter_package_in(HyQuery q, int keyname, int cmp_type,
 {
     if (!valid_filter_pkg(keyname, cmp_type))
 	return HY_E_QUERY;
-    clear_result(q);
+    q->applied = 0;
 
     struct _Filter *filterp = query_add_filter(q, 1);
     filterp->cmp_type = cmp_type;
@@ -1037,7 +1057,7 @@ hy_query_filter_reldep(HyQuery q, int keyname, const HyReldep reldep)
 {
     if (!valid_filter_reldep(keyname))
 	return HY_E_QUERY;
-    clear_result(q);
+    q->applied = 0;
 
     struct _Filter *filterp = query_add_filter(q, 1);
     filterp->cmp_type = HY_EQ;
@@ -1052,7 +1072,7 @@ hy_query_filter_reldep_in(HyQuery q, int keyname, const HyReldepList reldeplist)
 {
     if (!valid_filter_reldep(keyname))
 	return HY_E_QUERY;
-    clear_result(q);
+    q->applied = 0;
 
     const int nmatches = hy_reldeplist_count(reldeplist);
     struct _Filter *filterp = query_add_filter(q, nmatches);
@@ -1105,7 +1125,7 @@ int
 hy_query_filter_requires(HyQuery q, int cmp_type, const char *name, const char *evr)
 {
     /* convert to a reldep filter. the trick is handling negation right (it gets
-    resolved in compute(), we just have to make sure to store it in the
+    resolved in hy_query_apply(), we just have to make sure to store it in the
     filter. */
     int not_neg = cmp_type & ~HY_NOT;
     HyReldep reldep = hy_reldep_create(q->sack, name, not_neg, evr);
@@ -1125,7 +1145,7 @@ hy_query_filter_requires(HyQuery q, int cmp_type, const char *name, const char *
 void
 hy_query_filter_downgradable(HyQuery q, int val)
 {
-    clear_result(q);
+    q->applied = 0;
     q->downgradable = val;
 }
 
@@ -1135,7 +1155,7 @@ hy_query_filter_downgradable(HyQuery q, int val)
 void
 hy_query_filter_downgrades(HyQuery q, int val)
 {
-    clear_result(q);
+    q->applied = 0;
     q->downgrades = val;
 }
 
@@ -1145,7 +1165,7 @@ hy_query_filter_downgrades(HyQuery q, int val)
 void
 hy_query_filter_upgradable(HyQuery q, int val)
 {
-    clear_result(q);
+    q->applied = 0;
     q->updatable = val;
 }
 
@@ -1155,7 +1175,7 @@ hy_query_filter_upgradable(HyQuery q, int val)
 void
 hy_query_filter_upgrades(HyQuery q, int val)
 {
-    clear_result(q);
+    q->applied = 0;
     q->updates = val;
 }
 
@@ -1165,7 +1185,7 @@ hy_query_filter_upgrades(HyQuery q, int val)
 void
 hy_query_filter_latest_per_arch(HyQuery q, int val)
 {
-    clear_result(q);
+    q->applied = 0;
     q->latest_per_arch = 1;
     q->latest = val;
 }
@@ -1176,7 +1196,7 @@ hy_query_filter_latest_per_arch(HyQuery q, int val)
 void
 hy_query_filter_latest(HyQuery q, int val)
 {
-    clear_result(q);
+    q->applied = 0;
     q->latest_per_arch = 0;
     q->latest = val;
 }
@@ -1187,8 +1207,7 @@ hy_query_run(HyQuery q)
     Pool *pool = sack_pool(q->sack);
     HyPackageList plist = hy_packagelist_create();
 
-    if (!q->result)
-	compute(q);
+    hy_query_apply(q);
     for (int i = 1; i < pool->nsolvables; ++i)
 	if (MAPTST(q->result, i))
 	    hy_packagelist_push(plist, package_create(q->sack, i));
@@ -1198,7 +1217,6 @@ hy_query_run(HyQuery q)
 HyPackageSet
 hy_query_run_set(HyQuery q)
 {
-    if (!q->result)
-	compute(q);
+    hy_query_apply(q);
     return packageset_from_bitmap(q->sack, q->result);
 }

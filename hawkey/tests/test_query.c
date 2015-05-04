@@ -25,6 +25,7 @@
 
 // hawkey
 #include "src/query.h"
+#include "src/query_internal.h"
 #include "src/package.h"
 #include "src/packageset.h"
 #include "src/reldep.h"
@@ -832,6 +833,36 @@ START_TEST(test_query_multiple_flags)
 }
 END_TEST
 
+START_TEST(test_query_apply)
+{
+    HySack sack = test_globals.sack;
+    HyQuery q;
+    HyPackageList plist;
+
+    q = hy_query_create(sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_NOT | HY_GLOB, "j*");
+    struct _HyQuery _q = *q;
+    fail_unless(_q.result == NULL);
+    ck_assert_int_gt(_q.nfilters, 0);
+    ck_assert_int_eq(_q.applied, 0);
+    hy_query_apply(q);
+    _q = *q;
+    fail_unless(_q.result != NULL);
+    ck_assert_int_eq(_q.nfilters, 0);
+    ck_assert_int_eq(_q.applied, 1);
+    hy_query_filter(q, HY_PKG_NAME, HY_NOT | HY_GLOB, "p*");
+    _q = *q;
+    fail_unless(_q.result != NULL);
+    ck_assert_int_gt(_q.nfilters, 0);
+    ck_assert_int_eq(_q.applied, 0);
+    plist = hy_query_run(q);
+
+    ck_assert_int_eq(hy_packagelist_count(plist), 6);
+    hy_packagelist_free(plist);
+    hy_query_free(q);
+}
+END_TEST
+
 Suite *
 query_suite(void)
 {
@@ -862,6 +893,7 @@ query_suite(void)
     tcase_add_test(tc, test_query_nevra);
     tcase_add_test(tc, test_query_nevra_glob);
     tcase_add_test(tc, test_query_multiple_flags);
+    tcase_add_test(tc, test_query_apply);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Updates");
