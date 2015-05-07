@@ -1,7 +1,7 @@
 %global libsolv_version 0.6.4-1
 
 Name:		hawkey
-Version:	0.5.5
+Version:	0.5.6
 Release:	1%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
@@ -106,6 +106,9 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+* Thu May 07 2015 Michal Luscon <mluscon@redhat.com> 0.5.6-1
+- Revert "sack: force recomputing excludes" (RhUbg:1218650) (Jan Silhan)
+
 * Wed Apr 29 2015 Michal Luscon <mluscon@redhat.com> 0.5.5-1
 - get rid of yum references (Jan Silhan)
 - sack: force recomputing excludes (Jan Silhan)
