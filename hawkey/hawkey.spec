@@ -140,6 +140,9 @@ popd
 - New version 0.5.4 (Michal Luscon)
 - goal: implement methods for optional installation (RhBug:1167881) (Michal Luscon)
 
+* Wed Mar 25 2015 Jan Silhan <jsilhan@redhat.com> - 0.5.3-3
+- new release
+
 * Mon Feb 23 2015 Jan Silhan <jsilhan@redhat.com> - 0.5.3-2
 - bumped release to be greater than f21 release
 - Add Peter to Authors (Peter Hjalmarsson)
