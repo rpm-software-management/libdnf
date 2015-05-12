@@ -157,11 +157,12 @@ hy_package_installed(HyPackage pkg)
 int
 hy_package_cmp(HyPackage pkg1, HyPackage pkg2)
 {
-    Pool *pool = package_pool(pkg1);
-    Solvable *s1 = pool_id2solvable(pool, pkg1->id);
-    Solvable *s2 = pool_id2solvable(pool, pkg2->id);
-    const char *str1 = pool_id2str(pool, s1->name);
-    const char *str2 = pool_id2str(pool, s2->name);
+    Pool *pool1 = package_pool(pkg1);
+    Pool *pool2 = package_pool(pkg2);
+    Solvable *s1 = pool_id2solvable(pool1, pkg1->id);
+    Solvable *s2 = pool_id2solvable(pool2, pkg2->id);
+    const char *str1 = pool_id2str(pool1, s1->name);
+    const char *str2 = pool_id2str(pool2, s2->name);
     int ret = strcmp(str1, str2);
     if (ret)
 	return ret;
@@ -170,18 +171,22 @@ hy_package_cmp(HyPackage pkg1, HyPackage pkg2)
     if (ret)
 	return ret;
 
-    str1 = pool_id2str(pool, s1->arch);
-    str2 = pool_id2str(pool, s2->arch);
+    str1 = pool_id2str(pool1, s1->arch);
+    str2 = pool_id2str(pool2, s2->arch);
     return strcmp(str1, str2);
 }
 
 int
 hy_package_evr_cmp(HyPackage pkg1, HyPackage pkg2)
 {
+    Pool *pool1 = package_pool(pkg1);
+    Pool *pool2 = package_pool(pkg2);
     Solvable *s1 = get_solvable(pkg1);
     Solvable *s2 = get_solvable(pkg2);
+    const char *str1 = pool_id2str(pool1, s1->evr);
+    const char *str2 = pool_id2str(pool2, s2->evr);
 
-    return pool_evrcmp(package_pool(pkg1), s1->evr, s2->evr, EVRCMP_COMPARE);
+    return pool_evrcmp_str(package_pool(pkg1), str1, str2, EVRCMP_COMPARE);
 }
 
 char *

@@ -18,11 +18,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+// libsolv
+#include <solv/util.h>
+
 // hawkey
 #include "src/advisory.h"
 #include "src/package.h"
+#include "src/package_internal.h"
 #include "src/query.h"
 #include "src/reldep.h"
+#include "src/sack_internal.h"
 #include "src/stringarray.h"
 #include "src/util.h"
 #include "fixtures.h"
@@ -267,8 +272,42 @@ START_TEST(test_installed)
     hy_package_free(pkg1);
     hy_package_free(pkg2);
 }
-
 END_TEST
+
+START_TEST(test_two_sacks)
+{
+    /* This clumsily mimics create_ut_sack() and setup_with() to
+     * create a second HySack. */
+    char *tmpdir = solv_dupjoin(test_globals.tmpdir, "/tmp", NULL);
+    HySack sack1 = hy_sack_create(tmpdir, TEST_FIXED_ARCH, NULL, NULL,
+                                  HY_MAKE_CACHE_DIR);
+    Pool *pool1 = sack_pool(sack1);
+    const char *path = pool_tmpjoin(pool1, test_globals.repo_dir,
+                                    "change.repo", NULL);
+    fail_if(load_repo(pool1, "change", path, 0));
+    HyPackage pkg1 = by_name(sack1, "penny-lib");
+    fail_if(pkg1 == NULL);
+
+    HySack sack2 = test_globals.sack;
+    Pool *pool2 = sack_pool(sack2);
+    HyPackage pkg2 = by_name(sack2, "penny-lib");
+    fail_if(pkg2 == NULL);
+
+    /* "penny-lib" is in both pools but at different offsets */
+    Solvable *s1 = pool_id2solvable(pool1, pkg1->id);
+    Solvable *s2 = pool_id2solvable(pool2, pkg2->id);
+    fail_if(s1->name == s2->name);
+
+    fail_if(hy_package_cmp(pkg1, pkg2) != 0);
+
+    hy_package_free(pkg1);
+    hy_package_free(pkg2);
+
+    hy_sack_free(sack1);
+    solv_free(tmpdir);
+}
+END_TEST
+
 START_TEST(test_packager)
 {
     HyPackage pkg = by_name(test_globals.sack, "tour");
@@ -356,6 +395,7 @@ package_suite(void)
     tcase_add_test(tc, test_get_more_requires);
     tcase_add_test(tc, test_chksum_fail);
     tcase_add_test(tc, test_installed);
+    tcase_add_test(tc, test_two_sacks);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("WithRealRepo");
