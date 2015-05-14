@@ -2,7 +2,7 @@
 
 Name:		hawkey
 Version:	0.5.6
-Release:	1%{?dist}
+Release:	1%{?snapshot}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
