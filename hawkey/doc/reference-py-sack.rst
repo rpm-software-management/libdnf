@@ -25,8 +25,6 @@ Sack---The fundamental hawkey structure
   application typically needs at least one instance because it provides much of
   the hawkey's functionality.
 
-  ``len(sack)`` returns the number of the packages loaded into the sack.
-
   Sacks cannot be deeply copied.
 
   .. attribute:: cache_dir
@@ -71,6 +69,10 @@ Sack---The fundamental hawkey structure
     :ref:`\building_and_reusing_the_repo_cache-label`).
 
     `logfile` is a string giving a path of a log file location.
+
+  .. method:: __len__()
+
+    Returns the number of the packages loaded into the sack.
 
   .. method:: add_cmdline_package(filename)
 
