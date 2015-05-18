@@ -29,8 +29,7 @@ Sack---The fundamental hawkey structure
                :class:`hawkey.Query`, :class:`hawkey.Selector` or :class:`hawkey.Goal`
                created from different :class:`hawkey.Sack`. Usually for common tasks
                there is no need to initialize two or more `Sacks` in your program.
-
-  Sacks cannot be deeply copied.
+               Sacks cannot be deeply copied.
 
   .. attribute:: cache_dir
 
