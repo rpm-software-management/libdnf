@@ -616,3 +616,16 @@ Sack method `load_yum_repo` has been renamed to :meth:`.Sack.load_repo`
 Hawkey is package manager agnostic and the ``yum`` phrase could be misleading.
 
 The method will be dropped after 2015-10-27 AND no sooner than in 0.5.8.
+
+
+Changes in 0.5.7
+================
+
+Python bindings
+---------------
+
+Package: file attribute is represented by list of Unicode objects
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sack: `list_arches` method returns list of Unicode objects
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

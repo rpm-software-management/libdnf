@@ -255,7 +255,7 @@ strlist_to_pylist(const char **slist)
 	return NULL;
 
     for (const char **iter = slist; *iter; ++iter) {
-	PyObject *str = PyString_FromString(*iter);
+	PyObject *str = PyUnicode_FromString(*iter);
 	if (str == NULL)
 	    goto err;
 	int rc = PyList_Append(list, str);
