@@ -25,6 +25,11 @@ Sack---The fundamental hawkey structure
   application typically needs at least one instance because it provides much of
   the hawkey's functionality.
 
+  .. warning:: Any package instance is not supposed to work interchangeably between
+               :class:`hawkey.Query`, :class:`hawkey.Selector` or :class:`hawkey.Goal`
+               created from different :class:`hawkey.Sack`. Usually for common tasks
+               there is no need to initialize two or more `Sacks` in your program.
+
   Sacks cannot be deeply copied.
 
   .. attribute:: cache_dir
