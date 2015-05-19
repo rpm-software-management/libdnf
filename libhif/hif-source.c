@@ -1658,13 +1658,8 @@ hif_source_download_package (HifSource *source,
 			/* ignore */
 			g_clear_error (&error_local);
 		} else {
-			g_set_error (error,
-				     HIF_ERROR,
-				     HIF_ERROR_INTERNAL_ERROR,
-				     "cannot download %s to %s: %s",
-				     hy_package_get_location (pkg),
-				     directory_slash,
-				     error_local->message);
+			g_propagate_error (error, error_local);
+			error_local = NULL;
 			goto out;
 		}
 	}
