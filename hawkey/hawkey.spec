@@ -1,7 +1,7 @@
 %global libsolv_version 0.6.4-1
 
 Name:		hawkey
-Version:	0.5.6
+Version:	0.5.7
 Release:	1%{?snapshot}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
@@ -106,6 +106,13 @@ popd
 %exclude %{python3_sitearch}/hawkey/test/__pycache__
 
 %changelog
+* Wed May 20 2015 Michal Luscon <mluscon@redhat.com> 0.5.7-1
+- spec: add a %%{snapshot} macro for easier snapshot building (Radek Holy)
+- doc: sack: deep copy added to warning section (Jan Silhan)
+- doc: sack: warning about multiple Sack usage (Jan Silhan)
+- doc: sack: len(sack) -> method __len__ (Jan Silhan)
+- Package.files returns list of Unicode objects (Jan Silhan)
+
 * Thu May 07 2015 Michal Luscon <mluscon@redhat.com> 0.5.6-1
 - Revert "sack: force recomputing excludes" (RhUbg:1218650) (Jan Silhan)
 
