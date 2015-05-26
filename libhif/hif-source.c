@@ -54,6 +54,7 @@ typedef struct _HifSourcePrivate	HifSourcePrivate;
 struct _HifSourcePrivate
 {
 	HifSourceEnabled enabled;
+	gboolean	 required;
 	gboolean	 gpgcheck_md;
 	gboolean	 gpgcheck_pkgs;
 	gchar		*gpgkey;
@@ -133,6 +134,9 @@ hif_source_init (HifSource *source)
 	priv->repo_result = lr_result_init ();
 	priv->filenames_md = g_hash_table_new_full (g_str_hash, g_str_equal,
 						    g_free, g_free);
+	priv->required = FALSE;  /* This is the original default which we're
+				  * keeping for compatibility.
+				  */
 }
 
 /**
@@ -281,6 +285,21 @@ hif_source_get_enabled (HifSource *source)
 {
 	HifSourcePrivate *priv = GET_PRIVATE (source);
 	return priv->enabled;
+}
+
+/**
+ * hif_source_get_required:
+ * @source: a #HifSource instance.
+ *
+ * Returns: %TRUE if failure fetching this source is fatal
+ *
+ * Since: 0.2.1
+ **/
+gboolean
+hif_source_get_required (HifSource *source)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	return priv->required;
 }
 
 /**
@@ -576,6 +595,24 @@ hif_source_set_enabled (HifSource *source, HifSourceEnabled enabled)
 	/* packages implies metadata */
 	if (priv->enabled & HIF_SOURCE_ENABLED_PACKAGES)
 		priv->enabled |= HIF_SOURCE_ENABLED_METADATA;
+}
+
+/**
+ * hif_source_set_required:
+ * @source: a #HifSource instance.
+ * @required: if the source is required
+ *
+ * Sets whether failure to retrieve the source is fatal; by default it
+ * is not.
+ *
+ * Since: 0.2.1
+ **/
+void
+hif_source_set_required (HifSource *source, gboolean required)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+
+	priv->required = required;
 }
 
 /**

@@ -110,7 +110,8 @@ hif_sack_add_source (HySack sack,
 					 state_local,
 					 &error_local);
 		if (!ret) {
-			if (g_error_matches (error_local,
+			if (!hif_source_get_required (src) &&
+			    g_error_matches (error_local,
 					     HIF_ERROR,
 					     HIF_ERROR_CANNOT_FETCH_SOURCE)) {
 				g_warning ("Skipping refresh of %s: %s",

@@ -123,6 +123,7 @@ const gchar	*hif_source_get_location	(HifSource		*source);
 const gchar	*hif_source_get_filename	(HifSource		*source);
 const gchar	*hif_source_get_packages	(HifSource		*source);
 HifSourceEnabled hif_source_get_enabled		(HifSource		*source);
+gboolean         hif_source_get_required	(HifSource		*source);
 guint		 hif_source_get_cost		(HifSource		*source);
 HifSourceKind	 hif_source_get_kind		(HifSource		*source);
 gchar          **hif_source_get_exclude_packages(HifSource		*source);
@@ -153,6 +154,8 @@ void		 hif_source_set_packages_tmp	(HifSource		*source,
 						 const gchar		*packages_tmp);
 void		 hif_source_set_enabled		(HifSource		*source,
 						 HifSourceEnabled	 enabled);
+void		 hif_source_set_required	(HifSource		*source,
+						 gboolean       	 required);
 void		 hif_source_set_cost		(HifSource		*source,
 						 guint			 cost);
 void		 hif_source_set_kind		(HifSource		*source,
