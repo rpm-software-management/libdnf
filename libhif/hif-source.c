@@ -118,6 +118,9 @@ hif_source_finalize (GObject *object)
 		hy_repo_free (priv->repo);
 	if (priv->keyfile != NULL)
 		g_key_file_unref (priv->keyfile);
+	if (priv->context != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (priv->context),
+		                              (void **) &priv->context);
 
 	G_OBJECT_CLASS (hif_source_parent_class)->finalize (object);
 }
