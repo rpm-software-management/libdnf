@@ -99,6 +99,13 @@ AC_TRY_COMPILE([#include <stdlib.h>
 AC_DEFINE_UNQUOTED(BUILDOPT_HAWKEY_SACK_CREATE2, $BUILDOPT_HAWKEY_SACK_CREATE2, [Hawkey ABI change])
 AC_PATH_PROG([XSLTPROC], [xsltproc])
 
+# whether to use /var/lib/dnf/yumdb or /var/lib/yum/yumdb
+AC_ARG_ENABLE(dnf-yumdb, AS_HELP_STRING([--enable-dnf-yumdb],[use dnf/yumdb instead of yum/yumdb @<:@default=yes@:>@]),
+              enable_dnf_yumdb=$enableval,enable_dnf_yumdb=yes)
+if test x$enable_dnf_yumdb = xyes; then
+  AC_DEFINE_UNQUOTED(BUILDOPT_USE_DNF_YUMDB,1,[Use dnf/yumdb instead of yum/yumdb])
+fi
+
 AC_CONFIG_FILES([
 Makefile
 libhif/Makefile
