@@ -102,6 +102,11 @@ hif_db_get_dir_for_package (HifDb *db, HyPackage package)
 	const gchar *pkgid;
 	HifDbPrivate *priv = GET_PRIVATE (db);
 	const gchar *instroot;
+#ifdef BUILDOPT_USE_DNF_YUMDB
+	static const gchar *yumdb_dir = "/var/lib/dnf/yumdb";
+#else
+	static const gchar *yumdb_dir = "/var/lib/yum/yumdb";
+#endif
 
 	pkgid = hif_package_get_pkgid (package);
 	if (pkgid == NULL)
@@ -111,8 +116,9 @@ hif_db_get_dir_for_package (HifDb *db, HyPackage package)
 	if (g_strcmp0 (instroot, "/") == 0)
 		instroot = "";
 
-	return g_strdup_printf ("%s/var/lib/yum/yumdb/%c/%s-%s-%s-%s-%s",
+	return g_strdup_printf ("%s%s/%c/%s-%s-%s-%s-%s",
 				instroot,
+				yumdb_dir,
 				hy_package_get_name (package)[0],
 				pkgid,
 				hy_package_get_name (package),
