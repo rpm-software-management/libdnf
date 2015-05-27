@@ -58,6 +58,22 @@ G_DEFINE_TYPE (HifDb, hif_db, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), HIF_TYPE_DB, HifDbPrivate))
 
 /**
+ * hif_db_finalize:
+ **/
+static void
+hif_db_finalize (GObject *object)
+{
+	HifDb *db = HIF_DB (object);
+	HifDbPrivate *priv = GET_PRIVATE (db);
+
+	if (priv->context != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (priv->context),
+		                              (void **) &priv->context);
+
+	G_OBJECT_CLASS (hif_db_parent_class)->finalize (object);
+}
+
+/**
  * hif_db_init:
  **/
 static void
@@ -71,6 +87,8 @@ hif_db_init (HifDb *db)
 static void
 hif_db_class_init (HifDbClass *klass)
 {
+	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	object_class->finalize = hif_db_finalize;
 	g_type_class_add_private (klass, sizeof (HifDbPrivate));
 }
 
