@@ -101,6 +101,9 @@ hif_transaction_finalize (GObject *object)
 		g_ptr_array_unref (priv->remove);
 	if (priv->remove_helper != NULL)
 		g_ptr_array_unref (priv->remove_helper);
+	if (priv->context != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (priv->context),
+		                              (void **) &priv->context);
 
 	G_OBJECT_CLASS (hif_transaction_parent_class)->finalize (object);
 }
