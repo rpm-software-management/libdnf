@@ -24,6 +24,8 @@
 #include "sack_internal.h"
 #include "subject.h"
 #include "subject_internal.h"
+#include "nevra.h"
+#include "nevra_internal.h"
 #include "types.h"
 
 // most specific to least

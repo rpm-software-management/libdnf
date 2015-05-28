@@ -25,8 +25,6 @@
 #include <solv/util.h>
 #include "types.h"
 #include "nevra.h"
-#include "nevra_internal.h"
-#include "iutil.h"
 
 #ifdef __cplusplus
 extern "C" {
