@@ -390,8 +390,10 @@ hif_repos_source_parse (HifRepos *repos,
 
 	/* load non-standard keyfile */
 	keyfile = hif_repos_load_multiline_key_file (filename, error);
-	if (keyfile == NULL)
+	if (keyfile == NULL) {
+		g_prefix_error (error, "Failed to load %s: ", filename);
 		return FALSE;
+	}
 
 	/* save all the repos listed in the file */
 	groups = g_key_file_get_groups (keyfile, NULL);
