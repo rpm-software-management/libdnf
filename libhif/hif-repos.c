@@ -36,6 +36,7 @@
 
 #include <gio/gunixmounts.h>
 #include <librepo/util.h>
+#include <string.h>
 
 #include "hif-cleanup.h"
 #include "hif-package.h"
@@ -286,11 +287,15 @@ hif_repos_load_multiline_key_file (const gchar *filename, GError **error)
 		 * the previous line */
 		if (lines[i][0] == ' ' && string->len > 0) {
 
+			/* whitespace strip this new line */
+			g_strstrip (lines[i]);
+
+			/* skip over the line if it was only whitespace */
+			if (strlen (lines[i]) == 0)
+				continue;
+
 			/* remove old newline from previous line */
 			g_string_set_size (string, string->len - 1);
-
-			/* whitespace strip this new line */
-			g_strchug (lines[i]);
 
 			/* only add a ';' if we have anything after the '=' */
 			if (string->str[string->len - 1] == '=') {
