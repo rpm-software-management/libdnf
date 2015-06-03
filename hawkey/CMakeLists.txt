@@ -5,7 +5,7 @@ CMAKE_POLICY (SET CMP0005 OLD)
 INCLUDE (${CMAKE_SOURCE_DIR}/VERSION.cmake)
 SET (VERSION "${HAWKEY_MAJOR}.${HAWKEY_MINOR}.${HAWKEY_PATCH}")
 
-set (CMAKE_C_FLAGS		"${CMAKE_C_FLAGS} -std=c99 -Wall -Wl,--as-needed")
+set (CMAKE_C_FLAGS		"${CMAKE_C_FLAGS} -std=c99 -Werror=implicit-function-declaration -Wall -Wl,--as-needed")
 set (CMAKE_C_FLAGS_DEBUG	"${CMAKE_C_FLAGS} -ggdb -O0")
 IF(NOT CMAKE_BUILD_TYPE)
   set (CMAKE_BUILD_TYPE DEBUG)
