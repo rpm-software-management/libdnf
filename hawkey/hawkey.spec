@@ -104,7 +104,11 @@ ERROR
 fi
 make ARGS="-V" test
 %if %{with python3}
-./py3/tests/python/tests/run_nosetests
+# Run just the Python tests, not all of them, since
+# we have coverage of the core from the first build
+pushd py3/tests/python
+make ARGS="-V" test
+popd
 %endif
 
 %install
