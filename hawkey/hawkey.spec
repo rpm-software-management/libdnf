@@ -75,7 +75,7 @@ popd
 
 %check
 make ARGS="-V" test
-./py3/tests/python/tests/run_nosetests.sh
+./py3/tests/python/tests/run_nosetests
 
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
