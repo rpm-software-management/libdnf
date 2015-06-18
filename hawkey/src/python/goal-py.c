@@ -485,7 +485,7 @@ list_generic(_GoalObject *self, HyPackageList (*func)(HyGoal))
 	    PyErr_SetString(HyExc_Value, "Goal has not been run yet.");
 	    break;
 	case HY_E_NO_SOLUTION:
-	    PyErr_SetString(HyExc_Runtime, "Goal has not find a solution.");
+	    PyErr_SetString(HyExc_Runtime, "Goal could not find a solution.");
 	    break;
 	default:
 	    assert(0);
