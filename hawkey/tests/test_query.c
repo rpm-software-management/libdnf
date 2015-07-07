@@ -350,6 +350,62 @@ START_TEST(test_query_provides)
 }
 END_TEST
 
+START_TEST(test_query_recommends)
+{
+    HyPackageList plist;
+    HyPackage pkg;
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_RECOMMENDS, HY_EQ, "baby");
+    plist = hy_query_run(q);
+    pkg = hy_packagelist_get(plist, 0);
+    ck_assert_str_eq(hy_package_get_name(pkg), "flying");
+    hy_query_free(q);
+    hy_packagelist_free(plist);
+}
+END_TEST
+
+START_TEST(test_query_suggests)
+{
+    HyPackageList plist;
+    HyPackage pkg;
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_SUGGESTS, HY_EQ, "walrus");
+    plist = hy_query_run(q);
+    pkg = hy_packagelist_get(plist, 0);
+    ck_assert_str_eq(hy_package_get_name(pkg), "flying");
+    hy_query_free(q);
+    hy_packagelist_free(plist);
+}
+END_TEST
+
+START_TEST(test_query_supplements)
+{
+    HyPackageList plist;
+    HyPackage pkg;
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_SUPPLEMENTS, HY_EQ, "flying");
+    plist = hy_query_run(q);
+    pkg = hy_packagelist_get(plist, 0);
+    ck_assert_str_eq(hy_package_get_name(pkg), "baby");
+    hy_query_free(q);
+    hy_packagelist_free(plist);
+}
+END_TEST
+
+START_TEST(test_query_enhances)
+{
+    HyPackageList plist;
+    HyPackage pkg;
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_ENHANCES, HY_EQ, "flying");
+    plist = hy_query_run(q);
+    pkg = hy_packagelist_get(plist, 0);
+    ck_assert_str_eq(hy_package_get_name(pkg), "walrus");
+    hy_query_free(q);
+    hy_packagelist_free(plist);
+}
+END_TEST
+
 START_TEST(test_query_provides_in)
 {
     HyPackage pkg;
@@ -912,6 +968,10 @@ query_suite(void)
     tcase_add_test(tc, test_downgrade);
     tcase_add_test(tc, test_downgradable);
     tcase_add_test(tc, test_query_provides_str);
+    tcase_add_test(tc, test_query_recommends);
+    tcase_add_test(tc, test_query_suggests);
+    tcase_add_test(tc, test_query_supplements);
+    tcase_add_test(tc, test_query_enhances);
     tcase_add_test(tc, test_query_reldep);
     tcase_add_test(tc, test_query_reldep_arbitrary);
     tcase_add_test(tc, test_query_requires);

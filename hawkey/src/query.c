@@ -65,9 +65,13 @@ static int
 match_type_reldep(int keyname) {
     switch (keyname) {
     case HY_PKG_CONFLICTS:
+    case HY_PKG_ENHANCES:
     case HY_PKG_OBSOLETES:
     case HY_PKG_PROVIDES:
+    case HY_PKG_RECOMMENDS:
     case HY_PKG_REQUIRES:
+    case HY_PKG_SUGGESTS:
+    case HY_PKG_SUPPLEMENTS:
 	return 1;
     default:
 	return 0;
@@ -79,17 +83,21 @@ match_type_str(int keyname) {
     switch (keyname) {
     case HY_PKG_ARCH:
     case HY_PKG_DESCRIPTION:
+    case HY_PKG_ENHANCES:
     case HY_PKG_EVR:
     case HY_PKG_FILE:
     case HY_PKG_LOCATION:
     case HY_PKG_NAME:
     case HY_PKG_NEVRA:
     case HY_PKG_PROVIDES:
+    case HY_PKG_RECOMMENDS:
     case HY_PKG_RELEASE:
     case HY_PKG_REPONAME:
     case HY_PKG_REQUIRES:
     case HY_PKG_SOURCERPM:
+    case HY_PKG_SUGGESTS:
     case HY_PKG_SUMMARY:
+    case HY_PKG_SUPPLEMENTS:
     case HY_PKG_URL:
     case HY_PKG_VERSION:
 	return 1;
@@ -129,10 +137,18 @@ reldep_keyname2id(int keyname)
     switch(keyname) {
     case HY_PKG_CONFLICTS:
 	return SOLVABLE_CONFLICTS;
+    case HY_PKG_ENHANCES:
+        return SOLVABLE_ENHANCES;
     case HY_PKG_OBSOLETES:
 	return SOLVABLE_OBSOLETES;
     case HY_PKG_REQUIRES:
 	return SOLVABLE_REQUIRES;
+    case HY_PKG_RECOMMENDS:
+        return SOLVABLE_RECOMMENDS;
+    case HY_PKG_SUGGESTS:
+        return SOLVABLE_SUGGESTS;
+    case HY_PKG_SUPPLEMENTS:
+        return SOLVABLE_SUPPLEMENTS;
     default:
 	assert(0);
 	return 0;
@@ -820,7 +836,11 @@ hy_query_apply(HyQuery q)
 	    assert(f->match_type == _HY_RELDEP);
 	    filter_provides_reldep(q, f, &m);
 	    break;
-	case HY_PKG_REQUIRES:
+        case HY_PKG_ENHANCES:
+        case HY_PKG_RECOMMENDS:
+        case HY_PKG_REQUIRES:
+        case HY_PKG_SUGGESTS:
+        case HY_PKG_SUPPLEMENTS:
 	    assert(f->match_type == _HY_RELDEP);
 	    filter_rco_reldep(q, f, &m);
 	    break;
@@ -950,9 +970,13 @@ hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
 
     switch (keyname) {
     case HY_PKG_CONFLICTS:
+    case HY_PKG_ENHANCES:
     case HY_PKG_OBSOLETES:
     case HY_PKG_PROVIDES:
-    case HY_PKG_REQUIRES: {
+    case HY_PKG_RECOMMENDS:
+    case HY_PKG_REQUIRES:
+    case HY_PKG_SUGGESTS:
+    case HY_PKG_SUPPLEMENTS: {
 	HySack sack = query_sack(q);
 	HyReldep reldep = reldep_from_str(sack, match);
 

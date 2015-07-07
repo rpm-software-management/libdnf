@@ -1,8 +1,11 @@
 =Ver: 2.0
 #
 =Pkg: baby 6:4.9 3 x86_64
+=Sup: flying
 =Pkg: flying 3 0 noarch
 =Req: P-lib
+=Rec: baby
+=Sug: walrus
 =Pkg: fool 1 3 noarch
 =Prv: fool <= 1-3
 =Pkg: hello 1 1 noarch
@@ -25,3 +28,4 @@
 =Prv: walrus <= 2-5
 =Req: semolina = 2
 =Req: fool
+=Enh: flying
