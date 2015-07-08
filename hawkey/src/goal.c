@@ -593,6 +593,15 @@ sltr2job(const HySelector sltr, Queue *job, int solver_action)
 // public functions
 
 HyGoal
+hy_goal_clone(HyGoal goal)
+{
+    HyGoal gn = hy_goal_create(goal->sack);
+    queue_init_clone(&gn->staging, &goal->staging);
+    gn->actions = goal->actions;
+    return gn;
+}
+
+HyGoal
 hy_goal_create(HySack sack)
 {
     HyGoal goal = solv_calloc(1, sizeof(*goal));

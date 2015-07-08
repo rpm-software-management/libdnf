@@ -54,6 +54,7 @@ enum _hy_goal_actions {
 #define HY_REASON_USER 2
 
 HyGoal hy_goal_create(HySack sack);
+HyGoal hy_goal_clone(HyGoal goal);
 void hy_goal_free(HyGoal goal);
 
 int hy_goal_distupgrade_all(HyGoal goal);
