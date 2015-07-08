@@ -20,6 +20,7 @@
 
 from __future__ import absolute_import
 from . import base
+from copy import deepcopy
 
 import hawkey
 
@@ -37,6 +38,16 @@ class GoalTest(base.TestCase):
         self.assertEqual(set([hawkey.UPGRADE]), goal.actions)
         goal.install(name="semolina")
         self.assertEqual(set([hawkey.UPGRADE, hawkey.INSTALL]), goal.actions)
+
+    def test_clone(self):
+        pkg = base.by_name(self.sack, "penny-lib")
+        goal = hawkey.Goal(self.sack)
+        goal.erase(pkg)
+        self.assertFalse(goal.run())
+
+        goal2 = deepcopy(goal)
+        self.assertTrue(goal2.run(allow_uninstall=True))
+        self.assertEqual(len(goal2.list_erasures()), 2)
 
     def test_list_err(self):
         goal = hawkey.Goal(self.sack)

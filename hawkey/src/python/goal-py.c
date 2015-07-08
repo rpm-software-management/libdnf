@@ -559,7 +559,28 @@ get_reason(_GoalObject *self, PyObject *pkg)
     return PyLong_FromLong(reason);
 }
 
+PyObject *
+goalToPyObject(HyGoal goal, PyObject *sack)
+{
+    _GoalObject *self = (_GoalObject *)goal_Type.tp_alloc(&goal_Type, 0);
+    if (self) {
+        self->goal = goal;
+        self->sack = sack;
+        Py_INCREF(sack);
+    }
+    return (PyObject *)self;
+}
+
+static PyObject *
+deepcopy(_GoalObject *self, PyObject *args, PyObject *kwds)
+{
+    HyGoal goal = hy_goal_clone(self->goal);
+    return goalToPyObject(goal, self->sack);
+}
+
 static struct PyMethodDef goal_methods[] = {
+    {"__deepcopy__", (PyCFunction)deepcopy, METH_KEYWORDS|METH_VARARGS,
+     NULL},
     {"distupgrade_all",	(PyCFunction)distupgrade_all,	METH_NOARGS,	NULL},
     {"distupgrade",		(PyCFunction)distupgrade,
      METH_VARARGS | METH_KEYWORDS, NULL},
