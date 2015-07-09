@@ -40,6 +40,16 @@ enum _hy_goal_run_flags {
     HY_VERIFY = 1 << 2
 };
 
+enum _hy_goal_actions {
+    HY_ERASE		= 1 << 0,
+    HY_DISTUPGRADE	= 1 << 1,
+    HY_DISTUPGRADE_ALL	= 1 << 2,
+    HY_DOWNGRADE	= 1 << 3,
+    HY_INSTALL		= 1 << 4,
+    HY_UPGRADE		= 1 << 5,
+    HY_UPGRADE_ALL	= 1 << 6,
+};
+
 #define HY_REASON_DEP 1
 #define HY_REASON_USER 2
 
@@ -72,6 +82,7 @@ int hy_goal_upgrade_to_selector(HyGoal goal, HySelector sltr);
 int hy_goal_userinstalled(HyGoal goal, HyPackage pkg);
 
 /* introspecting the requests */
+int hy_goal_has_actions(HyGoal goal, int action);
 int hy_goal_req_has_distupgrade_all(HyGoal goal);
 int hy_goal_req_has_erase(HyGoal goal);
 int hy_goal_req_has_upgrade_all(HyGoal goal);

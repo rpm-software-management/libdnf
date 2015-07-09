@@ -51,6 +51,7 @@ struct _HyGoal {
     Queue staging;
     Solver *solv;
     Transaction *trans;
+    int actions;
 };
 
 struct _SolutionCallback {
@@ -614,6 +615,7 @@ hy_goal_free(HyGoal goal)
 int
 hy_goal_distupgrade_all(HyGoal goal)
 {
+    goal->actions |= HY_DISTUPGRADE_ALL;
     queue_push2(&goal->staging, SOLVER_DISTUPGRADE|SOLVER_SOLVABLE_ALL, 0);
     return 0;
 }
@@ -621,6 +623,7 @@ hy_goal_distupgrade_all(HyGoal goal)
 int
 hy_goal_distupgrade(HyGoal goal, HyPackage new_pkg)
 {
+    goal->actions |= HY_DISTUPGRADE;
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_DISTUPGRADE,
 	package_id(new_pkg));
     return 0;
@@ -629,18 +632,21 @@ hy_goal_distupgrade(HyGoal goal, HyPackage new_pkg)
 int
 hy_goal_distupgrade_selector(HyGoal goal, HySelector sltr)
 {
+    goal->actions |= HY_DISTUPGRADE;
     return sltr2job(sltr, &goal->staging, SOLVER_DISTUPGRADE);
 }
 
 int
 hy_goal_downgrade_to(HyGoal goal, HyPackage new_pkg)
 {
+    goal->actions |= HY_DOWNGRADE;
     return hy_goal_install(goal, new_pkg);
 }
 
 int
 hy_goal_erase(HyGoal goal, HyPackage pkg)
 {
+    goal->actions |= HY_ERASE;
     return hy_goal_erase_flags(goal, pkg, 0);
 }
 
@@ -653,6 +659,7 @@ hy_goal_erase_flags(HyGoal goal, HyPackage pkg, int flags)
 	   pool_id2solvable(pool, package_id(pkg))->repo == pool->installed);
 #endif
     int additional = erase_flags2libsolv(flags);
+    goal->actions |= HY_ERASE;
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_ERASE|additional,
 		package_id(pkg));
     return 0;
@@ -661,6 +668,7 @@ hy_goal_erase_flags(HyGoal goal, HyPackage pkg, int flags)
 int
 hy_goal_erase_selector(HyGoal goal, HySelector sltr)
 {
+    goal->actions |= HY_ERASE;
     return hy_goal_erase_selector_flags(goal, sltr, 0);
 }
 
@@ -668,12 +676,20 @@ int
 hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags)
 {
     int additional = erase_flags2libsolv(flags);
+    goal->actions |= HY_ERASE;
     return sltr2job(sltr, &goal->staging, SOLVER_ERASE|additional);
+}
+
+int
+hy_goal_has_actions(HyGoal goal, int action)
+{
+    return goal->actions & action;
 }
 
 int
 hy_goal_install(HyGoal goal, HyPackage new_pkg)
 {
+    goal->actions |= HY_INSTALL;
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_INSTALL, package_id(new_pkg));
     return 0;
 }
@@ -681,6 +697,7 @@ hy_goal_install(HyGoal goal, HyPackage new_pkg)
 int
 hy_goal_install_optional(HyGoal goal, HyPackage new_pkg)
 {
+    goal->actions |= HY_INSTALL;
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_INSTALL|SOLVER_WEAK,
 		package_id(new_pkg));
     return 0;
@@ -689,18 +706,21 @@ hy_goal_install_optional(HyGoal goal, HyPackage new_pkg)
 int
 hy_goal_install_selector(HyGoal goal, HySelector sltr)
 {
+    goal->actions |= HY_INSTALL;
     return sltr2job(sltr, &goal->staging, SOLVER_INSTALL);
 }
 
 int
 hy_goal_install_selector_optional(HyGoal goal, HySelector sltr)
 {
+    goal->actions |= HY_INSTALL;
     return sltr2job(sltr, &goal->staging, SOLVER_INSTALL|SOLVER_WEAK);
 }
 
 int
 hy_goal_upgrade_all(HyGoal goal)
 {
+    goal->actions |= HY_UPGRADE_ALL;
     queue_push2(&goal->staging, SOLVER_UPDATE|SOLVER_SOLVABLE_ALL, 0);
     return 0;
 }
@@ -708,12 +728,14 @@ hy_goal_upgrade_all(HyGoal goal)
 int
 hy_goal_upgrade_to(HyGoal goal, HyPackage new_pkg)
 {
+    goal->actions |= HY_UPGRADE;
     return hy_goal_upgrade_to_flags(goal, new_pkg, 0);
 }
 
 int
 hy_goal_upgrade_to_selector(HyGoal goal, HySelector sltr)
 {
+    goal->actions |= HY_UPGRADE;
     if (sltr->f_evr == NULL)
 	return sltr2job(sltr, &goal->staging, SOLVER_UPDATE);
     return sltr2job(sltr, &goal->staging, SOLVER_INSTALL);
@@ -722,6 +744,7 @@ hy_goal_upgrade_to_selector(HyGoal goal, HySelector sltr)
 int
 hy_goal_upgrade_selector(HyGoal goal, HySelector sltr)
 {
+    goal->actions |= HY_UPGRADE;
     return sltr2job(sltr, &goal->staging, SOLVER_UPDATE);
 }
 
@@ -746,6 +769,7 @@ hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags)
 	    return HY_E_VALIDATION;
 	}
     }
+    goal->actions |= HY_UPGRADE;
 
     return hy_goal_install(goal, new_pkg);
 }
