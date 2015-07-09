@@ -1688,7 +1688,7 @@ hif_source_download_package (HifSource *source,
 				  hif_source_checksum_hy_to_lr (checksum_type),
 				  checksum_str,
 				  0, /* size unknown */
-				  NULL, /* baseurl not required */
+				  hy_package_get_baseurl (pkg),
 				  TRUE,
 				  &error_local);
 	if (!ret) {
