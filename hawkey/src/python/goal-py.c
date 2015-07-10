@@ -596,9 +596,15 @@ static struct PyMethodDef goal_methods[] = {
     {"upgrade_all",	(PyCFunction)upgrade_all,	METH_NOARGS,	NULL},
     {"userinstalled",	(PyCFunction)userinstalled,	METH_O,		NULL},
     {"_has_actions",	(PyCFunction)has_actions,	METH_O, NULL},
+    // deprecated in 0.5.9, will be removed in 1.0.0
+    // use goal.actions | hawkey.DISTUPGRADE_ALL instead
     {"req_has_distupgrade_all",	(PyCFunction)req_has_distupgrade_all,
      METH_NOARGS,	NULL},
+    // deprecated in 0.5.9, will be removed in 1.0.0
+    // use goal.actions | hawkey.ERASE instead
     {"req_has_erase",	(PyCFunction)req_has_erase,	METH_NOARGS,	NULL},
+    // deprecated in 0.5.9, will be removed in 1.0.0
+    // use goal.actions | hawkey.UPGRADE_ALL instead
     {"req_has_upgrade_all", (PyCFunction)req_has_upgrade_all,
      METH_NOARGS,	NULL},
     {"req_length",	(PyCFunction)req_length,	METH_NOARGS,	NULL},

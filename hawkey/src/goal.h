@@ -84,9 +84,19 @@ int hy_goal_userinstalled(HyGoal goal, HyPackage pkg);
 
 /* introspecting the requests */
 int hy_goal_has_actions(HyGoal goal, int action);
+
+// deprecated in 0.5.9, will be removed in 1.0.0
+// use hy_goal_has_actions(goal, HY_DISTUPGRADE_ALL) instead
 int hy_goal_req_has_distupgrade_all(HyGoal goal);
+
+// deprecated in 0.5.9, will be removed in 1.0.0
+// use hy_goal_has_actions(goal, HY_DISTUPGRADE_ALL) instead
 int hy_goal_req_has_erase(HyGoal goal);
+
+// deprecated in 0.5.9, will be removed in 1.0.0
+// use hy_goal_has_actions(goal, HY_UPGRADE_ALL) instead
 int hy_goal_req_has_upgrade_all(HyGoal goal);
+
 int hy_goal_req_length(HyGoal goal);
 
 /* resolving the goal */

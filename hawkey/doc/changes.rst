@@ -629,3 +629,49 @@ Package: file attribute is represented by list of Unicode objects
 
 Sack: `list_arches` method returns list of Unicode objects
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+Changes in 0.5.9
+================
+
+Core
+----
+
+Deprecated ``hy_goal_req_has_distupgrade()``, ``hy_goal_req_has_erase()`` and ``hy_goal_req_has_upgrade()`` functions 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To make your code compile in 0.5.9 without changing functionality, change::
+
+    hy_goal_req_has_distupgrade_all(goal)
+    hy_goal_req_has_erase(goal)
+    hy_goal_req_has_upgrade_all(goal)
+
+to::
+
+    hy_goal_has_actions(goal, HY_DISTUPGRADE_ALL)
+    hy_goal_has_actions(goal, HY_ERASE)
+    hy_goal_has_actions(goal, HY_UPGRADE_ALL)
+
+respectively
+
+
+Python bindings
+---------------
+
+Deprecated Goal methods :meth:`Goal.req_has_distupgrade_all`, :meth:`Goal.req_has_erase` and :meth:`Goal.req_has_upgrade_all`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To make your code compatible with hawkey 0.5.9 without changing functionality,
+change::
+
+    goal.req_has_distupgrade_all()
+    goal.req_has_erase()
+    goal.req_has_upgrade_all()
+
+to::
+
+    goal.actions | hawkey.DISTUPGRADE_ALL
+    goal.actions | hawkey.ERASE
+    goal.actions | hawkey.UPGRADE_ALL
+
+respectively
