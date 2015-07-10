@@ -29,6 +29,15 @@ class GoalTest(base.TestCase):
         self.sack.load_system_repo()
         self.sack.load_test_repo("main", "main.repo")
 
+    def test_actions(self):
+        sltr = hawkey.Selector(self.sack).set(name="walrus")
+        goal = hawkey.Goal(self.sack)
+        self.assertEqual(set(), goal.actions)
+        goal.upgrade(select=sltr)
+        self.assertEqual(set([hawkey.UPGRADE]), goal.actions)
+        goal.install(name="semolina")
+        self.assertEqual(set([hawkey.UPGRADE, hawkey.INSTALL]), goal.actions)
+
     def test_list_err(self):
         goal = hawkey.Goal(self.sack)
         self.assertRaises(hawkey.ValueException, goal.list_installs)

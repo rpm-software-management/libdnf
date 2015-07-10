@@ -332,6 +332,12 @@ userinstalled(_GoalObject *self, PyObject *pkg)
 }
 
 static PyObject *
+has_actions(_GoalObject *self, PyObject *action)
+{
+    return PyBool_FromLong(hy_goal_has_actions(self->goal, PyLong_AsLong(action)));
+}
+
+static PyObject *
 req_has_distupgrade_all(_GoalObject *self, PyObject *unused)
 {
     return PyBool_FromLong(hy_goal_req_has_distupgrade_all(self->goal));
@@ -568,6 +574,7 @@ static struct PyMethodDef goal_methods[] = {
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"upgrade_all",	(PyCFunction)upgrade_all,	METH_NOARGS,	NULL},
     {"userinstalled",	(PyCFunction)userinstalled,	METH_O,		NULL},
+    {"_has_actions",	(PyCFunction)has_actions,	METH_O, NULL},
     {"req_has_distupgrade_all",	(PyCFunction)req_has_distupgrade_all,
      METH_NOARGS,	NULL},
     {"req_has_erase",	(PyCFunction)req_has_erase,	METH_NOARGS,	NULL},

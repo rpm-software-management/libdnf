@@ -267,6 +267,14 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "PKG_URL", HY_PKG_URL);
     PyModule_AddIntConstant(m, "PKG_VERSION", HY_PKG_VERSION);
 
+    PyModule_AddIntConstant(m, "ERASE", HY_ERASE);
+    PyModule_AddIntConstant(m, "DISTUPGRADE", HY_DISTUPGRADE);
+    PyModule_AddIntConstant(m, "DISTUPGRADE_ALL", HY_DISTUPGRADE_ALL);
+    PyModule_AddIntConstant(m, "DOWNGRADE", HY_DOWNGRADE);
+    PyModule_AddIntConstant(m, "INSTALL", HY_INSTALL);
+    PyModule_AddIntConstant(m, "UPGRADE", HY_UPGRADE);
+    PyModule_AddIntConstant(m, "UPGRADE_ALL", HY_UPGRADE_ALL);
+    
     PyModule_AddIntConstant(m, "CHKSUM_MD5", HY_CHKSUM_MD5);
     PyModule_AddIntConstant(m, "CHKSUM_SHA1", HY_CHKSUM_SHA1);
     PyModule_AddIntConstant(m, "CHKSUM_SHA256", HY_CHKSUM_SHA256);

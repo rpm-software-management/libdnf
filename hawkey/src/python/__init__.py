@@ -149,6 +149,14 @@ chksum_name = _hawkey.chksum_name
 chksum_type = _hawkey.chksum_type
 detect_arch = _hawkey.detect_arch
 
+ERASE = _hawkey.ERASE
+DISTUPGRADE = _hawkey.DISTUPGRADE
+DISTUPGRADE_ALL = _hawkey.DISTUPGRADE_ALL
+DOWNGRADE = _hawkey.DOWNGRADE
+INSTALL = _hawkey.INSTALL
+UPGRADE = _hawkey.UPGRADE
+UPGRADE_ALL = _hawkey.UPGRADE_ALL
+
 
 def split_nevra(s):
     t = _hawkey.split_nevra(s)
@@ -165,6 +173,19 @@ class NEVRA(_hawkey.NEVRA):
 class Goal(_hawkey.Goal):
     _reserved_kw = set(['package', 'select'])
     _flag_kw = set(['clean_deps', 'check_installed'])
+    _goal_actions = {
+        ERASE,
+        DISTUPGRADE,
+        DISTUPGRADE_ALL,
+        DOWNGRADE,
+        INSTALL,
+        UPGRADE,
+        UPGRADE_ALL
+    }
+
+    @property
+    def actions(self):
+        return {f for f in self._goal_actions if self._has_actions(f)}
 
     def _auto_selector(fn):
         def tweaked_fn(self, *args, **kwargs):
