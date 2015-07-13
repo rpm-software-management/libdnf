@@ -65,6 +65,22 @@ struct _HifContextClass
 	void (*_hif_reserved8)	(void);
 };
 
+/**
+ * HifContextInvalidateFlags:
+ * @HIF_CONTEXT_INVALIDATE_FLAG_NONE:		No caches are invalid
+ * @HIF_CONTEXT_INVALIDATE_FLAG_RPMDB:		The rpmdb cache is invalid
+ * @HIF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT:	Any enrollment may be invalid
+ *
+ * The update flags.
+ **/
+typedef enum {
+	HIF_CONTEXT_INVALIDATE_FLAG_NONE	= 0,
+	HIF_CONTEXT_INVALIDATE_FLAG_RPMDB	= 1,
+	HIF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT	= 2,
+	/*< private >*/
+	HIF_CONTEXT_INVALIDATE_FLAG_LAST
+} HifContextInvalidateFlags;
+
 GType		 hif_context_get_type			(void);
 HifContext	*hif_context_new			(void);
 
@@ -140,6 +156,8 @@ void             hif_context_set_http_proxy		(HifContext	*context,
 gboolean	 hif_context_setup			(HifContext	*context,
 							 GCancellable	*cancellable,
 							 GError		**error);
+gboolean	 hif_context_setup_enrollments		(HifContext	*context,
+							 GError		**error);
 gboolean	 hif_context_setup_sack			(HifContext	*context,
 							 HifState	*state,
 							 GError		**error);
@@ -148,6 +166,9 @@ gboolean	 hif_context_commit			(HifContext	*context,
 							 GError		**error);
 void		 hif_context_invalidate			(HifContext	*context,
 							 const gchar	*message);
+void		 hif_context_invalidate_full		(HifContext	*context,
+							 const gchar	*message,
+							 HifContextInvalidateFlags flags);
 gboolean	 hif_context_install			(HifContext	*context,
 							 const gchar	*name,
 							 GError		**error);

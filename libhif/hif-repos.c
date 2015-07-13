@@ -88,6 +88,8 @@ hif_repos_invalidate (HifRepos *repos)
 {
 	HifReposPrivate *priv = GET_PRIVATE (repos);
 	priv->loaded = FALSE;
+	hif_context_invalidate_full (priv->context, "repos.d invalidated",
+				     HIF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT);
 }
 
 /**
@@ -423,6 +425,10 @@ hif_repos_refresh (HifRepos *repos, GError **error)
 	/* no longer loaded */
 	hif_repos_invalidate (repos);
 	g_ptr_array_set_size (priv->sources, 0);
+
+	/* re-populate redhat.repo */
+	if (!hif_context_setup_enrollments (priv->context, error))
+		return FALSE;
 
 	/* open dir */
 	repo_path = hif_context_get_repo_dir (priv->context);

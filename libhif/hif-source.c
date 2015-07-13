@@ -1484,6 +1484,10 @@ hif_source_update (HifSource *source,
 	if (!ret)
 		goto out;
 
+	/* signal that the vendor platform data is not resyned */
+	hif_context_invalidate_full (priv->context, "updated repo cache",
+				     HIF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT);
+
 	/* done */
 	ret = hif_state_done (state, error);
 	if (!ret)

@@ -1428,7 +1428,9 @@ hif_transaction_commit (HifTransaction *transaction,
 	}
 
 	/* all sacks are invalid now */
-	hif_context_invalidate (priv->context, "transaction performed");
+	hif_context_invalidate_full (priv->context, "transaction performed",
+				     HIF_CONTEXT_INVALIDATE_FLAG_RPMDB |
+				     HIF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT);
 
 	/* this section done */
 	ret = hif_state_done (state, error);

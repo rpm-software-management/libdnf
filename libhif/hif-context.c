@@ -66,6 +66,7 @@ struct _HifContextPrivate
 	gboolean		 only_trusted;
 	gboolean		 enable_yumdb;
 	gboolean		 keep_cache;
+	gboolean		 enrollment_valid;
 	HifLock			*lock;
 	HifTransaction		*transaction;
 	GThread			*transaction_thread;
@@ -1199,6 +1200,43 @@ hif_context_set_http_proxy (HifContext	*context,
 #define MAX_NATIVE_ARCHES	12
 
 /**
+ * hif_context_setup_enrollments:
+ * @context: a #HifContext instance.
+ * @error: A #GError or %NULL
+ *
+ * Resyncs the enrollment with the vendor system. This may change the contents
+ * of files in repos.d according to subscription levels.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.2.1
+ **/
+gboolean
+hif_context_setup_enrollments (HifContext *context, GError **error)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	guint i;
+	const gchar *cmds[] = { "/usr/sbin/rhn-profile-sync",
+				"/usr/bin/subscription-manager refresh",
+				NULL };
+
+	/* no need to refresh */
+	if (priv->enrollment_valid)
+		return TRUE;
+
+	for (i = 0; cmds[i] != NULL; i++) {
+		_cleanup_strv_free_ gchar **argv = g_strsplit (cmds[i], " ", -1);
+		if (!g_file_test (argv[0], G_FILE_TEST_EXISTS))
+			continue;
+		g_debug ("Running: %s", cmds[i]);
+		if (!g_spawn_command_line_sync (cmds[i], NULL, NULL, NULL, error))
+			return FALSE;
+	}
+	priv->enrollment_valid = TRUE;
+	return TRUE;
+}
+
+/**
  * hif_context_setup:
  * @context: a #HifContext instance.
  * @cancellable: A #GCancellable or %NULL
@@ -1371,6 +1409,10 @@ hif_context_setup (HifContext *context,
 	if (!hif_context_copy_vendor_cache (context, error))
 		return FALSE;
 	if (!hif_context_copy_vendor_solv (context, error))
+		return FALSE;
+
+	/* initialize external frameworks where installed */
+	if (!hif_context_setup_enrollments (context, error))
 		return FALSE;
 
 	return TRUE;
@@ -1730,6 +1772,30 @@ hif_context_commit (HifContext *context, HifState *state, GError **error)
 }
 
 /**
+ * hif_context_invalidate_full:
+ * @context: a #HifContext instance.
+ * @message: the reason for invalidating
+ * @flags: a #HifContextInvalidateFlags, e.g. %HIF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT
+ *
+ * Informs the context that the certain parts of the context may no longer be
+ * in sync or valid.
+ *
+ * Since: 0.2.1
+ **/
+void
+hif_context_invalidate_full (HifContext *context,
+			     const gchar *message,
+			     HifContextInvalidateFlags flags)
+{
+	HifContextPrivate *priv = GET_PRIVATE (context);
+	g_debug ("Msg: %s", message);
+	if (flags & HIF_CONTEXT_INVALIDATE_FLAG_RPMDB)
+		g_signal_emit (context, signals [SIGNAL_INVALIDATE], 0, message);
+	if (flags & HIF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT)
+		priv->enrollment_valid = FALSE;
+}
+
+/**
  * hif_context_invalidate:
  * @context: a #HifContext instance.
  * @message: the reason for invalidating
@@ -1741,7 +1807,8 @@ hif_context_commit (HifContext *context, HifState *state, GError **error)
 void
 hif_context_invalidate (HifContext *context, const gchar *message)
 {
-	g_signal_emit (context, signals [SIGNAL_INVALIDATE], 0, message);
+	hif_context_invalidate_full (context, message,
+				     HIF_CONTEXT_INVALIDATE_FLAG_RPMDB);
 }
 
 /**
