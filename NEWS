@@ -1,3 +1,19 @@
+Version 0.2.1
+~~~~~~~~~~~~~
+Released: 2015-07-13
+
+New Features:
+ - Add a configure option to choose between dnf's yumdb and yum's yumdb (Kalev Lember)
+ - Add hif_source_set_required() (Colin Walters)
+
+Bugfixes:
+ - Fix rpmdb file monitor with / installs (Kalev Lember)
+ - Honor `basedir` xml element (Colin Walters)
+ - Ignore lines with just whitespace (Kalev Lember)
+ - Include repo filename in the failed to load error string (Kalev Lember)
+ - Remove obsoleted packages when committing the transaction (Kalev Lember)
+ - Tear down HifContext weak pointers when the objects are finalized (Kalev Lember)
+
 Version 0.2.0
 ~~~~~~~~~~~~~
 Released: 2015-04-08
