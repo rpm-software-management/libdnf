@@ -6,7 +6,7 @@
 %endif
 
 Name:		hawkey
-Version:	0.5.8
+Version:	0.5.9
 Release:	1%{?snapshot}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
@@ -131,6 +131,16 @@ popd
 %endif
 
 %changelog
+* Fri Jul 17 2015 Michal Luscon <mluscon@redhat.com> 0.5.9-1
+- don't require python3 in rhel (Jan Silhan)
+- depracate hy_goal_has* functions and Goal.req_has_* methods (Jan Silhan)
+- goal: py: implemented __deepcopy__ (Jan Silhan)
+- goal: implement clone (Jan Silhan)
+- goal: py: added actions attribute (Jan Silhan)
+- goal: added hy_goal_has_action function (Jan Silhan)
+- Add weak deps queries (Michal Luscon)
+- spec: fix the command that starts Python 3 tests (Radek Holy)
+
 * Thu Jun 04 2015 Jan Silhan <jsilhan@redhat.com> 0.5.8-1
 - added implicit-function-declaration compile flag (Jan Silhan)
 - subject: Fix compiler warning introduced by previous commit (Colin Walters)
