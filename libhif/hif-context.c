@@ -1215,23 +1215,39 @@ gboolean
 hif_context_setup_enrollments (HifContext *context, GError **error)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
-	guint i;
-	const gchar *cmds[] = { "/usr/sbin/rhn-profile-sync",
-				"/usr/bin/subscription-manager refresh",
-				NULL };
+	const char *refresh_plugin = HIF_REPO_ENTITLEMENT_REFRESH_PLUGIN;
 
 	/* no need to refresh */
 	if (priv->enrollment_valid)
 		return TRUE;
 
-	for (i = 0; cmds[i] != NULL; i++) {
-		_cleanup_strv_free_ gchar **argv = g_strsplit (cmds[i], " ", -1);
-		if (!g_file_test (argv[0], G_FILE_TEST_EXISTS))
-			continue;
-		g_debug ("Running: %s", cmds[i]);
-		if (!g_spawn_command_line_sync (cmds[i], NULL, NULL, NULL, error))
+	/* Let's assume that alternative installation roots don't
+	 * require entitlement.  We only want to do system things if
+	 * we're actually affecting the system.  A more accurate test
+	 * here would be checking that we're using /etc/yum.repos.d or
+	 * so, but that can come later.
+	 */
+	if (g_strcmp0 (priv->install_root, "/") != 0)
+		return TRUE;
+
+	if (*refresh_plugin) {
+		int child_argc;
+		_cleanup_strv_free_ gchar **child_argv = NULL;
+		int estatus;
+
+		if (!g_shell_parse_argv (refresh_plugin, &child_argc, &child_argv, error))
 			return FALSE;
+
+		if (child_argc > 0 && g_file_test (child_argv[0], G_FILE_TEST_EXISTS)) {
+			g_debug ("Running: %s", refresh_plugin);
+			if (!g_spawn_sync (NULL, child_argv, NULL, 0,
+					   NULL, NULL, NULL, NULL, &estatus, error))
+				return FALSE;
+			if (!g_spawn_check_exit_status (estatus, error))
+				return FALSE;
+		}
 	}
+
 	priv->enrollment_valid = TRUE;
 	return TRUE;
 }
