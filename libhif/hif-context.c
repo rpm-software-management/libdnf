@@ -1225,11 +1225,21 @@ hif_context_setup_enrollments (HifContext *context, GError **error)
 		return TRUE;
 
 	for (i = 0; cmds[i] != NULL; i++) {
-		_cleanup_strv_free_ gchar **argv = g_strsplit (cmds[i], " ", -1);
-		if (!g_file_test (argv[0], G_FILE_TEST_EXISTS))
+		int child_argc;
+		_cleanup_strv_free_ gchar **child_argv = NULL;
+		int estatus;
+
+		if (!g_shell_parse_argv (cmds[i], &child_argc, &child_argv, error))
+			return FALSE;
+		if (child_argc == 0)
+			continue;
+		if (!g_file_test (child_argv[0], G_FILE_TEST_EXISTS))
 			continue;
 		g_debug ("Running: %s", cmds[i]);
-		if (!g_spawn_command_line_sync (cmds[i], NULL, NULL, NULL, error))
+		if (!g_spawn_sync (NULL, child_argv, NULL, 0,
+				   NULL, NULL, NULL, NULL, &estatus, error))
+			return FALSE;
+		if (!g_spawn_check_exit_status (estatus, error))
 			return FALSE;
 	}
 	priv->enrollment_valid = TRUE;
