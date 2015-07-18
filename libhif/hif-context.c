@@ -1215,33 +1215,30 @@ gboolean
 hif_context_setup_enrollments (HifContext *context, GError **error)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
-	guint i;
-	const gchar *cmds[] = { "/usr/sbin/rhn-profile-sync",
-				"/usr/bin/subscription-manager refresh",
-				NULL };
+	const char *refresh_plugin = HIF_REPO_ENTITLEMENT_REFRESH_PLUGIN;
 
 	/* no need to refresh */
 	if (priv->enrollment_valid)
 		return TRUE;
 
-	for (i = 0; cmds[i] != NULL; i++) {
+	if (*refresh_plugin) {
 		int child_argc;
 		_cleanup_strv_free_ gchar **child_argv = NULL;
 		int estatus;
 
-		if (!g_shell_parse_argv (cmds[i], &child_argc, &child_argv, error))
+		if (!g_shell_parse_argv (refresh_plugin, &child_argc, &child_argv, error))
 			return FALSE;
-		if (child_argc == 0)
-			continue;
-		if (!g_file_test (child_argv[0], G_FILE_TEST_EXISTS))
-			continue;
-		g_debug ("Running: %s", cmds[i]);
-		if (!g_spawn_sync (NULL, child_argv, NULL, 0,
-				   NULL, NULL, NULL, NULL, &estatus, error))
-			return FALSE;
-		if (!g_spawn_check_exit_status (estatus, error))
-			return FALSE;
+
+		if (child_argc > 0 && g_file_test (child_argv[0], G_FILE_TEST_EXISTS)) {
+			g_debug ("Running: %s", refresh_plugin);
+			if (!g_spawn_sync (NULL, child_argv, NULL, 0,
+					   NULL, NULL, NULL, NULL, &estatus, error))
+				return FALSE;
+			if (!g_spawn_check_exit_status (estatus, error))
+				return FALSE;
+		}
 	}
+
 	priv->enrollment_valid = TRUE;
 	return TRUE;
 }

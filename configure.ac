@@ -106,6 +106,11 @@ if test x$enable_dnf_yumdb = xyes; then
   AC_DEFINE_UNQUOTED(BUILDOPT_USE_DNF_YUMDB,1,[Use dnf/yumdb instead of yum/yumdb])
 fi
 
+AC_ARG_WITH(repo-entitlement-refresh-plugin, AS_HELP_STRING([--with-repo-entitlement-refresh-plugin],[External command to update repos @<:@default=none@:>@]),
+            [],[])
+AC_DEFINE_UNQUOTED(HIF_REPO_ENTITLEMENT_REFRESH_PLUGIN, ["$with_repo_entitlement_refresh_plugin"],
+                   [Define repo entitlement refresh plugin])
+
 AC_CONFIG_FILES([
 Makefile
 libhif/Makefile
