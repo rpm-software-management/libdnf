@@ -1221,6 +1221,15 @@ hif_context_setup_enrollments (HifContext *context, GError **error)
 	if (priv->enrollment_valid)
 		return TRUE;
 
+	/* Let's assume that alternative installation roots don't
+	 * require entitlement.  We only want to do system things if
+	 * we're actually affecting the system.  A more accurate test
+	 * here would be checking that we're using /etc/yum.repos.d or
+	 * so, but that can come later.
+	 */
+	if (g_strcmp0 (priv->install_root, "/") != 0)
+		return TRUE;
+
 	if (*refresh_plugin) {
 		int child_argc;
 		_cleanup_strv_free_ gchar **child_argv = NULL;
