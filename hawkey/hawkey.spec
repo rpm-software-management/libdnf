@@ -3,6 +3,8 @@
 %if 0%{?rhel} != 0 && 0%{?rhel} <= 7
 # Do not build bindings for python3 for RHEL <= 7
 %bcond_with python3
+%else
+%bcond_without python3
 %endif
 
 Name:		hawkey
