@@ -1661,6 +1661,8 @@ hif_source_download_package (HifSource *source,
 	gboolean ret;
 	gchar *loc = NULL;
 	int checksum_type;
+	LrPackageTarget *target = NULL;
+	GSList *packages = NULL;
 	_cleanup_error_free_ GError *error_local = NULL;
 	_cleanup_free_ gchar *basename = NULL;
 	_cleanup_free_ gchar *directory_slash = NULL;
@@ -1697,15 +1699,6 @@ hif_source_download_package (HifSource *source,
 		goto done;
 	}
 
-	ret = lr_handle_setopt (priv->repo_handle, error,
-				LRO_PROGRESSDATA, state);
-	if (!ret)
-		goto out;
-	//TODO: this doesn't actually report sane things
-	ret = lr_handle_setopt (priv->repo_handle, error,
-				LRO_PROGRESSCB, hif_source_update_state_cb);
-	if (!ret)
-		goto out;
 	g_debug ("downloading %s to %s",
 		 hy_package_get_location (pkg),
 		 directory_slash);
@@ -1715,15 +1708,24 @@ hif_source_download_package (HifSource *source,
 	hif_state_action_start (state,
 				HIF_STATE_ACTION_DOWNLOAD_PACKAGES,
 				hif_package_get_id (pkg));
-	ret = lr_download_package (priv->repo_handle,
-				  hy_package_get_location (pkg),
-				  directory_slash,
-				  hif_source_checksum_hy_to_lr (checksum_type),
-				  checksum_str,
-				  0, /* size unknown */
-				  hy_package_get_baseurl (pkg),
-				  TRUE,
-				  &error_local);
+
+	target = lr_packagetarget_new_v2 (priv->repo_handle,
+					  hy_package_get_location (pkg),
+					  directory_slash,
+					  hif_source_checksum_hy_to_lr (checksum_type),
+					  checksum_str,
+					  0, /* size unknown */
+					  hy_package_get_baseurl (pkg),
+					  TRUE,
+					  hif_source_update_state_cb,
+					  state,
+					  NULL, NULL,
+					  error);
+	if (target == NULL)
+		goto out;
+	
+	packages = g_slist_prepend (packages, target);
+	ret = lr_download_packages (packages, LR_PACKAGEDOWNLOAD_FAILFAST, &error_local);
 	if (!ret) {
 		if (g_error_matches (error_local,
 				     LR_PACKAGE_DOWNLOADER_ERROR,
@@ -1735,7 +1737,8 @@ hif_source_download_package (HifSource *source,
 			error_local = NULL;
 			goto out;
 		}
-	}
+	} 
+
 done:
 	/* build return value */
 	basename = g_path_get_basename (hy_package_get_location (pkg));
@@ -1743,6 +1746,11 @@ done:
 out:
 	lr_handle_setopt (priv->repo_handle, NULL, LRO_PROGRESSCB, NULL);
 	lr_handle_setopt (priv->repo_handle, NULL, LRO_PROGRESSDATA, 0xdeadbeef);
+	if (target != NULL)
+		lr_packagetarget_free (target);
+	g_free (dlstate.last_mirror_failure_message);
+	g_free (dlstate.last_mirror_url);
+	g_slist_free (packages);
 	hy_free (checksum_str);
 	return loc;
 }
