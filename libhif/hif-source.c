@@ -1634,6 +1634,37 @@ hif_source_copy_package (HyPackage pkg,
 			    hif_source_copy_progress_cb, state, error);
 }
 
+struct DownloadState {
+	HifState *state;
+	gchar *last_mirror_url;
+	gchar *last_mirror_failure_message;
+};
+
+static int
+package_download_update_state_cb (void *user_data,
+				  gdouble total_to_download,
+				  gdouble now_downloaded)
+{
+	struct DownloadState *dlstate = user_data;
+	return hif_source_update_state_cb (dlstate->state, total_to_download, now_downloaded);
+}
+
+static int
+mirrorlist_failure_cb (void *user_data,
+		       const char *message,
+		       const char *url)
+{
+	struct DownloadState *dlstate = user_data;
+
+	if (dlstate->last_mirror_url)
+		goto out;
+
+	dlstate->last_mirror_url = g_strdup (url);
+	dlstate->last_mirror_failure_message = g_strdup (message);
+ out:
+	return LR_CB_OK;
+}
+
 /**
  * hif_source_download_package:
  * @source: a #HifSource instance.
@@ -1663,6 +1694,7 @@ hif_source_download_package (HifSource *source,
 	int checksum_type;
 	LrPackageTarget *target = NULL;
 	GSList *packages = NULL;
+	struct DownloadState dlstate = { 0, };
 	_cleanup_error_free_ GError *error_local = NULL;
 	_cleanup_free_ gchar *basename = NULL;
 	_cleanup_free_ gchar *directory_slash = NULL;
@@ -1709,6 +1741,8 @@ hif_source_download_package (HifSource *source,
 				HIF_STATE_ACTION_DOWNLOAD_PACKAGES,
 				hif_package_get_id (pkg));
 
+	dlstate.state = state;
+
 	target = lr_packagetarget_new_v2 (priv->repo_handle,
 					  hy_package_get_location (pkg),
 					  directory_slash,
@@ -1717,9 +1751,10 @@ hif_source_download_package (HifSource *source,
 					  0, /* size unknown */
 					  hy_package_get_baseurl (pkg),
 					  TRUE,
-					  hif_source_update_state_cb,
-					  state,
-					  NULL, NULL,
+					  package_download_update_state_cb,
+					  &dlstate,
+					  NULL,
+					  mirrorlist_failure_cb,
 					  error);
 	if (target == NULL)
 		goto out;
@@ -1733,6 +1768,10 @@ hif_source_download_package (HifSource *source,
 			/* ignore */
 			g_clear_error (&error_local);
 		} else {
+			if (dlstate.last_mirror_failure_message) {
+				_cleanup_free_ gchar *orig_message = error_local->message;
+				error_local->message = g_strconcat (orig_message, "; Last error: ", dlstate.last_mirror_failure_message, NULL);
+			}
 			g_propagate_error (error, error_local);
 			error_local = NULL;
 			goto out;
