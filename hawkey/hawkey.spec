@@ -9,7 +9,7 @@
 
 Name:		hawkey
 Version:	0.5.9
-Release:	1%{?snapshot}%{?dist}
+Release:	2%{?snapshot}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
@@ -133,6 +133,9 @@ popd
 %endif
 
 %changelog
+* Tue Jul 21 2015 Jan Silhan <jsilhan@redhat.com> 0.5.9-2
+- spec: builds python3-hawkey in Fedora distro (Jan Silhan)
+
 * Fri Jul 17 2015 Michal Luscon <mluscon@redhat.com> 0.5.9-1
 - don't require python3 in rhel (Jan Silhan)
 - depracate hy_goal_has* functions and Goal.req_has_* methods (Jan Silhan)
