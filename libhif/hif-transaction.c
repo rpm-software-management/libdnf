@@ -1287,13 +1287,8 @@ hif_transaction_commit (HifTransaction *transaction,
 		/* pre-get the pkgid, as this isn't possible to get after
 		 * the sack is invalidated */
 		if (hif_package_get_pkgid (pkg) == NULL) {
-			ret = FALSE;
-			g_set_error (error,
-				     HIF_ERROR,
-				     HIF_ERROR_INTERNAL_ERROR,
-				     "failed to pre-get pkgid for %s",
-				     hif_package_get_id (pkg));
-			goto out;
+			g_warning ("failed to pre-get pkgid for %s",
+				   hif_package_get_id (pkg));
 		}
 
 		/* are the things being removed actually being upgraded */
