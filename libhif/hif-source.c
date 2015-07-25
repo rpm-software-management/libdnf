@@ -1044,8 +1044,8 @@ hif_source_check_internal (HifSource *source,
 		return FALSE;
 	}
 
-	/* check metadata age */
-	if (permissible_cache_age != G_MAXUINT) {
+	/* check metadata age for non-local repos */
+	if (priv->kind != HIF_SOURCE_KIND_LOCAL && permissible_cache_age != G_MAXUINT) {
 		if (!hif_source_set_timestamp_modified (source, error))
 			return FALSE;
 		age_of_data = (g_get_real_time () - priv->timestamp_modified) / G_USEC_PER_SEC;
