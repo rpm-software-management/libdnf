@@ -3,6 +3,7 @@
 =Pkg: A 1 0 noarch
 =Req: somereq
 =Pkg: B 1 0 noarch
+=Rec: C
 =Prv: somereq
 =Pkg: C 1 0 noarch
 =Prv: somereq

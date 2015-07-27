@@ -289,6 +289,25 @@ START_TEST(test_goal_install_selector_nomatch)
 }
 END_TEST
 
+START_TEST(test_goal_install_weak_deps)
+{
+    HySelector sltr = hy_selector_create(test_globals.sack);
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "B");
+    HyGoal goal = hy_goal_create(test_globals.sack);
+    fail_if(hy_goal_install_selector(goal, sltr));
+    HyGoal goal2 = hy_goal_clone(goal);
+    fail_if(hy_goal_run(goal));
+    // recommended package C is installed too
+    assert_iueo(goal, 2, 0, 0, 0);
+
+    fail_if(hy_goal_run_flags(goal2, HY_IGNORE_WEAK_DEPS));
+    assert_iueo(goal2, 1, 0, 0, 0);
+    hy_goal_free(goal);
+    hy_goal_free(goal2);
+    hy_selector_free(sltr);
+}
+END_TEST
+
 START_TEST(test_goal_selector_glob)
 {
     HySelector sltr = hy_selector_create(test_globals.sack);
@@ -1290,6 +1309,7 @@ goal_suite(void)
     tc = tcase_create("Greedy");
     tcase_add_unchecked_fixture(tc, fixture_greedy_only, teardown);
     tcase_add_test(tc, test_goal_run_all);
+    tcase_add_test(tc, test_goal_install_weak_deps);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Installonly");

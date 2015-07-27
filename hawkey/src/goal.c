@@ -248,6 +248,9 @@ solve(HyGoal goal, Queue *job, int flags, hy_solution_callback user_cb,
 	solv->solution_callback_data = &cb_tuple;
     }
 
+    if (HY_IGNORE_WEAK_DEPS & flags)
+        solver_set_flag(solv, SOLVER_FLAG_IGNORE_RECOMMENDED, 1);
+
     if (solver_solve(solv, job))
 	return 1;
     // either allow solutions callback or installonlies, both at the same time

@@ -37,7 +37,8 @@ enum _hy_goal_op_flags {
 enum _hy_goal_run_flags {
     HY_ALLOW_UNINSTALL = 1 << 0,
     HY_FORCE_BEST = 1 << 1,
-    HY_VERIFY = 1 << 2
+    HY_VERIFY = 1 << 2,
+    HY_IGNORE_WEAK_DEPS = 1 << 3
 };
 
 enum _hy_goal_actions {
