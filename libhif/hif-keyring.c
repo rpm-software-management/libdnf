@@ -198,7 +198,6 @@ hif_keyring_check_untrusted_file (rpmKeyring keyring,
 	FD_t fd = NULL;
 	gboolean ret = FALSE;
 	Header hdr = NULL;
-	Header header = NULL;
 	pgpDig dig = NULL;
 	rpmRC rc;
 	rpmtd td = NULL;
@@ -306,7 +305,5 @@ out:
 		headerFree (hdr);
 	if (fd != NULL)
 		Fclose (fd);
-	if (header != NULL)
-		headerFree (header);
 	return ret;
 }
