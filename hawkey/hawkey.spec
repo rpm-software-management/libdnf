@@ -9,7 +9,7 @@
 
 Name:		hawkey
 Version:	0.5.9
-Release:	2%{?snapshot}%{?dist}
+Release:	3%{?snapshot}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
@@ -133,6 +133,11 @@ popd
 %endif
 
 %changelog
+* Tue Jul 28 2015 Michal Luscon <mluscon@redhat.com> 0.5.9-3
+- Add explicit values to all public enumerations (Colin Walters)
+- types: Revert unintentional ABI break in _hy_key_name_e (RhBug:1247335)
+  (Colin Walters)
+
 * Tue Jul 21 2015 Jan Silhan <jsilhan@redhat.com> 0.5.9-2
 - spec: builds python3-hawkey in Fedora distro (Jan Silhan)
 
