@@ -259,11 +259,12 @@ hif_keyring_check_untrusted_file (rpmKeyring keyring,
 
 	/* the package has no signing key */
 	if (rc != 1) {
+		_cleanup_free_ char *package_filename = g_path_get_basename (filename);
 		ret = FALSE;
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     HIF_ERROR_GPG_SIGNATURE_INVALID,
-				     "package is not signed");
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_GPG_SIGNATURE_INVALID,
+			     "package not signed: %s", package_filename);
 		goto out;
 	}
 
