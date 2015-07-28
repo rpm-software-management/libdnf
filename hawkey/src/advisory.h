@@ -29,10 +29,10 @@ extern "C" {
 #include "types.h"
 
 typedef enum {
-	HY_ADVISORY_UNKNOWN,	/* ordered by rough importance */
-	HY_ADVISORY_SECURITY,
-	HY_ADVISORY_BUGFIX,
-	HY_ADVISORY_ENHANCEMENT
+	HY_ADVISORY_UNKNOWN = 0,	/* ordered by rough importance */
+	HY_ADVISORY_SECURITY = 1,
+	HY_ADVISORY_BUGFIX = 2,
+	HY_ADVISORY_ENHANCEMENT = 3
 } HyAdvisoryType;
 
 void hy_advisory_free(HyAdvisory advisory);

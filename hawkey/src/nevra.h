@@ -28,10 +28,10 @@ extern "C" {
 #endif
 
 enum _hy_nevra_param_e {
-    HY_NEVRA_NAME,
-    HY_NEVRA_VERSION,
-    HY_NEVRA_RELEASE,
-    HY_NEVRA_ARCH
+    HY_NEVRA_NAME = 0,
+    HY_NEVRA_VERSION = 1,
+    HY_NEVRA_RELEASE = 2,
+    HY_NEVRA_ARCH = 3
 };
 
 HyNevra hy_nevra_create();

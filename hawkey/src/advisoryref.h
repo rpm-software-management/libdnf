@@ -29,10 +29,10 @@ extern "C" {
 #include "types.h"
 
 typedef enum {
-	HY_REFERENCE_UNKNOWN,
-	HY_REFERENCE_BUGZILLA,
-	HY_REFERENCE_CVE,
-	HY_REFERENCE_VENDOR
+	HY_REFERENCE_UNKNOWN = 0,
+	HY_REFERENCE_BUGZILLA = 1,
+	HY_REFERENCE_CVE = 2,
+	HY_REFERENCE_VENDOR = 3
 } HyAdvisoryRefType;
 
 void hy_advisoryref_free(HyAdvisoryRef advisoryref);

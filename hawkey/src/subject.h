@@ -36,10 +36,10 @@ enum _HyForm :short {
 enum _HyForm {
 #endif
     HY_FORM_NEVRA = 1,
-    HY_FORM_NEVR,
-    HY_FORM_NEV,
-    HY_FORM_NA,
-    HY_FORM_NAME
+    HY_FORM_NEVR = 2,
+    HY_FORM_NEV = 3,
+    HY_FORM_NA = 4,
+    HY_FORM_NAME = 5
 };
 
 struct _HyPossibilities {

@@ -29,12 +29,12 @@ extern "C" {
 #include "types.h"
 
 enum _hy_repo_param_e {
-    HY_REPO_NAME,
-    HY_REPO_MD_FN,
-    HY_REPO_PRESTO_FN,
-    HY_REPO_PRIMARY_FN,
-    HY_REPO_FILELISTS_FN,
-    HY_REPO_UPDATEINFO_FN
+    HY_REPO_NAME = 0,
+    HY_REPO_MD_FN = 1,
+    HY_REPO_PRESTO_FN = 2,
+    HY_REPO_PRIMARY_FN = 3,
+    HY_REPO_FILELISTS_FN = 4,
+    HY_REPO_UPDATEINFO_FN = 5
 };
 
 HyRepo hy_repo_create(const char *name);
