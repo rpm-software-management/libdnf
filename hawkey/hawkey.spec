@@ -8,8 +8,8 @@
 %endif
 
 Name:		hawkey
-Version:	0.5.9
-Release:	3%{?snapshot}%{?dist}
+Version:	0.6.0
+Release:	1%{?snapshot}%{?dist}
 Summary:	Library providing simplified C and Python API to libsolv
 Group:		System Environment/Libraries
 License:	LGPLv2+
