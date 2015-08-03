@@ -655,6 +655,10 @@ START_TEST(test_query_provides_str)
     ck_assert_int_eq(query_count_results(q), 2);
     hy_query_free(q);
 
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_PROVIDES, HY_EQ, "thisisnotgoingtoexist");
+    ck_assert_int_eq(query_count_results(q), 0);
+    hy_query_free(q);
 }
 END_TEST
 

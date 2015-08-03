@@ -981,7 +981,7 @@ hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
 	HyReldep reldep = reldep_from_str(sack, match);
 
 	if (reldep == NULL)
-	    return HY_E_QUERY;
+	    return hy_query_filter_empty(q);
 	int ret = hy_query_filter_reldep(q, keyname, reldep);
 	hy_reldep_free(reldep);
 	return ret;

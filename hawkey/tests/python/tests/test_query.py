@@ -183,6 +183,9 @@ class TestQuery(base.TestCase):
         self.assertRaises(hawkey.QueryException, q.filter,
                           provides__gt=requires[0])
 
+        q = hawkey.Query(self.sack).filter(provides="thisisnotgoingtoexist")
+        self.assertLength(q.run(), 0)
+
     def test_reldep_list(self):
         self.sack.load_test_repo("updates", "updates.repo")
         fool = base.by_name_repo(self.sack, "fool", "updates")
