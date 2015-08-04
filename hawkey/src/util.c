@@ -141,6 +141,12 @@ hy_detect_arch(char **arch)
 	else if (flags & ARM_VFP3)
 	    strcpy(un.machine, "armv7hl");
     }
+#ifdef __MIPSEL__
+    if (!strcmp(un.machine, "mips"))
+	strcpy(un.machine, "mipsel");
+    else if (!strcmp(un.machine, "mips64"))
+	strcpy(un.machine, "mips64el");
+#endif
     *arch = solv_strdup(un.machine);
     return 0;
 }
