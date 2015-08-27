@@ -1,4 +1,4 @@
-libihf
+libhif
 ======
 
 This library provides a high level package-manager. It uses librepo and hawkey
