@@ -797,3 +797,29 @@ reldep_from_str(HySack sack, const char *reldep_str)
     solv_free(evr);
     return reldep;
 }
+
+HyReldepList
+reldeplist_from_str(HySack sack, const char *reldep_str)
+{
+    int cmp_type;
+    char *name_glob = NULL;
+    char *evr = NULL;
+    Dataiterator di;
+    Pool *pool = sack_pool(sack);
+
+    HyReldepList reldeplist = hy_reldeplist_create(sack);
+    parse_reldep_str(reldep_str, &name_glob, &evr, &cmp_type);
+
+    dataiterator_init(&di, pool, 0, 0, 0, name_glob, SEARCH_STRING | SEARCH_GLOB);
+    while (dataiterator_step(&di)) {
+        HyReldep reldep = hy_reldep_create(sack, di.kv.str, cmp_type, evr);
+        if (reldep)
+            hy_reldeplist_add(reldeplist, reldep);
+        hy_reldep_free(reldep);
+    }
+
+    dataiterator_free(&di);
+    solv_free(name_glob);
+    solv_free(evr);
+    return reldeplist;
+}

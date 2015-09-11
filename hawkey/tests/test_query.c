@@ -662,6 +662,73 @@ START_TEST(test_query_provides_str)
 }
 END_TEST
 
+START_TEST(test_query_provides_glob)
+    {
+        HyQuery q = hy_query_create(test_globals.sack);
+        hy_query_filter(q, HY_PKG_PROVIDES, HY_GLOB, "penny*");
+        ck_assert_int_eq(query_count_results(q), 6);
+        hy_query_free(q);
+
+        HyQuery q1 = hy_query_create(test_globals.sack);
+        HyQuery q2 = hy_query_create(test_globals.sack);
+        hy_query_filter(q1, HY_PKG_PROVIDES, HY_GLOB, "P-l*b >= 3");
+        hy_query_filter(q2, HY_PKG_PROVIDES, HY_EQ, "P-lib >= 3");
+        ck_assert_int_eq(query_count_results(q1), query_count_results(q2));
+        hy_query_free(q);
+
+        q1 = hy_query_create(test_globals.sack);
+        q2 = hy_query_create(test_globals.sack);
+        hy_query_filter(q1, HY_PKG_PROVIDES, HY_GLOB, "*");
+        fail_unless(query_count_results(q1) == query_count_results(q2));
+        hy_query_free(q1);
+        hy_query_free(q2);
+    }
+END_TEST
+
+START_TEST(test_query_rco_glob)
+    {
+        HyQuery q = hy_query_create(test_globals.sack);
+        hy_query_filter(q, HY_PKG_REQUIRES, HY_GLOB, "*");
+        ck_assert_int_eq(query_count_results(q), 5);
+        hy_query_free(q);
+
+        q = hy_query_create(test_globals.sack);
+        hy_query_filter(q, HY_PKG_REQUIRES, HY_GLOB, "*oo*");
+        ck_assert_int_eq(query_count_results(q), 2);
+        hy_query_free(q);
+
+        q = hy_query_create(test_globals.sack);
+        hy_query_filter(q, HY_PKG_CONFLICTS, HY_GLOB, "*");
+        ck_assert_int_eq(query_count_results(q), 1);
+        hy_query_free(q);
+
+        q = hy_query_create(test_globals.sack);
+        hy_query_filter(q, HY_PKG_OBSOLETES, HY_GLOB, "*");
+        ck_assert_int_eq(query_count_results(q), 0);
+        hy_query_free(q);
+
+        q = hy_query_create(test_globals.sack);
+        hy_query_filter(q, HY_PKG_ENHANCES, HY_GLOB, "*");
+        ck_assert_int_eq(query_count_results(q), 1);
+        hy_query_free(q);
+
+        q = hy_query_create(test_globals.sack);
+        hy_query_filter(q, HY_PKG_RECOMMENDS, HY_GLOB, "*");
+        ck_assert_int_eq(query_count_results(q), 1);
+        hy_query_free(q);
+
+        q = hy_query_create(test_globals.sack);
+        hy_query_filter(q, HY_PKG_SUGGESTS, HY_GLOB, "*");
+        ck_assert_int_eq(query_count_results(q), 1);
+        hy_query_free(q);
+
+        q = hy_query_create(test_globals.sack);
+        hy_query_filter(q, HY_PKG_SUPPLEMENTS, HY_GLOB, "*");
+        ck_assert_int_eq(query_count_results(q), 1);
+        hy_query_free(q);
+    }
+END_TEST
+
 START_TEST(test_query_reldep)
 {
     HySack sack = test_globals.sack;
@@ -972,6 +1039,8 @@ query_suite(void)
     tcase_add_test(tc, test_downgrade);
     tcase_add_test(tc, test_downgradable);
     tcase_add_test(tc, test_query_provides_str);
+    tcase_add_test(tc, test_query_provides_glob);
+    tcase_add_test(tc, test_query_rco_glob);
     tcase_add_test(tc, test_query_recommends);
     tcase_add_test(tc, test_query_suggests);
     tcase_add_test(tc, test_query_supplements);

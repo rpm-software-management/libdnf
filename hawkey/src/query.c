@@ -98,6 +98,8 @@ match_type_str(int keyname) {
     case HY_PKG_SUGGESTS:
     case HY_PKG_SUMMARY:
     case HY_PKG_SUPPLEMENTS:
+    case HY_PKG_OBSOLETES:
+    case HY_PKG_CONFLICTS:
     case HY_PKG_URL:
     case HY_PKG_VERSION:
 	return 1;
@@ -999,13 +1001,20 @@ hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
     case HY_PKG_SUGGESTS:
     case HY_PKG_SUPPLEMENTS: {
 	HySack sack = query_sack(q);
-	HyReldep reldep = reldep_from_str(sack, match);
 
-	if (reldep == NULL)
-	    return hy_query_filter_empty(q);
-	int ret = hy_query_filter_reldep(q, keyname, reldep);
-	hy_reldep_free(reldep);
-	return ret;
+    if (cmp_type == HY_GLOB) {
+        HyReldepList reldeplist = reldeplist_from_str(sack, match);
+        hy_query_filter_reldep_in(q, keyname, reldeplist);
+        hy_reldeplist_free(reldeplist);
+        return 0;
+    } else {
+        HyReldep reldep = reldep_from_str(sack, match);
+        if (reldep == NULL)
+            return hy_query_filter_empty(q);
+        int ret = hy_query_filter_reldep(q, keyname, reldep);
+        hy_reldep_free(reldep);
+        return ret;
+    }
     }
     default: {
 	struct _Filter *filterp = query_add_filter(q, 1);
