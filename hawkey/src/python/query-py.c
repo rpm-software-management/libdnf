@@ -258,10 +258,11 @@ filter(_QueryObject *self, PyObject *args)
 
 	break;
     }
-    case HY_PKG_PROVIDES: {
+    case HY_PKG_PROVIDES:
+    case HY_PKG_REQUIRES: {
 	HySack sack = sackFromPyObject(self->sack);
 	assert(sack);
-	HyReldepList reldeplist = pyseq_to_reldeplist(match, sack);
+	HyReldepList reldeplist = pyseq_to_reldeplist(match, sack, cmp_type);
 	if (reldeplist == NULL)
 	    return NULL;
 

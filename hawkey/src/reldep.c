@@ -63,6 +63,12 @@ reldeplist_from_queue(Pool *pool, Queue h)
     return reldeplist;
 }
 
+void
+merge_reldeplists(HyReldepList rl1, HyReldepList rl2)
+{
+    queue_insertn(&rl1->queue, 0, rl2->queue.count, rl2->queue.elements);
+}
+
 HyReldep
 hy_reldep_create(HySack sack, const char *name, int cmp_type, const char *evr)
 {

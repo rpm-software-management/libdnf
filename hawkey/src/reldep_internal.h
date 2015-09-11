@@ -30,5 +30,6 @@
 HyReldep reldep_create(Pool *pool, Id r_id);
 Id reldep_id(HyReldep reldep);
 HyReldepList reldeplist_from_queue(Pool *pool, Queue h);
+void merge_reldeplists(HyReldepList rl1, HyReldepList rl2);
 
 #endif // HY_RELDEP_INTERNAL_H

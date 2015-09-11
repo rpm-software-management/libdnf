@@ -226,6 +226,38 @@ class TestQuery(base.TestCase):
         q = hawkey.Query(self.sack).filter(provides__glob="nomatch*")
         self.assertLength(q, 0)
 
+    def test_provides_list_of_strings(self):
+        q1 = hawkey.Query(self.sack).filter(provides=["penny", "P-lib"])
+        q2 = hawkey.Query(self.sack).filter(provides__glob=["penny", "P-lib"])
+        self.assertEqual(len(q1), len(q2))
+        q3 = hawkey.Query(self.sack).filter(provides__glob=["penny*", "P-lib*"])
+        self.assertEqual(len(q1), len(q3))
+        q4 = hawkey.Query(self.sack).filter(provides__glob=["nomatch*", "P-lib*"])
+        q5 = hawkey.Query(self.sack).filter(provides__glob="P-lib*")
+        self.assertEqual(len(q4), len(q5))
+        q6 = hawkey.Query(self.sack).filter(provides=["nomatch", "P-lib"])
+        q7 = hawkey.Query(self.sack).filter(provides="P-lib")
+        self.assertEqual(len(q6), len(q7))
+        q8 = hawkey.Query(self.sack).filter(provides=[])
+        self.assertLength(q8, 0)
+        q9 = hawkey.Query(self.sack).filter(provides__glob=[])
+        self.assertLength(q9, 0)
+
+    def test_requires_list_of_strings(self):
+        q1 = hawkey.Query(self.sack).filter(requires=["penny", "P-lib"])
+        q2 = hawkey.Query(self.sack).filter(requires__glob=["penny", "P-lib"])
+        self.assertEqual(len(q1), len(q2))
+        q3 = hawkey.Query(self.sack).filter(requires__glob=["penny*", "P-lib*"])
+        self.assertEqual(len(q1), len(q3))
+        q4 = hawkey.Query(self.sack).filter(requires__glob=["nomatch*", "P-lib*"])
+        q5 = hawkey.Query(self.sack).filter(requires__glob="P-lib*")
+        self.assertEqual(len(q4), len(q5))
+        q6 = hawkey.Query(self.sack).filter(requires=["nomatch", "P-lib"])
+        q7 = hawkey.Query(self.sack).filter(requires="P-lib")
+        self.assertEqual(len(q6), len(q7))
+        q1 = hawkey.Query(self.sack).filter(requires__glob=["*bin/away"])
+        self.assertLength(q1, 1)
+
 
 class TestQueryAllRepos(base.TestCase):
     def setUp(self):

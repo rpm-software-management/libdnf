@@ -28,6 +28,7 @@
 #include "src/packagelist.h"
 #include "src/packageset_internal.h"
 #include "src/reldep_internal.h"
+#include "src/iutil.h"
 #include "advisory-py.h"
 #include "advisorypkg-py.h"
 #include "advisoryref-py.h"
@@ -221,7 +222,7 @@ pyseq_to_packageset(PyObject *obj, HySack sack)
 }
 
 HyReldepList
-pyseq_to_reldeplist(PyObject *obj, HySack sack)
+pyseq_to_reldeplist(PyObject *obj, HySack sack, int cmp_type)
 {
     PyObject *sequence = PySequence_Fast(obj, "Expected a sequence.");
     if (sequence == NULL)
@@ -233,10 +234,31 @@ pyseq_to_reldeplist(PyObject *obj, HySack sack)
 	PyObject *item = PySequence_Fast_GET_ITEM(sequence, i);
 	if (item == NULL)
 	    goto fail;
-	HyReldep reldep = reldepFromPyObject(item);
-	if (reldep == NULL)
-	    goto fail;
-	hy_reldeplist_add(reldeplist, reldep);
+
+    if (cmp_type == HY_GLOB) {
+        HyReldepList g_reldeplist = NULL;
+        const char *reldep_str = NULL;
+        PyObject *tmp_py_str = NULL;
+
+        reldep_str = pycomp_get_string(item, &tmp_py_str);
+        if (reldep_str == NULL)
+            goto fail;
+        Py_XDECREF(tmp_py_str);
+
+        g_reldeplist = reldeplist_from_str(sack, reldep_str);
+        merge_reldeplists(reldeplist, g_reldeplist);
+        hy_reldeplist_free(g_reldeplist);
+
+    } else {
+        HyReldep reldep = NULL;
+        if reldepObject_Check(item)
+            reldep = reldepFromPyObject(item);
+        else
+            reldep = reldep_from_pystr(item, sack);
+
+        if (reldep != NULL)
+            hy_reldeplist_add(reldeplist, reldep);
+    }
     }
 
     Py_DECREF(sequence);
@@ -296,4 +318,20 @@ reldeplist_to_pylist(const HyReldepList reldeplist, PyObject *sack)
  fail:
     Py_DECREF(list);
     return NULL;
+}
+
+HyReldep
+reldep_from_pystr(PyObject *o, HySack sack)
+{
+    HyReldep reldep = NULL;
+    const char *reldep_str = NULL;
+    PyObject *tmp_py_str = NULL;
+
+    reldep_str = pycomp_get_string(o, &tmp_py_str);
+    if (reldep_str == NULL)
+        return NULL;
+    Py_XDECREF(tmp_py_str);
+
+    reldep = reldep_from_str(sack, reldep_str);
+    return reldep;
 }
