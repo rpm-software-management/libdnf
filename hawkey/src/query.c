@@ -332,6 +332,8 @@ filter_epoch(HyQuery q, struct _Filter *f, Map *m)
 	unsigned long epoch = f->matches[mi].num;
 
 	for (Id id = 1; id < pool->nsolvables; ++id) {
+            if (!MAPTST(q->result, id))
+                continue;
 	    Solvable *s = pool_id2solvable(pool, id);
 	    if (s->evr == ID_EMPTY)
 		continue;
@@ -357,6 +359,8 @@ filter_evr(HyQuery q, struct _Filter *f, Map *m)
 	Id match_evr = pool_str2id(pool, f->matches[mi].str, 1);
 
 	for (Id id = 1; id < pool->nsolvables; ++id) {
+            if (!MAPTST(q->result, id))
+                continue;
 	    Solvable *s = pool_id2solvable(pool, id);
 	    int cmp = pool_evrcmp(pool, s->evr, match_evr, EVRCMP_COMPARE);
 
@@ -379,6 +383,8 @@ filter_version(HyQuery q, struct _Filter *f, Map *m)
 	char *filter_vr = solv_dupjoin(match, "-0", NULL);
 
 	for (Id id = 1; id < pool->nsolvables; ++id) {
+            if (!MAPTST(q->result, id))
+                continue;
 	    char *e, *v, *r;
 	    Solvable *s = pool_id2solvable(pool, id);
 	    if (s->evr == ID_EMPTY)
@@ -413,6 +419,8 @@ filter_release(HyQuery q, struct _Filter *f, Map *m)
 	char *filter_vr = solv_dupjoin("0-", f->matches[mi].str, NULL);
 
 	for (Id id = 1; id < pool->nsolvables; ++id) {
+            if (!MAPTST(q->result, id))
+                continue;
 	    char *e, *v, *r;
 	    Solvable *s = pool_id2solvable(pool, id);
 	    if (s->evr == ID_EMPTY)
@@ -442,6 +450,8 @@ filter_sourcerpm(HyQuery q, struct _Filter *f, Map *m)
 	const char *match = f->matches[mi].str;
 
 	for (Id id = 1; id < pool->nsolvables; ++id) {
+            if (!MAPTST(q->result, id))
+                continue;
 	    Solvable *s = pool_id2solvable(pool, id);
 
 	    const char *name = solvable_lookup_str(s, SOLVABLE_SOURCENAME);
@@ -472,6 +482,8 @@ filter_obsoletes(HyQuery q, struct _Filter *f, Map *m)
     target = packageset_get_map(f->matches[0].pset);
     sack_make_provides_ready(q->sack);
     for (Id p = 1; p < pool->nsolvables; ++p) {
+        if (!MAPTST(q->result, p))
+            continue;
 	Solvable *s = pool_id2solvable(pool, p);
 	if (!s->repo)
 	    continue;
@@ -520,6 +532,9 @@ filter_rco_reldep(HyQuery q, struct _Filter *f, Map *m)
 	Id r_id = reldep_id(f->matches[i].reldep);
 
 	for (Id s_id = 1; s_id < pool->nsolvables; ++s_id) {
+            if (!MAPTST(q->result, s_id))
+                continue;
+
 	    Solvable *s = pool_id2solvable(pool, s_id);
 
 	    queue_empty(&rco);
@@ -558,6 +573,8 @@ filter_reponame(HyQuery q, struct _Filter *f, Map *m)
     }
 
     for (i = 1; i < pool->nsolvables; ++i) {
+        if (!MAPTST(q->result, i))
+            continue;
 	s = pool_id2solvable(pool, i);
 	switch (f->cmp_type & ~HY_COMPARISON_FLAG_MASK) {
 	case HY_EQ:
@@ -579,6 +596,8 @@ filter_location(HyQuery q, struct _Filter *f, Map *m)
 	const char *match = f->matches[mi].str;
 
 	for (Id id = 1; id < pool->nsolvables; ++id) {
+            if (!MAPTST(q->result, id))
+                continue;
 	    Solvable *s = pool_id2solvable(pool, id);
 
 	    const char *location = solvable_get_location(s, NULL);
@@ -598,6 +617,8 @@ filter_nevra(HyQuery q, struct _Filter *f, Map *m)
     char *nevra_pattern = f->matches[0].str;
 
     for (Id id = 1; id < pool->nsolvables; ++id) {
+        if (!MAPTST(q->result, id))
+            continue;
 	Solvable* s = pool_id2solvable(pool, id);
 	const char* nevra = pool_solvable2str(pool, s);
 	if (!(HY_GLOB & f->cmp_type)) {
