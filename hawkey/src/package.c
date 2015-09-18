@@ -67,7 +67,7 @@ reldeps_for(HyPackage pkg, Id type)
     Queue q;
 
     queue_init(&q);
-    solvable_lookup_idarray(s, type, &q);
+    solvable_lookup_deparray(s, type, &q, -1);
     reldeplist = reldeplist_from_queue(pool, q);
 
     queue_free(&q);
