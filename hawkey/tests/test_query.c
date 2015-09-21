@@ -674,7 +674,8 @@ START_TEST(test_query_provides_glob)
         hy_query_filter(q1, HY_PKG_PROVIDES, HY_GLOB, "P-l*b >= 3");
         hy_query_filter(q2, HY_PKG_PROVIDES, HY_EQ, "P-lib >= 3");
         ck_assert_int_eq(query_count_results(q1), query_count_results(q2));
-        hy_query_free(q);
+        hy_query_free(q1);
+        hy_query_free(q2);
 
         q1 = hy_query_create(test_globals.sack);
         q2 = hy_query_create(test_globals.sack);
