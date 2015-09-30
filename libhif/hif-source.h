@@ -192,6 +192,11 @@ gchar		*hif_source_download_package	(HifSource		*source,
 						 const gchar		*directory,
 						 HifState		*state,
 						 GError			**error);
+gboolean        hif_source_download_packages	(HifSource		*source,
+						 GPtrArray		*pkgs,
+						 const gchar		*directory,
+						 HifState		*state,
+						 GError			**error);
 #endif
 
 G_END_DECLS

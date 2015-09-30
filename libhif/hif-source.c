@@ -1657,22 +1657,53 @@ hif_source_download_package (HifSource *source,
 			     HifState *state,
 			     GError **error)
 {
+	_cleanup_ptrarray_unref_ GPtrArray *packages = g_ptr_array_new ();
+	_cleanup_free_ gchar *basename = NULL;
+
+	g_ptr_array_add (packages, pkg);
+
+	if (!hif_source_download_packages (source, packages, directory, state, error))
+		return NULL;
+
+	/* build return value */
+	basename = g_path_get_basename (hy_package_get_location (pkg));
+	return g_build_filename (directory, basename, NULL);
+}
+
+/**
+ * hif_source_download_packages:
+ * @source: a #HifSource instance.
+ * @packages: (element-type HyPackage): Array of packages, must be from this source
+ * @directory: the destination directory.
+ * @state: a #HifState.
+ * @error: a #GError or %NULL..
+ *
+ * Downloads multiple packages from a source.  The target filename
+ * will be equivalent to `g_path_get_basename (hy_package_get_location
+ * (pkg))`.
+ **/
+gboolean
+hif_source_download_packages (HifSource *source,
+			      GPtrArray *packages,
+			      const gchar *directory,
+			      HifState *state,
+			      GError **error)
+{
+	gboolean ret = FALSE;
 	HifSourcePrivate *priv = GET_PRIVATE (source);
 	char *checksum_str = NULL;
 	const unsigned char *checksum;
-	gboolean ret;
-	gchar *loc = NULL;
+	guint i;
 	int checksum_type;
 	LrPackageTarget *target = NULL;
-	GSList *packages = NULL;
+	GSList *package_targets = NULL;
 	struct DownloadState dlstate = { 0, };
 	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_free_ gchar *basename = NULL;
 	_cleanup_free_ gchar *directory_slash = NULL;
 
 	/* ensure we reset the values from the keyfile */
 	if (!hif_source_set_keyfile_data (source, error))
-		return NULL;
+		goto out;
 
 	/* if nothing specified then use cachedir */
 	if (directory == NULL) {
@@ -1694,44 +1725,52 @@ hif_source_download_package (HifSource *source,
 		directory_slash = g_build_filename (directory, "/", NULL);
 	}
 
-	/* is a local repo, i.e. we just need to copy */
 	if (hif_source_is_local (source)) {
-		hif_package_set_source (pkg, source);
-		if (!hif_source_copy_package (pkg, directory, state, error))
-			goto out;
+		/* is a local repo, i.e. we just need to copy */
+		for (i = 0; i < packages->len; i++) {
+			HyPackage pkg = packages->pdata[i];
+			hif_package_set_source (pkg, source);
+			if (!hif_source_copy_package (pkg, directory, state, error))
+				goto out;
+		}
 		goto done;
 	}
 
-	g_debug ("downloading %s to %s",
-		 hy_package_get_location (pkg),
-		 directory_slash);
+	for (i = 0; i < packages->len; i++) {
+		HyPackage pkg = packages->pdata[i];
 
-	checksum = hy_package_get_chksum (pkg, &checksum_type);
-	checksum_str = hy_chksum_str (checksum, checksum_type);
-	hif_state_action_start (state,
-				HIF_STATE_ACTION_DOWNLOAD_PACKAGES,
-				hif_package_get_id (pkg));
+		g_debug ("downloading %s to %s",
+			 hy_package_get_location (pkg),
+			 directory_slash);
 
-	dlstate.state = state;
+		checksum = hy_package_get_chksum (pkg, &checksum_type);
+		checksum_str = hy_chksum_str (checksum, checksum_type);
+		hif_state_action_start (state,
+					HIF_STATE_ACTION_DOWNLOAD_PACKAGES,
+					hif_package_get_id (pkg));
+		
+		dlstate.state = state;
 
-	target = lr_packagetarget_new_v2 (priv->repo_handle,
-					  hy_package_get_location (pkg),
-					  directory_slash,
-					  hif_source_checksum_hy_to_lr (checksum_type),
-					  checksum_str,
-					  0, /* size unknown */
-					  hy_package_get_baseurl (pkg),
-					  TRUE,
-					  package_download_update_state_cb,
-					  &dlstate,
-					  NULL,
-					  mirrorlist_failure_cb,
-					  error);
-	if (target == NULL)
-		goto out;
+		target = lr_packagetarget_new_v2 (priv->repo_handle,
+						  hy_package_get_location (pkg),
+						  directory_slash,
+						  hif_source_checksum_hy_to_lr (checksum_type),
+						  checksum_str,
+						  0, /* size unknown */
+						  hy_package_get_baseurl (pkg),
+						  TRUE,
+						  package_download_update_state_cb,
+						  &dlstate,
+						  NULL,
+						  mirrorlist_failure_cb,
+						  error);
+		if (target == NULL)
+			goto out;
 	
-	packages = g_slist_prepend (packages, target);
-	ret = lr_download_packages (packages, LR_PACKAGEDOWNLOAD_FAILFAST, &error_local);
+		package_targets = g_slist_prepend (package_targets, target);
+	}
+
+	ret = lr_download_packages (package_targets, LR_PACKAGEDOWNLOAD_FAILFAST, &error_local);
 	if (!ret) {
 		if (g_error_matches (error_local,
 				     LR_PACKAGE_DOWNLOADER_ERROR,
@@ -1750,20 +1789,17 @@ hif_source_download_package (HifSource *source,
 	} 
 
 done:
-	/* build return value */
-	basename = g_path_get_basename (hy_package_get_location (pkg));
-	loc = g_build_filename (directory_slash, basename, NULL);
+	ret = TRUE;
 out:
 	lr_handle_setopt (priv->repo_handle, NULL, LRO_PROGRESSCB, NULL);
 	lr_handle_setopt (priv->repo_handle, NULL, LRO_PROGRESSDATA, 0xdeadbeef);
-	if (target != NULL)
-		lr_packagetarget_free (target);
 	g_free (dlstate.last_mirror_failure_message);
 	g_free (dlstate.last_mirror_url);
-	g_slist_free (packages);
+	g_slist_free_full (package_targets, (GDestroyNotify)lr_packagetarget_free);
 	hy_free (checksum_str);
-	return loc;
+	return ret;
 }
+
 
 /**
  * hif_source_new:
