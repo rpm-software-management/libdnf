@@ -34,5 +34,9 @@ TARGET_LINK_LIBRARIES(test_main
     ${ZLIB_LIBRARY}
     ${RPMDB_LIBRARY})
 ADD_TEST(test_main test_main "${CMAKE_CURRENT_SOURCE_DIR}/repos/")
+ADD_TEST(test_valgrind ${VALGRIND_PROGRAM} --error-exitcode=1 --leak-check=full
+                       ${CMAKE_CURRENT_BINARY_DIR}/test_main
+                       ${CMAKE_CURRENT_SOURCE_DIR}/repos/)
+SET_TESTS_PROPERTIES(test_valgrind PROPERTIES ENVIRONMENT "CK_FORK=no")
 
 ADD_SUBDIRECTORY (python)
