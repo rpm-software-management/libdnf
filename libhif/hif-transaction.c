@@ -390,7 +390,15 @@ hif_transaction_check_untrusted (HifTransaction *transaction,
 			/* if the source is signed this is ALWAYS an error */
 			src = hif_package_get_source (pkg);
 			if (src != NULL && hif_source_get_gpgcheck (src)) {
-				g_propagate_error (error, error_local);
+				g_set_error (error,
+					     HIF_ERROR,
+					     HIF_ERROR_FILE_INVALID,
+					     "package %s cannot be verified "
+					     "and repo %s is GPG enabled: %s",
+					     hif_package_get_nevra (pkg),
+					     hif_source_get_id (src),
+					     error_local->message);
+				g_error_free (error_local);
 				return FALSE;
 			}
 
