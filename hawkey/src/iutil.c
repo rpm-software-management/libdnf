@@ -412,7 +412,7 @@ running_kernel(HySack sack)
     }
 
     Id kernel_id = -1;
-    HyQuery q = hy_query_create(sack);
+    HyQuery q = hy_query_create_flags(sack, HY_IGNORE_EXCLUDES);
     sack_make_provides_ready(sack);
     hy_query_filter(q, HY_PKG_FILE, HY_EQ, fn);
     hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
