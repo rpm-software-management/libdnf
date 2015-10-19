@@ -24,10 +24,10 @@
 #include <solv/util.h>
 
 // hawkey
-#include "src/nevra.h"
-#include "src/nevra_internal.h"
-#include "src/sack.h"
-#include "src/types.h"
+#include "src/hy-nevra.h"
+#include "src/hy-nevra_internal.h"
+#include "src/hy-sack.h"
+#include "src/hy-types.h"
 
 // pyhawkey
 #include "iutil-py.h"

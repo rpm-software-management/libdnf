@@ -25,12 +25,12 @@
 #include <solv/util.h>
 
 // hawkey
-#include "src/advisory.h"
-#include "src/iutil.h"
-#include "src/package_internal.h"
-#include "src/packagelist.h"
-#include "src/reldep.h"
-#include "src/sack_internal.h"
+#include "src/hy-advisory.h"
+#include "src/hy-iutil.h"
+#include "src/hy-package_internal.h"
+#include "src/hy-packagelist.h"
+#include "src/hy-reldep.h"
+#include "src/hy-sack_internal.h"
 
 // pyhawkey
 #include "iutil-py.h"

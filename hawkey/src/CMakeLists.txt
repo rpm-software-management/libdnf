@@ -1,22 +1,22 @@
 SET (hawkey_SRCS
-    advisory.c
-    advisorypkg.c
-    advisoryref.c
-    errno.c
-    goal.c
-    iutil.c
-    nevra.c
-    package.c
-    packagelist.c
-    packageset.c
-    query.c
-    reldep.c
-    repo.c
-    sack.c
-    selector.c
-    subject.c
-    subject_internal.c
-    util.c)
+    hy-advisory.c
+    hy-advisorypkg.c
+    hy-advisoryref.c
+    hy-errno.c
+    hy-goal.c
+    hy-iutil.c
+    hy-nevra.c
+    hy-package.c
+    hy-packagelist.c
+    hy-packageset.c
+    hy-query.c
+    hy-reldep.c
+    hy-repo.c
+    hy-sack.c
+    hy-selector.c
+    hy-subject.c
+    hy-subject_internal.c
+    hy-util.c)
 
 ADD_LIBRARY(libhawkey SHARED ${hawkey_SRCS})
 TARGET_LINK_LIBRARIES(libhawkey ${SOLV_LIBRARY} ${SOLVEXT_LIBRARY})
@@ -36,24 +36,24 @@ TARGET_LINK_LIBRARIES(hth libhawkey
 ADD_SUBDIRECTORY(python)
 
 SET(HAWKEY_headers
-    advisory.h
-    advisorypkg.h
-    advisoryref.h
-    errno.h
-    goal.h
-    nevra.h
-    package.h
-    packagelist.h
-    packageset.h
-    query.h
-    reldep.h
-    repo.h
-    sack.h
-    selector.h
-    subject.h
-    types.h
-    util.h
-    version.h)
+    hy-advisory.h
+    hy-advisorypkg.h
+    hy-advisoryref.h
+    hy-errno.h
+    hy-goal.h
+    hy-nevra.h
+    hy-package.h
+    hy-packagelist.h
+    hy-packageset.h
+    hy-query.h
+    hy-reldep.h
+    hy-repo.h
+    hy-sack.h
+    hy-selector.h
+    hy-subject.h
+    hy-types.h
+    hy-util.h
+    hy-version.h)
 
 IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
   SET (LIB_SUFFIX "64")
@@ -63,4 +63,4 @@ SET (LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
 INSTALL(FILES ${HAWKEY_headers} DESTINATION include/hawkey)
 INSTALL(TARGETS libhawkey LIBRARY DESTINATION ${LIB_INSTALL_DIR})
 
-CONFIGURE_FILE("version.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/version.h" @ONLY)
+CONFIGURE_FILE("hy-version.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/hy-version.h" @ONLY)

@@ -25,7 +25,7 @@
 #include <solv/pooltypes.h>
 
 // hawkey
-#include "src/types.h"
+#include "src/hy-types.h"
 
 extern PyTypeObject sack_Type;
 

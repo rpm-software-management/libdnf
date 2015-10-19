@@ -21,7 +21,7 @@
 #ifndef SELECTOR_PY_H
 #define SELECTOR_PY_H
 
-#include "src/types.h"
+#include "src/hy-types.h"
 
 extern PyTypeObject selector_Type;
 

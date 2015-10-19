@@ -21,7 +21,7 @@
 #ifndef QUERY_PY_H
 #define QUERY_PY_H
 
-#include "src/types.h"
+#include "src/hy-types.h"
 
 /* additional Query constants only used in the bindings */
 enum py_key_name_e {

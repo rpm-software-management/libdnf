@@ -21,8 +21,8 @@
 #ifndef SUBJECT_PY_H
 #define SUBJECT_PY_H
 
-#include "src/subject.h"
-#include "src/types.h"
+#include "src/hy-subject.h"
+#include "src/hy-types.h"
 
 extern PyTypeObject subject_Type;
 

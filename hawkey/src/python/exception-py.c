@@ -21,7 +21,7 @@
 #include <Python.h>
 
 // hawkey
-#include "src/errno_internal.h"
+#include "src/hy-errno_internal.h"
 
 // pyhawkey
 #include "exception-py.h"

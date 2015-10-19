@@ -22,10 +22,10 @@
 #include <datetime.h>
 
 // hawkey
-#include "src/advisory_internal.h"
-#include "src/advisorypkg.h"
-#include "src/advisoryref.h"
-#include "src/package.h"
+#include "src/hy-advisory_internal.h"
+#include "src/hy-advisorypkg.h"
+#include "src/hy-advisoryref.h"
+#include "src/hy-package.h"
 
 // pyhawkey
 #include "advisory-py.h"
