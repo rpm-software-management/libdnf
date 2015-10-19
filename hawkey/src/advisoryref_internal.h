@@ -31,7 +31,7 @@ HyAdvisoryRef advisoryref_create(Pool *pool, Id a_id, int index);
 HyAdvisoryRef advisoryref_clone(HyAdvisoryRef advisoryref);
 int advisoryref_identical(HyAdvisoryRef left, HyAdvisoryRef right);
 
-HyAdvisoryRefList advisoryreflist_create();
+HyAdvisoryRefList advisoryreflist_create(void);
 void advisoryreflist_add(HyAdvisoryRefList reflist, HyAdvisoryRef advisoryref);
 
 #endif // HY_ADVISORYREF_INTERNAL_H

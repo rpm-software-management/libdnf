@@ -24,12 +24,12 @@
 // hawkey
 #include "advisorypkg.h"
 
-HyAdvisoryPkg advisorypkg_create();
+HyAdvisoryPkg advisorypkg_create(void);
 void advisorypkg_set_string(HyAdvisoryPkg advisorypkg, int which, const char* str_val);
 HyAdvisoryPkg advisorypkg_clone(HyAdvisoryPkg advisorypkg);
 int advisorypkg_identical(HyAdvisoryPkg left, HyAdvisoryPkg right);
 
-HyAdvisoryPkgList advisorypkglist_create();
+HyAdvisoryPkgList advisorypkglist_create(void);
 void advisorypkglist_add(HyAdvisoryPkgList pkglist, HyAdvisoryPkg advisorypkg);
 
 #endif // HY_ADVISORYPKG_INTERNAL_H

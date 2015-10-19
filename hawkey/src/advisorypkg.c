@@ -40,7 +40,7 @@ struct _HyAdvisoryPkgList {
 
 /* internal */
 HyAdvisoryPkg
-advisorypkg_create()
+advisorypkg_create(void)
 {
     HyAdvisoryPkg pkg = solv_calloc(1, sizeof(*pkg));
     return pkg;

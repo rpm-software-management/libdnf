@@ -846,7 +846,7 @@ hy_goal_describe_problem(HyGoal goal, unsigned i)
     Id rid, source, target, dep;
     SolverRuleinfo type;
 
-    if (i >= hy_goal_count_problems(goal)) {
+    if (i >= (unsigned) hy_goal_count_problems(goal)) {
 	hy_errno = HY_E_OP;
 	return NULL;
     }
