@@ -3,6 +3,7 @@ ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = 						\
 	libhif						\
 	data						\
+	python						\
 	docs
 
 DISTCLEANFILES =					\
@@ -23,6 +24,7 @@ MAINTAINERCLEANFILES =					\
 	install-sh					\
 	ltmain.sh					\
 	Makefile.in					\
+	py-compile					\
 	missing						\
 	mkinstalldirs					\
 	test-driver
