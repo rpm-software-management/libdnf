@@ -24,14 +24,14 @@
 #include <solv/util.h>
 
 // hawkey
-#include "src/hy-iutil.h"
-#include "src/hy-nevra.h"
-#include "src/hy-nevra_internal.h"
-#include "src/hy-reldep.h"
-#include "src/hy-sack.h"
-#include "src/hy-sack_internal.h"
-#include "src/hy-subject.h"
-#include "src/hy-types.h"
+#include "hy-iutil.h"
+#include "hy-nevra.h"
+#include "hy-nevra_internal.h"
+#include "hy-reldep.h"
+#include "hy-sack.h"
+#include "hy-sack_internal.h"
+#include "hy-subject.h"
+#include "hy-types.h"
 
 // pyhawkey
 #include "iutil-py.h"

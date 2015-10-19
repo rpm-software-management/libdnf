@@ -21,7 +21,7 @@
 #ifndef PACKAGEDELTA_PY_H
 #define PACKAGEDELTA_PY_H
 
-#include "src/hy-types.h"
+#include "hy-types.h"
 
 extern PyTypeObject packageDelta_Type;
 

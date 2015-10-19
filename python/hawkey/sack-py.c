@@ -21,12 +21,12 @@
 #include "Python.h"
 
 // hawkey
-#include "src/hy-errno.h"
-#include "src/hy-package_internal.h"
-#include "src/hy-packageset.h"
-#include "src/hy-repo.h"
-#include "src/hy-sack_internal.h"
-#include "src/hy-util.h"
+#include "hy-errno.h"
+#include "hy-package_internal.h"
+#include "hy-packageset.h"
+#include "hy-repo.h"
+#include "hy-sack_internal.h"
+#include "hy-util.h"
 
 // pyhawkey
 #include "exception-py.h"

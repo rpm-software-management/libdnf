@@ -21,8 +21,8 @@
 #include <Python.h>
 
 // hawkey
-#include "src/hy-packagelist.h"
-#include "src/hy-selector.h"
+#include "hy-packagelist.h"
+#include "hy-selector.h"
 
 // pyhawkey
 #include "exception-py.h"

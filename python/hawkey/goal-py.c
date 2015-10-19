@@ -26,10 +26,10 @@
 #include <solv/util.h>
 
 // hawkey
-#include "src/hy-errno.h"
-#include "src/hy-goal.h"
-#include "src/hy-package_internal.h"
-#include "src/hy-packagelist.h"
+#include "hy-errno.h"
+#include "hy-goal.h"
+#include "hy-package_internal.h"
+#include "hy-packagelist.h"
 
 // pyhawkey
 #include "exception-py.h"

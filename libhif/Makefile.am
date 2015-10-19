@@ -66,6 +66,57 @@ libhif_include_HEADERS =					\
 	libhif.h
 
 libhif_la_SOURCES =						\
+	hy-advisory.c						\
+	hy-advisory.h						\
+	hy-advisory_internal.h					\
+	hy-advisorypkg.c					\
+	hy-advisorypkg.h					\
+	hy-advisorypkg_internal.h				\
+	hy-advisoryref.c					\
+	hy-advisoryref.h					\
+	hy-advisoryref_internal.h				\
+	hy-errno.c						\
+	hy-errno.h						\
+	hy-errno_internal.h					\
+	hy-goal.c						\
+	hy-goal.h						\
+	hy-goal_internal.h					\
+	hy-iutil.c						\
+	hy-iutil.h						\
+	hy-nevra.c						\
+	hy-nevra.h						\
+	hy-nevra_internal.h					\
+	hy-package.c						\
+	hy-package.h						\
+	hy-package_internal.h					\
+	hy-packagelist.c					\
+	hy-packagelist.h					\
+	hy-packageset.c						\
+	hy-packageset.h						\
+	hy-packageset_internal.h				\
+	hy-query.c						\
+	hy-query.h						\
+	hy-query_internal.h					\
+	hy-reldep.c						\
+	hy-reldep.h						\
+	hy-reldep_internal.h					\
+	hy-repo.c						\
+	hy-repo.h						\
+	hy-repo_internal.h					\
+	hy-sack.c						\
+	hy-sack.h						\
+	hy-sack_internal.h					\
+	hy-selector.c						\
+	hy-selector.h						\
+	hy-selector_internal.h					\
+	hy-subject.c						\
+	hy-subject.h						\
+	hy-subject_internal.c					\
+	hy-subject_internal.h					\
+	hy-types.h						\
+	hy-util.c						\
+	hy-util.h						\
+	hy-version.h						\
 	hif-cleanup.h						\
 	hif-context.c						\
 	hif-context.h						\

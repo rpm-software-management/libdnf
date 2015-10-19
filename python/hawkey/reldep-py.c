@@ -25,9 +25,9 @@
 #include <solv/util.h>
 
 // hawkey
-#include "src/hy-reldep_internal.h"
-#include "src/hy-sack_internal.h"
-#include "src/hy-iutil.h"
+#include "hy-reldep_internal.h"
+#include "hy-sack_internal.h"
+#include "hy-iutil.h"
 
 // pyhawkey
 #include "exception-py.h"

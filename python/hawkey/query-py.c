@@ -24,10 +24,10 @@
 #include <solv/util.h>
 
 // hawkey
-#include "src/hy-packagelist.h"
-#include "src/hy-packageset_internal.h"
-#include "src/hy-query_internal.h"
-#include "src/hy-reldep.h"
+#include "hy-packagelist.h"
+#include "hy-packageset_internal.h"
+#include "hy-query_internal.h"
+#include "hy-reldep.h"
 
 // pyhawkey
 #include "exception-py.h"

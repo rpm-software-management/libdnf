@@ -21,7 +21,7 @@
 #ifndef NEVRA_PY_H
 #define NEVRA_PY_H
 
-#include "src/hy-nevra.h"
+#include "hy-nevra.h"
 
 extern PyTypeObject nevra_Type;
 
