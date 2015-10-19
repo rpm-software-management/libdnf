@@ -13,7 +13,7 @@ BuildRequires: libtool
 BuildRequires: docbook-utils
 BuildRequires: gtk-doc
 BuildRequires: gobject-introspection-devel
-BuildRequires: hawkey-devel >= 0.4.6
+BuildRequires: libsolv-devel
 BuildRequires: rpm-devel >= 4.11.0
 BuildRequires: librepo-devel >= 1.7.11
 BuildRequires: libsolv-devel

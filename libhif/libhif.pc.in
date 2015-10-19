@@ -4,9 +4,9 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: libhif
-Description: Simple package manager interface using hawkey and librepo
+Description: Simple package manager interface and librepo
 Version: @VERSION@
-Requires: glib-2.0, gobject-2.0, hawkey, librepo, rpm
+Requires: glib-2.0, gobject-2.0, librepo, rpm
 Libs: -L${libdir} -lhif
 Cflags: -I${includedir}/libhif
 
