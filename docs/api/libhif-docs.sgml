@@ -33,7 +33,31 @@
         This part documents libhif.
       </para>
     </partintro>
+    <xi:include href="xml/hif-context.xml"/>
+    <xi:include href="xml/hif-db.xml"/>
+    <xi:include href="xml/hif-lock.xml"/>
+    <xi:include href="xml/hif-repos.xml"/>
+    <xi:include href="xml/hif-source.xml"/>
+    <xi:include href="xml/hif-state.xml"/>
+    <xi:include href="xml/hif-transaction.xml"/>
+  </reference>
+
+  <reference id="libhif-helpers">
+    <title>libhif helpers</title>
+    <partintro>
+      <para>
+        This part dociments the helper functionality.
+      </para>
+    </partintro>
+    <xi:include href="xml/hif-goal.xml"/>
+    <xi:include href="xml/hif-keyring.xml"/>
+    <xi:include href="xml/hif-sack.xml"/>
+    <xi:include href="xml/hif-utils.xml"/>
     <xi:include href="xml/hif-version.xml"/>
+    <xi:include href="xml/hif-package.xml"/>
+    <xi:include href="xml/hif-rpmts.xml"/>
+    <xi:include href="xml/hif-hawkey.xml"/>
+    <xi:include href="xml/hif-types.xml"/>
   </reference>
 
   <xi:include href="xml/annotation-glossary.xml">
