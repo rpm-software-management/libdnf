@@ -55,6 +55,11 @@ typedef struct _HifState		HifState;
  * @HIF_ERROR_SOURCE_NOT_FOUND:			Source was not found
  * @HIF_ERROR_FAILED_CONFIG_PARSING:		Configuration could not be read
  * @HIF_ERROR_PACKAGE_NOT_FOUND:		Package was not found
+ * @HIF_ERROR_INVALID_ARCHITECTURE:		Invalid architecture
+ * @HIF_ERROR_BAD_SELECTOR:			The selector was in some way bad
+ * @HIF_ERROR_NO_SOLUTION:			No solution was possible
+ * @HIF_ERROR_BAD_QUERY:			The query was in some way bad
+ * @HIF_ERROR_NO_CAPABILITY:			This feature was not available
  *
  * The error code.
  **/
@@ -76,6 +81,12 @@ typedef enum {
 	HIF_ERROR_SOURCE_NOT_FOUND		= 19,	/* Since: 0.1.0 */
 	HIF_ERROR_FAILED_CONFIG_PARSING		= 24,	/* Since: 0.1.0 */
 	HIF_ERROR_PACKAGE_NOT_FOUND		= 8,	/* Since: 0.1.0 */
+	HIF_ERROR_INVALID_ARCHITECTURE,			/* Since: 0.7.0 */
+	HIF_ERROR_BAD_SELECTOR,				/* Since: 0.7.0 */
+	HIF_ERROR_NO_SOLUTION,				/* Since: 0.7.0 */
+	HIF_ERROR_BAD_QUERY,				/* Since: 0.7.0 */
+	HIF_ERROR_CANNOT_WRITE_CACHE,			/* Since: 0.7.0 */
+	HIF_ERROR_NO_CAPABILITY,			/* Since: 0.7.0 */
 	/*< private >*/
 	HIF_ERROR_LAST
 } HifError;

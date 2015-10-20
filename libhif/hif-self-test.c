@@ -803,7 +803,7 @@ hif_utils_func (void)
 	g_assert (ret);
 
 	/* failure */
-	ret = hif_error_set_from_hawkey (HY_E_LIBSOLV, &error);
+	ret = hif_error_set_from_hawkey (HIF_ERROR_INTERNAL_ERROR, &error);
 	g_assert_error (error, HIF_ERROR, HIF_ERROR_FAILED);
 	g_assert (!ret);
 	g_clear_error (&error);

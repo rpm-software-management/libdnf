@@ -47,6 +47,7 @@
 #include <solv/solverdebug.h>
 
 // hawkey
+#include "hif-types.h"
 #include "hy-errno_internal.h"
 #include "hy-iutil.h"
 #include "hy-package_internal.h"
@@ -177,7 +178,7 @@ setarch(HySack sack, const char *req_arch)
 	if (pool->id2arch[id])
 	    count++;
     if (count < 2)
-	ret = HY_E_FAILED;
+	ret = HIF_ERROR_FAILED;
 
  done:
     solv_free(detected);
@@ -306,7 +307,7 @@ load_ext(HySack sack, HyRepo hrepo, int which_repodata,
 
     if (fn == NULL) {
 	HY_LOG_ERROR("load_ext(): no %d string for %s", which_filename, name);
-	return HY_E_NO_CAPABILITY;
+	return HIF_ERROR_NO_CAPABILITY;
     }
 
     char *fn_cache =  hy_sack_give_cache_fn(sack, name, suffix);
@@ -325,7 +326,7 @@ load_ext(HySack sack, HyRepo hrepo, int which_repodata,
 	ret = repo_add_solv(repo, fp, flags);
 	assert(ret == 0);
 	if (ret)
-	    ret = HY_E_LIBSOLV;
+	    ret = HIF_ERROR_INTERNAL_ERROR;
 	else {
 	    repo_update_state(hrepo, which_repodata, _HY_LOADED_CACHE);
 	    repo_set_repodata(hrepo, which_repodata, repo->nrepodata - 1);
@@ -340,7 +341,7 @@ load_ext(HySack sack, HyRepo hrepo, int which_repodata,
     fp = solv_xfopen(fn, "r");
     if (fp == NULL) {
 	HY_LOG_ERROR(format_err_str("Failed to open: %s.", fn));
-	ret = HY_E_IO;
+	ret = HIF_ERROR_FILE_INVALID;
 	goto finish;
     }
     HY_LOG_INFO("%s: loading: %s", __func__, fn);
@@ -366,7 +367,7 @@ static int
 load_filelists_cb(Repo *repo, FILE *fp)
 {
     if (repo_add_rpmmd(repo, fp, "FL", REPO_EXTEND_SOLVABLES))
-	return HY_E_LIBSOLV;
+	return HIF_ERROR_INTERNAL_ERROR;
     return 0;
 }
 
@@ -374,7 +375,7 @@ static int
 load_presto_cb(Repo *repo, FILE *fp)
 {
     if (repo_add_deltainfoxml(repo, fp, 0))
-	return HY_E_LIBSOLV;
+	return HIF_ERROR_INTERNAL_ERROR;
     return 0;
 }
 
@@ -382,7 +383,7 @@ static int
 load_updateinfo_cb(Repo *repo, FILE *fp)
 {
     if (repo_add_updateinfoxml(repo, fp, 0))
-	return HY_E_LIBSOLV;
+	return HIF_ERROR_INTERNAL_ERROR;
     return 0;
 }
 
@@ -412,7 +413,7 @@ write_main(HySack sack, HyRepo hrepo, int switchtosolv)
     if (tmp_fd < 0) {
 	HY_LOG_ERROR(format_err_str("Can not create temporary file: %s.",
 				    tmp_fn_templ));
-	retval = HY_E_IO;
+	retval = HIF_ERROR_FILE_INVALID;
 	goto done;
     }
 
@@ -420,7 +421,7 @@ write_main(HySack sack, HyRepo hrepo, int switchtosolv)
     if (!fp) {
 	HY_LOG_ERROR(format_err_str("Failed opening tmp file: %s.",
 				    strerror(errno)));
-	retval = HY_E_IO;
+	retval = HIF_ERROR_FILE_INVALID;
 	goto done;
     }
     retval = repo_write(repo, fp);
@@ -498,7 +499,7 @@ write_ext(HySack sack, HyRepo hrepo, int which_repodata, const char *suffix)
     if (tmp_fd < 0) {
 	HY_LOG_ERROR(format_err_str("Can not create temporary file: %s.",
 				    tmp_fn_templ));
-	ret = HY_E_IO;
+	ret = HIF_ERROR_FILE_INVALID;
 	goto done;
     }
     FILE *fp = fdopen(tmp_fd, "w+");
@@ -560,7 +561,7 @@ load_yum_repo(HySack sack, HyRepo hrepo)
     if (fp_repomd == NULL) {
 	HY_LOG_ERROR(format_err_str("Can not read file %s: %s.",
 				    fn_repomd, strerror(errno)));
-	retval = HY_E_IO;
+	retval = HIF_ERROR_FILE_INVALID;
 	goto finish;
     }
     checksum_fp(hrepo->checksum, fp_repomd);
@@ -571,7 +572,7 @@ load_yum_repo(HySack sack, HyRepo hrepo)
 	HY_LOG_INFO("using cached %s (0x%s)", name, chksum);
 	if (repo_add_solv(repo, fp_cache, 0)) {
 	    HY_LOG_ERROR("repo_add_solv() has failed.");
-	    retval = HY_E_LIBSOLV;
+	    retval = HIF_ERROR_INTERNAL_ERROR;
 	    goto finish;
 	}
 	hrepo->state_main = _HY_LOADED_CACHE;
@@ -584,7 +585,7 @@ load_yum_repo(HySack sack, HyRepo hrepo)
 	if (repo_add_repomdxml(repo, fp_repomd, 0) || \
 	    repo_add_rpmmd(repo, fp_primary, 0, 0)) {
 	    HY_LOG_ERROR("repo_add_repomdxml/rpmmd() has failed.");
-	    retval = HY_E_LIBSOLV;
+	    retval = HIF_ERROR_INTERNAL_ERROR;
 	    goto finish;
 	}
 	hrepo->state_main = _HY_LOADED_FETCH;
@@ -649,7 +650,7 @@ hy_sack_create(const char *cache_path, const char *arch, const char *rootdir,
 	if (ret) {
 	    HY_LOG_ERROR(format_err_str("Failed creating cachedir: %s.",
 					sack->cache_dir));
-	    hy_errno = HY_E_IO;
+	    hy_errno = HIF_ERROR_FILE_INVALID;
 	    goto fail;
 	}
     }
@@ -662,7 +663,7 @@ hy_sack_create(const char *cache_path, const char *arch, const char *rootdir,
 		      HY_LL_INFO | HY_LL_ERROR);
 
     if (setarch(sack, arch)) {
-	hy_errno = HY_E_ARCH;
+	hy_errno = HIF_ERROR_INVALID_ARCHITECTURE;
 	goto fail;
     }
 
@@ -893,7 +894,7 @@ hy_sack_repo_enabled(HySack sack, const char *reponame, int enabled)
     Map *excl = sack->repo_excludes;
 
     if (repo == NULL)
-	return HY_E_OP;
+	return HIF_ERROR_INTERNAL_ERROR;
     if (excl == NULL) {
 	excl = solv_calloc(1, sizeof(Map));
 	map_init(excl, pool->nsolvables);
@@ -933,7 +934,7 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
     rc = current_rpmdb_checksum(pool, hrepo->checksum);
     if (rc) {
 	format_err_str("Failed calculating RPMDB checksum.");
-	ret = HY_E_IO;
+	ret = HIF_ERROR_FILE_INVALID;
 	goto finish;
     }
 
@@ -954,7 +955,7 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
     if (rc) {
 	repo_free(repo, 1);
 	format_err_str("Failed loading RPMDB.");
-	ret = HY_E_IO;
+	ret = HIF_ERROR_FILE_INVALID;
 	goto finish;
     }
 
@@ -966,7 +967,7 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
     if (hrepo->state_main == _HY_LOADED_FETCH && build_cache) {
 	rc = write_main(sack, hrepo, 1);
 	if (rc) {
-	    ret = HY_E_CACHE_WRITE;
+	    ret = HIF_ERROR_CANNOT_WRITE_CACHE;
 	    goto finish;
 	}
     }
@@ -1005,7 +1006,7 @@ hy_sack_load_repo(HySack sack, HyRepo repo, int flags)
 			  HY_EXT_FILENAMES, HY_REPO_FILELISTS_FN,
 			  load_filelists_cb);
 	/* allow missing files */
-	if (retval == HY_E_NO_CAPABILITY) {
+	if (retval == HIF_ERROR_NO_CAPABILITY) {
 	    HY_LOG_INFO("no filelists metadata available for %s", repo->name);
 	    retval = 0;
 	}
@@ -1023,7 +1024,7 @@ hy_sack_load_repo(HySack sack, HyRepo repo, int flags)
 			  HY_EXT_PRESTO, HY_REPO_PRESTO_FN,
 			  load_presto_cb);
 	/* allow missing files */
-	if (retval == HY_E_NO_CAPABILITY) {
+	if (retval == HIF_ERROR_NO_CAPABILITY) {
 	    HY_LOG_INFO("no presto metadata available for %s", repo->name);
 	    retval = 0;
 	}
@@ -1039,7 +1040,7 @@ hy_sack_load_repo(HySack sack, HyRepo repo, int flags)
 			  HY_EXT_UPDATEINFO, HY_REPO_UPDATEINFO_FN,
 			  load_updateinfo_cb);
 	/* allow missing files */
-	if (retval == HY_E_NO_CAPABILITY) {
+	if (retval == HIF_ERROR_NO_CAPABILITY) {
 	    HY_LOG_INFO("no updateinfo available for %s", repo->name);
 	    retval = 0;
 	}
@@ -1052,7 +1053,7 @@ hy_sack_load_repo(HySack sack, HyRepo repo, int flags)
  finish:
     if (retval) {
 	hy_errno = retval;
-	return HY_E_FAILED;
+	return HIF_ERROR_FAILED;
     }
     return 0;
 }

@@ -35,6 +35,8 @@
 #include <solv/util.h>
 
 // hawkey
+#include "hif-cleanup.h"
+#include "hif-types.h"
 #include "hy-errno_internal.h"
 #include "hy-goal_internal.h"
 #include "hy-iutil.h"
@@ -306,9 +308,9 @@ list_results(HyGoal goal, Id type_filter1, Id type_filter2)
 
     if (!trans) {
 	if (!goal->solv)
-	    hy_errno = HY_E_OP;
+	    hy_errno = HIF_ERROR_INTERNAL_ERROR;
 	else
-	    hy_errno = HY_E_NO_SOLUTION;
+	    hy_errno = HIF_ERROR_NO_SOLUTION;
 	return NULL;
     }
     queue_init(&transpkgs);
@@ -361,7 +363,7 @@ filter_arch2job(HySack sack, const struct _Filter *f, Queue *job)
     Id archid = str2archid(pool, arch);
 
     if (archid == 0)
-	return HY_E_ARCH;
+	return HIF_ERROR_INVALID_ARCHITECTURE;
     for (int i = 0; i < job->count; i += 2) {
 	Id dep;
 	assert((job->elements[i] & SOLVER_SELECTMASK) == SOLVER_SOLVABLE_NAME);
@@ -533,7 +535,7 @@ sltr2job(const HySelector sltr, Queue *job, int solver_action)
     if (!any_req_filter) {
 	if (any_opt_filter)
 	    // no name or provides or file in the selector is an error
-	    ret = HY_E_SELECTOR;
+	    ret = HIF_ERROR_BAD_SELECTOR;
 	goto finish;
     }
 
@@ -754,8 +756,8 @@ hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags)
 	hy_packagelist_free(installed);
 	hy_query_free(q);
 	if (!count) {
-	    hy_errno = HY_E_VALIDATION;
-	    return HY_E_VALIDATION;
+	    hy_errno = HIF_ERROR_PACKAGE_NOT_FOUND;
+	    return HIF_ERROR_PACKAGE_NOT_FOUND;
 	}
     }
     goal->actions |= HY_UPGRADE;
@@ -823,7 +825,7 @@ hy_goal_describe_problem(HyGoal goal, unsigned i)
     SolverRuleinfo type;
 
     if (i >= (unsigned) hy_goal_count_problems(goal)) {
-	hy_errno = HY_E_OP;
+	hy_errno = HIF_ERROR_INTERNAL_ERROR;
 	return NULL;
     }
 
@@ -854,7 +856,7 @@ hy_goal_write_debugdata(HyGoal goal, const char *dir)
     HySack sack = goal->sack;
     Solver *solv = goal->solv;
     if (solv == NULL)
-	return HY_E_OP;
+	return HIF_ERROR_INTERNAL_ERROR;
 
     int flags = TESTCASE_RESULT_TRANSACTION | TESTCASE_RESULT_PROBLEMS;
     char *absdir = abspath(dir);
@@ -865,7 +867,7 @@ hy_goal_write_debugdata(HyGoal goal, const char *dir)
     if (!ret) {
 	format_err_str("Failed writing debugdata to %s: %s.", absdir,
 		       strerror(errno));
-	return HY_E_IO;
+	return HIF_ERROR_FILE_INVALID;
     }
     g_free(absdir);
     return 0;

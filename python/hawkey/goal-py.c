@@ -26,6 +26,8 @@
 #include <solv/util.h>
 
 // hawkey
+#include "hif-types.h"
+#include "hif-cleanup.h"
 #include "hy-errno.h"
 #include "hy-goal.h"
 #include "hy-package_internal.h"
@@ -155,14 +157,14 @@ op_ret2exc(int ret)
 	Py_RETURN_NONE;
 
     switch (hy_get_errno()) {
-    case HY_E_SELECTOR:
+    case HIF_ERROR_BAD_SELECTOR:
 	PyErr_SetString(HyExc_Value,
 			"Ill-formed Selector used for the operation.");
 	return NULL;
-    case HY_E_ARCH:
+    case HIF_ERROR_INVALID_ARCHITECTURE:
 	PyErr_SetString(HyExc_Arch, "Used arch is unknown.");
 	return NULL;
-    case HY_E_VALIDATION:
+    case HIF_ERROR_PACKAGE_NOT_FOUND:
 	PyErr_SetString(HyExc_Validation, "The validation check has failed.");
 	return NULL;
     default:
@@ -481,10 +483,10 @@ list_generic(_GoalObject *self, HyPackageList (*func)(HyGoal))
 
     if (!plist) {
 	switch (hy_get_errno()) {
-	case HY_E_OP:
+	case HIF_ERROR_INTERNAL_ERROR:
 	    PyErr_SetString(HyExc_Value, "Goal has not been run yet.");
 	    break;
-	case HY_E_NO_SOLUTION:
+	case HIF_ERROR_NO_SOLUTION:
 	    PyErr_SetString(HyExc_Runtime, "Goal could not find a solution.");
 	    break;
 	default:

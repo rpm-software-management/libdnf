@@ -21,6 +21,7 @@
 #include <Python.h>
 
 // hawkey
+#include "hif-types.h"
 #include "hy-errno_internal.h"
 
 // pyhawkey
@@ -81,10 +82,10 @@ ret2e(int ret, const char *msg)
     switch (ret) {
     case 0:
 	return 0;
-    case HY_E_FAILED:
+    case HIF_ERROR_FAILED:
 	exctype = HyExc_Runtime;
 	break;
-    case HY_E_IO: {
+    case HIF_ERROR_FILE_INVALID: {
 	const char *description = get_err_str();
 
 	exctype = PyExc_IOError;
@@ -92,8 +93,8 @@ ret2e(int ret, const char *msg)
 	    msg = description;
 	break;
     }
-    case HY_E_OP:
-    case HY_E_SELECTOR:
+    case HIF_ERROR_INTERNAL_ERROR:
+    case HIF_ERROR_BAD_SELECTOR:
 	exctype = HyExc_Value;
 	break;
     default:

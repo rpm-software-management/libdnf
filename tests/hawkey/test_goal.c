@@ -22,6 +22,7 @@
 #include <stdarg.h>
 
 // hawkey
+#include <libhif/libhif.h>
 #include "libhif/hy-errno.h"
 #include "libhif/hy-goal.h"
 #include "libhif/hy-iutil.h"
@@ -166,7 +167,7 @@ START_TEST(test_goal_list_err)
 {
     HyGoal goal = hy_goal_create(test_globals.sack);
     fail_unless(hy_goal_list_installs(goal) == NULL);
-    fail_unless(hy_get_errno() == HY_E_OP);
+    fail_unless(hy_get_errno() == HIF_ERROR_INTERNAL_ERROR);
     hy_goal_free(goal);
 }
 END_TEST
@@ -235,12 +236,12 @@ START_TEST(test_goal_install_selector_err)
     sltr = hy_selector_create(test_globals.sack);
     hy_selector_set(sltr, HY_PKG_ARCH, HY_EQ, "i586");
     fail_unless(hy_goal_install_selector(goal, sltr));
-    fail_unless(hy_get_errno() == HY_E_SELECTOR);
+    fail_unless(hy_get_errno() == HIF_ERROR_BAD_SELECTOR);
     hy_selector_free(sltr);
 
     sltr = hy_selector_create(test_globals.sack);
     hy_selector_set(sltr, HY_PKG_NAME, HY_GT, "semolina");
-    fail_unless(hy_get_errno() == HY_E_SELECTOR);
+    fail_unless(hy_get_errno() == HIF_ERROR_BAD_SELECTOR);
     hy_selector_free(sltr);
 
     sltr = hy_selector_create(test_globals.sack);
@@ -579,7 +580,7 @@ START_TEST(test_goal_describe_problem)
     hy_goal_install(goal, pkg);
     fail_unless(hy_goal_run(goal));
     fail_unless(hy_goal_list_installs(goal) == NULL);
-    fail_unless(hy_get_errno() == HY_E_NO_SOLUTION);
+    fail_unless(hy_get_errno() == HIF_ERROR_NO_SOLUTION);
     fail_unless(hy_goal_count_problems(goal) > 0);
 
     char *problem = hy_goal_describe_problem(goal, 0);
@@ -717,7 +718,7 @@ START_TEST(test_goal_verify)
 
     fail_unless(hy_goal_run_flags(goal, HY_VERIFY));
     fail_unless(hy_goal_list_installs(goal) == NULL);
-    fail_unless(hy_get_errno() == HY_E_NO_SOLUTION);
+    fail_unless(hy_get_errno() == HIF_ERROR_NO_SOLUTION);
     fail_unless(hy_goal_count_problems(goal) == 2);
 
     char *expected;

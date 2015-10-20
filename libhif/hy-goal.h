@@ -68,7 +68,7 @@ int hy_goal_erase_flags(HyGoal goal, HyPackage pkg, int flags);
 /**
  * Erase packages specified by the Selector.
  *
- * @returns	0 on success, HY_E_SELECTOR for an invalid Selector.
+ * @returns	0 on success, HIF_ERROR_BAD_SELECTOR for an invalid Selector.
  */
 int hy_goal_erase_selector(HyGoal goal, HySelector sltr);
 int hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags);

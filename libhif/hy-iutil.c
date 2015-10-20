@@ -45,6 +45,7 @@
 #include <glib.h>
 
 // hawkey
+#include "hif-types.h"
 #include "hy-errno_internal.h"
 #include "hy-iutil.h"
 #include "hy-package_internal.h"
@@ -226,7 +227,7 @@ abspath(const char *path)
 {
     const int len = strlen(path);
     if (len <= 1) {
-	hy_errno = HY_E_OP;
+	hy_errno = HIF_ERROR_INTERNAL_ERROR;
 	return NULL;
     }
 
@@ -235,7 +236,7 @@ abspath(const char *path)
 
     char cwd[PATH_MAX];
     if (!getcwd(cwd, PATH_MAX)) {
-	hy_errno = HY_E_FAILED;
+	hy_errno = HIF_ERROR_FAILED;
 	return NULL;
     }
 
@@ -302,12 +303,12 @@ mv(HySack sack, const char *old, const char *new)
     if (rename(old, new)) {
 	HY_LOG_ERROR(format_err_str("Failed renaming %s to %s: %s", old, new,
 				    strerror(errno)));
-	return HY_E_IO;
+	return HIF_ERROR_FILE_INVALID;
     }
     if (chmod(new, 0666 & ~get_umask())) {
 	HY_LOG_ERROR(format_err_str("Failed setting perms on %s: %s", new,
 				    strerror(errno)));
-	return HY_E_IO;
+	return HIF_ERROR_FILE_INVALID;
     }
     return 0;
 }

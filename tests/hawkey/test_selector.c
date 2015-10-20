@@ -19,6 +19,7 @@
  */
 
 // hawkey
+#include <libhif/libhif.h>
 #include "libhif/hy-selector.h"
 #include "libhif/hy-errno.h"
 #include "fixtures.h"
@@ -42,7 +43,7 @@ START_TEST(test_sltr_provides)
 {
     HySelector sltr = hy_selector_create(test_globals.sack);
     ck_assert_int_eq(hy_selector_set(sltr, HY_PKG_PROVIDES, HY_EQ, "*"),
-		     HY_E_SELECTOR);
+		     HIF_ERROR_BAD_SELECTOR);
     hy_selector_free(sltr);
 }
 END_TEST

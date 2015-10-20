@@ -31,6 +31,7 @@
 #include <solv/util.h>
 
 // hawkey
+#include "hif-types.h"
 #include "hy-errno.h"
 #include "hy-iutil.h"
 #include "hy-query_internal.h"
@@ -990,7 +991,7 @@ int
 hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
 {
     if (!valid_filter_str(keyname, cmp_type))
-	return HY_E_QUERY;
+	return HIF_ERROR_BAD_QUERY;
     q->applied = 0;
 
     switch (keyname) {
@@ -1045,7 +1046,7 @@ hy_query_filter_in(HyQuery q, int keyname, int cmp_type,
 		   const char **matches)
 {
     if (!valid_filter_str(keyname, cmp_type))
-	return HY_E_QUERY;
+	return HIF_ERROR_BAD_QUERY;
     q->applied = 0;
 
     const unsigned count = count_nullt_array(matches);
@@ -1063,7 +1064,7 @@ int
 hy_query_filter_num(HyQuery q, int keyname, int cmp_type, int match)
 {
     if (!valid_filter_num(keyname, cmp_type))
-	return HY_E_QUERY;
+	return HIF_ERROR_BAD_QUERY;
     q->applied = 0;
 
     struct _Filter *filterp = query_add_filter(q, 1);
@@ -1079,7 +1080,7 @@ hy_query_filter_num_in(HyQuery q, int keyname, int cmp_type, int nmatches,
 		       const int *matches)
 {
     if (!valid_filter_num(keyname, cmp_type))
-	return HY_E_QUERY;
+	return HIF_ERROR_BAD_QUERY;
     q->applied = 0;
 
     struct _Filter *filterp = query_add_filter(q, nmatches);
@@ -1097,7 +1098,7 @@ hy_query_filter_package_in(HyQuery q, int keyname, int cmp_type,
 			   const HyPackageSet pset)
 {
     if (!valid_filter_pkg(keyname, cmp_type))
-	return HY_E_QUERY;
+	return HIF_ERROR_BAD_QUERY;
     q->applied = 0;
 
     struct _Filter *filterp = query_add_filter(q, 1);
@@ -1112,7 +1113,7 @@ int
 hy_query_filter_reldep(HyQuery q, int keyname, const HyReldep reldep)
 {
     if (!valid_filter_reldep(keyname))
-	return HY_E_QUERY;
+	return HIF_ERROR_BAD_QUERY;
     q->applied = 0;
 
     struct _Filter *filterp = query_add_filter(q, 1);
@@ -1127,7 +1128,7 @@ int
 hy_query_filter_reldep_in(HyQuery q, int keyname, const HyReldepList reldeplist)
 {
     if (!valid_filter_reldep(keyname))
-	return HY_E_QUERY;
+	return HIF_ERROR_BAD_QUERY;
     q->applied = 0;
 
     const int nmatches = hy_reldeplist_count(reldeplist);
@@ -1163,7 +1164,7 @@ hy_query_filter_provides_in(HyQuery q, char **reldep_strs)
     for (int i = 0; reldep_strs[i] != NULL; ++i) {
 	if (parse_reldep_str(reldep_strs[i], &name, &evr, &cmp_type) == -1) {
 	    hy_reldeplist_free(reldeplist);
-	    return HY_E_QUERY;
+	    return HIF_ERROR_BAD_QUERY;
 	}
 	reldep = hy_reldep_create(q->sack, name, cmp_type, evr);
 	if (reldep)

@@ -24,6 +24,7 @@
 #include <solv/util.h>
 
 // hawkey
+#include "hif-types.h"
 #include "hy-errno.h"
 #include "hy-goal_internal.h"
 #include "hy-iutil.h"
@@ -52,7 +53,7 @@ replace_filter(HySack sack, struct _Filter **fp, int keyname, int cmp_type,
 	if (reldep == NULL) {
 	    filter_free(*fp);
 	    *fp = NULL;
-	    return HY_E_SELECTOR;
+	    return HIF_ERROR_BAD_SELECTOR;
 	}
 	f->matches[0].reldep = reldep;
 	return 0;
@@ -106,7 +107,7 @@ int
 hy_selector_set(HySelector sltr, int keyname, int cmp_type, const char *match)
 {
     if (!valid_setting(keyname, cmp_type))
-	return HY_E_SELECTOR;
+	return HIF_ERROR_BAD_SELECTOR;
     HySack sack = selector_sack(sltr);
 
     switch (keyname) {
@@ -117,20 +118,20 @@ hy_selector_set(HySelector sltr, int keyname, int cmp_type, const char *match)
 	return replace_filter(sack, &sltr->f_evr, keyname, cmp_type, match);
     case HY_PKG_NAME:
 	if (sltr->f_provides || sltr->f_file)
-	    return HY_E_SELECTOR;
+	    return HIF_ERROR_BAD_SELECTOR;
 	return replace_filter(sack, &sltr->f_name, keyname, cmp_type, match);
     case HY_PKG_PROVIDES:
 	if (sltr->f_name || sltr->f_file)
-	    return HY_E_SELECTOR;
+	    return HIF_ERROR_BAD_SELECTOR;
 	return replace_filter(sack, &sltr->f_provides, keyname, cmp_type, match);
     case HY_PKG_REPONAME:
         return replace_filter(sack, &sltr->f_reponame, keyname, cmp_type, match);
     case HY_PKG_FILE:
 	if (sltr->f_name || sltr->f_provides)
-	    return HY_E_SELECTOR;
+	    return HIF_ERROR_BAD_SELECTOR;
 	return replace_filter(sack, &sltr->f_file, keyname, cmp_type, match);
     default:
-	return HY_E_SELECTOR;
+	return HIF_ERROR_BAD_SELECTOR;
     }
 }
 

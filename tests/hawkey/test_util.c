@@ -22,6 +22,7 @@
 #include <stdio.h>
 
 // hawkey
+#include <libhif/libhif.h>
 #include "libhif/hy-errno.h"
 #include "libhif/hy-util.h"
 #include "test_suites.h"
@@ -81,7 +82,7 @@ START_TEST(test_split_nevra)
 
     n = "no.go";
     ret = hy_split_nevra(n, &name, &epoch, &version, &release, &arch);
-    fail_unless(ret == HY_E_OP);
+    fail_unless(ret == HIF_ERROR_INTERNAL_ERROR);
 }
 END_TEST
 

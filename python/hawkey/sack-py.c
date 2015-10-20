@@ -21,6 +21,7 @@
 #include "Python.h"
 
 // hawkey
+#include "hif-types.h"
 #include "hy-errno.h"
 #include "hy-package_internal.h"
 #include "hy-packageset.h"
@@ -166,11 +167,11 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     Py_XDECREF(tmp2_py_str);
     if (self->sack == NULL) {
 	switch (hy_get_errno()) {
-	case HY_E_IO:
+	case HIF_ERROR_FILE_INVALID:
 	    PyErr_SetString(PyExc_IOError,
 			    "Failed creating working files for the Sack.");
 	    break;
-	case HY_E_ARCH:
+	case HIF_ERROR_INVALID_ARCHITECTURE:
 	    PyErr_SetString(HyExc_Arch, "Unrecognized arch for the sack.");
 	    break;
 	default:
@@ -419,7 +420,7 @@ load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 	flags |= HY_BUILD_CACHE;
 
     int ret = hy_sack_load_system_repo(self->sack, crepo, flags);
-    if (ret == HY_E_CACHE_WRITE) {
+    if (ret == HIF_ERROR_CANNOT_WRITE_CACHE) {
 	PyErr_SetString(PyExc_IOError, "Failed writing the cache.");
 	return NULL;
     } else if (ret2e(ret, "load_system_repo() failed."))

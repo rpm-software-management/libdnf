@@ -28,6 +28,7 @@
 #include <solv/testcase.h>
 
 // hawkey
+#include <libhif/libhif.h>
 #include "libhif/hy-errno.h"
 #include "libhif/hy-package_internal.h"
 #include "libhif/hy-repo_internal.h"
@@ -58,7 +59,7 @@ START_TEST(test_sack_create)
     sack = hy_sack_create(test_globals.tmpdir, "", NULL, NULL,
 			  HY_MAKE_CACHE_DIR);
     fail_unless(sack == NULL);
-    fail_unless(hy_get_errno() == HY_E_ARCH);
+    fail_unless(hy_get_errno() == HIF_ERROR_INVALID_ARCHITECTURE);
 }
 END_TEST
 
@@ -99,8 +100,8 @@ START_TEST(test_load_repo_err)
 				 HY_MAKE_CACHE_DIR);
     HyRepo repo = hy_repo_create("crabalocker");
     hy_repo_set_string(repo, HY_REPO_MD_FN, "/non/existing");
-    fail_unless(hy_sack_load_repo(sack, repo, 0) == HY_E_FAILED);
-    fail_unless(hy_get_errno() == HY_E_IO);
+    fail_unless(hy_sack_load_repo(sack, repo, 0) == HIF_ERROR_FAILED);
+    fail_unless(hy_get_errno() == HIF_ERROR_FILE_INVALID);
     hy_repo_free(repo);
     hy_sack_free(sack);
 }

@@ -25,6 +25,7 @@
 #include <sys/utsname.h>
 
 // hawkey
+#include "hif-types.h"
 #include "hy-errno.h"
 #include "hy-iutil.h"
 #include "hy-package.h"
@@ -41,7 +42,7 @@ parse_cpu_flags(int *flags, const char *section)
 {
     char *cpuinfo = read_whole_file("/proc/cpuinfo");
     if (cpuinfo == NULL)
-	return HY_E_FAILED;
+	return HIF_ERROR_FAILED;
 
     char *features = strstr(cpuinfo, section);
     if (features != NULL) {
@@ -114,7 +115,7 @@ hy_detect_arch(char **arch)
     struct utsname un;
 
     if (uname(&un))
-	return HY_E_FAILED;
+	return HIF_ERROR_FAILED;
 
     if (!strcmp(un.machine, "armv6l")) {
 	int flags = 0;
@@ -152,7 +153,7 @@ hy_split_nevra(const char *nevra, char **name, long int *epoch,
 {
     const int len = strlen(nevra);
     if (len <= 0)
-	return HY_E_OP;
+	return HIF_ERROR_INTERNAL_ERROR;
 
     const char *m1 = NULL, *m2 = NULL, *m3 = NULL;
     const char *c;
@@ -162,7 +163,7 @@ hy_split_nevra(const char *nevra, char **name, long int *epoch,
 	    break;
 	}
     if (c == nevra)
-	return HY_E_OP;
+	return HIF_ERROR_INTERNAL_ERROR;
 
     for (; c > nevra; --c)
 	if (*c == '-') {
@@ -174,7 +175,7 @@ hy_split_nevra(const char *nevra, char **name, long int *epoch,
 	    }
 	}
     if (c == nevra)
-	return HY_E_OP;
+	return HIF_ERROR_INTERNAL_ERROR;
 
     *arch = solv_strdup(m3+1);
     *name = hy_strndup(nevra, (m1 - nevra));

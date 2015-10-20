@@ -61,8 +61,8 @@ int hy_sack_repo_enabled(HySack sack, const char *reponame, int enabled);
 /**
  * Load RPMDB, the system package database.
  *
- * @returns           0 on success, HY_E_IO on fatal error,
- *		      HY_E_CACHE_WRITE on cache write error.
+ * @returns           0 on success, HIF_ERROR_FILE_INVALID on fatal error,
+ *		      HIF_ERROR_CANNOT_WRITE_CACHE on cache write error.
  */
 int hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags);
 
