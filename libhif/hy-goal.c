@@ -814,7 +814,7 @@ hy_goal_count_problems(HyGoal goal)
 /**
  * String describing the encountered solving problem 'i'.
  *
- * Caller is responsible for freeing the returned string using hy_free().
+ * Caller is responsible for freeing the returned string using g_free().
  */
 char *
 hy_goal_describe_problem(HyGoal goal, unsigned i)
@@ -867,7 +867,7 @@ hy_goal_write_debugdata(HyGoal goal, const char *dir)
 		       strerror(errno));
 	return HY_E_IO;
     }
-    hy_free(absdir);
+    g_free(absdir);
     return 0;
 }
 

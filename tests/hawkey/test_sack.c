@@ -69,11 +69,11 @@ START_TEST(test_give_cache_fn)
 
     char *path = hy_sack_give_cache_fn(sack, "rain", NULL);
     fail_if(strstr(path, "rain.solv") == NULL);
-    hy_free(path);
+    g_free(path);
 
     path = hy_sack_give_cache_fn(sack, "rain", HY_EXT_FILENAMES);
     fail_if(strstr(path, "rain-filenames.solvx") == NULL);
-    hy_free(path);
+    g_free(path);
     hy_sack_free(sack);
 }
 END_TEST
@@ -88,7 +88,7 @@ START_TEST(test_list_arches)
     fail_unless(count_nullt_array(arches), 7);
     ck_assert_str_eq(arches[3], "i686");
 
-    hy_free(arches);
+    g_free(arches);
     hy_sack_free(sack);
 }
 END_TEST
@@ -122,7 +122,7 @@ START_TEST(test_repo_written)
     fail_unless(repo->state_presto == _HY_WRITTEN);
     fail_if(access(filename, R_OK|W_OK));
 
-    hy_free(filename);
+    g_free(filename);
     hy_sack_free(sack);
 }
 END_TEST
@@ -171,7 +171,7 @@ START_TEST(test_filelist)
 
     fail_unless(repo->state_filelists == _HY_WRITTEN);
     fail_if(access(fn_solv, R_OK));
-    hy_free(fn_solv);
+    g_free(fn_solv);
 
     check_filelist(sack_pool(test_globals.sack));
 }
@@ -219,7 +219,7 @@ START_TEST(test_presto)
 
     fail_if(access(fn_solv, R_OK));
     fail_unless(repo->state_presto == _HY_WRITTEN);
-    hy_free(fn_solv);
+    g_free(fn_solv);
     check_prestoinfo(sack_pool(sack));
 }
 END_TEST

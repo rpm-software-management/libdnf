@@ -274,7 +274,7 @@ hif_transaction_ensure_source (HifTransaction *transaction,
 		       HY_CMDLINE_REPO_NAME) == 0) {
 		location = hy_package_get_location (pkg);
 		hif_package_set_filename (pkg, location);
-		hy_free (location);
+		g_free (location);
 		return TRUE;
 	}
 

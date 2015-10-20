@@ -395,7 +395,7 @@ list_arches(_SackObject *self, PyObject *unused)
 	return NULL;
     }
     list = strlist_to_pylist(arches);
-    hy_free(arches);
+    g_free(arches);
     return list;
 }
 

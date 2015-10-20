@@ -100,10 +100,10 @@ START_TEST(test_versions)
     fail_unless(epoch == 6);
     version = hy_package_get_version(pkg);
     ck_assert_str_eq(version, "5.0");
-    hy_free(version);
+    g_free(version);
     release = hy_package_get_release(pkg);
     ck_assert_str_eq(release, "11");
-    hy_free(release);
+    g_free(release);
     hy_package_free(pkg);
 
     pkg = by_name(sack, "jay");
@@ -113,10 +113,10 @@ START_TEST(test_versions)
     fail_unless(epoch == 0);
     version = hy_package_get_version(pkg);
     ck_assert_str_eq(version, "5.0");
-    hy_free(version);
+    g_free(version);
     release = hy_package_get_release(pkg);
     ck_assert_str_eq(release, "0");
-    hy_free(release);
+    g_free(release);
     hy_package_free(pkg);
 }
 END_TEST
@@ -143,7 +143,7 @@ START_TEST(test_get_requires)
 
     char *depstr = hy_reldep_str(reldep);
     ck_assert_str_eq(depstr, "P-lib >= 3");
-    hy_free(depstr);
+    g_free(depstr);
 
     hy_reldep_free(reldep);
     hy_reldeplist_free(reldeplist);
@@ -321,13 +321,13 @@ START_TEST(test_sourcerpm)
     char *sourcerpm = hy_package_get_sourcerpm(pkg);
 
     ck_assert_str_eq(sourcerpm, "tour-4-6.src.rpm");
-    hy_free(sourcerpm);
+    g_free(sourcerpm);
     hy_package_free(pkg);
 
     pkg = by_name(test_globals.sack, "mystery-devel");
     sourcerpm = hy_package_get_sourcerpm(pkg);
     ck_assert_str_eq(sourcerpm, "mystery-19.67-1.src.rpm");
-    hy_free(sourcerpm);
+    g_free(sourcerpm);
     hy_package_free(pkg);
 }
 END_TEST

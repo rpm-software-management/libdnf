@@ -71,8 +71,8 @@ hif_package_destroy_func (void *userdata)
 	g_free (priv->origin);
 	g_free (priv->package_id);
 	g_free (priv->description);
-	hy_free (priv->checksum_str);
-	hy_free (priv->nevra);
+	g_free (priv->checksum_str);
+	g_free (priv->nevra);
 	g_slice_free (HifPackagePrivate, priv);
 }
 
@@ -206,7 +206,7 @@ hif_package_set_pkgid (HyPackage pkg, const gchar *pkgid)
 	priv = hif_package_get_priv (pkg);
 	if (priv == NULL)
 		return;
-	hy_free (priv->checksum_str);
+	g_free (priv->checksum_str);
 	priv->checksum_str = strdup (pkgid);
 }
 
@@ -715,7 +715,7 @@ hif_package_check_filename (HyPackage pkg, gboolean *valid, GError **error)
 	if (!ret)
 		goto out;
 out:
-	hy_free (checksum_valid);
+	g_free (checksum_valid);
 	return ret;
 }
 

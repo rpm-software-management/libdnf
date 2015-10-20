@@ -218,7 +218,7 @@ START_TEST(test_goal_install_selector)
     HyPackageList plist = hy_goal_list_installs(goal);
     char *nvra = hy_package_get_nevra(hy_packagelist_get(plist, 0));
     ck_assert_str_eq(nvra, "semolina-2-0.i686");
-    hy_free(nvra);
+    g_free(nvra);
     hy_packagelist_free(plist);
     hy_goal_free(goal);
 }
@@ -585,7 +585,7 @@ START_TEST(test_goal_describe_problem)
     char *problem = hy_goal_describe_problem(goal, 0);
     const char *expected = "nothing provides goodbye";
     fail_if(strncmp(problem, expected, strlen(expected)));
-    hy_free(problem);
+    g_free(problem);
 
     hy_package_free(pkg);
     hy_goal_free(goal);
@@ -725,11 +725,11 @@ START_TEST(test_goal_verify)
     problem = hy_goal_describe_problem(goal, 0);
     expected = "nothing provides missing-dep needed by missing-1-0.x86_64";
     fail_if(strncmp(problem, expected, strlen(expected)));
-    hy_free(problem);
+    g_free(problem);
     problem = hy_goal_describe_problem(goal, 1);
     expected = "package conflict-1-0.x86_64 conflicts with ok provided by ok-1-0.x86_64";
     fail_if(strncmp(problem, expected, strlen(expected)));
-    hy_free(problem);
+    g_free(problem);
 
     hy_goal_free(goal);
 }
@@ -837,7 +837,7 @@ START_TEST(test_goal_describe_problem_excludes)
 
     char *problem = hy_goal_describe_problem(goal, 0);
     ck_assert_str_eq(problem, "package semolina does not exist");
-    hy_free(problem);
+    g_free(problem);
 
     hy_goal_free(goal);
 }

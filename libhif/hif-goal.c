@@ -66,7 +66,7 @@ hif_goal_depsolve (HyGoal goal, GError **error)
 		for (j = 0; j < cnt; j++) {
 			tmp = hy_goal_describe_problem (goal, j);
 			g_string_append_printf (string, "%i. %s\n", j, tmp);
-			hy_free (tmp);
+			g_free (tmp);
 		}
 		g_string_truncate (string, string->len - 1);
 		g_set_error_literal (error,

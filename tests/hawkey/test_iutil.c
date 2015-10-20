@@ -45,11 +45,11 @@ START_TEST(test_abspath)
 {
     char *abs = abspath("/cus/tard");
     ck_assert_str_eq(abs, "/cus/tard");
-    hy_free(abs);
+    g_free(abs);
 
     abs = abspath("cus/tard");
     ck_assert_int_eq(abs[0], '/');
-    hy_free(abs);
+    g_free(abs);
 }
 END_TEST
 

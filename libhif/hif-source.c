@@ -1761,7 +1761,7 @@ out:
 	g_free (dlstate.last_mirror_failure_message);
 	g_free (dlstate.last_mirror_url);
 	g_slist_free (packages);
-	hy_free (checksum_str);
+	g_free (checksum_str);
 	return loc;
 }
 

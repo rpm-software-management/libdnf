@@ -33,7 +33,7 @@ START_TEST(test_detect_arch)
     int len = strlen(arch);
     ck_assert_int_gt(len, 0);
     ck_assert_int_eq(ret, 0);
-    hy_free(arch);
+    g_free(arch);
 }
 END_TEST
 
@@ -50,10 +50,10 @@ START_TEST(test_split_nevra)
     ck_assert_str_eq(version, "3.34");
     ck_assert_str_eq(release, "3.fc666");
     ck_assert_str_eq(arch, "i686");
-    hy_free(name);
-    hy_free(version);
-    hy_free(release);
-    hy_free(arch);
+    g_free(name);
+    g_free(version);
+    g_free(release);
+    g_free(arch);
 
     n = "python-meanwhile3.34.3-3:3.34-3.fc666.noarch";
     fail_if(hy_split_nevra(n, &name, &epoch, &version, &release, &arch));
@@ -62,10 +62,10 @@ START_TEST(test_split_nevra)
     ck_assert_str_eq(version, "3.34");
     ck_assert_str_eq(release, "3.fc666");
     ck_assert_str_eq(arch, "noarch");
-    hy_free(name);
-    hy_free(version);
-    hy_free(release);
-    hy_free(arch);
+    g_free(name);
+    g_free(version);
+    g_free(release);
+    g_free(arch);
 
     n = "easy-1.2.3-4.fc18.x86_64";
     hy_split_nevra(n, &name, &epoch, &version, &release, &arch);
@@ -74,10 +74,10 @@ START_TEST(test_split_nevra)
     ck_assert_str_eq(version, "1.2.3");
     ck_assert_str_eq(release, "4.fc18");
     ck_assert_str_eq(arch, "x86_64");
-    hy_free(name);
-    hy_free(version);
-    hy_free(release);
-    hy_free(arch);
+    g_free(name);
+    g_free(version);
+    g_free(release);
+    g_free(arch);
 
     n = "no.go";
     ret = hy_split_nevra(n, &name, &epoch, &version, &release, &arch);

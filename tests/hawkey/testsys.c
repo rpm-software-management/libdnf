@@ -80,7 +80,7 @@ dump_packagelist(HyPackageList plist, int free)
 	Solvable *s = pool_id2solvable(package_pool(pkg), package_id(pkg));
 	char *nvra = hy_package_get_nevra(pkg);
 	printf("\t%s @%s\n", nvra, s->repo->name);
-	hy_free(nvra);
+	g_free(nvra);
     }
     if (free)
 	hy_packagelist_free(plist);

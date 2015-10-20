@@ -63,12 +63,6 @@ parse_cpu_flags(int *flags, const char *section)
     return 0;
 }
 
-void
-hy_free(void *mem)
-{
-    free(mem);
-}
-
 const char *
 hy_chksum_name(int chksum_type)
 {

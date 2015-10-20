@@ -75,7 +75,7 @@ static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
 	    char *str = hy_chksum_str(hdrid, type);
 
 	    printf("\tsha1 header id: %s\n", str);
-	    hy_free(str);
+	    g_free(str);
 	}
 	if (show_obsoletes) {
 	    HyReldepList obsoletes = hy_package_get_obsoletes(pkg);
@@ -89,13 +89,13 @@ static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
 		HyPackage opkg = hy_packagelist_get(olist, j);
 		char *onvra = hy_package_get_nevra(opkg);
 		printf("obsoleting: %s\n", onvra);
-		hy_free(onvra);
+		g_free(onvra);
 	    }
 	    hy_packagelist_free(olist);
 	    hy_query_free(qobs);
 	    hy_reldeplist_free(obsoletes);
 	}
-	hy_free(nvra);
+	g_free(nvra);
     }
     hy_packagelist_free(plist);
 }
@@ -187,7 +187,7 @@ dump_goal_errors(HyGoal goal)
     for (int i = 0; i < hy_goal_count_problems(goal); ++i) {
 	char *problem = hy_goal_describe_problem(goal, i);
 	printf("%s\n", problem);
-	hy_free(problem);
+	g_free(problem);
     }
 }
 
@@ -222,7 +222,7 @@ erase(HySack sack, const char *name)
 	char *nvra = hy_package_get_nevra(pkg);
 
 	printf("erasing %s\n", nvra);
-	hy_free(nvra);
+	g_free(nvra);
     }
 
     hy_goal_free(goal);
@@ -259,10 +259,10 @@ static void update(HySack sack, HyPackage pkg)
 	printf("\tfrom: %s\n", nvra_installed);
 	printf("\tsize: %lld kB\n", hy_package_get_size(pkg) / 1024);
 
-	hy_free(nvra_installed);
+	g_free(nvra_installed);
 	hy_packagelist_free(obsoleted);
-	hy_free(location);
-	hy_free(nvra);
+	g_free(location);
+	g_free(nvra);
     }
     hy_packagelist_free(plist);
     // handle installs
@@ -276,8 +276,8 @@ static void update(HySack sack, HyPackage pkg)
 	printf("installing: %s using %s\n", nvra, location);
 	printf("\tsize: %lld kB\n", hy_package_get_size(pkg) / 1024);
 
-	hy_free(location);
-	hy_free(nvra);
+	g_free(location);
+	g_free(nvra);
     }
     hy_packagelist_free(plist);
 
