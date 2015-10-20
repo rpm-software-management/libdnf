@@ -23,9 +23,9 @@
 
 #include "hy-types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <glib.h>
+
+G_BEGIN_DECLS
 
 enum _hy_nevra_param_e {
     HY_NEVRA_NAME = 0,
@@ -46,8 +46,6 @@ HyQuery hy_nevra_to_query(HyNevra nevra, HySack sack);
 int hy_nevra_evr_cmp(HyNevra nevra1, HyNevra nevra2, HySack sack);
 char *hy_nevra_get_evr(HyNevra nevra);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif

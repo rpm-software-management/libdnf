@@ -21,9 +21,9 @@
 #ifndef HY_QUERY_H
 #define HY_QUERY_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <glib.h>
+
+G_BEGIN_DECLS
 
 /* hawkey */
 #include "hy-types.h"
@@ -90,8 +90,6 @@ HyPackageList hy_query_run(HyQuery q);
 HyPackageSet hy_query_run_set(HyQuery q);
 
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif /* HY_QUERY_H */

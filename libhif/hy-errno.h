@@ -21,9 +21,9 @@
 #ifndef HY_ERRNO_H
 #define HY_ERRNO_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <glib.h>
+
+G_BEGIN_DECLS
 
 enum _hy_errors_e {
     HY_E_FAILED		= 1,	// general runtime error
@@ -43,8 +43,6 @@ extern __thread int hy_errno;
 
 int hy_get_errno(void);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif /* HY_ERRNO_H */

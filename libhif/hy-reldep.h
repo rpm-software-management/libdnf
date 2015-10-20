@@ -21,9 +21,9 @@
 #ifndef HY_RELDEP_H
 #define HY_RELDEP_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <glib.h>
+
+G_BEGIN_DECLS
 
 /* hawkey */
 #include "hy-types.h"
@@ -40,8 +40,6 @@ void hy_reldeplist_add(HyReldepList reldeplist, HyReldep reldep);
 int hy_reldeplist_count(HyReldepList reldeplist);
 HyReldep hy_reldeplist_get_clone(HyReldepList reldeplist, int index);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif /* HY_RELDEP_H */

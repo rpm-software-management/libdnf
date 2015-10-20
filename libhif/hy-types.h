@@ -23,9 +23,7 @@
 
 #include <glib.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 #ifdef __cplusplus
 enum _HyForm :short ;
@@ -120,8 +118,6 @@ enum _hy_comparison_type_e {
     HY_NAME_ONLY = (1 << 16),
 };
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif /* HY_TYPES_H */

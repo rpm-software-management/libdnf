@@ -26,9 +26,9 @@
 #include "hy-types.h"
 #include "hy-nevra.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <glib.h>
+
+G_BEGIN_DECLS
 
 #ifdef __cplusplus
 enum _HyForm :short {
@@ -66,8 +66,6 @@ HyPossibilities hy_subject_nevra_possibilities_real(HySubject subject,
     HyForm *forms, HySack sack, int flags);
 int hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif

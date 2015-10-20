@@ -21,9 +21,9 @@
 #ifndef HY_SACK_H
 #define HY_SACK_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <glib.h>
+
+G_BEGIN_DECLS
 
 // hawkey
 #include "hy-types.h"
@@ -70,8 +70,6 @@ int hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags);
 // than in 0.5.8, use hy_advisorypkg_get_string instead
 int hy_sack_load_repo(HySack sack, HyRepo hrepo, int flags);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif /* HY_SACK_H */

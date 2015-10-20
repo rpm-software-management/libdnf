@@ -21,9 +21,9 @@
 #ifndef HY_ADVISORYPKG_H
 #define HY_ADVISORYPKG_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <glib.h>
+
+G_BEGIN_DECLS
 
 /* hawkey */
 #include "hy-types.h"
@@ -42,8 +42,6 @@ void hy_advisorypkglist_free(HyAdvisoryPkgList pkglist);
 int hy_advisorypkglist_count(HyAdvisoryPkgList pkglist);
 HyAdvisoryPkg hy_advisorypkglist_get_clone(HyAdvisoryPkgList pkglist, int index);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif /* HY_ADVISORYPKG_H */

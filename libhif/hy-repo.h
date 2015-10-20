@@ -21,9 +21,9 @@
 #ifndef HY_REPO_H
 #define HY_REPO_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <glib.h>
+
+G_BEGIN_DECLS
 
 // hawkey
 #include "hy-types.h"
@@ -46,8 +46,6 @@ void hy_repo_set_string(HyRepo repo, int which, const char *str_val);
 const char *hy_repo_get_string(HyRepo repo, int which);
 void hy_repo_free(HyRepo repo);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif /* HY_REPO_H */

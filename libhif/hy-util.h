@@ -21,9 +21,9 @@
 #ifndef HY_UTIL_H
 #define HY_UTIL_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <glib.h>
+
+G_BEGIN_DECLS
 
 void hy_free(void *mem);
 const char *hy_chksum_name(int chksum_type);
@@ -35,8 +35,6 @@ int hy_detect_arch(char **arch);
 int hy_split_nevra(const char *nevra, char **name, long int *epoch,
 		   char **version, char **release, char **arch);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif /* HY_UTIL_H */

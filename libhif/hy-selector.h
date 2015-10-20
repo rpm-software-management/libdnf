@@ -21,9 +21,9 @@
 #ifndef HY_SELECTOR_H
 #define HY_SELECTOR_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <glib.h>
+
+G_BEGIN_DECLS
 
 #include "hy-types.h"
 
@@ -33,8 +33,6 @@ int hy_selector_set(HySelector sltr, int keyname, int cmp_type,
 		    const char *match);
 HyPackageList hy_selector_matches(HySelector sltr);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif

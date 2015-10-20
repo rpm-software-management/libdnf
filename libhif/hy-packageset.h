@@ -21,9 +21,9 @@
 #ifndef HY_PACKAGESET_H
 #define HY_PACKAGESET_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <glib.h>
+
+G_BEGIN_DECLS
 
 // hawkey
 #include "hy-types.h"
@@ -36,8 +36,6 @@ unsigned hy_packageset_count(HyPackageSet pset);
 HyPackage hy_packageset_get_clone(HyPackageSet pset, int index);
 int hy_packageset_has(HyPackageSet pset, HyPackage pkg);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif /* HY_PACKAGESET_H */

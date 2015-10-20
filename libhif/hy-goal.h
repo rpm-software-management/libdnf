@@ -21,9 +21,9 @@
 #ifndef HY_GOAL_H
 #define HY_GOAL_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <glib.h>
+
+G_BEGIN_DECLS
 
 // hawkey
 #include "hy-types.h"
@@ -112,8 +112,6 @@ HyPackageList hy_goal_list_downgrades(HyGoal goal);
 HyPackageList hy_goal_list_obsoleted_by_package(HyGoal goal, HyPackage pkg);
 int hy_goal_get_reason(HyGoal goal, HyPackage pkg);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif

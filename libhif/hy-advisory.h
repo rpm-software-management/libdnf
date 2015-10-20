@@ -21,9 +21,9 @@
 #ifndef HY_ADVISORY_H
 #define HY_ADVISORY_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <glib.h>
+
+G_BEGIN_DECLS
 
 /* hawkey */
 #include "hy-types.h"
@@ -49,8 +49,6 @@ void hy_advisorylist_free(HyAdvisoryList advisorylist);
 int hy_advisorylist_count(HyAdvisoryList advisorylist);
 HyAdvisory hy_advisorylist_get_clone(HyAdvisoryList advisorylist, int index);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif /* HY_ADVISORY_H */

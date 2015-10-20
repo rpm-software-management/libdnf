@@ -21,9 +21,9 @@
 #ifndef HY_PACKAGELIST_H
 #define HY_PACKAGELIST_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <glib.h>
+
+G_BEGIN_DECLS
 
 // hawkey
 #include "hy-types.h"
@@ -39,8 +39,6 @@ void hy_packagelist_push(HyPackageList plist, HyPackage pkg);
 #define FOR_PACKAGELIST(pkg, pkglist, i)						\
     for (i = 0; (pkg = hy_packagelist_get(pkglist, i)) != NULL; ++i)
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif /* HY_PACKAGELIST_H */

@@ -21,9 +21,9 @@
 #ifndef HY_PACKAGE_H
 #define HY_PACKAGE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <glib.h>
+
+G_BEGIN_DECLS
 
 // hawkey
 #include "hy-types.h"
@@ -99,8 +99,6 @@ unsigned long long hy_packagedelta_get_downloadsize(HyPackageDelta delta);
 const unsigned char *hy_packagedelta_get_chksum(HyPackageDelta delta, int *type);
 void hy_packagedelta_free(HyPackageDelta delta);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif
