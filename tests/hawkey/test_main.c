@@ -60,17 +60,8 @@ int
 main(int argc, const char **argv)
 {
     int number_failed;
-    struct stat s;
 
-    if (argc != 2) {
-	fprintf(stderr, "synopsis: %s <repo_directory>\n", argv[0]);
-	exit(1);
-    }
-    if (stat(argv[1], &s) || !S_ISDIR(s.st_mode)) {
-	fprintf(stderr, "can not read repos at '%s'.\n", argv[1]);
-	exit(1);
-    }
-    if (init_test_globals(&test_globals, argv[1])) {
+    if (init_test_globals(&test_globals, TESTDATADIR)) {
 	fprintf(stderr, "failed initializing test engine.\n");
 	exit(1);
     }
