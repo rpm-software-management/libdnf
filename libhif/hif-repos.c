@@ -32,9 +32,8 @@
  */
 
 #include <strings.h>
-#include "config.h"
 
-#include <gio/gunixmounts.h>
+#include <gio-unix-2.0/gio/gunixmounts.h>
 #include <librepo/util.h>
 #include <string.h>
 

@@ -22,7 +22,7 @@
 #define ADVISORYPKG_PY_H
 
 // hawkey
-#include "hy-types.h"
+#include "libhif/hy-types.h"
 
 extern PyTypeObject advisorypkg_Type;
 

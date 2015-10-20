@@ -40,7 +40,6 @@
  * decision.
  */
 
-#include "config.h"
 
 #include "hif-cleanup.h"
 #include "hif-db.h"

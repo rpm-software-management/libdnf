@@ -28,15 +28,11 @@
  * These functions are used internally in libhif for various things.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 #include <stdlib.h>
 #include <glib/gstdio.h>
 
 #include "hif-cleanup.h"
-#include "libhif.h"
+#include "hif-types.h"
 #include "hif-utils.h"
 
 /**

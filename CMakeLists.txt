@@ -1,4 +1,4 @@
-PROJECT (hawkey)
+PROJECT (libhif)
 CMAKE_MINIMUM_REQUIRED (VERSION 2.4)
 CMAKE_POLICY (SET CMP0005 OLD)
 # Avoid a warning because "hth" links to
@@ -7,9 +7,11 @@ CMAKE_POLICY (SET CMP0005 OLD)
 CMAKE_POLICY(SET CMP0003 NEW)
 
 INCLUDE (${CMAKE_SOURCE_DIR}/VERSION.cmake)
-SET (VERSION "${HAWKEY_MAJOR}.${HAWKEY_MINOR}.${HAWKEY_PATCH}")
+# TODO add libhif version instead
+SET (PACKAGE_VERSION "${HAWKEY_MAJOR}.${HAWKEY_MINOR}.${HAWKEY_PATCH}")
 
-set (CMAKE_C_FLAGS		"${CMAKE_C_FLAGS} -std=c99 -Werror=implicit-function-declaration -Wall -Wl,--as-needed")
+set (CMAKE_C_FLAGS		"${CMAKE_C_FLAGS} -std=gnu99 -Werror=implicit-function-declaration -Wall -Wl,--as-needed")
+# TODO append more flags from libhif
 set (CMAKE_C_FLAGS_DEBUG	"${CMAKE_C_FLAGS} -ggdb -O0")
 IF(NOT CMAKE_BUILD_TYPE)
   set (CMAKE_BUILD_TYPE DEBUG)
@@ -28,8 +30,9 @@ if (LIBSOLV_PATH)
    ADD_CUSTOM_TARGET (generate_libsolv_includes ALL DEPENDS ${LIBSOLV_PATH}/build/solv)
 endif (LIBSOLV_PATH)
 
+# hawkey dependencies
 FIND_PACKAGE (PkgConfig)
-PKG_CHECK_MODULES (GLIB2 glib-2.0 REQUIRED)
+PKG_CHECK_MODULES (GLIB2 glib-2.0>=2.10)
 SET (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 FIND_PACKAGE (EXPAT REQUIRED)
 FIND_PACKAGE (ZLIB REQUIRED)
@@ -40,6 +43,13 @@ FIND_LIBRARY (CHECK_LIBRARY NAMES check)
 FIND_PROGRAM (VALGRIND_PROGRAM NAMES valgrind PATH /usr/bin /usr/local/bin)
 MESSAGE(STATUS "Using libsolv at ${SOLV_LIBRARY}")
 
+# libhif dependencies
+INCLUDE(FindGObjectIntrospection 0.9.8)
+SET(GLIB_FIND_COMPONENTS "gobject")
+FIND_PACKAGE (GLIB)
+# TODO handle yumdb / dnfdb for libhif
+
+FIND_LIBRARY(REPO_LIBRARY repo REQUIRED)
 INCLUDE_DIRECTORIES(${GLIB2_INCLUDE_DIRS})
 
 if (NOT PYTHON_DESIRED)
@@ -56,8 +66,8 @@ IF (RPMIO_LIBRARY)
   SET(RPMDB_LIBRARY ${RPMIO_LIBRARY} ${RPMDB_LIBRARY})
 ENDIF (RPMIO_LIBRARY)
 
-ADD_SUBDIRECTORY (hawkey/src)
+ADD_SUBDIRECTORY (libhif)
 ADD_SUBDIRECTORY (python/hawkey)
 ENABLE_TESTING()
-ADD_SUBDIRECTORY (hawkey/tests)
-ADD_SUBDIRECTORY (hawkey/doc)
+ADD_SUBDIRECTORY (tests/hawkey)
+ADD_SUBDIRECTORY (docs/hawkey)

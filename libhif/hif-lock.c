@@ -32,12 +32,12 @@
  * See also: #HifState
  */
 
-#include "config.h"
 
 #include <gio/gio.h>
 
 #include "hif-cleanup.h"
-#include "libhif.h"
+#include "hif-lock.h"
+#include "hif-types.h"
 #include "hif-utils.h"
 
 typedef struct _HifLockPrivate    HifLockPrivate;

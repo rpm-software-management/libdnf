@@ -27,10 +27,6 @@
  * These methods make it easier to get and set extra data on a package.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -44,7 +40,7 @@
 #include <librepo/librepo.h>
 
 #include "hif-cleanup.h"
-#include "libhif.h"
+#include "hif-package.h"
 #include "hif-utils.h"
 
 typedef struct {

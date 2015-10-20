@@ -191,6 +191,7 @@ dump_goal_errors(HyGoal goal)
     }
 }
 
+// TODO add GError as param
 static void
 erase(HySack sack, const char *name)
 {
@@ -215,7 +216,8 @@ erase(HySack sack, const char *name)
         goto finish;
     }
     hy_packagelist_free(plist);
-    plist = hy_goal_list_erasures(goal);
+    // FIXME propagate GError
+    plist = hy_goal_list_erasures(goal, NULL);
     printf("erasure count: %d\n", hy_packagelist_count(plist));
     for (int i = 0; i < hy_packagelist_count(plist); ++i) {
         HyPackage pkg = hy_packagelist_get(plist, i);
@@ -231,6 +233,7 @@ erase(HySack sack, const char *name)
     hy_query_free(q);
 }
 
+// TODO add GError as param
 static void update(HySack sack, HyPackage pkg)
 {
     HyGoal goal = hy_goal_create(sack);
@@ -245,7 +248,8 @@ static void update(HySack sack, HyPackage pkg)
         goto finish;
     }
     // handle upgrades
-    HyPackageList plist = hy_goal_list_upgrades(goal);
+    // FIXME propagate GError
+    HyPackageList plist = hy_goal_list_upgrades(goal, NULL);
     printf("upgrade count: %d\n", hy_packagelist_count(plist));
     for (int i = 0; i < hy_packagelist_count(plist); ++i) {
         HyPackage pkg = hy_packagelist_get(plist, i);
@@ -266,7 +270,8 @@ static void update(HySack sack, HyPackage pkg)
     }
     hy_packagelist_free(plist);
     // handle installs
-    plist = hy_goal_list_installs(goal);
+    // FIXME propagate GError
+    plist = hy_goal_list_installs(goal, NULL);
     printf("install count: %d\n", hy_packagelist_count(plist));
     for (int i = 0; i < hy_packagelist_count(plist); ++i) {
         HyPackage pkg = hy_packagelist_get(plist, i);
@@ -394,7 +399,8 @@ need_filelists(int argc, const char **argv)
 
 int main(int argc, const char **argv)
 {
-    HySack sack = hy_sack_create(NULL, NULL, NULL, NULL, HY_MAKE_CACHE_DIR);
+    // TODO handle GError
+    HySack sack = hy_sack_create(NULL, NULL, NULL, NULL, HY_MAKE_CACHE_DIR, NULL);
     HyRepo repo;
     char *md_repo;
     char *md_primary_xml;
@@ -420,20 +426,23 @@ int main(int argc, const char **argv)
     int load_flags = HY_BUILD_CACHE;
     /* rpmdb */
     repo = hy_repo_create(HY_SYSTEM_REPO_NAME);
-    hy_sack_load_system_repo(sack, NULL, load_flags);
+    // TODO handle GError
+    hy_sack_load_system_repo(sack, NULL, load_flags, NULL);
     hy_repo_free(repo);
 
     if (need_filelists(argc, argv))
         load_flags |= HY_LOAD_FILELISTS;
     /* Fedora repo */
     repo = config_repo("Fedora", md_repo, md_primary_xml, md_filelists);
-    ret = hy_sack_load_repo(sack, repo, load_flags);
+    // TODO handle GError
+    ret = hy_sack_load_repo(sack, repo, load_flags, NULL);
     assert(ret == 0); (void)ret;
     hy_repo_free(repo);
     /* Fedora updates repo */
     repo = config_repo("updates", md_repo_updates, md_primary_updates_xml,
                        md_filelists_updates);
-    ret = hy_sack_load_repo(sack, repo, load_flags);
+    // TODO handle GError
+    ret = hy_sack_load_repo(sack, repo, load_flags, NULL);
     assert(ret == 0); (void)ret;
     hy_repo_free(repo);
     free(md_repo);

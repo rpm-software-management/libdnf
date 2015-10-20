@@ -21,7 +21,7 @@
 #include <Python.h>
 
 // hawkey
-#include "hy-advisoryref-private.h"
+#include "libhif/hy-advisoryref_private.h"
 
 // pyhawkey
 #include "advisoryref-py.h"

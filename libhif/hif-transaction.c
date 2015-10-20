@@ -28,19 +28,24 @@
  * This object represents an RPM transaction.
  */
 
-#include "config.h"
 
 #include <rpm/rpmlib.h>
 #include <rpm/rpmts.h>
 #include <rpm/rpmlog.h>
+#include <rpm/rpmkeyring.h>
 
 #include "hy-packagelist.h"
 #include "hy-query.h"
 #include "hy-sack.h"
 #include "hy-util.h"
 
+#include "hif-context.h"
 #include "hif-cleanup.h"
-#include "libhif.h"
+#include "hif-goal.h"
+#include "hif-keyring.h"
+#include "hif-package.h"
+#include "hif-rpmts.h"
+#include "hif-transaction.h"
 #include "hif-utils.h"
 
 typedef enum {

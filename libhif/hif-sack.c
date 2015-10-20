@@ -30,13 +30,14 @@
  * See also: #HifSource
  */
 
-#include "config.h"
 
 #include "hy-query.h"
 #include "hy-packageset.h"
 
 #include "hif-cleanup.h"
-#include "libhif.h"
+#include "hif-sack.h"
+#include "hif-state.h"
+#include "hif-source.h"
 #include "hif-utils.h"
 
 static void

@@ -21,10 +21,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 /**
  * SECTION:hif-source
  * @short_description: Object representing a remote source.
@@ -36,17 +32,20 @@
  * See also: #HifSource
  */
 
-#include "config.h"
 
 #include <strings.h>
 #include <fcntl.h>
 #include <glib/gstdio.h>
+#include "hy-package.h"
 #include "hy-util.h"
 #include <librepo/librepo.h>
 #include <rpm/rpmts.h>
 
 #include "hif-cleanup.h"
-#include "libhif.h"
+#include "hif-keyring.h"
+#include "hif-package.h"
+#include "hif-source.h"
+#include "hif-state.h"
 #include "hif-utils.h"
 
 typedef struct _HifSourcePrivate    HifSourcePrivate;

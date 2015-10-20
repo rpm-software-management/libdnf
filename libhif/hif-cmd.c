@@ -19,16 +19,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 
 #include <gio/gio.h>
-#include <libhif.h>
 #include <locale.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "hif-cleanup.h"
-#include "libhif.h"
+#include "hif-context.h"
+#include "hif-state.h"
+#include "hif-transaction.h"
 #include "hif-utils.h"
 
 #define HIF_ERROR_INVALID_ARGUMENTS     0

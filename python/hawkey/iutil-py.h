@@ -21,7 +21,7 @@
 #ifndef IUTIL_PY_H
 #define IUTIL_PY_H
 
-#include "hy-types.h"
+#include "libhif/hy-types.h"
 
 #define TEST_COND(cond) \
     ((cond) ? Py_True : Py_False)

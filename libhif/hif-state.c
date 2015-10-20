@@ -80,7 +80,6 @@
  * See also: #HifLock
  */
 
-#include "config.h"
 
 #include "hif-cleanup.h"
 #include "hif-state.h"

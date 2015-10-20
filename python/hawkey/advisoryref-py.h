@@ -22,7 +22,7 @@
 #define ADVISORYREF_PY_H
 
 // hawkey
-#include "hy-types.h"
+#include "libhif/hy-types.h"
 
 extern PyTypeObject advisoryref_Type;
 

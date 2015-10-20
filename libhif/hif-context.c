@@ -29,7 +29,6 @@
  * to use objects from librepo, rpm or hawkey directly.
  */
 
-#include "config.h"
 
 #include <rpm/rpmlib.h>
 #include <rpm/rpmmacro.h>
@@ -39,7 +38,12 @@
 #include <librepo/librepo.h>
 
 #include "hif-cleanup.h"
-#include "libhif.h"
+#include "hif-context.h"
+#include "hif-package.h"
+#include "hif-sack.h"
+#include "hif-state.h"
+#include "hif-source.h"
+#include "hif-transaction.h"
 #include "hif-utils.h"
 
 typedef struct _HifContextPrivate    HifContextPrivate;

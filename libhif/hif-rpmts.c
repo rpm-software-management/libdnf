@@ -30,17 +30,16 @@
  * These methods make it easier to deal with rpm transactions.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 #include <glib.h>
 #include <rpm/rpmlib.h>
 #include <rpm/rpmlog.h>
 #include <rpm/rpmdb.h>
+#include <rpm/rpmts.h>
+
+#include "hy-package.h"
 
 #include "hif-cleanup.h"
-#include "libhif.h"
+#include "hif-types.h"
 #include "hif-utils.h"
 
 /**
