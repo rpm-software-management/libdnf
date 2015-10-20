@@ -984,14 +984,6 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags)
     return ret;
 }
 
-// deprecated in 0.5.5, eligible for dropping after 2015-10-27 AND no sooner
-// than in 0.5.8, use hy_advisorypkg_get_string instead
-int
-hy_sack_load_yum_repo(HySack sack, HyRepo repo, int flags)
-{
-    return hy_sack_load_repo(sack, repo, flags);
-}
-
 int
 hy_sack_load_repo(HySack sack, HyRepo repo, int flags)
 {
