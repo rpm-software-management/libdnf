@@ -182,7 +182,7 @@ START_TEST(test_checksums)
     HyPackage pkg = by_name(test_globals.sack, "mystery-devel");
     int i;
     HyChecksum *csum = hy_package_get_chksum(pkg, &i);
-    fail_unless(i == HY_CHKSUM_SHA256);
+    fail_unless(i == G_CHECKSUM_SHA256);
     // Check the first and last bytes. Those need to match against information
     // in primary.xml.gz.
     fail_unless(csum[0] == 0x2e);
@@ -351,7 +351,7 @@ START_TEST(test_presto)
     ck_assert_int_eq(size, 3132);
     int type;
     HyChecksum *csum = hy_packagedelta_get_chksum(delta, &type);
-    fail_unless(type == HY_CHKSUM_SHA256);
+    fail_unless(type == G_CHECKSUM_SHA256);
     ck_assert(!memcmp(csum, TOUR_45_46_DRPM_CHKSUM, 32));
     hy_packagedelta_free(delta);
     hy_package_free(tour);

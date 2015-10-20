@@ -183,13 +183,13 @@ int
 checksum_type2length(int type)
 {
     switch(type) {
-    case HY_CHKSUM_MD5:
+    case G_CHECKSUM_MD5:
 	return 16;
-    case HY_CHKSUM_SHA1:
+    case G_CHECKSUM_SHA1:
 	return 20;
-    case HY_CHKSUM_SHA256:
+    case G_CHECKSUM_SHA256:
 	return 32;
-    case HY_CHKSUM_SHA512:
+    case G_CHECKSUM_SHA512:
 	return 64;
     default:
 	return -1;
@@ -201,13 +201,13 @@ checksumt_l2h(int type)
 {
     switch (type) {
     case REPOKEY_TYPE_MD5:
-	return HY_CHKSUM_MD5;
+	return G_CHECKSUM_MD5;
     case REPOKEY_TYPE_SHA1:
-	return 	HY_CHKSUM_SHA1;
+	return 	G_CHECKSUM_SHA1;
     case REPOKEY_TYPE_SHA256:
-	return HY_CHKSUM_SHA256;
+	return G_CHECKSUM_SHA256;
     case REPOKEY_TYPE_SHA512:
-	return HY_CHKSUM_SHA512;
+	return G_CHECKSUM_SHA512;
     default:
 	assert(0);
 	return 0;

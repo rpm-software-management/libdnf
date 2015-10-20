@@ -646,13 +646,13 @@ hif_package_is_installonly (HyPackage pkg)
  * hif_source_checksum_hy_to_lr:
  **/
 static GChecksumType
-hif_source_checksum_hy_to_lr (int checksum_hy)
+hif_source_checksum_hy_to_lr (GChecksumType checksum)
 {
-	if (checksum_hy == HY_CHKSUM_MD5)
+	if (checksum == G_CHECKSUM_MD5)
 		return LR_CHECKSUM_MD5;
-	if (checksum_hy == HY_CHKSUM_SHA1)
+	if (checksum == G_CHECKSUM_SHA1)
 		return LR_CHECKSUM_SHA1;
-	if (checksum_hy == HY_CHKSUM_SHA256)
+	if (checksum == G_CHECKSUM_SHA256)
 		return LR_CHECKSUM_SHA256;
 	return G_CHECKSUM_SHA512;
 }

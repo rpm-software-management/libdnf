@@ -1562,11 +1562,11 @@ hif_source_commit (HifSource *source, GError **error)
 static LrChecksumType
 hif_source_checksum_hy_to_lr (int checksum_hy)
 {
-	if (checksum_hy == HY_CHKSUM_MD5)
+	if (checksum_hy == G_CHECKSUM_MD5)
 		return LR_CHECKSUM_MD5;
-	if (checksum_hy == HY_CHKSUM_SHA1)
+	if (checksum_hy == G_CHECKSUM_SHA1)
 		return LR_CHECKSUM_SHA1;
-	if (checksum_hy == HY_CHKSUM_SHA256)
+	if (checksum_hy == G_CHECKSUM_SHA256)
 		return LR_CHECKSUM_SHA256;
 	return LR_CHECKSUM_UNKNOWN;
 }

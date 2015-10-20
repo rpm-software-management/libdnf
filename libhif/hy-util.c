@@ -67,13 +67,13 @@ const char *
 hy_chksum_name(int chksum_type)
 {
     switch (chksum_type) {
-    case HY_CHKSUM_MD5:
+    case G_CHECKSUM_MD5:
 	return "md5";
-    case HY_CHKSUM_SHA1:
+    case G_CHECKSUM_SHA1:
 	return "sha1";
-    case HY_CHKSUM_SHA256:
+    case G_CHECKSUM_SHA256:
 	return "sha256";
-    case HY_CHKSUM_SHA512:
+    case G_CHECKSUM_SHA512:
 	return "sha512";
     default:
 	return NULL;
@@ -84,13 +84,13 @@ int
 hy_chksum_type(const char *chksum_name)
 {
     if (!strcasecmp(chksum_name, "md5"))
-	return HY_CHKSUM_MD5;
+	return G_CHECKSUM_MD5;
     if (!strcasecmp(chksum_name, "sha1"))
-	return HY_CHKSUM_SHA1;
+	return G_CHECKSUM_SHA1;
     if (!strcasecmp(chksum_name, "sha256"))
-	return HY_CHKSUM_SHA256;
+	return G_CHECKSUM_SHA256;
     if (!strcasecmp(chksum_name, "sha512"))
-	return HY_CHKSUM_SHA512;
+	return G_CHECKSUM_SHA512;
     return 0;
 }
 

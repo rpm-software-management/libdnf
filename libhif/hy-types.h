@@ -64,11 +64,6 @@ typedef int (*hy_solution_callback)(HyGoal goal, void *callback_data);
 #define HY_EXT_UPDATEINFO "-updateinfo"
 #define HY_EXT_PRESTO "-presto"
 
-#define HY_CHKSUM_MD5		1
-#define HY_CHKSUM_SHA1		2
-#define HY_CHKSUM_SHA256	3
-#define HY_CHKSUM_SHA512	4
-
 enum _hy_key_name_e {
     HY_PKG = 0,
     HY_PKG_ALL = 1,

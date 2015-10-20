@@ -275,10 +275,10 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "UPGRADE", HY_UPGRADE);
     PyModule_AddIntConstant(m, "UPGRADE_ALL", HY_UPGRADE_ALL);
     
-    PyModule_AddIntConstant(m, "CHKSUM_MD5", HY_CHKSUM_MD5);
-    PyModule_AddIntConstant(m, "CHKSUM_SHA1", HY_CHKSUM_SHA1);
-    PyModule_AddIntConstant(m, "CHKSUM_SHA256", HY_CHKSUM_SHA256);
-    PyModule_AddIntConstant(m, "CHKSUM_SHA512", HY_CHKSUM_SHA512);
+    PyModule_AddIntConstant(m, "CHKSUM_MD5", G_CHECKSUM_MD5);
+    PyModule_AddIntConstant(m, "CHKSUM_SHA1", G_CHECKSUM_SHA1);
+    PyModule_AddIntConstant(m, "CHKSUM_SHA256", G_CHECKSUM_SHA256);
+    PyModule_AddIntConstant(m, "CHKSUM_SHA512", G_CHECKSUM_SHA512);
 
     PyModule_AddIntConstant(m, "ICASE", HY_ICASE);
     PyModule_AddIntConstant(m, "EQ", HY_EQ);
