@@ -41,7 +41,7 @@ parse_cpu_flags(int *flags, const char *section)
 {
     char *cpuinfo = read_whole_file("/proc/cpuinfo");
     if (cpuinfo == NULL)
-	return hy_get_errno();
+	return HY_E_FAILED;
 
     char *features = strstr(cpuinfo, section);
     if (features != NULL) {
