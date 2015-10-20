@@ -19,6 +19,7 @@
  */
 
 #include <Python.h>
+#include <glib.h>
 #include <structmember.h>
 #include <stddef.h>
 
@@ -170,6 +171,29 @@ op_ret2exc(int ret)
     default:
 	PyErr_SetString(HyExc_Exception, "Goal operation failed.");
 	return NULL;
+    }
+}
+
+static PyObject *
+op_error2exc(const GError *error)
+{
+    if (error == NULL)
+        Py_RETURN_NONE;
+
+    switch (error->code) {
+    case HIF_ERROR_BAD_SELECTOR:
+        PyErr_SetString(HyExc_Value,
+                        "Ill-formed Selector used for the operation.");
+        return NULL;
+    case HIF_ERROR_INVALID_ARCHITECTURE:
+        PyErr_SetString(HyExc_Arch, "Used arch is unknown.");
+        return NULL;
+    case HIF_ERROR_PACKAGE_NOT_FOUND:
+        PyErr_SetString(HyExc_Validation, "The validation check has failed.");
+        return NULL;
+    default:
+        PyErr_SetString(HyExc_Exception, "Goal operation failed.");
+        return NULL;
     }
 }
 
@@ -460,6 +484,7 @@ log_decisions(_GoalObject *self, PyObject *unused)
 static PyObject *
 write_debugdata(_GoalObject *self, PyObject *dir_str)
 {
+    _cleanup_error_free_ GError *error = NULL;
     PyObject *tmp_py_str = NULL;
     const char *dir = pycomp_get_string(dir_str, &tmp_py_str);
 
@@ -468,10 +493,12 @@ write_debugdata(_GoalObject *self, PyObject *dir_str)
 	return NULL;
     }
 
-    int ret = hy_goal_write_debugdata(self->goal, dir);
+    gboolean ret = hy_goal_write_debugdata(self->goal, dir, &error);
     Py_XDECREF(tmp_py_str);
-    if (ret2e(ret, "write_debugdata() failed"))
+    if (!ret) {
+	op_error2exc(error);
 	return NULL;
+    }
     Py_RETURN_NONE;
 }
 

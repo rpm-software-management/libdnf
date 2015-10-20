@@ -850,27 +850,46 @@ hy_goal_log_decisions(HyGoal goal)
     return 0;
 }
 
-int
-hy_goal_write_debugdata(HyGoal goal, const char *dir)
+/**
+ * hy_goal_write_debugdata:
+ * @goal: A #HyGoal
+ * @dir: The directory to write to
+ * @error: A #GError, or %NULL
+ *
+ * Writes details about the testcase to a directory.
+ *
+ * Returns: %FALSE if an error was set
+ *
+ * Since: 0.7.0
+ */
+gboolean
+hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error)
 {
     HySack sack = goal->sack;
     Solver *solv = goal->solv;
-    if (solv == NULL)
-	return HIF_ERROR_INTERNAL_ERROR;
+    if (solv == NULL) {
+        g_set_error_literal (error,
+                             HIF_ERROR,
+                             HIF_ERROR_INTERNAL_ERROR,
+                             "no solver set");
+        return FALSE;
+    }
 
     int flags = TESTCASE_RESULT_TRANSACTION | TESTCASE_RESULT_PROBLEMS;
-    char *absdir = abspath(dir);
+    _cleanup_free_ char *absdir = abspath(dir);
     if (absdir == NULL)
-	return hy_errno;
+        return hy_errno;
     HY_LOG_INFO("writing solver debugdata to %s", absdir);
     int ret = testcase_write(solv, absdir, flags, NULL, NULL);
     if (!ret) {
-	format_err_str("Failed writing debugdata to %s: %s.", absdir,
-		       strerror(errno));
-	return HIF_ERROR_FILE_INVALID;
+        g_set_error (error,
+                     HIF_ERROR,
+                     HIF_ERROR_FILE_INVALID,
+                     "failed writing debugdata to %s: %s",
+                     absdir, strerror(errno));
+        return FALSE;
     }
-    g_free(absdir);
-    return 0;
+    return TRUE;
 }
 
 HyPackageList
