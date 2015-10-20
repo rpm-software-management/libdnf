@@ -85,6 +85,7 @@ PKG_CHECK_MODULES(GLIB, gio-unix-2.0 >= 2.36.0)
 GLIB_CFLAGS="$GLIB_CFLAGS -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_36 -DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_36"
 PKG_CHECK_MODULES(HAWKEY, libsolv librepo >= 1.7.11 rpm >= 4.11.0)
 PKG_CHECK_MODULES(PYTHON3, python3)
+PKG_CHECK_MODULES(CHECK, check)
 
 AM_PATH_PYTHON(3.0.0)
 PY_PREFIX=`$PYTHON -c 'import sys ; print sys.prefix'`
@@ -114,6 +115,8 @@ libhif/hy-version.h
 libhif/Makefile
 libhif/libhif.pc
 libhif/hif-version.h
+tests/Makefile
+tests/hawkey/Makefile
 data/Makefile
 data/tests/Makefile
 docs/Makefile

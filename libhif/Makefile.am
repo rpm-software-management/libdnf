@@ -155,8 +155,7 @@ libhif_la_LIBADD =						\
 libhif_la_LDFLAGS =						\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
 	-export-dynamic						\
-	-no-undefined						\
-	-export-symbols-regex '^hif_.*'
+	-no-undefined
 
 libhif_la_CFLAGS =						\
 	$(WARNINGFLAGS_C)
