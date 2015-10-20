@@ -39,8 +39,8 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
-#include <hawkey/reldep.h>
-#include <hawkey/util.h>
+#include "hy-reldep.h"
+#include "hy-util.h"
 #include <librepo/librepo.h>
 
 #include "hif-cleanup.h"

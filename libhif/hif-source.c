@@ -42,7 +42,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <glib/gstdio.h>
-#include <hawkey/util.h>
+#include "hy-util.h"
 #include <librepo/librepo.h>
 #include <rpm/rpmts.h>
 

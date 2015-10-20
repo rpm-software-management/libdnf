@@ -34,7 +34,7 @@
 
 #include <stdlib.h>
 #include <glib/gstdio.h>
-#include <hawkey/errno.h>
+#include "hy-errno.h"
 
 #include "hif-cleanup.h"
 #include "libhif.h"

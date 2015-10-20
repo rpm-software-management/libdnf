@@ -28,7 +28,7 @@
 
 #include <glib.h>
 #include <rpm/rpmts.h>
-#include <hawkey/package.h>
+#include "hy-package.h"
 
 gboolean	 hif_rpmts_add_install_filename	(rpmts		 ts,
 						 const gchar	*filename,

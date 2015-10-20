@@ -28,8 +28,8 @@
 
 #include <glib-object.h>
 
-#include <hawkey/repo.h>
-#include <hawkey/package.h>
+#include "hy-repo.h"
+#include "hy-package.h"
 
 #include "hif-context.h"
 #include "hif-state.h"

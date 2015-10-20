@@ -35,8 +35,8 @@
 #endif
 
 #include <glib.h>
-#include <hawkey/packagelist.h>
-#include <hawkey/util.h>
+#include "hy-packagelist.h"
+#include "hy-util.h"
 
 #include "hif-cleanup.h"
 #include "hif-goal.h"

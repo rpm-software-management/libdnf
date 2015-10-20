@@ -32,9 +32,9 @@
 
 #include "config.h"
 
-#include <hawkey/errno.h>
-#include <hawkey/query.h>
-#include <hawkey/packageset.h>
+#include "hy-errno.h"
+#include "hy-query.h"
+#include "hy-packageset.h"
 
 #include "hif-cleanup.h"
 #include "libhif.h"

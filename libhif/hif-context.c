@@ -34,9 +34,8 @@
 #include <rpm/rpmlib.h>
 #include <rpm/rpmmacro.h>
 
-#include <hawkey/query.h>
-#include <hawkey/packagelist.h>
-#include <hawkey/version.h>
+#include "hy-query.h"
+#include "hy-packagelist.h"
 #include <librepo/librepo.h>
 
 #include "hif-cleanup.h"

@@ -22,7 +22,7 @@
 #include "config.h"
 
 #include <glib-object.h>
-#include <hawkey/errno.h>
+#include "hy-errno.h"
 #include <stdlib.h>
 
 #include "hif-cleanup.h"

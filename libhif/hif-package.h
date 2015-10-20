@@ -28,7 +28,7 @@
 
 #include <glib.h>
 
-#include <hawkey/package.h>
+#include "hy-package.h"
 
 #include "hif-source.h"
 #include "hif-state.h"

@@ -29,7 +29,7 @@
 #include <glib-object.h>
 #include <gio/gio.h>
 
-#include <hawkey/goal.h>
+#include "hy-goal.h"
 
 #include "hif-context.h"
 #include "hif-db.h"

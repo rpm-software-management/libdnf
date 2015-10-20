@@ -27,8 +27,8 @@
 #define __HIF_DB_H
 
 #include <glib-object.h>
-#include <hawkey/package.h>
-#include <hawkey/packagelist.h>
+#include "hy-package.h"
+#include "hy-packagelist.h"
 
 #include "hif-context.h"
 

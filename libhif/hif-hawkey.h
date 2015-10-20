@@ -27,7 +27,7 @@
 #define __HIF_HAWKEY_UTILS_H
 
 #include <gio/gio.h>
-#include <hawkey/util.h>
+#include "hy-util.h"
 
 gboolean	 hif_error_set_from_hawkey	(int rc,
 						 GError			**error);

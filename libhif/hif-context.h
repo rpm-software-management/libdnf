@@ -29,8 +29,8 @@
 #include "hif-types.h"
 
 #ifndef __GI_SCANNER__
-#include <hawkey/goal.h>
-#include <hawkey/sack.h>
+#include "hy-goal.h"
+#include "hy-sack.h"
 #endif
 
 #define HIF_TYPE_CONTEXT		(hif_context_get_type())

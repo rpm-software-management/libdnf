@@ -28,8 +28,8 @@
 
 #include <glib.h>
 
-#include <hawkey/goal.h>
-#include <hawkey/package.h>
+#include "hy-goal.h"
+#include "hy-package.h"
 
 gboolean	 hif_goal_depsolve			(HyGoal		 goal,
 							 GError		**error);

@@ -34,10 +34,10 @@
 #include <rpm/rpmts.h>
 #include <rpm/rpmlog.h>
 
-#include <hawkey/packagelist.h>
-#include <hawkey/query.h>
-#include <hawkey/sack.h>
-#include <hawkey/util.h>
+#include "hy-packagelist.h"
+#include "hy-query.h"
+#include "hy-sack.h"
+#include "hy-util.h"
 
 #include "hif-cleanup.h"
 #include "libhif.h"

@@ -27,8 +27,7 @@
 #define __HIF_SACK_H
 
 #include <glib-object.h>
-#include <hawkey/sack.h>
-
+#include "hy-sack.h"
 #include "hif-source.h"
 #include "hif-state.h"
 
