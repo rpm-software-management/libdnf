@@ -771,30 +771,6 @@ hy_goal_userinstalled(HyGoal goal, HyPackage pkg)
     return 0;
 }
 
-// deprecated in 0.5.9, will be removed in 1.0.0
-// use hy_goal_has_actions(goal, HY_DISTUPGRADE_ALL) instead
-int
-hy_goal_req_has_distupgrade_all(HyGoal goal)
-{
-    return hy_goal_has_actions(goal, HY_DISTUPGRADE_ALL);
-}
-
-// deprecated in 0.5.9, will be removed in 1.0.0
-// use hy_goal_has_actions(goal, HY_ERASE) instead
-int
-hy_goal_req_has_erase(HyGoal goal)
-{
-    return hy_goal_has_actions(goal, HY_ERASE);
-}
-
-// deprecated in 0.5.9, will be removed in 1.0.0
-// use hy_goal_has_actions(goal, HY_UPGRADE_ALL) instead
-int
-hy_goal_req_has_upgrade_all(HyGoal goal)
-{
-    return hy_goal_has_actions(goal, HY_UPGRADE_ALL);
-}
-
 int hy_goal_req_length(HyGoal goal)
 {
     return goal->staging.count / 2;

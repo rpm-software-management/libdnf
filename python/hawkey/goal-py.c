@@ -344,19 +344,19 @@ has_actions(_GoalObject *self, PyObject *action)
 static PyObject *
 req_has_distupgrade_all(_GoalObject *self, PyObject *unused)
 {
-    return PyBool_FromLong(hy_goal_req_has_distupgrade_all(self->goal));
+    return PyBool_FromLong(hy_goal_has_actions(self->goal, HY_DISTUPGRADE_ALL));
 }
 
 static PyObject *
 req_has_erase(_GoalObject *self, PyObject *unused)
 {
-    return PyBool_FromLong(hy_goal_req_has_erase(self->goal));
+    return PyBool_FromLong(hy_goal_has_actions(self->goal, HY_ERASE));
 }
 
 static PyObject *
 req_has_upgrade_all(_GoalObject *self, PyObject *unused)
 {
-    return PyBool_FromLong(hy_goal_req_has_upgrade_all(self->goal));
+    return PyBool_FromLong(hy_goal_has_actions(self->goal, HY_UPGRADE_ALL));
 }
 
 static PyObject *
