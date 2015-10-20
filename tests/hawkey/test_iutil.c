@@ -26,8 +26,8 @@
 #include <solv/pool.h>
 
 // hawkey
-#include "src/util.h"
-#include "src/iutil.h"
+#include "libhif/hy-util.h"
+#include "libhif/hy-iutil.h"
 #include "fixtures.h"
 #include "test_suites.h"
 

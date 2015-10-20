@@ -24,12 +24,12 @@
 #include <solv/testcase.h>
 
 // hawkey
-#include "src/query.h"
-#include "src/query_internal.h"
-#include "src/package.h"
-#include "src/packageset.h"
-#include "src/reldep.h"
-#include "src/sack_internal.h"
+#include "libhif/hy-query.h"
+#include "libhif/hy-query_internal.h"
+#include "libhif/hy-package.h"
+#include "libhif/hy-packageset.h"
+#include "libhif/hy-reldep.h"
+#include "libhif/hy-sack_internal.h"
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"

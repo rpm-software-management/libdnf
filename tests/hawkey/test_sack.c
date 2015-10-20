@@ -28,11 +28,11 @@
 #include <solv/testcase.h>
 
 // hawkey
-#include "src/errno.h"
-#include "src/package_internal.h"
-#include "src/repo_internal.h"
-#include "src/sack_internal.h"
-#include "src/util.h"
+#include "libhif/hy-errno.h"
+#include "libhif/hy-package_internal.h"
+#include "libhif/hy-repo_internal.h"
+#include "libhif/hy-sack_internal.h"
+#include "libhif/hy-util.h"
 #include "fixtures.h"
 #include "testsys.h"
 #include "test_suites.h"

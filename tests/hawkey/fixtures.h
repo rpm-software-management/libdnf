@@ -18,26 +18,37 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef TESTSHARED_H
-#define TESTSHARED_H
-
-// libsolv
-#include <solv/pooltypes.h>
+#ifndef FIXTURES_H
+#define FIXTURES_H
 
 // hawkey
-#include "src/repo.h"
+#include "libhif/hy-sack.h"
 
-#define UNITTEST_DIR "/tmp/hawkeyXXXXXX"
-#define YUM_DIR_SUFFIX "yum/repodata/"
-#define YUM_REPO_NAME "nevermac"
-#define TEST_FIXED_ARCH "x86_64"
-#define TEST_EXPECT_SYSTEM_PKGS 13
-#define TEST_EXPECT_SYSTEM_NSOLVABLES TEST_EXPECT_SYSTEM_PKGS
-#define TEST_EXPECT_MAIN_NSOLVABLES 14
-#define TEST_EXPECT_UPDATES_NSOLVABLES 10
-#define TEST_EXPECT_YUM_NSOLVABLES 2
+struct TestGlobals_s {
+    char *repo_dir;
+    HySack sack;
+    char *tmpdir;
+};
 
-HyRepo glob_for_repofiles(Pool *pool, const char *repo_name, const char *path);
-int load_repo(Pool *pool, const char *name, const char *path, int installed);
+/* global data used to pass values from fixtures to tests */
+extern struct TestGlobals_s test_globals;
 
-#endif /* TESTSHARED_H */
+void fixture_cmdline_only(void);
+void fixture_empty(void);
+void fixture_greedy_only(void);
+void fixture_installonly(void);
+void fixture_system_only(void);
+void fixture_verify(void);
+void fixture_with_change(void);
+void fixture_with_cmdline(void);
+void fixture_with_forcebest(void);
+void fixture_with_main(void);
+void fixture_with_updates(void);
+void fixture_with_vendor(void);
+void fixture_all(void);
+void fixture_yum(void);
+void fixture_reset(void);
+void setup_yum_sack(HySack sack, const char *yum_repo_name);
+void teardown(void);
+
+#endif /* FIXTURES_H */

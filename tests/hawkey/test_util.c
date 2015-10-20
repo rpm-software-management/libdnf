@@ -22,8 +22,8 @@
 #include <stdio.h>
 
 // hawkey
-#include "src/errno.h"
-#include "src/util.h"
+#include "libhif/hy-errno.h"
+#include "libhif/hy-util.h"
 #include "test_suites.h"
 
 START_TEST(test_detect_arch)

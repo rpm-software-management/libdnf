@@ -1,9 +1,0 @@
-.emacs.desktop*
-build/
-TAGS
-tests/python/tests/*.pyc
-__pycache__
-tests/Testing
-# files below are generated from the respective .in:
-package/hawkey.spec
-src/version.h

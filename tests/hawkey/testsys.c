@@ -29,12 +29,12 @@
 #include <solv/util.h>
 
 // hawkey
-#include "src/goal.h"
-#include "src/package.h"
-#include "src/package_internal.h"
-#include "src/query.h"
-#include "src/sack_internal.h"
-#include "src/util.h"
+#include "libhif/hy-goal.h"
+#include "libhif/hy-package.h"
+#include "libhif/hy-package_internal.h"
+#include "libhif/hy-query.h"
+#include "libhif/hy-sack_internal.h"
+#include "libhif/hy-util.h"
 #include "testsys.h"
 
 void

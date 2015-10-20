@@ -20,10 +20,10 @@
 
 
 // hawkey
-#include "src/advisory.h"
-#include "src/advisorypkg.h"
-#include "src/advisoryref.h"
-#include "src/package.h"
+#include "libhif/hy-advisory.h"
+#include "libhif/hy-advisorypkg.h"
+#include "libhif/hy-advisoryref.h"
+#include "libhif/hy-package.h"
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"

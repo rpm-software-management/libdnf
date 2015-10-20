@@ -25,8 +25,8 @@
 #include <solv/pooltypes.h>
 
 // hawkey
-#include "src/packagelist.h"
-#include "src/sack.h"
+#include "libhif/hy-packagelist.h"
+#include "libhif/hy-sack.h"
 #include "testshared.h"
 
 void assert_nevra_eq(HyPackage pkg, const char *nevra);

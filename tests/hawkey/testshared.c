@@ -26,8 +26,8 @@
 #include <solv/testcase.h>
 
 // hawkey
-#include "src/repo.h"
-#include "src/repo_internal.h"
+#include "libhif/hy-repo.h"
+#include "libhif/hy-repo_internal.h"
 #include "testshared.h"
 
 HyRepo

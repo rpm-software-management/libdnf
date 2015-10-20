@@ -19,9 +19,9 @@
  */
 
 // hawkey
-#include "src/package.h"
-#include "src/reldep.h"
-#include "src/sack.h"
+#include "libhif/hy-package.h"
+#include "libhif/hy-reldep.h"
+#include "libhif/hy-sack.h"
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"

@@ -24,12 +24,12 @@
 #include <string.h>
 
 // hawkey
-#include "src/nevra.h"
-#include "src/nevra_internal.h"
-#include "src/reldep.h"
-#include "src/sack.h"
-#include "src/subject.h"
-#include "src/subject_internal.h"
+#include "libhif/hy-nevra.h"
+#include "libhif/hy-nevra_internal.h"
+#include "libhif/hy-reldep.h"
+#include "libhif/hy-sack.h"
+#include "libhif/hy-subject.h"
+#include "libhif/hy-subject_internal.h"
 #include "fixtures.h"
 #include "testshared.h"
 #include "test_suites.h"

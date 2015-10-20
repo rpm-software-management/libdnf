@@ -23,10 +23,10 @@
 #include <unistd.h>
 
 // hawkey
-#include "src/package.h"
-#include "src/repo.h"
-#include "src/iutil.h"
-#include "src/sack_internal.h"
+#include "libhif/hy-package.h"
+#include "libhif/hy-repo.h"
+#include "libhif/hy-iutil.h"
+#include "libhif/hy-sack_internal.h"
 #include "fixtures.h"
 #include "testsys.h"
 
