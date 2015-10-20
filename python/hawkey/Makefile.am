@@ -41,7 +41,11 @@ _hawkey_la_SOURCES =						\
 	selector-py.h						\
 	subject-py.c						\
 	subject-py.h
-_hawkey_la_CPPFLAGS = $(PYTHON3_CFLAGS) $(GLIB_CFLAGS) -I$(top_srcdir)/libhif
+_hawkey_la_CPPFLAGS =						\
+	$(PYTHON3_CFLAGS)					\
+	$(GLIB_CFLAGS)						\
+	-DHIF_COMPILATION					\
+	-I$(top_srcdir)/libhif
 _hawkey_la_LDFLAGS = -module -avoid-version
 _hawkey_la_LIBADD = $(top_builddir)/libhif/libhif.la
 

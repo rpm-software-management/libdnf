@@ -111,7 +111,6 @@ AC_CONFIG_FILES([
 Makefile
 python/Makefile
 python/hawkey/Makefile
-libhif/hy-version.h
 libhif/Makefile
 libhif/libhif.pc
 libhif/hif-version.h

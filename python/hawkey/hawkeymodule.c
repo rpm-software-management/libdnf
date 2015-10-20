@@ -30,7 +30,7 @@
 #include "hy-subject.h"
 #include "hy-types.h"
 #include "hy-util.h"
-#include "hy-version.h"
+#include "hif-version.h"
 
 // pyhawkey
 #include "advisory-py.h"
@@ -229,9 +229,9 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "FORM_NA", HY_FORM_NA);
     PyModule_AddIntConstant(m, "FORM_NAME", HY_FORM_NAME);
 
-    PyModule_AddIntConstant(m, "VERSION_MAJOR", HY_VERSION_MAJOR);
-    PyModule_AddIntConstant(m, "VERSION_MINOR", HY_VERSION_MINOR);
-    PyModule_AddIntConstant(m, "VERSION_PATCH", HY_VERSION_PATCH);
+    PyModule_AddIntConstant(m, "VERSION_MAJOR", HIF_MAJOR_VERSION);
+    PyModule_AddIntConstant(m, "VERSION_MINOR", HIF_MINOR_VERSION);
+    PyModule_AddIntConstant(m, "VERSION_PATCH", HIF_MICRO_VERSION);
 
     PyModule_AddStringConstant(m, "SYSTEM_REPO_NAME", HY_SYSTEM_REPO_NAME);
     PyModule_AddStringConstant(m, "CMDLINE_REPO_NAME", HY_CMDLINE_REPO_NAME);

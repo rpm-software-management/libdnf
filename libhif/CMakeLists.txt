@@ -52,8 +52,7 @@ SET(HAWKEY_headers
     hy-selector.h
     hy-subject.h
     hy-types.h
-    hy-util.h
-    hy-version.h)
+    hy-util.h)
 
 IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
   SET (LIB_SUFFIX "64")
@@ -62,5 +61,3 @@ SET (LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
 
 INSTALL(FILES ${HAWKEY_headers} DESTINATION include/hawkey)
 INSTALL(TARGETS libhawkey LIBRARY DESTINATION ${LIB_INSTALL_DIR})
-
-CONFIGURE_FILE("hy-version.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/hy-version.h" @ONLY)

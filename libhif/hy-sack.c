@@ -55,7 +55,7 @@
 #include "hy-repo_internal.h"
 #include "hy-sack_internal.h"
 #include "hy-util.h"
-#include "hy-version.h"
+#include "hif-version.h"
 
 #define DEFAULT_CACHE_ROOT "/var/cache/hawkey"
 #define DEFAULT_CACHE_USER "/var/tmp/hawkey"
@@ -197,8 +197,8 @@ log_cb(Pool *pool, void *cb_data, int level, const char *buf)
 
 	sack->log_out = fopen(fn, "a");
 	if (sack->log_out)
-	    HY_LOG_INFO("Started hawkey-%d.%d.%d.", HY_VERSION_MAJOR,
-			HY_VERSION_MINOR, HY_VERSION_PATCH);
+	    HY_LOG_INFO("Started hawkey-%d.%d.%d.", HIF_MAJOR_VERSION,
+			HIF_MINOR_VERSION, HIF_MICRO_VERSION);
     }
     if (!sack->log_out)
 	return;
