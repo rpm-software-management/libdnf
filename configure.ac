@@ -90,14 +90,6 @@ PKG_CHECK_MODULES(CHECK, check)
 AM_PATH_PYTHON(3.0.0)
 PY_PREFIX=`$PYTHON -c 'import sys ; print sys.prefix'`
 
-# Hawkey ABI change in 0.5.3
-AC_MSG_CHECKING([For hawkey 0.5.3 ABI break])
-AC_TRY_COMPILE([#include <stdlib.h>
-#include <hawkey/sack.h>],
-               [hy_sack_create(NULL, NULL, NULL, 0); return 0;],
-               [AC_MSG_RESULT([no]); BUILDOPT_HAWKEY_SACK_CREATE2=0],
-               [AC_MSG_RESULT([yes]); BUILDOPT_HAWKEY_SACK_CREATE2=1])
-AC_DEFINE_UNQUOTED(BUILDOPT_HAWKEY_SACK_CREATE2, $BUILDOPT_HAWKEY_SACK_CREATE2, [Hawkey ABI change])
 AC_PATH_PROG([XSLTPROC], [xsltproc])
 
 # whether to use /var/lib/dnf/yumdb or /var/lib/yum/yumdb
