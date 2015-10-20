@@ -21,6 +21,7 @@
 #define _GNU_SOURCE
 #include <assert.h>
 #include <errno.h>
+#include <glib.h>
 #include <fcntl.h>
 #include <linux/limits.h>
 #include <pwd.h>
@@ -69,7 +70,7 @@ static int
 glob_for_cachedir(char *path)
 {
     int ret = 1;
-    if (!str_endswith(path, "XXXXXX"))
+    if (!g_str_has_suffix(path, "XXXXXX"))
 	return ret;
 
     wordexp_t word_vector;
@@ -281,7 +282,7 @@ mkcachedir(char *path)
     if (access(p, X_OK)) {
 	*(strrchr(p, '/')) = '\0';
 	ret = mkcachedir(p);
-	if (str_endswith(path, "XXXXXX")) {
+	if (g_str_has_suffix(path, "XXXXXX")) {
 	    char *retptr = mkdtemp(path);
 	    if (retptr == NULL)
 		ret |= 1;
@@ -354,17 +355,6 @@ read_whole_file(const char *path)
   if (!g_file_get_contents (path, &contents, NULL, NULL))
     return NULL;
   return contents;
-}
-
-int
-str_endswith(const char *haystack, const char *needle)
-{
-    const int lenh = strlen(haystack);
-    const int lenn = strlen(needle);
-
-    if (lenn > lenh)
-	return 0;
-    return strncmp(haystack + lenh - lenn, needle, lenn) == 0 ? 1 : 0;
 }
 
 int

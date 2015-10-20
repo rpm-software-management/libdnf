@@ -66,7 +66,6 @@ char *this_username(void);
 unsigned count_nullt_array(const char **a);
 const char *ll_name(int level);
 char *read_whole_file(const char *path);
-int str_endswith(const char *haystack, const char *needle);
 int str_startswith(const char *haystack, const char *needle);
 char *pool_tmpdup(Pool *pool, const char *s);
 char *hy_strndup(const char *s, size_t n);

@@ -21,6 +21,7 @@
 #define _GNU_SOURCE
 #include <stdlib.h>
 #include <unistd.h>
+#include <glib.h>
 
 // libsolv
 #include <solv/pool.h>
@@ -132,7 +133,7 @@ START_TEST(test_mkcachedir)
 
     fail_if(asprintf(&dir, "%s%s", workdir, "/mkcachedir/sub2/wd-XXXXXX") == -1);
     fail_if(mkcachedir(dir));
-    fail_if(str_endswith(dir, "XXXXXX")); /* mkcache dir changed the Xs */
+    fail_if(g_str_has_suffix(dir, "XXXXXX")); /* mkcache dir changed the Xs */
     fail_if(access(dir, R_OK|X_OK|W_OK));
 
     /* test the globbing capability of mkcachedir */
@@ -143,15 +144,6 @@ START_TEST(test_mkcachedir)
 
     free(dir2);
     free(dir);
-}
-END_TEST
-
-START_TEST(test_str_endswith)
-{
-    fail_unless(str_endswith("spinning", "ing"));
-    fail_unless(str_endswith("spinning", "spinning"));
-    fail_unless(str_endswith("", ""));
-    fail_if(str_endswith("aaa", "b"));
 }
 END_TEST
 
@@ -201,7 +193,6 @@ iutil_suite(void)
     tcase_add_test(tc, test_checksum);
     tcase_add_test(tc, test_checksum_write_read);
     tcase_add_test(tc, test_mkcachedir);
-    tcase_add_test(tc, test_str_endswith);
     tcase_add_test(tc, test_str_startswith);
     tcase_add_test(tc, test_version_split);
     suite_add_tcase(s, tc);
