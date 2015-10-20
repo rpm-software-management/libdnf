@@ -63,11 +63,10 @@ parse_cpu_flags(int *flags, const char *section)
     return 0;
 }
 
-void *
+void
 hy_free(void *mem)
 {
     free(mem);
-    return 0;
 }
 
 const char *

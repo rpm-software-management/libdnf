@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-void *hy_free(void *mem);
+void hy_free(void *mem);
 void *hy_free_strs(char **strs);
 const char *hy_chksum_name(int chksum_type);
 int hy_chksum_type(const char *chksum_name);
