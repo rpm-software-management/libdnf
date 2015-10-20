@@ -147,16 +147,6 @@ START_TEST(test_mkcachedir)
 }
 END_TEST
 
-START_TEST(test_str_startswith)
-{
-    fail_unless(str_startswith("spinning", "spi"));
-    fail_unless(str_startswith("spinning", "spinning"));
-    fail_unless(str_startswith("", ""));
-    fail_if(str_startswith("aaa", "x"));
-    fail_if(str_startswith("aaa", "bbbb"));
-}
-END_TEST
-
 START_TEST(test_version_split)
 {
     Pool *pool = pool_create();
@@ -193,7 +183,6 @@ iutil_suite(void)
     tcase_add_test(tc, test_checksum);
     tcase_add_test(tc, test_checksum_write_read);
     tcase_add_test(tc, test_mkcachedir);
-    tcase_add_test(tc, test_str_startswith);
     tcase_add_test(tc, test_version_split);
     suite_add_tcase(s, tc);
     return s;

@@ -357,17 +357,6 @@ read_whole_file(const char *path)
   return contents;
 }
 
-int
-str_startswith(const char *haystack, const char *needle)
-{
-    const int lenh = strlen(haystack);
-    const int lenn = strlen(needle);
-
-    if (lenn > lenh)
-	return 0;
-    return !strncmp(haystack, needle, lenn);
-}
-
 char *
 pool_tmpdup(Pool *pool, const char *s)
 {

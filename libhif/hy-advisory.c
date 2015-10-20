@@ -19,6 +19,7 @@
  */
 
 #include <assert.h>
+#include <glib.h>
 
 //libsolv
 #include <solv/repo.h>
@@ -99,7 +100,7 @@ hy_advisory_get_id(HyAdvisory advisory)
     const char *id;
 
     id = pool_lookup_str(advisory->pool, advisory->a_id, SOLVABLE_NAME);
-    assert(str_startswith(id, SOLVABLE_NAME_ADVISORY_PREFIX));
+    assert(g_str_has_prefix(id, SOLVABLE_NAME_ADVISORY_PREFIX));
     //remove the prefix
     id += strlen(SOLVABLE_NAME_ADVISORY_PREFIX);
 

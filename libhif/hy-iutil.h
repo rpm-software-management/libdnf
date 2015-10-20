@@ -66,7 +66,6 @@ char *this_username(void);
 unsigned count_nullt_array(const char **a);
 const char *ll_name(int level);
 char *read_whole_file(const char *path);
-int str_startswith(const char *haystack, const char *needle);
 char *pool_tmpdup(Pool *pool, const char *s);
 char *hy_strndup(const char *s, size_t n);
 Id running_kernel(HySack sack);
@@ -81,7 +80,7 @@ Id what_upgrades(Pool *pool, Id p);
 Id what_downgrades(Pool *pool, Id p);
 static inline int is_package(Pool *pool, Solvable *s)
 {
-    return !str_startswith(pool_id2str(pool, s->name), SOLVABLE_NAME_ADVISORY_PREFIX);
+    return !g_str_has_prefix(pool_id2str(pool, s->name), SOLVABLE_NAME_ADVISORY_PREFIX);
 }
 
 /* package version utils */

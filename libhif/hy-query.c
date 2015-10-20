@@ -19,6 +19,7 @@
  */
 
 #define _GNU_SOURCE
+#include <glib.h>
 #include <assert.h>
 #include <fnmatch.h>
 #include <string.h>
@@ -460,7 +461,7 @@ filter_sourcerpm(HyQuery q, struct _Filter *f, Map *m)
 	    const char *name = solvable_lookup_str(s, SOLVABLE_SOURCENAME);
 	    if (name == NULL)
 		name = pool_id2str(pool, s->name);
-	    if (!str_startswith(match, name)) // early check
+	    if (!g_str_has_prefix(match, name)) // early check
 		continue;
 
 	    HyPackage pkg = package_create(q->sack, id);
