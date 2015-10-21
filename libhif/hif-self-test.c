@@ -22,7 +22,6 @@
 #include "config.h"
 
 #include <glib-object.h>
-#include "hy-errno.h"
 #include <stdlib.h>
 
 #include "hif-cleanup.h"
@@ -792,30 +791,6 @@ hif_state_small_step_func (void)
 }
 
 static void
-hif_utils_func (void)
-{
-	GError *error = NULL;
-	gboolean ret;
-
-	/* success */
-	ret = hif_error_set_from_hawkey (0, &error);
-	g_assert_no_error (error);
-	g_assert (ret);
-
-	/* failure */
-	ret = hif_error_set_from_hawkey (HIF_ERROR_INTERNAL_ERROR, &error);
-	g_assert_error (error, HIF_ERROR, HIF_ERROR_FAILED);
-	g_assert (!ret);
-	g_clear_error (&error);
-
-	/* new error enum */
-	ret = hif_error_set_from_hawkey (999, &error);
-	g_assert_error (error, HIF_ERROR, HIF_ERROR_FAILED);
-	g_assert (!ret);
-	g_clear_error (&error);
-}
-
-static void
 hif_repos_func (void)
 {
 	GError *error = NULL;
@@ -1121,7 +1096,6 @@ main (int argc, char **argv)
 	g_test_add_func ("/libhif/state[locking]", hif_state_locking_func);
 	g_test_add_func ("/libhif/state[finished]", hif_state_finished_func);
 	g_test_add_func ("/libhif/state[small-step]", hif_state_small_step_func);
-	g_test_add_func ("/libhif/utils", hif_utils_func);
 
 	return g_test_run ();
 }

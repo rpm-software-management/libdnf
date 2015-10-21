@@ -32,7 +32,6 @@
 
 // hawkey
 #include "hif-types.h"
-#include "hy-errno.h"
 #include "hy-iutil.h"
 #include "hy-query_internal.h"
 #include "hy-package_internal.h"

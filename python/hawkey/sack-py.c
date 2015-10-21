@@ -21,8 +21,8 @@
 #include "Python.h"
 
 // hawkey
+#include "hif-cleanup.h"
 #include "hif-types.h"
-#include "hy-errno.h"
 #include "hy-package_internal.h"
 #include "hy-packageset.h"
 #include "hy-repo.h"
@@ -136,6 +136,7 @@ sack_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 static int
 sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
 {
+    _cleanup_error_free_ GError *error = NULL;
     PyObject *custom_class = NULL;
     PyObject *custom_val = NULL;
     const char *cachedir = NULL;
@@ -162,11 +163,11 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     int flags = 0;
     if (make_cache_dir)
 	flags |= HY_MAKE_CACHE_DIR;
-    self->sack = hy_sack_create(cachedir, arch, rootdir, logfile, flags);
+    self->sack = hy_sack_create(cachedir, arch, rootdir, logfile, flags, &error);
     Py_XDECREF(tmp_py_str);
     Py_XDECREF(tmp2_py_str);
     if (self->sack == NULL) {
-	switch (hy_get_errno()) {
+	switch (error->code) {
 	case HIF_ERROR_FILE_INVALID:
 	    PyErr_SetString(PyExc_IOError,
 			    "Failed creating working files for the Sack.");
@@ -403,28 +404,29 @@ list_arches(_SackObject *self, PyObject *unused)
 static PyObject *
 load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 {
+    _cleanup_error_free_ GError *error = NULL;
     char *kwlist[] = {"repo", "build_cache", "load_filelists", "load_presto",
-		      NULL};
+                      NULL};
 
     HyRepo crepo = NULL;
     int build_cache = 0, unused_1 = 0, unused_2 = 0;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&iii", kwlist,
-				     repo_converter, &crepo,
-				     &build_cache, &unused_1, &unused_2))
+                                     repo_converter, &crepo,
+                                     &build_cache, &unused_1, &unused_2))
 
 
-	return 0;
+        return 0;
 
     int flags = 0;
     if (build_cache)
-	flags |= HY_BUILD_CACHE;
+        flags |= HY_BUILD_CACHE;
 
-    int ret = hy_sack_load_system_repo(self->sack, crepo, flags);
-    if (ret == HIF_ERROR_CANNOT_WRITE_CACHE) {
-	PyErr_SetString(PyExc_IOError, "Failed writing the cache.");
-	return NULL;
-    } else if (ret2e(ret, "load_system_repo() failed."))
-	return NULL;
+    gboolean ret = hy_sack_load_system_repo(self->sack, crepo, flags, &error);
+    if (g_error_matches (error, HIF_ERROR, HIF_ERROR_CANNOT_WRITE_CACHE)) {
+        PyErr_SetString(PyExc_IOError, "Failed writing the cache.");
+        return NULL;
+    } else if (error2e(error))
+        return NULL;
     Py_RETURN_NONE;
 }
 
@@ -443,7 +445,8 @@ load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 	return 0;
 
     int flags = 0;
-    int ret = 0;
+    gboolean ret = 0;
+    _cleanup_error_free_ GError *error = NULL;
     if (build_cache)
 	flags |= HY_BUILD_CACHE;
     if (load_filelists)
@@ -453,11 +456,10 @@ load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     if (load_updateinfo)
         flags |= HY_LOAD_UPDATEINFO;
     Py_BEGIN_ALLOW_THREADS;
-    if (hy_sack_load_repo(self->sack, crepo, flags))
-	ret = hy_get_errno();
+    ret = hy_sack_load_repo(self->sack, crepo, flags, error);
     Py_END_ALLOW_THREADS;
-    if (ret2e(ret, "Can not load repo."))
-	return NULL;
+    if (error2e(error))
+        return NULL;
     Py_RETURN_NONE;
 }
 

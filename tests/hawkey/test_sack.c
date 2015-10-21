@@ -29,7 +29,7 @@
 
 // hawkey
 #include <libhif/libhif.h>
-#include "libhif/hy-errno.h"
+#include "libhif/hif-cleanup.h"
 #include "libhif/hy-package_internal.h"
 #include "libhif/hy-repo_internal.h"
 #include "libhif/hy-sack_internal.h"
@@ -49,24 +49,24 @@ END_TEST
 
 START_TEST(test_sack_create)
 {
-    fail_unless(hy_get_errno() == 0);
+    _cleanup_error_free_ GError *error = NULL;
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
-				 HY_MAKE_CACHE_DIR);
+				 HY_MAKE_CACHE_DIR, NULL);
     fail_if(sack == NULL, NULL);
     fail_if(sack_pool(sack) == NULL, NULL);
     hy_sack_free(sack);
 
     sack = hy_sack_create(test_globals.tmpdir, "", NULL, NULL,
-			  HY_MAKE_CACHE_DIR);
+			  HY_MAKE_CACHE_DIR, NULL);
     fail_unless(sack == NULL);
-    fail_unless(hy_get_errno() == HIF_ERROR_INVALID_ARCHITECTURE);
+    fail_unless(error == NULL);
 }
 END_TEST
 
 START_TEST(test_give_cache_fn)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
-				 HY_MAKE_CACHE_DIR);
+				 HY_MAKE_CACHE_DIR, NULL);
 
     char *path = hy_sack_give_cache_fn(sack, "rain", NULL);
     fail_if(strstr(path, "rain.solv") == NULL);
@@ -82,7 +82,7 @@ END_TEST
 START_TEST(test_list_arches)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH, NULL,
-				 NULL, HY_MAKE_CACHE_DIR);
+				 NULL, HY_MAKE_CACHE_DIR, NULL);
     const char ** arches = hy_sack_list_arches(sack);
 
     /* noarch, x86_64, athlon, i686, i586, i486, i386 */
@@ -96,12 +96,15 @@ END_TEST
 
 START_TEST(test_load_repo_err)
 {
+    _cleanup_error_free_ GError *error = NULL;
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
-				 HY_MAKE_CACHE_DIR);
+				 HY_MAKE_CACHE_DIR, &error);
+    g_assert(sack != NULL);
     HyRepo repo = hy_repo_create("crabalocker");
+    g_assert(repo != NULL);
     hy_repo_set_string(repo, HY_REPO_MD_FN, "/non/existing");
-    fail_unless(hy_sack_load_repo(sack, repo, 0) == HIF_ERROR_FAILED);
-    fail_unless(hy_get_errno() == HIF_ERROR_FILE_INVALID);
+    fail_unless(!hy_sack_load_repo(sack, repo, 0, &error));
+    fail_unless(g_error_matches (error, HIF_ERROR, HIF_ERROR_FILE_INVALID));
     hy_repo_free(repo);
     hy_sack_free(sack);
 }
@@ -110,7 +113,7 @@ END_TEST
 START_TEST(test_repo_written)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
-				 HY_MAKE_CACHE_DIR);
+				 HY_MAKE_CACHE_DIR, NULL);
     char *filename = hy_sack_give_cache_fn(sack, "test_sack_written", NULL);
 
     fail_unless(access(filename, R_OK|W_OK));
@@ -181,7 +184,7 @@ END_TEST
 START_TEST(test_filelist_from_cache)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
-				 HY_MAKE_CACHE_DIR);
+				 HY_MAKE_CACHE_DIR, NULL);
     setup_yum_sack(sack, YUM_REPO_NAME);
 
     HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
@@ -228,7 +231,7 @@ END_TEST
 START_TEST(test_presto_from_cache)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH, NULL,
-				 NULL, HY_MAKE_CACHE_DIR);
+				 NULL, HY_MAKE_CACHE_DIR, NULL);
     setup_yum_sack(sack, YUM_REPO_NAME);
 
     HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);

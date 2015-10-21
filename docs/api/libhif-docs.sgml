@@ -56,7 +56,6 @@
     <xi:include href="xml/hif-version.xml"/>
     <xi:include href="xml/hif-package.xml"/>
     <xi:include href="xml/hif-rpmts.xml"/>
-    <xi:include href="xml/hif-hawkey.xml"/>
     <xi:include href="xml/hif-types.xml"/>
   </reference>
 

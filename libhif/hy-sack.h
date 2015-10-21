@@ -40,7 +40,7 @@ enum _hy_sack_repo_load_flags {
 };
 
 HySack hy_sack_create(const char *cachedir, const char *arch, const char *rootdir,
-		      const char* logfile, int flags);
+		      const char* logfile, int flags, GError **error);
 void hy_sack_free(HySack sack);
 int hy_sack_evr_cmp(HySack sack, const char *evr1, const char *evr2);
 const char *hy_sack_get_cache_dir(HySack sack);
@@ -64,11 +64,11 @@ int hy_sack_repo_enabled(HySack sack, const char *reponame, int enabled);
  * @returns           0 on success, HIF_ERROR_FILE_INVALID on fatal error,
  *		      HIF_ERROR_CANNOT_WRITE_CACHE on cache write error.
  */
-int hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags);
+gboolean hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags, GError **error);
 
 // deprecated in 0.5.5, eligible for dropping after 2015-10-27 AND no sooner
 // than in 0.5.8, use hy_advisorypkg_get_string instead
-int hy_sack_load_repo(HySack sack, HyRepo hrepo, int flags);
+gboolean hy_sack_load_repo(HySack sack, HyRepo hrepo, int flags, GError **error);
 
 G_END_DECLS
 

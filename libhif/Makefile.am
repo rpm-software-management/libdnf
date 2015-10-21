@@ -50,7 +50,6 @@ libhif_include_HEADERS =					\
 	hif-context.h						\
 	hif-db.h						\
 	hif-goal.h						\
-	hif-hawkey.h						\
 	hif-keyring.h						\
 	hif-lock.h						\
 	hif-package.h						\
@@ -75,9 +74,6 @@ libhif_la_SOURCES =						\
 	hy-advisoryref.c					\
 	hy-advisoryref.h					\
 	hy-advisoryref_internal.h				\
-	hy-errno.c						\
-	hy-errno.h						\
-	hy-errno_internal.h					\
 	hy-goal.c						\
 	hy-goal.h						\
 	hy-goal_internal.h					\

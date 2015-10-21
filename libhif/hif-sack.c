@@ -32,7 +32,6 @@
 
 #include "config.h"
 
-#include "hy-errno.h"
 #include "hy-query.h"
 #include "hy-packageset.h"
 
@@ -82,7 +81,6 @@ hif_sack_add_source (HySack sack,
 {
 	gboolean ret = TRUE;
 	GError *error_local = NULL;
-	gint rc;
 	HifState *state_local;
 	int flags_hy = HY_BUILD_CACHE;
 
@@ -145,14 +143,8 @@ hif_sack_add_source (HySack sack,
 	/* load solv */
 	g_debug ("Loading repo %s", hif_source_get_id (src));
 	hif_state_action_start (state, HIF_STATE_ACTION_LOADING_CACHE, NULL);
-	rc = hy_sack_load_repo (sack, hif_source_get_repo (src), flags_hy);
-	if (rc == HIF_ERROR_FAILED)
-		rc = hy_get_errno ();
-	if (!hif_error_set_from_hawkey (rc, error)) {
-		g_prefix_error (error, "Failed to load repo %s: ",
-				hif_source_get_id (src));
+	if (!hy_sack_load_repo (sack, hif_source_get_repo (src), flags_hy, error))
 		return FALSE;
-	}
 
 	process_excludes (sack, src);
 

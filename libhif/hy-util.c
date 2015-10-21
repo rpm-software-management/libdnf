@@ -26,7 +26,6 @@
 
 // hawkey
 #include "hif-types.h"
-#include "hy-errno.h"
 #include "hy-iutil.h"
 #include "hy-package.h"
 #include "hy-util.h"

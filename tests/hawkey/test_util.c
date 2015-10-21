@@ -23,7 +23,6 @@
 
 // hawkey
 #include <libhif/libhif.h>
-#include "libhif/hy-errno.h"
 #include "libhif/hy-util.h"
 #include "test_suites.h"
 

@@ -46,7 +46,6 @@
 
 // hawkey
 #include "hif-types.h"
-#include "hy-errno_internal.h"
 #include "hy-iutil.h"
 #include "hy-package_internal.h"
 #include "hy-packageset_internal.h"
@@ -226,17 +225,14 @@ char *
 abspath(const char *path)
 {
     const int len = strlen(path);
-    if (len <= 1) {
-	hy_errno = HIF_ERROR_INTERNAL_ERROR;
+    if (len <= 1)
 	return NULL;
-    }
 
     if (path[0] == '/')
 	return solv_strdup(path);
 
     char cwd[PATH_MAX];
     if (!getcwd(cwd, PATH_MAX)) {
-	hy_errno = HIF_ERROR_FAILED;
 	return NULL;
     }
 
@@ -297,20 +293,26 @@ mkcachedir(char *path)
     return ret;
 }
 
-int
-mv(HySack sack, const char *old, const char *new)
+gboolean
+mv(const char *old, const char *new, GError **error)
 {
     if (rename(old, new)) {
-	HY_LOG_ERROR(format_err_str("Failed renaming %s to %s: %s", old, new,
-				    strerror(errno)));
-	return HIF_ERROR_FILE_INVALID;
+	g_set_error(error,
+		    HIF_ERROR,
+		    HIF_ERROR_FILE_INVALID,
+		    "Failed renaming %s to %s: %s",
+		    old, new, strerror(errno));
+	return FALSE;
     }
     if (chmod(new, 0666 & ~get_umask())) {
-	HY_LOG_ERROR(format_err_str("Failed setting perms on %s: %s", new,
-				    strerror(errno)));
-	return HIF_ERROR_FILE_INVALID;
+	g_set_error(error,
+		    HIF_ERROR,
+		    HIF_ERROR_FILE_INVALID,
+		    "ailed setting perms on %s: %s",
+		    new, strerror(errno));
+	return FALSE;
     }
-    return 0;
+    return TRUE;
 }
 
 char *

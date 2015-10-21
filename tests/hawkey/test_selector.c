@@ -21,7 +21,6 @@
 // hawkey
 #include <libhif/libhif.h>
 #include "libhif/hy-selector.h"
-#include "libhif/hy-errno.h"
 #include "fixtures.h"
 #include "testsys.h"
 #include "test_suites.h"

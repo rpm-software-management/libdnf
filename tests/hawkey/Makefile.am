@@ -5,6 +5,7 @@ SHARED_CPPFLAGS =						\
 	-I$(top_srcdir)						\
 	-I$(top_builddir)/libhif				\
 	-DTESTDATADIR=\""$(top_srcdir)/data/tests/hawkey"\"	\
+	-DHIF_COMPILATION					\
 	-I.							\
 	-DG_LOG_DOMAIN=\"Hif\"
 
