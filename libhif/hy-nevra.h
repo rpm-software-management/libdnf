@@ -40,7 +40,7 @@ HyNevra hy_nevra_clone(HyNevra nevra);
 int hy_nevra_cmp(HyNevra nevra1, HyNevra nevra2);
 const char *hy_nevra_get_string(HyNevra nevra, int which);
 int hy_nevra_get_epoch(HyNevra nevra);
-int hy_nevra_set_epoch(HyNevra nevra, int epoch);
+void hy_nevra_set_epoch(HyNevra nevra, int epoch);
 void hy_nevra_set_string(HyNevra nevra, int which, const char* str_val);
 HyQuery hy_nevra_to_query(HyNevra nevra, HySack sack);
 int hy_nevra_evr_cmp(HyNevra nevra1, HyNevra nevra2, HySack sack);
