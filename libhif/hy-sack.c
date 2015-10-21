@@ -157,13 +157,13 @@ setarch(HySack sack, const char *req_arch)
     if (arch == NULL) {
         ret = hy_detect_arch(&detected);
         if (ret) {
-            HY_LOG_ERROR("hy_detect_arch() failed: %d", ret);
+            g_warning("hy_detect_arch() failed: %d", ret);
             return ret;
         }
         arch = detected;
     }
 
-    HY_LOG_INFO("Architecture is: %s", arch);
+    g_debug("Architecture is: %s", arch);
     pool_setarch(pool, arch);
     if (!strcmp(arch, "noarch"))
         // noarch never fails
@@ -184,36 +184,25 @@ setarch(HySack sack, const char *req_arch)
     return ret;
 }
 
+// log levels (see also SOLV_ERROR etc. in <solv/pool.h>)
+#define HY_LL_INFO  (1 << 20)
+#define HY_LL_ERROR (1 << 21)
+
 static void
 log_cb(Pool *pool, void *cb_data, int level, const char *buf)
 {
-    HySack sack = cb_data;
-
-    if (sack->log_out == NULL) {
-        const char *fn = sack->log_file;
-
-        if (!sack->log_file)
-            fn = pool_tmpjoin(pool, sack->cache_dir, "/hawkey.log", NULL);
-
-        sack->log_out = fopen(fn, "a");
-        if (sack->log_out)
-            HY_LOG_INFO("Started hawkey-%d.%d.%d.", HIF_MAJOR_VERSION,
-                        HIF_MINOR_VERSION, HIF_MICRO_VERSION);
+    /* just proxy this to the GLib logging handler */
+    switch(level) {
+        case HY_LL_INFO:
+            g_debug ("%s", buf);
+            break;
+        case HY_LL_ERROR:
+            g_warning ("%s", buf);
+            break;
+        default:
+            g_info ("%s", buf);
+            break;
     }
-    if (!sack->log_out)
-        return;
-
-    time_t t = time(NULL);
-    struct tm tm;
-    char timestr[26];
-
-    localtime_r(&t, &tm);
-    strftime(timestr, 26, "%b-%d %H:%M:%S ", &tm);
-    const char *pref = pool_tmpjoin(pool, ll_name(level), " ", timestr);
-    pref = pool_tmpjoin(pool, pref, buf, NULL);
-
-    fwrite(pref, strlen(pref), 1, sack->log_out);
-    fflush(sack->log_out);
 }
 
 static void
@@ -326,7 +315,7 @@ load_ext(HySack sack, HyRepo hrepo, int which_repodata,
         if (which_repodata == _HY_REPODATA_FILENAMES)
             flags |= REPO_LOCALPOOL;
         done = TRUE;
-        HY_LOG_INFO("%s: using cache file: %s", __func__, fn_cache);
+        g_debug("%s: using cache file: %s", __func__, fn_cache);
         ret = repo_add_solv(repo, fp, flags);
         if (ret) {
             g_set_error_literal (error,
@@ -353,7 +342,7 @@ load_ext(HySack sack, HyRepo hrepo, int which_repodata,
                      "failed to open: %s", fn);
         return FALSE;
     }
-    HY_LOG_INFO("%s: loading: %s", __func__, fn);
+    g_debug("%s: loading: %s", __func__, fn);
 
     int previous_last = repo->nrepodata - 1;
     ret = cb(repo, fp);
@@ -413,7 +402,7 @@ write_main(HySack sack, HyRepo hrepo, int switchtosolv, GError **error)
     gboolean ret = TRUE;
     gint rc;
 
-    HY_LOG_INFO("caching repo: %s (0x%s)", name, chksum);
+    g_debug("caching repo: %s (0x%s)", name, chksum);
 
     if (tmp_fd < 0) {
         ret = FALSE;
@@ -528,7 +517,7 @@ write_ext(HySack sack, HyRepo hrepo, int which_repodata, const char *suffix, GEr
     }
     FILE *fp = fdopen(tmp_fd, "w+");
 
-    HY_LOG_INFO("%s: storing %s to: %s", __func__, repo->name, tmp_fn_templ);
+    g_debug("%s: storing %s to: %s", __func__, repo->name, tmp_fn_templ);
     if (which_repodata != _HY_REPODATA_UPDATEINFO)
         ret |= repodata_write(data, fp);
     else
@@ -602,7 +591,7 @@ load_yum_repo(HySack sack, HyRepo hrepo, GError **error)
     assert(hrepo->state_main == _HY_NEW);
     if (can_use_repomd_cache(fp_cache, hrepo->checksum)) {
         const char *chksum = pool_checksum_str(pool, hrepo->checksum);
-        HY_LOG_INFO("using cached %s (0x%s)", name, chksum);
+        g_debug("using cached %s (0x%s)", name, chksum);
         if (repo_add_solv(repo, fp_cache, 0)) {
             g_set_error (error,
                          HIF_ERROR,
@@ -617,7 +606,7 @@ load_yum_repo(HySack sack, HyRepo hrepo, GError **error)
                                  "r");
         assert(fp_primary);
 
-        HY_LOG_INFO("fetching %s", name);
+        g_debug("fetching %s", name);
         if (repo_add_repomdxml(repo, fp_repomd, 0) || \
             repo_add_rpmmd(repo, fp_primary, 0, 0)) {
             g_set_error (error,
@@ -728,7 +717,7 @@ hy_sack_free(HySack sack)
         hy_repo_free(hrepo);
     }
     if (sack->log_out) {
-        HY_LOG_INFO("Finished.", sack);
+        g_debug("finished");
         fclose(sack->log_out);
     }
     solv_free(sack->cache_dir);
@@ -847,7 +836,7 @@ hy_sack_add_cmdline_package(HySack sack, const char *fn)
 
     assert(repo);
     if (!is_readable_rpm(fn)) {
-        HY_LOG_ERROR("not a readable RPM file: %s, skipping", fn);
+        g_warning("not a readable RPM file: %s, skipping", fn);
         return NULL;
     }
     p = repo_add_rpm(repo, fn, REPO_REUSE_REPODATA|REPO_NO_INTERNALIZE);
@@ -988,12 +977,12 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags, GError **error)
     Repo *repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
     if (can_use_rpmdb_cache(cache_fp, hrepo->checksum)) {
         const char *chksum = pool_checksum_str(pool, hrepo->checksum);
-        HY_LOG_INFO("using cached rpmdb (0x%s)", chksum);
+        g_debug("using cached rpmdb (0x%s)", chksum);
         rc = repo_add_solv(repo, cache_fp, 0);
         if (!rc)
             hrepo->state_main = _HY_LOADED_CACHE;
     } else {
-        HY_LOG_INFO("fetching rpmdb");
+        g_debug("fetching rpmdb");
         int flags = REPO_REUSE_REPODATA | RPM_ADD_WITH_HDRID | REPO_USE_ROOTDIR;
         rc = repo_add_rpmdb_reffp(repo, cache_fp, flags);
         if (!rc)
@@ -1058,7 +1047,7 @@ hy_sack_load_repo(HySack sack, HyRepo repo, int flags, GError **error)
             if (g_error_matches (error_local,
                                  HIF_ERROR,
                                  HIF_ERROR_NO_CAPABILITY)) {
-                HY_LOG_INFO("no filelists metadata available for %s", repo->name);
+                g_debug("no filelists metadata available for %s", repo->name);
                 g_clear_error (&error_local);
             } else {
                 g_propagate_error (error, error_local);
@@ -1080,7 +1069,7 @@ hy_sack_load_repo(HySack sack, HyRepo repo, int flags, GError **error)
             if (g_error_matches (error_local,
                                  HIF_ERROR,
                                  HIF_ERROR_NO_CAPABILITY)) {
-                HY_LOG_INFO("no presto metadata available for %s", repo->name);
+                g_debug("no presto metadata available for %s", repo->name);
                 g_clear_error (&error_local);
             } else {
                 g_propagate_error (error, error_local);
@@ -1102,7 +1091,7 @@ hy_sack_load_repo(HySack sack, HyRepo repo, int flags, GError **error)
             if (g_error_matches (error_local,
                                  HIF_ERROR,
                                  HIF_ERROR_NO_CAPABILITY)) {
-                HY_LOG_INFO("no updateinfo available for %s", repo->name);
+                g_debug("no updateinfo available for %s", repo->name);
                 g_clear_error (&error_local);
             } else {
                 g_propagate_error (error, error_local);
@@ -1183,7 +1172,7 @@ rewrite_repos(HySack sack, Queue *addedfileprovides,
         repo->nrepodata = hrepo->main_nrepodata;
         repo->nsolvables = hrepo->main_nsolvables;
         repo->end = hrepo->main_end;
-        HY_LOG_INFO("rewriting repo: %s", repo->name);
+        g_debug("rewriting repo: %s", repo->name);
         write_main(sack, hrepo, 0, NULL);
         repo->nrepodata = oldnrepodata;
         repo->nsolvables = oldnsolvables;

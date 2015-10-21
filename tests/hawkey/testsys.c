@@ -107,16 +107,6 @@ dump_goal_results(HyGoal goal)
 }
 
 int
-logfile_size(HySack sack)
-{
-    const int fd = fileno(sack->log_out);
-    struct stat st;
-
-    fstat(fd, &st);
-    return st.st_size;
-}
-
-int
 query_count_results(HyQuery query)
 {
     HyPackageList plist = hy_query_run(query);
