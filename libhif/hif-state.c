@@ -486,7 +486,7 @@ hif_state_get_speed(HifState *state)
 }
 
 /**
- * hif_state_set_speed_internal:
+ * hif_state_set_speed-private:
  **/
 static void
 hif_state_set_speed_internal(HifState *state, guint64 speed)

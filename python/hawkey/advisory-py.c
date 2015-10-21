@@ -22,7 +22,7 @@
 #include <datetime.h>
 
 // hawkey
-#include "hy-advisory_internal.h"
+#include "hy-advisory-private.h"
 #include "hy-advisorypkg.h"
 #include "hy-advisoryref.h"
 #include "hy-package.h"

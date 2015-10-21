@@ -37,14 +37,14 @@
 // hawkey
 #include "hif-cleanup.h"
 #include "hif-types.h"
-#include "hy-goal_internal.h"
+#include "hy-goal-private.h"
 #include "hy-iutil.h"
-#include "hy-package_internal.h"
-#include "hy-query_internal.h"
-#include "hy-reldep_internal.h"
-#include "hy-repo_internal.h"
-#include "hy-sack_internal.h"
-#include "hy-selector_internal.h"
+#include "hy-package-private.h"
+#include "hy-query-private.h"
+#include "hy-reldep-private.h"
+#include "hy-repo-private.h"
+#include "hy-sack-private.h"
+#include "hy-selector-private.h"
 #include "hy-util.h"
 
 struct _HyGoal {

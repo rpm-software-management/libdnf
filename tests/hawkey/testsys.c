@@ -31,9 +31,9 @@
 // hawkey
 #include "libhif/hy-goal.h"
 #include "libhif/hy-package.h"
-#include "libhif/hy-package_internal.h"
+#include "libhif/hy-package-private.h"
 #include "libhif/hy-query.h"
-#include "libhif/hy-sack_internal.h"
+#include "libhif/hy-sack-private.h"
 #include "libhif/hy-util.h"
 #include "testsys.h"
 

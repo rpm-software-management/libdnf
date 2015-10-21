@@ -22,7 +22,7 @@
 #include <solv/util.h>
 
 // hawkey
-#include "hy-advisorypkg_internal.h"
+#include "hy-advisorypkg-private.h"
 
 #define PACKAGE_BLOCK 15
 

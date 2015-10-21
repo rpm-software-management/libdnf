@@ -26,9 +26,9 @@
 #include <solv/util.h>
 
 // hawkey
-#include "hy-advisory_internal.h"
-#include "hy-advisorypkg_internal.h"
-#include "hy-advisoryref_internal.h"
+#include "hy-advisory-private.h"
+#include "hy-advisorypkg-private.h"
+#include "hy-advisoryref-private.h"
 #include "hy-iutil.h"
 
 #define FILENAME_BLOCK 15

@@ -25,8 +25,8 @@
 #include <solv/util.h>
 
 // hawkey
-#include "hy-reldep_internal.h"
-#include "hy-sack_internal.h"
+#include "hy-reldep-private.h"
+#include "hy-sack-private.h"
 #include "hy-iutil.h"
 
 // pyhawkey

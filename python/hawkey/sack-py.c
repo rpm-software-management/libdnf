@@ -23,10 +23,10 @@
 // hawkey
 #include "hif-cleanup.h"
 #include "hif-types.h"
-#include "hy-package_internal.h"
+#include "hy-package-private.h"
 #include "hy-packageset.h"
 #include "hy-repo.h"
-#include "hy-sack_internal.h"
+#include "hy-sack-private.h"
 #include "hy-util.h"
 
 // pyhawkey

@@ -21,7 +21,7 @@
 #include <Python.h>
 
 // hawkey
-#include "hy-subject_internal.h"
+#include "hy-subject-private.h"
 
 // pyhawkey
 #include "nevra-py.h"

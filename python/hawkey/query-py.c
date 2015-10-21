@@ -25,8 +25,8 @@
 
 // hawkey
 #include "hy-packagelist.h"
-#include "hy-packageset_internal.h"
-#include "hy-query_internal.h"
+#include "hy-packageset-private.h"
+#include "hy-query-private.h"
 #include "hy-reldep.h"
 
 // pyhawkey

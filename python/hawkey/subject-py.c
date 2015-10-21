@@ -26,10 +26,10 @@
 // hawkey
 #include "hy-iutil.h"
 #include "hy-nevra.h"
-#include "hy-nevra_internal.h"
+#include "hy-nevra-private.h"
 #include "hy-reldep.h"
 #include "hy-sack.h"
-#include "hy-sack_internal.h"
+#include "hy-sack-private.h"
 #include "hy-subject.h"
 #include "hy-types.h"
 

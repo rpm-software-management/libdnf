@@ -21,9 +21,9 @@
 #include <regex.h>
 #include <stdlib.h>
 #include "hy-nevra.h"
-#include "hy-nevra_internal.h"
+#include "hy-nevra-private.h"
 #include "hy-iutil.h"
-#include "hy-subject_internal.h"
+#include "hy-subject-private.h"
 
 const char *nevra_form_regex[] = {
     "^([^:]+)" "-(([0-9]+):)?" "([^-]*)" "-(.+)" "\\.([^.]+)$",

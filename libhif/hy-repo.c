@@ -24,7 +24,7 @@
 #include <solv/util.h>
 
 // hawkey
-#include "hy-repo_internal.h"
+#include "hy-repo-private.h"
 
 HyRepo
 hy_repo_link(HyRepo repo)

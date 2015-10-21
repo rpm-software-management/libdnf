@@ -19,7 +19,7 @@
  */
 
 // hawkey
-#include "libhif/hy-package_internal.h"
+#include "libhif/hy-package-private.h"
 #include "libhif/hy-packagelist.h"
 #include "test_suites.h"
 

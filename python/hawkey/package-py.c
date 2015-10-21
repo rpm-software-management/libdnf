@@ -27,10 +27,10 @@
 // hawkey
 #include "hy-advisory.h"
 #include "hy-iutil.h"
-#include "hy-package_internal.h"
+#include "hy-package-private.h"
 #include "hy-packagelist.h"
 #include "hy-reldep.h"
-#include "hy-sack_internal.h"
+#include "hy-sack-private.h"
 
 // pyhawkey
 #include "iutil-py.h"

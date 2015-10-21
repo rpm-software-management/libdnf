@@ -21,7 +21,7 @@
 #include <Python.h>
 
 // hawkey
-#include "hy-package_internal.h"
+#include "hy-package-private.h"
 #include "hy-iutil.h"
 
 // pyhawkey

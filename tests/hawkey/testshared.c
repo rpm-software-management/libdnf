@@ -27,7 +27,7 @@
 
 // hawkey
 #include "libhif/hy-repo.h"
-#include "libhif/hy-repo_internal.h"
+#include "libhif/hy-repo-private.h"
 #include "testshared.h"
 
 HyRepo

@@ -25,11 +25,11 @@
 
 // hawkey
 #include "libhif/hy-nevra.h"
-#include "libhif/hy-nevra_internal.h"
+#include "libhif/hy-nevra-private.h"
 #include "libhif/hy-reldep.h"
 #include "libhif/hy-sack.h"
 #include "libhif/hy-subject.h"
-#include "libhif/hy-subject_internal.h"
+#include "libhif/hy-subject-private.h"
 #include "fixtures.h"
 #include "testshared.h"
 #include "test_suites.h"
