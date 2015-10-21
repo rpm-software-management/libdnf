@@ -885,7 +885,6 @@ hy_goal_log_decisions(HyGoal goal)
 gboolean
 hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error)
 {
-    HySack sack = goal->sack;
     Solver *solv = goal->solv;
     if (solv == NULL) {
         g_set_error_literal (error,
@@ -904,7 +903,7 @@ hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error)
                      "failed to make %s absolute", dir);
         return FALSE;
     }
-    HY_LOG_INFO("writing solver debugdata to %s", absdir);
+    g_debug("writing solver debugdata to %s", absdir);
     int ret = testcase_write(solv, absdir, flags, NULL, NULL);
     if (!ret) {
         g_set_error (error,

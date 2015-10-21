@@ -330,27 +330,6 @@ count_nullt_array(const char **a)
     return strp - a;
 }
 
-const char *
-ll_name(int level)
-{
-    switch (level) {
-    case SOLV_FATAL:
-        return "LFATAL";
-    case SOLV_ERROR:
-        return "LSERROR";
-    case SOLV_WARN:
-        return "LSWARN";
-    case SOLV_DEBUG_RESULT:
-        return "LSRESULT";
-    case HY_LL_ERROR:
-        return "ERROR";
-    case HY_LL_INFO:
-        return "INFO";
-    default:
-        return "(level?)";
-    }
-}
-
 char *
 read_whole_file(const char *path)
 {
@@ -389,7 +368,7 @@ running_kernel(HySack sack)
     uname(&un);
     char *fn = pool_tmpjoin(pool, "/boot/vmlinuz-", un.release, NULL);
     if (access(fn, F_OK)) {
-        HY_LOG_ERROR("running_kernel(): no matching file: %s.", fn);
+        g_warning("running_kernel(): no matching file: %s.", fn);
         return -1;
     }
 
@@ -405,9 +384,9 @@ running_kernel(HySack sack)
     hy_query_free(q);
 
     if (kernel_id >= 0)
-        HY_LOG_INFO("running_kernel(): %s.", id2nevra(pool, kernel_id));
+        g_debug("running_kernel(): %s.", id2nevra(pool, kernel_id));
     else
-        HY_LOG_INFO("running_kernel(): running kernel not matched to a package.");
+        g_debug("running_kernel(): running kernel not matched to a package.");
     return kernel_id;
 }
 

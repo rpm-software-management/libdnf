@@ -598,26 +598,6 @@ START_TEST(test_goal_describe_problem)
 }
 END_TEST
 
-START_TEST(test_goal_log_decisions)
-{
-    HySack sack = test_globals.sack;
-    HyPackage pkg = get_latest_pkg(sack, "hello");
-    HyGoal goal = hy_goal_create(sack);
-
-    hy_goal_install(goal, pkg);
-    HY_LOG_INFO("--- decisions below --->");
-    const int origsize = logfile_size(sack);
-    hy_goal_run(goal);
-    hy_goal_log_decisions(goal);
-    const int newsize = logfile_size(sack);
-    // check something substantial was added to the logfile:
-    fail_unless(newsize - origsize > 3000);
-
-    hy_package_free(pkg);
-    hy_goal_free(goal);
-}
-END_TEST
-
 START_TEST(test_goal_no_reinstall)
 {
     HySack sack = test_globals.sack;
@@ -1283,7 +1263,6 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_get_reason_selector);
     tcase_add_test(tc, test_goal_describe_problem);
     tcase_add_test(tc, test_goal_distupgrade_all_keep_arch);
-    tcase_add_test(tc, test_goal_log_decisions);
     tcase_add_test(tc, test_goal_no_reinstall);
     tcase_add_test(tc, test_goal_erase_simple);
     tcase_add_test(tc, test_goal_erase_with_deps);

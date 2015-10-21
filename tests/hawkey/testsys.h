@@ -35,7 +35,6 @@ HyPackage by_name_repo(HySack sack, const char *name, const char *repo);
 void dump_packagelist(HyPackageList plist, int free);
 void dump_query_results(HyQuery query);
 void dump_goal_results(HyGoal goal);
-int logfile_size(HySack sack);
 int query_count_results(HyQuery query);
 
 #endif /* TESTSYS_H */
