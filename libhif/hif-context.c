@@ -1,13 +1,13 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2014-2015 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * version 2.1 of the License, or(at your option) any later version.
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -42,132 +42,132 @@
 #include "libhif.h"
 #include "hif-utils.h"
 
-typedef struct _HifContextPrivate	HifContextPrivate;
+typedef struct _HifContextPrivate    HifContextPrivate;
 struct _HifContextPrivate
 {
-	gchar			*repo_dir;
-	gchar			*base_arch;
-	gchar			*release_ver;
-	gchar			*cache_dir;
-	gchar			*solv_dir;
-	gchar			*vendor_cache_dir;
-	gchar			*vendor_solv_dir;
-	gchar			*lock_dir;
-	gchar			*os_info;
-	gchar			*arch_info;
-	gchar			*install_root;
-	gchar			*rpm_verbosity;
-	gchar			**native_arches;
-	gchar			*http_proxy;
-	gboolean		 cache_age;
-	gboolean		 check_disk_space;
-	gboolean		 check_transaction;
-	gboolean		 only_trusted;
-	gboolean		 enable_yumdb;
-	gboolean		 keep_cache;
-	gboolean		 enrollment_valid;
-	HifLock			*lock;
-	HifTransaction		*transaction;
-	GThread			*transaction_thread;
-	GFileMonitor		*monitor_rpmdb;
-	GHashTable              *override_macros;
+    gchar            *repo_dir;
+    gchar            *base_arch;
+    gchar            *release_ver;
+    gchar            *cache_dir;
+    gchar            *solv_dir;
+    gchar            *vendor_cache_dir;
+    gchar            *vendor_solv_dir;
+    gchar            *lock_dir;
+    gchar            *os_info;
+    gchar            *arch_info;
+    gchar            *install_root;
+    gchar            *rpm_verbosity;
+    gchar            **native_arches;
+    gchar            *http_proxy;
+    gboolean         cache_age;
+    gboolean         check_disk_space;
+    gboolean         check_transaction;
+    gboolean         only_trusted;
+    gboolean         enable_yumdb;
+    gboolean         keep_cache;
+    gboolean         enrollment_valid;
+    HifLock         *lock;
+    HifTransaction  *transaction;
+    GThread         *transaction_thread;
+    GFileMonitor    *monitor_rpmdb;
+    GHashTable      *override_macros;
 
-	/* used to implement a transaction */
-	GPtrArray		*sources;
-	HifRepos		*repos;
-	HifState		*state;		/* used for setup() and run() */
-	HyGoal			 goal;
-	HySack			 sack;
+    /* used to implement a transaction */
+    GPtrArray       *sources;
+    HifRepos        *repos;
+    HifState        *state;        /* used for setup() and run() */
+    HyGoal           goal;
+    HySack           sack;
 };
 
 enum {
-	SIGNAL_INVALIDATE,
-	SIGNAL_LAST
+    SIGNAL_INVALIDATE,
+    SIGNAL_LAST
 };
 
 static guint signals [SIGNAL_LAST] = { 0 };
 
-G_DEFINE_TYPE (HifContext, hif_context, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), HIF_TYPE_CONTEXT, HifContextPrivate))
+G_DEFINE_TYPE(HifContext, hif_context, G_TYPE_OBJECT)
+#define GET_PRIVATE(o)(G_TYPE_INSTANCE_GET_PRIVATE((o), HIF_TYPE_CONTEXT, HifContextPrivate))
 
 /**
  * hif_context_finalize:
  **/
 static void
-hif_context_finalize (GObject *object)
+hif_context_finalize(GObject *object)
 {
-	HifContext *context = HIF_CONTEXT (object);
-	HifContextPrivate *priv = GET_PRIVATE (context);
+    HifContext *context = HIF_CONTEXT(object);
+    HifContextPrivate *priv = GET_PRIVATE(context);
 
-	g_free (priv->repo_dir);
-	g_free (priv->base_arch);
-	g_free (priv->release_ver);
-	g_free (priv->cache_dir);
-	g_free (priv->solv_dir);
-	g_free (priv->vendor_cache_dir);
-	g_free (priv->vendor_solv_dir);
-	g_free (priv->lock_dir);
-	g_free (priv->rpm_verbosity);
-	g_free (priv->install_root);
-	g_free (priv->os_info);
-	g_free (priv->arch_info);
-	g_free (priv->http_proxy);
-	g_strfreev (priv->native_arches);
-	g_object_unref (priv->lock);
-	g_object_unref (priv->state);
-	g_hash_table_unref (priv->override_macros);
+    g_free(priv->repo_dir);
+    g_free(priv->base_arch);
+    g_free(priv->release_ver);
+    g_free(priv->cache_dir);
+    g_free(priv->solv_dir);
+    g_free(priv->vendor_cache_dir);
+    g_free(priv->vendor_solv_dir);
+    g_free(priv->lock_dir);
+    g_free(priv->rpm_verbosity);
+    g_free(priv->install_root);
+    g_free(priv->os_info);
+    g_free(priv->arch_info);
+    g_free(priv->http_proxy);
+    g_strfreev(priv->native_arches);
+    g_object_unref(priv->lock);
+    g_object_unref(priv->state);
+    g_hash_table_unref(priv->override_macros);
 
-	if (priv->transaction != NULL)
-		g_object_unref (priv->transaction);
-	if (priv->repos != NULL)
-		g_object_unref (priv->repos);
-	if (priv->sources != NULL)
-		g_ptr_array_unref (priv->sources);
-	if (priv->goal != NULL)
-		hy_goal_free (priv->goal);
-	if (priv->sack != NULL)
-		hy_sack_free (priv->sack);
-	if (priv->monitor_rpmdb != NULL)
-		g_object_unref (priv->monitor_rpmdb);
+    if (priv->transaction != NULL)
+        g_object_unref(priv->transaction);
+    if (priv->repos != NULL)
+        g_object_unref(priv->repos);
+    if (priv->sources != NULL)
+        g_ptr_array_unref(priv->sources);
+    if (priv->goal != NULL)
+        hy_goal_free(priv->goal);
+    if (priv->sack != NULL)
+        hy_sack_free(priv->sack);
+    if (priv->monitor_rpmdb != NULL)
+        g_object_unref(priv->monitor_rpmdb);
 
-	G_OBJECT_CLASS (hif_context_parent_class)->finalize (object);
+    G_OBJECT_CLASS(hif_context_parent_class)->finalize(object);
 }
 
 /**
  * hif_context_init:
  **/
 static void
-hif_context_init (HifContext *context)
+hif_context_init(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	priv->install_root = g_strdup ("/");
-	priv->check_disk_space = TRUE;
-	priv->check_transaction = TRUE;
-	priv->enable_yumdb = TRUE;
-	priv->state = hif_state_new ();
-	priv->lock = hif_lock_new ();
-	priv->cache_age = 60 * 60 * 24 * 7; /* 1 week */
-	priv->override_macros = g_hash_table_new_full (g_str_hash, g_str_equal,
-						       g_free, g_free);
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    priv->install_root = g_strdup("/");
+    priv->check_disk_space = TRUE;
+    priv->check_transaction = TRUE;
+    priv->enable_yumdb = TRUE;
+    priv->state = hif_state_new();
+    priv->lock = hif_lock_new();
+    priv->cache_age = 60 * 60 * 24 * 7; /* 1 week */
+    priv->override_macros = g_hash_table_new_full(g_str_hash, g_str_equal,
+                                                  g_free, g_free);
 }
 
 /**
  * hif_context_class_init:
  **/
 static void
-hif_context_class_init (HifContextClass *klass)
+hif_context_class_init(HifContextClass *klass)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	object_class->finalize = hif_context_finalize;
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
+    object_class->finalize = hif_context_finalize;
 
-	signals [SIGNAL_INVALIDATE] =
-		g_signal_new ("invalidate",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (HifContextClass, invalidate),
-			      NULL, NULL, g_cclosure_marshal_VOID__STRING,
-			      G_TYPE_NONE, 1, G_TYPE_STRING);
+    signals [SIGNAL_INVALIDATE] =
+        g_signal_new("invalidate",
+                  G_TYPE_FROM_CLASS(object_class), G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET(HifContextClass, invalidate),
+                  NULL, NULL, g_cclosure_marshal_VOID__STRING,
+                  G_TYPE_NONE, 1, G_TYPE_STRING);
 
-	g_type_class_add_private (klass, sizeof (HifContextPrivate));
+    g_type_class_add_private(klass, sizeof(HifContextPrivate));
 }
 
 /**
@@ -181,10 +181,10 @@ hif_context_class_init (HifContextClass *klass)
  * Since: 0.1.0
  **/
 const gchar *
-hif_context_get_repo_dir (HifContext *context)
+hif_context_get_repo_dir(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->repo_dir;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->repo_dir;
 }
 
 /**
@@ -198,10 +198,10 @@ hif_context_get_repo_dir (HifContext *context)
  * Since: 0.1.0
  **/
 const gchar *
-hif_context_get_base_arch (HifContext *context)
+hif_context_get_base_arch(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->base_arch;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->base_arch;
 }
 
 /**
@@ -215,10 +215,10 @@ hif_context_get_base_arch (HifContext *context)
  * Since: 0.1.0
  **/
 const gchar *
-hif_context_get_os_info (HifContext *context)
+hif_context_get_os_info(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->os_info;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->os_info;
 }
 
 /**
@@ -232,10 +232,10 @@ hif_context_get_os_info (HifContext *context)
  * Since: 0.1.0
  **/
 const gchar *
-hif_context_get_arch_info (HifContext *context)
+hif_context_get_arch_info(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->arch_info;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->arch_info;
 }
 
 /**
@@ -249,10 +249,10 @@ hif_context_get_arch_info (HifContext *context)
  * Since: 0.1.0
  **/
 const gchar *
-hif_context_get_release_ver (HifContext *context)
+hif_context_get_release_ver(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->release_ver;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->release_ver;
 }
 
 /**
@@ -266,10 +266,10 @@ hif_context_get_release_ver (HifContext *context)
  * Since: 0.1.0
  **/
 const gchar *
-hif_context_get_cache_dir (HifContext *context)
+hif_context_get_cache_dir(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->cache_dir;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->cache_dir;
 }
 
 /**
@@ -283,10 +283,10 @@ hif_context_get_cache_dir (HifContext *context)
  * Since: 0.1.0
  **/
 const gchar *
-hif_context_get_solv_dir (HifContext *context)
+hif_context_get_solv_dir(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->solv_dir;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->solv_dir;
 }
 
 /**
@@ -300,10 +300,10 @@ hif_context_get_solv_dir (HifContext *context)
  * Since: 0.1.4
  **/
 const gchar *
-hif_context_get_lock_dir (HifContext *context)
+hif_context_get_lock_dir(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->lock_dir;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->lock_dir;
 }
 
 /**
@@ -317,10 +317,10 @@ hif_context_get_lock_dir (HifContext *context)
  * Since: 0.1.0
  **/
 const gchar *
-hif_context_get_rpm_verbosity (HifContext *context)
+hif_context_get_rpm_verbosity(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->rpm_verbosity;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->rpm_verbosity;
 }
 
 /**
@@ -334,10 +334,10 @@ hif_context_get_rpm_verbosity (HifContext *context)
  * Since: 0.1.0
  **/
 const gchar *
-hif_context_get_install_root (HifContext *context)
+hif_context_get_install_root(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->install_root;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->install_root;
 }
 
 /**
@@ -346,15 +346,15 @@ hif_context_get_install_root (HifContext *context)
  *
  * Gets the native architectures, by default "noarch" and "i386".
  *
- * Returns: (transfer none): the native architectures
+ * Returns:(transfer none): the native architectures
  *
  * Since: 0.1.0
  **/
 const gchar **
-hif_context_get_native_arches (HifContext *context)
+hif_context_get_native_arches(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return (const gchar **) priv->native_arches;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return(const gchar **) priv->native_arches;
 }
 
 /**
@@ -363,14 +363,14 @@ hif_context_get_native_arches (HifContext *context)
  *
  * Gets the repositories loader used by the transaction.
  *
- * Returns: (transfer none): the repositories loader
+ * Returns:(transfer none): the repositories loader
  *
  * Since: 0.1.6
  **/
-HifRepos *hif_context_get_repos (HifContext	*context)
+HifRepos *hif_context_get_repos(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->repos;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->repos;
 }
 
 /**
@@ -379,36 +379,36 @@ HifRepos *hif_context_get_repos (HifContext	*context)
  *
  * Gets the sources used by the transaction.
  *
- * Returns: (transfer none) (element-type HifSource): the source list
+ * Returns:(transfer none)(element-type HifSource): the source list
  *
  * Since: 0.1.0
  **/
 GPtrArray *
-hif_context_get_sources (HifContext *context)
+hif_context_get_sources(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->sources;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->sources;
 }
 
 /**
  * hif_context_ensure_transaction:
  **/
 static void
-hif_context_ensure_transaction (HifContext *context)
+hif_context_ensure_transaction(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
+    HifContextPrivate *priv = GET_PRIVATE(context);
 
-	/* create if not yet created */
-	if (priv->transaction == NULL) {
-		priv->transaction = hif_transaction_new (context);
-		priv->transaction_thread = g_thread_self ();
-		hif_transaction_set_sources (priv->transaction, priv->sources);
-		return;
-	}
+    /* create if not yet created */
+    if (priv->transaction == NULL) {
+        priv->transaction = hif_transaction_new(context);
+        priv->transaction_thread = g_thread_self();
+        hif_transaction_set_sources(priv->transaction, priv->sources);
+        return;
+    }
 
-	/* check the transaction is not being used from a different thread */
-	if (priv->transaction_thread != g_thread_self ())
-		g_warning ("transaction being re-used by a different thread!");
+    /* check the transaction is not being used from a different thread */
+    if (priv->transaction_thread != g_thread_self())
+        g_warning("transaction being re-used by a different thread!");
 }
 
 /**
@@ -422,62 +422,62 @@ hif_context_ensure_transaction (HifContext *context)
  * this, just create a HifTransaction for each thread rather than using the
  * context version.
  *
- * Returns: (transfer none): the HifTransaction object
+ * Returns:(transfer none): the HifTransaction object
  *
  * Since: 0.1.0
  **/
 HifTransaction *
-hif_context_get_transaction (HifContext *context)
+hif_context_get_transaction(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	/* ensure transaction exists */
-	hif_context_ensure_transaction (context);
-	return priv->transaction;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    /* ensure transaction exists */
+    hif_context_ensure_transaction(context);
+    return priv->transaction;
 }
 
 /**
- * hif_context_get_sack: (skip)
+ * hif_context_get_sack:(skip)
  * @context: a #HifContext instance.
  *
- * Returns: (transfer none): the HySack object
+ * Returns:(transfer none): the HySack object
  *
  * Since: 0.1.0
  **/
 HySack
-hif_context_get_sack (HifContext	*context)
+hif_context_get_sack(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->sack;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->sack;
 }
 
 /**
- * hif_context_get_goal: (skip)
+ * hif_context_get_goal:(skip)
  * @context: a #HifContext instance.
  *
- * Returns: (transfer none): the HyGoal object
+ * Returns:(transfer none): the HyGoal object
  *
  * Since: 0.1.0
  **/
 HyGoal
-hif_context_get_goal (HifContext	*context)
+hif_context_get_goal(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->goal;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->goal;
 }
 
 /**
  * hif_context_get_state:
  * @context: a #HifContext instance.
  *
- * Returns: (transfer none): the HifState object
+ * Returns:(transfer none): the HifState object
  *
  * Since: 0.1.2
  **/
 HifState*
-hif_context_get_state (HifContext	*context)
+hif_context_get_state(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->state;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->state;
 }
 
 /**
@@ -491,10 +491,10 @@ hif_context_get_state (HifContext	*context)
  * Since: 0.1.0
  **/
 gboolean
-hif_context_get_check_disk_space (HifContext *context)
+hif_context_get_check_disk_space(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->check_disk_space;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->check_disk_space;
 }
 
 /**
@@ -510,10 +510,10 @@ hif_context_get_check_disk_space (HifContext *context)
  * Since: 0.1.0
  **/
 gboolean
-hif_context_get_check_transaction (HifContext *context)
+hif_context_get_check_transaction(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->check_transaction;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->check_transaction;
 }
 
 /**
@@ -527,10 +527,10 @@ hif_context_get_check_transaction (HifContext *context)
  * Since: 0.1.0
  **/
 gboolean
-hif_context_get_keep_cache (HifContext *context)
+hif_context_get_keep_cache(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->keep_cache;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->keep_cache;
 }
 
 /**
@@ -544,10 +544,10 @@ hif_context_get_keep_cache (HifContext *context)
  * Since: 0.1.0
  **/
 gboolean
-hif_context_get_only_trusted (HifContext *context)
+hif_context_get_only_trusted(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->only_trusted;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->only_trusted;
 }
 
 /**
@@ -559,10 +559,10 @@ hif_context_get_only_trusted (HifContext *context)
  * Since: 0.1.9
  **/
 gboolean
-hif_context_get_yumdb_enabled (HifContext *context)
+hif_context_get_yumdb_enabled(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->enable_yumdb;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->enable_yumdb;
 }
 
 /**
@@ -576,10 +576,10 @@ hif_context_get_yumdb_enabled (HifContext *context)
  * Since: 0.1.0
  **/
 guint
-hif_context_get_cache_age (HifContext *context)
+hif_context_get_cache_age(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->cache_age;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->cache_age;
 }
 
 /**
@@ -588,17 +588,18 @@ hif_context_get_cache_age (HifContext *context)
  *
  * Gets the packages that are allowed to be installed more than once.
  *
- * Returns: (transfer none): array of package names
+ * Returns:(transfer none): array of package names
  */
 const gchar **
-hif_context_get_installonly_pkgs (HifContext *context)
+hif_context_get_installonly_pkgs(HifContext *context)
 {
-	static const gchar *installonly_pkgs[] = { "kernel",
-						   "installonlypkg(kernel)",
-						   "installonlypkg(kernel-module)",
-						   "installonlypkg(vm)",
-						    NULL };
-	return installonly_pkgs;
+    static const gchar *installonly_pkgs[] = {
+        "kernel",
+        "installonlypkg(kernel)",
+        "installonlypkg(kernel-module)",
+        "installonlypkg(vm)",
+        NULL };
+    return installonly_pkgs;
 }
 
 /**
@@ -610,9 +611,9 @@ hif_context_get_installonly_pkgs (HifContext *context)
  * Returns: integer value
  */
 guint
-hif_context_get_installonly_limit (HifContext *context)
+hif_context_get_installonly_limit(HifContext *context)
 {
-	return 3;
+    return 3;
 }
 
 /**
@@ -625,11 +626,11 @@ hif_context_get_installonly_limit (HifContext *context)
  * Since: 0.1.0
  **/
 void
-hif_context_set_repo_dir (HifContext *context, const gchar *repo_dir)
+hif_context_set_repo_dir(HifContext *context, const gchar *repo_dir)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	g_free (priv->repo_dir);
-	priv->repo_dir = g_strdup (repo_dir);
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    g_free(priv->repo_dir);
+    priv->repo_dir = g_strdup(repo_dir);
 }
 
 /**
@@ -642,11 +643,11 @@ hif_context_set_repo_dir (HifContext *context, const gchar *repo_dir)
  * Since: 0.1.0
  **/
 void
-hif_context_set_release_ver (HifContext *context, const gchar *release_ver)
+hif_context_set_release_ver(HifContext *context, const gchar *release_ver)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	g_free (priv->release_ver);
-	priv->release_ver = g_strdup (release_ver);
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    g_free(priv->release_ver);
+    priv->release_ver = g_strdup(release_ver);
 }
 
 /**
@@ -659,11 +660,11 @@ hif_context_set_release_ver (HifContext *context, const gchar *release_ver)
  * Since: 0.1.0
  **/
 void
-hif_context_set_cache_dir (HifContext *context, const gchar *cache_dir)
+hif_context_set_cache_dir(HifContext *context, const gchar *cache_dir)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	g_free (priv->cache_dir);
-	priv->cache_dir = g_strdup (cache_dir);
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    g_free(priv->cache_dir);
+    priv->cache_dir = g_strdup(cache_dir);
 }
 
 /**
@@ -676,11 +677,11 @@ hif_context_set_cache_dir (HifContext *context, const gchar *cache_dir)
  * Since: 0.1.0
  **/
 void
-hif_context_set_solv_dir (HifContext *context, const gchar *solv_dir)
+hif_context_set_solv_dir(HifContext *context, const gchar *solv_dir)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	g_free (priv->solv_dir);
-	priv->solv_dir = g_strdup (solv_dir);
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    g_free(priv->solv_dir);
+    priv->solv_dir = g_strdup(solv_dir);
 }
 
 /**
@@ -693,11 +694,11 @@ hif_context_set_solv_dir (HifContext *context, const gchar *solv_dir)
  * Since: 0.1.6
  **/
 void
-hif_context_set_vendor_cache_dir (HifContext *context, const gchar *vendor_cache_dir)
+hif_context_set_vendor_cache_dir(HifContext *context, const gchar *vendor_cache_dir)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	g_free (priv->vendor_cache_dir);
-	priv->vendor_cache_dir = g_strdup (vendor_cache_dir);
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    g_free(priv->vendor_cache_dir);
+    priv->vendor_cache_dir = g_strdup(vendor_cache_dir);
 }
 
 /**
@@ -710,11 +711,11 @@ hif_context_set_vendor_cache_dir (HifContext *context, const gchar *vendor_cache
  * Since: 0.1.6
  **/
 void
-hif_context_set_vendor_solv_dir (HifContext *context, const gchar *vendor_solv_dir)
+hif_context_set_vendor_solv_dir(HifContext *context, const gchar *vendor_solv_dir)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	g_free (priv->vendor_solv_dir);
-	priv->vendor_solv_dir = g_strdup (vendor_solv_dir);
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    g_free(priv->vendor_solv_dir);
+    priv->vendor_solv_dir = g_strdup(vendor_solv_dir);
 }
 
 /**
@@ -727,11 +728,11 @@ hif_context_set_vendor_solv_dir (HifContext *context, const gchar *vendor_solv_d
  * Since: 0.1.4
  **/
 void
-hif_context_set_lock_dir (HifContext *context, const gchar *lock_dir)
+hif_context_set_lock_dir(HifContext *context, const gchar *lock_dir)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	g_free (priv->lock_dir);
-	priv->lock_dir = g_strdup (lock_dir);
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    g_free(priv->lock_dir);
+    priv->lock_dir = g_strdup(lock_dir);
 }
 
 /**
@@ -744,11 +745,11 @@ hif_context_set_lock_dir (HifContext *context, const gchar *lock_dir)
  * Since: 0.1.0
  **/
 void
-hif_context_set_rpm_verbosity (HifContext *context, const gchar *rpm_verbosity)
+hif_context_set_rpm_verbosity(HifContext *context, const gchar *rpm_verbosity)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	g_free (priv->rpm_verbosity);
-	priv->rpm_verbosity = g_strdup (rpm_verbosity);
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    g_free(priv->rpm_verbosity);
+    priv->rpm_verbosity = g_strdup(rpm_verbosity);
 }
 
 /**
@@ -761,11 +762,11 @@ hif_context_set_rpm_verbosity (HifContext *context, const gchar *rpm_verbosity)
  * Since: 0.1.0
  **/
 void
-hif_context_set_install_root (HifContext *context, const gchar *install_root)
+hif_context_set_install_root(HifContext *context, const gchar *install_root)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	g_free (priv->install_root);
-	priv->install_root = g_strdup (install_root);
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    g_free(priv->install_root);
+    priv->install_root = g_strdup(install_root);
 }
 
 /**
@@ -778,10 +779,10 @@ hif_context_set_install_root (HifContext *context, const gchar *install_root)
  * Since: 0.1.0
  **/
 void
-hif_context_set_check_disk_space (HifContext *context, gboolean check_disk_space)
+hif_context_set_check_disk_space(HifContext *context, gboolean check_disk_space)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	priv->check_disk_space = check_disk_space;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    priv->check_disk_space = check_disk_space;
 }
 
 /**
@@ -794,10 +795,10 @@ hif_context_set_check_disk_space (HifContext *context, gboolean check_disk_space
  * Since: 0.1.0
  **/
 void
-hif_context_set_check_transaction (HifContext *context, gboolean check_transaction)
+hif_context_set_check_transaction(HifContext *context, gboolean check_transaction)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	priv->check_transaction = check_transaction;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    priv->check_transaction = check_transaction;
 }
 
 /**
@@ -810,10 +811,10 @@ hif_context_set_check_transaction (HifContext *context, gboolean check_transacti
  * Since: 0.1.0
  **/
 void
-hif_context_set_keep_cache (HifContext *context, gboolean keep_cache)
+hif_context_set_keep_cache(HifContext *context, gboolean keep_cache)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	priv->keep_cache = keep_cache;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    priv->keep_cache = keep_cache;
 }
 
 /**
@@ -826,28 +827,28 @@ hif_context_set_keep_cache (HifContext *context, gboolean keep_cache)
  * Since: 0.1.0
  **/
 void
-hif_context_set_only_trusted (HifContext *context, gboolean only_trusted)
+hif_context_set_only_trusted(HifContext *context, gboolean only_trusted)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	priv->only_trusted = only_trusted;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    priv->only_trusted = only_trusted;
 }
 
 
 /**
  * hif_context_set_yumdb_enabled:
  * @context: a #HifContext instance.
- * @enable_yumdb: %FALSE to disable yum database (default is %TRUE)
+ * @enable_yumdb: %FALSE to disable yum database(default is %TRUE)
  *
  * Enables or disables writing the yum database.
  *
  * Since: 0.1.9
  **/
 void
-hif_context_set_yumdb_enabled (HifContext	*context,
-			       gboolean	 enable_yumdb)
+hif_context_set_yumdb_enabled(HifContext    *context,
+                   gboolean     enable_yumdb)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	priv->enable_yumdb = enable_yumdb;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    priv->enable_yumdb = enable_yumdb;
 }
 
 /**
@@ -860,69 +861,69 @@ hif_context_set_yumdb_enabled (HifContext	*context,
  * Since: 0.1.0
  **/
 void
-hif_context_set_cache_age (HifContext *context, guint cache_age)
+hif_context_set_cache_age(HifContext *context, guint cache_age)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	priv->cache_age = cache_age;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    priv->cache_age = cache_age;
 }
 
 /**
  * hif_context_set_os_release:
  **/
 static gboolean
-hif_context_set_os_release (HifContext *context, GError **error)
+hif_context_set_os_release(HifContext *context, GError **error)
 {
-	_cleanup_free_ gchar *contents = NULL;
-	_cleanup_free_ gchar *version = NULL;
-	_cleanup_string_free_ GString *str = NULL;
-	_cleanup_keyfile_unref_ GKeyFile *key_file = NULL;
+    _cleanup_free_ gchar *contents = NULL;
+    _cleanup_free_ gchar *version = NULL;
+    _cleanup_string_free_ GString *str = NULL;
+    _cleanup_keyfile_unref_ GKeyFile *key_file = NULL;
 
-	/* make a valid GKeyFile from the .ini data by prepending a header */
-	if (!g_file_get_contents ("/etc/os-release", &contents, NULL, NULL))
-		return FALSE;
-	str = g_string_new (contents);
-	g_string_prepend (str, "[os-release]\n");
-	key_file = g_key_file_new ();
-	if (!g_key_file_load_from_data (key_file,
-					 str->str, -1,
-					 G_KEY_FILE_NONE,
-					 error))
-		return FALSE;
+    /* make a valid GKeyFile from the .ini data by prepending a header */
+    if (!g_file_get_contents("/etc/os-release", &contents, NULL, NULL))
+        return FALSE;
+    str = g_string_new(contents);
+    g_string_prepend(str, "[os-release]\n");
+    key_file = g_key_file_new();
+    if (!g_key_file_load_from_data(key_file,
+                     str->str, -1,
+                     G_KEY_FILE_NONE,
+                     error))
+        return FALSE;
 
-	/* get keys */
-	version = g_key_file_get_string (key_file,
-					 "os-release",
-					 "VERSION_ID",
-					 error);
-	if (version == NULL)
-		return FALSE;
-	hif_context_set_release_ver (context, version);
-	return TRUE;
+    /* get keys */
+    version = g_key_file_get_string(key_file,
+                     "os-release",
+                     "VERSION_ID",
+                     error);
+    if (version == NULL)
+        return FALSE;
+    hif_context_set_release_ver(context, version);
+    return TRUE;
 }
 
 /**
  * hif_context_rpmdb_changed_cb:
  **/
 static void
-hif_context_rpmdb_changed_cb (GFileMonitor *monitor_,
-			      GFile *file, GFile *other_file,
-			      GFileMonitorEvent event_type,
-			      HifContext *context)
+hif_context_rpmdb_changed_cb(GFileMonitor *monitor_,
+                             GFile *file, GFile *other_file,
+                             GFileMonitorEvent event_type,
+                             HifContext *context)
 {
-	hif_context_invalidate (context, "rpmdb changed");
+    hif_context_invalidate(context, "rpmdb changed");
 }
 
 /* A heuristic; check whether /usr exists in the install root */
 static gboolean
-have_existing_install (HifContext *context)
+have_existing_install(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	_cleanup_free_ gchar *usr_path = g_build_filename (priv->install_root, "usr", NULL);
-	return g_file_test (usr_path, G_FILE_TEST_IS_DIR);
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    _cleanup_free_ gchar *usr_path = g_build_filename(priv->install_root, "usr", NULL);
+    return g_file_test(usr_path, G_FILE_TEST_IS_DIR);
 }
 
 /**
- * hif_context_setup_sack: (skip)
+ * hif_context_setup_sack:(skip)
  * @context: a #HifContext instance.
  * @state: A #HifState
  * @error: A #GError or %NULL
@@ -937,116 +938,116 @@ have_existing_install (HifContext *context)
  * Since: 0.1.3
  **/
 gboolean
-hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
+hif_context_setup_sack(HifContext *context, HifState *state, GError **error)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	gboolean ret;
-	_cleanup_free_ gchar *solv_dir_real = NULL;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    gboolean ret;
+    _cleanup_free_ gchar *solv_dir_real = NULL;
 
-	/* create empty sack */
-	solv_dir_real = hif_realpath (priv->solv_dir);
-	priv->sack = hy_sack_create (solv_dir_real, NULL,
-				     priv->install_root,
-				     NULL,
-				     HY_MAKE_CACHE_DIR,
-				     error);
-	if (priv->sack == NULL)
-		return FALSE;
-	hy_sack_set_installonly (priv->sack, hif_context_get_installonly_pkgs (context));
-	hy_sack_set_installonly_limit (priv->sack, hif_context_get_installonly_limit (context));
+    /* create empty sack */
+    solv_dir_real = hif_realpath(priv->solv_dir);
+    priv->sack = hy_sack_create(solv_dir_real, NULL,
+                     priv->install_root,
+                     NULL,
+                     HY_MAKE_CACHE_DIR,
+                     error);
+    if (priv->sack == NULL)
+        return FALSE;
+    hy_sack_set_installonly(priv->sack, hif_context_get_installonly_pkgs(context));
+    hy_sack_set_installonly_limit(priv->sack, hif_context_get_installonly_limit(context));
 
-	/* add installed packages */
-	if (have_existing_install (context)) {
-		if (!hy_sack_load_system_repo (priv->sack,
-					       NULL,
-					       HY_BUILD_CACHE,
-					       error))
-			return FALSE;
-	}
+    /* add installed packages */
+    if (have_existing_install(context)) {
+        if (!hy_sack_load_system_repo(priv->sack,
+                           NULL,
+                           HY_BUILD_CACHE,
+                           error))
+            return FALSE;
+    }
 
-	/* creates repo for command line rpms */
-	hy_sack_create_cmdline_repo (priv->sack);
+    /* creates repo for command line rpms */
+    hy_sack_create_cmdline_repo(priv->sack);
 
-	/* add remote */
-	ret = hif_sack_add_sources (priv->sack,
-				    priv->sources,
-				    priv->cache_age,
-				    HIF_SACK_ADD_FLAG_FILELISTS,
-				    state,
-				    error);
-	if (!ret)
-		return FALSE;
+    /* add remote */
+    ret = hif_sack_add_sources(priv->sack,
+                    priv->sources,
+                    priv->cache_age,
+                    HIF_SACK_ADD_FLAG_FILELISTS,
+                    state,
+                    error);
+    if (!ret)
+        return FALSE;
 
-	/* create goal */
-	if (priv->goal != NULL)
-		hy_goal_free (priv->goal);
-	priv->goal = hy_goal_create (priv->sack);
-	return TRUE;
+    /* create goal */
+    if (priv->goal != NULL)
+        hy_goal_free(priv->goal);
+    priv->goal = hy_goal_create(priv->sack);
+    return TRUE;
 }
 
 /**
  * hif_context_ensure_exists:
  **/
 static gboolean
-hif_context_ensure_exists (const gchar *directory, GError **error)
+hif_context_ensure_exists(const gchar *directory, GError **error)
 {
-	if (g_file_test (directory, G_FILE_TEST_EXISTS))
-		return TRUE;
-	if (g_mkdir_with_parents (directory, 0755) != 0) {
-		g_set_error (error,
-			     HIF_ERROR,
-			     HIF_ERROR_INTERNAL_ERROR,
-			     "Failed to create: %s", directory);
-		return FALSE;
-	}
-	return TRUE;
+    if (g_file_test(directory, G_FILE_TEST_EXISTS))
+        return TRUE;
+    if (g_mkdir_with_parents(directory, 0755) != 0) {
+        g_set_error(error,
+                 HIF_ERROR,
+                 HIF_ERROR_INTERNAL_ERROR,
+                 "Failed to create: %s", directory);
+        return FALSE;
+    }
+    return TRUE;
 }
 
 /**
  * hif_utils_copy_files:
  */
 static gboolean
-hif_utils_copy_files (const gchar *src, const gchar *dest, GError **error)
+hif_utils_copy_files(const gchar *src, const gchar *dest, GError **error)
 {
-	const gchar *tmp;
-	gint rc;
-	_cleanup_dir_close_ GDir *dir = NULL;
+    const gchar *tmp;
+    gint rc;
+    _cleanup_dir_close_ GDir *dir = NULL;
 
-	/* create destination directory */
-	rc = g_mkdir_with_parents (dest, 0755);
-	if (rc < 0) {
-		g_set_error (error,
-			     HIF_ERROR,
-			     HIF_ERROR_FAILED,
-			     "failed to create %s", dest);
-		return FALSE;
-	}
+    /* create destination directory */
+    rc = g_mkdir_with_parents(dest, 0755);
+    if (rc < 0) {
+        g_set_error(error,
+                 HIF_ERROR,
+                 HIF_ERROR_FAILED,
+                 "failed to create %s", dest);
+        return FALSE;
+    }
 
-	/* copy files */
-	dir = g_dir_open (src, 0, error);
-	if (dir == NULL)
-		return FALSE;
-	while ((tmp = g_dir_read_name (dir)) != NULL) {
-		_cleanup_free_ gchar *path_src = NULL;
-		_cleanup_free_ gchar *path_dest = NULL;
-		path_src = g_build_filename (src, tmp, NULL);
-		path_dest = g_build_filename (dest, tmp, NULL);
-		if (g_file_test (path_src, G_FILE_TEST_IS_DIR)) {
-			if (!hif_utils_copy_files (path_src, path_dest, error))
-				return FALSE;
-		} else {
-			_cleanup_object_unref_ GFile *file_src = NULL;
-			_cleanup_object_unref_ GFile *file_dest = NULL;
-			file_src = g_file_new_for_path (path_src);
-			file_dest = g_file_new_for_path (path_dest);
-			if (!g_file_copy (file_src, file_dest,
-					  G_FILE_COPY_NONE,
-					  NULL, NULL, NULL,
-					  error))
-				return FALSE;
-		}
-	}
-	return TRUE;
+    /* copy files */
+    dir = g_dir_open(src, 0, error);
+    if (dir == NULL)
+        return FALSE;
+    while ((tmp = g_dir_read_name(dir)) != NULL) {
+        _cleanup_free_ gchar *path_src = NULL;
+        _cleanup_free_ gchar *path_dest = NULL;
+        path_src = g_build_filename(src, tmp, NULL);
+        path_dest = g_build_filename(dest, tmp, NULL);
+        if (g_file_test(path_src, G_FILE_TEST_IS_DIR)) {
+            if (!hif_utils_copy_files(path_src, path_dest, error))
+                return FALSE;
+        } else {
+            _cleanup_object_unref_ GFile *file_src = NULL;
+            _cleanup_object_unref_ GFile *file_dest = NULL;
+            file_src = g_file_new_for_path(path_src);
+            file_dest = g_file_new_for_path(path_dest);
+            if (!g_file_copy(file_src, file_dest,
+                      G_FILE_COPY_NONE,
+                      NULL, NULL, NULL,
+                      error))
+                return FALSE;
+        }
+    }
+    return TRUE;
 }
 
 /**
@@ -1057,43 +1058,43 @@ hif_utils_copy_files (const gchar *src, const gchar *dest, GError **error)
  * /usr/share/PackageKit/metadata/updates/repodata/primary.xml.gz
  **/
 static gboolean
-hif_context_copy_vendor_cache (HifContext *context, GError **error)
+hif_context_copy_vendor_cache(HifContext *context, GError **error)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	HifSource *src;
-	const gchar *id;
-	guint i;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    HifSource *src;
+    const gchar *id;
+    guint i;
 
-	/* not set, or does not exists */
-	if (priv->vendor_cache_dir == NULL)
-		return TRUE;
-	if (!g_file_test (priv->vendor_cache_dir, G_FILE_TEST_EXISTS))
-		return TRUE;
+    /* not set, or does not exists */
+    if (priv->vendor_cache_dir == NULL)
+        return TRUE;
+    if (!g_file_test(priv->vendor_cache_dir, G_FILE_TEST_EXISTS))
+        return TRUE;
 
-	/* test each enabled repo in turn */
-	for (i = 0; i < priv->sources->len; i++) {
-		_cleanup_free_ gchar *path = NULL;
-		_cleanup_free_ gchar *path_vendor = NULL;
-		src = g_ptr_array_index (priv->sources, i);
-		if (hif_source_get_enabled (src) == HIF_SOURCE_ENABLED_NONE)
-			continue;
+    /* test each enabled repo in turn */
+    for (i = 0; i < priv->sources->len; i++) {
+        _cleanup_free_ gchar *path = NULL;
+        _cleanup_free_ gchar *path_vendor = NULL;
+        src = g_ptr_array_index(priv->sources, i);
+        if (hif_source_get_enabled(src) == HIF_SOURCE_ENABLED_NONE)
+            continue;
 
-		/* does the repo already exist */
-		id = hif_source_get_id (src);
-		path = g_build_filename (priv->cache_dir, id, NULL);
-		if (g_file_test (path, G_FILE_TEST_EXISTS))
-			continue;
+        /* does the repo already exist */
+        id = hif_source_get_id(src);
+        path = g_build_filename(priv->cache_dir, id, NULL);
+        if (g_file_test(path, G_FILE_TEST_EXISTS))
+            continue;
 
-		/* copy the files */
-		path_vendor = g_build_filename (priv->vendor_cache_dir, id, NULL);
-		if (!g_file_test (path_vendor, G_FILE_TEST_EXISTS))
-			continue;
-		g_debug ("copying files from %s to %s", path_vendor, path);
-		if (!hif_utils_copy_files (path_vendor, path, error))
-			return FALSE;
-	}
+        /* copy the files */
+        path_vendor = g_build_filename(priv->vendor_cache_dir, id, NULL);
+        if (!g_file_test(path_vendor, G_FILE_TEST_EXISTS))
+            continue;
+        g_debug("copying files from %s to %s", path_vendor, path);
+        if (!hif_utils_copy_files(path_vendor, path, error))
+            return FALSE;
+    }
 
-	return TRUE;
+    return TRUE;
 }
 
 /**
@@ -1104,28 +1105,28 @@ hif_context_copy_vendor_cache (HifContext *context, GError **error)
  * /usr/share/PackageKit/hawkey/fedora-filenames.solvx
  **/
 static gboolean
-hif_context_copy_vendor_solv (HifContext *context, GError **error)
+hif_context_copy_vendor_solv(HifContext *context, GError **error)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	_cleanup_free_ gchar *system_db = NULL;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    _cleanup_free_ gchar *system_db = NULL;
 
-	/* not set, or does not exists */
-	if (priv->vendor_solv_dir == NULL)
-		return TRUE;
-	if (!g_file_test (priv->vendor_solv_dir, G_FILE_TEST_EXISTS))
-		return TRUE;
+    /* not set, or does not exists */
+    if (priv->vendor_solv_dir == NULL)
+        return TRUE;
+    if (!g_file_test(priv->vendor_solv_dir, G_FILE_TEST_EXISTS))
+        return TRUE;
 
-	/* already exists */
-	system_db = g_build_filename (priv->solv_dir, "@System.solv", NULL);
-	if (g_file_test (system_db, G_FILE_TEST_EXISTS))
-		return TRUE;
+    /* already exists */
+    system_db = g_build_filename(priv->solv_dir, "@System.solv", NULL);
+    if (g_file_test(system_db, G_FILE_TEST_EXISTS))
+        return TRUE;
 
-	/* copy all the files */
-	g_debug ("copying files from %s to %s", priv->vendor_solv_dir, priv->solv_dir);
-	if (!hif_utils_copy_files (priv->vendor_solv_dir, priv->solv_dir, error))
-		return FALSE;
+    /* copy all the files */
+    g_debug("copying files from %s to %s", priv->vendor_solv_dir, priv->solv_dir);
+    if (!hif_utils_copy_files(priv->vendor_solv_dir, priv->solv_dir, error))
+        return FALSE;
 
-	return TRUE;
+    return TRUE;
 }
 
 /**
@@ -1141,12 +1142,12 @@ hif_context_copy_vendor_solv (HifContext *context, GError **error)
  * Since: 0.1.9
  **/
 void
-hif_context_set_rpm_macro (HifContext	*context,
-			   const gchar	*key,
-			   const gchar  *value)
+hif_context_set_rpm_macro(HifContext    *context,
+                          const gchar    *key,
+                          const gchar  *value)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	g_hash_table_replace (priv->override_macros, g_strdup (key), g_strdup (value));
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    g_hash_table_replace(priv->override_macros, g_strdup(key), g_strdup(value));
 }
 
 
@@ -1159,10 +1160,10 @@ hif_context_set_rpm_macro (HifContext	*context,
  * Since: 0.1.9
  **/
 const gchar *
-hif_context_get_http_proxy (HifContext *context)
+hif_context_get_http_proxy(HifContext *context)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	return priv->http_proxy;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->http_proxy;
 }
 
 /**
@@ -1176,15 +1177,14 @@ hif_context_get_http_proxy (HifContext *context)
  * Since: 0.1.9
  **/
 void
-hif_context_set_http_proxy (HifContext	*context,
-			    const gchar    *proxyurl)
+hif_context_set_http_proxy(HifContext *context, const gchar *proxyurl)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	g_free (priv->http_proxy);
-	priv->http_proxy = g_strdup (proxyurl);
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    g_free(priv->http_proxy);
+    priv->http_proxy = g_strdup(proxyurl);
 }
 
-#define MAX_NATIVE_ARCHES	12
+#define MAX_NATIVE_ARCHES    12
 
 /**
  * hif_context_setup_enrollments:
@@ -1199,47 +1199,48 @@ hif_context_set_http_proxy (HifContext	*context,
  * Since: 0.2.1
  **/
 gboolean
-hif_context_setup_enrollments (HifContext *context, GError **error)
+hif_context_setup_enrollments(HifContext *context, GError **error)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	guint i;
-	const gchar *cmds[] = { "/usr/sbin/rhn-profile-sync",
-				"/usr/bin/subscription-manager refresh",
-				NULL };
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    guint i;
+    const gchar *cmds[] = {
+        "/usr/sbin/rhn-profile-sync",
+        "/usr/bin/subscription-manager refresh",
+        NULL };
 
-	/* no need to refresh */
-	if (priv->enrollment_valid)
-		return TRUE;
+    /* no need to refresh */
+    if (priv->enrollment_valid)
+        return TRUE;
 
-	/* Let's assume that alternative installation roots don't
-	 * require entitlement.  We only want to do system things if
-	 * we're actually affecting the system.  A more accurate test
-	 * here would be checking that we're using /etc/yum.repos.d or
-	 * so, but that can come later.
-	 */
-	if (g_strcmp0 (priv->install_root, "/") != 0)
-		return TRUE;
+    /* Let's assume that alternative installation roots don't
+     * require entitlement.  We only want to do system things if
+     * we're actually affecting the system.  A more accurate test
+     * here would be checking that we're using /etc/yum.repos.d or
+     * so, but that can come later.
+     */
+    if (g_strcmp0(priv->install_root, "/") != 0)
+        return TRUE;
 
-	for (i = 0; cmds[i] != NULL; i++) {
-		int child_argc;
-		_cleanup_strv_free_ gchar **child_argv = NULL;
-		int estatus;
+    for (i = 0; cmds[i] != NULL; i++) {
+        int child_argc;
+        _cleanup_strv_free_ gchar **child_argv = NULL;
+        int estatus;
 
-		if (!g_shell_parse_argv (cmds[i], &child_argc, &child_argv, error))
-			return FALSE;
-		if (child_argc == 0)
-			continue;
-		if (!g_file_test (child_argv[0], G_FILE_TEST_EXISTS))
-			continue;
-		g_debug ("Running: %s", cmds[i]);
-		if (!g_spawn_sync (NULL, child_argv, NULL, 0,
-				   NULL, NULL, NULL, NULL, &estatus, error))
-			return FALSE;
-		if (!g_spawn_check_exit_status (estatus, error))
-			return FALSE;
-	}
-	priv->enrollment_valid = TRUE;
-	return TRUE;
+        if (!g_shell_parse_argv(cmds[i], &child_argc, &child_argv, error))
+            return FALSE;
+        if (child_argc == 0)
+            continue;
+        if (!g_file_test(child_argv[0], G_FILE_TEST_EXISTS))
+            continue;
+        g_debug("Running: %s", cmds[i]);
+        if (!g_spawn_sync(NULL, child_argv, NULL, 0,
+                          NULL, NULL, NULL, NULL, &estatus, error))
+            return FALSE;
+        if (!g_spawn_check_exit_status(estatus, error))
+            return FALSE;
+    }
+    priv->enrollment_valid = TRUE;
+    return TRUE;
 }
 
 /**
@@ -1259,169 +1260,169 @@ hif_context_setup_enrollments (HifContext *context, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-hif_context_setup (HifContext *context,
-		   GCancellable *cancellable,
-		   GError **error)
+hif_context_setup(HifContext *context,
+           GCancellable *cancellable,
+           GError **error)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	const gchar *value;
-	guint i;
-	guint j;
-	GHashTableIter hashiter;
-	gpointer hashkey, hashval;
-	_cleanup_string_free_ GString *buf = NULL;
-	_cleanup_free_ char *rpmdb_path = NULL;
-	_cleanup_object_unref_ GFile *file_rpmdb = NULL;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    const gchar *value;
+    guint i;
+    guint j;
+    GHashTableIter hashiter;
+    gpointer hashkey, hashval;
+    _cleanup_string_free_ GString *buf = NULL;
+    _cleanup_free_ char *rpmdb_path = NULL;
+    _cleanup_object_unref_ GFile *file_rpmdb = NULL;
 
-	/* data taken from https://github.com/rpm-software-management/dnf/blob/master/dnf/arch.py */
-	const struct {
-		const gchar	*base;
-		const gchar	*native[MAX_NATIVE_ARCHES];
-	} arch_map[] =  {
-		{ "aarch64",	{ "aarch64", NULL } },
-		{ "alpha",	{ "alpha", "alphaev4", "alphaev45", "alphaev5",
-				  "alphaev56", "alphaev6", "alphaev67",
-				  "alphaev68", "alphaev7", "alphapca56", NULL } },
-		{ "arm",	{ "armv5tejl", "armv5tel", "armv6l", "armv7l", NULL } },
-		{ "armhfp",	{ "armv7hl", "armv7hnl", NULL } },
-		{ "i386",	{ "i386", "athlon", "geode", "i386",
-				  "i486", "i586", "i686", NULL } },
-		{ "ia64",	{ "ia64", NULL } },
-		{ "noarch",	{ "noarch", NULL } },
-		{ "ppc",	{ "ppc", NULL } },
-		{ "ppc64",	{ "ppc64", "ppc64iseries", "ppc64p7",
-				  "ppc64pseries", NULL } },
-		{ "ppc64le",	{ "ppc64le", NULL } },
-		{ "s390",	{ "s390", NULL } },
-		{ "s390x",	{ "s390x", NULL } },
-		{ "sh3",	{ "sh3", NULL } },
-		{ "sh4",	{ "sh4", "sh4a", NULL } },
-		{ "sparc",	{ "sparc", "sparc64", "sparc64v", "sparcv8",
-				  "sparcv9", "sparcv9v", NULL } },
-		{ "x86_64",	{ "x86_64", "amd64", "ia32e", NULL } },
-		{ NULL,		{ NULL } }
-	};
+    /* data taken from https://github.com/rpm-software-management/dnf/blob/master/dnf/arch.py */
+    const struct {
+        const gchar    *base;
+        const gchar    *native[MAX_NATIVE_ARCHES];
+    } arch_map[] =  {
+        { "aarch64",    { "aarch64", NULL } },
+        { "alpha",      { "alpha", "alphaev4", "alphaev45", "alphaev5",
+                          "alphaev56", "alphaev6", "alphaev67",
+                          "alphaev68", "alphaev7", "alphapca56", NULL } },
+        { "arm",        { "armv5tejl", "armv5tel", "armv6l", "armv7l", NULL } },
+        { "armhfp",     { "armv7hl", "armv7hnl", NULL } },
+        { "i386",       { "i386", "athlon", "geode", "i386",
+                          "i486", "i586", "i686", NULL } },
+        { "ia64",       { "ia64", NULL } },
+        { "noarch",     { "noarch", NULL } },
+        { "ppc",        { "ppc", NULL } },
+        { "ppc64",      { "ppc64", "ppc64iseries", "ppc64p7",
+                          "ppc64pseries", NULL } },
+        { "ppc64le",    { "ppc64le", NULL } },
+        { "s390",       { "s390", NULL } },
+        { "s390x",      { "s390x", NULL } },
+        { "sh3",        { "sh3", NULL } },
+        { "sh4",        { "sh4", "sh4a", NULL } },
+        { "sparc",      { "sparc", "sparc64", "sparc64v", "sparcv8",
+                          "sparcv9", "sparcv9v", NULL } },
+        { "x86_64",     { "x86_64", "amd64", "ia32e", NULL } },
+        { NULL,         { NULL } }
+    };
 
-	/* check essential things are set */
-	if (priv->solv_dir == NULL) {
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     HIF_ERROR_INTERNAL_ERROR,
-				     "solv_dir not set");
-		return FALSE;
-	}
+    /* check essential things are set */
+    if (priv->solv_dir == NULL) {
+        g_set_error_literal(error,
+                     HIF_ERROR,
+                     HIF_ERROR_INTERNAL_ERROR,
+                     "solv_dir not set");
+        return FALSE;
+    }
 
-	/* ensure directories exist */
-	if (priv->repo_dir != NULL) {
-		if (!hif_context_ensure_exists (priv->repo_dir, error))
-			return FALSE;
-	}
-	if (priv->cache_dir != NULL) {
-		if (!hif_context_ensure_exists (priv->cache_dir, error))
-			return FALSE;
-	}
-	if (priv->solv_dir != NULL) {
-		if (!hif_context_ensure_exists (priv->solv_dir, error))
-			return FALSE;
-	}
-	if (priv->lock_dir != NULL) {
-		hif_lock_set_lock_dir (priv->lock, priv->lock_dir);
-		if (!hif_context_ensure_exists (priv->lock_dir, error))
-			return FALSE;
-	}
-	if (priv->install_root != NULL) {
-		if (!hif_context_ensure_exists (priv->install_root, error))
-			return FALSE;
-	}
+    /* ensure directories exist */
+    if (priv->repo_dir != NULL) {
+        if (!hif_context_ensure_exists(priv->repo_dir, error))
+            return FALSE;
+    }
+    if (priv->cache_dir != NULL) {
+        if (!hif_context_ensure_exists(priv->cache_dir, error))
+            return FALSE;
+    }
+    if (priv->solv_dir != NULL) {
+        if (!hif_context_ensure_exists(priv->solv_dir, error))
+            return FALSE;
+    }
+    if (priv->lock_dir != NULL) {
+        hif_lock_set_lock_dir(priv->lock, priv->lock_dir);
+        if (!hif_context_ensure_exists(priv->lock_dir, error))
+            return FALSE;
+    }
+    if (priv->install_root != NULL) {
+        if (!hif_context_ensure_exists(priv->install_root, error))
+            return FALSE;
+    }
 
-	/* connect if set */
-	if (cancellable != NULL)
-		hif_state_set_cancellable (priv->state, cancellable);
+    /* connect if set */
+    if (cancellable != NULL)
+        hif_state_set_cancellable(priv->state, cancellable);
 
-	if (rpmReadConfigFiles (NULL, NULL) != 0) {
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     HIF_ERROR_INTERNAL_ERROR,
-				     "failed to read rpm config files");
-		return FALSE;
-	}
+    if (rpmReadConfigFiles(NULL, NULL) != 0) {
+        g_set_error_literal(error,
+                            HIF_ERROR,
+                            HIF_ERROR_INTERNAL_ERROR,
+                            "failed to read rpm config files");
+        return FALSE;
+    }
 
-	buf = g_string_new ("");
-	g_hash_table_iter_init (&hashiter, priv->override_macros);
-	while (g_hash_table_iter_next (&hashiter, &hashkey, &hashval)) {
-		g_string_assign (buf, "%define ");
-		g_string_append (buf, (gchar*)hashkey);
-		g_string_append_c (buf, ' ');
-		g_string_append (buf, (gchar*)hashval);
-		/* Calling expand with %define (ignoring the return
-		 * value) is apparently the way to change the global
-		 * macro context.
-		 */
-		free (rpmExpand (buf->str, NULL));
-	}
+    buf = g_string_new("");
+    g_hash_table_iter_init(&hashiter, priv->override_macros);
+    while (g_hash_table_iter_next(&hashiter, &hashkey, &hashval)) {
+        g_string_assign(buf, "%define ");
+        g_string_append(buf,(gchar*)hashkey);
+        g_string_append_c(buf, ' ');
+        g_string_append(buf,(gchar*)hashval);
+        /* Calling expand with %define (ignoring the return
+         * value) is apparently the way to change the global
+         * macro context.
+         */
+        free(rpmExpand(buf->str, NULL));
+    }
 
-	/* get info from RPM */
-	rpmGetOsInfo (&value, NULL);
-	priv->os_info = g_strdup (value);
-	rpmGetArchInfo (&value, NULL);
-	priv->arch_info = g_strdup (value);
+    /* get info from RPM */
+    rpmGetOsInfo(&value, NULL);
+    priv->os_info = g_strdup(value);
+    rpmGetArchInfo(&value, NULL);
+    priv->arch_info = g_strdup(value);
 
-	/* find the base architecture */
-	for (i = 0; arch_map[i].base != NULL && priv->base_arch == NULL; i++) {
-		for (j = 0; arch_map[i].native[j] != NULL; j++) {
-			if (g_strcmp0 (arch_map[i].native[j], value) == 0) {
-				priv->base_arch = g_strdup (arch_map[i].base);
-				break;
-			}
-		}
-	}
+    /* find the base architecture */
+    for (i = 0; arch_map[i].base != NULL && priv->base_arch == NULL; i++) {
+        for (j = 0; arch_map[i].native[j] != NULL; j++) {
+            if (g_strcmp0(arch_map[i].native[j], value) == 0) {
+                priv->base_arch = g_strdup(arch_map[i].base);
+                break;
+            }
+        }
+    }
 
-	/* find all the native archs */
-	priv->native_arches = g_new0 (gchar *, MAX_NATIVE_ARCHES);
-	for (i = 0; arch_map[i].base != NULL; i++) {
-		if (g_strcmp0 (arch_map[i].base, priv->base_arch) == 0) {
-			for (j = 0; arch_map[i].native[j] != NULL; j++)
-				priv->native_arches[j] = g_strdup (arch_map[i].native[j]);
-			priv->native_arches[j++] = g_strdup ("noarch");
-			break;
-		}
-	}
+    /* find all the native archs */
+    priv->native_arches = g_new0(gchar *, MAX_NATIVE_ARCHES);
+    for (i = 0; arch_map[i].base != NULL; i++) {
+        if (g_strcmp0(arch_map[i].base, priv->base_arch) == 0) {
+            for (j = 0; arch_map[i].native[j] != NULL; j++)
+                priv->native_arches[j] = g_strdup(arch_map[i].native[j]);
+            priv->native_arches[j++] = g_strdup("noarch");
+            break;
+        }
+    }
 
-	/* get info from OS release file */
-	if (!hif_context_set_os_release (context, error))
-		return FALSE;
+    /* get info from OS release file */
+    if (!hif_context_set_os_release(context, error))
+        return FALSE;
 
-	/* setup RPM */
-	priv->repos = hif_repos_new (context);
-	priv->sources = hif_repos_get_sources (priv->repos, error);
-	if (priv->sources == NULL)
-		return FALSE;
+    /* setup RPM */
+    priv->repos = hif_repos_new(context);
+    priv->sources = hif_repos_get_sources(priv->repos, error);
+    if (priv->sources == NULL)
+        return FALSE;
 
-	/* setup a file monitor on the rpmdb, if we're operating on the native / */
-	if (g_strcmp0 (priv->install_root, "/") == 0) {
-		rpmdb_path = g_build_filename (priv->install_root, "var/lib/rpm/Packages", NULL);
-		file_rpmdb = g_file_new_for_path (rpmdb_path);
-		priv->monitor_rpmdb = g_file_monitor_file (file_rpmdb,
-							   G_FILE_MONITOR_NONE,
-							   NULL,
-							   error);
-		if (priv->monitor_rpmdb == NULL)
-			return FALSE;
-		g_signal_connect (priv->monitor_rpmdb, "changed",
-				  G_CALLBACK (hif_context_rpmdb_changed_cb), context);
-	}
+    /* setup a file monitor on the rpmdb, if we're operating on the native / */
+    if (g_strcmp0(priv->install_root, "/") == 0) {
+        rpmdb_path = g_build_filename(priv->install_root, "var/lib/rpm/Packages", NULL);
+        file_rpmdb = g_file_new_for_path(rpmdb_path);
+        priv->monitor_rpmdb = g_file_monitor_file(file_rpmdb,
+                               G_FILE_MONITOR_NONE,
+                               NULL,
+                               error);
+        if (priv->monitor_rpmdb == NULL)
+            return FALSE;
+        g_signal_connect(priv->monitor_rpmdb, "changed",
+                         G_CALLBACK(hif_context_rpmdb_changed_cb), context);
+    }
 
-	/* copy any vendor distributed cached metadata */
-	if (!hif_context_copy_vendor_cache (context, error))
-		return FALSE;
-	if (!hif_context_copy_vendor_solv (context, error))
-		return FALSE;
+    /* copy any vendor distributed cached metadata */
+    if (!hif_context_copy_vendor_cache(context, error))
+        return FALSE;
+    if (!hif_context_copy_vendor_solv(context, error))
+        return FALSE;
 
-	/* initialize external frameworks where installed */
-	if (!hif_context_setup_enrollments (context, error))
-		return FALSE;
+    /* initialize external frameworks where installed */
+    if (!hif_context_setup_enrollments(context, error))
+        return FALSE;
 
-	return TRUE;
+    return TRUE;
 }
 
 /**
@@ -1437,68 +1438,68 @@ hif_context_setup (HifContext *context,
  * Since: 0.1.0
  **/
 gboolean
-hif_context_run (HifContext *context, GCancellable *cancellable, GError **error)
+hif_context_run(HifContext *context, GCancellable *cancellable, GError **error)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	HifState *state_local;
-	gboolean ret;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    HifState *state_local;
+    gboolean ret;
 
-	/* ensure transaction exists */
-	hif_context_ensure_transaction (context);
+    /* ensure transaction exists */
+    hif_context_ensure_transaction(context);
 
-	/* connect if set */
-	hif_state_reset (priv->state);
-	if (cancellable != NULL)
-		hif_state_set_cancellable (priv->state, cancellable);
+    /* connect if set */
+    hif_state_reset(priv->state);
+    if (cancellable != NULL)
+        hif_state_set_cancellable(priv->state, cancellable);
 
-	ret = hif_state_set_steps (priv->state, error,
-				   5,	/* depsolve */
-				   50,	/* download */
-				   45,	/* commit */
-				   -1);
-	if (!ret)
-		return FALSE;
+    ret = hif_state_set_steps(priv->state, error,
+                              5,        /* depsolve */
+                              50,       /* download */
+                              45,       /* commit */
+                              -1);
+    if (!ret)
+        return FALSE;
 
-	/* depsolve */
-	state_local = hif_state_get_child (priv->state);
-	ret = hif_transaction_depsolve (priv->transaction,
-					priv->goal,
-					state_local,
-					error);
-	if (!ret)
-		return FALSE;
+    /* depsolve */
+    state_local = hif_state_get_child(priv->state);
+    ret = hif_transaction_depsolve(priv->transaction,
+                                   priv->goal,
+                                   state_local,
+                                   error);
+    if (!ret)
+        return FALSE;
 
-	/* this section done */
-	if (!hif_state_done (priv->state, error))
-		return FALSE;
+    /* this section done */
+    if (!hif_state_done(priv->state, error))
+        return FALSE;
 
-	/* download */
-	state_local = hif_state_get_child (priv->state);
-	ret = hif_transaction_download (priv->transaction,
-					state_local,
-					error);
-	if (!ret)
-		return FALSE;
+    /* download */
+    state_local = hif_state_get_child(priv->state);
+    ret = hif_transaction_download(priv->transaction,
+                                   state_local,
+                                   error);
+    if (!ret)
+        return FALSE;
 
-	/* this section done */
-	if (!hif_state_done (priv->state, error))
-		return FALSE;
+    /* this section done */
+    if (!hif_state_done(priv->state, error))
+        return FALSE;
 
-	/* commit set up transaction */
-	state_local = hif_state_get_child (priv->state);
-	ret = hif_transaction_commit (priv->transaction,
-				      priv->goal,
-				      state_local,
-				      error);
-	if (!ret)
-		return FALSE;
+    /* commit set up transaction */
+    state_local = hif_state_get_child(priv->state);
+    ret = hif_transaction_commit(priv->transaction,
+                                 priv->goal,
+                                 state_local,
+                                 error);
+    if (!ret)
+        return FALSE;
 
-	/* this sack is no longer valid */
-	hy_sack_free (priv->sack);
-	priv->sack = NULL;
+    /* this sack is no longer valid */
+    hy_sack_free(priv->sack);
+    priv->sack = NULL;
 
-	/* this section done */
-	return hif_state_done (priv->state, error);
+    /* this section done */
+    return hif_state_done(priv->state, error);
 }
 
 /**
@@ -1516,50 +1517,50 @@ hif_context_run (HifContext *context, GCancellable *cancellable, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-hif_context_install (HifContext *context, const gchar *name, GError **error)
+hif_context_install(HifContext *context, const gchar *name, GError **error)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	HyPackageList pkglist;
-	HyPackage pkg;
-	HyQuery query;
-	gboolean ret = TRUE;
-	guint i;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    HyPackageList pkglist;
+    HyPackage pkg;
+    HyQuery query;
+    gboolean ret = TRUE;
+    guint i;
 
-	/* create sack and add sources */
-	if (priv->sack == NULL) {
-		hif_state_reset (priv->state);
-		ret = hif_context_setup_sack (context, priv->state, error);
-		if (!ret)
-			return FALSE;
-	}
+    /* create sack and add sources */
+    if (priv->sack == NULL) {
+        hif_state_reset(priv->state);
+        ret = hif_context_setup_sack(context, priv->state, error);
+        if (!ret)
+            return FALSE;
+    }
 
-	/* find a newest remote package to install */
-	query = hy_query_create (priv->sack);
-	hy_query_filter_latest_per_arch (query, TRUE);
-	hy_query_filter_in (query, HY_PKG_ARCH, HY_EQ,
-			    (const gchar **) priv->native_arches);
-	hy_query_filter (query, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
-	hy_query_filter (query, HY_PKG_ARCH, HY_NEQ, "src");
-	hy_query_filter (query, HY_PKG_NAME, HY_EQ, name);
-	pkglist = hy_query_run (query);
+    /* find a newest remote package to install */
+    query = hy_query_create(priv->sack);
+    hy_query_filter_latest_per_arch(query, TRUE);
+    hy_query_filter_in(query, HY_PKG_ARCH, HY_EQ,
+                       (const gchar **) priv->native_arches);
+    hy_query_filter(query, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
+    hy_query_filter(query, HY_PKG_NAME, HY_EQ, name);
+    pkglist = hy_query_run(query);
 
-	if (hy_packagelist_count (pkglist) == 0) {
-		g_set_error (error,
-			     HIF_ERROR,
-			     HIF_ERROR_PACKAGE_NOT_FOUND,
-			     "No package '%s' found", name);
-		return FALSE;
-	}
+    if (hy_packagelist_count(pkglist) == 0) {
+        g_set_error(error,
+                    HIF_ERROR,
+                    HIF_ERROR_PACKAGE_NOT_FOUND,
+                    "No package '%s' found", name);
+        return FALSE;
+    }
 
-	/* add each package */
-	FOR_PACKAGELIST(pkg, pkglist, i) {
-		hif_package_set_user_action (pkg, TRUE);
-		g_debug ("adding %s-%s to goal", hy_package_get_name (pkg), hy_package_get_evr (pkg));
-		hy_goal_install (priv->goal, pkg);
-	}
-	hy_packagelist_free (pkglist);
-	hy_query_free (query);
-	return TRUE;
+    /* add each package */
+    FOR_PACKAGELIST(pkg, pkglist, i) {
+        hif_package_set_user_action(pkg, TRUE);
+        g_debug("adding %s-%s to goal", hy_package_get_name(pkg), hy_package_get_evr(pkg));
+        hy_goal_install(priv->goal, pkg);
+    }
+    hy_packagelist_free(pkglist);
+    hy_query_free(query);
+    return TRUE;
 }
 
 /**
@@ -1577,39 +1578,39 @@ hif_context_install (HifContext *context, const gchar *name, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-hif_context_remove (HifContext *context, const gchar *name, GError **error)
+hif_context_remove(HifContext *context, const gchar *name, GError **error)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	HyPackageList pkglist;
-	HyPackage pkg;
-	HyQuery query;
-	gboolean ret = TRUE;
-	guint i;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    HyPackageList pkglist;
+    HyPackage pkg;
+    HyQuery query;
+    gboolean ret = TRUE;
+    guint i;
 
-	/* create sack and add sources */
-	if (priv->sack == NULL) {
-		hif_state_reset (priv->state);
-		ret = hif_context_setup_sack (context, priv->state, error);
-		if (!ret)
-			return FALSE;
-	}
+    /* create sack and add sources */
+    if (priv->sack == NULL) {
+        hif_state_reset(priv->state);
+        ret = hif_context_setup_sack(context, priv->state, error);
+        if (!ret)
+            return FALSE;
+    }
 
-	/* find a newest remote package to install */
-	query = hy_query_create (priv->sack);
-	hy_query_filter_latest_per_arch (query, TRUE);
-	hy_query_filter (query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-	hy_query_filter (query, HY_PKG_ARCH, HY_NEQ, "src");
-	hy_query_filter (query, HY_PKG_NAME, HY_EQ, name);
-	pkglist = hy_query_run (query);
+    /* find a newest remote package to install */
+    query = hy_query_create(priv->sack);
+    hy_query_filter_latest_per_arch(query, TRUE);
+    hy_query_filter(query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
+    hy_query_filter(query, HY_PKG_NAME, HY_EQ, name);
+    pkglist = hy_query_run(query);
 
-	/* add each package */
-	FOR_PACKAGELIST(pkg, pkglist, i) {
-		hif_package_set_user_action (pkg, TRUE);
-		hy_goal_erase (priv->goal, pkg);
-	}
-	hy_packagelist_free (pkglist);
-	hy_query_free (query);
-	return TRUE;
+    /* add each package */
+    FOR_PACKAGELIST(pkg, pkglist, i) {
+        hif_package_set_user_action(pkg, TRUE);
+        hy_goal_erase(priv->goal, pkg);
+    }
+    hy_packagelist_free(pkglist);
+    hy_query_free(query);
+    return TRUE;
 }
 
 /**
@@ -1627,80 +1628,80 @@ hif_context_remove (HifContext *context, const gchar *name, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-hif_context_update (HifContext *context, const gchar *name, GError **error)
+hif_context_update(HifContext *context, const gchar *name, GError **error)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	HyPackageList pkglist;
-	HyPackage pkg;
-	HyQuery query;
-	gboolean ret = TRUE;
-	guint i;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    HyPackageList pkglist;
+    HyPackage pkg;
+    HyQuery query;
+    gboolean ret = TRUE;
+    guint i;
 
-	/* create sack and add sources */
-	if (priv->sack == NULL) {
-		hif_state_reset (priv->state);
-		ret = hif_context_setup_sack (context, priv->state, error);
-		if (!ret)
-			return FALSE;
-	}
+    /* create sack and add sources */
+    if (priv->sack == NULL) {
+        hif_state_reset(priv->state);
+        ret = hif_context_setup_sack(context, priv->state, error);
+        if (!ret)
+            return FALSE;
+    }
 
-	/* find a newest remote package to install */
-	query = hy_query_create (priv->sack);
-	hy_query_filter_latest_per_arch (query, TRUE);
-	hy_query_filter_in (query, HY_PKG_ARCH, HY_EQ,
-			    (const gchar **) priv->native_arches);
-	hy_query_filter (query, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
-	hy_query_filter (query, HY_PKG_NAME, HY_EQ, name);
-	pkglist = hy_query_run (query);
+    /* find a newest remote package to install */
+    query = hy_query_create(priv->sack);
+    hy_query_filter_latest_per_arch(query, TRUE);
+    hy_query_filter_in(query, HY_PKG_ARCH, HY_EQ,
+               (const gchar **) priv->native_arches);
+    hy_query_filter(query, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    hy_query_filter(query, HY_PKG_NAME, HY_EQ, name);
+    pkglist = hy_query_run(query);
 
-	/* add each package */
-	FOR_PACKAGELIST(pkg, pkglist, i) {
-		hif_package_set_user_action (pkg, TRUE);
-		if (hif_package_is_installonly (pkg))
-			hy_goal_install (priv->goal, pkg);
-		else
-			hy_goal_upgrade_to (priv->goal, pkg);
-	}
-	hy_packagelist_free (pkglist);
-	hy_query_free (query);
-	return TRUE;
+    /* add each package */
+    FOR_PACKAGELIST(pkg, pkglist, i) {
+        hif_package_set_user_action(pkg, TRUE);
+        if (hif_package_is_installonly(pkg))
+            hy_goal_install(priv->goal, pkg);
+        else
+            hy_goal_upgrade_to(priv->goal, pkg);
+    }
+    hy_packagelist_free(pkglist);
+    hy_query_free(query);
+    return TRUE;
 }
 
 /**
  * hif_context_repo_set_data:
  **/
 static gboolean
-hif_context_repo_set_data (HifContext *context,
-			   const gchar *repo_id,
-			   HifSourceEnabled enabled,
-			   GError **error)
+hif_context_repo_set_data(HifContext *context,
+                          const gchar *repo_id,
+                          HifSourceEnabled enabled,
+                          GError **error)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	HifSource *src = NULL;
-	HifSource *src_tmp;
-	guint i;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    HifSource *src = NULL;
+    HifSource *src_tmp;
+    guint i;
 
-	/* find a source with a matching ID */
-	for (i = 0; i < priv->sources->len; i++) {
-		src_tmp = g_ptr_array_index (priv->sources, i);
-		if (g_strcmp0 (hif_source_get_id (src_tmp), repo_id) == 0) {
-			src = src_tmp;
-			break;
-		}
-	}
+    /* find a source with a matching ID */
+    for (i = 0; i < priv->sources->len; i++) {
+        src_tmp = g_ptr_array_index(priv->sources, i);
+        if (g_strcmp0(hif_source_get_id(src_tmp), repo_id) == 0) {
+            src = src_tmp;
+            break;
+        }
+    }
 
-	/* nothing found */
-	if (src == NULL) {
-		g_set_error (error,
-			     HIF_ERROR,
-			     HIF_ERROR_INTERNAL_ERROR,
-			     "repo %s not found", repo_id);
-		return FALSE;
-	}
+    /* nothing found */
+    if (src == NULL) {
+        g_set_error(error,
+                    HIF_ERROR,
+                    HIF_ERROR_INTERNAL_ERROR,
+                    "repo %s not found", repo_id);
+        return FALSE;
+    }
 
-	/* this is runtime only */
-	hif_source_set_enabled (src, enabled);
-	return TRUE;
+    /* this is runtime only */
+    hif_source_set_enabled(src, enabled);
+    return TRUE;
 }
 
 /**
@@ -1718,13 +1719,13 @@ hif_context_repo_set_data (HifContext *context,
  * Since: 0.1.0
  **/
 gboolean
-hif_context_repo_enable (HifContext *context,
-			 const gchar *repo_id,
-			 GError **error)
+hif_context_repo_enable(HifContext *context,
+                        const gchar *repo_id,
+                        GError **error)
 {
-	return hif_context_repo_set_data (context, repo_id,
-					  HIF_SOURCE_ENABLED_PACKAGES |
-					  HIF_SOURCE_ENABLED_METADATA, error);
+    return hif_context_repo_set_data(context, repo_id,
+                                     HIF_SOURCE_ENABLED_PACKAGES |
+                                     HIF_SOURCE_ENABLED_METADATA, error);
 }
 
 /**
@@ -1742,16 +1743,16 @@ hif_context_repo_enable (HifContext *context,
  * Since: 0.1.0
  **/
 gboolean
-hif_context_repo_disable (HifContext *context,
-			  const gchar *repo_id,
-			  GError **error)
+hif_context_repo_disable(HifContext *context,
+                         const gchar *repo_id,
+                         GError **error)
 {
-	return hif_context_repo_set_data (context, repo_id,
-					  HIF_SOURCE_ENABLED_NONE, error);
+    return hif_context_repo_set_data(context, repo_id,
+                                     HIF_SOURCE_ENABLED_NONE, error);
 }
 
 /**
- * hif_context_commit: (skip)
+ * hif_context_commit:(skip)
  * @context: a #HifContext instance.
  * @state: A #HifState
  * @error: A #GError or %NULL
@@ -1763,18 +1764,18 @@ hif_context_repo_disable (HifContext *context,
  * Since: 0.1.0
  **/
 gboolean
-hif_context_commit (HifContext *context, HifState *state, GError **error)
+hif_context_commit(HifContext *context, HifState *state, GError **error)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
+    HifContextPrivate *priv = GET_PRIVATE(context);
 
-	/* ensure transaction exists */
-	hif_context_ensure_transaction (context);
+    /* ensure transaction exists */
+    hif_context_ensure_transaction(context);
 
-	/* run the transaction */
-	return hif_transaction_commit (priv->transaction,
-				       priv->goal,
-				       state,
-				       error);
+    /* run the transaction */
+    return hif_transaction_commit(priv->transaction,
+                                  priv->goal,
+                                  state,
+                                  error);
 }
 
 /**
@@ -1789,16 +1790,16 @@ hif_context_commit (HifContext *context, HifState *state, GError **error)
  * Since: 0.2.1
  **/
 void
-hif_context_invalidate_full (HifContext *context,
-			     const gchar *message,
-			     HifContextInvalidateFlags flags)
+hif_context_invalidate_full(HifContext *context,
+                 const gchar *message,
+                 HifContextInvalidateFlags flags)
 {
-	HifContextPrivate *priv = GET_PRIVATE (context);
-	g_debug ("Msg: %s", message);
-	if (flags & HIF_CONTEXT_INVALIDATE_FLAG_RPMDB)
-		g_signal_emit (context, signals [SIGNAL_INVALIDATE], 0, message);
-	if (flags & HIF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT)
-		priv->enrollment_valid = FALSE;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    g_debug("Msg: %s", message);
+    if (flags & HIF_CONTEXT_INVALIDATE_FLAG_RPMDB)
+        g_signal_emit(context, signals [SIGNAL_INVALIDATE], 0, message);
+    if (flags & HIF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT)
+        priv->enrollment_valid = FALSE;
 }
 
 /**
@@ -1811,10 +1812,10 @@ hif_context_invalidate_full (HifContext *context,
  * Since: 0.1.0
  **/
 void
-hif_context_invalidate (HifContext *context, const gchar *message)
+hif_context_invalidate(HifContext *context, const gchar *message)
 {
-	hif_context_invalidate_full (context, message,
-				     HIF_CONTEXT_INVALIDATE_FLAG_RPMDB);
+    hif_context_invalidate_full(context, message,
+                                HIF_CONTEXT_INVALIDATE_FLAG_RPMDB);
 }
 
 /**
@@ -1822,15 +1823,15 @@ hif_context_invalidate (HifContext *context, const gchar *message)
  *
  * Creates a new #HifContext.
  *
- * Returns: (transfer full): a #HifContext
+ * Returns:(transfer full): a #HifContext
  *
  * Since: 0.1.0
  **/
 HifContext *
-hif_context_new (void)
+hif_context_new(void)
 {
-	HifContext *context;
-	context = g_object_new (HIF_TYPE_CONTEXT, NULL);
-	lr_global_init ();
-	return HIF_CONTEXT (context);
+    HifContext *context;
+    context = g_object_new(HIF_TYPE_CONTEXT, NULL);
+    lr_global_init();
+    return HIF_CONTEXT(context);
 }

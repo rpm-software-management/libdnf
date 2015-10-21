@@ -1,6 +1,6 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2013-2015 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -31,9 +31,9 @@
 #include "hy-goal.h"
 #include "hy-package.h"
 
-gboolean	 hif_goal_depsolve			(HyGoal		 goal,
-							 GError		**error);
-GPtrArray	*hif_goal_get_packages			(HyGoal		 goal,
-							 ...);
+gboolean         hif_goal_depsolve                      (HyGoal          goal,
+                                                         GError         **error);
+GPtrArray       *hif_goal_get_packages                  (HyGoal          goal,
+                                                         ...);
 
 #endif /* __HIF_GOAL_H */

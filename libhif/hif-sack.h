@@ -1,6 +1,6 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2013-2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2013-2015 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -33,37 +33,37 @@
 
 /**
  * HifSackAddFlags:
- * @HIF_SACK_ADD_FLAG_NONE:			Add the primary
- * @HIF_SACK_ADD_FLAG_FILELISTS:		Add the filelists
- * @HIF_SACK_ADD_FLAG_UPDATEINFO:		Add the updateinfo
- * @HIF_SACK_ADD_FLAG_REMOTE:			Use remote sources
- * @HIF_SACK_ADD_FLAG_UNAVAILABLE:		Add sources that are unavailable
+ * @HIF_SACK_ADD_FLAG_NONE:                     Add the primary
+ * @HIF_SACK_ADD_FLAG_FILELISTS:                Add the filelists
+ * @HIF_SACK_ADD_FLAG_UPDATEINFO:               Add the updateinfo
+ * @HIF_SACK_ADD_FLAG_REMOTE:                   Use remote sources
+ * @HIF_SACK_ADD_FLAG_UNAVAILABLE:              Add sources that are unavailable
  *
  * The error code.
  **/
 typedef enum {
-	HIF_SACK_ADD_FLAG_NONE			= 0,
-	HIF_SACK_ADD_FLAG_FILELISTS		= 1,
-	HIF_SACK_ADD_FLAG_UPDATEINFO		= 2,
-	HIF_SACK_ADD_FLAG_REMOTE		= 4,
-	HIF_SACK_ADD_FLAG_UNAVAILABLE		= 8,
-	/*< private >*/
-	HIF_SACK_ADD_FLAG_LAST
+        HIF_SACK_ADD_FLAG_NONE                  = 0,
+        HIF_SACK_ADD_FLAG_FILELISTS             = 1,
+        HIF_SACK_ADD_FLAG_UPDATEINFO            = 2,
+        HIF_SACK_ADD_FLAG_REMOTE                = 4,
+        HIF_SACK_ADD_FLAG_UNAVAILABLE           = 8,
+        /*< private >*/
+        HIF_SACK_ADD_FLAG_LAST
 } HifSackAddFlags;
 
 /* object methods */
-gboolean	 hif_sack_add_source		(HySack		 sack,
-						 HifSource	*src,
-						 guint		 permissible_cache_age,
-						 HifSackAddFlags flags,
-						 HifState	*state,
-						 GError		**error);
-gboolean	 hif_sack_add_sources		(HySack		 sack,
-						 GPtrArray	*sources,
-						 guint		 permissible_cache_age,
-						 HifSackAddFlags flags,
-						 HifState	*state,
-						 GError		**error);
+gboolean         hif_sack_add_source            (HySack          sack,
+                                                 HifSource      *src,
+                                                 guint           permissible_cache_age,
+                                                 HifSackAddFlags flags,
+                                                 HifState       *state,
+                                                 GError         **error);
+gboolean         hif_sack_add_sources           (HySack          sack,
+                                                 GPtrArray      *sources,
+                                                 guint           permissible_cache_age,
+                                                 HifSackAddFlags flags,
+                                                 HifState       *state,
+                                                 GError         **error);
 
 G_END_DECLS
 

@@ -1,6 +1,6 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2013-2015 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -30,13 +30,13 @@
 
 #include <rpm/rpmkeyring.h>
 
-gboolean	 hif_keyring_add_public_key	(rpmKeyring		 keyring,
-						 const gchar		*filename,
-						 GError			**error);
-gboolean	 hif_keyring_add_public_keys	(rpmKeyring		 keyring,
-						 GError			**error);
-gboolean	 hif_keyring_check_untrusted_file (rpmKeyring		 keyring,
-						 const gchar		*filename,
-						 GError			**error);
+gboolean         hif_keyring_add_public_key     (rpmKeyring              keyring,
+                                                 const gchar            *filename,
+                                                 GError                 **error);
+gboolean         hif_keyring_add_public_keys    (rpmKeyring              keyring,
+                                                 GError                 **error);
+gboolean         hif_keyring_check_untrusted_file (rpmKeyring            keyring,
+                                                 const gchar            *filename,
+                                                 GError                 **error);
 
 #endif /* __HIF_KEYRING_H */

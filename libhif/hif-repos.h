@@ -1,6 +1,6 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2013-2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2013-2015 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -34,47 +34,47 @@
 #include "hif-state.h"
 #include "hif-source.h"
 
-#define HIF_TYPE_REPOS			(hif_repos_get_type())
-#define HIF_REPOS(obj)			(G_TYPE_CHECK_INSTANCE_CAST((obj), HIF_TYPE_REPOS, HifRepos))
-#define HIF_REPOS_CLASS(cls)		(G_TYPE_CHECK_CLASS_CAST((cls), HIF_TYPE_REPOS, HifReposClass))
-#define HIF_IS_REPOS(obj)		(G_TYPE_CHECK_INSTANCE_TYPE((obj), HIF_TYPE_REPOS))
-#define HIF_IS_REPOS_CLASS(cls)	(G_TYPE_CHECK_CLASS_TYPE((cls), HIF_TYPE_REPOS))
-#define HIF_REPOS_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS((obj), HIF_TYPE_REPOS, HifReposClass))
+#define HIF_TYPE_REPOS                  (hif_repos_get_type())
+#define HIF_REPOS(obj)                  (G_TYPE_CHECK_INSTANCE_CAST((obj), HIF_TYPE_REPOS, HifRepos))
+#define HIF_REPOS_CLASS(cls)            (G_TYPE_CHECK_CLASS_CAST((cls), HIF_TYPE_REPOS, HifReposClass))
+#define HIF_IS_REPOS(obj)               (G_TYPE_CHECK_INSTANCE_TYPE((obj), HIF_TYPE_REPOS))
+#define HIF_IS_REPOS_CLASS(cls)         (G_TYPE_CHECK_CLASS_TYPE((cls), HIF_TYPE_REPOS))
+#define HIF_REPOS_GET_CLASS(obj)        (G_TYPE_INSTANCE_GET_CLASS((obj), HIF_TYPE_REPOS, HifReposClass))
 
 G_BEGIN_DECLS
 
-typedef struct _HifReposClass	HifReposClass;
+typedef struct _HifReposClass   HifReposClass;
 
 struct _HifRepos
 {
-	GObject			parent;
+        GObject                 parent;
 };
 
 struct _HifReposClass
 {
-	GObjectClass		parent_class;
-	void			(* changed)	(HifRepos	*repos);
-	/*< private >*/
-	void (*_hif_reserved1)	(void);
-	void (*_hif_reserved2)	(void);
-	void (*_hif_reserved3)	(void);
-	void (*_hif_reserved4)	(void);
-	void (*_hif_reserved5)	(void);
-	void (*_hif_reserved6)	(void);
-	void (*_hif_reserved7)	(void);
-	void (*_hif_reserved8)	(void);
+        GObjectClass            parent_class;
+        void                    (* changed)     (HifRepos       *repos);
+        /*< private >*/
+        void (*_hif_reserved1)  (void);
+        void (*_hif_reserved2)  (void);
+        void (*_hif_reserved3)  (void);
+        void (*_hif_reserved4)  (void);
+        void (*_hif_reserved5)  (void);
+        void (*_hif_reserved6)  (void);
+        void (*_hif_reserved7)  (void);
+        void (*_hif_reserved8)  (void);
 };
 
-GType		 hif_repos_get_type		(void);
-HifRepos	*hif_repos_new			(HifContext	*context);
+GType            hif_repos_get_type             (void);
+HifRepos        *hif_repos_new                  (HifContext     *context);
 
 /* object methods */
-gboolean	 hif_repos_has_removable	(HifRepos	*self);
-GPtrArray	*hif_repos_get_sources		(HifRepos	*self,
-						 GError		**error);
-HifSource	*hif_repos_get_source_by_id	(HifRepos	*self,
-						 const gchar	*id,
-						 GError		**error);
+gboolean         hif_repos_has_removable        (HifRepos       *self);
+GPtrArray       *hif_repos_get_sources          (HifRepos       *self,
+                                                 GError         **error);
+HifSource       *hif_repos_get_source_by_id     (HifRepos       *self,
+                                                 const gchar    *id,
+                                                 GError         **error);
 
 G_END_DECLS
 
