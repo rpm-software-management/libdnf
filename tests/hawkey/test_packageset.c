@@ -19,9 +19,9 @@
  */
 
 // hawkey
-#include "libhif/hy-package_internal.h"
-#include "libhif/hy-packageset_internal.h"
-#include "libhif/hy-sack_internal.h"
+#include "libhif/hy-package-private.h"
+#include "libhif/hy-packageset-private.h"
+#include "libhif/hy-sack-private.h"
 #include "fixtures.h"
 #include "test_suites.h"
 

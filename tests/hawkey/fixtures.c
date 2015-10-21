@@ -26,7 +26,7 @@
 #include "libhif/hy-package.h"
 #include "libhif/hy-repo.h"
 #include "libhif/hy-iutil.h"
-#include "libhif/hy-sack_internal.h"
+#include "libhif/hy-sack-private.h"
 #include "fixtures.h"
 #include "testsys.h"
 

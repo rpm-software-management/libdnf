@@ -26,8 +26,8 @@
 
 // hawkey
 #include "hy-iutil.h"
-#include "hy-reldep_internal.h"
-#include "hy-sack_internal.h"
+#include "hy-reldep-private.h"
+#include "hy-sack-private.h"
 
 struct _HyReldep {
     Pool *pool;

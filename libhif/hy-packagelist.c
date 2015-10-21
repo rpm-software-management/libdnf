@@ -31,8 +31,8 @@
 
 // hawkey
 #include "hy-packagelist.h"
-#include "hy-package_internal.h"
-#include "hy-sack_internal.h"
+#include "hy-package-private.h"
+#include "hy-sack-private.h"
 
 HyPackageList
 hy_packagelist_create(void)

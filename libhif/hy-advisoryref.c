@@ -23,7 +23,7 @@
 #include <solv/util.h>
 
 // hawkey
-#include "hy-advisoryref_internal.h"
+#include "hy-advisoryref-private.h"
 
 #define REFERENCE_BLOCK 3
 

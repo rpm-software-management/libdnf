@@ -49,11 +49,11 @@
 // hawkey
 #include "hif-types.h"
 #include "hy-iutil.h"
-#include "hy-package_internal.h"
-#include "hy-packageset_internal.h"
+#include "hy-package-private.h"
+#include "hy-packageset-private.h"
 #include "hy-query.h"
-#include "hy-repo_internal.h"
-#include "hy-sack_internal.h"
+#include "hy-repo-private.h"
+#include "hy-sack-private.h"
 #include "hy-util.h"
 #include "hif-version.h"
 

@@ -25,9 +25,9 @@
 #include <solv/util.h>
 
 // hawkey
-#include "hy-package_internal.h"
-#include "hy-packageset_internal.h"
-#include "hy-sack_internal.h"
+#include "hy-package-private.h"
+#include "hy-packageset-private.h"
+#include "hy-sack-private.h"
 
 struct _HyPackageSet {
     HySack sack;

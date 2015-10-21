@@ -30,7 +30,7 @@
 #include "hif-types.h"
 #include "hif-cleanup.h"
 #include "hy-goal.h"
-#include "hy-package_internal.h"
+#include "hy-package-private.h"
 #include "hy-packagelist.h"
 
 // pyhawkey

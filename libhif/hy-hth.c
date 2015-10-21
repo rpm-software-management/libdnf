@@ -30,7 +30,7 @@
 
 // hawkey
 #include "hy-goal.h"
-#include "hy-package_internal.h"
+#include "hy-package-private.h"
 #include "hy-package.h"
 #include "hy-packagelist.h"
 #include "hy-packageset.h"

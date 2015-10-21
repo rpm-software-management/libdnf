@@ -30,9 +30,9 @@
 // hawkey
 #include <libhif/libhif.h>
 #include "libhif/hif-cleanup.h"
-#include "libhif/hy-package_internal.h"
-#include "libhif/hy-repo_internal.h"
-#include "libhif/hy-sack_internal.h"
+#include "libhif/hy-package-private.h"
+#include "libhif/hy-repo-private.h"
+#include "libhif/hy-sack-private.h"
 #include "libhif/hy-util.h"
 #include "fixtures.h"
 #include "testsys.h"

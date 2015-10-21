@@ -22,7 +22,7 @@
 #include <string.h>
 
 // hawkey
-#include "libhif/hy-repo_internal.h"
+#include "libhif/hy-repo-private.h"
 #include "fixtures.h"
 #include "testshared.h"
 #include "test_suites.h"

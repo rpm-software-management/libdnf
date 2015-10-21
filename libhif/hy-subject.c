@@ -21,12 +21,12 @@
 #include <stdlib.h>
 #include <fnmatch.h>
 #include "hy-reldep.h"
-#include "hy-sack_internal.h"
+#include "hy-sack-private.h"
 #include "hy-subject.h"
-#include "hy-subject_internal.h"
+#include "hy-subject-private.h"
 #include "hy-nevra.h"
 #include "hy-iutil.h"
-#include "hy-nevra_internal.h"
+#include "hy-nevra-private.h"
 #include "hy-types.h"
 
 // most specific to least

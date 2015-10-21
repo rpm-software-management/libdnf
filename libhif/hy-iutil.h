@@ -31,7 +31,7 @@
 #include <solv/transaction.h>
 
 // hawkey
-#include "hy-advisory_internal.h"
+#include "hy-advisory-private.h"
 #include "hy-packagelist.h"
 #include "hy-sack.h"
 

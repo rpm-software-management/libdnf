@@ -25,13 +25,13 @@
 
 // hawkey
 #include "hif-types.h"
-#include "hy-goal_internal.h"
+#include "hy-goal-private.h"
 #include "hy-iutil.h"
-#include "hy-package_internal.h"
+#include "hy-package-private.h"
 #include "hy-packagelist.h"
-#include "hy-query_internal.h"
-#include "hy-sack_internal.h"
-#include "hy-selector_internal.h"
+#include "hy-query-private.h"
+#include "hy-sack-private.h"
+#include "hy-selector-private.h"
 
 static int
 replace_filter(HySack sack, struct _Filter **fp, int keyname, int cmp_type,

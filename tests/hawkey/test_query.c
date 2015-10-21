@@ -25,11 +25,11 @@
 
 // hawkey
 #include "libhif/hy-query.h"
-#include "libhif/hy-query_internal.h"
+#include "libhif/hy-query-private.h"
 #include "libhif/hy-package.h"
 #include "libhif/hy-packageset.h"
 #include "libhif/hy-reldep.h"
-#include "libhif/hy-sack_internal.h"
+#include "libhif/hy-sack-private.h"
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"

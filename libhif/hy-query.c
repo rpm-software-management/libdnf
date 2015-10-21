@@ -33,12 +33,12 @@
 // hawkey
 #include "hif-types.h"
 #include "hy-iutil.h"
-#include "hy-query_internal.h"
-#include "hy-package_internal.h"
+#include "hy-query-private.h"
+#include "hy-package-private.h"
 #include "hy-packagelist.h"
-#include "hy-packageset_internal.h"
-#include "hy-reldep_internal.h"
-#include "hy-sack_internal.h"
+#include "hy-packageset-private.h"
+#include "hy-reldep-private.h"
+#include "hy-sack-private.h"
 
 #define BLOCK_SIZE 15
 

@@ -25,7 +25,7 @@
 
 // hawkey
 #include "hy-nevra.h"
-#include "hy-nevra_internal.h"
+#include "hy-nevra-private.h"
 #include "hy-sack.h"
 #include "hy-types.h"
 
