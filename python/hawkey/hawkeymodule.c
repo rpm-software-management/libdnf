@@ -57,7 +57,7 @@ detect_arch(PyObject *unused, PyObject *args)
     char *arch;
 
     if (ret2e(hy_detect_arch(&arch), "Failed detecting architecture."))
-	return NULL;
+        return NULL;
     return PyString_FromString(arch);
 }
 
@@ -68,11 +68,11 @@ chksum_name(PyObject *unused, PyObject *args)
     const char *name;
 
     if (!PyArg_ParseTuple(args, "i", &i))
-	return NULL;
+        return NULL;
     name = hy_chksum_name(i);
     if (name == NULL) {
-	PyErr_Format(PyExc_ValueError, "unrecognized chksum type: %d", i);
-	return NULL;
+        PyErr_Format(PyExc_ValueError, "unrecognized chksum type: %d", i);
+        return NULL;
     }
 
     return PyString_FromString(name);
@@ -92,8 +92,8 @@ chksum_type(PyObject *unused, PyObject *str_o)
     Py_XDECREF(tmp_py_str);
 
     if (type == 0) {
-	PyErr_Format(PyExc_ValueError, "unrecognized chksum type: %s", str);
-	return NULL;
+        PyErr_Format(PyExc_ValueError, "unrecognized chksum type: %s", str);
+        return NULL;
     }
     return PyLong_FromLong(type);
 }
@@ -115,24 +115,24 @@ split_nevra(PyObject *unused, PyObject *nevra_o)
     Py_XDECREF(tmp_py_str); // release memory after unicode string conversion
 
     if (ret2e(split_nevra_ret, "Failed parsing NEVRA."))
-	return NULL;
+        return NULL;
 
     PyObject *ret = Py_BuildValue("slsss", name, epoch, version, release, arch);
     if (ret == NULL)
-	return NULL;
+        return NULL;
     return ret;
 }
 
 static struct PyMethodDef hawkey_methods[] = {
-    {"chksum_name",		(PyCFunction)chksum_name,
-     METH_VARARGS,	NULL},
-    {"chksum_type",		(PyCFunction)chksum_type,
-     METH_O,		NULL},
-    {"detect_arch",		(PyCFunction)detect_arch,
-     METH_NOARGS,	NULL},
-    {"split_nevra",		(PyCFunction)split_nevra,
-     METH_O,		NULL},
-    {NULL}				/* sentinel */
+    {"chksum_name",                (PyCFunction)chksum_name,
+     METH_VARARGS,        NULL},
+    {"chksum_type",                (PyCFunction)chksum_type,
+     METH_O,                NULL},
+    {"detect_arch",                (PyCFunction)detect_arch,
+     METH_NOARGS,        NULL},
+    {"split_nevra",                (PyCFunction)split_nevra,
+     METH_O,                NULL},
+    {NULL}                                /* sentinel */
 };
 
 PYCOMP_MOD_INIT(_hawkey)
@@ -159,17 +159,17 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddObject(m, "Sack", (PyObject *)&sack_Type);
     /* _hawkey.Advisory */
     if (PyType_Ready(&advisory_Type) < 0)
-	return PYCOMP_MOD_ERROR_VAL;
+        return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&advisory_Type);
     PyModule_AddObject(m, "Advisory", (PyObject *)&advisory_Type);
     /* _hawkey.AdvisoryPkg */
     if (PyType_Ready(&advisorypkg_Type) < 0)
-	return PYCOMP_MOD_ERROR_VAL;
+        return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&advisorypkg_Type);
     PyModule_AddObject(m, "AdvisoryPkg", (PyObject *)&advisorypkg_Type);
     /* _hawkey.AdvisoryRef */
     if (PyType_Ready(&advisoryref_Type) < 0)
-	return PYCOMP_MOD_ERROR_VAL;
+        return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&advisoryref_Type);
     PyModule_AddObject(m, "AdvisoryRef", (PyObject *)&advisoryref_Type);
     /* _hawkey.Goal */
@@ -209,18 +209,18 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddObject(m, "Repo", (PyObject *)&repo_Type);
     /* _hawkey.NEVRA */
     if (PyType_Ready(&nevra_Type) < 0)
-	return PYCOMP_MOD_ERROR_VAL;
+        return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&nevra_Type);
     PyModule_AddObject(m, "NEVRA", (PyObject *)&nevra_Type);
     /* _hawkey.Subject */
     if (PyType_Ready(&subject_Type) < 0)
-	return PYCOMP_MOD_ERROR_VAL;
+        return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&subject_Type);
     PyModule_AddObject(m, "Subject", (PyObject *)&subject_Type);
     /* _hawkey._Possibilities */
     possibilities_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&possibilities_Type) < 0)
-	return PYCOMP_MOD_ERROR_VAL;
+        return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&possibilities_Type);
 
     PyModule_AddIntConstant(m, "FORM_NEVRA", HY_FORM_NEVRA);

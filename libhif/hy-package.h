@@ -32,13 +32,13 @@ G_BEGIN_DECLS
 // deprecated in 0.4.12, eligible for dropping after 2014-07-07 AND no sooner
 // than in 0.4.15, use HyAdvisoryType instead
 typedef enum {
-	HY_UPDATE_SEVERITY_SECURITY = 0,	/* ordered by rough importance */
-	HY_UPDATE_SEVERITY_IMPORTANT = 1,
-	HY_UPDATE_SEVERITY_BUGFIX = 2,
-	HY_UPDATE_SEVERITY_NORMAL = 3,
-	HY_UPDATE_SEVERITY_ENHANCEMENT = 4,
-	HY_UPDATE_SEVERITY_LOW = 5,
-	HY_UPDATE_SEVERITY_UNKNOWN = 6,
+        HY_UPDATE_SEVERITY_SECURITY = 0,        /* ordered by rough importance */
+        HY_UPDATE_SEVERITY_IMPORTANT = 1,
+        HY_UPDATE_SEVERITY_BUGFIX = 2,
+        HY_UPDATE_SEVERITY_NORMAL = 3,
+        HY_UPDATE_SEVERITY_ENHANCEMENT = 4,
+        HY_UPDATE_SEVERITY_LOW = 5,
+        HY_UPDATE_SEVERITY_UNKNOWN = 6,
 } HyUpdateSeverity;
 
 /* public */

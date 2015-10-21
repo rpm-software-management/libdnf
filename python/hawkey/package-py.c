@@ -52,8 +52,8 @@ HyPackage
 packageFromPyObject(PyObject *o)
 {
     if (!PyType_IsSubtype(o->ob_type, &package_Type)) {
-	PyErr_SetString(PyExc_TypeError, "Expected a Package object.");
-	return NULL;
+        PyErr_SetString(PyExc_TypeError, "Expected a Package object.");
+        return NULL;
     }
     return ((_PackageObject *)o)->package;
 }
@@ -63,7 +63,7 @@ package_converter(PyObject *o, HyPackage *pkg_ptr)
 {
     HyPackage pkg = packageFromPyObject(o);
     if (pkg == NULL)
-	return 0;
+        return 0;
     *pkg_ptr = pkg;
     return 1;
 }
@@ -75,8 +75,8 @@ package_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     _PackageObject *self = (_PackageObject*)type->tp_alloc(type, 0);
     if (self) {
-	self->sack = NULL;
-	self->package = NULL;
+        self->sack = NULL;
+        self->package = NULL;
     }
     return (PyObject*)self;
 }
@@ -85,7 +85,7 @@ static void
 package_dealloc(_PackageObject *self)
 {
     if (self->package)
-	hy_package_free(self->package);
+        hy_package_free(self->package);
 
     Py_XDECREF(self->sack);
     Py_TYPE(self)->tp_free(self);
@@ -99,10 +99,10 @@ package_init(_PackageObject *self, PyObject *args, PyObject *kwds)
     HySack csack;
 
     if (!PyArg_ParseTuple(args, "(O!i)", &sack_Type, &sack, &id))
-	return -1;
+        return -1;
     csack = sackFromPyObject(sack);
     if (csack == NULL)
-	return -1;
+        return -1;
     self->sack = sack;
     Py_INCREF(self->sack);
     self->package = package_create(csack, id);
@@ -160,8 +160,8 @@ package_repr(_PackageObject *self)
     PyObject *repr;
 
     repr = PyString_FromFormat("<hawkey.Package object id %ld, %s, %s>",
-			       package_hash(self), nevra,
-			       hy_package_get_reponame(pkg));
+                               package_hash(self), nevra,
+                               hy_package_get_reponame(pkg));
     solv_free(nevra);
     return repr;
 }
@@ -219,7 +219,7 @@ get_str(_PackageObject *self, void *closure)
     func = (const char *(*)(HyPackage))closure;
     cstr = func(self->package);
     if (cstr == NULL)
-	Py_RETURN_NONE;
+        Py_RETURN_NONE;
     return PyUnicode_FromString(cstr);
 }
 
@@ -233,7 +233,7 @@ get_str_alloced(_PackageObject *self, void *closure)
     func = (char *(*)(HyPackage))closure;
     cstr = func(self->package);
     if (cstr == NULL)
-	Py_RETURN_NONE;
+        Py_RETURN_NONE;
     ret = PyUnicode_FromString(cstr);
     solv_free(cstr);
     return ret;
@@ -263,8 +263,8 @@ get_chksum(_PackageObject *self, void *closure)
     func = (HyChecksum *(*)(HyPackage, int *))closure;
     cs = func(self->package, &type);
     if (cs == 0) {
-	PyErr_SetString(PyExc_AttributeError, "No such checksum.");
-	return NULL;
+        PyErr_SetString(PyExc_AttributeError, "No such checksum.");
+        return NULL;
     }
 
     PyObject *res;
@@ -280,9 +280,9 @@ get_chksum(_PackageObject *self, void *closure)
 }
 
 static PyGetSetDef package_getsetters[] = {
-    {"baseurl",	(getter)get_str, NULL, NULL,
+    {"baseurl",        (getter)get_str, NULL, NULL,
      (void *)hy_package_get_baseurl},
-    {"files",	(getter)get_str_array, NULL, NULL,
+    {"files",        (getter)get_str_array, NULL, NULL,
      (void *)hy_package_get_files},
     {"hdr_end", (getter)get_num, NULL, NULL, (void *)hy_package_get_hdr_end},
     {"location",  (getter)get_str_alloced, NULL, NULL,
@@ -334,7 +334,7 @@ static PyGetSetDef package_getsetters[] = {
      (void *)hy_package_get_suggests},
     {"supplements",  (getter)get_reldep, NULL, NULL,
      (void *)hy_package_get_supplements},
-    {NULL}			/* sentinel */
+    {NULL}                        /* sentinel */
 };
 
 /* object methods */
@@ -344,7 +344,7 @@ evr_cmp(_PackageObject *self, PyObject *other)
 {
     HyPackage pkg2 = packageFromPyObject(other);
     if (pkg2 == NULL)
-	return NULL;
+        return NULL;
     return PyLong_FromLong(hy_package_evr_cmp(self->package, pkg2));
 }
 
@@ -360,7 +360,7 @@ get_delta_from_evr(_PackageObject *self, PyObject *evr_str)
     HyPackageDelta delta_c = hy_package_get_delta_from_evr(self->package, evr);
     Py_XDECREF(tmp_py_str);
     if (delta_c)
-	return packageDeltaToPyObject(delta_c);
+        return packageDeltaToPyObject(delta_c);
     Py_RETURN_NONE;
 }
 
@@ -372,7 +372,7 @@ get_advisories(_PackageObject *self, PyObject *args)
     PyObject *list;
 
     if (!PyArg_ParseTuple(args, "i", &cmp_type))
-	return NULL;
+        return NULL;
 
     advisories = hy_package_get_advisories(self->package, cmp_type);
     list = advisorylist_to_pylist(advisories, self->sack);
@@ -390,43 +390,43 @@ static struct PyMethodDef package_methods[] = {
 
 PyTypeObject package_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "_hawkey.Package",		/*tp_name*/
-    sizeof(_PackageObject),	/*tp_basicsize*/
-    0,				/*tp_itemsize*/
+    "_hawkey.Package",                /*tp_name*/
+    sizeof(_PackageObject),        /*tp_basicsize*/
+    0,                                /*tp_itemsize*/
     (destructor) package_dealloc, /*tp_dealloc*/
-    0,				/*tp_print*/
-    0,				/*tp_getattr*/
-    0,				/*tp_setattr*/
-    0,				/*tp_compare*/
-    (reprfunc)package_repr,	/*tp_repr*/
-    0,				/*tp_as_number*/
-    0,				/*tp_as_sequence*/
-    0,				/*tp_as_mapping*/
-    (hashfunc)package_hash,	/*tp_hash */
-    0,				/*tp_call*/
-    (reprfunc)package_str,	/*tp_str*/
-    0,				/*tp_getattro*/
-    0,				/*tp_setattro*/
-    0,				/*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,	/*tp_flags*/
-    "Package object",		/* tp_doc */
-    0,				/* tp_traverse */
-    0,				/* tp_clear */
-    (richcmpfunc) package_py_richcompare,	/* tp_richcompare */
-    0,				/* tp_weaklistoffset */
-    0,				/* tp_iter */
-    0,                         	/* tp_iternext */
-    package_methods,		/* tp_methods */
-    0,				/* tp_members */
-    package_getsetters,		/* tp_getset */
-    0,				/* tp_base */
-    0,				/* tp_dict */
-    0,				/* tp_descr_get */
-    0,				/* tp_descr_set */
-    0,				/* tp_dictoffset */
-    (initproc)package_init,	/* tp_init */
-    0,				/* tp_alloc */
-    package_new,		/* tp_new */
-    0,				/* tp_free */
-    0,				/* tp_is_gc */
+    0,                                /*tp_print*/
+    0,                                /*tp_getattr*/
+    0,                                /*tp_setattr*/
+    0,                                /*tp_compare*/
+    (reprfunc)package_repr,        /*tp_repr*/
+    0,                                /*tp_as_number*/
+    0,                                /*tp_as_sequence*/
+    0,                                /*tp_as_mapping*/
+    (hashfunc)package_hash,        /*tp_hash */
+    0,                                /*tp_call*/
+    (reprfunc)package_str,        /*tp_str*/
+    0,                                /*tp_getattro*/
+    0,                                /*tp_setattro*/
+    0,                                /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,        /*tp_flags*/
+    "Package object",                /* tp_doc */
+    0,                                /* tp_traverse */
+    0,                                /* tp_clear */
+    (richcmpfunc) package_py_richcompare,        /* tp_richcompare */
+    0,                                /* tp_weaklistoffset */
+    0,                                /* tp_iter */
+    0,                                 /* tp_iternext */
+    package_methods,                /* tp_methods */
+    0,                                /* tp_members */
+    package_getsetters,                /* tp_getset */
+    0,                                /* tp_base */
+    0,                                /* tp_dict */
+    0,                                /* tp_descr_get */
+    0,                                /* tp_descr_set */
+    0,                                /* tp_dictoffset */
+    (initproc)package_init,        /* tp_init */
+    0,                                /* tp_alloc */
+    package_new,                /* tp_new */
+    0,                                /* tp_free */
+    0,                                /* tp_is_gc */
 };

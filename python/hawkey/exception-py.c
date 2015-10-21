@@ -38,37 +38,37 @@ init_exceptions(void)
 {
      HyExc_Exception = PyErr_NewException("_hawkey.Exception", NULL, NULL);
      if (!HyExc_Exception)
-	 return 0;
+         return 0;
      Py_INCREF(HyExc_Exception);
 
      HyExc_Value = PyErr_NewException("_hawkey.ValueException", HyExc_Exception,
-				      NULL);
+                                      NULL);
      if (!HyExc_Value)
-	 return 0;
+         return 0;
      Py_INCREF(HyExc_Value);
 
      HyExc_Query = PyErr_NewException("_hawkey.QueryException", HyExc_Value,
-				      NULL);
+                                      NULL);
      if (!HyExc_Query)
-	 return 0;
+         return 0;
      Py_INCREF(HyExc_Query);
 
      HyExc_Arch = PyErr_NewException("_hawkey.ArchException", HyExc_Value,
-				      NULL);
+                                      NULL);
      if (!HyExc_Arch)
-	 return 0;
+         return 0;
      Py_INCREF(HyExc_Arch);
 
      HyExc_Runtime = PyErr_NewException("_hawkey.RuntimeException",
-					HyExc_Exception, NULL);
+                                        HyExc_Exception, NULL);
      if (!HyExc_Runtime)
-	 return 0;
+         return 0;
      Py_INCREF(HyExc_Runtime);
 
      HyExc_Validation = PyErr_NewException("_hawkey.ValidationException",
-					HyExc_Exception, NULL);
+                                        HyExc_Exception, NULL);
      if (!HyExc_Validation)
-	 return 0;
+         return 0;
      Py_INCREF(HyExc_Validation);
 
      return 1;
@@ -80,24 +80,24 @@ ret2e(int ret, const char *msg)
     PyObject *exctype = NULL;
     switch (ret) {
     case 0:
-	return 0;
+        return 0;
     case HIF_ERROR_FAILED:
-	exctype = HyExc_Runtime;
-	break;
+        exctype = HyExc_Runtime;
+        break;
     case HIF_ERROR_FILE_INVALID: {
-	exctype = PyExc_IOError;
-	break;
+        exctype = PyExc_IOError;
+        break;
     }
     case HIF_ERROR_INTERNAL_ERROR:
     case HIF_ERROR_BAD_SELECTOR:
-	exctype = HyExc_Value;
-	break;
+        exctype = HyExc_Value;
+        break;
     default:
-	// try to end it quickly
-	assert(0);
-	// or fallback to an internal-error exception
-	PyErr_SetString(PyExc_AssertionError, msg);
-	return 1;
+        // try to end it quickly
+        assert(0);
+        // or fallback to an internal-error exception
+        PyErr_SetString(PyExc_AssertionError, msg);
+        return 1;
     }
 
     assert(exctype);

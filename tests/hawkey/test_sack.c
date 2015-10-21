@@ -51,13 +51,13 @@ START_TEST(test_sack_create)
 {
     _cleanup_error_free_ GError *error = NULL;
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
-				 HY_MAKE_CACHE_DIR, NULL);
+                                 HY_MAKE_CACHE_DIR, NULL);
     fail_if(sack == NULL, NULL);
     fail_if(sack_pool(sack) == NULL, NULL);
     hy_sack_free(sack);
 
     sack = hy_sack_create(test_globals.tmpdir, "", NULL, NULL,
-			  HY_MAKE_CACHE_DIR, NULL);
+                          HY_MAKE_CACHE_DIR, NULL);
     fail_unless(sack == NULL);
     fail_unless(error == NULL);
 }
@@ -66,7 +66,7 @@ END_TEST
 START_TEST(test_give_cache_fn)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
-				 HY_MAKE_CACHE_DIR, NULL);
+                                 HY_MAKE_CACHE_DIR, NULL);
 
     char *path = hy_sack_give_cache_fn(sack, "rain", NULL);
     fail_if(strstr(path, "rain.solv") == NULL);
@@ -82,7 +82,7 @@ END_TEST
 START_TEST(test_list_arches)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH, NULL,
-				 NULL, HY_MAKE_CACHE_DIR, NULL);
+                                 NULL, HY_MAKE_CACHE_DIR, NULL);
     const char ** arches = hy_sack_list_arches(sack);
 
     /* noarch, x86_64, athlon, i686, i586, i486, i386 */
@@ -98,7 +98,7 @@ START_TEST(test_load_repo_err)
 {
     _cleanup_error_free_ GError *error = NULL;
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
-				 HY_MAKE_CACHE_DIR, &error);
+                                 HY_MAKE_CACHE_DIR, &error);
     g_assert(sack != NULL);
     HyRepo repo = hy_repo_create("crabalocker");
     g_assert(repo != NULL);
@@ -113,7 +113,7 @@ END_TEST
 START_TEST(test_repo_written)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
-				 HY_MAKE_CACHE_DIR, NULL);
+                                 HY_MAKE_CACHE_DIR, NULL);
     char *filename = hy_sack_give_cache_fn(sack, "test_sack_written", NULL);
 
     fail_unless(access(filename, R_OK|W_OK));
@@ -134,7 +134,7 @@ END_TEST
 START_TEST(test_repo_load)
 {
     fail_unless(hy_sack_count(test_globals.sack) ==
-		TEST_EXPECT_SYSTEM_NSOLVABLES);
+                TEST_EXPECT_SYSTEM_NSOLVABLES);
 }
 END_TEST
 
@@ -145,23 +145,23 @@ check_filelist(Pool *pool)
     int count;
     Id last_found_solvable = 0;
     dataiterator_init(&di, pool, 0, 0, SOLVABLE_FILELIST, "/usr/bin/ste",
-		      SEARCH_STRING | SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
+                      SEARCH_STRING | SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
     for (count = 0; dataiterator_step(&di); ++count)
-	last_found_solvable = di.solvid;
+        last_found_solvable = di.solvid;
     fail_unless(count == 1);
     fail_if(last_found_solvable == 0);
     dataiterator_free(&di);
 
     dataiterator_init(&di, pool, 0, last_found_solvable, SOLVABLE_FILELIST, "/",
-		      SEARCH_STRINGSTART | SEARCH_FILES);
+                      SEARCH_STRINGSTART | SEARCH_FILES);
     for (count = 0; dataiterator_step(&di); ++count)
-	fail_if(strncmp(di.kv.str, "/usr/bin/", strlen("/usr/bin/")));
+        fail_if(strncmp(di.kv.str, "/usr/bin/", strlen("/usr/bin/")));
     fail_unless(count == 3);
     dataiterator_free(&di);
 
     dataiterator_init(&di, pool, 0, 0, SOLVABLE_FILELIST,
-		      "/usr/lib/python2.7/site-packages/tour/today.pyc",
-		      SEARCH_STRING | SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
+                      "/usr/lib/python2.7/site-packages/tour/today.pyc",
+                      SEARCH_STRING | SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
     for (count = 0; dataiterator_step(&di); ++count) ;
     fail_unless(count == 1);
     dataiterator_free(&di);
@@ -184,7 +184,7 @@ END_TEST
 START_TEST(test_filelist_from_cache)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
-				 HY_MAKE_CACHE_DIR, NULL);
+                                 HY_MAKE_CACHE_DIR, NULL);
     setup_yum_sack(sack, YUM_REPO_NAME);
 
     HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
@@ -200,7 +200,7 @@ check_prestoinfo(Pool *pool)
     Dataiterator di;
 
     dataiterator_init(&di, pool, NULL, SOLVID_META, DELTA_PACKAGE_NAME, "tour",
-		      SEARCH_STRING);
+                      SEARCH_STRING);
     dataiterator_prepend_keyname(&di, REPOSITORY_DELTAINFO);
     fail_unless(dataiterator_step(&di));
     dataiterator_setpos_parent(&di);
@@ -231,7 +231,7 @@ END_TEST
 START_TEST(test_presto_from_cache)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH, NULL,
-				 NULL, HY_MAKE_CACHE_DIR, NULL);
+                                 NULL, HY_MAKE_CACHE_DIR, NULL);
     setup_yum_sack(sack, YUM_REPO_NAME);
 
     HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);

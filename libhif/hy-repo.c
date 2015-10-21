@@ -49,7 +49,7 @@ repo_internalize_all_trigger(Pool *pool)
     Repo *repo;
 
     FOR_REPOS(i, repo)
-	repo_internalize_trigger(repo);
+        repo_internalize_trigger(repo);
 }
 
 void
@@ -58,28 +58,28 @@ repo_internalize_trigger(Repo * repo)
     HyRepo hrepo = repo->appdata;
     assert(hrepo->libsolv_repo == repo);
     if (!hrepo->needs_internalizing)
-	return;
+        return;
     hrepo->needs_internalizing = 0;
     repo_internalize(repo);
 }
 
 void
 repo_update_state(HyRepo repo, enum _hy_repo_repodata which,
-		  enum _hy_repo_state state)
+                  enum _hy_repo_state state)
 {
     assert(state <= _HY_WRITTEN);
     switch (which) {
     case _HY_REPODATA_FILENAMES:
-	repo->state_filelists = state;
-	return;
+        repo->state_filelists = state;
+        return;
     case _HY_REPODATA_PRESTO:
-	repo->state_presto = state;
-	return;
+        repo->state_presto = state;
+        return;
     case _HY_REPODATA_UPDATEINFO:
-	repo->state_updateinfo = state;
-	return;
+        repo->state_updateinfo = state;
+        return;
     default:
-	assert(0);
+        assert(0);
     }
     return;
 }
@@ -89,14 +89,14 @@ repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which)
 {
     switch (which) {
     case _HY_REPODATA_FILENAMES:
-	return repo->filenames_repodata;
+        return repo->filenames_repodata;
     case _HY_REPODATA_PRESTO:
-	return repo->presto_repodata;
+        return repo->presto_repodata;
     case _HY_REPODATA_UPDATEINFO:
-	return repo->updateinfo_repodata;
+        return repo->updateinfo_repodata;
     default:
-	assert(0);
-	return 0;
+        assert(0);
+        return 0;
     }
 }
 
@@ -105,17 +105,17 @@ repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata)
 {
     switch (which) {
     case _HY_REPODATA_FILENAMES:
-	repo->filenames_repodata = repodata;
-	return;
+        repo->filenames_repodata = repodata;
+        return;
     case _HY_REPODATA_PRESTO:
-	repo->presto_repodata = repodata;
-	return;
+        repo->presto_repodata = repodata;
+        return;
     case _HY_REPODATA_UPDATEINFO:
-	repo->updateinfo_repodata = repodata;
-	return;
+        repo->updateinfo_repodata = repodata;
+        return;
     default:
-	assert(0);
-	return;
+        assert(0);
+        return;
     }
 }
 
@@ -164,31 +164,31 @@ hy_repo_set_string(HyRepo repo, int which, const char *str_val)
 {
     switch (which) {
     case HY_REPO_NAME:
-	solv_free(repo->name);
-	repo->name = solv_strdup(str_val);
-	break;
+        solv_free(repo->name);
+        repo->name = solv_strdup(str_val);
+        break;
     case HY_REPO_MD_FN:
-	solv_free(repo->repomd_fn);
-	repo->repomd_fn = solv_strdup(str_val);
-	break;
+        solv_free(repo->repomd_fn);
+        repo->repomd_fn = solv_strdup(str_val);
+        break;
     case HY_REPO_PRIMARY_FN:
-	solv_free(repo->primary_fn);
-	repo->primary_fn = solv_strdup(str_val);
-	break;
+        solv_free(repo->primary_fn);
+        repo->primary_fn = solv_strdup(str_val);
+        break;
     case HY_REPO_FILELISTS_FN:
-	solv_free(repo->filelists_fn);
-	repo->filelists_fn = solv_strdup(str_val);
-	break;
+        solv_free(repo->filelists_fn);
+        repo->filelists_fn = solv_strdup(str_val);
+        break;
     case HY_REPO_PRESTO_FN:
-	solv_free(repo->presto_fn);
-	repo->presto_fn = solv_strdup(str_val);
-	break;
+        solv_free(repo->presto_fn);
+        repo->presto_fn = solv_strdup(str_val);
+        break;
     case HY_REPO_UPDATEINFO_FN:
-	solv_free(repo->updateinfo_fn);
-	repo->updateinfo_fn = solv_strdup(str_val);
-	break;
+        solv_free(repo->updateinfo_fn);
+        repo->updateinfo_fn = solv_strdup(str_val);
+        break;
     default:
-	assert(0);
+        assert(0);
     }
 }
 
@@ -197,19 +197,19 @@ hy_repo_get_string(HyRepo repo, int which)
 {
     switch(which) {
     case HY_REPO_NAME:
-	return repo->name;
+        return repo->name;
     case HY_REPO_MD_FN:
-	return repo->repomd_fn;
+        return repo->repomd_fn;
     case HY_REPO_PRIMARY_FN:
-	return repo->primary_fn;
+        return repo->primary_fn;
     case HY_REPO_FILELISTS_FN:
-	return repo->filelists_fn;
+        return repo->filelists_fn;
     case HY_REPO_PRESTO_FN:
-	return repo->presto_fn;
+        return repo->presto_fn;
     case HY_REPO_UPDATEINFO_FN:
-	return repo->updateinfo_fn;
+        return repo->updateinfo_fn;
     default:
-	assert(0);
+        assert(0);
     }
     return NULL;
 }
@@ -218,10 +218,10 @@ void
 hy_repo_free(HyRepo repo)
 {
     if (--repo->nrefs > 0)
-	return;
+        return;
 
     if (repo->libsolv_repo)
-	repo->libsolv_repo->appdata = NULL;
+        repo->libsolv_repo->appdata = NULL;
     solv_free(repo->name);
     solv_free(repo->repomd_fn);
     solv_free(repo->primary_fn);

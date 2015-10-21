@@ -41,11 +41,11 @@ static inline int
 is_glob_pattern(char *str)
 {
     if (str == NULL)
-	return 0;
+        return 0;
     while (*str != '\0') {
-	if (*str == '*' || *str == '[' || *str == '?')
-	    return 1;
-	str++;
+        if (*str == '*' || *str == '[' || *str == '?')
+            return 1;
+        str++;
     }
     return 0;
 }
@@ -57,13 +57,13 @@ is_real_name(HyNevra nevra, HySack sack, int flags)
     int glob_version = (flags & HY_GLOB) && is_glob_pattern(nevra->version);
     char *version = nevra->version;
     if (nevra->name == NULL && !glob_version)
-	return 1;
+        return 1;
     if (glob_version)
-	version = NULL;
+        version = NULL;
     if (!is_glob_pattern(nevra->name))
-	flags &= ~HY_GLOB;
+        flags &= ~HY_GLOB;
     if (sack_knows(sack, nevra->name, version, flags) == 0)
-	return 0;
+        return 0;
     return 1;
 }
 
@@ -71,12 +71,12 @@ static inline int
 arch_exist(char *arch, const char *existing_arch, int is_glob)
 {
     if (is_glob) {
-	if (fnmatch(arch, existing_arch, 0) == 0)
-	    return 1;
-	return 0;
+        if (fnmatch(arch, existing_arch, 0) == 0)
+            return 1;
+        return 0;
     }
     if (strcmp(arch, existing_arch) == 0)
-	return 1;
+        return 1;
     return 0;
 }
 
@@ -85,14 +85,14 @@ is_real_arch(HyNevra nevra, HySack sack, int flags)
 {
     int check_glob = (flags & HY_GLOB) && is_glob_pattern(nevra->arch);
     if (nevra->arch == NULL)
-	return 1;
+        return 1;
     if (arch_exist(nevra->arch, "src", check_glob))
-	return 1;
+        return 1;
     const char **existing_arches = hy_sack_list_arches(sack);
     int ret = 0;
     for (int i = 0; existing_arches[i] != NULL; ++i) {
-	if ((ret = arch_exist(nevra->arch, existing_arches[i], check_glob)))
-	    break;
+        if ((ret = arch_exist(nevra->arch, existing_arches[i], check_glob)))
+            break;
     }
     solv_free(existing_arches);
     return ret;
@@ -102,7 +102,7 @@ static inline int
 filter_real(HyNevra nevra, HySack sack, int flags)
 {
     return is_real_name(nevra, sack, flags) &&
-	is_real_arch(nevra, sack, flags);
+        is_real_arch(nevra, sack, flags);
 }
 
 HySubject
@@ -129,15 +129,15 @@ HyForm *
 forms_dup(HyForm *forms)
 {
     if (forms == NULL)
-	return NULL;
+        return NULL;
     HyForm *res = NULL;
     const int BLOCK_SIZE = 6;
     HyForm form;
     int i = 0;
     do {
-	res = solv_extend(res, i, 1, sizeof(HyForm), BLOCK_SIZE);
-	form = forms[i];
-	res[i++] = form;
+        res = solv_extend(res, i, 1, sizeof(HyForm), BLOCK_SIZE);
+        form = forms[i];
+        res[i++] = form;
     } while (form != -1);
     return res;
 }
@@ -153,9 +153,9 @@ possibilities_create(HySubject subject, HyForm *forms,HySack sack, int flags,
     poss->flags = flags;
     poss->type = type;
     if (forms == NULL)
-	poss->current = -1;
+        poss->current = -1;
     else
-	poss->current = 0;
+        poss->current = 0;
     return poss;
 }
 
@@ -168,19 +168,19 @@ hy_subject_reldep_possibilities_real(HySubject subject, HySack sack, int flags)
 int hy_possibilities_next_reldep(HyPossibilities iter, HyReldep *out_reldep)
 {
     if (iter->type != TYPE_RELDEP_NEW)
-	return -1;
+        return -1;
     iter->type = TYPE_RELDEP_END;
     char *name, *evr = NULL;
     int cmp_type = 0;
     if (parse_reldep_str(iter->subject, &name, &evr, &cmp_type) == -1)
-	return -1;
+        return -1;
     if (sack_knows(iter->sack, name, NULL, iter->flags)) {
-	*out_reldep = hy_reldep_create(iter->sack, name, cmp_type, evr);
-	solv_free(name);
-	solv_free(evr);
-	if (*out_reldep == NULL)
-	    return -1;
-	return 0;
+        *out_reldep = hy_reldep_create(iter->sack, name, cmp_type, evr);
+        solv_free(name);
+        solv_free(evr);
+        if (*out_reldep == NULL)
+            return -1;
+        return 0;
     }
     return -1;
 }
@@ -204,19 +204,19 @@ int
 hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra)
 {
     if (iter->type != TYPE_NEVRA || iter->current == -1)
-	return -1;
+        return -1;
     HyForm form = iter->forms[iter->current];
     while (form != -1) {
-	iter->current++;
-	*out_nevra = hy_nevra_create();
-	if (nevra_possibility(iter->subject, form, *out_nevra) == 0) {
-	    if (iter->sack == NULL)
-		return 0;
-	    if (filter_real(*out_nevra, iter->sack, iter->flags))
-		return 0;
-	}
-	form = iter->forms[iter->current];
-	hy_nevra_free(*out_nevra);
+        iter->current++;
+        *out_nevra = hy_nevra_create();
+        if (nevra_possibility(iter->subject, form, *out_nevra) == 0) {
+            if (iter->sack == NULL)
+                return 0;
+            if (filter_real(*out_nevra, iter->sack, iter->flags))
+                return 0;
+        }
+        form = iter->forms[iter->current];
+        hy_nevra_free(*out_nevra);
     }
     return -1;
 }

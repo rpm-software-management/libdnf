@@ -98,16 +98,16 @@ enum _hy_comparison_type_e {
     HY_COMPARISON_FLAG_MASK = HY_ICASE | HY_NOT,
 
     /* part 2: comparison types that mix with each other */
-    HY_EQ	= (1 << 8),
-    HY_LT	= (1 << 9),
-    HY_GT	= (1 << 10),
+    HY_EQ        = (1 << 8),
+    HY_LT        = (1 << 9),
+    HY_GT        = (1 << 10),
 
     /* part 3: comparison types that only make sense for strings */
-    HY_SUBSTR	= (1 << 11),
+    HY_SUBSTR        = (1 << 11),
     HY_GLOB     = (1 << 12),
 
     /* part 4: frequently used combinations */
-    HY_NEQ	= HY_EQ | HY_NOT,
+    HY_NEQ        = HY_EQ | HY_NOT,
 
     /* part 5: additional flags, not necessarily used for queries */
     HY_NAME_ONLY = (1 << 16),

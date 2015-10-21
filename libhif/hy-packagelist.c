@@ -67,7 +67,7 @@ hy_packagelist_get(HyPackageList plist, int index)
 {
     GPtrArray *a = (GPtrArray*)plist;
     if (index < a->len)
-	return a->pdata[index];
+        return a->pdata[index];
     return NULL;
 }
 
@@ -88,8 +88,8 @@ hy_packagelist_has(HyPackageList plist, HyPackage pkg)
 {
     GPtrArray *a = (GPtrArray*)plist;
     for (int i = 0; i < a->len; ++i)
-	if (hy_package_identical(pkg, a->pdata[i]))
-	    return 1;
+        if (hy_package_identical(pkg, a->pdata[i]))
+            return 1;
     return 0;
 }
 

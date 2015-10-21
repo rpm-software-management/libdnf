@@ -51,7 +51,7 @@ static PyObject *
 get_pattern(_SubjectObject *self, void *closure)
 {
     if (self->pattern == NULL)
-	Py_RETURN_NONE;
+        Py_RETURN_NONE;
     return PyUnicode_FromString(self->pattern);
 }
 
@@ -65,7 +65,7 @@ subject_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     _SubjectObject *self = (_SubjectObject*)type->tp_alloc(type, 0);
     if (self) {
-	self->pattern = NULL;
+        self->pattern = NULL;
     }
     return (PyObject*)self;
 }
@@ -83,7 +83,7 @@ subject_init(_SubjectObject *self, PyObject *args, PyObject *kwds)
     PyObject *py_pattern = NULL;
     PyObject *tmp_py_str = NULL;
     if (!PyArg_ParseTuple(args, "O", &py_pattern))
-	return -1;
+        return -1;
     const char * pattern = pycomp_get_string(py_pattern, &tmp_py_str);
     self->pattern = solv_strdup(pattern);
     Py_XDECREF(tmp_py_str);
@@ -124,12 +124,12 @@ fill_form(PyObject *o)
 {
     HyForm *cforms = NULL;
     if (PyList_Check(o))
-	cforms = forms_from_list(o);
+        cforms = forms_from_list(o);
     else if (PyInt_Check(o))
-	cforms = forms_from_int(o);
+        cforms = forms_from_int(o);
     if (cforms == NULL) {
-	PyErr_SetString(PyExc_TypeError, "Malformed subject forms.");
-	return NULL;
+        PyErr_SetString(PyExc_TypeError, "Malformed subject forms.");
+        return NULL;
     }
     return cforms;
 }
@@ -142,16 +142,16 @@ nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
     PyObject *form = NULL;
     char *kwlist[] = { "form", NULL };
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &form)) {
-	return NULL;
+        return NULL;
     }
     HyForm *cforms = NULL;
     if (form != NULL) {
-	cforms = fill_form(form);
-	if (cforms == NULL)
-	    return NULL;
+        cforms = fill_form(form);
+        if (cforms == NULL)
+            return NULL;
     }
     HyPossibilities iter = hy_subject_nevra_possibilities(self->pattern,
-	cforms);
+        cforms);
     solv_free(cforms);
     return possibilitiesToPyObject(iter, NULL);
 }
@@ -167,21 +167,21 @@ nevra_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
     PyObject *form = NULL;
     char *kwlist[] = { "sack", "allow_globs", "icase", "form", NULL };
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|iiO", kwlist,
-	&sack_Type, &sack, &allow_globs, &icase, &form))
-	return NULL;
+        &sack_Type, &sack, &allow_globs, &icase, &form))
+        return NULL;
     csack = sackFromPyObject(sack);
     if (csack == NULL)
-	return NULL;
+        return NULL;
     HyForm *cforms = NULL;
     if (form != NULL) {
-	cforms = fill_form(form);
-	if (cforms == NULL)
-	    return NULL;
+        cforms = fill_form(form);
+        if (cforms == NULL)
+            return NULL;
     }
     if (icase)
-	flags |= HY_ICASE;
+        flags |= HY_ICASE;
     if (allow_globs)
-	flags |= HY_GLOB;
+        flags |= HY_GLOB;
 
     HyPossibilities iter = hy_subject_nevra_possibilities_real(self->pattern,
     cforms, csack, flags);
@@ -198,16 +198,16 @@ reldep_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
     int flags = 0;
     char *kwlist[] = { "sack", "icase", NULL };
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|i", kwlist,
-	&sack_Type, &sack, &icase))
-	return NULL;
+        &sack_Type, &sack, &icase))
+        return NULL;
     csack = sackFromPyObject(sack);
     if (csack == NULL)
-	return NULL;
+        return NULL;
     if (icase)
-	flags |= HY_ICASE;
+        flags |= HY_ICASE;
     
     HyPossibilities iter = hy_subject_reldep_possibilities_real(self->pattern,
-	csack, flags);
+        csack, flags);
     return possibilitiesToPyObject(iter, sack);
 }
 

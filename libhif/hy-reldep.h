@@ -29,7 +29,7 @@ G_BEGIN_DECLS
 #include "hy-types.h"
 
 HyReldep hy_reldep_create(HySack sack, const char *name, int cmp_type,
-			  const char *evr);
+                          const char *evr);
 void hy_reldep_free(HyReldep reldep);
 HyReldep hy_reldep_clone(HyReldep reldep);
 char *hy_reldep_str(HyReldep reldep);

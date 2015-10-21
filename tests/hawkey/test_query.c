@@ -197,19 +197,19 @@ START_TEST(test_query_location)
 {
      HyQuery q = hy_query_create(test_globals.sack);
     fail_unless(hy_query_filter(q, HY_PKG_LOCATION, HY_GT,
-				"tour-4-6.noarch.rpm"));
+                                "tour-4-6.noarch.rpm"));
     fail_if(hy_query_filter(q, HY_PKG_LOCATION, HY_EQ,
-			    "tour-4-6.noarch.rpm"));
+                            "tour-4-6.noarch.rpm"));
     fail_unless(size_and_free(q) == 1);
 
     q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_LOCATION, HY_EQ,
-		    "mystery-devel-19.67-1.noarch.rpm");
+                    "mystery-devel-19.67-1.noarch.rpm");
     fail_unless(size_and_free(q) == 1);
 
     q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_LOCATION, HY_EQ,
-		    "mystery-19.67-1.src.rpm");
+                    "mystery-19.67-1.src.rpm");
     fail_unless(size_and_free(q) == 0);
 }
 END_TEST
@@ -531,8 +531,8 @@ START_TEST(test_upgrades_sanity)
     int i;
 
     FOR_REPOS(i, r)
-	if (!strcmp(r->name, "updates"))
-	    break;
+        if (!strcmp(r->name, "updates"))
+            break;
     fail_unless(r != NULL);
     fail_unless(r->nsolvables == TEST_EXPECT_UPDATES_NSOLVABLES);
 }
@@ -797,7 +797,7 @@ START_TEST(test_filter_sourcerpm)
 
     q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_SOURCERPM, HY_EQ,
-		    "mystery-devel-19.67-1.noarch.rpm");
+                    "mystery-devel-19.67-1.noarch.rpm");
     fail_unless(size_and_free(q) == 0);
 }
 END_TEST
@@ -806,7 +806,7 @@ START_TEST(test_filter_description)
 {
     HyQuery q = hy_query_create(test_globals.sack);
     fail_if(hy_query_filter(q, HY_PKG_DESCRIPTION, HY_SUBSTR,
-			    "Magical development files for mystery."));
+                            "Magical development files for mystery."));
     fail_unless(size_and_free(q) == 1);
 }
 END_TEST
@@ -840,7 +840,7 @@ START_TEST(test_filter_reponames)
     q = hy_query_create(test_globals.sack);
     hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist);
     fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES \
-					+ TEST_EXPECT_UPDATES_NSOLVABLES);
+                                        + TEST_EXPECT_UPDATES_NSOLVABLES);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);

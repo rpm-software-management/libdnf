@@ -44,7 +44,7 @@ START_TEST(nevra1)
     HyNevra nevra = hy_nevra_create();
 
     ck_assert_int_eq(
-	nevra_possibility((char *) inp_fof, HY_FORM_NEVRA, nevra), 0);
+        nevra_possibility((char *) inp_fof, HY_FORM_NEVRA, nevra), 0);
     ck_assert_str_eq(hy_nevra_get_string(nevra, HY_NEVRA_NAME), "four-of-fish");
     ck_assert_int_eq(hy_nevra_get_epoch(nevra), 8);
     ck_assert_str_eq(hy_nevra_get_string(nevra, HY_NEVRA_VERSION), "3.6.9");
@@ -89,7 +89,7 @@ START_TEST(nevra2)
     HyNevra nevra = hy_nevra_create();
 
     ck_assert_int_eq(
-	nevra_possibility((char *) inp_fof_noepoch, HY_FORM_NEVRA, nevra), 0);
+        nevra_possibility((char *) inp_fof_noepoch, HY_FORM_NEVRA, nevra), 0);
     ck_assert_str_eq(nevra->name, "four-of-fish");
     ck_assert_int_eq(nevra->epoch, -1);
     ck_assert_str_eq(nevra->version, "3.6.9");
@@ -105,7 +105,7 @@ START_TEST(nevr)
     HyNevra nevra = hy_nevra_create();
 
     ck_assert_int_eq(
-	nevra_possibility((char *) inp_fof, HY_FORM_NEVR, nevra), 0);
+        nevra_possibility((char *) inp_fof, HY_FORM_NEVR, nevra), 0);
     ck_assert_str_eq(nevra->name, "four-of-fish");
     ck_assert_int_eq(nevra->epoch, 8);
     ck_assert_str_eq(nevra->version, "3.6.9");
@@ -121,7 +121,7 @@ START_TEST(nevr_fail)
     HyNevra nevra = hy_nevra_create();
 
     ck_assert_int_eq(
-	nevra_possibility((char *) "four-of", HY_FORM_NEVR, nevra), -1);
+        nevra_possibility((char *) "four-of", HY_FORM_NEVR, nevra), -1);
 
     hy_nevra_free(nevra);
 }
@@ -132,7 +132,7 @@ START_TEST(nev)
     HyNevra nevra = hy_nevra_create();
 
     ck_assert_int_eq(
-	nevra_possibility((char *) inp_fof_nev, HY_FORM_NEV, nevra), 0);
+        nevra_possibility((char *) inp_fof_nev, HY_FORM_NEV, nevra), 0);
     ck_assert_str_eq(nevra->name, "four-of-fish");
     ck_assert_int_eq(nevra->epoch, 8);
     ck_assert_str_eq(nevra->version, "3.6.9");
@@ -148,7 +148,7 @@ START_TEST(na)
     HyNevra nevra = hy_nevra_create();
 
     ck_assert_int_eq(
-	nevra_possibility((char *) inp_fof_na, HY_FORM_NA, nevra), 0);
+        nevra_possibility((char *) inp_fof_na, HY_FORM_NA, nevra), 0);
     ck_assert_str_eq(nevra->name, "four-of-fish-3.6.9");
     ck_assert_int_eq(nevra->epoch, -1);
     fail_unless(nevra->version == NULL);
@@ -242,7 +242,7 @@ START_TEST(reldep)
     HyReldep reldep = NULL;
     HySubject subject = hy_subject_create("P-lib");
     HyPossibilities iter = hy_subject_reldep_possibilities_real(subject,
-	test_globals.sack, 0);
+        test_globals.sack, 0);
     ck_assert_int_eq(hy_possibilities_next_reldep(iter, &reldep), 0);
     char *reldep_str = hy_reldep_str(reldep);
     ck_assert_str_eq(reldep_str, "P-lib");
@@ -259,7 +259,7 @@ START_TEST(reldep_fail)
     HyReldep reldep;
     HySubject subject = hy_subject_create("Package not exist");
     HyPossibilities iter = hy_subject_reldep_possibilities_real(subject,
-	test_globals.sack, 0);
+        test_globals.sack, 0);
     ck_assert_int_eq(hy_possibilities_next_reldep(iter, &reldep), -1);
     hy_possibilities_free(iter);
     hy_subject_free(subject);
@@ -271,7 +271,7 @@ START_TEST(nevra_real_none)
     HyNevra nevra;
     HySubject subject = hy_subject_create(inp_fof_noepoch);
     HyPossibilities iter = hy_subject_nevra_possibilities_real(subject, NULL,
-	test_globals.sack, 0);
+        test_globals.sack, 0);
     ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), -1);
     hy_possibilities_free(iter);
     hy_subject_free(subject);
@@ -283,7 +283,7 @@ START_TEST(nevra_real)
     HyNevra nevra;
     HySubject subject = hy_subject_create("pilchard-1.2.4-1.x86_64");
     HyPossibilities iter = hy_subject_nevra_possibilities_real(subject, NULL,
-	test_globals.sack, 0);
+        test_globals.sack, 0);
 
     ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
     ck_assert_str_eq(nevra->name, "pilchard");
@@ -312,7 +312,7 @@ START_TEST(nevra_real_dash)
     HyNevra nevra;
     HySubject subject = hy_subject_create("penny-lib");
     HyPossibilities iter = hy_subject_nevra_possibilities_real(subject, NULL,
-	test_globals.sack, 0);
+        test_globals.sack, 0);
     
     ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
     ck_assert_str_eq(nevra->name, "penny-lib");
@@ -332,7 +332,7 @@ START_TEST(glob_arch)
     HyNevra nevra;
     HySubject subject = hy_subject_create("dog-1-2.i?86");
     HyPossibilities iter = hy_subject_nevra_possibilities_real(subject, NULL,
-	test_globals.sack, HY_GLOB);
+        test_globals.sack, HY_GLOB);
     ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
     ck_assert_str_eq(nevra->arch, "i?86");
     hy_nevra_free(nevra);
@@ -350,7 +350,7 @@ START_TEST(glob_arch_fail)
     HyNevra nevra;
     HySubject subject = hy_subject_create("dog-1-2.i*77");
     HyPossibilities iter = hy_subject_nevra_possibilities_real(subject, NULL,
-	test_globals.sack, HY_GLOB);
+        test_globals.sack, HY_GLOB);
     ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
     fail_unless(nevra->arch == NULL);
     hy_nevra_free(nevra);

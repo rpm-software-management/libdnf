@@ -57,7 +57,7 @@ START_TEST(test_checksum)
 {
     /* create a new file, edit it a bit */
     char *new_file = solv_dupjoin(test_globals.tmpdir,
-				  "/test_checksum", NULL);
+                                  "/test_checksum", NULL);
     build_test_file(new_file);
 
     unsigned char cs1[CHKSUM_BYTES];
@@ -100,7 +100,7 @@ END_TEST
 START_TEST(test_checksum_write_read)
 {
     char *new_file = solv_dupjoin(test_globals.tmpdir,
-				  "/test_checksum_write_read", NULL);
+                                  "/test_checksum_write_read", NULL);
     build_test_file(new_file);
 
     unsigned char cs_computed[CHKSUM_BYTES];

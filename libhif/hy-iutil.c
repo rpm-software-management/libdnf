@@ -71,7 +71,7 @@ glob_for_cachedir(char *path)
 {
     int ret = 1;
     if (!g_str_has_suffix(path, "XXXXXX"))
-	return ret;
+        return ret;
 
     wordexp_t word_vector;
     char *p = solv_strdup(path);
@@ -82,20 +82,20 @@ glob_for_cachedir(char *path)
     p[len-6] = '*';
     p[len-5] = '\0';
     if (wordexp(p, &word_vector, 0)) {
-	solv_free(p);
-	return ret;
+        solv_free(p);
+        return ret;
     }
     for (int i = 0; i < word_vector.we_wordc; ++i) {
-	char *entry = word_vector.we_wordv[i];
-	if (stat(entry, &s))
-	    continue;
-	if (S_ISDIR(s.st_mode) &&
-	    s.st_uid == getuid()) {
-	    assert(strlen(path) == strlen(entry));
-	    strcpy(path, entry);
-	    ret = 0;
-	    break;
-	}
+        char *entry = word_vector.we_wordv[i];
+        if (stat(entry, &s))
+            continue;
+        if (S_ISDIR(s.st_mode) &&
+            s.st_uid == getuid()) {
+            assert(strlen(path) == strlen(entry));
+            strcpy(path, entry);
+            ret = 0;
+            break;
+        }
     }
     wordfree(&word_vector);
     solv_free(p);
@@ -120,7 +120,7 @@ checksum_fp(unsigned char *out, FILE *fp)
     rewind(fp);
     solv_chksum_add(h, CHKSUM_IDENT, strlen(CHKSUM_IDENT));
     while ((l = fread(buf, 1, sizeof(buf), fp)) > 0)
-	solv_chksum_add(h, buf, l);
+        solv_chksum_add(h, buf, l);
     rewind(fp);
     solv_chksum_free(h, out);
     return 0;
@@ -131,8 +131,8 @@ int
 checksum_read(unsigned char *csout, FILE *fp)
 {
     if (fseek(fp, -32, SEEK_END) ||
-	fread(csout, CHKSUM_BYTES, 1, fp) != 1)
-	return 1;
+        fread(csout, CHKSUM_BYTES, 1, fp) != 1)
+        return 1;
     rewind(fp);
     return 0;
 }
@@ -145,7 +145,7 @@ checksum_stat(unsigned char *out, FILE *fp)
 
     struct stat stat;
     if (fstat(fileno(fp), &stat))
-	return 1;
+        return 1;
 
     /* based on calc_checksum_stat in libsolv's solv.c */
     void *h = solv_chksum_create(CHKSUM_TYPE);
@@ -162,8 +162,8 @@ checksum_stat(unsigned char *out, FILE *fp)
 int checksum_write(const unsigned char *cs, FILE *fp)
 {
     if (fseek(fp, 0, SEEK_END) ||
-	fwrite(cs, CHKSUM_BYTES, 1, fp) != 1)
-	return 1;
+        fwrite(cs, CHKSUM_BYTES, 1, fp) != 1)
+        return 1;
     return 0;
 }
 
@@ -171,11 +171,11 @@ void
 checksum_dump(const unsigned char *cs)
 {
     for (int i = 0; i < CHKSUM_BYTES; i+=4) {
-	printf("%02x%02x%02x%02x", cs[i], cs[i+1], cs[i+2], cs[i+3]);
-	if (i + 4 >= CHKSUM_BYTES)
-	    printf("\n");
-	else
-	    printf(" : ");
+        printf("%02x%02x%02x%02x", cs[i], cs[i+1], cs[i+2], cs[i+3]);
+        if (i + 4 >= CHKSUM_BYTES)
+            printf("\n");
+        else
+            printf(" : ");
     }
 }
 
@@ -184,15 +184,15 @@ checksum_type2length(int type)
 {
     switch(type) {
     case G_CHECKSUM_MD5:
-	return 16;
+        return 16;
     case G_CHECKSUM_SHA1:
-	return 20;
+        return 20;
     case G_CHECKSUM_SHA256:
-	return 32;
+        return 32;
     case G_CHECKSUM_SHA512:
-	return 64;
+        return 64;
     default:
-	return -1;
+        return -1;
     }
 }
 
@@ -201,16 +201,16 @@ checksumt_l2h(int type)
 {
     switch (type) {
     case REPOKEY_TYPE_MD5:
-	return G_CHECKSUM_MD5;
+        return G_CHECKSUM_MD5;
     case REPOKEY_TYPE_SHA1:
-	return 	G_CHECKSUM_SHA1;
+        return         G_CHECKSUM_SHA1;
     case REPOKEY_TYPE_SHA256:
-	return G_CHECKSUM_SHA256;
+        return G_CHECKSUM_SHA256;
     case REPOKEY_TYPE_SHA512:
-	return G_CHECKSUM_SHA512;
+        return G_CHECKSUM_SHA512;
     default:
-	assert(0);
-	return 0;
+        assert(0);
+        return 0;
     }
 }
 
@@ -226,14 +226,14 @@ abspath(const char *path)
 {
     const int len = strlen(path);
     if (len <= 1)
-	return NULL;
+        return NULL;
 
     if (path[0] == '/')
-	return solv_strdup(path);
+        return solv_strdup(path);
 
     char cwd[PATH_MAX];
     if (!getcwd(cwd, PATH_MAX)) {
-	return NULL;
+        return NULL;
     }
 
     return solv_dupjoin(cwd, "/", path);
@@ -245,9 +245,9 @@ is_readable_rpm(const char *fn)
     int len = strlen(fn);
 
     if (access(fn, R_OK))
-	return 0;
+        return 0;
     if (len <= 4 || strcmp(fn + len - 4, ".rpm"))
-	return 0;
+        return 0;
 
     return 1;
 }
@@ -265,28 +265,28 @@ mkcachedir(char *path)
     int ret = 1;
 
     if (!glob_for_cachedir(path))
-	return 0;
+        return 0;
 
     const int len = strlen(path);
     if (len < 1 || path[0] != '/')
-	return 1; // only absolute pathnames are accepted
+        return 1; // only absolute pathnames are accepted
 
     char *p = solv_strdup(path);
 
     if (p[len-1] == '/')
-	p[len-1] = '\0';
+        p[len-1] = '\0';
 
     if (access(p, X_OK)) {
-	*(strrchr(p, '/')) = '\0';
-	ret = mkcachedir(p);
-	if (g_str_has_suffix(path, "XXXXXX")) {
-	    char *retptr = mkdtemp(path);
-	    if (retptr == NULL)
-		ret |= 1;
-	} else
-	    ret |= mkdir(path, CACHEDIR_PERMISSIONS);
+        *(strrchr(p, '/')) = '\0';
+        ret = mkcachedir(p);
+        if (g_str_has_suffix(path, "XXXXXX")) {
+            char *retptr = mkdtemp(path);
+            if (retptr == NULL)
+                ret |= 1;
+        } else
+            ret |= mkdir(path, CACHEDIR_PERMISSIONS);
     } else {
-	ret = 0;
+        ret = 0;
     }
 
     solv_free(p);
@@ -297,20 +297,20 @@ gboolean
 mv(const char *old, const char *new, GError **error)
 {
     if (rename(old, new)) {
-	g_set_error(error,
-		    HIF_ERROR,
-		    HIF_ERROR_FILE_INVALID,
-		    "Failed renaming %s to %s: %s",
-		    old, new, strerror(errno));
-	return FALSE;
+        g_set_error(error,
+                    HIF_ERROR,
+                    HIF_ERROR_FILE_INVALID,
+                    "Failed renaming %s to %s: %s",
+                    old, new, strerror(errno));
+        return FALSE;
     }
     if (chmod(new, 0666 & ~get_umask())) {
-	g_set_error(error,
-		    HIF_ERROR,
-		    HIF_ERROR_FILE_INVALID,
-		    "ailed setting perms on %s: %s",
-		    new, strerror(errno));
-	return FALSE;
+        g_set_error(error,
+                    HIF_ERROR,
+                    HIF_ERROR_FILE_INVALID,
+                    "ailed setting perms on %s: %s",
+                    new, strerror(errno));
+        return FALSE;
     }
     return TRUE;
 }
@@ -335,19 +335,19 @@ ll_name(int level)
 {
     switch (level) {
     case SOLV_FATAL:
-	return "LFATAL";
+        return "LFATAL";
     case SOLV_ERROR:
-	return "LSERROR";
+        return "LSERROR";
     case SOLV_WARN:
-	return "LSWARN";
+        return "LSWARN";
     case SOLV_DEBUG_RESULT:
-	return "LSRESULT";
+        return "LSRESULT";
     case HY_LL_ERROR:
-	return "ERROR";
+        return "ERROR";
     case HY_LL_INFO:
-	return "INFO";
+        return "INFO";
     default:
-	return "(level?)";
+        return "(level?)";
     }
 }
 
@@ -389,8 +389,8 @@ running_kernel(HySack sack)
     uname(&un);
     char *fn = pool_tmpjoin(pool, "/boot/vmlinuz-", un.release, NULL);
     if (access(fn, F_OK)) {
-	HY_LOG_ERROR("running_kernel(): no matching file: %s.", fn);
-	return -1;
+        HY_LOG_ERROR("running_kernel(): no matching file: %s.", fn);
+        return -1;
     }
 
     Id kernel_id = -1;
@@ -400,14 +400,14 @@ running_kernel(HySack sack)
     hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
     HyPackageSet pset = hy_query_run_set(q);
     if (hy_packageset_count(pset) > 0)
-	kernel_id = packageset_get_pkgid(pset, 0, -1);
+        kernel_id = packageset_get_pkgid(pset, 0, -1);
     hy_packageset_free(pset);
     hy_query_free(q);
 
     if (kernel_id >= 0)
-	HY_LOG_INFO("running_kernel(): %s.", id2nevra(pool, kernel_id));
+        HY_LOG_INFO("running_kernel(): %s.", id2nevra(pool, kernel_id));
     else
-	HY_LOG_INFO("running_kernel(): running kernel not matched to a package.");
+        HY_LOG_INFO("running_kernel(): running kernel not matched to a package.");
     return kernel_id;
 }
 
@@ -416,11 +416,11 @@ cmptype2relflags(int type)
 {
     int flags = 0;
     if (type & HY_EQ)
-	flags |= REL_EQ;
+        flags |= REL_EQ;
     if (type & HY_LT)
-	flags |= REL_LT;
+        flags |= REL_LT;
     if (type & HY_GT)
-	flags |= REL_GT;
+        flags |= REL_GT;
     assert(flags);
     return flags;
 }
@@ -433,8 +433,8 @@ repo_by_name(HySack sack, const char *name)
     int repoid;
 
     FOR_REPOS(repoid, repo) {
-	if (!strcmp(repo->name, name))
-	    return repo;
+        if (!strcmp(repo->name, name))
+            return repo;
     }
     return NULL;
 }
@@ -445,7 +445,7 @@ hrepo_by_name(HySack sack, const char *name)
     Repo *repo = repo_by_name(sack, name);
 
     if (repo)
-	return repo->appdata;
+        return repo->appdata;
     return NULL;
 }
 
@@ -455,12 +455,12 @@ str2archid(Pool *pool, const char *arch)
     // originally from libsolv/examples/solv.c:str2archid()
     Id id;
     if (!*arch)
-	return 0;
+        return 0;
     id = pool_str2id(pool, arch, 0);
     if (id == ARCH_SRC || id == ARCH_NOSRC || id == ARCH_NOARCH)
-	return id;
+        return id;
     if (pool->id2arch && (id > pool->lastarch || !pool->id2arch[id]))
-	return 0;
+        return 0;
     return id;
 }
 
@@ -468,7 +468,7 @@ void
 queue2plist(HySack sack, Queue *q, HyPackageList plist)
 {
     for (int i = 0; i < q->count; ++i)
-	hy_packagelist_push(plist, package_create(sack, q->elements[i]));
+        hy_packagelist_push(plist, package_create(sack, q->elements[i]));
 }
 
 /**
@@ -501,22 +501,22 @@ what_upgrades(Pool *pool, Id pkg)
     assert(pool->installed);
     assert(pool->whatprovides);
     FOR_PROVIDES(p, pp, s->name) {
-	updated = pool_id2solvable(pool, p);
-	if (updated->repo != pool->installed ||
-	    updated->name != s->name)
-	    continue;
-	if (updated->arch != s->arch &&
-	    updated->arch != ARCH_NOARCH &&
-	    s->arch != ARCH_NOARCH)
-	    continue;
-	if (pool_evrcmp(pool, updated->evr, s->evr, EVRCMP_COMPARE) >= 0)
-	    // >= version installed, this pkg can not be used for upgrade
-	    return 0;
-	if (l == 0 ||
-	    pool_evrcmp(pool, updated->evr, l_evr, EVRCMP_COMPARE) > 0) {
-	    l = p;
-	    l_evr = updated->evr;
-	}
+        updated = pool_id2solvable(pool, p);
+        if (updated->repo != pool->installed ||
+            updated->name != s->name)
+            continue;
+        if (updated->arch != s->arch &&
+            updated->arch != ARCH_NOARCH &&
+            s->arch != ARCH_NOARCH)
+            continue;
+        if (pool_evrcmp(pool, updated->evr, s->evr, EVRCMP_COMPARE) >= 0)
+            // >= version installed, this pkg can not be used for upgrade
+            return 0;
+        if (l == 0 ||
+            pool_evrcmp(pool, updated->evr, l_evr, EVRCMP_COMPARE) > 0) {
+            l = p;
+            l_evr = updated->evr;
+        }
     }
     return l;
 }
@@ -544,19 +544,19 @@ what_downgrades(Pool *pool, Id pkg)
     assert(pool->installed);
     assert(pool->whatprovides);
     FOR_PROVIDES(p, pp, s->name) {
-	updated = pool_id2solvable(pool, p);
-	if (updated->repo != pool->installed ||
-	    updated->name != s->name ||
-	    updated->arch != s->arch)
-	    continue;
-	if (pool_evrcmp(pool, updated->evr, s->evr, EVRCMP_COMPARE) <= 0)
-	    // <= version installed, this pkg can not be used for downgrade
-	    return 0;
-	if (l == 0 ||
-	    pool_evrcmp(pool, updated->evr, l_evr, EVRCMP_COMPARE) < 0) {
-	    l = p;
-	    l_evr = updated->evr;
-	}
+        updated = pool_id2solvable(pool, p);
+        if (updated->repo != pool->installed ||
+            updated->name != s->name ||
+            updated->arch != s->arch)
+            continue;
+        if (pool_evrcmp(pool, updated->evr, s->evr, EVRCMP_COMPARE) <= 0)
+            // <= version installed, this pkg can not be used for downgrade
+            return 0;
+        if (l == 0 ||
+            pool_evrcmp(pool, updated->evr, l_evr, EVRCMP_COMPARE) < 0) {
+            l = p;
+            l_evr = updated->evr;
+        }
     }
     return l;
 }
@@ -569,10 +569,10 @@ pool_get_epoch(Pool *pool, const char *evr)
 
     pool_split_evr(pool, evr, &e, &v, &r);
     if (e) {
-	long int converted = strtol(e, &endptr, 10);
-	assert(converted > 0);
-	assert(*endptr == '\0');
-	epoch = converted;
+        long int converted = strtol(e, &endptr, 10);
+        assert(converted > 0);
+        assert(*endptr == '\0');
+        epoch = converted;
     }
 
     return epoch;
@@ -588,31 +588,31 @@ pool_get_epoch(Pool *pool, const char *evr)
  */
 void
 pool_split_evr(Pool *pool, const char *evr_c, char **epoch, char **version,
-		   char **release)
+                   char **release)
 {
     char *evr = pool_tmpdup(pool, evr_c);
     char *e, *v, *r;
 
     for (e = evr + 1; *e != ':' && *e != '-' && *e != '\0'; ++e)
-	;
+        ;
 
     if (*e == '-') {
-	*e = '\0';
-	v = evr;
-	r = e + 1;
-	e = NULL;
+        *e = '\0';
+        v = evr;
+        r = e + 1;
+        e = NULL;
     } else if (*e == '\0') {
-	v = evr;
-	e = NULL;
-	r = NULL;
+        v = evr;
+        e = NULL;
+        r = NULL;
     } else { /* *e == ':' */
-	*e = '\0';
-	v = e + 1;
-	e = evr;
-	for (r = v + 1; *r != '-'; ++r)
-	    assert(*r);
-	*r = '\0';
-	r++;
+        *e = '\0';
+        v = e + 1;
+        e = evr;
+        for (r = v + 1; *r != '-'; ++r)
+            assert(*r);
+        *r = '\0';
+        r++;
     }
     *epoch = e;
     *version = v;
@@ -623,8 +623,8 @@ int
 dump_jobqueue(Pool *pool, Queue *job)
 {
     for (int i = 0; i < job->count; i+=2)
-	    printf("\t%s\n", pool_job2str(pool, job->elements[i],
-					  job->elements[i+1], 0));
+            printf("\t%s\n", pool_job2str(pool, job->elements[i],
+                                          job->elements[i+1], 0));
     return job->count;
 }
 
@@ -633,7 +633,7 @@ dump_nullt_array(const char **a)
 {
     const char **strp = a;
     while (*strp)
-	printf("%s\n", *strp++);
+        printf("%s\n", *strp++);
     return strp - a;
 }
 
@@ -641,7 +641,7 @@ int
 dump_solvables_queue(Pool *pool, Queue *q)
 {
     for (int i = 0; i < q->count; ++i)
-	printf("%s\n", pool_solvid2str(pool, q->elements[i]));
+        printf("%s\n", pool_solvid2str(pool, q->elements[i]));
     return q->count;
 }
 
@@ -651,10 +651,10 @@ dump_map(Pool *pool, Map *m)
     unsigned c = 0;
     printf("(size: %d) ", m->size);
     for (Id id = 0; id < m->size << 3; ++id)
-	if (MAPTST(m, id)) {
-	    c++;
-	    printf("%d:", id);
-	}
+        if (MAPTST(m, id)) {
+            c++;
+            printf("%d:", id);
+        }
     printf("\n");
     return c;
 }
@@ -672,7 +672,7 @@ copy_str_from_subexpr(char** target, const char* source,
 {
     int subexpr_len = matches[i].rm_eo - matches[i].rm_so;
     if (subexpr_len == 0)
-	return -1;
+        return -1;
     *target = solv_malloc(sizeof(char*) * (subexpr_len + 1));
     strncpy(*target, &(source[matches[i].rm_so]), subexpr_len);
     (*target)[subexpr_len] = '\0';
@@ -686,29 +686,29 @@ get_cmp_flags(int *cmp_type, const char* source,
     int subexpr_len = matches[i].rm_eo - matches[i].rm_so;
     const char *match_start = &(source[matches[i].rm_so]);
     if (subexpr_len == 2) {
-	if (strncmp(match_start, "!=", 2) == 0)
-	    *cmp_type |= HY_NEQ;
-	else if (strncmp(match_start, "<=", 2) == 0) {
-	    *cmp_type |= HY_LT;
-	    *cmp_type |= HY_EQ;
-	}
-	else if (strncmp(match_start, ">=", 2) == 0) {
-	    *cmp_type |= HY_GT;
-	    *cmp_type |= HY_EQ;
-	}
-	else
-	    return -1;
+        if (strncmp(match_start, "!=", 2) == 0)
+            *cmp_type |= HY_NEQ;
+        else if (strncmp(match_start, "<=", 2) == 0) {
+            *cmp_type |= HY_LT;
+            *cmp_type |= HY_EQ;
+        }
+        else if (strncmp(match_start, ">=", 2) == 0) {
+            *cmp_type |= HY_GT;
+            *cmp_type |= HY_EQ;
+        }
+        else
+            return -1;
     } else if (subexpr_len == 1) {
-	if (*match_start == '<')
-	    *cmp_type |= HY_LT;
-	else if (*match_start == '>')
-	    *cmp_type |= HY_GT;
-	else if (*match_start == '=')
-	    *cmp_type |= HY_EQ;
-	else
-	    return -1;
+        if (*match_start == '<')
+            *cmp_type |= HY_LT;
+        else if (*match_start == '>')
+            *cmp_type |= HY_GT;
+        else if (*match_start == '=')
+            *cmp_type |= HY_EQ;
+        else
+            return -1;
     } else
-	return -1;
+        return -1;
     return 0;
 }
 
@@ -731,19 +731,19 @@ parse_reldep_str(const char *reldep_str, char **name, char **evr,
     regcomp(&reg, regex, REG_EXTENDED);
 
     if(regexec(&reg, reldep_str, 6, matches, 0) == 0) {
-	if (copy_str_from_subexpr(name, reldep_str, matches, 1) == -1)
-	    ret = -1;
-	// without comparator and evr
-	else if ((matches[2].rm_eo - matches[2].rm_so) == 0 &&
-	    (matches[3].rm_eo - matches[3].rm_so) == 0)
-	    ret = 0;
-	else if (get_cmp_flags(cmp_type, reldep_str, matches, 2) == -1 ||
-	    copy_str_from_subexpr(evr, reldep_str, matches, 3) == -1) {
-	    solv_free(*name);
-	    ret = -1;
-	}
+        if (copy_str_from_subexpr(name, reldep_str, matches, 1) == -1)
+            ret = -1;
+        // without comparator and evr
+        else if ((matches[2].rm_eo - matches[2].rm_so) == 0 &&
+            (matches[3].rm_eo - matches[3].rm_so) == 0)
+            ret = 0;
+        else if (get_cmp_flags(cmp_type, reldep_str, matches, 2) == -1 ||
+            copy_str_from_subexpr(evr, reldep_str, matches, 3) == -1) {
+            solv_free(*name);
+            ret = -1;
+        }
     } else
-	ret = -1;
+        ret = -1;
 
     regfree(&reg);
     return ret;
@@ -755,7 +755,7 @@ reldep_from_str(HySack sack, const char *reldep_str)
     char *name, *evr = NULL;
     int cmp_type = 0;
     if (parse_reldep_str(reldep_str, &name, &evr, &cmp_type) == -1)
-	return NULL;
+        return NULL;
     HyReldep reldep = hy_reldep_create(sack, name, cmp_type, evr);
     solv_free(name);
     solv_free(evr);

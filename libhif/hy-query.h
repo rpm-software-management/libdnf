@@ -29,7 +29,7 @@ G_BEGIN_DECLS
 #include "hy-types.h"
 
 enum _hy_query_flags {
-    HY_IGNORE_EXCLUDES	= 1 << 0
+    HY_IGNORE_EXCLUDES        = 1 << 0
 };
 
 void hy_query_apply(HyQuery q);
@@ -41,21 +41,21 @@ HyQuery hy_query_clone(HyQuery q);
 int hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match);
 int hy_query_filter_empty(HyQuery q);
 int hy_query_filter_in(HyQuery q, int keyname, int cmp_type,
-			const char **matches);
+                        const char **matches);
 int hy_query_filter_num(HyQuery q, int keyname, int cmp_type,
-			int match);
+                        int match);
 int hy_query_filter_num_in(HyQuery q, int keyname, int cmp_type, int nmatches,
-			   const int *matches);
+                           const int *matches);
 int hy_query_filter_package_in(HyQuery q, int keyname, int cmp_type,
-			       const HyPackageSet pset);
+                               const HyPackageSet pset);
 int hy_query_filter_reldep(HyQuery q, int keyname, const HyReldep reldep);
 int hy_query_filter_reldep_in(HyQuery q, int keyname,
-			      const HyReldepList reldeplist);
+                              const HyReldepList reldeplist);
 int hy_query_filter_provides(HyQuery q, int cmp_type, const char *name,
-			     const char *evr);
+                             const char *evr);
 int hy_query_filter_provides_in(HyQuery q, char **reldep_strs);
 int hy_query_filter_requires(HyQuery q, int cmp_type, const char *name,
-			     const char *evr);
+                             const char *evr);
 
 /**
  * Filter packages that are installed and have higher version than other not

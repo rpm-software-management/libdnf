@@ -42,11 +42,11 @@ possibilitiesToPyObject(HyPossibilities possibilities, PyObject* sack)
 
     p = PyObject_New(_PossibilitiesObject, &possibilities_Type);
     if (!p)
-	return NULL;
+        return NULL;
 
     if (!PyObject_Init((PyObject *)p, &possibilities_Type)) {
-	Py_DECREF(p);
-	return NULL;
+        Py_DECREF(p);
+        return NULL;
     }
     p->possibilities = possibilities;
     p->sack = sack;
@@ -72,13 +72,13 @@ static PyObject* possibilities_next(_PossibilitiesObject *self)
 {
     HyPossibilities iter = self->possibilities;
     if (iter->type == TYPE_NEVRA) {
-	HyNevra nevra;
-	if (hy_possibilities_next_nevra(iter, &nevra) == 0)
-	    return nevraToPyObject(nevra);
+        HyNevra nevra;
+        if (hy_possibilities_next_nevra(iter, &nevra) == 0)
+            return nevraToPyObject(nevra);
     } else {
-	HyReldep reldep;
-	if (hy_possibilities_next_reldep(iter, &reldep) == 0)
-	    return reldepToPyObject(reldep);
+        HyReldep reldep;
+        if (hy_possibilities_next_reldep(iter, &reldep) == 0)
+            return reldepToPyObject(reldep);
     }
     PyErr_SetNone(PyExc_StopIteration);
     return NULL;

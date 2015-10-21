@@ -43,8 +43,8 @@ typedef struct {
 HyRepo repoFromPyObject(PyObject *o)
 {
     if (!repoObject_Check(o)) {
-	PyErr_SetString(PyExc_TypeError, "Expected a Repo object.");
-	return NULL;
+        PyErr_SetString(PyExc_TypeError, "Expected a Repo object.");
+        return NULL;
     }
     return ((_RepoObject *)o)->repo;
 }
@@ -53,7 +53,7 @@ PyObject *repoToPyObject(HyRepo repo)
 {
     _RepoObject *self = (_RepoObject *)repo_Type.tp_alloc(&repo_Type, 0);
     if (self)
-	self->repo = repo;
+        self->repo = repo;
     return (PyObject *)self;
 }
 
@@ -62,7 +62,7 @@ repo_converter(PyObject *o, HyRepo *repo_ptr)
 {
     HyRepo repo = repoFromPyObject(o);
     if (repo == NULL)
-	return 0;
+        return 0;
     *repo_ptr = repo;
     return 1;
 }
@@ -74,11 +74,11 @@ repo_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     _RepoObject *self = (_RepoObject *)type->tp_alloc(type, 0);
     if (self) {
-	self->repo = hy_repo_create("(default)");
-	if (self->repo == NULL) {
-	    Py_DECREF(self);
-	    return NULL;
-	}
+        self->repo = hy_repo_create("(default)");
+        if (self->repo == NULL) {
+            Py_DECREF(self);
+            return NULL;
+        }
     }
     return (PyObject *) self;
 }
@@ -88,7 +88,7 @@ repo_init(_RepoObject *self, PyObject *args, PyObject *kwds)
 {
     const char *name;
     if (!PyArg_ParseTuple(args, "s", &name))
-	return -1;
+        return -1;
     hy_repo_set_string(self->repo, HY_REPO_NAME, name);
     return 0;
 }
@@ -115,9 +115,9 @@ set_int(_RepoObject *self, PyObject *value, void *closure)
     IntGetSetter *functions = (IntGetSetter*)closure;
     long num = PyLong_AsLong(value);
     if (PyErr_Occurred())
-    	return -1;
+            return -1;
     if (num > INT_MAX || num < INT_MIN) {
-	PyErr_SetString(PyExc_ValueError, "Value in the integer range expected.");
+        PyErr_SetString(PyExc_ValueError, "Value in the integer range expected.");
         return -1;
     }
     functions->setter(self->repo, num);
@@ -133,9 +133,9 @@ get_str(_RepoObject *self, void *closure)
 
     str = hy_repo_get_string(self->repo, str_key);
     if (str == NULL) {
-	ret = PyString_FromString("");
+        ret = PyString_FromString("");
     } else {
-	ret = PyString_FromString(str);
+        ret = PyString_FromString(str);
     }
     return ret; // NULL if PyString_FromString failed
 }
@@ -160,12 +160,12 @@ set_str(_RepoObject *self, PyObject *value, void *closure)
 static PyGetSetDef repo_getsetters[] = {
     {"cost", (getter)get_int, (setter)set_int, "repository cost",
      (void *)&(IntGetSetter){hy_repo_get_cost,
-			     hy_repo_set_cost}},
+                             hy_repo_set_cost}},
     {"name", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_NAME},
     {"priority", (getter)get_int, (setter)set_int, "repository priority",
      (void *)&(IntGetSetter){hy_repo_get_priority,
-			     hy_repo_set_priority}},
+                             hy_repo_set_priority}},
     {"repomd_fn", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_MD_FN},
     {"primary_fn", (getter)get_str, (setter)set_str, NULL,
@@ -176,48 +176,48 @@ static PyGetSetDef repo_getsetters[] = {
      (void *)HY_REPO_PRESTO_FN},
     {"updateinfo_fn", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_UPDATEINFO_FN},
-    {NULL}			/* sentinel */
+    {NULL}                        /* sentinel */
 };
 
 PyTypeObject repo_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "_hawkey.Repo",		/*tp_name*/
-    sizeof(_RepoObject),	/*tp_basicsize*/
-    0,				/*tp_itemsize*/
+    "_hawkey.Repo",                /*tp_name*/
+    sizeof(_RepoObject),        /*tp_basicsize*/
+    0,                                /*tp_itemsize*/
     (destructor) repo_dealloc,  /*tp_dealloc*/
-    0,				/*tp_print*/
-    0,				/*tp_getattr*/
-    0,				/*tp_setattr*/
-    0,				/*tp_compare*/
-    0,				/*tp_repr*/
-    0,				/*tp_as_number*/
-    0,				/*tp_as_sequence*/
-    0,				/*tp_as_mapping*/
-    0,				/*tp_hash */
-    0,				/*tp_call*/
-    0,				/*tp_str*/
-    0,				/*tp_getattro*/
-    0,				/*tp_setattro*/
-    0,				/*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,		/*tp_flags*/
-    "Repo object",		/* tp_doc */
-    0,				/* tp_traverse */
-    0,				/* tp_clear */
-    0,				/* tp_richcompare */
-    0,				/* tp_weaklistoffset */
-    PyObject_SelfIter,		/* tp_iter */
-    0,                         	/* tp_iternext */
-    0,				/* tp_methods */
-    0,				/* tp_members */
-    repo_getsetters,		/* tp_getset */
-    0,				/* tp_base */
-    0,				/* tp_dict */
-    0,				/* tp_descr_get */
-    0,				/* tp_descr_set */
-    0,				/* tp_dictoffset */
-    (initproc)repo_init,	/* tp_init */
-    0,				/* tp_alloc */
-    repo_new,			/* tp_new */
-    0,				/* tp_free */
-    0,				/* tp_is_gc */
+    0,                                /*tp_print*/
+    0,                                /*tp_getattr*/
+    0,                                /*tp_setattr*/
+    0,                                /*tp_compare*/
+    0,                                /*tp_repr*/
+    0,                                /*tp_as_number*/
+    0,                                /*tp_as_sequence*/
+    0,                                /*tp_as_mapping*/
+    0,                                /*tp_hash */
+    0,                                /*tp_call*/
+    0,                                /*tp_str*/
+    0,                                /*tp_getattro*/
+    0,                                /*tp_setattro*/
+    0,                                /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,                /*tp_flags*/
+    "Repo object",                /* tp_doc */
+    0,                                /* tp_traverse */
+    0,                                /* tp_clear */
+    0,                                /* tp_richcompare */
+    0,                                /* tp_weaklistoffset */
+    PyObject_SelfIter,                /* tp_iter */
+    0,                                 /* tp_iternext */
+    0,                                /* tp_methods */
+    0,                                /* tp_members */
+    repo_getsetters,                /* tp_getset */
+    0,                                /* tp_base */
+    0,                                /* tp_dict */
+    0,                                /* tp_descr_get */
+    0,                                /* tp_descr_set */
+    0,                                /* tp_dictoffset */
+    (initproc)repo_init,        /* tp_init */
+    0,                                /* tp_alloc */
+    repo_new,                        /* tp_new */
+    0,                                /* tp_free */
+    0,                                /* tp_is_gc */
 };

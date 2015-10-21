@@ -67,7 +67,7 @@ advisoryreflist_create()
     HyAdvisoryRefList reflist = solv_calloc(1, sizeof(*reflist));
     reflist->nrefs = 0;
     reflist->refs = solv_extend(
-	0, reflist->nrefs, 0, sizeof(HyAdvisoryRef), REFERENCE_BLOCK);
+        0, reflist->nrefs, 0, sizeof(HyAdvisoryRef), REFERENCE_BLOCK);
     return reflist;
 }
 
@@ -75,7 +75,7 @@ void
 advisoryreflist_add(HyAdvisoryRefList reflist, HyAdvisoryRef advisoryref)
 {
     reflist->refs = solv_extend(
-	reflist->refs, reflist->nrefs, 1, sizeof(advisoryref), REFERENCE_BLOCK);
+        reflist->refs, reflist->nrefs, 1, sizeof(advisoryref), REFERENCE_BLOCK);
     reflist->refs[reflist->nrefs++] = advisoryref_clone(advisoryref);
 }
 
@@ -95,11 +95,11 @@ advisoryref_get_str(HyAdvisoryRef advisoryref, Id keyname)
 
     dataiterator_init(&di, advisoryref->pool, 0, advisoryref->a_id, UPDATE_REFERENCE, 0, 0);
     while (dataiterator_step(&di)) {
-	dataiterator_setpos(&di);
-	if (count++ == advisoryref->index) {
-	    str = pool_lookup_str(advisoryref->pool, SOLVID_POS, keyname);
-	    break;
-	}
+        dataiterator_setpos(&di);
+        if (count++ == advisoryref->index) {
+            str = pool_lookup_str(advisoryref->pool, SOLVID_POS, keyname);
+            break;
+        }
     }
     dataiterator_free(&di);
 
@@ -113,13 +113,13 @@ hy_advisoryref_get_type(HyAdvisoryRef advisoryref)
     type = advisoryref_get_str(advisoryref, UPDATE_REFERENCE_TYPE);
 
     if (type == NULL)
-	return HY_REFERENCE_UNKNOWN;
+        return HY_REFERENCE_UNKNOWN;
     if (!strcmp (type, "bugzilla"))
-	return HY_REFERENCE_BUGZILLA;
+        return HY_REFERENCE_BUGZILLA;
     if (!strcmp (type, "cve"))
-	return HY_REFERENCE_CVE;
+        return HY_REFERENCE_CVE;
     if (!strcmp (type, "vendor"))
-	return HY_REFERENCE_VENDOR;
+        return HY_REFERENCE_VENDOR;
     return HY_REFERENCE_UNKNOWN;
 }
 
@@ -145,7 +145,7 @@ void
 hy_advisoryreflist_free(HyAdvisoryRefList reflist)
 {
     for(int i = 0; i < hy_advisoryreflist_count(reflist); i++) {
-	hy_advisoryref_free(reflist->refs[i]);
+        hy_advisoryref_free(reflist->refs[i]);
     }
     solv_free(reflist->refs);
     solv_free(reflist);

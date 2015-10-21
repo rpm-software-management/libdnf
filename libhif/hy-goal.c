@@ -71,7 +71,7 @@ erase_flags2libsolv(int flags)
 {
     int ret = 0;
     if (flags & HY_CLEAN_DEPS)
-	ret |= SOLVER_CLEANDEPS;
+        ret |= SOLVER_CLEANDEPS;
     return ret;
 }
 
@@ -83,9 +83,9 @@ same_name_subqueue(Pool *pool, Queue *in, Queue *out)
     queue_empty(out);
     queue_push(out, el);
     while (in->count &&
-	   pool_id2solvable(pool, in->elements[in->count - 1])->name == name)
-	// reverses the order so packages are sorted by descending version
-	queue_push(out, queue_pop(in));
+           pool_id2solvable(pool, in->elements[in->count - 1])->name == name)
+        // reverses the order so packages are sorted by descending version
+        queue_push(out, queue_pop(in));
 }
 
 static int
@@ -98,12 +98,12 @@ can_depend_on(Pool *pool, Solvable *sa, Id b)
     queue_init(&requires);
     solvable_lookup_idarray(sa, SOLVABLE_REQUIRES, &requires);
     for (int i = 0; i < requires.count; ++i) {
-	Id req_dep = requires.elements[i];
-	Id p, pp;
+        Id req_dep = requires.elements[i];
+        Id p, pp;
 
-	FOR_PROVIDES(p, pp, req_dep)
-	    if (p == b)
-		goto done;
+        FOR_PROVIDES(p, pp, req_dep)
+            if (p == b)
+                goto done;
     }
 
     ret = 0;
@@ -126,14 +126,14 @@ sort_packages(const void *ap, const void *bp, void *s_cb)
        not matter as long as it's consistent. */
     int name_diff = sa->name - sb->name;
     if (name_diff)
-	return name_diff;
+        return name_diff;
 
     /* same name, if one is/depends on the running kernel put it last */
     if (kernel >= 0) {
-	if (a == kernel || can_depend_on(pool, sa, kernel))
-	    return 1;
-	if (b == kernel || can_depend_on(pool, sb, kernel))
-	    return -1;
+        if (a == kernel || can_depend_on(pool, sa, kernel))
+            return 1;
+        if (b == kernel || can_depend_on(pool, sb, kernel))
+            return -1;
     }
 
     return pool_evrcmp(pool, sa->evr, sb->evr, EVRCMP_COMPARE);
@@ -144,44 +144,44 @@ limit_installonly_packages(HyGoal goal, Solver *solv, Queue *job)
 {
     HySack sack = goal->sack;
     if (!sack->installonly_limit)
-	return 0;
+        return 0;
 
     Queue *onlies = &sack->installonly;
     Pool *pool = sack_pool(sack);
     int reresolve = 0;
 
     for (int i = 0; i < onlies->count; ++i) {
-	Id p, pp;
-	Queue q;
-	queue_init(&q);
+        Id p, pp;
+        Queue q;
+        queue_init(&q);
 
-	FOR_PKG_PROVIDES(p, pp, onlies->elements[i])
-	    if (solver_get_decisionlevel(solv, p) > 0)
-		queue_push(&q, p);
-	if (q.count <= sack->installonly_limit) {
-	    queue_free(&q);
-	    continue;
-	}
+        FOR_PKG_PROVIDES(p, pp, onlies->elements[i])
+            if (solver_get_decisionlevel(solv, p) > 0)
+                queue_push(&q, p);
+        if (q.count <= sack->installonly_limit) {
+            queue_free(&q);
+            continue;
+        }
 
-	struct InstallonliesSortCallback s_cb = {pool, sack_running_kernel(sack)};
-	qsort_r(q.elements, q.count, sizeof(q.elements[0]), sort_packages, &s_cb);
-	Queue same_names;
-	queue_init(&same_names);
-	while (q.count > 0) {
-	    same_name_subqueue(pool, &q, &same_names);
-	    if (same_names.count <= sack->installonly_limit)
-		continue;
-	    reresolve = 1;
-	    for (int j = 0; j < same_names.count; ++j) {
-		Id id  = same_names.elements[j];
-		Id action = SOLVER_ERASE;
-		if (j < sack->installonly_limit)
-		    action = SOLVER_INSTALL;
-		queue_push2(job, action | SOLVER_SOLVABLE, id);
-	    }
-	}
-	queue_free(&same_names);
-	queue_free(&q);
+        struct InstallonliesSortCallback s_cb = {pool, sack_running_kernel(sack)};
+        qsort_r(q.elements, q.count, sizeof(q.elements[0]), sort_packages, &s_cb);
+        Queue same_names;
+        queue_init(&same_names);
+        while (q.count > 0) {
+            same_name_subqueue(pool, &q, &same_names);
+            if (same_names.count <= sack->installonly_limit)
+                continue;
+            reresolve = 1;
+            for (int j = 0; j < same_names.count; ++j) {
+                Id id  = same_names.elements[j];
+                Id action = SOLVER_ERASE;
+                if (j < sack->installonly_limit)
+                    action = SOLVER_INSTALL;
+                queue_push2(job, action | SOLVER_SOLVABLE, id);
+            }
+        }
+        queue_free(&same_names);
+        queue_free(&q);
     }
     return reresolve;
 }
@@ -208,11 +208,11 @@ init_solver(HyGoal goal, int flags)
     Solver *solv = solver_create(pool);
 
     if (goal->solv)
-	solver_free(goal->solv);
+        solver_free(goal->solv);
     goal->solv = solv;
 
     if (flags & HY_ALLOW_UNINSTALL)
-	solver_set_flag(solv, SOLVER_FLAG_ALLOW_UNINSTALL, 1);
+        solver_set_flag(solv, SOLVER_FLAG_ALLOW_UNINSTALL, 1);
     /* no vendor locking */
     solver_set_flag(solv, SOLVER_FLAG_ALLOW_VENDORCHANGE, 1);
     /* don't erase packages that are no longer in repo during distupgrade */
@@ -238,30 +238,30 @@ solve(HyGoal goal, Queue *job, int flags, hy_solution_callback user_cb,
     repo_internalize_all_trigger(sack_pool(sack));
     sack_make_provides_ready(sack);
     if (goal->trans) {
-	transaction_free(goal->trans);
-	goal->trans = NULL;
+        transaction_free(goal->trans);
+        goal->trans = NULL;
     }
 
     Solver *solv = init_solver(goal, flags);
     if (user_cb) {
-	cb_tuple = (struct _SolutionCallback){goal, user_cb, user_cb_data};
-	solv->solution_callback = internal_solver_callback;
-	solv->solution_callback_data = &cb_tuple;
+        cb_tuple = (struct _SolutionCallback){goal, user_cb, user_cb_data};
+        solv->solution_callback = internal_solver_callback;
+        solv->solution_callback_data = &cb_tuple;
     }
 
     if (HY_IGNORE_WEAK_DEPS & flags)
         solver_set_flag(solv, SOLVER_FLAG_IGNORE_RECOMMENDED, 1);
 
     if (solver_solve(solv, job))
-	return 1;
+        return 1;
     // either allow solutions callback or installonlies, both at the same time
     // are not supported
     if (!user_cb && limit_installonly_packages(goal, solv, job)) {
-	// allow erasing non-installonly packages that depend on a kernel about
-	// to be erased
-	solver_set_flag(solv, SOLVER_FLAG_ALLOW_UNINSTALL, 1);
-	if (solver_solve(solv, job))
-	    return 1;
+        // allow erasing non-installonly packages that depend on a kernel about
+        // to be erased
+        solver_set_flag(solv, SOLVER_FLAG_ALLOW_UNINSTALL, 1);
+        if (solver_solve(solv, job))
+            return 1;
     }
     goal->trans = solver_create_transaction(solv);
     return 0;
@@ -277,13 +277,13 @@ construct_job(HyGoal goal, int flags)
 
     /* apply forcebest */
     if (flags & HY_FORCE_BEST)
-	for (int i = 0; i < job->count; i += 2)
-	    job->elements[i] |= SOLVER_FORCEBEST;
+        for (int i = 0; i < job->count; i += 2)
+            job->elements[i] |= SOLVER_FORCEBEST;
 
     /* turn off implicit obsoletes for installonly packages */
     for (int i = 0; i < sack->installonly.count; i++)
-	queue_push2(job, SOLVER_MULTIVERSION|SOLVER_SOLVABLE_PROVIDES,
-		    sack->installonly.elements[i]);
+        queue_push2(job, SOLVER_MULTIVERSION|SOLVER_SOLVABLE_PROVIDES,
+                    sack->installonly.elements[i]);
 
     if (flags & HY_VERIFY)
         queue_push2(job, SOLVER_VERIFY|SOLVER_SOLVABLE_ALL, 0);
@@ -323,25 +323,25 @@ list_results(HyGoal goal, Id type_filter1, Id type_filter2, GError **error)
     queue_init(&transpkgs);
     plist = hy_packagelist_create();
     const int common_mode = SOLVER_TRANSACTION_SHOW_OBSOLETES |
-	SOLVER_TRANSACTION_CHANGE_IS_REINSTALL;
+        SOLVER_TRANSACTION_CHANGE_IS_REINSTALL;
 
     for (int i = 0; i < trans->steps.count; ++i) {
-	Id p = trans->steps.elements[i];
-	Id type;
+        Id p = trans->steps.elements[i];
+        Id type;
 
-	switch (type_filter1) {
-	case SOLVER_TRANSACTION_OBSOLETED:
-	    type =  transaction_type(trans, p, common_mode);
-	    break;
-	default:
-	    type  = transaction_type(trans, p, common_mode |
-				     SOLVER_TRANSACTION_SHOW_ACTIVE|
-				     SOLVER_TRANSACTION_SHOW_ALL);
-	    break;
-	}
+        switch (type_filter1) {
+        case SOLVER_TRANSACTION_OBSOLETED:
+            type =  transaction_type(trans, p, common_mode);
+            break;
+        default:
+            type  = transaction_type(trans, p, common_mode |
+                                     SOLVER_TRANSACTION_SHOW_ACTIVE|
+                                     SOLVER_TRANSACTION_SHOW_ALL);
+            break;
+        }
 
-	if (type == type_filter1 || (type_filter2 && type == type_filter2))
-	    hy_packagelist_push(plist, package_create(goal->sack, p));
+        if (type == type_filter1 || (type_filter2 && type == type_filter2))
+            hy_packagelist_push(plist, package_create(goal->sack, p));
     }
     return plist;
 }
@@ -352,8 +352,8 @@ static int
 job_has(Queue *job, Id what, Id id)
 {
     for (int i = 0; i < job->count; i += 2)
-	if (job->elements[i] == what && job->elements[i + 1] == id)
-	    return 1;
+        if (job->elements[i] == what && job->elements[i + 1] == id)
+            return 1;
     return 0;
 }
 
@@ -361,7 +361,7 @@ static int
 filter_arch2job(HySack sack, const struct _Filter *f, Queue *job)
 {
     if (f == NULL)
-	return 0;
+        return 0;
 
     assert(f->cmp_type == HY_EQ);
     assert(f->nmatches == 1);
@@ -370,14 +370,14 @@ filter_arch2job(HySack sack, const struct _Filter *f, Queue *job)
     Id archid = str2archid(pool, arch);
 
     if (archid == 0)
-	return HIF_ERROR_INVALID_ARCHITECTURE;
+        return HIF_ERROR_INVALID_ARCHITECTURE;
     for (int i = 0; i < job->count; i += 2) {
-	Id dep;
-	assert((job->elements[i] & SOLVER_SELECTMASK) == SOLVER_SOLVABLE_NAME);
-	dep = pool_rel2id(pool, job->elements[i + 1],
-			  archid, REL_ARCH, 1);
-	job->elements[i] |= SOLVER_SETARCH;
-	job->elements[i + 1] = dep;
+        Id dep;
+        assert((job->elements[i] & SOLVER_SELECTMASK) == SOLVER_SOLVABLE_NAME);
+        dep = pool_rel2id(pool, job->elements[i + 1],
+                          archid, REL_ARCH, 1);
+        job->elements[i] |= SOLVER_SETARCH;
+        job->elements[i + 1] = dep;
     }
     return 0;
 }
@@ -386,7 +386,7 @@ static int
 filter_evr2job(HySack sack, const struct _Filter *f, Queue *job)
 {
     if (f == NULL)
-	return 0;
+        return 0;
 
     assert(f->cmp_type == HY_EQ);
     assert(f->nmatches == 1);
@@ -395,12 +395,12 @@ filter_evr2job(HySack sack, const struct _Filter *f, Queue *job)
     Id evr = pool_str2id(pool, f->matches[0].str, 1);
     Id constr = f->keyname == HY_PKG_VERSION ? SOLVER_SETEV : SOLVER_SETEVR;
     for (int i = 0; i < job->count; i += 2) {
-	Id dep;
-	assert((job->elements[i] & SOLVER_SELECTMASK) == SOLVER_SOLVABLE_NAME);
-	dep = pool_rel2id(pool, job->elements[i + 1],
-			  evr, REL_EQ, 1);
-	job->elements[i] |= constr;
-	job->elements[i + 1] = dep;
+        Id dep;
+        assert((job->elements[i] & SOLVER_SELECTMASK) == SOLVER_SOLVABLE_NAME);
+        dep = pool_rel2id(pool, job->elements[i + 1],
+                          evr, REL_EQ, 1);
+        job->elements[i] |= constr;
+        job->elements[i + 1] = dep;
     }
     return 0;
 }
@@ -409,7 +409,7 @@ static int
 filter_file2job(HySack sack, const struct _Filter *f, Queue *job)
 {
     if (f == NULL)
-	return 0;
+        return 0;
     assert(f->nmatches == 1);
 
     const char *file = f->matches[0].str;
@@ -417,9 +417,9 @@ filter_file2job(HySack sack, const struct _Filter *f, Queue *job)
 
     int flags = f->cmp_type & HY_GLOB ? SELECTION_GLOB : 0;
     if (f->cmp_type & HY_GLOB)
-	flags |= SELECTION_NOCASE;
+        flags |= SELECTION_NOCASE;
     if (selection_make(pool, job, file, flags | SELECTION_FILELIST) == 0)
-	return 1;
+        return 1;
     return 0;
 }
 
@@ -427,7 +427,7 @@ static int
 filter_name2job(HySack sack, const struct _Filter *f, Queue *job)
 {
     if (f == NULL)
-	return 0;
+        return 0;
     assert(f->nmatches == 1);
 
     Pool *pool = sack_pool(sack);
@@ -437,26 +437,26 @@ filter_name2job(HySack sack, const struct _Filter *f, Queue *job)
 
     switch (f->cmp_type) {
     case HY_EQ:
-	id = pool_str2id(pool, name, 0);
-	if (id)
-	    queue_push2(job, SOLVER_SOLVABLE_NAME, id);
-	break;
+        id = pool_str2id(pool, name, 0);
+        if (id)
+            queue_push2(job, SOLVER_SOLVABLE_NAME, id);
+        break;
     case HY_GLOB:
-	dataiterator_init(&di, pool, 0, 0, SOLVABLE_NAME, name, SEARCH_GLOB);
-	while (dataiterator_step(&di)) {
-	    if (!is_package(pool, pool_id2solvable(pool, di.solvid)))
-	        continue;
-	    assert(di.idp);
-	    id = *di.idp;
-	    if (job_has(job, SOLVABLE_NAME, id))
-		continue;
-	    queue_push2(job, SOLVER_SOLVABLE_NAME, id);
-	}
-	dataiterator_free(&di);
-	break;
+        dataiterator_init(&di, pool, 0, 0, SOLVABLE_NAME, name, SEARCH_GLOB);
+        while (dataiterator_step(&di)) {
+            if (!is_package(pool, pool_id2solvable(pool, di.solvid)))
+                continue;
+            assert(di.idp);
+            id = *di.idp;
+            if (job_has(job, SOLVABLE_NAME, id))
+                continue;
+            queue_push2(job, SOLVER_SOLVABLE_NAME, id);
+        }
+        dataiterator_free(&di);
+        break;
     default:
-	assert(0);
-	return 1;
+        assert(0);
+        return 1;
     }
     return 0;
 }
@@ -465,7 +465,7 @@ static int
 filter_provides2job(HySack sack, const struct _Filter *f, Queue *job)
 {
     if (f == NULL)
-	return 0;
+        return 0;
     assert(f->nmatches == 1);
 
     Pool *pool = sack_pool(sack);
@@ -475,24 +475,24 @@ filter_provides2job(HySack sack, const struct _Filter *f, Queue *job)
 
     switch (f->cmp_type) {
     case HY_EQ:
-	id = reldep_id(f->matches[0].reldep);
-	queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
-	break;
+        id = reldep_id(f->matches[0].reldep);
+        queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
+        break;
     case HY_GLOB:
-	dataiterator_init(&di, pool, 0, 0, SOLVABLE_PROVIDES, name, SEARCH_GLOB);
-	while (dataiterator_step(&di)) {
-	    if (is_package(pool, pool_id2solvable(pool, di.solvid)))
-		break;
-	}
-	assert(di.idp);
-	id = *di.idp;
-	if (!job_has(job, SOLVABLE_PROVIDES, id))
-	    queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
-	dataiterator_free(&di);
-	break;
+        dataiterator_init(&di, pool, 0, 0, SOLVABLE_PROVIDES, name, SEARCH_GLOB);
+        while (dataiterator_step(&di)) {
+            if (is_package(pool, pool_id2solvable(pool, di.solvid)))
+                break;
+        }
+        assert(di.idp);
+        id = *di.idp;
+        if (!job_has(job, SOLVABLE_PROVIDES, id))
+            queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
+        dataiterator_free(&di);
+        break;
     default:
-	assert(0);
-	return 1;
+        assert(0);
+        return 1;
     }
     return 0;
 }
@@ -540,37 +540,37 @@ sltr2job(const HySelector sltr, Queue *job, int solver_action)
     queue_init(&job_sltr);
 
     if (!any_req_filter) {
-	if (any_opt_filter)
-	    // no name or provides or file in the selector is an error
-	    ret = HIF_ERROR_BAD_SELECTOR;
-	goto finish;
+        if (any_opt_filter)
+            // no name or provides or file in the selector is an error
+            ret = HIF_ERROR_BAD_SELECTOR;
+        goto finish;
     }
 
     sack_recompute_considered(sack);
     sack_make_provides_ready(sack);
     ret = filter_name2job(sack, sltr->f_name, &job_sltr);
     if (ret)
-	goto finish;
+        goto finish;
     ret = filter_file2job(sack, sltr->f_file, &job_sltr);
     if (ret)
-	goto finish;
+        goto finish;
     ret = filter_provides2job(sack, sltr->f_provides, &job_sltr);
     if (ret)
-	goto finish;
+        goto finish;
     ret = filter_arch2job(sack, sltr->f_arch, &job_sltr);
     if (ret)
-	goto finish;
+        goto finish;
     ret = filter_evr2job(sack, sltr->f_evr, &job_sltr);
     if (ret)
-	goto finish;
+        goto finish;
     ret = filter_reponame2job(sack, sltr->f_reponame, &job_sltr);
     if (ret)
         goto finish;
 
     for (int i = 0; i < job_sltr.count; i += 2)
- 	queue_push2(job,
- 		    job_sltr.elements[i] | solver_action,
- 		    job_sltr.elements[i + 1]);
+         queue_push2(job,
+                     job_sltr.elements[i] | solver_action,
+                     job_sltr.elements[i + 1]);
 
  finish:
     queue_free(&job_sltr);
@@ -601,9 +601,9 @@ void
 hy_goal_free(HyGoal goal)
 {
     if (goal->trans)
-	transaction_free(goal->trans);
+        transaction_free(goal->trans);
     if (goal->solv)
-	solver_free(goal->solv);
+        solver_free(goal->solv);
     queue_free(&goal->staging);
     solv_free(goal);
 }
@@ -621,7 +621,7 @@ hy_goal_distupgrade(HyGoal goal, HyPackage new_pkg)
 {
     goal->actions |= HY_DISTUPGRADE;
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_DISTUPGRADE,
-	package_id(new_pkg));
+        package_id(new_pkg));
     return 0;
 }
 
@@ -652,12 +652,12 @@ hy_goal_erase_flags(HyGoal goal, HyPackage pkg, int flags)
 #ifndef NDEBUG
     Pool *pool = sack_pool(goal->sack);
     assert(pool->installed &&
-	   pool_id2solvable(pool, package_id(pkg))->repo == pool->installed);
+           pool_id2solvable(pool, package_id(pkg))->repo == pool->installed);
 #endif
     int additional = erase_flags2libsolv(flags);
     goal->actions |= HY_ERASE;
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_ERASE|additional,
-		package_id(pkg));
+                package_id(pkg));
     return 0;
 }
 
@@ -695,7 +695,7 @@ hy_goal_install_optional(HyGoal goal, HyPackage new_pkg)
 {
     goal->actions |= HY_INSTALL;
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_INSTALL|SOLVER_WEAK,
-		package_id(new_pkg));
+                package_id(new_pkg));
     return 0;
 }
 
@@ -768,18 +768,18 @@ hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags)
     int count = 0;
 
     if (flags & HY_CHECK_INSTALLED) {
-	HyQuery q = hy_query_create(goal->sack);
-	const char *name = hy_package_get_name(new_pkg);
-	HyPackageList installed;
+        HyQuery q = hy_query_create(goal->sack);
+        const char *name = hy_package_get_name(new_pkg);
+        HyPackageList installed;
 
-	hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
-	hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-	installed = hy_query_run(q);
-	count = hy_packagelist_count(installed);
-	hy_packagelist_free(installed);
-	hy_query_free(q);
-	if (!count)
-	    return HIF_ERROR_PACKAGE_NOT_FOUND;
+        hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
+        hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+        installed = hy_query_run(q);
+        count = hy_packagelist_count(installed);
+        hy_packagelist_free(installed);
+        hy_query_free(q);
+        if (!count)
+            return HIF_ERROR_PACKAGE_NOT_FOUND;
     }
     goal->actions |= HY_UPGRADE;
 
@@ -790,7 +790,7 @@ int
 hy_goal_userinstalled(HyGoal goal, HyPackage pkg)
 {
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_USERINSTALLED,
-		package_id(pkg));
+                package_id(pkg));
     return 0;
 }
 
@@ -819,7 +819,7 @@ hy_goal_run_all(HyGoal goal, hy_solution_callback cb, void *cb_data)
 
 int
 hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
-		      int flags)
+                      int flags)
 {
     Queue *job = construct_job(goal, flags);
     int ret = solve(goal, job, flags, cb, cb_data);
@@ -854,7 +854,7 @@ hy_goal_describe_problem(HyGoal goal, unsigned i)
     type = solver_ruleinfo(goal->solv, rid, &source, &target, &dep);
 
     const char *problem = solver_problemruleinfo2str(goal->solv,
-						     type, source, target, dep);
+                                                     type, source, target, dep);
     return solv_strdup(problem);
 }
 
@@ -865,7 +865,7 @@ int
 hy_goal_log_decisions(HyGoal goal)
 {
     if (goal->solv == NULL)
-	return 1;
+        return 1;
     solver_printdecisionq(goal->solv, SOLV_DEBUG_RESULT);
     return 0;
 }
@@ -927,7 +927,7 @@ HyPackageList
 hy_goal_list_installs(HyGoal goal, GError **error)
 {
     return list_results(goal, SOLVER_TRANSACTION_INSTALL,
-			SOLVER_TRANSACTION_OBSOLETES, error);
+                        SOLVER_TRANSACTION_OBSOLETES, error);
 }
 
 HyPackageList
@@ -994,8 +994,8 @@ hy_goal_get_reason(HyGoal goal, HyPackage pkg)
     int reason = solver_describe_decision(goal->solv, package_id(pkg), &info);
 
     if ((reason == SOLVER_REASON_UNIT_RULE ||
-	 reason == SOLVER_REASON_RESOLVE_JOB) &&
-	solver_ruleclass(goal->solv, info) == SOLVER_RULE_JOB)
-	return HY_REASON_USER;
+         reason == SOLVER_REASON_RESOLVE_JOB) &&
+        solver_ruleclass(goal->solv, info) == SOLVER_RULE_JOB)
+        return HY_REASON_USER;
     return HY_REASON_DEP;
 }

@@ -75,7 +75,7 @@ void repo_finalize_init(HyRepo hrepo, Repo *repo);
 void repo_internalize_all_trigger(Pool *pool);
 void repo_internalize_trigger(Repo *r);
 void repo_update_state(HyRepo repo, enum _hy_repo_repodata which,
-		       enum _hy_repo_state state);
+                       enum _hy_repo_state state);
 Id repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which);
 void repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata);
 

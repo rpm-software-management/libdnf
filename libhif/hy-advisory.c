@@ -114,13 +114,13 @@ hy_advisory_get_type(HyAdvisory advisory)
     type = pool_lookup_str(advisory->pool, advisory->a_id, SOLVABLE_PATCHCATEGORY);
 
     if (type == NULL)
-	return HY_ADVISORY_UNKNOWN;
+        return HY_ADVISORY_UNKNOWN;
     if (!strcmp (type, "bugfix"))
-	return HY_ADVISORY_BUGFIX;
+        return HY_ADVISORY_BUGFIX;
     if (!strcmp (type, "enhancement"))
-	return HY_ADVISORY_ENHANCEMENT;
+        return HY_ADVISORY_ENHANCEMENT;
     if (!strcmp (type, "security"))
-	return HY_ADVISORY_SECURITY;
+        return HY_ADVISORY_SECURITY;
     return HY_ADVISORY_UNKNOWN;
 }
 
@@ -153,18 +153,18 @@ hy_advisory_get_packages(HyAdvisory advisory)
 
     dataiterator_init(&di, pool, 0, a_id, UPDATE_COLLECTION, 0, 0);
     while (dataiterator_step(&di)) {
-	dataiterator_setpos(&di);
-	pkg = advisorypkg_create();
-	advisorypkg_set_string(pkg, HY_ADVISORYPKG_NAME,
-		pool_lookup_str(pool, SOLVID_POS, UPDATE_COLLECTION_NAME));
-	advisorypkg_set_string(pkg, HY_ADVISORYPKG_EVR,
-		pool_lookup_str(pool, SOLVID_POS, UPDATE_COLLECTION_EVR));
-	advisorypkg_set_string(pkg, HY_ADVISORYPKG_ARCH,
-		pool_lookup_str(pool, SOLVID_POS, UPDATE_COLLECTION_ARCH));
-	advisorypkg_set_string(pkg, HY_ADVISORYPKG_FILENAME,
-		pool_lookup_str(pool, SOLVID_POS, UPDATE_COLLECTION_FILENAME));
-	advisorypkglist_add(pkglist, pkg);
-	hy_advisorypkg_free(pkg);
+        dataiterator_setpos(&di);
+        pkg = advisorypkg_create();
+        advisorypkg_set_string(pkg, HY_ADVISORYPKG_NAME,
+                pool_lookup_str(pool, SOLVID_POS, UPDATE_COLLECTION_NAME));
+        advisorypkg_set_string(pkg, HY_ADVISORYPKG_EVR,
+                pool_lookup_str(pool, SOLVID_POS, UPDATE_COLLECTION_EVR));
+        advisorypkg_set_string(pkg, HY_ADVISORYPKG_ARCH,
+                pool_lookup_str(pool, SOLVID_POS, UPDATE_COLLECTION_ARCH));
+        advisorypkg_set_string(pkg, HY_ADVISORYPKG_FILENAME,
+                pool_lookup_str(pool, SOLVID_POS, UPDATE_COLLECTION_FILENAME));
+        advisorypkglist_add(pkglist, pkg);
+        hy_advisorypkg_free(pkg);
     }
     dataiterator_free(&di);
 
@@ -182,9 +182,9 @@ hy_advisory_get_references(HyAdvisory advisory)
 
     dataiterator_init(&di, pool, 0, a_id, UPDATE_REFERENCE, 0, 0);
     for (int index = 0; dataiterator_step(&di); index++) {
-	ref = advisoryref_create(pool, a_id, index);
-	advisoryreflist_add(reflist, ref);
-	hy_advisoryref_free(ref);
+        ref = advisoryref_create(pool, a_id, index);
+        advisoryreflist_add(reflist, ref);
+        hy_advisoryref_free(ref);
     }
     dataiterator_free(&di);
 

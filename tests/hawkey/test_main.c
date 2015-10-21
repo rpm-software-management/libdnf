@@ -39,12 +39,12 @@ init_test_globals(struct TestGlobals_s *tg, const char *repo_dir)
 {
     int const len = strlen(repo_dir);
     if (repo_dir[len -1] != '/')
-	tg->repo_dir = solv_dupjoin(repo_dir, "/", NULL);
+        tg->repo_dir = solv_dupjoin(repo_dir, "/", NULL);
     else
-	tg->repo_dir = solv_strdup(repo_dir);
+        tg->repo_dir = solv_strdup(repo_dir);
     tg->tmpdir = solv_strdup(UNITTEST_DIR);
     if (mkdtemp(tg->tmpdir) == NULL)
-	return 1;
+        return 1;
     tg->sack = NULL;
     return 0;
 }
@@ -62,8 +62,8 @@ main(int argc, const char **argv)
     int number_failed;
 
     if (init_test_globals(&test_globals, TESTDATADIR)) {
-	fprintf(stderr, "failed initializing test engine.\n");
-	exit(1);
+        fprintf(stderr, "failed initializing test engine.\n");
+        exit(1);
     }
     printf("Tests using directory: %s\n", test_globals.tmpdir);
 

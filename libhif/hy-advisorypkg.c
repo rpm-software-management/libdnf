@@ -51,15 +51,15 @@ get_string(HyAdvisoryPkg advisorypkg, int which)
 {
     switch (which) {
     case HY_ADVISORYPKG_NAME:
-	return &(advisorypkg->name);
+        return &(advisorypkg->name);
     case HY_ADVISORYPKG_EVR:
-	return &(advisorypkg->evr);
+        return &(advisorypkg->evr);
     case HY_ADVISORYPKG_ARCH:
-	return &(advisorypkg->arch);
+        return &(advisorypkg->arch);
     case HY_ADVISORYPKG_FILENAME:
-	return &(advisorypkg->filename);
+        return &(advisorypkg->filename);
     default:
-	return NULL;
+        return NULL;
     }
 }
 
@@ -76,13 +76,13 @@ advisorypkg_clone(HyAdvisoryPkg advisorypkg)
 {
     HyAdvisoryPkg clone = advisorypkg_create();
     advisorypkg_set_string(clone, HY_ADVISORYPKG_NAME,
-	    hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_NAME));
+            hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_NAME));
     advisorypkg_set_string(clone, HY_ADVISORYPKG_EVR,
-	    hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_EVR));
+            hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_EVR));
     advisorypkg_set_string(clone, HY_ADVISORYPKG_ARCH,
-	    hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_ARCH));
+            hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_ARCH));
     advisorypkg_set_string(clone, HY_ADVISORYPKG_FILENAME,
-	    hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_FILENAME));
+            hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_FILENAME));
     return clone;
 }
 
@@ -90,10 +90,10 @@ int
 advisorypkg_identical(HyAdvisoryPkg left, HyAdvisoryPkg right)
 {
     return
-	strcmp(left->name, right->name) &&
-	strcmp(left->evr, right->evr) &&
-	strcmp(left->arch, right->arch) &&
-	strcmp(left->filename, right->filename);
+        strcmp(left->name, right->name) &&
+        strcmp(left->evr, right->evr) &&
+        strcmp(left->arch, right->arch) &&
+        strcmp(left->filename, right->filename);
 }
 
 HyAdvisoryPkgList
@@ -102,7 +102,7 @@ advisorypkglist_create()
     HyAdvisoryPkgList pkglist = solv_calloc(1, sizeof(*pkglist));
     pkglist->npkgs = 0;
     pkglist->pkgs = solv_extend(
-	0, pkglist->npkgs, 0, sizeof(HyAdvisoryPkg), PACKAGE_BLOCK);
+        0, pkglist->npkgs, 0, sizeof(HyAdvisoryPkg), PACKAGE_BLOCK);
     return pkglist;
 }
 
@@ -110,7 +110,7 @@ void
 advisorypkglist_add(HyAdvisoryPkgList pkglist, HyAdvisoryPkg advisorypkg)
 {
     pkglist->pkgs = solv_extend(
-	    pkglist->pkgs, pkglist->npkgs, 1, sizeof(advisorypkg), PACKAGE_BLOCK);
+            pkglist->pkgs, pkglist->npkgs, 1, sizeof(advisorypkg), PACKAGE_BLOCK);
     pkglist->pkgs[pkglist->npkgs++] = advisorypkg_clone(advisorypkg);
 }
 
@@ -135,7 +135,7 @@ void
 hy_advisorypkglist_free(HyAdvisoryPkgList pkglist)
 {
     for(int i = 0; i < hy_advisorypkglist_count(pkglist); i++) {
-	hy_advisorypkg_free(pkglist->pkgs[i]);
+        hy_advisorypkg_free(pkglist->pkgs[i]);
     }
     solv_free(pkglist->pkgs);
     solv_free(pkglist);

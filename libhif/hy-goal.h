@@ -29,26 +29,26 @@ G_BEGIN_DECLS
 #include "hy-types.h"
 
 enum _hy_goal_op_flags {
-    HY_CHECK_INSTALLED	= 1 << 0,
-    HY_CLEAN_DEPS	= 1 << 1,
-    HY_WEAK_SOLV	= 1 << 2
+    HY_CHECK_INSTALLED          = 1 << 0,
+    HY_CLEAN_DEPS               = 1 << 1,
+    HY_WEAK_SOLV                = 1 << 2
 };
 
 enum _hy_goal_run_flags {
-    HY_ALLOW_UNINSTALL = 1 << 0,
-    HY_FORCE_BEST = 1 << 1,
-    HY_VERIFY = 1 << 2,
-    HY_IGNORE_WEAK_DEPS = 1 << 3
+    HY_ALLOW_UNINSTALL          = 1 << 0,
+    HY_FORCE_BEST               = 1 << 1,
+    HY_VERIFY                   = 1 << 2,
+    HY_IGNORE_WEAK_DEPS         = 1 << 3
 };
 
 enum _hy_goal_actions {
-    HY_ERASE		= 1 << 0,
-    HY_DISTUPGRADE	= 1 << 1,
-    HY_DISTUPGRADE_ALL	= 1 << 2,
-    HY_DOWNGRADE	= 1 << 3,
-    HY_INSTALL		= 1 << 4,
-    HY_UPGRADE		= 1 << 5,
-    HY_UPGRADE_ALL	= 1 << 6,
+    HY_ERASE                    = 1 << 0,
+    HY_DISTUPGRADE              = 1 << 1,
+    HY_DISTUPGRADE_ALL          = 1 << 2,
+    HY_DOWNGRADE                = 1 << 3,
+    HY_INSTALL                  = 1 << 4,
+    HY_UPGRADE                  = 1 << 5,
+    HY_UPGRADE_ALL              = 1 << 6,
 };
 
 #define HY_REASON_DEP 1
@@ -68,7 +68,7 @@ int hy_goal_erase_flags(HyGoal goal, HyPackage pkg, int flags);
 /**
  * Erase packages specified by the Selector.
  *
- * @returns	0 on success, HIF_ERROR_BAD_SELECTOR for an invalid Selector.
+ * @returns        0 on success, HIF_ERROR_BAD_SELECTOR for an invalid Selector.
  */
 int hy_goal_erase_selector(HyGoal goal, HySelector sltr);
 int hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags);
@@ -93,7 +93,7 @@ int hy_goal_run(HyGoal goal);
 int hy_goal_run_flags(HyGoal goal, int flags);
 int hy_goal_run_all(HyGoal goal, hy_solution_callback cb, void *cb_data);
 int hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
-			  int flags);
+                          int flags);
 
 /* problems */
 int hy_goal_count_problems(HyGoal goal);
