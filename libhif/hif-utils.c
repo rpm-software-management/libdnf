@@ -1,13 +1,13 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2013-2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2013-2015 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * version 2.1 of the License, or(at your option) any later version.
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -47,12 +47,12 @@
  * Returns: an error quark
  **/
 GQuark
-hif_error_quark (void)
+hif_error_quark(void)
 {
-	static GQuark quark = 0;
-	if (!quark)
-		quark = g_quark_from_static_string ("HifError");
-	return quark;
+    static GQuark quark = 0;
+    if (!quark)
+        quark = g_quark_from_static_string("HifError");
+    return quark;
 }
 
 /**
@@ -66,22 +66,22 @@ hif_error_quark (void)
  * Since: 0.1.7
  **/
 gchar *
-hif_realpath (const gchar *path)
+hif_realpath(const gchar *path)
 {
-	gchar *real = NULL;
-	char *temp;
+    gchar *real = NULL;
+    char *temp;
 
-	/* don't trust realpath one little bit */
-	if (path == NULL)
-		return NULL;
+    /* don't trust realpath one little bit */
+    if (path == NULL)
+        return NULL;
 
-	/* glibc allocates us a buffer to try and fix some brain damage */
-	temp = realpath (path, NULL);
-	if (temp == NULL)
-		return NULL;
-	real = g_strdup (temp);
-	free (temp);
-	return real;
+    /* glibc allocates us a buffer to try and fix some brain damage */
+    temp = realpath(path, NULL);
+    if (temp == NULL)
+        return NULL;
+    real = g_strdup(temp);
+    free(temp);
+    return real;
 }
 
 /**
@@ -96,50 +96,50 @@ hif_realpath (const gchar *path)
  * Since: 0.1.7
  **/
 gboolean
-hif_remove_recursive (const gchar *directory, GError **error)
+hif_remove_recursive(const gchar *directory, GError **error)
 {
-	const gchar *filename;
-	_cleanup_dir_close_ GDir *dir;
-	_cleanup_error_free_ GError *error_local = NULL;
+    const gchar *filename;
+    _cleanup_dir_close_ GDir *dir;
+    _cleanup_error_free_ GError *error_local = NULL;
 
-	/* try to open */
-	dir = g_dir_open (directory, 0, &error_local);
-	if (dir == NULL) {
-		g_set_error (error,
-			     HIF_ERROR,
-			     HIF_ERROR_INTERNAL_ERROR,
-			     "cannot open directory %s: %s",
-			     directory, error_local->message);
-		return FALSE;
-	}
+    /* try to open */
+    dir = g_dir_open(directory, 0, &error_local);
+    if (dir == NULL) {
+        g_set_error(error,
+                    HIF_ERROR,
+                    HIF_ERROR_INTERNAL_ERROR,
+                    "cannot open directory %s: %s",
+                    directory, error_local->message);
+        return FALSE;
+    }
 
-	/* find each */
-	while ((filename = g_dir_read_name (dir))) {
-		_cleanup_free_ gchar *src = NULL;
-		src = g_build_filename (directory, filename, NULL);
-		if (g_file_test (src, G_FILE_TEST_IS_DIR)) {
-			if (!hif_remove_recursive (src, error))
-				return FALSE;
-		} else {
-			g_debug ("deleting file %s", src);
-			if (g_unlink (src) != 0) {
-				g_set_error (error,
-					     HIF_ERROR,
-					     HIF_ERROR_INTERNAL_ERROR,
-					     "failed to unlink %s", src);
-				return FALSE;
-			}
-		}
-	}
+    /* find each */
+    while ((filename = g_dir_read_name(dir))) {
+        _cleanup_free_ gchar *src = NULL;
+        src = g_build_filename(directory, filename, NULL);
+        if (g_file_test(src, G_FILE_TEST_IS_DIR)) {
+            if (!hif_remove_recursive(src, error))
+                return FALSE;
+        } else {
+            g_debug("deleting file %s", src);
+            if (g_unlink(src) != 0) {
+                g_set_error(error,
+                            HIF_ERROR,
+                            HIF_ERROR_INTERNAL_ERROR,
+                            "failed to unlink %s", src);
+                return FALSE;
+            }
+        }
+    }
 
-	/* remove directory */
-	g_debug ("deleting directory %s", directory);
-	if (g_remove (directory) != 0) {
-		g_set_error (error,
-			     HIF_ERROR,
-			     HIF_ERROR_INTERNAL_ERROR,
-			     "failed to remove %s", directory);
-		return FALSE;
-	}
-	return TRUE;
+    /* remove directory */
+    g_debug("deleting directory %s", directory);
+    if (g_remove(directory) != 0) {
+        g_set_error(error,
+                    HIF_ERROR,
+                    HIF_ERROR_INTERNAL_ERROR,
+                    "failed to remove %s", directory);
+        return FALSE;
+    }
+    return TRUE;
 }

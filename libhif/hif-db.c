@@ -1,13 +1,13 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2008-2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2015 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * version 2.1 of the License, or(at your option) any later version.
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -47,37 +47,37 @@
 #include "hif-package.h"
 #include "hif-utils.h"
 
-typedef struct _HifDbPrivate	HifDbPrivate;
+typedef struct _HifDbPrivate    HifDbPrivate;
 struct _HifDbPrivate
 {
-	HifContext		*context;	/* weak reference */
-	gboolean                 enabled;
+    HifContext      *context;    /* weak reference */
+    gboolean         enabled;
 };
 
-G_DEFINE_TYPE (HifDb, hif_db, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), HIF_TYPE_DB, HifDbPrivate))
+G_DEFINE_TYPE(HifDb, hif_db, G_TYPE_OBJECT)
+#define GET_PRIVATE(o)(G_TYPE_INSTANCE_GET_PRIVATE((o), HIF_TYPE_DB, HifDbPrivate))
 
 /**
  * hif_db_finalize:
  **/
 static void
-hif_db_finalize (GObject *object)
+hif_db_finalize(GObject *object)
 {
-	HifDb *db = HIF_DB (object);
-	HifDbPrivate *priv = GET_PRIVATE (db);
+    HifDb *db = HIF_DB(object);
+    HifDbPrivate *priv = GET_PRIVATE(db);
 
-	if (priv->context != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (priv->context),
-		                              (void **) &priv->context);
+    if (priv->context != NULL)
+        g_object_remove_weak_pointer(G_OBJECT(priv->context),
+                                     (void **) &priv->context);
 
-	G_OBJECT_CLASS (hif_db_parent_class)->finalize (object);
+    G_OBJECT_CLASS(hif_db_parent_class)->finalize(object);
 }
 
 /**
  * hif_db_init:
  **/
 static void
-hif_db_init (HifDb *db)
+hif_db_init(HifDb *db)
 {
 }
 
@@ -85,11 +85,11 @@ hif_db_init (HifDb *db)
  * hif_db_class_init:
  **/
 static void
-hif_db_class_init (HifDbClass *klass)
+hif_db_class_init(HifDbClass *klass)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	object_class->finalize = hif_db_finalize;
-	g_type_class_add_private (klass, sizeof (HifDbPrivate));
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
+    object_class->finalize = hif_db_finalize;
+    g_type_class_add_private(klass, sizeof(HifDbPrivate));
 }
 
 
@@ -97,52 +97,52 @@ hif_db_class_init (HifDbClass *klass)
  * hif_db_create_dir:
  **/
 static gboolean
-hif_db_create_dir (const gchar *dir, GError **error)
+hif_db_create_dir(const gchar *dir, GError **error)
 {
-	_cleanup_object_unref_ GFile *file = NULL;
+    _cleanup_object_unref_ GFile *file = NULL;
 
-	/* already exists */
-	if (g_file_test (dir, G_FILE_TEST_IS_DIR))
-		return TRUE;
+    /* already exists */
+    if (g_file_test(dir, G_FILE_TEST_IS_DIR))
+        return TRUE;
 
-	/* need to create */
-	g_debug ("creating %s", dir);
-	file = g_file_new_for_path (dir);
-	return g_file_make_directory_with_parents (file, NULL, error);
+    /* need to create */
+    g_debug("creating %s", dir);
+    file = g_file_new_for_path(dir);
+    return g_file_make_directory_with_parents(file, NULL, error);
 }
 
 /**
  * hif_db_get_dir_for_package:
  **/
 static gchar *
-hif_db_get_dir_for_package (HifDb *db, HyPackage package)
+hif_db_get_dir_for_package(HifDb *db, HyPackage package)
 {
-	const gchar *pkgid;
-	HifDbPrivate *priv = GET_PRIVATE (db);
-	const gchar *instroot;
+    const gchar *pkgid;
+    HifDbPrivate *priv = GET_PRIVATE(db);
+    const gchar *instroot;
 #ifdef BUILDOPT_USE_DNF_YUMDB
-	static const gchar *yumdb_dir = "/var/lib/dnf/yumdb";
+    static const gchar *yumdb_dir = "/var/lib/dnf/yumdb";
 #else
-	static const gchar *yumdb_dir = "/var/lib/yum/yumdb";
+    static const gchar *yumdb_dir = "/var/lib/yum/yumdb";
 #endif
 
-	pkgid = hif_package_get_pkgid (package);
-	if (pkgid == NULL)
-		return NULL;
+    pkgid = hif_package_get_pkgid(package);
+    if (pkgid == NULL)
+        return NULL;
 
-	instroot = hif_context_get_install_root (priv->context);
-	if (g_strcmp0 (instroot, "/") == 0)
-		instroot = "";
+    instroot = hif_context_get_install_root(priv->context);
+    if (g_strcmp0(instroot, "/") == 0)
+        instroot = "";
 
-	return g_strdup_printf ("%s%s/%c/%s-%s-%s-%s-%s",
-				instroot,
-				yumdb_dir,
-				hy_package_get_name (package)[0],
-				pkgid,
-				hy_package_get_name (package),
-				hy_package_get_version (package),
-				hy_package_get_release (package),
-				hy_package_get_arch (package));
+    return g_strdup_printf("%s%s/%c/%s-%s-%s-%s-%s",
+                          instroot,
+                          yumdb_dir,
+                          hy_package_get_name(package)[0],
+                          pkgid,
+                          hy_package_get_name(package),
+                          hy_package_get_version(package),
+                          hy_package_get_release(package),
+                          hy_package_get_arch(package));
 }
 
 /**
@@ -159,44 +159,44 @@ hif_db_get_dir_for_package (HifDb *db, HyPackage package)
  * Since: 0.1.0
  **/
 gchar *
-hif_db_get_string (HifDb *db, HyPackage package, const gchar *key, GError **error)
+hif_db_get_string(HifDb *db, HyPackage package, const gchar *key, GError **error)
 {
-	gchar *value = NULL;
-	_cleanup_free_ gchar *filename = NULL;
-	_cleanup_free_ gchar *index_dir = NULL;
+    gchar *value = NULL;
+    _cleanup_free_ gchar *filename = NULL;
+    _cleanup_free_ gchar *index_dir = NULL;
 
-	g_return_val_if_fail (HIF_IS_DB (db), NULL);
-	g_return_val_if_fail (package != NULL, NULL);
-	g_return_val_if_fail (key != NULL, NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+    g_return_val_if_fail(HIF_IS_DB(db), NULL);
+    g_return_val_if_fail(package != NULL, NULL);
+    g_return_val_if_fail(key != NULL, NULL);
+    g_return_val_if_fail(error == NULL || *error == NULL, NULL);
 
-	/* get file contents */
-	index_dir = hif_db_get_dir_for_package (db, package);
-	if (index_dir == NULL) {
-		g_set_error (error,
-			     HIF_ERROR,
-			     HIF_ERROR_FAILED,
-			     "cannot create index for %s",
-			     hif_package_get_id (package));
-		return NULL;
-	}
+    /* get file contents */
+    index_dir = hif_db_get_dir_for_package(db, package);
+    if (index_dir == NULL) {
+        g_set_error(error,
+                    HIF_ERROR,
+                    HIF_ERROR_FAILED,
+                    "cannot create index for %s",
+                    hif_package_get_id(package));
+        return NULL;
+    }
 
-	filename = g_build_filename (index_dir, key, NULL);
+    filename = g_build_filename(index_dir, key, NULL);
 
-	/* check it exists */
-	if (!g_file_test (filename, G_FILE_TEST_EXISTS)) {
-		g_set_error (error,
-			     HIF_ERROR,
-			     HIF_ERROR_FAILED,
-			     "%s key not found",
-			     filename);
-		return NULL;
-	}
+    /* check it exists */
+    if (!g_file_test(filename, G_FILE_TEST_EXISTS)) {
+        g_set_error(error,
+                    HIF_ERROR,
+                    HIF_ERROR_FAILED,
+                    "%s key not found",
+                    filename);
+        return NULL;
+    }
 
-	/* get value */
-	if (!g_file_get_contents (filename, &value, NULL, error))
-		return NULL;
-	return value;
+    /* get value */
+    if (!g_file_get_contents(filename, &value, NULL, error))
+        return NULL;
+    return value;
 }
 
 /**
@@ -214,42 +214,42 @@ hif_db_get_string (HifDb *db, HyPackage package, const gchar *key, GError **erro
  * Since: 0.1.0
  **/
 gboolean
-hif_db_set_string (HifDb *db,
-		   HyPackage package,
-		   const gchar *key,
-		   const gchar *value,
-		   GError **error)
+hif_db_set_string(HifDb *db,
+           HyPackage package,
+           const gchar *key,
+           const gchar *value,
+           GError **error)
 {
-	HifDbPrivate *priv = GET_PRIVATE (db);
-	_cleanup_free_ gchar *index_dir = NULL;
-	_cleanup_free_ gchar *index_file = NULL;
+    HifDbPrivate *priv = GET_PRIVATE(db);
+    _cleanup_free_ gchar *index_dir = NULL;
+    _cleanup_free_ gchar *index_file = NULL;
 
-	g_return_val_if_fail (HIF_IS_DB (db), FALSE);
-	g_return_val_if_fail (package != NULL, FALSE);
-	g_return_val_if_fail (key != NULL, FALSE);
-	g_return_val_if_fail (value != NULL, FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+    g_return_val_if_fail(HIF_IS_DB(db), FALSE);
+    g_return_val_if_fail(package != NULL, FALSE);
+    g_return_val_if_fail(key != NULL, FALSE);
+    g_return_val_if_fail(value != NULL, FALSE);
+    g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
-	if (!priv->enabled)
-		return TRUE;
+    if (!priv->enabled)
+        return TRUE;
 
-	/* create the index directory */
-	index_dir = hif_db_get_dir_for_package (db, package);
-	if (index_dir == NULL) {
-		g_set_error (error,
-			     HIF_ERROR,
-			     HIF_ERROR_FAILED,
-			     "cannot create index for %s",
-			     hif_package_get_id (package));
-		return FALSE;
-	}
-	if (!hif_db_create_dir (index_dir, error))
-		return FALSE;
+    /* create the index directory */
+    index_dir = hif_db_get_dir_for_package(db, package);
+    if (index_dir == NULL) {
+        g_set_error(error,
+                    HIF_ERROR,
+                    HIF_ERROR_FAILED,
+                    "cannot create index for %s",
+                    hif_package_get_id(package));
+        return FALSE;
+    }
+    if (!hif_db_create_dir(index_dir, error))
+        return FALSE;
 
-	/* write the value */
-	index_file = g_build_filename (index_dir, key, NULL);
-	g_debug ("writing %s to %s", value, index_file);
-	return g_file_set_contents (index_file, value, -1, error);
+    /* write the value */
+    index_file = g_build_filename(index_dir, key, NULL);
+    g_debug("writing %s to %s", value, index_file);
+    return g_file_set_contents(index_file, value, -1, error);
 }
 
 /**
@@ -266,40 +266,40 @@ hif_db_set_string (HifDb *db,
  * Since: 0.1.0
  **/
 gboolean
-hif_db_remove (HifDb *db,
-	       HyPackage package,
-	       const gchar *key,
-	       GError **error)
+hif_db_remove(HifDb *db,
+           HyPackage package,
+           const gchar *key,
+           GError **error)
 {
-	HifDbPrivate *priv = GET_PRIVATE (db);
-	_cleanup_free_ gchar *index_dir = NULL;
-	_cleanup_free_ gchar *index_file = NULL;
-	_cleanup_object_unref_ GFile *file = NULL;
+    HifDbPrivate *priv = GET_PRIVATE(db);
+    _cleanup_free_ gchar *index_dir = NULL;
+    _cleanup_free_ gchar *index_file = NULL;
+    _cleanup_object_unref_ GFile *file = NULL;
 
-	g_return_val_if_fail (HIF_IS_DB (db), FALSE);
-	g_return_val_if_fail (package != NULL, FALSE);
-	g_return_val_if_fail (key != NULL, FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+    g_return_val_if_fail(HIF_IS_DB(db), FALSE);
+    g_return_val_if_fail(package != NULL, FALSE);
+    g_return_val_if_fail(key != NULL, FALSE);
+    g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
-	if (!priv->enabled)
-		return TRUE;
+    if (!priv->enabled)
+        return TRUE;
 
-	/* create the index directory */
-	index_dir = hif_db_get_dir_for_package (db, package);
-	if (index_dir == NULL) {
-		g_set_error (error,
-			     HIF_ERROR,
-			     HIF_ERROR_FAILED,
-			     "cannot create index for %s",
-			     hif_package_get_id (package));
-		return FALSE;
-	}
+    /* create the index directory */
+    index_dir = hif_db_get_dir_for_package(db, package);
+    if (index_dir == NULL) {
+        g_set_error(error,
+                    HIF_ERROR,
+                    HIF_ERROR_FAILED,
+                    "cannot create index for %s",
+                    hif_package_get_id(package));
+        return FALSE;
+    }
 
-	/* delete the value */
-	g_debug ("deleting %s from %s", key, index_dir);
-	index_file = g_build_filename (index_dir, key, NULL);
-	file = g_file_new_for_path (index_file);
-	return g_file_delete (file, NULL, error);
+    /* delete the value */
+    g_debug("deleting %s from %s", key, index_dir);
+    index_file = g_build_filename(index_dir, key, NULL);
+    file = g_file_new_for_path(index_file);
+    return g_file_delete(file, NULL, error);
 }
 
 /**
@@ -315,60 +315,60 @@ hif_db_remove (HifDb *db,
  * Since: 0.1.0
  **/
 gboolean
-hif_db_remove_all (HifDb *db, HyPackage package, GError **error)
+hif_db_remove_all(HifDb *db, HyPackage package, GError **error)
 {
-	HifDbPrivate *priv = GET_PRIVATE (db);
-	const gchar *filename;
-	_cleanup_dir_close_ GDir *dir = NULL;
-	_cleanup_free_ gchar *index_dir = NULL;
-	_cleanup_object_unref_ GFile *file_directory = NULL;
+    HifDbPrivate *priv = GET_PRIVATE(db);
+    const gchar *filename;
+    _cleanup_dir_close_ GDir *dir = NULL;
+    _cleanup_free_ gchar *index_dir = NULL;
+    _cleanup_object_unref_ GFile *file_directory = NULL;
 
-	g_return_val_if_fail (HIF_IS_DB (db), FALSE);
-	g_return_val_if_fail (package != NULL, FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+    g_return_val_if_fail(HIF_IS_DB(db), FALSE);
+    g_return_val_if_fail(package != NULL, FALSE);
+    g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
-	if (!priv->enabled)
-		return TRUE;
+    if (!priv->enabled)
+        return TRUE;
 
-	/* get the folder */
-	index_dir = hif_db_get_dir_for_package (db, package);
-	if (index_dir == NULL) {
-		g_set_error (error,
-			     HIF_ERROR,
-			     HIF_ERROR_FAILED,
-			     "cannot create index for %s",
-			     hif_package_get_id (package));
-		return FALSE;
-	}
-	if (!g_file_test (index_dir, G_FILE_TEST_IS_DIR)) {
-		g_debug ("Nothing to delete in %s", index_dir);
-		return TRUE;
-	}
+    /* get the folder */
+    index_dir = hif_db_get_dir_for_package(db, package);
+    if (index_dir == NULL) {
+        g_set_error(error,
+                    HIF_ERROR,
+                    HIF_ERROR_FAILED,
+                    "cannot create index for %s",
+                    hif_package_get_id(package));
+        return FALSE;
+    }
+    if (!g_file_test(index_dir, G_FILE_TEST_IS_DIR)) {
+        g_debug("Nothing to delete in %s", index_dir);
+        return TRUE;
+    }
 
-	/* open */
-	dir = g_dir_open (index_dir, 0, error);
-	if (dir == NULL)
-		return FALSE;
+    /* open */
+    dir = g_dir_open(index_dir, 0, error);
+    if (dir == NULL)
+        return FALSE;
 
-	/* delete each one */
-	filename = g_dir_read_name (dir);
-	while (filename != NULL) {
-		_cleanup_free_ gchar *index_file;
-		_cleanup_object_unref_ GFile *file_tmp;
+    /* delete each one */
+    filename = g_dir_read_name(dir);
+    while (filename != NULL) {
+        _cleanup_free_ gchar *index_file;
+        _cleanup_object_unref_ GFile *file_tmp;
 
-		index_file = g_build_filename (index_dir, filename, NULL);
-		file_tmp = g_file_new_for_path (index_file);
+        index_file = g_build_filename(index_dir, filename, NULL);
+        file_tmp = g_file_new_for_path(index_file);
 
-		/* delete, ignoring error */
-		g_debug ("deleting %s from %s", filename, index_dir);
-		if (!g_file_delete (file_tmp, NULL, NULL))
-			g_debug ("failed to delete %s", filename);
-		filename = g_dir_read_name (dir);
-	}
+        /* delete, ignoring error */
+        g_debug("deleting %s from %s", filename, index_dir);
+        if (!g_file_delete(file_tmp, NULL, NULL))
+            g_debug("failed to delete %s", filename);
+        filename = g_dir_read_name(dir);
+    }
 
-	/* now delete the directory */
-	file_directory = g_file_new_for_path (index_dir);
-	return g_file_delete (file_directory, NULL, error);
+    /* now delete the directory */
+    file_directory = g_file_new_for_path(index_dir);
+    return g_file_delete(file_directory, NULL, error);
 }
 
 /**
@@ -381,26 +381,26 @@ hif_db_remove_all (HifDb *db, HyPackage package, GError **error)
  * Since: 0.1.0
  */
 void
-hif_db_ensure_origin_pkg (HifDb *db, HyPackage pkg)
+hif_db_ensure_origin_pkg(HifDb *db, HyPackage pkg)
 {
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *tmp = NULL;
+    _cleanup_error_free_ GError *error = NULL;
+    _cleanup_free_ gchar *tmp = NULL;
 
-	/* already set */
-	if (hif_package_get_origin (pkg) != NULL)
-		return;
-	if (!hy_package_installed (pkg))
-		return;
+    /* already set */
+    if (hif_package_get_origin(pkg) != NULL)
+        return;
+    if (!hy_package_installed(pkg))
+        return;
 
-	/* set from the database if available */
-	tmp = hif_db_get_string (db, pkg, "from_repo", &error);
-	if (tmp == NULL) {
-		g_debug ("no origin for %s: %s",
-			 hif_package_get_id (pkg),
-			 error->message);
-	} else {
-		hif_package_set_origin (pkg, tmp);
-	}
+    /* set from the database if available */
+    tmp = hif_db_get_string(db, pkg, "from_repo", &error);
+    if (tmp == NULL) {
+        g_debug("no origin for %s: %s",
+             hif_package_get_id(pkg),
+             error->message);
+    } else {
+        hif_package_set_origin(pkg, tmp);
+    }
 }
 
 /**
@@ -413,13 +413,13 @@ hif_db_ensure_origin_pkg (HifDb *db, HyPackage pkg)
  * Since: 0.1.0
  */
 void
-hif_db_ensure_origin_pkglist (HifDb *db, HyPackageList pkglist)
+hif_db_ensure_origin_pkglist(HifDb *db, HyPackageList pkglist)
 {
-	HyPackage pkg;
-	gint i;
+    HyPackage pkg;
+    gint i;
 
-	FOR_PACKAGELIST(pkg, pkglist, i)
-		hif_db_ensure_origin_pkg (db, pkg);
+    FOR_PACKAGELIST(pkg, pkglist, i)
+        hif_db_ensure_origin_pkg(db, pkg);
 }
 
 /**
@@ -428,20 +428,20 @@ hif_db_ensure_origin_pkglist (HifDb *db, HyPackageList pkglist)
  *
  * Creates a new #HifDb.
  *
- * Returns: (transfer full): a #HifDb
+ * Returns:(transfer full): a #HifDb
  *
  * Since: 0.1.0
  **/
 HifDb *
-hif_db_new (HifContext *context)
+hif_db_new(HifContext *context)
 {
-	HifDb *db;
-	HifDbPrivate *priv;
-	db = g_object_new (HIF_TYPE_DB, NULL);
-	priv = GET_PRIVATE (db);
-	priv->context = context;
-	g_object_add_weak_pointer (G_OBJECT (priv->context), (void **) &priv->context);
-	return HIF_DB (db);
+    HifDb *db;
+    HifDbPrivate *priv;
+    db = g_object_new(HIF_TYPE_DB, NULL);
+    priv = GET_PRIVATE(db);
+    priv->context = context;
+    g_object_add_weak_pointer(G_OBJECT(priv->context),(void **) &priv->context);
+    return HIF_DB(db);
 }
 
 /**
@@ -455,9 +455,8 @@ hif_db_new (HifContext *context)
  * Since: 0.2.0
  **/
 void
-hif_db_set_enabled (HifDb          *db,
-		    gboolean        enabled)
+hif_db_set_enabled(HifDb *db, gboolean enabled)
 {
-	HifDbPrivate *priv = GET_PRIVATE (db);
-	priv->enabled = enabled;
+    HifDbPrivate *priv = GET_PRIVATE(db);
+    priv->enabled = enabled;
 }

@@ -1,6 +1,6 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2013-2015 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -28,8 +28,8 @@
 
 #include <glib.h>
 
-gchar		*hif_realpath			(const gchar		*path);
-gboolean	 hif_remove_recursive		(const gchar		*directory,
-						 GError			**error);
+gchar           *hif_realpath                   (const gchar            *path);
+gboolean         hif_remove_recursive           (const gchar            *directory,
+                                                 GError                 **error);
 
 #endif /* __HIF_UTILS_H */
