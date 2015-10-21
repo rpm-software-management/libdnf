@@ -36,9 +36,9 @@ START_TEST(test_reldeplist_add)
     const int count = hy_reldeplist_count(obsoletes);
     fail_unless(count == 2);
     for (int i = 0; i < count; ++i) {
-	HyReldep reldep = hy_reldeplist_get_clone(obsoletes, i);
-	hy_reldeplist_add(reldeplist, reldep);
-	hy_reldep_free(reldep);
+        HyReldep reldep = hy_reldeplist_get_clone(obsoletes, i);
+        hy_reldeplist_add(reldeplist, reldep);
+        hy_reldep_free(reldep);
     }
 
     hy_package_free(flying);

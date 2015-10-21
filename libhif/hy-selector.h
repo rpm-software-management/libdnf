@@ -30,7 +30,7 @@ G_BEGIN_DECLS
 HySelector hy_selector_create(HySack sack);
 void hy_selector_free(HySelector sltr);
 int hy_selector_set(HySelector sltr, int keyname, int cmp_type,
-		    const char *match);
+                    const char *match);
 HyPackageList hy_selector_matches(HySelector sltr);
 
 G_END_DECLS

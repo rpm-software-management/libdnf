@@ -45,12 +45,12 @@ pycomp_get_string(PyObject *str, PyObject **tmp_py_str)
     else if (PyString_Check(str))
         res = PyString_AsString(str);
     else
-	PyErr_SetString(PyExc_TypeError, "Expected a string or a unicode object");
+        PyErr_SetString(PyExc_TypeError, "Expected a string or a unicode object");
 #else
     else if (PyBytes_Check(str))
         res = PyBytes_AsString(str);
     else
-	PyErr_SetString(PyExc_TypeError, "Expected a string or a unicode object");
+        PyErr_SetString(PyExc_TypeError, "Expected a string or a unicode object");
 #endif
 
     return res;

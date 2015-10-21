@@ -41,7 +41,7 @@ advisoryrefToPyObject(HyAdvisoryRef advisoryref, PyObject *sack)
 {
     _AdvisoryRefObject *self = PyObject_New(_AdvisoryRefObject, &advisoryref_Type);
     if (!self)
-	return NULL;
+        return NULL;
 
     self->advisoryref = advisoryref;
     self->sack = sack;
@@ -54,8 +54,8 @@ HyAdvisoryRef
 advisoryrefFromPyObject(PyObject *o)
 {
     if (!PyObject_TypeCheck(o, &advisoryref_Type)) {
-	PyErr_SetString(PyExc_TypeError, "Expected an AdvisoryRef object.");
-	return NULL;
+        PyErr_SetString(PyExc_TypeError, "Expected an AdvisoryRef object.");
+        return NULL;
     }
     return ((_AdvisoryRefObject*)o)->advisoryref;
 }
@@ -65,7 +65,7 @@ advisoryref_converter(PyObject *o, HyAdvisoryRef *ref_ptr)
 {
     HyAdvisoryRef ref = advisoryrefFromPyObject(o);
     if (ref == NULL)
-	return 0;
+        return 0;
     *ref_ptr = ref;
     return 1;
 }
@@ -87,30 +87,30 @@ advisoryref_richcompare(PyObject *self, PyObject *other, int op)
     HyAdvisoryRef cself, cother;
 
     if (!advisoryref_converter(self, &cself) ||
-	!advisoryref_converter(other, &cother)) {
-	if(PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError))
-	    PyErr_Clear();
-	Py_INCREF(Py_NotImplemented);
-	return Py_NotImplemented;
+        !advisoryref_converter(other, &cother)) {
+        if(PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError))
+            PyErr_Clear();
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
     }
 
     int identical = advisoryref_identical(cself, cother);
     switch (op) {
     case Py_EQ:
-	result = TEST_COND(identical);
-	break;
+        result = TEST_COND(identical);
+        break;
     case Py_NE:
-	result = TEST_COND(!identical);
-	break;
+        result = TEST_COND(!identical);
+        break;
     case Py_LE:
     case Py_GE:
     case Py_LT:
     case Py_GT:
-	result = Py_NotImplemented;
-	break;
+        result = Py_NotImplemented;
+        break;
     default:
-	PyErr_BadArgument();
-	return NULL;
+        PyErr_BadArgument();
+        return NULL;
     }
 
     Py_INCREF(result);
@@ -139,7 +139,7 @@ get_str(_AdvisoryRefObject *self, void *closure)
     func = (const char *(*)(HyAdvisoryRef))closure;
     cstr = func(self->advisoryref);
     if (cstr == NULL)
-	Py_RETURN_NONE;
+        Py_RETURN_NONE;
     return PyUnicode_FromString(cstr);
 }
 
@@ -153,43 +153,43 @@ static PyGetSetDef advisoryref_getsetters[] = {
 
 PyTypeObject advisoryref_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "_hawkey.AdvisoryRef",	/*tp_name*/
-    sizeof(_AdvisoryRefObject),	/*tp_basicsize*/
-    0,				/*tp_itemsize*/
-    (destructor) advisoryref_dealloc,	/*tp_dealloc*/
-    0,				/*tp_print*/
-    0,				/*tp_getattr*/
-    0,				/*tp_setattr*/
-    0,				/*tp_compare*/
-    0,				/*tp_repr*/
-    0,				/*tp_as_number*/
-    0,				/*tp_as_sequence*/
-    0,				/*tp_as_mapping*/
-    0,				/*tp_hash */
-    0,				/*tp_call*/
-    0,				/*tp_str*/
-    0,				/*tp_getattro*/
-    0,				/*tp_setattro*/
-    0,				/*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,	/*tp_flags*/
-    "AdvisoryRef object",	/* tp_doc */
-    0,				/* tp_traverse */
-    0,				/* tp_clear */
-    advisoryref_richcompare,	/* tp_richcompare */
-    0,				/* tp_weaklistoffset */
-    0,				/* tp_iter */
-    0,				/* tp_iternext */
-    0,				/* tp_methods */
-    0,				/* tp_members */
-    advisoryref_getsetters,	/* tp_getset */
-    0,				/* tp_base */
-    0,				/* tp_dict */
-    0,				/* tp_descr_get */
-    0,				/* tp_descr_set */
-    0,				/* tp_dictoffset */
-    0,				/* tp_init */
-    0,				/* tp_alloc */
-    0,				/* tp_new */
-    0,				/* tp_free */
-    0,				/* tp_is_gc */
+    "_hawkey.AdvisoryRef",        /*tp_name*/
+    sizeof(_AdvisoryRefObject),        /*tp_basicsize*/
+    0,                                /*tp_itemsize*/
+    (destructor) advisoryref_dealloc,        /*tp_dealloc*/
+    0,                                /*tp_print*/
+    0,                                /*tp_getattr*/
+    0,                                /*tp_setattr*/
+    0,                                /*tp_compare*/
+    0,                                /*tp_repr*/
+    0,                                /*tp_as_number*/
+    0,                                /*tp_as_sequence*/
+    0,                                /*tp_as_mapping*/
+    0,                                /*tp_hash */
+    0,                                /*tp_call*/
+    0,                                /*tp_str*/
+    0,                                /*tp_getattro*/
+    0,                                /*tp_setattro*/
+    0,                                /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,        /*tp_flags*/
+    "AdvisoryRef object",        /* tp_doc */
+    0,                                /* tp_traverse */
+    0,                                /* tp_clear */
+    advisoryref_richcompare,        /* tp_richcompare */
+    0,                                /* tp_weaklistoffset */
+    0,                                /* tp_iter */
+    0,                                /* tp_iternext */
+    0,                                /* tp_methods */
+    0,                                /* tp_members */
+    advisoryref_getsetters,        /* tp_getset */
+    0,                                /* tp_base */
+    0,                                /* tp_dict */
+    0,                                /* tp_descr_get */
+    0,                                /* tp_descr_set */
+    0,                                /* tp_dictoffset */
+    0,                                /* tp_init */
+    0,                                /* tp_alloc */
+    0,                                /* tp_new */
+    0,                                /* tp_free */
+    0,                                /* tp_is_gc */
 };

@@ -47,20 +47,20 @@ advisorylist_to_pylist(const HyAdvisoryList advisorylist, PyObject *sack)
 
     PyObject *list = PyList_New(0);
     if (list == NULL)
-	return NULL;
+        return NULL;
 
     const int count = hy_advisorylist_count(advisorylist);
     for (int i = 0; i < count; ++i) {
-	cadvisory = hy_advisorylist_get_clone(advisorylist,  i);
-	advisory = advisoryToPyObject(cadvisory, sack);
+        cadvisory = hy_advisorylist_get_clone(advisorylist,  i);
+        advisory = advisoryToPyObject(cadvisory, sack);
 
-	if (advisory == NULL)
-	    goto fail;
+        if (advisory == NULL)
+            goto fail;
 
-	int rc = PyList_Append(list, advisory);
-	Py_DECREF(advisory);
-	if (rc == -1)
-	    goto fail;
+        int rc = PyList_Append(list, advisory);
+        Py_DECREF(advisory);
+        if (rc == -1)
+            goto fail;
     }
 
     return list;
@@ -77,22 +77,22 @@ advisorypkglist_to_pylist(const HyAdvisoryPkgList advisorypkglist)
 
     PyObject *list = PyList_New(0);
     if (list == NULL)
-	return NULL;
+        return NULL;
 
     const int count = hy_advisorypkglist_count(advisorypkglist);
     for (int i = 0; i < count; ++i) {
-	cadvisorypkg = hy_advisorypkglist_get_clone(advisorypkglist,  i);
-	advisorypkg = advisorypkgToPyObject(cadvisorypkg);
+        cadvisorypkg = hy_advisorypkglist_get_clone(advisorypkglist,  i);
+        advisorypkg = advisorypkgToPyObject(cadvisorypkg);
 
-	if (advisorypkg == NULL) {
-	    hy_advisorypkg_free(cadvisorypkg);
-	    goto fail;
-	}
+        if (advisorypkg == NULL) {
+            hy_advisorypkg_free(cadvisorypkg);
+            goto fail;
+        }
 
-	int rc = PyList_Append(list, advisorypkg);
-	Py_DECREF(advisorypkg);
-	if (rc == -1)
-	    goto fail;
+        int rc = PyList_Append(list, advisorypkg);
+        Py_DECREF(advisorypkg);
+        if (rc == -1)
+            goto fail;
     }
 
     return list;
@@ -109,22 +109,22 @@ advisoryreflist_to_pylist(const HyAdvisoryRefList advisoryreflist, PyObject *sac
 
     PyObject *list = PyList_New(0);
     if (list == NULL)
-	return NULL;
+        return NULL;
 
     const int count = hy_advisoryreflist_count(advisoryreflist);
     for (int i = 0; i < count; ++i) {
-	cadvisoryref = hy_advisoryreflist_get_clone(advisoryreflist,  i);
-	advisoryref = advisoryrefToPyObject(cadvisoryref, sack);
+        cadvisoryref = hy_advisoryreflist_get_clone(advisoryreflist,  i);
+        advisoryref = advisoryrefToPyObject(cadvisoryref, sack);
 
-	if (advisoryref == NULL) {
-	    hy_advisoryref_free(cadvisoryref);
-	    goto fail;
-	}
+        if (advisoryref == NULL) {
+            hy_advisoryref_free(cadvisoryref);
+            goto fail;
+        }
 
-	int rc = PyList_Append(list, advisoryref);
-	Py_DECREF(advisoryref);
-	if (rc == -1)
-	    goto fail;
+        int rc = PyList_Append(list, advisoryref);
+        Py_DECREF(advisoryref);
+        if (rc == -1)
+            goto fail;
     }
 
     return list;
@@ -142,26 +142,26 @@ packagelist_to_pylist(HyPackageList plist, PyObject *sack)
 
     list = PyList_New(0);
     if (list == NULL)
-	return NULL;
+        return NULL;
     retval = list;
 
     int i;
     FOR_PACKAGELIST(cpkg, plist, i) {
-	PyObject *package = new_package(sack, package_id(cpkg));
-	if (package == NULL) {
-	    retval = NULL;
-	    break;
-	}
+        PyObject *package = new_package(sack, package_id(cpkg));
+        if (package == NULL) {
+            retval = NULL;
+            break;
+        }
 
-	int rc = PyList_Append(list, package);
-	Py_DECREF(package);
-	if (rc == -1) {
-	    retval = NULL;
-	    break;
-	}
+        int rc = PyList_Append(list, package);
+        Py_DECREF(package);
+        if (rc == -1) {
+            retval = NULL;
+            break;
+        }
     }
     if (retval)
-	return retval;
+        return retval;
     /* return error */
     Py_DECREF(list);
     return NULL;
@@ -172,20 +172,20 @@ packageset_to_pylist(HyPackageSet pset, PyObject *sack)
 {
     PyObject *list = PyList_New(0);
     if (list == NULL)
-	return NULL;
+        return NULL;
 
     const int count = hy_packageset_count(pset);
     Id id = -1;
     for (int i = 0; i < count; ++i) {
-	id = packageset_get_pkgid(pset, i, id);
-	PyObject *package = new_package(sack, id);
-	if (package == NULL)
-	    goto fail;
+        id = packageset_get_pkgid(pset, i, id);
+        PyObject *package = new_package(sack, id);
+        if (package == NULL)
+            goto fail;
 
-	int rc = PyList_Append(list, package);
-	Py_DECREF(package);
-	if (rc == -1)
-	    goto fail;
+        int rc = PyList_Append(list, package);
+        Py_DECREF(package);
+        if (rc == -1)
+            goto fail;
     }
 
     return list;
@@ -199,18 +199,18 @@ pyseq_to_packageset(PyObject *obj, HySack sack)
 {
     PyObject *sequence = PySequence_Fast(obj, "Expected a sequence.");
     if (sequence == NULL)
-	return NULL;
+        return NULL;
     HyPackageSet pset = hy_packageset_create(sack);
 
     const unsigned count = PySequence_Size(sequence);
     for (int i = 0; i < count; ++i) {
-	PyObject *item = PySequence_Fast_GET_ITEM(sequence, i);
-	if (item == NULL)
-	    goto fail;
-	HyPackage pkg = packageFromPyObject(item);
-	if (pkg == NULL)
-	    goto fail;
-	hy_packageset_add(pset, package_clone(pkg));
+        PyObject *item = PySequence_Fast_GET_ITEM(sequence, i);
+        if (item == NULL)
+            goto fail;
+        HyPackage pkg = packageFromPyObject(item);
+        if (pkg == NULL)
+            goto fail;
+        hy_packageset_add(pset, package_clone(pkg));
     }
 
     Py_DECREF(sequence);
@@ -226,14 +226,14 @@ pyseq_to_reldeplist(PyObject *obj, HySack sack, int cmp_type)
 {
     PyObject *sequence = PySequence_Fast(obj, "Expected a sequence.");
     if (sequence == NULL)
-	return NULL;
+        return NULL;
     HyReldepList reldeplist = hy_reldeplist_create(sack);
 
     const unsigned count = PySequence_Size(sequence);
     for (int i = 0; i < count; ++i) {
-	PyObject *item = PySequence_Fast_GET_ITEM(sequence, i);
-	if (item == NULL)
-	    goto fail;
+        PyObject *item = PySequence_Fast_GET_ITEM(sequence, i);
+        if (item == NULL)
+            goto fail;
 
     if (cmp_type == HY_GLOB) {
         HyReldepList g_reldeplist = NULL;
@@ -274,16 +274,16 @@ strlist_to_pylist(const char **slist)
 {
     PyObject *list = PyList_New(0);
     if (list == NULL)
-	return NULL;
+        return NULL;
 
     for (const char **iter = slist; *iter; ++iter) {
-	PyObject *str = PyUnicode_FromString(*iter);
-	if (str == NULL)
-	    goto err;
-	int rc = PyList_Append(list, str);
-	Py_DECREF(str);
-	if (rc == -1)
-	    goto err;
+        PyObject *str = PyUnicode_FromString(*iter);
+        if (str == NULL)
+            goto err;
+        int rc = PyList_Append(list, str);
+        Py_DECREF(str);
+        if (rc == -1)
+            goto err;
     }
     return list;
 
@@ -297,21 +297,21 @@ reldeplist_to_pylist(const HyReldepList reldeplist, PyObject *sack)
 {
     PyObject *list = PyList_New(0);
     if (list == NULL)
-	return NULL;
+        return NULL;
 
     const int count = hy_reldeplist_count(reldeplist);
     for (int i = 0; i < count; ++i) {
-	HyReldep creldep = hy_reldeplist_get_clone(reldeplist,  i);
-	PyObject *reldep = new_reldep(sack, reldep_id(creldep));
+        HyReldep creldep = hy_reldeplist_get_clone(reldeplist,  i);
+        PyObject *reldep = new_reldep(sack, reldep_id(creldep));
 
-	hy_reldep_free(creldep);
-	if (reldep == NULL)
-	    goto fail;
+        hy_reldep_free(creldep);
+        if (reldep == NULL)
+            goto fail;
 
-	int rc = PyList_Append(list, reldep);
-	Py_DECREF(reldep);
-	if (rc == -1)
-	    goto fail;
+        int rc = PyList_Append(list, reldep);
+        Py_DECREF(reldep);
+        if (rc == -1)
+            goto fail;
     }
 
     return list;

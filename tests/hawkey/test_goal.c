@@ -46,7 +46,7 @@ get_latest_pkg(HySack sack, const char *name)
     hy_query_filter_latest_per_arch(q, 1);
     HyPackageList plist = hy_query_run(q);
     fail_unless(hy_packagelist_count(plist) == 1,
-		"get_latest_pkg() failed finding '%s'.", name);
+                "get_latest_pkg() failed finding '%s'.", name);
     HyPackage pkg = hy_packagelist_get_clone(plist, 0);
     hy_query_free(q);
     hy_packagelist_free(plist);
@@ -110,7 +110,7 @@ userinstalled(HySack sack, HyGoal goal, const char *name)
     int i;
 
     FOR_PACKAGELIST(pkg, plist, i)
-	hy_goal_userinstalled(goal, pkg);
+        hy_goal_userinstalled(goal, pkg);
 
     hy_packagelist_free(plist);
     hy_query_free(q);
@@ -131,9 +131,9 @@ START_TEST(test_goal_sanity)
     HyGoal goal = hy_goal_create(test_globals.sack);
     fail_if(goal == NULL);
     fail_unless(hy_sack_count(test_globals.sack) ==
-		TEST_EXPECT_SYSTEM_NSOLVABLES +
-		TEST_EXPECT_MAIN_NSOLVABLES +
-		TEST_EXPECT_UPDATES_NSOLVABLES);
+                TEST_EXPECT_SYSTEM_NSOLVABLES +
+                TEST_EXPECT_MAIN_NSOLVABLES +
+                TEST_EXPECT_UPDATES_NSOLVABLES);
     hy_goal_free(goal);
 }
 END_TEST
@@ -458,10 +458,10 @@ assert_list_names(HyPackageList plist, ...)
 
     va_start(names, plist);
     while ((name = va_arg(names, char *)) != NULL) {
-	if (i >= count)
-	    fail("assert_list_names(): list too short");
-	HyPackage pkg = hy_packagelist_get(plist, i++);
-	ck_assert_str_eq(hy_package_get_name(pkg), name);
+        if (i >= count)
+            fail("assert_list_names(): list too short");
+        HyPackage pkg = hy_packagelist_get(plist, i++);
+        ck_assert_str_eq(hy_package_get_name(pkg), name);
     }
     fail_unless(i == count, "assert_list_names(): too many items in the list");
     va_end(names);
@@ -482,7 +482,7 @@ START_TEST(test_goal_upgrade_all)
 
     plist = hy_goal_list_upgrades(goal, NULL);
     assert_list_names(plist, "dog", "flying", "fool", "pilchard", "pilchard",
-		      NULL);
+                      NULL);
 
     // see all obsoletes of fool:
     HyPackage pkg = hy_packagelist_get(plist, 2);
@@ -511,12 +511,12 @@ START_TEST(test_goal_downgrade)
 
     HyPackage pkg = hy_packagelist_get(plist, 0);
     ck_assert_str_eq(hy_package_get_evr(pkg),
-		     "6:4.9-3");
+                     "6:4.9-3");
     HyPackageList obsoleted = hy_goal_list_obsoleted_by_package(goal, pkg);
     fail_unless(hy_packagelist_count(obsoleted) == 1);
     HyPackage old_pkg = hy_packagelist_get(obsoleted, 0);
     ck_assert_str_eq(hy_package_get_evr(old_pkg),
-		     "6:5.0-11");
+                     "6:5.0-11");
     hy_packagelist_free(obsoleted);
     hy_packagelist_free(plist);
 
@@ -537,14 +537,14 @@ START_TEST(test_goal_get_reason)
     int i;
     int set = 0;
     FOR_PACKAGELIST(pkg, plist, i) {
-	if (!strcmp(hy_package_get_name(pkg), "walrus")) {
-	    set |= 1 << 0;
-	    fail_unless(hy_goal_get_reason(goal, pkg) == HY_REASON_USER);
-	}
-	if (!strcmp(hy_package_get_name(pkg), "semolina")) {
-	    set |= 1 << 1;
-	    fail_unless(hy_goal_get_reason(goal, pkg) == HY_REASON_DEP);
-	}
+        if (!strcmp(hy_package_get_name(pkg), "walrus")) {
+            set |= 1 << 0;
+            fail_unless(hy_goal_get_reason(goal, pkg) == HY_REASON_USER);
+        }
+        if (!strcmp(hy_package_get_name(pkg), "semolina")) {
+            set |= 1 << 1;
+            fail_unless(hy_goal_get_reason(goal, pkg) == HY_REASON_DEP);
+        }
     }
     fail_unless(set == 3);
 
@@ -1053,8 +1053,8 @@ solution_cb(HyGoal goal, void *data)
     int i;
 
     FOR_PACKAGELIST(pkg, new_installs, i)
-	if (!hy_packagelist_has(solutions->installs, pkg))
-	    hy_packagelist_push(solutions->installs, hy_package_link(pkg));
+        if (!hy_packagelist_has(solutions->installs, pkg))
+            hy_packagelist_push(solutions->installs, hy_package_link(pkg));
     hy_packagelist_free(new_installs);
 
     return 0;

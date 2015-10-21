@@ -64,23 +64,23 @@ static int
 current_rpmdb_checksum(Pool *pool, unsigned char csout[CHKSUM_BYTES])
 {
     const char *rpmdb_prefix_paths[] = { "/var/lib/rpm/Packages",
-					 "/usr/share/rpm/Packages" };
+                                         "/usr/share/rpm/Packages" };
     unsigned int i;
     const char *fn;
     FILE *fp_rpmdb = NULL;
     int ret = 0;
 
     for (i = 0; i < sizeof(rpmdb_prefix_paths)/sizeof(*rpmdb_prefix_paths); i++) {
-	fn = pool_prepend_rootdir_tmp(pool, rpmdb_prefix_paths[i]);
-	fp_rpmdb = fopen(fn, "r");
-	if (fp_rpmdb)
-	    break;
+        fn = pool_prepend_rootdir_tmp(pool, rpmdb_prefix_paths[i]);
+        fp_rpmdb = fopen(fn, "r");
+        if (fp_rpmdb)
+            break;
     }
 
     if (!fp_rpmdb || checksum_stat(csout, fp_rpmdb))
-	ret = 1;
+        ret = 1;
     if (fp_rpmdb)
-	fclose(fp_rpmdb);
+        fclose(fp_rpmdb);
     return ret;
 }
 
@@ -90,9 +90,9 @@ can_use_rpmdb_cache(FILE *fp_solv, unsigned char cs[CHKSUM_BYTES])
     unsigned char cs_cache[CHKSUM_BYTES];
 
     if (fp_solv &&
-	!checksum_read(cs_cache, fp_solv) &&
-	!checksum_cmp(cs_cache, cs))
-	return 1;
+        !checksum_read(cs_cache, fp_solv) &&
+        !checksum_cmp(cs_cache, cs))
+        return 1;
 
     return 0;
 }
@@ -103,9 +103,9 @@ can_use_repomd_cache(FILE *fp_solv, unsigned char cs_repomd[CHKSUM_BYTES])
     unsigned char cs_cache[CHKSUM_BYTES];
 
     if (fp_solv &&
-	!checksum_read(cs_cache, fp_solv) &&
-	!checksum_cmp(cs_cache, cs_repomd))
-	return 1;
+        !checksum_read(cs_cache, fp_solv) &&
+        !checksum_cmp(cs_cache, cs_repomd))
+        return 1;
 
     return 0;
 }
@@ -114,8 +114,8 @@ static Map *
 free_map_fully(Map *m)
 {
     if (m) {
-	map_free(m);
-	solv_free(m);
+        map_free(m);
+        solv_free(m);
     }
     return NULL;
 }
@@ -125,23 +125,23 @@ sack_recompute_considered(HySack sack)
 {
     Pool *pool = sack_pool(sack);
     if (sack->considered_uptodate)
-	return;
+        return;
     if (!pool->considered) {
-	if (!sack->repo_excludes && !sack->pkg_excludes)
-	    return;
-	pool->considered = solv_calloc(1, sizeof(Map));
-	map_init(pool->considered, pool->nsolvables);
+        if (!sack->repo_excludes && !sack->pkg_excludes)
+            return;
+        pool->considered = solv_calloc(1, sizeof(Map));
+        map_init(pool->considered, pool->nsolvables);
     } else
-	map_grow(pool->considered, pool->nsolvables);
+        map_grow(pool->considered, pool->nsolvables);
 
     // considered = (all - repo_excludes - pkg_excludes) and pkg_includes
     map_setall(pool->considered);
     if (sack->repo_excludes)
-	map_subtract(pool->considered, sack->repo_excludes);
+        map_subtract(pool->considered, sack->repo_excludes);
     if (sack->pkg_excludes)
-	map_subtract(pool->considered, sack->pkg_excludes);
+        map_subtract(pool->considered, sack->pkg_excludes);
     if (sack->pkg_includes)
-	map_and(pool->considered, sack->pkg_includes);
+        map_and(pool->considered, sack->pkg_includes);
     pool_createwhatprovides(sack->pool);
     sack->considered_uptodate = 1;
 }
@@ -155,29 +155,29 @@ setarch(HySack sack, const char *req_arch)
     const char *arch = req_arch;
     char *detected = NULL;
     if (arch == NULL) {
-	ret = hy_detect_arch(&detected);
-	if (ret) {
-	    HY_LOG_ERROR("hy_detect_arch() failed: %d", ret);
-	    return ret;
-	}
-	arch = detected;
+        ret = hy_detect_arch(&detected);
+        if (ret) {
+            HY_LOG_ERROR("hy_detect_arch() failed: %d", ret);
+            return ret;
+        }
+        arch = detected;
     }
 
     HY_LOG_INFO("Architecture is: %s", arch);
     pool_setarch(pool, arch);
     if (!strcmp(arch, "noarch"))
-	// noarch never fails
-	goto done;
+        // noarch never fails
+        goto done;
 
     /* pool_setarch() doesn't tell us when it defaulted to 'noarch' but we
        consider it a failure. the only way to find out is count the
        architectures known to the Pool. */
     int count = 0;
     for (Id id = 0; id <= pool->lastarch; ++id)
-	if (pool->id2arch[id])
-	    count++;
+        if (pool->id2arch[id])
+            count++;
     if (count < 2)
-	ret = HIF_ERROR_FAILED;
+        ret = HIF_ERROR_FAILED;
 
  done:
     solv_free(detected);
@@ -190,18 +190,18 @@ log_cb(Pool *pool, void *cb_data, int level, const char *buf)
     HySack sack = cb_data;
 
     if (sack->log_out == NULL) {
-	const char *fn = sack->log_file;
+        const char *fn = sack->log_file;
 
-	if (!sack->log_file)
-	    fn = pool_tmpjoin(pool, sack->cache_dir, "/hawkey.log", NULL);
+        if (!sack->log_file)
+            fn = pool_tmpjoin(pool, sack->cache_dir, "/hawkey.log", NULL);
 
-	sack->log_out = fopen(fn, "a");
-	if (sack->log_out)
-	    HY_LOG_INFO("Started hawkey-%d.%d.%d.", HIF_MAJOR_VERSION,
-			HIF_MINOR_VERSION, HIF_MICRO_VERSION);
+        sack->log_out = fopen(fn, "a");
+        if (sack->log_out)
+            HY_LOG_INFO("Started hawkey-%d.%d.%d.", HIF_MAJOR_VERSION,
+                        HIF_MINOR_VERSION, HIF_MICRO_VERSION);
     }
     if (!sack->log_out)
-	return;
+        return;
 
     time_t t = time(NULL);
     struct tm tm;
@@ -223,9 +223,9 @@ queue_di(Pool *pool, Queue *queue, const char *str, int di_key, int flags)
     int di_flags = SEARCH_STRING;
 
     if (flags & HY_ICASE)
-	di_flags |= SEARCH_NOCASE;
+        di_flags |= SEARCH_NOCASE;
     if (flags & HY_GLOB)
-	di_flags |= SEARCH_GLOB;
+        di_flags |= SEARCH_GLOB;
 
     dataiterator_init(&di, pool, 0, 0, di_key, str, di_flags);
     while (dataiterator_step(&di))
@@ -240,16 +240,16 @@ queue_pkg_name(HySack sack, Queue *queue, const char *provide, int flags)
 {
     Pool *pool = sack_pool(sack);
     if (!flags) {
-	Id id = pool_str2id(pool, provide, 0);
-	if (id == 0)
-	    return;
-	Id p, pp;
-	FOR_PKG_PROVIDES(p, pp, id) {
-	    Solvable *s = pool_id2solvable(pool, p);
-	    if (s->name == id)
-		queue_push(queue, p);
-	}
-	return;
+        Id id = pool_str2id(pool, provide, 0);
+        if (id == 0)
+            return;
+        Id p, pp;
+        FOR_PKG_PROVIDES(p, pp, id) {
+            Solvable *s = pool_id2solvable(pool, p);
+            if (s->name == id)
+                queue_push(queue, p);
+        }
+        return;
     }
 
     queue_di(pool, queue, provide, SOLVABLE_NAME, flags);
@@ -261,13 +261,13 @@ queue_provides(HySack sack, Queue *queue, const char *provide, int flags)
 {
     Pool *pool = sack_pool(sack);
     if (!flags) {
-	Id id = pool_str2id(pool, provide, 0);
-	if (id == 0)
-	    return;
-	Id p, pp;
-	FOR_PKG_PROVIDES(p, pp, id)
-	    queue_push(queue, p);
-	return;
+        Id id = pool_str2id(pool, provide, 0);
+        if (id == 0)
+            return;
+        Id p, pp;
+        FOR_PKG_PROVIDES(p, pp, id)
+            queue_push(queue, p);
+        return;
     }
 
     queue_di(pool, queue, provide, SOLVABLE_PROVIDES, flags);
@@ -280,14 +280,14 @@ queue_filter_version(HySack sack, Queue *queue, const char *version)
     Pool *pool = sack_pool(sack);
     int j = 0;
     for (int i = 0; i < queue->count; ++i) {
-	Id p = queue->elements[i];
-	Solvable *s = pool_id2solvable(pool, p);
-	char *e, *v, *r;
-	const char *evr = pool_id2str(pool, s->evr);
+        Id p = queue->elements[i];
+        Solvable *s = pool_id2solvable(pool, p);
+        char *e, *v, *r;
+        const char *evr = pool_id2str(pool, s->evr);
 
-	pool_split_evr(pool, evr, &e, &v, &r);
-	if (!strcmp(v, version))
-	    queue->elements[j++] = p;
+        pool_split_evr(pool, evr, &e, &v, &r);
+        if (!strcmp(v, version))
+            queue->elements[j++] = p;
     }
     queue_truncate(queue, j);
 }
@@ -396,8 +396,8 @@ repo_is_one_piece(Repo *repo)
 {
     int i;
     for (i = repo->start; i < repo->end; i++)
-	if (repo->pool->solvables[i].repo != repo)
-	    return 0;
+        if (repo->pool->solvables[i].repo != repo)
+            return 0;
     return 1;
 }
 
@@ -724,12 +724,12 @@ hy_sack_free(HySack sack)
     int i;
 
     FOR_REPOS(i, repo) {
-	HyRepo hrepo = repo->appdata;
-	hy_repo_free(hrepo);
+        HyRepo hrepo = repo->appdata;
+        hy_repo_free(hrepo);
     }
     if (sack->log_out) {
-	HY_LOG_INFO("Finished.", sack);
-	fclose(sack->log_out);
+        HY_LOG_INFO("Finished.", sack);
+        fclose(sack->log_out);
     }
     solv_free(sack->cache_dir);
     solv_free(sack->log_file);
@@ -760,7 +760,7 @@ hy_sack_get_running_kernel(HySack sack)
 {
     Id id = sack_running_kernel(sack);
     if (id < 0)
-	return NULL;
+        return NULL;
     return package_create(sack, id);
 }
 
@@ -770,7 +770,7 @@ hy_sack_give_cache_fn(HySack sack, const char *reponame, const char *ext)
     assert(reponame);
     char *fn = solv_dupjoin(sack->cache_dir, "/", reponame);
     if (ext)
-	return solv_dupappend(fn, ext, ".solvx");
+        return solv_dupappend(fn, ext, ".solvx");
     return solv_dupappend(fn, ".solv", NULL);
 }
 
@@ -783,13 +783,13 @@ hy_sack_list_arches(HySack sack)
     const char **ss = NULL;
 
     if (!(pool->id2arch && pool->lastarch))
-	return NULL;
+        return NULL;
 
     for (Id id = 0; id <= pool->lastarch; ++id) {
-	if (!pool->id2arch[id])
-	    continue;
-	ss = solv_extend(ss, c, 1, sizeof(char*), BLOCK_SIZE);
-	ss[c++] = pool_id2str(pool, id);
+        if (!pool->id2arch[id])
+            continue;
+        ss = solv_extend(ss, c, 1, sizeof(char*), BLOCK_SIZE);
+        ss[c++] = pool_id2str(pool, id);
     }
     ss = solv_extend(ss, c, 1, sizeof(char*), BLOCK_SIZE);
     ss[c++] = NULL;
@@ -803,9 +803,9 @@ hy_sack_set_installonly(HySack sack, const char **installonly)
 
     queue_empty(&sack->installonly);
     if (installonly == NULL)
-	return;
+        return;
     while ((name = *installonly++) != NULL)
-	queue_pushunique(&sack->installonly, pool_str2id(sack->pool, name, 1));
+        queue_pushunique(&sack->installonly, pool_str2id(sack->pool, name, 1));
 }
 
 void
@@ -826,7 +826,7 @@ void
 hy_sack_create_cmdline_repo(HySack sack)
 {
     if (sack->cmdline_repo_created)
-	return;
+        return;
 
     HyRepo hrepo = hy_repo_create(HY_CMDLINE_REPO_NAME);
     Repo *repo = repo_create(sack_pool(sack), HY_CMDLINE_REPO_NAME);
@@ -847,8 +847,8 @@ hy_sack_add_cmdline_package(HySack sack, const char *fn)
 
     assert(repo);
     if (!is_readable_rpm(fn)) {
-	HY_LOG_ERROR("not a readable RPM file: %s, skipping", fn);
-	return NULL;
+        HY_LOG_ERROR("not a readable RPM file: %s, skipping", fn);
+        return NULL;
     }
     p = repo_add_rpm(repo, fn, REPO_REUSE_REPODATA|REPO_NO_INTERNALIZE);
     sack->provides_ready = 0;    /* triggers internalizing later */
@@ -875,9 +875,9 @@ hy_sack_add_excludes(HySack sack, HyPackageSet pset)
     Map *nexcl = packageset_get_map(pset);
 
     if (excl == NULL) {
-	excl = solv_calloc(1, sizeof(Map));
-	map_init(excl, pool->nsolvables);
-	sack->pkg_excludes = excl;
+        excl = solv_calloc(1, sizeof(Map));
+        map_init(excl, pool->nsolvables);
+        sack->pkg_excludes = excl;
     }
     assert(excl->size >= nexcl->size);
     map_or(excl, nexcl);
@@ -892,9 +892,9 @@ hy_sack_add_includes(HySack sack, HyPackageSet pset)
     Map *nincl = packageset_get_map(pset);
 
     if (incl == NULL) {
-	incl = solv_calloc(1, sizeof(Map));
-	map_init(incl, pool->nsolvables);
-	sack->pkg_includes = incl;
+        incl = solv_calloc(1, sizeof(Map));
+        map_init(incl, pool->nsolvables);
+        sack->pkg_includes = incl;
     }
     assert(incl->size >= nincl->size);
     map_or(incl, nincl);
@@ -909,8 +909,8 @@ hy_sack_set_excludes(HySack sack, HyPackageSet pset)
     if (pset) {
         Map *nexcl = packageset_get_map(pset);
 
-	sack->pkg_excludes = solv_calloc(1, sizeof(Map));
-	map_init_clone(sack->pkg_excludes, nexcl);
+        sack->pkg_excludes = solv_calloc(1, sizeof(Map));
+        map_init_clone(sack->pkg_excludes, nexcl);
     }
     sack->considered_uptodate = 0;
 }
@@ -923,8 +923,8 @@ hy_sack_set_includes(HySack sack, HyPackageSet pset)
     if (pset) {
         Map *nincl = packageset_get_map(pset);
 
-	sack->pkg_includes = solv_calloc(1, sizeof(Map));
-	map_init_clone(sack->pkg_includes, nincl);
+        sack->pkg_includes = solv_calloc(1, sizeof(Map));
+        map_init_clone(sack->pkg_includes, nincl);
     }
     sack->considered_uptodate = 0;
 }
@@ -937,11 +937,11 @@ hy_sack_repo_enabled(HySack sack, const char *reponame, int enabled)
     Map *excl = sack->repo_excludes;
 
     if (repo == NULL)
-	return HIF_ERROR_INTERNAL_ERROR;
+        return HIF_ERROR_INTERNAL_ERROR;
     if (excl == NULL) {
-	excl = solv_calloc(1, sizeof(Map));
-	map_init(excl, pool->nsolvables);
-	sack->repo_excludes = excl;
+        excl = solv_calloc(1, sizeof(Map));
+        map_init(excl, pool->nsolvables);
+        sack->repo_excludes = excl;
     }
     repo->disabled = !enabled;
     sack->provides_ready = 0;
@@ -949,11 +949,11 @@ hy_sack_repo_enabled(HySack sack, const char *reponame, int enabled)
     Id p;
     Solvable *s;
     if (repo->disabled)
-	FOR_REPO_SOLVABLES(repo, p, s)
-	    MAPSET(sack->repo_excludes, p);
+        FOR_REPO_SOLVABLES(repo, p, s)
+            MAPSET(sack->repo_excludes, p);
     else
-	FOR_REPO_SOLVABLES(repo, p, s)
-	    MAPCLR(sack->repo_excludes, p);
+        FOR_REPO_SOLVABLES(repo, p, s)
+            MAPCLR(sack->repo_excludes, p);
     sack->considered_uptodate = 0;
     return 0;
 }
@@ -1130,8 +1130,8 @@ is_superset(Queue *q1, Queue *q2, Map *m)
     for (i = 0; i < q2->count; i++)
         MAPSET(m, q2->elements[i]);
     for (i = 0; i < q1->count; i++)
-	if (MAPTST(m, q1->elements[i]))
-	    cnt++;
+        if (MAPTST(m, q1->elements[i]))
+            cnt++;
     for (i = 0; i < q2->count; i++)
         MAPCLR(m, q2->elements[i]);
     return cnt == q2->count;
@@ -1140,7 +1140,7 @@ is_superset(Queue *q1, Queue *q2, Map *m)
 
 static void
 rewrite_repos(HySack sack, Queue *addedfileprovides,
-	      Queue *addedfileprovides_inst)
+              Queue *addedfileprovides_inst)
 {
     Pool *pool = sack_pool(sack);
     int i;
@@ -1153,41 +1153,41 @@ rewrite_repos(HySack sack, Queue *addedfileprovides,
 
     Repo *repo;
     FOR_REPOS(i, repo) {
-	HyRepo hrepo = repo->appdata;
-	if (!hrepo)
-	    continue;
-	if (!(hrepo->load_flags & HY_BUILD_CACHE))
-	    continue;
-	if (hrepo->main_nrepodata < 2)
-	    continue;
-	/* now check if the repo already contains all of our file provides */
-	Queue *addedq = repo == pool->installed && addedfileprovides_inst ?
-	    addedfileprovides_inst : addedfileprovides;
-	if (!addedq->count)
-	    continue;
-	Repodata *data = repo_id2repodata(repo, 1);
-	queue_empty(&fileprovidesq);
-	if (repodata_lookup_idarray(data, SOLVID_META,
-				    REPOSITORY_ADDEDFILEPROVIDES,
-				    &fileprovidesq)) {
-	    if (is_superset(&fileprovidesq, addedq, &providedids))
-		continue;
-	}
-	repodata_set_idarray(data, SOLVID_META,
-			     REPOSITORY_ADDEDFILEPROVIDES, addedq);
-	repodata_internalize(data);
-	/* re-write main data only */
-	int oldnrepodata = repo->nrepodata;
-	int oldnsolvables = repo->nsolvables;
-	int oldend = repo->end;
-	repo->nrepodata = hrepo->main_nrepodata;
-	repo->nsolvables = hrepo->main_nsolvables;
-	repo->end = hrepo->main_end;
-	HY_LOG_INFO("rewriting repo: %s", repo->name);
-	write_main(sack, hrepo, 0, NULL);
-	repo->nrepodata = oldnrepodata;
-	repo->nsolvables = oldnsolvables;
-	repo->end = oldend;
+        HyRepo hrepo = repo->appdata;
+        if (!hrepo)
+            continue;
+        if (!(hrepo->load_flags & HY_BUILD_CACHE))
+            continue;
+        if (hrepo->main_nrepodata < 2)
+            continue;
+        /* now check if the repo already contains all of our file provides */
+        Queue *addedq = repo == pool->installed && addedfileprovides_inst ?
+            addedfileprovides_inst : addedfileprovides;
+        if (!addedq->count)
+            continue;
+        Repodata *data = repo_id2repodata(repo, 1);
+        queue_empty(&fileprovidesq);
+        if (repodata_lookup_idarray(data, SOLVID_META,
+                                    REPOSITORY_ADDEDFILEPROVIDES,
+                                    &fileprovidesq)) {
+            if (is_superset(&fileprovidesq, addedq, &providedids))
+                continue;
+        }
+        repodata_set_idarray(data, SOLVID_META,
+                             REPOSITORY_ADDEDFILEPROVIDES, addedq);
+        repodata_internalize(data);
+        /* re-write main data only */
+        int oldnrepodata = repo->nrepodata;
+        int oldnsolvables = repo->nsolvables;
+        int oldend = repo->end;
+        repo->nrepodata = hrepo->main_nrepodata;
+        repo->nsolvables = hrepo->main_nsolvables;
+        repo->end = hrepo->main_end;
+        HY_LOG_INFO("rewriting repo: %s", repo->name);
+        write_main(sack, hrepo, 0, NULL);
+        repo->nrepodata = oldnrepodata;
+        repo->nsolvables = oldnsolvables;
+        repo->end = oldend;
     }
     queue_free(&fileprovidesq);
     map_free(&providedids);
@@ -1197,18 +1197,18 @@ void
 sack_make_provides_ready(HySack sack)
 {
     if (!sack->provides_ready) {
-	Queue addedfileprovides;
-	Queue addedfileprovides_inst;
-	queue_init(&addedfileprovides);
-	queue_init(&addedfileprovides_inst);
-	pool_addfileprovides_queue(sack->pool, &addedfileprovides,
-				   &addedfileprovides_inst);
+        Queue addedfileprovides;
+        Queue addedfileprovides_inst;
+        queue_init(&addedfileprovides);
+        queue_init(&addedfileprovides_inst);
+        pool_addfileprovides_queue(sack->pool, &addedfileprovides,
+                                   &addedfileprovides_inst);
         if (addedfileprovides.count || addedfileprovides_inst.count)
-	    rewrite_repos(sack, &addedfileprovides, &addedfileprovides_inst);
-	queue_free(&addedfileprovides);
-	queue_free(&addedfileprovides_inst);
-	pool_createwhatprovides(sack->pool);
-	sack->provides_ready = 1;
+            rewrite_repos(sack, &addedfileprovides, &addedfileprovides_inst);
+        queue_free(&addedfileprovides);
+        queue_free(&addedfileprovides_inst);
+        pool_createwhatprovides(sack->pool);
+        sack->provides_ready = 1;
     }
 }
 
@@ -1216,7 +1216,7 @@ Id
 sack_running_kernel(HySack sack)
 {
     if (sack->running_kernel_id >= 0)
-	return sack->running_kernel_id;
+        return sack->running_kernel_id;
     sack->running_kernel_id = sack->running_kernel_fn(sack);
     return sack->running_kernel_id;
 }
@@ -1249,11 +1249,11 @@ sack_knows(HySack sack, const char *name, const char *version, int flags)
     flags &= ~HY_NAME_ONLY;
 
     if (name_only) {
-	queue_pkg_name(sack, q, name, flags);
-	if (version != NULL)
-	    queue_filter_version(sack, q, version);
+        queue_pkg_name(sack, q, name, flags);
+        if (version != NULL)
+            queue_filter_version(sack, q, version);
     } else
-	queue_provides(sack, q, name, flags);
+        queue_provides(sack, q, name, flags);
 
     ret = q->count > 0;
     queue_free(q);

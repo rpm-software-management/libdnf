@@ -96,7 +96,7 @@ HyPackage
 package_from_solvable(HySack sack, Solvable *s)
 {
     if (!s)
-	return NULL;
+        return NULL;
 
     Id p = s - s->repo->pool->solvables;
     return package_create(sack, p);
@@ -113,9 +113,9 @@ void
 hy_package_free(HyPackage pkg)
 {
     if (--pkg->nrefs > 0)
-	return;
+        return;
     if (pkg->destroy_func)
-	pkg->destroy_func(pkg->userdata);
+        pkg->destroy_func(pkg->userdata);
     solv_free(pkg);
 }
 
@@ -136,7 +136,7 @@ void
 hy_package_set_userdata(HyPackage pkg, void *userdata, HyUserdataDestroy destroy_func)
 {
     if (pkg->destroy_func)
-	pkg->destroy_func(pkg->userdata);
+        pkg->destroy_func(pkg->userdata);
     pkg->userdata = userdata;
     pkg->destroy_func = destroy_func;
 }
@@ -165,11 +165,11 @@ hy_package_cmp(HyPackage pkg1, HyPackage pkg2)
     const char *str2 = pool_id2str(pool2, s2->name);
     int ret = strcmp(str1, str2);
     if (ret)
-	return ret;
+        return ret;
 
     ret = hy_package_evr_cmp(pkg1, pkg2);
     if (ret)
-	return ret;
+        return ret;
 
     str1 = pool_id2str(pool1, s1->arch);
     str2 = pool_id2str(pool2, s2->arch);
@@ -264,7 +264,7 @@ hy_package_get_chksum(HyPackage pkg, int *type)
 
     ret = solvable_lookup_bin_checksum(s, SOLVABLE_CHECKSUM, type);
     if (ret)
-	*type = checksumt_l2h(*type);
+        *type = checksumt_l2h(*type);
     return ret;
 }
 
@@ -281,7 +281,7 @@ hy_package_get_hdr_chksum(HyPackage pkg, int *type)
 
     ret = solvable_lookup_bin_checksum(s, SOLVABLE_HDRID, type);
     if (ret)
-	*type = checksumt_l2h(*type);
+        *type = checksumt_l2h(*type);
     return ret;
 }
 
@@ -378,7 +378,7 @@ unsigned long long
 hy_package_get_size(HyPackage pkg)
 {
     unsigned type = hy_package_installed(pkg) ? SOLVABLE_INSTALLSIZE :
-						SOLVABLE_DOWNLOADSIZE;
+                                                SOLVABLE_DOWNLOADSIZE;
     return lookup_num(pkg, type);
 }
 
@@ -440,9 +440,9 @@ hy_package_get_files(HyPackage pkg)
 
     repo_internalize_trigger(s->repo);
     dataiterator_init(&di, pool, s->repo, pkg->id, SOLVABLE_FILELIST, NULL,
-		      SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
+                      SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
     while (dataiterator_step(&di)) {
-	g_ptr_array_add(ret, g_strdup(di.kv.str));
+        g_ptr_array_add(ret, g_strdup(di.kv.str));
     }
     dataiterator_free(&di);
     g_ptr_array_add(ret, NULL);
@@ -471,15 +471,15 @@ hy_package_get_advisories(HyPackage pkg, int cmp_type)
         if (!evr)
             continue;
 
-	cmp = pool_evrcmp(pool, evr, s->evr, EVRCMP_COMPARE);
-	if ((cmp > 0 && (cmp_type & HY_GT)) ||
-	    (cmp < 0 && (cmp_type & HY_LT)) ||
-	    (cmp == 0 && (cmp_type & HY_EQ))) {
-	    advisory = advisory_create(pool, di.solvid);
-	    advisorylist_add(advisorylist, advisory);
-	    hy_advisory_free(advisory);
-	    dataiterator_skip_solvable(&di);
-	}
+        cmp = pool_evrcmp(pool, evr, s->evr, EVRCMP_COMPARE);
+        if ((cmp > 0 && (cmp_type & HY_GT)) ||
+            (cmp < 0 && (cmp_type & HY_LT)) ||
+            (cmp == 0 && (cmp_type & HY_EQ))) {
+            advisory = advisory_create(pool, di.solvid);
+            advisorylist_add(advisorylist, advisory);
+            hy_advisory_free(advisory);
+            dataiterator_skip_solvable(&di);
+        }
     }
     dataiterator_free(&di);
     return advisorylist;
@@ -497,30 +497,30 @@ hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr)
     const char *name = hy_package_get_name(pkg);
 
     dataiterator_init(&di, pool, s->repo, SOLVID_META, DELTA_PACKAGE_NAME, name,
-		      SEARCH_STRING);
+                      SEARCH_STRING);
     dataiterator_prepend_keyname(&di, REPOSITORY_DELTAINFO);
     while (dataiterator_step(&di)) {
-	dataiterator_setpos_parent(&di);
-	if (pool_lookup_id(pool, SOLVID_POS, DELTA_PACKAGE_EVR) != s->evr ||
-	    pool_lookup_id(pool, SOLVID_POS, DELTA_PACKAGE_ARCH) != s->arch)
-	    continue;
-	const char * base_evr = pool_id2str(pool, pool_lookup_id(pool, SOLVID_POS,
-								 DELTA_BASE_EVR));
-	if (strcmp(base_evr, from_evr))
-	    continue;
+        dataiterator_setpos_parent(&di);
+        if (pool_lookup_id(pool, SOLVID_POS, DELTA_PACKAGE_EVR) != s->evr ||
+            pool_lookup_id(pool, SOLVID_POS, DELTA_PACKAGE_ARCH) != s->arch)
+            continue;
+        const char * base_evr = pool_id2str(pool, pool_lookup_id(pool, SOLVID_POS,
+                                                                 DELTA_BASE_EVR));
+        if (strcmp(base_evr, from_evr))
+            continue;
 
-	// we have the right delta info, set up HyPackageDelta and break out:
-	delta = delta_create();
-	delta->location = solv_strdup(pool_lookup_deltalocation(pool, SOLVID_POS, 0));
-	delta->baseurl = solv_strdup(pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_BASE));
-	delta->downloadsize = pool_lookup_num(pool, SOLVID_POS, DELTA_DOWNLOADSIZE, 0);
-	checksum = pool_lookup_bin_checksum(pool, SOLVID_POS, DELTA_CHECKSUM, &checksum_type);
-	if (checksum) {
-	    delta->checksum_type = checksumt_l2h(checksum_type);
-	    delta->checksum = solv_memdup((void*)checksum, checksum_type2length(delta->checksum_type));
-	}
+        // we have the right delta info, set up HyPackageDelta and break out:
+        delta = delta_create();
+        delta->location = solv_strdup(pool_lookup_deltalocation(pool, SOLVID_POS, 0));
+        delta->baseurl = solv_strdup(pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_BASE));
+        delta->downloadsize = pool_lookup_num(pool, SOLVID_POS, DELTA_DOWNLOADSIZE, 0);
+        checksum = pool_lookup_bin_checksum(pool, SOLVID_POS, DELTA_CHECKSUM, &checksum_type);
+        if (checksum) {
+            delta->checksum_type = checksumt_l2h(checksum_type);
+            delta->checksum = solv_memdup((void*)checksum, checksum_type2length(delta->checksum_type));
+        }
 
-	break;
+        break;
     }
     dataiterator_free(&di);
 
@@ -549,7 +549,7 @@ const unsigned char *
 hy_packagedelta_get_chksum(HyPackageDelta delta, int *type)
 {
     if (type)
-	*type = delta->checksum_type;
+        *type = delta->checksum_type;
     return delta->checksum;
 }
 

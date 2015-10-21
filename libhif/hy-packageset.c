@@ -52,36 +52,36 @@ map_index2id(Map *map, unsigned index, Id previous)
     Id id;
 
     if (previous >= 0) {
-	ti += previous >> 3;
-	unsigned char byte = *ti; // byte with the previous match
-	byte >>= (previous & 7) + 1; // shift away all previous 1 bits
-	enabled = _BitCountLookup[byte]; // are there any 1 bits left?
+        ti += previous >> 3;
+        unsigned char byte = *ti; // byte with the previous match
+        byte >>= (previous & 7) + 1; // shift away all previous 1 bits
+        enabled = _BitCountLookup[byte]; // are there any 1 bits left?
 
-	for (id = previous + 1; enabled; byte >>= 1, id++)
-	    if (byte & 0x01)
-		return id;
-	index = 0; // we are looking for the immediately following index
-	ti++;
+        for (id = previous + 1; enabled; byte >>= 1, id++)
+            if (byte & 0x01)
+                return id;
+        index = 0; // we are looking for the immediately following index
+        ti++;
     }
 
     while (ti < end) {
-	enabled = _BitCountLookup[*ti];
+        enabled = _BitCountLookup[*ti];
 
-	if (index >= enabled ){
-	    index -= enabled;
-	    ti++;
-	    continue;
-	}
-	id = (ti - map->map) << 3;
+        if (index >= enabled ){
+            index -= enabled;
+            ti++;
+            continue;
+        }
+        id = (ti - map->map) << 3;
 
-	index++;
-	for (unsigned char byte = *ti; index; byte >>= 1) {
-	    if ((byte & 0x01))
-		index--;
-	    if (index)
-		id++;
-	}
-	return id;
+        index++;
+        for (unsigned char byte = *ti; index; byte >>= 1) {
+            if ((byte & 0x01))
+                index--;
+            if (index)
+                id++;
+        }
+        return id;
     }
     return -1;
 }
@@ -102,7 +102,7 @@ map_count(Map *m)
     unsigned c = 0;
 
     while (ti < end)
-	c += _BitCountLookup[*ti++];
+        c += _BitCountLookup[*ti++];
 
     return c;
 }
@@ -165,7 +165,7 @@ hy_packageset_get_clone(HyPackageSet pset, int index)
 {
     Id id = map_index2id(&pset->map, index, -1);
     if (id < 0)
-	return NULL;
+        return NULL;
     return package_create(pset->sack, id);
 }
 

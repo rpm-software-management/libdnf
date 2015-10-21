@@ -51,8 +51,8 @@ START_TEST(test_iter_macro)
     int i, max = 0, count = 0;
     HyPackage pkg;
     FOR_PACKAGELIST(pkg, fixture_plist, i) {
-	count += 1;
-	max = i;
+        count += 1;
+        max = i;
     }
     fail_unless(max == 2);
     fail_unless(count == hy_packagelist_count(fixture_plist));

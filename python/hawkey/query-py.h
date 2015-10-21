@@ -36,7 +36,7 @@ enum py_key_name_e {
 
 extern PyTypeObject query_Type;
 
-#define queryObject_Check(o)	PyObject_TypeCheck(o, &query_Type)
+#define queryObject_Check(o)        PyObject_TypeCheck(o, &query_Type)
 
 HyQuery queryFromPyObject(PyObject *o);
 PyObject *queryToPyObject(HyQuery query, PyObject *sack);

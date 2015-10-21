@@ -75,8 +75,8 @@ END_TEST
 START_TEST(test_description)
 {
     ck_assert_str_eq(
-	    hy_advisory_get_description(advisory),
-	    "An example update to the tour package.");
+            hy_advisory_get_description(advisory),
+            "An example update to the tour package.");
 }
 END_TEST
 
@@ -99,8 +99,8 @@ START_TEST(test_packages)
     ck_assert_int_eq(hy_advisorypkglist_count(pkglist), 1);
     HyAdvisoryPkg package = hy_advisorypkglist_get_clone(pkglist, 0);
     ck_assert_str_eq(
-	    hy_advisorypkg_get_string(package, HY_ADVISORYPKG_FILENAME),
-	    "tour.noarch.rpm");
+            hy_advisorypkg_get_string(package, HY_ADVISORYPKG_FILENAME),
+            "tour.noarch.rpm");
     hy_advisorypkg_free(package);
 
     hy_advisorypkglist_free(pkglist);
@@ -115,13 +115,13 @@ START_TEST(test_refs)
     ck_assert_int_eq(hy_advisoryreflist_count(reflist), 2);
     reference = hy_advisoryreflist_get_clone(reflist, 0);
     ck_assert_str_eq(
-	    hy_advisoryref_get_url(reference),
-	    "https://bugzilla.redhat.com/show_bug.cgi?id=472090");
+            hy_advisoryref_get_url(reference),
+            "https://bugzilla.redhat.com/show_bug.cgi?id=472090");
     hy_advisoryref_free(reference);
     reference = hy_advisoryreflist_get_clone(reflist, 1);
     ck_assert_str_eq(
-	    hy_advisoryref_get_url(reference),
-	    "https://bugzilla.gnome.com/show_bug.cgi?id=472091");
+            hy_advisoryref_get_url(reference),
+            "https://bugzilla.gnome.com/show_bug.cgi?id=472091");
     hy_advisoryref_free(reference);
 
     hy_advisoryreflist_free(reflist);

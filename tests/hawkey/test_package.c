@@ -262,7 +262,7 @@ START_TEST(test_installed)
 {
     HyPackage pkg1 = by_name_repo(test_globals.sack, "penny-lib", "main");
     HyPackage pkg2 = by_name_repo(test_globals.sack,
-				  "penny-lib", HY_SYSTEM_REPO_NAME);
+                                  "penny-lib", HY_SYSTEM_REPO_NAME);
     int installed1 = hy_package_installed(pkg1);
     int installed2 = hy_package_installed(pkg2);
     fail_unless(installed1 == 0);

@@ -45,7 +45,7 @@ advisoryToPyObject(HyAdvisory advisory, PyObject *sack)
 {
     _AdvisoryObject *self = PyObject_New(_AdvisoryObject, &advisory_Type);
     if (!self)
-	return NULL;
+        return NULL;
 
     self->advisory = advisory;
     self->sack = sack;
@@ -58,8 +58,8 @@ HyAdvisory
 advisoryFromPyObject(PyObject *o)
 {
     if (!PyObject_TypeCheck(o, &advisory_Type)) {
-	PyErr_SetString(PyExc_TypeError, "Expected an Advisory object.");
-	return NULL;
+        PyErr_SetString(PyExc_TypeError, "Expected an Advisory object.");
+        return NULL;
     }
     return ((_AdvisoryObject*)o)->advisory;
 }
@@ -69,7 +69,7 @@ advisory_converter(PyObject *o, HyAdvisory *advisory_ptr)
 {
     HyAdvisory advisory = advisoryFromPyObject(o);
     if (advisory == NULL)
-	return 0;
+        return 0;
     *advisory_ptr = advisory;
     return 1;
 }
@@ -91,30 +91,30 @@ advisory_richcompare(PyObject *self, PyObject *other, int op)
     HyAdvisory cself, cother;
 
     if (!advisory_converter(self, &cself) ||
-	!advisory_converter(other, &cother)) {
-	if(PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError))
-	    PyErr_Clear();
-	Py_INCREF(Py_NotImplemented);
-	return Py_NotImplemented;
+        !advisory_converter(other, &cother)) {
+        if(PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError))
+            PyErr_Clear();
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
     }
 
     int identical = advisory_identical(cself, cother);
     switch (op) {
     case Py_EQ:
-	result = TEST_COND(identical);
-	break;
+        result = TEST_COND(identical);
+        break;
     case Py_NE:
-	result = TEST_COND(!identical);
-	break;
+        result = TEST_COND(!identical);
+        break;
     case Py_LE:
     case Py_GE:
     case Py_LT:
     case Py_GT:
-	result = Py_NotImplemented;
-	break;
+        result = Py_NotImplemented;
+        break;
     default:
-	PyErr_BadArgument();
-	return NULL;
+        PyErr_BadArgument();
+        return NULL;
     }
 
     Py_INCREF(result);
@@ -132,7 +132,7 @@ get_str(_AdvisoryObject *self, void *closure)
     func = (const char *(*)(HyAdvisory))closure;
     cstr = func(self->advisory);
     if (cstr == NULL)
-	Py_RETURN_NONE;
+        Py_RETURN_NONE;
     return PyUnicode_FromString(cstr);
 }
 
@@ -171,7 +171,7 @@ get_advisorypkg_list(_AdvisoryObject *self, void *closure)
     func = (HyAdvisoryPkgList (*)(HyAdvisory))closure;
     advisorypkgs = func(self->advisory);
     if (advisorypkgs == NULL)
-	Py_RETURN_NONE;
+        Py_RETURN_NONE;
 
     list = advisorypkglist_to_pylist(advisorypkgs);
     hy_advisorypkglist_free(advisorypkgs);
@@ -189,7 +189,7 @@ get_advisoryref_list(_AdvisoryObject *self, void *closure)
     func = (HyAdvisoryRefList (*)(HyAdvisory))closure;
     advisoryrefs = func(self->advisory);
     if (advisoryrefs == NULL)
-	Py_RETURN_NONE;
+        Py_RETURN_NONE;
 
     list = advisoryreflist_to_pylist(advisoryrefs, self->sack);
     hy_advisoryreflist_free(advisoryrefs);
@@ -211,43 +211,43 @@ static PyGetSetDef advisory_getsetters[] = {
 
 PyTypeObject advisory_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "_hawkey.Advisory",		/*tp_name*/
-    sizeof(_AdvisoryObject),	/*tp_basicsize*/
-    0,				/*tp_itemsize*/
-    (destructor) advisory_dealloc,	/*tp_dealloc*/
-    0,				/*tp_print*/
-    0,				/*tp_getattr*/
-    0,				/*tp_setattr*/
-    0,				/*tp_compare*/
-    0,				/*tp_repr*/
-    0,				/*tp_as_number*/
-    0,				/*tp_as_sequence*/
-    0,				/*tp_as_mapping*/
-    0,				/*tp_hash */
-    0,				/*tp_call*/
-    0,				/*tp_str*/
-    0,				/*tp_getattro*/
-    0,				/*tp_setattro*/
-    0,				/*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,	/*tp_flags*/
-    "Advisory object",		/* tp_doc */
-    0,				/* tp_traverse */
-    0,				/* tp_clear */
-    advisory_richcompare,	/* tp_richcompare */
-    0,				/* tp_weaklistoffset */
-    0,				/* tp_iter */
-    0,				/* tp_iternext */
-    0,				/* tp_methods */
-    0,				/* tp_members */
-    advisory_getsetters,	/* tp_getset */
-    0,				/* tp_base */
-    0,				/* tp_dict */
-    0,				/* tp_descr_get */
-    0,				/* tp_descr_set */
-    0,				/* tp_dictoffset */
-    0,				/* tp_init */
-    0,				/* tp_alloc */
-    0,				/* tp_new */
-    0,				/* tp_free */
-    0,				/* tp_is_gc */
+    "_hawkey.Advisory",                /*tp_name*/
+    sizeof(_AdvisoryObject),        /*tp_basicsize*/
+    0,                                /*tp_itemsize*/
+    (destructor) advisory_dealloc,        /*tp_dealloc*/
+    0,                                /*tp_print*/
+    0,                                /*tp_getattr*/
+    0,                                /*tp_setattr*/
+    0,                                /*tp_compare*/
+    0,                                /*tp_repr*/
+    0,                                /*tp_as_number*/
+    0,                                /*tp_as_sequence*/
+    0,                                /*tp_as_mapping*/
+    0,                                /*tp_hash */
+    0,                                /*tp_call*/
+    0,                                /*tp_str*/
+    0,                                /*tp_getattro*/
+    0,                                /*tp_setattro*/
+    0,                                /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,        /*tp_flags*/
+    "Advisory object",                /* tp_doc */
+    0,                                /* tp_traverse */
+    0,                                /* tp_clear */
+    advisory_richcompare,        /* tp_richcompare */
+    0,                                /* tp_weaklistoffset */
+    0,                                /* tp_iter */
+    0,                                /* tp_iternext */
+    0,                                /* tp_methods */
+    0,                                /* tp_members */
+    advisory_getsetters,        /* tp_getset */
+    0,                                /* tp_base */
+    0,                                /* tp_dict */
+    0,                                /* tp_descr_get */
+    0,                                /* tp_descr_set */
+    0,                                /* tp_dictoffset */
+    0,                                /* tp_init */
+    0,                                /* tp_alloc */
+    0,                                /* tp_new */
+    0,                                /* tp_free */
+    0,                                /* tp_is_gc */
 };

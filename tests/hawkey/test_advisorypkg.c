@@ -61,32 +61,32 @@ advisorypkg_teardown(void)
 START_TEST(test_name)
 {
     ck_assert_str_eq(
-	hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_NAME),
-	"tour");
+        hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_NAME),
+        "tour");
 }
 END_TEST
 
 START_TEST(test_evr)
 {
     ck_assert_str_eq(
-	hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_EVR),
-	"4-7");
+        hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_EVR),
+        "4-7");
 }
 END_TEST
 
 START_TEST(test_arch)
 {
     ck_assert_str_eq(
-	hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_ARCH),
-	"noarch");
+        hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_ARCH),
+        "noarch");
 }
 END_TEST
 
 START_TEST(test_filename)
 {
     ck_assert_str_eq(
-	hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_FILENAME),
-	"tour.noarch.rpm");
+        hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_FILENAME),
+        "tour.noarch.rpm");
 }
 END_TEST
 

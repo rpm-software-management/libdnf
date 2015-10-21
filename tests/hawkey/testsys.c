@@ -76,14 +76,14 @@ void
 dump_packagelist(HyPackageList plist, int free)
 {
     for (int i = 0; i < hy_packagelist_count(plist); ++i) {
-	HyPackage pkg = hy_packagelist_get(plist, i);
-	Solvable *s = pool_id2solvable(package_pool(pkg), package_id(pkg));
-	char *nvra = hy_package_get_nevra(pkg);
-	printf("\t%s @%s\n", nvra, s->repo->name);
-	g_free(nvra);
+        HyPackage pkg = hy_packagelist_get(plist, i);
+        Solvable *s = pool_id2solvable(package_pool(pkg), package_id(pkg));
+        char *nvra = hy_package_get_nevra(pkg);
+        printf("\t%s @%s\n", nvra, s->repo->name);
+        g_free(nvra);
     }
     if (free)
-	hy_packagelist_free(plist);
+        hy_packagelist_free(plist);
 }
 
 void

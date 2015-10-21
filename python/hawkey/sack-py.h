@@ -29,7 +29,7 @@
 
 extern PyTypeObject sack_Type;
 
-#define sackObject_Check(o)	PyObject_TypeCheck(o, &sack_Type)
+#define sackObject_Check(o)        PyObject_TypeCheck(o, &sack_Type)
 
 HySack sackFromPyObject(PyObject *o);
 int sack_converter(PyObject *o, HySack *sack_ptr);

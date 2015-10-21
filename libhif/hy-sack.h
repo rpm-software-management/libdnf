@@ -33,14 +33,14 @@ enum _hy_sack_sack_create_flags {
 };
 
 enum _hy_sack_repo_load_flags {
-    HY_BUILD_CACHE	= 1 << 0,
-    HY_LOAD_FILELISTS	= 1 << 1,
-    HY_LOAD_PRESTO	= 1 << 2,
-    HY_LOAD_UPDATEINFO	= 1 << 3
+    HY_BUILD_CACHE        = 1 << 0,
+    HY_LOAD_FILELISTS        = 1 << 1,
+    HY_LOAD_PRESTO        = 1 << 2,
+    HY_LOAD_UPDATEINFO        = 1 << 3
 };
 
 HySack hy_sack_create(const char *cachedir, const char *arch, const char *rootdir,
-		      const char* logfile, int flags, GError **error);
+                      const char* logfile, int flags, GError **error);
 void hy_sack_free(HySack sack);
 int hy_sack_evr_cmp(HySack sack, const char *evr1, const char *evr2);
 const char *hy_sack_get_cache_dir(HySack sack);
@@ -62,7 +62,7 @@ int hy_sack_repo_enabled(HySack sack, const char *reponame, int enabled);
  * Load RPMDB, the system package database.
  *
  * @returns           0 on success, HIF_ERROR_FILE_INVALID on fatal error,
- *		      HIF_ERROR_CANNOT_WRITE_CACHE on cache write error.
+ *                      HIF_ERROR_CANNOT_WRITE_CACHE on cache write error.
  */
 gboolean hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags, GError **error);
 

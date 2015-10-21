@@ -46,9 +46,9 @@ static int
 match_type_num(int keyname) {
     switch (keyname) {
     case HY_PKG_EPOCH:
-	return 1;
+        return 1;
     default:
-	return 0;
+        return 0;
     }
 }
 
@@ -57,9 +57,9 @@ match_type_pkg(int keyname) {
     switch (keyname) {
     case HY_PKG:
     case HY_PKG_OBSOLETES:
-	return 1;
+        return 1;
     default:
-	return 0;
+        return 0;
     }
 }
 
@@ -74,9 +74,9 @@ match_type_reldep(int keyname) {
     case HY_PKG_REQUIRES:
     case HY_PKG_SUGGESTS:
     case HY_PKG_SUPPLEMENTS:
-	return 1;
+        return 1;
     default:
-	return 0;
+        return 0;
     }
 }
 
@@ -104,9 +104,9 @@ match_type_str(int keyname) {
     case HY_PKG_CONFLICTS:
     case HY_PKG_URL:
     case HY_PKG_VERSION:
-	return 1;
+        return 1;
     default:
-	return 0;
+        return 0;
     }
 }
 
@@ -116,22 +116,22 @@ di_keyname2id(int keyname)
 {
     switch(keyname) {
     case HY_PKG_DESCRIPTION:
-	return SOLVABLE_DESCRIPTION;
+        return SOLVABLE_DESCRIPTION;
     case HY_PKG_NAME:
-	return SOLVABLE_NAME;
+        return SOLVABLE_NAME;
     case HY_PKG_URL:
-	return SOLVABLE_URL;
+        return SOLVABLE_URL;
     case HY_PKG_ARCH:
-	return SOLVABLE_ARCH;
+        return SOLVABLE_ARCH;
     case HY_PKG_EVR:
-	return SOLVABLE_EVR;
+        return SOLVABLE_EVR;
     case HY_PKG_SUMMARY:
-	return SOLVABLE_SUMMARY;
+        return SOLVABLE_SUMMARY;
     case HY_PKG_FILE:
-	return SOLVABLE_FILELIST;
+        return SOLVABLE_FILELIST;
     default:
-	assert(0);
-	return 0;
+        assert(0);
+        return 0;
     }
 }
 
@@ -140,13 +140,13 @@ reldep_keyname2id(int keyname)
 {
     switch(keyname) {
     case HY_PKG_CONFLICTS:
-	return SOLVABLE_CONFLICTS;
+        return SOLVABLE_CONFLICTS;
     case HY_PKG_ENHANCES:
         return SOLVABLE_ENHANCES;
     case HY_PKG_OBSOLETES:
-	return SOLVABLE_OBSOLETES;
+        return SOLVABLE_OBSOLETES;
     case HY_PKG_REQUIRES:
-	return SOLVABLE_REQUIRES;
+        return SOLVABLE_REQUIRES;
     case HY_PKG_RECOMMENDS:
         return SOLVABLE_RECOMMENDS;
     case HY_PKG_SUGGESTS:
@@ -154,8 +154,8 @@ reldep_keyname2id(int keyname)
     case HY_PKG_SUPPLEMENTS:
         return SOLVABLE_SUPPLEMENTS;
     default:
-	assert(0);
-	return 0;
+        assert(0);
+        return 0;
     }
 }
 
@@ -164,21 +164,21 @@ type2flags(int type, int keyname)
 {
     int ret = 0;
     if (keyname == HY_PKG_FILE)
-	ret |= SEARCH_FILES | SEARCH_COMPLETE_FILELIST;
+        ret |= SEARCH_FILES | SEARCH_COMPLETE_FILELIST;
     if (type & HY_ICASE)
-	ret |= SEARCH_NOCASE;
+        ret |= SEARCH_NOCASE;
 
     type &= ~HY_COMPARISON_FLAG_MASK;
     switch (type) {
     case HY_EQ:
-	return ret | SEARCH_STRING;
+        return ret | SEARCH_STRING;
     case HY_SUBSTR:
-	return ret | SEARCH_SUBSTRING;
+        return ret | SEARCH_SUBSTRING;
     case HY_GLOB:
-	return ret | SEARCH_GLOB;
+        return ret | SEARCH_GLOB;
     default:
-	assert(0); // not implemented
-	return 0;
+        assert(0); // not implemented
+        return 0;
     }
 }
 
@@ -186,15 +186,15 @@ static int
 valid_filter_str(int keyname, int cmp_type)
 {
     if (!match_type_str(keyname))
-	return 0;
+        return 0;
 
     cmp_type &= ~HY_NOT; // hy_query_run always handles NOT
     switch (keyname) {
     case HY_PKG_LOCATION:
     case HY_PKG_SOURCERPM:
-	return cmp_type == HY_EQ;
+        return cmp_type == HY_EQ;
     default:
-	return 1;
+        return 1;
     }
 }
 
@@ -202,16 +202,16 @@ static int
 valid_filter_num(int keyname, int cmp_type)
 {
     if (!match_type_num(keyname))
-	return 0;
+        return 0;
 
     cmp_type &= ~HY_NOT; // hy_query_run always handles NOT
     if (cmp_type & (HY_ICASE | HY_SUBSTR | HY_GLOB))
-	return 0;
+        return 0;
     switch (keyname) {
     case HY_PKG:
-	return cmp_type == HY_EQ;
+        return cmp_type == HY_EQ;
     default:
-	return 1;
+        return 1;
     }
 }
 
@@ -219,7 +219,7 @@ static int
 valid_filter_pkg(int keyname, int cmp_type)
 {
     if (!match_type_pkg(keyname))
-	return 0;
+        return 0;
     return cmp_type == HY_EQ;
 }
 
@@ -227,7 +227,7 @@ static int
 valid_filter_reldep(int keyname)
 {
     if (!match_type_reldep(keyname))
-	return 0;
+        return 0;
     return 1;
 }
 
@@ -243,25 +243,25 @@ void
 filter_reinit(struct _Filter *f, int nmatches)
 {
     for (int m = 0; m < f->nmatches; ++m)
-	switch (f->match_type) {
-	case _HY_PKG:
-	    hy_packageset_free(f->matches[m].pset);
-	    break;
-	case _HY_STR:
-	    solv_free(f->matches[m].str);
-	    break;
-	case _HY_RELDEP:
-	    hy_reldep_free(f->matches[m].reldep);
-	    break;
-	default:
-	    break;
-	}
+        switch (f->match_type) {
+        case _HY_PKG:
+            hy_packageset_free(f->matches[m].pset);
+            break;
+        case _HY_STR:
+            solv_free(f->matches[m].str);
+            break;
+        case _HY_RELDEP:
+            hy_reldep_free(f->matches[m].reldep);
+            break;
+        default:
+            break;
+        }
     solv_free(f->matches);
     f->match_type = _HY_VOID;
     if (nmatches > 0)
-	f->matches = solv_calloc(nmatches, sizeof(union _Match *));
+        f->matches = solv_calloc(nmatches, sizeof(union _Match *));
     else
-	f->matches = NULL;
+        f->matches = NULL;
     f->nmatches = nmatches;
 }
 
@@ -269,8 +269,8 @@ void
 filter_free(struct _Filter *f)
 {
     if (f) {
-	filter_reinit(f, 0);
-	solv_free(f);
+        filter_reinit(f, 0);
+        solv_free(f);
     }
 }
 
@@ -281,7 +281,7 @@ query_add_filter(HyQuery q, int nmatches)
     memset(&filter, 0, sizeof(filter));
     filter_reinit(&filter, nmatches);
     q->filters = solv_extend(q->filters, q->nfilters, 1, sizeof(filter),
-			     BLOCK_SIZE);
+                             BLOCK_SIZE);
     q->filters[q->nfilters] = filter; /* structure assignment */
     return q->filters + q->nfilters++;
 }
@@ -297,13 +297,13 @@ filter_dataiterator(HyQuery q, struct _Filter *f, Map *m)
     assert(f->match_type == _HY_STR);
     /* do an OR over all matches: */
     for (int i = 0; i < f->nmatches; ++i) {
-	dataiterator_init(&di, pool, 0, 0,
-			  keyname,
-			  f->matches[i].str,
-			  flags);
-	while (dataiterator_step(&di))
-	    MAPSET(m, di.solvid);
-	dataiterator_free(&di);
+        dataiterator_init(&di, pool, 0, 0,
+                          keyname,
+                          f->matches[i].str,
+                          flags);
+        while (dataiterator_step(&di))
+            MAPSET(m, di.solvid);
+        dataiterator_free(&di);
     }
 }
 
@@ -333,24 +333,24 @@ filter_epoch(HyQuery q, struct _Filter *f, Map *m)
     Pool *pool = sack_pool(q->sack);
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
-	unsigned long epoch = f->matches[mi].num;
+        unsigned long epoch = f->matches[mi].num;
 
-	for (Id id = 1; id < pool->nsolvables; ++id) {
+        for (Id id = 1; id < pool->nsolvables; ++id) {
             if (!MAPTST(q->result, id))
                 continue;
-	    Solvable *s = pool_id2solvable(pool, id);
-	    if (s->evr == ID_EMPTY)
-		continue;
+            Solvable *s = pool_id2solvable(pool, id);
+            if (s->evr == ID_EMPTY)
+                continue;
 
-	    const char *evr = pool_id2str(pool, s->evr);
-	    unsigned long pkg_epoch = pool_get_epoch(pool, evr);
+            const char *evr = pool_id2str(pool, s->evr);
+            unsigned long pkg_epoch = pool_get_epoch(pool, evr);
 
-	    int cmp_type = f->cmp_type;
-	    if ((pkg_epoch > epoch && cmp_type & HY_GT) ||
-		(pkg_epoch < epoch && cmp_type & HY_LT) ||
-		(pkg_epoch == epoch && cmp_type & HY_EQ))
-		MAPSET(m, id);
-	}
+            int cmp_type = f->cmp_type;
+            if ((pkg_epoch > epoch && cmp_type & HY_GT) ||
+                (pkg_epoch < epoch && cmp_type & HY_LT) ||
+                (pkg_epoch == epoch && cmp_type & HY_EQ))
+                MAPSET(m, id);
+        }
     }
 }
 
@@ -360,19 +360,19 @@ filter_evr(HyQuery q, struct _Filter *f, Map *m)
     Pool *pool = sack_pool(q->sack);
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
-	Id match_evr = pool_str2id(pool, f->matches[mi].str, 1);
+        Id match_evr = pool_str2id(pool, f->matches[mi].str, 1);
 
-	for (Id id = 1; id < pool->nsolvables; ++id) {
+        for (Id id = 1; id < pool->nsolvables; ++id) {
             if (!MAPTST(q->result, id))
                 continue;
-	    Solvable *s = pool_id2solvable(pool, id);
-	    int cmp = pool_evrcmp(pool, s->evr, match_evr, EVRCMP_COMPARE);
+            Solvable *s = pool_id2solvable(pool, id);
+            int cmp = pool_evrcmp(pool, s->evr, match_evr, EVRCMP_COMPARE);
 
-	    if ((cmp > 0 && f->cmp_type & HY_GT) ||
-		(cmp < 0 && f->cmp_type & HY_LT) ||
-		(cmp == 0 && f->cmp_type & HY_EQ))
-		MAPSET(m, id);
-	}
+            if ((cmp > 0 && f->cmp_type & HY_GT) ||
+                (cmp < 0 && f->cmp_type & HY_LT) ||
+                (cmp == 0 && f->cmp_type & HY_EQ))
+                MAPSET(m, id);
+        }
     }
 }
 
@@ -383,34 +383,34 @@ filter_version(HyQuery q, struct _Filter *f, Map *m)
     int cmp_type = f->cmp_type;
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
-	const char *match = f->matches[mi].str;
-	char *filter_vr = solv_dupjoin(match, "-0", NULL);
+        const char *match = f->matches[mi].str;
+        char *filter_vr = solv_dupjoin(match, "-0", NULL);
 
-	for (Id id = 1; id < pool->nsolvables; ++id) {
+        for (Id id = 1; id < pool->nsolvables; ++id) {
             if (!MAPTST(q->result, id))
                 continue;
-	    char *e, *v, *r;
-	    Solvable *s = pool_id2solvable(pool, id);
-	    if (s->evr == ID_EMPTY)
-		continue;
-	    const char *evr = pool_id2str(pool, s->evr);
+            char *e, *v, *r;
+            Solvable *s = pool_id2solvable(pool, id);
+            if (s->evr == ID_EMPTY)
+                continue;
+            const char *evr = pool_id2str(pool, s->evr);
 
-	    pool_split_evr(pool, evr, &e, &v, &r);
+            pool_split_evr(pool, evr, &e, &v, &r);
 
-	    if (cmp_type == HY_GLOB) {
-		if (fnmatch(match, v, 0))
-		    continue;
-		MAPSET(m, id);
-	    }
+            if (cmp_type == HY_GLOB) {
+                if (fnmatch(match, v, 0))
+                    continue;
+                MAPSET(m, id);
+            }
 
-	    char *vr = pool_tmpjoin(pool, v, "-0", NULL);
-	    int cmp = pool_evrcmp_str(pool, vr, filter_vr, EVRCMP_COMPARE);
-	    if ((cmp > 0 && cmp_type & HY_GT) ||
-		(cmp < 0 && cmp_type & HY_LT) ||
-		(cmp == 0 && cmp_type & HY_EQ))
-		MAPSET(m, id);
-	}
-	solv_free(filter_vr);
+            char *vr = pool_tmpjoin(pool, v, "-0", NULL);
+            int cmp = pool_evrcmp_str(pool, vr, filter_vr, EVRCMP_COMPARE);
+            if ((cmp > 0 && cmp_type & HY_GT) ||
+                (cmp < 0 && cmp_type & HY_LT) ||
+                (cmp == 0 && cmp_type & HY_EQ))
+                MAPSET(m, id);
+        }
+        solv_free(filter_vr);
     }
 }
 
@@ -420,28 +420,28 @@ filter_release(HyQuery q, struct _Filter *f, Map *m)
     Pool *pool = sack_pool(q->sack);
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
-	char *filter_vr = solv_dupjoin("0-", f->matches[mi].str, NULL);
+        char *filter_vr = solv_dupjoin("0-", f->matches[mi].str, NULL);
 
-	for (Id id = 1; id < pool->nsolvables; ++id) {
+        for (Id id = 1; id < pool->nsolvables; ++id) {
             if (!MAPTST(q->result, id))
                 continue;
-	    char *e, *v, *r;
-	    Solvable *s = pool_id2solvable(pool, id);
-	    if (s->evr == ID_EMPTY)
-		continue;
-	    const char *evr = pool_id2str(pool, s->evr);
+            char *e, *v, *r;
+            Solvable *s = pool_id2solvable(pool, id);
+            if (s->evr == ID_EMPTY)
+                continue;
+            const char *evr = pool_id2str(pool, s->evr);
 
-	    pool_split_evr(pool, evr, &e, &v, &r);
-	    char *vr = pool_tmpjoin(pool, "0-", r, NULL);
+            pool_split_evr(pool, evr, &e, &v, &r);
+            char *vr = pool_tmpjoin(pool, "0-", r, NULL);
 
-	    int cmp = pool_evrcmp_str(pool, vr, filter_vr, EVRCMP_COMPARE);
+            int cmp = pool_evrcmp_str(pool, vr, filter_vr, EVRCMP_COMPARE);
 
-	    if ((cmp > 0 && f->cmp_type & HY_GT) ||
-		(cmp < 0 && f->cmp_type & HY_LT) ||
-		(cmp == 0 && f->cmp_type & HY_EQ))
-		MAPSET(m, id);
-	}
-	solv_free(filter_vr);
+            if ((cmp > 0 && f->cmp_type & HY_GT) ||
+                (cmp < 0 && f->cmp_type & HY_LT) ||
+                (cmp == 0 && f->cmp_type & HY_EQ))
+                MAPSET(m, id);
+        }
+        solv_free(filter_vr);
     }
 }
 
@@ -451,26 +451,26 @@ filter_sourcerpm(HyQuery q, struct _Filter *f, Map *m)
     Pool *pool = sack_pool(q->sack);
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
-	const char *match = f->matches[mi].str;
+        const char *match = f->matches[mi].str;
 
-	for (Id id = 1; id < pool->nsolvables; ++id) {
+        for (Id id = 1; id < pool->nsolvables; ++id) {
             if (!MAPTST(q->result, id))
                 continue;
-	    Solvable *s = pool_id2solvable(pool, id);
+            Solvable *s = pool_id2solvable(pool, id);
 
-	    const char *name = solvable_lookup_str(s, SOLVABLE_SOURCENAME);
-	    if (name == NULL)
-		name = pool_id2str(pool, s->name);
-	    if (!g_str_has_prefix(match, name)) // early check
-		continue;
+            const char *name = solvable_lookup_str(s, SOLVABLE_SOURCENAME);
+            if (name == NULL)
+                name = pool_id2str(pool, s->name);
+            if (!g_str_has_prefix(match, name)) // early check
+                continue;
 
-	    HyPackage pkg = package_create(q->sack, id);
-	    char *srcrpm = hy_package_get_sourcerpm(pkg);
-	    if (srcrpm && !strcmp(match, srcrpm))
-		MAPSET(m, id);
-	    solv_free(srcrpm);
-	    hy_package_free(pkg);
-	}
+            HyPackage pkg = package_create(q->sack, id);
+            char *srcrpm = hy_package_get_sourcerpm(pkg);
+            if (srcrpm && !strcmp(match, srcrpm))
+                MAPSET(m, id);
+            solv_free(srcrpm);
+            hy_package_free(pkg);
+        }
     }
 }
 
@@ -488,23 +488,23 @@ filter_obsoletes(HyQuery q, struct _Filter *f, Map *m)
     for (Id p = 1; p < pool->nsolvables; ++p) {
         if (!MAPTST(q->result, p))
             continue;
-	Solvable *s = pool_id2solvable(pool, p);
-	if (!s->repo)
-	    continue;
-	for (Id *r_id = s->repo->idarraydata + s->obsoletes; *r_id; ++r_id) {
-	    Id r, rr;
+        Solvable *s = pool_id2solvable(pool, p);
+        if (!s->repo)
+            continue;
+        for (Id *r_id = s->repo->idarraydata + s->obsoletes; *r_id; ++r_id) {
+            Id r, rr;
 
-	    FOR_PROVIDES(r, rr, *r_id) {
-		if (!MAPTST(target, r))
-		    continue;
-		assert(r != SYSTEMSOLVABLE);
-		Solvable *so = pool_id2solvable(pool, r);
-		if (!obsprovides && !pool_match_nevr(pool, so, *r_id))
-		    continue; /* only matching pkg names */
-		MAPSET(m, p);
-		break;
-	    }
-	}
+            FOR_PROVIDES(r, rr, *r_id) {
+                if (!MAPTST(target, r))
+                    continue;
+                assert(r != SYSTEMSOLVABLE);
+                Solvable *so = pool_id2solvable(pool, r);
+                if (!obsprovides && !pool_match_nevr(pool, so, *r_id))
+                    continue; /* only matching pkg names */
+                MAPSET(m, p);
+                break;
+            }
+        }
     }
 }
 
@@ -516,9 +516,9 @@ filter_provides_reldep(HyQuery q, struct _Filter *f, Map *m)
 
     sack_make_provides_ready(q->sack);
     for (int i = 0; i < f->nmatches; ++i) {
-	Id r_id = reldep_id(f->matches[i].reldep);
-	FOR_PROVIDES(p, pp, r_id)
-	    MAPSET(m, p);
+        Id r_id = reldep_id(f->matches[i].reldep);
+        FOR_PROVIDES(p, pp, r_id)
+            MAPSET(m, p);
     }
 }
 
@@ -533,25 +533,25 @@ filter_rco_reldep(HyQuery q, struct _Filter *f, Map *m)
 
     queue_init(&rco);
     for (int i = 0; i < f->nmatches; ++i) {
-	Id r_id = reldep_id(f->matches[i].reldep);
+        Id r_id = reldep_id(f->matches[i].reldep);
 
-	for (Id s_id = 1; s_id < pool->nsolvables; ++s_id) {
+        for (Id s_id = 1; s_id < pool->nsolvables; ++s_id) {
             if (!MAPTST(q->result, s_id))
                 continue;
 
-	    Solvable *s = pool_id2solvable(pool, s_id);
+            Solvable *s = pool_id2solvable(pool, s_id);
 
-	    queue_empty(&rco);
-	    solvable_lookup_idarray(s, rco_key, &rco);
-	    for (int j = 0; j < rco.count; ++j) {
-		Id r_id2 = rco.elements[j];
+            queue_empty(&rco);
+            solvable_lookup_idarray(s, rco_key, &rco);
+            for (int j = 0; j < rco.count; ++j) {
+                Id r_id2 = rco.elements[j];
 
-		if (pool_match_dep(pool, r_id, r_id2)) {
-		    MAPSET(m, s_id);
-		    break;
-		}
-	    }
-	}
+                if (pool_match_dep(pool, r_id, r_id2)) {
+                    MAPSET(m, s_id);
+                    break;
+                }
+            }
+        }
     }
     queue_free(&rco);
 }
@@ -566,28 +566,28 @@ filter_reponame(HyQuery q, struct _Filter *f, Map *m)
     Id id, ourids[pool->nrepos];
 
     for (id = 0; id < pool->nrepos; ++id)
-	ourids[id] = 0;
+        ourids[id] = 0;
     FOR_REPOS(id, r) {
-	for (i = 0; i < f->nmatches; i++) {
-	    if (!strcmp(r->name, f->matches[i].str)) {
-		ourids[id] = 1;
-		break;
-	    }
-	}
+        for (i = 0; i < f->nmatches; i++) {
+            if (!strcmp(r->name, f->matches[i].str)) {
+                ourids[id] = 1;
+                break;
+            }
+        }
     }
 
     for (i = 1; i < pool->nsolvables; ++i) {
         if (!MAPTST(q->result, i))
             continue;
-	s = pool_id2solvable(pool, i);
-	switch (f->cmp_type & ~HY_COMPARISON_FLAG_MASK) {
-	case HY_EQ:
-	    if (s->repo && ourids[s->repo->repoid])
-		MAPSET(m, i);
-	    break;
-	default:
-	    assert(0);
-	}
+        s = pool_id2solvable(pool, i);
+        switch (f->cmp_type & ~HY_COMPARISON_FLAG_MASK) {
+        case HY_EQ:
+            if (s->repo && ourids[s->repo->repoid])
+                MAPSET(m, i);
+            break;
+        default:
+            assert(0);
+        }
     }
 }
 
@@ -597,19 +597,19 @@ filter_location(HyQuery q, struct _Filter *f, Map *m)
     Pool *pool = sack_pool(q->sack);
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
-	const char *match = f->matches[mi].str;
+        const char *match = f->matches[mi].str;
 
-	for (Id id = 1; id < pool->nsolvables; ++id) {
+        for (Id id = 1; id < pool->nsolvables; ++id) {
             if (!MAPTST(q->result, id))
                 continue;
-	    Solvable *s = pool_id2solvable(pool, id);
+            Solvable *s = pool_id2solvable(pool, id);
 
-	    const char *location = solvable_get_location(s, NULL);
-	    if (location == NULL)
-		continue;
-	    if (!strcmp(match, location))
-		MAPSET(m, id);
-	}
+            const char *location = solvable_get_location(s, NULL);
+            if (location == NULL)
+                continue;
+            if (!strcmp(match, location))
+                MAPSET(m, id);
+        }
     }
 }
 
@@ -623,14 +623,14 @@ filter_nevra(HyQuery q, struct _Filter *f, Map *m)
     for (Id id = 1; id < pool->nsolvables; ++id) {
         if (!MAPTST(q->result, id))
             continue;
-	Solvable* s = pool_id2solvable(pool, id);
-	const char* nevra = pool_solvable2str(pool, s);
-	if (!(HY_GLOB & f->cmp_type)) {
-	    if (strcmp(nevra_pattern, nevra) == 0)
-		MAPSET(m, id);
-	} else if (fnmatch(nevra_pattern, nevra, fn_flags) == 0) {
-	    MAPSET(m, id);
-	}
+        Solvable* s = pool_id2solvable(pool, id);
+        const char* nevra = pool_solvable2str(pool, s);
+        if (!(HY_GLOB & f->cmp_type)) {
+            if (strcmp(nevra_pattern, nevra) == 0)
+                MAPSET(m, id);
+        } else if (fnmatch(nevra_pattern, nevra, fn_flags) == 0) {
+            MAPSET(m, id);
+        }
     }
 }
 
@@ -646,15 +646,15 @@ filter_updown(HyQuery q, int downgrade, Map *res)
     sack_make_provides_ready(q->sack);
     map_init(&m, pool->nsolvables);
     for (i = 1; i < pool->nsolvables; ++i) {
-	if (!MAPTST(res, i))
-	    continue;
-	Solvable *s = pool_id2solvable(pool, i);
-	if (s->repo == pool->installed)
-	    continue;
-	if (downgrade && what_downgrades(pool, i) > 0)
-	    MAPSET(&m, i);
-	else if (!downgrade && what_upgrades(pool, i) > 0)
-	    MAPSET(&m, i);
+        if (!MAPTST(res, i))
+            continue;
+        Solvable *s = pool_id2solvable(pool, i);
+        if (s->repo == pool->installed)
+            continue;
+        if (downgrade && what_downgrades(pool, i) > 0)
+            MAPSET(&m, i);
+        else if (!downgrade && what_upgrades(pool, i) > 0)
+            MAPSET(&m, i);
     }
 
     map_and(res, &m);
@@ -673,14 +673,14 @@ filter_updown_able(HyQuery q, int downgradable, Map *res)
     sack_make_provides_ready(q->sack);
     map_init(&m, pool->nsolvables);
     FOR_PKG_SOLVABLES(p) {
-	s = pool_id2solvable(pool, p);
-	if (s->repo == pool->installed)
-	    continue;
+        s = pool_id2solvable(pool, p);
+        if (s->repo == pool->installed)
+            continue;
 
-	what = downgradable ? what_downgrades(pool, p) :
-			      what_upgrades(pool, p);
-	if (what != 0 && map_tst(res, what))
-	    map_set(&m, what);
+        what = downgradable ? what_downgrades(pool, p) :
+                              what_upgrades(pool, p);
+        if (what != 0 && map_tst(res, what))
+            map_set(&m, what);
     }
 
     map_and(res, &m);
@@ -728,16 +728,16 @@ filter_latest(HyQuery q, Map *res)
             queue_push(&samename, i);
 
     if (samename.count < 2) {
-	queue_free(&samename);
+        queue_free(&samename);
         return;
     }
 
     if (q->latest_per_arch)
         solv_sort(samename.elements, samename.count, sizeof(Id),
-		  filter_latest_sortcmp_byarch, pool);
+                  filter_latest_sortcmp_byarch, pool);
     else
         solv_sort(samename.elements, samename.count, sizeof(Id),
-		  filter_latest_sortcmp, pool);
+                  filter_latest_sortcmp, pool);
 
     Solvable *considered, *highest = 0;
     Id hp = 0;
@@ -818,82 +818,82 @@ hy_query_apply(HyQuery q)
     map_init(&m, pool->nsolvables);
     assert(m.size == q->result->size);
     for (int i = 0; i < q->nfilters; ++i) {
-	struct _Filter *f = q->filters + i;
+        struct _Filter *f = q->filters + i;
 
-	map_empty(&m);
-	switch (f->keyname) {
-	case HY_PKG:
-	    filter_pkg(q, f, &m);
-	    break;
-	case HY_PKG_ALL:
-	    filter_all(q, f, &m);
-	    break;
-	case HY_PKG_CONFLICTS:
-	    filter_rco_reldep(q, f, &m);
-	    break;
-	case HY_PKG_EPOCH:
-	    filter_epoch(q, f, &m);
-	    break;
-	case HY_PKG_EVR:
-	    filter_evr(q, f, &m);
-	    break;
-	case HY_PKG_NEVRA:
-	    filter_nevra(q, f, &m);
-	    break;
-	case HY_PKG_VERSION:
-	    filter_version(q, f, &m);
-	    break;
-	case HY_PKG_RELEASE:
-	    filter_release(q, f, &m);
-	    break;
-	case HY_PKG_SOURCERPM:
-	    filter_sourcerpm(q, f, &m);
-	    break;
-	case HY_PKG_OBSOLETES:
-	    if (f->match_type == _HY_RELDEP)
-		filter_rco_reldep(q, f, &m);
-	    else {
-		assert(f->match_type == _HY_PKG);
-		filter_obsoletes(q, f, &m);
-	    }
-	    break;
-	case HY_PKG_PROVIDES:
-	    assert(f->match_type == _HY_RELDEP);
-	    filter_provides_reldep(q, f, &m);
-	    break;
+        map_empty(&m);
+        switch (f->keyname) {
+        case HY_PKG:
+            filter_pkg(q, f, &m);
+            break;
+        case HY_PKG_ALL:
+            filter_all(q, f, &m);
+            break;
+        case HY_PKG_CONFLICTS:
+            filter_rco_reldep(q, f, &m);
+            break;
+        case HY_PKG_EPOCH:
+            filter_epoch(q, f, &m);
+            break;
+        case HY_PKG_EVR:
+            filter_evr(q, f, &m);
+            break;
+        case HY_PKG_NEVRA:
+            filter_nevra(q, f, &m);
+            break;
+        case HY_PKG_VERSION:
+            filter_version(q, f, &m);
+            break;
+        case HY_PKG_RELEASE:
+            filter_release(q, f, &m);
+            break;
+        case HY_PKG_SOURCERPM:
+            filter_sourcerpm(q, f, &m);
+            break;
+        case HY_PKG_OBSOLETES:
+            if (f->match_type == _HY_RELDEP)
+                filter_rco_reldep(q, f, &m);
+            else {
+                assert(f->match_type == _HY_PKG);
+                filter_obsoletes(q, f, &m);
+            }
+            break;
+        case HY_PKG_PROVIDES:
+            assert(f->match_type == _HY_RELDEP);
+            filter_provides_reldep(q, f, &m);
+            break;
         case HY_PKG_ENHANCES:
         case HY_PKG_RECOMMENDS:
         case HY_PKG_REQUIRES:
         case HY_PKG_SUGGESTS:
         case HY_PKG_SUPPLEMENTS:
-	    assert(f->match_type == _HY_RELDEP);
-	    filter_rco_reldep(q, f, &m);
-	    break;
-	case HY_PKG_REPONAME:
-	    filter_reponame(q, f, &m);
-	    break;
-	case HY_PKG_LOCATION:
-	    filter_location(q, f, &m);
-	    break;
-	default:
-	    filter_dataiterator(q, f, &m);
-	}
-	if (f->cmp_type & HY_NOT)
-	    map_subtract(q->result, &m);
-	else
-	    map_and(q->result, &m);
+            assert(f->match_type == _HY_RELDEP);
+            filter_rco_reldep(q, f, &m);
+            break;
+        case HY_PKG_REPONAME:
+            filter_reponame(q, f, &m);
+            break;
+        case HY_PKG_LOCATION:
+            filter_location(q, f, &m);
+            break;
+        default:
+            filter_dataiterator(q, f, &m);
+        }
+        if (f->cmp_type & HY_NOT)
+            map_subtract(q->result, &m);
+        else
+            map_and(q->result, &m);
     }
     map_free(&m);
     if (q->downgradable)
-	filter_updown_able(q, 1, q->result);
+        filter_updown_able(q, 1, q->result);
     if (q->downgrades)
-	filter_updown(q, 1, q->result);
+        filter_updown(q, 1, q->result);
     if (q->updatable)
-	filter_updown_able(q, 0, q->result);
+        filter_updown_able(q, 0, q->result);
     if (q->updates)
-	filter_updown(q, 0, q->result);
+        filter_updown(q, 0, q->result);
     if (q->latest)
-	filter_latest(q, q->result);
+        filter_latest(q, q->result);
 
     q->applied = 1;
     clear_filters(q);
@@ -946,41 +946,41 @@ hy_query_clone(HyQuery q)
     qn->applied = q->applied;
 
     for (int i = 0; i < q->nfilters; ++i) {
-	struct _Filter *filterp = query_add_filter(qn, q->filters[i].nmatches);
+        struct _Filter *filterp = query_add_filter(qn, q->filters[i].nmatches);
 
-	filterp->cmp_type = q->filters[i].cmp_type;
-	filterp->keyname = q->filters[i].keyname;
-	filterp->match_type = q->filters[i].match_type;
-	for (int j = 0; j < q->filters[i].nmatches; ++j) {
-	    char *str_copy;
-	    HyPackageSet pset;
-	    HyReldep reldep;
+        filterp->cmp_type = q->filters[i].cmp_type;
+        filterp->keyname = q->filters[i].keyname;
+        filterp->match_type = q->filters[i].match_type;
+        for (int j = 0; j < q->filters[i].nmatches; ++j) {
+            char *str_copy;
+            HyPackageSet pset;
+            HyReldep reldep;
 
-	    switch (filterp->match_type) {
-	    case _HY_NUM:
-		filterp->matches[j].num = q->filters[i].matches[j].num;
-		break;
-	    case _HY_PKG:
-		pset = q->filters[i].matches[j].pset;
-		filterp->matches[j].pset = hy_packageset_clone(pset);
-		break;
-	    case _HY_RELDEP:
-		reldep = q->filters[i].matches[j].reldep;
-		filterp->matches[j].reldep = hy_reldep_clone(reldep);
-		break;
-	    case _HY_STR:
-		str_copy = solv_strdup(q->filters[i].matches[j].str);
-		filterp->matches[j].str = str_copy;
-		break;
-	    default:
-		assert(0);
-	    }
-	}
+            switch (filterp->match_type) {
+            case _HY_NUM:
+                filterp->matches[j].num = q->filters[i].matches[j].num;
+                break;
+            case _HY_PKG:
+                pset = q->filters[i].matches[j].pset;
+                filterp->matches[j].pset = hy_packageset_clone(pset);
+                break;
+            case _HY_RELDEP:
+                reldep = q->filters[i].matches[j].reldep;
+                filterp->matches[j].reldep = hy_reldep_clone(reldep);
+                break;
+            case _HY_STR:
+                str_copy = solv_strdup(q->filters[i].matches[j].str);
+                filterp->matches[j].str = str_copy;
+                break;
+            default:
+                assert(0);
+            }
+        }
     }
     assert(qn->nfilters == q->nfilters);
     if (q->result) {
-	qn->result = solv_calloc(1, sizeof(Map));
-	map_init_clone(qn->result, q->result);
+        qn->result = solv_calloc(1, sizeof(Map));
+        map_init_clone(qn->result, q->result);
     }
 
     return qn;
@@ -990,7 +990,7 @@ int
 hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
 {
     if (!valid_filter_str(keyname, cmp_type))
-	return HIF_ERROR_BAD_QUERY;
+        return HIF_ERROR_BAD_QUERY;
     q->applied = 0;
 
     switch (keyname) {
@@ -1002,7 +1002,7 @@ hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
     case HY_PKG_REQUIRES:
     case HY_PKG_SUGGESTS:
     case HY_PKG_SUPPLEMENTS: {
-	HySack sack = query_sack(q);
+        HySack sack = query_sack(q);
 
     if (cmp_type == HY_GLOB) {
         HyReldepList reldeplist = reldeplist_from_str(sack, match);
@@ -1019,12 +1019,12 @@ hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
     }
     }
     default: {
-	struct _Filter *filterp = query_add_filter(q, 1);
-	filterp->cmp_type = cmp_type;
-	filterp->keyname = keyname;
-	filterp->match_type = _HY_STR;
-	filterp->matches[0].str = solv_strdup(match);
-	return 0;
+        struct _Filter *filterp = query_add_filter(q, 1);
+        filterp->cmp_type = cmp_type;
+        filterp->keyname = keyname;
+        filterp->match_type = _HY_STR;
+        filterp->matches[0].str = solv_strdup(match);
+        return 0;
     }
     }
 }
@@ -1042,10 +1042,10 @@ hy_query_filter_empty(HyQuery q)
 
 int
 hy_query_filter_in(HyQuery q, int keyname, int cmp_type,
-		   const char **matches)
+                   const char **matches)
 {
     if (!valid_filter_str(keyname, cmp_type))
-	return HIF_ERROR_BAD_QUERY;
+        return HIF_ERROR_BAD_QUERY;
     q->applied = 0;
 
     const unsigned count = count_nullt_array(matches);
@@ -1055,7 +1055,7 @@ hy_query_filter_in(HyQuery q, int keyname, int cmp_type,
     filterp->keyname = keyname;
     filterp->match_type = _HY_STR;
     for (int i = 0; i < count; ++i)
-	filterp->matches[i].str = solv_strdup(matches[i]);
+        filterp->matches[i].str = solv_strdup(matches[i]);
     return 0;
 }
 
@@ -1063,7 +1063,7 @@ int
 hy_query_filter_num(HyQuery q, int keyname, int cmp_type, int match)
 {
     if (!valid_filter_num(keyname, cmp_type))
-	return HIF_ERROR_BAD_QUERY;
+        return HIF_ERROR_BAD_QUERY;
     q->applied = 0;
 
     struct _Filter *filterp = query_add_filter(q, 1);
@@ -1076,10 +1076,10 @@ hy_query_filter_num(HyQuery q, int keyname, int cmp_type, int match)
 
 int
 hy_query_filter_num_in(HyQuery q, int keyname, int cmp_type, int nmatches,
-		       const int *matches)
+                       const int *matches)
 {
     if (!valid_filter_num(keyname, cmp_type))
-	return HIF_ERROR_BAD_QUERY;
+        return HIF_ERROR_BAD_QUERY;
     q->applied = 0;
 
     struct _Filter *filterp = query_add_filter(q, nmatches);
@@ -1088,16 +1088,16 @@ hy_query_filter_num_in(HyQuery q, int keyname, int cmp_type, int nmatches,
     filterp->keyname = keyname;
     filterp->match_type = _HY_NUM;
     for (int i = 0; i < nmatches; ++i)
-	filterp->matches[i].num = matches[i];
+        filterp->matches[i].num = matches[i];
     return 0;
 }
 
 int
 hy_query_filter_package_in(HyQuery q, int keyname, int cmp_type,
-			   const HyPackageSet pset)
+                           const HyPackageSet pset)
 {
     if (!valid_filter_pkg(keyname, cmp_type))
-	return HIF_ERROR_BAD_QUERY;
+        return HIF_ERROR_BAD_QUERY;
     q->applied = 0;
 
     struct _Filter *filterp = query_add_filter(q, 1);
@@ -1112,7 +1112,7 @@ int
 hy_query_filter_reldep(HyQuery q, int keyname, const HyReldep reldep)
 {
     if (!valid_filter_reldep(keyname))
-	return HIF_ERROR_BAD_QUERY;
+        return HIF_ERROR_BAD_QUERY;
     q->applied = 0;
 
     struct _Filter *filterp = query_add_filter(q, 1);
@@ -1127,7 +1127,7 @@ int
 hy_query_filter_reldep_in(HyQuery q, int keyname, const HyReldepList reldeplist)
 {
     if (!valid_filter_reldep(keyname))
-	return HIF_ERROR_BAD_QUERY;
+        return HIF_ERROR_BAD_QUERY;
     q->applied = 0;
 
     const int nmatches = hy_reldeplist_count(reldeplist);
@@ -1137,13 +1137,13 @@ hy_query_filter_reldep_in(HyQuery q, int keyname, const HyReldepList reldeplist)
     filterp->match_type = _HY_RELDEP;
 
     for (int i = 0; i < nmatches; ++i)
-	filterp->matches[i].reldep = hy_reldeplist_get_clone(reldeplist, i);
+        filterp->matches[i].reldep = hy_reldeplist_get_clone(reldeplist, i);
     return 0;
 }
 
 int
 hy_query_filter_provides(HyQuery q, int cmp_type, const char *name,
-			 const char *evr)
+                         const char *evr)
 {
     HyReldep reldep = hy_reldep_create(query_sack(q), name, cmp_type, evr);
     assert(reldep);
@@ -1161,16 +1161,16 @@ hy_query_filter_provides_in(HyQuery q, char **reldep_strs)
     HyReldep reldep;
     HyReldepList reldeplist = hy_reldeplist_create(q->sack);
     for (int i = 0; reldep_strs[i] != NULL; ++i) {
-	if (parse_reldep_str(reldep_strs[i], &name, &evr, &cmp_type) == -1) {
-	    hy_reldeplist_free(reldeplist);
-	    return HIF_ERROR_BAD_QUERY;
-	}
-	reldep = hy_reldep_create(q->sack, name, cmp_type, evr);
-	if (reldep)
-	    hy_reldeplist_add(reldeplist, reldep);
-	hy_reldep_free(reldep);
-	solv_free(name);
-	solv_free(evr);
+        if (parse_reldep_str(reldep_strs[i], &name, &evr, &cmp_type) == -1) {
+            hy_reldeplist_free(reldeplist);
+            return HIF_ERROR_BAD_QUERY;
+        }
+        reldep = hy_reldep_create(q->sack, name, cmp_type, evr);
+        if (reldep)
+            hy_reldeplist_add(reldeplist, reldep);
+        hy_reldep_free(reldep);
+        solv_free(name);
+        solv_free(evr);
     }
     hy_query_filter_reldep_in(q, HY_PKG_PROVIDES, reldeplist);
     hy_reldeplist_free(reldeplist);
@@ -1187,11 +1187,11 @@ hy_query_filter_requires(HyQuery q, int cmp_type, const char *name, const char *
     HyReldep reldep = hy_reldep_create(q->sack, name, not_neg, evr);
     int rc;
     if (reldep) {
-	rc = hy_query_filter_reldep(q, HY_PKG_REQUIRES, reldep);
-	hy_reldep_free(reldep);
-	q->filters[q->nfilters - 1].cmp_type = cmp_type;
+        rc = hy_query_filter_reldep(q, HY_PKG_REQUIRES, reldep);
+        hy_reldep_free(reldep);
+        q->filters[q->nfilters - 1].cmp_type = cmp_type;
     } else
-	rc = hy_query_filter_empty(q);
+        rc = hy_query_filter_empty(q);
     return rc;
 }
 
@@ -1265,8 +1265,8 @@ hy_query_run(HyQuery q)
 
     hy_query_apply(q);
     for (int i = 1; i < pool->nsolvables; ++i)
-	if (MAPTST(q->result, i))
-	    hy_packagelist_push(plist, package_create(q->sack, i));
+        if (MAPTST(q->result, i))
+            hy_packagelist_push(plist, package_create(q->sack, i));
     return plist;
 }
 

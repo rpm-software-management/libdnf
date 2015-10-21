@@ -51,11 +51,11 @@ static inline int
 string_cmp(const char *s1, const char *s2)
 {
     if (s1 == NULL) {
-	if (s2 == NULL)
-	    return 0;
-	return -1;
+        if (s2 == NULL)
+            return 0;
+        return -1;
     } else if (s2 == NULL)
-	return 1;
+        return 1;
     return strcmp(s1, s2);
 }
 
@@ -66,13 +66,13 @@ hy_nevra_cmp(HyNevra nevra1, HyNevra nevra2)
     char *nevra1_strs[] = { nevra1->name, nevra1->version, nevra1->release, nevra1->arch };
     char *nevra2_strs[] = { nevra2->name, nevra2->version, nevra2->release, nevra2->arch };
     if (nevra1->epoch < nevra2->epoch)
-	return -1;
+        return -1;
     else if (nevra1->epoch > nevra2->epoch)
-	return 1;
+        return 1;
     for (int i = 0; i < 4; ++i) {
-	ret = string_cmp(nevra1_strs[i], nevra2_strs[i]);
-	if (ret != 0)
-	    return ret;
+        ret = string_cmp(nevra1_strs[i], nevra2_strs[i]);
+        if (ret != 0)
+            return ret;
     }
     return 0;
 }
@@ -104,15 +104,15 @@ get_string(HyNevra nevra, int which)
 {
     switch (which) {
     case HY_NEVRA_NAME:
-	return &(nevra->name);
+        return &(nevra->name);
     case HY_NEVRA_VERSION:
-	return &(nevra->version);
+        return &(nevra->version);
     case HY_NEVRA_RELEASE:
-	return &(nevra->release);
+        return &(nevra->release);
     case HY_NEVRA_ARCH:
-	return &(nevra->arch);
+        return &(nevra->arch);
     default:
-	return NULL;
+        return NULL;
     }
 }
 
@@ -147,15 +147,15 @@ hy_nevra_to_query(HyNevra nevra, HySack sack)
 {
     HyQuery query = hy_query_create(sack);
     if (nevra->name != NULL)
-	hy_query_filter(query, HY_PKG_NAME, HY_EQ, nevra->name);
+        hy_query_filter(query, HY_PKG_NAME, HY_EQ, nevra->name);
     if (nevra->epoch != -1)
-	hy_query_filter_num(query, HY_PKG_EPOCH, HY_EQ, nevra->epoch);
+        hy_query_filter_num(query, HY_PKG_EPOCH, HY_EQ, nevra->epoch);
     if (nevra->version != NULL)
-	hy_query_filter(query, HY_PKG_VERSION, HY_EQ, nevra->version);
+        hy_query_filter(query, HY_PKG_VERSION, HY_EQ, nevra->version);
     if (nevra->release != NULL)
-	hy_query_filter(query, HY_PKG_RELEASE, HY_EQ, nevra->release);
+        hy_query_filter(query, HY_PKG_RELEASE, HY_EQ, nevra->release);
     if (nevra->arch != NULL)
-	hy_query_filter(query, HY_PKG_ARCH, HY_EQ, nevra->arch);
+        hy_query_filter(query, HY_PKG_ARCH, HY_EQ, nevra->arch);
     return query;
 }
 
@@ -176,11 +176,11 @@ char *hy_nevra_get_evr(HyNevra nevra)
 {
     char *str = NULL;
     if (nevra->epoch == -1) {
-	str = solv_malloc2(sizeof(char), 2 + VER_REL_LENGTH(nevra));
-	sprintf(str, "%s-%s", nevra->version, nevra->release);
+        str = solv_malloc2(sizeof(char), 2 + VER_REL_LENGTH(nevra));
+        sprintf(str, "%s-%s", nevra->version, nevra->release);
     } else {
-	str = solv_malloc2(sizeof(char), 18 + VER_REL_LENGTH(nevra));
-	sprintf(str, "%d:%s-%s", nevra->epoch, nevra->version, nevra->release);
+        str = solv_malloc2(sizeof(char), 18 + VER_REL_LENGTH(nevra));
+        sprintf(str, "%d:%s-%s", nevra->epoch, nevra->version, nevra->release);
     }
     return str;
 }

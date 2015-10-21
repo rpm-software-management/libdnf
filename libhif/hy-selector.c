@@ -35,27 +35,27 @@
 
 static int
 replace_filter(HySack sack, struct _Filter **fp, int keyname, int cmp_type,
-	       const char *match)
+               const char *match)
 {
     if (*fp == NULL)
-	*fp = filter_create(1);
+        *fp = filter_create(1);
     else
-	filter_reinit(*fp, 1);
+        filter_reinit(*fp, 1);
 
     struct _Filter *f = *fp;
 
     f->keyname = keyname;
     f->cmp_type = cmp_type;
     if (keyname == HY_PKG_PROVIDES && cmp_type != HY_GLOB) {
-	f->match_type = _HY_RELDEP;
-	HyReldep reldep = reldep_from_str(sack, match);
-	if (reldep == NULL) {
-	    filter_free(*fp);
-	    *fp = NULL;
-	    return HIF_ERROR_BAD_SELECTOR;
-	}
-	f->matches[0].reldep = reldep;
-	return 0;
+        f->match_type = _HY_RELDEP;
+        HyReldep reldep = reldep_from_str(sack, match);
+        if (reldep == NULL) {
+            filter_free(*fp);
+            *fp = NULL;
+            return HIF_ERROR_BAD_SELECTOR;
+        }
+        f->matches[0].reldep = reldep;
+        return 0;
     }
 
     f->match_type = _HY_STR;
@@ -71,14 +71,14 @@ valid_setting(int keyname, int cmp_type)
     case HY_PKG_EVR:
     case HY_PKG_REPONAME:
     case HY_PKG_VERSION:
-	return cmp_type == HY_EQ;
+        return cmp_type == HY_EQ;
     case HY_PKG_PROVIDES:
     case HY_PKG_NAME:
-	return (cmp_type == HY_EQ || cmp_type == HY_GLOB);
+        return (cmp_type == HY_EQ || cmp_type == HY_GLOB);
     case HY_PKG_FILE:
-	return 1;
+        return 1;
     default:
-	return 0;
+        return 0;
     }
 }
 
@@ -106,31 +106,31 @@ int
 hy_selector_set(HySelector sltr, int keyname, int cmp_type, const char *match)
 {
     if (!valid_setting(keyname, cmp_type))
-	return HIF_ERROR_BAD_SELECTOR;
+        return HIF_ERROR_BAD_SELECTOR;
     HySack sack = selector_sack(sltr);
 
     switch (keyname) {
     case HY_PKG_ARCH:
-	return replace_filter(sack, &sltr->f_arch, keyname, cmp_type, match);
+        return replace_filter(sack, &sltr->f_arch, keyname, cmp_type, match);
     case HY_PKG_EVR:
     case HY_PKG_VERSION:
-	return replace_filter(sack, &sltr->f_evr, keyname, cmp_type, match);
+        return replace_filter(sack, &sltr->f_evr, keyname, cmp_type, match);
     case HY_PKG_NAME:
-	if (sltr->f_provides || sltr->f_file)
-	    return HIF_ERROR_BAD_SELECTOR;
-	return replace_filter(sack, &sltr->f_name, keyname, cmp_type, match);
+        if (sltr->f_provides || sltr->f_file)
+            return HIF_ERROR_BAD_SELECTOR;
+        return replace_filter(sack, &sltr->f_name, keyname, cmp_type, match);
     case HY_PKG_PROVIDES:
-	if (sltr->f_name || sltr->f_file)
-	    return HIF_ERROR_BAD_SELECTOR;
-	return replace_filter(sack, &sltr->f_provides, keyname, cmp_type, match);
+        if (sltr->f_name || sltr->f_file)
+            return HIF_ERROR_BAD_SELECTOR;
+        return replace_filter(sack, &sltr->f_provides, keyname, cmp_type, match);
     case HY_PKG_REPONAME:
         return replace_filter(sack, &sltr->f_reponame, keyname, cmp_type, match);
     case HY_PKG_FILE:
-	if (sltr->f_name || sltr->f_provides)
-	    return HIF_ERROR_BAD_SELECTOR;
-	return replace_filter(sack, &sltr->f_file, keyname, cmp_type, match);
+        if (sltr->f_name || sltr->f_provides)
+            return HIF_ERROR_BAD_SELECTOR;
+        return replace_filter(sack, &sltr->f_file, keyname, cmp_type, match);
     default:
-	return HIF_ERROR_BAD_SELECTOR;
+        return HIF_ERROR_BAD_SELECTOR;
     }
 }
 

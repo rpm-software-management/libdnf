@@ -37,7 +37,7 @@ static HySack
 create_ut_sack(void)
 {
     HySack sack = hy_sack_create(test_globals.tmpdir, TEST_FIXED_ARCH, NULL,
-				 NULL, HY_MAKE_CACHE_DIR, NULL);
+                                 NULL, HY_MAKE_CACHE_DIR, NULL);
     test_globals.sack = sack;
     HY_LOG_INFO("HySack for UT created: %p", sack);
     return sack;
@@ -53,13 +53,13 @@ setup_with(HySack sack, ...)
     va_start(names, sack);
     const char *name = va_arg(names, const char *);
     while (name) {
-	const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
-					name, ".repo");
-	int installed = !strncmp(name, HY_SYSTEM_REPO_NAME,
-				 strlen(HY_SYSTEM_REPO_NAME));
+        const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
+                                        name, ".repo");
+        int installed = !strncmp(name, HY_SYSTEM_REPO_NAME,
+                                 strlen(HY_SYSTEM_REPO_NAME));
 
-	ret |= load_repo(pool, name, path, installed);
-	name = va_arg(names, const char *);
+        ret |= load_repo(pool, name, path, installed);
+        name = va_arg(names, const char *);
     }
     va_end(names);
     return ret;
@@ -70,7 +70,7 @@ void add_cmdline(HySack sack)
 {
     Pool *pool = sack_pool(sack);
     const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
-				    "yum/tour-4-6.noarch.rpm", NULL);
+                                    "yum/tour-4-6.noarch.rpm", NULL);
     HyPackage pkg = hy_sack_add_cmdline_package(sack, path);
     hy_package_free(pkg);
 }
@@ -186,7 +186,7 @@ void setup_yum_sack(HySack sack, const char *yum_repo_name)
 {
     Pool *pool = sack_pool(sack);
     const char *repo_path = pool_tmpjoin(pool, test_globals.repo_dir,
-					 YUM_DIR_SUFFIX, NULL);
+                                         YUM_DIR_SUFFIX, NULL);
     fail_if(access(repo_path, X_OK));
     HyRepo repo = glob_for_repofiles(pool, yum_repo_name, repo_path);
 
