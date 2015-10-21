@@ -136,10 +136,10 @@ hy_nevra_get_epoch(HyNevra nevra)
     return nevra->epoch;
 }
 
-int
+void
 hy_nevra_set_epoch(HyNevra nevra, int epoch)
 {
-    return nevra->epoch = epoch;
+    nevra->epoch = epoch;
 }
 
 HyQuery
