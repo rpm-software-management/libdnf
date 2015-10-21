@@ -97,13 +97,13 @@ void
 dump_goal_results(HyGoal goal)
 {
     printf("installs:\n");
-    dump_packagelist(hy_goal_list_installs(goal), 1);
+    dump_packagelist(hy_goal_list_installs(goal, NULL), 1);
     printf("upgrades:\n");
-    dump_packagelist(hy_goal_list_upgrades(goal), 1);
+    dump_packagelist(hy_goal_list_upgrades(goal, NULL), 1);
     printf("erasures:\n");
-    dump_packagelist(hy_goal_list_erasures(goal), 1);
+    dump_packagelist(hy_goal_list_erasures(goal, NULL), 1);
     printf("reinstalls:\n");
-    dump_packagelist(hy_goal_list_reinstalls(goal), 1);
+    dump_packagelist(hy_goal_list_reinstalls(goal, NULL), 1);
 }
 
 int

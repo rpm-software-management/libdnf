@@ -27,7 +27,6 @@
 #include <hif-context.h>
 #include <hif-db.h>
 #include <hif-goal.h>
-#include <hif-hawkey.h>
 #include <hif-keyring.h>
 #include <hif-lock.h>
 #include <hif-package.h>

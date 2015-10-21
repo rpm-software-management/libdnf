@@ -279,7 +279,7 @@ START_TEST(test_two_sacks)
      * create a second HySack. */
     char *tmpdir = solv_dupjoin(test_globals.tmpdir, "/tmp", NULL);
     HySack sack1 = hy_sack_create(tmpdir, TEST_FIXED_ARCH, NULL, NULL,
-                                  HY_MAKE_CACHE_DIR);
+                                  HY_MAKE_CACHE_DIR, NULL);
     Pool *pool1 = sack_pool(sack1);
     const char *path = pool_tmpjoin(pool1, test_globals.repo_dir,
                                     "change.repo", NULL);

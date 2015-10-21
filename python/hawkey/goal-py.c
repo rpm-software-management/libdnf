@@ -29,7 +29,6 @@
 // hawkey
 #include "hif-types.h"
 #include "hif-cleanup.h"
-#include "hy-errno.h"
 #include "hy-goal.h"
 #include "hy-package_internal.h"
 #include "hy-packagelist.h"
@@ -157,20 +156,20 @@ op_ret2exc(int ret)
     if (!ret)
 	Py_RETURN_NONE;
 
-    switch (hy_get_errno()) {
+    switch (ret) {
     case HIF_ERROR_BAD_SELECTOR:
-	PyErr_SetString(HyExc_Value,
-			"Ill-formed Selector used for the operation.");
-	return NULL;
+        PyErr_SetString(HyExc_Value,
+                        "Ill-formed Selector used for the operation.");
+        return NULL;
     case HIF_ERROR_INVALID_ARCHITECTURE:
-	PyErr_SetString(HyExc_Arch, "Used arch is unknown.");
-	return NULL;
+        PyErr_SetString(HyExc_Arch, "Used arch is unknown.");
+        return NULL;
     case HIF_ERROR_PACKAGE_NOT_FOUND:
-	PyErr_SetString(HyExc_Validation, "The validation check has failed.");
-	return NULL;
+        PyErr_SetString(HyExc_Validation, "The validation check has failed.");
+        return NULL;
     default:
-	PyErr_SetString(HyExc_Exception, "Goal operation failed.");
-	return NULL;
+        PyErr_SetString(HyExc_Exception, "Goal operation failed.");
+        return NULL;
     }
 }
 
@@ -290,18 +289,19 @@ install(_GoalObject *self, PyObject *args, PyObject *kwds)
     HyPackage pkg = NULL;
     HySelector sltr = NULL;
     int flags = 0;
-    int ret = 0;
+    gboolean ret = 0;
+    _cleanup_error_free_ GError *error = NULL;
     if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, &flags, HY_WEAK_SOLV))
-	return NULL;
+        return NULL;
 
     if (flags & HY_WEAK_SOLV) {
-	ret = pkg ? hy_goal_install_optional(self->goal, pkg) :
-	    hy_goal_install_selector_optional(self->goal, sltr);
+        ret = pkg ? hy_goal_install_optional(self->goal, pkg) :
+            hy_goal_install_selector_optional(self->goal, sltr, &error);
     } else {
-	ret = pkg ? hy_goal_install(self->goal, pkg) :
-	    hy_goal_install_selector(self->goal, sltr);
+        ret = pkg ? hy_goal_install(self->goal, pkg) :
+            hy_goal_install_selector(self->goal, sltr, &error);
     }
-    return op_ret2exc(ret);
+    return op_error2exc(error);
 }
 
 static PyObject *
@@ -503,23 +503,24 @@ write_debugdata(_GoalObject *self, PyObject *dir_str)
 }
 
 static PyObject *
-list_generic(_GoalObject *self, HyPackageList (*func)(HyGoal))
+list_generic(_GoalObject *self, HyPackageList (*func)(HyGoal, GError **))
 {
-    HyPackageList plist = func(self->goal);
+    _cleanup_error_free_ GError *error = NULL;
+    HyPackageList plist = func(self->goal, &error);
     PyObject *list;
 
     if (!plist) {
-	switch (hy_get_errno()) {
-	case HIF_ERROR_INTERNAL_ERROR:
-	    PyErr_SetString(HyExc_Value, "Goal has not been run yet.");
-	    break;
-	case HIF_ERROR_NO_SOLUTION:
-	    PyErr_SetString(HyExc_Runtime, "Goal could not find a solution.");
-	    break;
-	default:
-	    assert(0);
-	}
-	return NULL;
+        switch (error->code) {
+        case HIF_ERROR_INTERNAL_ERROR:
+            PyErr_SetString(HyExc_Value, "Goal has not been run yet.");
+            break;
+        case HIF_ERROR_NO_SOLUTION:
+            PyErr_SetString(HyExc_Runtime, "Goal could not find a solution.");
+            break;
+        default:
+            assert(0);
+        }
+        return NULL;
     }
     list = packagelist_to_pylist(plist, self->sack);
     hy_packagelist_free(plist);

@@ -74,8 +74,8 @@ int hy_goal_erase_selector(HyGoal goal, HySelector sltr);
 int hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags);
 int hy_goal_install(HyGoal goal, HyPackage new_pkg);
 int hy_goal_install_optional(HyGoal goal, HyPackage new_pkg);
-int hy_goal_install_selector(HyGoal goal, HySelector sltr);
-int hy_goal_install_selector_optional(HyGoal goal, HySelector sltr);
+gboolean hy_goal_install_selector(HyGoal goal, HySelector sltr, GError **error);
+gboolean hy_goal_install_selector_optional(HyGoal goal, HySelector sltr, GError **error);
 int hy_goal_upgrade_all(HyGoal goal);
 int hy_goal_upgrade_to(HyGoal goal, HyPackage new_pkg);
 int hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags);
@@ -102,13 +102,13 @@ int hy_goal_log_decisions(HyGoal goal);
 gboolean hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error);
 
 /* result processing */
-HyPackageList hy_goal_list_erasures(HyGoal goal);
-HyPackageList hy_goal_list_installs(HyGoal goal);
-HyPackageList hy_goal_list_obsoleted(HyGoal goal);
-HyPackageList hy_goal_list_reinstalls(HyGoal goal);
-HyPackageList hy_goal_list_unneeded(HyGoal goal);
-HyPackageList hy_goal_list_upgrades(HyGoal goal);
-HyPackageList hy_goal_list_downgrades(HyGoal goal);
+HyPackageList hy_goal_list_erasures(HyGoal goal, GError **error);
+HyPackageList hy_goal_list_installs(HyGoal goal, GError **error);
+HyPackageList hy_goal_list_obsoleted(HyGoal goal, GError **error);
+HyPackageList hy_goal_list_reinstalls(HyGoal goal, GError **error);
+HyPackageList hy_goal_list_unneeded(HyGoal goal, GError **error);
+HyPackageList hy_goal_list_upgrades(HyGoal goal, GError **error);
+HyPackageList hy_goal_list_downgrades(HyGoal goal, GError **error);
 HyPackageList hy_goal_list_obsoleted_by_package(HyGoal goal, HyPackage pkg);
 int hy_goal_get_reason(HyGoal goal, HyPackage pkg);
 

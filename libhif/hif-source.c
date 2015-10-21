@@ -40,7 +40,6 @@
 
 #include <strings.h>
 #include <fcntl.h>
-#include <errno.h>
 #include <glib/gstdio.h>
 #include "hy-util.h"
 #include <librepo/librepo.h>

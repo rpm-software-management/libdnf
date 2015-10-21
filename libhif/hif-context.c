@@ -941,7 +941,6 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 {
 	HifContextPrivate *priv = GET_PRIVATE (context);
 	gboolean ret;
-	gint rc;
 	_cleanup_free_ gchar *solv_dir_real = NULL;
 
 	/* create empty sack */
@@ -949,25 +948,20 @@ hif_context_setup_sack (HifContext *context, HifState *state, GError **error)
 	priv->sack = hy_sack_create (solv_dir_real, NULL,
 				     priv->install_root,
 				     NULL,
-				     HY_MAKE_CACHE_DIR);
-	if (priv->sack == NULL) {
-		g_set_error (error,
-			     HIF_ERROR,
-			     HIF_ERROR_INTERNAL_ERROR,
-			     "failed to create sack cache in %s for %s",
-			     priv->solv_dir, priv->install_root);
+				     HY_MAKE_CACHE_DIR,
+				     error);
+	if (priv->sack == NULL)
 		return FALSE;
-	}
 	hy_sack_set_installonly (priv->sack, hif_context_get_installonly_pkgs (context));
 	hy_sack_set_installonly_limit (priv->sack, hif_context_get_installonly_limit (context));
 
 	/* add installed packages */
 	if (have_existing_install (context)) {
-		rc = hy_sack_load_system_repo (priv->sack, NULL, HY_BUILD_CACHE);
-		if (!hif_error_set_from_hawkey (rc, error)) {
-			g_prefix_error (error, "Failed to load system repo: ");
+		if (!hy_sack_load_system_repo (priv->sack,
+					       NULL,
+					       HY_BUILD_CACHE,
+					       error))
 			return FALSE;
-		}
 	}
 
 	/* creates repo for command line rpms */

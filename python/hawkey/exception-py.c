@@ -22,7 +22,6 @@
 
 // hawkey
 #include "hif-types.h"
-#include "hy-errno_internal.h"
 
 // pyhawkey
 #include "exception-py.h"
@@ -86,11 +85,7 @@ ret2e(int ret, const char *msg)
 	exctype = HyExc_Runtime;
 	break;
     case HIF_ERROR_FILE_INVALID: {
-	const char *description = get_err_str();
-
 	exctype = PyExc_IOError;
-	if (strlen(description) > 0)
-	    msg = description;
 	break;
     }
     case HIF_ERROR_INTERNAL_ERROR:

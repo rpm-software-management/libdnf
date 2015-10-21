@@ -37,7 +37,6 @@
 // hawkey
 #include "hif-cleanup.h"
 #include "hif-types.h"
-#include "hy-errno_internal.h"
 #include "hy-goal_internal.h"
 #include "hy-iutil.h"
 #include "hy-package_internal.h"
@@ -300,18 +299,26 @@ free_job(Queue *job)
 }
 
 static HyPackageList
-list_results(HyGoal goal, Id type_filter1, Id type_filter2)
+list_results(HyGoal goal, Id type_filter1, Id type_filter2, GError **error)
 {
     Queue transpkgs;
     Transaction *trans = goal->trans;
     HyPackageList plist;
 
-    if (!trans) {
-	if (!goal->solv)
-	    hy_errno = HIF_ERROR_INTERNAL_ERROR;
-	else
-	    hy_errno = HIF_ERROR_NO_SOLUTION;
-	return NULL;
+    /* no transaction */
+    if (trans == NULL) {
+        if (goal->solv == NULL) {
+            g_set_error_literal (error,
+                                 HIF_ERROR,
+                                 HIF_ERROR_INTERNAL_ERROR,
+                                 "no solv in the goal");
+            return NULL;
+        }
+        g_set_error_literal (error,
+                             HIF_ERROR,
+                             HIF_ERROR_NO_SOLUTION,
+                             "no solution possible");
+        return NULL;
     }
     queue_init(&transpkgs);
     plist = hy_packagelist_create();
@@ -519,7 +526,7 @@ filter_reponame2job(HySack sack, const struct _Filter *f, Queue *job)
 /**
  * Build job queue from a Query.
  *
- * Returns 0 on success. Otherwise it returns non-zero and sets hy_errno.
+ * Returns an error code
  */
 int
 sltr2job(const HySelector sltr, Queue *job, int solver_action)
@@ -566,8 +573,6 @@ sltr2job(const HySelector sltr, Queue *job, int solver_action)
  		    job_sltr.elements[i + 1]);
 
  finish:
-    if (ret)
- 	hy_errno = ret;
     queue_free(&job_sltr);
     return ret;
 }
@@ -694,18 +699,36 @@ hy_goal_install_optional(HyGoal goal, HyPackage new_pkg)
     return 0;
 }
 
-int
-hy_goal_install_selector(HyGoal goal, HySelector sltr)
+gboolean
+hy_goal_install_selector(HyGoal goal, HySelector sltr, GError **error)
 {
+    int rc;
     goal->actions |= HY_INSTALL;
-    return sltr2job(sltr, &goal->staging, SOLVER_INSTALL);
+    rc = sltr2job(sltr, &goal->staging, SOLVER_INSTALL);
+    if (rc != 0) {
+        g_set_error_literal (error,
+                             HIF_ERROR,
+                             rc,
+                             "failed to install selector");
+        return FALSE;
+    }
+    return TRUE;
 }
 
-int
-hy_goal_install_selector_optional(HyGoal goal, HySelector sltr)
+gboolean
+hy_goal_install_selector_optional(HyGoal goal, HySelector sltr, GError **error)
 {
+    int rc;
     goal->actions |= HY_INSTALL;
-    return sltr2job(sltr, &goal->staging, SOLVER_INSTALL|SOLVER_WEAK);
+    rc = sltr2job(sltr, &goal->staging, SOLVER_INSTALL|SOLVER_WEAK);
+    if (rc != 0) {
+        g_set_error_literal (error,
+                             HIF_ERROR,
+                             rc,
+                             "failed to install optional selector");
+        return FALSE;
+    }
+    return TRUE;
 }
 
 int
@@ -728,7 +751,7 @@ hy_goal_upgrade_to_selector(HyGoal goal, HySelector sltr)
 {
     goal->actions |= HY_UPGRADE;
     if (sltr->f_evr == NULL)
-	return sltr2job(sltr, &goal->staging, SOLVER_UPDATE);
+        return sltr2job(sltr, &goal->staging, SOLVER_UPDATE);
     return sltr2job(sltr, &goal->staging, SOLVER_INSTALL);
 }
 
@@ -755,10 +778,8 @@ hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags)
 	count = hy_packagelist_count(installed);
 	hy_packagelist_free(installed);
 	hy_query_free(q);
-	if (!count) {
-	    hy_errno = HIF_ERROR_PACKAGE_NOT_FOUND;
+	if (!count)
 	    return HIF_ERROR_PACKAGE_NOT_FOUND;
-	}
     }
     goal->actions |= HY_UPGRADE;
 
@@ -824,10 +845,9 @@ hy_goal_describe_problem(HyGoal goal, unsigned i)
     Id rid, source, target, dep;
     SolverRuleinfo type;
 
-    if (i >= (unsigned) hy_goal_count_problems(goal)) {
-	hy_errno = HIF_ERROR_INTERNAL_ERROR;
-	return NULL;
-    }
+    /* internal error */
+    if (i >= (unsigned) hy_goal_count_problems(goal))
+        return NULL;
 
     // this libsolv interface indexes from 1 (we do from 0), so:
     rid = solver_findproblemrule(goal->solv, i + 1);
@@ -877,8 +897,13 @@ hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error)
 
     int flags = TESTCASE_RESULT_TRANSACTION | TESTCASE_RESULT_PROBLEMS;
     _cleanup_free_ char *absdir = abspath(dir);
-    if (absdir == NULL)
-        return hy_errno;
+    if (absdir == NULL) {
+        g_set_error (error,
+                     HIF_ERROR,
+                     HIF_ERROR_FILE_INVALID,
+                     "failed to make %s absolute", dir);
+        return FALSE;
+    }
     HY_LOG_INFO("writing solver debugdata to %s", absdir);
     int ret = testcase_write(solv, absdir, flags, NULL, NULL);
     if (!ret) {
@@ -893,32 +918,32 @@ hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error)
 }
 
 HyPackageList
-hy_goal_list_erasures(HyGoal goal)
+hy_goal_list_erasures(HyGoal goal, GError **error)
 {
-    return list_results(goal, SOLVER_TRANSACTION_ERASE, 0);
+    return list_results(goal, SOLVER_TRANSACTION_ERASE, 0, error);
 }
 
 HyPackageList
-hy_goal_list_installs(HyGoal goal)
+hy_goal_list_installs(HyGoal goal, GError **error)
 {
     return list_results(goal, SOLVER_TRANSACTION_INSTALL,
-			SOLVER_TRANSACTION_OBSOLETES);
+			SOLVER_TRANSACTION_OBSOLETES, error);
 }
 
 HyPackageList
-hy_goal_list_obsoleted(HyGoal goal)
+hy_goal_list_obsoleted(HyGoal goal, GError **error)
 {
-    return list_results(goal, SOLVER_TRANSACTION_OBSOLETED, 0);
+    return list_results(goal, SOLVER_TRANSACTION_OBSOLETED, 0, error);
 }
 
 HyPackageList
-hy_goal_list_reinstalls(HyGoal goal)
+hy_goal_list_reinstalls(HyGoal goal, GError **error)
 {
-    return list_results(goal, SOLVER_TRANSACTION_REINSTALL, 0);
+    return list_results(goal, SOLVER_TRANSACTION_REINSTALL, 0, error);
 }
 
 HyPackageList
-hy_goal_list_unneeded(HyGoal goal)
+hy_goal_list_unneeded(HyGoal goal, GError **error)
 {
     HyPackageList plist = hy_packagelist_create();
     Queue q;
@@ -932,15 +957,15 @@ hy_goal_list_unneeded(HyGoal goal)
 }
 
 HyPackageList
-hy_goal_list_upgrades(HyGoal goal)
+hy_goal_list_upgrades(HyGoal goal, GError **error)
 {
-    return list_results(goal, SOLVER_TRANSACTION_UPGRADE, 0);
+    return list_results(goal, SOLVER_TRANSACTION_UPGRADE, 0, error);
 }
 
 HyPackageList
-hy_goal_list_downgrades(HyGoal goal)
+hy_goal_list_downgrades(HyGoal goal, GError **error)
 {
-    return list_results(goal, SOLVER_TRANSACTION_DOWNGRADE, 0);
+    return list_results(goal, SOLVER_TRANSACTION_DOWNGRADE, 0, error);
 }
 
 HyPackageList
