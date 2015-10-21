@@ -456,7 +456,7 @@ load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     if (load_updateinfo)
         flags |= HY_LOAD_UPDATEINFO;
     Py_BEGIN_ALLOW_THREADS;
-    ret = hy_sack_load_repo(self->sack, crepo, flags, error);
+    ret = hy_sack_load_repo(self->sack, crepo, flags, &error);
     Py_END_ALLOW_THREADS;
     if (error2e(error))
         return NULL;
