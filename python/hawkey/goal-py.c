@@ -468,7 +468,7 @@ describe_problem(_GoalObject *self, PyObject *index_obj)
         return NULL;
     }
     str = PyString_FromString(cstr);
-    solv_free(cstr);
+    g_free(cstr);
     return str;
 }
 

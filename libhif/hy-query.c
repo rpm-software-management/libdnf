@@ -248,7 +248,7 @@ filter_reinit(struct _Filter *f, int nmatches)
             hy_packageset_free(f->matches[m].pset);
             break;
         case _HY_STR:
-            solv_free(f->matches[m].str);
+            g_free(f->matches[m].str);
             break;
         case _HY_RELDEP:
             hy_reldep_free(f->matches[m].reldep);
@@ -256,7 +256,7 @@ filter_reinit(struct _Filter *f, int nmatches)
         default:
             break;
         }
-    solv_free(f->matches);
+    g_free(f->matches);
     f->match_type = _HY_VOID;
     if (nmatches > 0)
         f->matches = solv_calloc(nmatches, sizeof(union _Match *));
@@ -270,7 +270,7 @@ filter_free(struct _Filter *f)
 {
     if (f) {
         filter_reinit(f, 0);
-        solv_free(f);
+        g_free(f);
     }
 }
 
@@ -410,7 +410,7 @@ filter_version(HyQuery q, struct _Filter *f, Map *m)
                 (cmp == 0 && cmp_type & HY_EQ))
                 MAPSET(m, id);
         }
-        solv_free(filter_vr);
+        g_free(filter_vr);
     }
 }
 
@@ -441,7 +441,7 @@ filter_release(HyQuery q, struct _Filter *f, Map *m)
                 (cmp == 0 && f->cmp_type & HY_EQ))
                 MAPSET(m, id);
         }
-        solv_free(filter_vr);
+        g_free(filter_vr);
     }
 }
 
@@ -468,7 +468,7 @@ filter_sourcerpm(HyQuery q, struct _Filter *f, Map *m)
             char *srcrpm = hy_package_get_sourcerpm(pkg);
             if (srcrpm && !strcmp(match, srcrpm))
                 MAPSET(m, id);
-            solv_free(srcrpm);
+            g_free(srcrpm);
             hy_package_free(pkg);
         }
     }
@@ -772,7 +772,7 @@ clear_filters(HyQuery q)
         struct _Filter *filterp = q->filters + i;
         filter_reinit(filterp, 0);
     }
-    solv_free(q->filters);
+    g_free(q->filters);
     q->filters = NULL;
     q->nfilters = 0;
     q->downgradable = 0;
@@ -918,7 +918,7 @@ void
 hy_query_free(HyQuery q)
 {
     hy_query_clear(q);
-    solv_free(q);
+    g_free(q);
 }
 
 void
@@ -926,7 +926,8 @@ hy_query_clear(HyQuery q)
 {
     if (q->result) {
         map_free(q->result);
-        q->result = solv_free(q->result);
+        g_free(q->result);
+        q->result = NULL;
     }
     clear_filters(q);
 }
@@ -1169,8 +1170,8 @@ hy_query_filter_provides_in(HyQuery q, char **reldep_strs)
         if (reldep)
             hy_reldeplist_add(reldeplist, reldep);
         hy_reldep_free(reldep);
-        solv_free(name);
-        solv_free(evr);
+        g_free(name);
+        g_free(evr);
     }
     hy_query_filter_reldep_in(q, HY_PKG_PROVIDES, reldeplist);
     hy_reldeplist_free(reldeplist);

@@ -82,7 +82,7 @@ glob_for_cachedir(char *path)
     p[len-6] = '*';
     p[len-5] = '\0';
     if (wordexp(p, &word_vector, 0)) {
-        solv_free(p);
+        g_free(p);
         return ret;
     }
     for (int i = 0; i < word_vector.we_wordc; ++i) {
@@ -98,7 +98,7 @@ glob_for_cachedir(char *path)
         }
     }
     wordfree(&word_vector);
-    solv_free(p);
+    g_free(p);
     return ret;
 }
 
@@ -289,7 +289,7 @@ mkcachedir(char *path)
         ret = 0;
     }
 
-    solv_free(p);
+    g_free(p);
     return ret;
 }
 
@@ -718,7 +718,7 @@ parse_reldep_str(const char *reldep_str, char **name, char **evr,
             ret = 0;
         else if (get_cmp_flags(cmp_type, reldep_str, matches, 2) == -1 ||
             copy_str_from_subexpr(evr, reldep_str, matches, 3) == -1) {
-            solv_free(*name);
+            g_free(*name);
             ret = -1;
         }
     } else
@@ -736,8 +736,8 @@ reldep_from_str(HySack sack, const char *reldep_str)
     if (parse_reldep_str(reldep_str, &name, &evr, &cmp_type) == -1)
         return NULL;
     HyReldep reldep = hy_reldep_create(sack, name, cmp_type, evr);
-    solv_free(name);
-    solv_free(evr);
+    g_free(name);
+    g_free(evr);
     return reldep;
 }
 
@@ -762,7 +762,7 @@ reldeplist_from_str(HySack sack, const char *reldep_str)
     }
 
     dataiterator_free(&di);
-    solv_free(name_glob);
-    solv_free(evr);
+    g_free(name_glob);
+    g_free(evr);
     return reldeplist;
 }

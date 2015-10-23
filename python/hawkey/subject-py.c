@@ -99,7 +99,7 @@ forms_from_list(PyObject *list)
     while (i < PyList_Size(list)) {
         PyObject *form = PyList_GetItem(list, i);
         if (!PyInt_Check(form)) {
-            solv_free(forms);
+            g_free(forms);
             return NULL;
         }
         forms = solv_extend(forms, i, 1, sizeof(HyForm), BLOCK_SIZE);
@@ -152,7 +152,7 @@ nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
     }
     HyPossibilities iter = hy_subject_nevra_possibilities(self->pattern,
         cforms);
-    solv_free(cforms);
+    g_free(cforms);
     return possibilitiesToPyObject(iter, NULL);
 }
 
@@ -185,7 +185,7 @@ nevra_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
 
     HyPossibilities iter = hy_subject_nevra_possibilities_real(self->pattern,
     cforms, csack, flags);
-    solv_free(cforms);
+    g_free(cforms);
     return possibilitiesToPyObject(iter, sack);
 }
 

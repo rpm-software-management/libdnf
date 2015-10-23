@@ -303,7 +303,7 @@ START_TEST(test_two_sacks)
     hy_package_free(pkg2);
 
     hy_sack_free(sack1);
-    solv_free(tmpdir);
+    g_free(tmpdir);
 }
 END_TEST
 

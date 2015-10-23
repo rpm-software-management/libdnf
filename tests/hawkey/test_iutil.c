@@ -93,7 +93,7 @@ START_TEST(test_checksum)
     fail_unless(checksum_cmp(cs1, cs2));
     fail_unless(checksum_cmp(cs1_sum, cs2_sum));
 
-    solv_free(new_file);
+    g_free(new_file);
 }
 END_TEST
 
@@ -118,7 +118,7 @@ START_TEST(test_checksum_write_read)
     fail_if(checksum_cmp(cs_computed, cs_read));
     fclose(fp);
 
-    solv_free(new_file);
+    g_free(new_file);
 }
 END_TEST
 

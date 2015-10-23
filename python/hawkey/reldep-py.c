@@ -131,8 +131,8 @@ reldep_init(_ReldepObject *self, PyObject *args, PyObject *kwds)
     }
 
     self->reldep = hy_reldep_create(csack, name, cmp_type, evr);
-    solv_free(name);
-    solv_free(evr);
+    g_free(name);
+    g_free(evr);
     Py_XDECREF(tmp_py_str);
     if (self->reldep == NULL) {
         PyErr_Format(HyExc_Value, "No such reldep: %s", reldep_str);
@@ -169,7 +169,7 @@ reldep_str(_ReldepObject *self)
     HyReldep reldep = self->reldep;
     char *cstr = hy_reldep_str(reldep);
     PyObject *retval = PyString_FromString(cstr);
-    solv_free(cstr);
+    g_free(cstr);
     return retval;
 }
 

@@ -85,7 +85,7 @@ advisorylist_add(HyAdvisoryList advisorylist, HyAdvisory advisory)
 void
 hy_advisory_free(HyAdvisory advisory)
 {
-    solv_free(advisory);
+    g_free(advisory);
 }
 
 const char *
@@ -195,7 +195,7 @@ void
 hy_advisorylist_free(HyAdvisoryList advisorylist)
 {
     queue_free(&advisorylist->queue);
-    solv_free(advisorylist);
+    g_free(advisorylist);
 }
 
 int

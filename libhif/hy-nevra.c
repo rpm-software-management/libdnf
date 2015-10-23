@@ -80,11 +80,11 @@ hy_nevra_cmp(HyNevra nevra1, HyNevra nevra2)
 void
 hy_nevra_free(HyNevra nevra)
 {
-    solv_free(nevra->name);
-    solv_free(nevra->version);
-    solv_free(nevra->release);
-    solv_free(nevra->arch);
-    solv_free(nevra);
+    g_free(nevra->name);
+    g_free(nevra->version);
+    g_free(nevra->release);
+    g_free(nevra->arch);
+    g_free(nevra);
 }
 
 HyNevra
@@ -126,7 +126,7 @@ void
 hy_nevra_set_string(HyNevra nevra, int which, const char* str_val)
 {
     char** attr = get_string(nevra, which);
-    solv_free(*attr);
+    g_free(*attr);
     *attr = solv_strdup(str_val);
 }
 
@@ -165,8 +165,8 @@ hy_nevra_evr_cmp(HyNevra nevra1, HyNevra nevra2, HySack sack)
     char *self_evr = hy_nevra_get_evr(nevra1);
     char *other_evr = hy_nevra_get_evr(nevra2);
     int cmp = hy_sack_evr_cmp(sack, self_evr, other_evr);
-    solv_free(self_evr);
-    solv_free(other_evr);
+    g_free(self_evr);
+    g_free(other_evr);
     return cmp;
 }
 

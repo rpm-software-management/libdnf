@@ -246,7 +246,7 @@ START_TEST(reldep)
     ck_assert_int_eq(hy_possibilities_next_reldep(iter, &reldep), 0);
     char *reldep_str = hy_reldep_str(reldep);
     ck_assert_str_eq(reldep_str, "P-lib");
-    solv_free(reldep_str);
+    g_free(reldep_str);
     hy_reldep_free(reldep);
     ck_assert_int_eq(hy_possibilities_next_reldep(iter, &reldep), -1);
     hy_possibilities_free(iter);

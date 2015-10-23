@@ -323,7 +323,7 @@ START_TEST(test_query_pkg)
     HyPackage pkg = hy_packageset_get_clone(pset, 0);
     char *nvra = hy_package_get_nevra(pkg);
     ck_assert_str_eq(nvra, "jay-6.0-0.x86_64");
-    solv_free(nvra);
+    g_free(nvra);
     hy_package_free(pkg);
 
     hy_packageset_free(pset);
@@ -918,8 +918,8 @@ START_TEST(test_query_nevra_glob)
     char *nevra2 = hy_package_get_nevra(pkg2);
     ck_assert_str_eq(nevra1, "penny-4-1.noarch");
     ck_assert_str_eq(nevra2, "penny-lib-4-1.x86_64");
-    solv_free(nevra1);
-    solv_free(nevra2);
+    g_free(nevra1);
+    g_free(nevra2);
     hy_packagelist_free(plist);
     hy_query_free(q);
 }
@@ -939,7 +939,7 @@ START_TEST(test_query_nevra)
     HyPackage pkg1 = hy_packagelist_get(plist, 0);
     char *nevra1 = hy_package_get_nevra(pkg1);
     ck_assert_str_eq(nevra1, "penny-4-1.noarch");
-    solv_free(nevra1);
+    g_free(nevra1);
     hy_packagelist_free(plist);
     hy_query_free(q);
 }

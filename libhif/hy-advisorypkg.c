@@ -67,7 +67,7 @@ void
 advisorypkg_set_string(HyAdvisoryPkg advisorypkg, int which, const char* str_val)
 {
     char** attr = get_string(advisorypkg, which);
-    solv_free(*attr);
+    g_free(*attr);
     *attr = solv_strdup(str_val);
 }
 
@@ -118,11 +118,11 @@ advisorypkglist_add(HyAdvisoryPkgList pkglist, HyAdvisoryPkg advisorypkg)
 void
 hy_advisorypkg_free(HyAdvisoryPkg advisorypkg)
 {
-    solv_free(advisorypkg->name);
-    solv_free(advisorypkg->evr);
-    solv_free(advisorypkg->arch);
-    solv_free(advisorypkg->filename);
-    solv_free(advisorypkg);
+    g_free(advisorypkg->name);
+    g_free(advisorypkg->evr);
+    g_free(advisorypkg->arch);
+    g_free(advisorypkg->filename);
+    g_free(advisorypkg);
 }
 
 const char *
@@ -137,8 +137,8 @@ hy_advisorypkglist_free(HyAdvisoryPkgList pkglist)
     for(int i = 0; i < hy_advisorypkglist_count(pkglist); i++) {
         hy_advisorypkg_free(pkglist->pkgs[i]);
     }
-    solv_free(pkglist->pkgs);
-    solv_free(pkglist);
+    g_free(pkglist->pkgs);
+    g_free(pkglist);
 }
 
 int
