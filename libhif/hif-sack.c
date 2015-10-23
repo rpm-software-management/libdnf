@@ -35,7 +35,6 @@
 #include "hy-query.h"
 #include "hy-packageset.h"
 
-#include "hif-cleanup.h"
 #include "libhif.h"
 #include "hif-utils.h"
 

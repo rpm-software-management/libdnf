@@ -43,7 +43,6 @@
 #include "hy-util.h"
 #include <librepo/librepo.h>
 
-#include "hif-cleanup.h"
 #include "libhif.h"
 #include "hif-utils.h"
 
@@ -105,7 +104,7 @@ hif_package_get_filename(HyPackage pkg)
         /* set the filename to cachedir for non-local sources */
         if (!hif_source_is_local(priv->src) ||
             !g_file_test(priv->filename, G_FILE_TEST_EXISTS)) {
-            _cleanup_free_ gchar *basename = NULL;
+            g_autofree gchar *basename = NULL;
             basename = g_path_get_basename(hy_package_get_location(pkg));
             g_free(priv->filename);
             priv->filename = g_build_filename(hif_source_get_packages(priv->src),
@@ -241,7 +240,7 @@ hif_package_get_id(HyPackage pkg)
 {
     HifPackagePrivate *priv;
     const gchar *reponame;
-    _cleanup_free_ gchar *reponame_tmp = NULL;
+    g_autofree gchar *reponame_tmp = NULL;
 
     priv = hif_package_get_priv(pkg);
     if (priv == NULL)
@@ -776,7 +775,7 @@ hif_package_array_download(GPtrArray *packages,
     /* download any package that is not currently installed */
     hif_state_set_number_steps(state, packages->len);
     for (i = 0; i < packages->len; i++) {
-        _cleanup_free_ gchar *tmp = NULL;
+        g_autofree gchar *tmp = NULL;
         pkg = g_ptr_array_index(packages, i);
         state_local = hif_state_get_child(state);
         tmp = hif_package_download(pkg, NULL, state_local, error);

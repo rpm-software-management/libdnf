@@ -82,7 +82,6 @@
 
 #include "config.h"
 
-#include "hif-cleanup.h"
 #include "hif-state.h"
 #include "hif-utils.h"
 

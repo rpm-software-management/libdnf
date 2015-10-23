@@ -112,7 +112,6 @@ libhif_la_SOURCES =						\
 	hy-types.h						\
 	hy-util.c						\
 	hy-util.h						\
-	hif-cleanup.h						\
 	hif-context.c						\
 	hif-context.h						\
 	hif-db.c						\

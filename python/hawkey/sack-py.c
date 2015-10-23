@@ -21,7 +21,6 @@
 #include "Python.h"
 
 // hawkey
-#include "hif-cleanup.h"
 #include "hif-types.h"
 #include "hy-package-private.h"
 #include "hy-packageset.h"
@@ -136,7 +135,7 @@ sack_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 static int
 sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
 {
-    _cleanup_error_free_ GError *error = NULL;
+    g_autoptr(GError) error = NULL;
     PyObject *custom_class = NULL;
     PyObject *custom_val = NULL;
     const char *cachedir = NULL;
@@ -404,7 +403,7 @@ list_arches(_SackObject *self, PyObject *unused)
 static PyObject *
 load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 {
-    _cleanup_error_free_ GError *error = NULL;
+    g_autoptr(GError) error = NULL;
     char *kwlist[] = {"repo", "build_cache", "load_filelists", "load_presto",
                       NULL};
 
@@ -446,7 +445,7 @@ load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 
     int flags = 0;
     gboolean ret = 0;
-    _cleanup_error_free_ GError *error = NULL;
+    g_autoptr(GError) error = NULL;
     if (build_cache)
         flags |= HY_BUILD_CACHE;
     if (load_filelists)

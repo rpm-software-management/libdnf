@@ -38,7 +38,6 @@
 #include <librepo/util.h>
 #include <string.h>
 
-#include "hif-cleanup.h"
 #include "hif-package.h"
 #include "hif-repos.h"
 #include "hif-utils.h"
@@ -150,9 +149,9 @@ hif_repos_add_media(HifRepos *repos,
 {
     HifReposPrivate *priv = GET_PRIVATE(repos);
     HifSource *source;
-    _cleanup_free_ gchar *packages = NULL;
-    _cleanup_free_ gchar *treeinfo_fn;
-    _cleanup_keyfile_unref_ GKeyFile *treeinfo;
+    g_autofree gchar *packages = NULL;
+    g_autofree gchar *treeinfo_fn;
+    g_autoptr(GKeyFile) treeinfo;
 
     /* get common things */
     treeinfo_fn = g_build_filename(mount_point, ".treeinfo", NULL);
@@ -170,7 +169,7 @@ hif_repos_add_media(HifRepos *repos,
     if (idx == 0) {
         hif_source_set_id(source, "media");
     } else {
-        _cleanup_free_ gchar *tmp;
+        g_autofree gchar *tmp;
         tmp = g_strdup_printf("media-%i", idx);
         hif_source_set_id(source, tmp);
     }
@@ -194,7 +193,7 @@ hif_repos_add_sack_from_mount_point(HifRepos *repos,
 {
     const gchar *id = ".treeinfo";
     gboolean exists;
-    _cleanup_free_ gchar *treeinfo_fn;
+    g_autofree gchar *treeinfo_fn;
 
     /* check if any installed media is an install disk */
     treeinfo_fn = g_build_filename(root, id, NULL);
@@ -267,9 +266,9 @@ hif_repos_load_multiline_key_file(const gchar *filename, GError **error)
     gboolean ret;
     gsize len;
     guint i;
-    _cleanup_free_ gchar *data = NULL;
-    _cleanup_string_free_ GString *string = NULL;
-    _cleanup_strv_free_ gchar **lines = NULL;
+    g_autofree gchar *data = NULL;
+    g_autoptr(GString) string = NULL;
+    g_auto(GStrv) lines = NULL;
 
     /* load file */
     if (!g_file_get_contents(filename, &data, &len, error))
@@ -338,7 +337,7 @@ hif_repos_source_parse_id(HifRepos *repos,
 {
     HifReposPrivate *priv = GET_PRIVATE(repos);
     HifSourceEnabled enabled = 0;
-    _cleanup_object_unref_ HifSource *source;
+    g_autoptr(HifSource) source;
 
     /* enabled isn't a required key */
     if (g_key_file_has_key(keyfile, id, "enabled", NULL)) {
@@ -353,7 +352,7 @@ hif_repos_source_parse_id(HifRepos *repos,
         if (g_key_file_get_boolean(keyfile, id, "enabled_metadata", NULL))
             enabled |= HIF_SOURCE_ENABLED_METADATA;
     } else {
-        _cleanup_free_ gchar *basename = NULL;
+        g_autofree gchar *basename = NULL;
         basename = g_path_get_basename(filename);
         if (g_strcmp0(basename, "redhat.repo") == 0)
             enabled |= HIF_SOURCE_ENABLED_METADATA;
@@ -385,8 +384,8 @@ hif_repos_source_parse(HifRepos *repos,
 {
     gboolean ret = TRUE;
     guint i;
-    _cleanup_strv_free_ gchar **groups = NULL;
-    _cleanup_keyfile_unref_ GKeyFile *keyfile;
+    g_auto(GStrv) groups = NULL;
+    g_autoptr(GKeyFile) keyfile;
 
     /* load non-standard keyfile */
     keyfile = hif_repos_load_multiline_key_file(filename, error);
@@ -418,7 +417,7 @@ hif_repos_refresh(HifRepos *repos, GError **error)
     HifReposPrivate *priv = GET_PRIVATE(repos);
     const gchar *file;
     const gchar *repo_path;
-    _cleanup_dir_close_ GDir *dir = NULL;
+    g_autoptr(GDir) dir = NULL;
 
     /* no longer loaded */
     hif_repos_invalidate(repos);
@@ -436,7 +435,7 @@ hif_repos_refresh(HifRepos *repos, GError **error)
 
     /* find all the .repo files */
     while ((file = g_dir_read_name(dir)) != NULL) {
-        _cleanup_free_ gchar *path_tmp = NULL;
+        g_autofree gchar *path_tmp = NULL;
         if (!g_str_has_suffix(file, ".repo"))
             continue;
         path_tmp = g_build_filename(repo_path, file, NULL);
@@ -556,8 +555,8 @@ hif_repos_setup_watch(HifRepos *repos)
 {
     HifReposPrivate *priv = GET_PRIVATE(repos);
     const gchar *repo_dir;
-    _cleanup_error_free_ GError *error = NULL;
-    _cleanup_object_unref_ GFile *file_repos = NULL;
+    g_autoptr(GError) error = NULL;
+    g_autoptr(GFile) file_repos = NULL;
 
     /* setup a file monitor on the repos directory */
     repo_dir = hif_context_get_repo_dir(priv->context);

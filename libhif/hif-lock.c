@@ -36,7 +36,6 @@
 
 #include <gio/gio.h>
 
-#include "hif-cleanup.h"
 #include "libhif.h"
 #include "hif-utils.h"
 
@@ -226,8 +225,8 @@ hif_lock_get_pid(HifLock *lock, const gchar *filename, GError **error)
     gboolean ret;
     guint64 pid;
     gchar *endptr = NULL;
-    _cleanup_error_free_ GError *error_local = NULL;
-    _cleanup_free_ gchar *contents = NULL;
+    g_autoptr(GError) error_local = NULL;
+    g_autofree gchar *contents = NULL;
 
     g_return_val_if_fail(HIF_IS_LOCK(lock), FALSE);
 
@@ -290,9 +289,9 @@ static gchar *
 hif_lock_get_cmdline_for_pid(guint pid)
 {
     gboolean ret;
-    _cleanup_error_free_ GError *error = NULL;
-    _cleanup_free_ gchar *data = NULL;
-    _cleanup_free_ gchar *filename = NULL;
+    g_autoptr(GError) error = NULL;
+    g_autofree gchar *data = NULL;
+    g_autofree gchar *filename = NULL;
 
     /* find the cmdline */
     filename = g_strdup_printf("/proc/%i/cmdline", pid);
@@ -383,11 +382,11 @@ hif_lock_take(HifLock *lock,
     gboolean ret;
     guint id = 0;
     guint pid;
-    _cleanup_error_free_ GError *error_local = NULL;
-    _cleanup_free_ gchar *cmdline = NULL;
-    _cleanup_free_ gchar *filename = NULL;
-    _cleanup_free_ gchar *pid_filename = NULL;
-    _cleanup_free_ gchar *pid_text = NULL;
+    g_autoptr(GError) error_local = NULL;
+    g_autofree gchar *cmdline = NULL;
+    g_autofree gchar *filename = NULL;
+    g_autofree gchar *pid_filename = NULL;
+    g_autofree gchar *pid_text = NULL;
 
     g_return_val_if_fail(HIF_IS_LOCK(lock), FALSE);
     g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
@@ -531,9 +530,9 @@ hif_lock_release(HifLock *lock, guint id, GError **error)
     /* delete file for process locks */
     if (item->refcount == 0 &&
         item->mode == HIF_LOCK_MODE_PROCESS) {
-        _cleanup_error_free_ GError *error_local = NULL;
-        _cleanup_free_ gchar *filename = NULL;
-        _cleanup_object_unref_ GFile *file = NULL;
+        g_autoptr(GError) error_local = NULL;
+        g_autofree gchar *filename = NULL;
+        g_autoptr(GFile) file = NULL;
 
         /* unlink */
         filename = hif_lock_get_filename_for_type(lock, item->type);
@@ -577,7 +576,7 @@ out:
 void
 hif_lock_release_noerror(HifLock *lock, guint id)
 {
-    _cleanup_error_free_ GError *error = NULL;
+    g_autoptr(GError) error = NULL;
     if (!hif_lock_release(lock, id, &error))
         g_warning("Handled locally: %s", error->message);
 }

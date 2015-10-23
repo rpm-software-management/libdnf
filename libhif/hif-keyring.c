@@ -38,7 +38,6 @@
 #include <rpm/rpmlib.h>
 #include <rpm/rpmts.h>
 
-#include "hif-cleanup.h"
 #include "libhif.h"
 #include "hif-utils.h"
 
@@ -66,7 +65,7 @@ hif_keyring_add_public_key(rpmKeyring keyring,
     pgpDig dig = NULL;
     rpmPubkey pubkey = NULL;
     uint8_t *pkt = NULL;
-    _cleanup_free_ gchar *data = NULL;
+    g_autofree gchar *data = NULL;
 
     /* ignore symlinks and directories */
     if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
@@ -168,7 +167,7 @@ hif_keyring_add_public_keys(rpmKeyring keyring, GError **error)
 {
     const gchar *gpg_dir = "/etc/pki/rpm-gpg";
     gboolean ret = TRUE;
-    _cleanup_dir_close_ GDir *dir;
+    g_autoptr(GDir) dir;
 
     /* search all the public key files */
     dir = g_dir_open(gpg_dir, 0, error);
@@ -176,7 +175,7 @@ hif_keyring_add_public_keys(rpmKeyring keyring, GError **error)
         return FALSE;
     do {
         const gchar *filename;
-        _cleanup_free_ gchar *path_tmp = NULL;
+        g_autofree gchar *path_tmp = NULL;
         filename = g_dir_read_name(dir);
         if (filename == NULL)
             break;
@@ -258,7 +257,7 @@ hif_keyring_check_untrusted_file(rpmKeyring keyring,
 
     /* the package has no signing key */
     if (rc != 1) {
-        _cleanup_free_ char *package_filename = g_path_get_basename(filename);
+        g_autofree char *package_filename = g_path_get_basename(filename);
         ret = FALSE;
         g_set_error(error,
                     HIF_ERROR,
