@@ -42,8 +42,7 @@
 #include "libhif.h"
 #include "hif-utils.h"
 
-typedef struct _HifContextPrivate    HifContextPrivate;
-struct _HifContextPrivate
+typedef struct
 {
     gchar            *repo_dir;
     gchar            *base_arch;
@@ -78,7 +77,7 @@ struct _HifContextPrivate
     HifState        *state;        /* used for setup() and run() */
     HyGoal           goal;
     HySack           sack;
-};
+} HifContextPrivate;
 
 enum {
     SIGNAL_INVALIDATE,
@@ -87,8 +86,8 @@ enum {
 
 static guint signals [SIGNAL_LAST] = { 0 };
 
-G_DEFINE_TYPE(HifContext, hif_context, G_TYPE_OBJECT)
-#define GET_PRIVATE(o)(G_TYPE_INSTANCE_GET_PRIVATE((o), HIF_TYPE_CONTEXT, HifContextPrivate))
+G_DEFINE_TYPE_WITH_PRIVATE(HifContext, hif_context, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (hif_context_get_instance_private (o))
 
 /**
  * hif_context_finalize:
@@ -166,8 +165,6 @@ hif_context_class_init(HifContextClass *klass)
                   G_STRUCT_OFFSET(HifContextClass, invalidate),
                   NULL, NULL, g_cclosure_marshal_VOID__STRING,
                   G_TYPE_NONE, 1, G_TYPE_STRING);
-
-    g_type_class_add_private(klass, sizeof(HifContextPrivate));
 }
 
 /**

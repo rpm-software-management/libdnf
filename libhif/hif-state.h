@@ -32,21 +32,10 @@
 #include "hif-types.h"
 #include "hif-lock.h"
 
-#define HIF_TYPE_STATE                  (hif_state_get_type())
-#define HIF_STATE(obj)                  (G_TYPE_CHECK_INSTANCE_CAST((obj), HIF_TYPE_STATE, HifState))
-#define HIF_STATE_CLASS(cls)            (G_TYPE_CHECK_CLASS_CAST((cls), HIF_TYPE_STATE, HifStateClass))
-#define HIF_IS_STATE(obj)               (G_TYPE_CHECK_INSTANCE_TYPE((obj), HIF_TYPE_STATE))
-#define HIF_IS_STATE_CLASS(cls)         (G_TYPE_CHECK_CLASS_TYPE((cls), HIF_TYPE_STATE))
-#define HIF_STATE_GET_CLASS(obj)        (G_TYPE_INSTANCE_GET_CLASS((obj), HIF_TYPE_STATE, HifStateClass))
-
 G_BEGIN_DECLS
 
-typedef struct _HifStateClass           HifStateClass;
-
-struct _HifState
-{
-        GObject                         parent;
-};
+#define HIF_TYPE_STATE (hif_state_get_type ())
+G_DECLARE_DERIVABLE_TYPE (HifState, hif_state, HIF, STATE, GObject)
 
 /**
  * HifStateAction:
@@ -119,7 +108,6 @@ struct _HifStateClass
 typedef gboolean (*HifStateErrorHandlerCb)              (const GError           *error,
                                                          gpointer                user_data);
 
-GType            hif_state_get_type                     (void);
 HifState        *hif_state_new                          (void);
 
 /* getters */

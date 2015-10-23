@@ -36,21 +36,10 @@
 #include "hif-state.h"
 #include "hif-repos.h"
 
-#define HIF_TYPE_TRANSACTION            (hif_transaction_get_type())
-#define HIF_TRANSACTION(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), HIF_TYPE_TRANSACTION, HifTransaction))
-#define HIF_TRANSACTION_CLASS(cls)      (G_TYPE_CHECK_CLASS_CAST((cls), HIF_TYPE_TRANSACTION, HifTransactionClass))
-#define HIF_IS_TRANSACTION(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), HIF_TYPE_TRANSACTION))
-#define HIF_IS_TRANSACTION_CLASS(cls)   (G_TYPE_CHECK_CLASS_TYPE((cls), HIF_TYPE_TRANSACTION))
-#define HIF_TRANSACTION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), HIF_TYPE_TRANSACTION, HifTransactionClass))
-
 G_BEGIN_DECLS
 
-typedef struct _HifTransactionClass     HifTransactionClass;
-
-struct _HifTransaction
-{
-        GObject                 parent;
-};
+#define HIF_TYPE_TRANSACTION (hif_transaction_get_type ())
+G_DECLARE_DERIVABLE_TYPE (HifTransaction, hif_transaction, HIF, TRANSACTION, GObject)
 
 struct _HifTransactionClass
 {
@@ -77,14 +66,13 @@ struct _HifTransactionClass
  * The transaction flags.
  **/
 typedef enum {
-        HIF_TRANSACTION_FLAG_NONE                               = 0,
-        HIF_TRANSACTION_FLAG_ONLY_TRUSTED               = 1 << 0,
+        HIF_TRANSACTION_FLAG_NONE               = 0,
+        HIF_TRANSACTION_FLAG_ONLY_TRUSTED       = 1 << 0,
         HIF_TRANSACTION_FLAG_ALLOW_REINSTALL    = 1 << 1,
         HIF_TRANSACTION_FLAG_ALLOW_DOWNGRADE    = 1 << 2,
         HIF_TRANSACTION_FLAG_NODOCS             = 1 << 3
 } HifTransactionFlag;
 
-GType            hif_transaction_get_type               (void);
 HifTransaction  *hif_transaction_new                    (HifContext     *context);
 
 /* getters */

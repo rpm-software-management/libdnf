@@ -40,13 +40,12 @@
 #include "libhif.h"
 #include "hif-utils.h"
 
-typedef struct _HifLockPrivate    HifLockPrivate;
-struct _HifLockPrivate
+typedef struct
 {
     GMutex          mutex;
     GPtrArray      *item_array; /* of HifLockItem */
     gchar          *lock_dir;
-};
+} HifLockPrivate;
 
 typedef struct {
     gpointer            owner;
@@ -56,8 +55,8 @@ typedef struct {
     HifLockType         type;
 } HifLockItem;
 
-G_DEFINE_TYPE(HifLock, hif_lock, G_TYPE_OBJECT)
-#define GET_PRIVATE(o)(G_TYPE_INSTANCE_GET_PRIVATE((o), HIF_TYPE_LOCK, HifLockPrivate))
+G_DEFINE_TYPE_WITH_PRIVATE(HifLock, hif_lock, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (hif_lock_get_instance_private (o))
 
 enum {
     SIGNAL_STATE_CHANGED,
@@ -121,7 +120,6 @@ hif_lock_class_init(HifLockClass *klass)
                      G_TYPE_NONE, 1, G_TYPE_UINT);
 
     object_class->finalize = hif_lock_finalize;
-    g_type_class_add_private(klass, sizeof(HifLockPrivate));
 }
 
 /**

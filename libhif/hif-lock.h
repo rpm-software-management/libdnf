@@ -28,22 +28,10 @@
 
 #include <glib-object.h>
 
-#define HIF_TYPE_LOCK           (hif_lock_get_type())
-#define HIF_LOCK(obj)           (G_TYPE_CHECK_INSTANCE_CAST((obj), HIF_TYPE_LOCK, HifLock))
-#define HIF_LOCK_CLASS(cls)     (G_TYPE_CHECK_CLASS_CAST((cls), HIF_TYPE_LOCK, HifLockClass))
-#define HIF_IS_LOCK(obj)        (G_TYPE_CHECK_INSTANCE_TYPE((obj), HIF_TYPE_LOCK))
-#define HIF_IS_LOCK_CLASS(cls)  (G_TYPE_CHECK_CLASS_TYPE((cls), HIF_TYPE_LOCK))
-#define HIF_LOCK_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS((obj), HIF_TYPE_LOCK, HifLockClass))
-
 G_BEGIN_DECLS
 
-typedef struct _HifLock         HifLock;
-typedef struct _HifLockClass    HifLockClass;
-
-struct _HifLock
-{
-        GObject                 parent;
-};
+#define HIF_TYPE_LOCK (hif_lock_get_type ())
+G_DECLARE_DERIVABLE_TYPE (HifLock, hif_lock, HIF, LOCK, GObject)
 
 struct _HifLockClass
 {
@@ -93,7 +81,6 @@ typedef enum {
         HIF_LOCK_MODE_LAST
 } HifLockMode;
 
-GType            hif_lock_get_type              (void);
 HifLock         *hif_lock_new                   (void);
 
 /* getters */

@@ -50,8 +50,7 @@ typedef enum {
     HIF_TRANSACTION_STEP_IGNORE
 } HifTransactionStep;
 
-typedef struct _HifTransactionPrivate    HifTransactionPrivate;
-struct _HifTransactionPrivate
+typedef struct
 {
     HifDb              *db;
     rpmKeyring          keyring;
@@ -72,10 +71,10 @@ struct _HifTransactionPrivate
     GPtrArray           *install;
     GPtrArray           *pkgs_to_download;
     guint64             flags;
-};
+} HifTransactionPrivate;
 
-G_DEFINE_TYPE(HifTransaction, hif_transaction, G_TYPE_OBJECT)
-#define GET_PRIVATE(o)(G_TYPE_INSTANCE_GET_PRIVATE((o), HIF_TYPE_TRANSACTION, HifTransactionPrivate))
+G_DEFINE_TYPE_WITH_PRIVATE(HifTransaction, hif_transaction, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (hif_transaction_get_instance_private (o))
 
 /**
  * hif_transaction_finalize:
@@ -129,8 +128,6 @@ hif_transaction_class_init(HifTransactionClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
     object_class->finalize = hif_transaction_finalize;
-
-    g_type_class_add_private(klass, sizeof(HifTransactionPrivate));
 }
 
 /**

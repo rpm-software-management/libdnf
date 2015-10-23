@@ -34,21 +34,10 @@
 #include "hif-context.h"
 #include "hif-state.h"
 
-#define HIF_TYPE_SOURCE                 (hif_source_get_type())
-#define HIF_SOURCE(obj)                 (G_TYPE_CHECK_INSTANCE_CAST((obj), HIF_TYPE_SOURCE, HifSource))
-#define HIF_SOURCE_CLASS(cls)           (G_TYPE_CHECK_CLASS_CAST((cls), HIF_TYPE_SOURCE, HifSourceClass))
-#define HIF_IS_SOURCE(obj)              (G_TYPE_CHECK_INSTANCE_TYPE((obj), HIF_TYPE_SOURCE))
-#define HIF_IS_SOURCE_CLASS(cls)        (G_TYPE_CHECK_CLASS_TYPE((cls), HIF_TYPE_SOURCE))
-#define HIF_SOURCE_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS((obj), HIF_TYPE_SOURCE, HifSourceClass))
-
 G_BEGIN_DECLS
 
-typedef struct _HifSourceClass          HifSourceClass;
-
-struct _HifSource
-{
-        GObject                 parent;
-};
+#define HIF_TYPE_SOURCE (hif_source_get_type ())
+G_DECLARE_DERIVABLE_TYPE (HifSource, hif_source, HIF, SOURCE, GObject)
 
 struct _HifSourceClass
 {
@@ -114,7 +103,6 @@ typedef enum {
         HIF_SOURCE_ENABLED_LAST
 } HifSourceEnabled;
 
-GType            hif_source_get_type            (void);
 HifSource       *hif_source_new                 (HifContext             *context);
 
 /* getters */
