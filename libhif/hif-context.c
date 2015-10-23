@@ -43,6 +43,7 @@
 #include "hif-state.h"
 #include "hif-transaction.h"
 #include "hif-utils.h"
+#include "hif-sack.h"
 #include "hy-query.h"
 
 typedef struct
@@ -79,7 +80,7 @@ typedef struct
     HifRepos        *repos;
     HifState        *state;        /* used for setup() and run() */
     HyGoal           goal;
-    HySack           sack;
+    HifSack         *sack;
 } HifContextPrivate;
 
 enum {
@@ -128,7 +129,7 @@ hif_context_finalize(GObject *object)
     if (priv->goal != NULL)
         hy_goal_free(priv->goal);
     if (priv->sack != NULL)
-        hy_sack_free(priv->sack);
+        g_object_unref(priv->sack);
     if (priv->monitor_rpmdb != NULL)
         g_object_unref(priv->monitor_rpmdb);
 
@@ -439,11 +440,11 @@ hif_context_get_transaction(HifContext *context)
  * hif_context_get_sack:(skip)
  * @context: a #HifContext instance.
  *
- * Returns:(transfer none): the HySack object
+ * Returns:(transfer none): the HifSack object
  *
  * Since: 0.1.0
  **/
-HySack
+HifSack *
 hif_context_get_sack(HifContext *context)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
@@ -946,27 +947,22 @@ hif_context_setup_sack(HifContext *context, HifState *state, GError **error)
 
     /* create empty sack */
     solv_dir_real = hif_realpath(priv->solv_dir);
-    priv->sack = hy_sack_create(solv_dir_real, NULL,
-                     priv->install_root,
-                     NULL,
-                     HY_MAKE_CACHE_DIR,
-                     error);
-    if (priv->sack == NULL)
+    priv->sack = hif_sack_new();
+    hif_sack_set_cachedir(priv->sack, solv_dir_real);
+    hif_sack_set_rootdir(priv->sack, priv->install_root);
+    if (!hif_sack_setup(priv->sack, HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, error))
         return FALSE;
-    hy_sack_set_installonly(priv->sack, hif_context_get_installonly_pkgs(context));
-    hy_sack_set_installonly_limit(priv->sack, hif_context_get_installonly_limit(context));
+    hif_sack_set_installonly(priv->sack, hif_context_get_installonly_pkgs(context));
+    hif_sack_set_installonly_limit(priv->sack, hif_context_get_installonly_limit(context));
 
     /* add installed packages */
     if (have_existing_install(context)) {
-        if (!hy_sack_load_system_repo(priv->sack,
+        if (!hif_sack_load_system_repo(priv->sack,
                            NULL,
-                           HY_BUILD_CACHE,
+                           HIF_SACK_LOAD_FLAG_BUILD_CACHE,
                            error))
             return FALSE;
     }
-
-    /* creates repo for command line rpms */
-    hy_sack_create_cmdline_repo(priv->sack);
 
     /* add remote */
     ret = hif_sack_add_sources(priv->sack,
@@ -1495,7 +1491,7 @@ hif_context_run(HifContext *context, GCancellable *cancellable, GError **error)
         return FALSE;
 
     /* this sack is no longer valid */
-    hy_sack_free(priv->sack);
+    g_object_unref(priv->sack);
     priv->sack = NULL;
 
     /* this section done */

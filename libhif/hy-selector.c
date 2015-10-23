@@ -27,12 +27,12 @@
 #include "hy-iutil.h"
 #include "hy-package-private.h"
 #include "hy-query-private.h"
-#include "hy-sack-private.h"
+#include "hif-sack-private.h"
 #include "hy-selector-private.h"
 #include "hy-util.h"
 
 static int
-replace_filter(HySack sack, struct _Filter **fp, int keyname, int cmp_type,
+replace_filter(HifSack *sack, struct _Filter **fp, int keyname, int cmp_type,
                const char *match)
 {
     if (*fp == NULL)
@@ -81,7 +81,7 @@ valid_setting(int keyname, int cmp_type)
 }
 
 HySelector
-hy_selector_create(HySack sack)
+hy_selector_create(HifSack *sack)
 {
     HySelector sltr = g_malloc0(sizeof(*sltr));
     sltr->sack = sack;
@@ -105,7 +105,7 @@ hy_selector_set(HySelector sltr, int keyname, int cmp_type, const char *match)
 {
     if (!valid_setting(keyname, cmp_type))
         return HIF_ERROR_BAD_SELECTOR;
-    HySack sack = selector_sack(sltr);
+    HifSack *sack = selector_sack(sltr);
 
     switch (keyname) {
     case HY_PKG_ARCH:
@@ -135,8 +135,8 @@ hy_selector_set(HySelector sltr, int keyname, int cmp_type, const char *match)
 GPtrArray *
 hy_selector_matches(HySelector sltr)
 {
-    HySack sack = selector_sack(sltr);
-    Pool *pool = sack_pool(sack);
+    HifSack *sack = selector_sack(sltr);
+    Pool *pool = hif_sack_get_pool(sack);
     Queue job, solvables;
 
     queue_init(&job);

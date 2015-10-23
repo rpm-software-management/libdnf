@@ -30,7 +30,7 @@
 
 #ifndef __GI_SCANNER__
 #include "hy-goal.h"
-#include "hy-sack.h"
+#include "hif-sack.h"
 #endif
 
 G_BEGIN_DECLS
@@ -97,7 +97,7 @@ GPtrArray       *hif_context_get_sources                (HifContext     *context
 #ifndef __GI_SCANNER__
 HifRepos        *hif_context_get_repos                  (HifContext     *context);
 HifTransaction  *hif_context_get_transaction            (HifContext     *context);
-HySack           hif_context_get_sack                   (HifContext     *context);
+HifSack         *hif_context_get_sack                   (HifContext     *context);
 HyGoal           hif_context_get_goal                   (HifContext     *context);
 #endif
 HifState*        hif_context_get_state                  (HifContext     *context);

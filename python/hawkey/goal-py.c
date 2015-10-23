@@ -216,7 +216,7 @@ static int
 goal_init(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *sack;
-    HySack csack;
+    HifSack *csack;
 
     if (!PyArg_ParseTuple(args, "O!", &sack_Type, &sack))
         return -1;

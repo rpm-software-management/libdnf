@@ -109,7 +109,7 @@ query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
         self->sack = query_obj->sack;
         self->query = hy_query_clone(query_obj->query);
     } else if (sack && query == Py_None && sackObject_Check(sack)) {
-        HySack csack = sackFromPyObject(sack);
+        HifSack *csack = sackFromPyObject(sack);
         assert(csack);
         self->sack = sack;
         self->query = hy_query_create(csack);
@@ -238,7 +238,7 @@ filter(_QueryObject *self, PyObject *args)
     switch (keyname) {
     case HY_PKG:
     case HY_PKG_OBSOLETES: {
-        HySack sack = sackFromPyObject(self->sack);
+        HifSack *sack = sackFromPyObject(self->sack);
         assert(sack);
         HyPackageSet pset = pyseq_to_packageset(match, sack);
 
@@ -254,7 +254,7 @@ filter(_QueryObject *self, PyObject *args)
     }
     case HY_PKG_PROVIDES:
     case HY_PKG_REQUIRES: {
-        HySack sack = sackFromPyObject(self->sack);
+        HifSack *sack = sackFromPyObject(self->sack);
         assert(sack);
         HyReldepList reldeplist = pyseq_to_reldeplist(match, sack, cmp_type);
         if (reldeplist == NULL)

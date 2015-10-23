@@ -26,6 +26,7 @@
 G_BEGIN_DECLS
 
 /* hawkey */
+#include "hif-sack.h"
 #include "hy-types.h"
 
 enum _hy_query_flags {
@@ -33,8 +34,8 @@ enum _hy_query_flags {
 };
 
 void hy_query_apply(HyQuery q);
-HyQuery hy_query_create(HySack sack);
-HyQuery hy_query_create_flags(HySack sack, int flags);
+HyQuery hy_query_create(HifSack *sack);
+HyQuery hy_query_create_flags(HifSack *sack, int flags);
 void hy_query_free(HyQuery q);
 void hy_query_clear(HyQuery q);
 HyQuery hy_query_clone(HyQuery q);

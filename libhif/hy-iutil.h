@@ -29,7 +29,7 @@
 #include <solv/transaction.h>
 
 #include "hif-advisory-private.h"
-#include "hy-sack.h"
+#include "hif-sack.h"
 
 #define CHKSUM_BYTES 32
 
@@ -54,14 +54,14 @@ char *this_username(void);
 /* misc utils */
 char *read_whole_file(const char *path);
 char *pool_tmpdup(Pool *pool, const char *s);
-Id running_kernel(HySack sack);
+Id running_kernel(HifSack *sack);
 
 /* libsolv utils */
 int cmptype2relflags(int type);
-Repo *repo_by_name(HySack sack, const char *name);
-HyRepo hrepo_by_name(HySack sack, const char *name);
+Repo *repo_by_name(HifSack *sack, const char *name);
+HyRepo hrepo_by_name(HifSack *sack, const char *name);
 Id str2archid(Pool *pool, const char *s);
-void queue2plist(HySack sack, Queue *q, GPtrArray *plist);
+void queue2plist(HifSack *sack, Queue *q, GPtrArray *plist);
 Id what_upgrades(Pool *pool, Id p);
 Id what_downgrades(Pool *pool, Id p);
 static inline int is_package(Pool *pool, Solvable *s)
@@ -79,8 +79,8 @@ int copy_str_from_subexpr(char** target, const char* source,
     regmatch_t* matches, int i);
 int parse_reldep_str(const char *nevra, char **name,
         char **evr, int *cmp_type);
-HyReldep reldep_from_str(HySack sack, const char *reldep_str);
-HyReldepList reldeplist_from_str(HySack sack, const char *reldep_str);
+HyReldep reldep_from_str(HifSack *sack, const char *reldep_str);
+HyReldepList reldeplist_from_str(HifSack *sack, const char *reldep_str);
 
 /* debug utils */
 int dump_jobqueue(Pool *pool, Queue *job);

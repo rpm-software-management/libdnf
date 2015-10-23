@@ -27,7 +27,7 @@
 #include "hy-iutil.h"
 #include "hy-package-private.h"
 #include "hy-reldep.h"
-#include "hy-sack-private.h"
+#include "hif-sack-private.h"
 
 #include "iutil-py.h"
 #include "package-py.h"
@@ -91,7 +91,7 @@ package_init(_PackageObject *self, PyObject *args, PyObject *kwds)
 {
     Id id;
     PyObject *sack;
-    HySack csack;
+    HifSack *csack;
 
     if (!PyArg_ParseTuple(args, "(O!i)", &sack_Type, &sack, &id))
         return -1;

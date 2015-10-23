@@ -25,7 +25,7 @@
 #include "hy-package-private.h"
 #include "hy-packageset.h"
 #include "hy-repo.h"
-#include "hy-sack-private.h"
+#include "hif-sack-private.h"
 #include "hy-util.h"
 
 // pyhawkey
@@ -40,7 +40,7 @@
 
 typedef struct {
     PyObject_HEAD
-    HySack sack;
+    HifSack *sack;
     PyObject *custom_package_class;
     PyObject *custom_package_val;
 } _SackObject;
@@ -73,7 +73,7 @@ new_package(PyObject *sack, Id id)
     return package;
 }
 
-HySack
+HifSack *
 sackFromPyObject(PyObject *o)
 {
     if (!sackObject_Check(o)) {
@@ -84,9 +84,9 @@ sackFromPyObject(PyObject *o)
 }
 
 int
-sack_converter(PyObject *o, HySack *sack_ptr)
+sack_converter(PyObject *o, HifSack **sack_ptr)
 {
-    HySack sack = sackFromPyObject(o);
+    HifSack *sack = sackFromPyObject(o);
     if (sack == NULL)
         return 0;
     *sack_ptr = sack;
@@ -104,7 +104,7 @@ repo_enabled(_SackObject *self, PyObject *reponame, int enabled)
         Py_XDECREF(tmp_py_str);
         return NULL;
     }
-    hy_sack_repo_enabled(self->sack, cname, enabled);
+    hif_sack_repo_enabled(self->sack, cname, enabled);
     Py_XDECREF(tmp_py_str);
     Py_RETURN_NONE;
 }
@@ -115,7 +115,7 @@ static void
 sack_dealloc(_SackObject *o)
 {
     if (o->sack)
-        hy_sack_free(o->sack);
+        g_object_unref(o->sack);
     Py_TYPE(o)->tp_free(o);
 }
 
@@ -161,11 +161,17 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
         logfile = pycomp_get_string(logfile_py, &tmp2_py_str);
     int flags = 0;
     if (make_cache_dir)
-        flags |= HY_MAKE_CACHE_DIR;
-    self->sack = hy_sack_create(cachedir, arch, rootdir, logfile, flags, &error);
+        flags |= HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR;
+    self->sack = hif_sack_new();
     Py_XDECREF(tmp_py_str);
     Py_XDECREF(tmp2_py_str);
-    if (self->sack == NULL) {
+    if (!hif_sack_set_arch(self->sack, arch, &error)) {
+        PyErr_SetString(HyExc_Arch, "Unrecognized arch for the sack.");
+        return -1;
+    }
+    hif_sack_set_rootdir(self->sack, rootdir);
+    hif_sack_set_cachedir(self->sack, cachedir);
+    if (!hif_sack_setup(self->sack, flags, &error)) {
         switch (error->code) {
         case HIF_ERROR_FILE_INVALID:
             PyErr_SetString(PyExc_IOError,
@@ -201,7 +207,7 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 get_cache_dir(_SackObject *self, void *unused)
 {
-    const char *cstr = hy_sack_get_cache_dir(self->sack);
+    const char *cstr = hif_sack_get_cache_dir(self->sack);
     if (cstr == NULL)
         Py_RETURN_NONE;
     return PyString_FromString(cstr);
@@ -234,8 +240,8 @@ set_installonly(_SackObject *self, PyObject *obj, void *unused)
     }
     strings[len] = NULL;
 
-    HySack sack = self->sack;
-    hy_sack_set_installonly(sack, strings);
+    HifSack *sack = self->sack;
+    hif_sack_set_installonly(sack, strings);
     pycomp_free_tmp_array(tmp_py_str, len - 1);
 
     return 0;
@@ -247,7 +253,7 @@ set_installonly_limit(_SackObject *self, PyObject *obj, void *unused)
     int limit = (int)PyLong_AsLong(obj);
     if (PyErr_Occurred())
         return -1;
-    hy_sack_set_installonly_limit(self->sack, limit);
+    hif_sack_set_installonly_limit(self->sack, limit);
     return 0;
 }
 
@@ -280,7 +286,7 @@ _knows(_SackObject *self, PyObject *args, PyObject *kwds)
         flags |= HY_ICASE;
     if (glob)
         flags |= HY_GLOB;
-    return PyLong_FromLong(sack_knows(self->sack, name, version, flags));
+    return PyLong_FromLong(hif_sack_knows(self->sack, name, version, flags));
 }
 
 static PyObject *
@@ -290,15 +296,15 @@ evr_cmp(_SackObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "ss", &evr1, &evr2))
         return NULL;
-    int cmp = hy_sack_evr_cmp(self->sack, evr1, evr2);
+    int cmp = hif_sack_evr_cmp(self->sack, evr1, evr2);
     return PyLong_FromLong(cmp);
 }
 
 static PyObject *
 get_running_kernel(_SackObject *self, PyObject *unused)
 {
-    HySack sack = self->sack;
-    HyPackage cpkg = hy_sack_get_running_kernel(sack);
+    HifSack *sack = self->sack;
+    HyPackage cpkg = hif_sack_get_running_kernel(sack);
 
     if (cpkg == NULL)
         Py_RETURN_NONE;
@@ -307,12 +313,9 @@ get_running_kernel(_SackObject *self, PyObject *unused)
     return pkg;
 }
 
-// deprecated in 0.5.3, eligible for dropping after 2015-06-23 AND no sooner
-// than in 0.5.8
 static PyObject *
 create_cmdline_repo(_SackObject *self, PyObject *unused)
 {
-    hy_sack_create_cmdline_repo(self->sack);
     Py_RETURN_NONE;
 }
 
@@ -339,7 +342,7 @@ add_cmdline_package(_SackObject *self, PyObject *fn_obj)
         Py_XDECREF(tmp_py_str);
         return NULL;
     }
-    cpkg = hy_sack_add_cmdline_package(self->sack, fn);
+    cpkg = hif_sack_add_cmdline_package(self->sack, fn);
     Py_XDECREF(tmp_py_str);
     if (cpkg == NULL) {
         PyErr_Format(PyExc_IOError, "Can not load RPM file: %s.", fn);
@@ -353,11 +356,11 @@ add_cmdline_package(_SackObject *self, PyObject *fn_obj)
 static PyObject *
 add_excludes(_SackObject *self, PyObject *seq)
 {
-    HySack sack = self->sack;
+    HifSack *sack = self->sack;
     HyPackageSet pset = pyseq_to_packageset(seq, sack);
     if (pset == NULL)
         return NULL;
-    hy_sack_add_excludes(sack, pset);
+    hif_sack_add_excludes(sack, pset);
     hy_packageset_free(pset);
     Py_RETURN_NONE;
 }
@@ -365,11 +368,11 @@ add_excludes(_SackObject *self, PyObject *seq)
 static PyObject *
 add_includes(_SackObject *self, PyObject *seq)
 {
-    HySack sack = self->sack;
+    HifSack *sack = self->sack;
     HyPackageSet pset = pyseq_to_packageset(seq, sack);
     if (pset == NULL)
         return NULL;
-    hy_sack_add_includes(sack, pset);
+    hif_sack_add_includes(sack, pset);
     hy_packageset_free(pset);
     Py_RETURN_NONE;
 }
@@ -389,7 +392,7 @@ enable_repo(_SackObject *self, PyObject *reponame)
 static PyObject *
 list_arches(_SackObject *self, PyObject *unused)
 {
-    const char **arches = hy_sack_list_arches(self->sack);
+    const char **arches = hif_sack_list_arches(self->sack);
     PyObject *list;
     if (!arches) {
         PyErr_SetString(HyExc_Runtime, "Arches not initialized");
@@ -418,9 +421,9 @@ load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 
     int flags = 0;
     if (build_cache)
-        flags |= HY_BUILD_CACHE;
+        flags |= HIF_SACK_LOAD_FLAG_BUILD_CACHE;
 
-    gboolean ret = hy_sack_load_system_repo(self->sack, crepo, flags, &error);
+    gboolean ret = hif_sack_load_system_repo(self->sack, crepo, flags, &error);
     if (g_error_matches (error, HIF_ERROR, HIF_ERROR_CANNOT_WRITE_CACHE)) {
         PyErr_SetString(PyExc_IOError, "Failed writing the cache.");
         return NULL;
@@ -447,15 +450,15 @@ load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     gboolean ret = 0;
     g_autoptr(GError) error = NULL;
     if (build_cache)
-        flags |= HY_BUILD_CACHE;
+        flags |= HIF_SACK_LOAD_FLAG_BUILD_CACHE;
     if (load_filelists)
-        flags |= HY_LOAD_FILELISTS;
+        flags |= HIF_SACK_LOAD_FLAG_USE_FILELISTS;
     if (load_presto)
-        flags |= HY_LOAD_PRESTO;
+        flags |= HIF_SACK_LOAD_FLAG_USE_PRESTO;
     if (load_updateinfo)
-        flags |= HY_LOAD_UPDATEINFO;
+        flags |= HIF_SACK_LOAD_FLAG_USE_UPDATEINFO;
     Py_BEGIN_ALLOW_THREADS;
-    ret = hy_sack_load_repo(self->sack, crepo, flags, &error);
+    ret = hif_sack_load_repo(self->sack, crepo, flags, &error);
     Py_END_ALLOW_THREADS;
     if (error2e(error))
         return NULL;
@@ -465,7 +468,7 @@ load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 static Py_ssize_t
 len(_SackObject *self)
 {
-    return hy_sack_count(self->sack);
+    return hif_sack_count(self->sack);
 }
 
 static PyObject *

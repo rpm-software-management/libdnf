@@ -25,10 +25,10 @@
 
 G_BEGIN_DECLS
 
-// hawkey
+#include "hif-sack.h"
 #include "hy-types.h"
 
-HyPackageSet hy_packageset_create(HySack sack);
+HyPackageSet hy_packageset_create(HifSack *sack);
 HyPackageSet hy_packageset_clone(HyPackageSet pset);
 void hy_packageset_free(HyPackageSet pset);
 void hy_packageset_add(HyPackageSet pset, HyPackage pkg);

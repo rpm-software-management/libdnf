@@ -27,20 +27,21 @@
 
 // hawkey
 #include "hy-package.h"
+#include "hif-sack.h"
 
 struct _HyPackage {
     int nrefs;
     Id id;
-    HySack sack;
+    HifSack *sack;
     void *userdata;
     HyUserdataDestroy destroy_func;
 };
 
 HyPackage package_clone(HyPackage pkg);
-HyPackage package_create(HySack sack, Id id);
+HyPackage package_create(HifSack *sack, Id id);
 static inline Id package_id(HyPackage pkg) { return pkg->id; }
 Pool *package_pool(HyPackage pkg);
-static inline HySack package_sack(HyPackage pkg) { return pkg->sack; }
-HyPackage package_from_solvable(HySack sack, Solvable *s);
+static inline HifSack *package_sack(HyPackage pkg) { return pkg->sack; }
+HyPackage package_from_solvable(HifSack *sack, Solvable *s);
 
 #endif // HY_PACKAGE_INTERNAL_H

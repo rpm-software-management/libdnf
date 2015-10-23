@@ -29,7 +29,7 @@
 #include "libhif/hy-package.h"
 #include "libhif/hy-packageset.h"
 #include "libhif/hy-reldep.h"
-#include "libhif/hy-sack-private.h"
+#include "libhif/hif-sack-private.h"
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"
@@ -44,10 +44,10 @@ size_and_free(HyQuery query)
 
 START_TEST(test_query_sanity)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     fail_unless(sack != NULL);
-    fail_unless(hy_sack_count(sack) == TEST_EXPECT_SYSTEM_NSOLVABLES);
-    fail_unless(sack_pool(sack)->installed != NULL);
+    fail_unless(hif_sack_count(sack) == TEST_EXPECT_SYSTEM_NSOLVABLES);
+    fail_unless(hif_sack_get_pool(sack)->installed != NULL);
 
     HyQuery query = hy_query_create(sack);
     fail_unless(query != NULL);
@@ -57,7 +57,7 @@ END_TEST
 
 START_TEST(test_query_run_set_sanity)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyQuery q = hy_query_create(sack);
     HyPackageSet pset = hy_query_run_set(q);
 
@@ -333,7 +333,7 @@ END_TEST
 
 START_TEST(test_query_provides)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyQuery q;
 
     q = hy_query_create(sack);
@@ -512,7 +512,7 @@ END_TEST
 
 START_TEST(test_query_conflicts)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyQuery q = hy_query_create(sack);
     HyReldep reldep = hy_reldep_create(sack, "custard", HY_GT|HY_EQ, "1.0.1");
 
@@ -526,7 +526,7 @@ END_TEST
 
 START_TEST(test_upgrades_sanity)
 {
-    Pool *pool = sack_pool(test_globals.sack);
+    Pool *pool = hif_sack_get_pool(test_globals.sack);
     Repo *r = NULL;
     int i;
 
@@ -541,7 +541,7 @@ END_TEST
 START_TEST(test_upgrades)
 {
     const char *installonly[] = {"fool", NULL};
-    hy_sack_set_installonly(test_globals.sack, installonly);
+    hif_sack_set_installonly(test_globals.sack, installonly);
 
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter_upgrades(q, 1);
@@ -732,7 +732,7 @@ END_TEST
 
 START_TEST(test_query_reldep)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage flying = by_name(sack, "flying");
 
     HyReldepList reldeplist = hy_package_get_requires(flying);
@@ -751,7 +751,7 @@ END_TEST
 
 START_TEST(test_query_reldep_arbitrary)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyQuery query = hy_query_create(sack);
     HyReldep reldep = hy_reldep_create(sack, "P-lib", HY_GT, "3-0");
 
@@ -813,7 +813,7 @@ END_TEST
 
 START_TEST(test_filter_obsoletes)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyQuery q = hy_query_create(sack);
     HyPackageSet pset = hy_packageset_create(sack); // empty
 
@@ -857,12 +857,12 @@ END_TEST
 
 START_TEST(test_excluded)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyQuery q = hy_query_create_flags(sack, HY_IGNORE_EXCLUDES);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
 
     HyPackageSet pset = hy_query_run_set(q);
-    hy_sack_add_excludes(sack, pset);
+    hif_sack_add_excludes(sack, pset);
     hy_packageset_free(pset);
     hy_query_free(q);
 
@@ -880,7 +880,7 @@ END_TEST
 
 START_TEST(test_disabled_repo)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyQuery q;
 
     q = hy_query_create(sack);
@@ -890,7 +890,7 @@ START_TEST(test_disabled_repo)
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
     ck_assert_int_eq(size_and_free(q), 5);
 
-    hy_sack_repo_enabled(sack, "main", 0);
+    hif_sack_repo_enabled(sack, "main", 0);
 
     q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_EVR, HY_EQ, "4.9-0");
@@ -903,7 +903,7 @@ END_TEST
 
 START_TEST(test_query_nevra_glob)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyQuery q;
     GPtrArray *plist;
 
@@ -927,7 +927,7 @@ END_TEST
 
 START_TEST(test_query_nevra)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyQuery q;
     GPtrArray *plist;
 
@@ -947,7 +947,7 @@ END_TEST
 
 START_TEST(test_query_multiple_flags)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyQuery q;
     GPtrArray *plist;
 
@@ -963,7 +963,7 @@ END_TEST
 
 START_TEST(test_query_apply)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyQuery q;
     GPtrArray *plist;
 

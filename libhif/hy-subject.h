@@ -44,7 +44,7 @@ enum _HyForm {
 
 struct _HyPossibilities {
     HySubject subject;
-    HySack sack;
+    HifSack *sack;
     int flags;
     HyForm *forms;
     int current;
@@ -58,12 +58,12 @@ HySubject hy_subject_create(const char * pattern);
 void hy_subject_free(HySubject subject);
 void hy_possibilities_free(HyPossibilities iter);
 HyPossibilities hy_subject_reldep_possibilities_real(HySubject subject,
-    HySack sack, int flags);
+    HifSack *sack, int flags);
 int hy_possibilities_next_reldep(HyPossibilities iter, HyReldep *out_reldep);
 HyPossibilities hy_subject_nevra_possibilities(HySubject subject,
     HyForm *forms);
 HyPossibilities hy_subject_nevra_possibilities_real(HySubject subject,
-    HyForm *forms, HySack sack, int flags);
+    HyForm *forms, HifSack *sack, int flags);
 int hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra);
 
 G_END_DECLS

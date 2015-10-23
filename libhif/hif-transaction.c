@@ -42,7 +42,7 @@
 #include "hif-transaction.h"
 #include "hif-utils.h"
 #include "hy-query.h"
-#include "hy-sack.h"
+#include "hif-sack.h"
 #include "hy-util.h"
 
 typedef enum {

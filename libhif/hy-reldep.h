@@ -27,14 +27,15 @@ G_BEGIN_DECLS
 
 /* hawkey */
 #include "hy-types.h"
+#include "hif-sack.h"
 
-HyReldep hy_reldep_create(HySack sack, const char *name, int cmp_type,
+HyReldep hy_reldep_create(HifSack *sack, const char *name, int cmp_type,
                           const char *evr);
 void hy_reldep_free(HyReldep reldep);
 HyReldep hy_reldep_clone(HyReldep reldep);
 char *hy_reldep_str(HyReldep reldep);
 
-HyReldepList hy_reldeplist_create(HySack sack);
+HyReldepList hy_reldeplist_create(HifSack *sack);
 void hy_reldeplist_free(HyReldepList reldeplist);
 void hy_reldeplist_add(HyReldepList reldeplist, HyReldep reldep);
 int hy_reldeplist_count(HyReldepList reldeplist);

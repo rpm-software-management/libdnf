@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <fnmatch.h>
 #include "hy-reldep.h"
-#include "hy-sack-private.h"
+#include "hif-sack-private.h"
 #include "hy-subject.h"
 #include "hy-subject-private.h"
 #include "hy-nevra.h"
@@ -51,7 +51,7 @@ is_glob_pattern(char *str)
 }
 
 static inline int
-is_real_name(HyNevra nevra, HySack sack, int flags)
+is_real_name(HyNevra nevra, HifSack *sack, int flags)
 {
     flags |= HY_NAME_ONLY;
     int glob_version = (flags & HY_GLOB) && is_glob_pattern(nevra->version);
@@ -62,7 +62,7 @@ is_real_name(HyNevra nevra, HySack sack, int flags)
         version = NULL;
     if (!is_glob_pattern(nevra->name))
         flags &= ~HY_GLOB;
-    if (sack_knows(sack, nevra->name, version, flags) == 0)
+    if (hif_sack_knows(sack, nevra->name, version, flags) == 0)
         return 0;
     return 1;
 }
@@ -81,14 +81,14 @@ arch_exist(char *arch, const char *existing_arch, int is_glob)
 }
 
 static inline int
-is_real_arch(HyNevra nevra, HySack sack, int flags)
+is_real_arch(HyNevra nevra, HifSack *sack, int flags)
 {
     int check_glob = (flags & HY_GLOB) && is_glob_pattern(nevra->arch);
     if (nevra->arch == NULL)
         return 1;
     if (arch_exist(nevra->arch, "src", check_glob))
         return 1;
-    const char **existing_arches = hy_sack_list_arches(sack);
+    const char **existing_arches = hif_sack_list_arches(sack);
     int ret = 0;
     for (int i = 0; existing_arches[i] != NULL; ++i) {
         if ((ret = arch_exist(nevra->arch, existing_arches[i], check_glob)))
@@ -99,7 +99,7 @@ is_real_arch(HyNevra nevra, HySack sack, int flags)
 }
 
 static inline int
-filter_real(HyNevra nevra, HySack sack, int flags)
+filter_real(HyNevra nevra, HifSack *sack, int flags)
 {
     return is_real_name(nevra, sack, flags) &&
         is_real_arch(nevra, sack, flags);
@@ -143,7 +143,7 @@ forms_dup(HyForm *forms)
 }
 
 static HyPossibilities
-possibilities_create(HySubject subject, HyForm *forms,HySack sack, int flags,
+possibilities_create(HySubject subject, HyForm *forms,HifSack *sack, int flags,
     enum poss_type type)
 {
     HyPossibilities poss = g_malloc0(sizeof(*poss));
@@ -160,7 +160,7 @@ possibilities_create(HySubject subject, HyForm *forms,HySack sack, int flags,
 }
 
 HyPossibilities
-hy_subject_reldep_possibilities_real(HySubject subject, HySack sack, int flags)
+hy_subject_reldep_possibilities_real(HySubject subject, HifSack *sack, int flags)
 {
     return possibilities_create(subject, NULL, sack, flags, TYPE_RELDEP_NEW);
 }
@@ -174,7 +174,7 @@ int hy_possibilities_next_reldep(HyPossibilities iter, HyReldep *out_reldep)
     int cmp_type = 0;
     if (parse_reldep_str(iter->subject, &name, &evr, &cmp_type) == -1)
         return -1;
-    if (sack_knows(iter->sack, name, NULL, iter->flags)) {
+    if (hif_sack_knows(iter->sack, name, NULL, iter->flags)) {
         *out_reldep = hy_reldep_create(iter->sack, name, cmp_type, evr);
         g_free(name);
         g_free(evr);
@@ -194,7 +194,7 @@ hy_subject_nevra_possibilities(HySubject subject, HyForm *forms)
 
 HyPossibilities
 hy_subject_nevra_possibilities_real(HySubject subject, HyForm *forms,
-    HySack sack, int flags)
+    HifSack *sack, int flags)
 {
     HyForm *default_forms = forms == NULL ? HY_FORMS_REAL : forms;
     return possibilities_create(subject, default_forms, sack, flags, TYPE_NEVRA);

@@ -27,7 +27,7 @@
 #include "libhif/hy-package-private.h"
 #include "libhif/hy-query.h"
 #include "libhif/hy-reldep.h"
-#include "libhif/hy-sack-private.h"
+#include "libhif/hif-sack-private.h"
 #include "libhif/hy-util.h"
 #include "fixtures.h"
 #include "test_suites.h"
@@ -73,7 +73,7 @@ END_TEST
 
 START_TEST(test_identical)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage pkg1 = by_name(sack, "penny-lib");
     HyPackage pkg2 = by_name(sack, "flying");
     HyPackage pkg3 = by_name(sack, "penny-lib");
@@ -89,7 +89,7 @@ END_TEST
 
 START_TEST(test_versions)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     unsigned epoch;
     char *version, *release;
     HyPackage pkg;
@@ -123,7 +123,7 @@ END_TEST
 
 START_TEST(test_no_sourcerpm)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage pkg = by_name(sack, "baby");
     char *src = hy_package_get_sourcerpm(pkg);
 
@@ -134,7 +134,7 @@ END_TEST
 
 START_TEST(test_get_requires)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage pkg = by_name(sack, "flying");
     HyReldepList reldeplist = hy_package_get_requires(pkg);
 
@@ -153,7 +153,7 @@ END_TEST
 
 START_TEST(test_get_more_requires)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage pkg = by_name(sack, "walrus");
     HyReldepList reldeplist = hy_package_get_requires(pkg);
 
@@ -165,7 +165,7 @@ END_TEST
 
 START_TEST(test_chksum_fail)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage pkg = by_name(sack, "walrus");
     int type;
 
@@ -194,7 +194,7 @@ END_TEST
 
 START_TEST(test_get_files)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
 
     HyPackage pkg = by_name(sack, "tour");
     gchar **files = hy_package_get_files(pkg);
@@ -213,7 +213,7 @@ START_TEST(test_get_advisories)
 {
     GPtrArray *advisories;
     HifAdvisory *advisory;
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage pkg = by_name(sack, "tour");
 
     advisories = hy_package_get_advisories(pkg, HY_GT);
@@ -229,7 +229,7 @@ END_TEST
 START_TEST(test_get_advisories_none)
 {
     GPtrArray *advisories;
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage pkg = by_name(sack, "mystery-devel");
 
     advisories = hy_package_get_advisories(pkg, HY_GT|HY_EQ);
@@ -275,19 +275,21 @@ END_TEST
 START_TEST(test_two_sacks)
 {
     /* This clumsily mimics create_ut_sack() and setup_with() to
-     * create a second HySack. */
+     * create a second HifSack. */
     char *tmpdir = solv_dupjoin(test_globals.tmpdir, "/tmp", NULL);
-    HySack sack1 = hy_sack_create(tmpdir, TEST_FIXED_ARCH, NULL, NULL,
-                                  HY_MAKE_CACHE_DIR, NULL);
-    Pool *pool1 = sack_pool(sack1);
+    HifSack *sack1 = hif_sack_new();
+    hif_sack_set_arch(sack1, TEST_FIXED_ARCH, NULL);
+    hif_sack_set_cachedir(sack1, tmpdir);
+    fail_unless(hif_sack_setup(sack1, HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
+    Pool *pool1 = hif_sack_get_pool(sack1);
     const char *path = pool_tmpjoin(pool1, test_globals.repo_dir,
                                     "change.repo", NULL);
     fail_if(load_repo(pool1, "change", path, 0));
     HyPackage pkg1 = by_name(sack1, "penny-lib");
     fail_if(pkg1 == NULL);
 
-    HySack sack2 = test_globals.sack;
-    Pool *pool2 = sack_pool(sack2);
+    HifSack *sack2 = test_globals.sack;
+    Pool *pool2 = hif_sack_get_pool(sack2);
     HyPackage pkg2 = by_name(sack2, "penny-lib");
     fail_if(pkg2 == NULL);
 
@@ -301,7 +303,7 @@ START_TEST(test_two_sacks)
     hy_package_free(pkg1);
     hy_package_free(pkg2);
 
-    hy_sack_free(sack1);
+    g_object_unref(sack1);
     g_free(tmpdir);
 }
 END_TEST
@@ -337,7 +339,7 @@ END_TEST
 
 START_TEST(test_presto)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage tour = by_name(sack, "tour");
     fail_if(tour == NULL);
 
@@ -359,7 +361,7 @@ END_TEST
 
 START_TEST(test_get_files_cmdline)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
 
     HyPackage pkg = by_name(sack, "tour");
     gchar **files;

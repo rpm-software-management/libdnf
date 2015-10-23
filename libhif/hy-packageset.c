@@ -27,10 +27,10 @@
 // hawkey
 #include "hy-package-private.h"
 #include "hy-packageset-private.h"
-#include "hy-sack-private.h"
+#include "hif-sack-private.h"
 
 struct _HyPackageSet {
-    HySack sack;
+    HifSack *sack;
     Map map;
 };
 
@@ -108,7 +108,7 @@ map_count(Map *m)
 }
 
 HyPackageSet
-packageset_from_bitmap(HySack sack, Map *m)
+packageset_from_bitmap(HifSack *sack, Map *m)
 {
     HyPackageSet pset = g_malloc0(sizeof(*pset));
     pset->sack = sack;
@@ -123,11 +123,11 @@ packageset_get_map(HyPackageSet pset)
 }
 
 HyPackageSet
-hy_packageset_create(HySack sack)
+hy_packageset_create(HifSack *sack)
 {
     HyPackageSet pset = g_malloc0(sizeof(*pset));
     pset->sack = sack;
-    map_init(&pset->map, sack_pool(sack)->nsolvables);
+    map_init(&pset->map, hif_sack_get_pool(sack)->nsolvables);
     return pset;
 }
 

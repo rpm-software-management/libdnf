@@ -30,7 +30,7 @@
 #include "hy-package.h"
 #include "hy-util.h"
 
-enum _hy_sack_cpu_flags {
+enum _hif_sack_cpu_flags {
     ARM_NEON = 1 << 0,
     ARM_VFP3  = 1 << 1,
     ARM_VFP  = 1 << 2

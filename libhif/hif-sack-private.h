@@ -22,41 +22,24 @@
 #define HY_SACK_INTERNAL_H
 
 #include <stdio.h>
-
-// libsolv
 #include <solv/pool.h>
 
-// hawkey
-#include "hy-sack.h"
+#include "hif-sack.h"
 
-typedef Id(*running_kernel_fn_t)(HySack);
+typedef Id  (*hif_sack_running_kernel_fn_t) (HifSack    *sack);
 
-struct _HySack {
-    Pool *pool;
-    int provides_ready;
-    Id running_kernel_id;
-    running_kernel_fn_t running_kernel_fn;
-    char *cache_dir;
-    char *log_file;
-    Queue installonly;
-    int installonly_limit;
-    FILE *log_out;
-    Map *pkg_excludes;
-    Map *pkg_includes;
-    Map *repo_excludes;
-    int considered_uptodate;
-    int cmdline_repo_created;
-};
+void         hif_sack_make_provides_ready   (HifSack    *sack);
+Id           hif_sack_running_kernel        (HifSack    *sack);
+int          hif_sack_knows                 (HifSack    *sack,
+                                             const char *name,
+                                             const char *version,
+                                             int         flags);
+void         hif_sack_recompute_considered  (HifSack    *sack);
+Pool        *hif_sack_get_pool              (HifSack    *sack);
+Id           hif_sack_last_solvable         (HifSack    *sack);
 
-void sack_make_provides_ready(HySack sack);
-Id sack_running_kernel(HySack sack);
-void sack_log(HySack sack, int level, const char *format, ...);
-int sack_knows(HySack sack, const char *name, const char *version, int flags);
-void sack_recompute_considered(HySack sack);
-static inline Pool *sack_pool(HySack sack) { return sack->pool; }
-static inline Id sack_last_solvable(HySack sack)
-{
-    return sack_pool(sack)->nsolvables - 1;
-}
+Queue       *hif_sack_get_installonly       (HifSack    *sack);
+void         hif_sack_set_running_kernel_fn (HifSack    *sack,
+                                             hif_sack_running_kernel_fn_t fn);
 
 #endif // HY_SACK_INTERNAL_H

@@ -33,7 +33,7 @@
 #include "libhif/hy-package.h"
 #include "libhif/hy-package-private.h"
 #include "libhif/hy-query.h"
-#include "libhif/hy-sack-private.h"
+#include "libhif/hif-sack-private.h"
 #include "libhif/hy-util.h"
 #include "testsys.h"
 
@@ -46,7 +46,7 @@ assert_nevra_eq(HyPackage pkg, const char *nevra)
 }
 
 HyPackage
-by_name(HySack sack, const char *name)
+by_name(HifSack *sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
@@ -59,7 +59,7 @@ by_name(HySack sack, const char *name)
 }
 
 HyPackage
-by_name_repo(HySack sack, const char *name, const char *repo)
+by_name_repo(HifSack *sack, const char *name, const char *repo)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);

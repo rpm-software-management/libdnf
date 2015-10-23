@@ -36,6 +36,7 @@ typedef struct _HifTransaction          HifTransaction;
 typedef struct _HifRepos                HifRepos;
 typedef struct _HifSource               HifSource;
 typedef struct _HifState                HifState;
+typedef struct _HifSack                 HifSack;
 
 /**
  * HifError:

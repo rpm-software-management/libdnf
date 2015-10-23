@@ -51,7 +51,7 @@ struct _Filter {
 };
 
 struct _HyQuery {
-    HySack sack;
+    HifSack *sack;
     int flags;
     Map *result;
     struct _Filter *filters;
@@ -69,6 +69,6 @@ struct _Filter *filter_create(int nmatches);
 void filter_reinit(struct _Filter *f, int nmatches);
 void filter_free(struct _Filter *f);
 
-static inline HySack query_sack(HyQuery query) { return query->sack; }
+static inline HifSack *query_sack(HyQuery query) { return query->sack; }
 
 #endif // HY_QUERY_INTERNAL_H

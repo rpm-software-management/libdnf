@@ -29,7 +29,7 @@
 // hawkey
 #include "hif-advisory-private.h"
 #include "hy-iutil.h"
-#include "hy-sack-private.h"
+#include "hif-sack-private.h"
 #include "hif-packagedelta-private.h"
 #include "hy-package-private.h"
 #include "hy-reldep-private.h"
@@ -47,7 +47,7 @@ get_solvable(HyPackage pkg)
 Pool *
 package_pool(HyPackage pkg)
 {
-    return sack_pool(pkg->sack);
+    return hif_sack_get_pool(pkg->sack);
 }
 
 static guint64
@@ -81,7 +81,7 @@ package_clone(HyPackage pkg)
 }
 
 HyPackage
-package_create(HySack sack, Id id)
+package_create(HifSack *sack, Id id)
 {
     HyPackage pkg;
 
@@ -93,7 +93,7 @@ package_create(HySack sack, Id id)
 }
 
 HyPackage
-package_from_solvable(HySack sack, Solvable *s)
+package_from_solvable(HifSack *sack, Solvable *s)
 {
     if (!s)
         return NULL;

@@ -25,7 +25,7 @@
 #include "hy-query.h"
 #include "hy-nevra.h"
 #include "hy-nevra-private.h"
-#include "hy-sack.h"
+#include "hif-sack.h"
 #include "hy-types.h"
 
 
@@ -143,7 +143,7 @@ hy_nevra_set_epoch(HyNevra nevra, int epoch)
 }
 
 HyQuery
-hy_nevra_to_query(HyNevra nevra, HySack sack)
+hy_nevra_to_query(HyNevra nevra, HifSack *sack)
 {
     HyQuery query = hy_query_create(sack);
     if (nevra->name != NULL)
@@ -160,11 +160,11 @@ hy_nevra_to_query(HyNevra nevra, HySack sack)
 }
 
 int
-hy_nevra_evr_cmp(HyNevra nevra1, HyNevra nevra2, HySack sack)
+hy_nevra_evr_cmp(HyNevra nevra1, HyNevra nevra2, HifSack *sack)
 {
     char *self_evr = hy_nevra_get_evr(nevra1);
     char *other_evr = hy_nevra_get_evr(nevra2);
-    int cmp = hy_sack_evr_cmp(sack, self_evr, other_evr);
+    int cmp = hif_sack_evr_cmp(sack, self_evr, other_evr);
     g_free(self_evr);
     g_free(other_evr);
     return cmp;

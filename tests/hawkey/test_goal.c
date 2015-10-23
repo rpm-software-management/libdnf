@@ -27,9 +27,10 @@
 #include "libhif/hy-iutil.h"
 #include "libhif/hy-package-private.h"
 #include "libhif/hy-packageset.h"
+#include "libhif/hif-sack-private.h"
 #include "libhif/hy-repo.h"
 #include "libhif/hy-query.h"
-#include "libhif/hy-sack-private.h"
+#include "libhif/hif-sack-private.h"
 #include "libhif/hy-selector.h"
 #include "libhif/hy-util.h"
 #include "fixtures.h"
@@ -37,7 +38,7 @@
 #include "test_suites.h"
 
 static HyPackage
-get_latest_pkg(HySack sack, const char *name)
+get_latest_pkg(HifSack *sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
@@ -53,7 +54,7 @@ get_latest_pkg(HySack sack, const char *name)
 }
 
 static HyPackage
-get_available_pkg(HySack sack, const char *name)
+get_available_pkg(HifSack *sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
@@ -68,14 +69,14 @@ get_available_pkg(HySack sack, const char *name)
 
 /* make Sack think we are unable to determine the running kernel */
 static Id
-mock_running_kernel_no(HySack sack)
+mock_running_kernel_no(HifSack *sack)
 {
     return -1;
 }
 
 /* make Sack think k-1-1 is the running kernel */
 static Id
-mock_running_kernel(HySack sack)
+mock_running_kernel(HifSack *sack)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "k");
@@ -99,7 +100,7 @@ size_and_free(GPtrArray *plist)
 }
 
 static void
-userinstalled(HySack sack, HyGoal goal, const char *name)
+userinstalled(HifSack *sack, HyGoal goal, const char *name)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
@@ -131,7 +132,7 @@ START_TEST(test_goal_sanity)
 {
     HyGoal goal = hy_goal_create(test_globals.sack);
     fail_if(goal == NULL);
-    fail_unless(hy_sack_count(test_globals.sack) ==
+    fail_unless(hif_sack_count(test_globals.sack) ==
                 TEST_EXPECT_SYSTEM_NSOLVABLES +
                 TEST_EXPECT_MAIN_NSOLVABLES +
                 TEST_EXPECT_UPDATES_NSOLVABLES);
@@ -373,7 +374,7 @@ END_TEST
 
 START_TEST(test_goal_selector_upgrade_provides)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HySelector sltr = hy_selector_create(sack);
     HyGoal goal = hy_goal_create(sack);
 
@@ -399,7 +400,7 @@ END_TEST
 
 START_TEST(test_goal_install_selector_file)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HySelector sltr = hy_selector_create(sack);
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_selector_set(sltr, HY_PKG_FILE, HY_EQ|HY_GLOB, "/*/answers"));
@@ -499,7 +500,7 @@ END_TEST
 
 START_TEST(test_goal_downgrade)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage to_be_pkg = get_available_pkg(sack, "baby");
     HyGoal goal = hy_goal_create(sack);
 
@@ -580,7 +581,7 @@ END_TEST
 START_TEST(test_goal_describe_problem)
 {
     g_autoptr(GError) error = NULL;
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage pkg = get_latest_pkg(sack, "hello");
     HyGoal goal = hy_goal_create(sack);
 
@@ -602,7 +603,7 @@ END_TEST
 
 START_TEST(test_goal_no_reinstall)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage pkg = get_latest_pkg(sack, "penny");
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_goal_install(goal, pkg));
@@ -615,7 +616,7 @@ END_TEST
 
 START_TEST(test_goal_erase_simple)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage pkg = by_name_repo(sack, "penny", HY_SYSTEM_REPO_NAME);
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_goal_erase(goal, pkg));
@@ -628,7 +629,7 @@ END_TEST
 
 START_TEST(test_goal_erase_with_deps)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage pkg = by_name_repo(sack, "penny-lib", HY_SYSTEM_REPO_NAME);
 
     // by default can not remove penny-lib, flying depends on it:
@@ -649,7 +650,7 @@ END_TEST
 
 START_TEST(test_goal_erase_clean_deps)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage pkg = by_name_repo(sack, "flying", HY_SYSTEM_REPO_NAME);
 
     // by default, leave dependencies alone:
@@ -684,7 +685,7 @@ END_TEST
 
 START_TEST(test_goal_forcebest)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
     HySelector sltr = hy_selector_create(sack);
 
@@ -701,7 +702,7 @@ END_TEST
 START_TEST(test_goal_verify)
 {
     g_autoptr(GError) error = NULL;
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
 
     fail_unless(hy_goal_run_flags(goal, HY_VERIFY));
@@ -728,9 +729,9 @@ START_TEST(test_goal_installonly)
 {
     const char *installonly[] = {"fool", NULL};
 
-    HySack sack = test_globals.sack;
-    hy_sack_set_installonly(sack, installonly);
-    hy_sack_set_installonly_limit(sack, 2);
+    HifSack *sack = test_globals.sack;
+    hif_sack_set_installonly(sack, installonly);
+    hif_sack_set_installonly_limit(sack, 2);
     HyPackage pkg = get_latest_pkg(sack, "fool");
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED));
@@ -744,11 +745,11 @@ END_TEST
 START_TEST(test_goal_installonly_upgrade_all)
 {
     const char *installonly[] = {"fool", NULL};
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
 
-    hy_sack_set_installonly(sack, installonly);
-    hy_sack_set_installonly_limit(sack, 2);
+    hif_sack_set_installonly(sack, installonly);
+    hif_sack_set_installonly_limit(sack, 2);
 
     hy_goal_upgrade_all(goal);
     fail_if(hy_goal_run(goal));
@@ -767,12 +768,12 @@ END_TEST
 
 START_TEST(test_goal_upgrade_all_excludes)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyQuery q = hy_query_create_flags(sack, HY_IGNORE_EXCLUDES);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "pilchard");
 
     HyPackageSet pset = hy_query_run_set(q);
-    hy_sack_add_excludes(sack, pset);
+    hif_sack_add_excludes(sack, pset);
     hy_packageset_free(pset);
     hy_query_free(q);
 
@@ -786,7 +787,7 @@ END_TEST
 
 START_TEST(test_goal_upgrade_disabled_repo)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
 
     hy_goal_upgrade_all(goal);
@@ -794,7 +795,7 @@ START_TEST(test_goal_upgrade_disabled_repo)
     fail_unless(size_and_free(hy_goal_list_upgrades(goal, NULL)) == 5);
     hy_goal_free(goal);
 
-    hy_sack_repo_enabled(sack, "updates", 0);
+    hif_sack_repo_enabled(sack, "updates", 0);
     goal = hy_goal_create(sack);
     hy_goal_upgrade_all(goal);
     hy_goal_run(goal);
@@ -805,12 +806,12 @@ END_TEST
 
 START_TEST(test_goal_describe_problem_excludes)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
 
     HyQuery q = hy_query_create_flags(sack, HY_IGNORE_EXCLUDES);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "semolina");
     HyPackageSet pset = hy_query_run_set(q);
-    hy_sack_add_excludes(sack, pset);
+    hif_sack_add_excludes(sack, pset);
     hy_packageset_free(pset);
     hy_query_free(q);
 
@@ -856,7 +857,7 @@ START_TEST(test_goal_distupgrade_all_excludes)
     HyQuery q = hy_query_create_flags(test_globals.sack, HY_IGNORE_EXCLUDES);
     hy_query_filter_provides(q, HY_GT|HY_EQ, "flying", "0");
     HyPackageSet pset = hy_query_run_set(q);
-    hy_sack_add_excludes(test_globals.sack, pset);
+    hif_sack_add_excludes(test_globals.sack, pset);
     hy_packageset_free(pset);
     hy_query_free(q);
 
@@ -959,7 +960,7 @@ END_TEST
 
 START_TEST(test_goal_rerun)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
     HyPackage pkg = get_latest_pkg(sack, "walrus");
 
@@ -980,7 +981,7 @@ END_TEST
 
 START_TEST(test_goal_unneeded)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
 
     userinstalled(sack, goal, "baby");
@@ -1046,7 +1047,7 @@ solution_cb(HyGoal goal, void *data)
 
 START_TEST(test_goal_run_all)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
     HyPackage pkg = get_available_pkg(sack, "A");
 
@@ -1066,10 +1067,10 @@ END_TEST
 START_TEST(test_goal_installonly_limit)
 {
     const char *installonly[] = {"k", NULL};
-    HySack sack = test_globals.sack;
-    hy_sack_set_installonly(sack, installonly);
-    hy_sack_set_installonly_limit(sack, 3);
-    sack->running_kernel_fn = mock_running_kernel_no;
+    HifSack *sack = test_globals.sack;
+    hif_sack_set_installonly(sack, installonly);
+    hif_sack_set_installonly_limit(sack, 3);
+    hif_sack_set_running_kernel_fn(sack, mock_running_kernel_no);
 
     HyGoal goal = hy_goal_create(sack);
     hy_goal_upgrade_all(goal);
@@ -1091,10 +1092,10 @@ START_TEST(test_goal_installonly_limit_disabled)
     // test that setting limit to 0 does not cause all intallonlies to be
     // uninstalled
     const char *installonly[] = {"k", NULL};
-    HySack sack = test_globals.sack;
-    hy_sack_set_installonly(sack, installonly);
-    hy_sack_set_installonly_limit(sack, 0);
-    sack->running_kernel_fn = mock_running_kernel_no;
+    HifSack *sack = test_globals.sack;
+    hif_sack_set_installonly(sack, installonly);
+    hif_sack_set_installonly_limit(sack, 0);
+    hif_sack_set_running_kernel_fn(sack, mock_running_kernel_no);
 
     HyGoal goal = hy_goal_create(sack);
     hy_goal_upgrade_all(goal);
@@ -1109,10 +1110,10 @@ END_TEST
 START_TEST(test_goal_installonly_limit_running_kernel)
 {
     const char *installonly[] = {"k", NULL};
-    HySack sack = test_globals.sack;
-    hy_sack_set_installonly(sack, installonly);
-    hy_sack_set_installonly_limit(sack, 3);
-    sack->running_kernel_fn = mock_running_kernel;
+    HifSack *sack = test_globals.sack;
+    hif_sack_set_installonly(sack, installonly);
+    hif_sack_set_installonly_limit(sack, 3);
+    hif_sack_set_running_kernel_fn(sack, mock_running_kernel);
 
     HyGoal goal = hy_goal_create(sack);
     hy_goal_upgrade_all(goal);
@@ -1133,10 +1134,10 @@ START_TEST(test_goal_installonly_limit_with_modules)
 {
     // most complex installonly test case, includes the k-m packages
     const char *installonly[] = {"k", "k-m", NULL};
-    HySack sack = test_globals.sack;
-    hy_sack_set_installonly(sack, installonly);
-    hy_sack_set_installonly_limit(sack, 3);
-    sack->running_kernel_fn = mock_running_kernel;
+    HifSack *sack = test_globals.sack;
+    hif_sack_set_installonly(sack, installonly);
+    hif_sack_set_installonly_limit(sack, 3);
+    hif_sack_set_running_kernel_fn(sack, mock_running_kernel);
 
     HyGoal goal = hy_goal_create(sack);
     hy_goal_upgrade_all(goal);
@@ -1157,7 +1158,7 @@ END_TEST
 
 START_TEST(test_goal_update_vendor)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
     HySelector sltr = hy_selector_create(sack);
 
@@ -1175,7 +1176,7 @@ END_TEST
 
 START_TEST(test_goal_forcebest_arches)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
     HySelector sltr = hy_selector_create(sack);
 
@@ -1193,7 +1194,7 @@ START_TEST(test_goal_change)
 {
     // test that changes are handled like reinstalls
 
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
 
     hy_goal_upgrade_all(goal);
@@ -1207,7 +1208,7 @@ END_TEST
 
 START_TEST(test_goal_clone)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
 
     hy_goal_upgrade_all(goal);
@@ -1227,7 +1228,7 @@ END_TEST
 
 START_TEST(test_cmdline_file_provides)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
 
     hy_goal_upgrade_all(goal);

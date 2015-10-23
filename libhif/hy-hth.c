@@ -33,7 +33,7 @@
 #include "hy-query.h"
 #include "hy-reldep.h"
 #include "hy-repo.h"
-#include "hy-sack.h"
+#include "hif-sack.h"
 #include "hy-util.h"
 
 #define CFG_FILE "~/.hawkey/main.config"
@@ -53,7 +53,7 @@ static const char *installonly[] = {
     NULL
 };
 
-static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
+static void execute_print(HifSack *sack, HyQuery q, int show_obsoletes)
 {
     GPtrArray *plist;
 
@@ -96,7 +96,7 @@ static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
     g_ptr_array_unref(plist);
 }
 
-static void search_and_print(HySack sack, const char *name)
+static void search_and_print(HifSack *sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
 
@@ -112,7 +112,7 @@ static void search_and_print(HySack sack, const char *name)
 }
 
 static void
-search_filter_files(HySack sack, const char *name)
+search_filter_files(HifSack *sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_FILE, HY_EQ, name);
@@ -120,7 +120,7 @@ search_filter_files(HySack sack, const char *name)
     hy_query_free(q);
 }
 
-static void search_filter_repos(HySack sack, const char *name) {
+static void search_filter_repos(HifSack *sack, const char *name) {
     HyQuery q = hy_query_create(sack);
 
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
@@ -129,7 +129,7 @@ static void search_filter_repos(HySack sack, const char *name) {
     hy_query_free(q);
 }
 
-static void search_anded(HySack sack, const char *name_substr,
+static void search_anded(HifSack *sack, const char *name_substr,
                          const char *summary_substr)
 {
     HyQuery q = hy_query_create(sack);
@@ -140,7 +140,7 @@ static void search_anded(HySack sack, const char *name_substr,
     hy_query_free(q);
 }
 
-static void search_provides(HySack sack, const char *name,
+static void search_provides(HifSack *sack, const char *name,
                             const char *version)
 {
     HyQuery q = hy_query_create(sack);
@@ -150,7 +150,7 @@ static void search_provides(HySack sack, const char *name,
     hy_query_free(q);
 }
 
-static void updatables_query_name(HySack sack, const char *name)
+static void updatables_query_name(HifSack *sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
 
@@ -163,7 +163,7 @@ static void updatables_query_name(HySack sack, const char *name)
     hy_query_free(q);
 }
 
-static void obsoletes(HySack sack)
+static void obsoletes(HifSack *sack)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
@@ -188,7 +188,7 @@ dump_goal_errors(HyGoal goal)
 }
 
 static void
-erase(HySack sack, const char *name)
+erase(HifSack *sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
@@ -227,7 +227,7 @@ erase(HySack sack, const char *name)
     hy_query_free(q);
 }
 
-static void update(HySack sack, HyPackage pkg)
+static void update(HifSack *sack, HyPackage pkg)
 {
     HyGoal goal = hy_goal_create(sack);
 
@@ -281,18 +281,18 @@ static void update(HySack sack, HyPackage pkg)
     hy_goal_free(goal);
 }
 
-static void update_local(HySack sack, const char *fn)
+static void update_local(HifSack *sack, const char *fn)
 {
     HyPackage pkg;
 
-    pkg = hy_sack_add_cmdline_package(sack, fn);
+    pkg = hif_sack_add_cmdline_package(sack, fn);
     if (pkg) {
         update(sack, pkg);
         hy_package_free(pkg);
     }
 }
 
-static void update_remote(HySack sack, const char *name)
+static void update_remote(HifSack *sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
     GPtrArray *plist;
@@ -390,7 +390,7 @@ need_filelists(int argc, const char **argv)
 
 int main(int argc, const char **argv)
 {
-    HySack sack = hy_sack_create(NULL, NULL, NULL, NULL, HY_MAKE_CACHE_DIR);
+    HifSack *sack = hif_sack_new ();
     HyRepo repo;
     char *md_repo;
     char *md_primary_xml;
@@ -399,6 +399,9 @@ int main(int argc, const char **argv)
     char *md_primary_updates_xml;
     char *md_filelists_updates;
     int ret;
+
+    if (!hif_sack_setup(sack, NULL, NULL, NULL, HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR))
+        return 1;
 
     if (read_repopaths(&md_repo, &md_primary_xml, &md_filelists, &md_repo_updates,
                        &md_primary_updates_xml, &md_filelists_updates)) {
@@ -413,23 +416,23 @@ int main(int argc, const char **argv)
                 "<updates filelists.xml.gz path>\n", CFG_FILE);
         return 1;
     }
-    int load_flags = HY_BUILD_CACHE;
+    int load_flags = HIF_SACK_LOAD_FLAG_BUILD_CACHE;
     /* rpmdb */
     repo = hy_repo_create(HY_SYSTEM_REPO_NAME);
-    hy_sack_load_system_repo(sack, NULL, load_flags);
+    hif_sack_load_system_repo(sack, NULL, load_flags);
     hy_repo_free(repo);
 
     if (need_filelists(argc, argv))
-        load_flags |= HY_LOAD_FILELISTS;
+        load_flags |= HIF_SACK_LOAD_FLAG_USE_FILELISTS;
     /* Fedora repo */
     repo = config_repo("Fedora", md_repo, md_primary_xml, md_filelists);
-    ret = hy_sack_load_repo(sack, repo, load_flags);
+    ret = hif_sack_load_repo(sack, repo, load_flags);
     assert(ret == 0); (void)ret;
     hy_repo_free(repo);
     /* Fedora updates repo */
     repo = config_repo("updates", md_repo_updates, md_primary_updates_xml,
                        md_filelists_updates);
-    ret = hy_sack_load_repo(sack, repo, load_flags);
+    ret = hif_sack_load_repo(sack, repo, load_flags);
     assert(ret == 0); (void)ret;
     hy_repo_free(repo);
     free(md_repo);
@@ -439,8 +442,8 @@ int main(int argc, const char **argv)
     free(md_primary_updates_xml);
     free(md_filelists_updates);
 
-    hy_sack_set_installonly(sack, installonly);
-    hy_sack_set_installonly_limit(sack, 3);
+    hif_sack_set_installonly(sack, installonly);
+    hif_sack_set_installonly_limit(sack, 3);
 
     if (argc == 2 && !strcmp(argv[1], "-o")) {
         obsoletes(sack);
@@ -464,7 +467,7 @@ int main(int argc, const char **argv)
         search_provides(sack, argv[2], argv[3]);
     }
 
-    hy_sack_free(sack);
+    g_object_unref(sack);
 
     return 0;
 }
