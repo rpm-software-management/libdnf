@@ -1046,7 +1046,7 @@ hy_query_filter_in(HyQuery q, int keyname, int cmp_type,
         return HIF_ERROR_BAD_QUERY;
     q->applied = 0;
 
-    const unsigned count = count_nullt_array(matches);
+    const unsigned count = g_strv_length((gchar**)matches);
     struct _Filter *filterp = query_add_filter(q, count);
 
     filterp->cmp_type = cmp_type;

@@ -52,7 +52,6 @@ gboolean mv(const char *old, const char *new, GError **error);
 char *this_username(void);
 
 /* misc utils */
-unsigned count_nullt_array(const char **a);
 char *read_whole_file(const char *path);
 char *pool_tmpdup(Pool *pool, const char *s);
 Id running_kernel(HySack sack);

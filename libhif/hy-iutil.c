@@ -322,14 +322,6 @@ this_username(void)
     return g_strdup(pw->pw_name);
 }
 
-unsigned
-count_nullt_array(const char **a)
-{
-    const char **strp = a;
-    while (*strp) strp++;
-    return strp - a;
-}
-
 char *
 read_whole_file(const char *path)
 {
