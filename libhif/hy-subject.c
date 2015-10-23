@@ -94,7 +94,7 @@ is_real_arch(HyNevra nevra, HySack sack, int flags)
         if ((ret = arch_exist(nevra->arch, existing_arches[i], check_glob)))
             break;
     }
-    solv_free(existing_arches);
+    g_free(existing_arches);
     return ret;
 }
 
@@ -114,15 +114,15 @@ hy_subject_create(const char * pattern)
 void
 hy_subject_free(HySubject subject)
 {
-    solv_free(subject);
+    g_free(subject);
 }
 
 void
 hy_possibilities_free(HyPossibilities iter)
 {
-    solv_free(iter->subject);
-    solv_free(iter->forms);
-    solv_free(iter);
+    g_free(iter->subject);
+    g_free(iter->forms);
+    g_free(iter);
 }
 
 HyForm *
@@ -176,8 +176,8 @@ int hy_possibilities_next_reldep(HyPossibilities iter, HyReldep *out_reldep)
         return -1;
     if (sack_knows(iter->sack, name, NULL, iter->flags)) {
         *out_reldep = hy_reldep_create(iter->sack, name, cmp_type, evr);
-        solv_free(name);
-        solv_free(evr);
+        g_free(name);
+        g_free(evr);
         if (*out_reldep == NULL)
             return -1;
         return 0;

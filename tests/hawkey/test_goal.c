@@ -1018,7 +1018,7 @@ static void
 solutions_free(struct Solutions *solutions)
 {
     hy_packagelist_free(solutions->installs);
-    solv_free(solutions);
+    g_free(solutions);
 }
 
 static int

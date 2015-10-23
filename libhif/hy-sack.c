@@ -115,7 +115,7 @@ free_map_fully(Map *m)
 {
     if (m) {
         map_free(m);
-        solv_free(m);
+        g_free(m);
     }
     return NULL;
 }
@@ -180,7 +180,7 @@ setarch(HySack sack, const char *req_arch)
         ret = HIF_ERROR_FAILED;
 
  done:
-    solv_free(detected);
+    g_free(detected);
     return ret;
 }
 
@@ -328,7 +328,7 @@ load_ext(HySack sack, HyRepo hrepo, int which_repodata,
             repo_set_repodata(hrepo, which_repodata, repo->nrepodata - 1);
         }
     }
-    solv_free(fn_cache);
+    g_free(fn_cache);
     if (fp)
         fclose(fp);
     if (done)
@@ -464,8 +464,8 @@ write_main(HySack sack, HyRepo hrepo, int switchtosolv, GError **error)
  done:
     if (!ret && tmp_fd >= 0)
         unlink(tmp_fn_templ);
-    solv_free(tmp_fn_templ);
-    solv_free(fn);
+    g_free(tmp_fn_templ);
+    g_free(fn);
     return ret;
 }
 
@@ -559,8 +559,8 @@ write_ext(HySack sack, HyRepo hrepo, int which_repodata, const char *suffix, GEr
  done:
     if (ret && tmp_fd >=0 )
         unlink(tmp_fn_templ);
-    solv_free(tmp_fn_templ);
-    solv_free(fn);
+    g_free(tmp_fn_templ);
+    g_free(fn);
     return success;
 }
 
@@ -625,7 +625,7 @@ out:
         fclose(fp_repomd);
     if (fp_primary)
         fclose(fp_primary);
-    solv_free(fn_cache);
+    g_free(fn_cache);
 
     if (retval) {
         repo_finalize_init(hrepo, repo);
@@ -667,7 +667,7 @@ hy_sack_create(const char *cache_path, const char *arch, const char *rootdir,
         char *path = pool_tmpjoin(pool, DEFAULT_CACHE_USER, "-", username);
         path = pool_tmpappend(pool, path, "-", "XXXXXX");
         sack->cache_dir = solv_strdup(path);
-        solv_free(username);
+        g_free(username);
     } else
         sack->cache_dir = solv_strdup(DEFAULT_CACHE_ROOT);
 
@@ -720,8 +720,8 @@ hy_sack_free(HySack sack)
         g_debug("finished");
         fclose(sack->log_out);
     }
-    solv_free(sack->cache_dir);
-    solv_free(sack->log_file);
+    g_free(sack->cache_dir);
+    g_free(sack->log_file);
     queue_free(&sack->installonly);
 
     free_map_fully(sack->pkg_excludes);
@@ -729,7 +729,7 @@ hy_sack_free(HySack sack)
     free_map_fully(sack->repo_excludes);
     free_map_fully(pool->considered);
     pool_free(sack->pool);
-    solv_free(sack);
+    g_free(sack);
 }
 
 int
@@ -957,7 +957,7 @@ hy_sack_load_system_repo(HySack sack, HyRepo a_hrepo, int flags, GError **error)
     gboolean ret = TRUE;
     HyRepo hrepo = a_hrepo;
 
-    solv_free(cache_fn);
+    g_free(cache_fn);
     if (hrepo)
         hy_repo_set_string(hrepo, HY_REPO_NAME, HY_SYSTEM_REPO_NAME);
     else
@@ -1246,6 +1246,6 @@ sack_knows(HySack sack, const char *name, const char *version, int flags)
 
     ret = q->count > 0;
     queue_free(q);
-    solv_free(q);
+    g_free(q);
     return ret;
 }

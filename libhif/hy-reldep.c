@@ -91,7 +91,7 @@ hy_reldep_create(HySack sack, const char *name, int cmp_type, const char *evr)
 void
 hy_reldep_free(HyReldep reldep)
 {
-    solv_free(reldep);
+    g_free(reldep);
 }
 
 HyReldep
@@ -120,7 +120,7 @@ void
 hy_reldeplist_free(HyReldepList reldeplist)
 {
     queue_free(&reldeplist->queue);
-    solv_free(reldeplist);
+    g_free(reldeplist);
 }
 
 void

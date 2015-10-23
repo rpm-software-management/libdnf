@@ -164,27 +164,27 @@ hy_repo_set_string(HyRepo repo, int which, const char *str_val)
 {
     switch (which) {
     case HY_REPO_NAME:
-        solv_free(repo->name);
+        g_free(repo->name);
         repo->name = solv_strdup(str_val);
         break;
     case HY_REPO_MD_FN:
-        solv_free(repo->repomd_fn);
+        g_free(repo->repomd_fn);
         repo->repomd_fn = solv_strdup(str_val);
         break;
     case HY_REPO_PRIMARY_FN:
-        solv_free(repo->primary_fn);
+        g_free(repo->primary_fn);
         repo->primary_fn = solv_strdup(str_val);
         break;
     case HY_REPO_FILELISTS_FN:
-        solv_free(repo->filelists_fn);
+        g_free(repo->filelists_fn);
         repo->filelists_fn = solv_strdup(str_val);
         break;
     case HY_REPO_PRESTO_FN:
-        solv_free(repo->presto_fn);
+        g_free(repo->presto_fn);
         repo->presto_fn = solv_strdup(str_val);
         break;
     case HY_REPO_UPDATEINFO_FN:
-        solv_free(repo->updateinfo_fn);
+        g_free(repo->updateinfo_fn);
         repo->updateinfo_fn = solv_strdup(str_val);
         break;
     default:
@@ -222,11 +222,11 @@ hy_repo_free(HyRepo repo)
 
     if (repo->libsolv_repo)
         repo->libsolv_repo->appdata = NULL;
-    solv_free(repo->name);
-    solv_free(repo->repomd_fn);
-    solv_free(repo->primary_fn);
-    solv_free(repo->filelists_fn);
-    solv_free(repo->presto_fn);
-    solv_free(repo->updateinfo_fn);
-    solv_free(repo);
+    g_free(repo->name);
+    g_free(repo->repomd_fn);
+    g_free(repo->primary_fn);
+    g_free(repo->filelists_fn);
+    g_free(repo->presto_fn);
+    g_free(repo->updateinfo_fn);
+    g_free(repo);
 }

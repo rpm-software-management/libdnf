@@ -189,7 +189,7 @@ evr(_NevraObject *self, PyObject *unused)
     PyObject *o;
     str = hy_nevra_get_evr(self->nevra);
     o = PyString_FromString(str);
-    solv_free(str);
+    g_free(str);
     return o;
 }
 

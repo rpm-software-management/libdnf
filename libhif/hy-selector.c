@@ -99,7 +99,7 @@ hy_selector_free(HySelector sltr)
     filter_free(sltr->f_name);
     filter_free(sltr->f_provides);
     filter_free(sltr->f_reponame);
-    solv_free(sltr);
+    g_free(sltr);
 }
 
 int

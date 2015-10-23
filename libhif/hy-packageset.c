@@ -144,7 +144,7 @@ void
 hy_packageset_free(HyPackageSet pset)
 {
     map_free(&pset->map);
-    solv_free(pset);
+    g_free(pset);
 }
 
 void

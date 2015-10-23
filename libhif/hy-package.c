@@ -116,7 +116,7 @@ hy_package_free(HyPackage pkg)
         return;
     if (pkg->destroy_func)
         pkg->destroy_func(pkg->userdata);
-    solv_free(pkg);
+    g_free(pkg);
 }
 
 HyPackage
@@ -556,8 +556,8 @@ hy_packagedelta_get_chksum(HyPackageDelta delta, int *type)
 void
 hy_packagedelta_free(HyPackageDelta delta)
 {
-    solv_free(delta->location);
-    solv_free(delta->baseurl);
-    solv_free(delta->checksum);
-    solv_free(delta);
+    g_free(delta->location);
+    g_free(delta->baseurl);
+    g_free(delta->checksum);
+    g_free(delta);
 }

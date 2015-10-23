@@ -83,7 +83,7 @@ advisoryreflist_add(HyAdvisoryRefList reflist, HyAdvisoryRef advisoryref)
 void
 hy_advisoryref_free(HyAdvisoryRef advisoryref)
 {
-    solv_free(advisoryref);
+    g_free(advisoryref);
 }
 
 static const char *
@@ -147,8 +147,8 @@ hy_advisoryreflist_free(HyAdvisoryRefList reflist)
     for(int i = 0; i < hy_advisoryreflist_count(reflist); i++) {
         hy_advisoryref_free(reflist->refs[i]);
     }
-    solv_free(reflist->refs);
-    solv_free(reflist);
+    g_free(reflist->refs);
+    g_free(reflist);
 }
 
 int

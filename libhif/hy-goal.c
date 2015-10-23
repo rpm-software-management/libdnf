@@ -294,7 +294,7 @@ static void
 free_job(Queue *job)
 {
     queue_free(job);
-    solv_free(job);
+    g_free(job);
 }
 
 static HyPackageList
@@ -604,7 +604,7 @@ hy_goal_free(HyGoal goal)
     if (goal->solv)
         solver_free(goal->solv);
     queue_free(&goal->staging);
-    solv_free(goal);
+    g_free(goal);
 }
 
 int

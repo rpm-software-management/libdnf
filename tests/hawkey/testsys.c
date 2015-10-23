@@ -42,7 +42,7 @@ assert_nevra_eq(HyPackage pkg, const char *nevra)
 {
     char *pkg_nevra = hy_package_get_nevra(pkg);
     ck_assert_str_eq(pkg_nevra, nevra);
-    solv_free(pkg_nevra);
+    g_free(pkg_nevra);
 }
 
 HyPackage

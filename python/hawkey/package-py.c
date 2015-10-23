@@ -162,7 +162,7 @@ package_repr(_PackageObject *self)
     repr = PyString_FromFormat("<hawkey.Package object id %ld, %s, %s>",
                                package_hash(self), nevra,
                                hy_package_get_reponame(pkg));
-    solv_free(nevra);
+    g_free(nevra);
     return repr;
 }
 
@@ -171,7 +171,7 @@ package_str(_PackageObject *self)
 {
     char *cstr = hy_package_get_nevra(self->package);
     PyObject *ret = PyString_FromString(cstr);
-    solv_free(cstr);
+    g_free(cstr);
     return ret;
 }
 
@@ -235,7 +235,7 @@ get_str_alloced(_PackageObject *self, void *closure)
     if (cstr == NULL)
         Py_RETURN_NONE;
     ret = PyUnicode_FromString(cstr);
-    solv_free(cstr);
+    g_free(cstr);
     return ret;
 }
 

@@ -52,8 +52,8 @@ init_test_globals(struct TestGlobals_s *tg, const char *repo_dir)
 static void
 free_test_globals(struct TestGlobals_s *tg)
 {
-    solv_free(tg->tmpdir);
-    solv_free(tg->repo_dir);
+    g_free(tg->tmpdir);
+    g_free(tg->repo_dir);
 }
 
 int
