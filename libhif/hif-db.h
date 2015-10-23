@@ -27,9 +27,8 @@
 #define __HIF_DB_H
 
 #include <glib-object.h>
-#include "hy-package.h"
-#include "hy-packagelist.h"
 
+#include "hy-package.h"
 #include "hif-context.h"
 
 G_BEGIN_DECLS
@@ -80,7 +79,7 @@ gboolean         hif_db_remove_all              (HifDb          *db,
 void             hif_db_ensure_origin_pkg       (HifDb          *db,
                                                  HyPackage       pkg);
 void             hif_db_ensure_origin_pkglist   (HifDb          *db,
-                                                 HyPackageList   pkglist);
+                                                 GPtrArray *  pkglist);
 
 G_END_DECLS
 

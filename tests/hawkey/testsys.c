@@ -50,10 +50,10 @@ by_name(HySack sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
-    HyPackageList plist = hy_query_run(q);
+    GPtrArray *plist = hy_query_run(q);
     hy_query_free(q);
-    HyPackage pkg = hy_packagelist_get_clone(plist, 0);
-    hy_packagelist_free(plist);
+    HyPackage pkg = hy_package_link(g_ptr_array_index(plist, 0));
+    g_ptr_array_unref(plist);
 
     return pkg;
 }
@@ -64,32 +64,32 @@ by_name_repo(HySack sack, const char *name, const char *repo)
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
     hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, repo);
-    HyPackageList plist = hy_query_run(q);
+    GPtrArray *plist = hy_query_run(q);
     hy_query_free(q);
-    HyPackage pkg = hy_packagelist_get_clone(plist, 0);
-    hy_packagelist_free(plist);
+    HyPackage pkg = hy_package_link(g_ptr_array_index(plist, 0));
+    g_ptr_array_unref(plist);
 
     return pkg;
 }
 
 void
-dump_packagelist(HyPackageList plist, int free)
+dump_packagelist(GPtrArray *plist, int free)
 {
-    for (int i = 0; i < hy_packagelist_count(plist); ++i) {
-        HyPackage pkg = hy_packagelist_get(plist, i);
+    for (guint i = 0; i < plist->len; ++i) {
+        HyPackage pkg = g_ptr_array_index(plist, i);
         Solvable *s = pool_id2solvable(package_pool(pkg), package_id(pkg));
         char *nvra = hy_package_get_nevra(pkg);
         printf("\t%s @%s\n", nvra, s->repo->name);
         g_free(nvra);
     }
     if (free)
-        hy_packagelist_free(plist);
+        g_ptr_array_unref(plist);
 }
 
 void
 dump_query_results(HyQuery query)
 {
-    HyPackageList plist = hy_query_run(query);
+    GPtrArray *plist = hy_query_run(query);
     dump_packagelist(plist, 1);
 }
 
@@ -109,8 +109,8 @@ dump_goal_results(HyGoal goal)
 int
 query_count_results(HyQuery query)
 {
-    HyPackageList plist = hy_query_run(query);
-    int ret = hy_packagelist_count(plist);
-    hy_packagelist_free(plist);
+    GPtrArray *plist = hy_query_run(query);
+    int ret = plist->len;
+    g_ptr_array_unref(plist);
     return ret;
 }

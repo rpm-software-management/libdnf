@@ -22,17 +22,13 @@
 #define HY_IUTIL_H
 
 #include <regex.h>
-
-// libsolv
 #include <solv/bitmap.h>
 #include <solv/queue.h>
 #include <solv/repo.h>
 #include <solv/rules.h>
 #include <solv/transaction.h>
 
-// hawkey
 #include "hif-advisory-private.h"
-#include "hy-packagelist.h"
 #include "hy-sack.h"
 
 #define CHKSUM_BYTES 32
@@ -66,7 +62,7 @@ int cmptype2relflags(int type);
 Repo *repo_by_name(HySack sack, const char *name);
 HyRepo hrepo_by_name(HySack sack, const char *name);
 Id str2archid(Pool *pool, const char *s);
-void queue2plist(HySack sack, Queue *q, HyPackageList plist);
+void queue2plist(HySack sack, Queue *q, GPtrArray *plist);
 Id what_upgrades(Pool *pool, Id p);
 Id what_downgrades(Pool *pool, Id p);
 static inline int is_package(Pool *pool, Solvable *s)

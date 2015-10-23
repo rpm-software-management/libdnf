@@ -7,7 +7,6 @@ SET (hawkey_SRCS
     hy-iutil.c
     hy-nevra.c
     hy-package.c
-    hy-packagelist.c
     hy-packageset.c
     hy-query.c
     hy-reldep.c
@@ -43,7 +42,6 @@ SET(HAWKEY_headers
     hy-goal.h
     hy-nevra.h
     hy-package.h
-    hy-packagelist.h
     hy-packageset.h
     hy-query.h
     hy-reldep.h

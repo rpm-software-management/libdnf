@@ -85,7 +85,7 @@ glob_for_cachedir(char *path)
         g_free(p);
         return ret;
     }
-    for (int i = 0; i < word_vector.we_wordc; ++i) {
+    for (guint i = 0; i < word_vector.we_wordc; ++i) {
         char *entry = word_vector.we_wordv[i];
         if (stat(entry, &s))
             continue;
@@ -431,10 +431,10 @@ str2archid(Pool *pool, const char *arch)
 }
 
 void
-queue2plist(HySack sack, Queue *q, HyPackageList plist)
+queue2plist(HySack sack, Queue *q, GPtrArray *plist)
 {
     for (int i = 0; i < q->count; ++i)
-        hy_packagelist_push(plist, package_create(sack, q->elements[i]));
+        g_ptr_array_add(plist, package_create(sack, q->elements[i]));
 }
 
 /**

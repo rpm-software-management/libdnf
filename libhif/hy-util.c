@@ -194,3 +194,19 @@ hy_split_nevra(const char *nevra, char **name, long int *epoch,
 
     return 0;
 }
+
+GPtrArray *
+hy_packagelist_create(void)
+{
+    return (GPtrArray *)g_ptr_array_new_with_free_func ((GDestroyNotify)hy_package_free);
+}
+
+int
+hy_packagelist_has(GPtrArray *plist, HyPackage pkg)
+{
+    GPtrArray *a = (GPtrArray*)plist;
+    for (guint i = 0; i < a->len; ++i)
+        if (hy_package_identical(pkg, a->pdata[i]))
+            return 1;
+    return 0;
+}

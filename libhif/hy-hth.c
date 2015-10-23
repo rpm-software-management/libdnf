@@ -23,16 +23,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <wordexp.h>
-
-// libsolv
 #include <solv/repo_rpmdb.h>
 #include <solv/solver.h>
 
-// hawkey
 #include "hy-goal.h"
 #include "hy-package-private.h"
 #include "hy-package.h"
-#include "hy-packagelist.h"
 #include "hy-packageset.h"
 #include "hy-query.h"
 #include "hy-reldep.h"
@@ -59,12 +55,12 @@ static const char *installonly[] = {
 
 static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
 {
-    HyPackageList plist;
+    GPtrArray *plist;
 
     plist = hy_query_run(q);
-    const int count = hy_packagelist_count(plist);
+    const int count = plist->len;
     for (int i = 0; i < count; ++i) {
-        HyPackage pkg = hy_packagelist_get(plist, i);
+        HyPackage pkg = g_ptr_array_index(plist, i);
         char *nvra = hy_package_get_nevra(pkg);
         const char *reponame = hy_package_get_reponame(pkg);
 
@@ -83,21 +79,21 @@ static void execute_print(HySack sack, HyQuery q, int show_obsoletes)
 
             hy_query_filter(qobs, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
             hy_query_filter_reldep_in(qobs, HY_PKG_PROVIDES, obsoletes);
-            HyPackageList olist = hy_query_run(qobs);
-            const int ocount = hy_packagelist_count(olist);
+            GPtrArray *olist = hy_query_run(qobs);
+            const int ocount = olist->len;
             for (int j = 0; j < ocount; ++j) {
-                HyPackage opkg = hy_packagelist_get(olist, j);
+                HyPackage opkg = g_ptr_array_index(olist, j);
                 char *onvra = hy_package_get_nevra(opkg);
                 printf("obsoleting: %s\n", onvra);
                 g_free(onvra);
             }
-            hy_packagelist_free(olist);
+            g_ptr_array_unref(olist);
             hy_query_free(qobs);
             hy_reldeplist_free(obsoletes);
         }
         g_free(nvra);
     }
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
 }
 
 static void search_and_print(HySack sack, const char *name)
@@ -198,27 +194,27 @@ erase(HySack sack, const char *name)
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
     hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
 
-    HyPackageList plist = hy_query_run(q);
-    if (hy_packagelist_count(plist) < 1) {
+    GPtrArray *plist = hy_query_run(q);
+    if (plist->len < 1) {
         printf("No installed package to erase found.\n");
         goto finish;
     }
-    if (hy_packagelist_count(plist) > 1)
+    if (plist->len > 1)
         printf("(more than one updatables found, selecting the first one)\n");
 
     HyGoal goal = hy_goal_create(sack);
-    hy_goal_erase(goal, hy_packagelist_get(plist, 0));
+    hy_goal_erase(goal, g_ptr_array_index(plist, 0));
 
     if (hy_goal_run(goal)) {
         dump_goal_errors(goal);
         hy_goal_free(goal);
         goto finish;
     }
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
     plist = hy_goal_list_erasures(goal);
-    printf("erasure count: %d\n", hy_packagelist_count(plist));
-    for (int i = 0; i < hy_packagelist_count(plist); ++i) {
-        HyPackage pkg = hy_packagelist_get(plist, i);
+    printf("erasure count: %d\n", plist->len);
+    for (int i = 0; i < plist->len; ++i) {
+        HyPackage pkg = g_ptr_array_index(plist, i);
         char *nvra = hy_package_get_nevra(pkg);
 
         printf("erasing %s\n", nvra);
@@ -227,7 +223,7 @@ erase(HySack sack, const char *name)
 
     hy_goal_free(goal);
  finish:
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
     hy_query_free(q);
 }
 
@@ -245,14 +241,14 @@ static void update(HySack sack, HyPackage pkg)
         goto finish;
     }
     // handle upgrades
-    HyPackageList plist = hy_goal_list_upgrades(goal);
-    printf("upgrade count: %d\n", hy_packagelist_count(plist));
-    for (int i = 0; i < hy_packagelist_count(plist); ++i) {
-        HyPackage pkg = hy_packagelist_get(plist, i);
+    GPtrArray *plist = hy_goal_list_upgrades(goal);
+    printf("upgrade count: %d\n", plist->len);
+    for (int i = 0; i < plist->len; ++i) {
+        HyPackage pkg = g_ptr_array_index(plist, i);
         char *nvra = hy_package_get_nevra(pkg);
         char *location = hy_package_get_location(pkg);
-        HyPackageList obsoleted = hy_goal_list_obsoleted_by_package(goal, pkg);
-        HyPackage installed = hy_packagelist_get(obsoleted, 0);
+        GPtrArray *obsoleted = hy_goal_list_obsoleted_by_package(goal, pkg);
+        HyPackage installed = g_ptr_array_index(obsoleted, 0);
         char *nvra_installed = hy_package_get_nevra(installed);
 
         printf("upgrading: %s using %s\n", nvra, location);
@@ -260,16 +256,16 @@ static void update(HySack sack, HyPackage pkg)
         printf("\tsize: %lld kB\n", hy_package_get_size(pkg) / 1024);
 
         g_free(nvra_installed);
-        hy_packagelist_free(obsoleted);
+        g_ptr_array_unref(obsoleted);
         g_free(location);
         g_free(nvra);
     }
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
     // handle installs
     plist = hy_goal_list_installs(goal);
-    printf("install count: %d\n", hy_packagelist_count(plist));
-    for (int i = 0; i < hy_packagelist_count(plist); ++i) {
-        HyPackage pkg = hy_packagelist_get(plist, i);
+    printf("install count: %d\n", plist->len);
+    for (int i = 0; i < plist->len; ++i) {
+        HyPackage pkg = g_ptr_array_index(plist, i);
         char *nvra = hy_package_get_nevra(pkg);
         char *location = hy_package_get_location(pkg);
 
@@ -279,7 +275,7 @@ static void update(HySack sack, HyPackage pkg)
         g_free(location);
         g_free(nvra);
     }
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
 
  finish:
     hy_goal_free(goal);
@@ -299,22 +295,22 @@ static void update_local(HySack sack, const char *fn)
 static void update_remote(HySack sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
-    HyPackageList plist;
+    GPtrArray *plist;
 
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
     hy_query_filter(q, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     hy_query_filter_latest_per_arch(q, 1);
 
     plist = hy_query_run(q);
-    if (hy_packagelist_count(plist) == 0) {
+    if (plist->len == 0) {
         printf("no updatables found\n");
         goto finish;
     }
-    if (hy_packagelist_count(plist) > 1)
+    if (plist->len > 1)
         printf("(more than one updatables found, selecting the first one)\n");
-    update(sack, hy_packagelist_get(plist, 0));
+    update(sack, g_ptr_array_index(plist, 0));
 finish:
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
     hy_query_free(q);
 }
 

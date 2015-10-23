@@ -297,12 +297,12 @@ free_job(Queue *job)
     g_free(job);
 }
 
-static HyPackageList
+static GPtrArray *
 list_results(HyGoal goal, Id type_filter1, Id type_filter2, GError **error)
 {
     Queue transpkgs;
     Transaction *trans = goal->trans;
-    HyPackageList plist;
+    GPtrArray *plist;
 
     /* no transaction */
     if (trans == NULL) {
@@ -340,7 +340,7 @@ list_results(HyGoal goal, Id type_filter1, Id type_filter2, GError **error)
         }
 
         if (type == type_filter1 || (type_filter2 && type == type_filter2))
-            hy_packagelist_push(plist, package_create(goal->sack, p));
+            g_ptr_array_add(plist, package_create(goal->sack, p));
     }
     return plist;
 }
@@ -769,13 +769,13 @@ hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags)
     if (flags & HY_CHECK_INSTALLED) {
         HyQuery q = hy_query_create(goal->sack);
         const char *name = hy_package_get_name(new_pkg);
-        HyPackageList installed;
+        GPtrArray *installed;
 
         hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
         hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
         installed = hy_query_run(q);
-        count = hy_packagelist_count(installed);
-        hy_packagelist_free(installed);
+        count = installed->len;
+        g_ptr_array_unref(installed);
         hy_query_free(q);
         if (!count)
             return HIF_ERROR_PACKAGE_NOT_FOUND;
@@ -915,35 +915,35 @@ hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error)
     return TRUE;
 }
 
-HyPackageList
+GPtrArray *
 hy_goal_list_erasures(HyGoal goal, GError **error)
 {
     return list_results(goal, SOLVER_TRANSACTION_ERASE, 0, error);
 }
 
-HyPackageList
+GPtrArray *
 hy_goal_list_installs(HyGoal goal, GError **error)
 {
     return list_results(goal, SOLVER_TRANSACTION_INSTALL,
                         SOLVER_TRANSACTION_OBSOLETES, error);
 }
 
-HyPackageList
+GPtrArray *
 hy_goal_list_obsoleted(HyGoal goal, GError **error)
 {
     return list_results(goal, SOLVER_TRANSACTION_OBSOLETED, 0, error);
 }
 
-HyPackageList
+GPtrArray *
 hy_goal_list_reinstalls(HyGoal goal, GError **error)
 {
     return list_results(goal, SOLVER_TRANSACTION_REINSTALL, 0, error);
 }
 
-HyPackageList
+GPtrArray *
 hy_goal_list_unneeded(HyGoal goal, GError **error)
 {
-    HyPackageList plist = hy_packagelist_create();
+    GPtrArray *plist = hy_packagelist_create();
     Queue q;
     Solver *solv = goal->solv;
 
@@ -954,25 +954,25 @@ hy_goal_list_unneeded(HyGoal goal, GError **error)
     return plist;
 }
 
-HyPackageList
+GPtrArray *
 hy_goal_list_upgrades(HyGoal goal, GError **error)
 {
     return list_results(goal, SOLVER_TRANSACTION_UPGRADE, 0, error);
 }
 
-HyPackageList
+GPtrArray *
 hy_goal_list_downgrades(HyGoal goal, GError **error)
 {
     return list_results(goal, SOLVER_TRANSACTION_DOWNGRADE, 0, error);
 }
 
-HyPackageList
+GPtrArray *
 hy_goal_list_obsoleted_by_package(HyGoal goal, HyPackage pkg)
 {
     HySack sack = goal->sack;
     Transaction *trans = goal->trans;
     Queue obsoletes;
-    HyPackageList plist = hy_packagelist_create();
+    GPtrArray *plist = hy_packagelist_create();
 
     assert(trans);
     queue_init(&obsoletes);

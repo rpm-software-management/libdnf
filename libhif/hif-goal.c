@@ -35,9 +35,8 @@
 #endif
 
 #include <glib.h>
-#include "hy-packagelist.h"
-#include "hy-util.h"
 
+#include "hy-util.h"
 #include "hif-goal.h"
 #include "hif-package.h"
 #include "hif-utils.h"
@@ -103,49 +102,55 @@ hif_goal_get_packages(HyGoal goal, ...)
     va_start(args, goal);
     array = g_ptr_array_new_with_free_func((GDestroyNotify) hy_package_free);
     for (j = 0;; j++) {
-        HyPackageList pkglist = NULL;
+        GPtrArray *pkglist = NULL;
         info_tmp = va_arg(args, gint);
         if (info_tmp == -1)
             break;
         switch(info_tmp) {
         case HIF_PACKAGE_INFO_REMOVE:
             pkglist = hy_goal_list_erasures(goal, NULL);
-            FOR_PACKAGELIST(pkg, pkglist, i) {
+            for (i = 0; i < pkglist->len; i++) {
+                pkg = g_ptr_array_index (pkglist, i);
                 hif_package_set_action(pkg, HIF_STATE_ACTION_REMOVE);
                 g_ptr_array_add(array, hy_package_link(pkg));
             }
             break;
         case HIF_PACKAGE_INFO_INSTALL:
             pkglist = hy_goal_list_installs(goal, NULL);
-            FOR_PACKAGELIST(pkg, pkglist, i) {
+            for (i = 0; i < pkglist->len; i++) {
+                pkg = g_ptr_array_index (pkglist, i);
                 hif_package_set_action(pkg, HIF_STATE_ACTION_INSTALL);
                 g_ptr_array_add(array, hy_package_link(pkg));
             }
             break;
         case HIF_PACKAGE_INFO_OBSOLETE:
             pkglist = hy_goal_list_obsoleted(goal, NULL);
-            FOR_PACKAGELIST(pkg, pkglist, i) {
+            for (i = 0; i < pkglist->len; i++) {
+                pkg = g_ptr_array_index (pkglist, i);
                 hif_package_set_action(pkg, HIF_STATE_ACTION_OBSOLETE);
                 g_ptr_array_add(array, hy_package_link(pkg));
             }
             break;
         case HIF_PACKAGE_INFO_REINSTALL:
             pkglist = hy_goal_list_reinstalls(goal, NULL);
-            FOR_PACKAGELIST(pkg, pkglist, i) {
+            for (i = 0; i < pkglist->len; i++) {
+                pkg = g_ptr_array_index (pkglist, i);
                 hif_package_set_action(pkg, HIF_STATE_ACTION_REINSTALL);
                 g_ptr_array_add(array, hy_package_link(pkg));
             }
             break;
         case HIF_PACKAGE_INFO_UPDATE:
             pkglist = hy_goal_list_upgrades(goal, NULL);
-            FOR_PACKAGELIST(pkg, pkglist, i) {
+            for (i = 0; i < pkglist->len; i++) {
+                pkg = g_ptr_array_index (pkglist, i);
                 hif_package_set_action(pkg, HIF_STATE_ACTION_UPDATE);
                 g_ptr_array_add(array, hy_package_link(pkg));
             }
             break;
         case HIF_PACKAGE_INFO_DOWNGRADE:
             pkglist = hy_goal_list_downgrades(goal, NULL);
-            FOR_PACKAGELIST(pkg, pkglist, i) {
+            for (i = 0; i < pkglist->len; i++) {
+                pkg = g_ptr_array_index (pkglist, i);
                 hif_package_set_action(pkg, HIF_STATE_ACTION_DOWNGRADE);
                 g_ptr_array_add(array, hy_package_link(pkg));
             }
@@ -153,7 +158,7 @@ hif_goal_get_packages(HyGoal goal, ...)
         default:
             g_assert_not_reached();
         }
-        hy_packagelist_free(pkglist);
+        g_ptr_array_unref(pkglist);
     }
     va_end(args);
     return array;

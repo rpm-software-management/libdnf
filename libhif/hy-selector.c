@@ -18,20 +18,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-// libsolv
 #include <solv/selection.h>
 #include <solv/solver.h>
 #include <solv/util.h>
 
-// hawkey
 #include "hif-types.h"
 #include "hy-goal-private.h"
 #include "hy-iutil.h"
 #include "hy-package-private.h"
-#include "hy-packagelist.h"
 #include "hy-query-private.h"
 #include "hy-sack-private.h"
 #include "hy-selector-private.h"
+#include "hy-util.h"
 
 static int
 replace_filter(HySack sack, struct _Filter **fp, int keyname, int cmp_type,
@@ -134,7 +132,7 @@ hy_selector_set(HySelector sltr, int keyname, int cmp_type, const char *match)
     }
 }
 
-HyPackageList
+GPtrArray *
 hy_selector_matches(HySelector sltr)
 {
     HySack sack = selector_sack(sltr);
@@ -147,9 +145,9 @@ hy_selector_matches(HySelector sltr)
     queue_init(&solvables);
     selection_solvables(pool, &job, &solvables);
 
-    HyPackageList plist = hy_packagelist_create();
+    GPtrArray *plist = hy_packagelist_create();
     for (int i = 0; i < solvables.count; i++)
-        hy_packagelist_push(plist, package_create(sack, solvables.elements[i]));
+        g_ptr_array_add(plist, package_create(sack, solvables.elements[i]));
 
     queue_free(&solvables);
     queue_free(&job);

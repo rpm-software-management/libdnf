@@ -20,11 +20,8 @@
 
 #include <Python.h>
 
-// hawkey
-#include "hy-packagelist.h"
 #include "hy-selector.h"
 
-// pyhawkey
 #include "exception-py.h"
 #include "iutil-py.h"
 #include "sack-py.h"
@@ -91,9 +88,9 @@ selector_dealloc(_SelectorObject *self)
 static PyObject *
 matches(_SelectorObject *self, PyObject *args)
 {
-    HyPackageList plist = hy_selector_matches(self->sltr);
+    GPtrArray *plist = hy_selector_matches(self->sltr);
     PyObject *list = packagelist_to_pylist(plist, self->sack);
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
     return list;
 }
 

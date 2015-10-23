@@ -352,90 +352,90 @@ END_TEST
 
 START_TEST(test_query_recommends)
 {
-    HyPackageList plist;
+    GPtrArray *plist;
     HyPackage pkg;
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_RECOMMENDS, HY_EQ, "baby");
     plist = hy_query_run(q);
-    pkg = hy_packagelist_get(plist, 0);
+    pkg = g_ptr_array_index(plist, 0);
     ck_assert_str_eq(hy_package_get_name(pkg), "flying");
     hy_query_free(q);
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
 }
 END_TEST
 
 START_TEST(test_query_suggests)
 {
-    HyPackageList plist;
+    GPtrArray *plist;
     HyPackage pkg;
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_SUGGESTS, HY_EQ, "walrus");
     plist = hy_query_run(q);
-    pkg = hy_packagelist_get(plist, 0);
+    pkg = g_ptr_array_index(plist, 0);
     ck_assert_str_eq(hy_package_get_name(pkg), "flying");
     hy_query_free(q);
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
 }
 END_TEST
 
 START_TEST(test_query_supplements)
 {
-    HyPackageList plist;
+    GPtrArray *plist;
     HyPackage pkg;
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_SUPPLEMENTS, HY_EQ, "flying");
     plist = hy_query_run(q);
-    pkg = hy_packagelist_get(plist, 0);
+    pkg = g_ptr_array_index(plist, 0);
     ck_assert_str_eq(hy_package_get_name(pkg), "baby");
     hy_query_free(q);
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
 }
 END_TEST
 
 START_TEST(test_query_enhances)
 {
-    HyPackageList plist;
+    GPtrArray *plist;
     HyPackage pkg;
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_ENHANCES, HY_EQ, "flying");
     plist = hy_query_run(q);
-    pkg = hy_packagelist_get(plist, 0);
+    pkg = g_ptr_array_index(plist, 0);
     ck_assert_str_eq(hy_package_get_name(pkg), "walrus");
     hy_query_free(q);
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
 }
 END_TEST
 
 START_TEST(test_query_provides_in)
 {
     HyPackage pkg;
-    HyPackageList plist;
+    GPtrArray *plist;
     char* pkg_names[] = { "P", "fool <= 2.0", "fool-lib > 3-3", NULL };
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter_provides_in(q, pkg_names);
     plist = hy_query_run(q);
-    pkg = hy_packagelist_get(plist, 0);
+    pkg = g_ptr_array_index(plist, 0);
     ck_assert_str_eq(hy_package_get_name(pkg), "fool");
     ck_assert_str_eq(hy_package_get_evr(pkg), "1-3");
-    pkg = hy_packagelist_get(plist, 1);
+    pkg = g_ptr_array_index(plist, 1);
     ck_assert_str_eq(hy_package_get_name(pkg), "penny");
-    pkg = hy_packagelist_get(plist, 2);
+    pkg = g_ptr_array_index(plist, 2);
     ck_assert_str_eq(hy_package_get_name(pkg), "fool");
     ck_assert_str_eq(hy_package_get_evr(pkg), "1-5");
     fail_unless(size_and_free(q) == 3);
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
 }
 END_TEST
 
 START_TEST(test_query_provides_in_not_found)
 {
-    HyPackageList plist;
+    GPtrArray *plist;
     char* provides[] = { "thisisnotgoingtoexist", NULL };
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter_provides_in(q, provides);
     plist = hy_query_run(q);
-    fail_unless(hy_packagelist_count(plist) == 0);
-    hy_packagelist_free(plist);
+    fail_unless(plist->len == 0);
+    g_ptr_array_unref(plist);
     hy_query_free(q);
 }
 END_TEST
@@ -564,13 +564,13 @@ START_TEST(test_filter_latest)
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "fool");
     hy_query_filter_latest_per_arch(q, 1);
-    HyPackageList plist = hy_query_run(q);
-    fail_unless(hy_packagelist_count(plist) == 1);
-    HyPackage pkg = hy_packagelist_get(plist, 0);
+    GPtrArray *plist = hy_query_run(q);
+    fail_unless(plist->len == 1);
+    HyPackage pkg = g_ptr_array_index(plist, 0);
     fail_if(strcmp(hy_package_get_name(pkg), "fool"));
     fail_if(strcmp(hy_package_get_evr(pkg), "1-5"));
     hy_query_free(q);
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
 }
 END_TEST
 
@@ -579,17 +579,17 @@ START_TEST(test_filter_latest2)
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "flying");
     hy_query_filter_latest_per_arch(q, 1);
-    HyPackageList plist = hy_query_run(q);
-    fail_unless(hy_packagelist_count(plist) == 2);
-    HyPackage pkg = hy_packagelist_get(plist, 0);
+    GPtrArray *plist = hy_query_run(q);
+    fail_unless(plist->len == 2);
+    HyPackage pkg = g_ptr_array_index(plist, 0);
     fail_if(strcmp(hy_package_get_name(pkg), "flying"));
     fail_if(strcmp(hy_package_get_evr(pkg), "3.1-0"));
-    pkg = hy_packagelist_get(plist, 1);
+    pkg = g_ptr_array_index(plist, 1);
     fail_if(strcmp(hy_package_get_name(pkg), "flying"));
     fail_if(strcmp(hy_package_get_evr(pkg), "3.2-0"));
 
     hy_query_free(q);
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
 
 }
 END_TEST
@@ -599,10 +599,10 @@ START_TEST(test_filter_latest_archs)
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "penny-lib");
     hy_query_filter_latest_per_arch(q, 1);
-    HyPackageList plist = hy_query_run(q);
-    fail_unless(hy_packagelist_count(plist) == 2); /* both architectures */
+    GPtrArray *plist = hy_query_run(q);
+    fail_unless(plist->len == 2); /* both architectures */
     hy_query_free(q);
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
 }
 END_TEST
 
@@ -613,10 +613,10 @@ START_TEST(test_upgrade_already_installed)
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
     hy_query_filter_upgrades(q, 1);
-    HyPackageList plist = hy_query_run(q);
-    fail_unless(hy_packagelist_count(plist) == 0);
+    GPtrArray *plist = hy_query_run(q);
+    fail_unless(plist->len == 0);
     hy_query_free(q);
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
 }
 END_TEST
 
@@ -625,12 +625,12 @@ START_TEST(test_downgrade)
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
     hy_query_filter_downgrades(q, 1);
-    HyPackageList plist = hy_query_run(q);
-    fail_unless(hy_packagelist_count(plist) == 1);
-    HyPackage pkg = hy_packagelist_get(plist, 0);
+    GPtrArray *plist = hy_query_run(q);
+    fail_unless(plist->len == 1);
+    HyPackage pkg = g_ptr_array_index(plist, 0);
     ck_assert_str_eq(hy_package_get_evr(pkg), "4.9-0");
     hy_query_free(q);
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
 }
 END_TEST
 
@@ -768,18 +768,18 @@ START_TEST(test_filter_files)
 {
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_FILE, HY_EQ, "/etc/takeyouaway");
-    HyPackageList plist = hy_query_run(q);
-    fail_unless(hy_packagelist_count(plist) == 1);
-    HyPackage pkg = hy_packagelist_get(plist, 0);
+    GPtrArray *plist = hy_query_run(q);
+    fail_unless(plist->len == 1);
+    HyPackage pkg = g_ptr_array_index(plist, 0);
     fail_if(strcmp(hy_package_get_name(pkg), "tour"));
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_FILE, HY_GLOB, "/usr/*");
     plist = hy_query_run(q);
-    fail_unless(hy_packagelist_count(plist) == 2);
-    hy_packagelist_free(plist);
+    fail_unless(plist->len == 2);
+    g_ptr_array_unref(plist);
     hy_query_free(q);
 }
 END_TEST
@@ -905,22 +905,22 @@ START_TEST(test_query_nevra_glob)
 {
     HySack sack = test_globals.sack;
     HyQuery q;
-    HyPackageList plist;
+    GPtrArray *plist;
 
     q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NEVRA, HY_GLOB, "p*4-1*");
     plist = hy_query_run(q);
 
-    ck_assert_int_eq(hy_packagelist_count(plist), 2);
-    HyPackage pkg1 = hy_packagelist_get(plist, 0);
-    HyPackage pkg2 = hy_packagelist_get(plist, 1);
+    ck_assert_int_eq(plist->len, 2);
+    HyPackage pkg1 = g_ptr_array_index(plist, 0);
+    HyPackage pkg2 = g_ptr_array_index(plist, 1);
     char *nevra1 = hy_package_get_nevra(pkg1);
     char *nevra2 = hy_package_get_nevra(pkg2);
     ck_assert_str_eq(nevra1, "penny-4-1.noarch");
     ck_assert_str_eq(nevra2, "penny-lib-4-1.x86_64");
     g_free(nevra1);
     g_free(nevra2);
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
     hy_query_free(q);
 }
 END_TEST
@@ -929,18 +929,18 @@ START_TEST(test_query_nevra)
 {
     HySack sack = test_globals.sack;
     HyQuery q;
-    HyPackageList plist;
+    GPtrArray *plist;
 
     q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NEVRA, HY_EQ, "penny-4-1.noarch");
     plist = hy_query_run(q);
 
-    ck_assert_int_eq(hy_packagelist_count(plist), 1);
-    HyPackage pkg1 = hy_packagelist_get(plist, 0);
+    ck_assert_int_eq(plist->len, 1);
+    HyPackage pkg1 = g_ptr_array_index(plist, 0);
     char *nevra1 = hy_package_get_nevra(pkg1);
     ck_assert_str_eq(nevra1, "penny-4-1.noarch");
     g_free(nevra1);
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
     hy_query_free(q);
 }
 END_TEST
@@ -949,14 +949,14 @@ START_TEST(test_query_multiple_flags)
 {
     HySack sack = test_globals.sack;
     HyQuery q;
-    HyPackageList plist;
+    GPtrArray *plist;
 
     q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_NOT | HY_GLOB, "p*");
     plist = hy_query_run(q);
 
-    ck_assert_int_eq(hy_packagelist_count(plist), 8);
-    hy_packagelist_free(plist);
+    ck_assert_int_eq(plist->len, 8);
+    g_ptr_array_unref(plist);
     hy_query_free(q);
 }
 END_TEST
@@ -965,7 +965,7 @@ START_TEST(test_query_apply)
 {
     HySack sack = test_globals.sack;
     HyQuery q;
-    HyPackageList plist;
+    GPtrArray *plist;
 
     q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_NOT | HY_GLOB, "j*");
@@ -985,8 +985,8 @@ START_TEST(test_query_apply)
     ck_assert_int_eq(_q.applied, 0);
     plist = hy_query_run(q);
 
-    ck_assert_int_eq(hy_packagelist_count(plist), 6);
-    hy_packagelist_free(plist);
+    ck_assert_int_eq(plist->len, 6);
+    g_ptr_array_unref(plist);
     hy_query_free(q);
 }
 END_TEST

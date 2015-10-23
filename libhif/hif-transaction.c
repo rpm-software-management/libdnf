@@ -34,13 +34,16 @@
 #include <rpm/rpmts.h>
 #include <rpm/rpmlog.h>
 
-#include "hy-packagelist.h"
+#include "hif-db.h"
+#include "hif-goal.h"
+#include "hif-keyring.h"
+#include "hif-package.h"
+#include "hif-rpmts.h"
+#include "hif-transaction.h"
+#include "hif-utils.h"
 #include "hy-query.h"
 #include "hy-sack.h"
 #include "hy-util.h"
-
-#include "libhif.h"
-#include "hif-utils.h"
 
 typedef enum {
     HIF_TRANSACTION_STEP_STARTED,
@@ -301,10 +304,10 @@ hif_transaction_ensure_source(HifTransaction *transaction,
 /**
  * hif_transaction_ensure_source_list:
  * @transaction: a #HifTransaction instance.
- * @pkglist: A #HyPackageList
+ * @pkglist: A #GPtrArray *
  * @error: A #GError or %NULL
  *
- * Ensures the #HifSource is set on the #HyPackageList if not already set.
+ * Ensures the #HifSource is set on the #GPtrArray *if not already set.
  *
  * Returns: %TRUE for success, %FALSE otherwise
  *
@@ -312,13 +315,14 @@ hif_transaction_ensure_source(HifTransaction *transaction,
  */
 gboolean
 hif_transaction_ensure_source_list(HifTransaction *transaction,
-                                   HyPackageList pkglist,
+                                   GPtrArray *pkglist,
                                    GError **error)
 {
     guint i;
     HyPackage pkg;
 
-    FOR_PACKAGELIST(pkg, pkglist, i) {
+    for (i = 0; i < pkglist->len; i++) {
+        pkg = g_ptr_array_index (pkglist, i);
         if (!hif_transaction_ensure_source(transaction, pkg, error))
             return FALSE;
     }
@@ -1165,7 +1169,7 @@ hif_transaction_commit(HifTransaction *transaction,
     guint i;
     guint j;
     HifState *state_local;
-    HyPackageList pkglist;
+    GPtrArray *pkglist;
     HyPackage pkg;
     HyPackage pkg_tmp;
     rpmprobFilterFlags problems_filter = 0;
@@ -1302,12 +1306,13 @@ hif_transaction_commit(HifTransaction *transaction,
         if (!is_update)
             continue;
         pkglist = hy_goal_list_obsoleted_by_package(goal, pkg);
-        FOR_PACKAGELIST(pkg_tmp, pkglist, j) {
+        for (j = 0; j < pkglist->len; j++) {
+            pkg_tmp = g_ptr_array_index (pkglist, i);
             g_ptr_array_add(priv->remove_helper,
                             hy_package_link(pkg_tmp));
             hif_package_set_action(pkg_tmp, HIF_STATE_ACTION_CLEANUP);
         }
-        hy_packagelist_free(pkglist);
+        g_ptr_array_unref(pkglist);
     }
 
     /* this section done */
