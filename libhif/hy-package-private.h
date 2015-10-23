@@ -39,7 +39,7 @@ struct _HyPackage {
 struct _HyPackageDelta {
     char *location;
     char *baseurl;
-    unsigned long long downloadsize;
+    guint64 downloadsize;
     int checksum_type;
     unsigned char *checksum;
 };

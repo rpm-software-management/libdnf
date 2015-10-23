@@ -58,7 +58,7 @@ const char          *hif_advisory_get_id            (HifAdvisory *advisory);
 HifAdvisoryKind      hif_advisory_get_kind          (HifAdvisory *advisory);
 const char          *hif_advisory_get_description   (HifAdvisory *advisory);
 const char          *hif_advisory_get_rights        (HifAdvisory *advisory);
-unsigned long long   hif_advisory_get_updated       (HifAdvisory *advisory);
+guint64              hif_advisory_get_updated       (HifAdvisory *advisory);
 GPtrArray           *hif_advisory_get_packages      (HifAdvisory *advisory);
 GPtrArray           *hif_advisory_get_references    (HifAdvisory *advisory);
 int                  hif_advisory_compare           (HifAdvisory *left,

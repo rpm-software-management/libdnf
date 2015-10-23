@@ -193,8 +193,8 @@ get_bool(_PackageObject *self, void *closure)
 static PyObject *
 get_num(_PackageObject *self, void *closure)
 {
-    unsigned long long (*func)(HyPackage);
-    func = (unsigned long long (*)(HyPackage))closure;
+    guint64 (*func)(HyPackage);
+    func = (guint64 (*)(HyPackage))closure;
     return PyLong_FromUnsignedLongLong(func(self->package));
 }
 

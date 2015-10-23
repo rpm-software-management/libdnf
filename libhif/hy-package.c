@@ -50,7 +50,7 @@ package_pool(HyPackage pkg)
     return sack_pool(pkg->sack);
 }
 
-static unsigned long long
+static guint64
 lookup_num(HyPackage pkg, unsigned type)
 {
     Solvable *s = get_solvable(pkg);
@@ -324,57 +324,57 @@ hy_package_get_url(HyPackage pkg)
     return solvable_lookup_str(get_solvable(pkg), SOLVABLE_URL);
 }
 
-unsigned long long
+guint64
 hy_package_get_downloadsize(HyPackage pkg)
 {
     return lookup_num(pkg, SOLVABLE_DOWNLOADSIZE);
 }
 
-unsigned long long
+guint64
 hy_package_get_epoch(HyPackage pkg)
 {
     return pool_get_epoch(package_pool(pkg), hy_package_get_evr(pkg));
 }
 
-unsigned long long
+guint64
 hy_package_get_hdr_end(HyPackage pkg)
 {
     return lookup_num(pkg, SOLVABLE_HEADEREND);
 }
 
-unsigned long long
+guint64
 hy_package_get_installsize(HyPackage pkg)
 {
     return lookup_num(pkg, SOLVABLE_INSTALLSIZE);
 }
 
-unsigned long long
+guint64
 hy_package_get_buildtime(HyPackage pkg)
 {
     return lookup_num(pkg, SOLVABLE_BUILDTIME);
 }
 
-unsigned long long
+guint64
 hy_package_get_installtime(HyPackage pkg)
 {
     return lookup_num(pkg, SOLVABLE_INSTALLTIME);
 }
 
-unsigned long long
+guint64
 hy_package_get_medianr(HyPackage pkg)
 {
     return lookup_num(pkg, SOLVABLE_MEDIANR);
 }
 
-unsigned long long
+guint64
 hy_package_get_rpmdbid(HyPackage pkg)
 {
-    unsigned long long ret = lookup_num(pkg, RPM_RPMDBID);
+    guint64 ret = lookup_num(pkg, RPM_RPMDBID);
     assert(ret > 0);
     return ret;
 }
 
-unsigned long long
+guint64
 hy_package_get_size(HyPackage pkg)
 {
     unsigned type = hy_package_installed(pkg) ? SOLVABLE_INSTALLSIZE :
@@ -538,7 +538,7 @@ hy_packagedelta_get_baseurl(HyPackageDelta delta)
     return delta->baseurl;
 }
 
-unsigned long long
+guint64
 hy_packagedelta_get_downloadsize(HyPackageDelta delta)
 {
     return delta->downloadsize;

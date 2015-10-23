@@ -55,15 +55,15 @@ const char *hy_package_get_packager(HyPackage pkg);
 const char *hy_package_get_reponame(HyPackage pkg);
 const char *hy_package_get_summary(HyPackage pkg);
 const char *hy_package_get_url(HyPackage pkg);
-unsigned long long hy_package_get_downloadsize(HyPackage pkg);
-unsigned long long hy_package_get_epoch(HyPackage pkg);
-unsigned long long hy_package_get_hdr_end(HyPackage pkg);
-unsigned long long hy_package_get_installsize(HyPackage pkg);
-unsigned long long hy_package_get_medianr(HyPackage pkg);
-unsigned long long hy_package_get_rpmdbid(HyPackage pkg);
-unsigned long long hy_package_get_size(HyPackage pkg);
-unsigned long long hy_package_get_buildtime(HyPackage pkg);
-unsigned long long hy_package_get_installtime(HyPackage pkg);
+guint64 hy_package_get_downloadsize(HyPackage pkg);
+guint64 hy_package_get_epoch(HyPackage pkg);
+guint64 hy_package_get_hdr_end(HyPackage pkg);
+guint64 hy_package_get_installsize(HyPackage pkg);
+guint64 hy_package_get_medianr(HyPackage pkg);
+guint64 hy_package_get_rpmdbid(HyPackage pkg);
+guint64 hy_package_get_size(HyPackage pkg);
+guint64 hy_package_get_buildtime(HyPackage pkg);
+guint64 hy_package_get_installtime(HyPackage pkg);
 
 HyReldepList hy_package_get_conflicts(HyPackage pkg);
 HyReldepList hy_package_get_enhances(HyPackage pkg);
@@ -83,7 +83,7 @@ void hy_package_set_userdata(HyPackage pkg, void *userdata, HyUserdataDestroy de
 HyPackageDelta hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr);
 const char *hy_packagedelta_get_location(HyPackageDelta delta);
 const char *hy_packagedelta_get_baseurl(HyPackageDelta delta);
-unsigned long long hy_packagedelta_get_downloadsize(HyPackageDelta delta);
+guint64 hy_packagedelta_get_downloadsize(HyPackageDelta delta);
 const unsigned char *hy_packagedelta_get_chksum(HyPackageDelta delta, int *type);
 void hy_packagedelta_free(HyPackageDelta delta);
 
