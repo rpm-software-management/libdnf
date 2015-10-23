@@ -25,6 +25,6 @@
 
 extern PyTypeObject packageDelta_Type;
 
-PyObject *packageDeltaToPyObject(HyPackageDelta delta);
+PyObject *packageDeltaToPyObject(HifPackageDelta *delta);
 
 #endif // PACKAGEDELTA_PY_H

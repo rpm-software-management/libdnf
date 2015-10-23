@@ -25,12 +25,12 @@
 #include <solv/evr.h>
 #include <solv/pool.h>
 #include <solv/repo.h>
-#include <solv/util.h>
 
 // hawkey
 #include "hif-advisory-private.h"
 #include "hy-iutil.h"
 #include "hy-sack-private.h"
+#include "hif-packagedelta-private.h"
 #include "hy-package-private.h"
 #include "hy-reldep-private.h"
 #include "hy-repo-private.h"
@@ -100,12 +100,6 @@ package_from_solvable(HySack sack, Solvable *s)
 
     Id p = s - s->repo->pool->solvables;
     return package_create(sack, p);
-}
-
-HyPackageDelta
-delta_create(void) {
-    HyPackageDelta delta = g_malloc0(sizeof(*delta));
-    return delta;
 }
 
 /* public */
@@ -484,15 +478,13 @@ hy_package_get_advisories(HyPackage pkg, int cmp_type)
     return advisorylist;
 }
 
-HyPackageDelta
+HifPackageDelta *
 hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr)
 {
     Pool *pool = package_pool(pkg);
     Solvable *s = get_solvable(pkg);
-    HyPackageDelta delta = NULL;
+    HifPackageDelta *delta = NULL;
     Dataiterator di;
-    Id checksum_type;
-    const unsigned char *checksum;
     const char *name = hy_package_get_name(pkg);
 
     dataiterator_init(&di, pool, s->repo, SOLVID_META, DELTA_PACKAGE_NAME, name,
@@ -508,55 +500,12 @@ hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr)
         if (strcmp(base_evr, from_evr))
             continue;
 
-        // we have the right delta info, set up HyPackageDelta and break out:
-        delta = delta_create();
-        delta->location = g_strdup(pool_lookup_deltalocation(pool, SOLVID_POS, 0));
-        delta->baseurl = g_strdup(pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_BASE));
-        delta->downloadsize = pool_lookup_num(pool, SOLVID_POS, DELTA_DOWNLOADSIZE, 0);
-        checksum = pool_lookup_bin_checksum(pool, SOLVID_POS, DELTA_CHECKSUM, &checksum_type);
-        if (checksum) {
-            delta->checksum_type = checksumt_l2h(checksum_type);
-            delta->checksum = solv_memdup((void*)checksum, checksum_type2length(delta->checksum_type));
-        }
+        // we have the right delta info, set up HifPackageDelta *and break out:
+        delta = hif_packagedelta_new(pool);
 
         break;
     }
     dataiterator_free(&di);
 
     return delta;
-}
-
-const char *
-hy_packagedelta_get_location(HyPackageDelta delta)
-{
-    return delta->location;
-}
-
-const char *
-hy_packagedelta_get_baseurl(HyPackageDelta delta)
-{
-    return delta->baseurl;
-}
-
-guint64
-hy_packagedelta_get_downloadsize(HyPackageDelta delta)
-{
-    return delta->downloadsize;
-}
-
-const unsigned char *
-hy_packagedelta_get_chksum(HyPackageDelta delta, int *type)
-{
-    if (type)
-        *type = delta->checksum_type;
-    return delta->checksum;
-}
-
-void
-hy_packagedelta_free(HyPackageDelta delta)
-{
-    g_free(delta->location);
-    g_free(delta->baseurl);
-    g_free(delta->checksum);
-    g_free(delta);
 }

@@ -31,11 +31,11 @@
 
 typedef struct {
     PyObject_HEAD
-    HyPackageDelta delta;
+    HifPackageDelta *delta;
 } _PackageDeltaObject;
 
 PyObject *
-packageDeltaToPyObject(HyPackageDelta delta)
+packageDeltaToPyObject(HifPackageDelta *delta)
 {
     _PackageDeltaObject *self = PyObject_New(_PackageDeltaObject, &packageDelta_Type);
     self->delta = delta;
@@ -47,7 +47,7 @@ packageDeltaToPyObject(HyPackageDelta delta)
 static void
 packageDelta_dealloc(_PackageDeltaObject *self)
 {
-    hy_packagedelta_free(self->delta);
+    g_object_unref(self->delta);
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -56,10 +56,10 @@ packageDelta_dealloc(_PackageDeltaObject *self)
 static PyObject *
 get_str(_PackageDeltaObject *self, void *closure)
 {
-    const char *(*func)(HyPackageDelta);
+    const char *(*func)(HifPackageDelta *);
     const char *cstr;
 
-    func = (const char *(*)(HyPackageDelta))closure;
+    func = (const char *(*)(HifPackageDelta *))closure;
     cstr = func(self->delta);
     if (cstr == NULL)
         Py_RETURN_NONE;
@@ -69,19 +69,19 @@ get_str(_PackageDeltaObject *self, void *closure)
 static PyObject *
 get_num(_PackageDeltaObject *self, void *closure)
 {
-    guint64 (*func)(HyPackageDelta);
-    func = (guint64 (*)(HyPackageDelta))closure;
+    guint64 (*func)(HifPackageDelta *);
+    func = (guint64 (*)(HifPackageDelta *))closure;
     return PyLong_FromUnsignedLongLong(func(self->delta));
 }
 
 static PyObject *
 get_chksum(_PackageDeltaObject *self, void *closure)
 {
-    HyChecksum *(*func)(HyPackageDelta, int *);
+    HyChecksum *(*func)(HifPackageDelta *, int *);
     int type;
     HyChecksum *cs;
 
-    func = (HyChecksum *(*)(HyPackageDelta, int *))closure;
+    func = (HyChecksum *(*)(HifPackageDelta *, int *))closure;
     cs = func(self->delta, &type);
     if (cs == 0) {
         PyErr_SetString(PyExc_AttributeError, "No such checksum.");
@@ -102,13 +102,13 @@ get_chksum(_PackageDeltaObject *self, void *closure)
 
 static PyGetSetDef packageDelta_getsetters[] = {
     {"location", (getter)get_str, NULL, NULL,
-     (void *)hy_packagedelta_get_location},
+     (void *)hif_packagedelta_get_location},
     {"baseurl", (getter)get_str, NULL, NULL,
-     (void *)hy_packagedelta_get_baseurl},
+     (void *)hif_packagedelta_get_baseurl},
     {"downloadsize", (getter)get_num, NULL, NULL,
-     (void *)hy_packagedelta_get_downloadsize},
+     (void *)hif_packagedelta_get_downloadsize},
     {"chksum", (getter)get_chksum, NULL, NULL,
-    (void *)hy_packagedelta_get_chksum},
+    (void *)hif_packagedelta_get_chksum},
     {NULL}                        /* sentinel */
 };
 

@@ -1,6 +1,7 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2012-2014 Red Hat, Inc.
+ * Copyright (C) 2015 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -19,31 +20,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef __LIBHIF_H
-#define __LIBHIF_H
+#if !defined (__LIBHIF_H) && !defined (HIF_COMPILATION)
+#error "Only <libhif.h> can be included directly."
+#endif
 
-#define __LIBHIF_H_INSIDE__
+#ifndef __HIF_PACKAGEDELTA_PRIVATE_H
+#define __HIF_PACKAGEDELTA_PRIVATE_H
 
-#include <hif-advisory.h>
-#include <hif-advisorypkg.h>
-#include <hif-advisoryref.h>
-#include <hif-context.h>
-#include <hif-db.h>
-#include <hif-goal.h>
-#include <hif-keyring.h>
-#include <hif-lock.h>
-#include <hif-package.h>
 #include <hif-packagedelta.h>
-#include <hif-repos.h>
-#include <hif-rpmts.h>
-#include <hif-sack.h>
-#include <hif-source.h>
-#include <hif-state.h>
-#include <hif-transaction.h>
-#include <hif-types.h>
-#include <hif-utils.h>
-#include <hif-version.h>
 
-#undef __LIBHIF_H_INSIDE__
+G_BEGIN_DECLS
 
-#endif /* __LIBHIF_H */
+HifPackageDelta *hif_packagedelta_new                  (Pool *pool);
+
+G_END_DECLS
+
+#endif /* __HIF_PACKAGEDELTA_PRIVATE_H */
