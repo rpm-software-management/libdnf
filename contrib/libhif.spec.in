@@ -17,6 +17,10 @@ BuildRequires: libsolv-devel
 BuildRequires: rpm-devel >= 4.11.0
 BuildRequires: librepo-devel >= 1.7.11
 BuildRequires: libsolv-devel
+BuildRequires: libsolv-devel >= %{libsolv_version}
+BuildRequires: check-devel
+BuildRequires: valgrind
+BuildRequires: python3-devel
 
 %description
 This library provides a simple interface to hawkey and librepo and is currently
@@ -28,6 +32,15 @@ Requires: %{name}%{?_isa} = %{version}-%{release}
 
 %description devel
 GLib headers and libraries for libhif.
+
+%package python3
+Summary: Legacy python3 binding for libhif
+Obsoletes: python3-hawkey <= 0.6.1-3
+Provides: python3-hawkey
+Requires: %{name}%{?_isa} = %{version}-%{release}
+
+%description python3
+Legacy python3 binding for libhif -- use GObjectIntrospection for new code.
 
 %prep
 %setup -q -n libhif-%{version}
@@ -45,6 +58,9 @@ make %{?_smp_mflags}
 make install DESTDIR=$RPM_BUILD_ROOT
 
 rm -f $RPM_BUILD_ROOT%{_libdir}/libhif*.la
+rm -f $RPM_BUILD_ROOT%{python3_sitearch}/_hawkey.la
+
+rm -rf $RPM_BUILD_ROOT%{python3_sitelib}/hawkey/__pycache__
 
 %post -p /sbin/ldconfig
 
@@ -54,6 +70,10 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/libhif*.la
 %doc README.md AUTHORS NEWS COPYING
 %{_libdir}/libhif.so.2*
 %{_libdir}/girepository-1.0/*.typelib
+
+%files python3
+%{python3_sitelib}/hawkey
+%{python3_sitearch}/_hawkey.so
 
 %files devel
 %{_libdir}/libhif.so
