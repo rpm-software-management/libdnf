@@ -125,7 +125,7 @@ HyRepo
 hy_repo_create(const char *name)
 {
     assert(name);
-    HyRepo repo = solv_calloc(1, sizeof(*repo));
+    HyRepo repo = g_malloc0(sizeof(*repo));
     repo->nrefs = 1;
     hy_repo_set_string(repo, HY_REPO_NAME, name);
     return repo;
@@ -165,27 +165,27 @@ hy_repo_set_string(HyRepo repo, int which, const char *str_val)
     switch (which) {
     case HY_REPO_NAME:
         g_free(repo->name);
-        repo->name = solv_strdup(str_val);
+        repo->name = g_strdup(str_val);
         break;
     case HY_REPO_MD_FN:
         g_free(repo->repomd_fn);
-        repo->repomd_fn = solv_strdup(str_val);
+        repo->repomd_fn = g_strdup(str_val);
         break;
     case HY_REPO_PRIMARY_FN:
         g_free(repo->primary_fn);
-        repo->primary_fn = solv_strdup(str_val);
+        repo->primary_fn = g_strdup(str_val);
         break;
     case HY_REPO_FILELISTS_FN:
         g_free(repo->filelists_fn);
-        repo->filelists_fn = solv_strdup(str_val);
+        repo->filelists_fn = g_strdup(str_val);
         break;
     case HY_REPO_PRESTO_FN:
         g_free(repo->presto_fn);
-        repo->presto_fn = solv_strdup(str_val);
+        repo->presto_fn = g_strdup(str_val);
         break;
     case HY_REPO_UPDATEINFO_FN:
         g_free(repo->updateinfo_fn);
-        repo->updateinfo_fn = solv_strdup(str_val);
+        repo->updateinfo_fn = g_strdup(str_val);
         break;
     default:
         assert(0);

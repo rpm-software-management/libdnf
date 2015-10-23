@@ -100,7 +100,7 @@ hy_chksum_str(const unsigned char *chksum, int type)
     int length = checksum_type2length(type);
     if (length==-1)
         return NULL;
-    char *s = solv_malloc(2 * length + 1);
+    char *s = g_malloc(2 * length + 1);
     solv_bin2hex(chksum, length, s);
 
     return s;
@@ -140,7 +140,7 @@ hy_detect_arch(char **arch)
     else if (!strcmp(un.machine, "mips64"))
         strcpy(un.machine, "mips64el");
 #endif
-    *arch = solv_strdup(un.machine);
+    *arch = g_strdup(un.machine);
     return 0;
 }
 
@@ -176,9 +176,9 @@ hy_split_nevra(const char *nevra, char **name, long int *epoch,
     if (c == nevra)
         return HIF_ERROR_INTERNAL_ERROR;
 
-    *arch = solv_strdup(m3+1);
-    *name = hy_strndup(nevra, (m1 - nevra));
-    *release = hy_strndup(m2 + 1, (m3 - m2 - 1));
+    *arch = g_strdup(m3+1);
+    *name = g_strndup(nevra, (m1 - nevra));
+    *release = g_strndup(m2 + 1, (m3 - m2 - 1));
 
     char *endptr;
     long int converted;
@@ -186,10 +186,10 @@ hy_split_nevra(const char *nevra, char **name, long int *epoch,
     converted = strtol(m1 + 1, &endptr, 10);
     if (!errno && *endptr == ':') {
         *epoch = converted;
-        *version = hy_strndup(endptr + 1, (m2 - endptr - 1));
+        *version = g_strndup(endptr + 1, (m2 - endptr - 1));
     } else {
         *epoch = 0;
-        *version = hy_strndup(m1 + 1, (m2 - m1 - 1));
+        *version = g_strndup(m1 + 1, (m2 - m1 - 1));
     }
 
     return 0;

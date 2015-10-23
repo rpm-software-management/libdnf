@@ -42,7 +42,7 @@ struct _HyReldepList {
 HyReldep
 reldep_create(Pool *pool, Id r_id)
 {
-    HyReldep reldep = solv_calloc(1, sizeof(*reldep));
+    HyReldep reldep = g_malloc0(sizeof(*reldep));
     reldep->pool = pool;
     reldep->r_id = r_id;
     return reldep;
@@ -57,7 +57,7 @@ reldep_id(HyReldep reldep)
 HyReldepList
 reldeplist_from_queue(Pool *pool, Queue h)
 {
-    HyReldepList reldeplist = solv_calloc(1, sizeof(*reldeplist));
+    HyReldepList reldeplist = g_malloc0(sizeof(*reldeplist));
     reldeplist->pool = pool;
     queue_init_clone(&reldeplist->queue, &h);
     return reldeplist;
@@ -104,13 +104,13 @@ char
 *hy_reldep_str(HyReldep reldep)
 {
     const char *str = pool_dep2str(reldep->pool, reldep->r_id);
-    return solv_strdup(str);
+    return g_strdup(str);
 }
 
 HyReldepList
 hy_reldeplist_create(HySack sack)
 {
-    HyReldepList reldeplist = solv_calloc(1, sizeof(*reldeplist));
+    HyReldepList reldeplist = g_malloc0(sizeof(*reldeplist));
     reldeplist->pool = sack_pool(sack);
     queue_init(&reldeplist->queue);
     return reldeplist;

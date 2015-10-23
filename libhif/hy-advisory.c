@@ -53,7 +53,7 @@ advisory_id(HyAdvisory advisory)
 HyAdvisory
 advisory_create(Pool *pool, Id a_id)
 {
-    HyAdvisory advisory = solv_calloc(1, sizeof(*advisory));
+    HyAdvisory advisory = g_malloc0(sizeof(*advisory));
     advisory->pool = pool;
     advisory->a_id = a_id;
     return advisory;
@@ -68,7 +68,7 @@ advisory_identical(HyAdvisory left, HyAdvisory right)
 HyAdvisoryList
 advisorylist_create(Pool *pool)
 {
-    HyAdvisoryList advisorylist = solv_calloc(1, sizeof(*advisorylist));
+    HyAdvisoryList advisorylist = g_malloc0(sizeof(*advisorylist));
     advisorylist->pool = pool;
     queue_init(&advisorylist->queue);
     return advisorylist;

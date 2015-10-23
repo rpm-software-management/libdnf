@@ -42,7 +42,7 @@ struct _HyAdvisoryPkgList {
 HyAdvisoryPkg
 advisorypkg_create(void)
 {
-    HyAdvisoryPkg pkg = solv_calloc(1, sizeof(*pkg));
+    HyAdvisoryPkg pkg = g_malloc0(sizeof(*pkg));
     return pkg;
 }
 
@@ -68,7 +68,7 @@ advisorypkg_set_string(HyAdvisoryPkg advisorypkg, int which, const char* str_val
 {
     char** attr = get_string(advisorypkg, which);
     g_free(*attr);
-    *attr = solv_strdup(str_val);
+    *attr = g_strdup(str_val);
 }
 
 HyAdvisoryPkg
@@ -99,7 +99,7 @@ advisorypkg_identical(HyAdvisoryPkg left, HyAdvisoryPkg right)
 HyAdvisoryPkgList
 advisorypkglist_create()
 {
-    HyAdvisoryPkgList pkglist = solv_calloc(1, sizeof(*pkglist));
+    HyAdvisoryPkgList pkglist = g_malloc0(sizeof(*pkglist));
     pkglist->npkgs = 0;
     pkglist->pkgs = solv_extend(
         0, pkglist->npkgs, 0, sizeof(HyAdvisoryPkg), PACKAGE_BLOCK);

@@ -85,7 +85,7 @@ subject_init(_SubjectObject *self, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTuple(args, "O", &py_pattern))
         return -1;
     const char * pattern = pycomp_get_string(py_pattern, &tmp_py_str);
-    self->pattern = solv_strdup(pattern);
+    self->pattern = g_strdup(pattern);
     Py_XDECREF(tmp_py_str);
     return 0;
 }
@@ -113,7 +113,7 @@ forms_from_list(PyObject *list)
 static HyForm *
 forms_from_int(PyObject *num)
 {
-    HyForm *forms = solv_calloc(2, sizeof(HyForm));
+    HyForm *forms = g_new0(HyForm, 2);
     forms[0] = PyLong_AsLong(num);
     forms[1] = -1;
     return forms;

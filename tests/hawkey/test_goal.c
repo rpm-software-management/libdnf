@@ -1009,7 +1009,7 @@ struct Solutions {
 static struct Solutions *
 solutions_create(void)
 {
-    struct Solutions *solutions = solv_calloc(1, sizeof(struct Solutions));
+    struct Solutions *solutions = g_malloc0(sizeof(struct Solutions));
     solutions->installs = hy_packagelist_create();
     return solutions;
 }

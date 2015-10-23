@@ -59,7 +59,6 @@ char *this_username(void);
 unsigned count_nullt_array(const char **a);
 char *read_whole_file(const char *path);
 char *pool_tmpdup(Pool *pool, const char *s);
-char *hy_strndup(const char *s, size_t n);
 Id running_kernel(HySack sack);
 
 /* libsolv utils */

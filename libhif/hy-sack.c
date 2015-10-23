@@ -129,7 +129,7 @@ sack_recompute_considered(HySack sack)
     if (!pool->considered) {
         if (!sack->repo_excludes && !sack->pkg_excludes)
             return;
-        pool->considered = solv_calloc(1, sizeof(Map));
+        pool->considered = g_malloc0(sizeof(Map));
         map_init(pool->considered, pool->nsolvables);
     } else
         map_grow(pool->considered, pool->nsolvables);
@@ -648,7 +648,7 @@ HySack
 hy_sack_create(const char *cache_path, const char *arch, const char *rootdir,
                const char* log_file, int flags, GError **error)
 {
-    HySack sack = solv_calloc(1, sizeof(*sack));
+    HySack sack = g_malloc0(sizeof(*sack));
     Pool *pool = pool_create();
 
     pool_set_rootdir(pool, rootdir);
@@ -658,18 +658,18 @@ hy_sack_create(const char *cache_path, const char *arch, const char *rootdir,
     sack->considered_uptodate = 1;
     sack->cmdline_repo_created = 0;
     if (log_file)
-        sack->log_file = solv_strdup(log_file);
+        sack->log_file = g_strdup(log_file);
 
     if (cache_path != NULL) {
-        sack->cache_dir = solv_strdup(cache_path);
+        sack->cache_dir = g_strdup(cache_path);
     } else if (geteuid()) {
         char *username = this_username();
         char *path = pool_tmpjoin(pool, DEFAULT_CACHE_USER, "-", username);
         path = pool_tmpappend(pool, path, "-", "XXXXXX");
-        sack->cache_dir = solv_strdup(path);
+        sack->cache_dir = g_strdup(path);
         g_free(username);
     } else
-        sack->cache_dir = solv_strdup(DEFAULT_CACHE_ROOT);
+        sack->cache_dir = g_strdup(DEFAULT_CACHE_ROOT);
 
     int ret;
     if (flags & HY_MAKE_CACHE_DIR) {
@@ -864,7 +864,7 @@ hy_sack_add_excludes(HySack sack, HyPackageSet pset)
     Map *nexcl = packageset_get_map(pset);
 
     if (excl == NULL) {
-        excl = solv_calloc(1, sizeof(Map));
+        excl = g_malloc0(sizeof(Map));
         map_init(excl, pool->nsolvables);
         sack->pkg_excludes = excl;
     }
@@ -881,7 +881,7 @@ hy_sack_add_includes(HySack sack, HyPackageSet pset)
     Map *nincl = packageset_get_map(pset);
 
     if (incl == NULL) {
-        incl = solv_calloc(1, sizeof(Map));
+        incl = g_malloc0(sizeof(Map));
         map_init(incl, pool->nsolvables);
         sack->pkg_includes = incl;
     }
@@ -898,7 +898,7 @@ hy_sack_set_excludes(HySack sack, HyPackageSet pset)
     if (pset) {
         Map *nexcl = packageset_get_map(pset);
 
-        sack->pkg_excludes = solv_calloc(1, sizeof(Map));
+        sack->pkg_excludes = g_malloc0(sizeof(Map));
         map_init_clone(sack->pkg_excludes, nexcl);
     }
     sack->considered_uptodate = 0;
@@ -912,7 +912,7 @@ hy_sack_set_includes(HySack sack, HyPackageSet pset)
     if (pset) {
         Map *nincl = packageset_get_map(pset);
 
-        sack->pkg_includes = solv_calloc(1, sizeof(Map));
+        sack->pkg_includes = g_malloc0(sizeof(Map));
         map_init_clone(sack->pkg_includes, nincl);
     }
     sack->considered_uptodate = 0;
@@ -928,7 +928,7 @@ hy_sack_repo_enabled(HySack sack, const char *reponame, int enabled)
     if (repo == NULL)
         return HIF_ERROR_INTERNAL_ERROR;
     if (excl == NULL) {
-        excl = solv_calloc(1, sizeof(Map));
+        excl = g_malloc0(sizeof(Map));
         map_init(excl, pool->nsolvables);
         sack->repo_excludes = excl;
     }
@@ -1228,7 +1228,7 @@ sack_log(HySack sack, int level, const char *format, ...)
 int
 sack_knows(HySack sack, const char *name, const char *version, int flags)
 {
-    Queue *q = solv_malloc(sizeof(*q));
+    Queue *q = g_malloc(sizeof(*q));
     int ret;
     int name_only = flags & HY_NAME_ONLY;
 

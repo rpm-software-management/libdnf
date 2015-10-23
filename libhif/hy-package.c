@@ -85,7 +85,7 @@ package_create(HySack sack, Id id)
 {
     HyPackage pkg;
 
-    pkg = solv_calloc(1, sizeof(*pkg));
+    pkg = g_malloc0(sizeof(*pkg));
     pkg->nrefs = 1;
     pkg->sack = sack;
     pkg->id = id;
@@ -104,7 +104,7 @@ package_from_solvable(HySack sack, Solvable *s)
 
 HyPackageDelta
 delta_create(void) {
-    HyPackageDelta delta = solv_calloc(1, sizeof(*delta));
+    HyPackageDelta delta = g_malloc0(sizeof(*delta));
     return delta;
 }
 
@@ -194,7 +194,7 @@ hy_package_get_location(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
     repo_internalize_trigger(s->repo);
-    return solv_strdup(solvable_get_location(s, NULL));
+    return g_strdup(solvable_get_location(s, NULL));
 }
 
 const char *
@@ -208,14 +208,14 @@ char *
 hy_package_get_nevra(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
-    return solv_strdup(pool_solvable2str(package_pool(pkg), s));
+    return g_strdup(pool_solvable2str(package_pool(pkg), s));
 }
 
 char *
 hy_package_get_sourcerpm(HyPackage pkg)
 {
     Solvable *s = get_solvable(pkg);
-    return solv_strdup(solvable_lookup_sourcepkg(s));
+    return g_strdup(solvable_lookup_sourcepkg(s));
 }
 
 char *
@@ -224,7 +224,7 @@ hy_package_get_version(HyPackage pkg)
     char *e, *v, *r;
 
     pool_split_evr(package_pool(pkg), hy_package_get_evr(pkg), &e, &v, &r);
-    return solv_strdup(v);
+    return g_strdup(v);
 }
 
 char *
@@ -233,7 +233,7 @@ hy_package_get_release(HyPackage pkg)
     char *e, *v, *r;
 
     pool_split_evr(package_pool(pkg), hy_package_get_evr(pkg), &e, &v, &r);
-    return solv_strdup(r);
+    return g_strdup(r);
 }
 
 const char*
@@ -511,8 +511,8 @@ hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr)
 
         // we have the right delta info, set up HyPackageDelta and break out:
         delta = delta_create();
-        delta->location = solv_strdup(pool_lookup_deltalocation(pool, SOLVID_POS, 0));
-        delta->baseurl = solv_strdup(pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_BASE));
+        delta->location = g_strdup(pool_lookup_deltalocation(pool, SOLVID_POS, 0));
+        delta->baseurl = g_strdup(pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_BASE));
         delta->downloadsize = pool_lookup_num(pool, SOLVID_POS, DELTA_DOWNLOADSIZE, 0);
         checksum = pool_lookup_bin_checksum(pool, SOLVID_POS, DELTA_CHECKSUM, &checksum_type);
         if (checksum) {

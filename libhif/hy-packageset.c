@@ -110,7 +110,7 @@ map_count(Map *m)
 HyPackageSet
 packageset_from_bitmap(HySack sack, Map *m)
 {
-    HyPackageSet pset = solv_calloc(1, sizeof(*pset));
+    HyPackageSet pset = g_malloc0(sizeof(*pset));
     pset->sack = sack;
     map_init_clone(&pset->map, m);
     return pset;
@@ -125,7 +125,7 @@ packageset_get_map(HyPackageSet pset)
 HyPackageSet
 hy_packageset_create(HySack sack)
 {
-    HyPackageSet pset = solv_calloc(1, sizeof(*pset));
+    HyPackageSet pset = g_malloc0(sizeof(*pset));
     pset->sack = sack;
     map_init(&pset->map, sack_pool(sack)->nsolvables);
     return pset;
@@ -134,7 +134,7 @@ hy_packageset_create(HySack sack)
 HyPackageSet
 hy_packageset_clone(HyPackageSet pset)
 {
-    HyPackageSet new = solv_malloc(sizeof(*new));
+    HyPackageSet new = g_malloc(sizeof(*new));
     memcpy(new, pset, sizeof(*pset));
     map_init_clone(&new->map, &pset->map);
     return new;

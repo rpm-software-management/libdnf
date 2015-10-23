@@ -74,7 +74,7 @@ glob_for_cachedir(char *path)
         return ret;
 
     wordexp_t word_vector;
-    char *p = solv_strdup(path);
+    char *p = g_strdup(path);
     const int len = strlen(p);
     struct stat s;
 
@@ -229,7 +229,7 @@ abspath(const char *path)
         return NULL;
 
     if (path[0] == '/')
-        return solv_strdup(path);
+        return g_strdup(path);
 
     char cwd[PATH_MAX];
     if (!getcwd(cwd, PATH_MAX)) {
@@ -271,7 +271,7 @@ mkcachedir(char *path)
     if (len < 1 || path[0] != '/')
         return 1; // only absolute pathnames are accepted
 
-    char *p = solv_strdup(path);
+    char *p = g_strdup(path);
 
     if (p[len-1] == '/')
         p[len-1] = '\0';
@@ -319,7 +319,7 @@ char *
 this_username(void)
 {
     const struct passwd *pw = getpwuid(getuid());
-    return solv_strdup(pw->pw_name);
+    return g_strdup(pw->pw_name);
 }
 
 unsigned
@@ -344,19 +344,6 @@ pool_tmpdup(Pool *pool, const char *s)
 {
     char *dup = pool_alloctmpspace(pool, strlen(s) + 1);
     return strcpy(dup, s);
-}
-
-/* can go once there is solv_strndup() */
-char *
-hy_strndup(const char *s, size_t n)
-{
-  if (!s)
-    return 0;
-
-  char *r = strndup(s, n);
-  if (!r)
-    solv_oom(0, n);
-  return r;
 }
 
 Id
@@ -652,7 +639,7 @@ copy_str_from_subexpr(char** target, const char* source,
     int subexpr_len = matches[i].rm_eo - matches[i].rm_so;
     if (subexpr_len == 0)
         return -1;
-    *target = solv_malloc(sizeof(char*) * (subexpr_len + 1));
+    *target = g_malloc(sizeof(char*) * (subexpr_len + 1));
     strncpy(*target, &(source[matches[i].rm_so]), subexpr_len);
     (*target)[subexpr_len] = '\0';
     return 0;

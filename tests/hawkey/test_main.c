@@ -41,8 +41,8 @@ init_test_globals(struct TestGlobals_s *tg, const char *repo_dir)
     if (repo_dir[len -1] != '/')
         tg->repo_dir = solv_dupjoin(repo_dir, "/", NULL);
     else
-        tg->repo_dir = solv_strdup(repo_dir);
-    tg->tmpdir = solv_strdup(UNITTEST_DIR);
+        tg->repo_dir = g_strdup(repo_dir);
+    tg->tmpdir = g_strdup(UNITTEST_DIR);
     if (mkdtemp(tg->tmpdir) == NULL)
         return 1;
     tg->sack = NULL;

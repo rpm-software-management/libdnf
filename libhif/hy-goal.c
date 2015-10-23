@@ -270,7 +270,7 @@ static Queue *
 construct_job(HyGoal goal, int flags)
 {
     HySack sack = goal->sack;
-    Queue *job = solv_malloc(sizeof(*job));
+    Queue *job = g_malloc(sizeof(*job));
 
     queue_init_clone(job, &goal->staging);
 
@@ -590,7 +590,7 @@ hy_goal_clone(HyGoal goal)
 HyGoal
 hy_goal_create(HySack sack)
 {
-    HyGoal goal = solv_calloc(1, sizeof(*goal));
+    HyGoal goal = g_malloc0(sizeof(*goal));
     goal->sack = sack;
     queue_init(&goal->staging);
     return goal;
@@ -854,7 +854,7 @@ hy_goal_describe_problem(HyGoal goal, unsigned i)
 
     const char *problem = solver_problemruleinfo2str(goal->solv,
                                                      type, source, target, dep);
-    return solv_strdup(problem);
+    return g_strdup(problem);
 }
 
 /**

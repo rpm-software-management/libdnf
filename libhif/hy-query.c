@@ -234,7 +234,7 @@ valid_filter_reldep(int keyname)
 struct _Filter *
 filter_create(int nmatches)
 {
-    struct _Filter *f = solv_calloc(1, sizeof(struct _Filter));
+    struct _Filter *f = g_malloc0(sizeof(struct _Filter));
     filter_reinit(f, nmatches);
     return f;
 }
@@ -259,7 +259,7 @@ filter_reinit(struct _Filter *f, int nmatches)
     g_free(f->matches);
     f->match_type = _HY_VOID;
     if (nmatches > 0)
-        f->matches = solv_calloc(nmatches, sizeof(union _Match *));
+        f->matches = g_malloc0(nmatches * sizeof(union _Match *));
     else
         f->matches = NULL;
     f->nmatches = nmatches;
@@ -789,7 +789,7 @@ init_result(HyQuery q)
     Pool *pool = sack_pool(q->sack);
     Id solvid;
 
-    q->result = solv_calloc(1, sizeof(Map));
+    q->result = g_malloc0(sizeof(Map));
     map_init(q->result, pool->nsolvables);
     FOR_PKG_SOLVABLES(solvid)
         map_set(q->result, solvid);
@@ -908,7 +908,7 @@ hy_query_create(HySack sack)
 HyQuery
 hy_query_create_flags(HySack sack, int flags)
 {
-    HyQuery q = solv_calloc(1, sizeof(*q));
+    HyQuery q = g_malloc0(sizeof(*q));
     q->sack = sack;
     q->flags = flags;
     return q;
@@ -970,7 +970,7 @@ hy_query_clone(HyQuery q)
                 filterp->matches[j].reldep = hy_reldep_clone(reldep);
                 break;
             case _HY_STR:
-                str_copy = solv_strdup(q->filters[i].matches[j].str);
+                str_copy = g_strdup(q->filters[i].matches[j].str);
                 filterp->matches[j].str = str_copy;
                 break;
             default:
@@ -980,7 +980,7 @@ hy_query_clone(HyQuery q)
     }
     assert(qn->nfilters == q->nfilters);
     if (q->result) {
-        qn->result = solv_calloc(1, sizeof(Map));
+        qn->result = g_malloc0(sizeof(Map));
         map_init_clone(qn->result, q->result);
     }
 
@@ -1024,7 +1024,7 @@ hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
         filterp->cmp_type = cmp_type;
         filterp->keyname = keyname;
         filterp->match_type = _HY_STR;
-        filterp->matches[0].str = solv_strdup(match);
+        filterp->matches[0].str = g_strdup(match);
         return 0;
     }
     }
@@ -1056,7 +1056,7 @@ hy_query_filter_in(HyQuery q, int keyname, int cmp_type,
     filterp->keyname = keyname;
     filterp->match_type = _HY_STR;
     for (int i = 0; i < count; ++i)
-        filterp->matches[i].str = solv_strdup(matches[i]);
+        filterp->matches[i].str = g_strdup(matches[i]);
     return 0;
 }
 
