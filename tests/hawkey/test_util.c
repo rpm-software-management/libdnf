@@ -22,7 +22,7 @@
 #include <stdio.h>
 
 // hawkey
-#include <libhif/libhif.h>
+#include "libhif/hif-types.h"
 #include "libhif/hy-util.h"
 #include "test_suites.h"
 
