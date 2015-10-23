@@ -45,7 +45,6 @@
 #include <librepo/librepo.h>
 #include <rpm/rpmts.h>
 
-#include "hif-cleanup.h"
 #include "libhif.h"
 #include "hif-utils.h"
 
@@ -250,7 +249,7 @@ gchar *
 hif_source_get_description(HifSource *source)
 {
     HifSourcePrivate *priv = GET_PRIVATE(source);
-    _cleanup_free_ gchar *tmp;
+    g_autofree gchar *tmp;
 
     /* is DVD */
     if (priv->kind == HIF_SOURCE_KIND_MEDIA) {
@@ -720,15 +719,15 @@ hif_source_set_keyfile_data(HifSource *source, GError **error)
 {
     HifSourcePrivate *priv = GET_PRIVATE(source);
     guint cost;
-    _cleanup_free_ gchar *metalink = NULL;
-    _cleanup_free_ gchar *mirrorlist = NULL;
-    _cleanup_free_ gchar *proxy = NULL;
-    _cleanup_free_ gchar *exclude_string = NULL;
-    _cleanup_free_ gchar *pwd = NULL;
-    _cleanup_free_ gchar *usr = NULL;
-    _cleanup_free_ gchar *usr_pwd = NULL;
-    _cleanup_free_ gchar *usr_pwd_proxy = NULL;
-    _cleanup_strv_free_ gchar **baseurls;
+    g_autofree gchar *metalink = NULL;
+    g_autofree gchar *mirrorlist = NULL;
+    g_autofree gchar *proxy = NULL;
+    g_autofree gchar *exclude_string = NULL;
+    g_autofree gchar *pwd = NULL;
+    g_autofree gchar *usr = NULL;
+    g_autofree gchar *usr_pwd = NULL;
+    g_autofree gchar *usr_pwd_proxy = NULL;
+    g_auto(GStrv) baseurls;
 
     g_debug("setting keyfile data for %s", priv->id);
 
@@ -755,7 +754,7 @@ hif_source_set_keyfile_data(HifSource *source, GError **error)
     /* file:// */
     if (baseurls != NULL && baseurls[0] != NULL &&
         mirrorlist == NULL && metalink == NULL) {
-        _cleanup_free_ gchar *url = NULL;
+        g_autofree gchar *url = NULL;
         url = lr_prepend_url_protocol(baseurls[0]);
         if (url != NULL && strncasecmp(url, "file://", 7) == 0) {
             if (g_strstr_len(url, -1, "$testdatadir") == NULL)
@@ -768,7 +767,7 @@ hif_source_set_keyfile_data(HifSource *source, GError **error)
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_LOCAL, FALSE))
         return FALSE;
     if (priv->location == NULL) {
-        _cleanup_free_ gchar *tmp = NULL;
+        g_autofree gchar *tmp = NULL;
         tmp = g_build_filename(hif_context_get_cache_dir(priv->context),
                     priv->id, NULL);
         hif_source_set_location(source, tmp);
@@ -776,7 +775,7 @@ hif_source_set_keyfile_data(HifSource *source, GError **error)
 
     /* set temp location for remote repos */
     if (priv->kind == HIF_SOURCE_KIND_REMOTE) {
-        _cleanup_string_free_ GString *tmp = NULL;
+        g_autoptr(GString) tmp = NULL;
         tmp = g_string_new(priv->location);
         if (tmp->str[tmp->len - 1] == '/')
             g_string_truncate(tmp, tmp->len - 1);
@@ -844,9 +843,9 @@ gboolean
 hif_source_setup(HifSource *source, GError **error)
 {
     HifSourcePrivate *priv = GET_PRIVATE(source);
-    _cleanup_free_ gchar *basearch = NULL;
-    _cleanup_free_ gchar *release = NULL;
-    _cleanup_free_ gchar *testdatadir = NULL;
+    g_autofree gchar *basearch = NULL;
+    g_autofree gchar *release = NULL;
+    g_autofree gchar *testdatadir = NULL;
 
     basearch = g_key_file_get_string(priv->keyfile, "general", "arch", NULL);
     if (basearch == NULL)
@@ -930,9 +929,9 @@ static gboolean
 hif_source_set_timestamp_modified(HifSource *source, GError **error)
 {
     HifSourcePrivate *priv = GET_PRIVATE(source);
-    _cleanup_free_ gchar *filename;
-    _cleanup_object_unref_ GFile *file;
-    _cleanup_object_unref_ GFileInfo *info;
+    g_autofree gchar *filename;
+    g_autoptr(GFile) file;
+    g_autoptr(GFileInfo) info;
 
     filename = g_build_filename(priv->location, "repodata", "repomd.xml", NULL);
     file = g_file_new_for_path(filename);
@@ -971,7 +970,7 @@ hif_source_check_internal(HifSource *source,
     LrYumRepo *yum_repo;
     const gchar *urls[] = { "", NULL };
     gint64 age_of_data; /* in seconds */
-    _cleanup_error_free_ GError *error_local = NULL;
+    g_autoptr(GError) error_local = NULL;
 
     /* has the media repo vanished? */
     if (priv->kind == HIF_SOURCE_KIND_MEDIA &&
@@ -1281,7 +1280,7 @@ hif_source_update(HifSource *source,
     gboolean ret;
     gint rc;
     gint64 timestamp_new = 0;
-    _cleanup_error_free_ GError *error_local = NULL;
+    g_autoptr(GError) error_local = NULL;
 
     /* cannot change DVD contents */
     if (priv->kind == HIF_SOURCE_KIND_MEDIA) {
@@ -1536,7 +1535,7 @@ gboolean
 hif_source_commit(HifSource *source, GError **error)
 {
     HifSourcePrivate *priv = GET_PRIVATE(source);
-    _cleanup_free_ gchar *data = NULL;
+    g_autofree gchar *data = NULL;
 
     /* cannot change DVD contents */
     if (priv->kind == HIF_SOURCE_KIND_MEDIA) {
@@ -1588,10 +1587,10 @@ hif_source_copy_package(HyPackage pkg,
              HifState *state,
              GError **error)
 {
-    _cleanup_free_ gchar *basename = NULL;
-    _cleanup_free_ gchar *dest = NULL;
-    _cleanup_object_unref_ GFile *file_dest;
-    _cleanup_object_unref_ GFile *file_source;
+    g_autofree gchar *basename = NULL;
+    g_autofree gchar *dest = NULL;
+    g_autoptr(GFile) file_dest;
+    g_autoptr(GFile) file_source;
 
     /* copy the file with progress */
     file_source = g_file_new_for_path(hif_package_get_filename(pkg));
@@ -1664,9 +1663,9 @@ hif_source_download_package(HifSource *source,
     LrPackageTarget *target = NULL;
     GSList *packages = NULL;
     struct DownloadState dlstate = { 0, };
-    _cleanup_error_free_ GError *error_local = NULL;
-    _cleanup_free_ gchar *basename = NULL;
-    _cleanup_free_ gchar *directory_slash = NULL;
+    g_autoptr(GError) error_local = NULL;
+    g_autofree gchar *basename = NULL;
+    g_autofree gchar *directory_slash = NULL;
 
     /* ensure we reset the values from the keyfile */
     if (!hif_source_set_keyfile_data(source, error))
@@ -1738,7 +1737,7 @@ hif_source_download_package(HifSource *source,
             g_clear_error(&error_local);
         } else {
             if (dlstate.last_mirror_failure_message) {
-                _cleanup_free_ gchar *orig_message = error_local->message;
+                g_autofree gchar *orig_message = error_local->message;
                 error_local->message = g_strconcat(orig_message, "; Last error: ", dlstate.last_mirror_failure_message, NULL);
             }
             g_propagate_error(error, error_local);

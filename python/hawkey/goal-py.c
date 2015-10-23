@@ -28,7 +28,6 @@
 
 // hawkey
 #include "hif-types.h"
-#include "hif-cleanup.h"
 #include "hy-goal.h"
 #include "hy-package-private.h"
 #include "hy-packagelist.h"
@@ -290,7 +289,7 @@ install(_GoalObject *self, PyObject *args, PyObject *kwds)
     HySelector sltr = NULL;
     int flags = 0;
     gboolean ret = 0;
-    _cleanup_error_free_ GError *error = NULL;
+    g_autoptr(GError) error = NULL;
     if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, &flags, HY_WEAK_SOLV))
         return NULL;
 
@@ -484,7 +483,7 @@ log_decisions(_GoalObject *self, PyObject *unused)
 static PyObject *
 write_debugdata(_GoalObject *self, PyObject *dir_str)
 {
-    _cleanup_error_free_ GError *error = NULL;
+    g_autoptr(GError) error = NULL;
     PyObject *tmp_py_str = NULL;
     const char *dir = pycomp_get_string(dir_str, &tmp_py_str);
 
@@ -505,7 +504,7 @@ write_debugdata(_GoalObject *self, PyObject *dir_str)
 static PyObject *
 list_generic(_GoalObject *self, HyPackageList (*func)(HyGoal, GError **))
 {
-    _cleanup_error_free_ GError *error = NULL;
+    g_autoptr(GError) error = NULL;
     HyPackageList plist = func(self->goal, &error);
     PyObject *list;
 

@@ -22,7 +22,6 @@
 #include <stdarg.h>
 
 // hawkey
-#include "libhif/hif-cleanup.h"
 #include "libhif/hif-types.h"
 #include "libhif/hy-goal.h"
 #include "libhif/hy-iutil.h"
@@ -165,7 +164,7 @@ END_TEST
 
 START_TEST(test_goal_list_err)
 {
-    _cleanup_error_free_ GError *error = NULL;
+    g_autoptr(GError) error = NULL;
     HyGoal goal = hy_goal_create(test_globals.sack);
     fail_unless(hy_goal_list_installs(goal, &error) == NULL);
     fail_unless(error->code == HIF_ERROR_INTERNAL_ERROR);
@@ -229,7 +228,7 @@ END_TEST
 START_TEST(test_goal_install_selector_err)
 {
     int rc;
-    _cleanup_error_free_ GError *error = NULL;
+    g_autoptr(GError) error = NULL;
     // Test that using the hy_goal_*_selector() methods returns an error for
     // selectors invalid in this context.
 
@@ -577,7 +576,7 @@ END_TEST
 
 START_TEST(test_goal_describe_problem)
 {
-    _cleanup_error_free_ GError *error = NULL;
+    g_autoptr(GError) error = NULL;
     HySack sack = test_globals.sack;
     HyPackage pkg = get_latest_pkg(sack, "hello");
     HyGoal goal = hy_goal_create(sack);
@@ -698,7 +697,7 @@ END_TEST
 
 START_TEST(test_goal_verify)
 {
-    _cleanup_error_free_ GError *error = NULL;
+    g_autoptr(GError) error = NULL;
     HySack sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
 

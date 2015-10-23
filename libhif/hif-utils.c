@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include <glib/gstdio.h>
 
-#include "hif-cleanup.h"
 #include "libhif.h"
 #include "hif-utils.h"
 
@@ -99,8 +98,8 @@ gboolean
 hif_remove_recursive(const gchar *directory, GError **error)
 {
     const gchar *filename;
-    _cleanup_dir_close_ GDir *dir;
-    _cleanup_error_free_ GError *error_local = NULL;
+    g_autoptr(GDir) dir;
+    g_autoptr(GError) error_local = NULL;
 
     /* try to open */
     dir = g_dir_open(directory, 0, &error_local);
@@ -115,7 +114,7 @@ hif_remove_recursive(const gchar *directory, GError **error)
 
     /* find each */
     while ((filename = g_dir_read_name(dir))) {
-        _cleanup_free_ gchar *src = NULL;
+        g_autofree gchar *src = NULL;
         src = g_build_filename(directory, filename, NULL);
         if (g_file_test(src, G_FILE_TEST_IS_DIR)) {
             if (!hif_remove_recursive(src, error))

@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "hif-cleanup.h"
 #include "libhif.h"
 #include "hif-utils.h"
 
@@ -86,7 +85,7 @@ hif_cmd_add(GPtrArray *array,
 {
     guint i;
     HifUtilItem *item;
-    _cleanup_strv_free_ gchar **names = NULL;
+    g_auto(GStrv) names = NULL;
 
     g_return_if_fail(name != NULL);
     g_return_if_fail(description != NULL);
@@ -163,7 +162,7 @@ hif_cmd_run(HifUtilPrivate *priv, const gchar *command, gchar **values, GError *
 {
     guint i;
     HifUtilItem *item;
-    _cleanup_string_free_ GString *string = NULL;
+    g_autoptr(GString) string = NULL;
 
     /* find command */
     for (i = 0; i < priv->cmd_array->len; i++) {
@@ -284,7 +283,7 @@ hif_cmd_refresh_source(HifUtilPrivate *priv, HifSource *src, HifState *state, GE
     HifState *state_local;
     gboolean ret;
     guint cache_age;
-    _cleanup_error_free_ GError *error_local = NULL;
+    g_autoptr(GError) error_local = NULL;
 
     /* set steps */
     if (!hif_state_set_steps(state, error, 50, 50, -1))
@@ -437,9 +436,9 @@ main(int argc, char *argv[])
     gboolean version = FALSE;
     gboolean opt_disable_yumdb = FALSE;
     guint retval = 1;
-    _cleanup_free_ gchar *opt_root = NULL;
-    _cleanup_free_ gchar *opt_reposdir = NULL;
-    _cleanup_free_ gchar *opt_cachedir = NULL;
+    g_autofree gchar *opt_root = NULL;
+    g_autofree gchar *opt_reposdir = NULL;
+    g_autofree gchar *opt_cachedir = NULL;
 
     const GOptionEntry options[] = {
         { "reposdir", 0, 0, G_OPTION_ARG_STRING, &opt_reposdir,
@@ -456,9 +455,9 @@ main(int argc, char *argv[])
             "Show version", NULL },
         { NULL}
     };
-    _cleanup_error_free_ GError *error = NULL;
-    _cleanup_free_ gchar *cmd_descriptions = NULL;
-    _cleanup_free_ gchar *filter = NULL;
+    g_autoptr(GError) error = NULL;
+    g_autofree gchar *cmd_descriptions = NULL;
+    g_autofree gchar *filter = NULL;
 
     setlocale(LC_ALL, "");
 
@@ -523,11 +522,11 @@ main(int argc, char *argv[])
         opt_cachedir = g_strdup("/var/cache/PackageKit"); 
 
     {
-        _cleanup_free_ char *metadatadir =
+        g_autofree char *metadatadir =
             g_build_filename(opt_cachedir, "metadata", NULL);
-        _cleanup_free_ char *solvdir =
+        g_autofree char *solvdir =
             g_build_filename(opt_cachedir, "hawkey", NULL);
-        _cleanup_free_ char *lockdir =
+        g_autofree char *lockdir =
             g_build_filename(opt_cachedir, "lock", NULL);
         hif_context_set_cache_dir(priv->context, metadatadir);
         hif_context_set_solv_dir(priv->context, solvdir);
@@ -560,7 +559,7 @@ main(int argc, char *argv[])
     ret = hif_cmd_run(priv, argv[1],(gchar**) &argv[2], &error);
     if (!ret) {
         if (g_error_matches(error, HIF_ERROR, HIF_ERROR_NO_SUCH_CMD)) {
-            _cleanup_free_ gchar *tmp = NULL;
+            g_autofree gchar *tmp = NULL;
             tmp = g_option_context_get_help(priv->option_context, TRUE, NULL);
             g_print("%s", tmp);
         } else {

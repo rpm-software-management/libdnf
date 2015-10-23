@@ -24,7 +24,6 @@
 #include <glib-object.h>
 #include <stdlib.h>
 
-#include "hif-cleanup.h"
 #include "libhif.h"
 #include "hif-utils.h"
 
@@ -797,9 +796,9 @@ hif_repos_func(void)
     HifSource *src;
     HifState *state;
     gboolean ret;
-    _cleanup_free_ gchar *repos_dir = NULL;
-    _cleanup_object_unref_ HifContext *ctx = NULL;
-    _cleanup_object_unref_ HifRepos *repos = NULL;
+    g_autofree gchar *repos_dir = NULL;
+    g_autoptr(HifContext) ctx = NULL;
+    g_autoptr(HifRepos) repos = NULL;
 
     /* set up local context */
     ctx = hif_context_new();
@@ -897,10 +896,10 @@ static void
 hif_repos_gpg_no_pubkey_func(void)
 {
     gboolean ret;
-    _cleanup_error_free_ GError *error = NULL;
-    _cleanup_free_ gchar *repos_dir = NULL;
-    _cleanup_object_unref_ HifContext *ctx = NULL;
-    _cleanup_object_unref_ HifRepos *repos = NULL;
+    g_autoptr(GError) error = NULL;
+    g_autofree gchar *repos_dir = NULL;
+    g_autoptr(HifContext) ctx = NULL;
+    g_autoptr(HifRepos) repos = NULL;
 
     /* set up local context */
     ctx = hif_context_new();
@@ -918,11 +917,11 @@ hif_repos_gpg_no_asc_func(void)
     HifRepos *repos;
     HifSource *src;
     gboolean ret;
-    _cleanup_error_free_ GError *error = NULL;
-    _cleanup_free_ gchar *repos_dir = NULL;
-    _cleanup_object_unref_ HifContext *ctx = NULL;
-    _cleanup_object_unref_ HifState *state = NULL;
-    _cleanup_object_unref_ HifLock *lock = NULL;
+    g_autoptr(GError) error = NULL;
+    g_autofree gchar *repos_dir = NULL;
+    g_autoptr(HifContext) ctx = NULL;
+    g_autoptr(HifState) state = NULL;
+    g_autoptr(HifLock) lock = NULL;
 
     lock = hif_lock_new();
     hif_lock_set_lock_dir(lock, "/tmp");
@@ -972,11 +971,11 @@ hif_repos_gpg_wrong_asc_func(void)
     HifRepos *repos;
     HifSource *src;
     gboolean ret;
-    _cleanup_error_free_ GError *error = NULL;
-    _cleanup_free_ gchar *repos_dir = NULL;
-    _cleanup_object_unref_ HifContext *ctx = NULL;
-    _cleanup_object_unref_ HifState *state = NULL;
-    _cleanup_object_unref_ HifLock *lock = NULL;
+    g_autoptr(GError) error = NULL;
+    g_autofree gchar *repos_dir = NULL;
+    g_autoptr(HifContext) ctx = NULL;
+    g_autoptr(HifState) state = NULL;
+    g_autoptr(HifLock) lock = NULL;
 
     lock = hif_lock_new();
     hif_lock_set_lock_dir(lock, "/tmp");
@@ -1019,11 +1018,11 @@ hif_repos_gpg_asc_func(void)
     HifRepos *repos;
     HifSource *src;
     gboolean ret;
-    _cleanup_error_free_ GError *error = NULL;
-    _cleanup_free_ gchar *repos_dir = NULL;
-    _cleanup_object_unref_ HifContext *ctx = NULL;
-    _cleanup_object_unref_ HifState *state = NULL;
-    _cleanup_object_unref_ HifLock *lock = NULL;
+    g_autoptr(GError) error = NULL;
+    g_autofree gchar *repos_dir = NULL;
+    g_autoptr(HifContext) ctx = NULL;
+    g_autoptr(HifState) state = NULL;
+    g_autoptr(HifLock) lock = NULL;
 
     lock = hif_lock_new();
     hif_lock_set_lock_dir(lock, "/tmp");

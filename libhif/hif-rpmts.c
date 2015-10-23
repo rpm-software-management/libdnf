@@ -39,7 +39,6 @@
 #include <rpm/rpmlog.h>
 #include <rpm/rpmdb.h>
 
-#include "hif-cleanup.h"
 #include "libhif.h"
 #include "hif-utils.h"
 
@@ -261,7 +260,7 @@ hif_rpmts_look_for_problems(rpmts ts, GError **error)
     rpmProblem prob;
     rpmpsi psi;
     rpmps probs = NULL;
-    _cleanup_string_free_ GString *string = NULL;
+    g_autoptr(GString) string = NULL;
 
     /* get a list of problems */
     probs = rpmtsProblems(ts);
@@ -272,7 +271,7 @@ hif_rpmts_look_for_problems(rpmts ts, GError **error)
     string = g_string_new("");
     psi = rpmpsInitIterator(probs);
     while (rpmpsNextIterator(psi) >= 0) {
-        _cleanup_free_ gchar *msg;
+        g_autofree gchar *msg;
         prob = rpmpsGetProblem(psi);
         msg = hif_rpmts_get_problem_str(prob);
         g_string_append(string, msg);
@@ -344,7 +343,7 @@ hif_rpmts_find_package(rpmts ts, HyPackage pkg, GError **error)
     Header hdr = NULL;
     rpmdbMatchIterator iter;
     unsigned int recOffset;
-    _cleanup_string_free_ GString *rpm_error = NULL;
+    g_autoptr(GString) rpm_error = NULL;
 
     /* find package by db-id */
     recOffset = hy_package_get_rpmdbid(pkg);

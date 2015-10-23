@@ -38,7 +38,6 @@
 #include "hy-packagelist.h"
 #include <librepo/librepo.h>
 
-#include "hif-cleanup.h"
 #include "libhif.h"
 #include "hif-utils.h"
 
@@ -870,10 +869,10 @@ hif_context_set_cache_age(HifContext *context, guint cache_age)
 static gboolean
 hif_context_set_os_release(HifContext *context, GError **error)
 {
-    _cleanup_free_ gchar *contents = NULL;
-    _cleanup_free_ gchar *version = NULL;
-    _cleanup_string_free_ GString *str = NULL;
-    _cleanup_keyfile_unref_ GKeyFile *key_file = NULL;
+    g_autofree gchar *contents = NULL;
+    g_autofree gchar *version = NULL;
+    g_autoptr(GString) str = NULL;
+    g_autoptr(GKeyFile) key_file = NULL;
 
     /* make a valid GKeyFile from the .ini data by prepending a header */
     if (!g_file_get_contents("/etc/os-release", &contents, NULL, NULL))
@@ -915,7 +914,7 @@ static gboolean
 have_existing_install(HifContext *context)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
-    _cleanup_free_ gchar *usr_path = g_build_filename(priv->install_root, "usr", NULL);
+    g_autofree gchar *usr_path = g_build_filename(priv->install_root, "usr", NULL);
     return g_file_test(usr_path, G_FILE_TEST_IS_DIR);
 }
 
@@ -939,7 +938,7 @@ hif_context_setup_sack(HifContext *context, HifState *state, GError **error)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
     gboolean ret;
-    _cleanup_free_ gchar *solv_dir_real = NULL;
+    g_autofree gchar *solv_dir_real = NULL;
 
     /* create empty sack */
     solv_dir_real = hif_realpath(priv->solv_dir);
@@ -1008,7 +1007,7 @@ hif_utils_copy_files(const gchar *src, const gchar *dest, GError **error)
 {
     const gchar *tmp;
     gint rc;
-    _cleanup_dir_close_ GDir *dir = NULL;
+    g_autoptr(GDir) dir = NULL;
 
     /* create destination directory */
     rc = g_mkdir_with_parents(dest, 0755);
@@ -1025,16 +1024,16 @@ hif_utils_copy_files(const gchar *src, const gchar *dest, GError **error)
     if (dir == NULL)
         return FALSE;
     while ((tmp = g_dir_read_name(dir)) != NULL) {
-        _cleanup_free_ gchar *path_src = NULL;
-        _cleanup_free_ gchar *path_dest = NULL;
+        g_autofree gchar *path_src = NULL;
+        g_autofree gchar *path_dest = NULL;
         path_src = g_build_filename(src, tmp, NULL);
         path_dest = g_build_filename(dest, tmp, NULL);
         if (g_file_test(path_src, G_FILE_TEST_IS_DIR)) {
             if (!hif_utils_copy_files(path_src, path_dest, error))
                 return FALSE;
         } else {
-            _cleanup_object_unref_ GFile *file_src = NULL;
-            _cleanup_object_unref_ GFile *file_dest = NULL;
+            g_autoptr(GFile) file_src = NULL;
+            g_autoptr(GFile) file_dest = NULL;
             file_src = g_file_new_for_path(path_src);
             file_dest = g_file_new_for_path(path_dest);
             if (!g_file_copy(file_src, file_dest,
@@ -1070,8 +1069,8 @@ hif_context_copy_vendor_cache(HifContext *context, GError **error)
 
     /* test each enabled repo in turn */
     for (i = 0; i < priv->sources->len; i++) {
-        _cleanup_free_ gchar *path = NULL;
-        _cleanup_free_ gchar *path_vendor = NULL;
+        g_autofree gchar *path = NULL;
+        g_autofree gchar *path_vendor = NULL;
         src = g_ptr_array_index(priv->sources, i);
         if (hif_source_get_enabled(src) == HIF_SOURCE_ENABLED_NONE)
             continue;
@@ -1105,7 +1104,7 @@ static gboolean
 hif_context_copy_vendor_solv(HifContext *context, GError **error)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
-    _cleanup_free_ gchar *system_db = NULL;
+    g_autofree gchar *system_db = NULL;
 
     /* not set, or does not exists */
     if (priv->vendor_solv_dir == NULL)
@@ -1220,7 +1219,7 @@ hif_context_setup_enrollments(HifContext *context, GError **error)
 
     for (i = 0; cmds[i] != NULL; i++) {
         int child_argc;
-        _cleanup_strv_free_ gchar **child_argv = NULL;
+        g_auto(GStrv) child_argv = NULL;
         int estatus;
 
         if (!g_shell_parse_argv(cmds[i], &child_argc, &child_argv, error))
@@ -1267,9 +1266,9 @@ hif_context_setup(HifContext *context,
     guint j;
     GHashTableIter hashiter;
     gpointer hashkey, hashval;
-    _cleanup_string_free_ GString *buf = NULL;
-    _cleanup_free_ char *rpmdb_path = NULL;
-    _cleanup_object_unref_ GFile *file_rpmdb = NULL;
+    g_autoptr(GString) buf = NULL;
+    g_autofree char *rpmdb_path = NULL;
+    g_autoptr(GFile) file_rpmdb = NULL;
 
     /* data taken from https://github.com/rpm-software-management/dnf/blob/master/dnf/arch.py */
     const struct {

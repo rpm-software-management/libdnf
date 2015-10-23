@@ -38,7 +38,6 @@
 #include "hy-packagelist.h"
 #include "hy-util.h"
 
-#include "hif-cleanup.h"
 #include "hif-goal.h"
 #include "hif-package.h"
 #include "hif-utils.h"
@@ -53,7 +52,7 @@ hif_goal_depsolve(HyGoal goal, GError **error)
     gint cnt;
     gint j;
     gint rc;
-    _cleanup_string_free_ GString *string = NULL;
+    g_autoptr(GString) string = NULL;
 
     rc = hy_goal_run_flags(goal, HY_ALLOW_UNINSTALL);
     if (rc) {

@@ -28,7 +28,6 @@
 #include <solv/testcase.h>
 
 // hawkey
-#include "libhif/hif-cleanup.h"
 #include "libhif/hif-types.h"
 #include "libhif/hy-package-private.h"
 #include "libhif/hy-repo-private.h"
@@ -49,7 +48,7 @@ END_TEST
 
 START_TEST(test_sack_create)
 {
-    _cleanup_error_free_ GError *error = NULL;
+    g_autoptr(GError) error = NULL;
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
                                  HY_MAKE_CACHE_DIR, NULL);
     fail_if(sack == NULL, NULL);
@@ -96,7 +95,7 @@ END_TEST
 
 START_TEST(test_load_repo_err)
 {
-    _cleanup_error_free_ GError *error = NULL;
+    g_autoptr(GError) error = NULL;
     HySack sack = hy_sack_create(test_globals.tmpdir, NULL, NULL, NULL,
                                  HY_MAKE_CACHE_DIR, &error);
     g_assert(sack != NULL);

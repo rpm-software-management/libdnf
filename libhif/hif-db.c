@@ -42,7 +42,6 @@
 
 #include "config.h"
 
-#include "hif-cleanup.h"
 #include "hif-db.h"
 #include "hif-package.h"
 #include "hif-utils.h"
@@ -97,7 +96,7 @@ hif_db_class_init(HifDbClass *klass)
 static gboolean
 hif_db_create_dir(const gchar *dir, GError **error)
 {
-    _cleanup_object_unref_ GFile *file = NULL;
+    g_autoptr(GFile) file = NULL;
 
     /* already exists */
     if (g_file_test(dir, G_FILE_TEST_IS_DIR))
@@ -160,8 +159,8 @@ gchar *
 hif_db_get_string(HifDb *db, HyPackage package, const gchar *key, GError **error)
 {
     gchar *value = NULL;
-    _cleanup_free_ gchar *filename = NULL;
-    _cleanup_free_ gchar *index_dir = NULL;
+    g_autofree gchar *filename = NULL;
+    g_autofree gchar *index_dir = NULL;
 
     g_return_val_if_fail(HIF_IS_DB(db), NULL);
     g_return_val_if_fail(package != NULL, NULL);
@@ -219,8 +218,8 @@ hif_db_set_string(HifDb *db,
            GError **error)
 {
     HifDbPrivate *priv = GET_PRIVATE(db);
-    _cleanup_free_ gchar *index_dir = NULL;
-    _cleanup_free_ gchar *index_file = NULL;
+    g_autofree gchar *index_dir = NULL;
+    g_autofree gchar *index_file = NULL;
 
     g_return_val_if_fail(HIF_IS_DB(db), FALSE);
     g_return_val_if_fail(package != NULL, FALSE);
@@ -270,9 +269,9 @@ hif_db_remove(HifDb *db,
            GError **error)
 {
     HifDbPrivate *priv = GET_PRIVATE(db);
-    _cleanup_free_ gchar *index_dir = NULL;
-    _cleanup_free_ gchar *index_file = NULL;
-    _cleanup_object_unref_ GFile *file = NULL;
+    g_autofree gchar *index_dir = NULL;
+    g_autofree gchar *index_file = NULL;
+    g_autoptr(GFile) file = NULL;
 
     g_return_val_if_fail(HIF_IS_DB(db), FALSE);
     g_return_val_if_fail(package != NULL, FALSE);
@@ -317,9 +316,9 @@ hif_db_remove_all(HifDb *db, HyPackage package, GError **error)
 {
     HifDbPrivate *priv = GET_PRIVATE(db);
     const gchar *filename;
-    _cleanup_dir_close_ GDir *dir = NULL;
-    _cleanup_free_ gchar *index_dir = NULL;
-    _cleanup_object_unref_ GFile *file_directory = NULL;
+    g_autoptr(GDir) dir = NULL;
+    g_autofree gchar *index_dir = NULL;
+    g_autoptr(GFile) file_directory = NULL;
 
     g_return_val_if_fail(HIF_IS_DB(db), FALSE);
     g_return_val_if_fail(package != NULL, FALSE);
@@ -351,8 +350,8 @@ hif_db_remove_all(HifDb *db, HyPackage package, GError **error)
     /* delete each one */
     filename = g_dir_read_name(dir);
     while (filename != NULL) {
-        _cleanup_free_ gchar *index_file;
-        _cleanup_object_unref_ GFile *file_tmp;
+        g_autofree gchar *index_file;
+        g_autoptr(GFile) file_tmp;
 
         index_file = g_build_filename(index_dir, filename, NULL);
         file_tmp = g_file_new_for_path(index_file);
@@ -381,8 +380,8 @@ hif_db_remove_all(HifDb *db, HyPackage package, GError **error)
 void
 hif_db_ensure_origin_pkg(HifDb *db, HyPackage pkg)
 {
-    _cleanup_error_free_ GError *error = NULL;
-    _cleanup_free_ gchar *tmp = NULL;
+    g_autoptr(GError) error = NULL;
+    g_autofree gchar *tmp = NULL;
 
     /* already set */
     if (hif_package_get_origin(pkg) != NULL)

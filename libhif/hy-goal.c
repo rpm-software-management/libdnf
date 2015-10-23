@@ -35,7 +35,6 @@
 #include <solv/util.h>
 
 // hawkey
-#include "hif-cleanup.h"
 #include "hif-types.h"
 #include "hy-goal-private.h"
 #include "hy-iutil.h"
@@ -895,7 +894,7 @@ hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error)
     }
 
     int flags = TESTCASE_RESULT_TRANSACTION | TESTCASE_RESULT_PROBLEMS;
-    _cleanup_free_ char *absdir = abspath(dir);
+    g_autofree char *absdir = abspath(dir);
     if (absdir == NULL) {
         g_set_error (error,
                      HIF_ERROR,
