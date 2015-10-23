@@ -69,8 +69,8 @@ get_str(_PackageDeltaObject *self, void *closure)
 static PyObject *
 get_num(_PackageDeltaObject *self, void *closure)
 {
-    unsigned long long (*func)(HyPackageDelta);
-    func = (unsigned long long (*)(HyPackageDelta))closure;
+    guint64 (*func)(HyPackageDelta);
+    func = (guint64 (*)(HyPackageDelta))closure;
     return PyLong_FromUnsignedLongLong(func(self->delta));
 }
 

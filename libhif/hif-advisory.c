@@ -221,7 +221,7 @@ hif_advisory_get_rights(HifAdvisory *advisory)
  *
  * Since: 0.7.0
  */
-unsigned long long
+guint64
 hif_advisory_get_updated(HifAdvisory *advisory)
 {
     HifAdvisoryPrivate *priv = GET_PRIVATE(advisory);

@@ -150,8 +150,8 @@ get_type(_AdvisoryObject *self, void *closure)
 static PyObject *
 get_datetime(_AdvisoryObject *self, void *closure)
 {
-    unsigned long long (*func)(HifAdvisory*);
-    func = (unsigned long long (*)(HifAdvisory*))closure;
+    guint64 (*func)(HifAdvisory*);
+    func = (guint64 (*)(HifAdvisory*))closure;
     PyObject *timestamp = PyLong_FromUnsignedLongLong(func(self->advisory));
     PyObject *args = Py_BuildValue("(O)", timestamp);
     PyDateTime_IMPORT;

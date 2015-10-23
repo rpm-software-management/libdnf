@@ -249,7 +249,7 @@ END_TEST
 START_TEST(test_lookup_num)
 {
     HyPackage pkg = by_name(test_globals.sack, "tour");
-    unsigned long long buildtime = hy_package_get_buildtime(pkg);
+    guint64 buildtime = hy_package_get_buildtime(pkg);
     fail_unless(buildtime > 1330473600); // after 2012-02-29
     fail_unless(buildtime < 1456704000); // before 2016-02-29
 
@@ -346,7 +346,7 @@ START_TEST(test_presto)
     ck_assert_str_eq(location, "drpms/tour-4-5_4-6.noarch.drpm");
     const char *baseurl = hy_packagedelta_get_baseurl(delta);
     fail_unless(baseurl == NULL);
-    unsigned long long size = hy_packagedelta_get_downloadsize(delta);
+    guint64 size = hy_packagedelta_get_downloadsize(delta);
     ck_assert_int_eq(size, 3132);
     int type;
     HyChecksum *csum = hy_packagedelta_get_chksum(delta, &type);
