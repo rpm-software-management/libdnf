@@ -21,9 +21,9 @@
 #include "Python.h"
 
 // hawkey
-#include "hy-advisory.h"
-#include "hy-advisorypkg.h"
-#include "hy-advisoryref.h"
+#include "hif-advisory.h"
+#include "hif-advisorypkg.h"
+#include "hif-advisoryref.h"
 #include "hy-package-private.h"
 #include "hy-packagelist.h"
 #include "hy-packageset-private.h"
@@ -40,18 +40,17 @@
 #include "pycomp.h"
 
 PyObject *
-advisorylist_to_pylist(const HyAdvisoryList advisorylist, PyObject *sack)
+advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack)
 {
-    HyAdvisory cadvisory;
+    HifAdvisory *cadvisory;
     PyObject *advisory;
 
     PyObject *list = PyList_New(0);
     if (list == NULL)
         return NULL;
 
-    const int count = hy_advisorylist_count(advisorylist);
-    for (int i = 0; i < count; ++i) {
-        cadvisory = hy_advisorylist_get_clone(advisorylist,  i);
+    for (int i = 0; i < advisorylist->len; ++i) {
+        cadvisory = g_ptr_array_index(advisorylist, i);
         advisory = advisoryToPyObject(cadvisory, sack);
 
         if (advisory == NULL)
@@ -70,24 +69,20 @@ advisorylist_to_pylist(const HyAdvisoryList advisorylist, PyObject *sack)
 }
 
 PyObject *
-advisorypkglist_to_pylist(const HyAdvisoryPkgList advisorypkglist)
+advisorypkglist_to_pylist(const GPtrArray *advisorypkglist)
 {
-    HyAdvisoryPkg cadvisorypkg;
+    HifAdvisoryPkg *cadvisorypkg;
     PyObject *advisorypkg;
 
     PyObject *list = PyList_New(0);
     if (list == NULL)
         return NULL;
 
-    const int count = hy_advisorypkglist_count(advisorypkglist);
-    for (int i = 0; i < count; ++i) {
-        cadvisorypkg = hy_advisorypkglist_get_clone(advisorypkglist,  i);
+    for (int i = 0; i < advisorypkglist->len; ++i) {
+        cadvisorypkg = g_ptr_array_index(advisorypkglist,  i);
         advisorypkg = advisorypkgToPyObject(cadvisorypkg);
-
-        if (advisorypkg == NULL) {
-            hy_advisorypkg_free(cadvisorypkg);
+        if (advisorypkg == NULL)
             goto fail;
-        }
 
         int rc = PyList_Append(list, advisorypkg);
         Py_DECREF(advisorypkg);
@@ -102,24 +97,20 @@ advisorypkglist_to_pylist(const HyAdvisoryPkgList advisorypkglist)
 }
 
 PyObject *
-advisoryreflist_to_pylist(const HyAdvisoryRefList advisoryreflist, PyObject *sack)
+advisoryreflist_to_pylist(const GPtrArray *advisoryreflist, PyObject *sack)
 {
-    HyAdvisoryRef cadvisoryref;
+    HifAdvisoryRef *cadvisoryref;
     PyObject *advisoryref;
 
     PyObject *list = PyList_New(0);
     if (list == NULL)
         return NULL;
 
-    const int count = hy_advisoryreflist_count(advisoryreflist);
-    for (int i = 0; i < count; ++i) {
-        cadvisoryref = hy_advisoryreflist_get_clone(advisoryreflist,  i);
+    for (int i = 0; i < advisoryreflist->len; ++i) {
+        cadvisoryref = g_ptr_array_index(advisoryreflist,  i);
         advisoryref = advisoryrefToPyObject(cadvisoryref, sack);
-
-        if (advisoryref == NULL) {
-            hy_advisoryref_free(cadvisoryref);
+        if (advisoryref == NULL)
             goto fail;
-        }
 
         int rc = PyList_Append(list, advisoryref);
         Py_DECREF(advisoryref);

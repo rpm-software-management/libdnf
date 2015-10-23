@@ -18,30 +18,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef HY_ADVISORYPKG_H
-#define HY_ADVISORYPKG_H
+#ifndef __HIF_ADVISORYREF_PRIVATE_H
+#define __HIF_ADVISORYREF_PRIVATE_H
 
-#include <glib.h>
+#include <solv/pool.h>
 
-G_BEGIN_DECLS
+#include "hif-advisoryref.h"
 
-/* hawkey */
-#include "hy-types.h"
+HifAdvisoryRef  *hif_advisoryref_new        (Pool *pool, Id a_id, int index);
 
-enum _hy_advisorypkg_param_e {
-    HY_ADVISORYPKG_NAME,
-    HY_ADVISORYPKG_EVR,
-    HY_ADVISORYPKG_ARCH,
-    HY_ADVISORYPKG_FILENAME
-};
-
-void hy_advisorypkg_free(HyAdvisoryPkg advisorypkg);
-const char *hy_advisorypkg_get_string(HyAdvisoryPkg advisorypkg, int which);
-
-void hy_advisorypkglist_free(HyAdvisoryPkgList pkglist);
-int hy_advisorypkglist_count(HyAdvisoryPkgList pkglist);
-HyAdvisoryPkg hy_advisorypkglist_get_clone(HyAdvisoryPkgList pkglist, int index);
-
-G_END_DECLS
-
-#endif /* HY_ADVISORYPKG_H */
+#endif // __HIF_ADVISORYREF_PRIVATE_H

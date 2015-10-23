@@ -23,6 +23,6 @@
 
 extern PyTypeObject advisory_Type;
 
-PyObject * advisoryToPyObject(HyAdvisory advisory, PyObject *sack);
+PyObject * advisoryToPyObject(HifAdvisory *advisory, PyObject *sack);
 
 #endif

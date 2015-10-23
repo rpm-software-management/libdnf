@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2014 Red Hat, Inc.
+ * Copyright (C) 2015 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -18,22 +19,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef HY_ADVISORY_INTERNAL_H
-#define HY_ADVISORY_INTERNAL_H
+#ifndef HIF_ADVISORY_KIND_PRIVATE_H
+#define HIF_ADVISORY_KIND_PRIVATE_H
 
-// libsolv
 #include <solv/pool.h>
 
-// hawkey
-#include "hy-advisory.h"
+#include "hif-advisory.h"
 
 #define SOLVABLE_NAME_ADVISORY_PREFIX "patch:"
 
-Id advisory_id(HyAdvisory advisory);
-HyAdvisory advisory_create(Pool *pool, Id a_id);
-int advisory_identical(HyAdvisory left, HyAdvisory right);
+HifAdvisory     *hif_advisory_new       (Pool *pool, Id a_id);
 
-HyAdvisoryList advisorylist_create(Pool *pool);
-void advisorylist_add(HyAdvisoryList advisorylist, HyAdvisory advisory);
-
-#endif // HY_ADVISORY_INTERNAL_H
+#endif // HIF_ADVISORY_KIND_PRIVATE_H

@@ -74,7 +74,7 @@ HyReldepList hy_package_get_requires(HyPackage pkg);
 HyReldepList hy_package_get_suggests(HyPackage pkg);
 HyReldepList hy_package_get_supplements(HyPackage pkg);
 HyStringArray hy_package_get_files(HyPackage pkg);
-HyAdvisoryList hy_package_get_advisories(HyPackage pkg, int cmp_type);
+GPtrArray *hy_package_get_advisories(HyPackage pkg, int cmp_type);
 
 typedef void (*HyUserdataDestroy) (void *userdata);
 void *hy_package_get_userdata(HyPackage pkg);

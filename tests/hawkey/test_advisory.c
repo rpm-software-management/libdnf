@@ -20,15 +20,15 @@
 
 
 // hawkey
-#include "libhif/hy-advisory.h"
-#include "libhif/hy-advisorypkg.h"
-#include "libhif/hy-advisoryref.h"
+#include "libhif/hif-advisory.h"
+#include "libhif/hif-advisorypkg.h"
+#include "libhif/hif-advisoryref.h"
 #include "libhif/hy-package.h"
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"
 
-static HyAdvisory advisory;
+static HifAdvisory *advisory;
 
 static void
 advisory_fixture(void)
@@ -36,95 +36,92 @@ advisory_fixture(void)
     fixture_yum();
 
     HyPackage pkg;
-    HyAdvisoryList advisories;
+    GPtrArray *advisories;
 
     pkg = by_name(test_globals.sack, "tour");
     advisories = hy_package_get_advisories(pkg, HY_GT);
 
-    advisory = hy_advisorylist_get_clone(advisories, 0);
+    advisory = g_object_ref(g_ptr_array_index(advisories, 0));
 
-    hy_advisorylist_free(advisories);
+    g_ptr_array_unref(advisories);
     hy_package_free(pkg);
 }
 
 static void
 advisory_teardown(void)
 {
-    hy_advisory_free(advisory);
+    g_object_unref(advisory);
     teardown();
 }
 
 START_TEST(test_title)
 {
-    ck_assert_str_eq(hy_advisory_get_title(advisory), "lvm2-2.02.39-7.fc10");
+    ck_assert_str_eq(hif_advisory_get_title(advisory), "lvm2-2.02.39-7.fc10");
 }
 END_TEST
 
 START_TEST(test_id)
 {
-    ck_assert_str_eq(hy_advisory_get_id(advisory), "FEDORA-2008-9969");
+    ck_assert_str_eq(hif_advisory_get_id(advisory), "FEDORA-2008-9969");
 }
 END_TEST
 
 START_TEST(test_type)
 {
-    ck_assert_int_eq(hy_advisory_get_type(advisory), HY_ADVISORY_BUGFIX);
+    ck_assert_int_eq(hif_advisory_get_kind(advisory), HIF_ADVISORY_KIND_BUGFIX);
 }
 END_TEST
 
 START_TEST(test_description)
 {
     ck_assert_str_eq(
-            hy_advisory_get_description(advisory),
+            hif_advisory_get_description(advisory),
             "An example update to the tour package.");
 }
 END_TEST
 
 START_TEST(test_rights)
 {
-    fail_if(hy_advisory_get_rights(advisory));
+    fail_if(hif_advisory_get_rights(advisory));
 }
 END_TEST
 
 START_TEST(test_updated)
 {
-    ck_assert_int_eq(hy_advisory_get_updated(advisory), 1228822286);
+    ck_assert_int_eq(hif_advisory_get_updated(advisory), 1228822286);
 }
 END_TEST
 
 START_TEST(test_packages)
 {
-    HyAdvisoryPkgList pkglist = hy_advisory_get_packages(advisory);
+    GPtrArray *pkglist = hif_advisory_get_packages(advisory);
 
-    ck_assert_int_eq(hy_advisorypkglist_count(pkglist), 1);
-    HyAdvisoryPkg package = hy_advisorypkglist_get_clone(pkglist, 0);
+    ck_assert_int_eq(pkglist->len, 1);
+    HifAdvisoryPkg *package = g_ptr_array_index(pkglist, 0);
     ck_assert_str_eq(
-            hy_advisorypkg_get_string(package, HY_ADVISORYPKG_FILENAME),
+            hif_advisorypkg_get_filename(package),
             "tour.noarch.rpm");
-    hy_advisorypkg_free(package);
 
-    hy_advisorypkglist_free(pkglist);
+    g_ptr_array_unref(pkglist);
 }
 END_TEST
 
 START_TEST(test_refs)
 {
-    HyAdvisoryRef reference;
-    HyAdvisoryRefList reflist = hy_advisory_get_references(advisory);
+    HifAdvisoryRef *reference;
+    GPtrArray *reflist = hif_advisory_get_references(advisory);
 
-    ck_assert_int_eq(hy_advisoryreflist_count(reflist), 2);
-    reference = hy_advisoryreflist_get_clone(reflist, 0);
+    ck_assert_int_eq(reflist->len, 2);
+    reference = g_ptr_array_index(reflist, 0);
     ck_assert_str_eq(
-            hy_advisoryref_get_url(reference),
+            hif_advisoryref_get_url(reference),
             "https://bugzilla.redhat.com/show_bug.cgi?id=472090");
-    hy_advisoryref_free(reference);
-    reference = hy_advisoryreflist_get_clone(reflist, 1);
+    reference = g_ptr_array_index(reflist, 1);
     ck_assert_str_eq(
-            hy_advisoryref_get_url(reference),
+            hif_advisoryref_get_url(reference),
             "https://bugzilla.gnome.com/show_bug.cgi?id=472091");
-    hy_advisoryref_free(reference);
 
-    hy_advisoryreflist_free(reflist);
+    g_ptr_array_unref(reflist);
 }
 END_TEST
 

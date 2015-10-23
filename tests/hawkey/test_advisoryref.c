@@ -20,14 +20,14 @@
 
 
 // hawkey
-#include "libhif/hy-advisory.h"
-#include "libhif/hy-advisoryref.h"
+#include "libhif/hif-advisory.h"
+#include "libhif/hif-advisoryref.h"
 #include "libhif/hy-package.h"
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"
 
-static HyAdvisoryRef reference;
+static HifAdvisoryRef *reference;
 
 static void
 advisoryref_fixture(void)
@@ -35,50 +35,49 @@ advisoryref_fixture(void)
     fixture_yum();
 
     HyPackage pkg;
-    HyAdvisoryList advisories;
-    HyAdvisory advisory;
-    HyAdvisoryRefList reflist;
+    GPtrArray *advisories;
+    HifAdvisory *advisory;
+    GPtrArray *reflist;
 
     pkg = by_name(test_globals.sack, "tour");
     advisories = hy_package_get_advisories(pkg, HY_GT);
-    advisory = hy_advisorylist_get_clone(advisories, 0);
-    reflist = hy_advisory_get_references(advisory);
-    reference = hy_advisoryreflist_get_clone(reflist, 0);
+    advisory = g_ptr_array_index(advisories, 0);
+    reflist = hif_advisory_get_references(advisory);
+    reference = g_object_ref(g_ptr_array_index(reflist, 0));
 
-    hy_advisoryreflist_free(reflist);
-    hy_advisory_free(advisory);
-    hy_advisorylist_free(advisories);
+    g_ptr_array_unref(reflist);
+    g_ptr_array_unref(advisories);
     hy_package_free(pkg);
 }
 
 static void
 advisoryref_teardown(void)
 {
-    hy_advisoryref_free(reference);
+    g_object_unref(reference);
     teardown();
 }
 
 START_TEST(test_type)
 {
-    ck_assert_int_eq(hy_advisoryref_get_type(reference), HY_REFERENCE_BUGZILLA);
+    ck_assert_int_eq(hif_advisoryref_get_kind(reference), HIF_REFERENCE_KIND_BUGZILLA);
 }
 END_TEST
 
 START_TEST(test_id)
 {
-    ck_assert_str_eq(hy_advisoryref_get_id(reference), "472090");
+    ck_assert_str_eq(hif_advisoryref_get_id(reference), "472090");
 }
 END_TEST
 
 START_TEST(test_title)
 {
-    ck_assert_str_eq(hy_advisoryref_get_title(reference), "/etc/init.d/clvmd points to /usr/sbin for LVM tools");
+    ck_assert_str_eq(hif_advisoryref_get_title(reference), "/etc/init.d/clvmd points to /usr/sbin for LVM tools");
 }
 END_TEST
 
 START_TEST(test_url)
 {
-    ck_assert_str_eq(hy_advisoryref_get_url(reference), "https://bugzilla.redhat.com/show_bug.cgi?id=472090");
+    ck_assert_str_eq(hif_advisoryref_get_url(reference), "https://bugzilla.redhat.com/show_bug.cgi?id=472090");
 }
 END_TEST
 

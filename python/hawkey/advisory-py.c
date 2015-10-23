@@ -22,9 +22,9 @@
 #include <datetime.h>
 
 // hawkey
-#include "hy-advisory-private.h"
-#include "hy-advisorypkg.h"
-#include "hy-advisoryref.h"
+#include "hif-advisory-private.h"
+#include "hif-advisorypkg.h"
+#include "hif-advisoryref.h"
 #include "hy-package.h"
 
 // pyhawkey
@@ -35,13 +35,13 @@
 
 typedef struct {
     PyObject_HEAD
-    HyAdvisory advisory;
+    HifAdvisory *advisory;
     PyObject *sack;
 } _AdvisoryObject;
 
 
 PyObject *
-advisoryToPyObject(HyAdvisory advisory, PyObject *sack)
+advisoryToPyObject(HifAdvisory *advisory, PyObject *sack)
 {
     _AdvisoryObject *self = PyObject_New(_AdvisoryObject, &advisory_Type);
     if (!self)
@@ -54,7 +54,7 @@ advisoryToPyObject(HyAdvisory advisory, PyObject *sack)
     return (PyObject *)self;
 }
 
-HyAdvisory
+HifAdvisory *
 advisoryFromPyObject(PyObject *o)
 {
     if (!PyObject_TypeCheck(o, &advisory_Type)) {
@@ -65,9 +65,9 @@ advisoryFromPyObject(PyObject *o)
 }
 
 int
-advisory_converter(PyObject *o, HyAdvisory *advisory_ptr)
+advisory_converter(PyObject *o, HifAdvisory **advisory_ptr)
 {
-    HyAdvisory advisory = advisoryFromPyObject(o);
+    HifAdvisory *advisory = advisoryFromPyObject(o);
     if (advisory == NULL)
         return 0;
     *advisory_ptr = advisory;
@@ -79,7 +79,7 @@ advisory_converter(PyObject *o, HyAdvisory *advisory_ptr)
 static void
 advisory_dealloc(_AdvisoryObject *self)
 {
-    hy_advisory_free(self->advisory);
+    g_object_unref(self->advisory);
     Py_XDECREF(self->sack);
     Py_TYPE(self)->tp_free(self);
 }
@@ -88,7 +88,7 @@ static PyObject *
 advisory_richcompare(PyObject *self, PyObject *other, int op)
 {
     PyObject *result;
-    HyAdvisory cself, cother;
+    HifAdvisory *cself, *cother;
 
     if (!advisory_converter(self, &cself) ||
         !advisory_converter(other, &cother)) {
@@ -98,7 +98,7 @@ advisory_richcompare(PyObject *self, PyObject *other, int op)
         return Py_NotImplemented;
     }
 
-    int identical = advisory_identical(cself, cother);
+    int identical = hif_advisory_compare(cself, cother);
     switch (op) {
     case Py_EQ:
         result = TEST_COND(identical);
@@ -126,10 +126,10 @@ advisory_richcompare(PyObject *self, PyObject *other, int op)
 static PyObject *
 get_str(_AdvisoryObject *self, void *closure)
 {
-    const char *(*func)(HyAdvisory);
+    const char *(*func)(HifAdvisory*);
     const char *cstr;
 
-    func = (const char *(*)(HyAdvisory))closure;
+    func = (const char *(*)(HifAdvisory*))closure;
     cstr = func(self->advisory);
     if (cstr == NULL)
         Py_RETURN_NONE;
@@ -139,10 +139,10 @@ get_str(_AdvisoryObject *self, void *closure)
 static PyObject *
 get_type(_AdvisoryObject *self, void *closure)
 {
-    HyAdvisoryType (*func)(HyAdvisory);
-    HyAdvisoryType ctype;
+    HifAdvisoryKind (*func)(HifAdvisory*);
+    HifAdvisoryKind ctype;
 
-    func = (HyAdvisoryType (*)(HyAdvisory))closure;
+    func = (HifAdvisoryKind (*)(HifAdvisory*))closure;
     ctype = func(self->advisory);
     return PyLong_FromLong(ctype);
 }
@@ -150,8 +150,8 @@ get_type(_AdvisoryObject *self, void *closure)
 static PyObject *
 get_datetime(_AdvisoryObject *self, void *closure)
 {
-    unsigned long long (*func)(HyAdvisory);
-    func = (unsigned long long (*)(HyAdvisory))closure;
+    unsigned long long (*func)(HifAdvisory*);
+    func = (unsigned long long (*)(HifAdvisory*))closure;
     PyObject *timestamp = PyLong_FromUnsignedLongLong(func(self->advisory));
     PyObject *args = Py_BuildValue("(O)", timestamp);
     PyDateTime_IMPORT;
@@ -164,17 +164,17 @@ get_datetime(_AdvisoryObject *self, void *closure)
 static PyObject *
 get_advisorypkg_list(_AdvisoryObject *self, void *closure)
 {
-    HyAdvisoryPkgList (*func)(HyAdvisory);
-    HyAdvisoryPkgList advisorypkgs;
+    GPtrArray *(*func)(HifAdvisory*);
+    GPtrArray *advisorypkgs;
     PyObject *list;
 
-    func = (HyAdvisoryPkgList (*)(HyAdvisory))closure;
+    func = (GPtrArray *(*)(HifAdvisory*))closure;
     advisorypkgs = func(self->advisory);
     if (advisorypkgs == NULL)
         Py_RETURN_NONE;
 
     list = advisorypkglist_to_pylist(advisorypkgs);
-    hy_advisorypkglist_free(advisorypkgs);
+    g_ptr_array_unref(advisorypkgs);
 
     return list;
 }
@@ -182,30 +182,30 @@ get_advisorypkg_list(_AdvisoryObject *self, void *closure)
 static PyObject *
 get_advisoryref_list(_AdvisoryObject *self, void *closure)
 {
-    HyAdvisoryRefList (*func)(HyAdvisory);
-    HyAdvisoryRefList advisoryrefs;
+    GPtrArray *(*func)(HifAdvisory*);
+    GPtrArray *advisoryrefs;
     PyObject *list;
 
-    func = (HyAdvisoryRefList (*)(HyAdvisory))closure;
+    func = (GPtrArray *(*)(HifAdvisory*))closure;
     advisoryrefs = func(self->advisory);
     if (advisoryrefs == NULL)
         Py_RETURN_NONE;
 
     list = advisoryreflist_to_pylist(advisoryrefs, self->sack);
-    hy_advisoryreflist_free(advisoryrefs);
+    g_ptr_array_unref(advisoryrefs);
 
     return list;
 }
 
 static PyGetSetDef advisory_getsetters[] = {
-    {"title", (getter)get_str, NULL, NULL, (void *)hy_advisory_get_title},
-    {"id", (getter)get_str, NULL, NULL, (void *)hy_advisory_get_id},
-    {"type", (getter)get_type, NULL, NULL, (void *)hy_advisory_get_type},
-    {"description", (getter)get_str, NULL, NULL, (void *)hy_advisory_get_description},
-    {"rights", (getter)get_str, NULL, NULL, (void *)hy_advisory_get_rights},
-    {"updated", (getter)get_datetime, NULL, NULL, (void *)hy_advisory_get_updated},
-    {"packages", (getter)get_advisorypkg_list, NULL, NULL, (void *)hy_advisory_get_packages},
-    {"references", (getter)get_advisoryref_list, NULL, NULL, (void *)hy_advisory_get_references},
+    {"title", (getter)get_str, NULL, NULL, (void *)hif_advisory_get_title},
+    {"id", (getter)get_str, NULL, NULL, (void *)hif_advisory_get_id},
+    {"type", (getter)get_type, NULL, NULL, (void *)hif_advisory_get_kind},
+    {"description", (getter)get_str, NULL, NULL, (void *)hif_advisory_get_description},
+    {"rights", (getter)get_str, NULL, NULL, (void *)hif_advisory_get_rights},
+    {"updated", (getter)get_datetime, NULL, NULL, (void *)hif_advisory_get_updated},
+    {"packages", (getter)get_advisorypkg_list, NULL, NULL, (void *)hif_advisory_get_packages},
+    {"references", (getter)get_advisoryref_list, NULL, NULL, (void *)hif_advisory_get_references},
     {NULL}                      /* sentinel */
 };
 

@@ -21,9 +21,9 @@
 #include <Python.h>
 
 // hawkey
-#include "hy-advisory.h"
-#include "hy-advisorypkg.h"
-#include "hy-advisoryref.h"
+#include "hif-advisory.h"
+#include "hif-advisorypkg.h"
+#include "hif-advisoryref.h"
 #include "hy-goal.h"
 #include "hy-package.h"
 #include "hy-query.h"
@@ -292,15 +292,15 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "REASON_DEP", HY_REASON_DEP);
     PyModule_AddIntConstant(m, "REASON_USER", HY_REASON_USER);
 
-    PyModule_AddIntConstant(m, "ADVISORY_UNKNOWN", HY_ADVISORY_UNKNOWN);
-    PyModule_AddIntConstant(m, "ADVISORY_SECURITY", HY_ADVISORY_SECURITY);
-    PyModule_AddIntConstant(m, "ADVISORY_BUGFIX", HY_ADVISORY_BUGFIX);
-    PyModule_AddIntConstant(m, "ADVISORY_ENHANCEMENT", HY_ADVISORY_ENHANCEMENT);
+    PyModule_AddIntConstant(m, "ADVISORY_UNKNOWN", HIF_ADVISORY_KIND_UNKNOWN);
+    PyModule_AddIntConstant(m, "ADVISORY_SECURITY", HIF_ADVISORY_KIND_SECURITY);
+    PyModule_AddIntConstant(m, "ADVISORY_BUGFIX", HIF_ADVISORY_KIND_BUGFIX);
+    PyModule_AddIntConstant(m, "ADVISORY_ENHANCEMENT", HIF_ADVISORY_KIND_ENHANCEMENT);
 
-    PyModule_AddIntConstant(m, "REFERENCE_UNKNOWN", HY_REFERENCE_UNKNOWN);
-    PyModule_AddIntConstant(m, "REFERENCE_BUGZILLA", HY_REFERENCE_BUGZILLA);
-    PyModule_AddIntConstant(m, "REFERENCE_CVE", HY_REFERENCE_CVE);
-    PyModule_AddIntConstant(m, "REFERENCE_VENDOR", HY_REFERENCE_VENDOR);
+    PyModule_AddIntConstant(m, "REFERENCE_UNKNOWN", HIF_REFERENCE_KIND_UNKNOWN);
+    PyModule_AddIntConstant(m, "REFERENCE_BUGZILLA", HIF_REFERENCE_KIND_BUGZILLA);
+    PyModule_AddIntConstant(m, "REFERENCE_CVE", HIF_REFERENCE_KIND_CVE);
+    PyModule_AddIntConstant(m, "REFERENCE_VENDOR", HIF_REFERENCE_KIND_VENDOR);
 
     return PYCOMP_MOD_SUCCESS_VAL(m);
 }

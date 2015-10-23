@@ -25,7 +25,7 @@
 #include <solv/util.h>
 
 // hawkey
-#include "hy-advisory.h"
+#include "hif-advisory.h"
 #include "hy-iutil.h"
 #include "hy-package-private.h"
 #include "hy-packagelist.h"
@@ -368,7 +368,7 @@ static PyObject *
 get_advisories(_PackageObject *self, PyObject *args)
 {
     int cmp_type;
-    HyAdvisoryList advisories;
+    GPtrArray *advisories;
     PyObject *list;
 
     if (!PyArg_ParseTuple(args, "i", &cmp_type))
@@ -376,7 +376,7 @@ get_advisories(_PackageObject *self, PyObject *args)
 
     advisories = hy_package_get_advisories(self->package, cmp_type);
     list = advisorylist_to_pylist(advisories, self->sack);
-    hy_advisorylist_free(advisories);
+    g_ptr_array_unref(advisories);
 
     return list;
 }

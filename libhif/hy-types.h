@@ -31,12 +31,6 @@ enum _HyForm :short ;
 typedef enum _HyForm HyForm;
 #endif
 
-typedef struct _HyAdvisory * HyAdvisory;
-typedef struct _HyAdvisoryList * HyAdvisoryList;
-typedef struct _HyAdvisoryPkg * HyAdvisoryPkg;
-typedef struct _HyAdvisoryPkgList * HyAdvisoryPkgList;
-typedef struct _HyAdvisoryRef * HyAdvisoryRef;
-typedef struct _HyAdvisoryRefList * HyAdvisoryRefList;
 typedef struct _HyRepo * HyRepo;
 typedef struct _HyGoal * HyGoal;
 typedef struct _HyNevra * HyNevra;

@@ -24,6 +24,9 @@
 
 #define __LIBHIF_H_INSIDE__
 
+#include <hif-advisory.h>
+#include <hif-advisorypkg.h>
+#include <hif-advisoryref.h>
 #include <hif-context.h>
 #include <hif-db.h>
 #include <hif-goal.h>
