@@ -43,15 +43,14 @@
 #include "hif-repos.h"
 #include "hif-utils.h"
 
-typedef struct _HifReposPrivate    HifReposPrivate;
-struct _HifReposPrivate
+typedef struct
 {
-    GFileMonitor        *monitor_repos;
-    HifContext        *context;    /* weak reference */
-    GPtrArray        *sources;
-    GVolumeMonitor        *volume_monitor;
+    GFileMonitor    *monitor_repos;
+    HifContext      *context;    /* weak reference */
+    GPtrArray       *sources;
+    GVolumeMonitor  *volume_monitor;
     gboolean         loaded;
-};
+} HifReposPrivate;
 
 enum {
     SIGNAL_CHANGED,
@@ -60,8 +59,8 @@ enum {
 
 static guint signals[SIGNAL_LAST] = { 0 };
 
-G_DEFINE_TYPE(HifRepos, hif_repos, G_TYPE_OBJECT)
-#define GET_PRIVATE(o)(G_TYPE_INSTANCE_GET_PRIVATE((o), HIF_TYPE_REPOS, HifReposPrivate))
+G_DEFINE_TYPE_WITH_PRIVATE(HifRepos, hif_repos, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (hif_repos_get_instance_private (o))
 
 /**
  * hif_repos_finalize:
@@ -138,7 +137,6 @@ hif_repos_class_init(HifReposClass *klass)
                   G_TYPE_NONE, 0);
 
     object_class->finalize = hif_repos_finalize;
-    g_type_class_add_private(klass, sizeof(HifReposPrivate));
 }
 
 /**

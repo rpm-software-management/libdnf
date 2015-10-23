@@ -49,8 +49,7 @@
 #include "libhif.h"
 #include "hif-utils.h"
 
-typedef struct _HifSourcePrivate    HifSourcePrivate;
-struct _HifSourcePrivate
+typedef struct
 {
     HifSourceEnabled enabled;
     gboolean         required;
@@ -80,12 +79,12 @@ struct _HifSourcePrivate
     LrHandle        *repo_handle;
     LrResult        *repo_result;
     LrUrlVars       *urlvars;
-};
+} HifSourcePrivate;
 
 #define HIF_CONFIG_GROUP_NAME            "PluginHawkey"
 
-G_DEFINE_TYPE(HifSource, hif_source, G_TYPE_OBJECT)
-#define GET_PRIVATE(o)(G_TYPE_INSTANCE_GET_PRIVATE((o), HIF_TYPE_SOURCE, HifSourcePrivate))
+G_DEFINE_TYPE_WITH_PRIVATE(HifSource, hif_source, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (hif_source_get_instance_private (o))
 
 /**
  * hif_source_finalize:
@@ -149,7 +148,6 @@ hif_source_class_init(HifSourceClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
     object_class->finalize = hif_source_finalize;
-    g_type_class_add_private(klass, sizeof(HifSourcePrivate));
 }
 
 /**

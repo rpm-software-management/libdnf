@@ -33,21 +33,10 @@
 #include "hy-sack.h"
 #endif
 
-#define HIF_TYPE_CONTEXT                (hif_context_get_type())
-#define HIF_CONTEXT(obj)                (G_TYPE_CHECK_INSTANCE_CAST((obj), HIF_TYPE_CONTEXT, HifContext))
-#define HIF_CONTEXT_CLASS(cls)          (G_TYPE_CHECK_CLASS_CAST((cls), HIF_TYPE_CONTEXT, HifContextClass))
-#define HIF_IS_CONTEXT(obj)             (G_TYPE_CHECK_INSTANCE_TYPE((obj), HIF_TYPE_CONTEXT))
-#define HIF_IS_CONTEXT_CLASS(cls)       (G_TYPE_CHECK_CLASS_TYPE((cls), HIF_TYPE_CONTEXT))
-#define HIF_CONTEXT_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS((obj), HIF_TYPE_CONTEXT, HifContextClass))
-
 G_BEGIN_DECLS
 
-typedef struct _HifContextClass         HifContextClass;
-
-struct _HifContext
-{
-        GObject                 parent;
-};
+#define HIF_TYPE_CONTEXT (hif_context_get_type ())
+G_DECLARE_DERIVABLE_TYPE (HifContext, hif_context, HIF, CONTEXT, GObject)
 
 struct _HifContextClass
 {
@@ -81,7 +70,6 @@ typedef enum {
         HIF_CONTEXT_INVALIDATE_FLAG_LAST
 } HifContextInvalidateFlags;
 
-GType            hif_context_get_type                   (void);
 HifContext      *hif_context_new                        (void);
 
 /* getters */

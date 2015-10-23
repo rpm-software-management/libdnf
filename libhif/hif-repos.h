@@ -34,21 +34,10 @@
 #include "hif-state.h"
 #include "hif-source.h"
 
-#define HIF_TYPE_REPOS                  (hif_repos_get_type())
-#define HIF_REPOS(obj)                  (G_TYPE_CHECK_INSTANCE_CAST((obj), HIF_TYPE_REPOS, HifRepos))
-#define HIF_REPOS_CLASS(cls)            (G_TYPE_CHECK_CLASS_CAST((cls), HIF_TYPE_REPOS, HifReposClass))
-#define HIF_IS_REPOS(obj)               (G_TYPE_CHECK_INSTANCE_TYPE((obj), HIF_TYPE_REPOS))
-#define HIF_IS_REPOS_CLASS(cls)         (G_TYPE_CHECK_CLASS_TYPE((cls), HIF_TYPE_REPOS))
-#define HIF_REPOS_GET_CLASS(obj)        (G_TYPE_INSTANCE_GET_CLASS((obj), HIF_TYPE_REPOS, HifReposClass))
-
 G_BEGIN_DECLS
 
-typedef struct _HifReposClass   HifReposClass;
-
-struct _HifRepos
-{
-        GObject                 parent;
-};
+#define HIF_TYPE_REPOS (hif_repos_get_type ())
+G_DECLARE_DERIVABLE_TYPE (HifRepos, hif_repos, HIF, REPOS, GObject)
 
 struct _HifReposClass
 {
@@ -65,7 +54,6 @@ struct _HifReposClass
         void (*_hif_reserved8)  (void);
 };
 
-GType            hif_repos_get_type             (void);
 HifRepos        *hif_repos_new                  (HifContext     *context);
 
 /* object methods */

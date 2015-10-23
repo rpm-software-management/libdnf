@@ -32,21 +32,10 @@
 
 #include "hif-context.h"
 
-#define HIF_TYPE_DB             (hif_db_get_type())
-#define HIF_DB(obj)             (G_TYPE_CHECK_INSTANCE_CAST((obj), HIF_TYPE_DB, HifDb))
-#define HIF_DB_CLASS(cls)       (G_TYPE_CHECK_CLASS_CAST((cls), HIF_TYPE_DB, HifDbClass))
-#define HIF_IS_DB(obj)          (G_TYPE_CHECK_INSTANCE_TYPE((obj), HIF_TYPE_DB))
-#define HIF_IS_DB_CLASS(cls)    (G_TYPE_CHECK_CLASS_TYPE((cls), HIF_TYPE_DB))
-#define HIF_DB_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS((obj), HIF_TYPE_DB, HifDbClass))
-
 G_BEGIN_DECLS
 
-typedef struct _HifDbClass      HifDbClass;
-
-struct _HifDb
-{
-        GObject                 parent;
-};
+#define HIF_TYPE_DB (hif_db_get_type ())
+G_DECLARE_DERIVABLE_TYPE (HifDb, hif_db, HIF, DB, GObject)
 
 struct _HifDbClass
 {
@@ -62,7 +51,6 @@ struct _HifDbClass
         void (*_hif_reserved8)  (void);
 };
 
-GType            hif_db_get_type                (void);
 HifDb           *hif_db_new                     (HifContext     *context);
 
 void             hif_db_set_enabled             (HifDb          *db,

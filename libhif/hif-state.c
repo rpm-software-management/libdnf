@@ -86,8 +86,7 @@
 #include "hif-state.h"
 #include "hif-utils.h"
 
-typedef struct _HifStatePrivate    HifStatePrivate;
-struct _HifStatePrivate
+typedef struct
 {
     gboolean         allow_cancel;
     gboolean         allow_cancel_changed_state;
@@ -117,7 +116,7 @@ struct _HifStatePrivate
     HifState         *parent;
     GPtrArray        *lock_ids;
     HifLock          *lock;
-};
+} HifStatePrivate;
 
 enum {
     SIGNAL_PERCENTAGE_CHANGED,
@@ -136,8 +135,8 @@ enum {
 
 static guint signals [SIGNAL_LAST] = { 0 };
 
-G_DEFINE_TYPE(HifState, hif_state, G_TYPE_OBJECT)
-#define GET_PRIVATE(o)(G_TYPE_INSTANCE_GET_PRIVATE((o), HIF_TYPE_STATE, HifStatePrivate))
+G_DEFINE_TYPE_WITH_PRIVATE(HifState, hif_state, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (hif_state_get_instance_private (o))
 
 #define HIF_STATE_SPEED_SMOOTHING_ITEMS        5
 
@@ -277,7 +276,6 @@ hif_state_class_init(HifStateClass *klass)
                      G_STRUCT_OFFSET(HifStateClass, package_progress_changed),
                      NULL, NULL, g_cclosure_marshal_generic,
                      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT);
-    g_type_class_add_private(klass, sizeof(HifStatePrivate));
 }
 
 /**
