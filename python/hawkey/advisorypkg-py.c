@@ -21,7 +21,7 @@
 #include <Python.h>
 
 // hawkey
-#include "hy-advisorypkg-private.h"
+#include "hif-advisorypkg-private.h"
 
 // pyhawkey
 #include "advisorypkg-py.h"
@@ -31,12 +31,12 @@
 
 typedef struct {
     PyObject_HEAD
-    HyAdvisoryPkg advisorypkg;
+    HifAdvisoryPkg *advisorypkg;
 } _AdvisoryPkgObject;
 
 
 PyObject *
-advisorypkgToPyObject(HyAdvisoryPkg advisorypkg)
+advisorypkgToPyObject(HifAdvisoryPkg *advisorypkg)
 {
     _AdvisoryPkgObject *self = PyObject_New(_AdvisoryPkgObject, &advisorypkg_Type);
     if (!self)
@@ -45,7 +45,7 @@ advisorypkgToPyObject(HyAdvisoryPkg advisorypkg)
     return (PyObject *)self;
 }
 
-HyAdvisoryPkg
+HifAdvisoryPkg *
 advisorypkgFromPyObject(PyObject *o)
 {
     if (!PyObject_TypeCheck(o, &advisorypkg_Type)) {
@@ -56,9 +56,9 @@ advisorypkgFromPyObject(PyObject *o)
 }
 
 int
-advisorypkg_converter(PyObject *o, HyAdvisoryPkg *ref_ptr)
+advisorypkg_converter(PyObject *o, HifAdvisoryPkg **ref_ptr)
 {
-    HyAdvisoryPkg ref = advisorypkgFromPyObject(o);
+    HifAdvisoryPkg *ref = advisorypkgFromPyObject(o);
     if (ref == NULL)
         return 0;
     *ref_ptr = ref;
@@ -70,7 +70,7 @@ advisorypkg_converter(PyObject *o, HyAdvisoryPkg *ref_ptr)
 static void
 advisorypkg_dealloc(_AdvisoryPkgObject *self)
 {
-    hy_advisorypkg_free(self->advisorypkg);
+    g_object_unref(self->advisorypkg);
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -78,7 +78,7 @@ static PyObject *
 advisorypkg_richcompare(PyObject *self, PyObject *other, int op)
 {
     PyObject *result;
-    HyAdvisoryPkg cself, cother;
+    HifAdvisoryPkg *cself, *cother;
 
     if (!advisorypkg_converter(self, &cself) ||
         !advisorypkg_converter(other, &cother)) {
@@ -88,7 +88,7 @@ advisorypkg_richcompare(PyObject *self, PyObject *other, int op)
         return Py_NotImplemented;
     }
 
-    int identical = advisorypkg_identical(cself, cother);
+    int identical = hif_advisorypkg_compare(cself, cother);
     switch (op) {
     case Py_EQ:
         result = TEST_COND(identical);
@@ -117,19 +117,22 @@ static PyObject *
 get_attr(_AdvisoryPkgObject *self, void *closure)
 {
     intptr_t str_key = (intptr_t)closure;
-    const char *str;
-
-    str = hy_advisorypkg_get_string(self->advisorypkg, str_key);
-    if (str == NULL)
-        Py_RETURN_NONE;
-    return PyUnicode_FromString(str);
+    if (str_key == 0)
+        return PyUnicode_FromString(hif_advisorypkg_get_name(self->advisorypkg));
+    if (str_key == 1)
+        return PyUnicode_FromString(hif_advisorypkg_get_evr(self->advisorypkg));
+    if (str_key == 2)
+        return PyUnicode_FromString(hif_advisorypkg_get_arch(self->advisorypkg));
+    if (str_key == 3)
+        return PyUnicode_FromString(hif_advisorypkg_get_filename(self->advisorypkg));
+    Py_RETURN_NONE;
 }
 
 static PyGetSetDef advisorypkg_getsetters[] = {
-    {"name", (getter)get_attr, NULL, NULL, (void *)HY_ADVISORYPKG_NAME},
-    {"evr", (getter)get_attr, NULL, NULL, (void *)HY_ADVISORYPKG_EVR},
-    {"arch", (getter)get_attr, NULL, NULL, (void *)HY_ADVISORYPKG_ARCH},
-    {"filename", (getter)get_attr, NULL, NULL, (void *)HY_ADVISORYPKG_FILENAME},
+    {"name", (getter)get_attr, NULL, NULL, (void *)0},
+    {"evr", (getter)get_attr, NULL, NULL, (void *)1},
+    {"arch", (getter)get_attr, NULL, NULL, (void *)2},
+    {"filename", (getter)get_attr, NULL, NULL, (void *)3},
     {NULL}                      /* sentinel */
 };
 

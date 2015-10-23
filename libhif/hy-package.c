@@ -28,7 +28,7 @@
 #include <solv/util.h>
 
 // hawkey
-#include "hy-advisory-private.h"
+#include "hif-advisory-private.h"
 #include "hy-iutil.h"
 #include "hy-sack-private.h"
 #include "hy-package-private.h"
@@ -449,15 +449,15 @@ hy_package_get_files(HyPackage pkg)
     return (gchar**)g_ptr_array_free (ret, FALSE);
 }
 
-HyAdvisoryList
+GPtrArray *
 hy_package_get_advisories(HyPackage pkg, int cmp_type)
 {
     Dataiterator di;
     Id evr;
     int cmp;
-    HyAdvisory advisory;
+    HifAdvisory *advisory;
     Pool *pool = package_pool(pkg);
-    HyAdvisoryList advisorylist = advisorylist_create(pool);
+    GPtrArray *advisorylist = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
     Solvable *s = get_solvable(pkg);
 
     dataiterator_init(&di, pool, 0, 0, UPDATE_COLLECTION_NAME,
@@ -475,9 +475,8 @@ hy_package_get_advisories(HyPackage pkg, int cmp_type)
         if ((cmp > 0 && (cmp_type & HY_GT)) ||
             (cmp < 0 && (cmp_type & HY_LT)) ||
             (cmp == 0 && (cmp_type & HY_EQ))) {
-            advisory = advisory_create(pool, di.solvid);
-            advisorylist_add(advisorylist, advisory);
-            hy_advisory_free(advisory);
+            advisory = hif_advisory_new(pool, di.solvid);
+            g_ptr_array_add(advisorylist, advisory);
             dataiterator_skip_solvable(&di);
         }
     }

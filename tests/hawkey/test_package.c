@@ -22,7 +22,7 @@
 #include <solv/util.h>
 
 // hawkey
-#include "libhif/hy-advisory.h"
+#include "libhif/hif-advisory.h"
 #include "libhif/hy-package.h"
 #include "libhif/hy-package-private.h"
 #include "libhif/hy-query.h"
@@ -211,37 +211,36 @@ END_TEST
 
 START_TEST(test_get_advisories)
 {
-    HyAdvisoryList advisories;
-    HyAdvisory advisory;
+    GPtrArray *advisories;
+    HifAdvisory *advisory;
     HySack sack = test_globals.sack;
     HyPackage pkg = by_name(sack, "tour");
 
     advisories = hy_package_get_advisories(pkg, HY_GT);
     fail_unless(advisories != NULL);
-    ck_assert_int_eq(hy_advisorylist_count(advisories), 1);
-    advisory = hy_advisorylist_get_clone(advisories, 0);
-    ck_assert_str_eq(hy_advisory_get_id(advisory), "FEDORA-2008-9969");
-    hy_advisory_free(advisory);
-    hy_advisorylist_free(advisories);
+    ck_assert_int_eq(advisories->len, 1);
+    advisory = g_ptr_array_index(advisories, 0);
+    ck_assert_str_eq(hif_advisory_get_id(advisory), "FEDORA-2008-9969");
+    g_ptr_array_unref(advisories);
     hy_package_free(pkg);
 }
 END_TEST
 
 START_TEST(test_get_advisories_none)
 {
-    HyAdvisoryList advisories;
+    GPtrArray *advisories;
     HySack sack = test_globals.sack;
     HyPackage pkg = by_name(sack, "mystery-devel");
 
     advisories = hy_package_get_advisories(pkg, HY_GT|HY_EQ);
     fail_unless(advisories != NULL);
-    ck_assert_int_eq(hy_advisorylist_count(advisories), 0);
-    hy_advisorylist_free(advisories);
+    ck_assert_int_eq(advisories->len, 0);
+    g_ptr_array_unref(advisories);
 
     advisories = hy_package_get_advisories(pkg, HY_LT|HY_EQ);
     fail_unless(advisories != NULL);
-    ck_assert_int_eq(hy_advisorylist_count(advisories), 0);
-    hy_advisorylist_free(advisories);
+    ck_assert_int_eq(advisories->len, 0);
+    g_ptr_array_unref(advisories);
 
     hy_package_free(pkg);
 }

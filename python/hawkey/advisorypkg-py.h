@@ -26,6 +26,6 @@
 
 extern PyTypeObject advisorypkg_Type;
 
-PyObject *advisorypkgToPyObject(HyAdvisoryPkg advisorypkg);
+PyObject *advisorypkgToPyObject(HifAdvisoryPkg *advisorypkg);
 
 #endif // ADVISORYPKG_PY_H

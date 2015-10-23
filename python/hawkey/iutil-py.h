@@ -26,9 +26,9 @@
 #define TEST_COND(cond) \
     ((cond) ? Py_True : Py_False)
 
-PyObject *advisorylist_to_pylist(const HyAdvisoryList advisorylist, PyObject *sack);
-PyObject *advisorypkglist_to_pylist(const HyAdvisoryPkgList advisorypkglist);
-PyObject *advisoryreflist_to_pylist(const HyAdvisoryRefList advisoryreflist, PyObject *sack);
+PyObject *advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack);
+PyObject *advisorypkglist_to_pylist(const GPtrArray *advisorypkglist);
+PyObject *advisoryreflist_to_pylist(const GPtrArray *advisoryreflist, PyObject *sack);
 PyObject *packagelist_to_pylist(HyPackageList plist, PyObject *sack);
 PyObject *packageset_to_pylist(HyPackageSet pset, PyObject *sack);
 HyPackageSet pyseq_to_packageset(PyObject *sequence, HySack sack);

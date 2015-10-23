@@ -20,14 +20,14 @@
 
 
 // hawkey
-#include "libhif/hy-advisory.h"
-#include "libhif/hy-advisorypkg.h"
+#include "libhif/hif-advisory.h"
+#include "libhif/hif-advisorypkg.h"
 #include "libhif/hy-package.h"
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"
 
-static HyAdvisoryPkg advisorypkg;
+static HifAdvisoryPkg *advisorypkg;
 
 static void
 advisorypkg_fixture(void)
@@ -35,58 +35,49 @@ advisorypkg_fixture(void)
     fixture_yum();
 
     HyPackage pkg;
-    HyAdvisoryList advisories;
-    HyAdvisory advisory;
-    HyAdvisoryPkgList pkglist;
+    GPtrArray *advisories;
+    HifAdvisory *advisory;
+    GPtrArray *pkglist;
 
     pkg = by_name(test_globals.sack, "tour");
     advisories = hy_package_get_advisories(pkg, HY_GT);
-    advisory = hy_advisorylist_get_clone(advisories, 0);
-    pkglist = hy_advisory_get_packages(advisory);
-    advisorypkg = hy_advisorypkglist_get_clone(pkglist, 0);
+    advisory = g_ptr_array_index(advisories, 0);
+    pkglist = hif_advisory_get_packages(advisory);
+    advisorypkg = g_object_ref(g_ptr_array_index(pkglist, 0));
 
-    hy_advisorypkglist_free(pkglist);
-    hy_advisory_free(advisory);
-    hy_advisorylist_free(advisories);
+    g_ptr_array_unref(pkglist);
+    g_ptr_array_unref(advisories);
     hy_package_free(pkg);
 }
 
 static void
 advisorypkg_teardown(void)
 {
-    hy_advisorypkg_free(advisorypkg);
+    g_object_unref(advisorypkg);
     teardown();
 }
 
 START_TEST(test_name)
 {
-    ck_assert_str_eq(
-        hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_NAME),
-        "tour");
+    ck_assert_str_eq(hif_advisorypkg_get_name(advisorypkg), "tour");
 }
 END_TEST
 
 START_TEST(test_evr)
 {
-    ck_assert_str_eq(
-        hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_EVR),
-        "4-7");
+    ck_assert_str_eq(hif_advisorypkg_get_evr(advisorypkg), "4-7");
 }
 END_TEST
 
 START_TEST(test_arch)
 {
-    ck_assert_str_eq(
-        hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_ARCH),
-        "noarch");
+    ck_assert_str_eq(hif_advisorypkg_get_arch(advisorypkg), "noarch");
 }
 END_TEST
 
 START_TEST(test_filename)
 {
-    ck_assert_str_eq(
-        hy_advisorypkg_get_string(advisorypkg, HY_ADVISORYPKG_FILENAME),
-        "tour.noarch.rpm");
+    ck_assert_str_eq(hif_advisorypkg_get_filename(advisorypkg), "tour.noarch.rpm");
 }
 END_TEST
 

@@ -1,7 +1,7 @@
 SET (hawkey_SRCS
-    hy-advisory.c
-    hy-advisorypkg.c
-    hy-advisoryref.c
+    hif-advisory.c
+    hif-advisorypkg.c
+    hif-advisoryref.c
     hy-errno.c
     hy-goal.c
     hy-iutil.c
@@ -36,9 +36,9 @@ TARGET_LINK_LIBRARIES(hth libhawkey
 ADD_SUBDIRECTORY(python)
 
 SET(HAWKEY_headers
-    hy-advisory.h
-    hy-advisorypkg.h
-    hy-advisoryref.h
+    hif-advisory.h
+    hif-advisorypkg.h
+    hif-advisoryref.h
     hy-errno.h
     hy-goal.h
     hy-nevra.h

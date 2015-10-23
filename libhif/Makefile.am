@@ -47,6 +47,9 @@ lib_LTLIBRARIES =						\
 
 libhif_includedir = $(includedir)/libhif
 libhif_include_HEADERS =					\
+	hif-advisory.h						\
+	hif-advisorypkg.h					\
+	hif-advisoryref.h					\
 	hif-context.h						\
 	hif-db.h						\
 	hif-goal.h						\
@@ -65,15 +68,15 @@ libhif_include_HEADERS =					\
 	libhif.h
 
 libhif_la_SOURCES =						\
-	hy-advisory.c						\
-	hy-advisory.h						\
-	hy-advisory-private.h					\
-	hy-advisorypkg.c					\
-	hy-advisorypkg.h					\
-	hy-advisorypkg-private.h				\
-	hy-advisoryref.c					\
-	hy-advisoryref.h					\
-	hy-advisoryref-private.h				\
+	hif-advisorypkg.c					\
+	hif-advisorypkg.h					\
+	hif-advisorypkg-private.h				\
+	hif-advisoryref.c					\
+	hif-advisoryref.h					\
+	hif-advisoryref-private.h				\
+	hif-advisory.c						\
+	hif-advisory.h						\
+	hif-advisory-private.h					\
 	hy-goal.c						\
 	hy-goal.h						\
 	hy-goal-private.h					\
