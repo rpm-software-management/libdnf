@@ -108,7 +108,7 @@ filter_real(HyNevra nevra, HySack sack, int flags)
 HySubject
 hy_subject_create(const char * pattern)
 {
-    return solv_strdup(pattern);
+    return g_strdup(pattern);
 }
 
 void
@@ -146,7 +146,7 @@ static HyPossibilities
 possibilities_create(HySubject subject, HyForm *forms,HySack sack, int flags,
     enum poss_type type)
 {
-    HyPossibilities poss = solv_calloc(1, sizeof(*poss));
+    HyPossibilities poss = g_malloc0(sizeof(*poss));
     poss->subject = hy_subject_create(subject);
     poss->forms = forms_dup(forms);
     poss->sack = sack;

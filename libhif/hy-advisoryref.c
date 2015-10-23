@@ -42,7 +42,7 @@ struct _HyAdvisoryRefList {
 HyAdvisoryRef
 advisoryref_create(Pool *pool, Id a_id, int index)
 {
-    HyAdvisoryRef ref = solv_calloc(1, sizeof(*ref));
+    HyAdvisoryRef ref = g_malloc0(sizeof(*ref));
     ref->pool = pool;
     ref->a_id = a_id;
     ref->index = index;
@@ -64,7 +64,7 @@ advisoryref_identical(HyAdvisoryRef left, HyAdvisoryRef right)
 HyAdvisoryRefList
 advisoryreflist_create()
 {
-    HyAdvisoryRefList reflist = solv_calloc(1, sizeof(*reflist));
+    HyAdvisoryRefList reflist = g_malloc0(sizeof(*reflist));
     reflist->nrefs = 0;
     reflist->refs = solv_extend(
         0, reflist->nrefs, 0, sizeof(HyAdvisoryRef), REFERENCE_BLOCK);

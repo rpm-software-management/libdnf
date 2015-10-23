@@ -59,7 +59,7 @@ replace_filter(HySack sack, struct _Filter **fp, int keyname, int cmp_type,
     }
 
     f->match_type = _HY_STR;
-    f->matches[0].str = solv_strdup(match);
+    f->matches[0].str = g_strdup(match);
     return 0;
 }
 
@@ -85,7 +85,7 @@ valid_setting(int keyname, int cmp_type)
 HySelector
 hy_selector_create(HySack sack)
 {
-    HySelector sltr = solv_calloc(1, sizeof(*sltr));
+    HySelector sltr = g_malloc0(sizeof(*sltr));
     sltr->sack = sack;
     return sltr;
 }

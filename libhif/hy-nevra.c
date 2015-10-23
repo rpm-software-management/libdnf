@@ -42,7 +42,7 @@ hy_nevra_clear(HyNevra nevra)
 HyNevra
 hy_nevra_create()
 {
-    HyNevra nevra = solv_calloc(1, sizeof(*nevra));
+    HyNevra nevra = g_malloc0(sizeof(*nevra));
     hy_nevra_clear(nevra);
     return nevra;
 }
@@ -91,11 +91,11 @@ HyNevra
 hy_nevra_clone(HyNevra nevra)
 {
     HyNevra clone = hy_nevra_create();
-    clone->name = solv_strdup(nevra->name);
+    clone->name = g_strdup(nevra->name);
     clone->epoch = nevra->epoch;
-    clone->version = solv_strdup(nevra->version);
-    clone->release = solv_strdup(nevra->release);
-    clone->arch = solv_strdup(nevra->arch);
+    clone->version = g_strdup(nevra->version);
+    clone->release = g_strdup(nevra->release);
+    clone->arch = g_strdup(nevra->arch);
     return clone;
 }
 
@@ -127,7 +127,7 @@ hy_nevra_set_string(HyNevra nevra, int which, const char* str_val)
 {
     char** attr = get_string(nevra, which);
     g_free(*attr);
-    *attr = solv_strdup(str_val);
+    *attr = g_strdup(str_val);
 }
 
 int
@@ -170,19 +170,9 @@ hy_nevra_evr_cmp(HyNevra nevra1, HyNevra nevra2, HySack sack)
     return cmp;
 }
 
-#define VER_REL_LENGTH(nevra) (strlen(nevra->version) + strlen(nevra->release))
-
 char *hy_nevra_get_evr(HyNevra nevra)
 {
-    char *str = NULL;
-    if (nevra->epoch == -1) {
-        str = solv_malloc2(sizeof(char), 2 + VER_REL_LENGTH(nevra));
-        sprintf(str, "%s-%s", nevra->version, nevra->release);
-    } else {
-        str = solv_malloc2(sizeof(char), 18 + VER_REL_LENGTH(nevra));
-        sprintf(str, "%d:%s-%s", nevra->epoch, nevra->version, nevra->release);
-    }
-    return str;
+    if (nevra->epoch == -1)
+        return g_strdup_printf ("%s-%s", nevra->version, nevra->release);
+    return g_strdup_printf ("%d:%s-%s", nevra->epoch, nevra->version, nevra->release);
 }
-
-#undef VER_REL_LENGTH
