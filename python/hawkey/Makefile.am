@@ -1,5 +1,5 @@
 
-hawkeydir = $(pkgpythondir)
+hawkeydir = $(pythondir)/hawkey
 hawkey_PYTHON = __init__.py
 
 pyexec_LTLIBRARIES = _hawkey.la
