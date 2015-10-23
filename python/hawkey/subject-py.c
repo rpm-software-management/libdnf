@@ -28,8 +28,8 @@
 #include "hy-nevra.h"
 #include "hy-nevra-private.h"
 #include "hy-reldep.h"
-#include "hy-sack.h"
-#include "hy-sack-private.h"
+#include "hif-sack.h"
+#include "hif-sack-private.h"
 #include "hy-subject.h"
 #include "hy-types.h"
 
@@ -160,7 +160,7 @@ static PyObject *
 nevra_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *sack = NULL;
-    HySack csack = NULL;
+    HifSack *csack = NULL;
     int allow_globs = 0;
     int icase = 0;
     int flags = 0;
@@ -193,7 +193,7 @@ static PyObject *
 reldep_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *sack = NULL;
-    HySack csack = NULL;
+    HifSack *csack = NULL;
     int icase = 0;
     int flags = 0;
     char *kwlist[] = { "sack", "icase", NULL };

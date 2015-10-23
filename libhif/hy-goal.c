@@ -42,12 +42,12 @@
 #include "hy-query-private.h"
 #include "hy-reldep-private.h"
 #include "hy-repo-private.h"
-#include "hy-sack-private.h"
+#include "hif-sack-private.h"
 #include "hy-selector-private.h"
 #include "hy-util.h"
 
 struct _HyGoal {
-    HySack sack;
+    HifSack *sack;
     Queue staging;
     Solver *solv;
     Transaction *trans;
@@ -141,12 +141,12 @@ sort_packages(const void *ap, const void *bp, void *s_cb)
 static int
 limit_installonly_packages(HyGoal goal, Solver *solv, Queue *job)
 {
-    HySack sack = goal->sack;
-    if (!sack->installonly_limit)
+    HifSack *sack = goal->sack;
+    if (!hif_sack_get_installonly_limit(sack))
         return 0;
 
-    Queue *onlies = &sack->installonly;
-    Pool *pool = sack_pool(sack);
+    Queue *onlies = hif_sack_get_installonly(sack);
+    Pool *pool = hif_sack_get_pool(sack);
     int reresolve = 0;
 
     for (int i = 0; i < onlies->count; ++i) {
@@ -157,24 +157,24 @@ limit_installonly_packages(HyGoal goal, Solver *solv, Queue *job)
         FOR_PKG_PROVIDES(p, pp, onlies->elements[i])
             if (solver_get_decisionlevel(solv, p) > 0)
                 queue_push(&q, p);
-        if (q.count <= sack->installonly_limit) {
+        if (q.count <= (int) hif_sack_get_installonly_limit(sack)) {
             queue_free(&q);
             continue;
         }
 
-        struct InstallonliesSortCallback s_cb = {pool, sack_running_kernel(sack)};
+        struct InstallonliesSortCallback s_cb = {pool, hif_sack_running_kernel(sack)};
         qsort_r(q.elements, q.count, sizeof(q.elements[0]), sort_packages, &s_cb);
         Queue same_names;
         queue_init(&same_names);
         while (q.count > 0) {
             same_name_subqueue(pool, &q, &same_names);
-            if (same_names.count <= sack->installonly_limit)
+            if (same_names.count <= (int) hif_sack_get_installonly_limit(sack))
                 continue;
             reresolve = 1;
             for (int j = 0; j < same_names.count; ++j) {
                 Id id  = same_names.elements[j];
                 Id action = SOLVER_ERASE;
-                if (j < sack->installonly_limit)
+                if (j < (int) hif_sack_get_installonly_limit(sack))
                     action = SOLVER_INSTALL;
                 queue_push2(job, action | SOLVER_SOLVABLE, id);
             }
@@ -203,7 +203,7 @@ internal_solver_callback(Solver *solv, void *data)
 static Solver *
 init_solver(HyGoal goal, int flags)
 {
-    Pool *pool = sack_pool(goal->sack);
+    Pool *pool = hif_sack_get_pool(goal->sack);
     Solver *solv = solver_create(pool);
 
     if (goal->solv)
@@ -228,14 +228,14 @@ static int
 solve(HyGoal goal, Queue *job, int flags, hy_solution_callback user_cb,
       void * user_cb_data)
 {
-    HySack sack = goal->sack;
+    HifSack *sack = goal->sack;
     struct _SolutionCallback cb_tuple;
 
     /* apply the excludes */
-    sack_recompute_considered(sack);
+    hif_sack_recompute_considered(sack);
 
-    repo_internalize_all_trigger(sack_pool(sack));
-    sack_make_provides_ready(sack);
+    repo_internalize_all_trigger(hif_sack_get_pool(sack));
+    hif_sack_make_provides_ready(sack);
     if (goal->trans) {
         transaction_free(goal->trans);
         goal->trans = NULL;
@@ -269,7 +269,7 @@ solve(HyGoal goal, Queue *job, int flags, hy_solution_callback user_cb,
 static Queue *
 construct_job(HyGoal goal, int flags)
 {
-    HySack sack = goal->sack;
+    HifSack *sack = goal->sack;
     Queue *job = g_malloc(sizeof(*job));
 
     queue_init_clone(job, &goal->staging);
@@ -280,9 +280,9 @@ construct_job(HyGoal goal, int flags)
             job->elements[i] |= SOLVER_FORCEBEST;
 
     /* turn off implicit obsoletes for installonly packages */
-    for (int i = 0; i < sack->installonly.count; i++)
+    for (int i = 0; i < (int) hif_sack_get_installonly(sack)->count; i++)
         queue_push2(job, SOLVER_MULTIVERSION|SOLVER_SOLVABLE_PROVIDES,
-                    sack->installonly.elements[i]);
+                    hif_sack_get_installonly(sack)->elements[i]);
 
     if (flags & HY_VERIFY)
         queue_push2(job, SOLVER_VERIFY|SOLVER_SOLVABLE_ALL, 0);
@@ -357,14 +357,14 @@ job_has(Queue *job, Id what, Id id)
 }
 
 static int
-filter_arch2job(HySack sack, const struct _Filter *f, Queue *job)
+filter_arch2job(HifSack *sack, const struct _Filter *f, Queue *job)
 {
     if (f == NULL)
         return 0;
 
     assert(f->cmp_type == HY_EQ);
     assert(f->nmatches == 1);
-    Pool *pool = sack_pool(sack);
+    Pool *pool = hif_sack_get_pool(sack);
     const char *arch = f->matches[0].str;
     Id archid = str2archid(pool, arch);
 
@@ -382,7 +382,7 @@ filter_arch2job(HySack sack, const struct _Filter *f, Queue *job)
 }
 
 static int
-filter_evr2job(HySack sack, const struct _Filter *f, Queue *job)
+filter_evr2job(HifSack *sack, const struct _Filter *f, Queue *job)
 {
     if (f == NULL)
         return 0;
@@ -390,7 +390,7 @@ filter_evr2job(HySack sack, const struct _Filter *f, Queue *job)
     assert(f->cmp_type == HY_EQ);
     assert(f->nmatches == 1);
 
-    Pool *pool = sack_pool(sack);
+    Pool *pool = hif_sack_get_pool(sack);
     Id evr = pool_str2id(pool, f->matches[0].str, 1);
     Id constr = f->keyname == HY_PKG_VERSION ? SOLVER_SETEV : SOLVER_SETEVR;
     for (int i = 0; i < job->count; i += 2) {
@@ -405,14 +405,14 @@ filter_evr2job(HySack sack, const struct _Filter *f, Queue *job)
 }
 
 static int
-filter_file2job(HySack sack, const struct _Filter *f, Queue *job)
+filter_file2job(HifSack *sack, const struct _Filter *f, Queue *job)
 {
     if (f == NULL)
         return 0;
     assert(f->nmatches == 1);
 
     const char *file = f->matches[0].str;
-    Pool *pool = sack_pool(sack);
+    Pool *pool = hif_sack_get_pool(sack);
 
     int flags = f->cmp_type & HY_GLOB ? SELECTION_GLOB : 0;
     if (f->cmp_type & HY_GLOB)
@@ -423,13 +423,13 @@ filter_file2job(HySack sack, const struct _Filter *f, Queue *job)
 }
 
 static int
-filter_name2job(HySack sack, const struct _Filter *f, Queue *job)
+filter_name2job(HifSack *sack, const struct _Filter *f, Queue *job)
 {
     if (f == NULL)
         return 0;
     assert(f->nmatches == 1);
 
-    Pool *pool = sack_pool(sack);
+    Pool *pool = hif_sack_get_pool(sack);
     const char *name = f->matches[0].str;
     Id id;
     Dataiterator di;
@@ -461,13 +461,13 @@ filter_name2job(HySack sack, const struct _Filter *f, Queue *job)
 }
 
 static int
-filter_provides2job(HySack sack, const struct _Filter *f, Queue *job)
+filter_provides2job(HifSack *sack, const struct _Filter *f, Queue *job)
 {
     if (f == NULL)
         return 0;
     assert(f->nmatches == 1);
 
-    Pool *pool = sack_pool(sack);
+    Pool *pool = hif_sack_get_pool(sack);
     const char *name = f->matches[0].str;
     Id id;
     Dataiterator di;
@@ -497,7 +497,7 @@ filter_provides2job(HySack sack, const struct _Filter *f, Queue *job)
 }
 
 static int
-filter_reponame2job(HySack sack, const struct _Filter *f, Queue *job)
+filter_reponame2job(HifSack *sack, const struct _Filter *f, Queue *job)
 {
     Queue repo_sel;
     Id i;
@@ -510,7 +510,7 @@ filter_reponame2job(HySack sack, const struct _Filter *f, Queue *job)
     assert(f->nmatches == 1);
 
     queue_init(&repo_sel);
-    Pool *pool = sack_pool(sack);
+    Pool *pool = hif_sack_get_pool(sack);
     FOR_REPOS(i, repo)
         if (!strcmp(f->matches[0].str, repo->name)) {
             queue_push2(&repo_sel, SOLVER_SOLVABLE_REPO | SOLVER_SETREPO, repo->repoid);
@@ -530,7 +530,7 @@ filter_reponame2job(HySack sack, const struct _Filter *f, Queue *job)
 int
 sltr2job(const HySelector sltr, Queue *job, int solver_action)
 {
-    HySack sack = selector_sack(sltr);
+    HifSack *sack = selector_sack(sltr);
     int ret = 0;
     Queue job_sltr;
     int any_opt_filter = sltr->f_arch || sltr->f_evr || sltr->f_reponame;
@@ -545,8 +545,8 @@ sltr2job(const HySelector sltr, Queue *job, int solver_action)
         goto finish;
     }
 
-    sack_recompute_considered(sack);
-    sack_make_provides_ready(sack);
+    hif_sack_recompute_considered(sack);
+    hif_sack_make_provides_ready(sack);
     ret = filter_name2job(sack, sltr->f_name, &job_sltr);
     if (ret)
         goto finish;
@@ -588,7 +588,7 @@ hy_goal_clone(HyGoal goal)
 }
 
 HyGoal
-hy_goal_create(HySack sack)
+hy_goal_create(HifSack *sack)
 {
     HyGoal goal = g_malloc0(sizeof(*goal));
     goal->sack = sack;
@@ -649,7 +649,7 @@ int
 hy_goal_erase_flags(HyGoal goal, HyPackage pkg, int flags)
 {
 #ifndef NDEBUG
-    Pool *pool = sack_pool(goal->sack);
+    Pool *pool = hif_sack_get_pool(goal->sack);
     assert(pool->installed &&
            pool_id2solvable(pool, package_id(pkg))->repo == pool->installed);
 #endif
@@ -969,7 +969,7 @@ hy_goal_list_downgrades(HyGoal goal, GError **error)
 GPtrArray *
 hy_goal_list_obsoleted_by_package(HyGoal goal, HyPackage pkg)
 {
-    HySack sack = goal->sack;
+    HifSack *sack = goal->sack;
     Transaction *trans = goal->trans;
     Queue obsoletes;
     GPtrArray *plist = hy_packagelist_create();

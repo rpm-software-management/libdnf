@@ -21,14 +21,14 @@
 // hawkey
 #include "libhif/hy-package.h"
 #include "libhif/hy-reldep.h"
-#include "libhif/hy-sack.h"
+#include "libhif/hif-sack.h"
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"
 
 START_TEST(test_reldeplist_add)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage flying = by_name_repo(sack, "fool", "updates");
     HyReldepList reldeplist = hy_reldeplist_create(sack);
     HyReldepList obsoletes = hy_package_get_obsoletes(flying);

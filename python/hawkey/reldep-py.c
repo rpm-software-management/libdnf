@@ -26,7 +26,7 @@
 
 // hawkey
 #include "hy-reldep-private.h"
-#include "hy-sack-private.h"
+#include "hif-sack-private.h"
 #include "hy-iutil.h"
 
 // pyhawkey
@@ -57,14 +57,14 @@ reldep_new_core(PyTypeObject *type, PyObject *sack)
 PyObject *
 new_reldep(PyObject *sack, Id r_id)
 {
-    HySack csack = sackFromPyObject(sack);
+    HifSack *csack = sackFromPyObject(sack);
     if (csack == NULL)
         return NULL;
 
     _ReldepObject *self = reldep_new_core(&reldep_Type, sack);
     if (self == NULL)
         return NULL;
-    self->reldep = reldep_create(sack_pool(csack), r_id);
+    self->reldep = reldep_create(hif_sack_get_pool(csack), r_id);
     return (PyObject*)self;
 }
 
@@ -117,7 +117,7 @@ reldep_init(_ReldepObject *self, PyObject *args, PyObject *kwds)
     PyObject *reldep_str_py = NULL;
     if (!PyArg_ParseTuple(args, "O!O", &sack_Type, &sack, &reldep_str_py))
         return -1;
-    HySack csack = sackFromPyObject(sack);
+    HifSack *csack = sackFromPyObject(sack);
     if (csack == NULL)
         return -1;
     reldep_str = pycomp_get_string(reldep_str_py, &tmp_py_str);

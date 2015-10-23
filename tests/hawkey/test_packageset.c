@@ -21,7 +21,7 @@
 // hawkey
 #include "libhif/hy-package-private.h"
 #include "libhif/hy-packageset-private.h"
-#include "libhif/hy-sack-private.h"
+#include "libhif/hif-sack-private.h"
 #include "fixtures.h"
 #include "test_suites.h"
 
@@ -32,10 +32,10 @@ packageset_fixture(void)
 {
     fixture_all();
 
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage pkg0 = package_create(sack, 0);
     HyPackage pkg9 = package_create(sack, 9);
-    int max = sack_last_solvable(sack);
+    int max = hif_sack_last_solvable(sack);
     HyPackage pkg_max = package_create(sack, max);
 
     // init the global var
@@ -56,7 +56,7 @@ packageset_teardown(void)
 
 START_TEST(test_clone)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackageSet pset2 = hy_packageset_clone(pset);
 
     HyPackage pkg8 = package_create(sack, 8);
@@ -73,10 +73,10 @@ END_TEST
 
 START_TEST(test_has)
 {
-    HySack sack = test_globals.sack;
+    HifSack *sack = test_globals.sack;
     HyPackage pkg0 = package_create(sack, 0);
     HyPackage pkg9 = package_create(sack, 9);
-    HyPackage pkg_max = package_create(sack, sack_last_solvable(sack));
+    HyPackage pkg_max = package_create(sack, hif_sack_last_solvable(sack));
 
     HyPackage pkg7 = package_create(sack, 7);
     HyPackage pkg8 = package_create(sack, 8);
@@ -101,8 +101,8 @@ END_TEST
 
 START_TEST(test_get_clone)
 {
-    HySack sack = test_globals.sack;
-    int max = sack_last_solvable(sack);
+    HifSack *sack = test_globals.sack;
+    int max = hif_sack_last_solvable(sack);
 
     fail_unless(hy_packageset_count(pset) == 3);
     HyPackage pkg0 = hy_packageset_get_clone(pset, 0);
@@ -136,8 +136,8 @@ END_TEST
 
 START_TEST(test_get_pkgid)
 {
-    HySack sack = test_globals.sack;
-    int max = sack_last_solvable(sack);
+    HifSack *sack = test_globals.sack;
+    int max = hif_sack_last_solvable(sack);
 
     // add some more packages
     HyPackage pkg;

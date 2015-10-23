@@ -25,12 +25,12 @@
 #include <solv/pooltypes.h>
 
 // hawkey
-#include "libhif/hy-sack.h"
+#include "libhif/hif-sack.h"
 #include "testshared.h"
 
 void assert_nevra_eq(HyPackage pkg, const char *nevra);
-HyPackage by_name(HySack sack, const char *name);
-HyPackage by_name_repo(HySack sack, const char *name, const char *repo);
+HyPackage by_name(HifSack *sack, const char *name);
+HyPackage by_name_repo(HifSack *sack, const char *name, const char *repo);
 void dump_packagelist(GPtrArray *plist, int free);
 void dump_query_results(HyQuery query);
 void dump_goal_results(HyGoal goal);

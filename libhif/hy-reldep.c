@@ -27,7 +27,7 @@
 // hawkey
 #include "hy-iutil.h"
 #include "hy-reldep-private.h"
-#include "hy-sack-private.h"
+#include "hif-sack-private.h"
 
 struct _HyReldep {
     Pool *pool;
@@ -70,9 +70,9 @@ merge_reldeplists(HyReldepList rl1, HyReldepList rl2)
 }
 
 HyReldep
-hy_reldep_create(HySack sack, const char *name, int cmp_type, const char *evr)
+hy_reldep_create(HifSack *sack, const char *name, int cmp_type, const char *evr)
 {
-    Pool *pool = sack_pool(sack);
+    Pool *pool = hif_sack_get_pool(sack);
     Id id = pool_str2id(pool, name, 0);
 
     if (id == STRID_NULL || id == STRID_EMPTY)
@@ -108,10 +108,10 @@ char
 }
 
 HyReldepList
-hy_reldeplist_create(HySack sack)
+hy_reldeplist_create(HifSack *sack)
 {
     HyReldepList reldeplist = g_malloc0(sizeof(*reldeplist));
-    reldeplist->pool = sack_pool(sack);
+    reldeplist->pool = hif_sack_get_pool(sack);
     queue_init(&reldeplist->queue);
     return reldeplist;
 }

@@ -22,6 +22,7 @@
 #define HY_NEVRA_H
 
 #include "hy-types.h"
+#include "hif-sack.h"
 
 #include <glib.h>
 
@@ -42,8 +43,8 @@ const char *hy_nevra_get_string(HyNevra nevra, int which);
 int hy_nevra_get_epoch(HyNevra nevra);
 void hy_nevra_set_epoch(HyNevra nevra, int epoch);
 void hy_nevra_set_string(HyNevra nevra, int which, const char* str_val);
-HyQuery hy_nevra_to_query(HyNevra nevra, HySack sack);
-int hy_nevra_evr_cmp(HyNevra nevra1, HyNevra nevra2, HySack sack);
+HyQuery hy_nevra_to_query(HyNevra nevra, HifSack *sack);
+int hy_nevra_evr_cmp(HyNevra nevra1, HyNevra nevra2, HifSack *sack);
 char *hy_nevra_get_evr(HyNevra nevra);
 
 G_END_DECLS

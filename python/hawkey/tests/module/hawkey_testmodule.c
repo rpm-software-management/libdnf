@@ -38,12 +38,12 @@ py_load_repo(PyObject *unused, PyObject *args)
     if (!PyArg_ParseTuple(args, "Ossi", &sack, &name, &path, &installed))
 	return NULL;
 
-    HySack csack = sackFromPyObject(sack);
+    HifSack *csack = sackFromPyObject(sack);
     if (csack == NULL) {
-	PyErr_SetString(PyExc_TypeError, "Expected a HySack object.");
+	PyErr_SetString(PyExc_TypeError, "Expected a HifSack *object.");
 	return NULL;
     }
-    if (load_repo(sack_pool(csack), name, path, installed)) {
+    if (load_repo(hif_sack_get_pool(csack), name, path, installed)) {
 	PyErr_SetString(PyExc_IOError, "Can not load a testing repo.");
 	return NULL;
     }
@@ -54,12 +54,12 @@ static PyObject *
 py_glob_for_repofiles(PyObject *unused, PyObject *args)
 {
     const char *repo_name, *path;
-    HySack sack;
+    HifSack *sack;
 
     if (!PyArg_ParseTuple(args, "O&ss",
 			  sack_converter, &sack, &repo_name, &path))
 	return NULL;
-    HyRepo repo = glob_for_repofiles(sack_pool(sack), repo_name, path);
+    HyRepo repo = glob_for_repofiles(hif_sack_get_pool(sack), repo_name, path);
     return repoToPyObject(repo);
 }
 

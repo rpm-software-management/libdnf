@@ -11,7 +11,7 @@ SET (hawkey_SRCS
     hy-query.c
     hy-reldep.c
     hy-repo.c
-    hy-sack.c
+    hif-sack.c
     hy-selector.c
     hy-subject.c
     hy-subject_internal.c
@@ -46,7 +46,7 @@ SET(HAWKEY_headers
     hy-query.h
     hy-reldep.h
     hy-repo.h
-    hy-sack.h
+    hif-sack.h
     hy-selector.h
     hy-subject.h
     hy-types.h

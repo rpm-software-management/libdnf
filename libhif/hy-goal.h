@@ -25,8 +25,8 @@
 
 G_BEGIN_DECLS
 
-// hawkey
 #include "hy-types.h"
+#include "hif-sack.h"
 
 enum _hy_goal_op_flags {
     HY_CHECK_INSTALLED          = 1 << 0,
@@ -54,7 +54,7 @@ enum _hy_goal_actions {
 #define HY_REASON_DEP 1
 #define HY_REASON_USER 2
 
-HyGoal hy_goal_create(HySack sack);
+HyGoal hy_goal_create(HifSack *sack);
 HyGoal hy_goal_clone(HyGoal goal);
 void hy_goal_free(HyGoal goal);
 

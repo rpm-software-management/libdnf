@@ -34,7 +34,7 @@
 #include "hy-package-private.h"
 #include "hy-packageset-private.h"
 #include "hy-reldep-private.h"
-#include "hy-sack-private.h"
+#include "hif-sack-private.h"
 #include "hy-util.h"
 
 #define BLOCK_SIZE 15
@@ -286,7 +286,7 @@ query_add_filter(HyQuery q, int nmatches)
 static void
 filter_dataiterator(HyQuery q, struct _Filter *f, Map *m)
 {
-    Pool *pool = sack_pool(q->sack);
+    Pool *pool = hif_sack_get_pool(q->sack);
     Dataiterator di;
     Id keyname = di_keyname2id(f->keyname);
     int flags = type2flags(f->cmp_type, f->keyname);
@@ -327,7 +327,7 @@ filter_all(HyQuery q, struct _Filter *f, Map *m)
 static void
 filter_epoch(HyQuery q, struct _Filter *f, Map *m)
 {
-    Pool *pool = sack_pool(q->sack);
+    Pool *pool = hif_sack_get_pool(q->sack);
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
         unsigned long epoch = f->matches[mi].num;
@@ -354,7 +354,7 @@ filter_epoch(HyQuery q, struct _Filter *f, Map *m)
 static void
 filter_evr(HyQuery q, struct _Filter *f, Map *m)
 {
-    Pool *pool = sack_pool(q->sack);
+    Pool *pool = hif_sack_get_pool(q->sack);
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
         Id match_evr = pool_str2id(pool, f->matches[mi].str, 1);
@@ -376,7 +376,7 @@ filter_evr(HyQuery q, struct _Filter *f, Map *m)
 static void
 filter_version(HyQuery q, struct _Filter *f, Map *m)
 {
-    Pool *pool = sack_pool(q->sack);
+    Pool *pool = hif_sack_get_pool(q->sack);
     int cmp_type = f->cmp_type;
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
@@ -414,7 +414,7 @@ filter_version(HyQuery q, struct _Filter *f, Map *m)
 static void
 filter_release(HyQuery q, struct _Filter *f, Map *m)
 {
-    Pool *pool = sack_pool(q->sack);
+    Pool *pool = hif_sack_get_pool(q->sack);
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
         char *filter_vr = solv_dupjoin("0-", f->matches[mi].str, NULL);
@@ -445,7 +445,7 @@ filter_release(HyQuery q, struct _Filter *f, Map *m)
 static void
 filter_sourcerpm(HyQuery q, struct _Filter *f, Map *m)
 {
-    Pool *pool = sack_pool(q->sack);
+    Pool *pool = hif_sack_get_pool(q->sack);
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
         const char *match = f->matches[mi].str;
@@ -474,14 +474,14 @@ filter_sourcerpm(HyQuery q, struct _Filter *f, Map *m)
 static void
 filter_obsoletes(HyQuery q, struct _Filter *f, Map *m)
 {
-    Pool *pool = sack_pool(q->sack);
+    Pool *pool = hif_sack_get_pool(q->sack);
     int obsprovides = pool_get_flag(pool, POOL_FLAG_OBSOLETEUSESPROVIDES);
     Map *target;
 
     assert(f->match_type == _HY_PKG);
     assert(f->nmatches == 1);
     target = packageset_get_map(f->matches[0].pset);
-    sack_make_provides_ready(q->sack);
+    hif_sack_make_provides_ready(q->sack);
     for (Id p = 1; p < pool->nsolvables; ++p) {
         if (!MAPTST(q->result, p))
             continue;
@@ -508,10 +508,10 @@ filter_obsoletes(HyQuery q, struct _Filter *f, Map *m)
 static void
 filter_provides_reldep(HyQuery q, struct _Filter *f, Map *m)
 {
-    Pool *pool = sack_pool(q->sack);
+    Pool *pool = hif_sack_get_pool(q->sack);
     Id p, pp;
 
-    sack_make_provides_ready(q->sack);
+    hif_sack_make_provides_ready(q->sack);
     for (int i = 0; i < f->nmatches; ++i) {
         Id r_id = reldep_id(f->matches[i].reldep);
         FOR_PROVIDES(p, pp, r_id)
@@ -524,7 +524,7 @@ filter_rco_reldep(HyQuery q, struct _Filter *f, Map *m)
 {
     assert(f->match_type == _HY_RELDEP);
 
-    Pool *pool = sack_pool(q->sack);
+    Pool *pool = hif_sack_get_pool(q->sack);
     Id rco_key = reldep_keyname2id(f->keyname);
     Queue rco;
 
@@ -556,7 +556,7 @@ filter_rco_reldep(HyQuery q, struct _Filter *f, Map *m)
 static void
 filter_reponame(HyQuery q, struct _Filter *f, Map *m)
 {
-    Pool *pool = sack_pool(q->sack);
+    Pool *pool = hif_sack_get_pool(q->sack);
     int i;
     Solvable *s;
     Repo *r;
@@ -591,7 +591,7 @@ filter_reponame(HyQuery q, struct _Filter *f, Map *m)
 static void
 filter_location(HyQuery q, struct _Filter *f, Map *m)
 {
-    Pool *pool = sack_pool(q->sack);
+    Pool *pool = hif_sack_get_pool(q->sack);
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
         const char *match = f->matches[mi].str;
@@ -613,7 +613,7 @@ filter_location(HyQuery q, struct _Filter *f, Map *m)
 static void
 filter_nevra(HyQuery q, struct _Filter *f, Map *m)
 {
-    Pool *pool = sack_pool(q->sack);
+    Pool *pool = hif_sack_get_pool(q->sack);
     int fn_flags = (HY_ICASE & f->cmp_type) ? FNM_CASEFOLD : 0;
     char *nevra_pattern = f->matches[0].str;
 
@@ -634,13 +634,13 @@ filter_nevra(HyQuery q, struct _Filter *f, Map *m)
 static void
 filter_updown(HyQuery q, int downgrade, Map *res)
 {
-    HySack sack = q->sack;
-    Pool *pool = sack_pool(sack);
+    HifSack *sack = q->sack;
+    Pool *pool = hif_sack_get_pool(sack);
     int i;
     Map m;
 
     assert(pool->installed);
-    sack_make_provides_ready(q->sack);
+    hif_sack_make_provides_ready(q->sack);
     map_init(&m, pool->nsolvables);
     for (i = 1; i < pool->nsolvables; ++i) {
         if (!MAPTST(res, i))
@@ -664,10 +664,10 @@ filter_updown_able(HyQuery q, int downgradable, Map *res)
     Id p, what;
     Solvable *s;
     Map m;
-    Pool *pool = sack_pool(q->sack);
+    Pool *pool = hif_sack_get_pool(q->sack);
 
     assert(pool->installed);
-    sack_make_provides_ready(q->sack);
+    hif_sack_make_provides_ready(q->sack);
     map_init(&m, pool->nsolvables);
     FOR_PKG_SOLVABLES(p) {
         s = pool_id2solvable(pool, p);
@@ -716,7 +716,7 @@ filter_latest_sortcmp_byarch(const void *ap, const void *bp, void *dp)
 static void
 filter_latest(HyQuery q, Map *res)
 {
-    Pool *pool = sack_pool(q->sack);
+    Pool *pool = hif_sack_get_pool(q->sack);
     Queue samename;
 
     queue_init(&samename);
@@ -783,7 +783,7 @@ clear_filters(HyQuery q)
 static void
 init_result(HyQuery q)
 {
-    Pool *pool = sack_pool(q->sack);
+    Pool *pool = hif_sack_get_pool(q->sack);
     Id solvid;
 
     q->result = g_malloc0(sizeof(Map));
@@ -791,7 +791,7 @@ init_result(HyQuery q)
     FOR_PKG_SOLVABLES(solvid)
         map_set(q->result, solvid);
     if (!(q->flags & HY_IGNORE_EXCLUDES)) {
-        sack_recompute_considered(q->sack);
+        hif_sack_recompute_considered(q->sack);
         if (pool->considered)
             map_and(q->result, pool->considered);
     }
@@ -805,7 +805,7 @@ init_result(HyQuery q)
 void
 hy_query_apply(HyQuery q)
 {
-    Pool *pool = sack_pool(q->sack);
+    Pool *pool = hif_sack_get_pool(q->sack);
     Map m;
 
     if (q->applied)
@@ -897,13 +897,13 @@ hy_query_apply(HyQuery q)
 }
 
 HyQuery
-hy_query_create(HySack sack)
+hy_query_create(HifSack *sack)
 {
     return hy_query_create_flags(sack, 0);
 }
 
 HyQuery
-hy_query_create_flags(HySack sack, int flags)
+hy_query_create_flags(HifSack *sack, int flags)
 {
     HyQuery q = g_malloc0(sizeof(*q));
     q->sack = sack;
@@ -1000,7 +1000,7 @@ hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
     case HY_PKG_REQUIRES:
     case HY_PKG_SUGGESTS:
     case HY_PKG_SUPPLEMENTS: {
-        HySack sack = query_sack(q);
+        HifSack *sack = query_sack(q);
 
     if (cmp_type == HY_GLOB) {
         HyReldepList reldeplist = reldeplist_from_str(sack, match);
@@ -1258,7 +1258,7 @@ hy_query_filter_latest(HyQuery q, int val)
 GPtrArray *
 hy_query_run(HyQuery q)
 {
-    Pool *pool = sack_pool(q->sack);
+    Pool *pool = hif_sack_get_pool(q->sack);
     GPtrArray *plist = hy_packagelist_create();
 
     hy_query_apply(q);

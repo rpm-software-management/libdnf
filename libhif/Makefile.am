@@ -101,9 +101,9 @@ libhif_la_SOURCES =						\
 	hy-repo.c						\
 	hy-repo.h						\
 	hy-repo-private.h					\
-	hy-sack.c						\
-	hy-sack.h						\
-	hy-sack-private.h					\
+	hif-sack.c						\
+	hif-sack.h						\
+	hif-sack-private.h					\
 	hy-selector.c						\
 	hy-selector.h						\
 	hy-selector-private.h					\
@@ -132,8 +132,6 @@ libhif_la_SOURCES =						\
 	hif-repos.h						\
 	hif-rpmts.c						\
 	hif-rpmts.h						\
-	hif-sack.c						\
-	hif-sack.h						\
 	hif-source.c						\
 	hif-source.h						\
 	hif-transaction.c					\

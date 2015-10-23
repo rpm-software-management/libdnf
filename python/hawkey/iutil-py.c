@@ -184,7 +184,7 @@ packageset_to_pylist(HyPackageSet pset, PyObject *sack)
 }
 
 HyPackageSet
-pyseq_to_packageset(PyObject *obj, HySack sack)
+pyseq_to_packageset(PyObject *obj, HifSack *sack)
 {
     PyObject *sequence = PySequence_Fast(obj, "Expected a sequence.");
     if (sequence == NULL)
@@ -211,7 +211,7 @@ pyseq_to_packageset(PyObject *obj, HySack sack)
 }
 
 HyReldepList
-pyseq_to_reldeplist(PyObject *obj, HySack sack, int cmp_type)
+pyseq_to_reldeplist(PyObject *obj, HifSack *sack, int cmp_type)
 {
     PyObject *sequence = PySequence_Fast(obj, "Expected a sequence.");
     if (sequence == NULL)
@@ -310,7 +310,7 @@ reldeplist_to_pylist(const HyReldepList reldeplist, PyObject *sack)
 }
 
 HyReldep
-reldep_from_pystr(PyObject *o, HySack sack)
+reldep_from_pystr(PyObject *o, HifSack *sack)
 {
     HyReldep reldep = NULL;
     const char *reldep_str = NULL;

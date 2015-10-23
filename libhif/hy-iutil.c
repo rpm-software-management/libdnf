@@ -51,7 +51,7 @@
 #include "hy-packageset-private.h"
 #include "hy-query.h"
 #include "hy-reldep.h"
-#include "hy-sack-private.h"
+#include "hif-sack-private.h"
 
 #define BUF_BLOCK 4096
 #define CHKSUM_TYPE REPOKEY_TYPE_SHA256
@@ -339,9 +339,9 @@ pool_tmpdup(Pool *pool, const char *s)
 }
 
 Id
-running_kernel(HySack sack)
+running_kernel(HifSack *sack)
 {
-    Pool *pool = sack_pool(sack);
+    Pool *pool = hif_sack_get_pool(sack);
     struct utsname un;
 
     uname(&un);
@@ -353,7 +353,7 @@ running_kernel(HySack sack)
 
     Id kernel_id = -1;
     HyQuery q = hy_query_create_flags(sack, HY_IGNORE_EXCLUDES);
-    sack_make_provides_ready(sack);
+    hif_sack_make_provides_ready(sack);
     hy_query_filter(q, HY_PKG_FILE, HY_EQ, fn);
     hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
     HyPackageSet pset = hy_query_run_set(q);
@@ -384,9 +384,9 @@ cmptype2relflags(int type)
 }
 
 Repo *
-repo_by_name(HySack sack, const char *name)
+repo_by_name(HifSack *sack, const char *name)
 {
-    Pool *pool = sack_pool(sack);
+    Pool *pool = hif_sack_get_pool(sack);
     Repo *repo;
     int repoid;
 
@@ -398,7 +398,7 @@ repo_by_name(HySack sack, const char *name)
 }
 
 HyRepo
-hrepo_by_name(HySack sack, const char *name)
+hrepo_by_name(HifSack *sack, const char *name)
 {
     Repo *repo = repo_by_name(sack, name);
 
@@ -423,7 +423,7 @@ str2archid(Pool *pool, const char *arch)
 }
 
 void
-queue2plist(HySack sack, Queue *q, GPtrArray *plist)
+queue2plist(HifSack *sack, Queue *q, GPtrArray *plist)
 {
     for (int i = 0; i < q->count; ++i)
         g_ptr_array_add(plist, package_create(sack, q->elements[i]));
@@ -708,7 +708,7 @@ parse_reldep_str(const char *reldep_str, char **name, char **evr,
 }
 
 HyReldep
-reldep_from_str(HySack sack, const char *reldep_str)
+reldep_from_str(HifSack *sack, const char *reldep_str)
 {
     char *name, *evr = NULL;
     int cmp_type = 0;
@@ -721,13 +721,13 @@ reldep_from_str(HySack sack, const char *reldep_str)
 }
 
 HyReldepList
-reldeplist_from_str(HySack sack, const char *reldep_str)
+reldeplist_from_str(HifSack *sack, const char *reldep_str)
 {
     int cmp_type;
     char *name_glob = NULL;
     char *evr = NULL;
     Dataiterator di;
-    Pool *pool = sack_pool(sack);
+    Pool *pool = hif_sack_get_pool(sack);
 
     HyReldepList reldeplist = hy_reldeplist_create(sack);
     parse_reldep_str(reldep_str, &name_glob, &evr, &cmp_type);
