@@ -21,23 +21,18 @@
 #include <Python.h>
 #include <stdio.h>
 
-// libsolv
 #include <solv/util.h>
 
-// hawkey
 #include "hif-advisory.h"
 #include "hy-iutil.h"
 #include "hy-package-private.h"
-#include "hy-packagelist.h"
 #include "hy-reldep.h"
 #include "hy-sack-private.h"
 
-// pyhawkey
 #include "iutil-py.h"
 #include "package-py.h"
 #include "packagedelta-py.h"
 #include "sack-py.h"
-
 #include "pycomp.h"
 
 typedef struct {

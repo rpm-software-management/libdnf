@@ -88,8 +88,6 @@ libhif_la_SOURCES =						\
 	hy-package.c						\
 	hy-package.h						\
 	hy-package-private.h					\
-	hy-packagelist.c					\
-	hy-packagelist.h					\
 	hy-packageset.c						\
 	hy-packageset.h						\
 	hy-packageset-private.h				\

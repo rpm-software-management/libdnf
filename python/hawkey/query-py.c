@@ -19,17 +19,12 @@
  */
 
 #include <Python.h>
-
-// libsolv
 #include <solv/util.h>
 
-// hawkey
-#include "hy-packagelist.h"
 #include "hy-packageset-private.h"
 #include "hy-query-private.h"
 #include "hy-reldep.h"
 
-// pyhawkey
 #include "exception-py.h"
 #include "hawkey-pysys.h"
 #include "iutil-py.h"
@@ -37,7 +32,6 @@
 #include "query-py.h"
 #include "reldep-py.h"
 #include "sack-py.h"
-
 #include "pycomp.h"
 
 typedef struct {

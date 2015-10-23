@@ -410,13 +410,14 @@ hif_db_ensure_origin_pkg(HifDb *db, HyPackage pkg)
  * Since: 0.1.0
  */
 void
-hif_db_ensure_origin_pkglist(HifDb *db, HyPackageList pkglist)
+hif_db_ensure_origin_pkglist(HifDb *db, GPtrArray *pkglist)
 {
     HyPackage pkg;
-    gint i;
-
-    FOR_PACKAGELIST(pkg, pkglist, i)
+    guint i;
+    for (i = 0; i < pkglist->len; i++) {
+        pkg = g_ptr_array_index (pkglist, i);
         hif_db_ensure_origin_pkg(db, pkg);
+    }
 }
 
 /**

@@ -23,6 +23,8 @@
 
 #include <glib.h>
 
+#include "hy-types.h"
+
 G_BEGIN_DECLS
 
 const char *hy_chksum_name(int chksum_type);
@@ -33,6 +35,9 @@ int hy_detect_arch(char **arch);
 
 int hy_split_nevra(const char *nevra, char **name, long int *epoch,
                    char **version, char **release, char **arch);
+
+GPtrArray *hy_packagelist_create(void);
+int hy_packagelist_has(GPtrArray *plist, HyPackage pkg);
 
 G_END_DECLS
 

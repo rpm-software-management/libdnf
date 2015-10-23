@@ -20,12 +20,10 @@
 
 #include "Python.h"
 
-// hawkey
 #include "hif-advisory.h"
 #include "hif-advisorypkg.h"
 #include "hif-advisoryref.h"
 #include "hy-package-private.h"
-#include "hy-packagelist.h"
 #include "hy-packageset-private.h"
 #include "hy-reldep-private.h"
 #include "hy-iutil.h"
@@ -36,7 +34,6 @@
 #include "package-py.h"
 #include "reldep-py.h"
 #include "sack-py.h"
-
 #include "pycomp.h"
 
 PyObject *
@@ -125,7 +122,7 @@ advisoryreflist_to_pylist(const GPtrArray *advisoryreflist, PyObject *sack)
 }
 
 PyObject *
-packagelist_to_pylist(HyPackageList plist, PyObject *sack)
+packagelist_to_pylist(GPtrArray *plist, PyObject *sack)
 {
     HyPackage cpkg;
     PyObject *list;
@@ -137,7 +134,8 @@ packagelist_to_pylist(HyPackageList plist, PyObject *sack)
     retval = list;
 
     int i;
-    FOR_PACKAGELIST(cpkg, plist, i) {
+    for (i = 0; i < plist->len; i++) {
+        cpkg = g_ptr_array_index (plist, i);
         PyObject *package = new_package(sack, package_id(cpkg));
         if (package == NULL) {
             retval = NULL;

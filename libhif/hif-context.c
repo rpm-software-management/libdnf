@@ -31,15 +31,19 @@
 
 #include "config.h"
 
+#include <gio/gio.h>
 #include <rpm/rpmlib.h>
 #include <rpm/rpmmacro.h>
-
-#include "hy-query.h"
-#include "hy-packagelist.h"
 #include <librepo/librepo.h>
 
-#include "libhif.h"
+#include "hif-lock.h"
+#include "hif-package.h"
+#include "hif-repos.h"
+#include "hif-sack.h"
+#include "hif-state.h"
+#include "hif-transaction.h"
 #include "hif-utils.h"
+#include "hy-query.h"
 
 typedef struct
 {
@@ -1516,7 +1520,7 @@ gboolean
 hif_context_install(HifContext *context, const gchar *name, GError **error)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
-    HyPackageList pkglist;
+    GPtrArray *pkglist;
     HyPackage pkg;
     HyQuery query;
     gboolean ret = TRUE;
@@ -1540,7 +1544,7 @@ hif_context_install(HifContext *context, const gchar *name, GError **error)
     hy_query_filter(query, HY_PKG_NAME, HY_EQ, name);
     pkglist = hy_query_run(query);
 
-    if (hy_packagelist_count(pkglist) == 0) {
+    if (pkglist->len == 0) {
         g_set_error(error,
                     HIF_ERROR,
                     HIF_ERROR_PACKAGE_NOT_FOUND,
@@ -1549,12 +1553,13 @@ hif_context_install(HifContext *context, const gchar *name, GError **error)
     }
 
     /* add each package */
-    FOR_PACKAGELIST(pkg, pkglist, i) {
+    for (i = 0; i < pkglist->len; i++) {
+        pkg = g_ptr_array_index (pkglist, i);
         hif_package_set_user_action(pkg, TRUE);
         g_debug("adding %s-%s to goal", hy_package_get_name(pkg), hy_package_get_evr(pkg));
         hy_goal_install(priv->goal, pkg);
     }
-    hy_packagelist_free(pkglist);
+    g_ptr_array_unref(pkglist);
     hy_query_free(query);
     return TRUE;
 }
@@ -1577,7 +1582,7 @@ gboolean
 hif_context_remove(HifContext *context, const gchar *name, GError **error)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
-    HyPackageList pkglist;
+    GPtrArray *pkglist;
     HyPackage pkg;
     HyQuery query;
     gboolean ret = TRUE;
@@ -1600,11 +1605,12 @@ hif_context_remove(HifContext *context, const gchar *name, GError **error)
     pkglist = hy_query_run(query);
 
     /* add each package */
-    FOR_PACKAGELIST(pkg, pkglist, i) {
+    for (i = 0; i < pkglist->len; i++) {
+        pkg = g_ptr_array_index (pkglist, i);
         hif_package_set_user_action(pkg, TRUE);
         hy_goal_erase(priv->goal, pkg);
     }
-    hy_packagelist_free(pkglist);
+    g_ptr_array_unref(pkglist);
     hy_query_free(query);
     return TRUE;
 }
@@ -1627,7 +1633,7 @@ gboolean
 hif_context_update(HifContext *context, const gchar *name, GError **error)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
-    HyPackageList pkglist;
+    GPtrArray *pkglist;
     HyPackage pkg;
     HyQuery query;
     gboolean ret = TRUE;
@@ -1651,14 +1657,15 @@ hif_context_update(HifContext *context, const gchar *name, GError **error)
     pkglist = hy_query_run(query);
 
     /* add each package */
-    FOR_PACKAGELIST(pkg, pkglist, i) {
+    for (i = 0; i < pkglist->len; i++) {
+        pkg = g_ptr_array_index (pkglist, i);
         hif_package_set_user_action(pkg, TRUE);
         if (hif_package_is_installonly(pkg))
             hy_goal_install(priv->goal, pkg);
         else
             hy_goal_upgrade_to(priv->goal, pkg);
     }
-    hy_packagelist_free(pkglist);
+    g_ptr_array_unref(pkglist);
     hy_query_free(query);
     return TRUE;
 }

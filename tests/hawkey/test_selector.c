@@ -30,10 +30,10 @@ START_TEST(test_sltr_matching)
     HySelector sltr = hy_selector_create(test_globals.sack);
 
     fail_if(hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "penny"));
-    HyPackageList plist = hy_selector_matches(sltr);
-    fail_unless(hy_packagelist_count(plist) == 2);
+    GPtrArray *plist = hy_selector_matches(sltr);
+    fail_unless(plist->len == 2);
 
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
     hy_selector_free(sltr);
 }
 END_TEST
@@ -51,10 +51,10 @@ START_TEST(test_sltr_provides_glob)
 {
     HySelector sltr = hy_selector_create(test_globals.sack);
     fail_if(hy_selector_set(sltr, HY_PKG_PROVIDES, HY_GLOB, "*alru*"));
-    HyPackageList plist = hy_selector_matches(sltr);
-    fail_unless(hy_packagelist_count(plist) == 2);
+    GPtrArray *plist = hy_selector_matches(sltr);
+    fail_unless(plist->len == 2);
 
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
     hy_selector_free(sltr);
 }
 END_TEST
@@ -65,10 +65,10 @@ START_TEST(test_sltr_reponame)
 
     fail_if(hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "penny"));
     fail_if(hy_selector_set(sltr, HY_PKG_REPONAME, HY_EQ, "main"));
-    HyPackageList plist = hy_selector_matches(sltr);
-    fail_unless(hy_packagelist_count(plist) == 1);
+    GPtrArray *plist = hy_selector_matches(sltr);
+    fail_unless(plist->len == 1);
 
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
     hy_selector_free(sltr);
 }
 END_TEST
@@ -79,10 +79,10 @@ START_TEST(test_sltr_reponame_nonexistent)
 
     fail_if(hy_selector_set(sltr, HY_PKG_NAME, HY_GLOB, "*"));
     fail_if(hy_selector_set(sltr, HY_PKG_REPONAME, HY_EQ, "non-existent"));
-    HyPackageList plist = hy_selector_matches(sltr);
-    fail_unless(hy_packagelist_count(plist) == 0);
+    GPtrArray *plist = hy_selector_matches(sltr);
+    fail_unless(plist->len == 0);
 
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
     hy_selector_free(sltr);
 }
 END_TEST
@@ -93,10 +93,10 @@ START_TEST(test_sltr_version)
 
     fail_if(hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "jay"));
     fail_if(hy_selector_set(sltr, HY_PKG_VERSION, HY_EQ, "5.0"));
-    HyPackageList plist = hy_selector_matches(sltr);
-    fail_unless(hy_packagelist_count(plist) == 2);
+    GPtrArray *plist = hy_selector_matches(sltr);
+    fail_unless(plist->len == 2);
 
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
     hy_selector_free(sltr);
 }
 END_TEST

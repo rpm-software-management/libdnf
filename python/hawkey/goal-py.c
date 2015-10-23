@@ -22,24 +22,18 @@
 #include <glib.h>
 #include <structmember.h>
 #include <stddef.h>
-
-// libsolv
 #include <solv/util.h>
 
-// hawkey
 #include "hif-types.h"
 #include "hy-goal.h"
 #include "hy-package-private.h"
-#include "hy-packagelist.h"
 
-// pyhawkey
 #include "exception-py.h"
 #include "goal-py.h"
 #include "iutil-py.h"
 #include "package-py.h"
 #include "selector-py.h"
 #include "sack-py.h"
-
 #include "pycomp.h"
 
 typedef struct {
@@ -502,10 +496,10 @@ write_debugdata(_GoalObject *self, PyObject *dir_str)
 }
 
 static PyObject *
-list_generic(_GoalObject *self, HyPackageList (*func)(HyGoal, GError **))
+list_generic(_GoalObject *self, GPtrArray *(*func)(HyGoal, GError **))
 {
     g_autoptr(GError) error = NULL;
-    HyPackageList plist = func(self->goal, &error);
+    GPtrArray *plist = func(self->goal, &error);
     PyObject *list;
 
     if (!plist) {
@@ -522,7 +516,7 @@ list_generic(_GoalObject *self, HyPackageList (*func)(HyGoal, GError **))
         return NULL;
     }
     list = packagelist_to_pylist(plist, self->sack);
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
     return list;
 }
 
@@ -575,9 +569,9 @@ obsoleted_by_package(_GoalObject *self, PyObject *pkg)
 
     if (cpkg == NULL)
         return NULL;
-    HyPackageList plist = hy_goal_list_obsoleted_by_package(self->goal, cpkg);
+    GPtrArray *plist = hy_goal_list_obsoleted_by_package(self->goal, cpkg);
     PyObject *list = packagelist_to_pylist(plist, self->sack);
-    hy_packagelist_free(plist);
+    g_ptr_array_unref(plist);
     return list;
 }
 

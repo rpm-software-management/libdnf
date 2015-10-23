@@ -23,22 +23,19 @@
 #include <assert.h>
 #include <fnmatch.h>
 #include <string.h>
-
-// libsolv
 #include <solv/evr.h>
 #include <solv/repo.h>
 #include <solv/solver.h>
 #include <solv/util.h>
 
-// hawkey
 #include "hif-types.h"
 #include "hy-iutil.h"
 #include "hy-query-private.h"
 #include "hy-package-private.h"
-#include "hy-packagelist.h"
 #include "hy-packageset-private.h"
 #include "hy-reldep-private.h"
 #include "hy-sack-private.h"
+#include "hy-util.h"
 
 #define BLOCK_SIZE 15
 
@@ -801,7 +798,7 @@ init_result(HyQuery q)
 
     // make sure the odd bits are cleared:
     unsigned total_bits = q->result->size << 3;
-    for (int i = pool->nsolvables; i < total_bits; ++i)
+    for (guint i = pool->nsolvables; i < total_bits; ++i)
         MAPCLR(q->result, i);
 }
 
@@ -1055,7 +1052,7 @@ hy_query_filter_in(HyQuery q, int keyname, int cmp_type,
     filterp->cmp_type = cmp_type;
     filterp->keyname = keyname;
     filterp->match_type = _HY_STR;
-    for (int i = 0; i < count; ++i)
+    for (guint i = 0; i < count; ++i)
         filterp->matches[i].str = g_strdup(matches[i]);
     return 0;
 }
@@ -1258,16 +1255,16 @@ hy_query_filter_latest(HyQuery q, int val)
     q->latest = val;
 }
 
-HyPackageList
+GPtrArray *
 hy_query_run(HyQuery q)
 {
     Pool *pool = sack_pool(q->sack);
-    HyPackageList plist = hy_packagelist_create();
+    GPtrArray *plist = hy_packagelist_create();
 
     hy_query_apply(q);
     for (int i = 1; i < pool->nsolvables; ++i)
         if (MAPTST(q->result, i))
-            hy_packagelist_push(plist, package_create(q->sack, i));
+            g_ptr_array_add(plist, package_create(q->sack, i));
     return plist;
 }
 

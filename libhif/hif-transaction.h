@@ -104,7 +104,7 @@ gboolean         hif_transaction_ensure_source          (HifTransaction *transac
                                                          HyPackage       pkg,
                                                          GError         **error);
 gboolean         hif_transaction_ensure_source_list     (HifTransaction *transaction,
-                                                         HyPackageList   pkglist,
+                                                         GPtrArray *  pkglist,
                                                          GError         **error);
 
 G_END_DECLS

@@ -42,8 +42,6 @@
 #include "hif-advisoryref-private.h"
 #include "hy-iutil.h"
 
-#include "hy-packagelist.h"
-
 typedef struct
 {
     Pool    *pool;
