@@ -36,20 +36,11 @@ struct _HyPackage {
     HyUserdataDestroy destroy_func;
 };
 
-struct _HyPackageDelta {
-    char *location;
-    char *baseurl;
-    guint64 downloadsize;
-    int checksum_type;
-    unsigned char *checksum;
-};
-
 HyPackage package_clone(HyPackage pkg);
 HyPackage package_create(HySack sack, Id id);
 static inline Id package_id(HyPackage pkg) { return pkg->id; }
 Pool *package_pool(HyPackage pkg);
 static inline HySack package_sack(HyPackage pkg) { return pkg->sack; }
 HyPackage package_from_solvable(HySack sack, Solvable *s);
-HyPackageDelta delta_create(void);
 
 #endif // HY_PACKAGE_INTERNAL_H

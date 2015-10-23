@@ -35,7 +35,6 @@ typedef struct _HyRepo * HyRepo;
 typedef struct _HyGoal * HyGoal;
 typedef struct _HyNevra * HyNevra;
 typedef struct _HyPackage * HyPackage;
-typedef struct _HyPackageDelta * HyPackageDelta;
 typedef struct _HyPackageSet * HyPackageSet;
 typedef struct _HyPossibilities * HyPossibilities;
 typedef struct _HyQuery * HyQuery;

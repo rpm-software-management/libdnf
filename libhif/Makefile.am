@@ -56,6 +56,7 @@ libhif_include_HEADERS =					\
 	hif-keyring.h						\
 	hif-lock.h						\
 	hif-package.h						\
+	hif-packagedelta.h					\
 	hif-repos.h						\
 	hif-rpmts.h						\
 	hif-sack.h						\
@@ -125,6 +126,8 @@ libhif_la_SOURCES =						\
 	hif-lock.h						\
 	hif-package.c						\
 	hif-package.h						\
+	hif-packagedelta.c					\
+	hif-packagedelta-private.h				\
 	hif-repos.c						\
 	hif-repos.h						\
 	hif-rpmts.c						\

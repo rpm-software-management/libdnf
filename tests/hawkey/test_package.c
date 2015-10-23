@@ -341,18 +341,18 @@ START_TEST(test_presto)
     HyPackage tour = by_name(sack, "tour");
     fail_if(tour == NULL);
 
-    HyPackageDelta delta = hy_package_get_delta_from_evr(tour, "4-5");
-    const char *location = hy_packagedelta_get_location(delta);
+    HifPackageDelta *delta = hy_package_get_delta_from_evr(tour, "4-5");
+    const char *location = hif_packagedelta_get_location(delta);
     ck_assert_str_eq(location, "drpms/tour-4-5_4-6.noarch.drpm");
-    const char *baseurl = hy_packagedelta_get_baseurl(delta);
+    const char *baseurl = hif_packagedelta_get_baseurl(delta);
     fail_unless(baseurl == NULL);
-    guint64 size = hy_packagedelta_get_downloadsize(delta);
+    guint64 size = hif_packagedelta_get_downloadsize(delta);
     ck_assert_int_eq(size, 3132);
     int type;
-    HyChecksum *csum = hy_packagedelta_get_chksum(delta, &type);
+    HyChecksum *csum = hif_packagedelta_get_chksum(delta, &type);
     fail_unless(type == G_CHECKSUM_SHA256);
     ck_assert(!memcmp(csum, TOUR_45_46_DRPM_CHKSUM, 32));
-    hy_packagedelta_free(delta);
+    g_object_unref(delta);
     hy_package_free(tour);
 }
 END_TEST

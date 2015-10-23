@@ -25,8 +25,8 @@
 
 G_BEGIN_DECLS
 
-// hawkey
 #include "hy-types.h"
+#include "hif-packagedelta.h"
 #include <glib.h>
 
 /* public */
@@ -80,12 +80,7 @@ typedef void (*HyUserdataDestroy) (void *userdata);
 void *hy_package_get_userdata(HyPackage pkg);
 void hy_package_set_userdata(HyPackage pkg, void *userdata, HyUserdataDestroy destroy_func);
 
-HyPackageDelta hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr);
-const char *hy_packagedelta_get_location(HyPackageDelta delta);
-const char *hy_packagedelta_get_baseurl(HyPackageDelta delta);
-guint64 hy_packagedelta_get_downloadsize(HyPackageDelta delta);
-const unsigned char *hy_packagedelta_get_chksum(HyPackageDelta delta, int *type);
-void hy_packagedelta_free(HyPackageDelta delta);
+HifPackageDelta *hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr);
 
 G_END_DECLS
 
