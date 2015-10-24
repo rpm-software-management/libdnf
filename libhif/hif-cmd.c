@@ -278,7 +278,7 @@ hif_cmd_remove(HifUtilPrivate *priv, gchar **values, GError **error)
  * hif_cmd_refresh_source:
  **/
 static gboolean
-hif_cmd_refresh_source(HifUtilPrivate *priv, HifSource *src, HifState *state, GError **error)
+hif_cmd_refresh_source(HifUtilPrivate *priv, HifRepo *src, HifState *state, GError **error)
 {
     HifState *state_local;
     gboolean ret;
@@ -291,9 +291,9 @@ hif_cmd_refresh_source(HifUtilPrivate *priv, HifSource *src, HifState *state, GE
 
     /* check source */
     state_local = hif_state_get_child(state);
-    g_print("Checking %s\n", hif_source_get_id(src));
+    g_print("Checking %s\n", hif_repo_get_id(src));
     cache_age = hif_context_get_cache_age(priv->context);
-    ret = hif_source_check(src, cache_age, state_local, &error_local);
+    ret = hif_repo_check(src, cache_age, state_local, &error_local);
     if (ret)
         return hif_state_finished(state, error);
 
@@ -303,7 +303,7 @@ hif_cmd_refresh_source(HifUtilPrivate *priv, HifSource *src, HifState *state, GE
 
     /* print error to console and continue */
     g_print("Failed to check %s: %s\n",
-         hif_source_get_id(src),
+         hif_repo_get_id(src),
          error_local->message);
     g_clear_error(&error_local);
     if (!hif_state_finished(state_local, error))
@@ -311,8 +311,8 @@ hif_cmd_refresh_source(HifUtilPrivate *priv, HifSource *src, HifState *state, GE
 
     /* actually update source */
     state_local = hif_state_get_child(state);
-    g_print("Updating %s\n", hif_source_get_id(src));
-    if (!hif_source_update(src, HIF_SOURCE_UPDATE_FLAG_IMPORT_PUBKEY,
+    g_print("Updating %s\n", hif_repo_get_id(src));
+    if (!hif_repo_update(src, HIF_REPO_UPDATE_FLAG_IMPORT_PUBKEY,
                 state_local, &error_local)) {
         if (g_error_matches(error_local,
                             HIF_ERROR,
@@ -335,7 +335,7 @@ static gboolean
 hif_cmd_refresh(HifUtilPrivate *priv, gchar **values, GError **error)
 {
     GPtrArray *sources;
-    HifSource *src;
+    HifRepo *src;
     HifState *state;
     HifState *state_local;
     guint i;
@@ -344,12 +344,12 @@ hif_cmd_refresh(HifUtilPrivate *priv, gchar **values, GError **error)
         return FALSE;
 
     /* check and refresh each source in turn */
-    sources = hif_context_get_sources(priv->context);
+    sources = hif_context_get_repos(priv->context);
     state = hif_context_get_state(priv->context);
     hif_state_set_number_steps(state, sources->len);
     for (i = 0; i < sources->len; i++) {
         src = g_ptr_array_index(sources, i);
-        if (hif_source_get_enabled(src) == HIF_SOURCE_ENABLED_NONE)
+        if (hif_repo_get_enabled(src) == HIF_REPO_ENABLED_NONE)
             continue;
         state_local = hif_state_get_child(state);
         if (!hif_cmd_refresh_source(priv, src, state_local, error))
@@ -367,7 +367,7 @@ static gboolean
 hif_cmd_clean(HifUtilPrivate *priv, gchar **values, GError **error)
 {
     GPtrArray *sources;
-    HifSource *src;
+    HifRepo *src;
     HifState *state;
     guint i;
 
@@ -375,12 +375,12 @@ hif_cmd_clean(HifUtilPrivate *priv, gchar **values, GError **error)
         return FALSE;
 
     /* clean each source in turn */
-    sources = hif_context_get_sources(priv->context);
+    sources = hif_context_get_repos(priv->context);
     state = hif_context_get_state(priv->context);
     hif_state_set_number_steps(state, sources->len);
     for (i = 0; i < sources->len; i++) {
         src = g_ptr_array_index(sources, i);
-        if (!hif_source_clean(src, error))
+        if (!hif_repo_clean(src, error))
             return FALSE;
         if (!hif_state_done(state, error))
             return FALSE;

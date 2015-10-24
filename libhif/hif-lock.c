@@ -135,7 +135,7 @@ hif_lock_type_to_string(HifLockType lock_type)
     if (lock_type == HIF_LOCK_TYPE_RPMDB)
         return "rpmdb";
     if (lock_type == HIF_LOCK_TYPE_REPO)
-        return "repo";
+        return "src";
     if (lock_type == HIF_LOCK_TYPE_METADATA)
         return "metadata";
     if (lock_type == HIF_LOCK_TYPE_CONFIG)

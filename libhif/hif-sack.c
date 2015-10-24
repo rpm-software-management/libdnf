@@ -33,7 +33,7 @@
 
 #include "config.h"
 
-#define _GNU_SOURCE
+#define _GNU_REPO
 #include <assert.h>
 #include <errno.h>
 #include <stdarg.h>
@@ -1647,9 +1647,9 @@ hif_sack_get_pool(HifSack *sack)
 /**********************************************************************/
 
 static void
-process_excludes(HifSack *sack, HifSource *src)
+process_excludes(HifSack *sack, HifRepo *repo)
 {
-    gchar **excludes = hif_source_get_exclude_packages(src);
+    gchar **excludes = hif_repo_get_exclude_packages(repo);
     gchar **iter;
     
     if (excludes == NULL)
@@ -1662,7 +1662,7 @@ process_excludes(HifSack *sack, HifSource *src)
 
         query = hy_query_create(sack);
         hy_query_filter_latest_per_arch(query, TRUE);
-        hy_query_filter(query, HY_PKG_REPONAME, HY_EQ, hif_source_get_id(src));
+        hy_query_filter(query, HY_PKG_REPONAME, HY_EQ, hif_repo_get_id(repo));
         hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
         hy_query_filter(query, HY_PKG_NAME, HY_EQ, name);
         pkgset = hy_query_run_set(query);
@@ -1675,11 +1675,11 @@ process_excludes(HifSack *sack, HifSource *src)
 }
 
 /**
- * hif_sack_add_source:
+ * hif_sack_add_repo:
  */
 gboolean
-hif_sack_add_source(HifSack *sack,
-                    HifSource *src,
+hif_sack_add_repo(HifSack *sack,
+                    HifRepo *repo,
                     guint permissible_cache_age,
                     HifSackAddFlags flags,
                     HifState *state,
@@ -1700,7 +1700,7 @@ hif_sack_add_source(HifSack *sack,
 
     /* check repo */
     state_local = hif_state_get_child(state);
-    ret = hif_source_check(src,
+    ret = hif_repo_check(repo,
                 permissible_cache_age,
                 state_local,
                 &error_local);
@@ -1709,17 +1709,17 @@ hif_sack_add_source(HifSack *sack,
              error_local->message);
         g_clear_error(&error_local);
         hif_state_reset(state_local);
-        ret = hif_source_update(src,
-                                HIF_SOURCE_UPDATE_FLAG_FORCE,
+        ret = hif_repo_update(repo,
+                                HIF_REPO_UPDATE_FLAG_FORCE,
                                 state_local,
                                 &error_local);
         if (!ret) {
-            if (!hif_source_get_required(src) &&
+            if (!hif_repo_get_required(repo) &&
                 g_error_matches(error_local,
                                 HIF_ERROR,
                                 HIF_ERROR_CANNOT_FETCH_SOURCE)) {
                 g_warning("Skipping refresh of %s: %s",
-                          hif_source_get_id(src),
+                          hif_repo_get_id(repo),
                           error_local->message);
                 g_error_free(error_local);
                 return hif_state_finished(state, error);
@@ -1730,9 +1730,9 @@ hif_sack_add_source(HifSack *sack,
     }
 
     /* checking disabled the repo */
-    if (hif_source_get_enabled(src) == HIF_SOURCE_ENABLED_NONE) {
+    if (hif_repo_get_enabled(repo) == HIF_REPO_ENABLED_NONE) {
         g_debug("Skipping %s as repo no longer enabled",
-                hif_source_get_id(src));
+                hif_repo_get_id(repo));
         return hif_state_finished(state, error);
     }
 
@@ -1747,23 +1747,23 @@ hif_sack_add_source(HifSack *sack,
         flags_hy |= HIF_SACK_LOAD_FLAG_USE_UPDATEINFO;
 
     /* load solv */
-    g_debug("Loading repo %s", hif_source_get_id(src));
+    g_debug("Loading repo %s", hif_repo_get_id(repo));
     hif_state_action_start(state, HIF_STATE_ACTION_LOADING_CACHE, NULL);
-    if (!hif_sack_load_repo(sack, hif_source_get_repo(src), flags_hy, error))
+    if (!hif_sack_load_repo(sack, hif_repo_get_repo(repo), flags_hy, error))
         return FALSE;
 
-    process_excludes(sack, src);
+    process_excludes(sack, repo);
 
     /* done */
     return hif_state_done(state, error);
 }
 
 /**
- * hif_sack_add_sources:
+ * hif_sack_add_repos:
  */
 gboolean
-hif_sack_add_sources(HifSack *sack,
-                     GPtrArray *sources,
+hif_sack_add_repos(HifSack *sack,
+                     GPtrArray *repos,
                      guint permissible_cache_age,
                      HifSackAddFlags flags,
                      HifState *state,
@@ -1772,32 +1772,32 @@ hif_sack_add_sources(HifSack *sack,
     gboolean ret;
     guint cnt = 0;
     guint i;
-    HifSource *src;
+    HifRepo *repo;
     HifState *state_local;
 
-    /* count the enabled sources */
-    for (i = 0; i < sources->len; i++) {
-        src = g_ptr_array_index(sources, i);
-        if (hif_source_get_enabled(src) != HIF_SOURCE_ENABLED_NONE)
+    /* count the enabled repos */
+    for (i = 0; i < repos->len; i++) {
+        repo = g_ptr_array_index(repos, i);
+        if (hif_repo_get_enabled(repo) != HIF_REPO_ENABLED_NONE)
             cnt++;
     }
 
     /* add each repo */
     hif_state_set_number_steps(state, cnt);
-    for (i = 0; i < sources->len; i++) {
-        src = g_ptr_array_index(sources, i);
-        if (hif_source_get_enabled(src) == HIF_SOURCE_ENABLED_NONE)
+    for (i = 0; i < repos->len; i++) {
+        repo = g_ptr_array_index(repos, i);
+        if (hif_repo_get_enabled(repo) == HIF_REPO_ENABLED_NONE)
             continue;
 
-        /* only allow metadata-only sources if FLAG_UNAVAILABLE is set */
-        if (hif_source_get_enabled(src) == HIF_SOURCE_ENABLED_METADATA) {
+        /* only allow metadata-only repos if FLAG_UNAVAILABLE is set */
+        if (hif_repo_get_enabled(repo) == HIF_REPO_ENABLED_METADATA) {
             if ((flags & HIF_SACK_ADD_FLAG_UNAVAILABLE) == 0)
                 continue;
         }
 
         state_local = hif_state_get_child(state);
-        ret = hif_sack_add_source(sack,
-                                  src,
+        ret = hif_sack_add_repo(sack,
+                                  repo,
                                   permissible_cache_age,
                                   flags,
                                   state_local,

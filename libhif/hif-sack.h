@@ -31,7 +31,7 @@
 
 #include "hy-types.h"
 #include "hif-sack.h"
-#include "hif-source.h"
+#include "hif-repo.h"
 #include "hif-state.h"
 
 G_BEGIN_DECLS
@@ -143,8 +143,8 @@ gboolean     hif_sack_load_repo             (HifSack        *sack,
  * @HIF_SACK_ADD_FLAG_NONE:                     Add the primary
  * @HIF_SACK_ADD_FLAG_FILELISTS:                Add the filelists
  * @HIF_SACK_ADD_FLAG_UPDATEINFO:               Add the updateinfo
- * @HIF_SACK_ADD_FLAG_REMOTE:                   Use remote sources
- * @HIF_SACK_ADD_FLAG_UNAVAILABLE:              Add sources that are unavailable
+ * @HIF_SACK_ADD_FLAG_REMOTE:                   Use remote repos
+ * @HIF_SACK_ADD_FLAG_UNAVAILABLE:              Add repos that are unavailable
  *
  * The error code.
  **/
@@ -158,14 +158,14 @@ typedef enum {
         HIF_SACK_ADD_FLAG_LAST
 } HifSackAddFlags;
 
-gboolean         hif_sack_add_source            (HifSack        *sack,
-                                                 HifSource      *src,
+gboolean         hif_sack_add_repo            (HifSack        *sack,
+                                                 HifRepo      *repo,
                                                  guint           permissible_cache_age,
                                                  HifSackAddFlags flags,
                                                  HifState       *state,
                                                  GError         **error);
-gboolean         hif_sack_add_sources           (HifSack        *sack,
-                                                 GPtrArray      *sources,
+gboolean         hif_sack_add_repos           (HifSack        *sack,
+                                                 GPtrArray      *repos,
                                                  guint           permissible_cache_age,
                                                  HifSackAddFlags flags,
                                                  HifState       *state,

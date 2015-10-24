@@ -76,8 +76,7 @@ typedef struct
     GHashTable      *override_macros;
 
     /* used to implement a transaction */
-    GPtrArray       *sources;
-    HifRepos        *repos;
+    GPtrArray       *repos;
     HifState        *state;        /* used for setup() and run() */
     HyGoal           goal;
     HifSack         *sack;
@@ -123,9 +122,7 @@ hif_context_finalize(GObject *object)
     if (priv->transaction != NULL)
         g_object_unref(priv->transaction);
     if (priv->repos != NULL)
-        g_object_unref(priv->repos);
-    if (priv->sources != NULL)
-        g_ptr_array_unref(priv->sources);
+        g_ptr_array_unref(priv->repos);
     if (priv->goal != NULL)
         hy_goal_free(priv->goal);
     if (priv->sack != NULL)
@@ -362,33 +359,17 @@ hif_context_get_native_arches(HifContext *context)
  * hif_context_get_repos:
  * @context: a #HifContext instance.
  *
- * Gets the repositories loader used by the transaction.
+ * Gets the repos used by the transaction.
  *
- * Returns:(transfer none): the repositories loader
- *
- * Since: 0.1.6
- **/
-HifRepos *hif_context_get_repos(HifContext *context)
-{
-    HifContextPrivate *priv = GET_PRIVATE(context);
-    return priv->repos;
-}
-
-/**
- * hif_context_get_sources:
- * @context: a #HifContext instance.
- *
- * Gets the sources used by the transaction.
- *
- * Returns:(transfer none)(element-type HifSource): the source list
+ * Returns:(transfer none)(element-type HifRepo): the repo list
  *
  * Since: 0.1.0
  **/
 GPtrArray *
-hif_context_get_sources(HifContext *context)
+hif_context_get_repos(HifContext *context)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
-    return priv->sources;
+    return priv->repos;
 }
 
 /**
@@ -403,7 +384,7 @@ hif_context_ensure_transaction(HifContext *context)
     if (priv->transaction == NULL) {
         priv->transaction = hif_transaction_new(context);
         priv->transaction_thread = g_thread_self();
-        hif_transaction_set_sources(priv->transaction, priv->sources);
+        hif_transaction_set_repos(priv->transaction, priv->repos);
         return;
     }
 
@@ -965,12 +946,12 @@ hif_context_setup_sack(HifContext *context, HifState *state, GError **error)
     }
 
     /* add remote */
-    ret = hif_sack_add_sources(priv->sack,
-                    priv->sources,
-                    priv->cache_age,
-                    HIF_SACK_ADD_FLAG_FILELISTS,
-                    state,
-                    error);
+    ret = hif_sack_add_repos(priv->sack,
+                             priv->repos,
+                             priv->cache_age,
+                             HIF_SACK_ADD_FLAG_FILELISTS,
+                             state,
+                             error);
     if (!ret)
         return FALSE;
 
@@ -1057,7 +1038,7 @@ static gboolean
 hif_context_copy_vendor_cache(HifContext *context, GError **error)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
-    HifSource *src;
+    HifRepo *repo;
     const gchar *id;
     guint i;
 
@@ -1068,15 +1049,15 @@ hif_context_copy_vendor_cache(HifContext *context, GError **error)
         return TRUE;
 
     /* test each enabled repo in turn */
-    for (i = 0; i < priv->sources->len; i++) {
+    for (i = 0; i < priv->repos->len; i++) {
         g_autofree gchar *path = NULL;
         g_autofree gchar *path_vendor = NULL;
-        src = g_ptr_array_index(priv->sources, i);
-        if (hif_source_get_enabled(src) == HIF_SOURCE_ENABLED_NONE)
+        repo = g_ptr_array_index(priv->repos, i);
+        if (hif_repo_get_enabled(repo) == HIF_REPO_ENABLED_NONE)
             continue;
 
         /* does the repo already exist */
-        id = hif_source_get_id(src);
+        id = hif_repo_get_id(repo);
         path = g_build_filename(priv->cache_dir, id, NULL);
         if (g_file_test(path, G_FILE_TEST_EXISTS))
             continue;
@@ -1167,7 +1148,7 @@ hif_context_get_http_proxy(HifContext *context)
  * @context: a #HifContext instance.
  * @proxyurl: Proxy URL
  *
- * Set the HTTP proxy used by default.  Per-source configuration will
+ * Set the HTTP proxy used by default.  Per-repo configuration will
  * override.
  *
  * Since: 0.1.9
@@ -1266,6 +1247,7 @@ hif_context_setup(HifContext *context,
     guint j;
     GHashTableIter hashiter;
     gpointer hashkey, hashval;
+    g_autoptr(HifRepos) repos = NULL;
     g_autoptr(GString) buf = NULL;
     g_autofree char *rpmdb_path = NULL;
     g_autoptr(GFile) file_rpmdb = NULL;
@@ -1389,9 +1371,9 @@ hif_context_setup(HifContext *context,
         return FALSE;
 
     /* setup RPM */
-    priv->repos = hif_repos_new(context);
-    priv->sources = hif_repos_get_sources(priv->repos, error);
-    if (priv->sources == NULL)
+    repos = hif_repos_new (context);
+    priv->repos = hif_repos_get_repos(repos, error);
+    if (priv->repos == NULL)
         return FALSE;
 
     /* setup a file monitor on the rpmdb, if we're operating on the native / */
@@ -1522,7 +1504,7 @@ hif_context_install(HifContext *context, const gchar *name, GError **error)
     gboolean ret = TRUE;
     guint i;
 
-    /* create sack and add sources */
+    /* create sack and add repos */
     if (priv->sack == NULL) {
         hif_state_reset(priv->state);
         ret = hif_context_setup_sack(context, priv->state, error);
@@ -1584,7 +1566,7 @@ hif_context_remove(HifContext *context, const gchar *name, GError **error)
     gboolean ret = TRUE;
     guint i;
 
-    /* create sack and add sources */
+    /* create sack and add repos */
     if (priv->sack == NULL) {
         hif_state_reset(priv->state);
         ret = hif_context_setup_sack(context, priv->state, error);
@@ -1635,7 +1617,7 @@ hif_context_update(HifContext *context, const gchar *name, GError **error)
     gboolean ret = TRUE;
     guint i;
 
-    /* create sack and add sources */
+    /* create sack and add repos */
     if (priv->sack == NULL) {
         hif_state_reset(priv->state);
         ret = hif_context_setup_sack(context, priv->state, error);
@@ -1672,25 +1654,25 @@ hif_context_update(HifContext *context, const gchar *name, GError **error)
 static gboolean
 hif_context_repo_set_data(HifContext *context,
                           const gchar *repo_id,
-                          HifSourceEnabled enabled,
+                          HifRepoEnabled enabled,
                           GError **error)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
-    HifSource *src = NULL;
-    HifSource *src_tmp;
+    HifRepo *repo = NULL;
+    HifRepo *repo_tmp;
     guint i;
 
-    /* find a source with a matching ID */
-    for (i = 0; i < priv->sources->len; i++) {
-        src_tmp = g_ptr_array_index(priv->sources, i);
-        if (g_strcmp0(hif_source_get_id(src_tmp), repo_id) == 0) {
-            src = src_tmp;
+    /* find a repo with a matching ID */
+    for (i = 0; i < priv->repos->len; i++) {
+        repo_tmp = g_ptr_array_index(priv->repos, i);
+        if (g_strcmp0(hif_repo_get_id(repo_tmp), repo_id) == 0) {
+            repo = repo_tmp;
             break;
         }
     }
 
     /* nothing found */
-    if (src == NULL) {
+    if (repo == NULL) {
         g_set_error(error,
                     HIF_ERROR,
                     HIF_ERROR_INTERNAL_ERROR,
@@ -1699,7 +1681,7 @@ hif_context_repo_set_data(HifContext *context,
     }
 
     /* this is runtime only */
-    hif_source_set_enabled(src, enabled);
+    hif_repo_set_enabled(repo, enabled);
     return TRUE;
 }
 
@@ -1723,8 +1705,8 @@ hif_context_repo_enable(HifContext *context,
                         GError **error)
 {
     return hif_context_repo_set_data(context, repo_id,
-                                     HIF_SOURCE_ENABLED_PACKAGES |
-                                     HIF_SOURCE_ENABLED_METADATA, error);
+                                     HIF_REPO_ENABLED_PACKAGES |
+                                     HIF_REPO_ENABLED_METADATA, error);
 }
 
 /**
@@ -1747,7 +1729,7 @@ hif_context_repo_disable(HifContext *context,
                          GError **error)
 {
     return hif_context_repo_set_data(context, repo_id,
-                                     HIF_SOURCE_ENABLED_NONE, error);
+                                     HIF_REPO_ENABLED_NONE, error);
 }
 
 /**

@@ -32,7 +32,7 @@
 
 #include "hif-context.h"
 #include "hif-state.h"
-#include "hif-source.h"
+#include "hif-repo.h"
 
 G_BEGIN_DECLS
 
@@ -58,9 +58,9 @@ HifRepos        *hif_repos_new                  (HifContext     *context);
 
 /* object methods */
 gboolean         hif_repos_has_removable        (HifRepos       *self);
-GPtrArray       *hif_repos_get_sources          (HifRepos       *self,
+GPtrArray       *hif_repos_get_repos          (HifRepos       *self,
                                                  GError         **error);
-HifSource       *hif_repos_get_source_by_id     (HifRepos       *self,
+HifRepo       *hif_repos_get_by_id     (HifRepos       *self,
                                                  const gchar    *id,
                                                  GError         **error);
 

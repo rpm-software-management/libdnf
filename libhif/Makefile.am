@@ -60,7 +60,7 @@ libhif_include_HEADERS =					\
 	hif-repos.h						\
 	hif-rpmts.h						\
 	hif-sack.h						\
-	hif-source.h						\
+	hif-repo.h						\
 	hif-state.h						\
 	hif-transaction.h					\
 	hif-types.h						\
@@ -132,8 +132,8 @@ libhif_la_SOURCES =						\
 	hif-repos.h						\
 	hif-rpmts.c						\
 	hif-rpmts.h						\
-	hif-source.c						\
-	hif-source.h						\
+	hif-repo.c						\
+	hif-repo.h						\
 	hif-transaction.c					\
 	hif-transaction.h					\
 	hif-state.c						\
@@ -190,8 +190,8 @@ introspection_sources =						\
 	hif-context.h						\
 	hif-state.h						\
 	hif-state.c						\
-	hif-source.h						\
-	hif-source.c						\
+	hif-repo.h						\
+	hif-repo.c						\
 	hif-version.h
 
 Hif-1.0.gir: libhif.la

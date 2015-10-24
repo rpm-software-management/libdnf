@@ -81,8 +81,8 @@ GPtrArray       *hif_transaction_get_remote_pkgs        (HifTransaction *transac
 HifDb           *hif_transaction_get_db                 (HifTransaction *transaction);
 
 /* setters */
-void             hif_transaction_set_sources            (HifTransaction *transaction,
-                                                         GPtrArray      *sources);
+void             hif_transaction_set_repos            (HifTransaction *transaction,
+                                                         GPtrArray      *repos);
 void             hif_transaction_set_uid                (HifTransaction *transaction,
                                                          guint           uid);
 void             hif_transaction_set_flags              (HifTransaction *transaction,
@@ -100,10 +100,10 @@ gboolean         hif_transaction_commit                 (HifTransaction *transac
                                                          HyGoal          goal,
                                                          HifState       *state,
                                                          GError         **error);
-gboolean         hif_transaction_ensure_source          (HifTransaction *transaction,
+gboolean         hif_transaction_ensure_repo          (HifTransaction *transaction,
                                                          HyPackage       pkg,
                                                          GError         **error);
-gboolean         hif_transaction_ensure_source_list     (HifTransaction *transaction,
+gboolean         hif_transaction_ensure_repo_list     (HifTransaction *transaction,
                                                          GPtrArray *  pkglist,
                                                          GError         **error);
 
