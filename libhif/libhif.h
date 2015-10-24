@@ -37,7 +37,7 @@
 #include <hif-repos.h>
 #include <hif-rpmts.h>
 #include <hif-sack.h>
-#include <hif-source.h>
+#include <hif-repo.h>
 #include <hif-state.h>
 #include <hif-transaction.h>
 #include <hif-types.h>

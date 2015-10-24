@@ -47,16 +47,16 @@
 #include "hif-utils.h"
 
 typedef struct {
-    char        *checksum_str;
-    char        *nevra;
-    gboolean     user_action;
-    gchar        *filename;
-    gchar        *origin;
-    gchar        *description;
-    gchar        *package_id;
-    HifPackageInfo     info;
-    HifStateAction     action;
-    HifSource    *src;
+    char            *checksum_str;
+    char            *nevra;
+    gboolean         user_action;
+    gchar           *filename;
+    gchar           *origin;
+    gchar           *description;
+    gchar           *package_id;
+    HifPackageInfo   info;
+    HifStateAction   action;
+    HifRepo         *repo;
 } HifPackagePrivate;
 
 /**
@@ -97,17 +97,17 @@ hif_package_get_filename(HyPackage pkg)
         return NULL;
 
     /* default cache filename location */
-    if (priv->filename == NULL && priv->src != NULL) {
-        priv->filename = g_build_filename(hif_source_get_location(priv->src),
+    if (priv->filename == NULL && priv->repo != NULL) {
+        priv->filename = g_build_filename(hif_repo_get_location(priv->repo),
                            hy_package_get_location(pkg),
                            NULL);
-        /* set the filename to cachedir for non-local sources */
-        if (!hif_source_is_local(priv->src) ||
+        /* set the filename to cachedir for non-local repos */
+        if (!hif_repo_is_local(priv->repo) ||
             !g_file_test(priv->filename, G_FILE_TEST_EXISTS)) {
             g_autofree gchar *basename = NULL;
             basename = g_path_get_basename(hy_package_get_location(pkg));
             g_free(priv->filename);
-            priv->filename = g_build_filename(hif_source_get_packages(priv->src),
+            priv->filename = g_build_filename(hif_repo_get_packages(priv->repo),
                                basename,
                                NULL);
         }
@@ -315,7 +315,7 @@ hif_package_get_description(HyPackage pkg)
  * hif_package_get_cost:
  * @pkg: a #HyPackage instance.
  *
- * Returns the cost of the source that provided the package.
+ * Returns the cost of the repo that provided the package.
  *
  * Returns: the cost, where higher is more expensive, default 1000
  *
@@ -326,11 +326,11 @@ hif_package_get_cost(HyPackage pkg)
 {
     HifPackagePrivate *priv;
     priv = hif_package_get_priv(pkg);
-    if (priv->src == NULL) {
-        g_warning("no src for %s", hif_package_get_id(pkg));
+    if (priv->repo == NULL) {
+        g_warning("no repo for %s", hif_package_get_id(pkg));
         return G_MAXUINT;
     }
-    return hif_source_get_cost(priv->src);
+    return hif_repo_get_cost(priv->repo);
 }
 
 /**
@@ -338,7 +338,7 @@ hif_package_get_cost(HyPackage pkg)
  * @pkg: a #HyPackage instance.
  * @filename: absolute filename.
  *
- * Sets the file on disk that matches the package source.
+ * Sets the file on disk that matches the package repo.
  *
  * Since: 0.1.0
  **/
@@ -360,7 +360,7 @@ hif_package_set_filename(HyPackage pkg, const gchar *filename)
  * @pkg: a #HyPackage instance.
  * @origin: origin, e.g. "fedora"
  *
- * Sets the package origin source.
+ * Sets the package origin repo.
  *
  * Since: 0.1.0
  **/
@@ -376,42 +376,42 @@ hif_package_set_origin(HyPackage pkg, const gchar *origin)
 }
 
 /**
- * hif_package_set_source:
+ * hif_package_set_repo:
  * @pkg: a #HyPackage instance.
- * @src: a #HifSource.
+ * @repo: a #HifRepo.
  *
- * Sets the source the package was created from.
+ * Sets the repo the package was created from.
  *
  * Since: 0.1.0
  **/
 void
-hif_package_set_source(HyPackage pkg, HifSource *src)
+hif_package_set_repo(HyPackage pkg, HifRepo *repo)
 {
     HifPackagePrivate *priv;
     priv = hif_package_get_priv(pkg);
     if (priv == NULL)
         return;
-    priv->src = src;
+    priv->repo = repo;
 }
 
 /**
- * hif_package_get_source:
+ * hif_package_get_repo:
  * @pkg: a #HyPackage instance.
  *
- * Gets the source the package was created from.
+ * Gets the repo the package was created from.
  *
- * Returns: a #HifSource or %NULL
+ * Returns: a #HifRepo or %NULL
  *
  * Since: 0.1.0
  **/
-HifSource *
-hif_package_get_source(HyPackage pkg)
+HifRepo *
+hif_package_get_repo(HyPackage pkg)
 {
     HifPackagePrivate *priv;
     priv = hy_package_get_userdata(pkg);
     if (priv == NULL)
         return NULL;
-    return priv->src;
+    return priv->repo;
 }
 
 /**
@@ -642,10 +642,10 @@ hif_package_is_installonly(HyPackage pkg)
 }
 
 /**
- * hif_source_checksum_hy_to_lr:
+ * hif_repo_checksum_hy_to_lr:
  **/
 static GChecksumType
-hif_source_checksum_hy_to_lr(GChecksumType checksum)
+hif_repo_checksum_hy_to_lr(GChecksumType checksum)
 {
     if (checksum == G_CHECKSUM_MD5)
         return LR_CHECKSUM_MD5;
@@ -690,7 +690,7 @@ hif_package_check_filename(HyPackage pkg, gboolean *valid, GError **error)
     /* check the checksum */
     checksum = hy_package_get_chksum(pkg, &checksum_type_hy);
     checksum_valid = hy_chksum_str(checksum, checksum_type_hy);
-    checksum_type_lr = hif_source_checksum_hy_to_lr(checksum_type_hy);
+    checksum_type_lr = hif_repo_checksum_hy_to_lr(checksum_type_hy);
     fd = g_open(path, O_RDONLY, 0);
     if (fd < 0) {
         ret = FALSE;
@@ -737,16 +737,16 @@ hif_package_download(HyPackage pkg,
               HifState *state,
               GError **error)
 {
-    HifSource *src;
-    src = hif_package_get_source(pkg);
-    if (src == NULL) {
+    HifRepo *repo;
+    repo = hif_package_get_repo(pkg);
+    if (repo == NULL) {
         g_set_error_literal(error,
                      HIF_ERROR,
                      HIF_ERROR_INTERNAL_ERROR,
-                     "package source is unset");
+                     "package repo is unset");
         return NULL;
     }
-    return hif_source_download_package(src, pkg, directory, state, error);
+    return hif_repo_download_package(repo, pkg, directory, state, error);
 }
 
 /**

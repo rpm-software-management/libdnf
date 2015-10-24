@@ -37,7 +37,7 @@
     <xi:include href="xml/hif-db.xml"/>
     <xi:include href="xml/hif-lock.xml"/>
     <xi:include href="xml/hif-repos.xml"/>
-    <xi:include href="xml/hif-source.xml"/>
+    <xi:include href="xml/hif-repo.xml"/>
     <xi:include href="xml/hif-state.xml"/>
     <xi:include href="xml/hif-transaction.xml"/>
   </reference>

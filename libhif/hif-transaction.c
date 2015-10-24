@@ -58,7 +58,7 @@ typedef struct
     rpmKeyring          keyring;
     rpmts               ts;
     HifContext         *context;    /* weak reference */
-    GPtrArray          *sources;
+    GPtrArray          *repos;
     guint               uid;
 
     /* previously in the helper */
@@ -94,8 +94,8 @@ hif_transaction_finalize(GObject *object)
 
     if (priv->db != NULL)
         g_object_unref(priv->db);
-    if (priv->sources != NULL)
-        g_ptr_array_unref(priv->sources);
+    if (priv->repos != NULL)
+        g_ptr_array_unref(priv->repos);
     if (priv->install != NULL)
         g_ptr_array_unref(priv->install);
     if (priv->remove != NULL)
@@ -187,21 +187,21 @@ hif_transaction_get_db(HifTransaction *transaction)
 }
 
 /**
- * hif_transaction_set_sources:
+ * hif_transaction_set_repos:
  * @transaction: a #HifTransaction instance.
- * @sources: the sources to use with the transaction
+ * @repos: the repos to use with the transaction
  *
- * Sets the list of sources.
+ * Sets the list of repos.
  *
  * Since: 0.1.0
  **/
 void
-hif_transaction_set_sources(HifTransaction *transaction, GPtrArray *sources)
+hif_transaction_set_repos(HifTransaction *transaction, GPtrArray *repos)
 {
     HifTransactionPrivate *priv = GET_PRIVATE(transaction);
-    if (priv->sources != NULL)
-        g_ptr_array_unref(priv->sources);
-    priv->sources = g_ptr_array_ref(sources);
+    if (priv->repos != NULL)
+        g_ptr_array_unref(priv->repos);
+    priv->repos = g_ptr_array_ref(repos);
 }
 
 /**
@@ -237,29 +237,29 @@ hif_transaction_set_flags(HifTransaction *transaction, guint64 flags)
 }
 
 /**
- * hif_transaction_ensure_source:
+ * hif_transaction_ensure_repo:
  * @transaction: a #HifTransaction instance.
  * @pkg: A #HyPackage
  * @error: A #GError or %NULL
  *
- * Ensures the #HifSource is set on the #HyPackage if not already set.
+ * Ensures the #HifRepo is set on the #HyPackage if not already set.
  *
  * Returns: %TRUE for success, %FALSE otherwise
  *
  * Since: 0.1.0
  */
 gboolean
-hif_transaction_ensure_source(HifTransaction *transaction,
+hif_transaction_ensure_repo(HifTransaction *transaction,
                               HyPackage pkg,
                               GError **error)
 {
-    HifSource *src;
+    HifRepo *repo;
     HifTransactionPrivate *priv = GET_PRIVATE(transaction);
     char *location;
     guint i;
 
     /* not set yet */
-    if (priv->sources == NULL) {
+    if (priv->repos == NULL) {
         g_set_error(error,
                     HIF_ERROR,
                     HIF_ERROR_INTERNAL_ERROR,
@@ -280,11 +280,11 @@ hif_transaction_ensure_source(HifTransaction *transaction,
     /* get repo */
     if (hy_package_installed(pkg))
         return TRUE;
-    for (i = 0; i < priv->sources->len; i++) {
-        src = g_ptr_array_index(priv->sources, i);
+    for (i = 0; i < priv->repos->len; i++) {
+        repo = g_ptr_array_index(priv->repos, i);
         if (g_strcmp0(hy_package_get_reponame(pkg),
-                      hif_source_get_id(src)) == 0) {
-            hif_package_set_source(pkg, src);
+                      hif_repo_get_id(repo)) == 0) {
+            hif_package_set_repo(pkg, repo);
             return TRUE;
         }
     }
@@ -293,28 +293,28 @@ hif_transaction_ensure_source(HifTransaction *transaction,
     g_set_error(error,
                 HIF_ERROR,
                 HIF_ERROR_INTERNAL_ERROR,
-                "Failed to ensure %s as source %s not "
-                "found(%i sources loaded)",
+                "Failed to ensure %s as repo %s not "
+                "found(%i repos loaded)",
                 hy_package_get_name(pkg),
                 hy_package_get_reponame(pkg),
-                priv->sources->len);
+                priv->repos->len);
     return FALSE;
 }
 
 /**
- * hif_transaction_ensure_source_list:
+ * hif_transaction_ensure_repo_list:
  * @transaction: a #HifTransaction instance.
  * @pkglist: A #GPtrArray *
  * @error: A #GError or %NULL
  *
- * Ensures the #HifSource is set on the #GPtrArray *if not already set.
+ * Ensures the #HifRepo is set on the #GPtrArray *if not already set.
  *
  * Returns: %TRUE for success, %FALSE otherwise
  *
  * Since: 0.1.0
  */
 gboolean
-hif_transaction_ensure_source_list(HifTransaction *transaction,
+hif_transaction_ensure_repo_list(HifTransaction *transaction,
                                    GPtrArray *pkglist,
                                    GError **error)
 {
@@ -323,7 +323,7 @@ hif_transaction_ensure_source_list(HifTransaction *transaction,
 
     for (i = 0; i < pkglist->len; i++) {
         pkg = g_ptr_array_index (pkglist, i);
-        if (!hif_transaction_ensure_source(transaction, pkg, error))
+        if (!hif_transaction_ensure_repo(transaction, pkg, error))
             return FALSE;
     }
     return TRUE;
@@ -356,11 +356,11 @@ hif_transaction_check_untrusted(HifTransaction *transaction,
     /* find any packages in untrusted repos */
     for (i = 0; i < install->len; i++) {
         GError *error_local = NULL;
-        HifSource *src;
+        HifRepo *repo;
         pkg = g_ptr_array_index(install, i);
 
         /* ensure the filename is set */
-        if (!hif_transaction_ensure_source(transaction, pkg, error)) {
+        if (!hif_transaction_ensure_repo(transaction, pkg, error)) {
             g_prefix_error(error, "Failed to check untrusted: ");
             return FALSE;
         }
@@ -387,16 +387,16 @@ hif_transaction_check_untrusted(HifTransaction *transaction,
                 return FALSE;
             }
 
-            /* if the source is signed this is ALWAYS an error */
-            src = hif_package_get_source(pkg);
-            if (src != NULL && hif_source_get_gpgcheck(src)) {
+            /* if the repo is signed this is ALWAYS an error */
+            repo = hif_package_get_repo(pkg);
+            if (repo != NULL && hif_repo_get_gpgcheck(repo)) {
                 g_set_error(error,
                             HIF_ERROR,
                             HIF_ERROR_FILE_INVALID,
                             "package %s cannot be verified "
                             "and repo %s is GPG enabled: %s",
                             hif_package_get_nevra(pkg),
-                            hif_source_get_id(src),
+                            hif_repo_get_id(repo),
                             error_local->message);
                 g_error_free(error_local);
                 return FALSE;
@@ -985,7 +985,7 @@ hif_transaction_write_yumdb(HifTransaction *transaction,
         hif_state_set_number_steps(state_local, priv->remove->len);
     for (i = 0; i < priv->remove->len; i++) {
         pkg = g_ptr_array_index(priv->remove, i);
-        if (!hif_transaction_ensure_source(transaction, pkg, error))
+        if (!hif_transaction_ensure_repo(transaction, pkg, error))
             return FALSE;
         if (!hif_db_remove_all(priv->db, pkg, error))
             return FALSE;
@@ -1085,8 +1085,8 @@ hif_transaction_depsolve(HifTransaction *transaction,
     for (i = 0; i < packages->len; i++) {
         pkg = g_ptr_array_index(packages, i);
 
-        /* get correct package source */
-        if (!hif_transaction_ensure_source(transaction, pkg, error))
+        /* get correct package repo */
+        if (!hif_transaction_ensure_repo(transaction, pkg, error))
             return FALSE;
 
         /* this is a local file */
@@ -1243,7 +1243,7 @@ hif_transaction_commit(HifTransaction *transaction,
     for (i = 0; i < priv->install->len; i++) {
 
         pkg = g_ptr_array_index(priv->install, i);
-        ret = hif_transaction_ensure_source(transaction, pkg, error);
+        ret = hif_transaction_ensure_repo(transaction, pkg, error);
         if (!ret)
             goto out;
 

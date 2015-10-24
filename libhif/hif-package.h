@@ -30,7 +30,7 @@
 
 #include "hy-package.h"
 
-#include "hif-source.h"
+#include "hif-repo.h"
 #include "hif-state.h"
 
 /**
@@ -59,9 +59,9 @@ typedef enum {
         HIF_PACKAGE_INFO_LAST
 } HifPackageInfo;
 
-HifSource       *hif_package_get_source                 (HyPackage       pkg);
-void             hif_package_set_source                 (HyPackage       pkg,
-                                                         HifSource      *src);
+HifRepo         *hif_package_get_repo                   (HyPackage       pkg);
+void             hif_package_set_repo                   (HyPackage       pkg,
+                                                         HifRepo        *repo);
 const gchar     *hif_package_get_filename               (HyPackage       pkg);
 void             hif_package_set_filename               (HyPackage       pkg,
                                                          const gchar    *filename);

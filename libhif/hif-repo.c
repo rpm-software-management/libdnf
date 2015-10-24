@@ -26,14 +26,14 @@
 #endif
 
 /**
- * SECTION:hif-source
- * @short_description: Object representing a remote source.
+ * SECTION:hif-repo
+ * @short_description: Object representing a remote repo.
  * @include: libhif.h
  * @stability: Unstable
  *
  * Sources are remote repositories of packages.
  *
- * See also: #HifSource
+ * See also: #HifRepo
  */
 
 #include "config.h"
@@ -50,7 +50,7 @@
 
 typedef struct
 {
-    HifSourceEnabled enabled;
+    HifRepoEnabled   enabled;
     gboolean         required;
     gboolean         gpgcheck_md;
     gboolean         gpgcheck_pkgs;
@@ -73,26 +73,26 @@ typedef struct
     GKeyFile        *keyfile;
     GHashTable      *filenames_md;          /* key:filename */
     HifContext      *context;               /* weak reference */
-    HifSourceKind    kind;
+    HifRepoKind      kind;
     HyRepo           repo;
     LrHandle        *repo_handle;
     LrResult        *repo_result;
     LrUrlVars       *urlvars;
-} HifSourcePrivate;
+} HifRepoPrivate;
 
 #define HIF_CONFIG_GROUP_NAME            "PluginHawkey"
 
-G_DEFINE_TYPE_WITH_PRIVATE(HifSource, hif_source, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (hif_source_get_instance_private (o))
+G_DEFINE_TYPE_WITH_PRIVATE(HifRepo, hif_repo, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (hif_repo_get_instance_private (o))
 
 /**
- * hif_source_finalize:
+ * hif_repo_finalize:
  **/
 static void
-hif_source_finalize(GObject *object)
+hif_repo_finalize(GObject *object)
 {
-    HifSource *source = HIF_SOURCE(object);
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepo *repo = HIF_REPO(object);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
 
     g_free(priv->id);
     g_free(priv->filename);
@@ -119,16 +119,16 @@ hif_source_finalize(GObject *object)
         g_object_remove_weak_pointer(G_OBJECT(priv->context),
                                      (void **) &priv->context);
 
-    G_OBJECT_CLASS(hif_source_parent_class)->finalize(object);
+    G_OBJECT_CLASS(hif_repo_parent_class)->finalize(object);
 }
 
 /**
- * hif_source_init:
+ * hif_repo_init:
  **/
 static void
-hif_source_init(HifSource *source)
+hif_repo_init(HifRepo *repo)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     priv->cost = 1000;
     priv->repo_handle = lr_handle_init();
     priv->repo_result = lr_result_init();
@@ -140,90 +140,90 @@ hif_source_init(HifSource *source)
 }
 
 /**
- * hif_source_class_init:
+ * hif_repo_class_init:
  **/
 static void
-hif_source_class_init(HifSourceClass *klass)
+hif_repo_class_init(HifRepoClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = hif_source_finalize;
+    object_class->finalize = hif_repo_finalize;
 }
 
 /**
- * hif_source_get_id:
- * @source: a #HifSource instance.
+ * hif_repo_get_id:
+ * @repo: a #HifRepo instance.
  *
- * Gets the source ID.
+ * Gets the repo ID.
  *
- * Returns: the source ID, e.g. "fedora-updates"
+ * Returns: the repo ID, e.g. "fedora-updates"
  *
  * Since: 0.1.0
  **/
 const gchar *
-hif_source_get_id(HifSource *source)
+hif_repo_get_id(HifRepo *repo)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->id;
 }
 
 /**
- * hif_source_get_location:
- * @source: a #HifSource instance.
+ * hif_repo_get_location:
+ * @repo: a #HifRepo instance.
  *
- * Gets the source location.
+ * Gets the repo location.
  *
- * Returns: the source location, e.g. "/var/cache/PackageKit/metadata/fedora"
+ * Returns: the repo location, e.g. "/var/cache/PackageKit/metadata/fedora"
  *
  * Since: 0.1.0
  **/
 const gchar *
-hif_source_get_location(HifSource *source)
+hif_repo_get_location(HifRepo *repo)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->location;
 }
 
 /**
- * hif_source_get_filename:
- * @source: a #HifSource instance.
+ * hif_repo_get_filename:
+ * @repo: a #HifRepo instance.
  *
- * Gets the source filename.
+ * Gets the repo filename.
  *
- * Returns: the source filename, e.g. "/etc/yum.repos.d/updates.repo"
+ * Returns: the repo filename, e.g. "/etc/yum.repos.d/updates.repo"
  *
  * Since: 0.1.0
  **/
 const gchar *
-hif_source_get_filename(HifSource *source)
+hif_repo_get_filename(HifRepo *repo)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->filename;
 }
 
 /**
- * hif_source_get_packages:
- * @source: a #HifSource instance.
+ * hif_repo_get_packages:
+ * @repo: a #HifRepo instance.
  *
- * Gets the source packages location.
+ * Gets the repo packages location.
  *
- * Returns: the source packages location, e.g. "/var/cache/PackageKit/metadata/fedora/packages"
+ * Returns: the repo packages location, e.g. "/var/cache/PackageKit/metadata/fedora/packages"
  *
  * Since: 0.1.0
  **/
 const gchar *
-hif_source_get_packages(HifSource *source)
+hif_repo_get_packages(HifRepo *repo)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->packages;
 }
 
 /**
- * hif_source_substitute:
+ * hif_repo_substitute:
  */
 static gchar *
-hif_source_substitute(HifSource *source, const gchar *url)
+hif_repo_substitute(HifRepo *repo, const gchar *url)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     char *tmp;
     gchar *substituted;
 
@@ -236,29 +236,29 @@ hif_source_substitute(HifSource *source, const gchar *url)
 }
 
 /**
- * hif_source_get_description:
- * @source: a #HifSource instance.
+ * hif_repo_get_description:
+ * @repo: a #HifRepo instance.
  *
- * Gets the source description.
+ * Gets the repo description.
  *
- * Returns: the source description, e.g. "Fedora 20 Updates"
+ * Returns: the repo description, e.g. "Fedora 20 Updates"
  *
  * Since: 0.1.0
  **/
 gchar *
-hif_source_get_description(HifSource *source)
+hif_repo_get_description(HifRepo *repo)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     g_autofree gchar *tmp;
 
     /* is DVD */
-    if (priv->kind == HIF_SOURCE_KIND_MEDIA) {
+    if (priv->kind == HIF_REPO_KIND_MEDIA) {
         tmp = g_key_file_get_string(priv->keyfile, "general", "name", NULL);
         if (tmp == NULL)
             return NULL;
     } else {
         tmp = g_key_file_get_string(priv->keyfile,
-                         hif_source_get_id(source),
+                         hif_repo_get_id(repo),
                          "name",
                          NULL);
         if (tmp == NULL)
@@ -266,93 +266,93 @@ hif_source_get_description(HifSource *source)
     }
 
     /* have to substitute things like $releasever and $basearch */
-    return hif_source_substitute(source, tmp);
+    return hif_repo_substitute(repo, tmp);
 }
 
 /**
- * hif_source_get_enabled:
- * @source: a #HifSource instance.
+ * hif_repo_get_enabled:
+ * @repo: a #HifRepo instance.
  *
- * Gets if the source is enabled.
+ * Gets if the repo is enabled.
  *
- * Returns: %HIF_SOURCE_ENABLED_PACKAGES if enabled
+ * Returns: %HIF_REPO_ENABLED_PACKAGES if enabled
  *
  * Since: 0.1.0
  **/
-HifSourceEnabled
-hif_source_get_enabled(HifSource *source)
+HifRepoEnabled
+hif_repo_get_enabled(HifRepo *repo)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->enabled;
 }
 
 /**
- * hif_source_get_required:
- * @source: a #HifSource instance.
+ * hif_repo_get_required:
+ * @repo: a #HifRepo instance.
  *
- * Returns: %TRUE if failure fetching this source is fatal
+ * Returns: %TRUE if failure fetching this repo is fatal
  *
  * Since: 0.2.1
  **/
 gboolean
-hif_source_get_required(HifSource *source)
+hif_repo_get_required(HifRepo *repo)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->required;
 }
 
 /**
- * hif_source_get_cost:
- * @source: a #HifSource instance.
+ * hif_repo_get_cost:
+ * @repo: a #HifRepo instance.
  *
- * Gets the source cost.
+ * Gets the repo cost.
  *
- * Returns: the source cost, where 1000 is default
+ * Returns: the repo cost, where 1000 is default
  *
  * Since: 0.1.0
  **/
 guint
-hif_source_get_cost(HifSource *source)
+hif_repo_get_cost(HifRepo *repo)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->cost;
 }
 
 /**
- * hif_source_get_kind:
- * @source: a #HifSource instance.
+ * hif_repo_get_kind:
+ * @repo: a #HifRepo instance.
  *
- * Gets the source kind.
+ * Gets the repo kind.
  *
- * Returns: the source kind, e.g. %HIF_SOURCE_KIND_MEDIA
+ * Returns: the repo kind, e.g. %HIF_REPO_KIND_MEDIA
  *
  * Since: 0.1.0
  **/
-HifSourceKind
-hif_source_get_kind(HifSource *source)
+HifRepoKind
+hif_repo_get_kind(HifRepo *repo)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->kind;
 }
 
 /**
- * hif_source_get_exclude_packages:
- * @source: a #HifSource instance.
+ * hif_repo_get_exclude_packages:
+ * @repo: a #HifRepo instance.
  *
  * Returns:(transfer none)(array zero-terminated=1): Packages which should be excluded
  *
  * Since: 0.1.9
  **/
 gchar **
-hif_source_get_exclude_packages   (HifSource *source)
+hif_repo_get_exclude_packages   (HifRepo *repo)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->exclude_packages;
 }
 
 /**
- * hif_source_get_gpgcheck:
- * @source: a #HifSource instance.
+ * hif_repo_get_gpgcheck:
+ * @repo: a #HifRepo instance.
  *
  * Gets if the packages should be signed.
  *
@@ -361,15 +361,15 @@ hif_source_get_exclude_packages   (HifSource *source)
  * Since: 0.1.0
  **/
 gboolean
-hif_source_get_gpgcheck(HifSource *source)
+hif_repo_get_gpgcheck(HifRepo *repo)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->gpgcheck_pkgs;
 }
 
 /**
- * hif_source_get_gpgcheck_md:
- * @source: a #HifSource instance.
+ * hif_repo_get_gpgcheck_md:
+ * @repo: a #HifRepo instance.
  *
  * Gets if the metadata should be signed.
  *
@@ -378,41 +378,41 @@ hif_source_get_gpgcheck(HifSource *source)
  * Since: 0.1.7
  **/
 gboolean
-hif_source_get_gpgcheck_md(HifSource *source)
+hif_repo_get_gpgcheck_md(HifRepo *repo)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->gpgcheck_md;
 }
 
 /**
- * hif_source_get_repo:
- * @source: a #HifSource instance.
+ * hif_repo_get_repo:
+ * @repo: a #HifRepo instance.
  *
- * Gets the #HyRepo backing this source.
+ * Gets the #HyRepo backing this repo.
  *
  * Returns: the #HyRepo
  *
  * Since: 0.1.0
  **/
 HyRepo
-hif_source_get_repo(HifSource *source)
+hif_repo_get_repo(HifRepo *repo)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->repo;
 }
 
 /**
- * hif_source_is_devel:
- * @source: a #HifSource instance.
+ * hif_repo_is_devel:
+ * @repo: a #HifRepo instance.
  *
- * Returns: %TRUE if the source is a development repo
+ * Returns: %TRUE if the repo is a development repo
  *
  * Since: 0.1.0
  **/
 gboolean
-hif_source_is_devel(HifSource *source)
+hif_repo_is_devel(HifRepo *repo)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     if (g_str_has_suffix(priv->id, "-debuginfo"))
         return TRUE;
     if (g_str_has_suffix(priv->id, "-debug"))
@@ -423,284 +423,284 @@ hif_source_is_devel(HifSource *source)
 }
 
 /**
- * hif_source_is_local:
- * @source: a #HifSource instance.
+ * hif_repo_is_local:
+ * @repo: a #HifRepo instance.
  *
- * Returns: %TRUE if the source is a repo on local or media filesystem
+ * Returns: %TRUE if the repo is a repo on local or media filesystem
  *
  * Since: 0.1.6
  **/
 gboolean
-hif_source_is_local(HifSource *source)
+hif_repo_is_local(HifRepo *repo)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
 
     /* media or local */
-    if (priv->kind == HIF_SOURCE_KIND_MEDIA ||
-        priv->kind == HIF_SOURCE_KIND_LOCAL)
+    if (priv->kind == HIF_REPO_KIND_MEDIA ||
+        priv->kind == HIF_REPO_KIND_LOCAL)
         return TRUE;
 
     return FALSE;
 }
 
 /**
- * hif_source_is_source:
- * @source: a #HifSource instance.
+ * hif_repo_is_repo:
+ * @repo: a #HifRepo instance.
  *
- * Returns: %TRUE if the source is a src repo
+ * Returns: %TRUE if the repo is a repo repo
  *
  * Since: 0.1.0
  **/
 gboolean
-hif_source_is_source(HifSource *source)
+hif_repo_is_repo(HifRepo *repo)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
-    if (g_str_has_suffix(priv->id, "-source"))
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
+    if (g_str_has_suffix(priv->id, "-repo"))
         return TRUE;
     return FALSE;
 }
 
 /**
- * hif_source_set_id:
- * @source: a #HifSource instance.
+ * hif_repo_set_id:
+ * @repo: a #HifRepo instance.
  * @id: the ID, e.g. "fedora-updates"
  *
- * Sets the source ID.
+ * Sets the repo ID.
  *
  * Since: 0.1.0
  **/
 void
-hif_source_set_id(HifSource *source, const gchar *id)
+hif_repo_set_id(HifRepo *repo, const gchar *id)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     g_free(priv->id);
     priv->id = g_strdup(id);
 }
 
 /**
- * hif_source_set_location:
- * @source: a #HifSource instance.
+ * hif_repo_set_location:
+ * @repo: a #HifRepo instance.
  * @location: the path
  *
- * Sets the source location and the default packages path.
+ * Sets the repo location and the default packages path.
  *
  * Since: 0.1.0
  **/
 void
-hif_source_set_location(HifSource *source, const gchar *location)
+hif_repo_set_location(HifRepo *repo, const gchar *location)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     g_free(priv->location);
     g_free(priv->packages);
     g_free(priv->keyring);
     g_free(priv->pubkey);
-    priv->location = hif_source_substitute(source, location);
+    priv->location = hif_repo_substitute(repo, location);
     priv->packages = g_build_filename(location, "packages", NULL);
     priv->keyring = g_build_filename(location, "gpgdir", NULL);
     priv->pubkey = g_build_filename(location, "repomd.pub", NULL);
 }
 
 /**
- * hif_source_set_location_tmp:
- * @source: a #HifSource instance.
+ * hif_repo_set_location_tmp:
+ * @repo: a #HifRepo instance.
  * @location_tmp: the temp path
  *
- * Sets the source location for temporary files and the default packages path.
+ * Sets the repo location for temporary files and the default packages path.
  *
  * Since: 0.1.0
  **/
 void
-hif_source_set_location_tmp(HifSource *source, const gchar *location_tmp)
+hif_repo_set_location_tmp(HifRepo *repo, const gchar *location_tmp)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     g_free(priv->location_tmp);
     g_free(priv->packages_tmp);
     g_free(priv->keyring_tmp);
     g_free(priv->pubkey_tmp);
-    priv->location_tmp = hif_source_substitute(source, location_tmp);
+    priv->location_tmp = hif_repo_substitute(repo, location_tmp);
     priv->packages_tmp = g_build_filename(location_tmp, "packages", NULL);
     priv->keyring_tmp = g_build_filename(location_tmp, "gpgdir", NULL);
     priv->pubkey_tmp = g_build_filename(location_tmp, "repomd.pub", NULL);
 }
 
 /**
- * hif_source_set_filename:
- * @source: a #HifSource instance.
+ * hif_repo_set_filename:
+ * @repo: a #HifRepo instance.
  * @filename: the filename path
  *
- * Sets the source backing filename.
+ * Sets the repo backing filename.
  *
  * Since: 0.1.0
  **/
 void
-hif_source_set_filename(HifSource *source, const gchar *filename)
+hif_repo_set_filename(HifRepo *repo, const gchar *filename)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
 
     g_free(priv->filename);
     priv->filename = g_strdup(filename);
 }
 
 /**
- * hif_source_set_packages:
- * @source: a #HifSource instance.
+ * hif_repo_set_packages:
+ * @repo: a #HifRepo instance.
  * @packages: the path to the package files
  *
- * Sets the source package location, typically ending in "Packages" or "packages".
+ * Sets the repo package location, typically ending in "Packages" or "packages".
  *
  * Since: 0.1.0
  **/
 void
-hif_source_set_packages(HifSource *source, const gchar *packages)
+hif_repo_set_packages(HifRepo *repo, const gchar *packages)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     g_free(priv->packages);
     priv->packages = g_strdup(packages);
 }
 
 /**
- * hif_source_set_packages_tmp:
- * @source: a #HifSource instance.
+ * hif_repo_set_packages_tmp:
+ * @repo: a #HifRepo instance.
  * @packages_tmp: the path to the temporary package files
  *
- * Sets the source package location for temporary files.
+ * Sets the repo package location for temporary files.
  *
  * Since: 0.1.0
  **/
 void
-hif_source_set_packages_tmp(HifSource *source, const gchar *packages_tmp)
+hif_repo_set_packages_tmp(HifRepo *repo, const gchar *packages_tmp)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     g_free(priv->packages_tmp);
     priv->packages_tmp = g_strdup(packages_tmp);
 }
 
 /**
- * hif_source_set_enabled:
- * @source: a #HifSource instance.
- * @enabled: if the source is enabled
+ * hif_repo_set_enabled:
+ * @repo: a #HifRepo instance.
+ * @enabled: if the repo is enabled
  *
- * Sets the source enabled state.
+ * Sets the repo enabled state.
  *
  * Since: 0.1.0
  **/
 void
-hif_source_set_enabled(HifSource *source, HifSourceEnabled enabled)
+hif_repo_set_enabled(HifRepo *repo, HifRepoEnabled enabled)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
 
     priv->enabled = enabled;
 
     /* packages implies metadata */
-    if (priv->enabled & HIF_SOURCE_ENABLED_PACKAGES)
-        priv->enabled |= HIF_SOURCE_ENABLED_METADATA;
+    if (priv->enabled & HIF_REPO_ENABLED_PACKAGES)
+        priv->enabled |= HIF_REPO_ENABLED_METADATA;
 }
 
 /**
- * hif_source_set_required:
- * @source: a #HifSource instance.
- * @required: if the source is required
+ * hif_repo_set_required:
+ * @repo: a #HifRepo instance.
+ * @required: if the repo is required
  *
- * Sets whether failure to retrieve the source is fatal; by default it
+ * Sets whether failure to retrieve the repo is fatal; by default it
  * is not.
  *
  * Since: 0.2.1
  **/
 void
-hif_source_set_required(HifSource *source, gboolean required)
+hif_repo_set_required(HifRepo *repo, gboolean required)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
 
     priv->required = required;
 }
 
 /**
- * hif_source_set_cost:
- * @source: a #HifSource instance.
- * @cost: the source cost
+ * hif_repo_set_cost:
+ * @repo: a #HifRepo instance.
+ * @cost: the repo cost
  *
- * Sets the source cost, where 1000 is the default.
+ * Sets the repo cost, where 1000 is the default.
  *
  * Since: 0.1.0
  **/
 void
-hif_source_set_cost(HifSource *source, guint cost)
+hif_repo_set_cost(HifRepo *repo, guint cost)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     priv->cost = cost;
 }
 
 /**
- * hif_source_set_kind:
- * @source: a #HifSource instance.
- * @kind: the #HifSourceKind
+ * hif_repo_set_kind:
+ * @repo: a #HifRepo instance.
+ * @kind: the #HifRepoKind
  *
- * Sets the source kind.
+ * Sets the repo kind.
  *
  * Since: 0.1.0
  **/
 void
-hif_source_set_kind(HifSource *source, HifSourceKind kind)
+hif_repo_set_kind(HifRepo *repo, HifRepoKind kind)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     priv->kind = kind;
 }
 
 /**
- * hif_source_set_gpgcheck:
- * @source: a #HifSource instance.
- * @gpgcheck_pkgs: if the source packages should be signed
+ * hif_repo_set_gpgcheck:
+ * @repo: a #HifRepo instance.
+ * @gpgcheck_pkgs: if the repo packages should be signed
  *
- * Sets the source signed status.
+ * Sets the repo signed status.
  *
  * Since: 0.1.0
  **/
 void
-hif_source_set_gpgcheck(HifSource *source, gboolean gpgcheck_pkgs)
+hif_repo_set_gpgcheck(HifRepo *repo, gboolean gpgcheck_pkgs)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     priv->gpgcheck_pkgs = gpgcheck_pkgs;
 }
 
 /**
- * hif_source_set_gpgcheck_md:
- * @source: a #HifSource instance.
- * @gpgcheck_md: if the source metadata should be signed
+ * hif_repo_set_gpgcheck_md:
+ * @repo: a #HifRepo instance.
+ * @gpgcheck_md: if the repo metadata should be signed
  *
  * Sets the metadata signed status.
  *
  * Since: 0.1.7
  **/
 void
-hif_source_set_gpgcheck_md(HifSource *source, gboolean gpgcheck_md)
+hif_repo_set_gpgcheck_md(HifRepo *repo, gboolean gpgcheck_md)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     priv->gpgcheck_md = gpgcheck_md;
 }
 
 /**
- * hif_source_set_keyfile:
- * @source: a #HifSource instance.
+ * hif_repo_set_keyfile:
+ * @repo: a #HifRepo instance.
  * @keyfile: the #GKeyFile
  *
- * Sets the source keyfile used to create the source.
+ * Sets the repo keyfile used to create the repo.
  *
  * Since: 0.1.0
  **/
 void
-hif_source_set_keyfile(HifSource *source, GKeyFile *keyfile)
+hif_repo_set_keyfile(HifRepo *repo, GKeyFile *keyfile)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     if (priv->keyfile != NULL)
         g_key_file_unref(priv->keyfile);
     priv->keyfile = g_key_file_ref(keyfile);
 }
 
 /**
- * hif_source_get_username_password_string:
+ * hif_repo_get_username_password_string:
  */
 static gchar *
-hif_source_get_username_password_string(const gchar *user, const gchar *pass)
+hif_repo_get_username_password_string(const gchar *user, const gchar *pass)
 {
     if (user == NULL && pass == NULL)
         return NULL;
@@ -712,12 +712,12 @@ hif_source_get_username_password_string(const gchar *user, const gchar *pass)
 }
 
 /**
- * hif_source_set_keyfile_data:
+ * hif_repo_set_keyfile_data:
  */
 static gboolean
-hif_source_set_keyfile_data(HifSource *source, GError **error)
+hif_repo_set_keyfile_data(HifRepo *repo, GError **error)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     guint cost;
     g_autofree gchar *metalink = NULL;
     g_autofree gchar *mirrorlist = NULL;
@@ -734,7 +734,7 @@ hif_source_set_keyfile_data(HifSource *source, GError **error)
     /* cost is optional */
     cost = g_key_file_get_integer(priv->keyfile, priv->id, "cost", NULL);
     if (cost != 0)
-        hif_source_set_cost(source, cost);
+        hif_repo_set_cost(repo, cost);
 
     /* baseurl is optional */
     baseurls = g_key_file_get_string_list(priv->keyfile, priv->id, "baseurl", NULL, NULL);
@@ -758,8 +758,8 @@ hif_source_set_keyfile_data(HifSource *source, GError **error)
         url = lr_prepend_url_protocol(baseurls[0]);
         if (url != NULL && strncasecmp(url, "file://", 7) == 0) {
             if (g_strstr_len(url, -1, "$testdatadir") == NULL)
-                priv->kind = HIF_SOURCE_KIND_LOCAL;
-            hif_source_set_location(source, url + 7);
+                priv->kind = HIF_REPO_KIND_LOCAL;
+            hif_repo_set_location(repo, url + 7);
         }
     }
 
@@ -770,17 +770,17 @@ hif_source_set_keyfile_data(HifSource *source, GError **error)
         g_autofree gchar *tmp = NULL;
         tmp = g_build_filename(hif_context_get_cache_dir(priv->context),
                     priv->id, NULL);
-        hif_source_set_location(source, tmp);
+        hif_repo_set_location(repo, tmp);
     }
 
     /* set temp location for remote repos */
-    if (priv->kind == HIF_SOURCE_KIND_REMOTE) {
+    if (priv->kind == HIF_REPO_KIND_REMOTE) {
         g_autoptr(GString) tmp = NULL;
         tmp = g_string_new(priv->location);
         if (tmp->str[tmp->len - 1] == '/')
             g_string_truncate(tmp, tmp->len - 1);
         g_string_append(tmp, ".tmp");
-        hif_source_set_location_tmp(source, tmp->str);
+        hif_repo_set_location_tmp(repo, tmp->str);
     }
 
     /* gpgkey is optional for gpgcheck=1, but required for repo_gpgcheck=1 */
@@ -815,34 +815,34 @@ hif_source_set_keyfile_data(HifSource *source, GError **error)
     /* both parts of the proxy auth are optional */
     usr = g_key_file_get_string(priv->keyfile, priv->id, "proxy_username", NULL);
     pwd = g_key_file_get_string(priv->keyfile, priv->id, "proxy_password", NULL);
-    usr_pwd_proxy = hif_source_get_username_password_string(usr, pwd);
+    usr_pwd_proxy = hif_repo_get_username_password_string(usr, pwd);
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_PROXYUSERPWD, usr_pwd_proxy))
         return FALSE;
 
     /* both parts of the HTTP auth are optional */
     usr = g_key_file_get_string(priv->keyfile, priv->id, "username", NULL);
     pwd = g_key_file_get_string(priv->keyfile, priv->id, "password", NULL);
-    usr_pwd = hif_source_get_username_password_string(usr, pwd);
+    usr_pwd = hif_repo_get_username_password_string(usr, pwd);
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_USERPWD, usr_pwd))
         return FALSE;
     return TRUE;
 }
 
 /**
- * hif_source_setup:
- * @source: a #HifSource instance.
+ * hif_repo_setup:
+ * @repo: a #HifRepo instance.
  * @error: a #GError or %NULL
  *
- * Sets up the source ready for use.
+ * Sets up the repo ready for use.
  *
  * Returns: %TRUE for success
  *
  * Since: 0.1.0
  **/
 gboolean
-hif_source_setup(HifSource *source, GError **error)
+hif_repo_setup(HifRepo *repo, GError **error)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     g_autofree gchar *basearch = NULL;
     g_autofree gchar *release = NULL;
     g_autofree gchar *testdatadir = NULL;
@@ -881,14 +881,14 @@ hif_source_setup(HifSource *source, GError **error)
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_GNUPGHOMEDIR, priv->keyring))
         return FALSE;
-    return hif_source_set_keyfile_data(source, error);
+    return hif_repo_set_keyfile_data(repo, error);
 }
 
 /**
- * hif_source_update_state_cb:
+ * hif_repo_update_state_cb:
  */
 static int
-hif_source_update_state_cb(void *user_data,
+hif_repo_update_state_cb(void *user_data,
                 gdouble total_to_download,
                 gdouble now_downloaded)
 {
@@ -923,12 +923,12 @@ hif_source_update_state_cb(void *user_data,
 }
 
 /**
- * hif_source_set_timestamp_modified:
+ * hif_repo_set_timestamp_modified:
  */
 static gboolean
-hif_source_set_timestamp_modified(HifSource *source, GError **error)
+hif_repo_set_timestamp_modified(HifRepo *repo, GError **error)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     g_autofree gchar *filename;
     g_autoptr(GFile) file;
     g_autoptr(GFileInfo) info;
@@ -951,12 +951,12 @@ hif_source_set_timestamp_modified(HifSource *source, GError **error)
 }
 
 static gboolean
-hif_source_check_internal(HifSource *source,
+hif_repo_check_internal(HifRepo *repo,
                guint permissible_cache_age,
                HifState *state,
                GError **error)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     const gchar *download_list[] = {
         "primary",
         "filelists",
@@ -973,23 +973,23 @@ hif_source_check_internal(HifSource *source,
     g_autoptr(GError) error_local = NULL;
 
     /* has the media repo vanished? */
-    if (priv->kind == HIF_SOURCE_KIND_MEDIA &&
+    if (priv->kind == HIF_REPO_KIND_MEDIA &&
         !g_file_test(priv->location, G_FILE_TEST_EXISTS)) {
-        priv->enabled = HIF_SOURCE_ENABLED_NONE;
+        priv->enabled = HIF_REPO_ENABLED_NONE;
         g_set_error(error,
                     HIF_ERROR,
-                    HIF_ERROR_SOURCE_NOT_AVAILABLE,
+                    HIF_ERROR_REPO_NOT_AVAILABLE,
                     "%s was not found", priv->location);
         return FALSE;
     }
 
     /* has the local repo vanished? */
-    if (priv->kind == HIF_SOURCE_KIND_LOCAL &&
+    if (priv->kind == HIF_REPO_KIND_LOCAL &&
         !g_file_test(priv->location, G_FILE_TEST_EXISTS)) {
-        priv->enabled = HIF_SOURCE_ENABLED_NONE;
+        priv->enabled = HIF_REPO_ENABLED_NONE;
         g_set_error(error,
                     HIF_ERROR,
-                    HIF_ERROR_SOURCE_NOT_AVAILABLE,
+                    HIF_ERROR_REPO_NOT_AVAILABLE,
                     "%s was not found", priv->location);
         return FALSE;
     }
@@ -1013,7 +1013,7 @@ hif_source_check_internal(HifSource *source,
     if (!lr_handle_perform(priv->repo_handle, priv->repo_result, &error_local)) {
         g_set_error(error,
                     HIF_ERROR,
-                    HIF_ERROR_SOURCE_NOT_AVAILABLE,
+                    HIF_ERROR_REPO_NOT_AVAILABLE,
                     "repodata %s was not complete: %s",
                     priv->id, error_local->message);
         return FALSE;
@@ -1042,8 +1042,8 @@ hif_source_check_internal(HifSource *source,
     }
 
     /* check metadata age for non-local repos */
-    if (priv->kind != HIF_SOURCE_KIND_LOCAL && permissible_cache_age != G_MAXUINT) {
-        if (!hif_source_set_timestamp_modified(source, error))
+    if (priv->kind != HIF_REPO_KIND_LOCAL && permissible_cache_age != G_MAXUINT) {
+        if (!hif_repo_set_timestamp_modified(repo, error))
             return FALSE;
         age_of_data =(g_get_real_time() - priv->timestamp_modified) / G_USEC_PER_SEC;
         if (age_of_data > permissible_cache_age) {
@@ -1100,34 +1100,34 @@ hif_source_check_internal(HifSource *source,
     }
 
     /* ensure we reset the values from the keyfile */
-    if (!hif_source_set_keyfile_data(source, error))
+    if (!hif_repo_set_keyfile_data(repo, error))
         return FALSE;
 
     return TRUE;
 }
 
 /**
- * hif_source_check:
- * @source: a #HifSource instance.
+ * hif_repo_check:
+ * @repo: a #HifRepo instance.
  * @permissible_cache_age: The oldest cache age allowed in seconds(wall clock time); Pass %G_MAXUINT to ignore
  * @state: a #HifState instance.
  * @error: a #GError or %NULL.
  *
- * Checks the source.
+ * Checks the repo.
  *
  * Returns: %TRUE for success, %FALSE otherwise
  *
  * Since: 0.1.0
  **/
 gboolean
-hif_source_check (HifSource *source,
+hif_repo_check (HifRepo *repo,
            guint permissible_cache_age,
            HifState *state,
            GError **error)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     g_clear_error(&priv->last_check_error);
-    if (!hif_source_check_internal(source, permissible_cache_age, state,
+    if (!hif_repo_check_internal(repo, permissible_cache_age, state,
                                    &priv->last_check_error)) {
         if (error)
             *error = g_error_copy(priv->last_check_error);
@@ -1138,43 +1138,43 @@ hif_source_check (HifSource *source,
 
 
 /**
- * hif_source_get_filename_md:
- * @source: a #HifSource instance.
+ * hif_repo_get_filename_md:
+ * @repo: a #HifRepo instance.
  * @md_kind: The file kind, e.g. "primary" or "updateinfo"
  *
- * Gets the filename used for a source data kind.
+ * Gets the filename used for a repo data kind.
  *
  * Returns: the full path to the data file, %NULL otherwise
  *
  * Since: 0.1.7
  **/
 const gchar *
-hif_source_get_filename_md(HifSource *source, const gchar *md_kind)
+hif_repo_get_filename_md(HifRepo *repo, const gchar *md_kind)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     g_return_val_if_fail(md_kind != NULL, NULL);
     return g_hash_table_lookup(priv->filenames_md, md_kind);
 }
 
 /**
- * hif_source_clean:
- * @source: a #HifSource instance.
+ * hif_repo_clean:
+ * @repo: a #HifRepo instance.
  * @error: a #GError or %NULL.
  *
- * Cleans the source by deleting all the location contents.
+ * Cleans the repo by deleting all the location contents.
  *
  * Returns: %TRUE for success, %FALSE otherwise
  *
  * Since: 0.1.0
  **/
 gboolean
-hif_source_clean(HifSource *source, GError **error)
+hif_repo_clean(HifRepo *repo, GError **error)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
 
     /* do not clean media or local repos */
-    if (priv->kind == HIF_SOURCE_KIND_MEDIA ||
-        priv->kind == HIF_SOURCE_KIND_LOCAL)
+    if (priv->kind == HIF_REPO_KIND_MEDIA ||
+        priv->kind == HIF_REPO_KIND_LOCAL)
         return TRUE;
 
     if (!g_file_test(priv->location, G_FILE_TEST_EXISTS))
@@ -1185,14 +1185,14 @@ hif_source_clean(HifSource *source, GError **error)
 }
 
 /**
- * hif_source_add_public_key:
+ * hif_repo_add_public_key:
  *
  * This imports a repodata public key into the default librpm keyring
  **/
 static gboolean
-hif_source_add_public_key(HifSource *source, GError **error)
+hif_repo_add_public_key(HifRepo *repo, GError **error)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     gboolean ret;
     rpmKeyring keyring;
     rpmts ts;
@@ -1207,12 +1207,12 @@ hif_source_add_public_key(HifSource *source, GError **error)
 }
 
 /**
- * hif_source_download_import_public_key:
+ * hif_repo_download_import_public_key:
  **/
 static gboolean
-hif_source_download_import_public_key(HifSource *source, GError **error)
+hif_repo_download_import_public_key(HifRepo *repo, GError **error)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     int fd;
 
     /* does this file already exist */
@@ -1257,25 +1257,25 @@ hif_source_download_import_public_key(HifSource *source, GError **error)
 }
 
 /**
- * hif_source_update:
- * @source: a #HifSource instance.
- * @flags: #HifSourceUpdateFlags, e.g. %HIF_SOURCE_UPDATE_FLAG_FORCE
+ * hif_repo_update:
+ * @repo: a #HifRepo instance.
+ * @flags: #HifRepoUpdateFlags, e.g. %HIF_REPO_UPDATE_FLAG_FORCE
  * @state: a #HifState instance.
  * @error: a #%GError or %NULL.
  *
- * Updates the source.
+ * Updates the repo.
  *
  * Returns: %TRUE for success, %FALSE otherwise
  *
  * Since: 0.1.0
  **/
 gboolean
-hif_source_update(HifSource *source,
-           HifSourceUpdateFlags flags,
+hif_repo_update(HifRepo *repo,
+           HifRepoUpdateFlags flags,
            HifState *state,
            GError **error)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     HifState *state_local;
     gboolean ret;
     gint rc;
@@ -1283,16 +1283,16 @@ hif_source_update(HifSource *source,
     g_autoptr(GError) error_local = NULL;
 
     /* cannot change DVD contents */
-    if (priv->kind == HIF_SOURCE_KIND_MEDIA) {
+    if (priv->kind == HIF_REPO_KIND_MEDIA) {
         g_set_error_literal(error,
                             HIF_ERROR,
-                            HIF_ERROR_SOURCE_NOT_AVAILABLE,
-                            "Cannot update read-only source");
+                            HIF_ERROR_REPO_NOT_AVAILABLE,
+                            "Cannot update read-only repo");
         return FALSE;
     }
 
     /* Just verify existence for local */
-    if (priv->kind == HIF_SOURCE_KIND_LOCAL) {
+    if (priv->kind == HIF_REPO_KIND_LOCAL) {
         if (priv->last_check_error) {
             if (error) 
                 *error = g_error_copy(priv->last_check_error);
@@ -1314,7 +1314,7 @@ hif_source_update(HifSource *source,
     }
 
     /* ensure we set the values from the keyfile */
-    if (!hif_source_set_keyfile_data(source, error))
+    if (!hif_repo_set_keyfile_data(repo, error))
         return FALSE;
 
     /* take lock */
@@ -1346,7 +1346,7 @@ hif_source_update(HifSource *source,
         ret = FALSE;
         g_set_error(error,
                     HIF_ERROR,
-                    HIF_ERROR_CANNOT_WRITE_SOURCE_CONFIG,
+                    HIF_ERROR_CANNOT_WRITE_REPO_CONFIG,
                     "Failed to create %s", priv->location_tmp);
         goto out;
     }
@@ -1356,15 +1356,15 @@ hif_source_update(HifSource *source,
        (g_str_has_prefix(priv->gpgkey, "https://") ||
          g_str_has_prefix(priv->gpgkey, "file://"))) {
         g_debug("importing public key %s", priv->gpgkey);
-        ret = hif_source_download_import_public_key(source, error);
+        ret = hif_repo_download_import_public_key(repo, error);
         if (!ret)
             goto out;
     }
 
     /* do we autoimport this into librpm */
     if (priv->gpgcheck_md &&
-       (flags & HIF_SOURCE_UPDATE_FLAG_IMPORT_PUBKEY) > 0) {
-        ret = hif_source_add_public_key(source, error);
+       (flags & HIF_REPO_UPDATE_FLAG_IMPORT_PUBKEY) > 0) {
+        ret = hif_repo_add_public_key(repo, error);
         if (!ret)
             goto out;
     }
@@ -1386,7 +1386,7 @@ hif_source_update(HifSource *source,
     if (!ret)
         goto out;
     ret = lr_handle_setopt(priv->repo_handle, error,
-                           LRO_PROGRESSCB, hif_source_update_state_cb);
+                           LRO_PROGRESSCB, hif_repo_update_state_cb);
     if (!ret)
         goto out;
     lr_result_clear(priv->repo_result);
@@ -1400,7 +1400,7 @@ hif_source_update(HifSource *source,
                     HIF_ERROR,
                     HIF_ERROR_CANNOT_FETCH_SOURCE,
                     "cannot update repo '%s': %s",
-                    hif_source_get_id(source),
+                    hif_repo_get_id(repo),
                     error_local->message);
         goto out;
     }
@@ -1416,7 +1416,7 @@ hif_source_update(HifSource *source,
                     error_local->message);
         goto out;
     }
-    if ((flags & HIF_SOURCE_UPDATE_FLAG_FORCE) == 0 &&
+    if ((flags & HIF_REPO_UPDATE_FLAG_FORCE) == 0 &&
         timestamp_new < priv->timestamp_generated) {
         g_debug("fresh metadata was older than what we have, ignoring");
         if (!hif_state_finished(state, error))
@@ -1425,7 +1425,7 @@ hif_source_update(HifSource *source,
     }
 
     /* only simulate */
-    if (flags & HIF_SOURCE_UPDATE_FLAG_SIMULATE) {
+    if (flags & HIF_REPO_UPDATE_FLAG_SIMULATE) {
         g_debug("simulating, so not switching to new metadata");
         ret = hif_remove_recursive(priv->location_tmp, error);
         goto out;
@@ -1446,7 +1446,7 @@ hif_source_update(HifSource *source,
     }
 
     /* delete old /var/cache/PackageKit/metadata/$REPO/ */
-    ret = hif_source_clean(source, error);
+    ret = hif_repo_clean(repo, error);
     if (!ret)
         goto out;
 
@@ -1477,7 +1477,7 @@ hif_source_update(HifSource *source,
 
     /* now setup internal hawkey stuff */
     state_local = hif_state_get_child(state);
-    ret = hif_source_check(source, G_MAXUINT, state_local, error);
+    ret = hif_repo_check(repo, G_MAXUINT, state_local, error);
     if (!ret)
         goto out;
 
@@ -1497,51 +1497,51 @@ out:
 }
 
 /**
- * hif_source_set_data:
- * @source: a #HifSource instance.
+ * hif_repo_set_data:
+ * @repo: a #HifRepo instance.
  * @parameter: the UTF8 key.
  * @value: the UTF8 value.
  * @error: A #GError or %NULL
  *
- * Sets data on the source.
+ * Sets data on the repo.
  *
  * Returns: %TRUE for success, %FALSE otherwise
  *
  * Since: 0.1.0
  **/
 gboolean
-hif_source_set_data(HifSource *source,
+hif_repo_set_data(HifRepo *repo,
                     const gchar *parameter,
                     const gchar *value,
                     GError **error)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     g_key_file_set_string(priv->keyfile, priv->id, parameter, value);
     return TRUE;
 }
 
 /**
- * hif_source_commit:
- * @source: a #HifSource instance.
+ * hif_repo_commit:
+ * @repo: a #HifRepo instance.
  * @error: A #GError or %NULL
  *
- * Commits data on the source, which involves saving a new .repo file.
+ * Commits data on the repo, which involves saving a new .repo file.
  *
  * Returns: %TRUE for success, %FALSE otherwise
  *
  * Since: 0.1.4
  **/
 gboolean
-hif_source_commit(HifSource *source, GError **error)
+hif_repo_commit(HifRepo *repo, GError **error)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     g_autofree gchar *data = NULL;
 
     /* cannot change DVD contents */
-    if (priv->kind == HIF_SOURCE_KIND_MEDIA) {
+    if (priv->kind == HIF_REPO_KIND_MEDIA) {
         g_set_error_literal(error,
                             HIF_ERROR,
-                            HIF_ERROR_CANNOT_WRITE_SOURCE_CONFIG,
+                            HIF_ERROR_CANNOT_WRITE_REPO_CONFIG,
                             "Cannot commit to read-only media");
         return FALSE;
     }
@@ -1554,10 +1554,10 @@ hif_source_commit(HifSource *source, GError **error)
 }
 
 /**
- * hif_source_checksum_hy_to_lr:
+ * hif_repo_checksum_hy_to_lr:
  **/
 static LrChecksumType
-hif_source_checksum_hy_to_lr(int checksum_hy)
+hif_repo_checksum_hy_to_lr(int checksum_hy)
 {
     if (checksum_hy == G_CHECKSUM_MD5)
         return LR_CHECKSUM_MD5;
@@ -1569,20 +1569,20 @@ hif_source_checksum_hy_to_lr(int checksum_hy)
 }
 
 /**
- * hif_source_copy_progress_cb:
+ * hif_repo_copy_progress_cb:
  **/
 static void
-hif_source_copy_progress_cb(goffset current, goffset total, gpointer user_data)
+hif_repo_copy_progress_cb(goffset current, goffset total, gpointer user_data)
 {
     HifState *state = HIF_STATE(user_data);
     hif_state_set_percentage(state, 100.0f * current / total);
 }
 
 /**
- * hif_source_copy_package:
+ * hif_repo_copy_package:
  **/
 static gboolean
-hif_source_copy_package(HyPackage pkg,
+hif_repo_copy_package(HyPackage pkg,
              const gchar *directory,
              HifState *state,
              GError **error)
@@ -1590,16 +1590,16 @@ hif_source_copy_package(HyPackage pkg,
     g_autofree gchar *basename = NULL;
     g_autofree gchar *dest = NULL;
     g_autoptr(GFile) file_dest;
-    g_autoptr(GFile) file_source;
+    g_autoptr(GFile) file_repo;
 
     /* copy the file with progress */
-    file_source = g_file_new_for_path(hif_package_get_filename(pkg));
+    file_repo = g_file_new_for_path(hif_package_get_filename(pkg));
     basename = g_path_get_basename(hy_package_get_location(pkg));
     dest = g_build_filename(directory, basename, NULL);
     file_dest = g_file_new_for_path(dest);
-    return g_file_copy(file_source, file_dest, G_FILE_COPY_NONE,
+    return g_file_copy(file_repo, file_dest, G_FILE_COPY_NONE,
                        hif_state_get_cancellable(state),
-                       hif_source_copy_progress_cb, state, error);
+                       hif_repo_copy_progress_cb, state, error);
 }
 
 struct DownloadState {
@@ -1614,7 +1614,7 @@ package_download_update_state_cb(void *user_data,
                                  gdouble now_downloaded)
 {
     struct DownloadState *dlstate = user_data;
-    return hif_source_update_state_cb(dlstate->state, total_to_download, now_downloaded);
+    return hif_repo_update_state_cb(dlstate->state, total_to_download, now_downloaded);
 }
 
 static int
@@ -1634,27 +1634,27 @@ out:
 }
 
 /**
- * hif_source_download_package:
- * @source: a #HifSource instance.
+ * hif_repo_download_package:
+ * @repo: a #HifRepo instance.
  * @pkg: a #HyPackage instance.
  * @directory: the destination directory.
  * @state: a #HifState.
  * @error: a #GError or %NULL..
  *
- * Downloads a package from a source.
+ * Downloads a package from a repo.
  *
  * Returns: the complete filename of the downloaded file
  *
  * Since: 0.1.0
  **/
 gchar *
-hif_source_download_package(HifSource *source,
+hif_repo_download_package(HifRepo *repo,
                             HyPackage pkg,
                             const gchar *directory,
                             HifState *state,
                             GError **error)
 {
-    HifSourcePrivate *priv = GET_PRIVATE(source);
+    HifRepoPrivate *priv = GET_PRIVATE(repo);
     char *checksum_str = NULL;
     const unsigned char *checksum;
     gboolean ret;
@@ -1668,7 +1668,7 @@ hif_source_download_package(HifSource *source,
     g_autofree gchar *directory_slash = NULL;
 
     /* ensure we reset the values from the keyfile */
-    if (!hif_source_set_keyfile_data(source, error))
+    if (!hif_repo_set_keyfile_data(repo, error))
         return NULL;
 
     /* if nothing specified then use cachedir */
@@ -1692,9 +1692,9 @@ hif_source_download_package(HifSource *source,
     }
 
     /* is a local repo, i.e. we just need to copy */
-    if (hif_source_is_local(source)) {
-        hif_package_set_source(pkg, source);
-        if (!hif_source_copy_package(pkg, directory, state, error))
+    if (hif_repo_is_local(repo)) {
+        hif_package_set_repo(pkg, repo);
+        if (!hif_repo_copy_package(pkg, directory, state, error))
             goto out;
         goto done;
     }
@@ -1714,7 +1714,7 @@ hif_source_download_package(HifSource *source,
     target = lr_packagetarget_new_v2(priv->repo_handle,
                                      hy_package_get_location(pkg),
                                      directory_slash,
-                                     hif_source_checksum_hy_to_lr(checksum_type),
+                                     hif_repo_checksum_hy_to_lr(checksum_type),
                                      checksum_str,
                                      0, /* size unknown */
                                      hy_package_get_baseurl(pkg),
@@ -1763,23 +1763,23 @@ out:
 }
 
 /**
- * hif_source_new:
+ * hif_repo_new:
  * @context: A #HifContext instance
  *
- * Creates a new #HifSource.
+ * Creates a new #HifRepo.
  *
- * Returns:(transfer full): a #HifSource
+ * Returns:(transfer full): a #HifRepo
  *
  * Since: 0.1.0
  **/
-HifSource *
-hif_source_new(HifContext *context)
+HifRepo *
+hif_repo_new(HifContext *context)
 {
-    HifSource *source;
-    HifSourcePrivate *priv;
-    source = g_object_new(HIF_TYPE_SOURCE, NULL);
-    priv = GET_PRIVATE(source);
+    HifRepo *repo;
+    HifRepoPrivate *priv;
+    repo = g_object_new(HIF_TYPE_REPO, NULL);
+    priv = GET_PRIVATE(repo);
     priv->context = context;
     g_object_add_weak_pointer(G_OBJECT(priv->context),(void **) &priv->context);
-    return HIF_SOURCE(source);
+    return HIF_REPO(repo);
 }

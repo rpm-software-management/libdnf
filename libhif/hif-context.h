@@ -93,9 +93,8 @@ gboolean         hif_context_get_yumdb_enabled          (HifContext     *context
 guint            hif_context_get_cache_age              (HifContext     *context);
 guint            hif_context_get_installonly_limit      (HifContext     *context);
 const gchar     *hif_context_get_http_proxy             (HifContext     *context);
-GPtrArray       *hif_context_get_sources                (HifContext     *context);
+GPtrArray       *hif_context_get_repos                  (HifContext     *context);
 #ifndef __GI_SCANNER__
-HifRepos        *hif_context_get_repos                  (HifContext     *context);
 HifTransaction  *hif_context_get_transaction            (HifContext     *context);
 HifSack         *hif_context_get_sack                   (HifContext     *context);
 HyGoal           hif_context_get_goal                   (HifContext     *context);

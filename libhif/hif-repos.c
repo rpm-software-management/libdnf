@@ -21,14 +21,14 @@
 
 /**
  * SECTION:hif-repos
- * @short_description: An object for loading several #HifSource objects.
+ * @short_description: An object for loading several #HifRepo objects.
  * @include: libhif.h
  * @stability: Stable
  *
- * This object can create #HifSource objects from either DVD media or from .repo
+ * This object can create #HifRepo objects from either DVD media or from .repo
  * files in the repodir.
  *
- * See also: #HifSource
+ * See also: #HifRepo
  */
 
 #include <strings.h>
@@ -46,7 +46,7 @@ typedef struct
 {
     GFileMonitor    *monitor_repos;
     HifContext      *context;    /* weak reference */
-    GPtrArray       *sources;
+    GPtrArray       *repos;
     GVolumeMonitor  *volume_monitor;
     gboolean         loaded;
 } HifReposPrivate;
@@ -73,7 +73,7 @@ hif_repos_finalize(GObject *object)
     if (priv->monitor_repos != NULL)
         g_object_unref(priv->monitor_repos);
     g_object_unref(priv->volume_monitor);
-    g_ptr_array_unref(priv->sources);
+    g_ptr_array_unref(priv->repos);
 
     G_OBJECT_CLASS(hif_repos_parent_class)->finalize(object);
 }
@@ -109,7 +109,7 @@ static void
 hif_repos_init(HifRepos *repos)
 {
     HifReposPrivate *priv = GET_PRIVATE(repos);
-    priv->sources = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
+    priv->repos = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
     priv->volume_monitor = g_volume_monitor_get();
     g_signal_connect(priv->volume_monitor, "mount-added",
                      G_CALLBACK(hif_repos_mount_changed_cb), repos);
@@ -148,7 +148,7 @@ hif_repos_add_media(HifRepos *repos,
              GError **error)
 {
     HifReposPrivate *priv = GET_PRIVATE(repos);
-    HifSource *source;
+    HifRepo *repo;
     g_autofree gchar *packages = NULL;
     g_autofree gchar *treeinfo_fn;
     g_autoptr(GKeyFile) treeinfo;
@@ -160,25 +160,25 @@ hif_repos_add_media(HifRepos *repos,
         return FALSE;
 
     /* create read-only location */
-    source = hif_source_new(priv->context);
-    hif_source_set_enabled(source, HIF_SOURCE_ENABLED_PACKAGES);
-    hif_source_set_gpgcheck(source, TRUE);
-    hif_source_set_kind(source, HIF_SOURCE_KIND_MEDIA);
-    hif_source_set_cost(source, 100);
-    hif_source_set_keyfile(source, treeinfo);
+    repo = hif_repo_new(priv->context);
+    hif_repo_set_enabled(repo, HIF_REPO_ENABLED_PACKAGES);
+    hif_repo_set_gpgcheck(repo, TRUE);
+    hif_repo_set_kind(repo, HIF_REPO_KIND_MEDIA);
+    hif_repo_set_cost(repo, 100);
+    hif_repo_set_keyfile(repo, treeinfo);
     if (idx == 0) {
-        hif_source_set_id(source, "media");
+        hif_repo_set_id(repo, "media");
     } else {
         g_autofree gchar *tmp;
         tmp = g_strdup_printf("media-%i", idx);
-        hif_source_set_id(source, tmp);
+        hif_repo_set_id(repo, tmp);
     }
-    hif_source_set_location(source, mount_point);
-    if (!hif_source_setup(source, error))
+    hif_repo_set_location(repo, mount_point);
+    if (!hif_repo_setup(repo, error))
         return FALSE;
 
-    g_debug("added source %s", hif_source_get_id(source));
-    g_ptr_array_add(priv->sources, source);
+    g_debug("added repo %s", hif_repo_get_id(repo));
+    g_ptr_array_add(priv->repos, repo);
     return TRUE;
 }
 
@@ -202,7 +202,7 @@ hif_repos_add_sack_from_mount_point(HifRepos *repos,
     if (!exists)
         return TRUE;
 
-    /* add the repodata/repomd.xml as a source */
+    /* add the repodata/repomd.xml as a repo */
     if (!hif_repos_add_media(repos, root, *idx, error))
         return FALSE;
    (*idx)++;
@@ -210,10 +210,10 @@ hif_repos_add_sack_from_mount_point(HifRepos *repos,
 }
 
 /**
- * hif_repos_get_sources_removable:
+ * hif_repos_get_repos_removable:
  */
 static gboolean
-hif_repos_get_sources_removable(HifRepos *repos, GError **error)
+hif_repos_get_repos_removable(HifRepos *repos, GError **error)
 {
     GList *mounts;
     GList *l;
@@ -242,16 +242,16 @@ out:
 }
 
 /**
- * hi_repos_source_cost_fn:
+ * hi_repos_repo_cost_fn:
  */
 static gint
-hi_repos_source_cost_fn(gconstpointer a, gconstpointer b)
+hi_repos_repo_cost_fn(gconstpointer a, gconstpointer b)
 {
-    HifSource *src_a = *((HifSource **) a);
-    HifSource *src_b = *((HifSource **) b);
-    if (hif_source_get_cost(src_a) < hif_source_get_cost(src_b))
+    HifRepo *repo_a = *((HifRepo **) a);
+    HifRepo *repo_b = *((HifRepo **) b);
+    if (hif_repo_get_cost(repo_a) < hif_repo_get_cost(repo_b))
         return -1;
-    if (hif_source_get_cost(src_a) > hif_source_get_cost(src_b))
+    if (hif_repo_get_cost(repo_a) > hif_repo_get_cost(repo_b))
         return 1;
     return 0;
 }
@@ -326,59 +326,59 @@ hif_repos_load_multiline_key_file(const gchar *filename, GError **error)
 }
 
 /**
- * hif_repos_source_parse_id:
+ * hif_repos_repo_parse_id:
  **/
 static gboolean
-hif_repos_source_parse_id(HifRepos *repos,
+hif_repos_repo_parse_id(HifRepos *repos,
                           const gchar *id,
                           const gchar *filename,
                           GKeyFile *keyfile,
                           GError **error)
 {
     HifReposPrivate *priv = GET_PRIVATE(repos);
-    HifSourceEnabled enabled = 0;
-    g_autoptr(HifSource) source;
+    HifRepoEnabled enabled = 0;
+    g_autoptr(HifRepo) repo;
 
     /* enabled isn't a required key */
     if (g_key_file_has_key(keyfile, id, "enabled", NULL)) {
         if (g_key_file_get_boolean(keyfile, id, "enabled", NULL))
-            enabled |= HIF_SOURCE_ENABLED_PACKAGES;
+            enabled |= HIF_REPO_ENABLED_PACKAGES;
     } else {
-        enabled |= HIF_SOURCE_ENABLED_PACKAGES;
+        enabled |= HIF_REPO_ENABLED_PACKAGES;
     }
 
     /* enabled_metadata isn't a required key */
     if (g_key_file_has_key(keyfile, id, "enabled_metadata", NULL)) {
         if (g_key_file_get_boolean(keyfile, id, "enabled_metadata", NULL))
-            enabled |= HIF_SOURCE_ENABLED_METADATA;
+            enabled |= HIF_REPO_ENABLED_METADATA;
     } else {
         g_autofree gchar *basename = NULL;
         basename = g_path_get_basename(filename);
         if (g_strcmp0(basename, "redhat.repo") == 0)
-            enabled |= HIF_SOURCE_ENABLED_METADATA;
+            enabled |= HIF_REPO_ENABLED_METADATA;
     }
 
-    source = hif_source_new(priv->context);
-    hif_source_set_enabled(source, enabled);
-    hif_source_set_kind(source, HIF_SOURCE_KIND_REMOTE);
-    hif_source_set_keyfile(source, keyfile);
-    hif_source_set_filename(source, filename);
-    hif_source_set_id(source, id);
+    repo = hif_repo_new(priv->context);
+    hif_repo_set_enabled(repo, enabled);
+    hif_repo_set_kind(repo, HIF_REPO_KIND_REMOTE);
+    hif_repo_set_keyfile(repo, keyfile);
+    hif_repo_set_filename(repo, filename);
+    hif_repo_set_id(repo, id);
 
     /* set up the repo ready for use */
-    if (!hif_source_setup(source, error))
+    if (!hif_repo_setup(repo, error))
         return FALSE;
 
-    g_debug("added source %s\t%s", filename, id);
-    g_ptr_array_add(priv->sources, g_object_ref(source));
+    g_debug("added repo %s\t%s", filename, id);
+    g_ptr_array_add(priv->repos, g_object_ref(repo));
     return TRUE;
 }
 
 /**
- * hif_repos_source_parse:
+ * hif_repos_repo_parse:
  **/
 static gboolean
-hif_repos_source_parse(HifRepos *repos,
+hif_repos_repo_parse(HifRepos *repos,
                        const gchar *filename,
                        GError **error)
 {
@@ -397,7 +397,7 @@ hif_repos_source_parse(HifRepos *repos,
     /* save all the repos listed in the file */
     groups = g_key_file_get_groups(keyfile, NULL);
     for (i = 0; groups[i] != NULL; i++) {
-        ret = hif_repos_source_parse_id(repos,
+        ret = hif_repos_repo_parse_id(repos,
                          groups[i],
                          filename,
                          keyfile,
@@ -421,7 +421,7 @@ hif_repos_refresh(HifRepos *repos, GError **error)
 
     /* no longer loaded */
     hif_repos_invalidate(repos);
-    g_ptr_array_set_size(priv->sources, 0);
+    g_ptr_array_set_size(priv->repos, 0);
 
     /* re-populate redhat.repo */
     if (!hif_context_setup_enrollments(priv->context, error))
@@ -439,19 +439,19 @@ hif_repos_refresh(HifRepos *repos, GError **error)
         if (!g_str_has_suffix(file, ".repo"))
             continue;
         path_tmp = g_build_filename(repo_path, file, NULL);
-        if (!hif_repos_source_parse(repos, path_tmp, error))
+        if (!hif_repos_repo_parse(repos, path_tmp, error))
             return FALSE;
     }
 
-    /* add any DVD sources */
-    if (!hif_repos_get_sources_removable(repos, error))
+    /* add any DVD repos */
+    if (!hif_repos_get_repos_removable(repos, error))
         return FALSE;
 
     /* all okay */
     priv->loaded = TRUE;
 
     /* sort these in order of cost */
-    g_ptr_array_sort(priv->sources, hi_repos_source_cost_fn);
+    g_ptr_array_sort(priv->repos, hi_repos_repo_cost_fn);
     return TRUE;
 }
 
@@ -462,27 +462,27 @@ gboolean
 hif_repos_has_removable(HifRepos *repos)
 {
     HifReposPrivate *priv = GET_PRIVATE(repos);
-    HifSource *src;
+    HifRepo *repo;
     guint i;
 
     g_return_val_if_fail(HIF_IS_REPOS(repos), FALSE);
 
     /* are there any media repos */
-    for (i = 0; i < priv->sources->len; i++) {
-        src = g_ptr_array_index(priv->sources, i);
-        if (hif_source_get_kind(src) == HIF_SOURCE_KIND_MEDIA)
+    for (i = 0; i < priv->repos->len; i++) {
+        repo = g_ptr_array_index(priv->repos, i);
+        if (hif_repo_get_kind(repo) == HIF_REPO_KIND_MEDIA)
             return TRUE;
     }
     return FALSE;
 }
 
 /**
- * hif_repos_get_sources:
+ * hif_repos_get_repos:
  *
- * Returns:(transfer container)(element-type HifSource): Array of sources
+ * Returns:(transfer container)(element-type HifRepo): Array of repos
  */
 GPtrArray *
-hif_repos_get_sources(HifRepos *repos, GError **error)
+hif_repos_get_repos(HifRepos *repos, GError **error)
 {
     HifReposPrivate *priv = GET_PRIVATE(repos);
 
@@ -496,17 +496,17 @@ hif_repos_get_sources(HifRepos *repos, GError **error)
     }
 
     /* all okay */
-    return g_ptr_array_ref(priv->sources);
+    return g_ptr_array_ref(priv->repos);
 }
 
 /**
- * hif_repos_get_source_by_id:
+ * hif_repos_get_by_id:
  */
-HifSource *
-hif_repos_get_source_by_id(HifRepos *repos, const gchar *id, GError **error)
+HifRepo *
+hif_repos_get_by_id(HifRepos *repos, const gchar *id, GError **error)
 {
     HifReposPrivate *priv = GET_PRIVATE(repos);
-    HifSource *tmp;
+    HifRepo *tmp;
     guint i;
 
     g_return_val_if_fail(HIF_IS_REPOS(repos), NULL);
@@ -519,16 +519,16 @@ hif_repos_get_source_by_id(HifRepos *repos, const gchar *id, GError **error)
             return NULL;
     }
 
-    for (i = 0; i < priv->sources->len; i++) {
-        tmp = g_ptr_array_index(priv->sources, i);
-        if (g_strcmp0(hif_source_get_id(tmp), id) == 0)
+    for (i = 0; i < priv->repos->len; i++) {
+        tmp = g_ptr_array_index(priv->repos, i);
+        if (g_strcmp0(hif_repo_get_id(tmp), id) == 0)
             return tmp;
     }
 
     /* we didn't find anything */
     g_set_error(error,
                 HIF_ERROR,
-                HIF_ERROR_SOURCE_NOT_FOUND,
+                HIF_ERROR_REPO_NOT_FOUND,
                 "failed to find %s", id);
     return NULL;
 }

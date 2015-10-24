@@ -190,13 +190,13 @@ hif_lock_threads_func(void)
 }
 
 static void
-ch_test_source_func(void)
+ch_test_repo_func(void)
 {
-    HifSource *source;
+    HifRepo *repo;
     HifContext *context;
     context = hif_context_new();
-    source = hif_source_new(context);
-    g_object_unref(source);
+    repo = hif_repo_new(context);
+    g_object_unref(repo);
     g_object_unref(context);
 }
 
@@ -793,7 +793,7 @@ static void
 hif_repos_func(void)
 {
     GError *error = NULL;
-    HifSource *src;
+    HifRepo *repo;
     HifState *state;
     gboolean ret;
     g_autofree gchar *repos_dir = NULL;
@@ -814,47 +814,47 @@ hif_repos_func(void)
 
     /* load repos that need keyfile fixes */
     repos = hif_repos_new(ctx);
-    src = hif_repos_get_source_by_id(repos, "bumblebee", &error);
+    repo = hif_repos_get_by_id(repos, "bumblebee", &error);
     g_assert_no_error(error);
-    g_assert(src != NULL);
-    g_assert_cmpint(hif_source_get_kind(src), ==, HIF_SOURCE_KIND_REMOTE);
-    g_assert(hif_source_get_gpgcheck(src));
-    g_assert(!hif_source_get_gpgcheck_md(src));
+    g_assert(repo != NULL);
+    g_assert_cmpint(hif_repo_get_kind(repo), ==, HIF_REPO_KIND_REMOTE);
+    g_assert(hif_repo_get_gpgcheck(repo));
+    g_assert(!hif_repo_get_gpgcheck_md(repo));
 
     /* load repos that should be metadata enabled automatically */
-    src = hif_repos_get_source_by_id(repos, "redhat", &error);
+    repo = hif_repos_get_by_id(repos, "redhat", &error);
     g_assert_no_error(error);
-    g_assert(src != NULL);
-    g_assert_cmpint(hif_source_get_enabled(src), ==, HIF_SOURCE_ENABLED_METADATA);
-    g_assert_cmpint(hif_source_get_kind(src), ==, HIF_SOURCE_KIND_REMOTE);
-    g_assert(!hif_source_get_gpgcheck(src));
-    g_assert(!hif_source_get_gpgcheck_md(src));
+    g_assert(repo != NULL);
+    g_assert_cmpint(hif_repo_get_enabled(repo), ==, HIF_REPO_ENABLED_METADATA);
+    g_assert_cmpint(hif_repo_get_kind(repo), ==, HIF_REPO_KIND_REMOTE);
+    g_assert(!hif_repo_get_gpgcheck(repo));
+    g_assert(!hif_repo_get_gpgcheck_md(repo));
 
     /* load local metadata repo */
-    src = hif_repos_get_source_by_id(repos, "local", &error);
+    repo = hif_repos_get_by_id(repos, "local", &error);
     g_assert_no_error(error);
-    g_assert(src != NULL);
-    g_assert_cmpint(hif_source_get_enabled(src), ==, HIF_SOURCE_ENABLED_METADATA |
-                               HIF_SOURCE_ENABLED_PACKAGES);
-    g_assert_cmpint(hif_source_get_kind(src), ==, HIF_SOURCE_KIND_LOCAL);
-    g_assert(!hif_source_get_gpgcheck(src));
-    g_assert(!hif_source_get_gpgcheck_md(src));
+    g_assert(repo != NULL);
+    g_assert_cmpint(hif_repo_get_enabled(repo), ==, HIF_REPO_ENABLED_METADATA |
+                               HIF_REPO_ENABLED_PACKAGES);
+    g_assert_cmpint(hif_repo_get_kind(repo), ==, HIF_REPO_KIND_LOCAL);
+    g_assert(!hif_repo_get_gpgcheck(repo));
+    g_assert(!hif_repo_get_gpgcheck_md(repo));
 
     /* try to clean local repo */
-    ret = hif_source_clean(src, &error);
+    ret = hif_repo_clean(repo, &error);
     g_assert_no_error(error);
     g_assert(ret);
 
     /* try to refresh local repo */
     hif_state_reset(state);
-    ret = hif_source_update(src, HIF_SOURCE_UPDATE_FLAG_NONE, state, &error);
+    ret = hif_repo_update(repo, HIF_REPO_UPDATE_FLAG_NONE, state, &error);
     g_assert_no_error(error);
     g_assert(ret);
 
     /* try to check local repo that will not exist */
     hif_state_reset(state);
-    ret = hif_source_check(src, 1, state, &error);
-    g_assert_error(error, HIF_ERROR, HIF_ERROR_SOURCE_NOT_AVAILABLE);
+    ret = hif_repo_check(repo, 1, state, &error);
+    g_assert_error(error, HIF_ERROR, HIF_ERROR_REPO_NOT_AVAILABLE);
     g_assert(!ret);
     g_clear_error(&error);
 }
@@ -915,7 +915,7 @@ static void
 hif_repos_gpg_no_asc_func(void)
 {
     HifRepos *repos;
-    HifSource *src;
+    HifRepo *repo;
     gboolean ret;
     g_autoptr(GError) error = NULL;
     g_autofree gchar *repos_dir = NULL;
@@ -935,28 +935,28 @@ hif_repos_gpg_no_asc_func(void)
     g_assert_no_error(error);
     g_assert(ret);
 
-    /* get the source with no repomd.xml.asc */
-    repos = hif_context_get_repos(ctx);
-    src = hif_repos_get_source_by_id(repos, "gpg-repo-no-asc", &error);
+    /* get the repo with no repomd.xml.asc */
+    repos = hif_repos_new(ctx);
+    repo = hif_repos_get_by_id(repos, "gpg-repo-no-asc", &error);
     g_assert_no_error(error);
-    g_assert(src != NULL);
+    g_assert(repo != NULL);
 
     /* check, which should fail as no local repomd.xml.asc exists */
     state = hif_state_new();
-    ret = hif_source_check(src, G_MAXUINT, state, &error);
-    g_assert_error(error, HIF_ERROR, HIF_ERROR_SOURCE_NOT_AVAILABLE);
+    ret = hif_repo_check(repo, G_MAXUINT, state, &error);
+    g_assert_error(error, HIF_ERROR, HIF_ERROR_REPO_NOT_AVAILABLE);
     g_assert(!ret);
     g_clear_error(&error);
 
     /* update, which should fail as no *remote* repomd.xml.asc exists */
     hif_state_reset(state);
-    ret = hif_source_update(src,
-                            HIF_SOURCE_UPDATE_FLAG_FORCE |
-                            HIF_SOURCE_UPDATE_FLAG_SIMULATE,
+    ret = hif_repo_update(repo,
+                            HIF_REPO_UPDATE_FLAG_FORCE |
+                            HIF_REPO_UPDATE_FLAG_SIMULATE,
                             state, &error);
     if (g_error_matches(error,
                         HIF_ERROR,
-                        HIF_ERROR_CANNOT_WRITE_SOURCE_CONFIG)) {
+                        HIF_ERROR_CANNOT_WRITE_REPO_CONFIG)) {
         g_debug("skipping tests: %s", error->message);
         return;
     }
@@ -969,7 +969,7 @@ static void
 hif_repos_gpg_wrong_asc_func(void)
 {
     HifRepos *repos;
-    HifSource *src;
+    HifRepo *repo;
     gboolean ret;
     g_autoptr(GError) error = NULL;
     g_autofree gchar *repos_dir = NULL;
@@ -989,21 +989,21 @@ hif_repos_gpg_wrong_asc_func(void)
     g_assert_no_error(error);
     g_assert(ret);
 
-    /* get the source with the *wrong* remote repomd.xml.asc */
-    repos = hif_context_get_repos(ctx);
-    src = hif_repos_get_source_by_id(repos, "gpg-repo-wrong-asc", &error);
+    /* get the repo with the *wrong* remote repomd.xml.asc */
+    repos = hif_repos_new(ctx);
+    repo = hif_repos_get_by_id(repos, "gpg-repo-wrong-asc", &error);
     g_assert_no_error(error);
-    g_assert(src != NULL);
+    g_assert(repo != NULL);
 
     /* update, which should fail as the repomd.xml.asc key is wrong */
     state = hif_state_new();
-    ret = hif_source_update(src,
-                            HIF_SOURCE_UPDATE_FLAG_FORCE |
-                            HIF_SOURCE_UPDATE_FLAG_SIMULATE,
+    ret = hif_repo_update(repo,
+                            HIF_REPO_UPDATE_FLAG_FORCE |
+                            HIF_REPO_UPDATE_FLAG_SIMULATE,
                             state, &error);
     if (g_error_matches(error,
                         HIF_ERROR,
-                        HIF_ERROR_CANNOT_WRITE_SOURCE_CONFIG)) {
+                        HIF_ERROR_CANNOT_WRITE_REPO_CONFIG)) {
         g_debug("skipping tests: %s", error->message);
         return;
     }
@@ -1016,7 +1016,7 @@ static void
 hif_repos_gpg_asc_func(void)
 {
     HifRepos *repos;
-    HifSource *src;
+    HifRepo *repo;
     gboolean ret;
     g_autoptr(GError) error = NULL;
     g_autofree gchar *repos_dir = NULL;
@@ -1036,28 +1036,28 @@ hif_repos_gpg_asc_func(void)
     g_assert_no_error(error);
     g_assert(ret);
 
-    /* get the source with no repomd.xml.asc */
-    repos = hif_context_get_repos(ctx);
-    src = hif_repos_get_source_by_id(repos, "gpg-repo-asc", &error);
+    /* get the repo with no repomd.xml.asc */
+    repos = hif_repos_new(ctx);
+    repo = hif_repos_get_by_id(repos, "gpg-repo-asc", &error);
     g_assert_no_error(error);
-    g_assert(src != NULL);
+    g_assert(repo != NULL);
 
     /* check, which should fail as there's no gnupg homedir with the key */
     state = hif_state_new();
-    ret = hif_source_check(src, G_MAXUINT, state, &error);
-    g_assert_error(error, HIF_ERROR, HIF_ERROR_SOURCE_NOT_AVAILABLE);
+    ret = hif_repo_check(repo, G_MAXUINT, state, &error);
+    g_assert_error(error, HIF_ERROR, HIF_ERROR_REPO_NOT_AVAILABLE);
     g_assert(!ret);
     g_clear_error(&error);
 
     /* update, which should pass as a valid remote repomd.xml.asc exists */
     hif_state_reset(state);
-    ret = hif_source_update(src,
-                 HIF_SOURCE_UPDATE_FLAG_FORCE |
-                 HIF_SOURCE_UPDATE_FLAG_SIMULATE,
+    ret = hif_repo_update(repo,
+                 HIF_REPO_UPDATE_FLAG_FORCE |
+                 HIF_REPO_UPDATE_FLAG_SIMULATE,
                  state, &error);
     if (g_error_matches(error,
                  HIF_ERROR,
-                 HIF_ERROR_CANNOT_WRITE_SOURCE_CONFIG)) {
+                 HIF_ERROR_CANNOT_WRITE_REPO_CONFIG)) {
         g_debug("skipping tests: %s", error->message);
         return;
     }
@@ -1084,7 +1084,7 @@ main(int argc, char **argv)
     g_test_add_func("/libhif/context", hif_context_func);
     g_test_add_func("/libhif/lock", hif_lock_func);
     g_test_add_func("/libhif/lock[threads]", hif_lock_threads_func);
-    g_test_add_func("/libhif/source", ch_test_source_func);
+    g_test_add_func("/libhif/repo", ch_test_repo_func);
     g_test_add_func("/libhif/state", hif_state_func);
     g_test_add_func("/libhif/state[child]", hif_state_child_func);
     g_test_add_func("/libhif/state[parent-1-step]", hif_state_parent_one_step_proxy_func);
