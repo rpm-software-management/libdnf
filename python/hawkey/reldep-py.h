@@ -25,7 +25,7 @@
 #include <solv/pooltypes.h>
 
 // hawkey
-#include "hy-types.h"
+#include "libhif/hy-types.h"
 
 extern PyTypeObject reldep_Type;
 

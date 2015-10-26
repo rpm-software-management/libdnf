@@ -21,13 +21,13 @@
 #include "Python.h"
 
 // hawkey
-#include "hif-cleanup.h"
-#include "hif-types.h"
-#include "hy-package-private.h"
-#include "hy-packageset.h"
-#include "hy-repo.h"
-#include "hy-sack-private.h"
-#include "hy-util.h"
+#include "libhif/hif-cleanup.h"
+#include "libhif/hif-types.h"
+#include "libhif/hy-package-private.h"
+#include "libhif/hy-packageset.h"
+#include "libhif/hy-repo.h"
+#include "libhif/hy-sack-private.h"
+#include "libhif/hy-util.h"
 
 // pyhawkey
 #include "exception-py.h"
@@ -425,8 +425,11 @@ load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     if (g_error_matches (error, HIF_ERROR, HIF_ERROR_CANNOT_WRITE_CACHE)) {
         PyErr_SetString(PyExc_IOError, "Failed writing the cache.");
         return NULL;
-    } else if (error2e(error))
+    } else if (error) {
+        // FIXME: this should return specific error
+        PyErr_SetString(PyExc_AssertionError, "Internal error occurred.");
         return NULL;
+    }
     Py_RETURN_NONE;
 }
 
@@ -458,8 +461,11 @@ load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     Py_BEGIN_ALLOW_THREADS;
     ret = hy_sack_load_repo(self->sack, crepo, flags, &error);
     Py_END_ALLOW_THREADS;
-    if (error2e(error))
+    if (error) {
+        // FIXME: this should return specific error
+        PyErr_SetString(PyExc_AssertionError, "Internal error occurred.");
         return NULL;
+    }
     Py_RETURN_NONE;
 }
 

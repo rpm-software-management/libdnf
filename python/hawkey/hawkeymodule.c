@@ -21,16 +21,16 @@
 #include <Python.h>
 
 // hawkey
-#include "hy-advisory.h"
-#include "hy-advisorypkg.h"
-#include "hy-advisoryref.h"
-#include "hy-goal.h"
-#include "hy-package.h"
-#include "hy-query.h"
-#include "hy-subject.h"
-#include "hy-types.h"
-#include "hy-util.h"
-#include "hif-version.h"
+#include "libhif/hy-advisory.h"
+#include "libhif/hy-advisorypkg.h"
+#include "libhif/hy-advisoryref.h"
+#include "libhif/hy-goal.h"
+#include "libhif/hy-package.h"
+#include "libhif/hy-query.h"
+#include "libhif/hy-subject.h"
+#include "libhif/hy-types.h"
+#include "libhif/hy-util.h"
+#include "libhif/hif-version.h"
 
 // pyhawkey
 #include "advisory-py.h"

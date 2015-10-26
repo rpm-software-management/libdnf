@@ -32,10 +32,6 @@ SET (hawkey_SRCS
     hif-utils.c)
 # TODO make this staff generic using FILE(GLOB ...)
 
-ADD_DEFINITIONS(-DHIF_COMPILATION)
-# FIXME test constant should be separated from `hif-source.c`
-ADD_DEFINITIONS(-DTESTDATADIR=\\"${CMAKE_SOURCE_DIR}/data/tests\\")
-ADD_DEFINITIONS(-DPACKAGE_VERSION=\\"${PACKAGE_VERSION}\\")
 CONFIGURE_FILE("hif-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/hif-version.h)
 
 ADD_LIBRARY(libhawkey SHARED ${hawkey_SRCS})

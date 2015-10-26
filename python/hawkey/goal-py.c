@@ -27,11 +27,11 @@
 #include <solv/util.h>
 
 // hawkey
-#include "hif-types.h"
-#include "hif-cleanup.h"
-#include "hy-goal.h"
-#include "hy-package-private.h"
-#include "hy-packagelist.h"
+#include "libhif/hif-types.h"
+#include "libhif/hif-cleanup.h"
+#include "libhif/hy-goal.h"
+#include "libhif/hy-package-private.h"
+#include "libhif/hy-packagelist.h"
 
 // pyhawkey
 #include "exception-py.h"

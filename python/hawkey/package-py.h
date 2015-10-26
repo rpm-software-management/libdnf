@@ -21,7 +21,7 @@
 #ifndef PACKAGE_PY_H
 #define PACKAGE_PY_H
 
-#include "hy-types.h"
+#include "libhif/hy-types.h"
 
 extern PyTypeObject package_Type;
 

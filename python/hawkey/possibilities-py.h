@@ -21,8 +21,8 @@
 #ifndef POSSIBILITIES_PY_H
 #define POSSIBILITIES_PY_H
 
-#include "hy-subject.h"
-#include "hy-types.h"
+#include "libhif/hy-subject.h"
+#include "libhif/hy-types.h"
 
 extern PyTypeObject possibilities_Type;
 

@@ -22,7 +22,7 @@
 #include <stdint.h>
 
 // hawkey
-#include "hy-repo.h"
+#include "libhif/hy-repo.h"
 
 // pyhawkey
 #include "hawkey-pysys.h"

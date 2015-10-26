@@ -21,7 +21,7 @@
 #include <Python.h>
 
 // hawkey
-#include "hif-types.h"
+#include "libhif/hif-types.h"
 
 // pyhawkey
 #include "exception-py.h"

@@ -21,8 +21,8 @@
 #include <Python.h>
 
 // hawkey
-#include "hy-package-private.h"
-#include "hy-iutil.h"
+#include "libhif/hy-package-private.h"
+#include "libhif/hy-iutil.h"
 
 // pyhawkey
 #include "packagedelta-py.h"

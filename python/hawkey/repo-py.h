@@ -21,7 +21,7 @@
 #ifndef REPO_PY_H
 #define REPO_PY_H
 
-#include "hy-types.h"
+#include "libhif/hy-types.h"
 
 extern PyTypeObject repo_Type;
 
