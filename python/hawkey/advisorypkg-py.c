@@ -21,7 +21,7 @@
 #include <Python.h>
 
 // hawkey
-#include "libhif/hy-advisorypkg_private.h"
+#include "libhif/hy-advisorypkg-private.h"
 
 // pyhawkey
 #include "advisorypkg-py.h"
