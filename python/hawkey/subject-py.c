@@ -24,14 +24,14 @@
 #include <solv/util.h>
 
 // hawkey
-#include "hy-iutil.h"
-#include "hy-nevra.h"
-#include "hy-nevra-private.h"
-#include "hy-reldep.h"
-#include "hy-sack.h"
-#include "hy-sack-private.h"
-#include "hy-subject.h"
-#include "hy-types.h"
+#include "libhif/hy-iutil.h"
+#include "libhif/hy-nevra.h"
+#include "libhif/hy-nevra-private.h"
+#include "libhif/hy-reldep.h"
+#include "libhif/hy-sack.h"
+#include "libhif/hy-sack-private.h"
+#include "libhif/hy-subject.h"
+#include "libhif/hy-types.h"
 
 // pyhawkey
 #include "iutil-py.h"

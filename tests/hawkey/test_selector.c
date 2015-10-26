@@ -19,7 +19,7 @@
  */
 
 // hawkey
-#include <libhif/libhif.h>
+#include "libhif/hif-types.h"
 #include "libhif/hy-selector.h"
 #include "fixtures.h"
 #include "testsys.h"

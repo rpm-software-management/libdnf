@@ -28,8 +28,8 @@
 #include <solv/testcase.h>
 
 // hawkey
-#include <libhif/libhif.h>
 #include "libhif/hif-cleanup.h"
+#include "libhif/hif-types.h"
 #include "libhif/hy-package-private.h"
 #include "libhif/hy-repo-private.h"
 #include "libhif/hy-sack-private.h"
