@@ -846,6 +846,7 @@ hif_repo_setup(HifRepo *repo, GError **error)
     g_autofree gchar *basearch = NULL;
     g_autofree gchar *release = NULL;
     g_autofree gchar *testdatadir = NULL;
+    g_autofree gchar *user_agent = NULL;
 
     basearch = g_key_file_get_string(priv->keyfile, "general", "arch", NULL);
     if (basearch == NULL)
@@ -867,7 +868,8 @@ hif_repo_setup(HifRepo *repo, GError **error)
                             "releasever not set");
         return FALSE;
     }
-    if (!lr_handle_setopt(priv->repo_handle, error, LRO_USERAGENT, "PackageKit-hawkey"))
+    user_agent = g_strdup_printf("PackageKit-hawkey/%s", VERSION);
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_USERAGENT, user_agent))
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_REPOTYPE, LR_YUMREPO))
         return FALSE;
