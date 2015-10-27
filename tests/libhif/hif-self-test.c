@@ -23,9 +23,11 @@
 #include <glib-object.h>
 #include <stdlib.h>
 
-#include "hif-cleanup.h"
-#include "libhif.h"
-#include "hif-utils.h"
+#include "libhif/hif-cleanup.h"
+#include "libhif/hif-repos.h"
+#include "libhif/hif-source.h"
+#include "libhif/hif-types.h"
+#include "libhif/hif-utils.h"
 
 /**
  * cd_test_get_filename:

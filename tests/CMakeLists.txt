@@ -1,0 +1,2 @@
+ADD_SUBDIRECTORY (hawkey)
+ADD_SUBDIRECTORY (libhif)
