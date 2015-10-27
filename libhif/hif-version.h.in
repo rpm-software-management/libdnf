@@ -38,9 +38,9 @@
 
 /* compile time version
  */
-#define HIF_MAJOR_VERSION				(@HAWKEY_MAJOR@)
-#define HIF_MINOR_VERSION				(@HAWKEY_MINOR@)
-#define HIF_MICRO_VERSION				(@HAWKEY_PATCH@)
+#define HIF_MAJOR_VERSION				(@HIF_MAJOR_VERSION@)
+#define HIF_MINOR_VERSION				(@HIF_MINOR_VERSION@)
+#define HIF_MICRO_VERSION				(@HIF_MICRO_VERSION@)
 
 /* check whether a As version equal to or greater than
  * major.minor.micro.
