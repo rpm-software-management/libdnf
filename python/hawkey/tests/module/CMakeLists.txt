@@ -25,7 +25,7 @@ TARGET_LINK_LIBRARIES(testmodule _hawkeymodule
 
 # copy the whole package under hawkey/test so 'import hawkey.test' works as expected:
 SET (pytest_COPIES __init__.py)
-SET (TMODULE_TARGET ${CMAKE_BINARY_DIR}/src/python/hawkey/test)
+SET (TMODULE_TARGET ${CMAKE_BINARY_DIR}/python/hawkey/test)
 FILE(COPY ${pytest_COPIES} DESTINATION ${TMODULE_TARGET})
 ADD_CUSTOM_COMMAND(TARGET testmodule
 		   POST_BUILD

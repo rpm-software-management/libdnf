@@ -71,8 +71,7 @@ ADD_DEFINITIONS(-DTESTDATADIR=\\"${CMAKE_SOURCE_DIR}/data/tests\\")
 ADD_DEFINITIONS(-DPACKAGE_VERSION=\\"${PACKAGE_VERSION}\\")
 
 ADD_SUBDIRECTORY (libhif)
-# FIXME uncomment to test python code too
-ADD_SUBDIRECTORY (python/hawkey)
 ENABLE_TESTING()
 ADD_SUBDIRECTORY (tests/hawkey)
+ADD_SUBDIRECTORY (python/hawkey)
 ADD_SUBDIRECTORY (docs/hawkey)
