@@ -22,11 +22,11 @@
 
 // hawkey
 #include "libhif/hy-sack-private.h"
-#include "repo-py.h"
-#include "sack-py.h"
-#include "tests/testshared.h"
+#include "python/hawkey/repo-py.h"
+#include "python/hawkey/sack-py.h"
+#include "tests/hawkey/testshared.h"
 
-#include "pycomp.h"
+#include "python/hawkey/pycomp.h"
 
 static PyObject *
 py_load_repo(PyObject *unused, PyObject *args)
