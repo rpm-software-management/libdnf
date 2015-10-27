@@ -23,7 +23,7 @@
 #include <glib-object.h>
 #include <stdlib.h>
 
-#include "hif-utils.h"
+#include "libhif/libhif.h"
 
 /**
  * cd_test_get_filename:
