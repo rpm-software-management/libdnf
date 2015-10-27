@@ -34,6 +34,8 @@
 #include "test_suites.h"
 #include "testsys.h"
 
+#define TESTREPODATADIR TESTDATADIR "/hawkey"
+
 static int
 init_test_globals(struct TestGlobals_s *tg, const char *repo_dir)
 {
@@ -61,7 +63,7 @@ main(int argc, const char **argv)
 {
     int number_failed;
 
-    if (init_test_globals(&test_globals, TESTDATADIR)) {
+    if (init_test_globals(&test_globals, TESTREPODATADIR)) {
         fprintf(stderr, "failed initializing test engine.\n");
         exit(1);
     }
