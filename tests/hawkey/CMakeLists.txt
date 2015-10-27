@@ -27,6 +27,11 @@ execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; sys.stdout.write('%
 ADD_EXECUTABLE(test_main ${hawkeytest_SRCS})
 TARGET_LINK_LIBRARIES(test_main
     libhawkey
+    ${REPO_LIBRARY}
+    ${GLIB_LIBRARIES}
+    ${GLIB_GOBJECT_LIBRARIES}
+    ${GLIB_GIO_LIBRARIES}
+    ${GLIB_GIO_UNIX_LIBRARIES}
     ${CHECK_LIBRARY}
     ${SOLV_LIBRARY}
     ${SOLVEXT_LIBRARY}
