@@ -30,7 +30,6 @@ if (LIBSOLV_PATH)
 endif (LIBSOLV_PATH)
 
 # hawkey dependencies
-SET(GLIB_FIND_COMPONENTS gobject; gio; gio-unix;)
 FIND_PACKAGE (PkgConfig)
 SET (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 FIND_PACKAGE (GLIB REQUIRED)
@@ -43,8 +42,6 @@ FIND_LIBRARY (CHECK_LIBRARY NAMES check)
 FIND_PROGRAM (VALGRIND_PROGRAM NAMES valgrind PATH /usr/bin /usr/local/bin)
 MESSAGE(STATUS "Using libsolv at ${SOLV_LIBRARY}")
 
-# libhif dependencies
-INCLUDE(FindGObjectIntrospection 0.9.8)
 # TODO handle yumdb / dnfdb for libhif
 
 FIND_LIBRARY(REPO_LIBRARY repo REQUIRED)
@@ -65,7 +62,6 @@ IF (RPMIO_LIBRARY)
 ENDIF (RPMIO_LIBRARY)
 
 ADD_DEFINITIONS(-DHIF_COMPILATION)
-# FIXME test constant should be separated from `hif-source.c`
 ADD_DEFINITIONS(-DTESTDATADIR=\\"${CMAKE_SOURCE_DIR}/data/tests\\")
 ADD_DEFINITIONS(-DPACKAGE_VERSION=\\"${PACKAGE_VERSION}\\")
 

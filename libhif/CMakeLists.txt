@@ -1,4 +1,4 @@
-SET (hawkey_SRCS
+SET (LIBHIF_SRCS
     hy-advisory.c
     hy-advisorypkg.c
     hy-advisoryref.c
@@ -30,11 +30,10 @@ SET (hawkey_SRCS
     hif-state.c
     hif-transaction.c
     hif-utils.c)
-# TODO make this staff generic using FILE(GLOB ...)
 
 CONFIGURE_FILE("hif-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/hif-version.h)
 
-ADD_LIBRARY(libhawkey SHARED ${hawkey_SRCS})
+ADD_LIBRARY(libhawkey SHARED ${LIBHIF_SRCS})
 TARGET_LINK_LIBRARIES(libhawkey ${GLIB_LIBRARIES})
         
 TARGET_LINK_LIBRARIES(libhawkey ${SOLV_LIBRARY} ${SOLVEXT_LIBRARY})
