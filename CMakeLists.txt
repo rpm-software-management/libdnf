@@ -10,8 +10,7 @@ INCLUDE (${CMAKE_SOURCE_DIR}/VERSION.cmake)
 # TODO add libhif version instead
 SET (PACKAGE_VERSION "${HAWKEY_MAJOR}.${HAWKEY_MINOR}.${HAWKEY_PATCH}")
 
-set (CMAKE_C_FLAGS		"${CMAKE_C_FLAGS} -std=gnu99 -Werror=implicit-function-declaration -Wall -Wl,--as-needed")
-# TODO append more flags from libhif
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wcast-align -Wno-uninitialized -Wmissing-declarations -Wredundant-decls -Wcast-align -Wwrite-strings -Wreturn-type -Wformat-nonliteral -Wmissing-format-attribute -Wsign-compare -Wtype-limits -Wuninitialized -Waggregate-return -Wshadow -Winline -Wall -Werror=implicit-function-declaration -Wl,--as-needed")
 set (CMAKE_C_FLAGS_DEBUG	"${CMAKE_C_FLAGS} -ggdb -O0")
 IF(NOT CMAKE_BUILD_TYPE)
   set (CMAKE_BUILD_TYPE DEBUG)
