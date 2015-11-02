@@ -67,7 +67,6 @@ SET(HAWKEY_headers
     hy-advisory.h
     hy-advisorypkg.h
     hy-advisoryref.h
-    hy-errno.h
     hy-goal.h
     hy-nevra.h
     hy-package.h
