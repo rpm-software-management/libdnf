@@ -15,4 +15,5 @@ TARGET_LINK_LIBRARIES(test_libhif_main
 
 ADD_TEST(test_libhif_main test_libhif_main)
 ADD_TEST(test_libhif_valgrind ${VALGRIND_PROGRAM} --error-exitcode=1 --leak-check=full
+                --errors-for-leak-kinds=definite
                 ${CMAKE_CURRENT_BINARY_DIR}/test_libhif_main)
