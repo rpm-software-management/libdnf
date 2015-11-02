@@ -53,7 +53,7 @@ copyright = u'2012-2015, Red Hat, Licensed under GPLv2+'
 # The short X.Y version.
 
 def version_readout():
-    fn = os.path.join(_dirname, '../VERSION.cmake')
+    fn = os.path.join(_dirname, '../../VERSION.cmake')
     with open(fn) as f:
         lines = f.readlines()
 
