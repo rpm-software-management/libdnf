@@ -1629,7 +1629,6 @@ hif_context_install (HifContext *context, const gchar *name, GError **error)
 
     /* add first package */
     pkg = g_ptr_array_index (pkglist, 0);
-    hif_package_set_user_action(pkg, TRUE);
     g_debug("adding %s-%s to goal", hif_package_get_name(pkg), hif_package_get_evr(pkg));
     hy_goal_install(priv->goal, pkg);
 
@@ -1680,7 +1679,6 @@ hif_context_remove(HifContext *context, const gchar *name, GError **error)
     /* add each package */
     for (i = 0; i < pkglist->len; i++) {
         pkg = g_ptr_array_index (pkglist, i);
-        hif_package_set_user_action(pkg, TRUE);
         hy_goal_erase(priv->goal, pkg);
     }
     g_ptr_array_unref(pkglist);
@@ -1733,7 +1731,6 @@ hif_context_update(HifContext *context, const gchar *name, GError **error)
     /* add each package */
     for (i = 0; i < pkglist->len; i++) {
         pkg = g_ptr_array_index (pkglist, i);
-        hif_package_set_user_action(pkg, TRUE);
         if (hif_package_is_installonly(pkg))
             hy_goal_install(priv->goal, pkg);
         else
