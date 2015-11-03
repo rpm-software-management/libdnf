@@ -33,10 +33,10 @@ packageset_fixture(void)
     fixture_all();
 
     HifSack *sack = test_globals.sack;
-    HifPackage *pkg0 = hif_package_new(sack, 0);
-    HifPackage *pkg9 = hif_package_new(sack, 9);
+    g_autoptr(HifPackage) pkg0 = hif_package_new(sack, 0);
+    g_autoptr(HifPackage) pkg9 = hif_package_new(sack, 9);
     int max = hif_sack_last_solvable(sack);
-    HifPackage *pkg_max = hif_package_new(sack, max);
+    g_autoptr(HifPackage) pkg_max = hif_package_new(sack, max);
 
     // init the global var
     pset = hy_packageset_create(sack);
@@ -121,6 +121,8 @@ START_TEST(test_get_clone)
     HifPackage *pkg11 = hif_package_new(sack, 11);
     hy_packageset_add(pset, pkg8);
     hy_packageset_add(pset, pkg11);
+    g_object_unref(pkg8);
+    g_object_unref(pkg11);
     pkg8 = hy_packageset_get_clone(pset, 1);
     pkg9 = hy_packageset_get_clone(pset, 2);
     pkg11 = hy_packageset_get_clone(pset, 3);
@@ -143,10 +145,13 @@ START_TEST(test_get_pkgid)
     HifPackage *pkg;
     pkg = hif_package_new(sack, 7);
     hy_packageset_add(pset, pkg);
+    g_object_unref(pkg);
     pkg = hif_package_new(sack, 8);
     hy_packageset_add(pset, pkg);
+    g_object_unref(pkg);
     pkg = hif_package_new(sack, 15);
     hy_packageset_add(pset, pkg);
+    g_object_unref(pkg);
 
     Id id = -1;
     id = packageset_get_pkgid(pset, 0, id);

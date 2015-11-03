@@ -821,7 +821,9 @@ START_TEST(test_filter_obsoletes)
     fail_unless(query_count_results(q) == 0);
     hy_query_clear(q);
 
-    hy_packageset_add(pset, by_name(sack, "penny"));
+    HifPackage *pkg = by_name(sack, "penny");
+    hy_packageset_add(pset, pkg);
+    g_object_unref(pkg);
     hy_query_filter_package_in(q, HY_PKG_OBSOLETES, HY_EQ, pset);
     fail_unless(query_count_results(q) == 1);
 
