@@ -250,7 +250,7 @@ popd
 - Do not crash when trying to parse pathological files like bumblebee.repo
 - Resolves: #1164330
 
-* Mon Nov 11 2014 Richard Hughes <richard@hughsie.com> 0.1.6-1
+* Tue Nov 11 2014 Richard Hughes <richard@hughsie.com> 0.1.6-1
 - Update to new upstream version
 - Add support for package reinstallation and downgrade
 - Copy the vendor cache if present
@@ -262,7 +262,7 @@ popd
 - Add all native architectures for ARM and i386
 - Check for libQtGui rather than libkde* to detect GUI apps
 
-* Mon Sep 12 2014 Richard Hughes <richard@hughsie.com> 0.1.4-1
+* Fri Sep 12 2014 Richard Hughes <richard@hughsie.com> 0.1.4-1
 - Update to new upstream version
 - Allow setting the default lock directory
 - Ensure all the required directories exist when setting up the context
