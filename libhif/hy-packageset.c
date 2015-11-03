@@ -151,7 +151,6 @@ void
 hy_packageset_add(HifPackageSet pset, HifPackage *pkg)
 {
     MAPSET(&pset->map, hif_package_get_id(pkg));
-    g_object_unref(pkg);
 }
 
 unsigned
