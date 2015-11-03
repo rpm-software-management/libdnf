@@ -34,11 +34,19 @@ SET (LIBHIF_SRCS
 CONFIGURE_FILE("hif-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/hif-version.h)
 
 ADD_LIBRARY(libhawkey SHARED ${LIBHIF_SRCS})
-TARGET_LINK_LIBRARIES(libhawkey ${GLIB_LIBRARIES})
+TARGET_LINK_LIBRARIES(libhawkey
+                      ${REPO_LIBRARY}
+                      ${GLIB_LIBRARIES}
+                      ${GLIB_GOBJECT_LIBRARIES}
+                      ${GLIB_GIO_LIBRARIES}
+                      ${GLIB_GIO_UNIX_LIBRARIES}
+                      ${CHECK_LIBRARY}
+                      ${SOLV_LIBRARY}
+                      ${SOLVEXT_LIBRARY}
+                      ${EXPAT_LIBRARY}
+                      ${ZLIB_LIBRARY}
+                      ${RPMDB_LIBRARY})
         
-TARGET_LINK_LIBRARIES(libhawkey ${SOLV_LIBRARY} ${SOLVEXT_LIBRARY})
-TARGET_LINK_LIBRARIES(libhawkey ${EXPAT_LIBRARY} ${ZLIB_LIBRARY} ${RPMDB_LIBRARY})
-TARGET_LINK_LIBRARIES(libhawkey ${INTROSPECTION_LIBS})
 SET_TARGET_PROPERTIES(libhawkey PROPERTIES OUTPUT_NAME "hawkey")
 SET_TARGET_PROPERTIES(libhawkey PROPERTIES SOVERSION 3)
 

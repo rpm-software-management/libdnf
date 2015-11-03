@@ -47,8 +47,15 @@ ADD_LIBRARY(_hawkeymodule SHARED ${hawkeymodule_SRCS})
 SET_TARGET_PROPERTIES(_hawkeymodule PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(_hawkeymodule PROPERTIES OUTPUT_NAME ${HAWKEY_MODULE_NAME})
 SET_TARGET_PROPERTIES(_hawkeymodule PROPERTIES LIBRARY_OUTPUT_DIRECTORY "./hawkey")
-TARGET_LINK_LIBRARIES(_hawkeymodule libhawkey ${SOLV_LIBRARY} ${SOLVEXT_LIBRARY})
-TARGET_LINK_LIBRARIES(_hawkeymodule ${PYTHON_LIBRARY})
+TARGET_LINK_LIBRARIES(_hawkeymodule
+                      libhawkey
+                      ${GLIB_LIBRARIES}
+                      ${GLIB_GOBJECT_LIBRARIES}
+                      ${GLIB_GIO_LIBRARIES}
+                      ${GLIB_GIO_UNIX_LIBRARIES}
+                      ${SOLV_LIBRARY}
+                      ${SOLVEXT_LIBRARY}
+                      ${PYTHON_LIBRARY})
 
 INSTALL(FILES __init__.py DESTINATION ${PYTHON_INSTALL_DIR}/hawkey)
 INSTALL(TARGETS _hawkeymodule LIBRARY DESTINATION ${PYTHON_INSTALL_DIR}/hawkey)
