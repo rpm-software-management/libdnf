@@ -769,23 +769,44 @@ hif_package_array_download (GPtrArray *packages,
 			    HifState *state,
 			    GError **error)
 {
-	HifState *state_local;
-	HyPackage pkg;
+	gboolean ret = FALSE;
+	_cleanup_hashtable_unref_ GHashTable *source_to_packages = g_hash_table_new_full (NULL, NULL, NULL, (GDestroyNotify)g_ptr_array_unref);
+	GHashTableIter hiter;
+	gpointer key, value;
 	guint i;
 
 	/* download any package that is not currently installed */
 	hif_state_set_number_steps (state, packages->len);
 	for (i = 0; i < packages->len; i++) {
-		_cleanup_free_ gchar *tmp = NULL;
-		pkg = g_ptr_array_index (packages, i);
-		state_local = hif_state_get_child (state);
-		tmp = hif_package_download (pkg, NULL, state_local, error);
-		if (tmp == NULL)
-			return FALSE;
-
-		/* done */
-		if (!hif_state_done (state, error))
-			return FALSE;
+		HyPackage pkg = g_ptr_array_index (packages, i);
+		HifSource *src = hif_package_get_source (pkg);
+		GPtrArray *source_packages;
+		if (src == NULL) {
+			g_set_error_literal (error,
+					     HIF_ERROR,
+					     HIF_ERROR_INTERNAL_ERROR,
+					     "package source is unset");
+			goto out;
+		}
+		source_packages = g_hash_table_lookup (source_to_packages, src);
+		if (!source_packages) {
+			source_packages = g_ptr_array_new ();
+			g_hash_table_insert (source_to_packages, src, source_packages);
+		}
+		g_ptr_array_add (source_packages, pkg);
 	}
-	return TRUE;
+
+	g_hash_table_iter_init (&hiter, source_to_packages);
+	while (g_hash_table_iter_next (&hiter, &key, &value)) {
+		HifSource *src = key;
+		GPtrArray *src_packages = value;
+
+		if (!hif_source_download_packages (src, src_packages, directory,
+						   state, error))
+			goto out;
+	}
+
+	ret = FALSE;
+ out:
+	return ret;
 }
