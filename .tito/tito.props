@@ -6,4 +6,4 @@ changelog_format = %s (%an)
 
 [version_template]
 destination_file = VERSION.cmake
-template_file = rel-eng/templates/version
+template_file = .tito/templates/version
