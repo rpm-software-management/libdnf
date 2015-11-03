@@ -59,12 +59,12 @@ START_TEST(test_query_run_set_sanity)
 {
     HifSack *sack = test_globals.sack;
     HyQuery q = hy_query_create(sack);
-    HifPackageSet pset = hy_query_run_set(q);
+    HifPackageSet *pset = hy_query_run_set(q);
 
     // make sure we are testing with some odd bits in the underlying map:
     fail_unless(TEST_EXPECT_SYSTEM_NSOLVABLES % 8);
-    fail_unless(hy_packageset_count(pset) == TEST_EXPECT_SYSTEM_NSOLVABLES);
-    hy_packageset_free(pset);
+    fail_unless(hif_packageset_count(pset) == TEST_EXPECT_SYSTEM_NSOLVABLES);
+    g_object_unref(pset);
     hy_query_free(q);
 }
 END_TEST
@@ -293,7 +293,7 @@ END_TEST
 
 START_TEST(test_query_pkg)
 {
-    HifPackageSet pset;
+    HifPackageSet *pset;
     HyQuery q, q2;
 
     // setup
@@ -301,7 +301,7 @@ START_TEST(test_query_pkg)
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
     pset = hy_query_run_set(q);
     hy_query_free(q);
-    fail_unless(hy_packageset_count(pset), 2);
+    fail_unless(hif_packageset_count(pset), 2);
 
     // use hy_query_filter_package_in():
     q = hy_query_create(test_globals.sack);
@@ -309,7 +309,7 @@ START_TEST(test_query_pkg)
     fail_unless(hy_query_filter_package_in(q, HY_PKG, HY_GT, pset));
     // add the filter:
     fail_if(hy_query_filter_package_in(q, HY_PKG, HY_EQ, pset));
-    hy_packageset_free(pset);
+    g_object_unref(pset);
 
     // cloning must work
     q2 = hy_query_clone(q);
@@ -319,14 +319,14 @@ START_TEST(test_query_pkg)
     // filter on
     hy_query_filter_latest_per_arch(q2, 1);
     pset = hy_query_run_set(q2);
-    fail_unless(hy_packageset_count(pset) == 1);
-    HifPackage *pkg = hy_packageset_get_clone(pset, 0);
+    fail_unless(hif_packageset_count(pset) == 1);
+    HifPackage *pkg = hif_packageset_get_clone(pset, 0);
     char *nvra = hif_package_get_nevra(pkg);
     ck_assert_str_eq(nvra, "jay-6.0-0.x86_64");
     g_free(nvra);
     g_object_unref(pkg);
 
-    hy_packageset_free(pset);
+    g_object_unref(pset);
     hy_query_free(q2);
 }
 END_TEST
@@ -815,20 +815,20 @@ START_TEST(test_filter_obsoletes)
 {
     HifSack *sack = test_globals.sack;
     HyQuery q = hy_query_create(sack);
-    HifPackageSet pset = hy_packageset_create(sack); // empty
+    HifPackageSet *pset = hif_packageset_new(sack); // empty
 
     fail_if(hy_query_filter_package_in(q, HY_PKG_OBSOLETES, HY_EQ, pset));
     fail_unless(query_count_results(q) == 0);
     hy_query_clear(q);
 
     HifPackage *pkg = by_name(sack, "penny");
-    hy_packageset_add(pset, pkg);
+    hif_packageset_add(pset, pkg);
     g_object_unref(pkg);
     hy_query_filter_package_in(q, HY_PKG_OBSOLETES, HY_EQ, pset);
     fail_unless(query_count_results(q) == 1);
 
     hy_query_free(q);
-    hy_packageset_free(pset);
+    g_object_unref(pset);
 }
 END_TEST
 
@@ -863,9 +863,9 @@ START_TEST(test_excluded)
     HyQuery q = hy_query_create_flags(sack, HY_IGNORE_EXCLUDES);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
 
-    HifPackageSet pset = hy_query_run_set(q);
+    HifPackageSet *pset = hy_query_run_set(q);
     hif_sack_add_excludes(sack, pset);
-    hy_packageset_free(pset);
+    g_object_unref(pset);
     hy_query_free(q);
 
     q = hy_query_create_flags(sack, 0);

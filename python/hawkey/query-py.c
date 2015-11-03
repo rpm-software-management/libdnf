@@ -218,11 +218,11 @@ filter(_QueryObject *self, PyObject *args)
     }
     if (queryObject_Check(match)) {
         HyQuery target = queryFromPyObject(match);
-        HifPackageSet pset = hy_query_run_set(target);
+        HifPackageSet *pset = hy_query_run_set(target);
         int ret = hy_query_filter_package_in(self->query, keyname,
                                              cmp_type, pset);
 
-        hy_packageset_free(pset);
+        g_object_unref(pset);
         if (ret)
             return raise_bad_filter();
         Py_RETURN_NONE;
@@ -240,13 +240,13 @@ filter(_QueryObject *self, PyObject *args)
     case HY_PKG_OBSOLETES: {
         HifSack *sack = sackFromPyObject(self->sack);
         assert(sack);
-        HifPackageSet pset = pyseq_to_packageset(match, sack);
+        HifPackageSet *pset = pyseq_to_packageset(match, sack);
 
         if (pset == NULL)
             return NULL;
         int ret = hy_query_filter_package_in(self->query, keyname,
                                              cmp_type, pset);
-        hy_packageset_free(pset);
+        g_object_unref(pset);
         if (ret)
             return raise_bad_filter();
 
@@ -301,12 +301,12 @@ filter(_QueryObject *self, PyObject *args)
 static PyObject *
 run(_QueryObject *self, PyObject *unused)
 {
-    HifPackageSet pset;
+    HifPackageSet *pset;
     PyObject *list;
 
     pset = hy_query_run_set(self->query);
     list = packageset_to_pylist(pset, self->sack);
-    hy_packageset_free(pset);
+    g_object_unref(pset);
     return list;
 }
 
