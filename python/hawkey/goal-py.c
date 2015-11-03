@@ -43,7 +43,7 @@ typedef struct {
 } _GoalObject;
 
 static int
-args_pkg_sltr_check(HyPackage pkg, HySelector sltr)
+args_pkg_sltr_check(HifPackage *pkg, HySelector sltr)
 {
     if (!(pkg || sltr)) {
         PyErr_SetString(PyExc_ValueError,
@@ -60,7 +60,7 @@ args_pkg_sltr_check(HyPackage pkg, HySelector sltr)
 
 static int
 args_pkg_sltr_parse(PyObject *args, PyObject *kwds,
-                     HyPackage *pkg, HySelector *sltr, int *flags, int flag_mask)
+                     HifPackage **pkg, HySelector *sltr, int *flags, int flag_mask)
 {
     char *kwlist[] = {"package", "select", "clean_deps", "check_installed",
                       "optional", NULL};
@@ -241,7 +241,7 @@ distupgrade_all(_GoalObject *self, PyObject *unused)
 static PyObject *
 distupgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    HyPackage pkg = NULL;
+    HifPackage *pkg = NULL;
     HySelector sltr = NULL;
     if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, NULL, 0))
         return NULL;
@@ -254,7 +254,7 @@ distupgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 downgrade_to(_GoalObject *self, PyObject *pkg_obj)
 {
-    HyPackage pkg = packageFromPyObject(pkg_obj);
+    HifPackage *pkg = packageFromPyObject(pkg_obj);
     if (pkg == NULL)
         return NULL;
     if (hy_goal_downgrade_to(self->goal, pkg))
@@ -265,7 +265,7 @@ downgrade_to(_GoalObject *self, PyObject *pkg_obj)
 static PyObject *
 erase(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    HyPackage pkg = NULL;
+    HifPackage *pkg = NULL;
     HySelector sltr = NULL;
     int flags = 0;
     if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, &flags, HY_CLEAN_DEPS))
@@ -279,7 +279,7 @@ erase(_GoalObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 install(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    HyPackage pkg = NULL;
+    HifPackage *pkg = NULL;
     HySelector sltr = NULL;
     int flags = 0;
     gboolean ret = 0;
@@ -300,7 +300,7 @@ install(_GoalObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 upgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    HyPackage pkg = NULL;
+    HifPackage *pkg = NULL;
     HySelector sltr = NULL;
 
     if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, NULL, 0))
@@ -317,7 +317,7 @@ upgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 upgrade_to(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    HyPackage pkg = NULL;
+    HifPackage *pkg = NULL;
     HySelector sltr = NULL;
     int ret;
     int flags = 0;
@@ -343,7 +343,7 @@ upgrade_all(_GoalObject *self, PyObject *unused)
 static PyObject *
 userinstalled(_GoalObject *self, PyObject *pkg)
 {
-    HyPackage cpkg = packageFromPyObject(pkg);
+    HifPackage *cpkg = packageFromPyObject(pkg);
     int ret;
 
     if (cpkg == NULL)
@@ -565,7 +565,7 @@ list_upgrades(_GoalObject *self, PyObject *unused)
 static PyObject *
 obsoleted_by_package(_GoalObject *self, PyObject *pkg)
 {
-    HyPackage cpkg = packageFromPyObject(pkg);
+    HifPackage *cpkg = packageFromPyObject(pkg);
 
     if (cpkg == NULL)
         return NULL;
@@ -578,7 +578,7 @@ obsoleted_by_package(_GoalObject *self, PyObject *pkg)
 static PyObject *
 get_reason(_GoalObject *self, PyObject *pkg)
 {
-    HyPackage cpkg = packageFromPyObject(pkg);
+    HifPackage *cpkg = packageFromPyObject(pkg);
 
     if (cpkg == NULL)
         return NULL;

@@ -34,20 +34,20 @@ advisorypkg_fixture(void)
 {
     fixture_yum();
 
-    HyPackage pkg;
+    HifPackage *pkg;
     GPtrArray *advisories;
     HifAdvisory *advisory;
     GPtrArray *pkglist;
 
     pkg = by_name(test_globals.sack, "tour");
-    advisories = hy_package_get_advisories(pkg, HY_GT);
+    advisories = hif_package_get_advisories(pkg, HY_GT);
     advisory = g_ptr_array_index(advisories, 0);
     pkglist = hif_advisory_get_packages(advisory);
     advisorypkg = g_object_ref(g_ptr_array_index(pkglist, 0));
 
     g_ptr_array_unref(pkglist);
     g_ptr_array_unref(advisories);
-    hy_package_free(pkg);
+    g_object_unref(pkg);
 }
 
 static void

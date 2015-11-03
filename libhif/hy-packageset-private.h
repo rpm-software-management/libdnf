@@ -29,8 +29,8 @@
 #include "hy-packageset.h"
 
 unsigned map_count(Map *m);
-HyPackageSet packageset_from_bitmap(HifSack *sack, Map *m);
-Map *packageset_get_map(HyPackageSet pset);
-Id packageset_get_pkgid(HyPackageSet pset, int index, Id previous);
+HifPackageSet packageset_from_bitmap(HifSack *sack, Map *m);
+Map *packageset_get_map(HifPackageSet pset);
+Id packageset_get_pkgid(HifPackageSet pset, int index, Id previous);
 
 #endif // HY_PACKAGESET_INTERNAL_H

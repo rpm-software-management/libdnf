@@ -147,7 +147,7 @@ hy_selector_matches(HySelector sltr)
 
     GPtrArray *plist = hy_packagelist_create();
     for (int i = 0; i < solvables.count; i++)
-        g_ptr_array_add(plist, package_create(sack, solvables.elements[i]));
+        g_ptr_array_add(plist, hif_package_new(sack, solvables.elements[i]));
 
     queue_free(&solvables);
     queue_free(&job);

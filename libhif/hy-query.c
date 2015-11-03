@@ -461,12 +461,12 @@ filter_sourcerpm(HyQuery q, struct _Filter *f, Map *m)
             if (!g_str_has_prefix(match, name)) // early check
                 continue;
 
-            HyPackage pkg = package_create(q->sack, id);
-            char *srcrpm = hy_package_get_sourcerpm(pkg);
+            HifPackage *pkg = hif_package_new(q->sack, id);
+            char *srcrpm = hif_package_get_sourcerpm(pkg);
             if (srcrpm && !strcmp(match, srcrpm))
                 MAPSET(m, id);
             g_free(srcrpm);
-            hy_package_free(pkg);
+            g_object_unref(pkg);
         }
     }
 }
@@ -951,7 +951,7 @@ hy_query_clone(HyQuery q)
         filterp->match_type = q->filters[i].match_type;
         for (int j = 0; j < q->filters[i].nmatches; ++j) {
             char *str_copy;
-            HyPackageSet pset;
+            HifPackageSet pset;
             HyReldep reldep;
 
             switch (filterp->match_type) {
@@ -1092,7 +1092,7 @@ hy_query_filter_num_in(HyQuery q, int keyname, int cmp_type, int nmatches,
 
 int
 hy_query_filter_package_in(HyQuery q, int keyname, int cmp_type,
-                           const HyPackageSet pset)
+                           const HifPackageSet pset)
 {
     if (!valid_filter_pkg(keyname, cmp_type))
         return HIF_ERROR_BAD_QUERY;
@@ -1264,11 +1264,11 @@ hy_query_run(HyQuery q)
     hy_query_apply(q);
     for (int i = 1; i < pool->nsolvables; ++i)
         if (MAPTST(q->result, i))
-            g_ptr_array_add(plist, package_create(q->sack, i));
+            g_ptr_array_add(plist, hif_package_new(q->sack, i));
     return plist;
 }
 
-HyPackageSet
+HifPackageSet
 hy_query_run_set(HyQuery q)
 {
     hy_query_apply(q);

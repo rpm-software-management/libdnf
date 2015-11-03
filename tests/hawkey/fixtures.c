@@ -73,8 +73,8 @@ void add_cmdline(HifSack *sack)
     Pool *pool = hif_sack_get_pool(sack);
     const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
                                     "yum/tour-4-6.noarch.rpm", NULL);
-    HyPackage pkg = hif_sack_add_cmdline_package(sack, path);
-    hy_package_free(pkg);
+    HifPackage *pkg = hif_sack_add_cmdline_package(sack, path);
+    g_object_unref(pkg);
 }
 
 void

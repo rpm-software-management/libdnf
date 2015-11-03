@@ -338,7 +338,7 @@ hif_rpmts_log_handler_cb(rpmlogRec rec, rpmlogCallbackData data)
  * hif_rpmts_find_package:
  **/
 static Header
-hif_rpmts_find_package(rpmts ts, HyPackage pkg, GError **error)
+hif_rpmts_find_package(rpmts ts, HifPackage *pkg, GError **error)
 {
     Header hdr = NULL;
     rpmdbMatchIterator iter;
@@ -346,7 +346,7 @@ hif_rpmts_find_package(rpmts ts, HyPackage pkg, GError **error)
     g_autoptr(GString) rpm_error = NULL;
 
     /* find package by db-id */
-    recOffset = hy_package_get_rpmdbid(pkg);
+    recOffset = hif_package_get_rpmdbid(pkg);
     rpmlogSetCallback(hif_rpmts_log_handler_cb, &rpm_error);
     iter = rpmtsInitIterator(ts, RPMDBI_PACKAGES,
                  &recOffset, sizeof(recOffset));
@@ -370,7 +370,7 @@ hif_rpmts_find_package(rpmts ts, HyPackage pkg, GError **error)
                     HIF_ERROR,
                     HIF_ERROR_FILE_NOT_FOUND,
                     "failed to find package %s",
-                    hy_package_get_name(pkg));
+                    hif_package_get_name(pkg));
         goto out;
     }
 
@@ -386,7 +386,7 @@ out:
 /**
  * hif_rpmts_add_remove_pkg:
  * @ts: a #rpmts instance.
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  * @error: a #GError or %NULL..
  *
  * Adds to the transaction a package to be removed.
@@ -396,7 +396,7 @@ out:
  * Since: 0.1.0
  **/
 gboolean
-hif_rpmts_add_remove_pkg(rpmts ts, HyPackage pkg, GError **error)
+hif_rpmts_add_remove_pkg(rpmts ts, HifPackage *pkg, GError **error)
 {
     gboolean ret = TRUE;
     gint retval;
@@ -416,7 +416,7 @@ hif_rpmts_add_remove_pkg(rpmts ts, HyPackage pkg, GError **error)
                     HIF_ERROR,
                     HIF_ERROR_INTERNAL_ERROR,
                     "could not add erase element %s(%i)",
-                    hy_package_get_name(pkg), retval);
+                    hif_package_get_name(pkg), retval);
         goto out;
     }
 out:

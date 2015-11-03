@@ -29,7 +29,7 @@
 #include "hy-packageset-private.h"
 #include "hif-sack-private.h"
 
-struct _HyPackageSet {
+struct _HifPackageSet {
     HifSack *sack;
     Map map;
 };
@@ -87,7 +87,7 @@ map_index2id(Map *map, unsigned index, Id previous)
 }
 
 Id
-packageset_get_pkgid(HyPackageSet pset, int index, Id previous)
+packageset_get_pkgid(HifPackageSet pset, int index, Id previous)
 {
     Id id = map_index2id(&pset->map, index, previous);
     assert(id >= 0);
@@ -107,70 +107,70 @@ map_count(Map *m)
     return c;
 }
 
-HyPackageSet
+HifPackageSet
 packageset_from_bitmap(HifSack *sack, Map *m)
 {
-    HyPackageSet pset = g_malloc0(sizeof(*pset));
+    HifPackageSet pset = g_malloc0(sizeof(*pset));
     pset->sack = sack;
     map_init_clone(&pset->map, m);
     return pset;
 }
 
 Map *
-packageset_get_map(HyPackageSet pset)
+packageset_get_map(HifPackageSet pset)
 {
     return &pset->map;
 }
 
-HyPackageSet
+HifPackageSet
 hy_packageset_create(HifSack *sack)
 {
-    HyPackageSet pset = g_malloc0(sizeof(*pset));
+    HifPackageSet pset = g_malloc0(sizeof(*pset));
     pset->sack = sack;
     map_init(&pset->map, hif_sack_get_pool(sack)->nsolvables);
     return pset;
 }
 
-HyPackageSet
-hy_packageset_clone(HyPackageSet pset)
+HifPackageSet
+hy_packageset_clone(HifPackageSet pset)
 {
-    HyPackageSet new = g_malloc(sizeof(*new));
+    HifPackageSet new = g_malloc(sizeof(*new));
     memcpy(new, pset, sizeof(*pset));
     map_init_clone(&new->map, &pset->map);
     return new;
 }
 
 void
-hy_packageset_free(HyPackageSet pset)
+hy_packageset_free(HifPackageSet pset)
 {
     map_free(&pset->map);
     g_free(pset);
 }
 
 void
-hy_packageset_add(HyPackageSet pset, HyPackage pkg)
+hy_packageset_add(HifPackageSet pset, HifPackage *pkg)
 {
-    MAPSET(&pset->map, package_id(pkg));
-    hy_package_free(pkg);
+    MAPSET(&pset->map, hif_package_get_id(pkg));
+    g_object_unref(pkg);
 }
 
 unsigned
-hy_packageset_count(HyPackageSet pset)
+hy_packageset_count(HifPackageSet pset)
 {
     return map_count(&pset->map);
 }
 
-HyPackage
-hy_packageset_get_clone(HyPackageSet pset, int index)
+HifPackage *
+hy_packageset_get_clone(HifPackageSet pset, int index)
 {
     Id id = map_index2id(&pset->map, index, -1);
     if (id < 0)
         return NULL;
-    return package_create(pset->sack, id);
+    return hif_package_new(pset->sack, id);
 }
 
 int
-hy_packageset_has(HyPackageSet pset, HyPackage pkg)
+hy_packageset_has(HifPackageSet pset, HifPackage *pkg)
 {
-    return MAPTST(&pset->map, package_id(pkg));
+    return MAPTST(&pset->map, hif_package_get_id(pkg));
 }

@@ -48,11 +48,9 @@
 
 typedef struct {
     char            *checksum_str;
-    char            *nevra;
     gboolean         user_action;
     gchar           *filename;
     gchar           *origin;
-    gchar           *description;
     gchar           *package_id;
     HifPackageInfo   info;
     HifStateAction   action;
@@ -69,15 +67,31 @@ hif_package_destroy_func(void *userdata)
     g_free(priv->filename);
     g_free(priv->origin);
     g_free(priv->package_id);
-    g_free(priv->description);
     g_free(priv->checksum_str);
-    g_free(priv->nevra);
     g_slice_free(HifPackagePrivate, priv);
 }
 
 /**
+ * hif_package_get_priv:
+ **/
+static HifPackagePrivate *
+hif_package_get_priv(HifPackage *pkg)
+{
+    HifPackagePrivate *priv;
+
+    /* create private area */
+    priv = g_object_get_data(G_OBJECT(pkg), "HifPackagePrivate");
+    if (priv != NULL)
+        return priv;
+
+    priv = g_slice_new0(HifPackagePrivate);
+    g_object_set_data_full(G_OBJECT(pkg), "HifPackagePrivate", priv, hif_package_destroy_func);
+    return priv;
+}
+
+/**
  * hif_package_get_filename:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  *
  * Gets the package filename.
  *
@@ -86,26 +100,26 @@ hif_package_destroy_func(void *userdata)
  * Since: 0.1.0
  **/
 const gchar *
-hif_package_get_filename(HyPackage pkg)
+hif_package_get_filename(HifPackage *pkg)
 {
     HifPackagePrivate *priv;
 
-    priv = hy_package_get_userdata(pkg);
+    priv = hif_package_get_priv(pkg);
     if (priv == NULL)
         return NULL;
-    if (hy_package_installed(pkg))
+    if (hif_package_installed(pkg))
         return NULL;
 
     /* default cache filename location */
     if (priv->filename == NULL && priv->repo != NULL) {
         priv->filename = g_build_filename(hif_repo_get_location(priv->repo),
-                           hy_package_get_location(pkg),
+                           hif_package_get_location(pkg),
                            NULL);
         /* set the filename to cachedir for non-local repos */
         if (!hif_repo_is_local(priv->repo) ||
             !g_file_test(priv->filename, G_FILE_TEST_EXISTS)) {
             g_autofree gchar *basename = NULL;
-            basename = g_path_get_basename(hy_package_get_location(pkg));
+            basename = g_path_get_basename(hif_package_get_location(pkg));
             g_free(priv->filename);
             priv->filename = g_build_filename(hif_repo_get_packages(priv->repo),
                                basename,
@@ -118,7 +132,7 @@ hif_package_get_filename(HyPackage pkg)
 
 /**
  * hif_package_get_origin:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  *
  * Gets the package origin.
  *
@@ -127,38 +141,20 @@ hif_package_get_filename(HyPackage pkg)
  * Since: 0.1.0
  **/
 const gchar *
-hif_package_get_origin(HyPackage pkg)
+hif_package_get_origin(HifPackage *pkg)
 {
     HifPackagePrivate *priv;
-    priv = hy_package_get_userdata(pkg);
+    priv = hif_package_get_priv(pkg);
     if (priv == NULL)
         return NULL;
-    if (!hy_package_installed(pkg))
+    if (!hif_package_installed(pkg))
         return NULL;
     return priv->origin;
 }
 
 /**
- * hif_package_get_priv:
- **/
-static HifPackagePrivate *
-hif_package_get_priv(HyPackage pkg)
-{
-    HifPackagePrivate *priv;
-
-    /* create private area */
-    priv = hy_package_get_userdata(pkg);
-    if (priv != NULL)
-        return priv;
-
-    priv = g_slice_new0(HifPackagePrivate);
-    hy_package_set_userdata(pkg, priv, hif_package_destroy_func);
-    return priv;
-}
-
-/**
  * hif_package_get_pkgid:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  *
  * Gets the pkgid, which is the SHA hash of the package header.
  *
@@ -167,7 +163,7 @@ hif_package_get_priv(HyPackage pkg)
  * Since: 0.1.0
  **/
 const gchar *
-hif_package_get_pkgid(HyPackage pkg)
+hif_package_get_pkgid(HifPackage *pkg)
 {
     const unsigned char *checksum;
     HifPackagePrivate *priv;
@@ -180,7 +176,7 @@ hif_package_get_pkgid(HyPackage pkg)
         goto out;
 
     /* calculate and cache */
-    checksum = hy_package_get_hdr_chksum(pkg, &checksum_type);
+    checksum = hif_package_get_hdr_chksum(pkg, &checksum_type);
     if (checksum == NULL)
         goto out;
     priv->checksum_str = hy_chksum_str(checksum, checksum_type);
@@ -190,7 +186,7 @@ out:
 
 /**
  * hif_package_set_pkgid:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  * @pkgid: pkgid, e.g. "e6e3b2b10c1ef1033769147dbd1bf851c7de7699"
  *
  * Sets the package pkgid, which is the SHA hash of the package header.
@@ -198,7 +194,7 @@ out:
  * Since: 0.1.8
  **/
 void
-hif_package_set_pkgid(HyPackage pkg, const gchar *pkgid)
+hif_package_set_pkgid(HifPackage *pkg, const gchar *pkgid)
 {
     HifPackagePrivate *priv;
     g_return_if_fail(pkgid != NULL);
@@ -226,8 +222,8 @@ hif_package_id_build(const gchar *name,
 }
 
 /**
- * hif_package_get_id:
- * @pkg: a #HyPackage instance.
+ * hif_package_get_package_id:
+ * @pkg: a #HifPackage *instance.
  *
  * Gets the package-id as used by PackageKit.
  *
@@ -236,7 +232,7 @@ hif_package_id_build(const gchar *name,
  * Since: 0.1.0
  **/
 const gchar *
-hif_package_get_id(HyPackage pkg)
+hif_package_get_package_id(HifPackage *pkg)
 {
     HifPackagePrivate *priv;
     const gchar *reponame;
@@ -249,7 +245,7 @@ hif_package_get_id(HyPackage pkg)
         goto out;
 
     /* calculate and cache */
-    reponame = hy_package_get_reponame(pkg);
+    reponame = hif_package_get_reponame(pkg);
     if (g_strcmp0(reponame, HY_SYSTEM_REPO_NAME) == 0) {
         /* origin data to munge into the package_id data field */
         if (priv->origin != NULL) {
@@ -261,59 +257,17 @@ hif_package_get_id(HyPackage pkg)
     } else if (g_strcmp0(reponame, HY_CMDLINE_REPO_NAME) == 0) {
         reponame = "local";
     }
-    priv->package_id = hif_package_id_build(hy_package_get_name(pkg),
-                        hy_package_get_evr(pkg),
-                        hy_package_get_arch(pkg),
+    priv->package_id = hif_package_id_build(hif_package_get_name(pkg),
+                        hif_package_get_evr(pkg),
+                        hif_package_get_arch(pkg),
                         reponame);
 out:
     return priv->package_id;
 }
 
 /**
- * hif_package_get_nevra:
- * @pkg: a #HyPackage instance.
- *
- * Gets the package NEVRA.
- *
- * Returns: the package NEVRA, e.g. "2:hal-0.3.4-5.i386"
- *
- * Since: 0.1.0
- **/
-const gchar *
-hif_package_get_nevra(HyPackage pkg)
-{
-    HifPackagePrivate *priv;
-    priv = hif_package_get_priv(pkg);
-    if (priv->nevra == NULL)
-        priv->nevra = hy_package_get_nevra(pkg);
-    return priv->nevra;
-}
-
-/**
- * hif_package_get_description:
- * @pkg: a #HyPackage instance.
- *
- * Get the package description, with minor tweaks to remove extra whitespace.
- *
- * Returns: the package description
- *
- * Since: 0.1.0
- **/
-const gchar *
-hif_package_get_description(HyPackage pkg)
-{
-    HifPackagePrivate *priv;
-    priv = hif_package_get_priv(pkg);
-    if (priv->description == NULL) {
-        priv->description = g_strdup(hy_package_get_description(pkg));
-        g_strdelimit(priv->description, "\n\t", ' ');
-    }
-    return priv->description;
-}
-
-/**
  * hif_package_get_cost:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  *
  * Returns the cost of the repo that provided the package.
  *
@@ -322,12 +276,12 @@ hif_package_get_description(HyPackage pkg)
  * Since: 0.1.0
  **/
 guint
-hif_package_get_cost(HyPackage pkg)
+hif_package_get_cost(HifPackage *pkg)
 {
     HifPackagePrivate *priv;
     priv = hif_package_get_priv(pkg);
     if (priv->repo == NULL) {
-        g_warning("no repo for %s", hif_package_get_id(pkg));
+        g_warning("no repo for %s", hif_package_get_package_id(pkg));
         return G_MAXUINT;
     }
     return hif_repo_get_cost(priv->repo);
@@ -335,7 +289,7 @@ hif_package_get_cost(HyPackage pkg)
 
 /**
  * hif_package_set_filename:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  * @filename: absolute filename.
  *
  * Sets the file on disk that matches the package repo.
@@ -343,7 +297,7 @@ hif_package_get_cost(HyPackage pkg)
  * Since: 0.1.0
  **/
 void
-hif_package_set_filename(HyPackage pkg, const gchar *filename)
+hif_package_set_filename(HifPackage *pkg, const gchar *filename)
 {
     HifPackagePrivate *priv;
 
@@ -357,7 +311,7 @@ hif_package_set_filename(HyPackage pkg, const gchar *filename)
 
 /**
  * hif_package_set_origin:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  * @origin: origin, e.g. "fedora"
  *
  * Sets the package origin repo.
@@ -365,7 +319,7 @@ hif_package_set_filename(HyPackage pkg, const gchar *filename)
  * Since: 0.1.0
  **/
 void
-hif_package_set_origin(HyPackage pkg, const gchar *origin)
+hif_package_set_origin(HifPackage *pkg, const gchar *origin)
 {
     HifPackagePrivate *priv;
     priv = hif_package_get_priv(pkg);
@@ -377,7 +331,7 @@ hif_package_set_origin(HyPackage pkg, const gchar *origin)
 
 /**
  * hif_package_set_repo:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  * @repo: a #HifRepo.
  *
  * Sets the repo the package was created from.
@@ -385,7 +339,7 @@ hif_package_set_origin(HyPackage pkg, const gchar *origin)
  * Since: 0.1.0
  **/
 void
-hif_package_set_repo(HyPackage pkg, HifRepo *repo)
+hif_package_set_repo(HifPackage *pkg, HifRepo *repo)
 {
     HifPackagePrivate *priv;
     priv = hif_package_get_priv(pkg);
@@ -396,7 +350,7 @@ hif_package_set_repo(HyPackage pkg, HifRepo *repo)
 
 /**
  * hif_package_get_repo:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  *
  * Gets the repo the package was created from.
  *
@@ -405,10 +359,10 @@ hif_package_set_repo(HyPackage pkg, HifRepo *repo)
  * Since: 0.1.0
  **/
 HifRepo *
-hif_package_get_repo(HyPackage pkg)
+hif_package_get_repo(HifPackage *pkg)
 {
     HifPackagePrivate *priv;
-    priv = hy_package_get_userdata(pkg);
+    priv = hif_package_get_priv(pkg);
     if (priv == NULL)
         return NULL;
     return priv->repo;
@@ -416,7 +370,7 @@ hif_package_get_repo(HyPackage pkg)
 
 /**
  * hif_package_get_info:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  *
  * Gets the info enum assigned to the package.
  *
@@ -425,10 +379,10 @@ hif_package_get_repo(HyPackage pkg)
  * Since: 0.1.0
  **/
 HifPackageInfo
-hif_package_get_info(HyPackage pkg)
+hif_package_get_info(HifPackage *pkg)
 {
     HifPackagePrivate *priv;
-    priv = hy_package_get_userdata(pkg);
+    priv = hif_package_get_priv(pkg);
     if (priv == NULL)
         return HIF_PACKAGE_INFO_UNKNOWN;
     return priv->info;
@@ -436,7 +390,7 @@ hif_package_get_info(HyPackage pkg)
 
 /**
  * hif_package_get_action:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  *
  * Gets the action assigned to the package, i.e. what is going to be performed.
  *
@@ -445,10 +399,10 @@ hif_package_get_info(HyPackage pkg)
  * Since: 0.1.0
  */
 HifStateAction
-hif_package_get_action(HyPackage pkg)
+hif_package_get_action(HifPackage *pkg)
 {
     HifPackagePrivate *priv;
-    priv = hy_package_get_userdata(pkg);
+    priv = hif_package_get_priv(pkg);
     if (priv == NULL)
         return HIF_STATE_ACTION_UNKNOWN;
     return priv->action;
@@ -456,7 +410,7 @@ hif_package_get_action(HyPackage pkg)
 
 /**
  * hif_package_set_info:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  * @info: the info flags.
  *
  * Sets the info flags for the package.
@@ -464,7 +418,7 @@ hif_package_get_action(HyPackage pkg)
  * Since: 0.1.0
  **/
 void
-hif_package_set_info(HyPackage pkg, HifPackageInfo info)
+hif_package_set_info(HifPackage *pkg, HifPackageInfo info)
 {
     HifPackagePrivate *priv;
     priv = hif_package_get_priv(pkg);
@@ -475,7 +429,7 @@ hif_package_set_info(HyPackage pkg, HifPackageInfo info)
 
 /**
  * hif_package_set_action:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  * @action: the #HifStateAction for the package.
  *
  * Sets the action for the package, i.e. what is going to be performed.
@@ -483,7 +437,7 @@ hif_package_set_info(HyPackage pkg, HifPackageInfo info)
  * Since: 0.1.0
  */
 void
-hif_package_set_action(HyPackage pkg, HifStateAction action)
+hif_package_set_action(HifPackage *pkg, HifStateAction action)
 {
     HifPackagePrivate *priv;
     priv = hif_package_get_priv(pkg);
@@ -494,7 +448,7 @@ hif_package_set_action(HyPackage pkg, HifStateAction action)
 
 /**
  * hif_package_get_user_action:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  *
  * Gets if the package was installed or removed as the user action.
  *
@@ -503,10 +457,10 @@ hif_package_set_action(HyPackage pkg, HifStateAction action)
  * Since: 0.1.0
  **/
 gboolean
-hif_package_get_user_action(HyPackage pkg)
+hif_package_get_user_action(HifPackage *pkg)
 {
     HifPackagePrivate *priv;
-    priv = hy_package_get_userdata(pkg);
+    priv = hif_package_get_priv(pkg);
     if (priv == NULL)
         return FALSE;
     return priv->user_action;
@@ -514,7 +468,7 @@ hif_package_get_user_action(HyPackage pkg)
 
 /**
  * hif_package_set_user_action:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  * @user_action: %TRUE if the package was explicitly requested.
  *
  * Sets if the package was installed or removed as the user action.
@@ -522,7 +476,7 @@ hif_package_get_user_action(HyPackage pkg)
  * Since: 0.1.0
  **/
 void
-hif_package_set_user_action(HyPackage pkg, gboolean user_action)
+hif_package_set_user_action(HifPackage *pkg, gboolean user_action)
 {
     HifPackagePrivate *priv;
     priv = hif_package_get_priv(pkg);
@@ -533,14 +487,14 @@ hif_package_set_user_action(HyPackage pkg, gboolean user_action)
 
 /**
  * hif_package_is_gui:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  *
  * Returns: %TRUE if the package is a GUI package
  *
  * Since: 0.1.0
  **/
 gboolean
-hif_package_is_gui(HyPackage pkg)
+hif_package_is_gui(HifPackage *pkg)
 {
     gboolean ret = FALSE;
     gchar *tmp;
@@ -550,7 +504,7 @@ hif_package_is_gui(HyPackage pkg)
     int size;
 
     /* find if the package depends on GTK or KDE */
-    reldeplist = hy_package_get_requires(pkg);
+    reldeplist = hif_package_get_requires(pkg);
     size = hy_reldeplist_count(reldeplist);
     for (idx = 0; idx < size && !ret; idx++) {
         reldep = hy_reldeplist_get_clone(reldeplist, idx);
@@ -571,17 +525,17 @@ hif_package_is_gui(HyPackage pkg)
 
 /**
  * hif_package_is_devel:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  *
  * Returns: %TRUE if the package is a development package
  *
  * Since: 0.1.0
  **/
 gboolean
-hif_package_is_devel(HyPackage pkg)
+hif_package_is_devel(HifPackage *pkg)
 {
     const gchar *name;
-    name = hy_package_get_name(pkg);
+    name = hif_package_get_name(pkg);
     if (g_str_has_suffix(name, "-debuginfo"))
         return TRUE;
     if (g_str_has_suffix(name, "-devel"))
@@ -595,23 +549,23 @@ hif_package_is_devel(HyPackage pkg)
 
 /**
  * hif_package_is_downloaded:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  *
  * Returns: %TRUE if the package is already downloaded
  *
  * Since: 0.1.0
  **/
 gboolean
-hif_package_is_downloaded(HyPackage pkg)
+hif_package_is_downloaded(HifPackage *pkg)
 {
     const gchar *filename;
 
-    if (hy_package_installed(pkg))
+    if (hif_package_installed(pkg))
         return FALSE;
     filename = hif_package_get_filename(pkg);
     if (filename == NULL) {
         g_warning("Failed to get cache filename for %s",
-               hy_package_get_name(pkg));
+               hif_package_get_name(pkg));
         return FALSE;
     }
     return g_file_test(filename, G_FILE_TEST_EXISTS);
@@ -619,21 +573,21 @@ hif_package_is_downloaded(HyPackage pkg)
 
 /**
  * hif_package_is_installonly:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  *
  * Returns: %TRUE if the package can be installed more than once
  *
  * Since: 0.1.0
  */
 gboolean
-hif_package_is_installonly(HyPackage pkg)
+hif_package_is_installonly(HifPackage *pkg)
 {
     const gchar **installonly_pkgs;
     const gchar *pkg_name;
     guint i;
 
     installonly_pkgs = hif_context_get_installonly_pkgs(NULL);
-    pkg_name = hy_package_get_name(pkg);
+    pkg_name = hif_package_get_name(pkg);
     for (i = 0; installonly_pkgs[i] != NULL; i++) {
         if (g_strcmp0(pkg_name, installonly_pkgs[i]) == 0)
             return TRUE;
@@ -658,7 +612,7 @@ hif_repo_checksum_hy_to_lr(GChecksumType checksum)
 
 /**
  * hif_package_check_filename:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  * @valid: Set to %TRUE if the package is valid.
  * @error: a #GError or %NULL..
  *
@@ -669,7 +623,7 @@ hif_repo_checksum_hy_to_lr(GChecksumType checksum)
  * Since: 0.1.0
  **/
 gboolean
-hif_package_check_filename(HyPackage pkg, gboolean *valid, GError **error)
+hif_package_check_filename(HifPackage *pkg, gboolean *valid, GError **error)
 {
     LrChecksumType checksum_type_lr;
     char *checksum_valid = NULL;
@@ -688,7 +642,7 @@ hif_package_check_filename(HyPackage pkg, gboolean *valid, GError **error)
     }
 
     /* check the checksum */
-    checksum = hy_package_get_chksum(pkg, &checksum_type_hy);
+    checksum = hif_package_get_chksum(pkg, &checksum_type_hy);
     checksum_valid = hy_chksum_str(checksum, checksum_type_hy);
     checksum_type_lr = hif_repo_checksum_hy_to_lr(checksum_type_hy);
     fd = g_open(path, O_RDONLY, 0);
@@ -720,7 +674,7 @@ out:
 
 /**
  * hif_package_download:
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  * @directory: destination directory, or %NULL for the cachedir.
  * @state: the #HifState.
  * @error: a #GError or %NULL..
@@ -732,7 +686,7 @@ out:
  * Since: 0.1.0
  **/
 gchar *
-hif_package_download(HyPackage pkg,
+hif_package_download(HifPackage *pkg,
               const gchar *directory,
               HifState *state,
               GError **error)
@@ -769,7 +723,7 @@ hif_package_array_download(GPtrArray *packages,
                 GError **error)
 {
     HifState *state_local;
-    HyPackage pkg;
+    HifPackage *pkg;
     guint i;
 
     /* download any package that is not currently installed */

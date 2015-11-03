@@ -1584,7 +1584,7 @@ hif_repo_copy_progress_cb(goffset current, goffset total, gpointer user_data)
  * hif_repo_copy_package:
  **/
 static gboolean
-hif_repo_copy_package(HyPackage pkg,
+hif_repo_copy_package(HifPackage *pkg,
              const gchar *directory,
              HifState *state,
              GError **error)
@@ -1596,7 +1596,7 @@ hif_repo_copy_package(HyPackage pkg,
 
     /* copy the file with progress */
     file_repo = g_file_new_for_path(hif_package_get_filename(pkg));
-    basename = g_path_get_basename(hy_package_get_location(pkg));
+    basename = g_path_get_basename(hif_package_get_location(pkg));
     dest = g_build_filename(directory, basename, NULL);
     file_dest = g_file_new_for_path(dest);
     return g_file_copy(file_repo, file_dest, G_FILE_COPY_NONE,
@@ -1638,7 +1638,7 @@ out:
 /**
  * hif_repo_download_package:
  * @repo: a #HifRepo instance.
- * @pkg: a #HyPackage instance.
+ * @pkg: a #HifPackage *instance.
  * @directory: the destination directory.
  * @state: a #HifState.
  * @error: a #GError or %NULL..
@@ -1651,7 +1651,7 @@ out:
  **/
 gchar *
 hif_repo_download_package(HifRepo *repo,
-                            HyPackage pkg,
+                            HifPackage *pkg,
                             const gchar *directory,
                             HifState *state,
                             GError **error)
@@ -1702,24 +1702,24 @@ hif_repo_download_package(HifRepo *repo,
     }
 
     g_debug("downloading %s to %s",
-         hy_package_get_location(pkg),
+         hif_package_get_location(pkg),
          directory_slash);
 
-    checksum = hy_package_get_chksum(pkg, &checksum_type);
+    checksum = hif_package_get_chksum(pkg, &checksum_type);
     checksum_str = hy_chksum_str(checksum, checksum_type);
     hif_state_action_start(state,
                            HIF_STATE_ACTION_DOWNLOAD_PACKAGES,
-                           hif_package_get_id(pkg));
+                           hif_package_get_package_id(pkg));
 
     dlstate.state = state;
 
     target = lr_packagetarget_new_v2(priv->repo_handle,
-                                     hy_package_get_location(pkg),
+                                     hif_package_get_location(pkg),
                                      directory_slash,
                                      hif_repo_checksum_hy_to_lr(checksum_type),
                                      checksum_str,
                                      0, /* size unknown */
-                                     hy_package_get_baseurl(pkg),
+                                     hif_package_get_baseurl(pkg),
                                      TRUE,
                                      package_download_update_state_cb,
                                      &dlstate,
@@ -1750,7 +1750,7 @@ hif_repo_download_package(HifRepo *repo,
 
 done:
     /* build return value */
-    basename = g_path_get_basename(hy_package_get_location(pkg));
+    basename = g_path_get_basename(hif_package_get_location(pkg));
     loc = g_build_filename(directory_slash, basename, NULL);
 out:
     lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSCB, NULL);

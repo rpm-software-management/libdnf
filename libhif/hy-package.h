@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012-2014 Red Hat, Inc.
+ * Copyright (C) 2015 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -18,70 +19,82 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef HY_PACKAGE_H
-#define HY_PACKAGE_H
+#if !defined (__LIBHIF_H) && !defined (HIF_COMPILATION)
+#error "Only <libhif.h> can be included directly."
+#endif
 
-#include <glib.h>
+#ifndef __HY_PACKAGE_H
+#define __HY_PACKAGE_H
+
+#include <glib-object.h>
+#include "hy-types.h"
+#include "hif-packagedelta.h"
 
 G_BEGIN_DECLS
 
-#include "hy-types.h"
-#include "hif-packagedelta.h"
-#include <glib.h>
+#define HIF_TYPE_PACKAGE (hif_package_get_type ())
+G_DECLARE_DERIVABLE_TYPE (HifPackage, hif_package, HIF, PACKAGE, GObject)
 
-/* public */
-void hy_package_free(HyPackage pkg);
-HyPackage hy_package_link(HyPackage pkg);
-int hy_package_identical(HyPackage pkg1, HyPackage pkg2);
-int hy_package_installed(HyPackage pkg);
-int hy_package_cmp(HyPackage pkg1, HyPackage pkg2);
-int hy_package_evr_cmp(HyPackage pkg1, HyPackage pkg2);
+struct _HifPackageClass
+{
+        GObjectClass            parent_class;
+        /*< private >*/
+        void (*_hif_reserved1)  (void);
+        void (*_hif_reserved2)  (void);
+        void (*_hif_reserved3)  (void);
+        void (*_hif_reserved4)  (void);
+        void (*_hif_reserved5)  (void);
+        void (*_hif_reserved6)  (void);
+        void (*_hif_reserved7)  (void);
+        void (*_hif_reserved8)  (void);
+};
 
-char *hy_package_get_location(HyPackage pkg);
-const char *hy_package_get_baseurl(HyPackage pkg);
-char *hy_package_get_nevra(HyPackage pkg);
-char *hy_package_get_sourcerpm(HyPackage pkg);
-char *hy_package_get_version(HyPackage pkg);
-char *hy_package_get_release(HyPackage pkg);
+gboolean     hif_package_get_identical  (HifPackage *pkg1, HifPackage *pkg2);
+gboolean     hif_package_installed      (HifPackage *pkg);
+int          hif_package_cmp            (HifPackage *pkg1, HifPackage *pkg2);
+int          hif_package_evr_cmp        (HifPackage *pkg1, HifPackage *pkg2);
 
-const char *hy_package_get_name(HyPackage pkg);
-const char *hy_package_get_arch(HyPackage pkg);
-const unsigned char *hy_package_get_chksum(HyPackage pkg, int *type);
-const char *hy_package_get_description(HyPackage pkg);
-const char *hy_package_get_evr(HyPackage pkg);
-const char *hy_package_get_license(HyPackage pkg);
-const unsigned char *hy_package_get_hdr_chksum(HyPackage pkg, int *type);
-const char *hy_package_get_packager(HyPackage pkg);
-const char *hy_package_get_reponame(HyPackage pkg);
-const char *hy_package_get_summary(HyPackage pkg);
-const char *hy_package_get_url(HyPackage pkg);
-guint64 hy_package_get_downloadsize(HyPackage pkg);
-guint64 hy_package_get_epoch(HyPackage pkg);
-guint64 hy_package_get_hdr_end(HyPackage pkg);
-guint64 hy_package_get_installsize(HyPackage pkg);
-guint64 hy_package_get_medianr(HyPackage pkg);
-guint64 hy_package_get_rpmdbid(HyPackage pkg);
-guint64 hy_package_get_size(HyPackage pkg);
-guint64 hy_package_get_buildtime(HyPackage pkg);
-guint64 hy_package_get_installtime(HyPackage pkg);
+char        *hif_package_get_location   (HifPackage *pkg);
+const char  *hif_package_get_baseurl    (HifPackage *pkg);
+char        *hif_package_get_nevra      (HifPackage *pkg);
+char        *hif_package_get_sourcerpm  (HifPackage *pkg);
+char        *hif_package_get_version    (HifPackage *pkg);
+char        *hif_package_get_release    (HifPackage *pkg);
 
-HyReldepList hy_package_get_conflicts(HyPackage pkg);
-HyReldepList hy_package_get_enhances(HyPackage pkg);
-HyReldepList hy_package_get_obsoletes(HyPackage pkg);
-HyReldepList hy_package_get_provides(HyPackage pkg);
-HyReldepList hy_package_get_recommends(HyPackage pkg);
-HyReldepList hy_package_get_requires(HyPackage pkg);
-HyReldepList hy_package_get_suggests(HyPackage pkg);
-HyReldepList hy_package_get_supplements(HyPackage pkg);
-char **hy_package_get_files(HyPackage pkg);
-GPtrArray *hy_package_get_advisories(HyPackage pkg, int cmp_type);
+const char  *hif_package_get_name       (HifPackage *pkg);
+const char  *hif_package_get_arch       (HifPackage *pkg);
+const unsigned char *hif_package_get_chksum(HifPackage *pkg, int *type);
+const char  *hif_package_get_description(HifPackage *pkg);
+const char  *hif_package_get_evr        (HifPackage *pkg);
+const char  *hif_package_get_license    (HifPackage *pkg);
+const unsigned char *hif_package_get_hdr_chksum(HifPackage *pkg, int *type);
+const char  *hif_package_get_packager   (HifPackage *pkg);
+const char  *hif_package_get_reponame   (HifPackage *pkg);
+const char  *hif_package_get_summary    (HifPackage *pkg);
+const char  *hif_package_get_url        (HifPackage *pkg);
+guint64      hif_package_get_downloadsize(HifPackage *pkg);
+guint64      hif_package_get_epoch      (HifPackage *pkg);
+guint64      hif_package_get_hdr_end    (HifPackage *pkg);
+guint64      hif_package_get_installsize(HifPackage *pkg);
+guint64      hif_package_get_medianr    (HifPackage *pkg);
+guint64      hif_package_get_rpmdbid    (HifPackage *pkg);
+guint64      hif_package_get_size       (HifPackage *pkg);
+guint64      hif_package_get_buildtime  (HifPackage *pkg);
+guint64      hif_package_get_installtime(HifPackage *pkg);
 
-typedef void (*HyUserdataDestroy) (void *userdata);
-void *hy_package_get_userdata(HyPackage pkg);
-void hy_package_set_userdata(HyPackage pkg, void *userdata, HyUserdataDestroy destroy_func);
+HyReldepList hif_package_get_conflicts  (HifPackage *pkg);
+HyReldepList hif_package_get_enhances   (HifPackage *pkg);
+HyReldepList hif_package_get_obsoletes  (HifPackage *pkg);
+HyReldepList hif_package_get_provides   (HifPackage *pkg);
+HyReldepList hif_package_get_recommends (HifPackage *pkg);
+HyReldepList hif_package_get_requires   (HifPackage *pkg);
+HyReldepList hif_package_get_suggests   (HifPackage *pkg);
+HyReldepList hif_package_get_supplements(HifPackage *pkg);
+char       **hif_package_get_files      (HifPackage *pkg);
+GPtrArray   *hif_package_get_advisories (HifPackage *pkg, int cmp_type);
 
-HifPackageDelta *hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr);
+HifPackageDelta *hif_package_get_delta_from_evr(HifPackage *pkg, const char *from_evr);
 
 G_END_DECLS
 
-#endif
+#endif /* __HY_PACKAGE_H */

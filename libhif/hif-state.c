@@ -705,7 +705,7 @@ hif_state_action_start(HifState *state, HifStateAction action, const gchar *acti
 /**
  * hif_state_set_package_progress:
  * @state: a #HifState instance.
- * @package_id: A package_id
+ * @hif_package_get_id: A package_id
  * @action: A #HifStateAction
  * @percentage: A percentage
  *
@@ -715,17 +715,17 @@ hif_state_action_start(HifState *state, HifStateAction action, const gchar *acti
  **/
 void
 hif_state_set_package_progress(HifState *state,
-                const gchar *package_id,
+                const gchar *hif_package_get_id,
                 HifStateAction action,
                 guint percentage)
 {
-    g_return_if_fail(package_id != NULL);
+    g_return_if_fail(hif_package_get_id != NULL);
     g_return_if_fail(action != HIF_STATE_ACTION_UNKNOWN);
     g_return_if_fail(percentage <= 100);
 
     /* just emit */
     g_signal_emit(state, signals [SIGNAL_PACKAGE_PROGRESS_CHANGED], 0,
-               package_id, action, percentage);
+               hif_package_get_id, action, percentage);
 }
 
 /**
@@ -899,14 +899,14 @@ hif_state_child_action_changed_cb(HifState *child,
  **/
 static void
 hif_state_child_package_progress_changed_cb(HifState *child,
-                         const gchar *package_id,
+                         const gchar *hif_package_get_id,
                          HifStateAction action,
                          guint progress,
                          HifState *state)
 {
     /* just emit */
     g_signal_emit(state, signals [SIGNAL_PACKAGE_PROGRESS_CHANGED], 0,
-                  package_id, action, progress);
+                  hif_package_get_id, action, progress);
 }
 
 /**

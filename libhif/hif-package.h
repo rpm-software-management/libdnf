@@ -59,40 +59,38 @@ typedef enum {
         HIF_PACKAGE_INFO_LAST
 } HifPackageInfo;
 
-HifRepo         *hif_package_get_repo                   (HyPackage       pkg);
-void             hif_package_set_repo                   (HyPackage       pkg,
+HifRepo         *hif_package_get_repo                   (HifPackage     *pkg);
+void             hif_package_set_repo                   (HifPackage     *pkg,
                                                          HifRepo        *repo);
-const gchar     *hif_package_get_filename               (HyPackage       pkg);
-void             hif_package_set_filename               (HyPackage       pkg,
+const gchar     *hif_package_get_filename               (HifPackage     *pkg);
+void             hif_package_set_filename               (HifPackage     *pkg,
                                                          const gchar    *filename);
-const gchar     *hif_package_get_origin                 (HyPackage       pkg);
-void             hif_package_set_origin                 (HyPackage       pkg,
+const gchar     *hif_package_get_origin                 (HifPackage     *pkg);
+void             hif_package_set_origin                 (HifPackage     *pkg,
                                                          const gchar    *origin);
-const gchar     *hif_package_get_id                     (HyPackage       pkg);
-HifPackageInfo   hif_package_get_info                   (HyPackage       pkg);
-void             hif_package_set_info                   (HyPackage       pkg,
+const gchar     *hif_package_get_package_id             (HifPackage     *pkg);
+HifPackageInfo   hif_package_get_info                   (HifPackage     *pkg);
+void             hif_package_set_info                   (HifPackage     *pkg,
                                                          HifPackageInfo  info);
-HifStateAction   hif_package_get_action                 (HyPackage       pkg);
-void             hif_package_set_action                 (HyPackage       pkg,
+HifStateAction   hif_package_get_action                 (HifPackage     *pkg);
+void             hif_package_set_action                 (HifPackage     *pkg,
                                                          HifStateAction  action);
-gboolean         hif_package_get_user_action            (HyPackage       pkg);
-void             hif_package_set_user_action            (HyPackage       pkg,
+gboolean         hif_package_get_user_action            (HifPackage     *pkg);
+void             hif_package_set_user_action            (HifPackage     *pkg,
                                                          gboolean        user_action);
-gboolean         hif_package_is_gui                     (HyPackage       pkg);
-gboolean         hif_package_is_devel                   (HyPackage       pkg);
-gboolean         hif_package_is_downloaded              (HyPackage       pkg);
-gboolean         hif_package_is_installonly             (HyPackage       pkg);
-const gchar     *hif_package_get_pkgid                  (HyPackage       pkg);
-void             hif_package_set_pkgid                  (HyPackage       pkg,
+gboolean         hif_package_is_gui                     (HifPackage     *pkg);
+gboolean         hif_package_is_devel                   (HifPackage     *pkg);
+gboolean         hif_package_is_downloaded              (HifPackage     *pkg);
+gboolean         hif_package_is_installonly             (HifPackage     *pkg);
+const gchar     *hif_package_get_pkgid                  (HifPackage     *pkg);
+void             hif_package_set_pkgid                  (HifPackage     *pkg,
                                                          const gchar    *pkgid);
-const gchar     *hif_package_get_nevra                  (HyPackage       pkg);
-const gchar     *hif_package_get_description            (HyPackage       pkg);
-guint            hif_package_get_cost                   (HyPackage       pkg);
-gchar           *hif_package_download                   (HyPackage       pkg,
+guint            hif_package_get_cost                   (HifPackage     *pkg);
+gchar           *hif_package_download                   (HifPackage     *pkg,
                                                          const gchar    *directory,
                                                          HifState       *state,
                                                          GError         **error);
-gboolean         hif_package_check_filename             (HyPackage       pkg,
+gboolean         hif_package_check_filename             (HifPackage     *pkg,
                                                          gboolean       *valid,
                                                          GError         **error);
 

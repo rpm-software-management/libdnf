@@ -119,7 +119,7 @@ hif_transaction_init(HifTransaction *transaction)
     priv->ts = rpmtsCreate();
     priv->keyring = rpmtsGetKeyring(priv->ts, 1);
     priv->timer = g_timer_new();
-    priv->pkgs_to_download = g_ptr_array_new_with_free_func((GDestroyNotify) hy_package_free);
+    priv->pkgs_to_download = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
 }
 
 /**
@@ -239,10 +239,10 @@ hif_transaction_set_flags(HifTransaction *transaction, guint64 flags)
 /**
  * hif_transaction_ensure_repo:
  * @transaction: a #HifTransaction instance.
- * @pkg: A #HyPackage
+ * @pkg: A #HifPackage
  * @error: A #GError or %NULL
  *
- * Ensures the #HifRepo is set on the #HyPackage if not already set.
+ * Ensures the #HifRepo is set on the #HifPackage *if not already set.
  *
  * Returns: %TRUE for success, %FALSE otherwise
  *
@@ -250,7 +250,7 @@ hif_transaction_set_flags(HifTransaction *transaction, guint64 flags)
  */
 gboolean
 hif_transaction_ensure_repo(HifTransaction *transaction,
-                              HyPackage pkg,
+                              HifPackage *pkg,
                               GError **error)
 {
     HifRepo *repo;
@@ -264,25 +264,25 @@ hif_transaction_ensure_repo(HifTransaction *transaction,
                     HIF_ERROR,
                     HIF_ERROR_INTERNAL_ERROR,
                     "Sources not set when trying to ensure package %s",
-                    hy_package_get_name(pkg));
+                    hif_package_get_name(pkg));
         return FALSE;
     }
 
     /* this is a local file */
-    if (g_strcmp0(hy_package_get_reponame(pkg),
+    if (g_strcmp0(hif_package_get_reponame(pkg),
                   HY_CMDLINE_REPO_NAME) == 0) {
-        location = hy_package_get_location(pkg);
+        location = hif_package_get_location(pkg);
         hif_package_set_filename(pkg, location);
         g_free(location);
         return TRUE;
     }
 
     /* get repo */
-    if (hy_package_installed(pkg))
+    if (hif_package_installed(pkg))
         return TRUE;
     for (i = 0; i < priv->repos->len; i++) {
         repo = g_ptr_array_index(priv->repos, i);
-        if (g_strcmp0(hy_package_get_reponame(pkg),
+        if (g_strcmp0(hif_package_get_reponame(pkg),
                       hif_repo_get_id(repo)) == 0) {
             hif_package_set_repo(pkg, repo);
             return TRUE;
@@ -295,8 +295,8 @@ hif_transaction_ensure_repo(HifTransaction *transaction,
                 HIF_ERROR_INTERNAL_ERROR,
                 "Failed to ensure %s as repo %s not "
                 "found(%i repos loaded)",
-                hy_package_get_name(pkg),
-                hy_package_get_reponame(pkg),
+                hif_package_get_name(pkg),
+                hif_package_get_reponame(pkg),
                 priv->repos->len);
     return FALSE;
 }
@@ -319,7 +319,7 @@ hif_transaction_ensure_repo_list(HifTransaction *transaction,
                                    GError **error)
 {
     guint i;
-    HyPackage pkg;
+    HifPackage *pkg;
 
     for (i = 0; i < pkglist->len; i++) {
         pkg = g_ptr_array_index (pkglist, i);
@@ -338,7 +338,7 @@ hif_transaction_check_untrusted(HifTransaction *transaction,
                                 GError **error)
 {
     HifTransactionPrivate *priv = GET_PRIVATE(transaction);
-    HyPackage pkg;
+    HifPackage *pkg;
     const gchar *fn;
     guint i;
     g_autoptr(GPtrArray) install;
@@ -372,7 +372,7 @@ hif_transaction_check_untrusted(HifTransaction *transaction,
                         HIF_ERROR,
                         HIF_ERROR_FILE_NOT_FOUND,
                         "Downloaded file for %s not found",
-                        hy_package_get_name(pkg));
+                        hif_package_get_name(pkg));
             return FALSE;
         }
 
@@ -492,7 +492,7 @@ hif_transaction_rpmcb_type_to_string(const rpmCallbackType what)
 /**
  * hif_find_pkg_from_header:
  **/
-static HyPackage
+static HifPackage *
 hif_find_pkg_from_header(GPtrArray *array, Header hdr)
 {
     const gchar *arch;
@@ -501,7 +501,7 @@ hif_find_pkg_from_header(GPtrArray *array, Header hdr)
     const gchar *version;
     guint epoch;
     guint i;
-    HyPackage pkg;
+    HifPackage *pkg;
 
     /* get details */
     name = headerGetString(hdr, RPMTAG_NAME);
@@ -513,15 +513,15 @@ hif_find_pkg_from_header(GPtrArray *array, Header hdr)
     /* find in array */
     for (i = 0; i < array->len; i++) {
         pkg = g_ptr_array_index(array, i);
-        if (g_strcmp0(name, hy_package_get_name(pkg)) != 0)
+        if (g_strcmp0(name, hif_package_get_name(pkg)) != 0)
             continue;
-        if (g_strcmp0(version, hy_package_get_version(pkg)) != 0)
+        if (g_strcmp0(version, hif_package_get_version(pkg)) != 0)
             continue;
-        if (g_strcmp0(release, hy_package_get_release(pkg)) != 0)
+        if (g_strcmp0(release, hif_package_get_release(pkg)) != 0)
             continue;
-        if (g_strcmp0(arch, hy_package_get_arch(pkg)) != 0)
+        if (g_strcmp0(arch, hif_package_get_arch(pkg)) != 0)
             continue;
-        if (epoch != hy_package_get_epoch(pkg))
+        if (epoch != hif_package_get_epoch(pkg))
             continue;
         return pkg;
     }
@@ -531,12 +531,12 @@ hif_find_pkg_from_header(GPtrArray *array, Header hdr)
 /**
  * hif_find_pkg_from_filename_suffix:
  **/
-static HyPackage
+static HifPackage *
 hif_find_pkg_from_filename_suffix(GPtrArray *array, const gchar *filename_suffix)
 {
     const gchar *filename;
     guint i;
-    HyPackage pkg;
+    HifPackage *pkg;
 
     /* find in array */
     for (i = 0; i < array->len; i++) {
@@ -553,16 +553,16 @@ hif_find_pkg_from_filename_suffix(GPtrArray *array, const gchar *filename_suffix
 /**
  * hif_find_pkg_from_name:
  **/
-static HyPackage
+static HifPackage *
 hif_find_pkg_from_name(GPtrArray *array, const gchar *pkgname)
 {
     guint i;
-    HyPackage pkg;
+    HifPackage *pkg;
 
     /* find in array */
     for (i = 0; i < array->len; i++) {
         pkg = g_ptr_array_index(array, i);
-        if (g_strcmp0(hy_package_get_name(pkg), pkgname) == 0)
+        if (g_strcmp0(hif_package_get_name(pkg), pkgname) == 0)
             return pkg;
     }
     return NULL;
@@ -586,7 +586,7 @@ hif_transaction_ts_progress_cb(const void *arg,
     guint percentage;
     guint speed;
     Header hdr =(Header) arg;
-    HyPackage pkg;
+    HifPackage *pkg;
     HifStateAction action;
     void *rc = NULL;
     g_autoptr(GError) error_local = NULL;
@@ -649,7 +649,7 @@ hif_transaction_ts_progress_cb(const void *arg,
         priv->child = hif_state_get_child(priv->state);
         hif_state_action_start(priv->child,
                                action,
-                               hif_package_get_id(pkg));
+                               hif_package_get_package_id(pkg));
         g_debug("install start: %s size=%i", filename,(gint32) total);
         break;
 
@@ -681,7 +681,7 @@ hif_transaction_ts_progress_cb(const void *arg,
         priv->child = hif_state_get_child(priv->state);
         hif_state_action_start(priv->child,
                                action,
-                               hif_package_get_id(pkg));
+                               hif_package_get_package_id(pkg));
         g_debug("remove start: %s size=%i", filename,(gint32) total);
         break;
 
@@ -720,7 +720,7 @@ hif_transaction_ts_progress_cb(const void *arg,
         }
 
         hif_state_set_package_progress(priv->state,
-                                       hif_package_get_id(pkg),
+                                       hif_package_get_package_id(pkg),
                                        HIF_STATE_ACTION_INSTALL,
                                        percentage);
         break;
@@ -761,7 +761,7 @@ hif_transaction_ts_progress_cb(const void *arg,
             action = HIF_STATE_ACTION_REMOVE;
 
         hif_state_set_package_progress(priv->state,
-                                       hif_package_get_id(pkg),
+                                       hif_package_get_package_id(pkg),
                                        action,
                                        percentage);
         break;
@@ -845,7 +845,7 @@ hif_transaction_delete_packages(HifTransaction *transaction,
 {
     HifTransactionPrivate *priv = GET_PRIVATE(transaction);
     HifState *state_local;
-    HyPackage pkg;
+    HifPackage *pkg;
     const gchar *filename;
     const gchar *cachedir;
     guint i;
@@ -895,7 +895,7 @@ hif_transaction_delete_packages(HifTransaction *transaction,
  **/
 static gboolean
 hif_transaction_write_yumdb_install_item(HifTransaction *transaction,
-                                         HyPackage pkg,
+                                         HifPackage *pkg,
                                          HifState *state,
                                          GError **error)
 {
@@ -909,7 +909,7 @@ hif_transaction_write_yumdb_install_item(HifTransaction *transaction,
                     HIF_ERROR,
                     HIF_ERROR_INTERNAL_ERROR,
                     "no yumdb entry for %s as no pkgid",
-                    hif_package_get_id(pkg));
+                    hif_package_get_package_id(pkg));
         return FALSE;
     }
 
@@ -917,7 +917,7 @@ hif_transaction_write_yumdb_install_item(HifTransaction *transaction,
     hif_state_set_allow_cancel(state, FALSE);
 
     /* set the repo this came from */
-    tmp = hy_package_get_reponame(pkg);
+    tmp = hif_package_get_reponame(pkg);
     if (!hif_db_set_string(priv->db, pkg, "from_repo", tmp, error))
         return FALSE;
 
@@ -963,7 +963,7 @@ hif_transaction_write_yumdb(HifTransaction *transaction,
 {
     HifState *state_local;
     HifState *state_loop;
-    HyPackage pkg;
+    HifPackage *pkg;
     HifTransactionPrivate *priv = GET_PRIVATE(transaction);
     gboolean ret;
     guint i;
@@ -1064,7 +1064,7 @@ hif_transaction_depsolve(HifTransaction *transaction,
                          GError **error)
 {
     HifTransactionPrivate *priv = GET_PRIVATE(transaction);
-    HyPackage pkg;
+    HifPackage *pkg;
     gboolean valid;
     guint i;
     g_autoptr(GPtrArray) packages = NULL;
@@ -1090,7 +1090,7 @@ hif_transaction_depsolve(HifTransaction *transaction,
             return FALSE;
 
         /* this is a local file */
-        if (g_strcmp0(hy_package_get_reponame(pkg),
+        if (g_strcmp0(hif_package_get_reponame(pkg),
                       HY_CMDLINE_REPO_NAME) == 0) {
             continue;
         }
@@ -1102,7 +1102,7 @@ hif_transaction_depsolve(HifTransaction *transaction,
         /* package needs to be downloaded */
         if (!valid) {
             g_ptr_array_add(priv->pkgs_to_download,
-                            hy_package_link(pkg));
+                            g_object_ref(pkg));
         }
     }
     return TRUE;
@@ -1170,8 +1170,8 @@ hif_transaction_commit(HifTransaction *transaction,
     guint j;
     HifState *state_local;
     GPtrArray *pkglist;
-    HyPackage pkg;
-    HyPackage pkg_tmp;
+    HifPackage *pkg;
+    HifPackage *pkg_tmp;
     rpmprobFilterFlags problems_filter = 0;
     rpmtransFlags rpmts_flags = RPMTRANS_FLAG_NONE;
     HifTransactionPrivate *priv = GET_PRIVATE(transaction);
@@ -1286,19 +1286,19 @@ hif_transaction_commit(HifTransaction *transaction,
          * the sack is invalidated */
         if (hif_package_get_pkgid(pkg) == NULL) {
             g_warning("failed to pre-get pkgid for %s",
-                      hif_package_get_id(pkg));
+                      hif_package_get_package_id(pkg));
         }
 
         /* are the things being removed actually being upgraded */
         pkg_tmp = hif_find_pkg_from_name(priv->install,
-                                         hy_package_get_name(pkg));
+                                         hif_package_get_name(pkg));
         if (pkg_tmp != NULL)
             hif_package_set_action(pkg, HIF_STATE_ACTION_CLEANUP);
     }
 
     /* add anything that gets obsoleted to a helper array which is used to
-     * map removed packages auto-added by rpm to actual HyPackage's */
-    priv->remove_helper = g_ptr_array_new_with_free_func((GDestroyNotify) hy_package_free);
+     * map removed packages auto-added by rpm to actual HifPackage's */
+    priv->remove_helper = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
     for (i = 0; i < priv->install->len; i++) {
         pkg = g_ptr_array_index(priv->install, i);
         is_update = hif_package_get_action(pkg) == HIF_STATE_ACTION_UPDATE ||
@@ -1309,7 +1309,7 @@ hif_transaction_commit(HifTransaction *transaction,
         for (j = 0; j < pkglist->len; j++) {
             pkg_tmp = g_ptr_array_index (pkglist, i);
             g_ptr_array_add(priv->remove_helper,
-                            hy_package_link(pkg_tmp));
+                            g_object_ref(pkg_tmp));
             hif_package_set_action(pkg_tmp, HIF_STATE_ACTION_CLEANUP);
         }
         g_ptr_array_unref(pkglist);

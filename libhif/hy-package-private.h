@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2015 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -18,30 +19,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef HY_PACKAGE_INTERNAL_H
-#define HY_PACKAGE_INTERNAL_H
+#ifndef __HY_PACKAGE_INTERNAL_H
+#define __HY_PACKAGE_INTERNAL_H
 
-// libsolv
-#include <solv/pool.h>
-#include <solv/solvable.h>
-
-// hawkey
 #include "hy-package.h"
 #include "hif-sack.h"
 
-struct _HyPackage {
-    int nrefs;
-    Id id;
-    HifSack *sack;
-    void *userdata;
-    HyUserdataDestroy destroy_func;
-};
+HifPackage  *hif_package_clone          (HifPackage *pkg);
+HifPackage  *hif_package_new            (HifSack    *sack, Id id);
+Id           hif_package_get_id         (HifPackage *pkg);
+Pool        *hif_package_get_pool       (HifPackage *pkg);
+HifSack     *hif_package_get_sack       (HifPackage *pkg);
+HifPackage  *hif_package_from_solvable  (HifSack    *sack, Solvable *s);
 
-HyPackage package_clone(HyPackage pkg);
-HyPackage package_create(HifSack *sack, Id id);
-static inline Id package_id(HyPackage pkg) { return pkg->id; }
-Pool *package_pool(HyPackage pkg);
-static inline HifSack *package_sack(HyPackage pkg) { return pkg->sack; }
-HyPackage package_from_solvable(HifSack *sack, Solvable *s);
-
-#endif // HY_PACKAGE_INTERNAL_H
+#endif // __HY_PACKAGE_INTERNAL_H

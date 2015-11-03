@@ -1499,7 +1499,7 @@ hif_context_install(HifContext *context, const gchar *name, GError **error)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
     GPtrArray *pkglist;
-    HyPackage pkg;
+    HifPackage *pkg;
     HyQuery query;
     gboolean ret = TRUE;
     guint i;
@@ -1534,7 +1534,7 @@ hif_context_install(HifContext *context, const gchar *name, GError **error)
     for (i = 0; i < pkglist->len; i++) {
         pkg = g_ptr_array_index (pkglist, i);
         hif_package_set_user_action(pkg, TRUE);
-        g_debug("adding %s-%s to goal", hy_package_get_name(pkg), hy_package_get_evr(pkg));
+        g_debug("adding %s-%s to goal", hif_package_get_name(pkg), hif_package_get_evr(pkg));
         hy_goal_install(priv->goal, pkg);
     }
     g_ptr_array_unref(pkglist);
@@ -1561,7 +1561,7 @@ hif_context_remove(HifContext *context, const gchar *name, GError **error)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
     GPtrArray *pkglist;
-    HyPackage pkg;
+    HifPackage *pkg;
     HyQuery query;
     gboolean ret = TRUE;
     guint i;
@@ -1612,7 +1612,7 @@ hif_context_update(HifContext *context, const gchar *name, GError **error)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
     GPtrArray *pkglist;
-    HyPackage pkg;
+    HifPackage *pkg;
     HyQuery query;
     gboolean ret = TRUE;
     guint i;

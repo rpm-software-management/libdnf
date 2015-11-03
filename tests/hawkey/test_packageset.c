@@ -25,7 +25,7 @@
 #include "fixtures.h"
 #include "test_suites.h"
 
-static HyPackageSet pset;
+static HifPackageSet pset;
 
 static void
 packageset_fixture(void)
@@ -33,10 +33,10 @@ packageset_fixture(void)
     fixture_all();
 
     HifSack *sack = test_globals.sack;
-    HyPackage pkg0 = package_create(sack, 0);
-    HyPackage pkg9 = package_create(sack, 9);
+    HifPackage *pkg0 = hif_package_new(sack, 0);
+    HifPackage *pkg9 = hif_package_new(sack, 9);
     int max = hif_sack_last_solvable(sack);
-    HyPackage pkg_max = package_create(sack, max);
+    HifPackage *pkg_max = hif_package_new(sack, max);
 
     // init the global var
     pset = hy_packageset_create(sack);
@@ -57,16 +57,16 @@ packageset_teardown(void)
 START_TEST(test_clone)
 {
     HifSack *sack = test_globals.sack;
-    HyPackageSet pset2 = hy_packageset_clone(pset);
+    HifPackageSet pset2 = hy_packageset_clone(pset);
 
-    HyPackage pkg8 = package_create(sack, 8);
-    HyPackage pkg9 = package_create(sack, 9);
+    HifPackage *pkg8 = hif_package_new(sack, 8);
+    HifPackage *pkg9 = hif_package_new(sack, 9);
 
     fail_if(hy_packageset_has(pset2, pkg8));
     fail_unless(hy_packageset_has(pset2, pkg9));
 
-    hy_package_free(pkg8);
-    hy_package_free(pkg9);
+    g_object_unref(pkg8);
+    g_object_unref(pkg9);
     hy_packageset_free(pset2);
 }
 END_TEST
@@ -74,13 +74,13 @@ END_TEST
 START_TEST(test_has)
 {
     HifSack *sack = test_globals.sack;
-    HyPackage pkg0 = package_create(sack, 0);
-    HyPackage pkg9 = package_create(sack, 9);
-    HyPackage pkg_max = package_create(sack, hif_sack_last_solvable(sack));
+    HifPackage *pkg0 = hif_package_new(sack, 0);
+    HifPackage *pkg9 = hif_package_new(sack, 9);
+    HifPackage *pkg_max = hif_package_new(sack, hif_sack_last_solvable(sack));
 
-    HyPackage pkg7 = package_create(sack, 7);
-    HyPackage pkg8 = package_create(sack, 8);
-    HyPackage pkg15 = package_create(sack, 15);
+    HifPackage *pkg7 = hif_package_new(sack, 7);
+    HifPackage *pkg8 = hif_package_new(sack, 8);
+    HifPackage *pkg15 = hif_package_new(sack, 15);
 
     fail_unless(hy_packageset_has(pset, pkg0));
     fail_unless(hy_packageset_has(pset, pkg9));
@@ -89,12 +89,12 @@ START_TEST(test_has)
     fail_if(hy_packageset_has(pset, pkg8));
     fail_if(hy_packageset_has(pset, pkg15));
 
-    hy_package_free(pkg0);
-    hy_package_free(pkg9);
-    hy_package_free(pkg_max);
-    hy_package_free(pkg7);
-    hy_package_free(pkg8);
-    hy_package_free(pkg15);
+    g_object_unref(pkg0);
+    g_object_unref(pkg9);
+    g_object_unref(pkg_max);
+    g_object_unref(pkg7);
+    g_object_unref(pkg8);
+    g_object_unref(pkg15);
 
 }
 END_TEST
@@ -105,32 +105,32 @@ START_TEST(test_get_clone)
     int max = hif_sack_last_solvable(sack);
 
     fail_unless(hy_packageset_count(pset) == 3);
-    HyPackage pkg0 = hy_packageset_get_clone(pset, 0);
-    HyPackage pkg9 = hy_packageset_get_clone(pset, 1);
-    HyPackage pkg_max = hy_packageset_get_clone(pset, 2);
-    fail_unless(package_id(pkg0) == 0);
-    fail_unless(package_id(pkg9) == 9);
-    fail_unless(package_id(pkg_max) == max);
+    HifPackage *pkg0 = hy_packageset_get_clone(pset, 0);
+    HifPackage *pkg9 = hy_packageset_get_clone(pset, 1);
+    HifPackage *pkg_max = hy_packageset_get_clone(pset, 2);
+    fail_unless(hif_package_get_id(pkg0) == 0);
+    fail_unless(hif_package_get_id(pkg9) == 9);
+    fail_unless(hif_package_get_id(pkg_max) == max);
     fail_unless(hy_packageset_get_clone(pset, 3) == NULL);
 
-    hy_package_free(pkg0);
-    hy_package_free(pkg9);
-    hy_package_free(pkg_max);
+    g_object_unref(pkg0);
+    g_object_unref(pkg9);
+    g_object_unref(pkg_max);
 
-    HyPackage pkg8 = package_create(sack, 8);
-    HyPackage pkg11 = package_create(sack, 11);
+    HifPackage *pkg8 = hif_package_new(sack, 8);
+    HifPackage *pkg11 = hif_package_new(sack, 11);
     hy_packageset_add(pset, pkg8);
     hy_packageset_add(pset, pkg11);
     pkg8 = hy_packageset_get_clone(pset, 1);
     pkg9 = hy_packageset_get_clone(pset, 2);
     pkg11 = hy_packageset_get_clone(pset, 3);
-    fail_unless(package_id(pkg8) == 8);
-    fail_unless(package_id(pkg9) == 9);
-    fail_unless(package_id(pkg11) == 11);
+    fail_unless(hif_package_get_id(pkg8) == 8);
+    fail_unless(hif_package_get_id(pkg9) == 9);
+    fail_unless(hif_package_get_id(pkg11) == 11);
 
-    hy_package_free(pkg8);
-    hy_package_free(pkg9);
-    hy_package_free(pkg11);
+    g_object_unref(pkg8);
+    g_object_unref(pkg9);
+    g_object_unref(pkg11);
 }
 END_TEST
 
@@ -140,12 +140,12 @@ START_TEST(test_get_pkgid)
     int max = hif_sack_last_solvable(sack);
 
     // add some more packages
-    HyPackage pkg;
-    pkg = package_create(sack, 7);
+    HifPackage *pkg;
+    pkg = hif_package_new(sack, 7);
     hy_packageset_add(pset, pkg);
-    pkg = package_create(sack, 8);
+    pkg = hif_package_new(sack, 8);
     hy_packageset_add(pset, pkg);
-    pkg = package_create(sack, 15);
+    pkg = hif_package_new(sack, 15);
     hy_packageset_add(pset, pkg);
 
     Id id = -1;

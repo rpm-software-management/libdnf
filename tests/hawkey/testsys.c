@@ -38,27 +38,27 @@
 #include "testsys.h"
 
 void
-assert_nevra_eq(HyPackage pkg, const char *nevra)
+assert_nevra_eq(HifPackage *pkg, const char *nevra)
 {
-    char *pkg_nevra = hy_package_get_nevra(pkg);
+    char *pkg_nevra = hif_package_get_nevra(pkg);
     ck_assert_str_eq(pkg_nevra, nevra);
     g_free(pkg_nevra);
 }
 
-HyPackage
+HifPackage *
 by_name(HifSack *sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
     GPtrArray *plist = hy_query_run(q);
     hy_query_free(q);
-    HyPackage pkg = hy_package_link(g_ptr_array_index(plist, 0));
+    HifPackage *pkg = g_object_ref(g_ptr_array_index(plist, 0));
     g_ptr_array_unref(plist);
 
     return pkg;
 }
 
-HyPackage
+HifPackage *
 by_name_repo(HifSack *sack, const char *name, const char *repo)
 {
     HyQuery q = hy_query_create(sack);
@@ -66,7 +66,7 @@ by_name_repo(HifSack *sack, const char *name, const char *repo)
     hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, repo);
     GPtrArray *plist = hy_query_run(q);
     hy_query_free(q);
-    HyPackage pkg = hy_package_link(g_ptr_array_index(plist, 0));
+    HifPackage *pkg = g_object_ref(g_ptr_array_index(plist, 0));
     g_ptr_array_unref(plist);
 
     return pkg;
@@ -76,9 +76,9 @@ void
 dump_packagelist(GPtrArray *plist, int free)
 {
     for (guint i = 0; i < plist->len; ++i) {
-        HyPackage pkg = g_ptr_array_index(plist, i);
-        Solvable *s = pool_id2solvable(package_pool(pkg), package_id(pkg));
-        char *nvra = hy_package_get_nevra(pkg);
+        HifPackage *pkg = g_ptr_array_index(plist, i);
+        Solvable *s = pool_id2solvable(hif_package_get_pool(pkg), hif_package_get_id(pkg));
+        char *nvra = hif_package_get_nevra(pkg);
         printf("\t%s @%s\n", nvra, s->repo->name);
         g_free(nvra);
     }

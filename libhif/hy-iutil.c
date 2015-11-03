@@ -356,7 +356,7 @@ running_kernel(HifSack *sack)
     hif_sack_make_provides_ready(sack);
     hy_query_filter(q, HY_PKG_FILE, HY_EQ, fn);
     hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-    HyPackageSet pset = hy_query_run_set(q);
+    HifPackageSet pset = hy_query_run_set(q);
     if (hy_packageset_count(pset) > 0)
         kernel_id = packageset_get_pkgid(pset, 0, -1);
     hy_packageset_free(pset);
@@ -426,7 +426,7 @@ void
 queue2plist(HifSack *sack, Queue *q, GPtrArray *plist)
 {
     for (int i = 0; i < q->count; ++i)
-        g_ptr_array_add(plist, package_create(sack, q->elements[i]));
+        g_ptr_array_add(plist, hif_package_new(sack, q->elements[i]));
 }
 
 /**

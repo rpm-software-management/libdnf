@@ -23,6 +23,7 @@
 
 #include <glib.h>
 
+#include "hy-package.h"
 #include "hy-types.h"
 
 G_BEGIN_DECLS
@@ -37,7 +38,7 @@ int hy_split_nevra(const char *nevra, char **name, long int *epoch,
                    char **version, char **release, char **arch);
 
 GPtrArray *hy_packagelist_create(void);
-int hy_packagelist_has(GPtrArray *plist, HyPackage pkg);
+int hy_packagelist_has(GPtrArray *plist, HifPackage *pkg);
 
 G_END_DECLS
 

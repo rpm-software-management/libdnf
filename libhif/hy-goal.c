@@ -340,7 +340,7 @@ list_results(HyGoal goal, Id type_filter1, Id type_filter2, GError **error)
         }
 
         if (type == type_filter1 || (type_filter2 && type == type_filter2))
-            g_ptr_array_add(plist, package_create(goal->sack, p));
+            g_ptr_array_add(plist, hif_package_new(goal->sack, p));
     }
     return plist;
 }
@@ -616,11 +616,11 @@ hy_goal_distupgrade_all(HyGoal goal)
 }
 
 int
-hy_goal_distupgrade(HyGoal goal, HyPackage new_pkg)
+hy_goal_distupgrade(HyGoal goal, HifPackage *new_pkg)
 {
     goal->actions |= HY_DISTUPGRADE;
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_DISTUPGRADE,
-        package_id(new_pkg));
+        hif_package_get_id(new_pkg));
     return 0;
 }
 
@@ -632,31 +632,31 @@ hy_goal_distupgrade_selector(HyGoal goal, HySelector sltr)
 }
 
 int
-hy_goal_downgrade_to(HyGoal goal, HyPackage new_pkg)
+hy_goal_downgrade_to(HyGoal goal, HifPackage *new_pkg)
 {
     goal->actions |= HY_DOWNGRADE;
     return hy_goal_install(goal, new_pkg);
 }
 
 int
-hy_goal_erase(HyGoal goal, HyPackage pkg)
+hy_goal_erase(HyGoal goal, HifPackage *pkg)
 {
     goal->actions |= HY_ERASE;
     return hy_goal_erase_flags(goal, pkg, 0);
 }
 
 int
-hy_goal_erase_flags(HyGoal goal, HyPackage pkg, int flags)
+hy_goal_erase_flags(HyGoal goal, HifPackage *pkg, int flags)
 {
 #ifndef NDEBUG
     Pool *pool = hif_sack_get_pool(goal->sack);
     assert(pool->installed &&
-           pool_id2solvable(pool, package_id(pkg))->repo == pool->installed);
+           pool_id2solvable(pool, hif_package_get_id(pkg))->repo == pool->installed);
 #endif
     int additional = erase_flags2libsolv(flags);
     goal->actions |= HY_ERASE;
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_ERASE|additional,
-                package_id(pkg));
+                hif_package_get_id(pkg));
     return 0;
 }
 
@@ -682,19 +682,19 @@ hy_goal_has_actions(HyGoal goal, int action)
 }
 
 int
-hy_goal_install(HyGoal goal, HyPackage new_pkg)
+hy_goal_install(HyGoal goal, HifPackage *new_pkg)
 {
     goal->actions |= HY_INSTALL;
-    queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_INSTALL, package_id(new_pkg));
+    queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_INSTALL, hif_package_get_id(new_pkg));
     return 0;
 }
 
 int
-hy_goal_install_optional(HyGoal goal, HyPackage new_pkg)
+hy_goal_install_optional(HyGoal goal, HifPackage *new_pkg)
 {
     goal->actions |= HY_INSTALL;
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_INSTALL|SOLVER_WEAK,
-                package_id(new_pkg));
+                hif_package_get_id(new_pkg));
     return 0;
 }
 
@@ -739,7 +739,7 @@ hy_goal_upgrade_all(HyGoal goal)
 }
 
 int
-hy_goal_upgrade_to(HyGoal goal, HyPackage new_pkg)
+hy_goal_upgrade_to(HyGoal goal, HifPackage *new_pkg)
 {
     goal->actions |= HY_UPGRADE;
     return hy_goal_upgrade_to_flags(goal, new_pkg, 0);
@@ -762,13 +762,13 @@ hy_goal_upgrade_selector(HyGoal goal, HySelector sltr)
 }
 
 int
-hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags)
+hy_goal_upgrade_to_flags(HyGoal goal, HifPackage *new_pkg, int flags)
 {
     int count = 0;
 
     if (flags & HY_CHECK_INSTALLED) {
         HyQuery q = hy_query_create(goal->sack);
-        const char *name = hy_package_get_name(new_pkg);
+        const char *name = hif_package_get_name(new_pkg);
         GPtrArray *installed;
 
         hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
@@ -786,10 +786,10 @@ hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags)
 }
 
 int
-hy_goal_userinstalled(HyGoal goal, HyPackage pkg)
+hy_goal_userinstalled(HyGoal goal, HifPackage *pkg)
 {
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_USERINSTALLED,
-                package_id(pkg));
+                hif_package_get_id(pkg));
     return 0;
 }
 
@@ -967,7 +967,7 @@ hy_goal_list_downgrades(HyGoal goal, GError **error)
 }
 
 GPtrArray *
-hy_goal_list_obsoleted_by_package(HyGoal goal, HyPackage pkg)
+hy_goal_list_obsoleted_by_package(HyGoal goal, HifPackage *pkg)
 {
     HifSack *sack = goal->sack;
     Transaction *trans = goal->trans;
@@ -977,7 +977,7 @@ hy_goal_list_obsoleted_by_package(HyGoal goal, HyPackage pkg)
     assert(trans);
     queue_init(&obsoletes);
 
-    transaction_all_obs_pkgs(trans, package_id(pkg), &obsoletes);
+    transaction_all_obs_pkgs(trans, hif_package_get_id(pkg), &obsoletes);
     queue2plist(sack, &obsoletes, plist);
 
     queue_free(&obsoletes);
@@ -985,11 +985,11 @@ hy_goal_list_obsoleted_by_package(HyGoal goal, HyPackage pkg)
 }
 
 int
-hy_goal_get_reason(HyGoal goal, HyPackage pkg)
+hy_goal_get_reason(HyGoal goal, HifPackage *pkg)
 {
     assert(goal->solv);
     Id info;
-    int reason = solver_describe_decision(goal->solv, package_id(pkg), &info);
+    int reason = solver_describe_decision(goal->solv, hif_package_get_id(pkg), &info);
 
     if ((reason == SOLVER_REASON_UNIT_RULE ||
          reason == SOLVER_REASON_RESOLVE_JOB) &&

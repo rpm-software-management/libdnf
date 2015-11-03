@@ -59,11 +59,11 @@ HyGoal hy_goal_clone(HyGoal goal);
 void hy_goal_free(HyGoal goal);
 
 int hy_goal_distupgrade_all(HyGoal goal);
-int hy_goal_distupgrade(HyGoal goal, HyPackage new_pkg);
+int hy_goal_distupgrade(HyGoal goal, HifPackage *new_pkg);
 int hy_goal_distupgrade_selector(HyGoal goal, HySelector);
-int hy_goal_downgrade_to(HyGoal goal, HyPackage new_pkg);
-int hy_goal_erase(HyGoal goal, HyPackage pkg);
-int hy_goal_erase_flags(HyGoal goal, HyPackage pkg, int flags);
+int hy_goal_downgrade_to(HyGoal goal, HifPackage *new_pkg);
+int hy_goal_erase(HyGoal goal, HifPackage *pkg);
+int hy_goal_erase_flags(HyGoal goal, HifPackage *pkg, int flags);
 
 /**
  * Erase packages specified by the Selector.
@@ -72,16 +72,16 @@ int hy_goal_erase_flags(HyGoal goal, HyPackage pkg, int flags);
  */
 int hy_goal_erase_selector(HyGoal goal, HySelector sltr);
 int hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags);
-int hy_goal_install(HyGoal goal, HyPackage new_pkg);
-int hy_goal_install_optional(HyGoal goal, HyPackage new_pkg);
+int hy_goal_install(HyGoal goal, HifPackage *new_pkg);
+int hy_goal_install_optional(HyGoal goal, HifPackage *new_pkg);
 gboolean hy_goal_install_selector(HyGoal goal, HySelector sltr, GError **error);
 gboolean hy_goal_install_selector_optional(HyGoal goal, HySelector sltr, GError **error);
 int hy_goal_upgrade_all(HyGoal goal);
-int hy_goal_upgrade_to(HyGoal goal, HyPackage new_pkg);
-int hy_goal_upgrade_to_flags(HyGoal goal, HyPackage new_pkg, int flags);
+int hy_goal_upgrade_to(HyGoal goal, HifPackage *new_pkg);
+int hy_goal_upgrade_to_flags(HyGoal goal, HifPackage *new_pkg, int flags);
 int hy_goal_upgrade_selector(HyGoal goal, HySelector sltr);
 int hy_goal_upgrade_to_selector(HyGoal goal, HySelector sltr);
-int hy_goal_userinstalled(HyGoal goal, HyPackage pkg);
+int hy_goal_userinstalled(HyGoal goal, HifPackage *pkg);
 
 /* introspecting the requests */
 int hy_goal_has_actions(HyGoal goal, int action);
@@ -109,8 +109,8 @@ GPtrArray *hy_goal_list_reinstalls(HyGoal goal, GError **error);
 GPtrArray *hy_goal_list_unneeded(HyGoal goal, GError **error);
 GPtrArray *hy_goal_list_upgrades(HyGoal goal, GError **error);
 GPtrArray *hy_goal_list_downgrades(HyGoal goal, GError **error);
-GPtrArray *hy_goal_list_obsoleted_by_package(HyGoal goal, HyPackage pkg);
-int hy_goal_get_reason(HyGoal goal, HyPackage pkg);
+GPtrArray *hy_goal_list_obsoleted_by_package(HyGoal goal, HifPackage *pkg);
+int hy_goal_get_reason(HyGoal goal, HifPackage *pkg);
 
 G_END_DECLS
 

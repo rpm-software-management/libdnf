@@ -227,7 +227,7 @@ hif_state_test_action_changed_cb(HifState *state, HifStateAction action, gpointe
 
 static void
 hif_state_test_package_progress_changed_cb(HifState *state,
-                        const gchar *package_id,
+                        const gchar *hif_package_get_id,
                         HifStateAction action,
                         guint percentage,
                         gpointer data)

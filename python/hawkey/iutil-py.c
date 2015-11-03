@@ -124,7 +124,7 @@ advisoryreflist_to_pylist(const GPtrArray *advisoryreflist, PyObject *sack)
 PyObject *
 packagelist_to_pylist(GPtrArray *plist, PyObject *sack)
 {
-    HyPackage cpkg;
+    HifPackage *cpkg;
     PyObject *list;
     PyObject *retval;
 
@@ -136,7 +136,7 @@ packagelist_to_pylist(GPtrArray *plist, PyObject *sack)
     int i;
     for (i = 0; i < plist->len; i++) {
         cpkg = g_ptr_array_index (plist, i);
-        PyObject *package = new_package(sack, package_id(cpkg));
+        PyObject *package = new_package(sack, hif_package_get_id(cpkg));
         if (package == NULL) {
             retval = NULL;
             break;
@@ -157,7 +157,7 @@ packagelist_to_pylist(GPtrArray *plist, PyObject *sack)
 }
 
 PyObject *
-packageset_to_pylist(HyPackageSet pset, PyObject *sack)
+packageset_to_pylist(HifPackageSet pset, PyObject *sack)
 {
     PyObject *list = PyList_New(0);
     if (list == NULL)
@@ -183,23 +183,23 @@ packageset_to_pylist(HyPackageSet pset, PyObject *sack)
     return NULL;
 }
 
-HyPackageSet
+HifPackageSet
 pyseq_to_packageset(PyObject *obj, HifSack *sack)
 {
     PyObject *sequence = PySequence_Fast(obj, "Expected a sequence.");
     if (sequence == NULL)
         return NULL;
-    HyPackageSet pset = hy_packageset_create(sack);
+    HifPackageSet pset = hy_packageset_create(sack);
 
     const unsigned count = PySequence_Size(sequence);
     for (int i = 0; i < count; ++i) {
         PyObject *item = PySequence_Fast_GET_ITEM(sequence, i);
         if (item == NULL)
             goto fail;
-        HyPackage pkg = packageFromPyObject(item);
+        HifPackage *pkg = packageFromPyObject(item);
         if (pkg == NULL)
             goto fail;
-        hy_packageset_add(pset, package_clone(pkg));
+        hy_packageset_add(pset, hif_package_clone(pkg));
     }
 
     Py_DECREF(sequence);

@@ -304,12 +304,12 @@ static PyObject *
 get_running_kernel(_SackObject *self, PyObject *unused)
 {
     HifSack *sack = self->sack;
-    HyPackage cpkg = hif_sack_get_running_kernel(sack);
+    HifPackage *cpkg = hif_sack_get_running_kernel(sack);
 
     if (cpkg == NULL)
         Py_RETURN_NONE;
-    PyObject *pkg = new_package((PyObject*)self, package_id(cpkg));
-    hy_package_free(cpkg);
+    PyObject *pkg = new_package((PyObject*)self, hif_package_get_id(cpkg));
+    g_object_unref(cpkg);
     return pkg;
 }
 
@@ -333,7 +333,7 @@ create_package(_SackObject *self, PyObject *solvable_id)
 static PyObject *
 add_cmdline_package(_SackObject *self, PyObject *fn_obj)
 {
-    HyPackage cpkg;
+    HifPackage *cpkg;
     PyObject *pkg;
     PyObject *tmp_py_str = NULL;
     const char *fn = pycomp_get_string(fn_obj, &tmp_py_str);
@@ -348,8 +348,8 @@ add_cmdline_package(_SackObject *self, PyObject *fn_obj)
         PyErr_Format(PyExc_IOError, "Can not load RPM file: %s.", fn);
         return NULL;
     }
-    pkg = new_package((PyObject*)self, package_id(cpkg));
-    hy_package_free(cpkg);
+    pkg = new_package((PyObject*)self, hif_package_get_id(cpkg));
+    g_object_unref(cpkg);
     return pkg;
 }
 
@@ -357,7 +357,7 @@ static PyObject *
 add_excludes(_SackObject *self, PyObject *seq)
 {
     HifSack *sack = self->sack;
-    HyPackageSet pset = pyseq_to_packageset(seq, sack);
+    HifPackageSet pset = pyseq_to_packageset(seq, sack);
     if (pset == NULL)
         return NULL;
     hif_sack_add_excludes(sack, pset);
@@ -369,7 +369,7 @@ static PyObject *
 add_includes(_SackObject *self, PyObject *seq)
 {
     HifSack *sack = self->sack;
-    HyPackageSet pset = pyseq_to_packageset(seq, sack);
+    HifPackageSet pset = pyseq_to_packageset(seq, sack);
     if (pset == NULL)
         return NULL;
     hif_sack_add_includes(sack, pset);
