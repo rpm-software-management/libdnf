@@ -71,6 +71,7 @@ struct _HifTransactionPrivate
 	GPtrArray		*remove_helper;
 	GPtrArray		*install;
 	GPtrArray		*pkgs_to_download;
+	GHashTable		*erased_by_package_hash;
 	guint64			 flags;
 };
 
@@ -101,6 +102,8 @@ hif_transaction_finalize (GObject *object)
 		g_ptr_array_unref (priv->remove);
 	if (priv->remove_helper != NULL)
 		g_ptr_array_unref (priv->remove_helper);
+	if (priv->erased_by_package_hash != NULL)
+		g_hash_table_unref (priv->erased_by_package_hash);
 	if (priv->context != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (priv->context),
 		                              (void **) &priv->context);
@@ -888,6 +891,48 @@ hif_transaction_delete_packages (HifTransaction *transaction,
 	return TRUE;
 }
 
+static gchar *
+hif_transaction_get_propagated_reason (HifTransaction *transaction,
+                                       HyGoal goal,
+                                       HyPackage pkg)
+{
+	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
+
+	/* kernel is always marked as "user" */
+	if (hif_package_is_installonly (pkg))
+		return g_strdup ("user");
+
+	/* for updates, propagate updated package's reason from existing yumdb entry */
+	if (hif_package_get_action (pkg) == HIF_STATE_ACTION_DOWNGRADE ||
+	    hif_package_get_action (pkg) == HIF_STATE_ACTION_REINSTALL ||
+	    hif_package_get_action (pkg) == HIF_STATE_ACTION_UPDATE) {
+		HyPackage erased_package;
+
+		erased_package = g_hash_table_lookup (priv->erased_by_package_hash, hif_package_get_id (pkg));
+		if (erased_package != NULL) {
+			gchar *reason;
+
+			reason = hif_db_get_string (priv->db, erased_package, "reason", NULL);
+			if (reason != NULL) {
+				g_debug ("propagating yumdb reason %s from %s to %s",
+				         reason,
+				         hif_package_get_id (erased_package),
+				         hif_package_get_id (pkg));
+				return reason;
+			}
+		}
+		return g_strdup ("dep");
+	}
+
+	/* for non-upgrades, packages explicitly passed to hawkey for
+	 * installation get "user" and dependencies it adds on its own get
+	 * "dep" */
+	if (hy_goal_get_reason (goal, pkg) == HY_REASON_USER)
+		return g_strdup ("user");
+	else
+		return g_strdup ("dep");
+}
+
 /**
  * hif_transaction_write_yumdb_install_item:
  *
@@ -896,6 +941,7 @@ hif_transaction_delete_packages (HifTransaction *transaction,
  **/
 static gboolean
 hif_transaction_write_yumdb_install_item (HifTransaction *transaction,
+					  HyGoal goal,
 					  HyPackage pkg,
 					  HifState *state,
 					  GError **error)
@@ -903,6 +949,7 @@ hif_transaction_write_yumdb_install_item (HifTransaction *transaction,
 	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
 	const gchar *tmp;
 	_cleanup_free_ gchar *euid = NULL;
+	_cleanup_free_ gchar *reason = NULL;
 
 	/* should be set by hif_transaction_ts_progress_cb () */
 	if (hif_package_get_pkgid (pkg) == NULL) {
@@ -928,13 +975,9 @@ hif_transaction_write_yumdb_install_item (HifTransaction *transaction,
 		return FALSE;
 
 	/* set the correct reason */
-	if (hif_package_get_user_action (pkg)) {
-		if (!hif_db_set_string (priv->db, pkg, "reason", "user", error))
-			return FALSE;
-	} else {
-		if (!hif_db_set_string (priv->db, pkg, "reason", "dep", error))
-			return FALSE;
-	}
+	reason = hif_transaction_get_propagated_reason (transaction, goal, pkg);
+	if (!hif_db_set_string (priv->db, pkg, "reason", reason, error))
+		return FALSE;
 
 	/* set the correct release */
 	tmp = hif_context_get_release_ver (priv->context);
@@ -959,6 +1002,7 @@ _hif_state_get_step_multiple_pair (guint first, guint second)
  **/
 static gboolean
 hif_transaction_write_yumdb (HifTransaction *transaction,
+			     HyGoal goal,
 			     HifState *state,
 			     GError **error)
 {
@@ -1011,6 +1055,7 @@ hif_transaction_write_yumdb (HifTransaction *transaction,
 		pkg = g_ptr_array_index (priv->install, i);
 		state_loop = hif_state_get_child (state_local);
 		ret = hif_transaction_write_yumdb_install_item (transaction,
+								goal,
 								pkg,
 								state_loop,
 								error);
@@ -1145,6 +1190,10 @@ hif_transaction_reset (HifTransaction *transaction)
 		g_ptr_array_unref (priv->remove_helper);
 		priv->remove_helper = NULL;
 	}
+	if (priv->erased_by_package_hash != NULL) {
+		g_hash_table_unref (priv->erased_by_package_hash);
+		priv->erased_by_package_hash = NULL;
+	}
 }
 
 /**
@@ -1179,6 +1228,7 @@ hif_transaction_commit (HifTransaction *transaction,
 	guint i;
 	guint j;
 	HifState *state_local;
+	HyPackageList all_obsoleted;
 	HyPackageList pkglist;
 	HyPackage pkg;
 	HyPackage pkg_tmp;
@@ -1329,6 +1379,29 @@ hif_transaction_commit (HifTransaction *transaction,
 		hy_packagelist_free (pkglist);
 	}
 
+	/* map updated packages to their previous versions */
+	priv->erased_by_package_hash = g_hash_table_new_full (g_str_hash, g_str_equal,
+	                                                      g_free, (GDestroyNotify) hy_package_free);
+	all_obsoleted = hy_goal_list_obsoleted (goal);
+	for (i = 0; i < priv->install->len; i++) {
+		pkg = g_ptr_array_index (priv->install, i);
+		if (hif_package_get_action (pkg) != HIF_STATE_ACTION_UPDATE &&
+		    hif_package_get_action (pkg) != HIF_STATE_ACTION_DOWNGRADE &&
+		    hif_package_get_action (pkg) != HIF_STATE_ACTION_REINSTALL)
+			continue;
+
+		pkglist = hy_goal_list_obsoleted_by_package (goal, pkg);
+		FOR_PACKAGELIST(pkg_tmp, pkglist, j) {
+			if (!hy_packagelist_has (all_obsoleted, pkg_tmp)) {
+				g_hash_table_insert (priv->erased_by_package_hash,
+				                     g_strdup (hif_package_get_id (pkg)),
+				                     hy_package_link (pkg_tmp));
+			}
+		}
+		hy_packagelist_free (pkglist);
+	}
+	hy_packagelist_free (all_obsoleted);
+
 	/* this section done */
 	ret = hif_state_done (state, error);
 	if (!ret)
@@ -1415,6 +1488,7 @@ hif_transaction_commit (HifTransaction *transaction,
 	/* write to the yumDB */
 	state_local = hif_state_get_child (state);
 	ret = hif_transaction_write_yumdb (transaction,
+					   goal,
 					   state_local,
 					   error);
 	if (!ret)
