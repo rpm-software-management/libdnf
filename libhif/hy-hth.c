@@ -172,7 +172,7 @@ static void obsoletes(HifSack *sack)
 
     q = hy_query_create(sack);
     hy_query_filter_package_in(q, HY_PKG_OBSOLETES, HY_EQ, installed_pkgs);
-    hy_packageset_free(installed_pkgs);
+    g_object_unref(installed_pkgs);
     execute_print(sack, q, 1);
     hy_query_free(q);
 }

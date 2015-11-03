@@ -157,16 +157,16 @@ packagelist_to_pylist(GPtrArray *plist, PyObject *sack)
 }
 
 PyObject *
-packageset_to_pylist(HifPackageSet pset, PyObject *sack)
+packageset_to_pylist(HifPackageSet *pset, PyObject *sack)
 {
     PyObject *list = PyList_New(0);
     if (list == NULL)
         return NULL;
 
-    const int count = hy_packageset_count(pset);
+    const int count = hif_packageset_count(pset);
     Id id = -1;
     for (int i = 0; i < count; ++i) {
-        id = packageset_get_pkgid(pset, i, id);
+        id = hif_packageset_get_pkgid(pset, i, id);
         PyObject *package = new_package(sack, id);
         if (package == NULL)
             goto fail;
@@ -183,13 +183,13 @@ packageset_to_pylist(HifPackageSet pset, PyObject *sack)
     return NULL;
 }
 
-HifPackageSet
+HifPackageSet *
 pyseq_to_packageset(PyObject *obj, HifSack *sack)
 {
     PyObject *sequence = PySequence_Fast(obj, "Expected a sequence.");
     if (sequence == NULL)
         return NULL;
-    HifPackageSet pset = hy_packageset_create(sack);
+    HifPackageSet *pset = hif_packageset_new(sack);
 
     const unsigned count = PySequence_Size(sequence);
     for (int i = 0; i < count; ++i) {
@@ -199,14 +199,14 @@ pyseq_to_packageset(PyObject *obj, HifSack *sack)
         HifPackage *pkg = packageFromPyObject(item);
         if (pkg == NULL)
             goto fail;
-        hy_packageset_add(pset, pkg);
+        hif_packageset_add(pset, pkg);
         g_object_unref(pkg);
     }
 
     Py_DECREF(sequence);
     return pset;
  fail:
-    hy_packageset_free(pset);
+    g_object_unref(pset);
     Py_DECREF(sequence);
     return NULL;
 }

@@ -242,7 +242,7 @@ filter_reinit(struct _Filter *f, int nmatches)
     for (int m = 0; m < f->nmatches; ++m)
         switch (f->match_type) {
         case _HY_PKG:
-            hy_packageset_free(f->matches[m].pset);
+            g_object_unref(f->matches[m].pset);
             break;
         case _HY_STR:
             g_free(f->matches[m].str);
@@ -311,7 +311,7 @@ filter_pkg(HyQuery q, struct _Filter *f, Map *m)
     assert(f->match_type == _HY_PKG);
 
     map_free(m);
-    map_init_clone(m, packageset_get_map(f->matches[0].pset));
+    map_init_clone(m, hif_packageset_get_map(f->matches[0].pset));
 }
 
 static void
@@ -480,7 +480,7 @@ filter_obsoletes(HyQuery q, struct _Filter *f, Map *m)
 
     assert(f->match_type == _HY_PKG);
     assert(f->nmatches == 1);
-    target = packageset_get_map(f->matches[0].pset);
+    target = hif_packageset_get_map(f->matches[0].pset);
     hif_sack_make_provides_ready(q->sack);
     for (Id p = 1; p < pool->nsolvables; ++p) {
         if (!MAPTST(q->result, p))
@@ -951,7 +951,7 @@ hy_query_clone(HyQuery q)
         filterp->match_type = q->filters[i].match_type;
         for (int j = 0; j < q->filters[i].nmatches; ++j) {
             char *str_copy;
-            HifPackageSet pset;
+            HifPackageSet *pset;
             HyReldep reldep;
 
             switch (filterp->match_type) {
@@ -960,7 +960,7 @@ hy_query_clone(HyQuery q)
                 break;
             case _HY_PKG:
                 pset = q->filters[i].matches[j].pset;
-                filterp->matches[j].pset = hy_packageset_clone(pset);
+                filterp->matches[j].pset = hif_packageset_clone(pset);
                 break;
             case _HY_RELDEP:
                 reldep = q->filters[i].matches[j].reldep;
@@ -1092,7 +1092,7 @@ hy_query_filter_num_in(HyQuery q, int keyname, int cmp_type, int nmatches,
 
 int
 hy_query_filter_package_in(HyQuery q, int keyname, int cmp_type,
-                           const HifPackageSet pset)
+                           const HifPackageSet *pset)
 {
     if (!valid_filter_pkg(keyname, cmp_type))
         return HIF_ERROR_BAD_QUERY;
@@ -1102,7 +1102,7 @@ hy_query_filter_package_in(HyQuery q, int keyname, int cmp_type,
     filterp->cmp_type = cmp_type;
     filterp->keyname = keyname;
     filterp->match_type = _HY_PKG;
-    filterp->matches[0].pset = hy_packageset_clone(pset);
+    filterp->matches[0].pset = hif_packageset_clone(pset);
     return 0;
 }
 
@@ -1268,9 +1268,9 @@ hy_query_run(HyQuery q)
     return plist;
 }
 
-HifPackageSet
+HifPackageSet *
 hy_query_run_set(HyQuery q)
 {
     hy_query_apply(q);
-    return packageset_from_bitmap(q->sack, q->result);
+    return hif_packageset_from_bitmap(q->sack, q->result);
 }

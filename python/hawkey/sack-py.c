@@ -357,11 +357,11 @@ static PyObject *
 add_excludes(_SackObject *self, PyObject *seq)
 {
     HifSack *sack = self->sack;
-    HifPackageSet pset = pyseq_to_packageset(seq, sack);
+    HifPackageSet *pset = pyseq_to_packageset(seq, sack);
     if (pset == NULL)
         return NULL;
     hif_sack_add_excludes(sack, pset);
-    hy_packageset_free(pset);
+    g_object_unref(pset);
     Py_RETURN_NONE;
 }
 
@@ -369,11 +369,11 @@ static PyObject *
 add_includes(_SackObject *self, PyObject *seq)
 {
     HifSack *sack = self->sack;
-    HifPackageSet pset = pyseq_to_packageset(seq, sack);
+    HifPackageSet *pset = pyseq_to_packageset(seq, sack);
     if (pset == NULL)
         return NULL;
     hif_sack_add_includes(sack, pset);
-    hy_packageset_free(pset);
+    g_object_unref(pset);
     Py_RETURN_NONE;
 }
 

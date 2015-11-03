@@ -772,9 +772,9 @@ START_TEST(test_goal_upgrade_all_excludes)
     HyQuery q = hy_query_create_flags(sack, HY_IGNORE_EXCLUDES);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "pilchard");
 
-    HifPackageSet pset = hy_query_run_set(q);
+    HifPackageSet *pset = hy_query_run_set(q);
     hif_sack_add_excludes(sack, pset);
-    hy_packageset_free(pset);
+    g_object_unref(pset);
     hy_query_free(q);
 
     HyGoal goal = hy_goal_create(sack);
@@ -810,9 +810,9 @@ START_TEST(test_goal_describe_problem_excludes)
 
     HyQuery q = hy_query_create_flags(sack, HY_IGNORE_EXCLUDES);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "semolina");
-    HifPackageSet pset = hy_query_run_set(q);
+    HifPackageSet *pset = hy_query_run_set(q);
     hif_sack_add_excludes(sack, pset);
-    hy_packageset_free(pset);
+    g_object_unref(pset);
     hy_query_free(q);
 
     HyGoal goal = hy_goal_create(sack);
@@ -856,9 +856,9 @@ START_TEST(test_goal_distupgrade_all_excludes)
 {
     HyQuery q = hy_query_create_flags(test_globals.sack, HY_IGNORE_EXCLUDES);
     hy_query_filter_provides(q, HY_GT|HY_EQ, "flying", "0");
-    HifPackageSet pset = hy_query_run_set(q);
+    HifPackageSet *pset = hy_query_run_set(q);
     hif_sack_add_excludes(test_globals.sack, pset);
-    hy_packageset_free(pset);
+    g_object_unref(pset);
     hy_query_free(q);
 
     HyGoal goal = hy_goal_create(test_globals.sack);

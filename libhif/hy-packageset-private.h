@@ -28,9 +28,8 @@
 // hawkey
 #include "hy-packageset.h"
 
-unsigned map_count(Map *m);
-HifPackageSet packageset_from_bitmap(HifSack *sack, Map *m);
-Map *packageset_get_map(HifPackageSet pset);
-Id packageset_get_pkgid(HifPackageSet pset, int index, Id previous);
+HifPackageSet   *hif_packageset_from_bitmap    (HifSack *sack, Map *m);
+Map             *hif_packageset_get_map        (HifPackageSet *pset);
+Id               hif_packageset_get_pkgid      (HifPackageSet *pset, int index, Id previous);
 
 #endif // HY_PACKAGESET_INTERNAL_H

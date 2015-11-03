@@ -1144,12 +1144,12 @@ hif_sack_count(HifSack *sack)
  * Since: 0.7.0
  */
 void
-hif_sack_add_excludes(HifSack *sack, HifPackageSet pset)
+hif_sack_add_excludes(HifSack *sack, HifPackageSet *pset)
 {
     HifSackPrivate *priv = GET_PRIVATE(sack);
     Pool *pool = hif_sack_get_pool(sack);
     Map *excl = priv->pkg_excludes;
-    Map *nexcl = packageset_get_map(pset);
+    Map *nexcl = hif_packageset_get_map(pset);
 
     if (excl == NULL) {
         excl = g_malloc0(sizeof(Map));
@@ -1171,12 +1171,12 @@ hif_sack_add_excludes(HifSack *sack, HifPackageSet pset)
  * Since: 0.7.0
  */
 void
-hif_sack_add_includes(HifSack *sack, HifPackageSet pset)
+hif_sack_add_includes(HifSack *sack, HifPackageSet *pset)
 {
     HifSackPrivate *priv = GET_PRIVATE(sack);
     Pool *pool = hif_sack_get_pool(sack);
     Map *incl = priv->pkg_includes;
-    Map *nincl = packageset_get_map(pset);
+    Map *nincl = hif_packageset_get_map(pset);
 
     if (incl == NULL) {
         incl = g_malloc0(sizeof(Map));
@@ -1198,13 +1198,13 @@ hif_sack_add_includes(HifSack *sack, HifPackageSet pset)
  * Since: 0.7.0
  */
 void
-hif_sack_set_excludes(HifSack *sack, HifPackageSet pset)
+hif_sack_set_excludes(HifSack *sack, HifPackageSet *pset)
 {
     HifSackPrivate *priv = GET_PRIVATE(sack);
     priv->pkg_excludes = free_map_fully(priv->pkg_excludes);
 
     if (pset) {
-        Map *nexcl = packageset_get_map(pset);
+        Map *nexcl = hif_packageset_get_map(pset);
 
         priv->pkg_excludes = g_malloc0(sizeof(Map));
         map_init_clone(priv->pkg_excludes, nexcl);
@@ -1222,13 +1222,13 @@ hif_sack_set_excludes(HifSack *sack, HifPackageSet pset)
  * Since: 0.7.0
  */
 void
-hif_sack_set_includes(HifSack *sack, HifPackageSet pset)
+hif_sack_set_includes(HifSack *sack, HifPackageSet *pset)
 {
     HifSackPrivate *priv = GET_PRIVATE(sack);
     priv->pkg_includes = free_map_fully(priv->pkg_includes);
 
     if (pset) {
-        Map *nincl = packageset_get_map(pset);
+        Map *nincl = hif_packageset_get_map(pset);
         priv->pkg_includes = g_malloc0(sizeof(Map));
         map_init_clone(priv->pkg_includes, nincl);
     }
@@ -1658,7 +1658,7 @@ process_excludes(HifSack *sack, HifRepo *repo)
     for (iter = excludes; *iter; iter++) {
         const char *name = *iter;
         HyQuery query;
-        HifPackageSet pkgset;
+        HifPackageSet *pkgset;
 
         query = hy_query_create(sack);
         hy_query_filter_latest_per_arch(query, TRUE);
@@ -1670,7 +1670,7 @@ process_excludes(HifSack *sack, HifRepo *repo)
         hif_sack_add_excludes(sack, pkgset);
 
         hy_query_free(query);
-        hy_packageset_free(pkgset);
+        g_object_unref(pkgset);
     }
 }
 
