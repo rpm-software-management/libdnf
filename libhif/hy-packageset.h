@@ -27,14 +27,15 @@ G_BEGIN_DECLS
 
 #include "hif-sack.h"
 #include "hy-types.h"
+#include "hy-package.h"
 
-HyPackageSet hy_packageset_create(HifSack *sack);
-HyPackageSet hy_packageset_clone(HyPackageSet pset);
-void hy_packageset_free(HyPackageSet pset);
-void hy_packageset_add(HyPackageSet pset, HyPackage pkg);
-unsigned hy_packageset_count(HyPackageSet pset);
-HyPackage hy_packageset_get_clone(HyPackageSet pset, int index);
-int hy_packageset_has(HyPackageSet pset, HyPackage pkg);
+HifPackageSet hy_packageset_create(HifSack *sack);
+HifPackageSet hy_packageset_clone(HifPackageSet pset);
+void hy_packageset_free(HifPackageSet pset);
+void hy_packageset_add(HifPackageSet pset, HifPackage *pkg);
+unsigned hy_packageset_count(HifPackageSet pset);
+HifPackage *hy_packageset_get_clone(HifPackageSet pset, int index);
+int hy_packageset_has(HifPackageSet pset, HifPackage *pkg);
 
 G_END_DECLS
 

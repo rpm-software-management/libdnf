@@ -86,7 +86,7 @@ struct _HifStateClass
                                                          HifStateAction  action,
                                                          const gchar    *action_hint);
         void            (* package_progress_changed)    (HifState       *state,
-                                                         const gchar    *package_id,
+                                                         const gchar    *hif_package_get_id,
                                                          HifStateAction  action,
                                                          guint           percentage);
         /*< private >*/
@@ -137,7 +137,7 @@ gboolean         hif_state_set_steps_real               (HifState               
 gboolean         hif_state_set_percentage               (HifState               *state,
                                                          guint                   percentage);
 void             hif_state_set_package_progress         (HifState               *state,
-                                                         const gchar            *package_id,
+                                                         const gchar            *hif_package_get_id,
                                                          HifStateAction          action,
                                                          guint                   percentage);
 

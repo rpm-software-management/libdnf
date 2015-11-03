@@ -112,7 +112,7 @@ hif_db_create_dir(const gchar *dir, GError **error)
  * hif_db_get_dir_for_package:
  **/
 static gchar *
-hif_db_get_dir_for_package(HifDb *db, HyPackage package)
+hif_db_get_dir_for_package(HifDb *db, HifPackage *package)
 {
     const gchar *pkgid;
     HifDbPrivate *priv = GET_PRIVATE(db);
@@ -134,12 +134,12 @@ hif_db_get_dir_for_package(HifDb *db, HyPackage package)
     return g_strdup_printf("%s%s/%c/%s-%s-%s-%s-%s",
                           instroot,
                           yumdb_dir,
-                          hy_package_get_name(package)[0],
+                          hif_package_get_name(package)[0],
                           pkgid,
-                          hy_package_get_name(package),
-                          hy_package_get_version(package),
-                          hy_package_get_release(package),
-                          hy_package_get_arch(package));
+                          hif_package_get_name(package),
+                          hif_package_get_version(package),
+                          hif_package_get_release(package),
+                          hif_package_get_arch(package));
 }
 
 /**
@@ -156,7 +156,7 @@ hif_db_get_dir_for_package(HifDb *db, HyPackage package)
  * Since: 0.1.0
  **/
 gchar *
-hif_db_get_string(HifDb *db, HyPackage package, const gchar *key, GError **error)
+hif_db_get_string(HifDb *db, HifPackage *package, const gchar *key, GError **error)
 {
     gchar *value = NULL;
     g_autofree gchar *filename = NULL;
@@ -174,7 +174,7 @@ hif_db_get_string(HifDb *db, HyPackage package, const gchar *key, GError **error
                     HIF_ERROR,
                     HIF_ERROR_FAILED,
                     "cannot create index for %s",
-                    hif_package_get_id(package));
+                    hif_package_get_package_id(package));
         return NULL;
     }
 
@@ -212,7 +212,7 @@ hif_db_get_string(HifDb *db, HyPackage package, const gchar *key, GError **error
  **/
 gboolean
 hif_db_set_string(HifDb *db,
-           HyPackage package,
+           HifPackage *package,
            const gchar *key,
            const gchar *value,
            GError **error)
@@ -237,7 +237,7 @@ hif_db_set_string(HifDb *db,
                     HIF_ERROR,
                     HIF_ERROR_FAILED,
                     "cannot create index for %s",
-                    hif_package_get_id(package));
+                    hif_package_get_package_id(package));
         return FALSE;
     }
     if (!hif_db_create_dir(index_dir, error))
@@ -264,7 +264,7 @@ hif_db_set_string(HifDb *db,
  **/
 gboolean
 hif_db_remove(HifDb *db,
-           HyPackage package,
+           HifPackage *package,
            const gchar *key,
            GError **error)
 {
@@ -288,7 +288,7 @@ hif_db_remove(HifDb *db,
                     HIF_ERROR,
                     HIF_ERROR_FAILED,
                     "cannot create index for %s",
-                    hif_package_get_id(package));
+                    hif_package_get_package_id(package));
         return FALSE;
     }
 
@@ -312,7 +312,7 @@ hif_db_remove(HifDb *db,
  * Since: 0.1.0
  **/
 gboolean
-hif_db_remove_all(HifDb *db, HyPackage package, GError **error)
+hif_db_remove_all(HifDb *db, HifPackage *package, GError **error)
 {
     HifDbPrivate *priv = GET_PRIVATE(db);
     const gchar *filename;
@@ -334,7 +334,7 @@ hif_db_remove_all(HifDb *db, HyPackage package, GError **error)
                     HIF_ERROR,
                     HIF_ERROR_FAILED,
                     "cannot create index for %s",
-                    hif_package_get_id(package));
+                    hif_package_get_package_id(package));
         return FALSE;
     }
     if (!g_file_test(index_dir, G_FILE_TEST_IS_DIR)) {
@@ -378,7 +378,7 @@ hif_db_remove_all(HifDb *db, HyPackage package, GError **error)
  * Since: 0.1.0
  */
 void
-hif_db_ensure_origin_pkg(HifDb *db, HyPackage pkg)
+hif_db_ensure_origin_pkg(HifDb *db, HifPackage *pkg)
 {
     g_autoptr(GError) error = NULL;
     g_autofree gchar *tmp = NULL;
@@ -386,14 +386,14 @@ hif_db_ensure_origin_pkg(HifDb *db, HyPackage pkg)
     /* already set */
     if (hif_package_get_origin(pkg) != NULL)
         return;
-    if (!hy_package_installed(pkg))
+    if (!hif_package_installed(pkg))
         return;
 
     /* set from the database if available */
     tmp = hif_db_get_string(db, pkg, "from_repo", &error);
     if (tmp == NULL) {
         g_debug("no origin for %s: %s",
-             hif_package_get_id(pkg),
+             hif_package_get_package_id(pkg),
              error->message);
     } else {
         hif_package_set_origin(pkg, tmp);
@@ -412,7 +412,7 @@ hif_db_ensure_origin_pkg(HifDb *db, HyPackage pkg)
 void
 hif_db_ensure_origin_pkglist(HifDb *db, GPtrArray *pkglist)
 {
-    HyPackage pkg;
+    HifPackage *pkg;
     guint i;
     for (i = 0; i < pkglist->len; i++) {
         pkg = g_ptr_array_index (pkglist, i);

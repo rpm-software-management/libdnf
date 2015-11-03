@@ -23,10 +23,10 @@
 #include "libhif/hy-util.h"
 #include "test_suites.h"
 
-static HyPackage
+static HifPackage *
 mock_package(Id id)
 {
-    return package_create(NULL, id);
+    return hif_package_new(NULL, id);
 }
 
 static GPtrArray *fixture_plist;
@@ -48,14 +48,14 @@ free_fixture(void)
 
 START_TEST(test_has)
 {
-    HyPackage pkg1 = mock_package(10);
-    HyPackage pkg2 = mock_package(1);
+    HifPackage *pkg1 = mock_package(10);
+    HifPackage *pkg2 = mock_package(1);
 
     fail_unless(hy_packagelist_has(fixture_plist, pkg1));
     fail_if(hy_packagelist_has(fixture_plist, pkg2));
 
-    hy_package_free(pkg1);
-    hy_package_free(pkg2);
+    g_object_unref(pkg1);
+    g_object_unref(pkg2);
 }
 END_TEST
 

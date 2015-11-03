@@ -928,17 +928,17 @@ hif_sack_get_cache_dir(HifSack *sack)
  *
  * Gets the running kernel.
  *
- * Returns: a #HyPackage, or %NULL
+ * Returns: a #HifPackage, or %NULL
  *
  * Since: 0.7.0
  */
-HyPackage
+HifPackage *
 hif_sack_get_running_kernel(HifSack *sack)
 {
     Id id = hif_sack_running_kernel(sack);
     if (id < 0)
         return NULL;
-    return package_create(sack, id);
+    return hif_package_new(sack, id);
 }
 
 /**
@@ -1090,11 +1090,11 @@ hif_sack_setup_cmdline_repo(HifSack *sack)
  *
  * Adds the given .rpm file to the command line repo.
  *
- * Returns: a #HyPackage, or %NULL
+ * Returns: a #HifPackage, or %NULL
  *
  * Since: 0.7.0
  */
-HyPackage
+HifPackage *
 hif_sack_add_cmdline_package(HifSack *sack, const char *fn)
 {
     HifSackPrivate *priv = GET_PRIVATE(sack);
@@ -1109,7 +1109,7 @@ hif_sack_add_cmdline_package(HifSack *sack, const char *fn)
     }
     p = repo_add_rpm(repo, fn, REPO_REUSE_REPODATA|REPO_NO_INTERNALIZE);
     priv->provides_ready = 0;    /* triggers internalizing later */
-    return package_create(sack, p);
+    return hif_package_new(sack, p);
 }
 
 /**
@@ -1137,14 +1137,14 @@ hif_sack_count(HifSack *sack)
 /**
  * hif_sack_add_excludes:
  * @sack: a #HifSack instance.
- * @pset: a #HyPackageSet or %NULL.
+ * @pset: a #HifPackageSet or %NULL.
  *
  * Adds excludes to the sack.
  *
  * Since: 0.7.0
  */
 void
-hif_sack_add_excludes(HifSack *sack, HyPackageSet pset)
+hif_sack_add_excludes(HifSack *sack, HifPackageSet pset)
 {
     HifSackPrivate *priv = GET_PRIVATE(sack);
     Pool *pool = hif_sack_get_pool(sack);
@@ -1164,14 +1164,14 @@ hif_sack_add_excludes(HifSack *sack, HyPackageSet pset)
 /**
  * hif_sack_add_includes:
  * @sack: a #HifSack instance.
- * @pset: a #HyPackageSet or %NULL.
+ * @pset: a #HifPackageSet or %NULL.
  *
  * Add includes to the sack.
  *
  * Since: 0.7.0
  */
 void
-hif_sack_add_includes(HifSack *sack, HyPackageSet pset)
+hif_sack_add_includes(HifSack *sack, HifPackageSet pset)
 {
     HifSackPrivate *priv = GET_PRIVATE(sack);
     Pool *pool = hif_sack_get_pool(sack);
@@ -1191,14 +1191,14 @@ hif_sack_add_includes(HifSack *sack, HyPackageSet pset)
 /**
  * hif_sack_set_excludes:
  * @sack: a #HifSack instance.
- * @pset: a #HyPackageSet or %NULL.
+ * @pset: a #HifPackageSet or %NULL.
  *
  * Set excludes for the sack.
  *
  * Since: 0.7.0
  */
 void
-hif_sack_set_excludes(HifSack *sack, HyPackageSet pset)
+hif_sack_set_excludes(HifSack *sack, HifPackageSet pset)
 {
     HifSackPrivate *priv = GET_PRIVATE(sack);
     priv->pkg_excludes = free_map_fully(priv->pkg_excludes);
@@ -1215,14 +1215,14 @@ hif_sack_set_excludes(HifSack *sack, HyPackageSet pset)
 /**
  * hif_sack_set_includes:
  * @sack: a #HifSack instance.
- * @pset: a #HyPackageSet or %NULL.
+ * @pset: a #HifPackageSet or %NULL.
  *
  * Set any sack includes.
  *
  * Since: 0.7.0
  */
 void
-hif_sack_set_includes(HifSack *sack, HyPackageSet pset)
+hif_sack_set_includes(HifSack *sack, HifPackageSet pset)
 {
     HifSackPrivate *priv = GET_PRIVATE(sack);
     priv->pkg_includes = free_map_fully(priv->pkg_includes);
@@ -1658,7 +1658,7 @@ process_excludes(HifSack *sack, HifRepo *repo)
     for (iter = excludes; *iter; iter++) {
         const char *name = *iter;
         HyQuery query;
-        HyPackageSet pkgset;
+        HifPackageSet pkgset;
 
         query = hy_query_create(sack);
         hy_query_filter_latest_per_arch(query, TRUE);

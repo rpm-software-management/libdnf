@@ -101,7 +101,7 @@ gboolean         hif_transaction_commit                 (HifTransaction *transac
                                                          HifState       *state,
                                                          GError         **error);
 gboolean         hif_transaction_ensure_repo          (HifTransaction *transaction,
-                                                         HyPackage       pkg,
+                                                         HifPackage *      pkg,
                                                          GError         **error);
 gboolean         hif_transaction_ensure_repo_list     (HifTransaction *transaction,
                                                          GPtrArray *  pkglist,

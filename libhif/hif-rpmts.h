@@ -36,7 +36,7 @@ gboolean         hif_rpmts_add_install_filename (rpmts           ts,
                                                  gboolean        is_update,
                                                  GError         **error);
 gboolean         hif_rpmts_add_remove_pkg       (rpmts           ts,
-                                                 HyPackage       pkg,
+                                                 HifPackage *      pkg,
                                                  GError         **error);
 gboolean         hif_rpmts_look_for_problems    (rpmts           ts,
                                                  GError         **error);

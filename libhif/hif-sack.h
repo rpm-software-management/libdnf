@@ -103,7 +103,7 @@ int          hif_sack_evr_cmp               (HifSack        *sack,
                                              const char     *evr1,
                                              const char     *evr2);
 const char  *hif_sack_get_cache_dir         (HifSack        *sack);
-HyPackage    hif_sack_get_running_kernel    (HifSack        *sack);
+HifPackage *   hif_sack_get_running_kernel    (HifSack        *sack);
 char        *hif_sack_give_cache_fn         (HifSack        *sack,
                                              const char     *reponame,
                                              const char     *ext);
@@ -113,17 +113,17 @@ void         hif_sack_set_installonly       (HifSack        *sack,
 void         hif_sack_set_installonly_limit (HifSack        *sack,
                                              guint           limit);
 guint        hif_sack_get_installonly_limit (HifSack        *sack);
-HyPackage    hif_sack_add_cmdline_package   (HifSack        *sack,
+HifPackage *   hif_sack_add_cmdline_package   (HifSack        *sack,
                                              const char     *fn);
 int          hif_sack_count                 (HifSack        *sack);
 void         hif_sack_add_excludes          (HifSack        *sack,
-                                             HyPackageSet    pset);
+                                             HifPackageSet    pset);
 void         hif_sack_add_includes          (HifSack        *sack,
-                                             HyPackageSet    pset);
+                                             HifPackageSet    pset);
 void         hif_sack_set_excludes          (HifSack        *sack,
-                                             HyPackageSet    pset);
+                                             HifPackageSet    pset);
 void         hif_sack_set_includes          (HifSack        *sack,
-                                             HyPackageSet    pset);
+                                             HifPackageSet    pset);
 int          hif_sack_repo_enabled          (HifSack        *sack,
                                              const char     *reponame,
                                              int             enabled);

@@ -48,7 +48,7 @@ int hy_query_filter_num(HyQuery q, int keyname, int cmp_type,
 int hy_query_filter_num_in(HyQuery q, int keyname, int cmp_type, int nmatches,
                            const int *matches);
 int hy_query_filter_package_in(HyQuery q, int keyname, int cmp_type,
-                               const HyPackageSet pset);
+                               const HifPackageSet pset);
 int hy_query_filter_reldep(HyQuery q, int keyname, const HyReldep reldep);
 int hy_query_filter_reldep_in(HyQuery q, int keyname,
                               const HyReldepList reldeplist);
@@ -88,7 +88,7 @@ void hy_query_filter_latest_per_arch(HyQuery q, int val);
 void hy_query_filter_latest(HyQuery q, int val);
 
 GPtrArray *hy_query_run(HyQuery q);
-HyPackageSet hy_query_run_set(HyQuery q);
+HifPackageSet hy_query_run_set(HyQuery q);
 
 
 G_END_DECLS

@@ -18,40 +18,121 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <assert.h>
-#include <stdlib.h>
+/**
+ * SECTION:hif-package
+ * @short_description: Package
+ * @include: libhif.h
+ * @stability: Unstable
+ *
+ * An object representing a package in the system.
+ *
+ * See also: #HifContext
+ */
 
-//libsolv
+#include "config.h"
+
+#include <stdlib.h>
 #include <solv/evr.h>
 #include <solv/pool.h>
 #include <solv/repo.h>
 
-// hawkey
 #include "hif-advisory-private.h"
-#include "hy-iutil.h"
-#include "hif-sack-private.h"
 #include "hif-packagedelta-private.h"
+#include "hif-sack-private.h"
+#include "hy-iutil.h"
 #include "hy-package-private.h"
 #include "hy-reldep-private.h"
 #include "hy-repo-private.h"
 
 #define BLOCK_SIZE 31
 
-/* internal */
-static Solvable *
-get_solvable(HyPackage pkg)
+typedef struct
 {
-    return pool_id2solvable(package_pool(pkg), pkg->id);
+    gboolean         loaded;
+    Id               id;
+    HifSack         *sack;
+} HifPackagePrivate;
+
+G_DEFINE_TYPE_WITH_PRIVATE(HifPackage, hif_package, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (hif_package_get_instance_private (o))
+
+/**
+ * hif_package_finalize:
+ **/
+static void
+hif_package_finalize(GObject *object)
+{
+    G_OBJECT_CLASS(hif_package_parent_class)->finalize(object);
 }
 
-Pool *
-package_pool(HyPackage pkg)
+/**
+ * hif_package_init:
+ **/
+static void
+hif_package_init(HifPackage *package)
 {
-    return hif_sack_get_pool(pkg->sack);
+}
+
+/**
+ * hif_package_class_init:
+ **/
+static void
+hif_package_class_init(HifPackageClass *klass)
+{
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
+    object_class->finalize = hif_package_finalize;
+}
+
+
+/**
+ * hif_package_new:
+ *
+ * Creates a new #HifPackage.
+ *
+ * Returns:(transfer full): a #HifPackage
+ *
+ * Since: 0.7.0
+ **/
+HifPackage *
+hif_package_new(HifSack *sack, Id id)
+{
+    HifPackage *pkg;
+    HifPackagePrivate *priv;
+    pkg = g_object_new(HIF_TYPE_PACKAGE, NULL);
+    priv = GET_PRIVATE(pkg);
+    priv->sack = sack;
+    priv->id = id;
+    return HIF_PACKAGE(pkg);
+}
+
+
+/* internal */
+static Solvable *
+get_solvable(HifPackage *pkg)
+{
+    HifPackagePrivate *priv = GET_PRIVATE(pkg);
+    return pool_id2solvable(hif_package_get_pool(pkg), priv->id);
+}
+
+/**
+ * hif_package_get_pool: (skip)
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the pool used for storage.
+ *
+ * Returns: (transfer none): a %Pool
+ *
+ * Since: 0.7.0
+ */
+Pool *
+hif_package_get_pool(HifPackage *pkg)
+{
+    HifPackagePrivate *priv = GET_PRIVATE(pkg);
+    return hif_sack_get_pool(priv->sack);
 }
 
 static guint64
-lookup_num(HyPackage pkg, unsigned type)
+lookup_num(HifPackage *pkg, unsigned type)
 {
     Solvable *s = get_solvable(pkg);
     repo_internalize_trigger(s->repo);
@@ -59,9 +140,9 @@ lookup_num(HyPackage pkg, unsigned type)
 }
 
 static HyReldepList
-reldeps_for(HyPackage pkg, Id type)
+reldeps_for(HifPackage *pkg, Id type)
 {
-    Pool *pool = package_pool(pkg);
+    Pool *pool = hif_package_get_pool(pkg);
     Solvable *s = get_solvable(pkg);
     HyReldepList reldeplist;
     Queue q;
@@ -74,94 +155,137 @@ reldeps_for(HyPackage pkg, Id type)
     return reldeplist;
 }
 
-HyPackage
-package_clone(HyPackage pkg)
+/**
+ * hif_package_clone:
+ * @pkg: a #HifPackage instance.
+ *
+ * Clones the package.
+ *
+ * Returns: a #HifPackage
+ *
+ * Since: 0.7.0
+ */
+HifPackage *
+hif_package_clone(HifPackage *pkg)
 {
-    return package_create(package_sack(pkg), package_id(pkg));
+    return hif_package_new(hif_package_get_sack(pkg), hif_package_get_id(pkg));
 }
 
-HyPackage
-package_create(HifSack *sack, Id id)
+/**
+ * hif_package_get_id: (skip):
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the internal ID used to identify the package in the pool.
+ *
+ * Returns: an integer, or 0 for unknown
+ *
+ * Since: 0.7.0
+ */
+Id
+hif_package_get_id(HifPackage *pkg)
 {
-    HyPackage pkg;
-
-    pkg = g_malloc0(sizeof(*pkg));
-    pkg->nrefs = 1;
-    pkg->sack = sack;
-    pkg->id = id;
-    return pkg;
+    HifPackagePrivate *priv = GET_PRIVATE(pkg);
+    return priv->id;
 }
 
-HyPackage
-package_from_solvable(HifSack *sack, Solvable *s)
+/**
+ * hif_package_get_sack:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the package sack for the package.
+ *
+ * Returns: a #HifSack, or %NULL
+ *
+ * Since: 0.7.0
+ */
+HifSack *
+hif_package_get_sack(HifPackage *pkg)
+{
+    HifPackagePrivate *priv = GET_PRIVATE(pkg);
+    return priv->sack;
+}
+
+/**
+ * hif_package_from_solvable: (skip):
+ * @pkg: a #HifPackage instance.
+ *
+ * Creates a package from a solvable.
+ *
+ * Returns: a #HyPackage
+ *
+ * Since: 0.7.0
+ */
+HifPackage *
+hif_package_from_solvable(HifSack *sack, Solvable *s)
 {
     if (!s)
         return NULL;
 
     Id p = s - s->repo->pool->solvables;
-    return package_create(sack, p);
+    return hif_package_new(sack, p);
 }
 
-/* public */
-void
-hy_package_free(HyPackage pkg)
+/**
+ * hif_package_get_identical:
+ * @pkg1: a #HifPackage instance.
+ * @pkg2: another #HifPackage instance.
+ *
+ * Tests two packages for equality.
+ *
+ * Returns: %TRUE if the packages are the same
+ *
+ * Since: 0.7.0
+ */
+gboolean
+hif_package_get_identical(HifPackage *pkg1, HifPackage *pkg2)
 {
-    if (--pkg->nrefs > 0)
-        return;
-    if (pkg->destroy_func)
-        pkg->destroy_func(pkg->userdata);
-    g_free(pkg);
+    HifPackagePrivate *priv1 = GET_PRIVATE(pkg1);
+    HifPackagePrivate *priv2 = GET_PRIVATE(pkg2);
+    return priv1->id == priv2->id;
 }
 
-HyPackage
-hy_package_link(HyPackage pkg)
-{
-    pkg->nrefs++;
-    return pkg;
-}
-
-void *
-hy_package_get_userdata(HyPackage pkg)
-{
-    return pkg->userdata;
-}
-
-void
-hy_package_set_userdata(HyPackage pkg, void *userdata, HyUserdataDestroy destroy_func)
-{
-    if (pkg->destroy_func)
-        pkg->destroy_func(pkg->userdata);
-    pkg->userdata = userdata;
-    pkg->destroy_func = destroy_func;
-}
-
-int
-hy_package_identical(HyPackage pkg1, HyPackage pkg2)
-{
-    return pkg1->id == pkg2->id;
-}
-
-int
-hy_package_installed(HyPackage pkg)
+/**
+ * hif_package_installed:
+ * @pkg: a #HifPackage instance.
+ *
+ * Tests if the package is installed.
+ *
+ * Returns: %TRUE if installed
+ *
+ * Since: 0.7.0
+ */
+gboolean
+hif_package_installed(HifPackage *pkg)
 {
     Solvable *s = get_solvable(pkg);
-    return (package_pool(pkg)->installed == s->repo);
+    return (hif_package_get_pool(pkg)->installed == s->repo);
 }
 
+/**
+ * hif_package_cmp:
+ * @pkg1: a #HifPackage instance.
+ * @pkg2: another #HifPackage instance.
+ *
+ * Compares two packages.
+ *
+ * Returns: %TRUE for success
+ *
+ * Since: 0.7.0
+ */
 int
-hy_package_cmp(HyPackage pkg1, HyPackage pkg2)
+hif_package_cmp(HifPackage *pkg1, HifPackage *pkg2)
 {
-    Pool *pool1 = package_pool(pkg1);
-    Pool *pool2 = package_pool(pkg2);
-    Solvable *s1 = pool_id2solvable(pool1, pkg1->id);
-    Solvable *s2 = pool_id2solvable(pool2, pkg2->id);
+    Pool *pool1 = hif_package_get_pool(pkg1);
+    Pool *pool2 = hif_package_get_pool(pkg2);
+    Solvable *s1 = pool_id2solvable(pool1, hif_package_get_id(pkg1));
+    Solvable *s2 = pool_id2solvable(pool2, hif_package_get_id(pkg2));
     const char *str1 = pool_id2str(pool1, s1->name);
     const char *str2 = pool_id2str(pool2, s2->name);
     int ret = strcmp(str1, str2);
     if (ret)
         return ret;
 
-    ret = hy_package_evr_cmp(pkg1, pkg2);
+    ret = hif_package_evr_cmp(pkg1, pkg2);
     if (ret)
         return ret;
 
@@ -170,88 +294,197 @@ hy_package_cmp(HyPackage pkg1, HyPackage pkg2)
     return strcmp(str1, str2);
 }
 
+/**
+ * hif_package_evr_cmp:
+ * @pkg1: a #HifPackage instance.
+ * @pkg2: another #HifPackage instance.
+ *
+ * Compares two packages, only using the EVR values.
+ *
+ * Returns: %TRUE for success
+ *
+ * Since: 0.7.0
+ */
 int
-hy_package_evr_cmp(HyPackage pkg1, HyPackage pkg2)
+hif_package_evr_cmp(HifPackage *pkg1, HifPackage *pkg2)
 {
-    Pool *pool1 = package_pool(pkg1);
-    Pool *pool2 = package_pool(pkg2);
+    Pool *pool1 = hif_package_get_pool(pkg1);
+    Pool *pool2 = hif_package_get_pool(pkg2);
     Solvable *s1 = get_solvable(pkg1);
     Solvable *s2 = get_solvable(pkg2);
     const char *str1 = pool_id2str(pool1, s1->evr);
     const char *str2 = pool_id2str(pool2, s2->evr);
 
-    return pool_evrcmp_str(package_pool(pkg1), str1, str2, EVRCMP_COMPARE);
+    return pool_evrcmp_str(hif_package_get_pool(pkg1), str1, str2, EVRCMP_COMPARE);
 }
 
+/**
+ * hif_package_get_location:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the location (XXX??) for the package.
+ *
+ * Returns: (transfer full): string
+ *
+ * Since: 0.7.0
+ */
 char *
-hy_package_get_location(HyPackage pkg)
+hif_package_get_location(HifPackage *pkg)
 {
     Solvable *s = get_solvable(pkg);
     repo_internalize_trigger(s->repo);
     return g_strdup(solvable_get_location(s, NULL));
 }
 
+/**
+ * hif_package_get_baseurl:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the baseurl for the package.
+ *
+ * Returns: a string, or %NULL
+ *
+ * Since: 0.7.0
+ */
 const char *
-hy_package_get_baseurl(HyPackage pkg)
+hif_package_get_baseurl(HifPackage *pkg)
 {
     Solvable *s = get_solvable(pkg);
     return solvable_lookup_str(s, SOLVABLE_MEDIABASE);
 }
 
+/**
+ * hif_package_get_nevra:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the package NEVRA.
+ *
+ * Returns: (transfer full): a string, or %NULL
+ *
+ * Since: 0.7.0
+ */
 char *
-hy_package_get_nevra(HyPackage pkg)
+hif_package_get_nevra(HifPackage *pkg)
 {
     Solvable *s = get_solvable(pkg);
-    return g_strdup(pool_solvable2str(package_pool(pkg), s));
+    return g_strdup(pool_solvable2str(hif_package_get_pool(pkg), s));
 }
 
+/**
+ * hif_package_get_sourcerpm:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the source RPM for the package.
+ *
+ * Returns: (transfer full): a string, or %NULL
+ *
+ * Since: 0.7.0
+ */
 char *
-hy_package_get_sourcerpm(HyPackage pkg)
+hif_package_get_sourcerpm(HifPackage *pkg)
 {
     Solvable *s = get_solvable(pkg);
     return g_strdup(solvable_lookup_sourcepkg(s));
 }
 
+/**
+ * hif_package_get_version:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the version for the package.
+ *
+ * Returns: (transfer full): a string, or %NULL
+ *
+ * Since: 0.7.0
+ */
 char *
-hy_package_get_version(HyPackage pkg)
+hif_package_get_version(HifPackage *pkg)
 {
     char *e, *v, *r;
-
-    pool_split_evr(package_pool(pkg), hy_package_get_evr(pkg), &e, &v, &r);
+    pool_split_evr(hif_package_get_pool(pkg), hif_package_get_evr(pkg), &e, &v, &r);
     return g_strdup(v);
 }
 
+/**
+ * hif_package_get_release:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the release for the package.
+ *
+ * Returns: (transfer full): a string, or %NULL
+ *
+ * Since: 0.7.0
+ */
 char *
-hy_package_get_release(HyPackage pkg)
+hif_package_get_release(HifPackage *pkg)
 {
     char *e, *v, *r;
-
-    pool_split_evr(package_pool(pkg), hy_package_get_evr(pkg), &e, &v, &r);
+    pool_split_evr(hif_package_get_pool(pkg), hif_package_get_evr(pkg), &e, &v, &r);
     return g_strdup(r);
 }
 
-const char*
-hy_package_get_name(HyPackage pkg)
+/**
+ * hif_package_get_name:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the name for the package.
+ *
+ * Returns: a string, or %NULL
+ *
+ * Since: 0.7.0
+ */
+const char *
+hif_package_get_name(HifPackage *pkg)
 {
-    Pool *pool = package_pool(pkg);
+    Pool *pool = hif_package_get_pool(pkg);
     return pool_id2str(pool, get_solvable(pkg)->name);
 }
 
+/**
+ * hif_package_get_packager:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX for the package.
+ *
+ * Returns: a string, or %NULL
+ *
+ * Since: 0.7.0
+ */
 const char *
-hy_package_get_packager(HyPackage pkg)
+hif_package_get_packager(HifPackage *pkg)
 {
     return solvable_lookup_str(get_solvable(pkg), SOLVABLE_PACKAGER);
 }
 
-const char*
-hy_package_get_arch(HyPackage pkg)
+/**
+ * hif_package_get_arch:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the architecture for the package.
+ *
+ * Returns: a string, or %NULL
+ *
+ * Since: 0.7.0
+ */
+const char *
+hif_package_get_arch(HifPackage *pkg)
 {
-    Pool *pool = package_pool(pkg);
+    Pool *pool = hif_package_get_pool(pkg);
     return pool_id2str(pool, get_solvable(pkg)->arch);
 }
 
+/**
+ * hif_package_get_chksum:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the checksum for the package.
+ *
+ * Returns: raw checksum bytes
+ *
+ * Since: 0.7.0
+ */
 const unsigned char *
-hy_package_get_chksum(HyPackage pkg, int *type)
+hif_package_get_chksum(HifPackage *pkg, int *type)
 {
     Solvable *s = get_solvable(pkg);
     const unsigned char* ret;
@@ -263,12 +496,18 @@ hy_package_get_chksum(HyPackage pkg, int *type)
 }
 
 /**
- * SHA1 checksum of the package's header.
+ * hif_package_get_hdr_chksum:
+ * @pkg: a #HifPackage instance.
  *
- * Only sane for packages in rpmdb.
+ * Gets the SHA1 checksum of the packages header.
+ * This is only set for packages in the rpmdb.
+ *
+ * Returns: raw checksum bytes
+ *
+ * Since: 0.7.0
  */
 const unsigned char *
-hy_package_get_hdr_chksum(HyPackage pkg, int *type)
+hif_package_get_hdr_chksum(HifPackage *pkg, int *type)
 {
     Solvable *s = get_solvable(pkg);
     const unsigned char *ret;
@@ -279,161 +518,402 @@ hy_package_get_hdr_chksum(HyPackage pkg, int *type)
     return ret;
 }
 
+/**
+ * hif_package_get_description:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the description for the package.
+ *
+ * Returns: a string, or %NULL
+ *
+ * Since: 0.7.0
+ */
 const char *
-hy_package_get_description(HyPackage pkg)
+hif_package_get_description(HifPackage *pkg)
 {
     return solvable_lookup_str(get_solvable(pkg), SOLVABLE_DESCRIPTION);
 }
 
-const char*
-hy_package_get_evr(HyPackage pkg)
+/**
+ * hif_package_get_evr:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the EVR for the package.
+ *
+ * Returns: a string
+ *
+ * Since: 0.7.0
+ */
+const char *
+hif_package_get_evr(HifPackage *pkg)
 {
-    Pool *pool = package_pool(pkg);
+    Pool *pool = hif_package_get_pool(pkg);
     return pool_id2str(pool, get_solvable(pkg)->evr);
 }
 
+/**
+ * hif_package_get_license:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the license for the package.
+ *
+ * Returns: a string, or %NULL
+ *
+ * Since: 0.7.0
+ */
 const char *
-hy_package_get_license(HyPackage pkg)
+hif_package_get_license(HifPackage *pkg)
 {
     return solvable_lookup_str(get_solvable(pkg), SOLVABLE_LICENSE);
 }
 
-const char*
-hy_package_get_reponame(HyPackage pkg)
+/**
+ * hif_package_get_reponame:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the reponame for the package.
+ *
+ * Returns: a string, or %NULL
+ *
+ * Since: 0.7.0
+ */
+const char *
+hif_package_get_reponame(HifPackage *pkg)
 {
     Solvable *s = get_solvable(pkg);
     return s->repo->name;
 }
 
-const char*
-hy_package_get_summary(HyPackage pkg)
+/**
+ * hif_package_get_summary:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the summary for the package.
+ *
+ * Returns: a string, or %NULL
+ *
+ * Since: 0.7.0
+ */
+const char *
+hif_package_get_summary(HifPackage *pkg)
 {
     Solvable *s = get_solvable(pkg);
     return solvable_lookup_str(s, SOLVABLE_SUMMARY);
 }
 
+/**
+ * hif_package_get_url:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the url for the package.
+ *
+ * Returns: a string, or %NULL
+ *
+ * Since: 0.7.0
+ */
 const char *
-hy_package_get_url(HyPackage pkg)
+hif_package_get_url(HifPackage *pkg)
 {
     return solvable_lookup_str(get_solvable(pkg), SOLVABLE_URL);
 }
 
+/**
+ * hif_package_get_downloadsize:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the download size for the package.
+ *
+ * Returns: %TRUE for success
+ *
+ * Since: 0.7.0
+ */
 guint64
-hy_package_get_downloadsize(HyPackage pkg)
+hif_package_get_downloadsize(HifPackage *pkg)
 {
     return lookup_num(pkg, SOLVABLE_DOWNLOADSIZE);
 }
 
+/**
+ * hif_package_get_epoch:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the epoch for the package.
+ *
+ * Returns: %TRUE for success
+ *
+ * Since: 0.7.0
+ */
 guint64
-hy_package_get_epoch(HyPackage pkg)
+hif_package_get_epoch(HifPackage *pkg)
 {
-    return pool_get_epoch(package_pool(pkg), hy_package_get_evr(pkg));
+    return pool_get_epoch(hif_package_get_pool(pkg), hif_package_get_evr(pkg));
 }
 
+/**
+ * hif_package_get_hdr_end:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the header end index for the package.
+ *
+ * Returns: an index, or 0 for not known
+ *
+ * Since: 0.7.0
+ */
 guint64
-hy_package_get_hdr_end(HyPackage pkg)
+hif_package_get_hdr_end(HifPackage *pkg)
 {
     return lookup_num(pkg, SOLVABLE_HEADEREND);
 }
 
+/**
+ * hif_package_get_installsize:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the installed size for the package.
+ *
+ * Returns: size in bytes
+ *
+ * Since: 0.7.0
+ */
 guint64
-hy_package_get_installsize(HyPackage pkg)
+hif_package_get_installsize(HifPackage *pkg)
 {
     return lookup_num(pkg, SOLVABLE_INSTALLSIZE);
 }
 
+/**
+ * hif_package_get_buildtime:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the build time for the package.
+ *
+ * Returns: UNIX time
+ *
+ * Since: 0.7.0
+ */
 guint64
-hy_package_get_buildtime(HyPackage pkg)
+hif_package_get_buildtime(HifPackage *pkg)
 {
     return lookup_num(pkg, SOLVABLE_BUILDTIME);
 }
 
+/**
+ * hif_package_get_installtime:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the install time for the package.
+ *
+ * Returns: UNIX time
+ *
+ * Since: 0.7.0
+ */
 guint64
-hy_package_get_installtime(HyPackage pkg)
+hif_package_get_installtime(HifPackage *pkg)
 {
     return lookup_num(pkg, SOLVABLE_INSTALLTIME);
 }
 
+/**
+ * hif_package_get_medianr:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the media number for the package.
+ *
+ * Returns: integer value
+ *
+ * Since: 0.7.0
+ */
 guint64
-hy_package_get_medianr(HyPackage pkg)
+hif_package_get_medianr(HifPackage *pkg)
 {
     return lookup_num(pkg, SOLVABLE_MEDIANR);
 }
 
+/**
+ * hif_package_get_rpmdbid:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the RPMDB ID for the package.
+ *
+ * Returns: an ID, or 0 for not known
+ *
+ * Since: 0.7.0
+ */
 guint64
-hy_package_get_rpmdbid(HyPackage pkg)
+hif_package_get_rpmdbid(HifPackage *pkg)
 {
     guint64 ret = lookup_num(pkg, RPM_RPMDBID);
-    assert(ret > 0);
+    g_assert(ret > 0);
     return ret;
 }
 
+/**
+ * hif_package_get_size:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the size for the package.
+ *
+ * Returns: size in bytes
+ *
+ * Since: 0.7.0
+ */
 guint64
-hy_package_get_size(HyPackage pkg)
+hif_package_get_size(HifPackage *pkg)
 {
-    unsigned type = hy_package_installed(pkg) ? SOLVABLE_INSTALLSIZE :
-                                                SOLVABLE_DOWNLOADSIZE;
+    unsigned type = hif_package_installed(pkg) ? SOLVABLE_INSTALLSIZE :
+                                                 SOLVABLE_DOWNLOADSIZE;
     return lookup_num(pkg, type);
 }
 
+/**
+ * hif_package_get_conflicts:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the conflicts for the package.
+ *
+ * Returns: A #HyReldepList
+ *
+ * Since: 0.7.0
+ */
 HyReldepList
-hy_package_get_conflicts(HyPackage pkg)
+hif_package_get_conflicts(HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_CONFLICTS);
 }
 
+/**
+ * hif_package_get_enhances:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the enhances for the package.
+ *
+ * Returns: A #HyReldepList
+ *
+ * Since: 0.7.0
+ */
 HyReldepList
-hy_package_get_enhances(HyPackage pkg)
+hif_package_get_enhances(HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_ENHANCES);
 }
 
+/**
+ * hif_package_get_obsoletes:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the obsoletes for the package.
+ *
+ * Returns: A #HyReldepList
+ *
+ * Since: 0.7.0
+ */
 HyReldepList
-hy_package_get_obsoletes(HyPackage pkg)
+hif_package_get_obsoletes(HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_OBSOLETES);
 }
 
+/**
+ * hif_package_get_provides:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the provides for the package.
+ *
+ * Returns: A #HyReldepList
+ *
+ * Since: 0.7.0
+ */
 HyReldepList
-hy_package_get_provides(HyPackage pkg)
+hif_package_get_provides(HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_PROVIDES);
 }
 
+/**
+ * hif_package_get_recommends:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the recommends for the package.
+ *
+ * Returns: A #HyReldepList
+ *
+ * Since: 0.7.0
+ */
 HyReldepList
-hy_package_get_recommends(HyPackage pkg)
+hif_package_get_recommends(HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_RECOMMENDS);
 }
 
+/**
+ * hif_package_get_requires:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the requires for the package.
+ *
+ * Returns: A #HyReldepList
+ *
+ * Since: 0.7.0
+ */
 HyReldepList
-hy_package_get_requires(HyPackage pkg)
+hif_package_get_requires(HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_REQUIRES);
 }
 
+/**
+ * hif_package_get_suggests:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the suggests for the package.
+ *
+ * Returns: A #HyReldepList
+ *
+ * Since: 0.7.0
+ */
 HyReldepList
-hy_package_get_suggests(HyPackage pkg)
+hif_package_get_suggests(HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_SUGGESTS);
 }
 
+/**
+ * hif_package_get_supplements:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the supplements for the package.
+ *
+ * Returns: A #HyReldepList
+ *
+ * Since: 0.7.0
+ */
 HyReldepList
-hy_package_get_supplements(HyPackage pkg)
+hif_package_get_supplements(HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_SUPPLEMENTS);
 }
 
+/**
+ * hif_package_get_files:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the files contained in the package.
+ *
+ * Returns: (transfer full): the file list
+ *
+ * Since: 0.7.0
+ */
 gchar **
-hy_package_get_files(HyPackage pkg)
+hif_package_get_files(HifPackage *pkg)
 {
-    Pool *pool = package_pool(pkg);
+    HifPackagePrivate *priv = GET_PRIVATE(pkg);
+    Pool *pool = hif_package_get_pool(pkg);
     Solvable *s = get_solvable(pkg);
     Dataiterator di;
     GPtrArray *ret = g_ptr_array_new();
 
     repo_internalize_trigger(s->repo);
-    dataiterator_init(&di, pool, s->repo, pkg->id, SOLVABLE_FILELIST, NULL,
+    dataiterator_init(&di, pool, s->repo, priv->id, SOLVABLE_FILELIST, NULL,
                       SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
     while (dataiterator_step(&di)) {
         g_ptr_array_add(ret, g_strdup(di.kv.str));
@@ -443,14 +923,24 @@ hy_package_get_files(HyPackage pkg)
     return (gchar**)g_ptr_array_free (ret, FALSE);
 }
 
+/**
+ * hif_package_get_advisories:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the list of advisories for the package.
+ *
+ * Returns: (transfer container) (element-type HifAdvisory): a list
+ *
+ * Since: 0.7.0
+ */
 GPtrArray *
-hy_package_get_advisories(HyPackage pkg, int cmp_type)
+hif_package_get_advisories(HifPackage *pkg, int cmp_type)
 {
     Dataiterator di;
     Id evr;
     int cmp;
     HifAdvisory *advisory;
-    Pool *pool = package_pool(pkg);
+    Pool *pool = hif_package_get_pool(pkg);
     GPtrArray *advisorylist = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
     Solvable *s = get_solvable(pkg);
 
@@ -478,14 +968,25 @@ hy_package_get_advisories(HyPackage pkg, int cmp_type)
     return advisorylist;
 }
 
+/**
+ * hif_package_get_delta_from_evr:
+ * @pkg: a #HifPackage instance.
+ * @from_evr: the EVR string of what's installed
+ *
+ * Gets the package delta for the package given an existing EVR.
+ *
+ * Returns: a #HifPackageDelta, or %NULL
+ *
+ * Since: 0.7.0
+ */
 HifPackageDelta *
-hy_package_get_delta_from_evr(HyPackage pkg, const char *from_evr)
+hif_package_get_delta_from_evr(HifPackage *pkg, const char *from_evr)
 {
-    Pool *pool = package_pool(pkg);
+    Pool *pool = hif_package_get_pool(pkg);
     Solvable *s = get_solvable(pkg);
     HifPackageDelta *delta = NULL;
     Dataiterator di;
-    const char *name = hy_package_get_name(pkg);
+    const char *name = hif_package_get_name(pkg);
 
     dataiterator_init(&di, pool, s->repo, SOLVID_META, DELTA_PACKAGE_NAME, name,
                       SEARCH_STRING);

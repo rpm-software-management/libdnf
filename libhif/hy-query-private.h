@@ -29,7 +29,7 @@
 
 union _Match {
     int num;
-    HyPackageSet pset;
+    HifPackageSet pset;
     HyReldep reldep;
     char *str;
 };

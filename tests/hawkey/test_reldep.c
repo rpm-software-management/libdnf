@@ -29,9 +29,9 @@
 START_TEST(test_reldeplist_add)
 {
     HifSack *sack = test_globals.sack;
-    HyPackage flying = by_name_repo(sack, "fool", "updates");
+    HifPackage *flying = by_name_repo(sack, "fool", "updates");
     HyReldepList reldeplist = hy_reldeplist_create(sack);
-    HyReldepList obsoletes = hy_package_get_obsoletes(flying);
+    HyReldepList obsoletes = hif_package_get_obsoletes(flying);
 
     const int count = hy_reldeplist_count(obsoletes);
     fail_unless(count == 2);
@@ -41,7 +41,7 @@ START_TEST(test_reldeplist_add)
         hy_reldep_free(reldep);
     }
 
-    hy_package_free(flying);
+    g_object_unref(flying);
     fail_unless(hy_reldeplist_count(reldeplist) == 2);
     hy_reldeplist_free(obsoletes);
     hy_reldeplist_free(reldeplist);

@@ -218,7 +218,7 @@ filter(_QueryObject *self, PyObject *args)
     }
     if (queryObject_Check(match)) {
         HyQuery target = queryFromPyObject(match);
-        HyPackageSet pset = hy_query_run_set(target);
+        HifPackageSet pset = hy_query_run_set(target);
         int ret = hy_query_filter_package_in(self->query, keyname,
                                              cmp_type, pset);
 
@@ -240,7 +240,7 @@ filter(_QueryObject *self, PyObject *args)
     case HY_PKG_OBSOLETES: {
         HifSack *sack = sackFromPyObject(self->sack);
         assert(sack);
-        HyPackageSet pset = pyseq_to_packageset(match, sack);
+        HifPackageSet pset = pyseq_to_packageset(match, sack);
 
         if (pset == NULL)
             return NULL;
@@ -301,7 +301,7 @@ filter(_QueryObject *self, PyObject *args)
 static PyObject *
 run(_QueryObject *self, PyObject *unused)
 {
-    HyPackageSet pset;
+    HifPackageSet pset;
     PyObject *list;
 
     pset = hy_query_run_set(self->query);

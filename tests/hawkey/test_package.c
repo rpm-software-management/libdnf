@@ -33,57 +33,27 @@
 #include "test_suites.h"
 #include "testsys.h"
 
-START_TEST(test_refcounting)
-{
-    HyPackage pkg = by_name(test_globals.sack, "penny-lib");
-    fail_unless(hy_package_link(pkg) != NULL);
-    hy_package_free(pkg);
-    hy_package_free(pkg);
-}
-END_TEST
-
-static int ran_destroy_func = 0;
-
-static void
-destroy_func (void *userdata)
-{
-    fail_unless(userdata == (void *) 0xdeadbeef);
-    ran_destroy_func++;
-}
-
-START_TEST(test_userdata)
-{
-    HyPackage pkg = by_name(test_globals.sack, "penny-lib");
-    fail_unless(pkg != NULL);
-    hy_package_set_userdata(pkg, (void *) 0xdeadbeef, destroy_func);
-    fail_unless(hy_package_get_userdata(pkg) == (void *) 0xdeadbeef);
-    fail_unless(ran_destroy_func == 0);
-    hy_package_free(pkg);
-    fail_unless(ran_destroy_func == 1);
-}
-END_TEST
-
 START_TEST(test_package_summary)
 {
-    HyPackage pkg = by_name(test_globals.sack, "penny-lib");
-    fail_if(strcmp(hy_package_get_summary(pkg), "in my ears"));
-    hy_package_free(pkg);
+    HifPackage *pkg = by_name(test_globals.sack, "penny-lib");
+    fail_if(strcmp(hif_package_get_summary(pkg), "in my ears"));
+    g_object_unref(pkg);
 }
 END_TEST
 
 START_TEST(test_identical)
 {
     HifSack *sack = test_globals.sack;
-    HyPackage pkg1 = by_name(sack, "penny-lib");
-    HyPackage pkg2 = by_name(sack, "flying");
-    HyPackage pkg3 = by_name(sack, "penny-lib");
+    HifPackage *pkg1 = by_name(sack, "penny-lib");
+    HifPackage *pkg2 = by_name(sack, "flying");
+    HifPackage *pkg3 = by_name(sack, "penny-lib");
 
-    fail_unless(hy_package_identical(pkg1, pkg3));
-    fail_if(hy_package_identical(pkg2, pkg3));
+    fail_unless(hif_package_get_identical(pkg1, pkg3));
+    fail_if(hif_package_get_identical(pkg2, pkg3));
 
-    hy_package_free(pkg1);
-    hy_package_free(pkg2);
-    hy_package_free(pkg3);
+    g_object_unref(pkg1);
+    g_object_unref(pkg2);
+    g_object_unref(pkg3);
 }
 END_TEST
 
@@ -92,51 +62,51 @@ START_TEST(test_versions)
     HifSack *sack = test_globals.sack;
     unsigned epoch;
     char *version, *release;
-    HyPackage pkg;
+    HifPackage *pkg;
 
     pkg = by_name(sack, "baby");
-    ck_assert_str_eq(hy_package_get_evr(pkg), "6:5.0-11");
-    epoch = hy_package_get_epoch(pkg);
+    ck_assert_str_eq(hif_package_get_evr(pkg), "6:5.0-11");
+    epoch = hif_package_get_epoch(pkg);
     fail_unless(epoch == 6);
-    version = hy_package_get_version(pkg);
+    version = hif_package_get_version(pkg);
     ck_assert_str_eq(version, "5.0");
     g_free(version);
-    release = hy_package_get_release(pkg);
+    release = hif_package_get_release(pkg);
     ck_assert_str_eq(release, "11");
     g_free(release);
-    hy_package_free(pkg);
+    g_object_unref(pkg);
 
     pkg = by_name(sack, "jay");
     // epoch missing if it's 0:
-    ck_assert_str_eq(hy_package_get_evr(pkg), "5.0-0");
-    epoch = hy_package_get_epoch(pkg);
+    ck_assert_str_eq(hif_package_get_evr(pkg), "5.0-0");
+    epoch = hif_package_get_epoch(pkg);
     fail_unless(epoch == 0);
-    version = hy_package_get_version(pkg);
+    version = hif_package_get_version(pkg);
     ck_assert_str_eq(version, "5.0");
     g_free(version);
-    release = hy_package_get_release(pkg);
+    release = hif_package_get_release(pkg);
     ck_assert_str_eq(release, "0");
     g_free(release);
-    hy_package_free(pkg);
+    g_object_unref(pkg);
 }
 END_TEST
 
 START_TEST(test_no_sourcerpm)
 {
     HifSack *sack = test_globals.sack;
-    HyPackage pkg = by_name(sack, "baby");
-    char *src = hy_package_get_sourcerpm(pkg);
+    HifPackage *pkg = by_name(sack, "baby");
+    char *src = hif_package_get_sourcerpm(pkg);
 
     fail_unless(src == NULL);
-    hy_package_free(pkg);
+    g_object_unref(pkg);
 }
 END_TEST
 
 START_TEST(test_get_requires)
 {
     HifSack *sack = test_globals.sack;
-    HyPackage pkg = by_name(sack, "flying");
-    HyReldepList reldeplist = hy_package_get_requires(pkg);
+    HifPackage *pkg = by_name(sack, "flying");
+    HyReldepList reldeplist = hif_package_get_requires(pkg);
 
     fail_unless(hy_reldeplist_count(reldeplist) == 1);
     HyReldep reldep = hy_reldeplist_get_clone(reldeplist, 0);
@@ -147,48 +117,48 @@ START_TEST(test_get_requires)
 
     hy_reldep_free(reldep);
     hy_reldeplist_free(reldeplist);
-    hy_package_free(pkg);
+    g_object_unref(pkg);
 }
 END_TEST
 
 START_TEST(test_get_more_requires)
 {
     HifSack *sack = test_globals.sack;
-    HyPackage pkg = by_name(sack, "walrus");
-    HyReldepList reldeplist = hy_package_get_requires(pkg);
+    HifPackage *pkg = by_name(sack, "walrus");
+    HyReldepList reldeplist = hif_package_get_requires(pkg);
 
     fail_unless(hy_reldeplist_count(reldeplist) == 2);
     hy_reldeplist_free(reldeplist);
-    hy_package_free(pkg);
+    g_object_unref(pkg);
 }
 END_TEST
 
 START_TEST(test_chksum_fail)
 {
     HifSack *sack = test_globals.sack;
-    HyPackage pkg = by_name(sack, "walrus");
+    HifPackage *pkg = by_name(sack, "walrus");
     int type;
 
-    const unsigned char *chksum = hy_package_get_chksum(pkg, &type);
+    const unsigned char *chksum = hif_package_get_chksum(pkg, &type);
     fail_unless(chksum == NULL);
-    chksum = hy_package_get_hdr_chksum(pkg, &type);
+    chksum = hif_package_get_hdr_chksum(pkg, &type);
     fail_unless(chksum == NULL);
-    hy_package_free(pkg);
+    g_object_unref(pkg);
 }
 END_TEST
 
 START_TEST(test_checksums)
 {
-    HyPackage pkg = by_name(test_globals.sack, "mystery-devel");
+    HifPackage *pkg = by_name(test_globals.sack, "mystery-devel");
     int i;
-    HyChecksum *csum = hy_package_get_chksum(pkg, &i);
+    HyChecksum *csum = hif_package_get_chksum(pkg, &i);
     fail_unless(i == G_CHECKSUM_SHA256);
     // Check the first and last bytes. Those need to match against information
     // in primary.xml.gz.
     fail_unless(csum[0] == 0x2e);
     fail_unless(csum[31] == 0xf5);
 
-    hy_package_free(pkg);
+    g_object_unref(pkg);
 }
 END_TEST
 
@@ -196,8 +166,8 @@ START_TEST(test_get_files)
 {
     HifSack *sack = test_globals.sack;
 
-    HyPackage pkg = by_name(sack, "tour");
-    gchar **files = hy_package_get_files(pkg);
+    HifPackage *pkg = by_name(sack, "tour");
+    gchar **files = hif_package_get_files(pkg);
     int i = 0;
     char **iter;
 
@@ -205,7 +175,7 @@ START_TEST(test_get_files)
         i++;
     g_assert_cmpint(i, ==, 6);
     g_strfreev(files);
-    hy_package_free(pkg);
+    g_object_unref(pkg);
 }
 END_TEST
 
@@ -214,15 +184,15 @@ START_TEST(test_get_advisories)
     GPtrArray *advisories;
     HifAdvisory *advisory;
     HifSack *sack = test_globals.sack;
-    HyPackage pkg = by_name(sack, "tour");
+    HifPackage *pkg = by_name(sack, "tour");
 
-    advisories = hy_package_get_advisories(pkg, HY_GT);
+    advisories = hif_package_get_advisories(pkg, HY_GT);
     fail_unless(advisories != NULL);
     ck_assert_int_eq(advisories->len, 1);
     advisory = g_ptr_array_index(advisories, 0);
     ck_assert_str_eq(hif_advisory_get_id(advisory), "FEDORA-2008-9969");
     g_ptr_array_unref(advisories);
-    hy_package_free(pkg);
+    g_object_unref(pkg);
 }
 END_TEST
 
@@ -230,45 +200,45 @@ START_TEST(test_get_advisories_none)
 {
     GPtrArray *advisories;
     HifSack *sack = test_globals.sack;
-    HyPackage pkg = by_name(sack, "mystery-devel");
+    HifPackage *pkg = by_name(sack, "mystery-devel");
 
-    advisories = hy_package_get_advisories(pkg, HY_GT|HY_EQ);
+    advisories = hif_package_get_advisories(pkg, HY_GT|HY_EQ);
     fail_unless(advisories != NULL);
     ck_assert_int_eq(advisories->len, 0);
     g_ptr_array_unref(advisories);
 
-    advisories = hy_package_get_advisories(pkg, HY_LT|HY_EQ);
+    advisories = hif_package_get_advisories(pkg, HY_LT|HY_EQ);
     fail_unless(advisories != NULL);
     ck_assert_int_eq(advisories->len, 0);
     g_ptr_array_unref(advisories);
 
-    hy_package_free(pkg);
+    g_object_unref(pkg);
 }
 END_TEST
 
 START_TEST(test_lookup_num)
 {
-    HyPackage pkg = by_name(test_globals.sack, "tour");
-    guint64 buildtime = hy_package_get_buildtime(pkg);
+    HifPackage *pkg = by_name(test_globals.sack, "tour");
+    guint64 buildtime = hif_package_get_buildtime(pkg);
     fail_unless(buildtime > 1330473600); // after 2012-02-29
     fail_unless(buildtime < 1456704000); // before 2016-02-29
 
-    hy_package_free(pkg);
+    g_object_unref(pkg);
 }
 END_TEST
 
 START_TEST(test_installed)
 {
-    HyPackage pkg1 = by_name_repo(test_globals.sack, "penny-lib", "main");
-    HyPackage pkg2 = by_name_repo(test_globals.sack,
+    HifPackage *pkg1 = by_name_repo(test_globals.sack, "penny-lib", "main");
+    HifPackage *pkg2 = by_name_repo(test_globals.sack,
                                   "penny-lib", HY_SYSTEM_REPO_NAME);
-    int installed1 = hy_package_installed(pkg1);
-    int installed2 = hy_package_installed(pkg2);
+    int installed1 = hif_package_installed(pkg1);
+    int installed2 = hif_package_installed(pkg2);
     fail_unless(installed1 == 0);
     fail_unless(installed2 == 1);
 
-    hy_package_free(pkg1);
-    hy_package_free(pkg2);
+    g_object_unref(pkg1);
+    g_object_unref(pkg2);
 }
 END_TEST
 
@@ -285,23 +255,23 @@ START_TEST(test_two_sacks)
     const char *path = pool_tmpjoin(pool1, test_globals.repo_dir,
                                     "change.repo", NULL);
     fail_if(load_repo(pool1, "change", path, 0));
-    HyPackage pkg1 = by_name(sack1, "penny-lib");
+    HifPackage *pkg1 = by_name(sack1, "penny-lib");
     fail_if(pkg1 == NULL);
 
     HifSack *sack2 = test_globals.sack;
     Pool *pool2 = hif_sack_get_pool(sack2);
-    HyPackage pkg2 = by_name(sack2, "penny-lib");
+    HifPackage *pkg2 = by_name(sack2, "penny-lib");
     fail_if(pkg2 == NULL);
 
     /* "penny-lib" is in both pools but at different offsets */
-    Solvable *s1 = pool_id2solvable(pool1, pkg1->id);
-    Solvable *s2 = pool_id2solvable(pool2, pkg2->id);
+    Solvable *s1 = pool_id2solvable(pool1, hif_package_get_id(pkg1));
+    Solvable *s2 = pool_id2solvable(pool2, hif_package_get_id(pkg2));
     fail_if(s1->name == s2->name);
 
-    fail_if(hy_package_cmp(pkg1, pkg2) != 0);
+    fail_if(hif_package_cmp(pkg1, pkg2) != 0);
 
-    hy_package_free(pkg1);
-    hy_package_free(pkg2);
+    g_object_unref(pkg1);
+    g_object_unref(pkg2);
 
     g_object_unref(sack1);
     g_free(tmpdir);
@@ -310,26 +280,26 @@ END_TEST
 
 START_TEST(test_packager)
 {
-    HyPackage pkg = by_name(test_globals.sack, "tour");
-    ck_assert_str_eq(hy_package_get_packager(pkg), "roll up <roll@up.net>");
-    hy_package_free(pkg);
+    HifPackage *pkg = by_name(test_globals.sack, "tour");
+    ck_assert_str_eq(hif_package_get_packager(pkg), "roll up <roll@up.net>");
+    g_object_unref(pkg);
 }
 END_TEST
 
 START_TEST(test_sourcerpm)
 {
-    HyPackage pkg = by_name(test_globals.sack, "tour");
-    char *sourcerpm = hy_package_get_sourcerpm(pkg);
+    HifPackage *pkg = by_name(test_globals.sack, "tour");
+    char *sourcerpm = hif_package_get_sourcerpm(pkg);
 
     ck_assert_str_eq(sourcerpm, "tour-4-6.src.rpm");
     g_free(sourcerpm);
-    hy_package_free(pkg);
+    g_object_unref(pkg);
 
     pkg = by_name(test_globals.sack, "mystery-devel");
-    sourcerpm = hy_package_get_sourcerpm(pkg);
+    sourcerpm = hif_package_get_sourcerpm(pkg);
     ck_assert_str_eq(sourcerpm, "mystery-19.67-1.src.rpm");
     g_free(sourcerpm);
-    hy_package_free(pkg);
+    g_object_unref(pkg);
 }
 END_TEST
 
@@ -340,10 +310,10 @@ END_TEST
 START_TEST(test_presto)
 {
     HifSack *sack = test_globals.sack;
-    HyPackage tour = by_name(sack, "tour");
+    HifPackage *tour = by_name(sack, "tour");
     fail_if(tour == NULL);
 
-    HifPackageDelta *delta = hy_package_get_delta_from_evr(tour, "4-5");
+    HifPackageDelta *delta = hif_package_get_delta_from_evr(tour, "4-5");
     const char *location = hif_packagedelta_get_location(delta);
     ck_assert_str_eq(location, "drpms/tour-4-5_4-6.noarch.drpm");
     const char *baseurl = hif_packagedelta_get_baseurl(delta);
@@ -355,7 +325,7 @@ START_TEST(test_presto)
     fail_unless(type == G_CHECKSUM_SHA256);
     ck_assert(!memcmp(csum, TOUR_45_46_DRPM_CHKSUM, 32));
     g_object_unref(delta);
-    hy_package_free(tour);
+    g_object_unref(tour);
 }
 END_TEST
 
@@ -363,13 +333,13 @@ START_TEST(test_get_files_cmdline)
 {
     HifSack *sack = test_globals.sack;
 
-    HyPackage pkg = by_name(sack, "tour");
+    HifPackage *pkg = by_name(sack, "tour");
     gchar **files;
 
-    files = hy_package_get_files(pkg);
+    files = hif_package_get_files(pkg);
     g_assert_cmpint (6, ==, g_strv_length(files));
     g_strfreev(files);
-    hy_package_free(pkg);
+    g_object_unref(pkg);
 }
 END_TEST
 
@@ -381,8 +351,6 @@ package_suite(void)
 
     tc = tcase_create("Core");
     tcase_add_unchecked_fixture(tc, fixture_system_only, teardown);
-    tcase_add_test(tc, test_refcounting);
-    tcase_add_test(tc, test_userdata);
     tcase_add_test(tc, test_package_summary);
     tcase_add_test(tc, test_identical);
     tcase_add_test(tc, test_versions);

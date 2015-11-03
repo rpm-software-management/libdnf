@@ -37,13 +37,13 @@
 
 typedef struct {
     PyObject_HEAD
-    HyPackage package;
+    HifPackage *package;
     PyObject *sack;
 } _PackageObject;
 
 long package_hash(_PackageObject *self);
 
-HyPackage
+HifPackage *
 packageFromPyObject(PyObject *o)
 {
     if (!PyType_IsSubtype(o->ob_type, &package_Type)) {
@@ -54,9 +54,9 @@ packageFromPyObject(PyObject *o)
 }
 
 int
-package_converter(PyObject *o, HyPackage *pkg_ptr)
+package_converter(PyObject *o, HifPackage **pkg_ptr)
 {
-    HyPackage pkg = packageFromPyObject(o);
+    HifPackage *pkg = packageFromPyObject(o);
     if (pkg == NULL)
         return 0;
     *pkg_ptr = pkg;
@@ -80,7 +80,7 @@ static void
 package_dealloc(_PackageObject *self)
 {
     if (self->package)
-        hy_package_free(self->package);
+        g_object_unref(self->package);
 
     Py_XDECREF(self->sack);
     Py_TYPE(self)->tp_free(self);
@@ -100,7 +100,7 @@ package_init(_PackageObject *self, PyObject *args, PyObject *kwds)
         return -1;
     self->sack = sack;
     Py_INCREF(self->sack);
-    self->package = package_create(csack, id);
+    self->package = hif_package_new(csack, id);
     return 0;
 }
 
@@ -108,7 +108,7 @@ PyObject *
 package_py_richcompare(PyObject *self, PyObject *other, int op)
 {
     PyObject *v;
-    HyPackage self_package, other_package;
+    HifPackage *self_package, *other_package;
 
     if (!package_converter(self, &self_package) ||
         !package_converter(other, &other_package)) {
@@ -118,7 +118,7 @@ package_py_richcompare(PyObject *self, PyObject *other, int op)
         return Py_NotImplemented;
     }
 
-    long result = hy_package_cmp(self_package, other_package);
+    long result = hif_package_cmp(self_package, other_package);
 
     switch (op) {
     case Py_EQ:
@@ -150,13 +150,13 @@ package_py_richcompare(PyObject *self, PyObject *other, int op)
 static PyObject *
 package_repr(_PackageObject *self)
 {
-    HyPackage pkg = self->package;
-    char *nevra = hy_package_get_nevra(pkg);
+    HifPackage *pkg = self->package;
+    char *nevra = hif_package_get_nevra(pkg);
     PyObject *repr;
 
     repr = PyString_FromFormat("<hawkey.Package object id %ld, %s, %s>",
                                package_hash(self), nevra,
-                               hy_package_get_reponame(pkg));
+                               hif_package_get_reponame(pkg));
     g_free(nevra);
     return repr;
 }
@@ -164,7 +164,7 @@ package_repr(_PackageObject *self)
 static PyObject *
 package_str(_PackageObject *self)
 {
-    char *cstr = hy_package_get_nevra(self->package);
+    char *cstr = hif_package_get_nevra(self->package);
     PyObject *ret = PyString_FromString(cstr);
     g_free(cstr);
     return ret;
@@ -172,7 +172,7 @@ package_str(_PackageObject *self)
 
 long package_hash(_PackageObject *self)
 {
-    return package_id(self->package);
+    return hif_package_get_id(self->package);
 }
 
 /* getsetters */
@@ -180,23 +180,23 @@ long package_hash(_PackageObject *self)
 static PyObject *
 get_bool(_PackageObject *self, void *closure)
 {
-    unsigned long (*func)(HyPackage);
-    func = (unsigned long (*)(HyPackage))closure;
+    unsigned long (*func)(HifPackage*);
+    func = (unsigned long (*)(HifPackage*))closure;
     return PyBool_FromLong(func(self->package));
 }
 
 static PyObject *
 get_num(_PackageObject *self, void *closure)
 {
-    guint64 (*func)(HyPackage);
-    func = (guint64 (*)(HyPackage))closure;
+    guint64 (*func)(HifPackage*);
+    func = (guint64 (*)(HifPackage*))closure;
     return PyLong_FromUnsignedLongLong(func(self->package));
 }
 
 static PyObject *
 get_reldep(_PackageObject *self, void *closure)
 {
-    HyReldepList (*func)(HyPackage) = (HyReldepList (*)(HyPackage))closure;
+    HyReldepList (*func)(HifPackage*) = (HyReldepList (*)(HifPackage*))closure;
     HyReldepList reldeplist = func(self->package);
     assert(reldeplist);
     PyObject *list = reldeplist_to_pylist(reldeplist, self->sack);
@@ -208,10 +208,10 @@ get_reldep(_PackageObject *self, void *closure)
 static PyObject *
 get_str(_PackageObject *self, void *closure)
 {
-    const char *(*func)(HyPackage);
+    const char *(*func)(HifPackage*);
     const char *cstr;
 
-    func = (const char *(*)(HyPackage))closure;
+    func = (const char *(*)(HifPackage*))closure;
     cstr = func(self->package);
     if (cstr == NULL)
         Py_RETURN_NONE;
@@ -221,11 +221,11 @@ get_str(_PackageObject *self, void *closure)
 static PyObject *
 get_str_alloced(_PackageObject *self, void *closure)
 {
-    char *(*func)(HyPackage);
+    char *(*func)(HifPackage*);
     char *cstr;
     PyObject *ret;
 
-    func = (char *(*)(HyPackage))closure;
+    func = (char *(*)(HifPackage*))closure;
     cstr = func(self->package);
     if (cstr == NULL)
         Py_RETURN_NONE;
@@ -237,10 +237,10 @@ get_str_alloced(_PackageObject *self, void *closure)
 static PyObject *
 get_str_array(_PackageObject *self, void *closure)
 {
-    gchar ** (*func)(HyPackage);
+    gchar ** (*func)(HifPackage*);
     gchar ** strv;
 
-    func = (gchar **(*)(HyPackage))closure;
+    func = (gchar **(*)(HifPackage*))closure;
     strv = func(self->package);
     PyObject *list = strlist_to_pylist((const char **)strv);
     g_strfreev(strv);
@@ -251,11 +251,11 @@ get_str_array(_PackageObject *self, void *closure)
 static PyObject *
 get_chksum(_PackageObject *self, void *closure)
 {
-    HyChecksum *(*func)(HyPackage, int *);
+    HyChecksum *(*func)(HifPackage*, int *);
     int type;
     HyChecksum *cs;
 
-    func = (HyChecksum *(*)(HyPackage, int *))closure;
+    func = (HyChecksum *(*)(HifPackage*, int *))closure;
     cs = func(self->package, &type);
     if (cs == 0) {
         PyErr_SetString(PyExc_AttributeError, "No such checksum.");
@@ -276,59 +276,59 @@ get_chksum(_PackageObject *self, void *closure)
 
 static PyGetSetDef package_getsetters[] = {
     {"baseurl",        (getter)get_str, NULL, NULL,
-     (void *)hy_package_get_baseurl},
+     (void *)hif_package_get_baseurl},
     {"files",        (getter)get_str_array, NULL, NULL,
-     (void *)hy_package_get_files},
-    {"hdr_end", (getter)get_num, NULL, NULL, (void *)hy_package_get_hdr_end},
+     (void *)hif_package_get_files},
+    {"hdr_end", (getter)get_num, NULL, NULL, (void *)hif_package_get_hdr_end},
     {"location",  (getter)get_str_alloced, NULL, NULL,
-     (void *)hy_package_get_location},
+     (void *)hif_package_get_location},
     {"sourcerpm",  (getter)get_str_alloced, NULL, NULL,
-     (void *)hy_package_get_sourcerpm},
+     (void *)hif_package_get_sourcerpm},
     {"version",  (getter)get_str_alloced, NULL, NULL,
-     (void *)hy_package_get_version},
+     (void *)hif_package_get_version},
     {"release",  (getter)get_str_alloced, NULL, NULL,
-     (void *)hy_package_get_release},
-    {"name", (getter)get_str, NULL, NULL, (void *)hy_package_get_name},
-    {"arch", (getter)get_str, NULL, NULL, (void *)hy_package_get_arch},
+     (void *)hif_package_get_release},
+    {"name", (getter)get_str, NULL, NULL, (void *)hif_package_get_name},
+    {"arch", (getter)get_str, NULL, NULL, (void *)hif_package_get_arch},
     {"hdr_chksum", (getter)get_chksum, NULL, NULL,
-     (void *)hy_package_get_hdr_chksum},
-    {"chksum", (getter)get_chksum, NULL, NULL, (void *)hy_package_get_chksum},
+     (void *)hif_package_get_hdr_chksum},
+    {"chksum", (getter)get_chksum, NULL, NULL, (void *)hif_package_get_chksum},
     {"description", (getter)get_str, NULL, NULL,
-     (void *)hy_package_get_description},
-    {"evr",  (getter)get_str, NULL, NULL, (void *)hy_package_get_evr},
-    {"license", (getter)get_str, NULL, NULL, (void *)hy_package_get_license},
-    {"packager",  (getter)get_str, NULL, NULL, (void *)hy_package_get_packager},
-    {"reponame",  (getter)get_str, NULL, NULL, (void *)hy_package_get_reponame},
-    {"summary",  (getter)get_str, NULL, NULL, (void *)hy_package_get_summary},
-    {"url",  (getter)get_str, NULL, NULL, (void *)hy_package_get_url},
+     (void *)hif_package_get_description},
+    {"evr",  (getter)get_str, NULL, NULL, (void *)hif_package_get_evr},
+    {"license", (getter)get_str, NULL, NULL, (void *)hif_package_get_license},
+    {"packager",  (getter)get_str, NULL, NULL, (void *)hif_package_get_packager},
+    {"reponame",  (getter)get_str, NULL, NULL, (void *)hif_package_get_reponame},
+    {"summary",  (getter)get_str, NULL, NULL, (void *)hif_package_get_summary},
+    {"url",  (getter)get_str, NULL, NULL, (void *)hif_package_get_url},
     {"downloadsize", (getter)get_num, NULL, NULL,
-     (void *)hy_package_get_downloadsize},
-    {"epoch", (getter)get_num, NULL, NULL, (void *)hy_package_get_epoch},
+     (void *)hif_package_get_downloadsize},
+    {"epoch", (getter)get_num, NULL, NULL, (void *)hif_package_get_epoch},
     {"installsize", (getter)get_num, NULL, NULL,
-     (void *)hy_package_get_installsize},
-    {"buildtime", (getter)get_num, NULL, NULL, (void *)hy_package_get_buildtime},
+     (void *)hif_package_get_installsize},
+    {"buildtime", (getter)get_num, NULL, NULL, (void *)hif_package_get_buildtime},
     {"installtime", (getter)get_num, NULL, NULL,
-     (void *)hy_package_get_installtime},
-    {"installed", (getter)get_bool, NULL, NULL, (void *)hy_package_installed},
-    {"medianr", (getter)get_num, NULL, NULL, (void *)hy_package_get_medianr},
-    {"rpmdbid", (getter)get_num, NULL, NULL, (void *)hy_package_get_rpmdbid},
-    {"size", (getter)get_num, NULL, NULL, (void *)hy_package_get_size},
+     (void *)hif_package_get_installtime},
+    {"installed", (getter)get_bool, NULL, NULL, (void *)hif_package_installed},
+    {"medianr", (getter)get_num, NULL, NULL, (void *)hif_package_get_medianr},
+    {"rpmdbid", (getter)get_num, NULL, NULL, (void *)hif_package_get_rpmdbid},
+    {"size", (getter)get_num, NULL, NULL, (void *)hif_package_get_size},
     {"conflicts",  (getter)get_reldep, NULL, NULL,
-     (void *)hy_package_get_conflicts},
+     (void *)hif_package_get_conflicts},
     {"enhances",  (getter)get_reldep, NULL, NULL,
-     (void *)hy_package_get_enhances},
+     (void *)hif_package_get_enhances},
     {"obsoletes",  (getter)get_reldep, NULL, NULL,
-     (void *)hy_package_get_obsoletes},
+     (void *)hif_package_get_obsoletes},
     {"provides",  (getter)get_reldep, NULL, NULL,
-     (void *)hy_package_get_provides},
+     (void *)hif_package_get_provides},
     {"recommends",  (getter)get_reldep, NULL, NULL,
-     (void *)hy_package_get_recommends},
+     (void *)hif_package_get_recommends},
     {"requires",  (getter)get_reldep, NULL, NULL,
-     (void *)hy_package_get_requires},
+     (void *)hif_package_get_requires},
     {"suggests",  (getter)get_reldep, NULL, NULL,
-     (void *)hy_package_get_suggests},
+     (void *)hif_package_get_suggests},
     {"supplements",  (getter)get_reldep, NULL, NULL,
-     (void *)hy_package_get_supplements},
+     (void *)hif_package_get_supplements},
     {NULL}                        /* sentinel */
 };
 
@@ -337,10 +337,10 @@ static PyGetSetDef package_getsetters[] = {
 static PyObject *
 evr_cmp(_PackageObject *self, PyObject *other)
 {
-    HyPackage pkg2 = packageFromPyObject(other);
+    HifPackage *pkg2 = packageFromPyObject(other);
     if (pkg2 == NULL)
         return NULL;
-    return PyLong_FromLong(hy_package_evr_cmp(self->package, pkg2));
+    return PyLong_FromLong(hif_package_evr_cmp(self->package, pkg2));
 }
 
 static PyObject *
@@ -352,7 +352,7 @@ get_delta_from_evr(_PackageObject *self, PyObject *evr_str)
         Py_XDECREF(tmp_py_str);
         return NULL;
     }
-    HifPackageDelta *delta_c = hy_package_get_delta_from_evr(self->package, evr);
+    HifPackageDelta *delta_c = hif_package_get_delta_from_evr(self->package, evr);
     Py_XDECREF(tmp_py_str);
     if (delta_c)
         return packageDeltaToPyObject(delta_c);
@@ -369,7 +369,7 @@ get_advisories(_PackageObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &cmp_type))
         return NULL;
 
-    advisories = hy_package_get_advisories(self->package, cmp_type);
+    advisories = hif_package_get_advisories(self->package, cmp_type);
     list = advisorylist_to_pylist(advisories, self->sack);
     g_ptr_array_unref(advisories);
 

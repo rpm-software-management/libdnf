@@ -60,21 +60,21 @@ static void execute_print(HifSack *sack, HyQuery q, int show_obsoletes)
     plist = hy_query_run(q);
     const int count = plist->len;
     for (int i = 0; i < count; ++i) {
-        HyPackage pkg = g_ptr_array_index(plist, i);
-        char *nvra = hy_package_get_nevra(pkg);
-        const char *reponame = hy_package_get_reponame(pkg);
+        HifPackage *pkg = g_ptr_array_index(plist, i);
+        char *nvra = hif_package_get_nevra(pkg);
+        const char *reponame = hif_package_get_reponame(pkg);
 
         printf("found package: %s [%s]\n", nvra, reponame);
         if (strcmp(reponame, HY_SYSTEM_REPO_NAME) == 0) {
             int type;
-            const unsigned char * hdrid = hy_package_get_hdr_chksum(pkg, &type);
+            const unsigned char * hdrid = hif_package_get_hdr_chksum(pkg, &type);
             char *str = hy_chksum_str(hdrid, type);
 
             printf("\tsha1 header id: %s\n", str);
             g_free(str);
         }
         if (show_obsoletes) {
-            HyReldepList obsoletes = hy_package_get_obsoletes(pkg);
+            HyReldepList obsoletes = hif_package_get_obsoletes(pkg);
             HyQuery qobs = hy_query_create(sack);
 
             hy_query_filter(qobs, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
@@ -82,8 +82,8 @@ static void execute_print(HifSack *sack, HyQuery q, int show_obsoletes)
             GPtrArray *olist = hy_query_run(qobs);
             const int ocount = olist->len;
             for (int j = 0; j < ocount; ++j) {
-                HyPackage opkg = g_ptr_array_index(olist, j);
-                char *onvra = hy_package_get_nevra(opkg);
+                HifPackage *opkg = g_ptr_array_index(olist, j);
+                char *onvra = hif_package_get_nevra(opkg);
                 printf("obsoleting: %s\n", onvra);
                 g_free(onvra);
             }
@@ -167,7 +167,7 @@ static void obsoletes(HifSack *sack)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-    HyPackageSet installed_pkgs = hy_query_run_set(q);
+    HifPackageSet installed_pkgs = hy_query_run_set(q);
     hy_query_free(q);
 
     q = hy_query_create(sack);
@@ -214,8 +214,8 @@ erase(HifSack *sack, const char *name)
     plist = hy_goal_list_erasures(goal);
     printf("erasure count: %d\n", plist->len);
     for (int i = 0; i < plist->len; ++i) {
-        HyPackage pkg = g_ptr_array_index(plist, i);
-        char *nvra = hy_package_get_nevra(pkg);
+        HifPackage *pkg = g_ptr_array_index(plist, i);
+        char *nvra = hif_package_get_nevra(pkg);
 
         printf("erasing %s\n", nvra);
         g_free(nvra);
@@ -227,7 +227,7 @@ erase(HifSack *sack, const char *name)
     hy_query_free(q);
 }
 
-static void update(HifSack *sack, HyPackage pkg)
+static void update(HifSack *sack, HifPackage *pkg)
 {
     HyGoal goal = hy_goal_create(sack);
 
@@ -244,16 +244,16 @@ static void update(HifSack *sack, HyPackage pkg)
     GPtrArray *plist = hy_goal_list_upgrades(goal);
     printf("upgrade count: %d\n", plist->len);
     for (int i = 0; i < plist->len; ++i) {
-        HyPackage pkg = g_ptr_array_index(plist, i);
-        char *nvra = hy_package_get_nevra(pkg);
-        char *location = hy_package_get_location(pkg);
+        HifPackage *pkg = g_ptr_array_index(plist, i);
+        char *nvra = hif_package_get_nevra(pkg);
+        char *location = hif_package_get_location(pkg);
         GPtrArray *obsoleted = hy_goal_list_obsoleted_by_package(goal, pkg);
-        HyPackage installed = g_ptr_array_index(obsoleted, 0);
-        char *nvra_installed = hy_package_get_nevra(installed);
+        HifPackage *installed = g_ptr_array_index(obsoleted, 0);
+        char *nvra_installed = hif_package_get_nevra(installed);
 
         printf("upgrading: %s using %s\n", nvra, location);
         printf("\tfrom: %s\n", nvra_installed);
-        printf("\tsize: %lld kB\n", hy_package_get_size(pkg) / 1024);
+        printf("\tsize: %lld kB\n", hif_package_get_size(pkg) / 1024);
 
         g_free(nvra_installed);
         g_ptr_array_unref(obsoleted);
@@ -265,12 +265,12 @@ static void update(HifSack *sack, HyPackage pkg)
     plist = hy_goal_list_installs(goal);
     printf("install count: %d\n", plist->len);
     for (int i = 0; i < plist->len; ++i) {
-        HyPackage pkg = g_ptr_array_index(plist, i);
-        char *nvra = hy_package_get_nevra(pkg);
-        char *location = hy_package_get_location(pkg);
+        HifPackage *pkg = g_ptr_array_index(plist, i);
+        char *nvra = hif_package_get_nevra(pkg);
+        char *location = hif_package_get_location(pkg);
 
         printf("installing: %s using %s\n", nvra, location);
-        printf("\tsize: %lld kB\n", hy_package_get_size(pkg) / 1024);
+        printf("\tsize: %lld kB\n", hif_package_get_size(pkg) / 1024);
 
         g_free(location);
         g_free(nvra);
@@ -283,12 +283,12 @@ static void update(HifSack *sack, HyPackage pkg)
 
 static void update_local(HifSack *sack, const char *fn)
 {
-    HyPackage pkg;
+    HifPackage *pkg;
 
     pkg = hif_sack_add_cmdline_package(sack, fn);
     if (pkg) {
         update(sack, pkg);
-        hy_package_free(pkg);
+        g_object_unref(pkg);
     }
 }
 

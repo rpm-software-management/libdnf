@@ -57,27 +57,27 @@ void             hif_db_set_enabled             (HifDb          *db,
 
 /* getters */
 gchar           *hif_db_get_string              (HifDb          *db,
-                                                 HyPackage       package,
+                                                 HifPackage *      package,
                                                  const gchar    *key,
                                                  GError         **error);
 
 /* setters */
 gboolean         hif_db_set_string              (HifDb          *db,
-                                                 HyPackage       package,
+                                                 HifPackage *      package,
                                                  const gchar    *key,
                                                  const gchar    *value,
                                                  GError         **error);
 
 /* object methods */
 gboolean         hif_db_remove                  (HifDb          *db,
-                                                 HyPackage       package,
+                                                 HifPackage *      package,
                                                  const gchar    *key,
                                                  GError         **error);
 gboolean         hif_db_remove_all              (HifDb          *db,
-                                                 HyPackage       package,
+                                                 HifPackage *      package,
                                                  GError         **error);
 void             hif_db_ensure_origin_pkg       (HifDb          *db,
-                                                 HyPackage       pkg);
+                                                 HifPackage *      pkg);
 void             hif_db_ensure_origin_pkglist   (HifDb          *db,
                                                  GPtrArray *  pkglist);
 

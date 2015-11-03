@@ -176,7 +176,7 @@ gboolean         hif_repo_commit                (HifRepo              *repo,
                                                  GError              **error);
 #ifndef __GI_SCANNER__
 gchar           *hif_repo_download_package      (HifRepo              *repo,
-                                                 HyPackage             pkg,
+                                                 HifPackage *            pkg,
                                                  const gchar          *directory,
                                                  HifState             *state,
                                                  GError              **error);

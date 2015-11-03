@@ -92,7 +92,7 @@ GPtrArray *
 hif_goal_get_packages(HyGoal goal, ...)
 {
     GPtrArray *array;
-    HyPackage pkg;
+    HifPackage *pkg;
     gint info_tmp;
     guint i;
     guint j;
@@ -100,7 +100,7 @@ hif_goal_get_packages(HyGoal goal, ...)
 
     /* process the valist */
     va_start(args, goal);
-    array = g_ptr_array_new_with_free_func((GDestroyNotify) hy_package_free);
+    array = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
     for (j = 0;; j++) {
         GPtrArray *pkglist = NULL;
         info_tmp = va_arg(args, gint);
@@ -112,7 +112,7 @@ hif_goal_get_packages(HyGoal goal, ...)
             for (i = 0; i < pkglist->len; i++) {
                 pkg = g_ptr_array_index (pkglist, i);
                 hif_package_set_action(pkg, HIF_STATE_ACTION_REMOVE);
-                g_ptr_array_add(array, hy_package_link(pkg));
+                g_ptr_array_add(array, g_object_ref(pkg));
             }
             break;
         case HIF_PACKAGE_INFO_INSTALL:
@@ -120,7 +120,7 @@ hif_goal_get_packages(HyGoal goal, ...)
             for (i = 0; i < pkglist->len; i++) {
                 pkg = g_ptr_array_index (pkglist, i);
                 hif_package_set_action(pkg, HIF_STATE_ACTION_INSTALL);
-                g_ptr_array_add(array, hy_package_link(pkg));
+                g_ptr_array_add(array, g_object_ref(pkg));
             }
             break;
         case HIF_PACKAGE_INFO_OBSOLETE:
@@ -128,7 +128,7 @@ hif_goal_get_packages(HyGoal goal, ...)
             for (i = 0; i < pkglist->len; i++) {
                 pkg = g_ptr_array_index (pkglist, i);
                 hif_package_set_action(pkg, HIF_STATE_ACTION_OBSOLETE);
-                g_ptr_array_add(array, hy_package_link(pkg));
+                g_ptr_array_add(array, g_object_ref(pkg));
             }
             break;
         case HIF_PACKAGE_INFO_REINSTALL:
@@ -136,7 +136,7 @@ hif_goal_get_packages(HyGoal goal, ...)
             for (i = 0; i < pkglist->len; i++) {
                 pkg = g_ptr_array_index (pkglist, i);
                 hif_package_set_action(pkg, HIF_STATE_ACTION_REINSTALL);
-                g_ptr_array_add(array, hy_package_link(pkg));
+                g_ptr_array_add(array, g_object_ref(pkg));
             }
             break;
         case HIF_PACKAGE_INFO_UPDATE:
@@ -144,7 +144,7 @@ hif_goal_get_packages(HyGoal goal, ...)
             for (i = 0; i < pkglist->len; i++) {
                 pkg = g_ptr_array_index (pkglist, i);
                 hif_package_set_action(pkg, HIF_STATE_ACTION_UPDATE);
-                g_ptr_array_add(array, hy_package_link(pkg));
+                g_ptr_array_add(array, g_object_ref(pkg));
             }
             break;
         case HIF_PACKAGE_INFO_DOWNGRADE:
@@ -152,7 +152,7 @@ hif_goal_get_packages(HyGoal goal, ...)
             for (i = 0; i < pkglist->len; i++) {
                 pkg = g_ptr_array_index (pkglist, i);
                 hif_package_set_action(pkg, HIF_STATE_ACTION_DOWNGRADE);
-                g_ptr_array_add(array, hy_package_link(pkg));
+                g_ptr_array_add(array, g_object_ref(pkg));
             }
             break;
         default:
