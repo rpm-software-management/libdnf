@@ -20,12 +20,12 @@
 
 #include <wordexp.h>
 
-// libsolv
+
 #include <solv/pool.h>
 #include <solv/repo.h>
 #include <solv/testcase.h>
 
-// hawkey
+
 #include "libhif/hy-repo.h"
 #include "libhif/hy-repo-private.h"
 #include "testshared.h"

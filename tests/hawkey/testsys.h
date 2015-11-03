@@ -21,10 +21,10 @@
 #ifndef TESTSYS_H
 #define TESTSYS_H
 
-// libsolv
+
 #include <solv/pooltypes.h>
 
-// hawkey
+
 #include "libhif/hif-sack.h"
 #include "testshared.h"
 

@@ -23,10 +23,10 @@
 #include <unistd.h>
 #include <glib.h>
 
-// libsolv
+
 #include <solv/pool.h>
 
-// hawkey
+
 #include "libhif/hy-util.h"
 #include "libhif/hy-iutil.h"
 #include "fixtures.h"

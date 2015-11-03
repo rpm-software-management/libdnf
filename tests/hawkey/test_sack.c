@@ -24,10 +24,10 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-// libsolv
+
 #include <solv/testcase.h>
 
-// hawkey
+
 #include "libhif/hif-types.h"
 #include "libhif/hy-package-private.h"
 #include "libhif/hy-repo-private.h"

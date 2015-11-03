@@ -21,11 +21,9 @@
 #ifndef HY_PACKAGESET_INTERNAL_H
 #define HY_PACKAGESET_INTERNAL_H
 
-// libsolv
 #include <solv/pooltypes.h>
 #include <solv/bitmap.h>
 
-// hawkey
 #include "hy-packageset.h"
 
 HifPackageSet   *hif_packageset_from_bitmap    (HifSack *sack, Map *m);

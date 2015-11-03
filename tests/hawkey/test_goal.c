@@ -21,7 +21,7 @@
 #include <check.h>
 #include <stdarg.h>
 
-// hawkey
+
 #include "libhif/hif-types.h"
 #include "libhif/hy-goal.h"
 #include "libhif/hy-iutil.h"

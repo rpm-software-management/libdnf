@@ -21,7 +21,7 @@
 #include <check.h>
 #include <string.h>
 
-// hawkey
+
 #include "libhif/hy-repo-private.h"
 #include "fixtures.h"
 #include "testshared.h"

@@ -18,10 +18,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-// libsolv
+
 #include <solv/util.h>
 
-// hawkey
+
 #include "libhif/hif-advisory.h"
 #include "libhif/hy-package.h"
 #include "libhif/hy-package-private.h"

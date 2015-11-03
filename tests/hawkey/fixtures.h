@@ -21,7 +21,7 @@
 #ifndef FIXTURES_H
 #define FIXTURES_H
 
-// hawkey
+
 #include "libhif/hif-sack.h"
 
 struct TestGlobals_s {

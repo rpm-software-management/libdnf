@@ -19,7 +19,7 @@
  */
 
 
-// hawkey
+
 #include "libhif/hif-advisory.h"
 #include "libhif/hif-advisoryref.h"
 #include "libhif/hy-package.h"

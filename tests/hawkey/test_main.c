@@ -26,10 +26,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-// libsolv
+
 #include <solv/util.h>
 
-// hawkey
+
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"

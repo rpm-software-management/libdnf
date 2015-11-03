@@ -22,7 +22,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-// hawkey
+
 #include "libhif/hy-package.h"
 #include "libhif/hy-repo.h"
 #include "libhif/hy-iutil.h"

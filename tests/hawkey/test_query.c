@@ -20,10 +20,10 @@
 
 #include <check.h>
 
-// libsolv
+
 #include <solv/testcase.h>
 
-// hawkey
+
 #include "libhif/hy-query.h"
 #include "libhif/hy-query-private.h"
 #include "libhif/hy-package.h"

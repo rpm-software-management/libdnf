@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-// hawkey
+
 #include "libhif/hy-package.h"
 #include "libhif/hy-reldep.h"
 #include "libhif/hif-sack.h"

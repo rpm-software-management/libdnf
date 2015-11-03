@@ -23,7 +23,7 @@
 #include <check.h>
 #include <string.h>
 
-// hawkey
+
 #include "libhif/hy-nevra.h"
 #include "libhif/hy-nevra-private.h"
 #include "libhif/hy-reldep.h"

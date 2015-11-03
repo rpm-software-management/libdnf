@@ -24,11 +24,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-// libsolv
+
 #include <solv/repo.h>
 #include <solv/util.h>
 
-// hawkey
+
 #include "libhif/hy-goal.h"
 #include "libhif/hy-package.h"
 #include "libhif/hy-package-private.h"

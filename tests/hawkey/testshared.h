@@ -21,10 +21,10 @@
 #ifndef TESTSHARED_H
 #define TESTSHARED_H
 
-// libsolv
+
 #include <solv/pooltypes.h>
 
-// hawkey
+
 #include "libhif/hy-repo.h"
 
 #define UNITTEST_DIR "/tmp/hawkeyXXXXXX"
