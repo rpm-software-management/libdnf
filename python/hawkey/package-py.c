@@ -296,6 +296,7 @@ static PyGetSetDef package_getsetters[] = {
     {"description", (getter)get_str, NULL, NULL,
      (void *)hif_package_get_description},
     {"evr",  (getter)get_str, NULL, NULL, (void *)hif_package_get_evr},
+    {"group",  (getter)get_str, NULL, NULL, (void *)hif_package_get_group},
     {"license", (getter)get_str, NULL, NULL, (void *)hif_package_get_license},
     {"packager",  (getter)get_str, NULL, NULL, (void *)hif_package_get_packager},
     {"reponame",  (getter)get_str, NULL, NULL, (void *)hif_package_get_reponame},
