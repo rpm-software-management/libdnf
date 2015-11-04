@@ -552,6 +552,22 @@ hif_package_get_evr(HifPackage *pkg)
 }
 
 /**
+ * hif_package_get_group:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the group for the package.
+ *
+ * Returns: a string, or %NULL
+ *
+ * Since: 0.7.0
+ */
+const char *
+hif_package_get_group(HifPackage *pkg)
+{
+  return solvable_lookup_str(get_solvable(pkg), SOLVABLE_GROUP);
+}
+
+/**
  * hif_package_get_license:
  * @pkg: a #HifPackage instance.
  *

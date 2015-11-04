@@ -66,6 +66,7 @@ const char  *hif_package_get_arch       (HifPackage *pkg);
 const unsigned char *hif_package_get_chksum(HifPackage *pkg, int *type);
 const char  *hif_package_get_description(HifPackage *pkg);
 const char  *hif_package_get_evr        (HifPackage *pkg);
+const char  *hif_package_get_group      (HifPackage *pkg);
 const char  *hif_package_get_license    (HifPackage *pkg);
 const unsigned char *hif_package_get_hdr_chksum(HifPackage *pkg, int *type);
 const char  *hif_package_get_packager   (HifPackage *pkg);
