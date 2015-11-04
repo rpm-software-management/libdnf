@@ -81,10 +81,30 @@ SET(HAWKEY_headers
     hy-types.h
     hy-util.h)
 
+SET(LIBHIF_headers
+    hif-context.h
+    hif-db.h
+    hif-goal.h
+    hif-keyring.h
+    hif-lock.h
+    hif-package.h
+    hif-repos.h
+    hif-rpmts.h
+    hif-sack.h
+    hif-source.h
+    hif-state.h
+    hif-transaction.h
+    hif-types.h
+    hif-utils.h
+    hif-version.h
+    libhif.h)
+
+
 IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
   SET (LIB_SUFFIX "64")
 ENDIF (CMAKE_SIZEOF_VOID_P MATCHES "8")
 SET (LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
 
 INSTALL(FILES ${HAWKEY_headers} DESTINATION include/hawkey)
+INSTALL(FILES ${LIBHIF_headers} DESTINATION include/libhif)
 INSTALL(TARGETS libhif LIBRARY DESTINATION ${LIB_INSTALL_DIR})
