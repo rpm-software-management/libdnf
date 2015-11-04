@@ -24,7 +24,7 @@ SET_TARGET_PROPERTIES(testshared PROPERTIES COMPILE_FLAGS -fPIC)
 
 ADD_EXECUTABLE(test_hawkey_main ${hawkeytest_SRCS})
 TARGET_LINK_LIBRARIES(test_hawkey_main
-    libhawkey
+    libhif
     ${REPO_LIBRARY}
     ${GLIB_LIBRARIES}
     ${GLIB_GOBJECT_LIBRARIES}

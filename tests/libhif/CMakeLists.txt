@@ -1,6 +1,6 @@
 ADD_EXECUTABLE(test_libhif_main hif-self-test.c)
 TARGET_LINK_LIBRARIES(test_libhif_main
-    libhawkey
+    libhif
     ${REPO_LIBRARY}
     ${GLIB_LIBRARIES}
     ${GLIB_GOBJECT_LIBRARIES}

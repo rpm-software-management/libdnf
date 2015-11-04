@@ -48,7 +48,7 @@ SET_TARGET_PROPERTIES(_hawkeymodule PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(_hawkeymodule PROPERTIES OUTPUT_NAME ${HAWKEY_MODULE_NAME})
 SET_TARGET_PROPERTIES(_hawkeymodule PROPERTIES LIBRARY_OUTPUT_DIRECTORY "./hawkey")
 TARGET_LINK_LIBRARIES(_hawkeymodule
-                      libhawkey
+                      libhif
                       ${GLIB_LIBRARIES}
                       ${GLIB_GOBJECT_LIBRARIES}
                       ${GLIB_GIO_LIBRARIES}

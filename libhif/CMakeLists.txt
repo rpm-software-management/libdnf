@@ -33,8 +33,8 @@ SET (LIBHIF_SRCS
 
 CONFIGURE_FILE("hif-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/hif-version.h)
 
-ADD_LIBRARY(libhawkey SHARED ${LIBHIF_SRCS})
-TARGET_LINK_LIBRARIES(libhawkey
+ADD_LIBRARY(libhif SHARED ${LIBHIF_SRCS})
+TARGET_LINK_LIBRARIES(libhif
                       ${REPO_LIBRARY}
                       ${GLIB_LIBRARIES}
                       ${GLIB_GOBJECT_LIBRARIES}
@@ -46,22 +46,22 @@ TARGET_LINK_LIBRARIES(libhawkey
                       ${EXPAT_LIBRARY}
                       ${ZLIB_LIBRARY}
                       ${RPMDB_LIBRARY})
-        
-SET_TARGET_PROPERTIES(libhawkey PROPERTIES OUTPUT_NAME "hawkey")
-SET_TARGET_PROPERTIES(libhawkey PROPERTIES SOVERSION 3)
+
+SET_TARGET_PROPERTIES(libhif PROPERTIES OUTPUT_NAME "libhif")
+SET_TARGET_PROPERTIES(libhif PROPERTIES SOVERSION 3)
 
 ADD_EXECUTABLE(hth hy-hth.c)
-TARGET_LINK_LIBRARIES(hth libhawkey
+TARGET_LINK_LIBRARIES(hth libhif
                            ${GLIB_LIBRARIES}
                            ${GLIB_GOBJECT_LIBRARIES}
                            ${GLIB_GIO_LIBRARIES}
                            ${GLIB_GIO_UNIX_LIBRARIES}
-			   ${SOLV_LIBRARY}
-			   ${SOLVEXT_LIBRARY}
-			   ${REPO_LIBRARY}
-			   ${EXPAT_LIBRARY}
-			   ${ZLIB_LIBRARY}
-			   ${RPMDB_LIBRARY})
+                           ${SOLV_LIBRARY}
+                           ${SOLVEXT_LIBRARY}
+                           ${REPO_LIBRARY}
+                           ${EXPAT_LIBRARY}
+                           ${ZLIB_LIBRARY}
+                           ${RPMDB_LIBRARY})
 
 SET(HAWKEY_headers
     hy-advisory.h
@@ -87,4 +87,4 @@ ENDIF (CMAKE_SIZEOF_VOID_P MATCHES "8")
 SET (LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
 
 INSTALL(FILES ${HAWKEY_headers} DESTINATION include/hawkey)
-INSTALL(TARGETS libhawkey LIBRARY DESTINATION ${LIB_INSTALL_DIR})
+INSTALL(TARGETS libhif LIBRARY DESTINATION ${LIB_INSTALL_DIR})
