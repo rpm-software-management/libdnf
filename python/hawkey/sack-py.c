@@ -424,11 +424,8 @@ load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
         flags |= HIF_SACK_LOAD_FLAG_BUILD_CACHE;
 
     gboolean ret = hif_sack_load_system_repo(self->sack, crepo, flags, &error);
-    if (g_error_matches (error, HIF_ERROR, HIF_ERROR_CANNOT_WRITE_CACHE)) {
-        PyErr_SetString(PyExc_IOError, "Failed writing the cache.");
-        return NULL;
-    } else if (error2e(error))
-        return NULL;
+    if (!ret)
+        return op_error2exc(error);
     Py_RETURN_NONE;
 }
 
@@ -460,8 +457,8 @@ load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     Py_BEGIN_ALLOW_THREADS;
     ret = hif_sack_load_repo(self->sack, crepo, flags, &error);
     Py_END_ALLOW_THREADS;
-    if (error2e(error))
-        return NULL;
+    if (!ret)
+        return op_error2exc(error);
     Py_RETURN_NONE;
 }
 
