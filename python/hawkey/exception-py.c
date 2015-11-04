@@ -104,3 +104,33 @@ ret2e(int ret, const char *msg)
     PyErr_SetString(exctype, msg);
     return 1;
 }
+
+
+PyObject *
+op_error2exc(const GError *error)
+{
+    if (error == NULL)
+        Py_RETURN_NONE;
+
+    switch (error->code) {
+    case HIF_ERROR_BAD_SELECTOR:
+        PyErr_SetString(HyExc_Value,
+                        "Ill-formed Selector used for the operation.");
+        return NULL;
+    case HIF_ERROR_INVALID_ARCHITECTURE:
+        PyErr_SetString(HyExc_Arch, "Used arch is unknown.");
+        return NULL;
+    case HIF_ERROR_PACKAGE_NOT_FOUND:
+        PyErr_SetString(HyExc_Validation, "The validation check has failed.");
+        return NULL;
+    case HIF_ERROR_FILE_INVALID:
+        PyErr_SetString(PyExc_IOError, error->message);
+        return NULL;
+    case HIF_ERROR_CANNOT_WRITE_CACHE:
+        PyErr_SetString(PyExc_IOError, "Failed writing the cache.");
+        return NULL;
+    default:
+        PyErr_SetString(HyExc_Exception, error->message);
+        return NULL;
+    }
+}

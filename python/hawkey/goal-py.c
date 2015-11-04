@@ -173,29 +173,6 @@ op_ret2exc(int ret)
     }
 }
 
-static PyObject *
-op_error2exc(const GError *error)
-{
-    if (error == NULL)
-        Py_RETURN_NONE;
-
-    switch (error->code) {
-    case HIF_ERROR_BAD_SELECTOR:
-        PyErr_SetString(HyExc_Value,
-                        "Ill-formed Selector used for the operation.");
-        return NULL;
-    case HIF_ERROR_INVALID_ARCHITECTURE:
-        PyErr_SetString(HyExc_Arch, "Used arch is unknown.");
-        return NULL;
-    case HIF_ERROR_PACKAGE_NOT_FOUND:
-        PyErr_SetString(HyExc_Validation, "The validation check has failed.");
-        return NULL;
-    default:
-        PyErr_SetString(HyExc_Exception, "Goal operation failed.");
-        return NULL;
-    }
-}
-
 /* functions on the type */
 
 static PyObject *

@@ -422,14 +422,8 @@ load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
         flags |= HY_BUILD_CACHE;
 
     gboolean ret = hy_sack_load_system_repo(self->sack, crepo, flags, &error);
-    if (g_error_matches (error, HIF_ERROR, HIF_ERROR_CANNOT_WRITE_CACHE)) {
-        PyErr_SetString(PyExc_IOError, "Failed writing the cache.");
-        return NULL;
-    } else if (error) {
-        // FIXME: this should return specific error
-        PyErr_SetString(PyExc_AssertionError, "Internal error occurred.");
-        return NULL;
-    }
+    if (!ret)
+        return op_error2exc(error);
     Py_RETURN_NONE;
 }
 
@@ -461,11 +455,8 @@ load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     Py_BEGIN_ALLOW_THREADS;
     ret = hy_sack_load_repo(self->sack, crepo, flags, &error);
     Py_END_ALLOW_THREADS;
-    if (error) {
-        // FIXME: this should return specific error
-        PyErr_SetString(PyExc_AssertionError, "Internal error occurred.");
-        return NULL;
-    }
+    if (!ret)
+        return op_error2exc(error);
     Py_RETURN_NONE;
 }
 
