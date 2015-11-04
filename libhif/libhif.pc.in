@@ -1,7 +1,6 @@
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-libdir=@libdir@
-includedir=@includedir@
+prefix=@CMAKE_INSTALL_PREFIX@
+libdir=@LIB_INSTALL_DIR@
+includedir=@CMAKE_INSTALL_PREFIX@/include
 
 Name: libhif
 Description: Simple package manager interface and librepo
