@@ -96,7 +96,7 @@ mv ../py3 ./
 %endif
 
 %build
-%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .
+%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDISABLE_VALGRIND_TESTS=1 .
 make %{?_smp_mflags}
 make doc-man
 
@@ -108,22 +108,22 @@ make doc-man
 popd
 %endif
 
-#%check
-#if [ "$(id -u)" == "0" ] ; then
-#        cat <<ERROR 1>&2
-#Package tests cannot be run under superuser account.
-#Please build the package as non-root user.
-#ERROR
-#        exit 1
-#fi
-#make ARGS="-V" test
-#%if %{with python3}
+%check
+if [ "$(id -u)" == "0" ] ; then
+        cat <<ERROR 1>&2
+Package tests cannot be run under superuser account.
+Please build the package as non-root user.
+ERROR
+        exit 1
+fi
+make ARGS="-V" test
+%if %{with python3}
 # Run just the Python tests, not all of them, since
 # we have coverage of the core from the first build
-#pushd py3/tests/python
-#make ARGS="-V" test
-#popd
-#%endif
+pushd py3/python/hawkey/tests
+make ARGS="-V" test
+popd
+%endif
 
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
