@@ -148,8 +148,6 @@ popd
 %{_libdir}/pkgconfig/libhif.pc
 %dir %{_includedir}/libhif
 %{_includedir}/libhif/*.h
-%dir %{_includedir}/hawkey
-%{_includedir}/hawkey/*.h
 %{_datadir}/gtk-doc
 %{_datadir}/gir-1.0/*.gir
 

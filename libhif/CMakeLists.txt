@@ -64,24 +64,6 @@ TARGET_LINK_LIBRARIES(hth libhif
                            ${ZLIB_LIBRARY}
                            ${RPMDB_LIBRARY})
 
-SET(HAWKEY_headers
-    hy-advisory.h
-    hy-advisorypkg.h
-    hy-advisoryref.h
-    hy-goal.h
-    hy-nevra.h
-    hy-package.h
-    hy-packagelist.h
-    hy-packageset.h
-    hy-query.h
-    hy-reldep.h
-    hy-repo.h
-    hy-sack.h
-    hy-selector.h
-    hy-subject.h
-    hy-types.h
-    hy-util.h)
-
 SET(LIBHIF_headers
     hif-context.h
     hif-db.h
@@ -107,6 +89,5 @@ SET (LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
 
 INSTALL(FILES "libhif.pc"
         DESTINATION "${LIB_INSTALL_DIR}/pkgconfig")
-INSTALL(FILES ${HAWKEY_headers} DESTINATION include/hawkey)
 INSTALL(FILES ${LIBHIF_headers} DESTINATION include/libhif)
 INSTALL(TARGETS libhif LIBRARY DESTINATION ${LIB_INSTALL_DIR})
