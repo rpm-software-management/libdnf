@@ -48,21 +48,21 @@ TARGET_LINK_LIBRARIES(libhif
                       ${ZLIB_LIBRARY}
                       ${RPMDB_LIBRARY})
 
-SET_TARGET_PROPERTIES(libhif PROPERTIES OUTPUT_NAME "libhif")
+SET_TARGET_PROPERTIES(libhif PROPERTIES OUTPUT_NAME "hif")
 SET_TARGET_PROPERTIES(libhif PROPERTIES SOVERSION 3)
 
 ADD_EXECUTABLE(hth hy-hth.c)
 TARGET_LINK_LIBRARIES(hth libhif
-                           ${GLIB_LIBRARIES}
-                           ${GLIB_GOBJECT_LIBRARIES}
-                           ${GLIB_GIO_LIBRARIES}
-                           ${GLIB_GIO_UNIX_LIBRARIES}
-                           ${SOLV_LIBRARY}
-                           ${SOLVEXT_LIBRARY}
-                           ${REPO_LIBRARY}
-                           ${EXPAT_LIBRARY}
-                           ${ZLIB_LIBRARY}
-                           ${RPMDB_LIBRARY})
+                      ${GLIB_LIBRARIES}
+                      ${GLIB_GOBJECT_LIBRARIES}
+                      ${GLIB_GIO_LIBRARIES}
+                      ${GLIB_GIO_UNIX_LIBRARIES}
+                      ${SOLV_LIBRARY}
+                      ${SOLVEXT_LIBRARY}
+                      ${REPO_LIBRARY}
+                      ${EXPAT_LIBRARY}
+                      ${ZLIB_LIBRARY}
+                      ${RPMDB_LIBRARY})
 
 SET(LIBHIF_headers
     hif-context.h
