@@ -147,7 +147,6 @@ popd
 %postun -p /sbin/ldconfig
 
 %files
-%doc COPYING README.rst
 %doc README.md AUTHORS NEWS COPYING
 %{_libdir}/libhif.so.*
 %{_libdir}/girepository-1.0/*.typelib
@@ -157,7 +156,7 @@ popd
 %{_libdir}/pkgconfig/libhif.pc
 %dir %{_includedir}/libhif
 %{_includedir}/libhif/*.h
-%{_datadir}/gtk-doc
+# %%{_datadir}/gtk-doc
 %{_datadir}/gir-1.0/*.gir
 
 %files -n hawkey-man
