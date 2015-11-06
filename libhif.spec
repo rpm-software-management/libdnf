@@ -57,8 +57,8 @@ Requires:	libsolv-devel
 %description devel
 Development files for libhif.
 
-%package -n python-hawkey
-Summary:	Python 2 bindings for the hawkey library
+%package -n hawkey-man
+Summary:	Documentation for the hawkey python bindings
 Group:		Development/Languages
 BuildRequires:  python2-devel
 BuildRequires:  python-nose
@@ -69,6 +69,17 @@ BuildRequires:	python-sphinx
 %endif
 Requires:	%{name}%{?_isa} = %{version}-%{release}
 
+%description -n hawkey-man
+Python 2 bindings for the hawkey library.
+
+%package -n python-hawkey
+Summary:	Python 2 bindings for the hawkey library
+Group:		Development/Languages
+BuildRequires:  python2-devel
+BuildRequires:  python-nose
+Requires:	%{name}%{?_isa} = %{version}-%{release}
+Recommends:     hawkey-man = %{version}-%{release}
+
 %description -n python-hawkey
 Python 2 bindings for the hawkey library.
 
@@ -76,10 +87,8 @@ Python 2 bindings for the hawkey library.
 %package -n python3-hawkey
 Summary:	Python 3 bindings for the hawkey library
 Group:		Development/Languages
-BuildRequires:	python3-devel
-BuildRequires:	python3-nose
-BuildRequires:	python3-sphinx >= 1.1.3-9
 Requires:	%{name}%{?_isa} = %{version}-%{release}
+Recommends:     hawkey-man = %{version}-%{release}
 
 %description -n python3-hawkey
 Python 3 bindings for the hawkey library.
@@ -150,6 +159,9 @@ popd
 %{_includedir}/libhif/*.h
 %{_datadir}/gtk-doc
 %{_datadir}/gir-1.0/*.gir
+
+%files -n hawkey-man
+%{_mandir}/man3/hawkey.3.gz
 
 %files -n python-hawkey
 %{python_sitearch}/
