@@ -72,20 +72,22 @@ Requires:	%{name}%{?_isa} = %{version}-%{release}
 %description -n hawkey-man
 Python 2 bindings for the hawkey library.
 
-%package -n python-hawkey
+%package -n python2-hawkey
 Summary:	Python 2 bindings for the hawkey library
+%{?python_provide:%python_provide python2-hawkey}
 Group:		Development/Languages
 BuildRequires:  python2-devel
 BuildRequires:  python-nose
 Requires:	%{name}%{?_isa} = %{version}-%{release}
 Recommends:     hawkey-man = %{version}-%{release}
 
-%description -n python-hawkey
+%description -n python2-hawkey
 Python 2 bindings for the hawkey library.
 
 %if %{with python3}
 %package -n python3-hawkey
 Summary:	Python 3 bindings for the hawkey library
+%{?python_provide:%python_provide python3-hawkey}
 Group:		Development/Languages
 Requires:	%{name}%{?_isa} = %{version}-%{release}
 Recommends:     hawkey-man = %{version}-%{release}
@@ -162,7 +164,7 @@ popd
 %files -n hawkey-man
 %{_mandir}/man3/hawkey.3.gz
 
-%files -n python-hawkey
+%files -n python2-hawkey
 %{python_sitearch}/
 
 %if %{with python3}
