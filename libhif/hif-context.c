@@ -1367,7 +1367,8 @@ hif_context_setup(HifContext *context,
     }
 
     /* get info from OS release file */
-    if (!hif_context_set_os_release(context, error))
+    if (priv->release_ver == NULL &&
+        !hif_context_set_os_release(context, error))
         return FALSE;
 
     /* setup RPM */
