@@ -24,25 +24,25 @@
 
 #define __LIBHIF_H_INSIDE__
 
-#include <hif-advisory.h>
-#include <hif-advisorypkg.h>
-#include <hif-advisoryref.h>
-#include <hif-context.h>
-#include <hif-db.h>
-#include <hif-goal.h>
-#include <hif-keyring.h>
-#include <hif-lock.h>
-#include <hif-package.h>
-#include <hif-packagedelta.h>
-#include <hif-repos.h>
-#include <hif-rpmts.h>
-#include <hif-sack.h>
-#include <hif-repo.h>
-#include <hif-state.h>
-#include <hif-transaction.h>
-#include <hif-types.h>
-#include <hif-utils.h>
-#include <hif-version.h>
+#include <libhif/hif-advisory.h>
+#include <libhif/hif-advisorypkg.h>
+#include <libhif/hif-advisoryref.h>
+#include <libhif/hif-context.h>
+#include <libhif/hif-db.h>
+#include <libhif/hif-goal.h>
+#include <libhif/hif-keyring.h>
+#include <libhif/hif-lock.h>
+#include <libhif/hif-package.h>
+#include <libhif/hif-packagedelta.h>
+#include <libhif/hif-repos.h>
+#include <libhif/hif-rpmts.h>
+#include <libhif/hif-sack.h>
+#include <libhif/hif-repo.h>
+#include <libhif/hif-state.h>
+#include <libhif/hif-transaction.h>
+#include <libhif/hif-types.h>
+#include <libhif/hif-utils.h>
+#include <libhif/hif-version.h>
 
 #undef __LIBHIF_H_INSIDE__
 

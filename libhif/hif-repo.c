@@ -45,7 +45,10 @@
 #include <librepo/librepo.h>
 #include <rpm/rpmts.h>
 
-#include "libhif.h"
+#include "hif-keyring.h"
+#include "hif-package.h"
+#include "hif-repo.h"
+#include "hif-types.h"
 #include "hif-utils.h"
 
 typedef struct

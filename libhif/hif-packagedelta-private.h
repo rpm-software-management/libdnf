@@ -27,7 +27,7 @@
 #ifndef __HIF_PACKAGEDELTA_PRIVATE_H
 #define __HIF_PACKAGEDELTA_PRIVATE_H
 
-#include <hif-packagedelta.h>
+#include "hif-packagedelta.h"
 
 G_BEGIN_DECLS
 

@@ -1,4 +1,4 @@
-PROJECT (hawkey)
+PROJECT (libhif)
 CMAKE_MINIMUM_REQUIRED (VERSION 2.4)
 CMAKE_POLICY (SET CMP0005 OLD)
 # Avoid a warning because "hth" links to
@@ -6,10 +6,10 @@ CMAKE_POLICY (SET CMP0005 OLD)
 # GLib.  There may be a better way to do this...
 CMAKE_POLICY(SET CMP0003 NEW)
 
+OPTION(DISABLE_VALGRIND_TESTS "Enables valgrind tests for hawkey and libhif" OFF)
 INCLUDE (${CMAKE_SOURCE_DIR}/VERSION.cmake)
-SET (VERSION "${HAWKEY_MAJOR}.${HAWKEY_MINOR}.${HAWKEY_PATCH}")
 
-set (CMAKE_C_FLAGS		"${CMAKE_C_FLAGS} -std=c99 -Werror=implicit-function-declaration -Wall -Wl,--as-needed")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wcast-align -Wno-uninitialized -Wmissing-declarations -Wredundant-decls -Wcast-align -Wwrite-strings -Wreturn-type -Wformat-nonliteral -Wmissing-format-attribute -Wsign-compare -Wtype-limits -Wuninitialized -Waggregate-return -Wshadow -Winline -Wall -Werror=implicit-function-declaration -Wl,--as-needed")
 set (CMAKE_C_FLAGS_DEBUG	"${CMAKE_C_FLAGS} -ggdb -O0")
 IF(NOT CMAKE_BUILD_TYPE)
   set (CMAKE_BUILD_TYPE DEBUG)
@@ -28,9 +28,10 @@ if (LIBSOLV_PATH)
    ADD_CUSTOM_TARGET (generate_libsolv_includes ALL DEPENDS ${LIBSOLV_PATH}/build/solv)
 endif (LIBSOLV_PATH)
 
+# hawkey dependencies
 FIND_PACKAGE (PkgConfig)
-PKG_CHECK_MODULES (GLIB2 glib-2.0 REQUIRED)
 SET (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+FIND_PACKAGE (GLIB REQUIRED)
 FIND_PACKAGE (EXPAT REQUIRED)
 FIND_PACKAGE (ZLIB REQUIRED)
 FIND_LIBRARY (RPMDB_LIBRARY NAMES rpmdb)
@@ -40,7 +41,10 @@ FIND_LIBRARY (CHECK_LIBRARY NAMES check)
 FIND_PROGRAM (VALGRIND_PROGRAM NAMES valgrind PATH /usr/bin /usr/local/bin)
 MESSAGE(STATUS "Using libsolv at ${SOLV_LIBRARY}")
 
-INCLUDE_DIRECTORIES(${GLIB2_INCLUDE_DIRS})
+# TODO handle yumdb / dnfdb for libhif
+
+FIND_LIBRARY(REPO_LIBRARY repo REQUIRED)
+INCLUDE_DIRECTORIES(${GLIB_INCLUDE_DIRS})
 
 if (NOT PYTHON_DESIRED)
     set (PYTHON_DESIRED "2")
@@ -56,8 +60,12 @@ IF (RPMIO_LIBRARY)
   SET(RPMDB_LIBRARY ${RPMIO_LIBRARY} ${RPMDB_LIBRARY})
 ENDIF (RPMIO_LIBRARY)
 
-ADD_SUBDIRECTORY (hawkey/src)
-ADD_SUBDIRECTORY (python/hawkey)
+ADD_DEFINITIONS(-DHIF_COMPILATION)
+ADD_DEFINITIONS(-DTESTDATADIR=\\"${CMAKE_SOURCE_DIR}/data/tests\\")
+ADD_DEFINITIONS(-DPACKAGE_VERSION=\\"${HIF_VERSION}\\")
+
+ADD_SUBDIRECTORY (libhif)
 ENABLE_TESTING()
-ADD_SUBDIRECTORY (hawkey/tests)
-ADD_SUBDIRECTORY (hawkey/doc)
+ADD_SUBDIRECTORY (tests)
+ADD_SUBDIRECTORY (python/hawkey)
+ADD_SUBDIRECTORY (docs/hawkey)

@@ -39,7 +39,8 @@
 #include <rpm/rpmlog.h>
 #include <rpm/rpmdb.h>
 
-#include "libhif.h"
+#include "hif-rpmts.h"
+#include "hif-types.h"
 #include "hif-utils.h"
 
 /**

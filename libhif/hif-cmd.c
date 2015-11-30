@@ -22,7 +22,6 @@
 #include "config.h"
 
 #include <gio/gio.h>
-#include <libhif.h>
 #include <locale.h>
 #include <stdlib.h>
 #include <string.h>

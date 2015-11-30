@@ -38,7 +38,8 @@
 #include <rpm/rpmlib.h>
 #include <rpm/rpmts.h>
 
-#include "libhif.h"
+#include "hif-types.h"
+#include "hif-keyring.h"
 #include "hif-utils.h"
 
 /**

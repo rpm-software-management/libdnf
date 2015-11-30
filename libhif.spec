@@ -57,8 +57,8 @@ Requires:	libsolv-devel
 %description devel
 Development files for libhif.
 
-%package -n python-hawkey
-Summary:	Python 2 bindings for the hawkey library
+%package -n hawkey-man
+Summary:	Documentation for the hawkey python bindings
 Group:		Development/Languages
 BuildRequires:  python2-devel
 BuildRequires:  python-nose
@@ -69,17 +69,28 @@ BuildRequires:	python-sphinx
 %endif
 Requires:	%{name}%{?_isa} = %{version}-%{release}
 
-%description -n python-hawkey
+%description -n hawkey-man
+Python 2 bindings for the hawkey library.
+
+%package -n python2-hawkey
+Summary:	Python 2 bindings for the hawkey library
+%{?python_provide:%python_provide python2-hawkey}
+Group:		Development/Languages
+BuildRequires:  python2-devel
+BuildRequires:  python-nose
+Requires:	%{name}%{?_isa} = %{version}-%{release}
+Recommends:     hawkey-man = %{version}-%{release}
+
+%description -n python2-hawkey
 Python 2 bindings for the hawkey library.
 
 %if %{with python3}
 %package -n python3-hawkey
 Summary:	Python 3 bindings for the hawkey library
+%{?python_provide:%python_provide python3-hawkey}
 Group:		Development/Languages
-BuildRequires:	python3-devel
-BuildRequires:	python3-nose
-BuildRequires:	python3-sphinx >= 1.1.3-9
 Requires:	%{name}%{?_isa} = %{version}-%{release}
+Recommends:     hawkey-man = %{version}-%{release}
 
 %description -n python3-hawkey
 Python 3 bindings for the hawkey library.
@@ -96,7 +107,7 @@ mv ../py3 ./
 %endif
 
 %build
-%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .
+%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDISABLE_VALGRIND_TESTS=1 .
 make %{?_smp_mflags}
 make doc-man
 
@@ -108,22 +119,22 @@ make doc-man
 popd
 %endif
 
-#%check
-#if [ "$(id -u)" == "0" ] ; then
-#        cat <<ERROR 1>&2
-#Package tests cannot be run under superuser account.
-#Please build the package as non-root user.
-#ERROR
-#        exit 1
-#fi
-#make ARGS="-V" test
-#%if %{with python3}
+%check
+if [ "$(id -u)" == "0" ] ; then
+        cat <<ERROR 1>&2
+Package tests cannot be run under superuser account.
+Please build the package as non-root user.
+ERROR
+        exit 1
+fi
+make ARGS="-V" test
+%if %{with python3}
 # Run just the Python tests, not all of them, since
 # we have coverage of the core from the first build
-#pushd py3/tests/python
-#make ARGS="-V" test
-#popd
-#%endif
+pushd py3/python/hawkey/tests
+make ARGS="-V" test
+popd
+%endif
 
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
@@ -138,22 +149,22 @@ popd
 %postun -p /sbin/ldconfig
 
 %files
-%doc COPYING README.rst
 %doc README.md AUTHORS NEWS COPYING
 %{_libdir}/libhif.so.*
-%{_libdir}/girepository-1.0/*.typelib
+# %%{_libdir}/girepository-1.0/*.typelib
 
 %files devel
 %{_libdir}/libhif.so
 %{_libdir}/pkgconfig/libhif.pc
 %dir %{_includedir}/libhif
 %{_includedir}/libhif/*.h
-%dir %{_includedir}/hawkey
-%{_includedir}/hawkey/*.h
-%{_datadir}/gtk-doc
-%{_datadir}/gir-1.0/*.gir
+# %%{_datadir}/gtk-doc
+# %%{_datadir}/gir-1.0/*.gir
 
-%files -n python-hawkey
+%files -n hawkey-man
+%{_mandir}/man3/hawkey.3.gz
+
+%files -n python2-hawkey
 %{python_sitearch}/
 
 %if %{with python3}

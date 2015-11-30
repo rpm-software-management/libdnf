@@ -39,12 +39,13 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
-#include "hy-reldep.h"
-#include "hy-util.h"
 #include <librepo/librepo.h>
 
-#include "libhif.h"
+#include "hif-package.h"
+#include "hif-types.h"
 #include "hif-utils.h"
+#include "hy-reldep.h"
+#include "hy-util.h"
 
 typedef struct {
     char            *checksum_str;

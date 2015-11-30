@@ -36,7 +36,8 @@
 
 #include <gio/gio.h>
 
-#include "libhif.h"
+#include "hif-lock.h"
+#include "hif-types.h"
 #include "hif-utils.h"
 
 typedef struct

@@ -24,7 +24,6 @@
 #include <glib-object.h>
 #include <stdlib.h>
 
-#include "libhif.h"
 #include "hif-utils.h"
 
 /**

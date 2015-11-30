@@ -35,7 +35,7 @@
 #include <stdlib.h>
 #include <glib/gstdio.h>
 
-#include "libhif.h"
+#include "hif-types.h"
 #include "hif-utils.h"
 
 /**
