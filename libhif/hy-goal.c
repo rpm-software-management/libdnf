@@ -18,8 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#define _GNU_SOURCE
-
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
@@ -163,7 +161,7 @@ limit_installonly_packages(HyGoal goal, Solver *solv, Queue *job)
         }
 
         struct InstallonliesSortCallback s_cb = {pool, hif_sack_running_kernel(sack)};
-        qsort_r(q.elements, q.count, sizeof(q.elements[0]), sort_packages, &s_cb);
+        solv_sort(q.elements, q.count, sizeof(q.elements[0]), sort_packages, &s_cb);
         Queue same_names;
         queue_init(&same_names);
         while (q.count > 0) {
