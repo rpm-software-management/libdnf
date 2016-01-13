@@ -46,8 +46,9 @@ TARGET_LINK_LIBRARIES(libhif
                       ${ZLIB_LIBRARY}
                       ${RPMDB_LIBRARY})
 
+SET(HIF_SO_VERSION 3)
 SET_TARGET_PROPERTIES(libhif PROPERTIES OUTPUT_NAME "hif")
-SET_TARGET_PROPERTIES(libhif PROPERTIES SOVERSION 3)
+SET_TARGET_PROPERTIES(libhif PROPERTIES SOVERSION ${HIF_SO_VERSION})
 
 ADD_EXECUTABLE(hth hy-hth.c)
 TARGET_LINK_LIBRARIES(hth libhif
@@ -88,6 +89,76 @@ IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
   SET (LIB_SUFFIX "64")
 ENDIF (CMAKE_SIZEOF_VOID_P MATCHES "8")
 SET (LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
+
+# gir generation
+# taken from https://github.com/ufo-kit/libuca/blob/master/src/CMakeLists.txt
+find_program(INTROSPECTION_SCANNER "g-ir-scanner")
+find_program(INTROSPECTION_COMPILER "g-ir-compiler")
+pkg_check_modules(GOBJECT_INTROSPECTION gobject-introspection-1.0)
+
+find_package(PkgConfig REQUIRED)
+function(pkg_check_variable _pkg _name)
+    string(TOUPPER ${_pkg} _pkg_upper)
+    string(TOUPPER ${_name} _name_upper)
+    string(REPLACE "-" "_" _pkg_upper ${_pkg_upper})
+    string(REPLACE "-" "_" _name_upper ${_name_upper})
+    set(_output_name "${_pkg_upper}_${_name_upper}")
+
+    execute_process(COMMAND ${PKG_CONFIG_EXECUTABLE} --variable=${_name} ${_pkg}
+                    OUTPUT_VARIABLE _pkg_result
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    set("${_output_name}" "${_pkg_result}" CACHE STRING "pkg-config variable
+    ${_name} of ${_pkg}")
+endfunction()
+
+if (GOBJECT_INTROSPECTION_FOUND)
+    option(WITH_GIR "Build introspection files" ON)
+
+    if (WITH_GIR)
+        pkg_check_variable(gobject-introspection-1.0 g_ir_scanner)
+        pkg_check_variable(gobject-introspection-1.0 g_ir_compiler)
+
+        set(GIR_PREFIX "Hif-${HIF_SO_VERSION}.0")
+        set(GIR_XML "${GIR_PREFIX}.gir")
+        set(GIR_TYPELIB "${GIR_PREFIX}.typelib")
+
+        add_custom_command(OUTPUT ${GIR_XML}
+            COMMAND ${GOBJECT_INTROSPECTION_1.0_G_IR_SCANNER}
+                    --namespace=Hif
+                    --nsversion=${HIF_SO_VERSION}
+                    --library-path=${CMAKE_CURRENT_BINARY_DIR}
+                    --library=hif
+                    --no-libtool
+                    --include=GObject-2.0
+                    --include=Gio-2.0
+                    -Idirectory ${CMAKE_CURRENT_SOURCE_DIR}
+                    --output ${CMAKE_CURRENT_BINARY_DIR}/${GIR_XML}
+                    --warn-all
+                    --quiet
+                    hif-context.c hif-context.h hif-state.h hif-state.c
+                    hif-version.h
+            DEPENDS libhif
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+        add_custom_command(OUTPUT ${GIR_TYPELIB}
+            COMMAND ${GOBJECT_INTROSPECTION_1.0_G_IR_COMPILER}
+                    -o ${GIR_TYPELIB}
+                    ${GIR_XML}
+            DEPENDS ${GIR_XML}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+        add_custom_target(gir DEPENDS ${GIR_XML} ${GIR_TYPELIB})
+    endif()
+endif()
+
+if (WITH_GIR)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${GIR_XML}
+            DESTINATION share/gir-1.0
+            COMPONENT libraries)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${GIR_TYPELIB}
+            DESTINATION ${LIB_INSTALL_DIR}/girepository-1.0
+            COMPONENT libraries)
+endif()
 
 INSTALL(FILES "libhif.pc"
         DESTINATION "${LIB_INSTALL_DIR}/pkgconfig")

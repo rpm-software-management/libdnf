@@ -110,10 +110,11 @@ mv ../py3 ./
 %cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDISABLE_VALGRIND_TESTS=1 .
 make %{?_smp_mflags}
 make doc-man
+make gir
 
 %if %{with python3}
 pushd py3
-%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPYTHON_DESIRED:str=3 -DDISABLE_VALGRIND_TESTS=1 .
+%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPYTHON_DESIRED:str=3 -DWITH_GIR=0 -DDISABLE_VALGRIND_TESTS=1 .
 make %{?_smp_mflags}
 make doc-man
 popd
@@ -151,7 +152,7 @@ popd
 %files
 %doc README.md AUTHORS NEWS COPYING
 %{_libdir}/libhif.so.*
-# %%{_libdir}/girepository-1.0/*.typelib
+%{_libdir}/girepository-1.0/*.typelib
 
 %files devel
 %{_libdir}/libhif.so
@@ -159,7 +160,7 @@ popd
 %dir %{_includedir}/libhif
 %{_includedir}/libhif/*.h
 # %%{_datadir}/gtk-doc
-# %%{_datadir}/gir-1.0/*.gir
+%{_datadir}/gir-1.0/*.gir
 
 %files -n hawkey-man
 %{_mandir}/man3/hawkey.3.gz
