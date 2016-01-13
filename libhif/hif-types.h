@@ -21,10 +21,6 @@
  */
 
 
-#if !defined (__LIBHIF_H) && !defined (HIF_COMPILATION)
-#error "Only <libhif.h> can be included directly."
-#endif
-
 #ifndef __HIF_TYPES_H
 #define __HIF_TYPES_H
 

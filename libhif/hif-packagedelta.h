@@ -20,10 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__LIBHIF_H) && !defined (HIF_COMPILATION)
-#error "Only <libhif.h> can be included directly."
-#endif
-
 #ifndef __HIF_PACKAGEDELTA_H
 #define __HIF_PACKAGEDELTA_H
 
