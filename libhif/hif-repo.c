@@ -21,9 +21,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
 
 /**
  * SECTION:hif-repo
@@ -36,7 +33,6 @@
  * See also: #HifRepo
  */
 
-#include "config.h"
 
 #include <strings.h>
 #include <fcntl.h>
@@ -871,7 +867,7 @@ hif_repo_setup(HifRepo *repo, GError **error)
                             "releasever not set");
         return FALSE;
     }
-    user_agent = g_strdup_printf("PackageKit-hawkey/%s", VERSION);
+    user_agent = g_strdup_printf("PackageKit-hawkey/%s", PACKAGE_VERSION);
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_USERAGENT, user_agent))
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_REPOTYPE, LR_YUMREPO))

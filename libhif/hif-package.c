@@ -27,9 +27,6 @@
  * These methods make it easier to get and set extra data on a package.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
 
 #include <stdlib.h>
 #include <string.h>

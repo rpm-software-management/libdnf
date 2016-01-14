@@ -30,7 +30,6 @@
  * See also: #HifContext
  */
 
-#include "config.h"
 
 #include <glib.h>
 

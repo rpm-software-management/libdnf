@@ -30,9 +30,6 @@
  * These methods make it easier to deal with rpm transactions.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
 
 #include <glib.h>
 #include <rpm/rpmlib.h>

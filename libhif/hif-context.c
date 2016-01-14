@@ -29,7 +29,6 @@
  * to use objects from librepo, rpm or hawkey directly.
  */
 
-#include "config.h"
 
 #include <gio/gio.h>
 #include <rpm/rpmlib.h>
