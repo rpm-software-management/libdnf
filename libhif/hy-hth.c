@@ -167,7 +167,7 @@ static void obsoletes(HifSack *sack)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-    HifPackageSet installed_pkgs = hy_query_run_set(q);
+    HifPackageSet *installed_pkgs = hy_query_run_set(q);
     hy_query_free(q);
 
     q = hy_query_create(sack);
