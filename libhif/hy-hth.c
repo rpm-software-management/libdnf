@@ -401,7 +401,7 @@ int main(int argc, const char **argv)
     int ret;
     g_autoptr(GError) error = NULL;
 
-    if (!hif_sack_setup(sack, NULL, NULL, NULL, HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR))
+    if (!hif_sack_setup(sack, HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL))
         return 1;
 
     if (read_repopaths(&md_repo, &md_primary_xml, &md_filelists, &md_repo_updates,
