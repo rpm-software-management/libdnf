@@ -31,7 +31,6 @@
  * See also: #HifContext
  */
 
-#include "config.h"
 
 #include <solv/repo.h>
 #include <solv/util.h>

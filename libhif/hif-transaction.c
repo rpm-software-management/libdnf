@@ -28,7 +28,6 @@
  * This object represents an RPM transaction.
  */
 
-#include "config.h"
 
 #include <rpm/rpmlib.h>
 #include <rpm/rpmts.h>

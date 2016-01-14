@@ -31,7 +31,6 @@
  * See also: #HifContext
  */
 
-#include "config.h"
 
 #define _GNU_REPO
 #include <assert.h>
