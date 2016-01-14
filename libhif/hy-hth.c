@@ -399,6 +399,7 @@ int main(int argc, const char **argv)
     char *md_primary_updates_xml;
     char *md_filelists_updates;
     int ret;
+    g_autoptr(GError) error = NULL;
 
     if (!hif_sack_setup(sack, NULL, NULL, NULL, HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR))
         return 1;
@@ -419,20 +420,20 @@ int main(int argc, const char **argv)
     int load_flags = HIF_SACK_LOAD_FLAG_BUILD_CACHE;
     /* rpmdb */
     repo = hy_repo_create(HY_SYSTEM_REPO_NAME);
-    hif_sack_load_system_repo(sack, NULL, load_flags);
+    hif_sack_load_system_repo(sack, NULL, load_flags, &error);
     hy_repo_free(repo);
 
     if (need_filelists(argc, argv))
         load_flags |= HIF_SACK_LOAD_FLAG_USE_FILELISTS;
     /* Fedora repo */
     repo = config_repo("Fedora", md_repo, md_primary_xml, md_filelists);
-    ret = hif_sack_load_repo(sack, repo, load_flags);
+    ret = hif_sack_load_repo(sack, repo, load_flags, &error);
     assert(ret == 0); (void)ret;
     hy_repo_free(repo);
     /* Fedora updates repo */
     repo = config_repo("updates", md_repo_updates, md_primary_updates_xml,
                        md_filelists_updates);
-    ret = hif_sack_load_repo(sack, repo, load_flags);
+    ret = hif_sack_load_repo(sack, repo, load_flags, &error);
     assert(ret == 0); (void)ret;
     hy_repo_free(repo);
     free(md_repo);
