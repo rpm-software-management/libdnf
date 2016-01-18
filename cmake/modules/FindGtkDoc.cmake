@@ -57,8 +57,8 @@ find_package_handle_standard_args(GtkDoc
 
 # ::
 #
-# gtk_doc_add_module(doc_prefix sourcedir 
-#                    [XML xmlfile] 
+# gtk_doc_add_module(doc_prefix sourcedir
+#                    [XML xmlfile]
 #                    [FIXXREFOPTS fixxrefoption1...]
 #                    [IGNOREHEADERS header1...]
 #                    [DEPENDS depend1...] )
@@ -179,7 +179,7 @@ macro(gtk_doc_add_module _doc_prefix _doc_sourcedir)
                 "${_output_signals}"
             DEPENDS
                 "${_output_types}"
-            COMMAND ${CMAKE_COMMAND} 
+            COMMAND ${CMAKE_COMMAND}
                 -D "GTKDOC_SCANGOBJ_EXE:STRING=${GTKDOC_SCANGOBJ_EXE}"
                 -D "doc_prefix:STRING=${_doc_prefix}"
                 -D "output_types:STRING=${_output_types}"
@@ -194,13 +194,13 @@ macro(gtk_doc_add_module _doc_prefix _doc_sourcedir)
         set(_copy_xml_if_needed "")
         if(_xml_file)
             get_filename_component(_xml_file ${_xml_file} ABSOLUTE)
-            set(_copy_xml_if_needed 
+            set(_copy_xml_if_needed
                 COMMAND ${CMAKE_COMMAND} -E copy "${_xml_file}" "${_default_xml_file}")
         endif(_xml_file)
 
         set(_remove_xml_if_needed "")
         if(_xml_file)
-            set(_remove_xml_if_needed 
+            set(_remove_xml_if_needed
                 COMMAND ${CMAKE_COMMAND} -E remove ${_default_xml_file})
         endif(_xml_file)
 
@@ -237,7 +237,7 @@ macro(gtk_doc_add_module _doc_prefix _doc_sourcedir)
         # add a command to output HTML
         add_custom_command(
             OUTPUT
-                "${_output_html_stamp}" 
+                "${_output_html_stamp}"
             DEPENDS
                 "${_output_html_dir_stamp}"
                 "${_output_sgml_stamp}"
@@ -256,7 +256,7 @@ macro(gtk_doc_add_module _doc_prefix _doc_sourcedir)
                     ${_remove_xml_if_needed}
             VERBATIM)
 
-        add_custom_target(doc-${_doc_prefix} ${_do_all} 
+        add_custom_target(doc-${_doc_prefix} ${_do_all}
             DEPENDS "${_output_html_stamp}")
     endif(_opts_valid)
-endmacro(gtk_doc_add_module) 
+endmacro(gtk_doc_add_module)
