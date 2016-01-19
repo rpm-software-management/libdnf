@@ -405,6 +405,20 @@ hif_source_get_repo (HifSource *source)
 	return priv->repo;
 }
 
+LrHandle *
+hif_source_get_lrhandle (HifSource              *source)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	return priv->repo_handle;
+}
+
+LrResult *
+hif_source_get_lrresult (HifSource              *source)
+{
+	HifSourcePrivate *priv = GET_PRIVATE (source);
+	return priv->repo_result;
+}
+
 /**
  * hif_source_is_devel:
  * @source: a #HifSource instance.
