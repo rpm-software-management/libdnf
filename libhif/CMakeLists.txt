@@ -1,7 +1,7 @@
 SET (LIBHIF_SRCS
-    hif-advisory.c
     hif-advisorypkg.c
     hif-advisoryref.c
+    hif-advisory.c
     hy-goal.c
     hy-iutil.c
     hy-nevra.c
@@ -15,16 +15,15 @@ SET (LIBHIF_SRCS
     hy-subject.c
     hy-subject-private.c
     hy-util.c
-    hif-cmd.c
     hif-context.c
     hif-db.c
     hif-goal.c
     hif-keyring.c
     hif-lock.c
     hif-package.c
+    hif-packagedelta.c
     hif-repos.c
     hif-rpmts.c
-    hif-sack.c
     hif-repo.c
     hif-state.c
     hif-transaction.c
@@ -64,16 +63,20 @@ TARGET_LINK_LIBRARIES(hth libhif
                       ${RPMDB_LIBRARY})
 
 SET(LIBHIF_headers
+    hif-advisory.h
+    hif-advisorypkg.h
+    hif-advisoryref.h
     hif-context.h
     hif-db.h
     hif-goal.h
     hif-keyring.h
     hif-lock.h
     hif-package.h
+    hif-packagedelta.h
     hif-repos.h
     hif-rpmts.h
     hif-sack.h
-    hif-source.h
+    hif-repo.h
     hif-state.h
     hif-transaction.h
     hif-types.h
