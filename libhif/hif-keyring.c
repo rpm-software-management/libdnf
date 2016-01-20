@@ -286,7 +286,8 @@ hif_keyring_check_untrusted_file (rpmKeyring keyring,
 		g_set_error_literal (error,
 				     HIF_ERROR,
 				     HIF_ERROR_GPG_SIGNATURE_INVALID,
-				     "failed to lookup digest in keyring");
+				     "failed to lookup digest in keyring for %s",
+				     filename);
 		goto out;
 	}
 
