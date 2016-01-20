@@ -261,10 +261,11 @@ hif_keyring_check_untrusted_file (rpmKeyring keyring,
 	/* the package has no signing key */
 	if (rc != 1) {
 		ret = FALSE;
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     HIF_ERROR_GPG_SIGNATURE_INVALID,
-				     "package is not signed");
+		g_set_error (error,
+		             HIF_ERROR,
+		             HIF_ERROR_GPG_SIGNATURE_INVALID,
+		             "package %s is not signed",
+		             filename);
 		goto out;
 	}
 
@@ -283,11 +284,11 @@ hif_keyring_check_untrusted_file (rpmKeyring keyring,
 	/* does the key exist in the keyring */
 	rc = rpmKeyringLookup (keyring, dig);
 	if (rc != RPMRC_OK) {
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     HIF_ERROR_GPG_SIGNATURE_INVALID,
-				     "failed to lookup digest in keyring for %s",
-				     filename);
+		g_set_error (error,
+		             HIF_ERROR,
+		             HIF_ERROR_GPG_SIGNATURE_INVALID,
+		             "failed to lookup digest in keyring for %s",
+		             filename);
 		goto out;
 	}
 
