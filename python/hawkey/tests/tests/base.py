@@ -33,7 +33,7 @@ if cachedir is None:
                                 prefix='pyhawkey')
 
 class TestCase(unittest.TestCase):
-    repo_dir = os.path.normpath(os.path.join(__file__, "../../../repos"))
+    repo_dir = os.path.normpath(os.path.join(__file__, "../../../../../data/tests/hawkey/"))
 
     def assertLength(self, collection, length):
         return self.assertEqual(len(collection), length)
