@@ -22,8 +22,6 @@ SET (hawkeytest_SRCS
 ADD_LIBRARY(testshared STATIC testshared.c)
 SET_TARGET_PROPERTIES(testshared PROPERTIES COMPILE_FLAGS -fPIC)
 
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; sys.stdout.write('%s.%s' % (sys.version_info.major, sys.version_info.minor))" OUTPUT_VARIABLE PYTHON_MAJOR_DOT_MINOR_VERSION)
-
 ADD_EXECUTABLE(test_hawkey_main ${hawkeytest_SRCS})
 TARGET_LINK_LIBRARIES(test_hawkey_main
     libhif
