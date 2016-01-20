@@ -21,12 +21,12 @@
 #include <Python.h>
 
 // hawkey
-#include "src/sack_internal.h"
-#include "src/python/repo-py.h"
-#include "src/python/sack-py.h"
-#include "tests/testshared.h"
+#include "hif-sack-private.h"
+#include "python/hawkey/repo-py.h"
+#include "python/hawkey/sack-py.h"
+#include "tests/hawkey/testshared.h"
 
-#include "src/python/pycomp.h"
+#include "python/hawkey/pycomp.h"
 
 static PyObject *
 py_load_repo(PyObject *unused, PyObject *args)
