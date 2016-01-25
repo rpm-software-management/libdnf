@@ -31,7 +31,6 @@
  * See also: #HifContext
  */
 
-#include "config.h"
 
 #include <solv/bitmap.h>
 #include <solv/util.h>
@@ -201,6 +200,7 @@ hif_packageset_from_bitmap(HifSack *sack, Map *m)
 {
     HifPackageSet *pset = hif_packageset_new(sack);
     HifPackageSetPrivate *priv = GET_PRIVATE(pset);
+    map_free(&priv->map);
     map_init_clone(&priv->map, m);
     return pset;
 }
@@ -238,6 +238,7 @@ hif_packageset_clone(HifPackageSet *pset)
     HifPackageSetPrivate *priv = GET_PRIVATE(pset);
     HifPackageSet *new = hif_packageset_new(priv->sack);
     HifPackageSetPrivate *priv_new = GET_PRIVATE(new);
+    map_free(&priv_new->map);
     map_init_clone(&priv_new->map, &priv->map);
     return new;
 }

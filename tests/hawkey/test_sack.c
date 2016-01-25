@@ -59,6 +59,7 @@ START_TEST(test_sack_create)
     sack = hif_sack_new ();
     fail_if(hif_sack_set_arch(sack, "", &error));
     fail_if(error == NULL);
+    g_object_unref(sack);
 }
 END_TEST
 
