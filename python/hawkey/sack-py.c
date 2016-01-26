@@ -147,10 +147,10 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     PyObject *cachedir_py = NULL;
     PyObject *logfile_py = NULL;
     int make_cache_dir = 0;
-    char *kwlist[] = {"cachedir", "arch", "rootdir", "pkgcls",
+    const char *kwlist[] = {"cachedir", "arch", "rootdir", "pkgcls",
                       "pkginitval", "make_cache_dir", "logfile", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OssOOiO", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OssOOiO", (char**) kwlist,
                                      &cachedir_py, &arch, &rootdir,
                                      &custom_class, &custom_val,
                                      &make_cache_dir, &logfile_py))
@@ -258,9 +258,9 @@ set_installonly_limit(_SackObject *self, PyObject *obj, void *unused)
 }
 
 static PyGetSetDef sack_getsetters[] = {
-    {"cache_dir",        (getter)get_cache_dir, NULL, NULL, NULL},
-    {"installonly",        NULL, (setter)set_installonly, NULL, NULL},
-    {"installonly_limit",        NULL, (setter)set_installonly_limit, NULL, NULL},
+    {(char*)"cache_dir",        (getter)get_cache_dir, NULL, NULL, NULL},
+    {(char*)"installonly",        NULL, (setter)set_installonly, NULL, NULL},
+    {(char*)"installonly_limit",        NULL, (setter)set_installonly_limit, NULL, NULL},
     {NULL}                        /* sentinel */
 };
 
@@ -273,9 +273,9 @@ _knows(_SackObject *self, PyObject *args, PyObject *kwds)
     const char *version = NULL;
     int name_only = 0, icase = 0, glob = 0;
 
-    char *kwlist[] = {"name", "version", "name_only", "icase", "glob",
+    const char *kwlist[] = {"name", "version", "name_only", "icase", "glob",
                       NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|ziii", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|ziii", (char**) kwlist,
                                      &name, &version, &name_only, &icase, &glob))
         return NULL;
 
@@ -407,12 +407,12 @@ static PyObject *
 load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 {
     g_autoptr(GError) error = NULL;
-    char *kwlist[] = {"repo", "build_cache", "load_filelists", "load_presto",
+    const char *kwlist[] = {"repo", "build_cache", "load_filelists", "load_presto",
                       NULL};
 
     HyRepo crepo = NULL;
     int build_cache = 0, unused_1 = 0, unused_2 = 0;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&iii", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&iii", (char**) kwlist,
                                      repo_converter, &crepo,
                                      &build_cache, &unused_1, &unused_2))
 
@@ -432,12 +432,12 @@ load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 {
-    char *kwlist[] = {"repo", "build_cache", "load_filelists", "load_presto",
+    const char *kwlist[] = {"repo", "build_cache", "load_filelists", "load_presto",
                       "load_updateinfo", NULL};
 
     HyRepo crepo = NULL;
     int build_cache = 0, load_filelists = 0, load_presto = 0, load_updateinfo = 0;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|iiii", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|iiii", (char**) kwlist,
                                      repo_converter, &crepo,
                                      &build_cache, &load_filelists,
                                      &load_presto, &load_updateinfo))

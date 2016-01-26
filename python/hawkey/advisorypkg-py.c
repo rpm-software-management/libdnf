@@ -129,10 +129,10 @@ get_attr(_AdvisoryPkgObject *self, void *closure)
 }
 
 static PyGetSetDef advisorypkg_getsetters[] = {
-    {"name", (getter)get_attr, NULL, NULL, (void *)0},
-    {"evr", (getter)get_attr, NULL, NULL, (void *)1},
-    {"arch", (getter)get_attr, NULL, NULL, (void *)2},
-    {"filename", (getter)get_attr, NULL, NULL, (void *)3},
+    {(char*)"name", (getter)get_attr, NULL, NULL, (void *)0},
+    {(char*)"evr", (getter)get_attr, NULL, NULL, (void *)1},
+    {(char*)"arch", (getter)get_attr, NULL, NULL, (void *)2},
+    {(char*)"filename", (getter)get_attr, NULL, NULL, (void *)3},
     {NULL}                      /* sentinel */
 };
 

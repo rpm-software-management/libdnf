@@ -410,9 +410,9 @@ START_TEST(test_query_provides_in)
 {
     HifPackage *pkg;
     GPtrArray *plist;
-    char* pkg_names[] = { "P", "fool <= 2.0", "fool-lib > 3-3", NULL };
+    const char* pkg_names[] = { "P", "fool <= 2.0", "fool-lib > 3-3", NULL };
     HyQuery q = hy_query_create(test_globals.sack);
-    hy_query_filter_provides_in(q, pkg_names);
+    hy_query_filter_provides_in(q, (char**) pkg_names);
     plist = hy_query_run(q);
     pkg = g_ptr_array_index(plist, 0);
     ck_assert_str_eq(hif_package_get_name(pkg), "fool");
@@ -430,9 +430,9 @@ END_TEST
 START_TEST(test_query_provides_in_not_found)
 {
     GPtrArray *plist;
-    char* provides[] = { "thisisnotgoingtoexist", NULL };
+    const char* provides[] = { "thisisnotgoingtoexist", NULL };
     HyQuery q = hy_query_create(test_globals.sack);
-    hy_query_filter_provides_in(q, provides);
+    hy_query_filter_provides_in(q, (char**) provides);
     plist = hy_query_run(q);
     fail_unless(plist->len == 0);
     g_ptr_array_unref(plist);
