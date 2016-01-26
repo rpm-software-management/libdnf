@@ -54,7 +54,7 @@ advisoryToPyObject(HifAdvisory *advisory, PyObject *sack)
     return (PyObject *)self;
 }
 
-HifAdvisory *
+static HifAdvisory *
 advisoryFromPyObject(PyObject *o)
 {
     if (!PyObject_TypeCheck(o, &advisory_Type)) {
@@ -64,7 +64,7 @@ advisoryFromPyObject(PyObject *o)
     return ((_AdvisoryObject*)o)->advisory;
 }
 
-int
+static int
 advisory_converter(PyObject *o, HifAdvisory **advisory_ptr)
 {
     HifAdvisory *advisory = advisoryFromPyObject(o);

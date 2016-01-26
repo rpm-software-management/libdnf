@@ -125,7 +125,7 @@ hy_possibilities_free(HyPossibilities iter)
     g_free(iter);
 }
 
-HyForm *
+static HyForm *
 forms_dup(HyForm *forms)
 {
     if (forms == NULL)

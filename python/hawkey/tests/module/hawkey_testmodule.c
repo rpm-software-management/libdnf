@@ -28,6 +28,8 @@
 
 #include "python/hawkey/pycomp.h"
 
+PYCOMP_MOD_INIT(_hawkey_test);
+
 static PyObject *
 py_load_repo(PyObject *unused, PyObject *args)
 {

@@ -568,7 +568,7 @@ get_reason(_GoalObject *self, PyObject *pkg)
     return PyLong_FromLong(reason);
 }
 
-PyObject *
+static PyObject *
 goalToPyObject(HyGoal goal, PyObject *sack)
 {
     _GoalObject *self = (_GoalObject *)goal_Type.tp_alloc(&goal_Type, 0);

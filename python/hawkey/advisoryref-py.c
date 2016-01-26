@@ -50,7 +50,7 @@ advisoryrefToPyObject(HifAdvisoryRef *advisoryref, PyObject *sack)
     return (PyObject *)self;
 }
 
-HifAdvisoryRef *
+static HifAdvisoryRef *
 advisoryrefFromPyObject(PyObject *o)
 {
     if (!PyObject_TypeCheck(o, &advisoryref_Type)) {
@@ -60,7 +60,7 @@ advisoryrefFromPyObject(PyObject *o)
     return ((_AdvisoryRefObject*)o)->advisoryref;
 }
 
-int
+static int
 advisoryref_converter(PyObject *o, HifAdvisoryRef **ref_ptr)
 {
     HifAdvisoryRef *ref = advisoryrefFromPyObject(o);
