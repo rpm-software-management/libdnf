@@ -274,7 +274,7 @@ filter(_QueryObject *self, PyObject *args)
         const char *matches[count + 1];
         matches[count] = NULL;
         PyObject *tmp_py_strs[count];
-        for (int i = 0; i < count; ++i) {
+        for (unsigned int i = 0; i < count; ++i) {
             PyObject *item = PySequence_Fast_GET_ITEM(seq, i);
             tmp_py_strs[i] = NULL;
             if (PyUnicode_Check(item) || PyString_Check(item)) {

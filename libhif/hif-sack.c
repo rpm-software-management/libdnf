@@ -582,7 +582,7 @@ static int
 write_ext_updateinfo_filter(Repo *repo, Repokey *key, void *kfdata)
 {
     Repodata *data = kfdata;
-    if (key->name == 1 && key->size != data->repodataid)
+    if (key->name == 1 && (int) key->size != data->repodataid)
         return -1;
     return repo_write_stdkeyfilter(repo, key, 0);
 }
