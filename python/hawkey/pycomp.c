@@ -19,6 +19,7 @@
  */
 
 #include <Python.h>
+#include "pycomp.h"
 
 /**
  * unicode string in Python 2/3 to c string converter,

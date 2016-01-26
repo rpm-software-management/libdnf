@@ -104,7 +104,7 @@ package_init(_PackageObject *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-PyObject *
+static PyObject *
 package_py_richcompare(PyObject *self, PyObject *other, int op)
 {
     PyObject *v;

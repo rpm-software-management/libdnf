@@ -45,7 +45,7 @@ advisorypkgToPyObject(HifAdvisoryPkg *advisorypkg)
     return (PyObject *)self;
 }
 
-HifAdvisoryPkg *
+static HifAdvisoryPkg *
 advisorypkgFromPyObject(PyObject *o)
 {
     if (!PyObject_TypeCheck(o, &advisorypkg_Type)) {
@@ -55,7 +55,7 @@ advisorypkgFromPyObject(PyObject *o)
     return ((_AdvisoryPkgObject*)o)->advisorypkg;
 }
 
-int
+static int
 advisorypkg_converter(PyObject *o, HifAdvisoryPkg **ref_ptr)
 {
     HifAdvisoryPkg *ref = advisorypkgFromPyObject(o);
