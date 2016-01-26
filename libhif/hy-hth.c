@@ -244,16 +244,16 @@ static void update(HifSack *sack, HifPackage *pkg)
     GPtrArray *plist = hy_goal_list_upgrades(goal, NULL);
     printf("upgrade count: %d\n", plist->len);
     for (unsigned int i = 0; i < plist->len; ++i) {
-        HifPackage *pkg = g_ptr_array_index(plist, i);
-        char *nvra = hif_package_get_nevra(pkg);
-        char *location = hif_package_get_location(pkg);
-        GPtrArray *obsoleted = hy_goal_list_obsoleted_by_package(goal, pkg);
+        HifPackage *upkg = g_ptr_array_index(plist, i);
+        char *nvra = hif_package_get_nevra(upkg);
+        char *location = hif_package_get_location(upkg);
+        GPtrArray *obsoleted = hy_goal_list_obsoleted_by_package(goal, upkg);
         HifPackage *installed = g_ptr_array_index(obsoleted, 0);
         char *nvra_installed = hif_package_get_nevra(installed);
 
         printf("upgrading: %s using %s\n", nvra, location);
         printf("\tfrom: %s\n", nvra_installed);
-        printf("\tsize: %lld kB\n", hif_package_get_size(pkg) / 1024);
+        printf("\tsize: %lld kB\n", hif_package_get_size(upkg) / 1024);
 
         g_free(nvra_installed);
         g_ptr_array_unref(obsoleted);
@@ -265,12 +265,12 @@ static void update(HifSack *sack, HifPackage *pkg)
     plist = hy_goal_list_installs(goal, NULL);
     printf("install count: %d\n", plist->len);
     for (unsigned int i = 0; i < plist->len; ++i) {
-        HifPackage *pkg = g_ptr_array_index(plist, i);
-        char *nvra = hif_package_get_nevra(pkg);
-        char *location = hif_package_get_location(pkg);
+        HifPackage *ipkg = g_ptr_array_index(plist, i);
+        char *nvra = hif_package_get_nevra(ipkg);
+        char *location = hif_package_get_location(ipkg);
 
         printf("installing: %s using %s\n", nvra, location);
-        printf("\tsize: %lld kB\n", hif_package_get_size(pkg) / 1024);
+        printf("\tsize: %lld kB\n", hif_package_get_size(ipkg) / 1024);
 
         g_free(location);
         g_free(nvra);
