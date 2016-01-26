@@ -253,7 +253,7 @@ static void update(HifSack *sack, HifPackage *pkg)
 
         printf("upgrading: %s using %s\n", nvra, location);
         printf("\tfrom: %s\n", nvra_installed);
-        printf("\tsize: %lld kB\n", hif_package_get_size(upkg) / 1024);
+        printf("\tsize: %lu kB\n", hif_package_get_size(upkg) / 1024);
 
         g_free(nvra_installed);
         g_ptr_array_unref(obsoleted);
@@ -270,7 +270,7 @@ static void update(HifSack *sack, HifPackage *pkg)
         char *location = hif_package_get_location(ipkg);
 
         printf("installing: %s using %s\n", nvra, location);
-        printf("\tsize: %lld kB\n", hif_package_get_size(ipkg) / 1024);
+        printf("\tsize: %lu kB\n", hif_package_get_size(ipkg) / 1024);
 
         g_free(location);
         g_free(nvra);
