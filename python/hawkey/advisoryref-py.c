@@ -144,10 +144,10 @@ get_str(_AdvisoryRefObject *self, void *closure)
 }
 
 static PyGetSetDef advisoryref_getsetters[] = {
-    {"type", (getter)get_type, NULL, NULL, (void *)hif_advisoryref_get_kind},
-    {"id", (getter)get_str, NULL, NULL, (void *)hif_advisoryref_get_id},
-    {"title", (getter)get_str, NULL, NULL, (void *)hif_advisoryref_get_title},
-    {"url", (getter)get_str, NULL, NULL, (void *)hif_advisoryref_get_url},
+    {(char*)"type", (getter)get_type, NULL, NULL, (void *)hif_advisoryref_get_kind},
+    {(char*)"id", (getter)get_str, NULL, NULL, (void *)hif_advisoryref_get_id},
+    {(char*)"title", (getter)get_str, NULL, NULL, (void *)hif_advisoryref_get_title},
+    {(char*)"url", (getter)get_str, NULL, NULL, (void *)hif_advisoryref_get_url},
     {NULL}                      /* sentinel */
 };
 

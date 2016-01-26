@@ -158,23 +158,23 @@ set_str(_RepoObject *self, PyObject *value, void *closure)
 }
 
 static PyGetSetDef repo_getsetters[] = {
-    {"cost", (getter)get_int, (setter)set_int, "repository cost",
+    {(char*)"cost", (getter)get_int, (setter)set_int, (char*)"repository cost",
      (void *)&(IntGetSetter){hy_repo_get_cost,
                              hy_repo_set_cost}},
-    {"name", (getter)get_str, (setter)set_str, NULL,
+    {(char*)"name", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_NAME},
-    {"priority", (getter)get_int, (setter)set_int, "repository priority",
+    {(char*)"priority", (getter)get_int, (setter)set_int, (char*)"repository priority",
      (void *)&(IntGetSetter){hy_repo_get_priority,
                              hy_repo_set_priority}},
-    {"repomd_fn", (getter)get_str, (setter)set_str, NULL,
+    {(char*)"repomd_fn", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_MD_FN},
-    {"primary_fn", (getter)get_str, (setter)set_str, NULL,
+    {(char*)"primary_fn", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_PRIMARY_FN},
-    {"filelists_fn", (getter)get_str, (setter)set_str, NULL,
+    {(char*)"filelists_fn", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_FILELISTS_FN},
-    {"presto_fn", (getter)get_str, (setter)set_str, NULL,
+    {(char*)"presto_fn", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_PRESTO_FN},
-    {"updateinfo_fn", (getter)get_str, (setter)set_str, NULL,
+    {(char*)"updateinfo_fn", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_UPDATEINFO_FN},
     {NULL}                        /* sentinel */
 };

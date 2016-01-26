@@ -56,7 +56,7 @@ get_pattern(_SubjectObject *self, void *closure)
 }
 
 static PyGetSetDef subject_getsetters[] = {
-    {"pattern", (getter)get_pattern, NULL, NULL, NULL},
+    {(char*)"pattern", (getter)get_pattern, NULL, NULL, NULL},
     {NULL}          /* sentinel */
 };
 
@@ -140,8 +140,8 @@ static PyObject *
 nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *form = NULL;
-    char *kwlist[] = { "form", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &form)) {
+    const char *kwlist[] = { "form", NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", (char**) kwlist, &form)) {
         return NULL;
     }
     HyForm *cforms = NULL;
@@ -165,8 +165,8 @@ nevra_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
     int icase = 0;
     int flags = 0;
     PyObject *form = NULL;
-    char *kwlist[] = { "sack", "allow_globs", "icase", "form", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|iiO", kwlist,
+    const char *kwlist[] = { "sack", "allow_globs", "icase", "form", NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|iiO", (char**) kwlist,
         &sack_Type, &sack, &allow_globs, &icase, &form))
         return NULL;
     csack = sackFromPyObject(sack);
@@ -196,8 +196,8 @@ reldep_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
     HifSack *csack = NULL;
     int icase = 0;
     int flags = 0;
-    char *kwlist[] = { "sack", "icase", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|i", kwlist,
+    const char *kwlist[] = { "sack", "icase", NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|i", (char**) kwlist,
         &sack_Type, &sack, &icase))
         return NULL;
     csack = sackFromPyObject(sack);
