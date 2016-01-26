@@ -32,10 +32,12 @@ TARGET_LINK_LIBRARIES(test_hawkey_main
     ${ZLIB_LIBRARY}
     ${RPMDB_LIBRARY})
 ADD_TEST(test_hawkey_main test_hawkey_main "${CMAKE_CURRENT_SOURCE_DIR}/data/tests/hawkey/")
-IF (VALGRIND_PROGRAM)
-    ADD_TEST(test_hawkey_valgrind ${VALGRIND_PROGRAM} --error-exitcode=1 --leak-check=full
-                       ${CMAKE_CURRENT_BINARY_DIR}/test_hawkey_main
-                       ${CMAKE_CURRENT_SOURCE_DIR}/data/tests/hawkey/)
-    SET_TESTS_PROPERTIES(test_hawkey_valgrind PROPERTIES ENVIRONMENT "CK_FORK=no")
+IF (NOT DISABLE_VALGRIND_TESTS)
+  IF (VALGRIND_PROGRAM)
+      ADD_TEST(test_hawkey_valgrind ${VALGRIND_PROGRAM} --error-exitcode=1 --leak-check=full
+                        ${CMAKE_CURRENT_BINARY_DIR}/test_hawkey_main
+                        ${CMAKE_CURRENT_SOURCE_DIR}/data/tests/hawkey/)
+      SET_TESTS_PROPERTIES(test_hawkey_valgrind PROPERTIES ENVIRONMENT "CK_FORK=no")
+  ENDIF()
 ENDIF()
 

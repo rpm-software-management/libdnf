@@ -113,7 +113,7 @@ make doc-man
 
 %if %{with python3}
 pushd py3
-%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPYTHON_DESIRED:str=3.
+%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPYTHON_DESIRED:str=3 -DDISABLE_VALGRIND_TESTS=1 .
 make %{?_smp_mflags}
 make doc-man
 popd
