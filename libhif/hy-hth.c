@@ -213,7 +213,7 @@ erase(HifSack *sack, const char *name)
     g_ptr_array_unref(plist);
     plist = hy_goal_list_erasures(goal, NULL);
     printf("erasure count: %d\n", plist->len);
-    for (int i = 0; i < plist->len; ++i) {
+    for (unsigned int i = 0; i < plist->len; ++i) {
         HifPackage *pkg = g_ptr_array_index(plist, i);
         char *nvra = hif_package_get_nevra(pkg);
 
@@ -243,7 +243,7 @@ static void update(HifSack *sack, HifPackage *pkg)
     // handle upgrades
     GPtrArray *plist = hy_goal_list_upgrades(goal, NULL);
     printf("upgrade count: %d\n", plist->len);
-    for (int i = 0; i < plist->len; ++i) {
+    for (unsigned int i = 0; i < plist->len; ++i) {
         HifPackage *pkg = g_ptr_array_index(plist, i);
         char *nvra = hif_package_get_nevra(pkg);
         char *location = hif_package_get_location(pkg);
@@ -264,7 +264,7 @@ static void update(HifSack *sack, HifPackage *pkg)
     // handle installs
     plist = hy_goal_list_installs(goal, NULL);
     printf("install count: %d\n", plist->len);
-    for (int i = 0; i < plist->len; ++i) {
+    for (unsigned int i = 0; i < plist->len; ++i) {
         HifPackage *pkg = g_ptr_array_index(plist, i);
         char *nvra = hif_package_get_nevra(pkg);
         char *location = hif_package_get_location(pkg);

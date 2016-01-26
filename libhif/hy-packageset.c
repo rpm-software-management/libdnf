@@ -115,7 +115,7 @@ map_index2id(Map *map, unsigned index, Id previous)
 {
     unsigned char *ti = map->map;
     unsigned char *end = ti + map->size;
-    int enabled;
+    unsigned int enabled;
     Id id;
 
     if (previous >= 0) {
