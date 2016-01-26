@@ -31,11 +31,11 @@
 
 // most specific to least
 HyForm HY_FORMS_MOST_SPEC[] = {
-    HY_FORM_NEVRA, HY_FORM_NEVR, HY_FORM_NEV, HY_FORM_NA, HY_FORM_NAME, -1 };
+    HY_FORM_NEVRA, HY_FORM_NEVR, HY_FORM_NEV, HY_FORM_NA, HY_FORM_NAME, _HY_FORM_STOP_ };
 
 // what the user most probably means
 HyForm HY_FORMS_REAL[] = {
-    HY_FORM_NA, HY_FORM_NAME, HY_FORM_NEVRA, HY_FORM_NEV, HY_FORM_NEVR, -1 };
+    HY_FORM_NA, HY_FORM_NAME, HY_FORM_NEVRA, HY_FORM_NEV, HY_FORM_NEVR, _HY_FORM_STOP_ };
 
 static inline int
 is_glob_pattern(char *str)
@@ -138,7 +138,7 @@ forms_dup(HyForm *forms)
         res = solv_extend(res, i, 1, sizeof(HyForm), BLOCK_SIZE);
         form = forms[i];
         res[i++] = form;
-    } while (form != -1);
+    } while (form != _HY_FORM_STOP_);
     return res;
 }
 
@@ -206,7 +206,7 @@ hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra)
     if (iter->type != TYPE_NEVRA || iter->current == -1)
         return -1;
     HyForm form = iter->forms[iter->current];
-    while (form != -1) {
+    while (form != _HY_FORM_STOP_) {
         iter->current++;
         *out_nevra = hy_nevra_create();
         if (nevra_possibility(iter->subject, form, *out_nevra) == 0) {

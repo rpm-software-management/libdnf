@@ -106,7 +106,7 @@ forms_from_list(PyObject *list)
         forms[i++] = PyLong_AsLong(form);
     }
     forms = solv_extend(forms, i, 1, sizeof(HyForm), BLOCK_SIZE);
-    forms[i] = -1;
+    forms[i] = _HY_FORM_STOP_;
     return forms;
 }
 
@@ -115,7 +115,7 @@ forms_from_int(PyObject *num)
 {
     HyForm *forms = g_new0(HyForm, 2);
     forms[0] = PyLong_AsLong(num);
-    forms[1] = -1;
+    forms[1] = _HY_FORM_STOP_;
     return forms;
 }
 
