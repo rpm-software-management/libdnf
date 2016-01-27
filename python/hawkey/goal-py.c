@@ -259,17 +259,22 @@ install(_GoalObject *self, PyObject *args, PyObject *kwds)
     HifPackage *pkg = NULL;
     HySelector sltr = NULL;
     int flags = 0;
-    gboolean ret = 0;
     g_autoptr(GError) error = NULL;
     if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, &flags, HY_WEAK_SOLV))
         return NULL;
 
     if (flags & HY_WEAK_SOLV) {
-        ret = pkg ? hy_goal_install_optional(self->goal, pkg) :
+        if (pkg) {
+            hy_goal_install_optional(self->goal, pkg);
+        } else {
             hy_goal_install_selector_optional(self->goal, sltr, &error);
+        }
     } else {
-        ret = pkg ? hy_goal_install(self->goal, pkg) :
+        if (pkg) {
+            hy_goal_install(self->goal, pkg);
+        } else {
             hy_goal_install_selector(self->goal, sltr, &error);
+        }
     }
     return op_error2exc(error);
 }
