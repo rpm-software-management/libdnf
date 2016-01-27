@@ -141,24 +141,20 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     const char *cachedir = NULL;
     const char *arch = NULL;
     const char *rootdir = NULL;
-    const char *logfile = NULL;
     PyObject *tmp_py_str = NULL;
     PyObject *tmp2_py_str = NULL;
     PyObject *cachedir_py = NULL;
-    PyObject *logfile_py = NULL;
     int make_cache_dir = 0;
     const char *kwlist[] = {"cachedir", "arch", "rootdir", "pkgcls",
-                      "pkginitval", "make_cache_dir", "logfile", NULL};
+                      "pkginitval", "make_cache_dir", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OssOOiO", (char**) kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OssOOi", (char**) kwlist,
                                      &cachedir_py, &arch, &rootdir,
                                      &custom_class, &custom_val,
-                                     &make_cache_dir, &logfile_py))
+                                     &make_cache_dir))
         return -1;
     if (cachedir_py != NULL)
         cachedir = pycomp_get_string(cachedir_py, &tmp_py_str);
-    if (logfile_py != NULL)
-        logfile = pycomp_get_string(logfile_py, &tmp2_py_str);
     int flags = 0;
     if (make_cache_dir)
         flags |= HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR;
