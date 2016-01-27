@@ -74,7 +74,6 @@
 
 typedef struct
 {
-    FILE                *log_out;
     Id                   running_kernel_id;
     Map                 *pkg_excludes;
     Map                 *pkg_includes;
@@ -118,10 +117,6 @@ hif_sack_finalize(GObject *object)
     FOR_REPOS(i, repo) {
         HyRepo hrepo = repo->appdata;
         hy_repo_free(hrepo);
-    }
-    if (priv->log_out) {
-        g_debug("finished");
-        fclose(priv->log_out);
     }
     g_free(priv->cache_dir);
     queue_free(&priv->installonly);
