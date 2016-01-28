@@ -95,7 +95,7 @@ gboolean
 hif_remove_recursive(const gchar *directory, GError **error)
 {
     const gchar *filename;
-    g_autoptr(GDir) dir;
+    g_autoptr(GDir) dir = NULL;
     g_autoptr(GError) error_local = NULL;
 
     /* try to open */

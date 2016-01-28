@@ -149,8 +149,8 @@ hif_repos_add_media(HifRepos *repos,
     HifReposPrivate *priv = GET_PRIVATE(repos);
     HifRepo *repo;
     g_autofree gchar *packages = NULL;
-    g_autofree gchar *treeinfo_fn;
-    g_autoptr(GKeyFile) treeinfo;
+    g_autofree gchar *treeinfo_fn = NULL;
+    g_autoptr(GKeyFile) treeinfo = NULL;
 
     /* get common things */
     treeinfo_fn = g_build_filename(mount_point, ".treeinfo", NULL);
@@ -168,7 +168,7 @@ hif_repos_add_media(HifRepos *repos,
     if (idx == 0) {
         hif_repo_set_id(repo, "media");
     } else {
-        g_autofree gchar *tmp;
+        g_autofree gchar *tmp = NULL;
         tmp = g_strdup_printf("media-%i", idx);
         hif_repo_set_id(repo, tmp);
     }
@@ -192,7 +192,7 @@ hif_repos_add_sack_from_mount_point(HifRepos *repos,
 {
     const gchar *id = ".treeinfo";
     gboolean exists;
-    g_autofree gchar *treeinfo_fn;
+    g_autofree gchar *treeinfo_fn = NULL;
 
     /* check if any installed media is an install disk */
     treeinfo_fn = g_build_filename(root, id, NULL);
@@ -336,7 +336,7 @@ hif_repos_repo_parse_id(HifRepos *repos,
 {
     HifReposPrivate *priv = GET_PRIVATE(repos);
     HifRepoEnabled enabled = 0;
-    g_autoptr(HifRepo) repo;
+    g_autoptr(HifRepo) repo = NULL;
 
     /* enabled isn't a required key */
     if (g_key_file_has_key(keyfile, id, "enabled", NULL)) {
@@ -384,7 +384,7 @@ hif_repos_repo_parse(HifRepos *repos,
     gboolean ret = TRUE;
     guint i;
     g_auto(GStrv) groups = NULL;
-    g_autoptr(GKeyFile) keyfile;
+    g_autoptr(GKeyFile) keyfile = NULL;
 
     /* load non-standard keyfile */
     keyfile = hif_repos_load_multiline_key_file(filename, error);
