@@ -107,7 +107,7 @@ mv ../py3 ./
 %endif
 
 %build
-%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDISABLE_VALGRIND_TESTS=1 .
+%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .
 make %{?_smp_mflags}
 make doc-man
 make doc-gtk
@@ -115,7 +115,7 @@ make gir
 
 %if %{with python3}
 pushd py3
-%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPYTHON_DESIRED:str=3 -DWITH_GIR=0 -DDISABLE_VALGRIND_TESTS=1 .
+%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPYTHON_DESIRED:str=3 -DWITH_GIR=0 .
 make %{?_smp_mflags}
 make doc-man
 make doc-gtk
