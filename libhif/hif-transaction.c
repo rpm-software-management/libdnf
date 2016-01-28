@@ -340,7 +340,7 @@ hif_transaction_check_untrusted(HifTransaction *transaction,
     HifPackage *pkg;
     const gchar *fn;
     guint i;
-    g_autoptr(GPtrArray) install;
+    g_autoptr(GPtrArray) install = NULL;
 
     /* find a list of all the packages we might have to download */
     install = hif_goal_get_packages(goal,
@@ -873,7 +873,7 @@ hif_transaction_delete_packages(HifTransaction *transaction,
         /* don't delete files not in the repo */
         filename = hif_package_get_filename(pkg);
         if (g_str_has_prefix(filename, cachedir)) {
-            g_autoptr(GFile) file;
+            g_autoptr(GFile) file = NULL;
             file = g_file_new_for_path(filename);
             if (!g_file_delete(file, NULL, error))
                 return FALSE;

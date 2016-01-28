@@ -269,7 +269,7 @@ hif_rpmts_look_for_problems(rpmts ts, GError **error)
     string = g_string_new("");
     psi = rpmpsInitIterator(probs);
     while (rpmpsNextIterator(psi) >= 0) {
-        g_autofree gchar *msg;
+        g_autofree gchar *msg = NULL;
         prob = rpmpsGetProblem(psi);
         msg = hif_rpmts_get_problem_str(prob);
         g_string_append(string, msg);
