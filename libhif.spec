@@ -32,6 +32,7 @@ BuildRequires: gobject-introspection-devel
 BuildRequires: rpm-devel >= 4.11.0
 
 Requires:	libsolv%{?_isa} >= %{libsolv_version}
+Obsoletes:      hawkey < 0.7.0
 
 # prevent provides from nonstandard paths:
 %filter_provides_in %{python_sitearch}/.*\.so$
