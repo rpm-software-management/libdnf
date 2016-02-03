@@ -47,7 +47,7 @@ advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack)
         return NULL;
 
     for (unsigned int i = 0; i < advisorylist->len; ++i) {
-        cadvisory = g_ptr_array_index(advisorylist, i);
+        cadvisory = g_object_ref(g_ptr_array_index(advisorylist, i));
         advisory = advisoryToPyObject(cadvisory, sack);
 
         if (advisory == NULL)
@@ -76,7 +76,7 @@ advisorypkglist_to_pylist(const GPtrArray *advisorypkglist)
         return NULL;
 
     for (unsigned int i = 0; i < advisorypkglist->len; ++i) {
-        cadvisorypkg = g_ptr_array_index(advisorypkglist,  i);
+        cadvisorypkg = g_object_ref(g_ptr_array_index(advisorypkglist,  i));
         advisorypkg = advisorypkgToPyObject(cadvisorypkg);
         if (advisorypkg == NULL)
             goto fail;
@@ -104,7 +104,7 @@ advisoryreflist_to_pylist(const GPtrArray *advisoryreflist, PyObject *sack)
         return NULL;
 
     for (unsigned int i = 0; i < advisoryreflist->len; ++i) {
-        cadvisoryref = g_ptr_array_index(advisoryreflist,  i);
+        cadvisoryref = g_object_ref(g_ptr_array_index(advisoryreflist,  i));
         advisoryref = advisoryrefToPyObject(cadvisoryref, sack);
         if (advisoryref == NULL)
             goto fail;
