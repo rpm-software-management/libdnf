@@ -22,23 +22,22 @@ SET (hawkeytest_SRCS
 ADD_LIBRARY(testshared STATIC testshared.c)
 SET_TARGET_PROPERTIES(testshared PROPERTIES COMPILE_FLAGS -fPIC)
 
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; sys.stdout.write('%s.%s' % (sys.version_info.major, sys.version_info.minor))" OUTPUT_VARIABLE PYTHON_MAJOR_DOT_MINOR_VERSION)
-
-ADD_EXECUTABLE(test_main ${hawkeytest_SRCS})
-TARGET_LINK_LIBRARIES(test_main
-    libhawkey
+ADD_EXECUTABLE(test_hawkey_main ${hawkeytest_SRCS})
+TARGET_LINK_LIBRARIES(test_hawkey_main
+    libhif
     ${CHECK_LIBRARY}
     ${SOLV_LIBRARY}
     ${SOLVEXT_LIBRARY}
     ${EXPAT_LIBRARY}
     ${ZLIB_LIBRARY}
     ${RPMDB_LIBRARY})
-ADD_TEST(test_main test_main "${CMAKE_CURRENT_SOURCE_DIR}/repos/")
-IF (VALGRIND_PROGRAM)
-    ADD_TEST(test_valgrind ${VALGRIND_PROGRAM} --error-exitcode=1 --leak-check=full
-                       ${CMAKE_CURRENT_BINARY_DIR}/test_main
-                       ${CMAKE_CURRENT_SOURCE_DIR}/repos/)
-    SET_TESTS_PROPERTIES(test_valgrind PROPERTIES ENVIRONMENT "CK_FORK=no")
+ADD_TEST(test_hawkey_main test_hawkey_main "${CMAKE_CURRENT_SOURCE_DIR}/data/tests/hawkey/")
+IF (NOT DISABLE_VALGRIND_TESTS)
+  IF (VALGRIND_PROGRAM)
+      ADD_TEST(test_hawkey_valgrind ${VALGRIND_PROGRAM} --error-exitcode=1 --leak-check=full
+                        ${CMAKE_CURRENT_BINARY_DIR}/test_hawkey_main
+                        ${CMAKE_CURRENT_SOURCE_DIR}/data/tests/hawkey/)
+      SET_TESTS_PROPERTIES(test_hawkey_valgrind PROPERTIES ENVIRONMENT "CK_FORK=no")
+  ENDIF()
 ENDIF()
 
-ADD_SUBDIRECTORY (python)

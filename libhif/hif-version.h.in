@@ -29,10 +29,6 @@
  * depending on the version of libhif headers installed.
  */
 
-#if !defined (__LIBHIF_H) && !defined (HIF_COMPILATION)
-#error "Only <libhif.h> can be included directly."
-#endif
-
 #ifndef __HIF_VERSION_H
 #define __HIF_VERSION_H
 

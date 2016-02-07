@@ -30,7 +30,6 @@
  * See also: #HifAdvisory
  */
 
-#include "config.h"
 
 #include <solv/util.h>
 

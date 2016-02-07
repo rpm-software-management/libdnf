@@ -32,7 +32,6 @@
  * See also: #HifState
  */
 
-#include "config.h"
 
 #include <gio/gio.h>
 

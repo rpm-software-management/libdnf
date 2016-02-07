@@ -167,7 +167,7 @@ static void obsoletes(HifSack *sack)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-    HifPackageSet installed_pkgs = hy_query_run_set(q);
+    HifPackageSet *installed_pkgs = hy_query_run_set(q);
     hy_query_free(q);
 
     q = hy_query_create(sack);
@@ -211,7 +211,7 @@ erase(HifSack *sack, const char *name)
         goto finish;
     }
     g_ptr_array_unref(plist);
-    plist = hy_goal_list_erasures(goal);
+    plist = hy_goal_list_erasures(goal, NULL);
     printf("erasure count: %d\n", plist->len);
     for (int i = 0; i < plist->len; ++i) {
         HifPackage *pkg = g_ptr_array_index(plist, i);
@@ -241,7 +241,7 @@ static void update(HifSack *sack, HifPackage *pkg)
         goto finish;
     }
     // handle upgrades
-    GPtrArray *plist = hy_goal_list_upgrades(goal);
+    GPtrArray *plist = hy_goal_list_upgrades(goal, NULL);
     printf("upgrade count: %d\n", plist->len);
     for (int i = 0; i < plist->len; ++i) {
         HifPackage *pkg = g_ptr_array_index(plist, i);
@@ -262,7 +262,7 @@ static void update(HifSack *sack, HifPackage *pkg)
     }
     g_ptr_array_unref(plist);
     // handle installs
-    plist = hy_goal_list_installs(goal);
+    plist = hy_goal_list_installs(goal, NULL);
     printf("install count: %d\n", plist->len);
     for (int i = 0; i < plist->len; ++i) {
         HifPackage *pkg = g_ptr_array_index(plist, i);
@@ -399,8 +399,9 @@ int main(int argc, const char **argv)
     char *md_primary_updates_xml;
     char *md_filelists_updates;
     int ret;
+    g_autoptr(GError) error = NULL;
 
-    if (!hif_sack_setup(sack, NULL, NULL, NULL, HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR))
+    if (!hif_sack_setup(sack, HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL))
         return 1;
 
     if (read_repopaths(&md_repo, &md_primary_xml, &md_filelists, &md_repo_updates,
@@ -419,20 +420,20 @@ int main(int argc, const char **argv)
     int load_flags = HIF_SACK_LOAD_FLAG_BUILD_CACHE;
     /* rpmdb */
     repo = hy_repo_create(HY_SYSTEM_REPO_NAME);
-    hif_sack_load_system_repo(sack, NULL, load_flags);
+    hif_sack_load_system_repo(sack, NULL, load_flags, &error);
     hy_repo_free(repo);
 
     if (need_filelists(argc, argv))
         load_flags |= HIF_SACK_LOAD_FLAG_USE_FILELISTS;
     /* Fedora repo */
     repo = config_repo("Fedora", md_repo, md_primary_xml, md_filelists);
-    ret = hif_sack_load_repo(sack, repo, load_flags);
+    ret = hif_sack_load_repo(sack, repo, load_flags, &error);
     assert(ret == 0); (void)ret;
     hy_repo_free(repo);
     /* Fedora updates repo */
     repo = config_repo("updates", md_repo_updates, md_primary_updates_xml,
                        md_filelists_updates);
-    ret = hif_sack_load_repo(sack, repo, load_flags);
+    ret = hif_sack_load_repo(sack, repo, load_flags, &error);
     assert(ret == 0); (void)ret;
     hy_repo_free(repo);
     free(md_repo);

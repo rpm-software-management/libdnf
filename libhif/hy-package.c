@@ -29,7 +29,6 @@
  * See also: #HifContext
  */
 
-#include "config.h"
 
 #include <stdlib.h>
 #include <solv/evr.h>
