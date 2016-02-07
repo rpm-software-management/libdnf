@@ -147,7 +147,7 @@ if (GOBJECT_INTROSPECTION_FOUND)
                     ${GIR_XML}
             DEPENDS ${GIR_XML}
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-        add_custom_target(gir DEPENDS ${GIR_XML} ${GIR_TYPELIB})
+        add_custom_target(gir ALL DEPENDS ${GIR_XML} ${GIR_TYPELIB})
     endif()
 endif()
 
