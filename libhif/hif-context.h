@@ -25,7 +25,7 @@
 #include "hif-types.h"
 
 #ifndef __GI_SCANNER__
-#include "hy-goal.h"
+#include "hif-transaction.h"
 #include "hif-sack.h"
 #endif
 

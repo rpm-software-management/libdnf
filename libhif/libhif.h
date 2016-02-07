@@ -44,6 +44,18 @@
 #include <libhif/hif-utils.h>
 #include <libhif/hif-version.h>
 
+/* In progress conversion to hif */
+#include <libhif/hy-goal.h>
+#include <libhif/hy-nevra.h>
+#include <libhif/hy-package.h>
+#include <libhif/hy-packageset.h>
+#include <libhif/hy-query.h>
+#include <libhif/hy-reldep.h>
+#include <libhif/hy-repo.h>
+#include <libhif/hy-selector.h>
+#include <libhif/hy-subject.h>
+#include <libhif/hy-util.h>
+
 #undef __LIBHIF_H_INSIDE__
 
 #endif /* __LIBHIF_H */
