@@ -400,7 +400,7 @@ load_ext(HifSack *sack, HyRepo hrepo, int which_repodata,
     if (fn == NULL) {
         g_set_error (error,
                      HIF_ERROR,
-                     HIF_ERROR_FILE_INVALID,
+                     HIF_ERROR_NO_CAPABILITY,
                      "no %d string for %s",
                      which_filename, name);
         return FALSE;
