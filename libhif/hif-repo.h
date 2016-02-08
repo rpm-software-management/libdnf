@@ -30,6 +30,8 @@
 #include "hif-context.h"
 #include "hif-state.h"
 
+#include <librepo/librepo.h>
+
 G_BEGIN_DECLS
 
 #define HIF_TYPE_REPO (hif_repo_get_type ())
@@ -170,6 +172,11 @@ gboolean         hif_repo_set_data              (HifRepo              *repo,
                                                  GError              **error);
 gboolean         hif_repo_commit                (HifRepo              *repo,
                                                  GError              **error);
+
+LrHandle *       hif_repo_get_lr_handle         (HifRepo              *repo);
+
+LrResult *       hif_repo_get_lr_result         (HifRepo              *repo);
+
 #ifndef __GI_SCANNER__
 gchar           *hif_repo_download_package      (HifRepo              *repo,
                                                  HifPackage *            pkg,

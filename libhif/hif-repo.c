@@ -1634,6 +1634,20 @@ out:
     return LR_CB_OK;
 }
 
+LrHandle *
+hif_repo_get_lr_handle (HifRepo              *repo)
+{
+    HifRepoPrivate *priv = GET_PRIVATE (repo);
+    return priv->repo_handle;
+}
+
+LrResult *
+hif_repo_get_lr_result (HifRepo              *repo)
+{
+    HifRepoPrivate *priv = GET_PRIVATE (repo);
+    return priv->repo_result;
+}
+
 /**
  * hif_repo_download_package:
  * @repo: a #HifRepo instance.
