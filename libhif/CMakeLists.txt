@@ -63,6 +63,20 @@ TARGET_LINK_LIBRARIES(hth libhif
                       ${ZLIB_LIBRARY}
                       ${RPMDB_LIBRARY})
 
+SET(LIBHAWKEY_headers
+    hy-goal.h
+    hy-nevra.h
+    hy-package.h
+    hy-packageset.h
+    hy-query.h
+    hy-reldep.h
+    hy-repo.h
+    hy-selector.h
+    hy-subject.h
+    hy-types.h
+    hy-util.h
+    )
+
 SET(LIBHIF_headers
     hif-advisory.h
     hif-advisorypkg.h
@@ -163,4 +177,5 @@ endif()
 INSTALL(FILES "libhif.pc"
         DESTINATION "${LIB_INSTALL_DIR}/pkgconfig")
 INSTALL(FILES ${LIBHIF_headers} DESTINATION include/libhif)
+INSTALL(FILES ${LIBHAWKEY_headers} DESTINATION include/libhif)
 INSTALL(TARGETS libhif LIBRARY DESTINATION ${LIB_INSTALL_DIR})
