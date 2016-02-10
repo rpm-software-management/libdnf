@@ -199,7 +199,6 @@ pyseq_to_packageset(PyObject *obj, HifSack *sack)
         if (pkg == NULL)
             goto fail;
         hif_packageset_add(pset, pkg);
-        g_object_unref(pkg);
     }
 
     Py_DECREF(sequence);
