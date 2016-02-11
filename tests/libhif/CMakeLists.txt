@@ -14,10 +14,8 @@ TARGET_LINK_LIBRARIES(test_libhif_main
                       ${RPMDB_LIBRARY})
 
 ADD_TEST(test_libhif_main test_libhif_main)
-IF (NOT DISABLE_VALGRIND_TESTS)
-  IF (VALGRIND_PROGRAM)
+IF (NOT DISABLE_VALGRIND AND VALGRIND_PROGRAM)
     ADD_TEST(test_libhif_valgrind ${VALGRIND_PROGRAM} --error-exitcode=1 --leak-check=full
              --suppressions=${CMAKE_SOURCE_DIR}/tests/valgrind-suppressions.txt
              ${CMAKE_CURRENT_BINARY_DIR}/test_libhif_main)
-  ENDIF()
 ENDIF()

@@ -6,7 +6,6 @@ CMAKE_POLICY (SET CMP0005 OLD)
 # GLib.  There may be a better way to do this...
 CMAKE_POLICY(SET CMP0003 NEW)
 
-OPTION(DISABLE_VALGRIND_TESTS "Enables valgrind tests for hawkey and libhif" OFF)
 INCLUDE (${CMAKE_SOURCE_DIR}/VERSION.cmake)
 
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wcast-align -Wno-uninitialized -Wmissing-declarations -Wredundant-decls -Wcast-align -Wwrite-strings -Wreturn-type -Wformat-nonliteral -Wmissing-format-attribute -Wsign-compare -Wtype-limits -Wuninitialized -Waggregate-return -Wshadow -Winline -Wall -Werror=implicit-function-declaration -Wl,--as-needed")
