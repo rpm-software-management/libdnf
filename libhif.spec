@@ -78,6 +78,7 @@ Summary:	Python 2 bindings for the hawkey library
 %{?python_provide:%python_provide python2-hawkey}
 Group:		Development/Languages
 BuildRequires:  python2-devel
+BuildRequires:  python-macros
 BuildRequires:  python-nose
 Requires:	%{name}%{?_isa} = %{version}-%{release}
 Recommends:     hawkey-man = %{version}-%{release}
