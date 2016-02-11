@@ -61,13 +61,8 @@ Development files for libhif.
 %package -n hawkey-man
 Summary:	Documentation for the hawkey python bindings
 Group:		Development/Languages
-BuildRequires:  python2-devel
 BuildRequires:  python-nose
-%if %{with python3}
-BuildRequires:	python3-sphinx >= 1.1.3-9
-%else
 BuildRequires:	python-sphinx
-%endif
 Requires:	%{name}%{?_isa} = %{version}-%{release}
 
 %description -n hawkey-man
@@ -113,16 +108,11 @@ mv ../py3 ./
 %build
 %cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .
 make %{?_smp_mflags}
-make doc-man
-make doc-gtk
-make gir
 
 %if %{with python3}
 pushd py3
-%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPYTHON_DESIRED:str=3 -DWITH_GIR=0 .
+%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPYTHON_DESIRED:str=3 -DWITH_GIR=0 -DWITH_MAN=0 -Dgtkdoc=0 .
 make %{?_smp_mflags}
-make doc-man
-make doc-gtk
 popd
 %endif
 
