@@ -64,7 +64,7 @@ Group:		Development/Languages
 BuildRequires:  python2-devel
 BuildRequires:  python-nose
 %if %{with python3}
-BuildRequires:	python-sphinx >= 1.1.3-9
+BuildRequires:	python3-sphinx >= 1.1.3-9
 %else
 BuildRequires:	python-sphinx
 %endif
