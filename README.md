@@ -14,16 +14,22 @@ Building for Fedora
 
 Packages needed for the build, or the build requires:
 
+* make
 * check-devel
 * cmake
 * expat-devel
 * gcc
 * libsolv-devel
 * libsolv-tools
+* librepo-devel
 * python-devel (or python3-devel for Python 3 build)
 * python-nose (or python3-nose for Python 3 build)
 * rpm-devel
 * zlib-devel
+* glib2-devel
+* gtk-doc
+* gobject-introspection-devel
+* python-sphinx
 
 From the checkout dir::
 
