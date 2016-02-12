@@ -22,7 +22,7 @@ if (GTKDOC_FOUND)
                     libhif
                     ${CMAKE_SOURCE_DIR}/docs/libhif/libhif-docs.sgml
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/html")
-    add_custom_target(doc-gtk ALL DEPENDS doc-scan doc-mkdb doc-mkhtml)
+    add_custom_target(doc-gtk DEPENDS doc-scan doc-mkdb doc-mkhtml)
 else ()
     message (FATAL_ERROR "gtk-doc not found")
 endif ()
