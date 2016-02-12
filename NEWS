@@ -1,3 +1,14 @@
+Version 0.2.2
+~~~~~~~~~~~~~
+Released: 2016-02-12
+
+Bugfixes:
+ - Include rpm name in the error message when gpg key check fails (Kalev Lember)
+ - Include the rpm name in one more error message (Kalev Lember)
+ - Propagate "too old" and other errors for local repos (Colin Walters)
+ - Use a better message if a gpg signed repo has untrusted content (Richard Hughes)
+ - Use passed in releasever if set (Kalev Lember)
+
 Version 0.2.1
 ~~~~~~~~~~~~~
 Released: 2015-07-13
