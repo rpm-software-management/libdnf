@@ -368,7 +368,7 @@ hif_state_discrete_to_percent(guint discrete, guint steps)
         g_warning("steps is 0!");
         return 0;
     }
-    return((gfloat) discrete *(100.0f /(gfloat)(steps)));
+    return((gfloat) ((gdouble) discrete *(100.0 /(gdouble)(steps))));
 }
 
 /**
