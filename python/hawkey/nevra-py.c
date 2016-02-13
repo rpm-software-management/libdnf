@@ -116,15 +116,15 @@ set_attr(_NevraObject *self, PyObject *value, void *closure)
 }
 
 static PyGetSetDef nevra_getsetters[] = {
-    {"name", (getter)get_attr, (setter)set_attr, NULL,
+    {(char*)"name", (getter)get_attr, (setter)set_attr, NULL,
      (void *)HY_NEVRA_NAME},
-    {"epoch", (getter)get_epoch, (setter)set_epoch, NULL,
+    {(char*)"epoch", (getter)get_epoch, (setter)set_epoch, NULL,
      NULL},
-    {"version", (getter)get_attr, (setter)set_attr, NULL,
+    {(char*)"version", (getter)get_attr, (setter)set_attr, NULL,
      (void *)HY_NEVRA_VERSION},
-    {"release", (getter)get_attr, (setter)set_attr, NULL,
+    {(char*)"release", (getter)get_attr, (setter)set_attr, NULL,
      (void *)HY_NEVRA_RELEASE},
-    {"arch", (getter)get_attr, (setter)set_attr, NULL,
+    {(char*)"arch", (getter)get_attr, (setter)set_attr, NULL,
      (void *)HY_NEVRA_ARCH},
     {NULL}          /* sentinel */
 };
@@ -153,10 +153,10 @@ nevra_init(_NevraObject *self, PyObject *args, PyObject *kwds)
     PyObject *epoch_o = NULL;
     HyNevra cnevra = NULL;
 
-    char *kwlist[] = {"name", "epoch", "version", "release", "arch",
+    const char *kwlist[] = {"name", "epoch", "version", "release", "arch",
         "nevra", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|zOzzzO&", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|zOzzzO&", (char**) kwlist,
         &name, &epoch_o, &version, &release, &arch, nevra_converter, &cnevra))
         return -1;
     if (name == NULL && cnevra == NULL) {

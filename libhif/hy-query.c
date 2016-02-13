@@ -1092,7 +1092,7 @@ hy_query_filter_num_in(HyQuery q, int keyname, int cmp_type, int nmatches,
 
 int
 hy_query_filter_package_in(HyQuery q, int keyname, int cmp_type,
-                           const HifPackageSet *pset)
+                           HifPackageSet *pset)
 {
     if (!valid_filter_pkg(keyname, cmp_type))
         return HIF_ERROR_BAD_QUERY;

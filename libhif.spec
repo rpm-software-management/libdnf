@@ -32,6 +32,7 @@ BuildRequires: gobject-introspection-devel
 BuildRequires: rpm-devel >= 4.11.0
 
 Requires:	libsolv%{?_isa} >= %{libsolv_version}
+Obsoletes:      hawkey < 0.7.0
 
 # prevent provides from nonstandard paths:
 %filter_provides_in %{python_sitearch}/.*\.so$
@@ -60,13 +61,8 @@ Development files for libhif.
 %package -n hawkey-man
 Summary:	Documentation for the hawkey python bindings
 Group:		Development/Languages
-BuildRequires:  python2-devel
 BuildRequires:  python-nose
-%if %{with python3}
-BuildRequires:	python-sphinx >= 1.1.3-9
-%else
 BuildRequires:	python-sphinx
-%endif
 Requires:	%{name}%{?_isa} = %{version}-%{release}
 
 %description -n hawkey-man
@@ -77,6 +73,7 @@ Summary:	Python 2 bindings for the hawkey library
 %{?python_provide:%python_provide python2-hawkey}
 Group:		Development/Languages
 BuildRequires:  python2-devel
+BuildRequires:  python-macros
 BuildRequires:  python-nose
 Requires:	%{name}%{?_isa} = %{version}-%{release}
 Recommends:     hawkey-man = %{version}-%{release}
@@ -89,6 +86,8 @@ Python 2 bindings for the hawkey library.
 Summary:	Python 3 bindings for the hawkey library
 %{?python_provide:%python_provide python3-hawkey}
 Group:		Development/Languages
+BuildRequires:  python3-devel
+BuildRequires:  python3-nose
 Requires:	%{name}%{?_isa} = %{version}-%{release}
 Recommends:     hawkey-man = %{version}-%{release}
 
@@ -107,18 +106,13 @@ mv ../py3 ./
 %endif
 
 %build
-%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDISABLE_VALGRIND_TESTS=1 .
+%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDISABLE_VALGRIND=1 .
 make %{?_smp_mflags}
-make doc-man
-make doc-gtk
-make gir
 
 %if %{with python3}
 pushd py3
-%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPYTHON_DESIRED:str=3 -DWITH_GIR=0 -DDISABLE_VALGRIND_TESTS=1 .
+%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPYTHON_DESIRED:str=3 -DWITH_GIR=0 -DWITH_MAN=0 -Dgtkdoc=0 -DDISABLE_VALGRIND=1 .
 make %{?_smp_mflags}
-make doc-man
-make doc-gtk
 popd
 %endif
 

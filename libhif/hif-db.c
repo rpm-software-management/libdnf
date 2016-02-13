@@ -349,8 +349,8 @@ hif_db_remove_all(HifDb *db, HifPackage *package, GError **error)
     /* delete each one */
     filename = g_dir_read_name(dir);
     while (filename != NULL) {
-        g_autofree gchar *index_file;
-        g_autoptr(GFile) file_tmp;
+        g_autofree gchar *index_file = NULL;
+        g_autoptr(GFile) file_tmp = NULL;
 
         index_file = g_build_filename(index_dir, filename, NULL);
         file_tmp = g_file_new_for_path(index_file);

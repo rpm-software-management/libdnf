@@ -101,13 +101,13 @@ get_chksum(_PackageDeltaObject *self, void *closure)
 }
 
 static PyGetSetDef packageDelta_getsetters[] = {
-    {"location", (getter)get_str, NULL, NULL,
+    {(char*) "location", (getter)get_str, NULL, NULL,
      (void *)hif_packagedelta_get_location},
-    {"baseurl", (getter)get_str, NULL, NULL,
+    {(char*) "baseurl", (getter)get_str, NULL, NULL,
      (void *)hif_packagedelta_get_baseurl},
-    {"downloadsize", (getter)get_num, NULL, NULL,
+    {(char*) "downloadsize", (getter)get_num, NULL, NULL,
      (void *)hif_packagedelta_get_downloadsize},
-    {"chksum", (getter)get_chksum, NULL, NULL,
+    {(char*) "chksum", (getter)get_chksum, NULL, NULL,
     (void *)hif_packagedelta_get_chksum},
     {NULL}                        /* sentinel */
 };

@@ -39,7 +39,8 @@ enum _HyForm {
     HY_FORM_NEVR = 2,
     HY_FORM_NEV = 3,
     HY_FORM_NA = 4,
-    HY_FORM_NAME = 5
+    HY_FORM_NAME = 5,
+    _HY_FORM_STOP_ = -1
 };
 
 struct _HyPossibilities {

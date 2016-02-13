@@ -97,11 +97,11 @@ query_dealloc(_QueryObject *self)
 static int
 query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
 {
-    char *kwlist[] = {"sack", "query", NULL};
+    const char *kwlist[] = {"sack", "query", NULL};
     PyObject *sack;
     PyObject *query;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist, &sack, &query))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", (char**) kwlist, &sack, &query))
         return -1;
 
     if (query && sack == Py_None && queryObject_Check(query)) {
@@ -132,7 +132,7 @@ get_evaluated(_QueryObject *self, void *unused)
 }
 
 static PyGetSetDef query_getsetters[] = {
-    {"evaluated",  (getter)get_evaluated, NULL, NULL, NULL},
+    {(char*)"evaluated",  (getter)get_evaluated, NULL, NULL, NULL},
     {NULL}                        /* sentinel */
 };
 
@@ -274,7 +274,7 @@ filter(_QueryObject *self, PyObject *args)
         const char *matches[count + 1];
         matches[count] = NULL;
         PyObject *tmp_py_strs[count];
-        for (int i = 0; i < count; ++i) {
+        for (unsigned int i = 0; i < count; ++i) {
             PyObject *item = PySequence_Fast_GET_ITEM(seq, i);
             tmp_py_strs[i] = NULL;
             if (PyUnicode_Check(item) || PyString_Check(item)) {

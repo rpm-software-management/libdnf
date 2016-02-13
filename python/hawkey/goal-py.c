@@ -62,10 +62,10 @@ static int
 args_pkg_sltr_parse(PyObject *args, PyObject *kwds,
                      HifPackage **pkg, HySelector *sltr, int *flags, int flag_mask)
 {
-    char *kwlist[] = {"package", "select", "clean_deps", "check_installed",
+    const char *kwlist[] = {"package", "select", "clean_deps", "check_installed",
                       "optional", NULL};
     int clean_deps = 0, check_installed = 0, optional = 0;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&O&iii", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&O&iii", (char**) kwlist,
                                      package_converter, pkg,
                                      selector_converter, sltr,
                                      &clean_deps, &check_installed,
@@ -103,7 +103,7 @@ args_pkg_sltr_parse(PyObject *args, PyObject *kwds,
 static int
 args_run_parse(PyObject *args, PyObject *kwds, int *flags, PyObject **callback_p)
 {
-    char *kwlist[] = {"callback", "allow_uninstall", "force_best", "verify",
+    const char *kwlist[] = {"callback", "allow_uninstall", "force_best", "verify",
         "ignore_weak_deps", NULL};
     int ignore_weak_deps = 0;
     int allow_uninstall = 0;
@@ -111,7 +111,7 @@ args_run_parse(PyObject *args, PyObject *kwds, int *flags, PyObject **callback_p
     int verify = 0;
     PyObject *callback = NULL;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Oiiii", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Oiiii", (char**) kwlist,
                                      &callback, &allow_uninstall, &force_best,
                                      &verify, &ignore_weak_deps))
         return 0;
@@ -259,17 +259,22 @@ install(_GoalObject *self, PyObject *args, PyObject *kwds)
     HifPackage *pkg = NULL;
     HySelector sltr = NULL;
     int flags = 0;
-    gboolean ret = 0;
     g_autoptr(GError) error = NULL;
     if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, &flags, HY_WEAK_SOLV))
         return NULL;
 
     if (flags & HY_WEAK_SOLV) {
-        ret = pkg ? hy_goal_install_optional(self->goal, pkg) :
+        if (pkg) {
+            hy_goal_install_optional(self->goal, pkg);
+        } else {
             hy_goal_install_selector_optional(self->goal, sltr, &error);
+        }
     } else {
-        ret = pkg ? hy_goal_install(self->goal, pkg) :
+        if (pkg) {
+            hy_goal_install(self->goal, pkg);
+        } else {
             hy_goal_install_selector(self->goal, sltr, &error);
+        }
     }
     return op_error2exc(error);
 }
@@ -563,7 +568,7 @@ get_reason(_GoalObject *self, PyObject *pkg)
     return PyLong_FromLong(reason);
 }
 
-PyObject *
+static PyObject *
 goalToPyObject(HyGoal goal, PyObject *sack)
 {
     _GoalObject *self = (_GoalObject *)goal_Type.tp_alloc(&goal_Type, 0);
@@ -634,7 +639,7 @@ static struct PyMethodDef goal_methods[] = {
 };
 
 static struct PyMemberDef goal_members[] = {
-    {"sack", T_OBJECT, offsetof(_GoalObject, sack), READONLY, NULL},
+    {(char*)"sack", T_OBJECT, offsetof(_GoalObject, sack), READONLY, NULL},
     {NULL}
 };
 

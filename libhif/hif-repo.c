@@ -248,7 +248,7 @@ gchar *
 hif_repo_get_description(HifRepo *repo)
 {
     HifRepoPrivate *priv = GET_PRIVATE(repo);
-    g_autofree gchar *tmp;
+    g_autofree gchar *tmp = NULL;
 
     /* is DVD */
     if (priv->kind == HIF_REPO_KIND_MEDIA) {
@@ -930,9 +930,9 @@ static gboolean
 hif_repo_set_timestamp_modified(HifRepo *repo, GError **error)
 {
     HifRepoPrivate *priv = GET_PRIVATE(repo);
-    g_autofree gchar *filename;
-    g_autoptr(GFile) file;
-    g_autoptr(GFileInfo) info;
+    g_autofree gchar *filename = NULL;
+    g_autoptr(GFile) file = NULL;
+    g_autoptr(GFileInfo) info = NULL;
 
     filename = g_build_filename(priv->location, "repodata", "repomd.xml", NULL);
     file = g_file_new_for_path(filename);
@@ -1590,8 +1590,8 @@ hif_repo_copy_package(HifPackage *pkg,
 {
     g_autofree gchar *basename = NULL;
     g_autofree gchar *dest = NULL;
-    g_autoptr(GFile) file_dest;
-    g_autoptr(GFile) file_repo;
+    g_autoptr(GFile) file_dest = NULL;
+    g_autoptr(GFile) file_repo = NULL;
 
     /* copy the file with progress */
     file_repo = g_file_new_for_path(hif_package_get_filename(pkg));

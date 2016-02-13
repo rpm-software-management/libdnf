@@ -710,7 +710,7 @@ START_TEST(test_goal_verify)
     fail_unless(error->code == HIF_ERROR_NO_SOLUTION);
     fail_unless(hy_goal_count_problems(goal) == 2);
 
-    char *expected;
+    const char *expected;
     char *problem;
     problem = hy_goal_describe_problem(goal, 0);
     expected = "nothing provides missing-dep needed by missing-1-0.x86_64";
