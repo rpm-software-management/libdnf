@@ -74,7 +74,6 @@
 
 typedef struct
 {
-    FILE                *log_out;
     Id                   running_kernel_id;
     Map                 *pkg_excludes;
     Map                 *pkg_includes;
@@ -118,10 +117,6 @@ hif_sack_finalize(GObject *object)
     FOR_REPOS(i, repo) {
         HyRepo hrepo = repo->appdata;
         hy_repo_free(hrepo);
-    }
-    if (priv->log_out) {
-        g_debug("finished");
-        fclose(priv->log_out);
     }
     g_free(priv->cache_dir);
     queue_free(&priv->installonly);
@@ -405,7 +400,7 @@ load_ext(HifSack *sack, HyRepo hrepo, int which_repodata,
     if (fn == NULL) {
         g_set_error (error,
                      HIF_ERROR,
-                     HIF_ERROR_FILE_INVALID,
+                     HIF_ERROR_NO_CAPABILITY,
                      "no %d string for %s",
                      which_filename, name);
         return FALSE;
@@ -582,7 +577,7 @@ static int
 write_ext_updateinfo_filter(Repo *repo, Repokey *key, void *kfdata)
 {
     Repodata *data = kfdata;
-    if (key->name == 1 && key->size != data->repodataid)
+    if (key->name == 1 && (int) key->size != data->repodataid)
         return -1;
     return repo_write_stdkeyfilter(repo, key, 0);
 }

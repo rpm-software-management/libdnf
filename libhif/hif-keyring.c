@@ -165,7 +165,7 @@ hif_keyring_add_public_keys(rpmKeyring keyring, GError **error)
 {
     const gchar *gpg_dir = "/etc/pki/rpm-gpg";
     gboolean ret = TRUE;
-    g_autoptr(GDir) dir;
+    g_autoptr(GDir) dir = NULL;
 
     /* search all the public key files */
     dir = g_dir_open(gpg_dir, 0, error);

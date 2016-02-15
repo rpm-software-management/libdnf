@@ -45,7 +45,7 @@ advisorypkgToPyObject(HifAdvisoryPkg *advisorypkg)
     return (PyObject *)self;
 }
 
-HifAdvisoryPkg *
+static HifAdvisoryPkg *
 advisorypkgFromPyObject(PyObject *o)
 {
     if (!PyObject_TypeCheck(o, &advisorypkg_Type)) {
@@ -55,7 +55,7 @@ advisorypkgFromPyObject(PyObject *o)
     return ((_AdvisoryPkgObject*)o)->advisorypkg;
 }
 
-int
+static int
 advisorypkg_converter(PyObject *o, HifAdvisoryPkg **ref_ptr)
 {
     HifAdvisoryPkg *ref = advisorypkgFromPyObject(o);
@@ -129,10 +129,10 @@ get_attr(_AdvisoryPkgObject *self, void *closure)
 }
 
 static PyGetSetDef advisorypkg_getsetters[] = {
-    {"name", (getter)get_attr, NULL, NULL, (void *)0},
-    {"evr", (getter)get_attr, NULL, NULL, (void *)1},
-    {"arch", (getter)get_attr, NULL, NULL, (void *)2},
-    {"filename", (getter)get_attr, NULL, NULL, (void *)3},
+    {(char*)"name", (getter)get_attr, NULL, NULL, (void *)0},
+    {(char*)"evr", (getter)get_attr, NULL, NULL, (void *)1},
+    {(char*)"arch", (getter)get_attr, NULL, NULL, (void *)2},
+    {(char*)"filename", (getter)get_attr, NULL, NULL, (void *)3},
     {NULL}                      /* sentinel */
 };
 

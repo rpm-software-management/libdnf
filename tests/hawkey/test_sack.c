@@ -49,7 +49,7 @@ END_TEST
 START_TEST(test_sack_create)
 {
     g_autoptr(GError) error = NULL;
-    HifSack *sack = hif_sack_new();
+    g_autoptr(HifSack) sack = hif_sack_new();
     hif_sack_set_cachedir(sack, test_globals.tmpdir);
     fail_unless(hif_sack_setup(sack, HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
     fail_if(sack == NULL, NULL);

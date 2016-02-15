@@ -115,7 +115,7 @@ map_index2id(Map *map, unsigned index, Id previous)
 {
     unsigned char *ti = map->map;
     unsigned char *end = ti + map->size;
-    int enabled;
+    unsigned int enabled;
     Id id;
 
     if (previous >= 0) {
@@ -200,6 +200,7 @@ hif_packageset_from_bitmap(HifSack *sack, Map *m)
 {
     HifPackageSet *pset = hif_packageset_new(sack);
     HifPackageSetPrivate *priv = GET_PRIVATE(pset);
+    map_free(&priv->map);
     map_init_clone(&priv->map, m);
     return pset;
 }
@@ -237,6 +238,7 @@ hif_packageset_clone(HifPackageSet *pset)
     HifPackageSetPrivate *priv = GET_PRIVATE(pset);
     HifPackageSet *new = hif_packageset_new(priv->sack);
     HifPackageSetPrivate *priv_new = GET_PRIVATE(new);
+    map_free(&priv_new->map);
     map_init_clone(&priv_new->map, &priv->map);
     return new;
 }

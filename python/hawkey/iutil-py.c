@@ -46,8 +46,8 @@ advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack)
     if (list == NULL)
         return NULL;
 
-    for (int i = 0; i < advisorylist->len; ++i) {
-        cadvisory = g_ptr_array_index(advisorylist, i);
+    for (unsigned int i = 0; i < advisorylist->len; ++i) {
+        cadvisory = g_object_ref(g_ptr_array_index(advisorylist, i));
         advisory = advisoryToPyObject(cadvisory, sack);
 
         if (advisory == NULL)
@@ -75,8 +75,8 @@ advisorypkglist_to_pylist(const GPtrArray *advisorypkglist)
     if (list == NULL)
         return NULL;
 
-    for (int i = 0; i < advisorypkglist->len; ++i) {
-        cadvisorypkg = g_ptr_array_index(advisorypkglist,  i);
+    for (unsigned int i = 0; i < advisorypkglist->len; ++i) {
+        cadvisorypkg = g_object_ref(g_ptr_array_index(advisorypkglist,  i));
         advisorypkg = advisorypkgToPyObject(cadvisorypkg);
         if (advisorypkg == NULL)
             goto fail;
@@ -103,8 +103,8 @@ advisoryreflist_to_pylist(const GPtrArray *advisoryreflist, PyObject *sack)
     if (list == NULL)
         return NULL;
 
-    for (int i = 0; i < advisoryreflist->len; ++i) {
-        cadvisoryref = g_ptr_array_index(advisoryreflist,  i);
+    for (unsigned int i = 0; i < advisoryreflist->len; ++i) {
+        cadvisoryref = g_object_ref(g_ptr_array_index(advisoryreflist,  i));
         advisoryref = advisoryrefToPyObject(cadvisoryref, sack);
         if (advisoryref == NULL)
             goto fail;
@@ -133,8 +133,7 @@ packagelist_to_pylist(GPtrArray *plist, PyObject *sack)
         return NULL;
     retval = list;
 
-    int i;
-    for (i = 0; i < plist->len; i++) {
+    for (unsigned int i = 0; i < plist->len; i++) {
         cpkg = g_ptr_array_index (plist, i);
         PyObject *package = new_package(sack, hif_package_get_id(cpkg));
         if (package == NULL) {
@@ -192,7 +191,7 @@ pyseq_to_packageset(PyObject *obj, HifSack *sack)
     HifPackageSet *pset = hif_packageset_new(sack);
 
     const unsigned count = PySequence_Size(sequence);
-    for (int i = 0; i < count; ++i) {
+    for (unsigned int i = 0; i < count; ++i) {
         PyObject *item = PySequence_Fast_GET_ITEM(sequence, i);
         if (item == NULL)
             goto fail;
@@ -200,7 +199,6 @@ pyseq_to_packageset(PyObject *obj, HifSack *sack)
         if (pkg == NULL)
             goto fail;
         hif_packageset_add(pset, pkg);
-        g_object_unref(pkg);
     }
 
     Py_DECREF(sequence);
@@ -220,7 +218,7 @@ pyseq_to_reldeplist(PyObject *obj, HifSack *sack, int cmp_type)
     HyReldepList reldeplist = hy_reldeplist_create(sack);
 
     const unsigned count = PySequence_Size(sequence);
-    for (int i = 0; i < count; ++i) {
+    for (unsigned int i = 0; i < count; ++i) {
         PyObject *item = PySequence_Fast_GET_ITEM(sequence, i);
         if (item == NULL)
             goto fail;

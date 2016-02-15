@@ -54,7 +54,7 @@ advisoryToPyObject(HifAdvisory *advisory, PyObject *sack)
     return (PyObject *)self;
 }
 
-HifAdvisory *
+static HifAdvisory *
 advisoryFromPyObject(PyObject *o)
 {
     if (!PyObject_TypeCheck(o, &advisory_Type)) {
@@ -64,7 +64,7 @@ advisoryFromPyObject(PyObject *o)
     return ((_AdvisoryObject*)o)->advisory;
 }
 
-int
+static int
 advisory_converter(PyObject *o, HifAdvisory **advisory_ptr)
 {
     HifAdvisory *advisory = advisoryFromPyObject(o);
@@ -198,14 +198,14 @@ get_advisoryref_list(_AdvisoryObject *self, void *closure)
 }
 
 static PyGetSetDef advisory_getsetters[] = {
-    {"title", (getter)get_str, NULL, NULL, (void *)hif_advisory_get_title},
-    {"id", (getter)get_str, NULL, NULL, (void *)hif_advisory_get_id},
-    {"type", (getter)get_type, NULL, NULL, (void *)hif_advisory_get_kind},
-    {"description", (getter)get_str, NULL, NULL, (void *)hif_advisory_get_description},
-    {"rights", (getter)get_str, NULL, NULL, (void *)hif_advisory_get_rights},
-    {"updated", (getter)get_datetime, NULL, NULL, (void *)hif_advisory_get_updated},
-    {"packages", (getter)get_advisorypkg_list, NULL, NULL, (void *)hif_advisory_get_packages},
-    {"references", (getter)get_advisoryref_list, NULL, NULL, (void *)hif_advisory_get_references},
+    {(char*)"title", (getter)get_str, NULL, NULL, (void *)hif_advisory_get_title},
+    {(char*)"id", (getter)get_str, NULL, NULL, (void *)hif_advisory_get_id},
+    {(char*)"type", (getter)get_type, NULL, NULL, (void *)hif_advisory_get_kind},
+    {(char*)"description", (getter)get_str, NULL, NULL, (void *)hif_advisory_get_description},
+    {(char*)"rights", (getter)get_str, NULL, NULL, (void *)hif_advisory_get_rights},
+    {(char*)"updated", (getter)get_datetime, NULL, NULL, (void *)hif_advisory_get_updated},
+    {(char*)"packages", (getter)get_advisorypkg_list, NULL, NULL, (void *)hif_advisory_get_packages},
+    {(char*)"references", (getter)get_advisoryref_list, NULL, NULL, (void *)hif_advisory_get_references},
     {NULL}                      /* sentinel */
 };
 
