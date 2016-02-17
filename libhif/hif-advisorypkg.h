@@ -22,6 +22,7 @@
 #ifndef __HIF_ADVISORYPKG_H
 #define __HIF_ADVISORYPKG_H
 
+#include <solv/pool.h>
 #include <glib-object.h>
 
 G_BEGIN_DECLS
@@ -43,13 +44,16 @@ struct _HifAdvisoryPkgClass
         void (*_hif_reserved8)  (void);
 };
 
-const char      *hif_advisorypkg_get_name       (HifAdvisoryPkg *advisorypkg);
-const char      *hif_advisorypkg_get_evr        (HifAdvisoryPkg *advisorypkg);
-const char      *hif_advisorypkg_get_arch       (HifAdvisoryPkg *advisorypkg);
-const char      *hif_advisorypkg_get_filename   (HifAdvisoryPkg *advisorypkg);
+const char      *hif_advisorypkg_get_name         (HifAdvisoryPkg *advisorypkg);
+const char      *hif_advisorypkg_get_evr          (HifAdvisoryPkg *advisorypkg);
+const char      *hif_advisorypkg_get_arch         (HifAdvisoryPkg *advisorypkg);
+const char      *hif_advisorypkg_get_filename     (HifAdvisoryPkg *advisorypkg);
 
-int              hif_advisorypkg_compare        (HifAdvisoryPkg *left,
-                                                 HifAdvisoryPkg *right);
+int              hif_advisorypkg_compare          (HifAdvisoryPkg *left,
+                                                   HifAdvisoryPkg *right);
+gboolean         hif_advisorypkg_compare_solvable (HifAdvisoryPkg *advisorypkg,
+                                                   Pool           *pool,
+                                                   Solvable       *s);
 
 G_END_DECLS
 

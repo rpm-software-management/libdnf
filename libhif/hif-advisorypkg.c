@@ -31,6 +31,7 @@
  */
 
 
+#include <solv/evr.h>
 #include <solv/util.h>
 
 #include "hif-advisorypkg-private.h"
@@ -170,6 +171,33 @@ hif_advisorypkg_compare(HifAdvisoryPkg *left, HifAdvisoryPkg *right)
         g_strcmp0(lpriv->evr, rpriv->evr) ||
         g_strcmp0(lpriv->arch, rpriv->arch) ||
         g_strcmp0(lpriv->filename, rpriv->filename);
+}
+
+/**
+ * hif_advisorypkg_compare_solvable:
+ * @advisorypkg: a #HifAdvisoryPkg instance.
+ * @pool: package pool
+ * @solvable: solvable
+ *
+ * Compares advisorypkg against solvable
+ *
+ * Returns: 0 if they are the same
+ *
+ * Since: 0.7.0
+ */
+gboolean
+hif_advisorypkg_compare_solvable(HifAdvisoryPkg *advisorypkg, Pool *pool, Solvable *s)
+{
+    HifAdvisoryPkgPrivate *priv = GET_PRIVATE(advisorypkg);
+
+    const char *n = pool_id2str(pool, s->name);
+    const char *e = pool_id2str(pool, s->evr);
+    const char *a = pool_id2str(pool, s->arch);
+
+    return
+        g_strcmp0(priv->name, n) ||
+        pool_evrcmp_str(pool, priv->evr, e, EVRCMP_COMPARE) ||
+        g_strcmp0(priv->arch, a);
 }
 
 /**

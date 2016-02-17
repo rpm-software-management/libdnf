@@ -237,6 +237,11 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddStringConstant(m, "CMDLINE_REPO_NAME", HY_CMDLINE_REPO_NAME);
 
     PyModule_AddIntConstant(m, "PKG", HY_PKG);
+    PyModule_AddIntConstant(m, "PKG_ADVISORY", HY_PKG_ADVISORY);
+    PyModule_AddIntConstant(m, "PKG_ADVISORY_BUG", HY_PKG_ADVISORY_BUG);
+    PyModule_AddIntConstant(m, "PKG_ADVISORY_CVE", HY_PKG_ADVISORY_CVE);
+    PyModule_AddIntConstant(m, "PKG_ADVISORY_SEVERITY", HY_PKG_ADVISORY_SEVERITY);
+    PyModule_AddIntConstant(m, "PKG_ADVISORY_TYPE", HY_PKG_ADVISORY_TYPE);
     PyModule_AddIntConstant(m, "PKG_ARCH", HY_PKG_ARCH);
     PyModule_AddIntConstant(m, "PKG_CONFLICTS", HY_PKG_CONFLICTS);
     PyModule_AddIntConstant(m, "PKG_DESCRIPTION", HY_PKG_DESCRIPTION);

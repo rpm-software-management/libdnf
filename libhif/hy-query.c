@@ -29,6 +29,7 @@
 #include <solv/util.h>
 
 #include "hif-types.h"
+#include "hif-advisorypkg.h"
 #include "hy-iutil.h"
 #include "hy-query-private.h"
 #include "hy-package-private.h"
@@ -80,6 +81,11 @@ match_type_reldep(int keyname) {
 static int
 match_type_str(int keyname) {
     switch (keyname) {
+    case HY_PKG_ADVISORY:
+    case HY_PKG_ADVISORY_BUG:
+    case HY_PKG_ADVISORY_CVE:
+    case HY_PKG_ADVISORY_SEVERITY:
+    case HY_PKG_ADVISORY_TYPE:
     case HY_PKG_ARCH:
     case HY_PKG_DESCRIPTION:
     case HY_PKG_ENHANCES:
@@ -763,6 +769,59 @@ filter_latest(HyQuery q, Map *res)
 }
 
 static void
+filter_advisory(HyQuery q, struct _Filter *f, Map *m, int keyname)
+{
+    Pool *pool = hif_sack_get_pool(q->sack);
+    HifAdvisory *advisory;
+    g_autoptr(GPtrArray) pkgs = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
+    Dataiterator di;
+
+    // iterate over advisories
+    dataiterator_init(&di, pool, 0, 0, 0, 0, 0);
+    dataiterator_prepend_keyname(&di, UPDATE_COLLECTION);
+    while (dataiterator_step(&di)) {
+        dataiterator_setpos_parent(&di);
+        advisory = hif_advisory_new(pool, di.solvid);
+        const char *adv_id = hif_advisory_get_id(advisory);
+
+        for (int mi = 0; mi < f->nmatches; ++mi) {
+            const char *match = f->matches[mi].str;
+            if (!strcmp(match, adv_id)) {
+                // remember package nevras for matched advisories
+                GPtrArray *apkgs = hif_advisory_get_packages(advisory);
+                HifAdvisoryPkg *apkg;
+                for (unsigned int p = 0; p < apkgs->len; ++p) {
+                     apkg = g_ptr_array_index(apkgs, p);
+                     g_ptr_array_add(pkgs, g_object_ref(apkg));
+                }
+                g_ptr_array_unref(apkgs);
+            }
+        }
+        g_object_unref(advisory);
+        dataiterator_skip_solvable(&di);
+    }
+
+    // convert nevras (from HifAdvisoryPkg) to pool ids
+    for (Id id = 1; id < pool->nsolvables; ++id) {
+        if (pkgs->len == 0)
+            break;
+        if (!MAPTST(q->result, id))
+            continue;
+        Solvable* s = pool_id2solvable(pool, id);
+        for (unsigned int p = 0; p < pkgs->len; ++p) {
+            HifAdvisoryPkg *apkg = g_ptr_array_index(pkgs, p);
+            if (hif_advisorypkg_compare_solvable(apkg, pool, s) == 0) {
+                MAPSET(m, id);
+                // found it, now remove it from the list to speed up rest of query
+                g_ptr_array_remove_index(pkgs, p);
+                break;
+            }
+        }
+    }
+    dataiterator_free(&di);
+}
+
+static void
 clear_filters(HyQuery q)
 {
     for (int i = 0; i < q->nfilters; ++i) {
@@ -871,6 +930,13 @@ hy_query_apply(HyQuery q)
             break;
         case HY_PKG_LOCATION:
             filter_location(q, f, &m);
+            break;
+        case HY_PKG_ADVISORY:
+        case HY_PKG_ADVISORY_BUG:
+        case HY_PKG_ADVISORY_CVE:
+        case HY_PKG_ADVISORY_SEVERITY:
+        case HY_PKG_ADVISORY_TYPE:
+            filter_advisory(q, f, &m, f->keyname);
             break;
         default:
             filter_dataiterator(q, f, &m);
