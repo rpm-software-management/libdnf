@@ -166,9 +166,9 @@ hif_advisorypkg_compare(HifAdvisoryPkg *left, HifAdvisoryPkg *right)
     HifAdvisoryPkgPrivate *lpriv = GET_PRIVATE(left);
     HifAdvisoryPkgPrivate *rpriv = GET_PRIVATE(right);
     return
-        g_strcmp0(lpriv->name, rpriv->name) &&
-        g_strcmp0(lpriv->evr, rpriv->evr) &&
-        g_strcmp0(lpriv->arch, rpriv->arch) &&
+        g_strcmp0(lpriv->name, rpriv->name) ||
+        g_strcmp0(lpriv->evr, rpriv->evr) ||
+        g_strcmp0(lpriv->arch, rpriv->arch) ||
         g_strcmp0(lpriv->filename, rpriv->filename);
 }
 
