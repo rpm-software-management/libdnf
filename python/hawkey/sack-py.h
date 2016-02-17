@@ -35,5 +35,7 @@ HifSack *sackFromPyObject(PyObject *o);
 int sack_converter(PyObject *o, HifSack **sack_ptr);
 
 PyObject *new_package(PyObject *sack, Id id);
+gboolean set_logfile(const gchar *path, FILE *log_out);
+const char *log_level_name(int level);
 
 #endif // SACK_PY_H

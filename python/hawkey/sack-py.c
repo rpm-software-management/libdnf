@@ -27,6 +27,7 @@
 #include "hy-repo.h"
 #include "hif-sack-private.h"
 #include "hy-util.h"
+#include "hif-version.h"
 
 // pyhawkey
 #include "exception-py.h"
@@ -43,6 +44,7 @@ typedef struct {
     HifSack *sack;
     PyObject *custom_package_class;
     PyObject *custom_package_val;
+    FILE *log_out;
 } _SackObject;
 
 PyObject *
@@ -116,6 +118,8 @@ sack_dealloc(_SackObject *o)
 {
     if (o->sack)
         g_object_unref(o->sack);
+    if (o->log_out)
+        fclose(o->log_out);
     Py_TYPE(o)->tp_free(o);
 }
 
@@ -132,6 +136,58 @@ sack_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     return (PyObject *)self;
 }
 
+const char *
+log_level_name(int level)
+{
+    switch (level) {
+    case G_LOG_FLAG_FATAL:
+        return "FATAL";
+    case G_LOG_LEVEL_ERROR:
+        return "ERROR";
+    case G_LOG_LEVEL_CRITICAL:
+        return "CRITICAL";
+    case G_LOG_LEVEL_WARNING:
+        return "WARN";
+    case G_LOG_LEVEL_DEBUG:
+        return "DEBUG";
+    case G_LOG_LEVEL_INFO:
+        return "INFO";
+    default:
+        return "(level?)";
+    }
+}
+
+static void
+log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data)
+{
+    time_t t = time(NULL);
+    struct tm tm;
+    char timestr[26];
+
+    FILE *log_out = (FILE*) user_data;
+    localtime_r(&t, &tm);
+    strftime(timestr, 26, "%b-%d %H:%M:%S ", &tm);
+    gchar *msg = g_strjoin("", log_level_name(log_level), " ",
+                           timestr, message, "\n", NULL);
+    fwrite(msg, strlen(msg), 1, log_out);
+    fflush(log_out);
+    g_free(msg);
+}
+
+gboolean
+set_logfile(const gchar *path, FILE *log_out)
+{
+    log_out = fopen(path, "a");
+
+    if (!log_out)
+        return FALSE;
+
+    g_log_set_default_handler(log_handler, log_out);
+    g_info("=== Started libhif-%d.%d.%d ===", HIF_MAJOR_VERSION,
+            HIF_MINOR_VERSION, HIF_MICRO_VERSION);
+    return TRUE;
+}
+
 static int
 sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
 {
@@ -141,17 +197,20 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     const char *cachedir = NULL;
     const char *arch = NULL;
     const char *rootdir = NULL;
+    const char *logfile = NULL;
     PyObject *tmp_py_str = NULL;
     PyObject *tmp2_py_str = NULL;
     PyObject *cachedir_py = NULL;
+    PyObject *logfile_py = NULL;
+    self->log_out = NULL;
     int make_cache_dir = 0;
     const char *kwlist[] = {"cachedir", "arch", "rootdir", "pkgcls",
-                      "pkginitval", "make_cache_dir", NULL};
+                      "pkginitval", "make_cache_dir", "logfile", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OssOOi", (char**) kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OssOOiO", (char**) kwlist,
                                      &cachedir_py, &arch, &rootdir,
                                      &custom_class, &custom_val,
-                                     &make_cache_dir))
+                                     &make_cache_dir, &logfile_py))
         return -1;
     if (cachedir_py != NULL)
         cachedir = pycomp_get_string(cachedir_py, &tmp_py_str);
@@ -159,14 +218,21 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     if (make_cache_dir)
         flags |= HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR;
     self->sack = hif_sack_new();
-    Py_XDECREF(tmp_py_str);
-    Py_XDECREF(tmp2_py_str);
     if (!hif_sack_set_arch(self->sack, arch, &error)) {
         PyErr_SetString(HyExc_Arch, "Unrecognized arch for the sack.");
         return -1;
     }
     hif_sack_set_rootdir(self->sack, rootdir);
     hif_sack_set_cachedir(self->sack, cachedir);
+    if (logfile_py != NULL) {
+        logfile = pycomp_get_string(logfile_py, &tmp2_py_str);
+        if (!set_logfile(logfile, self->log_out)) {
+            PyErr_Format(PyExc_IOError, "Failed to open log file: %s", logfile);
+            return -1;
+        }
+    }
+    Py_XDECREF(tmp_py_str);
+    Py_XDECREF(tmp2_py_str);
     if (!hif_sack_setup(self->sack, flags, &error)) {
         switch (error->code) {
         case HIF_ERROR_FILE_INVALID:
