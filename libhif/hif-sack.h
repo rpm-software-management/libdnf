@@ -93,6 +93,8 @@ gboolean     hif_sack_set_arch              (HifSack        *sack,
                                              GError        **error);
 void         hif_sack_set_rootdir           (HifSack        *sack,
                                              const gchar    *value);
+gboolean     hif_sack_set_logfile           (HifSack        *sack,
+                                             const gchar    *value);
 gboolean     hif_sack_setup                 (HifSack        *sack,
                                              int             flags,
                                              GError        **error);

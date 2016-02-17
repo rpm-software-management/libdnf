@@ -28,6 +28,7 @@
 
 G_BEGIN_DECLS
 
+const char *log_level_name(int level);
 const char *hy_chksum_name(int chksum_type);
 int hy_chksum_type(const char *chksum_name);
 char *hy_chksum_str(const unsigned char *chksum, int type);
