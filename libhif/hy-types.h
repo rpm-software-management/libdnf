@@ -75,7 +75,12 @@ enum _hy_key_name_e {
     HY_PKG_ENHANCES = 20,
     HY_PKG_RECOMMENDS = 21,
     HY_PKG_SUGGESTS = 22,
-    HY_PKG_SUPPLEMENTS = 23 
+    HY_PKG_SUPPLEMENTS = 23,
+    HY_PKG_ADVISORY = 24,
+    HY_PKG_ADVISORY_BUG = 25,
+    HY_PKG_ADVISORY_CVE = 26,
+    HY_PKG_ADVISORY_SEVERITY = 27,
+    HY_PKG_ADVISORY_TYPE = 28
 };
 
 enum _hy_comparison_type_e {
