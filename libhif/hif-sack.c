@@ -1661,7 +1661,8 @@ process_excludes(HifSack *sack, HifRepo *repo)
         hy_query_filter(query, HY_PKG_NAME, HY_EQ, name);
         pkgset = hy_query_run_set(query);
 
-        hif_sack_add_excludes(sack, pkgset);
+        if (hif_packageset_count(pkgset) > 0)
+            hif_sack_add_excludes(sack, pkgset);
 
         hy_query_free(query);
         g_object_unref(pkgset);
