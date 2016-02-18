@@ -1197,6 +1197,13 @@ hif_context_setup_enrollments(HifContext *context, GError **error)
     if (g_strcmp0(priv->install_root, "/") != 0)
         return TRUE;
 
+    /* Also, all of the subman stuff only works as root, if we're not
+     * root, assume we're running in the test suite, or we're part of
+     * e.g. rpm-ostree which is trying to run totally as non-root.
+     */
+    if (getuid () != 0)
+        return TRUE;
+
     for (i = 0; cmds[i] != NULL; i++) {
         int child_argc;
         g_auto(GStrv) child_argv = NULL;
