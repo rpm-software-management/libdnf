@@ -1645,7 +1645,7 @@ process_excludes(HifSack *sack, HifRepo *repo)
 {
     gchar **excludes = hif_repo_get_exclude_packages(repo);
     gchar **iter;
-    
+
     if (excludes == NULL)
         return;
 
