@@ -82,6 +82,8 @@ int parse_reldep_str(const char *nevra, char **name,
 HyReldep reldep_from_str(HifSack *sack, const char *reldep_str);
 HyReldepList reldeplist_from_str(HifSack *sack, const char *reldep_str);
 
+/* advisory utils */
+
 /* debug utils */
 int dump_jobqueue(Pool *pool, Queue *job);
 int dump_nullt_array(const char **a);
