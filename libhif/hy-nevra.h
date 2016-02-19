@@ -35,7 +35,7 @@ enum _hy_nevra_param_e {
     HY_NEVRA_ARCH = 3
 };
 
-HyNevra hy_nevra_create();
+HyNevra hy_nevra_create(void);
 void hy_nevra_free(HyNevra nevra);
 HyNevra hy_nevra_clone(HyNevra nevra);
 int hy_nevra_cmp(HyNevra nevra1, HyNevra nevra2);
