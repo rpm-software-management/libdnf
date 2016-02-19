@@ -791,6 +791,8 @@ filter_advisory(HyQuery q, struct _Filter *f, Map *m, int keyname)
                 eq = hif_advisory_match_id(advisory, match);
                 break;
             case HY_PKG_ADVISORY_BUG:
+                eq = hif_advisory_match_bug(advisory, match);
+                break;
             case HY_PKG_ADVISORY_CVE:
                 eq = hif_advisory_match_cve(advisory, match);
                 break;

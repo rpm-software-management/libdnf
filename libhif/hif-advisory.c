@@ -371,3 +371,32 @@ hif_advisory_match_cve(HifAdvisory *advisory, const char *s)
     }
     return FALSE;
 }
+
+/**
+ * hif_advisory_match_bug:
+ * @advisory: a #HifAdvisory instance.
+ * @s: string
+ *
+ * Matches if #HifAdvisoryRef has a #HifAdvisoryRef which is bug
+ * and matches against string
+ *
+ * Returns: %TRUE if they are the same
+ *
+ * Since: 0.7.0
+ */
+gboolean
+hif_advisory_match_bug(HifAdvisory *advisory, const char *s)
+{
+    g_autoptr(GPtrArray) refs = hif_advisory_get_references(advisory);
+
+    for (guint r = 0; r < refs->len; ++r) {
+        HifAdvisoryRef *ref = g_ptr_array_index(refs, r);
+        if (hif_advisoryref_get_kind(ref) == HIF_REFERENCE_KIND_BUGZILLA) {
+            const char *rid = hif_advisoryref_get_id(ref);
+            if (!g_strcmp0(rid, s)) {
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
