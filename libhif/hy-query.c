@@ -775,6 +775,7 @@ filter_advisory(HyQuery q, struct _Filter *f, Map *m, int keyname)
     HifAdvisory *advisory;
     g_autoptr(GPtrArray) pkgs = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
     Dataiterator di;
+    gboolean eq;
 
     // iterate over advisories
     dataiterator_init(&di, pool, 0, 0, 0, 0, 0);
@@ -782,11 +783,22 @@ filter_advisory(HyQuery q, struct _Filter *f, Map *m, int keyname)
     while (dataiterator_step(&di)) {
         dataiterator_setpos_parent(&di);
         advisory = hif_advisory_new(pool, di.solvid);
-        const char *adv_id = hif_advisory_get_id(advisory);
 
         for (int mi = 0; mi < f->nmatches; ++mi) {
             const char *match = f->matches[mi].str;
-            if (!strcmp(match, adv_id)) {
+            switch(keyname) {
+            case HY_PKG_ADVISORY:
+                eq = hif_advisory_match_id(advisory, match);
+                break;
+            case HY_PKG_ADVISORY_BUG:
+            case HY_PKG_ADVISORY_CVE:
+            case HY_PKG_ADVISORY_TYPE:
+                eq = hif_advisory_match_kind(advisory, match);
+                break;
+            default:
+                eq = FALSE;
+            }
+            if (eq) {
                 // remember package nevras for matched advisories
                 GPtrArray *apkgs = hif_advisory_get_packages(advisory);
                 HifAdvisoryPkg *apkg;
