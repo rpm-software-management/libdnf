@@ -342,3 +342,32 @@ hif_advisory_match_kind(HifAdvisory *advisory, const char *s)
     HifAdvisoryKind skind = str2hif_advisory_kind(s);
     return kind == skind;
 }
+
+/**
+ * hif_advisory_match_cve:
+ * @advisory: a #HifAdvisory instance.
+ * @s: string
+ *
+ * Matches if #HifAdvisoryRef has a #HifAdvisoryRef which is CVE
+ * and matches against string
+ *
+ * Returns: %TRUE if they are the same
+ *
+ * Since: 0.7.0
+ */
+gboolean
+hif_advisory_match_cve(HifAdvisory *advisory, const char *s)
+{
+    g_autoptr(GPtrArray) refs = hif_advisory_get_references(advisory);
+
+    for (guint r = 0; r < refs->len; ++r) {
+        HifAdvisoryRef *ref = g_ptr_array_index(refs, r);
+        if (hif_advisoryref_get_kind(ref) == HIF_REFERENCE_KIND_CVE) {
+            const char *rid = hif_advisoryref_get_id(ref);
+            if (!g_strcmp0(rid, s)) {
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}

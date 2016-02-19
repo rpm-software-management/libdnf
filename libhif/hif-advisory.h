@@ -64,6 +64,8 @@ gboolean             hif_advisory_match_id          (HifAdvisory *advisory,
                                                      const char  *s);
 gboolean             hif_advisory_match_kind        (HifAdvisory *advisory,
                                                      const char  *s);
+gboolean             hif_advisory_match_cve         (HifAdvisory *advisory,
+                                                     const char  *s);
 
 G_END_DECLS
 
