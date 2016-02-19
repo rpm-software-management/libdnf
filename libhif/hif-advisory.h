@@ -63,6 +63,7 @@ int                  hif_advisory_compare           (HifAdvisory *left,
 int                  hif_advisory_match_id          (HifAdvisory *advisory, const char *s);
 int                  hif_advisory_match_kind        (HifAdvisory *advisory, const char *s);
 int                  hif_advisory_match_cve         (HifAdvisory *advisory, const char *s);
+int                  hif_advisory_match_bug         (HifAdvisory *advisory, const char *s);
 
 G_END_DECLS
 
