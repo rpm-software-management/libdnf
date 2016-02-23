@@ -204,12 +204,12 @@ START_TEST(test_get_advisories_none)
 
     advisories = hif_package_get_advisories(pkg, HY_GT|HY_EQ);
     fail_unless(advisories != NULL);
-    ck_assert_int_eq(advisories->len, 0);
+    ck_assert_int_eq(advisories->len, 1);
     g_ptr_array_unref(advisories);
 
     advisories = hif_package_get_advisories(pkg, HY_LT|HY_EQ);
     fail_unless(advisories != NULL);
-    ck_assert_int_eq(advisories->len, 0);
+    ck_assert_int_eq(advisories->len, 1);
     g_ptr_array_unref(advisories);
 
     g_object_unref(pkg);

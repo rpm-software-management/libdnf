@@ -993,6 +993,46 @@ START_TEST(test_query_apply)
 }
 END_TEST
 
+START_TEST(test_filter_advisory)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_ADVISORY, HY_EQ, "BEATLES-1967-1127");
+    g_autoptr(GPtrArray) plist = hy_query_run(q);
+    fail_unless(plist->len == 2);
+    hy_query_free(q);
+}
+END_TEST
+
+START_TEST(test_filter_advisory_type)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_ADVISORY_TYPE, HY_EQ, "security");
+    g_autoptr(GPtrArray) plist = hy_query_run(q);
+    fail_unless(plist->len == 2);
+    hy_query_free(q);
+}
+END_TEST
+
+START_TEST(test_filter_advisory_cve)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_ADVISORY_CVE, HY_EQ, "CVE-1967-BEATLES");
+    g_autoptr(GPtrArray) plist = hy_query_run(q);
+    fail_unless(plist->len == 2);
+    hy_query_free(q);
+}
+END_TEST
+
+START_TEST(test_filter_advisory_bug)
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_ADVISORY_BUG, HY_EQ, "0#john");
+    g_autoptr(GPtrArray) plist = hy_query_run(q);
+    fail_unless(plist->len == 2);
+    hy_query_free(q);
+}
+END_TEST
+
 Suite *
 query_suite(void)
 {
@@ -1075,6 +1115,14 @@ query_suite(void)
     tcase_add_checked_fixture(tc, fixture_reset, NULL);
     tcase_add_test(tc, test_excluded);
     tcase_add_test(tc, test_disabled_repo);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("Advisories");
+    tcase_add_unchecked_fixture(tc, fixture_yum, teardown);
+    tcase_add_test(tc, test_filter_advisory);
+    tcase_add_test(tc, test_filter_advisory_type);
+    tcase_add_test(tc, test_filter_advisory_cve);
+    tcase_add_test(tc, test_filter_advisory_bug);
     suite_add_tcase(s, tc);
 
     return s;
