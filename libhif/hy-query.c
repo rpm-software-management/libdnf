@@ -621,18 +621,21 @@ filter_nevra(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = hif_sack_get_pool(q->sack);
     int fn_flags = (HY_ICASE & f->cmp_type) ? FNM_CASEFOLD : 0;
-    char *nevra_pattern = f->matches[0].str;
 
     for (Id id = 1; id < pool->nsolvables; ++id) {
         if (!MAPTST(q->result, id))
             continue;
         Solvable* s = pool_id2solvable(pool, id);
         const char* nevra = pool_solvable2str(pool, s);
-        if (!(HY_GLOB & f->cmp_type)) {
-            if (strcmp(nevra_pattern, nevra) == 0)
-                MAPSET(m, id);
-        } else if (fnmatch(nevra_pattern, nevra, fn_flags) == 0) {
-            MAPSET(m, id);
+
+        for (int mi = 0; mi < f->nmatches; ++mi) {
+             const char *nevra_pattern = f->matches[mi].str;
+             if (!(HY_GLOB & f->cmp_type)) {
+                 if (strcmp(nevra_pattern, nevra) == 0)
+                     MAPSET(m, id);
+             } else if (fnmatch(nevra_pattern, nevra, fn_flags) == 0) {
+                 MAPSET(m, id);
+             }
         }
     }
 }
