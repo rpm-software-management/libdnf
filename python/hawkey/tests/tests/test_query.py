@@ -380,3 +380,31 @@ class TestQuerySubclass(base.TestCase):
         self.assertIsInstance(q, self.CustomQuery)
         q = q.filter(name="pepper")
         self.assertIsInstance(q, self.CustomQuery)
+
+class TestQueryFilterAdvisory(base.TestCase):
+    """Tests related to packages and updateinfo metadata."""
+
+    def setUp(self):
+        """Prepare the test fixture."""
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
+        self.sack.load_repo(load_updateinfo=True)
+        self.expected_pkgs = hawkey.Query(self.sack).filter(nevra=[
+                                                'mystery-devel-19.67-1.noarch',
+                                                'tour-4-6.noarch']
+                                                ).run()
+
+    def test_advisory(self):
+        pkgs = hawkey.Query(self.sack).filter(advisory='BEATLES-1967-1127').run()
+        self.assertEqual(pkgs, self.expected_pkgs)
+
+    def test_advisory_type(self):
+        pkgs = hawkey.Query(self.sack).filter(advisory_type='security').run()
+        self.assertEqual(pkgs, self.expected_pkgs)
+
+    def test_advisory_bug(self):
+        pkgs = hawkey.Query(self.sack).filter(advisory_bug='0#paul').run()
+        self.assertEqual(pkgs, self.expected_pkgs)
+
+    def test_advisory_cve(self):
+        pkgs = hawkey.Query(self.sack).filter(advisory_cve='CVE-1967-BEATLES').run()
+        self.assertEqual(pkgs, self.expected_pkgs)
