@@ -76,7 +76,9 @@ BuildRequires:  python2-devel
 BuildRequires:  python-macros
 BuildRequires:  python-nose
 Requires:	%{name}%{?_isa} = %{version}-%{release}
+%if 0%{?fedora} != 0 && 0%{?fedora} >= 21
 Recommends:     hawkey-man = %{version}-%{release}
+%endif
 
 %description -n python2-hawkey
 Python 2 bindings for the hawkey library.
@@ -89,7 +91,9 @@ Group:		Development/Languages
 BuildRequires:  python3-devel
 BuildRequires:  python3-nose
 Requires:	%{name}%{?_isa} = %{version}-%{release}
+%if 0%{?fedora} != 0 && 0%{?fedora} >= 21
 Recommends:     hawkey-man = %{version}-%{release}
+%endif
 
 %description -n python3-hawkey
 Python 3 bindings for the hawkey library.
