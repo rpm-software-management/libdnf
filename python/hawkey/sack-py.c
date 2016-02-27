@@ -141,17 +141,19 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     const char *cachedir = NULL;
     const char *arch = NULL;
     const char *rootdir = NULL;
+    const char *logfile = NULL;
     PyObject *tmp_py_str = NULL;
     PyObject *tmp2_py_str = NULL;
     PyObject *cachedir_py = NULL;
+    PyObject *logfile_py = NULL;
     int make_cache_dir = 0;
     const char *kwlist[] = {"cachedir", "arch", "rootdir", "pkgcls",
-                      "pkginitval", "make_cache_dir", NULL};
+                      "pkginitval", "make_cache_dir", "logfile", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OssOOi", (char**) kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OssOOiO", (char**) kwlist,
                                      &cachedir_py, &arch, &rootdir,
                                      &custom_class, &custom_val,
-                                     &make_cache_dir))
+                                     &make_cache_dir, &logfile_py))
         return -1;
     if (cachedir_py != NULL)
         cachedir = pycomp_get_string(cachedir_py, &tmp_py_str);
@@ -159,14 +161,21 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     if (make_cache_dir)
         flags |= HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR;
     self->sack = hif_sack_new();
-    Py_XDECREF(tmp_py_str);
-    Py_XDECREF(tmp2_py_str);
     if (!hif_sack_set_arch(self->sack, arch, &error)) {
         PyErr_SetString(HyExc_Arch, "Unrecognized arch for the sack.");
         return -1;
     }
     hif_sack_set_rootdir(self->sack, rootdir);
     hif_sack_set_cachedir(self->sack, cachedir);
+    if (logfile_py != NULL) {
+        logfile = pycomp_get_string(logfile_py, &tmp2_py_str);
+        if (!hif_sack_set_logfile(self->sack, logfile)) {
+            PyErr_SetString(PyExc_IOError, "Failed to open log file.");
+            return -1;
+        }
+    }
+    Py_XDECREF(tmp_py_str);
+    Py_XDECREF(tmp2_py_str);
     if (!hif_sack_setup(self->sack, flags, &error)) {
         switch (error->code) {
         case HIF_ERROR_FILE_INVALID:

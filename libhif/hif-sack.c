@@ -87,6 +87,8 @@ typedef struct
     gchar               *cache_dir;
     hif_sack_running_kernel_fn_t  running_kernel_fn;
     guint                installonly_limit;
+    gchar               *log_file;
+    FILE                *log_out;
 } HifSackPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(HifSack, hif_sack, G_TYPE_OBJECT)
@@ -119,6 +121,11 @@ hif_sack_finalize(GObject *object)
         hy_repo_free(hrepo);
     }
     g_free(priv->cache_dir);
+    if (priv->log_file) {
+        g_info("Finished.");
+        g_free(priv->log_file);
+        fclose(priv->log_out);
+    }
     queue_free(&priv->installonly);
 
     free_map_fully(priv->pkg_excludes);
@@ -151,6 +158,22 @@ log_cb(Pool *pool, void *cb_data, int level, const char *buf)
     }
 }
 
+static void
+log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data)
+{
+    time_t t = time(NULL);
+    struct tm tm;
+    char timestr[26];
+    HifSackPrivate *sack = user_data;
+
+    localtime_r(&t, &tm);
+    strftime(timestr, 26, "%b-%d %H:%M:%S ", &tm);
+    const char *pref = pool_tmpjoin(sack->pool, log_level_name(log_level), " ", timestr);
+    pref = pool_tmpjoin(sack->pool, pref, message, "\n");
+    fwrite(pref, strlen(pref), 1, sack->log_out);
+    fflush(sack->log_out);
+}
+
 /**
  * hif_sack_init:
  **/
@@ -163,6 +186,7 @@ hif_sack_init(HifSack *sack)
     priv->running_kernel_fn = running_kernel;
     priv->considered_uptodate = TRUE;
     priv->cmdline_repo_created = FALSE;
+    priv->log_file = NULL;
     queue_init(&priv->installonly);
 
     /* logging up after this*/
@@ -811,6 +835,35 @@ hif_sack_set_arch (HifSack *sack, const gchar *value, GError **error)
         return FALSE;
     }
     priv->have_set_arch = TRUE;
+    return TRUE;
+}
+
+/**
+ * hif_sack_set_logfile:
+ * @sack: a #HifSack instance.
+ * @value: a filepath.
+ * Sets the logfile.
+ *
+ * Since: 0.8.0
+ */
+gboolean
+hif_sack_set_logfile (HifSack *sack, const gchar *value)
+{
+    HifSackPrivate *priv = GET_PRIVATE(sack);
+    if (priv->log_file) {
+        g_free(priv->log_file);
+        fclose(priv->log_out);
+    }
+
+    priv->log_file = g_strdup(value);
+    priv->log_out = fopen(priv->log_file, "a");
+
+    if (!priv->log_out)
+        return FALSE;
+
+    g_log_set_default_handler(log_handler, priv);
+    g_info("=== Started libhif-%d.%d.%d ===", HIF_MAJOR_VERSION,
+            HIF_MINOR_VERSION, HIF_MICRO_VERSION);
     return TRUE;
 }
 

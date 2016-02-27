@@ -36,6 +36,27 @@ enum _hif_sack_cpu_flags {
     ARM_VFP  = 1 << 2
 };
 
+const char *
+log_level_name(int level)
+{
+    switch (level) {
+    case G_LOG_FLAG_FATAL:
+        return "FATAL";
+    case G_LOG_LEVEL_ERROR:
+        return "ERROR";
+    case G_LOG_LEVEL_CRITICAL:
+        return "CRITICAL";
+    case G_LOG_LEVEL_WARNING:
+        return "WARN";
+    case G_LOG_LEVEL_DEBUG:
+        return "DEBUG";
+    case G_LOG_LEVEL_INFO:
+        return "INFO";
+    default:
+        return "(level?)";
+    }
+}
+
 static int
 parse_cpu_flags(int *flags, const char *section)
 {
