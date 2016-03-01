@@ -274,7 +274,12 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "INSTALL", HY_INSTALL);
     PyModule_AddIntConstant(m, "UPGRADE", HY_UPGRADE);
     PyModule_AddIntConstant(m, "UPGRADE_ALL", HY_UPGRADE_ALL);
-    
+
+    PyModule_AddIntConstant(m, "ALLOW_UNINSTALL", HY_ALLOW_UNINSTALL);
+    PyModule_AddIntConstant(m, "FORCE_BEST", HY_FORCE_BEST);
+    PyModule_AddIntConstant(m, "VERIFY", HY_VERIFY);
+    PyModule_AddIntConstant(m, "IGNORE_WEAK_DEPS", HY_IGNORE_WEAK_DEPS);
+
     PyModule_AddIntConstant(m, "CHKSUM_MD5", G_CHECKSUM_MD5);
     PyModule_AddIntConstant(m, "CHKSUM_SHA1", G_CHECKSUM_SHA1);
     PyModule_AddIntConstant(m, "CHKSUM_SHA256", G_CHECKSUM_SHA256);

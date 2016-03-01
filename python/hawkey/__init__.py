@@ -157,6 +157,11 @@ INSTALL = _hawkey.INSTALL
 UPGRADE = _hawkey.UPGRADE
 UPGRADE_ALL = _hawkey.UPGRADE_ALL
 
+ALLOW_UNINSTALL = _hawkey.ALLOW_UNINSTALL
+FORCE_BEST = _hawkey.FORCE_BEST
+VERIFY = _hawkey.VERIFY
+IGNORE_WEAK_DEPS = _hawkey.IGNORE_WEAK_DEPS
+
 
 def split_nevra(s):
     t = _hawkey.split_nevra(s)
