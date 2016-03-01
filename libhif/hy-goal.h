@@ -34,13 +34,6 @@ enum _hy_goal_op_flags {
     HY_WEAK_SOLV                = 1 << 2
 };
 
-enum _hy_goal_run_flags {
-    HY_ALLOW_UNINSTALL          = 1 << 0,
-    HY_FORCE_BEST               = 1 << 1,
-    HY_VERIFY                   = 1 << 2,
-    HY_IGNORE_WEAK_DEPS         = 1 << 3
-};
-
 enum _hy_goal_actions {
     HY_ERASE                    = 1 << 0,
     HY_DISTUPGRADE              = 1 << 1,
@@ -49,6 +42,12 @@ enum _hy_goal_actions {
     HY_INSTALL                  = 1 << 4,
     HY_UPGRADE                  = 1 << 5,
     HY_UPGRADE_ALL              = 1 << 6,
+
+    // hy_goal_run flags
+    HY_ALLOW_UNINSTALL          = 1 << 10,
+    HY_FORCE_BEST               = 1 << 11,
+    HY_VERIFY                   = 1 << 12,
+    HY_IGNORE_WEAK_DEPS         = 1 << 13
 };
 
 #define HY_REASON_DEP 1
