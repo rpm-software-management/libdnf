@@ -819,6 +819,7 @@ hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
                       int flags)
 {
     Queue *job = construct_job(goal, flags);
+    goal->actions |= flags;
     int ret = solve(goal, job, flags, cb, cb_data);
     free_job(job);
     return ret;
