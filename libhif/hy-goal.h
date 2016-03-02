@@ -83,16 +83,16 @@ int hy_goal_upgrade_to_selector(HyGoal goal, HySelector sltr);
 int hy_goal_userinstalled(HyGoal goal, HifPackage *pkg);
 
 /* introspecting the requests */
-int hy_goal_has_actions(HyGoal goal, int action);
+int hy_goal_has_actions(HyGoal goal, enum _hy_goal_actions action);
 
 int hy_goal_req_length(HyGoal goal);
 
 /* resolving the goal */
 int hy_goal_run(HyGoal goal);
-int hy_goal_run_flags(HyGoal goal, int flags);
+int hy_goal_run_flags(HyGoal goal, enum _hy_goal_actions flags);
 int hy_goal_run_all(HyGoal goal, hy_solution_callback cb, void *cb_data);
 int hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
-                          int flags);
+                          enum _hy_goal_actions flags);
 
 /* problems */
 int hy_goal_count_problems(HyGoal goal);

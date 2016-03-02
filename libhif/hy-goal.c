@@ -49,7 +49,7 @@ struct _HyGoal {
     Queue staging;
     Solver *solv;
     Transaction *trans;
-    int actions;
+    enum _hy_goal_actions actions;
 };
 
 struct _SolutionCallback {
@@ -199,7 +199,7 @@ internal_solver_callback(Solver *solv, void *data)
 }
 
 static Solver *
-init_solver(HyGoal goal, int flags)
+init_solver(HyGoal goal, enum _hy_goal_actions flags)
 {
     Pool *pool = hif_sack_get_pool(goal->sack);
     Solver *solv = solver_create(pool);
@@ -223,8 +223,8 @@ init_solver(HyGoal goal, int flags)
 }
 
 static int
-solve(HyGoal goal, Queue *job, int flags, hy_solution_callback user_cb,
-      void * user_cb_data)
+solve(HyGoal goal, Queue *job, enum _hy_goal_actions flags,
+      hy_solution_callback user_cb, void * user_cb_data)
 {
     HifSack *sack = goal->sack;
     struct _SolutionCallback cb_tuple;
@@ -265,7 +265,7 @@ solve(HyGoal goal, Queue *job, int flags, hy_solution_callback user_cb,
 }
 
 static Queue *
-construct_job(HyGoal goal, int flags)
+construct_job(HyGoal goal, enum _hy_goal_actions flags)
 {
     HifSack *sack = goal->sack;
     Queue *job = g_malloc(sizeof(*job));
@@ -674,7 +674,7 @@ hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags)
 }
 
 int
-hy_goal_has_actions(HyGoal goal, int action)
+hy_goal_has_actions(HyGoal goal, enum _hy_goal_actions action)
 {
     return goal->actions & action;
 }
@@ -803,7 +803,7 @@ hy_goal_run(HyGoal goal)
 }
 
 int
-hy_goal_run_flags(HyGoal goal, int flags)
+hy_goal_run_flags(HyGoal goal, enum _hy_goal_actions flags)
 {
     return hy_goal_run_all_flags(goal, NULL, NULL, flags);
 }
@@ -816,7 +816,7 @@ hy_goal_run_all(HyGoal goal, hy_solution_callback cb, void *cb_data)
 
 int
 hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
-                      int flags)
+                      enum _hy_goal_actions flags)
 {
     Queue *job = construct_job(goal, flags);
     goal->actions |= flags;
