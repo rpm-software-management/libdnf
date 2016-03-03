@@ -50,7 +50,7 @@ hif_goal_depsolve(HyGoal goal, GError **error)
     gint rc;
     g_autoptr(GString) string = NULL;
 
-    rc = hy_goal_run_flags(goal, HY_ALLOW_UNINSTALL);
+    rc = hy_goal_run_flags(goal, HIF_ALLOW_UNINSTALL);
     if (rc) {
         string = g_string_new("Could not depsolve transaction; ");
         cnt = hy_goal_count_problems(goal);

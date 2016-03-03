@@ -267,18 +267,18 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "PKG_URL", HY_PKG_URL);
     PyModule_AddIntConstant(m, "PKG_VERSION", HY_PKG_VERSION);
 
-    PyModule_AddIntConstant(m, "ERASE", HY_ERASE);
-    PyModule_AddIntConstant(m, "DISTUPGRADE", HY_DISTUPGRADE);
-    PyModule_AddIntConstant(m, "DISTUPGRADE_ALL", HY_DISTUPGRADE_ALL);
-    PyModule_AddIntConstant(m, "DOWNGRADE", HY_DOWNGRADE);
-    PyModule_AddIntConstant(m, "INSTALL", HY_INSTALL);
-    PyModule_AddIntConstant(m, "UPGRADE", HY_UPGRADE);
-    PyModule_AddIntConstant(m, "UPGRADE_ALL", HY_UPGRADE_ALL);
+    PyModule_AddIntConstant(m, "ERASE", HIF_ERASE);
+    PyModule_AddIntConstant(m, "DISTUPGRADE", HIF_DISTUPGRADE);
+    PyModule_AddIntConstant(m, "DISTUPGRADE_ALL", HIF_DISTUPGRADE_ALL);
+    PyModule_AddIntConstant(m, "DOWNGRADE", HIF_DOWNGRADE);
+    PyModule_AddIntConstant(m, "INSTALL", HIF_INSTALL);
+    PyModule_AddIntConstant(m, "UPGRADE", HIF_UPGRADE);
+    PyModule_AddIntConstant(m, "UPGRADE_ALL", HIF_UPGRADE_ALL);
 
-    PyModule_AddIntConstant(m, "ALLOW_UNINSTALL", HY_ALLOW_UNINSTALL);
-    PyModule_AddIntConstant(m, "FORCE_BEST", HY_FORCE_BEST);
-    PyModule_AddIntConstant(m, "VERIFY", HY_VERIFY);
-    PyModule_AddIntConstant(m, "IGNORE_WEAK_DEPS", HY_IGNORE_WEAK_DEPS);
+    PyModule_AddIntConstant(m, "ALLOW_UNINSTALL", HIF_ALLOW_UNINSTALL);
+    PyModule_AddIntConstant(m, "FORCE_BEST", HIF_FORCE_BEST);
+    PyModule_AddIntConstant(m, "VERIFY", HIF_VERIFY);
+    PyModule_AddIntConstant(m, "IGNORE_WEAK_DEPS", HIF_IGNORE_WEAK_DEPS);
 
     PyModule_AddIntConstant(m, "CHKSUM_MD5", G_CHECKSUM_MD5);
     PyModule_AddIntConstant(m, "CHKSUM_SHA1", G_CHECKSUM_SHA1);
