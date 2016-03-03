@@ -637,8 +637,8 @@ Changes in 0.5.9
 Core
 ----
 
-Deprecated ``hy_goal_req_has_distupgrade()``, ``hy_goal_req_has_erase()`` and ``hy_goal_req_has_upgrade()`` functions 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Deprecated ``hy_goal_req_has_distupgrade()``, ``hy_goal_req_has_erase()`` and ``hy_goal_req_has_upgrade()`` functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To make your code compile in 0.5.9 without changing functionality, change::
 
@@ -659,7 +659,7 @@ Python bindings
 ---------------
 
 Deprecated Goal methods :meth:`Goal.req_has_distupgrade_all`, :meth:`Goal.req_has_erase` and :meth:`Goal.req_has_upgrade_all`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To make your code compatible with hawkey 0.5.9 without changing functionality,
 change::
