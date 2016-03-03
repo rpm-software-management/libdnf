@@ -49,7 +49,7 @@ struct _HyGoal {
     Queue staging;
     Solver *solv;
     Transaction *trans;
-    enum _hy_goal_actions actions;
+    HifGoalActions actions;
 };
 
 struct _SolutionCallback {
@@ -199,7 +199,7 @@ internal_solver_callback(Solver *solv, void *data)
 }
 
 static Solver *
-init_solver(HyGoal goal, enum _hy_goal_actions flags)
+init_solver(HyGoal goal, HifGoalActions flags)
 {
     Pool *pool = hif_sack_get_pool(goal->sack);
     Solver *solv = solver_create(pool);
@@ -208,7 +208,7 @@ init_solver(HyGoal goal, enum _hy_goal_actions flags)
         solver_free(goal->solv);
     goal->solv = solv;
 
-    if (flags & HY_ALLOW_UNINSTALL)
+    if (flags & HIF_ALLOW_UNINSTALL)
         solver_set_flag(solv, SOLVER_FLAG_ALLOW_UNINSTALL, 1);
     /* no vendor locking */
     solver_set_flag(solv, SOLVER_FLAG_ALLOW_VENDORCHANGE, 1);
@@ -223,7 +223,7 @@ init_solver(HyGoal goal, enum _hy_goal_actions flags)
 }
 
 static int
-solve(HyGoal goal, Queue *job, enum _hy_goal_actions flags,
+solve(HyGoal goal, Queue *job, HifGoalActions flags,
       hy_solution_callback user_cb, void * user_cb_data)
 {
     HifSack *sack = goal->sack;
@@ -246,7 +246,7 @@ solve(HyGoal goal, Queue *job, enum _hy_goal_actions flags,
         solv->solution_callback_data = &cb_tuple;
     }
 
-    if (HY_IGNORE_WEAK_DEPS & flags)
+    if (HIF_IGNORE_WEAK_DEPS & flags)
         solver_set_flag(solv, SOLVER_FLAG_IGNORE_RECOMMENDED, 1);
 
     if (solver_solve(solv, job))
@@ -265,7 +265,7 @@ solve(HyGoal goal, Queue *job, enum _hy_goal_actions flags,
 }
 
 static Queue *
-construct_job(HyGoal goal, enum _hy_goal_actions flags)
+construct_job(HyGoal goal, HifGoalActions flags)
 {
     HifSack *sack = goal->sack;
     Queue *job = g_malloc(sizeof(*job));
@@ -273,7 +273,7 @@ construct_job(HyGoal goal, enum _hy_goal_actions flags)
     queue_init_clone(job, &goal->staging);
 
     /* apply forcebest */
-    if (flags & HY_FORCE_BEST)
+    if (flags & HIF_FORCE_BEST)
         for (int i = 0; i < job->count; i += 2)
             job->elements[i] |= SOLVER_FORCEBEST;
 
@@ -282,7 +282,7 @@ construct_job(HyGoal goal, enum _hy_goal_actions flags)
         queue_push2(job, SOLVER_MULTIVERSION|SOLVER_SOLVABLE_PROVIDES,
                     hif_sack_get_installonly(sack)->elements[i]);
 
-    if (flags & HY_VERIFY)
+    if (flags & HIF_VERIFY)
         queue_push2(job, SOLVER_VERIFY|SOLVER_SOLVABLE_ALL, 0);
 
     return job;
@@ -608,7 +608,7 @@ hy_goal_free(HyGoal goal)
 int
 hy_goal_distupgrade_all(HyGoal goal)
 {
-    goal->actions |= HY_DISTUPGRADE_ALL;
+    goal->actions |= HIF_DISTUPGRADE_ALL;
     queue_push2(&goal->staging, SOLVER_DISTUPGRADE|SOLVER_SOLVABLE_ALL, 0);
     return 0;
 }
@@ -616,7 +616,7 @@ hy_goal_distupgrade_all(HyGoal goal)
 int
 hy_goal_distupgrade(HyGoal goal, HifPackage *new_pkg)
 {
-    goal->actions |= HY_DISTUPGRADE;
+    goal->actions |= HIF_DISTUPGRADE;
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_DISTUPGRADE,
         hif_package_get_id(new_pkg));
     return 0;
@@ -625,21 +625,21 @@ hy_goal_distupgrade(HyGoal goal, HifPackage *new_pkg)
 int
 hy_goal_distupgrade_selector(HyGoal goal, HySelector sltr)
 {
-    goal->actions |= HY_DISTUPGRADE;
+    goal->actions |= HIF_DISTUPGRADE;
     return sltr2job(sltr, &goal->staging, SOLVER_DISTUPGRADE);
 }
 
 int
 hy_goal_downgrade_to(HyGoal goal, HifPackage *new_pkg)
 {
-    goal->actions |= HY_DOWNGRADE;
+    goal->actions |= HIF_DOWNGRADE;
     return hy_goal_install(goal, new_pkg);
 }
 
 int
 hy_goal_erase(HyGoal goal, HifPackage *pkg)
 {
-    goal->actions |= HY_ERASE;
+    goal->actions |= HIF_ERASE;
     return hy_goal_erase_flags(goal, pkg, 0);
 }
 
@@ -652,7 +652,7 @@ hy_goal_erase_flags(HyGoal goal, HifPackage *pkg, int flags)
            pool_id2solvable(pool, hif_package_get_id(pkg))->repo == pool->installed);
 #endif
     int additional = erase_flags2libsolv(flags);
-    goal->actions |= HY_ERASE;
+    goal->actions |= HIF_ERASE;
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_ERASE|additional,
                 hif_package_get_id(pkg));
     return 0;
@@ -661,7 +661,7 @@ hy_goal_erase_flags(HyGoal goal, HifPackage *pkg, int flags)
 int
 hy_goal_erase_selector(HyGoal goal, HySelector sltr)
 {
-    goal->actions |= HY_ERASE;
+    goal->actions |= HIF_ERASE;
     return hy_goal_erase_selector_flags(goal, sltr, 0);
 }
 
@@ -669,12 +669,12 @@ int
 hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags)
 {
     int additional = erase_flags2libsolv(flags);
-    goal->actions |= HY_ERASE;
+    goal->actions |= HIF_ERASE;
     return sltr2job(sltr, &goal->staging, SOLVER_ERASE|additional);
 }
 
 int
-hy_goal_has_actions(HyGoal goal, enum _hy_goal_actions action)
+hy_goal_has_actions(HyGoal goal, HifGoalActions action)
 {
     return goal->actions & action;
 }
@@ -682,7 +682,7 @@ hy_goal_has_actions(HyGoal goal, enum _hy_goal_actions action)
 int
 hy_goal_install(HyGoal goal, HifPackage *new_pkg)
 {
-    goal->actions |= HY_INSTALL;
+    goal->actions |= HIF_INSTALL;
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_INSTALL, hif_package_get_id(new_pkg));
     return 0;
 }
@@ -690,7 +690,7 @@ hy_goal_install(HyGoal goal, HifPackage *new_pkg)
 int
 hy_goal_install_optional(HyGoal goal, HifPackage *new_pkg)
 {
-    goal->actions |= HY_INSTALL;
+    goal->actions |= HIF_INSTALL;
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_INSTALL|SOLVER_WEAK,
                 hif_package_get_id(new_pkg));
     return 0;
@@ -700,7 +700,7 @@ gboolean
 hy_goal_install_selector(HyGoal goal, HySelector sltr, GError **error)
 {
     int rc;
-    goal->actions |= HY_INSTALL;
+    goal->actions |= HIF_INSTALL;
     rc = sltr2job(sltr, &goal->staging, SOLVER_INSTALL);
     if (rc != 0) {
         g_set_error_literal (error,
@@ -716,7 +716,7 @@ gboolean
 hy_goal_install_selector_optional(HyGoal goal, HySelector sltr, GError **error)
 {
     int rc;
-    goal->actions |= HY_INSTALL;
+    goal->actions |= HIF_INSTALL;
     rc = sltr2job(sltr, &goal->staging, SOLVER_INSTALL|SOLVER_WEAK);
     if (rc != 0) {
         g_set_error_literal (error,
@@ -731,7 +731,7 @@ hy_goal_install_selector_optional(HyGoal goal, HySelector sltr, GError **error)
 int
 hy_goal_upgrade_all(HyGoal goal)
 {
-    goal->actions |= HY_UPGRADE_ALL;
+    goal->actions |= HIF_UPGRADE_ALL;
     queue_push2(&goal->staging, SOLVER_UPDATE|SOLVER_SOLVABLE_ALL, 0);
     return 0;
 }
@@ -739,14 +739,14 @@ hy_goal_upgrade_all(HyGoal goal)
 int
 hy_goal_upgrade_to(HyGoal goal, HifPackage *new_pkg)
 {
-    goal->actions |= HY_UPGRADE;
+    goal->actions |= HIF_UPGRADE;
     return hy_goal_upgrade_to_flags(goal, new_pkg, 0);
 }
 
 int
 hy_goal_upgrade_to_selector(HyGoal goal, HySelector sltr)
 {
-    goal->actions |= HY_UPGRADE;
+    goal->actions |= HIF_UPGRADE;
     if (sltr->f_evr == NULL)
         return sltr2job(sltr, &goal->staging, SOLVER_UPDATE);
     return sltr2job(sltr, &goal->staging, SOLVER_INSTALL);
@@ -755,7 +755,7 @@ hy_goal_upgrade_to_selector(HyGoal goal, HySelector sltr)
 int
 hy_goal_upgrade_selector(HyGoal goal, HySelector sltr)
 {
-    goal->actions |= HY_UPGRADE;
+    goal->actions |= HIF_UPGRADE;
     return sltr2job(sltr, &goal->staging, SOLVER_UPDATE);
 }
 
@@ -778,7 +778,7 @@ hy_goal_upgrade_to_flags(HyGoal goal, HifPackage *new_pkg, int flags)
         if (!count)
             return HIF_ERROR_PACKAGE_NOT_FOUND;
     }
-    goal->actions |= HY_UPGRADE;
+    goal->actions |= HIF_UPGRADE;
 
     return hy_goal_install(goal, new_pkg);
 }
@@ -803,7 +803,7 @@ hy_goal_run(HyGoal goal)
 }
 
 int
-hy_goal_run_flags(HyGoal goal, enum _hy_goal_actions flags)
+hy_goal_run_flags(HyGoal goal, HifGoalActions flags)
 {
     return hy_goal_run_all_flags(goal, NULL, NULL, flags);
 }
@@ -816,7 +816,7 @@ hy_goal_run_all(HyGoal goal, hy_solution_callback cb, void *cb_data)
 
 int
 hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
-                      enum _hy_goal_actions flags)
+                      HifGoalActions flags)
 {
     Queue *job = construct_job(goal, flags);
     goal->actions |= flags;

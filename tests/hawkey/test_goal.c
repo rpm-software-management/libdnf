@@ -144,9 +144,9 @@ START_TEST(test_goal_actions)
 {
     HifPackage *pkg = get_latest_pkg(test_globals.sack, "walrus");
     HyGoal goal = hy_goal_create(test_globals.sack);
-    fail_if(hy_goal_has_actions(goal, HY_INSTALL));
+    fail_if(hy_goal_has_actions(goal, HIF_INSTALL));
     fail_if(hy_goal_install(goal, pkg));
-    fail_unless(hy_goal_has_actions(goal, HY_INSTALL));
+    fail_unless(hy_goal_has_actions(goal, HIF_INSTALL));
     g_object_unref(pkg);
     hy_goal_free(goal);
 }
@@ -307,7 +307,7 @@ START_TEST(test_goal_install_weak_deps)
     // recommended package C is installed too
     assert_iueo(goal, 2, 0, 0, 0);
 
-    fail_if(hy_goal_run_flags(goal2, HY_IGNORE_WEAK_DEPS));
+    fail_if(hy_goal_run_flags(goal2, HIF_IGNORE_WEAK_DEPS));
     assert_iueo(goal2, 1, 0, 0, 0);
     hy_goal_free(goal);
     hy_goal_free(goal2);
@@ -640,7 +640,7 @@ START_TEST(test_goal_erase_with_deps)
 
     goal = hy_goal_create(sack);
     hy_goal_erase(goal, pkg);
-    fail_if(hy_goal_run_flags(goal, HY_ALLOW_UNINSTALL));
+    fail_if(hy_goal_run_flags(goal, HIF_ALLOW_UNINSTALL));
     assert_iueo(goal, 0, 0, 2, 0);
     hy_goal_free(goal);
 
@@ -691,7 +691,7 @@ START_TEST(test_goal_forcebest)
 
     hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "flying");
     hy_goal_upgrade_selector(goal, sltr);
-    fail_unless(hy_goal_run_flags(goal, HY_FORCE_BEST));
+    fail_unless(hy_goal_run_flags(goal, HIF_FORCE_BEST));
     fail_unless(hy_goal_count_problems(goal) == 1);
 
     hy_selector_free(sltr);
@@ -705,7 +705,7 @@ START_TEST(test_goal_verify)
     HifSack *sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
 
-    fail_unless(hy_goal_run_flags(goal, HY_VERIFY));
+    fail_unless(hy_goal_run_flags(goal, HIF_VERIFY));
     fail_unless(hy_goal_list_installs(goal, &error) == NULL);
     fail_unless(error->code == HIF_ERROR_NO_SOLUTION);
     fail_unless(hy_goal_count_problems(goal) == 2);
@@ -1182,7 +1182,7 @@ START_TEST(test_goal_forcebest_arches)
 
     hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "gun");
     fail_if(hy_goal_upgrade_selector(goal, sltr));
-    fail_if(hy_goal_run_flags(goal, HY_FORCE_BEST));
+    fail_if(hy_goal_run_flags(goal, HIF_FORCE_BEST));
     assert_iueo(goal, 0, 0, 0, 0);
 
     hy_selector_free(sltr);
@@ -1232,7 +1232,7 @@ START_TEST(test_cmdline_file_provides)
     HyGoal goal = hy_goal_create(sack);
 
     hy_goal_upgrade_all(goal);
-    ck_assert(!hy_goal_run_flags(goal, HY_FORCE_BEST));
+    ck_assert(!hy_goal_run_flags(goal, HIF_FORCE_BEST));
     assert_iueo(goal, 0, 1, 0, 0);
     hy_goal_free(goal);
 }

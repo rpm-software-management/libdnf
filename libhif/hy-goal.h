@@ -34,21 +34,21 @@ enum _hy_goal_op_flags {
     HY_WEAK_SOLV                = 1 << 2
 };
 
-enum _hy_goal_actions {
-    HY_ERASE                    = 1 << 0,
-    HY_DISTUPGRADE              = 1 << 1,
-    HY_DISTUPGRADE_ALL          = 1 << 2,
-    HY_DOWNGRADE                = 1 << 3,
-    HY_INSTALL                  = 1 << 4,
-    HY_UPGRADE                  = 1 << 5,
-    HY_UPGRADE_ALL              = 1 << 6,
+typedef enum {
+    HIF_ERASE                    = 1 << 0,
+    HIF_DISTUPGRADE              = 1 << 1,
+    HIF_DISTUPGRADE_ALL          = 1 << 2,
+    HIF_DOWNGRADE                = 1 << 3,
+    HIF_INSTALL                  = 1 << 4,
+    HIF_UPGRADE                  = 1 << 5,
+    HIF_UPGRADE_ALL              = 1 << 6,
 
     // hy_goal_run flags
-    HY_ALLOW_UNINSTALL          = 1 << 10,
-    HY_FORCE_BEST               = 1 << 11,
-    HY_VERIFY                   = 1 << 12,
-    HY_IGNORE_WEAK_DEPS         = 1 << 13
-};
+    HIF_ALLOW_UNINSTALL          = 1 << 10,
+    HIF_FORCE_BEST               = 1 << 11,
+    HIF_VERIFY                   = 1 << 12,
+    HIF_IGNORE_WEAK_DEPS         = 1 << 13
+} HifGoalActions;
 
 #define HY_REASON_DEP 1
 #define HY_REASON_USER 2
@@ -83,16 +83,16 @@ int hy_goal_upgrade_to_selector(HyGoal goal, HySelector sltr);
 int hy_goal_userinstalled(HyGoal goal, HifPackage *pkg);
 
 /* introspecting the requests */
-int hy_goal_has_actions(HyGoal goal, enum _hy_goal_actions action);
+int hy_goal_has_actions(HyGoal goal, HifGoalActions action);
 
 int hy_goal_req_length(HyGoal goal);
 
 /* resolving the goal */
 int hy_goal_run(HyGoal goal);
-int hy_goal_run_flags(HyGoal goal, enum _hy_goal_actions flags);
+int hy_goal_run_flags(HyGoal goal, HifGoalActions flags);
 int hy_goal_run_all(HyGoal goal, hy_solution_callback cb, void *cb_data);
 int hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
-                          enum _hy_goal_actions flags);
+                          HifGoalActions flags);
 
 /* problems */
 int hy_goal_count_problems(HyGoal goal);
