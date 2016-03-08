@@ -75,7 +75,7 @@ Group:		Development/Languages
 BuildRequires:  python2-devel
 BuildRequires:  python-nose
 Requires:	%{name}%{?_isa} = %{version}-%{release}
-%if 0%{?fedora} != 0 && 0%{?fedora} >= 21
+%if 0%{?fedora}
 Recommends:     hawkey-man = %{version}-%{release}
 %endif
 
@@ -90,7 +90,7 @@ Group:		Development/Languages
 BuildRequires:  python3-devel
 BuildRequires:  python3-nose
 Requires:	%{name}%{?_isa} = %{version}-%{release}
-%if 0%{?fedora} != 0 && 0%{?fedora} >= 21
+%if 0%{?fedora}
 Recommends:     hawkey-man = %{version}-%{release}
 %endif
 
