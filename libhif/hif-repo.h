@@ -173,9 +173,11 @@ gboolean         hif_repo_set_data              (HifRepo              *repo,
 gboolean         hif_repo_commit                (HifRepo              *repo,
                                                  GError              **error);
 
+#ifndef __GI_SCANNER__
 LrHandle *       hif_repo_get_lr_handle         (HifRepo              *repo);
 
 LrResult *       hif_repo_get_lr_result         (HifRepo              *repo);
+#endif
 
 #ifndef __GI_SCANNER__
 gchar           *hif_repo_download_package      (HifRepo              *repo,

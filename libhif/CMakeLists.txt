@@ -150,7 +150,9 @@ if (GOBJECT_INTROSPECTION_FOUND)
                     --output ${CMAKE_CURRENT_BINARY_DIR}/${GIR_XML}
                     --warn-all
                     --quiet
-                    hif-context.c hif-context.h hif-state.h hif-state.c
+                    hif-context.c hif-context.h
+                    hif-repo.c hif-repo.h
+                    hif-state.h hif-state.c
                     hif-version.h
             DEPENDS libhif
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
