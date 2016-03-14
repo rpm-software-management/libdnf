@@ -85,6 +85,7 @@ HyReldepList hif_package_get_obsoletes  (HifPackage *pkg);
 HyReldepList hif_package_get_provides   (HifPackage *pkg);
 HyReldepList hif_package_get_recommends (HifPackage *pkg);
 HyReldepList hif_package_get_requires   (HifPackage *pkg);
+HyReldepList hif_package_get_requires_pre(HifPackage *pkg);
 HyReldepList hif_package_get_suggests   (HifPackage *pkg);
 HyReldepList hif_package_get_supplements(HifPackage *pkg);
 char       **hif_package_get_files      (HifPackage *pkg);

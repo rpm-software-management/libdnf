@@ -34,6 +34,7 @@
 #include <solv/evr.h>
 #include <solv/pool.h>
 #include <solv/repo.h>
+#include <solv/queue.h>
 
 #include "hif-advisory-private.h"
 #include "hif-packagedelta-private.h"
@@ -145,9 +146,16 @@ reldeps_for(HifPackage *pkg, Id type)
     Solvable *s = get_solvable(pkg);
     HyReldepList reldeplist;
     Queue q;
+    Id marker = -1;
+    Id solv_type = type;
 
+    if (type == SOLVABLE_PREREQMARKER) {
+        solv_type = SOLVABLE_REQUIRES;
+        marker = 1;
+    }
     queue_init(&q);
-    solvable_lookup_deparray(s, type, &q, -1);
+    solvable_lookup_deparray(s, solv_type, &q, marker);
+
     reldeplist = reldeplist_from_queue(pool, q);
 
     queue_free(&q);
@@ -874,6 +882,22 @@ HyReldepList
 hif_package_get_requires(HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_REQUIRES);
+}
+
+/**
+ * hif_package_get_requires_pre:
+ * @pkg: a #HifPackage instance.
+ *
+ * Gets the Requires(pre) for the package.
+ *
+ * Returns: A #HyReldepList
+ *
+ * Since: 0.7.0
+ */
+HyReldepList
+hif_package_get_requires_pre(HifPackage *pkg)
+{
+    return reldeps_for(pkg, SOLVABLE_PREREQMARKER);
 }
 
 /**

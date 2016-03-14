@@ -320,6 +320,8 @@ static PyGetSetDef package_getsetters[] = {
      (void *)hif_package_get_enhances},
     {(char*)"obsoletes",  (getter)get_reldep, NULL, NULL,
      (void *)hif_package_get_obsoletes},
+    {(char*)"requires_pre",  (getter)get_reldep, NULL, NULL,
+     (void *)hif_package_get_requires_pre},
     {(char*)"provides",  (getter)get_reldep, NULL, NULL,
      (void *)hif_package_get_provides},
     {(char*)"recommends",  (getter)get_reldep, NULL, NULL,
