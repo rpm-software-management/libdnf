@@ -343,7 +343,7 @@ hif_context_get_install_root(HifContext *context)
  *
  * Gets the native architectures, by default "noarch" and "i386".
  *
- * Returns:(transfer none): the native architectures
+ * Returns: (transfer none): the native architectures
  *
  * Since: 0.1.0
  **/
@@ -360,7 +360,7 @@ hif_context_get_native_arches(HifContext *context)
  *
  * Gets the repos used by the transaction.
  *
- * Returns:(transfer none)(element-type HifRepo): the repo list
+ * Returns: (transfer none) (element-type HifRepo): the repo list
  *
  * Since: 0.1.0
  **/
@@ -403,7 +403,7 @@ hif_context_ensure_transaction(HifContext *context)
  * this, just create a HifTransaction for each thread rather than using the
  * context version.
  *
- * Returns:(transfer none): the HifTransaction object
+ * Returns: (transfer none): the HifTransaction object
  *
  * Since: 0.1.0
  **/
@@ -420,7 +420,7 @@ hif_context_get_transaction(HifContext *context)
  * hif_context_get_sack:(skip)
  * @context: a #HifContext instance.
  *
- * Returns:(transfer none): the HifSack object
+ * Returns: (transfer none): the HifSack object
  *
  * Since: 0.1.0
  **/
@@ -435,7 +435,7 @@ hif_context_get_sack(HifContext *context)
  * hif_context_get_goal:(skip)
  * @context: a #HifContext instance.
  *
- * Returns:(transfer none): the HyGoal object
+ * Returns: (transfer none): the HyGoal object
  *
  * Since: 0.1.0
  **/
@@ -450,7 +450,7 @@ hif_context_get_goal(HifContext *context)
  * hif_context_get_state:
  * @context: a #HifContext instance.
  *
- * Returns:(transfer none): the HifState object
+ * Returns: (transfer none): the HifState object
  *
  * Since: 0.1.2
  **/
@@ -569,7 +569,7 @@ hif_context_get_cache_age(HifContext *context)
  *
  * Gets the packages that are allowed to be installed more than once.
  *
- * Returns:(transfer none): array of package names
+ * Returns: (transfer none): array of package names
  */
 const gchar **
 hif_context_get_installonly_pkgs(HifContext *context)
@@ -1811,7 +1811,7 @@ hif_context_invalidate(HifContext *context, const gchar *message)
  *
  * Creates a new #HifContext.
  *
- * Returns:(transfer full): a #HifContext
+ * Returns: (transfer full): a #HifContext
  *
  * Since: 0.1.0
  **/
