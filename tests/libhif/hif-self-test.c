@@ -1067,6 +1067,11 @@ int
 main(int argc, char **argv)
 {
     g_setenv("G_MESSAGES_DEBUG", "all", FALSE);
+    /* avoid gvfs (http://bugzilla.gnome.org/show_bug.cgi?id=526454) */
+    /* Also because we do valgrind testing and there are vast array of
+     * "leaks" when we load gio vfs modules.
+     */
+    g_setenv ("GIO_USE_VFS", "local", TRUE);
 
     g_test_init(&argc, &argv, NULL);
 
