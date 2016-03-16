@@ -1,0 +1,10 @@
+# https://github.com/rpm-software-management/librepo/pull/84
+{
+   librepo_known_1
+   Memcheck:Leak
+   fun:malloc
+   fun:lr_malloc
+   fun:lr_pathconcat
+   ...
+   fun:lr_handle_perform
+}
