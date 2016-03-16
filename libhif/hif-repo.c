@@ -106,6 +106,7 @@ hif_repo_finalize(GObject *object)
     g_free(priv->pubkey);
     g_free(priv->pubkey_tmp);
     g_hash_table_unref(priv->filenames_md);
+    g_clear_error(&priv->last_check_error);
     if (priv->repo_result != NULL)
         lr_result_free(priv->repo_result);
     if (priv->repo_handle != NULL)
@@ -776,7 +777,7 @@ hif_repo_set_keyfile_data(HifRepo *repo, GError **error)
     if (priv->kind == HIF_REPO_KIND_REMOTE) {
         g_autoptr(GString) tmp = NULL;
         tmp = g_string_new(priv->location);
-        if (tmp->str[tmp->len - 1] == '/')
+        if (tmp->len > 0 && tmp->str[tmp->len - 1] == '/')
             g_string_truncate(tmp, tmp->len - 1);
         g_string_append(tmp, ".tmp");
         hif_repo_set_location_tmp(repo, tmp->str);
