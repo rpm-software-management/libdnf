@@ -69,6 +69,7 @@ hif_repos_finalize(GObject *object)
     HifRepos *repos = HIF_REPOS(object);
     HifReposPrivate *priv = GET_PRIVATE(repos);
 
+    g_object_remove_weak_pointer(G_OBJECT(priv->context),(void **) &priv->context);
     if (priv->monitor_repos != NULL)
         g_object_unref(priv->monitor_repos);
     g_object_unref(priv->volume_monitor);
