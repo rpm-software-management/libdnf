@@ -1,0 +1,18 @@
+{
+   nss_init_1
+   Memcheck:Leak
+   ...
+   fun:NSS_InitContext
+}
+{
+   libsoftokn_all
+   Memcheck:Leak
+   ...
+   obj:/usr/lib*/libsoftokn3.so
+}
+{
+   libfreebl_all
+   Memcheck:Leak
+   ...
+   obj:/usr/lib*/libfreeblpriv3.so
+}
