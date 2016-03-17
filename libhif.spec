@@ -1,5 +1,7 @@
 %global libsolv_version 0.6.4-1
 
+%bcond_with valgrind
+
 # Do not build bindings for python3 for RHEL <= 7
 %if 0%{?rhel} != 0 && 0%{?rhel} <= 7
 %bcond_with python3
@@ -109,12 +111,22 @@ mv ../py3 ./
 %endif
 
 %build
-%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDISABLE_VALGRIND=1 .
+%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo . \
+%if %{with valgrind}
+
+%else
+       -DDISABLE_VALGRIND=1
+%endif
 make %{?_smp_mflags}
 
 %if %{with python3}
 pushd py3
-%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPYTHON_DESIRED:str=3 -DWITH_GIR=0 -DWITH_MAN=0 -Dgtkdoc=0 -DDISABLE_VALGRIND=1 .
+%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPYTHON_DESIRED:str=3 -DWITH_GIR=0 -DWITH_MAN=0 -Dgtkdoc=0 . \
+%if %{with valgrind}
+
+%else
+       -DDISABLE_VALGRIND=1
+%endif
 make %{?_smp_mflags}
 popd
 %endif
