@@ -319,6 +319,36 @@ apply(PyObject *self, PyObject *unused)
     return self;
 }
 
+static PyObject *
+q_union(PyObject *self, PyObject *other)
+{
+    HyQuery self_q = ((_QueryObject *) self)->query;
+    HyQuery other_q = ((_QueryObject *) other)->query;
+    hy_query_union(self_q, other_q);
+    Py_INCREF(self);
+    return self;
+}
+
+static PyObject *
+q_intersection(PyObject *self, PyObject *other)
+{
+    HyQuery self_q = ((_QueryObject *) self)->query;
+    HyQuery other_q = ((_QueryObject *) other)->query;
+    hy_query_intersection(self_q, other_q);
+    Py_INCREF(self);
+    return self;
+}
+
+static PyObject *
+q_difference(PyObject *self, PyObject *other)
+{
+    HyQuery self_q = ((_QueryObject *) self)->query;
+    HyQuery other_q = ((_QueryObject *) other)->query;
+    hy_query_difference(self_q, other_q);
+    Py_INCREF(self);
+    return self;
+}
+
 static struct PyMethodDef query_methods[] = {
     {"clear", (PyCFunction)clear, METH_NOARGS,
      NULL},
@@ -327,6 +357,12 @@ static struct PyMethodDef query_methods[] = {
     {"run", (PyCFunction)run, METH_NOARGS,
      NULL},
     {"apply", (PyCFunction)apply, METH_NOARGS,
+     NULL},
+    {"union", (PyCFunction)q_union, METH_O,
+     NULL},
+    {"intersection", (PyCFunction)q_intersection, METH_O,
+     NULL},
+    {"difference", (PyCFunction)q_difference, METH_O,
      NULL},
     {NULL}                      /* sentinel */
 };

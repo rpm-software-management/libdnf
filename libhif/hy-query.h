@@ -91,6 +91,9 @@ void hy_query_filter_latest(HyQuery q, int val);
 GPtrArray *hy_query_run(HyQuery q);
 HifPackageSet *hy_query_run_set(HyQuery q);
 
+void hy_query_union(HyQuery q, HyQuery other);
+void hy_query_intersection(HyQuery q, HyQuery other);
+void hy_query_difference(HyQuery q, HyQuery other);
 
 G_END_DECLS
 
