@@ -1035,6 +1035,54 @@ START_TEST(test_filter_advisory_bug)
 }
 END_TEST
 
+START_TEST(test_difference)
+{
+    HyQuery q1 = hy_query_create(test_globals.sack);
+    hy_query_filter(q1, HY_PKG_VERSION, HY_EQ, "4");
+    HyQuery q2 = hy_query_create(test_globals.sack);
+    hy_query_filter(q2, HY_PKG_NAME, HY_GLOB, "p*");
+
+    hy_query_difference(q1, q2);
+    GPtrArray *plist = hy_query_run(q1);
+    fail_unless(plist->len == 2);
+    hy_query_free(q2);
+    hy_query_free(q1);
+    g_ptr_array_unref(plist);
+}
+END_TEST
+
+START_TEST(test_intersection)
+{
+    HyQuery q1 = hy_query_create(test_globals.sack);
+    hy_query_filter(q1, HY_PKG_VERSION, HY_EQ, "4");
+    HyQuery q2 = hy_query_create(test_globals.sack);
+    hy_query_filter(q2, HY_PKG_NAME, HY_GLOB, "p*");
+
+    hy_query_intersection(q1, q2);
+    GPtrArray *plist = hy_query_run(q1);
+    fail_unless(plist->len == 7);
+    hy_query_free(q2);
+    hy_query_free(q1);
+    g_ptr_array_unref(plist);
+}
+END_TEST
+
+START_TEST(test_union)
+{
+    HyQuery q1 = hy_query_create(test_globals.sack);
+    hy_query_filter(q1, HY_PKG_VERSION, HY_EQ, "4");
+    HyQuery q2 = hy_query_create(test_globals.sack);
+    hy_query_filter(q2, HY_PKG_NAME, HY_GLOB, "p*");
+
+    hy_query_union(q1, q2);
+    GPtrArray *plist = hy_query_run(q1);
+    fail_unless(plist->len == 11);
+    hy_query_free(q2);
+    hy_query_free(q1);
+    g_ptr_array_unref(plist);
+}
+END_TEST
+
 Suite *
 query_suite(void)
 {
@@ -1125,6 +1173,13 @@ query_suite(void)
     tcase_add_test(tc, test_filter_advisory_type);
     tcase_add_test(tc, test_filter_advisory_cve);
     tcase_add_test(tc, test_filter_advisory_bug);
+
+    tc = tcase_create("Set Operations");
+    tcase_add_unchecked_fixture(tc, fixture_with_main, teardown);
+    tcase_add_test(tc, test_difference);
+    tcase_add_test(tc, test_intersection);
+    tcase_add_test(tc, test_union);
+
     suite_add_tcase(s, tc);
 
     return s;

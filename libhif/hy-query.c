@@ -1359,3 +1359,60 @@ hy_query_run_set(HyQuery q)
     hy_query_apply(q);
     return hif_packageset_from_bitmap(q->sack, q->result);
 }
+
+/**
+ * hy_query_union:
+ * @q:     a #HyQuery instance
+ * @other: other #HyQuery instance
+ *
+ * Unites query with other query (aka logical or).
+ *
+ * Returns: Nothing.
+ *
+ * Since: 0.7.0
+ */
+void
+hy_query_union(HyQuery q, HyQuery other)
+{
+    hy_query_apply(q);
+    hy_query_apply(other);
+    map_or(q->result, other->result);
+}
+
+/**
+ * hy_query_intersection:
+ * @q:     a #HyQuery instance
+ * @other: other #HyQuery instance
+ *
+ * Intersects query with other query (aka logical and).
+ *
+ * Returns: Nothing.
+ *
+ * Since: 0.7.0
+ */
+void
+hy_query_intersection(HyQuery q, HyQuery other)
+{
+    hy_query_apply(q);
+    hy_query_apply(other);
+    map_and(q->result, other->result);
+}
+
+/**
+ * hy_query_difference:
+ * @q:     a #HyQuery instance
+ * @other: other #HyQuery instance
+ *
+ * Computes difference between query and other query (aka q and not other).
+ *
+ * Returns: Nothing.
+ *
+ * Since: 0.7.0
+ */
+void
+hy_query_difference(HyQuery q, HyQuery other)
+{
+    hy_query_apply(q);
+    hy_query_apply(other);
+    map_subtract(q->result, other->result);
+}

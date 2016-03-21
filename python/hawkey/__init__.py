@@ -343,6 +343,17 @@ class Query(_hawkey.Query):
         raise NotImplementedError(
             "hawkey.Query.provides is not implemented yet")
 
+    def difference(self, other):
+        new_query = type(self)(query=self)
+        return super(Query, new_query).difference(other)
+
+    def intersection(self, other):
+        new_query = type(self)(query=self)
+        return super(Query, new_query).intersection(other)
+
+    def union(self, other):
+        new_query = type(self)(query=self)
+        return super(Query, new_query).union(other)
 
 class Selector(_hawkey.Selector):
 
