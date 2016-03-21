@@ -60,10 +60,10 @@ GPtrArray           *hif_advisory_get_packages      (HifAdvisory *advisory);
 GPtrArray           *hif_advisory_get_references    (HifAdvisory *advisory);
 int                  hif_advisory_compare           (HifAdvisory *left,
                                                      HifAdvisory *right);
-int                  hif_advisory_match_id          (HifAdvisory *advisory, const char *s);
-int                  hif_advisory_match_kind        (HifAdvisory *advisory, const char *s);
-int                  hif_advisory_match_cve         (HifAdvisory *advisory, const char *s);
-int                  hif_advisory_match_bug         (HifAdvisory *advisory, const char *s);
+gboolean             hif_advisory_match_id          (HifAdvisory *advisory, const char *s);
+gboolean             hif_advisory_match_kind        (HifAdvisory *advisory, const char *s);
+gboolean             hif_advisory_match_cve         (HifAdvisory *advisory, const char *s);
+gboolean             hif_advisory_match_bug         (HifAdvisory *advisory, const char *s);
 
 G_END_DECLS
 

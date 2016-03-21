@@ -778,7 +778,7 @@ filter_advisory(HyQuery q, struct _Filter *f, Map *m, int keyname)
     HifAdvisory *advisory;
     g_autoptr(GPtrArray) pkgs = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
     Dataiterator di;
-    int eq;
+    gboolean eq;
 
     // iterate over advisories
     dataiterator_init(&di, pool, 0, 0, 0, 0, 0);

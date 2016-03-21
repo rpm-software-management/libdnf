@@ -317,7 +317,7 @@ str2hif_advisory_kind(const char *str)
  *
  * Since: 0.7.0
  */
-int
+gboolean
 hif_advisory_match_id(HifAdvisory *advisory, const char *s)
 {
     const char* id = hif_advisory_get_id(advisory);
@@ -335,7 +335,7 @@ hif_advisory_match_id(HifAdvisory *advisory, const char *s)
  *
  * Since: 0.7.0
  */
-int
+gboolean
 hif_advisory_match_kind(HifAdvisory *advisory, const char *s)
 {
     HifAdvisoryKind kind = hif_advisory_get_kind(advisory);
@@ -355,7 +355,7 @@ hif_advisory_match_kind(HifAdvisory *advisory, const char *s)
  *
  * Since: 0.7.0
  */
-int
+gboolean
 hif_advisory_match_cve(HifAdvisory *advisory, const char *s)
 {
     g_autoptr(GPtrArray) refs = hif_advisory_get_references(advisory);
@@ -384,7 +384,7 @@ hif_advisory_match_cve(HifAdvisory *advisory, const char *s)
  *
  * Since: 0.7.0
  */
-int
+gboolean
 hif_advisory_match_bug(HifAdvisory *advisory, const char *s)
 {
     g_autoptr(GPtrArray) refs = hif_advisory_get_references(advisory);
