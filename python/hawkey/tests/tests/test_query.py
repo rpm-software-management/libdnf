@@ -408,3 +408,30 @@ class TestQueryFilterAdvisory(base.TestCase):
     def test_advisory_cve(self):
         pkgs = hawkey.Query(self.sack).filter(advisory_cve='CVE-1967-BEATLES').run()
         self.assertEqual(pkgs, self.expected_pkgs)
+
+class TestQuerySetOperations(base.TestCase):
+    def setUp(self):
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
+        self.sack.load_system_repo()
+        self.q = hawkey.Query(self.sack)
+        self.q1 = self.q.filter(version='4')
+        self.q2 = self.q.filter(name__glob='p*')
+
+    def test_difference(self):
+        qi = self.q1.difference(self.q2)
+        difference = [p for p in self.q1 if p not in self.q2]
+        self.assertEqual(qi.run(), difference)
+
+    def test_intersection(self):
+        qi = self.q1.intersection(self.q2)
+        intersection = self.q.filter(version='4', name__glob='p*')
+        self.assertEqual(qi.run(), intersection.run())
+
+    def test_union(self):
+        qu = self.q1.union(self.q2)
+        union = set(self.q1.run() + self.q2.run())
+        self.assertEqual(set(qu), union)
+
+    def test_zzz_queries_not_modified(self):
+        self.assertEqual(len(self.q1), 5)
+        self.assertEqual(len(self.q2), 5)
