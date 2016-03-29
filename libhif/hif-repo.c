@@ -802,7 +802,7 @@ hif_repo_set_keyfile_data(HifRepo *repo, GError **error)
 
     exclude_string = g_key_file_get_string(priv->keyfile, priv->id, "exclude", NULL);
     if (exclude_string) {
-        priv->exclude_packages = g_strsplit(exclude_string, " ", -1);
+        priv->exclude_packages = g_strsplit_set(exclude_string, " ,", -1);
     }
 
     /* proxy is optional */
