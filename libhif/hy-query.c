@@ -217,7 +217,7 @@ valid_filter_pkg(int keyname, int cmp_type)
 {
     if (!match_type_pkg(keyname))
         return 0;
-    return cmp_type == HY_EQ;
+    return cmp_type == HY_EQ || cmp_type == HY_NEQ;
 }
 
 static int
