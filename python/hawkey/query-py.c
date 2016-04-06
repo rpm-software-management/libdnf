@@ -21,6 +21,7 @@
 #include <Python.h>
 #include <solv/util.h>
 
+#include "hy-package-private.h"
 #include "hy-packageset-private.h"
 #include "hy-query-private.h"
 #include "hif-reldep.h"
@@ -349,6 +350,21 @@ q_difference(PyObject *self, PyObject *other)
     return self;
 }
 
+static PyObject *
+q_contains(PyObject *self, PyObject *pypkg)
+{
+    HyQuery q = ((_QueryObject *) self)->query;
+    HifPackage *pkg = packageFromPyObject(pypkg);
+
+    if (pkg) {
+        Id id = hif_package_get_id(pkg);
+        hy_query_apply(q);
+        if (MAPTST(q->result, id))
+            Py_RETURN_TRUE;
+    }
+    Py_RETURN_FALSE;
+}
+
 static struct PyMethodDef query_methods[] = {
     {"clear", (PyCFunction)clear, METH_NOARGS,
      NULL},
@@ -363,6 +379,8 @@ static struct PyMethodDef query_methods[] = {
     {"intersection", (PyCFunction)q_intersection, METH_O,
      NULL},
     {"difference", (PyCFunction)q_difference, METH_O,
+     NULL},
+    {"__contains__", (PyCFunction)q_contains, METH_O,
      NULL},
     {NULL}                      /* sentinel */
 };
