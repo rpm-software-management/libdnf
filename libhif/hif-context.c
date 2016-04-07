@@ -58,6 +58,7 @@ typedef struct
     gchar            *os_info;
     gchar            *arch_info;
     gchar            *install_root;
+    gchar            *source_root;
     gchar            *rpm_verbosity;
     gchar            **native_arches;
     gchar            *http_proxy;
@@ -110,6 +111,7 @@ hif_context_finalize(GObject *object)
     g_free(priv->lock_dir);
     g_free(priv->rpm_verbosity);
     g_free(priv->install_root);
+    g_free(priv->source_root);
     g_free(priv->os_info);
     g_free(priv->arch_info);
     g_free(priv->http_proxy);
@@ -335,6 +337,23 @@ hif_context_get_install_root(HifContext *context)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
     return priv->install_root;
+}
+
+/**
+ * hif_context_get_source_root:
+ * @context: a #HifContext instance.
+ *
+ * Gets the source root, by default "/".
+ *
+ * Returns: the source root, e.g. "/tmp/my_os"
+ *
+ * Since: 0.1.0
+ **/
+const gchar *
+hif_context_get_source_root(HifContext *context)
+{
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->source_root != NULL ? priv->source_root : priv->install_root;
 }
 
 /**
@@ -751,6 +770,23 @@ hif_context_set_install_root(HifContext *context, const gchar *install_root)
 }
 
 /**
+ * hif_context_set_source_root:
+ * @context: a #HifContext instance.
+ * @source_root: the source root, e.g. "/"
+ *
+ * Sets the source root to use for retrieving system information.
+ *
+ * Since: 0.1.0
+ **/
+void
+hif_context_set_source_root(HifContext *context, const gchar *source_root)
+{
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    g_free(priv->source_root);
+    priv->source_root = g_strdup(source_root);
+}
+
+/**
  * hif_context_set_check_disk_space:
  * @context: a #HifContext instance.
  * @check_disk_space: %TRUE to check for diskspace
@@ -854,16 +890,27 @@ hif_context_set_cache_age(HifContext *context, guint cache_age)
 static gboolean
 hif_context_set_os_release(HifContext *context, GError **error)
 {
+    HifContextPrivate *priv = GET_PRIVATE(context);
     g_autofree gchar *contents = NULL;
     g_autofree gchar *version = NULL;
+    g_autofree gchar *os_release = NULL;
     g_autoptr(GString) str = NULL;
     g_autoptr(GKeyFile) key_file = NULL;
+    const char *source_root = hif_context_get_source_root(context);
+
+    os_release = g_build_filename(source_root, "etc/os-release", NULL);
+    if (!g_file_get_contents(os_release, &contents, NULL, NULL)) {
+        g_free (os_release);
+        os_release = g_build_filename(source_root, "usr/lib/os-release", NULL);
+        if (!g_file_get_contents(os_release, &contents, NULL, NULL))
+            return FALSE;
+    }
+
+    str = g_string_new(contents);
 
     /* make a valid GKeyFile from the .ini data by prepending a header */
-    if (!g_file_get_contents("/etc/os-release", &contents, NULL, NULL))
-        return FALSE;
-    str = g_string_new(contents);
     g_string_prepend(str, "[os-release]\n");
+
     key_file = g_key_file_new();
     if (!g_key_file_load_from_data(key_file,
                      str->str, -1,
