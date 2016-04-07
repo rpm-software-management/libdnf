@@ -27,7 +27,10 @@
 // hawkey
 #include "hif-types.h"
 #include "hy-iutil.h"
+#include "hy-nevra.h"
 #include "hy-package.h"
+#include "hy-subject.h"
+#include "hy-subject-private.h"
 #include "hy-util.h"
 
 enum _hif_sack_cpu_flags {
@@ -147,52 +150,28 @@ hy_detect_arch(char **arch)
 #undef MAX_ARCH_LENGTH
 
 int
-hy_split_nevra(const char *nevra, char **name, long int *epoch,
+hy_split_nevra(const char *nevra, char **name, int *epoch,
                char **version, char **release, char **arch)
 {
     const int len = strlen(nevra);
     if (len <= 0)
         return HIF_ERROR_INTERNAL_ERROR;
+    HyNevra out_nevra = hy_nevra_create();
+    if (nevra_possibility((char *) nevra, HY_FORM_NEVRA, out_nevra) == 0) {
+        *arch = g_strdup(hy_nevra_get_string(out_nevra, HY_NEVRA_ARCH));
+        *name = g_strdup(hy_nevra_get_string(out_nevra, HY_NEVRA_NAME));
+        *release = g_strdup(hy_nevra_get_string(out_nevra, HY_NEVRA_RELEASE));
+        *version = g_strdup(hy_nevra_get_string(out_nevra, HY_NEVRA_VERSION));
+        *epoch = hy_nevra_get_epoch(out_nevra);
+        if (*epoch == -1)
+            *epoch = 0;
 
-    const char *m1 = NULL, *m2 = NULL, *m3 = NULL;
-    const char *c;
-    for (c = nevra + len - 1; c > nevra; --c)
-        if (*c == '.') {
-            m3 = c;
-            break;
-        }
-    if (c == nevra)
-        return HIF_ERROR_INTERNAL_ERROR;
-
-    for (; c > nevra; --c)
-        if (*c == '-') {
-            if (m2 == NULL)
-                m2 = c;
-            else if (m1 == NULL) {
-                m1 = c;
-                break;
-            }
-        }
-    if (c == nevra)
-        return HIF_ERROR_INTERNAL_ERROR;
-
-    *arch = g_strdup(m3+1);
-    *name = g_strndup(nevra, (m1 - nevra));
-    *release = g_strndup(m2 + 1, (m3 - m2 - 1));
-
-    char *endptr;
-    long int converted;
-    errno = 0;
-    converted = strtol(m1 + 1, &endptr, 10);
-    if (!errno && *endptr == ':') {
-        *epoch = converted;
-        *version = g_strndup(endptr + 1, (m2 - endptr - 1));
-    } else {
-        *epoch = 0;
-        *version = g_strndup(m1 + 1, (m2 - m1 - 1));
+        hy_nevra_free(out_nevra);
+        return 0;
     }
 
-    return 0;
+    hy_nevra_free(out_nevra);
+    return HIF_ERROR_INTERNAL_ERROR;
 }
 
 GPtrArray *
