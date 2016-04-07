@@ -40,7 +40,7 @@ END_TEST
 START_TEST(test_split_nevra)
 {
     int ret;
-    long int epoch;
+    int epoch;
     char *name, *version, *release, *arch;
 
     const char *n = "meanwhile3.34.3-3:3.34-3.fc666.i686";

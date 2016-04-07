@@ -34,7 +34,7 @@ char *hy_chksum_str(const unsigned char *chksum, int type);
 
 int hy_detect_arch(char **arch);
 
-int hy_split_nevra(const char *nevra, char **name, long int *epoch,
+int hy_split_nevra(const char *nevra, char **name, int *epoch,
                    char **version, char **release, char **arch);
 
 GPtrArray *hy_packagelist_create(void);

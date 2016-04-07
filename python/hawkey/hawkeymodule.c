@@ -108,7 +108,7 @@ split_nevra(PyObject *unused, PyObject *nevra_o)
         Py_XDECREF(tmp_py_str);
         return NULL;
     }
-    long epoch;
+    int epoch;
     char *name, *version, *release, *arch;
 
     int split_nevra_ret = hy_split_nevra(nevra, &name, &epoch, &version, &release, &arch);

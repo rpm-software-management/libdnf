@@ -37,6 +37,10 @@ class Util(unittest.TestCase):
     def test_split_nevra(self):
         self.assertRaises(hawkey.ValueException, hawkey.split_nevra, "no.go")
         self.assertRaises(hawkey.ValueException, hawkey.split_nevra, "")
+        self.assertRaises(hawkey.ValueException, hawkey.split_nevra, "eyes-8:-4.fc18.x86_64")
+        self.assertRaises(hawkey.ValueException, hawkey.split_nevra, "eyes-4.fc18.x86_64")
+        self.assertRaises(hawkey.ValueException, hawkey.split_nevra, "eyes--4.fc18.x86_64")
+        self.assertRaises(hawkey.ValueException, hawkey.split_nevra, "eyes-8:1.2.3-4.")
 
         nevra = hawkey.split_nevra("eyes-8:1.2.3-4.fc18.x86_64")
         self.assertEqual(nevra.name, "eyes")
