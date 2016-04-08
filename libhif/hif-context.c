@@ -142,7 +142,6 @@ hif_context_init(HifContext *context)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
     priv->install_root = g_strdup("/");
-    priv->source_root = g_strdup("/");
     priv->check_disk_space = TRUE;
     priv->check_transaction = TRUE;
     priv->enable_yumdb = TRUE;
@@ -354,7 +353,7 @@ const gchar *
 hif_context_get_source_root(HifContext *context)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
-    return priv->source_root;
+    return priv->source_root != NULL ? priv->source_root : priv->install_root;
 }
 
 /**
@@ -897,11 +896,12 @@ hif_context_set_os_release(HifContext *context, GError **error)
     g_autofree gchar *os_release = NULL;
     g_autoptr(GString) str = NULL;
     g_autoptr(GKeyFile) key_file = NULL;
+    const char *source_root = hif_context_get_source_root(context);
 
-    os_release = g_build_filename(priv->source_root, "etc/os-release", NULL);
+    os_release = g_build_filename(source_root, "etc/os-release", NULL);
     if (!g_file_get_contents(os_release, &contents, NULL, NULL)) {
         g_free (os_release);
-        os_release = g_build_filename(priv->source_root, "usr/lib/os-release", NULL);
+        os_release = g_build_filename(source_root, "usr/lib/os-release", NULL);
         if (!g_file_get_contents(os_release, &contents, NULL, NULL))
             return FALSE;
     }
