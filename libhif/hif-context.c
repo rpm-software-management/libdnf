@@ -903,7 +903,7 @@ hif_context_set_os_release(HifContext *context, GError **error)
         g_free (os_release);
         os_release = g_build_filename(priv->source_root, "usr/lib/os-release", NULL);
         if (!g_file_get_contents(os_release, &contents, NULL, NULL))
-          return FALSE;
+            return FALSE;
     }
 
     str = g_string_new(contents);
