@@ -347,7 +347,7 @@ hif_context_get_install_root(HifContext *context)
  *
  * Returns: the source root, e.g. "/tmp/my_os"
  *
- * Since: 0.1.0
+ * Since: 0.7.0
  **/
 const gchar *
 hif_context_get_source_root(HifContext *context)
@@ -776,7 +776,7 @@ hif_context_set_install_root(HifContext *context, const gchar *install_root)
  *
  * Sets the source root to use for retrieving system information.
  *
- * Since: 0.1.0
+ * Since: 0.7.0
  **/
 void
 hif_context_set_source_root(HifContext *context, const gchar *source_root)
