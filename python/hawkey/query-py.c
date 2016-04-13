@@ -365,6 +365,22 @@ q_contains(PyObject *self, PyObject *pypkg)
     Py_RETURN_FALSE;
 }
 
+static PyObject *
+q_length(PyObject *self, PyObject *unused)
+{
+    HyQuery q = ((_QueryObject *) self)->query;
+    hy_query_apply(q);
+
+    unsigned char *res = q->result->map;
+    unsigned char *end = res + q->result->size;
+    int length = 0;
+
+    while (res < end)
+        length += __builtin_popcount(*res++);
+
+    return PyLong_FromLong(length);
+}
+
 static struct PyMethodDef query_methods[] = {
     {"clear", (PyCFunction)clear, METH_NOARGS,
      NULL},
@@ -381,6 +397,8 @@ static struct PyMethodDef query_methods[] = {
     {"difference", (PyCFunction)q_difference, METH_O,
      NULL},
     {"__contains__", (PyCFunction)q_contains, METH_O,
+     NULL},
+    {"__len__", (PyCFunction)q_length, METH_NOARGS,
      NULL},
     {NULL}                      /* sentinel */
 };

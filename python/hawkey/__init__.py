@@ -306,9 +306,6 @@ class Query(_hawkey.Query):
     def __getitem__(self, idx):
         return self.run()[idx]
 
-    def __len__(self):
-        return len(self.run())
-
     def count(self):
         return len(self)
 
