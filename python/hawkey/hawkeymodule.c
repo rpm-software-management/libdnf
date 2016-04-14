@@ -296,6 +296,8 @@ PYCOMP_MOD_INIT(_hawkey)
 
     PyModule_AddIntConstant(m, "REASON_DEP", HY_REASON_DEP);
     PyModule_AddIntConstant(m, "REASON_USER", HY_REASON_USER);
+    PyModule_AddIntConstant(m, "REASON_CLEAN", HY_REASON_CLEAN);
+    PyModule_AddIntConstant(m, "REASON_WEAKDEP", HY_REASON_WEAKDEP);
 
     PyModule_AddIntConstant(m, "ADVISORY_UNKNOWN", HIF_ADVISORY_KIND_UNKNOWN);
     PyModule_AddIntConstant(m, "ADVISORY_SECURITY", HIF_ADVISORY_KIND_SECURITY);

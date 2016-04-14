@@ -34,7 +34,8 @@ __all__ = [
     # constants
     'CHKSUM_MD5', 'CHKSUM_SHA1', 'CHKSUM_SHA256', 'CHKSUM_SHA512', 'ICASE',
     'CMDLINE_REPO_NAME', 'SYSTEM_REPO_NAME', 'REASON_DEP', 'REASON_USER',
-    'FORM_NEVRA', 'FORM_NEVR', 'FORM_NEV', 'FORM_NA', 'FORM_NAME', 'FORM_ALL',
+    'REASON_CLEAN', 'REASON_WEAKDEP', 'FORM_NEVRA', 'FORM_NEVR', 'FORM_NEV',
+    'FORM_NA', 'FORM_NAME', 'FORM_ALL',
     # exceptions
     'ArchException', 'Exception', 'QueryException', 'RuntimeException',
     'ValueException',
@@ -123,6 +124,8 @@ CHKSUM_SHA512 = _hawkey.CHKSUM_SHA512
 
 REASON_DEP = _hawkey.REASON_DEP
 REASON_USER = _hawkey.REASON_USER
+REASON_CLEAN = _hawkey.REASON_CLEAN
+REASON_WEAKDEP = _hawkey.REASON_WEAKDEP
 
 ADVISORY_UNKNOWN = _hawkey.ADVISORY_UNKNOWN
 ADVISORY_SECURITY = _hawkey.ADVISORY_SECURITY

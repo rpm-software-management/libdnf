@@ -994,5 +994,9 @@ hy_goal_get_reason(HyGoal goal, HifPackage *pkg)
          reason == SOLVER_REASON_RESOLVE_JOB) &&
         solver_ruleclass(goal->solv, info) == SOLVER_RULE_JOB)
         return HY_REASON_USER;
+    if (reason == SOLVER_REASON_CLEANDEPS_ERASE)
+        return HY_REASON_CLEAN;
+    if (reason == SOLVER_REASON_WEAKDEP)
+        return HY_REASON_WEAKDEP;
     return HY_REASON_DEP;
 }
