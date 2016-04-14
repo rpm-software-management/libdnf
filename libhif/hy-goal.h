@@ -52,6 +52,8 @@ typedef enum {
 
 #define HY_REASON_DEP 1
 #define HY_REASON_USER 2
+#define HY_REASON_CLEAN 3
+#define HY_REASON_WEAKDEP 4
 
 HyGoal hy_goal_create(HifSack *sack);
 HyGoal hy_goal_clone(HyGoal goal);
