@@ -1150,7 +1150,6 @@ hif_sack_add_excludes(HifSack *sack, HifPackageSet *pset)
         map_init(excl, pool->nsolvables);
         priv->pkg_excludes = excl;
     }
-    assert(excl->size >= nexcl->size);
     map_or(excl, nexcl);
     priv->considered_uptodate = FALSE;
 }
