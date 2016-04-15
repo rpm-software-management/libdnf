@@ -890,7 +890,6 @@ hif_context_set_cache_age(HifContext *context, guint cache_age)
 static gboolean
 hif_context_set_os_release(HifContext *context, GError **error)
 {
-    HifContextPrivate *priv = GET_PRIVATE(context);
     g_autofree gchar *contents = NULL;
     g_autofree gchar *version = NULL;
     g_autofree gchar *os_release = NULL;
