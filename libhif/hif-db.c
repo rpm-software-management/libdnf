@@ -176,7 +176,7 @@ hif_db_get_string (HifDb *db, HyPackage package, const gchar *key, GError **erro
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_FAILED,
-			     "cannot create index for %s",
+			     "cannot read index for %s",
 			     hif_package_get_id (package));
 		return NULL;
 	}
