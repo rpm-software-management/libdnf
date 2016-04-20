@@ -1603,6 +1603,7 @@ hif_context_update (HifContext *context, const gchar *name, GError **error)
 	hy_query_filter_in (query, HY_PKG_ARCH, HY_EQ,
 			    (const gchar **) priv->native_arches);
 	hy_query_filter (query, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+	hy_query_filter (query, HY_PKG_ARCH, HY_NEQ, "src");
 	hy_query_filter (query, HY_PKG_NAME, HY_EQ, name);
 	pkglist = hy_query_run (query);
 
