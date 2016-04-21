@@ -1015,7 +1015,7 @@ hif_transaction_write_yumdb (HifTransaction *transaction,
 	guint steps_auto;
 
 	steps_auto = _hif_state_get_step_multiple_pair (priv->install->len,
-							priv->remove->len);
+							priv->remove->len + priv->remove_helper->len);
 	ret = hif_state_set_steps (state,
 				   error,
 				   steps_auto,		/* install */
@@ -1048,11 +1048,24 @@ hif_transaction_write_yumdb (HifTransaction *transaction,
 		return FALSE;
 
 	/* remove all the old entries */
-	if (priv->remove->len > 0)
+	if ((priv->remove->len + priv->remove_helper->len) > 0)
 		hif_state_set_number_steps (state_local,
-					    priv->remove->len);
+					    priv->remove->len + priv->remove_helper->len);
 	for (i = 0; i < priv->remove->len; i++) {
 		pkg = g_ptr_array_index (priv->remove, i);
+		ret = hif_transaction_ensure_source (transaction, pkg, error);
+		if (!ret)
+			return FALSE;
+		ret = hif_db_remove_all (priv->db,
+					 pkg,
+					 error);
+		if (!ret)
+			return FALSE;
+		if (!hif_state_done (state_local, error))
+			return FALSE;
+	}
+	for (i = 0; i < priv->remove_helper->len; i++) {
+		pkg = g_ptr_array_index (priv->remove_helper, i);
 		ret = hif_transaction_ensure_source (transaction, pkg, error);
 		if (!ret)
 			return FALSE;
