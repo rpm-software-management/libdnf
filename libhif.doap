@@ -5,7 +5,7 @@
          xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
          xmlns:foaf="http://xmlns.com/foaf/0.1/">
   <Project rdf:about="https://github.com/rpm-software-management/libhif">
-    <name>util-linux</name>
+    <name>libhif</name>
     <homepage rdf:resource="https://github.com/rpm-software-management/libhif" />
     <shortdesc>
        Simple package manager
@@ -26,7 +26,7 @@
     </repository>
     <maintainer>
       <foaf:Person>
-        <foaf:name>Richard Hughsie</foaf:name>
+        <foaf:name>Richard Hughes</foaf:name>
         <foaf:mbox rdf:resource="mailto:rhughes@redhat.com" />
       </foaf:Person>
     </maintainer>
