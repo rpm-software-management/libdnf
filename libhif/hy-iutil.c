@@ -238,6 +238,16 @@ abspath(const char *path)
     return solv_dupjoin(cwd, "/", path);
 }
 
+Map *
+free_map_fully(Map *m)
+{
+    if (m == NULL)
+        return NULL;
+    map_free(m);
+    g_free(m);
+    return NULL;
+}
+
 int
 is_readable_rpm(const char *fn)
 {
