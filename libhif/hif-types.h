@@ -88,6 +88,7 @@ typedef enum {
         HIF_ERROR_BAD_QUERY,                            /* Since: 0.7.0 */
         HIF_ERROR_CANNOT_WRITE_CACHE,                   /* Since: 0.7.0 */
         HIF_ERROR_NO_CAPABILITY,                        /* Since: 0.7.0 */
+        HIF_ERROR_REMOVAL_OF_PROTECTED_PKG,             /* Since: 0.7.0 */
         /*< private >*/
         HIF_ERROR_LAST
 } HifError;

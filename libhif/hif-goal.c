@@ -34,8 +34,13 @@
 #include <glib.h>
 
 #include "hy-util.h"
+#include "hy-goal-private.h"
 #include "hif-goal.h"
 #include "hif-package.h"
+#include "hy-packageset-private.h"
+#include "hy-iutil.h"
+#include "hif-sack.h"
+#include "hif-sack-private.h"
 #include "hif-utils.h"
 
 /**
@@ -166,4 +171,40 @@ hif_goal_get_packages(HyGoal goal, ...)
     }
     va_end(args);
     return array;
+}
+
+/**
+ * hif_goal_add_protected:
+ */
+void
+hif_goal_add_protected(HyGoal goal, HifPackageSet *pset)
+{
+    Pool *pool = hif_sack_get_pool(goal->sack);
+    Map *protected = goal->protected;
+    Map *nprotected = hif_packageset_get_map(pset);
+
+    if (protected == NULL) {
+        protected = g_malloc0(sizeof(Map));
+        map_init(protected, pool->nsolvables);
+        goal->protected = protected;
+    } else
+        map_grow(protected, pool->nsolvables);
+
+    map_or(protected, nprotected);
+}
+
+/**
+ * hif_goal_set_protected:
+ */
+void
+hif_goal_set_protected(HyGoal goal, HifPackageSet *pset)
+{
+    goal->protected = free_map_fully(goal->protected);
+
+    if (pset) {
+        Map *nprotected = hif_packageset_get_map(pset);
+
+        goal->protected = g_malloc0(sizeof(Map));
+        map_init_clone(goal->protected, nprotected);
+    }
 }

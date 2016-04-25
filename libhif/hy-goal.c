@@ -41,16 +41,11 @@
 #include "hif-reldep-private.h"
 #include "hy-repo-private.h"
 #include "hif-sack-private.h"
+#include "hif-goal.h"
+#include "hif-package.h"
 #include "hy-selector-private.h"
 #include "hy-util.h"
 
-struct _HyGoal {
-    HifSack *sack;
-    Queue staging;
-    Solver *solv;
-    Transaction *trans;
-    HifGoalActions actions;
-};
 
 struct _SolutionCallback {
     HyGoal goal;
@@ -69,6 +64,31 @@ erase_flags2libsolv(int flags)
     int ret = 0;
     if (flags & HY_CLEAN_DEPS)
         ret |= SOLVER_CLEANDEPS;
+    return ret;
+}
+
+static gboolean
+protected_in_removals(HyGoal goal) {
+    guint i = 0;
+    gboolean ret = FALSE;
+    if (goal->removal_of_protected != NULL)
+        g_ptr_array_free(goal->removal_of_protected, TRUE);
+    if (goal->protected == NULL)
+        return FALSE;
+    goal->removal_of_protected = hif_goal_get_packages(goal,
+                                     HIF_PACKAGE_INFO_REMOVE,
+                                     HIF_PACKAGE_INFO_OBSOLETE,
+                                     -1);
+    while (i < goal->removal_of_protected->len) {
+        HifPackage *pkg = g_ptr_array_index(goal->removal_of_protected, i);
+
+        if (MAPTST(goal->protected, hif_package_get_id(pkg))) {
+            ret = TRUE;
+            i++;
+        } else {
+            g_ptr_array_remove_index(goal->removal_of_protected, i);
+        }
+    }
     return ret;
 }
 
@@ -208,8 +228,6 @@ init_solver(HyGoal goal, HifGoalActions flags)
         solver_free(goal->solv);
     goal->solv = solv;
 
-    if (flags & HIF_ALLOW_UNINSTALL)
-        solver_set_flag(solv, SOLVER_FLAG_ALLOW_UNINSTALL, 1);
     /* no vendor locking */
     solver_set_flag(solv, SOLVER_FLAG_ALLOW_VENDORCHANGE, 1);
     /* don't erase packages that are no longer in repo during distupgrade */
@@ -222,10 +240,34 @@ init_solver(HyGoal goal, HifGoalActions flags)
     return solv;
 }
 
+static void
+allow_uninstall_all_but_protected(HyGoal goal, Queue *job, HifGoalActions flags) {
+    Pool *pool = hif_sack_get_pool(goal->sack);
+
+    if (goal->protected == NULL) {
+        goal->protected = g_malloc0(sizeof(Map));
+        map_init(goal->protected, pool->nsolvables);
+    } else
+        map_grow(goal->protected, pool->nsolvables);
+
+    assert(goal->protected != NULL);
+    Id kernel = hif_sack_running_kernel(goal->sack);
+    if (kernel > 0)
+        MAPSET(goal->protected, kernel);
+
+    if (HIF_ALLOW_UNINSTALL & flags)
+        for (Id id = 1; id < pool->nsolvables; ++id) {
+            Solvable *s = pool_id2solvable(pool, id);
+            if (pool->installed == s->repo) {
+                if (!MAPTST(goal->protected, id) && pool->installed == s->repo)
+                    queue_push2(job, SOLVER_ALLOWUNINSTALL|SOLVER_SOLVABLE, id);
+            }
+        }
+}
+
 static int
 solve(HyGoal goal, Queue *job, HifGoalActions flags,
-      hy_solution_callback user_cb, void * user_cb_data)
-{
+      hy_solution_callback user_cb, void * user_cb_data) {
     HifSack *sack = goal->sack;
     struct _SolutionCallback cb_tuple;
 
@@ -256,11 +298,16 @@ solve(HyGoal goal, Queue *job, HifGoalActions flags,
     if (!user_cb && limit_installonly_packages(goal, solv, job)) {
         // allow erasing non-installonly packages that depend on a kernel about
         // to be erased
-        solver_set_flag(solv, SOLVER_FLAG_ALLOW_UNINSTALL, 1);
+        allow_uninstall_all_but_protected(goal, job, HIF_ALLOW_UNINSTALL);
         if (solver_solve(solv, job))
             return 1;
     }
     goal->trans = solver_create_transaction(solv);
+
+    if (protected_in_removals(goal)) {
+        g_warning("protected package detected to be removed");
+        return 1;
+    }
     return 0;
 }
 
@@ -281,6 +328,8 @@ construct_job(HyGoal goal, HifGoalActions flags)
     for (int i = 0; i < (int) hif_sack_get_installonly(sack)->count; i++)
         queue_push2(job, SOLVER_MULTIVERSION|SOLVER_SOLVABLE_PROVIDES,
                     hif_sack_get_installonly(sack)->elements[i]);
+
+    allow_uninstall_all_but_protected(goal, job, flags);
 
     if (flags & HIF_VERIFY)
         queue_push2(job, SOLVER_VERIFY|SOLVER_SOLVABLE_ALL, 0);
@@ -309,6 +358,12 @@ list_results(HyGoal goal, Id type_filter1, Id type_filter2, GError **error)
                                  HIF_ERROR,
                                  HIF_ERROR_INTERNAL_ERROR,
                                  "no solv in the goal");
+            return NULL;
+        } else if (goal->removal_of_protected->len) {
+            g_set_error_literal (error,
+                                 HIF_ERROR,
+                                 HIF_ERROR_REMOVAL_OF_PROTECTED_PKG,
+                                 "no solution, protected package trying to be removed");
             return NULL;
         }
         g_set_error_literal (error,
@@ -581,7 +636,11 @@ hy_goal_clone(HyGoal goal)
 {
     HyGoal gn = hy_goal_create(goal->sack);
     queue_init_clone(&gn->staging, &goal->staging);
+    gn->protected = g_malloc0(sizeof(Map));
+    if (goal->protected != NULL)
+        map_init_clone(gn->protected, goal->protected);
     gn->actions = goal->actions;
+    gn->removal_of_protected = g_object_ref(goal->removal_of_protected);
     return gn;
 }
 
@@ -590,6 +649,7 @@ hy_goal_create(HifSack *sack)
 {
     HyGoal goal = g_malloc0(sizeof(*goal));
     goal->sack = sack;
+    goal->removal_of_protected = g_ptr_array_new();
     queue_init(&goal->staging);
     return goal;
 }
@@ -602,6 +662,7 @@ hy_goal_free(HyGoal goal)
     if (goal->solv)
         solver_free(goal->solv);
     queue_free(&goal->staging);
+    free_map_fully(goal->protected);
     g_free(goal);
 }
 
@@ -829,7 +890,7 @@ int
 hy_goal_count_problems(HyGoal goal)
 {
     assert(goal->solv);
-    return solver_problem_count(goal->solv);
+    return solver_problem_count(goal->solv) + MIN(1, goal->removal_of_protected->len);
 }
 
 /**
@@ -842,10 +903,29 @@ hy_goal_describe_problem(HyGoal goal, unsigned i)
 {
     Id rid, source, target, dep;
     SolverRuleinfo type;
+    g_autoptr(GString) string = NULL;
+    HifPackage *pkg;
+    guint j;
+    const char* name;
 
     /* internal error */
     if (i >= (unsigned) hy_goal_count_problems(goal))
         return NULL;
+    // problem is not in libsolv - erasal of protected packages
+    if (i >= (unsigned) solver_problem_count(goal->solv)) {
+        string = g_string_new("The operation would result in removing"
+                              " the following protected packages: ");
+        for (j = 0; j < goal->removal_of_protected->len; ++j) {
+            pkg = g_ptr_array_index (goal->removal_of_protected, i);
+            name = hif_package_get_name(pkg);
+            if (j == 0) {
+                g_string_append(string, name);
+            } else {
+                g_string_append_printf(string, ", %s", name);
+            }
+        }
+        return g_strdup(string->str);
+    }
 
     // this libsolv interface indexes from 1 (we do from 0), so:
     rid = solver_findproblemrule(goal->solv, i + 1);

@@ -23,9 +23,21 @@
 
 // libsolv
 #include <solv/queue.h>
+#include <solv/transaction.h>
+#include <solv/solver.h>
 
 // hawkey
 #include "hy-goal.h"
+
+struct _HyGoal {
+    HifSack *sack;
+    Queue staging;
+    Solver *solv;
+    Transaction *trans;
+    HifGoalActions actions;
+    Map *protected;
+    GPtrArray *removal_of_protected;
+};
 
 int sltr2job(const HySelector sltr, Queue *job, int solver_action);
 

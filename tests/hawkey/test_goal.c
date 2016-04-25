@@ -31,6 +31,7 @@
 #include "libhif/hy-repo.h"
 #include "libhif/hy-query.h"
 #include "libhif/hif-sack-private.h"
+#include "libhif/hif-goal.h"
 #include "libhif/hy-selector.h"
 #include "libhif/hy-util.h"
 #include "fixtures.h"
@@ -643,8 +644,53 @@ START_TEST(test_goal_erase_with_deps)
     fail_if(hy_goal_run_flags(goal, HIF_ALLOW_UNINSTALL));
     assert_iueo(goal, 0, 0, 2, 0);
     hy_goal_free(goal);
+}
+END_TEST
 
+START_TEST(test_goal_protected)
+{
+    HifSack *sack = test_globals.sack;
+    HifPackageSet *protected = hif_packageset_new(sack);
+    HifPackage *pkg = by_name_repo(sack, "penny-lib", HY_SYSTEM_REPO_NAME);
+    HifPackage *pp = by_name_repo(sack, "flying", HY_SYSTEM_REPO_NAME);
+    g_autoptr(GError) error = NULL;
+    const char *expected;
+    char *problem;
+
+    // when protected_packages set is empty it should remove both packages
+    HyGoal goal = hy_goal_create(sack);
+    HifPackageSet *empty = hif_packageset_new(sack);
+    hif_goal_set_protected(goal, empty);
+    g_object_unref(empty);
+    hy_goal_erase(goal, pkg);
+    fail_if(hy_goal_run_flags(goal, HIF_ALLOW_UNINSTALL));
+    assert_iueo(goal, 0, 0, 2, 0);
+    hy_goal_free(goal);
+
+    // fails to uninstall penny-lib because flying is protected
+    goal = hy_goal_create(sack);
+    hif_packageset_add(protected, pp);
+    hif_goal_set_protected(goal, protected);
+    hy_goal_erase(goal, pkg);
+    fail_unless(hy_goal_run_flags(goal, HIF_ALLOW_UNINSTALL));
+    hy_goal_free(goal);
+
+    // removal of protected package explicitly should trigger error
+    goal = hy_goal_create(sack);
+    hif_goal_set_protected(goal, protected);
+    hy_goal_erase(goal, pp);
+    fail_unless(hy_goal_run(goal));
+    fail_unless(hy_goal_count_problems(goal) == 1);
+    problem = hy_goal_describe_problem(goal, 0);
+    expected = "The operation would result in removing "
+        "the following protected packages: flying";
+    fail_if(strncmp(problem, expected, strlen(expected)));
+    g_free(problem);
+    hy_goal_free(goal);
+
+    g_object_unref(protected);
     g_object_unref(pkg);
+    g_object_unref(pp);
 }
 END_TEST
 
@@ -1087,6 +1133,22 @@ START_TEST(test_goal_installonly_limit)
 }
 END_TEST
 
+START_TEST(test_goal_kernel_protected)
+{
+    HifSack *sack = test_globals.sack;
+    hif_sack_set_running_kernel_fn(sack, mock_running_kernel);
+    Id kernel_id = mock_running_kernel(sack);
+    HifPackage *kernel = hif_package_new(sack, kernel_id);
+
+    HyGoal goal = hy_goal_create(sack);
+    hy_goal_erase(goal, kernel);
+    fail_unless(hy_goal_run_flags(goal, 0));
+
+    g_object_unref(kernel);
+    hy_goal_free(goal);
+}
+END_TEST
+
 START_TEST(test_goal_installonly_limit_disabled)
 {
     // test that setting limit to 0 does not cause all intallonlies to be
@@ -1271,6 +1333,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_no_reinstall);
     tcase_add_test(tc, test_goal_erase_simple);
     tcase_add_test(tc, test_goal_erase_with_deps);
+    tcase_add_test(tc, test_goal_protected);
     tcase_add_test(tc, test_goal_erase_clean_deps);
     tcase_add_test(tc, test_goal_forcebest);
     suite_add_tcase(s, tc);
@@ -1310,6 +1373,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_installonly_limit_disabled);
     tcase_add_test(tc, test_goal_installonly_limit_running_kernel);
     tcase_add_test(tc, test_goal_installonly_limit_with_modules);
+    tcase_add_test(tc, test_goal_kernel_protected);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Vendor");
