@@ -36,8 +36,6 @@ typedef struct _HyGoal * HyGoal;
 typedef struct _HyNevra * HyNevra;
 typedef struct _HyPossibilities * HyPossibilities;
 typedef struct _HyQuery * HyQuery;
-typedef struct _HyReldep * HyReldep;
-typedef struct _HyReldepList * HyReldepList;
 typedef struct _HySelector * HySelector;
 typedef char * HySubject;
 

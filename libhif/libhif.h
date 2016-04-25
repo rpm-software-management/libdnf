@@ -50,7 +50,8 @@
 #include <libhif/hy-package.h>
 #include <libhif/hy-packageset.h>
 #include <libhif/hy-query.h>
-#include <libhif/hy-reldep.h>
+#include <libhif/hif-reldep.h>
+#include <libhif/hif-reldep-list.h>
 #include <libhif/hy-repo.h>
 #include <libhif/hy-selector.h>
 #include <libhif/hy-subject.h>

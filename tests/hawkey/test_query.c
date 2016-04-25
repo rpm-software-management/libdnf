@@ -28,7 +28,9 @@
 #include "libhif/hy-query-private.h"
 #include "libhif/hy-package.h"
 #include "libhif/hy-packageset.h"
-#include "libhif/hy-reldep.h"
+#include "libhif/hif-enums.h"
+#include "libhif/hif-reldep.h"
+#include "libhif/hif-reldep-list.h"
 #include "libhif/hif-sack-private.h"
 #include "fixtures.h"
 #include "test_suites.h"
@@ -514,12 +516,12 @@ START_TEST(test_query_conflicts)
 {
     HifSack *sack = test_globals.sack;
     HyQuery q = hy_query_create(sack);
-    HyReldep reldep = hy_reldep_create(sack, "custard", HY_GT|HY_EQ, "1.0.1");
+    HifReldep *reldep = hif_reldep_new(sack, "custard", HIF_COMPARISON_GT|HIF_COMPARISON_EQ, "1.0.1");
 
     fail_unless(reldep != NULL);
     hy_query_filter_reldep(q, HY_PKG_CONFLICTS, reldep);
     fail_unless(query_count_results(q) == 1);
-    hy_reldep_free(reldep);
+    g_object_unref(reldep);
     hy_query_free(q);
 }
 END_TEST
@@ -735,15 +737,15 @@ START_TEST(test_query_reldep)
     HifSack *sack = test_globals.sack;
     HifPackage *flying = by_name(sack, "flying");
 
-    HyReldepList reldeplist = hif_package_get_requires(flying);
-    HyReldep reldep = hy_reldeplist_get_clone(reldeplist, 0);
+    HifReldepList *reldeplist = hif_package_get_requires(flying);
+    HifReldep *reldep = hif_reldep_list_index(reldeplist, 0);
 
     HyQuery q = hy_query_create(test_globals.sack);
     fail_if(hy_query_filter_reldep(q, HY_PKG_PROVIDES, reldep));
     fail_unless(query_count_results(q) == 3);
 
-    hy_reldep_free(reldep);
-    hy_reldeplist_free(reldeplist);
+    g_object_unref (reldep);
+    g_object_unref (reldeplist);
     g_object_unref(flying);
     hy_query_free(q);
 }
@@ -753,13 +755,13 @@ START_TEST(test_query_reldep_arbitrary)
 {
     HifSack *sack = test_globals.sack;
     HyQuery query = hy_query_create(sack);
-    HyReldep reldep = hy_reldep_create(sack, "P-lib", HY_GT, "3-0");
+    HifReldep *reldep = hif_reldep_new(sack, "P-lib", HIF_COMPARISON_GT, "3-0");
 
     fail_if(reldep == NULL);
     hy_query_filter_reldep(query, HY_PKG_PROVIDES, reldep);
     fail_unless(query_count_results(query) == 3);
 
-    hy_reldep_free(reldep);
+    g_object_unref(reldep);
     hy_query_free(query);
 }
 END_TEST

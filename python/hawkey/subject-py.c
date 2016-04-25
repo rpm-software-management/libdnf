@@ -27,7 +27,6 @@
 #include "hy-iutil.h"
 #include "hy-nevra.h"
 #include "hy-nevra-private.h"
-#include "hy-reldep.h"
 #include "hif-sack.h"
 #include "hif-sack-private.h"
 #include "hy-subject.h"

@@ -23,7 +23,8 @@
 
 #include "hy-packageset-private.h"
 #include "hy-query-private.h"
-#include "hy-reldep.h"
+#include "hif-reldep.h"
+#include "hif-reldep-list.h"
 
 #include "exception-py.h"
 #include "hawkey-pysys.h"
@@ -228,7 +229,7 @@ filter(_QueryObject *self, PyObject *args)
         Py_RETURN_NONE;
     }
     if (reldepObject_Check(match)) {
-        HyReldep reldep = reldepFromPyObject(match);
+        HifReldep *reldep = reldepFromPyObject(match);
         if (cmp_type != HY_EQ ||
             hy_query_filter_reldep(self->query, keyname, reldep))
             return raise_bad_filter();
@@ -256,12 +257,12 @@ filter(_QueryObject *self, PyObject *args)
     case HY_PKG_REQUIRES: {
         HifSack *sack = sackFromPyObject(self->sack);
         assert(sack);
-        HyReldepList reldeplist = pyseq_to_reldeplist(match, sack, cmp_type);
+        HifReldepList *reldeplist = pyseq_to_reldeplist(match, sack, cmp_type);
         if (reldeplist == NULL)
             return NULL;
 
         int ret = hy_query_filter_reldep_in(self->query, keyname, reldeplist);
-        hy_reldeplist_free(reldeplist);
+        g_object_unref (reldeplist);
         if (ret)
             return raise_bad_filter();
         break;

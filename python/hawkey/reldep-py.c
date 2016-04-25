@@ -25,8 +25,9 @@
 #include <solv/util.h>
 
 // hawkey
-#include "hy-reldep-private.h"
+#include "hif-reldep.h"
 #include "hif-sack-private.h"
+#include "hif-reldep-private.h"
 #include "hy-iutil.h"
 
 // pyhawkey
@@ -38,7 +39,7 @@
 
 typedef struct {
     PyObject_HEAD
-    HyReldep reldep;
+    HifReldep *reldep;
     PyObject *sack;
 } _ReldepObject;
 
@@ -64,11 +65,11 @@ new_reldep(PyObject *sack, Id r_id)
     _ReldepObject *self = reldep_new_core(&reldep_Type, sack);
     if (self == NULL)
         return NULL;
-    self->reldep = reldep_create(hif_sack_get_pool(csack), r_id);
+    self->reldep = hif_reldep_from_pool (hif_sack_get_pool(csack), r_id);
     return (PyObject*)self;
 }
 
-HyReldep
+HifReldep *
 reldepFromPyObject(PyObject *o)
 {
     if (!PyType_IsSubtype(o->ob_type, &reldep_Type)) {
@@ -98,7 +99,7 @@ reldep_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 }
 
 PyObject *
-reldepToPyObject(HyReldep reldep)
+reldepToPyObject(HifReldep *reldep)
 {
     _ReldepObject *self = (_ReldepObject *)reldep_Type.tp_alloc(&reldep_Type, 0);
     if (self)
@@ -130,7 +131,7 @@ reldep_init(_ReldepObject *self, PyObject *args, PyObject *kwds)
         return -1;
     }
 
-    self->reldep = hy_reldep_create(csack, name, cmp_type, evr);
+    self->reldep = hif_reldep_new (csack, name, cmp_type, evr);
     g_free(name);
     g_free(evr);
     Py_XDECREF(tmp_py_str);
@@ -145,7 +146,7 @@ static void
 reldep_dealloc(_ReldepObject *self)
 {
     if (self->reldep)
-        hy_reldep_free(self->reldep);
+        g_object_unref (self->reldep);
 
     Py_XDECREF(self->sack);
     Py_TYPE(self)->tp_free(self);
@@ -166,10 +167,9 @@ reldep_repr(_ReldepObject *self)
 static PyObject *
 reldep_str(_ReldepObject *self)
 {
-    HyReldep reldep = self->reldep;
-    char *cstr = hy_reldep_str(reldep);
+    HifReldep *reldep = self->reldep;
+    const char *cstr = hif_reldep_to_string (reldep);
     PyObject *retval = PyString_FromString(cstr);
-    g_free(cstr);
     return retval;
 }
 
@@ -180,7 +180,7 @@ reldep_hash(_ReldepObject *self)
         PyErr_SetString(HyExc_Value, "Invalid Reldep has no hash.");
         return -1;
     }
-    return reldep_id(self->reldep);
+    return hif_reldep_get_id (self->reldep);
 }
 
 PyTypeObject reldep_Type = {

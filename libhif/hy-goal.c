@@ -38,7 +38,7 @@
 #include "hy-iutil.h"
 #include "hy-package-private.h"
 #include "hy-query-private.h"
-#include "hy-reldep-private.h"
+#include "hif-reldep-private.h"
 #include "hy-repo-private.h"
 #include "hif-sack-private.h"
 #include "hy-selector-private.h"
@@ -472,7 +472,7 @@ filter_provides2job(HifSack *sack, const struct _Filter *f, Queue *job)
 
     switch (f->cmp_type) {
     case HY_EQ:
-        id = reldep_id(f->matches[0].reldep);
+        id = hif_reldep_get_id (f->matches[0].reldep);
         queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
         break;
     case HY_GLOB:

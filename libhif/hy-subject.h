@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <solv/util.h>
+#include "hif-types.h"
 #include "hy-types.h"
 #include "hy-nevra.h"
 
@@ -60,7 +61,7 @@ void hy_subject_free(HySubject subject);
 void hy_possibilities_free(HyPossibilities iter);
 HyPossibilities hy_subject_reldep_possibilities_real(HySubject subject,
     HifSack *sack, int flags);
-int hy_possibilities_next_reldep(HyPossibilities iter, HyReldep *out_reldep);
+int hy_possibilities_next_reldep(HyPossibilities iter, HifReldep **out_reldep);
 HyPossibilities hy_subject_nevra_possibilities(HySubject subject,
     HyForm *forms);
 HyPossibilities hy_subject_nevra_possibilities_real(HySubject subject,

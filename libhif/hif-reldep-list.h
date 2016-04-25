@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
- *
- * Licensed under the GNU Lesser General Public License Version 2.1
+ * Copyright © 2016  Igor Gnatenko <ignatenko@redhat.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,21 +16,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef RELDEP_PY_H
-#define RELDEP_PY_H
+#pragma once
 
-// libsolv
-#include <solv/pooltypes.h>
+#include <glib-object.h>
 
-// hawkey
-#include "hy-types.h"
+#include "hif-reldep.h"
+#include "hif-types.h"
 
-extern PyTypeObject reldep_Type;
+G_BEGIN_DECLS
 
-#define reldepObject_Check(o)        PyObject_TypeCheck(o, &reldep_Type)
+#define HIF_TYPE_RELDEP_LIST (hif_reldep_list_get_type())
 
-PyObject *new_reldep(PyObject *sack, Id r_id);
-HifReldep *reldepFromPyObject(PyObject *o);
-PyObject *reldepToPyObject(HifReldep *reldep);
+G_DECLARE_FINAL_TYPE (HifReldepList, hif_reldep_list, HIF, RELDEP_LIST, GObject)
 
-#endif // RELDEP_PY_H
+HifReldepList *hif_reldep_list_new   (HifSack       *sack);
+void           hif_reldep_list_add   (HifReldepList *reldep_list,
+                                      HifReldep     *reldep);
+gint           hif_reldep_list_count (HifReldepList *reldep_list);
+HifReldep     *hif_reldep_list_index (HifReldepList *reldep_list,
+                                      gint           index);
+
+
+G_END_DECLS

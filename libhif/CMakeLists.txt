@@ -5,10 +5,11 @@ SET (LIBHIF_SRCS
     hy-goal.c
     hy-iutil.c
     hy-nevra.c
+    hif-reldep.c
+    hif-reldep-list.c
     hy-package.c
     hy-packageset.c
     hy-query.c
-    hy-reldep.c
     hy-repo.c
     hif-sack.c
     hy-selector.c
@@ -69,7 +70,6 @@ SET(LIBHAWKEY_headers
     hy-package.h
     hy-packageset.h
     hy-query.h
-    hy-reldep.h
     hy-repo.h
     hy-selector.h
     hy-subject.h
@@ -91,6 +91,8 @@ SET(LIBHIF_headers
     hif-repos.h
     hif-rpmts.h
     hif-sack.h
+    hif-reldep.h
+    hif-reldep-list.h
     hif-repo.h
     hif-state.h
     hif-transaction.h
