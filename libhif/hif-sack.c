@@ -92,15 +92,6 @@ typedef struct
 G_DEFINE_TYPE_WITH_PRIVATE(HifSack, hif_sack, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) (hif_sack_get_instance_private (o))
 
-static Map *
-free_map_fully(Map *m)
-{
-    if (m == NULL)
-        return NULL;
-    map_free(m);
-    g_free(m);
-    return NULL;
-}
 
 /**
  * hif_sack_finalize:

@@ -64,6 +64,7 @@ Id str2archid(Pool *pool, const char *s);
 void queue2plist(HifSack *sack, Queue *q, GPtrArray *plist);
 Id what_upgrades(Pool *pool, Id p);
 Id what_downgrades(Pool *pool, Id p);
+Map *free_map_fully(Map *m);
 static inline int is_package(Pool *pool, Solvable *s)
 {
     return !g_str_has_prefix(pool_id2str(pool, s->name), SOLVABLE_NAME_ADVISORY_PREFIX);
