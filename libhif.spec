@@ -3,7 +3,7 @@
 %bcond_with valgrind
 
 # Do not build bindings for python3 for RHEL <= 7
-%if 0%{?rhel} != 0 && 0%{?rhel} <= 7
+%if 0%{?rhel} && 0%{?rhel} <= 7
 %bcond_with python3
 %else
 %bcond_without python3
@@ -11,72 +11,57 @@
 
 Name:           libhif
 Version:        0.7.0
-Release:        1%{?snapshot}%{?dist}
+Release:        1%{?dist}
 Summary:        Library providing simplified C and Python API to libsolv
-Group:          System Environment/Libraries
 License:        LGPLv2+
 URL:            https://github.com/rpm-software-management/%{name}
-# git clone https://github.com/rpm-software-management/libhif.git && cd libhif && tito build --tgz
-Source0: https://github.com/rpm-software-management/%{name}/archive/%{name}-%{version}.tar.gz
+Source0:        https://github.com/rpm-software-management/%{name}/archive/%{name}-%{version}.tar.gz
 
-BuildRequires: libsolv-devel >= %{libsolv_version}
-BuildRequires: librepo-devel
-BuildRequires: cmake
-BuildRequires: expat-devel
-BuildRequires: zlib-devel
-BuildRequires: check-devel
-BuildRequires: valgrind
-BuildRequires: glib2-devel >= 2.16.1
-BuildRequires: libtool
-BuildRequires: docbook-utils
-BuildRequires: gtk-doc
-BuildRequires: gobject-introspection-devel
-BuildRequires: rpm-devel >= 4.11.0
+BuildRequires:  cmake
+BuildRequires:  gcc
+BuildRequires:  libsolv-devel >= %{libsolv_version}
+BuildRequires:  librepo-devel
+BuildRequires:  expat-devel
+BuildRequires:  zlib-devel
+BuildRequires:  check-devel
+%if %{with valgrind}
+BuildRequires:  valgrind
+%endif
+BuildRequires:  glib2-devel >= 2.16.1
+BuildRequires:  libtool
+BuildRequires:  gtk-doc
+BuildRequires:  gobject-introspection-devel
+BuildRequires:  rpm-devel >= 4.11.0
 
-Requires:	libsolv%{?_isa} >= %{libsolv_version}
+Requires:       libsolv%{?_isa} >= %{libsolv_version}
 Obsoletes:      hawkey < 0.7.0
-
-# prevent provides from nonstandard paths:
-%filter_provides_in %{python_sitearch}/.*\.so$
-%if %{with python3}
-%filter_provides_in %{python3_sitearch}/.*\.so$
-%endif
-# filter out _hawkey_testmodule.so DT_NEEDED _hawkeymodule.so:
-%filter_requires_in %{python_sitearch}/hawkey/test/.*\.so$
-%if %{with python3}
-%filter_requires_in %{python3_sitearch}/hawkey/test/.*\.so$
-%endif
-%filter_setup
 
 %description
 A Library providing simplified C and Python API to libsolv.
 
 %package devel
-Summary:	A Library providing simplified C and Python API to libsolv
-Group:		Development/Libraries
-Requires:	%{name}%{?_isa} = %{version}-%{release}
-Requires:	libsolv-devel
+Summary:        Development files for %{name}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+Requires:       libsolv-devel%{?_isa} >= %{libsolv_version}
 
 %description devel
-Development files for libhif.
+Development files for %{name}.
 
 %package -n hawkey-man
-Summary:	Documentation for the hawkey python bindings
-Group:		Development/Languages
+Summary:        Documentation for the hawkey python bindings
 BuildRequires:  python-nose
-BuildRequires:	python-sphinx
-Requires:	%{name}%{?_isa} = %{version}-%{release}
+BuildRequires:  python-sphinx
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description -n hawkey-man
 Python 2 bindings for the hawkey library.
 
 %package -n python2-hawkey
-Summary:	Python 2 bindings for the hawkey library
+Summary:        Python 2 bindings for the hawkey library
 %{?python_provide:%python_provide python2-hawkey}
-Group:		Development/Languages
 BuildRequires:  python2-devel
 BuildRequires:  python-nose
-Requires:	%{name}%{?_isa} = %{version}-%{release}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 %if 0%{?fedora}
 Recommends:     hawkey-man = %{version}-%{release}
 %endif
@@ -86,12 +71,11 @@ Python 2 bindings for the hawkey library.
 
 %if %{with python3}
 %package -n python3-hawkey
-Summary:	Python 3 bindings for the hawkey library
+Summary:        Python 3 bindings for the hawkey library
 %{?python_provide:%python_provide python3-hawkey}
-Group:		Development/Languages
 BuildRequires:  python3-devel
 BuildRequires:  python3-nose
-Requires:	%{name}%{?_isa} = %{version}-%{release}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 %if 0%{?fedora}
 Recommends:     hawkey-man = %{version}-%{release}
 %endif
@@ -101,33 +85,22 @@ Python 3 bindings for the hawkey library.
 %endif
 
 %prep
-%setup -q -n %{name}-%{version}
-
+%autosetup
+mkdir build-py2
 %if %{with python3}
-rm -rf py3
-mkdir ../py3
-cp -a . ../py3/
-mv ../py3 ./
+mkdir build-py3
 %endif
 
 %build
-%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo . \
-%if %{with valgrind}
-
-%else
-       -DDISABLE_VALGRIND=1
-%endif
-make %{?_smp_mflags}
+pushd build-py2
+  %cmake ../ %{!?_with_valgrind:-DDISABLE_VALGRIND=1}
+  %make_build
+popd
 
 %if %{with python3}
-pushd py3
-%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPYTHON_DESIRED:str=3 -DWITH_GIR=0 -DWITH_MAN=0 -Dgtkdoc=0 . \
-%if %{with valgrind}
-
-%else
-       -DDISABLE_VALGRIND=1
-%endif
-make %{?_smp_mflags}
+pushd build-py3
+  %cmake -DPYTHON_DESIRED:str=3 -DWITH_GIR=0 -DWITH_MAN=0 -Dgtkdoc=0 ../ %{!?_with_valgrind:-DDISABLE_VALGRIND=1}
+  %make_build
 popd
 %endif
 
@@ -139,51 +112,52 @@ Please build the package as non-root user.
 ERROR
         exit 1
 fi
-make ARGS="-V" test
+pushd build-py2
+  make ARGS="-V" test
+popd
 %if %{with python3}
 # Run just the Python tests, not all of them, since
 # we have coverage of the core from the first build
-pushd py3/python/hawkey/tests
-make ARGS="-V" test
+pushd build-py3/python/hawkey/tests
+  make ARGS="-V" test
 popd
 %endif
 
 %install
-make install DESTDIR=$RPM_BUILD_ROOT
+pushd build-py2
+  %make_install
+popd
 %if %{with python3}
-pushd py3
-make install DESTDIR=$RPM_BUILD_ROOT
+pushd build-py3
+  %make_install
 popd
 %endif
 
 %post -p /sbin/ldconfig
-
 %postun -p /sbin/ldconfig
 
 %files
-%doc README.md AUTHORS NEWS COPYING
-%{_libdir}/libhif.so.*
-%{_libdir}/girepository-1.0/*.typelib
+%license COPYING
+%doc README.md AUTHORS NEWS
+%{_libdir}/%{name}.so.*
+%{_libdir}/girepository-1.0/Hif-*.typelib
 
 %files devel
-%{_libdir}/libhif.so
-%{_libdir}/pkgconfig/libhif.pc
-%dir %{_includedir}/libhif
-%{_includedir}/libhif/*.h
-%{_datadir}/gtk-doc
-%{_datadir}/gir-1.0/*.gir
+%{_libdir}/%{name}.so
+%{_libdir}/pkgconfig/%{name}.pc
+%{_includedir}/%{name}/
+%doc %{_datadir}/gtk-doc/html/%{name}/
+%{_datadir}/gir-1.0/Hif-*.gir
 
 %files -n hawkey-man
 %{_mandir}/man3/hawkey.3.gz
 
 %files -n python2-hawkey
-%{python_sitearch}/
+%{python2_sitearch}/hawkey/
 
 %if %{with python3}
 %files -n python3-hawkey
-%{python3_sitearch}/
-%exclude %{python3_sitearch}/hawkey/__pycache__
-%exclude %{python3_sitearch}/hawkey/test/__pycache__
+%{python3_sitearch}/hawkey/
 %endif
 
 %changelog
