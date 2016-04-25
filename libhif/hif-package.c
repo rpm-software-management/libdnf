@@ -41,7 +41,8 @@
 #include "hif-package.h"
 #include "hif-types.h"
 #include "hif-utils.h"
-#include "hy-reldep.h"
+#include "hif-reldep.h"
+#include "hif-reldep-list.h"
 #include "hy-util.h"
 
 typedef struct {
@@ -495,29 +496,26 @@ gboolean
 hif_package_is_gui(HifPackage *pkg)
 {
     gboolean ret = FALSE;
-    gchar *tmp;
+    const gchar *tmp;
     gint idx;
-    HyReldepList reldeplist;
-    HyReldep reldep;
-    int size;
+    HifReldep *reldep;
+    gint size;
 
     /* find if the package depends on GTK or KDE */
-    reldeplist = hif_package_get_requires(pkg);
-    size = hy_reldeplist_count(reldeplist);
+    g_autoptr(HifReldepList) reldep_list = hif_package_get_requires (pkg);
+    size = hif_reldep_list_count (reldep_list);
     for (idx = 0; idx < size && !ret; idx++) {
-        reldep = hy_reldeplist_get_clone(reldeplist, idx);
-        tmp = hy_reldep_str(reldep);
+        reldep = hif_reldep_list_index (reldep_list, idx);
+        tmp = hif_reldep_to_string (reldep);
         if (g_strstr_len(tmp, -1, "libgtk") != NULL ||
             g_strstr_len(tmp, -1, "libQt5Gui.so") != NULL ||
             g_strstr_len(tmp, -1, "libQtGui.so") != NULL ||
             g_strstr_len(tmp, -1, "libqt-mt.so") != NULL) {
             ret = TRUE;
         }
-        free(tmp);
-        hy_reldep_free(reldep);
+        g_object_unref (reldep);
     }
 
-    hy_reldeplist_free(reldeplist);
     return ret;
 }
 

@@ -27,6 +27,7 @@ G_BEGIN_DECLS
 
 /* hawkey */
 #include "hif-sack.h"
+#include "hif-types.h"
 #include "hy-types.h"
 
 enum _hy_query_flags {
@@ -49,9 +50,9 @@ int hy_query_filter_num_in(HyQuery q, int keyname, int cmp_type, int nmatches,
                            const int *matches);
 int hy_query_filter_package_in(HyQuery q, int keyname, int cmp_type,
                                HifPackageSet *pset);
-int hy_query_filter_reldep(HyQuery q, int keyname, const HyReldep reldep);
+int hy_query_filter_reldep(HyQuery q, int keyname, HifReldep *reldep);
 int hy_query_filter_reldep_in(HyQuery q, int keyname,
-                              const HyReldepList reldeplist);
+                              HifReldepList *reldeplist);
 int hy_query_filter_provides(HyQuery q, int cmp_type, const char *name,
                              const char *evr);
 int hy_query_filter_provides_in(HyQuery q, char **reldep_strs);

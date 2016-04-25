@@ -20,7 +20,7 @@
 
 #include <stdlib.h>
 #include <fnmatch.h>
-#include "hy-reldep.h"
+#include "hif-reldep.h"
 #include "hif-sack-private.h"
 #include "hy-subject.h"
 #include "hy-subject-private.h"
@@ -165,7 +165,7 @@ hy_subject_reldep_possibilities_real(HySubject subject, HifSack *sack, int flags
     return possibilities_create(subject, NULL, sack, flags, TYPE_RELDEP_NEW);
 }
 
-int hy_possibilities_next_reldep(HyPossibilities iter, HyReldep *out_reldep)
+int hy_possibilities_next_reldep(HyPossibilities iter, HifReldep **out_reldep)
 {
     if (iter->type != TYPE_RELDEP_NEW)
         return -1;
@@ -175,7 +175,7 @@ int hy_possibilities_next_reldep(HyPossibilities iter, HyReldep *out_reldep)
     if (parse_reldep_str(iter->subject, &name, &evr, &cmp_type) == -1)
         return -1;
     if (hif_sack_knows(iter->sack, name, NULL, iter->flags)) {
-        *out_reldep = hy_reldep_create(iter->sack, name, cmp_type, evr);
+        *out_reldep = hif_reldep_new (iter->sack, name, cmp_type, evr);
         g_free(name);
         g_free(evr);
         if (*out_reldep == NULL)

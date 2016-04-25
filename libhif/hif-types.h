@@ -34,6 +34,8 @@ typedef struct _HifRepo                 HifRepo;
 typedef struct _HifState                HifState;
 typedef struct _HifSack                 HifSack;
 typedef struct _HifPackageSet           HifPackageSet;
+typedef struct _HifReldep               HifReldep;
+typedef struct _HifReldepList           HifReldepList;
 
 /**
  * HifError:

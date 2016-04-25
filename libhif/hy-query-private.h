@@ -30,7 +30,7 @@
 union _Match {
     int num;
     HifPackageSet *pset;
-    HyReldep reldep;
+    HifReldep *reldep;
     char *str;
 };
 

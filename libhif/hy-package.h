@@ -25,6 +25,7 @@
 #include <glib-object.h>
 #include "hy-types.h"
 #include "hif-packagedelta.h"
+#include "hif-reldep-list.h"
 
 G_BEGIN_DECLS
 
@@ -79,15 +80,15 @@ guint64      hif_package_get_size       (HifPackage *pkg);
 guint64      hif_package_get_buildtime  (HifPackage *pkg);
 guint64      hif_package_get_installtime(HifPackage *pkg);
 
-HyReldepList hif_package_get_conflicts  (HifPackage *pkg);
-HyReldepList hif_package_get_enhances   (HifPackage *pkg);
-HyReldepList hif_package_get_obsoletes  (HifPackage *pkg);
-HyReldepList hif_package_get_provides   (HifPackage *pkg);
-HyReldepList hif_package_get_recommends (HifPackage *pkg);
-HyReldepList hif_package_get_requires   (HifPackage *pkg);
-HyReldepList hif_package_get_requires_pre(HifPackage *pkg);
-HyReldepList hif_package_get_suggests   (HifPackage *pkg);
-HyReldepList hif_package_get_supplements(HifPackage *pkg);
+HifReldepList *hif_package_get_conflicts    (HifPackage *pkg);
+HifReldepList *hif_package_get_enhances     (HifPackage *pkg);
+HifReldepList *hif_package_get_obsoletes    (HifPackage *pkg);
+HifReldepList *hif_package_get_provides     (HifPackage *pkg);
+HifReldepList *hif_package_get_recommends   (HifPackage *pkg);
+HifReldepList *hif_package_get_requires     (HifPackage *pkg);
+HifReldepList *hif_package_get_requires_pre (HifPackage *pkg);
+HifReldepList *hif_package_get_suggests     (HifPackage *pkg);
+HifReldepList *hif_package_get_supplements  (HifPackage *pkg);
 char       **hif_package_get_files      (HifPackage *pkg);
 GPtrArray   *hif_package_get_advisories (HifPackage *pkg, int cmp_type);
 

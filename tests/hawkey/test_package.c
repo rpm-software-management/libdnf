@@ -26,7 +26,8 @@
 #include "libhif/hy-package.h"
 #include "libhif/hy-package-private.h"
 #include "libhif/hy-query.h"
-#include "libhif/hy-reldep.h"
+#include "libhif/hif-reldep.h"
+#include "libhif/hif-reldep-list.h"
 #include "libhif/hif-sack-private.h"
 #include "libhif/hy-util.h"
 #include "fixtures.h"
@@ -106,17 +107,16 @@ START_TEST(test_get_requires)
 {
     HifSack *sack = test_globals.sack;
     HifPackage *pkg = by_name(sack, "flying");
-    HyReldepList reldeplist = hif_package_get_requires(pkg);
+    HifReldepList *reldeplist = hif_package_get_requires(pkg);
 
-    fail_unless(hy_reldeplist_count(reldeplist) == 1);
-    HyReldep reldep = hy_reldeplist_get_clone(reldeplist, 0);
+    fail_unless(hif_reldep_list_count (reldeplist) == 1);
+    HifReldep *reldep = hif_reldep_list_index (reldeplist, 0);
 
-    char *depstr = hy_reldep_str(reldep);
+    const char *depstr = hif_reldep_to_string (reldep);
     ck_assert_str_eq(depstr, "P-lib >= 3");
-    g_free(depstr);
 
-    hy_reldep_free(reldep);
-    hy_reldeplist_free(reldeplist);
+    g_object_unref(reldep);
+    g_object_unref(reldeplist);
     g_object_unref(pkg);
 }
 END_TEST
@@ -125,10 +125,10 @@ START_TEST(test_get_more_requires)
 {
     HifSack *sack = test_globals.sack;
     HifPackage *pkg = by_name(sack, "walrus");
-    HyReldepList reldeplist = hif_package_get_requires(pkg);
+    HifReldepList *reldeplist = hif_package_get_requires(pkg);
 
-    fail_unless(hy_reldeplist_count(reldeplist) == 2);
-    hy_reldeplist_free(reldeplist);
+    fail_unless(hif_reldep_list_count (reldeplist) == 2);
+    g_object_unref(reldeplist);
     g_object_unref(pkg);
 }
 END_TEST

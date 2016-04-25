@@ -33,9 +33,9 @@ PyObject *advisoryreflist_to_pylist(const GPtrArray *advisoryreflist, PyObject *
 PyObject *packagelist_to_pylist(GPtrArray *plist, PyObject *sack);
 PyObject *packageset_to_pylist(HifPackageSet *pset, PyObject *sack);
 HifPackageSet *pyseq_to_packageset(PyObject *sequence, HifSack *sack);
-HyReldepList pyseq_to_reldeplist(PyObject *sequence, HifSack *sack, int cmp_type);
+HifReldepList *pyseq_to_reldeplist(PyObject *sequence, HifSack *sack, int cmp_type);
 PyObject *strlist_to_pylist(const char **slist);
-PyObject *reldeplist_to_pylist(const HyReldepList reldeplist, PyObject *sack);
-HyReldep reldep_from_pystr(PyObject *o, HifSack *sack);
+PyObject *reldeplist_to_pylist(HifReldepList *reldeplist, PyObject *sack);
+HifReldep *reldep_from_pystr(PyObject *o, HifSack *sack);
 
 #endif // IUTIL_PY_H

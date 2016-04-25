@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
- *
- * Licensed under the GNU Lesser General Public License Version 2.1
+ * Copyright © 2016  Igor Gnatenko <ignatenko@redhat.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,29 +16,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef HY_RELDEP_H
-#define HY_RELDEP_H
+#pragma once
 
 #include <glib.h>
 
+#include <solv/pool.h>
+
+#include "hif-reldep-list.h"
+
 G_BEGIN_DECLS
 
-/* hawkey */
-#include "hy-types.h"
-#include "hif-sack.h"
-
-HyReldep hy_reldep_create(HifSack *sack, const char *name, int cmp_type,
-                          const char *evr);
-void hy_reldep_free(HyReldep reldep);
-HyReldep hy_reldep_clone(HyReldep reldep);
-char *hy_reldep_str(HyReldep reldep);
-
-HyReldepList hy_reldeplist_create(HifSack *sack);
-void hy_reldeplist_free(HyReldepList reldeplist);
-void hy_reldeplist_add(HyReldepList reldeplist, HyReldep reldep);
-int hy_reldeplist_count(HyReldepList reldeplist);
-HyReldep hy_reldeplist_get_clone(HyReldepList reldeplist, int index);
+HifReldepList *hif_reldep_list_from_queue (Pool          *pool,
+                                           Queue          queue);
+void           hif_reldep_list_extend     (HifReldepList *rl1,
+                                           HifReldepList *rl2);
 
 G_END_DECLS
-
-#endif /* HY_RELDEP_H */

@@ -46,7 +46,7 @@ replace_filter(HifSack *sack, struct _Filter **fp, int keyname, int cmp_type,
     f->cmp_type = cmp_type;
     if (keyname == HY_PKG_PROVIDES && cmp_type != HY_GLOB) {
         f->match_type = _HY_RELDEP;
-        HyReldep reldep = reldep_from_str(sack, match);
+        HifReldep *reldep = reldep_from_str (sack, match);
         if (reldep == NULL) {
             filter_free(*fp);
             *fp = NULL;

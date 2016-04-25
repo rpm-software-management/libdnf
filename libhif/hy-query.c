@@ -33,7 +33,7 @@
 #include "hy-query-private.h"
 #include "hy-package-private.h"
 #include "hy-packageset-private.h"
-#include "hy-reldep-private.h"
+#include "hif-reldep-private.h"
 #include "hif-sack-private.h"
 #include "hy-util.h"
 
@@ -248,7 +248,7 @@ filter_reinit(struct _Filter *f, int nmatches)
             g_free(f->matches[m].str);
             break;
         case _HY_RELDEP:
-            hy_reldep_free(f->matches[m].reldep);
+            g_object_unref (f->matches[m].reldep);
             break;
         default:
             break;
@@ -513,7 +513,7 @@ filter_provides_reldep(HyQuery q, struct _Filter *f, Map *m)
 
     hif_sack_make_provides_ready(q->sack);
     for (int i = 0; i < f->nmatches; ++i) {
-        Id r_id = reldep_id(f->matches[i].reldep);
+        Id r_id = hif_reldep_get_id (f->matches[i].reldep);
         FOR_PROVIDES(p, pp, r_id)
             MAPSET(m, p);
     }
@@ -530,7 +530,7 @@ filter_rco_reldep(HyQuery q, struct _Filter *f, Map *m)
 
     queue_init(&rco);
     for (int i = 0; i < f->nmatches; ++i) {
-        Id r_id = reldep_id(f->matches[i].reldep);
+        Id r_id = hif_reldep_get_id (f->matches[i].reldep);
 
         for (Id s_id = 1; s_id < pool->nsolvables; ++s_id) {
             if (!MAPTST(q->result, s_id))
@@ -952,7 +952,7 @@ hy_query_clone(HyQuery q)
         for (int j = 0; j < q->filters[i].nmatches; ++j) {
             char *str_copy;
             HifPackageSet *pset;
-            HyReldep reldep;
+            HifReldep *reldep;
 
             switch (filterp->match_type) {
             case _HY_NUM:
@@ -964,7 +964,7 @@ hy_query_clone(HyQuery q)
                 break;
             case _HY_RELDEP:
                 reldep = q->filters[i].matches[j].reldep;
-                filterp->matches[j].reldep = hy_reldep_clone(reldep);
+                filterp->matches[j].reldep = g_object_ref (reldep);
                 break;
             case _HY_STR:
                 str_copy = g_strdup(q->filters[i].matches[j].str);
@@ -1003,16 +1003,16 @@ hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
         HifSack *sack = query_sack(q);
 
     if (cmp_type == HY_GLOB) {
-        HyReldepList reldeplist = reldeplist_from_str(sack, match);
+        HifReldepList *reldeplist = reldeplist_from_str (sack, match);
         hy_query_filter_reldep_in(q, keyname, reldeplist);
-        hy_reldeplist_free(reldeplist);
+        g_object_unref (reldeplist);
         return 0;
     } else {
-        HyReldep reldep = reldep_from_str(sack, match);
+        HifReldep *reldep = reldep_from_str (sack, match);
         if (reldep == NULL)
             return hy_query_filter_empty(q);
         int ret = hy_query_filter_reldep(q, keyname, reldep);
-        hy_reldep_free(reldep);
+        g_object_unref (reldep);
         return ret;
     }
     }
@@ -1107,7 +1107,7 @@ hy_query_filter_package_in(HyQuery q, int keyname, int cmp_type,
 }
 
 int
-hy_query_filter_reldep(HyQuery q, int keyname, const HyReldep reldep)
+hy_query_filter_reldep(HyQuery q, int keyname, HifReldep *reldep)
 {
     if (!valid_filter_reldep(keyname))
         return HIF_ERROR_BAD_QUERY;
@@ -1117,25 +1117,25 @@ hy_query_filter_reldep(HyQuery q, int keyname, const HyReldep reldep)
     filterp->cmp_type = HY_EQ;
     filterp->keyname = keyname;
     filterp->match_type = _HY_RELDEP;
-    filterp->matches[0].reldep = hy_reldep_clone(reldep);
+    filterp->matches[0].reldep = g_object_ref (reldep);
     return 0;
 }
 
 int
-hy_query_filter_reldep_in(HyQuery q, int keyname, const HyReldepList reldeplist)
+hy_query_filter_reldep_in(HyQuery q, int keyname, HifReldepList *reldeplist)
 {
     if (!valid_filter_reldep(keyname))
         return HIF_ERROR_BAD_QUERY;
     q->applied = 0;
 
-    const int nmatches = hy_reldeplist_count(reldeplist);
+    const int nmatches = hif_reldep_list_count (reldeplist);
     struct _Filter *filterp = query_add_filter(q, nmatches);
     filterp->cmp_type = HY_EQ;
     filterp->keyname = keyname;
     filterp->match_type = _HY_RELDEP;
 
     for (int i = 0; i < nmatches; ++i)
-        filterp->matches[i].reldep = hy_reldeplist_get_clone(reldeplist, i);
+        filterp->matches[i].reldep = hif_reldep_list_index (reldeplist, i);
     return 0;
 }
 
@@ -1143,10 +1143,10 @@ int
 hy_query_filter_provides(HyQuery q, int cmp_type, const char *name,
                          const char *evr)
 {
-    HyReldep reldep = hy_reldep_create(query_sack(q), name, cmp_type, evr);
+    HifReldep *reldep = hif_reldep_new (query_sack(q), name, cmp_type, evr);
     assert(reldep);
     int ret = hy_query_filter_reldep(q, HY_PKG_PROVIDES, reldep);
-    hy_reldep_free(reldep);
+    g_object_unref (reldep);
     return ret;
 }
 
@@ -1156,22 +1156,22 @@ hy_query_filter_provides_in(HyQuery q, char **reldep_strs)
     int cmp_type;
     char *name = NULL;
     char *evr = NULL;
-    HyReldep reldep;
-    HyReldepList reldeplist = hy_reldeplist_create(q->sack);
+    HifReldep *reldep;
+    HifReldepList *reldeplist = hif_reldep_list_new (q->sack);
     for (int i = 0; reldep_strs[i] != NULL; ++i) {
         if (parse_reldep_str(reldep_strs[i], &name, &evr, &cmp_type) == -1) {
-            hy_reldeplist_free(reldeplist);
+            g_object_unref(reldeplist);
             return HIF_ERROR_BAD_QUERY;
         }
-        reldep = hy_reldep_create(q->sack, name, cmp_type, evr);
+        reldep = hif_reldep_new (q->sack, name, cmp_type, evr);
         if (reldep)
-            hy_reldeplist_add(reldeplist, reldep);
-        hy_reldep_free(reldep);
+            hif_reldep_list_add (reldeplist, reldep);
+        g_object_unref (reldep);
         g_free(name);
         g_free(evr);
     }
     hy_query_filter_reldep_in(q, HY_PKG_PROVIDES, reldeplist);
-    hy_reldeplist_free(reldeplist);
+    g_object_unref (reldeplist);
     return 0;
 }
 
@@ -1182,11 +1182,11 @@ hy_query_filter_requires(HyQuery q, int cmp_type, const char *name, const char *
     resolved in hy_query_apply(), we just have to make sure to store it in the
     filter. */
     int not_neg = cmp_type & ~HY_NOT;
-    HyReldep reldep = hy_reldep_create(q->sack, name, not_neg, evr);
+    HifReldep *reldep = hif_reldep_new (q->sack, name, not_neg, evr);
     int rc;
     if (reldep) {
         rc = hy_query_filter_reldep(q, HY_PKG_REQUIRES, reldep);
-        hy_reldep_free(reldep);
+        g_object_unref (reldep);
         q->filters[q->nfilters - 1].cmp_type = cmp_type;
     } else
         rc = hy_query_filter_empty(q);

@@ -26,7 +26,7 @@
 #include "hif-advisory.h"
 #include "hy-iutil.h"
 #include "hy-package-private.h"
-#include "hy-reldep.h"
+#include "hif-reldep.h"
 #include "hif-sack-private.h"
 
 #include "iutil-py.h"
@@ -196,11 +196,11 @@ get_num(_PackageObject *self, void *closure)
 static PyObject *
 get_reldep(_PackageObject *self, void *closure)
 {
-    HyReldepList (*func)(HifPackage*) = (HyReldepList (*)(HifPackage*))closure;
-    HyReldepList reldeplist = func(self->package);
+    HifReldepList *(*func)(HifPackage*) = (HifReldepList *(*)(HifPackage*))closure;
+    HifReldepList *reldeplist = func(self->package);
     assert(reldeplist);
     PyObject *list = reldeplist_to_pylist(reldeplist, self->sack);
-    hy_reldeplist_free(reldeplist);
+    g_object_unref(reldeplist);
 
     return list;
 }

@@ -25,7 +25,8 @@
 #include "hif-advisoryref.h"
 #include "hy-package-private.h"
 #include "hy-packageset-private.h"
-#include "hy-reldep-private.h"
+#include "hif-reldep-private.h"
+#include "hif-reldep-list-private.h"
 #include "hy-iutil.h"
 #include "advisory-py.h"
 #include "advisorypkg-py.h"
@@ -209,13 +210,13 @@ pyseq_to_packageset(PyObject *obj, HifSack *sack)
     return NULL;
 }
 
-HyReldepList
+HifReldepList *
 pyseq_to_reldeplist(PyObject *obj, HifSack *sack, int cmp_type)
 {
     PyObject *sequence = PySequence_Fast(obj, "Expected a sequence.");
     if (sequence == NULL)
         return NULL;
-    HyReldepList reldeplist = hy_reldeplist_create(sack);
+    HifReldepList *reldeplist = hif_reldep_list_new (sack);
 
     const unsigned count = PySequence_Size(sequence);
     for (unsigned int i = 0; i < count; ++i) {
@@ -224,7 +225,7 @@ pyseq_to_reldeplist(PyObject *obj, HifSack *sack, int cmp_type)
             goto fail;
 
     if (cmp_type == HY_GLOB) {
-        HyReldepList g_reldeplist = NULL;
+        HifReldepList *g_reldeplist = NULL;
         const char *reldep_str = NULL;
         PyObject *tmp_py_str = NULL;
 
@@ -233,26 +234,26 @@ pyseq_to_reldeplist(PyObject *obj, HifSack *sack, int cmp_type)
             goto fail;
         Py_XDECREF(tmp_py_str);
 
-        g_reldeplist = reldeplist_from_str(sack, reldep_str);
-        merge_reldeplists(reldeplist, g_reldeplist);
-        hy_reldeplist_free(g_reldeplist);
+        g_reldeplist = reldeplist_from_str (sack, reldep_str);
+        hif_reldep_list_extend (reldeplist, g_reldeplist);
+        g_object_unref (g_reldeplist);
 
     } else {
-        HyReldep reldep = NULL;
+        HifReldep *reldep = NULL;
         if reldepObject_Check(item)
             reldep = reldepFromPyObject(item);
         else
             reldep = reldep_from_pystr(item, sack);
 
         if (reldep != NULL)
-            hy_reldeplist_add(reldeplist, reldep);
+            hif_reldep_list_add (reldeplist, reldep);
     }
     }
 
     Py_DECREF(sequence);
     return reldeplist;
  fail:
-    hy_reldeplist_free(reldeplist);
+    g_object_unref (reldeplist);
     Py_DECREF(sequence);
     return NULL;
 }
@@ -281,18 +282,18 @@ strlist_to_pylist(const char **slist)
 }
 
 PyObject *
-reldeplist_to_pylist(const HyReldepList reldeplist, PyObject *sack)
+reldeplist_to_pylist(HifReldepList *reldeplist, PyObject *sack)
 {
     PyObject *list = PyList_New(0);
     if (list == NULL)
         return NULL;
 
-    const int count = hy_reldeplist_count(reldeplist);
+    const int count = hif_reldep_list_count (reldeplist);
     for (int i = 0; i < count; ++i) {
-        HyReldep creldep = hy_reldeplist_get_clone(reldeplist,  i);
-        PyObject *reldep = new_reldep(sack, reldep_id(creldep));
+        HifReldep *creldep = hif_reldep_list_index (reldeplist,  i);
+        PyObject *reldep = new_reldep(sack, hif_reldep_get_id (creldep));
 
-        hy_reldep_free(creldep);
+        g_object_unref (creldep);
         if (reldep == NULL)
             goto fail;
 
@@ -308,10 +309,10 @@ reldeplist_to_pylist(const HyReldepList reldeplist, PyObject *sack)
     return NULL;
 }
 
-HyReldep
+HifReldep *
 reldep_from_pystr(PyObject *o, HifSack *sack)
 {
-    HyReldep reldep = NULL;
+    HifReldep *reldep = NULL;
     const char *reldep_str = NULL;
     PyObject *tmp_py_str = NULL;
 

@@ -41,7 +41,7 @@
 #include "hif-sack-private.h"
 #include "hy-iutil.h"
 #include "hy-package-private.h"
-#include "hy-reldep-private.h"
+#include "hif-reldep-list-private.h"
 #include "hy-repo-private.h"
 
 #define BLOCK_SIZE 31
@@ -139,12 +139,12 @@ lookup_num(HifPackage *pkg, unsigned type)
     return solvable_lookup_num(s, type, 0);
 }
 
-static HyReldepList
+static HifReldepList *
 reldeps_for(HifPackage *pkg, Id type)
 {
     Pool *pool = hif_package_get_pool(pkg);
     Solvable *s = get_solvable(pkg);
-    HyReldepList reldeplist;
+    HifReldepList *reldeplist;
     Queue q;
     Id marker = -1;
     Id solv_type = type;
@@ -156,7 +156,7 @@ reldeps_for(HifPackage *pkg, Id type)
     queue_init(&q);
     solvable_lookup_deparray(s, solv_type, &q, marker);
 
-    reldeplist = reldeplist_from_queue(pool, q);
+    reldeplist = hif_reldep_list_from_queue (pool, q);
 
     queue_free(&q);
     return reldeplist;
@@ -794,11 +794,11 @@ hif_package_get_size(HifPackage *pkg)
  *
  * Gets the conflicts for the package.
  *
- * Returns: A #HyReldepList
+ * Returns: A #HifReldepList
  *
  * Since: 0.7.0
  */
-HyReldepList
+HifReldepList *
 hif_package_get_conflicts(HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_CONFLICTS);
@@ -810,11 +810,11 @@ hif_package_get_conflicts(HifPackage *pkg)
  *
  * Gets the enhances for the package.
  *
- * Returns: A #HyReldepList
+ * Returns: A #HifReldepList
  *
  * Since: 0.7.0
  */
-HyReldepList
+HifReldepList *
 hif_package_get_enhances(HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_ENHANCES);
@@ -826,11 +826,11 @@ hif_package_get_enhances(HifPackage *pkg)
  *
  * Gets the obsoletes for the package.
  *
- * Returns: A #HyReldepList
+ * Returns: A #HifReldepList
  *
  * Since: 0.7.0
  */
-HyReldepList
+HifReldepList *
 hif_package_get_obsoletes(HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_OBSOLETES);
@@ -842,11 +842,11 @@ hif_package_get_obsoletes(HifPackage *pkg)
  *
  * Gets the provides for the package.
  *
- * Returns: A #HyReldepList
+ * Returns: A #HifReldepList
  *
  * Since: 0.7.0
  */
-HyReldepList
+HifReldepList *
 hif_package_get_provides(HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_PROVIDES);
@@ -858,11 +858,11 @@ hif_package_get_provides(HifPackage *pkg)
  *
  * Gets the recommends for the package.
  *
- * Returns: A #HyReldepList
+ * Returns: A #HifReldepList
  *
  * Since: 0.7.0
  */
-HyReldepList
+HifReldepList *
 hif_package_get_recommends(HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_RECOMMENDS);
@@ -874,11 +874,11 @@ hif_package_get_recommends(HifPackage *pkg)
  *
  * Gets the requires for the package.
  *
- * Returns: A #HyReldepList
+ * Returns: A #HifReldepList
  *
  * Since: 0.7.0
  */
-HyReldepList
+HifReldepList *
 hif_package_get_requires(HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_REQUIRES);
@@ -890,12 +890,12 @@ hif_package_get_requires(HifPackage *pkg)
  *
  * Gets the Requires(pre) for the package.
  *
- * Returns: A #HyReldepList
+ * Returns: A #HifReldepList
  *
  * Since: 0.7.0
  */
-HyReldepList
-hif_package_get_requires_pre(HifPackage *pkg)
+HifReldepList *
+hif_package_get_requires_pre (HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_PREREQMARKER);
 }
@@ -906,11 +906,11 @@ hif_package_get_requires_pre(HifPackage *pkg)
  *
  * Gets the suggests for the package.
  *
- * Returns: A #HyReldepList
+ * Returns: A #HifReldepList
  *
  * Since: 0.7.0
  */
-HyReldepList
+HifReldepList *
 hif_package_get_suggests(HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_SUGGESTS);
@@ -922,11 +922,11 @@ hif_package_get_suggests(HifPackage *pkg)
  *
  * Gets the supplements for the package.
  *
- * Returns: A #HyReldepList
+ * Returns: A #HifReldepList
  *
  * Since: 0.7.0
  */
-HyReldepList
+HifReldepList *
 hif_package_get_supplements(HifPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_SUPPLEMENTS);

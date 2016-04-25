@@ -31,7 +31,7 @@
 #include "hy-package.h"
 #include "hy-packageset.h"
 #include "hy-query.h"
-#include "hy-reldep.h"
+#include "hif-reldep-list.h"
 #include "hy-repo.h"
 #include "hif-sack.h"
 #include "hy-util.h"
@@ -74,7 +74,7 @@ static void execute_print(HifSack *sack, HyQuery q, int show_obsoletes)
             g_free(str);
         }
         if (show_obsoletes) {
-            HyReldepList obsoletes = hif_package_get_obsoletes(pkg);
+            HifReldepList *obsoletes = hif_package_get_obsoletes(pkg);
             HyQuery qobs = hy_query_create(sack);
 
             hy_query_filter(qobs, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
@@ -89,7 +89,7 @@ static void execute_print(HifSack *sack, HyQuery q, int show_obsoletes)
             }
             g_ptr_array_unref(olist);
             hy_query_free(qobs);
-            hy_reldeplist_free(obsoletes);
+            g_object_unref(obsoletes);
         }
         g_free(nvra);
     }

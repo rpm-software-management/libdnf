@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
- *
- * Licensed under the GNU Lesser General Public License Version 2.1
+ * Copyright © 2016  Igor Gnatenko <ignatenko@redhat.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,18 +16,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef HY_RELDEP_INTERNAL_H
-#define HY_RELDEP_INTERNAL_H
+#pragma once
 
-// libsolv
+#include <glib.h>
+
 #include <solv/pool.h>
 
-// hawkey
-#include "hy-reldep.h"
+#include "hif-reldep.h"
 
-HyReldep reldep_create(Pool *pool, Id r_id);
-Id reldep_id(HyReldep reldep);
-HyReldepList reldeplist_from_queue(Pool *pool, Queue h);
-void merge_reldeplists(HyReldepList rl1, HyReldepList rl2);
+G_BEGIN_DECLS
 
-#endif // HY_RELDEP_INTERNAL_H
+HifReldep *hif_reldep_from_pool (Pool      *pool,
+                                 Id         r_id);
+Id hif_reldep_get_id            (HifReldep *reldep);
+
+G_END_DECLS

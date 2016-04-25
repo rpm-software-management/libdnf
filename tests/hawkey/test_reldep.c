@@ -20,7 +20,8 @@
 
 
 #include "libhif/hy-package.h"
-#include "libhif/hy-reldep.h"
+#include "libhif/hif-reldep.h"
+#include "libhif/hif-reldep-list.h"
 #include "libhif/hif-sack.h"
 #include "fixtures.h"
 #include "test_suites.h"
@@ -30,21 +31,19 @@ START_TEST(test_reldeplist_add)
 {
     HifSack *sack = test_globals.sack;
     HifPackage *flying = by_name_repo(sack, "fool", "updates");
-    HyReldepList reldeplist = hy_reldeplist_create(sack);
-    HyReldepList obsoletes = hif_package_get_obsoletes(flying);
+    g_autoptr(HifReldepList) reldeplist = hif_reldep_list_new (sack);
+    g_autoptr(HifReldepList) obsoletes = hif_package_get_obsoletes (flying);
 
-    const int count = hy_reldeplist_count(obsoletes);
+    const int count = hif_reldep_list_count (obsoletes);
     fail_unless(count == 2);
     for (int i = 0; i < count; ++i) {
-        HyReldep reldep = hy_reldeplist_get_clone(obsoletes, i);
-        hy_reldeplist_add(reldeplist, reldep);
-        hy_reldep_free(reldep);
+        HifReldep *reldep = hif_reldep_list_index (obsoletes, i);
+        hif_reldep_list_add (reldeplist, reldep);
+        g_object_unref (reldep);
     }
 
-    g_object_unref(flying);
-    fail_unless(hy_reldeplist_count(reldeplist) == 2);
-    hy_reldeplist_free(obsoletes);
-    hy_reldeplist_free(reldeplist);
+    g_object_unref (flying);
+    fail_unless(hif_reldep_list_count (reldeplist) == 2);
 }
 END_TEST
 

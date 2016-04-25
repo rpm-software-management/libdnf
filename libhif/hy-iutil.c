@@ -50,7 +50,6 @@
 #include "hy-package-private.h"
 #include "hy-packageset-private.h"
 #include "hy-query.h"
-#include "hy-reldep.h"
 #include "hif-sack-private.h"
 
 #define BUF_BLOCK 4096
@@ -707,20 +706,20 @@ parse_reldep_str(const char *reldep_str, char **name, char **evr,
     return ret;
 }
 
-HyReldep
+HifReldep *
 reldep_from_str(HifSack *sack, const char *reldep_str)
 {
     char *name, *evr = NULL;
     int cmp_type = 0;
     if (parse_reldep_str(reldep_str, &name, &evr, &cmp_type) == -1)
         return NULL;
-    HyReldep reldep = hy_reldep_create(sack, name, cmp_type, evr);
+    HifReldep *reldep = hif_reldep_new (sack, name, cmp_type, evr);
     g_free(name);
     g_free(evr);
     return reldep;
 }
 
-HyReldepList
+HifReldepList *
 reldeplist_from_str(HifSack *sack, const char *reldep_str)
 {
     int cmp_type;
@@ -729,15 +728,15 @@ reldeplist_from_str(HifSack *sack, const char *reldep_str)
     Dataiterator di;
     Pool *pool = hif_sack_get_pool(sack);
 
-    HyReldepList reldeplist = hy_reldeplist_create(sack);
+    HifReldepList *reldeplist = hif_reldep_list_new (sack);
     parse_reldep_str(reldep_str, &name_glob, &evr, &cmp_type);
 
     dataiterator_init(&di, pool, 0, 0, 0, name_glob, SEARCH_STRING | SEARCH_GLOB);
     while (dataiterator_step(&di)) {
-        HyReldep reldep = hy_reldep_create(sack, di.kv.str, cmp_type, evr);
+        HifReldep *reldep = hif_reldep_new (sack, di.kv.str, cmp_type, evr);
         if (reldep)
-            hy_reldeplist_add(reldeplist, reldep);
-        hy_reldep_free(reldep);
+            hif_reldep_list_add (reldeplist, reldep);
+        g_object_unref (reldep);
     }
 
     dataiterator_free(&di);
