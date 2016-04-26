@@ -30,8 +30,8 @@ SET (LIBHIF_SRCS
     hif-transaction.c
     hif-utils.c)
 
-CONFIGURE_FILE("hif-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/hif-version.h)
-CONFIGURE_FILE("libhif.pc.in" "${CMAKE_CURRENT_SOURCE_DIR}/libhif.pc" @ONLY)
+configure_file ("hif-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/hif-version.h)
+configure_file ("libhif.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libhif.pc @ONLY)
 
 ADD_LIBRARY(libhif SHARED ${LIBHIF_SRCS})
 TARGET_LINK_LIBRARIES(libhif
@@ -100,11 +100,6 @@ SET(LIBHIF_headers
     hif-utils.h
     hif-version.h
     libhif.h)
-
-IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
-  SET (LIB_SUFFIX "64")
-ENDIF (CMAKE_SIZEOF_VOID_P MATCHES "8")
-SET (LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
 
 # gir generation
 # taken from https://github.com/ufo-kit/libuca/blob/master/src/CMakeLists.txt
