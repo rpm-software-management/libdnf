@@ -82,6 +82,7 @@ SET(LIBHIF_headers
     hif-advisorypkg.h
     hif-advisoryref.h
     hif-context.h
+    hif-enums.h
     hif-db.h
     hif-goal.h
     hif-keyring.h
