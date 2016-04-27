@@ -1627,7 +1627,7 @@ hif_context_remove(HifContext *context, const gchar *name, GError **error)
             return FALSE;
     }
 
-    /* find a newest remote package to install */
+    /* find installed packages to remove */
     query = hy_query_create(priv->sack);
     hy_query_filter_latest_per_arch(query, TRUE);
     hy_query_filter(query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
