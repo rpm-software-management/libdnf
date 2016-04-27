@@ -173,8 +173,8 @@ if (GOBJECT_INTROSPECTION_FOUND)
     endif()
 endif()
 
-INSTALL(FILES "libhif.pc"
-        DESTINATION "${LIB_INSTALL_DIR}/pkgconfig")
+install (FILES ${CMAKE_CURRENT_BINARY_DIR}/libhif.pc
+         DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
 INSTALL(FILES ${LIBHIF_headers} DESTINATION include/libhif)
 INSTALL(FILES ${LIBHAWKEY_headers} DESTINATION include/libhif)
 INSTALL(TARGETS libhif LIBRARY DESTINATION ${LIB_INSTALL_DIR})
