@@ -40,7 +40,7 @@ class AdvisoriesTest(base.TestCase):
 
     def test_noadvisory(self):
         pkg = hawkey.Query(self.sack).filter(name='mystery-devel')[0]
-        advisories = pkg.get_advisories(hawkey.GT | hawkey.EQ)
+        advisories = pkg.get_advisories(hawkey.GT)
         self.assertEqual(len(advisories), 0)
 
 class PackageTest(base.TestCase):

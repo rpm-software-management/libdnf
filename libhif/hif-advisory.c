@@ -50,6 +50,8 @@ typedef struct
 G_DEFINE_TYPE_WITH_PRIVATE(HifAdvisory, hif_advisory, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) (hif_advisory_get_instance_private (o))
 
+static HifAdvisoryKind str2hif_advisory_kind(const char *str);
+
 /**
  * hif_advisory_init:
  **/
@@ -163,15 +165,7 @@ hif_advisory_get_kind(HifAdvisory *advisory)
     HifAdvisoryPrivate *priv = GET_PRIVATE(advisory);
     const char *type;
     type = pool_lookup_str(priv->pool, priv->a_id, SOLVABLE_PATCHCATEGORY);
-    if (type == NULL)
-        return HIF_ADVISORY_KIND_UNKNOWN;
-    if (!strcmp (type, "bugfix"))
-        return HIF_ADVISORY_KIND_BUGFIX;
-    if (!strcmp (type, "enhancement"))
-        return HIF_ADVISORY_KIND_ENHANCEMENT;
-    if (!strcmp (type, "security"))
-        return HIF_ADVISORY_KIND_SECURITY;
-    return HIF_ADVISORY_KIND_UNKNOWN;
+    return str2hif_advisory_kind(type);
 }
 
 /**
@@ -288,4 +282,121 @@ hif_advisory_get_references(HifAdvisory *advisory)
     dataiterator_free(&di);
 
     return reflist;
+}
+
+/**
+ * str2hif_advisory_kind:
+ * @str: a string
+ *
+ * Returns: a #HifAdvisoryKind, e.g. %HIF_ADVISORY_KIND_BUGFIX
+ *
+ * Since: 0.7.0
+ */
+static HifAdvisoryKind
+str2hif_advisory_kind(const char *str)
+{
+    if (str == NULL)
+        return HIF_ADVISORY_KIND_UNKNOWN;
+    if (!strcmp (str, "bugfix"))
+        return HIF_ADVISORY_KIND_BUGFIX;
+    if (!strcmp (str, "enhancement"))
+        return HIF_ADVISORY_KIND_ENHANCEMENT;
+    if (!strcmp (str, "security"))
+        return HIF_ADVISORY_KIND_SECURITY;
+    return HIF_ADVISORY_KIND_UNKNOWN;
+}
+
+/**
+ * hif_advisory_match_id:
+ * @advisory: a #HifAdvisory instance.
+ * @s: string
+ *
+ * Matches #HifAdvisory id against string
+ *
+ * Returns: %TRUE if they are the same
+ *
+ * Since: 0.7.0
+ */
+gboolean
+hif_advisory_match_id(HifAdvisory *advisory, const char *s)
+{
+    const char* id = hif_advisory_get_id(advisory);
+    return !g_strcmp0(id, s);
+}
+
+/**
+ * hif_advisory_match_kind:
+ * @advisory: a #HifAdvisory instance.
+ * @s: string
+ *
+ * Matches #HifAdvisory kind against string
+ *
+ * Returns: %TRUE if they are the same
+ *
+ * Since: 0.7.0
+ */
+gboolean
+hif_advisory_match_kind(HifAdvisory *advisory, const char *s)
+{
+    HifAdvisoryKind kind = hif_advisory_get_kind(advisory);
+    HifAdvisoryKind skind = str2hif_advisory_kind(s);
+    return kind == skind;
+}
+
+/**
+ * hif_advisory_match_cve:
+ * @advisory: a #HifAdvisory instance.
+ * @s: string
+ *
+ * Matches if #HifAdvisoryRef has a #HifAdvisoryRef which is CVE
+ * and matches against string
+ *
+ * Returns: %TRUE if they are the same
+ *
+ * Since: 0.7.0
+ */
+gboolean
+hif_advisory_match_cve(HifAdvisory *advisory, const char *s)
+{
+    g_autoptr(GPtrArray) refs = hif_advisory_get_references(advisory);
+
+    for (unsigned int r = 0; r < refs->len; ++r) {
+        HifAdvisoryRef *ref = g_ptr_array_index(refs, r);
+        if (hif_advisoryref_get_kind(ref) == HIF_REFERENCE_KIND_CVE) {
+            const char *rid = hif_advisoryref_get_id(ref);
+            if (!g_strcmp0(rid, s)) {
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+
+/**
+ * hif_advisory_match_bug:
+ * @advisory: a #HifAdvisory instance.
+ * @s: string
+ *
+ * Matches if #HifAdvisoryRef has a #HifAdvisoryRef which is bug
+ * and matches against string
+ *
+ * Returns: %TRUE if they are the same
+ *
+ * Since: 0.7.0
+ */
+gboolean
+hif_advisory_match_bug(HifAdvisory *advisory, const char *s)
+{
+    g_autoptr(GPtrArray) refs = hif_advisory_get_references(advisory);
+
+    for (unsigned int r = 0; r < refs->len; ++r) {
+        HifAdvisoryRef *ref = g_ptr_array_index(refs, r);
+        if (hif_advisoryref_get_kind(ref) == HIF_REFERENCE_KIND_BUGZILLA) {
+            const char *rid = hif_advisoryref_get_id(ref);
+            if (!g_strcmp0(rid, s)) {
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
 }

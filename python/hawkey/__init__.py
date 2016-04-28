@@ -46,6 +46,11 @@ __all__ = [
 
 _QUERY_KEYNAME_MAP = {
     'pkg': _hawkey.PKG,
+    'advisory': _hawkey.PKG_ADVISORY,
+    'advisory_bug': _hawkey.PKG_ADVISORY_BUG,
+    'advisory_cve': _hawkey.PKG_ADVISORY_CVE,
+    'advisory_severity': _hawkey.PKG_ADVISORY_SEVERITY,
+    'advisory_type': _hawkey.PKG_ADVISORY_TYPE,
     'arch': _hawkey.PKG_ARCH,
     'conflicts': _hawkey.PKG_CONFLICTS,
     'description': _hawkey.PKG_DESCRIPTION,
