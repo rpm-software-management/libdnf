@@ -35,7 +35,7 @@ configure_file ("libhif.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libhif.pc @ONLY)
 
 ADD_LIBRARY(libhif SHARED ${LIBHIF_SRCS})
 TARGET_LINK_LIBRARIES(libhif
-                      ${REPO_LIBRARY}
+                      ${REPO_LIBRARIES}
                       ${GLIB_LIBRARIES}
                       ${GLIB_GOBJECT_LIBRARIES}
                       ${GLIB_GIO_LIBRARIES}
@@ -56,7 +56,7 @@ TARGET_LINK_LIBRARIES(hth libhif
                       ${GLIB_GIO_UNIX_LIBRARIES}
                       ${LIBSOLV_LIBRARY}
                       ${LIBSOLV_EXT_LIBRARY}
-                      ${REPO_LIBRARY}
+                      ${REPO_LIBRARIES}
                       ${RPMDB_LIBRARY})
 
 SET(LIBHAWKEY_headers

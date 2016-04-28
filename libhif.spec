@@ -20,7 +20,7 @@ Source0:        https://github.com/rpm-software-management/%{name}/archive/%{nam
 BuildRequires:  cmake
 BuildRequires:  gcc
 BuildRequires:  libsolv-devel >= %{libsolv_version}
-BuildRequires:  librepo-devel
+BuildRequires:  pkgconfig(librepo)
 BuildRequires:  pkgconfig(check)
 %if %{with valgrind}
 BuildRequires:  valgrind
