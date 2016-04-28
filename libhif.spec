@@ -25,10 +25,10 @@ BuildRequires:  pkgconfig(check)
 %if %{with valgrind}
 BuildRequires:  valgrind
 %endif
-BuildRequires:  glib2-devel >= 2.16.1
+BuildRequires:  pkgconfig(gio-unix-2.0) >= 2.44.0
 BuildRequires:  libtool
-BuildRequires:  gtk-doc
-BuildRequires:  gobject-introspection-devel
+BuildRequires:  pkgconfig(gtk-doc)
+BuildRequires:  pkgconfig(gobject-introspection-1.0)
 BuildRequires:  rpm-devel >= 4.11.0
 
 Requires:       libsolv%{?_isa} >= %{libsolv_version}
