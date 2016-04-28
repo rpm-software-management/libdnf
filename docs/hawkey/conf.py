@@ -57,10 +57,12 @@ def version_readout():
     with open(fn) as f:
         lines = f.readlines()
 
-    pat = re.compile('\d+.\d+.\d+')
-    version = pat.findall(lines[0])[0]
+    pat = re.compile("\d+")
+    major = pat.findall(lines[0])[0]
+    minor = pat.findall(lines[1])[0]
+    micro = pat.findall(lines[2])[0]
 
-    return version
+    return "{}.{}.{}".format(major, minor, micro)
 
 version = version_readout()
 # The full version, including alpha/beta/rc tags.

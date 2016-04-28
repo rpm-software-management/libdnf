@@ -6,7 +6,8 @@ CMAKE_POLICY (SET CMP0005 OLD)
 # GLib.  There may be a better way to do this...
 CMAKE_POLICY(SET CMP0003 NEW)
 
-INCLUDE (${CMAKE_SOURCE_DIR}/VERSION.cmake)
+include (VERSION.cmake)
+message ("Building libhif version: ${HIF_VERSION}")
 
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wcast-align -Wno-uninitialized -Wmissing-declarations -Wredundant-decls -Wcast-align -Wwrite-strings -Wreturn-type -Wformat-nonliteral -Wmissing-format-attribute -Wsign-compare -Wtype-limits -Wuninitialized -Waggregate-return -Wshadow -Winline -Wall -Werror=implicit-function-declaration -Wl,--as-needed")
 set (CMAKE_C_FLAGS_DEBUG	"${CMAKE_C_FLAGS} -ggdb -O0")
