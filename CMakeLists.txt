@@ -19,12 +19,12 @@ ADD_DEFINITIONS(-DG_LOG_DOMAIN=\\"libhif\\")
 INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR})
 
 # hawkey dependencies
-FIND_PACKAGE (PkgConfig)
+find_package (PkgConfig REQUIRED)
 SET (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 PKG_CHECK_MODULES(GLIB gio-unix-2.0>=2.44.0 REQUIRED)
 FIND_LIBRARY (RPMDB_LIBRARY NAMES rpmdb)
 find_package (LibSolv REQUIRED COMPONENTS ext)
-FIND_LIBRARY (CHECK_LIBRARY NAMES check)
+pkg_check_modules (CHECK REQUIRED check)
 FIND_PROGRAM (VALGRIND_PROGRAM NAMES valgrind PATH /usr/bin /usr/local/bin)
 
 # TODO handle yumdb / dnfdb for libhif

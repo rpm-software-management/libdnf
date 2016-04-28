@@ -21,7 +21,7 @@ BuildRequires:  cmake
 BuildRequires:  gcc
 BuildRequires:  libsolv-devel >= %{libsolv_version}
 BuildRequires:  librepo-devel
-BuildRequires:  check-devel
+BuildRequires:  pkgconfig(check)
 %if %{with valgrind}
 BuildRequires:  valgrind
 %endif

@@ -25,7 +25,7 @@ SET_TARGET_PROPERTIES(testshared PROPERTIES COMPILE_FLAGS -fPIC)
 ADD_EXECUTABLE(test_hawkey_main ${hawkeytest_SRCS})
 TARGET_LINK_LIBRARIES(test_hawkey_main
     libhif
-    ${CHECK_LIBRARY}
+    ${CHECK_LIBRARIES}
     ${SOLV_LIBRARY}
     ${SOLVEXT_LIBRARY}
     ${RPMDB_LIBRARY})

@@ -40,7 +40,6 @@ TARGET_LINK_LIBRARIES(libhif
                       ${GLIB_GOBJECT_LIBRARIES}
                       ${GLIB_GIO_LIBRARIES}
                       ${GLIB_GIO_UNIX_LIBRARIES}
-                      ${CHECK_LIBRARY}
                       ${LIBSOLV_LIBRARY}
                       ${LIBSOLV_EXT_LIBRARY}
                       ${RPMDB_LIBRARY})

@@ -6,7 +6,6 @@ TARGET_LINK_LIBRARIES(test_libhif_main
                       ${GLIB_GOBJECT_LIBRARIES}
                       ${GLIB_GIO_LIBRARIES}
                       ${GLIB_GIO_UNIX_LIBRARIES}
-                      ${CHECK_LIBRARY}
                       ${SOLV_LIBRARY}
                       ${SOLVEXT_LIBRARY}
                       ${RPMDB_LIBRARY})
