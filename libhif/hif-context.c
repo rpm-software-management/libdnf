@@ -151,6 +151,35 @@ hif_context_init(HifContext *context)
     priv->cache_age = 60 * 60 * 24 * 7; /* 1 week */
     priv->override_macros = g_hash_table_new_full(g_str_hash, g_str_equal,
                                                   g_free, g_free);
+
+    (void) hif_context_get_base_arch(context);
+}
+
+/**
+ * hif_context_globals_init:
+ * @error: Error
+ *
+ * Sadly RPM has process global data.  You should invoke
+ * this function early on in process startup.  If not,
+ * it will be invoked for you.
+ */
+gboolean
+hif_context_globals_init (GError **error)
+{
+    static gsize initialized = 0;
+    gboolean ret = TRUE;
+
+    if (g_once_init_enter (&initialized)) {
+        if (rpmReadConfigFiles(NULL, NULL) != 0) {
+            g_set_error_literal(error,
+                                HIF_ERROR,
+                                HIF_ERROR_INTERNAL_ERROR,
+                                "failed to read rpm config files");
+            ret = FALSE;
+        }
+        g_once_init_leave (&initialized, 1);
+    }
+    return ret;
 }
 
 /**
@@ -1370,13 +1399,8 @@ hif_context_setup(HifContext *context,
     if (cancellable != NULL)
         hif_state_set_cancellable(priv->state, cancellable);
 
-    if (rpmReadConfigFiles(NULL, NULL) != 0) {
-        g_set_error_literal(error,
-                            HIF_ERROR,
-                            HIF_ERROR_INTERNAL_ERROR,
-                            "failed to read rpm config files");
+    if (!hif_context_globals_init (error))
         return FALSE;
-    }
 
     buf = g_string_new("");
     g_hash_table_iter_init(&hashiter, priv->override_macros);
