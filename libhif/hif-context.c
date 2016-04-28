@@ -197,6 +197,9 @@ hif_context_init(HifContext *context)
  * Sadly RPM has process global data.  You should invoke
  * this function early on in process startup.  If not,
  * it will be invoked for you.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ * Since: 0.7.0
  */
 gboolean
 hif_context_globals_init (GError **error)
