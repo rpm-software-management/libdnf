@@ -208,6 +208,11 @@ hif_context_globals_init (GError **error)
     gboolean ret = TRUE;
 
     if (g_once_init_enter (&initialized)) {
+
+        /* librepo's globals */
+        lr_global_init();
+
+        /* librpm's globals */
         if (rpmReadConfigFiles(NULL, NULL) != 0) {
             g_set_error_literal(error,
                                 HIF_ERROR,
@@ -215,6 +220,7 @@ hif_context_globals_init (GError **error)
                                 "failed to read rpm config files");
             ret = FALSE;
         }
+
         g_once_init_leave (&initialized, 1);
     }
     return ret;
@@ -1908,6 +1914,5 @@ hif_context_new(void)
 {
     HifContext *context;
     context = g_object_new(HIF_TYPE_CONTEXT, NULL);
-    lr_global_init();
     return HIF_CONTEXT(context);
 }
