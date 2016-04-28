@@ -29,7 +29,6 @@ TARGET_LINK_LIBRARIES(test_hawkey_main
     ${SOLV_LIBRARY}
     ${SOLVEXT_LIBRARY}
     ${EXPAT_LIBRARY}
-    ${ZLIB_LIBRARY}
     ${RPMDB_LIBRARY})
 ADD_TEST(test_hawkey_main test_hawkey_main "${CMAKE_CURRENT_SOURCE_DIR}/data/tests/hawkey/")
 IF (NOT DISABLE_VALGRIND AND VALGRIND_PROGRAM)

@@ -10,7 +10,6 @@ TARGET_LINK_LIBRARIES(test_libhif_main
                       ${SOLV_LIBRARY}
                       ${SOLVEXT_LIBRARY}
                       ${EXPAT_LIBRARY}
-                      ${ZLIB_LIBRARY}
                       ${RPMDB_LIBRARY})
 
 ADD_TEST(test_libhif_main test_libhif_main)

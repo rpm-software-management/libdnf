@@ -25,7 +25,6 @@ Packages needed for the build, or the build requires:
 * python-devel (or python3-devel for Python 3 build)
 * python-nose (or python3-nose for Python 3 build)
 * rpm-devel
-* zlib-devel
 * glib2-devel
 * gtk-doc
 * gobject-introspection-devel

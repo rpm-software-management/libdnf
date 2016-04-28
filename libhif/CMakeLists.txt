@@ -44,7 +44,6 @@ TARGET_LINK_LIBRARIES(libhif
                       ${LIBSOLV_LIBRARY}
                       ${LIBSOLV_EXT_LIBRARY}
                       ${EXPAT_LIBRARY}
-                      ${ZLIB_LIBRARY}
                       ${RPMDB_LIBRARY})
 
 SET(HIF_SO_VERSION 3)
@@ -61,7 +60,6 @@ TARGET_LINK_LIBRARIES(hth libhif
                       ${LIBSOLV_EXT_LIBRARY}
                       ${REPO_LIBRARY}
                       ${EXPAT_LIBRARY}
-                      ${ZLIB_LIBRARY}
                       ${RPMDB_LIBRARY})
 
 SET(LIBHAWKEY_headers
