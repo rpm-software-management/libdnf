@@ -66,6 +66,8 @@ typedef enum {
         HIF_CONTEXT_INVALIDATE_FLAG_LAST
 } HifContextInvalidateFlags;
 
+gboolean         hif_context_globals_init               (GError **error);
+
 HifContext      *hif_context_new                        (void);
 
 /* getters */
