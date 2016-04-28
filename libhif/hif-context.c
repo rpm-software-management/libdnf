@@ -46,6 +46,37 @@
 #include "hy-query.h"
 #include "hy-subject.h"
 
+#define MAX_NATIVE_ARCHES    12
+
+/* data taken from https://github.com/rpm-software-management/dnf/blob/master/dnf/arch.py */
+static const struct {
+    const gchar    *base;
+    const gchar    *native[MAX_NATIVE_ARCHES];
+} arch_map[] =  {
+    { "aarch64",    { "aarch64", NULL } },
+    { "alpha",      { "alpha", "alphaev4", "alphaev45", "alphaev5",
+                      "alphaev56", "alphaev6", "alphaev67",
+                      "alphaev68", "alphaev7", "alphapca56", NULL } },
+    { "arm",        { "armv5tejl", "armv5tel", "armv6l", "armv7l", NULL } },
+    { "armhfp",     { "armv7hl", "armv7hnl", NULL } },
+    { "i386",       { "i386", "athlon", "geode", "i386",
+                      "i486", "i586", "i686", NULL } },
+    { "ia64",       { "ia64", NULL } },
+    { "noarch",     { "noarch", NULL } },
+    { "ppc",        { "ppc", NULL } },
+    { "ppc64",      { "ppc64", "ppc64iseries", "ppc64p7",
+                      "ppc64pseries", NULL } },
+    { "ppc64le",    { "ppc64le", NULL } },
+    { "s390",       { "s390", NULL } },
+    { "s390x",      { "s390x", NULL } },
+    { "sh3",        { "sh3", NULL } },
+    { "sh4",        { "sh4", "sh4a", NULL } },
+    { "sparc",      { "sparc", "sparc64", "sparc64v", "sparcv8",
+                      "sparcv9", "sparcv9v", NULL } },
+    { "x86_64",     { "x86_64", "amd64", "ia32e", NULL } },
+    { NULL,         { NULL } }
+};
+
 typedef struct
 {
     gchar            *repo_dir;
@@ -152,7 +183,11 @@ hif_context_init(HifContext *context)
     priv->override_macros = g_hash_table_new_full(g_str_hash, g_str_equal,
                                                   g_free, g_free);
 
-    (void) hif_context_get_base_arch(context);
+    /* Initialize some state that used to happen in
+     * hif_context_setup(), because callers like rpm-ostree want
+     * access to the basearch, but before installroot.
+     */
+    (void) hif_context_globals_init(NULL);
 }
 
 /**
@@ -240,6 +275,28 @@ const gchar *
 hif_context_get_base_arch(HifContext *context)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
+    int i, j;
+    const char *value;
+
+    if (priv->base_arch)
+        return priv->base_arch;
+
+    /* get info from RPM */
+    rpmGetOsInfo(&value, NULL);
+    priv->os_info = g_strdup(value);
+    rpmGetArchInfo(&value, NULL);
+    priv->arch_info = g_strdup(value);
+
+    /* find the base architecture */
+    for (i = 0; arch_map[i].base != NULL && priv->base_arch == NULL; i++) {
+        for (j = 0; arch_map[i].native[j] != NULL; j++) {
+            if (g_strcmp0(arch_map[i].native[j], value) == 0) {
+                priv->base_arch = g_strdup(arch_map[i].base);
+                break;
+            }
+        }
+    }
+
     return priv->base_arch;
 }
 
@@ -1246,8 +1303,6 @@ hif_context_set_http_proxy(HifContext *context, const gchar *proxyurl)
     priv->http_proxy = g_strdup(proxyurl);
 }
 
-#define MAX_NATIVE_ARCHES    12
-
 /**
  * hif_context_setup_enrollments:
  * @context: a #HifContext instance.
@@ -1334,7 +1389,6 @@ hif_context_setup(HifContext *context,
            GError **error)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
-    const gchar *value;
     guint i;
     guint j;
     GHashTableIter hashiter;
@@ -1343,35 +1397,6 @@ hif_context_setup(HifContext *context,
     g_autoptr(GString) buf = NULL;
     g_autofree char *rpmdb_path = NULL;
     g_autoptr(GFile) file_rpmdb = NULL;
-
-    /* data taken from https://github.com/rpm-software-management/dnf/blob/master/dnf/arch.py */
-    const struct {
-        const gchar    *base;
-        const gchar    *native[MAX_NATIVE_ARCHES];
-    } arch_map[] =  {
-        { "aarch64",    { "aarch64", NULL } },
-        { "alpha",      { "alpha", "alphaev4", "alphaev45", "alphaev5",
-                          "alphaev56", "alphaev6", "alphaev67",
-                          "alphaev68", "alphaev7", "alphapca56", NULL } },
-        { "arm",        { "armv5tejl", "armv5tel", "armv6l", "armv7l", NULL } },
-        { "armhfp",     { "armv7hl", "armv7hnl", NULL } },
-        { "i386",       { "i386", "athlon", "geode", "i386",
-                          "i486", "i586", "i686", NULL } },
-        { "ia64",       { "ia64", NULL } },
-        { "noarch",     { "noarch", NULL } },
-        { "ppc",        { "ppc", NULL } },
-        { "ppc64",      { "ppc64", "ppc64iseries", "ppc64p7",
-                          "ppc64pseries", NULL } },
-        { "ppc64le",    { "ppc64le", NULL } },
-        { "s390",       { "s390", NULL } },
-        { "s390x",      { "s390x", NULL } },
-        { "sh3",        { "sh3", NULL } },
-        { "sh4",        { "sh4", "sh4a", NULL } },
-        { "sparc",      { "sparc", "sparc64", "sparc64v", "sparcv8",
-                          "sparcv9", "sparcv9v", NULL } },
-        { "x86_64",     { "x86_64", "amd64", "ia32e", NULL } },
-        { NULL,         { NULL } }
-    };
 
     /* check essential things are set */
     if (priv->solv_dir == NULL) {
@@ -1426,21 +1451,7 @@ hif_context_setup(HifContext *context,
         free(rpmExpand(buf->str, NULL));
     }
 
-    /* get info from RPM */
-    rpmGetOsInfo(&value, NULL);
-    priv->os_info = g_strdup(value);
-    rpmGetArchInfo(&value, NULL);
-    priv->arch_info = g_strdup(value);
-
-    /* find the base architecture */
-    for (i = 0; arch_map[i].base != NULL && priv->base_arch == NULL; i++) {
-        for (j = 0; arch_map[i].native[j] != NULL; j++) {
-            if (g_strcmp0(arch_map[i].native[j], value) == 0) {
-                priv->base_arch = g_strdup(arch_map[i].base);
-                break;
-            }
-        }
-    }
+    (void) hif_context_get_base_arch(context);
 
     /* find all the native archs */
     priv->native_arches = g_new0(gchar *, MAX_NATIVE_ARCHES);
