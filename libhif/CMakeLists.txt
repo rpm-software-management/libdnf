@@ -41,8 +41,8 @@ TARGET_LINK_LIBRARIES(libhif
                       ${GLIB_GIO_LIBRARIES}
                       ${GLIB_GIO_UNIX_LIBRARIES}
                       ${CHECK_LIBRARY}
-                      ${SOLV_LIBRARY}
-                      ${SOLVEXT_LIBRARY}
+                      ${LIBSOLV_LIBRARY}
+                      ${LIBSOLV_EXT_LIBRARY}
                       ${EXPAT_LIBRARY}
                       ${ZLIB_LIBRARY}
                       ${RPMDB_LIBRARY})
@@ -57,8 +57,8 @@ TARGET_LINK_LIBRARIES(hth libhif
                       ${GLIB_GOBJECT_LIBRARIES}
                       ${GLIB_GIO_LIBRARIES}
                       ${GLIB_GIO_UNIX_LIBRARIES}
-                      ${SOLV_LIBRARY}
-                      ${SOLVEXT_LIBRARY}
+                      ${LIBSOLV_LIBRARY}
+                      ${LIBSOLV_EXT_LIBRARY}
                       ${REPO_LIBRARY}
                       ${EXPAT_LIBRARY}
                       ${ZLIB_LIBRARY}

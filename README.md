@@ -42,16 +42,6 @@ Building the documentation, from the build/ directory::
 
     make doc
 
-Building from a libsolv checkout
-================================
-
-Libsolv is checked out at ``/home/<user>/libsolv``, build dir is at ``/home/<user>/libsolv/build``::
-
-    mkdir build
-    cd build/
-    cmake -D LIBSOLV_PATH="/home/<user>/libsolv/" ..
-    make
-
 Tests
 =====
 
