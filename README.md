@@ -17,7 +17,6 @@ Packages needed for the build, or the build requires:
 * make
 * check-devel
 * cmake
-* expat-devel
 * gcc
 * libsolv-devel
 * libsolv-tools
