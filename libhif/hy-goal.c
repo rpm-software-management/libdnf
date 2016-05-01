@@ -301,6 +301,8 @@ list_results(HyGoal goal, Id type_filter1, Id type_filter2, GError **error)
     Queue transpkgs;
     Transaction *trans = goal->trans;
     GPtrArray *plist;
+    HifSack *sack = goal->sack;
+    Pool *pool = hif_sack_get_pool(sack);
 
     /* no transaction */
     if (trans == NULL) {
@@ -324,7 +326,16 @@ list_results(HyGoal goal, Id type_filter1, Id type_filter2, GError **error)
 
     for (int i = 0; i < trans->steps.count; ++i) {
         Id p = trans->steps.elements[i];
+	Solvable *s = pool_id2solvable(pool, p);
+	const char *name = pool_id2str(pool, s->name);
         Id type;
+
+	/* Skip "virtual" items like comps groups here.  They end up
+	 * in the goal solely for dependency generation, but we hide
+	 * them from the rest of libhif.
+	 */
+	if (g_str_has_prefix (name, "group:"))
+	  continue;
 
         switch (type_filter1) {
         case SOLVER_TRANSACTION_OBSOLETED:

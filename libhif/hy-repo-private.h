@@ -47,6 +47,7 @@ struct _HyRepo {
     char *filelists_fn;
     char *presto_fn;
     char *updateinfo_fn;
+    char *group_fn;
     enum _hy_repo_state state_main;
     enum _hy_repo_state state_filelists;
     enum _hy_repo_state state_presto;
