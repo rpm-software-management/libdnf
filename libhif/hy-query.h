@@ -34,6 +34,8 @@ enum _hy_query_flags {
     HY_IGNORE_EXCLUDES        = 1 << 0
 };
 
+#define hy_autoquery __attribute__ ((cleanup(hy_query_autofree)))
+
 void hy_query_apply(HyQuery q);
 HyQuery hy_query_create(HifSack *sack);
 HyQuery hy_query_create_flags(HifSack *sack, int flags);
@@ -94,6 +96,15 @@ HifPackageSet *hy_query_run_set(HyQuery q);
 void hy_query_union(HyQuery q, HyQuery other);
 void hy_query_intersection(HyQuery q, HyQuery other);
 void hy_query_difference(HyQuery q, HyQuery other);
+
+static inline void
+hy_query_autofree (void *v)
+{
+  HyQuery *pp = (HyQuery*)v;
+  HyQuery query = *pp;
+  if (query)
+    hy_query_free (query);
+}
 
 G_END_DECLS
 
