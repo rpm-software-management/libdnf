@@ -1102,6 +1102,8 @@ hif_sack_add_cmdline_package(HifSack *sack, const char *fn)
         return NULL;
     }
     p = repo_add_rpm(repo, fn, REPO_REUSE_REPODATA|REPO_NO_INTERNALIZE);
+    HyRepo hrepo = repo->appdata;
+    hrepo->needs_internalizing = 1;
     priv->provides_ready = 0;    /* triggers internalizing later */
     return hif_package_new(sack, p);
 }

@@ -135,6 +135,29 @@ START_TEST(test_repo_written)
 }
 END_TEST
 
+START_TEST(test_add_cmdline_package)
+{
+    HifSack *sack = hif_sack_new();
+    hif_sack_set_cachedir(sack, test_globals.tmpdir);
+
+    char *path_mystery = solv_dupjoin(TESTDATADIR, "/hawkey/yum/mystery-devel-19.67-1.noarch.rpm", NULL);
+    HifPackage *pkg_mystery = hif_sack_add_cmdline_package(sack, path_mystery);
+    char *location_mystery = hif_package_get_location(pkg_mystery);
+    ck_assert_str_eq(path_mystery, location_mystery);
+
+    char *path_tour = solv_dupjoin(TESTDATADIR, "/hawkey/yum/tour-4-6.noarch.rpm", NULL);
+    HifPackage *pkg_tour = hif_sack_add_cmdline_package(sack, path_tour);
+    char *location_tour = hif_package_get_location(pkg_tour);
+    ck_assert_str_eq(path_tour, location_tour);
+
+    g_free(path_mystery);
+    g_free(location_mystery);
+    g_free(path_tour);
+    g_free(location_tour);
+    g_object_unref(sack);
+}
+END_TEST
+
 START_TEST(test_repo_load)
 {
     fail_unless(hif_sack_count(test_globals.sack) ==
@@ -288,6 +311,7 @@ sack_suite(void)
     tcase_add_test(tc, test_list_arches);
     tcase_add_test(tc, test_load_repo_err);
     tcase_add_test(tc, test_repo_written);
+    tcase_add_test(tc, test_add_cmdline_package);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Repos");
