@@ -391,6 +391,7 @@ char *
 hif_package_get_sourcerpm(HifPackage *pkg)
 {
     Solvable *s = get_solvable(pkg);
+    repo_internalize_trigger(s->repo);
     return g_strdup(solvable_lookup_sourcepkg(s));
 }
 
