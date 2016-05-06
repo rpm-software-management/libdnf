@@ -133,7 +133,7 @@ if (GOBJECT_INTROSPECTION_FOUND)
         add_custom_command(OUTPUT ${GIR_XML}
             COMMAND ${GOBJECT_INTROSPECTION_1.0_G_IR_SCANNER}
                     --namespace=Hif
-                    --nsversion=${HIF_SO_VERSION}
+                    --nsversion=${HIF_SO_VERSION}.0
                     --library-path=${CMAKE_CURRENT_BINARY_DIR}
                     --library=hif
                     --no-libtool
