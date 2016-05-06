@@ -306,9 +306,6 @@ class Query(_hawkey.Query):
     def __getitem__(self, idx):
         return self.run()[idx]
 
-    def __len__(self):
-        return len(self.run())
-
     def count(self):
         return len(self)
 
@@ -343,6 +340,17 @@ class Query(_hawkey.Query):
         raise NotImplementedError(
             "hawkey.Query.provides is not implemented yet")
 
+    def difference(self, other):
+        new_query = type(self)(query=self)
+        return super(Query, new_query).difference(other)
+
+    def intersection(self, other):
+        new_query = type(self)(query=self)
+        return super(Query, new_query).intersection(other)
+
+    def union(self, other):
+        new_query = type(self)(query=self)
+        return super(Query, new_query).union(other)
 
 class Selector(_hawkey.Selector):
 

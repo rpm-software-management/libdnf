@@ -21,6 +21,7 @@
 #include <Python.h>
 #include <solv/util.h>
 
+#include "hy-package-private.h"
 #include "hy-packageset-private.h"
 #include "hy-query-private.h"
 #include "hif-reldep.h"
@@ -319,6 +320,67 @@ apply(PyObject *self, PyObject *unused)
     return self;
 }
 
+static PyObject *
+q_union(PyObject *self, PyObject *other)
+{
+    HyQuery self_q = ((_QueryObject *) self)->query;
+    HyQuery other_q = ((_QueryObject *) other)->query;
+    hy_query_union(self_q, other_q);
+    Py_INCREF(self);
+    return self;
+}
+
+static PyObject *
+q_intersection(PyObject *self, PyObject *other)
+{
+    HyQuery self_q = ((_QueryObject *) self)->query;
+    HyQuery other_q = ((_QueryObject *) other)->query;
+    hy_query_intersection(self_q, other_q);
+    Py_INCREF(self);
+    return self;
+}
+
+static PyObject *
+q_difference(PyObject *self, PyObject *other)
+{
+    HyQuery self_q = ((_QueryObject *) self)->query;
+    HyQuery other_q = ((_QueryObject *) other)->query;
+    hy_query_difference(self_q, other_q);
+    Py_INCREF(self);
+    return self;
+}
+
+static PyObject *
+q_contains(PyObject *self, PyObject *pypkg)
+{
+    HyQuery q = ((_QueryObject *) self)->query;
+    HifPackage *pkg = packageFromPyObject(pypkg);
+
+    if (pkg) {
+        Id id = hif_package_get_id(pkg);
+        hy_query_apply(q);
+        if (MAPTST(q->result, id))
+            Py_RETURN_TRUE;
+    }
+    Py_RETURN_FALSE;
+}
+
+static PyObject *
+q_length(PyObject *self, PyObject *unused)
+{
+    HyQuery q = ((_QueryObject *) self)->query;
+    hy_query_apply(q);
+
+    unsigned char *res = q->result->map;
+    unsigned char *end = res + q->result->size;
+    int length = 0;
+
+    while (res < end)
+        length += __builtin_popcount(*res++);
+
+    return PyLong_FromLong(length);
+}
+
 static struct PyMethodDef query_methods[] = {
     {"clear", (PyCFunction)clear, METH_NOARGS,
      NULL},
@@ -327,6 +389,16 @@ static struct PyMethodDef query_methods[] = {
     {"run", (PyCFunction)run, METH_NOARGS,
      NULL},
     {"apply", (PyCFunction)apply, METH_NOARGS,
+     NULL},
+    {"union", (PyCFunction)q_union, METH_O,
+     NULL},
+    {"intersection", (PyCFunction)q_intersection, METH_O,
+     NULL},
+    {"difference", (PyCFunction)q_difference, METH_O,
+     NULL},
+    {"__contains__", (PyCFunction)q_contains, METH_O,
+     NULL},
+    {"__len__", (PyCFunction)q_length, METH_NOARGS,
      NULL},
     {NULL}                      /* sentinel */
 };
