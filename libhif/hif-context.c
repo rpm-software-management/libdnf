@@ -44,7 +44,6 @@
 #include "hif-utils.h"
 #include "hif-sack.h"
 #include "hy-query.h"
-#include "hy-subject.h"
 
 #define MAX_NATIVE_ARCHES    12
 
@@ -1594,51 +1593,48 @@ hif_context_run(HifContext *context, GCancellable *cancellable, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-hif_context_install (HifContext *context, const gchar *name, GError **error)
+hif_context_install(HifContext *context, const gchar *name, GError **error)
 {
-    HifContextPrivate *priv = GET_PRIVATE (context);
-    g_autoptr(GPtrArray) pkglist = NULL;
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    GPtrArray *pkglist;
     HifPackage *pkg;
     HyQuery query;
-    HySubject subject;
-    HyPossibilities poss;
-    HyNevra nevra;
     gboolean ret = TRUE;
+    guint i;
 
-    /* create sack and add sources */
+    /* create sack and add repos */
     if (priv->sack == NULL) {
-        hif_state_reset (priv->state);
+        hif_state_reset(priv->state);
         ret = hif_context_setup_sack(context, priv->state, error);
         if (!ret)
             return FALSE;
     }
 
-    subject = hy_subject_create(name);
-    poss = hy_subject_nevra_possibilities_real(subject, NULL, priv->sack, 0);
-    if (hy_possibilities_next_nevra(poss, &nevra) == 0) {
-        query = hy_nevra_to_query(nevra, priv->sack);
-        pkglist = hy_query_run(query);
-    } else {
-        g_set_error (error,
-                     HIF_ERROR,
-                     HIF_ERROR_PACKAGE_NOT_FOUND,
-                     "No package '%s' found", name);
-        return FALSE;
-    }
+    /* find a newest remote package to install */
+    query = hy_query_create(priv->sack);
+    hy_query_filter_latest(query, TRUE);
+    hy_query_filter_in(query, HY_PKG_ARCH, HY_EQ,
+                       (const gchar **) priv->native_arches);
+    hy_query_filter(query, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
+    hy_query_filter(query, HY_PKG_NAME, HY_EQ, name);
+    pkglist = hy_query_run(query);
 
-    if (pkglist->len > 0) {
-        pkg = pkglist->pdata[0];
-        hif_package_set_user_action(pkg, TRUE);
-        g_debug("adding %s-%s to goal", hif_package_get_name(pkg), hif_package_get_evr(pkg));
-        hy_goal_install(priv->goal, pkg);
-    } else {
+    if (pkglist->len == 0) {
         g_set_error(error,
                     HIF_ERROR,
                     HIF_ERROR_PACKAGE_NOT_FOUND,
-                    "Unable to find matching package for target '%s'", name);
+                    "No package '%s' found", name);
         return FALSE;
     }
 
+    /* add first package */
+    pkg = g_ptr_array_index (pkglist, 0);
+    hif_package_set_user_action(pkg, TRUE);
+    g_debug("adding %s-%s to goal", hif_package_get_name(pkg), hif_package_get_evr(pkg));
+    hy_goal_install(priv->goal, pkg);
+
+    g_ptr_array_unref(pkglist);
     hy_query_free(query);
     return TRUE;
 }
