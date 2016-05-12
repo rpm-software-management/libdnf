@@ -1593,18 +1593,17 @@ hif_context_run(HifContext *context, GCancellable *cancellable, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-hif_context_install(HifContext *context, const gchar *name, GError **error)
+hif_context_install (HifContext *context, const gchar *name, GError **error)
 {
-    HifContextPrivate *priv = GET_PRIVATE(context);
-    GPtrArray *pkglist;
+    HifContextPrivate *priv = GET_PRIVATE (context);
+    g_autoptr(GPtrArray) pkglist = NULL;
     HifPackage *pkg;
     HyQuery query;
     gboolean ret = TRUE;
-    guint i;
 
-    /* create sack and add repos */
+    /* create sack and add sources */
     if (priv->sack == NULL) {
-        hif_state_reset(priv->state);
+        hif_state_reset (priv->state);
         ret = hif_context_setup_sack(context, priv->state, error);
         if (!ret)
             return FALSE;
@@ -1634,7 +1633,6 @@ hif_context_install(HifContext *context, const gchar *name, GError **error)
     g_debug("adding %s-%s to goal", hif_package_get_name(pkg), hif_package_get_evr(pkg));
     hy_goal_install(priv->goal, pkg);
 
-    g_ptr_array_unref(pkglist);
     hy_query_free(query);
     return TRUE;
 }
