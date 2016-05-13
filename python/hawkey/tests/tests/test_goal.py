@@ -49,6 +49,10 @@ class GoalTest(base.TestCase):
         self.assertTrue(goal2.run(allow_uninstall=True))
         self.assertEqual(len(goal2.list_erasures()), 2)
 
+        goal3 = deepcopy(goal)
+        goal3.add_protected(hawkey.Query(self.sack).filter(name="flying"))
+        self.assertFalse(goal3.run(allow_uninstall=True))
+
     def test_list_err(self):
         goal = hawkey.Goal(self.sack)
         self.assertRaises(hawkey.ValueException, goal.list_installs)

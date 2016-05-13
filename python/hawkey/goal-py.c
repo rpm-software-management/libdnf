@@ -25,7 +25,9 @@
 #include <solv/util.h>
 
 #include "hif-types.h"
+#include "hif-goal.h"
 #include "hy-goal.h"
+#include "hy-goal-private.h"
 #include "hy-package-private.h"
 
 #include "exception-py.h"
@@ -367,6 +369,18 @@ req_length(_GoalObject *self, PyObject *unused)
 }
 
 static PyObject *
+add_protected(_GoalObject *self, PyObject *seq)
+{
+    HyGoal goal = self->goal;
+    HifPackageSet *pset = pyseq_to_packageset(seq, goal->sack);
+    if (pset == NULL)
+        return NULL;
+    hif_goal_add_protected(goal, pset);
+    g_object_unref(pset);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 run(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     int flags = 0;
@@ -589,6 +603,8 @@ deepcopy(_GoalObject *self, PyObject *args, PyObject *kwds)
 
 static struct PyMethodDef goal_methods[] = {
     {"__deepcopy__", (PyCFunction)deepcopy, METH_KEYWORDS|METH_VARARGS,
+     NULL},
+    {"add_protected", (PyCFunction)add_protected, METH_O,
      NULL},
     {"distupgrade_all",        (PyCFunction)distupgrade_all,        METH_NOARGS,        NULL},
     {"distupgrade",                (PyCFunction)distupgrade,
