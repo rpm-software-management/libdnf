@@ -19,6 +19,8 @@ ADD_DEFINITIONS(-DG_LOG_DOMAIN=\\"libhif\\")
 
 INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR})
 
+OPTION (ENABLE_SOLV_URPMREORDER "Build with support for URPM-like solution reordering?" OFF)
+
 # hawkey dependencies
 find_package (PkgConfig REQUIRED)
 SET (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
@@ -31,6 +33,10 @@ FIND_PROGRAM (VALGRIND_PROGRAM NAMES valgrind PATH /usr/bin /usr/local/bin)
 
 # TODO handle yumdb / dnfdb for libhif
 ADD_DEFINITIONS(-DBUILDOPT_USE_DNF_YUMDB=1)
+
+IF (ENABLE_SOLV_URPMREORDER)
+   ADD_DEFINITIONS(-DLIBSOLV_FLAG_URPMREORDER=1)
+ENDIF()
 
 INCLUDE_DIRECTORIES(${GLIB_INCLUDE_DIRS})
 
