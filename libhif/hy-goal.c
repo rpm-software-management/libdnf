@@ -219,6 +219,11 @@ init_solver(HyGoal goal, HifGoalActions flags)
     /* support package splits via obsoletes */
     solver_set_flag(solv, SOLVER_FLAG_YUM_OBSOLETES, 1);
 
+#if defined(LIBSOLV_FLAG_URPMREORDER)
+    /* support urpm-like solution reordering */
+    solver_set_flag(solv, SOLVER_FLAG_URPM_REORDER, 1);
+#endif
+
     return solv;
 }
 
