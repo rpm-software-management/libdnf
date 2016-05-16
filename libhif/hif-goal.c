@@ -40,9 +40,16 @@
 
 /**
  * hif_goal_depsolve:
+ * @goal: a #HyGoal.
+ * @flags: some #HifGoalActions to enable.
+ * @error: a #GError or %NULL
+ *
+ * Returns: %TRUE if depsolve is successful.
+ *
+ * Since: 0.7.0
  */
 gboolean
-hif_goal_depsolve(HyGoal goal, GError **error)
+hif_goal_depsolve(HyGoal goal, HifGoalActions flags, GError **error)
 {
     gchar *tmp;
     gint cnt;
@@ -50,7 +57,7 @@ hif_goal_depsolve(HyGoal goal, GError **error)
     gint rc;
     g_autoptr(GString) string = NULL;
 
-    rc = hy_goal_run_flags(goal, HIF_ALLOW_UNINSTALL);
+    rc = hy_goal_run_flags(goal, flags);
     if (rc) {
         string = g_string_new("Could not depsolve transaction; ");
         cnt = hy_goal_count_problems(goal);

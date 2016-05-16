@@ -28,7 +28,8 @@
 #include "hy-package.h"
 
 gboolean         hif_goal_depsolve                      (HyGoal          goal,
-                                                         GError         **error);
+                                                         HifGoalActions  flags,
+                                                         GError          **error);
 GPtrArray       *hif_goal_get_packages                  (HyGoal          goal,
                                                          ...);
 

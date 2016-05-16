@@ -1069,7 +1069,7 @@ hif_transaction_depsolve(HifTransaction *transaction,
     g_autoptr(GPtrArray) packages = NULL;
 
     /* depsolve */
-    if (!hif_goal_depsolve(goal, error))
+    if (!hif_goal_depsolve(goal, HIF_ALLOW_UNINSTALL, error))
         return FALSE;
 
     /* find a list of all the packages we have to download */
