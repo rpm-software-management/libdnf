@@ -792,6 +792,9 @@ hif_sack_set_arch (HifSack *sack, const gchar *value, GError **error)
     g_debug("Architecture is: %s", arch);
     pool_setarch(pool, arch);
 
+    /* Since one of commits after 0.6.20 libsolv allowes custom arches
+     * which means it will be 'newcoolarch' ad 'noarch' always. */
+#if LIBSOLV_VERSION <= 620
     /* noarch never fails */
     if (!strcmp(arch, "noarch"))
         return TRUE;
@@ -810,6 +813,7 @@ hif_sack_set_arch (HifSack *sack, const gchar *value, GError **error)
                      "autodetection failed (noarch invalid)");
         return FALSE;
     }
+#endif
     priv->have_set_arch = TRUE;
     return TRUE;
 }
