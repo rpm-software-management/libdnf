@@ -900,6 +900,10 @@ hif_sack_setup(HifSack *sack, int flags, GError **error)
 int
 hif_sack_evr_cmp(HifSack *sack, const char *evr1, const char *evr2)
 {
+    if (sack == NULL) {
+        g_autoptr(HifSack) s = hif_sack_new();
+        sack = s;
+    }
     return pool_evrcmp_str(hif_sack_get_pool(sack), evr1, evr2, EVRCMP_COMPARE);
 }
 
