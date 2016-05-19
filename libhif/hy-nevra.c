@@ -63,18 +63,13 @@ int
 hy_nevra_cmp(HyNevra nevra1, HyNevra nevra2)
 {
     int ret;
-    char *nevra1_strs[] = { nevra1->name, nevra1->version, nevra1->release, nevra1->arch };
-    char *nevra2_strs[] = { nevra2->name, nevra2->version, nevra2->release, nevra2->arch };
-    if (nevra1->epoch < nevra2->epoch)
-        return -1;
-    else if (nevra1->epoch > nevra2->epoch)
-        return 1;
-    for (int i = 0; i < 4; ++i) {
-        ret = string_cmp(nevra1_strs[i], nevra2_strs[i]);
-        if (ret != 0)
-            return ret;
-    }
-    return 0;
+    ret = string_cmp(nevra1->name, nevra2->name);
+    if (ret != 0)
+        return ret;
+    ret = hy_nevra_evr_cmp(nevra1, nevra2, NULL);
+    if (ret != 0)
+        return ret;
+    return string_cmp(nevra1->arch, nevra2->arch);
 }
 
 void
