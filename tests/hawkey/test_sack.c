@@ -48,17 +48,11 @@ END_TEST
 
 START_TEST(test_sack_create)
 {
-    g_autoptr(GError) error = NULL;
     g_autoptr(HifSack) sack = hif_sack_new();
     hif_sack_set_cachedir(sack, test_globals.tmpdir);
     fail_unless(hif_sack_setup(sack, HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
     fail_if(sack == NULL, NULL);
     fail_if(hif_sack_get_pool(sack) == NULL, NULL);
-    g_object_unref(sack);
-
-    sack = hif_sack_new ();
-    fail_if(hif_sack_set_arch(sack, "", &error));
-    fail_if(error == NULL);
 }
 END_TEST
 
