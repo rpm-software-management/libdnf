@@ -21,6 +21,7 @@
 import hawkey
 import unittest
 
+
 class NEVRATest(unittest.TestCase):
     def test_evr_cmp(self):
         sack = hawkey.Sack()
@@ -32,3 +33,7 @@ class NEVRATest(unittest.TestCase):
         n1 = hawkey.split_nevra("jay-3.10-4.fc3.x86_64")
         n2 = hawkey.split_nevra("jay-3.10-5.fc3.x86_64")
         self.assertLess(n1.evr_cmp(n2, sack), 0)
+
+        n1 = hawkey.split_nevra('pungi-4.0.14-3.fc24.src')
+        n2 = hawkey.split_nevra('pungi-4.0.7-1.fc24.src')
+        self.assertFalse(n1 < n2)
