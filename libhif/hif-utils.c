@@ -139,3 +139,42 @@ hif_remove_recursive(const gchar *directory, GError **error)
     }
     return TRUE;
 }
+
+/**
+ * hif_get_file_contents_allow_noent:
+ * @path: File to open
+ * @out_contents: Output variable containing contents
+ * @out_length: Output variable containing length
+ * @error: A #GError, or %NULL
+ *
+ * Reads a file's contents. If the file does not exist, returns TRUE.
+ *
+ * Returns: %FALSE if an error other than G_FILE_ERROR_NOENT was set
+ *
+ * Since: 0.1.7
+ **/
+gboolean
+hif_get_file_contents_allow_noent(const gchar            *path,
+                                  gchar                  **out_contents,
+                                  gsize                  *out_length,
+                                  GError                 **error)
+{
+    gsize length;
+    g_autofree gchar *contents = NULL;
+    g_autoptr(GError) local_error = NULL;
+
+    if (!g_file_get_contents(path, &contents, &length, &local_error)) {
+        if (g_error_matches(local_error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
+            return TRUE;
+
+        g_propagate_error(error, local_error);
+        return FALSE;
+    }
+
+    if (out_contents != NULL)
+        *out_contents = g_steal_pointer (&contents);
+    if (out_length != NULL)
+        *out_length = length;
+
+    return TRUE;
+}
