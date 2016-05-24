@@ -994,11 +994,21 @@ hif_context_set_os_release(HifContext *context, GError **error)
     const char *source_root = hif_context_get_source_root(context);
 
     os_release = g_build_filename(source_root, "etc/os-release", NULL);
-    if (!g_file_get_contents(os_release, &contents, NULL, NULL)) {
+    if (!hif_get_file_contents_allow_noent(os_release, &contents, NULL, error))
+        return FALSE;
+
+    if (contents == NULL) {
         g_free (os_release);
         os_release = g_build_filename(source_root, "usr/lib/os-release", NULL);
-        if (!g_file_get_contents(os_release, &contents, NULL, NULL))
+        if (!hif_get_file_contents_allow_noent(os_release, &contents, NULL, error))
             return FALSE;
+    }
+
+    if (contents == NULL) {
+        g_set_error(error, HIF_ERROR, HIF_ERROR_FILE_NOT_FOUND,
+                    "Could not find os-release in etc/ nor in usr/lib "
+                    "under source root '%s'", source_root);
+        return FALSE;
     }
 
     str = g_string_new(contents);

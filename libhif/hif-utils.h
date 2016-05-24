@@ -24,8 +24,12 @@
 
 #include <glib.h>
 
-gchar           *hif_realpath                   (const gchar            *path);
-gboolean         hif_remove_recursive           (const gchar            *directory,
-                                                 GError                 **error);
+gchar           *hif_realpath                       (const gchar            *path);
+gboolean         hif_remove_recursive               (const gchar            *directory,
+                                                     GError                 **error);
+gboolean         hif_get_file_contents_allow_noent  (const gchar            *path,
+                                                     gchar                  **out_contents,
+                                                     gsize                  *length,
+                                                     GError                 **error);
 
 #endif /* __HIF_UTILS_H */
