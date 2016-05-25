@@ -1,4 +1,4 @@
-%global libsolv_version 0.6.20-1
+%global libsolv_version 0.6.21-1
 
 %bcond_with valgrind
 
