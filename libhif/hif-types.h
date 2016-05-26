@@ -61,6 +61,7 @@ typedef struct _HifReldepList           HifReldepList;
  * @HIF_ERROR_NO_SOLUTION:                      No solution was possible
  * @HIF_ERROR_BAD_QUERY:                        The query was in some way bad
  * @HIF_ERROR_NO_CAPABILITY:                    This feature was not available
+ * @HIF_ERROR_NO_SPACE:                         Out of disk space
  *
  * The error code.
  **/
@@ -82,6 +83,7 @@ typedef enum {
         HIF_ERROR_REPO_NOT_FOUND                = 19,   /* Since: 0.1.0 */
         HIF_ERROR_FAILED_CONFIG_PARSING         = 24,   /* Since: 0.1.0 */
         HIF_ERROR_PACKAGE_NOT_FOUND             = 8,    /* Since: 0.1.0 */
+        HIF_ERROR_NO_SPACE                      = 46,   /* Since: 0.2.3 */
         HIF_ERROR_INVALID_ARCHITECTURE,                 /* Since: 0.7.0 */
         HIF_ERROR_BAD_SELECTOR,                         /* Since: 0.7.0 */
         HIF_ERROR_NO_SOLUTION,                          /* Since: 0.7.0 */
