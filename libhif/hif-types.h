@@ -55,6 +55,7 @@ typedef struct _HifState		HifState;
  * @HIF_ERROR_SOURCE_NOT_FOUND:			Source was not found
  * @HIF_ERROR_FAILED_CONFIG_PARSING:		Configuration could not be read
  * @HIF_ERROR_PACKAGE_NOT_FOUND:		Package was not found
+ * @HIF_ERROR_NO_SPACE:				Out of disk space
  *
  * The error code.
  **/
@@ -76,6 +77,7 @@ typedef enum {
 	HIF_ERROR_SOURCE_NOT_FOUND		= 19,	/* Since: 0.1.0 */
 	HIF_ERROR_FAILED_CONFIG_PARSING		= 24,	/* Since: 0.1.0 */
 	HIF_ERROR_PACKAGE_NOT_FOUND		= 8,	/* Since: 0.1.0 */
+	HIF_ERROR_NO_SPACE			= 46,	/* Since: 0.2.3 */
 	/*< private >*/
 	HIF_ERROR_LAST
 } HifError;

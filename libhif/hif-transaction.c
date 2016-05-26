@@ -1082,6 +1082,80 @@ hif_transaction_write_yumdb (HifTransaction *transaction,
 	return hif_state_done (state, error);
 }
 
+static guint64
+hif_transaction_get_download_size (HifTransaction *transaction)
+{
+	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
+	guint i;
+	guint64 download_size = 0;
+
+	for (i = 0; i < priv->pkgs_to_download->len; i++) {
+		HyPackage pkg = g_ptr_array_index (priv->pkgs_to_download, i);
+
+		download_size += hy_package_get_downloadsize (pkg);
+	}
+
+	return download_size;
+}
+
+static gboolean
+hif_transaction_check_free_space (HifTransaction *transaction,
+                                  GError **error)
+{
+	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
+	const gchar *cachedir;
+	guint64 download_size;
+	guint64 free_space;
+	_cleanup_object_unref_ GFile *file = NULL;
+	_cleanup_object_unref_ GFileInfo *filesystem_info = NULL;
+
+	download_size = hif_transaction_get_download_size (transaction);
+
+	cachedir = hif_context_get_cache_dir (priv->context);
+	if (cachedir == NULL) {
+		g_set_error_literal (error,
+		                     HIF_ERROR,
+		                     HIF_ERROR_FAILED_CONFIG_PARSING,
+		                     "Failed to get value for CacheDir");
+		return FALSE;
+	}
+
+	file = g_file_new_for_path (cachedir);
+	filesystem_info = g_file_query_filesystem_info (file, G_FILE_ATTRIBUTE_FILESYSTEM_FREE, NULL, error);
+	if (filesystem_info == NULL) {
+		g_prefix_error (error, "Failed to get filesystem free size for %s: ", cachedir);
+		return FALSE;
+	}
+
+	if (!g_file_info_has_attribute (filesystem_info, G_FILE_ATTRIBUTE_FILESYSTEM_FREE)) {
+		g_set_error (error,
+		             HIF_ERROR,
+		             HIF_ERROR_FAILED,
+		             "Failed to get filesystem free size for %s",
+		             cachedir);
+		return FALSE;
+	}
+
+	free_space = g_file_info_get_attribute_uint64 (filesystem_info, G_FILE_ATTRIBUTE_FILESYSTEM_FREE);
+	if (free_space < download_size) {
+		_cleanup_free_ gchar *formatted_download_size = NULL;
+		_cleanup_free_ gchar *formatted_free_size = NULL;
+
+		formatted_download_size = g_format_size (download_size);
+		formatted_free_size = g_format_size (free_space);
+		g_set_error (error,
+		             HIF_ERROR,
+		             HIF_ERROR_NO_SPACE,
+		             "Not enough free space in %s: needed %s, available %s",
+		             cachedir,
+		             formatted_download_size,
+		             formatted_free_size);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 /**
  * hif_transaction_download:
  * @transaction: a #HifTransaction instance.
@@ -1100,6 +1174,10 @@ hif_transaction_download (HifTransaction *transaction,
 			  GError **error)
 {
 	HifTransactionPrivate *priv = GET_PRIVATE (transaction);
+
+	/* check that we have enough free space */
+	if (!hif_transaction_check_free_space (transaction, error))
+		return FALSE;
 
 	/* just download the list */
 	return hif_package_array_download (priv->pkgs_to_download,
