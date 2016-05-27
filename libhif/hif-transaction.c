@@ -1336,15 +1336,25 @@ hif_transaction_commit (HifTransaction *transaction,
 		goto out;
 
 	/* set state */
-	ret = hif_state_set_steps (state,
-				   error,
-				   2, /* install */
-				   2, /* remove */
-				   10, /* test-commit */
-				   83, /* commit */
-				   1, /* write yumDB */
-				   2, /* delete files */
-				   -1);
+	if (priv->flags & HIF_TRANSACTION_FLAG_TEST) {
+		ret = hif_state_set_steps (state,
+		                           error,
+		                           2, /* install */
+		                           2, /* remove */
+		                           10, /* test-commit */
+		                           86, /* commit */
+		                           -1);
+	} else {
+		ret = hif_state_set_steps (state,
+		                           error,
+		                           2, /* install */
+		                           2, /* remove */
+		                           10, /* test-commit */
+		                           83, /* commit */
+		                           1, /* write yumDB */
+		                           2, /* delete files */
+		                           -1);
+	}
 	if (!ret)
 		goto out;
 
@@ -1537,6 +1547,34 @@ hif_transaction_commit (HifTransaction *transaction,
 
 	if (priv->flags & HIF_TRANSACTION_FLAG_NODOCS)
 		rpmts_flags |= RPMTRANS_FLAG_NODOCS;
+
+	if (priv->flags & HIF_TRANSACTION_FLAG_TEST) {
+		/* run the transaction in test mode */
+		rpmts_flags |= RPMTRANS_FLAG_TEST;
+
+		priv->step = HIF_TRANSACTION_STEP_IGNORE;
+		rpmtsSetFlags (priv->ts, rpmts_flags);
+		g_debug ("Running transaction in test mode");
+		hif_state_set_allow_cancel (state, FALSE);
+		rc = rpmtsRun (priv->ts, NULL, problems_filter);
+		if (rc < 0) {
+			ret = FALSE;
+			g_set_error (error,
+			             HIF_ERROR,
+			             HIF_ERROR_INTERNAL_ERROR,
+			             "Error %i running transaction test", rc);
+			goto out;
+		}
+		if (rc > 0) {
+			ret = hif_rpmts_look_for_problems (priv->ts, error);
+			if (!ret)
+				goto out;
+		}
+
+		/* transaction test done; return */
+		ret = hif_state_done (state, error);
+		goto out;
+	}
 
 	/* run the transaction */
 	priv->state = hif_state_get_child (state);
