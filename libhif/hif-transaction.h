@@ -58,6 +58,7 @@ struct _HifTransactionClass
  * @HIF_TRANSACTION_FLAG_ALLOW_REINSTALL:       Allow package reinstallation
  * @HIF_TRANSACTION_FLAG_ALLOW_DOWNGRADE:       Allow package downrades
  * @HIF_TRANSACTION_FLAG_NODOCS:                Don't install documentation
+ * @HIF_TRANSACTION_FLAG_TEST:                  Only do a transaction test
  *
  * The transaction flags.
  **/
@@ -66,7 +67,8 @@ typedef enum {
         HIF_TRANSACTION_FLAG_ONLY_TRUSTED       = 1 << 0,
         HIF_TRANSACTION_FLAG_ALLOW_REINSTALL    = 1 << 1,
         HIF_TRANSACTION_FLAG_ALLOW_DOWNGRADE    = 1 << 2,
-        HIF_TRANSACTION_FLAG_NODOCS             = 1 << 3
+        HIF_TRANSACTION_FLAG_NODOCS             = 1 << 3,
+        HIF_TRANSACTION_FLAG_TEST               = 1 << 4
 } HifTransactionFlag;
 
 HifTransaction  *hif_transaction_new                    (HifContext     *context);
