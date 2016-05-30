@@ -175,6 +175,10 @@ hif_goal_get_packages(HyGoal goal, ...)
 
 /**
  * hif_goal_add_protected:
+ * @goal: a #HyGoal.
+ * @pset: a #HifPackageSet that would be added to the protected packages.
+ *
+ * Since: 0.7.0
  */
 void
 hif_goal_add_protected(HyGoal goal, HifPackageSet *pset)
@@ -195,6 +199,10 @@ hif_goal_add_protected(HyGoal goal, HifPackageSet *pset)
 
 /**
  * hif_goal_set_protected:
+ * @goal: a #HyGoal.
+ * @pset: a #HifPackageSet of protected packages (the previous setup will be overridden).
+ *
+ * Since: 0.7.0
  */
 void
 hif_goal_set_protected(HyGoal goal, HifPackageSet *pset)

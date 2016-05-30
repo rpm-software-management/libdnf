@@ -19,6 +19,7 @@
  */
 
 #include <check.h>
+#include <glib.h>
 #include <stdarg.h>
 
 
@@ -653,9 +654,8 @@ START_TEST(test_goal_protected)
     HifPackageSet *protected = hif_packageset_new(sack);
     HifPackage *pkg = by_name_repo(sack, "penny-lib", HY_SYSTEM_REPO_NAME);
     HifPackage *pp = by_name_repo(sack, "flying", HY_SYSTEM_REPO_NAME);
-    g_autoptr(GError) error = NULL;
     const char *expected;
-    char *problem;
+    g_autofree gchar *problem;
 
     // when protected_packages set is empty it should remove both packages
     HyGoal goal = hy_goal_create(sack);
@@ -684,8 +684,7 @@ START_TEST(test_goal_protected)
     problem = hy_goal_describe_problem(goal, 0);
     expected = "The operation would result in removing "
         "the following protected packages: flying";
-    fail_if(strncmp(problem, expected, strlen(expected)));
-    g_free(problem);
+    fail_if(g_strcmp0(problem, expected));
     hy_goal_free(goal);
 
     g_object_unref(protected);
