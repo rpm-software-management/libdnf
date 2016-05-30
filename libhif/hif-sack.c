@@ -1781,8 +1781,16 @@ hif_sack_add_repos(HifSack *sack,
     /* count the enabled repos */
     for (i = 0; i < repos->len; i++) {
         repo = g_ptr_array_index(repos, i);
-        if (hif_repo_get_enabled(repo) != HIF_REPO_ENABLED_NONE)
-            cnt++;
+        if (hif_repo_get_enabled(repo) == HIF_REPO_ENABLED_NONE)
+            continue;
+
+        /* only allow metadata-only repos if FLAG_UNAVAILABLE is set */
+        if (hif_repo_get_enabled(repo) == HIF_REPO_ENABLED_METADATA) {
+            if ((flags & HIF_SACK_ADD_FLAG_UNAVAILABLE) == 0)
+                continue;
+        }
+
+        cnt++;
     }
 
     /* add each repo */
