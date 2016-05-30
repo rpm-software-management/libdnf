@@ -180,8 +180,16 @@ hif_sack_add_sources (HySack sack,
 	/* count the enabled sources */
 	for (i = 0; i < sources->len; i++) {
 		src = g_ptr_array_index (sources, i);
-		if (hif_source_get_enabled (src) != HIF_SOURCE_ENABLED_NONE)
-			cnt++;
+		if (hif_source_get_enabled (src) == HIF_SOURCE_ENABLED_NONE)
+			continue;
+
+		/* only allow metadata-only sources if FLAG_UNAVAILABLE is set */
+		if (hif_source_get_enabled (src) == HIF_SOURCE_ENABLED_METADATA) {
+			if ((flags & HIF_SACK_ADD_FLAG_UNAVAILABLE) == 0)
+				continue;
+		}
+
+		cnt++;
 	}
 
 	/* add each repo */
