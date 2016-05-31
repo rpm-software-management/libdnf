@@ -68,7 +68,9 @@ typedef enum {
         HIF_TRANSACTION_FLAG_ALLOW_REINSTALL    = 1 << 1,
         HIF_TRANSACTION_FLAG_ALLOW_DOWNGRADE    = 1 << 2,
         HIF_TRANSACTION_FLAG_NODOCS             = 1 << 3,
-        HIF_TRANSACTION_FLAG_TEST               = 1 << 4
+        HIF_TRANSACTION_FLAG_TEST               = 1 << 4,
+        /*< private >*/
+        HIF_TRANSACTION_FLAG_LAST
 } HifTransactionFlag;
 
 HifTransaction  *hif_transaction_new                    (HifContext     *context);
