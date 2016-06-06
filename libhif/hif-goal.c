@@ -39,7 +39,6 @@
 #include "hif-package.h"
 #include "hy-packageset-private.h"
 #include "hy-iutil.h"
-#include "hif-sack.h"
 #include "hif-sack-private.h"
 #include "hif-utils.h"
 

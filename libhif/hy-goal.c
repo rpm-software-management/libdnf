@@ -304,10 +304,9 @@ solve(HyGoal goal, Queue *job, HifGoalActions flags,
     }
     goal->trans = solver_create_transaction(solv);
 
-    if (protected_in_removals(goal)) {
-        g_warning("protected package detected to be removed");
+    if (protected_in_removals(goal))
         return 1;
-    }
+
     return 0;
 }
 
@@ -363,7 +362,7 @@ list_results(HyGoal goal, Id type_filter1, Id type_filter2, GError **error)
             g_set_error_literal (error,
                                  HIF_ERROR,
                                  HIF_ERROR_REMOVAL_OF_PROTECTED_PKG,
-                                 "no solution, protected package trying to be removed");
+                                 "no solution, cannot remove protected package");
             return NULL;
         }
         g_set_error_literal (error,
@@ -663,6 +662,7 @@ hy_goal_free(HyGoal goal)
         solver_free(goal->solv);
     queue_free(&goal->staging);
     free_map_fully(goal->protected);
+    g_object_unref(goal->removal_of_protected);
     g_free(goal);
 }
 
@@ -906,12 +906,12 @@ hy_goal_describe_problem(HyGoal goal, unsigned i)
     g_autoptr(GString) string = NULL;
     HifPackage *pkg;
     guint j;
-    const char* name;
+    const char *name;
 
     /* internal error */
     if (i >= (unsigned) hy_goal_count_problems(goal))
         return NULL;
-    // problem is not in libsolv - erasal of protected packages
+    // problem is not in libsolv - removal of protected packages
     if (i >= (unsigned) solver_problem_count(goal->solv)) {
         string = g_string_new("The operation would result in removing"
                               " the following protected packages: ");

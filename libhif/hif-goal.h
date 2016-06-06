@@ -32,9 +32,9 @@ gboolean         hif_goal_depsolve                      (HyGoal          goal,
                                                          GError          **error);
 GPtrArray       *hif_goal_get_packages                  (HyGoal          goal,
                                                          ...);
-void             hif_goal_add_protected                 (HyGoal goal,
+void                 hif_goal_add_protected                      (HyGoal goal,
                                                          HifPackageSet *pset);
-void             hif_goal_set_protected                 (HyGoal goal,
+void                 hif_goal_set_protected                      (HyGoal goal,
                                                          HifPackageSet *pset);
 
 #endif /* __HIF_GOAL_H */
