@@ -987,6 +987,7 @@ static gboolean
 hif_context_set_os_release(HifContext *context, GError **error)
 {
     g_autofree gchar *contents = NULL;
+    g_autofree gchar *maybe_quoted_version = NULL;
     g_autofree gchar *version = NULL;
     g_autofree gchar *os_release = NULL;
     g_autoptr(GString) str = NULL;
@@ -1024,11 +1025,14 @@ hif_context_set_os_release(HifContext *context, GError **error)
         return FALSE;
 
     /* get keys */
-    version = g_key_file_get_string(key_file,
-                     "os-release",
-                     "VERSION_ID",
-                     error);
-    if (version == NULL)
+    maybe_quoted_version = g_key_file_get_string(key_file,
+                                                 "os-release",
+                                                 "VERSION_ID",
+                                                 error);
+    if (maybe_quoted_version == NULL)
+        return FALSE;
+    version = g_shell_unquote(maybe_quoted_version, error);
+    if (!version)
         return FALSE;
     hif_context_set_release_ver(context, version);
     return TRUE;
