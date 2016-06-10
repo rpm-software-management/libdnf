@@ -868,8 +868,7 @@ hif_repo_setup(HifRepo *repo, GError **error)
                             "releasever not set");
         return FALSE;
     }
-    user_agent = g_strdup_printf("PackageKit-hawkey/%s", PACKAGE_VERSION);
-    if (!lr_handle_setopt(priv->repo_handle, error, LRO_USERAGENT, user_agent))
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_USERAGENT, hif_context_get_user_agent(priv->context)))
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_REPOTYPE, LR_YUMREPO))
         return FALSE;

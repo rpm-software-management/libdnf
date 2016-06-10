@@ -99,6 +99,7 @@ HifSack         *hif_context_get_sack                   (HifContext     *context
 HyGoal           hif_context_get_goal                   (HifContext     *context);
 #endif
 HifState*        hif_context_get_state                  (HifContext     *context);
+const char *     hif_context_get_user_agent             (HifContext     *context);
 
 /* setters */
 void             hif_context_set_repo_dir               (HifContext     *context,
@@ -139,6 +140,8 @@ void             hif_context_set_rpm_macro              (HifContext     *context
                                                          const gchar    *value);
 void             hif_context_set_http_proxy             (HifContext     *context,
                                                          const gchar    *proxyurl);
+void             hif_context_set_user_agent             (HifContext     *context,
+                                                         const gchar    *user_agent);
 
 /* object methods */
 gboolean         hif_context_setup                      (HifContext     *context,

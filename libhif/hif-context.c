@@ -93,6 +93,7 @@ typedef struct
     gchar            *rpm_verbosity;
     gchar            **native_arches;
     gchar            *http_proxy;
+    gchar            *user_agent;
     gboolean         cache_age;
     gboolean         check_disk_space;
     gboolean         check_transaction;
@@ -146,6 +147,7 @@ hif_context_finalize(GObject *object)
     g_free(priv->os_info);
     g_free(priv->arch_info);
     g_free(priv->http_proxy);
+    g_free(priv->user_agent);
     g_strfreev(priv->native_arches);
     g_object_unref(priv->lock);
     g_object_unref(priv->state);
@@ -181,6 +183,7 @@ hif_context_init(HifContext *context)
     priv->cache_age = 60 * 60 * 24 * 7; /* 1 week */
     priv->override_macros = g_hash_table_new_full(g_str_hash, g_str_equal,
                                                   g_free, g_free);
+    priv->user_agent = g_strdup("libhif/" PACKAGE_VERSION);
 
     /* Initialize some state that used to happen in
      * hif_context_setup(), because callers like rpm-ostree want
@@ -574,6 +577,19 @@ hif_context_get_state(HifContext *context)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
     return priv->state;
+}
+
+/**
+ * hif_context_get_user_agent:
+ * @context: a #HifContext instance.
+ *
+ * Returns: (transfer none): the user agent
+ **/
+const gchar *
+hif_context_get_user_agent (HifContext *context)
+{
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    return priv->user_agent;
 }
 
 /**
@@ -1036,6 +1052,20 @@ hif_context_set_os_release(HifContext *context, GError **error)
         return FALSE;
     hif_context_set_release_ver(context, version);
     return TRUE;
+}
+
+/**
+ * hif_context_set_user_agent:
+ * @context: Context
+ * @user_agent: User-Agent string for HTTP requests
+ **/
+void
+hif_context_set_user_agent (HifContext  *context,
+                            const gchar *user_agent)
+{
+    HifContextPrivate *priv = GET_PRIVATE(context);
+    g_free (priv->user_agent);
+    priv->user_agent = g_strdup (user_agent);
 }
 
 /**
