@@ -147,6 +147,7 @@ hif_context_finalize(GObject *object)
     g_free(priv->os_info);
     g_free(priv->arch_info);
     g_free(priv->http_proxy);
+    g_free(priv->user_agent);
     g_strfreev(priv->native_arches);
     g_object_unref(priv->lock);
     g_object_unref(priv->state);
@@ -584,8 +585,8 @@ hif_context_get_state(HifContext *context)
  *
  * Returns: (transfer none): the user agent
  **/
-const char *
-hif_context_get_user_agent (HifContext     *context)
+const gchar *
+hif_context_get_user_agent (HifContext *context)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
     return priv->user_agent;
