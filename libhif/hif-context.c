@@ -1060,7 +1060,7 @@ hif_context_set_os_release(HifContext *context, GError **error)
  * @user_agent: User-Agent string for HTTP requests
  **/
 void
-hif_context_set_user_agent (HifContext *context,
+hif_context_set_user_agent (HifContext  *context,
                             const gchar *user_agent)
 {
     HifContextPrivate *priv = GET_PRIVATE(context);
