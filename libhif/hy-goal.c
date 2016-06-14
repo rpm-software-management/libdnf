@@ -662,7 +662,7 @@ hy_goal_free(HyGoal goal)
         solver_free(goal->solv);
     queue_free(&goal->staging);
     free_map_fully(goal->protected);
-    g_object_unref(goal->removal_of_protected);
+    g_ptr_array_unref(goal->removal_of_protected);
     g_free(goal);
 }
 
