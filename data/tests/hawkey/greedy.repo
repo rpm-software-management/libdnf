@@ -5,5 +5,7 @@
 =Pkg: B 1 0 noarch
 =Rec: C
 =Prv: somereq
+=Obs: somereq
 =Pkg: C 1 0 noarch
 =Prv: somereq
+=Pkg: somereq 1 0 noarch

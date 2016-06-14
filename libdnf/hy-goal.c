@@ -523,6 +523,36 @@ filter_name2job(DnfSack *sack, const struct _Filter *f, Queue *job)
     return 0;
 }
 
+/**
+ * add_preferred_provide:
+ * when searching by provides the packages that contain the same
+ * name as provide or contain obsoletes with the same name as their
+ * provide will be picked first
+ */
+static void
+add_preferred_provide(DnfSack *sack, Queue *job, Id id)
+{
+    g_autoptr(GPtrArray) plist = g_ptr_array_new_with_free_func(
+        (GDestroyNotify) g_object_unref);
+    Pool *pool = dnf_sack_get_pool(sack);
+    const char *name = pool_dep2str(pool, id);
+    HyQuery q = hy_query_create(sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_NEQ, name);
+    DnfPackageSet *pset = hy_query_run_set(q);
+    hy_query_filter(q, HY_PKG_PROVIDES, HY_EQ, name);
+    hy_query_filter_package_in(q, HY_PKG_OBSOLETES, HY_NEQ, pset);
+    DnfPackage *pkg;
+    plist = hy_query_run(q);
+    for (guint i = 0; i < plist->len; i++) {
+        pkg = g_ptr_array_index(plist, i);
+        queue_push2(job, SOLVER_DISFAVOR|SOLVER_SOLVABLE,
+                    dnf_package_get_id(pkg));
+    }
+    queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
+    hy_query_free(q);
+    g_object_unref(pset);
+}
+
 static int
 filter_provides2job(DnfSack *sack, const struct _Filter *f, Queue *job)
 {
@@ -538,7 +568,7 @@ filter_provides2job(DnfSack *sack, const struct _Filter *f, Queue *job)
     switch (f->cmp_type) {
     case HY_EQ:
         id = dnf_reldep_get_id (f->matches[0].reldep);
-        queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
+        add_preferred_provide(sack, job, id);
         break;
     case HY_GLOB:
         dataiterator_init(&di, pool, 0, 0, SOLVABLE_PROVIDES, name, SEARCH_GLOB);
@@ -549,7 +579,7 @@ filter_provides2job(DnfSack *sack, const struct _Filter *f, Queue *job)
         assert(di.idp);
         id = *di.idp;
         if (!job_has(job, SOLVABLE_PROVIDES, id))
-            queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
+            add_preferred_provide(sack, job, id);
         dataiterator_free(&di);
         break;
     default:
