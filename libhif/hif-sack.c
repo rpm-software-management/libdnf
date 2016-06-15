@@ -823,6 +823,11 @@ hif_sack_set_rootdir (HifSack *sack, const gchar *value)
 {
     HifSackPrivate *priv = GET_PRIVATE(sack);
     pool_set_rootdir(priv->pool, value);
+    /* Don't look for running kernels if we're not operating live on
+     * the current system.
+     */
+    if (g_strcmp0(value, "/") != 0)
+        priv->running_kernel_fn = NULL;
 }
 
 /**
@@ -1578,7 +1583,8 @@ hif_sack_running_kernel(HifSack *sack)
     HifSackPrivate *priv = GET_PRIVATE(sack);
     if (priv->running_kernel_id >= 0)
         return priv->running_kernel_id;
-    priv->running_kernel_id = priv->running_kernel_fn(sack);
+    if (priv->running_kernel_fn)
+        priv->running_kernel_id = priv->running_kernel_fn(sack);
     return priv->running_kernel_id;
 }
 
