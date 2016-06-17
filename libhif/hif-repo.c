@@ -764,7 +764,7 @@ hif_repo_set_keyfile_data(HifRepo *repo, GError **error)
     }
 
     /* set location if currently unset */
-    if (!lr_handle_setopt(priv->repo_handle, error, LRO_LOCAL, FALSE))
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_LOCAL, 0L))
         return FALSE;
     if (priv->location == NULL) {
         g_autofree gchar *tmp = NULL;
@@ -797,7 +797,9 @@ hif_repo_set_keyfile_data(HifRepo *repo, GError **error)
                             "gpgkey not set, yet repo_gpgcheck=1");
         return FALSE;
     }
-    if (!lr_handle_setopt(priv->repo_handle, error, LRO_GPGCHECK, priv->gpgcheck_md))
+
+    /* XXX: setopt() expects a long, so we need a long on the stack */
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_GPGCHECK, (long)priv->gpgcheck_md))
         return FALSE;
 
     exclude_string = g_key_file_get_string(priv->keyfile, priv->id, "exclude", NULL);
@@ -876,7 +878,7 @@ hif_repo_setup(HifRepo *repo, GError **error)
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_REPOTYPE, LR_YUMREPO))
         return FALSE;
-    if (!lr_handle_setopt(priv->repo_handle, error, LRO_INTERRUPTIBLE, FALSE))
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_INTERRUPTIBLE, 0L))
         return FALSE;
     priv->urlvars = lr_urlvars_set(priv->urlvars, "releasever", release);
     priv->urlvars = lr_urlvars_set(priv->urlvars, "basearch", basearch);
@@ -1034,9 +1036,9 @@ hif_repo_check_internal(HifRepo *repo,
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_DESTDIR, priv->location))
         return FALSE;
-    if (!lr_handle_setopt(priv->repo_handle, error, LRO_LOCAL, TRUE))
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_LOCAL, 1L))
         return FALSE;
-    if (!lr_handle_setopt(priv->repo_handle, error, LRO_CHECKSUM, TRUE))
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_CHECKSUM, 1L))
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_YUMDLIST, download_list))
         return FALSE;
@@ -1404,7 +1406,7 @@ hif_repo_update(HifRepo *repo,
 
     g_debug("Attempting to update %s", priv->id);
     ret = lr_handle_setopt(priv->repo_handle, error,
-                           LRO_LOCAL, FALSE);
+                           LRO_LOCAL, 0L);
     if (!ret)
         goto out;
     ret = lr_handle_setopt(priv->repo_handle, error,
