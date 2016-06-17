@@ -890,12 +890,10 @@ hif_repo_setup(HifRepo *repo, GError **error)
     if (g_key_file_has_key(priv->keyfile, priv->id, "sslverify", NULL))
         sslverify = g_key_file_get_boolean(priv->keyfile, priv->id, "sslverify", NULL);
 
-    if (sslverify) {
-        if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLVERIFYPEER, TRUE))
-            return FALSE;
-        if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLVERIFYHOST, TRUE))
-            return FALSE;
-    }
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLVERIFYPEER, sslverify))
+        return FALSE;
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLVERIFYHOST, sslverify))
+        return FALSE;
 
     sslcacert = g_key_file_get_string(priv->keyfile, priv->id, "sslcacert", NULL);
     if (sslcacert != NULL) {
