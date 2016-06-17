@@ -850,6 +850,7 @@ hif_repo_setup(HifRepo *repo, GError **error)
     g_autofree gchar *sslcacert = NULL;
     g_autofree gchar *sslclientcert = NULL;
     g_autofree gchar *sslclientkey = NULL;
+    gboolean sslverify = TRUE;
 
     basearch = g_key_file_get_string(priv->keyfile, "general", "arch", NULL);
     if (basearch == NULL)
@@ -886,13 +887,14 @@ hif_repo_setup(HifRepo *repo, GError **error)
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_GNUPGHOMEDIR, priv->keyring))
         return FALSE;
 
-    if (g_key_file_has_key(priv->keyfile, priv->id, "sslverify", NULL)) {
-        if (g_key_file_get_boolean(priv->keyfile, priv->id, "sslverify", NULL)) {
-            if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLVERIFYPEER, TRUE))
-                return FALSE;
-            if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLVERIFYHOST, TRUE))
-                return FALSE;
-        }
+    if (g_key_file_has_key(priv->keyfile, priv->id, "sslverify", NULL))
+        sslverify = g_key_file_get_boolean(priv->keyfile, priv->id, "sslverify", NULL);
+
+    if (sslverify) {
+        if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLVERIFYPEER, TRUE))
+            return FALSE;
+        if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLVERIFYHOST, TRUE))
+            return FALSE;
     }
 
     sslcacert = g_key_file_get_string(priv->keyfile, priv->id, "sslcacert", NULL);
