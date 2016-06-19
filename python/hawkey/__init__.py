@@ -195,6 +195,10 @@ class NEVRA(_hawkey.NEVRA):
         _hawkey_query = super(NEVRA, self).to_query(sack)
         return Query(query=_hawkey_query)
 
+    def _has_just_name(self):
+        return self.name and not self.epoch and not self.version and \
+            not self.release and not self.arch
+
 
 class Goal(_hawkey.Goal):
     _reserved_kw = set(['package', 'select'])
