@@ -177,3 +177,6 @@ class FullPropertiesTest(base.TestCase):
 
     def test_hdr_end(self):
         self.assertEqual(self.pkg.hdr_end, 2081)
+
+    def test_sourcerpm(self):
+        self.assertEqual(self.pkg.sourcerpm, 'mystery-19.67-1.src.rpm')
