@@ -80,7 +80,7 @@ typedef struct
     Map                 *repo_excludes;
     Pool                *pool;
     Queue                installonly;
-    gboolean             cmdline_repo_created;
+    Repo                *cmdline_repo;
     gboolean             considered_uptodate;
     gboolean             have_set_arch;
     gboolean             provides_ready;
@@ -153,7 +153,7 @@ hif_sack_init(HifSack *sack)
     priv->running_kernel_id = -1;
     priv->running_kernel_fn = running_kernel;
     priv->considered_uptodate = TRUE;
-    priv->cmdline_repo_created = FALSE;
+    priv->cmdline_repo = NULL;
     queue_init(&priv->installonly);
 
     /* logging up after this*/
@@ -1047,19 +1047,19 @@ hif_sack_get_installonly_limit(HifSack *sack)
     return priv->installonly_limit;
 }
 
-static void
+Repo *
 hif_sack_setup_cmdline_repo(HifSack *sack)
 {
     HifSackPrivate *priv = GET_PRIVATE(sack);
-    if (priv->cmdline_repo_created)
-        return;
-
-    HyRepo hrepo = hy_repo_create(HY_CMDLINE_REPO_NAME);
-    Repo *repo = repo_create(hif_sack_get_pool(sack), HY_CMDLINE_REPO_NAME);
-    repo->appdata = hrepo;
-    hrepo->libsolv_repo = repo;
-    hrepo->needs_internalizing = 1;
-    priv->cmdline_repo_created = TRUE;
+    if (!priv->cmdline_repo) {
+         HyRepo hrepo = hy_repo_create(HY_CMDLINE_REPO_NAME);
+         Repo *repo = repo_create(hif_sack_get_pool(sack), HY_CMDLINE_REPO_NAME);
+         repo->appdata = hrepo;
+         hrepo->libsolv_repo = repo;
+         hrepo->needs_internalizing = 1;
+         priv->cmdline_repo = repo;
+    }
+    return priv->cmdline_repo;
 }
 
 /**
@@ -1077,8 +1077,7 @@ HifPackage *
 hif_sack_add_cmdline_package(HifSack *sack, const char *fn)
 {
     HifSackPrivate *priv = GET_PRIVATE(sack);
-    hif_sack_setup_cmdline_repo(sack);
-    Repo *repo = repo_by_name(sack, HY_CMDLINE_REPO_NAME);
+    Repo *repo = hif_sack_setup_cmdline_repo(sack);
     Id p;
 
     assert(repo);
