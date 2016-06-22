@@ -1067,7 +1067,7 @@ hif_sack_get_installonly_limit(HifSack *sack)
     return priv->installonly_limit;
 }
 
-Repo*
+Repo *
 hif_sack_setup_cmdline_repo(HifSack *sack)
 {
     HifSackPrivate *priv = GET_PRIVATE(sack);
