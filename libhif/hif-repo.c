@@ -56,6 +56,7 @@ typedef struct
     gchar           *gpgkey;
     gchar          **exclude_packages;
     guint            cost;
+    guint            priority;
     gchar           *filename;      /* /etc/yum.repos.d/updates.repo */
     gchar           *id;
     gchar           *location;      /* /var/cache/PackageKit/metadata/fedora */
@@ -736,6 +737,13 @@ hif_repo_set_keyfile_data(HifRepo *repo, GError **error)
     if (cost != 0)
         hif_repo_set_cost(repo, cost);
 
+    /* priority is optional */
+    priv->priority = g_key_file_get_integer(priv->keyfile, priv->id, "priority", NULL);
+    if (priv->priority != 0 && priv->repo) {
+        hy_repo_set_priority(priv->repo, priv->priority);
+        fprintf (stderr, "loaded priority %u\n", priv->priority);
+    }
+
     /* baseurl is optional */
     baseurls = g_key_file_get_string_list(priv->keyfile, priv->id, "baseurl", NULL, NULL);
     if (baseurls && !lr_handle_setopt(priv->repo_handle, error, LRO_URLS, baseurls))
@@ -1137,6 +1145,8 @@ hif_repo_check_internal(HifRepo *repo,
     /* ensure we reset the values from the keyfile */
     if (!hif_repo_set_keyfile_data(repo, error))
         return FALSE;
+    if (priv->priority != 0)
+        hy_repo_set_priority(priv->repo, priv->priority);
 
     return TRUE;
 }
