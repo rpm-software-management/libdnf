@@ -100,5 +100,6 @@ gboolean	 hif_package_array_download		(GPtrArray	*packages,
 							 const gchar	*directory,
 							 HifState	*state,
 							 GError		**error);
+guint64		 hif_package_array_get_download_size	(GPtrArray	*packages);
 
 #endif /* __HIF_PACKAGE_H */
