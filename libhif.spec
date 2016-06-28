@@ -136,12 +136,12 @@ popd
 %files
 %license COPYING
 %doc README.md AUTHORS NEWS
-%{_libdir}/%{name}.so.*
+%{_libdir}/%{name}2.so.*
 %{_libdir}/girepository-1.0/Hif-*.typelib
 
 %files devel
 %{_libdir}/%{name}.so
-%{_libdir}/pkgconfig/%{name}.pc
+%{_libdir}/pkgconfig/%{name}2.pc
 %{_includedir}/%{name}/
 %doc %{_datadir}/gtk-doc/html/%{name}/
 %{_datadir}/gir-1.0/Hif-*.gir
