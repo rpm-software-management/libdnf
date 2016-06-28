@@ -1071,22 +1071,6 @@ hif_transaction_write_yumdb(HifTransaction *transaction,
     return hif_state_done(state, error);
 }
 
-static guint64
-hif_transaction_get_download_size(HifTransaction *transaction)
-{
-    HifTransactionPrivate *priv = GET_PRIVATE(transaction);
-    guint i;
-    guint64 download_size = 0;
-
-    for (i = 0; i < priv->pkgs_to_download->len; i++) {
-        HifPackage *pkg = g_ptr_array_index(priv->pkgs_to_download, i);
-
-        download_size += hif_package_get_downloadsize(pkg);
-    }
-
-    return download_size;
-}
-
 static gboolean
 hif_transaction_check_free_space(HifTransaction *transaction,
                                  GError **error)
@@ -1098,7 +1082,7 @@ hif_transaction_check_free_space(HifTransaction *transaction,
     g_autoptr(GFile) file = NULL;
     g_autoptr(GFileInfo) filesystem_info = NULL;
 
-    download_size = hif_transaction_get_download_size(transaction);
+    download_size = hif_package_array_get_download_size(priv->pkgs_to_download);
 
     cachedir = hif_context_get_cache_dir(priv->context);
     if (cachedir == NULL) {
