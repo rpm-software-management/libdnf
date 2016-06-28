@@ -1249,9 +1249,10 @@ hy_query_filter_provides_in(HyQuery q, char **reldep_strs)
             return HIF_ERROR_BAD_QUERY;
         }
         reldep = hif_reldep_new (q->sack, name, cmp_type, evr);
-        if (reldep)
+        if (reldep) {
             hif_reldep_list_add (reldeplist, reldep);
-        g_object_unref (reldep);
+            g_object_unref (reldep);
+        }
         g_free(name);
         g_free(evr);
     }
