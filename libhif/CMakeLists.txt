@@ -23,6 +23,7 @@ SET (LIBHIF_SRCS
     hif-lock.c
     hif-package.c
     hif-packagedelta.c
+    hif-repo.c
     hif-repos.c
     hif-rpmts.c
     hif-repo.c
@@ -84,6 +85,7 @@ SET(LIBHIF_headers
     hif-lock.h
     hif-package.h
     hif-packagedelta.h
+    hif-repo.h
     hif-repos.h
     hif-rpmts.h
     hif-sack.h
