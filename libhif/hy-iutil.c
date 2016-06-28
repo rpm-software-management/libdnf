@@ -744,9 +744,10 @@ reldeplist_from_str(HifSack *sack, const char *reldep_str)
     dataiterator_init(&di, pool, 0, 0, 0, name_glob, SEARCH_STRING | SEARCH_GLOB);
     while (dataiterator_step(&di)) {
         HifReldep *reldep = hif_reldep_new (sack, di.kv.str, cmp_type, evr);
-        if (reldep)
+        if (reldep) {
             hif_reldep_list_add (reldeplist, reldep);
-        g_object_unref (reldep);
+            g_object_unref (reldep);
+        }
     }
 
     dataiterator_free(&di);
