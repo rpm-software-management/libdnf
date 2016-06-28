@@ -254,7 +254,8 @@ filter_reinit(struct _Filter *f, int nmatches)
             g_free(f->matches[m].str);
             break;
         case _HY_RELDEP:
-            g_object_unref (f->matches[m].reldep);
+            if (f->matches[m].reldep)
+                g_object_unref (f->matches[m].reldep);
             break;
         default:
             break;
