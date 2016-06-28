@@ -738,3 +738,28 @@ hif_package_array_download(GPtrArray *packages,
     }
     return TRUE;
 }
+
+/**
+ * hif_package_array_get_download_size:
+ * @packages: an array of packages.
+ *
+ * Gets the download size for an array of packages.
+ *
+ * Returns: the download size
+ *
+ * Since: 0.2.3
+ */
+guint64
+hif_package_array_get_download_size(GPtrArray *packages)
+{
+    guint i;
+    guint64 download_size = 0;
+
+    for (i = 0; i < packages->len; i++) {
+        HifPackage *pkg = g_ptr_array_index(packages, i);
+
+        download_size += hif_package_get_downloadsize(pkg);
+    }
+
+    return download_size;
+}
