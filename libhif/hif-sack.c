@@ -32,7 +32,7 @@
  */
 
 
-#define _GNU_REPO
+#define _GNU_SOURCE
 #include <assert.h>
 #include <errno.h>
 #include <stdarg.h>
