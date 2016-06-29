@@ -4,6 +4,13 @@ libhif
 This library provides a high level package-manager. It uses librepo and hawkey
 under the hood.
 
+:warning: :warning: :warning:
+**Note that libhif is currently being reworked and is
+considered unstable. Once major users like PackageKit and
+DNF are fully ported, a new stable release will be
+considered.**
+:warning: :warning: :warning:
+
 License
 ----
 
