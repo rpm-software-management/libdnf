@@ -1852,7 +1852,7 @@ hif_repo_download_packages(HifRepo *repo,
         PackageDownloadData *data;
 
         g_debug("downloading %s to %s",
-                hif_package_get_location (pkg),
+                hif_package_get_location(pkg),
                 directory_slash);
 
         data = g_slice_new0(PackageDownloadData);
