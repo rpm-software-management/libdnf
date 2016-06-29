@@ -1637,19 +1637,72 @@ hif_repo_copy_package(HifPackage *pkg,
                        hif_repo_copy_progress_cb, state, error);
 }
 
-struct DownloadState {
-    HifState *state;
+typedef struct
+{
     gchar *last_mirror_url;
     gchar *last_mirror_failure_message;
-};
+    guint64 downloaded;
+    guint64 download_size;
+} GlobalDownloadData;
+
+typedef struct
+{
+    HifPackage *pkg;
+    HifState *state;
+    guint64 downloaded;
+    GlobalDownloadData *global_download_data;
+} PackageDownloadData;
 
 static int
 package_download_update_state_cb(void *user_data,
                                  gdouble total_to_download,
                                  gdouble now_downloaded)
 {
-    struct DownloadState *dlstate = user_data;
-    return hif_repo_update_state_cb(dlstate->state, total_to_download, now_downloaded);
+    PackageDownloadData *data = user_data;
+    GlobalDownloadData *global_data = data->global_download_data;
+    gboolean ret;
+    gdouble percentage;
+    guint64 previously_downloaded;
+
+    /* abort */
+    if (!hif_state_check(data->state, NULL))
+        return -1;
+
+    /* nothing sensible */
+    if (total_to_download < 0 || now_downloaded < 0)
+        return 0;
+
+    hif_state_action_start(data->state,
+                           HIF_STATE_ACTION_DOWNLOAD_PACKAGES,
+                           hif_package_get_package_id(data->pkg));
+
+    previously_downloaded = data->downloaded;
+    data->downloaded = now_downloaded;
+
+    global_data->downloaded += (now_downloaded - previously_downloaded);
+
+    /* set percentage */
+    percentage = 100.0f * global_data->downloaded / global_data->download_size;
+    ret = hif_state_set_percentage(data->state, percentage);
+    if (ret) {
+        g_debug("update state %d/%d",
+               (int)global_data->downloaded,
+               (int)global_data->download_size);
+    }
+
+    return 0;
+}
+
+static int
+package_download_end_cb(void *user_data,
+                        LrTransferStatus status,
+                        const char *msg)
+{
+    PackageDownloadData *data = user_data;
+
+    g_slice_free(PackageDownloadData, data);
+
+    return LR_CB_OK;
 }
 
 static int
@@ -1657,13 +1710,14 @@ mirrorlist_failure_cb(void *user_data,
                       const char *message,
                       const char *url)
 {
-    struct DownloadState *dlstate = user_data;
+    PackageDownloadData *data = user_data;
+    GlobalDownloadData *global_data = data->global_download_data;
 
-    if (dlstate->last_mirror_url)
+    if (global_data->last_mirror_url)
         goto out;
 
-    dlstate->last_mirror_url = g_strdup(url);
-    dlstate->last_mirror_failure_message = g_strdup(message);
+    global_data->last_mirror_url = g_strdup(url);
+    global_data->last_mirror_failure_message = g_strdup(message);
 out:
     return LR_CB_OK;
 }
@@ -1703,22 +1757,56 @@ hif_repo_download_package(HifRepo *repo,
                             HifState *state,
                             GError **error)
 {
+    g_autoptr(GPtrArray) packages = g_ptr_array_new();
+    g_autofree gchar *basename = NULL;
+
+    g_ptr_array_add(packages, pkg);
+
+    if (!hif_repo_download_packages(repo, packages, directory, state, error))
+        return NULL;
+
+    /* build return value */
+    basename = g_path_get_basename(hif_package_get_location(pkg));
+    return g_build_filename(directory, basename, NULL);
+}
+
+/**
+ * hif_repo_download_packages:
+ * @repo: a #HifRepo instance.
+ * @packages: (element-type HifPackage): an array of packages, must be from this repo
+ * @directory: the destination directory.
+ * @state: a #HifState.
+ * @error: a #GError or %NULL.
+ *
+ * Downloads multiple packages from a repo. The target filename will be
+ * equivalent to `g_path_get_basename (hif_package_get_location (pkg))`.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.2.3
+ **/
+gboolean
+hif_repo_download_packages(HifRepo *repo,
+                           GPtrArray *packages,
+                           const gchar *directory,
+                           HifState *state,
+                           GError **error)
+{
     HifRepoPrivate *priv = GET_PRIVATE(repo);
     char *checksum_str = NULL;
     const unsigned char *checksum;
-    gboolean ret;
-    gchar *loc = NULL;
+    gboolean ret = FALSE;
+    guint i;
     int checksum_type;
     LrPackageTarget *target = NULL;
-    GSList *packages = NULL;
-    struct DownloadState dlstate = { 0, };
+    GSList *package_targets = NULL;
+    GlobalDownloadData global_data = { 0, };
     g_autoptr(GError) error_local = NULL;
-    g_autofree gchar *basename = NULL;
     g_autofree gchar *directory_slash = NULL;
 
     /* ensure we reset the values from the keyfile */
     if (!hif_repo_set_keyfile_data(repo, error))
-        return NULL;
+        goto out;
 
     /* if nothing specified then use cachedir */
     if (directory == NULL) {
@@ -1742,42 +1830,59 @@ hif_repo_download_package(HifRepo *repo,
 
     /* is a local repo, i.e. we just need to copy */
     if (hif_repo_is_local(repo)) {
-        hif_package_set_repo(pkg, repo);
-        if (!hif_repo_copy_package(pkg, directory, state, error))
-            goto out;
+        /* the number of packages to copy */
+        hif_state_set_number_steps(state, packages->len);
+
+        for (i = 0; i < packages->len; i++) {
+            HifPackage *pkg = packages->pdata[i];
+            HifState *state_loop = hif_state_get_child(state);
+
+            hif_package_set_repo(pkg, repo);
+            if (!hif_repo_copy_package(pkg, directory, state_loop, error))
+                goto out;
+            if (!hif_state_done(state, error))
+                goto out;
+        }
         goto done;
     }
 
-    g_debug("downloading %s to %s",
-         hif_package_get_location(pkg),
-         directory_slash);
+    global_data.download_size = hif_package_array_get_download_size(packages);
+    for (i = 0; i < packages->len; i++) {
+        HifPackage *pkg = packages->pdata[i];
+        PackageDownloadData *data;
 
-    checksum = hif_package_get_chksum(pkg, &checksum_type);
-    checksum_str = hy_chksum_str(checksum, checksum_type);
-    hif_state_action_start(state,
-                           HIF_STATE_ACTION_DOWNLOAD_PACKAGES,
-                           hif_package_get_package_id(pkg));
+        g_debug("downloading %s to %s",
+                hif_package_get_location(pkg),
+                directory_slash);
 
-    dlstate.state = state;
+        data = g_slice_new0(PackageDownloadData);
+        data->pkg = pkg;
+        data->state = state;
+        data->global_download_data = &global_data;
 
-    target = lr_packagetarget_new_v2(priv->repo_handle,
-                                     hif_package_get_location(pkg),
-                                     directory_slash,
-                                     hif_repo_checksum_hy_to_lr(checksum_type),
-                                     checksum_str,
-                                     0, /* size unknown */
-                                     hif_package_get_baseurl(pkg),
-                                     TRUE,
-                                     package_download_update_state_cb,
-                                     &dlstate,
-                                     NULL,
-                                     mirrorlist_failure_cb,
-                                     error);
-    if (target == NULL)
-        goto out;
-    
-    packages = g_slist_prepend(packages, target);
-    ret = lr_download_packages(packages, LR_PACKAGEDOWNLOAD_FAILFAST, &error_local);
+        checksum = hif_package_get_chksum(pkg, &checksum_type);
+        checksum_str = hy_chksum_str(checksum, checksum_type);
+
+        target = lr_packagetarget_new_v2(priv->repo_handle,
+                                         hif_package_get_location(pkg),
+                                         directory_slash,
+                                         hif_repo_checksum_hy_to_lr(checksum_type),
+                                         checksum_str,
+                                         hif_package_get_downloadsize(pkg),
+                                         hif_package_get_baseurl(pkg),
+                                         TRUE,
+                                         package_download_update_state_cb,
+                                         data,
+                                         package_download_end_cb,
+                                         mirrorlist_failure_cb,
+                                         error);
+        if (target == NULL)
+            goto out;
+
+        package_targets = g_slist_prepend(package_targets, target);
+    }
+
+    ret = lr_download_packages(package_targets, LR_PACKAGEDOWNLOAD_FAILFAST, &error_local);
     if (!ret) {
         if (g_error_matches(error_local,
                      LR_PACKAGE_DOWNLOADER_ERROR,
@@ -1785,9 +1890,9 @@ hif_repo_download_package(HifRepo *repo,
             /* ignore */
             g_clear_error(&error_local);
         } else {
-            if (dlstate.last_mirror_failure_message) {
+            if (global_data.last_mirror_failure_message) {
                 g_autofree gchar *orig_message = error_local->message;
-                error_local->message = g_strconcat(orig_message, "; Last error: ", dlstate.last_mirror_failure_message, NULL);
+                error_local->message = g_strconcat(orig_message, "; Last error: ", global_data.last_mirror_failure_message, NULL);
             }
             g_propagate_error(error, error_local);
             error_local = NULL;
@@ -1796,19 +1901,15 @@ hif_repo_download_package(HifRepo *repo,
     } 
 
 done:
-    /* build return value */
-    basename = g_path_get_basename(hif_package_get_location(pkg));
-    loc = g_build_filename(directory_slash, basename, NULL);
+    ret = TRUE;
 out:
     lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSCB, NULL);
     lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSDATA, 0xdeadbeef);
-    if (target != NULL)
-        lr_packagetarget_free(target);
-    g_free(dlstate.last_mirror_failure_message);
-    g_free(dlstate.last_mirror_url);
-    g_slist_free(packages);
+    g_free(global_data.last_mirror_failure_message);
+    g_free(global_data.last_mirror_url);
+    g_slist_free_full(package_targets, (GDestroyNotify)lr_packagetarget_free);
     g_free(checksum_str);
-    return loc;
+    return ret;
 }
 
 /**

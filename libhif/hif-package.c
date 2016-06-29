@@ -719,17 +719,45 @@ hif_package_array_download(GPtrArray *packages,
                 GError **error)
 {
     HifState *state_local;
-    HifPackage *pkg;
+    GHashTableIter hiter;
+    gpointer key, value;
     guint i;
+    g_autoptr(GHashTable) repo_to_packages = NULL;
 
-    /* download any package that is not currently installed */
-    hif_state_set_number_steps(state, packages->len);
+    /* map packages to repos */
+    repo_to_packages = g_hash_table_new_full(NULL, NULL, NULL, (GDestroyNotify)g_ptr_array_unref);
     for (i = 0; i < packages->len; i++) {
-        g_autofree gchar *tmp = NULL;
-        pkg = g_ptr_array_index(packages, i);
+        HifPackage *pkg = g_ptr_array_index(packages, i);
+        HifRepo *repo;
+        GPtrArray *repo_packages;
+
+        repo = hif_package_get_repo(pkg);
+        if (repo == NULL) {
+            g_set_error_literal(error,
+                                HIF_ERROR,
+                                HIF_ERROR_INTERNAL_ERROR,
+                                "package repo is unset");
+            return FALSE;
+        }
+        repo_packages = g_hash_table_lookup(repo_to_packages, repo);
+        if (repo_packages == NULL) {
+            repo_packages = g_ptr_array_new();
+            g_hash_table_insert(repo_to_packages, repo, repo_packages);
+        }
+        g_ptr_array_add(repo_packages, pkg);
+    }
+
+    /* set steps according to the number of repos we are going to download from */
+    hif_state_set_number_steps(state, g_hash_table_size(repo_to_packages));
+
+    /* download all packages from each repo in one go */
+    g_hash_table_iter_init(&hiter, repo_to_packages);
+    while (g_hash_table_iter_next(&hiter, &key, &value)) {
+        HifRepo *repo = key;
+        GPtrArray *repo_packages = value;
+
         state_local = hif_state_get_child(state);
-        tmp = hif_package_download(pkg, NULL, state_local, error);
-        if (tmp == NULL)
+        if (!hif_repo_download_packages(repo, repo_packages, directory, state_local, error))
             return FALSE;
 
         /* done */

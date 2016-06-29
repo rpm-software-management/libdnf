@@ -185,6 +185,11 @@ gchar           *hif_repo_download_package      (HifRepo              *repo,
                                                  const gchar          *directory,
                                                  HifState             *state,
                                                  GError              **error);
+gboolean         hif_repo_download_packages     (HifRepo              *repo,
+                                                 GPtrArray            *pkgs,
+                                                 const gchar          *directory,
+                                                 HifState             *state,
+                                                 GError              **error);
 #endif
 
 G_END_DECLS
