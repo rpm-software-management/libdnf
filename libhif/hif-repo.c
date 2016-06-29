@@ -344,7 +344,7 @@ hif_repo_get_kind(HifRepo *repo)
  * Since: 0.1.9
  **/
 gchar **
-hif_repo_get_exclude_packages   (HifRepo *repo)
+hif_repo_get_exclude_packages(HifRepo *repo)
 {
     HifRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->exclude_packages;
@@ -924,8 +924,8 @@ hif_repo_setup(HifRepo *repo, GError **error)
  */
 static int
 hif_repo_update_state_cb(void *user_data,
-                gdouble total_to_download,
-                gdouble now_downloaded)
+                         gdouble total_to_download,
+                         gdouble now_downloaded)
 {
     gboolean ret;
     gdouble percentage;
@@ -987,9 +987,9 @@ hif_repo_set_timestamp_modified(HifRepo *repo, GError **error)
 
 static gboolean
 hif_repo_check_internal(HifRepo *repo,
-               guint permissible_cache_age,
-               HifState *state,
-               GError **error)
+                        guint permissible_cache_age,
+                        HifState *state,
+                        GError **error)
 {
     HifRepoPrivate *priv = GET_PRIVATE(repo);
     const gchar *download_list[] = {
@@ -1155,10 +1155,10 @@ hif_repo_check_internal(HifRepo *repo,
  * Since: 0.1.0
  **/
 gboolean
-hif_repo_check (HifRepo *repo,
-           guint permissible_cache_age,
-           HifState *state,
-           GError **error)
+hif_repo_check(HifRepo *repo,
+               guint permissible_cache_age,
+               HifState *state,
+               GError **error)
 {
     HifRepoPrivate *priv = GET_PRIVATE(repo);
     g_clear_error(&priv->last_check_error);
@@ -1306,9 +1306,9 @@ hif_repo_download_import_public_key(HifRepo *repo, GError **error)
  **/
 gboolean
 hif_repo_update(HifRepo *repo,
-           HifRepoUpdateFlags flags,
-           HifState *state,
-           GError **error)
+                HifRepoUpdateFlags flags,
+                HifState *state,
+                GError **error)
 {
     HifRepoPrivate *priv = GET_PRIVATE(repo);
     HifState *state_local;
@@ -1546,9 +1546,9 @@ out:
  **/
 gboolean
 hif_repo_set_data(HifRepo *repo,
-                    const gchar *parameter,
-                    const gchar *value,
-                    GError **error)
+                  const gchar *parameter,
+                  const gchar *value,
+                  GError **error)
 {
     HifRepoPrivate *priv = GET_PRIVATE(repo);
     g_key_file_set_string(priv->keyfile, priv->id, parameter, value);
@@ -1618,9 +1618,9 @@ hif_repo_copy_progress_cb(goffset current, goffset total, gpointer user_data)
  **/
 static gboolean
 hif_repo_copy_package(HifPackage *pkg,
-             const gchar *directory,
-             HifState *state,
-             GError **error)
+                      const gchar *directory,
+                      HifState *state,
+                      GError **error)
 {
     g_autofree gchar *basename = NULL;
     g_autofree gchar *dest = NULL;
@@ -1723,14 +1723,14 @@ out:
 }
 
 LrHandle *
-hif_repo_get_lr_handle (HifRepo              *repo)
+hif_repo_get_lr_handle(HifRepo *repo)
 {
     HifRepoPrivate *priv = GET_PRIVATE (repo);
     return priv->repo_handle;
 }
 
 LrResult *
-hif_repo_get_lr_result (HifRepo              *repo)
+hif_repo_get_lr_result(HifRepo *repo)
 {
     HifRepoPrivate *priv = GET_PRIVATE (repo);
     return priv->repo_result;
@@ -1752,10 +1752,10 @@ hif_repo_get_lr_result (HifRepo              *repo)
  **/
 gchar *
 hif_repo_download_package(HifRepo *repo,
-                            HifPackage *pkg,
-                            const gchar *directory,
-                            HifState *state,
-                            GError **error)
+                          HifPackage *pkg,
+                          const gchar *directory,
+                          HifState *state,
+                          GError **error)
 {
     g_autoptr(GPtrArray) packages = g_ptr_array_new();
     g_autofree gchar *basename = NULL;
