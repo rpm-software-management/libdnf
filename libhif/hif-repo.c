@@ -79,8 +79,6 @@ typedef struct
     LrUrlVars       *urlvars;
 } HifRepoPrivate;
 
-#define HIF_CONFIG_GROUP_NAME            "PluginHawkey"
-
 G_DEFINE_TYPE_WITH_PRIVATE(HifRepo, hif_repo, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) (hif_repo_get_instance_private (o))
 
