@@ -763,17 +763,46 @@ hif_package_array_download (GPtrArray *packages,
 			    GError **error)
 {
 	HifState *state_local;
-	HyPackage pkg;
+	_cleanup_hashtable_unref_ GHashTable *source_to_packages = NULL;
+	GHashTableIter hiter;
+	gpointer key, value;
 	guint i;
 
-	/* download any package that is not currently installed */
-	hif_state_set_number_steps (state, packages->len);
+	/* map packages to sources */
+	source_to_packages = g_hash_table_new_full (NULL, NULL, NULL, (GDestroyNotify) g_ptr_array_unref);
 	for (i = 0; i < packages->len; i++) {
-		_cleanup_free_ gchar *tmp = NULL;
-		pkg = g_ptr_array_index (packages, i);
+		HyPackage pkg = g_ptr_array_index (packages, i);
+		HifSource *src;
+		GPtrArray *source_packages;
+
+		src = hif_package_get_source (pkg);
+		if (src == NULL) {
+			g_set_error_literal (error,
+			                     HIF_ERROR,
+			                     HIF_ERROR_INTERNAL_ERROR,
+			                     "package source is unset");
+			return FALSE;
+		}
+		source_packages = g_hash_table_lookup (source_to_packages, src);
+		if (source_packages == NULL) {
+			source_packages = g_ptr_array_new ();
+			g_hash_table_insert (source_to_packages, src, source_packages);
+		}
+		g_ptr_array_add (source_packages, pkg);
+	}
+
+	/* set steps according to the number of sources we are going to download from */
+	hif_state_set_number_steps (state, g_hash_table_size (source_to_packages));
+
+	/* download all packages from each source in one go */
+	g_hash_table_iter_init (&hiter, source_to_packages);
+	while (g_hash_table_iter_next (&hiter, &key, &value)) {
+		HifSource *src = key;
+		GPtrArray *src_packages = value;
+
 		state_local = hif_state_get_child (state);
-		tmp = hif_package_download (pkg, NULL, state_local, error);
-		if (tmp == NULL)
+		if (!hif_source_download_packages (src, src_packages, directory,
+		                                   state_local, error))
 			return FALSE;
 
 		/* done */
