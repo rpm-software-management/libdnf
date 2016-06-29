@@ -1765,6 +1765,8 @@ hif_source_download_package (HifSource *source,
  * will be equivalent to `g_path_get_basename (hy_package_get_location
  * (pkg))`.
  *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
  * Since: 0.2.3
  **/
 gboolean
