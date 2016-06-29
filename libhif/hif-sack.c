@@ -784,27 +784,7 @@ hif_sack_set_arch (HifSack *sack, const gchar *value, GError **error)
     pool_setarch(pool, arch);
 
     /* Since one of commits after 0.6.20 libsolv allowes custom arches
-     * which means it will be 'newcoolarch' ad 'noarch' always. */
-#if LIBSOLV_VERSION <= 620
-    /* noarch never fails */
-    if (!strcmp(arch, "noarch"))
-        return TRUE;
-
-    /* pool_setarch() doesn't tell us when it defaulted to 'noarch' but we
-     * consider it a failure. the only way to find out is count the
-     * architectures known to the Pool. */
-    int count = 0;
-    for (Id id = 0; id <= pool->lastarch; ++id)
-        if (pool->id2arch[id])
-            count++;
-    if (count < 2) {
-        g_set_error (error,
-                     HIF_ERROR,
-                     HIF_ERROR_INVALID_ARCHITECTURE,
-                     "autodetection failed (noarch invalid)");
-        return FALSE;
-    }
-#endif
+     * which means it will be 'newcoolarch' and 'noarch' always. */
     priv->have_set_arch = TRUE;
     return TRUE;
 }
