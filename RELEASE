@@ -2,12 +2,12 @@ Release Notes
 
 1. Write NEWS entries for libhif in the same format as usual.
 
-git shortlog libhif_0_2_2.. | grep -i -v trivial | grep -v Merge > NEWS.new
+git shortlog libhif_0_2_3.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 0.2.3
+Version 0.2.4
 ~~~~~~~~~~~~~
-Released: 2014-xx-xx
+Released: 2016-xx-xx
 
 Notes:
 
@@ -20,8 +20,8 @@ Bugfixes:
 
 4. Commit changes in git:
 
-git commit -a -m "Release version 0.2.3"
-git tag -s -f -m "Release 0.2.3" libhif_0_2_3
+git commit -a -m "Release version 0.2.4"
+git tag -s -f -m "Release 0.2.4" libhif_0_2_4
 <gpg password>
 git push --tags
 git push
