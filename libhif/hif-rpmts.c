@@ -219,8 +219,8 @@ hif_rpmts_get_problem_str(rpmProblem prob)
         break;
     case RPMPROB_OLDPACKAGE:
         str = g_strdup_printf("package %s(newer than %s) is already installed",
-                              pkg_nevr,
-                              pkg_nevr_alt);
+                              pkg_nevr_alt,
+                              pkg_nevr);
         break;
     case RPMPROB_DISKSPACE:
     case RPMPROB_DISKNODES:
