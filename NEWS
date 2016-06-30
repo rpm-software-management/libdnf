@@ -1,3 +1,22 @@
+Version 0.2.3
+~~~~~~~~~~~~~
+Released: 2016-06-30
+
+New Features:
+ - Add a flag to run transactions in test mode (Kalev Lember)
+ - Add hif_package_array_get_download_size (Kalev Lember)
+ - Check for available disk space before downloading packages (Kalev Lember)
+ - Request multiple packages at once from librepo (Kalev Lember)
+
+Bugfixes:
+ - Cache first mirrorlist failure error (Colin Walters)
+ - Clean up all old yumdb entries when updating packages (Kalev Lember)
+ - Correctly set yumdb "reason" when updating / installing packages (Kalev Lember)
+ - Don't prepend package name to download error messages (Colin Walters)
+ - Fix a step counting traceback with metadata only sources (Kalev Lember)
+ - Use lrPackageTarget v2 API to prep for improved callbacks (Colin Walters)
+ - Write new entries to yumdb before removing old ones (Kalev Lember)
+
 Version 0.2.2
 ~~~~~~~~~~~~~
 Released: 2016-02-12
