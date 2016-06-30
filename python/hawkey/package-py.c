@@ -151,22 +151,20 @@ static PyObject *
 package_repr(_PackageObject *self)
 {
     HifPackage *pkg = self->package;
-    char *nevra = hif_package_get_nevra(pkg);
+    const char *nevra = hif_package_get_nevra(pkg);
     PyObject *repr;
 
     repr = PyString_FromFormat("<hawkey.Package object id %ld, %s, %s>",
                                package_hash(self), nevra,
                                hif_package_get_reponame(pkg));
-    g_free(nevra);
     return repr;
 }
 
 static PyObject *
 package_str(_PackageObject *self)
 {
-    char *cstr = hif_package_get_nevra(self->package);
+    const char *cstr = hif_package_get_nevra(self->package);
     PyObject *ret = PyString_FromString(cstr);
-    g_free(cstr);
     return ret;
 }
 

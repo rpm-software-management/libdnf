@@ -323,9 +323,8 @@ START_TEST(test_query_pkg)
     pset = hy_query_run_set(q2);
     fail_unless(hif_packageset_count(pset) == 1);
     HifPackage *pkg = hif_packageset_get_clone(pset, 0);
-    char *nvra = hif_package_get_nevra(pkg);
+    const char *nvra = hif_package_get_nevra(pkg);
     ck_assert_str_eq(nvra, "jay-6.0-0.x86_64");
-    g_free(nvra);
     g_object_unref(pkg);
 
     g_object_unref(pset);
@@ -918,12 +917,10 @@ START_TEST(test_query_nevra_glob)
     ck_assert_int_eq(plist->len, 2);
     HifPackage *pkg1 = g_ptr_array_index(plist, 0);
     HifPackage *pkg2 = g_ptr_array_index(plist, 1);
-    char *nevra1 = hif_package_get_nevra(pkg1);
-    char *nevra2 = hif_package_get_nevra(pkg2);
+    const char *nevra1 = hif_package_get_nevra(pkg1);
+    const char *nevra2 = hif_package_get_nevra(pkg2);
     ck_assert_str_eq(nevra1, "penny-4-1.noarch");
     ck_assert_str_eq(nevra2, "penny-lib-4-1.x86_64");
-    g_free(nevra1);
-    g_free(nevra2);
     g_ptr_array_unref(plist);
     hy_query_free(q);
 }
@@ -941,9 +938,8 @@ START_TEST(test_query_nevra)
 
     ck_assert_int_eq(plist->len, 1);
     HifPackage *pkg1 = g_ptr_array_index(plist, 0);
-    char *nevra1 = hif_package_get_nevra(pkg1);
+    const char *nevra1 = hif_package_get_nevra(pkg1);
     ck_assert_str_eq(nevra1, "penny-4-1.noarch");
-    g_free(nevra1);
     g_ptr_array_unref(plist);
     hy_query_free(q);
 }

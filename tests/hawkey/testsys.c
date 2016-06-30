@@ -40,9 +40,8 @@
 void
 assert_nevra_eq(HifPackage *pkg, const char *nevra)
 {
-    char *pkg_nevra = hif_package_get_nevra(pkg);
+    const char *pkg_nevra = hif_package_get_nevra(pkg);
     ck_assert_str_eq(pkg_nevra, nevra);
-    g_free(pkg_nevra);
 }
 
 HifPackage *
@@ -78,9 +77,8 @@ dump_packagelist(GPtrArray *plist, int free)
     for (guint i = 0; i < plist->len; ++i) {
         HifPackage *pkg = g_ptr_array_index(plist, i);
         Solvable *s = pool_id2solvable(hif_package_get_pool(pkg), hif_package_get_id(pkg));
-        char *nvra = hif_package_get_nevra(pkg);
+        const char *nvra = hif_package_get_nevra(pkg);
         printf("\t%s @%s\n", nvra, s->repo->name);
-        g_free(nvra);
     }
     if (free)
         g_ptr_array_unref(plist);

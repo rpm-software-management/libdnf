@@ -53,7 +53,7 @@ int          hif_package_evr_cmp        (HifPackage *pkg1, HifPackage *pkg2);
 
 char        *hif_package_get_location   (HifPackage *pkg);
 const char  *hif_package_get_baseurl    (HifPackage *pkg);
-char        *hif_package_get_nevra      (HifPackage *pkg);
+const char  *hif_package_get_nevra      (HifPackage *pkg);
 char        *hif_package_get_sourcerpm  (HifPackage *pkg);
 char        *hif_package_get_version    (HifPackage *pkg);
 char        *hif_package_get_release    (HifPackage *pkg);
