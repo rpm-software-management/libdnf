@@ -1290,6 +1290,7 @@ END_TEST
 START_TEST(test_cmdline_file_provides)
 {
     HifSack *sack = test_globals.sack;
+    hif_sack_set_running_kernel_fn(sack, mock_running_kernel_no);
     HyGoal goal = hy_goal_create(sack);
 
     hy_goal_upgrade_all(goal);
