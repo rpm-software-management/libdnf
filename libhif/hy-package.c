@@ -366,15 +366,15 @@ hif_package_get_baseurl(HifPackage *pkg)
  *
  * Gets the package NEVRA.
  *
- * Returns: (transfer full): a string, or %NULL
+ * Returns: (transfer none): a string, or %NULL
  *
  * Since: 0.7.0
  */
-char *
+const char *
 hif_package_get_nevra(HifPackage *pkg)
 {
     Solvable *s = get_solvable(pkg);
-    return g_strdup(pool_solvable2str(hif_package_get_pool(pkg), s));
+    return pool_solvable2str(hif_package_get_pool(pkg), s);
 }
 
 /**
