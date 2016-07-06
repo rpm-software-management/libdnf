@@ -356,7 +356,7 @@ running_kernel(HifSack *sack)
     uname(&un);
     char *fn = pool_tmpjoin(pool, "/boot/vmlinuz-", un.release, NULL);
     if (access(fn, F_OK)) {
-        g_warning("running_kernel(): no matching file: %s.", fn);
+        g_debug("running_kernel(): no matching file: %s.", fn);
         return -1;
     }
 
