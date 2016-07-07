@@ -303,6 +303,8 @@ str2dnf_advisory_kind(const char *str)
         return DNF_ADVISORY_KIND_ENHANCEMENT;
     if (!strcmp (str, "security"))
         return DNF_ADVISORY_KIND_SECURITY;
+    if (!strcmp (str, "newpackage"))
+        return DNF_ADVISORY_KIND_NEWPACKAGE;
     return DNF_ADVISORY_KIND_UNKNOWN;
 }
 

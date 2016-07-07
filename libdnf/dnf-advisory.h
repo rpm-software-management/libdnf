@@ -47,7 +47,8 @@ typedef enum {
         DNF_ADVISORY_KIND_UNKNOWN       = 0,        /* ordered by rough importance */
         DNF_ADVISORY_KIND_SECURITY      = 1,
         DNF_ADVISORY_KIND_BUGFIX        = 2,
-        DNF_ADVISORY_KIND_ENHANCEMENT   = 3
+        DNF_ADVISORY_KIND_ENHANCEMENT   = 3,
+        DNF_ADVISORY_KIND_NEWPACKAGE    = 4
 } DnfAdvisoryKind;
 
 const char          *dnf_advisory_get_title         (DnfAdvisory *advisory);
