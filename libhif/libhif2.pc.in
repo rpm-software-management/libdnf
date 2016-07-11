@@ -2,9 +2,9 @@ prefix=@CMAKE_INSTALL_PREFIX@
 libdir=@LIB_INSTALL_DIR@
 includedir=${prefix}/include
 
-Name: libhif
+Name: libhif2
 Description: Simple package manager interface and librepo
 Version: @HIF_VERSION@
 Requires: glib-2.0, gobject-2.0, librepo, rpm
-Libs: -L${libdir} -lhif
+Libs: -L${libdir} -lhif2
 Cflags: -I${includedir}

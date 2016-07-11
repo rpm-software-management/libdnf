@@ -23,6 +23,7 @@ SET (LIBHIF_SRCS
     hif-lock.c
     hif-package.c
     hif-packagedelta.c
+    hif-repo.c
     hif-repos.c
     hif-rpmts.c
     hif-repo.c
@@ -31,7 +32,7 @@ SET (LIBHIF_SRCS
     hif-utils.c)
 
 configure_file ("hif-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/hif-version.h)
-configure_file ("libhif.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libhif.pc @ONLY)
+configure_file ("libhif2.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libhif2.pc @ONLY)
 
 ADD_LIBRARY(libhif SHARED ${LIBHIF_SRCS})
 TARGET_LINK_LIBRARIES(libhif
@@ -45,7 +46,7 @@ TARGET_LINK_LIBRARIES(libhif
                       ${RPMDB_LIBRARY})
 
 SET(HIF_SO_VERSION 3)
-SET_TARGET_PROPERTIES(libhif PROPERTIES OUTPUT_NAME "hif")
+SET_TARGET_PROPERTIES(libhif PROPERTIES OUTPUT_NAME "hif2")
 SET_TARGET_PROPERTIES(libhif PROPERTIES SOVERSION ${HIF_SO_VERSION})
 
 ADD_EXECUTABLE(hth hy-hth.c)
@@ -84,6 +85,7 @@ SET(LIBHIF_headers
     hif-lock.h
     hif-package.h
     hif-packagedelta.h
+    hif-repo.h
     hif-repos.h
     hif-rpmts.h
     hif-sack.h
@@ -135,7 +137,7 @@ if (GOBJECT_INTROSPECTION_FOUND)
                     --namespace=Hif
                     --nsversion=${HIF_SO_VERSION}.0
                     --library-path=${CMAKE_CURRENT_BINARY_DIR}
-                    --library=hif
+                    --library=hif2
                     --no-libtool
                     --include=GObject-2.0
                     --include=Gio-2.0
@@ -168,8 +170,8 @@ if (GOBJECT_INTROSPECTION_FOUND)
     endif()
 endif()
 
-install (FILES ${CMAKE_CURRENT_BINARY_DIR}/libhif.pc
+install (FILES ${CMAKE_CURRENT_BINARY_DIR}/libhif2.pc
          DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
-INSTALL(FILES ${LIBHIF_headers} DESTINATION include/libhif)
-INSTALL(FILES ${LIBHAWKEY_headers} DESTINATION include/libhif)
+INSTALL(FILES ${LIBHIF_headers} DESTINATION include/libhif2)
+INSTALL(FILES ${LIBHAWKEY_headers} DESTINATION include/libhif2)
 INSTALL(TARGETS libhif LIBRARY DESTINATION ${LIB_INSTALL_DIR})
