@@ -20,29 +20,29 @@
 
 
 
-#include "libhif/hif-advisory.h"
-#include "libhif/hif-advisorypkg.h"
-#include "libhif/hy-package.h"
+#include "libdnf/dnf-advisory.h"
+#include "libdnf/dnf-advisorypkg.h"
+#include "libdnf/hy-package.h"
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"
 
-static HifAdvisoryPkg *advisorypkg;
+static DnfAdvisoryPkg *advisorypkg;
 
 static void
 advisorypkg_fixture(void)
 {
     fixture_yum();
 
-    HifPackage *pkg;
+    DnfPackage *pkg;
     GPtrArray *advisories;
-    HifAdvisory *advisory;
+    DnfAdvisory *advisory;
     GPtrArray *pkglist;
 
     pkg = by_name(test_globals.sack, "tour");
-    advisories = hif_package_get_advisories(pkg, HY_GT);
+    advisories = dnf_package_get_advisories(pkg, HY_GT);
     advisory = g_ptr_array_index(advisories, 0);
-    pkglist = hif_advisory_get_packages(advisory);
+    pkglist = dnf_advisory_get_packages(advisory);
     advisorypkg = g_object_ref(g_ptr_array_index(pkglist, 0));
 
     g_ptr_array_unref(pkglist);
@@ -59,25 +59,25 @@ advisorypkg_teardown(void)
 
 START_TEST(test_name)
 {
-    ck_assert_str_eq(hif_advisorypkg_get_name(advisorypkg), "tour");
+    ck_assert_str_eq(dnf_advisorypkg_get_name(advisorypkg), "tour");
 }
 END_TEST
 
 START_TEST(test_evr)
 {
-    ck_assert_str_eq(hif_advisorypkg_get_evr(advisorypkg), "4-7");
+    ck_assert_str_eq(dnf_advisorypkg_get_evr(advisorypkg), "4-7");
 }
 END_TEST
 
 START_TEST(test_arch)
 {
-    ck_assert_str_eq(hif_advisorypkg_get_arch(advisorypkg), "noarch");
+    ck_assert_str_eq(dnf_advisorypkg_get_arch(advisorypkg), "noarch");
 }
 END_TEST
 
 START_TEST(test_filename)
 {
-    ck_assert_str_eq(hif_advisorypkg_get_filename(advisorypkg), "tour.noarch.rpm");
+    ck_assert_str_eq(dnf_advisorypkg_get_filename(advisorypkg), "tour.noarch.rpm");
 }
 END_TEST
 

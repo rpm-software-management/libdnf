@@ -21,7 +21,7 @@
 #include <Python.h>
 
 // hawkey
-#include "hif-advisorypkg-private.h"
+#include "dnf-advisorypkg-private.h"
 
 // pyhawkey
 #include "advisorypkg-py.h"
@@ -31,12 +31,12 @@
 
 typedef struct {
     PyObject_HEAD
-    HifAdvisoryPkg *advisorypkg;
+    DnfAdvisoryPkg *advisorypkg;
 } _AdvisoryPkgObject;
 
 
 PyObject *
-advisorypkgToPyObject(HifAdvisoryPkg *advisorypkg)
+advisorypkgToPyObject(DnfAdvisoryPkg *advisorypkg)
 {
     _AdvisoryPkgObject *self = PyObject_New(_AdvisoryPkgObject, &advisorypkg_Type);
     if (!self)
@@ -45,7 +45,7 @@ advisorypkgToPyObject(HifAdvisoryPkg *advisorypkg)
     return (PyObject *)self;
 }
 
-static HifAdvisoryPkg *
+static DnfAdvisoryPkg *
 advisorypkgFromPyObject(PyObject *o)
 {
     if (!PyObject_TypeCheck(o, &advisorypkg_Type)) {
@@ -56,9 +56,9 @@ advisorypkgFromPyObject(PyObject *o)
 }
 
 static int
-advisorypkg_converter(PyObject *o, HifAdvisoryPkg **ref_ptr)
+advisorypkg_converter(PyObject *o, DnfAdvisoryPkg **ref_ptr)
 {
-    HifAdvisoryPkg *ref = advisorypkgFromPyObject(o);
+    DnfAdvisoryPkg *ref = advisorypkgFromPyObject(o);
     if (ref == NULL)
         return 0;
     *ref_ptr = ref;
@@ -78,7 +78,7 @@ static PyObject *
 advisorypkg_richcompare(PyObject *self, PyObject *other, int op)
 {
     PyObject *result;
-    HifAdvisoryPkg *cself, *cother;
+    DnfAdvisoryPkg *cself, *cother;
 
     if (!advisorypkg_converter(self, &cself) ||
         !advisorypkg_converter(other, &cother)) {
@@ -88,7 +88,7 @@ advisorypkg_richcompare(PyObject *self, PyObject *other, int op)
         return Py_NotImplemented;
     }
 
-    int identical = hif_advisorypkg_compare(cself, cother);
+    int identical = dnf_advisorypkg_compare(cself, cother);
     switch (op) {
     case Py_EQ:
         result = TEST_COND(identical);
@@ -118,13 +118,13 @@ get_attr(_AdvisoryPkgObject *self, void *closure)
 {
     intptr_t str_key = (intptr_t)closure;
     if (str_key == 0)
-        return PyUnicode_FromString(hif_advisorypkg_get_name(self->advisorypkg));
+        return PyUnicode_FromString(dnf_advisorypkg_get_name(self->advisorypkg));
     if (str_key == 1)
-        return PyUnicode_FromString(hif_advisorypkg_get_evr(self->advisorypkg));
+        return PyUnicode_FromString(dnf_advisorypkg_get_evr(self->advisorypkg));
     if (str_key == 2)
-        return PyUnicode_FromString(hif_advisorypkg_get_arch(self->advisorypkg));
+        return PyUnicode_FromString(dnf_advisorypkg_get_arch(self->advisorypkg));
     if (str_key == 3)
-        return PyUnicode_FromString(hif_advisorypkg_get_filename(self->advisorypkg));
+        return PyUnicode_FromString(dnf_advisorypkg_get_filename(self->advisorypkg));
     Py_RETURN_NONE;
 }
 

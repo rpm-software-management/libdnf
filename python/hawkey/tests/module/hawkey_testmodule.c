@@ -21,7 +21,7 @@
 #include <Python.h>
 
 // hawkey
-#include "hif-sack-private.h"
+#include "dnf-sack-private.h"
 #include "python/hawkey/repo-py.h"
 #include "python/hawkey/sack-py.h"
 #include "tests/hawkey/testshared.h"
@@ -40,12 +40,12 @@ py_load_repo(PyObject *unused, PyObject *args)
     if (!PyArg_ParseTuple(args, "Ossi", &sack, &name, &path, &installed))
 	return NULL;
 
-    HifSack *csack = sackFromPyObject(sack);
+    DnfSack *csack = sackFromPyObject(sack);
     if (csack == NULL) {
-	PyErr_SetString(PyExc_TypeError, "Expected a HifSack *object.");
+	PyErr_SetString(PyExc_TypeError, "Expected a DnfSack *object.");
 	return NULL;
     }
-    if (load_repo(hif_sack_get_pool(csack), name, path, installed)) {
+    if (load_repo(dnf_sack_get_pool(csack), name, path, installed)) {
 	PyErr_SetString(PyExc_IOError, "Can not load a testing repo.");
 	return NULL;
     }
@@ -56,12 +56,12 @@ static PyObject *
 py_glob_for_repofiles(PyObject *unused, PyObject *args)
 {
     const char *repo_name, *path;
-    HifSack *sack;
+    DnfSack *sack;
 
     if (!PyArg_ParseTuple(args, "O&ss",
 			  sack_converter, &sack, &repo_name, &path))
 	return NULL;
-    HyRepo repo = glob_for_repofiles(hif_sack_get_pool(sack), repo_name, path);
+    HyRepo repo = glob_for_repofiles(dnf_sack_get_pool(sack), repo_name, path);
     return repoToPyObject(repo);
 }
 

@@ -32,7 +32,7 @@ extern PyTypeObject reldep_Type;
 #define reldepObject_Check(o)        PyObject_TypeCheck(o, &reldep_Type)
 
 PyObject *new_reldep(PyObject *sack, Id r_id);
-HifReldep *reldepFromPyObject(PyObject *o);
-PyObject *reldepToPyObject(HifReldep *reldep);
+DnfReldep *reldepFromPyObject(PyObject *o);
+PyObject *reldepToPyObject(DnfReldep *reldep);
 
 #endif // RELDEP_PY_H

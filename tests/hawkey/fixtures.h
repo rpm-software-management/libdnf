@@ -22,11 +22,11 @@
 #define FIXTURES_H
 
 
-#include "libhif/hif-sack.h"
+#include "libdnf/dnf-sack.h"
 
 struct TestGlobals_s {
     char *repo_dir;
-    HifSack *sack;
+    DnfSack *sack;
     char *tmpdir;
 };
 
@@ -48,7 +48,7 @@ void fixture_with_vendor(void);
 void fixture_all(void);
 void fixture_yum(void);
 void fixture_reset(void);
-void setup_yum_sack(HifSack *sack, const char *yum_repo_name);
+void setup_yum_sack(DnfSack *sack, const char *yum_repo_name);
 void teardown(void);
 
 #endif /* FIXTURES_H */

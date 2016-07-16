@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+libdir=@LIB_INSTALL_DIR@
+includedir=${prefix}/include
+
+Name: libdnf
+Description: Simple package manager interface and librepo
+Version: @LIBDNF_VERSION@
+Requires: glib-2.0, gobject-2.0, librepo, rpm
+Libs: -L${libdir} -ldnf
+Cflags: -I${includedir}

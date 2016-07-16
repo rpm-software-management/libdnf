@@ -29,43 +29,43 @@
 #include <solv/util.h>
 
 
-#include "libhif/hy-goal.h"
-#include "libhif/hy-package.h"
-#include "libhif/hy-package-private.h"
-#include "libhif/hy-query.h"
-#include "libhif/hif-sack-private.h"
-#include "libhif/hy-util.h"
+#include "libdnf/hy-goal.h"
+#include "libdnf/hy-package.h"
+#include "libdnf/hy-package-private.h"
+#include "libdnf/hy-query.h"
+#include "libdnf/dnf-sack-private.h"
+#include "libdnf/hy-util.h"
 #include "testsys.h"
 
 void
-assert_nevra_eq(HifPackage *pkg, const char *nevra)
+assert_nevra_eq(DnfPackage *pkg, const char *nevra)
 {
-    const char *pkg_nevra = hif_package_get_nevra(pkg);
+    const char *pkg_nevra = dnf_package_get_nevra(pkg);
     ck_assert_str_eq(pkg_nevra, nevra);
 }
 
-HifPackage *
-by_name(HifSack *sack, const char *name)
+DnfPackage *
+by_name(DnfSack *sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
     GPtrArray *plist = hy_query_run(q);
     hy_query_free(q);
-    HifPackage *pkg = g_object_ref(g_ptr_array_index(plist, 0));
+    DnfPackage *pkg = g_object_ref(g_ptr_array_index(plist, 0));
     g_ptr_array_unref(plist);
 
     return pkg;
 }
 
-HifPackage *
-by_name_repo(HifSack *sack, const char *name, const char *repo)
+DnfPackage *
+by_name_repo(DnfSack *sack, const char *name, const char *repo)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
     hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, repo);
     GPtrArray *plist = hy_query_run(q);
     hy_query_free(q);
-    HifPackage *pkg = g_object_ref(g_ptr_array_index(plist, 0));
+    DnfPackage *pkg = g_object_ref(g_ptr_array_index(plist, 0));
     g_ptr_array_unref(plist);
 
     return pkg;
@@ -75,9 +75,9 @@ void
 dump_packagelist(GPtrArray *plist, int free)
 {
     for (guint i = 0; i < plist->len; ++i) {
-        HifPackage *pkg = g_ptr_array_index(plist, i);
-        Solvable *s = pool_id2solvable(hif_package_get_pool(pkg), hif_package_get_id(pkg));
-        const char *nvra = hif_package_get_nevra(pkg);
+        DnfPackage *pkg = g_ptr_array_index(plist, i);
+        Solvable *s = pool_id2solvable(dnf_package_get_pool(pkg), dnf_package_get_id(pkg));
+        const char *nvra = dnf_package_get_nevra(pkg);
         printf("\t%s @%s\n", nvra, s->repo->name);
     }
     if (free)

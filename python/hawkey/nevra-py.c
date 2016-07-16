@@ -26,7 +26,7 @@
 // hawkey
 #include "hy-nevra.h"
 #include "hy-nevra-private.h"
-#include "hif-sack.h"
+#include "dnf-sack.h"
 #include "hy-types.h"
 
 // pyhawkey
@@ -206,7 +206,7 @@ nevra_converter(PyObject *o, HyNevra *nevra_ptr)
 static PyObject *
 evr_cmp(_NevraObject *self, PyObject *args)
 {
-    HifSack *sack;
+    DnfSack *sack;
     HyNevra nevra;
     if (!PyArg_ParseTuple(args, "O&O&", nevra_converter, &nevra, sack_converter, &sack)) {
         return NULL;
@@ -221,7 +221,7 @@ static PyObject *
 to_query(_NevraObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *sack;
-    HifSack *csack;
+    DnfSack *csack;
     if (!PyArg_ParseTuple(args, "O!", &sack_Type, &sack)) {
         return NULL;
     }

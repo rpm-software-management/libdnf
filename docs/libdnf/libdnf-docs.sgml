@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!ENTITY version SYSTEM "version.xml">
+]>
+<book id="index" xmlns:xi="http://www.w3.org/2003/XInclude">
+  <bookinfo>
+    <title>libdnf Reference Manual</title>
+    <releaseinfo>
+      for libdnf &version;
+    </releaseinfo>
+    <authorgroup>
+      <author>
+        <firstname>Richard</firstname>
+        <surname>Hughes</surname>
+        <affiliation>
+          <address>
+            <email>richard@hughsie.com</email>
+          </address>
+        </affiliation>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>2014</year>
+      <holder>Richard Hughes</holder>
+    </copyright>
+  </bookinfo>
+
+  <reference id="libdnf">
+    <title>libdnf library</title>
+    <partintro>
+      <para>
+        This part documents libdnf.
+      </para>
+    </partintro>
+    <xi:include href="xml/dnf-context.xml"/>
+    <xi:include href="xml/dnf-db.xml"/>
+    <xi:include href="xml/dnf-lock.xml"/>
+    <xi:include href="xml/dnf-repos.xml"/>
+    <xi:include href="xml/dnf-repo.xml"/>
+    <xi:include href="xml/dnf-state.xml"/>
+    <xi:include href="xml/dnf-transaction.xml"/>
+  </reference>
+
+  <reference id="libdnf-helpers">
+    <title>libdnf helpers</title>
+    <partintro>
+      <para>
+        This part dociments the helper functionality.
+      </para>
+    </partintro>
+    <xi:include href="xml/dnf-goal.xml"/>
+    <xi:include href="xml/dnf-keyring.xml"/>
+    <xi:include href="xml/dnf-sack.xml"/>
+    <xi:include href="xml/dnf-utils.xml"/>
+    <xi:include href="xml/dnf-version.xml"/>
+    <xi:include href="xml/dnf-package.xml"/>
+    <xi:include href="xml/dnf-rpmts.xml"/>
+    <xi:include href="xml/dnf-types.xml"/>
+  </reference>
+
+  <xi:include href="xml/annotation-glossary.xml">
+    <xi:fallback />
+  </xi:include>
+
+</book>

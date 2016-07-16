@@ -24,8 +24,8 @@
 #include <stddef.h>
 #include <solv/util.h>
 
-#include "hif-types.h"
-#include "hif-goal.h"
+#include "dnf-types.h"
+#include "dnf-goal.h"
 #include "hy-goal.h"
 #include "hy-goal-private.h"
 #include "hy-package-private.h"
@@ -45,7 +45,7 @@ typedef struct {
 } _GoalObject;
 
 static int
-args_pkg_sltr_check(HifPackage *pkg, HySelector sltr)
+args_pkg_sltr_check(DnfPackage *pkg, HySelector sltr)
 {
     if (!(pkg || sltr)) {
         PyErr_SetString(PyExc_ValueError,
@@ -62,7 +62,7 @@ args_pkg_sltr_check(HifPackage *pkg, HySelector sltr)
 
 static int
 args_pkg_sltr_parse(PyObject *args, PyObject *kwds,
-                     HifPackage **pkg, HySelector *sltr, int *flags, int flag_mask)
+                     DnfPackage **pkg, HySelector *sltr, int *flags, int flag_mask)
 {
     const char *kwlist[] = {"package", "select", "clean_deps", "check_installed",
                       "optional", NULL};
@@ -135,13 +135,13 @@ args_run_parse(PyObject *args, PyObject *kwds, int *flags, PyObject **callback_p
     }
 
     if (allow_uninstall)
-        *flags |= HIF_ALLOW_UNINSTALL;
+        *flags |= DNF_ALLOW_UNINSTALL;
     if (force_best)
-        *flags |= HIF_FORCE_BEST;
+        *flags |= DNF_FORCE_BEST;
     if (verify)
-        *flags |= HIF_VERIFY;
+        *flags |= DNF_VERIFY;
     if (ignore_weak_deps)
-        *flags |= HIF_IGNORE_WEAK_DEPS;
+        *flags |= DNF_IGNORE_WEAK_DEPS;
     return 1;
 }
 
@@ -152,14 +152,14 @@ op_ret2exc(int ret)
         Py_RETURN_NONE;
 
     switch (ret) {
-    case HIF_ERROR_BAD_SELECTOR:
+    case DNF_ERROR_BAD_SELECTOR:
         PyErr_SetString(HyExc_Value,
                         "Ill-formed Selector used for the operation.");
         return NULL;
-    case HIF_ERROR_INVALID_ARCHITECTURE:
+    case DNF_ERROR_INVALID_ARCHITECTURE:
         PyErr_SetString(HyExc_Arch, "Used arch is unknown.");
         return NULL;
-    case HIF_ERROR_PACKAGE_NOT_FOUND:
+    case DNF_ERROR_PACKAGE_NOT_FOUND:
         PyErr_SetString(HyExc_Validation, "The validation check has failed.");
         return NULL;
     default:
@@ -195,7 +195,7 @@ static int
 goal_init(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *sack;
-    HifSack *csack;
+    DnfSack *csack;
 
     if (!PyArg_ParseTuple(args, "O!", &sack_Type, &sack))
         return -1;
@@ -220,7 +220,7 @@ distupgrade_all(_GoalObject *self, PyObject *unused)
 static PyObject *
 distupgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    HifPackage *pkg = NULL;
+    DnfPackage *pkg = NULL;
     HySelector sltr = NULL;
     if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, NULL, 0))
         return NULL;
@@ -233,7 +233,7 @@ distupgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 downgrade_to(_GoalObject *self, PyObject *pkg_obj)
 {
-    HifPackage *pkg = packageFromPyObject(pkg_obj);
+    DnfPackage *pkg = packageFromPyObject(pkg_obj);
     if (pkg == NULL)
         return NULL;
     if (hy_goal_downgrade_to(self->goal, pkg))
@@ -244,7 +244,7 @@ downgrade_to(_GoalObject *self, PyObject *pkg_obj)
 static PyObject *
 erase(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    HifPackage *pkg = NULL;
+    DnfPackage *pkg = NULL;
     HySelector sltr = NULL;
     int flags = 0;
     if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, &flags, HY_CLEAN_DEPS))
@@ -258,7 +258,7 @@ erase(_GoalObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 install(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    HifPackage *pkg = NULL;
+    DnfPackage *pkg = NULL;
     HySelector sltr = NULL;
     int flags = 0;
     g_autoptr(GError) error = NULL;
@@ -284,7 +284,7 @@ install(_GoalObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 upgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    HifPackage *pkg = NULL;
+    DnfPackage *pkg = NULL;
     HySelector sltr = NULL;
 
     if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, NULL, 0))
@@ -301,7 +301,7 @@ upgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 upgrade_to(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    HifPackage *pkg = NULL;
+    DnfPackage *pkg = NULL;
     HySelector sltr = NULL;
     int ret;
     int flags = 0;
@@ -327,7 +327,7 @@ upgrade_all(_GoalObject *self, PyObject *unused)
 static PyObject *
 userinstalled(_GoalObject *self, PyObject *pkg)
 {
-    HifPackage *cpkg = packageFromPyObject(pkg);
+    DnfPackage *cpkg = packageFromPyObject(pkg);
     int ret;
 
     if (cpkg == NULL)
@@ -347,19 +347,19 @@ has_actions(_GoalObject *self, PyObject *action)
 static PyObject *
 req_has_distupgrade_all(_GoalObject *self, PyObject *unused)
 {
-    return PyBool_FromLong(hy_goal_has_actions(self->goal, HIF_DISTUPGRADE_ALL));
+    return PyBool_FromLong(hy_goal_has_actions(self->goal, DNF_DISTUPGRADE_ALL));
 }
 
 static PyObject *
 req_has_erase(_GoalObject *self, PyObject *unused)
 {
-    return PyBool_FromLong(hy_goal_has_actions(self->goal, HIF_ERASE));
+    return PyBool_FromLong(hy_goal_has_actions(self->goal, DNF_ERASE));
 }
 
 static PyObject *
 req_has_upgrade_all(_GoalObject *self, PyObject *unused)
 {
-    return PyBool_FromLong(hy_goal_has_actions(self->goal, HIF_UPGRADE_ALL));
+    return PyBool_FromLong(hy_goal_has_actions(self->goal, DNF_UPGRADE_ALL));
 }
 
 static PyObject *
@@ -372,10 +372,10 @@ static PyObject *
 add_protected(_GoalObject *self, PyObject *seq)
 {
     HyGoal goal = self->goal;
-    HifPackageSet *pset = pyseq_to_packageset(seq, goal->sack);
+    DnfPackageSet *pset = pyseq_to_packageset(seq, goal->sack);
     if (pset == NULL)
         return NULL;
-    hif_goal_add_protected(goal, pset);
+    dnf_goal_add_protected(goal, pset);
     g_object_unref(pset);
     Py_RETURN_NONE;
 }
@@ -500,10 +500,10 @@ list_generic(_GoalObject *self, GPtrArray *(*func)(HyGoal, GError **))
 
     if (!plist) {
         switch (error->code) {
-        case HIF_ERROR_INTERNAL_ERROR:
+        case DNF_ERROR_INTERNAL_ERROR:
             PyErr_SetString(HyExc_Value, "Goal has not been run yet.");
             break;
-        case HIF_ERROR_NO_SOLUTION:
+        case DNF_ERROR_NO_SOLUTION:
             PyErr_SetString(HyExc_Runtime, "Goal could not find a solution.");
             break;
         default:
@@ -561,7 +561,7 @@ list_upgrades(_GoalObject *self, PyObject *unused)
 static PyObject *
 obsoleted_by_package(_GoalObject *self, PyObject *pkg)
 {
-    HifPackage *cpkg = packageFromPyObject(pkg);
+    DnfPackage *cpkg = packageFromPyObject(pkg);
 
     if (cpkg == NULL)
         return NULL;
@@ -574,7 +574,7 @@ obsoleted_by_package(_GoalObject *self, PyObject *pkg)
 static PyObject *
 get_reason(_GoalObject *self, PyObject *pkg)
 {
-    HifPackage *cpkg = packageFromPyObject(pkg);
+    DnfPackage *cpkg = packageFromPyObject(pkg);
 
     if (cpkg == NULL)
         return NULL;

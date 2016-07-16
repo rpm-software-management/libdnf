@@ -27,8 +27,8 @@
 #include <solv/pool.h>
 
 
-#include "libhif/hy-util.h"
-#include "libhif/hy-iutil.h"
+#include "libdnf/hy-util.h"
+#include "libdnf/hy-iutil.h"
 #include "fixtures.h"
 #include "test_suites.h"
 

@@ -19,8 +19,8 @@
  */
 
 
-#include "libhif/hy-selector.h"
-#include "libhif/hif-types.h"
+#include "libdnf/hy-selector.h"
+#include "libdnf/dnf-types.h"
 #include "fixtures.h"
 #include "testsys.h"
 #include "test_suites.h"
@@ -42,7 +42,7 @@ START_TEST(test_sltr_provides)
 {
     HySelector sltr = hy_selector_create(test_globals.sack);
     ck_assert_int_eq(hy_selector_set(sltr, HY_PKG_PROVIDES, HY_EQ, "*"),
-                     HIF_ERROR_BAD_SELECTOR);
+                     DNF_ERROR_BAD_SELECTOR);
     hy_selector_free(sltr);
 }
 END_TEST

@@ -25,7 +25,7 @@
 #include <solv/pooltypes.h>
 
 
-#include "libhif/hy-repo.h"
+#include "libdnf/hy-repo.h"
 
 #define UNITTEST_DIR "/tmp/hawkeyXXXXXX"
 #define YUM_DIR_SUFFIX "yum/repodata/"

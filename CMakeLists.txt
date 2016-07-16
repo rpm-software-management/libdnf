@@ -1,4 +1,4 @@
-PROJECT (libhif C)
+PROJECT (libdnf C)
 CMAKE_MINIMUM_REQUIRED (VERSION 2.4)
 CMAKE_POLICY (SET CMP0005 OLD)
 # Avoid a warning because "hth" links to
@@ -7,7 +7,7 @@ CMAKE_POLICY (SET CMP0005 OLD)
 CMAKE_POLICY(SET CMP0003 NEW)
 
 include (VERSION.cmake)
-message ("Building libhif version: ${HIF_VERSION}")
+message ("Building libdnf version: ${LIBDNF_VERSION}")
 
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wcast-align -Wno-uninitialized -Wmissing-declarations -Wredundant-decls -Wcast-align -Wwrite-strings -Wreturn-type -Wformat-nonliteral -Wmissing-format-attribute -Wsign-compare -Wtype-limits -Wuninitialized -Waggregate-return -Wshadow -Winline -Wall -Werror=implicit-function-declaration -Wl,--as-needed")
 set (CMAKE_C_FLAGS_DEBUG	"${CMAKE_C_FLAGS} -ggdb -O0")
@@ -15,7 +15,7 @@ IF(NOT CMAKE_BUILD_TYPE)
   set (CMAKE_BUILD_TYPE DEBUG)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
-ADD_DEFINITIONS(-DG_LOG_DOMAIN=\\"libhif\\")
+ADD_DEFINITIONS(-DG_LOG_DOMAIN=\\"libdnf\\")
 
 INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR})
 
@@ -31,7 +31,7 @@ pkg_check_modules (CHECK REQUIRED check)
 pkg_check_modules (REPO REQUIRED librepo)
 FIND_PROGRAM (VALGRIND_PROGRAM NAMES valgrind PATH /usr/bin /usr/local/bin)
 
-# TODO handle yumdb / dnfdb for libhif
+# TODO handle yumdb / dnfdb for libdnf
 ADD_DEFINITIONS(-DBUILDOPT_USE_DNF_YUMDB=1)
 
 IF (ENABLE_SOLV_URPMREORDER)
@@ -55,16 +55,16 @@ IF (RPMIO_LIBRARY)
 ENDIF (RPMIO_LIBRARY)
 
 ADD_DEFINITIONS(-DTESTDATADIR=\\"${CMAKE_SOURCE_DIR}/data/tests\\")
-ADD_DEFINITIONS(-DPACKAGE_VERSION=\\"${HIF_VERSION}\\")
+ADD_DEFINITIONS(-DPACKAGE_VERSION=\\"${LIBDNF_VERSION}\\")
 
 IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
   SET (LIB_SUFFIX "64")
 ENDIF (CMAKE_SIZEOF_VOID_P MATCHES "8")
 SET (LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
 
-ADD_SUBDIRECTORY (libhif)
+ADD_SUBDIRECTORY (libdnf)
 ENABLE_TESTING()
 ADD_SUBDIRECTORY (tests)
 ADD_SUBDIRECTORY (python/hawkey)
 ADD_SUBDIRECTORY (docs/hawkey)
-ADD_SUBDIRECTORY (docs/libhif)
+ADD_SUBDIRECTORY (docs/libdnf)

@@ -21,16 +21,16 @@
 #include <Python.h>
 
 // hawkey
-#include "hif-advisory.h"
-#include "hif-advisorypkg.h"
-#include "hif-advisoryref.h"
+#include "dnf-advisory.h"
+#include "dnf-advisorypkg.h"
+#include "dnf-advisoryref.h"
 #include "hy-goal.h"
 #include "hy-package.h"
 #include "hy-query.h"
 #include "hy-subject.h"
 #include "hy-types.h"
 #include "hy-util.h"
-#include "hif-version.h"
+#include "dnf-version.h"
 
 // pyhawkey
 #include "advisory-py.h"
@@ -229,9 +229,9 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "FORM_NA", HY_FORM_NA);
     PyModule_AddIntConstant(m, "FORM_NAME", HY_FORM_NAME);
 
-    PyModule_AddIntConstant(m, "VERSION_MAJOR", HIF_MAJOR_VERSION);
-    PyModule_AddIntConstant(m, "VERSION_MINOR", HIF_MINOR_VERSION);
-    PyModule_AddIntConstant(m, "VERSION_PATCH", HIF_MICRO_VERSION);
+    PyModule_AddIntConstant(m, "VERSION_MAJOR", DNF_MAJOR_VERSION);
+    PyModule_AddIntConstant(m, "VERSION_MINOR", DNF_MINOR_VERSION);
+    PyModule_AddIntConstant(m, "VERSION_PATCH", DNF_MICRO_VERSION);
 
     PyModule_AddStringConstant(m, "SYSTEM_REPO_NAME", HY_SYSTEM_REPO_NAME);
     PyModule_AddStringConstant(m, "CMDLINE_REPO_NAME", HY_CMDLINE_REPO_NAME);
@@ -272,18 +272,18 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "PKG_URL", HY_PKG_URL);
     PyModule_AddIntConstant(m, "PKG_VERSION", HY_PKG_VERSION);
 
-    PyModule_AddIntConstant(m, "ERASE", HIF_ERASE);
-    PyModule_AddIntConstant(m, "DISTUPGRADE", HIF_DISTUPGRADE);
-    PyModule_AddIntConstant(m, "DISTUPGRADE_ALL", HIF_DISTUPGRADE_ALL);
-    PyModule_AddIntConstant(m, "DOWNGRADE", HIF_DOWNGRADE);
-    PyModule_AddIntConstant(m, "INSTALL", HIF_INSTALL);
-    PyModule_AddIntConstant(m, "UPGRADE", HIF_UPGRADE);
-    PyModule_AddIntConstant(m, "UPGRADE_ALL", HIF_UPGRADE_ALL);
+    PyModule_AddIntConstant(m, "ERASE", DNF_ERASE);
+    PyModule_AddIntConstant(m, "DISTUPGRADE", DNF_DISTUPGRADE);
+    PyModule_AddIntConstant(m, "DISTUPGRADE_ALL", DNF_DISTUPGRADE_ALL);
+    PyModule_AddIntConstant(m, "DOWNGRADE", DNF_DOWNGRADE);
+    PyModule_AddIntConstant(m, "INSTALL", DNF_INSTALL);
+    PyModule_AddIntConstant(m, "UPGRADE", DNF_UPGRADE);
+    PyModule_AddIntConstant(m, "UPGRADE_ALL", DNF_UPGRADE_ALL);
 
-    PyModule_AddIntConstant(m, "ALLOW_UNINSTALL", HIF_ALLOW_UNINSTALL);
-    PyModule_AddIntConstant(m, "FORCE_BEST", HIF_FORCE_BEST);
-    PyModule_AddIntConstant(m, "VERIFY", HIF_VERIFY);
-    PyModule_AddIntConstant(m, "IGNORE_WEAK_DEPS", HIF_IGNORE_WEAK_DEPS);
+    PyModule_AddIntConstant(m, "ALLOW_UNINSTALL", DNF_ALLOW_UNINSTALL);
+    PyModule_AddIntConstant(m, "FORCE_BEST", DNF_FORCE_BEST);
+    PyModule_AddIntConstant(m, "VERIFY", DNF_VERIFY);
+    PyModule_AddIntConstant(m, "IGNORE_WEAK_DEPS", DNF_IGNORE_WEAK_DEPS);
 
     PyModule_AddIntConstant(m, "CHKSUM_MD5", G_CHECKSUM_MD5);
     PyModule_AddIntConstant(m, "CHKSUM_SHA1", G_CHECKSUM_SHA1);
@@ -304,15 +304,15 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "REASON_CLEAN", HY_REASON_CLEAN);
     PyModule_AddIntConstant(m, "REASON_WEAKDEP", HY_REASON_WEAKDEP);
 
-    PyModule_AddIntConstant(m, "ADVISORY_UNKNOWN", HIF_ADVISORY_KIND_UNKNOWN);
-    PyModule_AddIntConstant(m, "ADVISORY_SECURITY", HIF_ADVISORY_KIND_SECURITY);
-    PyModule_AddIntConstant(m, "ADVISORY_BUGFIX", HIF_ADVISORY_KIND_BUGFIX);
-    PyModule_AddIntConstant(m, "ADVISORY_ENHANCEMENT", HIF_ADVISORY_KIND_ENHANCEMENT);
+    PyModule_AddIntConstant(m, "ADVISORY_UNKNOWN", DNF_ADVISORY_KIND_UNKNOWN);
+    PyModule_AddIntConstant(m, "ADVISORY_SECURITY", DNF_ADVISORY_KIND_SECURITY);
+    PyModule_AddIntConstant(m, "ADVISORY_BUGFIX", DNF_ADVISORY_KIND_BUGFIX);
+    PyModule_AddIntConstant(m, "ADVISORY_ENHANCEMENT", DNF_ADVISORY_KIND_ENHANCEMENT);
 
-    PyModule_AddIntConstant(m, "REFERENCE_UNKNOWN", HIF_REFERENCE_KIND_UNKNOWN);
-    PyModule_AddIntConstant(m, "REFERENCE_BUGZILLA", HIF_REFERENCE_KIND_BUGZILLA);
-    PyModule_AddIntConstant(m, "REFERENCE_CVE", HIF_REFERENCE_KIND_CVE);
-    PyModule_AddIntConstant(m, "REFERENCE_VENDOR", HIF_REFERENCE_KIND_VENDOR);
+    PyModule_AddIntConstant(m, "REFERENCE_UNKNOWN", DNF_REFERENCE_KIND_UNKNOWN);
+    PyModule_AddIntConstant(m, "REFERENCE_BUGZILLA", DNF_REFERENCE_KIND_BUGZILLA);
+    PyModule_AddIntConstant(m, "REFERENCE_CVE", DNF_REFERENCE_KIND_CVE);
+    PyModule_AddIntConstant(m, "REFERENCE_VENDOR", DNF_REFERENCE_KIND_VENDOR);
 
     return PYCOMP_MOD_SUCCESS_VAL(m);
 }

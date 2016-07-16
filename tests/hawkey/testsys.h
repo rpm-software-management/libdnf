@@ -25,12 +25,12 @@
 #include <solv/pooltypes.h>
 
 
-#include "libhif/hif-sack.h"
+#include "libdnf/dnf-sack.h"
 #include "testshared.h"
 
-void assert_nevra_eq(HifPackage *pkg, const char *nevra);
-HifPackage *by_name(HifSack *sack, const char *name);
-HifPackage *by_name_repo(HifSack *sack, const char *name, const char *repo);
+void assert_nevra_eq(DnfPackage *pkg, const char *nevra);
+DnfPackage *by_name(DnfSack *sack, const char *name);
+DnfPackage *by_name_repo(DnfSack *sack, const char *name, const char *repo);
 void dump_packagelist(GPtrArray *plist, int free);
 void dump_query_results(HyQuery query);
 void dump_goal_results(HyGoal goal);

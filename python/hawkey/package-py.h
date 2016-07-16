@@ -25,7 +25,7 @@
 
 extern PyTypeObject package_Type;
 
-HifPackage *packageFromPyObject(PyObject *o);
-int package_converter(PyObject *o, HifPackage **pkg_ptr);
+DnfPackage *packageFromPyObject(PyObject *o);
+int package_converter(PyObject *o, DnfPackage **pkg_ptr);
 
 #endif // PACKAGE_PY_H

@@ -28,11 +28,11 @@
 #include <solv/testcase.h>
 
 
-#include "libhif/hif-types.h"
-#include "libhif/hy-package-private.h"
-#include "libhif/hy-repo-private.h"
-#include "libhif/hif-sack-private.h"
-#include "libhif/hy-util.h"
+#include "libdnf/dnf-types.h"
+#include "libdnf/hy-package-private.h"
+#include "libdnf/hy-repo-private.h"
+#include "libdnf/dnf-sack-private.h"
+#include "libdnf/hy-util.h"
 #include "fixtures.h"
 #include "testsys.h"
 #include "test_suites.h"
@@ -48,25 +48,25 @@ END_TEST
 
 START_TEST(test_sack_create)
 {
-    g_autoptr(HifSack) sack = hif_sack_new();
-    hif_sack_set_cachedir(sack, test_globals.tmpdir);
-    fail_unless(hif_sack_setup(sack, HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
+    g_autoptr(DnfSack) sack = dnf_sack_new();
+    dnf_sack_set_cachedir(sack, test_globals.tmpdir);
+    fail_unless(dnf_sack_setup(sack, DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
     fail_if(sack == NULL, NULL);
-    fail_if(hif_sack_get_pool(sack) == NULL, NULL);
+    fail_if(dnf_sack_get_pool(sack) == NULL, NULL);
 }
 END_TEST
 
 START_TEST(test_give_cache_fn)
 {
-    HifSack *sack = hif_sack_new();
-    hif_sack_set_cachedir(sack, test_globals.tmpdir);
-    fail_unless(hif_sack_setup(sack, HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
+    DnfSack *sack = dnf_sack_new();
+    dnf_sack_set_cachedir(sack, test_globals.tmpdir);
+    fail_unless(dnf_sack_setup(sack, DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
 
-    char *path = hif_sack_give_cache_fn(sack, "rain", NULL);
+    char *path = dnf_sack_give_cache_fn(sack, "rain", NULL);
     fail_if(strstr(path, "rain.solv") == NULL);
     g_free(path);
 
-    path = hif_sack_give_cache_fn(sack, "rain", HY_EXT_FILENAMES);
+    path = dnf_sack_give_cache_fn(sack, "rain", HY_EXT_FILENAMES);
     fail_if(strstr(path, "rain-filenames.solvx") == NULL);
     g_free(path);
     g_object_unref(sack);
@@ -75,11 +75,11 @@ END_TEST
 
 START_TEST(test_list_arches)
 {
-    HifSack *sack = hif_sack_new();
-    hif_sack_set_cachedir(sack, test_globals.tmpdir);
-    hif_sack_set_arch(sack, TEST_FIXED_ARCH, NULL);
-    fail_unless(hif_sack_setup(sack, HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
-    const char ** arches = hif_sack_list_arches(sack);
+    DnfSack *sack = dnf_sack_new();
+    dnf_sack_set_cachedir(sack, test_globals.tmpdir);
+    dnf_sack_set_arch(sack, TEST_FIXED_ARCH, NULL);
+    fail_unless(dnf_sack_setup(sack, DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
+    const char ** arches = dnf_sack_list_arches(sack);
 
     /* noarch, x86_64, athlon, i686, i586, i486, i386 */
     fail_unless(g_strv_length((gchar**)arches), 7);
@@ -93,15 +93,15 @@ END_TEST
 START_TEST(test_load_repo_err)
 {
     g_autoptr(GError) error = NULL;
-    HifSack *sack = hif_sack_new();
-    hif_sack_set_cachedir(sack, test_globals.tmpdir);
-    fail_unless(hif_sack_setup(sack, HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, &error));
+    DnfSack *sack = dnf_sack_new();
+    dnf_sack_set_cachedir(sack, test_globals.tmpdir);
+    fail_unless(dnf_sack_setup(sack, DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, &error));
     g_assert(sack != NULL);
     HyRepo repo = hy_repo_create("crabalocker");
     g_assert(repo != NULL);
     hy_repo_set_string(repo, HY_REPO_MD_FN, "/non/existing");
-    fail_unless(!hif_sack_load_repo(sack, repo, 0, &error));
-    fail_unless(g_error_matches (error, HIF_ERROR, HIF_ERROR_FILE_INVALID));
+    fail_unless(!dnf_sack_load_repo(sack, repo, 0, &error));
+    fail_unless(g_error_matches (error, DNF_ERROR, DNF_ERROR_FILE_INVALID));
     hy_repo_free(repo);
     g_object_unref(sack);
 }
@@ -109,10 +109,10 @@ END_TEST
 
 START_TEST(test_repo_written)
 {
-    HifSack *sack = hif_sack_new();
-    hif_sack_set_cachedir(sack, test_globals.tmpdir);
-    fail_unless(hif_sack_setup(sack, HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
-    char *filename = hif_sack_give_cache_fn(sack, "test_sack_written", NULL);
+    DnfSack *sack = dnf_sack_new();
+    dnf_sack_set_cachedir(sack, test_globals.tmpdir);
+    fail_unless(dnf_sack_setup(sack, DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
+    char *filename = dnf_sack_give_cache_fn(sack, "test_sack_written", NULL);
 
     fail_unless(access(filename, R_OK|W_OK));
     setup_yum_sack(sack, "test_sack_written");
@@ -131,17 +131,17 @@ END_TEST
 
 START_TEST(test_add_cmdline_package)
 {
-    HifSack *sack = hif_sack_new();
-    hif_sack_set_cachedir(sack, test_globals.tmpdir);
+    DnfSack *sack = dnf_sack_new();
+    dnf_sack_set_cachedir(sack, test_globals.tmpdir);
 
     char *path_mystery = solv_dupjoin(TESTDATADIR, "/hawkey/yum/mystery-devel-19.67-1.noarch.rpm", NULL);
-    HifPackage *pkg_mystery = hif_sack_add_cmdline_package(sack, path_mystery);
-    char *location_mystery = hif_package_get_location(pkg_mystery);
+    DnfPackage *pkg_mystery = dnf_sack_add_cmdline_package(sack, path_mystery);
+    char *location_mystery = dnf_package_get_location(pkg_mystery);
     ck_assert_str_eq(path_mystery, location_mystery);
 
     char *path_tour = solv_dupjoin(TESTDATADIR, "/hawkey/yum/tour-4-6.noarch.rpm", NULL);
-    HifPackage *pkg_tour = hif_sack_add_cmdline_package(sack, path_tour);
-    char *location_tour = hif_package_get_location(pkg_tour);
+    DnfPackage *pkg_tour = dnf_sack_add_cmdline_package(sack, path_tour);
+    char *location_tour = dnf_package_get_location(pkg_tour);
     ck_assert_str_eq(path_tour, location_tour);
 
     g_free(path_mystery);
@@ -154,7 +154,7 @@ END_TEST
 
 START_TEST(test_repo_load)
 {
-    fail_unless(hif_sack_count(test_globals.sack) ==
+    fail_unless(dnf_sack_count(test_globals.sack) ==
                 TEST_EXPECT_SYSTEM_NSOLVABLES);
 }
 END_TEST
@@ -190,28 +190,28 @@ check_filelist(Pool *pool)
 
 START_TEST(test_filelist)
 {
-    HifSack *sack = test_globals.sack;
+    DnfSack *sack = test_globals.sack;
     HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
-    char *fn_solv = hif_sack_give_cache_fn(sack, YUM_REPO_NAME, HY_EXT_FILENAMES);
+    char *fn_solv = dnf_sack_give_cache_fn(sack, YUM_REPO_NAME, HY_EXT_FILENAMES);
 
     fail_unless(repo->state_filelists == _HY_WRITTEN);
     fail_if(access(fn_solv, R_OK));
     g_free(fn_solv);
 
-    check_filelist(hif_sack_get_pool(test_globals.sack));
+    check_filelist(dnf_sack_get_pool(test_globals.sack));
 }
 END_TEST
 
 START_TEST(test_filelist_from_cache)
 {
-    HifSack *sack = hif_sack_new();
-    hif_sack_set_cachedir(sack, test_globals.tmpdir);
-    fail_unless(hif_sack_setup(sack, HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
+    DnfSack *sack = dnf_sack_new();
+    dnf_sack_set_cachedir(sack, test_globals.tmpdir);
+    fail_unless(dnf_sack_setup(sack, DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
     setup_yum_sack(sack, YUM_REPO_NAME);
 
     HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
     fail_unless(repo->state_filelists == _HY_LOADED_CACHE);
-    check_filelist(hif_sack_get_pool(sack));
+    check_filelist(dnf_sack_get_pool(sack));
     g_object_unref(sack);
 }
 END_TEST
@@ -239,58 +239,58 @@ check_prestoinfo(Pool *pool)
 
 START_TEST(test_presto)
 {
-    HifSack *sack = test_globals.sack;
+    DnfSack *sack = test_globals.sack;
     HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
-    char *fn_solv = hif_sack_give_cache_fn(sack, YUM_REPO_NAME, HY_EXT_PRESTO);
+    char *fn_solv = dnf_sack_give_cache_fn(sack, YUM_REPO_NAME, HY_EXT_PRESTO);
 
     fail_if(access(fn_solv, R_OK));
     fail_unless(repo->state_presto == _HY_WRITTEN);
     g_free(fn_solv);
-    check_prestoinfo(hif_sack_get_pool(sack));
+    check_prestoinfo(dnf_sack_get_pool(sack));
 }
 END_TEST
 
 START_TEST(test_presto_from_cache)
 {
-    HifSack *sack = hif_sack_new();
-    hif_sack_set_cachedir(sack, test_globals.tmpdir);
-    hif_sack_set_arch(sack, TEST_FIXED_ARCH, NULL);
-    fail_unless(hif_sack_setup(sack, HIF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
+    DnfSack *sack = dnf_sack_new();
+    dnf_sack_set_cachedir(sack, test_globals.tmpdir);
+    dnf_sack_set_arch(sack, TEST_FIXED_ARCH, NULL);
+    fail_unless(dnf_sack_setup(sack, DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
     setup_yum_sack(sack, YUM_REPO_NAME);
 
     HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
     fail_unless(repo->state_presto == _HY_LOADED_CACHE);
-    check_prestoinfo(hif_sack_get_pool(sack));
+    check_prestoinfo(dnf_sack_get_pool(sack));
     g_object_unref(sack);
 }
 END_TEST
 
-START_TEST(test_hif_sack_knows)
+START_TEST(test_dnf_sack_knows)
 {
-    HifSack *sack = test_globals.sack;
+    DnfSack *sack = test_globals.sack;
 
-    fail_if(hif_sack_knows(sack, "penny-lib-DEVEL", NULL, 0));
-    fail_unless(hif_sack_knows(sack, "penny-lib-DEVEL", NULL, HY_ICASE|HY_NAME_ONLY));
+    fail_if(dnf_sack_knows(sack, "penny-lib-DEVEL", NULL, 0));
+    fail_unless(dnf_sack_knows(sack, "penny-lib-DEVEL", NULL, HY_ICASE|HY_NAME_ONLY));
 
-    fail_if(hif_sack_knows(sack, "P", NULL, HY_NAME_ONLY));
-    fail_unless(hif_sack_knows(sack, "P", NULL, 0));
+    fail_if(dnf_sack_knows(sack, "P", NULL, HY_NAME_ONLY));
+    fail_unless(dnf_sack_knows(sack, "P", NULL, 0));
 }
 END_TEST
 
-START_TEST(test_hif_sack_knows_glob)
+START_TEST(test_dnf_sack_knows_glob)
 {
-    HifSack *sack = test_globals.sack;
-    fail_if(hif_sack_knows(sack, "penny-l*", "4", HY_NAME_ONLY));
-    fail_unless(hif_sack_knows(sack, "penny-l*", "4", HY_NAME_ONLY|HY_GLOB));
-    fail_if(hif_sack_knows(sack, "penny-l*1", "4", HY_NAME_ONLY|HY_GLOB));
+    DnfSack *sack = test_globals.sack;
+    fail_if(dnf_sack_knows(sack, "penny-l*", "4", HY_NAME_ONLY));
+    fail_unless(dnf_sack_knows(sack, "penny-l*", "4", HY_NAME_ONLY|HY_GLOB));
+    fail_if(dnf_sack_knows(sack, "penny-l*1", "4", HY_NAME_ONLY|HY_GLOB));
 }
 END_TEST
 
-START_TEST(test_hif_sack_knows_version)
+START_TEST(test_dnf_sack_knows_version)
 {
-    HifSack *sack = test_globals.sack;
-    fail_unless(hif_sack_knows(sack, "penny", "4", HY_NAME_ONLY));
-    fail_if(hif_sack_knows(sack, "penny", "5", HY_NAME_ONLY));
+    DnfSack *sack = test_globals.sack;
+    fail_unless(dnf_sack_knows(sack, "penny", "4", HY_NAME_ONLY));
+    fail_if(dnf_sack_knows(sack, "penny", "5", HY_NAME_ONLY));
 }
 END_TEST
 
@@ -323,9 +323,9 @@ sack_suite(void)
 
     tc = tcase_create("SackKnows");
     tcase_add_unchecked_fixture(tc, fixture_all, teardown);
-    tcase_add_test(tc, test_hif_sack_knows);
-    tcase_add_test(tc, test_hif_sack_knows_glob);
-    tcase_add_test(tc, test_hif_sack_knows_version);
+    tcase_add_test(tc, test_dnf_sack_knows);
+    tcase_add_test(tc, test_dnf_sack_knows_glob);
+    tcase_add_test(tc, test_dnf_sack_knows_version);
     suite_add_tcase(s, tc);
 
     return s;
