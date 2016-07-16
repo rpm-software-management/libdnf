@@ -19,14 +19,14 @@
  */
 
 
-#include "libhif/hy-package-private.h"
-#include "libhif/hy-util.h"
+#include "libdnf/hy-package-private.h"
+#include "libdnf/hy-util.h"
 #include "test_suites.h"
 
-static HifPackage *
+static DnfPackage *
 mock_package(Id id)
 {
-    return hif_package_new(NULL, id);
+    return dnf_package_new(NULL, id);
 }
 
 static GPtrArray *fixture_plist;
@@ -48,8 +48,8 @@ free_fixture(void)
 
 START_TEST(test_has)
 {
-    HifPackage *pkg1 = mock_package(10);
-    HifPackage *pkg2 = mock_package(1);
+    DnfPackage *pkg1 = mock_package(10);
+    DnfPackage *pkg2 = mock_package(1);
 
     fail_unless(hy_packagelist_has(fixture_plist, pkg1));
     fail_if(hy_packagelist_has(fixture_plist, pkg2));

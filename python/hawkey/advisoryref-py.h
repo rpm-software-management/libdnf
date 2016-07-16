@@ -26,6 +26,6 @@
 
 extern PyTypeObject advisoryref_Type;
 
-PyObject *advisoryrefToPyObject(HifAdvisoryRef *advisoryref, PyObject *sack);
+PyObject *advisoryrefToPyObject(DnfAdvisoryRef *advisoryref, PyObject *sack);
 
 #endif // ADVISORYREF_PY_H

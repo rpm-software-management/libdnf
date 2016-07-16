@@ -1,6 +1,6 @@
 # This GLib suppressions file is known to be used at least by:
 #
-#  - rpm-software-management/libhif
+#  - rpm-software-management/libdnf
 #
 # This file should be treated as canonical.
 {

@@ -76,7 +76,7 @@ static PyObject* possibilities_next(_PossibilitiesObject *self)
         if (hy_possibilities_next_nevra(iter, &nevra) == 0)
             return nevraToPyObject(nevra);
     } else {
-        HifReldep *reldep;
+        DnfReldep *reldep;
         if (hy_possibilities_next_reldep(iter, &reldep) == 0)
             return reldepToPyObject(reldep);
     }

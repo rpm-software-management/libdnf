@@ -1,4 +1,4 @@
 # These are currently the only two things that
 # show up in a srcdir != builddir build.
-docs/libhif/version.xml
-libhif/hif-version.h
+/docs/libdnf/version.xml
+/libdnf/dnf-version.h

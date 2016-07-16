@@ -21,7 +21,7 @@
 #include <Python.h>
 
 // hawkey
-#include "hif-advisoryref-private.h"
+#include "dnf-advisoryref-private.h"
 
 // pyhawkey
 #include "advisoryref-py.h"
@@ -31,13 +31,13 @@
 
 typedef struct {
     PyObject_HEAD
-    HifAdvisoryRef *advisoryref;
+    DnfAdvisoryRef *advisoryref;
     PyObject *sack;
 } _AdvisoryRefObject;
 
 
 PyObject *
-advisoryrefToPyObject(HifAdvisoryRef *advisoryref, PyObject *sack)
+advisoryrefToPyObject(DnfAdvisoryRef *advisoryref, PyObject *sack)
 {
     _AdvisoryRefObject *self = PyObject_New(_AdvisoryRefObject, &advisoryref_Type);
     if (!self)
@@ -50,7 +50,7 @@ advisoryrefToPyObject(HifAdvisoryRef *advisoryref, PyObject *sack)
     return (PyObject *)self;
 }
 
-static HifAdvisoryRef *
+static DnfAdvisoryRef *
 advisoryrefFromPyObject(PyObject *o)
 {
     if (!PyObject_TypeCheck(o, &advisoryref_Type)) {
@@ -61,9 +61,9 @@ advisoryrefFromPyObject(PyObject *o)
 }
 
 static int
-advisoryref_converter(PyObject *o, HifAdvisoryRef **ref_ptr)
+advisoryref_converter(PyObject *o, DnfAdvisoryRef **ref_ptr)
 {
-    HifAdvisoryRef *ref = advisoryrefFromPyObject(o);
+    DnfAdvisoryRef *ref = advisoryrefFromPyObject(o);
     if (ref == NULL)
         return 0;
     *ref_ptr = ref;
@@ -84,7 +84,7 @@ static PyObject *
 advisoryref_richcompare(PyObject *self, PyObject *other, int op)
 {
     PyObject *result;
-    HifAdvisoryRef *cself, *cother;
+    DnfAdvisoryRef *cself, *cother;
 
     if (!advisoryref_converter(self, &cself) ||
         !advisoryref_converter(other, &cother)) {
@@ -94,7 +94,7 @@ advisoryref_richcompare(PyObject *self, PyObject *other, int op)
         return Py_NotImplemented;
     }
 
-    int identical = hif_advisoryref_compare(cself, cother);
+    int identical = dnf_advisoryref_compare(cself, cother);
     switch (op) {
     case Py_EQ:
         result = TEST_COND(identical);
@@ -122,10 +122,10 @@ advisoryref_richcompare(PyObject *self, PyObject *other, int op)
 static PyObject *
 get_type(_AdvisoryRefObject *self, void *closure)
 {
-    HifAdvisoryRefKind (*func)(HifAdvisoryRef*);
-    HifAdvisoryRefKind ctype;
+    DnfAdvisoryRefKind (*func)(DnfAdvisoryRef*);
+    DnfAdvisoryRefKind ctype;
 
-    func = (HifAdvisoryRefKind (*)(HifAdvisoryRef*))closure;
+    func = (DnfAdvisoryRefKind (*)(DnfAdvisoryRef*))closure;
     ctype = func(self->advisoryref);
     return PyLong_FromLong(ctype);
 }
@@ -133,10 +133,10 @@ get_type(_AdvisoryRefObject *self, void *closure)
 static PyObject *
 get_str(_AdvisoryRefObject *self, void *closure)
 {
-    const char *(*func)(HifAdvisoryRef*);
+    const char *(*func)(DnfAdvisoryRef*);
     const char *cstr;
 
-    func = (const char *(*)(HifAdvisoryRef*))closure;
+    func = (const char *(*)(DnfAdvisoryRef*))closure;
     cstr = func(self->advisoryref);
     if (cstr == NULL)
         Py_RETURN_NONE;
@@ -144,10 +144,10 @@ get_str(_AdvisoryRefObject *self, void *closure)
 }
 
 static PyGetSetDef advisoryref_getsetters[] = {
-    {(char*)"type", (getter)get_type, NULL, NULL, (void *)hif_advisoryref_get_kind},
-    {(char*)"id", (getter)get_str, NULL, NULL, (void *)hif_advisoryref_get_id},
-    {(char*)"title", (getter)get_str, NULL, NULL, (void *)hif_advisoryref_get_title},
-    {(char*)"url", (getter)get_str, NULL, NULL, (void *)hif_advisoryref_get_url},
+    {(char*)"type", (getter)get_type, NULL, NULL, (void *)dnf_advisoryref_get_kind},
+    {(char*)"id", (getter)get_str, NULL, NULL, (void *)dnf_advisoryref_get_id},
+    {(char*)"title", (getter)get_str, NULL, NULL, (void *)dnf_advisoryref_get_title},
+    {(char*)"url", (getter)get_str, NULL, NULL, (void *)dnf_advisoryref_get_url},
     {NULL}                      /* sentinel */
 };
 

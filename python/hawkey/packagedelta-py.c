@@ -31,11 +31,11 @@
 
 typedef struct {
     PyObject_HEAD
-    HifPackageDelta *delta;
+    DnfPackageDelta *delta;
 } _PackageDeltaObject;
 
 PyObject *
-packageDeltaToPyObject(HifPackageDelta *delta)
+packageDeltaToPyObject(DnfPackageDelta *delta)
 {
     _PackageDeltaObject *self = PyObject_New(_PackageDeltaObject, &packageDelta_Type);
     self->delta = delta;
@@ -56,10 +56,10 @@ packageDelta_dealloc(_PackageDeltaObject *self)
 static PyObject *
 get_str(_PackageDeltaObject *self, void *closure)
 {
-    const char *(*func)(HifPackageDelta *);
+    const char *(*func)(DnfPackageDelta *);
     const char *cstr;
 
-    func = (const char *(*)(HifPackageDelta *))closure;
+    func = (const char *(*)(DnfPackageDelta *))closure;
     cstr = func(self->delta);
     if (cstr == NULL)
         Py_RETURN_NONE;
@@ -69,19 +69,19 @@ get_str(_PackageDeltaObject *self, void *closure)
 static PyObject *
 get_num(_PackageDeltaObject *self, void *closure)
 {
-    guint64 (*func)(HifPackageDelta *);
-    func = (guint64 (*)(HifPackageDelta *))closure;
+    guint64 (*func)(DnfPackageDelta *);
+    func = (guint64 (*)(DnfPackageDelta *))closure;
     return PyLong_FromUnsignedLongLong(func(self->delta));
 }
 
 static PyObject *
 get_chksum(_PackageDeltaObject *self, void *closure)
 {
-    HyChecksum *(*func)(HifPackageDelta *, int *);
+    HyChecksum *(*func)(DnfPackageDelta *, int *);
     int type;
     HyChecksum *cs;
 
-    func = (HyChecksum *(*)(HifPackageDelta *, int *))closure;
+    func = (HyChecksum *(*)(DnfPackageDelta *, int *))closure;
     cs = func(self->delta, &type);
     if (cs == 0) {
         PyErr_SetString(PyExc_AttributeError, "No such checksum.");
@@ -102,13 +102,13 @@ get_chksum(_PackageDeltaObject *self, void *closure)
 
 static PyGetSetDef packageDelta_getsetters[] = {
     {(char*) "location", (getter)get_str, NULL, NULL,
-     (void *)hif_packagedelta_get_location},
+     (void *)dnf_packagedelta_get_location},
     {(char*) "baseurl", (getter)get_str, NULL, NULL,
-     (void *)hif_packagedelta_get_baseurl},
+     (void *)dnf_packagedelta_get_baseurl},
     {(char*) "downloadsize", (getter)get_num, NULL, NULL,
-     (void *)hif_packagedelta_get_downloadsize},
+     (void *)dnf_packagedelta_get_downloadsize},
     {(char*) "chksum", (getter)get_chksum, NULL, NULL,
-    (void *)hif_packagedelta_get_chksum},
+    (void *)dnf_packagedelta_get_chksum},
     {NULL}                        /* sentinel */
 };
 

@@ -22,9 +22,9 @@
 #include <datetime.h>
 
 // hawkey
-#include "hif-advisory-private.h"
-#include "hif-advisorypkg.h"
-#include "hif-advisoryref.h"
+#include "dnf-advisory-private.h"
+#include "dnf-advisorypkg.h"
+#include "dnf-advisoryref.h"
 #include "hy-package.h"
 
 // pyhawkey
@@ -35,13 +35,13 @@
 
 typedef struct {
     PyObject_HEAD
-    HifAdvisory *advisory;
+    DnfAdvisory *advisory;
     PyObject *sack;
 } _AdvisoryObject;
 
 
 PyObject *
-advisoryToPyObject(HifAdvisory *advisory, PyObject *sack)
+advisoryToPyObject(DnfAdvisory *advisory, PyObject *sack)
 {
     _AdvisoryObject *self = PyObject_New(_AdvisoryObject, &advisory_Type);
     if (!self)
@@ -54,7 +54,7 @@ advisoryToPyObject(HifAdvisory *advisory, PyObject *sack)
     return (PyObject *)self;
 }
 
-static HifAdvisory *
+static DnfAdvisory *
 advisoryFromPyObject(PyObject *o)
 {
     if (!PyObject_TypeCheck(o, &advisory_Type)) {
@@ -65,9 +65,9 @@ advisoryFromPyObject(PyObject *o)
 }
 
 static int
-advisory_converter(PyObject *o, HifAdvisory **advisory_ptr)
+advisory_converter(PyObject *o, DnfAdvisory **advisory_ptr)
 {
-    HifAdvisory *advisory = advisoryFromPyObject(o);
+    DnfAdvisory *advisory = advisoryFromPyObject(o);
     if (advisory == NULL)
         return 0;
     *advisory_ptr = advisory;
@@ -88,7 +88,7 @@ static PyObject *
 advisory_richcompare(PyObject *self, PyObject *other, int op)
 {
     PyObject *result;
-    HifAdvisory *cself, *cother;
+    DnfAdvisory *cself, *cother;
 
     if (!advisory_converter(self, &cself) ||
         !advisory_converter(other, &cother)) {
@@ -98,7 +98,7 @@ advisory_richcompare(PyObject *self, PyObject *other, int op)
         return Py_NotImplemented;
     }
 
-    int identical = hif_advisory_compare(cself, cother);
+    int identical = dnf_advisory_compare(cself, cother);
     switch (op) {
     case Py_EQ:
         result = TEST_COND(identical);
@@ -126,10 +126,10 @@ advisory_richcompare(PyObject *self, PyObject *other, int op)
 static PyObject *
 get_str(_AdvisoryObject *self, void *closure)
 {
-    const char *(*func)(HifAdvisory*);
+    const char *(*func)(DnfAdvisory*);
     const char *cstr;
 
-    func = (const char *(*)(HifAdvisory*))closure;
+    func = (const char *(*)(DnfAdvisory*))closure;
     cstr = func(self->advisory);
     if (cstr == NULL)
         Py_RETURN_NONE;
@@ -139,10 +139,10 @@ get_str(_AdvisoryObject *self, void *closure)
 static PyObject *
 get_type(_AdvisoryObject *self, void *closure)
 {
-    HifAdvisoryKind (*func)(HifAdvisory*);
-    HifAdvisoryKind ctype;
+    DnfAdvisoryKind (*func)(DnfAdvisory*);
+    DnfAdvisoryKind ctype;
 
-    func = (HifAdvisoryKind (*)(HifAdvisory*))closure;
+    func = (DnfAdvisoryKind (*)(DnfAdvisory*))closure;
     ctype = func(self->advisory);
     return PyLong_FromLong(ctype);
 }
@@ -150,8 +150,8 @@ get_type(_AdvisoryObject *self, void *closure)
 static PyObject *
 get_datetime(_AdvisoryObject *self, void *closure)
 {
-    guint64 (*func)(HifAdvisory*);
-    func = (guint64 (*)(HifAdvisory*))closure;
+    guint64 (*func)(DnfAdvisory*);
+    func = (guint64 (*)(DnfAdvisory*))closure;
     PyObject *timestamp = PyLong_FromUnsignedLongLong(func(self->advisory));
     PyObject *args = Py_BuildValue("(O)", timestamp);
     PyDateTime_IMPORT;
@@ -164,11 +164,11 @@ get_datetime(_AdvisoryObject *self, void *closure)
 static PyObject *
 get_advisorypkg_list(_AdvisoryObject *self, void *closure)
 {
-    GPtrArray *(*func)(HifAdvisory*);
+    GPtrArray *(*func)(DnfAdvisory*);
     GPtrArray *advisorypkgs;
     PyObject *list;
 
-    func = (GPtrArray *(*)(HifAdvisory*))closure;
+    func = (GPtrArray *(*)(DnfAdvisory*))closure;
     advisorypkgs = func(self->advisory);
     if (advisorypkgs == NULL)
         Py_RETURN_NONE;
@@ -182,11 +182,11 @@ get_advisorypkg_list(_AdvisoryObject *self, void *closure)
 static PyObject *
 get_advisoryref_list(_AdvisoryObject *self, void *closure)
 {
-    GPtrArray *(*func)(HifAdvisory*);
+    GPtrArray *(*func)(DnfAdvisory*);
     GPtrArray *advisoryrefs;
     PyObject *list;
 
-    func = (GPtrArray *(*)(HifAdvisory*))closure;
+    func = (GPtrArray *(*)(DnfAdvisory*))closure;
     advisoryrefs = func(self->advisory);
     if (advisoryrefs == NULL)
         Py_RETURN_NONE;
@@ -198,14 +198,14 @@ get_advisoryref_list(_AdvisoryObject *self, void *closure)
 }
 
 static PyGetSetDef advisory_getsetters[] = {
-    {(char*)"title", (getter)get_str, NULL, NULL, (void *)hif_advisory_get_title},
-    {(char*)"id", (getter)get_str, NULL, NULL, (void *)hif_advisory_get_id},
-    {(char*)"type", (getter)get_type, NULL, NULL, (void *)hif_advisory_get_kind},
-    {(char*)"description", (getter)get_str, NULL, NULL, (void *)hif_advisory_get_description},
-    {(char*)"rights", (getter)get_str, NULL, NULL, (void *)hif_advisory_get_rights},
-    {(char*)"updated", (getter)get_datetime, NULL, NULL, (void *)hif_advisory_get_updated},
-    {(char*)"packages", (getter)get_advisorypkg_list, NULL, NULL, (void *)hif_advisory_get_packages},
-    {(char*)"references", (getter)get_advisoryref_list, NULL, NULL, (void *)hif_advisory_get_references},
+    {(char*)"title", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_title},
+    {(char*)"id", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_id},
+    {(char*)"type", (getter)get_type, NULL, NULL, (void *)dnf_advisory_get_kind},
+    {(char*)"description", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_description},
+    {(char*)"rights", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_rights},
+    {(char*)"updated", (getter)get_datetime, NULL, NULL, (void *)dnf_advisory_get_updated},
+    {(char*)"packages", (getter)get_advisorypkg_list, NULL, NULL, (void *)dnf_advisory_get_packages},
+    {(char*)"references", (getter)get_advisoryref_list, NULL, NULL, (void *)dnf_advisory_get_references},
     {NULL}                      /* sentinel */
 };
 

@@ -22,8 +22,8 @@
 #include <stdio.h>
 
 
-#include "libhif/hif-types.h"
-#include "libhif/hy-util.h"
+#include "libdnf/dnf-types.h"
+#include "libdnf/hy-util.h"
 #include "test_suites.h"
 
 START_TEST(test_detect_arch)
@@ -81,7 +81,7 @@ START_TEST(test_split_nevra)
 
     n = "no.go";
     ret = hy_split_nevra(n, &name, &epoch, &version, &release, &arch);
-    fail_unless(ret == HIF_ERROR_INTERNAL_ERROR);
+    fail_unless(ret == DNF_ERROR_INTERNAL_ERROR);
 }
 END_TEST
 

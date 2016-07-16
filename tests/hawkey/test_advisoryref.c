@@ -20,29 +20,29 @@
 
 
 
-#include "libhif/hif-advisory.h"
-#include "libhif/hif-advisoryref.h"
-#include "libhif/hy-package.h"
+#include "libdnf/dnf-advisory.h"
+#include "libdnf/dnf-advisoryref.h"
+#include "libdnf/hy-package.h"
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"
 
-static HifAdvisoryRef *reference;
+static DnfAdvisoryRef *reference;
 
 static void
 advisoryref_fixture(void)
 {
     fixture_yum();
 
-    HifPackage *pkg;
+    DnfPackage *pkg;
     GPtrArray *advisories;
-    HifAdvisory *advisory;
+    DnfAdvisory *advisory;
     GPtrArray *reflist;
 
     pkg = by_name(test_globals.sack, "tour");
-    advisories = hif_package_get_advisories(pkg, HY_GT);
+    advisories = dnf_package_get_advisories(pkg, HY_GT);
     advisory = g_ptr_array_index(advisories, 0);
-    reflist = hif_advisory_get_references(advisory);
+    reflist = dnf_advisory_get_references(advisory);
     reference = g_object_ref(g_ptr_array_index(reflist, 0));
 
     g_ptr_array_unref(reflist);
@@ -59,25 +59,25 @@ advisoryref_teardown(void)
 
 START_TEST(test_type)
 {
-    ck_assert_int_eq(hif_advisoryref_get_kind(reference), HIF_REFERENCE_KIND_BUGZILLA);
+    ck_assert_int_eq(dnf_advisoryref_get_kind(reference), DNF_REFERENCE_KIND_BUGZILLA);
 }
 END_TEST
 
 START_TEST(test_id)
 {
-    ck_assert_str_eq(hif_advisoryref_get_id(reference), "472090");
+    ck_assert_str_eq(dnf_advisoryref_get_id(reference), "472090");
 }
 END_TEST
 
 START_TEST(test_title)
 {
-    ck_assert_str_eq(hif_advisoryref_get_title(reference), "/etc/init.d/clvmd points to /usr/sbin for LVM tools");
+    ck_assert_str_eq(dnf_advisoryref_get_title(reference), "/etc/init.d/clvmd points to /usr/sbin for LVM tools");
 }
 END_TEST
 
 START_TEST(test_url)
 {
-    ck_assert_str_eq(hif_advisoryref_get_url(reference), "https://bugzilla.redhat.com/show_bug.cgi?id=472090");
+    ck_assert_str_eq(dnf_advisoryref_get_url(reference), "https://bugzilla.redhat.com/show_bug.cgi?id=472090");
 }
 END_TEST
 

@@ -22,7 +22,7 @@
 #include <string.h>
 
 
-#include "libhif/hy-repo-private.h"
+#include "libdnf/hy-repo-private.h"
 #include "fixtures.h"
 #include "testshared.h"
 #include "test_suites.h"
@@ -41,7 +41,7 @@ END_TEST
 
 START_TEST(test_cost)
 {
-    HifSack *sack = test_globals.sack;
+    DnfSack *sack = test_globals.sack;
     HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
     hy_repo_set_cost(repo, 700);
     fail_unless(repo->libsolv_repo != NULL);

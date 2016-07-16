@@ -62,7 +62,7 @@ static int
 selector_init(_SelectorObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *sack;
-    HifSack *csack;
+    DnfSack *csack;
 
     if (!PyArg_ParseTuple(args, "O!", &sack_Type, &sack))
         return -1;

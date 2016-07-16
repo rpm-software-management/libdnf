@@ -31,8 +31,8 @@ extern PyTypeObject sack_Type;
 
 #define sackObject_Check(o)        PyObject_TypeCheck(o, &sack_Type)
 
-HifSack *sackFromPyObject(PyObject *o);
-int sack_converter(PyObject *o, HifSack **sack_ptr);
+DnfSack *sackFromPyObject(PyObject *o);
+int sack_converter(PyObject *o, DnfSack **sack_ptr);
 
 PyObject *new_package(PyObject *sack, Id id);
 gboolean set_logfile(const gchar *path, FILE *log_out);

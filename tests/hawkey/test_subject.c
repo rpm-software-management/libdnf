@@ -24,12 +24,12 @@
 #include <string.h>
 
 
-#include "libhif/hy-nevra.h"
-#include "libhif/hy-nevra-private.h"
-#include "libhif/hif-reldep.h"
-#include "libhif/hif-sack.h"
-#include "libhif/hy-subject.h"
-#include "libhif/hy-subject-private.h"
+#include "libdnf/hy-nevra.h"
+#include "libdnf/hy-nevra-private.h"
+#include "libdnf/dnf-reldep.h"
+#include "libdnf/dnf-sack.h"
+#include "libdnf/hy-subject.h"
+#include "libdnf/hy-subject-private.h"
 #include "fixtures.h"
 #include "testshared.h"
 #include "test_suites.h"
@@ -239,12 +239,12 @@ END_TEST
 
 START_TEST(reldep)
 {
-    HifReldep *reldep = NULL;
+    DnfReldep *reldep = NULL;
     HySubject subject = hy_subject_create("P-lib");
     HyPossibilities iter = hy_subject_reldep_possibilities_real(subject,
         test_globals.sack, 0);
     ck_assert_int_eq(hy_possibilities_next_reldep(iter, &reldep), 0);
-    const gchar *reldep_str = hif_reldep_to_string (reldep);
+    const gchar *reldep_str = dnf_reldep_to_string (reldep);
     ck_assert_str_eq(reldep_str, "P-lib");
     g_object_unref(reldep);
     ck_assert_int_eq(hy_possibilities_next_reldep(iter, &reldep), -1);
@@ -255,7 +255,7 @@ END_TEST
 
 START_TEST(reldep_fail)
 {
-    HifReldep *reldep;
+    DnfReldep *reldep;
     HySubject subject = hy_subject_create("Package not exist");
     HyPossibilities iter = hy_subject_reldep_possibilities_real(subject,
         test_globals.sack, 0);

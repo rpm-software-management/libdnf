@@ -24,8 +24,8 @@
 #include "hy-package-private.h"
 #include "hy-packageset-private.h"
 #include "hy-query-private.h"
-#include "hif-reldep.h"
-#include "hif-reldep-list.h"
+#include "dnf-reldep.h"
+#include "dnf-reldep-list.h"
 
 #include "exception-py.h"
 #include "hawkey-pysys.h"
@@ -111,7 +111,7 @@ query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
         self->sack = query_obj->sack;
         self->query = hy_query_clone(query_obj->query);
     } else if (sack && query == Py_None && sackObject_Check(sack)) {
-        HifSack *csack = sackFromPyObject(sack);
+        DnfSack *csack = sackFromPyObject(sack);
         assert(csack);
         self->sack = sack;
         self->query = hy_query_create(csack);
@@ -220,7 +220,7 @@ filter(_QueryObject *self, PyObject *args)
     }
     if (queryObject_Check(match)) {
         HyQuery target = queryFromPyObject(match);
-        HifPackageSet *pset = hy_query_run_set(target);
+        DnfPackageSet *pset = hy_query_run_set(target);
         int ret = hy_query_filter_package_in(self->query, keyname,
                                              cmp_type, pset);
 
@@ -230,7 +230,7 @@ filter(_QueryObject *self, PyObject *args)
         Py_RETURN_NONE;
     }
     if (reldepObject_Check(match)) {
-        HifReldep *reldep = reldepFromPyObject(match);
+        DnfReldep *reldep = reldepFromPyObject(match);
         if (cmp_type != HY_EQ ||
             hy_query_filter_reldep(self->query, keyname, reldep))
             return raise_bad_filter();
@@ -240,9 +240,9 @@ filter(_QueryObject *self, PyObject *args)
     switch (keyname) {
     case HY_PKG:
     case HY_PKG_OBSOLETES: {
-        HifSack *sack = sackFromPyObject(self->sack);
+        DnfSack *sack = sackFromPyObject(self->sack);
         assert(sack);
-        HifPackageSet *pset = pyseq_to_packageset(match, sack);
+        DnfPackageSet *pset = pyseq_to_packageset(match, sack);
 
         if (pset == NULL)
             return NULL;
@@ -256,9 +256,9 @@ filter(_QueryObject *self, PyObject *args)
     }
     case HY_PKG_PROVIDES:
     case HY_PKG_REQUIRES: {
-        HifSack *sack = sackFromPyObject(self->sack);
+        DnfSack *sack = sackFromPyObject(self->sack);
         assert(sack);
-        HifReldepList *reldeplist = pyseq_to_reldeplist(match, sack, cmp_type);
+        DnfReldepList *reldeplist = pyseq_to_reldeplist(match, sack, cmp_type);
         if (reldeplist == NULL)
             return NULL;
 
@@ -303,7 +303,7 @@ filter(_QueryObject *self, PyObject *args)
 static PyObject *
 run(_QueryObject *self, PyObject *unused)
 {
-    HifPackageSet *pset;
+    DnfPackageSet *pset;
     PyObject *list;
 
     pset = hy_query_run_set(self->query);
@@ -354,10 +354,10 @@ static PyObject *
 q_contains(PyObject *self, PyObject *pypkg)
 {
     HyQuery q = ((_QueryObject *) self)->query;
-    HifPackage *pkg = packageFromPyObject(pypkg);
+    DnfPackage *pkg = packageFromPyObject(pypkg);
 
     if (pkg) {
-        Id id = hif_package_get_id(pkg);
+        Id id = dnf_package_get_id(pkg);
         hy_query_apply(q);
         if (MAPTST(q->result, id))
             Py_RETURN_TRUE;

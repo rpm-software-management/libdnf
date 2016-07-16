@@ -1,4 +1,4 @@
-OPTION(DISABLE_VALGRIND "Enables valgrind tests for hawkey and libhif" OFF)
+OPTION(DISABLE_VALGRIND "Enables valgrind tests for hawkey and libdnf" OFF)
 
 ADD_SUBDIRECTORY (hawkey)
-ADD_SUBDIRECTORY (libhif)
+ADD_SUBDIRECTORY (libdnf)

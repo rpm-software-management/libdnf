@@ -26,8 +26,8 @@
 #include <solv/testcase.h>
 
 
-#include "libhif/hy-repo.h"
-#include "libhif/hy-repo-private.h"
+#include "libdnf/hy-repo.h"
+#include "libdnf/hy-repo-private.h"
 #include "testshared.h"
 
 HyRepo

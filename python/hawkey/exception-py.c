@@ -21,7 +21,7 @@
 #include <Python.h>
 
 // hawkey
-#include "hif-types.h"
+#include "dnf-types.h"
 
 // pyhawkey
 #include "exception-py.h"
@@ -81,15 +81,15 @@ ret2e(int ret, const char *msg)
     switch (ret) {
     case 0:
         return 0;
-    case HIF_ERROR_FAILED:
+    case DNF_ERROR_FAILED:
         exctype = HyExc_Runtime;
         break;
-    case HIF_ERROR_FILE_INVALID: {
+    case DNF_ERROR_FILE_INVALID: {
         exctype = PyExc_IOError;
         break;
     }
-    case HIF_ERROR_INTERNAL_ERROR:
-    case HIF_ERROR_BAD_SELECTOR:
+    case DNF_ERROR_INTERNAL_ERROR:
+    case DNF_ERROR_BAD_SELECTOR:
         exctype = HyExc_Value;
         break;
     default:
@@ -113,20 +113,20 @@ op_error2exc(const GError *error)
         Py_RETURN_NONE;
 
     switch (error->code) {
-    case HIF_ERROR_BAD_SELECTOR:
+    case DNF_ERROR_BAD_SELECTOR:
         PyErr_SetString(HyExc_Value,
                         "Ill-formed Selector used for the operation.");
         return NULL;
-    case HIF_ERROR_INVALID_ARCHITECTURE:
+    case DNF_ERROR_INVALID_ARCHITECTURE:
         PyErr_SetString(HyExc_Arch, "Used arch is unknown.");
         return NULL;
-    case HIF_ERROR_PACKAGE_NOT_FOUND:
+    case DNF_ERROR_PACKAGE_NOT_FOUND:
         PyErr_SetString(HyExc_Validation, "The validation check has failed.");
         return NULL;
-    case HIF_ERROR_FILE_INVALID:
+    case DNF_ERROR_FILE_INVALID:
         PyErr_SetString(PyExc_IOError, error->message);
         return NULL;
-    case HIF_ERROR_CANNOT_WRITE_CACHE:
+    case DNF_ERROR_CANNOT_WRITE_CACHE:
         PyErr_SetString(PyExc_IOError, "Failed writing the cache.");
         return NULL;
     default:
