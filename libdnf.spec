@@ -33,6 +33,7 @@ BuildRequires:  pkgconfig(gobject-introspection-1.0)
 BuildRequires:  rpm-devel >= 4.11.0
 
 Requires:       libsolv%{?_isa} >= %{libsolv_version}
+Obsoletes:      libhif > 0.6.0
 
 %description
 A Library providing simplified C and Python API to libsolv.
@@ -44,6 +45,7 @@ Requires:       libsolv-devel%{?_isa} >= %{libsolv_version}
 BuildRequires:  python-nose
 BuildRequires:  python-sphinx
 Obsoletes:      hawkey-man < 0.7.1
+Obsoletes:      libhif-devel > 0.6.0
 
 %description devel
 Development files for %{name}.
