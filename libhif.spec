@@ -31,7 +31,6 @@ BuildRequires:  pkgconfig(gobject-introspection-1.0)
 BuildRequires:  rpm-devel >= 4.11.0
 
 Requires:       libsolv%{?_isa} >= %{libsolv_version}
-Obsoletes:      hawkey < 0.7.0
 
 %description
 A Library providing simplified C and Python API to libsolv.
