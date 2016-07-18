@@ -39,6 +39,7 @@ repo_finalize_init(HyRepo hrepo, Repo *repo)
     repo->appdata = hy_repo_link(hrepo);
     repo->subpriority = -hrepo->cost;
     repo->priority = -hrepo->priority;
+    fprintf(stderr, "finalize init priority %d\n", repo->priority);
     hrepo->libsolv_repo = repo;
 }
 
@@ -155,8 +156,11 @@ void
 hy_repo_set_priority(HyRepo repo, int value)
 {
     repo->priority = value;
-    if (repo->libsolv_repo)
+    if (repo->libsolv_repo) {
         repo->libsolv_repo->priority = -value;
+	fprintf (stderr, "libsolv set priority %d\n", value);
+    }
+    fprintf (stderr, "set priority %d\n", value);
 }
 
 void
