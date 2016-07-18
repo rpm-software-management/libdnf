@@ -52,6 +52,7 @@
 #include <solv/repo_repomdxml.h>
 #include <solv/repo_updateinfoxml.h>
 #include <solv/repo_rpmmd.h>
+#include <solv/repo_comps.h>
 #include <solv/repo_rpmdb.h>
 #include <solv/repo_solv.h>
 #include <solv/repo_write.h>
@@ -668,6 +669,7 @@ load_yum_repo(HifSack *sack, HyRepo hrepo, GError **error)
     Repo *repo = repo_create(pool, name);
     const char *fn_repomd = hy_repo_get_string(hrepo, HY_REPO_MD_FN);
     char *fn_cache = hif_sack_give_cache_fn(sack, name, NULL);
+    const char *fn_group = hy_repo_get_string(hrepo, HY_REPO_GROUP_FN);
 
     FILE *fp_primary = NULL;
     FILE *fp_cache = fopen(fn_cache, "r");
@@ -712,6 +714,31 @@ load_yum_repo(HifSack *sack, HyRepo hrepo, GError **error)
             goto out;
         }
         hrepo->state_main = _HY_LOADED_FETCH;
+    }
+
+    /* For now, unconditionally adding comps.  It Shouldn't Break
+     * Anything(tm), and users want it.
+     */
+    if (fn_group != NULL) {
+        FILE *fp_group = fopen(fn_group, "r");
+        if (!fp_group) { 
+            g_set_error (error,
+                         HIF_ERROR,
+                         HIF_ERROR_FILE_INVALID,
+                         "can not read file %s: %s",
+                         fn_group, strerror(errno));
+            retval = FALSE;
+            goto out;
+        }
+        
+        if (repo_add_comps(repo, fp_group, 0)) {
+            g_set_error (error,
+                         HIF_ERROR,
+                         HIF_ERROR_INTERNAL_ERROR,
+                         "repo_add_comps failed");
+            retval = FALSE;
+            goto out;
+        }
     }
 out:
     if (fp_cache)

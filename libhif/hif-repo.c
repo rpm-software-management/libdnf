@@ -1115,6 +1115,7 @@ hif_repo_check_internal(HifRepo *repo,
     }
     tmp = lr_yum_repo_path(yum_repo, "group");
     if (tmp != NULL) {
+        hy_repo_set_string(priv->repo, HY_REPO_GROUP_FN, tmp);
         g_hash_table_insert(priv->filenames_md,
                             g_strdup("group"),
                             g_strdup(tmp));

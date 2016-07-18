@@ -187,6 +187,10 @@ hy_repo_set_string(HyRepo repo, int which, const char *str_val)
         g_free(repo->updateinfo_fn);
         repo->updateinfo_fn = g_strdup(str_val);
         break;
+    case HY_REPO_GROUP_FN:
+        g_free(repo->group_fn);
+        repo->group_fn = g_strdup(str_val);
+        break;
     default:
         assert(0);
     }
@@ -208,6 +212,8 @@ hy_repo_get_string(HyRepo repo, int which)
         return repo->presto_fn;
     case HY_REPO_UPDATEINFO_FN:
         return repo->updateinfo_fn;
+    case HY_REPO_GROUP_FN:
+        return repo->group_fn;
     default:
         assert(0);
     }
@@ -228,5 +234,6 @@ hy_repo_free(HyRepo repo)
     g_free(repo->filelists_fn);
     g_free(repo->presto_fn);
     g_free(repo->updateinfo_fn);
+    g_free(repo->group_fn);
     g_free(repo);
 }

@@ -80,6 +80,7 @@ typedef enum {
     HIF_SACK_LOAD_FLAG_USE_FILELISTS        = 1 << 1,
     HIF_SACK_LOAD_FLAG_USE_PRESTO           = 1 << 2,
     HIF_SACK_LOAD_FLAG_USE_UPDATEINFO       = 1 << 3,
+    HIF_SACK_LOAD_FLAG_USE_GROUP            = 1 << 4,
     /*< private >*/
     HIF_SACK_LOAD_FLAG_LAST
 } HifSackLoadFlags;

@@ -1622,6 +1622,33 @@ hif_context_run(HifContext *context, GCancellable *cancellable, GError **error)
     return hif_state_done(priv->state, error);
 }
 
+static gboolean
+context_install_group (HifContext *context, const gchar *name, GError **error)
+{
+    HifContextPrivate *priv = GET_PRIVATE (context);
+    g_autoptr(GPtrArray) pkglist = NULL;
+    HifPackage *pkg;
+    hy_autoquery HyQuery query = NULL;
+    char *groupid = g_strconcat("group:", name + 1, NULL);
+
+    query = hy_query_create(priv->sack);
+    hy_query_filter(query, HY_GROUP_NAME, HY_EQ, groupid);
+    pkglist = hy_query_run(query);
+
+    if (pkglist->len == 0) {
+        g_set_error(error,
+                    HIF_ERROR,
+                    HIF_ERROR_PACKAGE_NOT_FOUND,
+                    "No group '%s' found", name);
+        return FALSE;
+    }
+
+    pkg = g_ptr_array_index (pkglist, 0);
+    hy_goal_install(priv->goal, pkg);
+
+    return TRUE;
+}
+
 /**
  * hif_context_install:
  * @context: a #HifContext instance.
@@ -1652,6 +1679,10 @@ hif_context_install (HifContext *context, const gchar *name, GError **error)
         if (!ret)
             return FALSE;
     }
+
+    if (name[0] == '@') {
+        return context_install_group(context, name, error);
+    } 
 
     /* find a newest remote package to install */
     query = hy_query_create(priv->sack);

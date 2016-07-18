@@ -107,6 +107,7 @@ match_type_str(int keyname) {
     case HY_PKG_CONFLICTS:
     case HY_PKG_URL:
     case HY_PKG_VERSION:
+    case HY_GROUP_NAME:
         return 1;
     default:
         return 0;
@@ -132,6 +133,8 @@ di_keyname2id(int keyname)
         return SOLVABLE_SUMMARY;
     case HY_PKG_FILE:
         return SOLVABLE_FILELIST;
+    case HY_GROUP_NAME:
+        return SOLVABLE_NAME;
     default:
         assert(0);
         return 0;
