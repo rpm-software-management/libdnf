@@ -1623,6 +1623,128 @@ hif_context_run(HifContext *context, GCancellable *cancellable, GError **error)
 }
 
 /**
+ * hif_find_package_version: 
+ * @context: a #HifContext instance.
+ * @name: A package name
+ * @pkglist: A GPtrArray used to return packages with matching name and version.
+ *
+ * Helper function that parses package names to find version and release info and
+ * then looks for packages that match all specified criteria.
+ *
+ * Regular expressions are used, first to look for all four parts (name, version,
+ * release, and arch). If there is a partial match, we look for one less part until
+ * we get match. We then use however many parts we found to specify the #HyQuery
+ * used to find matching packages.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise. If successful, @pkglist will contain
+ * the match.
+ *
+ * Since: 0.7.0
+ */
+static gboolean
+hif_find_package_version (HifContext *context, const gchar *name, GPtrArray **pkglist, GError **error)
+{
+    HifContextPrivate *priv = GET_PRIVATE (context);
+    hy_autoquery HyQuery query = NULL;
+    g_autofree gchar* request_name = NULL;
+    gboolean rval = FALSE;
+    GMatchInfo *match_info;
+
+    gchar *n = NULL;
+    gchar *v = NULL;
+    gchar *r = NULL;
+    gchar *a = NULL;
+
+    GRegex *nvra, *nvr, *nv;
+
+    g_debug("* WORK ON NAME: '%s'", name);
+
+    query = hy_query_create(priv->sack);
+    hy_query_filter_in(query, HY_PKG_ARCH, HY_EQ,
+                       (const gchar **) priv->native_arches);
+    hy_query_filter(query, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
+
+    /* I don't like hardcoding the archs, but when I use a more generic pattern, sometimes parts of the revision get put in the arch */
+    nvra = g_regex_new("^(.+)-([0-9.]+)-(.+?)\\.(aarch64|alpha|arm|armhfp|i386|ia64|noarch|ppc|ppc64|ppc64le|s390|s390x|sh3|sh4|sparc|x86_64)", 0, 0, error);
+    if (nvra == NULL)
+        return FALSE;
+
+    nvr = g_regex_new("^(.+)-([0-9.]+?)-(.+)", 0, 0, error);
+    if (nvr == NULL) {
+        g_regex_unref(nvra);
+        return FALSE;
+    }
+        
+    nv = g_regex_new("^(.+?)-([0-9.]+)", 0, 0, error);
+    if (nv == NULL) {
+        g_regex_unref(nvra);
+        g_regex_unref(nvr);
+        return FALSE;
+    }
+
+    g_regex_match(nvra, name, G_REGEX_MATCH_PARTIAL_SOFT, &match_info);
+    if (g_match_info_is_partial_match(match_info)) {
+        g_debug("* PARTIAL MATCH");
+        g_regex_match(nvr, name, G_REGEX_MATCH_PARTIAL_SOFT, &match_info);
+        if (g_match_info_is_partial_match(match_info)) {
+            g_debug("** PARTIAL MATCH");
+            g_regex_match(nv, name, G_REGEX_MATCH_PARTIAL_SOFT, &match_info);
+        }
+    }
+    gint matches = g_match_info_get_match_count(match_info);
+    g_debug("%d MATCHES IN %s", matches, name);
+
+    if (matches <= 0)
+        return FALSE;
+
+    /* we know there is at least one match, so we don't need to check 'matches' */
+    n = g_match_info_fetch( match_info, 1);
+    if (n) {
+        g_debug("* NAME: %s", n);
+        hy_query_filter(query, HY_PKG_NAME, HY_EQ, n);
+    }
+
+    if (matches > 2) {
+        v = g_match_info_fetch( match_info, 2);
+        if (v) {
+            g_debug("* VERS: %s", v);
+            hy_query_filter(query, HY_PKG_VERSION, HY_EQ, v);
+        }
+    }
+
+    if (matches > 3) {
+        r = g_match_info_fetch( match_info, 3);
+        if (r) {
+            g_debug("*  REV: %s", r);
+            hy_query_filter(query, HY_PKG_RELEASE, HY_EQ, r);
+        }
+    }
+
+    if (matches > 4) {
+        a = g_match_info_fetch( match_info, 4);
+        if (a) {
+            g_debug("* ARCH: %s", a);
+            hy_query_filter(query, HY_PKG_ARCH, HY_EQ, a);
+        }
+    }
+
+    *pkglist = hy_query_run(query);
+
+    g_debug("* QUERY RETURNED %d", (*pkglist)->len);
+
+    if ((*pkglist)->len > 0)
+        rval = TRUE;
+
+    g_regex_unref(nvra);
+    g_regex_unref(nvr);
+    g_regex_unref(nv);
+
+    g_match_info_free(match_info);
+    return rval;
+}
+
+/**
  * hif_context_install:
  * @context: a #HifContext instance.
  * @name: A package or group name, e.g. "firefox" or "@gnome-desktop"
@@ -1664,16 +1786,24 @@ hif_context_install (HifContext *context, const gchar *name, GError **error)
     pkglist = hy_query_run(query);
 
     if (pkglist->len == 0) {
-        g_set_error(error,
-                    HIF_ERROR,
-                    HIF_ERROR_PACKAGE_NOT_FOUND,
-                    "No package '%s' found", name);
-        return FALSE;
+        g_debug("QUERY RETURNED NONE");
+        if(!hif_find_package_version(context, name, &pkglist, error)) {
+            g_set_error(error,
+                        HIF_ERROR,
+                        HIF_ERROR_PACKAGE_NOT_FOUND,
+                        "No package '%s' found", name);
+            return FALSE;
+        }
+        g_debug("hif_find_package_version FOUND %d", pkglist->len);
     }
 
     /* add first package */
     pkg = g_ptr_array_index (pkglist, 0);
-    g_debug("adding %s-%s to goal", hif_package_get_name(pkg), hif_package_get_evr(pkg));
+    g_debug("adding %s-%s to goal (from '%s')", hif_package_get_name(pkg), hif_package_get_evr(pkg), name);
+    g_debug("- NAME: '%s'", hif_package_get_name(pkg));
+    g_debug("- VERS: '%s'", hif_package_get_version(pkg));
+    g_debug("-  REV: '%s'", hif_package_get_release(pkg));
+    g_debug("- ARCH: '%s'", hif_package_get_arch(pkg));
     hy_goal_install(priv->goal, pkg);
 
     return TRUE;
