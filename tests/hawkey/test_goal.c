@@ -547,7 +547,7 @@ START_TEST(test_goal_get_reason)
         }
         if (!strcmp(dnf_package_get_name(pkg), "semolina")) {
             set |= 1 << 1;
-            fail_unless(hy_goal_get_reason(goal, pkg) == HY_REASON_DEP);
+            fail_unless(hy_goal_get_reason(goal, pkg) == HY_REASON_REQUIRES);
         }
     }
     fail_unless(set == 3);
@@ -1300,6 +1300,27 @@ START_TEST(test_cmdline_file_provides)
 }
 END_TEST
 
+START_TEST(test_goal_get_solution)
+{
+
+    HifSack *sack = test_globals.sack;
+    HyGoal goal = hy_goal_create(sack);
+    HySelector sltr = hy_selector_create(sack);
+
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "pilchard");
+    hy_goal_install_selector(goal, sltr,NULL);
+    fail_unless(hy_goal_run_flags(goal, HY_FORCE_BEST));
+    fail_unless(hy_goal_count_problems(goal) == 1);
+
+    hy_goal_get_solution(goal,0);
+
+    hy_selector_free(sltr);
+    hy_goal_free(goal);
+
+}
+END_TEST
+
+
 Suite *
 goal_suite(void)
 {
@@ -1336,6 +1357,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_protected);
     tcase_add_test(tc, test_goal_erase_clean_deps);
     tcase_add_test(tc, test_goal_forcebest);
+    tcase_add_test(tc, test_goal_get_solution);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("ModifiesSackState");

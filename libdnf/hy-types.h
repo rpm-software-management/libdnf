@@ -37,6 +37,7 @@ typedef struct _HyNevra * HyNevra;
 typedef struct _HyPossibilities * HyPossibilities;
 typedef struct _HyQuery * HyQuery;
 typedef struct _HySelector * HySelector;
+typedef struct _HySolution * HySolution;
 typedef char * HySubject;
 
 typedef const unsigned char HyChecksum;
