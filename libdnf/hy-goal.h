@@ -50,6 +50,18 @@ typedef enum {
     DNF_IGNORE_WEAK_DEPS         = 1 << 13
 } DnfGoalActions;
 
+enum _hy_goal_solution_actions {
+     HY_ALLOW_INSTALL            = 1 << 1,
+     HY_ALLOW_REINSTALL          = 1 << 2,
+     HY_ALLOW_UPGRADE            = 1 << 3,
+     HY_ALLOW_DOWNGRADE          = 1 << 4,
+     HY_ALLOW_CHANGE             = 1 << 5,
+     HY_ALLOW_OBSOLETE           = 1 << 6,
+     HY_DO_NOT_INSTALL           = 1 << 7,
+     HY_ALLOW_REPLACEMENT        = 1 << 8,
+     HY_BAD_SOLUTION             = 1 << 9
+};
+
 #define HY_REASON_DEP 1
 #define HY_REASON_USER 2
 #define HY_REASON_CLEAN 3
@@ -112,6 +124,8 @@ GPtrArray *hy_goal_list_upgrades(HyGoal goal, GError **error);
 GPtrArray *hy_goal_list_downgrades(HyGoal goal, GError **error);
 GPtrArray *hy_goal_list_obsoleted_by_package(HyGoal goal, DnfPackage *pkg);
 int hy_goal_get_reason(HyGoal goal, DnfPackage *pkg);
+GSList *hy_goal_get_solution(HyGoal goal, unsigned problem_id);
+//void hy_goal_get_solution_test(HyGoal goal, unsigned problem_id);
 
 G_END_DECLS
 
