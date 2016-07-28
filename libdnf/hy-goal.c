@@ -1216,7 +1216,7 @@ hy_goal_get_solution(HyGoal goal, unsigned problem_id)
                 g_debug("rp=%d, p=%d",rp,p);
                 g_debug("name: %s",pool_id2str(pool, s->name));
 
-                HySolution sol;
+                HySolution sol = g_malloc0(sizeof(*sol));
                 pkg = *hif_package_from_solvable(sack,s);
                 sol->package = pkg;
 
@@ -1229,7 +1229,7 @@ hy_goal_get_solution(HyGoal goal, unsigned problem_id)
                  * have to modify these enums.
              */
 
-                //sol->action = action;
+                sol->action = action;
             }
         }
 
