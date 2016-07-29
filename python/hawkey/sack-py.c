@@ -183,8 +183,8 @@ set_logfile(const gchar *path, FILE *log_out)
         return FALSE;
 
     g_log_set_default_handler(log_handler, log_out);
-    g_info("=== Started libdnf-%d.%d.%d ===", DNF_MAJOR_VERSION,
-            DNF_MINOR_VERSION, DNF_MICRO_VERSION);
+    g_info("=== Started libdnf-%d.%d.%d ===", LIBDNF_MAJOR_VERSION,
+            LIBDNF_MINOR_VERSION, LIBDNF_MICRO_VERSION);
     return TRUE;
 }
 

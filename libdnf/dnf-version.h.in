@@ -34,17 +34,17 @@
 
 /* compile time version
  */
-#define DNF_MAJOR_VERSION				(@DNF_MAJOR_VERSION@)
-#define DNF_MINOR_VERSION				(@DNF_MINOR_VERSION@)
-#define DNF_MICRO_VERSION				(@DNF_MICRO_VERSION@)
+#define LIBDNF_MAJOR_VERSION				(@LIBDNF_MAJOR_VERSION@)
+#define LIBDNF_MINOR_VERSION				(@LIBDNF_MINOR_VERSION@)
+#define LIBDNF_MICRO_VERSION				(@LIBDNF_MICRO_VERSION@)
 
 /* check whether a As version equal to or greater than
  * major.minor.micro.
  */
 #define DNF_CHECK_VERSION(major,minor,micro)    \
-    (DNF_MAJOR_VERSION > (major) || \
-     (DNF_MAJOR_VERSION == (major) && DNF_MINOR_VERSION > (minor)) || \
-     (DNF_MAJOR_VERSION == (major) && DNF_MINOR_VERSION == (minor) && \
-      DNF_MICRO_VERSION >= (micro)))
+    (LIBDNF_MAJOR_VERSION > (major) || \
+     (LIBDNF_MAJOR_VERSION == (major) && LIBDNF_MINOR_VERSION > (minor)) || \
+     (LIBDNF_MAJOR_VERSION == (major) && LIBDNF_MINOR_VERSION == (minor) && \
+      LIBDNF_MICRO_VERSION >= (micro)))
 
 #endif /* __DNF_VERSION_H */

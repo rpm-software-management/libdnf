@@ -229,9 +229,9 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "FORM_NA", HY_FORM_NA);
     PyModule_AddIntConstant(m, "FORM_NAME", HY_FORM_NAME);
 
-    PyModule_AddIntConstant(m, "VERSION_MAJOR", DNF_MAJOR_VERSION);
-    PyModule_AddIntConstant(m, "VERSION_MINOR", DNF_MINOR_VERSION);
-    PyModule_AddIntConstant(m, "VERSION_PATCH", DNF_MICRO_VERSION);
+    PyModule_AddIntConstant(m, "VERSION_MAJOR", LIBDNF_MAJOR_VERSION);
+    PyModule_AddIntConstant(m, "VERSION_MINOR", LIBDNF_MINOR_VERSION);
+    PyModule_AddIntConstant(m, "VERSION_PATCH", LIBDNF_MICRO_VERSION);
 
     PyModule_AddStringConstant(m, "SYSTEM_REPO_NAME", HY_SYSTEM_REPO_NAME);
     PyModule_AddStringConstant(m, "CMDLINE_REPO_NAME", HY_CMDLINE_REPO_NAME);
