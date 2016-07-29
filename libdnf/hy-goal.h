@@ -124,8 +124,7 @@ GPtrArray *hy_goal_list_upgrades(HyGoal goal, GError **error);
 GPtrArray *hy_goal_list_downgrades(HyGoal goal, GError **error);
 GPtrArray *hy_goal_list_obsoleted_by_package(HyGoal goal, DnfPackage *pkg);
 int hy_goal_get_reason(HyGoal goal, DnfPackage *pkg);
-GSList *hy_goal_get_solution(HyGoal goal, unsigned problem_id);
-//void hy_goal_get_solution_test(HyGoal goal, unsigned problem_id);
+GPtrArray *hy_goal_get_solution(HyGoal goal, guint problem_id);
 
 G_END_DECLS
 

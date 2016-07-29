@@ -53,7 +53,7 @@
 
 struct _HySolution {
     int action;
-    HifPackage package;
+    HifPackage *package;
 };
 
 struct _SolutionCallback {
@@ -1089,7 +1089,7 @@ hy_goal_list_obsoleted_by_package(HyGoal goal, DnfPackage *pkg)
 int
 hy_goal_get_reason(HyGoal goal, DnfPackage *pkg)
 {
-        //solver_get_recommendations
+    //solver_get_recommendations
 
     assert(goal->solv);
     Id info;
@@ -1106,21 +1106,31 @@ hy_goal_get_reason(HyGoal goal, DnfPackage *pkg)
     return HY_REASON_DEP;
 }
 
-GSList *
-hy_goal_get_solution(HyGoal goal, unsigned problem_id)
+/**
+ * hy_goal_get_solution:
+ * @goal: A #HyGoal
+ * @problem_id: problem sequence number
+ *
+ * Returns list of #HifSolution objects associated with the problem.
+ *
+ * Returns: GPtrArray of #HifSolution objects
+ *
+ * Since: 0.7.0
+ */
+GPtrArray *
+hy_goal_get_solution(HyGoal goal, guint problem_id)
 {
     assert(goal->solv);
     assert(goal->sack);
 
     int scnt = 0;
-    int action = 0;
     Id solution, element, p, rp;
     Pool *pool = goal->solv->pool;
     Solver *solv = goal->solv;
     Solvable *s = NULL;
     HifSack *sack = goal->sack;
-    HifPackage pkg;
-    GSList *packages = NULL;
+    HifPackage *pkg = NULL;
+    GPtrArray *slist = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 
     g_debug("Variables initialized.");
 
@@ -1128,13 +1138,15 @@ hy_goal_get_solution(HyGoal goal, unsigned problem_id)
     if (problem_id >= (unsigned) hy_goal_count_problems(goal))
     {
         g_debug("internal error");
-        return packages;
+        return slist;
     }
     // hawkey problems - removal of protected packages
     if (problem_id >= (unsigned) solver_problem_count(goal->solv))
     {
         g_debug("removal of protected packages");
-        return packages;
+        // what about returning list packages which pull protected
+        // packages into transaction?
+        return slist;
     }
 
     problem_id++; //increment problem ID. libsolv indexes at 1, libhif indexes at 0
@@ -1152,6 +1164,7 @@ hy_goal_get_solution(HyGoal goal, unsigned problem_id)
         element = 0;
         while ((element = solver_next_solutionelement(solv, problem_id, solution,
                                                       element, &p, &rp)) != 0) {
+            HySolution sol = g_malloc0(sizeof(*sol));
             // see libsolv:solver_next_solutionelement() description
             // for possible results and their meaning
             if (p == SOLVER_SOLUTION_JOB || p == SOLVER_SOLUTION_POOLJOB) {
@@ -1167,41 +1180,49 @@ hy_goal_get_solution(HyGoal goal, unsigned problem_id)
 
                 g_debug("%s", pool_tmpjoin(pool, "do not ask to ",
                                            pool_job2str(pool, how, what, 0), 0));
+                sol->action = HY_DO_NOT_INSTALL;
             } else if (p == SOLVER_SOLUTION_INFARCH) {
                 s = pool->solvables + rp;
                 if (pool->installed && s->repo == pool->installed) {
                     g_debug("%s", pool_tmpjoin(pool, "keep ",
                                                pool_solvable2str(pool, s),
                                                " despite the inferior architecture"));
+                    sol->action = HY_BAD_SOLUTION; //FIXME
                 } else {
                     g_debug("%s", pool_tmpjoin(pool, "install ",
                                                pool_solvable2str(pool, s),
                                                " despite the inferior architecture"));
+                    sol->action = HY_ALLOW_INSTALL;
                 }
             } else if (p == SOLVER_SOLUTION_DISTUPGRADE) {
                 s = pool->solvables + rp;
                 if (pool->installed && s->repo == pool->installed) {
                     g_debug("%s", pool_tmpjoin(pool, "keep obsolete ",
                                                pool_solvable2str(pool, s), 0));
+                    sol->action = HY_BAD_SOLUTION; //FIXME
                 } else {
                     g_debug("%s", pool_tmpjoin(pool, "install ",
                                                pool_solvable2str(pool, s),
                                                " from excluded repository"));
+                    sol->action = HY_ALLOW_INSTALL;
                 }
             } else if (p == SOLVER_SOLUTION_BEST) {
                 s = pool->solvables + rp;
                 if (pool->installed && s->repo == pool->installed) {
                     g_debug("%s", pool_tmpjoin(pool, "keep old ",
                                               pool_solvable2str(pool, s), 0));
+                    sol->action = HY_BAD_SOLUTION; //FIXME
                 } else {
                     g_debug("%s", pool_tmpjoin(pool, "install ",
                                               pool_solvable2str(pool, s),
                                               " despite the old version"));
+                    sol->action = HY_ALLOW_INSTALL;
                 }
             } else if (p > 0 && rp == 0) {
                 s = pool->solvables + p;
                 g_debug("%s", pool_tmpjoin(pool, "allow deinstallation of ",
                                            pool_solvid2str(pool, p), 0));
+                sol->action = HY_BAD_SOLUTION; //FIXME
             } else if (p > 0 && rp > 0) {
                 s = pool->solvables + rp;
                 const char *sp = pool_solvid2str(pool, p);
@@ -1209,35 +1230,27 @@ hy_goal_get_solution(HyGoal goal, unsigned problem_id)
                 const char *str = pool_tmpjoin(pool, "allow replacement of ", sp, 0);
                 g_debug("%s", pool_tmpappend(pool, str, " with ", srp));
 
-                action = HY_ALLOW_REPLACEMENT;
+                sol->action = HY_ALLOW_REPLACEMENT;
             } else {
                 s = pool->solvables + rp;
                 g_debug("%s", "bad solution element");
-                action = HY_BAD_SOLUTION;
+                sol->action = HY_BAD_SOLUTION;
             }
 
             g_debug("rp=%d, p=%d",rp,p);
             g_debug("name: %s",pool_id2str(pool, s->name));
 
-            HySolution sol = g_malloc0(sizeof(*sol));
-            pkg = *hif_package_from_solvable(sack,s);
+            if (s->repo) {
+                pkg = hif_package_from_solvable(sack,s);
+            }
             sol->package = pkg;
 
-
-           /* For this part, you'll have to set `action` in each `if` statement above based on the debug
-            * statements you see. (FYI, I took these debug statements from another file.) I put some
-            * examples above to show what I mean.
-            *
-            * There's an enum that contains `solver actions`, which is located in in hy-goal.h. You may
-            * have to modify these enums.
-            */
-
-            sol->action = action;
+            g_ptr_array_add(slist, sol);
         }
     }
 
     //HySolution solution = g_slist_nth_data(packages, 0);
     //g_debug("solution->package = %s",hif_package_get_name(solution->package));
 
-    return packages;
+    return slist;
 }
