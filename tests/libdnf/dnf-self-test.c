@@ -788,7 +788,7 @@ dnf_state_small_step_func(void)
 }
 
 static void
-dnf_repos_func(void)
+dnf_repo_loader_func(void)
 {
     GError *error = NULL;
     DnfRepo *repo;
@@ -796,7 +796,7 @@ dnf_repos_func(void)
     gboolean ret;
     g_autofree gchar *repos_dir = NULL;
     g_autoptr(DnfContext) ctx = NULL;
-    g_autoptr(DnfRepos) repos = NULL;
+    g_autoptr(DnfRepoLoader) repo_loader = NULL;
 
     /* set up local context */
     ctx = dnf_context_new();
@@ -811,8 +811,8 @@ dnf_repos_func(void)
     state = dnf_context_get_state(ctx);
 
     /* load repos that need keyfile fixes */
-    repos = dnf_repos_new(ctx);
-    repo = dnf_repos_get_by_id(repos, "bumblebee", &error);
+    repo_loader = dnf_repo_loader_new(ctx);
+    repo = dnf_repo_loader_get_repo_by_id(repo_loader, "bumblebee", &error);
     g_assert_no_error(error);
     g_assert(repo != NULL);
     g_assert_cmpint(dnf_repo_get_kind(repo), ==, DNF_REPO_KIND_REMOTE);
@@ -820,7 +820,7 @@ dnf_repos_func(void)
     g_assert(!dnf_repo_get_gpgcheck_md(repo));
 
     /* load repos that should be metadata enabled automatically */
-    repo = dnf_repos_get_by_id(repos, "redhat", &error);
+    repo = dnf_repo_loader_get_repo_by_id(repo_loader, "redhat", &error);
     g_assert_no_error(error);
     g_assert(repo != NULL);
     g_assert_cmpint(dnf_repo_get_enabled(repo), ==, DNF_REPO_ENABLED_METADATA);
@@ -829,7 +829,7 @@ dnf_repos_func(void)
     g_assert(!dnf_repo_get_gpgcheck_md(repo));
 
     /* load local metadata repo */
-    repo = dnf_repos_get_by_id(repos, "local", &error);
+    repo = dnf_repo_loader_get_repo_by_id(repo_loader, "local", &error);
     g_assert_no_error(error);
     g_assert(repo != NULL);
     g_assert_cmpint(dnf_repo_get_enabled(repo), ==, DNF_REPO_ENABLED_METADATA |
@@ -891,13 +891,13 @@ dnf_context_func(void)
 }
 
 static void
-dnf_repos_gpg_no_pubkey_func(void)
+dnf_repo_loader_gpg_no_pubkey_func(void)
 {
     gboolean ret;
     g_autoptr(GError) error = NULL;
     g_autofree gchar *repos_dir = NULL;
     g_autoptr(DnfContext) ctx = NULL;
-    g_autoptr(DnfRepos) repos = NULL;
+    g_autoptr(DnfRepoLoader) repo_loader = NULL;
 
     /* set up local context */
     ctx = dnf_context_new();
@@ -910,9 +910,9 @@ dnf_repos_gpg_no_pubkey_func(void)
 }
 
 static void
-dnf_repos_gpg_no_asc_func(void)
+dnf_repo_loader_gpg_no_asc_func(void)
 {
-    DnfRepos *repos;
+    DnfRepoLoader *repo_loader;
     DnfRepo *repo;
     gboolean ret;
     g_autoptr(GError) error = NULL;
@@ -934,8 +934,8 @@ dnf_repos_gpg_no_asc_func(void)
     g_assert(ret);
 
     /* get the repo with no repomd.xml.asc */
-    repos = dnf_repos_new(ctx);
-    repo = dnf_repos_get_by_id(repos, "gpg-repo-no-asc", &error);
+    repo_loader = dnf_repo_loader_new(ctx);
+    repo = dnf_repo_loader_get_repo_by_id(repo_loader, "gpg-repo-no-asc", &error);
     g_assert_no_error(error);
     g_assert(repo != NULL);
 
@@ -964,9 +964,9 @@ dnf_repos_gpg_no_asc_func(void)
 }
 
 static void
-dnf_repos_gpg_wrong_asc_func(void)
+dnf_repo_loader_gpg_wrong_asc_func(void)
 {
-    DnfRepos *repos;
+    DnfRepoLoader *repo_loader;
     DnfRepo *repo;
     gboolean ret;
     g_autoptr(GError) error = NULL;
@@ -988,8 +988,8 @@ dnf_repos_gpg_wrong_asc_func(void)
     g_assert(ret);
 
     /* get the repo with the *wrong* remote repomd.xml.asc */
-    repos = dnf_repos_new(ctx);
-    repo = dnf_repos_get_by_id(repos, "gpg-repo-wrong-asc", &error);
+    repo_loader = dnf_repo_loader_new(ctx);
+    repo = dnf_repo_loader_get_repo_by_id(repo_loader, "gpg-repo-wrong-asc", &error);
     g_assert_no_error(error);
     g_assert(repo != NULL);
 
@@ -1011,9 +1011,9 @@ dnf_repos_gpg_wrong_asc_func(void)
 }
 
 static void
-dnf_repos_gpg_asc_func(void)
+dnf_repo_loader_gpg_asc_func(void)
 {
-    DnfRepos *repos;
+    DnfRepoLoader *repo_loader;
     DnfRepo *repo;
     gboolean ret;
     g_autoptr(GError) error = NULL;
@@ -1035,8 +1035,8 @@ dnf_repos_gpg_asc_func(void)
     g_assert(ret);
 
     /* get the repo with no repomd.xml.asc */
-    repos = dnf_repos_new(ctx);
-    repo = dnf_repos_get_by_id(repos, "gpg-repo-asc", &error);
+    repo_loader = dnf_repo_loader_new(ctx);
+    repo = dnf_repo_loader_get_repo_by_id(repo_loader, "gpg-repo-asc", &error);
     g_assert_no_error(error);
     g_assert(repo != NULL);
 
@@ -1079,11 +1079,11 @@ main(int argc, char **argv)
     g_log_set_fatal_mask(NULL, G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL);
 
     /* tests go here */
-    g_test_add_func("/libdnf/repos{gpg-asc}", dnf_repos_gpg_asc_func);
-    g_test_add_func("/libdnf/repos{gpg-wrong-asc}", dnf_repos_gpg_wrong_asc_func);
-    g_test_add_func("/libdnf/repos{gpg-no-asc}", dnf_repos_gpg_no_asc_func);
-    g_test_add_func("/libdnf/repos", dnf_repos_func);
-    g_test_add_func("/libdnf/repos{gpg-no-pubkey}", dnf_repos_gpg_no_pubkey_func);
+    g_test_add_func("/libdnf/repo_loader{gpg-asc}", dnf_repo_loader_gpg_asc_func);
+    g_test_add_func("/libdnf/repo_loader{gpg-wrong-asc}", dnf_repo_loader_gpg_wrong_asc_func);
+    g_test_add_func("/libdnf/repo_loader{gpg-no-asc}", dnf_repo_loader_gpg_no_asc_func);
+    g_test_add_func("/libdnf/repo_loader", dnf_repo_loader_func);
+    g_test_add_func("/libdnf/repo_loader{gpg-no-pubkey}", dnf_repo_loader_gpg_no_pubkey_func);
     g_test_add_func("/libdnf/context", dnf_context_func);
     g_test_add_func("/libdnf/lock", dnf_lock_func);
     g_test_add_func("/libdnf/lock[threads]", dnf_lock_threads_func);

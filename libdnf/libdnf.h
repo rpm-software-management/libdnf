@@ -34,7 +34,7 @@
 #include <libdnf/dnf-lock.h>
 #include <libdnf/dnf-package.h>
 #include <libdnf/dnf-packagedelta.h>
-#include <libdnf/dnf-repos.h>
+#include <libdnf/dnf-repo-loader.h>
 #include <libdnf/dnf-rpmts.h>
 #include <libdnf/dnf-sack.h>
 #include <libdnf/dnf-repo.h>

@@ -23,7 +23,7 @@ SET (LIBDNF_SRCS
     dnf-lock.c
     dnf-package.c
     dnf-packagedelta.c
-    dnf-repos.c
+    dnf-repo-loader.c
     dnf-rpmts.c
     dnf-repo.c
     dnf-state.c
@@ -84,7 +84,7 @@ SET(LIBDNF_headers
     dnf-lock.h
     dnf-package.h
     dnf-packagedelta.h
-    dnf-repos.h
+    dnf-repo-loader.h
     dnf-rpmts.h
     dnf-sack.h
     dnf-reldep.h

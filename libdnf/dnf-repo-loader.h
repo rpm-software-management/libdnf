@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef __DNF_REPOS_H
-#define __DNF_REPOS_H
+#ifndef __DNF_REPO_LOADER_H
+#define __DNF_REPO_LOADER_H
 
 #include <glib-object.h>
 #include "hy-repo.h"
@@ -32,13 +32,13 @@
 
 G_BEGIN_DECLS
 
-#define DNF_TYPE_REPOS (dnf_repos_get_type ())
-G_DECLARE_DERIVABLE_TYPE (DnfRepos, dnf_repos, DNF, REPOS, GObject)
+#define DNF_TYPE_REPO_LOADER (dnf_repo_loader_get_type ())
+G_DECLARE_DERIVABLE_TYPE (DnfRepoLoader, dnf_repo_loader, DNF, REPO_LOADER, GObject)
 
-struct _DnfReposClass
+struct _DnfRepoLoaderClass
 {
         GObjectClass            parent_class;
-        void                    (* changed)     (DnfRepos       *repos);
+        void                    (* changed)     (DnfRepoLoader   *self);
         /*< private >*/
         void (*_dnf_reserved1)  (void);
         void (*_dnf_reserved2)  (void);
@@ -50,16 +50,16 @@ struct _DnfReposClass
         void (*_dnf_reserved8)  (void);
 };
 
-DnfRepos        *dnf_repos_new                  (DnfContext     *context);
+DnfRepoLoader   *dnf_repo_loader_new                    (DnfContext      *context);
 
 /* object methods */
-gboolean         dnf_repos_has_removable        (DnfRepos       *self);
-GPtrArray       *dnf_repos_get_repos          (DnfRepos       *self,
-                                                 GError         **error);
-DnfRepo       *dnf_repos_get_by_id     (DnfRepos       *self,
-                                                 const gchar    *id,
-                                                 GError         **error);
+gboolean         dnf_repo_loader_has_removable_repos    (DnfRepoLoader   *self);
+GPtrArray       *dnf_repo_loader_get_repos              (DnfRepoLoader   *self,
+                                                         GError         **error);
+DnfRepo         *dnf_repo_loader_get_repo_by_id         (DnfRepoLoader   *self,
+                                                         const gchar     *id,
+                                                         GError         **error);
 
 G_END_DECLS
 
-#endif /* __DNF_REPOS_H */
+#endif /* __DNF_REPO_LOADER_H */

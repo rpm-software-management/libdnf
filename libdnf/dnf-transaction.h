@@ -30,7 +30,6 @@
 #include "dnf-context.h"
 #include "dnf-db.h"
 #include "dnf-state.h"
-#include "dnf-repos.h"
 
 G_BEGIN_DECLS
 

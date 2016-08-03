@@ -37,7 +37,7 @@
 
 #include "dnf-lock.h"
 #include "dnf-package.h"
-#include "dnf-repos.h"
+#include "dnf-repo-loader.h"
 #include "dnf-sack.h"
 #include "dnf-state.h"
 #include "dnf-transaction.h"
@@ -1436,7 +1436,7 @@ dnf_context_setup(DnfContext *context,
     guint j;
     GHashTableIter hashiter;
     gpointer hashkey, hashval;
-    g_autoptr(DnfRepos) repos = NULL;
+    g_autoptr(DnfRepoLoader) repo_loader = NULL;
     g_autoptr(GString) buf = NULL;
     g_autofree char *rpmdb_path = NULL;
     g_autoptr(GFile) file_rpmdb = NULL;
@@ -1513,8 +1513,8 @@ dnf_context_setup(DnfContext *context,
         return FALSE;
 
     /* setup RPM */
-    repos = dnf_repos_new (context);
-    priv->repos = dnf_repos_get_repos(repos, error);
+    repo_loader = dnf_repo_loader_new (context);
+    priv->repos = dnf_repo_loader_get_repos(repo_loader, error);
     if (priv->repos == NULL)
         return FALSE;
 
