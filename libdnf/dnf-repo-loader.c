@@ -69,7 +69,9 @@ dnf_repo_loader_finalize(GObject *object)
     DnfRepoLoader *self = DNF_REPO_LOADER(object);
     DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
 
-    g_object_remove_weak_pointer(G_OBJECT(priv->context),(void **) &priv->context);
+    if (priv->context != NULL)
+        g_object_remove_weak_pointer(G_OBJECT(priv->context),
+                                     (void **) &priv->context);
     if (priv->monitor_repos != NULL)
         g_object_unref(priv->monitor_repos);
     g_object_unref(priv->volume_monitor);
