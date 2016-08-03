@@ -94,6 +94,7 @@ guint            dnf_context_get_installonly_limit      (DnfContext     *context
 const gchar     *dnf_context_get_http_proxy             (DnfContext     *context);
 GPtrArray       *dnf_context_get_repos                  (DnfContext     *context);
 #ifndef __GI_SCANNER__
+DnfRepoLoader   *dnf_context_get_repo_loader            (DnfContext     *context);
 DnfTransaction  *dnf_context_get_transaction            (DnfContext     *context);
 DnfSack         *dnf_context_get_sack                   (DnfContext     *context);
 HyGoal           dnf_context_get_goal                   (DnfContext     *context);

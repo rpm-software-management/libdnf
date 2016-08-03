@@ -108,6 +108,7 @@ typedef struct
     GHashTable      *override_macros;
 
     /* used to implement a transaction */
+    DnfRepoLoader   *repo_loader;
     GPtrArray       *repos;
     DnfState        *state;        /* used for setup() and run() */
     HyGoal           goal;
@@ -155,6 +156,8 @@ dnf_context_finalize(GObject *object)
 
     if (priv->transaction != NULL)
         g_object_unref(priv->transaction);
+    if (priv->repo_loader != NULL)
+        g_object_unref(priv->repo_loader);
     if (priv->repos != NULL)
         g_ptr_array_unref(priv->repos);
     if (priv->goal != NULL)
@@ -470,6 +473,23 @@ dnf_context_get_native_arches(DnfContext *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     return(const gchar **) priv->native_arches;
+}
+
+/**
+ * dnf_context_get_repo_loader:
+ * @context: a #DnfContext instance.
+ *
+ * Gets the repo loader used by the transaction.
+ *
+ * Returns: (transfer none): the repo loader
+ *
+ * Since: 0.7.0
+ **/
+DnfRepoLoader *
+dnf_context_get_repo_loader(DnfContext *context)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    return priv->repo_loader;
 }
 
 /**
@@ -1436,7 +1456,6 @@ dnf_context_setup(DnfContext *context,
     guint j;
     GHashTableIter hashiter;
     gpointer hashkey, hashval;
-    g_autoptr(DnfRepoLoader) repo_loader = NULL;
     g_autoptr(GString) buf = NULL;
     g_autofree char *rpmdb_path = NULL;
     g_autoptr(GFile) file_rpmdb = NULL;
@@ -1513,8 +1532,8 @@ dnf_context_setup(DnfContext *context,
         return FALSE;
 
     /* setup RPM */
-    repo_loader = dnf_repo_loader_new (context);
-    priv->repos = dnf_repo_loader_get_repos(repo_loader, error);
+    priv->repo_loader = dnf_repo_loader_new(context);
+    priv->repos = dnf_repo_loader_get_repos(priv->repo_loader, error);
     if (priv->repos == NULL)
         return FALSE;
 
