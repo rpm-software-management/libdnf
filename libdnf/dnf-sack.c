@@ -1047,7 +1047,7 @@ dnf_sack_get_installonly_limit(DnfSack *sack)
     return priv->installonly_limit;
 }
 
-Repo *
+static Repo *
 dnf_sack_setup_cmdline_repo(DnfSack *sack)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
