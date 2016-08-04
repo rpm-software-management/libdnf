@@ -1437,7 +1437,7 @@ dnf_transaction_commit(DnfTransaction *transaction,
             continue;
         pkglist = hy_goal_list_obsoleted_by_package(goal, pkg);
         for (j = 0; j < pkglist->len; j++) {
-            pkg_tmp = g_ptr_array_index (pkglist, i);
+            pkg_tmp = g_ptr_array_index (pkglist, j);
             g_ptr_array_add(priv->remove_helper,
                             g_object_ref(pkg_tmp));
             dnf_package_set_action(pkg_tmp, DNF_STATE_ACTION_CLEANUP);
@@ -1463,7 +1463,7 @@ dnf_transaction_commit(DnfTransaction *transaction,
 
         pkglist = hy_goal_list_obsoleted_by_package(goal, pkg);
         for (j = 0; j < pkglist->len; j++) {
-            pkg_tmp = g_ptr_array_index(pkglist, i);
+            pkg_tmp = g_ptr_array_index(pkglist, j);
             if (!hy_packagelist_has(all_obsoleted, pkg_tmp)) {
                 g_hash_table_insert(priv->erased_by_package_hash,
                                     g_strdup(dnf_package_get_package_id(pkg)),
