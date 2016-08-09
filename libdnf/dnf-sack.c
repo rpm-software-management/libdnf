@@ -1641,7 +1641,6 @@ process_excludes(DnfSack *sack, DnfRepo *repo)
         DnfPackageSet *pkgset;
 
         query = hy_query_create(sack);
-        hy_query_filter_latest_per_arch(query, TRUE);
         hy_query_filter(query, HY_PKG_REPONAME, HY_EQ, dnf_repo_get_id(repo));
         hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
         hy_query_filter(query, HY_PKG_NAME, HY_EQ, name);
@@ -1733,8 +1732,6 @@ dnf_sack_add_repo(DnfSack *sack,
     if (!dnf_sack_load_repo(sack, dnf_repo_get_repo(repo), flags_hy, error))
         return FALSE;
 
-    process_excludes(sack, repo);
-
     /* done */
     return dnf_state_done(state, error);
 }
@@ -1755,6 +1752,7 @@ dnf_sack_add_repos(DnfSack *sack,
     guint i;
     DnfRepo *repo;
     DnfState *state_local;
+    g_autoptr(GPtrArray) enabled_repos = g_ptr_array_new();
 
     /* count the enabled repos */
     for (i = 0; i < repos->len; i++) {
@@ -1794,9 +1792,17 @@ dnf_sack_add_repos(DnfSack *sack,
         if (!ret)
             return FALSE;
 
+        g_ptr_array_add(enabled_repos, repo);
+
         /* done */
         if (!dnf_state_done(state, error))
             return FALSE;
+    }
+
+    for (i = 0; i < enabled_repos->len; i++) {
+        repo = enabled_repos->pdata[i];
+
+        process_excludes(sack, repo);
     }
 
     /* success */
