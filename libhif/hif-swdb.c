@@ -27,6 +27,7 @@
 #define DB_BIND_INT(res, id, source) assert(_db_bind_int(res, id, source))
 #define DB_STEP(res) assert(_db_step(res))
 #define DB_FIND(res) _db_find(res)
+#define DB_FIND_STR(res) _db_find_str(res)
 
 // Leave DB open when in multi-insert transaction
 #define DB_TRANS_BEGIN 	self->running = 1;
@@ -43,6 +44,68 @@
 
 #define FIND_REPO_BY_NAME "SELECT R_ID FROM REPO WHERE name=@name"
 #define FIND_PDID_FROM_PID "SELECT PD_ID FROM PACKAGE_DATA WHERE P_ID=@pid"
+#define FIND_TID_FROM_PDID "SELECT T_ID FROM TRANS_DATA WHERE PD_ID=@pdid"
+#define LOAD_OUTPUT "SELECT msg FROM trans_error WHERE tid=@tid and type=@type ORDER BY mid ASC"
+#define PKG_DATA_ATTR_BY_PID "SELECT @attr FROM PACKAGE_DATA WHERE P_ID=@pid"
+#define TRANS_DATA_ATTR_BY_PDID "SELECT @attr FROM TRANS_DATA WHERE PD_ID=@pdid"
+#define TRANS_ATTR_BY_TID "SELECT @attr FROM TRANS WHERE T_ID=@tid"
+
+#define FIND_PKG_BY_NEVRA   "SELECT P_ID FROM PACKAGE WHERE name=@name and epoch=@epoch and version=@version and release=@release"\
+                            " and arch=@arch and @type=type"
+#define FIND_PKG_BY_NEVRACHT "SELECT P_ID FROM PACKAGE WHERE name=@name and epoch=@epoch and version=@version and release=@release"\
+                            " and arch=@arch and @type=type and checksum_data=@cdata and checksum_type=@ctype"
+
+
+#define C_PKG_DATA 		"CREATE TABLE PACKAGE_DATA ( PD_ID integer PRIMARY KEY,"\
+                    	"P_ID integer, R_ID integer, from_repo_revision text,"\
+                    	"from_repo_timestamp text, installed_by text, changed_by text,"\
+                    	"installonly text, origin_url text)"
+
+#define C_PKG 			"CREATE TABLE PACKAGE ( P_ID integer primary key, name text,"\
+						"epoch text, version text, release text, arch text,"\
+						"checksum_data text, checksum_type text, type integer)"
+
+#define C_REPO			"CREATE TABLE REPO (R_ID INTEGER PRIMARY KEY, name text,"\
+                    	"last_synced text, is_expired text)"
+
+#define C_TRANS_DATA	"CREATE TABLE TRANS_DATA (TD_ID INTEGER PRIMARY KEY,"\
+                        "T_ID integer,PD_ID integer, G_ID integer, done INTEGER,"\
+                        "ORIGINAL_TD_ID integer, reason integer, state integer)"
+
+#define C_TRANS 		"CREATE TABLE TRANS (T_ID integer primary key, beg_timestamp text,"\
+                        "end_timestamp text, RPMDB_version text, cmdline text,"\
+                        "loginuid text, releasever text, return_code integer)"
+
+#define C_OUTPUT		"CREATE TABLE OUTPUT (O_ID integer primary key,T_ID INTEGER,"\
+						"msg text, type integer)"
+
+
+#define C_STATE_TYPE	"CREATE TABLE STATE_TYPE (ID INTEGER PRIMARY KEY, description text)"
+#define C_REASON_TYPE	"CREATE TABLE REASON_TYPE (ID INTEGER PRIMARY KEY, description text)"
+#define C_OUTPUT_TYPE	"CREATE TABLE OUTPUT_TYPE (ID INTEGER PRIMARY KEY, description text)"
+#define C_PKG_TYPE		"CREATE TABLE PACKAGE_TYPE (ID INTEGER PRIMARY KEY, description text)"
+
+#define C_GROUPS		"CREATE TABLE GROUPS (G_ID INTEGER PRIMARY KEY, name_id text, name text,"\
+                        "ui_name text, is_installed integer, pkg_types integer, grp_types integer)"
+
+#define C_T_GROUP_DATA	"CREATE TABLE TRANS_GROUP_DATA (TG_ID INTEGER PRIMARY KEY,"\
+						"T_ID integer, G_ID integer, name_id text, name text, ui_name text,"\
+                        "is_installed integer, pkg_types integer, grp_types integer)"
+
+#define C_GROUPS_PKG	"CREATE TABLE GROUPS_PACKAGE (GP_ID INTEGER PRIMARY KEY,"\
+                        "G_ID integer, name text)"
+
+#define C_GROUPS_EX		"CREATE TABLE GROUPS_EXCLUDE (GE_ID INTEGER PRIMARY KEY,"\
+                        "G_ID integer, name text)"
+
+#define C_ENV_GROUPS	"CREATE TABLE ENVIRONMENTS_GROUPS (EG_ID INTEGER PRIMARY KEY,"\
+                        "E_ID integer, G_ID integer)"
+
+#define C_ENV			"CREATE TABLE ENVIRONMENTS (E_ID INTEGER PRIMARY KEY, name_id text,"\
+                        "name text, ui_name text, pkg_types integer, grp_types integer)"
+
+#define C_ENV_EX		"CREATE TABLE ENVIRONMENTS_EXCLUDE (EE_ID INTEGER PRIMARY KEY,"\
+                        "E_ID integer, name text)"
 
 #include "hif-swdb.h"
 #include <stdio.h>
@@ -105,7 +168,7 @@ struct package_data_t
   	const gchar *from_repo_timestamp;
   	const gchar *installed_by;
   	const gchar *changed_by;
-  	const gchar *instalonly;
+  	const gchar *installonly;
   	const gchar *origin_url;
 };
 
@@ -157,7 +220,7 @@ HifSwdb* hif_swdb_new(void)
 
 /******************************* Functions *************************************/
 
-static gint _db_step(sqlite3_stmt *res)
+static gint _db_step	(sqlite3_stmt *res)
 {
   	if (sqlite3_step(res) != SQLITE_DONE)
     {
@@ -170,7 +233,7 @@ static gint _db_step(sqlite3_stmt *res)
 }
 
 // assumes only one parameter on output e.g "SELECT ID FROM DUMMY WHERE ..."
-static gint _db_find(sqlite3_stmt *res)
+static gint _db_find	(sqlite3_stmt *res)
 {
   	if (sqlite3_step(res) == SQLITE_ROW ) // id for description found
     {
@@ -179,14 +242,32 @@ static gint _db_find(sqlite3_stmt *res)
         return result;
     }
   	else
-	{
-	  sqlite3_finalize(res);
-	  return 0;
-	}
+    {
+        sqlite3_finalize(res);
+	    return 0;
+    }
+}
+
+// assumes only one text parameter on output e.g "SELECT DESC FROM DUMMY WHERE ..."
+static const guchar *_db_find_str(sqlite3_stmt *res)
+{
+  	if (sqlite3_step(res) == SQLITE_ROW ) // id for description found
+    {
+        const guchar * result = sqlite3_column_text(res, 0);
+        sqlite3_finalize(res);
+        return result;
+    }
+  	else
+    {
+        sqlite3_finalize(res);
+        return NULL;
+    }
 }
 
 
-static gint _db_prepare(sqlite3 *db, const gchar *sql, sqlite3_stmt **res)
+static gint _db_prepare	(	sqlite3 *db,
+						 	const gchar *sql,
+						   	sqlite3_stmt **res)
 {
   	gint rc = sqlite3_prepare_v2(db, sql, -1, res, NULL);
     if(rc != SQLITE_OK)
@@ -199,7 +280,9 @@ static gint _db_prepare(sqlite3 *db, const gchar *sql, sqlite3_stmt **res)
   	return 1; //true because of assert
 }
 
-static gint _db_bind(sqlite3_stmt *res, const gchar *id, const gchar *source)
+static gint _db_bind	(	sqlite3_stmt *res,
+						 	const gchar *id,
+						 	const gchar *source)
 {
   	gint idx = sqlite3_bind_parameter_index(res, id);
     gint rc = sqlite3_bind_text(res, idx, source, -1, SQLITE_STATIC);
@@ -213,7 +296,9 @@ static gint _db_bind(sqlite3_stmt *res, const gchar *id, const gchar *source)
   	return 1; //true because of assert
 }
 
-static gint _db_bind_int(sqlite3_stmt *res, const gchar *id, gint source)
+static gint _db_bind_int (	sqlite3_stmt *res,
+						  	const gchar *id,
+						  	gint source)
 {
   	gint idx = sqlite3_bind_parameter_index(res, id);
     gint rc = sqlite3_bind_int(res, idx, source);
@@ -227,7 +312,10 @@ static gint _db_bind_int(sqlite3_stmt *res, const gchar *id, gint source)
   	return 1; //true because of assert
 }
 
-static gint _db_exec(sqlite3 *db, const gchar *cmd, int (*callback)(void *, int, char **, char**))
+//use macros DB_[PREP,BIND,STEP] for parametrised queries
+static gint _db_exec	(sqlite3 *db,
+						 const gchar *cmd,
+						 int (*callback)(void *, int, char **, char**))
 {
     gchar *err_msg;
     gint result = sqlite3_exec(db, cmd, callback, 0, &err_msg);
@@ -237,10 +325,43 @@ static gint _db_exec(sqlite3 *db, const gchar *cmd, int (*callback)(void *, int,
         sqlite3_free(err_msg);
         return 1;
     }
-    else
+    return 0;
+}
+
+static const gchar *_table_by_attribute(const gchar *attr)
+{
+    gint table = 0;
+    if (!g_strcmp0(attr,"from_repo_revision")) table = 1;
+    else if (!g_strcmp0(attr,"from_repo_timestamp")) table = 1;
+    else if (!g_strcmp0(attr,"installed_by")) table = 1;
+    else if (!g_strcmp0(attr,"changed_by")) table = 1;
+    else if (!g_strcmp0(attr,"installonly")) table = 1;
+    else if (!g_strcmp0(attr,"origin_url")) table = 1;
+    else if (!g_strcmp0(attr,"beg_timestamp")) table = 2;
+    else if (!g_strcmp0(attr,"end_timestamp")) table = 2;
+    else if (!g_strcmp0(attr,"RPMDB_version")) table = 2;
+    else if (!g_strcmp0(attr,"cmdline")) table = 2;
+    else if (!g_strcmp0(attr,"loginuid")) table = 2;
+    else if (!g_strcmp0(attr,"releasever")) table = 2;
+    else if (!g_strcmp0(attr,"return_code")) table = 2;
+    else if (!g_strcmp0(attr,"done")) table = 3;
+    else if (!g_strcmp0(attr,"ORIGINAL_TD_ID")) table = 3;
+    else if (!g_strcmp0(attr,"reason")) table = 3;
+    else if (!g_strcmp0(attr,"state")) table = 3;
+
+    if (table == 1)
     {
-        return 0;
+        return "PACKAGE_DATA";
     }
+    if (table == 2)
+    {
+        return "TRANS";
+    }
+    if (table == 3)
+    {
+        return "TRANS_DATA";
+    }
+    return NULL; //attr not found
 }
 
 
@@ -351,12 +472,12 @@ static gint _package_insert(sqlite3 *db, struct package_t *package)
   	return 0;
 }
 
-gint hif_swdb_add_package_naevrcht(	HifSwdb *self,
+gint hif_swdb_add_package_nevracht(	HifSwdb *self,
 				  					const gchar *name,
+									const gchar *epoch,
+									const gchar *version,
+									const gchar *release,
 				  					const gchar *arch,
-				  					const gchar *epoch,
-				  					const gchar *version,
-				  					const gchar *release,
 				 					const gchar *checksum_data,
 								   	const gchar *checksum_type,
 								  	const gchar *type)
@@ -364,8 +485,6 @@ gint hif_swdb_add_package_naevrcht(	HifSwdb *self,
   	if (hif_swdb_open(self))
     	return 1;
   	DB_TRANS_BEGIN
-
-  	//transform data into nevra format
  	struct package_t package = {name, epoch, version, release, arch,
 		checksum_data, checksum_type, hif_swdb_get_package_type(self,type)};
 
@@ -373,6 +492,66 @@ gint hif_swdb_add_package_naevrcht(	HifSwdb *self,
   	DB_TRANS_END
   	hif_swdb_close(self);
   	return rc;
+}
+
+const gint 	hif_swdb_get_pid_by_nevracht(	HifSwdb *self,
+											const gchar *name,
+											const gchar *epoch,
+											const gchar *version,
+											const gchar *release,
+											const gchar *arch,
+											const gchar *checksum_data,
+											const gchar *checksum_type,
+											const gchar *type,
+											const gboolean create)
+{
+    if (hif_swdb_open(self))
+    	return 1;
+  	DB_TRANS_BEGIN
+ 	const gint _type = hif_swdb_get_package_type(self,type);
+    sqlite3_stmt *res;
+    gint rc = 0;
+    if (g_strcmp0(checksum_type,"") && g_strcmp0(checksum_data,""))
+    {
+        const gchar *sql = FIND_PKG_BY_NEVRACHT;
+        DB_PREP(self->db, sql, res);
+        DB_BIND(res, "@name", name);
+        DB_BIND(res, "@epoch", epoch);
+        DB_BIND(res, "@version", version);
+        DB_BIND(res, "@release", release);
+        DB_BIND(res, "@arch", arch);
+        DB_BIND_INT(res, "@type", _type);
+        DB_BIND(res, "checksum_data", checksum_data);
+        DB_BIND(res, "checksum_type", checksum_type);
+        rc = DB_FIND(res);
+    }
+    else
+    {
+        const gchar *sql = FIND_PKG_BY_NEVRA;
+        DB_PREP(self->db, sql, res);
+        DB_BIND(res, "@name", name);
+        DB_BIND(res, "@epoch", epoch);
+        DB_BIND(res, "@version", version);
+        DB_BIND(res, "@release", release);
+        DB_BIND(res, "@arch", arch);
+        DB_BIND_INT(res, "@type", _type);
+        rc = DB_FIND(res);
+    }
+    if(rc) //found
+    {
+        DB_TRANS_END
+      	hif_swdb_close(self);
+      	return rc;
+    }
+
+    if(create)
+    {
+        hif_swdb_add_package_nevracht(self, name, epoch, version, release, arch, checksum_data, checksum_type, type);
+        return hif_swdb_get_pid_by_nevracht(self, name, epoch, version, release, arch, checksum_data, checksum_type, type, 0);
+    }
+    DB_TRANS_END
+    hif_swdb_close(self);
+    return 0;
 }
 
 static gint _package_data_insert (sqlite3 *db, struct package_data_t *package_data)
@@ -386,7 +565,7 @@ static gint _package_data_insert (sqlite3 *db, struct package_data_t *package_da
   	DB_BIND(res, "@repo_t", package_data->from_repo_timestamp);
   	DB_BIND(res, "@installed_by", package_data->installed_by);
   	DB_BIND(res, "@changed_by", package_data->changed_by);
-  	DB_BIND(res, "@installonly", package_data->instalonly);
+  	DB_BIND(res, "@installonly", package_data->installonly);
   	DB_BIND(res, "@origin_url", package_data->origin_url);
 	DB_STEP(res);
   	return 0;
@@ -399,16 +578,16 @@ gint 	hif_swdb_log_package_data(	HifSwdb *self,
                                   	const gchar *from_repo_timestamp,
                                   	const gchar *installed_by,
                                   	const gchar *changed_by,
-                                  	const gchar *instalonly,
+                                  	const gchar *installonly,
                                   	const gchar *origin_url )
 {
   	if (hif_swdb_open(self))
     	return 1;
 
-  	struct package_data_t pacakge_data = { pid, _bind_repo_by_name(self->db, from_repo),
-	  from_repo_revision, from_repo_timestamp, installed_by, changed_by, instalonly, origin_url};
+  	struct package_data_t package_data = { pid, _bind_repo_by_name(self->db, from_repo),
+	  from_repo_revision, from_repo_timestamp, installed_by, changed_by, installonly, origin_url};
 
-  	gint rc = _package_data_insert(self->db, &pacakge_data);
+  	gint rc = _package_data_insert(self->db, &package_data);
 
   	hif_swdb_close(self);
   	return rc;
@@ -422,6 +601,71 @@ static gint _pdid_from_pid (	sqlite3 *db,
   	DB_PREP(db, sql, res);
   	DB_BIND_INT(res, "@pid", pid);
   	return DB_FIND(res);
+}
+
+static gint _tid_from_pdid (	sqlite3 *db,
+								const gint pdid )
+{
+  	sqlite3_stmt *res;
+  	const gchar *sql = FIND_TID_FROM_PDID;
+  	DB_PREP(db, sql, res);
+  	DB_BIND_INT(res, "@pdid", pdid);
+  	return DB_FIND(res);
+}
+
+const guchar *hif_swdb_get_pkg_attr( HifSwdb *self,
+                                    const gint pid,
+                                    const gchar *attribute)
+{
+    if (hif_swdb_open(self))
+    {
+    	return NULL;
+    }
+
+    const gchar *table = _table_by_attribute(attribute);
+    if (!table) //attribute not found
+    {
+        if (!g_strcmp0(attribute, "command_line")) //compatibility issue
+            table = "TRANS";
+        else
+            return NULL;
+    }
+    sqlite3_stmt *res;
+
+    if (!g_strcmp0(table,"PACKAGE_DATA"))
+    {
+        const gchar *sql = PKG_DATA_ATTR_BY_PID;
+        DB_PREP(self->db, sql, res);
+        DB_BIND(res, "@attr", attribute);
+        DB_BIND_INT(res, "@pid", pid);
+        hif_swdb_close(self);
+        return DB_FIND_STR(res);
+    }
+    if (!g_strcmp0(table,"TRANS_DATA"))
+    {
+        //need to get PD_ID first
+        const gint pdid = _pdid_from_pid(self->db, pid);
+        const gchar *sql = TRANS_DATA_ATTR_BY_PDID;
+        DB_PREP(self->db, sql, res);
+        DB_BIND(res, "@attr", attribute);
+        DB_BIND_INT(res, "@pdid", pdid);
+        hif_swdb_close(self);
+        return DB_FIND_STR(res);
+    }
+    if (!g_strcmp0(table,"TRANS"))
+    {
+        //need to get T_ID first via PD_ID
+        const gint pdid = _pdid_from_pid(self->db, pid);
+        const gint tid = _tid_from_pdid(self->db, pdid);
+        const gchar *sql = TRANS_ATTR_BY_TID;
+        DB_PREP(self->db, sql, res);
+        DB_BIND(res, "@attr", attribute);
+        DB_BIND_INT(res, "@tid", tid);
+        hif_swdb_close(self);
+        return DB_FIND_STR(res);
+    }
+    hif_swdb_close(self);
+    return NULL;
 }
 
 /*************************** TRANS DATA PERSISTOR ****************************/
@@ -577,7 +821,7 @@ gint hif_swdb_log_output	(	HifSwdb *self,
 
   	DB_TRANS_BEGIN
 
-  	struct output_t output = { tid, msg, hif_swdb_get_output_type(self, "stout") };
+  	struct output_t output = { tid, msg, hif_swdb_get_output_type(self, "stdout") };
   	gint rc = _output_insert( self->db, &output);
 
   	DB_TRANS_END
@@ -585,6 +829,48 @@ gint hif_swdb_log_output	(	HifSwdb *self,
   	return rc;
 }
 
+static const guchar * _load_output (  sqlite3 *db,
+                                    const gint tid,
+                                    const gint type)
+{
+    sqlite3_stmt *res;
+  	const gchar *sql = LOAD_OUTPUT;
+  	DB_PREP(db,sql,res);
+  	DB_BIND_INT(res, "@tid", tid);
+  	DB_BIND_INT(res, "@type", type);
+  	return DB_FIND_STR(res);
+}
+
+/* FIXME: This returns only first output for chosen transaction
+ * - We need to find some way how to push array of strings to python
+ */
+const guchar *hif_swdb_load_error (  HifSwdb *self,
+                                    const gint tid)
+{
+    if (hif_swdb_open(self))
+    	return NULL;
+    DB_TRANS_BEGIN
+    const guchar *rc = _load_output( self->db,
+                                    tid,
+                                    hif_swdb_get_output_type(self, "stderr"));
+    DB_TRANS_END
+    hif_swdb_close(self);
+    return rc;
+}
+
+const guchar *hif_swdb_load_output (  HifSwdb *self,
+                                    const gint tid)
+{
+    if (hif_swdb_open(self))
+    	return NULL;
+    DB_TRANS_BEGIN
+    const guchar *rc = _load_output( self->db,
+                                    tid,
+                                    hif_swdb_get_output_type(self, "stdout"));
+    DB_TRANS_END
+    hif_swdb_close(self);
+    return rc;
+}
 
 
 /****************************** TYPE BINDERS *********************************/
@@ -761,66 +1047,25 @@ gint hif_swdb_create_db (HifSwdb *self)
 
     // Create all tables
     gint failed = 0;
+    failed += _db_exec (self->db, C_PKG_DATA, NULL);
+    failed += _db_exec (self->db, C_PKG, NULL);
+    failed += _db_exec (self->db, C_REPO, NULL);
+    failed += _db_exec (self->db, C_TRANS_DATA, NULL);
+    failed += _db_exec (self->db, C_TRANS, NULL);
+    failed += _db_exec (self->db, C_OUTPUT, NULL);
+    failed += _db_exec (self->db, C_STATE_TYPE, NULL);
+    failed += _db_exec (self->db, C_REASON_TYPE, NULL);
+    failed += _db_exec (self->db, C_OUTPUT_TYPE, NULL);
+    failed += _db_exec (self->db, C_PKG_TYPE, NULL);
+    failed += _db_exec (self->db, C_GROUPS, NULL);
+    failed += _db_exec (self->db, C_T_GROUP_DATA, NULL);
+    failed += _db_exec (self->db, C_GROUPS_PKG, NULL);
+    failed += _db_exec (self->db, C_GROUPS_EX, NULL);
+    failed += _db_exec (self->db, C_ENV_GROUPS, NULL);
+    failed += _db_exec (self->db, C_ENV, NULL);
+    failed += _db_exec (self->db, C_ENV_EX, NULL);
 
-    //PACKAGE_DATA
-    failed += _db_exec (self->db," CREATE TABLE PACKAGE_DATA ( PD_ID integer PRIMARY KEY,"
-                                    "P_ID integer, R_ID integer, from_repo_revision text,"
-                                    "from_repo_timestamp text, installed_by text, changed_by text,"
-                                    "installonly text, origin_url text)", NULL);
-    //PACKAGE
-    failed += _db_exec (self->db, "CREATE TABLE PACKAGE ( P_ID integer primary key, name text, epoch text,"
-                                    "version text, release text, arch text, checksum_data text,"
-                                    "checksum_type text, type integer )", NULL);
-    //REPO
-    failed += _db_exec (self->db, "CREATE TABLE REPO (R_ID INTEGER PRIMARY KEY, name text,"
-                                    "last_synced text, is_expired text)", NULL);
-    //TRANS_DATA
-    failed += _db_exec (self->db, "CREATE TABLE TRANS_DATA (TD_ID INTEGER PRIMARY KEY,"
-                                    "T_ID integer,PD_ID integer, G_ID integer, done INTEGER,"
-                                    "ORIGINAL_TD_ID integer, reason integer, state integer)", NULL);
-    //TRANS
-    failed += _db_exec (self->db," CREATE TABLE TRANS (T_ID integer primary key, beg_timestamp text,"
-                                    "end_timestamp text, RPMDB_version text, cmdline text,"
-                                    "loginuid text, releasever text, return_code integer) ", NULL);
-    //OUTPUT
-    failed += _db_exec (self->db, "CREATE TABLE OUTPUT (O_ID integer primary key,T_ID INTEGER, msg text, type integer)", NULL);
-
-    //STATE_TYPE
-    failed += _db_exec (self->db, "CREATE TABLE STATE_TYPE (ID INTEGER PRIMARY KEY, description text)", NULL);
-
-    //REASON_TYPE
-    failed += _db_exec (self->db, "CREATE TABLE REASON_TYPE (ID INTEGER PRIMARY KEY, description text)", NULL);
-
-    //OUTPUT_TYPE
-    failed += _db_exec (self->db, "CREATE TABLE OUTPUT_TYPE (ID INTEGER PRIMARY KEY, description text)", NULL);
-
-    //PACKAGE_TYPE
-    failed += _db_exec (self->db, "CREATE TABLE PACKAGE_TYPE (ID INTEGER PRIMARY KEY, description text)", NULL);
-
-    //GROUPS
-    failed += _db_exec (self->db, "CREATE TABLE GROUPS (G_ID INTEGER PRIMARY KEY, name_id text, name text,"
-                                    "ui_name text, is_installed integer, pkg_types integer, grp_types integer)", NULL);
-    //TRANS_GROUP_DATA
-    failed += _db_exec (self->db, "CREATE TABLE TRANS_GROUP_DATA (TG_ID INTEGER PRIMARY KEY, T_ID integer,"
-                                    "G_ID integer, name_id text, name text, ui_name text,"
-                                    "is_installed integer, pkg_types integer, grp_types integer)", NULL);
-    //GROUPS_PACKAGE
-    failed += _db_exec (self->db, "CREATE TABLE GROUPS_PACKAGE (GP_ID INTEGER PRIMARY KEY,"
-                                    "G_ID integer, name text)", NULL);
-    //GROUPS_EXCLUDE
-    failed += _db_exec (self->db, "CREATE TABLE GROUPS_EXCLUDE (GE_ID INTEGER PRIMARY KEY,"
-                                    "G_ID integer, name text)", NULL);
-    //ENVIRONMENTS_GROUPS
-    failed += _db_exec (self->db, "CREATE TABLE ENVIRONMENTS_GROUPS (EG_ID INTEGER PRIMARY KEY,"
-                                    "E_ID integer, G_ID integer)", NULL);
-    //ENVIRONMENTS
-    failed += _db_exec (self->db, "CREATE TABLE ENVIRONMENTS (E_ID INTEGER PRIMARY KEY, name_id text,"
-                                    "name text, ui_name text, pkg_types integer, grp_types integer)", NULL);
-    //ENVIRONMENTS_EXCLUDE
-    failed += _db_exec (self->db, "CREATE TABLE ENVIRONMENTS_EXCLUDE (EE_ID INTEGER PRIMARY KEY,"
-                                    "E_ID integer, name text)", NULL);
-
-    if (failed != 0)
+  	if (failed != 0)
     {
         fprintf(stderr, "SQL error: Unable to create %d tables\n",failed);
         sqlite3_close(self->db);
