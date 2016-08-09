@@ -63,6 +63,7 @@ Python 2 bindings for the hawkey library.
 %if %{with python3}
 %package -n python3-hawkey
 Summary:        Python 3 bindings for the hawkey library
+%{?system_python_abi}
 %{?python_provide:%python_provide python3-hawkey}
 BuildRequires:  python3-devel
 BuildRequires:  python3-nose
