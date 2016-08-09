@@ -34,9 +34,9 @@
 
 /* compile time version
  */
-#define LIBDNF_MAJOR_VERSION				(@LIBDNF_MAJOR_VERSION@)
-#define LIBDNF_MINOR_VERSION				(@LIBDNF_MINOR_VERSION@)
-#define LIBDNF_MICRO_VERSION				(@LIBDNF_MICRO_VERSION@)
+#define LIBDNF_MAJOR_VERSION				(@PROJECT_VERSION_MAJOR@)
+#define LIBDNF_MINOR_VERSION				(@PROJECT_VERSION_MINOR@)
+#define LIBDNF_MICRO_VERSION				(@PROJECT_VERSION_PATCH@)
 
 /* check whether a As version equal to or greater than
  * major.minor.micro.
