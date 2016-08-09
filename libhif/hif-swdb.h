@@ -66,12 +66,12 @@ gint hif_swdb_get_reason_type (HifSwdb *self, const gchar *type);
 
 gint hif_swdb_get_state_type (HifSwdb *self, const gchar *type);
 
-gint hif_swdb_add_package_naevrcht(	HifSwdb *self,
+gint hif_swdb_add_package_nevracht(	HifSwdb *self,
 				  					const gchar *name,
+									const gchar *epoch,
+									const gchar *version,
+									const gchar *release,
 				  					const gchar *arch,
-				  					const gchar *epoch,
-				  					const gchar *version,
-				  					const gchar *release,
 				 					const gchar *checksum_data,
 								   	const gchar *checksum_type,
 								  	const gchar *type);
@@ -115,7 +115,27 @@ gint 	hif_swdb_trans_data_beg(	HifSwdb *self,
 gint 	hif_swdb_trans_data_end	(	HifSwdb *self,
 									const gint tid);
 
+
+const guchar *hif_swdb_get_pkg_attr( HifSwdb *self,
+									const gint pid,
+									const gchar *attribute);
+
+const guchar *hif_swdb_load_error (  HifSwdb *self,
+                                    const gint tid);
+const guchar *hif_swdb_load_output (  HifSwdb *self,
+									const gint tid);
+
+const gint 	hif_swdb_get_pid_by_nevracht(	HifSwdb *self,
+											const gchar *name,
+											const gchar *epoch,
+											const gchar *version,
+											const gchar *release,
+											const gchar *arch,
+											const gchar *checksum_data,
+											const gchar *checksum_type,
+											const gchar *type,
+											const gboolean create);
+
 G_END_DECLS
 
 #endif
-
