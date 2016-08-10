@@ -1090,6 +1090,8 @@ dnf_repo_check_internal(DnfRepo *repo,
     }
 
     /* create a HyRepo */
+    if (priv->repo != NULL)
+        hy_repo_free(priv->repo);
     priv->repo = hy_repo_create(priv->id);
     hy_repo_set_string(priv->repo, HY_REPO_MD_FN, yum_repo->repomd);
     tmp = lr_yum_repo_path(yum_repo, "primary");
