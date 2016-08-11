@@ -644,6 +644,7 @@ START_TEST(test_goal_erase_with_deps)
     fail_if(hy_goal_run_flags(goal, DNF_ALLOW_UNINSTALL));
     assert_iueo(goal, 0, 0, 2, 0);
     hy_goal_free(goal);
+    g_object_unref(pkg);
 }
 END_TEST
 

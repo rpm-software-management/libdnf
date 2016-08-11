@@ -146,6 +146,8 @@ START_TEST(test_add_cmdline_package)
 
     g_free(path_mystery);
     g_free(path_tour);
+    g_object_unref(pkg_mystery);
+    g_object_unref(pkg_tour);
     g_object_unref(sack);
 }
 END_TEST
