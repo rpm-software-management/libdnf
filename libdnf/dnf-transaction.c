@@ -257,7 +257,6 @@ dnf_transaction_ensure_repo(DnfTransaction *transaction,
 {
     DnfRepo *repo;
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
-    char *location;
     guint i;
 
     /* not set yet */
@@ -273,9 +272,7 @@ dnf_transaction_ensure_repo(DnfTransaction *transaction,
     /* this is a local file */
     if (g_strcmp0(dnf_package_get_reponame(pkg),
                   HY_CMDLINE_REPO_NAME) == 0) {
-        location = dnf_package_get_location(pkg);
-        dnf_package_set_filename(pkg, location);
-        g_free(location);
+        dnf_package_set_filename(pkg, dnf_package_get_location(pkg));
         return TRUE;
     }
 
