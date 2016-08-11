@@ -644,6 +644,7 @@ hy_goal_clone(HyGoal goal)
     if (goal->protected != NULL)
         map_init_clone(gn->protected, goal->protected);
     gn->actions = goal->actions;
+    g_ptr_array_unref(gn->removal_of_protected);
     gn->removal_of_protected = g_ptr_array_ref(goal->removal_of_protected);
     return gn;
 }
