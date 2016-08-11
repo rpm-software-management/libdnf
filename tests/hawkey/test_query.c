@@ -1169,13 +1169,13 @@ query_suite(void)
     tcase_add_test(tc, test_filter_advisory_type);
     tcase_add_test(tc, test_filter_advisory_cve);
     tcase_add_test(tc, test_filter_advisory_bug);
+    suite_add_tcase(s, tc);
 
     tc = tcase_create("Set Operations");
     tcase_add_unchecked_fixture(tc, fixture_with_main, teardown);
     tcase_add_test(tc, test_difference);
     tcase_add_test(tc, test_intersection);
     tcase_add_test(tc, test_union);
-
     suite_add_tcase(s, tc);
 
     return s;
