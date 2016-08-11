@@ -136,18 +136,16 @@ START_TEST(test_add_cmdline_package)
 
     char *path_mystery = solv_dupjoin(TESTDATADIR, "/hawkey/yum/mystery-devel-19.67-1.noarch.rpm", NULL);
     DnfPackage *pkg_mystery = dnf_sack_add_cmdline_package(sack, path_mystery);
-    char *location_mystery = dnf_package_get_location(pkg_mystery);
+    const char *location_mystery = dnf_package_get_location(pkg_mystery);
     ck_assert_str_eq(path_mystery, location_mystery);
 
     char *path_tour = solv_dupjoin(TESTDATADIR, "/hawkey/yum/tour-4-6.noarch.rpm", NULL);
     DnfPackage *pkg_tour = dnf_sack_add_cmdline_package(sack, path_tour);
-    char *location_tour = dnf_package_get_location(pkg_tour);
+    const char *location_tour = dnf_package_get_location(pkg_tour);
     ck_assert_str_eq(path_tour, location_tour);
 
     g_free(path_mystery);
-    g_free(location_mystery);
     g_free(path_tour);
-    g_free(location_tour);
     g_object_unref(sack);
 }
 END_TEST

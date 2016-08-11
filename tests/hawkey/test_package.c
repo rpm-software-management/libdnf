@@ -62,7 +62,7 @@ START_TEST(test_versions)
 {
     DnfSack *sack = test_globals.sack;
     unsigned epoch;
-    char *version, *release;
+    const char *version, *release;
     DnfPackage *pkg;
 
     pkg = by_name(sack, "baby");
@@ -71,10 +71,8 @@ START_TEST(test_versions)
     fail_unless(epoch == 6);
     version = dnf_package_get_version(pkg);
     ck_assert_str_eq(version, "5.0");
-    g_free(version);
     release = dnf_package_get_release(pkg);
     ck_assert_str_eq(release, "11");
-    g_free(release);
     g_object_unref(pkg);
 
     pkg = by_name(sack, "jay");
@@ -84,10 +82,8 @@ START_TEST(test_versions)
     fail_unless(epoch == 0);
     version = dnf_package_get_version(pkg);
     ck_assert_str_eq(version, "5.0");
-    g_free(version);
     release = dnf_package_get_release(pkg);
     ck_assert_str_eq(release, "0");
-    g_free(release);
     g_object_unref(pkg);
 }
 END_TEST
@@ -96,7 +92,7 @@ START_TEST(test_no_sourcerpm)
 {
     DnfSack *sack = test_globals.sack;
     DnfPackage *pkg = by_name(sack, "baby");
-    char *src = dnf_package_get_sourcerpm(pkg);
+    const char *src = dnf_package_get_sourcerpm(pkg);
 
     fail_unless(src == NULL);
     g_object_unref(pkg);
@@ -289,16 +285,14 @@ END_TEST
 START_TEST(test_sourcerpm)
 {
     DnfPackage *pkg = by_name(test_globals.sack, "tour");
-    char *sourcerpm = dnf_package_get_sourcerpm(pkg);
+    const char *sourcerpm = dnf_package_get_sourcerpm(pkg);
 
     ck_assert_str_eq(sourcerpm, "tour-4-6.src.rpm");
-    g_free(sourcerpm);
     g_object_unref(pkg);
 
     pkg = by_name(test_globals.sack, "mystery-devel");
     sourcerpm = dnf_package_get_sourcerpm(pkg);
     ck_assert_str_eq(sourcerpm, "mystery-19.67-1.src.rpm");
-    g_free(sourcerpm);
     g_object_unref(pkg);
 }
 END_TEST

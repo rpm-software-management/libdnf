@@ -243,7 +243,7 @@ static void update(DnfSack *sack, DnfPackage *pkg)
     for (unsigned int i = 0; i < plist->len; ++i) {
         DnfPackage *upkg = g_ptr_array_index(plist, i);
         const char *nvra = dnf_package_get_nevra(upkg);
-        char *location = dnf_package_get_location(upkg);
+        const char *location = dnf_package_get_location(upkg);
         GPtrArray *obsoleted = hy_goal_list_obsoleted_by_package(goal, upkg);
         DnfPackage *installed = g_ptr_array_index(obsoleted, 0);
         const char *nvra_installed = dnf_package_get_nevra(installed);
@@ -253,7 +253,6 @@ static void update(DnfSack *sack, DnfPackage *pkg)
         printf("\tsize: %lu kB\n", dnf_package_get_size(upkg) / 1024);
 
         g_ptr_array_unref(obsoleted);
-        g_free(location);
     }
     g_ptr_array_unref(plist);
     // handle installs
@@ -262,12 +261,10 @@ static void update(DnfSack *sack, DnfPackage *pkg)
     for (unsigned int i = 0; i < plist->len; ++i) {
         DnfPackage *ipkg = g_ptr_array_index(plist, i);
         const char *nvra = dnf_package_get_nevra(ipkg);
-        char *location = dnf_package_get_location(ipkg);
+        const char *location = dnf_package_get_location(ipkg);
 
         printf("installing: %s using %s\n", nvra, location);
         printf("\tsize: %lu kB\n", dnf_package_get_size(ipkg) / 1024);
-
-        g_free(location);
     }
     g_ptr_array_unref(plist);
 

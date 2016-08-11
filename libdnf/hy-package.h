@@ -51,12 +51,12 @@ gboolean     dnf_package_installed      (DnfPackage *pkg);
 int          dnf_package_cmp            (DnfPackage *pkg1, DnfPackage *pkg2);
 int          dnf_package_evr_cmp        (DnfPackage *pkg1, DnfPackage *pkg2);
 
-char        *dnf_package_get_location   (DnfPackage *pkg);
+const char  *dnf_package_get_location   (DnfPackage *pkg);
 const char  *dnf_package_get_baseurl    (DnfPackage *pkg);
 const char  *dnf_package_get_nevra      (DnfPackage *pkg);
-char        *dnf_package_get_sourcerpm  (DnfPackage *pkg);
-char        *dnf_package_get_version    (DnfPackage *pkg);
-char        *dnf_package_get_release    (DnfPackage *pkg);
+const char  *dnf_package_get_sourcerpm  (DnfPackage *pkg);
+const char  *dnf_package_get_version    (DnfPackage *pkg);
+const char  *dnf_package_get_release    (DnfPackage *pkg);
 
 const char  *dnf_package_get_name       (DnfPackage *pkg);
 const char  *dnf_package_get_arch       (DnfPackage *pkg);

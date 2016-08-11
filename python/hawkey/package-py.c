@@ -217,22 +217,6 @@ get_str(_PackageObject *self, void *closure)
 }
 
 static PyObject *
-get_str_alloced(_PackageObject *self, void *closure)
-{
-    char *(*func)(DnfPackage*);
-    char *cstr;
-    PyObject *ret;
-
-    func = (char *(*)(DnfPackage*))closure;
-    cstr = func(self->package);
-    if (cstr == NULL)
-        Py_RETURN_NONE;
-    ret = PyUnicode_FromString(cstr);
-    g_free(cstr);
-    return ret;
-}
-
-static PyObject *
 get_str_array(_PackageObject *self, void *closure)
 {
     gchar ** (*func)(DnfPackage*);
@@ -278,13 +262,13 @@ static PyGetSetDef package_getsetters[] = {
     {(char*)"files",        (getter)get_str_array, NULL, NULL,
      (void *)dnf_package_get_files},
     {(char*)"hdr_end", (getter)get_num, NULL, NULL, (void *)dnf_package_get_hdr_end},
-    {(char*)"location",  (getter)get_str_alloced, NULL, NULL,
+    {(char*)"location",  (getter)get_str, NULL, NULL,
      (void *)dnf_package_get_location},
-    {(char*)"sourcerpm",  (getter)get_str_alloced, NULL, NULL,
+    {(char*)"sourcerpm",  (getter)get_str, NULL, NULL,
      (void *)dnf_package_get_sourcerpm},
-    {(char*)"version",  (getter)get_str_alloced, NULL, NULL,
+    {(char*)"version",  (getter)get_str, NULL, NULL,
      (void *)dnf_package_get_version},
-    {(char*)"release",  (getter)get_str_alloced, NULL, NULL,
+    {(char*)"release",  (getter)get_str, NULL, NULL,
      (void *)dnf_package_get_release},
     {(char*)"name", (getter)get_str, NULL, NULL, (void *)dnf_package_get_name},
     {(char*)"arch", (getter)get_str, NULL, NULL, (void *)dnf_package_get_arch},

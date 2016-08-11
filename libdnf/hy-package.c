@@ -331,16 +331,16 @@ dnf_package_evr_cmp(DnfPackage *pkg1, DnfPackage *pkg2)
  *
  * Gets the location (XXX??) for the package.
  *
- * Returns: (transfer full): string
+ * Returns: (transfer none): string
  *
  * Since: 0.7.0
  */
-char *
+const char *
 dnf_package_get_location(DnfPackage *pkg)
 {
     Solvable *s = get_solvable(pkg);
     repo_internalize_trigger(s->repo);
-    return g_strdup(solvable_get_location(s, NULL));
+    return solvable_get_location(s, NULL);
 }
 
 /**
@@ -383,16 +383,16 @@ dnf_package_get_nevra(DnfPackage *pkg)
  *
  * Gets the source RPM for the package.
  *
- * Returns: (transfer full): a string, or %NULL
+ * Returns: (transfer none): a string, or %NULL
  *
  * Since: 0.7.0
  */
-char *
+const char *
 dnf_package_get_sourcerpm(DnfPackage *pkg)
 {
     Solvable *s = get_solvable(pkg);
     repo_internalize_trigger(s->repo);
-    return g_strdup(solvable_lookup_sourcepkg(s));
+    return solvable_lookup_sourcepkg(s);
 }
 
 /**
@@ -401,16 +401,16 @@ dnf_package_get_sourcerpm(DnfPackage *pkg)
  *
  * Gets the version for the package.
  *
- * Returns: (transfer full): a string, or %NULL
+ * Returns: (transfer none): a string, or %NULL
  *
  * Since: 0.7.0
  */
-char *
+const char *
 dnf_package_get_version(DnfPackage *pkg)
 {
     char *e, *v, *r;
     pool_split_evr(dnf_package_get_pool(pkg), dnf_package_get_evr(pkg), &e, &v, &r);
-    return g_strdup(v);
+    return v;
 }
 
 /**
@@ -419,16 +419,16 @@ dnf_package_get_version(DnfPackage *pkg)
  *
  * Gets the release for the package.
  *
- * Returns: (transfer full): a string, or %NULL
+ * Returns: (transfer none): a string, or %NULL
  *
  * Since: 0.7.0
  */
-char *
+const char *
 dnf_package_get_release(DnfPackage *pkg)
 {
     char *e, *v, *r;
     pool_split_evr(dnf_package_get_pool(pkg), dnf_package_get_evr(pkg), &e, &v, &r);
-    return g_strdup(r);
+    return r;
 }
 
 /**

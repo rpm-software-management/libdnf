@@ -469,10 +469,9 @@ filter_sourcerpm(HyQuery q, struct _Filter *f, Map *m)
                 continue;
 
             DnfPackage *pkg = dnf_package_new(q->sack, id);
-            char *srcrpm = dnf_package_get_sourcerpm(pkg);
+            const char *srcrpm = dnf_package_get_sourcerpm(pkg);
             if (srcrpm && !strcmp(match, srcrpm))
                 MAPSET(m, id);
-            g_free(srcrpm);
             g_object_unref(pkg);
         }
     }
