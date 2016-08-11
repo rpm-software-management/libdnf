@@ -42,8 +42,6 @@ Summary:        Development files for %{name}
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 Requires:       libsolv-devel%{?_isa} >= %{libsolv_version}
 BuildRequires:  python-nose
-BuildRequires:  python-sphinx
-Obsoletes:      hawkey-man < 0.7.1
 
 %description devel
 Development files for %{name}.
@@ -80,7 +78,7 @@ mkdir build-py3
 
 %build
 pushd build-py2
-  %cmake ../ %{!?_with_valgrind:-DDISABLE_VALGRIND=1}
+  %cmake -DWITH_MAN=OFF ../ %{!?_with_valgrind:-DDISABLE_VALGRIND=1}
   %make_build
 popd
 
@@ -131,7 +129,6 @@ popd
 
 %files devel
 %doc %{_datadir}/gtk-doc/html/%{name}/
-%doc %{_mandir}/man3/hawkey.3*
 %{_libdir}/%{name}.so
 %{_libdir}/pkgconfig/%{name}.pc
 %{_includedir}/%{name}/
