@@ -27,7 +27,9 @@
 #define DB_BIND_INT(res, id, source) assert(_db_bind_int(res, id, source))
 #define DB_STEP(res) assert(_db_step(res))
 #define DB_FIND(res) _db_find(res)
+#define DB_FIND_MULTI(res) _db_find_multi(res)
 #define DB_FIND_STR(res) _db_find_str(res)
+#define DB_FIND_STR_MULTI(res) _db_find_str_multi(res)
 
 // Leave DB open when in multi-insert transaction
 #define DB_TRANS_BEGIN 	self->running = 1;
@@ -38,14 +40,22 @@
 #define INSERT_TRANS_BEG "insert into TRANS values(null,@beg,null,@rpmdbv,@cmdline,@loginuid,@releasever,null)"
 #define INSERT_TRANS_END "UPDATE TRANS SET end_timestamp=@end,return_code=@rc WHERE T_ID=@tid"
 #define INSERT_REPO "insert into REPO values(null,@name,null,null)"
-#define INSERT_PKG_DATA "insert into PACKAGE_DATA values(null,@pid,@rid,@repo_r,@repo_t,@installed_by,@changed_by,@installonly,@origin_url)"
+
+#define UPDATE_PKG_DATA "UPDATE PACKAGE_DATA SET R_ID=@rid,from_repo_revision=@repo_r,from_repo_timestamp=@repo_t,"\
+                        "installed_by=@installed_by,changed_by=@changed_by,installonly=@installonly,"\
+                        "origin_url=@origin_url where P_ID=@pid"
+
 #define INSERT_TRANS_DATA_BEG "insert into TRANS_DATA values(null,@tid,@pdid,null,@done,null,@reason,@state)"
 #define UPDATE_TRANS_DATA_END "UPDATE TRANS_DATA SET done=@done WHERE T_ID=@tid"
+#define UPDATE_TRANS_DATA_PID_END "UPDATE TRANS_DATA SET done=@done WHERE T_ID=@tid and PD_ID=@pdid and state=@state"
 
 #define FIND_REPO_BY_NAME "SELECT R_ID FROM REPO WHERE name=@name"
-#define FIND_PDID_FROM_PID "SELECT PD_ID FROM PACKAGE_DATA WHERE P_ID=@pid"
+#define FIND_PDID_FROM_PID "SELECT PD_ID FROM PACKAGE_DATA WHERE P_ID=@pid ORDER by PD_ID DESC"
+#define FIND_ALL_PDID_FOR_PID "SELECT PD_ID FROM PACKAGE_DATA WHERE P_ID=@pid"
+
+#define INSERT_PDID "insert into PACKAGE_DATA values(null,@pid,null,null,null,null,null,null,null)"
 #define FIND_TID_FROM_PDID "SELECT T_ID FROM TRANS_DATA WHERE PD_ID=@pdid"
-#define LOAD_OUTPUT "SELECT msg FROM trans_error WHERE tid=@tid and type=@type ORDER BY mid ASC"
+#define LOAD_OUTPUT "SELECT msg FROM OUTPUT WHERE T_ID=@tid and type=@type"
 #define PKG_DATA_ATTR_BY_PID "SELECT @attr FROM PACKAGE_DATA WHERE P_ID=@pid"
 #define TRANS_DATA_ATTR_BY_PDID "SELECT @attr FROM TRANS_DATA WHERE PD_ID=@pdid"
 #define TRANS_ATTR_BY_TID "SELECT @attr FROM TRANS WHERE T_ID=@tid"
@@ -55,6 +65,18 @@
 #define FIND_PKG_BY_NEVRACHT "SELECT P_ID FROM PACKAGE WHERE name=@name and epoch=@epoch and version=@version and release=@release"\
                             " and arch=@arch and @type=type and checksum_data=@cdata and checksum_type=@ctype"
 
+#define FIND_PIDS_BY_NAME "SELECT P_ID FROM PACKAGE WHERE NAME LIKE @pattern"
+
+#define SIMPLE_SEARCH "SELECT P_ID FROM PACKAGE WHERE name LIKE @pat"
+#define SEARCH_PATTERN "SELECT P_ID,name,epoch,version,release,arch,"\
+  "name || '.' || arch AS sql_nameArch,"\
+  "name || '-' || version || '-' || release || '.' || arch AS sql_nameVerRelArch,"\
+  "name || '-' || version AS sql_nameVer,"\
+  "name || '-' || version || '-' || release AS sql_nameVerRel,"\
+  "epoch || ':' || name || '-' || version || '-' || release || '-' || arch AS sql_envra,"\
+  "name || '-' || epoch || '-' || version || '-' || release || '-' || arch AS sql_nevra "\
+  "FROM PACKAGE WHERE name LIKE @sub AND (sql_nameArch LIKE @pat OR sql_nameVerRelArch LIKE @pat OR sql_nameVer LIKE @pat OR"\
+  " sql_nameVerRel LIKE @pat OR sql_nevra LIKE @pat OR sql_envra LIKE @pat)"
 
 #define C_PKG_DATA 		"CREATE TABLE PACKAGE_DATA ( PD_ID integer PRIMARY KEY,"\
                     	"P_ID integer, R_ID integer, from_repo_revision text,"\
@@ -106,6 +128,9 @@
 
 #define C_ENV_EX		"CREATE TABLE ENVIRONMENTS_EXCLUDE (EE_ID INTEGER PRIMARY KEY,"\
                         "E_ID integer, name text)"
+#define C_RPM_DATA      "CREATE TABLE RPM_DATA (RPM_ID INTEGER PRIMARY KEY, P_ID INTEGER,"\
+                        "buildtime TEXT, buildhost TEXT, license TEXT, packager TEXT, size TEXT,"\
+                        "sourcerpm TEXT, url TEXT, vendor TEXT, committer TEXT, committime TEXT)"
 
 #include "hif-swdb.h"
 #include <stdio.h>
@@ -192,7 +217,6 @@ hif_swdb_class_init(HifSwdbClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
     object_class->finalize = hif_swdb_finalize;
-
 }
 
 // Object initialiser
@@ -224,7 +248,7 @@ static gint _db_step	(sqlite3_stmt *res)
 {
   	if (sqlite3_step(res) != SQLITE_DONE)
     {
-        fprintf(stderr, "SQL error: Could not execute statement in _db_step()\n");
+        fprintf(stderr, "SQL error: Could not execute statement in _db_step() - try again as root?\n");
         sqlite3_finalize(res);
         return 0;
 	}
@@ -264,6 +288,33 @@ static const guchar *_db_find_str(sqlite3_stmt *res)
     }
 }
 
+static const guchar *_db_find_str_multi(sqlite3_stmt *res)
+{
+  	if (sqlite3_step(res) == SQLITE_ROW ) // id for description found
+    {
+        const guchar * result = sqlite3_column_text(res, 0);
+        return result;
+    }
+  	else
+    {
+        sqlite3_finalize(res);
+        return NULL;
+    }
+}
+
+static gint _db_find_multi	(sqlite3_stmt *res)
+{
+  	if (sqlite3_step(res) == SQLITE_ROW ) // id for description found
+    {
+        gint result = sqlite3_column_int(res, 0);
+        return result;
+    }
+  	else
+    {
+        sqlite3_finalize(res);
+	    return 0;
+    }
+}
 
 static gint _db_prepare	(	sqlite3 *db,
 						 	const gchar *sql,
@@ -364,6 +415,162 @@ static const gchar *_table_by_attribute(const gchar *attr)
     return NULL; //attr not found
 }
 
+/*********************************** UTILS *************************************/
+
+static GSList *_get_subpatterns(const gchar* pattern)
+{
+    GSList *subpatterns = NULL;
+    subpatterns = g_slist_append (subpatterns, g_strdup(pattern));
+    const gchar * pattern_r = g_utf8_strreverse(pattern, -1);
+    gint delimiters1 = 1;
+    gint delimiters2 = 1;
+    for (int i = 0; pattern[i]; ++i)
+    {
+        if (pattern_r[i] == '-') //there will be substring for each delimiter
+        {
+            delimiters1++;
+            gchar **subs = g_strsplit(pattern_r,"-",delimiters1);
+            subpatterns = g_slist_append (subpatterns, g_utf8_strreverse(subs[g_strv_length (subs)-1],-1));
+        }
+        if (pattern_r[i] == '.') //there will be substring for each delimiter
+        {
+            delimiters2++;
+            gchar **subs = g_strsplit(pattern_r,".",delimiters2);
+            subpatterns = g_slist_append (subpatterns, g_utf8_strreverse(subs[g_strv_length (subs)-1],-1));
+        }
+    }
+    return subpatterns;
+}
+
+static GSList *_simple_search(sqlite3* db, const gchar * pattern)
+{
+    GSList *tids = NULL;
+    sqlite3_stmt *res_simple;
+    const gchar *sql_simple = SIMPLE_SEARCH;
+    DB_PREP(db, sql_simple, res_simple);
+    DB_BIND(res_simple, "@pat", pattern);
+    gint pid_simple;
+    GSList *simple = NULL;
+    while( (pid_simple = DB_FIND_MULTI(res_simple)))
+    {
+        simple = g_slist_append (simple, GINT_TO_POINTER(pid_simple));
+    }
+    while(simple)
+    {
+        pid_simple = GPOINTER_TO_INT(simple->data);
+        simple = simple->next;
+        GSList *pdids = _all_pdid_for_pid(db, pid_simple);
+        while(pdids)
+        {
+            gint pdid = GPOINTER_TO_INT(pdids->data);
+            pdids = pdids->next;
+            gint tid = _tid_from_pdid(db, pdid);
+            if(tid)
+            {
+                tids = g_slist_append (tids, GINT_TO_POINTER(tid));
+            }
+        }
+    }
+    return tids;
+}
+
+static GSList *_extended_search (sqlite3* db, const gchar *pattern)
+{
+    GSList *tids = NULL;
+    //split pattern into subpatterns - minimalising data processed
+    GSList *subpatterns = _get_subpatterns(pattern);
+    gchar *best_match = NULL;
+    gint best_match_count = 0;
+    while(subpatterns)
+    {
+        const gchar *subpattern = subpatterns->data;
+        subpatterns = subpatterns->next;
+
+        //find best subpattern
+        sqlite3_stmt *res;
+        const gchar *sql = FIND_PIDS_BY_NAME;
+        DB_PREP( db, sql, res);
+        DB_BIND(res, "@pattern", subpattern);
+        gint pid;
+        gint matches = 0;
+        while ((pid = DB_FIND_MULTI(res)))
+        {
+            matches++;
+        }
+        if (matches > 0)
+        {
+            if(best_match_count == 0 || matches < best_match_count)
+            {
+                best_match_count = matches;
+                best_match = (gchar *)subpattern;
+            }
+        }
+    }
+    sqlite3_stmt *res;
+    const gchar *sql = SEARCH_PATTERN;
+    DB_PREP( db, sql, res);
+    //lot of patterns...
+    DB_BIND(res, "@sub", best_match);
+    DB_BIND(res, "@pat", pattern);
+    DB_BIND(res, "@pat", pattern);
+    DB_BIND(res, "@pat", pattern);
+    DB_BIND(res, "@pat", pattern);
+    DB_BIND(res, "@pat", pattern);
+    DB_BIND(res, "@pat", pattern);
+    gint pid = DB_FIND(res);
+    if(pid)
+    {
+        GSList *pdids = _all_pdid_for_pid(db, pid);
+        while(pdids)
+        {
+            gint pdid = GPOINTER_TO_INT(pdids->data);
+            pdids = pdids->next;
+            gint tid = _tid_from_pdid(db, pdid);
+            if(tid)
+            {
+                tids = g_slist_append (tids, GINT_TO_POINTER(tid));
+            }
+        }
+    }
+    return tids;
+}
+
+/**
+* hif_swdb_search:
+* @patterns: (element-type utf8) (transfer container): list of constants
+* Returns: (element-type gint32) (transfer container): list of constants
+*/
+GSList *hif_swdb_search (   HifSwdb *self,
+                            const GSList *patterns)
+{
+    if (hif_swdb_open(self))
+        return NULL;
+    DB_TRANS_BEGIN
+
+    GSList *tids = NULL;
+    while(patterns)
+    {
+        const gchar *pattern = patterns->data;
+        patterns = patterns->next;
+
+        //try simple search
+        GSList *simple =  _simple_search(self->db, pattern);
+        if(simple)
+        {
+            tids = g_slist_concat(tids,simple);
+            continue;
+        }
+        //need for extended search
+        GSList *extended = _extended_search(self->db, pattern);
+        if(extended)
+        {
+            tids = g_slist_concat(tids, extended);
+        }
+    }
+    DB_TRANS_END
+    hif_swdb_close(self);
+    return tids;
+}
 
 /******************************* GROUP PERSISTOR *******************************/
 
@@ -443,7 +650,7 @@ static gint _bind_repo_by_name (sqlite3 *db, const gchar *name)
 	  	DB_PREP(db, sql, res);
 	  	DB_BIND(res, "@name", name);
 	  	DB_STEP(res);
-	  	return _bind_repo_by_name(db, name);
+	  	return sqlite3_last_insert_rowid(db);
 	}
 }
 
@@ -469,7 +676,7 @@ static gint _package_insert(sqlite3 *db, struct package_t *package)
   	DB_BIND(res, "@ctype", package->checksum_type);
   	DB_BIND_INT(res, "@type", package->type);
 	DB_STEP(res);
-  	return 0;
+  	return sqlite3_last_insert_rowid(db);
 }
 
 gint hif_swdb_add_package_nevracht(	HifSwdb *self,
@@ -521,8 +728,8 @@ const gint 	hif_swdb_get_pid_by_nevracht(	HifSwdb *self,
         DB_BIND(res, "@release", release);
         DB_BIND(res, "@arch", arch);
         DB_BIND_INT(res, "@type", _type);
-        DB_BIND(res, "checksum_data", checksum_data);
-        DB_BIND(res, "checksum_type", checksum_type);
+        DB_BIND(res, "@cdata", checksum_data);
+        DB_BIND(res, "@ctype", checksum_type);
         rc = DB_FIND(res);
     }
     else
@@ -546,18 +753,17 @@ const gint 	hif_swdb_get_pid_by_nevracht(	HifSwdb *self,
 
     if(create)
     {
-        hif_swdb_add_package_nevracht(self, name, epoch, version, release, arch, checksum_data, checksum_type, type);
-        return hif_swdb_get_pid_by_nevracht(self, name, epoch, version, release, arch, checksum_data, checksum_type, type, 0);
+        return hif_swdb_add_package_nevracht(self, name, epoch, version, release, arch, checksum_data, checksum_type, type);
     }
     DB_TRANS_END
     hif_swdb_close(self);
     return 0;
 }
 
-static gint _package_data_insert (sqlite3 *db, struct package_data_t *package_data)
+static gint _package_data_update (sqlite3 *db, struct package_data_t *package_data)
 {
   	sqlite3_stmt *res;
-   	const gchar *sql = INSERT_PKG_DATA;
+   	const gchar *sql = UPDATE_PKG_DATA;
 	DB_PREP(db,sql,res);
   	DB_BIND_INT(res, "@pid", package_data->pid);
   	DB_BIND_INT(res, "@rid", package_data->rid);
@@ -587,7 +793,7 @@ gint 	hif_swdb_log_package_data(	HifSwdb *self,
   	struct package_data_t package_data = { pid, _bind_repo_by_name(self->db, from_repo),
 	  from_repo_revision, from_repo_timestamp, installed_by, changed_by, installonly, origin_url};
 
-  	gint rc = _package_data_insert(self->db, &package_data);
+  	gint rc = _package_data_update(self->db, &package_data);
 
   	hif_swdb_close(self);
   	return rc;
@@ -600,7 +806,30 @@ static gint _pdid_from_pid (	sqlite3 *db,
   	const gchar *sql = FIND_PDID_FROM_PID;
   	DB_PREP(db, sql, res);
   	DB_BIND_INT(res, "@pid", pid);
-  	return DB_FIND(res);
+    gint rc = DB_FIND(res);
+    if (rc)
+        return rc;
+    const gchar *sql_insert = INSERT_PDID;
+    DB_PREP(db, sql_insert, res);
+    DB_BIND_INT(res, "@pid", pid);
+    DB_STEP(res);
+    return sqlite3_last_insert_rowid(db);
+}
+
+static GSList* _all_pdid_for_pid (	sqlite3 *db,
+								    const gint pid )
+{
+    GSList *pdids = NULL;
+    sqlite3_stmt *res;
+  	const gchar *sql = FIND_ALL_PDID_FOR_PID;
+  	DB_PREP(db, sql, res);
+  	DB_BIND_INT(res, "@pid", pid);
+    gint pdid;
+    while( (pdid = DB_FIND_MULTI(res)))
+    {
+        pdids = g_slist_append (pdids, GINT_TO_POINTER(pdid));
+    }
+    return pdids;
 }
 
 static gint _tid_from_pdid (	sqlite3 *db,
@@ -638,8 +867,9 @@ const guchar *hif_swdb_get_pkg_attr( HifSwdb *self,
         DB_PREP(self->db, sql, res);
         DB_BIND(res, "@attr", attribute);
         DB_BIND_INT(res, "@pid", pid);
+        const guchar *rv = DB_FIND_STR(res);
         hif_swdb_close(self);
-        return DB_FIND_STR(res);
+        return rv;
     }
     if (!g_strcmp0(table,"TRANS_DATA"))
     {
@@ -649,8 +879,30 @@ const guchar *hif_swdb_get_pkg_attr( HifSwdb *self,
         DB_PREP(self->db, sql, res);
         DB_BIND(res, "@attr", attribute);
         DB_BIND_INT(res, "@pdid", pdid);
+        const guchar *rv;
+        if (!g_strcmp0(attribute,"reason"))
+        {
+            const gint rc_id = DB_FIND(res);
+            rv = _look_for_desc(self->db, "REASON_TYPE", rc_id);
+            hif_swdb_close(self);
+            if (!rv)
+                return (guchar*)"Unknown";
+            else
+                return rv;
+        }
+        if (!g_strcmp0(attribute,"state"))
+        {
+            const gint rc_id = DB_FIND(res);
+            rv = _look_for_desc(self->db, "STATE_TYPE", rc_id);
+            hif_swdb_close(self);
+            if (!rv)
+                return (guchar*)"Unknown";
+            else
+                return rv;
+        }
+        rv = DB_FIND_STR(res);
         hif_swdb_close(self);
-        return DB_FIND_STR(res);
+        return rv;
     }
     if (!g_strcmp0(table,"TRANS"))
     {
@@ -661,8 +913,9 @@ const guchar *hif_swdb_get_pkg_attr( HifSwdb *self,
         DB_PREP(self->db, sql, res);
         DB_BIND(res, "@attr", attribute);
         DB_BIND_INT(res, "@tid", tid);
+        const guchar *rv = DB_FIND_STR(res);
         hif_swdb_close(self);
-        return DB_FIND_STR(res);
+        return rv;
     }
     hif_swdb_close(self);
     return NULL;
@@ -692,8 +945,8 @@ gint 	hif_swdb_trans_data_beg	(	HifSwdb *self,
   	if (hif_swdb_open(self))
     	return 1;
   	DB_TRANS_BEGIN
-
- 	struct trans_data_beg_t trans_data_beg = {tid, _pdid_from_pid(self->db, pid),
+    const gint pdid = _pdid_from_pid(self->db, pid);
+ 	struct trans_data_beg_t trans_data_beg = {tid, pdid,
 	  	hif_swdb_get_reason_type(self, reason), hif_swdb_get_state_type(self,state)};
   	gint rc = _trans_data_beg_insert(self->db, &trans_data_beg);
   	DB_TRANS_END
@@ -713,6 +966,9 @@ static gint _trans_data_end_update( sqlite3 *db,
   	return 0;
 }
 
+/*
+ * Mark all packages from transaction as done
+ */
 gint 	hif_swdb_trans_data_end	(	HifSwdb *self,
 									const gint tid)
 {
@@ -721,6 +977,34 @@ gint 	hif_swdb_trans_data_end	(	HifSwdb *self,
   	gint rc = _trans_data_end_update(self->db, tid);
   	hif_swdb_close(self);
   	return rc;
+}
+
+/*
+ * Mark single package from transaction as done
+ */
+gint    hif_swdb_trans_data_pid_end (   HifSwdb *self,
+                                        const gint pid,
+                                        const gint tid,
+                                        const gchar *state)
+{
+    if (hif_swdb_open(self))
+    	return 1;
+    DB_TRANS_BEGIN
+
+    const gint pdid = _pdid_from_pid(self->db, pid);
+    const gint _state = hif_swdb_get_state_type(self,state);
+    sqlite3_stmt *res;
+  	const gchar *sql = UPDATE_TRANS_DATA_PID_END;
+  	DB_PREP(self->db, sql, res);
+  	DB_BIND_INT(res, "@done", 1);
+  	DB_BIND_INT(res, "@tid", tid);
+    DB_BIND_INT(res, "@pdid", pdid);
+    DB_BIND_INT(res, "@state", _state);
+  	DB_STEP(res);
+
+    DB_TRANS_END
+    hif_swdb_close(self);
+    return 0;
 }
 
 
@@ -737,7 +1021,7 @@ static gint _trans_beg_insert(sqlite3 *db, struct trans_beg_t *trans_beg)
   	DB_BIND(res, "@loginuid", trans_beg->loginuid);
   	DB_BIND(res, "@releasever", trans_beg->releasever);
   	DB_STEP(res);
-  	return 0;
+  	return sqlite3_last_insert_rowid(db);
 }
 
 gint 	hif_swdb_trans_beg 	(	HifSwdb *self,
@@ -813,8 +1097,8 @@ gint hif_swdb_log_error	(	HifSwdb *self,
 }
 
 gint hif_swdb_log_output	(	HifSwdb *self,
-						 	const gint tid,
-							const gchar *msg)
+						 	    const gint tid,
+							    const gchar *msg)
 {
   	if (hif_swdb_open(self))
     	return 1;
@@ -829,7 +1113,7 @@ gint hif_swdb_log_output	(	HifSwdb *self,
   	return rc;
 }
 
-static const guchar * _load_output (  sqlite3 *db,
+static GSList *_load_output (       sqlite3 *db,
                                     const gint tid,
                                     const gint type)
 {
@@ -838,19 +1122,27 @@ static const guchar * _load_output (  sqlite3 *db,
   	DB_PREP(db,sql,res);
   	DB_BIND_INT(res, "@tid", tid);
   	DB_BIND_INT(res, "@type", type);
-  	return DB_FIND_STR(res);
+    GSList *l = NULL;
+    gchar *row;
+    while( (row = (gchar *)DB_FIND_STR_MULTI(res)) )
+    {
+        l = g_slist_append (l, g_strdup(row));
+    }
+    return l;
 }
 
-/* FIXME: This returns only first output for chosen transaction
- * - We need to find some way how to push array of strings to python
- */
-const guchar *hif_swdb_load_error (  HifSwdb *self,
+/**
+* hif_swdb_load_error:
+*
+* Returns: (element-type utf8) (transfer container): list of constants
+*/
+GSList *hif_swdb_load_error (       HifSwdb *self,
                                     const gint tid)
 {
     if (hif_swdb_open(self))
     	return NULL;
     DB_TRANS_BEGIN
-    const guchar *rc = _load_output( self->db,
+    GSList *rc = _load_output(      self->db,
                                     tid,
                                     hif_swdb_get_output_type(self, "stderr"));
     DB_TRANS_END
@@ -858,13 +1150,18 @@ const guchar *hif_swdb_load_error (  HifSwdb *self,
     return rc;
 }
 
-const guchar *hif_swdb_load_output (  HifSwdb *self,
+/**
+* hif_swdb_load_output:
+*
+* Returns: (element-type utf8) (transfer container): list of constants
+*/
+GSList *hif_swdb_load_output (      HifSwdb *self,
                                     const gint tid)
 {
     if (hif_swdb_open(self))
     	return NULL;
     DB_TRANS_BEGIN
-    const guchar *rc = _load_output( self->db,
+    GSList *rc = _load_output( self->db,
                                     tid,
                                     hif_swdb_get_output_type(self, "stdout"));
     DB_TRANS_END
@@ -897,15 +1194,22 @@ static gint _insert_desc(sqlite3 *db, const gchar *table, const gchar *desc)
 {
     sqlite3_stmt *res;
     gchar *sql = g_strjoin(" ","insert into",table,"values (null, @desc)", NULL);
-
   	DB_PREP(db, sql, res);
     DB_BIND(res, "@desc", desc);
 	DB_STEP(res);
-  	return 0;
+  	return sqlite3_last_insert_rowid(db);
+}
+
+static const guchar* _look_for_desc(sqlite3 *db, const gchar *table, const gint id)
+{
+    sqlite3_stmt *res;
+    gchar *sql = g_strjoin(" ","select description from",table,"where ID=@id", NULL);
+  	DB_PREP(db, sql, res);
+    DB_BIND_INT(res, "@id", id);
+	return DB_FIND_STR(res);
 }
 
 /* Bind description to id in chosen table
- * Returns: ID of desctiption (adds new element if description not present), <= 0 if error
  * Usage: _bind_desc_id(db, table, description)
  * Requires opened DB
  */
@@ -918,12 +1222,7 @@ static gint _bind_desc_id(sqlite3 *db, const gchar *table, const gchar *desc)
 	}
     else // id for desc not found, try to add it
     {
-        id = _insert_desc(db,table,desc);
-	  	if(id) //error
-		{
-		  return id;
-		}
-	  	return _find_match_by_desc(db,table,desc);
+        return _insert_desc(db,table,desc);
     }
 }
 
@@ -1064,6 +1363,7 @@ gint hif_swdb_create_db (HifSwdb *self)
     failed += _db_exec (self->db, C_ENV_GROUPS, NULL);
     failed += _db_exec (self->db, C_ENV, NULL);
     failed += _db_exec (self->db, C_ENV_EX, NULL);
+    failed += _db_exec (self->db, C_RPM_DATA, NULL);
 
   	if (failed != 0)
     {
