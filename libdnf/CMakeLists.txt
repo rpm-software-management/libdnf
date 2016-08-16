@@ -106,6 +106,7 @@ SET(LIBDNF_headers
     dnf-utils.h
     dnf-version.h
     dnf-swdb.h
+    dnf-swdb-sql.h
     libdnf.h
     )
 
