@@ -26,6 +26,7 @@ SET (LIBDNF_SRCS
     dnf-repo-loader.c
     dnf-rpmts.c
     dnf-repo.c
+    hif-solution.c
     dnf-state.c
     dnf-transaction.c
     dnf-utils.c)
@@ -90,6 +91,7 @@ SET(LIBDNF_headers
     dnf-reldep.h
     dnf-reldep-list.h
     dnf-repo.h
+    hif-solution.h
     dnf-state.h
     dnf-transaction.h
     dnf-types.h

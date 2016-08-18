@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2016 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -18,33 +18,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef HY_GOAL_INTERNAL_H
-#define HY_GOAL_INTERNAL_H
+#ifndef __HIF_SOLUTION_PRIVATE_H
+#define __HIF_SOLUTION_PRIVATE_H
 
-// libsolv
-#include <solv/queue.h>
-#include <solv/transaction.h>
-#include <solv/solver.h>
+#include <glib-object.h>
 
-// hawkey
-#include "hy-goal.h"
+#include "hif-solution.h"
 
-struct _HyGoal {
-    DnfSack *sack;
-    Queue staging;
-    Solver *solv;
-    Transaction *trans;
-    DnfGoalActions actions;
-    Map *protected;
-    GPtrArray *removal_of_protected;
-};
+G_BEGIN_DECLS
 
-struct _HySolution {
-    int action;
-    char *new;
-    char *old;
-};
+HifSolution  *hif_solution_new            (void);
 
-int sltr2job(const HySelector sltr, Queue *job, int solver_action);
+G_END_DECLS
 
-#endif // HY_GOAL_INTERNAL_H
+#endif /* __HIF_SOLUTION_PRIVATE_H */
