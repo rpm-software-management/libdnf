@@ -1309,10 +1309,25 @@ START_TEST(test_goal_get_solution)
 
     hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "pilchard");
     hy_goal_install_selector(goal, sltr,NULL);
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "dog");
+    hy_goal_install_selector(goal, sltr,NULL);
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "custard");
+    hy_goal_install_selector(goal, sltr,NULL);
     fail_unless(hy_goal_run_flags(goal, HIF_FORCE_BEST));
-    fail_unless(hy_goal_count_problems(goal) == 1);
+    fail_unless(hy_goal_count_problems(goal) == 2);
 
-    hy_goal_get_solution(goal,0);
+    g_autoptr(GPtrArray) slist = NULL;
+    for (unsigned int p = 0; p < hy_goal_count_problems(goal); ++p) {
+        slist = hy_goal_get_solution(goal, p);
+        printf("Problem %d:\n", p);
+        for (unsigned int i = 0; i < slist->len; ++i) {
+            HySolution sol = g_ptr_array_index(slist, i);
+            printf("Solution %d: ", i);
+            printf("action = %d, new package = %s, old package = %s\n",
+                   sol->action, sol->new, sol->old);
+        }
+    }
+
 
     hy_selector_free(sltr);
     hy_goal_free(goal);
