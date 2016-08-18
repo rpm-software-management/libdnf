@@ -36,6 +36,7 @@
 #include "package-py.h"
 #include "selector-py.h"
 #include "sack-py.h"
+#include "solution-py.h"
 #include "pycomp.h"
 
 typedef struct {
@@ -583,6 +584,26 @@ get_reason(_GoalObject *self, PyObject *pkg)
 }
 
 static PyObject *
+get_solution(_GoalObject *self, PyObject *index_obj)
+{
+    PyObject *list;
+
+    if (!PyInt_Check(index_obj)) {
+        PyErr_SetString(PyExc_TypeError, "An integer value expected.");
+        return NULL;
+    }
+    g_autoptr(GPtrArray) slist = hy_goal_get_solution(self->goal,
+                                                      PyLong_AsLong(index_obj));
+    if (slist == NULL) {
+        PyErr_SetString(PyExc_ValueError, "Index out of range.");
+        return NULL;
+    }
+    // make PYLIST from GPtrArray
+    list = solutionlist_to_pylist(slist);
+    return list;
+}
+
+static PyObject *
 goalToPyObject(HyGoal goal, PyObject *sack)
 {
     _GoalObject *self = (_GoalObject *)goal_Type.tp_alloc(&goal_Type, 0);
@@ -651,6 +672,7 @@ static struct PyMethodDef goal_methods[] = {
     {"obsoleted_by_package",(PyCFunction)obsoleted_by_package,
      METH_O, NULL},
     {"get_reason",        (PyCFunction)get_reason,        METH_O,                NULL},
+    {"get_solution",      (PyCFunction)get_solution,      METH_O,                NULL},
     {NULL}                      /* sentinel */
 };
 

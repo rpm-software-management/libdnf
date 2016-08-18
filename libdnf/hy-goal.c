@@ -62,14 +62,6 @@ struct InstallonliesSortCallback {
     Id running_kernel;
 };
 
-static int illegals[] = {
-  POLICY_ILLEGAL_DOWNGRADE,
-  POLICY_ILLEGAL_NAMECHANGE,
-  POLICY_ILLEGAL_ARCHCHANGE,
-  POLICY_ILLEGAL_VENDORCHANGE,
-  0
-};
-
 static int
 erase_flags2libsolv(int flags)
 {

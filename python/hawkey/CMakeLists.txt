@@ -41,6 +41,7 @@ SET (hawkeymodule_SRCS
     reldep-py.c
     sack-py.c
     selector-py.c
+    solution-py.c
     subject-py.c
     pycomp.c)
 
