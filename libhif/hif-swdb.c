@@ -20,6 +20,12 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+/* TODO: _old_data_pkgs for TRANS
+ *
+ *
+ */
+
+
 #define default_path "/var/lib/dnf/swdb.sqlite"
 
 #define DB_PREP(db, sql, res) assert(_db_prepare(db, sql, &res))
@@ -53,6 +59,7 @@ struct _HifSwdb
 
 G_DEFINE_TYPE(HifSwdb, hif_swdb, G_TYPE_OBJECT)
 G_DEFINE_TYPE(HifSwdbPkg, hif_swdb_pkg, G_TYPE_OBJECT) //history package
+G_DEFINE_TYPE(HifSwdbTrans, hif_swdb_trans, G_TYPE_OBJECT) //history transaction
 
 /* Table structs */
 struct package_t
@@ -125,13 +132,13 @@ struct rpm_data_t
     const gchar *committime;
 };
 
-// Destructor
+// SWDB Destructor
 static void hif_swdb_finalize(GObject *object)
 {
     G_OBJECT_CLASS (hif_swdb_parent_class)->finalize (object);
 }
 
-// Class initialiser
+// SWDB Class initialiser
 static void
 hif_swdb_class_init(HifSwdbClass *klass)
 {
@@ -139,7 +146,7 @@ hif_swdb_class_init(HifSwdbClass *klass)
     object_class->finalize = hif_swdb_finalize;
 }
 
-// Object initialiser
+// SWDB Object initialiser
 static void
 hif_swdb_init(HifSwdb *self)
 {
@@ -163,13 +170,13 @@ HifSwdb* hif_swdb_new(void)
 }
 
 
-// Destructor
+// PKG Destructor
 static void hif_swdb_pkg_finalize(GObject *object)
 {
     G_OBJECT_CLASS (hif_swdb_pkg_parent_class)->finalize (object);
 }
 
-// Class initialiser
+// PKG Class initialiser
 static void
 hif_swdb_pkg_class_init(HifSwdbPkgClass *klass)
 {
@@ -177,7 +184,7 @@ hif_swdb_pkg_class_init(HifSwdbPkgClass *klass)
     object_class->finalize = hif_swdb_pkg_finalize;
 }
 
-// Object initialiser
+// PKG Object initialiser
 static void
 hif_swdb_pkg_init(HifSwdbPkg *self)
 {
@@ -209,6 +216,57 @@ HifSwdbPkg* hif_swdb_pkg_new(   const gchar* name,
     swdbpkg->checksum_type = g_strdup(checksum_type);
     if (type) swdbpkg->type = g_strdup(type); else swdbpkg->type = NULL;
   	return swdbpkg;
+}
+
+
+// TRANS Destructor
+static void hif_swdb_trans_finalize(GObject *object)
+{
+    G_OBJECT_CLASS (hif_swdb_trans_parent_class)->finalize (object);
+}
+
+// TRANS Class initialiser
+static void
+hif_swdb_trans_class_init(HifSwdbTransClass *klass)
+{
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
+    object_class->finalize = hif_swdb_trans_finalize;
+}
+
+// TRANS Object initialiser
+static void
+hif_swdb_trans_init(HifSwdbTrans *self)
+{
+    self->altered_lt_rpmdb = 0;
+	self->altered_gt_rpmdb = 0;
+}
+
+/**
+ * hif_swdb_trans_new:
+ *
+ * Creates a new #HifSwdbTrans.
+ *
+ * Returns: a #HifSwdbTrans
+ **/
+HifSwdbTrans* hif_swdb_trans_new(	const gint tid,
+                                    const gchar *beg_timestamp,
+									const gchar *end_timestamp,
+									const gchar *rpmdb_version,
+									const gchar *cmdline,
+									const gchar *loginuid,
+									const gchar *releasever,
+									const gint return_code)
+{
+    HifSwdbTrans *trans = g_object_new(HIF_TYPE_SWDB_TRANS, NULL);
+    trans->tid = tid;
+    trans->beg_timestamp = g_strdup(beg_timestamp);
+    trans->end_timestamp = g_strdup(end_timestamp);
+    trans->rpmdb_version = g_strdup(rpmdb_version);
+    trans->cmdline = g_strdup(cmdline);
+    trans->loginuid = g_strdup(loginuid);
+    trans->releasever = g_strdup(releasever);
+    trans->return_code = return_code;
+  	return trans;
 }
 
 /******************************* Functions *************************************/
@@ -1011,7 +1069,6 @@ static gint _rpm_data_insert (sqlite3 *db, struct rpm_data_t *rpm_data)
   	return 0;
 }
 
-
 gint 	hif_swdb_log_rpm_data(	HifSwdb *self,
 									const gint   pid,
                                   	const gchar *buildtime,
@@ -1193,6 +1250,88 @@ const gchar *hif_swdb_trans_cmdline (   HifSwdb *self,
     const gchar *cmdline = DB_FIND_STR(res);
     hif_swdb_close(self);
   	return cmdline;
+}
+
+static void _resolve_altered    (GPtrArray *trans)
+{
+    for(int i = trans->len-1; i > 0; --i)
+    {
+        HifSwdbTrans *las = (HifSwdbTrans *)g_ptr_array_index(trans, i);
+        HifSwdbTrans *obj = (HifSwdbTrans *)g_ptr_array_index(trans, i-1);
+        if(g_strcmp0(las->rpmdb_version, obj->rpmdb_version)) //rpmdb_version changed
+        {
+            obj->altered_lt_rpmdb = 1;
+            las->altered_gt_rpmdb = 1;
+        }
+    }
+}
+
+GPtrArray *hif_swdb_trans_get_old_trans_data(HifSwdbTrans *self)
+{
+    //TODO:
+}
+
+/**
+* hif_swdb_trans_old:
+* @tids: (element-type void)(transfer container): list of constants
+* Returns: (element-type HifSwdbTrans)(array)(transfer container): list of #HifSwdbTrans
+*/
+GPtrArray *hif_swdb_trans_old(	HifSwdb *self,
+                                GPtrArray *tids,
+								gint limit,
+								const gboolean complete_only)
+{
+    if (hif_swdb_open(self))
+    	return NULL;
+    GPtrArray *node = g_ptr_array_new();
+    sqlite3_stmt *res;
+    if(tids->len)
+        limit = 0;
+    const gchar *sql;
+    if (limit && complete_only)
+        sql = S_TRANS_COMP_W_LIMIT;
+    else if (limit)
+        sql = S_TRANS_W_LIMIT;
+    else if (complete_only)
+        sql = S_TRANS_COMP;
+    else
+        sql = S_TRANS;
+    DB_PREP(self->db, sql, res);
+    if (limit)
+        DB_BIND_INT(res, "@limit", limit);
+    gint tid;
+    gboolean match = 0;
+    while(sqlite3_step(res) == SQLITE_ROW)
+    {
+        tid = sqlite3_column_int(res, 0);
+        if(tids->len)
+        {
+            match = 0;
+            for(guint i = 0; i < tids->len; ++i)
+            {
+                if( tid == GPOINTER_TO_INT(g_ptr_array_index(tids,i)))
+                {
+                    match = 1;
+                    break;
+                }
+            }
+            if (!match)
+                continue;
+        }
+        HifSwdbTrans *trans = hif_swdb_trans_new(   tid, //tid
+                                                    (gchar *)sqlite3_column_text (res, 1), //beg_t
+                                                    (gchar *)sqlite3_column_text (res, 2), //end_t
+                                                    (gchar *)sqlite3_column_text (res, 3), //rpmdb_v
+                                                    (gchar *)sqlite3_column_text (res, 4), //cmdline
+                                                    (gchar *)sqlite3_column_text (res, 5), //loginuid
+                                                    (gchar *)sqlite3_column_text (res, 6), //releasever
+                                                    sqlite3_column_int  (res, 7)); // return_code
+        g_ptr_array_add(node, (gpointer) trans);
+    }
+    _resolve_altered(node);
+    sqlite3_finalize(res);
+    hif_swdb_close(self);
+    return node;
 }
 
 

@@ -27,34 +27,9 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <sqlite3.h>
+#include "hif-swdb-obj.h"
 
 G_BEGIN_DECLS
-
-//Package holder for swdb history
-#define HIF_TYPE_SWDB_PKG ( hif_swdb_pkg_get_type())
-G_DECLARE_FINAL_TYPE ( HifSwdbPkg, hif_swdb_pkg, HIF, SWDB_PKG, GObject)
-struct _HifSwdbPkg
-{
-	GObject parent_instance;
-    const gchar *name;
-	const gchar *epoch;
-	const gchar *version;
-	const gchar *release;
-	const gchar *arch;
-	const gchar *checksum_data;
-	const gchar *checksum_type;
-	const gchar *type;
-};
-
-HifSwdbPkg* hif_swdb_pkg_new(   const gchar* name,
-                                const gchar* epoch,
-                                const gchar* version,
-                                const gchar* release,
-                                const gchar* arch,
-                                const gchar* checksum_data,
-                                const gchar* checksum_type,
-                                const gchar* type);
-
 
 #define HIF_TYPE_SWDB (hif_swdb_get_type ())
 G_DECLARE_FINAL_TYPE (HifSwdb, hif_swdb, HIF,SWDB, GObject) // structure,function prefix,namespace,object name,inherits
@@ -199,6 +174,11 @@ GPtrArray *hif_swdb_get_packages_by_tid(   HifSwdb *self,
 
 const gchar * hif_swdb_trans_cmdline (   HifSwdb *self,
 							 	        const gint tid);
+
+GPtrArray *hif_swdb_trans_old(	HifSwdb *self,
+                                GPtrArray *tids,
+								gint limit,
+								const gboolean complete_only);
 
 G_END_DECLS
 
