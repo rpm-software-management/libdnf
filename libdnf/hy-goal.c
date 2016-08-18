@@ -1090,7 +1090,7 @@ hy_goal_get_reason(HyGoal goal, DnfPackage *pkg)
         return HY_REASON_USER;
     if (reason == SOLVER_REASON_CLEANDEPS_ERASE)
         return HY_REASON_CLEAN;
-    if (reason == SOLVER_REASON_WEAKDEP) //You might want to see `solver_describe_weakdep_decision(Solver *solv, Id p, Queue *whyq)` in libsolv
+    if (reason == SOLVER_REASON_WEAKDEP)
         return HY_REASON_WEAKDEP;
     return HY_REASON_DEP;
 }
@@ -1119,18 +1119,14 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
     Solvable *s = NULL;
     GPtrArray *slist = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 
-    g_debug("Variables initialized.");
-
     //Internal error
     if (problem_id >= (unsigned) hy_goal_count_problems(goal))
     {
-        g_debug("internal error");
         return slist;
     }
     // hawkey problems - removal of protected packages
     if (problem_id >= (unsigned) solver_problem_count(goal->solv))
     {
-        g_debug("removal of protected packages");
         // what about returning list packages which pull protected
         // packages into transaction?
         return slist;
@@ -1138,16 +1134,11 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
 
     problem_id++; //increment problem ID. libsolv indexes at 1, libhif indexes at 0
 
-    g_debug("solver_problem_count = %d", solver_problem_count(solv));
-
     scnt = solver_solution_count(solv, problem_id);
-    g_debug("solution_count = %d", scnt);
-        p = 0;
-        rp = 0;
-
+    p = 0;
+    rp = 0;
 
     for (solution = 1; solution <= scnt; solution++) {
-        g_debug("Problem %d, Solution %d/%d", problem_id, solution, scnt);
         element = 0;
         while ((element = solver_next_solutionelement(solv, problem_id, solution,
                                                       element, &p, &rp)) != 0) {
@@ -1161,84 +1152,68 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
                 Id how, what;
                 if (p == SOLVER_SOLUTION_JOB) {
                     rp += solv->pooljobcnt;
-                    g_debug("Solver solution job");
                 }
                 s = pool->solvables + rp;
 
                 how = solv->job.elements[rp - 1];
                 what = solv->job.elements[rp];
 
-                g_debug("%s", pool_tmpjoin(pool, "do not ask to ",
-                                           pool_job2str(pool, how, what, 0), 0));
+                // do not ask to use that dependency
+                // pool_job2str(pool, how, what, 0), 0));
                 action = HY_DO_NOT_INSTALL;
                 new = solver_select2str(pool, how & SOLVER_SELECTMASK, what);
             } else if (p == SOLVER_SOLUTION_INFARCH) {
                 s = pool->solvables + rp;
                 if (pool->installed && s->repo == pool->installed) {
-                    g_debug("%s", pool_tmpjoin(pool, "keep ",
-                                               pool_solvable2str(pool, s),
-                                               " despite the inferior architecture"));
+                    // keep package despite the inferior architecture
                     action = HY_DO_NOT_REMOVE;
                     old = pool_solvable2str(pool, s);
                 } else {
-                    g_debug("%s", pool_tmpjoin(pool, "install ",
-                                               pool_solvable2str(pool, s),
-                                               " despite the inferior architecture"));
+                    // install despite the inferior architecture
                     action = HY_ALLOW_INSTALL;
                     new = pool_solvable2str(pool, s);
                 }
             } else if (p == SOLVER_SOLUTION_DISTUPGRADE) {
                 s = pool->solvables + rp;
                 if (pool->installed && s->repo == pool->installed) {
-                    g_debug("%s", pool_tmpjoin(pool, "keep obsolete ",
-                                               pool_solvable2str(pool, s), 0));
+                    // keep obsolete package
                     action = HY_DO_NOT_OBSOLETE;
                     old = pool_solvable2str(pool, s);
                 } else {
-                    g_debug("%s", pool_tmpjoin(pool, "install ",
-                                               pool_solvable2str(pool, s),
-                                               " from excluded repository"));
+                    // installC package from excluded repository
                     action = HY_ALLOW_INSTALL;
                     new = pool_solvable2str(pool, s);
                 }
             } else if (p == SOLVER_SOLUTION_BEST) {
                 s = pool->solvables + rp;
                 if (pool->installed && s->repo == pool->installed) {
-                    g_debug("%s", pool_tmpjoin(pool, "keep old ",
-                                              pool_solvable2str(pool, s), 0));
+                    // keep old package
                     action = HY_DO_NOT_UPGRADE;
                     old = pool_solvable2str(pool, s);
                 } else {
-                    g_debug("%s", pool_tmpjoin(pool, "install ",
-                                              pool_solvable2str(pool, s),
-                                              " despite the old version"));
+                    // install despite the old version
                     action = HY_ALLOW_INSTALL;
                     new = pool_solvable2str(pool, s);
                 }
             } else if (p > 0 && rp == 0) {
                 s = pool->solvables + p;
-                g_debug("%s", pool_tmpjoin(pool, "allow deinstallation of ",
-                                           pool_solvid2str(pool, p), 0));
+                // allow deinstallation of package
                 action = HY_ALLOW_REMOVE;
-                old = pool_solvable2str(pool, s);
+                old = pool_solvid2str(pool, p);
             } else if (p > 0 && rp > 0) {
                 s = pool->solvables + rp;
-                const char *sp = pool_solvid2str(pool, p);
-                const char *srp = pool_solvid2str(pool, rp);
-                const char *str = pool_tmpjoin(pool, "allow replacement of ", sp, 0);
-                g_debug("%s", pool_tmpappend(pool, str, " with ", srp));
-
-                old = sp;
-                new = srp;
+                // allow replacement of old with new
                 action = HY_ALLOW_REPLACEMENT;
+                old = pool_solvid2str(pool, p);
+                new = pool_solvid2str(pool, rp);
             } else {
                 s = pool->solvables + rp;
-                g_debug("%s", "bad solution element");
+                // bad solution element
                 action = HY_BAD_SOLUTION;
             }
 
-            g_debug("rp=%d, p=%d",rp,p);
-            g_debug("name: %s",pool_id2str(pool, s->name));
+            //g_debug("rp=%d, p=%d",rp,p);
+            //g_debug("name: %s",pool_id2str(pool, s->name));
 
             hif_solution_set(sol, action, old, new);
             g_ptr_array_add(slist, sol);
