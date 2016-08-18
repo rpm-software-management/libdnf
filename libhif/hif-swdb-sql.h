@@ -33,7 +33,7 @@
                         "installed_by=@installed_by,changed_by=@changed_by,installonly=@installonly,"\
                         "origin_url=@origin_url where P_ID=@pid"
 
-#define INSERT_RPM_DATA "INSERT into RPM_DATA values(@pid,@buildtime,@buildhost,@license,@packager,@size,@sourcerpm,@url,"\
+#define INSERT_RPM_DATA "INSERT into RPM_DATA values(null,@pid,@buildtime,@buildhost,@license,@packager,@size,@sourcerpm,@url,"\
                         "@vendor,@committer,@committime)"
 
 #define INSERT_TRANS_DATA_BEG "insert into TRANS_DATA values(null,@tid,@pdid,null,@done,null,@reason,@state)"
@@ -75,7 +75,10 @@
 
 #define S_PACKAGE_BY_PID "SELECT name,epoch,version,release,arch,checksum_data,checksum_type,type FROM PACKAGE WHERE P_ID=@pid"
 
-
+#define S_TRANS "SELECT * from TRANS ORDER BY T_ID DESC"
+#define S_TRANS_W_LIMIT "SELECT * from TRANS ORDER BY T_ID DESC LIMIT @limit"
+#define S_TRANS_COMP "SELECT * from TRANS WHERE end_timestamp is not null or end_timestamp!='' ORDER BY T_ID DESC"
+#define S_TRANS_COMP_W_LIMIT "SELECT * from TRANS WHERE end_timestamp is not null or end_timestamp!='' ORDER BY T_ID DESC LIMIT @limit"
 
 //CREATION OF tables
 
