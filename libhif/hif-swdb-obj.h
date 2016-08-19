@@ -56,9 +56,11 @@ HifSwdbPkg* hif_swdb_pkg_new(   const gchar* name,
 
 #define HIF_TYPE_SWDB_TRANS ( hif_swdb_trans_get_type())
 G_DECLARE_FINAL_TYPE ( HifSwdbTrans, hif_swdb_trans, HIF, SWDB_TRANS, GObject)
+
 struct _HifSwdbTrans
 {
 	GObject parent_instance;
+	HifSwdb *swdb;
 	gint tid;
 	const gchar *beg_timestamp;
 	const gchar *end_timestamp;
@@ -69,6 +71,8 @@ struct _HifSwdbTrans
 	gint return_code;
 	gboolean altered_lt_rpmdb;
 	gboolean altered_gt_rpmdb;
+	gboolean is_output;
+	gboolean is_error;
 };
 
 HifSwdbTrans* hif_swdb_trans_new(	const gint tid,
@@ -79,6 +83,32 @@ HifSwdbTrans* hif_swdb_trans_new(	const gint tid,
 									const gchar *loginuid,
 									const gchar *releasever,
 									const gint return_code);
+
+//holder for history transaction data
+
+#define HIF_TYPE_SWDB_TRANSDATA ( hif_swdb_transdata_get_type())
+G_DECLARE_FINAL_TYPE ( HifSwdbTransData, hif_swdb_transdata, HIF, SWDB_TRANSDATA, GObject)
+struct _HifSwdbTransData
+{
+	GObject parent_instance;
+	gint tdid;
+	gint tid;
+	gint pdid;
+	gint gid;
+	gint done;
+	gint ORIGINAL_TD_ID;
+	gchar *reason;
+	gchar *state;
+};
+
+HifSwdbTransData* hif_swdb_transdata_new(	gint tdid,
+											gint tid,
+											gint pdid,
+											gint gid,
+											gint done,
+											gint ORIGINAL_TD_ID,
+											gchar *reason,
+											gchar *state);
 
 G_END_DECLS
 

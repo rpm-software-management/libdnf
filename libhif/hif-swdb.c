@@ -21,8 +21,6 @@
 */
 
 /* TODO: _old_data_pkgs for TRANS
- *
- *
  */
 
 
@@ -60,6 +58,7 @@ struct _HifSwdb
 G_DEFINE_TYPE(HifSwdb, hif_swdb, G_TYPE_OBJECT)
 G_DEFINE_TYPE(HifSwdbPkg, hif_swdb_pkg, G_TYPE_OBJECT) //history package
 G_DEFINE_TYPE(HifSwdbTrans, hif_swdb_trans, G_TYPE_OBJECT) //history transaction
+G_DEFINE_TYPE(HifSwdbTransData, hif_swdb_transdata, G_TYPE_OBJECT) //history transaction data
 
 /* Table structs */
 struct package_t
@@ -237,6 +236,9 @@ hif_swdb_trans_class_init(HifSwdbTransClass *klass)
 static void
 hif_swdb_trans_init(HifSwdbTrans *self)
 {
+    self->is_output = 0;
+    self->is_error = 0;
+    self->swdb = NULL;
     self->altered_lt_rpmdb = 0;
 	self->altered_gt_rpmdb = 0;
 }
@@ -267,6 +269,55 @@ HifSwdbTrans* hif_swdb_trans_new(	const gint tid,
     trans->releasever = g_strdup(releasever);
     trans->return_code = return_code;
   	return trans;
+}
+
+//TRANS DATA object
+// TRANS DATA Destructor
+static void hif_swdb_transdata_finalize(GObject *object)
+{
+    G_OBJECT_CLASS (hif_swdb_transdata_parent_class)->finalize (object);
+}
+
+// TRANS DATA Class initialiser
+static void
+hif_swdb_transdata_class_init(HifSwdbTransDataClass *klass)
+{
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
+    object_class->finalize = hif_swdb_transdata_finalize;
+}
+
+// TRANS DATA Object initialiser
+static void
+hif_swdb_transdata_init(HifSwdbTransData *self)
+{
+}
+
+/**
+ * hif_swdb_transdata_new:
+ *
+ * Creates a new #HifSwdbTransData.
+ *
+ * Returns: a #HifSwdbTransData
+ **/
+HifSwdbTransData* hif_swdb_transdata_new(   gint tdid,
+                                            gint tid,
+                                            gint pdid,
+                                            gint gid,
+                                            gint done,
+                                            gint ORIGINAL_TD_ID,
+                                            gchar *reason,
+                                            gchar *state)
+{
+    HifSwdbTransData *data = g_object_new(HIF_TYPE_SWDB_TRANSDATA, NULL);
+    data->tdid = tdid;
+    data->tid = tid;
+    data->pdid = pdid;
+    data->gid = gid;
+    data->done = done;
+    data->ORIGINAL_TD_ID = ORIGINAL_TD_ID;
+    data->reason = reason;
+    data->state = state;
+    return data;
 }
 
 /******************************* Functions *************************************/
@@ -1254,11 +1305,12 @@ const gchar *hif_swdb_trans_cmdline (   HifSwdb *self,
 
 static void _resolve_altered    (GPtrArray *trans)
 {
-    for(int i = trans->len-1; i > 0; --i)
+    for(guint i = trans->len-1; i > 0; --i)
     {
         HifSwdbTrans *las = (HifSwdbTrans *)g_ptr_array_index(trans, i);
         HifSwdbTrans *obj = (HifSwdbTrans *)g_ptr_array_index(trans, i-1);
-        if(g_strcmp0(las->rpmdb_version, obj->rpmdb_version)) //rpmdb_version changed
+        //FIXME: this is wrong...
+        if(!g_strcmp0(las->rpmdb_version, obj->rpmdb_version)) //rpmdb_version changed
         {
             obj->altered_lt_rpmdb = 1;
             las->altered_gt_rpmdb = 1;
@@ -1266,9 +1318,79 @@ static void _resolve_altered    (GPtrArray *trans)
     }
 }
 
+static gboolean _test_output (HifSwdb *self, gint tid, const gchar *o_type)
+{
+    const gint type = hif_swdb_get_output_type(self, o_type);
+    sqlite3_stmt *res;
+    const gchar *sql = LOAD_OUTPUT;
+    DB_PREP(self->db, sql, res);
+    DB_BIND_INT(res, "@tid", tid);
+    DB_BIND_INT(res, "@type", type);
+    if (sqlite3_step(res) == SQLITE_ROW)
+    {
+        sqlite3_finalize(res);
+        return 1;
+    }
+    sqlite3_finalize(res);
+    return 0;
+}
+
+
+static void _resolve_outputs (HifSwdb *self, GPtrArray *trans)
+{
+    for(guint i = 0; i < trans->len; ++i)
+    {
+        HifSwdbTrans *obj = (HifSwdbTrans *)g_ptr_array_index(trans, i);
+        obj->is_output = _test_output(self, obj->tid, "stdout");
+        obj->is_error = _test_output(self, obj->tid, "stderr");
+    }
+}
+
+/**
+* hif_swdb_get_old_trans_data:
+* Returns: (element-type HifSwdbTransData)(array)(transfer container): list of #HifSwdbTransData
+*/
+GPtrArray *hif_swdb_get_old_trans_data (    HifSwdb *self,
+                                            HifSwdbTrans *trans)
+{
+    if (!trans->tid)
+        return NULL;
+    if (hif_swdb_open(self))
+    	return NULL;
+    GPtrArray *node = g_ptr_array_new();
+    sqlite3_stmt *res;
+    const gchar *sql = S_TRANS_DATA_BY_TID;
+    DB_PREP(self->db, sql, res);
+    DB_BIND_INT(res, "@tid", trans->tid);
+    while(sqlite3_step(res) == SQLITE_ROW)
+    {
+        HifSwdbTransData *data = hif_swdb_transdata_new(
+                                    sqlite3_column_int(res, 0), //td_id
+                                    sqlite3_column_int(res, 1), //t_id
+                                    sqlite3_column_int(res, 2), //pd_id
+                                    sqlite3_column_int(res, 3), //g_id
+                                    sqlite3_column_int(res, 4), //done
+                                    sqlite3_column_int(res, 5), //ORIGINAL_TD_ID
+                                    // Is this allright?
+                                    _look_for_desc(self->db, "REASON_TYPE", sqlite3_column_int(res,6)), //reason
+                                    _look_for_desc(self->db, "STATE_TYPE", sqlite3_column_int(res,7))); //state
+        g_ptr_array_add(node, (gpointer) data);
+    }
+    sqlite3_finalize(res);
+    hif_swdb_close(self);
+    return node;
+}
+
+/**
+* hif_swdb_trans_get_old_trans_data:
+* Returns: (element-type HifSwdbTransData)(array)(transfer container): list of #HifSwdbTransData
+*/
 GPtrArray *hif_swdb_trans_get_old_trans_data(HifSwdbTrans *self)
 {
-    //TODO:
+    if (self->swdb)
+        return hif_swdb_get_old_trans_data( self->swdb, self);
+    else
+        return NULL;
 }
 
 /**
@@ -1283,6 +1405,7 @@ GPtrArray *hif_swdb_trans_old(	HifSwdb *self,
 {
     if (hif_swdb_open(self))
     	return NULL;
+    DB_TRANS_BEGIN
     GPtrArray *node = g_ptr_array_new();
     sqlite3_stmt *res;
     if(tids->len)
@@ -1326,10 +1449,13 @@ GPtrArray *hif_swdb_trans_old(	HifSwdb *self,
                                                     (gchar *)sqlite3_column_text (res, 5), //loginuid
                                                     (gchar *)sqlite3_column_text (res, 6), //releasever
                                                     sqlite3_column_int  (res, 7)); // return_code
+        trans->swdb = self;
         g_ptr_array_add(node, (gpointer) trans);
     }
-    _resolve_altered(node);
     sqlite3_finalize(res);
+    _resolve_altered(node);
+    _resolve_outputs(self,node);
+    DB_TRANS_END
     hif_swdb_close(self);
     return node;
 }
