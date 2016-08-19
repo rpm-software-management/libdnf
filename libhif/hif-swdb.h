@@ -27,12 +27,13 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <sqlite3.h>
-#include "hif-swdb-obj.h"
 
 G_BEGIN_DECLS
 
 #define HIF_TYPE_SWDB (hif_swdb_get_type ())
 G_DECLARE_FINAL_TYPE (HifSwdb, hif_swdb, HIF,SWDB, GObject) // structure,function prefix,namespace,object name,inherits
+
+#include "hif-swdb-obj.h"
 
 HifSwdb *hif_swdb_new(void);
 
@@ -179,6 +180,9 @@ GPtrArray *hif_swdb_trans_old(	HifSwdb *self,
                                 GPtrArray *tids,
 								gint limit,
 								const gboolean complete_only);
+
+GPtrArray *hif_swdb_trans_get_old_trans_data(	HifSwdbTrans *self);
+GPtrArray *hif_swdb_get_old_trans_data(	HifSwdb *self, HifSwdbTrans *trans);
 
 G_END_DECLS
 
