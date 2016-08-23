@@ -1,4 +1,5 @@
 %global libsolv_version 0.6.21-1
+%global dnf_conflict 2.0.0
 
 %bcond_with valgrind
 
@@ -52,6 +53,10 @@ Summary:        Python 2 bindings for the hawkey library
 BuildRequires:  python2-devel
 BuildRequires:  python-nose
 Requires:       %{name}%{?_isa} = %{version}-%{release}
+# Fix problem with hawkey - dnf version incompatibility
+# Can be deleted for distros where only python2-dnf >= 2.0.0
+Conflicts:      python2-dnf < %{dnf_conflict}
+Conflicts:      python-dnf < %{dnf_conflict}
 
 %description -n python2-hawkey
 Python 2 bindings for the hawkey library.
@@ -64,6 +69,9 @@ Summary:        Python 3 bindings for the hawkey library
 BuildRequires:  python3-devel
 BuildRequires:  python3-nose
 Requires:       %{name}%{?_isa} = %{version}-%{release}
+# Fix problem with hawkey - dnf version incompatibility
+# Can be deleted for distros where only python3-dnf >= 2.0.0
+Conflicts:      python3-dnf < %{dnf_conflict}
 
 %description -n python3-hawkey
 Python 3 bindings for the hawkey library.
