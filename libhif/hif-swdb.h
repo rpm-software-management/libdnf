@@ -50,11 +50,11 @@ gint hif_swdb_create_db (HifSwdb *self);
 /* Remove old and create new */
 gint hif_swdb_reset_db (HifSwdb *self);
 
-gint hif_swdb_add_group_package (HifSwdb *self, gint gid, const gchar *name);
+gint hif_swdb_env_add_exclude (     HifSwdbEnv *env,
+                                    GPtrArray *exclude);
 
-gint hif_swdb_add_group_exclude (HifSwdb *self, gint gid, const gchar *name);
-
-gint hif_swdb_add_environments_exclude (HifSwdb *self, gint eid, const gchar *name);
+gint hif_swdb_env_add_group (     HifSwdbEnv *env,
+                                    GPtrArray *groups);
 
 gint hif_swdb_open(HifSwdb *self);
 
@@ -127,10 +127,10 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
 									const gint pid,
 									const gchar *attribute);
 
-GPtrArray *hif_swdb_load_error (  	HifSwdb *self,
-                            	const gint tid);
-GPtrArray *hif_swdb_load_output (  HifSwdb *self,
-								const gint tid);
+GPtrArray *hif_swdb_load_error (    HifSwdb *self,
+                                    const gint tid);
+GPtrArray *hif_swdb_load_output (   HifSwdb *self,
+								    const gint tid);
 
 const gint 	hif_swdb_get_pid_by_nevracht(	HifSwdb *self,
 											const gchar *name,
@@ -157,7 +157,7 @@ static GSList * _all_pdid_for_pid (	sqlite3 *db,
 static gint _tid_from_pdid (	sqlite3 *db,
 								const gint pdid );
 
-gint 	hif_swdb_log_rpm_data(	HifSwdb *self,
+gint 	hif_swdb_log_rpm_data(	   HifSwdb *self,
 									const gint   pid,
                                   	const gchar *buildtime,
                                     const gchar *buildhost,
@@ -183,6 +183,33 @@ GPtrArray *hif_swdb_trans_old(	HifSwdb *self,
 
 GPtrArray *hif_swdb_trans_get_old_trans_data(	HifSwdbTrans *self);
 GPtrArray *hif_swdb_get_old_trans_data(	HifSwdb *self, HifSwdbTrans *trans);
+
+gint hif_swdb_add_group (   HifSwdb *self,
+                            HifSwdbGroup *group);
+
+gint hif_swdb_add_env (     HifSwdb *self,
+                            HifSwdbEnv *env);
+
+HifSwdbGroup *hif_swdb_get_group	(     HifSwdb * self,
+	 								      const gchar* name_id);
+
+GPtrArray *hif_swdb_groups_by_pattern   (   HifSwdb *self,
+                                            const gchar *pattern);
+
+gint hif_swdb_uninstall_group(      HifSwdb *self,
+                                    HifSwdbGroup *group);
+HifSwdbEnv *hif_swdb_get_env(   HifSwdb * self,
+	 							const gchar* name_id);
+
+gint hif_swdb_groups_commit(    HifSwdb *self,
+                                GPtrArray *groups);
+
+GPtrArray *hif_swdb_env_by_pattern   (  HifSwdb *self,
+                                        const gchar *pattern);
+gint hif_swdb_log_group_trans(  HifSwdb *self,
+                                const gint tid,
+                                GPtrArray *installing,
+                                GPtrArray *removing);
 
 G_END_DECLS
 

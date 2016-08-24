@@ -23,11 +23,17 @@
 #ifndef _HIF_SWDB_SQL
 #define _HIF_SWDB_SQL
 
+#define I_GROUP "Insert into GROUPS values(null, @name_id, @name, @ui_name, @is_installed, @pkg_types, @grp_types)"
+#define I_ENV "Insert into ENVIRONMENTS values(null, @name_id, @name, @ui_name, @pkg_types, @grp_types)"
+#define I_ENV_GROUP "insert into ENVIRONMENTS_GROUPS values(null, @eid, @gid)"
 #define INSERT_PKG "insert into PACKAGE values(null,@name,@epoch,@version,@release,@arch,@cdata,@ctype,@type)"
 #define INSERT_OUTPUT "insert into OUTPUT values(null,@tid,@msg,@type)"
 #define INSERT_TRANS_BEG "insert into TRANS values(null,@beg,null,@rpmdbv,@cmdline,@loginuid,@releasever,null)"
 #define INSERT_TRANS_END "UPDATE TRANS SET end_timestamp=@end,return_code=@rc WHERE T_ID=@tid"
 #define INSERT_REPO "insert into REPO values(null,@name,null,null)"
+
+#define I_TRANS_GROUP_DATA  "insert into TRANS_GROUP_DATA values(null,@tid,@gid,@name_id,@name,@ui_name,"\
+                            "@is_installed,@pkg_types,@grp_types)"
 
 #define UPDATE_PKG_DATA "UPDATE PACKAGE_DATA SET R_ID=@rid,from_repo_revision=@repo_r,from_repo_timestamp=@repo_t,"\
                         "installed_by=@installed_by,changed_by=@changed_by,installonly=@installonly,"\
@@ -73,14 +79,31 @@
   " sql_nameVerRel LIKE @pat OR sql_nevra LIKE @pat OR sql_envra LIKE @pat)"
 
 
-#define S_PACKAGE_BY_PID "SELECT name,epoch,version,release,arch,checksum_data,checksum_type,type FROM PACKAGE WHERE P_ID=@pid"
+#define S_PACKAGE_BY_PID "SELECT * FROM PACKAGE WHERE P_ID=@pid"
 
 #define S_TRANS "SELECT * from TRANS ORDER BY T_ID DESC"
 #define S_TRANS_W_LIMIT "SELECT * from TRANS ORDER BY T_ID DESC LIMIT @limit"
 #define S_TRANS_COMP "SELECT * from TRANS WHERE end_timestamp is not null or end_timestamp!='' ORDER BY T_ID DESC"
 #define S_TRANS_COMP_W_LIMIT "SELECT * from TRANS WHERE end_timestamp is not null or end_timestamp!='' ORDER BY T_ID DESC LIMIT @limit"
-
 #define S_TRANS_DATA_BY_TID "SELECT * FROM TRANS_DATA WHERE T_ID=@tid"
+#define S_PACKAGE_STATE "select TD_ID,done,state from PACAKGE_DATA join TRANS_DATA using (PD_ID) where P_ID=@pid order by TD_ID desc limit 1"
+#define S_GID_BY_NAME_ID "Select G_ID from GROUPS where name_id LIKE @id"
+#define S_GROUP_BY_NAME_ID "select * from GROUPS where name_id LIKE @id"
+#define S_ENV_BY_NAME_ID "select * from ENVIRONMENTS where name_id LIKE @id"
+#define S_GROUPS_BY_PATTERN "SELECT * from GROUPS where name_id LIKE @pat or name LIKE @pat or ui_name LIKE @pat"
+#define S_ENV_BY_PATTERN "SELECT * from ENVIRONMENTS where name_id LIKE @pat or name LIKE @pat or ui_name LIKE @pat"
+#define S_GROUP_EXCLUDE_BY_ID "SELECT name FROM GROUPS_EXCLUDE where G_ID=@gid"
+#define S_GROUP_PACKAGE_BY_ID "SELECT name FROM GROUPS_PACKAGE where G_ID=@gid"
+#define S_ENV_EXCLUDE_BY_ID "SELECT name FROM ENVIRONMENTS_EXCLUDE where E_ID=@eid"
+#define S_IS_INSTALLED_BY_EID "SELECT is_installed FROM ENVIRONMENTS_GROUPS join GROUPS using(G_ID) where E_ID=eid"
+#define S_GROUP_NAME_ID_BY_EID "SELECT name_id FROM ENVIRONMENTS_GROUPS join GROUPS using(G_ID) where E_ID=eid"
+
+#define U_GROUP_COMMIT "UPDATE GROUPS SET is_installed=1 where name_id=@id"
+
+#define U_GROUP "UPDATE GROUPS SET name=@name,ui_name=@ui_name,is_installed=@is_installed,pkg_types=@pkg_types,"\
+                "grp_types=@grp_types where G_ID=@gid"
+
+#define R_FULL_LIST_BY_ID "DELETE FROM GROUPS_PACKAGE WHERE G_ID=@gid"
 //CREATION OF tables
 
 #define C_PKG_DATA 		"CREATE TABLE PACKAGE_DATA ( PD_ID integer PRIMARY KEY,"\
