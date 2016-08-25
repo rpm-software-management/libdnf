@@ -132,10 +132,11 @@ hy_detect_arch(char **arch)
         int ret = parse_cpu_flags(&flags, "Features");
         if (ret)
             return ret;
-        if (flags & (ARM_NEON | ARM_VFP3))
-            strcpy(un.machine, "armv7hnl");
-        else if (flags & ARM_VFP3)
-            strcpy(un.machine, "armv7hl");
+        if (flags & ARM_VFP3)
+            if (flags & ARM_NEON)
+                strcpy(un.machine, "armv7hnl");
+            else
+                strcpy(un.machine, "armv7hl");
     }
 #ifdef __MIPSEL__
     if (!strcmp(un.machine, "mips"))
