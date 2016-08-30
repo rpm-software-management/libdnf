@@ -107,6 +107,8 @@ dnf_sack_finalize(GObject *object)
 
     FOR_REPOS(i, repo) {
         HyRepo hrepo = repo->appdata;
+        if (!hrepo)
+            continue;
         hy_repo_free(hrepo);
     }
     g_free(priv->cache_dir);
