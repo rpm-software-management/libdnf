@@ -1,16 +1,15 @@
-PROJECT (libdnf C)
-CMAKE_MINIMUM_REQUIRED (VERSION 2.4)
+cmake_minimum_required (VERSION 3.0)
+project (libdnf VERSION 0.7.0 LANGUAGES C)
 CMAKE_POLICY (SET CMP0005 OLD)
 # Avoid a warning because "hth" links to
 # the in-tree libhawkey, but uses pkg-config to find
 # GLib.  There may be a better way to do this...
 CMAKE_POLICY(SET CMP0003 NEW)
 
-include (VERSION.cmake)
-message ("Building libdnf version: ${LIBDNF_VERSION}")
+message ("Building libdnf version: ${PROECT_VERSION}")
 
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wcast-align -Wno-uninitialized -Wmissing-declarations -Wredundant-decls -Wcast-align -Wwrite-strings -Wreturn-type -Wformat-nonliteral -Wmissing-format-attribute -Wsign-compare -Wtype-limits -Wuninitialized -Waggregate-return -Wshadow -Winline -Wall -Werror=implicit-function-declaration -Wl,--as-needed")
-set (CMAKE_C_FLAGS_DEBUG	"${CMAKE_C_FLAGS} -ggdb -O0")
+set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -ggdb -O0")
 IF(NOT CMAKE_BUILD_TYPE)
   set (CMAKE_BUILD_TYPE DEBUG)
 ENDIF(NOT CMAKE_BUILD_TYPE)
@@ -55,7 +54,7 @@ IF (RPMIO_LIBRARY)
 ENDIF (RPMIO_LIBRARY)
 
 ADD_DEFINITIONS(-DTESTDATADIR=\\"${CMAKE_SOURCE_DIR}/data/tests\\")
-ADD_DEFINITIONS(-DPACKAGE_VERSION=\\"${LIBDNF_VERSION}\\")
+ADD_DEFINITIONS(-DPACKAGE_VERSION=\\"${PROJECT_VERSION}\\")
 
 IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
   SET (LIB_SUFFIX "64")
