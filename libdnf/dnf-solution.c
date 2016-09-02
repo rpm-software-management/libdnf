@@ -19,7 +19,7 @@
  */
 
 /**
- * SECTION:hif-solution
+ * SECTION:dnf-solution
  * @short_description: solution object
  * @include: libhif.h
  *
@@ -27,89 +27,89 @@
  */
 
 
-#include "hif-solution-private.h"
-#include "hif-solution.h"
+#include "dnf-solution-private.h"
+#include "dnf-solution.h"
 
 typedef struct
 {
     int      action;
     char    *old;
     char    *new;
-} HifSolutionPrivate;
+} DnfSolutionPrivate;
 
-G_DEFINE_TYPE_WITH_PRIVATE(HifSolution, hif_solution, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (hif_solution_get_instance_private (o))
+G_DEFINE_TYPE_WITH_PRIVATE(DnfSolution, dnf_solution, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (dnf_solution_get_instance_private (o))
 
 /**
- * hif_solution_new:
+ * dnf_solution_new:
  *
- * Creates a new #HifSolution.
+ * Creates a new #DnfSolution.
  *
- * Returns:(transfer full): a #HifSolution
+ * Returns:(transfer full): a #DnfSolution
  *
  * Since: 0.7.0
  **/
-HifSolution *
-hif_solution_new(void)
+DnfSolution *
+dnf_solution_new(void)
 {
-    HifSolution *solution;
-    solution = g_object_new(HIF_TYPE_SOLUTION, NULL);
-    return HIF_SOLUTION(solution);
+    DnfSolution *solution;
+    solution = g_object_new(DNF_TYPE_SOLUTION, NULL);
+    return DNF_SOLUTION(solution);
 }
 
 /**
- * hif_solution_finalize:
+ * dnf_solution_finalize:
  **/
 static void
-hif_solution_finalize(GObject *object)
+dnf_solution_finalize(GObject *object)
 {
-    HifSolution *solution = HIF_SOLUTION(object);
-    HifSolutionPrivate *priv = GET_PRIVATE(solution);
+    DnfSolution *solution = DNF_SOLUTION(object);
+    DnfSolutionPrivate *priv = GET_PRIVATE(solution);
 
     g_free(priv->old);
     g_free(priv->new);
 
-    G_OBJECT_CLASS(hif_solution_parent_class)->finalize(object);
+    G_OBJECT_CLASS(dnf_solution_parent_class)->finalize(object);
 }
 
 /**
- * hif_solution_init:
+ * dnf_solution_init:
  **/
 static void
-hif_solution_init(HifSolution *solution)
+dnf_solution_init(DnfSolution *solution)
 {
 }
 
 /**
- * hif_solution_class_init:
+ * dnf_solution_class_init:
  **/
 static void
-hif_solution_class_init(HifSolutionClass *klass)
+dnf_solution_class_init(DnfSolutionClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = hif_solution_finalize;
+    object_class->finalize = dnf_solution_finalize;
 }
 
 /**
- * hif_solution_get_action:
- * @solution: a #HifSolution instance.
+ * dnf_solution_get_action:
+ * @solution: a #DnfSolution instance.
  *
  * Returns the solution action.
  *
- * Returns: int
+ * Returns: DnfGoalSolutionActions
  *
  * Since: 0.7.0
  */
-gint
-hif_solution_get_action(HifSolution *solution)
+DnfGoalSolutionActions
+dnf_solution_get_action(DnfSolution *solution)
 {
-    HifSolutionPrivate *priv = GET_PRIVATE(solution);
+    DnfSolutionPrivate *priv = GET_PRIVATE(solution);
     return priv->action;
 }
 
 /**
- * hif_solution_get_old:
- * @solution: a #HifSolution instance.
+ * dnf_solution_get_old:
+ * @solution: a #DnfSolution instance.
  *
  * Returns the solution old package description.
  *
@@ -118,15 +118,15 @@ hif_solution_get_action(HifSolution *solution)
  * Since: 0.7.0
  */
 const gchar *
-hif_solution_get_old(HifSolution *solution)
+dnf_solution_get_old(DnfSolution *solution)
 {
-    HifSolutionPrivate *priv = GET_PRIVATE(solution);
+    DnfSolutionPrivate *priv = GET_PRIVATE(solution);
     return priv->old;
 }
 
 /**
- * hif_solution_get_new:
- * @solution: a #HifSolution instance.
+ * dnf_solution_get_new:
+ * @solution: a #DnfSolution instance.
  *
  * Returns the solution new package description.
  *
@@ -135,15 +135,15 @@ hif_solution_get_old(HifSolution *solution)
  * Since: 0.7.0
  */
 const gchar *
-hif_solution_get_new(HifSolution *solution)
+dnf_solution_get_new(DnfSolution *solution)
 {
-    HifSolutionPrivate *priv = GET_PRIVATE(solution);
+    DnfSolutionPrivate *priv = GET_PRIVATE(solution);
     return priv->new;
 }
 
 /**
- * hif_solution_set:
- * @solution: a #HifSolution instance.
+ * dnf_solution_set:
+ * @solution: a #DnfSolution instance.
  *
  * Sets solution attributes.
  *
@@ -152,9 +152,9 @@ hif_solution_get_new(HifSolution *solution)
  * Since: 0.7.0
  */
 void
-hif_solution_set(HifSolution *solution, int action, const char *old, const char *new)
+dnf_solution_set(DnfSolution *solution, int action, const char *old, const char *new)
 {
-    HifSolutionPrivate *priv = GET_PRIVATE(solution);
+    DnfSolutionPrivate *priv = GET_PRIVATE(solution);
     priv->action = action;
     g_free(priv->old);
     priv->old = g_strdup(old);

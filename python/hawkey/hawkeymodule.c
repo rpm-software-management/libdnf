@@ -28,7 +28,7 @@
 #include "hy-package.h"
 #include "hy-query.h"
 #include "hy-subject.h"
-#include "hif-solution.h"
+#include "dnf-solution.h"
 #include "hy-types.h"
 #include "hy-util.h"
 #include "dnf-version.h"

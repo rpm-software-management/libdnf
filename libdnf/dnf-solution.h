@@ -18,17 +18,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __HIF_SOLUTION_PRIVATE_H
-#define __HIF_SOLUTION_PRIVATE_H
+#pragma once
 
 #include <glib-object.h>
 
-#include "hif-solution.h"
-
 G_BEGIN_DECLS
 
-HifSolution  *hif_solution_new            (void);
+#define DNF_TYPE_SOLUTION (dnf_solution_get_type ())
+G_DECLARE_DERIVABLE_TYPE (DnfSolution, dnf_solution, DNF, SOLUTION, GObject)
+
+struct _DnfSolutionClass
+{
+        GObjectClass            parent_class;
+};
+
+DnfGoalSolutionActions dnf_solution_get_action (DnfSolution *solution);
+const gchar *dnf_solution_get_old        (DnfSolution *solution);
+const gchar *dnf_solution_get_new        (DnfSolution *solution);
+void         dnf_solution_set            (DnfSolution *solution,
+                                          int action,
+                                          const char *old,
+                                          const char *new);
 
 G_END_DECLS
-
-#endif /* __HIF_SOLUTION_PRIVATE_H */

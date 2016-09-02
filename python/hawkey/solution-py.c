@@ -24,18 +24,18 @@
 #include <stddef.h>
 #include <solv/util.h>
 
-#include "hif-types.h"
-#include "hif-solution.h"
+#include "dnf-types.h"
+#include "dnf-solution.h"
 
 #include "solution-py.h"
 
 typedef struct {
     PyObject_HEAD
-    HifSolution *solution;
+    DnfSolution *solution;
 } _SolutionObject;
 
 PyObject *
-solutionToPyObject(HifSolution *solution)
+solutionToPyObject(DnfSolution *solution)
 {
     _SolutionObject *self = PyObject_New(_SolutionObject, &solution_Type);
     if (!self)
@@ -47,7 +47,7 @@ solutionToPyObject(HifSolution *solution)
 PyObject *
 solutionlist_to_pylist(const GPtrArray *slist)
 {
-    HifSolution *sol;
+    DnfSolution *sol;
     PyObject *pysol;
 
     PyObject *list = PyList_New(0);
@@ -86,13 +86,13 @@ solution_dealloc(_SolutionObject *self)
 static PyObject *
 get_action(_SolutionObject *self, void *closure)
 {
-    return PyLong_FromLong(hif_solution_get_action(self->solution));
+    return PyLong_FromLong(dnf_solution_get_action(self->solution));
 }
 
 static PyObject *
 get_old(_SolutionObject *self, void *closure)
 {
-    const char *s = hif_solution_get_old(self->solution);
+    const char *s = dnf_solution_get_old(self->solution);
     if (!s)
         return Py_None;
     return PyUnicode_FromString(s);
@@ -101,7 +101,7 @@ get_old(_SolutionObject *self, void *closure)
 static PyObject *
 get_new(_SolutionObject *self, void *closure)
 {
-    const char *s = hif_solution_get_new(self->solution);
+    const char *s = dnf_solution_get_new(self->solution);
     if (!s)
         return Py_None;
     return PyUnicode_FromString(s);

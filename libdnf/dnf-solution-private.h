@@ -22,22 +22,11 @@
 
 #include <glib-object.h>
 
+#include "dnf-solution.h"
+
 G_BEGIN_DECLS
 
-#define HIF_TYPE_SOLUTION (hif_solution_get_type ())
-G_DECLARE_FINAL_TYPE (HifSolution, hif_solution, HIF, SOLUTION, GObject)
-
-struct _HifSolutionClass
-{
-        GObjectClass            parent_class;
-};
-
-gint         hif_solution_get_action     (HifSolution *solution);
-const gchar *hif_solution_get_old        (HifSolution *solution);
-const gchar *hif_solution_get_new        (HifSolution *solution);
-void         hif_solution_set            (HifSolution *solution,
-                                          int action,
-                                          const char *old,
-                                          const char *new);
+DnfSolution  *dnf_solution_new            (void);
 
 G_END_DECLS
+
