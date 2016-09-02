@@ -47,10 +47,10 @@
 #include "dnf-package.h"
 #include "hy-selector-private.h"
 #include "hy-util.h"
-#include "hif-package.h"
+#include "dnf-package.h"
 #include "hy-package.h"
-#include "hif-solution-private.h"
-#include "hif-solution.h"
+#include "dnf-solution-private.h"
+#include "dnf-solution.h"
 
 
 struct _SolutionCallback {
@@ -1100,9 +1100,9 @@ hy_goal_get_reason(HyGoal goal, DnfPackage *pkg)
  * @goal: A #HyGoal
  * @problem_id: problem sequence number
  *
- * Returns list of #HifSolution objects associated with the problem.
+ * Returns list of #DnfSolution objects associated with the problem.
  *
- * Returns: GPtrArray of #HifSolution objects
+ * Returns: GPtrArray of #DnfSolution objects
  *
  * Since: 0.7.0
  */
@@ -1142,7 +1142,7 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
         element = 0;
         while ((element = solver_next_solutionelement(solv, problem_id, solution,
                                                       element, &p, &rp)) != 0) {
-            HifSolution *sol = hif_solution_new();
+            DnfSolution *sol = dnf_solution_new();
             const char *old = NULL;
             const char *new = NULL;
             int action;
@@ -1215,7 +1215,7 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
             //g_debug("rp=%d, p=%d",rp,p);
             //g_debug("name: %s",pool_id2str(pool, s->name));
 
-            hif_solution_set(sol, action, old, new);
+            dnf_solution_set(sol, action, old, new);
             g_ptr_array_add(slist, sol);
         }
     }

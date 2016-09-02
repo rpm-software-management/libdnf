@@ -21,11 +21,11 @@
 #ifndef SOLUTION_PY_H
 #define SOLUTION_PY_H
 
-#include "hif-solution-private.h"
+#include "dnf-solution-private.h"
 
 extern PyTypeObject solution_Type;
 
-PyObject *solutionToPyObject(HifSolution *solution);
+PyObject *solutionToPyObject(DnfSolution *solution);
 PyObject *solutionlist_to_pylist(const GPtrArray *slist);
 
 #endif

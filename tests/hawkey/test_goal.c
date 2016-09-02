@@ -32,7 +32,7 @@
 #include "libdnf/hy-repo.h"
 #include "libdnf/hy-query.h"
 #include "libdnf/dnf-sack-private.h"
-#include "libhif/hif-solution.h"
+#include "libdnf/dnf-solution.h"
 #include "libdnf/dnf-goal.h"
 #include "libdnf/hy-selector.h"
 #include "libdnf/hy-util.h"
@@ -1304,7 +1304,7 @@ END_TEST
 START_TEST(test_goal_get_solution)
 {
 
-    HifSack *sack = test_globals.sack;
+    DnfSack *sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
     HySelector sltr = hy_selector_create(sack);
 
@@ -1314,7 +1314,7 @@ START_TEST(test_goal_get_solution)
     hy_goal_install_selector(goal, sltr,NULL);
     hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "custard");
     hy_goal_install_selector(goal, sltr,NULL);
-    fail_unless(hy_goal_run_flags(goal, HIF_FORCE_BEST));
+    fail_unless(hy_goal_run_flags(goal, DNF_FORCE_BEST));
     fail_unless(hy_goal_count_problems(goal) == 2);
 
     int expected_actions[2][3] = {{HY_DO_NOT_INSTALL, 0, 0},
@@ -1328,10 +1328,10 @@ START_TEST(test_goal_get_solution)
     for (int p = 0; p < hy_goal_count_problems(goal); ++p) {
         slist = hy_goal_get_solution(goal, p);
         for (unsigned int i = 0; i < slist->len; ++i) {
-            HifSolution *sol = g_ptr_array_index(slist, i);
-            fail_unless(hif_solution_get_action(sol) == expected_actions[p][i]);
-            fail_unless(g_strcmp0(hif_solution_get_old(sol), expected_old[p][i]) == 0);
-            fail_unless(g_strcmp0(hif_solution_get_new(sol), expected_new[p][i]) == 0);
+            DnfSolution *sol = g_ptr_array_index(slist, i);
+            fail_unless(dnf_solution_get_action(sol) == expected_actions[p][i]);
+            fail_unless(g_strcmp0(dnf_solution_get_old(sol), expected_old[p][i]) == 0);
+            fail_unless(g_strcmp0(dnf_solution_get_new(sol), expected_new[p][i]) == 0);
         }
     }
 
