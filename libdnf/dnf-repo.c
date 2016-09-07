@@ -1386,22 +1386,23 @@ dnf_repo_update(DnfRepo *repo,
         goto out;
     }
 
-    /* download and import public key */
-    if (priv->gpgcheck_md &&
-       (g_str_has_prefix(priv->gpgkey, "https://") ||
-         g_str_has_prefix(priv->gpgkey, "file://"))) {
-        g_debug("importing public key %s", priv->gpgkey);
-        ret = dnf_repo_download_import_public_key(repo, error);
-        if (!ret)
-            goto out;
-    }
+    if (priv->gpgkey &&
+        (priv->gpgcheck_md || priv->gpgcheck_pkgs)) {
+        /* download and import public key */
+        if ((g_str_has_prefix(priv->gpgkey, "https://") ||
+             g_str_has_prefix(priv->gpgkey, "file://"))) {
+            g_debug("importing public key %s", priv->gpgkey);
+            ret = dnf_repo_download_import_public_key(repo, error);
+            if (!ret)
+                goto out;
+        }
 
-    /* do we autoimport this into librpm */
-    if (priv->gpgcheck_md &&
-       (flags & DNF_REPO_UPDATE_FLAG_IMPORT_PUBKEY) > 0) {
-        ret = dnf_repo_add_public_key(repo, error);
-        if (!ret)
-            goto out;
+        /* do we autoimport this into librpm */
+        if ((flags & DNF_REPO_UPDATE_FLAG_IMPORT_PUBKEY) > 0) {
+            ret = dnf_repo_add_public_key(repo, error);
+            if (!ret)
+                goto out;
+        }
     }
 
     g_debug("Attempting to update %s", priv->id);
