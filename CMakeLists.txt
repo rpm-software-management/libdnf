@@ -16,7 +16,6 @@ check_symbol_exists (FNM_CASEFOLD "fnmatch.h" HAS_FNM_CASEFOLD)
 if (NOT HAS_FNM_CASEFOLD)
   message (SEND_ERROR "FNM_CASEFOLD is not available")
 endif ()
-add_definitions (-D_GNU_SOURCE)
 
 ADD_DEFINITIONS(-DG_LOG_DOMAIN=\\"libdnf\\")
 
