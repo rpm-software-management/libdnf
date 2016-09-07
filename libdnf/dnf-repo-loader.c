@@ -400,10 +400,10 @@ dnf_repo_loader_repo_parse(DnfRepoLoader *self,
     groups = g_key_file_get_groups(keyfile, NULL);
     for (i = 0; groups[i] != NULL; i++) {
         ret = dnf_repo_loader_repo_parse_id(self,
-                         groups[i],
-                         filename,
-                         keyfile,
-                         error);
+                                            groups[i],
+                                            filename,
+                                            keyfile,
+                                            error);
         if (!ret)
             return FALSE;
     }

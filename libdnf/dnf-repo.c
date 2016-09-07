@@ -273,9 +273,9 @@ dnf_repo_get_description(DnfRepo *repo)
             return NULL;
     } else {
         tmp = g_key_file_get_string(priv->keyfile,
-                         dnf_repo_get_id(repo),
-                         "name",
-                         NULL);
+                                    dnf_repo_get_id(repo),
+                                    "name",
+                                    NULL);
         if (tmp == NULL)
             return NULL;
     }
@@ -784,7 +784,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     if (priv->location == NULL) {
         g_autofree gchar *tmp = NULL;
         tmp = g_build_filename(dnf_context_get_cache_dir(priv->context),
-                    priv->id, NULL);
+                               priv->id, NULL);
         dnf_repo_set_location(repo, tmp);
     }
 
@@ -801,10 +801,8 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     /* gpgkey is optional for gpgcheck=1, but required for repo_gpgcheck=1 */
     g_free(priv->gpgkey);
     priv->gpgkey = g_key_file_get_string(priv->keyfile, priv->id, "gpgkey", NULL);
-    priv->gpgcheck_pkgs = g_key_file_get_boolean(priv->keyfile, priv->id,
-                              "gpgcheck", NULL);
-    priv->gpgcheck_md = g_key_file_get_boolean(priv->keyfile, priv->id,
-                              "repo_gpgcheck", NULL);
+    priv->gpgcheck_pkgs = g_key_file_get_boolean(priv->keyfile, priv->id, "gpgcheck", NULL);
+    priv->gpgcheck_md = g_key_file_get_boolean(priv->keyfile, priv->id, "repo_gpgcheck", NULL);
     if (priv->gpgcheck_md && priv->gpgkey == NULL) {
         g_set_error_literal(error,
                             DNF_ERROR,
@@ -1081,7 +1079,7 @@ dnf_repo_check_internal(DnfRepo *repo,
 
     /* get timestamp */
     ret = lr_result_getinfo(priv->repo_result, &error_local,
-                 LRR_YUM_TIMESTAMP, &priv->timestamp_generated);
+                            LRR_YUM_TIMESTAMP, &priv->timestamp_generated);
     if (!ret) {
         g_set_error(error,
                     DNF_ERROR,
@@ -1180,7 +1178,7 @@ dnf_repo_check(DnfRepo *repo,
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     g_clear_error(&priv->last_check_error);
     if (!dnf_repo_check_internal(repo, permissible_cache_age, state,
-                                   &priv->last_check_error)) {
+                                 &priv->last_check_error)) {
         if (error)
             *error = g_error_copy(priv->last_check_error);
         return FALSE;
@@ -1444,7 +1442,7 @@ dnf_repo_update(DnfRepo *repo,
         goto out;
     lr_result_clear(priv->repo_result);
     dnf_state_action_start(state_local,
-                DNF_STATE_ACTION_DOWNLOAD_METADATA, NULL);
+                           DNF_STATE_ACTION_DOWNLOAD_METADATA, NULL);
     ret = lr_handle_perform(priv->repo_handle,
                             priv->repo_result,
                             &error_local);
@@ -1460,7 +1458,7 @@ dnf_repo_update(DnfRepo *repo,
 
     /* check the newer metadata is newer */
     ret = lr_result_getinfo(priv->repo_result, &error_local,
-                 LRR_YUM_TIMESTAMP, &timestamp_new);
+                            LRR_YUM_TIMESTAMP, &timestamp_new);
     if (!ret) {
         g_set_error(error,
                     DNF_ERROR,
@@ -1704,8 +1702,8 @@ package_download_update_state_cb(void *user_data,
     ret = dnf_state_set_percentage(data->state, percentage);
     if (ret) {
         g_debug("update state %d/%d",
-               (int)global_data->downloaded,
-               (int)global_data->download_size);
+                (int)global_data->downloaded,
+                (int)global_data->download_size);
     }
 
     return 0;
@@ -1903,8 +1901,8 @@ dnf_repo_download_packages(DnfRepo *repo,
     ret = lr_download_packages(package_targets, LR_PACKAGEDOWNLOAD_FAILFAST, &error_local);
     if (!ret) {
         if (g_error_matches(error_local,
-                     LR_PACKAGE_DOWNLOADER_ERROR,
-                     LRE_ALREADYDOWNLOADED)) {
+                            LR_PACKAGE_DOWNLOADER_ERROR,
+                            LRE_ALREADYDOWNLOADED)) {
             /* ignore */
             g_clear_error(&error_local);
         } else {

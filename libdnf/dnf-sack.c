@@ -1683,18 +1683,18 @@ dnf_sack_add_repo(DnfSack *sack,
     /* check repo */
     state_local = dnf_state_get_child(state);
     ret = dnf_repo_check(repo,
-                permissible_cache_age,
-                state_local,
-                &error_local);
+                         permissible_cache_age,
+                         state_local,
+                         &error_local);
     if (!ret) {
         g_debug("failed to check, attempting update: %s",
-             error_local->message);
+                error_local->message);
         g_clear_error(&error_local);
         dnf_state_reset(state_local);
         ret = dnf_repo_update(repo,
-                                DNF_REPO_UPDATE_FLAG_FORCE,
-                                state_local,
-                                &error_local);
+                              DNF_REPO_UPDATE_FLAG_FORCE,
+                              state_local,
+                              &error_local);
         if (!ret) {
             if (!dnf_repo_get_required(repo) &&
                 g_error_matches(error_local,
