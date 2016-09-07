@@ -188,8 +188,8 @@ dnf_keyring_add_public_keys(rpmKeyring keyring, GError **error)
  */
 gboolean
 dnf_keyring_check_untrusted_file(rpmKeyring keyring,
-                  const gchar *filename,
-                  GError **error)
+                                 const gchar *filename,
+                                 GError **error)
 {
     FD_t fd = NULL;
     gboolean ret = FALSE;
