@@ -108,6 +108,7 @@ const gchar     *dnf_repo_get_id                (DnfRepo              *repo);
 const gchar     *dnf_repo_get_location          (DnfRepo              *repo);
 const gchar     *dnf_repo_get_filename          (DnfRepo              *repo);
 const gchar     *dnf_repo_get_packages          (DnfRepo              *repo);
+const gchar     *dnf_repo_get_public_key        (DnfRepo              *repo);
 DnfRepoEnabled   dnf_repo_get_enabled           (DnfRepo              *repo);
 gboolean         dnf_repo_get_required          (DnfRepo              *repo);
 guint            dnf_repo_get_cost              (DnfRepo              *repo);

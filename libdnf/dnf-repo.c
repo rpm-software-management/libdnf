@@ -216,6 +216,23 @@ dnf_repo_get_packages(DnfRepo *repo)
 }
 
 /**
+ * dnf_repo_get_public_key:
+ * @repo: a #DnfRepo instance.
+ *
+ * Gets the public key location.
+ *
+ * Returns: the repo public key location, e.g. "/var/cache/PackageKit/metadata/fedora/repomd.pub"
+ *
+ * Since: 0.7.0
+ **/
+const gchar *
+dnf_repo_get_public_key(DnfRepo *repo)
+{
+    DnfRepoPrivate *priv = GET_PRIVATE(repo);
+    return priv->pubkey;
+}
+
+/**
  * dnf_repo_substitute:
  */
 static gchar *
