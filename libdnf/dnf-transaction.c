@@ -1324,10 +1324,25 @@ dnf_transaction_commit(DnfTransaction *transaction,
     if (!ret)
         goto out;
 
-    /* import all GPG keys */
+    /* import all system wide GPG keys */
     ret = dnf_keyring_add_public_keys(priv->keyring, error);
     if (!ret)
         goto out;
+
+    /* import downloaded repo GPG keys */
+    for (i = 0; i < priv->repos->len; i++) {
+        DnfRepo *repo = g_ptr_array_index(priv->repos, i);
+        const gchar *pubkey;
+
+        /* does this file actually exist */
+        pubkey = dnf_repo_get_public_key(repo);
+        if (g_file_test(pubkey, G_FILE_TEST_EXISTS)) {
+            /* import */
+            ret = dnf_keyring_add_public_key(priv->keyring, pubkey, error);
+            if (!ret)
+                goto out;
+        }
+    }
 
     /* find any packages without valid GPG signatures */
     ret = dnf_transaction_check_untrusted(transaction, goal, error);
