@@ -13,7 +13,7 @@
 * This library is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
+* Lesser GeneDral Public License for more details.
 *
 * You should have received a copy of the GNU Lesser General Public
 * License along with this library; if not, write to the Free Software
@@ -52,7 +52,8 @@
 #define GET_TRANS_CMDLINE "SELECT cmdline FROM TRANS WHERE T_ID=@tid"
 
 #define INSERT_PDID "insert into PACKAGE_DATA values(null,@pid,null,null,null,null,null,null,null)"
-#define FIND_TID_FROM_PDID "SELECT T_ID FROM TRANS_DATA WHERE PD_ID=@pdid"
+#define FIND_TID_FROM_PDID "SELECT T_ID FROM TRANS_DATA WHERE PD_ID=@pdid LIMIT 1"
+#define FIND_TIDS_FROM_PDID "SELECT T_ID FROM TRANS_DATA WHERE PD_ID=@pdid"
 #define LOAD_OUTPUT "SELECT msg FROM OUTPUT WHERE T_ID=@tid and type=@type"
 #define PKG_DATA_ATTR_BY_PID "FROM PACKAGE_DATA WHERE P_ID=@pid"
 #define TRANS_DATA_ATTR_BY_PDID "FROM TRANS_DATA WHERE PD_ID=@pdid"
@@ -80,6 +81,8 @@
 
 
 #define S_PACKAGE_BY_PID "SELECT * FROM PACKAGE WHERE P_ID=@pid"
+#define S_PACKAGE_DATA_BY_PID "SELECT * FROM PACKAGE_DATA WHERE P_ID=@pid"
+#define S_REPO_BY_RID "select name from REPO where R_ID=@rid"
 
 #define S_TRANS "SELECT * from TRANS ORDER BY T_ID DESC"
 #define S_TRANS_W_LIMIT "SELECT * from TRANS ORDER BY T_ID DESC LIMIT @limit"
@@ -97,6 +100,8 @@
 #define S_ENV_EXCLUDE_BY_ID "SELECT name FROM ENVIRONMENTS_EXCLUDE where E_ID=@eid"
 #define S_IS_INSTALLED_BY_EID "SELECT is_installed FROM ENVIRONMENTS_GROUPS join GROUPS using(G_ID) where E_ID=@eid"
 #define S_GROUP_NAME_ID_BY_EID "SELECT name_id FROM ENVIRONMENTS_GROUPS join GROUPS using(G_ID) where E_ID=@eid"
+#define S_REPO_FROM_PID "SELECT name, PD_ID FROM PACKAGE_DATA join REPO using(R_ID) where P_ID=@pid"
+#define S_RELEASEVER_FROM_PDID "SELECT releasever from TRANS_DATA join TRANS using(T_ID) where PD_ID=@pdid"
 
 #define U_GROUP_COMMIT "UPDATE GROUPS SET is_installed=1 where name_id=@id"
 

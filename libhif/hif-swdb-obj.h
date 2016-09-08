@@ -44,6 +44,8 @@ struct _HifSwdbPkg
 	gboolean done;
 	gchar 	*state;
 	gint 	pid;
+	gchar * ui_from_repo;
+	HifSwdb *swdb;
 };
 
 HifSwdbPkg* hif_swdb_pkg_new(   const gchar* name,
@@ -54,6 +56,32 @@ HifSwdbPkg* hif_swdb_pkg_new(   const gchar* name,
                                 const gchar* checksum_data,
                                 const gchar* checksum_type,
                                 const gchar* type);
+const gchar* hif_swdb_pkg_ui_from_repo	( HifSwdbPkg *self);
+
+
+//Package Data holder for swdb history
+#define HIF_TYPE_SWDB_PKGDATA ( hif_swdb_pkgdata_get_type())
+G_DECLARE_FINAL_TYPE ( HifSwdbPkgData, hif_swdb_pkgdata, HIF, SWDB_PKGDATA, GObject)
+struct _HifSwdbPkgData
+{
+	GObject parent_instance;
+	gchar *from_repo;
+    gchar *from_repo_revision;
+  	gchar *from_repo_timestamp;
+  	gchar *installed_by;
+  	gchar *changed_by;
+  	gchar *installonly;
+  	gchar *origin_url;
+	gint 	pdid;
+	gint 	pid;
+};
+
+HifSwdbPkgData* hif_swdb_pkgdata_new( 	const gchar* from_repo_revision,
+                                        const gchar* from_repo_timestamp,
+                                        const gchar* installed_by,
+                                        const gchar* changed_by,
+                                        const gchar* installonly,
+                                        const gchar* origin_url);
 
 //holder for history transaction
 
