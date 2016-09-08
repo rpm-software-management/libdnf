@@ -35,7 +35,8 @@ G_DECLARE_FINAL_TYPE (HifSwdb, hif_swdb, HIF,SWDB, GObject) // structure,functio
 
 #include "hif-swdb-obj.h"
 
-HifSwdb *hif_swdb_new(void);
+HifSwdb *hif_swdb_new (     const gchar* db_path,
+                            const gchar* releasever);
 
 const gchar* hif_swdb_get_path (HifSwdb *self);
 
@@ -99,14 +100,8 @@ gint 	hif_swdb_trans_end 	(	HifSwdb *self,
 								const gint return_code);
 
 gint 	hif_swdb_log_package_data(	HifSwdb *self,
-									const gint   pid,
-                                  	const gchar *from_repo,
-                                  	const gchar *from_repo_revision,
-                                  	const gchar *from_repo_timestamp,
-                                  	const gchar *installed_by,
-                                  	const gchar *changed_by,
-                                  	const gchar *instalonly,
-                                  	const gchar *origin_url );
+                                    const gint pid,
+									HifSwdbPkgData *pkgdata );
 
 gint 	hif_swdb_trans_data_beg(	HifSwdb *self,
 									const gint 	 tid,
@@ -156,6 +151,12 @@ static GSList * _all_pdid_for_pid (	sqlite3 *db,
 
 static gint _tid_from_pdid (	sqlite3 *db,
 								const gint pdid );
+
+static GArray * _tids_from_pdid (	sqlite3 *db,
+								    const gint pdid );
+
+static const gchar* _repo_by_rid(   sqlite3 *db,
+                                    const gint rid);
 
 gint 	hif_swdb_log_rpm_data(	   HifSwdb *self,
 									const gint   pid,
@@ -210,6 +211,12 @@ gint hif_swdb_log_group_trans(  HifSwdb *self,
                                 const gint tid,
                                 GPtrArray *installing,
                                 GPtrArray *removing);
+HifSwdbTrans *hif_swdb_last (HifSwdb *self);
+
+HifSwdbPkg *hif_swdb_package_by_pattern (   HifSwdb *self,
+                                            const gchar *pattern);
+HifSwdbPkgData *hif_swdb_package_data_by_pattern (  HifSwdb *self,
+                                                    const gchar *pattern);
 
 G_END_DECLS
 
