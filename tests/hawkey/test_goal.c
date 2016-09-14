@@ -243,7 +243,7 @@ START_TEST(test_goal_install_selector_obsoletes_first)
     assert_iueo(goal, 1, 0, 0, 0);
 
     GPtrArray *plist = hy_goal_list_installs(goal, NULL);
-    char *nvra = hif_package_get_nevra(g_ptr_array_index(plist, 0));
+    char *nvra = dnf_package_get_nevra(g_ptr_array_index(plist, 0));
     ck_assert_str_eq(nvra, "B-1-0.noarch");
     g_free(nvra);
     g_ptr_array_unref(plist);
