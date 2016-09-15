@@ -602,6 +602,34 @@ START_TEST(test_goal_describe_problem)
 }
 END_TEST
 
+START_TEST(test_goal_describe_problem_rules)
+{
+    g_autoptr(GError) error = NULL;
+    DnfSack *sack = test_globals.sack;
+    DnfPackage *pkg = get_latest_pkg(sack, "hello");
+    HyGoal goal = hy_goal_create(sack);
+
+    hy_goal_install(goal, pkg);
+    fail_unless(hy_goal_run(goal));
+    fail_unless(hy_goal_list_installs(goal, &error) == NULL);
+    fail_unless(error->code == DNF_ERROR_NO_SOLUTION);
+    fail_unless(hy_goal_count_problems(goal) > 0);
+
+    char **problems = hy_goal_describe_problem_rules(goal, 0);
+    const char *expected[] = {
+                "conflicting requests",
+                "nothing provides goodbye needed by hello-1-1.noarch"
+                };
+    for (gint p = 0; p < hy_goal_count_problems(goal); ++p) {
+        fail_if(strncmp(problems[p], expected[p], strlen(expected[p])));
+    }
+    g_free(problems);
+
+    g_object_unref(pkg);
+    hy_goal_free(goal);
+}
+END_TEST
+
 START_TEST(test_goal_no_reinstall)
 {
     DnfSack *sack = test_globals.sack;
@@ -1329,6 +1357,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_get_reason);
     tcase_add_test(tc, test_goal_get_reason_selector);
     tcase_add_test(tc, test_goal_describe_problem);
+    tcase_add_test(tc, test_goal_describe_problem_rules);
     tcase_add_test(tc, test_goal_distupgrade_all_keep_arch);
     tcase_add_test(tc, test_goal_no_reinstall);
     tcase_add_test(tc, test_goal_erase_simple);
