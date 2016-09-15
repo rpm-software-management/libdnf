@@ -660,6 +660,7 @@ static struct PyMethodDef goal_methods[] = {
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"count_problems",        (PyCFunction)count_problems,        METH_NOARGS,        NULL},
     {"describe_problem",(PyCFunction)describe_problem,        METH_O,                NULL},
+    {"describe_problem_rules",(PyCFunction)describe_problem_rules,        METH_O,                NULL},
     {"log_decisions",   (PyCFunction)log_decisions,        METH_NOARGS,        NULL},
     {"write_debugdata", (PyCFunction)write_debugdata,        METH_O,                NULL},
     {"list_erasures",        (PyCFunction)list_erasures,        METH_NOARGS,        NULL},

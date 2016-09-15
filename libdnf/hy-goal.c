@@ -51,6 +51,7 @@
 #include "hy-package.h"
 #include "dnf-solution-private.h"
 
+#define BLOCK_SIZE 15
 
 struct _SolutionCallback {
     HyGoal goal;
@@ -945,6 +946,50 @@ hy_goal_describe_problem(HyGoal goal, unsigned i)
     const char *problem = solver_problemruleinfo2str(goal->solv,
                                                      type, source, target, dep);
     return g_strdup(problem);
+}
+
+/**
+ * List describing failed rules in solving problem 'i'.
+ *
+ * Caller is responsible for freeing the returned string list.
+ */
+char **
+hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
+{
+    const char **problist = NULL;
+    int p = 0;
+    /* internal error */
+    if (i >= (unsigned) hy_goal_count_problems(goal))
+        return NULL;
+    // problem is not in libsolv - removal of protected packages
+    if (i >= (unsigned) solver_problem_count(goal->solv)) {
+        problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
+        problist[p++] = hy_goal_describe_problem(goal, i);
+        problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
+        problist[p++] = NULL;
+        return problist;
+    }
+
+    Queue pq;
+    Id rid, source, target, dep;
+    SolverRuleinfo type;
+    const char *problem;
+    int j;
+    queue_init(&pq);
+    // this libsolv interface indexes from 1 (we do from 0), so:
+    solver_findallproblemrules(goal->solv, i+1, &pq);
+    for (j = 0; j < pq.count; j++) {
+        rid = pq.elements[j];
+        type = solver_ruleinfo(goal->solv, rid, &source, &target, &dep);
+        problem = solver_problemruleinfo2str(goal->solv,
+                                             type, source, target, dep);
+        problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
+        problist[p++] = g_strdup(problem);
+    }
+    problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
+    problist[p++] = NULL;
+    queue_free(&pq);
+    return problist;
 }
 
 /**
