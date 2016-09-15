@@ -218,6 +218,10 @@ class Goal(_hawkey.Goal):
     def problems(self):
         return [self.describe_problem(i) for i in range(0, self.count_problems())]
 
+    @property
+    def problem_rules(self):
+        return [self.describe_problem_rules(i) for i in range(0, self.count_problems())]
+
     def run(self, callback=None, **kwargs):
         ret = super(Goal, self).run(**kwargs)
         if callback:
