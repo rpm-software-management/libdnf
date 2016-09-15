@@ -464,6 +464,27 @@ describe_problem(_GoalObject *self, PyObject *index_obj)
 }
 
 static PyObject *
+describe_problem_rules(_GoalObject *self, PyObject *index_obj)
+{
+    PyObject *list;
+
+    if (!PyInt_Check(index_obj)) {
+        PyErr_SetString(PyExc_TypeError, "An integer value expected.");
+        return NULL;
+    }
+    const char **plist = hy_goal_describe_problem_rules(self->goal,
+                                                       PyLong_AsLong(index_obj));
+    if (plist == NULL) {
+        PyErr_SetString(PyExc_ValueError, "Index out of range.");
+        return NULL;
+    }
+
+    list = strlist_to_pylist(plist);
+    g_free(plist);
+    return list;
+}
+
+static PyObject *
 log_decisions(_GoalObject *self, PyObject *unused)
 {
     if (hy_goal_log_decisions(self->goal))
