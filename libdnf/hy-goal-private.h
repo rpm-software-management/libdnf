@@ -39,12 +39,6 @@ struct _HyGoal {
     GPtrArray *removal_of_protected;
 };
 
-struct _HySolution {
-    int action;
-    char *new;
-    char *old;
-};
-
 int sltr2job(const HySelector sltr, Queue *job, int solver_action);
 
 #endif // HY_GOAL_INTERNAL_H

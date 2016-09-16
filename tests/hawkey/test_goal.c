@@ -32,6 +32,7 @@
 #include "libdnf/hy-repo.h"
 #include "libdnf/hy-query.h"
 #include "libdnf/dnf-sack-private.h"
+#include "libhif/hif-solution.h"
 #include "libdnf/dnf-goal.h"
 #include "libdnf/hy-selector.h"
 #include "libdnf/hy-util.h"
@@ -1317,14 +1318,16 @@ START_TEST(test_goal_get_solution)
     fail_unless(hy_goal_count_problems(goal) == 2);
 
     g_autoptr(GPtrArray) slist = NULL;
-    for (unsigned int p = 0; p < hy_goal_count_problems(goal); ++p) {
+    for (int p = 0; p < hy_goal_count_problems(goal); ++p) {
         slist = hy_goal_get_solution(goal, p);
         printf("Problem %d:\n", p);
         for (unsigned int i = 0; i < slist->len; ++i) {
-            HySolution sol = g_ptr_array_index(slist, i);
+            HifSolution *sol = g_ptr_array_index(slist, i);
             printf("Solution %d: ", i);
             printf("action = %d, new package = %s, old package = %s\n",
-                   sol->action, sol->new, sol->old);
+                   hif_solution_get_action(sol),
+                   hif_solution_get_new(sol),
+                   hif_solution_get_old(sol));
         }
     }
 
