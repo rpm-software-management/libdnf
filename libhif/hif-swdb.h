@@ -140,13 +140,13 @@ const gint 	hif_swdb_get_pid_by_nevracht(	HifSwdb *self,
 
 static gchar* _look_for_desc(sqlite3 *db, const gchar *table, const gint id);
 
-GSList *hif_swdb_search (   HifSwdb *self,
+GArray *hif_swdb_search (   HifSwdb *self,
 							const GSList *patterns);
 
 
 static gint _pdid_from_pid (	sqlite3 *db,
 								const gint pid );
-static GSList * _all_pdid_for_pid (	sqlite3 *db,
+static GArray * _all_pdid_for_pid (	sqlite3 *db,
 									const gint pid );
 
 static gint _tid_from_pdid (	sqlite3 *db,
@@ -178,7 +178,7 @@ const gchar * hif_swdb_trans_cmdline (   HifSwdb *self,
 							 	        const gint tid);
 
 GPtrArray *hif_swdb_trans_old(	HifSwdb *self,
-                                GPtrArray *tids,
+                                GArray *tids,
 								gint limit,
 								const gboolean complete_only);
 
@@ -217,6 +217,20 @@ HifSwdbPkg *hif_swdb_package_by_pattern (   HifSwdb *self,
                                             const gchar *pattern);
 HifSwdbPkgData *hif_swdb_package_data_by_pattern (  HifSwdb *self,
                                                     const gchar *pattern);
+
+const gchar *hif_swdb_attr_by_pattern (   HifSwdb *self,
+                                            const gchar *attr,
+                                            const gchar *pattern);
+
+const gchar *hif_swdb_repo_by_pattern (     HifSwdb *self,
+                                            const gchar *pattern);
+
+const gint hif_swdb_mark_user_installed (   HifSwdb *self,
+                                            const gchar *pattern,
+                                            gboolean user_installed);
+
+GPtrArray * hif_swdb_checksums_by_patterns( HifSwdb *self,
+                                            GPtrArray *patterns);
 
 G_END_DECLS
 
