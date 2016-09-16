@@ -50,22 +50,6 @@ typedef enum {
     DNF_IGNORE_WEAK_DEPS         = 1 << 13
 } DnfGoalActions;
 
-typedef enum _hy_goal_solution_actions {
-     HY_ALLOW_INSTALL            = 1 << 1,
-     HY_ALLOW_REINSTALL          = 1 << 2,
-     HY_ALLOW_UPGRADE            = 1 << 3,
-     HY_ALLOW_DOWNGRADE          = 1 << 4,
-     HY_ALLOW_CHANGE             = 1 << 5,
-     HY_ALLOW_OBSOLETE           = 1 << 6,
-     HY_ALLOW_REPLACEMENT        = 1 << 7,
-     HY_ALLOW_REMOVE             = 1 << 8,
-     HY_DO_NOT_INSTALL           = 1 << 9,
-     HY_DO_NOT_REMOVE            = 1 << 10,
-     HY_DO_NOT_OBSOLETE          = 1 << 11,
-     HY_DO_NOT_UPGRADE           = 1 << 12,
-     HY_BAD_SOLUTION             = 1 << 13
-} DnfGoalSolutionActions;
-
 #define HY_REASON_DEP 1
 #define HY_REASON_USER 2
 #define HY_REASON_CLEAN 3

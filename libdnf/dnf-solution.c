@@ -30,31 +30,30 @@
 #include "dnf-solution-private.h"
 #include "dnf-solution.h"
 
-typedef struct
+struct _DnfSolution
 {
-    int      action;
-    char    *old;
-    char    *new;
-} DnfSolutionPrivate;
+    GObject            parent_instance;
 
-G_DEFINE_TYPE_WITH_PRIVATE(DnfSolution, dnf_solution, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (dnf_solution_get_instance_private (o))
+    DnfSolutionAction  action;
+    gchar             *old;
+    gchar             *new;
+};
 
-/**
+G_DEFINE_TYPE(DnfSolution, dnf_solution, G_TYPE_OBJECT)
+
+/*
  * dnf_solution_new:
  *
  * Creates a new #DnfSolution.
  *
- * Returns:(transfer full): a #DnfSolution
+ * Returns: a #DnfSolution
  *
  * Since: 0.7.0
  **/
 DnfSolution *
 dnf_solution_new(void)
 {
-    DnfSolution *solution;
-    solution = g_object_new(DNF_TYPE_SOLUTION, NULL);
-    return DNF_SOLUTION(solution);
+    return g_object_new(DNF_TYPE_SOLUTION, NULL);
 }
 
 /**
@@ -63,11 +62,10 @@ dnf_solution_new(void)
 static void
 dnf_solution_finalize(GObject *object)
 {
-    DnfSolution *solution = DNF_SOLUTION(object);
-    DnfSolutionPrivate *priv = GET_PRIVATE(solution);
+    DnfSolution *self = (DnfSolution *)object;
 
-    g_free(priv->old);
-    g_free(priv->new);
+    g_free(self->old);
+    g_free(self->new);
 
     G_OBJECT_CLASS(dnf_solution_parent_class)->finalize(object);
 }
@@ -96,15 +94,14 @@ dnf_solution_class_init(DnfSolutionClass *klass)
  *
  * Returns the solution action.
  *
- * Returns: DnfGoalSolutionActions
+ * Returns: an #DnfSolutionAction
  *
  * Since: 0.7.0
  */
-DnfGoalSolutionActions
+DnfSolutionAction
 dnf_solution_get_action(DnfSolution *solution)
 {
-    DnfSolutionPrivate *priv = GET_PRIVATE(solution);
-    return priv->action;
+    return solution->action;
 }
 
 /**
@@ -120,8 +117,7 @@ dnf_solution_get_action(DnfSolution *solution)
 const gchar *
 dnf_solution_get_old(DnfSolution *solution)
 {
-    DnfSolutionPrivate *priv = GET_PRIVATE(solution);
-    return priv->old;
+    return solution->old;
 }
 
 /**
@@ -137,8 +133,7 @@ dnf_solution_get_old(DnfSolution *solution)
 const gchar *
 dnf_solution_get_new(DnfSolution *solution)
 {
-    DnfSolutionPrivate *priv = GET_PRIVATE(solution);
-    return priv->new;
+    return solution->new;
 }
 
 /**
@@ -152,12 +147,12 @@ dnf_solution_get_new(DnfSolution *solution)
  * Since: 0.7.0
  */
 void
-dnf_solution_set(DnfSolution *solution, int action, const char *old, const char *new)
+dnf_solution_set(DnfSolution *solution, DnfSolutionAction action,
+                 const gchar *old, const gchar *new)
 {
-    DnfSolutionPrivate *priv = GET_PRIVATE(solution);
-    priv->action = action;
-    g_free(priv->old);
-    priv->old = g_strdup(old);
-    g_free(priv->new);
-    priv->new = g_strdup(new);
+    solution->action = action;
+    g_free(solution->old);
+    solution->old = g_strdup(old);
+    g_free(solution->new);
+    solution->new = g_strdup(new);
 }

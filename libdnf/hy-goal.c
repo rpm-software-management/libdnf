@@ -50,7 +50,6 @@
 #include "dnf-package.h"
 #include "hy-package.h"
 #include "dnf-solution-private.h"
-#include "dnf-solution.h"
 
 
 struct _SolutionCallback {
@@ -1143,9 +1142,9 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
         while ((element = solver_next_solutionelement(solv, problem_id, solution,
                                                       element, &p, &rp)) != 0) {
             DnfSolution *sol = dnf_solution_new();
-            const char *old = NULL;
-            const char *new = NULL;
-            int action;
+            const gchar *old = NULL;
+            const gchar *new = NULL;
+            DnfSolutionAction action;
             // see libsolv:solver_next_solutionelement() description
             // for possible results and their meaning
             if (p == SOLVER_SOLUTION_JOB || p == SOLVER_SOLUTION_POOLJOB) {
@@ -1160,56 +1159,56 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
 
                 // do not ask to use that dependency
                 // pool_job2str(pool, how, what, 0), 0));
-                action = HY_DO_NOT_INSTALL;
+                action = DNF_SOLUTION_ACTION_DO_NOT_INSTALL;
                 new = solver_select2str(pool, how & SOLVER_SELECTMASK, what);
             } else if (p == SOLVER_SOLUTION_INFARCH) {
                 s = pool->solvables + rp;
                 if (pool->installed && s->repo == pool->installed) {
                     // keep package despite the inferior architecture
-                    action = HY_DO_NOT_REMOVE;
+                    action = DNF_SOLUTION_ACTION_DO_NOT_REMOVE;
                     old = pool_solvable2str(pool, s);
                 } else {
                     // install despite the inferior architecture
-                    action = HY_ALLOW_INSTALL;
+                    action = DNF_SOLUTION_ACTION_ALLOW_INSTALL;
                     new = pool_solvable2str(pool, s);
                 }
             } else if (p == SOLVER_SOLUTION_DISTUPGRADE) {
                 s = pool->solvables + rp;
                 if (pool->installed && s->repo == pool->installed) {
                     // keep obsolete package
-                    action = HY_DO_NOT_OBSOLETE;
+                    action = DNF_SOLUTION_ACTION_DO_NOT_OBSOLETE;
                     old = pool_solvable2str(pool, s);
                 } else {
                     // installC package from excluded repository
-                    action = HY_ALLOW_INSTALL;
+                    action = DNF_SOLUTION_ACTION_ALLOW_INSTALL;
                     new = pool_solvable2str(pool, s);
                 }
             } else if (p == SOLVER_SOLUTION_BEST) {
                 s = pool->solvables + rp;
                 if (pool->installed && s->repo == pool->installed) {
                     // keep old package
-                    action = HY_DO_NOT_UPGRADE;
+                    action = DNF_SOLUTION_ACTION_DO_NOT_UPGRADE;
                     old = pool_solvable2str(pool, s);
                 } else {
                     // install despite the old version
-                    action = HY_ALLOW_INSTALL;
+                    action = DNF_SOLUTION_ACTION_ALLOW_INSTALL;
                     new = pool_solvable2str(pool, s);
                 }
             } else if (p > 0 && rp == 0) {
                 s = pool->solvables + p;
                 // allow deinstallation of package
-                action = HY_ALLOW_REMOVE;
+                action = DNF_SOLUTION_ACTION_ALLOW_REMOVE;
                 old = pool_solvid2str(pool, p);
             } else if (p > 0 && rp > 0) {
                 s = pool->solvables + rp;
                 // allow replacement of old with new
-                action = HY_ALLOW_REPLACEMENT;
+                action = DNF_SOLUTION_ACTION_ALLOW_REPLACEMENT;
                 old = pool_solvid2str(pool, p);
                 new = pool_solvid2str(pool, rp);
             } else {
                 s = pool->solvables + rp;
                 // bad solution element
-                action = HY_BAD_SOLUTION;
+                action = DNF_SOLUTION_ACTION_BAD_SOLUTION;
             }
 
             //g_debug("rp=%d, p=%d",rp,p);
