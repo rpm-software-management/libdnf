@@ -49,6 +49,8 @@
 #include "hy-util.h"
 #include "hif-package.h"
 #include "hy-package.h"
+#include "hif-solution-private.h"
+#include "hif-solution.h"
 
 
 struct _SolutionCallback {
@@ -676,23 +678,6 @@ hy_goal_free(HyGoal goal)
     g_free(goal);
 }
 
-HySolution
-hy_solution_create()
-{
-    HySolution sol = g_malloc0(sizeof(*sol));
-    return sol;
-}
-
-void
-hy_solution_free(HySolution sol)
-{
-    if (sol->new)
-        g_free(sol->new);
-    if (sol->old)
-        g_free(sol->old);
-    g_free(sol);
-}
-
 int
 hy_goal_distupgrade_all(HyGoal goal)
 {
@@ -1132,8 +1117,7 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
     Pool *pool = goal->solv->pool;
     Solver *solv = goal->solv;
     Solvable *s = NULL;
-    HifSack *sack = goal->sack;
-    GPtrArray *slist = g_ptr_array_new_with_free_func((GDestroyNotify)hy_solution_free);
+    GPtrArray *slist = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 
     g_debug("Variables initialized.");
 
@@ -1167,9 +1151,10 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
         element = 0;
         while ((element = solver_next_solutionelement(solv, problem_id, solution,
                                                       element, &p, &rp)) != 0) {
-            HySolution sol = hy_solution_create();
-            char *old = NULL;
-            char *new = NULL;
+            HifSolution *sol = hif_solution_new();
+            const char *old = NULL;
+            const char *new = NULL;
+            int action;
             // see libsolv:solver_next_solutionelement() description
             // for possible results and their meaning
             if (p == SOLVER_SOLUTION_JOB || p == SOLVER_SOLUTION_POOLJOB) {
@@ -1185,7 +1170,7 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
 
                 g_debug("%s", pool_tmpjoin(pool, "do not ask to ",
                                            pool_job2str(pool, how, what, 0), 0));
-                sol->action = HY_DO_NOT_INSTALL;
+                action = HY_DO_NOT_INSTALL;
                 new = solver_select2str(pool, how & SOLVER_SELECTMASK, what);
             } else if (p == SOLVER_SOLUTION_INFARCH) {
                 s = pool->solvables + rp;
@@ -1193,13 +1178,13 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
                     g_debug("%s", pool_tmpjoin(pool, "keep ",
                                                pool_solvable2str(pool, s),
                                                " despite the inferior architecture"));
-                    sol->action = HY_DO_NOT_REMOVE;
+                    action = HY_DO_NOT_REMOVE;
                     old = pool_solvable2str(pool, s);
                 } else {
                     g_debug("%s", pool_tmpjoin(pool, "install ",
                                                pool_solvable2str(pool, s),
                                                " despite the inferior architecture"));
-                    sol->action = HY_ALLOW_INSTALL;
+                    action = HY_ALLOW_INSTALL;
                     new = pool_solvable2str(pool, s);
                 }
             } else if (p == SOLVER_SOLUTION_DISTUPGRADE) {
@@ -1207,13 +1192,13 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
                 if (pool->installed && s->repo == pool->installed) {
                     g_debug("%s", pool_tmpjoin(pool, "keep obsolete ",
                                                pool_solvable2str(pool, s), 0));
-                    sol->action = HY_DO_NOT_OBSOLETE;
+                    action = HY_DO_NOT_OBSOLETE;
                     old = pool_solvable2str(pool, s);
                 } else {
                     g_debug("%s", pool_tmpjoin(pool, "install ",
                                                pool_solvable2str(pool, s),
                                                " from excluded repository"));
-                    sol->action = HY_ALLOW_INSTALL;
+                    action = HY_ALLOW_INSTALL;
                     new = pool_solvable2str(pool, s);
                 }
             } else if (p == SOLVER_SOLUTION_BEST) {
@@ -1221,20 +1206,20 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
                 if (pool->installed && s->repo == pool->installed) {
                     g_debug("%s", pool_tmpjoin(pool, "keep old ",
                                               pool_solvable2str(pool, s), 0));
-                    sol->action = HY_DO_NOT_UPGRADE;
+                    action = HY_DO_NOT_UPGRADE;
                     old = pool_solvable2str(pool, s);
                 } else {
                     g_debug("%s", pool_tmpjoin(pool, "install ",
                                               pool_solvable2str(pool, s),
                                               " despite the old version"));
-                    sol->action = HY_ALLOW_INSTALL;
+                    action = HY_ALLOW_INSTALL;
                     new = pool_solvable2str(pool, s);
                 }
             } else if (p > 0 && rp == 0) {
                 s = pool->solvables + p;
                 g_debug("%s", pool_tmpjoin(pool, "allow deinstallation of ",
                                            pool_solvid2str(pool, p), 0));
-                sol->action = HY_ALLOW_REMOVE;
+                action = HY_ALLOW_REMOVE;
                 old = pool_solvable2str(pool, s);
             } else if (p > 0 && rp > 0) {
                 s = pool->solvables + rp;
@@ -1245,18 +1230,17 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
 
                 old = sp;
                 new = srp;
-                sol->action = HY_ALLOW_REPLACEMENT;
+                action = HY_ALLOW_REPLACEMENT;
             } else {
                 s = pool->solvables + rp;
                 g_debug("%s", "bad solution element");
-                sol->action = HY_BAD_SOLUTION;
+                action = HY_BAD_SOLUTION;
             }
 
             g_debug("rp=%d, p=%d",rp,p);
             g_debug("name: %s",pool_id2str(pool, s->name));
 
-            sol->old = g_strdup(old);
-            sol->new = g_strdup(new);
+            hif_solution_set(sol, action, old, new);
             g_ptr_array_add(slist, sol);
         }
     }
