@@ -1317,24 +1317,26 @@ START_TEST(test_goal_get_solution)
     fail_unless(hy_goal_run_flags(goal, HIF_FORCE_BEST));
     fail_unless(hy_goal_count_problems(goal) == 2);
 
+    int expected_actions[2][3] = {{HY_DO_NOT_INSTALL, 0, 0},
+                        {HY_ALLOW_REMOVE, HY_DO_NOT_REMOVE, HY_DO_NOT_INSTALL}};
+    const char *expected_old[2][3] = { {NULL, NULL, NULL},
+                        {"pilchard-1.2.3-1.i686", "pilchard-1.2.3-1.i686", NULL}};
+    const char *expected_new[2][3] = {{"custard", NULL, NULL},
+                        {NULL, NULL, "pilchard"}};
+
     g_autoptr(GPtrArray) slist = NULL;
     for (int p = 0; p < hy_goal_count_problems(goal); ++p) {
         slist = hy_goal_get_solution(goal, p);
-        printf("Problem %d:\n", p);
         for (unsigned int i = 0; i < slist->len; ++i) {
             HifSolution *sol = g_ptr_array_index(slist, i);
-            printf("Solution %d: ", i);
-            printf("action = %d, new package = %s, old package = %s\n",
-                   hif_solution_get_action(sol),
-                   hif_solution_get_new(sol),
-                   hif_solution_get_old(sol));
+            fail_unless(hif_solution_get_action(sol) == expected_actions[p][i]);
+            fail_unless(g_strcmp0(hif_solution_get_old(sol), expected_old[p][i]) == 0);
+            fail_unless(g_strcmp0(hif_solution_get_new(sol), expected_new[p][i]) == 0);
         }
     }
 
-
     hy_selector_free(sltr);
     hy_goal_free(goal);
-
 }
 END_TEST
 
