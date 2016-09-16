@@ -1317,17 +1317,19 @@ START_TEST(test_goal_get_solution)
     fail_unless(hy_goal_run_flags(goal, DNF_FORCE_BEST));
     fail_unless(hy_goal_count_problems(goal) == 2);
 
-    int expected_actions[2][3] = {{HY_DO_NOT_INSTALL, 0, 0},
-                        {HY_ALLOW_REMOVE, HY_DO_NOT_REMOVE, HY_DO_NOT_INSTALL}};
-    const char *expected_old[2][3] = { {NULL, NULL, NULL},
+    gint expected_actions[2][3] = {{DNF_SOLUTION_ACTION_DO_NOT_INSTALL, 0, 0},
+                                   {DNF_SOLUTION_ACTION_ALLOW_REMOVE,
+                                    DNF_SOLUTION_ACTION_DO_NOT_REMOVE,
+                                    DNF_SOLUTION_ACTION_DO_NOT_INSTALL}};
+    const gchar *expected_old[2][3] = {{NULL, NULL, NULL},
                         {"pilchard-1.2.3-1.i686", "pilchard-1.2.3-1.i686", NULL}};
-    const char *expected_new[2][3] = {{"custard", NULL, NULL},
+    const gchar *expected_new[2][3] = {{"custard", NULL, NULL},
                         {NULL, NULL, "pilchard"}};
 
     g_autoptr(GPtrArray) slist = NULL;
-    for (int p = 0; p < hy_goal_count_problems(goal); ++p) {
+    for (gint p = 0; p < hy_goal_count_problems(goal); ++p) {
         slist = hy_goal_get_solution(goal, p);
-        for (unsigned int i = 0; i < slist->len; ++i) {
+        for (guint i = 0; i < slist->len; ++i) {
             DnfSolution *sol = g_ptr_array_index(slist, i);
             fail_unless(dnf_solution_get_action(sol) == expected_actions[p][i]);
             fail_unless(g_strcmp0(dnf_solution_get_old(sol), expected_old[p][i]) == 0);
