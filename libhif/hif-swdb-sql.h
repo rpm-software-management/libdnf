@@ -76,8 +76,8 @@
   "name || '-' || version || '-' || release AS sql_nameVerRel,"\
   "epoch || ':' || name || '-' || version || '-' || release || '-' || arch AS sql_envra,"\
   "name || '-' || epoch || '-' || version || '-' || release || '-' || arch AS sql_nevra "\
-  "FROM PACKAGE WHERE name LIKE @sub AND (sql_nameArch LIKE @pat OR sql_nameVerRelArch LIKE @pat OR sql_nameVer LIKE @pat OR"\
-  " sql_nameVerRel LIKE @pat OR sql_nevra LIKE @pat OR sql_envra LIKE @pat)"
+  "FROM PACKAGE WHERE sql_nameArch LIKE @pat OR sql_nameVerRelArch LIKE @pat OR sql_nameVer LIKE @pat OR"\
+  " sql_nameVerRel LIKE @pat OR sql_nevra LIKE @pat OR sql_envra LIKE @pat"
 
 
 #define S_PACKAGE_BY_PID "SELECT * FROM PACKAGE WHERE P_ID=@pid"
@@ -101,12 +101,16 @@
 #define S_IS_INSTALLED_BY_EID "SELECT is_installed FROM ENVIRONMENTS_GROUPS join GROUPS using(G_ID) where E_ID=@eid"
 #define S_GROUP_NAME_ID_BY_EID "SELECT name_id FROM ENVIRONMENTS_GROUPS join GROUPS using(G_ID) where E_ID=@eid"
 #define S_REPO_FROM_PID "SELECT name, PD_ID FROM PACKAGE_DATA join REPO using(R_ID) where P_ID=@pid"
+#define S_REPO_FROM_PID2 "SELECT name FROM PACKAGE_DATA join REPO using(R_ID) where P_ID=@pid"
 #define S_RELEASEVER_FROM_PDID "SELECT releasever from TRANS_DATA join TRANS using(T_ID) where PD_ID=@pdid"
+#define S_CHECKSUMS_BY_PID "SELECT checksum_data, checksum_type from PACKAGE where P_ID=@pid"
 
 #define U_GROUP_COMMIT "UPDATE GROUPS SET is_installed=1 where name_id=@id"
 
 #define U_GROUP "UPDATE GROUPS SET name=@name,ui_name=@ui_name,is_installed=@is_installed,pkg_types=@pkg_types,"\
                 "grp_types=@grp_types where G_ID=@gid"
+
+#define U_REASON_BY_PDID "UPDATE TRANS_DATA SET reason=@reason where PD_ID=@pdid"
 
 #define R_FULL_LIST_BY_ID "DELETE FROM GROUPS_PACKAGE WHERE G_ID=@gid"
 //CREATION OF tables

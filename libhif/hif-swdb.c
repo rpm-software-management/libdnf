@@ -23,11 +23,9 @@
 /* TODO:    -   Fix fixmes
             -   Replace structs with Gobjects
             -   Get rid of yumdb (yumdb.get_package calls etc)
-            -   Get rid of remaining classes in dnf/yum/history.py
             -   Think about GOM
-            -   Replace GSList an GPtrArray with GArray when using integers
  */
-
+//#include <sys/time.h>
 
 #define default_path "/var/lib/dnf/history/swdb.sqlite"
 
@@ -656,106 +654,65 @@ static const gchar *_table_by_attribute(const gchar *attr)
 
 /*********************************** UTILS *************************************/
 
-static GSList *_get_subpatterns(const gchar* pattern)
-{
-    GSList *subpatterns = NULL;
-    subpatterns = g_slist_append (subpatterns, g_strdup(pattern));
-    const gchar * pattern_r = g_utf8_strreverse(pattern, -1);
-    gint delimiters1 = 1;
-    gint delimiters2 = 1;
-    for (int i = 0; pattern[i]; ++i)
-    {
-        if (pattern_r[i] == '-') //there will be substring for each delimiter
-        {
-            delimiters1++;
-            gchar **subs = g_strsplit(pattern_r,"-",delimiters1);
-            subpatterns = g_slist_append (subpatterns, g_utf8_strreverse(subs[g_strv_length (subs)-1],-1));
-        }
-        if (pattern_r[i] == '.') //there will be substring for each delimiter
-        {
-            delimiters2++;
-            gchar **subs = g_strsplit(pattern_r,".",delimiters2);
-            subpatterns = g_slist_append (subpatterns, g_utf8_strreverse(subs[g_strv_length (subs)-1],-1));
-        }
-    }
-    return subpatterns;
-}
-
 // Pattern on input, transaction IDs on output
-static GSList *_simple_search(sqlite3* db, const gchar * pattern)
+static GArray *_simple_search(sqlite3* db, const gchar * pattern)
 {
-    GSList *tids = NULL;
+    GArray *tids = g_array_new(0,0,sizeof(gint));
     sqlite3_stmt *res_simple;
     const gchar *sql_simple = SIMPLE_SEARCH;
     DB_PREP(db, sql_simple, res_simple);
     DB_BIND(res_simple, "@pat", pattern);
     gint pid_simple;
-    GSList *simple = NULL;
+    GArray *simple = g_array_new(0,0,sizeof(gint));
     while( (pid_simple = DB_FIND_MULTI(res_simple)))
     {
-        simple = g_slist_append (simple, GINT_TO_POINTER(pid_simple));
+        g_array_append_val(simple, pid_simple);
     }
-    while(simple)
+    gint pdid;
+    for(guint i = 0; i < simple->len; i++)
     {
-        pid_simple = GPOINTER_TO_INT(simple->data);
-        simple = simple->next;
-        GSList *pdids = _all_pdid_for_pid(db, pid_simple);
-        while(pdids)
+        pid_simple = g_array_index(simple, gint, i);
+        GArray *pdids = _all_pdid_for_pid(db, pid_simple);
+        for( guint j = 0; j < pdids->len; j++)
         {
-            gint pdid = GPOINTER_TO_INT(pdids->data);
-            pdids = pdids->next;
+            pdid = g_array_index(pdids, gint, j);
             GArray *tids_for_pdid = _tids_from_pdid(db, pdid);
-            for (guint i = 0; i< tids_for_pdid->len; i++)
-            {
-                tids = g_slist_append (tids, GINT_TO_POINTER(g_array_index(tids_for_pdid, gint, i)));
-            }
+            tids = g_array_append_vals (tids, tids_for_pdid->data, tids_for_pdid->len);
         }
     }
     return tids;
 }
+
+/* XXX Garbage just for testing
+static struct timeval tm1;
+
+static inline void start()
+{
+    gettimeofday(&tm1, NULL);
+}
+
+static inline void stop()
+{
+    struct timeval tm2;
+    gettimeofday(&tm2, NULL);
+
+    unsigned long long t = 1000 * (tm2.tv_sec - tm1.tv_sec) + (tm2.tv_usec - tm1.tv_usec) / 1000;
+    printf("%llu ms\n", t);
+}
+*/
 
 /*
 * Provides package search with extended pattern
 * expected_result parameter sets expected output
 * Set 0 for PID or 1 for TID
 */
-static GSList *_extended_search (sqlite3* db, const gchar *pattern, const gint expected_result)
+static GArray *_extended_search (sqlite3* db, const gchar *pattern, const gint expected_result)
 {
-    GSList *tids = NULL;
-    //split pattern into subpatterns - minimalising data processed
-    GSList *subpatterns = _get_subpatterns(pattern);
-    gchar *best_match = NULL;
-    gint best_match_count = 0;
-    while(subpatterns)
-    {
-        const gchar *subpattern = subpatterns->data;
-        subpatterns = subpatterns->next;
-
-        //find best subpattern
-        sqlite3_stmt *res;
-        const gchar *sql = FIND_PIDS_BY_NAME;
-        DB_PREP( db, sql, res);
-        DB_BIND(res, "@pattern", subpattern);
-        gint pid;
-        gint matches = 0;
-        while ((pid = DB_FIND_MULTI(res)))
-        {
-            matches++;
-        }
-        if (matches > 0)
-        {
-            if(best_match_count == 0 || matches < best_match_count)
-            {
-                best_match_count = matches;
-                best_match = (gchar *)subpattern;
-            }
-        }
-    }
+    GArray *tids = g_array_new(0, 0, sizeof(gint));
     sqlite3_stmt *res;
     const gchar *sql = SEARCH_PATTERN;
     DB_PREP( db, sql, res);
     //lot of patterns...
-    DB_BIND(res, "@sub", best_match);
     DB_BIND(res, "@pat", pattern);
     DB_BIND(res, "@pat", pattern);
     DB_BIND(res, "@pat", pattern);
@@ -765,21 +722,18 @@ static GSList *_extended_search (sqlite3* db, const gchar *pattern, const gint e
     gint pid = DB_FIND(res);
     if (!expected_result)
     {
-        tids = g_slist_append (tids, GINT_TO_POINTER(pid));
-        return tids;
-    };
+        //g_array_append_val (tids, pid);
+        return GINT_TO_POINTER(pid);
+    }
+    gint pdid;
     if(pid)
     {
-        GSList *pdids = _all_pdid_for_pid(db, pid);
-        while(pdids)
+        GArray *pdids = _all_pdid_for_pid(db, pid);
+        for(guint i = 0; i < pdids->len; i++)
         {
-            gint pdid = GPOINTER_TO_INT(pdids->data);
-            pdids = pdids->next;
+            pdid = g_array_index(pdids, gint, i);
             GArray *tids_for_pdid = _tids_from_pdid(db, pdid);
-            for (guint i = 0; i< tids_for_pdid->len; i++)
-            {
-                tids = g_slist_append (tids, GINT_TO_POINTER(g_array_index(tids_for_pdid, gint, i)));
-            }
+            tids = g_array_append_vals (tids, tids_for_pdid->data, tids_for_pdid->len);
         }
     }
     return tids;
@@ -790,36 +744,75 @@ static GSList *_extended_search (sqlite3* db, const gchar *pattern, const gint e
 * @patterns: (element-type utf8) (transfer container): list of constants
 * Returns: (element-type gint32) (transfer container): list of constants
 */
-GSList *hif_swdb_search (   HifSwdb *self,
+GArray *hif_swdb_search (   HifSwdb *self,
                             const GSList *patterns)
 {
     if (hif_swdb_open(self))
         return NULL;
     DB_TRANS_BEGIN
 
-    GSList *tids = NULL;
+    GArray *tids = g_array_new(0, 0, sizeof(gint));
     while(patterns)
     {
         const gchar *pattern = patterns->data;
         patterns = patterns->next;
 
         //try simple search
-        GSList *simple =  _simple_search(self->db, pattern);
-        if(simple)
+        GArray *simple =  _simple_search(self->db, pattern);
+        if(simple->len)
         {
-            tids = g_slist_concat(tids,simple);
+            tids = g_array_append_vals(tids, simple->data, simple->len);
             continue;
         }
         //need for extended search
-        GSList *extended = _extended_search(self->db, pattern, 1);
+        GArray *extended = _extended_search(self->db, pattern, 1);
         if(extended)
         {
-            tids = g_slist_concat(tids, extended);
+            tids = g_array_append_vals(tids, extended->data, extended->len);
         }
     }
     DB_TRANS_END
     hif_swdb_close(self);
     return tids;
+}
+
+/**
+* hif_swdb_checksums_by_patterns:
+* @patterns: (element-type utf8) (transfer container): list of constants
+* Returns: (element-type utf8) (transfer container): list of constants
+*/
+GPtrArray * hif_swdb_checksums_by_patterns( HifSwdb *self,
+                                            GPtrArray *patterns)
+{
+    if (hif_swdb_open(self))
+        return NULL;
+    gint  pid;
+    gchar *buff1;
+    gchar *buff2;
+    GPtrArray *checksums = g_ptr_array_new();
+    const gchar *sql = S_CHECKSUMS_BY_PID;
+    for(guint i = 0; i < patterns->len; i++)
+    {
+        pid = GPOINTER_TO_INT(_extended_search(self->db, (const gchar *)g_ptr_array_index(patterns, i), 0));
+        if(!pid)
+            continue;
+        sqlite3_stmt *res;
+        DB_PREP(self->db, sql, res);
+        DB_BIND_INT(res, "@pid", pid);
+        if(sqlite3_step(res) == SQLITE_ROW)
+        {
+            buff1 = (gchar *)sqlite3_column_text(res, 0);
+            buff2 = (gchar *)sqlite3_column_text(res, 1);
+            if(buff1 && buff2)
+            {
+                g_ptr_array_add(checksums, (gpointer)g_strdup(buff2)); //type
+                g_ptr_array_add(checksums, (gpointer)g_strdup(buff1)); //data
+            }
+        }
+        sqlite3_finalize(res);
+    }
+    hif_swdb_close(self);
+    return checksums;
 }
 
 /******************************* GROUP PERSISTOR *******************************/
@@ -1415,6 +1408,26 @@ static const gchar* _repo_by_rid(   sqlite3 *db,
     return DB_FIND_STR(res);
 }
 
+const gchar *hif_swdb_repo_by_pattern (     HifSwdb *self,
+                                            const gchar *pattern)
+{
+    if (hif_swdb_open(self))
+    	return NULL;
+    gint pid = GPOINTER_TO_INT(_extended_search(self->db, pattern, 0));
+    if(!pid)
+    {
+        hif_swdb_close(self);
+        return "unknown";
+    }
+    sqlite3_stmt *res;
+    const gchar *sql = S_REPO_FROM_PID2;
+    DB_PREP(self->db, sql, res);
+    DB_BIND_INT(res, "@pid", pid);
+    const gchar *r_name = DB_FIND_STR(res);
+    hif_swdb_close(self);
+    return r_name;
+}
+
 /**************************** PACKAGE PERSISTOR ******************************/
 
 static gint _package_insert(HifSwdb *self, HifSwdbPkg *package)
@@ -1563,10 +1576,10 @@ static gint _pdid_from_pid (	sqlite3 *db,
     return sqlite3_last_insert_rowid(db);
 }
 
-static GSList* _all_pdid_for_pid (	sqlite3 *db,
+static GArray* _all_pdid_for_pid (	sqlite3 *db,
 								    const gint pid )
 {
-    GSList *pdids = NULL;
+    GArray *pdids = g_array_new(0,0,sizeof(gint));
     sqlite3_stmt *res;
   	const gchar *sql = FIND_ALL_PDID_FOR_PID;
   	DB_PREP(db, sql, res);
@@ -1574,7 +1587,7 @@ static GSList* _all_pdid_for_pid (	sqlite3 *db,
     gint pdid;
     while( (pdid = DB_FIND_MULTI(res)))
     {
-        pdids = g_slist_append (pdids, GINT_TO_POINTER(pdid));
+        g_array_append_val(pdids, pdid);
     }
     return pdids;
 }
@@ -1607,10 +1620,10 @@ static GArray * _tids_from_pdid (	sqlite3 *db,
   	return tids;
 }
 
-static GSList *_pids_by_tid (    sqlite3 *db,
+static GArray *_pids_by_tid (    sqlite3 *db,
                                 const gint tid)
 {
-    GSList *pids = NULL;
+    GArray *pids = g_array_new(0, 0, sizeof(gint));
     sqlite3_stmt *res;
     const gchar* sql = PID_BY_TID;
     DB_PREP(db, sql, res);
@@ -1618,7 +1631,7 @@ static GSList *_pids_by_tid (    sqlite3 *db,
     gint pid;
     while ( (pid = DB_FIND_MULTI(res)))
     {
-        pids = g_slist_append(pids, GINT_TO_POINTER(pid));
+        g_array_append_val(pids, pid);
     }
     return pids;
 }
@@ -1712,6 +1725,21 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
     return NULL;
 }
 
+const gchar *hif_swdb_attr_by_pattern (   HifSwdb *self,
+                                            const gchar *attr,
+                                            const gchar *pattern)
+{
+    if (hif_swdb_open(self))
+    	return NULL;
+    gint pid = GPOINTER_TO_INT(_extended_search(self->db, pattern, 0));
+    if(!pid)
+    {
+        hif_swdb_close(self);
+        return NULL;
+    }
+    return hif_swdb_get_pkg_attr(self, pid, attr);
+}
+
 static void _resolve_package_state  (   HifSwdb *self,
                                         HifSwdbPkg *pkg)
 {
@@ -1798,13 +1826,12 @@ GPtrArray *hif_swdb_get_packages_by_tid(   HifSwdb *self,
     DB_TRANS_BEGIN
 
     GPtrArray *node = g_ptr_array_new();
-    GSList *pids = _pids_by_tid(self->db, tid);
+    GArray *pids = _pids_by_tid(self->db, tid);
     gint pid;
     HifSwdbPkg *pkg;
-    while (pids)
+    for(guint i = 0; i < pids->len ;i++)
     {
-        pid = GPOINTER_TO_INT(pids->data);
-        pids = pids->next;
+        pid = g_array_index(pids, gint, i);
         pkg = _get_package_by_pid(self->db, pid);
         if(pkg)
         {
@@ -1871,8 +1898,7 @@ HifSwdbPkg *hif_swdb_package_by_pattern (   HifSwdb *self,
 {
     if (hif_swdb_open(self))
         return NULL;
-    GSList *node = _extended_search(self->db, pattern, 0);
-    gint pid = GPOINTER_TO_INT(node->data);
+    gint pid = GPOINTER_TO_INT(_extended_search(self->db, pattern, 0));
     if (!pid)
     {
         hif_swdb_close(self);
@@ -1892,8 +1918,7 @@ HifSwdbPkgData *hif_swdb_package_data_by_pattern (  HifSwdb *self,
 {
     if (hif_swdb_open(self))
         return NULL;
-    GSList *node = _extended_search(self->db, pattern, 0);
-    gint pid = GPOINTER_TO_INT(node->data);
+    gint pid = GPOINTER_TO_INT(_extended_search(self->db, pattern, 0));
     if (!pid)
     {
         hif_swdb_close(self);
@@ -1902,6 +1927,50 @@ HifSwdbPkgData *hif_swdb_package_data_by_pattern (  HifSwdb *self,
     HifSwdbPkgData *pkgdata = _get_package_data_by_pid(self->db, pid);
     hif_swdb_close(self);
     return pkgdata;
+}
+
+static const gint _mark_pkg_as (   sqlite3 *db,
+                            const gint pdid,
+                            gint mark)
+{
+    sqlite3_stmt *res;
+    const gchar *sql = U_REASON_BY_PDID;
+    DB_PREP(db, sql, res);
+    DB_BIND_INT(res, "@reason", mark);
+    DB_BIND_INT(res, "@pdid", pdid);
+    DB_STEP(res);
+    return 0;
+}
+
+const gint hif_swdb_mark_user_installed (   HifSwdb *self,
+                                            const gchar *pattern,
+                                            gboolean user_installed)
+{
+    if (hif_swdb_open(self))
+        return 1;
+    DB_TRANS_BEGIN
+    gint pid = GPOINTER_TO_INT(_extended_search(self->db, pattern, 0));
+    if (!pid)
+    {
+        hif_swdb_close(self);
+        return 1;
+    }
+    const gint pdid = _pdid_from_pid(self->db, pid);
+    gint rc = 1;
+    gint reason_id;
+    if(user_installed)
+    {
+        reason_id = hif_swdb_get_reason_type( self, "user");
+        rc = _mark_pkg_as(self->db, pdid, reason_id);
+    }
+    else
+    {
+        reason_id = hif_swdb_get_reason_type( self, "dep");
+        rc = _mark_pkg_as(self->db, pdid, reason_id);
+    }
+    DB_TRANS_END
+    hif_swdb_close(self);
+    return rc;
 }
 
 /**************************** RPM DATA PERSISTOR *****************************/
@@ -2201,11 +2270,11 @@ GPtrArray *hif_swdb_trans_get_old_trans_data(HifSwdbTrans *self)
 
 /**
 * hif_swdb_trans_old:
-* @tids: (element-type void)(transfer container): list of constants
+* @tids: (element-type gint32)(transfer container): list of constants
 * Returns: (element-type HifSwdbTrans)(array)(transfer container): list of #HifSwdbTrans
 */
 GPtrArray *hif_swdb_trans_old(	HifSwdb *self,
-                                GPtrArray *tids,
+                                GArray *tids,
 								gint limit,
 								const gboolean complete_only)
 {
@@ -2238,7 +2307,7 @@ GPtrArray *hif_swdb_trans_old(	HifSwdb *self,
             match = 0;
             for(guint i = 0; i < tids->len; ++i)
             {
-                if( tid == GPOINTER_TO_INT(g_ptr_array_index(tids,i)))
+                if( tid == g_array_index(tids,gint,i))
                 {
                     match = 1;
                     break;
