@@ -700,7 +700,7 @@ int
 hy_goal_downgrade_to(HyGoal goal, DnfPackage *new_pkg)
 {
     goal->actions |= DNF_DOWNGRADE;
-    return hy_goal_install(goal, new_pkg);
+    return hy_goal_install_optional(goal, new_pkg);
 }
 
 int
