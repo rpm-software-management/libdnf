@@ -103,7 +103,12 @@
 #define S_REPO_FROM_PID "SELECT name, PD_ID FROM PACKAGE_DATA join REPO using(R_ID) where P_ID=@pid"
 #define S_REPO_FROM_PID2 "SELECT name FROM PACKAGE_DATA join REPO using(R_ID) where P_ID=@pid"
 #define S_RELEASEVER_FROM_PDID "SELECT releasever from TRANS_DATA join TRANS using(T_ID) where PD_ID=@pdid"
-#define S_CHECKSUMS_BY_PID "SELECT checksum_data, checksum_type from PACKAGE where P_ID=@pid"
+#define S_CHECKSUMS_BY_NVRA "SELECT name,version,release,arch,checksum_data, checksum_type,"\
+  "name || '-' || version || '-' || release || '.' || arch AS sql_nameVerRelArch "\
+  "FROM PACKAGE WHERE sql_nameVerRelArch LIKE @nvra"
+#define S_PID_BY_NVRA "SELECT P_ID,name,version,release,arch,"\
+  "name || '-' || version || '-' || release || '.' || arch AS sql_nameVerRelArch "\
+  "FROM PACKAGE WHERE sql_nameVerRelArch LIKE @nvra"
 
 #define U_GROUP_COMMIT "UPDATE GROUPS SET is_installed=1 where name_id=@id"
 

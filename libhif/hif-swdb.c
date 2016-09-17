@@ -25,7 +25,6 @@
             -   Get rid of yumdb (yumdb.get_package calls etc)
             -   Think about GOM
  */
-//#include <sys/time.h>
 
 #define default_path "/var/lib/dnf/history/swdb.sqlite"
 
@@ -684,6 +683,7 @@ static GArray *_simple_search(sqlite3* db, const gchar * pattern)
 }
 
 /* XXX Garbage just for testing
+#include <sys/time.h>
 static struct timeval tm1;
 
 static inline void start()
@@ -703,10 +703,8 @@ static inline void stop()
 
 /*
 * Provides package search with extended pattern
-* expected_result parameter sets expected output
-* Set 0 for PID or 1 for TID
 */
-static GArray *_extended_search (sqlite3* db, const gchar *pattern, const gint expected_result)
+static GArray *_extended_search (sqlite3* db, const gchar *pattern)
 {
     GArray *tids = g_array_new(0, 0, sizeof(gint));
     sqlite3_stmt *res;
@@ -720,11 +718,6 @@ static GArray *_extended_search (sqlite3* db, const gchar *pattern, const gint e
     DB_BIND(res, "@pat", pattern);
     DB_BIND(res, "@pat", pattern);
     gint pid = DB_FIND(res);
-    if (!expected_result)
-    {
-        //g_array_append_val (tids, pid);
-        return GINT_TO_POINTER(pid);
-    }
     gint pdid;
     if(pid)
     {
@@ -765,7 +758,7 @@ GArray *hif_swdb_search (   HifSwdb *self,
             continue;
         }
         //need for extended search
-        GArray *extended = _extended_search(self->db, pattern, 1);
+        GArray *extended = _extended_search(self->db, pattern);
         if(extended)
         {
             tids = g_array_append_vals(tids, extended->data, extended->len);
@@ -775,34 +768,43 @@ GArray *hif_swdb_search (   HifSwdb *self,
     hif_swdb_close(self);
     return tids;
 }
+static gint _pid_by_nvra    (   sqlite3 *db,
+                                const gchar *nvra)
+{
+    gint pid = 0;
+    const gchar *sql = S_PID_BY_NVRA;
+    sqlite3_stmt *res;
+    DB_PREP(db, sql, res);
+    DB_BIND(res, "@nvra", nvra);
+    pid = DB_FIND(res);
+    return pid;
+}
 
 /**
-* hif_swdb_checksums_by_patterns:
-* @patterns: (element-type utf8) (transfer container): list of constants
+* hif_swdb_checksums_by_nvras:
+* @nvras: (element-type utf8) (transfer container): list of constants
 * Returns: (element-type utf8) (transfer container): list of constants
 */
-GPtrArray * hif_swdb_checksums_by_patterns( HifSwdb *self,
-                                            GPtrArray *patterns)
+GPtrArray * hif_swdb_checksums_by_nvras(    HifSwdb *self,
+                                            GPtrArray *nvras)
 {
     if (hif_swdb_open(self))
         return NULL;
-    gint  pid;
     gchar *buff1;
     gchar *buff2;
+    gchar *nvra;
     GPtrArray *checksums = g_ptr_array_new();
-    const gchar *sql = S_CHECKSUMS_BY_PID;
-    for(guint i = 0; i < patterns->len; i++)
+    const gchar *sql = S_CHECKSUMS_BY_NVRA;
+    for(guint i = 0; i < nvras->len; i++)
     {
-        pid = GPOINTER_TO_INT(_extended_search(self->db, (const gchar *)g_ptr_array_index(patterns, i), 0));
-        if(!pid)
-            continue;
+        nvra = (gchar *)g_ptr_array_index(nvras, i);
         sqlite3_stmt *res;
         DB_PREP(self->db, sql, res);
-        DB_BIND_INT(res, "@pid", pid);
+        DB_BIND(res, "@nvra", nvra);
         if(sqlite3_step(res) == SQLITE_ROW)
         {
-            buff1 = (gchar *)sqlite3_column_text(res, 0);
-            buff2 = (gchar *)sqlite3_column_text(res, 1);
+            buff1 = (gchar *)sqlite3_column_text(res, 4);
+            buff2 = (gchar *)sqlite3_column_text(res, 5);
             if(buff1 && buff2)
             {
                 g_ptr_array_add(checksums, (gpointer)g_strdup(buff2)); //type
@@ -1413,7 +1415,7 @@ const gchar *hif_swdb_repo_by_pattern (     HifSwdb *self,
 {
     if (hif_swdb_open(self))
     	return NULL;
-    gint pid = GPOINTER_TO_INT(_extended_search(self->db, pattern, 0));
+    gint pid = _pid_by_nvra(self->db, pattern);
     if(!pid)
     {
         hif_swdb_close(self);
@@ -1731,7 +1733,7 @@ const gchar *hif_swdb_attr_by_pattern (   HifSwdb *self,
 {
     if (hif_swdb_open(self))
     	return NULL;
-    gint pid = GPOINTER_TO_INT(_extended_search(self->db, pattern, 0));
+    gint pid = _pid_by_nvra(self->db, pattern);
     if(!pid)
     {
         hif_swdb_close(self);
@@ -1898,7 +1900,7 @@ HifSwdbPkg *hif_swdb_package_by_pattern (   HifSwdb *self,
 {
     if (hif_swdb_open(self))
         return NULL;
-    gint pid = GPOINTER_TO_INT(_extended_search(self->db, pattern, 0));
+    gint pid = _pid_by_nvra(self->db, pattern);
     if (!pid)
     {
         hif_swdb_close(self);
@@ -1918,7 +1920,7 @@ HifSwdbPkgData *hif_swdb_package_data_by_pattern (  HifSwdb *self,
 {
     if (hif_swdb_open(self))
         return NULL;
-    gint pid = GPOINTER_TO_INT(_extended_search(self->db, pattern, 0));
+    gint pid = _pid_by_nvra(self->db, pattern);
     if (!pid)
     {
         hif_swdb_close(self);
@@ -1942,14 +1944,14 @@ static const gint _mark_pkg_as (   sqlite3 *db,
     return 0;
 }
 
-const gint hif_swdb_mark_user_installed (   HifSwdb *self,
-                                            const gchar *pattern,
-                                            gboolean user_installed)
+const gint hif_swdb_set_reason (    HifSwdb *self,
+                                    const gchar *nvra,
+                                    const gchar *reason)
 {
     if (hif_swdb_open(self))
         return 1;
     DB_TRANS_BEGIN
-    gint pid = GPOINTER_TO_INT(_extended_search(self->db, pattern, 0));
+    gint pid = _pid_by_nvra(self->db, nvra);
     if (!pid)
     {
         hif_swdb_close(self);
@@ -1958,18 +1960,26 @@ const gint hif_swdb_mark_user_installed (   HifSwdb *self,
     const gint pdid = _pdid_from_pid(self->db, pid);
     gint rc = 1;
     gint reason_id;
+    reason_id = hif_swdb_get_reason_type( self, reason);
+    rc = _mark_pkg_as(self->db, pdid, reason_id);
+    DB_TRANS_END
+    hif_swdb_close(self);
+    return rc;
+}
+
+const gint hif_swdb_mark_user_installed (   HifSwdb *self,
+                                            const gchar *pattern,
+                                            gboolean user_installed)
+{
+    gint rc;
     if(user_installed)
     {
-        reason_id = hif_swdb_get_reason_type( self, "user");
-        rc = _mark_pkg_as(self->db, pdid, reason_id);
+        rc = hif_swdb_set_reason(self, pattern, "user");
     }
     else
     {
-        reason_id = hif_swdb_get_reason_type( self, "dep");
-        rc = _mark_pkg_as(self->db, pdid, reason_id);
+        rc = hif_swdb_set_reason(self, pattern, "dep");
     }
-    DB_TRANS_END
-    hif_swdb_close(self);
     return rc;
 }
 
