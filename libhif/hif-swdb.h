@@ -229,8 +229,12 @@ const gint hif_swdb_mark_user_installed (   HifSwdb *self,
                                             const gchar *pattern,
                                             gboolean user_installed);
 
-GPtrArray * hif_swdb_checksums_by_patterns( HifSwdb *self,
-                                            GPtrArray *patterns);
+GPtrArray * hif_swdb_checksums_by_nvras(    HifSwdb *self,
+                                            GPtrArray *nvras);
+
+const gint hif_swdb_set_reason (    HifSwdb *self,
+                                    const gchar *nvra,
+                                    const gchar *reason);
 
 G_END_DECLS
 
