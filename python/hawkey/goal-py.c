@@ -258,6 +258,7 @@ erase(_GoalObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 install(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
+    printf("hy_goal_install_optionalstardsdsdddd\n");
     DnfPackage *pkg = NULL;
     HySelector sltr = NULL;
     int flags = 0;
@@ -267,14 +268,18 @@ install(_GoalObject *self, PyObject *args, PyObject *kwds)
 
     if (flags & HY_WEAK_SOLV) {
         if (pkg) {
+            printf("hy_goal_install_optional\n");
             hy_goal_install_optional(self->goal, pkg);
         } else {
+            printf("hy_goal_install_selector_optional\n");
             hy_goal_install_selector_optional(self->goal, sltr, &error);
         }
     } else {
         if (pkg) {
+            printf("hy_goal_install\n");
             hy_goal_install(self->goal, pkg);
         } else {
+            printf("hy_goal_install_selector\n");
             hy_goal_install_selector(self->goal, sltr, &error);
         }
     }
