@@ -727,6 +727,7 @@ dnf_context_get_installonly_pkgs(DnfContext *context)
 {
     static const gchar *installonly_pkgs[] = {
         "kernel",
+        "kernel-PAE",
         "installonlypkg(kernel)",
         "installonlypkg(kernel-module)",
         "installonlypkg(vm)",
