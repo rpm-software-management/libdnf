@@ -32,6 +32,9 @@ def CONSTRUCT_NAME(row):
 def PACKAGE_DATA_INSERT(cursor,data):
     cursor.execute('INSERT INTO PACKAGE_DATA VALUES (null,?,?,?,?,?,?,?,?)', data)
 
+def RPM_DATA_INSERT(cursor,data):
+    cursor.execute('INSERT INTO RPM_DATA VALUES (null,?,?,?,?,?,?,?,?,?,?,?)', data)
+
 def TRANS_DATA_INSERT(cursor,data):
     cursor.execute('INSERT INTO TRANS_DATA VALUES (null,?,?,?,?,?,?,?)', data)
 
@@ -186,7 +189,7 @@ def GET_YUMDB_PACKAGES(cursor):
 #input argument parser
 parser = argparse.ArgumentParser(description="Unified DNF software database (swdb) migration tool")
 parser.add_argument('-i', '--input', help='DNF yumDB and history folder, default: /var/lib/dnf/', default='/var/lib/dnf/')
-parser.add_argument('-o', '--output', help='output SQLiteDB file, default: /var/lib/dnf/swdb.sqlite', default="/var/lib/dnf/swdb.sqlite")
+parser.add_argument('-o', '--output', help='output SQLiteDB file, default: /var/lib/dnf/history/swdb.sqlite', default="/var/lib/dnf/history/swdb.sqlite")
 parser.add_argument('-f', '--force', help='Force overwrite', action='store_true', default=False)
 args = parser.parse_args()
 no = set(['no','n',''])
@@ -253,6 +256,7 @@ TRANS_DATA = ['T_ID','PD_ID','G_ID','done','ORIGINAL_TD_ID','reason','state']
 TRANS = ['T_ID','beg_timestamp','end_timestamp','RPMDB_version','cmdline','loginuid','releasever','return_code']
 GROUPS = ['name_id','name','ui_name','is_installed','pkg_types','grp_types']
 ENVIRONMENTS = ['name_id','name','ui_name','pkg_types','grp_types']
+RPM_DATA = ["P_ID","buildtime","buildhost","license","packager","size","sourcerpm","url","vendor","committer","committime"]
 
 ############################# TABLE INIT ######################################
 
@@ -311,6 +315,10 @@ cursor.execute('''CREATE TABLE ENVIRONMENTS (E_ID INTEGER PRIMARY KEY, name_id t
 #create table ENVIRONMENTS_EXCLUDE
 cursor.execute('''CREATE TABLE ENVIRONMENTS_EXCLUDE (EE_ID INTEGER PRIMARY KEY, E_ID integer, name text)''')
 
+#create table RPM_DATA
+cursor.execute('''CREATE TABLE RPM_DATA (RPM_ID INTEGER PRIMARY KEY, P_ID INTEGER, buildtime TEXT, buildhost TEXT, license TEXT, packager TEXT, size TEXT,
+    sourcerpm TEXT, url TEXT, vendor TEXT, committer TEXT, committime TEXT)''')
+
 
 #----------------------------- DB CONSTRUCTION -------------------------------#
 
@@ -362,6 +370,27 @@ tmp_row = cursor.fetchall()
 for row in tmp_row:
     BIND_PID_PDID(cursor,int(row[0]))
 #----------------------------------------#
+
+#save changes
+database.commit()
+
+#construction of RPM_DATA according to pkg_rpmdb
+actualPID = 0
+record_RPM = [''] * len(RPM_DATA)
+h_cursor.execute('SELECT * FROM pkg_rpmdb')
+#for each row in pkg_rpmdb
+for row in h_cursor:
+    newPID = row[0]
+    if actualPID != newPID:
+        if actualPID != 0:
+            record_RPM[RPM_DATA.index('P_ID')] = actualPID
+            RPM_DATA_INSERT(cursor,record_RPM) #insert new record into PACKAGE_DATA
+        actualPID = newPID
+        record_RPM = [''] * len(RPM_DATA)
+    if row[1] in RPM_DATA:
+        record_RPM[RPM_DATA.index(row[1])] = row[2] #collect data for record from pkg_yumdb
+record_RPM[RPM_DATA.index('P_ID')] = actualPID
+RPM_DATA_INSERT(cursor,record_RPM) #insert last record
 
 #save changes
 database.commit()
@@ -486,45 +515,46 @@ GET_YUMDB_PACKAGES(cursor)
 print('Transforming groups')
 #construction of GROUPS
 
-with open(groups_path) as groups_file:
-    data = json.load(groups_file)
-    for key in data:
-        if key == 'GROUPS':
-            for value in data[key]:
-                record_G = [''] * len(GROUPS)
-                record_G[GROUPS.index('name_id')] = value
-                if 'name' in data[key][value]:
-                    record_G[GROUPS.index('name')] = data[key][value]['name']
-                record_G[GROUPS.index('pkg_types')] = data[key][value]['pkg_types']
-                record_G[GROUPS.index('grp_types')] = data[key][value]['grp_types']
-                record_G[GROUPS.index('is_installed')] = 1
-                if 'ui_name' in data[key][value]:
-                    record_G[GROUPS.index('ui_name')] = data[key][value]['ui_name']
-                cursor.execute('INSERT INTO GROUPS VALUES (null,?,?,?,?,?,?)',(record_G))
-                cursor.execute('SELECT last_insert_rowid()')
-                tmp_gid = cursor.fetchone()[0]
-                for package in data[key][value]['full_list']:
-                    ADD_GROUPS_PACKAGE(cursor,tmp_gid,package)
-                for package in data[key][value]['pkg_exclude']:
-                    ADD_GROUPS_EXCLUDE(cursor,tmp_gid,package)
-    for key in data:
-        if key == 'ENVIRONMENTS':
-            for value in data[key]:
-                record_E = [''] * len(ENVIRONMENTS)
-                record_E[GROUPS.index('name_id')] = value
-                if 'name' in data[key][value]:
-                    record_G[GROUPS.index('name')] = data[key][value]['name']
-                record_E[ENVIRONMENTS.index('pkg_types')] = data[key][value]['pkg_types']
-                record_E[ENVIRONMENTS.index('grp_types')] = data[key][value]['grp_types']
-                if 'ui_name' in data[key][value]:
-                    record_E[ENVIRONMENTS.index('ui_name')] = data[key][value]['ui_name']
-                cursor.execute('INSERT INTO ENVIRONMENTS VALUES (null,?,?,?,?,?)',(record_E))
-                cursor.execute('SELECT last_insert_rowid()')
-                tmp_eid = cursor.fetchone()[0]
-                for package in data[key][value]['full_list']:
-                    BIND_ENV_GROUP(cursor,tmp_eid,package)
-                for package in data[key][value]['pkg_exclude']:
-                    ADD_ENV_EXCLUDE(cursor,tmp_eid,package)
+if os.path.isfile(groups_path):
+    with open(groups_path) as groups_file:
+        data = json.load(groups_file)
+        for key in data:
+            if key == 'GROUPS':
+                for value in data[key]:
+                    record_G = [''] * len(GROUPS)
+                    record_G[GROUPS.index('name_id')] = value
+                    if 'name' in data[key][value]:
+                        record_G[GROUPS.index('name')] = data[key][value]['name']
+                    record_G[GROUPS.index('pkg_types')] = data[key][value]['pkg_types']
+                    record_G[GROUPS.index('grp_types')] = data[key][value]['grp_types']
+                    record_G[GROUPS.index('is_installed')] = 1
+                    if 'ui_name' in data[key][value]:
+                        record_G[GROUPS.index('ui_name')] = data[key][value]['ui_name']
+                    cursor.execute('INSERT INTO GROUPS VALUES (null,?,?,?,?,?,?)',(record_G))
+                    cursor.execute('SELECT last_insert_rowid()')
+                    tmp_gid = cursor.fetchone()[0]
+                    for package in data[key][value]['full_list']:
+                        ADD_GROUPS_PACKAGE(cursor,tmp_gid,package)
+                    for package in data[key][value]['pkg_exclude']:
+                        ADD_GROUPS_EXCLUDE(cursor,tmp_gid,package)
+        for key in data:
+            if key == 'ENVIRONMENTS':
+                for value in data[key]:
+                    record_E = [''] * len(ENVIRONMENTS)
+                    record_E[GROUPS.index('name_id')] = value
+                    if 'name' in data[key][value]:
+                        record_G[GROUPS.index('name')] = data[key][value]['name']
+                    record_E[ENVIRONMENTS.index('pkg_types')] = data[key][value]['pkg_types']
+                    record_E[ENVIRONMENTS.index('grp_types')] = data[key][value]['grp_types']
+                    if 'ui_name' in data[key][value]:
+                        record_E[ENVIRONMENTS.index('ui_name')] = data[key][value]['ui_name']
+                    cursor.execute('INSERT INTO ENVIRONMENTS VALUES (null,?,?,?,?,?)',(record_E))
+                    cursor.execute('SELECT last_insert_rowid()')
+                    tmp_eid = cursor.fetchone()[0]
+                    for package in data[key][value]['full_list']:
+                        BIND_ENV_GROUP(cursor,tmp_eid,package)
+                    for package in data[key][value]['pkg_exclude']:
+                        ADD_ENV_EXCLUDE(cursor,tmp_eid,package)
 
 #NOTE:ui_name necessary for TRANS_DATA
 #construction of TRANS_GROUP_DATA from GROUPS
