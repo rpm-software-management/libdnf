@@ -803,8 +803,8 @@ GPtrArray * hif_swdb_checksums_by_nvras(    HifSwdb *self,
         DB_BIND(res, "@nvra", nvra);
         if(sqlite3_step(res) == SQLITE_ROW)
         {
-            buff1 = (gchar *)sqlite3_column_text(res, 4);
-            buff2 = (gchar *)sqlite3_column_text(res, 5);
+            buff1 = (gchar *)sqlite3_column_text(res, 0);
+            buff2 = (gchar *)sqlite3_column_text(res, 1);
             if(buff1 && buff2)
             {
                 g_ptr_array_add(checksums, (gpointer)g_strdup(buff2)); //type
@@ -1428,6 +1428,31 @@ const gchar *hif_swdb_repo_by_pattern (     HifSwdb *self,
     const gchar *r_name = DB_FIND_STR(res);
     hif_swdb_close(self);
     return r_name;
+}
+
+const gint hif_swdb_set_repo (      HifSwdb *self,
+                                    const gchar *nvra,
+                                    const gchar *repo)
+{
+    if (hif_swdb_open(self))
+        return 1;
+    DB_TRANS_BEGIN
+    gint pid = _pid_by_nvra(self->db, nvra);
+    if (!pid)
+    {
+        hif_swdb_close(self);
+        return 1;
+    }
+    const gint rid = _bind_repo_by_name(self->db, repo);
+    sqlite3_stmt *res;
+    const gchar *sql = U_REPO_BY_PID;
+    DB_PREP(self->db, sql, res);
+    DB_BIND_INT(res, "@rid", rid);
+    DB_BIND_INT(res, "@pid", pid);
+    DB_STEP(res);
+    DB_TRANS_END
+    hif_swdb_close(self);
+    return 0;
 }
 
 /**************************** PACKAGE PERSISTOR ******************************/
@@ -2194,7 +2219,7 @@ static void _resolve_altered    (GPtrArray *trans)
     {
         HifSwdbTrans *las = (HifSwdbTrans *)g_ptr_array_index(trans, i);
         HifSwdbTrans *obj = (HifSwdbTrans *)g_ptr_array_index(trans, i+1);
-        //FIXME: this is probably wrong...
+        //FIXME: this is probably wrong... we need end_RPMDN_VERSION
         if(!g_strcmp0(las->rpmdb_version, obj->rpmdb_version)) //rpmdb_version changed
         {
             obj->altered_gt_rpmdb = 1;
@@ -2658,6 +2683,7 @@ gint hif_swdb_create_db (HifSwdb *self)
     failed += _db_exec (self->db, C_ENV, NULL);
     failed += _db_exec (self->db, C_ENV_EX, NULL);
     failed += _db_exec (self->db, C_RPM_DATA, NULL);
+    failed += _db_exec (self->db, C_INDEX_NVRA, NULL);
 
   	if (failed != 0)
     {
