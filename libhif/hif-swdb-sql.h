@@ -103,13 +103,8 @@
 #define S_REPO_FROM_PID "SELECT name, PD_ID FROM PACKAGE_DATA join REPO using(R_ID) where P_ID=@pid"
 #define S_REPO_FROM_PID2 "SELECT name FROM PACKAGE_DATA join REPO using(R_ID) where P_ID=@pid"
 #define S_RELEASEVER_FROM_PDID "SELECT releasever from TRANS_DATA join TRANS using(T_ID) where PD_ID=@pdid"
-#define S_CHECKSUMS_BY_NVRA "SELECT name,version,release,arch,checksum_data, checksum_type,"\
-  "name || '-' || version || '-' || release || '.' || arch AS sql_nameVerRelArch "\
-  "FROM PACKAGE WHERE sql_nameVerRelArch LIKE @nvra"
-#define S_PID_BY_NVRA "SELECT P_ID,name,version,release,arch,"\
-  "name || '-' || version || '-' || release || '.' || arch AS sql_nameVerRelArch "\
-  "FROM PACKAGE WHERE sql_nameVerRelArch LIKE @nvra"
-
+#define S_CHECKSUMS_BY_NVRA "SELECT checksum_data, checksum_type FROM PACKAGE WHERE name || '-' || version || '-' || release || '.' || arch=@nvra"
+#define S_PID_BY_NVRA "SELECT P_ID FROM PACKAGE WHERE name || '-' || version || '-' || release || '.' || arch=@nvra"
 #define U_GROUP_COMMIT "UPDATE GROUPS SET is_installed=1 where name_id=@id"
 
 #define U_GROUP "UPDATE GROUPS SET name=@name,ui_name=@ui_name,is_installed=@is_installed,pkg_types=@pkg_types,"\
@@ -118,6 +113,9 @@
 #define U_REASON_BY_PDID "UPDATE TRANS_DATA SET reason=@reason where PD_ID=@pdid"
 
 #define R_FULL_LIST_BY_ID "DELETE FROM GROUPS_PACKAGE WHERE G_ID=@gid"
+
+#define U_REPO_BY_PID "UPDATE PACKAGE_DATA SET R_ID=@rid where P_ID=@pid"
+
 //CREATION OF tables
 
 #define C_PKG_DATA 		"CREATE TABLE PACKAGE_DATA ( PD_ID integer PRIMARY KEY,"\
@@ -173,5 +171,6 @@
 #define C_RPM_DATA      "CREATE TABLE RPM_DATA (RPM_ID INTEGER PRIMARY KEY, P_ID INTEGER,"\
                         "buildtime TEXT, buildhost TEXT, license TEXT, packager TEXT, size TEXT,"\
                         "sourcerpm TEXT, url TEXT, vendor TEXT, committer TEXT, committime TEXT)"
+#define C_INDEX_NVRA    "create index nvra on PACKAGE(name || '-' || version || '-' || release || '.' || arch)"
 
 #endif

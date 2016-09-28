@@ -236,6 +236,10 @@ const gint hif_swdb_set_reason (    HifSwdb *self,
                                     const gchar *nvra,
                                     const gchar *reason);
 
+const gint hif_swdb_set_repo (      HifSwdb *self,
+                                    const gchar *nvra,
+                                    const gchar *repo);
+
 G_END_DECLS
 
 #endif
