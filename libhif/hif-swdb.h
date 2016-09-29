@@ -97,6 +97,7 @@ gint 	hif_swdb_trans_beg 	(	HifSwdb *self,
 gint 	hif_swdb_trans_end 	(	HifSwdb *self,
 							 	const gint tid,
 							 	const gchar *end_timestamp,
+                                const gchar *end_rpmdb_version,
 								const gint return_code);
 
 gint 	hif_swdb_log_package_data(	HifSwdb *self,
