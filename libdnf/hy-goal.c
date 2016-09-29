@@ -953,7 +953,7 @@ hy_goal_describe_problem(HyGoal goal, unsigned i)
  *
  * Caller is responsible for freeing the returned string list.
  */
-char **
+const char **
 hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
 {
     const char **problist = NULL;

@@ -99,7 +99,7 @@ int hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
 /* problems */
 int hy_goal_count_problems(HyGoal goal);
 char *hy_goal_describe_problem(HyGoal goal, unsigned i);
-char **hy_goal_describe_problem_rules(HyGoal goal, unsigned i);
+const char **hy_goal_describe_problem_rules(HyGoal goal, unsigned i);
 int hy_goal_log_decisions(HyGoal goal);
 gboolean hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error);
 
