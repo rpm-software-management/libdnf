@@ -1345,7 +1345,8 @@ START_TEST(test_goal_get_solution)
     fail_unless(hy_goal_run_flags(goal, DNF_FORCE_BEST));
     fail_unless(hy_goal_count_problems(goal) == 2);
 
-    gint expected_actions[2][3] = {{DNF_SOLUTION_ACTION_DO_NOT_INSTALL, 0, 0},
+    DnfSolutionAction expected_actions[2][3] = {
+                                   {DNF_SOLUTION_ACTION_DO_NOT_INSTALL, 0, 0},
                                    {DNF_SOLUTION_ACTION_ALLOW_REMOVE,
                                     DNF_SOLUTION_ACTION_DO_NOT_REMOVE,
                                     DNF_SOLUTION_ACTION_DO_NOT_INSTALL}};
