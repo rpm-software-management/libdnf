@@ -28,8 +28,8 @@
 #define I_ENV_GROUP "insert into ENVIRONMENTS_GROUPS values(null, @eid, @gid)"
 #define INSERT_PKG "insert into PACKAGE values(null,@name,@epoch,@version,@release,@arch,@cdata,@ctype,@type)"
 #define INSERT_OUTPUT "insert into OUTPUT values(null,@tid,@msg,@type)"
-#define INSERT_TRANS_BEG "insert into TRANS values(null,@beg,null,@rpmdbv,@cmdline,@loginuid,@releasever,null)"
-#define INSERT_TRANS_END "UPDATE TRANS SET end_timestamp=@end,return_code=@rc WHERE T_ID=@tid"
+#define INSERT_TRANS_BEG "insert into TRANS values(null,@beg,null,@rpmdbv,null,@cmdline,@loginuid,@releasever,null)"
+#define INSERT_TRANS_END "UPDATE TRANS SET end_timestamp=@end,end_RPMDB_version=@rpmdbv, return_code=@rc WHERE T_ID=@tid"
 #define INSERT_REPO "insert into REPO values(null,@name,null,null)"
 
 #define I_TRANS_GROUP_DATA  "insert into TRANS_GROUP_DATA values(null,@tid,@gid,@name_id,@name,@ui_name,"\
@@ -88,6 +88,7 @@
 #define S_TRANS_W_LIMIT "SELECT * from TRANS ORDER BY T_ID DESC LIMIT @limit"
 #define S_TRANS_COMP "SELECT * from TRANS WHERE end_timestamp is not null or end_timestamp!='' ORDER BY T_ID DESC"
 #define S_TRANS_COMP_W_LIMIT "SELECT * from TRANS WHERE end_timestamp is not null or end_timestamp!='' ORDER BY T_ID DESC LIMIT @limit"
+
 #define S_TRANS_DATA_BY_TID "SELECT * FROM TRANS_DATA WHERE T_ID=@tid"
 #define S_PACKAGE_STATE "select TD_ID,done,state from PACAKGE_DATA join TRANS_DATA using (PD_ID) where P_ID=@pid order by TD_ID desc limit 1"
 #define S_GID_BY_NAME_ID "Select G_ID from GROUPS where name_id LIKE @id"
@@ -135,7 +136,7 @@
                         "ORIGINAL_TD_ID integer, reason integer, state integer)"
 
 #define C_TRANS 		"CREATE TABLE TRANS (T_ID integer primary key, beg_timestamp text,"\
-                        "end_timestamp text, RPMDB_version text, cmdline text,"\
+                        "end_timestamp text, beg_RPMDB_version text, end_RPMDB_version ,cmdline text,"\
                         "loginuid text, releasever text, return_code integer)"
 
 #define C_OUTPUT		"CREATE TABLE OUTPUT (O_ID integer primary key,T_ID INTEGER,"\

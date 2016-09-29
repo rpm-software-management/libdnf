@@ -22,7 +22,6 @@
 
 /* TODO:    -   Fix fixmes
             -   Replace structs with Gobjects
-            -   Get rid of yumdb (yumdb.get_package calls etc)
             -   Think about GOM
  */
 
@@ -88,6 +87,7 @@ struct trans_end_t
 {
   	const gint tid;
    	const gchar *end_timestamp;
+    const gchar *end_rpmdb_version;
   	const gint return_code;
 };
 
@@ -301,7 +301,8 @@ hif_swdb_trans_init(HifSwdbTrans *self)
 HifSwdbTrans* hif_swdb_trans_new(	const gint tid,
                                     const gchar *beg_timestamp,
 									const gchar *end_timestamp,
-									const gchar *rpmdb_version,
+									const gchar *beg_rpmdb_version,
+                                    const gchar *end_rpmdb_version,
 									const gchar *cmdline,
 									const gchar *loginuid,
 									const gchar *releasever,
@@ -311,7 +312,8 @@ HifSwdbTrans* hif_swdb_trans_new(	const gint tid,
     trans->tid = tid;
     trans->beg_timestamp = g_strdup(beg_timestamp);
     trans->end_timestamp = g_strdup(end_timestamp);
-    trans->rpmdb_version = g_strdup(rpmdb_version);
+    trans->beg_rpmdb_version = g_strdup(beg_rpmdb_version);
+    trans->end_rpmdb_version = g_strdup(end_rpmdb_version);
     trans->cmdline = g_strdup(cmdline);
     trans->loginuid = g_strdup(loginuid);
     trans->releasever = g_strdup(releasever);
@@ -612,7 +614,8 @@ static const gchar *_table_by_attribute(const gchar *attr)
     else if (!g_strcmp0(attr,"origin_url")) table = 1;
     else if (!g_strcmp0(attr,"beg_timestamp")) table = 2;
     else if (!g_strcmp0(attr,"end_timestamp")) table = 2;
-    else if (!g_strcmp0(attr,"RPMDB_version")) table = 2;
+    else if (!g_strcmp0(attr,"beg_RPMDB_version")) table = 2;
+    else if (!g_strcmp0(attr,"end_RPMDB_version")) table = 2;
     else if (!g_strcmp0(attr,"cmdline")) table = 2;
     else if (!g_strcmp0(attr,"loginuid")) table = 2;
     else if (!g_strcmp0(attr,"releasever")) table = 2;
@@ -2181,6 +2184,7 @@ static gint _trans_end_insert(sqlite3 *db, struct trans_end_t *trans_end)
   	DB_PREP(db,sql,res);
   	DB_BIND_INT(res, "@tid", trans_end->tid );
 	DB_BIND(res, "@end", trans_end->end_timestamp );
+    DB_BIND(res, "@rpmdbv", trans_end->end_rpmdb_version);
   	DB_BIND_INT(res, "@rc", trans_end->return_code );
   	DB_STEP(res);
   	return 0;
@@ -2189,11 +2193,12 @@ static gint _trans_end_insert(sqlite3 *db, struct trans_end_t *trans_end)
 gint 	hif_swdb_trans_end 	(	HifSwdb *self,
 							 	const gint tid,
 							 	const gchar *end_timestamp,
+                                const gchar *end_rpmdb_version,
 								const gint return_code)
 {
 	if (hif_swdb_open(self))
     	return 1;
-  	struct trans_end_t trans_end = { tid, end_timestamp, return_code};
+  	struct trans_end_t trans_end = { tid, end_timestamp, end_rpmdb_version, return_code};
   	gint rc = _trans_end_insert(self->db, &trans_end);
   	hif_swdb_close(self);
   	return rc;
@@ -2219,11 +2224,19 @@ static void _resolve_altered    (GPtrArray *trans)
     {
         HifSwdbTrans *las = (HifSwdbTrans *)g_ptr_array_index(trans, i);
         HifSwdbTrans *obj = (HifSwdbTrans *)g_ptr_array_index(trans, i+1);
-        //FIXME: this is probably wrong... we need end_RPMDN_VERSION
-        if(!g_strcmp0(las->rpmdb_version, obj->rpmdb_version)) //rpmdb_version changed
+
+        if(!las->end_rpmdb_version || !obj->beg_rpmdb_version)
+            continue;
+
+        if ( g_strcmp0(obj->end_rpmdb_version, las->beg_rpmdb_version) )
         {
-            obj->altered_gt_rpmdb = 1;
-            las->altered_lt_rpmdb = 1;
+            obj->altered_lt_rpmdb = 1;
+            las->altered_gt_rpmdb = 1;
+        }
+        else
+        {
+            las->altered_gt_rpmdb = 0;
+            obj->altered_lt_rpmdb = 0;
         }
     }
 }
@@ -2354,11 +2367,12 @@ GPtrArray *hif_swdb_trans_old(	HifSwdb *self,
         HifSwdbTrans *trans = hif_swdb_trans_new(   tid, //tid
                                                     (gchar *)sqlite3_column_text (res, 1), //beg_t
                                                     (gchar *)sqlite3_column_text (res, 2), //end_t
-                                                    (gchar *)sqlite3_column_text (res, 3), //rpmdb_v
-                                                    (gchar *)sqlite3_column_text (res, 4), //cmdline
-                                                    (gchar *)sqlite3_column_text (res, 5), //loginuid
-                                                    (gchar *)sqlite3_column_text (res, 6), //releasever
-                                                    sqlite3_column_int  (res, 7)); // return_code
+                                                    (gchar *)sqlite3_column_text (res, 3), //beg_rpmdb_v
+                                                    (gchar *)sqlite3_column_text (res, 4), //end_rpmdb_v
+                                                    (gchar *)sqlite3_column_text (res, 5), //cmdline
+                                                    (gchar *)sqlite3_column_text (res, 6), //loginuid
+                                                    (gchar *)sqlite3_column_text (res, 7), //releasever
+                                                    sqlite3_column_int  (res, 8)); // return_code
         trans->swdb = self;
         g_ptr_array_add(node, (gpointer) trans);
     }

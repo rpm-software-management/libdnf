@@ -95,7 +95,8 @@ struct _HifSwdbTrans
 	gint tid;
 	const gchar *beg_timestamp;
 	const gchar *end_timestamp;
-	const gchar *rpmdb_version;
+	const gchar *beg_rpmdb_version;
+	const gchar *end_rpmdb_version;
 	const gchar *cmdline;
 	const gchar *loginuid;
 	const gchar *releasever;
@@ -109,7 +110,8 @@ struct _HifSwdbTrans
 HifSwdbTrans* hif_swdb_trans_new(	const gint tid,
 									const gchar *beg_timestamp,
 									const gchar *end_timestamp,
-									const gchar *rpmdb_version,
+									const gchar *beg_rpmdb_version,
+									const gchar *end_rpmdb_version,
 									const gchar *cmdline,
 									const gchar *loginuid,
 									const gchar *releasever,
