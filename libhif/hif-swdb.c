@@ -685,25 +685,6 @@ static GArray *_simple_search(sqlite3* db, const gchar * pattern)
     return tids;
 }
 
-/* XXX Garbage just for testing
-#include <sys/time.h>
-static struct timeval tm1;
-
-static inline void start()
-{
-    gettimeofday(&tm1, NULL);
-}
-
-static inline void stop()
-{
-    struct timeval tm2;
-    gettimeofday(&tm2, NULL);
-
-    unsigned long long t = 1000 * (tm2.tv_sec - tm1.tv_sec) + (tm2.tv_usec - tm1.tv_usec) / 1000;
-    printf("%llu ms\n", t);
-}
-*/
-
 /*
 * Provides package search with extended pattern
 */
@@ -720,7 +701,7 @@ static GArray *_extended_search (sqlite3* db, const gchar *pattern)
     DB_BIND(res, "@pat", pattern);
     DB_BIND(res, "@pat", pattern);
     DB_BIND(res, "@pat", pattern);
-    gint pid = DB_FIND(res);
+    gint pid = DB_FIND(res); //FIXME what about multiple versions?
     gint pdid;
     if(pid)
     {
@@ -820,6 +801,84 @@ GPtrArray * hif_swdb_checksums_by_nvras(    HifSwdb *self,
     return checksums;
 }
 
+
+/**
+ * hif_swdb_select_user_installed:
+ * @nvras: (element-type utf8)(transfer container): list of constants
+ * Returns: (element-type gint32)(transfer container): list of constants
+**/
+GArray *hif_swdb_select_user_installed (    HifSwdb *self,
+                                            GPtrArray *nvras)
+{
+    if (hif_swdb_open(self))
+        return NULL;
+
+    gint depid = _find_match_by_desc(self->db, "REASON_TYPE", "dep");
+    if (!depid)
+    {
+        hif_swdb_close(self);
+        return NULL;
+    }
+    GArray *dep_ids = g_array_new(0,0,sizeof(gint));
+    gint pid = 0;
+    gint pdid = 0;
+    gint reason_id = 0;
+    const gchar *sql = S_REASON_ID_BY_PDID;
+    for( guint i = 0; i < nvras->len; i++)
+    {
+        pid = _pid_by_nvra(self->db, (gchar *)g_ptr_array_index(nvras, i));
+        if(!pid)
+        {
+            //better not uninstall package when not sure
+            g_array_append_val(dep_ids, i);
+            continue;
+        }
+        pdid = _pdid_from_pid(self->db, pid);
+        if(!pdid)
+        {
+            g_array_append_val(dep_ids, i);
+            continue;
+        }
+        sqlite3_stmt *res;
+        DB_PREP(self->db, sql, res);
+        DB_BIND_INT(res, "@pdid", pdid);
+        while( sqlite3_step(res) == SQLITE_ROW)
+        {
+            reason_id = sqlite3_column_int(res, 0);
+            if (reason_id != depid)
+            {
+                g_array_append_val(dep_ids, i);
+                break;
+            }
+        }
+        sqlite3_finalize(res);
+    }
+    hif_swdb_close(self);
+    return dep_ids;
+}
+
+gboolean hif_swdb_user_installed (  HifSwdb *self,
+                                    const gchar *nvra  )
+{
+    if (hif_swdb_open(self))
+        return 0; //XXX Is "false" proper default value?
+
+    DB_TRANS_BEGIN
+
+    gboolean rc = 0;
+    gint pid = _pid_by_nvra(self->db, nvra);
+    if  (    pid &&
+            !g_strcmp0("user",hif_swdb_get_pkg_attr(self, pid, "reason", "TRANS_DATA")) &&
+            !g_strcmp0("anaconda", _repo_by_pid(self->db, pid))
+        )
+        //XXX anaconda, anakonda, both or what? should it be hardcoded???
+        rc = 1; //is user installed...
+
+    DB_TRANS_END
+
+    hif_swdb_close(self);
+    return rc;
+}
 /******************************* GROUP PERSISTOR *******************************/
 
 /* insert into groups/env package tables
@@ -1413,6 +1472,16 @@ static const gchar* _repo_by_rid(   sqlite3 *db,
     return DB_FIND_STR(res);
 }
 
+static gchar *_repo_by_pid  (   sqlite3 *db,
+                                gint pid)
+{
+    sqlite3_stmt *res;
+    const gchar *sql = S_REPO_FROM_PID2;
+    DB_PREP(db, sql, res);
+    DB_BIND_INT(res, "@pid", pid);
+    return DB_FIND_STR(res);
+}
+
 const gchar *hif_swdb_repo_by_pattern (     HifSwdb *self,
                                             const gchar *pattern)
 {
@@ -1424,11 +1493,7 @@ const gchar *hif_swdb_repo_by_pattern (     HifSwdb *self,
         hif_swdb_close(self);
         return "unknown";
     }
-    sqlite3_stmt *res;
-    const gchar *sql = S_REPO_FROM_PID2;
-    DB_PREP(self->db, sql, res);
-    DB_BIND_INT(res, "@pid", pid);
-    const gchar *r_name = DB_FIND_STR(res);
+    const gchar *r_name = _repo_by_pid(self->db, pid);
     hif_swdb_close(self);
     return r_name;
 }
@@ -1673,14 +1738,20 @@ static const gchar *_insert_attr(const gchar *sql, const gchar* attr)
 
 const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
                                     const gint pid,
-                                    const gchar *attribute)
+                                    const gchar *attribute,
+                                    const gchar *cheat)
 {
     if (hif_swdb_open(self))
     {
     	return NULL;
     }
 
-    const gchar *table = _table_by_attribute(attribute);
+    const gchar *table;
+    if(cheat)
+        table = cheat;
+    else
+        table = _table_by_attribute(attribute);
+
     if (!table) //attribute not found
     {
         if (!g_strcmp0(attribute, "command_line")) //compatibility issue
@@ -1689,15 +1760,6 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
             return NULL;
     }
     sqlite3_stmt *res;
-    if (!g_strcmp0(table,"PACKAGE_DATA"))
-    {
-        const gchar *sql = _insert_attr(PKG_DATA_ATTR_BY_PID, attribute);
-        DB_PREP(self->db, sql, res);
-        DB_BIND_INT(res, "@pid", pid);
-        gchar *output = DB_FIND_STR(res);
-        hif_swdb_close(self);
-        return output;
-    }
     if (!g_strcmp0(table,"TRANS_DATA"))
     {
         //need to get PD_ID first
@@ -1726,6 +1788,15 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
             else
                 return rv;
         }
+        gchar *output = DB_FIND_STR(res);
+        hif_swdb_close(self);
+        return output;
+    }
+    if (!g_strcmp0(table,"PACKAGE_DATA"))
+    {
+        const gchar *sql = _insert_attr(PKG_DATA_ATTR_BY_PID, attribute);
+        DB_PREP(self->db, sql, res);
+        DB_BIND_INT(res, "@pid", pid);
         gchar *output = DB_FIND_STR(res);
         hif_swdb_close(self);
         return output;
@@ -1767,7 +1838,7 @@ const gchar *hif_swdb_attr_by_pattern (   HifSwdb *self,
         hif_swdb_close(self);
         return NULL;
     }
-    return hif_swdb_get_pkg_attr(self, pid, attr);
+    return hif_swdb_get_pkg_attr(self, pid, attr, NULL);
 }
 
 static void _resolve_package_state  (   HifSwdb *self,

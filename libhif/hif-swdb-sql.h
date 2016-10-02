@@ -107,6 +107,7 @@
 #define S_CHECKSUMS_BY_NVRA "SELECT checksum_data, checksum_type FROM PACKAGE WHERE name || '-' || version || '-' || release || '.' || arch=@nvra"
 #define S_PID_BY_NVRA "SELECT P_ID FROM PACKAGE WHERE name || '-' || version || '-' || release || '.' || arch=@nvra"
 #define U_GROUP_COMMIT "UPDATE GROUPS SET is_installed=1 where name_id=@id"
+#define S_REASON_ID_BY_PDID "SELECT reason FROM PACKAGE_DATA join TRANS_DATA using(PD_ID) where PD_ID=@pdid"
 
 #define U_GROUP "UPDATE GROUPS SET name=@name,ui_name=@ui_name,is_installed=@is_installed,pkg_types=@pkg_types,"\
                 "grp_types=@grp_types where G_ID=@gid"

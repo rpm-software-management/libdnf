@@ -121,7 +121,8 @@ gint    hif_swdb_trans_data_pid_end (   HifSwdb *self,
 
 const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
 									const gint pid,
-									const gchar *attribute);
+									const gchar *attribute,
+                                    const gchar *cheat);
 
 GPtrArray *hif_swdb_load_error (    HifSwdb *self,
                                     const gint tid);
@@ -240,6 +241,16 @@ const gint hif_swdb_set_reason (    HifSwdb *self,
 const gint hif_swdb_set_repo (      HifSwdb *self,
                                     const gchar *nvra,
                                     const gchar *repo);
+gboolean hif_swdb_user_installed (  HifSwdb *self,
+                                    const gchar *nvra  );
+static gchar *_repo_by_pid  (   sqlite3 *db,
+                                gint pid);
+
+GArray *hif_swdb_select_user_installed( HifSwdb *self,
+                                        GPtrArray *nvras);
+
+static gint _find_match_by_desc(sqlite3 *db, const gchar *table, const gchar *desc);
+
 
 G_END_DECLS
 
