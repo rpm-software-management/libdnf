@@ -721,9 +721,6 @@ dnf_transaction_ts_progress_cb(const void *arg,
         break;
 
     default:
-        g_warning("unknown transaction phase: %u(%s)",
-                  what,
-                  dnf_transaction_rpmcb_type_to_string(what));
         break;
     }
     return rc;
