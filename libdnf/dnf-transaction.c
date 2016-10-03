@@ -417,78 +417,6 @@ dnf_transaction_check_untrusted(DnfTransaction *transaction,
 }
 
 /**
- * dnf_transaction_rpmcb_type_to_string:
- **/
-static const gchar *
-dnf_transaction_rpmcb_type_to_string(const rpmCallbackType what)
-{
-    const gchar *type = NULL;
-    switch(what) {
-    case RPMCALLBACK_UNKNOWN:
-        type = "unknown";
-        break;
-    case RPMCALLBACK_INST_PROGRESS:
-        type = "install-progress";
-        break;
-    case RPMCALLBACK_INST_START:
-        type = "install-start";
-        break;
-    case RPMCALLBACK_INST_OPEN_FILE:
-        type = "install-open-file";
-        break;
-    case RPMCALLBACK_INST_CLOSE_FILE:
-        type = "install-close-file";
-        break;
-    case RPMCALLBACK_TRANS_PROGRESS:
-        type = "transaction-progress";
-        break;
-    case RPMCALLBACK_TRANS_START:
-        type = "transaction-start";
-        break;
-    case RPMCALLBACK_TRANS_STOP:
-        type = "transaction-stop";
-        break;
-    case RPMCALLBACK_UNINST_PROGRESS:
-        type = "uninstall-progress";
-        break;
-    case RPMCALLBACK_UNINST_START:
-        type = "uninstall-start";
-        break;
-    case RPMCALLBACK_UNINST_STOP:
-        type = "uninstall-stop";
-        break;
-    case RPMCALLBACK_REPACKAGE_PROGRESS:
-        type = "repackage-progress";
-        break;
-    case RPMCALLBACK_REPACKAGE_START:
-        type = "repackage-start";
-        break;
-    case RPMCALLBACK_REPACKAGE_STOP:
-        type = "repackage-stop";
-        break;
-    case RPMCALLBACK_UNPACK_ERROR:
-        type = "unpack-error";
-        break;
-    case RPMCALLBACK_CPIO_ERROR:
-        type = "cpio-error";
-        break;
-    case RPMCALLBACK_SCRIPT_ERROR:
-        type = "script-error";
-        break;
-    case RPMCALLBACK_SCRIPT_START:
-        type = "script-start";
-        break;
-    case RPMCALLBACK_SCRIPT_STOP:
-        type = "script-stop";
-        break;
-    case RPMCALLBACK_INST_STOP:
-        type = "install-stop";
-        break;
-    }
-    return type;
-}
-
-/**
  * dnf_find_pkg_from_header:
  **/
 static DnfPackage *
@@ -592,8 +520,8 @@ dnf_transaction_ts_progress_cb(const void *arg,
 
     if (hdr != NULL)
         name = headerGetString(hdr, RPMTAG_NAME);
-    g_debug("phase: %s(%i/%i, %s/%s)",
-            dnf_transaction_rpmcb_type_to_string(what),
+    g_debug("phase: %u(%i/%i, %s/%s)",
+            (uint)what,
            (gint32) amount,
            (gint32) total,
            (const gchar *) key,
@@ -792,18 +720,6 @@ dnf_transaction_ts_progress_cb(const void *arg,
         }
         break;
 
-    case RPMCALLBACK_UNPACK_ERROR:
-    case RPMCALLBACK_CPIO_ERROR:
-    case RPMCALLBACK_SCRIPT_ERROR:
-    case RPMCALLBACK_SCRIPT_START:
-    case RPMCALLBACK_SCRIPT_STOP:
-    case RPMCALLBACK_UNKNOWN:
-    case RPMCALLBACK_REPACKAGE_PROGRESS:
-    case RPMCALLBACK_REPACKAGE_START:
-    case RPMCALLBACK_REPACKAGE_STOP:
-        g_debug("%s uninteresting",
-                dnf_transaction_rpmcb_type_to_string(what));
-        break;
     default:
         g_warning("unknown transaction phase: %u(%s)",
                   what,
