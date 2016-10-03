@@ -1359,7 +1359,7 @@ START_TEST(test_goal_get_solution)
         slist = hy_goal_get_solution(goal, p);
         for (guint i = 0; i < slist->len; ++i) {
             DnfSolution *sol = g_ptr_array_index(slist, i);
-            fail_unless(dnf_solution_get_action(sol) == expected_actions[p][i]);
+            fail_unless((gint)dnf_solution_get_action(sol) == expected_actions[p][i]);
             fail_unless(g_strcmp0(dnf_solution_get_old(sol), expected_old[p][i]) == 0);
             fail_unless(g_strcmp0(dnf_solution_get_new(sol), expected_new[p][i]) == 0);
         }
