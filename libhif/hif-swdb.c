@@ -1946,7 +1946,7 @@ GPtrArray *hif_swdb_get_packages_by_tid(   HifSwdb *self,
     return node;
 }
 
-const gchar* hif_swdb_pkg_ui_from_repo	( HifSwdbPkg *self)
+const gchar* hif_swdb_pkg_get_ui_from_repo	( HifSwdbPkg *self)
 {
     if(self->ui_from_repo)
         return g_strdup(self->ui_from_repo);

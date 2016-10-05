@@ -90,7 +90,7 @@
 #define S_TRANS_COMP_W_LIMIT "SELECT * from TRANS WHERE end_timestamp is not null or end_timestamp!='' ORDER BY T_ID DESC LIMIT @limit"
 
 #define S_TRANS_DATA_BY_TID "SELECT * FROM TRANS_DATA WHERE T_ID=@tid"
-#define S_PACKAGE_STATE "select TD_ID,done,state from PACAKGE_DATA join TRANS_DATA using (PD_ID) where P_ID=@pid order by TD_ID desc limit 1"
+#define S_PACKAGE_STATE "select TD_ID,done,state from PACKAGE_DATA join TRANS_DATA using (PD_ID) where P_ID=@pid order by TD_ID desc limit 1"
 #define S_GID_BY_NAME_ID "Select G_ID from GROUPS where name_id LIKE @id"
 #define S_GROUP_BY_NAME_ID "select * from GROUPS where name_id LIKE @id"
 #define S_ENV_BY_NAME_ID "select * from ENVIRONMENTS where name_id LIKE @id"

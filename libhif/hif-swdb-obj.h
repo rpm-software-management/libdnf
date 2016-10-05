@@ -56,7 +56,7 @@ HifSwdbPkg* hif_swdb_pkg_new(   const gchar* name,
                                 const gchar* checksum_data,
                                 const gchar* checksum_type,
                                 const gchar* type);
-const gchar* hif_swdb_pkg_ui_from_repo	( HifSwdbPkg *self);
+const gchar* hif_swdb_pkg_get_ui_from_repo	( HifSwdbPkg *self);
 
 
 //Package Data holder for swdb history
