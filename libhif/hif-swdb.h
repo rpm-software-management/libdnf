@@ -30,8 +30,8 @@
 
 G_BEGIN_DECLS
 
-#define HIF_TYPE_SWDB (hif_swdb_get_type ())
-G_DECLARE_FINAL_TYPE (HifSwdb, hif_swdb, HIF,SWDB, GObject) // structure,function prefix,namespace,object name,inherits
+#define DNF_TYPE_SWDB dnf_swdb_get_type ()
+G_DECLARE_FINAL_TYPE (DnfSwdb, dnf_swdb, DNF,SWDB, GObject) // structure,function prefix,namespace,object name,inherits
 
 #include "hif-swdb-obj.h"
 
@@ -140,25 +140,25 @@ const gint 	hif_swdb_get_pid_by_nevracht(	HifSwdb *self,
 											const gchar *type,
 											const gboolean create);
 
-static gchar* _look_for_desc(sqlite3 *db, const gchar *table, const gint id);
+gchar* _look_for_desc(sqlite3 *db, const gchar *table, const gint id);
 
 GArray *hif_swdb_search (   HifSwdb *self,
 							const GSList *patterns);
 
 
-static gint _pdid_from_pid (	sqlite3 *db,
+gint _pdid_from_pid (	sqlite3 *db,
+						const gint pid );
+GArray * _all_pdid_for_pid (	sqlite3 *db,
 								const gint pid );
-static GArray * _all_pdid_for_pid (	sqlite3 *db,
-									const gint pid );
 
-static gint _tid_from_pdid (	sqlite3 *db,
-								const gint pdid );
+gint _tid_from_pdid (	sqlite3 *db,
+						const gint pdid );
 
-static GArray * _tids_from_pdid (	sqlite3 *db,
-								    const gint pdid );
+GArray * _tids_from_pdid (	sqlite3 *db,
+							const gint pdid );
 
-static const gchar* _repo_by_rid(   sqlite3 *db,
-                                    const gint rid);
+const gchar* _repo_by_rid(   sqlite3 *db,
+                            const gint rid);
 
 gint 	hif_swdb_log_rpm_data(	   HifSwdb *self,
 									const gint   pid,
@@ -215,17 +215,18 @@ gint hif_swdb_log_group_trans(  HifSwdb *self,
                                 GPtrArray *removing);
 HifSwdbTrans *hif_swdb_last (HifSwdb *self);
 
-HifSwdbPkg *hif_swdb_package_by_pattern (   HifSwdb *self,
-                                            const gchar *pattern);
-HifSwdbPkgData *hif_swdb_package_data_by_pattern (  HifSwdb *self,
-                                                    const gchar *pattern);
+DnfSwdbPkg *dnf_swdb_package_by_nvra (  DnfSwdb *self,
+                                        const gchar *nvra);
 
-const gchar *hif_swdb_attr_by_pattern (   HifSwdb *self,
-                                            const gchar *attr,
-                                            const gchar *pattern);
+DnfSwdbPkgData *dnf_swdb_package_data_by_nvra(  DnfSwdb *self,
+                                                const gchar *nvra);
 
-const gchar *hif_swdb_repo_by_pattern (     HifSwdb *self,
-                                            const gchar *pattern);
+const gchar *dnf_swdb_attr_by_nvra (    DnfSwdb *self,
+                                        const gchar *attr,
+                                        const gchar *nvra);
+
+const gchar *dnf_swdb_repo_by_nvra (    DnfSwdb *self,
+                                        const gchar *nvra);
 
 const gint hif_swdb_mark_user_installed (   HifSwdb *self,
                                             const gchar *pattern,
@@ -243,13 +244,13 @@ const gint hif_swdb_set_repo (      HifSwdb *self,
                                     const gchar *repo);
 gboolean hif_swdb_user_installed (  HifSwdb *self,
                                     const gchar *nvra  );
-static gchar *_repo_by_pid  (   sqlite3 *db,
-                                gint pid);
+gchar *_repo_by_pid  (   sqlite3 *db,
+                        gint pid);
 
 GArray *hif_swdb_select_user_installed( HifSwdb *self,
                                         GPtrArray *nvras);
 
-static gint _find_match_by_desc(sqlite3 *db, const gchar *table, const gchar *desc);
+gint _find_match_by_desc(sqlite3 *db, const gchar *table, const gchar *desc);
 
 
 G_END_DECLS

@@ -28,9 +28,9 @@
 G_BEGIN_DECLS
 
 //Package holder for swdb history
-#define HIF_TYPE_SWDB_PKG ( hif_swdb_pkg_get_type())
-G_DECLARE_FINAL_TYPE ( HifSwdbPkg, hif_swdb_pkg, HIF, SWDB_PKG, GObject)
-struct _HifSwdbPkg
+#define DNF_TYPE_SWDB_PKG dnf_swdb_pkg_get_type()
+G_DECLARE_FINAL_TYPE ( DnfSwdbPkg, dnf_swdb_pkg, DNF, SWDB_PKG, GObject)
+struct _DnfSwdbPkg
 {
 	GObject parent_instance;
     const gchar *name;
@@ -45,7 +45,8 @@ struct _HifSwdbPkg
 	gchar 	*state;
 	gint 	pid;
 	gchar * ui_from_repo;
-	HifSwdb *swdb;
+	gchar * nvra;
+	DnfSwdb *swdb;
 };
 
 HifSwdbPkg* hif_swdb_pkg_new(   const gchar* name,
@@ -60,9 +61,9 @@ const gchar* hif_swdb_pkg_get_ui_from_repo	( HifSwdbPkg *self);
 
 
 //Package Data holder for swdb history
-#define HIF_TYPE_SWDB_PKGDATA ( hif_swdb_pkgdata_get_type())
-G_DECLARE_FINAL_TYPE ( HifSwdbPkgData, hif_swdb_pkgdata, HIF, SWDB_PKGDATA, GObject)
-struct _HifSwdbPkgData
+#define DNF_TYPE_SWDB_PKGDATA dnf_swdb_pkgdata_get_type()
+G_DECLARE_FINAL_TYPE ( DnfSwdbPkgData, dnf_swdb_pkgdata, DNF, SWDB_PKGDATA, GObject)
+struct _DnfSwdbPkgData
 {
 	GObject parent_instance;
 	gchar *from_repo;
@@ -85,8 +86,8 @@ HifSwdbPkgData* hif_swdb_pkgdata_new( 	const gchar* from_repo_revision,
 
 //holder for history transaction
 
-#define HIF_TYPE_SWDB_TRANS ( hif_swdb_trans_get_type())
-G_DECLARE_FINAL_TYPE ( HifSwdbTrans, hif_swdb_trans, HIF, SWDB_TRANS, GObject)
+#define DNF_TYPE_SWDB_TRANS dnf_swdb_trans_get_type()
+G_DECLARE_FINAL_TYPE ( DnfSwdbTrans, dnf_swdb_trans, DNF, SWDB_TRANS, GObject)
 
 struct _HifSwdbTrans
 {
@@ -119,9 +120,9 @@ HifSwdbTrans* hif_swdb_trans_new(	const gint tid,
 
 //holder for history transaction data
 
-#define HIF_TYPE_SWDB_TRANSDATA ( hif_swdb_transdata_get_type())
-G_DECLARE_FINAL_TYPE ( HifSwdbTransData, hif_swdb_transdata, HIF, SWDB_TRANSDATA, GObject)
-struct _HifSwdbTransData
+#define DNF_TYPE_SWDB_TRANSDATA dnf_swdb_transdata_get_type()
+G_DECLARE_FINAL_TYPE ( DnfSwdbTransData, dnf_swdb_transdata, DNF, SWDB_TRANSDATA, GObject)
+struct _DnfSwdbTransData
 {
 	GObject parent_instance;
 	gint tdid;
@@ -145,9 +146,9 @@ HifSwdbTransData* hif_swdb_transdata_new(	gint tdid,
 
 //holder for group
 
-#define HIF_TYPE_SWDB_GROUP ( hif_swdb_group_get_type())
-G_DECLARE_FINAL_TYPE ( HifSwdbGroup, hif_swdb_group, HIF, SWDB_GROUP, GObject)
-struct _HifSwdbGroup
+#define DNF_TYPE_SWDB_GROUP dnf_swdb_group_get_type()
+G_DECLARE_FINAL_TYPE ( DnfSwdbGroup, dnf_swdb_group, DNF, SWDB_GROUP, GObject)
+struct _DnfSwdbGroup
 {
 	GObject parent_instance;
 	gint gid;
@@ -181,9 +182,9 @@ gint hif_swdb_group_add_exclude (       HifSwdbGroup *group,
 
 //holder for environment
 
-#define HIF_TYPE_SWDB_ENV ( hif_swdb_env_get_type())
-G_DECLARE_FINAL_TYPE ( HifSwdbEnv, hif_swdb_env, HIF, SWDB_ENV, GObject)
-struct _HifSwdbEnv
+#define DNF_TYPE_SWDB_ENV dnf_swdb_env_get_type()
+G_DECLARE_FINAL_TYPE ( DnfSwdbEnv, dnf_swdb_env, DNF, SWDB_ENV, GObject)
+struct _DnfSwdbEnv
 {
 	GObject parent_instance;
 	gint eid;
