@@ -185,6 +185,7 @@ hif_swdb_pkg_init(HifSwdbPkg *self)
     self->pid = 0;
     self->ui_from_repo = NULL;
     self->swdb = NULL;
+    self->nvra = NULL;
 }
 
 /**
@@ -211,6 +212,8 @@ HifSwdbPkg* hif_swdb_pkg_new(   const gchar* name,
     swdbpkg->arch = g_strdup(arch);
     swdbpkg->checksum_data = g_strdup(checksum_data);
     swdbpkg->checksum_type = g_strdup(checksum_type);
+    swdbpkg->nvra = g_strjoin("-", swdbpkg->name, swdbpkg->version, swdbpkg->release, NULL);
+    swdbpkg->nvra = g_strjoin(".", swdbpkg->nvra, swdbpkg->arch, NULL);
     if (type) swdbpkg->type = g_strdup(type); else swdbpkg->type = NULL;
   	return swdbpkg;
 }
@@ -1462,8 +1465,8 @@ static gint _bind_repo_by_name (sqlite3 *db, const gchar *name)
 	}
 }
 
-static const gchar* _repo_by_rid(   sqlite3 *db,
-                                    const gint rid)
+const gchar* _repo_by_rid(  sqlite3 *db,
+                            const gint rid)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_REPO_BY_RID;
@@ -1472,8 +1475,8 @@ static const gchar* _repo_by_rid(   sqlite3 *db,
     return DB_FIND_STR(res);
 }
 
-static gchar *_repo_by_pid  (   sqlite3 *db,
-                                gint pid)
+gchar *_repo_by_pid  (   sqlite3 *db,
+                        gint pid)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_REPO_FROM_PID2;
@@ -1482,12 +1485,12 @@ static gchar *_repo_by_pid  (   sqlite3 *db,
     return DB_FIND_STR(res);
 }
 
-const gchar *hif_swdb_repo_by_pattern (     HifSwdb *self,
-                                            const gchar *pattern)
+const gchar *dnf_swdb_repo_by_nvra (    DnfSwdb *self,
+                                        const gchar *nvra)
 {
     if (hif_swdb_open(self))
     	return NULL;
-    gint pid = _pid_by_nvra(self->db, pattern);
+    gint pid = _pid_by_nvra(self->db, nvra);
     if(!pid)
     {
         hif_swdb_close(self);
@@ -1654,8 +1657,8 @@ gint 	hif_swdb_log_package_data(	HifSwdb *self,
   	return rc;
 }
 
-static gint _pdid_from_pid (	sqlite3 *db,
-								const gint pid )
+gint _pdid_from_pid (	sqlite3 *db,
+						const gint pid )
 {
   	sqlite3_stmt *res;
   	const gchar *sql = FIND_PDID_FROM_PID;
@@ -1671,8 +1674,8 @@ static gint _pdid_from_pid (	sqlite3 *db,
     return sqlite3_last_insert_rowid(db);
 }
 
-static GArray* _all_pdid_for_pid (	sqlite3 *db,
-								    const gint pid )
+GArray* _all_pdid_for_pid (	sqlite3 *db,
+							const gint pid )
 {
     GArray *pdids = g_array_new(0,0,sizeof(gint));
     sqlite3_stmt *res;
@@ -1687,8 +1690,8 @@ static GArray* _all_pdid_for_pid (	sqlite3 *db,
     return pdids;
 }
 
-static gint _tid_from_pdid (	sqlite3 *db,
-								const gint pdid )
+gint _tid_from_pdid (	sqlite3 *db,
+						const gint pdid )
 {
   	sqlite3_stmt *res;
   	const gchar *sql = FIND_TID_FROM_PDID;
@@ -1697,8 +1700,8 @@ static gint _tid_from_pdid (	sqlite3 *db,
   	return DB_FIND(res);
 }
 
-static GArray * _tids_from_pdid (	sqlite3 *db,
-								    const gint pdid )
+GArray * _tids_from_pdid (	sqlite3 *db,
+							const gint pdid )
 {
   	sqlite3_stmt *res;
     GArray *tids = g_array_new(0,0,sizeof(gint));
@@ -1826,13 +1829,13 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
     return NULL;
 }
 
-const gchar *hif_swdb_attr_by_pattern (   HifSwdb *self,
-                                            const gchar *attr,
-                                            const gchar *pattern)
+const gchar *dnf_swdb_attr_by_nvra (    DnfSwdb *self,
+                                        const gchar *attr,
+                                        const gchar *nvra)
 {
     if (hif_swdb_open(self))
     	return NULL;
-    gint pid = _pid_by_nvra(self->db, pattern);
+    gint pid = _pid_by_nvra(self->db, nvra);
     if(!pid)
     {
         hif_swdb_close(self);
@@ -1991,15 +1994,15 @@ const gchar* hif_swdb_pkg_get_ui_from_repo	( HifSwdbPkg *self)
 }
 
 /**
-* hif_swdb_package_by_pattern:
-* Returns: (transfer full): #HifSwdbPkg
+* dnf_swdb_package_by_nvra:
+* Returns: (transfer full): #DnfSwdbPkg
 */
-HifSwdbPkg *hif_swdb_package_by_pattern (   HifSwdb *self,
-                                            const gchar *pattern)
+DnfSwdbPkg *dnf_swdb_package_by_nvra (  DnfSwdb *self,
+                                        const gchar *nvra)
 {
     if (hif_swdb_open(self))
         return NULL;
-    gint pid = _pid_by_nvra(self->db, pattern);
+    gint pid = _pid_by_nvra(self->db, nvra);
     if (!pid)
     {
         hif_swdb_close(self);
@@ -2011,15 +2014,15 @@ HifSwdbPkg *hif_swdb_package_by_pattern (   HifSwdb *self,
 }
 
 /**
-* hif_swdb_package_data_by_pattern:
-* Returns: (transfer full): #HifSwdbPkgData
+* dnf_swdb_package_data_by_nvra:
+* Returns: (transfer full): #DnfSwdbPkgData
 */
-HifSwdbPkgData *hif_swdb_package_data_by_pattern (  HifSwdb *self,
-                                                    const gchar *pattern)
+DnfSwdbPkgData *dnf_swdb_package_data_by_nvra(  DnfSwdb *self,
+                                                const gchar *nvra)
 {
     if (hif_swdb_open(self))
         return NULL;
-    gint pid = _pid_by_nvra(self->db, pattern);
+    gint pid = _pid_by_nvra(self->db, nvra);
     if (!pid)
     {
         hif_swdb_close(self);
@@ -2461,7 +2464,7 @@ GPtrArray *hif_swdb_trans_old(	HifSwdb *self,
 **/
 HifSwdbTrans *hif_swdb_last (HifSwdb *self)
 {
-    GPtrArray *node = hif_swdb_trans_old(self, NULL, 1, 1);
+    GPtrArray *node = dnf_swdb_trans_old(self, NULL, 1, 0);
     if (!node || !node->len)
         return NULL;
     HifSwdbTrans *trans = g_ptr_array_index(node, 0);
@@ -2580,7 +2583,7 @@ GPtrArray *hif_swdb_load_output (      HifSwdb *self,
  * Returns ID for description or 0 if not found
  * Requires opened DB
  */
-static gint _find_match_by_desc(sqlite3 *db, const gchar *table, const gchar *desc)
+gint _find_match_by_desc(sqlite3 *db, const gchar *table, const gchar *desc)
 {
     sqlite3_stmt *res;
     const gchar *sql = g_strjoin(" ","select ID from",table,"where description=@desc", NULL);
@@ -2604,7 +2607,7 @@ static gint _insert_desc(sqlite3 *db, const gchar *table, const gchar *desc)
   	return sqlite3_last_insert_rowid(db);
 }
 
-static gchar* _look_for_desc(sqlite3 *db, const gchar *table, const gint id)
+gchar* _look_for_desc(sqlite3 *db, const gchar *table, const gint id)
 {
     sqlite3_stmt *res;
     gchar *sql = g_strjoin(" ","select description from",table,"where ID=@id", NULL);

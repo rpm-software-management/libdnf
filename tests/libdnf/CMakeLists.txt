@@ -1,4 +1,5 @@
 ADD_EXECUTABLE(test_libdnf_main dnf-self-test.c)
+ADD_EXECUTABLE(test_libdnf_swdb dnf-swdb-test.c ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb.c ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb.h)
 TARGET_LINK_LIBRARIES(test_libdnf_main
                       libdnf
                       ${REPO_LIBRARIES}
@@ -9,6 +10,16 @@ TARGET_LINK_LIBRARIES(test_libdnf_main
                       ${SOLV_LIBRARY}
                       ${SOLVEXT_LIBRARY}
                       ${RPMDB_LIBRARY})
+
+TARGET_LINK_LIBRARIES(test_libdnf_swdb
+                    ${REPO_LIBRARIES}
+                    ${GLIB_LIBRARIES}
+                    ${GLIB_GOBJECT_LIBRARIES}
+                    ${GLIB_GIO_LIBRARIES}
+                    ${GLIB_GIO_UNIX_LIBRARIES}
+                    ${SOLV_LIBRARY}
+                    ${SOLVEXT_LIBRARY}
+                    ${RPMDB_LIBRARY})
 
 ADD_TEST(test_libdnf_main test_libdnf_main)
 IF (NOT DISABLE_VALGRIND AND VALGRIND_PROGRAM)
