@@ -159,7 +159,7 @@ class TestQuery(base.TestCase):
     def test_nevra_match(self):
         query = hawkey.Query(self.sack).filter(nevra__glob="*lib*64")
         self.assertEqual(len(query), 1)
-        self.assertEqual(str(query[0]), 'penny-lib-4-1.x86_64')
+        self.assertEqual(str(query[0]), "penny-lib-4-1.x86_64")
 
     def test_repeated(self):
         q = hawkey.Query(self.sack).filter(name="jay")
@@ -203,13 +203,13 @@ class TestQuery(base.TestCase):
     def test_multiple_flags(self):
         q = hawkey.Query(self.sack).filter(name__glob__not=["p*", "j*"])
         self.assertItemsEqual(list(map(lambda p: p.name, q.run())),
-                              ['baby', 'dog', 'flying', 'fool', 'gun', 'tour'])
+                              ["baby", "dog", "flying", "fool", "gun", "tour"])
 
     def test_apply(self):
         q = hawkey.Query(self.sack).filter(name__glob__not="p*").apply()
         res = q.filter(name__glob__not="j*").run()
         self.assertItemsEqual(list(map(lambda p: p.name, res)),
-                              ['baby', 'dog', 'flying', 'fool', 'gun', 'tour'])
+                              ["baby", "dog", "flying", "fool", "gun", "tour"])
 
     def test_provides_glob_should_work(self):
         q1 = hawkey.Query(self.sack).filter(provides__glob="penny*")
@@ -270,22 +270,22 @@ class TestQueryAllRepos(base.TestCase):
         reldep = hawkey.Reldep(self.sack, "semolina = 2")
         q = hawkey.Query(self.sack).filter(requires=reldep)
         self.assertItemsEqual(list(map(str, q.run())),
-                              ['walrus-2-5.noarch', 'walrus-2-6.noarch'])
+                              ["walrus-2-5.noarch", "walrus-2-6.noarch"])
 
         reldep = hawkey.Reldep(self.sack, "semolina > 1.0")
         q = hawkey.Query(self.sack).filter(requires=reldep)
         self.assertItemsEqual(list(map(str, q.run())),
-                              ['walrus-2-5.noarch', 'walrus-2-6.noarch'])
+                              ["walrus-2-5.noarch", "walrus-2-6.noarch"])
 
     def test_obsoletes(self):
         reldep = hawkey.Reldep(self.sack, "penny < 4-0")
         q = hawkey.Query(self.sack).filter(obsoletes=reldep)
-        self.assertItemsEqual(list(map(str, q.run())), ['fool-1-5.noarch'])
+        self.assertItemsEqual(list(map(str, q.run())), ["fool-1-5.noarch"])
 
     def test_downgradable(self):
         query = hawkey.Query(self.sack).filter(downgradable=True)
         self.assertEqual({str(pkg) for pkg in query},
-                         {'baby-6:5.0-11.x86_64', 'jay-5.0-0.x86_64'})
+                         {"baby-6:5.0-11.x86_64", "jay-5.0-0.x86_64"})
 
     def test_rco_glob(self):
         q1 = hawkey.Query(self.sack).filter(requires__glob="*")
@@ -317,9 +317,9 @@ class TestQueryUpdates(base.TestCase):
     def test_upgradable(self):
         query = hawkey.Query(self.sack).filter(upgradable=True)
         self.assertEqual({str(pkg) for pkg in query},
-                         {'dog-1-1.x86_64', 'flying-2-9.noarch',
-                          'fool-1-3.noarch', 'pilchard-1.2.3-1.i686',
-                          'pilchard-1.2.3-1.x86_64'})
+                         {"dog-1-1.x86_64", "flying-2-9.noarch",
+                          "fool-1-3.noarch", "pilchard-1.2.3-1.i686",
+                          "pilchard-1.2.3-1.x86_64"})
 
     def test_updates_noarch(self):
         q = hawkey.Query(self.sack)
@@ -329,7 +329,7 @@ class TestQueryUpdates(base.TestCase):
     def test_updates_arch(self):
         q = hawkey.Query(self.sack)
         pilchard = q.filter(name="dog", upgrades=True)
-        self.assertItemsEqual(list(map(str, pilchard.run())), ['dog-1-2.x86_64'])
+        self.assertItemsEqual(list(map(str, pilchard.run())), ["dog-1-2.x86_64"])
 
     def test_glob_arch(self):
         q = hawkey.Query(self.sack)
@@ -347,7 +347,7 @@ class TestQueryUpdates(base.TestCase):
 
         o = hawkey.Query(self.sack).filter(obsoletes=q)
         self.assertLength(o, 1)
-        self.assertEqual(str(o[0]), 'fool-1-5.noarch')
+        self.assertEqual(str(o[0]), "fool-1-5.noarch")
 
     def test_subquery_evaluated(self):
         q = hawkey.Query(self.sack).filter(name="penny")
@@ -374,12 +374,12 @@ class TestOddArch(base.TestCase):
 class TestAllArch(base.TestCase):
 
     def setUp(self):
-        self.sack1 = base.TestSack(repo_dir=self.repo_dir, arch='ppc64')
-        self.sack2 = base.TestSack(repo_dir=self.repo_dir, arch='x86_64')
+        self.sack1 = base.TestSack(repo_dir=self.repo_dir, arch="ppc64")
+        self.sack2 = base.TestSack(repo_dir=self.repo_dir, arch="x86_64")
         self.sack3 = base.TestSack(repo_dir=self.repo_dir, all_arch=True)
-        self.sack1.load_test_repo('test_ppc', 'ppc.repo')
-        self.sack2.load_test_repo('test_ppc', 'ppc.repo')
-        self.sack3.load_test_repo('test_ppc', 'ppc.repo')
+        self.sack1.load_test_repo("test_ppc", "ppc.repo")
+        self.sack2.load_test_repo("test_ppc", "ppc.repo")
+        self.sack3.load_test_repo("test_ppc", "ppc.repo")
 
     def test_provides_all_arch_query(self):
         ppc_pkgs = hawkey.Query(self.sack1)
@@ -414,24 +414,24 @@ class TestQueryFilterAdvisory(base.TestCase):
         self.sack = base.TestSack(repo_dir=self.repo_dir)
         self.sack.load_repo(load_updateinfo=True)
         self.expected_pkgs = hawkey.Query(self.sack).filter(nevra=[
-                                                'mystery-devel-19.67-1.noarch',
-                                                'tour-4-6.noarch']
+                                                "mystery-devel-19.67-1.noarch",
+                                                "tour-4-6.noarch"]
                                                 ).run()
 
     def test_advisory(self):
-        pkgs = hawkey.Query(self.sack).filter(advisory='BEATLES-1967-1127').run()
+        pkgs = hawkey.Query(self.sack).filter(advisory="BEATLES-1967-1127").run()
         self.assertEqual(pkgs, self.expected_pkgs)
 
     def test_advisory_type(self):
-        pkgs = hawkey.Query(self.sack).filter(advisory_type='security').run()
+        pkgs = hawkey.Query(self.sack).filter(advisory_type="security").run()
         self.assertEqual(pkgs, self.expected_pkgs)
 
     def test_advisory_bug(self):
-        pkgs = hawkey.Query(self.sack).filter(advisory_bug='0#paul').run()
+        pkgs = hawkey.Query(self.sack).filter(advisory_bug="0#paul").run()
         self.assertEqual(pkgs, self.expected_pkgs)
 
     def test_advisory_cve(self):
-        pkgs = hawkey.Query(self.sack).filter(advisory_cve='CVE-1967-BEATLES').run()
+        pkgs = hawkey.Query(self.sack).filter(advisory_cve="CVE-1967-BEATLES").run()
         self.assertEqual(pkgs, self.expected_pkgs)
 
 class TestQuerySetOperations(base.TestCase):
@@ -439,8 +439,8 @@ class TestQuerySetOperations(base.TestCase):
         self.sack = base.TestSack(repo_dir=self.repo_dir)
         self.sack.load_system_repo()
         self.q = hawkey.Query(self.sack)
-        self.q1 = self.q.filter(version='4')
-        self.q2 = self.q.filter(name__glob='p*')
+        self.q1 = self.q.filter(version="4")
+        self.q2 = self.q.filter(name__glob="p*")
 
     def test_difference(self):
         qi = self.q1.difference(self.q2)
@@ -449,7 +449,7 @@ class TestQuerySetOperations(base.TestCase):
 
     def test_intersection(self):
         qi = self.q1.intersection(self.q2)
-        intersection = self.q.filter(version='4', name__glob='p*')
+        intersection = self.q.filter(version="4", name__glob="p*")
         self.assertEqual(qi.run(), intersection.run())
 
     def test_union(self):

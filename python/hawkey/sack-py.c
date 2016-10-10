@@ -204,7 +204,7 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     PyObject *logfile_py = NULL;
     self->log_out = NULL;
     int make_cache_dir = 0;
-    int all_arch = 0;
+    gboolean all_arch = FALSE;
     const char *kwlist[] = {"cachedir", "arch", "rootdir", "pkgcls",
                       "pkginitval", "make_cache_dir", "logfile", "all_arch",
                       NULL};

@@ -793,13 +793,16 @@ dnf_sack_set_arch (DnfSack *sack, const gchar *value, GError **error)
 }
 
 /**
- * dnf_sack_set_all_arch
+ * dnf_sack_set_all_arch:
  * @sack: a #DnfSack instance.
- * @all_arch: new value for all_arch property
+ * @all_arch: new value for all_arch property.
  *
  * This is used for controlling whether an arch needs to
  * be set within libsolv or not.
  *
+ * Returns: Nothing.
+ *
+ * Since: 0.7.0
  */
 void
 dnf_sack_set_all_arch (DnfSack *sack, gboolean all_arch)
@@ -812,7 +815,9 @@ dnf_sack_set_all_arch (DnfSack *sack, gboolean all_arch)
  * dnf_sack_get_all_arch
  * @sack: a #DnfSack instance.
  *
- * Returns: the state of all_arch
+ * Returns: the state of all_arch.
+ *
+ * Since: 0.7.0
  */
 gboolean
 dnf_sack_get_all_arch (DnfSack *sack)

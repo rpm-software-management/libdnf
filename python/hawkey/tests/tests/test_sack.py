@@ -85,7 +85,7 @@ class BasicTest(unittest.TestCase):
         self.assertGreater(sack.evr_cmp("1:3.10-4", "3.10-5"), 0)
 
     def test_all_arch(self):
-        sack = hawkey.Sack(arch='x86_64')
+        sack = hawkey.Sack(arch="x86_64")
         # greater than noarch as it has picked up the default architecture
         self.assertGreater(len(sack.list_arches()), 1)
         sack2 = hawkey.Sack(all_arch=True)
