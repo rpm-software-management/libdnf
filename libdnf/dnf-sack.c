@@ -83,6 +83,7 @@ typedef struct
     Repo                *cmdline_repo;
     gboolean             considered_uptodate;
     gboolean             have_set_arch;
+    gboolean             all_arch;
     gboolean             provides_ready;
     gchar               *cache_dir;
     dnf_sack_running_kernel_fn_t  running_kernel_fn;
@@ -791,6 +792,40 @@ dnf_sack_set_arch (DnfSack *sack, const gchar *value, GError **error)
 }
 
 /**
+ * dnf_sack_set_all_arch:
+ * @sack: a #DnfSack instance.
+ * @all_arch: new value for all_arch property.
+ *
+ * This is used for controlling whether an arch needs to
+ * be set within libsolv or not.
+ *
+ * Returns: Nothing.
+ *
+ * Since: 0.7.0
+ */
+void
+dnf_sack_set_all_arch (DnfSack *sack, gboolean all_arch)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    priv->all_arch = all_arch;
+}
+
+/**
+ * dnf_sack_get_all_arch
+ * @sack: a #DnfSack instance.
+ *
+ * Returns: the state of all_arch.
+ *
+ * Since: 0.7.0
+ */
+gboolean
+dnf_sack_get_all_arch (DnfSack *sack)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    return priv->all_arch;
+}
+
+/**
  * dnf_sack_set_rootdir:
  * @sack: a #DnfSack instance.
  * @value: a directory path, or %NULL.
@@ -855,7 +890,7 @@ dnf_sack_setup(DnfSack *sack, int flags, GError **error)
     }
 
     /* never called dnf_sack_set_arch(), so autodetect */
-    if (!priv->have_set_arch) {
+    if (!priv->have_set_arch && !priv->all_arch) {
         if (!dnf_sack_set_arch (sack, NULL, error))
             return FALSE;
     }

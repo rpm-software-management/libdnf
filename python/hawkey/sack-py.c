@@ -204,13 +204,15 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     PyObject *logfile_py = NULL;
     self->log_out = NULL;
     int make_cache_dir = 0;
+    gboolean all_arch = FALSE;
     const char *kwlist[] = {"cachedir", "arch", "rootdir", "pkgcls",
-                      "pkginitval", "make_cache_dir", "logfile", NULL};
+                      "pkginitval", "make_cache_dir", "logfile", "all_arch",
+                      NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OssOOiO", (char**) kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OssOOiOi", (char**) kwlist,
                                      &cachedir_py, &arch, &rootdir,
                                      &custom_class, &custom_val,
-                                     &make_cache_dir, &logfile_py))
+                                     &make_cache_dir, &logfile_py, &all_arch))
         return -1;
     if (cachedir_py != NULL)
         cachedir = pycomp_get_string(cachedir_py, &tmp_py_str);
@@ -218,9 +220,13 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     if (make_cache_dir)
         flags |= DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR;
     self->sack = dnf_sack_new();
-    if (!dnf_sack_set_arch(self->sack, arch, &error)) {
-        PyErr_SetString(HyExc_Arch, "Unrecognized arch for the sack.");
-        return -1;
+    if (all_arch) {
+        dnf_sack_set_all_arch(self->sack, all_arch);
+    } else {
+        if (!dnf_sack_set_arch(self->sack, arch, &error)) {
+            PyErr_SetString(HyExc_Arch, "Unrecognized arch for the sack.");
+            return -1;
+        }
     }
     dnf_sack_set_rootdir(self->sack, rootdir);
     dnf_sack_set_cachedir(self->sack, cachedir);
@@ -456,13 +462,18 @@ list_arches(_SackObject *self, PyObject *unused)
 {
     const char **arches = dnf_sack_list_arches(self->sack);
     PyObject *list;
-    if (!arches) {
+    if (!arches && !dnf_sack_get_all_arch(self->sack)) {
         PyErr_SetString(HyExc_Runtime, "Arches not initialized");
         return NULL;
     }
-    list = strlist_to_pylist(arches);
-    g_free(arches);
-    return list;
+
+    if (arches) {
+        list = strlist_to_pylist(arches);
+        g_free(arches);
+        return list;
+    } else {
+        return PyList_New(0);
+    }
 }
 
 static PyObject *

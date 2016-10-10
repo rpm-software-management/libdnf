@@ -49,14 +49,16 @@ skip = unittest.skip
 
 class TestSack(hawkey.test.TestSackMixin, hawkey.Sack):
     def __init__(self, repo_dir, PackageClass=None, package_userdata=None,
-                 make_cache_dir=True):
+                 make_cache_dir=True, arch=None, all_arch=False):
         hawkey.test.TestSackMixin.__init__(self, repo_dir)
         hawkey.Sack.__init__(self,
                              cachedir=cachedir,
-                             arch=hawkey.test.FIXED_ARCH,
+                             arch=arch if arch is not None else hawkey.test.FIXED_ARCH,
                              pkgcls=PackageClass,
                              pkginitval=package_userdata,
-                             make_cache_dir=make_cache_dir)
+                             make_cache_dir=make_cache_dir,
+                             all_arch=all_arch,
+                             )
 
     def load_repo(self, **kwargs):
         d = os.path.join(self.repo_dir, hawkey.test.YUM_DIR_SUFFIX)

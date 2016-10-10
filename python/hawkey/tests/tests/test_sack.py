@@ -84,6 +84,14 @@ class BasicTest(unittest.TestCase):
         self.assertGreater(sack.evr_cmp("3.11-4", "3.10-5"), 0)
         self.assertGreater(sack.evr_cmp("1:3.10-4", "3.10-5"), 0)
 
+    def test_all_arch(self):
+        sack = hawkey.Sack(arch="x86_64")
+        # greater than noarch as it has picked up the default architecture
+        self.assertGreater(len(sack.list_arches()), 1)
+        sack2 = hawkey.Sack(all_arch=True)
+        self.assertEqual(len(sack2.list_arches()), 0)
+
+
 class PackageWrappingTest(base.TestCase):
     class MyPackage(hawkey.Package):
         def __init__(self, initobject, myval):
