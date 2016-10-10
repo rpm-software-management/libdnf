@@ -91,6 +91,9 @@ void         dnf_sack_set_cachedir          (DnfSack        *sack,
 gboolean     dnf_sack_set_arch              (DnfSack        *sack,
                                              const gchar    *value,
                                              GError        **error);
+void         dnf_sack_set_all_arch          (DnfSack        *sack,
+                                             int             all_arch);
+gboolean     dnf_sack_get_all_arch          (DnfSack        *sack);
 void         dnf_sack_set_rootdir           (DnfSack        *sack,
                                              const gchar    *value);
 gboolean     dnf_sack_setup                 (DnfSack        *sack,

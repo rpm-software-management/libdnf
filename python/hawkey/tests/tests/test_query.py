@@ -370,6 +370,31 @@ class TestOddArch(base.TestCase):
         q = hawkey.Query(self.sack).filter(latest_per_arch=True)
         self.assertEqual(len(q), 1)
 
+
+class TestAllArch(base.TestCase):
+
+    def setUp(self):
+        self.sack1 = base.TestSack(repo_dir=self.repo_dir, arch='ppc64')
+        self.sack2 = base.TestSack(repo_dir=self.repo_dir, arch='x86_64')
+        self.sack3 = base.TestSack(repo_dir=self.repo_dir, all_arch=True)
+        self.sack1.load_test_repo('test_ppc', 'ppc.repo')
+        self.sack2.load_test_repo('test_ppc', 'ppc.repo')
+        self.sack3.load_test_repo('test_ppc', 'ppc.repo')
+
+    def test_provides_all_arch_query(self):
+        ppc_pkgs = hawkey.Query(self.sack1)
+        self.assertGreater(len(ppc_pkgs), 0)
+        pkg1 = ppc_pkgs[0]
+
+        query_ppc = hawkey.Query(self.sack1).filter(provides=pkg1.provides[0])
+        query_x86 = hawkey.Query(self.sack2).filter(provides=pkg1.provides[0])
+        query_all = hawkey.Query(self.sack3).filter(provides=pkg1.provides[0])
+
+        self.assertEqual(len(query_ppc), 1)
+        self.assertEqual(len(query_x86), 0)
+        self.assertEqual(len(query_all), 1)
+
+
 class TestQuerySubclass(base.TestCase):
     class CustomQuery(hawkey.Query):
         pass
