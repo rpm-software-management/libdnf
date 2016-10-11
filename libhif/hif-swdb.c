@@ -117,7 +117,10 @@ struct rpm_data_t
 // SWDB Destructor
 static void hif_swdb_finalize(GObject *object)
 {
-    G_OBJECT_CLASS (hif_swdb_parent_class)->finalize (object);
+    g_free( (gchar*) ((DnfSwdb*) object)->path);
+    g_free( (gchar*) ((DnfSwdb*) object)->db);
+    g_free( (gchar*) ((DnfSwdb*) object)->releasever);
+    G_OBJECT_CLASS (dnf_swdb_parent_class)->finalize (object);
 }
 
 // SWDB Class initialiser
@@ -165,7 +168,18 @@ HifSwdb* hif_swdb_new   (   const gchar* db_path,
 // PKG Destructor
 static void hif_swdb_pkg_finalize(GObject *object)
 {
-    G_OBJECT_CLASS (hif_swdb_pkg_parent_class)->finalize (object);
+    g_free( (gchar*) ((DnfSwdbPkg*) object)->name);
+	g_free( (gchar*) ((DnfSwdbPkg*) object)->epoch);
+	g_free( (gchar*) ((DnfSwdbPkg*) object)->version);
+	g_free( (gchar*) ((DnfSwdbPkg*) object)->release);
+	g_free( (gchar*) ((DnfSwdbPkg*) object)->arch);
+	g_free( (gchar*) ((DnfSwdbPkg*) object)->checksum_data);
+	g_free( (gchar*) ((DnfSwdbPkg*) object)->checksum_type);
+	g_free( (gchar*) ((DnfSwdbPkg*) object)->type);
+	g_free( (gchar*) ((DnfSwdbPkg*) object)->state);
+	g_free( (gchar*) ((DnfSwdbPkg*) object)->ui_from_repo);
+	g_free( (gchar*) ((DnfSwdbPkg*) object)->nvra);
+    G_OBJECT_CLASS (dnf_swdb_pkg_parent_class)->finalize (object);
 }
 
 // PKG Class initialiser
@@ -212,8 +226,9 @@ HifSwdbPkg* hif_swdb_pkg_new(   const gchar* name,
     swdbpkg->arch = g_strdup(arch);
     swdbpkg->checksum_data = g_strdup(checksum_data);
     swdbpkg->checksum_type = g_strdup(checksum_type);
-    swdbpkg->nvra = g_strjoin("-", swdbpkg->name, swdbpkg->version, swdbpkg->release, NULL);
-    swdbpkg->nvra = g_strjoin(".", swdbpkg->nvra, swdbpkg->arch, NULL);
+    gchar *tmp = g_strjoin("-", swdbpkg->name, swdbpkg->version, swdbpkg->release, NULL);
+    swdbpkg->nvra = g_strjoin(".", tmp, swdbpkg->arch, NULL);
+    g_free(tmp);
     if (type) swdbpkg->type = g_strdup(type); else swdbpkg->type = NULL;
   	return swdbpkg;
 }
@@ -221,7 +236,14 @@ HifSwdbPkg* hif_swdb_pkg_new(   const gchar* name,
 // PKG DATA Destructor
 static void hif_swdb_pkgdata_finalize(GObject *object)
 {
-    G_OBJECT_CLASS (hif_swdb_pkgdata_parent_class)->finalize (object);
+	g_free( (gchar*) ((DnfSwdbPkgData*) object)->from_repo);
+    g_free( (gchar*) ((DnfSwdbPkgData*) object)->from_repo_revision);
+  	g_free( (gchar*) ((DnfSwdbPkgData*) object)->from_repo_timestamp);
+  	g_free( (gchar*) ((DnfSwdbPkgData*) object)->installed_by);
+  	g_free( (gchar*) ((DnfSwdbPkgData*) object)->changed_by);
+  	g_free( (gchar*) ((DnfSwdbPkgData*) object)->installonly);
+  	g_free( (gchar*) ((DnfSwdbPkgData*) object)->origin_url);
+    G_OBJECT_CLASS (dnf_swdb_pkgdata_parent_class)->finalize (object);
 }
 
 // PKG DATA Class initialiser
@@ -272,7 +294,14 @@ HifSwdbPkgData* hif_swdb_pkgdata_new(   const gchar* from_repo_revision,
 // TRANS Destructor
 static void hif_swdb_trans_finalize(GObject *object)
 {
-    G_OBJECT_CLASS (hif_swdb_trans_parent_class)->finalize (object);
+	g_free( (gchar*) ((DnfSwdbTrans*) object)->beg_timestamp);
+	g_free( (gchar*) ((DnfSwdbTrans*) object)->end_timestamp);
+	g_free( (gchar*) ((DnfSwdbTrans*) object)->beg_rpmdb_version);
+	g_free( (gchar*) ((DnfSwdbTrans*) object)->end_rpmdb_version);
+	g_free( (gchar*) ((DnfSwdbTrans*) object)->cmdline);
+	g_free( (gchar*) ((DnfSwdbTrans*) object)->loginuid);
+	g_free( (gchar*) ((DnfSwdbTrans*) object)->releasever);
+    G_OBJECT_CLASS (dnf_swdb_trans_parent_class)->finalize (object);
 }
 
 // TRANS Class initialiser
@@ -328,7 +357,9 @@ HifSwdbTrans* hif_swdb_trans_new(	const gint tid,
 // TRANS DATA Destructor
 static void hif_swdb_transdata_finalize(GObject *object)
 {
-    G_OBJECT_CLASS (hif_swdb_transdata_parent_class)->finalize (object);
+    g_free( (gchar*) ((DnfSwdbTransData*) object)->reason);
+	g_free( (gchar*) ((DnfSwdbTransData*) object)->state);
+    G_OBJECT_CLASS (dnf_swdb_transdata_parent_class)->finalize (object);
 }
 
 // TRANS DATA Class initialiser
@@ -377,7 +408,10 @@ HifSwdbTransData* hif_swdb_transdata_new(   gint tdid,
 // Group destructor
 static void hif_swdb_group_finalize(GObject *object)
 {
-    G_OBJECT_CLASS (hif_swdb_group_parent_class)->finalize (object);
+    g_free( (gchar*) ((DnfSwdbGroup*) object)->name_id);
+	g_free( (gchar*) ((DnfSwdbGroup*) object)->name);
+	g_free( (gchar*) ((DnfSwdbGroup*) object)->ui_name);
+    G_OBJECT_CLASS (dnf_swdb_group_parent_class)->finalize (object);
 }
 
 // Group Class initialiser
@@ -426,7 +460,10 @@ HifSwdbGroup* hif_swdb_group_new(	const gchar* name_id,
 // environment destructor
 static void hif_swdb_env_finalize(GObject *object)
 {
-    G_OBJECT_CLASS (hif_swdb_env_parent_class)->finalize (object);
+    g_free( (gchar*) ((DnfSwdbEnv*) object)->name_id);
+	g_free( (gchar*) ((DnfSwdbEnv*) object)->name);
+	g_free( (gchar*) ((DnfSwdbEnv*) object)->ui_name);
+    G_OBJECT_CLASS (dnf_swdb_env_parent_class)->finalize (object);
 }
 
 // environment Class initialiser
@@ -903,6 +940,8 @@ static gint _insert_id_name (sqlite3 *db, const gchar *table, gint id, const gch
     DB_BIND(res, "@name", name);
 
     DB_STEP(res);
+
+    g_free(sql);
   	return 0;
 }
 
@@ -1775,9 +1814,13 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
         {
             const gint rc_id = DB_FIND(res);
             rv = _look_for_desc(self->db, "REASON_TYPE", rc_id);
-            hif_swdb_close(self);
+            dnf_swdb_close(self);
+
+            if(!cheat)
+                g_free((gchar*)table);
+
             if (!rv)
-                return (gchar*)"Unknown";
+                return "Unknown";
             else
                 return rv;
         }
@@ -1785,14 +1828,21 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
         {
             const gint rc_id = DB_FIND(res);
             rv = _look_for_desc(self->db, "STATE_TYPE", rc_id);
-            hif_swdb_close(self);
+            dnf_swdb_close(self);
+            if(!cheat)
+                g_free((gchar*)table);
+
             if (!rv)
-                return (gchar*)"Unknown";
+                return "Unknown";
             else
                 return rv;
         }
         gchar *output = DB_FIND_STR(res);
-        hif_swdb_close(self);
+        dnf_swdb_close(self);
+
+        if(!cheat)
+            g_free((gchar*)table);
+
         return output;
     }
     if (!g_strcmp0(table,"PACKAGE_DATA"))
@@ -1801,7 +1851,11 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
         DB_PREP(self->db, sql, res);
         DB_BIND_INT(res, "@pid", pid);
         gchar *output = DB_FIND_STR(res);
-        hif_swdb_close(self);
+        dnf_swdb_close(self);
+
+        if(!cheat)
+            g_free((gchar*)table);
+
         return output;
     }
     if (!g_strcmp0(table,"TRANS"))
@@ -1813,7 +1867,11 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
         DB_PREP(self->db, sql, res);
         DB_BIND_INT(res, "@tid", tid);
         gchar *output = DB_FIND_STR(res);
-        hif_swdb_close(self);
+        dnf_swdb_close(self);
+
+        if(!cheat)
+            g_free((gchar*)table);
+
         return output;
     }
     if (!g_strcmp0(table,"RPM_DATA"))
@@ -1822,10 +1880,18 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
         DB_PREP(self->db, sql, res);
         DB_BIND_INT(res, "@pid", pid);
         gchar *output= DB_FIND_STR(res);
-        hif_swdb_close(self);
+        dnf_swdb_close(self);
+
+        if(!cheat)
+            g_free((gchar*)table);
+
         return output;
     }
-    hif_swdb_close(self);
+
+    if(!cheat)
+        g_free((gchar*)table);
+
+    dnf_swdb_close(self);
     return NULL;
 }
 
@@ -1956,7 +2022,7 @@ const gchar* hif_swdb_pkg_get_ui_from_repo	( HifSwdbPkg *self)
     if(!self->swdb || !self->pid || hif_swdb_open(self->swdb))
         return "(unknown)";
     sqlite3_stmt *res;
-    gchar *sql = (gchar*)S_REPO_FROM_PID;
+    const gchar *sql = S_REPO_FROM_PID;
     gint pdid = 0;
     DB_PREP(self->swdb->db, sql, res);
     DB_BIND_INT(res, "@pid", self->pid);
@@ -1972,7 +2038,7 @@ const gchar* hif_swdb_pkg_get_ui_from_repo	( HifSwdbPkg *self)
     if (pdid && self->swdb->releasever)
     {
         gchar *cur_releasever = NULL;;
-        sql = (gchar*)S_RELEASEVER_FROM_PDID;
+        sql = S_RELEASEVER_FROM_PDID;
         DB_PREP(self->swdb->db, sql, res);
         DB_BIND_INT(res, "@pdid", pdid);
         if(sqlite3_step(res) == SQLITE_ROW)
@@ -1982,9 +2048,13 @@ const gchar* hif_swdb_pkg_get_ui_from_repo	( HifSwdbPkg *self)
         sqlite3_finalize(res);
         if(g_strcmp0(cur_releasever, self->swdb->releasever))
         {
-            hif_swdb_close(self->swdb);
-            return g_strjoin(NULL, "@", r_name, "/", cur_releasever, NULL);
+            dnf_swdb_close(self->swdb);
+            gchar * rc = g_strjoin(NULL, "@", r_name, "/", cur_releasever, NULL);
+            g_free(r_name);
+            g_free(cur_releasever);
+            return rc;
         }
+        g_free(cur_releasever);
     }
     hif_swdb_close(self->swdb);
     if(r_name)
@@ -2534,6 +2604,7 @@ static GPtrArray *_load_output (       sqlite3 *db,
     while( (row = (gchar *)DB_FIND_STR_MULTI(res)) )
     {
         g_ptr_array_add(l, g_strdup(row));
+        g_free(row);
     }
     return l;
 }
