@@ -117,9 +117,10 @@ struct rpm_data_t
 // SWDB Destructor
 static void hif_swdb_finalize(GObject *object)
 {
-    g_free( (gchar*) ((DnfSwdb*) object)->path);
-    g_free( (gchar*) ((DnfSwdb*) object)->db);
-    g_free( (gchar*) ((DnfSwdb*) object)->releasever);
+    DnfSwdb *swdb = (DnfSwdb *) object;
+    g_free( swdb->path );
+    g_free( swdb->db);
+    g_free( swdb->releasever);
     G_OBJECT_CLASS (dnf_swdb_parent_class)->finalize (object);
 }
 
@@ -168,17 +169,18 @@ HifSwdb* hif_swdb_new   (   const gchar* db_path,
 // PKG Destructor
 static void hif_swdb_pkg_finalize(GObject *object)
 {
-    g_free( (gchar*) ((DnfSwdbPkg*) object)->name);
-	g_free( (gchar*) ((DnfSwdbPkg*) object)->epoch);
-	g_free( (gchar*) ((DnfSwdbPkg*) object)->version);
-	g_free( (gchar*) ((DnfSwdbPkg*) object)->release);
-	g_free( (gchar*) ((DnfSwdbPkg*) object)->arch);
-	g_free( (gchar*) ((DnfSwdbPkg*) object)->checksum_data);
-	g_free( (gchar*) ((DnfSwdbPkg*) object)->checksum_type);
-	g_free( (gchar*) ((DnfSwdbPkg*) object)->type);
-	g_free( (gchar*) ((DnfSwdbPkg*) object)->state);
-	g_free( (gchar*) ((DnfSwdbPkg*) object)->ui_from_repo);
-	g_free( (gchar*) ((DnfSwdbPkg*) object)->nvra);
+    DnfSwdbPkg *pkg = (DnfSwdbPkg *)object;
+    g_free( (gchar*) pkg->name);
+	g_free( (gchar*) pkg->epoch);
+	g_free( (gchar*) pkg->version);
+	g_free( (gchar*) pkg->release);
+	g_free( (gchar*) pkg->arch);
+	g_free( (gchar*) pkg->checksum_data);
+	g_free( (gchar*) pkg->checksum_type);
+	g_free( (gchar*) pkg->type);
+	g_free( pkg->state);
+	g_free( pkg->ui_from_repo);
+	g_free( pkg->nvra);
     G_OBJECT_CLASS (dnf_swdb_pkg_parent_class)->finalize (object);
 }
 
@@ -236,13 +238,14 @@ HifSwdbPkg* hif_swdb_pkg_new(   const gchar* name,
 // PKG DATA Destructor
 static void hif_swdb_pkgdata_finalize(GObject *object)
 {
-	g_free( (gchar*) ((DnfSwdbPkgData*) object)->from_repo);
-    g_free( (gchar*) ((DnfSwdbPkgData*) object)->from_repo_revision);
-  	g_free( (gchar*) ((DnfSwdbPkgData*) object)->from_repo_timestamp);
-  	g_free( (gchar*) ((DnfSwdbPkgData*) object)->installed_by);
-  	g_free( (gchar*) ((DnfSwdbPkgData*) object)->changed_by);
-  	g_free( (gchar*) ((DnfSwdbPkgData*) object)->installonly);
-  	g_free( (gchar*) ((DnfSwdbPkgData*) object)->origin_url);
+    DnfSwdbPkgData * pkgdata = (DnfSwdbPkgData*) object;
+	g_free( pkgdata->from_repo);
+    g_free( pkgdata->from_repo_revision);
+  	g_free( pkgdata->from_repo_timestamp);
+  	g_free( pkgdata->installed_by);
+  	g_free( pkgdata->changed_by);
+  	g_free( pkgdata->installonly);
+  	g_free( pkgdata->origin_url);
     G_OBJECT_CLASS (dnf_swdb_pkgdata_parent_class)->finalize (object);
 }
 
@@ -294,13 +297,14 @@ HifSwdbPkgData* hif_swdb_pkgdata_new(   const gchar* from_repo_revision,
 // TRANS Destructor
 static void hif_swdb_trans_finalize(GObject *object)
 {
-	g_free( (gchar*) ((DnfSwdbTrans*) object)->beg_timestamp);
-	g_free( (gchar*) ((DnfSwdbTrans*) object)->end_timestamp);
-	g_free( (gchar*) ((DnfSwdbTrans*) object)->beg_rpmdb_version);
-	g_free( (gchar*) ((DnfSwdbTrans*) object)->end_rpmdb_version);
-	g_free( (gchar*) ((DnfSwdbTrans*) object)->cmdline);
-	g_free( (gchar*) ((DnfSwdbTrans*) object)->loginuid);
-	g_free( (gchar*) ((DnfSwdbTrans*) object)->releasever);
+    DnfSwdbTrans *trans = (DnfSwdbTrans *) object;
+	g_free( (gchar*) trans->beg_timestamp);
+	g_free( (gchar*) trans->end_timestamp);
+	g_free( (gchar*) trans->beg_rpmdb_version);
+	g_free( (gchar*) trans->end_rpmdb_version);
+	g_free( (gchar*) trans->cmdline);
+	g_free( (gchar*) trans->loginuid);
+	g_free( (gchar*) trans->releasever);
     G_OBJECT_CLASS (dnf_swdb_trans_parent_class)->finalize (object);
 }
 
@@ -357,8 +361,9 @@ HifSwdbTrans* hif_swdb_trans_new(	const gint tid,
 // TRANS DATA Destructor
 static void hif_swdb_transdata_finalize(GObject *object)
 {
-    g_free( (gchar*) ((DnfSwdbTransData*) object)->reason);
-	g_free( (gchar*) ((DnfSwdbTransData*) object)->state);
+    DnfSwdbTransData * tdata = (DnfSwdbTransData*) object;
+    g_free( tdata->reason);
+	g_free( tdata->state);
     G_OBJECT_CLASS (dnf_swdb_transdata_parent_class)->finalize (object);
 }
 
@@ -408,9 +413,10 @@ HifSwdbTransData* hif_swdb_transdata_new(   gint tdid,
 // Group destructor
 static void hif_swdb_group_finalize(GObject *object)
 {
-    g_free( (gchar*) ((DnfSwdbGroup*) object)->name_id);
-	g_free( (gchar*) ((DnfSwdbGroup*) object)->name);
-	g_free( (gchar*) ((DnfSwdbGroup*) object)->ui_name);
+    DnfSwdbGroup * group = (DnfSwdbGroup*) object;
+    g_free( (gchar*) group->name_id);
+	g_free( group->name);
+	g_free( group->ui_name);
     G_OBJECT_CLASS (dnf_swdb_group_parent_class)->finalize (object);
 }
 
@@ -460,9 +466,10 @@ HifSwdbGroup* hif_swdb_group_new(	const gchar* name_id,
 // environment destructor
 static void hif_swdb_env_finalize(GObject *object)
 {
-    g_free( (gchar*) ((DnfSwdbEnv*) object)->name_id);
-	g_free( (gchar*) ((DnfSwdbEnv*) object)->name);
-	g_free( (gchar*) ((DnfSwdbEnv*) object)->ui_name);
+    DnfSwdbEnv * env = (DnfSwdbEnv *) object;
+    g_free( (gchar*) env->name_id);
+	g_free( env->name);
+	g_free( env->ui_name);
     G_OBJECT_CLASS (dnf_swdb_env_parent_class)->finalize (object);
 }
 
@@ -1816,9 +1823,6 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
             rv = _look_for_desc(self->db, "REASON_TYPE", rc_id);
             dnf_swdb_close(self);
 
-            if(!cheat)
-                g_free((gchar*)table);
-
             if (!rv)
                 return "Unknown";
             else
@@ -1829,8 +1833,6 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
             const gint rc_id = DB_FIND(res);
             rv = _look_for_desc(self->db, "STATE_TYPE", rc_id);
             dnf_swdb_close(self);
-            if(!cheat)
-                g_free((gchar*)table);
 
             if (!rv)
                 return "Unknown";
@@ -1839,9 +1841,6 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
         }
         gchar *output = DB_FIND_STR(res);
         dnf_swdb_close(self);
-
-        if(!cheat)
-            g_free((gchar*)table);
 
         return output;
     }
@@ -1852,9 +1851,6 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
         DB_BIND_INT(res, "@pid", pid);
         gchar *output = DB_FIND_STR(res);
         dnf_swdb_close(self);
-
-        if(!cheat)
-            g_free((gchar*)table);
 
         return output;
     }
@@ -1869,9 +1865,6 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
         gchar *output = DB_FIND_STR(res);
         dnf_swdb_close(self);
 
-        if(!cheat)
-            g_free((gchar*)table);
-
         return output;
     }
     if (!g_strcmp0(table,"RPM_DATA"))
@@ -1882,14 +1875,8 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
         gchar *output= DB_FIND_STR(res);
         dnf_swdb_close(self);
 
-        if(!cheat)
-            g_free((gchar*)table);
-
         return output;
     }
-
-    if(!cheat)
-        g_free((gchar*)table);
 
     dnf_swdb_close(self);
     return NULL;
