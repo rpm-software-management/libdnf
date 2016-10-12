@@ -27,6 +27,7 @@
 
 #include <solv/testcase.h>
 
+#include <glib/gstdio.h>
 
 #include "libdnf/dnf-types.h"
 #include "libdnf/hy-package-private.h"
@@ -131,7 +132,8 @@ END_TEST
 
 START_TEST(test_add_cmdline_package)
 {
-    DnfSack *sack = dnf_sack_new();
+    g_autoptr(GError) error = NULL;
+    g_autoptr(DnfSack) sack = dnf_sack_new();
     dnf_sack_set_cachedir(sack, test_globals.tmpdir);
 
     char *path_mystery = solv_dupjoin(TESTDATADIR, "/hawkey/yum/mystery-devel-19.67-1.noarch.rpm", NULL);
@@ -143,6 +145,13 @@ START_TEST(test_add_cmdline_package)
     DnfPackage *pkg_tour = dnf_sack_add_cmdline_package(sack, path_tour);
     const char *location_tour = dnf_package_get_location(pkg_tour);
     ck_assert_str_eq(path_tour, location_tour);
+
+    g_autofree gchar *path_null_rpm = g_build_filename (test_globals.tmpdir, "null.rpm", NULL);
+    FILE *fp = g_fopen (path_null_rpm, "w");
+    fail_unless (fp != NULL);
+    fclose (fp);
+    fail_unless (error == NULL);
+    fail_unless (dnf_sack_add_cmdline_package (sack, path_null_rpm) == NULL);
 
     g_free(path_mystery);
     g_free(path_tour);
