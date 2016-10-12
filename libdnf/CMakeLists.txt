@@ -1,4 +1,5 @@
 SET (LIBDNF_SRCS
+    dnf-activatable.c
     dnf-advisorypkg.c
     dnf-advisoryref.c
     dnf-advisory.c
@@ -41,9 +42,15 @@ TARGET_LINK_LIBRARIES(libdnf
                       ${GLIB_GOBJECT_LIBRARIES}
                       ${GLIB_GIO_LIBRARIES}
                       ${GLIB_GIO_UNIX_LIBRARIES}
+                      ${PEAS_LIBRARIES}
                       ${LIBSOLV_LIBRARY}
                       ${LIBSOLV_EXT_LIBRARY}
                       ${RPMDB_LIBRARY})
+target_include_directories (libdnf
+                            PRIVATE ${PEAS_INCLUDE_DIRS})
+target_compile_definitions (libdnf
+                            PRIVATE -DBUILDDIR="${CMAKE_CURRENT_BINARY_DIR}"
+                            PRIVATE -DSRCDIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 SET(DNF_SO_VERSION 1)
 SET_TARGET_PROPERTIES(libdnf PROPERTIES OUTPUT_NAME "dnf")
@@ -74,6 +81,7 @@ SET(LIBHAWKEY_headers
     )
 
 SET(LIBDNF_headers
+    dnf-activatable.h
     dnf-advisory.h
     dnf-advisorypkg.h
     dnf-advisoryref.h

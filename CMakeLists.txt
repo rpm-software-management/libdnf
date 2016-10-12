@@ -27,6 +27,7 @@ OPTION (ENABLE_SOLV_URPMREORDER "Build with support for URPM-like solution reord
 find_package (PkgConfig REQUIRED)
 SET (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 PKG_CHECK_MODULES(GLIB gio-unix-2.0>=2.44.0 REQUIRED)
+pkg_check_modules (PEAS REQUIRED libpeas-1.0>=1.15.0)
 FIND_LIBRARY (RPMDB_LIBRARY NAMES rpmdb)
 find_package (LibSolv 0.6.21 REQUIRED COMPONENTS ext)
 pkg_check_modules (CHECK REQUIRED check)
@@ -63,6 +64,12 @@ IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
   SET (LIB_SUFFIX "64")
 ENDIF (CMAKE_SIZEOF_VOID_P MATCHES "8")
 SET (LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
+set (SHARE_INSTALL_PREFIX
+     ${CMAKE_INSTALL_PREFIX}/share
+     CACHE PATH "Base directory for data files")
+
+add_definitions (-DPACKAGE_LIBDIR=\\"${LIB_INSTALL_DIR}/dnf\\")
+add_definitions (-DPACKAGE_DATADIR=\\"${SHARE_INSTALL_PREFIX}/dnf\\")
 
 ADD_SUBDIRECTORY (libdnf)
 ENABLE_TESTING()
