@@ -39,6 +39,9 @@
                         "installed_by=@installed_by,changed_by=@changed_by,installonly=@installonly,"\
                         "origin_url=@origin_url where P_ID=@pid"
 
+#define INSERT_PKG_DATA "Insert into PACKAGE_DATA values (null, @pid, @rid, @repo_r, @repo_t,"\
+                        "@installed_by,@changed_by,@installonly, @origin_url)"
+
 #define INSERT_RPM_DATA "INSERT into RPM_DATA values(null,@pid,@buildtime,@buildhost,@license,@packager,@size,@sourcerpm,@url,"\
                         "@vendor,@committer,@committime)"
 
@@ -51,7 +54,7 @@
 #define FIND_ALL_PDID_FOR_PID "SELECT PD_ID FROM PACKAGE_DATA WHERE P_ID=@pid"
 #define GET_TRANS_CMDLINE "SELECT cmdline FROM TRANS WHERE T_ID=@tid"
 
-#define INSERT_PDID "insert into PACKAGE_DATA values(null,@pid,null,null,null,null,null,null,null)"
+#define INSERT_PDID "insert into PACKAGE_DATA values(null,@pid,null,null,null,null,null,null,'#')"
 #define FIND_TID_FROM_PDID "SELECT T_ID FROM TRANS_DATA WHERE PD_ID=@pdid LIMIT 1"
 #define FIND_TIDS_FROM_PDID "SELECT T_ID FROM TRANS_DATA WHERE PD_ID=@pdid"
 #define LOAD_OUTPUT "SELECT msg FROM OUTPUT WHERE T_ID=@tid and type=@type"
@@ -83,6 +86,7 @@
 #define S_PACKAGE_BY_PID "SELECT * FROM PACKAGE WHERE P_ID=@pid"
 #define S_PACKAGE_DATA_BY_PID "SELECT * FROM PACKAGE_DATA WHERE P_ID=@pid"
 #define S_REPO_BY_RID "select name from REPO where R_ID=@rid"
+#define S_PREV_AUTO_PD "SELECT PD_ID FROM PACKAGE_DATA where P_ID=@pid and origin_url='#'"
 
 #define S_TRANS "SELECT * from TRANS ORDER BY T_ID DESC"
 #define S_TRANS_W_LIMIT "SELECT * from TRANS ORDER BY T_ID DESC LIMIT @limit"
