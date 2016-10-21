@@ -1,4 +1,5 @@
-/*
+/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+
  * Copyright (C) 2013 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
@@ -28,6 +29,8 @@
 #include "hy-iutil.h"
 #include "hy-nevra-private.h"
 #include "hy-types.h"
+#include "hy-query.h"
+#include "hy-selector.h"
 
 // most specific to least
 HyForm HY_FORMS_MOST_SPEC[] = {
@@ -216,7 +219,171 @@ hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra)
                 return 0;
         }
         form = iter->forms[iter->current];
-        hy_nevra_free(*out_nevra);
+        g_clear_pointer(out_nevra, hy_nevra_free);
     }
     return -1;
 }
+
+struct NevraToQuery {
+    int nevra_type;
+    int query_type;
+};
+
+/* Given a subject, attempt to create a query choose the first one, and update
+ * the query to try to match it.
+ * 
+ * This code is based on rpm-software-management/dnf/subject.py:get_best_query() at git
+ * revision: 1d83fdc0280ca4202281ef489afe600e2f51a32a
+ */
+HyQuery
+hy_subject_get_best_query(HySubject subject, DnfSack *sack, gboolean with_provides)
+{
+#if 0
+    int ret = -1;
+    HyNevra nevra = NULL;
+    HyPossibilities iter = NULL;
+    HyQuery query = NULL;
+    DnfReldep *reldep = NULL;
+
+    iter = hy_subject_nevra_possibilities_real(subject, NULL, sack, 0);
+
+    if ((ret = hy_possibilities_next_nevra(iter, &nevra)) < 0)
+        goto out;
+
+    if (nevra != NULL) {
+        struct NevraToQuery nevraquerymap[] =
+            { { HY_NEVRA_NAME, HY_PKG_NAME },
+              { HY_NEVRA_VERSION, HY_PKG_VERSION },
+              { HY_NEVRA_RELEASE, HY_PKG_RELEASE },
+              { HY_NEVRA_ARCH, HY_PKG_ARCH }};
+
+        query = hy_query_create(sack);
+
+        for (guint i = 0; i < G_N_ELEMENTS(nevraquerymap); i++) {
+            const char *str = hy_nevra_get_string(nevra, nevraquerymap[i].nevra_type);
+            if (str)
+                hy_query_filter(query, nevraquerymap[i].query_type, HY_EQ, str);
+        }
+    } else if (with_provides) {
+        hy_possibilities_free(iter);
+        iter = hy_subject_reldep_possibilities_real(subject, sack, 0);
+
+        if ((ret = hy_possibilities_next_reldep(iter, &reldep)) < 0)
+            goto out;
+
+        query = hy_query_create(sack);
+        /* TODO(walters) Do we need to split EVR here? */
+        hy_query_filter_provides(query, HY_EQ, dnf_reldep_to_string(reldep), NULL);
+    }
+
+    if (query == NULL) {
+        query = hy_query_create(sack);
+        hy_query_filter_empty(query);
+    }
+ out:
+    if (iter)
+        hy_possibilities_free(iter);
+    if (nevra)
+        hy_nevra_free(nevra);
+    g_clear_object(&reldep);
+    return query;
+#else
+    /* At some point, we may use this */
+    g_assert_not_reached ();
+#endif
+}
+
+static HySelector
+nevra_to_selector(HyNevra nevra, DnfSack *sack)
+{
+    HySelector selector = hy_selector_create(sack);
+
+    if (hy_nevra_has_just_name(nevra)) {
+        hy_selector_set(selector, HY_PKG_PROVIDES, HY_EQ,
+                        hy_nevra_get_string(nevra, HY_NEVRA_NAME));
+    } else {
+        const char *str = hy_nevra_get_string(nevra, HY_NEVRA_NAME);
+        int epoch;
+
+        if (str)
+            hy_selector_set(selector, HY_PKG_NAME, HY_EQ, str);
+
+        epoch = hy_nevra_get_epoch(nevra);
+        str = hy_nevra_get_string(nevra, HY_NEVRA_VERSION);
+        if (str != NULL) {
+            g_autoptr(GString) evrbuf = g_string_new (str);
+
+            if (epoch > 0) {
+                char buf[G_ASCII_DTOSTR_BUF_SIZE];
+
+                g_ascii_dtostr(buf, sizeof(buf), epoch);
+                g_string_prepend(evrbuf, buf);
+                g_string_prepend_c(evrbuf, ':');
+            }
+
+            str = hy_nevra_get_string(nevra, HY_NEVRA_RELEASE);
+            if (!str) {
+                hy_selector_set(selector, HY_PKG_VERSION, HY_EQ, evrbuf->str);
+            } else {
+                g_string_append_c(evrbuf, '-');
+                g_string_append(evrbuf, str);
+                hy_selector_set(selector, HY_PKG_EVR, HY_EQ, evrbuf->str);
+            }
+        }
+    }
+
+    if (hy_selector_has_matches(selector)) {
+        return g_steal_pointer(&selector);
+    } else {
+        hy_selector_free(selector);
+        return NULL;
+    }
+}
+
+/* Given a subject, attempt to create a "selector".
+ * 
+ * This code is based on rpm-software-management/dnf/subject.py:get_best_selector() at git
+ * revision: 1d83fdc0280ca4202281ef489afe600e2f51a32a
+ */
+HySelector
+hy_subject_get_best_selector(HySubject subject, DnfSack *sack)
+{
+    HyNevra nevra = NULL;
+    HyPossibilities iter = NULL;
+    HySelector selector = NULL;
+    DnfReldep *reldep = NULL;
+
+    iter = hy_subject_nevra_possibilities_real(subject, NULL, sack, 0);
+
+    if (hy_possibilities_next_nevra(iter, &nevra) == 0 && nevra != NULL) {
+        selector = nevra_to_selector(nevra, sack);
+    }
+
+    if (selector == NULL) {
+        hy_possibilities_free(iter);
+        iter = hy_subject_reldep_possibilities_real(subject, sack, 0);
+
+        if (hy_possibilities_next_reldep(iter, &reldep) == 0 && reldep != NULL) {
+            selector = hy_selector_create(sack);
+            hy_selector_set(selector, HY_PKG_PROVIDES, HY_EQ, dnf_reldep_to_string(reldep));
+            if (!hy_selector_has_matches(selector))
+                g_clear_pointer(&selector, hy_selector_free);
+        }
+    }
+
+    /* We don't do globs yet */
+    if (g_str_has_prefix (subject, "/")) {
+        selector = hy_selector_create(sack);
+        hy_selector_set(selector, HY_PKG_FILE, HY_EQ, subject);
+    }
+
+    if (selector == NULL)
+        selector = hy_selector_create(sack);
+    if (iter)
+        hy_possibilities_free(iter);
+    if (nevra)
+        hy_nevra_free(nevra);
+    g_clear_object(&reldep);
+    return selector;
+}
+

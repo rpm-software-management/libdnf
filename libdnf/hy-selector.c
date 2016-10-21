@@ -1,4 +1,4 @@
-/*
+/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  * Copyright (C) 2012-2014 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
@@ -152,4 +152,17 @@ hy_selector_matches(HySelector sltr)
     queue_free(&solvables);
     queue_free(&job);
     return plist;
+}
+
+gboolean
+hy_selector_has_matches(HySelector sltr)
+{
+    /* Doing things this way obviously wastes allocations,
+     * but it avoids code duplication.  All of the callers
+     * seem to really want this, so at some point if that's
+     * true, let's nuke hy_selector_matches().
+     */
+    g_autoptr(GPtrArray) selector_matches = NULL;
+    selector_matches = hy_selector_matches(sltr);
+    return selector_matches->len > 0;
 }

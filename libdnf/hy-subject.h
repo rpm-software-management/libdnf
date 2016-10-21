@@ -68,6 +68,9 @@ HyPossibilities hy_subject_nevra_possibilities_real(HySubject subject,
     HyForm *forms, DnfSack *sack, int flags);
 int hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra);
 
+HyQuery hy_subject_get_best_query(HySubject subject, DnfSack *sack, gboolean with_provides);
+HySelector hy_subject_get_best_selector(HySubject subject, DnfSack *sack);
+
 G_END_DECLS
 
 #endif
