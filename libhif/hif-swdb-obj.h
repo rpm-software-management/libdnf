@@ -82,7 +82,8 @@ HifSwdbPkgData* hif_swdb_pkgdata_new( 	const gchar* from_repo_revision,
                                         const gchar* installed_by,
                                         const gchar* changed_by,
                                         const gchar* installonly,
-                                        const gchar* origin_url);
+                                        const gchar* origin_url,
+										const gchar* from_repo);
 
 //holder for history transaction
 

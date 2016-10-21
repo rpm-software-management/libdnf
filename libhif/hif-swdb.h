@@ -79,7 +79,10 @@ gint hif_swdb_add_package_nevracht(	HifSwdb *self,
 								   	const gchar *checksum_type,
 								  	const gchar *type);
 
-gint 	hif_swdb_log_error 		(	HifSwdb *self,
+gint dnf_swdb_add_package(	DnfSwdb *self,
+				  			DnfSwdbPkg *pkg);
+
+gint 	dnf_swdb_log_error 		(	DnfSwdb *self,
 						 			const gint tid,
 							  		const gchar *msg);
 
