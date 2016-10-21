@@ -171,3 +171,12 @@ char *hy_nevra_get_evr(HyNevra nevra)
         return g_strdup_printf ("%s-%s", nevra->version, nevra->release);
     return g_strdup_printf ("%d:%s-%s", nevra->epoch, nevra->version, nevra->release);
 }
+
+gboolean
+hy_nevra_has_just_name(HyNevra nevra)
+{
+  return nevra->name != NULL &&
+    nevra->epoch == -1 &&
+    nevra->version == NULL &&
+    nevra->release == NULL;
+}
