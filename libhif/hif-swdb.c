@@ -2076,13 +2076,17 @@ const gchar* hif_swdb_pkg_get_ui_from_repo	( HifSwdbPkg *self)
             gchar * rc = g_strjoin(NULL, "@", r_name, "/", cur_releasever, NULL);
             g_free(r_name);
             g_free(cur_releasever);
+            self->ui_from_repo = rc;
             return rc;
         }
         g_free(cur_releasever);
     }
     hif_swdb_close(self->swdb);
     if(r_name)
+    {
+        self->ui_from_repo = r_name;
         return r_name;
+    }
     else
         return "(unknown)";
 }
