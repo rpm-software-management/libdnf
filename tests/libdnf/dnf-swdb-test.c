@@ -46,33 +46,33 @@
 * dnf_swdb_groups_commit
 * dnf_swdb_log_group_trans
 * ------ REPOS -----
-* dnf_swdb_repo_by_pattern
+* dnf_swdb_repo_by_nvra
 * dnf_swdb_set_repo
 * ----- PACKAGE -----
 * dnf_swdb_add_package_nevracht
 * dnf_swdb_get_pid_by_nevracht
 * dnf_swdb_log_package_data
 * dnf_swdb_get_pkg_attr
-* dnf_swdb_attr_by_pattern
+* dnf_swdb_attr_by_nvra
 * dnf_swdb_get_packages_by_tid
 * dnf_swdb_pkg_get_ui_from_repo
-* dnf_swdb_package_by_pattern
-* dnf_swdb_package_data_by_pattern
+* dnf_swdb_package_by_nvra
+* dnf_swdb_package_data_by_nvra
 * dnf_swdb_set_reason
 * dnf_swdb_mark_user_installed
 * dnf_swdb_add_package #
 * ------ RPM ------
 * dnf_swdb_log_rpm_data
 * ------ TRANS -----
-* dnf_swdb_trans_data_beg
-* dnf_swdb_trans_data_end
-* dnf_swdb_trans_data_pid_end
+* dnf_swdb_trans_data_beg #
+* dnf_swdb_trans_data_end #
+* dnf_swdb_trans_data_pid_end #
 * dnf_swdb_trans_beg #
 * dnf_swdb_trans_end #
 * dnf_swdb_trans_cmdline
 * dnf_swdb_get_old_trans_data
 * dnf_swdb_trans_old
-* dnf_swdb_last * repair this in dnf - complete only called automaticaly
+* dnf_swdb_last #
 * dnf_swdb_log_error
 * dnf_swdb_log_output
 * dnf_swdb_load_error
@@ -82,14 +82,14 @@
 * dnf_swdb_set_path
 * dnf_swdb_exist
 * dnf_swdb_create_db
-* dnf_swdb_reset_db
+* dnf_swdb_reset_db #
 * ------ intern ------
 * dnf_swdb_open #
 * dnf_swdb_close #
-* dnf_swdb_get_package_type
-* dnf_swdb_get_output_type
-* dnf_swdb_get_reason_type
-* dnf_swdb_get_state_type
+* dnf_swdb_get_package_type #
+* dnf_swdb_get_output_type #
+* dnf_swdb_get_reason_type #
+* dnf_swdb_get_state_type #
 * # = covered
 */
 
@@ -227,7 +227,6 @@ gint main ()
     //reset database
     dnf_swdb_reset_db(self);
 
-    gint rc;
     srand(time(NULL));
 
     //lets do some intial transaction
@@ -254,17 +253,64 @@ gint main ()
                                             "user", //reason
                                             "Installed" //state
         ));
+
+        //package is being installed...
+
+        //package installed successfully
+        g_assert(!dnf_swdb_trans_data_pid_end(  self,
+                                                pkg->pid,
+                                                tid,
+                                                "Installed"));
+
         g_object_unref(pkg);
         g_object_unref(pkg_data);
     }
 
-
-
-
-
     //close transaction
-    rc = end_trans(self, tid);
-    g_assert(!rc);
+    g_assert(!end_trans(self, tid));
+
+    //all done, mark all packages as done
+    //XXX we dont need to do that here, not sure about DNF
+    //g_assert(!dnf_swdb_trans_data_end( self, tid));
+
+    //get me last transaction and check few things
+    DnfSwdbTrans *trans = dnf_swdb_last(self);
+    g_assert(trans->tid == 1);
+    g_assert(trans->return_code == 0);
+    g_assert(!trans->altered_lt_rpmdb);
+    g_assert(!trans->altered_gt_rpmdb);
+
+    //get me all packages from that transaction and verify them
+    GPtrArray *packages = dnf_swdb_get_packages_by_tid(self, trans->tid);
+    g_assert(packages->len == INIT_PACAKGES);
+    for (guint i = 0; i < packages->len; ++i)
+    {
+        DnfSwdbPkg *pkg = g_ptr_array_index(packages, i);
+        g_assert(pkg->name);
+        g_assert(pkg->epoch);
+        g_assert(pkg->version);
+        g_assert(pkg->release);
+        g_assert(pkg->arch);
+        g_assert(pkg->checksum_data);
+        g_assert(pkg->checksum_type);
+        g_assert(pkg->type);
+        g_assert(pkg->done);
+        g_assert(pkg->state);
+        g_assert(pkg->pid);
+        g_assert(pkg->nvra);
+        g_assert(dnf_swdb_pkg_get_ui_from_repo(pkg));
+        DnfSwdbPkgData *pkgdata = dnf_swdb_package_data_by_nvra(self,pkg->nvra);
+        g_assert(pkgdata);
+        g_assert(pkgdata->from_repo);
+        g_assert(pkgdata->from_repo_revision);
+        g_assert(pkgdata->from_repo_timestamp);
+        g_assert(pkgdata->installed_by);
+        g_assert(pkgdata->pdid);
+        g_assert(pkgdata->pid);
+        g_assert(!g_strcmp0(pkgdata->from_repo, pkg->ui_from_repo));
+        g_object_unref(pkg);
+        g_object_unref(pkgdata);
+    }
 
 
 
