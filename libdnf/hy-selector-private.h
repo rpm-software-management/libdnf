@@ -31,6 +31,7 @@ struct _HySelector {
     struct _Filter *f_name;
     struct _Filter *f_provides;
     struct _Filter *f_reponame;
+    struct _Filter *f_pkg;
 };
 
 static inline DnfSack *selector_sack(HySelector sltr) { return sltr->sack; }

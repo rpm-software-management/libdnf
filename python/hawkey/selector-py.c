@@ -23,7 +23,9 @@
 #include "hy-selector.h"
 
 #include "exception-py.h"
+#include "hy-query.h"
 #include "iutil-py.h"
+#include "query-py.h"
 #include "sack-py.h"
 #include "selector-py.h"
 
@@ -99,13 +101,34 @@ set(_SelectorObject *self, PyObject *args)
 {
     key_t keyname;
     int cmp_type;
-    const char *cmatch;
+    PyObject *match;
 
-    if (!PyArg_ParseTuple(args, "iis", &keyname, &cmp_type, &cmatch))
+    if (!PyArg_ParseTuple(args, "iiO", &keyname, &cmp_type, &match))
         return NULL;
-    if (ret2e(hy_selector_set(self->sltr, keyname, cmp_type, cmatch),
-              "Invalid Selector spec." ))
-        return NULL;
+
+    if (keyname == HY_PKG) {
+        const DnfPackageSet *pset;
+        if (queryObject_Check(match)) {
+            HyQuery *target = queryFromPyObject(match);
+            pset = hy_query_run_set(target);
+        } else {
+            DnfSack *sack = sackFromPyObject(self->sack);
+            assert(sack);
+            pset = pyseq_to_packageset(match, sack);
+        }
+        if (ret2e(hy_selector_pkg_set(self->sltr, keyname, cmp_type, pset),
+                  "Invalid Selector spec." )) {
+               return NULL;
+        }
+    } else {
+        const char *cmatch;
+        PyObject *tmp_py_str = NULL;
+        cmatch = pycomp_get_string(match, &tmp_py_str);
+        if (ret2e(hy_selector_set(self->sltr, keyname, cmp_type, cmatch),
+                  "Invalid Selector spec." ))
+            return NULL;
+
+    }
     Py_RETURN_NONE;
 }
 
