@@ -30,6 +30,8 @@ G_BEGIN_DECLS
 
 HySelector hy_selector_create(DnfSack *sack);
 void hy_selector_free(HySelector sltr);
+int hy_selector_pkg_set(HySelector sltr, int keyname, int cmp_type,
+                        const DnfPackageSet *pset);
 int hy_selector_set(HySelector sltr, int keyname, int cmp_type,
                     const char *match);
 gboolean hy_selector_has_matches(HySelector sltr);

@@ -22,12 +22,12 @@
 #include <solv/solver.h>
 #include <solv/util.h>
 
+#include "dnf-sack-private.h"
 #include "dnf-types.h"
 #include "hy-goal-private.h"
 #include "hy-iutil.h"
 #include "hy-package-private.h"
 #include "hy-query-private.h"
-#include "dnf-sack-private.h"
 #include "hy-selector-private.h"
 #include "hy-util.h"
 
@@ -58,6 +58,24 @@ replace_filter(DnfSack *sack, struct _Filter **fp, int keyname, int cmp_type,
 
     f->match_type = _HY_STR;
     f->matches[0].str = g_strdup(match);
+    return 0;
+}
+
+static int
+replace_pkg_filter(DnfSack *sack, struct _Filter **fp, int keyname, int cmp_type,
+                   const DnfPackageSet *pset)
+{
+    if (*fp == NULL)
+        *fp = filter_create(1);
+    else
+        filter_reinit(*fp, 1);
+
+    struct _Filter *f = *fp;
+
+    f->keyname = keyname;
+    f->cmp_type = cmp_type;
+    f->match_type = _HY_PKG;
+    f->matches[0].pset = dnf_packageset_clone(pset);
     return 0;
 }
 
@@ -97,7 +115,15 @@ hy_selector_free(HySelector sltr)
     filter_free(sltr->f_name);
     filter_free(sltr->f_provides);
     filter_free(sltr->f_reponame);
+    filter_free(sltr->f_pkg);
     g_free(sltr);
+}
+
+int
+hy_selector_pkg_set(HySelector sltr, int keyname, int cmp_type, const DnfPackageSet *pset)
+{
+    DnfSack *sack = selector_sack(sltr);
+    return replace_pkg_filter(sack, &sltr->f_pkg, keyname, cmp_type, pset);
 }
 
 int
