@@ -111,11 +111,15 @@ set(_SelectorObject *self, PyObject *args)
         if (queryObject_Check(match)) {
             HyQuery *target = queryFromPyObject(match);
             pset = hy_query_run_set(target);
-        } else {
+        } else if (PyList_Check(match)) {
             DnfSack *sack = sackFromPyObject(self->sack);
             assert(sack);
             pset = pyseq_to_packageset(match, sack);
+        }  else {
+            (ret2e(DNF_ERROR_BAD_SELECTOR, "Invalid value type: Only List and Query supported"));
+            return NULL;
         }
+
         if (ret2e(hy_selector_pkg_set(self->sltr, keyname, cmp_type, pset),
                   "Invalid Selector spec." )) {
                return NULL;
