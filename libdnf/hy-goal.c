@@ -39,6 +39,7 @@
 #include "hy-goal-private.h"
 #include "hy-iutil.h"
 #include "hy-package-private.h"
+#include "hy-packageset-private.h"
 #include "hy-query-private.h"
 #include "dnf-reldep-private.h"
 #include "hy-repo-private.h"
@@ -486,6 +487,28 @@ filter_file2job(DnfSack *sack, const struct _Filter *f, Queue *job)
 }
 
 static int
+filter_pkg2job(DnfSack *sack, const struct _Filter *f, Queue *job)
+{
+    if (f == NULL)
+        return 0;
+    assert(f->nmatches == 1);
+    Pool *pool = dnf_sack_get_pool(sack);
+    const DnfPackageSet *pset = f->matches[0].pset;
+    const int count = dnf_packageset_count(pset);
+    Id what;
+    Id id = -1;
+    Queue pkgs;
+    queue_init(&pkgs);
+    for (int i = 0; i < count; ++i) {
+        id = dnf_packageset_get_pkgid(pset, i, id);
+        queue_push(&pkgs, id);
+    }
+    what = pool_queuetowhatprovides(pool, &pkgs);
+    queue_push2(job, SOLVER_SOLVABLE_ONE_OF|SOLVER_SETARCH, what);
+    return 0;
+}
+
+static int
 filter_name2job(DnfSack *sack, const struct _Filter *f, Queue *job)
 {
     if (f == NULL)
@@ -627,7 +650,7 @@ sltr2job(const HySelector sltr, Queue *job, int solver_action)
     int ret = 0;
     Queue job_sltr;
     int any_opt_filter = sltr->f_arch || sltr->f_evr || sltr->f_reponame;
-    int any_req_filter = sltr->f_name || sltr->f_provides || sltr->f_file;
+    int any_req_filter = sltr->f_name || sltr->f_provides || sltr->f_file || sltr->f_pkg;
 
     queue_init(&job_sltr);
 
@@ -640,6 +663,9 @@ sltr2job(const HySelector sltr, Queue *job, int solver_action)
 
     dnf_sack_recompute_considered(sack);
     dnf_sack_make_provides_ready(sack);
+    ret = filter_pkg2job(sack, sltr->f_pkg, &job_sltr);
+    if (ret)
+        goto finish;
     ret = filter_name2job(sack, sltr->f_name, &job_sltr);
     if (ret)
         goto finish;
