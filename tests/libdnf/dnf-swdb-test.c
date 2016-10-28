@@ -20,7 +20,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-/** TODO
+/** TODO Checklist
 * dnf_swdb_search
 * dnf_swdb_checksums_by_nvras
 * dnf_swdb_select_user_installed
@@ -46,18 +46,18 @@
 * dnf_swdb_groups_commit
 * dnf_swdb_log_group_trans
 * ------ REPOS -----
-* dnf_swdb_repo_by_nvra
-* dnf_swdb_set_repo
+* dnf_swdb_repo_by_nvra #
+* dnf_swdb_set_repo #
 * ----- PACKAGE -----
-* dnf_swdb_add_package_nevracht
-* dnf_swdb_get_pid_by_nevracht
-* dnf_swdb_log_package_data
+* dnf_swdb_add_package_nevracht # deprecated
+* dnf_swdb_get_pid_by_nevracht #
+* dnf_swdb_log_package_data #
 * dnf_swdb_get_pkg_attr
 * dnf_swdb_attr_by_nvra
-* dnf_swdb_get_packages_by_tid
-* dnf_swdb_pkg_get_ui_from_repo
+* dnf_swdb_get_packages_by_tid #
+* dnf_swdb_pkg_get_ui_from_repo #
 * dnf_swdb_package_by_nvra
-* dnf_swdb_package_data_by_nvra
+* dnf_swdb_package_data_by_nvra #
 * dnf_swdb_set_reason
 * dnf_swdb_mark_user_installed
 * dnf_swdb_add_package #
@@ -70,18 +70,18 @@
 * dnf_swdb_trans_beg #
 * dnf_swdb_trans_end #
 * dnf_swdb_trans_cmdline
-* dnf_swdb_get_old_trans_data
+* dnf_swdb_get_old_trans_data #
 * dnf_swdb_trans_old
 * dnf_swdb_last #
 * dnf_swdb_log_error
-* dnf_swdb_log_output
+* dnf_swdb_log_output #
 * dnf_swdb_load_error
-* dnf_swdb_load_output
+* dnf_swdb_load_output #
 * ------ UTIL -----
-* dnf_swdb_get_path
-* dnf_swdb_set_path
-* dnf_swdb_exist
-* dnf_swdb_create_db
+* dnf_swdb_get_path #
+* dnf_swdb_set_path #
+* dnf_swdb_exist #
+* dnf_swdb_create_db #
 * dnf_swdb_reset_db #
 * ------ intern ------
 * dnf_swdb_open #
@@ -100,7 +100,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define INIT_PACAKGES 1000
+#define INIT_PACAKGES 512
+#define TRANS_OUT "initial transaction 001"
 
 /**
  * Generate some random string with given length
@@ -153,7 +154,7 @@ static DnfSwdbPkg * generate_package ()
  */
 static DnfSwdbPkgData * generate_package_data ()
 {
-	const gchar *from_repo = (rand() % 2) ? "testaconda" : "testdora";
+	const gchar *from_repo = "testaconda";
     gchar *from_repo_revision = generate_str(16);
   	gchar *from_repo_timestamp = malloc (11*sizeof(gchar));
     snprintf(from_repo_timestamp, 11, "%d", (gint)time(NULL));
@@ -218,18 +219,131 @@ static gint end_trans ( DnfSwdb *self,
     return rc;
 }
 
-
-gint main ()
+static void check_package_persistor(DnfSwdb *self, DnfSwdbPkg *pkg)
 {
-    //create DB object
-    DnfSwdb *self = dnf_swdb_new( "/tmp", "42");
+    gchar *repo = dnf_swdb_repo_by_nvra(self, pkg->nvra);
+    g_assert(!g_strcmp0(pkg->ui_from_repo, repo));
 
-    //reset database
-    dnf_swdb_reset_db(self);
+    const gchar* new_repo = (rand() % 2) ? "testdora" : "testfusion";
+    g_assert(!dnf_swdb_set_repo(self, pkg->nvra, new_repo));
+    repo = dnf_swdb_repo_by_nvra(self, pkg->nvra);
 
-    srand(time(NULL));
+    //*Sigh...* here we have problem of non object - nvra approach
+    //repo changed in database but not in our package object...
+    //We would like to do:
+    //g_assert(!g_strcmp0(new_repo, pkg->from_repo));
+    //but we only can:
+    g_assert(!g_strcmp0(new_repo, repo));
+    g_free(repo);
 
-    //lets do some intial transaction
+    gint pid = dnf_swdb_get_pid_by_nevracht(self,
+    										pkg->name,
+											pkg->epoch,
+											pkg->version,
+											pkg->release,
+											pkg->arch,
+											pkg->checksum_data,
+											pkg->checksum_type,
+											pkg->type,
+											FALSE);
+    g_assert(pid && pid == pkg->pid);
+
+    /* TODO
+    * dnf_swdb_get_pkg_attr
+    * dnf_swdb_attr_by_nvra
+    * dnf_swdb_package_by_nvra
+    * dnf_swdb_set_reason
+    * dnf_swdb_mark_user_installed
+    * dnf_swdb_search
+    * dnf_swdb_checksums_by_nvras
+    * dnf_swdb_select_user_installed
+    * dnf_swdb_user_installed
+    * dnf_swdb_log_rpm_data
+    */
+}
+
+static void check_initial_transaction(DnfSwdb *self)
+{
+    DnfSwdbTrans *trans = dnf_swdb_last(self);
+    g_assert(trans->tid == 1);
+    g_assert(trans->return_code == 0);
+    g_assert(!trans->altered_lt_rpmdb);
+    g_assert(!trans->altered_gt_rpmdb);
+
+    //get me all packages from that transaction and verify them
+    GPtrArray *packages = dnf_swdb_get_packages_by_tid(self, trans->tid);
+    GPtrArray *trans_data = dnf_swdb_get_old_trans_data(self, trans);
+    g_assert(trans_data && trans_data->len == INIT_PACAKGES);
+    g_assert(packages && packages->len == INIT_PACAKGES);
+
+    for (guint i = 0; i < packages->len; ++i)
+    {
+        //check object attributes
+        DnfSwdbPkg *pkg = g_ptr_array_index(packages, i);
+        g_assert(pkg->name && *pkg->name);
+        g_assert(pkg->epoch && *pkg->epoch);
+        g_assert(pkg->version && *pkg->version);
+        g_assert(pkg->release && *pkg->release);
+        g_assert(pkg->arch && *pkg->arch);
+        g_assert(pkg->checksum_data && *pkg->checksum_data);
+        g_assert(pkg->checksum_type && *pkg->checksum_type);
+        g_assert(pkg->type && *pkg->type);
+        g_assert(pkg->done);
+        g_assert(pkg->state && *pkg->state);
+        g_assert(pkg->pid);
+        g_assert(pkg->nvra && *pkg->nvra);
+        g_assert(dnf_swdb_pkg_get_ui_from_repo(pkg));
+
+        //check package trans and package data
+        DnfSwdbTransData *transdata = g_ptr_array_index(trans_data, i);
+        DnfSwdbPkgData *pkgdata = dnf_swdb_package_data_by_nvra(self,
+                                                                pkg->nvra);
+        g_assert(pkgdata);
+        g_assert(pkgdata->from_repo && *pkgdata->from_repo);
+        g_assert(pkgdata->from_repo_revision && *pkgdata->from_repo_revision);
+        g_assert(pkgdata->from_repo_timestamp && *pkgdata->from_repo_timestamp);
+        g_assert(pkgdata->installed_by && *pkgdata->installed_by);
+        g_assert(!g_strcmp0(pkgdata->from_repo, pkg->ui_from_repo));
+
+        g_assert(transdata->done);
+
+        g_assert(transdata->reason);
+        g_assert(!g_strcmp0(transdata->reason, "user"));
+
+        g_assert(transdata->state);
+        g_assert(!g_strcmp0(transdata->state, "Installed"));
+
+        //check bindings
+        g_assert(pkgdata->pdid);
+        g_assert(transdata->pdid);
+        g_assert(pkgdata->pdid == transdata->pdid);
+
+        g_assert(pkgdata->pid);
+        g_assert(pkgdata->pid == pkg->pid);
+
+        g_assert(transdata->tid);
+        g_assert(transdata->tid == trans->tid);
+
+        //check methods operating with package
+        check_package_persistor(self, pkg);
+
+        g_object_unref(pkg);
+        g_object_unref(pkgdata);
+        g_object_unref(transdata);
+    }
+    g_ptr_array_free(packages, FALSE);
+    g_ptr_array_free(trans_data, FALSE);
+
+    //verify trans output
+    GPtrArray *output = dnf_swdb_load_output(self, trans->tid);
+    g_assert(!g_strcmp0(g_ptr_array_index(output,0), TRANS_OUT));
+    g_ptr_array_free(output, FALSE);
+
+    g_object_unref(trans);
+}
+
+static void run_initial_transaction(DnfSwdb *self)
+{
     guint tid = begin_trans(self);
     g_assert(tid); //tid not 0
 
@@ -266,53 +380,42 @@ gint main ()
         g_object_unref(pkg_data);
     }
 
+    //add some output
+    g_assert(!dnf_swdb_log_output(self, tid, TRANS_OUT));
+
+
     //close transaction
     g_assert(!end_trans(self, tid));
 
     //all done, mark all packages as done
     //XXX we dont need to do that here, not sure about DNF
     //g_assert(!dnf_swdb_trans_data_end( self, tid));
+}
 
-    //get me last transaction and check few things
-    DnfSwdbTrans *trans = dnf_swdb_last(self);
-    g_assert(trans->tid == 1);
-    g_assert(trans->return_code == 0);
-    g_assert(!trans->altered_lt_rpmdb);
-    g_assert(!trans->altered_gt_rpmdb);
+gint main ()
+{
+    //create DB object
+    DnfSwdb *self = dnf_swdb_new( "/tmp", "42");
 
-    //get me all packages from that transaction and verify them
-    GPtrArray *packages = dnf_swdb_get_packages_by_tid(self, trans->tid);
-    g_assert(packages->len == INIT_PACAKGES);
-    for (guint i = 0; i < packages->len; ++i)
-    {
-        DnfSwdbPkg *pkg = g_ptr_array_index(packages, i);
-        g_assert(pkg->name);
-        g_assert(pkg->epoch);
-        g_assert(pkg->version);
-        g_assert(pkg->release);
-        g_assert(pkg->arch);
-        g_assert(pkg->checksum_data);
-        g_assert(pkg->checksum_type);
-        g_assert(pkg->type);
-        g_assert(pkg->done);
-        g_assert(pkg->state);
-        g_assert(pkg->pid);
-        g_assert(pkg->nvra);
-        g_assert(dnf_swdb_pkg_get_ui_from_repo(pkg));
-        DnfSwdbPkgData *pkgdata = dnf_swdb_package_data_by_nvra(self,pkg->nvra);
-        g_assert(pkgdata);
-        g_assert(pkgdata->from_repo);
-        g_assert(pkgdata->from_repo_revision);
-        g_assert(pkgdata->from_repo_timestamp);
-        g_assert(pkgdata->installed_by);
-        g_assert(pkgdata->pdid);
-        g_assert(pkgdata->pid);
-        g_assert(!g_strcmp0(pkgdata->from_repo, pkg->ui_from_repo));
-        g_object_unref(pkg);
-        g_object_unref(pkgdata);
-    }
+    //check path setup
+    const gchar *full_path = "/tmp/swdb.sqlite";
+    g_assert(!g_strcmp0(dnf_swdb_get_path(self), full_path));
+    dnf_swdb_set_path(self, full_path);
+    g_assert(!g_strcmp0(dnf_swdb_get_path(self), full_path));
 
+    //check if db exists
+    g_assert(dnf_swdb_exist(self));
 
+    //reset database
+    dnf_swdb_reset_db(self);
+
+    srand(time(NULL));
+
+    //lets do some intial transaction
+    run_initial_transaction(self);
+
+    //take initial transaction and verify it
+    check_initial_transaction(self);
 
     return 0;
 }
