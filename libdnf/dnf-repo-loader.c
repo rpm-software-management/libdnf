@@ -151,7 +151,6 @@ dnf_repo_loader_add_media(DnfRepoLoader *self,
 {
     DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
     DnfRepo *repo;
-    g_autofree gchar *packages = NULL;
     g_autofree gchar *treeinfo_fn = NULL;
     g_autoptr(GKeyFile) treeinfo = NULL;
 

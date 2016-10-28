@@ -897,7 +897,6 @@ dnf_repo_loader_gpg_no_pubkey_func(void)
     g_autoptr(GError) error = NULL;
     g_autofree gchar *repos_dir = NULL;
     g_autoptr(DnfContext) ctx = NULL;
-    g_autoptr(DnfRepoLoader) repo_loader = NULL;
 
     /* set up local context */
     ctx = dnf_context_new();

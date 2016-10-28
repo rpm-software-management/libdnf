@@ -861,7 +861,6 @@ dnf_repo_setup(DnfRepo *repo, GError **error)
     g_autofree gchar *basearch = NULL;
     g_autofree gchar *release = NULL;
     g_autofree gchar *testdatadir = NULL;
-    g_autofree gchar *user_agent = NULL;
     g_autofree gchar *sslcacert = NULL;
     g_autofree gchar *sslclientcert = NULL;
     g_autofree gchar *sslclientkey = NULL;
