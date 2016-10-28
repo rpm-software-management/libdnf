@@ -122,26 +122,26 @@ gint    hif_swdb_trans_data_pid_end (   HifSwdb *self,
                                         const gchar *state);
 
 
-const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
-									const gint pid,
-									const gchar *attribute,
-                                    const gchar *cheat);
+gchar *dnf_swdb_get_pkg_attr(DnfSwdb *self,
+						     const gint pid,
+							 const gchar *attribute,
+                             const gchar *cheat);
 
 GPtrArray *hif_swdb_load_error (    HifSwdb *self,
                                     const gint tid);
 GPtrArray *hif_swdb_load_output (   HifSwdb *self,
 								    const gint tid);
 
-const gint 	hif_swdb_get_pid_by_nevracht(	HifSwdb *self,
-											const gchar *name,
-											const gchar *epoch,
-											const gchar *version,
-											const gchar *release,
-											const gchar *arch,
-											const gchar *checksum_data,
-											const gchar *checksum_type,
-											const gchar *type,
-											const gboolean create);
+gint 	dnf_swdb_get_pid_by_nevracht(	DnfSwdb *self,
+										const gchar *name,
+										const gchar *epoch,
+										const gchar *version,
+										const gchar *release,
+										const gchar *arch,
+										const gchar *checksum_data,
+										const gchar *checksum_type,
+										const gchar *type,
+										const gboolean create);
 
 gchar* _look_for_desc(sqlite3 *db, const gchar *table, const gint id);
 
@@ -160,8 +160,8 @@ gint _tid_from_pdid (	sqlite3 *db,
 GArray * _tids_from_pdid (	sqlite3 *db,
 							const gint pdid );
 
-const gchar* _repo_by_rid(   sqlite3 *db,
-                            const gint rid);
+gchar* _repo_by_rid(sqlite3 *db,
+                    const gint rid);
 
 gint 	hif_swdb_log_rpm_data(	   HifSwdb *self,
 									const gint   pid,
@@ -179,8 +179,8 @@ gint 	hif_swdb_log_rpm_data(	   HifSwdb *self,
 GPtrArray *hif_swdb_get_packages_by_tid(   HifSwdb *self,
                                     		const gint tid);
 
-const gchar * hif_swdb_trans_cmdline (   HifSwdb *self,
-							 	        const gint tid);
+gchar * dnf_swdb_trans_cmdline (DnfSwdb *self,
+							 	const gint tid);
 
 GPtrArray *hif_swdb_trans_old(	HifSwdb *self,
                                 GArray *tids,
@@ -224,28 +224,29 @@ DnfSwdbPkg *dnf_swdb_package_by_nvra (  DnfSwdb *self,
 DnfSwdbPkgData *dnf_swdb_package_data_by_nvra(  DnfSwdb *self,
                                                 const gchar *nvra);
 
-const gchar *dnf_swdb_attr_by_nvra (    DnfSwdb *self,
-                                        const gchar *attr,
-                                        const gchar *nvra);
+gchar *dnf_swdb_attr_by_nvra (  DnfSwdb *self,
+                                const gchar *attr,
+                                const gchar *nvra);
 
-const gchar *dnf_swdb_repo_by_nvra (    DnfSwdb *self,
-                                        const gchar *nvra);
+gchar *dnf_swdb_repo_by_nvra (  DnfSwdb *self,
+                                const gchar *nvra);
 
-const gint hif_swdb_mark_user_installed (   HifSwdb *self,
-                                            const gchar *pattern,
-                                            gboolean user_installed);
+gint dnf_swdb_mark_user_installed ( DnfSwdb *self,
+                                    const gchar *pattern,
+                                    gboolean user_installed);
 
 GPtrArray * hif_swdb_checksums_by_nvras(    HifSwdb *self,
                                             GPtrArray *nvras);
 
-const gint hif_swdb_set_reason (    HifSwdb *self,
-                                    const gchar *nvra,
-                                    const gchar *reason);
+gint dnf_swdb_set_reason (  DnfSwdb *self,
+                            const gchar *nvra,
+                            const gchar *reason);
 
-const gint hif_swdb_set_repo (      HifSwdb *self,
-                                    const gchar *nvra,
-                                    const gchar *repo);
-gboolean hif_swdb_user_installed (  HifSwdb *self,
+gint dnf_swdb_set_repo (    DnfSwdb *self,
+                            const gchar *nvra,
+                            const gchar *repo);
+
+gboolean dnf_swdb_user_installed (  DnfSwdb *self,
                                     const gchar *nvra  );
 gchar *_repo_by_pid  (   sqlite3 *db,
                         gint pid);

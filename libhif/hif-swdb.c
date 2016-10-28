@@ -1513,8 +1513,8 @@ static gint _bind_repo_by_name (sqlite3 *db, const gchar *name)
 	}
 }
 
-const gchar* _repo_by_rid(  sqlite3 *db,
-                            const gint rid)
+gchar* _repo_by_rid(  sqlite3 *db,
+                      const gint rid)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_REPO_BY_RID;
@@ -1533,25 +1533,25 @@ gchar *_repo_by_pid  (   sqlite3 *db,
     return DB_FIND_STR(res);
 }
 
-const gchar *dnf_swdb_repo_by_nvra (    DnfSwdb *self,
-                                        const gchar *nvra)
+gchar *dnf_swdb_repo_by_nvra (  DnfSwdb *self,
+                                const gchar *nvra)
 {
     if (hif_swdb_open(self))
     	return NULL;
     gint pid = _pid_by_nvra(self->db, nvra);
     if(!pid)
     {
-        hif_swdb_close(self);
-        return "unknown";
+        dnf_swdb_close(self);
+        return g_strdup("unknown");
     }
-    const gchar *r_name = _repo_by_pid(self->db, pid);
-    hif_swdb_close(self);
+    gchar *r_name = _repo_by_pid(self->db, pid);
+    dnf_swdb_close(self);
     return r_name;
 }
 
-const gint hif_swdb_set_repo (      HifSwdb *self,
-                                    const gchar *nvra,
-                                    const gchar *repo)
+gint dnf_swdb_set_repo (DnfSwdb *self,
+                        const gchar *nvra,
+                        const gchar *repo)
 {
     if (hif_swdb_open(self))
         return 1;
@@ -1630,16 +1630,16 @@ gint dnf_swdb_add_package(	DnfSwdb *self,
   	return rc;
 }
 
-const gint 	dnf_swdb_get_pid_by_nevracht(	DnfSwdb *self,
-											const gchar *name,
-											const gchar *epoch,
-											const gchar *version,
-											const gchar *release,
-											const gchar *arch,
-											const gchar *checksum_data,
-											const gchar *checksum_type,
-											const gchar *type,
-											const gboolean create)
+gint dnf_swdb_get_pid_by_nevracht(	DnfSwdb *self,
+									const gchar *name,
+									const gchar *epoch,
+									const gchar *version,
+									const gchar *release,
+									const gchar *arch,
+									const gchar *checksum_data,
+									const gchar *checksum_type,
+									const gchar *type,
+									const gboolean create)
 {
     if (hif_swdb_open(self))
     	return 1;
@@ -1821,10 +1821,10 @@ static const gchar *_insert_attr(const gchar *sql, const gchar* attr)
     return  g_strjoin(" ", "SELECT", attr, sql, NULL);
 }
 
-const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
-                                    const gint pid,
-                                    const gchar *attribute,
-                                    const gchar *cheat)
+gchar *dnf_swdb_get_pkg_attr(   DnfSwdb *self,
+                                const gint pid,
+                                const gchar *attribute,
+                                const gchar *cheat)
 {
     if (hif_swdb_open(self))
     {
@@ -1860,7 +1860,7 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
             dnf_swdb_close(self);
 
             if (!rv)
-                return "Unknown";
+                return g_strdup("Unknown");
             else
                 return rv;
         }
@@ -1871,7 +1871,7 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
             dnf_swdb_close(self);
 
             if (!rv)
-                return "Unknown";
+                return g_strdup("Unknown");
             else
                 return rv;
         }
@@ -1918,9 +1918,9 @@ const gchar *hif_swdb_get_pkg_attr( HifSwdb *self,
     return NULL;
 }
 
-const gchar *dnf_swdb_attr_by_nvra (    DnfSwdb *self,
-                                        const gchar *attr,
-                                        const gchar *nvra)
+gchar *dnf_swdb_attr_by_nvra (  DnfSwdb *self,
+                                const gchar *attr,
+                                const gchar *nvra)
 {
     if (hif_swdb_open(self))
     	return NULL;
@@ -1971,7 +1971,7 @@ static HifSwdbPkgData *_get_package_data_by_pid (   sqlite3 *db,
         pkgdata->pid = pid;
         gint rid = sqlite3_column_int(res, 2);
         sqlite3_finalize(res);
-        pkgdata->from_repo = (gchar *)_repo_by_rid(db, rid); //from repo
+        pkgdata->from_repo = _repo_by_rid(db, rid); //from repo
         return pkgdata;
     }
     sqlite3_finalize(res);
@@ -2144,9 +2144,9 @@ static const gint _mark_pkg_as (   sqlite3 *db,
     return 0;
 }
 
-const gint hif_swdb_set_reason (    HifSwdb *self,
-                                    const gchar *nvra,
-                                    const gchar *reason)
+gint dnf_swdb_set_reason (  DnfSwdb *self,
+                            const gchar *nvra,
+                            const gchar *reason)
 {
     if (hif_swdb_open(self))
         return 1;
@@ -2167,9 +2167,9 @@ const gint hif_swdb_set_reason (    HifSwdb *self,
     return rc;
 }
 
-const gint hif_swdb_mark_user_installed (   HifSwdb *self,
-                                            const gchar *pattern,
-                                            gboolean user_installed)
+gint dnf_swdb_mark_user_installed ( DnfSwdb *self,
+                                    const gchar *pattern,
+                                    gboolean user_installed)
 {
     gint rc;
     if(user_installed)
@@ -2376,8 +2376,8 @@ gint 	hif_swdb_trans_end 	(	HifSwdb *self,
   	return rc;
 }
 
-const gchar *hif_swdb_trans_cmdline (   HifSwdb *self,
-							 	        const gint tid)
+gchar *dnf_swdb_trans_cmdline ( DnfSwdb *self,
+								const gint tid)
 {
 	if (hif_swdb_open(self))
     	return NULL;
@@ -2385,8 +2385,8 @@ const gchar *hif_swdb_trans_cmdline (   HifSwdb *self,
     const gchar *sql = GET_TRANS_CMDLINE;
     DB_PREP(self->db, sql, res);
     DB_BIND_INT(res, "@tid", tid);
-    const gchar *cmdline = DB_FIND_STR(res);
-    hif_swdb_close(self);
+    gchar *cmdline = DB_FIND_STR(res);
+    dnf_swdb_close(self);
   	return cmdline;
 }
 
@@ -2631,8 +2631,7 @@ static GPtrArray *_load_output (       sqlite3 *db,
     gchar *row;
     while( (row = (gchar *)DB_FIND_STR_MULTI(res)) )
     {
-        g_ptr_array_add(l, g_strdup(row));
-        g_free(row);
+        g_ptr_array_add(l, row);
     }
     return l;
 }
