@@ -594,7 +594,7 @@ dnf_package_is_installonly(DnfPackage *pkg)
 /**
  * dnf_repo_checksum_hy_to_lr:
  **/
-static GChecksumType
+static LrChecksumType
 dnf_repo_checksum_hy_to_lr(GChecksumType checksum)
 {
     if (checksum == G_CHECKSUM_MD5)
@@ -603,7 +603,7 @@ dnf_repo_checksum_hy_to_lr(GChecksumType checksum)
         return LR_CHECKSUM_SHA1;
     if (checksum == G_CHECKSUM_SHA256)
         return LR_CHECKSUM_SHA256;
-    return G_CHECKSUM_SHA512;
+    return LR_CHECKSUM_SHA512;
 }
 
 /**
