@@ -163,18 +163,18 @@ GArray * _tids_from_pdid (	sqlite3 *db,
 gchar* _repo_by_rid(sqlite3 *db,
                     const gint rid);
 
-gint 	hif_swdb_log_rpm_data(	   HifSwdb *self,
-									const gint   pid,
-                                  	const gchar *buildtime,
-                                    const gchar *buildhost,
-                                    const gchar *license,
-                                    const gchar *packager,
-                                    const gchar *size,
-                                    const gchar *sourcerpm,
-                                    const gchar *url,
-                                    const gchar *vendor,
-                                    const gchar *committer,
-                                    const gchar *committime);
+gint 	dnf_swdb_log_rpm_data(  DnfSwdb *self,
+								const gint   pid,
+                                const gchar *buildtime,
+                                const gchar *buildhost,
+                                const gchar *license,
+                                const gchar *packager,
+                                const gchar *size,
+                                const gchar *sourcerpm,
+                                const gchar *url,
+                                const gchar *vendor,
+                                const gchar *committer,
+                                const gchar *committime);
 
 GPtrArray *hif_swdb_get_packages_by_tid(   HifSwdb *self,
                                     		const gint tid);
@@ -255,6 +255,8 @@ GArray *hif_swdb_select_user_installed( HifSwdb *self,
                                         GPtrArray *nvras);
 
 gint _find_match_by_desc(sqlite3 *db, const gchar *table, const gchar *desc);
+
+gint dnf_swdb_add_rpm_data(	DnfSwdb *self, DnfSwdbRpmData *rpm_data);
 
 
 G_END_DECLS
