@@ -24,7 +24,7 @@
 * dnf_swdb_search
 * dnf_swdb_checksums_by_nvras
 * dnf_swdb_select_user_installed
-* dnf_swdb_user_installed
+* dnf_swdb_user_installed #
 * ----- GROUPS -----
 * dnf_swdb_group_add_package
 * dnf_swdb_group_add_exclude
@@ -50,19 +50,20 @@
 * dnf_swdb_set_repo #
 * ----- PACKAGE -----
 * dnf_swdb_add_package_nevracht # deprecated
-* dnf_swdb_get_pid_by_nevracht #
+* dnf_swdb_get_pid_by_nevracht # deprecated
 * dnf_swdb_log_package_data #
-* dnf_swdb_get_pkg_attr
-* dnf_swdb_attr_by_nvra
+* dnf_swdb_get_pkg_attr #
+* dnf_swdb_attr_by_nvra #
 * dnf_swdb_get_packages_by_tid #
 * dnf_swdb_pkg_get_ui_from_repo #
-* dnf_swdb_package_by_nvra
+* dnf_swdb_package_by_nvra #
 * dnf_swdb_package_data_by_nvra #
-* dnf_swdb_set_reason
-* dnf_swdb_mark_user_installed
+* dnf_swdb_set_reason #
+* dnf_swdb_mark_user_installed #
 * dnf_swdb_add_package #
 * ------ RPM ------
-* dnf_swdb_log_rpm_data
+* dnf_swdb_log_rpm_data # deprecated
+* dnf_swdb_add_rpm_data #
 * ------ TRANS -----
 * dnf_swdb_trans_data_beg #
 * dnf_swdb_trans_data_end #
@@ -100,7 +101,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define INIT_PACAKGES 512
+#define INIT_PACAKGES 128
 #define TRANS_OUT "initial transaction 001"
 
 /**
@@ -150,6 +151,46 @@ static DnfSwdbPkg * generate_package ()
 }
 
 /**
+ * Generate rpm data with some random attributes
+ */
+static DnfSwdbRpmData * generate_rpm_data (gint pid)
+{
+    gchar* buildtime = generate_str(10);
+    gchar* buildhost = generate_str(6);
+    gchar* license = generate_str(4);
+    gchar* packager = generate_str(6);
+    gchar* size = generate_str(2);
+    gchar* sourcerpm = generate_str(16);
+    gchar* url = generate_str(16);
+    gchar* vendor = generate_str(6);
+    gchar* committer = generate_str(6);
+    gchar* committime = generate_str(10);
+    DnfSwdbRpmData *data = dnf_swdb_rpmdata_new(pid,
+                                                buildtime,
+                                                buildhost,
+                                                license,
+                                                packager,
+                                                size,
+                                                sourcerpm,
+                                                url,
+                                                vendor,
+                                                committer,
+                                                committime);
+    g_free(buildtime);
+    g_free(buildhost);
+    g_free(license);
+    g_free(packager);
+    g_free(size);
+    g_free(sourcerpm);
+    g_free(url);
+    g_free(vendor);
+    g_free(committer);
+    g_free(committime);
+    g_assert(data);
+    return data;
+}
+
+/**
  * Generate some package data with random attributes
  */
 static DnfSwdbPkgData * generate_package_data ()
@@ -164,15 +205,13 @@ static DnfSwdbPkgData * generate_package_data ()
   	const gchar *origin_url =
         (rand()% 10) ? NULL : "https://github.com/edynox/libhif";
 
-    DnfSwdbPkgData *pkg_data = dnf_swdb_pkgdata_new(
-                        from_repo_revision,
-                        from_repo_timestamp,
-                        installed_by,
-                        changed_by,
-                        installonly,
-                        origin_url,
-                        from_repo
-    );
+    DnfSwdbPkgData *pkg_data = dnf_swdb_pkgdata_new(from_repo_revision,
+                                                    from_repo_timestamp,
+                                                    installed_by,
+                                                    changed_by,
+                                                    installonly,
+                                                    origin_url,
+                                                    from_repo);
     g_free(from_repo_revision);
     g_free(from_repo_timestamp);
     return pkg_data;
@@ -223,6 +262,7 @@ static void check_package_persistor(DnfSwdb *self, DnfSwdbPkg *pkg)
 {
     gchar *repo = dnf_swdb_repo_by_nvra(self, pkg->nvra);
     g_assert(!g_strcmp0(pkg->ui_from_repo, repo));
+    g_free(repo);
 
     const gchar* new_repo = (rand() % 2) ? "testdora" : "testfusion";
     g_assert(!dnf_swdb_set_repo(self, pkg->nvra, new_repo));
@@ -236,6 +276,7 @@ static void check_package_persistor(DnfSwdb *self, DnfSwdbPkg *pkg)
     g_assert(!g_strcmp0(new_repo, repo));
     g_free(repo);
 
+    //deprecated but still used
     gint pid = dnf_swdb_get_pid_by_nevracht(self,
     										pkg->name,
 											pkg->epoch,
@@ -248,18 +289,55 @@ static void check_package_persistor(DnfSwdb *self, DnfSwdbPkg *pkg)
 											FALSE);
     g_assert(pid && pid == pkg->pid);
 
-    /* TODO
-    * dnf_swdb_get_pkg_attr
-    * dnf_swdb_attr_by_nvra
-    * dnf_swdb_package_by_nvra
-    * dnf_swdb_set_reason
-    * dnf_swdb_mark_user_installed
-    * dnf_swdb_search
-    * dnf_swdb_checksums_by_nvras
-    * dnf_swdb_select_user_installed
-    * dnf_swdb_user_installed
-    * dnf_swdb_log_rpm_data
-    */
+    //test another method how to obtain same package
+    DnfSwdbPkg *same_pkg = dnf_swdb_package_by_nvra(self, pkg->nvra);
+    g_assert(same_pkg);
+    g_assert(same_pkg->pid == pid);
+    g_assert(!g_strcmp0(pkg->checksum_data, same_pkg->checksum_data));
+
+    //obtained package should contain new repo settings
+    g_assert(!g_strcmp0(dnf_swdb_pkg_get_ui_from_repo(same_pkg), new_repo));
+
+    g_object_unref(same_pkg);
+
+    //check some attribute from each package attribute table
+    gchar *tmp = dnf_swdb_get_pkg_attr(self,
+                                   pid,
+                                   "packager",
+                                   "RPM_DATA"); //by pid w/ cheat
+    g_assert(tmp);
+    g_free(tmp);
+
+    tmp = dnf_swdb_get_pkg_attr(self,
+                                   pid,
+                                   "installed_by",
+                                   NULL); //by pid w/o cheat
+    g_assert(tmp);
+    g_free(tmp);
+
+    tmp = dnf_swdb_attr_by_nvra(self,
+                                   "cmdline",
+                                   pkg->nvra); //by nvra w/o typing
+    g_assert(tmp);
+    g_free(tmp);
+
+    tmp = dnf_swdb_attr_by_nvra(self,
+                                   "state",
+                                   pkg->nvra); //by nvra w/ typing
+    g_assert(tmp);
+    g_free(tmp);
+
+    //playing with reason
+    g_assert(dnf_swdb_user_installed(self, pkg->nvra));
+
+    g_assert(!dnf_swdb_mark_user_installed(self, pkg->nvra, FALSE));
+
+    g_assert(!dnf_swdb_user_installed(self, pkg->nvra));
+
+    g_assert(!dnf_swdb_set_reason(self, pkg->nvra, "user"));
+
+    g_assert(dnf_swdb_user_installed(self, pkg->nvra));
+
 }
 
 static void check_initial_transaction(DnfSwdb *self)
@@ -355,6 +433,11 @@ static void run_initial_transaction(DnfSwdb *self)
         //add pkg to database
         g_assert(dnf_swdb_add_package(self, pkg));
 
+        DnfSwdbRpmData *rpm_data = generate_rpm_data(pkg->pid);
+
+        //add rpm data to package
+        g_assert(!dnf_swdb_add_rpm_data(self, rpm_data));
+
         DnfSwdbPkgData *pkg_data = generate_package_data();
 
         //add package data
@@ -365,8 +448,7 @@ static void run_initial_transaction(DnfSwdb *self)
                                             tid,
                                             pkg->pid,
                                             "user", //reason
-                                            "Installed" //state
-        ));
+                                            "Installed")); //state
 
         //package is being installed...
 
@@ -377,6 +459,7 @@ static void run_initial_transaction(DnfSwdb *self)
                                                 "Installed"));
 
         g_object_unref(pkg);
+        g_object_unref(rpm_data);
         g_object_unref(pkg_data);
     }
 
@@ -395,19 +478,20 @@ static void run_initial_transaction(DnfSwdb *self)
 gint main ()
 {
     //create DB object
-    DnfSwdb *self = dnf_swdb_new( "/tmp", "42");
+    DnfSwdb *self = dnf_swdb_new( ".", "42");
 
     //check path setup
-    const gchar *full_path = "/tmp/swdb.sqlite";
+    const gchar *full_path = "./swdb.sqlite";
     g_assert(!g_strcmp0(dnf_swdb_get_path(self), full_path));
-    dnf_swdb_set_path(self, full_path);
-    g_assert(!g_strcmp0(dnf_swdb_get_path(self), full_path));
-
-    //check if db exists
-    g_assert(dnf_swdb_exist(self));
+    const gchar *new_full_path = "./tmp_swdb.sqlite";
+    dnf_swdb_set_path(self, new_full_path);
+    g_assert(!g_strcmp0(dnf_swdb_get_path(self), new_full_path));
 
     //reset database
     dnf_swdb_reset_db(self);
+
+    //check if db exists
+    g_assert(dnf_swdb_exist(self));
 
     srand(time(NULL));
 

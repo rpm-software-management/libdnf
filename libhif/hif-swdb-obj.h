@@ -57,8 +57,7 @@ HifSwdbPkg* hif_swdb_pkg_new(   const gchar* name,
                                 const gchar* checksum_data,
                                 const gchar* checksum_type,
                                 const gchar* type);
-const gchar* hif_swdb_pkg_get_ui_from_repo	( HifSwdbPkg *self);
-
+gchar* dnf_swdb_pkg_get_ui_from_repo	( DnfSwdbPkg *self);
 
 //Package Data holder for swdb history
 #define DNF_TYPE_SWDB_PKGDATA dnf_swdb_pkgdata_get_type()
@@ -209,6 +208,36 @@ GPtrArray *hif_swdb_env_get_grp_list    (HifSwdbEnv* env);
 GPtrArray *hif_swdb_env_get_exclude    (HifSwdbEnv* self);
 
 gboolean hif_swdb_env_is_installed  (HifSwdbEnv *env );
+
+#define DNF_TYPE_SWDB_RPMDATA dnf_swdb_rpmdata_get_type()
+G_DECLARE_FINAL_TYPE (DnfSwdbRpmData, dnf_swdb_rpmdata, DNF, SWDB_RPMDATA, GObject)
+struct _DnfSwdbRpmData
+{
+	GObject parent_instance;
+	gint   pid;
+    const gchar *buildtime;
+    const gchar *buildhost;
+    const gchar *license;
+    const gchar *packager;
+    const gchar *size;
+    const gchar *sourcerpm;
+    const gchar *url;
+    const gchar *vendor;
+    const gchar *committer;
+    const gchar *committime;
+};
+
+DnfSwdbRpmData* dnf_swdb_rpmdata_new(const gint   pid,
+									 const gchar *buildtime,
+									 const gchar *buildhost,
+									 const gchar *license,
+									 const gchar *packager,
+									 const gchar *size,
+									 const gchar *sourcerpm,
+									 const gchar *url,
+									 const gchar *vendor,
+									 const gchar *committer,
+									 const gchar *committime);
 
 G_END_DECLS
 
