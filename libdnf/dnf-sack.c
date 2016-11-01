@@ -685,7 +685,6 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
     }
     checksum_fp(hrepo->checksum, fp_repomd);
 
-    assert(hrepo->state_main == _HY_NEW);
     if (can_use_repomd_cache(fp_cache, hrepo->checksum)) {
         const char *chksum = pool_checksum_str(pool, hrepo->checksum);
         g_debug("using cached %s (0x%s)", name, chksum);
