@@ -6,9 +6,15 @@
 # Do not build bindings for python3 for RHEL <= 7
 %if 0%{?rhel} && 0%{?rhel} <= 7
 %bcond_with python3
+%bcond_without rhsm_plugin
 %else
 %bcond_without python3
+%bcond_with rhsm_plugin
 %endif
+
+%global _cmake_opts \\\
+    -DENABLE_SUBSCRIPTION_MANAGER_PLUGIN=%{?with_rhsm_plugin:ON}%{!?with_rhsm_plugin:OFF} \\\
+    %{nil}
 
 %global oldname libhif
 
@@ -47,6 +53,16 @@ BuildRequires:  python-nose
 
 %description devel
 Development files for %{name}.
+
+%if %{with rhsm_plugin}
+%package plugin-rhsm
+Summary:        Red Hat Subscription Manager Plugin for %{name}
+BuildRequires:  pkgconfig(librhsm)
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+
+%description plugin-rhsm
+%{summary}.
+%endif
 
 %package -n python2-hawkey
 Summary:        Python 2 bindings for the hawkey library
@@ -87,13 +103,13 @@ mkdir build-py3
 
 %build
 pushd build-py2
-  %cmake -DWITH_MAN=OFF ../ %{!?with_valgrind:-DDISABLE_VALGRIND=1}
+  %cmake -DWITH_MAN=OFF ../ %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts}
   %make_build
 popd
 
 %if %{with python3}
 pushd build-py3
-  %cmake -DPYTHON_DESIRED:str=3 -DWITH_GIR=0 -DWITH_MAN=0 -Dgtkdoc=0 ../ %{!?with_valgrind:-DDISABLE_VALGRIND=1}
+  %cmake -DPYTHON_DESIRED:str=3 -DWITH_GIR=0 -DWITH_MAN=0 -Dgtkdoc=0 ../ %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts}
   %make_build
 popd
 %endif
@@ -118,6 +134,8 @@ popd
 %endif
 
 %install
+mkdir -p %{buildroot}%{_libdir}/dnf/plugins/
+mkdir -p %{buildroot}%{_datadir}/dnf/plugins/
 pushd build-py2
   %make_install
 popd
@@ -135,6 +153,16 @@ popd
 %doc README.md AUTHORS NEWS
 %{_libdir}/%{name}.so.*
 %{_libdir}/girepository-1.0/Dnf-*.typelib
+%dir %{_libdir}/dnf/
+%dir %{_libdir}/dnf/plugins/
+%dir %{_datadir}/dnf/
+%dir %{_datadir}/dnf/plugins/
+
+%if %{with rhsm_plugin}
+%files plugin-rhsm
+%{_libdir}/dnf/plugins/subscription-manager.plugin
+%{_libdir}/dnf/plugins/libsubscription-manager.so
+%endif
 
 %files devel
 %doc %{_datadir}/gtk-doc/html/%{name}/

@@ -178,6 +178,8 @@ if (GOBJECT_INTROSPECTION_FOUND)
     endif()
 endif()
 
+add_subdirectory (plugins)
+
 install (FILES ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc
          DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
 INSTALL(FILES ${LIBDNF_headers} DESTINATION include/libdnf)

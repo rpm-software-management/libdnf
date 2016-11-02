@@ -1,0 +1,8 @@
+[Plugin]
+Module = subscription-manager
+Loader = c
+Name = Red Hat Subscription Manager
+Description = Access CDN repositories using subscriptions
+Authors = Igor Gnatenko <ignatenko@redhat.com>
+License = LGPLv2+
+Copyright = Copyright © 2016 Igor Gnatenko

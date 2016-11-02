@@ -22,6 +22,7 @@ ADD_DEFINITIONS(-DG_LOG_DOMAIN=\\"libdnf\\")
 INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR})
 
 OPTION (ENABLE_SOLV_URPMREORDER "Build with support for URPM-like solution reordering?" OFF)
+option (ENABLE_SUBSCRIPTION_MANAGER_PLUGIN "Build with subscription-manager plugin" OFF)
 
 # hawkey dependencies
 find_package (PkgConfig REQUIRED)
@@ -68,8 +69,10 @@ set (SHARE_INSTALL_PREFIX
      ${CMAKE_INSTALL_PREFIX}/share
      CACHE PATH "Base directory for data files")
 
-add_definitions (-DPACKAGE_LIBDIR=\\"${LIB_INSTALL_DIR}/dnf\\")
-add_definitions (-DPACKAGE_DATADIR=\\"${SHARE_INSTALL_PREFIX}/dnf\\")
+set (PKG_LIBDIR ${LIB_INSTALL_DIR}/dnf)
+set (PKG_DATADIR ${SHARE_INSTALL_PREFIX}/dnf)
+add_definitions (-DPACKAGE_LIBDIR=\\"${PKG_LIBDIR}\\")
+add_definitions (-DPACKAGE_DATADIR=\\"${PKG_DATADIR}\\")
 
 ADD_SUBDIRECTORY (libdnf)
 ENABLE_TESTING()
