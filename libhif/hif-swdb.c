@@ -837,18 +837,17 @@ static GArray *_extended_search (sqlite3* db, const gchar *pattern)
 * @patterns: (element-type utf8) (transfer container): list of constants
 * Returns: (element-type gint32) (transfer container): list of constants
 */
-GArray *hif_swdb_search (   HifSwdb *self,
-                            const GSList *patterns)
+GArray *dnf_swdb_search (   DnfSwdb *self,
+                            GPtrArray *patterns)
 {
     if (hif_swdb_open(self))
         return NULL;
     DB_TRANS_BEGIN
 
     GArray *tids = g_array_new(0, 0, sizeof(gint));
-    while(patterns)
+    for(guint i = 0; i < patterns-> len; ++i)
     {
-        const gchar *pattern = patterns->data;
-        patterns = patterns->next;
+        gchar *pattern = g_ptr_array_index(patterns, i);
 
         //try simple search
         GArray *simple =  _simple_search(self->db, pattern);
@@ -922,6 +921,9 @@ GPtrArray * hif_swdb_checksums_by_nvras(    HifSwdb *self,
  * hif_swdb_select_user_installed:
  * @nvras: (element-type utf8)(transfer container): list of constants
  * Returns: (element-type gint32)(transfer container): list of constants
+ *  - id`s of nvras, which are user installed
+ *  - e.g. when there is ["abc", "def", "ghi"] on input and "abc" and "ghi" are
+ *      user installed, output will be [0,2]
 **/
 GArray *hif_swdb_select_user_installed (    HifSwdb *self,
                                             GPtrArray *nvras)
@@ -930,29 +932,34 @@ GArray *hif_swdb_select_user_installed (    HifSwdb *self,
         return NULL;
 
     gint depid = _find_match_by_desc(self->db, "REASON_TYPE", "dep");
+    GArray *usr_ids = g_array_new(0,0,sizeof(gint));
     if (!depid)
     {
-        hif_swdb_close(self);
-        return NULL;
+        //there are no dependency pacakges - all packages are user installed
+        for(guint i = 0; i < nvras->len; ++i)
+            g_array_append_val(usr_ids, i);
+
+        dnf_swdb_close(self);
+        return usr_ids;
     }
-    GArray *dep_ids = g_array_new(0,0,sizeof(gint));
+
     gint pid = 0;
     gint pdid = 0;
     gint reason_id = 0;
     const gchar *sql = S_REASON_ID_BY_PDID;
-    for( guint i = 0; i < nvras->len; i++)
+    for( guint i = 0; i < nvras->len; ++i)
     {
         pid = _pid_by_nvra(self->db, (gchar *)g_ptr_array_index(nvras, i));
         if(!pid)
         {
             //better not uninstall package when not sure
-            g_array_append_val(dep_ids, i);
+            g_array_append_val(usr_ids, i);
             continue;
         }
         pdid = _pdid_from_pid(self->db, pid);
         if(!pdid)
         {
-            g_array_append_val(dep_ids, i);
+            g_array_append_val(usr_ids, i);
             continue;
         }
         sqlite3_stmt *res;
@@ -963,14 +970,14 @@ GArray *hif_swdb_select_user_installed (    HifSwdb *self,
             reason_id = sqlite3_column_int(res, 0);
             if (reason_id != depid)
             {
-                g_array_append_val(dep_ids, i);
+                g_array_append_val(usr_ids, i);
                 break;
             }
         }
         sqlite3_finalize(res);
     }
-    hif_swdb_close(self);
-    return dep_ids;
+    dnf_swdb_close(self);
+    return usr_ids;
 }
 
 gboolean hif_swdb_user_installed (  HifSwdb *self,
@@ -1313,7 +1320,8 @@ GPtrArray *hif_swdb_groups_by_pattern   (HifSwdb *self,
         group->gid = sqlite3_column_int(res,0);
         g_ptr_array_add(node, (gpointer) group);
     }
-    hif_swdb_close(self);
+    sqlite3_finalize(res);
+    dnf_swdb_close(self);
     return node;
 }
 
@@ -1345,7 +1353,8 @@ GPtrArray *hif_swdb_env_by_pattern      (HifSwdb *self,
         env->eid = sqlite3_column_int(res,0);
         g_ptr_array_add(node, (gpointer) env);
     }
-    hif_swdb_close(self);
+    sqlite3_finalize(res);
+    dnf_swdb_close(self);
     return node;
 }
 

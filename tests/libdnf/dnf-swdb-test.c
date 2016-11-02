@@ -23,7 +23,7 @@
 /** TODO Checklist
 * dnf_swdb_search
 * dnf_swdb_checksums_by_nvras
-* dnf_swdb_select_user_installed
+* dnf_swdb_select_user_installed #
 * dnf_swdb_user_installed #
 * ----- GROUPS -----
 * dnf_swdb_group_add_package
@@ -101,8 +101,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define INIT_PACAKGES 128
+#define INIT_PACAKGES 64
 #define TRANS_OUT "initial transaction 001"
+
+char *random_package_nvra = NULL;
 
 /**
  * Generate some random string with given length
@@ -354,6 +356,27 @@ static void check_initial_transaction(DnfSwdb *self)
     g_assert(trans_data && trans_data->len == INIT_PACAKGES);
     g_assert(packages && packages->len == INIT_PACAKGES);
 
+    DnfSwdbPkg *rpkg = g_ptr_array_index(packages, rand() % packages->len);
+    random_package_nvra = g_strdup(rpkg->nvra);
+
+    GPtrArray *nvras = g_ptr_array_new();
+    //get packages and check if they are user installed
+    for(guint i = 0; i < packages->len; ++i)
+    {
+        DnfSwdbPkg *pkg = g_ptr_array_index(packages, i);
+        g_ptr_array_add(nvras, pkg->nvra);
+    }
+    GArray *user_installed = dnf_swdb_select_user_installed(self, nvras);
+    g_assert(user_installed);
+    g_assert(user_installed->len == packages->len);
+    g_assert(g_array_index(user_installed,
+                           gint,
+                           packages->len - 1) == ((int)packages->len -1));
+
+    g_array_free(user_installed, TRUE);
+    g_ptr_array_free(nvras, FALSE);
+
+
     for (guint i = 0; i < packages->len; ++i)
     {
         //check object attributes
@@ -500,6 +523,27 @@ gint main ()
 
     //take initial transaction and verify it
     check_initial_transaction(self);
+
+    //search some random package
+    DnfSwdbPkg *pkg = dnf_swdb_package_by_nvra(self, random_package_nvra);
+    g_assert(!g_strcmp0(pkg->nvra, random_package_nvra));
+    GPtrArray *patts = g_ptr_array_new();
+    g_ptr_array_add(patts, (gpointer) pkg->name);
+    GArray *tids = dnf_swdb_search(self, patts);
+    g_ptr_array_free(patts, FALSE);
+    g_assert(tids);
+    g_assert(tids->len == 1);
+    g_assert(g_array_index(tids, gint, 0) == 1); // initial trans
+    g_array_free(tids, TRUE);
+
+    //TODO try to update, remove and reinstall package
+
+    //TODO create some group transaction
+
+
+
+
+    g_object_unref(pkg);
 
     return 0;
 }
