@@ -1088,6 +1088,10 @@ dnf_sack_add_cmdline_package(DnfSack *sack, const char *fn)
         return NULL;
     }
     p = repo_add_rpm(repo, fn, REPO_REUSE_REPODATA|REPO_NO_INTERNALIZE);
+    if (!p) {
+        g_warning("malformed RPM file: %s, skipping", fn);
+        return NULL;
+    }
     HyRepo hrepo = repo->appdata;
     hrepo->needs_internalizing = 1;
     priv->provides_ready = 0;    /* triggers internalizing later */
