@@ -123,6 +123,10 @@ int
 hy_selector_pkg_set(HySelector sltr, int keyname, int cmp_type, const DnfPackageSet *pset)
 {
     DnfSack *sack = selector_sack(sltr);
+
+    if (sltr->f_name || sltr->f_provides || sltr->f_file) {
+        return DNF_ERROR_BAD_SELECTOR;
+    }
     return replace_pkg_filter(sack, &sltr->f_pkg, keyname, cmp_type, pset);
 }
 
@@ -140,17 +144,17 @@ hy_selector_set(HySelector sltr, int keyname, int cmp_type, const char *match)
     case HY_PKG_VERSION:
         return replace_filter(sack, &sltr->f_evr, keyname, cmp_type, match);
     case HY_PKG_NAME:
-        if (sltr->f_provides || sltr->f_file)
+        if (sltr->f_provides || sltr->f_file || sltr->f_pkg)
             return DNF_ERROR_BAD_SELECTOR;
         return replace_filter(sack, &sltr->f_name, keyname, cmp_type, match);
     case HY_PKG_PROVIDES:
-        if (sltr->f_name || sltr->f_file)
+        if (sltr->f_name || sltr->f_file || sltr->f_pkg)
             return DNF_ERROR_BAD_SELECTOR;
         return replace_filter(sack, &sltr->f_provides, keyname, cmp_type, match);
     case HY_PKG_REPONAME:
         return replace_filter(sack, &sltr->f_reponame, keyname, cmp_type, match);
     case HY_PKG_FILE:
-        if (sltr->f_name || sltr->f_provides)
+        if (sltr->f_name || sltr->f_provides || sltr->f_pkg)
             return DNF_ERROR_BAD_SELECTOR;
         return replace_filter(sack, &sltr->f_file, keyname, cmp_type, match);
     default:
