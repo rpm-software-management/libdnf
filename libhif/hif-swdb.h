@@ -145,9 +145,8 @@ gint 	dnf_swdb_get_pid_by_nevracht(	DnfSwdb *self,
 
 gchar* _look_for_desc(sqlite3 *db, const gchar *table, const gint id);
 
-GArray *hif_swdb_search (   HifSwdb *self,
-							const GSList *patterns);
-
+GArray *dnf_swdb_search (   DnfSwdb *self,
+                            GPtrArray *patterns);
 
 gint _pdid_from_pid (	sqlite3 *db,
 						const gint pid );
