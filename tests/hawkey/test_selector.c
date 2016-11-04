@@ -19,11 +19,43 @@
  */
 
 
+#include "libdnf/hy-package-private.h"
+#include "libdnf/hy-query.h"
 #include "libdnf/hy-selector.h"
 #include "libdnf/dnf-types.h"
+#include "libdnf/hy-util.h"
 #include "fixtures.h"
 #include "testsys.h"
 #include "test_suites.h"
+
+START_TEST(test_sltr_pkg)
+{
+    HySelector sltr = hy_selector_create(test_globals.sack);
+    DnfPackageSet *pset = dnf_packageset_new(test_globals.sack);
+
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "penny");
+    GPtrArray *plist1 = hy_query_run(q);
+    hy_query_free(q);
+    fail_unless(plist1->len == 2);
+    DnfPackage *pkg0 = g_object_ref(g_ptr_array_index(plist1, 0));
+    DnfPackage *pkg1 = g_object_ref(g_ptr_array_index(plist1, 1));
+    g_ptr_array_unref(plist1);
+    dnf_packageset_add(pset, pkg0);
+
+    fail_if(hy_selector_pkg_set(sltr, HY_PKG, HY_EQ, pset));
+    GPtrArray *plist = hy_selector_matches(sltr);
+    fail_unless(plist->len == 1);
+    fail_unless(hy_packagelist_has(plist, pkg0));
+    fail_if(hy_packagelist_has(plist, pkg1));
+
+    g_object_unref(pkg0);
+    g_object_unref(pkg1);
+    g_object_unref(pset);
+    g_ptr_array_unref(plist);
+    hy_selector_free(sltr);
+}
+END_TEST
 
 START_TEST(test_sltr_matching)
 {
@@ -108,6 +140,7 @@ selector_suite(void)
     TCase *tc = tcase_create("Core");
 
     tcase_add_unchecked_fixture(tc, fixture_all, teardown);
+    tcase_add_test(tc, test_sltr_pkg);
     tcase_add_test(tc, test_sltr_matching);
     tcase_add_test(tc, test_sltr_provides);
     tcase_add_test(tc, test_sltr_provides_glob);
