@@ -50,7 +50,7 @@
 #define UPDATE_TRANS_DATA_PID_END "UPDATE TRANS_DATA SET done=@done WHERE T_ID=@tid and PD_ID=@pdid and state=@state"
 
 #define FIND_REPO_BY_NAME "SELECT R_ID FROM REPO WHERE name=@name"
-#define FIND_PDID_FROM_PID "SELECT PD_ID FROM PACKAGE_DATA WHERE P_ID=@pid ORDER by PD_ID DESC"
+#define FIND_PDID_FROM_PID "SELECT PD_ID FROM PACKAGE_DATA WHERE P_ID=@pid ORDER by PD_ID DESC LIMIT 1"
 #define FIND_ALL_PDID_FOR_PID "SELECT PD_ID FROM PACKAGE_DATA WHERE P_ID=@pid"
 #define GET_TRANS_CMDLINE "SELECT cmdline FROM TRANS WHERE T_ID=@tid"
 
@@ -82,8 +82,18 @@
   "FROM PACKAGE WHERE sql_nameArch LIKE @pat OR sql_nameVerRelArch LIKE @pat OR sql_nameVer LIKE @pat OR"\
   " sql_nameVerRel LIKE @pat OR sql_nevra LIKE @pat OR sql_envra LIKE @pat"
 
-
+#define S_PDID_TDID_BY_PID  "SELECT PD_ID,TD_ID from PACKAGE_DATA join TRANS_DATA"\
+                            " using (PD_ID) where P_ID=@pid ORDER by PD_ID DESC LIMIT 1"
 #define S_PACKAGE_BY_PID "SELECT * FROM PACKAGE WHERE P_ID=@pid"
+#define S_NAME_BY_PID "SELECT name FROM PACKAGE WHERE P_ID=@pid"
+#define S_LAST_TDID_BY_NAME "SELECT TD_ID FROM PACKAGE join PACKAGE_DATA using(P_ID) "\
+                            "join TRANS_DATA using(PD_ID) WHERE name=@name "\
+                            "and P_ID!=@pid ORDER BY TD_ID DESC LIMIT 1"
+
+#define S_LAST_W_TDID_BY_NAME   "SELECT TD_ID FROM PACKAGE join PACKAGE_DATA using(P_ID) "\
+                                "join TRANS_DATA using(PD_ID) WHERE name=@name "\
+                                "and PD_ID!=@pdid ORDER BY TD_ID DESC LIMIT 1"
+
 #define S_PACKAGE_DATA_BY_PID "SELECT * FROM PACKAGE_DATA WHERE P_ID=@pid"
 #define S_REPO_BY_RID "select name from REPO where R_ID=@rid"
 #define S_PREV_AUTO_PD "SELECT PD_ID FROM PACKAGE_DATA where P_ID=@pid and origin_url='#'"
@@ -121,6 +131,8 @@
 #define R_FULL_LIST_BY_ID "DELETE FROM GROUPS_PACKAGE WHERE G_ID=@gid"
 
 #define U_REPO_BY_PID "UPDATE PACKAGE_DATA SET R_ID=@rid where P_ID=@pid"
+
+#define U_ORIGINAL_TDID_BY_TDID "UPDATE TRANS_DATA set ORIGINAL_TD_ID=@orig where TD_ID=@tdid"
 
 //CREATION OF tables
 

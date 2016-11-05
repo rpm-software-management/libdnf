@@ -2426,6 +2426,7 @@ gint 	hif_swdb_trans_data_end	(	HifSwdb *self,
 
 /*
  * Mark single package from transaction as done
+ * Resolve ORIGINAL_TD_ID if any
  */
 gint    hif_swdb_trans_data_pid_end (   HifSwdb *self,
                                         const gint pid,
@@ -2436,9 +2437,21 @@ gint    hif_swdb_trans_data_pid_end (   HifSwdb *self,
     	return 1;
     DB_TRANS_BEGIN
 
-    const gint pdid = _pdid_from_pid(self->db, pid);
-    const gint _state = hif_swdb_get_state_type(self,state);
     sqlite3_stmt *res;
+    const gchar *p_sql = S_PDID_TDID_BY_PID;
+    DB_PREP(self->db, p_sql, res);
+    DB_BIND_INT(res, "@pid", pid);
+    gint pdid = 0;
+    gint tdid = 0;
+    if(sqlite3_step(res) == SQLITE_ROW)
+    {
+        pdid = sqlite3_column_int(res, 0);
+        tdid = sqlite3_column_int(res, 1);
+    }
+    sqlite3_finalize(res);
+
+    gint _state = dnf_swdb_get_state_type(self,state);
+
   	const gchar *sql = UPDATE_TRANS_DATA_PID_END;
   	DB_PREP(self->db, sql, res);
   	DB_BIND_INT(res, "@done", 1);
@@ -2446,6 +2459,56 @@ gint    hif_swdb_trans_data_pid_end (   HifSwdb *self,
     DB_BIND_INT(res, "@pdid", pdid);
     DB_BIND_INT(res, "@state", _state);
   	DB_STEP(res);
+
+    // resolve ORIGINAL_TD_ID
+    // this will be little bit problematic
+    if (g_strcmp0("Install", state) &&
+        g_strcmp0("Updated", state) &&
+        g_strcmp0("Reinstalled", state) &&
+        g_strcmp0("Obsoleted", state) &&
+        // FIXME we cant tell which package was obsoleted for now
+        g_strcmp0("Obsolete", state)
+    ) //other than these
+    {
+        /* get installed package name *sigh* - in future we would want to call
+         * this directly with unified DnfSwdbPkg object, so we could skip this
+         * and also there would be no pkg2pid method in DNF XXX
+         * Also, by this method, we cant tell if package was obsoleted
+        */
+
+        const gchar * n_sql = S_NAME_BY_PID;
+        DB_PREP(self->db, n_sql, res);
+      	DB_BIND_INT(res, "@pid", pid);
+        gchar * name = DB_FIND_STR(res);
+        if (name)
+        {
+            // find last package with same name in database
+            const gchar * t_sql;
+            if(!g_strcmp0("Update", state))
+            {
+                t_sql = S_LAST_TDID_BY_NAME;
+                DB_PREP(self->db, t_sql, res);
+                DB_BIND_INT(res, "@pid", pid);
+            }
+            else
+            {
+                t_sql = S_LAST_W_TDID_BY_NAME;
+                DB_PREP(self->db, t_sql, res);
+                DB_BIND_INT(res, "@pdid", pdid);
+            }
+            DB_BIND(res, "@name", name);
+            gint orig = DB_FIND(res);
+            if(orig)
+            {
+                const gchar * s_sql = U_ORIGINAL_TDID_BY_TDID;
+                DB_PREP(self->db, s_sql, res);
+              	DB_BIND_INT(res, "@tdid", tdid);
+                DB_BIND_INT(res, "@orig", orig);
+                DB_STEP(res);
+            }
+            g_free(name);
+        }
+    }
 
     DB_TRANS_END
     hif_swdb_close(self);
