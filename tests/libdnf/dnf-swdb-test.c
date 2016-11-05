@@ -130,7 +130,7 @@ static DnfSwdbPkg * generate_package ()
     gchar* version = generate_str(4);
     gchar* release = generate_str(6);
     gchar* arch = generate_str(4);
-    gchar* checksum_data = generate_str(64);
+    gchar* checksum_data = generate_str(32);
     const gchar* checksum_type = (rand() % 10) ? "sha256" : "sha1";
     const gchar *type = (rand() % 10) ? "rpm" : "source";
     DnfSwdbPkg *pkg = dnf_swdb_pkg_new(
@@ -412,7 +412,7 @@ static void check_initial_transaction(DnfSwdb *self)
         g_assert(!g_strcmp0(transdata->reason, "user"));
 
         g_assert(transdata->state);
-        g_assert(!g_strcmp0(transdata->state, "Installed"));
+        g_assert(!g_strcmp0(transdata->state, "Install"));
 
         //check bindings
         g_assert(pkgdata->pdid);
@@ -471,7 +471,7 @@ static void run_initial_transaction(DnfSwdb *self)
                                             tid,
                                             pkg->pid,
                                             "user", //reason
-                                            "Installed")); //state
+                                            "Install")); //state
 
         //package is being installed...
 
@@ -479,7 +479,7 @@ static void run_initial_transaction(DnfSwdb *self)
         g_assert(!dnf_swdb_trans_data_pid_end(  self,
                                                 pkg->pid,
                                                 tid,
-                                                "Installed"));
+                                                "Install"));
 
         g_object_unref(pkg);
         g_object_unref(rpm_data);
@@ -496,6 +496,38 @@ static void run_initial_transaction(DnfSwdb *self)
     //all done, mark all packages as done
     //XXX we dont need to do that here, not sure about DNF
     //g_assert(!dnf_swdb_trans_data_end( self, tid));
+}
+
+static void update_package(DnfSwdb *self, DnfSwdbPkg *pkg)
+{
+    gint tid = begin_trans(self);
+    g_assert(tid); //tid not 0
+    g_assert(dnf_swdb_add_package(self, pkg)); //pkg added
+    DnfSwdbRpmData *rpm_data = generate_rpm_data(pkg->pid); //add rpm_data
+    g_assert(!dnf_swdb_add_rpm_data(self, rpm_data));
+    DnfSwdbPkgData *pkg_data = generate_package_data();
+    g_assert(!dnf_swdb_log_package_data(self, pkg->pid, pkg_data));
+    g_assert(!dnf_swdb_trans_data_beg(  self,
+                                        tid,
+                                        pkg->pid,
+                                        "user", //reason
+                                        "Update")); //state
+    g_assert(!dnf_swdb_trans_data_pid_end(  self,
+                                            pkg->pid,
+                                            tid,
+                                            "Update"));
+    g_assert(!end_trans(self, tid));
+    DnfSwdbTrans *last_trans = dnf_swdb_last(self);
+    g_assert(last_trans);
+    GPtrArray *trans_data_array = dnf_swdb_get_old_trans_data(self, last_trans);
+    g_assert(trans_data_array || trans_data_array->len);
+    DnfSwdbTransData *trans_data = g_ptr_array_index(trans_data_array, 0);
+    g_assert(trans_data);
+    g_assert(trans_data->ORIGINAL_TD_ID);
+    g_ptr_array_free(trans_data_array, FALSE);
+    g_object_unref(trans_data);
+    g_object_unref(rpm_data);
+    g_object_unref(pkg_data);
 }
 
 gint main ()
@@ -536,7 +568,15 @@ gint main ()
     g_assert(g_array_index(tids, gint, 0) == 1); // initial trans
     g_array_free(tids, TRUE);
 
-    //TODO try to update, remove and reinstall package
+    //update
+    //change package version and checksum
+    g_free((gchar*) pkg->version);
+    pkg->version = generate_str(4);
+    g_free((gchar*) pkg->checksum_data);
+    pkg->checksum_data = generate_str(32);
+    update_package(self, pkg);
+
+    //TODO try to remove and reinstall package
 
     //TODO create some group transaction
 
