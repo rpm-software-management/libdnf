@@ -88,11 +88,11 @@
 #define S_NAME_BY_PID "SELECT name FROM PACKAGE WHERE P_ID=@pid"
 #define S_LAST_TDID_BY_NAME "SELECT TD_ID FROM PACKAGE join PACKAGE_DATA using(P_ID) "\
                             "join TRANS_DATA using(PD_ID) WHERE name=@name "\
-                            "and P_ID!=@pid ORDER BY TD_ID DESC LIMIT 1"
+                            "and P_ID!=@pid and T_ID!=@tid ORDER BY TD_ID DESC LIMIT 1"
 
 #define S_LAST_W_TDID_BY_NAME   "SELECT TD_ID FROM PACKAGE join PACKAGE_DATA using(P_ID) "\
                                 "join TRANS_DATA using(PD_ID) WHERE name=@name "\
-                                "and PD_ID!=@pdid ORDER BY TD_ID DESC LIMIT 1"
+                                "and T_ID!=@tid ORDER BY TD_ID DESC LIMIT 1"
 
 #define S_PACKAGE_DATA_BY_PID "SELECT * FROM PACKAGE_DATA WHERE P_ID=@pid"
 #define S_REPO_BY_RID "select name from REPO where R_ID=@rid"

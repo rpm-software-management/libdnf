@@ -104,7 +104,6 @@ static void hif_swdb_finalize(GObject *object)
 {
     DnfSwdb *swdb = (DnfSwdb *) object;
     g_free( swdb->path );
-    g_free( swdb->db);
     g_free( swdb->releasever);
     G_OBJECT_CLASS (dnf_swdb_parent_class)->finalize (object);
 }
@@ -778,7 +777,7 @@ static GArray *_simple_search(sqlite3* db, const gchar * pattern)
     DB_PREP(db, sql_simple, res_simple);
     DB_BIND(res_simple, "@pat", pattern);
     gint pid_simple;
-    GArray *simple = g_array_new(0,0,sizeof(gint));
+    GArray *simple = g_array_new(0, 0, sizeof(gint));
     while( (pid_simple = DB_FIND_MULTI(res_simple)))
     {
         g_array_append_val(simple, pid_simple);
@@ -794,7 +793,9 @@ static GArray *_simple_search(sqlite3* db, const gchar * pattern)
             GArray *tids_for_pdid = _tids_from_pdid(db, pdid);
             tids = g_array_append_vals (tids, tids_for_pdid->data,
                                         tids_for_pdid->len);
+            g_array_free(tids_for_pdid, TRUE);
         }
+        g_array_free(pdids, TRUE);
     }
     g_array_free(simple, TRUE);
     return tids;
@@ -827,7 +828,9 @@ static GArray *_extended_search (sqlite3* db, const gchar *pattern)
             GArray *tids_for_pdid = _tids_from_pdid(db, pdid);
             tids = g_array_append_vals (tids, tids_for_pdid->data,
                                         tids_for_pdid->len);
+            g_array_free(tids_for_pdid, TRUE);
         }
+        g_array_free(pdids, TRUE);
     }
     return tids;
 }
@@ -854,14 +857,17 @@ GArray *dnf_swdb_search (   DnfSwdb *self,
         if(simple->len)
         {
             tids = g_array_append_vals(tids, simple->data, simple->len);
+            g_array_free(simple, TRUE);
             continue;
         }
+        g_array_free(simple, TRUE);
         //need for extended search
         GArray *extended = _extended_search(self->db, pattern);
         if(extended)
         {
             tids = g_array_append_vals(tids, extended->data, extended->len);
         }
+        g_array_free(extended, TRUE);
     }
     DB_TRANS_END
     hif_swdb_close(self);
@@ -2450,7 +2456,7 @@ gint    hif_swdb_trans_data_pid_end (   HifSwdb *self,
     }
     sqlite3_finalize(res);
 
-    gint _state = dnf_swdb_get_state_type(self,state);
+    gint _state = dnf_swdb_get_state_type(self, state);
 
   	const gchar *sql = UPDATE_TRANS_DATA_PID_END;
   	DB_PREP(self->db, sql, res);
@@ -2494,8 +2500,8 @@ gint    hif_swdb_trans_data_pid_end (   HifSwdb *self,
             {
                 t_sql = S_LAST_W_TDID_BY_NAME;
                 DB_PREP(self->db, t_sql, res);
-                DB_BIND_INT(res, "@pdid", pdid);
             }
+            DB_BIND_INT(res, "@tid", tid);
             DB_BIND(res, "@name", name);
             gint orig = DB_FIND(res);
             if(orig)
@@ -2506,8 +2512,8 @@ gint    hif_swdb_trans_data_pid_end (   HifSwdb *self,
                 DB_BIND_INT(res, "@orig", orig);
                 DB_STEP(res);
             }
-            g_free(name);
         }
+        g_free(name);
     }
 
     DB_TRANS_END
@@ -2772,7 +2778,7 @@ HifSwdbTrans *hif_swdb_last (HifSwdb *self)
     if (!node || !node->len)
         return NULL;
     DnfSwdbTrans *trans = g_ptr_array_index(node, 0);
-    g_ptr_array_free(node, FALSE);
+    g_ptr_array_free(node, TRUE);
     return trans;
 }
 
@@ -2825,9 +2831,9 @@ gint hif_swdb_log_output	(	HifSwdb *self,
   	return rc;
 }
 
-static GPtrArray *_load_output (       sqlite3 *db,
-                                    const gint tid,
-                                    const gint type)
+static GPtrArray *_load_output (sqlite3 *db,
+                                gint tid,
+                                gint type)
 {
     sqlite3_stmt *res;
   	const gchar *sql = LOAD_OUTPUT;
