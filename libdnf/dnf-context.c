@@ -1535,12 +1535,6 @@ dnf_context_setup(DnfContext *context,
         !dnf_context_set_os_release(context, error))
         return FALSE;
 
-    /* setup RPM */
-    priv->repo_loader = dnf_repo_loader_new(context);
-    priv->repos = dnf_repo_loader_get_repos(priv->repo_loader, error);
-    if (priv->repos == NULL)
-        return FALSE;
-
     /* setup a file monitor on the rpmdb, if we're operating on the native / */
     if (g_strcmp0(priv->install_root, "/") == 0) {
         rpmdb_path = g_build_filename(priv->install_root, "var/lib/rpm/Packages", NULL);
@@ -1563,6 +1557,12 @@ dnf_context_setup(DnfContext *context,
 
     /* initialize external frameworks where installed */
     if (!dnf_context_setup_enrollments(context, error))
+        return FALSE;
+
+    /* initialize repos */
+    priv->repo_loader = dnf_repo_loader_new(context);
+    priv->repos = dnf_repo_loader_get_repos(priv->repo_loader, error);
+    if (priv->repos == NULL)
         return FALSE;
 
     return TRUE;
