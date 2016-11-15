@@ -54,14 +54,12 @@ struct _DnfContextClass
  * DnfContextInvalidateFlags:
  * @DNF_CONTEXT_INVALIDATE_FLAG_NONE:           No caches are invalid
  * @DNF_CONTEXT_INVALIDATE_FLAG_RPMDB:          The rpmdb cache is invalid
- * @DNF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT:     Any enrollment may be invalid
  *
  * The update flags.
  **/
 typedef enum {
         DNF_CONTEXT_INVALIDATE_FLAG_NONE        = 0,
         DNF_CONTEXT_INVALIDATE_FLAG_RPMDB       = 1,
-        DNF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT  = 2,
         /*< private >*/
         DNF_CONTEXT_INVALIDATE_FLAG_LAST
 } DnfContextInvalidateFlags;
@@ -147,8 +145,6 @@ void             dnf_context_set_user_agent             (DnfContext     *context
 /* object methods */
 gboolean         dnf_context_setup                      (DnfContext     *context,
                                                          GCancellable   *cancellable,
-                                                         GError         **error);
-gboolean         dnf_context_setup_enrollments          (DnfContext     *context,
                                                          GError         **error);
 gboolean         dnf_context_setup_sack                 (DnfContext     *context,
                                                          DnfState       *state,

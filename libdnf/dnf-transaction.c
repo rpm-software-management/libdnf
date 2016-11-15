@@ -1532,8 +1532,7 @@ dnf_transaction_commit(DnfTransaction *transaction,
 
     /* all sacks are invalid now */
     dnf_context_invalidate_full(priv->context, "transaction performed",
-                                DNF_CONTEXT_INVALIDATE_FLAG_RPMDB |
-                                DNF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT);
+                                DNF_CONTEXT_INVALIDATE_FLAG_RPMDB);
 
     /* this section done */
     ret = dnf_state_done(state, error);

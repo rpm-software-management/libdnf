@@ -104,7 +104,6 @@ typedef struct
     gboolean         only_trusted;
     gboolean         enable_yumdb;
     gboolean         keep_cache;
-    gboolean         enrollment_valid;
     DnfLock         *lock;
     DnfTransaction  *transaction;
     GThread         *transaction_thread;
@@ -1457,70 +1456,6 @@ dnf_context_set_http_proxy(DnfContext *context, const gchar *proxyurl)
 }
 
 /**
- * dnf_context_setup_enrollments:
- * @context: a #DnfContext instance.
- * @error: A #GError or %NULL
- *
- * Resyncs the enrollment with the vendor system. This may change the contents
- * of files in repos.d according to subscription levels.
- *
- * Returns: %TRUE for success, %FALSE otherwise
- *
- * Since: 0.2.1
- **/
-gboolean
-dnf_context_setup_enrollments(DnfContext *context, GError **error)
-{
-    DnfContextPrivate *priv = GET_PRIVATE(context);
-    guint i;
-    const gchar *cmds[] = {
-        "/usr/sbin/rhn-profile-sync",
-        "/usr/bin/subscription-manager refresh",
-        NULL };
-
-    /* no need to refresh */
-    if (priv->enrollment_valid)
-        return TRUE;
-
-    /* Let's assume that alternative installation roots don't
-     * require entitlement.  We only want to do system things if
-     * we're actually affecting the system.  A more accurate test
-     * here would be checking that we're using /etc/yum.repos.d or
-     * so, but that can come later.
-     */
-    if (g_strcmp0(priv->install_root, "/") != 0)
-        return TRUE;
-
-    /* Also, all of the subman stuff only works as root, if we're not
-     * root, assume we're running in the test suite, or we're part of
-     * e.g. rpm-ostree which is trying to run totally as non-root.
-     */
-    if (getuid () != 0)
-        return TRUE;
-
-    for (i = 0; cmds[i] != NULL; i++) {
-        int child_argc;
-        g_auto(GStrv) child_argv = NULL;
-        int estatus;
-
-        if (!g_shell_parse_argv(cmds[i], &child_argc, &child_argv, error))
-            return FALSE;
-        if (child_argc == 0)
-            continue;
-        if (!g_file_test(child_argv[0], G_FILE_TEST_EXISTS))
-            continue;
-        g_debug("Running: %s", cmds[i]);
-        if (!g_spawn_sync(NULL, child_argv, NULL, 0,
-                          NULL, NULL, NULL, NULL, &estatus, error))
-            return FALSE;
-        if (!g_spawn_check_exit_status(estatus, error))
-            return FALSE;
-    }
-    priv->enrollment_valid = TRUE;
-    return TRUE;
-}
-
-/**
  * dnf_context_setup:
  * @context: a #DnfContext instance.
  * @cancellable: A #GCancellable or %NULL
@@ -1645,10 +1580,6 @@ dnf_context_setup (DnfContext    *context,
     peas_extension_set_foreach (priv->extension_set,
                                 on_extension_setup,
                                 context);
-
-    /* initialize external frameworks where installed */
-    if (!dnf_context_setup_enrollments(context, error))
-        return FALSE;
 
     /* initialize repos */
     priv->repo_loader = dnf_repo_loader_new(context);
@@ -2036,7 +1967,7 @@ dnf_context_commit(DnfContext *context, DnfState *state, GError **error)
  * dnf_context_invalidate_full:
  * @context: a #DnfContext instance.
  * @message: the reason for invalidating
- * @flags: a #DnfContextInvalidateFlags, e.g. %DNF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT
+ * @flags: a #DnfContextInvalidateFlags, e.g. %DNF_CONTEXT_INVALIDATE_FLAG_RPMDB
  *
  * Informs the context that the certain parts of the context may no longer be
  * in sync or valid.
@@ -2052,8 +1983,6 @@ dnf_context_invalidate_full(DnfContext *context,
     g_debug("Msg: %s", message);
     if (flags & DNF_CONTEXT_INVALIDATE_FLAG_RPMDB)
         g_signal_emit(context, signals [SIGNAL_INVALIDATE], 0, message);
-    if (flags & DNF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT)
-        priv->enrollment_valid = FALSE;
 }
 
 /**

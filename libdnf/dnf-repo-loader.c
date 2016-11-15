@@ -88,8 +88,6 @@ dnf_repo_loader_invalidate(DnfRepoLoader *self)
 {
     DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
     priv->loaded = FALSE;
-    dnf_context_invalidate_full(priv->context, "repos.d invalidated",
-                     DNF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT);
 }
 
 /**
@@ -423,10 +421,6 @@ dnf_repo_loader_refresh(DnfRepoLoader *self, GError **error)
     /* no longer loaded */
     dnf_repo_loader_invalidate(self);
     g_ptr_array_set_size(priv->repos, 0);
-
-    /* re-populate redhat.repo */
-    if (!dnf_context_setup_enrollments(priv->context, error))
-        return FALSE;
 
     /* open dir */
     repo_path = dnf_context_get_repo_dir(priv->context);

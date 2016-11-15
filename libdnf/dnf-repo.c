@@ -1531,10 +1531,6 @@ dnf_repo_update(DnfRepo *repo,
     if (!ret)
         goto out;
 
-    /* signal that the vendor platform data is not resyned */
-    dnf_context_invalidate_full(priv->context, "updated repo cache",
-                                DNF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT);
-
     /* done */
     ret = dnf_state_done(state, error);
     if (!ret)
