@@ -504,7 +504,7 @@ filter_pkg2job(DnfSack *sack, const struct _Filter *f, Queue *job)
         queue_push(&pkgs, id);
     }
     what = pool_queuetowhatprovides(pool, &pkgs);
-    queue_push2(job, SOLVER_SOLVABLE_ONE_OF|SOLVER_SETARCH, what);
+    queue_push2(job, SOLVER_SOLVABLE_ONE_OF|SOLVER_SETARCH|SOLVER_SETEVR, what);
     return 0;
 }
 
