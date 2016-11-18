@@ -45,7 +45,8 @@ TARGET_LINK_LIBRARIES(libdnf
                       ${GLIB_GIO_UNIX_LIBRARIES}
                       ${LIBSOLV_LIBRARY}
                       ${LIBSOLV_EXT_LIBRARY}
-                      ${RPMDB_LIBRARY})
+                      ${RPMDB_LIBRARY}
+                      ${SQLite3_LIBRARIES})
 
 if (ENABLE_RHSM_SUPPORT)
     target_link_libraries (libdnf ${RHSM_LIBRARIES})
