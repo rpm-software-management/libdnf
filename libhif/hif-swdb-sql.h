@@ -46,7 +46,6 @@
                         "@vendor,@committer,@committime)"
 
 #define INSERT_TRANS_DATA_BEG "insert into TRANS_DATA values(null,@tid,@pdid,null,@done,null,@reason,@state)"
-#define UPDATE_TRANS_DATA_END "UPDATE TRANS_DATA SET done=@done WHERE T_ID=@tid"
 #define UPDATE_TRANS_DATA_PID_END "UPDATE TRANS_DATA SET done=@done WHERE T_ID=@tid and PD_ID=@pdid and state=@state"
 
 #define FIND_REPO_BY_NAME "SELECT R_ID FROM REPO WHERE name=@name"
@@ -63,11 +62,6 @@
 #define TRANS_ATTR_BY_TID "FROM TRANS WHERE T_ID=@tid"
 #define RPM_ATTR_BY_PID    "FROM RPM_DATA WHERE P_ID=@pid"
 #define PID_BY_TID  "select P_ID from TRANS_DATA join PACKAGE_DATA using(PD_ID) where T_ID=@tid"
-
-#define FIND_PKG_BY_NEVRA   "SELECT P_ID FROM PACKAGE WHERE name=@name and epoch=@epoch and version=@version and release=@release"\
-                            " and arch=@arch and @type=type"
-#define FIND_PKG_BY_NEVRACHT "SELECT P_ID FROM PACKAGE WHERE name=@name and epoch=@epoch and version=@version and release=@release"\
-                            " and arch=@arch and @type=type and checksum_data=@cdata and checksum_type=@ctype"
 
 #define FIND_PIDS_BY_NAME "SELECT P_ID FROM PACKAGE WHERE NAME LIKE @pattern"
 
