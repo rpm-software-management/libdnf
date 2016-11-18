@@ -1179,8 +1179,8 @@ int
 hy_goal_get_reason(HyGoal goal, DnfPackage *pkg)
 {
     //solver_get_recommendations
-
-    assert(goal->solv);
+    if (!goal->solv)
+        return HY_REASON_USER;
     Id info;
     int reason = solver_describe_decision(goal->solv, dnf_package_get_id(pkg), &info);
 
