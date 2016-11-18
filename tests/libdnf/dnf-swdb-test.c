@@ -49,8 +49,6 @@
 * dnf_swdb_repo_by_nvra #
 * dnf_swdb_set_repo #
 * ----- PACKAGE -----
-* dnf_swdb_add_package_nevracht # deprecated
-* dnf_swdb_get_pid_by_nevracht # deprecated
 * dnf_swdb_log_package_data #
 * dnf_swdb_get_pkg_attr #
 * dnf_swdb_attr_by_nvra #
@@ -62,7 +60,6 @@
 * dnf_swdb_mark_user_installed #
 * dnf_swdb_add_package #
 * ------ RPM ------
-* dnf_swdb_log_rpm_data # deprecated
 * dnf_swdb_add_rpm_data #
 * ------ TRANS -----
 * dnf_swdb_trans_data_beg #
@@ -278,17 +275,7 @@ static void check_package_persistor(DnfSwdb *self, DnfSwdbPkg *pkg)
     g_assert(!g_strcmp0(new_repo, repo));
     g_free(repo);
 
-    //deprecated but still used
-    gint pid = dnf_swdb_get_pid_by_nevracht(self,
-    										pkg->name,
-											pkg->epoch,
-											pkg->version,
-											pkg->release,
-											pkg->arch,
-											pkg->checksum_data,
-											pkg->checksum_type,
-											pkg->type,
-											FALSE);
+    gint pid = dnf_swdb_pid_by_nvra(self, pkg->nvra);
     g_assert(pid && pid == pkg->pid);
 
     //test another method how to obtain same package

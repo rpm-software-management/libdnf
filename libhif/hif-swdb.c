@@ -20,11 +20,6 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-/* TODO:    -   Fix fixmes
-            -   Replace structs with Gobjects
-            -   Think about GOM
- */
-
 #define default_path "/var/lib/dnf/history/swdb.sqlite"
 
 #define DB_PREP(db, sql, res) assert(_db_prepare(db, sql, &res))
@@ -809,7 +804,7 @@ static GArray *_extended_search (sqlite3* db, const gchar *pattern)
     GArray *tids = g_array_new(0, 0, sizeof(gint));
     sqlite3_stmt *res;
     const gchar *sql = SEARCH_PATTERN;
-    DB_PREP( db, sql, res);
+    DB_PREP(db, sql, res);
     //lot of patterns...
     DB_BIND(res, "@pat", pattern);
     DB_BIND(res, "@pat", pattern);
@@ -817,12 +812,20 @@ static GArray *_extended_search (sqlite3* db, const gchar *pattern)
     DB_BIND(res, "@pat", pattern);
     DB_BIND(res, "@pat", pattern);
     DB_BIND(res, "@pat", pattern);
-    gint pid = DB_FIND(res); //FIXME what about multiple versions?
-    gint pdid;
-    if(pid)
+    GArray *pids = g_array_new(0, 0, sizeof(gint));
+    gint pid;
+    while(sqlite3_step(res) == SQLITE_ROW)
     {
+        pid = sqlite3_column_int(res, 0);
+        g_array_append_val(pids, pid);
+    }
+    sqlite3_finalize(res);
+    gint pdid;
+    for(guint j = 0; j < pids->len; ++j)
+    {
+        pid = g_array_index(pids, gint, j);
         GArray *pdids = _all_pdid_for_pid(db, pid);
-        for(guint i = 0; i < pdids->len; i++)
+        for(guint i = 0; i < pdids->len; ++i)
         {
             pdid = g_array_index(pdids, gint, i);
             GArray *tids_for_pdid = _tids_from_pdid(db, pdid);
@@ -832,6 +835,7 @@ static GArray *_extended_search (sqlite3* db, const gchar *pattern)
         }
         g_array_free(pdids, TRUE);
     }
+    g_array_free(pids, TRUE);
     return tids;
 }
 
@@ -1701,28 +1705,6 @@ static gint _package_insert(HifSwdb *self, HifSwdbPkg *package)
   	return package->pid;
 }
 
-gint hif_swdb_add_package_nevracht(	HifSwdb *self,
-				  					const gchar *name,
-									const gchar *epoch,
-									const gchar *version,
-									const gchar *release,
-				  					const gchar *arch,
-				 					const gchar *checksum_data,
-								   	const gchar *checksum_type,
-								  	const gchar *type)
-{
-  	if (hif_swdb_open(self))
-    	return 1;
-  	DB_TRANS_BEGIN
- 	DnfSwdbPkg *package = dnf_swdb_pkg_new(name, epoch, version, release, arch,
-		                                   checksum_data, checksum_type, type);
-    gint rc = _package_insert(self, package);
-    g_object_unref(package);
-  	DB_TRANS_END
-  	hif_swdb_close(self);
-  	return rc;
-}
-
 gint dnf_swdb_add_package(	DnfSwdb *self,
 				  			DnfSwdbPkg *pkg)
 {
@@ -1735,75 +1717,6 @@ gint dnf_swdb_add_package(	DnfSwdb *self,
     DB_TRANS_END
   	dnf_swdb_close(self);
   	return rc;
-}
-
-gint dnf_swdb_get_pid_by_nevracht(	DnfSwdb *self,
-									const gchar *name,
-									const gchar *epoch,
-									const gchar *version,
-									const gchar *release,
-									const gchar *arch,
-									const gchar *checksum_data,
-									const gchar *checksum_type,
-									const gchar *type,
-									const gboolean create)
-{
-    if (hif_swdb_open(self))
-    	return 1;
-  	DB_TRANS_BEGIN
- 	const gint _type = hif_swdb_get_package_type(self,type);
-    sqlite3_stmt *res;
-    gint rc = 0;
-    if (g_strcmp0(checksum_type,"") && g_strcmp0(checksum_data,""))
-    {
-        const gchar *sql = FIND_PKG_BY_NEVRACHT;
-        DB_PREP(self->db, sql, res);
-        DB_BIND(res, "@name", name);
-        DB_BIND(res, "@epoch", epoch);
-        DB_BIND(res, "@version", version);
-        DB_BIND(res, "@release", release);
-        DB_BIND(res, "@arch", arch);
-        DB_BIND_INT(res, "@type", _type);
-        DB_BIND(res, "@cdata", checksum_data);
-        DB_BIND(res, "@ctype", checksum_type);
-        rc = DB_FIND(res);
-    }
-    else
-    {
-        const gchar *sql = FIND_PKG_BY_NEVRA;
-        DB_PREP(self->db, sql, res);
-        DB_BIND(res, "@name", name);
-        DB_BIND(res, "@epoch", epoch);
-        DB_BIND(res, "@version", version);
-        DB_BIND(res, "@release", release);
-        DB_BIND(res, "@arch", arch);
-        DB_BIND_INT(res, "@type", _type);
-        rc = DB_FIND(res);
-    }
-    if(rc) //found
-    {
-        DB_TRANS_END
-      	hif_swdb_close(self);
-      	return rc;
-    }
-
-    if(create)
-    {
-        return dnf_swdb_add_package_nevracht(
-            self,
-            name,
-            epoch,
-            version,
-            release,
-            arch,
-            checksum_data,
-            checksum_type,
-            type
-        );
-    }
-    DB_TRANS_END
-    hif_swdb_close(self);
-    return 0;
 }
 
 static gint _package_data_update (  sqlite3 *db,
@@ -2214,6 +2127,20 @@ gchar* dnf_swdb_pkg_get_ui_from_repo	( DnfSwdbPkg *self)
 }
 
 /**
+ * dnf_swdb_pid_by_nvra:
+ * Returns P_ID for package with given nvra or 0
+ */
+gint dnf_swdb_pid_by_nvra(DnfSwdb *self,
+                          const gchar *nvra)
+{
+    if (dnf_swdb_open(self))
+        return 0;
+    gint pid = _pid_by_nvra(self->db, nvra);
+    dnf_swdb_close(self);
+    return pid;
+}
+
+/**
 * dnf_swdb_package_by_nvra:
 * Returns: (transfer full): #DnfSwdbPkg
 */
@@ -2254,9 +2181,9 @@ DnfSwdbPkgData *dnf_swdb_package_data_by_nvra(  DnfSwdb *self,
     return pkgdata;
 }
 
-static const gint _mark_pkg_as (   sqlite3 *db,
-                            const gint pdid,
-                            gint mark)
+static const gint _mark_pkg_as(sqlite3 *db,
+                               const gint pdid,
+                               gint mark)
 {
     sqlite3_stmt *res;
     const gchar *sql = U_REASON_BY_PDID;
@@ -2267,9 +2194,9 @@ static const gint _mark_pkg_as (   sqlite3 *db,
     return 0;
 }
 
-gint dnf_swdb_set_reason (  DnfSwdb *self,
-                            const gchar *nvra,
-                            const gchar *reason)
+gint dnf_swdb_set_reason(DnfSwdb *self,
+                         const gchar *nvra,
+                         const gchar *reason)
 {
     if (hif_swdb_open(self))
         return 1;
@@ -2290,9 +2217,9 @@ gint dnf_swdb_set_reason (  DnfSwdb *self,
     return rc;
 }
 
-gint dnf_swdb_mark_user_installed ( DnfSwdb *self,
-                                    const gchar *pattern,
-                                    gboolean user_installed)
+gint dnf_swdb_mark_user_installed(DnfSwdb *self,
+                                  const gchar *pattern,
+                                  gboolean user_installed)
 {
     gint rc;
     if(user_installed)
@@ -2328,39 +2255,6 @@ static gint _rpm_data_insert (sqlite3 *db, DnfSwdbRpmData *rpm_data)
   	return 0;
 }
 
-gint dnf_swdb_log_rpm_data(	DnfSwdb *self,
-							const gint   pid,
-                            const gchar *buildtime,
-                            const gchar *buildhost,
-                            const gchar *license,
-                            const gchar *packager,
-                            const gchar *size,
-                            const gchar *sourcerpm,
-                            const gchar *url,
-                            const gchar *vendor,
-                            const gchar *committer,
-                            const gchar *committime)
-{
-  	if (hif_swdb_open(self))
-    	return 1;
-
-  	DnfSwdbRpmData *rpm_data = dnf_swdb_rpmdata_new(pid,
-                                                    buildtime,
-                                                    buildhost,
-                                                    license,
-                                                    packager,
-                                                    size,
-                                                    sourcerpm,
-                                                    url,
-                                                    vendor,
-                                                    committer,
-                                                    committime);
-  	gint rc = _rpm_data_insert(self->db, rpm_data);
-    g_object_unref(rpm_data);
-  	dnf_swdb_close(self);
-  	return rc;
-}
-
 gint dnf_swdb_add_rpm_data(	DnfSwdb *self,
 							DnfSwdbRpmData *rpm_data)
 {
@@ -2374,7 +2268,8 @@ gint dnf_swdb_add_rpm_data(	DnfSwdb *self,
 
 /*************************** TRANS DATA PERSISTOR ****************************/
 
-static gint _trans_data_beg_insert	(sqlite3 *db, struct trans_data_beg_t *trans_data_beg)
+static gint _trans_data_beg_insert(sqlite3 *db,
+                                   struct trans_data_beg_t *trans_data_beg)
 {
   	sqlite3_stmt *res;
   	const gchar *sql = INSERT_TRANS_DATA_BEG;
@@ -2401,31 +2296,6 @@ gint 	hif_swdb_trans_data_beg	(	HifSwdb *self,
 	  	hif_swdb_get_reason_type(self, reason), hif_swdb_get_state_type(self,state)};
   	gint rc = _trans_data_beg_insert(self->db, &trans_data_beg);
   	DB_TRANS_END
-  	hif_swdb_close(self);
-  	return rc;
-}
-
-static gint _trans_data_end_update( sqlite3 *db,
-								    const gint tid)
-{
-  	sqlite3_stmt *res;
-  	const gchar *sql = UPDATE_TRANS_DATA_END;
-  	DB_PREP(db, sql, res);
-  	DB_BIND_INT(res, "@done", 1);
-  	DB_BIND_INT(res, "@tid", tid);
-  	DB_STEP(res);
-  	return 0;
-}
-
-/*
- * Mark all packages from transaction as done
- */
-gint 	hif_swdb_trans_data_end	(	HifSwdb *self,
-									const gint tid)
-{
-  	if (hif_swdb_open(self))
-    	return 1;
-  	gint rc = _trans_data_end_update(self->db, tid);
   	hif_swdb_close(self);
   	return rc;
 }
@@ -2478,7 +2348,7 @@ gint    hif_swdb_trans_data_pid_end (   HifSwdb *self,
     {
         /* get installed package name *sigh* - in future we would want to call
          * this directly with unified DnfSwdbPkg object, so we could skip this
-         * and also there would be no pkg2pid method in DNF XXX
+         * and there would be no pkg2pid method in DNF XXX
          * Also, by this method, we cant tell if package was obsoleted
         */
 

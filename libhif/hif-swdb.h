@@ -69,16 +69,6 @@ gint hif_swdb_get_reason_type (HifSwdb *self, const gchar *type);
 
 gint hif_swdb_get_state_type (HifSwdb *self, const gchar *type);
 
-gint hif_swdb_add_package_nevracht(	HifSwdb *self,
-				  					const gchar *name,
-									const gchar *epoch,
-									const gchar *version,
-									const gchar *release,
-				  					const gchar *arch,
-				 					const gchar *checksum_data,
-								   	const gchar *checksum_type,
-								  	const gchar *type);
-
 gint dnf_swdb_add_package(	DnfSwdb *self,
 				  			DnfSwdbPkg *pkg);
 
@@ -113,10 +103,7 @@ gint 	hif_swdb_trans_data_beg(	HifSwdb *self,
 									const gchar *reason,
 									const gchar *state );
 
-gint 	hif_swdb_trans_data_end	(	HifSwdb *self,
-									const gint tid);
-
-gint    hif_swdb_trans_data_pid_end (   HifSwdb *self,
+gint    dnf_swdb_trans_data_pid_end (   DnfSwdb *self,
                                         const gint pid,
                                         const gint tid,
                                         const gchar *state);
@@ -131,17 +118,6 @@ GPtrArray *hif_swdb_load_error (    HifSwdb *self,
                                     const gint tid);
 GPtrArray *hif_swdb_load_output (   HifSwdb *self,
 								    const gint tid);
-
-gint 	dnf_swdb_get_pid_by_nevracht(	DnfSwdb *self,
-										const gchar *name,
-										const gchar *epoch,
-										const gchar *version,
-										const gchar *release,
-										const gchar *arch,
-										const gchar *checksum_data,
-										const gchar *checksum_type,
-										const gchar *type,
-										const gboolean create);
 
 gchar* _look_for_desc(sqlite3 *db, const gchar *table, const gint id);
 
@@ -162,20 +138,7 @@ GArray * _tids_from_pdid (	sqlite3 *db,
 gchar* _repo_by_rid(sqlite3 *db,
                     const gint rid);
 
-gint 	dnf_swdb_log_rpm_data(  DnfSwdb *self,
-								const gint   pid,
-                                const gchar *buildtime,
-                                const gchar *buildhost,
-                                const gchar *license,
-                                const gchar *packager,
-                                const gchar *size,
-                                const gchar *sourcerpm,
-                                const gchar *url,
-                                const gchar *vendor,
-                                const gchar *committer,
-                                const gchar *committime);
-
-GPtrArray *hif_swdb_get_packages_by_tid(   HifSwdb *self,
+GPtrArray *dnf_swdb_get_packages_by_tid(   DnfSwdb *self,
                                     		const gint tid);
 
 gchar * dnf_swdb_trans_cmdline (DnfSwdb *self,
@@ -256,6 +219,9 @@ GArray *hif_swdb_select_user_installed( HifSwdb *self,
 gint _find_match_by_desc(sqlite3 *db, const gchar *table, const gchar *desc);
 
 gint dnf_swdb_add_rpm_data(	DnfSwdb *self, DnfSwdbRpmData *rpm_data);
+
+gint dnf_swdb_pid_by_nvra(DnfSwdb *self,
+                          const gchar *nvra);
 
 
 G_END_DECLS
