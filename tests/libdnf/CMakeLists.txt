@@ -19,7 +19,8 @@ TARGET_LINK_LIBRARIES(test_libdnf_swdb
                     ${GLIB_GIO_UNIX_LIBRARIES}
                     ${SOLV_LIBRARY}
                     ${SOLVEXT_LIBRARY}
-                    ${RPMDB_LIBRARY})
+                    ${RPMDB_LIBRARY}
+                    ${SQLite3_LIBRARIES}    )
 
 ADD_TEST(test_libdnf_main test_libdnf_main)
 IF (NOT DISABLE_VALGRIND AND VALGRIND_PROGRAM)
