@@ -348,9 +348,12 @@ class Query(_hawkey.Query):
 
     def filter(self, *lst, **kwargs):
         new_query = type(self)(query=self)
-        return new_query.filterm(*lst, **kwargs)
+        return new_query._filterm(*lst, **kwargs)
 
     def filterm(self, *lst, **kwargs):
+        return self._filterm(*lst, **kwargs)
+
+    def _filterm(self, *lst, **kwargs):
         self._result = None
         flags = set(lst)
         for arg_tuple in _parse_filter_args(flags, kwargs):
