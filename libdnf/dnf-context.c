@@ -1038,6 +1038,15 @@ dnf_context_set_os_release(DnfContext *context, GError **error)
         return FALSE;
 
     if (contents == NULL) {
+        g_free(os_release);
+        /* For rpm-ostree use on systems that haven't adapted to usr/lib/os-release yet,
+         * e.g. CentOS 7 Core AH */
+        os_release = g_build_filename(source_root, "usr/etc/os-release", NULL);
+        if (!dnf_get_file_contents_allow_noent(os_release, &contents, NULL, error))
+            return FALSE;
+    }
+
+    if (contents == NULL) {
         g_free (os_release);
         os_release = g_build_filename(source_root, "usr/lib/os-release", NULL);
         if (!dnf_get_file_contents_allow_noent(os_release, &contents, NULL, error))
