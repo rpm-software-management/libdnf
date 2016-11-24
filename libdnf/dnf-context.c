@@ -1801,6 +1801,35 @@ dnf_context_update(DnfContext *context, const gchar *name, GError **error)
 }
 
 /**
+ * dnf_context_update_all:
+ * @context: a #DnfContext instance.
+ * @error: A #GError or %NULL
+ *
+ * Update all packages.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.7.0
+ **/
+gboolean
+dnf_context_update_all (DnfContext  *context,
+                        GError     **error)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+
+    /* create sack and add repos */
+    if (priv->sack == NULL) {
+        dnf_state_reset(priv->state);
+        if (!dnf_context_setup_sack(context, priv->state, error))
+            return FALSE;
+    }
+
+    /* update whole solvables */
+    hy_goal_upgrade_all (priv->goal);
+    return TRUE;
+}
+
+/**
  * dnf_context_repo_set_data:
  **/
 static gboolean
