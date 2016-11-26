@@ -1055,7 +1055,7 @@ dnf_context_set_os_release(DnfContext *context, GError **error)
 
     if (contents == NULL) {
         g_set_error(error, DNF_ERROR, DNF_ERROR_FILE_NOT_FOUND,
-                    "Could not find os-release in etc/ nor in usr/lib "
+                    "Could not find os-release in etc/, usr/etc, or usr/lib "
                     "under source root '%s'", source_root);
         return FALSE;
     }
