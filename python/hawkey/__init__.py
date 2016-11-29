@@ -255,6 +255,10 @@ class Goal(_hawkey.Goal):
         super(Goal, self).install(*args, **kwargs)
 
     @_auto_selector
+    def downgrade_to(self, *args, **kwargs):
+        super(Goal, self).downgrade_to(*args, **kwargs)
+
+    @_auto_selector
     def upgrade(self, *args, **kwargs):
         super(Goal, self).upgrade(*args, **kwargs)
 

@@ -47,7 +47,8 @@ typedef enum {
     DNF_ALLOW_UNINSTALL          = 1 << 10,
     DNF_FORCE_BEST               = 1 << 11,
     DNF_VERIFY                   = 1 << 12,
-    DNF_IGNORE_WEAK_DEPS         = 1 << 13
+    DNF_IGNORE_WEAK_DEPS         = 1 << 13,
+    DNF_ALLOW_DOWNGRADE          = 1 << 14
 } DnfGoalActions;
 
 #define HY_REASON_DEP 1
@@ -63,6 +64,8 @@ int hy_goal_distupgrade_all(HyGoal goal);
 int hy_goal_distupgrade(HyGoal goal, DnfPackage *new_pkg);
 int hy_goal_distupgrade_selector(HyGoal goal, HySelector);
 int hy_goal_downgrade_to(HyGoal goal, DnfPackage *new_pkg);
+int hy_goal_downgrade_to_selector(HyGoal goal, HySelector sltr);
+int hy_goal_downgrade_to_selector_optional(HyGoal goal, HySelector sltr);
 int hy_goal_erase(HyGoal goal, DnfPackage *pkg);
 int hy_goal_erase_flags(HyGoal goal, DnfPackage *pkg, int flags);
 
