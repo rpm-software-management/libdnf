@@ -303,6 +303,9 @@ solve(HyGoal goal, Queue *job, DnfGoalActions flags,
     if (DNF_IGNORE_WEAK_DEPS & flags)
         solver_set_flag(solv, SOLVER_FLAG_IGNORE_RECOMMENDED, 1);
 
+    if (DNF_ALLOW_DOWNGRADE & goal->actions)
+        solver_set_flag(solv, SOLVER_FLAG_ALLOW_DOWNGRADE, 1);
+
     if (solver_solve(solv, job))
         return 1;
     // either allow solutions callback or installonlies, both at the same time
@@ -763,6 +766,20 @@ hy_goal_downgrade_to(HyGoal goal, DnfPackage *new_pkg)
 {
     goal->actions |= DNF_DOWNGRADE;
     return hy_goal_install(goal, new_pkg);
+}
+
+int
+hy_goal_downgrade_to_selector(HyGoal goal, HySelector sltr)
+{
+    goal->actions |= DNF_DOWNGRADE|DNF_ALLOW_DOWNGRADE;
+    return sltr2job(sltr, &goal->staging, SOLVER_INSTALL);
+}
+
+int
+hy_goal_downgrade_to_selector_optional(HyGoal goal, HySelector sltr)
+{
+    goal->actions |= DNF_DOWNGRADE|DNF_ALLOW_DOWNGRADE;
+    return sltr2job(sltr, &goal->staging, SOLVER_INSTALL|SOLVER_WEAK);
 }
 
 int
