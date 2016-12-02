@@ -299,7 +299,7 @@ nevra_to_selector(HyNevra nevra, DnfSack *sack)
     HySelector selector = hy_selector_create(sack);
 
     if (hy_nevra_has_just_name(nevra)) {
-        hy_selector_set(selector, HY_PKG_PROVIDES, HY_EQ,
+        hy_selector_set(selector, HY_PKG_NAME, HY_EQ,
                         hy_nevra_get_string(nevra, HY_NEVRA_NAME));
     } else {
         const char *str = hy_nevra_get_string(nevra, HY_NEVRA_NAME);
