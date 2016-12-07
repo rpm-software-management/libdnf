@@ -422,8 +422,10 @@ static void
 filter_release(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = dnf_sack_get_pool(q->sack);
+    int cmp_type = f->cmp_type;
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
+        const char *match = f->matches[mi].str;
         char *filter_vr = solv_dupjoin("0-", f->matches[mi].str, NULL);
 
         for (Id id = 1; id < pool->nsolvables; ++id) {
@@ -436,6 +438,13 @@ filter_release(HyQuery q, struct _Filter *f, Map *m)
             const char *evr = pool_id2str(pool, s->evr);
 
             pool_split_evr(pool, evr, &e, &v, &r);
+
+            if (cmp_type == HY_GLOB) {
+                if (fnmatch(match, r, 0))
+                    continue;
+                MAPSET(m, id);
+            }
+
             char *vr = pool_tmpjoin(pool, "0-", r, NULL);
 
             int cmp = pool_evrcmp_str(pool, vr, filter_vr, EVRCMP_COMPARE);
