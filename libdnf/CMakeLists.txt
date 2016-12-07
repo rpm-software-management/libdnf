@@ -133,7 +133,7 @@ if (GOBJECT_INTROSPECTION_FOUND)
         set(GIR_TYPELIB "${GIR_PREFIX}.typelib")
 
         add_custom_command(OUTPUT ${GIR_XML}
-            COMMAND ${GOBJECT_INTROSPECTION_1.0_G_IR_SCANNER}
+            COMMAND env CFLAGS=${CMAKE_C_FLAGS} ${GOBJECT_INTROSPECTION_1.0_G_IR_SCANNER}
                     --namespace=Dnf
                     --nsversion=${DNF_SO_VERSION}.0
                     --library-path=${CMAKE_CURRENT_BINARY_DIR}
