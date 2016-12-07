@@ -493,7 +493,7 @@ filter_pkg2job(DnfSack *sack, const struct _Filter *f, Queue *job)
         return 0;
     assert(f->nmatches == 1);
     Pool *pool = dnf_sack_get_pool(sack);
-    const DnfPackageSet *pset = f->matches[0].pset;
+    DnfPackageSet *pset = f->matches[0].pset;
     const int count = dnf_packageset_count(pset);
     Id what;
     Id id = -1;

@@ -75,7 +75,7 @@ replace_pkg_filter(DnfSack *sack, struct _Filter **fp, int keyname, int cmp_type
     f->keyname = keyname;
     f->cmp_type = cmp_type;
     f->match_type = _HY_PKG;
-    f->matches[0].pset = dnf_packageset_clone(pset);
+    f->matches[0].pset = dnf_packageset_clone((DnfPackageSet*)pset);
     return 0;
 }
 
