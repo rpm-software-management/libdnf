@@ -109,7 +109,7 @@ set(_SelectorObject *self, PyObject *args)
     if (keyname == HY_PKG) {
         const DnfPackageSet *pset;
         if (queryObject_Check(match)) {
-            HyQuery *target = queryFromPyObject(match);
+            HyQuery target = queryFromPyObject(match);
             pset = hy_query_run_set(target);
         } else if (PyList_Check(match)) {
             DnfSack *sack = sackFromPyObject(self->sack);
