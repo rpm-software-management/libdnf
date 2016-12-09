@@ -47,7 +47,9 @@ typedef enum {
     DNF_ALLOW_UNINSTALL          = 1 << 10,
     DNF_FORCE_BEST               = 1 << 11,
     DNF_VERIFY                   = 1 << 12,
-    DNF_IGNORE_WEAK_DEPS         = 1 << 13
+    DNF_IGNORE_WEAK_DEPS         = 1 << 13,
+    DNF_ALLOW_DOWNGRADE          = 1 << 14,
+    DNF_NEED_UPDATEPROVIDE       = 1 << 15
 } DnfGoalActions;
 
 #define HY_REASON_DEP 1

@@ -303,6 +303,9 @@ solve(HyGoal goal, Queue *job, DnfGoalActions flags,
     if (DNF_IGNORE_WEAK_DEPS & flags)
         solver_set_flag(solv, SOLVER_FLAG_IGNORE_RECOMMENDED, 1);
 
+    if (DNF_NEED_UPDATEPROVIDE & goal->actions)
+        solver_set_flag(solv, SOLVER_FLAG_NEED_UPDATEPROVIDE, 1);
+
     if (solver_solve(solv, job))
         return 1;
     // either allow solutions callback or installonlies, both at the same time
@@ -875,7 +878,7 @@ hy_goal_upgrade_to(HyGoal goal, DnfPackage *new_pkg)
 int
 hy_goal_upgrade_to_selector(HyGoal goal, HySelector sltr)
 {
-    goal->actions |= DNF_UPGRADE;
+    goal->actions |= DNF_UPGRADE|DNF_NEED_UPDATEPROVIDE;
     if (sltr->f_evr == NULL)
         return sltr2job(sltr, &goal->staging, SOLVER_UPDATE);
     return sltr2job(sltr, &goal->staging, SOLVER_INSTALL);
