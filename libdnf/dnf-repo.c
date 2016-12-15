@@ -726,6 +726,33 @@ dnf_repo_get_username_password_string(const gchar *user, const gchar *pass)
     return g_strdup_printf("%s:%s", user, pass);
 }
 
+static gboolean
+dnf_repo_get_boolean(GKeyFile *keyfile,
+                     const gchar *group_name,
+                     const gchar *key,
+                     GError **error)
+{
+    gboolean val;
+    g_autofree gchar *str = NULL;
+    g_autoptr(GError) error_local = NULL;
+
+    /* try to parse as boolean */
+    val = g_key_file_get_boolean(keyfile, group_name, key, &error_local);
+    if (error_local == NULL)
+        return val;
+
+    /* if that failed, try matching with "True" and "False" that are often used
+     * in .repo files, but aren't valid keyfile booleans */
+    str = g_key_file_get_string(keyfile, group_name, key, NULL);
+    if (g_strcmp0(str, "True") == 0)
+        return TRUE;
+    if (g_strcmp0(str, "False") == 0)
+        return FALSE;
+
+    g_propagate_error(error, g_steal_pointer(&error_local));
+    return FALSE;
+}
+
 /**
  * dnf_repo_set_keyfile_data:
  */
@@ -749,7 +776,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 
     /* enabled is optional */
     if (g_key_file_has_key(priv->keyfile, priv->id, "enabled", NULL)) {
-        if (g_key_file_get_boolean(priv->keyfile, priv->id, "enabled", NULL))
+        if (dnf_repo_get_boolean(priv->keyfile, priv->id, "enabled", NULL))
             enabled |= DNF_REPO_ENABLED_PACKAGES;
     } else {
         enabled |= DNF_REPO_ENABLED_PACKAGES;
@@ -757,7 +784,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 
     /* enabled_metadata is optional */
     if (g_key_file_has_key(priv->keyfile, priv->id, "enabled_metadata", NULL)) {
-        if (g_key_file_get_boolean(priv->keyfile, priv->id, "enabled_metadata", NULL))
+        if (dnf_repo_get_boolean(priv->keyfile, priv->id, "enabled_metadata", NULL))
             enabled |= DNF_REPO_ENABLED_METADATA;
     } else {
         g_autofree gchar *basename = g_path_get_basename(priv->filename);
@@ -823,8 +850,8 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     /* gpgkey is optional for gpgcheck=1, but required for repo_gpgcheck=1 */
     g_free(priv->gpgkey);
     priv->gpgkey = g_key_file_get_string(priv->keyfile, priv->id, "gpgkey", NULL);
-    priv->gpgcheck_pkgs = g_key_file_get_boolean(priv->keyfile, priv->id, "gpgcheck", NULL);
-    priv->gpgcheck_md = g_key_file_get_boolean(priv->keyfile, priv->id, "repo_gpgcheck", NULL);
+    priv->gpgcheck_pkgs = dnf_repo_get_boolean(priv->keyfile, priv->id, "gpgcheck", NULL);
+    priv->gpgcheck_md = dnf_repo_get_boolean(priv->keyfile, priv->id, "repo_gpgcheck", NULL);
     if (priv->gpgcheck_md && priv->gpgkey == NULL) {
         g_set_error_literal(error,
                             DNF_ERROR,
@@ -924,7 +951,7 @@ dnf_repo_setup(DnfRepo *repo, GError **error)
         return FALSE;
 
     if (g_key_file_has_key(priv->keyfile, priv->id, "sslverify", NULL))
-        sslverify = g_key_file_get_boolean(priv->keyfile, priv->id, "sslverify", NULL);
+        sslverify = dnf_repo_get_boolean(priv->keyfile, priv->id, "sslverify", NULL);
 
     /* XXX: setopt() expects a long, so we need a long on the stack */
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLVERIFYPEER, (long)sslverify))
