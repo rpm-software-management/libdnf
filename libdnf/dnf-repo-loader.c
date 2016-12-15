@@ -337,30 +337,9 @@ dnf_repo_loader_repo_parse_id(DnfRepoLoader *self,
                               GError **error)
 {
     DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
-    DnfRepoEnabled enabled = 0;
     g_autoptr(DnfRepo) repo = NULL;
 
-    /* enabled isn't a required key */
-    if (g_key_file_has_key(keyfile, id, "enabled", NULL)) {
-        if (g_key_file_get_boolean(keyfile, id, "enabled", NULL))
-            enabled |= DNF_REPO_ENABLED_PACKAGES;
-    } else {
-        enabled |= DNF_REPO_ENABLED_PACKAGES;
-    }
-
-    /* enabled_metadata isn't a required key */
-    if (g_key_file_has_key(keyfile, id, "enabled_metadata", NULL)) {
-        if (g_key_file_get_boolean(keyfile, id, "enabled_metadata", NULL))
-            enabled |= DNF_REPO_ENABLED_METADATA;
-    } else {
-        g_autofree gchar *basename = NULL;
-        basename = g_path_get_basename(filename);
-        if (g_strcmp0(basename, "redhat.repo") == 0)
-            enabled |= DNF_REPO_ENABLED_METADATA;
-    }
-
     repo = dnf_repo_new(priv->context);
-    dnf_repo_set_enabled(repo, enabled);
     dnf_repo_set_kind(repo, DNF_REPO_KIND_REMOTE);
     dnf_repo_set_keyfile(repo, keyfile);
     dnf_repo_set_filename(repo, filename);
