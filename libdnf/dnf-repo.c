@@ -795,6 +795,14 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 
     dnf_repo_set_enabled(repo, enabled);
 
+    /* skip_if_unavailable is optional */
+    if (g_key_file_has_key(priv->keyfile, priv->id, "skip_if_unavailable", NULL)) {
+        if (dnf_repo_get_boolean(priv->keyfile, priv->id, "skip_if_unavailable", NULL))
+            priv->required = FALSE;
+        else
+            priv->required = TRUE;
+    }
+
     /* cost is optional */
     cost = g_key_file_get_integer(priv->keyfile, priv->id, "cost", NULL);
     if (cost != 0)
