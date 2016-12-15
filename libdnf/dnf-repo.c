@@ -1320,6 +1320,7 @@ dnf_repo_download_import_public_key(DnfRepo *repo, GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     int fd;
+    g_autoptr(GError) error_local = NULL;
 
     /* does this file already exist */
     if (g_file_test(priv->pubkey_tmp, G_FILE_TEST_EXISTS))
@@ -1351,7 +1352,13 @@ dnf_repo_download_import_public_key(DnfRepo *repo, GError **error)
                     priv->pubkey_tmp, fd);
         return FALSE;
     }
-    if (!lr_download_url(priv->repo_handle, priv->gpgkey, fd, error)) {
+    if (!lr_download_url(priv->repo_handle, priv->gpgkey, fd, &error_local)) {
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_CANNOT_FETCH_SOURCE,
+                    "Failed to download gpg key for repo '%s': %s",
+                    dnf_repo_get_id(repo),
+                    error_local->message);
         g_close(fd, NULL);
         return FALSE;
     }
