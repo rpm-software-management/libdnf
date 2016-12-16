@@ -1012,7 +1012,7 @@ hy_goal_describe_problem(HyGoal goal, unsigned i)
 const char **
 hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
 {
-    const char **problist = NULL;
+    char **problist = NULL;
     int p = 0;
     /* internal error */
     if (i >= (unsigned) hy_goal_count_problems(goal))
