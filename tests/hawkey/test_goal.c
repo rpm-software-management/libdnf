@@ -637,7 +637,7 @@ START_TEST(test_goal_describe_problem_rules)
     fail_unless(error->code == DNF_ERROR_NO_SOLUTION);
     fail_unless(hy_goal_count_problems(goal) > 0);
 
-    const char **problems = hy_goal_describe_problem_rules(goal, 0);
+    g_auto(GStrv) problems = hy_goal_describe_problem_rules(goal, 0);
     const char *expected[] = {
                 "conflicting requests",
                 "nothing provides goodbye needed by hello-1-1.noarch"
@@ -645,7 +645,6 @@ START_TEST(test_goal_describe_problem_rules)
     for (gint p = 0; p < hy_goal_count_problems(goal); ++p) {
         fail_if(strncmp(problems[p], expected[p], strlen(expected[p])));
     }
-    g_free(problems);
 
     g_object_unref(pkg);
     hy_goal_free(goal);
