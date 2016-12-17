@@ -1872,12 +1872,8 @@ dnf_repo_download_packages(DnfRepo *repo,
                            GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    char *checksum_str = NULL;
-    const unsigned char *checksum;
     gboolean ret = FALSE;
     guint i;
-    int checksum_type;
-    LrPackageTarget *target = NULL;
     GSList *package_targets = NULL;
     GlobalDownloadData global_data = { 0, };
     g_autoptr(GError) error_local = NULL;
@@ -1929,6 +1925,10 @@ dnf_repo_download_packages(DnfRepo *repo,
     for (i = 0; i < packages->len; i++) {
         DnfPackage *pkg = packages->pdata[i];
         PackageDownloadData *data;
+        LrPackageTarget *target;
+        const unsigned char *checksum;
+        int checksum_type;
+        g_autofree char *checksum_str = NULL;
 
         g_debug("downloading %s to %s",
                 dnf_package_get_location(pkg),
@@ -1987,7 +1987,6 @@ out:
     g_free(global_data.last_mirror_failure_message);
     g_free(global_data.last_mirror_url);
     g_slist_free_full(package_targets, (GDestroyNotify)lr_packagetarget_free);
-    g_free(checksum_str);
     return ret;
 }
 
