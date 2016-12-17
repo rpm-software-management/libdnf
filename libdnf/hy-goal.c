@@ -555,8 +555,6 @@ filter_name2job(DnfSack *sack, const struct _Filter *f, Queue *job)
 static void
 add_preferred_provide(DnfSack *sack, Queue *job, Id id)
 {
-    g_autoptr(GPtrArray) plist = g_ptr_array_new_with_free_func(
-        (GDestroyNotify) g_object_unref);
     Pool *pool = dnf_sack_get_pool(sack);
     const char *name = pool_dep2str(pool, id);
     HyQuery q = hy_query_create(sack);
@@ -565,7 +563,7 @@ add_preferred_provide(DnfSack *sack, Queue *job, Id id)
     hy_query_filter(q, HY_PKG_PROVIDES, HY_EQ, name);
     hy_query_filter_package_in(q, HY_PKG_OBSOLETES, HY_NEQ, pset);
     DnfPackage *pkg;
-    plist = hy_query_run(q);
+    g_autoptr(GPtrArray) plist = hy_query_run(q);
     for (guint i = 0; i < plist->len; i++) {
         pkg = g_ptr_array_index(plist, i);
         queue_push2(job, SOLVER_DISFAVOR|SOLVER_SOLVABLE,
