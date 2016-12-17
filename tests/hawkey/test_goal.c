@@ -1376,9 +1376,8 @@ START_TEST(test_goal_get_solution)
     const gchar *expected_new[2][3] = {{"custard", NULL, NULL},
                         {NULL, NULL, "pilchard"}};
 
-    g_autoptr(GPtrArray) slist = NULL;
     for (gint p = 0; p < hy_goal_count_problems(goal); ++p) {
-        slist = hy_goal_get_solution(goal, p);
+        g_autoptr(GPtrArray) slist = hy_goal_get_solution(goal, p);
         for (guint i = 0; i < slist->len; ++i) {
             DnfSolution *sol = g_ptr_array_index(slist, i);
             fail_unless(dnf_solution_get_action(sol) == expected_actions[p][i]);
