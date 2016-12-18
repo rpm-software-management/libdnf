@@ -1604,6 +1604,12 @@ dnf_repo_update(DnfRepo *repo,
     if (!ret)
         goto out;
 out:
+    if (!ret) {
+        /* remove the .tmp dir on failure */
+        g_autoptr(GError) error_remove = NULL;
+        if (!dnf_remove_recursive(priv->location_tmp, &error_remove))
+            g_debug("Failed to remove %s: %s", priv->location_tmp, error_remove->message);
+    }
     dnf_state_release_locks(state);
     lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSCB, NULL);
     lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSDATA, 0xdeadbeef);
