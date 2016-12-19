@@ -1,11 +1,10 @@
 libdnf
 ======
 
-This library provides a high level package-manager. It uses librepo and hawkey
-under the hood.
+This library provides a high level package-manager. It's core library of [dnf](https://github.com/rpm-software-management/dnf), [PackageKit](https://github.com/hughsie/PackageKit) and [rpm-ostree](https://github.com/projectatomic/rpm-ostree). It's replacement for deprecated [hawkey library](https://github.com/rpm-software-management/hawkey) which it contains inside and uses [librepo](https://github.com/rpm-software-management/librepo) under the hood.
 
 :warning: :warning: :warning:
-**Note that libhif is currently being reworked and is
+**Note that libdnf is currently being reworked and is
 considered unstable. Once major users like PackageKit and
 DNF are fully ported, a new stable release will be
 considered.**
@@ -73,6 +72,6 @@ The PYTHONPATH is unfortunately needed as the Python test suite needs to know wh
 Documentation
 =============
 
-See the `hawkey documentation page <http://hawkey.readthedocs.org>`_.
+See the [hawkey documentation page](http://hawkey.readthedocs.org).
 
-Information internal to the hawkey development is maintained on a `github wiki <https://github.com/rpm-software-management/dnf/wiki#wiki-Contact>`_.
+Information internal to the hawkey development is maintained on a [github wiki](https://github.com/rpm-software-management/dnf/wiki#wiki-Contact).
