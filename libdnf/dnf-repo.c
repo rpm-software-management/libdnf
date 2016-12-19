@@ -1113,6 +1113,8 @@ dnf_repo_check_internal(DnfRepo *repo,
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_MIRRORLIST, NULL))
         return FALSE;
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_GNUPGHOMEDIR, priv->keyring))
+        return FALSE;
     lr_result_clear(priv->repo_result);
     if (!lr_handle_perform(priv->repo_handle, priv->repo_result, &error_local)) {
         g_set_error(error,
