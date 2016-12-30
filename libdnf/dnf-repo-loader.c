@@ -398,14 +398,15 @@ dnf_repo_loader_refresh(DnfRepoLoader *self, GError **error)
     const gchar *file;
     const gchar *repo_path;
     g_autoptr(GDir) dir = NULL;
+    g_autoptr(GError) error_local = NULL;
 
     /* no longer loaded */
     dnf_repo_loader_invalidate(self);
     g_ptr_array_set_size(priv->repos, 0);
 
     /* re-populate redhat.repo */
-    if (!dnf_context_setup_enrollments(priv->context, error))
-        return FALSE;
+    if (!dnf_context_setup_enrollments(priv->context, &error_local))
+        g_warning("Failed to setup enrollments: %s", error_local->message);
 
     /* open dir */
     repo_path = dnf_context_get_repo_dir(priv->context);
