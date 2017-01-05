@@ -45,6 +45,10 @@ TARGET_LINK_LIBRARIES(libdnf
                       ${LIBSOLV_EXT_LIBRARY}
                       ${RPMDB_LIBRARY})
 
+if (ENABLE_RHSM_SUPPORT)
+    target_link_libraries (libdnf ${RHSM_LIBRARIES})
+endif ()
+
 SET(DNF_SO_VERSION 1)
 SET_TARGET_PROPERTIES(libdnf PROPERTIES OUTPUT_NAME "dnf")
 SET_TARGET_PROPERTIES(libdnf PROPERTIES SOVERSION ${DNF_SO_VERSION})

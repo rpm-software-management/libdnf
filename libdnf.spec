@@ -10,6 +10,16 @@
 %bcond_without python3
 %endif
 
+%if 0%{?rhel}
+%bcond_without rhsm
+%else
+%bcond_with rhsm
+%endif
+
+%global _cmake_opts \\\
+    -DENABLE_RHSM_SUPPORT=%{?with_rhsm:ON}%{!?with_rhsm:OFF} \\\
+    %{nil}
+
 %global oldname libhif
 
 Name:           libdnf
@@ -32,6 +42,9 @@ BuildRequires:  pkgconfig(gio-unix-2.0) >= 2.44.0
 BuildRequires:  pkgconfig(gtk-doc)
 BuildRequires:  pkgconfig(gobject-introspection-1.0)
 BuildRequires:  rpm-devel >= 4.11.0
+%if %{with rhsm}
+BuildRequires:  pkgconfig(librhsm)
+%endif
 
 Requires:       libsolv%{?_isa} >= %{libsolv_version}
 
@@ -86,13 +99,13 @@ mkdir build-py3
 
 %build
 pushd build-py2
-  %cmake -DWITH_MAN=OFF ../ %{!?with_valgrind:-DDISABLE_VALGRIND=1}
+  %cmake -DWITH_MAN=OFF ../ %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts}
   %make_build
 popd
 
 %if %{with python3}
 pushd build-py3
-  %cmake -DPYTHON_DESIRED:str=3 -DWITH_GIR=0 -DWITH_MAN=0 -Dgtkdoc=0 ../ %{!?with_valgrind:-DDISABLE_VALGRIND=1}
+  %cmake -DPYTHON_DESIRED:str=3 -DWITH_GIR=0 -DWITH_MAN=0 -Dgtkdoc=0 ../ %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts}
   %make_build
 popd
 %endif
