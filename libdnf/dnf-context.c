@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2014-2015 Richard Hughes <richard@hughsie.com>
+ * Copyright © 2016  Igor Gnatenko <ignatenko@redhat.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -34,6 +35,9 @@
 #include <rpm/rpmlib.h>
 #include <rpm/rpmmacro.h>
 #include <librepo/librepo.h>
+#ifdef RHSM_SUPPORT
+#include <rhsm/rhsm.h>
+#endif
 
 #include "dnf-lock.h"
 #include "dnf-package.h"
@@ -1394,11 +1398,6 @@ gboolean
 dnf_context_setup_enrollments(DnfContext *context, GError **error)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
-    guint i;
-    const gchar *cmds[] = {
-        "/usr/sbin/rhn-profile-sync",
-        "/usr/bin/subscription-manager refresh",
-        NULL };
 
     /* no need to refresh */
     if (priv->enrollment_valid)
@@ -1420,24 +1419,17 @@ dnf_context_setup_enrollments(DnfContext *context, GError **error)
     if (getuid () != 0)
         return TRUE;
 
-    for (i = 0; cmds[i] != NULL; i++) {
-        int child_argc;
-        g_auto(GStrv) child_argv = NULL;
-        int estatus;
+#ifdef RHSM_SUPPORT
+    g_autoptr(RHSMContext) rhsm_ctx = rhsm_context_new ();
+    g_autofree gchar *repofname = g_build_filename (priv->repo_dir,
+                                                    "redhat.repo",
+                                                    NULL);
+    g_autoptr(GKeyFile) repofile = rhsm_utils_yum_repo_from_context (rhsm_ctx);
 
-        if (!g_shell_parse_argv(cmds[i], &child_argc, &child_argv, error))
-            return FALSE;
-        if (child_argc == 0)
-            continue;
-        if (!g_file_test(child_argv[0], G_FILE_TEST_EXISTS))
-            continue;
-        g_debug("Running: %s", cmds[i]);
-        if (!g_spawn_sync(NULL, child_argv, NULL, 0,
-                          NULL, NULL, NULL, NULL, &estatus, error))
-            return FALSE;
-        if (!g_spawn_check_exit_status(estatus, error))
-            return FALSE;
-    }
+    if (!g_key_file_save_to_file (repofile, repofname, error))
+        return FALSE;
+#endif
+
     priv->enrollment_valid = TRUE;
     return TRUE;
 }
