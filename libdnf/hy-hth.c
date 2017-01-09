@@ -250,7 +250,7 @@ static void update(DnfSack *sack, DnfPackage *pkg)
 
         printf("upgrading: %s using %s\n", nvra, location);
         printf("\tfrom: %s\n", nvra_installed);
-        printf("\tsize: %lu kB\n", dnf_package_get_size(upkg) / 1024);
+        printf("\tsize: %" G_GUINT64_FORMAT " kB\n", dnf_package_get_size(upkg) / 1024);
 
         g_ptr_array_unref(obsoleted);
     }
@@ -264,7 +264,7 @@ static void update(DnfSack *sack, DnfPackage *pkg)
         const char *location = dnf_package_get_location(ipkg);
 
         printf("installing: %s using %s\n", nvra, location);
-        printf("\tsize: %lu kB\n", dnf_package_get_size(ipkg) / 1024);
+        printf("\tsize: %" G_GUINT64_FORMAT " kB\n", dnf_package_get_size(ipkg) / 1024);
     }
     g_ptr_array_unref(plist);
 
