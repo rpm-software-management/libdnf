@@ -41,6 +41,7 @@ BuildRequires:  valgrind
 BuildRequires:  pkgconfig(gio-unix-2.0) >= 2.44.0
 BuildRequires:  pkgconfig(gtk-doc)
 BuildRequires:  pkgconfig(gobject-introspection-1.0)
+BuildRequires:  vala
 BuildRequires:  rpm-devel >= 4.11.0
 %if %{with rhsm}
 BuildRequires:  pkgconfig(librhsm)
@@ -154,6 +155,7 @@ popd
 %{_libdir}/pkgconfig/%{name}.pc
 %{_includedir}/%{name}/
 %{_datadir}/gir-1.0/Dnf-*.gir
+%{_datadir}/vala/vapi/
 
 %files -n python2-hawkey
 %{python2_sitearch}/hawkey/
