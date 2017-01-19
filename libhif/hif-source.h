@@ -30,6 +30,9 @@
 
 #include <hawkey/repo.h>
 #include <hawkey/package.h>
+#ifndef __GI_SCANNER__
+#include <librepo/librepo.h>
+#endif
 
 #include "hif-context.h"
 #include "hif-state.h"
@@ -134,7 +137,9 @@ const gchar	*hif_source_get_filename_md	(HifSource		*source,
 						 const gchar		*md_kind);
 #ifndef __GI_SCANNER__
 HyRepo		 hif_source_get_repo		(HifSource		*source);
-#endif
+LrHandle *       hif_source_get_lrhandle        (HifSource              *source);
+LrResult *       hif_source_get_lrresult        (HifSource              *source);
+#endif 
 gboolean	 hif_source_is_devel		(HifSource		*source);
 gboolean	 hif_source_is_local		(HifSource		*source);
 gboolean	 hif_source_is_source		(HifSource		*source);
