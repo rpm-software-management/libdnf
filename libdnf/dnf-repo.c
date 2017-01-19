@@ -988,6 +988,13 @@ dnf_repo_setup(DnfRepo *repo, GError **error)
     return dnf_repo_set_keyfile_data(repo, error);
 }
 
+typedef struct
+{
+    DnfState *state;
+    gchar *last_mirror_url;
+    gchar *last_mirror_failure_message;
+} RepoUpdateData;
+
 /**
  * dnf_repo_update_state_cb:
  */
@@ -998,7 +1005,8 @@ dnf_repo_update_state_cb(void *user_data,
 {
     gboolean ret;
     gdouble percentage;
-    DnfState *state =(DnfState *) user_data;
+    RepoUpdateData *updatedata = user_data;
+    DnfState *state = updatedata->state;
 
     /* abort */
     if (!dnf_state_check(state, NULL))
@@ -1371,6 +1379,23 @@ dnf_repo_download_import_public_key(DnfRepo *repo, GError **error)
     return lr_gpg_import_key(priv->pubkey_tmp, priv->keyring_tmp, error);
 }
 
+static int
+repo_mirrorlist_failure_cb(void *user_data,
+                           const char *message,
+                           const char *url,
+                           const char *metadata)
+{
+    RepoUpdateData *data = user_data;
+
+    if (data->last_mirror_url)
+        goto out;
+
+    data->last_mirror_url = g_strdup(url);
+    data->last_mirror_failure_message = g_strdup(message);
+ out:
+    return LR_CB_OK;
+}
+
 /**
  * dnf_repo_update:
  * @repo: a #DnfRepo instance.
@@ -1396,6 +1421,7 @@ dnf_repo_update(DnfRepo *repo,
     gint rc;
     gint64 timestamp_new = 0;
     g_autoptr(GError) error_local = NULL;
+    RepoUpdateData updatedata = { 0, };
 
     /* cannot change DVD contents */
     if (priv->kind == DNF_REPO_KIND_MEDIA) {
@@ -1496,15 +1522,21 @@ dnf_repo_update(DnfRepo *repo,
         goto out;
 
     /* Callback to display progress of downloading */
-    state_local = dnf_state_get_child(state);
+    state_local = updatedata.state = dnf_state_get_child(state);
     ret = lr_handle_setopt(priv->repo_handle, error,
-                           LRO_PROGRESSDATA, state_local);
+                           LRO_PROGRESSDATA, &updatedata);
     if (!ret)
         goto out;
     ret = lr_handle_setopt(priv->repo_handle, error,
                            LRO_PROGRESSCB, dnf_repo_update_state_cb);
     if (!ret)
         goto out;
+    /* Note this uses the same user data as PROGRESSDATA */
+    ret = lr_handle_setopt(priv->repo_handle, error,
+                           LRO_HMFCB, repo_mirrorlist_failure_cb);
+    if (!ret)
+        goto out;
+
     lr_result_clear(priv->repo_result);
     dnf_state_action_start(state_local,
                            DNF_STATE_ACTION_DOWNLOAD_METADATA, NULL);
@@ -1512,6 +1544,11 @@ dnf_repo_update(DnfRepo *repo,
                             priv->repo_result,
                             &error_local);
     if (!ret) {
+        if (updatedata.last_mirror_failure_message) {
+            g_autofree gchar *orig_message = error_local->message;
+            error_local->message = g_strconcat(orig_message, "; Last error: ", updatedata.last_mirror_failure_message, NULL);
+        }
+
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_CANNOT_FETCH_SOURCE,
@@ -1612,6 +1649,8 @@ out:
         if (!dnf_remove_recursive(priv->location_tmp, &error_remove))
             g_debug("Failed to remove %s: %s", priv->location_tmp, error_remove->message);
     }
+    g_free(updatedata.last_mirror_failure_message);
+    g_free(updatedata.last_mirror_url);
     dnf_state_release_locks(state);
     lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSCB, NULL);
     lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSDATA, 0xdeadbeef);
