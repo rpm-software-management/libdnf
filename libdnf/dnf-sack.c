@@ -1535,6 +1535,7 @@ dnf_sack_make_provides_ready(DnfSack *sack)
 
     if (priv->provides_ready)
         return;
+    repo_internalize_all_trigger(priv->pool);
     Queue addedfileprovides;
     Queue addedfileprovides_inst;
     queue_init(&addedfileprovides);
