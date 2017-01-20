@@ -286,7 +286,6 @@ solve(HyGoal goal, Queue *job, DnfGoalActions flags,
     /* apply the excludes */
     dnf_sack_recompute_considered(sack);
 
-    repo_internalize_all_trigger(dnf_sack_get_pool(sack));
     dnf_sack_make_provides_ready(sack);
     if (goal->trans) {
         transaction_free(goal->trans);
