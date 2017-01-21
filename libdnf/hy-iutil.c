@@ -353,7 +353,10 @@ running_kernel(DnfSack *sack)
     Pool *pool = dnf_sack_get_pool(sack);
     struct utsname un;
 
-    uname(&un);
+    if (uname(&un) < 0) {
+        g_debug("uname(): %s", g_strerror(errno));
+        return -1;
+    }
     char *fn = pool_tmpjoin(pool, "/boot/vmlinuz-", un.release, NULL);
     if (access(fn, F_OK)) {
         g_debug("running_kernel(): no matching file: %s.", fn);
