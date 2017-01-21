@@ -116,7 +116,7 @@ hy_detect_arch(char **arch)
 {
     struct utsname un;
 
-    if (uname(&un))
+    if (uname(&un) < 0)
         return DNF_ERROR_FAILED;
 
     if (!strcmp(un.machine, "armv6l")) {
