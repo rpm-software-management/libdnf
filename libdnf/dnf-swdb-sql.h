@@ -1,4 +1,4 @@
-/* hif-swdb-sql.h
+/* dnf-swdb-sql.h
 *
 * Copyright (C) 2016 Red Hat, Inc.
 * Author: Eduard Cuba <xcubae00@stud.fit.vutbr.cz>
@@ -20,8 +20,8 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef _HIF_SWDB_SQL
-#define _HIF_SWDB_SQL
+#ifndef _DNF_SWDB_SQL
+#define _DNF_SWDB_SQL
 
 #define I_GROUP "Insert into GROUPS values(null, @name_id, @name, @ui_name, @is_installed, @pkg_types, @grp_types)"
 #define I_ENV "Insert into ENVIRONMENTS values(null, @name_id, @name, @ui_name, @pkg_types, @grp_types)"

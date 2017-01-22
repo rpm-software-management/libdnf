@@ -1,4 +1,4 @@
-/* hif-swdb.h
+/* dnf-swdb.h
  *
  * Copyright (C) 2016 Red Hat, Inc.
  * Author: Eduard Cuba <xcubae00@stud.fit.vutbr.cz>
@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef HIF_SWDB_H
-#define HIF_SWDB_H
+#ifndef DNF_SWDB_H
+#define DNF_SWDB_H
 
 #include <glib-object.h>
 #include <glib.h>
@@ -33,41 +33,41 @@ G_BEGIN_DECLS
 #define DNF_TYPE_SWDB dnf_swdb_get_type ()
 G_DECLARE_FINAL_TYPE (DnfSwdb, dnf_swdb, DNF,SWDB, GObject) // structure,function prefix,namespace,object name,inherits
 
-#include "hif-swdb-obj.h"
+#include "dnf-swdb-obj.h"
 
-HifSwdb *hif_swdb_new (     const gchar* db_path,
+DnfSwdb *dnf_swdb_new (     const gchar* db_path,
                             const gchar* releasever);
 
-const gchar* hif_swdb_get_path (HifSwdb *self);
+const gchar* dnf_swdb_get_path (DnfSwdb *self);
 
 /* change path to swdb - actual swdb is closed first */
-void  hif_swdb_set_path (HifSwdb *self, const gchar *path);
+void  dnf_swdb_set_path (DnfSwdb *self, const gchar *path);
 
 /* True when swdb exist */
-gboolean hif_swdb_exist(HifSwdb *self);
+gboolean dnf_swdb_exist(DnfSwdb *self);
 
-gint hif_swdb_create_db (HifSwdb *self);
+gint dnf_swdb_create_db (DnfSwdb *self);
 
 /* Remove old and create new */
-gint hif_swdb_reset_db (HifSwdb *self);
+gint dnf_swdb_reset_db (DnfSwdb *self);
 
-gint hif_swdb_env_add_exclude (     HifSwdbEnv *env,
+gint dnf_swdb_env_add_exclude (     DnfSwdbEnv *env,
                                     GPtrArray *exclude);
 
-gint hif_swdb_env_add_group (     HifSwdbEnv *env,
+gint dnf_swdb_env_add_group (     DnfSwdbEnv *env,
                                     GPtrArray *groups);
 
-gint hif_swdb_open(HifSwdb *self);
+gint dnf_swdb_open(DnfSwdb *self);
 
-void hif_swdb_close(HifSwdb *self);
+void dnf_swdb_close(DnfSwdb *self);
 
-gint hif_swdb_get_package_type (HifSwdb *self, const gchar *type);
+gint dnf_swdb_get_package_type (DnfSwdb *self, const gchar *type);
 
-gint hif_swdb_get_output_type (HifSwdb *self, const gchar *type);
+gint dnf_swdb_get_output_type (DnfSwdb *self, const gchar *type);
 
-gint hif_swdb_get_reason_type (HifSwdb *self, const gchar *type);
+gint dnf_swdb_get_reason_type (DnfSwdb *self, const gchar *type);
 
-gint hif_swdb_get_state_type (HifSwdb *self, const gchar *type);
+gint dnf_swdb_get_state_type (DnfSwdb *self, const gchar *type);
 
 gint dnf_swdb_add_package(	DnfSwdb *self,
 				  			DnfSwdbPkg *pkg);
@@ -76,28 +76,28 @@ gint 	dnf_swdb_log_error 		(	DnfSwdb *self,
 						 			const gint tid,
 							  		const gchar *msg);
 
-gint 	hif_swdb_log_output		(	HifSwdb *self,
+gint 	dnf_swdb_log_output		(	DnfSwdb *self,
 						 			const gint tid,
 									const gchar *msg);
 
-gint 	hif_swdb_trans_beg 	(	HifSwdb *self,
+gint 	dnf_swdb_trans_beg 	(	DnfSwdb *self,
 							 	const gchar *timestamp,
 							 	const gchar *rpmdb_version,
 								const gchar *cmdline,
 								const gchar *loginuid,
 								const gchar *releasever);
 
-gint 	hif_swdb_trans_end 	(	HifSwdb *self,
+gint 	dnf_swdb_trans_end 	(	DnfSwdb *self,
 							 	const gint tid,
 							 	const gchar *end_timestamp,
                                 const gchar *end_rpmdb_version,
 								const gint return_code);
 
-gint 	hif_swdb_log_package_data(	HifSwdb *self,
+gint 	dnf_swdb_log_package_data(	DnfSwdb *self,
                                     const gint pid,
-									HifSwdbPkgData *pkgdata );
+									DnfSwdbPkgData *pkgdata );
 
-gint 	hif_swdb_trans_data_beg(	HifSwdb *self,
+gint 	dnf_swdb_trans_data_beg(	DnfSwdb *self,
 									const gint 	 tid,
 									const gint 	 pid,
 									const gchar *reason,
@@ -114,9 +114,9 @@ gchar *dnf_swdb_get_pkg_attr(DnfSwdb *self,
 							 const gchar *attribute,
                              const gchar *cheat);
 
-GPtrArray *hif_swdb_load_error (    HifSwdb *self,
+GPtrArray *dnf_swdb_load_error (    DnfSwdb *self,
                                     const gint tid);
-GPtrArray *hif_swdb_load_output (   HifSwdb *self,
+GPtrArray *dnf_swdb_load_output (   DnfSwdb *self,
 								    const gint tid);
 
 gchar* _look_for_desc(sqlite3 *db, const gchar *table, const gint id);
@@ -144,41 +144,41 @@ GPtrArray *dnf_swdb_get_packages_by_tid(   DnfSwdb *self,
 gchar * dnf_swdb_trans_cmdline (DnfSwdb *self,
 							 	const gint tid);
 
-GPtrArray *hif_swdb_trans_old(	HifSwdb *self,
+GPtrArray *dnf_swdb_trans_old(	DnfSwdb *self,
                                 GArray *tids,
 								gint limit,
 								const gboolean complete_only);
 
-GPtrArray *hif_swdb_trans_get_old_trans_data(	HifSwdbTrans *self);
-GPtrArray *hif_swdb_get_old_trans_data(	HifSwdb *self, HifSwdbTrans *trans);
+GPtrArray *dnf_swdb_trans_get_old_trans_data(	DnfSwdbTrans *self);
+GPtrArray *dnf_swdb_get_old_trans_data(	DnfSwdb *self, DnfSwdbTrans *trans);
 
-gint hif_swdb_add_group (   HifSwdb *self,
-                            HifSwdbGroup *group);
+gint dnf_swdb_add_group (   DnfSwdb *self,
+                            DnfSwdbGroup *group);
 
-gint hif_swdb_add_env (     HifSwdb *self,
-                            HifSwdbEnv *env);
+gint dnf_swdb_add_env (     DnfSwdb *self,
+                            DnfSwdbEnv *env);
 
-HifSwdbGroup *hif_swdb_get_group	(     HifSwdb * self,
+DnfSwdbGroup *dnf_swdb_get_group	(     DnfSwdb * self,
 	 								      const gchar* name_id);
 
-GPtrArray *hif_swdb_groups_by_pattern   (   HifSwdb *self,
+GPtrArray *dnf_swdb_groups_by_pattern   (   DnfSwdb *self,
                                             const gchar *pattern);
 
-gint hif_swdb_uninstall_group(      HifSwdb *self,
-                                    HifSwdbGroup *group);
-HifSwdbEnv *hif_swdb_get_env(   HifSwdb * self,
+gint dnf_swdb_uninstall_group(      DnfSwdb *self,
+                                    DnfSwdbGroup *group);
+DnfSwdbEnv *dnf_swdb_get_env(   DnfSwdb * self,
 	 							const gchar* name_id);
 
-gint hif_swdb_groups_commit(    HifSwdb *self,
+gint dnf_swdb_groups_commit(    DnfSwdb *self,
                                 GPtrArray *groups);
 
-GPtrArray *hif_swdb_env_by_pattern   (  HifSwdb *self,
+GPtrArray *dnf_swdb_env_by_pattern   (  DnfSwdb *self,
                                         const gchar *pattern);
-gint hif_swdb_log_group_trans(  HifSwdb *self,
+gint dnf_swdb_log_group_trans(  DnfSwdb *self,
                                 const gint tid,
                                 GPtrArray *installing,
                                 GPtrArray *removing);
-HifSwdbTrans *hif_swdb_last (HifSwdb *self);
+DnfSwdbTrans *dnf_swdb_last (DnfSwdb *self);
 
 DnfSwdbPkg *dnf_swdb_package_by_nvra (  DnfSwdb *self,
                                         const gchar *nvra);
@@ -197,7 +197,7 @@ gint dnf_swdb_mark_user_installed ( DnfSwdb *self,
                                     const gchar *pattern,
                                     gboolean user_installed);
 
-GPtrArray * hif_swdb_checksums_by_nvras(    HifSwdb *self,
+GPtrArray * dnf_swdb_checksums_by_nvras(    DnfSwdb *self,
                                             GPtrArray *nvras);
 
 gint dnf_swdb_set_reason (  DnfSwdb *self,
@@ -213,7 +213,7 @@ gboolean dnf_swdb_user_installed (  DnfSwdb *self,
 gchar *_repo_by_pid  (   sqlite3 *db,
                         gint pid);
 
-GArray *hif_swdb_select_user_installed( HifSwdb *self,
+GArray *dnf_swdb_select_user_installed( DnfSwdb *self,
                                         GPtrArray *nvras);
 
 gint _find_match_by_desc(sqlite3 *db, const gchar *table, const gchar *desc);
