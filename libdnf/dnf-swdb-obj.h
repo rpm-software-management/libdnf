@@ -1,4 +1,4 @@
-/* hif-swdb-obj.h
+/* dnf-swdb-obj.h
  *
  * Copyright (C) 2016 Red Hat, Inc.
  * Author: Eduard Cuba <xcubae00@stud.fit.vutbr.cz>
@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef HIF_SWDB_OBJ_H
-#define HIF_SWDB_OBJ_H
+#ifndef DNF_SWDB_OBJ_H
+#define DNF_SWDB_OBJ_H
 
 #include <glib-object.h>
 
@@ -49,7 +49,7 @@ struct _DnfSwdbPkg
 	DnfSwdb *swdb;
 };
 
-HifSwdbPkg* hif_swdb_pkg_new(   const gchar* name,
+DnfSwdbPkg* dnf_swdb_pkg_new(   const gchar* name,
                                 const gchar* epoch,
                                 const gchar* version,
                                 const gchar* release,
@@ -76,7 +76,7 @@ struct _DnfSwdbPkgData
 	gint 	pid;
 };
 
-HifSwdbPkgData* hif_swdb_pkgdata_new( 	const gchar* from_repo_revision,
+DnfSwdbPkgData* dnf_swdb_pkgdata_new( 	const gchar* from_repo_revision,
                                         const gchar* from_repo_timestamp,
                                         const gchar* installed_by,
                                         const gchar* changed_by,
@@ -89,10 +89,10 @@ HifSwdbPkgData* hif_swdb_pkgdata_new( 	const gchar* from_repo_revision,
 #define DNF_TYPE_SWDB_TRANS dnf_swdb_trans_get_type()
 G_DECLARE_FINAL_TYPE ( DnfSwdbTrans, dnf_swdb_trans, DNF, SWDB_TRANS, GObject)
 
-struct _HifSwdbTrans
+struct _DnfSwdbTrans
 {
 	GObject parent_instance;
-	HifSwdb *swdb;
+	DnfSwdb *swdb;
 	gint tid;
 	const gchar *beg_timestamp;
 	const gchar *end_timestamp;
@@ -108,7 +108,7 @@ struct _HifSwdbTrans
 	gboolean is_error;
 };
 
-HifSwdbTrans* hif_swdb_trans_new(	const gint tid,
+DnfSwdbTrans* dnf_swdb_trans_new(	const gint tid,
 									const gchar *beg_timestamp,
 									const gchar *end_timestamp,
 									const gchar *beg_rpmdb_version,
@@ -135,7 +135,7 @@ struct _DnfSwdbTransData
 	gchar *state;
 };
 
-HifSwdbTransData* hif_swdb_transdata_new(	gint tdid,
+DnfSwdbTransData* dnf_swdb_transdata_new(	gint tdid,
 											gint tid,
 											gint pdid,
 											gint gid,
@@ -158,26 +158,26 @@ struct _DnfSwdbGroup
 	gint is_installed;
 	gint pkg_types;
 	gint grp_types;
-	HifSwdb *swdb;
+	DnfSwdb *swdb;
 };
 
-HifSwdbGroup* hif_swdb_group_new(
+DnfSwdbGroup* dnf_swdb_group_new(
 									const gchar* name_id,
 									gchar* name,
 									gchar* ui_name,
 									gint is_installed,
 									gint pkg_types,
 									gint grp_types,
-									HifSwdb *swdb);
+									DnfSwdb *swdb);
 
-GPtrArray * hif_swdb_group_get_exclude(HifSwdbGroup *self);
-GPtrArray * hif_swdb_group_get_full_list(HifSwdbGroup *self);
-gint hif_swdb_group_update_full_list(   HifSwdbGroup *group,
+GPtrArray * dnf_swdb_group_get_exclude(DnfSwdbGroup *self);
+GPtrArray * dnf_swdb_group_get_full_list(DnfSwdbGroup *self);
+gint dnf_swdb_group_update_full_list(   DnfSwdbGroup *group,
                                         GPtrArray *full_list);
-gint hif_swdb_group_add_package (       HifSwdbGroup *group,
+gint dnf_swdb_group_add_package (       DnfSwdbGroup *group,
                                         GPtrArray *packages);
 
-gint hif_swdb_group_add_exclude (       HifSwdbGroup *group,
+gint dnf_swdb_group_add_exclude (       DnfSwdbGroup *group,
                                         GPtrArray *exclude);
 
 //holder for environment
@@ -193,21 +193,21 @@ struct _DnfSwdbEnv
 	gchar* ui_name;
 	gint pkg_types;
 	gint grp_types;
-	HifSwdb *swdb;
+	DnfSwdb *swdb;
 };
 
-HifSwdbEnv* hif_swdb_env_new(		const gchar* name_id,
+DnfSwdbEnv* dnf_swdb_env_new(		const gchar* name_id,
 									gchar* name,
 									gchar* ui_name,
 									gint pkg_types,
 									gint grp_types,
-									HifSwdb *swdb);
+									DnfSwdb *swdb);
 
-GPtrArray *hif_swdb_env_get_grp_list    (HifSwdbEnv* env);
+GPtrArray *dnf_swdb_env_get_grp_list    (DnfSwdbEnv* env);
 
-GPtrArray *hif_swdb_env_get_exclude    (HifSwdbEnv* self);
+GPtrArray *dnf_swdb_env_get_exclude    (DnfSwdbEnv* self);
 
-gboolean hif_swdb_env_is_installed  (HifSwdbEnv *env );
+gboolean dnf_swdb_env_is_installed  (DnfSwdbEnv *env );
 
 #define DNF_TYPE_SWDB_RPMDATA dnf_swdb_rpmdata_get_type()
 G_DECLARE_FINAL_TYPE (DnfSwdbRpmData, dnf_swdb_rpmdata, DNF, SWDB_RPMDATA, GObject)

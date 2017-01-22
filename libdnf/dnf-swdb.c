@@ -1,4 +1,4 @@
-/* hif-swdb.c
+/* dnf-swdb.c
 *
 * Copyright (C) 2016 Red Hat, Inc.
 * Author: Eduard Cuba <xcubae00@stud.fit.vutbr.cz>
@@ -35,13 +35,13 @@
 #define DB_TRANS_BEGIN 	self->running = 1;
 #define DB_TRANS_END	self->running = 0;
 
-#include "hif-swdb.h"
+#include "dnf-swdb.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "hif-swdb-sql.h"
+#include "dnf-swdb-sql.h"
 
-struct _HifSwdb
+struct _DnfSwdb
 {
     GObject parent_instance;
     gchar   *path;
@@ -95,7 +95,7 @@ struct trans_data_beg_t
 };
 
 // SWDB Destructor
-static void hif_swdb_finalize(GObject *object)
+static void dnf_swdb_finalize(GObject *object)
 {
     DnfSwdb *swdb = (DnfSwdb *) object;
     g_free( swdb->path );
@@ -105,15 +105,15 @@ static void hif_swdb_finalize(GObject *object)
 
 // SWDB Class initialiser
 static void
-hif_swdb_class_init(HifSwdbClass *klass)
+dnf_swdb_class_init(DnfSwdbClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = hif_swdb_finalize;
+    object_class->finalize = dnf_swdb_finalize;
 }
 
 // SWDB Object initialiser
 static void
-hif_swdb_init(HifSwdb *self)
+dnf_swdb_init(DnfSwdb *self)
 {
   	self->path = g_strdup(default_path);
 	self->ready = 0;
@@ -122,16 +122,16 @@ hif_swdb_init(HifSwdb *self)
 }
 
 /**
- * hif_swdb_new:
+ * dnf_swdb_new:
  *
- * Creates a new #HifSwdb.
+ * Creates a new #DnfSwdb.
  *
- * Returns: a #HifSwdb
+ * Returns: a #DnfSwdb
  **/
-HifSwdb* hif_swdb_new   (   const gchar* db_path,
+DnfSwdb* dnf_swdb_new   (   const gchar* db_path,
                             const gchar* releasever)
 {
-    HifSwdb *swdb = g_object_new(HIF_TYPE_SWDB, NULL);
+    DnfSwdb *swdb = g_object_new(DNF_TYPE_SWDB, NULL);
     if (releasever)
     {
         swdb->releasever = g_strdup(releasever);
@@ -146,7 +146,7 @@ HifSwdb* hif_swdb_new   (   const gchar* db_path,
 
 
 // PKG Destructor
-static void hif_swdb_pkg_finalize(GObject *object)
+static void dnf_swdb_pkg_finalize(GObject *object)
 {
     DnfSwdbPkg *pkg = (DnfSwdbPkg *)object;
     g_free( (gchar*) pkg->name);
@@ -165,15 +165,15 @@ static void hif_swdb_pkg_finalize(GObject *object)
 
 // PKG Class initialiser
 static void
-hif_swdb_pkg_class_init(HifSwdbPkgClass *klass)
+dnf_swdb_pkg_class_init(DnfSwdbPkgClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = hif_swdb_pkg_finalize;
+    object_class->finalize = dnf_swdb_pkg_finalize;
 }
 
 // PKG Object initialiser
 static void
-hif_swdb_pkg_init(HifSwdbPkg *self)
+dnf_swdb_pkg_init(DnfSwdbPkg *self)
 {
     self->done = 0;
     self->state = NULL;
@@ -184,13 +184,13 @@ hif_swdb_pkg_init(HifSwdbPkg *self)
 }
 
 /**
- * hif_swdb_pkg_new:
+ * dnf_swdb_pkg_new:
  *
- * Creates a new #HifSwdbPkg.
+ * Creates a new #DnfSwdbPkg.
  *
- * Returns: a #HifSwdbPkg
+ * Returns: a #DnfSwdbPkg
  **/
-HifSwdbPkg* hif_swdb_pkg_new(   const gchar* name,
+DnfSwdbPkg* dnf_swdb_pkg_new(   const gchar* name,
                                 const gchar* epoch,
                                 const gchar* version,
                                 const gchar* release,
@@ -199,7 +199,7 @@ HifSwdbPkg* hif_swdb_pkg_new(   const gchar* name,
                                 const gchar* checksum_type,
                                 const gchar* type)
 {
-    HifSwdbPkg *swdbpkg = g_object_new(HIF_TYPE_SWDB_PKG, NULL);
+    DnfSwdbPkg *swdbpkg = g_object_new(DNF_TYPE_SWDB_PKG, NULL);
     swdbpkg->name = g_strdup(name);
     swdbpkg->epoch = g_strdup(epoch);
     swdbpkg->version = g_strdup(version);
@@ -216,7 +216,7 @@ HifSwdbPkg* hif_swdb_pkg_new(   const gchar* name,
 }
 
 // PKG DATA Destructor
-static void hif_swdb_pkgdata_finalize(GObject *object)
+static void dnf_swdb_pkgdata_finalize(GObject *object)
 {
     DnfSwdbPkgData * pkgdata = (DnfSwdbPkgData*) object;
 	g_free( pkgdata->from_repo);
@@ -231,15 +231,15 @@ static void hif_swdb_pkgdata_finalize(GObject *object)
 
 // PKG DATA Class initialiser
 static void
-hif_swdb_pkgdata_class_init(HifSwdbPkgDataClass *klass)
+dnf_swdb_pkgdata_class_init(DnfSwdbPkgDataClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = hif_swdb_pkgdata_finalize;
+    object_class->finalize = dnf_swdb_pkgdata_finalize;
 }
 
 // PKG DATA Object initialiser
 static void
-hif_swdb_pkgdata_init(HifSwdbPkgData *self)
+dnf_swdb_pkgdata_init(DnfSwdbPkgData *self)
 {
     self->from_repo = NULL;
     self->from_repo_revision = NULL;
@@ -251,13 +251,13 @@ hif_swdb_pkgdata_init(HifSwdbPkgData *self)
 }
 
 /**
- * hif_swdb_pkgdata_new:
+ * dnf_swdb_pkgdata_new:
  *
- * Creates a new #HifSwdbPkgData.
+ * Creates a new #DnfSwdbPkgData.
  *
- * Returns: a #HifSwdbPkgData
+ * Returns: a #DnfSwdbPkgData
  **/
-HifSwdbPkgData* hif_swdb_pkgdata_new(   const gchar* from_repo_revision,
+DnfSwdbPkgData* dnf_swdb_pkgdata_new(   const gchar* from_repo_revision,
                                         const gchar* from_repo_timestamp,
                                         const gchar* installed_by,
                                         const gchar* changed_by,
@@ -265,7 +265,7 @@ HifSwdbPkgData* hif_swdb_pkgdata_new(   const gchar* from_repo_revision,
                                         const gchar* origin_url,
                                         const gchar* from_repo)
 {
-    HifSwdbPkgData *pkgdata = g_object_new(HIF_TYPE_SWDB_PKGDATA, NULL);
+    DnfSwdbPkgData *pkgdata = g_object_new(DNF_TYPE_SWDB_PKGDATA, NULL);
     pkgdata->from_repo_revision = g_strdup(from_repo_revision);
     pkgdata->from_repo_timestamp = g_strdup(from_repo_timestamp);
     pkgdata->installed_by = g_strdup(installed_by);
@@ -277,7 +277,7 @@ HifSwdbPkgData* hif_swdb_pkgdata_new(   const gchar* from_repo_revision,
 }
 
 // TRANS Destructor
-static void hif_swdb_trans_finalize(GObject *object)
+static void dnf_swdb_trans_finalize(GObject *object)
 {
     DnfSwdbTrans *trans = (DnfSwdbTrans *) object;
 	g_free( (gchar*) trans->beg_timestamp);
@@ -292,15 +292,15 @@ static void hif_swdb_trans_finalize(GObject *object)
 
 // TRANS Class initialiser
 static void
-hif_swdb_trans_class_init(HifSwdbTransClass *klass)
+dnf_swdb_trans_class_init(DnfSwdbTransClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = hif_swdb_trans_finalize;
+    object_class->finalize = dnf_swdb_trans_finalize;
 }
 
 // TRANS Object initialiser
 static void
-hif_swdb_trans_init(HifSwdbTrans *self)
+dnf_swdb_trans_init(DnfSwdbTrans *self)
 {
     self->is_output = 0;
     self->is_error = 0;
@@ -310,13 +310,13 @@ hif_swdb_trans_init(HifSwdbTrans *self)
 }
 
 /**
- * hif_swdb_trans_new:
+ * dnf_swdb_trans_new:
  *
- * Creates a new #HifSwdbTrans.
+ * Creates a new #DnfSwdbTrans.
  *
- * Returns: a #HifSwdbTrans
+ * Returns: a #DnfSwdbTrans
  **/
-HifSwdbTrans* hif_swdb_trans_new(	const gint tid,
+DnfSwdbTrans* dnf_swdb_trans_new(	const gint tid,
                                     const gchar *beg_timestamp,
 									const gchar *end_timestamp,
 									const gchar *beg_rpmdb_version,
@@ -326,7 +326,7 @@ HifSwdbTrans* hif_swdb_trans_new(	const gint tid,
 									const gchar *releasever,
 									const gint return_code)
 {
-    HifSwdbTrans *trans = g_object_new(HIF_TYPE_SWDB_TRANS, NULL);
+    DnfSwdbTrans *trans = g_object_new(DNF_TYPE_SWDB_TRANS, NULL);
     trans->tid = tid;
     trans->beg_timestamp = g_strdup(beg_timestamp);
     trans->end_timestamp = g_strdup(end_timestamp);
@@ -341,7 +341,7 @@ HifSwdbTrans* hif_swdb_trans_new(	const gint tid,
 
 //TRANS DATA object
 // TRANS DATA Destructor
-static void hif_swdb_transdata_finalize(GObject *object)
+static void dnf_swdb_transdata_finalize(GObject *object)
 {
     DnfSwdbTransData * tdata = (DnfSwdbTransData*) object;
     g_free( tdata->reason);
@@ -351,26 +351,26 @@ static void hif_swdb_transdata_finalize(GObject *object)
 
 // TRANS DATA Class initialiser
 static void
-hif_swdb_transdata_class_init(HifSwdbTransDataClass *klass)
+dnf_swdb_transdata_class_init(DnfSwdbTransDataClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = hif_swdb_transdata_finalize;
+    object_class->finalize = dnf_swdb_transdata_finalize;
 }
 
 // TRANS DATA Object initialiser
 static void
-hif_swdb_transdata_init(HifSwdbTransData *self)
+dnf_swdb_transdata_init(DnfSwdbTransData *self)
 {
 }
 
 /**
- * hif_swdb_transdata_new:
+ * dnf_swdb_transdata_new:
  *
- * Creates a new #HifSwdbTransData.
+ * Creates a new #DnfSwdbTransData.
  *
- * Returns: a #HifSwdbTransData
+ * Returns: a #DnfSwdbTransData
  **/
-HifSwdbTransData* hif_swdb_transdata_new(   gint tdid,
+DnfSwdbTransData* dnf_swdb_transdata_new(   gint tdid,
                                             gint tid,
                                             gint pdid,
                                             gint gid,
@@ -379,7 +379,7 @@ HifSwdbTransData* hif_swdb_transdata_new(   gint tdid,
                                             gchar *reason,
                                             gchar *state)
 {
-    HifSwdbTransData *data = g_object_new(HIF_TYPE_SWDB_TRANSDATA, NULL);
+    DnfSwdbTransData *data = g_object_new(DNF_TYPE_SWDB_TRANSDATA, NULL);
     data->tdid = tdid;
     data->tid = tid;
     data->pdid = pdid;
@@ -393,7 +393,7 @@ HifSwdbTransData* hif_swdb_transdata_new(   gint tdid,
 
 
 // Group destructor
-static void hif_swdb_group_finalize(GObject *object)
+static void dnf_swdb_group_finalize(GObject *object)
 {
     DnfSwdbGroup * group = (DnfSwdbGroup*) object;
     g_free( (gchar*) group->name_id);
@@ -404,15 +404,15 @@ static void hif_swdb_group_finalize(GObject *object)
 
 // Group Class initialiser
 static void
-hif_swdb_group_class_init(HifSwdbGroupClass *klass)
+dnf_swdb_group_class_init(DnfSwdbGroupClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = hif_swdb_group_finalize;
+    object_class->finalize = dnf_swdb_group_finalize;
 }
 
 // Group Object initialiser
 static void
-hif_swdb_group_init(HifSwdbGroup *self)
+dnf_swdb_group_init(DnfSwdbGroup *self)
 {
     self->gid = 0;
     self->swdb = NULL;
@@ -420,21 +420,21 @@ hif_swdb_group_init(HifSwdbGroup *self)
 }
 
 /**
- * hif_swdb_group_new:
+ * dnf_swdb_group_new:
  *
- * Creates a new #HifSwdbGroup.
+ * Creates a new #DnfSwdbGroup.
  *
- * Returns: a #HifSwdbGroup
+ * Returns: a #DnfSwdbGroup
  **/
-HifSwdbGroup* hif_swdb_group_new(	const gchar* name_id,
+DnfSwdbGroup* dnf_swdb_group_new(	const gchar* name_id,
 									gchar* name,
 									gchar* ui_name,
 									gint is_installed,
 									gint pkg_types,
 									gint grp_types,
-                                    HifSwdb *swdb)
+                                    DnfSwdb *swdb)
 {
-    HifSwdbGroup *group = g_object_new(HIF_TYPE_SWDB_GROUP, NULL);
+    DnfSwdbGroup *group = g_object_new(DNF_TYPE_SWDB_GROUP, NULL);
     group->name_id = g_strdup(name_id);
     group->name = g_strdup(name);
     group->ui_name = g_strdup(ui_name);
@@ -446,7 +446,7 @@ HifSwdbGroup* hif_swdb_group_new(	const gchar* name_id,
 }
 
 // environment destructor
-static void hif_swdb_env_finalize(GObject *object)
+static void dnf_swdb_env_finalize(GObject *object)
 {
     DnfSwdbEnv * env = (DnfSwdbEnv *) object;
     g_free( (gchar*) env->name_id);
@@ -457,35 +457,35 @@ static void hif_swdb_env_finalize(GObject *object)
 
 // environment Class initialiser
 static void
-hif_swdb_env_class_init(HifSwdbEnvClass *klass)
+dnf_swdb_env_class_init(DnfSwdbEnvClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = hif_swdb_env_finalize;
+    object_class->finalize = dnf_swdb_env_finalize;
 }
 
 // environment Object initialiser
 static void
-hif_swdb_env_init(HifSwdbEnv *self)
+dnf_swdb_env_init(DnfSwdbEnv *self)
 {
     self->eid = 0;
     self->swdb = NULL;
 }
 
 /**
- * hif_swdb_env_new:
+ * dnf_swdb_env_new:
  *
- * Creates a new #HifSwdbEnv.
+ * Creates a new #DnfSwdbEnv.
  *
- * Returns: a #HifSwdbEnv
+ * Returns: a #DnfSwdbEnv
  **/
-HifSwdbEnv* hif_swdb_env_new(	    const gchar* name_id,
+DnfSwdbEnv* dnf_swdb_env_new(	    const gchar* name_id,
 									gchar* name,
 									gchar* ui_name,
 									gint pkg_types,
 									gint grp_types,
-                                    HifSwdb *swdb)
+                                    DnfSwdb *swdb)
 {
-    HifSwdbEnv *env = g_object_new(HIF_TYPE_SWDB_ENV, NULL);
+    DnfSwdbEnv *env = g_object_new(DNF_TYPE_SWDB_ENV, NULL);
     env->name_id = g_strdup(name_id);
     env->name = g_strdup(name);
     env->ui_name = g_strdup(ui_name);
@@ -840,14 +840,14 @@ static GArray *_extended_search (sqlite3* db, const gchar *pattern)
 }
 
 /**
-* hif_swdb_search:
+* dnf_swdb_search:
 * @patterns: (element-type utf8) (transfer container): list of constants
 * Returns: (element-type gint32) (transfer container): list of constants
 */
 GArray *dnf_swdb_search (   DnfSwdb *self,
                             GPtrArray *patterns)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
         return NULL;
     DB_TRANS_BEGIN
 
@@ -874,7 +874,7 @@ GArray *dnf_swdb_search (   DnfSwdb *self,
         g_array_free(extended, TRUE);
     }
     DB_TRANS_END
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return tids;
 }
 static gint _pid_by_nvra    (   sqlite3 *db,
@@ -890,14 +890,14 @@ static gint _pid_by_nvra    (   sqlite3 *db,
 }
 
 /**
-* hif_swdb_checksums_by_nvras:
+* dnf_swdb_checksums_by_nvras:
 * @nvras: (element-type utf8) (transfer container): list of constants
 * Returns: (element-type utf8) (transfer container): list of constants
 */
-GPtrArray * hif_swdb_checksums_by_nvras(    HifSwdb *self,
+GPtrArray * dnf_swdb_checksums_by_nvras(    DnfSwdb *self,
                                             GPtrArray *nvras)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
         return NULL;
     gchar *buff1;
     gchar *buff2;
@@ -922,23 +922,23 @@ GPtrArray * hif_swdb_checksums_by_nvras(    HifSwdb *self,
         }
         sqlite3_finalize(res);
     }
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return checksums;
 }
 
 
 /**
- * hif_swdb_select_user_installed:
+ * dnf_swdb_select_user_installed:
  * @nvras: (element-type utf8)(transfer container): list of constants
  * Returns: (element-type gint32)(transfer container): list of constants
  *  - id`s of nvras, which are user installed
  *  - e.g. when there is ["abc", "def", "ghi"] on input and "abc" and "ghi" are
  *      user installed, output will be [0,2]
 **/
-GArray *hif_swdb_select_user_installed (    HifSwdb *self,
+GArray *dnf_swdb_select_user_installed (    DnfSwdb *self,
                                             GPtrArray *nvras)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
         return NULL;
 
     gint depid = _find_match_by_desc(self->db, "REASON_TYPE", "dep");
@@ -990,7 +990,7 @@ GArray *hif_swdb_select_user_installed (    HifSwdb *self,
     return usr_ids;
 }
 
-gboolean hif_swdb_user_installed (  HifSwdb *self,
+gboolean dnf_swdb_user_installed (  DnfSwdb *self,
                                     const gchar *nvra  )
 {
     if (dnf_swdb_open(self))
@@ -1018,7 +1018,7 @@ gboolean hif_swdb_user_installed (  HifSwdb *self,
     }
     DB_TRANS_END
 
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return rc;
 }
 /****************************** GROUP PERSISTOR ******************************/
@@ -1051,28 +1051,28 @@ static gint _insert_id_name(sqlite3 *db,
   	return 0;
 }
 
-static gint _insert_group_additional(   HifSwdb *self,
-                                        HifSwdbGroup *group,
+static gint _insert_group_additional(   DnfSwdb *self,
+                                        DnfSwdbGroup *group,
                                         GPtrArray *data,
                                         const gchar *table)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
         return 1;
     for(guint i = 0; i < data->len; i++)
     {
         _insert_id_name(self->db, table, group->gid,
                         (gchar *)g_ptr_array_index(data, i));
     }
-	hif_swdb_close(self);
+	dnf_swdb_close(self);
   	return 0;
 }
 
 //add new group package
 /**
-* hif_swdb_group_add_package:
+* dnf_swdb_group_add_package:
 * @packages: (element-type utf8)(transfer container): list of constants
 */
-gint hif_swdb_group_add_package (       HifSwdbGroup *group,
+gint dnf_swdb_group_add_package (       DnfSwdbGroup *group,
                                         GPtrArray *packages)
 {
     if(group->gid)
@@ -1086,10 +1086,10 @@ gint hif_swdb_group_add_package (       HifSwdbGroup *group,
 
 //add new group exclude
 /**
-* hif_swdb_group_add_exclude:
+* dnf_swdb_group_add_exclude:
 * @exclude: (element-type utf8)(transfer container): list of constants
 */
-gint hif_swdb_group_add_exclude (       HifSwdbGroup *group,
+gint dnf_swdb_group_add_exclude (       DnfSwdbGroup *group,
                                         GPtrArray *exclude)
 {
     if(group->gid)
@@ -1103,15 +1103,15 @@ gint hif_swdb_group_add_exclude (       HifSwdbGroup *group,
 
 //add new environments exclude
 /**
-* hif_swdb_env_add_exclude:
+* dnf_swdb_env_add_exclude:
 * @exclude: (element-type utf8)(transfer container): list of constants
 */
-gint hif_swdb_env_add_exclude (     HifSwdbEnv *env,
+gint dnf_swdb_env_add_exclude (     DnfSwdbEnv *env,
                                     GPtrArray *exclude)
 {
     if(env->eid)
     {
-        if (hif_swdb_open(env->swdb))
+        if (dnf_swdb_open(env->swdb))
             return 1;
         for(guint i = 0; i < exclude->len; i++)
         {
@@ -1120,7 +1120,7 @@ gint hif_swdb_env_add_exclude (     HifSwdbEnv *env,
                              env->eid,
                              (gchar *)g_ptr_array_index(exclude, i));
         }
-        hif_swdb_close(env->swdb);
+        dnf_swdb_close(env->swdb);
         return 0;
     }
     else
@@ -1137,15 +1137,15 @@ static gint _group_id_to_gid(sqlite3 *db, const gchar *group_id)
 }
 
 /**
-* hif_swdb_env_add_group:
+* dnf_swdb_env_add_group:
 * @groups: (element-type utf8)(transfer container): list of constants
 */
-gint hif_swdb_env_add_group (   HifSwdbEnv *env,
+gint dnf_swdb_env_add_group (   DnfSwdbEnv *env,
                                 GPtrArray *groups)
 {
     if(env->eid)
     {
-        if (hif_swdb_open(env->swdb))
+        if (dnf_swdb_open(env->swdb))
             return 1;
         const gchar *sql = I_ENV_GROUP;
         gint gid;
@@ -1162,7 +1162,7 @@ gint hif_swdb_env_add_group (   HifSwdbEnv *env,
             DB_BIND_INT(res, "@gid", gid);
             DB_STEP(res);
         }
-        hif_swdb_close(env->swdb);
+        dnf_swdb_close(env->swdb);
         return 0;
     }
     else
@@ -1170,7 +1170,7 @@ gint hif_swdb_env_add_group (   HifSwdbEnv *env,
 }
 
 static void _add_group  (   sqlite3 *db,
-                            HifSwdbGroup *group)
+                            DnfSwdbGroup *group)
 {
     sqlite3_stmt *res;
     const gchar *sql = I_GROUP;
@@ -1185,17 +1185,17 @@ static void _add_group  (   sqlite3 *db,
     group->gid = sqlite3_last_insert_rowid(db);
 }
 
-gint hif_swdb_add_group (   HifSwdb *self,
-                            HifSwdbGroup *group)
+gint dnf_swdb_add_group (   DnfSwdb *self,
+                            DnfSwdbGroup *group)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
         return 1;
     _add_group  (self->db, group);
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return 0;
 }
 
-static void _add_env(sqlite3 *db, HifSwdbEnv *env)
+static void _add_env(sqlite3 *db, DnfSwdbEnv *env)
 {
     sqlite3_stmt *res;
     const gchar *sql = I_ENV;
@@ -1210,17 +1210,17 @@ static void _add_env(sqlite3 *db, HifSwdbEnv *env)
 
 }
 
-gint hif_swdb_add_env (     HifSwdb *self,
-                            HifSwdbEnv *env)
+gint dnf_swdb_add_env (     DnfSwdb *self,
+                            DnfSwdbEnv *env)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
         return 1;
     _add_env  (self->db, env);
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return 0;
 }
 
-static HifSwdbGroup *_get_group(sqlite3 *db,
+static DnfSwdbGroup *_get_group(sqlite3 *db,
                                 const gchar *name_id)
 {
     sqlite3_stmt *res;
@@ -1229,7 +1229,7 @@ static HifSwdbGroup *_get_group(sqlite3 *db,
     DB_BIND(res, "@id", name_id);
     if (sqlite3_step(res) == SQLITE_ROW)
     {
-        HifSwdbGroup *group = hif_swdb_group_new(
+        DnfSwdbGroup *group = dnf_swdb_group_new(
                                 name_id, //name_id
                                 (gchar*)sqlite3_column_text(res, 2),//name
                                 (gchar*)sqlite3_column_text(res, 3),//ui_name
@@ -1245,23 +1245,23 @@ static HifSwdbGroup *_get_group(sqlite3 *db,
 }
 
 /**
-* hif_swdb_get_group:
-* Returns: (transfer full): #HifSwdbGroup
+* dnf_swdb_get_group:
+* Returns: (transfer full): #DnfSwdbGroup
 */
-HifSwdbGroup *hif_swdb_get_group	(HifSwdb * self,
+DnfSwdbGroup *dnf_swdb_get_group	(DnfSwdb * self,
 	 								const gchar* name_id)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
         return NULL;
 
-    HifSwdbGroup *group = _get_group(self->db, name_id);
+    DnfSwdbGroup *group = _get_group(self->db, name_id);
     if(group)
         group->swdb = self;
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return group;
 }
 
-static HifSwdbEnv *_get_env(    sqlite3 *db,
+static DnfSwdbEnv *_get_env(    sqlite3 *db,
                                 const gchar *name_id)
 {
     sqlite3_stmt *res;
@@ -1270,7 +1270,7 @@ static HifSwdbEnv *_get_env(    sqlite3 *db,
     DB_BIND(res, "@id", name_id);
     if (sqlite3_step(res) == SQLITE_ROW)
     {
-        HifSwdbEnv *env = hif_swdb_env_new(
+        DnfSwdbEnv *env = dnf_swdb_env_new(
                                 name_id, //name_id
                                 (gchar*)sqlite3_column_text(res, 2),//name
                                 (gchar*)sqlite3_column_text(res, 3),//ui_name
@@ -1285,30 +1285,30 @@ static HifSwdbEnv *_get_env(    sqlite3 *db,
 }
 
 /**
-* hif_swdb_get_env:
-* Returns: (transfer full): #HifSwdbEnv
+* dnf_swdb_get_env:
+* Returns: (transfer full): #DnfSwdbEnv
 */
-HifSwdbEnv *hif_swdb_get_env(   HifSwdb * self,
+DnfSwdbEnv *dnf_swdb_get_env(   DnfSwdb * self,
 	 							const gchar* name_id)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
         return NULL;
 
-    HifSwdbEnv *env = _get_env(self->db, name_id);
+    DnfSwdbEnv *env = _get_env(self->db, name_id);
     if(env)
         env->swdb = self;
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return env;
 }
 
 /**
-* hif_swdb_groups_by_pattern:
-* Returns: (element-type HifSwdbGroup)(array)(transfer container): list of #HifSwdbGroup
+* dnf_swdb_groups_by_pattern:
+* Returns: (element-type DnfSwdbGroup)(array)(transfer container): list of #DnfSwdbGroup
 */
-GPtrArray *hif_swdb_groups_by_pattern   (HifSwdb *self,
+GPtrArray *dnf_swdb_groups_by_pattern   (DnfSwdb *self,
                                         const gchar *pattern)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
         return NULL;
     GPtrArray *node = g_ptr_array_new();
     sqlite3_stmt *res;
@@ -1336,13 +1336,13 @@ GPtrArray *hif_swdb_groups_by_pattern   (HifSwdb *self,
 }
 
 /**
-* hif_swdb_env_by_pattern:
-* Returns: (element-type HifSwdbEnv)(array)(transfer container): list of #HifSwdbEnv
+* dnf_swdb_env_by_pattern:
+* Returns: (element-type DnfSwdbEnv)(array)(transfer container): list of #DnfSwdbEnv
 */
-GPtrArray *hif_swdb_env_by_pattern      (HifSwdb *self,
+GPtrArray *dnf_swdb_env_by_pattern      (DnfSwdb *self,
                                         const gchar *pattern)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
         return NULL;
     GPtrArray *node = g_ptr_array_new();
     sqlite3_stmt *res;
@@ -1381,66 +1381,66 @@ static inline GPtrArray *_get_list_from_table(sqlite3_stmt *res)
 }
 
 /**
-* hif_swdb_group_get_exclude:
+* dnf_swdb_group_get_exclude:
 * Returns: (element-type utf8)(array)(transfer container): list of utf8
 */
-GPtrArray * hif_swdb_group_get_exclude(HifSwdbGroup *self)
+GPtrArray * dnf_swdb_group_get_exclude(DnfSwdbGroup *self)
 {
     if(!self->gid)
         return NULL;
-    if (hif_swdb_open(self->swdb) )
+    if (dnf_swdb_open(self->swdb) )
         return NULL;
     sqlite3_stmt *res;
     const gchar *sql = S_GROUP_EXCLUDE_BY_ID;
     DB_PREP(self->swdb->db, sql, res);
     DB_BIND_INT(res, "@gid", self->gid);
     GPtrArray *node = _get_list_from_table(res);
-    hif_swdb_close(self->swdb);
+    dnf_swdb_close(self->swdb);
     return node;
 }
 
 /**
-* hif_swdb_group_get_full_list:
+* dnf_swdb_group_get_full_list:
 * Returns: (element-type utf8)(array)(transfer container): list of utf8
 */
-GPtrArray * hif_swdb_group_get_full_list(HifSwdbGroup *self)
+GPtrArray * dnf_swdb_group_get_full_list(DnfSwdbGroup *self)
 {
     if(!self->gid)
         return NULL;
-    if (hif_swdb_open(self->swdb) )
+    if (dnf_swdb_open(self->swdb) )
         return NULL;
     sqlite3_stmt *res;
     const gchar *sql = S_GROUP_PACKAGE_BY_ID;
     DB_PREP(self->swdb->db, sql, res);
     DB_BIND_INT(res, "@gid", self->gid);
     GPtrArray *node = _get_list_from_table(res);
-    hif_swdb_close(self->swdb);
+    dnf_swdb_close(self->swdb);
     return node;
 }
 
 /**
-* hif_swdb_group_update_full_list:
+* dnf_swdb_group_update_full_list:
 * @full_list: (element-type utf8)(transfer container): list of constants
 */
-gint hif_swdb_group_update_full_list(   HifSwdbGroup *group,
+gint dnf_swdb_group_update_full_list(   DnfSwdbGroup *group,
                                         GPtrArray *full_list)
 {
     if(!group->gid)
         return 1;
-    if (hif_swdb_open(group->swdb) )
+    if (dnf_swdb_open(group->swdb) )
         return 1;
     sqlite3_stmt *res;
     const gchar *sql = R_FULL_LIST_BY_ID;
     DB_PREP(group->swdb->db, sql, res);
     DB_BIND_INT(res, "@gid", group->gid);
     DB_STEP(res);
-    hif_swdb_close(group->swdb);
-    hif_swdb_group_add_package(group, full_list);
+    dnf_swdb_close(group->swdb);
+    dnf_swdb_group_add_package(group, full_list);
     return 0;
 }
 
 static void _update_group   (   sqlite3 *db,
-                                HifSwdbGroup *group)
+                                DnfSwdbGroup *group)
 {
     sqlite3_stmt *res;
     const gchar *sql = U_GROUP;
@@ -1454,28 +1454,28 @@ static void _update_group   (   sqlite3 *db,
     DB_STEP(res);
 }
 
-gint hif_swdb_uninstall_group( HifSwdb *self,
-                            HifSwdbGroup *group)
+gint dnf_swdb_uninstall_group( DnfSwdb *self,
+                            DnfSwdbGroup *group)
 {
     if(!group->gid)
         return 1;
-    if (hif_swdb_open(self) )
+    if (dnf_swdb_open(self) )
         return 1;
     group->is_installed = 0;
     _update_group( self->db, group);
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return 0;
 }
 
 /**
-* hif_swdb_env_get_grp_list:
+* dnf_swdb_env_get_grp_list:
 * Returns: (element-type utf8)(array)(transfer container): list of utf8
 */
-GPtrArray *hif_swdb_env_get_grp_list    (HifSwdbEnv* env)
+GPtrArray *dnf_swdb_env_get_grp_list    (DnfSwdbEnv* env)
 {
     if(!env->eid)
         return NULL;
-    if (hif_swdb_open(env->swdb) )
+    if (dnf_swdb_open(env->swdb) )
         return NULL;
     GPtrArray *node = g_ptr_array_new();
     sqlite3_stmt *res;
@@ -1488,15 +1488,15 @@ GPtrArray *hif_swdb_env_get_grp_list    (HifSwdbEnv* env)
         g_ptr_array_add(node, (gpointer) name_id);
     }
     sqlite3_finalize(res);
-    hif_swdb_close(env->swdb);
+    dnf_swdb_close(env->swdb);
     return node;
 }
 
-gboolean hif_swdb_env_is_installed  (HifSwdbEnv *env )
+gboolean dnf_swdb_env_is_installed  (DnfSwdbEnv *env )
 {
     if(!env->eid)
         return 0;
-    if (hif_swdb_open(env->swdb) )
+    if (dnf_swdb_open(env->swdb) )
         return 0;
     gboolean found = 1;
     sqlite3_stmt *res;
@@ -1512,38 +1512,38 @@ gboolean hif_swdb_env_is_installed  (HifSwdbEnv *env )
         }
     }
     sqlite3_finalize(res);
-    hif_swdb_close(env->swdb);
+    dnf_swdb_close(env->swdb);
     return found;
 }
 
 /**
-* hif_swdb_env_get_exclude:
+* dnf_swdb_env_get_exclude:
 * Returns: (element-type utf8)(array)(transfer container): list of utf8
 */
-GPtrArray *hif_swdb_env_get_exclude    (HifSwdbEnv* self)
+GPtrArray *dnf_swdb_env_get_exclude    (DnfSwdbEnv* self)
 {
     if(!self->eid)
         return NULL;
-    if (hif_swdb_open(self->swdb) )
+    if (dnf_swdb_open(self->swdb) )
         return NULL;
     sqlite3_stmt *res;
     const gchar *sql = S_ENV_EXCLUDE_BY_ID;
     DB_PREP(self->swdb->db, sql, res);
     DB_BIND_INT(res, "@eid", self->eid);
     GPtrArray *node = _get_list_from_table(res);
-    hif_swdb_close(self->swdb);
+    dnf_swdb_close(self->swdb);
     return node;
 }
 
 
 /**
-* hif_swdb_groups_commit:
+* dnf_swdb_groups_commit:
 * @groups: (element-type utf8)(transfer container): list of constants
 */
-gint hif_swdb_groups_commit(    HifSwdb *self,
+gint dnf_swdb_groups_commit(    DnfSwdb *self,
                                 GPtrArray *groups)
 {
-    if (hif_swdb_open(self) )
+    if (dnf_swdb_open(self) )
         return 1;
     const gchar *sql = U_GROUP_COMMIT;
     for(guint i = 0; i < groups->len; ++i)
@@ -1553,7 +1553,7 @@ gint hif_swdb_groups_commit(    HifSwdb *self,
         DB_BIND(res, "@id", (const gchar *)g_ptr_array_index(groups, i));
         DB_STEP(res);
     }
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return 0;
 }
 
@@ -1566,7 +1566,7 @@ static void _log_group_trans (   sqlite3 *db,
     for(guint i = 0; i< groups->len; ++i)
     {
         sqlite3_stmt *res;
-        HifSwdbGroup *group = g_ptr_array_index(groups, i);
+        DnfSwdbGroup *group = g_ptr_array_index(groups, i);
         DB_PREP(db, sql, res);
         DB_BIND_INT(res, "@tid", tid);
         DB_BIND_INT(res, "@gid", group->gid);
@@ -1582,21 +1582,21 @@ static void _log_group_trans (   sqlite3 *db,
 }
 
 /**
-* hif_swdb_log_group_trans:
-* @installing: (element-type HifSwdbGroup)(array)(transfer container): list of #HifSwdbGroup
-* @removing: (element-type HifSwdbGroup)(array)(transfer container): list of #HifSwdbGroup
+* dnf_swdb_log_group_trans:
+* @installing: (element-type DnfSwdbGroup)(array)(transfer container): list of #DnfSwdbGroup
+* @removing: (element-type DnfSwdbGroup)(array)(transfer container): list of #DnfSwdbGroup
 */
-gint hif_swdb_log_group_trans(  HifSwdb *self,
+gint dnf_swdb_log_group_trans(  DnfSwdb *self,
                                 const gint tid,
                                 GPtrArray *installing,
                                 GPtrArray *removing)
 {
-    if (hif_swdb_open(self) )
+    if (dnf_swdb_open(self) )
         return 1;
     _log_group_trans(self->db, tid, installing, 1);
     _log_group_trans(self->db, tid, removing, 0);
 
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return 0;
 }
 
@@ -1646,7 +1646,7 @@ gchar *_repo_by_pid  (   sqlite3 *db,
 gchar *dnf_swdb_repo_by_nvra (  DnfSwdb *self,
                                 const gchar *nvra)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
     	return NULL;
     gint pid = _pid_by_nvra(self->db, nvra);
     if(!pid)
@@ -1663,13 +1663,13 @@ gint dnf_swdb_set_repo (DnfSwdb *self,
                         const gchar *nvra,
                         const gchar *repo)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
         return 1;
     DB_TRANS_BEGIN
     gint pid = _pid_by_nvra(self->db, nvra);
     if (!pid)
     {
-        hif_swdb_close(self);
+        dnf_swdb_close(self);
         return 1;
     }
     const gint rid = _bind_repo_by_name(self->db, repo);
@@ -1680,15 +1680,15 @@ gint dnf_swdb_set_repo (DnfSwdb *self,
     DB_BIND_INT(res, "@pid", pid);
     DB_STEP(res);
     DB_TRANS_END
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return 0;
 }
 
 /**************************** PACKAGE PERSISTOR ******************************/
 
-static gint _package_insert(HifSwdb *self, HifSwdbPkg *package)
+static gint _package_insert(DnfSwdb *self, DnfSwdbPkg *package)
 {
-    gint type_id = hif_swdb_get_package_type(self,package->type);
+    gint type_id = dnf_swdb_get_package_type(self,package->type);
     sqlite3_stmt *res;
    	const gchar *sql = INSERT_PKG;
 	DB_PREP(self->db,sql,res);
@@ -1721,7 +1721,7 @@ gint dnf_swdb_add_package(	DnfSwdb *self,
 
 static gint _package_data_update (  sqlite3 *db,
                                     const gint pid,
-                                    HifSwdbPkgData *pkgdata)
+                                    DnfSwdbPkgData *pkgdata)
 {
     gint rid = _bind_repo_by_name(db, pkgdata->from_repo);
 
@@ -1748,14 +1748,14 @@ static gint _package_data_update (  sqlite3 *db,
   	return 0;
 }
 
-gint 	hif_swdb_log_package_data(	HifSwdb *self,
+gint 	dnf_swdb_log_package_data(	DnfSwdb *self,
                                     const gint pid,
-									HifSwdbPkgData *pkgdata )
+									DnfSwdbPkgData *pkgdata )
 {
-  	if (hif_swdb_open(self))
+  	if (dnf_swdb_open(self))
     	return 1;
   	gint rc = _package_data_update(self->db, pid, pkgdata);
-  	hif_swdb_close(self);
+  	dnf_swdb_close(self);
   	return rc;
 }
 
@@ -1854,7 +1854,7 @@ gchar *dnf_swdb_get_pkg_attr(   DnfSwdb *self,
                                 const gchar *attribute,
                                 const gchar *cheat)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
     {
     	return NULL;
     }
@@ -1955,19 +1955,19 @@ gchar *dnf_swdb_attr_by_nvra (  DnfSwdb *self,
                                 const gchar *attr,
                                 const gchar *nvra)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
     	return NULL;
     gint pid = _pid_by_nvra(self->db, nvra);
     if(!pid)
     {
-        hif_swdb_close(self);
+        dnf_swdb_close(self);
         return NULL;
     }
-    return hif_swdb_get_pkg_attr(self, pid, attr, NULL);
+    return dnf_swdb_get_pkg_attr(self, pid, attr, NULL);
 }
 
-static void _resolve_package_state  (   HifSwdb *self,
-                                        HifSwdbPkg *pkg)
+static void _resolve_package_state  (   DnfSwdb *self,
+                                        DnfSwdbPkg *pkg)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_PACKAGE_STATE;
@@ -1982,7 +1982,7 @@ static void _resolve_package_state  (   HifSwdb *self,
     }
 }
 
-static HifSwdbPkgData *_get_package_data_by_pid (   sqlite3 *db,
+static DnfSwdbPkgData *_get_package_data_by_pid (   sqlite3 *db,
                                                     const gint pid)
 {
     sqlite3_stmt *res;
@@ -1991,7 +1991,7 @@ static HifSwdbPkgData *_get_package_data_by_pid (   sqlite3 *db,
     DB_BIND_INT(res, "@pid", pid);
     if (sqlite3_step(res) == SQLITE_ROW)
     {
-        HifSwdbPkgData *pkgdata = hif_swdb_pkgdata_new(
+        DnfSwdbPkgData *pkgdata = dnf_swdb_pkgdata_new(
             (gchar *)sqlite3_column_text(res, 3), //from_repo_revision
             (gchar *)sqlite3_column_text(res, 4), //from_repo_timestamp
             (gchar *)sqlite3_column_text(res, 5), //installed_by
@@ -2011,7 +2011,7 @@ static HifSwdbPkgData *_get_package_data_by_pid (   sqlite3 *db,
     return NULL;
 }
 
-static HifSwdbPkg *_get_package_by_pid (    sqlite3 *db,
+static DnfSwdbPkg *_get_package_by_pid (    sqlite3 *db,
                                             const gint pid)
 {
     sqlite3_stmt *res;
@@ -2020,7 +2020,7 @@ static HifSwdbPkg *_get_package_by_pid (    sqlite3 *db,
     DB_BIND_INT(res, "@pid", pid);
     if (sqlite3_step(res) == SQLITE_ROW)
     {
-        HifSwdbPkg *pkg = hif_swdb_pkg_new(
+        DnfSwdbPkg *pkg = dnf_swdb_pkg_new(
             (gchar *)sqlite3_column_text(res, 1), //name
             (gchar *)sqlite3_column_text(res, 2), //epoch
             (gchar *)sqlite3_column_text(res, 3), //version
@@ -2041,21 +2041,21 @@ static HifSwdbPkg *_get_package_by_pid (    sqlite3 *db,
 }
 
 /**
-* hif_swdb_get_packages_by_tid:
+* dnf_swdb_get_packages_by_tid:
 *
-* Returns: (element-type HifSwdbPkg)(array)(transfer container): list of #HifSwdbPkg
+* Returns: (element-type DnfSwdbPkg)(array)(transfer container): list of #DnfSwdbPkg
 */
-GPtrArray *hif_swdb_get_packages_by_tid(   HifSwdb *self,
+GPtrArray *dnf_swdb_get_packages_by_tid(   DnfSwdb *self,
                                             const gint tid)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
     	return NULL;
     DB_TRANS_BEGIN
 
     GPtrArray *node = g_ptr_array_new();
     GArray *pids = _pids_by_tid(self->db, tid);
     gint pid;
-    HifSwdbPkg *pkg;
+    DnfSwdbPkg *pkg;
     for(guint i = 0; i < pids->len ;i++)
     {
         pid = g_array_index(pids, gint, i);
@@ -2069,7 +2069,7 @@ GPtrArray *hif_swdb_get_packages_by_tid(   HifSwdb *self,
     }
     g_array_free(pids, TRUE);
     DB_TRANS_END
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return node;
 }
 
@@ -2116,7 +2116,7 @@ gchar* dnf_swdb_pkg_get_ui_from_repo	( DnfSwdbPkg *self)
         }
         g_free(cur_releasever);
     }
-    hif_swdb_close(self->swdb);
+    dnf_swdb_close(self->swdb);
     if(r_name)
     {
         self->ui_from_repo = r_name;
@@ -2147,12 +2147,12 @@ gint dnf_swdb_pid_by_nvra(DnfSwdb *self,
 DnfSwdbPkg *dnf_swdb_package_by_nvra (  DnfSwdb *self,
                                         const gchar *nvra)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
         return NULL;
     gint pid = _pid_by_nvra(self->db, nvra);
     if (!pid)
     {
-        hif_swdb_close(self);
+        dnf_swdb_close(self);
         return NULL;
     }
     DnfSwdbPkg *pkg = _get_package_by_pid(self->db, pid);
@@ -2168,16 +2168,16 @@ DnfSwdbPkg *dnf_swdb_package_by_nvra (  DnfSwdb *self,
 DnfSwdbPkgData *dnf_swdb_package_data_by_nvra(  DnfSwdb *self,
                                                 const gchar *nvra)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
         return NULL;
     gint pid = _pid_by_nvra(self->db, nvra);
     if (!pid)
     {
-        hif_swdb_close(self);
+        dnf_swdb_close(self);
         return NULL;
     }
-    HifSwdbPkgData *pkgdata = _get_package_data_by_pid(self->db, pid);
-    hif_swdb_close(self);
+    DnfSwdbPkgData *pkgdata = _get_package_data_by_pid(self->db, pid);
+    dnf_swdb_close(self);
     return pkgdata;
 }
 
@@ -2198,22 +2198,22 @@ gint dnf_swdb_set_reason(DnfSwdb *self,
                          const gchar *nvra,
                          const gchar *reason)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
         return 1;
     DB_TRANS_BEGIN
     gint pid = _pid_by_nvra(self->db, nvra);
     if (!pid)
     {
-        hif_swdb_close(self);
+        dnf_swdb_close(self);
         return 1;
     }
     const gint pdid = _pdid_from_pid(self->db, pid);
     gint rc = 1;
     gint reason_id;
-    reason_id = hif_swdb_get_reason_type( self, reason);
+    reason_id = dnf_swdb_get_reason_type( self, reason);
     rc = _mark_pkg_as(self->db, pdid, reason_id);
     DB_TRANS_END
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return rc;
 }
 
@@ -2224,11 +2224,11 @@ gint dnf_swdb_mark_user_installed(DnfSwdb *self,
     gint rc;
     if(user_installed)
     {
-        rc = hif_swdb_set_reason(self, pattern, "user");
+        rc = dnf_swdb_set_reason(self, pattern, "user");
     }
     else
     {
-        rc = hif_swdb_set_reason(self, pattern, "dep");
+        rc = dnf_swdb_set_reason(self, pattern, "dep");
     }
     return rc;
 }
@@ -2282,21 +2282,21 @@ static gint _trans_data_beg_insert(sqlite3 *db,
   	return DB_FIND(res);
 }
 
-gint 	hif_swdb_trans_data_beg	(	HifSwdb *self,
+gint 	dnf_swdb_trans_data_beg	(	DnfSwdb *self,
 									const gint 	 tid,
 									const gint 	 pid,
 									const gchar *reason,
 									const gchar *state )
 {
-  	if (hif_swdb_open(self))
+  	if (dnf_swdb_open(self))
     	return 1;
   	DB_TRANS_BEGIN
     const gint pdid = _pdid_from_pid(self->db, pid);
  	struct trans_data_beg_t trans_data_beg = {tid, pdid,
-	  	hif_swdb_get_reason_type(self, reason), hif_swdb_get_state_type(self,state)};
+	  	dnf_swdb_get_reason_type(self, reason), dnf_swdb_get_state_type(self,state)};
   	gint rc = _trans_data_beg_insert(self->db, &trans_data_beg);
   	DB_TRANS_END
-  	hif_swdb_close(self);
+  	dnf_swdb_close(self);
   	return rc;
 }
 
@@ -2304,12 +2304,12 @@ gint 	hif_swdb_trans_data_beg	(	HifSwdb *self,
  * Mark single package from transaction as done
  * Resolve ORIGINAL_TD_ID if any
  */
-gint    hif_swdb_trans_data_pid_end (   HifSwdb *self,
+gint    dnf_swdb_trans_data_pid_end (   DnfSwdb *self,
                                         const gint pid,
                                         const gint tid,
                                         const gchar *state)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
     	return 1;
     DB_TRANS_BEGIN
 
@@ -2387,7 +2387,7 @@ gint    hif_swdb_trans_data_pid_end (   HifSwdb *self,
     }
 
     DB_TRANS_END
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return 0;
 }
 
@@ -2408,18 +2408,18 @@ static gint _trans_beg_insert(sqlite3 *db, struct trans_beg_t *trans_beg)
   	return sqlite3_last_insert_rowid(db);
 }
 
-gint 	hif_swdb_trans_beg 	(	HifSwdb *self,
+gint 	dnf_swdb_trans_beg 	(	DnfSwdb *self,
 							 	const gchar *timestamp,
 							 	const gchar *rpmdb_version,
 								const gchar *cmdline,
 								const gchar *loginuid,
 								const gchar *releasever)
 {
-	if (hif_swdb_open(self))
+	if (dnf_swdb_open(self))
     	return 1;
   	struct trans_beg_t trans_beg = { timestamp, rpmdb_version, cmdline, loginuid, releasever};
   	gint rc = _trans_beg_insert(self->db, &trans_beg);
-  	hif_swdb_close(self);
+  	dnf_swdb_close(self);
   	return rc;
 }
 
@@ -2436,24 +2436,24 @@ static gint _trans_end_insert(sqlite3 *db, struct trans_end_t *trans_end)
   	return 0;
 }
 
-gint 	hif_swdb_trans_end 	(	HifSwdb *self,
+gint 	dnf_swdb_trans_end 	(	DnfSwdb *self,
 							 	const gint tid,
 							 	const gchar *end_timestamp,
                                 const gchar *end_rpmdb_version,
 								const gint return_code)
 {
-	if (hif_swdb_open(self))
+	if (dnf_swdb_open(self))
     	return 1;
   	struct trans_end_t trans_end = { tid, end_timestamp, end_rpmdb_version, return_code};
   	gint rc = _trans_end_insert(self->db, &trans_end);
-  	hif_swdb_close(self);
+  	dnf_swdb_close(self);
   	return rc;
 }
 
 gchar *dnf_swdb_trans_cmdline ( DnfSwdb *self,
 								const gint tid)
 {
-	if (hif_swdb_open(self))
+	if (dnf_swdb_open(self))
     	return NULL;
     sqlite3_stmt *res;
     const gchar *sql = GET_TRANS_CMDLINE;
@@ -2468,8 +2468,8 @@ static void _resolve_altered    (GPtrArray *trans)
 {
     for(guint i = 0; i < (trans->len-1); i++)
     {
-        HifSwdbTrans *las = (HifSwdbTrans *)g_ptr_array_index(trans, i);
-        HifSwdbTrans *obj = (HifSwdbTrans *)g_ptr_array_index(trans, i+1);
+        DnfSwdbTrans *las = (DnfSwdbTrans *)g_ptr_array_index(trans, i);
+        DnfSwdbTrans *obj = (DnfSwdbTrans *)g_ptr_array_index(trans, i+1);
 
         if(!las->end_rpmdb_version || !obj->beg_rpmdb_version)
             continue;
@@ -2487,9 +2487,9 @@ static void _resolve_altered    (GPtrArray *trans)
     }
 }
 
-static gboolean _test_output (HifSwdb *self, gint tid, const gchar *o_type)
+static gboolean _test_output (DnfSwdb *self, gint tid, const gchar *o_type)
 {
-    const gint type = hif_swdb_get_output_type(self, o_type);
+    const gint type = dnf_swdb_get_output_type(self, o_type);
     sqlite3_stmt *res;
     const gchar *sql = LOAD_OUTPUT;
     DB_PREP(self->db, sql, res);
@@ -2505,26 +2505,26 @@ static gboolean _test_output (HifSwdb *self, gint tid, const gchar *o_type)
 }
 
 
-static void _resolve_outputs (HifSwdb *self, GPtrArray *trans)
+static void _resolve_outputs (DnfSwdb *self, GPtrArray *trans)
 {
     for(guint i = 0; i < trans->len; ++i)
     {
-        HifSwdbTrans *obj = (HifSwdbTrans *)g_ptr_array_index(trans, i);
+        DnfSwdbTrans *obj = (DnfSwdbTrans *)g_ptr_array_index(trans, i);
         obj->is_output = _test_output(self, obj->tid, "stdout");
         obj->is_error = _test_output(self, obj->tid, "stderr");
     }
 }
 
 /**
-* hif_swdb_get_old_trans_data:
-* Returns: (element-type HifSwdbTransData)(array)(transfer container): list of #HifSwdbTransData
+* dnf_swdb_get_old_trans_data:
+* Returns: (element-type DnfSwdbTransData)(array)(transfer container): list of #DnfSwdbTransData
 */
-GPtrArray *hif_swdb_get_old_trans_data (    HifSwdb *self,
-                                            HifSwdbTrans *trans)
+GPtrArray *dnf_swdb_get_old_trans_data (    DnfSwdb *self,
+                                            DnfSwdbTrans *trans)
 {
     if (!trans->tid)
         return NULL;
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
     	return NULL;
     GPtrArray *node = g_ptr_array_new();
     sqlite3_stmt *res;
@@ -2554,33 +2554,33 @@ GPtrArray *hif_swdb_get_old_trans_data (    HifSwdb *self,
         g_free(tmp_state);
     }
     sqlite3_finalize(res);
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return node;
 }
 
 /**
-* hif_swdb_trans_get_old_trans_data:
-* Returns: (element-type HifSwdbTransData)(array)(transfer container): list of #HifSwdbTransData
+* dnf_swdb_trans_get_old_trans_data:
+* Returns: (element-type DnfSwdbTransData)(array)(transfer container): list of #DnfSwdbTransData
 */
-GPtrArray *hif_swdb_trans_get_old_trans_data(HifSwdbTrans *self)
+GPtrArray *dnf_swdb_trans_get_old_trans_data(DnfSwdbTrans *self)
 {
     if (self->swdb)
-        return hif_swdb_get_old_trans_data( self->swdb, self);
+        return dnf_swdb_get_old_trans_data( self->swdb, self);
     else
         return NULL;
 }
 
 /**
-* hif_swdb_trans_old:
+* dnf_swdb_trans_old:
 * @tids: (element-type gint32)(transfer container): list of constants
-* Returns: (element-type HifSwdbTrans)(array)(transfer container): list of #HifSwdbTrans
+* Returns: (element-type DnfSwdbTrans)(array)(transfer container): list of #DnfSwdbTrans
 */
-GPtrArray *hif_swdb_trans_old(	HifSwdb *self,
+GPtrArray *dnf_swdb_trans_old(	DnfSwdb *self,
                                 GArray *tids,
 								gint limit,
 								const gboolean complete_only)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
     	return NULL;
     DB_TRANS_BEGIN
     GPtrArray *node = g_ptr_array_new();
@@ -2618,7 +2618,7 @@ GPtrArray *hif_swdb_trans_old(	HifSwdb *self,
             if (!match)
                 continue;
         }
-        HifSwdbTrans *trans = hif_swdb_trans_new(   tid, //tid
+        DnfSwdbTrans *trans = dnf_swdb_trans_new(   tid, //tid
                                                     (gchar *)sqlite3_column_text (res, 1), //beg_t
                                                     (gchar *)sqlite3_column_text (res, 2), //end_t
                                                     (gchar *)sqlite3_column_text (res, 3), //beg_rpmdb_v
@@ -2634,15 +2634,15 @@ GPtrArray *hif_swdb_trans_old(	HifSwdb *self,
     _resolve_altered(node);
     _resolve_outputs(self,node);
     DB_TRANS_END
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return node;
 }
 
 /**
-* hif_swdb_last:
-* Returns: (transfer full): #HifSwdbTrans
+* dnf_swdb_last:
+* Returns: (transfer full): #DnfSwdbTrans
 **/
-HifSwdbTrans *hif_swdb_last (HifSwdb *self)
+DnfSwdbTrans *dnf_swdb_last (DnfSwdb *self)
 {
     GPtrArray *node = dnf_swdb_trans_old(self, NULL, 1, 0);
     if (!node || !node->len)
@@ -2667,37 +2667,37 @@ static gint _output_insert(sqlite3 *db, struct output_t *output)
   	return 0;
 }
 
-gint hif_swdb_log_error	(	HifSwdb *self,
+gint dnf_swdb_log_error	(	DnfSwdb *self,
 						 	const gint tid,
 							const gchar *msg)
 {
-  	if (hif_swdb_open(self))
+  	if (dnf_swdb_open(self))
     	return 1;
 
   	DB_TRANS_BEGIN
 
-  	struct output_t output = { tid, msg, hif_swdb_get_output_type(self, "stderr") };
+  	struct output_t output = { tid, msg, dnf_swdb_get_output_type(self, "stderr") };
   	gint rc = _output_insert( self->db, &output);
 
   	DB_TRANS_END
-  	hif_swdb_close(self);
+  	dnf_swdb_close(self);
   	return rc;
 }
 
-gint hif_swdb_log_output	(	HifSwdb *self,
+gint dnf_swdb_log_output	(	DnfSwdb *self,
 						 	    const gint tid,
 							    const gchar *msg)
 {
-  	if (hif_swdb_open(self))
+  	if (dnf_swdb_open(self))
     	return 1;
 
   	DB_TRANS_BEGIN
 
-  	struct output_t output = { tid, msg, hif_swdb_get_output_type(self, "stdout") };
+  	struct output_t output = { tid, msg, dnf_swdb_get_output_type(self, "stdout") };
   	gint rc = _output_insert( self->db, &output);
 
   	DB_TRANS_END
-  	hif_swdb_close(self);
+  	dnf_swdb_close(self);
   	return rc;
 }
 
@@ -2720,40 +2720,40 @@ static GPtrArray *_load_output (sqlite3 *db,
 }
 
 /**
-* hif_swdb_load_error:
+* dnf_swdb_load_error:
 *
 * Returns: (element-type utf8) (transfer container): list of constants
 */
-GPtrArray *hif_swdb_load_error (       HifSwdb *self,
+GPtrArray *dnf_swdb_load_error (       DnfSwdb *self,
                                     const gint tid)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
     	return NULL;
     DB_TRANS_BEGIN
     GPtrArray *rc = _load_output(      self->db,
                                     tid,
-                                    hif_swdb_get_output_type(self, "stderr"));
+                                    dnf_swdb_get_output_type(self, "stderr"));
     DB_TRANS_END
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return rc;
 }
 
 /**
-* hif_swdb_load_output:
+* dnf_swdb_load_output:
 *
 * Returns: (element-type utf8) (transfer container): list of constants
 */
-GPtrArray *hif_swdb_load_output (      HifSwdb *self,
+GPtrArray *dnf_swdb_load_output (      DnfSwdb *self,
                                     const gint tid)
 {
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
     	return NULL;
     DB_TRANS_BEGIN
     GPtrArray *rc = _load_output( self->db,
                                     tid,
-                                    hif_swdb_get_output_type(self, "stdout"));
+                                    dnf_swdb_get_output_type(self, "stdout"));
     DB_TRANS_END
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return rc;
 }
 
@@ -2823,69 +2823,69 @@ static gint _bind_desc_id(sqlite3 *db, const gchar *table, const gchar *desc)
 
 /* Binder for PACKAGE_TYPE
  * Returns: ID of description in PACKAGE_TYPE table
- * Usage: hif_swdb_get_package_type( HifSwdb, description)
+ * Usage: dnf_swdb_get_package_type( DnfSwdb, description)
  */
-gint hif_swdb_get_package_type (HifSwdb *self, const gchar *type)
+gint dnf_swdb_get_package_type (DnfSwdb *self, const gchar *type)
 {
 
- 	if(hif_swdb_open(self))
+ 	if(dnf_swdb_open(self))
  		return -1;
   	gint rc = _bind_desc_id(self->db, "PACKAGE_TYPE", type);
-	hif_swdb_close(self);
+	dnf_swdb_close(self);
   	return rc;
 }
 
 /* OUTPUT_TYPE binder
  * Returns: ID of description in OUTPUT_TYPE table
- * Usage: hif_swdb_get_output_type( HifSwdb, description)
+ * Usage: dnf_swdb_get_output_type( DnfSwdb, description)
  */
-gint hif_swdb_get_output_type (HifSwdb *self, const gchar *type)
+gint dnf_swdb_get_output_type (DnfSwdb *self, const gchar *type)
 {
-	if(hif_swdb_open(self))
+	if(dnf_swdb_open(self))
  		return -1;
   	gint rc = _bind_desc_id(self->db, "OUTPUT_TYPE", type);
-  	hif_swdb_close(self);
+  	dnf_swdb_close(self);
   	return rc;
 }
 
 /* REASON_TYPE binder
  * Returns: ID of description in REASON_TYPE table
- * Usage: hif_swdb_get_reason_type( HifSwdb, description)
+ * Usage: dnf_swdb_get_reason_type( DnfSwdb, description)
  */
-gint hif_swdb_get_reason_type (HifSwdb *self, const gchar *type)
+gint dnf_swdb_get_reason_type (DnfSwdb *self, const gchar *type)
 {
 
-	if(hif_swdb_open(self))
+	if(dnf_swdb_open(self))
  		return -1;
   	gint rc = _bind_desc_id(self->db, "REASON_TYPE", type);
-  	hif_swdb_close(self);
+  	dnf_swdb_close(self);
   	return rc;
 }
 
 /* STATE_TYPE binder
  * Returns: ID of description in STATE_TYPE table
- * Usage: hif_swdb_get_state_type( HifSwdb, description)
+ * Usage: dnf_swdb_get_state_type( DnfSwdb, description)
  */
-gint hif_swdb_get_state_type (HifSwdb *self, const gchar *type)
+gint dnf_swdb_get_state_type (DnfSwdb *self, const gchar *type)
 {
 
-	if(hif_swdb_open(self))
+	if(dnf_swdb_open(self))
  		return -1;
   	gint rc = _bind_desc_id(self->db, "STATE_TYPE", type);
-  	hif_swdb_close(self);
+  	dnf_swdb_close(self);
   	return rc;
 }
 
 /******************************* Database operators ************************************/
 
 //returns path to swdb, default is /var/lib/dnf/swdb.sqlite
-const gchar   *hif_swdb_get_path  (HifSwdb *self)
+const gchar   *dnf_swdb_get_path  (DnfSwdb *self)
 {
     return self->path;
 }
 
 //changes path to swdb
-void  hif_swdb_set_path   (HifSwdb *self, const gchar *path)
+void  dnf_swdb_set_path   (DnfSwdb *self, const gchar *path)
 {
     if(g_strcmp0(path,self->path) != 0)
     {
@@ -2896,19 +2896,19 @@ void  hif_swdb_set_path   (HifSwdb *self, const gchar *path)
 }
 
 //TRUE if db exists else false
-gboolean hif_swdb_exist(HifSwdb *self)
+gboolean dnf_swdb_exist(DnfSwdb *self)
 {
-    return g_file_test(hif_swdb_get_path (self),G_FILE_TEST_EXISTS);
+    return g_file_test(dnf_swdb_get_path (self),G_FILE_TEST_EXISTS);
 }
 
 //open database at self->path
-gint hif_swdb_open(HifSwdb *self)
+gint dnf_swdb_open(DnfSwdb *self)
 {
 
     if(self->ready)
     return 0;
 
-    if( sqlite3_open(hif_swdb_get_path (self), &self->db))
+    if( sqlite3_open(dnf_swdb_get_path (self), &self->db))
     {
         fprintf(stderr, "ERROR: %s (try again as root)\n", sqlite3_errmsg(self->db));
         return 1;
@@ -2918,7 +2918,7 @@ gint hif_swdb_open(HifSwdb *self)
     return 0;
 }
 
-void hif_swdb_close(HifSwdb *self)
+void dnf_swdb_close(DnfSwdb *self)
 {
     if( self->ready && !self->running )
     {
@@ -2928,10 +2928,10 @@ void hif_swdb_close(HifSwdb *self)
 }
 
 //create db at path
-gint hif_swdb_create_db (HifSwdb *self)
+gint dnf_swdb_create_db (DnfSwdb *self)
 {
 
-    if (hif_swdb_open(self))
+    if (dnf_swdb_open(self))
     	return 1;
 
     // Create all tables
@@ -2963,22 +2963,22 @@ gint hif_swdb_create_db (HifSwdb *self)
         return 2;
     }
 
-    hif_swdb_close(self);
+    dnf_swdb_close(self);
     return 0;
 }
 
 //remove and init empty db
-gint hif_swdb_reset_db (HifSwdb *self)
+gint dnf_swdb_reset_db (DnfSwdb *self)
 {
 
-    if(hif_swdb_exist(self))
+    if(dnf_swdb_exist(self))
     {
-        hif_swdb_close(self);
+        dnf_swdb_close(self);
         if (g_remove(self->path)!= 0)
         {
             fprintf(stderr,"SWDB error: Could not reset database (try again as root)\n");
             return 1;
         }
     }
-    return hif_swdb_create_db(self);
+    return dnf_swdb_create_db(self);
 }
