@@ -1,6 +1,6 @@
 /* dnf-swdb.c
 *
-* Copyright (C) 2016 Red Hat, Inc.
+* Copyright (C) 2017 Red Hat, Inc.
 * Author: Eduard Cuba <xcubae00@stud.fit.vutbr.cz>
 *
 * Licensed under the GNU Lesser General Public License Version 2.1
@@ -22,15 +22,6 @@
 
 #define default_path "/var/lib/dnf/history/swdb.sqlite"
 
-#define DB_PREP(db, sql, res) assert(_db_prepare(db, sql, &res))
-#define DB_BIND(res, id, source) assert(_db_bind(res, id, source))
-#define DB_BIND_INT(res, id, source) assert(_db_bind_int(res, id, source))
-#define DB_STEP(res) assert(_db_step(res))
-#define DB_FIND(res) _db_find(res)
-#define DB_FIND_MULTI(res) _db_find_multi(res)
-#define DB_FIND_STR(res) _db_find_str(res)
-#define DB_FIND_STR_MULTI(res) _db_find_str_multi(res)
-
 // Leave DB open when in multi-insert transaction
 #define DB_TRANS_BEGIN 	self->running = 1;
 #define DB_TRANS_END	self->running = 0;
@@ -40,23 +31,12 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "dnf-swdb-sql.h"
-
-struct _DnfSwdb
-{
-    GObject parent_instance;
-    gchar   *path;
-    sqlite3 *db;
-    gboolean ready; //db opened
-  	gboolean running; //if true, db will not be closed
-    gchar *releasever;
-};
+#include "dnf-swdb-db.h"
 
 G_DEFINE_TYPE(DnfSwdb, dnf_swdb, G_TYPE_OBJECT)
 G_DEFINE_TYPE(DnfSwdbPkg, dnf_swdb_pkg, G_TYPE_OBJECT) //history package
 G_DEFINE_TYPE(DnfSwdbTrans, dnf_swdb_trans, G_TYPE_OBJECT) //transaction
 G_DEFINE_TYPE(DnfSwdbTransData, dnf_swdb_transdata, G_TYPE_OBJECT) //trans data
-G_DEFINE_TYPE(DnfSwdbGroup, dnf_swdb_group, G_TYPE_OBJECT)
-G_DEFINE_TYPE(DnfSwdbEnv, dnf_swdb_env, G_TYPE_OBJECT)
 G_DEFINE_TYPE(DnfSwdbPkgData, dnf_swdb_pkgdata, G_TYPE_OBJECT)
 G_DEFINE_TYPE(DnfSwdbRpmData, dnf_swdb_rpmdata, G_TYPE_OBJECT)
 
@@ -315,16 +295,16 @@ dnf_swdb_trans_init(DnfSwdbTrans *self)
  * Creates a new #DnfSwdbTrans.
  *
  * Returns: a #DnfSwdbTrans
- **/
-DnfSwdbTrans* dnf_swdb_trans_new(	const gint tid,
-                                    const gchar *beg_timestamp,
-									const gchar *end_timestamp,
-									const gchar *beg_rpmdb_version,
-                                    const gchar *end_rpmdb_version,
-									const gchar *cmdline,
-									const gchar *loginuid,
-									const gchar *releasever,
-									const gint return_code)
+**/
+DnfSwdbTrans* dnf_swdb_trans_new(gint tid,
+                                 const gchar *beg_timestamp,
+                                 const gchar *end_timestamp,
+                                 const gchar *beg_rpmdb_version,
+                                 const gchar *end_rpmdb_version,
+                                 const gchar *cmdline,
+                                 const gchar *loginuid,
+                                 const gchar *releasever,
+                                 gint return_code)
 {
     DnfSwdbTrans *trans = g_object_new(DNF_TYPE_SWDB_TRANS, NULL);
     trans->tid = tid;
@@ -369,15 +349,15 @@ dnf_swdb_transdata_init(DnfSwdbTransData *self)
  * Creates a new #DnfSwdbTransData.
  *
  * Returns: a #DnfSwdbTransData
- **/
-DnfSwdbTransData* dnf_swdb_transdata_new(   gint tdid,
-                                            gint tid,
-                                            gint pdid,
-                                            gint gid,
-                                            gint done,
-                                            gint ORIGINAL_TD_ID,
-                                            gchar *reason,
-                                            gchar *state)
+**/
+DnfSwdbTransData* dnf_swdb_transdata_new(gint tdid,
+                                         gint tid,
+                                         gint pdid,
+                                         gint gid,
+                                         gint done,
+                                         gint ORIGINAL_TD_ID,
+                                         gchar *reason,
+                                         gchar *state)
 {
     DnfSwdbTransData *data = g_object_new(DNF_TYPE_SWDB_TRANSDATA, NULL);
     data->tdid = tdid;
@@ -389,110 +369,6 @@ DnfSwdbTransData* dnf_swdb_transdata_new(   gint tdid,
     data->reason = g_strdup(reason);
     data->state = g_strdup(state);
     return data;
-}
-
-
-// Group destructor
-static void dnf_swdb_group_finalize(GObject *object)
-{
-    DnfSwdbGroup * group = (DnfSwdbGroup*) object;
-    g_free( (gchar*) group->name_id);
-	g_free( group->name);
-	g_free( group->ui_name);
-    G_OBJECT_CLASS (dnf_swdb_group_parent_class)->finalize (object);
-}
-
-// Group Class initialiser
-static void
-dnf_swdb_group_class_init(DnfSwdbGroupClass *klass)
-{
-    GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = dnf_swdb_group_finalize;
-}
-
-// Group Object initialiser
-static void
-dnf_swdb_group_init(DnfSwdbGroup *self)
-{
-    self->gid = 0;
-    self->swdb = NULL;
-    self->is_installed = 0;
-}
-
-/**
- * dnf_swdb_group_new:
- *
- * Creates a new #DnfSwdbGroup.
- *
- * Returns: a #DnfSwdbGroup
- **/
-DnfSwdbGroup* dnf_swdb_group_new(	const gchar* name_id,
-									gchar* name,
-									gchar* ui_name,
-									gint is_installed,
-									gint pkg_types,
-									gint grp_types,
-                                    DnfSwdb *swdb)
-{
-    DnfSwdbGroup *group = g_object_new(DNF_TYPE_SWDB_GROUP, NULL);
-    group->name_id = g_strdup(name_id);
-    group->name = g_strdup(name);
-    group->ui_name = g_strdup(ui_name);
-    group->is_installed = is_installed;
-    group->pkg_types = pkg_types;
-    group->grp_types = grp_types;
-    group->swdb = swdb;
-    return group;
-}
-
-// environment destructor
-static void dnf_swdb_env_finalize(GObject *object)
-{
-    DnfSwdbEnv * env = (DnfSwdbEnv *) object;
-    g_free( (gchar*) env->name_id);
-	g_free( env->name);
-	g_free( env->ui_name);
-    G_OBJECT_CLASS (dnf_swdb_env_parent_class)->finalize (object);
-}
-
-// environment Class initialiser
-static void
-dnf_swdb_env_class_init(DnfSwdbEnvClass *klass)
-{
-    GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = dnf_swdb_env_finalize;
-}
-
-// environment Object initialiser
-static void
-dnf_swdb_env_init(DnfSwdbEnv *self)
-{
-    self->eid = 0;
-    self->swdb = NULL;
-}
-
-/**
- * dnf_swdb_env_new:
- *
- * Creates a new #DnfSwdbEnv.
- *
- * Returns: a #DnfSwdbEnv
- **/
-DnfSwdbEnv* dnf_swdb_env_new(	    const gchar* name_id,
-									gchar* name,
-									gchar* ui_name,
-									gint pkg_types,
-									gint grp_types,
-                                    DnfSwdb *swdb)
-{
-    DnfSwdbEnv *env = g_object_new(DNF_TYPE_SWDB_ENV, NULL);
-    env->name_id = g_strdup(name_id);
-    env->name = g_strdup(name);
-    env->ui_name = g_strdup(ui_name);
-    env->pkg_types = pkg_types;
-    env->grp_types = grp_types;
-    env->swdb = swdb;
-    return env;
 }
 
 // rpmdata destructor
@@ -541,18 +417,18 @@ static void dnf_swdb_rpmdata_init(DnfSwdbRpmData *self)
  * Creates a new #DnfSwdbRpmData.
  *
  * Returns: a #DnfSwdbRpmData
- **/
- DnfSwdbRpmData* dnf_swdb_rpmdata_new(const gint   pid,
- 									  const gchar *buildtime,
- 									  const gchar *buildhost,
- 									  const gchar *license,
- 									  const gchar *packager,
- 									  const gchar *size,
- 									  const gchar *sourcerpm,
- 									  const gchar *url,
- 									  const gchar *vendor,
- 									  const gchar *committer,
- 									  const gchar *committime)
+**/
+DnfSwdbRpmData *dnf_swdb_rpmdata_new(gint   pid,
+                                     const gchar *buildtime,
+                                     const gchar *buildhost,
+                                     const gchar *license,
+                                     const gchar *packager,
+                                     const gchar *size,
+                                     const gchar *sourcerpm,
+                                     const gchar *url,
+                                     const gchar *vendor,
+                                     const gchar *committer,
+                                     const gchar *committime)
 {
     DnfSwdbRpmData *rpmdata = g_object_new(DNF_TYPE_SWDB_RPMDATA, NULL);
     rpmdata->pid = pid;
@@ -569,283 +445,12 @@ static void dnf_swdb_rpmdata_init(DnfSwdbRpmData *self)
     return rpmdata;
 }
 
-/***************************** Functions ***********************************/
-
-static gint _db_step	(sqlite3_stmt *res)
-{
-  	if (sqlite3_step(res) != SQLITE_DONE)
-    {
-        fprintf(stderr,
-                "SQL error:Could not execute statement. Try again as root.\n");
-        sqlite3_finalize(res);
-        return 0;
-	}
-  	sqlite3_finalize(res);
-  	return 1; //true because of assert
-}
-
-// assumes only one parameter on output e.g "SELECT ID FROM DUMMY WHERE ..."
-static gint _db_find	(sqlite3_stmt *res)
-{
-  	if (sqlite3_step(res) == SQLITE_ROW ) // id for description found
-    {
-        gint result = sqlite3_column_int(res, 0);
-        sqlite3_finalize(res);
-        return result;
-    }
-  	else
-    {
-        sqlite3_finalize(res);
-	    return 0;
-    }
-}
-
-// assumes one text parameter on output e.g "SELECT DESC FROM DUMMY WHERE ..."
-static gchar *_db_find_str(sqlite3_stmt *res)
-{
-  	if (sqlite3_step(res) == SQLITE_ROW ) // id for description found
-    {
-        gchar * result = g_strdup((gchar *)sqlite3_column_text(res, 0));
-        sqlite3_finalize(res);
-        return result;
-    }
-  	else
-    {
-        sqlite3_finalize(res);
-        return NULL;
-    }
-}
-
-static gchar *_db_find_str_multi(sqlite3_stmt *res)
-{
-  	if (sqlite3_step(res) == SQLITE_ROW ) // id for description found
-    {
-        gchar * result = g_strdup((gchar *)sqlite3_column_text(res, 0));
-        return result;
-    }
-  	else
-    {
-        sqlite3_finalize(res);
-        return NULL;
-    }
-}
-
-static gint _db_find_multi	(sqlite3_stmt *res)
-{
-  	if (sqlite3_step(res) == SQLITE_ROW ) // id for description found
-    {
-        gint result = sqlite3_column_int(res, 0);
-        return result;
-    }
-  	else
-    {
-        sqlite3_finalize(res);
-	    return 0;
-    }
-}
-
-static gint _db_prepare	(	sqlite3 *db,
-						 	const gchar *sql,
-						   	sqlite3_stmt **res)
-{
-  	gint rc = sqlite3_prepare_v2(db, sql, -1, res, NULL);
-    if(rc != SQLITE_OK)
-    {
-        fprintf(stderr, "SQL error: %s\n", sqlite3_errmsg(db));
-	  	fprintf(stderr, "SQL error: Prepare failed!\n");
-        sqlite3_finalize(*res);
-        return 0;
-    }
-  	return 1; //true because of assert
-}
-
-static gint _db_bind	(	sqlite3_stmt *res,
-						 	const gchar *id,
-						 	const gchar *source)
-{
-  	gint idx = sqlite3_bind_parameter_index(res, id);
-    gint rc = sqlite3_bind_text(res, idx, source, -1, SQLITE_STATIC);
-
-  	if (rc) //something went wrong
-    {
-        fprintf(stderr, "SQL error: Could not bind parameters(%d|%s|%s)\n",
-                idx, id, source);
-        sqlite3_finalize(res);
-        return 0;
-    }
-  	return 1; //true because of assert
-}
-
-static gint _db_bind_int (	sqlite3_stmt *res,
-						  	const gchar *id,
-						  	gint source)
-{
-  	gint idx = sqlite3_bind_parameter_index(res, id);
-    gint rc = sqlite3_bind_int(res, idx, source);
-
-  	if (rc) //something went wrong
-    {
-        fprintf(stderr, "SQL error: Could not bind parameters(%s|%d)\n",
-                id, source);
-        sqlite3_finalize(res);
-        return 0;
-    }
-  	return 1; //true because of assert
-}
-
-//use macros DB_[PREP,BIND,STEP] for parametrised queries
-static gint _db_exec	(sqlite3 *db,
-						 const gchar *cmd,
-						 int (*callback)(void *, int, char **, char**))
-{
-    gchar *err_msg;
-    gint result = sqlite3_exec(db, cmd, callback, 0, &err_msg);
-    if ( result != SQLITE_OK)
-    {
-        fprintf(stderr, "SQL error: %s\n", err_msg);
-        sqlite3_free(err_msg);
-        return 1;
-    }
-    return 0;
-}
-
-static const gchar *_table_by_attribute(const gchar *attr)
-{
-    //IDEA some lookup table would be nice
-    gint table = 0;
-    if      (!g_strcmp0(attr,"reason")) table = 3; //most common
-    else if (!g_strcmp0(attr,"state")) table = 3;
-    else if (!g_strcmp0(attr,"done")) table = 3;
-    else if (!g_strcmp0(attr,"from_repo_revision")) table = 1;
-    else if (!g_strcmp0(attr,"from_repo_timestamp")) table = 1;
-    else if (!g_strcmp0(attr,"installed_by")) table = 1;
-    else if (!g_strcmp0(attr,"changed_by")) table = 1;
-    else if (!g_strcmp0(attr,"installonly")) table = 1;
-    else if (!g_strcmp0(attr,"origin_url")) table = 1;
-    else if (!g_strcmp0(attr,"beg_timestamp")) table = 2;
-    else if (!g_strcmp0(attr,"end_timestamp")) table = 2;
-    else if (!g_strcmp0(attr,"beg_RPMDB_version")) table = 2;
-    else if (!g_strcmp0(attr,"end_RPMDB_version")) table = 2;
-    else if (!g_strcmp0(attr,"cmdline")) table = 2;
-    else if (!g_strcmp0(attr,"loginuid")) table = 2;
-    else if (!g_strcmp0(attr,"releasever")) table = 2;
-    else if (!g_strcmp0(attr,"return_code")) table = 2;
-    else if (!g_strcmp0(attr,"ORIGINAL_TD_ID")) table = 3;
-    else if (!g_strcmp0(attr,"buildtime")) table = 4;
-    else if (!g_strcmp0(attr,"buildhost")) table = 4;
-    else if (!g_strcmp0(attr,"license")) table = 4;
-    else if (!g_strcmp0(attr,"packager")) table = 4;
-    else if (!g_strcmp0(attr,"size")) table = 4;
-    else if (!g_strcmp0(attr,"sourcerpm")) table = 4;
-    else if (!g_strcmp0(attr,"url")) table = 4;
-    else if (!g_strcmp0(attr,"vendor")) table = 4;
-    else if (!g_strcmp0(attr,"committer")) table = 4;
-    else if (!g_strcmp0(attr,"committime")) table = 4;
-
-    if (table == 1)
-    {
-        return "PACKAGE_DATA";
-    }
-    if (table == 2)
-    {
-        return "TRANS";
-    }
-    if (table == 3)
-    {
-        return "TRANS_DATA";
-    }
-    if (table == 4)
-    {
-        return "RPM_DATA";
-    }
-    return NULL; //attr not found
-}
-
-/********************************* UTILS ***********************************/
-
-// Pattern on input, transaction IDs on output
-static GArray *_simple_search(sqlite3* db, const gchar * pattern)
-{
-    GArray *tids = g_array_new(0,0,sizeof(gint));
-    sqlite3_stmt *res_simple;
-    const gchar *sql_simple = SIMPLE_SEARCH;
-    DB_PREP(db, sql_simple, res_simple);
-    DB_BIND(res_simple, "@pat", pattern);
-    gint pid_simple;
-    GArray *simple = g_array_new(0, 0, sizeof(gint));
-    while( (pid_simple = DB_FIND_MULTI(res_simple)))
-    {
-        g_array_append_val(simple, pid_simple);
-    }
-    gint pdid;
-    for(guint i = 0; i < simple->len; i++)
-    {
-        pid_simple = g_array_index(simple, gint, i);
-        GArray *pdids = _all_pdid_for_pid(db, pid_simple);
-        for( guint j = 0; j < pdids->len; j++)
-        {
-            pdid = g_array_index(pdids, gint, j);
-            GArray *tids_for_pdid = _tids_from_pdid(db, pdid);
-            tids = g_array_append_vals (tids, tids_for_pdid->data,
-                                        tids_for_pdid->len);
-            g_array_free(tids_for_pdid, TRUE);
-        }
-        g_array_free(pdids, TRUE);
-    }
-    g_array_free(simple, TRUE);
-    return tids;
-}
-
-/*
-* Provides package search with extended pattern
-*/
-static GArray *_extended_search (sqlite3* db, const gchar *pattern)
-{
-    GArray *tids = g_array_new(0, 0, sizeof(gint));
-    sqlite3_stmt *res;
-    const gchar *sql = SEARCH_PATTERN;
-    DB_PREP(db, sql, res);
-    //lot of patterns...
-    DB_BIND(res, "@pat", pattern);
-    DB_BIND(res, "@pat", pattern);
-    DB_BIND(res, "@pat", pattern);
-    DB_BIND(res, "@pat", pattern);
-    DB_BIND(res, "@pat", pattern);
-    DB_BIND(res, "@pat", pattern);
-    GArray *pids = g_array_new(0, 0, sizeof(gint));
-    gint pid;
-    while(sqlite3_step(res) == SQLITE_ROW)
-    {
-        pid = sqlite3_column_int(res, 0);
-        g_array_append_val(pids, pid);
-    }
-    sqlite3_finalize(res);
-    gint pdid;
-    for(guint j = 0; j < pids->len; ++j)
-    {
-        pid = g_array_index(pids, gint, j);
-        GArray *pdids = _all_pdid_for_pid(db, pid);
-        for(guint i = 0; i < pdids->len; ++i)
-        {
-            pdid = g_array_index(pdids, gint, i);
-            GArray *tids_for_pdid = _tids_from_pdid(db, pdid);
-            tids = g_array_append_vals (tids, tids_for_pdid->data,
-                                        tids_for_pdid->len);
-            g_array_free(tids_for_pdid, TRUE);
-        }
-        g_array_free(pdids, TRUE);
-    }
-    g_array_free(pids, TRUE);
-    return tids;
-}
-
 /**
 * dnf_swdb_search:
 * @patterns: (element-type utf8) (transfer container): list of constants
 * Returns: (element-type gint32) (transfer container): list of constants
 */
-GArray *dnf_swdb_search (   DnfSwdb *self,
-                            GPtrArray *patterns)
+GArray *dnf_swdb_search(DnfSwdb *self, GPtrArray *patterns)
 {
     if (dnf_swdb_open(self))
         return NULL;
@@ -877,6 +482,7 @@ GArray *dnf_swdb_search (   DnfSwdb *self,
     dnf_swdb_close(self);
     return tids;
 }
+
 static gint _pid_by_nvra    (   sqlite3 *db,
                                 const gchar *nvra)
 {
@@ -1021,584 +627,6 @@ gboolean dnf_swdb_user_installed (  DnfSwdb *self,
     dnf_swdb_close(self);
     return rc;
 }
-/****************************** GROUP PERSISTOR ******************************/
-
-/* insert into groups/env package tables
- * Returns: 0 if successfull
- * usage: rc = _insert_id_name(db, "TABLE", "Xid", "pkg_name");
- * Requires opened DB
- */
-static gint _insert_id_name(sqlite3 *db,
-                            const gchar *table,
-                            gint id,
-                            const gchar *name)
-{
-    sqlite3_stmt *res;
-    gchar *sql = g_strjoin(" ","insert into",table,"values (null, @id, @name)",
-                           NULL);
-
-    DB_PREP(db,sql,res);
-
-    //entity id
-	DB_BIND_INT(res, "@id", id);
-
-    //package name
-    DB_BIND(res, "@name", name);
-
-    DB_STEP(res);
-
-    g_free(sql);
-  	return 0;
-}
-
-static gint _insert_group_additional(   DnfSwdb *self,
-                                        DnfSwdbGroup *group,
-                                        GPtrArray *data,
-                                        const gchar *table)
-{
-    if (dnf_swdb_open(self))
-        return 1;
-    for(guint i = 0; i < data->len; i++)
-    {
-        _insert_id_name(self->db, table, group->gid,
-                        (gchar *)g_ptr_array_index(data, i));
-    }
-	dnf_swdb_close(self);
-  	return 0;
-}
-
-//add new group package
-/**
-* dnf_swdb_group_add_package:
-* @packages: (element-type utf8)(transfer container): list of constants
-*/
-gint dnf_swdb_group_add_package (       DnfSwdbGroup *group,
-                                        GPtrArray *packages)
-{
-    if(group->gid)
-        return _insert_group_additional(group->swdb,
-                                        group,
-                                        packages,
-                                        "GROUPS_PACKAGE");
-    else
-        return 0;
-}
-
-//add new group exclude
-/**
-* dnf_swdb_group_add_exclude:
-* @exclude: (element-type utf8)(transfer container): list of constants
-*/
-gint dnf_swdb_group_add_exclude (       DnfSwdbGroup *group,
-                                        GPtrArray *exclude)
-{
-    if(group->gid)
-        return _insert_group_additional(group->swdb,
-                                        group,
-                                        exclude,
-                                        "GROUPS_EXCLUDE");
-    else
-        return 0;
-}
-
-//add new environments exclude
-/**
-* dnf_swdb_env_add_exclude:
-* @exclude: (element-type utf8)(transfer container): list of constants
-*/
-gint dnf_swdb_env_add_exclude (     DnfSwdbEnv *env,
-                                    GPtrArray *exclude)
-{
-    if(env->eid)
-    {
-        if (dnf_swdb_open(env->swdb))
-            return 1;
-        for(guint i = 0; i < exclude->len; i++)
-        {
-            _insert_id_name (env->swdb->db,
-                             "ENVIRONMENTS_EXCLUDE",
-                             env->eid,
-                             (gchar *)g_ptr_array_index(exclude, i));
-        }
-        dnf_swdb_close(env->swdb);
-        return 0;
-    }
-    else
-        return 1;
-}
-
-static gint _group_id_to_gid(sqlite3 *db, const gchar *group_id)
-{
-    sqlite3_stmt *res;
-    const gchar* sql = S_GID_BY_NAME_ID;
-    DB_PREP(db, sql, res);
-    DB_BIND(res, "@id", group_id);
-    return DB_FIND(res);
-}
-
-/**
-* dnf_swdb_env_add_group:
-* @groups: (element-type utf8)(transfer container): list of constants
-*/
-gint dnf_swdb_env_add_group (   DnfSwdbEnv *env,
-                                GPtrArray *groups)
-{
-    if(env->eid)
-    {
-        if (dnf_swdb_open(env->swdb))
-            return 1;
-        const gchar *sql = I_ENV_GROUP;
-        gint gid;
-        for(guint i = 0; i < groups->len; i++)
-        {
-            //bind group_id to gid
-            gid = _group_id_to_gid(env->swdb->db,
-                                   (const gchar*)g_ptr_array_index(groups, i));
-            if (!gid)
-                continue;
-            sqlite3_stmt *res;
-            DB_PREP(env->swdb->db, sql, res);
-            DB_BIND_INT(res, "@eid", env->eid);
-            DB_BIND_INT(res, "@gid", gid);
-            DB_STEP(res);
-        }
-        dnf_swdb_close(env->swdb);
-        return 0;
-    }
-    else
-        return 1;
-}
-
-static void _add_group  (   sqlite3 *db,
-                            DnfSwdbGroup *group)
-{
-    sqlite3_stmt *res;
-    const gchar *sql = I_GROUP;
-    DB_PREP(db, sql, res);
-    DB_BIND(res, "@name_id", group->name_id);
-    DB_BIND(res, "@name", group->name);
-    DB_BIND(res, "@ui_name", group->ui_name);
-    DB_BIND_INT(res, "@is_installed", group->is_installed);
-    DB_BIND_INT(res, "@pkg_types", group->pkg_types);
-    DB_BIND_INT(res, "@grp_types", group->grp_types);
-    DB_STEP(res);
-    group->gid = sqlite3_last_insert_rowid(db);
-}
-
-gint dnf_swdb_add_group (   DnfSwdb *self,
-                            DnfSwdbGroup *group)
-{
-    if (dnf_swdb_open(self))
-        return 1;
-    _add_group  (self->db, group);
-    dnf_swdb_close(self);
-    return 0;
-}
-
-static void _add_env(sqlite3 *db, DnfSwdbEnv *env)
-{
-    sqlite3_stmt *res;
-    const gchar *sql = I_ENV;
-    DB_PREP(db, sql, res);
-    DB_BIND(res, "@name_id", env->name_id);
-    DB_BIND(res, "@name", env->name);
-    DB_BIND(res, "@ui_name", env->ui_name);
-    DB_BIND_INT(res, "@pkg_types", env->pkg_types);
-    DB_BIND_INT(res, "@grp_types", env->grp_types);
-    DB_STEP(res);
-    env->eid = sqlite3_last_insert_rowid(db);
-
-}
-
-gint dnf_swdb_add_env (     DnfSwdb *self,
-                            DnfSwdbEnv *env)
-{
-    if (dnf_swdb_open(self))
-        return 1;
-    _add_env  (self->db, env);
-    dnf_swdb_close(self);
-    return 0;
-}
-
-static DnfSwdbGroup *_get_group(sqlite3 *db,
-                                const gchar *name_id)
-{
-    sqlite3_stmt *res;
-    const gchar *sql = S_GROUP_BY_NAME_ID;
-    DB_PREP(db, sql, res);
-    DB_BIND(res, "@id", name_id);
-    if (sqlite3_step(res) == SQLITE_ROW)
-    {
-        DnfSwdbGroup *group = dnf_swdb_group_new(
-                                name_id, //name_id
-                                (gchar*)sqlite3_column_text(res, 2),//name
-                                (gchar*)sqlite3_column_text(res, 3),//ui_name
-                                sqlite3_column_int(res, 4),//is_installed
-                                sqlite3_column_int(res, 5),//pkg_types
-                                sqlite3_column_int(res, 6),//grp_types
-                                NULL); //swdb
-        group->gid = sqlite3_column_int(res,0);
-        sqlite3_finalize(res);
-        return group;
-    }
-    return NULL;
-}
-
-/**
-* dnf_swdb_get_group:
-* Returns: (transfer full): #DnfSwdbGroup
-*/
-DnfSwdbGroup *dnf_swdb_get_group	(DnfSwdb * self,
-	 								const gchar* name_id)
-{
-    if (dnf_swdb_open(self))
-        return NULL;
-
-    DnfSwdbGroup *group = _get_group(self->db, name_id);
-    if(group)
-        group->swdb = self;
-    dnf_swdb_close(self);
-    return group;
-}
-
-static DnfSwdbEnv *_get_env(    sqlite3 *db,
-                                const gchar *name_id)
-{
-    sqlite3_stmt *res;
-    const gchar *sql = S_ENV_BY_NAME_ID;
-    DB_PREP(db, sql, res);
-    DB_BIND(res, "@id", name_id);
-    if (sqlite3_step(res) == SQLITE_ROW)
-    {
-        DnfSwdbEnv *env = dnf_swdb_env_new(
-                                name_id, //name_id
-                                (gchar*)sqlite3_column_text(res, 2),//name
-                                (gchar*)sqlite3_column_text(res, 3),//ui_name
-                                sqlite3_column_int(res, 4),//pkg_types
-                                sqlite3_column_int(res, 5),//grp_types
-                                NULL); //swdb
-        env->eid = sqlite3_column_int(res,0);
-        sqlite3_finalize(res);
-        return env;
-    }
-    return NULL;
-}
-
-/**
-* dnf_swdb_get_env:
-* Returns: (transfer full): #DnfSwdbEnv
-*/
-DnfSwdbEnv *dnf_swdb_get_env(   DnfSwdb * self,
-	 							const gchar* name_id)
-{
-    if (dnf_swdb_open(self))
-        return NULL;
-
-    DnfSwdbEnv *env = _get_env(self->db, name_id);
-    if(env)
-        env->swdb = self;
-    dnf_swdb_close(self);
-    return env;
-}
-
-/**
-* dnf_swdb_groups_by_pattern:
-* Returns: (element-type DnfSwdbGroup)(array)(transfer container): list of #DnfSwdbGroup
-*/
-GPtrArray *dnf_swdb_groups_by_pattern   (DnfSwdb *self,
-                                        const gchar *pattern)
-{
-    if (dnf_swdb_open(self))
-        return NULL;
-    GPtrArray *node = g_ptr_array_new();
-    sqlite3_stmt *res;
-    const gchar *sql = S_GROUPS_BY_PATTERN;
-    DB_PREP(self->db, sql, res);
-    DB_BIND(res, "@pat", pattern);
-    DB_BIND(res, "@pat", pattern);
-    DB_BIND(res, "@pat", pattern);
-    while(sqlite3_step(res) == SQLITE_ROW)
-    {
-        DnfSwdbGroup *group = dnf_swdb_group_new(
-                            (const gchar*)sqlite3_column_text(res,1), //name_id
-                            (gchar*)sqlite3_column_text(res, 2),//name
-                            (gchar*)sqlite3_column_text(res, 3),//ui_name
-                            sqlite3_column_int(res, 4),//is_installed
-                            sqlite3_column_int(res, 5),//pkg_types
-                            sqlite3_column_int(res, 6),//grp_types
-                            self); //swdb
-        group->gid = sqlite3_column_int(res,0);
-        g_ptr_array_add(node, (gpointer) group);
-    }
-    sqlite3_finalize(res);
-    dnf_swdb_close(self);
-    return node;
-}
-
-/**
-* dnf_swdb_env_by_pattern:
-* Returns: (element-type DnfSwdbEnv)(array)(transfer container): list of #DnfSwdbEnv
-*/
-GPtrArray *dnf_swdb_env_by_pattern      (DnfSwdb *self,
-                                        const gchar *pattern)
-{
-    if (dnf_swdb_open(self))
-        return NULL;
-    GPtrArray *node = g_ptr_array_new();
-    sqlite3_stmt *res;
-    const gchar *sql = S_ENV_BY_PATTERN;
-    DB_PREP(self->db, sql, res);
-    DB_BIND(res, "@pat", pattern);
-    DB_BIND(res, "@pat", pattern);
-    DB_BIND(res, "@pat", pattern);
-    while(sqlite3_step(res) == SQLITE_ROW)
-    {
-        DnfSwdbEnv *env = dnf_swdb_env_new(
-                            (const gchar*)sqlite3_column_text(res,1), //name_id
-                            (gchar*)sqlite3_column_text(res, 2),//name
-                            (gchar*)sqlite3_column_text(res, 3),//ui_name
-                            sqlite3_column_int(res, 4),//pkg_types
-                            sqlite3_column_int(res, 5),//grp_types
-                            self); //swdb
-        env->eid = sqlite3_column_int(res,0);
-        g_ptr_array_add(node, (gpointer) env);
-    }
-    sqlite3_finalize(res);
-    dnf_swdb_close(self);
-    return node;
-}
-
-static inline GPtrArray *_get_list_from_table(sqlite3_stmt *res)
-{
-    GPtrArray *node = g_ptr_array_new();
-    while(sqlite3_step(res) == SQLITE_ROW)
-    {
-        gchar *str = g_strdup((const gchar*)sqlite3_column_text(res,0));
-        g_ptr_array_add(node, (gpointer) str);
-    }
-    sqlite3_finalize(res);
-    return node;
-}
-
-/**
-* dnf_swdb_group_get_exclude:
-* Returns: (element-type utf8)(array)(transfer container): list of utf8
-*/
-GPtrArray * dnf_swdb_group_get_exclude(DnfSwdbGroup *self)
-{
-    if(!self->gid)
-        return NULL;
-    if (dnf_swdb_open(self->swdb) )
-        return NULL;
-    sqlite3_stmt *res;
-    const gchar *sql = S_GROUP_EXCLUDE_BY_ID;
-    DB_PREP(self->swdb->db, sql, res);
-    DB_BIND_INT(res, "@gid", self->gid);
-    GPtrArray *node = _get_list_from_table(res);
-    dnf_swdb_close(self->swdb);
-    return node;
-}
-
-/**
-* dnf_swdb_group_get_full_list:
-* Returns: (element-type utf8)(array)(transfer container): list of utf8
-*/
-GPtrArray * dnf_swdb_group_get_full_list(DnfSwdbGroup *self)
-{
-    if(!self->gid)
-        return NULL;
-    if (dnf_swdb_open(self->swdb) )
-        return NULL;
-    sqlite3_stmt *res;
-    const gchar *sql = S_GROUP_PACKAGE_BY_ID;
-    DB_PREP(self->swdb->db, sql, res);
-    DB_BIND_INT(res, "@gid", self->gid);
-    GPtrArray *node = _get_list_from_table(res);
-    dnf_swdb_close(self->swdb);
-    return node;
-}
-
-/**
-* dnf_swdb_group_update_full_list:
-* @full_list: (element-type utf8)(transfer container): list of constants
-*/
-gint dnf_swdb_group_update_full_list(   DnfSwdbGroup *group,
-                                        GPtrArray *full_list)
-{
-    if(!group->gid)
-        return 1;
-    if (dnf_swdb_open(group->swdb) )
-        return 1;
-    sqlite3_stmt *res;
-    const gchar *sql = R_FULL_LIST_BY_ID;
-    DB_PREP(group->swdb->db, sql, res);
-    DB_BIND_INT(res, "@gid", group->gid);
-    DB_STEP(res);
-    dnf_swdb_close(group->swdb);
-    dnf_swdb_group_add_package(group, full_list);
-    return 0;
-}
-
-static void _update_group   (   sqlite3 *db,
-                                DnfSwdbGroup *group)
-{
-    sqlite3_stmt *res;
-    const gchar *sql = U_GROUP;
-    DB_PREP(db, sql, res);
-    DB_BIND(res, "@name", group->name);
-    DB_BIND(res, "@ui_name", group->ui_name);
-    DB_BIND_INT(res, "@is_installed", group->is_installed);
-    DB_BIND_INT(res, "@pkg_types", group->pkg_types);
-    DB_BIND_INT(res, "@grp_types", group->grp_types);
-    DB_BIND_INT(res, "@gid", group->gid);
-    DB_STEP(res);
-}
-
-gint dnf_swdb_uninstall_group( DnfSwdb *self,
-                            DnfSwdbGroup *group)
-{
-    if(!group->gid)
-        return 1;
-    if (dnf_swdb_open(self) )
-        return 1;
-    group->is_installed = 0;
-    _update_group( self->db, group);
-    dnf_swdb_close(self);
-    return 0;
-}
-
-/**
-* dnf_swdb_env_get_grp_list:
-* Returns: (element-type utf8)(array)(transfer container): list of utf8
-*/
-GPtrArray *dnf_swdb_env_get_grp_list    (DnfSwdbEnv* env)
-{
-    if(!env->eid)
-        return NULL;
-    if (dnf_swdb_open(env->swdb) )
-        return NULL;
-    GPtrArray *node = g_ptr_array_new();
-    sqlite3_stmt *res;
-    const gchar *sql = S_GROUP_NAME_ID_BY_EID;
-    DB_PREP(env->swdb->db, sql, res);
-    DB_BIND_INT(res, "@eid", env->eid);
-    while (sqlite3_step(res) == SQLITE_ROW)
-    {
-        gchar *name_id = g_strdup((const gchar*)sqlite3_column_text(res,0));
-        g_ptr_array_add(node, (gpointer) name_id);
-    }
-    sqlite3_finalize(res);
-    dnf_swdb_close(env->swdb);
-    return node;
-}
-
-gboolean dnf_swdb_env_is_installed  (DnfSwdbEnv *env )
-{
-    if(!env->eid)
-        return 0;
-    if (dnf_swdb_open(env->swdb) )
-        return 0;
-    gboolean found = 1;
-    sqlite3_stmt *res;
-    const gchar* sql = S_IS_INSTALLED_BY_EID;
-    DB_PREP(env->swdb->db, sql, res);
-    DB_BIND_INT(res, "@eid", env->eid);
-    while(sqlite3_step(res) == SQLITE_ROW)
-    {
-        if(!sqlite3_column_int(res, 0)) //is_installed is not True
-        {
-            found = 0;
-            break;
-        }
-    }
-    sqlite3_finalize(res);
-    dnf_swdb_close(env->swdb);
-    return found;
-}
-
-/**
-* dnf_swdb_env_get_exclude:
-* Returns: (element-type utf8)(array)(transfer container): list of utf8
-*/
-GPtrArray *dnf_swdb_env_get_exclude    (DnfSwdbEnv* self)
-{
-    if(!self->eid)
-        return NULL;
-    if (dnf_swdb_open(self->swdb) )
-        return NULL;
-    sqlite3_stmt *res;
-    const gchar *sql = S_ENV_EXCLUDE_BY_ID;
-    DB_PREP(self->swdb->db, sql, res);
-    DB_BIND_INT(res, "@eid", self->eid);
-    GPtrArray *node = _get_list_from_table(res);
-    dnf_swdb_close(self->swdb);
-    return node;
-}
-
-
-/**
-* dnf_swdb_groups_commit:
-* @groups: (element-type utf8)(transfer container): list of constants
-*/
-gint dnf_swdb_groups_commit(    DnfSwdb *self,
-                                GPtrArray *groups)
-{
-    if (dnf_swdb_open(self) )
-        return 1;
-    const gchar *sql = U_GROUP_COMMIT;
-    for(guint i = 0; i < groups->len; ++i)
-    {
-        sqlite3_stmt *res;
-        DB_PREP(self->db, sql, res);
-        DB_BIND(res, "@id", (const gchar *)g_ptr_array_index(groups, i));
-        DB_STEP(res);
-    }
-    dnf_swdb_close(self);
-    return 0;
-}
-
-static void _log_group_trans (   sqlite3 *db,
-                                const gint tid,
-                                GPtrArray *groups,
-                                const gint is_installed)
-{
-    const gchar *sql = I_TRANS_GROUP_DATA;
-    for(guint i = 0; i< groups->len; ++i)
-    {
-        sqlite3_stmt *res;
-        DnfSwdbGroup *group = g_ptr_array_index(groups, i);
-        DB_PREP(db, sql, res);
-        DB_BIND_INT(res, "@tid", tid);
-        DB_BIND_INT(res, "@gid", group->gid);
-        DB_BIND(res, "@name_id", group->name_id);
-        DB_BIND(res, "@name", group->name);
-        DB_BIND(res, "@ui_name", group->ui_name);
-        DB_BIND_INT(res, "@is_installed", is_installed);
-        DB_BIND_INT(res, "@pkg_types", group->pkg_types);
-        DB_BIND_INT(res, "@grp_types", group->grp_types);
-        DB_STEP(res);
-    }
-
-}
-
-/**
-* dnf_swdb_log_group_trans:
-* @installing: (element-type DnfSwdbGroup)(array)(transfer container): list of #DnfSwdbGroup
-* @removing: (element-type DnfSwdbGroup)(array)(transfer container): list of #DnfSwdbGroup
-*/
-gint dnf_swdb_log_group_trans(  DnfSwdb *self,
-                                const gint tid,
-                                GPtrArray *installing,
-                                GPtrArray *removing)
-{
-    if (dnf_swdb_open(self) )
-        return 1;
-    _log_group_trans(self->db, tid, installing, 1);
-    _log_group_trans(self->db, tid, removing, 0);
-
-    dnf_swdb_close(self);
-    return 0;
-}
 
 /***************************** REPO PERSISTOR ********************************/
 
@@ -1623,8 +651,7 @@ static gint _bind_repo_by_name (sqlite3 *db, const gchar *name)
 	}
 }
 
-gchar* _repo_by_rid(  sqlite3 *db,
-                      const gint rid)
+gchar* _repo_by_rid(sqlite3 *db, gint rid)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_REPO_BY_RID;
@@ -1748,9 +775,9 @@ static gint _package_data_update (  sqlite3 *db,
   	return 0;
 }
 
-gint 	dnf_swdb_log_package_data(	DnfSwdb *self,
-                                    const gint pid,
-									DnfSwdbPkgData *pkgdata )
+gint dnf_swdb_log_package_data(DnfSwdb *self,
+                               gint pid,
+                               DnfSwdbPkgData *pkgdata )
 {
   	if (dnf_swdb_open(self))
     	return 1;
@@ -1759,8 +786,7 @@ gint 	dnf_swdb_log_package_data(	DnfSwdb *self,
   	return rc;
 }
 
-gint _pdid_from_pid (	sqlite3 *db,
-						const gint pid )
+gint _pdid_from_pid(sqlite3 *db, gint pid)
 {
   	sqlite3_stmt *res;
   	const gchar *sql = FIND_PDID_FROM_PID;
@@ -1776,8 +802,7 @@ gint _pdid_from_pid (	sqlite3 *db,
     return sqlite3_last_insert_rowid(db);
 }
 
-GArray* _all_pdid_for_pid (	sqlite3 *db,
-							const gint pid )
+GArray* _all_pdid_for_pid(sqlite3 *db, gint pid)
 {
     GArray *pdids = g_array_new(0,0,sizeof(gint));
     sqlite3_stmt *res;
@@ -1792,8 +817,7 @@ GArray* _all_pdid_for_pid (	sqlite3 *db,
     return pdids;
 }
 
-gint _tid_from_pdid (	sqlite3 *db,
-						const gint pdid )
+gint _tid_from_pdid(sqlite3 *db, gint pdid)
 {
   	sqlite3_stmt *res;
   	const gchar *sql = FIND_TID_FROM_PDID;
@@ -1802,8 +826,7 @@ gint _tid_from_pdid (	sqlite3 *db,
   	return DB_FIND(res);
 }
 
-GArray * _tids_from_pdid (	sqlite3 *db,
-							const gint pdid )
+GArray * _tids_from_pdid(sqlite3 *db, gint pdid)
 {
   	sqlite3_stmt *res;
     GArray *tids = g_array_new(0,0,sizeof(gint));
@@ -1848,11 +871,11 @@ static gchar *_insert_attr(const gchar *sql, const gchar* attr)
  * @attribute   pacakge attribute to look for
  * @cheat       direct specification - name of target SQLite table or NULL
  *              just optimization for internal purposes
- */
-gchar *dnf_swdb_get_pkg_attr(   DnfSwdb *self,
-                                const gint pid,
-                                const gchar *attribute,
-                                const gchar *cheat)
+**/
+gchar *dnf_swdb_get_pkg_attr(DnfSwdb *self,
+                             gint pid,
+                             const gchar *attribute,
+                             const gchar *cheat)
 {
     if (dnf_swdb_open(self))
     {
@@ -2045,8 +1068,7 @@ static DnfSwdbPkg *_get_package_by_pid (    sqlite3 *db,
 *
 * Returns: (element-type DnfSwdbPkg)(array)(transfer container): list of #DnfSwdbPkg
 */
-GPtrArray *dnf_swdb_get_packages_by_tid(   DnfSwdb *self,
-                                            const gint tid)
+GPtrArray *dnf_swdb_get_packages_by_tid(DnfSwdb *self, gint tid)
 {
     if (dnf_swdb_open(self))
     	return NULL;
@@ -2282,11 +1304,11 @@ static gint _trans_data_beg_insert(sqlite3 *db,
   	return DB_FIND(res);
 }
 
-gint 	dnf_swdb_trans_data_beg	(	DnfSwdb *self,
-									const gint 	 tid,
-									const gint 	 pid,
-									const gchar *reason,
-									const gchar *state )
+gint dnf_swdb_trans_data_beg(DnfSwdb *self,
+                             gint tid,
+                             gint pid,
+                             const gchar *reason,
+                             const gchar *state )
 {
   	if (dnf_swdb_open(self))
     	return 1;
@@ -2301,13 +1323,13 @@ gint 	dnf_swdb_trans_data_beg	(	DnfSwdb *self,
 }
 
 /*
- * Mark single package from transaction as done
- * Resolve ORIGINAL_TD_ID if any
- */
-gint    dnf_swdb_trans_data_pid_end (   DnfSwdb *self,
-                                        const gint pid,
-                                        const gint tid,
-                                        const gchar *state)
+* Mark single package from transaction as done
+* Resolve ORIGINAL_TD_ID if any
+*/
+gint dnf_swdb_trans_data_pid_end(DnfSwdb *self,
+                                 gint pid,
+                                 gint tid,
+                                 const gchar *state)
 {
     if (dnf_swdb_open(self))
     	return 1;
@@ -2436,11 +1458,11 @@ static gint _trans_end_insert(sqlite3 *db, struct trans_end_t *trans_end)
   	return 0;
 }
 
-gint 	dnf_swdb_trans_end 	(	DnfSwdb *self,
-							 	const gint tid,
-							 	const gchar *end_timestamp,
-                                const gchar *end_rpmdb_version,
-								const gint return_code)
+gint dnf_swdb_trans_end(DnfSwdb *self,
+                        gint tid,
+                        const gchar *end_timestamp,
+                        const gchar *end_rpmdb_version,
+                        gint return_code)
 {
 	if (dnf_swdb_open(self))
     	return 1;
@@ -2450,8 +1472,7 @@ gint 	dnf_swdb_trans_end 	(	DnfSwdb *self,
   	return rc;
 }
 
-gchar *dnf_swdb_trans_cmdline ( DnfSwdb *self,
-								const gint tid)
+gchar *dnf_swdb_trans_cmdline(DnfSwdb *self, gint tid)
 {
 	if (dnf_swdb_open(self))
     	return NULL;
@@ -2575,10 +1596,10 @@ GPtrArray *dnf_swdb_trans_get_old_trans_data(DnfSwdbTrans *self)
 * @tids: (element-type gint32)(transfer container): list of constants
 * Returns: (element-type DnfSwdbTrans)(array)(transfer container): list of #DnfSwdbTrans
 */
-GPtrArray *dnf_swdb_trans_old(	DnfSwdb *self,
-                                GArray *tids,
-								gint limit,
-								const gboolean complete_only)
+GPtrArray *dnf_swdb_trans_old(DnfSwdb *self,
+                              GArray *tids,
+                              gint limit,
+                              const gboolean complete_only)
 {
     if (dnf_swdb_open(self))
     	return NULL;
@@ -2667,9 +1688,7 @@ static gint _output_insert(sqlite3 *db, struct output_t *output)
   	return 0;
 }
 
-gint dnf_swdb_log_error	(	DnfSwdb *self,
-						 	const gint tid,
-							const gchar *msg)
+gint dnf_swdb_log_error(DnfSwdb *self, gint tid, const gchar *msg)
 {
   	if (dnf_swdb_open(self))
     	return 1;
@@ -2684,9 +1703,7 @@ gint dnf_swdb_log_error	(	DnfSwdb *self,
   	return rc;
 }
 
-gint dnf_swdb_log_output	(	DnfSwdb *self,
-						 	    const gint tid,
-							    const gchar *msg)
+gint dnf_swdb_log_output(DnfSwdb *self, gint tid, const gchar *msg)
 {
   	if (dnf_swdb_open(self))
     	return 1;
@@ -2701,9 +1718,7 @@ gint dnf_swdb_log_output	(	DnfSwdb *self,
   	return rc;
 }
 
-static GPtrArray *_load_output (sqlite3 *db,
-                                gint tid,
-                                gint type)
+static GPtrArray *_load_output(sqlite3 *db, gint tid, gint type)
 {
     sqlite3_stmt *res;
   	const gchar *sql = LOAD_OUTPUT;
@@ -2724,8 +1739,7 @@ static GPtrArray *_load_output (sqlite3 *db,
 *
 * Returns: (element-type utf8) (transfer container): list of constants
 */
-GPtrArray *dnf_swdb_load_error (       DnfSwdb *self,
-                                    const gint tid)
+GPtrArray *dnf_swdb_load_error(DnfSwdb *self, gint tid)
 {
     if (dnf_swdb_open(self))
     	return NULL;
@@ -2743,8 +1757,7 @@ GPtrArray *dnf_swdb_load_error (       DnfSwdb *self,
 *
 * Returns: (element-type utf8) (transfer container): list of constants
 */
-GPtrArray *dnf_swdb_load_output (      DnfSwdb *self,
-                                    const gint tid)
+GPtrArray *dnf_swdb_load_output(DnfSwdb *self, gint tid)
 {
     if (dnf_swdb_open(self))
     	return NULL;
@@ -2792,7 +1805,7 @@ static gint _insert_desc(sqlite3 *db, const gchar *table, const gchar *desc)
   	return result;
 }
 
-gchar* _look_for_desc(sqlite3 *db, const gchar *table, const gint id)
+gchar* _look_for_desc(sqlite3 *db, const gchar *table, gint id)
 {
     sqlite3_stmt *res;
     gchar *sql = g_strjoin(" ","select description from",table,"where ID=@id", NULL);
@@ -2876,8 +1889,6 @@ gint dnf_swdb_get_state_type (DnfSwdb *self, const gchar *type)
   	return rc;
 }
 
-/******************************* Database operators ************************************/
-
 //returns path to swdb, default is /var/lib/dnf/swdb.sqlite
 const gchar   *dnf_swdb_get_path  (DnfSwdb *self)
 {
@@ -2904,7 +1915,6 @@ gboolean dnf_swdb_exist(DnfSwdb *self)
 //open database at self->path
 gint dnf_swdb_open(DnfSwdb *self)
 {
-
     if(self->ready)
     return 0;
 
@@ -2930,33 +1940,11 @@ void dnf_swdb_close(DnfSwdb *self)
 //create db at path
 gint dnf_swdb_create_db (DnfSwdb *self)
 {
-
     if (dnf_swdb_open(self))
     	return 1;
 
-    // Create all tables
-    gint failed = 0;
-    failed += _db_exec (self->db, C_PKG_DATA, NULL);
-    failed += _db_exec (self->db, C_PKG, NULL);
-    failed += _db_exec (self->db, C_REPO, NULL);
-    failed += _db_exec (self->db, C_TRANS_DATA, NULL);
-    failed += _db_exec (self->db, C_TRANS, NULL);
-    failed += _db_exec (self->db, C_OUTPUT, NULL);
-    failed += _db_exec (self->db, C_STATE_TYPE, NULL);
-    failed += _db_exec (self->db, C_REASON_TYPE, NULL);
-    failed += _db_exec (self->db, C_OUTPUT_TYPE, NULL);
-    failed += _db_exec (self->db, C_PKG_TYPE, NULL);
-    failed += _db_exec (self->db, C_GROUPS, NULL);
-    failed += _db_exec (self->db, C_T_GROUP_DATA, NULL);
-    failed += _db_exec (self->db, C_GROUPS_PKG, NULL);
-    failed += _db_exec (self->db, C_GROUPS_EX, NULL);
-    failed += _db_exec (self->db, C_ENV_GROUPS, NULL);
-    failed += _db_exec (self->db, C_ENV, NULL);
-    failed += _db_exec (self->db, C_ENV_EX, NULL);
-    failed += _db_exec (self->db, C_RPM_DATA, NULL);
-    failed += _db_exec (self->db, C_INDEX_NVRA, NULL);
-
-  	if (failed != 0)
+    int failed = _create_db(self->db);
+  	if (failed)
     {
         fprintf(stderr, "SQL error: Unable to create %d tables\n",failed);
         sqlite3_close(self->db);
@@ -2970,7 +1958,6 @@ gint dnf_swdb_create_db (DnfSwdb *self)
 //remove and init empty db
 gint dnf_swdb_reset_db (DnfSwdb *self)
 {
-
     if(dnf_swdb_exist(self))
     {
         dnf_swdb_close(self);

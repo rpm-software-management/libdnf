@@ -1,5 +1,16 @@
 ADD_EXECUTABLE(test_libdnf_main dnf-self-test.c)
-ADD_EXECUTABLE(test_libdnf_swdb dnf-swdb-test.c ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb.c ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb.h)
+
+SET(SWDB_SOURCES
+    ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb.c
+    ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb.h
+    ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb-db.c
+    ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb-db.h
+    ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb-groups.c
+    ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb-groups.h
+    )
+
+ADD_EXECUTABLE(test_libdnf_swdb dnf-swdb-test.c ${SWDB_SOURCES})
+
 TARGET_LINK_LIBRARIES(test_libdnf_main
                       libdnf
                       ${REPO_LIBRARIES}
