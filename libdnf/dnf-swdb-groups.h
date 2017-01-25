@@ -63,7 +63,7 @@ gint dnf_swdb_group_add_package(DnfSwdbGroup *group,
 gint dnf_swdb_group_add_exclude(DnfSwdbGroup *group,
                                 GPtrArray *exclude);
 
-void _insert_group_additional(DnfSwdb *self,
+void _insert_group_additional(sqlite3 *db,
                               int gid,
                               GPtrArray *data,
                               const gchar *table);
@@ -112,6 +112,10 @@ gint dnf_swdb_env_add_group(DnfSwdbEnv *env, GPtrArray *groups);
 DnfSwdbEnv *_get_env(sqlite3 *db, const gchar *name_id);
 
 GPtrArray *_get_list_from_table(sqlite3_stmt *res);
+
+GPtrArray *_get_data_list(sqlite3 *db, int gid, const gchar *table);
+
+GPtrArray *_env_get_group_list(sqlite3 *db, gint eid);
 
 void _log_group_trans (sqlite3 *db,
                        const gint tid,

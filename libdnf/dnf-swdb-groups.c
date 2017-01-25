@@ -158,15 +158,31 @@ gint _insert_id_name(sqlite3 *db, const gchar *table, gint id, const gchar *name
     return 0;
 }
 
-void _insert_group_additional(DnfSwdb *self,
+static gboolean _find_match(const gchar *str, GPtrArray *arr)
+{
+    for(guint i = 0;i < arr->len; ++i)
+    {
+        if(!g_strcmp0(str, (gchar *)g_ptr_array_index(arr, i)))
+        {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+void _insert_group_additional(sqlite3 *db,
                               int gid,
                               GPtrArray *data,
                               const gchar *table)
 {
-    for(guint i = 0; i < data->len; i++)
+    GPtrArray *actualList = _get_data_list(db, gid, table);
+    for(guint i = 0; i < data->len; ++i)
     {
-        _insert_id_name(self->db, table, gid,
-                        (gchar *)g_ptr_array_index(data, i));
+        const gchar *name = (gchar *)g_ptr_array_index(data, i);
+        if(!_find_match(name, actualList))
+        {
+            _insert_id_name(db, table, gid, name);
+        }
     }
 }
 
@@ -179,7 +195,7 @@ gint dnf_swdb_group_add_package(DnfSwdbGroup *group, GPtrArray *packages)
 
     if(!group->gid || dnf_swdb_open(group->swdb))
         return 1;
-    _insert_group_additional(group->swdb, group->gid, packages, "GROUPS_PACKAGE");
+    _insert_group_additional(group->swdb->db, group->gid, packages, "GROUPS_PACKAGE");
     dnf_swdb_close(group->swdb);
     return 0;
 }
@@ -192,7 +208,7 @@ gint dnf_swdb_group_add_exclude(DnfSwdbGroup *group, GPtrArray *exclude)
 {
     if(!group->gid || dnf_swdb_open(group->swdb))
         return 1;
-    _insert_group_additional(group->swdb, group->gid, exclude, "GROUPS_EXCLUDE");
+    _insert_group_additional(group->swdb->db, group->gid, exclude, "GROUPS_EXCLUDE");
     dnf_swdb_close(group->swdb);
     return 0;
 }
@@ -240,11 +256,19 @@ gint dnf_swdb_env_add_group(DnfSwdbEnv *env, GPtrArray *groups)
         return 1;
     const gchar *sql = I_ENV_GROUP;
     gint gid;
+    GPtrArray *actualList = _env_get_group_list(env->swdb->db, env->eid);
     for(guint i = 0; i < groups->len; i++)
     {
+        const gchar *name = (gchar*)g_ptr_array_index(groups, i);
+
+        //test for existing binding
+        if(_find_match(name, actualList))
+        {
+            continue;
+        }
+
         //bind group_id to gid
-        gid = _group_id_to_gid(env->swdb->db,
-                               (const gchar*)g_ptr_array_index(groups, i));
+        gid = _group_id_to_gid(env->swdb->db, name);
         if (!gid)
             continue;
         sqlite3_stmt *res;
@@ -494,6 +518,17 @@ GPtrArray *_get_list_from_table(sqlite3_stmt *res)
     return node;
 }
 
+GPtrArray *_get_data_list(sqlite3 *db, int gid, const gchar *table)
+{
+    sqlite3_stmt *res;
+    gchar *sql = g_strjoin(" ","SELECT name FROM", table, "where G_ID=@gid", NULL);
+    DB_PREP(db, sql, res);
+    DB_BIND_INT(res, "@gid", gid);
+    GPtrArray *node = _get_list_from_table(res);
+    g_free(sql);
+    return node;
+}
+
 /**
 * dnf_swdb_group_get_exclude:
 * Returns: (element-type utf8)(array)(transfer container): list of utf8
@@ -504,11 +539,7 @@ GPtrArray * dnf_swdb_group_get_exclude(DnfSwdbGroup *self)
         return NULL;
     if (dnf_swdb_open(self->swdb) )
         return NULL;
-    sqlite3_stmt *res;
-    const gchar *sql = S_GROUP_EXCLUDE_BY_ID;
-    DB_PREP(self->swdb->db, sql, res);
-    DB_BIND_INT(res, "@gid", self->gid);
-    GPtrArray *node = _get_list_from_table(res);
+    GPtrArray *node = _get_data_list(self->swdb->db, self->gid, "GROUPS_EXCLUDE");
     dnf_swdb_close(self->swdb);
     return node;
 }
@@ -517,17 +548,13 @@ GPtrArray * dnf_swdb_group_get_exclude(DnfSwdbGroup *self)
 * dnf_swdb_group_get_full_list:
 * Returns: (element-type utf8)(array)(transfer container): list of utf8
 */
-GPtrArray * dnf_swdb_group_get_full_list(DnfSwdbGroup *self)
+GPtrArray *dnf_swdb_group_get_full_list(DnfSwdbGroup *self)
 {
     if(!self->gid)
         return NULL;
     if (dnf_swdb_open(self->swdb) )
         return NULL;
-    sqlite3_stmt *res;
-    const gchar *sql = S_GROUP_PACKAGE_BY_ID;
-    DB_PREP(self->swdb->db, sql, res);
-    DB_BIND_INT(res, "@gid", self->gid);
-    GPtrArray *node = _get_list_from_table(res);
+    GPtrArray *node = _get_data_list(self->swdb->db, self->gid, "GROUPS_PACKAGE");
     dnf_swdb_close(self->swdb);
     return node;
 }
@@ -547,7 +574,7 @@ gint dnf_swdb_group_update_full_list(DnfSwdbGroup *group, GPtrArray *full_list)
     DB_PREP(group->swdb->db, sql, res);
     DB_BIND_INT(res, "@gid", group->gid);
     DB_STEP(res);
-    _insert_group_additional(group->swdb, group->gid, full_list, "GROUPS_PACKAGE");
+    _insert_group_additional(group->swdb->db, group->gid, full_list, "GROUPS_PACKAGE");
     dnf_swdb_close(group->swdb);
     return 0;
 }
@@ -578,27 +605,24 @@ gint dnf_swdb_uninstall_group(DnfSwdb *self, DnfSwdbGroup *group)
     return 0;
 }
 
+GPtrArray *_env_get_group_list(sqlite3 *db, gint eid)
+{
+    sqlite3_stmt *res;
+    const gchar *sql = S_GROUP_NAME_ID_BY_EID;
+    DB_PREP(db, sql, res);
+    DB_BIND_INT(res, "@eid", eid);
+    return _get_list_from_table(res);
+}
+
 /**
 * dnf_swdb_env_get_group_list:
 * Returns: (element-type utf8)(array)(transfer container): list of utf8
 */
 GPtrArray *dnf_swdb_env_get_group_list(DnfSwdbEnv* env)
 {
-    if(!env->eid)
+    if(!env->eid || dnf_swdb_open(env->swdb))
         return NULL;
-    if (dnf_swdb_open(env->swdb) )
-        return NULL;
-    GPtrArray *node = g_ptr_array_new();
-    sqlite3_stmt *res;
-    const gchar *sql = S_GROUP_NAME_ID_BY_EID;
-    DB_PREP(env->swdb->db, sql, res);
-    DB_BIND_INT(res, "@eid", env->eid);
-    while (sqlite3_step(res) == SQLITE_ROW)
-    {
-        gchar *name_id = g_strdup((const gchar*)sqlite3_column_text(res,0));
-        g_ptr_array_add(node, (gpointer) name_id);
-    }
-    sqlite3_finalize(res);
+    GPtrArray *node = _env_get_group_list(env->swdb->db, env->eid);
     dnf_swdb_close(env->swdb);
     return node;
 }
