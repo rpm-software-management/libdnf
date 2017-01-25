@@ -44,34 +44,34 @@ G_DEFINE_TYPE(DnfSwdbRpmData, dnf_swdb_rpmdata, G_TYPE_OBJECT)
 
 struct output_t
 {
-  	const gint tid;
-  	const gchar *msg;
-  	gint type;
+    const gint tid;
+    const gchar *msg;
+    gint type;
 };
 
 struct trans_beg_t
 {
-  	const gchar *beg_timestamp;
-  	const gchar *rpmdb_version;
-  	const gchar *cmdline;
-  	const gchar *loginuid;
-  	const gchar *releasever;
+    const gchar *beg_timestamp;
+    const gchar *rpmdb_version;
+    const gchar *cmdline;
+    const gchar *loginuid;
+    const gchar *releasever;
 };
 
 struct trans_end_t
 {
-  	const gint tid;
-   	const gchar *end_timestamp;
+    const gint tid;
+    const gchar *end_timestamp;
     const gchar *end_rpmdb_version;
-  	const gint return_code;
+    const gint return_code;
 };
 
 struct trans_data_beg_t
 {
-  	const gint 	tid;
-	const gint 	pdid;
-  	const gint 	reason;
-	const gint 	state;
+    const gint 	tid;
+    const gint 	pdid;
+    const gint 	reason;
+    const gint 	state;
 };
 
 // SWDB Destructor
@@ -130,16 +130,16 @@ static void dnf_swdb_pkg_finalize(GObject *object)
 {
     DnfSwdbPkg *pkg = (DnfSwdbPkg *)object;
     g_free( (gchar*) pkg->name);
-	g_free( (gchar*) pkg->epoch);
-	g_free( (gchar*) pkg->version);
-	g_free( (gchar*) pkg->release);
-	g_free( (gchar*) pkg->arch);
-	g_free( (gchar*) pkg->checksum_data);
-	g_free( (gchar*) pkg->checksum_type);
-	g_free( (gchar*) pkg->type);
-	g_free( pkg->state);
-	g_free( pkg->ui_from_repo);
-	g_free( pkg->nvra);
+    g_free( (gchar*) pkg->epoch);
+    g_free( (gchar*) pkg->version);
+    g_free( (gchar*) pkg->release);
+    g_free( (gchar*) pkg->arch);
+    g_free( (gchar*) pkg->checksum_data);
+    g_free( (gchar*) pkg->checksum_type);
+    g_free( (gchar*) pkg->type);
+    g_free( pkg->state);
+    g_free( pkg->ui_from_repo);
+    g_free( pkg->nvra);
     G_OBJECT_CLASS (dnf_swdb_pkg_parent_class)->finalize (object);
 }
 
@@ -192,20 +192,20 @@ DnfSwdbPkg* dnf_swdb_pkg_new(   const gchar* name,
     swdbpkg->nvra = g_strjoin(".", tmp, swdbpkg->arch, NULL);
     g_free(tmp);
     if (type) swdbpkg->type = g_strdup(type); else swdbpkg->type = NULL;
-  	return swdbpkg;
+    return swdbpkg;
 }
 
 // PKG DATA Destructor
 static void dnf_swdb_pkgdata_finalize(GObject *object)
 {
     DnfSwdbPkgData * pkgdata = (DnfSwdbPkgData*) object;
-	g_free( pkgdata->from_repo);
+    g_free( pkgdata->from_repo);
     g_free( pkgdata->from_repo_revision);
-  	g_free( pkgdata->from_repo_timestamp);
-  	g_free( pkgdata->installed_by);
-  	g_free( pkgdata->changed_by);
-  	g_free( pkgdata->installonly);
-  	g_free( pkgdata->origin_url);
+    g_free( pkgdata->from_repo_timestamp);
+    g_free( pkgdata->installed_by);
+    g_free( pkgdata->changed_by);
+    g_free( pkgdata->installonly);
+    g_free( pkgdata->origin_url);
     G_OBJECT_CLASS (dnf_swdb_pkgdata_parent_class)->finalize (object);
 }
 
@@ -223,11 +223,11 @@ dnf_swdb_pkgdata_init(DnfSwdbPkgData *self)
 {
     self->from_repo = NULL;
     self->from_repo_revision = NULL;
-  	self->from_repo_timestamp = NULL;
-  	self->installed_by = NULL;
-  	self->changed_by = NULL;
-  	self->installonly = NULL;
-  	self->origin_url = NULL;
+    self->from_repo_timestamp = NULL;
+    self->installed_by = NULL;
+    self->changed_by = NULL;
+    self->installonly = NULL;
+    self->origin_url = NULL;
 }
 
 /**
@@ -253,20 +253,20 @@ DnfSwdbPkgData* dnf_swdb_pkgdata_new(   const gchar* from_repo_revision,
     pkgdata->installonly = g_strdup(installonly);
     pkgdata->origin_url = g_strdup(origin_url);
     pkgdata->from_repo = g_strdup(from_repo);
-  	return pkgdata;
+    return pkgdata;
 }
 
 // TRANS Destructor
 static void dnf_swdb_trans_finalize(GObject *object)
 {
     DnfSwdbTrans *trans = (DnfSwdbTrans *) object;
-	g_free( (gchar*) trans->beg_timestamp);
-	g_free( (gchar*) trans->end_timestamp);
-	g_free( (gchar*) trans->beg_rpmdb_version);
-	g_free( (gchar*) trans->end_rpmdb_version);
-	g_free( (gchar*) trans->cmdline);
-	g_free( (gchar*) trans->loginuid);
-	g_free( (gchar*) trans->releasever);
+    g_free( (gchar*) trans->beg_timestamp);
+    g_free( (gchar*) trans->end_timestamp);
+    g_free( (gchar*) trans->beg_rpmdb_version);
+    g_free( (gchar*) trans->end_rpmdb_version);
+    g_free( (gchar*) trans->cmdline);
+    g_free( (gchar*) trans->loginuid);
+    g_free( (gchar*) trans->releasever);
     G_OBJECT_CLASS (dnf_swdb_trans_parent_class)->finalize (object);
 }
 
@@ -316,7 +316,7 @@ DnfSwdbTrans* dnf_swdb_trans_new(gint tid,
     trans->loginuid = g_strdup(loginuid);
     trans->releasever = g_strdup(releasever);
     trans->return_code = return_code;
-  	return trans;
+    return trans;
 }
 
 //TRANS DATA object
@@ -325,7 +325,7 @@ static void dnf_swdb_transdata_finalize(GObject *object)
 {
     DnfSwdbTransData * tdata = (DnfSwdbTransData*) object;
     g_free( tdata->reason);
-	g_free( tdata->state);
+    g_free( tdata->state);
     G_OBJECT_CLASS (dnf_swdb_transdata_parent_class)->finalize (object);
 }
 
@@ -398,7 +398,7 @@ static void dnf_swdb_rpmdata_class_init(DnfSwdbRpmDataClass *klass)
 // rpmdata Object initialiser
 static void dnf_swdb_rpmdata_init(DnfSwdbRpmData *self)
 {
-	self->pid = 0;
+    self->pid = 0;
     self->buildtime = NULL;
     self->buildhost = NULL;
     self->license = NULL;
@@ -632,23 +632,23 @@ gboolean dnf_swdb_user_installed (  DnfSwdb *self,
 
 static gint _bind_repo_by_name (sqlite3 *db, const gchar *name)
 {
-  	sqlite3_stmt *res;
-  	const gchar *sql = FIND_REPO_BY_NAME;
-	DB_PREP(db, sql, res);
-  	DB_BIND(res, "@name", name);
-  	gint rc = DB_FIND(res);
-  	if (rc)
-	{
-	  	return rc;
-	}
-  	else //not found, need to insert
-	{
-	  	sql = INSERT_REPO;
-	  	DB_PREP(db, sql, res);
-	  	DB_BIND(res, "@name", name);
-	  	DB_STEP(res);
-	  	return sqlite3_last_insert_rowid(db);
-	}
+    sqlite3_stmt *res;
+    const gchar *sql = FIND_REPO_BY_NAME;
+    DB_PREP(db, sql, res);
+    DB_BIND(res, "@name", name);
+    gint rc = DB_FIND(res);
+    if (rc)
+    {
+        return rc;
+    }
+    else //not found, need to insert
+    {
+    sql = INSERT_REPO;
+    DB_PREP(db, sql, res);
+    DB_BIND(res, "@name", name);
+    DB_STEP(res);
+    return sqlite3_last_insert_rowid(db);
+    }
 }
 
 gchar* _repo_by_rid(sqlite3 *db, gint rid)
@@ -674,7 +674,7 @@ gchar *dnf_swdb_repo_by_nvra (  DnfSwdb *self,
                                 const gchar *nvra)
 {
     if (dnf_swdb_open(self))
-    	return NULL;
+        return NULL;
     gint pid = _pid_by_nvra(self->db, nvra);
     if(!pid)
     {
@@ -717,34 +717,33 @@ static gint _package_insert(DnfSwdb *self, DnfSwdbPkg *package)
 {
     gint type_id = dnf_swdb_get_package_type(self,package->type);
     sqlite3_stmt *res;
-   	const gchar *sql = INSERT_PKG;
-	DB_PREP(self->db,sql,res);
-  	DB_BIND(res, "@name", package->name);
-  	DB_BIND(res, "@epoch", package->epoch);
-  	DB_BIND(res, "@version", package->version);
-  	DB_BIND(res, "@release", package->release);
-  	DB_BIND(res, "@arch", package->arch);
-  	DB_BIND(res, "@cdata", package->checksum_data);
-  	DB_BIND(res, "@ctype", package->checksum_type);
-  	DB_BIND_INT(res, "@type", type_id);
-	DB_STEP(res);
+    const gchar *sql = INSERT_PKG;
+    DB_PREP(self->db,sql,res);
+    DB_BIND(res, "@name", package->name);
+    DB_BIND(res, "@epoch", package->epoch);
+    DB_BIND(res, "@version", package->version);
+    DB_BIND(res, "@release", package->release);
+    DB_BIND(res, "@arch", package->arch);
+    DB_BIND(res, "@cdata", package->checksum_data);
+    DB_BIND(res, "@ctype", package->checksum_type);
+    DB_BIND_INT(res, "@type", type_id);
+    DB_STEP(res);
     package->pid =  sqlite3_last_insert_rowid(self->db);
-  	return package->pid;
+    return package->pid;
 }
 
-gint dnf_swdb_add_package(	DnfSwdb *self,
-				  			DnfSwdbPkg *pkg)
+gint dnf_swdb_add_package(DnfSwdb *self, DnfSwdbPkg *pkg)
 {
-  	if (dnf_swdb_open(self))
-    	return 1;
+    if (dnf_swdb_open(self))
+        return 1;
     DB_TRANS_BEGIN
 
     gint rc = _package_insert(self, pkg);
 
     DB_TRANS_END
-  	dnf_swdb_close(self);
-  	return rc;
-}
+    dnf_swdb_close(self);
+    return rc;
+    }
 
 static gint _package_data_update (  sqlite3 *db,
                                     const gint pid,
