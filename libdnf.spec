@@ -41,7 +41,7 @@ BuildRequires:  valgrind
 BuildRequires:  pkgconfig(gio-unix-2.0) >= 2.44.0
 BuildRequires:  pkgconfig(gtk-doc)
 BuildRequires:  pkgconfig(gobject-introspection-1.0)
-BuildRequires:  vala
+BuildRequires:  %{_bindir}/vapigen
 BuildRequires:  rpm-devel >= 4.11.0
 %if %{with rhsm}
 BuildRequires:  pkgconfig(librhsm)
