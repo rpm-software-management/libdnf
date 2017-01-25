@@ -63,10 +63,20 @@ gint dnf_swdb_group_add_package(DnfSwdbGroup *group,
 gint dnf_swdb_group_add_exclude(DnfSwdbGroup *group,
                                 GPtrArray *exclude);
 
-gint _insert_group_additional(DnfSwdb *self,
-                              DnfSwdbGroup *group,
+void _insert_group_additional(DnfSwdb *self,
+                              int gid,
                               GPtrArray *data,
                               const gchar *table);
+
+void _update_group(sqlite3 *db, DnfSwdbGroup *group);
+
+gint _insert_id_name(sqlite3 *db, const gchar *table, gint id, const gchar *name);
+
+gint _group_id_to_gid(sqlite3 *db, const gchar *group_id);
+
+void _add_group(sqlite3 *db, DnfSwdbGroup *group);
+
+DnfSwdbGroup *_get_group(sqlite3 *db, const gchar *name_id);
 
 #define DNF_TYPE_SWDB_ENV dnf_swdb_env_get_type()
 G_DECLARE_FINAL_TYPE ( DnfSwdbEnv, dnf_swdb_env, DNF, SWDB_ENV, GObject)
@@ -98,6 +108,19 @@ gboolean dnf_swdb_env_is_installed  (DnfSwdbEnv *env );
 gint dnf_swdb_env_add_exclude(DnfSwdbEnv *env, GPtrArray *exclude);
 
 gint dnf_swdb_env_add_group(DnfSwdbEnv *env, GPtrArray *groups);
+
+DnfSwdbEnv *_get_env(sqlite3 *db, const gchar *name_id);
+
+GPtrArray *_get_list_from_table(sqlite3_stmt *res);
+
+void _log_group_trans (sqlite3 *db,
+                       const gint tid,
+                       GPtrArray *groups,
+                       const gint is_installed);
+
+void _update_env(sqlite3 *db, DnfSwdbEnv *env);
+
+void _add_env(sqlite3 *db, DnfSwdbEnv *env);
 
 G_END_DECLS
 

@@ -44,5 +44,8 @@
 #define U_GROUP "UPDATE GROUPS SET name=@name,ui_name=@ui_name,is_installed=@is_installed,pkg_types=@pkg_types,"\
                 "grp_types=@grp_types where G_ID=@gid"
 
+#define U_ENV "UPDATE ENVIRONMENTS SET name=@name,ui_name=@ui_name,pkg_types=@pkg_types,"\
+                "grp_types=@grp_types where E_ID=@eid"
+
 #define R_FULL_LIST_BY_ID "DELETE FROM GROUPS_PACKAGE WHERE G_ID=@gid"
 #endif
