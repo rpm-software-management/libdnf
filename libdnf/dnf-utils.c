@@ -118,7 +118,7 @@ dnf_remove_recursive(const gchar *directory, GError **error)
                 return FALSE;
         } else {
             g_debug("deleting file %s", src);
-            if (g_unlink(src) != 0) {
+            if ((g_unlink(src) != 0) && g_file_test(src, G_FILE_TEST_EXISTS)) {
                 g_set_error(error,
                             DNF_ERROR,
                             DNF_ERROR_INTERNAL_ERROR,
