@@ -29,6 +29,7 @@
  */
 
 
+#include <errno.h>
 #include <stdlib.h>
 #include <glib/gstdio.h>
 
@@ -118,7 +119,7 @@ dnf_remove_recursive(const gchar *directory, GError **error)
                 return FALSE;
         } else {
             g_debug("deleting file %s", src);
-            if (g_unlink(src) != 0) {
+            if ((g_unlink(src) != 0) && errno != ENOENT) {
                 g_set_error(error,
                             DNF_ERROR,
                             DNF_ERROR_INTERNAL_ERROR,
