@@ -101,9 +101,9 @@ DnfSwdbEnv* dnf_swdb_env_new(const gchar* name_id,
 
 GPtrArray *dnf_swdb_env_get_group_list(DnfSwdbEnv* env);
 
-GPtrArray *dnf_swdb_env_get_exclude    (DnfSwdbEnv* self);
+GPtrArray *dnf_swdb_env_get_exclude(DnfSwdbEnv* self);
 
-gboolean dnf_swdb_env_is_installed  (DnfSwdbEnv *env );
+gboolean dnf_swdb_env_is_installed(DnfSwdbEnv *env );
 
 gint dnf_swdb_env_add_exclude(DnfSwdbEnv *env, GPtrArray *exclude);
 

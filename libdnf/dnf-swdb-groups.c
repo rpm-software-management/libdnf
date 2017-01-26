@@ -627,22 +627,23 @@ GPtrArray *dnf_swdb_env_get_group_list(DnfSwdbEnv* env)
     return node;
 }
 
-gboolean dnf_swdb_env_is_installed  (DnfSwdbEnv *env )
+gboolean dnf_swdb_env_is_installed(DnfSwdbEnv *env)
 {
     if(!env->eid)
         return 0;
     if (dnf_swdb_open(env->swdb) )
         return 0;
-    gboolean found = 1;
+    gboolean found = FALSE;
     sqlite3_stmt *res;
     const gchar* sql = S_IS_INSTALLED_BY_EID;
     DB_PREP(env->swdb->db, sql, res);
     DB_BIND_INT(res, "@eid", env->eid);
     while(sqlite3_step(res) == SQLITE_ROW)
     {
+        found = TRUE; //at least one group must be found
         if(!sqlite3_column_int(res, 0)) //is_installed is not True
         {
-            found = 0;
+            found = FALSE;
             break;
         }
     }
