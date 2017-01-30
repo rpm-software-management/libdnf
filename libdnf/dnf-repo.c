@@ -285,6 +285,19 @@ dnf_repo_get_description(DnfRepo *repo)
 }
 
 /**
+ * dnf_repo_get_timestamp_generated:
+ * @repo: a #DnfRepo instance.
+ *
+ * Returns: Time in seconds since the epoch (UTC)
+ **/
+guint64
+dnf_repo_get_timestamp_generated (DnfRepo *repo)
+{
+    DnfRepoPrivate *priv = GET_PRIVATE(repo);
+    return priv->timestamp_generated;
+}
+
+/**
  * dnf_repo_get_enabled:
  * @repo: a #DnfRepo instance.
  *
