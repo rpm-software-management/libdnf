@@ -328,17 +328,88 @@ dnf_transaction_ensure_repo_list(DnfTransaction *transaction,
     return TRUE;
 }
 
+gboolean
+dnf_transaction_gpgcheck_package (DnfTransaction *transaction,
+                                  DnfPackage     *pkg,
+                                  GError        **error)
+{
+    DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
+    GError *error_local = NULL;
+    DnfRepo *repo;
+    const gchar *fn;
+
+    /* ensure the filename is set */
+    if (!dnf_transaction_ensure_repo(transaction, pkg, error)) {
+        g_prefix_error(error, "Failed to check untrusted: ");
+        return FALSE;
+    }
+
+    /* find the location of the local file */
+    fn = dnf_package_get_filename(pkg);
+    if (fn == NULL) {
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_FILE_NOT_FOUND,
+                    "Downloaded file for %s not found",
+                    dnf_package_get_name(pkg));
+        return FALSE;
+    }
+
+    /* check file */
+    if (!dnf_keyring_check_untrusted_file(priv->keyring, fn, &error_local)) {
+
+        /* probably an i/o error */
+        if (!g_error_matches(error_local,
+                             DNF_ERROR,
+                             DNF_ERROR_GPG_SIGNATURE_INVALID)) {
+            g_propagate_error(error, error_local);
+            return FALSE;
+        }
+
+        /* if the repo is signed this is ALWAYS an error */
+        repo = dnf_package_get_repo(pkg);
+        if (repo != NULL && dnf_repo_get_gpgcheck(repo)) {
+            g_set_error(error,
+                        DNF_ERROR,
+                        DNF_ERROR_FILE_INVALID,
+                        "package %s cannot be verified "
+                        "and repo %s is GPG enabled: %s",
+                        dnf_package_get_nevra(pkg),
+                        dnf_repo_get_id(repo),
+                        error_local->message);
+            g_error_free(error_local);
+            return FALSE;
+        }
+
+        /* we can only install signed packages in this mode */
+        if ((priv->flags & DNF_TRANSACTION_FLAG_ONLY_TRUSTED) > 0) {
+            g_propagate_error(error, error_local);
+            return FALSE;
+        }
+
+        /* we can install unsigned packages */
+        g_warning("ignoring as allow-untrusted: %s",
+                error_local->message);
+        g_clear_error(&error_local);
+    }
+
+    return TRUE;
+}
+
 /**
  * dnf_transaction_check_untrusted:
+ * @transaction: Transaction
+ * @goal: Target goal
+ * @error: Error
+ *
+ * Verify GPG signatures for all pending packages to be changed as part
+ * of @goal.
  */
-static gboolean
+gboolean
 dnf_transaction_check_untrusted(DnfTransaction *transaction,
                                 HyGoal goal,
                                 GError **error)
 {
-    DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
-    DnfPackage *pkg;
-    const gchar *fn;
     guint i;
     g_autoptr(GPtrArray) install = NULL;
 
@@ -354,64 +425,10 @@ dnf_transaction_check_untrusted(DnfTransaction *transaction,
 
     /* find any packages in untrusted repos */
     for (i = 0; i < install->len; i++) {
-        GError *error_local = NULL;
-        DnfRepo *repo;
-        pkg = g_ptr_array_index(install, i);
+        DnfPackage *pkg = g_ptr_array_index(install, i);
 
-        /* ensure the filename is set */
-        if (!dnf_transaction_ensure_repo(transaction, pkg, error)) {
-            g_prefix_error(error, "Failed to check untrusted: ");
+        if (!dnf_transaction_gpgcheck_package (transaction, pkg, error))
             return FALSE;
-        }
-
-        /* find the location of the local file */
-        fn = dnf_package_get_filename(pkg);
-        if (fn == NULL) {
-            g_set_error(error,
-                        DNF_ERROR,
-                        DNF_ERROR_FILE_NOT_FOUND,
-                        "Downloaded file for %s not found",
-                        dnf_package_get_name(pkg));
-            return FALSE;
-        }
-
-        /* check file */
-        if (!dnf_keyring_check_untrusted_file(priv->keyring, fn, &error_local)) {
-
-            /* probably an i/o error */
-            if (!g_error_matches(error_local,
-                                 DNF_ERROR,
-                                 DNF_ERROR_GPG_SIGNATURE_INVALID)) {
-                g_propagate_error(error, error_local);
-                return FALSE;
-            }
-
-            /* if the repo is signed this is ALWAYS an error */
-            repo = dnf_package_get_repo(pkg);
-            if (repo != NULL && dnf_repo_get_gpgcheck(repo)) {
-                g_set_error(error,
-                            DNF_ERROR,
-                            DNF_ERROR_FILE_INVALID,
-                            "package %s cannot be verified "
-                            "and repo %s is GPG enabled: %s",
-                            dnf_package_get_nevra(pkg),
-                            dnf_repo_get_id(repo),
-                            error_local->message);
-                g_error_free(error_local);
-                return FALSE;
-            }
-
-            /* we can only install signed packages in this mode */
-            if ((priv->flags & DNF_TRANSACTION_FLAG_ONLY_TRUSTED) > 0) {
-                g_propagate_error(error, error_local);
-                return FALSE;
-            }
-
-            /* we can install unsigned packages */
-            g_debug("ignoring as allow-untrusted: %s",
-                 error_local->message);
-            g_clear_error(&error_local);
-        }
     }
     return TRUE;
 }
@@ -1167,6 +1184,44 @@ dnf_transaction_reset(DnfTransaction *transaction)
 }
 
 /**
+ * dnf_transaction_import_keys:
+ * @transaction: a #DnfTransaction instance.
+ * @error: A #GError or %NULL
+ *
+ * Imports all keys from /etc/pki/rpm-gpg as well as any
+ * downloaded per-repo keys.  Note this is called automatically
+ * by dnf_transaction_commit().
+ **/
+gboolean
+dnf_transaction_import_keys(DnfTransaction *transaction,
+                            GError **error)
+{
+    guint i;
+
+    DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
+    /* import all system wide GPG keys */
+    if (!dnf_keyring_add_public_keys(priv->keyring, error))
+        return FALSE;
+
+    /* import downloaded repo GPG keys */
+    for (i = 0; i < priv->repos->len; i++) {
+        DnfRepo *repo = g_ptr_array_index(priv->repos, i);
+        const gchar *pubkey;
+
+        /* does this file actually exist */
+        pubkey = dnf_repo_get_public_key(repo);
+        if (g_file_test(pubkey, G_FILE_TEST_EXISTS)) {
+            /* import */
+            if (!dnf_keyring_add_public_key(priv->keyring, pubkey, error))
+                return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+
+/**
  * dnf_transaction_commit:
  * @transaction: a #DnfTransaction instance.
  * @goal: A #HyGoal
@@ -1237,25 +1292,9 @@ dnf_transaction_commit(DnfTransaction *transaction,
     if (!ret)
         goto out;
 
-    /* import all system wide GPG keys */
-    ret = dnf_keyring_add_public_keys(priv->keyring, error);
+    ret = dnf_transaction_import_keys(transaction, error);
     if (!ret)
         goto out;
-
-    /* import downloaded repo GPG keys */
-    for (i = 0; i < priv->repos->len; i++) {
-        DnfRepo *repo = g_ptr_array_index(priv->repos, i);
-        const gchar *pubkey;
-
-        /* does this file actually exist */
-        pubkey = dnf_repo_get_public_key(repo);
-        if (g_file_test(pubkey, G_FILE_TEST_EXISTS)) {
-            /* import */
-            ret = dnf_keyring_add_public_key(priv->keyring, pubkey, error);
-            if (!ret)
-                goto out;
-        }
-    }
 
     /* find any packages without valid GPG signatures */
     ret = dnf_transaction_check_untrusted(transaction, goal, error);
