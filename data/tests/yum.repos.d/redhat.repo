@@ -2,3 +2,4 @@
 name=Red Hat
 baseurl=http://www.redhat.com/
 enabled=0
+gpgcheck=0
