@@ -587,15 +587,11 @@ static void erase_package(DnfSwdb *self, DnfSwdbPkg *pkg, gint last_tdid)
 
 gint main ()
 {
+    const gchar *_path = "./tmp_swdb.sqlite";
     //create DB object
-    DnfSwdb *self = dnf_swdb_new( ".", "42");
+    DnfSwdb *self = dnf_swdb_new(_path, "42");
 
-    //check path setup
-    const gchar *full_path = "./swdb.sqlite";
-    g_assert(!g_strcmp0(dnf_swdb_get_path(self), full_path));
-    const gchar *new_full_path = "./tmp_swdb.sqlite";
-    dnf_swdb_set_path(self, new_full_path);
-    g_assert(!g_strcmp0(dnf_swdb_get_path(self), new_full_path));
+    g_assert(!g_strcmp0(dnf_swdb_get_path(self), _path));
 
     //reset database
     dnf_swdb_reset_db(self);

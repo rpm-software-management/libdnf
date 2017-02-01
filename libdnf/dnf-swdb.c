@@ -20,8 +20,6 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#define default_path "/var/lib/dnf/history/swdb.sqlite"
-
 // Leave DB open when in multi-insert transaction
 #define DB_TRANS_BEGIN 	self->running = 1;
 #define DB_TRANS_END	self->running = 0;
@@ -78,6 +76,8 @@ struct trans_data_beg_t
 static void dnf_swdb_finalize(GObject *object)
 {
     DnfSwdb *swdb = (DnfSwdb *) object;
+    swdb->running = 0;
+    dnf_swdb_close(swdb);
     g_free( swdb->path );
     g_free( swdb->releasever);
     G_OBJECT_CLASS (dnf_swdb_parent_class)->finalize (object);
@@ -95,8 +95,7 @@ dnf_swdb_class_init(DnfSwdbClass *klass)
 static void
 dnf_swdb_init(DnfSwdb *self)
 {
-  	self->path = g_strdup(default_path);
-	self->ready = 0;
+  	self->path = NULL;
   	self->running = 0;
     self->releasever = NULL;
 }
@@ -108,8 +107,7 @@ dnf_swdb_init(DnfSwdb *self)
  *
  * Returns: a #DnfSwdb
  **/
-DnfSwdb* dnf_swdb_new   (   const gchar* db_path,
-                            const gchar* releasever)
+DnfSwdb* dnf_swdb_new(const gchar* db_path, const gchar* releasever)
 {
     DnfSwdb *swdb = g_object_new(DNF_TYPE_SWDB, NULL);
     if (releasever)
@@ -119,7 +117,7 @@ DnfSwdb* dnf_swdb_new   (   const gchar* db_path,
     if (db_path)
     {
         g_free(swdb->path);
-        swdb->path = g_strjoin("/",db_path,"swdb.sqlite",NULL);
+        swdb->path = g_strdup(db_path);
     }
     return swdb;
 }
@@ -1914,25 +1912,34 @@ gboolean dnf_swdb_exist(DnfSwdb *self)
 //open database at self->path
 gint dnf_swdb_open(DnfSwdb *self)
 {
-    if(self->ready)
-    return 0;
+    if(self->db)
+        return 0;
 
-    if( sqlite3_open(dnf_swdb_get_path (self), &self->db))
+    if(sqlite3_open(self->path, &self->db))
     {
-        fprintf(stderr, "ERROR: %s (try again as root)\n", sqlite3_errmsg(self->db));
+        fprintf(stderr, "ERROR: %s %s\n", sqlite3_errmsg(self->db), self->path);
         return 1;
     }
-
-    self->ready = 1;
     return 0;
 }
 
 void dnf_swdb_close(DnfSwdb *self)
 {
-    if( self->ready && !self->running )
+    if(self->db && !self->running )
     {
-        sqlite3_close(self->db);
-        self->ready = 0;
+        if(sqlite3_close(self->db) == SQLITE_BUSY)
+        {
+            sqlite3_stmt *res;
+            while((res = sqlite3_next_stmt(self->db, NULL)))
+            {
+                sqlite3_finalize(res);
+            }
+            if(sqlite3_close(self->db))
+            {
+                fprintf(stderr, "ERROR: %s\n", sqlite3_errmsg(self->db));
+            }
+        }
+        self->db = NULL;
     }
 }
 
