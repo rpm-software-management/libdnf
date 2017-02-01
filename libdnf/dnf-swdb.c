@@ -1000,6 +1000,10 @@ static void _resolve_package_state  (   DnfSwdb *self,
         sqlite3_finalize(res);
         pkg->state = _look_for_desc(self->db, "STATE_TYPE", state_code);
     }
+    else
+    {
+        sqlite3_finalize(res);
+    }
 }
 
 static DnfSwdbPkgData *_get_package_data_by_pid (   sqlite3 *db,
@@ -1636,15 +1640,17 @@ GPtrArray *dnf_swdb_trans_old(DnfSwdb *self,
             if (!match)
                 continue;
         }
-        DnfSwdbTrans *trans = dnf_swdb_trans_new(   tid, //tid
-                                                    (gchar *)sqlite3_column_text (res, 1), //beg_t
-                                                    (gchar *)sqlite3_column_text (res, 2), //end_t
-                                                    (gchar *)sqlite3_column_text (res, 3), //beg_rpmdb_v
-                                                    (gchar *)sqlite3_column_text (res, 4), //end_rpmdb_v
-                                                    (gchar *)sqlite3_column_text (res, 5), //cmdline
-                                                    (gchar *)sqlite3_column_text (res, 6), //loginuid
-                                                    (gchar *)sqlite3_column_text (res, 7), //releasever
-                                                    sqlite3_column_int  (res, 8)); // return_code
+        DnfSwdbTrans *trans = dnf_swdb_trans_new(
+            tid, //tid
+            (gchar *)sqlite3_column_text (res, 1), //beg_t
+            (gchar *)sqlite3_column_text (res, 2), //end_t
+            (gchar *)sqlite3_column_text (res, 3), //beg_rpmdb_v
+            (gchar *)sqlite3_column_text (res, 4), //end_rpmdb_v
+            (gchar *)sqlite3_column_text (res, 5), //cmdline
+            (gchar *)sqlite3_column_text (res, 6), //loginuid
+            (gchar *)sqlite3_column_text (res, 7), //releasever
+            sqlite3_column_int  (res, 8) // return_code
+        );
         trans->swdb = self;
         g_ptr_array_add(node, (gpointer) trans);
     }

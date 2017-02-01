@@ -673,7 +673,7 @@ GPtrArray *dnf_swdb_env_get_exclude    (DnfSwdbEnv* self)
 
 /**
 * dnf_swdb_groups_commit:
-* @groups: (element-type utf8)(transfer container): list of constants
+* @groups: (element-type DnfSwdbGroup)(array)(transfer container): list of #DnfSwdbGroup
 */
 gint dnf_swdb_groups_commit(DnfSwdb *self, GPtrArray *groups)
 {
@@ -682,9 +682,10 @@ gint dnf_swdb_groups_commit(DnfSwdb *self, GPtrArray *groups)
     const gchar *sql = U_GROUP_COMMIT;
     for(guint i = 0; i < groups->len; ++i)
     {
+        DnfSwdbGroup *group = (DnfSwdbGroup *) g_ptr_array_index(groups, i);
         sqlite3_stmt *res;
         DB_PREP(self->db, sql, res);
-        DB_BIND(res, "@id", (const gchar *)g_ptr_array_index(groups, i));
+        DB_BIND(res, "@id", group->name_id);
         DB_STEP(res);
     }
     dnf_swdb_close(self);
