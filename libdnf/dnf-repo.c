@@ -865,7 +865,16 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
         if (priv->gpgkeys && !*priv->gpgkeys)
             g_strfreev(g_steal_pointer (&priv->gpgkeys));
     }
-    priv->gpgcheck_pkgs = dnf_repo_get_boolean(priv->keyfile, priv->id, "gpgcheck", NULL);
+    /* Currently, we don't have a global configuration file.  The way this worked in yum
+     * is that the yum package enabled gpgcheck=1 by default in /etc/yum.conf.  Basically,
+     * I don't think many people changed that.  It's just saner to disable it in the individual
+     * repo files as required.  To claim compatibility with yum repository files, I think
+     * we need to basically hard code the yum.conf defaults here.
+     */
+    if (!g_key_file_has_key (priv->keyfile, priv->id, "gpgcheck", NULL))
+        priv->gpgcheck_pkgs = TRUE;
+    else
+        priv->gpgcheck_pkgs = dnf_repo_get_boolean(priv->keyfile, priv->id, "gpgcheck", NULL);
     priv->gpgcheck_md = dnf_repo_get_boolean(priv->keyfile, priv->id, "repo_gpgcheck", NULL);
     if (priv->gpgcheck_md && priv->gpgkeys == NULL) {
         g_set_error_literal(error,
