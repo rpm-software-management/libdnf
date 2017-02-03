@@ -149,7 +149,7 @@ gchar *dnf_swdb_trans_cmdline(DnfSwdb *self, gint tid);
 GPtrArray *dnf_swdb_trans_old(DnfSwdb *self,
                               GArray *tids,
                               gint limit,
-                              const gboolean complete_only);
+                              gboolean complete_only);
 
 GPtrArray *dnf_swdb_trans_get_old_trans_data(DnfSwdbTrans *self);
 
