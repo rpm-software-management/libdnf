@@ -1486,7 +1486,7 @@ gchar *dnf_swdb_trans_cmdline(DnfSwdb *self, gint tid)
   	return cmdline;
 }
 
-static void _resolve_altered    (GPtrArray *trans)
+static void _resolve_altered(GPtrArray *trans)
 {
     for(guint i = 0; i < (trans->len-1); i++)
     {
@@ -1511,7 +1511,9 @@ static void _resolve_altered    (GPtrArray *trans)
 
 static gboolean _test_output (DnfSwdb *self, gint tid, const gchar *o_type)
 {
-    const gint type = dnf_swdb_get_output_type(self, o_type);
+    DB_TRANS_BEGIN
+    gint type = dnf_swdb_get_output_type(self, o_type);
+    DB_TRANS_END
     sqlite3_stmt *res;
     const gchar *sql = LOAD_OUTPUT;
     DB_PREP(self->db, sql, res);
@@ -1600,11 +1602,10 @@ GPtrArray *dnf_swdb_trans_get_old_trans_data(DnfSwdbTrans *self)
 GPtrArray *dnf_swdb_trans_old(DnfSwdb *self,
                               GArray *tids,
                               gint limit,
-                              const gboolean complete_only)
+                              gboolean complete_only)
 {
     if (dnf_swdb_open(self))
     	return NULL;
-    DB_TRANS_BEGIN
     GPtrArray *node = g_ptr_array_new();
     sqlite3_stmt *res;
     if(tids && tids->len)
@@ -1655,9 +1656,11 @@ GPtrArray *dnf_swdb_trans_old(DnfSwdb *self,
         g_ptr_array_add(node, (gpointer) trans);
     }
     sqlite3_finalize(res);
-    _resolve_altered(node);
-    _resolve_outputs(self,node);
-    DB_TRANS_END
+    if (node->len)
+    {
+        _resolve_altered(node);
+        _resolve_outputs(self, node);
+    }
     dnf_swdb_close(self);
     return node;
 }
@@ -1747,9 +1750,9 @@ GPtrArray *dnf_swdb_load_error(DnfSwdb *self, gint tid)
     if (dnf_swdb_open(self))
     	return NULL;
     DB_TRANS_BEGIN
-    GPtrArray *rc = _load_output(      self->db,
-                                    tid,
-                                    dnf_swdb_get_output_type(self, "stderr"));
+    GPtrArray *rc = _load_output(self->db,
+                                 tid,
+                                 dnf_swdb_get_output_type(self, "stderr"));
     DB_TRANS_END
     dnf_swdb_close(self);
     return rc;
@@ -1765,9 +1768,9 @@ GPtrArray *dnf_swdb_load_output(DnfSwdb *self, gint tid)
     if (dnf_swdb_open(self))
     	return NULL;
     DB_TRANS_BEGIN
-    GPtrArray *rc = _load_output( self->db,
-                                    tid,
-                                    dnf_swdb_get_output_type(self, "stdout"));
+    GPtrArray *rc = _load_output(self->db,
+                                 tid,
+                                 dnf_swdb_get_output_type(self, "stdout"));
     DB_TRANS_END
     dnf_swdb_close(self);
     return rc;
