@@ -83,6 +83,9 @@ gint dnf_swdb_get_output_type(DnfSwdb *self, const gchar *type);
 
 gint dnf_swdb_get_reason_type(DnfSwdb *self, const gchar *type);
 
+gchar *_reason_by_pid(sqlite3 *db, gint pid);
+gchar *dnf_swdb_reason_by_nvra(DnfSwdb *self, const gchar *nvra);
+
 gint dnf_swdb_get_state_type(DnfSwdb *self, const gchar *type);
 
 gint dnf_swdb_add_package(DnfSwdb *self, DnfSwdbPkg *pkg);
@@ -119,11 +122,6 @@ gint dnf_swdb_trans_data_pid_end(DnfSwdb *self,
                                  gint tid,
                                  const gchar *state);
 
-gchar *dnf_swdb_get_pkg_attr(DnfSwdb *self,
-                             gint pid,
-                             const gchar *attribute,
-                             const gchar *cheat);
-
 GPtrArray *dnf_swdb_load_error(DnfSwdb *self, gint tid);
 
 GPtrArray *dnf_swdb_load_output(DnfSwdb *self, gint tid);
@@ -135,8 +133,6 @@ GArray *dnf_swdb_search(DnfSwdb *self, GPtrArray *patterns);
 gint _pdid_from_pid(sqlite3 *db, gint pid);
 
 GArray * _all_pdid_for_pid(sqlite3 *db, gint pid);
-
-gint _tid_from_pdid(sqlite3 *db, gint pdid);
 
 GArray * _tids_from_pdid(sqlite3 *db, gint pdid);
 
@@ -183,10 +179,6 @@ DnfSwdbPkg *dnf_swdb_package_by_nvra(DnfSwdb *self,
 
 DnfSwdbPkgData *dnf_swdb_package_data_by_nvra(DnfSwdb *self,
                                               const gchar *nvra);
-
-gchar *dnf_swdb_attr_by_nvra(DnfSwdb *self,
-                             const gchar *attr,
-                             const gchar *nvra);
 
 gchar *dnf_swdb_repo_by_nvra(DnfSwdb *self,
                              const gchar *nvra);

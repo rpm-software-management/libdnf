@@ -50,8 +50,6 @@
 * dnf_swdb_set_repo #
 * ----- PACKAGE -----
 * dnf_swdb_log_package_data #
-* dnf_swdb_get_pkg_attr #
-* dnf_swdb_attr_by_nvra #
 * dnf_swdb_get_packages_by_tid #
 * dnf_swdb_pkg_get_ui_from_repo #
 * dnf_swdb_package_by_nvra #
@@ -59,6 +57,7 @@
 * dnf_swdb_set_reason #
 * dnf_swdb_mark_user_installed #
 * dnf_swdb_add_package #
+* dnf_swdb_reason_by_nvra #
 * ------ RPM ------
 * dnf_swdb_add_rpm_data #
 * ------ TRANS -----
@@ -288,33 +287,6 @@ static void check_package_persistor(DnfSwdb *self, DnfSwdbPkg *pkg)
     g_assert(!g_strcmp0(dnf_swdb_pkg_get_ui_from_repo(same_pkg), new_repo));
 
     g_object_unref(same_pkg);
-
-    //check some attribute from each package attribute table
-    gchar *tmp = dnf_swdb_get_pkg_attr(self,
-                                   pid,
-                                   "packager",
-                                   "RPM_DATA"); //by pid w/ cheat
-    g_assert(tmp);
-    g_free(tmp);
-
-    tmp = dnf_swdb_get_pkg_attr(self,
-                                   pid,
-                                   "installed_by",
-                                   NULL); //by pid w/o cheat
-    g_assert(tmp);
-    g_free(tmp);
-
-    tmp = dnf_swdb_attr_by_nvra(self,
-                                   "cmdline",
-                                   pkg->nvra); //by nvra w/o typing
-    g_assert(tmp);
-    g_free(tmp);
-
-    tmp = dnf_swdb_attr_by_nvra(self,
-                                   "state",
-                                   pkg->nvra); //by nvra w/ typing
-    g_assert(tmp);
-    g_free(tmp);
 
     //playing with reason
     g_assert(dnf_swdb_user_installed(self, pkg->nvra));

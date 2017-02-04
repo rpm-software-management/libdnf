@@ -184,58 +184,6 @@ gint _db_exec(sqlite3 *db,
     return 0;
 }
 
-const gchar *_table_by_attribute(const gchar *attr)
-{
-    //IDEA some lookup table would be nice
-    gint table = 0;
-    if      (!g_strcmp0(attr,"reason")) table = 3; //most common
-    else if (!g_strcmp0(attr,"state")) table = 3;
-    else if (!g_strcmp0(attr,"done")) table = 3;
-    else if (!g_strcmp0(attr,"from_repo_revision")) table = 1;
-    else if (!g_strcmp0(attr,"from_repo_timestamp")) table = 1;
-    else if (!g_strcmp0(attr,"installed_by")) table = 1;
-    else if (!g_strcmp0(attr,"changed_by")) table = 1;
-    else if (!g_strcmp0(attr,"installonly")) table = 1;
-    else if (!g_strcmp0(attr,"origin_url")) table = 1;
-    else if (!g_strcmp0(attr,"beg_timestamp")) table = 2;
-    else if (!g_strcmp0(attr,"end_timestamp")) table = 2;
-    else if (!g_strcmp0(attr,"beg_RPMDB_version")) table = 2;
-    else if (!g_strcmp0(attr,"end_RPMDB_version")) table = 2;
-    else if (!g_strcmp0(attr,"cmdline")) table = 2;
-    else if (!g_strcmp0(attr,"loginuid")) table = 2;
-    else if (!g_strcmp0(attr,"releasever")) table = 2;
-    else if (!g_strcmp0(attr,"return_code")) table = 2;
-    else if (!g_strcmp0(attr,"ORIGINAL_TD_ID")) table = 3;
-    else if (!g_strcmp0(attr,"buildtime")) table = 4;
-    else if (!g_strcmp0(attr,"buildhost")) table = 4;
-    else if (!g_strcmp0(attr,"license")) table = 4;
-    else if (!g_strcmp0(attr,"packager")) table = 4;
-    else if (!g_strcmp0(attr,"size")) table = 4;
-    else if (!g_strcmp0(attr,"sourcerpm")) table = 4;
-    else if (!g_strcmp0(attr,"url")) table = 4;
-    else if (!g_strcmp0(attr,"vendor")) table = 4;
-    else if (!g_strcmp0(attr,"committer")) table = 4;
-    else if (!g_strcmp0(attr,"committime")) table = 4;
-
-    if (table == 1)
-    {
-        return "PACKAGE_DATA";
-    }
-    if (table == 2)
-    {
-        return "TRANS";
-    }
-    if (table == 3)
-    {
-        return "TRANS_DATA";
-    }
-    if (table == 4)
-    {
-        return "RPM_DATA";
-    }
-    return NULL; //attr not found
-}
-
 // Pattern on input, transaction IDs on output
 GArray *_simple_search(sqlite3* db, const gchar * pattern)
 {

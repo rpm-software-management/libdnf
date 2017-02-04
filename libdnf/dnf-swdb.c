@@ -42,7 +42,7 @@ G_DEFINE_TYPE(DnfSwdbRpmData, dnf_swdb_rpmdata, G_TYPE_OBJECT)
 
 struct output_t
 {
-    const gint tid;
+    gint tid;
     const gchar *msg;
     gint type;
 };
@@ -58,18 +58,18 @@ struct trans_beg_t
 
 struct trans_end_t
 {
-    const gint tid;
+    gint tid;
     const gchar *end_timestamp;
     const gchar *end_rpmdb_version;
-    const gint return_code;
+    gint return_code;
 };
 
 struct trans_data_beg_t
 {
-    const gint 	tid;
-    const gint 	pdid;
-    const gint 	reason;
-    const gint 	state;
+    gint tid;
+    gint pdid;
+    gint reason;
+    gint state;
 };
 
 // SWDB Destructor
@@ -78,8 +78,8 @@ static void dnf_swdb_finalize(GObject *object)
     DnfSwdb *swdb = (DnfSwdb *) object;
     swdb->running = 0;
     dnf_swdb_close(swdb);
-    g_free( swdb->path );
-    g_free( swdb->releasever);
+    g_free(swdb->path);
+    g_free(swdb->releasever);
     G_OBJECT_CLASS (dnf_swdb_parent_class)->finalize (object);
 }
 
@@ -127,17 +127,17 @@ DnfSwdb* dnf_swdb_new(const gchar* db_path, const gchar* releasever)
 static void dnf_swdb_pkg_finalize(GObject *object)
 {
     DnfSwdbPkg *pkg = (DnfSwdbPkg *)object;
-    g_free( (gchar*) pkg->name);
-    g_free( (gchar*) pkg->epoch);
-    g_free( (gchar*) pkg->version);
-    g_free( (gchar*) pkg->release);
-    g_free( (gchar*) pkg->arch);
-    g_free( (gchar*) pkg->checksum_data);
-    g_free( (gchar*) pkg->checksum_type);
-    g_free( (gchar*) pkg->type);
-    g_free( pkg->state);
-    g_free( pkg->ui_from_repo);
-    g_free( pkg->nvra);
+    g_free((gchar*) pkg->name);
+    g_free((gchar*) pkg->epoch);
+    g_free((gchar*) pkg->version);
+    g_free((gchar*) pkg->release);
+    g_free((gchar*) pkg->arch);
+    g_free((gchar*) pkg->checksum_data);
+    g_free((gchar*) pkg->checksum_type);
+    g_free((gchar*) pkg->type);
+    g_free(pkg->state);
+    g_free(pkg->ui_from_repo);
+    g_free(pkg->nvra);
     G_OBJECT_CLASS (dnf_swdb_pkg_parent_class)->finalize (object);
 }
 
@@ -168,14 +168,14 @@ dnf_swdb_pkg_init(DnfSwdbPkg *self)
  *
  * Returns: a #DnfSwdbPkg
  **/
-DnfSwdbPkg* dnf_swdb_pkg_new(   const gchar* name,
-                                const gchar* epoch,
-                                const gchar* version,
-                                const gchar* release,
-                                const gchar* arch,
-                                const gchar* checksum_data,
-                                const gchar* checksum_type,
-                                const gchar* type)
+DnfSwdbPkg* dnf_swdb_pkg_new(const gchar* name,
+                             const gchar* epoch,
+                             const gchar* version,
+                             const gchar* release,
+                             const gchar* arch,
+                             const gchar* checksum_data,
+                             const gchar* checksum_type,
+                             const gchar* type)
 {
     DnfSwdbPkg *swdbpkg = g_object_new(DNF_TYPE_SWDB_PKG, NULL);
     swdbpkg->name = g_strdup(name);
@@ -235,13 +235,13 @@ dnf_swdb_pkgdata_init(DnfSwdbPkgData *self)
  *
  * Returns: a #DnfSwdbPkgData
  **/
-DnfSwdbPkgData* dnf_swdb_pkgdata_new(   const gchar* from_repo_revision,
-                                        const gchar* from_repo_timestamp,
-                                        const gchar* installed_by,
-                                        const gchar* changed_by,
-                                        const gchar* installonly,
-                                        const gchar* origin_url,
-                                        const gchar* from_repo)
+DnfSwdbPkgData *dnf_swdb_pkgdata_new(const gchar* from_repo_revision,
+                                     const gchar* from_repo_timestamp,
+                                     const gchar* installed_by,
+                                     const gchar* changed_by,
+                                     const gchar* installonly,
+                                     const gchar* origin_url,
+                                     const gchar* from_repo)
 {
     DnfSwdbPkgData *pkgdata = g_object_new(DNF_TYPE_SWDB_PKGDATA, NULL);
     pkgdata->from_repo_revision = g_strdup(from_repo_revision);
@@ -416,7 +416,7 @@ static void dnf_swdb_rpmdata_init(DnfSwdbRpmData *self)
  *
  * Returns: a #DnfSwdbRpmData
 **/
-DnfSwdbRpmData *dnf_swdb_rpmdata_new(gint   pid,
+DnfSwdbRpmData *dnf_swdb_rpmdata_new(gint pid,
                                      const gchar *buildtime,
                                      const gchar *buildhost,
                                      const gchar *license,
@@ -481,8 +481,7 @@ GArray *dnf_swdb_search(DnfSwdb *self, GPtrArray *patterns)
     return tids;
 }
 
-static gint _pid_by_nvra    (   sqlite3 *db,
-                                const gchar *nvra)
+static gint _pid_by_nvra(sqlite3 *db, const gchar *nvra)
 {
     gint pid = 0;
     const gchar *sql = S_PID_BY_NVRA;
@@ -498,8 +497,7 @@ static gint _pid_by_nvra    (   sqlite3 *db,
 * @nvras: (element-type utf8) (transfer container): list of constants
 * Returns: (element-type utf8) (transfer container): list of constants
 */
-GPtrArray * dnf_swdb_checksums_by_nvras(    DnfSwdb *self,
-                                            GPtrArray *nvras)
+GPtrArray * dnf_swdb_checksums_by_nvras(DnfSwdb *self, GPtrArray *nvras)
 {
     if (dnf_swdb_open(self))
         return NULL;
@@ -539,8 +537,7 @@ GPtrArray * dnf_swdb_checksums_by_nvras(    DnfSwdb *self,
  *  - e.g. when there is ["abc", "def", "ghi"] on input and "abc" and "ghi" are
  *      user installed, output will be [0,2]
 **/
-GArray *dnf_swdb_select_user_installed (    DnfSwdb *self,
-                                            GPtrArray *nvras)
+GArray *dnf_swdb_select_user_installed(DnfSwdb *self, GPtrArray *nvras)
 {
     if (dnf_swdb_open(self))
         return NULL;
@@ -594,8 +591,7 @@ GArray *dnf_swdb_select_user_installed (    DnfSwdb *self,
     return usr_ids;
 }
 
-gboolean dnf_swdb_user_installed (  DnfSwdb *self,
-                                    const gchar *nvra  )
+gboolean dnf_swdb_user_installed(DnfSwdb *self, const gchar *nvra)
 {
     if (dnf_swdb_open(self))
         return 1; //XXX Is "true" proper default value?
@@ -607,10 +603,7 @@ gboolean dnf_swdb_user_installed (  DnfSwdb *self,
     if (pid)
     {
         gchar *repo = _repo_by_pid(self->db, pid);
-        gchar *reason = dnf_swdb_get_pkg_attr(self,
-                                              pid,
-                                              "reason",
-                                              "TRANS_DATA");
+        gchar *reason = _reason_by_pid(self->db, pid);
         if( g_strcmp0("user", reason) &&
             g_strcmp0("anaconda", repo)
         )
@@ -668,8 +661,7 @@ gchar *_repo_by_pid  (   sqlite3 *db,
     return DB_FIND_STR(res);
 }
 
-gchar *dnf_swdb_repo_by_nvra (  DnfSwdb *self,
-                                const gchar *nvra)
+gchar *dnf_swdb_repo_by_nvra(DnfSwdb *self, const gchar *nvra)
 {
     if (dnf_swdb_open(self))
         return NULL;
@@ -684,9 +676,7 @@ gchar *dnf_swdb_repo_by_nvra (  DnfSwdb *self,
     return r_name;
 }
 
-gint dnf_swdb_set_repo (DnfSwdb *self,
-                        const gchar *nvra,
-                        const gchar *repo)
+gint dnf_swdb_set_repo(DnfSwdb *self, const gchar *nvra, const gchar *repo)
 {
     if (dnf_swdb_open(self))
         return 1;
@@ -697,7 +687,7 @@ gint dnf_swdb_set_repo (DnfSwdb *self,
         dnf_swdb_close(self);
         return 1;
     }
-    const gint rid = _bind_repo_by_name(self->db, repo);
+    gint rid = _bind_repo_by_name(self->db, repo);
     sqlite3_stmt *res;
     const gchar *sql = U_REPO_BY_PID;
     DB_PREP(self->db, sql, res);
@@ -743,9 +733,7 @@ gint dnf_swdb_add_package(DnfSwdb *self, DnfSwdbPkg *pkg)
     return rc;
     }
 
-static gint _package_data_update (  sqlite3 *db,
-                                    const gint pid,
-                                    DnfSwdbPkgData *pkgdata)
+static gint _package_data_update(sqlite3 *db, gint pid, DnfSwdbPkgData *pkgdata)
 {
     gint rid = _bind_repo_by_name(db, pkgdata->from_repo);
 
@@ -755,7 +743,7 @@ static gint _package_data_update (  sqlite3 *db,
     DB_PREP(db, sql, res);
     DB_BIND_INT(res, "@pid", pid);
     gint pdid = DB_FIND(res);
-    if ( !pdid ) //autogen field not avalible, we need to insert
+    if (!pdid) //autogen field not avalible, we need to insert
         sql = INSERT_PKG_DATA;
     else //there is some autogen row, we can just add values
         sql = UPDATE_PKG_DATA;
@@ -814,15 +802,6 @@ GArray* _all_pdid_for_pid(sqlite3 *db, gint pid)
     return pdids;
 }
 
-gint _tid_from_pdid(sqlite3 *db, gint pdid)
-{
-  	sqlite3_stmt *res;
-  	const gchar *sql = FIND_TID_FROM_PDID;
-  	DB_PREP(db, sql, res);
-  	DB_BIND_INT(res, "@pdid", pdid);
-  	return DB_FIND(res);
-}
-
 GArray * _tids_from_pdid(sqlite3 *db, gint pdid)
 {
   	sqlite3_stmt *res;
@@ -840,8 +819,7 @@ GArray * _tids_from_pdid(sqlite3 *db, gint pdid)
   	return tids;
 }
 
-static GArray *_pids_by_tid (    sqlite3 *db,
-                                const gint tid)
+static GArray *_pids_by_tid(sqlite3 *db, gint tid)
 {
     GArray *pids = g_array_new(0, 0, sizeof(gint));
     sqlite3_stmt *res;
@@ -856,138 +834,36 @@ static GArray *_pids_by_tid (    sqlite3 *db,
     return pids;
 }
 
-static gchar *_insert_attr(const gchar *sql, const gchar* attr)
+gchar *_reason_by_pid(sqlite3 *db, gint pid)
 {
-    return  g_strjoin(" ", "SELECT", attr, sql, NULL);
-}
-
-
-/**
- * dnf_swdb_get_pkg_attr:
- * @pid pacakge ID
- * @attribute   pacakge attribute to look for
- * @cheat       direct specification - name of target SQLite table or NULL
- *              just optimization for internal purposes
-**/
-gchar *dnf_swdb_get_pkg_attr(DnfSwdb *self,
-                             gint pid,
-                             const gchar *attribute,
-                             const gchar *cheat)
-{
-    if (dnf_swdb_open(self))
-    {
-    	return NULL;
-    }
-
-    const gchar *table;
-    if(cheat)
-        table = cheat;
-    else
-        table = _table_by_attribute(attribute);
-
-    if (!table) //attribute not found
-    {
-        if (!g_strcmp0(attribute, "command_line")) //compatibility issue
-            table = "TRANS";
-        else
-            return NULL;
-    }
+    gchar *reason = NULL;
     sqlite3_stmt *res;
-    if (!g_strcmp0(table,"TRANS_DATA"))
+    const gchar *sql = S_REASON_BY_PID;
+    DB_PREP(db, sql, res);
+    DB_BIND_INT(res, "@pid", pid);
+    gint reason_id = DB_FIND(res);
+    if (reason_id)
     {
-        //need to get PD_ID first
-        const gint pdid = _pdid_from_pid(self->db, pid);
-        gchar *sql = _insert_attr( TRANS_DATA_ATTR_BY_PDID, attribute);
-        DB_PREP(self->db, sql, res);
-        DB_BIND_INT(res, "@pdid", pdid);
-        gchar *rv;
-        if (!g_strcmp0(attribute,"reason"))
-        {
-            const gint rc_id = DB_FIND(res);
-            rv = _look_for_desc(self->db, "REASON_TYPE", rc_id);
-            dnf_swdb_close(self);
-            g_free(sql);
-
-            if (!rv)
-                return g_strdup("Unknown");
-            else
-                return rv;
-        }
-        if (!g_strcmp0(attribute,"state"))
-        {
-            const gint rc_id = DB_FIND(res);
-            rv = _look_for_desc(self->db, "STATE_TYPE", rc_id);
-            dnf_swdb_close(self);
-            g_free(sql);
-
-            if (!rv)
-                return g_strdup("Unknown");
-            else
-                return rv;
-        }
-        gchar *output = DB_FIND_STR(res);
-        g_free(sql);
-        dnf_swdb_close(self);
-
-        return output;
+        reason = _look_for_desc(db, "REASON_TYPE", reason_id);
     }
-    if (!g_strcmp0(table,"PACKAGE_DATA"))
-    {
-        gchar *sql = _insert_attr(PKG_DATA_ATTR_BY_PID, attribute);
-        DB_PREP(self->db, sql, res);
-        DB_BIND_INT(res, "@pid", pid);
-        gchar *output = DB_FIND_STR(res);
-        dnf_swdb_close(self);
-        g_free(sql);
-        return output;
-    }
-    if (!g_strcmp0(table,"TRANS"))
-    {
-        //need to get T_ID first via PD_ID
-        const gint pdid = _pdid_from_pid(self->db, pid);
-        const gint tid = _tid_from_pdid(self->db, pdid);
-        gchar *sql = _insert_attr( TRANS_ATTR_BY_TID, attribute);
-        DB_PREP(self->db, sql, res);
-        DB_BIND_INT(res, "@tid", tid);
-        gchar *output = DB_FIND_STR(res);
-        dnf_swdb_close(self);
-        g_free(sql);
-
-        return output;
-    }
-    if (!g_strcmp0(table,"RPM_DATA"))
-    {
-        gchar *sql = _insert_attr (RPM_ATTR_BY_PID, attribute);
-        DB_PREP(self->db, sql, res);
-        DB_BIND_INT(res, "@pid", pid);
-        gchar *output= DB_FIND_STR(res);
-        dnf_swdb_close(self);
-        g_free(sql);
-
-        return output;
-    }
-
-    dnf_swdb_close(self);
-    return NULL;
+    return reason;
 }
 
-gchar *dnf_swdb_attr_by_nvra (  DnfSwdb *self,
-                                const gchar *attr,
-                                const gchar *nvra)
+gchar *dnf_swdb_reason_by_nvra(DnfSwdb *self, const gchar *nvra)
 {
     if (dnf_swdb_open(self))
     	return NULL;
     gint pid = _pid_by_nvra(self->db, nvra);
-    if(!pid)
+    gchar *reason = NULL;
+    if(pid)
     {
-        dnf_swdb_close(self);
-        return NULL;
+        reason = _reason_by_pid(self->db, pid);
     }
-    return dnf_swdb_get_pkg_attr(self, pid, attr, NULL);
+    dnf_swdb_close(self);
+    return reason;
 }
 
-static void _resolve_package_state  (   DnfSwdb *self,
-                                        DnfSwdbPkg *pkg)
+static void _resolve_package_state(DnfSwdb *self, DnfSwdbPkg *pkg)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_PACKAGE_STATE;
@@ -1006,8 +882,7 @@ static void _resolve_package_state  (   DnfSwdb *self,
     }
 }
 
-static DnfSwdbPkgData *_get_package_data_by_pid (   sqlite3 *db,
-                                                    const gint pid)
+static DnfSwdbPkgData *_get_package_data_by_pid (sqlite3 *db, gint pid)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_PACKAGE_DATA_BY_PID;
@@ -1035,8 +910,7 @@ static DnfSwdbPkgData *_get_package_data_by_pid (   sqlite3 *db,
     return NULL;
 }
 
-static DnfSwdbPkg *_get_package_by_pid (    sqlite3 *db,
-                                            const gint pid)
+static DnfSwdbPkg *_get_package_by_pid(sqlite3 *db, gint pid)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_PACKAGE_BY_PID;
@@ -1124,8 +998,7 @@ gchar* dnf_swdb_pkg_get_ui_from_repo	( DnfSwdbPkg *self)
         DB_BIND_INT(res, "@pdid", pdid);
         if(sqlite3_step(res) == SQLITE_ROW)
         {
-            cur_releasever = g_strdup((const gchar*)sqlite3_column_text(res,
-                                                                        0));
+            cur_releasever = g_strdup((const gchar*)sqlite3_column_text(res, 0));
         }
         sqlite3_finalize(res);
         if(g_strcmp0(cur_releasever, self->swdb->releasever))
@@ -1167,8 +1040,7 @@ gint dnf_swdb_pid_by_nvra(DnfSwdb *self,
 * dnf_swdb_package_by_nvra:
 * Returns: (transfer full): #DnfSwdbPkg
 */
-DnfSwdbPkg *dnf_swdb_package_by_nvra (  DnfSwdb *self,
-                                        const gchar *nvra)
+DnfSwdbPkg *dnf_swdb_package_by_nvra(DnfSwdb *self, const gchar *nvra)
 {
     if (dnf_swdb_open(self))
         return NULL;
@@ -1188,8 +1060,7 @@ DnfSwdbPkg *dnf_swdb_package_by_nvra (  DnfSwdb *self,
 * dnf_swdb_package_data_by_nvra:
 * Returns: (transfer full): #DnfSwdbPkgData
 */
-DnfSwdbPkgData *dnf_swdb_package_data_by_nvra(  DnfSwdb *self,
-                                                const gchar *nvra)
+DnfSwdbPkgData *dnf_swdb_package_data_by_nvra(DnfSwdb *self, const gchar *nvra)
 {
     if (dnf_swdb_open(self))
         return NULL;
@@ -1204,9 +1075,7 @@ DnfSwdbPkgData *dnf_swdb_package_data_by_nvra(  DnfSwdb *self,
     return pkgdata;
 }
 
-static const gint _mark_pkg_as(sqlite3 *db,
-                               const gint pdid,
-                               gint mark)
+static gint _mark_pkg_as(sqlite3 *db, gint pdid, gint mark)
 {
     sqlite3_stmt *res;
     const gchar *sql = U_REASON_BY_PDID;
@@ -1217,9 +1086,7 @@ static const gint _mark_pkg_as(sqlite3 *db,
     return 0;
 }
 
-gint dnf_swdb_set_reason(DnfSwdb *self,
-                         const gchar *nvra,
-                         const gchar *reason)
+gint dnf_swdb_set_reason(DnfSwdb *self, const gchar *nvra, const gchar *reason)
 {
     if (dnf_swdb_open(self))
         return 1;
@@ -1230,7 +1097,7 @@ gint dnf_swdb_set_reason(DnfSwdb *self,
         dnf_swdb_close(self);
         return 1;
     }
-    const gint pdid = _pdid_from_pid(self->db, pid);
+    gint pdid = _pdid_from_pid(self->db, pid);
     gint rc = 1;
     gint reason_id;
     reason_id = dnf_swdb_get_reason_type( self, reason);
@@ -1278,8 +1145,7 @@ static gint _rpm_data_insert (sqlite3 *db, DnfSwdbRpmData *rpm_data)
   	return 0;
 }
 
-gint dnf_swdb_add_rpm_data(	DnfSwdb *self,
-							DnfSwdbRpmData *rpm_data)
+gint dnf_swdb_add_rpm_data(DnfSwdb *self, DnfSwdbRpmData *rpm_data)
 {
   	if (dnf_swdb_open(self))
     	return 1;
@@ -1314,7 +1180,7 @@ gint dnf_swdb_trans_data_beg(DnfSwdb *self,
   	if (dnf_swdb_open(self))
     	return 1;
   	DB_TRANS_BEGIN
-    const gint pdid = _pdid_from_pid(self->db, pid);
+    gint pdid = _pdid_from_pid(self->db, pid);
  	struct trans_data_beg_t trans_data_beg = {tid, pdid,
 	  	dnf_swdb_get_reason_type(self, reason), dnf_swdb_get_state_type(self,state)};
   	gint rc = _trans_data_beg_insert(self->db, &trans_data_beg);
@@ -1431,12 +1297,12 @@ static gint _trans_beg_insert(sqlite3 *db, struct trans_beg_t *trans_beg)
   	return sqlite3_last_insert_rowid(db);
 }
 
-gint 	dnf_swdb_trans_beg 	(	DnfSwdb *self,
-							 	const gchar *timestamp,
-							 	const gchar *rpmdb_version,
-								const gchar *cmdline,
-								const gchar *loginuid,
-								const gchar *releasever)
+gint dnf_swdb_trans_beg(DnfSwdb *self,
+                        const gchar *timestamp,
+                        const gchar *rpmdb_version,
+                        const gchar *cmdline,
+                        const gchar *loginuid,
+                        const gchar *releasever)
 {
 	if (dnf_swdb_open(self))
     	return 1;
@@ -1509,7 +1375,7 @@ static void _resolve_altered(GPtrArray *trans)
     }
 }
 
-static gboolean _test_output (DnfSwdb *self, gint tid, const gchar *o_type)
+static gboolean _test_output(DnfSwdb *self, gint tid, const gchar *o_type)
 {
     DB_TRANS_BEGIN
     gint type = dnf_swdb_get_output_type(self, o_type);
@@ -1529,7 +1395,7 @@ static gboolean _test_output (DnfSwdb *self, gint tid, const gchar *o_type)
 }
 
 
-static void _resolve_outputs (DnfSwdb *self, GPtrArray *trans)
+static void _resolve_outputs(DnfSwdb *self, GPtrArray *trans)
 {
     for(guint i = 0; i < trans->len; ++i)
     {
@@ -1543,8 +1409,7 @@ static void _resolve_outputs (DnfSwdb *self, GPtrArray *trans)
 * dnf_swdb_get_old_trans_data:
 * Returns: (element-type DnfSwdbTransData)(array)(transfer container): list of #DnfSwdbTransData
 */
-GPtrArray *dnf_swdb_get_old_trans_data (    DnfSwdb *self,
-                                            DnfSwdbTrans *trans)
+GPtrArray *dnf_swdb_get_old_trans_data(DnfSwdb *self, DnfSwdbTrans *trans)
 {
     if (!trans->tid)
         return NULL;
@@ -1565,14 +1430,15 @@ GPtrArray *dnf_swdb_get_old_trans_data (    DnfSwdb *self,
                                          sqlite3_column_int(res,7));
 
         DnfSwdbTransData *data = dnf_swdb_transdata_new(
-                                    sqlite3_column_int(res, 0), //td_id
-                                    sqlite3_column_int(res, 1), //t_id
-                                    sqlite3_column_int(res, 2), //pd_id
-                                    sqlite3_column_int(res, 3), //g_id
-                                    sqlite3_column_int(res, 4), //done
-                                    sqlite3_column_int(res, 5), //ORIGINAL_TD_ID
-                                    tmp_reason, //reason
-                                    tmp_state); //state
+            sqlite3_column_int(res, 0), //td_id
+            sqlite3_column_int(res, 1), //t_id
+            sqlite3_column_int(res, 2), //pd_id
+            sqlite3_column_int(res, 3), //g_id
+            sqlite3_column_int(res, 4), //done
+            sqlite3_column_int(res, 5), //ORIGINAL_TD_ID
+            tmp_reason, //reason
+            tmp_state //state
+        );
         g_ptr_array_add(node, (gpointer) data);
         g_free(tmp_reason);
         g_free(tmp_state);
@@ -1684,14 +1550,14 @@ DnfSwdbTrans *dnf_swdb_last (DnfSwdb *self)
 
 static gint _output_insert(sqlite3 *db, struct output_t *output)
 {
-  	sqlite3_stmt *res;
-  	const gchar *sql = INSERT_OUTPUT;
-  	DB_PREP(db,sql,res);
-  	DB_BIND_INT(res, "@tid", output->tid);
-  	DB_BIND(res, "@msg", output->msg);
-  	DB_BIND_INT(res, "@type", output->type);
-  	DB_STEP(res);
-  	return 0;
+    sqlite3_stmt *res;
+    const gchar *sql = INSERT_OUTPUT;
+    DB_PREP(db,sql,res);
+    DB_BIND_INT(res, "@tid", output->tid);
+    DB_BIND(res, "@msg", output->msg);
+    DB_BIND_INT(res, "@type", output->type);
+    DB_STEP(res);
+    return 0;
 }
 
 gint dnf_swdb_log_error(DnfSwdb *self, gint tid, const gchar *msg)
@@ -1711,26 +1577,26 @@ gint dnf_swdb_log_error(DnfSwdb *self, gint tid, const gchar *msg)
 
 gint dnf_swdb_log_output(DnfSwdb *self, gint tid, const gchar *msg)
 {
-  	if (dnf_swdb_open(self))
-    	return 1;
+    if (dnf_swdb_open(self))
+        return 1;
 
-  	DB_TRANS_BEGIN
+    DB_TRANS_BEGIN
 
-  	struct output_t output = { tid, msg, dnf_swdb_get_output_type(self, "stdout") };
-  	gint rc = _output_insert( self->db, &output);
+    struct output_t output = { tid, msg, dnf_swdb_get_output_type(self, "stdout") };
+    gint rc = _output_insert( self->db, &output);
 
-  	DB_TRANS_END
-  	dnf_swdb_close(self);
-  	return rc;
+    DB_TRANS_END
+    dnf_swdb_close(self);
+    return rc;
 }
 
 static GPtrArray *_load_output(sqlite3 *db, gint tid, gint type)
 {
     sqlite3_stmt *res;
-  	const gchar *sql = LOAD_OUTPUT;
-  	DB_PREP(db,sql,res);
-  	DB_BIND_INT(res, "@tid", tid);
-  	DB_BIND_INT(res, "@type", type);
+    const gchar *sql = LOAD_OUTPUT;
+    DB_PREP(db,sql,res);
+    DB_BIND_INT(res, "@tid", tid);
+    DB_BIND_INT(res, "@type", type);
     GPtrArray *l = g_ptr_array_new();
     gchar *row;
     while( (row = (gchar *)DB_FIND_STR_MULTI(res)) )
@@ -1750,9 +1616,11 @@ GPtrArray *dnf_swdb_load_error(DnfSwdb *self, gint tid)
     if (dnf_swdb_open(self))
     	return NULL;
     DB_TRANS_BEGIN
-    GPtrArray *rc = _load_output(self->db,
-                                 tid,
-                                 dnf_swdb_get_output_type(self, "stderr"));
+    GPtrArray *rc = _load_output(
+        self->db,
+        tid,
+        dnf_swdb_get_output_type(self, "stderr")
+    );
     DB_TRANS_END
     dnf_swdb_close(self);
     return rc;

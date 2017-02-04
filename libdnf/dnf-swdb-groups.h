@@ -117,10 +117,7 @@ GPtrArray *_get_data_list(sqlite3 *db, int gid, const gchar *table);
 
 GPtrArray *_env_get_group_list(sqlite3 *db, gint eid);
 
-void _log_group_trans (sqlite3 *db,
-                       const gint tid,
-                       GPtrArray *groups,
-                       const gint is_installed);
+void _log_group_trans (sqlite3 *db, gint tid, GPtrArray *groups, gint is_installed);
 
 void _update_env(sqlite3 *db, DnfSwdbEnv *env);
 
