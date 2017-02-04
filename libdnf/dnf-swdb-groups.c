@@ -692,10 +692,7 @@ gint dnf_swdb_groups_commit(DnfSwdb *self, GPtrArray *groups)
     return 0;
 }
 
-void _log_group_trans (sqlite3 *db,
-                       const gint tid,
-                       GPtrArray *groups,
-                       const gint is_installed)
+void _log_group_trans(sqlite3 *db, gint tid, GPtrArray *groups, gint is_installed)
 {
     const gchar *sql = I_TRANS_GROUP_DATA;
     for(guint i = 0; i< groups->len; ++i)

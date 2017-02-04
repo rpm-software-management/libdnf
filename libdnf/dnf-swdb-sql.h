@@ -48,7 +48,6 @@
 #define GET_TRANS_CMDLINE "SELECT cmdline FROM TRANS WHERE T_ID=@tid"
 
 #define INSERT_PDID "insert into PACKAGE_DATA values(null,@pid,null,null,null,null,null,null,'#')"
-#define FIND_TID_FROM_PDID "SELECT T_ID FROM TRANS_DATA WHERE PD_ID=@pdid LIMIT 1"
 #define FIND_TIDS_FROM_PDID "SELECT T_ID FROM TRANS_DATA WHERE PD_ID=@pdid"
 #define LOAD_OUTPUT "SELECT msg FROM OUTPUT WHERE T_ID=@tid and type=@type"
 #define PKG_DATA_ATTR_BY_PID "FROM PACKAGE_DATA WHERE P_ID=@pid"
@@ -59,6 +58,8 @@
 
 #define FIND_PIDS_BY_NAME "SELECT P_ID FROM PACKAGE WHERE NAME LIKE @pattern"
 
+
+#define S_REASON_BY_PID "SELECT reason FROM PACKAGE_DATA join TRANS_DATA using (PD_ID) WHERE P_ID=@pid ORDER by TD_ID DESC LIMIT 1"
 #define S_PDID_TDID_BY_PID  "SELECT PD_ID,TD_ID from PACKAGE_DATA join TRANS_DATA"\
                             " using (PD_ID) where P_ID=@pid ORDER by PD_ID DESC LIMIT 1"
 #define S_PACKAGE_BY_PID "SELECT * FROM PACKAGE WHERE P_ID=@pid"

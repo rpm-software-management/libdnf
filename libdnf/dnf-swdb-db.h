@@ -50,8 +50,6 @@ gint _db_exec(sqlite3 *db,
               const gchar *cmd,
               int (*callback)(void *, int, char **, char**));
 
-const gchar *_table_by_attribute(const gchar *attr);
-
 GArray *_simple_search(sqlite3* db, const gchar * pattern);
 
 GArray *_extended_search (sqlite3* db, const gchar *pattern);
