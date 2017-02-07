@@ -61,6 +61,8 @@ hy_chksum_name(int chksum_type)
         return "sha1";
     case G_CHECKSUM_SHA256:
         return "sha256";
+    case G_CHECKSUM_SHA384:
+        return "sha384";
     case G_CHECKSUM_SHA512:
         return "sha512";
     default:
@@ -77,6 +79,8 @@ hy_chksum_type(const char *chksum_name)
         return G_CHECKSUM_SHA1;
     if (!strcasecmp(chksum_name, "sha256"))
         return G_CHECKSUM_SHA256;
+    if (!strcasecmp(chksum_name, "sha384"))
+        return G_CHECKSUM_SHA384;
     if (!strcasecmp(chksum_name, "sha512"))
         return G_CHECKSUM_SHA512;
     return 0;

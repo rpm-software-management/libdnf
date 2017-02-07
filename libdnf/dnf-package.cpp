@@ -601,6 +601,8 @@ dnf_repo_checksum_hy_to_lr(GChecksumType checksum)
         return LR_CHECKSUM_SHA1;
     if (checksum == G_CHECKSUM_SHA256)
         return LR_CHECKSUM_SHA256;
+    if (checksum == G_CHECKSUM_SHA384)
+        return LR_CHECKSUM_SHA384;
     return LR_CHECKSUM_SHA512;
 }
 
