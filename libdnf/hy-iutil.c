@@ -188,6 +188,8 @@ checksum_type2length(int type)
         return 20;
     case G_CHECKSUM_SHA256:
         return 32;
+    case G_CHECKSUM_SHA384:
+        return 48;
     case G_CHECKSUM_SHA512:
         return 64;
     default:
@@ -202,9 +204,11 @@ checksumt_l2h(int type)
     case REPOKEY_TYPE_MD5:
         return G_CHECKSUM_MD5;
     case REPOKEY_TYPE_SHA1:
-        return         G_CHECKSUM_SHA1;
+        return G_CHECKSUM_SHA1;
     case REPOKEY_TYPE_SHA256:
         return G_CHECKSUM_SHA256;
+    case REPOKEY_TYPE_SHA384:
+        return G_CHECKSUM_SHA384;
     case REPOKEY_TYPE_SHA512:
         return G_CHECKSUM_SHA512;
     default:
