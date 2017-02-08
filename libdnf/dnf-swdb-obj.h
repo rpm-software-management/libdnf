@@ -60,6 +60,8 @@ DnfSwdbPkg* dnf_swdb_pkg_new(const gchar* name,
 
 gchar* dnf_swdb_pkg_get_ui_from_repo(DnfSwdbPkg *self);
 
+gchar* dnf_swdb_pkg_get_reason(DnfSwdbPkg *self);
+
 //Package Data holder for swdb history
 #define DNF_TYPE_SWDB_PKGDATA dnf_swdb_pkgdata_get_type()
 G_DECLARE_FINAL_TYPE ( DnfSwdbPkgData, dnf_swdb_pkgdata, DNF, SWDB_PKGDATA, GObject)
