@@ -232,9 +232,10 @@ pyseq_to_reldeplist(PyObject *obj, DnfSack *sack, int cmp_type)
         reldep_str = pycomp_get_string(item, &tmp_py_str);
         if (reldep_str == NULL)
             goto fail;
-        Py_XDECREF(tmp_py_str);
 
         g_reldeplist = reldeplist_from_str (sack, reldep_str);
+        Py_XDECREF(tmp_py_str);
+
         dnf_reldep_list_extend (reldeplist, g_reldeplist);
         g_object_unref (g_reldeplist);
 
@@ -319,8 +320,9 @@ reldep_from_pystr(PyObject *o, DnfSack *sack)
     reldep_str = pycomp_get_string(o, &tmp_py_str);
     if (reldep_str == NULL)
         return NULL;
-    Py_XDECREF(tmp_py_str);
 
     reldep = reldep_from_str(sack, reldep_str);
+    Py_XDECREF(tmp_py_str);
+
     return reldep;
 }
