@@ -118,6 +118,7 @@ gboolean         dnf_repo_get_gpgcheck          (DnfRepo              *repo);
 gboolean         dnf_repo_get_gpgcheck_md       (DnfRepo              *repo);
 gchar           *dnf_repo_get_description       (DnfRepo              *repo);
 guint64          dnf_repo_get_timestamp_generated(DnfRepo              *repo);
+guint            dnf_repo_get_n_solvables       (DnfRepo              *repo);
 const gchar     *dnf_repo_get_filename_md       (DnfRepo              *repo,
                                                  const gchar          *md_kind);
 #ifndef __GI_SCANNER__

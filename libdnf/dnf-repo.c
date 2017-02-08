@@ -298,6 +298,19 @@ dnf_repo_get_timestamp_generated (DnfRepo *repo)
 }
 
 /**
+ * dnf_repo_get_n_solvables:
+ * @repo: a #DnfRepo instance.
+ *
+ * Returns: Number of packages in the repo
+ **/
+guint
+dnf_repo_get_n_solvables (DnfRepo *repo)
+{
+    DnfRepoPrivate *priv = GET_PRIVATE(repo);
+    return hy_repo_get_n_solvables (priv->repo);
+}
+
+/**
  * dnf_repo_get_enabled:
  * @repo: a #DnfRepo instance.
  *
