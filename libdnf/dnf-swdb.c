@@ -863,6 +863,19 @@ gchar *dnf_swdb_reason_by_nvra(DnfSwdb *self, const gchar *nvra)
     return reason;
 }
 
+gchar *dnf_swdb_pkg_get_reason(DnfSwdbPkg *self)
+{
+    if (!self || dnf_swdb_open(self->swdb))
+    	return NULL;
+    gchar *reason = NULL;
+    if(self->pid)
+    {
+        reason = _reason_by_pid(self->swdb->db, self->pid);
+    }
+    dnf_swdb_close(self->swdb);
+    return reason;
+}
+
 static void _resolve_package_state(DnfSwdb *self, DnfSwdbPkg *pkg)
 {
     sqlite3_stmt *res;
@@ -970,7 +983,7 @@ GPtrArray *dnf_swdb_get_packages_by_tid(DnfSwdb *self, gint tid)
     return node;
 }
 
-gchar* dnf_swdb_pkg_get_ui_from_repo	( DnfSwdbPkg *self)
+gchar* dnf_swdb_pkg_get_ui_from_repo( DnfSwdbPkg *self)
 {
     if(self->ui_from_repo)
         return g_strdup(self->ui_from_repo);
@@ -1001,7 +1014,7 @@ gchar* dnf_swdb_pkg_get_ui_from_repo	( DnfSwdbPkg *self)
             cur_releasever = g_strdup((const gchar*)sqlite3_column_text(res, 0));
         }
         sqlite3_finalize(res);
-        if(g_strcmp0(cur_releasever, self->swdb->releasever))
+        if(cur_releasever && g_strcmp0(cur_releasever, self->swdb->releasever))
         {
             dnf_swdb_close(self->swdb);
             gchar *rc = g_strjoin(NULL, "@", r_name, "/", cur_releasever, NULL);
@@ -1018,8 +1031,7 @@ gchar* dnf_swdb_pkg_get_ui_from_repo	( DnfSwdbPkg *self)
         self->ui_from_repo = r_name;
         return r_name;
     }
-    else
-        return g_strdup("(unknown)");
+    return g_strdup("(unknown)");
 }
 
 /**
@@ -1797,7 +1809,7 @@ gint dnf_swdb_open(DnfSwdb *self)
         fprintf(stderr, "ERROR: %s %s\n", sqlite3_errmsg(self->db), self->path);
         return 1;
     }
-    return 0;
+    return _db_exec(self->db, DISABLE_JOURNAL, NULL);
 }
 
 void dnf_swdb_close(DnfSwdb *self)

@@ -23,6 +23,8 @@
 #ifndef _DNF_SWDB_SQL
 #define _DNF_SWDB_SQL
 
+#define DISABLE_JOURNAL "PRAGMA locking_mode = EXCLUSIVE"
+
 #define INSERT_PKG "insert into PACKAGE values(null,@name,@epoch,@version,@release,@arch,@cdata,@ctype,@type)"
 #define INSERT_OUTPUT "insert into OUTPUT values(null,@tid,@msg,@type)"
 #define INSERT_TRANS_BEG "insert into TRANS values(null,@beg,null,@rpmdbv,null,@cmdline,@loginuid,@releasever,null)"
