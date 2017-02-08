@@ -40,6 +40,7 @@ enum _hy_repo_param_e {
 HyRepo hy_repo_create(const char *name);
 int hy_repo_get_cost(HyRepo repo);
 int hy_repo_get_priority(HyRepo repo);
+guint hy_repo_get_n_solvables(HyRepo repo);
 void hy_repo_set_cost(HyRepo repo, int value);
 void hy_repo_set_priority(HyRepo repo, int value);
 void hy_repo_set_string(HyRepo repo, int which, const char *str_val);

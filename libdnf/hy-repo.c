@@ -143,6 +143,12 @@ hy_repo_get_priority(HyRepo repo)
     return repo->priority;
 }
 
+guint
+hy_repo_get_n_solvables(HyRepo repo)
+{
+  return (guint)repo->libsolv_repo->nsolvables;
+}
+
 void
 hy_repo_set_cost(HyRepo repo, int value)
 {
