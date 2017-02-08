@@ -876,16 +876,17 @@ gchar *dnf_swdb_pkg_get_reason(DnfSwdbPkg *self)
     return reason;
 }
 
-static void _resolve_package_state(DnfSwdb *self, DnfSwdbPkg *pkg)
+static void _resolve_package_state(DnfSwdb *self, DnfSwdbPkg *pkg, gint tid)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_PACKAGE_STATE;
     DB_PREP(self->db, sql, res);
     DB_BIND_INT(res, "@pid", pkg->pid);
+    DB_BIND_INT(res, "@tid", tid);
     if (sqlite3_step(res) == SQLITE_ROW)
     {
-        gint state_code = sqlite3_column_int(res, 2);
-        pkg->done = sqlite3_column_int(res, 1);
+        pkg->done = sqlite3_column_int(res, 0);
+        gint state_code = sqlite3_column_int(res, 1);
         sqlite3_finalize(res);
         pkg->state = _look_for_desc(self->db, "STATE_TYPE", state_code);
     }
@@ -973,7 +974,7 @@ GPtrArray *dnf_swdb_get_packages_by_tid(DnfSwdb *self, gint tid)
         if(pkg)
         {
             pkg->swdb = self;
-            _resolve_package_state(self, pkg);
+            _resolve_package_state(self, pkg, tid);
             g_ptr_array_add(node, (gpointer) pkg);
         }
     }
