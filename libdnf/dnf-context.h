@@ -72,6 +72,7 @@ DnfContext      *dnf_context_new                        (void);
 
 /* getters */
 const gchar     *dnf_context_get_repo_dir               (DnfContext     *context);
+GPtrArray       *dnf_context_get_repo_dirs              (DnfContext     *context);
 const gchar     *dnf_context_get_base_arch              (DnfContext     *context);
 const gchar     *dnf_context_get_os_info                (DnfContext     *context);
 const gchar     *dnf_context_get_arch_info              (DnfContext     *context);

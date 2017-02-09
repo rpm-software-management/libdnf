@@ -85,6 +85,7 @@ static const struct {
 typedef struct
 {
     gchar            *repo_dir;
+    GPtrArray        *repo_dirs;
     gchar            *base_arch;
     gchar            *release_ver;
     gchar            *cache_dir;
@@ -160,6 +161,8 @@ dnf_context_finalize(GObject *object)
     g_object_unref(priv->state);
     g_hash_table_unref(priv->override_macros);
 
+    if (priv->repo_dirs != NULL)
+        g_ptr_array_unref(priv->repo_dirs);
     if (priv->transaction != NULL)
         g_object_unref(priv->transaction);
     if (priv->repo_loader != NULL)
@@ -259,9 +262,9 @@ dnf_context_class_init(DnfContextClass *klass)
  * dnf_context_get_repo_dir:
  * @context: a #DnfContext instance.
  *
- * Gets the context ID.
+ * Gets the list of repo dirs.
  *
- * Returns: the context ID, e.g. "fedora-updates"
+ * Returns: the list of repo dirs, e.g. "/etc/yum.repos.d/".
  *
  * Since: 0.1.0
  **/
@@ -270,6 +273,23 @@ dnf_context_get_repo_dir(DnfContext *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     return priv->repo_dir;
+}
+
+/**
+ * dnf_context_get_repo_dirs:
+ * @context: a #DnfContext instance.
+ *
+ * Gets the list of repo dirs as a pointer array.
+ *
+ * Returns: the list of repo dirs.
+ *
+ * Since: 0.7.1
+ **/
+GPtrArray *
+dnf_context_get_repo_dirs(DnfContext *context)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    return priv->repo_dirs;
 }
 
 /**
@@ -760,7 +780,7 @@ dnf_context_get_installonly_limit(DnfContext *context)
  * @context: a #DnfContext instance.
  * @repo_dir: the repodir, e.g. "/etc/yum.repos.d"
  *
- * Sets the repo directory.
+ * Sets the list of repo directories.
  *
  * Since: 0.1.0
  **/
@@ -769,7 +789,17 @@ dnf_context_set_repo_dir(DnfContext *context, const gchar *repo_dir)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     g_free(priv->repo_dir);
+    g_clear_pointer(&priv->repo_dirs, g_ptr_array_unref);
+
     priv->repo_dir = g_strdup(repo_dir);
+
+    if (repo_dir != NULL) {
+        g_auto(GStrv) repo_dirs = g_strsplit(repo_dir, ",", -1);
+        priv->repo_dirs = g_ptr_array_new_with_free_func(g_free);
+        for (char **dir = repo_dirs; dir && *dir; dir++) {
+            g_ptr_array_add(priv->repo_dirs, g_strdup(*dir));
+        }
+    }
 }
 
 /**
@@ -1419,9 +1449,16 @@ dnf_context_setup_enrollments(DnfContext *context, GError **error)
     if (getuid () != 0)
         return TRUE;
 
+    /* If there are no repo dirs set up, then there's nothing to do.
+     */
+    if (priv->repo_dirs->len == 0)
+        return TRUE;
+
 #ifdef RHSM_SUPPORT
     g_autoptr(RHSMContext) rhsm_ctx = rhsm_context_new ();
-    g_autofree gchar *repofname = g_build_filename (priv->repo_dir,
+
+    /* just use the first repo in the list */
+    g_autofree gchar *repofname = g_build_filename (priv->repo_dirs->pdata[0],
                                                     "redhat.repo",
                                                     NULL);
     g_autoptr(GKeyFile) repofile = rhsm_utils_yum_repo_from_context (rhsm_ctx);
@@ -1474,9 +1511,11 @@ dnf_context_setup(DnfContext *context,
     }
 
     /* ensure directories exist */
-    if (priv->repo_dir != NULL) {
-        if (!dnf_context_ensure_exists(priv->repo_dir, error))
-            return FALSE;
+    if (priv->repo_dirs != NULL) {
+        for (i = 0; i < priv->repo_dirs->len; i++) {
+            if (!dnf_context_ensure_exists(priv->repo_dirs->pdata[i], error))
+                return FALSE;
+        }
     }
     if (priv->cache_dir != NULL) {
         if (!dnf_context_ensure_exists(priv->cache_dir, error))
