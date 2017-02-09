@@ -48,7 +48,7 @@
                     	"last_synced text, is_expired text)"
 
 #define C_TRANS_DATA	"CREATE TABLE TRANS_DATA (TD_ID INTEGER PRIMARY KEY,"\
-                        "T_ID integer,PD_ID integer, G_ID integer, done INTEGER,"\
+                        "T_ID integer,PD_ID integer, TG_ID integer, done INTEGER,"\
                         "ORIGINAL_TD_ID integer, reason integer, state integer)"
 
 #define C_TRANS 		"CREATE TABLE TRANS (T_ID integer primary key, beg_timestamp text,"\
@@ -65,7 +65,7 @@
 #define C_PKG_TYPE		"CREATE TABLE PACKAGE_TYPE (ID INTEGER PRIMARY KEY, description text)"
 
 #define C_GROUPS		"CREATE TABLE GROUPS (G_ID INTEGER PRIMARY KEY, name_id text, name text,"\
-                        "ui_name text, is_installed integer, pkg_types integer, grp_types integer)"
+                        "ui_name text, is_installed integer, pkg_types integer)"
 
 #define C_T_GROUP_DATA	"CREATE TABLE TRANS_GROUP_DATA (TG_ID INTEGER PRIMARY KEY,"\
 						"T_ID integer, G_ID integer, name_id text, name text, ui_name text,"\
@@ -81,7 +81,7 @@
                         "E_ID integer, G_ID integer)"
 
 #define C_ENV			"CREATE TABLE ENVIRONMENTS (E_ID INTEGER PRIMARY KEY, name_id text,"\
-                        "name text, ui_name text, pkg_types integer, grp_types integer)"
+                        "name text, ui_name text, grp_types integer)"
 
 #define C_ENV_EX		"CREATE TABLE ENVIRONMENTS_EXCLUDE (EE_ID INTEGER PRIMARY KEY,"\
                         "E_ID integer, name text)"

@@ -70,7 +70,6 @@ DnfSwdbGroup* dnf_swdb_group_new(const gchar* name_id,
                                  gchar* ui_name,
                                  gint is_installed,
                                  gint pkg_types,
-                                 gint grp_types,
                                  DnfSwdb *swdb)
 {
     DnfSwdbGroup *group = g_object_new(DNF_TYPE_SWDB_GROUP, NULL);
@@ -79,7 +78,6 @@ DnfSwdbGroup* dnf_swdb_group_new(const gchar* name_id,
     group->ui_name = g_strdup(ui_name);
     group->is_installed = is_installed;
     group->pkg_types = pkg_types;
-    group->grp_types = grp_types;
     group->swdb = swdb;
     return group;
 }
@@ -120,7 +118,6 @@ dnf_swdb_env_init(DnfSwdbEnv *self)
 DnfSwdbEnv* dnf_swdb_env_new(const gchar* name_id,
                              gchar* name,
                              gchar* ui_name,
-                             gint pkg_types,
                              gint grp_types,
                              DnfSwdb *swdb)
 {
@@ -128,7 +125,6 @@ DnfSwdbEnv* dnf_swdb_env_new(const gchar* name_id,
     env->name_id = g_strdup(name_id);
     env->name = g_strdup(name);
     env->ui_name = g_strdup(ui_name);
-    env->pkg_types = pkg_types;
     env->grp_types = grp_types;
     env->swdb = swdb;
     return env;
@@ -291,7 +287,6 @@ void _add_group(sqlite3 *db, DnfSwdbGroup *group)
     DB_BIND(res, "@ui_name", group->ui_name);
     DB_BIND_INT(res, "@is_installed", group->is_installed);
     DB_BIND_INT(res, "@pkg_types", group->pkg_types);
-    DB_BIND_INT(res, "@grp_types", group->grp_types);
     DB_STEP(res);
     group->gid = sqlite3_last_insert_rowid(db);
 }
@@ -323,7 +318,6 @@ void _update_env(sqlite3 *db, DnfSwdbEnv *env)
     DB_PREP(db, sql, res);
     DB_BIND(res, "@name", env->name);
     DB_BIND(res, "@ui_name", env->ui_name);
-    DB_BIND_INT(res, "@pkg_types", env->pkg_types);
     DB_BIND_INT(res, "@grp_types", env->grp_types);
     DB_BIND_INT(res, "@eid", env->eid);
     DB_STEP(res);
@@ -337,7 +331,6 @@ void _add_env(sqlite3 *db, DnfSwdbEnv *env)
     DB_BIND(res, "@name_id", env->name_id);
     DB_BIND(res, "@name", env->name);
     DB_BIND(res, "@ui_name", env->ui_name);
-    DB_BIND_INT(res, "@pkg_types", env->pkg_types);
     DB_BIND_INT(res, "@grp_types", env->grp_types);
     DB_STEP(res);
     env->eid = sqlite3_last_insert_rowid(db);
@@ -378,7 +371,6 @@ DnfSwdbGroup *_get_group(sqlite3 *db, const gchar *name_id)
                                 (gchar*)sqlite3_column_text(res, 3),//ui_name
                                 sqlite3_column_int(res, 4),//is_installed
                                 sqlite3_column_int(res, 5),//pkg_types
-                                sqlite3_column_int(res, 6),//grp_types
                                 NULL); //swdb
         group->gid = sqlite3_column_int(res,0);
         sqlite3_finalize(res);
@@ -415,8 +407,7 @@ DnfSwdbEnv *_get_env(sqlite3 *db, const gchar *name_id)
                                 name_id, //name_id
                                 (gchar*)sqlite3_column_text(res, 2),//name
                                 (gchar*)sqlite3_column_text(res, 3),//ui_name
-                                sqlite3_column_int(res, 4),//pkg_types
-                                sqlite3_column_int(res, 5),//grp_types
+                                sqlite3_column_int(res, 4),//grp_types
                                 NULL); //swdb
         env->eid = sqlite3_column_int(res,0);
         sqlite3_finalize(res);
@@ -464,7 +455,6 @@ GPtrArray *dnf_swdb_groups_by_pattern(DnfSwdb *self, const gchar *pattern)
                             (gchar*)sqlite3_column_text(res, 3),//ui_name
                             sqlite3_column_int(res, 4),//is_installed
                             sqlite3_column_int(res, 5),//pkg_types
-                            sqlite3_column_int(res, 6),//grp_types
                             self); //swdb
         group->gid = sqlite3_column_int(res,0);
         g_ptr_array_add(node, (gpointer) group);
@@ -495,8 +485,7 @@ GPtrArray *dnf_swdb_env_by_pattern(DnfSwdb *self, const gchar *pattern)
                             (const gchar*)sqlite3_column_text(res,1), //name_id
                             (gchar*)sqlite3_column_text(res, 2),//name
                             (gchar*)sqlite3_column_text(res, 3),//ui_name
-                            sqlite3_column_int(res, 4),//pkg_types
-                            sqlite3_column_int(res, 5),//grp_types
+                            sqlite3_column_int(res, 4),//grp_types
                             self); //swdb
         env->eid = sqlite3_column_int(res,0);
         g_ptr_array_add(node, (gpointer) env);
@@ -588,7 +577,6 @@ void _update_group(sqlite3 *db, DnfSwdbGroup *group)
     DB_BIND(res, "@ui_name", group->ui_name);
     DB_BIND_INT(res, "@is_installed", group->is_installed);
     DB_BIND_INT(res, "@pkg_types", group->pkg_types);
-    DB_BIND_INT(res, "@grp_types", group->grp_types);
     DB_BIND_INT(res, "@gid", group->gid);
     DB_STEP(res);
 }
@@ -707,17 +695,19 @@ void _log_group_trans(sqlite3 *db, gint tid, GPtrArray *groups, gint is_installe
         DB_BIND(res, "@ui_name", group->ui_name);
         DB_BIND_INT(res, "@is_installed", is_installed);
         DB_BIND_INT(res, "@pkg_types", group->pkg_types);
-        DB_BIND_INT(res, "@grp_types", group->grp_types);
         DB_STEP(res);
     }
 
 }
 
+
+//FIXME!!!! TRANS_GROUP_DATA not connected with TRANS_DATA!!!
+// need to return TGID here
 /**
 * dnf_swdb_log_group_trans:
 * @installing: (element-type DnfSwdbGroup)(array)(transfer container): list of #DnfSwdbGroup
 * @removing: (element-type DnfSwdbGroup)(array)(transfer container): list of #DnfSwdbGroup
-*/
+**/
 gint dnf_swdb_log_group_trans(DnfSwdb *self,
                               gint tid,
                               GPtrArray *installing,
@@ -730,4 +720,34 @@ gint dnf_swdb_log_group_trans(DnfSwdb *self,
 
     dnf_swdb_close(self);
     return 0;
+}
+
+/**
+* dnf_swdb_removable_pkg:
+* Test if package can be removed with group
+* @self: Swdb object
+* @pkg_name: name of the package
+* @Returns: True if package was installed with group and does not appear in
+*           multiple installed groups, else False.
+**/
+gboolean dnf_swdb_removable_pkg(DnfSwdb *self, const gchar* pkg_name)
+{
+    if (dnf_swdb_open(self) )
+        return FALSE;
+    gboolean removable = TRUE;
+    //check if package was installed with group
+
+    /* TODO
+    def _removable_pkg(self, pkg_name):
+    prst = self.persistor
+    count = 0
+    if self._reason_fn(pkg_name) != 'group':
+        return False
+    for id_ in prst.groups():
+        p_grp = prst.group(id_.name_id)
+        count += sum(1 for pkg in p_grp.get_full_list() if pkg == pkg_name)
+    return count < 2
+    */
+    dnf_swdb_close(self);
+    return removable;
 }
