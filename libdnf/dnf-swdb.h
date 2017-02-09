@@ -155,6 +155,8 @@ gint dnf_swdb_add_group(DnfSwdb *self, DnfSwdbGroup *group);
 
 gint dnf_swdb_add_env(DnfSwdb *self, DnfSwdbEnv *env);
 
+gboolean dnf_swdb_removable_pkg(DnfSwdb *self, const gchar* pkg_name);
+
 DnfSwdbGroup *dnf_swdb_get_group(DnfSwdb * self, const gchar* name_id);
 
 GPtrArray *dnf_swdb_groups_by_pattern(DnfSwdb *self, const gchar *pattern);

@@ -351,7 +351,7 @@ dnf_swdb_transdata_init(DnfSwdbTransData *self)
 DnfSwdbTransData* dnf_swdb_transdata_new(gint tdid,
                                          gint tid,
                                          gint pdid,
-                                         gint gid,
+                                         gint tgid,
                                          gint done,
                                          gint ORIGINAL_TD_ID,
                                          gchar *reason,
@@ -361,7 +361,7 @@ DnfSwdbTransData* dnf_swdb_transdata_new(gint tdid,
     data->tdid = tdid;
     data->tid = tid;
     data->pdid = pdid;
-    data->gid = gid;
+    data->tgid = tgid;
     data->done = done;
     data->ORIGINAL_TD_ID = ORIGINAL_TD_ID;
     data->reason = g_strdup(reason);
@@ -1170,6 +1170,8 @@ gint dnf_swdb_add_rpm_data(DnfSwdb *self, DnfSwdbRpmData *rpm_data)
 
 /*************************** TRANS DATA PERSISTOR ****************************/
 
+
+//FIXME accept tgid here!
 static gint _trans_data_beg_insert(sqlite3 *db,
                                    struct trans_data_beg_t *trans_data_beg)
 {

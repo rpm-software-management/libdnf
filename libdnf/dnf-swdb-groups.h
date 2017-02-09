@@ -38,7 +38,6 @@ struct _DnfSwdbGroup
     gchar* ui_name;
     gint is_installed;
     gint pkg_types;
-    gint grp_types;
     DnfSwdb *swdb;
 };
 
@@ -47,7 +46,6 @@ DnfSwdbGroup* dnf_swdb_group_new(const gchar* name_id,
                                  gchar* ui_name,
                                  gint is_installed,
                                  gint pkg_types,
-                                 gint grp_types,
                                  DnfSwdb *swdb);
 
 GPtrArray * dnf_swdb_group_get_exclude(DnfSwdbGroup *self);
@@ -87,7 +85,6 @@ struct _DnfSwdbEnv
     const gchar* name_id;
     gchar* name;
     gchar* ui_name;
-    gint pkg_types;
     gint grp_types;
     DnfSwdb *swdb;
 };
@@ -95,7 +92,6 @@ struct _DnfSwdbEnv
 DnfSwdbEnv* dnf_swdb_env_new(const gchar* name_id,
                              gchar* name,
                              gchar* ui_name,
-                             gint pkg_types,
                              gint grp_types,
                              DnfSwdb *swdb);
 
