@@ -773,7 +773,6 @@ static gboolean
 dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    DnfRepoEnabled enabled = 0;
     guint cost;
     g_autofree gchar *metalink = NULL;
     g_autofree gchar *mirrorlist = NULL;
@@ -786,27 +785,6 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     g_auto(GStrv) baseurls;
 
     g_debug("setting keyfile data for %s", priv->id);
-
-    /* enabled is optional */
-    if (g_key_file_has_key(priv->keyfile, priv->id, "enabled", NULL)) {
-        if (dnf_repo_get_boolean(priv->keyfile, priv->id, "enabled", NULL))
-            enabled |= DNF_REPO_ENABLED_PACKAGES;
-    } else {
-        enabled |= DNF_REPO_ENABLED_PACKAGES;
-    }
-
-    /* enabled_metadata is optional */
-    if (g_key_file_has_key(priv->keyfile, priv->id, "enabled_metadata", NULL)) {
-        if (dnf_repo_get_boolean(priv->keyfile, priv->id, "enabled_metadata", NULL))
-            enabled |= DNF_REPO_ENABLED_METADATA;
-    } else {
-        g_autofree gchar *basename = g_path_get_basename(priv->filename);
-        /* special case the satellite and subscription manager repo */
-        if (g_strcmp0(basename, "redhat.repo") == 0)
-            enabled |= DNF_REPO_ENABLED_METADATA;
-    }
-
-    dnf_repo_set_enabled(repo, enabled);
 
     /* skip_if_unavailable is optional */
     if (g_key_file_has_key(priv->keyfile, priv->id, "skip_if_unavailable", NULL)) {
@@ -928,6 +906,7 @@ gboolean
 dnf_repo_setup(DnfRepo *repo, GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
+    DnfRepoEnabled enabled = 0;
     g_autofree gchar *basearch = NULL;
     g_autofree gchar *release = NULL;
     g_autofree gchar *testdatadir = NULL;
@@ -997,6 +976,27 @@ dnf_repo_setup(DnfRepo *repo, GError **error)
         if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLCLIENTKEY, sslclientkey))
             return FALSE;
     }
+
+    /* enabled is optional */
+    if (g_key_file_has_key(priv->keyfile, priv->id, "enabled", NULL)) {
+        if (dnf_repo_get_boolean(priv->keyfile, priv->id, "enabled", NULL))
+            enabled |= DNF_REPO_ENABLED_PACKAGES;
+    } else {
+        enabled |= DNF_REPO_ENABLED_PACKAGES;
+    }
+
+    /* enabled_metadata is optional */
+    if (g_key_file_has_key(priv->keyfile, priv->id, "enabled_metadata", NULL)) {
+        if (dnf_repo_get_boolean(priv->keyfile, priv->id, "enabled_metadata", NULL))
+            enabled |= DNF_REPO_ENABLED_METADATA;
+    } else {
+        g_autofree gchar *basename = g_path_get_basename(priv->filename);
+        /* special case the satellite and subscription manager repo */
+        if (g_strcmp0(basename, "redhat.repo") == 0)
+            enabled |= DNF_REPO_ENABLED_METADATA;
+    }
+
+    dnf_repo_set_enabled(repo, enabled);
 
     return dnf_repo_set_keyfile_data(repo, error);
 }
