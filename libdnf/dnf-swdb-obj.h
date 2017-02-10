@@ -131,7 +131,7 @@ struct _DnfSwdbTransData
     gint tdid;
     gint tid;
     gint pdid;
-    gint gid;
+    gint tgid;
     gint done;
     gint ORIGINAL_TD_ID;
     gchar *reason;
@@ -141,7 +141,7 @@ struct _DnfSwdbTransData
 DnfSwdbTransData* dnf_swdb_transdata_new(gint tdid,
                                          gint tid,
                                          gint pdid,
-                                         gint gid,
+                                         gint tgid,
                                          gint done,
                                          gint ORIGINAL_TD_ID,
                                          gchar *reason,

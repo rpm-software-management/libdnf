@@ -24,7 +24,7 @@
 #define _DNF_SWDB_GROUPS_SQL
 
 #define I_GROUP "Insert into GROUPS values(null, @name_id, @name, @ui_name, @is_installed, @pkg_types)"
-#define I_ENV "Insert into ENVIRONMENTS values(null, @name_id, @name, @ui_name, @grp_types)"
+#define I_ENV "Insert into ENVIRONMENTS values(null, @name_id, @name, @ui_name, @pkg_types, @grp_types)"
 #define I_ENV_GROUP "insert into ENVIRONMENTS_GROUPS values(null, @eid, @gid)"
 #define I_TRANS_GROUP_DATA  "insert into TRANS_GROUP_DATA values(null,@tid,@gid,@name_id,@name,@ui_name,"\
                             "@is_installed,@pkg_types)"
@@ -41,12 +41,13 @@
 #define U_GROUP_COMMIT "UPDATE GROUPS SET is_installed=1 where name_id=@id"
 #define U_GROUP "UPDATE GROUPS SET name=@name,ui_name=@ui_name,is_installed=@is_installed,pkg_types=@pkg_types where G_ID=@gid"
 
-#define U_ENV "UPDATE ENVIRONMENTS SET name=@name,ui_name=@ui_name,grp_types=@grp_types where E_ID=@eid"
+#define U_ENV "UPDATE ENVIRONMENTS SET name=@name,ui_name=@ui_name,pkg_types=@pkg_types,grp_types=@grp_types where E_ID=@eid"
 
 #define R_FULL_LIST_BY_ID "DELETE FROM GROUPS_PACKAGE WHERE G_ID=@gid"
 
-#define S_REMOVABLE "SELECT TD_ID,description from PACKAGE join PACKAGE_DATA using (P_ID) "\
-                    "join TRANS_DATA using (PD_ID) join STATE_TYPE ON TRANS_DATA.state = STATE_TYPE.id "\
-                    "WHERE name=@name and TG_ID > 0"
+#define S_REM_REASON "SELECT description from PACKAGE join PACKAGE_DATA using (P_ID) join TRANS_DATA using(PD_ID) "\
+                     "join REASON_TYPE ON TRANS_DATA.reason = REASON_TYPE.id where name=@name ORDER BY TD_ID DESC"
+
+#define S_REM "SELECT G_ID from GROUPS_PACKAGE join GROUPS using(G_ID) where is_installed=1 and GROUPS_PACKAGE.name=@name"
 
 #endif

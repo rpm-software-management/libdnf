@@ -85,6 +85,7 @@ struct _DnfSwdbEnv
     const gchar* name_id;
     gchar* name;
     gchar* ui_name;
+    gint pkg_types;
     gint grp_types;
     DnfSwdb *swdb;
 };
@@ -92,6 +93,7 @@ struct _DnfSwdbEnv
 DnfSwdbEnv* dnf_swdb_env_new(const gchar* name_id,
                              gchar* name,
                              gchar* ui_name,
+                             gint pkg_types,
                              gint grp_types,
                              DnfSwdb *swdb);
 

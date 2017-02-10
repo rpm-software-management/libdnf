@@ -38,40 +38,6 @@ G_DEFINE_TYPE(DnfSwdbTransData, dnf_swdb_transdata, G_TYPE_OBJECT) //trans data
 G_DEFINE_TYPE(DnfSwdbPkgData, dnf_swdb_pkgdata, G_TYPE_OBJECT)
 G_DEFINE_TYPE(DnfSwdbRpmData, dnf_swdb_rpmdata, G_TYPE_OBJECT)
 
-/* Table structs */
-
-struct output_t
-{
-    gint tid;
-    const gchar *msg;
-    gint type;
-};
-
-struct trans_beg_t
-{
-    const gchar *beg_timestamp;
-    const gchar *rpmdb_version;
-    const gchar *cmdline;
-    const gchar *loginuid;
-    const gchar *releasever;
-};
-
-struct trans_end_t
-{
-    gint tid;
-    const gchar *end_timestamp;
-    const gchar *end_rpmdb_version;
-    gint return_code;
-};
-
-struct trans_data_beg_t
-{
-    gint tid;
-    gint pdid;
-    gint reason;
-    gint state;
-};
-
 // SWDB Destructor
 static void dnf_swdb_finalize(GObject *object)
 {
@@ -984,7 +950,7 @@ GPtrArray *dnf_swdb_get_packages_by_tid(DnfSwdb *self, gint tid)
     return node;
 }
 
-gchar* dnf_swdb_pkg_get_ui_from_repo( DnfSwdbPkg *self)
+gchar* dnf_swdb_pkg_get_ui_from_repo(DnfSwdbPkg *self)
 {
     if(self->ui_from_repo)
         return g_strdup(self->ui_from_repo);
@@ -1022,7 +988,7 @@ gchar* dnf_swdb_pkg_get_ui_from_repo( DnfSwdbPkg *self)
             g_free(r_name);
             g_free(cur_releasever);
             self->ui_from_repo = rc;
-            return rc;
+            return g_strdup(rc);
         }
         g_free(cur_releasever);
     }
@@ -1030,7 +996,7 @@ gchar* dnf_swdb_pkg_get_ui_from_repo( DnfSwdbPkg *self)
     if(r_name)
     {
         self->ui_from_repo = r_name;
-        return r_name;
+        return g_strdup(r_name);
     }
     return g_strdup("(unknown)");
 }
@@ -1170,38 +1136,60 @@ gint dnf_swdb_add_rpm_data(DnfSwdb *self, DnfSwdbRpmData *rpm_data)
 
 /*************************** TRANS DATA PERSISTOR ****************************/
 
-
-//FIXME accept tgid here!
 static gint _trans_data_beg_insert(sqlite3 *db,
-                                   struct trans_data_beg_t *trans_data_beg)
+                                   gint tid,
+                                   gint pdid,
+                                   gint tgid,
+                                   gint reason,
+                                   gint state)
 {
-  	sqlite3_stmt *res;
-  	const gchar *sql = INSERT_TRANS_DATA_BEG;
-  	DB_PREP(db, sql, res);
-  	DB_BIND_INT(res, "@tid", trans_data_beg->tid);
-  	DB_BIND_INT(res, "@pdid", trans_data_beg->pdid);
-  	DB_BIND_INT(res, "@done", 0);
-  	DB_BIND_INT(res, "@reason", trans_data_beg->reason);
-  	DB_BIND_INT(res, "@state", trans_data_beg->state);
-  	return DB_FIND(res);
+    sqlite3_stmt *res;
+    const gchar *sql = INSERT_TRANS_DATA_BEG;
+    DB_PREP(db, sql, res);
+    DB_BIND_INT(res, "@tid", tid);
+    DB_BIND_INT(res, "@pdid", pdid);
+    DB_BIND_INT(res, "@tgid", tgid);
+    DB_BIND_INT(res, "@reason", reason);
+    DB_BIND_INT(res, "@state", state);
+    return DB_FIND(res);
+}
+
+static gint _resolve_group_origin(sqlite3 *db, gint tid, gint pid)
+{
+    sqlite3_stmt *res;
+    const gchar *sql = RESOLVE_GROUP_TRANS;
+    DB_PREP(db, sql, res);
+    DB_BIND_INT(res, "@pid", pid);
+    DB_BIND_INT(res, "@tid", tid);
+    return DB_FIND(res);
 }
 
 gint dnf_swdb_trans_data_beg(DnfSwdb *self,
                              gint tid,
                              gint pid,
                              const gchar *reason,
-                             const gchar *state )
+                             const gchar *state)
 {
-  	if (dnf_swdb_open(self))
-    	return 1;
-  	DB_TRANS_BEGIN
+    if (dnf_swdb_open(self))
+        return 1;
+    DB_TRANS_BEGIN
     gint pdid = _pdid_from_pid(self->db, pid);
- 	struct trans_data_beg_t trans_data_beg = {tid, pdid,
-	  	dnf_swdb_get_reason_type(self, reason), dnf_swdb_get_state_type(self,state)};
-  	gint rc = _trans_data_beg_insert(self->db, &trans_data_beg);
-  	DB_TRANS_END
-  	dnf_swdb_close(self);
-  	return rc;
+    gint tgid = 0;
+    if(!g_strcmp0(reason, "group"))
+    {
+        tgid = _resolve_group_origin(self->db, tid, pid);
+    }
+    gint rc = _trans_data_beg_insert(
+        self->db,
+        tid,
+        pdid,
+        tgid,
+        dnf_swdb_get_reason_type(self, reason),
+        dnf_swdb_get_state_type(self, state)
+    );
+    DB_TRANS_END
+    dnf_swdb_close(self);
+    return rc;
 }
 
 /*
@@ -1298,20 +1286,6 @@ gint dnf_swdb_trans_data_pid_end(DnfSwdb *self,
 
 /****************************** TRANS PERSISTOR ******************************/
 
-static gint _trans_beg_insert(sqlite3 *db, struct trans_beg_t *trans_beg)
-{
-  	sqlite3_stmt *res;
-  	const gchar *sql = INSERT_TRANS_BEG;
-  	DB_PREP(db,sql,res);
-	DB_BIND(res, "@beg", trans_beg->beg_timestamp);
-  	DB_BIND(res, "@rpmdbv", trans_beg->rpmdb_version );
-  	DB_BIND(res, "@cmdline", trans_beg->cmdline);
-  	DB_BIND(res, "@loginuid", trans_beg->loginuid);
-  	DB_BIND(res, "@releasever", trans_beg->releasever);
-  	DB_STEP(res);
-  	return sqlite3_last_insert_rowid(db);
-}
-
 gint dnf_swdb_trans_beg(DnfSwdb *self,
                         const gchar *timestamp,
                         const gchar *rpmdb_version,
@@ -1319,25 +1293,22 @@ gint dnf_swdb_trans_beg(DnfSwdb *self,
                         const gchar *loginuid,
                         const gchar *releasever)
 {
-	if (dnf_swdb_open(self))
-    	return 1;
-  	struct trans_beg_t trans_beg = { timestamp, rpmdb_version, cmdline, loginuid, releasever};
-  	gint rc = _trans_beg_insert(self->db, &trans_beg);
-  	dnf_swdb_close(self);
-  	return rc;
-}
+    if (dnf_swdb_open(self))
+        return 1;
 
-static gint _trans_end_insert(sqlite3 *db, struct trans_end_t *trans_end)
-{
-  	sqlite3_stmt *res;
-  	const gchar *sql = INSERT_TRANS_END;
-  	DB_PREP(db,sql,res);
-  	DB_BIND_INT(res, "@tid", trans_end->tid );
-	DB_BIND(res, "@end", trans_end->end_timestamp );
-    DB_BIND(res, "@rpmdbv", trans_end->end_rpmdb_version);
-  	DB_BIND_INT(res, "@rc", trans_end->return_code );
-  	DB_STEP(res);
-  	return 0;
+    sqlite3_stmt *res;
+    const gchar *sql = INSERT_TRANS_BEG;
+    DB_PREP(self->db,sql,res);
+    DB_BIND(res, "@beg", timestamp);
+    DB_BIND(res, "@rpmdbv", rpmdb_version );
+    DB_BIND(res, "@cmdline", cmdline);
+    DB_BIND(res, "@loginuid", loginuid);
+    DB_BIND(res, "@releasever", releasever);
+    DB_STEP(res);
+    gint rc = sqlite3_last_insert_rowid(self->db);
+
+    dnf_swdb_close(self);
+    return rc;
 }
 
 gint dnf_swdb_trans_end(DnfSwdb *self,
@@ -1346,12 +1317,18 @@ gint dnf_swdb_trans_end(DnfSwdb *self,
                         const gchar *end_rpmdb_version,
                         gint return_code)
 {
-	if (dnf_swdb_open(self))
-    	return 1;
-  	struct trans_end_t trans_end = { tid, end_timestamp, end_rpmdb_version, return_code};
-  	gint rc = _trans_end_insert(self->db, &trans_end);
-  	dnf_swdb_close(self);
-  	return rc;
+    if (dnf_swdb_open(self))
+        return 1;
+    sqlite3_stmt *res;
+    const gchar *sql = INSERT_TRANS_END;
+    DB_PREP(self->db,sql,res);
+    DB_BIND_INT(res, "@tid", tid );
+    DB_BIND(res, "@end", end_timestamp );
+    DB_BIND(res, "@rpmdbv", end_rpmdb_version);
+    DB_BIND_INT(res, "@rc", return_code );
+    DB_STEP(res);
+    dnf_swdb_close(self);
+    return 0;
 }
 
 gchar *dnf_swdb_trans_cmdline(DnfSwdb *self, gint tid)
@@ -1563,31 +1540,35 @@ DnfSwdbTrans *dnf_swdb_last (DnfSwdb *self)
 
 /****************************** OUTPUT PERSISTOR *****************************/
 
-static gint _output_insert(sqlite3 *db, struct output_t *output)
+static gint _output_insert(sqlite3 *db, gint tid, const gchar *msg, gint type)
 {
     sqlite3_stmt *res;
     const gchar *sql = INSERT_OUTPUT;
     DB_PREP(db,sql,res);
-    DB_BIND_INT(res, "@tid", output->tid);
-    DB_BIND(res, "@msg", output->msg);
-    DB_BIND_INT(res, "@type", output->type);
+    DB_BIND_INT(res, "@tid", tid);
+    DB_BIND(res, "@msg", msg);
+    DB_BIND_INT(res, "@type", type);
     DB_STEP(res);
     return 0;
 }
 
 gint dnf_swdb_log_error(DnfSwdb *self, gint tid, const gchar *msg)
 {
-  	if (dnf_swdb_open(self))
-    	return 1;
+    if (dnf_swdb_open(self))
+        return 1;
 
-  	DB_TRANS_BEGIN
+    DB_TRANS_BEGIN
 
-  	struct output_t output = { tid, msg, dnf_swdb_get_output_type(self, "stderr") };
-  	gint rc = _output_insert( self->db, &output);
+    gint rc = _output_insert(
+        self->db,
+        tid,
+        msg,
+        dnf_swdb_get_output_type(self, "stderr")
+    );
 
-  	DB_TRANS_END
-  	dnf_swdb_close(self);
-  	return rc;
+    DB_TRANS_END
+    dnf_swdb_close(self);
+    return rc;
 }
 
 gint dnf_swdb_log_output(DnfSwdb *self, gint tid, const gchar *msg)
@@ -1597,8 +1578,12 @@ gint dnf_swdb_log_output(DnfSwdb *self, gint tid, const gchar *msg)
 
     DB_TRANS_BEGIN
 
-    struct output_t output = { tid, msg, dnf_swdb_get_output_type(self, "stdout") };
-    gint rc = _output_insert( self->db, &output);
+    gint rc = _output_insert(
+        self->db,
+        tid,
+        msg,
+        dnf_swdb_get_output_type(self, "stdout")
+    );
 
     DB_TRANS_END
     dnf_swdb_close(self);
