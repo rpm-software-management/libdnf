@@ -69,7 +69,7 @@
 
 #define C_T_GROUP_DATA	"CREATE TABLE TRANS_GROUP_DATA (TG_ID INTEGER PRIMARY KEY,"\
 						"T_ID integer, G_ID integer, name_id text, name text, ui_name text,"\
-                        "is_installed integer, pkg_types integer, grp_types integer)"
+                        "is_installed integer, pkg_types integer)"
 
 #define C_GROUPS_PKG	"CREATE TABLE GROUPS_PACKAGE (GP_ID INTEGER PRIMARY KEY,"\
                         "G_ID integer, name text)"
@@ -81,7 +81,7 @@
                         "E_ID integer, G_ID integer)"
 
 #define C_ENV			"CREATE TABLE ENVIRONMENTS (E_ID INTEGER PRIMARY KEY, name_id text,"\
-                        "name text, ui_name text, grp_types integer)"
+                        "name text, ui_name text, pkg_types integer, grp_types integer)"
 
 #define C_ENV_EX		"CREATE TABLE ENVIRONMENTS_EXCLUDE (EE_ID INTEGER PRIMARY KEY,"\
                         "E_ID integer, name text)"

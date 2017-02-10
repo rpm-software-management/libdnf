@@ -118,6 +118,7 @@ dnf_swdb_env_init(DnfSwdbEnv *self)
 DnfSwdbEnv* dnf_swdb_env_new(const gchar* name_id,
                              gchar* name,
                              gchar* ui_name,
+                             gint pkg_types,
                              gint grp_types,
                              DnfSwdb *swdb)
 {
@@ -125,6 +126,7 @@ DnfSwdbEnv* dnf_swdb_env_new(const gchar* name_id,
     env->name_id = g_strdup(name_id);
     env->name = g_strdup(name);
     env->ui_name = g_strdup(ui_name);
+    env->pkg_types = pkg_types;
     env->grp_types = grp_types;
     env->swdb = swdb;
     return env;
@@ -318,6 +320,7 @@ void _update_env(sqlite3 *db, DnfSwdbEnv *env)
     DB_PREP(db, sql, res);
     DB_BIND(res, "@name", env->name);
     DB_BIND(res, "@ui_name", env->ui_name);
+    DB_BIND_INT(res, "@pkg_types", env->pkg_types);
     DB_BIND_INT(res, "@grp_types", env->grp_types);
     DB_BIND_INT(res, "@eid", env->eid);
     DB_STEP(res);
@@ -331,6 +334,7 @@ void _add_env(sqlite3 *db, DnfSwdbEnv *env)
     DB_BIND(res, "@name_id", env->name_id);
     DB_BIND(res, "@name", env->name);
     DB_BIND(res, "@ui_name", env->ui_name);
+    DB_BIND_INT(res, "@pkg_types", env->pkg_types);
     DB_BIND_INT(res, "@grp_types", env->grp_types);
     DB_STEP(res);
     env->eid = sqlite3_last_insert_rowid(db);
@@ -407,7 +411,8 @@ DnfSwdbEnv *_get_env(sqlite3 *db, const gchar *name_id)
                                 name_id, //name_id
                                 (gchar*)sqlite3_column_text(res, 2),//name
                                 (gchar*)sqlite3_column_text(res, 3),//ui_name
-                                sqlite3_column_int(res, 4),//grp_types
+                                sqlite3_column_int(res, 4),//pkg_types
+                                sqlite3_column_int(res, 5),//grp_types
                                 NULL); //swdb
         env->eid = sqlite3_column_int(res,0);
         sqlite3_finalize(res);
@@ -485,7 +490,8 @@ GPtrArray *dnf_swdb_env_by_pattern(DnfSwdb *self, const gchar *pattern)
                             (const gchar*)sqlite3_column_text(res,1), //name_id
                             (gchar*)sqlite3_column_text(res, 2),//name
                             (gchar*)sqlite3_column_text(res, 3),//ui_name
-                            sqlite3_column_int(res, 4),//grp_types
+                            sqlite3_column_int(res, 4),//pkg_types
+                            sqlite3_column_int(res, 5),//grp_types
                             self); //swdb
         env->eid = sqlite3_column_int(res,0);
         g_ptr_array_add(node, (gpointer) env);
@@ -665,7 +671,7 @@ GPtrArray *dnf_swdb_env_get_exclude    (DnfSwdbEnv* self)
 */
 gint dnf_swdb_groups_commit(DnfSwdb *self, GPtrArray *groups)
 {
-    if (dnf_swdb_open(self) )
+    if (dnf_swdb_open(self))
         return 1;
     const gchar *sql = U_GROUP_COMMIT;
     for(guint i = 0; i < groups->len; ++i)
@@ -700,9 +706,6 @@ void _log_group_trans(sqlite3 *db, gint tid, GPtrArray *groups, gint is_installe
 
 }
 
-
-//FIXME!!!! TRANS_GROUP_DATA not connected with TRANS_DATA!!!
-// need to return TGID here
 /**
 * dnf_swdb_log_group_trans:
 * @installing: (element-type DnfSwdbGroup)(array)(transfer container): list of #DnfSwdbGroup
@@ -737,17 +740,29 @@ gboolean dnf_swdb_removable_pkg(DnfSwdb *self, const gchar* pkg_name)
     gboolean removable = TRUE;
     //check if package was installed with group
 
-    /* TODO
-    def _removable_pkg(self, pkg_name):
-    prst = self.persistor
-    count = 0
-    if self._reason_fn(pkg_name) != 'group':
-        return False
-    for id_ in prst.groups():
-        p_grp = prst.group(id_.name_id)
-        count += sum(1 for pkg in p_grp.get_full_list() if pkg == pkg_name)
-    return count < 2
-    */
+    sqlite3_stmt *res;
+    const gchar *sql = S_REM_REASON;
+    DB_PREP(self->db, sql, res);
+    DB_BIND(res, "@name", pkg_name);
+    gchar *reason = DB_FIND_STR(res);
+    if(g_strcmp0(reason, "group")) // null or != "group"
+    {
+        removable = FALSE;
+    }
+    else
+    {
+        sql = S_REM;
+        DB_PREP(self->db, sql, res);
+        DB_BIND(res, "@name", pkg_name);
+        gint count = 0;
+        while(sqlite3_step(res) == SQLITE_ROW && count < 2)
+        {
+            count++;
+        }
+        sqlite3_finalize(res);
+        removable = count < 2;
+    }
+    g_free(reason);
     dnf_swdb_close(self);
     return removable;
 }
