@@ -56,6 +56,7 @@ const char          *dnf_advisory_get_id            (DnfAdvisory *advisory);
 DnfAdvisoryKind      dnf_advisory_get_kind          (DnfAdvisory *advisory);
 const char          *dnf_advisory_get_description   (DnfAdvisory *advisory);
 const char          *dnf_advisory_get_rights        (DnfAdvisory *advisory);
+const char          *dnf_advisory_get_severity      (DnfAdvisory *advisory);
 guint64              dnf_advisory_get_updated       (DnfAdvisory *advisory);
 GPtrArray           *dnf_advisory_get_packages      (DnfAdvisory *advisory);
 GPtrArray           *dnf_advisory_get_references    (DnfAdvisory *advisory);
