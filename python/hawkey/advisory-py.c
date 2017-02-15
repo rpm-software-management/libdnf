@@ -203,6 +203,7 @@ static PyGetSetDef advisory_getsetters[] = {
     {(char*)"type", (getter)get_type, NULL, NULL, (void *)dnf_advisory_get_kind},
     {(char*)"description", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_description},
     {(char*)"rights", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_rights},
+    {(char*)"severity", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_severity},
     {(char*)"updated", (getter)get_datetime, NULL, NULL, (void *)dnf_advisory_get_updated},
     {(char*)"packages", (getter)get_advisorypkg_list, NULL, NULL, (void *)dnf_advisory_get_packages},
     {(char*)"references", (getter)get_advisoryref_list, NULL, NULL, (void *)dnf_advisory_get_references},

@@ -203,6 +203,23 @@ dnf_advisory_get_rights(DnfAdvisory *advisory)
 }
 
 /**
+ * dnf_advisory_get_severity:
+ * @advisory: a #DnfAdvisory instance.
+ *
+ * Gets the advisory severity.
+ *
+ * Returns: a string value, or %NULL for unset
+ *
+ * Since: 0.8.0
+ */
+const char *
+dnf_advisory_get_severity(DnfAdvisory *advisory)
+{
+    DnfAdvisoryPrivate *priv = GET_PRIVATE(advisory);
+    return pool_lookup_str(priv->pool, priv->a_id, UPDATE_SEVERITY);
+}
+
+/**
  * dnf_advisory_get_updated:
  * @advisory: a #DnfAdvisory instance.
  *
