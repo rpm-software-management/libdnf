@@ -186,6 +186,8 @@ void _insert_group_additional(sqlite3 *db,
 
 /**
 * dnf_swdb_group_add_package:
+* Add list of package names into group full list
+* Does nothing when group allready contains particular package.
 * @packages: (element-type utf8)(transfer container): list of constants
 */
 gint dnf_swdb_group_add_package(DnfSwdbGroup *group, GPtrArray *packages)
@@ -200,39 +202,45 @@ gint dnf_swdb_group_add_package(DnfSwdbGroup *group, GPtrArray *packages)
 
 /**
 * dnf_swdb_group_add_exclude:
+* Add list of package names into group exclude list.
+* Does nothing if particular package is allready in exclude list.
 * @exclude: (element-type utf8)(transfer container): list of constants
 */
 gint dnf_swdb_group_add_exclude(DnfSwdbGroup *group, GPtrArray *exclude)
 {
     if(!group->gid || dnf_swdb_open(group->swdb))
         return 1;
-    _insert_group_additional(group->swdb->db, group->gid, exclude, "GROUPS_EXCLUDE");
+    _insert_group_additional(
+        group->swdb->db,
+        group->gid,
+        exclude,
+        "GROUPS_EXCLUDE");
     dnf_swdb_close(group->swdb);
     return 0;
 }
 
 /**
 * dnf_swdb_env_add_exclude:
+* Add list of groups into environment exclude list
+* Does nothing when particular group is allready in lexclude list
 * @exclude: (element-type utf8)(transfer container): list of constants
 */
 gint dnf_swdb_env_add_exclude(DnfSwdbEnv *env, GPtrArray *exclude)
 {
-    if(env->eid)
-    {
-        if (dnf_swdb_open(env->swdb))
-            return 1;
-        for(guint i = 0; i < exclude->len; i++)
-        {
-            _insert_id_name (env->swdb->db,
-                             "ENVIRONMENTS_EXCLUDE",
-                             env->eid,
-                             (gchar *)g_ptr_array_index(exclude, i));
-        }
-        dnf_swdb_close(env->swdb);
-        return 0;
-    }
-    else
+    if(!env->eid || dnf_swdb_open(env->swdb))
         return 1;
+    sqlite3 *db = env->swdb->db;
+    GPtrArray *actualList = _env_get_exclude(db, env->eid);
+    for(guint i = 0; i < exclude->len; ++i)
+    {
+        const gchar *name = (gchar *)g_ptr_array_index(exclude, i);
+        if(!_find_match(name, actualList))
+        {
+            _insert_id_name(db, "ENVIRONMENTS_EXCLUDE", env->eid, name);
+        }
+    }
+    dnf_swdb_close(env->swdb);
+    return 0;
 }
 
 gint _group_id_to_gid(sqlite3 *db, const gchar *group_id)
@@ -246,6 +254,8 @@ gint _group_id_to_gid(sqlite3 *db, const gchar *group_id)
 
 /**
 * dnf_swdb_env_add_group:
+* Add list of groups into environment full list.
+* When environment allready contains particular group, does nothing.
 * @groups: (element-type utf8)(transfer container): list of constants
 */
 gint dnf_swdb_env_add_group(DnfSwdbEnv *env, GPtrArray *groups)
@@ -627,40 +637,36 @@ gboolean dnf_swdb_env_is_installed(DnfSwdbEnv *env)
         return 0;
     if (dnf_swdb_open(env->swdb) )
         return 0;
-    gboolean found = FALSE;
     sqlite3_stmt *res;
     const gchar* sql = S_IS_INSTALLED_BY_EID;
     DB_PREP(env->swdb->db, sql, res);
     DB_BIND_INT(res, "@eid", env->eid);
-    while(sqlite3_step(res) == SQLITE_ROW)
-    {
-        found = TRUE; //at least one group must be found
-        if(!sqlite3_column_int(res, 0)) //is_installed is not True
-        {
-            found = FALSE;
-            break;
-        }
-    }
+    gboolean found = sqlite3_step(res) == SQLITE_ROW;
     sqlite3_finalize(res);
     dnf_swdb_close(env->swdb);
     return found;
+}
+
+GPtrArray *_env_get_exclude(sqlite3 *db, int eid)
+{
+    sqlite3_stmt *res;
+    const gchar *sql = S_ENV_EXCLUDE_BY_ID;
+    DB_PREP(db, sql, res);
+    DB_BIND_INT(res, "@eid", eid);
+    return _get_list_from_table(res);
 }
 
 /**
 * dnf_swdb_env_get_exclude:
 * Returns: (element-type utf8)(array)(transfer container): list of utf8
 */
-GPtrArray *dnf_swdb_env_get_exclude    (DnfSwdbEnv* self)
+GPtrArray *dnf_swdb_env_get_exclude(DnfSwdbEnv* self)
 {
     if(!self->eid)
         return NULL;
     if (dnf_swdb_open(self->swdb) )
         return NULL;
-    sqlite3_stmt *res;
-    const gchar *sql = S_ENV_EXCLUDE_BY_ID;
-    DB_PREP(self->swdb->db, sql, res);
-    DB_BIND_INT(res, "@eid", self->eid);
-    GPtrArray *node = _get_list_from_table(res);
+    GPtrArray *node = _env_get_exclude(self->swdb->db, self->eid);
     dnf_swdb_close(self->swdb);
     return node;
 }
