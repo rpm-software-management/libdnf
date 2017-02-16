@@ -109,6 +109,8 @@ gint dnf_swdb_env_add_group(DnfSwdbEnv *env, GPtrArray *groups);
 
 DnfSwdbEnv *_get_env(sqlite3 *db, const gchar *name_id);
 
+GPtrArray *_env_get_exclude(sqlite3 *db, int eid);
+
 GPtrArray *_get_list_from_table(sqlite3_stmt *res);
 
 GPtrArray *_get_data_list(sqlite3 *db, int gid, const gchar *table);

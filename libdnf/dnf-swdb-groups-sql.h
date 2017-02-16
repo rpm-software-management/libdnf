@@ -35,7 +35,7 @@
 #define S_GROUPS_BY_PATTERN "SELECT * from GROUPS where name_id LIKE @pat or name LIKE @pat or ui_name LIKE @pat"
 #define S_ENV_BY_PATTERN "SELECT * from ENVIRONMENTS where name_id LIKE @pat or name LIKE @pat or ui_name LIKE @pat"
 #define S_ENV_EXCLUDE_BY_ID "SELECT name FROM ENVIRONMENTS_EXCLUDE where E_ID=@eid"
-#define S_IS_INSTALLED_BY_EID "SELECT is_installed FROM ENVIRONMENTS_GROUPS join GROUPS using(G_ID) where E_ID=@eid"
+#define S_IS_INSTALLED_BY_EID "SELECT E_ID FROM ENVIRONMENTS_GROUPS join GROUPS using(G_ID) where E_ID=@eid and is_installed=1"
 #define S_GROUP_NAME_ID_BY_EID "SELECT name_id FROM ENVIRONMENTS_GROUPS join GROUPS using(G_ID) where E_ID=@eid"
 
 #define U_GROUP_COMMIT "UPDATE GROUPS SET is_installed=1 where name_id=@id"
