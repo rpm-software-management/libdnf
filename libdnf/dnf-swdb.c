@@ -548,23 +548,20 @@ GArray *dnf_swdb_select_user_installed(DnfSwdb *self, GPtrArray *nvras)
 gboolean dnf_swdb_user_installed(DnfSwdb *self, const gchar *nvra)
 {
     if (dnf_swdb_open(self))
-        return 1; //XXX Is "true" proper default value?
+        return TRUE;
 
-    gboolean rc = 1;
     gint pid = _pid_by_nvra(self->db, nvra);
-    if (pid)
+    if(!pid)
     {
-        gchar *repo = _repo_by_pid(self->db, pid);
-        gchar *reason = _reason_by_pid(self->db, pid);
-        if( g_strcmp0("user", reason) &&
-            g_strcmp0("anaconda", repo)
-        )
-        //XXX anaconda, anakonda, both or what? should it be hardcoded???
-        //package installed by user, but not anaconda right?
-            rc = 0; //is user installed...
-        g_free(repo);
-        g_free(reason);
+        return FALSE;
     }
+    gboolean rc = TRUE;
+    gchar *repo = _repo_by_pid(self->db, pid);
+    gchar *reason = _reason_by_pid(self->db, pid);
+    if(g_strcmp0("user", reason) || !g_strcmp0("anakonda", repo))
+        rc = FALSE;
+    g_free(repo);
+    g_free(reason);
     return rc;
 }
 

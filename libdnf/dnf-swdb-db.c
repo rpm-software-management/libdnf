@@ -56,8 +56,7 @@ gint _db_step(sqlite3_stmt *res)
 {
     if (sqlite3_step(res) != SQLITE_DONE)
     {
-        fprintf(stderr,
-                "SQL error:Could not execute statement. Try again as root.\n");
+        fprintf(stderr, "SQL error: Statement execution failed!\n");
         sqlite3_finalize(res);
         return 0;
     }
