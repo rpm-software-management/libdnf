@@ -53,7 +53,7 @@ typedef struct
     gboolean         required;
     gboolean         gpgcheck_md;
     gboolean         gpgcheck_pkgs;
-    gchar           *gpgkey;
+    gchar          **gpgkeys;
     gchar          **exclude_packages;
     guint            cost;
     gchar           *filename;      /* /etc/yum.repos.d/updates.repo */
@@ -65,7 +65,6 @@ typedef struct
     gchar           *keyring;       /* /var/cache/PackageKit/metadata/fedora/gpgdir */
     gchar           *keyring_tmp;   /* /var/cache/PackageKit/metadata/fedora.tmp/gpgdir */
     gchar           *pubkey;        /* /var/cache/PackageKit/metadata/fedora/repomd.pub */
-    gchar           *pubkey_tmp;    /* /var/cache/PackageKit/metadata/fedora.tmp/repomd.pub */
     gint64           timestamp_generated;   /* µs */
     gint64           timestamp_modified;    /* µs */
     GError          *last_check_error;
@@ -93,7 +92,7 @@ dnf_repo_finalize(GObject *object)
 
     g_free(priv->id);
     g_free(priv->filename);
-    g_free(priv->gpgkey);
+    g_strfreev(priv->gpgkeys);
     g_strfreev(priv->exclude_packages);
     g_free(priv->location_tmp);
     g_free(priv->location);
@@ -102,7 +101,6 @@ dnf_repo_finalize(GObject *object)
     g_free(priv->keyring);
     g_free(priv->keyring_tmp);
     g_free(priv->pubkey);
-    g_free(priv->pubkey_tmp);
     g_hash_table_unref(priv->filenames_md);
     g_clear_error(&priv->last_check_error);
     if (priv->repo_result != NULL)
@@ -544,11 +542,9 @@ dnf_repo_set_location_tmp(DnfRepo *repo, const gchar *location_tmp)
     g_free(priv->location_tmp);
     g_free(priv->packages_tmp);
     g_free(priv->keyring_tmp);
-    g_free(priv->pubkey_tmp);
     priv->location_tmp = dnf_repo_substitute(repo, location_tmp);
     priv->packages_tmp = g_build_filename(location_tmp, "packages", NULL);
     priv->keyring_tmp = g_build_filename(location_tmp, "gpgdir", NULL);
-    priv->pubkey_tmp = g_build_filename(location_tmp, "repomd.pub", NULL);
 }
 
 /**
@@ -778,7 +774,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     g_autofree gchar *metalink = NULL;
     g_autofree gchar *mirrorlist = NULL;
     g_autofree gchar *proxy = NULL;
-    g_autofree gchar *exclude_string = NULL;
+    g_autofree gchar *tmp_strval = NULL;
     g_autofree gchar *pwd = NULL;
     g_autofree gchar *usr = NULL;
     g_autofree gchar *usr_pwd = NULL;
@@ -869,11 +865,18 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     }
 
     /* gpgkey is optional for gpgcheck=1, but required for repo_gpgcheck=1 */
-    g_free(priv->gpgkey);
-    priv->gpgkey = g_key_file_get_string(priv->keyfile, priv->id, "gpgkey", NULL);
+    g_strfreev(priv->gpgkeys);
+    tmp_strval = g_key_file_get_string(priv->keyfile, priv->id, "gpgkey", NULL);
+    if (tmp_strval) {
+        priv->gpgkeys = g_strsplit_set(tmp_strval, " ,", -1);
+        g_free(g_steal_pointer (&tmp_strval));
+        /* Canonicalize the empty list to NULL for ease of checking elsewhere */
+        if (priv->gpgkeys && !*priv->gpgkeys)
+            g_strfreev(g_steal_pointer (&priv->gpgkeys));
+    }
     priv->gpgcheck_pkgs = dnf_repo_get_boolean(priv->keyfile, priv->id, "gpgcheck", NULL);
     priv->gpgcheck_md = dnf_repo_get_boolean(priv->keyfile, priv->id, "repo_gpgcheck", NULL);
-    if (priv->gpgcheck_md && priv->gpgkey == NULL) {
+    if (priv->gpgcheck_md && priv->gpgkeys == NULL) {
         g_set_error_literal(error,
                             DNF_ERROR,
                             DNF_ERROR_FILE_INVALID,
@@ -885,9 +888,10 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_GPGCHECK, (long)priv->gpgcheck_md))
         return FALSE;
 
-    exclude_string = g_key_file_get_string(priv->keyfile, priv->id, "exclude", NULL);
-    if (exclude_string) {
-        priv->exclude_packages = g_strsplit_set(exclude_string, " ,", -1);
+    tmp_strval = g_key_file_get_string(priv->keyfile, priv->id, "exclude", NULL);
+    if (tmp_strval) {
+        priv->exclude_packages = g_strsplit_set(tmp_strval, " ,", -1);
+        g_free(g_steal_pointer (&tmp_strval));
     }
 
     /* proxy is optional */
@@ -1319,9 +1323,10 @@ dnf_repo_clean(DnfRepo *repo, GError **error)
  * This imports a repodata public key into the default librpm keyring
  **/
 static gboolean
-dnf_repo_add_public_key(DnfRepo *repo, GError **error)
+dnf_repo_add_public_key(DnfRepo *repo,
+                        const char *tmp_path,
+                        GError **error)
 {
-    DnfRepoPrivate *priv = GET_PRIVATE(repo);
     gboolean ret;
     rpmKeyring keyring;
     rpmts ts;
@@ -1329,25 +1334,28 @@ dnf_repo_add_public_key(DnfRepo *repo, GError **error)
     /* then import to rpmdb */
     ts = rpmtsCreate();
     keyring = rpmtsGetKeyring(ts, 1);
-    ret = dnf_keyring_add_public_key(keyring, priv->pubkey_tmp, error);
+    ret = dnf_keyring_add_public_key(keyring, tmp_path, error);
     rpmKeyringFree(keyring);
     rpmtsFree(ts);
     return ret;
 }
 
 /**
- * dnf_repo_download_import_public_key:
+ * dnf_repo_download_import_public_keys:
  **/
 static gboolean
-dnf_repo_download_import_public_key(DnfRepo *repo, GError **error)
+dnf_repo_download_import_public_key(DnfRepo *repo,
+                                    const char *gpgkey,
+                                    const char *key_tmp,
+                                    GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     int fd;
     g_autoptr(GError) error_local = NULL;
 
     /* does this file already exist */
-    if (g_file_test(priv->pubkey_tmp, G_FILE_TEST_EXISTS))
-        return lr_gpg_import_key(priv->pubkey_tmp, priv->keyring_tmp, error);
+    if (g_file_test(key_tmp, G_FILE_TEST_EXISTS))
+        return lr_gpg_import_key(key_tmp, priv->keyring_tmp, error);
 
     /* create the gpgdir location */
     if (g_mkdir_with_parents(priv->keyring_tmp, 0755) != 0) {
@@ -1365,17 +1373,17 @@ dnf_repo_download_import_public_key(DnfRepo *repo, GError **error)
         return FALSE;
 
     /* download to known location */
-    g_debug("Downloading %s to %s", priv->gpgkey, priv->pubkey_tmp);
-    fd = g_open(priv->pubkey_tmp, O_CLOEXEC | O_CREAT | O_RDWR, 0774);
+    g_debug("Downloading %s to %s", gpgkey, key_tmp);
+    fd = g_open(key_tmp, O_CLOEXEC | O_CREAT | O_RDWR, 0774);
     if (fd < 0) {
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_INTERNAL_ERROR,
                     "Failed to open %s: %i",
-                    priv->pubkey_tmp, fd);
+                    key_tmp, fd);
         return FALSE;
     }
-    if (!lr_download_url(priv->repo_handle, priv->gpgkey, fd, &error_local)) {
+    if (!lr_download_url(priv->repo_handle, gpgkey, fd, &error_local)) {
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_CANNOT_FETCH_SOURCE,
@@ -1389,7 +1397,7 @@ dnf_repo_download_import_public_key(DnfRepo *repo, GError **error)
         return FALSE;
 
     /* import found key */
-    return lr_gpg_import_key(priv->pubkey_tmp, priv->keyring_tmp, error);
+    return lr_gpg_import_key(key_tmp, priv->keyring_tmp, error);
 }
 
 static int
@@ -1505,22 +1513,29 @@ dnf_repo_update(DnfRepo *repo,
         goto out;
     }
 
-    if (priv->gpgkey &&
+    if (priv->gpgkeys &&
         (priv->gpgcheck_md || priv->gpgcheck_pkgs)) {
-        /* download and import public key */
-        if ((g_str_has_prefix(priv->gpgkey, "https://") ||
-             g_str_has_prefix(priv->gpgkey, "file://"))) {
-            g_debug("importing public key %s", priv->gpgkey);
-            ret = dnf_repo_download_import_public_key(repo, error);
-            if (!ret)
-                goto out;
-        }
+        for (char **iter = priv->gpgkeys; iter && *iter; iter++) {
+            const char *gpgkey = *iter;
+            g_autofree char *gpgkey_name = g_path_get_basename(gpgkey);
+            g_autofree char *key_tmp = g_build_filename(priv->location_tmp, gpgkey_name, NULL);
 
-        /* do we autoimport this into librpm */
-        if ((flags & DNF_REPO_UPDATE_FLAG_IMPORT_PUBKEY) > 0) {
-            ret = dnf_repo_add_public_key(repo, error);
-            if (!ret)
-                goto out;
+            /* download and import public key */
+            if ((g_str_has_prefix(gpgkey, "https://") ||
+                  g_str_has_prefix(gpgkey, "file://"))) {
+                g_debug("importing public key %s", gpgkey);
+
+                ret = dnf_repo_download_import_public_key(repo, gpgkey, key_tmp, error);
+                if (!ret)
+                    goto out;
+            }
+
+            /* do we autoimport this into librpm? */
+            if ((flags & DNF_REPO_UPDATE_FLAG_IMPORT_PUBKEY) > 0) {
+                ret = dnf_repo_add_public_key(repo, key_tmp, error);
+                if (!ret)
+                    goto out;
+            }
         }
     }
 
