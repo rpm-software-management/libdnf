@@ -23,9 +23,6 @@
 #ifndef DNF_SWDB_H
 #define DNF_SWDB_H
 
-#define DB_TRANS_BEGIN 	self->running = 1;
-#define DB_TRANS_END	self->running = 0;
-
 #define DB_PREP(db, sql, res) assert(_db_prepare(db, sql, &res))
 #define DB_BIND(res, id, source) assert(_db_bind(res, id, source))
 #define DB_BIND_INT(res, id, source) assert(_db_bind_int(res, id, source))
@@ -51,7 +48,6 @@ struct _DnfSwdb
     gchar   *path;
     sqlite3 *db;
     gboolean ready; //db opened
-  	gboolean running; //if true, db will not be closed
     gchar *releasever;
 };
 
