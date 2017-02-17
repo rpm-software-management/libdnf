@@ -57,7 +57,7 @@ def version_readout():
     with open(fn) as f:
         lines = f.readlines()
 
-    pat = re.compile("\d+")
+    pat = re.compile(r"\d+")
     major = pat.findall(lines[0])[0]
     minor = pat.findall(lines[1])[0]
     micro = pat.findall(lines[2])[0]

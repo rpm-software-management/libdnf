@@ -54,7 +54,7 @@ class PackageTest(base.TestCase):
         self.assertTrue(isinstance(self.pkg, hawkey.Package))
 
     def test_repr(self):
-        regexp = "<hawkey.Package object id \d+, flying-2-9\.noarch, @System>"
+        regexp = r"<hawkey.Package object id \d+, flying-2-9\.noarch, @System>"
         self.assertRegexpMatches(repr(self.pkg), regexp)
 
     def test_str(self):
