@@ -196,7 +196,6 @@ gint dnf_swdb_group_add_package(DnfSwdbGroup *group, GPtrArray *packages)
     if(!group->gid || dnf_swdb_open(group->swdb))
         return 1;
     _insert_group_additional(group->swdb->db, group->gid, packages, "GROUPS_PACKAGE");
-    dnf_swdb_close(group->swdb);
     return 0;
 }
 
@@ -215,7 +214,6 @@ gint dnf_swdb_group_add_exclude(DnfSwdbGroup *group, GPtrArray *exclude)
         group->gid,
         exclude,
         "GROUPS_EXCLUDE");
-    dnf_swdb_close(group->swdb);
     return 0;
 }
 
@@ -239,7 +237,6 @@ gint dnf_swdb_env_add_exclude(DnfSwdbEnv *env, GPtrArray *exclude)
             _insert_id_name(db, "ENVIRONMENTS_EXCLUDE", env->eid, name);
         }
     }
-    dnf_swdb_close(env->swdb);
     return 0;
 }
 
@@ -285,7 +282,6 @@ gint dnf_swdb_env_add_group(DnfSwdbEnv *env, GPtrArray *groups)
         DB_BIND_INT(res, "@gid", gid);
         DB_STEP(res);
     }
-    dnf_swdb_close(env->swdb);
     return 0;
 }
 
@@ -319,7 +315,6 @@ gint dnf_swdb_add_group(DnfSwdb *self, DnfSwdbGroup *group)
         _update_group(self->db, group);
 
     }
-    dnf_swdb_close(self);
     return 0;
 }
 
@@ -367,7 +362,6 @@ gint dnf_swdb_add_env(DnfSwdb *self, DnfSwdbEnv *env)
         _update_env(self->db, env);
 
     }
-    dnf_swdb_close(self);
     return 0;
 }
 
@@ -405,7 +399,6 @@ DnfSwdbGroup *dnf_swdb_get_group(DnfSwdb * self, const gchar* name_id)
     DnfSwdbGroup *group = _get_group(self->db, name_id);
     if(group)
         group->swdb = self;
-    dnf_swdb_close(self);
     return group;
 }
 
@@ -443,7 +436,6 @@ DnfSwdbEnv *dnf_swdb_get_env(DnfSwdb * self, const gchar* name_id)
     DnfSwdbEnv *env = _get_env(self->db, name_id);
     if(env)
         env->swdb = self;
-    dnf_swdb_close(self);
     return env;
 }
 
@@ -475,7 +467,6 @@ GPtrArray *dnf_swdb_groups_by_pattern(DnfSwdb *self, const gchar *pattern)
         g_ptr_array_add(node, (gpointer) group);
     }
     sqlite3_finalize(res);
-    dnf_swdb_close(self);
     return node;
 }
 
@@ -507,7 +498,6 @@ GPtrArray *dnf_swdb_env_by_pattern(DnfSwdb *self, const gchar *pattern)
         g_ptr_array_add(node, (gpointer) env);
     }
     sqlite3_finalize(res);
-    dnf_swdb_close(self);
     return node;
 }
 
@@ -545,7 +535,6 @@ GPtrArray * dnf_swdb_group_get_exclude(DnfSwdbGroup *self)
     if (dnf_swdb_open(self->swdb) )
         return NULL;
     GPtrArray *node = _get_data_list(self->swdb->db, self->gid, "GROUPS_EXCLUDE");
-    dnf_swdb_close(self->swdb);
     return node;
 }
 
@@ -560,7 +549,6 @@ GPtrArray *dnf_swdb_group_get_full_list(DnfSwdbGroup *self)
     if (dnf_swdb_open(self->swdb) )
         return NULL;
     GPtrArray *node = _get_data_list(self->swdb->db, self->gid, "GROUPS_PACKAGE");
-    dnf_swdb_close(self->swdb);
     return node;
 }
 
@@ -580,7 +568,6 @@ gint dnf_swdb_group_update_full_list(DnfSwdbGroup *group, GPtrArray *full_list)
     DB_BIND_INT(res, "@gid", group->gid);
     DB_STEP(res);
     _insert_group_additional(group->swdb->db, group->gid, full_list, "GROUPS_PACKAGE");
-    dnf_swdb_close(group->swdb);
     return 0;
 }
 
@@ -605,7 +592,6 @@ gint dnf_swdb_uninstall_group(DnfSwdb *self, DnfSwdbGroup *group)
         return 1;
     group->is_installed = 0;
     _update_group(self->db, group);
-    dnf_swdb_close(self);
     return 0;
 }
 
@@ -627,7 +613,6 @@ GPtrArray *dnf_swdb_env_get_group_list(DnfSwdbEnv* env)
     if(!env->eid || dnf_swdb_open(env->swdb))
         return NULL;
     GPtrArray *node = _env_get_group_list(env->swdb->db, env->eid);
-    dnf_swdb_close(env->swdb);
     return node;
 }
 
@@ -643,7 +628,6 @@ gboolean dnf_swdb_env_is_installed(DnfSwdbEnv *env)
     DB_BIND_INT(res, "@eid", env->eid);
     gboolean found = sqlite3_step(res) == SQLITE_ROW;
     sqlite3_finalize(res);
-    dnf_swdb_close(env->swdb);
     return found;
 }
 
@@ -667,7 +651,6 @@ GPtrArray *dnf_swdb_env_get_exclude(DnfSwdbEnv* self)
     if (dnf_swdb_open(self->swdb) )
         return NULL;
     GPtrArray *node = _env_get_exclude(self->swdb->db, self->eid);
-    dnf_swdb_close(self->swdb);
     return node;
 }
 
@@ -688,7 +671,6 @@ gint dnf_swdb_groups_commit(DnfSwdb *self, GPtrArray *groups)
         DB_BIND(res, "@id", group->name_id);
         DB_STEP(res);
     }
-    dnf_swdb_close(self);
     return 0;
 }
 
@@ -726,8 +708,6 @@ gint dnf_swdb_log_group_trans(DnfSwdb *self,
         return 1;
     _log_group_trans(self->db, tid, installing, 1);
     _log_group_trans(self->db, tid, removing, 0);
-
-    dnf_swdb_close(self);
     return 0;
 }
 
@@ -769,6 +749,5 @@ gboolean dnf_swdb_removable_pkg(DnfSwdb *self, const gchar* pkg_name)
         removable = count < 2;
     }
     g_free(reason);
-    dnf_swdb_close(self);
     return removable;
 }

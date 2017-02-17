@@ -23,7 +23,7 @@
 #ifndef _DNF_SWDB_SQL
 #define _DNF_SWDB_SQL
 
-#define DISABLE_JOURNAL "PRAGMA locking_mode = EXCLUSIVE"
+#define TRUNCATE_JOURNAL "PRAGMA journal_mode = TRUNCATE"
 
 #define INSERT_PKG "insert into PACKAGE values(null,@name,@epoch,@version,@release,@arch,@cdata,@ctype,@type)"
 #define INSERT_OUTPUT "insert into OUTPUT values(null,@tid,@msg,@type)"
