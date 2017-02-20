@@ -10,7 +10,7 @@
 %bcond_without python3
 %endif
 
-%if 0%{?rhel}
+%if 0%{?rhel} && 0%{!?centos}
 %bcond_without rhsm
 %else
 %bcond_with rhsm
