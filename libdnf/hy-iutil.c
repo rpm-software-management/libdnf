@@ -40,6 +40,7 @@
 #include <solv/solver.h>
 #include <solv/solverdebug.h>
 #include <solv/util.h>
+#include <solv/pool_parserpmrichdep.h>
 
 // glib
 #include <glib.h>
@@ -51,6 +52,7 @@
 #include "hy-packageset-private.h"
 #include "hy-query.h"
 #include "dnf-sack-private.h"
+#include "dnf-reldep-private.h"
 
 #define BUF_BLOCK 4096
 #define CHKSUM_TYPE REPOKEY_TYPE_SHA256
@@ -722,14 +724,23 @@ parse_reldep_str(const char *reldep_str, char **name, char **evr,
 DnfReldep *
 reldep_from_str(DnfSack *sack, const char *reldep_str)
 {
-    char *name, *evr = NULL;
-    int cmp_type = 0;
-    if (parse_reldep_str(reldep_str, &name, &evr, &cmp_type) == -1)
-        return NULL;
-    DnfReldep *reldep = dnf_reldep_new (sack, name, cmp_type, evr);
-    g_free(name);
-    g_free(evr);
-    return reldep;
+    if (reldep_str[0] == '(') {
+        /* Rich dependency */
+        Pool *pool = dnf_sack_get_pool (sack);
+        Id id = pool_parserpmrichdep(pool, reldep_str);
+        if (!id)
+            return NULL;
+        return dnf_reldep_from_pool (pool, id);
+    } else {
+        char *name, *evr = NULL;
+        int cmp_type = 0;
+        if (parse_reldep_str(reldep_str, &name, &evr, &cmp_type) == -1)
+            return NULL;
+        DnfReldep *reldep = dnf_reldep_new (sack, name, cmp_type, evr);
+        g_free(name);
+        g_free(evr);
+        return reldep;
+    }
 }
 
 DnfReldepList *
