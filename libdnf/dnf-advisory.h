@@ -66,6 +66,8 @@ gboolean             dnf_advisory_match_id          (DnfAdvisory *advisory,
                                                      const char  *s);
 gboolean             dnf_advisory_match_kind        (DnfAdvisory *advisory,
                                                      const char  *s);
+gboolean             dnf_advisory_match_severity    (DnfAdvisory *advisory,
+                                                     const char  *s);
 gboolean             dnf_advisory_match_cve         (DnfAdvisory *advisory,
                                                      const char  *s);
 gboolean             dnf_advisory_match_bug         (DnfAdvisory *advisory,

@@ -811,6 +811,9 @@ filter_advisory(HyQuery q, struct _Filter *f, Map *m, int keyname)
             case HY_PKG_ADVISORY_TYPE:
                 eq = dnf_advisory_match_kind(advisory, match);
                 break;
+            case HY_PKG_ADVISORY_SEVERITY:
+                eq = dnf_advisory_match_severity(advisory, match);
+                break;
             default:
                 eq = FALSE;
             }
