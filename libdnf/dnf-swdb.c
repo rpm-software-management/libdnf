@@ -1336,10 +1336,10 @@ static void _resolve_outputs(DnfSwdb *self, GPtrArray *trans)
 }
 
 /**
-* dnf_swdb_get_old_trans_data:
+* dnf_swdb_get_trans_data:
 * Returns: (element-type DnfSwdbTransData)(array)(transfer container): list of #DnfSwdbTransData
 */
-GPtrArray *dnf_swdb_get_old_trans_data(DnfSwdb *self, DnfSwdbTrans *trans)
+GPtrArray *dnf_swdb_get_trans_data(DnfSwdb *self, DnfSwdbTrans *trans)
 {
     if (!trans->tid)
         return NULL;
@@ -1378,13 +1378,13 @@ GPtrArray *dnf_swdb_get_old_trans_data(DnfSwdb *self, DnfSwdbTrans *trans)
 }
 
 /**
-* dnf_swdb_trans_get_old_trans_data:
+* dnf_swdb_trans_get_trans_data:
 * Returns: (element-type DnfSwdbTransData)(array)(transfer container): list of #DnfSwdbTransData
 */
-GPtrArray *dnf_swdb_trans_get_old_trans_data(DnfSwdbTrans *self)
+GPtrArray *dnf_swdb_trans_get_trans_data(DnfSwdbTrans *self)
 {
     if (self->swdb)
-        return dnf_swdb_get_old_trans_data( self->swdb, self);
+        return dnf_swdb_get_trans_data(self->swdb, self);
     else
         return NULL;
 }
