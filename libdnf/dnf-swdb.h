@@ -143,9 +143,9 @@ GPtrArray *dnf_swdb_trans_old(DnfSwdb *self,
                               gint limit,
                               gboolean complete_only);
 
-GPtrArray *dnf_swdb_trans_get_old_trans_data(DnfSwdbTrans *self);
+GPtrArray *dnf_swdb_trans_get_trans_data(DnfSwdbTrans *self);
 
-GPtrArray *dnf_swdb_get_old_trans_data(DnfSwdb *self, DnfSwdbTrans *trans);
+GPtrArray *dnf_swdb_get_trans_data(DnfSwdb *self, DnfSwdbTrans *trans);
 
 gint dnf_swdb_add_group(DnfSwdb *self, DnfSwdbGroup *group);
 
