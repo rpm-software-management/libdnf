@@ -363,6 +363,24 @@ dnf_advisory_match_kind(DnfAdvisory *advisory, const char *s)
 }
 
 /**
+ * dnf_advisory_match_severity:
+ * @advisory: a #DnfAdvisory instance.
+ * @s: string
+ *
+ * Matches #DnfAdvisory severity against string
+ *
+ * Returns: %TRUE if they are the same
+ *
+ * Since: 0.8.0
+ */
+gboolean
+dnf_advisory_match_severity(DnfAdvisory *advisory, const char *s)
+{
+    const char *severity_str = dnf_advisory_get_severity(advisory);
+    return g_strcmp0(severity_str,s) == 0;
+}
+
+/**
  * dnf_advisory_match_cve:
  * @advisory: a #DnfAdvisory instance.
  * @s: string
