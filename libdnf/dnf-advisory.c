@@ -377,10 +377,7 @@ gboolean
 dnf_advisory_match_severity(DnfAdvisory *advisory, const char *s)
 {
     const char *severity_str = dnf_advisory_get_severity(advisory);
-    if (!g_strcmp0(severity_str,s)) {
-        return TRUE;
-    }
-    return FALSE;
+    return g_strcmp0(severity_str,s) == 0;
 }
 
 /**
