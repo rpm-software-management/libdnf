@@ -1711,7 +1711,7 @@ gint dnf_swdb_open(DnfSwdb *self)
         fprintf(stderr, "ERROR: %s %s\n", sqlite3_errmsg(self->db), self->path);
         return 1;
     }
-    return _db_exec(self->db, TRUNCATE_JOURNAL, NULL);
+    return _db_exec(self->db, TRUNCATE_EXCLUSIVE, NULL);
 }
 
 void dnf_swdb_close(DnfSwdb *self)
