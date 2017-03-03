@@ -97,11 +97,11 @@ gboolean         dnf_transaction_download               (DnfTransaction *transac
                                                          GError         **error);
 
 gboolean         dnf_transaction_import_keys            (DnfTransaction *transaction,
-                                                         GError **error);
+                                                         GError        **error);
 
-gboolean         dnf_transaction_gpgcheck_package        (DnfTransaction *transaction,
-                                                          DnfPackage     *pkg,
-                                                          GError        **error);
+gboolean         dnf_transaction_gpgcheck_package       (DnfTransaction *transaction,
+                                                         DnfPackage     *pkg,
+                                                         GError        **error);
 gboolean         dnf_transaction_check_untrusted        (DnfTransaction *transaction,
                                                          HyGoal          goal,
                                                          GError        **error);

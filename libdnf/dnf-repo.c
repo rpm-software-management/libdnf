@@ -858,7 +858,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
      * repo files as required.  To claim compatibility with yum repository files, I think
      * we need to basically hard code the yum.conf defaults here.
      */
-    if (!g_key_file_has_key (priv->keyfile, priv->id, "gpgcheck", NULL))
+    if (!g_key_file_has_key(priv->keyfile, priv->id, "gpgcheck", NULL))
         priv->gpgcheck_pkgs = TRUE;
     else
         priv->gpgcheck_pkgs = dnf_repo_get_boolean(priv->keyfile, priv->id, "gpgcheck", NULL);

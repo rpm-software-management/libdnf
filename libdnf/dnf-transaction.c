@@ -329,9 +329,9 @@ dnf_transaction_ensure_repo_list(DnfTransaction *transaction,
 }
 
 gboolean
-dnf_transaction_gpgcheck_package (DnfTransaction *transaction,
-                                  DnfPackage     *pkg,
-                                  GError        **error)
+dnf_transaction_gpgcheck_package(DnfTransaction *transaction,
+                                 DnfPackage     *pkg,
+                                 GError        **error)
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     GError *error_local = NULL;
