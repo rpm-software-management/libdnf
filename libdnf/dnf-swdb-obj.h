@@ -121,6 +121,8 @@ DnfSwdbTrans* dnf_swdb_trans_new(gint tid,
                                  const gchar *releasever,
                                  gint return_code);
 
+gboolean dnf_swdb_trans_compare_rpmdbv(DnfSwdbTrans *self, const gchar *rpmdbv);
+
 //holder for history transaction data
 
 #define DNF_TYPE_SWDB_TRANSDATA dnf_swdb_transdata_get_type()

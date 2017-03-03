@@ -1473,6 +1473,26 @@ DnfSwdbTrans *dnf_swdb_last (DnfSwdb *self)
     return trans;
 }
 
+/**
+* dnf_swdb_trans_compare_rpmdbv:
+* @self: #DnfSwdbTrans object
+* @rpmdbv: current version of rpmdb
+*
+* Compare current version of rpmdb with version from transaction
+* If versions differs, set altered_gt_rpmdb to #True
+*
+* Returns: #true if self.end_rpmdb_version == rpmdbv
+**/
+gboolean dnf_swdb_trans_compare_rpmdbv(DnfSwdbTrans *self, const gchar *rpmdbv)
+{
+    gboolean altered = g_strcmp0(self->end_rpmdb_version, rpmdbv);
+    if (altered)
+    {
+        self->altered_gt_rpmdb = TRUE;
+    }
+    return !altered;
+}
+
 
 /****************************** OUTPUT PERSISTOR *****************************/
 
