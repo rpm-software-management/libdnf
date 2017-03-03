@@ -2,6 +2,7 @@
 name=repo file with whitespace at the end
 baseurl=http://whitespace
 enabled=1
+gpgcheck=0
 
 
 
