@@ -385,12 +385,9 @@ dnf_transaction_gpgcheck_package(DnfTransaction *transaction,
         if ((priv->flags & DNF_TRANSACTION_FLAG_ONLY_TRUSTED) > 0) {
             g_propagate_error(error, error_local);
             return FALSE;
+        } else {
+            g_clear_error(&error_local);
         }
-
-        /* we can install unsigned packages */
-        g_warning("ignoring as allow-untrusted: %s",
-                error_local->message);
-        g_clear_error(&error_local);
     }
 
     return TRUE;
