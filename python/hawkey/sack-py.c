@@ -506,18 +506,19 @@ static PyObject *
 load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 {
     const char *kwlist[] = {"repo", "build_cache", "load_filelists", "load_presto",
-                      "load_updateinfo", NULL};
+                      "load_updateinfo", "only_cached", "cache_dir", NULL};
 
     HyRepo crepo = NULL;
-    int build_cache = 0, load_filelists = 0, load_presto = 0, load_updateinfo = 0;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|iiii", (char**) kwlist,
+    int build_cache = 0, load_filelists = 0, load_presto = 0, load_updateinfo = 0, only_cached = 0;
+    const char *cache_dir = NULL;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|iiiiiz", (char**) kwlist,
                                      repo_converter, &crepo,
                                      &build_cache, &load_filelists,
-                                     &load_presto, &load_updateinfo))
+                                     &load_presto, &load_updateinfo, &only_cached, &cache_dir))
         return 0;
 
     int flags = 0;
-    gboolean ret = 0;
+    gboolean ret = 0, ret_cache = 0;
     g_autoptr(GError) error = NULL;
     if (build_cache)
         flags |= DNF_SACK_LOAD_FLAG_BUILD_CACHE;
@@ -527,11 +528,18 @@ load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
         flags |= DNF_SACK_LOAD_FLAG_USE_PRESTO;
     if (load_updateinfo)
         flags |= DNF_SACK_LOAD_FLAG_USE_UPDATEINFO;
-    Py_BEGIN_ALLOW_THREADS;
-    ret = dnf_sack_load_repo(self->sack, crepo, flags, &error);
-    Py_END_ALLOW_THREADS;
-    if (!ret)
-        return op_error2exc(error);
+    if (!only_cached) {
+        Py_BEGIN_ALLOW_THREADS;
+        ret = dnf_sack_load_repo(self->sack, crepo, flags, &error);
+        Py_END_ALLOW_THREADS;
+        if (!ret)
+            return op_error2exc(error);
+    }
+    if (cache_dir) {
+        Py_BEGIN_ALLOW_THREADS;
+        ret_cache = dnf_sack_load_repo_cashed_rpms(self->sack, crepo, cache_dir, &error);
+        Py_END_ALLOW_THREADS;
+    }
     Py_RETURN_NONE;
 }
 
