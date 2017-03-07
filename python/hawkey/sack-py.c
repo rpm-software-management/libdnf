@@ -518,7 +518,7 @@ load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
         return 0;
 
     int flags = 0;
-    gboolean ret = 0, ret_cache = 0;
+    gboolean ret = 0;
     g_autoptr(GError) error = NULL;
     if (build_cache)
         flags |= DNF_SACK_LOAD_FLAG_BUILD_CACHE;
@@ -537,7 +537,7 @@ load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     }
     if (cache_dir) {
         Py_BEGIN_ALLOW_THREADS;
-        ret_cache = dnf_sack_load_repo_cashed_rpms(self->sack, crepo, cache_dir, &error);
+        dnf_sack_load_repo_cached_rpms(self->sack, crepo, cache_dir);
         Py_END_ALLOW_THREADS;
     }
     Py_RETURN_NONE;
