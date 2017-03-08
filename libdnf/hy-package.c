@@ -499,6 +499,7 @@ dnf_package_get_chksum(DnfPackage *pkg, int *type)
     Solvable *s = get_solvable(pkg);
     const unsigned char* ret;
 
+    repo_internalize_trigger(s->repo);
     ret = solvable_lookup_bin_checksum(s, SOLVABLE_CHECKSUM, type);
     if (ret)
         *type = checksumt_l2h(*type);
@@ -522,6 +523,7 @@ dnf_package_get_hdr_chksum(DnfPackage *pkg, int *type)
     Solvable *s = get_solvable(pkg);
     const unsigned char *ret;
 
+    repo_internalize_trigger(s->repo);
     ret = solvable_lookup_bin_checksum(s, SOLVABLE_HDRID, type);
     if (ret)
         *type = checksumt_l2h(*type);
