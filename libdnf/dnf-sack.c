@@ -1121,7 +1121,8 @@ dnf_sack_add_cmdline_package(DnfSack *sack, const char *fn)
         g_warning("not a readable RPM file: %s, skipping", fn);
         return NULL;
     }
-    p = repo_add_rpm(repo, fn, REPO_REUSE_REPODATA|REPO_NO_INTERNALIZE);
+    p = repo_add_rpm(repo, fn, REPO_REUSE_REPODATA|REPO_NO_INTERNALIZE|
+                               RPM_ADD_WITH_HDRID|RPM_ADD_WITH_SHA256SUM);
     if (p == 0) {
         g_warning ("failed to read RPM: %s, skipping",
                    pool_errstr (dnf_sack_get_pool (sack)));
