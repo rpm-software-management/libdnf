@@ -80,7 +80,7 @@ dnf_reldep_from_pool (Pool *pool,
  * @cmp_type: Comparison type
  * @evr: (nullable): EVR
  *
- * Returns: an #DnfReldep, or %NULL
+ * Returns: an #DnfReldep
  *
  * Since: 0.7.0
  */
@@ -91,10 +91,7 @@ dnf_reldep_new (DnfSack           *sack,
                 const gchar       *evr)
 {
     Pool *pool = dnf_sack_get_pool (sack);
-    Id id = pool_str2id (pool, name, 0);
-
-    if (id == STRID_NULL || id == STRID_EMPTY)
-        return NULL;
+    Id id = pool_str2id (pool, name, 1);
 
     if (evr) {
         g_assert (cmp_type);

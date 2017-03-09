@@ -73,8 +73,11 @@ END_TEST
 START_TEST(test_sltr_provides)
 {
     HySelector sltr = hy_selector_create(test_globals.sack);
-    ck_assert_int_eq(hy_selector_set(sltr, HY_PKG_PROVIDES, HY_EQ, "*"),
-                     DNF_ERROR_BAD_SELECTOR);
+    fail_if(hy_selector_set(sltr, HY_PKG_PROVIDES, HY_EQ, "*"));
+    GPtrArray *plist = hy_selector_matches(sltr);
+    fail_unless(plist->len == 0);
+
+    g_ptr_array_unref(plist);
     hy_selector_free(sltr);
 }
 END_TEST

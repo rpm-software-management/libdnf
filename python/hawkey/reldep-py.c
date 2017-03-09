@@ -135,10 +135,6 @@ reldep_init(_ReldepObject *self, PyObject *args, PyObject *kwds)
     g_free(name);
     g_free(evr);
     Py_XDECREF(tmp_py_str);
-    if (self->reldep == NULL) {
-        PyErr_Format(HyExc_Value, "No such reldep: %s", reldep_str);
-        return -1;
-    }
     return 0;
 }
 

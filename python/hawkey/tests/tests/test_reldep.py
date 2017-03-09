@@ -35,20 +35,15 @@ class Reldep(base.TestCase):
         reldep = requires[0]
         self.assertEqual(str(reldep), "P-lib >= 3")
 
-    def test_unicode(self):
-        reldep_str = u"\u0159 >= 3"
-        self.assertRaises(hawkey.ValueException, hawkey.Reldep, self.sack,
-                          reldep_str)
-
     def test_custom_creation(self):
         reldep_str = "P-lib >= 3"
         reldep = hawkey.Reldep(self.sack, reldep_str)
         self.assertEqual(reldep_str, str(reldep))
+        reldep_str = "lane = 4"
+        reldep = hawkey.Reldep(self.sack, reldep_str)
+        self.assertEqual(reldep_str, str(reldep))
 
     def test_custom_creation_fail(self):
-        reldep_str = "lane = 4"
-        self.assertRaises(hawkey.ValueException, hawkey.Reldep, self.sack,
-                          reldep_str)
         reldep_str = "P-lib >="
         self.assertRaises(hawkey.ValueException, hawkey.Reldep, self.sack,
                           reldep_str)
@@ -63,6 +58,12 @@ class Reldep(base.TestCase):
         reldep = hawkey.Reldep(self.sack, "P-lib < 3-3")
         q = hawkey.Query(self.sack).filter(provides=reldep)
         self.assertLength(q, 0)
+        reldep = hawkey.Reldep(self.sack, u"\u0159 >= 3")
+        q = hawkey.Query(self.sack).filter(provides=reldep)
+        self.assertLength(q, 0)
+        reldep = hawkey.Reldep(self.sack, "foo >= 1.0-1.fc20")
+        q = hawkey.Query(self.sack).filter(provides=reldep)
+        self.assertLength(q, 0)
 
     def test_query_name_only(self):
         reldep_str = "P-lib"
@@ -74,9 +75,3 @@ class Reldep(base.TestCase):
 
     def test_not_crash(self):
         self.assertRaises(ValueError, hawkey.Reldep)
-
-    def test_non_num_version(self):
-        reldep_str = 'foo >= 1.0-1.fc20'
-        with self.assertRaises(hawkey.ValueException) as ctx:
-            hawkey.Reldep(self.sack, reldep_str)
-        self.assertEqual(ctx.exception.args[0], "No such reldep: %s" % reldep_str)
