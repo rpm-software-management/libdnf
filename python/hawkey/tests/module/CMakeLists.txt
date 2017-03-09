@@ -1,8 +1,6 @@
 if (${PYTHON_DESIRED} STREQUAL "2")
-    FIND_PACKAGE (PythonLibs 2)
     SET(TEST_MODULE_NAME "_hawkey_testmodule")
 else()
-    FIND_PACKAGE(PythonLibs 3.0)
     SET(TEST_MODULE_NAME "_hawkey_test")
 endif()
 
