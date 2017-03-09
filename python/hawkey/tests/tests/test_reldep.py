@@ -42,9 +42,15 @@ class Reldep(base.TestCase):
         reldep_str = "lane = 4"
         reldep = hawkey.Reldep(self.sack, reldep_str)
         self.assertEqual(reldep_str, str(reldep))
+        reldep_str = "(foo if bar)"
+        reldep = hawkey.Reldep(self.sack, reldep_str)
+        self.assertEqual(reldep_str, str(reldep))
 
     def test_custom_creation_fail(self):
         reldep_str = "P-lib >="
+        self.assertRaises(hawkey.ValueException, hawkey.Reldep, self.sack,
+                          reldep_str)
+        reldep_str = "(foo i bar)"
         self.assertRaises(hawkey.ValueException, hawkey.Reldep, self.sack,
                           reldep_str)
 
@@ -53,6 +59,9 @@ class Reldep(base.TestCase):
         q = hawkey.Query(self.sack).filter(provides=reldep)
         self.assertLength(q, 1)
         reldep = hawkey.Reldep(self.sack, "P-lib >= 3")
+        q = hawkey.Query(self.sack).filter(provides=reldep)
+        self.assertLength(q, 1)
+        reldep = hawkey.Reldep(self.sack, "(foo or P-lib)")
         q = hawkey.Query(self.sack).filter(provides=reldep)
         self.assertLength(q, 1)
         reldep = hawkey.Reldep(self.sack, "P-lib < 3-3")
