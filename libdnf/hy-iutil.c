@@ -721,6 +721,16 @@ parse_reldep_str(const char *reldep_str, char **name, char **evr,
     return ret;
 }
 
+/**
+ * reldep_from_str:
+ * @sack: #DnfSack
+ * @reldep_str: Reldep string
+ *
+ * Creates new #DnfReldep from @reldep_str. Returns %NULL
+ * if string can't be parsed.
+ *
+ * Returns: (transfer full): new #DnfReldep, or %NULL
+ */
 DnfReldep *
 reldep_from_str(DnfSack *sack, const char *reldep_str)
 {

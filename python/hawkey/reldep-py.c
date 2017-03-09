@@ -111,9 +111,7 @@ static int
 reldep_init(_ReldepObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *sack;
-    int cmp_type = 0;
     const char *reldep_str = NULL;
-    char *name, *evr = NULL;
     PyObject *tmp_py_str = NULL;
     PyObject *reldep_str_py = NULL;
     if (!PyArg_ParseTuple(args, "O!O", &sack_Type, &sack, &reldep_str_py))
@@ -125,15 +123,13 @@ reldep_init(_ReldepObject *self, PyObject *args, PyObject *kwds)
     if (reldep_str == NULL)
         return -1;
 
-    if (parse_reldep_str(reldep_str, &name, &evr, &cmp_type) == -1) {
+    self->reldep = reldep_from_str (csack, reldep_str);
+    if (self->reldep == NULL) {
         PyErr_Format(HyExc_Value, "Wrong reldep format: %s", reldep_str);
         Py_XDECREF(tmp_py_str);
         return -1;
     }
 
-    self->reldep = dnf_reldep_new (csack, name, cmp_type, evr);
-    g_free(name);
-    g_free(evr);
     Py_XDECREF(tmp_py_str);
     return 0;
 }
