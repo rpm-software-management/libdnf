@@ -230,27 +230,6 @@ START_TEST(test_goal_install_selector)
 }
 END_TEST
 
-START_TEST(test_goal_install_selector_obsoletes_first)
-{
-    HySelector sltr;
-    HyGoal goal = hy_goal_create(test_globals.sack);
-
-    sltr = hy_selector_create(test_globals.sack);
-    hy_selector_set(sltr, HY_PKG_PROVIDES, HY_EQ, "somereq");
-    fail_if(!hy_goal_install_selector(goal, sltr, NULL));
-    hy_selector_free(sltr);
-
-    fail_if(hy_goal_run(goal));
-    assert_iueo(goal, 1, 0, 0, 0);
-
-    GPtrArray *plist = hy_goal_list_installs(goal, NULL);
-    const char *nvra = dnf_package_get_nevra(g_ptr_array_index(plist, 0));
-    ck_assert_str_eq(nvra, "B-1-0.noarch");
-    g_ptr_array_unref(plist);
-    hy_goal_free(goal);
-}
-END_TEST
-
 START_TEST(test_goal_install_selector_err)
 {
     int rc;
@@ -1456,7 +1435,6 @@ goal_suite(void)
     tc = tcase_create("Greedy");
     tcase_add_unchecked_fixture(tc, fixture_greedy_only, teardown);
     tcase_add_test(tc, test_goal_run_all);
-    tcase_add_test(tc, test_goal_install_selector_obsoletes_first);
     tcase_add_test(tc, test_goal_install_weak_deps);
     suite_add_tcase(s, tc);
 
