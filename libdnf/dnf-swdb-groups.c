@@ -36,8 +36,8 @@ static void dnf_swdb_group_finalize(GObject *object)
 {
     DnfSwdbGroup * group = (DnfSwdbGroup*) object;
     g_free( (gchar*) group->name_id);
-	g_free( group->name);
-	g_free( group->ui_name);
+    g_free( group->name);
+    g_free( group->ui_name);
     G_OBJECT_CLASS (dnf_swdb_group_parent_class)->finalize (object);
 }
 
@@ -87,8 +87,8 @@ static void dnf_swdb_env_finalize(GObject *object)
 {
     DnfSwdbEnv * env = (DnfSwdbEnv *) object;
     g_free( (gchar*) env->name_id);
-	g_free( env->name);
-	g_free( env->ui_name);
+    g_free( env->name);
+    g_free( env->ui_name);
     G_OBJECT_CLASS (dnf_swdb_env_parent_class)->finalize (object);
 }
 

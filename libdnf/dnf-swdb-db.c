@@ -110,7 +110,7 @@ gchar *_db_find_str_multi(sqlite3_stmt *res)
     }
 }
 
-gint _db_find_multi	(sqlite3_stmt *res)
+gint _db_find_multi(sqlite3_stmt *res)
 {
     if (sqlite3_step(res) == SQLITE_ROW ) // id for description found
     {
