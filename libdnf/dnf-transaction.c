@@ -46,6 +46,13 @@
 #include "dnf-sack.h"
 #include "hy-util.h"
 
+#if WITH_SWDB
+
+#include "dnf-swdb.h"
+#include "dnf-swdb-obj.h"
+
+#endif
+
 typedef enum {
     DNF_TRANSACTION_STEP_STARTED,
     DNF_TRANSACTION_STEP_PREPARING,
@@ -855,6 +862,60 @@ dnf_transaction_get_propagated_reason(DnfTransaction *transaction,
         return g_strdup("dep");
 }
 
+#if WITH_SWDB
+
+
+/**
+ * _dnf_transaction_transform_to_swdb_pkg:
+ * @swdb: Software database object
+ * @pkg: Hawkey package object
+ *
+ * Transform Hawkey package object to swdb object
+ * Returns: SWDB Package ID
+ **/
+static gint
+_dnf_transaction_transform_to_swdb_pkg(DnfSwdb *swdb,
+                                       DnfPackage *pkg)
+{
+    gint pid = 0;
+    const gchar *nevra = dnf_package_get_nevra(pkg);
+    DnfSwdbPkg *spkg = dnf_swdb_package_by_nvra(swdb, nevra);
+
+    if (spkg) {
+        pid = spkg->pid;
+        g_object_unref(spkg);
+        return pid;
+    }
+
+    int type = 0;
+    const gchar *name = dnf_package_get_name(pkg);
+    guint64 _epoch = dnf_package_get_epoch(pkg);
+    g_autofree gchar *epoch = g_strdup_printf("%lu", _epoch);
+
+    const gchar *version = dnf_package_get_version(pkg);
+    const gchar *release = dnf_package_get_release(pkg);
+    const gchar *arch = dnf_package_get_arch(pkg);
+
+    const guchar *bin_chksum = dnf_package_get_chksum(pkg, &type);
+    g_autofree gchar *chksum = hy_chksum_str(bin_chksum, type);
+    const gchar *chksum_type = hy_chksum_name(type);
+
+    spkg = dnf_swdb_pkg_new(name,
+                            epoch,
+                            version,
+                            release,
+                            arch,
+                            chksum,
+                            chksum_type,
+                            "rpm");
+
+    pid = dnf_swdb_add_package(swdb, spkg);
+
+    g_object_unref(spkg);
+    return pid;
+}
+#endif
+
 /**
  * dnf_transaction_write_yumdb_install_item:
  *
@@ -865,11 +926,13 @@ static gboolean
 dnf_transaction_write_yumdb_install_item(DnfTransaction *transaction,
                                          HyGoal goal,
                                          DnfPackage *pkg,
+                                         void *_swdb,
                                          DnfState *state,
                                          GError **error)
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     const gchar *tmp;
+    const gchar *release;
     g_autofree gchar *euid = NULL;
     g_autofree gchar *reason = NULL;
 
@@ -902,8 +965,42 @@ dnf_transaction_write_yumdb_install_item(DnfTransaction *transaction,
         return FALSE;
 
     /* set the correct release */
-    tmp = dnf_context_get_release_ver(priv->context);
-    return dnf_db_set_string(priv->db, pkg, "releasever", tmp, error);
+    release = dnf_context_get_release_ver(priv->context);
+    if (!dnf_db_set_string(priv->db, pkg, "releasever", release, error))
+        return FALSE;
+
+    #if WITH_SWDB
+
+    /* save these attributes to swdb */
+    DnfSwdb *swdb = (DnfSwdb *) _swdb;
+
+    /* Insert package to SWDB*/
+    gint pid = _dnf_transaction_transform_to_swdb_pkg(swdb, pkg);
+
+    if (!pid)
+        return FALSE;
+
+    DnfSwdbPkgData *pkg_data = dnf_swdb_pkgdata_new(NULL,
+                                                    NULL,
+                                                    euid,
+                                                    NULL,
+                                                    NULL,
+                                                    "PK",
+                                                    tmp);
+
+    /* Insert package data */
+    if(dnf_swdb_log_package_data(swdb, pid, pkg_data))
+        return FALSE;
+
+    /* Insert fake transaction data */
+    if(dnf_swdb_trans_data_beg(swdb, 0, pid, reason, "Installed"))
+        return FALSE;
+
+    g_object_unref(pkg_data);
+
+    #endif
+
+    return TRUE;
 }
 
 /**
@@ -946,6 +1043,17 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
     if (!ret)
         return FALSE;
 
+
+    /* prepare SWDB object */
+    void *swdb = NULL;
+
+    #if WITH_SWDB
+
+    const gchar *release = dnf_context_get_release_ver(priv->context);
+    swdb = (void *) dnf_swdb_new(DNF_SWDB_DEFAULT_PATH, release);
+
+    #endif
+
     /* add all the new entries */
     state_local = dnf_state_get_child(state);
     if (priv->install->len > 0)
@@ -957,6 +1065,7 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
         ret = dnf_transaction_write_yumdb_install_item(transaction,
                                                        goal,
                                                        pkg,
+                                                       swdb,
                                                        state_loop,
                                                        error);
         if (!ret)
@@ -990,6 +1099,13 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
         if (!dnf_state_done(state_local, error))
             return FALSE;
     }
+
+    #if WITH_SWDB
+
+    DnfSwdb *_swdb = (DnfSwdb *) swdb;
+    g_object_unref(_swdb);
+
+    #endif
 
     /* this section done */
     return dnf_state_done(state, error);

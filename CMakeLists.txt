@@ -25,6 +25,8 @@ INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR})
 OPTION (ENABLE_SOLV_URPMREORDER "Build with support for URPM-like solution reordering?" OFF)
 option (ENABLE_RHSM_SUPPORT "Build with Red Hat Subscription Manager support?" OFF)
 
+OPTION (WITH_SWDB "Support for unified software database" ON)
+
 # hawkey dependencies
 find_package (PkgConfig REQUIRED)
 SET (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
@@ -48,6 +50,11 @@ IF (ENABLE_SOLV_URPMREORDER)
 ENDIF()
 
 INCLUDE_DIRECTORIES(${REPO_INCLUDE_DIRS})
+
+IF (WITH_SWDB)
+   ADD_DEFINITIONS(-DWITH_SWDB=1)
+ENDIF()
+
 INCLUDE_DIRECTORIES(${GLIB_INCLUDE_DIRS})
 link_directories(${REPO_LIBRARY_DIRS})
 
