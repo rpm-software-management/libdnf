@@ -701,8 +701,7 @@ gint dnf_swdb_log_package_data(DnfSwdb *self,
 {
     if (dnf_swdb_open(self))
         return 1;
-    gint rc = _package_data_update(self->db, pid, pkgdata);
-    return rc;
+    return _package_data_update(self->db, pid, pkgdata);
 }
 
 gint _pdid_from_pid(sqlite3 *db, gint pid)

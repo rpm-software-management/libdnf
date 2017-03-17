@@ -23,6 +23,8 @@
 #ifndef DNF_SWDB_H
 #define DNF_SWDB_H
 
+#define DNF_SWDB_DEFAULT_PATH "/var/lib/dnf/history/swdb.sqlite"
+
 #define DB_PREP(db, sql, res) assert(_db_prepare(db, sql, &res))
 #define DB_BIND(res, id, source) assert(_db_bind(res, id, source))
 #define DB_BIND_INT(res, id, source) assert(_db_bind_int(res, id, source))
