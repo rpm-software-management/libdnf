@@ -66,7 +66,7 @@ static const struct {
     { "alpha",      { "alpha", "alphaev4", "alphaev45", "alphaev5",
                       "alphaev56", "alphaev6", "alphaev67",
                       "alphaev68", "alphaev7", "alphapca56", NULL } },
-    { "arm",        { "armv5tejl", "armv5tel", "armv6l", "armv7l", NULL } },
+    { "arm",        { "armv5tejl", "armv5tel", "armv5tl", "armv6l", "armv7l", NULL } },
     { "armhfp",     { "armv7hl", "armv7hnl", NULL } },
     { "i386",       { "i386", "athlon", "geode", "i386",
                       "i486", "i586", "i686", NULL } },
