@@ -1485,6 +1485,41 @@ dnf_sack_load_repo(DnfSack *sack, HyRepo repo, int flags, GError **error)
     return TRUE;
 }
 
+gboolean
+dnf_sack_load_repo_cached_rpms(DnfSack *sack, HyRepo repo, const char *directory)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    g_autoptr(GError) error = NULL;
+    const gchar *filename;
+    g_autoptr(GDir) dir = NULL;
+    Repo *libsolv_repo = repo->libsolv_repo;
+    Id p;
+    if (!libsolv_repo) {
+        const char *name = hy_repo_get_string(repo, HY_REPO_NAME);
+        libsolv_repo = repo_create(dnf_sack_get_pool(sack), name);
+        repo_finalize_init(repo, libsolv_repo);
+    }
+    dir = g_dir_open(directory, 0, &error);
+    if (dir == NULL)
+        return FALSE;
+    gboolean added_files = FALSE;
+    while ((filename = g_dir_read_name(dir))) {
+        g_autofree gchar *rpm_fn = NULL;
+        rpm_fn = g_build_filename(directory, filename, NULL);
+        if (is_readable_rpm(rpm_fn)) {
+            p = repo_add_rpm(libsolv_repo, rpm_fn, REPO_REUSE_REPODATA|REPO_NO_INTERNALIZE);
+            if (p != 0)
+                added_files = TRUE;
+        }
+    }
+    if (added_files) {
+        repo->needs_internalizing = 1;
+        priv->provides_ready = 0;    /* triggers internalizing later */
+        return TRUE;
+    }
+    return FALSE;
+}
+
 // internal to hawkey
 
 // return true if q1 is a superset of q2

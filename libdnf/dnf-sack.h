@@ -135,6 +135,9 @@ gboolean     dnf_sack_load_repo             (DnfSack        *sack,
                                              HyRepo          hrepo,
                                              int             flags,
                                              GError        **error);
+gboolean     dnf_sack_load_repo_cached_rpms (DnfSack        *sack,
+                                             HyRepo          hrepo,
+                                             const char     *directory);
 
 /**********************************************************************/
 
