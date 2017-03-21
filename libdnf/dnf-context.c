@@ -34,6 +34,8 @@
 #include <gio/gio.h>
 #include <rpm/rpmlib.h>
 #include <rpm/rpmmacro.h>
+#include <rpm/rpmts.h>
+#include <rpm/rpmdb.h>
 #include <librepo/librepo.h>
 #ifdef RHSM_SUPPORT
 #include <rhsm/rhsm.h>
@@ -52,6 +54,8 @@
 #include "hy-selector.h"
 
 #define MAX_NATIVE_ARCHES    12
+
+#define RELEASEVER_PROV "system-release(releasever)"
 
 /* data taken from https://github.com/rpm-software-management/dnf/blob/master/dnf/arch.py */
 static const struct {
@@ -1029,13 +1033,36 @@ dnf_context_set_cache_age(DnfContext *context, guint cache_age)
 static gboolean
 dnf_context_set_os_release(DnfContext *context, GError **error)
 {
+    const char *source_root = dnf_context_get_source_root (context);
+
+    gboolean found_in_rpmdb = FALSE;
+    rpmts ts = rpmtsCreate ();
+    rpmtsSetRootDir (ts, source_root);
+    rpmdbMatchIterator mi = rpmtsInitIterator (ts, RPMTAG_PROVIDENAME, RELEASEVER_PROV, 0);
+    Header hdr;
+    while ((hdr = rpmdbNextIterator (mi)) != NULL) {
+        const char *v = headerGetString (hdr, RPMTAG_VERSION);
+        rpmds ds = rpmdsNew (hdr, RPMTAG_PROVIDENAME, 0);
+        while (rpmdsNext (ds) >= 0) {
+            if (strcmp (rpmdsN (ds), RELEASEVER_PROV) == 0 && rpmdsFlags (ds) == RPMSENSE_EQUAL)
+                v = rpmdsEVR (ds);
+        }
+        found_in_rpmdb = TRUE;
+        dnf_context_set_release_ver (context, v);
+        rpmdsFree (ds);
+        break;
+    }
+    rpmdbFreeIterator (mi);
+    rpmtsFree (ts);
+    if (found_in_rpmdb)
+        return TRUE;
+
     g_autofree gchar *contents = NULL;
     g_autofree gchar *maybe_quoted_version = NULL;
     g_autofree gchar *version = NULL;
     g_autofree gchar *os_release = NULL;
     g_autoptr(GString) str = NULL;
     g_autoptr(GKeyFile) key_file = NULL;
-    const char *source_root = dnf_context_get_source_root(context);
 
     os_release = g_build_filename(source_root, "etc/os-release", NULL);
     if (!dnf_get_file_contents_allow_noent(os_release, &contents, NULL, error))
