@@ -34,6 +34,8 @@
 #include <gio/gio.h>
 #include <rpm/rpmlib.h>
 #include <rpm/rpmmacro.h>
+#include <rpm/rpmts.h>
+#include <rpm/rpmdb.h>
 #include <librepo/librepo.h>
 #ifdef RHSM_SUPPORT
 #include <rhsm/rhsm.h>
@@ -80,6 +82,12 @@ static const struct {
                       "sparcv9", "sparcv9v", NULL } },
     { "x86_64",     { "x86_64", "amd64", "ia32e", NULL } },
     { NULL,         { NULL } }
+};
+
+static const char *DISTROVERPKG[] = {
+    "system-release(releasever)",
+    "redhat-release",
+    NULL,
 };
 
 typedef struct
@@ -1029,13 +1037,40 @@ dnf_context_set_cache_age(DnfContext *context, guint cache_age)
 static gboolean
 dnf_context_set_os_release(DnfContext *context, GError **error)
 {
+    const char *source_root = dnf_context_get_source_root (context);
+
+    gboolean found_in_rpmdb = FALSE;
+    rpmts ts = rpmtsCreate ();
+    rpmtsSetRootDir (ts, source_root);
+    for (const char **pkg = DISTROVERPKG; *pkg != NULL; pkg++) {
+        rpmdbMatchIterator mi = rpmtsInitIterator (ts, RPMTAG_PROVIDENAME, *pkg, 0);
+        Header hdr;
+        while ((hdr = rpmdbNextIterator (mi)) != NULL) {
+            const char *v = headerGetString (hdr, RPMTAG_VERSION);
+            rpmds ds = rpmdsNew (hdr, RPMTAG_PROVIDENAME, 0);
+            while (rpmdsNext (ds) >= 0) {
+                if (strcmp (rpmdsN (ds), *pkg) == 0 && rpmdsFlags (ds) == RPMSENSE_EQUAL)
+                    v = rpmdsEVR (ds);
+            }
+            found_in_rpmdb = TRUE;
+            dnf_context_set_release_ver (context, v);
+            rpmdsFree (ds);
+            break;
+        }
+        rpmdbFreeIterator (mi);
+        if (found_in_rpmdb)
+            break;
+    }
+    rpmtsFree (ts);
+    if (found_in_rpmdb)
+        return TRUE;
+
     g_autofree gchar *contents = NULL;
     g_autofree gchar *maybe_quoted_version = NULL;
     g_autofree gchar *version = NULL;
     g_autofree gchar *os_release = NULL;
     g_autoptr(GString) str = NULL;
     g_autoptr(GKeyFile) key_file = NULL;
-    const char *source_root = dnf_context_get_source_root(context);
 
     os_release = g_build_filename(source_root, "etc/os-release", NULL);
     if (!dnf_get_file_contents_allow_noent(os_release, &contents, NULL, error))
