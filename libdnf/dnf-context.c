@@ -55,6 +55,8 @@
 
 #define MAX_NATIVE_ARCHES    12
 
+#define RELEASEVER_PROV "system-release(releasever)"
+
 /* data taken from https://github.com/rpm-software-management/dnf/blob/master/dnf/arch.py */
 static const struct {
     const gchar    *base;
@@ -82,12 +84,6 @@ static const struct {
                       "sparcv9", "sparcv9v", NULL } },
     { "x86_64",     { "x86_64", "amd64", "ia32e", NULL } },
     { NULL,         { NULL } }
-};
-
-static const char *DISTROVERPKG[] = {
-    "system-release(releasever)",
-    "redhat-release",
-    NULL,
 };
 
 typedef struct
@@ -1042,25 +1038,21 @@ dnf_context_set_os_release(DnfContext *context, GError **error)
     gboolean found_in_rpmdb = FALSE;
     rpmts ts = rpmtsCreate ();
     rpmtsSetRootDir (ts, source_root);
-    for (const char **pkg = DISTROVERPKG; *pkg != NULL; pkg++) {
-        rpmdbMatchIterator mi = rpmtsInitIterator (ts, RPMTAG_PROVIDENAME, *pkg, 0);
-        Header hdr;
-        while ((hdr = rpmdbNextIterator (mi)) != NULL) {
-            const char *v = headerGetString (hdr, RPMTAG_VERSION);
-            rpmds ds = rpmdsNew (hdr, RPMTAG_PROVIDENAME, 0);
-            while (rpmdsNext (ds) >= 0) {
-                if (strcmp (rpmdsN (ds), *pkg) == 0 && rpmdsFlags (ds) == RPMSENSE_EQUAL)
-                    v = rpmdsEVR (ds);
-            }
-            found_in_rpmdb = TRUE;
-            dnf_context_set_release_ver (context, v);
-            rpmdsFree (ds);
-            break;
+    rpmdbMatchIterator mi = rpmtsInitIterator (ts, RPMTAG_PROVIDENAME, RELEASEVER_PROV, 0);
+    Header hdr;
+    while ((hdr = rpmdbNextIterator (mi)) != NULL) {
+        const char *v = headerGetString (hdr, RPMTAG_VERSION);
+        rpmds ds = rpmdsNew (hdr, RPMTAG_PROVIDENAME, 0);
+        while (rpmdsNext (ds) >= 0) {
+            if (strcmp (rpmdsN (ds), RELEASEVER_PROV) == 0 && rpmdsFlags (ds) == RPMSENSE_EQUAL)
+                v = rpmdsEVR (ds);
         }
-        rpmdbFreeIterator (mi);
-        if (found_in_rpmdb)
-            break;
+        found_in_rpmdb = TRUE;
+        dnf_context_set_release_ver (context, v);
+        rpmdsFree (ds);
+        break;
     }
+    rpmdbFreeIterator (mi);
     rpmtsFree (ts);
     if (found_in_rpmdb)
         return TRUE;
