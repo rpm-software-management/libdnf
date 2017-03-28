@@ -1489,6 +1489,7 @@ dnf_context_setup(DnfContext *context,
     gpointer hashkey, hashval;
     g_autoptr(GString) buf = NULL;
     g_autofree char *rpmdb_path = NULL;
+    g_autoptr(GError) error_local = NULL;
     g_autoptr(GFile) file_rpmdb = NULL;
 
     /* check essential things are set */
@@ -1583,8 +1584,8 @@ dnf_context_setup(DnfContext *context,
         return FALSE;
 
     /* initialize external frameworks where installed */
-    if (!dnf_context_setup_enrollments(context, error))
-        return FALSE;
+    if (!dnf_context_setup_enrollments(context, &error_local))
+        g_warning("Failed to setup enrollments: %s", error_local->message);
 
     /* initialize repos */
     priv->repo_loader = dnf_repo_loader_new(context);
