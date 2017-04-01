@@ -1203,14 +1203,16 @@ dnf_transaction_import_keys(DnfTransaction *transaction,
     /* import downloaded repo GPG keys */
     for (i = 0; i < priv->repos->len; i++) {
         DnfRepo *repo = g_ptr_array_index(priv->repos, i);
-        const gchar *pubkey;
+        g_auto(GStrv) pubkeys = dnf_repo_get_public_keys(repo);
 
         /* does this file actually exist */
-        pubkey = dnf_repo_get_public_key(repo);
-        if (g_file_test(pubkey, G_FILE_TEST_EXISTS)) {
-            /* import */
-            if (!dnf_keyring_add_public_key(priv->keyring, pubkey, error))
-                return FALSE;
+        for (char **iter = pubkeys; iter && *iter; iter++) {
+            const char *pubkey = *iter;
+            if (g_file_test(pubkey, G_FILE_TEST_EXISTS)) {
+                /* import */
+                if (!dnf_keyring_add_public_key(priv->keyring, pubkey, error))
+                    return FALSE;
+            }
         }
     }
 
