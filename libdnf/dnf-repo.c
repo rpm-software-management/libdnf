@@ -64,7 +64,6 @@ typedef struct
     gchar           *packages_tmp;  /* /var/cache/PackageKit/metadata/fedora.tmp/packages */
     gchar           *keyring;       /* /var/cache/PackageKit/metadata/fedora/gpgdir */
     gchar           *keyring_tmp;   /* /var/cache/PackageKit/metadata/fedora.tmp/gpgdir */
-    gchar           *pubkey;        /* /var/cache/PackageKit/metadata/fedora/repomd.pub */
     gint64           timestamp_generated;   /* µs */
     gint64           timestamp_modified;    /* µs */
     GError          *last_check_error;
@@ -100,7 +99,6 @@ dnf_repo_finalize(GObject *object)
     g_free(priv->packages_tmp);
     g_free(priv->keyring);
     g_free(priv->keyring_tmp);
-    g_free(priv->pubkey);
     g_hash_table_unref(priv->filenames_md);
     g_clear_error(&priv->last_check_error);
     if (priv->repo_result != NULL)
@@ -214,20 +212,27 @@ dnf_repo_get_packages(DnfRepo *repo)
 }
 
 /**
- * dnf_repo_get_public_key:
+ * dnf_repo_get_public_keys:
  * @repo: a #DnfRepo instance.
  *
  * Gets the public key location.
  *
- * Returns: the repo public key location, e.g. "/var/cache/PackageKit/metadata/fedora/repomd.pub"
+ * Returns: (transfer full)(array zero-terminated=1): The repo public key location, e.g. "/var/cache/PackageKit/metadata/fedora/repomd.pub"
  *
- * Since: 0.7.0
+ * Since: 0.8.2
  **/
-const gchar *
-dnf_repo_get_public_key(DnfRepo *repo)
+gchar **
+dnf_repo_get_public_keys(DnfRepo *repo)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    return priv->pubkey;
+    g_autoptr(GPtrArray) ret = g_ptr_array_new();
+    for (char **iter = priv->gpgkeys; iter && *iter; iter++) {
+        const char *key = *iter;
+        g_autofree gchar *key_bn = g_path_get_basename(key);
+        g_ptr_array_add(ret, g_build_filename(priv->location, key_bn, NULL));
+    }
+    g_ptr_array_add(ret, NULL);
+    return (gchar**)g_ptr_array_free (g_steal_pointer (&ret), FALSE);
 }
 
 /**
@@ -532,11 +537,9 @@ dnf_repo_set_location(DnfRepo *repo, const gchar *location)
     g_free(priv->location);
     g_free(priv->packages);
     g_free(priv->keyring);
-    g_free(priv->pubkey);
     priv->location = dnf_repo_substitute(repo, location);
     priv->packages = g_build_filename(location, "packages", NULL);
     priv->keyring = g_build_filename(location, "gpgdir", NULL);
-    priv->pubkey = g_build_filename(location, "repomd.pub", NULL);
 }
 
 /**
