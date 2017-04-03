@@ -1442,6 +1442,23 @@ repo_mirrorlist_failure_cb(void *user_data,
     return LR_CB_OK;
 }
 
+static int
+repo_mirrorlist_failure_cb(void *user_data,
+                           const char *message,
+                           const char *url,
+                           const char *metadata)
+{
+    RepoUpdateData *data = user_data;
+
+    if (data->last_mirror_url)
+        goto out;
+
+    data->last_mirror_url = g_strdup(url);
+    data->last_mirror_failure_message = g_strdup(message);
+ out:
+    return LR_CB_OK;
+}
+
 /**
  * dnf_repo_update:
  * @repo: a #DnfRepo instance.
