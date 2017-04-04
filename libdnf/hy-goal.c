@@ -949,6 +949,36 @@ hy_goal_count_problems(HyGoal goal)
 }
 
 /**
+ * Reports packages that has a conflict
+ *
+ * Returns Queue with Ids of packages with conflict
+ */
+Queue *
+hy_goal_conflict_pkgs(HyGoal goal, unsigned i)
+{
+    SolverRuleinfo type;
+    Id rid, source, target, dep;
+
+    Queue pq;
+    Queue* conflict = g_malloc(sizeof(*conflict));
+    int j;
+    queue_init(&pq);
+    queue_init(conflict);
+    // this libsolv interface indexes from 1 (we do from 0), so:
+    solver_findallproblemrules(goal->solv, i+1, &pq);
+    for (j = 0; j < pq.count; j++) {
+        rid = pq.elements[j];
+        type = solver_ruleinfo(goal->solv, rid, &source, &target, &dep);
+        if (type == SOLVER_RULE_PKG_CONFLICTS)
+            queue_push2(conflict, source, target);
+        else if (type == SOLVER_RULE_PKG_SELF_CONFLICT)
+            queue_push(conflict, source);
+    }
+    queue_free(&pq);
+    return conflict;
+}
+
+/**
  * String describing the encountered solving problem 'i'.
  *
  * Caller is responsible for freeing the returned string using g_free().
