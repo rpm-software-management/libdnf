@@ -240,6 +240,14 @@ class Goal(_hawkey.Goal):
     def problem_rules(self):
         return [self.describe_problem_rules(i) for i in range(0, self.count_problems())]
 
+    def problem_conflicts(self, available=True):
+        conflict_package_list = []
+        for i in range(0, self.count_problems()):
+            conflict_package_list += self.conflict_pkgs(i)
+        if available:
+            conflict_package_list = [pkg for pkg in conflict_package_list if not pkg.installed]
+        return conflict_package_list
+
     def run(self, callback=None, **kwargs):
         ret = super(Goal, self).run(**kwargs)
         if callback:
