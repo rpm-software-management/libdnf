@@ -25,6 +25,12 @@
 
 #define TRUNCATE_EXCLUSIVE "PRAGMA journal_mode = TRUNCATE; PRAGMA locking_mode = EXCLUSIVE"
 
+
+#define I_DESC_REASON  "INSERT INTO reason_type  VALUES (null, @desc)"
+#define I_DESC_STATE   "INSERT INTO state_type   VALUES (null, @desc)"
+#define I_DESC_OUTPUT  "INSERT INTO output_type  VALUES (null, @desc)"
+#define I_DESC_PACKAGE "INSERT INTO package_type VALUES (null, @desc)"
+
 #define INSERT_PKG "insert into PACKAGE values(null,@name,@epoch,@version,@release,@arch,@cdata,@ctype,@type)"
 #define INSERT_OUTPUT "insert into OUTPUT values(null,@tid,@msg,@type)"
 #define INSERT_TRANS_BEG "insert into TRANS values(null,@beg,null,@rpmdbv,null,@cmdline,@loginuid,@releasever,null)"
@@ -93,6 +99,17 @@
 #define S_CHECKSUMS_BY_NVRA "SELECT checksum_data, checksum_type FROM PACKAGE WHERE name || '-' || version || '-' || release || '.' || arch=@nvra"
 #define S_PID_BY_NVRA "SELECT P_ID FROM PACKAGE WHERE name || '-' || version || '-' || release || '.' || arch=@nvra"
 #define S_REASON_ID_BY_PDID "SELECT reason FROM PACKAGE_DATA join TRANS_DATA using(PD_ID) where PD_ID=@pdid"
+
+#define S_REASON_TYPE_ID  "SELECT reason FROM reason_type  WHERE description=@desc"
+#define S_STATE_TYPE_ID   "SELECT state  FROM state_type   WHERE description=@desc"
+#define S_OUTPUT_TYPE_ID  "SELECT type   FROM output_type  WHERE description=@desc"
+#define S_PACKAGE_TYPE_ID "SELECT type   FROM package_type WHERE description=@desc"
+
+#define S_REASON_TYPE_BY_ID  "SELECT description FROM reason_type  WHERE reason=@id"
+#define S_STATE_TYPE_BY_ID   "SELECT description FROM state_type   WHERE state=@id"
+#define S_OUTPUT_TYPE_BY_ID  "SELECT description FROM output_type  WHERE type=@id"
+#define S_PACKAGE_TYPE_BY_ID "SELECT description FROM package_type WHERE type=@id"
+
 
 #define U_REASON_BY_PDID "UPDATE TRANS_DATA SET reason=@reason where PD_ID=@pdid"
 

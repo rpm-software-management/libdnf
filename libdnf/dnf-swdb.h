@@ -124,7 +124,7 @@ GPtrArray *dnf_swdb_load_error(DnfSwdb *self, gint tid);
 
 GPtrArray *dnf_swdb_load_output(DnfSwdb *self, gint tid);
 
-gchar* _look_for_desc(sqlite3 *db, const gchar *table, gint id);
+gchar *_get_description(sqlite3 *db, gint id, const gchar *sql);
 
 GArray *dnf_swdb_search(DnfSwdb *self, GPtrArray *patterns);
 
@@ -201,7 +201,7 @@ gchar *_repo_by_pid(sqlite3 *db, gint pid);
 
 GArray *dnf_swdb_select_user_installed(DnfSwdb *self, GPtrArray *nvras);
 
-gint _find_match_by_desc(sqlite3 *db, const gchar *table, const gchar *desc);
+gint _get_description_id(sqlite3 *db, const gchar *desc, const gchar *sql);
 
 gint dnf_swdb_add_rpm_data(DnfSwdb *self, DnfSwdbRpmData *rpm_data);
 

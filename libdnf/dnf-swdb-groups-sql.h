@@ -46,7 +46,7 @@
 #define R_FULL_LIST_BY_ID "DELETE FROM GROUPS_PACKAGE WHERE G_ID=@gid"
 
 #define S_REM_REASON "SELECT description from PACKAGE join PACKAGE_DATA using (P_ID) join TRANS_DATA using(PD_ID) "\
-                     "join REASON_TYPE ON TRANS_DATA.reason = REASON_TYPE.id where name=@name ORDER BY TD_ID DESC"
+                     "join REASON_TYPE using(reason) where name=@name ORDER BY TD_ID DESC"
 
 #define S_REM "SELECT G_ID from GROUPS_PACKAGE join GROUPS using(G_ID) where is_installed=1 and GROUPS_PACKAGE.name=@name"
 

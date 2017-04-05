@@ -498,7 +498,7 @@ GArray *dnf_swdb_select_user_installed(DnfSwdb *self, GPtrArray *nvras)
     if (dnf_swdb_open(self))
         return NULL;
 
-    gint depid = _find_match_by_desc(self->db, "REASON_TYPE", "dep");
+    gint depid = _get_description_id(self->db, "dep", S_REASON_TYPE_ID);
     GArray *usr_ids = g_array_new(0,0,sizeof(gint));
     if (!depid)
     {
@@ -777,7 +777,7 @@ gchar *_reason_by_pid(sqlite3 *db, gint pid)
     gint reason_id = DB_FIND(res);
     if (reason_id)
     {
-        reason = _look_for_desc(db, "REASON_TYPE", reason_id);
+        reason = _get_description(db, reason_id, S_REASON_TYPE_BY_ID);
     }
     return reason;
 }
@@ -819,7 +819,7 @@ static void _resolve_package_state(DnfSwdb *self, DnfSwdbPkg *pkg, gint tid)
         pkg->done = sqlite3_column_int(res, 0);
         gint state_code = sqlite3_column_int(res, 1);
         sqlite3_finalize(res);
-        pkg->state = _look_for_desc(self->db, "STATE_TYPE", state_code);
+        pkg->state = _get_description(self->db, state_code, S_STATE_TYPE_BY_ID);
     }
     else
     {
@@ -876,7 +876,7 @@ static DnfSwdbPkg *_get_package_by_pid(sqlite3 *db, gint pid)
         gint type = sqlite3_column_int(res, 8); //unresolved type
         pkg->pid = pid;
         sqlite3_finalize(res);
-        pkg->type = _look_for_desc(db, "PACKAGE_TYPE", type);
+        pkg->type = _get_description(db, type, S_PACKAGE_TYPE_BY_ID);
         return pkg;
     }
     sqlite3_finalize(res);
@@ -1351,12 +1351,13 @@ GPtrArray *dnf_swdb_get_trans_data(DnfSwdb *self, DnfSwdbTrans *trans)
     DB_BIND_INT(res, "@tid", trans->tid);
     while(sqlite3_step(res) == SQLITE_ROW)
     {
-        gchar *tmp_reason = _look_for_desc(self->db,
-                                           "REASON_TYPE",
-                                           sqlite3_column_int(res,6));
-        gchar *tmp_state = _look_for_desc(self->db,
-                                         "STATE_TYPE",
-                                         sqlite3_column_int(res,7));
+        gchar *tmp_reason = _get_description(self->db,
+                                            sqlite3_column_int(res,6),
+                                            S_REASON_TYPE_BY_ID);
+
+        gchar *tmp_state = _get_description(self->db,
+                                            sqlite3_column_int(res,7),
+                                            S_STATE_TYPE_BY_ID);
 
         DnfSwdbTransData *data = dnf_swdb_transdata_new(
             sqlite3_column_int(res, 0), //td_id
@@ -1586,119 +1587,129 @@ GPtrArray *dnf_swdb_load_output(DnfSwdb *self, gint tid)
 
 /****************************** TYPE BINDERS *********************************/
 
-/* Finds ID by description in @table
- * Returns ID for description or 0 if not found
- * Requires opened DB
- */
-gint _find_match_by_desc(sqlite3 *db, const gchar *table, const gchar *desc)
+/**
+* _get_reason_id:
+* @db: database handle
+* @desc: reason description
+* @sql: sql command selecting id with "desc" parameter placeholder
+*
+* Find reason id by its @desc in table used in @sql statement
+*
+* Returns: @desc's id from @sql
+**/
+gint _get_description_id (sqlite3 *db, const gchar *desc, const gchar *sql)
 {
     sqlite3_stmt *res;
-    gchar *sql = g_strjoin(" ","select ID from",table,"where description=@desc", NULL);
 
-    DB_PREP(db,sql,res);
+    DB_PREP(db, sql, res);
     DB_BIND(res, "@desc", desc);
-    gint result = DB_FIND(res);
-    g_free(sql);
-    return result;
+    return DB_FIND(res);
 }
 
-/* Inserts description into @table
- * Returns 0 if successfull
- * Requires opened DB
- */
-static gint _insert_desc(sqlite3 *db, const gchar *table, const gchar *desc)
+/**
+* _add_description:
+* @db: database handle
+* @desc: new description
+* @sql: sql command for inserting description into table with @desc placeholder
+*
+* Insert @desc into table specified in sql and return inserted row id
+*
+* Returns: inserted @desc id in table
+**/
+static gint _add_description (sqlite3 *db, const gchar *desc, const gchar *sql)
 {
     sqlite3_stmt *res;
-    gchar *sql = g_strjoin(" ","insert into",table,"values (null, @desc)", NULL);
     DB_PREP(db, sql, res);
     DB_BIND(res, "@desc", desc);
     DB_STEP(res);
-    gint result = sqlite3_last_insert_rowid(db);
-    g_free(sql);
-    return result;
+    return sqlite3_last_insert_rowid(db);
 }
 
-gchar* _look_for_desc(sqlite3 *db, const gchar *table, gint id)
+/**
+* _get_description:
+* @db: database handle
+* @id: description
+* @sql: sql statement selecting description with placeholder for @id
+* Returns: description for @id
+**/
+gchar *_get_description(sqlite3 *db, gint id, const gchar *sql)
 {
     sqlite3_stmt *res;
-    gchar *sql = g_strjoin(" ","select description from",table,"where ID=@id", NULL);
     DB_PREP(db, sql, res);
     DB_BIND_INT(res, "@id", id);
-    gchar * result = DB_FIND_STR(res);
-    g_free(sql);
-    return result;
+    return DB_FIND_STR(res);
 }
 
-/* Bind description to id in chosen table
- * Usage: _bind_desc_id(db, table, description)
- * Requires opened DB
- */
-static gint _bind_desc_id(sqlite3 *db, const gchar *table, const gchar *desc)
-{
-    gint id = _find_match_by_desc(db,table,desc);
-    if(id) //found or error
-    {
-        return id;
-    }
-    else // id for desc not found, try to add it
-    {
-        return _insert_desc(db,table,desc);
-    }
-}
-
-/* Binder for PACKAGE_TYPE
- * Returns: ID of description in PACKAGE_TYPE table
- * Usage: dnf_swdb_get_package_type( DnfSwdb, description)
- */
+/**
+* dnf_swdb_get_package_type:
+* @self: swdb object
+* @type: package type description
+* Returns: package @type description id
+**/
 gint dnf_swdb_get_package_type (DnfSwdb *self, const gchar *type)
 {
-
     if(dnf_swdb_open(self))
         return -1;
-    gint rc = _bind_desc_id(self->db, "PACKAGE_TYPE", type);
-    return rc;
+    gint id = _get_description_id(self->db, type, S_PACKAGE_TYPE_ID);
+    if (!id) {
+        id = _add_description(self->db, type, I_DESC_PACKAGE);
+    }
+    return id;
 }
 
-/* OUTPUT_TYPE binder
- * Returns: ID of description in OUTPUT_TYPE table
- * Usage: dnf_swdb_get_output_type( DnfSwdb, description)
- */
+/**
+* dnf_swdb_get_output_type:
+* @self: swdb object
+* @type: output type description
+* Returns: output @type description id
+**/
 gint dnf_swdb_get_output_type (DnfSwdb *self, const gchar *type)
 {
     if(dnf_swdb_open(self))
         return -1;
-    gint rc = _bind_desc_id(self->db, "OUTPUT_TYPE", type);
-    return rc;
+    gint id = _get_description_id(self->db, type, S_OUTPUT_TYPE_ID);
+    if (!id) {
+        id = _add_description(self->db, type, I_DESC_OUTPUT);
+    }
+    return id;
 }
 
-/* REASON_TYPE binder
- * Returns: ID of description in REASON_TYPE table
- * Usage: dnf_swdb_get_reason_type( DnfSwdb, description)
- */
+/**
+* dnf_swdb_get_reason_type:
+* @self: swdb object
+* @type: reason type description
+* Returns: reason @type description id
+**/
 gint dnf_swdb_get_reason_type (DnfSwdb *self, const gchar *type)
 {
-
     if(dnf_swdb_open(self))
         return -1;
-    gint rc = _bind_desc_id(self->db, "REASON_TYPE", type);
-    return rc;
+    gint id = _get_description_id(self->db, type, S_REASON_TYPE_ID);
+    if (!id) {
+        id = _add_description(self->db, type, I_DESC_REASON);
+    }
+    return id;
 }
 
-/* STATE_TYPE binder
- * Returns: ID of description in STATE_TYPE table
- * Usage: dnf_swdb_get_state_type( DnfSwdb, description)
- */
+/**
+* dnf_swdb_get_state_type:
+* @self: swdb object
+* @type: state type description
+* Returns: state @type description id
+**/
 gint dnf_swdb_get_state_type (DnfSwdb *self, const gchar *type)
 {
-
     if(dnf_swdb_open(self))
         return -1;
-    gint rc = _bind_desc_id(self->db, "STATE_TYPE", type);
-    return rc;
+    gint id = _get_description_id(self->db, type, S_STATE_TYPE_ID);
+    if (!id) {
+        id = _add_description(self->db, type, I_DESC_STATE);
+    }
+    return id;
 }
 
 //returns path to swdb, default is /var/lib/dnf/swdb.sqlite
-const gchar   *dnf_swdb_get_path  (DnfSwdb *self)
+const gchar *dnf_swdb_get_path (DnfSwdb *self)
 {
     return self->path;
 }
