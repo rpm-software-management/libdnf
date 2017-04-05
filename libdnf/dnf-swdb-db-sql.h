@@ -59,10 +59,10 @@
                  "msg text, type integer)"
 
 
-#define C_STATE_TYPE  "CREATE TABLE STATE_TYPE (ID INTEGER PRIMARY KEY, description text)"
-#define C_REASON_TYPE "CREATE TABLE REASON_TYPE (ID INTEGER PRIMARY KEY, description text)"
-#define C_OUTPUT_TYPE "CREATE TABLE OUTPUT_TYPE (ID INTEGER PRIMARY KEY, description text)"
-#define C_PKG_TYPE    "CREATE TABLE PACKAGE_TYPE (ID INTEGER PRIMARY KEY, description text)"
+#define C_STATE_TYPE  "CREATE TABLE STATE_TYPE (state INTEGER PRIMARY KEY, description text)"
+#define C_REASON_TYPE "CREATE TABLE REASON_TYPE (reason INTEGER PRIMARY KEY, description text)"
+#define C_OUTPUT_TYPE "CREATE TABLE OUTPUT_TYPE (type INTEGER PRIMARY KEY, description text)"
+#define C_PKG_TYPE    "CREATE TABLE PACKAGE_TYPE (type INTEGER PRIMARY KEY, description text)"
 
 #define C_GROUPS "CREATE TABLE GROUPS (G_ID INTEGER PRIMARY KEY, name_id text, name text,"\
                  "ui_name text, is_installed integer, pkg_types integer)"
