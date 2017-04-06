@@ -27,9 +27,18 @@
 
 G_BEGIN_DECLS
 
-//Package holder for swdb history
-#define DNF_TYPE_SWDB_PKG dnf_swdb_pkg_get_type()
-G_DECLARE_FINAL_TYPE ( DnfSwdbPkg, dnf_swdb_pkg, DNF, SWDB_PKG, GObject)
+#define DNF_TYPE_SWDB_PKG       dnf_swdb_pkg_get_type()
+#define DNF_TYPE_SWDB_PKGDATA   dnf_swdb_pkgdata_get_type()
+#define DNF_TYPE_SWDB_TRANS     dnf_swdb_trans_get_type()
+#define DNF_TYPE_SWDB_TRANSDATA dnf_swdb_transdata_get_type()
+#define DNF_TYPE_SWDB_RPMDATA   dnf_swdb_rpmdata_get_type()
+
+G_DECLARE_FINAL_TYPE (DnfSwdbPkg, dnf_swdb_pkg, DNF, SWDB_PKG, GObject)
+G_DECLARE_FINAL_TYPE (DnfSwdbPkgData, dnf_swdb_pkgdata, DNF, SWDB_PKGDATA, GObject)
+G_DECLARE_FINAL_TYPE (DnfSwdbTrans, dnf_swdb_trans, DNF, SWDB_TRANS, GObject)
+G_DECLARE_FINAL_TYPE (DnfSwdbTransData, dnf_swdb_transdata, DNF, SWDB_TRANSDATA, GObject)
+G_DECLARE_FINAL_TYPE (DnfSwdbRpmData, dnf_swdb_rpmdata, DNF, SWDB_RPMDATA, GObject)
+
 struct _DnfSwdbPkg
 {
     GObject parent_instance;
@@ -49,22 +58,6 @@ struct _DnfSwdbPkg
     DnfSwdb *swdb;
 };
 
-DnfSwdbPkg* dnf_swdb_pkg_new(const gchar* name,
-                             const gchar* epoch,
-                             const gchar* version,
-                             const gchar* release,
-                             const gchar* arch,
-                             const gchar* checksum_data,
-                             const gchar* checksum_type,
-                             const gchar* type);
-
-gchar* dnf_swdb_pkg_get_ui_from_repo(DnfSwdbPkg *self);
-
-gchar* dnf_swdb_pkg_get_reason(DnfSwdbPkg *self);
-
-//Package Data holder for swdb history
-#define DNF_TYPE_SWDB_PKGDATA dnf_swdb_pkgdata_get_type()
-G_DECLARE_FINAL_TYPE ( DnfSwdbPkgData, dnf_swdb_pkgdata, DNF, SWDB_PKGDATA, GObject)
 struct _DnfSwdbPkgData
 {
     GObject parent_instance;
@@ -78,19 +71,6 @@ struct _DnfSwdbPkgData
     gint pdid;
     gint pid;
 };
-
-DnfSwdbPkgData* dnf_swdb_pkgdata_new(const gchar* from_repo_revision,
-                                     const gchar* from_repo_timestamp,
-                                     const gchar* installed_by,
-                                     const gchar* changed_by,
-                                     const gchar* installonly,
-                                     const gchar* origin_url,
-                                     const gchar* from_repo);
-
-//holder for history transaction
-
-#define DNF_TYPE_SWDB_TRANS dnf_swdb_trans_get_type()
-G_DECLARE_FINAL_TYPE ( DnfSwdbTrans, dnf_swdb_trans, DNF, SWDB_TRANS, GObject)
 
 struct _DnfSwdbTrans
 {
@@ -111,22 +91,6 @@ struct _DnfSwdbTrans
     gboolean is_error;
 };
 
-DnfSwdbTrans* dnf_swdb_trans_new(gint tid,
-                                 const gchar *beg_timestamp,
-                                 const gchar *end_timestamp,
-                                 const gchar *beg_rpmdb_version,
-                                 const gchar *end_rpmdb_version,
-                                 const gchar *cmdline,
-                                 const gchar *loginuid,
-                                 const gchar *releasever,
-                                 gint return_code);
-
-gboolean dnf_swdb_trans_compare_rpmdbv(DnfSwdbTrans *self, const gchar *rpmdbv);
-
-//holder for history transaction data
-
-#define DNF_TYPE_SWDB_TRANSDATA dnf_swdb_transdata_get_type()
-G_DECLARE_FINAL_TYPE ( DnfSwdbTransData, dnf_swdb_transdata, DNF, SWDB_TRANSDATA, GObject)
 struct _DnfSwdbTransData
 {
     GObject parent_instance;
@@ -140,17 +104,6 @@ struct _DnfSwdbTransData
     gchar *state;
 };
 
-DnfSwdbTransData* dnf_swdb_transdata_new(gint tdid,
-                                         gint tid,
-                                         gint pdid,
-                                         gint tgid,
-                                         gint done,
-                                         gint ORIGINAL_TD_ID,
-                                         gchar *reason,
-                                         gchar *state);
-
-#define DNF_TYPE_SWDB_RPMDATA dnf_swdb_rpmdata_get_type()
-G_DECLARE_FINAL_TYPE (DnfSwdbRpmData, dnf_swdb_rpmdata, DNF, SWDB_RPMDATA, GObject)
 struct _DnfSwdbRpmData
 {
     GObject parent_instance;
@@ -167,18 +120,53 @@ struct _DnfSwdbRpmData
     const gchar *committime;
 };
 
-DnfSwdbRpmData *dnf_swdb_rpmdata_new(gint   pid,
-                                     const gchar *buildtime,
-                                     const gchar *buildhost,
-                                     const gchar *license,
-                                     const gchar *packager,
-                                     const gchar *size,
-                                     const gchar *sourcerpm,
-                                     const gchar *url,
-                                     const gchar *vendor,
-                                     const gchar *committer,
-                                     const gchar *committime);
-
+DnfSwdbPkg          *dnf_swdb_pkg_new               (const gchar   *name,
+                                                     const gchar   *epoch,
+                                                     const gchar   *version,
+                                                     const gchar   *release,
+                                                     const gchar   *arch,
+                                                     const gchar   *checksum_data,
+                                                     const gchar   *checksum_type,
+                                                     const gchar   *type);
+gchar              *dnf_swdb_pkg_get_ui_from_repo   (DnfSwdbPkg    *self);
+gchar              *dnf_swdb_pkg_get_reason         (DnfSwdbPkg    *self);
+DnfSwdbPkgData     *dnf_swdb_pkgdata_new            (const gchar   *from_repo_revision,
+                                                     const gchar   *from_repo_timestamp,
+                                                     const gchar   *installed_by,
+                                                     const gchar   *changed_by,
+                                                     const gchar   *installonly,
+                                                     const gchar   *origin_url,
+                                                     const gchar   *from_repo);
+DnfSwdbTrans       *dnf_swdb_trans_new              (gint           tid,
+                                                     const gchar   *beg_timestamp,
+                                                     const gchar   *end_timestamp,
+                                                     const gchar   *beg_rpmdb_version,
+                                                     const gchar   *end_rpmdb_version,
+                                                     const gchar   *cmdline,
+                                                     const gchar   *loginuid,
+                                                     const gchar   *releasever,
+                                                     gint           return_code);
+gboolean            dnf_swdb_trans_compare_rpmdbv   (DnfSwdbTrans  *self,
+                                                     const gchar   *rpmdbv);
+DnfSwdbTransData   *dnf_swdb_transdata_new          (gint           tdid,
+                                                     gint           tid,
+                                                     gint           pdid,
+                                                     gint           tgid,
+                                                     gint           done,
+                                                     gint           ORIGINAL_TD_ID,
+                                                     gchar         *reason,
+                                                     gchar         *state);
+DnfSwdbRpmData     *dnf_swdb_rpmdata_new            (gint           pid,
+                                                     const gchar   *buildtime,
+                                                     const gchar   *buildhost,
+                                                     const gchar   *license,
+                                                     const gchar   *packager,
+                                                     const gchar   *size,
+                                                     const gchar   *sourcerpm,
+                                                     const gchar   *url,
+                                                     const gchar   *vendor,
+                                                     const gchar   *committer,
+                                                     const gchar   *committime);
 G_END_DECLS
 
 #endif
