@@ -511,6 +511,39 @@ conflict_problem_pkgs(_GoalObject *self, PyObject *index_obj)
     return list;
 }
 
+/**
+ * Reports packages that has a conflict
+ *
+ * Returns Python list with package objects that have a conflict.
+ */
+static PyObject *
+broken_dependency_pkgs(_GoalObject *self, PyObject *index_obj)
+{
+    PyObject *list;
+    Queue *broken_dependency;
+    DnfSack *csack = sackFromPyObject(self->sack);
+    DnfPackageSet *pset = dnf_packageset_new(csack);
+    
+    if (!PyInt_Check(index_obj)) {
+        PyErr_SetString(PyExc_TypeError, "An integer value expected.");
+        return NULL;
+    }
+    broken_dependency = hy_goal_conflict_pkgs(self->goal, PyLong_AsLong(index_obj));
+    if (broken_dependency == NULL) {
+        PyErr_SetString(PyExc_ValueError, "Index out of range.");
+        return NULL;
+    }
+    for (int i = 0; i < broken_dependency->count; ++i) {
+        Id id = broken_dependency->elements[i];
+        DnfPackage *pkg = dnf_package_new(csack, id);
+        if (pkg == NULL)
+            continue;
+        dnf_packageset_add(pset, pkg);
+    }
+    list = packageset_to_pylist(pset, self->sack);
+    return list;
+}
+
 static PyObject *
 describe_problem_rules(_GoalObject *self, PyObject *index_obj)
 {
@@ -729,6 +762,7 @@ static struct PyMethodDef goal_methods[] = {
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"count_problems",        (PyCFunction)count_problems,        METH_NOARGS,        NULL},
     {"conflict_pkgs",(PyCFunction)conflict_problem_pkgs,        METH_O,                NULL},
+    {"broken_dependency_pkgs",(PyCFunction)broken_dependency_pkgs,        METH_O,                NULL},
     {"describe_problem",(PyCFunction)describe_problem,        METH_O,                NULL},
     {"describe_problem_rules",(PyCFunction)describe_problem_rules,        METH_O,                NULL},
     {"log_decisions",   (PyCFunction)log_decisions,        METH_NOARGS,        NULL},
