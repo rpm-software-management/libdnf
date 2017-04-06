@@ -979,6 +979,36 @@ hy_goal_conflict_pkgs(HyGoal goal, unsigned i)
 }
 
 /**
+ * Reports packages that have broken dependency
+ *
+ * Returns Queue with Ids of packages with broken dependency
+ */
+Queue *
+hy_goal_broken_dependency_pkgs(HyGoal goal, unsigned i)
+{
+    SolverRuleinfo type;
+    Id rid, source, target, dep;
+
+    Queue pq;
+    Queue* broken_dependency = g_malloc(sizeof(*broken_dependency));
+    int j;
+    queue_init(&pq);
+    queue_init(broken_dependency);
+    // this libsolv interface indexes from 1 (we do from 0), so:
+    solver_findallproblemrules(goal->solv, i+1, &pq);
+    for (j = 0; j < pq.count; j++) {
+        rid = pq.elements[j];
+        type = solver_ruleinfo(goal->solv, rid, &source, &target, &dep);
+        if (type == SOLVER_RULE_PKG_NOTHING_PROVIDES_DEP)
+            queue_push(broken_dependency, source);
+        else if (type == SOLVER_RULE_PKG_REQUIRES)
+            queue_push(broken_dependency, source);
+    }
+    queue_free(&pq);
+    return broken_dependency;
+}
+
+/**
  * String describing the encountered solving problem 'i'.
  *
  * Caller is responsible for freeing the returned string using g_free().
