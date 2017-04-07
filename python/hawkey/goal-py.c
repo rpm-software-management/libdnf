@@ -571,12 +571,17 @@ problem_conflicts(_GoalObject *self, PyObject *args, PyObject *kwds)
  * Returns Python list with package objects that have a conflict.
  */
 static PyObject *
-problem_broken_dependency(_GoalObject *self, PyObject *unused)
+problem_broken_dependency(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *list;
     Queue *broken_dependency;
     DnfSack *csack = sackFromPyObject(self->sack);
     DnfPackageSet *pset = dnf_packageset_new(csack);
+    const char *kwlist[] = {"available", NULL};
+    int available = 0;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", (char**) kwlist, &available))
+        return 0;
     
     int count_problems = hy_goal_count_problems(self->goal);
     for (int i = 0; i < count_problems; i++) {
@@ -585,6 +590,8 @@ problem_broken_dependency(_GoalObject *self, PyObject *unused)
             Id id = broken_dependency->elements[j];
             DnfPackage *pkg = dnf_package_new(csack, id);
             if (pkg == NULL)
+                continue;
+            if (available && dnf_package_installed(pkg))
                 continue;
             dnf_packageset_add(pset, pkg);
         }
@@ -791,7 +798,7 @@ static struct PyMethodDef goal_methods[] = {
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"count_problems",        (PyCFunction)count_problems,        METH_NOARGS,        NULL},
     {"problem_conflicts",(PyCFunction)problem_conflicts,        METH_VARARGS | METH_KEYWORDS,                NULL},
-    {"problem_broken_dependency",(PyCFunction)problem_broken_dependency,        METH_NOARGS,                NULL},
+    {"problem_broken_dependency",(PyCFunction)problem_broken_dependency,        METH_VARARGS | METH_KEYWORDS,                NULL},
     {"describe_problem",(PyCFunction)describe_problem,        METH_O,                NULL},
     {"problem_rules", (PyCFunction)problem_rules,        METH_NOARGS,                NULL},
     {"log_decisions",   (PyCFunction)log_decisions,        METH_NOARGS,        NULL},
