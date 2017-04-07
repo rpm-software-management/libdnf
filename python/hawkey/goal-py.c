@@ -597,26 +597,6 @@ broken_dependency_pkgs(_GoalObject *self, PyObject *index_obj)
 }
 
 static PyObject *
-describe_problem_rules(_GoalObject *self, PyObject *index_obj)
-{
-    PyObject *list;
-
-    if (!PyInt_Check(index_obj)) {
-        PyErr_SetString(PyExc_TypeError, "An integer value expected.");
-        return NULL;
-    }
-    g_auto(GStrv) plist = hy_goal_describe_problem_rules(self->goal,
-                                                         PyLong_AsLong(index_obj));
-    if (plist == NULL) {
-        PyErr_SetString(PyExc_ValueError, "Index out of range.");
-        return NULL;
-    }
-
-    list = strlist_to_pylist((const char **)plist);
-    return list;
-}
-
-static PyObject *
 log_decisions(_GoalObject *self, PyObject *unused)
 {
     if (hy_goal_log_decisions(self->goal))
@@ -817,7 +797,6 @@ static struct PyMethodDef goal_methods[] = {
     {"broken_dependency_pkgs",(PyCFunction)broken_dependency_pkgs,        METH_O,                NULL},
     {"describe_problem",(PyCFunction)describe_problem,        METH_O,                NULL},
     {"problem_rules", (PyCFunction)problem_rules,        METH_NOARGS,                NULL},
-    {"describe_problem_rules",(PyCFunction)describe_problem_rules,        METH_O,                NULL},
     {"log_decisions",   (PyCFunction)log_decisions,        METH_NOARGS,        NULL},
     {"write_debugdata", (PyCFunction)write_debugdata,        METH_O,                NULL},
     {"list_erasures",        (PyCFunction)list_erasures,        METH_NOARGS,        NULL},
