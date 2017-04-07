@@ -236,10 +236,6 @@ class Goal(_hawkey.Goal):
     def problems(self):
         return [self.describe_problem(i) for i in range(0, self.count_problems())]
 
-    @property
-    def problem_rules(self):
-        return [self.describe_problem_rules(i) for i in range(0, self.count_problems())]
-
     def problem_conflicts(self, available=True):
         conflict_package_list = []
         for i in range(0, self.count_problems()):

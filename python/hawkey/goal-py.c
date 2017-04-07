@@ -39,6 +39,8 @@
 #include "solution-py.h"
 #include "pycomp.h"
 
+#define BLOCK_SIZE 15
+
 typedef struct {
     PyObject_HEAD
     HyGoal goal;
@@ -479,6 +481,56 @@ describe_problem(_GoalObject *self, PyObject *index_obj)
 }
 
 /**
+ * Reports problems described in strings.
+ *
+ * Returns Python list with Python list of strings for each problem or empty Python list if no
+ * problem or NULL in case of error.
+ */
+static PyObject *
+problem_rules(_GoalObject *self, PyObject *unused)
+{
+    PyObject *list_output = PyList_New(0);
+    PyObject *list;
+    char **problist = NULL;
+    gboolean unique;
+    int p = 0;
+    if (list_output == NULL)
+        return NULL;
+    int count_problems = hy_goal_count_problems(self->goal);
+    for (int i = 0; i < count_problems; i++) {
+        g_auto(GStrv) plist = hy_goal_describe_problem_rules(self->goal, i);
+        if (plist == NULL) {
+            PyErr_SetString(PyExc_ValueError, "Index out of range.");
+            continue;
+        }
+        for (int j = 0; plist[j] != NULL; j++) {
+            unique = TRUE;
+            if (problist != NULL) {
+                for (int k = 0; problist[k] != NULL; k++) {
+                    if (g_strcmp0(plist[j], problist[k]) == 0)
+                        unique = FALSE;
+                }
+            }
+            if (unique == TRUE) {
+                problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
+                problist[p++] = g_strdup(plist[j]);
+                problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
+                problist[p] = NULL;
+            }
+        }
+        list = strlist_to_pylist((const char **)problist);
+        g_strfreev(problist);
+        p = 0;
+        problist = NULL;
+        int rc = PyList_Append(list_output, list);
+        Py_DECREF(list);
+        if (rc == -1)
+            return NULL;
+    }
+    return list_output;
+}
+
+/**
  * Reports packages that has a conflict
  *
  * Returns Python list with package objects that have a conflict.
@@ -523,7 +575,7 @@ broken_dependency_pkgs(_GoalObject *self, PyObject *index_obj)
     Queue *broken_dependency;
     DnfSack *csack = sackFromPyObject(self->sack);
     DnfPackageSet *pset = dnf_packageset_new(csack);
-    
+
     if (!PyInt_Check(index_obj)) {
         PyErr_SetString(PyExc_TypeError, "An integer value expected.");
         return NULL;
@@ -764,6 +816,7 @@ static struct PyMethodDef goal_methods[] = {
     {"conflict_pkgs",(PyCFunction)conflict_problem_pkgs,        METH_O,                NULL},
     {"broken_dependency_pkgs",(PyCFunction)broken_dependency_pkgs,        METH_O,                NULL},
     {"describe_problem",(PyCFunction)describe_problem,        METH_O,                NULL},
+    {"problem_rules", (PyCFunction)problem_rules,        METH_NOARGS,                NULL},
     {"describe_problem_rules",(PyCFunction)describe_problem_rules,        METH_O,                NULL},
     {"log_decisions",   (PyCFunction)log_decisions,        METH_NOARGS,        NULL},
     {"write_debugdata", (PyCFunction)write_debugdata,        METH_O,                NULL},
