@@ -244,12 +244,6 @@ class Goal(_hawkey.Goal):
             conflict_package_list = [pkg for pkg in conflict_package_list if not pkg.installed]
         return conflict_package_list
 
-    def problem_broken_dependency(self):
-        broken_dependency_package_list = []
-        for i in range(0, self.count_problems()):
-            broken_dependency_package_list += self.broken_dependency_pkgs(i)
-        return broken_dependency_package_list
-
     def run(self, callback=None, **kwargs):
         ret = super(Goal, self).run(**kwargs)
         if callback:
