@@ -536,28 +536,30 @@ problem_rules(_GoalObject *self, PyObject *unused)
  * Returns Python list with package objects that have a conflict.
  */
 static PyObject *
-conflict_problem_pkgs(_GoalObject *self, PyObject *index_obj)
+problem_conflicts(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *list;
     Queue *conflict;
     DnfSack *csack = sackFromPyObject(self->sack);
     DnfPackageSet *pset = dnf_packageset_new(csack);
+    const char *kwlist[] = {"available", NULL};
+    int available = 0;
 
-    if (!PyInt_Check(index_obj)) {
-        PyErr_SetString(PyExc_TypeError, "An integer value expected.");
-        return NULL;
-    }
-    conflict = hy_goal_conflict_pkgs(self->goal, PyLong_AsLong(index_obj));
-    if (conflict == NULL) {
-        PyErr_SetString(PyExc_ValueError, "Index out of range.");
-        return NULL;
-    }
-    for (int i = 0; i < conflict->count; ++i) {
-        Id id = conflict->elements[i];
-        DnfPackage *pkg = dnf_package_new(csack, id);
-        if (pkg == NULL)
-            continue;
-        dnf_packageset_add(pset, pkg);
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", (char**) kwlist, &available))
+        return 0;
+
+    int count_problems = hy_goal_count_problems(self->goal);
+    for (int i = 0; i < count_problems; i++) {
+        conflict = hy_goal_conflict_pkgs(self->goal, i);
+        for (int j = 0; j < conflict->count; j++) {
+            Id id = conflict->elements[j];
+            DnfPackage *pkg = dnf_package_new(csack, id);
+            if (pkg == NULL)
+                continue;
+            if (available && dnf_package_installed(pkg))
+                continue;
+            dnf_packageset_add(pset, pkg);
+        }
     }
     list = packageset_to_pylist(pset, self->sack);
     return list;
@@ -788,7 +790,7 @@ static struct PyMethodDef goal_methods[] = {
     {"run_all",        (PyCFunction)run_all,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"count_problems",        (PyCFunction)count_problems,        METH_NOARGS,        NULL},
-    {"conflict_pkgs",(PyCFunction)conflict_problem_pkgs,        METH_O,                NULL},
+    {"problem_conflicts",(PyCFunction)problem_conflicts,        METH_VARARGS | METH_KEYWORDS,                NULL},
     {"problem_broken_dependency",(PyCFunction)problem_broken_dependency,        METH_NOARGS,                NULL},
     {"describe_problem",(PyCFunction)describe_problem,        METH_O,                NULL},
     {"problem_rules", (PyCFunction)problem_rules,        METH_NOARGS,                NULL},
