@@ -491,9 +491,6 @@ problem_rules(_GoalObject *self, PyObject *unused)
 {
     PyObject *list_output = PyList_New(0);
     PyObject *list;
-    char **problist = NULL;
-    gboolean unique;
-    int p = 0;
     if (list_output == NULL)
         return NULL;
     int count_problems = hy_goal_count_problems(self->goal);
@@ -503,25 +500,7 @@ problem_rules(_GoalObject *self, PyObject *unused)
             PyErr_SetString(PyExc_ValueError, "Index out of range.");
             continue;
         }
-        for (int j = 0; plist[j] != NULL; j++) {
-            unique = TRUE;
-            if (problist != NULL) {
-                for (int k = 0; problist[k] != NULL; k++) {
-                    if (g_strcmp0(plist[j], problist[k]) == 0)
-                        unique = FALSE;
-                }
-            }
-            if (unique == TRUE) {
-                problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
-                problist[p++] = g_strdup(plist[j]);
-                problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
-                problist[p] = NULL;
-            }
-        }
-        list = strlist_to_pylist((const char **)problist);
-        g_strfreev(problist);
-        p = 0;
-        problist = NULL;
+        list = strlist_to_pylist((const char **)plist);
         int rc = PyList_Append(list_output, list);
         Py_DECREF(list);
         if (rc == -1)

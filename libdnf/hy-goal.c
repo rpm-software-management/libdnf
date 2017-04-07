@@ -1086,6 +1086,7 @@ hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
     SolverRuleinfo type;
     const char *problem;
     int j;
+    gboolean unique;
     queue_init(&pq);
     // this libsolv interface indexes from 1 (we do from 0), so:
     solver_findallproblemrules(goal->solv, i+1, &pq);
@@ -1094,11 +1095,23 @@ hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
         type = solver_ruleinfo(goal->solv, rid, &source, &target, &dep);
         problem = solver_problemruleinfo2str(goal->solv,
                                              type, source, target, dep);
-        problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
-        problist[p++] = g_strdup(problem);
+        unique = TRUE;
+        if (problist != NULL) {
+            for (int k = 0; problist[k] != NULL; k++) {
+                if (g_strcmp0(problem, problist[k]) == 0) {
+                    unique = FALSE;
+                    break;
+                }
+            }
+        }
+        if (unique) {
+            if (problist == NULL)
+                problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
+            problist[p++] = g_strdup(problem);
+            problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
+            problist[p] = NULL;
+        }
     }
-    problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
-    problist[p++] = NULL;
     queue_free(&pq);
     return problist;
 }
