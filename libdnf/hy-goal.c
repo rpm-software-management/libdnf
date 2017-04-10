@@ -980,6 +980,8 @@ hy_goal_conflict_pkgs(HyGoal goal, unsigned i)
             queue_push2(conflict, source, target);
         else if (type == SOLVER_RULE_PKG_SELF_CONFLICT)
             queue_push(conflict, source);
+        else if (type == SOLVER_RULE_PKG_SAME_NAME)
+            queue_push2(conflict, source, target);
     }
     queue_free(&pq);
     return conflict;
