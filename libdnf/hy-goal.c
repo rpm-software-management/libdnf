@@ -306,6 +306,13 @@ solve(HyGoal goal, Queue *job, DnfGoalActions flags,
         solv->solution_callback = internal_solver_callback;
         solv->solution_callback_data = &cb_tuple;
     }
+    
+    /* Removal of SOLVER_WEAK to allow report errors*/
+    if (DNF_IGNORE_WEAK & flags) {
+        for (int i = 0; i < job->count; i += 2) {
+            job->elements[i] &= ~SOLVER_WEAK;
+        }
+    }
 
     if (DNF_IGNORE_WEAK_DEPS & flags)
         solver_set_flag(solv, SOLVER_FLAG_IGNORE_RECOMMENDED, 1);
