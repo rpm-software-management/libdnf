@@ -109,16 +109,17 @@ static int
 args_run_parse(PyObject *args, PyObject *kwds, int *flags, PyObject **callback_p)
 {
     const char *kwlist[] = {"callback", "allow_uninstall", "force_best", "verify",
-        "ignore_weak_deps", NULL};
+        "ignore_weak_deps", "ignore_weak", NULL};
+    int ignore_weak = 0;
     int ignore_weak_deps = 0;
     int allow_uninstall = 0;
     int force_best = 0;
     int verify = 0;
     PyObject *callback = NULL;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Oiiii", (char**) kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Oiiiii", (char**) kwlist,
                                      &callback, &allow_uninstall, &force_best,
-                                     &verify, &ignore_weak_deps))
+                                     &verify, &ignore_weak_deps, &ignore_weak))
         return 0;
 
     if (callback) {
@@ -145,6 +146,8 @@ args_run_parse(PyObject *args, PyObject *kwds, int *flags, PyObject **callback_p
         *flags |= DNF_VERIFY;
     if (ignore_weak_deps)
         *flags |= DNF_IGNORE_WEAK_DEPS;
+    if (ignore_weak)
+        *flags |= DNF_IGNORE_WEAK;
     return 1;
 }
 
