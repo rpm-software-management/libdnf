@@ -35,6 +35,11 @@
     "FROM PACKAGE WHERE sql_na LIKE @pat OR sql_nvra LIKE @pat OR sql_nv LIKE @pat OR"\
     " sql_nvr LIKE @pat OR sql_nevra LIKE @pat OR sql_envra LIKE @pat"
 
+#define FIND_TIDS_FROM_PDID "SELECT T_ID FROM TRANS_DATA WHERE PD_ID=@pdid"
+#define FIND_ALL_PDID_FOR_PID "SELECT PD_ID FROM PACKAGE_DATA WHERE P_ID=@pid"
+
+
+
 #define C_PKG_DATA  "CREATE TABLE PACKAGE_DATA ( PD_ID integer PRIMARY KEY,"\
                     "P_ID integer, R_ID integer, from_repo_revision text,"\
                     "from_repo_timestamp text, installed_by text, changed_by text,"\

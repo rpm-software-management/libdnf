@@ -36,7 +36,7 @@ struct _DnfSwdbGroup
 {
     GObject parent_instance;
     gint gid;
-    const gchar* name_id;
+    gchar* name_id;
     gchar* name;
     gchar* ui_name;
     gint is_installed;
@@ -48,7 +48,7 @@ struct _DnfSwdbEnv
 {
     GObject parent_instance;
     gint eid;
-    const gchar* name_id;
+    gchar* name_id;
     gchar* name;
     gchar* ui_name;
     gint pkg_types;
@@ -57,8 +57,8 @@ struct _DnfSwdbEnv
 };
 
 DnfSwdbGroup       *dnf_swdb_group_new              (const gchar   *name_id,
-                                                     gchar         *name,
-                                                     gchar         *ui_name,
+                                                     const gchar   *name,
+                                                     const gchar   *ui_name,
                                                      gint           is_installed,
                                                      gint           pkg_types,
                                                      DnfSwdb       *swdb);
@@ -70,10 +70,6 @@ gint                dnf_swdb_group_add_package      (DnfSwdbGroup  *group,
                                                      GPtrArray     *packages);
 gint                dnf_swdb_group_add_exclude      (DnfSwdbGroup  *group,
                                                      GPtrArray     *exclude);
-void                _insert_group_additional        (sqlite3       *db,
-                                                     int            gid,
-                                                     GPtrArray     *data,
-                                                     const gchar   *table);
 void                _update_group                   (sqlite3       *db,
                                                      DnfSwdbGroup  *group);
 gint                _insert_id_name                 (sqlite3       *db,
@@ -87,8 +83,8 @@ void                _add_group                      (sqlite3       *db,
 DnfSwdbGroup       *_get_group                      (sqlite3       *db,
                                                      const gchar   *name_id);
 DnfSwdbEnv         *dnf_swdb_env_new                (const gchar   *name_id,
-                                                     gchar         *name,
-                                                     gchar         *ui_name,
+                                                     const gchar   *name,
+                                                     const gchar   *ui_name,
                                                      gint           pkg_types,
                                                      gint           grp_types,
                                                      DnfSwdb       *swdb);

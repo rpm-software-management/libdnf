@@ -52,11 +52,9 @@
 
 #define FIND_REPO_BY_NAME "SELECT R_ID FROM REPO WHERE name=@name"
 #define FIND_PDID_FROM_PID "SELECT PD_ID FROM PACKAGE_DATA WHERE P_ID=@pid ORDER by PD_ID DESC LIMIT 1"
-#define FIND_ALL_PDID_FOR_PID "SELECT PD_ID FROM PACKAGE_DATA WHERE P_ID=@pid"
 #define GET_TRANS_CMDLINE "SELECT cmdline FROM TRANS WHERE T_ID=@tid"
 
 #define INSERT_PDID "insert into PACKAGE_DATA values(null,@pid,null,null,null,null,null,null,'#')"
-#define FIND_TIDS_FROM_PDID "SELECT T_ID FROM TRANS_DATA WHERE PD_ID=@pdid"
 #define LOAD_OUTPUT "SELECT msg FROM OUTPUT WHERE T_ID=@tid and type=@type"
 #define PKG_DATA_ATTR_BY_PID "FROM PACKAGE_DATA WHERE P_ID=@pid"
 #define TRANS_DATA_ATTR_BY_PDID "FROM TRANS_DATA WHERE PD_ID=@pdid"
@@ -82,7 +80,7 @@
                                 "join TRANS_DATA using(PD_ID) WHERE name=@name "\
                                 "and T_ID!=@tid ORDER BY TD_ID DESC LIMIT 1"
 
-#define S_PACKAGE_DATA_BY_PID "SELECT * FROM PACKAGE_DATA WHERE P_ID=@pid"
+#define S_PACKAGE_DATA_BY_PID "SELECT * FROM PACKAGE_DATA WHERE P_ID=@pid ORDER BY PD_ID DESC"
 #define S_REPO_BY_RID "select name from REPO where R_ID=@rid"
 #define S_PREV_AUTO_PD "SELECT PD_ID FROM PACKAGE_DATA where P_ID=@pid and origin_url='#'"
 
