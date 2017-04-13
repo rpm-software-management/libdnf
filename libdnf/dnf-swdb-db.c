@@ -27,7 +27,17 @@
 #include "dnf-swdb.h"
 #include "dnf-swdb-db-sql.h"
 
-gint _create_db(sqlite3 *db)
+
+/**
+* _create_db:
+* @db: sqlite database handle
+*
+* Create empty database
+*
+* Returns: 0 if successful else count of tables failed to create
+**/
+gint
+_create_db(sqlite3 *db)
 {
     gint failed = 0;
     failed += _db_exec (db, C_PKG_DATA, NULL);
@@ -52,7 +62,16 @@ gint _create_db(sqlite3 *db)
     return failed;
 }
 
-gint _db_step(sqlite3_stmt *res)
+/**
+* _db_step:
+* @res: sqlite statement
+*
+* Execute statement @res
+*
+* Returns: 1 if successful
+**/
+gint
+_db_step(sqlite3_stmt *res)
 {
     if (sqlite3_step(res) != SQLITE_DONE)
     {
@@ -64,8 +83,14 @@ gint _db_step(sqlite3_stmt *res)
     return 1; //true because of assert
 }
 
-// assumes only one parameter on output e.g "SELECT ID FROM DUMMY WHERE ..."
-gint _db_find(sqlite3_stmt *res)
+/**
+* _db_find:
+* @res: sqlite statement
+*
+* Returns: first integral result of statement @res or 0 if error occurred
+**/
+gint
+_db_find(sqlite3_stmt *res)
 {
     if (sqlite3_step(res) == SQLITE_ROW ) // id for description found
     {
@@ -80,8 +105,15 @@ gint _db_find(sqlite3_stmt *res)
     }
 }
 
-// assumes one text parameter on output e.g "SELECT DESC FROM DUMMY WHERE ..."
-gchar *_db_find_str(sqlite3_stmt *res)
+
+/**
+* _db_find_str:
+* @res: sqlite statement
+*
+* Returns: first string result of statement @res or %NULL if error occurred
+**/
+gchar*
+_db_find_str(sqlite3_stmt *res)
 {
     if (sqlite3_step(res) == SQLITE_ROW ) // id for description found
     {
@@ -96,7 +128,17 @@ gchar *_db_find_str(sqlite3_stmt *res)
     }
 }
 
-gchar *_db_find_str_multi(sqlite3_stmt *res)
+
+/**
+* _db_find_str_multi:
+* @res: sqlite statement
+*
+* String result iterator
+*
+* Returns: next string result or %NULL if search hit the bottom
+**/
+gchar*
+_db_find_str_multi(sqlite3_stmt *res)
 {
     if (sqlite3_step(res) == SQLITE_ROW ) // id for description found
     {
@@ -110,7 +152,17 @@ gchar *_db_find_str_multi(sqlite3_stmt *res)
     }
 }
 
-gint _db_find_multi(sqlite3_stmt *res)
+
+/**
+* _db_find_multi:
+* @res: sqlite statement
+*
+* Integral result iterator
+*
+* Returns: next integral or 0 if search hit the bottom
+**/
+gint
+_db_find_multi(sqlite3_stmt *res)
 {
     if (sqlite3_step(res) == SQLITE_ROW ) // id for description found
     {
@@ -124,7 +176,17 @@ gint _db_find_multi(sqlite3_stmt *res)
     }
 }
 
-gint _db_prepare(sqlite3 *db, const gchar *sql, sqlite3_stmt **res)
+
+/**
+* _db_prepare:
+* @db: sqlite database handle
+* @sql: sql command in string
+* @res: target sql statement
+*
+* Returns: 1 if successful
+**/
+gint
+_db_prepare(sqlite3 *db, const gchar *sql, sqlite3_stmt **res)
 {
    gint rc = sqlite3_prepare_v2(db, sql, -1, res, NULL);
     if(rc != SQLITE_OK)
@@ -137,7 +199,19 @@ gint _db_prepare(sqlite3 *db, const gchar *sql, sqlite3_stmt **res)
     return 1; //true because of assert
 }
 
-gint _db_bind(sqlite3_stmt *res, const gchar *id, const gchar *source)
+
+/**
+* _db_bind:
+* @res: sqlite statement
+* @id: value placeholder
+* @source: new placeholder value
+*
+* Bind string to placeholder
+*
+* Returns: 1 if successful
+**/
+gint
+_db_bind(sqlite3_stmt *res, const gchar *id, const gchar *source)
 {
     gint idx = sqlite3_bind_parameter_index(res, id);
     gint rc = sqlite3_bind_text(res, idx, source, -1, SQLITE_STATIC);
@@ -152,7 +226,18 @@ gint _db_bind(sqlite3_stmt *res, const gchar *id, const gchar *source)
     return 1; //true because of assert
 }
 
-gint _db_bind_int (sqlite3_stmt *res, const gchar *id, gint source)
+/**
+* _db_bind_int:
+* @res: sqlite statement
+* @id: value placeholder
+* @source: new placeholder value
+*
+* Bind integer to placeholder
+*
+* Returns: 1 if successful
+**/
+gint
+_db_bind_int (sqlite3_stmt *res, const gchar *id, gint source)
 {
     gint idx = sqlite3_bind_parameter_index(res, id);
     gint rc = sqlite3_bind_int(res, idx, source);
@@ -167,7 +252,16 @@ gint _db_bind_int (sqlite3_stmt *res, const gchar *id, gint source)
     return 1; //true because of assert
 }
 
-//use macros DB_[PREP,BIND,STEP] for parametrised queries
+/**
+* _db_exec:
+* @db: sqlite database handle
+* @cmd: sql command
+* @callback: callback function
+*
+* Direct execution of sql command
+*
+* Returns: 0 if successful
+**/
 gint _db_exec(sqlite3 *db,
               const gchar *cmd,
               int (*callback)(void *, int, char **, char**))
@@ -183,8 +277,70 @@ gint _db_exec(sqlite3 *db,
     return 0;
 }
 
-// Pattern on input, transaction IDs on output
-GArray *_simple_search(sqlite3* db, const gchar * pattern)
+/**
+* _tids_from_pdid:
+* @db: sqlite database handle
+* @pdid: package data ID
+*
+* Get transaction data IDs for selected package data ID
+*
+* Returns: list of transaction data IDs
+**/
+static GArray*
+_tids_from_pdid(sqlite3 *db, gint pdid)
+{
+    sqlite3_stmt *res;
+    GArray *tids = g_array_new(0,0,sizeof(gint));
+    const gchar *sql = FIND_TIDS_FROM_PDID;
+    DB_PREP(db, sql, res);
+    DB_BIND_INT(res, "@pdid", pdid);
+    gint tid = 0;
+    while(sqlite3_step(res) == SQLITE_ROW)
+    {
+        tid = sqlite3_column_int(res, 0);
+        g_array_append_val(tids, tid);
+    }
+    sqlite3_finalize(res);
+    return tids;
+}
+
+
+/**
+* _all_pdid_for_pid:
+* @db: sqlite database handle
+* @pid: package ID
+*
+* Get all package data IDs connected with package with ID @pid.
+*
+* Returns: list of package data IDs
+**/
+static GArray*
+_all_pdid_for_pid(sqlite3 *db, gint pid)
+{
+    GArray *pdids = g_array_new(0,0,sizeof(gint));
+    sqlite3_stmt *res;
+    const gchar *sql = FIND_ALL_PDID_FOR_PID;
+    DB_PREP(db, sql, res);
+    DB_BIND_INT(res, "@pid", pid);
+    gint pdid;
+    while((pdid = DB_FIND_MULTI(res)))
+    {
+        g_array_append_val(pdids, pdid);
+    }
+    return pdids;
+}
+
+/**
+* _simple_search:
+* @db: sqlite database handle
+* @pattern: package name
+*
+* Find transactions which operated with package matched by name
+*
+* Returns: list of transaction IDs
+**/
+GArray*
+_simple_search(sqlite3* db, const gchar * pattern)
 {
     GArray *tids = g_array_new(0,0,sizeof(gint));
     sqlite3_stmt *res_simple;
@@ -216,10 +372,23 @@ GArray *_simple_search(sqlite3* db, const gchar * pattern)
     return tids;
 }
 
-/*
-* Provides package search with extended pattern
-*/
-GArray *_extended_search (sqlite3* db, const gchar *pattern)
+/**
+* _extended_search:
+* @db: sqlite database handle
+* @pattern: package pattern
+*
+* Find transactions containing packages matched by @pattern
+* Accepted pattern formats:
+*   name.arch
+*   name-version-release.arch
+*   name-version
+*   epoch:name-version-release.arch
+*   name-epoch-version-release.arch*
+*
+* Returns: list of transaction IDs
+**/
+GArray*
+_extended_search (sqlite3* db, const gchar *pattern)
 {
     GArray *tids = g_array_new(0, 0, sizeof(gint));
     sqlite3_stmt *res;

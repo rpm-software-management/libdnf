@@ -23,7 +23,7 @@
 #ifndef DNF_SWDB_H
 #define DNF_SWDB_H
 
-#define DNF_SWDB_DEFAULT_PATH               "/var/lib/dnf/history/swdb.sqlite"
+#define DNF_SWDB_DEFAULT_PATH           "/var/lib/dnf/history/swdb.sqlite"
 
 #define DB_PREP(db, sql, res)           assert(_db_prepare(db, sql, &res))
 #define DB_BIND(res, id, source)        assert(_db_bind(res, id, source))
@@ -121,10 +121,6 @@ GArray         *dnf_swdb_search                 (DnfSwdb        *self,
                                                  GPtrArray      *patterns);
 gint            _pdid_from_pid                  (sqlite3        *db,
                                                  gint            pid);
-GArray         *_all_pdid_for_pid               (sqlite3        *db,
-                                                 gint            pid);
-GArray         *_tids_from_pdid                 (sqlite3        *db,
-                                                 gint            pdid);
 gchar          *_repo_by_rid                    (sqlite3        *db,
                                                  gint            rid);
 GPtrArray      *dnf_swdb_get_packages_by_tid    (DnfSwdb        *self,
@@ -168,7 +164,7 @@ DnfSwdbPkgData *dnf_swdb_package_data_by_nvra   (DnfSwdb        *self,
 gchar          *dnf_swdb_repo_by_nvra           (DnfSwdb        *self,
                                                  const gchar    *nvra);
 gint            dnf_swdb_mark_user_installed    (DnfSwdb        *self,
-                                                 const gchar    *pattern,
+                                                 const gchar    *nvra,
                                                  gboolean        user_installed);
 GPtrArray      *dnf_swdb_checksums_by_nvras     (DnfSwdb        *self,
                                                  GPtrArray      *nvras);

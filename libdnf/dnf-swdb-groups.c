@@ -32,12 +32,13 @@ G_DEFINE_TYPE(DnfSwdbGroup, dnf_swdb_group, G_TYPE_OBJECT)
 G_DEFINE_TYPE(DnfSwdbEnv, dnf_swdb_env, G_TYPE_OBJECT)
 
 // Group destructor
-static void dnf_swdb_group_finalize(GObject *object)
+static void
+dnf_swdb_group_finalize(GObject *object)
 {
     DnfSwdbGroup * group = (DnfSwdbGroup*) object;
-    g_free( (gchar*) group->name_id);
-    g_free( group->name);
-    g_free( group->ui_name);
+    g_free(group->name_id);
+    g_free(group->name);
+    g_free(group->ui_name);
     G_OBJECT_CLASS (dnf_swdb_group_parent_class)->finalize (object);
 }
 
@@ -65,12 +66,13 @@ dnf_swdb_group_init(DnfSwdbGroup *self)
  *
  * Returns: a #DnfSwdbGroup
 **/
-DnfSwdbGroup* dnf_swdb_group_new(const gchar* name_id,
-                                 gchar* name,
-                                 gchar* ui_name,
-                                 gint is_installed,
-                                 gint pkg_types,
-                                 DnfSwdb *swdb)
+DnfSwdbGroup*
+dnf_swdb_group_new(const gchar* name_id,
+                   const gchar* name,
+                   const gchar* ui_name,
+                   gint is_installed,
+                   gint pkg_types,
+                   DnfSwdb *swdb)
 {
     DnfSwdbGroup *group = g_object_new(DNF_TYPE_SWDB_GROUP, NULL);
     group->name_id = g_strdup(name_id);
@@ -83,12 +85,13 @@ DnfSwdbGroup* dnf_swdb_group_new(const gchar* name_id,
 }
 
 // environment destructor
-static void dnf_swdb_env_finalize(GObject *object)
+static void
+dnf_swdb_env_finalize(GObject *object)
 {
     DnfSwdbEnv * env = (DnfSwdbEnv *) object;
-    g_free( (gchar*) env->name_id);
-    g_free( env->name);
-    g_free( env->ui_name);
+    g_free(env->name_id);
+    g_free(env->name);
+    g_free(env->ui_name);
     G_OBJECT_CLASS (dnf_swdb_env_parent_class)->finalize (object);
 }
 
@@ -115,12 +118,13 @@ dnf_swdb_env_init(DnfSwdbEnv *self)
  *
  * Returns: a #DnfSwdbEnv
 **/
-DnfSwdbEnv* dnf_swdb_env_new(const gchar* name_id,
-                             gchar* name,
-                             gchar* ui_name,
-                             gint pkg_types,
-                             gint grp_types,
-                             DnfSwdb *swdb)
+DnfSwdbEnv*
+dnf_swdb_env_new(const gchar* name_id,
+                 const gchar* name,
+                 const gchar* ui_name,
+                 gint pkg_types,
+                 gint grp_types,
+                 DnfSwdb *swdb)
 {
     DnfSwdbEnv *env = g_object_new(DNF_TYPE_SWDB_ENV, NULL);
     env->name_id = g_strdup(name_id);
@@ -132,12 +136,21 @@ DnfSwdbEnv* dnf_swdb_env_new(const gchar* name_id,
     return env;
 }
 
-/* insert into groups/env package tables
- * Returns: 0 if successfull
- * usage: rc = _insert_id_name(db, "TABLE", "Xid", "pkg_name");
- * Requires opened DB
- */
-gint _insert_id_name(sqlite3 *db, const gchar *table, gint id, const gchar *name)
+/**
+* _insert_id_name:
+* @db: sqlite database handle
+* @table: table name
+* @id: group/env ID
+* @name: package name
+*
+* Create group-package or environment-group binding
+*
+* Returns: 0 if successful
+*
+* TODO: remove dynamic sql command construction
+**/
+gint
+_insert_id_name(sqlite3 *db, const gchar *table, gint id, const gchar *name)
 {
     sqlite3_stmt *res;
     gchar *sql = g_strjoin(" ","insert into",table,"values (null, @id, @name)", NULL);
@@ -156,7 +169,16 @@ gint _insert_id_name(sqlite3 *db, const gchar *table, gint id, const gchar *name
     return 0;
 }
 
-static gboolean _find_match(const gchar *str, GPtrArray *arr)
+
+/**
+* _find_match:
+* @str: needle
+* @arr: haystack
+*
+* Returns: %TRUE if @str found in @arr
+**/
+static gboolean
+_find_match(const gchar *str, GPtrArray *arr)
 {
     for(guint i = 0;i < arr->len; ++i)
     {
@@ -168,10 +190,21 @@ static gboolean _find_match(const gchar *str, GPtrArray *arr)
     return FALSE;
 }
 
-void _insert_group_additional(sqlite3 *db,
-                              int gid,
-                              GPtrArray *data,
-                              const gchar *table)
+
+/**
+* _insert_group_additional:
+* @db: sqlite database handle
+* @gid: group ID
+* @data: list of package/group names
+* @table: target table
+*
+* Bind list of package/group names with group/environment ID in @table
+**/
+static void
+_insert_group_additional(sqlite3 *db,
+                         int gid,
+                         GPtrArray *data,
+                         const gchar *table)
 {
     GPtrArray *actualList = _get_data_list(db, gid, table);
     for(guint i = 0; i < data->len; ++i)
@@ -186,11 +219,15 @@ void _insert_group_additional(sqlite3 *db,
 
 /**
 * dnf_swdb_group_add_package:
+* @packages: (element-type utf8)(transfer container): list of package name
+*
 * Add list of package names into group full list
 * Does nothing when group allready contains particular package.
-* @packages: (element-type utf8)(transfer container): list of constants
-*/
-gint dnf_swdb_group_add_package(DnfSwdbGroup *group, GPtrArray *packages)
+*
+* Returns: 0 if successful
+**/
+gint
+dnf_swdb_group_add_package(DnfSwdbGroup *group, GPtrArray *packages)
 {
 
     if(!group->gid || dnf_swdb_open(group->swdb))
@@ -201,11 +238,15 @@ gint dnf_swdb_group_add_package(DnfSwdbGroup *group, GPtrArray *packages)
 
 /**
 * dnf_swdb_group_add_exclude:
+* @exclude: (element-type utf8)(transfer container): list of package names
+*
 * Add list of package names into group exclude list.
 * Does nothing if particular package is allready in exclude list.
-* @exclude: (element-type utf8)(transfer container): list of constants
-*/
-gint dnf_swdb_group_add_exclude(DnfSwdbGroup *group, GPtrArray *exclude)
+*
+* Returns: 0 if successful
+**/
+gint
+dnf_swdb_group_add_exclude(DnfSwdbGroup *group, GPtrArray *exclude)
 {
     if(!group->gid || dnf_swdb_open(group->swdb))
         return 1;
@@ -219,11 +260,15 @@ gint dnf_swdb_group_add_exclude(DnfSwdbGroup *group, GPtrArray *exclude)
 
 /**
 * dnf_swdb_env_add_exclude:
+* @exclude: (element-type utf8)(transfer container): list of group names
+*
 * Add list of groups into environment exclude list
 * Does nothing when particular group is allready in lexclude list
-* @exclude: (element-type utf8)(transfer container): list of constants
-*/
-gint dnf_swdb_env_add_exclude(DnfSwdbEnv *env, GPtrArray *exclude)
+*
+* Returns: 0 if successful
+**/
+gint
+dnf_swdb_env_add_exclude(DnfSwdbEnv *env, GPtrArray *exclude)
 {
     if(!env->eid || dnf_swdb_open(env->swdb))
         return 1;
@@ -240,7 +285,16 @@ gint dnf_swdb_env_add_exclude(DnfSwdbEnv *env, GPtrArray *exclude)
     return 0;
 }
 
-gint _group_id_to_gid(sqlite3 *db, const gchar *group_id)
+
+/**
+* _group_id_to_gid:
+* @db: sqlite database handle
+* @group_id: group unique identifier string
+*
+* Returns: group ID
+**/
+gint
+_group_id_to_gid(sqlite3 *db, const gchar *group_id)
 {
     sqlite3_stmt *res;
     const gchar* sql = S_GID_BY_NAME_ID;
@@ -251,11 +305,15 @@ gint _group_id_to_gid(sqlite3 *db, const gchar *group_id)
 
 /**
 * dnf_swdb_env_add_group:
+* @groups: (element-type utf8)(transfer container): list of group names
+*
 * Add list of groups into environment full list.
 * When environment allready contains particular group, does nothing.
-* @groups: (element-type utf8)(transfer container): list of constants
-*/
-gint dnf_swdb_env_add_group(DnfSwdbEnv *env, GPtrArray *groups)
+*
+* Returns: 0 if successful
+**/
+gint
+dnf_swdb_env_add_group(DnfSwdbEnv *env, GPtrArray *groups)
 {
     if (!env->eid || dnf_swdb_open(env->swdb))
         return 1;
@@ -285,7 +343,16 @@ gint dnf_swdb_env_add_group(DnfSwdbEnv *env, GPtrArray *groups)
     return 0;
 }
 
-void _add_group(sqlite3 *db, DnfSwdbGroup *group)
+
+/**
+* _add_group:
+* @db: sqlite database handle
+* @group: group object
+*
+* Insert @group into SWDB
+**/
+void
+_add_group(sqlite3 *db, DnfSwdbGroup *group)
 {
     sqlite3_stmt *res;
     const gchar *sql = I_GROUP;
@@ -299,7 +366,17 @@ void _add_group(sqlite3 *db, DnfSwdbGroup *group)
     group->gid = sqlite3_last_insert_rowid(db);
 }
 
-gint dnf_swdb_add_group(DnfSwdb *self, DnfSwdbGroup *group)
+/**
+* dnf_swdb_add_group:
+* @self: SWDB object
+* @group: group object
+*
+* Insert or update @group
+*
+* Returns: 0 if successful
+**/
+gint
+dnf_swdb_add_group(DnfSwdb *self, DnfSwdbGroup *group)
 {
     if (dnf_swdb_open(self))
         return 1;
@@ -318,7 +395,16 @@ gint dnf_swdb_add_group(DnfSwdb *self, DnfSwdbGroup *group)
     return 0;
 }
 
-void _update_env(sqlite3 *db, DnfSwdbEnv *env)
+
+/**
+* _update_env:
+* @db: sqlite database handle
+* @env: environment object
+*
+* Update environment attributes
+**/
+void
+_update_env(sqlite3 *db, DnfSwdbEnv *env)
 {
     sqlite3_stmt *res;
     const gchar *sql = U_ENV;
@@ -331,7 +417,16 @@ void _update_env(sqlite3 *db, DnfSwdbEnv *env)
     DB_STEP(res);
 }
 
-void _add_env(sqlite3 *db, DnfSwdbEnv *env)
+
+/**
+* _add_env:
+* @db: sqlite database holder
+* @env: environment object
+*
+* Insert @env into SWDB
+**/
+void
+_add_env(sqlite3 *db, DnfSwdbEnv *env)
 {
     sqlite3_stmt *res;
     const gchar *sql = I_ENV;
@@ -346,7 +441,18 @@ void _add_env(sqlite3 *db, DnfSwdbEnv *env)
 
 }
 
-gint dnf_swdb_add_env(DnfSwdb *self, DnfSwdbEnv *env)
+
+/**
+* dnf_swdb_add_env:
+* @self: SWDB object
+* @env: environment object
+*
+* Insert or update environment @env
+*
+* Returns: 0 if successful
+**/
+gint
+dnf_swdb_add_env(DnfSwdb *self, DnfSwdbEnv *env)
 {
     if (dnf_swdb_open(self))
         return 1;
@@ -365,7 +471,18 @@ gint dnf_swdb_add_env(DnfSwdb *self, DnfSwdbEnv *env)
     return 0;
 }
 
-DnfSwdbGroup *_get_group(sqlite3 *db, const gchar *name_id)
+
+/**
+* _get_group:
+* @db: sqlite database handle
+* @name_id: uniqie group identifier
+*
+* Get group object by @name_id
+*
+* Returns: #DnfSwdbGroup matched by @name_id
+**/
+DnfSwdbGroup*
+_get_group(sqlite3 *db, const gchar *name_id)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_GROUP_BY_NAME_ID;
@@ -387,11 +504,18 @@ DnfSwdbGroup *_get_group(sqlite3 *db, const gchar *name_id)
     return NULL;
 }
 
+
 /**
 * dnf_swdb_get_group:
-* Returns: (transfer full): #DnfSwdbGroup
+* @self: SWDB object
+* @name_id: uniqie group identifier
+*
+* Get group object by @name_id
+*
+* Returns: (transfer full): #DnfSwdbGroup matched by name_id
 */
-DnfSwdbGroup *dnf_swdb_get_group(DnfSwdb * self, const gchar* name_id)
+DnfSwdbGroup*
+dnf_swdb_get_group(DnfSwdb * self, const gchar* name_id)
 {
     if (dnf_swdb_open(self))
         return NULL;
@@ -402,7 +526,19 @@ DnfSwdbGroup *dnf_swdb_get_group(DnfSwdb * self, const gchar* name_id)
     return group;
 }
 
-DnfSwdbEnv *_get_env(sqlite3 *db, const gchar *name_id)
+
+/**
+* _get_env:
+* @db: sqlite database handle
+* @name_id: uniqie environment identifier
+*
+* Get environment object by @name_id
+*
+* Returns: #DnfSwdbEnv matched by @name_id
+**/
+
+DnfSwdbEnv*
+_get_env(sqlite3 *db, const gchar *name_id)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_ENV_BY_NAME_ID;
@@ -424,11 +560,18 @@ DnfSwdbEnv *_get_env(sqlite3 *db, const gchar *name_id)
     return NULL;
 }
 
+
 /**
 * dnf_swdb_get_env:
-* Returns: (transfer full): #DnfSwdbEnv
-*/
-DnfSwdbEnv *dnf_swdb_get_env(DnfSwdb * self, const gchar* name_id)
+* @self: SWDB object
+* @name_id: uniqie environment identifier
+*
+* Get environment object by @name_id
+*
+* Returns: (transfer full): #DnfSwdbEnv matched by @name_id
+**/
+DnfSwdbEnv*
+dnf_swdb_get_env(DnfSwdb *self, const gchar *name_id)
 {
     if (dnf_swdb_open(self))
         return NULL;
@@ -439,11 +582,19 @@ DnfSwdbEnv *dnf_swdb_get_env(DnfSwdb * self, const gchar* name_id)
     return env;
 }
 
+
 /**
 * dnf_swdb_groups_by_pattern:
+* @self: SWDB object
+* @pattern: string pattern
+*
+* Get list of groups matched by @pattern
+* @pattern can match name_id, name or ui_name
+*
 * Returns: (element-type DnfSwdbGroup)(array)(transfer container): list of #DnfSwdbGroup
-*/
-GPtrArray *dnf_swdb_groups_by_pattern(DnfSwdb *self, const gchar *pattern)
+**/
+GPtrArray*
+dnf_swdb_groups_by_pattern(DnfSwdb *self, const gchar *pattern)
 {
     if (dnf_swdb_open(self))
         return NULL;
@@ -472,9 +623,16 @@ GPtrArray *dnf_swdb_groups_by_pattern(DnfSwdb *self, const gchar *pattern)
 
 /**
 * dnf_swdb_env_by_pattern:
+* @self: SWDB object
+* @pattern: string pattern
+*
+* Get list of environment matched by @pattern
+* @pattern can match name_id, name or ui_name
+*
 * Returns: (element-type DnfSwdbEnv)(array)(transfer container): list of #DnfSwdbEnv
-*/
-GPtrArray *dnf_swdb_env_by_pattern(DnfSwdb *self, const gchar *pattern)
+**/
+GPtrArray*
+dnf_swdb_env_by_pattern(DnfSwdb *self, const gchar *pattern)
 {
     if (dnf_swdb_open(self))
         return NULL;
@@ -501,7 +659,15 @@ GPtrArray *dnf_swdb_env_by_pattern(DnfSwdb *self, const gchar *pattern)
     return node;
 }
 
-GPtrArray *_get_list_from_table(sqlite3_stmt *res)
+
+/**
+* _get_list_from_table:
+* @res: sqlite3_stmt returning list of strings
+*
+* Returns: list of string matched by @res
+**/
+GPtrArray*
+_get_list_from_table(sqlite3_stmt *res)
 {
     GPtrArray *node = g_ptr_array_new();
     while(sqlite3_step(res) == SQLITE_ROW)
@@ -513,7 +679,21 @@ GPtrArray *_get_list_from_table(sqlite3_stmt *res)
     return node;
 }
 
-GPtrArray *_get_data_list(sqlite3 *db, int gid, const gchar *table)
+
+/**
+* _get_data_list:
+* @db: sqlite database handle
+* @gid: group id
+* @table: target table
+*
+* Get list of names connected with @gid from @table
+*
+* Returns: list of names
+*
+* TODO: don't use dynamic sql command construction
+**/
+GPtrArray*
+_get_data_list(sqlite3 *db, int gid, const gchar *table)
 {
     sqlite3_stmt *res;
     gchar *sql = g_strjoin(" ","SELECT name FROM", table, "where G_ID=@gid", NULL);
@@ -526,9 +706,14 @@ GPtrArray *_get_data_list(sqlite3 *db, int gid, const gchar *table)
 
 /**
 * dnf_swdb_group_get_exclude:
-* Returns: (element-type utf8)(array)(transfer container): list of utf8
-*/
-GPtrArray * dnf_swdb_group_get_exclude(DnfSwdbGroup *self)
+* @self: group object
+*
+* Get list of excludes for @self
+*
+* Returns: (element-type utf8)(array)(transfer container): list of excludes
+**/
+GPtrArray*
+dnf_swdb_group_get_exclude(DnfSwdbGroup *self)
 {
     if(!self->gid)
         return NULL;
@@ -540,9 +725,14 @@ GPtrArray * dnf_swdb_group_get_exclude(DnfSwdbGroup *self)
 
 /**
 * dnf_swdb_group_get_full_list:
-* Returns: (element-type utf8)(array)(transfer container): list of utf8
-*/
-GPtrArray *dnf_swdb_group_get_full_list(DnfSwdbGroup *self)
+* @self: group object
+*
+* Get full package list of @self
+*
+* Returns: (element-type utf8)(array)(transfer container): list of package names
+**/
+GPtrArray*
+dnf_swdb_group_get_full_list(DnfSwdbGroup *self)
 {
     if(!self->gid)
         return NULL;
@@ -554,9 +744,15 @@ GPtrArray *dnf_swdb_group_get_full_list(DnfSwdbGroup *self)
 
 /**
 * dnf_swdb_group_update_full_list:
-* @full_list: (element-type utf8)(transfer container): list of constants
+* @group: group object
+* @full_list: (element-type utf8)(transfer container): list of package names
+*
+* Update list of packages installed with group
+*
+* Returns: 0 if successful
 */
-gint dnf_swdb_group_update_full_list(DnfSwdbGroup *group, GPtrArray *full_list)
+gint
+dnf_swdb_group_update_full_list(DnfSwdbGroup *group, GPtrArray *full_list)
 {
     if(!group->gid)
         return 1;
@@ -571,7 +767,16 @@ gint dnf_swdb_group_update_full_list(DnfSwdbGroup *group, GPtrArray *full_list)
     return 0;
 }
 
-void _update_group(sqlite3 *db, DnfSwdbGroup *group)
+
+/**
+* _update_group:
+* @db: sqlite database handle
+* @group: group object
+*
+* Update @group data in SWDB by properties from @group object
+**/
+void
+_update_group(sqlite3 *db, DnfSwdbGroup *group)
 {
     sqlite3_stmt *res;
     const gchar *sql = U_GROUP;
@@ -584,7 +789,18 @@ void _update_group(sqlite3 *db, DnfSwdbGroup *group)
     DB_STEP(res);
 }
 
-gint dnf_swdb_uninstall_group(DnfSwdb *self, DnfSwdbGroup *group)
+
+/**
+* dnf_swdb_uninstall_group:
+* @self: SWDB object
+* @group: group object
+*
+* Set group is_installed to 0
+*
+* Returns: 0 if successful
+**/
+gint
+dnf_swdb_uninstall_group(DnfSwdb *self, DnfSwdbGroup *group)
 {
     if(!group->gid)
         return 1;
@@ -595,7 +811,18 @@ gint dnf_swdb_uninstall_group(DnfSwdb *self, DnfSwdbGroup *group)
     return 0;
 }
 
-GPtrArray *_env_get_group_list(sqlite3 *db, gint eid)
+
+/**
+* _env_get_group_list:
+* @db: sqlite database handle
+* @eid: environment ID
+*
+* Get full list of groups for environment @eid
+*
+* Returns: list of group names
+**/
+GPtrArray*
+_env_get_group_list(sqlite3 *db, gint eid)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_GROUP_NAME_ID_BY_EID;
@@ -606,9 +833,14 @@ GPtrArray *_env_get_group_list(sqlite3 *db, gint eid)
 
 /**
 * dnf_swdb_env_get_group_list:
-* Returns: (element-type utf8)(array)(transfer container): list of utf8
+* @env: environment object
+*
+* Get full list of groups for environment @env
+*
+* Returns: (element-type utf8)(array)(transfer container): list of group names
 */
-GPtrArray *dnf_swdb_env_get_group_list(DnfSwdbEnv* env)
+GPtrArray*
+dnf_swdb_env_get_group_list(DnfSwdbEnv* env)
 {
     if(!env->eid || dnf_swdb_open(env->swdb))
         return NULL;
@@ -616,7 +848,17 @@ GPtrArray *dnf_swdb_env_get_group_list(DnfSwdbEnv* env)
     return node;
 }
 
-gboolean dnf_swdb_env_is_installed(DnfSwdbEnv *env)
+
+/**
+* dnf_swdb_env_is_installed:
+* @env: environment object
+*
+* Resolve if environment is installed by looking at list of installed groups
+*
+* Returns: %TRUE if @env is installed (1 of more of its groups is installed)
+**/
+gboolean
+dnf_swdb_env_is_installed(DnfSwdbEnv *env)
 {
     if(!env->eid)
         return 0;
@@ -631,7 +873,18 @@ gboolean dnf_swdb_env_is_installed(DnfSwdbEnv *env)
     return found;
 }
 
-GPtrArray *_env_get_exclude(sqlite3 *db, int eid)
+
+/**
+* _env_get_exclude:
+* @db: sqlite database handle
+* @eid: environment ID
+*
+* Get environment exclude list
+*
+* Returns: list of excluded groups
+**/
+GPtrArray*
+_env_get_exclude(sqlite3 *db, int eid)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_ENV_EXCLUDE_BY_ID;
@@ -640,11 +893,17 @@ GPtrArray *_env_get_exclude(sqlite3 *db, int eid)
     return _get_list_from_table(res);
 }
 
+
 /**
 * dnf_swdb_env_get_exclude:
-* Returns: (element-type utf8)(array)(transfer container): list of utf8
-*/
-GPtrArray *dnf_swdb_env_get_exclude(DnfSwdbEnv* self)
+* @self: environment object
+*
+* Get environment exclude list
+*
+* Returns: (element-type utf8)(array)(transfer container): list of excluded group names
+**/
+GPtrArray*
+dnf_swdb_env_get_exclude(DnfSwdbEnv* self)
 {
     if(!self->eid)
         return NULL;
@@ -654,11 +913,18 @@ GPtrArray *dnf_swdb_env_get_exclude(DnfSwdbEnv* self)
     return node;
 }
 
+
 /**
 * dnf_swdb_groups_commit:
+* @self: SWDB object
 * @groups: (element-type DnfSwdbGroup)(array)(transfer container): list of #DnfSwdbGroup
-*/
-gint dnf_swdb_groups_commit(DnfSwdb *self, GPtrArray *groups)
+*
+* Tag list of @groups as installed
+*
+* Returns: 0 if successful
+**/
+gint
+dnf_swdb_groups_commit(DnfSwdb *self, GPtrArray *groups)
 {
     if (dnf_swdb_open(self))
         return 1;
@@ -674,7 +940,16 @@ gint dnf_swdb_groups_commit(DnfSwdb *self, GPtrArray *groups)
     return 0;
 }
 
-void _log_group_trans(sqlite3 *db, gint tid, GPtrArray *groups, gint is_installed)
+
+/**
+* _log_group_trans:
+* @db: sqlite database handle
+* @tid: transaction ID
+* @groups: list of #DnfSwdbGroup to be installed
+* @is_installed: tag whether groups should be tagged as installed
+**/
+void
+_log_group_trans(sqlite3 *db, gint tid, GPtrArray *groups, gint is_installed)
 {
     const gchar *sql = I_TRANS_GROUP_DATA;
     for(guint i = 0; i< groups->len; ++i)
@@ -696,13 +971,20 @@ void _log_group_trans(sqlite3 *db, gint tid, GPtrArray *groups, gint is_installe
 
 /**
 * dnf_swdb_log_group_trans:
+* @self: SWDB object
+* @tid: transaction ID
 * @installing: (element-type DnfSwdbGroup)(array)(transfer container): list of #DnfSwdbGroup
 * @removing: (element-type DnfSwdbGroup)(array)(transfer container): list of #DnfSwdbGroup
+*
+* Log group transaction
+*
+* Returns: 0 if successful
 **/
-gint dnf_swdb_log_group_trans(DnfSwdb *self,
-                              gint tid,
-                              GPtrArray *installing,
-                              GPtrArray *removing)
+gint
+dnf_swdb_log_group_trans(DnfSwdb *self,
+                         gint tid,
+                         GPtrArray *installing,
+                         GPtrArray *removing)
 {
     if (dnf_swdb_open(self) )
         return 1;
@@ -713,13 +995,17 @@ gint dnf_swdb_log_group_trans(DnfSwdb *self,
 
 /**
 * dnf_swdb_removable_pkg:
-* Test if package can be removed with group
-* @self: Swdb object
+* @self: SWDB object
 * @pkg_name: name of the package
-* @Returns: True if package was installed with group and does not appear in
-*           multiple installed groups, else False.
+*
+* Test if package can be removed with group
+*   - package was installed with group
+*   - package doesn't appear in any other installed group
+*
+* Returns: %TRUE if package can be removed
 **/
-gboolean dnf_swdb_removable_pkg(DnfSwdb *self, const gchar* pkg_name)
+gboolean
+dnf_swdb_removable_pkg(DnfSwdb *self, const gchar* pkg_name)
 {
     if (dnf_swdb_open(self) )
         return FALSE;

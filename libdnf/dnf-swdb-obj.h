@@ -77,13 +77,13 @@ struct _DnfSwdbTrans
     GObject parent_instance;
     DnfSwdb *swdb;
     gint tid;
-    const gchar *beg_timestamp;
-    const gchar *end_timestamp;
-    const gchar *beg_rpmdb_version;
-    const gchar *end_rpmdb_version;
-    const gchar *cmdline;
-    const gchar *loginuid;
-    const gchar *releasever;
+    gchar *beg_timestamp;
+    gchar *end_timestamp;
+    gchar *beg_rpmdb_version;
+    gchar *end_rpmdb_version;
+    gchar *cmdline;
+    gchar *loginuid;
+    gchar *releasever;
     gint return_code;
     gboolean altered_lt_rpmdb;
     gboolean altered_gt_rpmdb;
@@ -108,16 +108,16 @@ struct _DnfSwdbRpmData
 {
     GObject parent_instance;
     gint   pid;
-    const gchar *buildtime;
-    const gchar *buildhost;
-    const gchar *license;
-    const gchar *packager;
-    const gchar *size;
-    const gchar *sourcerpm;
-    const gchar *url;
-    const gchar *vendor;
-    const gchar *committer;
-    const gchar *committime;
+    gchar *buildtime;
+    gchar *buildhost;
+    gchar *license;
+    gchar *packager;
+    gchar *size;
+    gchar *sourcerpm;
+    gchar *url;
+    gchar *vendor;
+    gchar *committer;
+    gchar *committime;
 };
 
 DnfSwdbPkg          *dnf_swdb_pkg_new               (const gchar   *name,
