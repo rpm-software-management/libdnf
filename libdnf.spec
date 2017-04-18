@@ -22,6 +22,11 @@
 
 %global oldname libhif
 
+# libdnf ABI values
+%global sover 1
+%global girapi 1.0
+
+
 Name:           libdnf
 Version:        0.8.1
 Release:        1%{?dist}
@@ -46,7 +51,13 @@ BuildRequires:  rpm-devel >= 4.11.0
 BuildRequires:  pkgconfig(librhsm)
 %endif
 
+%if 0%{?mageia}
+Requires:       %{_lib}solv0%{?_isa} >= %{libsolv_version}
+Provides:       %{_lib}dnf%{sover} = %{version}-%{release}
+Provides:       %{_lib}dnf-gir%{girapi} = %{version}-%{release}
+%else
 Requires:       libsolv%{?_isa} >= %{libsolv_version}
+%endif
 
 %description
 A Library providing simplified C and Python API to libsolv.
@@ -54,7 +65,11 @@ A Library providing simplified C and Python API to libsolv.
 %package devel
 Summary:        Development files for %{name}
 Requires:       %{name}%{?_isa} = %{version}-%{release}
+%if 0%{?mageia}
+Requires:       %{_lib}solv-devel%{?_isa} >= %{libsolv_version}
+%else
 Requires:       libsolv-devel%{?_isa} >= %{libsolv_version}
+%endif
 BuildRequires:  python-nose
 
 %description devel
@@ -99,13 +114,13 @@ mkdir build-py3
 
 %build
 pushd build-py2
-  %cmake -DWITH_MAN=OFF ../ %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts}
+  %cmake -DWITH_MAN=OFF ../ %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{?mageia:-DENABLE_SOLV_URPMREORDER=1} %{_cmake_opts}
   %make_build
 popd
 
 %if %{with python3}
 pushd build-py3
-  %cmake -DPYTHON_DESIRED:str=3 -DWITH_GIR=0 -DWITH_MAN=0 -Dgtkdoc=0 ../ %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts}
+  %cmake -DPYTHON_DESIRED:str=3 -DWITH_GIR=0 -DWITH_MAN=0 -Dgtkdoc=0 ../ %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{?mageia:-DENABLE_SOLV_URPMREORDER=1} %{_cmake_opts}
   %make_build
 popd
 %endif
@@ -139,14 +154,17 @@ pushd build-py3
 popd
 %endif
 
+# Mageia uses file triggers for this instead
+%if ! 0%{?mageia}
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
+%endif
 
 %files
 %license COPYING
 %doc README.md AUTHORS NEWS
-%{_libdir}/%{name}.so.*
-%{_libdir}/girepository-1.0/Dnf-*.typelib
+%{_libdir}/%{name}.so.%{sover}
+%{_libdir}/girepository-1.0/Dnf-%{girapi}.typelib
 
 %files devel
 %doc %{_datadir}/gtk-doc/html/%{name}/
