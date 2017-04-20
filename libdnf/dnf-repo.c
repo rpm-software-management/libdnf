@@ -1782,40 +1782,6 @@ dnf_repo_checksum_hy_to_lr(int checksum_hy)
     return LR_CHECKSUM_UNKNOWN;
 }
 
-/**
- * dnf_repo_copy_progress_cb:
- **/
-static void
-dnf_repo_copy_progress_cb(goffset current, goffset total, gpointer user_data)
-{
-    DnfState *state = DNF_STATE(user_data);
-    dnf_state_set_percentage(state, 100.0f * current / total);
-}
-
-/**
- * dnf_repo_copy_package:
- **/
-static gboolean
-dnf_repo_copy_package(DnfPackage *pkg,
-                      const gchar *directory,
-                      DnfState *state,
-                      GError **error)
-{
-    g_autofree gchar *basename = NULL;
-    g_autofree gchar *dest = NULL;
-    g_autoptr(GFile) file_dest = NULL;
-    g_autoptr(GFile) file_repo = NULL;
-
-    /* copy the file with progress */
-    file_repo = g_file_new_for_path(dnf_package_get_filename(pkg));
-    basename = g_path_get_basename(dnf_package_get_location(pkg));
-    dest = g_build_filename(directory, basename, NULL);
-    file_dest = g_file_new_for_path(dest);
-    return g_file_copy(file_repo, file_dest, G_FILE_COPY_NONE,
-                       dnf_state_get_cancellable(state),
-                       dnf_repo_copy_progress_cb, state, error);
-}
-
 typedef struct
 {
     gchar *last_mirror_url;
@@ -1983,6 +1949,17 @@ dnf_repo_download_packages(DnfRepo *repo,
     if (!dnf_repo_set_keyfile_data(repo, error))
         goto out;
 
+    /* we should never be asked to download from a local repo.  if
+       this happens, it's a bug somewhere else. */
+    if (dnf_repo_is_local(repo)) {
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_INTERNAL_ERROR,
+                    "Refusing to download from local repository \"%s\"",
+                    priv->id);
+        goto out;
+    }
+
     /* if nothing specified then use cachedir */
     if (directory == NULL) {
         directory_slash = g_build_filename(priv->packages, "/", NULL);
@@ -2001,24 +1978,6 @@ dnf_repo_download_packages(DnfRepo *repo,
          * output directory is fully specified as a filename, but
          * basename needs a trailing '/' to detect it's not a filename */
         directory_slash = g_build_filename(directory, "/", NULL);
-    }
-
-    /* is a local repo, i.e. we just need to copy */
-    if (dnf_repo_is_local(repo)) {
-        /* the number of packages to copy */
-        dnf_state_set_number_steps(state, packages->len);
-
-        for (i = 0; i < packages->len; i++) {
-            DnfPackage *pkg = packages->pdata[i];
-            DnfState *state_loop = dnf_state_get_child(state);
-
-            dnf_package_set_repo(pkg, repo);
-            if (!dnf_repo_copy_package(pkg, directory, state_loop, error))
-                goto out;
-            if (!dnf_state_done(state, error))
-                goto out;
-        }
-        goto done;
     }
 
     global_data.download_size = dnf_package_array_get_download_size(packages);
@@ -2077,9 +2036,8 @@ dnf_repo_download_packages(DnfRepo *repo,
             error_local = NULL;
             goto out;
         }
-    } 
+    }
 
-done:
     ret = TRUE;
 out:
     lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSCB, NULL);

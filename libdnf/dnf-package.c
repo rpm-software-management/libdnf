@@ -111,15 +111,14 @@ dnf_package_get_filename(DnfPackage *pkg)
 
     /* default cache filename location */
     if (priv->filename == NULL && priv->repo != NULL) {
-        priv->filename = g_build_filename(dnf_repo_get_location(priv->repo),
-                           dnf_package_get_location(pkg),
-                           NULL);
-        /* set the filename to cachedir for non-local repos */
-        if (!dnf_repo_is_local(priv->repo) ||
-            !g_file_test(priv->filename, G_FILE_TEST_EXISTS)) {
+        if (dnf_repo_is_local(priv->repo)) {
+            priv->filename = g_build_filename(dnf_repo_get_location(priv->repo),
+                                              dnf_package_get_location(pkg),
+                                              NULL);
+        } else {
+            /* set the filename to cachedir for non-local repos */
             g_autofree gchar *basename = NULL;
             basename = g_path_get_basename(dnf_package_get_location(pkg));
-            g_free(priv->filename);
             priv->filename = g_build_filename(dnf_repo_get_packages(priv->repo),
                                basename,
                                NULL);
@@ -634,6 +633,17 @@ dnf_package_check_filename(DnfPackage *pkg, gboolean *valid, GError **error)
     g_debug("checking if %s already exists...", path);
     if (!g_file_test(path, G_FILE_TEST_EXISTS)) {
         *valid = FALSE;
+
+        /* a missing file in a local repo is an error since we can't
+           download it. */
+        if (dnf_repo_is_local (dnf_package_get_repo (pkg))) {
+            ret = FALSE;
+            g_set_error(error,
+                        DNF_ERROR,
+                        DNF_ERROR_INTERNAL_ERROR,
+                        "File missing in local repository %s", path);
+        }
+
         goto out;
     }
 
@@ -663,6 +673,19 @@ dnf_package_check_filename(DnfPackage *pkg, gboolean *valid, GError **error)
     ret = g_close(fd, error);
     if (!ret)
         goto out;
+
+    /* A checksum mismatch for a package in a local repository is an
+       error.  We can't repair it by downloading a corrected version,
+       so let's fail here. */
+    if (!*valid && dnf_repo_is_local (dnf_package_get_repo (pkg))) {
+        ret = FALSE;
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_INTERNAL_ERROR,
+                    "Checksum mismatch in local repository %s", path);
+        goto out;
+    }
+
 out:
     g_free(checksum_valid);
     return ret;
