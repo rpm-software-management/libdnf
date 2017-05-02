@@ -23,7 +23,7 @@
 %global oldname libhif
 
 Name:           libdnf
-Version:        0.8.1
+Version:        0.8.2
 Release:        1%{?dist}
 Summary:        Library providing simplified C and Python API to libsolv
 License:        LGPLv2+
