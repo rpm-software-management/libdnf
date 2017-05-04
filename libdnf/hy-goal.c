@@ -153,6 +153,14 @@ sort_packages(const void *ap, const void *bp, void *s_cb)
         return name_diff;
 
     /* same name, if one is/depends on the running kernel put it last */
+
+    /* move available packages to end of the list */
+    if (pool->installed != sa->repo)
+        return 1;
+
+    if (pool->installed != sb->repo)
+        return -1;
+
     if (kernel >= 0) {
         if (a == kernel || can_depend_on(pool, sa, kernel))
             return 1;
