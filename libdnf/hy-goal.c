@@ -159,6 +159,11 @@ sort_packages(const void *ap, const void *bp, void *s_cb)
         if (b == kernel || can_depend_on(pool, sb, kernel))
             return -1;
     }
+    if (pool->installed != sa->repo)
+        return 1;
+
+    if (pool->installed != sb->repo)
+        return -1;
 
     return pool_evrcmp(pool, sa->evr, sb->evr, EVRCMP_COMPARE);
 }
