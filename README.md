@@ -48,7 +48,6 @@ Building the documentation, from the build/ directory::
 
 Building RPMs:
 
-    tito init # Step is required due to removal of tito support from the project
     tito build --rpm --test
 
 Tests
