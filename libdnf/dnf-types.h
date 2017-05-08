@@ -98,5 +98,16 @@ typedef enum {
 #define DNF_ERROR                       (dnf_error_quark ())
 GQuark           dnf_error_quark        (void);
 
+#if !GLIB_CHECK_VERSION(2, 45, 8)
+static inline void
+g_autoptr_cleanup_gstring_free (GString *string)
+{
+  if (string)
+    g_string_free (string, TRUE);
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(GString, g_autoptr_cleanup_gstring_free)
+#endif
+
 #endif
 
