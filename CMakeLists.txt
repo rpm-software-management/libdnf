@@ -27,7 +27,7 @@ option (ENABLE_RHSM_SUPPORT "Build with Red Hat Subscription Manager support?" O
 # hawkey dependencies
 find_package (PkgConfig REQUIRED)
 SET (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
-PKG_CHECK_MODULES(GLIB gio-unix-2.0>=2.44.0 REQUIRED)
+PKG_CHECK_MODULES(GLIB gio-unix-2.0>=2.46.0 REQUIRED)
 FIND_LIBRARY (RPMDB_LIBRARY NAMES rpmdb)
 find_package (LibSolv 0.6.21 REQUIRED COMPONENTS ext)
 if (ENABLE_RHSM_SUPPORT)
