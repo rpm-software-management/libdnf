@@ -360,10 +360,8 @@ running_kernel(DnfSack *sack)
         return -1;
     }
     char *fn = pool_tmpjoin(pool, "/boot/vmlinuz-", un.release, NULL);
-    if (access(fn, F_OK)) {
+    if (access(fn, F_OK)) 
         g_debug("running_kernel(): no matching file: %s.", fn);
-        return -1;
-    }
 
     Id kernel_id = -1;
     HyQuery q = hy_query_create_flags(sack, HY_IGNORE_EXCLUDES);
