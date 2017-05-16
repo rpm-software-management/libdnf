@@ -999,7 +999,7 @@ hy_goal_broken_dependency_pkgs(HyGoal goal, unsigned i)
     Id rid, source, target, dep;
 
     Queue pq;
-    Queue* broken_dependency = g_malloc(sizeof(*broken_dependency));
+    Queue* broken_dependency = g_malloc(sizeof(Queue));
     int j;
     queue_init(&pq);
     queue_init(broken_dependency);
