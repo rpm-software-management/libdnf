@@ -967,7 +967,7 @@ hy_goal_conflict_pkgs(HyGoal goal, unsigned i)
     Id rid, source, target, dep;
 
     Queue pq;
-    Queue* conflict = g_malloc(sizeof(*conflict));
+    Queue* conflict = g_malloc(sizeof(Queue));
     int j;
     queue_init(&pq);
     queue_init(conflict);
