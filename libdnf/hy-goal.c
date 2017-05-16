@@ -1105,7 +1105,7 @@ hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
                 }
             }
         }
-        if (unique == TRUE) {
+        if (unique) {
             if (problist == NULL)
                 problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
             problist[p++] = g_strdup(problem);
