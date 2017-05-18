@@ -184,14 +184,29 @@ limit_installonly_packages(HyGoal goal, Solver *solv, Queue *job)
 
     for (int i = 0; i < onlies->count; ++i) {
         Id p, pp;
-        Queue q;
+        Queue q, installing;
         queue_init(&q);
+        queue_init(&installing);
 
         FOR_PKG_PROVIDES(p, pp, onlies->elements[i])
             if (solver_get_decisionlevel(solv, p) > 0)
                 queue_push(&q, p);
         if (q.count <= (int) dnf_sack_get_installonly_limit(sack)) {
             queue_free(&q);
+            queue_free(&installing);
+            continue;
+        }
+        for (int k = 0; k < q.count; ++k) {
+            Id id  = q.elements[k];
+            Solvable *s = pool_id2solvable(pool, id);
+            if (pool->installed != s->repo) {
+                queue_push(&installing, id);
+                break;
+            }
+        }
+        if (!installing.count) {
+            queue_free(&q);
+            queue_free(&installing);
             continue;
         }
 
@@ -214,6 +229,7 @@ limit_installonly_packages(HyGoal goal, Solver *solv, Queue *job)
         }
         queue_free(&same_names);
         queue_free(&q);
+        queue_free(&installing);
     }
     return reresolve;
 }
