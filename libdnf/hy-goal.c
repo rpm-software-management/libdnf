@@ -1263,7 +1263,8 @@ hy_goal_get_reason(HyGoal goal, DnfPackage *pkg)
 
     if ((reason == SOLVER_REASON_UNIT_RULE ||
          reason == SOLVER_REASON_RESOLVE_JOB) &&
-        solver_ruleclass(goal->solv, info) == SOLVER_RULE_JOB)
+        (solver_ruleclass(goal->solv, info) == SOLVER_RULE_JOB ||
+         solver_ruleclass(goal->solv, info) == SOLVER_RULE_BEST))
         return HY_REASON_USER;
     if (reason == SOLVER_REASON_CLEANDEPS_ERASE)
         return HY_REASON_CLEAN;
