@@ -360,7 +360,7 @@ running_kernel(DnfSack *sack)
         return -1;
     }
     char *fn = pool_tmpjoin(pool, "/boot/vmlinuz-", un.release, NULL);
-    if (access(fn, F_OK)) 
+    if (access(fn, F_OK))
         g_debug("running_kernel(): no matching file: %s.", fn);
 
     Id kernel_id = -1;

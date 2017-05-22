@@ -1481,7 +1481,7 @@ dnf_repo_update(DnfRepo *repo,
     /* Just verify existence for local */
     if (priv->kind == DNF_REPO_KIND_LOCAL) {
         if (priv->last_check_error) {
-            if (error) 
+            if (error)
                 *error = g_error_copy(priv->last_check_error);
             return FALSE;
         }

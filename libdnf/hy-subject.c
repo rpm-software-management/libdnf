@@ -231,7 +231,7 @@ struct NevraToQuery {
 
 /* Given a subject, attempt to create a query choose the first one, and update
  * the query to try to match it.
- * 
+ *
  * This code is based on rpm-software-management/dnf/subject.py:get_best_query() at git
  * revision: 1d83fdc0280ca4202281ef489afe600e2f51a32a
  */
@@ -341,7 +341,7 @@ nevra_to_selector(HyNevra nevra, DnfSack *sack)
 }
 
 /* Given a subject, attempt to create a "selector".
- * 
+ *
  * This code is based on rpm-software-management/dnf/subject.py:get_best_selector() at git
  * revision: 1d83fdc0280ca4202281ef489afe600e2f51a32a
  */

@@ -41,7 +41,7 @@ nevra_possibility(char *nevra_str, int form, HyNevra nevra)
     enum { NAME = 1, EPOCH = 3, VERSION = 4, RELEASE = 5, ARCH = 6 };
     regex_t reg;
     char *epoch = NULL;
-    
+
     regmatch_t matches[10];
 
     regcomp(&reg, nevra_form_regex[form - 1], REG_EXTENDED);

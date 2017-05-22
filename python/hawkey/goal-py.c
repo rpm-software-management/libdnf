@@ -564,7 +564,7 @@ problem_broken_dependency(_GoalObject *self, PyObject *args, PyObject *kwds)
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", (char**) kwlist, &available))
         return 0;
-    
+
     int count_problems = hy_goal_count_problems(self->goal);
     for (int i = 0; i < count_problems; i++) {
         broken_dependency = hy_goal_broken_dependency_pkgs(self->goal, i);

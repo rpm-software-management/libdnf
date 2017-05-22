@@ -198,7 +198,7 @@ START_TEST(combined2)
     ck_assert_str_eq(nevra->release, "11.fc100");
     ck_assert_str_eq(nevra->arch, "x86_64");
     hy_nevra_free(nevra);
-    
+
     ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
     ck_assert_str_eq(nevra->name, "four-of-fish");
     ck_assert_int_eq(nevra->epoch, -1);
@@ -312,7 +312,7 @@ START_TEST(nevra_real_dash)
     HySubject subject = hy_subject_create("penny-lib");
     HyPossibilities iter = hy_subject_nevra_possibilities_real(subject, NULL,
         test_globals.sack, 0);
-    
+
     ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
     ck_assert_str_eq(nevra->name, "penny-lib");
     fail_unless(nevra->epoch == -1);

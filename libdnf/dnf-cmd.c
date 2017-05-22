@@ -517,7 +517,7 @@ main(int argc, char *argv[])
             goto out;
         }
     } else if (!opt_cachedir)
-        opt_cachedir = g_strdup("/var/cache/PackageKit"); 
+        opt_cachedir = g_strdup("/var/cache/PackageKit");
 
     {
         g_autofree char *metadatadir =

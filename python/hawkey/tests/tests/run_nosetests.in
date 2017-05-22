@@ -1,4 +1,4 @@
-#!/usr/bin/python 
+#!/usr/bin/python
 
 # Run the appropriate version of nosetests, setting PYTHONPATH
 # to point to our just built libraries.  Also use xunit output,
@@ -41,5 +41,3 @@ if not found_testsuite:
     fatal("run_nosetests failed to find 'testsuite' in xunit.xml")
 
 sys.exit(0)
-
-    

@@ -204,7 +204,7 @@ reldep_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     if (icase)
         flags |= HY_ICASE;
-    
+
     HyPossibilities iter = hy_subject_reldep_possibilities_real(self->pattern,
         csack, flags);
     return possibilitiesToPyObject(iter, sack);
