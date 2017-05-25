@@ -411,11 +411,12 @@ add_cmdline_package(_SackObject *self, PyObject *fn_obj)
         return NULL;
     }
     cpkg = dnf_sack_add_cmdline_package(self->sack, fn);
-    Py_XDECREF(tmp_py_str);
     if (cpkg == NULL) {
         PyErr_Format(PyExc_IOError, "Can not load RPM file: %s.", fn);
+        Py_XDECREF(tmp_py_str);
         return NULL;
     }
+    Py_XDECREF(tmp_py_str);
     pkg = new_package((PyObject*)self, dnf_package_get_id(cpkg));
     g_object_unref(cpkg);
     return pkg;
