@@ -1839,9 +1839,10 @@ dnf_swdb_trans_old(DnfSwdb *self,
 * Returns: (transfer full): last #DnfSwdbTrans
 **/
 DnfSwdbTrans*
-dnf_swdb_last (DnfSwdb *self)
+dnf_swdb_last (DnfSwdb *self,
+               gboolean complete_only)
 {
-    GPtrArray *node = dnf_swdb_trans_old(self, NULL, 1, 0);
+    GPtrArray *node = dnf_swdb_trans_old(self, NULL, 1, complete_only);
     if (!node || !node->len)
         return NULL;
     DnfSwdbTrans *trans = g_ptr_array_index(node, 0);

@@ -156,7 +156,8 @@ gint            dnf_swdb_log_group_trans        (DnfSwdb        *self,
                                                  gint            tid,
                                                  GPtrArray      *installing,
                                                  GPtrArray      *removing);
-DnfSwdbTrans   *dnf_swdb_last                   (DnfSwdb        *self);
+DnfSwdbTrans   *dnf_swdb_last                   (DnfSwdb        *self,
+                                                 gboolean        complete_only);
 DnfSwdbPkg     *dnf_swdb_package_by_nvra        (DnfSwdb        *self,
                                                  const gchar    *nvra);
 DnfSwdbPkgData *dnf_swdb_package_data_by_nvra   (DnfSwdb        *self,
