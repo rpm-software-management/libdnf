@@ -559,8 +559,10 @@ dnf_swdb_select_user_installed(DnfSwdb *self, GPtrArray *nvras)
         return NULL;
 
     gint depid = _get_description_id(self->db, "dep", S_REASON_TYPE_ID);
+    gint weakid = _get_description_id(self->db, "weak", S_REASON_TYPE_ID);
+
     GArray *usr_ids = g_array_new(0,0,sizeof(gint));
-    if (!depid)
+    if (!depid && !weakid)
     {
         //there are no dependency pacakges - all packages are user installed
         for(guint i = 0; i < nvras->len; ++i)
@@ -594,7 +596,7 @@ dnf_swdb_select_user_installed(DnfSwdb *self, GPtrArray *nvras)
         while( sqlite3_step(res) == SQLITE_ROW)
         {
             reason_id = sqlite3_column_int(res, 0);
-            if (reason_id != depid)
+            if (reason_id != depid && reason_id != weakid)
             {
                 g_array_append_val(usr_ids, i);
                 break;
