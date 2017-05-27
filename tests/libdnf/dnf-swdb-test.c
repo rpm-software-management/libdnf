@@ -303,7 +303,8 @@ static void check_package_persistor(DnfSwdb *self, DnfSwdbPkg *pkg)
 
 static void check_initial_transaction(DnfSwdb *self)
 {
-    DnfSwdbTrans *trans = dnf_swdb_last(self);
+    DnfSwdbTrans *trans = dnf_swdb_last(self, TRUE);
+    g_assert(trans);
     g_assert(trans->tid == 1);
     g_assert(trans->return_code == 0);
     g_assert(!trans->altered_lt_rpmdb);
@@ -446,6 +447,10 @@ static void run_initial_transaction(DnfSwdb *self)
         g_object_unref(pkg_data);
     }
 
+    //check for complete/incomplete transaction
+    g_assert(dnf_swdb_last(self, FALSE));
+    g_assert(!dnf_swdb_last(self, TRUE));
+
     //add some output
     g_assert(!dnf_swdb_log_output(self, tid, TRANS_OUT));
 
@@ -477,7 +482,7 @@ static gint update_package(DnfSwdb *self, DnfSwdbPkg *pkg)
                                             tid,
                                             "Update"));
     g_assert(!end_trans(self, tid));
-    DnfSwdbTrans *last_trans = dnf_swdb_last(self);
+    DnfSwdbTrans *last_trans = dnf_swdb_last(self, TRUE);
     g_assert(last_trans);
     GPtrArray *trans_data_array = dnf_swdb_get_trans_data(self, last_trans);
     g_assert(trans_data_array || trans_data_array->len);
@@ -510,7 +515,7 @@ static gint reinstall_package(DnfSwdb *self, DnfSwdbPkg *pkg, gint last_tdid)
                                             tid,
                                             "Reinstall"));
     g_assert(!end_trans(self, tid));
-    DnfSwdbTrans *last_trans = dnf_swdb_last(self);
+    DnfSwdbTrans *last_trans = dnf_swdb_last(self, TRUE);
     g_assert(last_trans);
     GPtrArray *trans_data_array = dnf_swdb_get_trans_data(self, last_trans);
     g_assert(trans_data_array || trans_data_array->len);
@@ -542,7 +547,7 @@ static void erase_package(DnfSwdb *self, DnfSwdbPkg *pkg, gint last_tdid)
                                             tid,
                                             "Erase"));
     g_assert(!end_trans(self, tid));
-    DnfSwdbTrans *last_trans = dnf_swdb_last(self);
+    DnfSwdbTrans *last_trans = dnf_swdb_last(self, TRUE);
     g_assert(last_trans);
     GPtrArray *trans_data_array = dnf_swdb_get_trans_data(self, last_trans);
     g_assert(trans_data_array || trans_data_array->len);
