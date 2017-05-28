@@ -38,7 +38,7 @@ BuildRequires:  pkgconfig(check)
 %if %{with valgrind}
 BuildRequires:  valgrind
 %endif
-BuildRequires:  pkgconfig(gio-unix-2.0) >= 2.44.0
+BuildRequires:  pkgconfig(gio-unix-2.0) >= 2.46.0
 BuildRequires:  pkgconfig(gtk-doc)
 BuildRequires:  pkgconfig(gobject-introspection-1.0)
 BuildRequires:  rpm-devel >= 4.11.0
