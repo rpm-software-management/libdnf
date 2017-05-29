@@ -765,7 +765,7 @@ hy_goal_distupgrade_selector(HyGoal goal, HySelector sltr)
 int
 hy_goal_downgrade_to(HyGoal goal, DnfPackage *new_pkg)
 {
-    goal->actions |= DNF_DOWNGRADE;
+    goal->actions |= DNF_DOWNGRADE|DNF_ALLOW_DOWNGRADE;
     return hy_goal_install(goal, new_pkg);
 }
 
@@ -829,7 +829,7 @@ hy_goal_has_actions(HyGoal goal, DnfGoalActions action)
 int
 hy_goal_install(HyGoal goal, DnfPackage *new_pkg)
 {
-    goal->actions |= DNF_INSTALL;
+    goal->actions |= DNF_INSTALL|DNF_ALLOW_DOWNGRADE;
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_INSTALL, dnf_package_get_id(new_pkg));
     return 0;
 }
@@ -837,7 +837,7 @@ hy_goal_install(HyGoal goal, DnfPackage *new_pkg)
 int
 hy_goal_install_optional(HyGoal goal, DnfPackage *new_pkg)
 {
-    goal->actions |= DNF_INSTALL;
+    goal->actions |= DNF_INSTALL|DNF_ALLOW_DOWNGRADE;
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_INSTALL|SOLVER_WEAK,
                 dnf_package_get_id(new_pkg));
     return 0;
@@ -847,7 +847,7 @@ gboolean
 hy_goal_install_selector(HyGoal goal, HySelector sltr, GError **error)
 {
     int rc;
-    goal->actions |= DNF_INSTALL;
+    goal->actions |= DNF_INSTALL|DNF_ALLOW_DOWNGRADE;
     rc = sltr2job(sltr, &goal->staging, SOLVER_INSTALL);
     if (rc != 0) {
         g_set_error_literal (error,
@@ -863,7 +863,7 @@ gboolean
 hy_goal_install_selector_optional(HyGoal goal, HySelector sltr, GError **error)
 {
     int rc;
-    goal->actions |= DNF_INSTALL;
+    goal->actions |= DNF_INSTALL|DNF_ALLOW_DOWNGRADE;
     rc = sltr2job(sltr, &goal->staging, SOLVER_INSTALL|SOLVER_WEAK);
     if (rc != 0) {
         g_set_error_literal (error,
