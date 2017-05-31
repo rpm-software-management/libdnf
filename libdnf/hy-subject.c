@@ -317,8 +317,8 @@ nevra_to_selector(HyNevra nevra, DnfSack *sack)
                 char buf[G_ASCII_DTOSTR_BUF_SIZE];
 
                 g_ascii_dtostr(buf, sizeof(buf), epoch);
-                g_string_prepend(evrbuf, buf);
                 g_string_prepend_c(evrbuf, ':');
+                g_string_prepend(evrbuf, buf);
             }
 
             str = hy_nevra_get_string(nevra, HY_NEVRA_RELEASE);
