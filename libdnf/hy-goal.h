@@ -52,6 +52,12 @@ typedef enum {
     DNF_IGNORE_WEAK              = 1 << 15
 } DnfGoalActions;
 
+typedef enum {
+    DNF_PACKAGE_STATE_ALL              = 0,
+    DNF_PACKAGE_STATE_AVAILABLE        = 1,
+    DNF_PACKAGE_STATE_INSTALLED        = 2
+} DnfPackageState;
+
 #define HY_REASON_DEP 1
 #define HY_REASON_USER 2
 #define HY_REASON_CLEAN 3
@@ -102,8 +108,8 @@ int hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
 
 /* problems */
 int hy_goal_count_problems(HyGoal goal);
-Queue *hy_goal_conflict_pkgs(HyGoal goal, unsigned i);
-Queue *hy_goal_broken_dependency_pkgs(HyGoal goal, unsigned i);
+DnfPackageSet *hy_goal_conflict_all_pkgs(HyGoal goal, DnfPackageState pkg_type);
+DnfPackageSet *hy_goal_broken_dependency_all_pkgs(HyGoal goal, DnfPackageState pkg_type);
 char *hy_goal_describe_problem(HyGoal goal, unsigned i);
 char **hy_goal_describe_problem_rules(HyGoal goal, unsigned i);
 int hy_goal_log_decisions(HyGoal goal);
