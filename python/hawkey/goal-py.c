@@ -521,28 +521,18 @@ static PyObject *
 problem_conflicts(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *list;
-    Queue *conflict;
-    DnfSack *csack = sackFromPyObject(self->sack);
-    DnfPackageSet *pset = dnf_packageset_new(csack);
+    DnfPackageSet *pset;
     const char *kwlist[] = {"available", NULL};
     int available = 0;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", (char**) kwlist, &available))
         return 0;
 
-    int count_problems = hy_goal_count_problems(self->goal);
-    for (int i = 0; i < count_problems; i++) {
-        conflict = hy_goal_conflict_pkgs(self->goal, i);
-        for (int j = 0; j < conflict->count; j++) {
-            Id id = conflict->elements[j];
-            DnfPackage *pkg = dnf_package_new(csack, id);
-            if (pkg == NULL)
-                continue;
-            if (available && dnf_package_installed(pkg))
-                continue;
-            dnf_packageset_add(pset, pkg);
-        }
-    }
+    DnfPackageState pkg_type = DNF_PACKAGE_STATE_ALL;
+    if (available)
+        pkg_type = DNF_PACKAGE_STATE_AVAILABLE;
+
+    pset = hy_goal_conflict_all_pkgs(self->goal, pkg_type);
     list = packageset_to_pylist(pset, self->sack);
     return list;
 }
@@ -556,28 +546,19 @@ static PyObject *
 problem_broken_dependency(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *list;
-    Queue *broken_dependency;
-    DnfSack *csack = sackFromPyObject(self->sack);
-    DnfPackageSet *pset = dnf_packageset_new(csack);
+    DnfPackageSet *pset;
     const char *kwlist[] = {"available", NULL};
     int available = 0;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", (char**) kwlist, &available))
         return 0;
 
-    int count_problems = hy_goal_count_problems(self->goal);
-    for (int i = 0; i < count_problems; i++) {
-        broken_dependency = hy_goal_broken_dependency_pkgs(self->goal, i);
-        for (int j = 0; j < broken_dependency->count; j++) {
-            Id id = broken_dependency->elements[j];
-            DnfPackage *pkg = dnf_package_new(csack, id);
-            if (pkg == NULL)
-                continue;
-            if (available && dnf_package_installed(pkg))
-                continue;
-            dnf_packageset_add(pset, pkg);
-        }
-    }
+    DnfPackageState pkg_type = DNF_PACKAGE_STATE_ALL;
+
+    if (available)
+        pkg_type = DNF_PACKAGE_STATE_AVAILABLE;
+
+    pset = hy_goal_broken_dependency_all_pkgs(self->goal, pkg_type);
     list = packageset_to_pylist(pset, self->sack);
     return list;
 }

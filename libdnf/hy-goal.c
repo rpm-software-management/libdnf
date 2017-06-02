@@ -527,7 +527,7 @@ filter_pkg2job(DnfSack *sack, const struct _Filter *f, Queue *job)
     assert(f->nmatches == 1);
     Pool *pool = dnf_sack_get_pool(sack);
     DnfPackageSet *pset = f->matches[0].pset;
-    const int count = dnf_packageset_count(pset);
+    unsigned int count = dnf_packageset_count(pset);
     Id what;
     Id id = -1;
     Queue pkgs;
@@ -984,7 +984,7 @@ hy_goal_count_problems(HyGoal goal)
  *
  * Returns Queue with Ids of packages with conflict
  */
-Queue *
+static Queue *
 hy_goal_conflict_pkgs(HyGoal goal, unsigned i)
 {
     SolverRuleinfo type;
@@ -1012,11 +1012,41 @@ hy_goal_conflict_pkgs(HyGoal goal, unsigned i)
 }
 
 /**
+ * Reports packages that has a conflict
+ *
+ * available - if available it returns set with available packages with conflicts
+ *
+ * Returns DnfPackageSet with all packages that have a conflict.
+ */
+DnfPackageSet *
+hy_goal_conflict_all_pkgs(HyGoal goal, DnfPackageState pkg_type)
+{
+    DnfPackageSet *pset = dnf_packageset_new(goal->sack);
+
+    int count_problems = hy_goal_count_problems(goal);
+    for (int i = 0; i < count_problems; i++) {
+        Queue *conflict = hy_goal_conflict_pkgs(goal, i);
+        for (int j = 0; j < conflict->count; j++) {
+            Id id = conflict->elements[j];
+            DnfPackage *pkg = dnf_package_new(goal->sack, id);
+            if (pkg == NULL)
+                continue;
+            if (pkg_type ==  DNF_PACKAGE_STATE_AVAILABLE && dnf_package_installed(pkg))
+                continue;
+            if (pkg_type ==  DNF_PACKAGE_STATE_INSTALLED && !dnf_package_installed(pkg))
+                continue;
+            dnf_packageset_add(pset, pkg);
+        }
+        queue_free(conflict);
+    }
+    return pset;
+}
+/**
  * Reports packages that have broken dependency
  *
  * Returns Queue with Ids of packages with broken dependency
  */
-Queue *
+static Queue *
 hy_goal_broken_dependency_pkgs(HyGoal goal, unsigned i)
 {
     SolverRuleinfo type;
@@ -1042,29 +1072,56 @@ hy_goal_broken_dependency_pkgs(HyGoal goal, unsigned i)
 }
 
 /**
- * String describing the encountered solving problem 'i'.
+ * Reports all packages that have broken dependency
+ * available - if available returns only available packages with broken dependencies
+ * Returns DnfPackageSet with all packages with broken dependency
+ */
+DnfPackageSet *
+hy_goal_broken_dependency_all_pkgs(HyGoal goal, DnfPackageState pkg_type)
+{
+    DnfPackageSet *pset = dnf_packageset_new(goal->sack);
+
+    int count_problems = hy_goal_count_problems(goal);
+    for (int i = 0; i < count_problems; i++) {
+        Queue *broken_dependency = hy_goal_broken_dependency_pkgs(goal, i);
+        for (int j = 0; j < broken_dependency->count; j++) {
+            Id id = broken_dependency->elements[j];
+            DnfPackage *pkg = dnf_package_new(goal->sack, id);
+            if (pkg == NULL)
+                continue;
+            if (pkg_type ==  DNF_PACKAGE_STATE_AVAILABLE && dnf_package_installed(pkg))
+                continue;
+            if (pkg_type ==  DNF_PACKAGE_STATE_INSTALLED && !dnf_package_installed(pkg))
+                continue;
+            dnf_packageset_add(pset, pkg);
+        }
+        queue_free(broken_dependency);
+    }
+    return pset;
+}
+
+/**
+ * String describing the removal of protected packages.
  *
  * Caller is responsible for freeing the returned string using g_free().
  */
-char *
-hy_goal_describe_problem(HyGoal goal, unsigned i)
+static char *
+hy_goal_describe_protected_removal(HyGoal goal)
 {
-    Id rid, source, target, dep;
-    SolverRuleinfo type;
     g_autoptr(GString) string = NULL;
     DnfPackage *pkg;
     guint j;
     const char *name;
+    DnfPackageSet *pset;
+    Pool *pool = goal->solv->pool;
+    Solvable *s;
 
-    /* internal error */
-    if (i >= (unsigned) hy_goal_count_problems(goal))
-        return NULL;
-    // problem is not in libsolv - removal of protected packages
-    if (i >= (unsigned) solver_problem_count(goal->solv)) {
-        string = g_string_new("The operation would result in removing"
-                              " the following protected packages: ");
-        for (j = 0; j < goal->removal_of_protected->len; ++j) {
-            pkg = g_ptr_array_index (goal->removal_of_protected, i);
+    string = g_string_new("The operation would result in removing"
+                          " the following protected packages: ");
+
+    if ((goal->removal_of_protected != NULL) && (0 < goal->removal_of_protected->len)) {
+        for (j = 0; j < goal->removal_of_protected->len; j++) {
+            pkg = g_ptr_array_index(goal->removal_of_protected, j);
             name = dnf_package_get_name(pkg);
             if (j == 0) {
                 g_string_append(string, name);
@@ -1074,14 +1131,54 @@ hy_goal_describe_problem(HyGoal goal, unsigned i)
         }
         return g_strdup(string->str);
     }
+    pset = hy_goal_broken_dependency_all_pkgs(goal, DNF_PACKAGE_STATE_INSTALLED);
+    unsigned int count = dnf_packageset_count(pset);
+    Id id = -1;
+    gboolean found = FALSE;
+    for (int i = 0; i < count; ++i) {
+        id = dnf_packageset_get_pkgid(pset, i, id);
+        if (MAPTST(goal->protected, id)) {
+            s = pool_id2solvable(pool, id);
+            name = pool_id2str(pool, s->name);
+            if (!found) {
+                g_string_append(string, name);
+                found = TRUE;
+            } else {
+                g_string_append_printf(string, ", %s", name);
+            }
+        }
+    }
+    if (found)
+        return g_strdup(string->str);
+    return NULL;
+}
+
+/**
+ * String describing the encountered solving problem 'i'.
+ *
+ * Caller is responsible for freeing the returned string using g_free().
+ */
+char *
+hy_goal_describe_problem(HyGoal goal, unsigned i)
+{
+    Id rid, source, target, dep;
+    SolverRuleinfo type;
+
+    /* internal error */
+    if (i >= (unsigned) hy_goal_count_problems(goal)) {
+        return NULL;
+    }
+    // problem is not in libsolv - removal of protected packages
+    char *problem = hy_goal_describe_protected_removal(goal);
+    if (problem)
+        return problem;
 
     // this libsolv interface indexes from 1 (we do from 0), so:
     rid = solver_findproblemrule(goal->solv, i + 1);
     type = solver_ruleinfo(goal->solv, rid, &source, &target, &dep);
 
-    const char *problem = solver_problemruleinfo2str(goal->solv,
-                                                     type, source, target, dep);
-    return g_strdup(problem);
+    const char *problem_str = solver_problemruleinfo2str(goal->solv, type, source, target, dep);
+    return g_strdup(problem_str);
 }
 
 /**
@@ -1098,9 +1195,10 @@ hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
     if (i >= (unsigned) hy_goal_count_problems(goal))
         return NULL;
     // problem is not in libsolv - removal of protected packages
-    if (i >= (unsigned) solver_problem_count(goal->solv)) {
+    char *problem = hy_goal_describe_protected_removal(goal);
+    if (problem) {
         problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
-        problist[p++] = hy_goal_describe_problem(goal, i);
+        problist[p++] = problem;
         problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
         problist[p++] = NULL;
         return problist;
@@ -1109,7 +1207,6 @@ hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
     Queue pq;
     Id rid, source, target, dep;
     SolverRuleinfo type;
-    const char *problem;
     int j;
     gboolean unique;
     queue_init(&pq);
@@ -1118,12 +1215,11 @@ hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
     for (j = 0; j < pq.count; j++) {
         rid = pq.elements[j];
         type = solver_ruleinfo(goal->solv, rid, &source, &target, &dep);
-        problem = solver_problemruleinfo2str(goal->solv,
-                                             type, source, target, dep);
+        const char *problem_str = solver_problemruleinfo2str(goal->solv, type, source, target, dep);
         unique = TRUE;
         if (problist != NULL) {
             for (int k = 0; problist[k] != NULL; k++) {
-                if (g_strcmp0(problem, problist[k]) == 0) {
+                if (g_strcmp0(problem_str, problist[k]) == 0) {
                     unique = FALSE;
                     break;
                 }
@@ -1132,7 +1228,7 @@ hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
         if (unique) {
             if (problist == NULL)
                 problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
-            problist[p++] = g_strdup(problem);
+            problist[p++] = g_strdup(problem_str);
             problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
             problist[p] = NULL;
         }
