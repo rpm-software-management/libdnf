@@ -1257,9 +1257,11 @@ dnf_repo_check_internal(DnfRepo *repo,
                             g_strdup(tmp));
     }
 
+    DnfRepoEnabled enabled = dnf_repo_get_enabled(repo);
     /* ensure we reset the values from the keyfile */
     if (!dnf_repo_set_keyfile_data(repo, error))
         return FALSE;
+    dnf_repo_set_enabled(repo, enabled);
 
     return TRUE;
 }
@@ -1500,9 +1502,11 @@ dnf_repo_update(DnfRepo *repo,
         return FALSE;
     }
 
+    DnfRepoEnabled enabled = dnf_repo_get_enabled(repo);
     /* ensure we set the values from the keyfile */
     if (!dnf_repo_set_keyfile_data(repo, error))
         return FALSE;
+    dnf_repo_set_enabled(repo, enabled);
 
     /* take lock */
     ret = dnf_state_take_lock(state,
@@ -1945,9 +1949,11 @@ dnf_repo_download_packages(DnfRepo *repo,
     g_autoptr(GError) error_local = NULL;
     g_autofree gchar *directory_slash = NULL;
 
+    DnfRepoEnabled enabled = dnf_repo_get_enabled(repo);
     /* ensure we reset the values from the keyfile */
     if (!dnf_repo_set_keyfile_data(repo, error))
         goto out;
+    dnf_repo_set_enabled(repo, enabled);
 
     /* we should never be asked to download from a local repo.  if
        this happens, it's a bug somewhere else. */
