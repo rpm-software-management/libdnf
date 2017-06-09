@@ -26,10 +26,10 @@
 #include <assert.h>
 #include "dnf-swdb-sql.h"
 #include "dnf-swdb-db.h"
+#include "dnf-swdb-trans.h"
 
 G_DEFINE_TYPE(DnfSwdb, dnf_swdb, G_TYPE_OBJECT)
 G_DEFINE_TYPE(DnfSwdbPkg, dnf_swdb_pkg, G_TYPE_OBJECT) //history package
-G_DEFINE_TYPE(DnfSwdbTrans, dnf_swdb_trans, G_TYPE_OBJECT) //transaction
 G_DEFINE_TYPE(DnfSwdbTransData, dnf_swdb_transdata, G_TYPE_OBJECT) //trans data
 G_DEFINE_TYPE(DnfSwdbPkgData, dnf_swdb_pkgdata, G_TYPE_OBJECT)
 G_DEFINE_TYPE(DnfSwdbRpmData, dnf_swdb_rpmdata, G_TYPE_OBJECT)
@@ -225,71 +225,6 @@ dnf_swdb_pkgdata_new(const gchar* from_repo_revision,
     pkgdata->origin_url = g_strdup(origin_url);
     pkgdata->from_repo = g_strdup(from_repo);
     return pkgdata;
-}
-
-// SWDB Transaction Destructor
-static void
-dnf_swdb_trans_finalize(GObject *object)
-{
-    DnfSwdbTrans *trans = (DnfSwdbTrans *) object;
-    g_free(trans->beg_timestamp);
-    g_free(trans->end_timestamp);
-    g_free(trans->beg_rpmdb_version);
-    g_free(trans->end_rpmdb_version);
-    g_free(trans->cmdline);
-    g_free(trans->loginuid);
-    g_free(trans->releasever);
-    G_OBJECT_CLASS (dnf_swdb_trans_parent_class)->finalize (object);
-}
-
-// SWDB Transaction Class initialiser
-static void
-dnf_swdb_trans_class_init(DnfSwdbTransClass *klass)
-{
-    GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = dnf_swdb_trans_finalize;
-}
-
-// SWDB Transaction Object initialiser
-static void
-dnf_swdb_trans_init(DnfSwdbTrans *self)
-{
-    self->is_output = 0;
-    self->is_error = 0;
-    self->swdb = NULL;
-    self->altered_lt_rpmdb = 0;
-    self->altered_gt_rpmdb = 0;
-}
-
-/**
- * dnf_swdb_trans_new:
- *
- * Creates a new #DnfSwdbTrans.
- *
- * Returns: a #DnfSwdbTrans
-**/
-DnfSwdbTrans*
-dnf_swdb_trans_new(gint tid,
-                   const gchar *beg_timestamp,
-                   const gchar *end_timestamp,
-                   const gchar *beg_rpmdb_version,
-                   const gchar *end_rpmdb_version,
-                   const gchar *cmdline,
-                   const gchar *loginuid,
-                   const gchar *releasever,
-                   gint return_code)
-{
-    DnfSwdbTrans *trans = g_object_new(DNF_TYPE_SWDB_TRANS, NULL);
-    trans->tid = tid;
-    trans->beg_timestamp = g_strdup(beg_timestamp);
-    trans->end_timestamp = g_strdup(end_timestamp);
-    trans->beg_rpmdb_version = g_strdup(beg_rpmdb_version);
-    trans->end_rpmdb_version = g_strdup(end_rpmdb_version);
-    trans->cmdline = g_strdup(cmdline);
-    trans->loginuid = g_strdup(loginuid);
-    trans->releasever = g_strdup(releasever);
-    trans->return_code = return_code;
-    return trans;
 }
 
 // SWDB Transaction Data Destructor
@@ -1651,7 +1586,7 @@ _test_output(DnfSwdb *self, gint tid, const gchar *o_type)
 {
     gint type = dnf_swdb_get_output_type(self, o_type);
     sqlite3_stmt *res;
-    const gchar *sql = LOAD_OUTPUT;
+    const gchar *sql = T_OUTPUT;
     DB_PREP(self->db, sql, res);
     DB_BIND_INT(res, "@tid", tid);
     DB_BIND_INT(res, "@type", type);
@@ -1681,73 +1616,6 @@ _resolve_outputs(DnfSwdb *self, GPtrArray *trans)
         obj->is_output = _test_output(self, obj->tid, "stdout");
         obj->is_error = _test_output(self, obj->tid, "stderr");
     }
-}
-
-
-/**
-* dnf_swdb_get_trans_data:
-* @self: SWDB object
-* @trans: transaction object
-*
-* Get list of transaction data objects for given transaction
-*
-* Returns: (element-type DnfSwdbTransData)(array)(transfer container): list of #DnfSwdbTransData
-**/
-GPtrArray*
-dnf_swdb_get_trans_data(DnfSwdb *self, DnfSwdbTrans *trans)
-{
-    if (!trans->tid)
-        return NULL;
-    if (dnf_swdb_open(self))
-        return NULL;
-    GPtrArray *node = g_ptr_array_new();
-    sqlite3_stmt *res;
-    const gchar *sql = S_TRANS_DATA_BY_TID;
-    DB_PREP(self->db, sql, res);
-    DB_BIND_INT(res, "@tid", trans->tid);
-    while(sqlite3_step(res) == SQLITE_ROW)
-    {
-        gchar *tmp_reason = _get_description(self->db,
-                                            sqlite3_column_int(res,6),
-                                            S_REASON_TYPE_BY_ID);
-
-        gchar *tmp_state = _get_description(self->db,
-                                            sqlite3_column_int(res,7),
-                                            S_STATE_TYPE_BY_ID);
-
-        DnfSwdbTransData *data = dnf_swdb_transdata_new(
-            sqlite3_column_int(res, 0), //td_id
-            sqlite3_column_int(res, 1), //t_id
-            sqlite3_column_int(res, 2), //pd_id
-            sqlite3_column_int(res, 3), //g_id
-            sqlite3_column_int(res, 4), //done
-            sqlite3_column_int(res, 5), //ORIGINAL_TD_ID
-            tmp_reason, //reason
-            tmp_state //state
-        );
-        g_ptr_array_add(node, (gpointer) data);
-        g_free(tmp_reason);
-        g_free(tmp_state);
-    }
-    sqlite3_finalize(res);
-    return node;
-}
-
-/**
-* dnf_swdb_trans_get_trans_data:
-* @self: transaction object
-*
-* Get list of transaction data objects for transaction
-*
-* Returns: (element-type DnfSwdbTransData)(array)(transfer container): list of #DnfSwdbTransData
-*/
-GPtrArray*
-dnf_swdb_trans_get_trans_data(DnfSwdbTrans *self)
-{
-    if (self->swdb)
-        return dnf_swdb_get_trans_data(self->swdb, self);
-    else
-        return NULL;
 }
 
 /**
@@ -1850,49 +1718,7 @@ dnf_swdb_last (DnfSwdb *self,
     return trans;
 }
 
-/**
-* dnf_swdb_trans_compare_rpmdbv:
-* @self: #DnfSwdbTrans object
-* @rpmdbv: current version of rpmdb
-*
-* Compare current version of rpmdb with version from transaction
-* If versions differs, set altered_gt_rpmdb to #True
-*
-* Returns: #true if self.end_rpmdb_version == rpmdbv
-**/
-gboolean
-dnf_swdb_trans_compare_rpmdbv(DnfSwdbTrans *self, const gchar *rpmdbv)
-{
-    gboolean altered = g_strcmp0(self->end_rpmdb_version, rpmdbv);
-    if (altered)
-    {
-        self->altered_gt_rpmdb = TRUE;
-    }
-    return !altered;
-}
-
-
 /****************************** OUTPUT PERSISTOR *****************************/
-
-/**
-* _output_insert:
-* @db: sqlite database handle
-* @tid: transaction ID
-* @msg: output text
-* @type: type of @msg (stdout or stderr)
-**/
-static void
-_output_insert(sqlite3 *db, gint tid, const gchar *msg, gint type)
-{
-    sqlite3_stmt *res;
-    const gchar *sql = INSERT_OUTPUT;
-    DB_PREP(db,sql,res);
-    DB_BIND_INT(res, "@tid", tid);
-    DB_BIND(res, "@msg", msg);
-    DB_BIND_INT(res, "@type", type);
-    DB_STEP(res);
-}
-
 
 /**
 * dnf_swdb_log_error:
@@ -1945,34 +1771,6 @@ dnf_swdb_log_output(DnfSwdb *self, gint tid, const gchar *msg)
     return 0;
 }
 
-
-/**
-* _load_output:
-* @db: sqlite database handle
-* @tid: transaction ID
-* @type: output type
-*
-* Load output for transaction @tid
-*
-* Returns: list of transaction outputs in string
-**/
-static GPtrArray*
-_load_output(sqlite3 *db, gint tid, gint type)
-{
-    sqlite3_stmt *res;
-    const gchar *sql = LOAD_OUTPUT;
-    DB_PREP(db,sql,res);
-    DB_BIND_INT(res, "@tid", tid);
-    DB_BIND_INT(res, "@type", type);
-    GPtrArray *l = g_ptr_array_new();
-    gchar *row;
-    while((row = (gchar *)DB_FIND_STR_MULTI(res)) )
-    {
-        g_ptr_array_add(l, row);
-    }
-    return l;
-}
-
 /**
 * dnf_swdb_load_error:
 * @self: SWDB object
@@ -1987,12 +1785,9 @@ dnf_swdb_load_error(DnfSwdb *self, gint tid)
 {
     if (dnf_swdb_open(self))
         return NULL;
-    GPtrArray *rc = _load_output(
-        self->db,
-        tid,
-        dnf_swdb_get_output_type(self, "stderr")
-    );
-    return rc;
+    return _load_output(self->db,
+                        tid,
+                        dnf_swdb_get_output_type(self, "stderr"));
 }
 
 /**
@@ -2009,10 +1804,9 @@ dnf_swdb_load_output(DnfSwdb *self, gint tid)
 {
     if (dnf_swdb_open(self))
         return NULL;
-    GPtrArray *rc = _load_output(self->db,
-                                 tid,
-                                 dnf_swdb_get_output_type(self, "stdout"));
-    return rc;
+    return _load_output(self->db,
+                        tid,
+                        dnf_swdb_get_output_type(self, "stdout"));
 }
 
 
@@ -2201,8 +1995,15 @@ dnf_swdb_exist(DnfSwdb *self)
 gint
 dnf_swdb_open(DnfSwdb *self)
 {
-    if(self->db)
+    if (!self)
+    {
+        return 1;
+    }
+
+    if (self->db)
+    {
         return 0;
+    }
 
     if(sqlite3_open(self->path, &self->db))
     {

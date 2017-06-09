@@ -32,7 +32,6 @@
 #define I_DESC_PACKAGE "INSERT INTO package_type VALUES (null, @desc)"
 
 #define INSERT_PKG "insert into PACKAGE values(null,@name,@epoch,@version,@release,@arch,@cdata,@ctype,@type)"
-#define INSERT_OUTPUT "insert into OUTPUT values(null,@tid,@msg,@type)"
 #define INSERT_TRANS_BEG "insert into TRANS values(null,@beg,null,@rpmdbv,null,@cmdline,@loginuid,@releasever,null)"
 #define INSERT_TRANS_END "UPDATE TRANS SET end_timestamp=@end,end_RPMDB_version=@rpmdbv, return_code=@rc WHERE T_ID=@tid"
 #define INSERT_REPO "insert into REPO values(null,@name,null,null)"
@@ -55,7 +54,6 @@
 #define GET_TRANS_CMDLINE "SELECT cmdline FROM TRANS WHERE T_ID=@tid"
 
 #define INSERT_PDID "insert into PACKAGE_DATA values(null,@pid,null,null,null,null,null,null,'#')"
-#define LOAD_OUTPUT "SELECT msg FROM OUTPUT WHERE T_ID=@tid and type=@type"
 #define PKG_DATA_ATTR_BY_PID "FROM PACKAGE_DATA WHERE P_ID=@pid"
 #define TRANS_DATA_ATTR_BY_PDID "FROM TRANS_DATA WHERE PD_ID=@pdid"
 #define TRANS_ATTR_BY_TID "FROM TRANS WHERE T_ID=@tid"
@@ -114,5 +112,8 @@
 #define U_REPO_BY_PID "UPDATE PACKAGE_DATA SET R_ID=@rid where P_ID=@pid"
 
 #define U_ORIGINAL_TDID_BY_TDID "UPDATE TRANS_DATA set ORIGINAL_TD_ID=@orig where TD_ID=@tdid"
+
+#define T_OUTPUT "SELECT O_ID FROM OUTPUT WHERE T_ID=@tid and type=@type"
+
 
 #endif

@@ -42,8 +42,13 @@
 G_BEGIN_DECLS
 
 #define DNF_TYPE_SWDB dnf_swdb_get_type ()
+
 // structure,function prefix,namespace,object name,inherits
-G_DECLARE_FINAL_TYPE (DnfSwdb, dnf_swdb, DNF,SWDB, GObject)
+G_DECLARE_FINAL_TYPE (DnfSwdb, dnf_swdb, DNF, SWDB, GObject)
+
+#include "dnf-swdb-obj.h"
+#include "dnf-swdb-groups.h"
+#include "dnf-swdb-trans.h"
 
 struct _DnfSwdb
 {
@@ -53,9 +58,6 @@ struct _DnfSwdb
     gboolean ready; //db opened
     gchar *releasever;
 };
-
-#include "dnf-swdb-obj.h"
-#include "dnf-swdb-groups.h"
 
 DnfSwdb        *dnf_swdb_new                    (const gchar    *db_path,
                                                  const gchar    *releasever);
@@ -131,9 +133,6 @@ GPtrArray      *dnf_swdb_trans_old              (DnfSwdb        *self,
                                                  GArray         *tids,
                                                  gint            limit,
                                                  gboolean        complete_only);
-GPtrArray      *dnf_swdb_trans_get_trans_data   (DnfSwdbTrans   *self);
-GPtrArray      *dnf_swdb_get_trans_data         (DnfSwdb        *self,
-                                                 DnfSwdbTrans   *trans);
 gint            dnf_swdb_add_group              (DnfSwdb        *self,
                                                  DnfSwdbGroup   *group);
 gint            dnf_swdb_add_env                (DnfSwdb        *self,

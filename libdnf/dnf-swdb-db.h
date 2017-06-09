@@ -50,4 +50,13 @@ GArray         *_simple_search      (sqlite3        *db,
                                      const gchar    *pattern);
 GArray         *_extended_search    (sqlite3        *db,
                                      const gchar    *pattern);
+
+GPtrArray      *_load_output        (sqlite3        *db,
+                                     gint            tid,
+                                     gint            type);
+
+void            _output_insert      (sqlite3        *db,
+                                     gint            tid,
+                                     const gchar    *msg,
+                                     gint            type);
 #endif

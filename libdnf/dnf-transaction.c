@@ -50,6 +50,7 @@
 
 #include "dnf-swdb.h"
 #include "dnf-swdb-obj.h"
+#include "dnf-swdb-trans.h"
 
 #endif
 
@@ -988,6 +989,8 @@ dnf_transaction_write_yumdb_install_item(DnfTransaction *transaction,
                                                     "PK",
                                                     tmp);
 
+    /* TODO - Replace that "PK" with logging into transaction performed with */
+
     /* Insert package data */
     if(dnf_swdb_log_package_data(swdb, pid, pkg_data))
         return FALSE;
@@ -1051,6 +1054,8 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
 
     const gchar *release = dnf_context_get_release_ver(priv->context);
     swdb = (void *) dnf_swdb_new(DNF_SWDB_DEFAULT_PATH, release);
+
+    // TODO - crate transaction - make it visible to user in dnf history
 
     #endif
 
