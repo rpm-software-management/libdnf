@@ -7,6 +7,8 @@ SET(SWDB_SOURCES
     ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb-db.h
     ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb-groups.c
     ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb-groups.h
+    ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb-trans.c
+    ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb-trans.h
     )
 
 ADD_EXECUTABLE(test_libdnf_swdb dnf-swdb-test.c ${SWDB_SOURCES})

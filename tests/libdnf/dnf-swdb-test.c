@@ -20,76 +20,6 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-/** TODO Checklist
-* dnf_swdb_search
-* dnf_swdb_checksums_by_nvras
-* dnf_swdb_select_user_installed #
-* dnf_swdb_user_installed #
-* ----- GROUPS -----
-* dnf_swdb_group_add_package
-* dnf_swdb_group_add_exclude
-* dnf_swdb_env_add_exclude
-* dnf_swdb_env_add_group
-* dnf_swdb_add_group
-* dnf_swdb_add_env
-* dnf_swdb_get_group
-* dnf_swdb_get_env
-* dnf_swdb_groups_by_pattern
-* dnf_swdb_env_by_pattern
-* dnf_swdb_group_get_exclude
-* dnf_swdb_group_get_full_list
-* dnf_swdb_group_update_full_list
-* dnf_swdb_uninstall_group
-* dnf_swdb_env_get_grp_list
-* dnf_swdb_env_is_installed
-* dnf_swdb_env_get_exclude
-* dnf_swdb_groups_commit
-* dnf_swdb_log_group_trans
-* ------ REPOS -----
-* dnf_swdb_repo_by_nvra #
-* dnf_swdb_set_repo #
-* ----- PACKAGE -----
-* dnf_swdb_log_package_data #
-* dnf_swdb_get_packages_by_tid #
-* dnf_swdb_pkg_get_ui_from_repo #
-* dnf_swdb_package_by_nvra #
-* dnf_swdb_package_data_by_nvra #
-* dnf_swdb_set_reason #
-* dnf_swdb_mark_user_installed #
-* dnf_swdb_add_package #
-* dnf_swdb_reason_by_nvra #
-* ------ RPM ------
-* dnf_swdb_add_rpm_data #
-* ------ TRANS -----
-* dnf_swdb_trans_data_beg #
-* dnf_swdb_trans_data_end #
-* dnf_swdb_trans_data_pid_end #
-* dnf_swdb_trans_beg #
-* dnf_swdb_trans_end #
-* dnf_swdb_trans_cmdline
-* dnf_swdb_get_trans_data #
-* dnf_swdb_trans_old
-* dnf_swdb_last #
-* dnf_swdb_log_error
-* dnf_swdb_log_output #
-* dnf_swdb_load_error
-* dnf_swdb_load_output #
-* ------ UTIL -----
-* dnf_swdb_get_path #
-* dnf_swdb_set_path #
-* dnf_swdb_exist #
-* dnf_swdb_create_db #
-* dnf_swdb_reset_db #
-* ------ intern ------
-* dnf_swdb_open #
-* dnf_swdb_close #
-* dnf_swdb_get_package_type #
-* dnf_swdb_get_output_type #
-* dnf_swdb_get_reason_type #
-* dnf_swdb_get_state_type #
-* # = covered
-*/
-
 #include <glib.h>
 #include <glib-object.h>
 #include "libdnf/dnf-swdb.h"
@@ -311,8 +241,8 @@ static void check_initial_transaction(DnfSwdb *self)
     g_assert(!trans->altered_gt_rpmdb);
 
     //get me all packages from that transaction and verify them
-    GPtrArray *packages = dnf_swdb_get_packages_by_tid(self, trans->tid);
-    GPtrArray *trans_data = dnf_swdb_get_trans_data(self, trans);
+    GPtrArray *packages = dnf_swdb_trans_packages(trans);
+    GPtrArray *trans_data = dnf_swdb_trans_data(trans);
     g_assert(trans_data && trans_data->len == INIT_PACAKGES);
     g_assert(packages && packages->len == INIT_PACAKGES);
 
@@ -457,10 +387,6 @@ static void run_initial_transaction(DnfSwdb *self)
 
     //close transaction
     g_assert(!end_trans(self, tid));
-
-    //all done, mark all packages as done
-    //XXX we dont need to do that here, not sure about DNF
-    //g_assert(!dnf_swdb_trans_data_end( self, tid));
 }
 
 static gint update_package(DnfSwdb *self, DnfSwdbPkg *pkg)
@@ -484,7 +410,7 @@ static gint update_package(DnfSwdb *self, DnfSwdbPkg *pkg)
     g_assert(!end_trans(self, tid));
     DnfSwdbTrans *last_trans = dnf_swdb_last(self, TRUE);
     g_assert(last_trans);
-    GPtrArray *trans_data_array = dnf_swdb_get_trans_data(self, last_trans);
+    GPtrArray *trans_data_array = dnf_swdb_trans_data(last_trans);
     g_assert(trans_data_array || trans_data_array->len);
     DnfSwdbTransData *trans_data = g_ptr_array_index(trans_data_array, 0);
     g_assert(trans_data);
@@ -505,19 +431,19 @@ static gint reinstall_package(DnfSwdb *self, DnfSwdbPkg *pkg, gint last_tdid)
     g_assert(tid); //tid not 0
     DnfSwdbPkgData *pkg_data = generate_package_data();
     g_assert(!dnf_swdb_log_package_data(self, pkg->pid, pkg_data));
-    g_assert(!dnf_swdb_trans_data_beg(  self,
-                                        tid,
-                                        pkg->pid,
-                                        "user", //reason
-                                        "Reinstall")); //state
-    g_assert(!dnf_swdb_trans_data_pid_end(  self,
-                                            pkg->pid,
-                                            tid,
-                                            "Reinstall"));
+    g_assert(!dnf_swdb_trans_data_beg(self,
+                                      tid,
+                                      pkg->pid,
+                                      "user", //reason
+                                      "Reinstall")); //state
+    g_assert(!dnf_swdb_trans_data_pid_end(self,
+                                          pkg->pid,
+                                          tid,
+                                          "Reinstall"));
     g_assert(!end_trans(self, tid));
     DnfSwdbTrans *last_trans = dnf_swdb_last(self, TRUE);
     g_assert(last_trans);
-    GPtrArray *trans_data_array = dnf_swdb_get_trans_data(self, last_trans);
+    GPtrArray *trans_data_array = dnf_swdb_trans_data(last_trans);
     g_assert(trans_data_array || trans_data_array->len);
     DnfSwdbTransData *trans_data = g_ptr_array_index(trans_data_array, 0);
     g_assert(trans_data);
@@ -542,14 +468,14 @@ static void erase_package(DnfSwdb *self, DnfSwdbPkg *pkg, gint last_tdid)
                                         pkg->pid,
                                         "user", //reason
                                         "Erase")); //state
-    g_assert(!dnf_swdb_trans_data_pid_end(  self,
-                                            pkg->pid,
-                                            tid,
-                                            "Erase"));
+    g_assert(!dnf_swdb_trans_data_pid_end(self,
+                                          pkg->pid,
+                                          tid,
+                                          "Erase"));
     g_assert(!end_trans(self, tid));
     DnfSwdbTrans *last_trans = dnf_swdb_last(self, TRUE);
     g_assert(last_trans);
-    GPtrArray *trans_data_array = dnf_swdb_get_trans_data(self, last_trans);
+    GPtrArray *trans_data_array = dnf_swdb_trans_data(last_trans);
     g_assert(trans_data_array || trans_data_array->len);
     DnfSwdbTransData *trans_data = g_ptr_array_index(trans_data_array, 0);
     g_assert(trans_data);
@@ -607,9 +533,6 @@ gint main ()
     erase_package(self, pkg, tdid);
 
     //TODO create some group transaction
-
-
-
 
     g_object_unref(pkg);
     g_object_unref(self);

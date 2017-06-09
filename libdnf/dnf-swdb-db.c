@@ -427,3 +427,51 @@ _extended_search (sqlite3* db, const gchar *pattern)
     g_array_free(pids, TRUE);
     return tids;
 }
+
+
+/**
+* _load_output:
+* @db: sqlite database handle
+* @tid: transaction ID
+* @type: output type
+*
+* Load output for transaction @tid
+*
+* Returns: list of transaction outputs in string
+**/
+GPtrArray*
+_load_output(sqlite3 *db, gint tid, gint type)
+{
+    sqlite3_stmt *res;
+    const gchar *sql = S_OUTPUT;
+    DB_PREP(db,sql,res);
+    DB_BIND_INT(res, "@tid", tid);
+    DB_BIND_INT(res, "@type", type);
+    GPtrArray *l = g_ptr_array_new();
+    gchar *row;
+    while((row = (gchar *)DB_FIND_STR_MULTI(res)) )
+    {
+        g_ptr_array_add(l, row);
+    }
+    return l;
+}
+
+
+/**
+* _output_insert:
+* @db: sqlite database handle
+* @tid: transaction ID
+* @msg: output text
+* @type: type of @msg (stdout or stderr)
+**/
+void
+_output_insert(sqlite3 *db, gint tid, const gchar *msg, gint type)
+{
+    sqlite3_stmt *res;
+    const gchar *sql = I_OUTPUT;
+    DB_PREP(db,sql,res);
+    DB_BIND_INT(res, "@tid", tid);
+    DB_BIND(res, "@msg", msg);
+    DB_BIND_INT(res, "@type", type);
+    DB_STEP(res);
+}

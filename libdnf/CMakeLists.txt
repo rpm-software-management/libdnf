@@ -33,7 +33,8 @@ SET (LIBDNF_SRCS
     dnf-utils.c
     dnf-swdb.c
     dnf-swdb-db.c
-    dnf-swdb-groups.c)
+    dnf-swdb-groups.c
+    dnf-swdb-trans.c)
 
 configure_file ("dnf-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/dnf-version.h)
 configure_file ("libdnf.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc @ONLY)
@@ -115,6 +116,7 @@ SET(LIBDNF_headers
     dnf-swdb-db-sql.h
     dnf-swdb-groups.h
     dnf-swdb-groups-sql.h
+    dnf-swdb-trans.h
     libdnf.h
     )
 
@@ -172,6 +174,7 @@ if (GOBJECT_INTROSPECTION_FOUND)
                     dnf-swdb.h dnf-swdb.c dnf-swdb-obj.h
                     dnf-swdb-groups.c dnf-swdb-groups.h
                     dnf-swdb-db.c dnf-swdb-db.h
+                    dnf-swdb-trans.c dnf-swdb-trans.h
             DEPENDS libdnf
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 

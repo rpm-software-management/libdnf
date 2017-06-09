@@ -38,8 +38,6 @@
 #define FIND_TIDS_FROM_PDID "SELECT T_ID FROM TRANS_DATA WHERE PD_ID=@pdid"
 #define FIND_ALL_PDID_FOR_PID "SELECT PD_ID FROM PACKAGE_DATA WHERE P_ID=@pid"
 
-
-
 #define C_PKG_DATA  "CREATE TABLE PACKAGE_DATA ( PD_ID integer PRIMARY KEY,"\
                     "P_ID integer, R_ID integer, from_repo_revision text,"\
                     "from_repo_timestamp text, installed_by text, changed_by text,"\
@@ -96,5 +94,11 @@
                    "sourcerpm TEXT, url TEXT, vendor TEXT, committer TEXT, committime TEXT)"
 
 #define C_INDEX_NVRA    "create index nvra on PACKAGE(name || '-' || version || '-' || release || '.' || arch)"
+
+#define S_OUTPUT "SELECT msg FROM OUTPUT WHERE T_ID=@tid and type=@type"
+
+#define I_OUTPUT "insert into OUTPUT values(null,@tid,@msg,@type)"
+
+
 
 #endif
