@@ -27,36 +27,15 @@
 
 G_BEGIN_DECLS
 
-#define DNF_TYPE_SWDB_PKG       dnf_swdb_pkg_get_type()
 #define DNF_TYPE_SWDB_PKGDATA   dnf_swdb_pkgdata_get_type()
 #define DNF_TYPE_SWDB_TRANSDATA dnf_swdb_transdata_get_type()
 #define DNF_TYPE_SWDB_RPMDATA   dnf_swdb_rpmdata_get_type()
 
-G_DECLARE_FINAL_TYPE (DnfSwdbPkg, dnf_swdb_pkg, DNF, SWDB_PKG, GObject)
 G_DECLARE_FINAL_TYPE (DnfSwdbPkgData, dnf_swdb_pkgdata, DNF, SWDB_PKGDATA, GObject)
 G_DECLARE_FINAL_TYPE (DnfSwdbTransData, dnf_swdb_transdata, DNF, SWDB_TRANSDATA, GObject)
 G_DECLARE_FINAL_TYPE (DnfSwdbRpmData, dnf_swdb_rpmdata, DNF, SWDB_RPMDATA, GObject)
 
 #include "dnf-swdb.h"
-
-struct _DnfSwdbPkg
-{
-    GObject parent_instance;
-    const gchar *name;
-    const gchar *epoch;
-    const gchar *version;
-    const gchar *release;
-    const gchar *arch;
-    const gchar *checksum_data;
-    const gchar *checksum_type;
-    const gchar *type;
-    gboolean done;
-    gchar *state;
-    gint pid;
-    gchar *ui_from_repo;
-    gchar *nvra;
-    DnfSwdb *swdb;
-};
 
 struct _DnfSwdbPkgData
 {
@@ -101,16 +80,6 @@ struct _DnfSwdbRpmData
     gchar *committime;
 };
 
-DnfSwdbPkg          *dnf_swdb_pkg_new               (const gchar   *name,
-                                                     const gchar   *epoch,
-                                                     const gchar   *version,
-                                                     const gchar   *release,
-                                                     const gchar   *arch,
-                                                     const gchar   *checksum_data,
-                                                     const gchar   *checksum_type,
-                                                     const gchar   *type);
-gchar              *dnf_swdb_pkg_get_ui_from_repo   (DnfSwdbPkg    *self);
-gchar              *dnf_swdb_pkg_get_reason         (DnfSwdbPkg    *self);
 DnfSwdbPkgData     *dnf_swdb_pkgdata_new            (const gchar   *from_repo_revision,
                                                      const gchar   *from_repo_timestamp,
                                                      const gchar   *installed_by,

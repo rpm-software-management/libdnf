@@ -38,6 +38,7 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <sqlite3.h>
+#include <assert.h>
 
 G_BEGIN_DECLS
 
@@ -46,9 +47,11 @@ G_BEGIN_DECLS
 // structure,function prefix,namespace,object name,inherits
 G_DECLARE_FINAL_TYPE (DnfSwdb, dnf_swdb, DNF, SWDB, GObject)
 
+#include "dnf-swdb-pkg.h"
 #include "dnf-swdb-obj.h"
 #include "dnf-swdb-groups.h"
 #include "dnf-swdb-trans.h"
+#include "dnf-swdb-db.h"
 
 struct _DnfSwdb
 {
@@ -187,6 +190,11 @@ gint            dnf_swdb_add_rpm_data           (DnfSwdb        *self,
                                                  DnfSwdbRpmData *rpm_data);
 gint            dnf_swdb_pid_by_nvra            (DnfSwdb        *self,
                                                  const gchar    *nvra);
+void            dnf_swdb_trans_with             (DnfSwdb        *self,
+                                                 int             tid,
+                                                 int             pid);
+ DnfSwdbPkg    *_get_package_by_pid             (sqlite3        *db,
+                                                 gint            pid);
 
 G_END_DECLS
 

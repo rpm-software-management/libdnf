@@ -58,6 +58,7 @@ _create_db(sqlite3 *db)
     failed += _db_exec (db, C_ENV, NULL);
     failed += _db_exec (db, C_ENV_EX, NULL);
     failed += _db_exec (db, C_RPM_DATA, NULL);
+    failed += _db_exec (db, C_TRANS_WITH, NULL);
     failed += _db_exec (db, C_INDEX_NVRA, NULL);
     return failed;
 }

@@ -30,6 +30,7 @@
 #define I_DESC_STATE   "INSERT INTO state_type   VALUES (null, @desc)"
 #define I_DESC_OUTPUT  "INSERT INTO output_type  VALUES (null, @desc)"
 #define I_DESC_PACKAGE "INSERT INTO package_type VALUES (null, @desc)"
+#define I_TRANS_WITH   "INSERT INTO TRANS_WITH   VALUES (null, @tid, @pid)"
 
 #define INSERT_PKG "insert into PACKAGE values(null,@name,@epoch,@version,@release,@arch,@cdata,@ctype,@type)"
 #define INSERT_TRANS_BEG "insert into TRANS values(null,@beg,null,@rpmdbv,null,@cmdline,@loginuid,@releasever,null)"
@@ -87,11 +88,8 @@
 #define S_TRANS_COMP "SELECT * from TRANS WHERE end_timestamp is not null or end_timestamp!='' ORDER BY T_ID DESC"
 #define S_TRANS_COMP_W_LIMIT "SELECT * from TRANS WHERE end_timestamp is not null or end_timestamp!='' ORDER BY T_ID DESC LIMIT @limit"
 
-#define S_TRANS_DATA_BY_TID "SELECT * FROM TRANS_DATA WHERE T_ID=@tid"
 #define S_PACKAGE_STATE "select done,state from PACKAGE_DATA join TRANS_DATA using (PD_ID) where P_ID=@pid and T_ID=@tid"
-#define S_REPO_FROM_PID "SELECT name, PD_ID FROM PACKAGE_DATA join REPO using(R_ID) where P_ID=@pid"
 #define S_REPO_FROM_PID2 "SELECT name FROM PACKAGE_DATA join REPO using(R_ID) where P_ID=@pid"
-#define S_RELEASEVER_FROM_PDID "SELECT releasever from TRANS_DATA join TRANS using(T_ID) where PD_ID=@pdid"
 #define S_CHECKSUMS_BY_NVRA "SELECT checksum_data, checksum_type FROM PACKAGE WHERE name || '-' || version || '-' || release || '.' || arch=@nvra"
 #define S_PID_BY_NVRA "SELECT P_ID FROM PACKAGE WHERE name || '-' || version || '-' || release || '.' || arch=@nvra"
 #define S_REASON_ID_BY_PDID "SELECT reason FROM PACKAGE_DATA join TRANS_DATA using(PD_ID) where PD_ID=@pdid"
