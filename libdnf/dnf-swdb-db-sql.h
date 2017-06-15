@@ -93,6 +93,8 @@
                    "buildtime TEXT, buildhost TEXT, license TEXT, packager TEXT, size TEXT,"\
                    "sourcerpm TEXT, url TEXT, vendor TEXT, committer TEXT, committime TEXT)"
 
+#define C_TRANS_WITH "CREATE TABLE TRANS_WITH (TW_ID integer PRIMARY KEY, T_ID integer, P_ID integer)"
+
 #define C_INDEX_NVRA    "create index nvra on PACKAGE(name || '-' || version || '-' || release || '.' || arch)"
 
 #define S_OUTPUT "SELECT msg FROM OUTPUT WHERE T_ID=@tid and type=@type"

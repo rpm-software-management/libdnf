@@ -69,6 +69,8 @@ GPtrArray      *dnf_swdb_trans_error            (DnfSwdbTrans  *self);
 void            dnf_swdb_trans_merge            (DnfSwdbTrans  *self,
                                                  DnfSwdbTrans  *other);
 GPtrArray      *dnf_swdb_trans_packages         (DnfSwdbTrans  *self);
+GPtrArray      *dnf_swdb_trans_performed_with   (DnfSwdbTrans  *self);
+GArray         *dnf_swdb_trans_tids             (DnfSwdbTrans  *self);
 
 G_END_DECLS
 

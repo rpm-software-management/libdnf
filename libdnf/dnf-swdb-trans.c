@@ -20,13 +20,10 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
 #include "dnf-swdb.h"
 #include "dnf-swdb-trans.h"
+#include "dnf-swdb-trans-sql.h"
 #include "dnf-swdb-sql.h"
-#include "dnf-swdb-db.h"
 
 G_DEFINE_TYPE(DnfSwdbTrans, dnf_swdb_trans, G_TYPE_OBJECT) //transaction
 
@@ -192,7 +189,7 @@ dnf_swdb_trans_merge(DnfSwdbTrans *self,
         gdouble end_time_other = g_ascii_strtod(other->end_timestamp, NULL);
 
         //compare ending timestamps
-        if (end_time > end_time_other)
+        if (end_time < end_time_other)
         {
             g_free(self->end_timestamp);
             self->end_timestamp = g_strdup(other->end_timestamp);
@@ -254,83 +251,6 @@ _pkg_pair_set(_pkg_pair *p,
 }
 
 /**
-* _compare_packages:
-* @pkg1: first package
-* @pkg2: second package
-*
-* Performs "@pkg2 - @pkg1"
-* TODO: relocate this to package and use it as comparison function in DNF
-*
-* Returns: < 0 when is @pkg1 newer, > 0 when older, else 0
-**/
-static gint64
-_compare_packages(DnfSwdbPkg *pkg1,
-                  DnfSwdbPkg *pkg2)
-{
-    //compare epochs
-    if (pkg1->epoch && pkg2->epoch)
-    {
-        gint64 epoch1 = g_ascii_strtoll(pkg1->epoch, NULL, 0);
-        gint64 epoch2 = g_ascii_strtoll(pkg2->epoch, NULL, 0);
-        gint64 res = epoch2 - epoch1;
-        if (res)
-        {
-            return res;
-        }
-    }
-    else if (pkg1->epoch && !pkg2->epoch)
-    {
-        return -1;
-    }
-    else if (!pkg1->epoch && pkg2->epoch)
-    {
-        return 1;
-    }
-
-    //compare versions
-
-    //split version string into substrings
-    gchar **version1 = g_strsplit(pkg1->version, ".", 0);
-    gchar **version2 = g_strsplit(pkg2->version, ".", 0);
-
-    if (!version1 || !version2)
-    {
-        return 0;
-    }
-
-    //compare subversions
-    const gchar *subv1 = *version1;
-    const gchar *subv2 = *version2;
-
-    gint i = 0;
-    gint64 res = 0;
-    while (subv1 && subv2)
-    {
-        //convert subversions into int
-        gint64 v1 = g_ascii_strtoll(subv1, NULL, 0);
-        gint64 v2 = g_ascii_strtoll(subv2, NULL, 0);
-
-        //compare subversions
-        res = v2 - v1;
-        if (res)
-        {
-            break;
-        }
-
-        //move to next subversion
-        i++;
-        subv1 = *(version1 + i);
-        subv2 = *(version2 + i);
-    }
-
-    g_strfreev(version1);
-    g_strfreev(version2);
-
-    return res;
-}
-
-
-/**
 * _merge_altered_packages:
 * @prev: transaction package pair
 * @pkg: new package
@@ -342,7 +262,7 @@ _merge_altered_packages(_pkg_pair *prev,
                         DnfSwdbPkg *pkg)
 {
     DnfSwdbPkg *pkg1 = prev->first;
-    gint64 res = _compare_packages(pkg1, pkg);
+    gint64 res = dnf_swdb_pkg_compare(pkg1, pkg);
     if (res < 0) //pkg1 is newer -> downgrade
     {
         g_free(pkg1->state);
@@ -875,4 +795,79 @@ dnf_swdb_trans_data(DnfSwdbTrans *self)
     }
     sqlite3_finalize(res);
     return node;
+}
+
+
+/**
+* dnf_swdb_trans_performed_with:
+* @self: transaction object
+*
+* Get transaction performed with packages for transaction @self
+*
+* Returns: (element-type DnfSwdbPkg)(array)(transfer container): list of #DnfSwdbPkg
+**/
+GPtrArray*
+dnf_swdb_trans_performed_with(DnfSwdbTrans *self)
+{
+    DnfSwdb *swdb = self->swdb;
+
+    if (!self->tid || dnf_swdb_open(swdb))
+    {
+        return NULL;
+    }
+
+    //fetch pids
+    sqlite3_stmt *res;
+    const gchar *sql = S_TRANS_WITH;
+    DB_PREP(swdb->db, sql, res);
+    DB_BIND_INT(res, "@tid", self->tid);
+
+    gint pid;
+    GArray *pids = g_array_new(0, 0, sizeof(gint));
+    while ((pid = DB_FIND_MULTI(res)))
+    {
+        g_array_append_val(pids, pid);
+    }
+
+    //get packages for these pids
+    GPtrArray *pkgs = g_ptr_array_new();
+    for (guint i = 0; i < pids->len; ++i)
+    {
+        pid = g_array_index(pids, gint, i);
+        DnfSwdbPkg *pkg = _get_package_by_pid(swdb->db, pid);
+        if (pkg)
+        {
+            g_ptr_array_add(pkgs, (gpointer) pkg);
+        }
+    }
+    g_array_unref(pids);
+    return pkgs;
+}
+
+
+/**
+* dnf_swdb_trans_tids:
+* self: transaction object
+*
+* Return array of transaction ids merged into transaction
+* Or just transaction id when @self is not merged transaction
+*
+* Returns: (element-type gint32) (transfer container): list of transaction ids
+**/
+GArray*
+dnf_swdb_trans_tids(DnfSwdbTrans *self)
+{
+    GArray *tids = g_array_new(0, 0, sizeof(gint));
+
+    //merged
+    if (self->merged_tids)
+    {
+        GArray *source = self->merged_tids;
+        g_array_append_vals(tids, source->data, source->len);
+        return tids;
+    }
+
+    //not merged
+    g_array_append_val(tids, self->tid);
+    return tids;
 }

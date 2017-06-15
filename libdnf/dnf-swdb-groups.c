@@ -20,11 +20,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
 #include "dnf-swdb.h"
-#include "dnf-swdb-db.h"
 #include "dnf-swdb-groups.h"
 #include "dnf-swdb-groups-sql.h"
 

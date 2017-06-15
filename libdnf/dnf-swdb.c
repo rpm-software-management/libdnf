@@ -23,13 +23,10 @@
 #include "dnf-swdb.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 #include "dnf-swdb-sql.h"
-#include "dnf-swdb-db.h"
 #include "dnf-swdb-trans.h"
 
 G_DEFINE_TYPE(DnfSwdb, dnf_swdb, G_TYPE_OBJECT)
-G_DEFINE_TYPE(DnfSwdbPkg, dnf_swdb_pkg, G_TYPE_OBJECT) //history package
 G_DEFINE_TYPE(DnfSwdbTransData, dnf_swdb_transdata, G_TYPE_OBJECT) //trans data
 G_DEFINE_TYPE(DnfSwdbPkgData, dnf_swdb_pkgdata, G_TYPE_OBJECT)
 G_DEFINE_TYPE(DnfSwdbRpmData, dnf_swdb_rpmdata, G_TYPE_OBJECT)
@@ -82,86 +79,6 @@ dnf_swdb_new(const gchar* db_path, const gchar* releasever)
         swdb->path = g_strdup(db_path);
     }
     return swdb;
-}
-
-
-// SWDB package Destructor
-static void
-dnf_swdb_pkg_finalize(GObject *object)
-{
-    DnfSwdbPkg *pkg = (DnfSwdbPkg *)object;
-    g_free((gchar*) pkg->name);
-    g_free((gchar*) pkg->epoch);
-    g_free((gchar*) pkg->version);
-    g_free((gchar*) pkg->release);
-    g_free((gchar*) pkg->arch);
-    g_free((gchar*) pkg->checksum_data);
-    g_free((gchar*) pkg->checksum_type);
-    g_free((gchar*) pkg->type);
-    g_free(pkg->state);
-    g_free(pkg->ui_from_repo);
-    g_free(pkg->nvra);
-    G_OBJECT_CLASS (dnf_swdb_pkg_parent_class)->finalize (object);
-}
-
-// SWDB Package Class initialiser
-static void
-dnf_swdb_pkg_class_init(DnfSwdbPkgClass *klass)
-{
-    GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = dnf_swdb_pkg_finalize;
-}
-
-// SWDB Package object initialiser
-static void
-dnf_swdb_pkg_init(DnfSwdbPkg *self)
-{
-    self->done = 0;
-    self->state = NULL;
-    self->pid = 0;
-    self->ui_from_repo = NULL;
-    self->swdb = NULL;
-    self->nvra = NULL;
-}
-
-/**
- * dnf_swdb_pkg_new:
- *
- * Creates a new #DnfSwdbPkg.
- *
- * Returns: a #DnfSwdbPkg
- **/
-DnfSwdbPkg*
-dnf_swdb_pkg_new(const gchar* name,
-                 const gchar* epoch,
-                 const gchar* version,
-                 const gchar* release,
-                 const gchar* arch,
-                 const gchar* checksum_data,
-                 const gchar* checksum_type,
-                 const gchar* type)
-{
-    DnfSwdbPkg *swdbpkg = g_object_new(DNF_TYPE_SWDB_PKG, NULL);
-    swdbpkg->name = g_strdup(name);
-    swdbpkg->epoch = g_strdup(epoch);
-    swdbpkg->version = g_strdup(version);
-    swdbpkg->release = g_strdup(release);
-    swdbpkg->arch = g_strdup(arch);
-    swdbpkg->checksum_data = g_strdup(checksum_data);
-    swdbpkg->checksum_type = g_strdup(checksum_type);
-    gchar *tmp = g_strjoin("-", swdbpkg->name, swdbpkg->version,
-                           swdbpkg->release, NULL);
-    swdbpkg->nvra = g_strjoin(".", tmp, swdbpkg->arch, NULL);
-    g_free(tmp);
-    if (type)
-    {
-        swdbpkg->type = g_strdup(type);
-    }
-    else
-    {
-        swdbpkg->type = NULL;
-    }
-    return swdbpkg;
 }
 
 // SWDB Package Data Destructor
@@ -869,25 +786,6 @@ dnf_swdb_reason_by_nvra(DnfSwdb *self, const gchar *nvra)
 
 
 /**
-* dnf_swdb_pkg_get_reason:
-* @self: package object
-*
-* Returns: package reason string
-**/
-gchar*
-dnf_swdb_pkg_get_reason(DnfSwdbPkg *self)
-{
-    if (!self || dnf_swdb_open(self->swdb))
-        return NULL;
-    gchar *reason = NULL;
-    if(self->pid)
-    {
-        reason = _reason_by_pid(self->swdb->db, self->pid);
-    }
-    return reason;
-}
-
-/**
 * _resolve_package_state:
 * @self: SWDB object
 * @pkg: package object
@@ -960,7 +858,7 @@ _get_package_data_by_pid (sqlite3 *db, gint pid)
 *
 * Returns: package object for @pid
 **/
-static DnfSwdbPkg*
+DnfSwdbPkg*
 _get_package_by_pid(sqlite3 *db, gint pid)
 {
     sqlite3_stmt *res;
@@ -1021,67 +919,6 @@ dnf_swdb_get_packages_by_tid(DnfSwdb *self, gint tid)
     }
     g_array_free(pids, TRUE);
     return node;
-}
-
-
-/**
-* dnf_swdb_pkg_get_ui_from_repo:
-* @self: package object
-*
-* Get UI reponame for package @self
-* If package was installed with some other releasever, then
-* print repository name in format @repo/releasever
-*
-* Returns: repository UI name
-**/
-gchar*
-dnf_swdb_pkg_get_ui_from_repo(DnfSwdbPkg *self)
-{
-    if(self->ui_from_repo)
-        return g_strdup(self->ui_from_repo);
-    if(!self->swdb || !self->pid || dnf_swdb_open(self->swdb))
-        return g_strdup("(unknown)");
-    sqlite3_stmt *res;
-    const gchar *sql = S_REPO_FROM_PID;
-    gint pdid = 0;
-    DB_PREP(self->swdb->db, sql, res);
-    DB_BIND_INT(res, "@pid", self->pid);
-    gchar *r_name = NULL;
-    if(sqlite3_step(res) == SQLITE_ROW)
-    {
-        r_name = g_strdup((const gchar*)sqlite3_column_text(res, 0));
-        pdid = sqlite3_column_int(res, 1);
-    }
-    sqlite3_finalize(res);
-
-    //now we find out if package wasnt installed from some other releasever
-    if (pdid && self->swdb->releasever)
-    {
-        gchar *cur_releasever = NULL;;
-        sql = S_RELEASEVER_FROM_PDID;
-        DB_PREP(self->swdb->db, sql, res);
-        DB_BIND_INT(res, "@pdid", pdid);
-        if(sqlite3_step(res) == SQLITE_ROW)
-        {
-            cur_releasever = g_strdup((const gchar*)sqlite3_column_text(res, 0));
-        }
-        sqlite3_finalize(res);
-        if(cur_releasever && g_strcmp0(cur_releasever, self->swdb->releasever))
-        {
-            gchar *rc = g_strjoin(NULL, "@", r_name, "/", cur_releasever, NULL);
-            g_free(r_name);
-            g_free(cur_releasever);
-            self->ui_from_repo = rc;
-            return g_strdup(rc);
-        }
-        g_free(cur_releasever);
-    }
-    if(r_name)
-    {
-        self->ui_from_repo = r_name;
-        return g_strdup(r_name);
-    }
-    return g_strdup("(unknown)");
 }
 
 /**
@@ -1518,6 +1355,32 @@ dnf_swdb_trans_end(DnfSwdb *self,
     DB_BIND_INT(res, "@rc", return_code );
     DB_STEP(res);
     return 0;
+}
+
+
+/**
+* dnf_swdb_trans_with:
+* @self: SWDB object
+* @tid: transaction ID
+* @pid: package ID
+*
+* Log transaction perforemed with package
+**/
+void
+dnf_swdb_trans_with(DnfSwdb *self,
+                    int tid,
+                    int pid)
+{
+    if (dnf_swdb_open(self))
+    {
+        return;
+    }
+    sqlite3_stmt *res;
+    const gchar *sql = I_TRANS_WITH;
+    DB_PREP(self->db, sql, res);
+    DB_BIND_INT(res, "@tid", tid);
+    DB_BIND_INT(res, "@pid", pid);
+    DB_STEP(res);
 }
 
 
