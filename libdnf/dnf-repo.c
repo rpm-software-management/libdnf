@@ -779,7 +779,8 @@ dnf_repo_get_boolean(GKeyFile *keyfile,
 }
 
 /**
- * dnf_repo_set_keyfile_data:
+ * dnf_repo_set_keyfile_data: initialize (or potentially reset) repo & LrHandle
+ * from keyfile values.
  */
 static gboolean
 dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
@@ -811,19 +812,19 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     if (cost != 0)
         dnf_repo_set_cost(repo, cost);
 
-    /* baseurl is optional */
+    /* baseurl is optional; if missing, unset it */
     baseurls = g_key_file_get_string_list(priv->keyfile, priv->id, "baseurl", NULL, NULL);
-    if (baseurls && !lr_handle_setopt(priv->repo_handle, error, LRO_URLS, baseurls))
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_URLS, baseurls))
         return FALSE;
 
-    /* mirrorlist is optional */
+    /* mirrorlist is optional; if missing, unset it */
     mirrorlist = g_key_file_get_string(priv->keyfile, priv->id, "mirrorlist", NULL);
-    if (mirrorlist && !lr_handle_setopt(priv->repo_handle, error, LRO_MIRRORLIST, mirrorlist))
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_MIRRORLIST, mirrorlist))
         return FALSE;
 
-    /* metalink is optional */
+    /* metalink is optional; if missing, unset it */
     metalink = g_key_file_get_string(priv->keyfile, priv->id, "metalink", NULL);
-    if (metalink && !lr_handle_setopt(priv->repo_handle, error, LRO_METALINKURL, metalink))
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_METALINKURL, metalink))
         return FALSE;
 
     /* file:// */
