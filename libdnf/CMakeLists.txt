@@ -147,6 +147,7 @@ if (GOBJECT_INTROSPECTION_FOUND)
                     --include=Gio-2.0
                     -Idirectory ${CMAKE_CURRENT_SOURCE_DIR}
                     --output ${CMAKE_CURRENT_BINARY_DIR}/${GIR_XML}
+                    --pkg=librepo
                     --warn-all
                     --quiet
                     dnf-context.c dnf-context.h
