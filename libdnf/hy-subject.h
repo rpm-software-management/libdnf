@@ -73,4 +73,7 @@ HySelector hy_subject_get_best_selector(HySubject subject, DnfSack *sack);
 
 G_END_DECLS
 
+G_DEFINE_AUTO_CLEANUP_FREE_FUNC(HySubject, hy_subject_free, NULL)
+G_DEFINE_AUTO_CLEANUP_FREE_FUNC(HyPossibilities, hy_possibilities_free, NULL)
+
 #endif

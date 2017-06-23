@@ -39,4 +39,6 @@ GPtrArray *hy_selector_matches(HySelector sltr);
 
 G_END_DECLS
 
+G_DEFINE_AUTO_CLEANUP_FREE_FUNC(HySelector, hy_selector_free, NULL)
+
 #endif
