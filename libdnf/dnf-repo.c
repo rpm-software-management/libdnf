@@ -787,8 +787,9 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     guint cost;
-    g_autofree gchar *metalink = NULL;
     g_autofree gchar *mirrorlist = NULL;
+    g_autofree gchar *mirrorlisturl = NULL;
+    g_autofree gchar *metalinkurl = NULL;
     g_autofree gchar *proxy = NULL;
     g_autofree gchar *tmp_strval = NULL;
     g_autofree gchar *pwd = NULL;
@@ -817,19 +818,30 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_URLS, baseurls))
         return FALSE;
 
-    /* mirrorlist is optional; if missing, unset it */
+    /* the "mirrorlist" entry could be either a real mirrorlist, or a metalink entry */
     mirrorlist = g_key_file_get_string(priv->keyfile, priv->id, "mirrorlist", NULL);
-    if (!lr_handle_setopt(priv->repo_handle, error, LRO_MIRRORLIST, mirrorlist))
-        return FALSE;
+    if (mirrorlist) {
+        if (strstr(mirrorlist, "metalink"))
+            metalinkurl = g_steal_pointer(&mirrorlist);
+        else /* it really is a mirrorlist */
+            mirrorlisturl = g_steal_pointer(&mirrorlist);
+    }
 
-    /* metalink is optional; if missing, unset it */
-    metalink = g_key_file_get_string(priv->keyfile, priv->id, "metalink", NULL);
-    if (!lr_handle_setopt(priv->repo_handle, error, LRO_METALINKURL, metalink))
+    /* let "metalink" entry override metalink-as-mirrorlist entry */
+    if (g_key_file_has_key(priv->keyfile, priv->id, "metalink", NULL)) {
+        g_free(metalinkurl);
+        metalinkurl = g_key_file_get_string(priv->keyfile, priv->id, "metalink", NULL);
+    }
+
+    /* now set the final values (or unset them) */
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_MIRRORLISTURL, mirrorlisturl))
+        return FALSE;
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_METALINKURL, metalinkurl))
         return FALSE;
 
     /* file:// */
     if (baseurls != NULL && baseurls[0] != NULL &&
-        mirrorlist == NULL && metalink == NULL) {
+        mirrorlisturl == NULL && metalinkurl == NULL) {
         g_autofree gchar *url = NULL;
         url = lr_prepend_url_protocol(baseurls[0]);
         if (url != NULL && strncasecmp(url, "file://", 7) == 0) {
