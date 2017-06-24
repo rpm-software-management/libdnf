@@ -34,6 +34,8 @@ char *hy_chksum_str(const unsigned char *chksum, int type);
 
 int hy_detect_arch(char **arch);
 
+gboolean hy_is_glob_pattern(const char *pattern);
+
 int hy_split_nevra(const char *nevra, char **name, int *epoch,
                    char **version, char **release, char **arch);
 
