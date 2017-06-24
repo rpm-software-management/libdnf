@@ -151,6 +151,12 @@ hy_detect_arch(char **arch)
 
 #undef MAX_ARCH_LENGTH
 
+gboolean
+hy_is_glob_pattern(const char *pattern)
+{
+    return strpbrk(pattern, "*[?") != NULL;
+}
+
 int
 hy_split_nevra(const char *nevra, char **name, int *epoch,
                char **version, char **release, char **arch)

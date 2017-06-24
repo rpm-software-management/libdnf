@@ -210,6 +210,8 @@ filter(_QueryObject *self, PyObject *args)
     }
     if (PyInt_Check(match)) {
         long val = PyLong_AsLong(match);
+        if (cmp_type == HY_GLOB) // Workaround: Python can send integer with HY_GLOB
+            cmp_type = HY_EQ;
         if (val > INT_MAX || val < INT_MIN) {
             PyErr_SetString(HyExc_Value, "Numeric argument out of range.");
             return NULL;

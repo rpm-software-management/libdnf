@@ -1084,6 +1084,9 @@ hy_query_clone(HyQuery q)
 int
 hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
 {
+    if (cmp_type == HY_GLOB && !hy_is_glob_pattern(match))
+        cmp_type = HY_EQ;
+
     if (!valid_filter_str(keyname, cmp_type))
         return DNF_ERROR_BAD_QUERY;
     q->applied = 0;
@@ -1139,6 +1142,17 @@ int
 hy_query_filter_in(HyQuery q, int keyname, int cmp_type,
                    const char **matches)
 {
+    if (cmp_type == HY_GLOB) {
+        gboolean is_glob = FALSE;
+        for (const char **match = matches; *match != NULL; match++) {
+            if (hy_is_glob_pattern(*match)) {
+                is_glob = TRUE;
+                break;
+            }
+        }
+        if (!is_glob) cmp_type = HY_EQ;
+    }
+
     if (!valid_filter_str(keyname, cmp_type))
         return DNF_ERROR_BAD_QUERY;
     q->applied = 0;
