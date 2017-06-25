@@ -532,7 +532,7 @@ filter_pkg2job(DnfSack *sack, const struct _Filter *f, Queue *job)
     Id id = -1;
     Queue pkgs;
     queue_init(&pkgs);
-    for (int i = 0; i < count; ++i) {
+    for (unsigned int i = 0; i < count; ++i) {
         id = dnf_packageset_get_pkgid(pset, i, id);
         queue_push(&pkgs, id);
     }
@@ -1135,7 +1135,7 @@ hy_goal_describe_protected_removal(HyGoal goal)
     unsigned int count = dnf_packageset_count(pset);
     Id id = -1;
     gboolean found = FALSE;
-    for (int i = 0; i < count; ++i) {
+    for (unsigned int i = 0; i < count; ++i) {
         id = dnf_packageset_get_pkgid(pset, i, id);
         if (MAPTST(goal->protected, id)) {
             s = pool_id2solvable(pool, id);
