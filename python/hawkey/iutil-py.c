@@ -165,7 +165,7 @@ packageset_to_pylist(DnfPackageSet *pset, PyObject *sack)
 
     unsigned int count = dnf_packageset_count(pset);
     Id id = -1;
-    for (int i = 0; i < count; ++i) {
+    for (unsigned int i = 0; i < count; ++i) {
         id = dnf_packageset_get_pkgid(pset, i, id);
         PyObject *package = new_package(sack, id);
         if (package == NULL)
