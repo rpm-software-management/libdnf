@@ -305,22 +305,22 @@ mkcachedir(char *path)
 }
 
 gboolean
-mv(const char *old, const char *new, GError **error)
+mv(const char* oldpath, const char* newpath, GError** error)
 {
-    if (rename(old, new)) {
+    if (rename(oldpath, newpath)) {
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_FILE_INVALID,
                     _("Failed renaming %1$s to %2$s: %3$s"),
-                    old, new, strerror(errno));
+                    oldpath, newpath, strerror(errno));
         return FALSE;
     }
-    if (chmod(new, 0666 & ~get_umask())) {
+    if (chmod(newpath, 0666 & ~get_umask())) {
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_FILE_INVALID,
                     _("Failed setting perms on %1$s: %2$s"),
-                    new, strerror(errno));
+                    newpath, strerror(errno));
         return FALSE;
     }
     return TRUE;
