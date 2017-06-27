@@ -1,4 +1,4 @@
-PROJECT (libdnf C)
+PROJECT (libdnf LANGUAGES C CXX)
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8.5)
 CMAKE_POLICY (SET CMP0005 OLD)
 # Avoid a warning because "hth" links to

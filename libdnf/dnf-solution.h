@@ -48,7 +48,7 @@ const gchar *dnf_solution_get_old        (DnfSolution *solution);
 const gchar *dnf_solution_get_new        (DnfSolution *solution);
 void         dnf_solution_set            (DnfSolution *solution,
                                           DnfSolutionAction action,
-                                          const gchar *old,
-                                          const gchar *new);
+                                          const gchar *old_str,
+                                          const gchar *new_str);
 
 G_END_DECLS
