@@ -35,8 +35,8 @@ struct _DnfSolution
     GObject            parent_instance;
 
     DnfSolutionAction  action;
-    gchar             *old;
-    gchar             *new;
+    gchar             *old_str;
+    gchar             *new_str;
 };
 
 G_DEFINE_TYPE(DnfSolution, dnf_solution, G_TYPE_OBJECT)
@@ -64,8 +64,8 @@ dnf_solution_finalize(GObject *object)
 {
     DnfSolution *self = (DnfSolution *)object;
 
-    g_free(self->old);
-    g_free(self->new);
+    g_free(self->old_str);
+    g_free(self->new_str);
 
     G_OBJECT_CLASS(dnf_solution_parent_class)->finalize(object);
 }
@@ -117,7 +117,7 @@ dnf_solution_get_action(DnfSolution *solution)
 const gchar *
 dnf_solution_get_old(DnfSolution *solution)
 {
-    return solution->old;
+    return solution->old_str;
 }
 
 /**
@@ -133,7 +133,7 @@ dnf_solution_get_old(DnfSolution *solution)
 const gchar *
 dnf_solution_get_new(DnfSolution *solution)
 {
-    return solution->new;
+    return solution->new_str;
 }
 
 /**
@@ -148,11 +148,11 @@ dnf_solution_get_new(DnfSolution *solution)
  */
 void
 dnf_solution_set(DnfSolution *solution, DnfSolutionAction action,
-                 const gchar *old, const gchar *new)
+                 const gchar *old_str, const gchar *new_str)
 {
     solution->action = action;
-    g_free(solution->old);
-    solution->old = g_strdup(old);
-    g_free(solution->new);
-    solution->new = g_strdup(new);
+    g_free(solution->old_str);
+    solution->old_str = g_strdup(old_str);
+    g_free(solution->new_str);
+    solution->new_str = g_strdup(new_str);
 }

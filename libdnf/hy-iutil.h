@@ -49,7 +49,7 @@ const char *pool_checksum_str(Pool *pool, const unsigned char *chksum);
 char *abspath(const char *path);
 int is_readable_rpm(const char *fn);
 int mkcachedir(char *path);
-gboolean mv(const char *old, const char *new, GError **error);
+gboolean mv(const char *old_path, const char *new_path, GError **error);
 char *this_username(void);
 
 /* misc utils */
@@ -89,6 +89,8 @@ int dump_nullt_array(const char **a);
 int dump_solvables_queue(Pool *pool, Queue *q);
 int dump_map(Pool *pool, Map *m);
 const char *id2nevra(Pool *pool, Id id);
+
+G_END_DECLS
 
 /* loop over all package providers of d */
 #define FOR_PKG_PROVIDES(v, vp, d)                                      \

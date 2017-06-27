@@ -236,11 +236,11 @@ DnfPackageSet *
 dnf_packageset_clone(DnfPackageSet *pset)
 {
     DnfPackageSetPrivate *priv = GET_PRIVATE(pset);
-    DnfPackageSet *new = dnf_packageset_new(priv->sack);
-    DnfPackageSetPrivate *priv_new = GET_PRIVATE(new);
+    DnfPackageSet *new_pkgset = dnf_packageset_new(priv->sack);
+    DnfPackageSetPrivate *priv_new = GET_PRIVATE(new_pkgset);
     map_free(&priv_new->map);
     map_init_clone(&priv_new->map, &priv->map);
-    return new;
+    return new_pkgset;
 }
 
 /**
