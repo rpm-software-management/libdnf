@@ -20,14 +20,12 @@
     -DENABLE_RHSM_SUPPORT=%{?with_rhsm:ON}%{!?with_rhsm:OFF} \\\
     %{nil}
 
-%global oldname libhif
-
 Name:           libdnf
 Version:        0.9.2
 Release:        1%{?dist}
 Summary:        Library providing simplified C and Python API to libsolv
 License:        LGPLv2+
-URL:            https://github.com/rpm-software-management/%{oldname}
+URL:            https://github.com/rpm-software-management/libdnf
 Source0:        %{url}/archive/%{version}/%{name}-%{version}.tar.gz
 
 BuildRequires:  cmake
@@ -55,7 +53,6 @@ A Library providing simplified C and Python API to libsolv.
 Summary:        Development files for %{name}
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 Requires:       libsolv-devel%{?_isa} >= %{libsolv_version}
-BuildRequires:  python-nose
 
 %description devel
 Development files for %{name}.
@@ -64,7 +61,11 @@ Development files for %{name}.
 Summary:        Python 2 bindings for the hawkey library
 %{?python_provide:%python_provide python2-hawkey}
 BuildRequires:  python2-devel
+%if 0%{?rhel} && 0%{?rhel} <= 7
 BuildRequires:  python-nose
+%else
+BuildRequires:  python2-nose
+%endif
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 # Fix problem with hawkey - dnf version incompatibility
 # Can be deleted for distros where only python2-dnf >= 2.0.0
@@ -91,7 +92,7 @@ Python 3 bindings for the hawkey library.
 %endif
 
 %prep
-%autosetup -n %{oldname}-%{version}
+%autosetup
 mkdir build-py2
 %if %{with python3}
 mkdir build-py3
