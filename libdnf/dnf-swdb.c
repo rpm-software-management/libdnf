@@ -1385,6 +1385,37 @@ dnf_swdb_trans_with(DnfSwdb *self,
 
 
 /**
+* dnf_swdb_trans_with_libdnf:
+* @self: SWDB object
+* @tid: transaction ID
+*
+* Log transaction perforemed with libdnf
+**/
+void
+dnf_swdb_trans_with_libdnf(DnfSwdb *self, int tid)
+{
+    if (dnf_swdb_open(self))
+    {
+        return;
+    }
+    sqlite3_stmt *res;
+    const gchar *sql = S_LATEST_PACKAGE;
+    DB_PREP(self->db, sql, res);
+    DB_BIND(res, "@name", "libdnf");
+    gint pid = DB_FIND(res);
+    if (pid) {
+        dnf_swdb_trans_with(self, tid, pid);
+    }
+    DB_PREP(self->db, sql, res);
+    DB_BIND(res, "@name", "rpm");
+    pid = DB_FIND(res);
+    if (pid) {
+        dnf_swdb_trans_with(self, tid, pid);
+    }
+}
+
+
+/**
 * dnf_swdb_trans_cmdline:
 * @self: SWDB object
 * @tid: transaction ID
