@@ -1,7 +1,7 @@
 /* dnf-swdb-test.c
 *
 * Copyright (C) 2016 Red Hat, Inc.
-* Author: Eduard Cuba <xcubae00@stud.fit.vutbr.cz>
+* Author: Eduard Cuba <ecuba@redhat.com>
 *
 * Licensed under the GNU Lesser General Public License Version 2.1
 *
@@ -27,18 +27,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define INIT_PACAKGES 32
-#define TRANS_OUT "initial transaction 001"
-
-char *random_package_nvra = NULL;
+#define INIT_PACAKGES 10
+#define TRANS_OUT "initial transaction"
+#define TEST_PATH "tmp_swdb.sqlite"
 
 /**
- * Generate some random string with given length
+ * Generate some random string of given length
  */
-static gchar * generate_str(guint len)
+static gchar*
+generate_str(guint len)
 {
-    gchar *str = malloc (sizeof(gchar)*(len+1));
-    for (guint i = 0; i< len; ++i)
+    gchar *str = malloc(sizeof(gchar) * (len + 1));
+    for (guint i = 0; i < len; ++i)
     {
         str[i] = rand() % 26 + 97;
     }
@@ -47,18 +47,19 @@ static gchar * generate_str(guint len)
 }
 
 /**
- * Generate ordinary package with some random attributes
+ * Generate ordinary package with random attributes
  */
-static DnfSwdbPkg * generate_package ()
+static DnfSwdbPkg*
+generate_package()
 {
     gchar* name = generate_str(8);
-    const gchar* epoch = (rand() % 2) ? "0":"1";
+    gchar* epoch = g_strdup((rand() % 2) ? "0" : "1");
     gchar* version = generate_str(4);
     gchar* release = generate_str(6);
     gchar* arch = generate_str(4);
     gchar* checksum_data = generate_str(32);
-    const gchar* checksum_type = (rand() % 10) ? "sha256" : "sha1";
-    const gchar *type = (rand() % 10) ? "rpm" : "source";
+    gchar* checksum_type = g_strdup((rand() % 10) ? "sha256" : "sha1");
+    gchar *type = g_strdup((rand() % 10) ? "rpm" : "source");
     DnfSwdbPkg *pkg = dnf_swdb_pkg_new(
         name,
         epoch,
@@ -81,7 +82,8 @@ static DnfSwdbPkg * generate_package ()
 /**
  * Generate rpm data with some random attributes
  */
-static DnfSwdbRpmData * generate_rpm_data (gint pid)
+static DnfSwdbRpmData*
+generate_rpm_data(gint pid)
 {
     gchar* buildtime = generate_str(10);
     gchar* buildhost = generate_str(6);
@@ -93,17 +95,19 @@ static DnfSwdbRpmData * generate_rpm_data (gint pid)
     gchar* vendor = generate_str(6);
     gchar* committer = generate_str(6);
     gchar* committime = generate_str(10);
-    DnfSwdbRpmData *data = dnf_swdb_rpmdata_new(pid,
-                                                buildtime,
-                                                buildhost,
-                                                license,
-                                                packager,
-                                                size,
-                                                sourcerpm,
-                                                url,
-                                                vendor,
-                                                committer,
-                                                committime);
+    DnfSwdbRpmData *data = dnf_swdb_rpmdata_new(
+        pid,
+        buildtime,
+        buildhost,
+        license,
+        packager,
+        size,
+        sourcerpm,
+        url,
+        vendor,
+        committer,
+        committime);
+
     g_free(buildtime);
     g_free(buildhost);
     g_free(license);
@@ -121,31 +125,34 @@ static DnfSwdbRpmData * generate_rpm_data (gint pid)
 /**
  * Generate some package data with random attributes
  */
-static DnfSwdbPkgData * generate_package_data ()
+static DnfSwdbPkgData*
+generate_package_data()
 {
-	const gchar *from_repo = "testaconda";
+    const gchar *from_repo = "testaconda";
     gchar *from_repo_revision = generate_str(16);
-  	gchar *from_repo_timestamp = malloc (11*sizeof(gchar));
+    gchar *from_repo_timestamp = malloc (11*sizeof(gchar));
     snprintf(from_repo_timestamp, 11, "%d", (gint)time(NULL));
-  	const gchar *installed_by = "1000";
-  	const gchar *changed_by = (rand()% 25) ? NULL : "4242" ;
-  	const gchar *installonly = (rand()% 100) ? NULL : "True";
-  	const gchar *origin_url =
-        (rand()% 10) ? NULL : "https://github.com/edynox/libhif";
+    const gchar *installed_by = "1000";
+    const gchar *changed_by = (rand()% 25) ? NULL : "4242" ;
+    const gchar *installonly = (rand()% 100) ? NULL : "True";
+    const gchar *origin_url = (rand()% 9) ? NULL : "github.com/edynox/dnf";
 
-    DnfSwdbPkgData *pkg_data = dnf_swdb_pkgdata_new(from_repo_revision,
-                                                    from_repo_timestamp,
-                                                    installed_by,
-                                                    changed_by,
-                                                    installonly,
-                                                    origin_url,
-                                                    from_repo);
+    DnfSwdbPkgData *pkg_data = dnf_swdb_pkgdata_new(
+        from_repo_revision,
+        from_repo_timestamp,
+        installed_by,
+        changed_by,
+        installonly,
+        origin_url,
+        from_repo);
+
     g_free(from_repo_revision);
     g_free(from_repo_timestamp);
     return pkg_data;
 }
 
-static gint begin_trans( DnfSwdb *self)
+static gint
+begin_trans(DnfSwdb *self)
 {
     gchar *time_str = malloc (11*sizeof(gchar));
     snprintf(time_str, 11, "%d", (gint)time(NULL));
@@ -154,39 +161,40 @@ static gint begin_trans( DnfSwdb *self)
     gchar *cmdline = generate_str(16);
 
     //open initial transaction
-    guint tid =  dnf_swdb_trans_beg(    self,
-                                        time_str,
-                                        rpmdb_version,
-    					                cmdline,
-    					                 "1000",
-    					                "42");
+    guint tid =  dnf_swdb_trans_beg(self,
+                                    time_str,
+                                    rpmdb_version,
+                                    cmdline,
+                                    "1000",
+                                    "42");
     g_free(time_str);
     g_free(rpmdb_version);
     g_free(cmdline);
     return tid;
 }
 
-static gint end_trans ( DnfSwdb *self,
-                        gint tid)
+static gint
+end_trans(DnfSwdb *self, gint tid)
 {
     gint rc;
-    gchar *time_str = malloc (11*sizeof(gchar));
+    gchar *time_str = malloc(11 * sizeof(gchar));
     gchar *rpmdb_version = generate_str(32);
 
-    snprintf(time_str, 11, "%d", (gint)time(NULL));
+    snprintf(time_str, 11, "%d", (gint) time(NULL));
 
     //close transaction as success
-    rc =  dnf_swdb_trans_end(   self,
-                                tid,
-                                time_str,
-                                rpmdb_version,
-    					        0);
+    rc = dnf_swdb_trans_end(self,
+                            tid,
+                            time_str,
+                            rpmdb_version,
+                            0);
     g_free(time_str);
     g_free(rpmdb_version);
     return rc;
 }
 
-static void check_package_persistor(DnfSwdb *self, DnfSwdbPkg *pkg)
+static void
+check_package_persistor(DnfSwdb *self, DnfSwdbPkg *pkg)
 {
     gchar *repo = dnf_swdb_repo_by_nvra(self, pkg->nvra);
     g_assert(!g_strcmp0(pkg->ui_from_repo, repo));
@@ -196,11 +204,6 @@ static void check_package_persistor(DnfSwdb *self, DnfSwdbPkg *pkg)
     g_assert(!dnf_swdb_set_repo(self, pkg->nvra, new_repo));
     repo = dnf_swdb_repo_by_nvra(self, pkg->nvra);
 
-    //*Sigh...* here we have problem of non object - nvra approach
-    //repo changed in database but not in our package object...
-    //We would like to do:
-    //g_assert(!g_strcmp0(new_repo, pkg->from_repo));
-    //but we only can:
     g_assert(!g_strcmp0(new_repo, repo));
     g_free(repo);
 
@@ -221,33 +224,31 @@ static void check_package_persistor(DnfSwdb *self, DnfSwdbPkg *pkg)
     //playing with reason
     g_assert(dnf_swdb_user_installed(self, pkg->nvra));
 
-    g_assert(!dnf_swdb_mark_user_installed(self, pkg->nvra, FALSE));
+    g_assert_false(dnf_swdb_mark_user_installed(self, pkg->nvra, FALSE));
 
-    g_assert(!dnf_swdb_user_installed(self, pkg->nvra));
+    g_assert_false(dnf_swdb_user_installed(self, pkg->nvra));
 
-    g_assert(!dnf_swdb_set_reason(self, pkg->nvra, "user"));
+    g_assert_false(dnf_swdb_set_reason(self, pkg->nvra, "user"));
 
     g_assert(dnf_swdb_user_installed(self, pkg->nvra));
 
 }
 
-static void check_initial_transaction(DnfSwdb *self)
+static void
+check_initial_transaction(DnfSwdb *self)
 {
     DnfSwdbTrans *trans = dnf_swdb_last(self, TRUE);
     g_assert(trans);
     g_assert(trans->tid == 1);
     g_assert(trans->return_code == 0);
-    g_assert(!trans->altered_lt_rpmdb);
-    g_assert(!trans->altered_gt_rpmdb);
+    g_assert_false(trans->altered_lt_rpmdb);
+    g_assert_false(trans->altered_gt_rpmdb);
 
     //get me all packages from that transaction and verify them
     GPtrArray *packages = dnf_swdb_trans_packages(trans);
     GPtrArray *trans_data = dnf_swdb_trans_data(trans);
     g_assert(trans_data && trans_data->len == INIT_PACAKGES);
     g_assert(packages && packages->len == INIT_PACAKGES);
-
-    DnfSwdbPkg *rpkg = g_ptr_array_index(packages, rand() % packages->len);
-    random_package_nvra = g_strdup(rpkg->nvra);
 
     GPtrArray *nvras = g_ptr_array_new();
     //get packages and check if they are user installed
@@ -334,7 +335,8 @@ static void check_initial_transaction(DnfSwdb *self)
     g_object_unref(trans);
 }
 
-static void run_initial_transaction(DnfSwdb *self)
+static void
+run_initial_transaction(DnfSwdb *self)
 {
     guint tid = begin_trans(self);
     g_assert(tid); //tid not 0
@@ -358,19 +360,23 @@ static void run_initial_transaction(DnfSwdb *self)
         g_assert(!dnf_swdb_log_package_data(self, pkg->pid, pkg_data));
 
         //dont forget trans data
-        g_assert(!dnf_swdb_trans_data_beg(  self,
-                                            tid,
-                                            pkg->pid,
-                                            "user", //reason
-                                            "Install")); //state
+        g_assert_false(
+            dnf_swdb_trans_data_beg(
+                self,
+                tid,
+                pkg->pid,
+                "user", //reason
+                "Install")); //state
 
         //package is being installed...
 
         //package installed successfully
-        g_assert(!dnf_swdb_trans_data_pid_end(  self,
-                                                pkg->pid,
-                                                tid,
-                                                "Install"));
+        g_assert_false(
+            dnf_swdb_trans_data_pid_end(
+                self,
+                pkg->pid,
+                tid,
+                "Install"));
 
         g_object_unref(pkg);
         g_object_unref(rpm_data);
@@ -389,152 +395,297 @@ static void run_initial_transaction(DnfSwdb *self)
     g_assert(!end_trans(self, tid));
 }
 
-static gint update_package(DnfSwdb *self, DnfSwdbPkg *pkg)
+static void
+dnf_swdb_setup_func(void)
 {
-    gint tid = begin_trans(self);
-    g_assert(tid); //tid not 0
-    g_assert(dnf_swdb_add_package(self, pkg)); //pkg added
-    DnfSwdbRpmData *rpm_data = generate_rpm_data(pkg->pid); //add rpm_data
-    g_assert(!dnf_swdb_add_rpm_data(self, rpm_data));
-    DnfSwdbPkgData *pkg_data = generate_package_data();
-    g_assert(!dnf_swdb_log_package_data(self, pkg->pid, pkg_data));
-    g_assert(!dnf_swdb_trans_data_beg(  self,
-                                        tid,
-                                        pkg->pid,
-                                        "user", //reason
-                                        "Update")); //state
-    g_assert(!dnf_swdb_trans_data_pid_end(  self,
-                                            pkg->pid,
-                                            tid,
-                                            "Update"));
-    g_assert(!end_trans(self, tid));
-    DnfSwdbTrans *last_trans = dnf_swdb_last(self, TRUE);
-    g_assert(last_trans);
-    GPtrArray *trans_data_array = dnf_swdb_trans_data(last_trans);
-    g_assert(trans_data_array || trans_data_array->len);
-    DnfSwdbTransData *trans_data = g_ptr_array_index(trans_data_array, 0);
-    g_assert(trans_data);
-    g_assert(trans_data->ORIGINAL_TD_ID);
-    gint tdid = trans_data->tdid;
-    g_assert(tdid); //to check up reinstall
-    g_ptr_array_free(trans_data_array, TRUE);
-    g_object_unref(trans_data);
-    g_object_unref(rpm_data);
-    g_object_unref(pkg_data);
-    g_object_unref(last_trans);
-    return tdid;
-}
+    DnfSwdb *self = dnf_swdb_new(TEST_PATH, "42");
 
-static gint reinstall_package(DnfSwdb *self, DnfSwdbPkg *pkg, gint last_tdid)
-{
-    gint tid = begin_trans(self);
-    g_assert(tid); //tid not 0
-    DnfSwdbPkgData *pkg_data = generate_package_data();
-    g_assert(!dnf_swdb_log_package_data(self, pkg->pid, pkg_data));
-    g_assert(!dnf_swdb_trans_data_beg(self,
-                                      tid,
-                                      pkg->pid,
-                                      "user", //reason
-                                      "Reinstall")); //state
-    g_assert(!dnf_swdb_trans_data_pid_end(self,
-                                          pkg->pid,
-                                          tid,
-                                          "Reinstall"));
-    g_assert(!end_trans(self, tid));
-    DnfSwdbTrans *last_trans = dnf_swdb_last(self, TRUE);
-    g_assert(last_trans);
-    GPtrArray *trans_data_array = dnf_swdb_trans_data(last_trans);
-    g_assert(trans_data_array || trans_data_array->len);
-    DnfSwdbTransData *trans_data = g_ptr_array_index(trans_data_array, 0);
-    g_assert(trans_data);
-    g_assert(trans_data->ORIGINAL_TD_ID == last_tdid);
-    gint tdid = trans_data->tdid;
-    g_assert(tdid);
-    g_ptr_array_free(trans_data_array, TRUE);
-    g_object_unref(last_trans);
-    g_object_unref(trans_data);
-    g_object_unref(pkg_data);
-    return tdid;
-}
-
-static void erase_package(DnfSwdb *self, DnfSwdbPkg *pkg, gint last_tdid)
-{
-    gint tid = begin_trans(self);
-    g_assert(tid); //tid not 0
-    DnfSwdbPkgData *pkg_data = generate_package_data();
-    g_assert(!dnf_swdb_log_package_data(self, pkg->pid, pkg_data));
-    g_assert(!dnf_swdb_trans_data_beg(  self,
-                                        tid,
-                                        pkg->pid,
-                                        "user", //reason
-                                        "Erase")); //state
-    g_assert(!dnf_swdb_trans_data_pid_end(self,
-                                          pkg->pid,
-                                          tid,
-                                          "Erase"));
-    g_assert(!end_trans(self, tid));
-    DnfSwdbTrans *last_trans = dnf_swdb_last(self, TRUE);
-    g_assert(last_trans);
-    GPtrArray *trans_data_array = dnf_swdb_trans_data(last_trans);
-    g_assert(trans_data_array || trans_data_array->len);
-    DnfSwdbTransData *trans_data = g_ptr_array_index(trans_data_array, 0);
-    g_assert(trans_data);
-    g_assert(trans_data->ORIGINAL_TD_ID == last_tdid);
-    gint tdid = trans_data->tdid;
-    g_assert(tdid);
-    g_ptr_array_free(trans_data_array, TRUE);
-    g_object_unref(trans_data);
-    g_object_unref(pkg_data);
-    g_object_unref(last_trans);
-}
-
-gint main ()
-{
-    const gchar *_path = "./tmp_swdb.sqlite";
-    //create DB object
-    DnfSwdb *self = dnf_swdb_new(_path, "42");
-
-    g_assert(!g_strcmp0(dnf_swdb_get_path(self), _path));
+    //test path
+    g_assert(!g_strcmp0(dnf_swdb_get_path(self), TEST_PATH));
 
     //reset database
     dnf_swdb_reset_db(self);
 
-    //check if db exists
+    //test db existence
     g_assert(dnf_swdb_exist(self));
 
-    srand(time(NULL));
+    g_object_unref(self);
+}
 
-    //lets do some intial transaction
+static void
+dnf_swdb_initial_func(void)
+{
+    //create DB object
+    DnfSwdb *self = dnf_swdb_new(TEST_PATH, "42");
+
+    //run initial transaction
     run_initial_transaction(self);
 
-    //take initial transaction and verify it
+    //verify initial transaction
     check_initial_transaction(self);
 
-    //search some random package
-    DnfSwdbPkg *pkg = dnf_swdb_package_by_nvra(self, random_package_nvra);
-    g_assert(!g_strcmp0(pkg->nvra, random_package_nvra));
+    g_object_unref(self);
+}
+
+static void
+dnf_swdb_search_func(void)
+{
+    DnfSwdb *self = dnf_swdb_new(TEST_PATH, "42");
+
+    //open database
+    g_assert_false(dnf_swdb_open(self));
+
+    //get a package
+    DnfSwdbPkg *pkg = _get_package_by_pid(self->db, INIT_PACAKGES / 2);
+
+    //find transaction of this package by name
     GPtrArray *patts = g_ptr_array_new();
     g_ptr_array_add(patts, (gpointer) pkg->name);
+
     GArray *tids = dnf_swdb_search(self, patts);
-    g_ptr_array_free(patts, TRUE);
+
     g_assert(tids);
     g_assert(tids->len == 1);
     g_assert(g_array_index(tids, gint, 0) == 1); // initial trans
-    g_array_free(tids, TRUE);
 
-    //update
+    g_array_free(tids, TRUE);
+    g_ptr_array_free(patts, TRUE);
+    g_object_unref(pkg);
+    g_object_unref(self);
+}
+
+static void
+dnf_swdb_get_func(void)
+{
+    DnfSwdb *self = dnf_swdb_new(TEST_PATH, "42");
+
+    //open database
+    g_assert_false(dnf_swdb_open(self));
+
+    //get a package
+    DnfSwdbPkg *rpkg = _get_package_by_pid(self->db, INIT_PACAKGES / 2);
+
+    //find this package by nvra
+    DnfSwdbPkg *pkg = dnf_swdb_package_by_nvra(self, rpkg->nvra);
+    g_assert(!g_strcmp0(pkg->nvra, rpkg->nvra));
+
+    g_object_unref(self);
+}
+
+static void
+dnf_swdb_update_func(void)
+{
+    DnfSwdb *self = dnf_swdb_new(TEST_PATH, "42");
+
+    //open database
+    g_assert_false(dnf_swdb_open(self));
+
+    //get a package
+    DnfSwdbPkg *pkg = _get_package_by_pid(self->db, INIT_PACAKGES / 2);
+
     //change package version and checksum
     g_free((gchar*) pkg->version);
     pkg->version = generate_str(4);
     g_free((gchar*) pkg->checksum_data);
     pkg->checksum_data = generate_str(32);
-    gint tdid = update_package(self, pkg);
-    tdid = reinstall_package(self, pkg, tdid);
-    erase_package(self, pkg, tdid);
 
-    //TODO create some group transaction
+    //update
+    gint tid = begin_trans(self);
 
+    g_assert(tid); //tid not 0
+
+    //add package
+    g_assert(dnf_swdb_add_package(self, pkg));
+
+    //add rpm data
+    DnfSwdbRpmData *rpm_data = generate_rpm_data(pkg->pid);
+    g_assert_false(dnf_swdb_add_rpm_data(self, rpm_data));
+
+    //add package data
+    DnfSwdbPkgData *pkg_data = generate_package_data();
+    g_assert_false(dnf_swdb_log_package_data(self, pkg->pid, pkg_data));
+
+    //initialize transaction data
+    g_assert_false(
+        dnf_swdb_trans_data_beg(
+            self,
+            tid,
+            pkg->pid,
+            "user", //reason
+            "Update")); //state
+
+    //finalize transaction data
+    g_assert_false(
+        dnf_swdb_trans_data_pid_end(
+            self,
+            pkg->pid,
+            tid,
+            "Update"));
+
+    g_assert_false(end_trans(self, tid));
+
+    //check last transaction
+    DnfSwdbTrans *last_trans = dnf_swdb_last(self, TRUE);
+    g_assert(last_trans);
+
+    //check last transaction data
+    GPtrArray *trans_data_array = dnf_swdb_trans_data(last_trans);
+    g_assert(trans_data_array || trans_data_array->len);
+
+    //check trans data about package
+    DnfSwdbTransData *trans_data = g_ptr_array_index(trans_data_array, 0);
+    g_assert(trans_data);
+    g_assert(trans_data->ORIGINAL_TD_ID);
+    g_assert(trans_data->tdid);
+
+    g_ptr_array_free(trans_data_array, TRUE);
+    g_object_unref(trans_data);
+    g_object_unref(rpm_data);
+    g_object_unref(pkg_data);
+    g_object_unref(last_trans);
     g_object_unref(pkg);
     g_object_unref(self);
-    return 0;
+}
+
+static void
+dnf_swdb_reinstall_func(void)
+{
+    DnfSwdb *self = dnf_swdb_new(TEST_PATH, "42");
+
+    //open database
+    g_assert_false(dnf_swdb_open(self));
+
+    //get a package
+    DnfSwdbPkg *pkg = _get_package_by_pid(self->db, INIT_PACAKGES / 2);
+
+    //initialize transaction
+    gint tid = begin_trans(self);
+    g_assert(tid); //tid not 0
+
+    //insert package data
+    DnfSwdbPkgData *pkg_data = generate_package_data();
+    g_assert_false(dnf_swdb_log_package_data(self, pkg->pid, pkg_data));
+
+    //initialize transaction data
+    g_assert_false(
+        dnf_swdb_trans_data_beg(
+            self,
+            tid,
+            pkg->pid,
+            "user", //reason
+            "Reinstall")); //state
+
+    //finalize transaction data
+    g_assert_false(
+        dnf_swdb_trans_data_pid_end(
+            self,
+            pkg->pid,
+            tid,
+            "Reinstall"));
+
+    //finalize transaction
+    g_assert_false(end_trans(self, tid));
+    DnfSwdbTrans *last_trans = dnf_swdb_last(self, TRUE);
+    g_assert(last_trans);
+
+    //get trans data of the transaction
+    GPtrArray *trans_data_array = dnf_swdb_trans_data(last_trans);
+    g_assert(trans_data_array || trans_data_array->len);
+    DnfSwdbTransData *trans_data = g_ptr_array_index(trans_data_array, 0);
+
+    g_assert(trans_data);
+    g_assert(trans_data->ORIGINAL_TD_ID);
+    g_assert(trans_data->tdid);
+
+    g_ptr_array_free(trans_data_array, TRUE);
+    g_object_unref(last_trans);
+    g_object_unref(trans_data);
+    g_object_unref(pkg_data);
+    g_object_unref(pkg);
+    g_object_unref(self);
+}
+
+static void
+dnf_swdb_erase_func(void)
+{
+    DnfSwdb *self = dnf_swdb_new(TEST_PATH, "42");
+
+    //open database
+    g_assert_false(dnf_swdb_open(self));
+
+    //get a package
+    DnfSwdbPkg *pkg = _get_package_by_pid(self->db, INIT_PACAKGES / 2);
+
+    //initialize transaction
+    gint tid = begin_trans(self);
+    g_assert(tid); //tid not 0
+
+    //insert package data
+    DnfSwdbPkgData *pkg_data = generate_package_data();
+    g_assert_false(dnf_swdb_log_package_data(self, pkg->pid, pkg_data));
+
+    //initialize transaction data
+    g_assert_false(
+        dnf_swdb_trans_data_beg(
+            self,
+            tid,
+            pkg->pid,
+            "user", //reason
+            "Erase")); //state
+
+    //finalize transaction data
+    g_assert_false(
+        dnf_swdb_trans_data_pid_end(
+            self,
+            pkg->pid,
+            tid,
+            "Erase"));
+
+    //finalize transaction
+    g_assert_false(end_trans(self, tid));
+
+    //get last transaction
+    DnfSwdbTrans *last_trans = dnf_swdb_last(self, TRUE);
+    g_assert(last_trans);
+
+    //get last transaction data
+    GPtrArray *trans_data_array = dnf_swdb_trans_data(last_trans);
+    g_assert(trans_data_array || trans_data_array->len);
+    DnfSwdbTransData *trans_data = g_ptr_array_index(trans_data_array, 0);
+
+    g_assert(trans_data);
+    g_assert(trans_data->ORIGINAL_TD_ID);
+    g_assert(trans_data->tdid);
+
+    g_ptr_array_free(trans_data_array, TRUE);
+    g_object_unref(trans_data);
+    g_object_unref(pkg_data);
+    g_object_unref(last_trans);
+    g_object_unref(pkg);
+    g_object_unref(self);
+}
+
+int
+main(int argc, char **argv)
+{
+    g_setenv("G_MESSAGES_DEBUG", "all", FALSE);
+    g_setenv ("GIO_USE_VFS", "local", TRUE);
+
+    g_test_init(&argc, &argv, NULL);
+
+    /*
+    * Tests TODO
+    * - test ORIGINAL_TD_ID in reinstall, erase and update
+    */
+
+    //swdb tests
+    g_test_add_func("/libdnf/swdb[setup]", dnf_swdb_setup_func);
+    g_test_add_func("/libdnf/swdb[initial]", dnf_swdb_initial_func);
+    g_test_add_func("/libdnf/swdb[get_package]", dnf_swdb_get_func);
+    g_test_add_func("/libdnf/swdb[search]", dnf_swdb_search_func);
+    g_test_add_func("/libdnf/swdb[update_package]", dnf_swdb_update_func);
+    g_test_add_func("/libdnf/swdb[reinstall_package]", dnf_swdb_reinstall_func);
+    g_test_add_func("/libdnf/swdb[erase_package]", dnf_swdb_erase_func);
+
+    return g_test_run();
 }

@@ -39,7 +39,7 @@ dnf_swdb_finalize(GObject *object)
     dnf_swdb_close(swdb);
     g_free(swdb->path);
     g_free(swdb->releasever);
-    G_OBJECT_CLASS (dnf_swdb_parent_class)->finalize (object);
+    G_OBJECT_CLASS (dnf_swdb_parent_class)->finalize(object);
 }
 
 // SWDB Class initialiser
