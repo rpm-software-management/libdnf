@@ -104,6 +104,7 @@
 #define S_OUTPUT_TYPE_BY_ID  "SELECT description FROM output_type  WHERE type=@id"
 #define S_PACKAGE_TYPE_BY_ID "SELECT description FROM package_type WHERE type=@id"
 
+#define S_LATEST_PACKAGE "SELECT p_id FROM package WHERE name=@name ORDER BY p_id DESC LIMIT 1"
 
 #define U_REASON_BY_PDID "UPDATE TRANS_DATA SET reason=@reason where PD_ID=@pdid"
 

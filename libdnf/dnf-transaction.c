@@ -88,6 +88,12 @@ typedef struct
 G_DEFINE_TYPE_WITH_PRIVATE(DnfTransaction, dnf_transaction, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) (dnf_transaction_get_instance_private (o))
 
+typedef struct
+{
+    void *swdb;
+    gint tid;
+} SwdbHandle;
+
 /**
  * dnf_transaction_finalize:
  **/
@@ -927,7 +933,7 @@ static gboolean
 dnf_transaction_write_yumdb_install_item(DnfTransaction *transaction,
                                          HyGoal goal,
                                          DnfPackage *pkg,
-                                         void *_swdb,
+                                         SwdbHandle *handle,
                                          DnfState *state,
                                          GError **error)
 {
@@ -973,7 +979,7 @@ dnf_transaction_write_yumdb_install_item(DnfTransaction *transaction,
     #if WITH_SWDB
 
     /* save these attributes to swdb */
-    DnfSwdb *swdb = (DnfSwdb *) _swdb;
+    DnfSwdb *swdb = (DnfSwdb *) handle->swdb;
 
     /* Insert package to SWDB*/
     gint pid = _dnf_transaction_transform_to_swdb_pkg(swdb, pkg);
@@ -981,22 +987,20 @@ dnf_transaction_write_yumdb_install_item(DnfTransaction *transaction,
     if (!pid)
         return FALSE;
 
-    DnfSwdbPkgData *pkg_data = dnf_swdb_pkgdata_new(NULL,
-                                                    NULL,
+    DnfSwdbPkgData *pkg_data = dnf_swdb_pkgdata_new(NULL, //from_repo_revision
+                                                    NULL, //from_repo_timestamp
                                                     euid,
-                                                    NULL,
-                                                    NULL,
-                                                    "PK",
+                                                    NULL, //changed by
+                                                    NULL, //installonly
+                                                    NULL, //origin_url
                                                     tmp);
-
-    /* TODO - Replace that "PK" with logging into transaction performed with */
 
     /* Insert package data */
     if(dnf_swdb_log_package_data(swdb, pid, pkg_data))
         return FALSE;
 
     /* Insert fake transaction data */
-    if(dnf_swdb_trans_data_beg(swdb, 0, pid, reason, "Installed"))
+    if(dnf_swdb_trans_data_beg(swdb, handle->tid, pid, reason, "Installed"))
         return FALSE;
 
     g_object_unref(pkg_data);
@@ -1047,15 +1051,33 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
         return FALSE;
 
 
-    /* prepare SWDB object */
-    void *swdb = NULL;
+    /* prepare SWDB handle */
+    SwdbHandle handle;
+    handle.swdb = NULL;
+    handle.tid = 0;
 
     #if WITH_SWDB
 
+    //get release
     const gchar *release = dnf_context_get_release_ver(priv->context);
-    swdb = (void *) dnf_swdb_new(DNF_SWDB_DEFAULT_PATH, release);
 
-    // TODO - crate transaction - make it visible to user in dnf history
+    gchar *uid = g_strdup_printf("%i", priv->uid);
+
+    //get time
+    gchar *time_str = malloc(11 * sizeof(gchar));
+    snprintf(time_str, 11, "%d", (gint) time(NULL)); //XXX
+
+    //prepare swdb object
+    DnfSwdb *swdb = dnf_swdb_new(DNF_SWDB_DEFAULT_PATH, release);
+    handle.swdb = (void *) swdb;
+
+    //initialize transaction
+    handle.tid = dnf_swdb_trans_beg(swdb,
+                                    time_str,
+                                    NULL, //beg rpmdb version
+                                    NULL, //cmdline
+                                    uid, //login ID
+                                    release);
 
     #endif
 
@@ -1070,7 +1092,7 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
         ret = dnf_transaction_write_yumdb_install_item(transaction,
                                                        goal,
                                                        pkg,
-                                                       swdb,
+                                                       &handle,
                                                        state_loop,
                                                        error);
         if (!ret)
@@ -1078,6 +1100,27 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
         if (!dnf_state_done(state_local, error))
             return FALSE;
     }
+
+    #if WITH_SWDB
+
+    //transaction performed with
+    dnf_swdb_trans_with_libdnf(swdb, handle.tid);
+
+    snprintf(time_str, 11, "%d", (gint) time(NULL));
+
+    //finalize transaction
+    dnf_swdb_trans_end(
+        swdb,
+        handle.tid,
+        time_str,
+        NULL, //end rpmdb version
+        0); //return code
+
+    g_free(uid);
+    g_free(time_str);
+    g_object_unref(swdb);
+
+    #endif
 
     /* this section done */
     if (!dnf_state_done(state, error))
@@ -1104,13 +1147,6 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
         if (!dnf_state_done(state_local, error))
             return FALSE;
     }
-
-    #if WITH_SWDB
-
-    DnfSwdb *_swdb = (DnfSwdb *) swdb;
-    g_object_unref(_swdb);
-
-    #endif
 
     /* this section done */
     return dnf_state_done(state, error);

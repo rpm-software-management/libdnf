@@ -1,7 +1,7 @@
 /* dnf-swdb.h
  *
  * Copyright (C) 2016 Red Hat, Inc.
- * Author: Eduard Cuba <xcubae00@stud.fit.vutbr.cz>
+ * Author: Eduard Cuba <ecuba@redhat.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -195,6 +195,8 @@ void            dnf_swdb_trans_with             (DnfSwdb        *self,
                                                  int             pid);
  DnfSwdbPkg    *_get_package_by_pid             (sqlite3        *db,
                                                  gint            pid);
+void            dnf_swdb_trans_with_libdnf      (DnfSwdb        *self,
+                                                 int             tid);
 
 G_END_DECLS
 
