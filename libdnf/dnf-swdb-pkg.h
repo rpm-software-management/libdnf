@@ -63,6 +63,10 @@ gchar              *dnf_swdb_pkg_get_ui_from_repo   (DnfSwdbPkg    *self);
 gchar              *dnf_swdb_pkg_get_reason         (DnfSwdbPkg    *self);
 gint64              dnf_swdb_pkg_compare            (DnfSwdbPkg    *pkg1,
                                                      DnfSwdbPkg    *pkg2);
+gboolean            dnf_swdb_pkg___lt__             (DnfSwdbPkg    *first,
+                                                     DnfSwdbPkg    *second);
+gboolean            dnf_swdb_pkg___gt__             (DnfSwdbPkg    *first,
+                                                     DnfSwdbPkg    *second);
 
 G_END_DECLS
 

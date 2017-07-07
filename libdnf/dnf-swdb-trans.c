@@ -847,7 +847,7 @@ dnf_swdb_trans_performed_with(DnfSwdbTrans *self)
 
 /**
 * dnf_swdb_trans_tids:
-* self: transaction object
+* @self: transaction object
 *
 * Return array of transaction ids merged into transaction
 * Or just transaction id when @self is not merged transaction
@@ -870,4 +870,65 @@ dnf_swdb_trans_tids(DnfSwdbTrans *self)
     //not merged
     g_array_append_val(tids, self->tid);
     return tids;
+}
+
+
+/**
+* dnf_swdb_trans_compare:
+* @first: first transaction
+* @second: second transaction
+*
+* Returns: @second - @first
+**/
+gint64
+dnf_swdb_trans_compare(DnfSwdbTrans *first,
+                       DnfSwdbTrans *second)
+{
+    if (!first || !second)
+    {
+        return 0;
+    }
+    gdouble beg_first = g_ascii_strtod(first->beg_timestamp, NULL);
+    gdouble beg_second = g_ascii_strtod(second->beg_timestamp, NULL);
+
+    if (beg_first == beg_second)
+    {
+        gdouble end_first = g_ascii_strtod(first->end_timestamp, NULL);
+        gdouble end_second = g_ascii_strtod(second->end_timestamp, NULL);
+        if (end_first == end_second)
+        {
+            return second->tid - first->tid;
+        }
+        return end_second - end_first;
+    }
+
+    return beg_second - beg_first;
+}
+
+/**
+* dnf_swdb_trans___lt__:
+* @first: first transaction
+* @second: second transaction
+*
+* Returns: %true when @first is less then @second
+**/
+gboolean
+dnf_swdb_trans___lt__(DnfSwdbTrans *first,
+                      DnfSwdbTrans *second)
+{
+    return dnf_swdb_trans_compare(first, second) < 0;
+}
+
+/**
+* dnf_swdb_trans___gt__:
+* @first: first transaction
+* @second: second transaction
+*
+* Returns: %true when @first is greater then @second
+**/
+gboolean
+dnf_swdb_trans___gt__(DnfSwdbTrans *first,
+                      DnfSwdbTrans *second)
+{
+    return dnf_swdb_trans_compare(first, second) > 0;
 }
