@@ -259,3 +259,33 @@ dnf_swdb_pkg_compare(DnfSwdbPkg *pkg1,
 
     return res;
 }
+
+
+/**
+* dnf_swdb_pkg___lt__:
+* @first: first package
+* @second: second package
+*
+* Returns: %true when @first < @second - @second is newer
+**/
+gboolean
+dnf_swdb_pkg___lt__(DnfSwdbPkg *first,
+                    DnfSwdbPkg *second)
+{
+    return dnf_swdb_pkg_compare(first, second) > 0;
+}
+
+
+/**
+* dnf_swdb_pkg___gt__:
+* @first: first package
+* @second: second package
+*
+* Returns: %true when @first > @second - @first is newer
+**/
+gboolean
+dnf_swdb_pkg___gt__(DnfSwdbPkg *first,
+                    DnfSwdbPkg *second)
+{
+    return dnf_swdb_pkg_compare(first, second) < 0;
+}

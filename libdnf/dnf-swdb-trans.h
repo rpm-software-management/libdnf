@@ -72,6 +72,13 @@ GPtrArray      *dnf_swdb_trans_packages         (DnfSwdbTrans  *self);
 GPtrArray      *dnf_swdb_trans_performed_with   (DnfSwdbTrans  *self);
 GArray         *dnf_swdb_trans_tids             (DnfSwdbTrans  *self);
 
+gint64          dnf_swdb_trans_compare          (DnfSwdbTrans *first,
+                                                 DnfSwdbTrans *second);
+gboolean        dnf_swdb_trans___lt__           (DnfSwdbTrans *first,
+                                                 DnfSwdbTrans *second);
+gboolean        dnf_swdb_trans___gt__           (DnfSwdbTrans *first,
+                                                 DnfSwdbTrans *second);
+
 G_END_DECLS
 
 #endif
