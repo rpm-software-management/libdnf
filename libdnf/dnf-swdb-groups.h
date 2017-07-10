@@ -32,6 +32,8 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE (DnfSwdbGroup, dnf_swdb_group, DNF, SWDB_GROUP, GObject)
 G_DECLARE_FINAL_TYPE (DnfSwdbEnv, dnf_swdb_env, DNF, SWDB_ENV, GObject)
 
+#include "dnf-swdb.h"
+
 struct _DnfSwdbGroup
 {
     GObject parent_instance;

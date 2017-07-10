@@ -23,7 +23,6 @@
 #ifndef DNF_SWDB_PKG_H
 #define DNF_SWDB_PKG_H
 
-#include "dnf-swdb.h"
 #include <glib-object.h>
 
 G_BEGIN_DECLS
@@ -31,6 +30,8 @@ G_BEGIN_DECLS
 #define DNF_TYPE_SWDB_PKG       dnf_swdb_pkg_get_type()
 
 G_DECLARE_FINAL_TYPE (DnfSwdbPkg, dnf_swdb_pkg, DNF, SWDB_PKG, GObject)
+
+#include "dnf-swdb.h"
 
 struct _DnfSwdbPkg
 {
