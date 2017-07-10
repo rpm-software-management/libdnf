@@ -1,0 +1,9 @@
+---
+BasedOnStyle: Mozilla
+---
+Language: Cpp
+AllowAllParametersOfDeclarationOnNextLine: true
+PointerAlignment: Right
+IndentWidth: 4
+ColumnLimit: 100
+...
