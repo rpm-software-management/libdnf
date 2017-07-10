@@ -1605,8 +1605,15 @@ dnf_swdb_last (DnfSwdb *self,
                gboolean complete_only)
 {
     GPtrArray *node = dnf_swdb_trans_old(self, NULL, 1, complete_only);
-    if (!node || !node->len)
+    if (!node)
+    {
         return NULL;
+    }
+    if (!node->len)
+    {
+        g_ptr_array_free(node, TRUE);
+        return NULL;
+    }
     DnfSwdbTrans *trans = g_ptr_array_index(node, 0);
     g_ptr_array_free(node, TRUE);
     return trans;
