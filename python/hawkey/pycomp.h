@@ -23,6 +23,8 @@
 #ifndef PYCOMP_H
 #define PYCOMP_H
 
+#include <Python.h>
+
 // Python 3 and newer types compatibility
 #if PY_MAJOR_VERSION >= 3
     #define PyInt_Check PyLong_Check
