@@ -797,6 +797,7 @@ dnf_repo_loader_func(void)
     g_autofree gchar *repos_dir = NULL;
     g_autoptr(DnfContext) ctx = NULL;
     g_autoptr(DnfRepoLoader) repo_loader = NULL;
+    guint metadata_expire;
 
     /* set up local context */
     ctx = dnf_context_new();
@@ -846,6 +847,9 @@ dnf_repo_loader_func(void)
     /* try to refresh local repo */
     dnf_state_reset(state);
     ret = dnf_repo_update(repo, DNF_REPO_UPDATE_FLAG_NONE, state, &error);
+    /* check the metadata expire attribute */
+    metadata_expire = dnf_repo_get_metadata_expire(repo);
+    g_assert_cmpuint(metadata_expire, == , 60 * 60 * 24);
     g_assert_no_error(error);
     g_assert(ret);
 
