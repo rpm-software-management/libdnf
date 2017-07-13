@@ -886,7 +886,7 @@ _dnf_transaction_transform_to_swdb_pkg(DnfSwdb *swdb,
 {
     gint pid = 0;
     const gchar *nevra = dnf_package_get_nevra(pkg);
-    DnfSwdbPkg *spkg = dnf_swdb_package_by_nvra(swdb, nevra);
+    DnfSwdbPkg *spkg = dnf_swdb_package_by_nevra(swdb, nevra);
 
     if (spkg) {
         pid = spkg->pid;
@@ -896,8 +896,7 @@ _dnf_transaction_transform_to_swdb_pkg(DnfSwdb *swdb,
 
     int type = 0;
     const gchar *name = dnf_package_get_name(pkg);
-    guint64 _epoch = dnf_package_get_epoch(pkg);
-    g_autofree gchar *epoch = g_strdup_printf("%lu", _epoch);
+    guint64 epoch = dnf_package_get_epoch(pkg);
 
     const gchar *version = dnf_package_get_version(pkg);
     const gchar *release = dnf_package_get_release(pkg);

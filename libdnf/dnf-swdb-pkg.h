@@ -37,7 +37,7 @@ struct _DnfSwdbPkg
 {
     GObject parent_instance;
     const gchar *name;
-    const gchar *epoch;
+    gint epoch;
     const gchar *version;
     const gchar *release;
     const gchar *arch;
@@ -48,12 +48,12 @@ struct _DnfSwdbPkg
     gchar *state;
     gint pid;
     gchar *ui_from_repo;
-    gchar *nvra;
+    gchar *nevra;
     DnfSwdb *swdb;
 };
 
 DnfSwdbPkg          *dnf_swdb_pkg_new               (const gchar   *name,
-                                                     const gchar   *epoch,
+                                                     gint           epoch,
                                                      const gchar   *version,
                                                      const gchar   *release,
                                                      const gchar   *arch,

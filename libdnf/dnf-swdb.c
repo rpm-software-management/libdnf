@@ -317,32 +317,32 @@ dnf_swdb_search (DnfSwdb *self, GPtrArray *patterns)
 }
 
 /**
- * _pid_by_nvra:
+ * _pid_by_nevra:
  * @db: sqlite database handle
- * @nvra: string in format name-version-release.arch
+ * @nevra: string in format name-[epoch:]version-release.arch
  *
- * Get Package ID from SWDB by package nvra
- * Indexed nvra provides fast binding between other package objects
+ * Get Package ID from SWDB by package nevra
+ * Indexed nevra provides fast binding between other package objects
  *
- * Returns: id of package matched by @nvra
+ * Returns: id of package matched by @nevra
  **/
 static gint
-_pid_by_nvra (sqlite3 *db, const gchar *nvra)
+_pid_by_nevra (sqlite3 *db, const gchar *nevra)
 {
     gint pid = 0;
-    const gchar *sql = S_PID_BY_NVRA;
+    const gchar *sql = g_strrstr (nevra, ":") ? S_PID_BY_NEVRA : S_PID_BY_NVRA;
     sqlite3_stmt *res;
     DB_PREP (db, sql, res);
-    DB_BIND (res, "@nvra", nvra);
+    DB_BIND (res, "@nevra", nevra);
     pid = DB_FIND (res);
     return pid;
 }
 
 /**
- * dnf_swdb_checksums_by_nvras:
- * @nvras: (element-type utf8) (transfer container): list of patterns
+ * dnf_swdb_checksums_by_nevras:
+ * @nevras: (element-type utf8) (transfer container): list of patterns
  *
- * Patch packages by name-version-release.arch and return list of their
+ * Patch packages by name-[epoch:]version-release.arch and return list of their
  * checksums.
  * Output is in format:
  *   [checksum_type, checksum_data, checksum_type, checksum_data, ...]
@@ -352,20 +352,25 @@ _pid_by_nvra (sqlite3 *db, const gchar *nvra)
  * Returns: (element-type utf8) (transfer container): list of checksums
  **/
 GPtrArray *
-dnf_swdb_checksums_by_nvras (DnfSwdb *self, GPtrArray *nvras)
+dnf_swdb_checksums_by_nevras (DnfSwdb *self, GPtrArray *nevras)
 {
     if (dnf_swdb_open (self))
         return NULL;
     gchar *buff1;
     gchar *buff2;
-    gchar *nvra;
+    gchar *nevra;
     GPtrArray *checksums = g_ptr_array_new ();
-    const gchar *sql = S_CHECKSUMS_BY_NVRA;
-    for (guint i = 0; i < nvras->len; i++) {
-        nvra = (gchar *)g_ptr_array_index (nvras, i);
+    const gchar *sql = S_CHECKSUM_BY_NEVRA; //TODO
+    const gchar *sql2 = S_CHECKSUM_BY_NVRA;
+    for (guint i = 0; i < nevras->len; i++) {
+        nevra = (gchar *)g_ptr_array_index (nevras, i);
         sqlite3_stmt *res;
-        DB_PREP (self->db, sql, res);
-        DB_BIND (res, "@nvra", nvra);
+        if (g_strrstr (nevra, ":")) {
+            DB_PREP (self->db, sql, res);
+        } else {
+            DB_PREP (self->db, sql2, res);
+        }
+        DB_BIND (res, "@nevra", nevra);
         if (sqlite3_step (res) == SQLITE_ROW) {
             buff1 = (gchar *)sqlite3_column_text (res, 0);
             buff2 = (gchar *)sqlite3_column_text (res, 1);
@@ -381,20 +386,20 @@ dnf_swdb_checksums_by_nvras (DnfSwdb *self, GPtrArray *nvras)
 
 /**
  * dnf_swdb_select_user_installed:
- * @nvras: (element-type utf8)(transfer container): list of patterns
+ * @nevras: (element-type utf8)(transfer container): list of patterns
  *
- * Match user installed packages by their name-version-release.arch
+ * Match user installed packages by their name-[epoch:]version-release.arch
  * Return id's of user installed pacakges
  *
  * Example:
- *   @nvras = ["abc", "def", "ghi"]
+ *   @nevras = ["abc", "def", "ghi"]
  *   # "abc" and "ghi" are user installed packages
  *   Output:[0,2]
  *
  * Returns: (element-type gint32)(transfer container): list of matched indexes
  **/
 GArray *
-dnf_swdb_select_user_installed (DnfSwdb *self, GPtrArray *nvras)
+dnf_swdb_select_user_installed (DnfSwdb *self, GPtrArray *nevras)
 {
     if (dnf_swdb_open (self))
         return NULL;
@@ -405,7 +410,7 @@ dnf_swdb_select_user_installed (DnfSwdb *self, GPtrArray *nvras)
     GArray *usr_ids = g_array_new (0, 0, sizeof (gint));
     if (!depid && !weakid) {
         // there are no dependency pacakges - all packages are user installed
-        for (guint i = 0; i < nvras->len; ++i)
+        for (guint i = 0; i < nevras->len; ++i)
             g_array_append_val (usr_ids, i);
 
         return usr_ids;
@@ -415,8 +420,8 @@ dnf_swdb_select_user_installed (DnfSwdb *self, GPtrArray *nvras)
     gint pdid = 0;
     gint reason_id = 0;
     const gchar *sql = S_REASON_ID_BY_PDID;
-    for (guint i = 0; i < nvras->len; ++i) {
-        pid = _pid_by_nvra (self->db, (gchar *)g_ptr_array_index (nvras, i));
+    for (guint i = 0; i < nevras->len; ++i) {
+        pid = _pid_by_nevra (self->db, (gchar *)g_ptr_array_index (nevras, i));
         if (!pid) {
             // better not uninstall package when not sure
             g_array_append_val (usr_ids, i);
@@ -445,16 +450,16 @@ dnf_swdb_select_user_installed (DnfSwdb *self, GPtrArray *nvras)
 /**
  * dnf_swdb_user_installed:
  * @self: SWDB object
- * @nvra: string in format name-version-release.arch
+ * @nevra: string in format name-[epoch:]version-release.arch
  * Returns: %TRUE if package is user installed
  **/
 gboolean
-dnf_swdb_user_installed (DnfSwdb *self, const gchar *nvra)
+dnf_swdb_user_installed (DnfSwdb *self, const gchar *nevra)
 {
     if (dnf_swdb_open (self))
         return TRUE;
 
-    gint pid = _pid_by_nvra (self->db, nvra);
+    gint pid = _pid_by_nevra (self->db, nevra);
     if (!pid) {
         return FALSE;
     }
@@ -527,17 +532,17 @@ _repo_by_pid (sqlite3 *db, gint pid)
 }
 
 /**
- * dnf_swdb_repo_by_nvra:
+ * dnf_swdb_repo_by_nevra:
  * @self: SWDB object
- * @nvra: string in format name-version-release.arch
+ * @nevra: string in format name-[epoch:]version-release.arch
  * Returns: repository name
  **/
 gchar *
-dnf_swdb_repo_by_nvra (DnfSwdb *self, const gchar *nvra)
+dnf_swdb_repo_by_nevra (DnfSwdb *self, const gchar *nevra)
 {
     if (dnf_swdb_open (self))
         return NULL;
-    gint pid = _pid_by_nvra (self->db, nvra);
+    gint pid = _pid_by_nevra (self->db, nevra);
     if (!pid) {
         return g_strdup ("unknown");
     }
@@ -548,19 +553,19 @@ dnf_swdb_repo_by_nvra (DnfSwdb *self, const gchar *nvra)
 /**
  * dnf_swdb_set_repo:
  * @self: SWDB object
- * @nvra: string in format name-version-release.arch
+ * @nevra: string in format name-[epoch:]version-release.arch
  * @repo: repository name
  *
- * Set source repository for package matched by @nvra
+ * Set source repository for package matched by @nevra
  *
  * Returns: 0 if source repository was set successfully
  **/
 gint
-dnf_swdb_set_repo (DnfSwdb *self, const gchar *nvra, const gchar *repo)
+dnf_swdb_set_repo (DnfSwdb *self, const gchar *nevra, const gchar *repo)
 {
     if (dnf_swdb_open (self))
         return 1;
-    gint pid = _pid_by_nvra (self->db, nvra);
+    gint pid = _pid_by_nevra (self->db, nevra);
     if (!pid) {
         return 1;
     }
@@ -593,7 +598,7 @@ _package_insert (DnfSwdb *self, DnfSwdbPkg *package)
     const gchar *sql = INSERT_PKG;
     DB_PREP (self->db, sql, res);
     DB_BIND (res, "@name", package->name);
-    DB_BIND (res, "@epoch", package->epoch);
+    DB_BIND_INT (res, "@epoch", package->epoch);
     DB_BIND (res, "@version", package->version);
     DB_BIND (res, "@release", package->release);
     DB_BIND (res, "@arch", package->arch);
@@ -739,18 +744,18 @@ _reason_by_pid (sqlite3 *db, gint pid)
 }
 
 /**
- * dnf_swdb_reason_by_nvra:
+ * dnf_swdb_reason_by_nevra:
  * @self: SWDB object
- * @nvra: string in format name-version-release.arch
+ * @nevra: string in format name-[epoch:]version-release.arch
  *
- * Returns: reason string for package matched by @nvra
+ * Returns: reason string for package matched by @nevra
  **/
 gchar *
-dnf_swdb_reason_by_nvra (DnfSwdb *self, const gchar *nvra)
+dnf_swdb_reason_by_nevra (DnfSwdb *self, const gchar *nevra)
 {
     if (dnf_swdb_open (self))
         return NULL;
-    gint pid = _pid_by_nvra (self->db, nvra);
+    gint pid = _pid_by_nevra (self->db, nevra);
     gchar *reason = NULL;
     if (pid) {
         reason = _reason_by_pid (self->db, pid);
@@ -835,7 +840,7 @@ _get_package_by_pid (sqlite3 *db, gint pid)
     DB_BIND_INT (res, "@pid", pid);
     if (sqlite3_step (res) == SQLITE_ROW) {
         DnfSwdbPkg *pkg = dnf_swdb_pkg_new ((gchar *)sqlite3_column_text (res, 1), // name
-                                            (gchar *)sqlite3_column_text (res, 2), // epoch
+                                            sqlite3_column_int (res, 2), // epoch
                                             (gchar *)sqlite3_column_text (res, 3), // version
                                             (gchar *)sqlite3_column_text (res, 4), // release
                                             (gchar *)sqlite3_column_text (res, 5), // arch
@@ -886,34 +891,34 @@ dnf_swdb_get_packages_by_tid (DnfSwdb *self, gint tid)
 }
 
 /**
- * dnf_swdb_pid_by_nvra:
+ * dnf_swdb_pid_by_nevra:
  * @self: SWDB object
- * @nvra: string in format name-version-release.arch
+ * @nevra: string in format name-[epoch:]version-release.arch
  *
- * Returns: ID of package matched by @nvra or 0
+ * Returns: ID of package matched by @nevra or 0
  **/
 gint
-dnf_swdb_pid_by_nvra (DnfSwdb *self, const gchar *nvra)
+dnf_swdb_pid_by_nevra (DnfSwdb *self, const gchar *nevra)
 {
     if (dnf_swdb_open (self))
         return 0;
-    gint pid = _pid_by_nvra (self->db, nvra);
+    gint pid = _pid_by_nevra (self->db, nevra);
     return pid;
 }
 
 /**
- * dnf_swdb_package_by_nvra:
+ * dnf_swdb_package_by_nevra:
  * @self: SWDB object
- * @nvra: string in format name-version-release.arch
+ * @nevra: string in format name-[epoch:]version-release.arch
  *
- * Returns: (transfer full): #DnfSwdbPkg matched by @nvra
+ * Returns: (transfer full): #DnfSwdbPkg matched by @nevra
  **/
 DnfSwdbPkg *
-dnf_swdb_package_by_nvra (DnfSwdb *self, const gchar *nvra)
+dnf_swdb_package_by_nevra (DnfSwdb *self, const gchar *nevra)
 {
     if (dnf_swdb_open (self))
         return NULL;
-    gint pid = _pid_by_nvra (self->db, nvra);
+    gint pid = _pid_by_nevra (self->db, nevra);
     if (!pid) {
         return NULL;
     }
@@ -923,18 +928,18 @@ dnf_swdb_package_by_nvra (DnfSwdb *self, const gchar *nvra)
 }
 
 /**
- * dnf_swdb_package_data_by_nvra:
+ * dnf_swdb_package_data_by_nevra:
  * @self: SWDB object
- * @nvra: string in format name-version-release.arch
+ * @nevra: string in format name-[epoch:]version-release.arch
  *
- * Returns: (transfer full): #DnfSwdbPkgData for package matched by @nvra
+ * Returns: (transfer full): #DnfSwdbPkgData for package matched by @nevra
  **/
 DnfSwdbPkgData *
-dnf_swdb_package_data_by_nvra (DnfSwdb *self, const gchar *nvra)
+dnf_swdb_package_data_by_nevra (DnfSwdb *self, const gchar *nevra)
 {
     if (dnf_swdb_open (self))
         return NULL;
-    gint pid = _pid_by_nvra (self->db, nvra);
+    gint pid = _pid_by_nevra (self->db, nevra);
     if (!pid) {
         return NULL;
     }
@@ -964,18 +969,18 @@ _mark_pkg_as (sqlite3 *db, gint pdid, gint mark)
 /**
  * dnf_swdb_set_reason:
  * @self: SWDB object
- * @nvra: string in format name-version-release.arch
+ * @nevra: string in format name-[epoch:]version-release.arch
  * @reason: reason string
  *
- * Set reason of package matched by @nvra to @reason
+ * Set reason of package matched by @nevra to @reason
  * Returns: 0 if successfull, else 1
  **/
 gint
-dnf_swdb_set_reason (DnfSwdb *self, const gchar *nvra, const gchar *reason)
+dnf_swdb_set_reason (DnfSwdb *self, const gchar *nevra, const gchar *reason)
 {
     if (dnf_swdb_open (self))
         return 1;
-    gint pid = _pid_by_nvra (self->db, nvra);
+    gint pid = _pid_by_nevra (self->db, nevra);
     if (!pid) {
         return 1;
     }
@@ -989,7 +994,7 @@ dnf_swdb_set_reason (DnfSwdb *self, const gchar *nvra, const gchar *reason)
 /**
  * dnf_swdb_mark_user_installed:
  * @self: SWDB object
- * @nvra: string in format name-version-release.arch
+ * @nevra: string in format name-[epoch:]version-release.arch
  * @user_installed: user installed flag (%TRUE if user installed)
  *
  * (Un)mark package as user installed
@@ -997,13 +1002,13 @@ dnf_swdb_set_reason (DnfSwdb *self, const gchar *nvra, const gchar *reason)
  * Returns: 0 if successfull
  **/
 gint
-dnf_swdb_mark_user_installed (DnfSwdb *self, const gchar *nvra, gboolean user_installed)
+dnf_swdb_mark_user_installed (DnfSwdb *self, const gchar *nevra, gboolean user_installed)
 {
     gint rc;
     if (user_installed) {
-        rc = dnf_swdb_set_reason (self, nvra, "user");
+        rc = dnf_swdb_set_reason (self, nevra, "user");
     } else {
-        rc = dnf_swdb_set_reason (self, nvra, "dep");
+        rc = dnf_swdb_set_reason (self, nevra, "dep");
     }
     return rc;
 }
