@@ -118,8 +118,6 @@ static void
 dnf_transaction_init(DnfTransaction *transaction)
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
-    priv->ts = rpmtsCreate();
-    priv->keyring = rpmtsGetKeyring(priv->ts, 1);
     priv->timer = g_timer_new();
     priv->pkgs_to_download = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
 }
@@ -1602,6 +1600,9 @@ dnf_transaction_new(DnfContext *context)
     priv = GET_PRIVATE(transaction);
     priv->context = context;
     g_object_add_weak_pointer(G_OBJECT(priv->context),(void **) &priv->context);
+    priv->ts = rpmtsCreate();
+    rpmtsSetRootDir(priv->ts, dnf_context_get_install_root(context));
+    priv->keyring = rpmtsGetKeyring(priv->ts, 1);
     priv->db = dnf_db_new(context);
     /* propagate db enablement */
     dnf_db_set_enabled(priv->db, dnf_context_get_yumdb_enabled(context));
