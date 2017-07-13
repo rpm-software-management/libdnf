@@ -112,6 +112,7 @@ gchar **         dnf_repo_get_public_keys       (DnfRepo              *repo);
 DnfRepoEnabled   dnf_repo_get_enabled           (DnfRepo              *repo);
 gboolean         dnf_repo_get_required          (DnfRepo              *repo);
 guint            dnf_repo_get_cost              (DnfRepo              *repo);
+guint            dnf_repo_get_metadata_expire   (DnfRepo              *repo);
 DnfRepoKind      dnf_repo_get_kind              (DnfRepo              *repo);
 gchar          **dnf_repo_get_exclude_packages  (DnfRepo              *repo);
 gboolean         dnf_repo_get_gpgcheck          (DnfRepo              *repo);
@@ -155,6 +156,8 @@ void             dnf_repo_set_gpgcheck_md       (DnfRepo              *repo,
                                                  gboolean              gpgcheck_md);
 void             dnf_repo_set_keyfile           (DnfRepo              *repo,
                                                  GKeyFile             *keyfile);
+void             dnf_repo_set_metadata_expire   (DnfRepo              *repo,
+                                                 guint                 metadata_expire);
 gboolean         dnf_repo_setup                 (DnfRepo              *repo,
                                                  GError              **error);
 

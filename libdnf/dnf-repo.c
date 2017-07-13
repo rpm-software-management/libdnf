@@ -56,6 +56,7 @@ typedef struct
     gchar          **gpgkeys;
     gchar          **exclude_packages;
     guint            cost;
+    guint            metadata_expire;       /*seconds*/
     gchar           *filename;      /* /etc/yum.repos.d/updates.repo */
     gchar           *id;
     gchar           *location;      /* /var/cache/PackageKit/metadata/fedora */
@@ -446,6 +447,22 @@ dnf_repo_get_repo(DnfRepo *repo)
 }
 
 /**
+ * dnf_repo_get_metadata_expire:
+ * @repo: a #DnfRepo instance.
+ *
+ * Gets the metadata_expire time for the repo
+ *
+ * Returns: the metadata_expire time in seconds
+ */
+guint
+dnf_repo_get_metadata_expire(DnfRepo *repo)
+{
+	DnfRepoPrivate *priv = GET_PRIVATE(repo);
+	return priv->metadata_expire;
+
+}
+
+/**
  * dnf_repo_is_devel:
  * @repo: a #DnfRepo instance.
  *
@@ -737,6 +754,112 @@ dnf_repo_set_keyfile(DnfRepo *repo, GKeyFile *keyfile)
 }
 
 /**
+ * dnf_repo_set_metadata_expire:
+ * @repo: a #DnfRepo instance.
+ * @metadata_expire: the expected expiry time for metadata
+ *
+ * Sets the metadata_expire time, which is default to be 0 days
+ **/
+void
+dnf_repo_set_metadata_expire(DnfRepo *repo, guint metadata_expire)
+{
+    DnfRepoPrivate *priv = GET_PRIVATE(repo);
+    priv->metadata_expire = metadata_expire;
+}
+
+/**
+ *  dnf_repo_parse_time_from_str
+ *  @expression: a expression to be parsed
+ *  @error: error item
+ *
+ *  Parse String into an integer value of seconds, or a human
+ *  readable variation specifying days, hours, minutes or seconds
+ *  until something happens. Note that due to historical president
+ *  -1 means "never", so this accepts that and allows
+ *  the word never, too.
+ *
+ *  Valid inputs: 100, 1.5m, 90s, 1.2d, 1d, 0xF, 0.1, -1, never.
+ *  Invalid inputs: -10, -0.1, 45.6Z, 1d6h, 1day, 1y.
+
+ *  Returns: integer value in seconds
+ **/
+
+static guint
+dnf_repo_parse_time_from_str(const gchar *expression, GError **error)
+{
+    gint multiplier;
+    gdouble parsed_time;
+    gchar *endptr = NULL;
+    guint result;
+
+    if (!g_strcmp0(expression, "")) {
+        g_set_error_literal(error,
+                            DNF_ERROR,
+                            DNF_ERROR_FILE_INVALID,
+                            "no metadata value specified");
+        return 0;
+    }
+
+    if (g_strcmp0(expression, "-1") == 0 || g_strcmp0(expression,"never") == 0)
+        return G_MAXUINT;
+
+    gchar last_char = expression[ strlen(expression) - 1 ];
+
+    /* check if the input ends with h, m ,d ,s as units */
+    if (g_ascii_isalpha(last_char)) {
+        if (last_char == 'h')
+            multiplier = 60 * 60;
+        else if (last_char == 's')
+            multiplier = 1;
+        else if (last_char == 'm')
+            multiplier = 60;
+        else if (last_char == 'd')
+            multiplier = 60 * 60 * 24;
+        else {
+            g_set_error(error, DNF_ERROR, DNF_ERROR_FILE_INVALID,
+                        "unknown unit %c", last_char);
+            return 0;
+        }
+    }
+    else
+        multiplier = 1;
+
+    /* convert expression into a double*/
+    parsed_time = g_ascii_strtod(expression, &endptr);
+
+    /* failed to parse */
+    if (expression == endptr) {
+        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
+                    "failed to parse time: %s", expression);
+        return 0;
+    }
+
+    /* time can not be below zero */
+    if (parsed_time < 0) {
+        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
+                    "seconds value must not be negative %s",expression );
+        return 0;
+    }
+
+    /* time too large */
+    if (parsed_time > G_MAXDOUBLE || (parsed_time * multiplier) > G_MAXUINT){
+        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
+                    "time too large");
+        return 0;
+    }
+    result = (guint) (parsed_time * multiplier);
+
+    /* for the case where time is too small (i.e result = 0) */
+    if (result == 0) {
+         g_set_error_literal(error,
+                             DNF_ERROR,
+                             DNF_ERROR_FILE_INVALID,
+                            "metadata expire time too small, has to be at least one second");
+    }
+
+    return result;
+}
+/**
  * dnf_repo_get_username_password_string:
  */
 static gchar *
@@ -787,6 +910,8 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     guint cost;
+    guint metadata_expire;
+    g_autofree gchar *metadata_expire_str = NULL;
     g_autofree gchar *mirrorlist = NULL;
     g_autofree gchar *mirrorlisturl = NULL;
     g_autofree gchar *metalinkurl = NULL;
@@ -817,6 +942,18 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     baseurls = g_key_file_get_string_list(priv->keyfile, priv->id, "baseurl", NULL, NULL);
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_URLS, baseurls))
         return FALSE;
+
+    /* metadata_expire is optional, if shown, we parse the string to add the time */
+    metadata_expire_str = g_key_file_get_string(priv->keyfile, priv->id, "metadata_expire", NULL);
+    if (metadata_expire_str) {
+        metadata_expire = dnf_repo_parse_time_from_str(metadata_expire_str , error);
+
+        /* we assume zero is default, and when string exist, 0 seconds is assumed to be error */
+        if (metadata_expire != 0)
+            dnf_repo_set_metadata_expire(repo, metadata_expire);
+        else
+            return FALSE;
+    }
 
     /* the "mirrorlist" entry could be either a real mirrorlist, or a metalink entry */
     mirrorlist = g_key_file_get_string(priv->keyfile, priv->id, "mirrorlist", NULL);
@@ -1138,6 +1275,8 @@ dnf_repo_check_internal(DnfRepo *repo,
     const gchar *urls[] = { "", NULL };
     gint64 age_of_data; /* in seconds */
     g_autoptr(GError) error_local = NULL;
+    guint metadata_expire;
+    guint valid_time_allowed;
 
     /* has the media repo vanished? */
     if (priv->kind == DNF_REPO_KIND_MEDIA &&
@@ -1215,12 +1354,20 @@ dnf_repo_check_internal(DnfRepo *repo,
         if (!dnf_repo_set_timestamp_modified(repo, error))
             return FALSE;
         age_of_data =(g_get_real_time() - priv->timestamp_modified) / G_USEC_PER_SEC;
-        if (age_of_data > permissible_cache_age) {
+
+        /*choose a lower value between cache and metadata_expire for expired checking */
+        metadata_expire = dnf_repo_get_metadata_expire(repo);
+        if (metadata_expire != 0)
+            valid_time_allowed = metadata_expire <= permissible_cache_age ? metadata_expire  : permissible_cache_age;
+        else
+            valid_time_allowed = permissible_cache_age;
+
+        if (age_of_data > valid_time_allowed) {
             g_set_error(error,
                         DNF_ERROR,
                         DNF_ERROR_INTERNAL_ERROR,
                         "cache too old: %"G_GINT64_FORMAT" > %i",
-                        age_of_data, permissible_cache_age);
+                        age_of_data, valid_time_allowed);
             return FALSE;
         }
     }
