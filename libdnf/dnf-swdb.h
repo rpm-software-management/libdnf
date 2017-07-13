@@ -80,8 +80,8 @@ gint            dnf_swdb_get_reason_type        (DnfSwdb        *self,
                                                  const gchar    *type);
 gchar          *_reason_by_pid                  (sqlite3        *db,
                                                  gint            pid);
-gchar          *dnf_swdb_reason_by_nvra         (DnfSwdb        *self,
-                                                 const gchar    *nvra);
+gchar          *dnf_swdb_reason_by_nevra        (DnfSwdb        *self,
+                                                 const gchar    *nevra);
 gint            dnf_swdb_get_state_type         (DnfSwdb        *self,
                                                  const gchar    *type);
 gint            dnf_swdb_add_package            (DnfSwdb        *self,
@@ -160,36 +160,36 @@ gint            dnf_swdb_log_group_trans        (DnfSwdb        *self,
                                                  GPtrArray      *removing);
 DnfSwdbTrans   *dnf_swdb_last                   (DnfSwdb        *self,
                                                  gboolean        complete_only);
-DnfSwdbPkg     *dnf_swdb_package_by_nvra        (DnfSwdb        *self,
-                                                 const gchar    *nvra);
-DnfSwdbPkgData *dnf_swdb_package_data_by_nvra   (DnfSwdb        *self,
-                                                 const gchar    *nvra);
-gchar          *dnf_swdb_repo_by_nvra           (DnfSwdb        *self,
-                                                 const gchar    *nvra);
+DnfSwdbPkg     *dnf_swdb_package_by_nevra       (DnfSwdb        *self,
+                                                 const gchar    *nevra);
+DnfSwdbPkgData *dnf_swdb_package_data_by_nevra  (DnfSwdb        *self,
+                                                 const gchar    *nevra);
+gchar          *dnf_swdb_repo_by_nevra          (DnfSwdb        *self,
+                                                 const gchar    *nevra);
 gint            dnf_swdb_mark_user_installed    (DnfSwdb        *self,
-                                                 const gchar    *nvra,
+                                                 const gchar    *nevra,
                                                  gboolean        user_installed);
-GPtrArray      *dnf_swdb_checksums_by_nvras     (DnfSwdb        *self,
-                                                 GPtrArray      *nvras);
+GPtrArray      *dnf_swdb_checksums_by_nevras    (DnfSwdb        *self,
+                                                 GPtrArray      *nevras);
 gint            dnf_swdb_set_reason             (DnfSwdb        *self,
-                                                 const gchar    *nvra,
+                                                 const gchar    *nevra,
                                                  const gchar    *reason);
 gint            dnf_swdb_set_repo               (DnfSwdb        *self,
-                                                 const gchar    *nvra,
+                                                 const gchar    *nevra,
                                                  const gchar    *repo);
 gboolean        dnf_swdb_user_installed         (DnfSwdb        *self,
-                                                 const gchar    *nvra);
+                                                 const gchar    *nevra);
 gchar          *_repo_by_pid                    (sqlite3        *db,
                                                  gint            pid);
 GArray         *dnf_swdb_select_user_installed  (DnfSwdb        *self,
-                                                 GPtrArray      *nvras);
+                                                 GPtrArray      *nevras);
 gint            _get_description_id             (sqlite3        *db,
                                                  const gchar    *desc,
                                                  const gchar    *sql);
 gint            dnf_swdb_add_rpm_data           (DnfSwdb        *self,
                                                  DnfSwdbRpmData *rpm_data);
-gint            dnf_swdb_pid_by_nvra            (DnfSwdb        *self,
-                                                 const gchar    *nvra);
+gint            dnf_swdb_pid_by_nevra           (DnfSwdb        *self,
+                                                 const gchar    *nevra);
 void            dnf_swdb_trans_with             (DnfSwdb        *self,
                                                  int             tid,
                                                  int             pid);

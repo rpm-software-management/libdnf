@@ -47,7 +47,7 @@
 
 #define C_PKG \
     "CREATE TABLE PACKAGE ( P_ID integer primary key, name text," \
-    "epoch text, version text, release text, arch text," \
+    "epoch integer, version text, release text, arch text," \
     "checksum_data text, checksum_type text, type integer)"
 
 #define C_REPO \
@@ -109,6 +109,9 @@
 
 #define C_TRANS_WITH \
     "CREATE TABLE TRANS_WITH (TW_ID integer PRIMARY KEY, T_ID integer, P_ID integer)"
+
+#define C_INDEX_NEVRA \
+    "create index nevra on PACKAGE(name || '-' || epoch || ':' || version || '-' || release || '.' || arch)"
 
 #define C_INDEX_NVRA \
     "create index nvra on PACKAGE(name || '-' || version || '-' || release || '.' || arch)"

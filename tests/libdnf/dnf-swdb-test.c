@@ -63,7 +63,7 @@ generate_package (void)
     g_autoptr (GRand) r = g_rand_new ();
 
     g_autofree gchar *name = generate_str (8);
-    const gchar *epoch = g_rand_boolean (r) ? "0" : "1";
+    gint epoch = g_rand_boolean (r) ? 0 : 1;
     g_autofree gchar *version = generate_str (4);
     g_autofree gchar *release = generate_str (6);
     g_autofree gchar *arch = generate_str (4);
@@ -168,23 +168,23 @@ end_trans (DnfSwdb *self, gint tid)
 static void
 check_package_persistor (DnfSwdb *self, DnfSwdbPkg *pkg)
 {
-    g_autofree gchar *repo = dnf_swdb_repo_by_nvra (self, pkg->nvra);
+    g_autofree gchar *repo = dnf_swdb_repo_by_nevra (self, pkg->nevra);
     g_assert_false (g_strcmp0 (pkg->ui_from_repo, repo));
 
     const gchar *new_repo = "testdora";
 
-    g_assert_false (dnf_swdb_set_repo (self, pkg->nvra, new_repo));
+    g_assert_false (dnf_swdb_set_repo (self, pkg->nevra, new_repo));
 
     g_free (repo);
-    repo = dnf_swdb_repo_by_nvra (self, pkg->nvra);
+    repo = dnf_swdb_repo_by_nevra (self, pkg->nevra);
 
     g_assert_false (g_strcmp0 (new_repo, repo));
 
-    gint pid = dnf_swdb_pid_by_nvra (self, pkg->nvra);
+    gint pid = dnf_swdb_pid_by_nevra (self, pkg->nevra);
     g_assert (pid && pid == pkg->pid);
 
     // test another method how to obtain same package
-    g_autoptr (DnfSwdbPkg) same_pkg = dnf_swdb_package_by_nvra (self, pkg->nvra);
+    g_autoptr (DnfSwdbPkg) same_pkg = dnf_swdb_package_by_nevra (self, pkg->nevra);
     g_assert (same_pkg);
     g_assert (same_pkg->pid == pid);
     g_assert_false (g_strcmp0 (pkg->checksum_data, same_pkg->checksum_data));
@@ -194,15 +194,15 @@ check_package_persistor (DnfSwdb *self, DnfSwdbPkg *pkg)
     g_assert_false (g_strcmp0 (ui_from_repo, new_repo));
 
     // playing with reason
-    g_assert (dnf_swdb_user_installed (self, pkg->nvra));
+    g_assert (dnf_swdb_user_installed (self, pkg->nevra));
 
-    g_assert_false (dnf_swdb_mark_user_installed (self, pkg->nvra, FALSE));
+    g_assert_false (dnf_swdb_mark_user_installed (self, pkg->nevra, FALSE));
 
-    g_assert_false (dnf_swdb_user_installed (self, pkg->nvra));
+    g_assert_false (dnf_swdb_user_installed (self, pkg->nevra));
 
-    g_assert_false (dnf_swdb_set_reason (self, pkg->nvra, "user"));
+    g_assert_false (dnf_swdb_set_reason (self, pkg->nevra, "user"));
 
-    g_assert (dnf_swdb_user_installed (self, pkg->nvra));
+    g_assert (dnf_swdb_user_installed (self, pkg->nevra));
 }
 
 static void
@@ -221,25 +221,24 @@ check_initial_transaction (DnfSwdb *self)
     g_assert (trans_data && trans_data->len == INIT_PACAKGES);
     g_assert (packages && packages->len == INIT_PACAKGES);
 
-    GPtrArray *nvras = g_ptr_array_new ();
+    GPtrArray *nevras = g_ptr_array_new ();
     // get packages and check if they are user installed
     for (guint i = 0; i < packages->len; ++i) {
         DnfSwdbPkg *pkg = g_ptr_array_index (packages, i);
-        g_ptr_array_add (nvras, pkg->nvra);
+        g_ptr_array_add (nevras, pkg->nevra);
     }
-    GArray *user_installed = dnf_swdb_select_user_installed (self, nvras);
+    GArray *user_installed = dnf_swdb_select_user_installed (self, nevras);
     g_assert (user_installed);
     g_assert (user_installed->len == packages->len);
     g_assert (g_array_index (user_installed, gint, packages->len - 1) == ((int)packages->len - 1));
 
     g_array_free (user_installed, TRUE);
-    g_ptr_array_free (nvras, TRUE);
+    g_ptr_array_free (nevras, TRUE);
 
     for (guint i = 0; i < packages->len; ++i) {
         // check object attributes
         g_autoptr (DnfSwdbPkg) pkg = g_ptr_array_index (packages, i);
         g_assert (pkg->name && *pkg->name);
-        g_assert (pkg->epoch && *pkg->epoch);
         g_assert (pkg->version && *pkg->version);
         g_assert (pkg->release && *pkg->release);
         g_assert (pkg->arch && *pkg->arch);
@@ -249,13 +248,13 @@ check_initial_transaction (DnfSwdb *self)
         g_assert (pkg->done);
         g_assert (pkg->state && *pkg->state);
         g_assert (pkg->pid);
-        g_assert (pkg->nvra && *pkg->nvra);
+        g_assert (pkg->nevra && *pkg->nevra);
         g_autofree gchar *ui_from_repo = dnf_swdb_pkg_get_ui_from_repo (pkg);
         g_assert (ui_from_repo);
 
         // check package trans and package data
         g_autoptr (DnfSwdbTransData) transdata = g_ptr_array_index (trans_data, i);
-        g_autoptr (DnfSwdbPkgData) pkgdata = dnf_swdb_package_data_by_nvra (self, pkg->nvra);
+        g_autoptr (DnfSwdbPkgData) pkgdata = dnf_swdb_package_data_by_nevra (self, pkg->nevra);
 
         g_assert (pkgdata);
         g_assert (pkgdata->from_repo && *pkgdata->from_repo);
@@ -409,9 +408,9 @@ dnf_swdb_get_func (void)
     // get a package
     g_autoptr (DnfSwdbPkg) rpkg = _get_package_by_pid (self->db, INIT_PACAKGES / 2);
 
-    // find this package by nvra
-    g_autoptr (DnfSwdbPkg) pkg = dnf_swdb_package_by_nvra (self, rpkg->nvra);
-    g_assert_false (g_strcmp0 (pkg->nvra, rpkg->nvra));
+    // find this package by nevra
+    g_autoptr (DnfSwdbPkg) pkg = dnf_swdb_package_by_nevra (self, rpkg->nevra);
+    g_assert_false (g_strcmp0 (pkg->nevra, rpkg->nevra));
 }
 
 static void

@@ -32,7 +32,6 @@ dnf_swdb_pkg_finalize (GObject *object)
 {
     DnfSwdbPkg *pkg = (DnfSwdbPkg *)object;
     g_free ((gchar *)pkg->name);
-    g_free ((gchar *)pkg->epoch);
     g_free ((gchar *)pkg->version);
     g_free ((gchar *)pkg->release);
     g_free ((gchar *)pkg->arch);
@@ -41,7 +40,7 @@ dnf_swdb_pkg_finalize (GObject *object)
     g_free ((gchar *)pkg->type);
     g_free (pkg->state);
     g_free (pkg->ui_from_repo);
-    g_free (pkg->nvra);
+    g_free (pkg->nevra);
     G_OBJECT_CLASS (dnf_swdb_pkg_parent_class)->finalize (object);
 }
 
@@ -62,7 +61,25 @@ dnf_swdb_pkg_init (DnfSwdbPkg *self)
     self->pid = 0;
     self->ui_from_repo = NULL;
     self->swdb = NULL;
-    self->nvra = NULL;
+    self->nevra = NULL;
+}
+
+static gchar *
+_pkg_make_nevra (DnfSwdbPkg *self)
+{
+    if (self->epoch) {
+        return g_strdup_printf ("%s-%d:%s-%s.%s",
+                                self->name,
+                                self->epoch,
+                                self->version,
+                                self->release,
+                                self->arch);
+    }
+    return g_strdup_printf ("%s-%s-%s.%s",
+                            self->name,
+                            self->version,
+                            self->release,
+                            self->arch);
 }
 
 /**
@@ -74,7 +91,7 @@ dnf_swdb_pkg_init (DnfSwdbPkg *self)
  **/
 DnfSwdbPkg *
 dnf_swdb_pkg_new (const gchar *name,
-                  const gchar *epoch,
+                  gint         epoch,
                   const gchar *version,
                   const gchar *release,
                   const gchar *arch,
@@ -84,15 +101,13 @@ dnf_swdb_pkg_new (const gchar *name,
 {
     DnfSwdbPkg *swdbpkg = g_object_new (DNF_TYPE_SWDB_PKG, NULL);
     swdbpkg->name = g_strdup (name);
-    swdbpkg->epoch = g_strdup (epoch);
+    swdbpkg->epoch = epoch;
     swdbpkg->version = g_strdup (version);
     swdbpkg->release = g_strdup (release);
     swdbpkg->arch = g_strdup (arch);
     swdbpkg->checksum_data = g_strdup (checksum_data);
     swdbpkg->checksum_type = g_strdup (checksum_type);
-    gchar *tmp = g_strjoin ("-", swdbpkg->name, swdbpkg->version, swdbpkg->release, NULL);
-    swdbpkg->nvra = g_strjoin (".", tmp, swdbpkg->arch, NULL);
-    g_free (tmp);
+    swdbpkg->nevra = _pkg_make_nevra (swdbpkg);
     if (type) {
         swdbpkg->type = g_strdup (type);
     } else {
@@ -188,17 +203,9 @@ gint64
 dnf_swdb_pkg_compare (DnfSwdbPkg *pkg1, DnfSwdbPkg *pkg2)
 {
     // compare epochs
-    if (pkg1->epoch && pkg2->epoch) {
-        gint64 epoch1 = g_ascii_strtoll (pkg1->epoch, NULL, 0);
-        gint64 epoch2 = g_ascii_strtoll (pkg2->epoch, NULL, 0);
-        gint64 res = epoch2 - epoch1;
-        if (res) {
-            return res;
-        }
-    } else if (pkg1->epoch && !pkg2->epoch) {
-        return -1;
-    } else if (!pkg1->epoch && pkg2->epoch) {
-        return 1;
+    gint64 res = pkg2->epoch - pkg1->epoch;
+    if (res) {
+        return res;
     }
 
     // compare versions
@@ -216,7 +223,7 @@ dnf_swdb_pkg_compare (DnfSwdbPkg *pkg1, DnfSwdbPkg *pkg2)
     const gchar *subv2 = *version2;
 
     gint i = 0;
-    gint64 res = 0;
+    res = 0;
     while (subv1 && subv2) {
         // convert subversions into int
         gint64 v1 = g_ascii_strtoll (subv1, NULL, 0);
