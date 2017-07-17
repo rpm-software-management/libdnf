@@ -104,6 +104,7 @@ typedef struct
     gchar            **native_arches;
     gchar            *http_proxy;
     gchar            *user_agent;
+    gboolean         downloadonly;  // only download resolved packages
     gboolean         cache_age;
     gboolean         check_disk_space;
     gboolean         check_transaction;
@@ -193,6 +194,7 @@ dnf_context_init(DnfContext *context)
     priv->enable_yumdb = TRUE;
     priv->state = dnf_state_new();
     priv->lock = dnf_lock_new();
+    priv->downloadonly = FALSE;
     priv->cache_age = 60 * 60 * 24 * 7; /* 1 week */
     priv->override_macros = g_hash_table_new_full(g_str_hash, g_str_equal,
                                                   g_free, g_free);
@@ -708,6 +710,21 @@ dnf_context_get_yumdb_enabled(DnfContext *context)
 }
 
 /**
+ * dnf_context_get_downloadonly:
+ * @context: a #DnfContext instance.
+ *
+ * Returns: %TRUE if download only functionality is enabled
+ *
+ * Since: 0.9.2
+ **/
+gboolean
+dnf_context_get_downloadonly(DnfContext *context)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    return priv->downloadonly;
+}
+
+/**
  * dnf_context_get_cache_age:
  * @context: a #DnfContext instance.
  *
@@ -1009,6 +1026,22 @@ dnf_context_set_yumdb_enabled(DnfContext    *context,
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     priv->enable_yumdb = enable_yumdb;
+}
+
+/**
+ * dnf_context_set_downloadonly:
+ * @context: a #DnfContext instance.
+ * @downloadonly: #TRUE only download resolved packages, do not perform RPM transaction
+ *
+ * Enables or disables the download only functionality.
+ *
+ * Since: 0.9.2
+ **/
+void
+dnf_context_set_downloadonly(DnfContext *context, gboolean downloadonly)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    priv->downloadonly = downloadonly;
 }
 
 /**
@@ -1622,11 +1655,17 @@ dnf_context_run(DnfContext *context, GCancellable *cancellable, GError **error)
     if (cancellable != NULL)
         dnf_state_set_cancellable(priv->state, cancellable);
 
-    ret = dnf_state_set_steps(priv->state, error,
-                              5,        /* depsolve */
-                              50,       /* download */
-                              45,       /* commit */
-                              -1);
+    if (priv->downloadonly)
+        ret = dnf_state_set_steps(priv->state, error,
+                                  10,       /* depsolve */
+                                  90,       /* download */
+                                  -1);
+    else
+        ret = dnf_state_set_steps(priv->state, error,
+                                  5,        /* depsolve */
+                                  50,       /* download */
+                                  45,       /* commit */
+                                 -1);
     if (!ret)
         return FALSE;
 
@@ -1651,6 +1690,9 @@ dnf_context_run(DnfContext *context, GCancellable *cancellable, GError **error)
     if (!ret)
         return FALSE;
 
+    if (priv->downloadonly)
+        goto out;
+
     /* this section done */
     if (!dnf_state_done(priv->state, error))
         return FALSE;
@@ -1664,6 +1706,7 @@ dnf_context_run(DnfContext *context, GCancellable *cancellable, GError **error)
     if (!ret)
         return FALSE;
 
+out:
     /* this sack is no longer valid */
     g_object_unref(priv->sack);
     priv->sack = NULL;

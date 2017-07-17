@@ -89,6 +89,7 @@ gboolean         dnf_context_get_check_transaction      (DnfContext     *context
 gboolean         dnf_context_get_keep_cache             (DnfContext     *context);
 gboolean         dnf_context_get_only_trusted           (DnfContext     *context);
 gboolean         dnf_context_get_yumdb_enabled          (DnfContext     *context);
+gboolean         dnf_context_get_downloadonly           (DnfContext     *context);
 guint            dnf_context_get_cache_age              (DnfContext     *context);
 guint            dnf_context_get_installonly_limit      (DnfContext     *context);
 const gchar     *dnf_context_get_http_proxy             (DnfContext     *context);
@@ -133,6 +134,8 @@ void             dnf_context_set_only_trusted           (DnfContext     *context
                                                          gboolean        only_trusted);
 void             dnf_context_set_yumdb_enabled          (DnfContext     *context,
                                                          gboolean        enable_yumdb);
+void             dnf_context_set_downloadonly           (DnfContext     *context,
+                                                         gboolean        downloadonly);
 void             dnf_context_set_cache_age              (DnfContext     *context,
                                                          guint           cache_age);
 
