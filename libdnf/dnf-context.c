@@ -104,7 +104,7 @@ typedef struct
     gchar            **native_arches;
     gchar            *http_proxy;
     gchar            *user_agent;
-    gboolean         cache_age;
+    guint            cache_age;     /*seconds*/
     gboolean         check_disk_space;
     gboolean         check_transaction;
     gboolean         only_trusted;
