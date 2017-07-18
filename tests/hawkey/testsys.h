@@ -21,19 +21,24 @@
 #ifndef TESTSYS_H
 #define TESTSYS_H
 
-
 #include <solv/pooltypes.h>
-
 
 #include "libdnf/dnf-sack.h"
 #include "testshared.h"
 
-void assert_nevra_eq(DnfPackage *pkg, const char *nevra);
-DnfPackage *by_name(DnfSack *sack, const char *name);
-DnfPackage *by_name_repo(DnfSack *sack, const char *name, const char *repo);
-void dump_packagelist(GPtrArray *plist, int free);
-void dump_query_results(HyQuery query);
-void dump_goal_results(HyGoal goal);
-int query_count_results(HyQuery query);
+void
+assert_nevra_eq(DnfPackage *pkg, const char *nevra);
+DnfPackage *
+by_name(DnfSack *sack, const char *name);
+DnfPackage *
+by_name_repo(DnfSack *sack, const char *name, const char *repo);
+void
+dump_packagelist(GPtrArray *plist, int free);
+void
+dump_query_results(HyQuery query);
+void
+dump_goal_results(HyGoal goal);
+int
+query_count_results(HyQuery query);
 
 #endif /* TESTSYS_H */

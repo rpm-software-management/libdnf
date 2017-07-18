@@ -32,7 +32,6 @@
  * See also: #DnfState
  */
 
-
 #include <gio/gio.h>
 
 #include "dnf-lock.h"
@@ -41,28 +40,30 @@
 
 typedef struct
 {
-    GMutex          mutex;
-    GPtrArray      *item_array; /* of DnfLockItem */
-    gchar          *lock_dir;
+    GMutex mutex;
+    GPtrArray *item_array; /* of DnfLockItem */
+    gchar *lock_dir;
 } DnfLockPrivate;
 
-typedef struct {
-    gpointer            owner;
-    guint               id;
-    guint               refcount;
-    DnfLockMode         mode;
-    DnfLockType         type;
+typedef struct
+{
+    gpointer owner;
+    guint id;
+    guint refcount;
+    DnfLockMode mode;
+    DnfLockType type;
 } DnfLockItem;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfLock, dnf_lock, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (dnf_lock_get_instance_private (o))
+#define GET_PRIVATE(o) (dnf_lock_get_instance_private(o))
 
-enum {
+enum
+{
     SIGNAL_STATE_CHANGED,
     SIGNAL_LAST
 };
 
-static guint signals [SIGNAL_LAST] = { 0 };
+static guint signals[SIGNAL_LAST] = { 0 };
 
 static gpointer dnf_lock_object = NULL;
 
@@ -81,8 +82,7 @@ dnf_lock_finalize(GObject *object)
     for (i = 0; i < priv->item_array->len; i++) {
         item = g_ptr_array_index(priv->item_array, i);
         if (item->refcount > 0) {
-            g_warning("held lock %s at shutdown",
-                      dnf_lock_type_to_string(item->type));
+            g_warning("held lock %s at shutdown", dnf_lock_type_to_string(item->type));
             dnf_lock_release(lock, item->id, NULL);
         }
     }
@@ -111,12 +111,16 @@ dnf_lock_class_init(DnfLockClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
 
-    signals [SIGNAL_STATE_CHANGED] =
-        g_signal_new("state-changed",
-                     G_TYPE_FROM_CLASS(object_class), G_SIGNAL_RUN_LAST,
-                     G_STRUCT_OFFSET(DnfLockClass, state_changed),
-                     NULL, NULL, g_cclosure_marshal_VOID__UINT,
-                     G_TYPE_NONE, 1, G_TYPE_UINT);
+    signals[SIGNAL_STATE_CHANGED] = g_signal_new("state-changed",
+                                                 G_TYPE_FROM_CLASS(object_class),
+                                                 G_SIGNAL_RUN_LAST,
+                                                 G_STRUCT_OFFSET(DnfLockClass, state_changed),
+                                                 NULL,
+                                                 NULL,
+                                                 g_cclosure_marshal_VOID__UINT,
+                                                 G_TYPE_NONE,
+                                                 1,
+                                                 G_TYPE_UINT);
 
     object_class->finalize = dnf_lock_finalize;
 }
@@ -160,9 +164,7 @@ dnf_lock_mode_to_string(DnfLockMode lock_mode)
  * dnf_lock_get_item_by_type_mode:
  **/
 static DnfLockItem *
-dnf_lock_get_item_by_type_mode(DnfLock *lock,
-                DnfLockType type,
-                DnfLockMode mode)
+dnf_lock_get_item_by_type_mode(DnfLock *lock, DnfLockType type, DnfLockMode mode)
 {
     DnfLockItem *item;
     DnfLockPrivate *priv = GET_PRIVATE(lock);
@@ -233,10 +235,7 @@ dnf_lock_get_pid(DnfLock *lock, const gchar *filename, GError **error)
     /* file doesn't exists */
     ret = g_file_test(filename, G_FILE_TEST_EXISTS);
     if (!ret) {
-        g_set_error_literal(error,
-                            DNF_ERROR,
-                            DNF_ERROR_INTERNAL_ERROR,
-                            "lock file not present");
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "lock file not present");
         return 0;
     }
 
@@ -256,18 +255,18 @@ dnf_lock_get_pid(DnfLock *lock, const gchar *filename, GError **error)
 
     /* failed to parse */
     if (contents == endptr) {
-        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
-                    "failed to parse pid: %s", contents);
+        g_set_error(
+          error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "failed to parse pid: %s", contents);
         return 0;
     }
 
     /* too large */
     if (pid > G_MAXUINT) {
-        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
-                    "pid too large %" G_GUINT64_FORMAT, pid);
+        g_set_error(
+          error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "pid too large %" G_GUINT64_FORMAT, pid);
         return 0;
     }
-    return(guint) pid;
+    return (guint)pid;
 }
 
 /**
@@ -277,9 +276,7 @@ static gchar *
 dnf_lock_get_filename_for_type(DnfLock *lock, DnfLockType type)
 {
     DnfLockPrivate *priv = GET_PRIVATE(lock);
-    return g_strdup_printf("%s/dnf-%s.lock",
-                           priv->lock_dir,
-                           dnf_lock_type_to_string(type));
+    return g_strdup_printf("%s/dnf-%s.lock", priv->lock_dir, dnf_lock_type_to_string(type));
 }
 
 /**
@@ -355,7 +352,7 @@ dnf_lock_emit_state(DnfLock *lock)
 {
     guint bitfield = 0;
     bitfield = dnf_lock_get_state(lock);
-    g_signal_emit(lock, signals [SIGNAL_STATE_CHANGED], 0, bitfield);
+    g_signal_emit(lock, signals[SIGNAL_STATE_CHANGED], 0, bitfield);
 }
 
 /**
@@ -372,10 +369,7 @@ dnf_lock_emit_state(DnfLock *lock)
  * Since: 0.1.0
  **/
 guint
-dnf_lock_take(DnfLock *lock,
-              DnfLockType type,
-              DnfLockMode mode,
-              GError **error)
+dnf_lock_take(DnfLock *lock, DnfLockType type, DnfLockMode mode, GError **error)
 {
     DnfLockItem *item;
     DnfLockPrivate *priv = GET_PRIVATE(lock);
@@ -398,9 +392,7 @@ dnf_lock_take(DnfLock *lock,
      * a thread lock */
     item = dnf_lock_get_item_by_type_mode(lock, type, mode);
     if (item == NULL && mode == DNF_LOCK_MODE_THREAD) {
-        item = dnf_lock_get_item_by_type_mode(lock,
-                                              type,
-                                              DNF_LOCK_MODE_PROCESS);
+        item = dnf_lock_get_item_by_type_mode(lock, type, DNF_LOCK_MODE_PROCESS);
     }
 
     /* create a lock file for process locks */
@@ -507,10 +499,8 @@ dnf_lock_release(DnfLock *lock, guint id, GError **error)
     /* never took */
     item = dnf_lock_get_item_by_id(lock, id);
     if (item == NULL) {
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_INTERNAL_ERROR,
-                    "Lock was never taken with id %i", id);
+        g_set_error(
+          error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "Lock was never taken with id %i", id);
         goto out;
     }
 
@@ -528,8 +518,7 @@ dnf_lock_release(DnfLock *lock, guint id, GError **error)
     item->refcount--;
 
     /* delete file for process locks */
-    if (item->refcount == 0 &&
-        item->mode == DNF_LOCK_MODE_PROCESS) {
+    if (item->refcount == 0 && item->mode == DNF_LOCK_MODE_PROCESS) {
         g_autoptr(GError) error_local = NULL;
         g_autofree gchar *filename = NULL;
         g_autoptr(GFile) file = NULL;

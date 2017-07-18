@@ -20,22 +20,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-
 #ifndef __DNF_TYPES_H
 #define __DNF_TYPES_H
 
 #include <gio/gio.h>
 
-typedef struct _DnfContext              DnfContext;
-typedef struct _DnfDb                   DnfDb;
-typedef struct _DnfTransaction          DnfTransaction;
-typedef struct _DnfRepoLoader           DnfRepoLoader;
-typedef struct _DnfRepo                 DnfRepo;
-typedef struct _DnfState                DnfState;
-typedef struct _DnfSack                 DnfSack;
-typedef struct _DnfPackageSet           DnfPackageSet;
-typedef struct _DnfReldep               DnfReldep;
-typedef struct _DnfReldepList           DnfReldepList;
+typedef struct _DnfContext DnfContext;
+typedef struct _DnfDb DnfDb;
+typedef struct _DnfTransaction DnfTransaction;
+typedef struct _DnfRepoLoader DnfRepoLoader;
+typedef struct _DnfRepo DnfRepo;
+typedef struct _DnfState DnfState;
+typedef struct _DnfSack DnfSack;
+typedef struct _DnfPackageSet DnfPackageSet;
+typedef struct _DnfReldep DnfReldep;
+typedef struct _DnfReldepList DnfReldepList;
 
 /**
  * DnfError:
@@ -66,37 +65,37 @@ typedef struct _DnfReldepList           DnfReldepList;
  * The error code.
  **/
 typedef enum {
-        DNF_ERROR_FAILED                        = 1,    /* Since: 0.1.0 */
-        DNF_ERROR_INTERNAL_ERROR                = 4,    /* Since: 0.1.0 */
-        DNF_ERROR_CANNOT_GET_LOCK               = 26,   /* Since: 0.1.0 */
-        DNF_ERROR_CANCELLED                     = 17,   /* Since: 0.1.0 */
-        DNF_ERROR_REPO_NOT_AVAILABLE            = 37,   /* Since: 0.1.0 */
-        DNF_ERROR_CANNOT_FETCH_SOURCE           = 64,   /* Since: 0.1.0 */
-        DNF_ERROR_CANNOT_WRITE_REPO_CONFIG      = 28,   /* Since: 0.1.0 */
-        DNF_ERROR_PACKAGE_CONFLICTS             = 36,   /* Since: 0.1.0 */
-        DNF_ERROR_NO_PACKAGES_TO_UPDATE         = 27,   /* Since: 0.1.0 */
-        DNF_ERROR_PACKAGE_INSTALL_BLOCKED       = 39,   /* Since: 0.1.0 */
-        DNF_ERROR_FILE_NOT_FOUND                = 42,   /* Since: 0.1.0 */
-        DNF_ERROR_UNFINISHED_TRANSACTION        = 66,   /* Since: 0.1.0 */
-        DNF_ERROR_GPG_SIGNATURE_INVALID         = 30,   /* Since: 0.1.0 */
-        DNF_ERROR_FILE_INVALID                  = 38,   /* Since: 0.1.0 */
-        DNF_ERROR_REPO_NOT_FOUND                = 19,   /* Since: 0.1.0 */
-        DNF_ERROR_FAILED_CONFIG_PARSING         = 24,   /* Since: 0.1.0 */
-        DNF_ERROR_PACKAGE_NOT_FOUND             = 8,    /* Since: 0.1.0 */
-        DNF_ERROR_NO_SPACE                      = 46,   /* Since: 0.2.3 */
-        DNF_ERROR_INVALID_ARCHITECTURE,                 /* Since: 0.7.0 */
-        DNF_ERROR_BAD_SELECTOR,                         /* Since: 0.7.0 */
-        DNF_ERROR_NO_SOLUTION,                          /* Since: 0.7.0 */
-        DNF_ERROR_BAD_QUERY,                            /* Since: 0.7.0 */
-        DNF_ERROR_CANNOT_WRITE_CACHE,                   /* Since: 0.7.0 */
-        DNF_ERROR_NO_CAPABILITY,                        /* Since: 0.7.0 */
-        DNF_ERROR_REMOVAL_OF_PROTECTED_PKG,             /* Since: 0.7.0 */
-        /*< private >*/
-        DNF_ERROR_LAST
+    DNF_ERROR_FAILED = 1,                    /* Since: 0.1.0 */
+    DNF_ERROR_INTERNAL_ERROR = 4,            /* Since: 0.1.0 */
+    DNF_ERROR_CANNOT_GET_LOCK = 26,          /* Since: 0.1.0 */
+    DNF_ERROR_CANCELLED = 17,                /* Since: 0.1.0 */
+    DNF_ERROR_REPO_NOT_AVAILABLE = 37,       /* Since: 0.1.0 */
+    DNF_ERROR_CANNOT_FETCH_SOURCE = 64,      /* Since: 0.1.0 */
+    DNF_ERROR_CANNOT_WRITE_REPO_CONFIG = 28, /* Since: 0.1.0 */
+    DNF_ERROR_PACKAGE_CONFLICTS = 36,        /* Since: 0.1.0 */
+    DNF_ERROR_NO_PACKAGES_TO_UPDATE = 27,    /* Since: 0.1.0 */
+    DNF_ERROR_PACKAGE_INSTALL_BLOCKED = 39,  /* Since: 0.1.0 */
+    DNF_ERROR_FILE_NOT_FOUND = 42,           /* Since: 0.1.0 */
+    DNF_ERROR_UNFINISHED_TRANSACTION = 66,   /* Since: 0.1.0 */
+    DNF_ERROR_GPG_SIGNATURE_INVALID = 30,    /* Since: 0.1.0 */
+    DNF_ERROR_FILE_INVALID = 38,             /* Since: 0.1.0 */
+    DNF_ERROR_REPO_NOT_FOUND = 19,           /* Since: 0.1.0 */
+    DNF_ERROR_FAILED_CONFIG_PARSING = 24,    /* Since: 0.1.0 */
+    DNF_ERROR_PACKAGE_NOT_FOUND = 8,         /* Since: 0.1.0 */
+    DNF_ERROR_NO_SPACE = 46,                 /* Since: 0.2.3 */
+    DNF_ERROR_INVALID_ARCHITECTURE,          /* Since: 0.7.0 */
+    DNF_ERROR_BAD_SELECTOR,                  /* Since: 0.7.0 */
+    DNF_ERROR_NO_SOLUTION,                   /* Since: 0.7.0 */
+    DNF_ERROR_BAD_QUERY,                     /* Since: 0.7.0 */
+    DNF_ERROR_CANNOT_WRITE_CACHE,            /* Since: 0.7.0 */
+    DNF_ERROR_NO_CAPABILITY,                 /* Since: 0.7.0 */
+    DNF_ERROR_REMOVAL_OF_PROTECTED_PKG,      /* Since: 0.7.0 */
+    /*< private >*/
+    DNF_ERROR_LAST
 } DnfError;
 
-#define DNF_ERROR                       (dnf_error_quark ())
-GQuark           dnf_error_quark        (void);
+#define DNF_ERROR (dnf_error_quark())
+GQuark
+dnf_error_quark(void);
 
 #endif
-

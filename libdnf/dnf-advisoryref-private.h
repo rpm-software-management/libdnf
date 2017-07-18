@@ -25,6 +25,7 @@
 
 #include "dnf-advisoryref.h"
 
-DnfAdvisoryRef  *dnf_advisoryref_new        (Pool *pool, Id a_id, int index);
+DnfAdvisoryRef *
+dnf_advisoryref_new(Pool *pool, Id a_id, int index);
 
 #endif // __DNF_ADVISORYREF_PRIVATE_H

@@ -18,11 +18,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
+#include "fixtures.h"
+#include "libdnf/dnf-sack-private.h"
 #include "libdnf/hy-package-private.h"
 #include "libdnf/hy-packageset-private.h"
-#include "libdnf/dnf-sack-private.h"
-#include "fixtures.h"
 #include "test_suites.h"
 
 static DnfPackageSet *pset;
@@ -44,7 +43,6 @@ packageset_fixture(void)
     dnf_packageset_add(pset, pkg0);
     dnf_packageset_add(pset, pkg9);
     dnf_packageset_add(pset, pkg_max);
-
 }
 
 static void
@@ -95,7 +93,6 @@ START_TEST(test_has)
     g_object_unref(pkg7);
     g_object_unref(pkg8);
     g_object_unref(pkg15);
-
 }
 END_TEST
 

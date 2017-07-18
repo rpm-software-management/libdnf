@@ -26,9 +26,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-
 #include <solv/util.h>
-
 
 #include "fixtures.h"
 #include "test_suites.h"
@@ -40,7 +38,7 @@ static int
 init_test_globals(struct TestGlobals_s *tg, const char *repo_dir)
 {
     int const len = strlen(repo_dir);
-    if (repo_dir[len -1] != '/')
+    if (repo_dir[len - 1] != '/')
         tg->repo_dir = solv_dupjoin(repo_dir, "/", NULL);
     else
         tg->repo_dir = g_strdup(repo_dir);

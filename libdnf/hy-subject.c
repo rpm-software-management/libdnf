@@ -19,26 +19,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stdlib.h>
-#include <fnmatch.h>
+#include "hy-subject.h"
 #include "dnf-reldep.h"
 #include "dnf-sack-private.h"
-#include "hy-subject.h"
-#include "hy-subject-private.h"
-#include "hy-nevra.h"
 #include "hy-iutil.h"
 #include "hy-nevra-private.h"
-#include "hy-types.h"
+#include "hy-nevra.h"
 #include "hy-query.h"
 #include "hy-selector.h"
+#include "hy-subject-private.h"
+#include "hy-types.h"
+#include <fnmatch.h>
+#include <stdlib.h>
 
 // most specific to least
-HyForm HY_FORMS_MOST_SPEC[] = {
-    HY_FORM_NEVRA, HY_FORM_NEVR, HY_FORM_NEV, HY_FORM_NA, HY_FORM_NAME, _HY_FORM_STOP_ };
+HyForm HY_FORMS_MOST_SPEC[] = { HY_FORM_NEVRA, HY_FORM_NEVR, HY_FORM_NEV,
+                                HY_FORM_NA,    HY_FORM_NAME, _HY_FORM_STOP_ };
 
 // what the user most probably means
-HyForm HY_FORMS_REAL[] = {
-    HY_FORM_NA, HY_FORM_NAME, HY_FORM_NEVRA, HY_FORM_NEV, HY_FORM_NEVR, _HY_FORM_STOP_ };
+HyForm HY_FORMS_REAL[] = { HY_FORM_NA,  HY_FORM_NAME, HY_FORM_NEVRA,
+                           HY_FORM_NEV, HY_FORM_NEVR, _HY_FORM_STOP_ };
 
 static inline int
 is_glob_pattern(char *str)
@@ -104,12 +104,11 @@ is_real_arch(HyNevra nevra, DnfSack *sack, int flags)
 static inline int
 filter_real(HyNevra nevra, DnfSack *sack, int flags)
 {
-    return is_real_name(nevra, sack, flags) &&
-        is_real_arch(nevra, sack, flags);
+    return is_real_name(nevra, sack, flags) && is_real_arch(nevra, sack, flags);
 }
 
 HySubject
-hy_subject_create(const char * pattern)
+hy_subject_create(const char *pattern)
 {
     return g_strdup(pattern);
 }
@@ -146,8 +145,8 @@ forms_dup(HyForm *forms)
 }
 
 static HyPossibilities
-possibilities_create(HySubject subject, HyForm *forms,DnfSack *sack, int flags,
-    enum poss_type type)
+possibilities_create(
+  HySubject subject, HyForm *forms, DnfSack *sack, int flags, enum poss_type type)
 {
     HyPossibilities poss = g_malloc0(sizeof(*poss));
     poss->subject = hy_subject_create(subject);
@@ -168,7 +167,8 @@ hy_subject_reldep_possibilities_real(HySubject subject, DnfSack *sack, int flags
     return possibilities_create(subject, NULL, sack, flags, TYPE_RELDEP_NEW);
 }
 
-int hy_possibilities_next_reldep(HyPossibilities iter, DnfReldep **out_reldep)
+int
+hy_possibilities_next_reldep(HyPossibilities iter, DnfReldep **out_reldep)
 {
     if (iter->type != TYPE_RELDEP_NEW)
         return -1;
@@ -178,7 +178,7 @@ int hy_possibilities_next_reldep(HyPossibilities iter, DnfReldep **out_reldep)
     if (parse_reldep_str(iter->subject, &name, &evr, &cmp_type) == -1)
         return -1;
     if (dnf_sack_knows(iter->sack, name, NULL, iter->flags)) {
-        *out_reldep = dnf_reldep_new (iter->sack, name, cmp_type, evr);
+        *out_reldep = dnf_reldep_new(iter->sack, name, cmp_type, evr);
         g_free(name);
         g_free(evr);
         if (*out_reldep == NULL)
@@ -196,8 +196,7 @@ hy_subject_nevra_possibilities(HySubject subject, HyForm *forms)
 }
 
 HyPossibilities
-hy_subject_nevra_possibilities_real(HySubject subject, HyForm *forms,
-    DnfSack *sack, int flags)
+hy_subject_nevra_possibilities_real(HySubject subject, HyForm *forms, DnfSack *sack, int flags)
 {
     HyForm *default_forms = forms == NULL ? HY_FORMS_REAL : forms;
     return possibilities_create(subject, default_forms, sack, flags, TYPE_NEVRA);
@@ -224,7 +223,8 @@ hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra)
     return -1;
 }
 
-struct NevraToQuery {
+struct NevraToQuery
+{
     int nevra_type;
     int query_type;
 };
@@ -289,7 +289,7 @@ hy_subject_get_best_query(HySubject subject, DnfSack *sack, gboolean with_provid
     return query;
 #else
     /* At some point, we may use this */
-    g_assert_not_reached ();
+    g_assert_not_reached();
 #endif
 }
 
@@ -299,8 +299,7 @@ nevra_to_selector(HyNevra nevra, DnfSack *sack)
     HySelector selector = hy_selector_create(sack);
 
     if (hy_nevra_has_just_name(nevra)) {
-        hy_selector_set(selector, HY_PKG_NAME, HY_EQ,
-                        hy_nevra_get_string(nevra, HY_NEVRA_NAME));
+        hy_selector_set(selector, HY_PKG_NAME, HY_EQ, hy_nevra_get_string(nevra, HY_NEVRA_NAME));
     } else {
         const char *str = hy_nevra_get_string(nevra, HY_NEVRA_NAME);
         int epoch;
@@ -311,7 +310,7 @@ nevra_to_selector(HyNevra nevra, DnfSack *sack)
         epoch = hy_nevra_get_epoch(nevra);
         str = hy_nevra_get_string(nevra, HY_NEVRA_VERSION);
         if (str != NULL) {
-            g_autoptr(GString) evrbuf = g_string_new (str);
+            g_autoptr(GString) evrbuf = g_string_new(str);
 
             if (epoch > 0) {
                 char buf[G_ASCII_DTOSTR_BUF_SIZE];
@@ -372,7 +371,7 @@ hy_subject_get_best_selector(HySubject subject, DnfSack *sack)
     }
 
     /* We don't do globs yet */
-    if (g_str_has_prefix (subject, "/")) {
+    if (g_str_has_prefix(subject, "/")) {
         selector = hy_selector_create(sack);
         hy_selector_set(selector, HY_PKG_FILE, HY_EQ, subject);
     }
@@ -386,4 +385,3 @@ hy_subject_get_best_selector(HySubject subject, DnfSack *sack)
     g_clear_object(&reldep);
     return selector;
 }
-

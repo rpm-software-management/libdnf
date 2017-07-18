@@ -30,7 +30,6 @@
  * See also: #DnfContext
  */
 
-
 #include <glib.h>
 
 #include <solv/repo.h>
@@ -43,14 +42,15 @@
 
 typedef struct
 {
-    Pool    *pool;
-    Id       a_id;
+    Pool *pool;
+    Id a_id;
 } DnfAdvisoryPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfAdvisory, dnf_advisory, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (dnf_advisory_get_instance_private (o))
+#define GET_PRIVATE(o) (dnf_advisory_get_instance_private(o))
 
-static DnfAdvisoryKind str2dnf_advisory_kind(const char *str);
+static DnfAdvisoryKind
+str2dnf_advisory_kind(const char *str);
 
 /**
  * dnf_advisory_init:
@@ -143,7 +143,7 @@ dnf_advisory_get_id(DnfAdvisory *advisory)
 
     id = pool_lookup_str(priv->pool, priv->a_id, SOLVABLE_NAME);
     g_assert(g_str_has_prefix(id, SOLVABLE_NAME_ADVISORY_PREFIX));
-    //remove the prefix
+    // remove the prefix
     id += strlen(SOLVABLE_NAME_ADVISORY_PREFIX);
 
     return id;
@@ -252,20 +252,20 @@ dnf_advisory_get_packages(DnfAdvisory *advisory)
     DnfAdvisoryPrivate *priv = GET_PRIVATE(advisory);
     Dataiterator di;
     DnfAdvisoryPkg *pkg;
-    GPtrArray *pkglist = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
+    GPtrArray *pkglist = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 
     dataiterator_init(&di, priv->pool, 0, priv->a_id, UPDATE_COLLECTION, 0, 0);
     while (dataiterator_step(&di)) {
         dataiterator_setpos(&di);
         pkg = dnf_advisorypkg_new();
         dnf_advisorypkg_set_name(pkg,
-                pool_lookup_str(priv->pool, SOLVID_POS, UPDATE_COLLECTION_NAME));
+                                 pool_lookup_str(priv->pool, SOLVID_POS, UPDATE_COLLECTION_NAME));
         dnf_advisorypkg_set_evr(pkg,
-                pool_lookup_str(priv->pool, SOLVID_POS, UPDATE_COLLECTION_EVR));
+                                pool_lookup_str(priv->pool, SOLVID_POS, UPDATE_COLLECTION_EVR));
         dnf_advisorypkg_set_arch(pkg,
-                pool_lookup_str(priv->pool, SOLVID_POS, UPDATE_COLLECTION_ARCH));
-        dnf_advisorypkg_set_filename(pkg,
-                pool_lookup_str(priv->pool, SOLVID_POS, UPDATE_COLLECTION_FILENAME));
+                                 pool_lookup_str(priv->pool, SOLVID_POS, UPDATE_COLLECTION_ARCH));
+        dnf_advisorypkg_set_filename(
+          pkg, pool_lookup_str(priv->pool, SOLVID_POS, UPDATE_COLLECTION_FILENAME));
         g_ptr_array_add(pkglist, pkg);
     }
     dataiterator_free(&di);
@@ -289,7 +289,7 @@ dnf_advisory_get_references(DnfAdvisory *advisory)
     DnfAdvisoryPrivate *priv = GET_PRIVATE(advisory);
     Dataiterator di;
     DnfAdvisoryRef *ref;
-    GPtrArray *reflist = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+    GPtrArray *reflist = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 
     dataiterator_init(&di, priv->pool, 0, priv->a_id, UPDATE_REFERENCE, 0, 0);
     for (int index = 0; dataiterator_step(&di); index++) {
@@ -314,13 +314,13 @@ str2dnf_advisory_kind(const char *str)
 {
     if (str == NULL)
         return DNF_ADVISORY_KIND_UNKNOWN;
-    if (!strcmp (str, "bugfix"))
+    if (!strcmp(str, "bugfix"))
         return DNF_ADVISORY_KIND_BUGFIX;
-    if (!strcmp (str, "enhancement"))
+    if (!strcmp(str, "enhancement"))
         return DNF_ADVISORY_KIND_ENHANCEMENT;
-    if (!strcmp (str, "security"))
+    if (!strcmp(str, "security"))
         return DNF_ADVISORY_KIND_SECURITY;
-    if (!strcmp (str, "newpackage"))
+    if (!strcmp(str, "newpackage"))
         return DNF_ADVISORY_KIND_NEWPACKAGE;
     return DNF_ADVISORY_KIND_UNKNOWN;
 }
@@ -377,7 +377,7 @@ gboolean
 dnf_advisory_match_severity(DnfAdvisory *advisory, const char *s)
 {
     const char *severity_str = dnf_advisory_get_severity(advisory);
-    return g_strcmp0(severity_str,s) == 0;
+    return g_strcmp0(severity_str, s) == 0;
 }
 
 /**

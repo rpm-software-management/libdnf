@@ -24,24 +24,25 @@
 #include <solv/util.h>
 
 #include "dnf-advisory.h"
-#include "hy-iutil.h"
-#include "hy-package-private.h"
 #include "dnf-reldep.h"
 #include "dnf-sack-private.h"
+#include "hy-iutil.h"
+#include "hy-package-private.h"
 
 #include "iutil-py.h"
 #include "package-py.h"
 #include "packagedelta-py.h"
-#include "sack-py.h"
 #include "pycomp.h"
+#include "sack-py.h"
 
-typedef struct {
-    PyObject_HEAD
-    DnfPackage *package;
+typedef struct
+{
+    PyObject_HEAD DnfPackage *package;
     PyObject *sack;
 } _PackageObject;
 
-long package_hash(_PackageObject *self);
+long
+package_hash(_PackageObject *self);
 
 DnfPackage *
 packageFromPyObject(PyObject *o)
@@ -68,12 +69,12 @@ package_converter(PyObject *o, DnfPackage **pkg_ptr)
 static PyObject *
 package_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    _PackageObject *self = (_PackageObject*)type->tp_alloc(type, 0);
+    _PackageObject *self = (_PackageObject *)type->tp_alloc(type, 0);
     if (self) {
         self->sack = NULL;
         self->package = NULL;
     }
-    return (PyObject*)self;
+    return (PyObject *)self;
 }
 
 static void
@@ -110,9 +111,8 @@ package_py_richcompare(PyObject *self, PyObject *other, int op)
     PyObject *v;
     DnfPackage *self_package, *other_package;
 
-    if (!package_converter(self, &self_package) ||
-        !package_converter(other, &other_package)) {
-        if(PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError))
+    if (!package_converter(self, &self_package) || !package_converter(other, &other_package)) {
+        if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError))
             PyErr_Clear();
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
@@ -121,27 +121,27 @@ package_py_richcompare(PyObject *self, PyObject *other, int op)
     long result = dnf_package_cmp(self_package, other_package);
 
     switch (op) {
-    case Py_EQ:
-        v = TEST_COND(result == 0);
-        break;
-    case Py_NE:
-        v = TEST_COND(result != 0);
-        break;
-    case Py_LE:
-        v = TEST_COND(result <= 0);
-        break;
-    case Py_GE:
-        v = TEST_COND(result >= 0);
-        break;
-    case Py_LT:
-        v = TEST_COND(result < 0);
-        break;
-    case Py_GT:
-        v = TEST_COND(result > 0);
-        break;
-    default:
-        PyErr_BadArgument();
-        return NULL;
+        case Py_EQ:
+            v = TEST_COND(result == 0);
+            break;
+        case Py_NE:
+            v = TEST_COND(result != 0);
+            break;
+        case Py_LE:
+            v = TEST_COND(result <= 0);
+            break;
+        case Py_GE:
+            v = TEST_COND(result >= 0);
+            break;
+        case Py_LT:
+            v = TEST_COND(result < 0);
+            break;
+        case Py_GT:
+            v = TEST_COND(result > 0);
+            break;
+        default:
+            PyErr_BadArgument();
+            return NULL;
     }
     Py_INCREF(v);
     return v;
@@ -155,7 +155,8 @@ package_repr(_PackageObject *self)
     PyObject *repr;
 
     repr = PyString_FromFormat("<hawkey.Package object id %ld, %s, %s>",
-                               package_hash(self), nevra,
+                               package_hash(self),
+                               nevra,
                                dnf_package_get_reponame(pkg));
     return repr;
 }
@@ -168,7 +169,8 @@ package_str(_PackageObject *self)
     return ret;
 }
 
-long package_hash(_PackageObject *self)
+long
+package_hash(_PackageObject *self)
 {
     return dnf_package_get_id(self->package);
 }
@@ -178,23 +180,23 @@ long package_hash(_PackageObject *self)
 static PyObject *
 get_bool(_PackageObject *self, void *closure)
 {
-    unsigned long (*func)(DnfPackage*);
-    func = (unsigned long (*)(DnfPackage*))closure;
+    unsigned long (*func)(DnfPackage *);
+    func = (unsigned long (*)(DnfPackage *))closure;
     return PyBool_FromLong(func(self->package));
 }
 
 static PyObject *
 get_num(_PackageObject *self, void *closure)
 {
-    guint64 (*func)(DnfPackage*);
-    func = (guint64 (*)(DnfPackage*))closure;
+    guint64 (*func)(DnfPackage *);
+    func = (guint64(*)(DnfPackage *))closure;
     return PyLong_FromUnsignedLongLong(func(self->package));
 }
 
 static PyObject *
 get_reldep(_PackageObject *self, void *closure)
 {
-    DnfReldepList *(*func)(DnfPackage*) = (DnfReldepList *(*)(DnfPackage*))closure;
+    DnfReldepList *(*func)(DnfPackage *) = (DnfReldepList * (*)(DnfPackage *)) closure;
     DnfReldepList *reldeplist = func(self->package);
     assert(reldeplist);
     PyObject *list = reldeplist_to_pylist(reldeplist, self->sack);
@@ -206,10 +208,10 @@ get_reldep(_PackageObject *self, void *closure)
 static PyObject *
 get_str(_PackageObject *self, void *closure)
 {
-    const char *(*func)(DnfPackage*);
+    const char *(*func)(DnfPackage *);
     const char *cstr;
 
-    func = (const char *(*)(DnfPackage*))closure;
+    func = (const char *(*)(DnfPackage *))closure;
     cstr = func(self->package);
     if (cstr == NULL)
         Py_RETURN_NONE;
@@ -219,10 +221,10 @@ get_str(_PackageObject *self, void *closure)
 static PyObject *
 get_str_array(_PackageObject *self, void *closure)
 {
-    gchar ** (*func)(DnfPackage*);
-    gchar ** strv;
+    gchar **(*func)(DnfPackage *);
+    gchar **strv;
 
-    func = (gchar **(*)(DnfPackage*))closure;
+    func = (gchar * *(*)(DnfPackage *)) closure;
     strv = func(self->package);
     PyObject *list = strlist_to_pylist((const char **)strv);
     g_strfreev(strv);
@@ -233,11 +235,11 @@ get_str_array(_PackageObject *self, void *closure)
 static PyObject *
 get_chksum(_PackageObject *self, void *closure)
 {
-    HyChecksum *(*func)(DnfPackage*, int *);
+    HyChecksum *(*func)(DnfPackage *, int *);
     int type;
     HyChecksum *cs;
 
-    func = (HyChecksum *(*)(DnfPackage*, int *))closure;
+    func = (HyChecksum * (*)(DnfPackage *, int *)) closure;
     cs = func(self->package, &type);
     if (cs == 0) {
         PyErr_SetString(PyExc_AttributeError, "No such checksum.");
@@ -257,64 +259,48 @@ get_chksum(_PackageObject *self, void *closure)
 }
 
 static PyGetSetDef package_getsetters[] = {
-    {(char*)"baseurl",        (getter)get_str, NULL, NULL,
-     (void *)dnf_package_get_baseurl},
-    {(char*)"files",        (getter)get_str_array, NULL, NULL,
-     (void *)dnf_package_get_files},
-    {(char*)"hdr_end", (getter)get_num, NULL, NULL, (void *)dnf_package_get_hdr_end},
-    {(char*)"location",  (getter)get_str, NULL, NULL,
-     (void *)dnf_package_get_location},
-    {(char*)"sourcerpm",  (getter)get_str, NULL, NULL,
-     (void *)dnf_package_get_sourcerpm},
-    {(char*)"version",  (getter)get_str, NULL, NULL,
-     (void *)dnf_package_get_version},
-    {(char*)"release",  (getter)get_str, NULL, NULL,
-     (void *)dnf_package_get_release},
-    {(char*)"name", (getter)get_str, NULL, NULL, (void *)dnf_package_get_name},
-    {(char*)"arch", (getter)get_str, NULL, NULL, (void *)dnf_package_get_arch},
-    {(char*)"hdr_chksum", (getter)get_chksum, NULL, NULL,
-     (void *)dnf_package_get_hdr_chksum},
-    {(char*)"chksum", (getter)get_chksum, NULL, NULL, (void *)dnf_package_get_chksum},
-    {(char*)"description", (getter)get_str, NULL, NULL,
-     (void *)dnf_package_get_description},
-    {(char*)"evr",  (getter)get_str, NULL, NULL, (void *)dnf_package_get_evr},
-    {(char*)"group",  (getter)get_str, NULL, NULL, (void *)dnf_package_get_group},
-    {(char*)"license", (getter)get_str, NULL, NULL, (void *)dnf_package_get_license},
-    {(char*)"packager",  (getter)get_str, NULL, NULL, (void *)dnf_package_get_packager},
-    {(char*)"reponame",  (getter)get_str, NULL, NULL, (void *)dnf_package_get_reponame},
-    {(char*)"summary",  (getter)get_str, NULL, NULL, (void *)dnf_package_get_summary},
-    {(char*)"url",  (getter)get_str, NULL, NULL, (void *)dnf_package_get_url},
-    {(char*)"downloadsize", (getter)get_num, NULL, NULL,
-     (void *)dnf_package_get_downloadsize},
-    {(char*)"epoch", (getter)get_num, NULL, NULL, (void *)dnf_package_get_epoch},
-    {(char*)"installsize", (getter)get_num, NULL, NULL,
-     (void *)dnf_package_get_installsize},
-    {(char*)"buildtime", (getter)get_num, NULL, NULL, (void *)dnf_package_get_buildtime},
-    {(char*)"installtime", (getter)get_num, NULL, NULL,
-     (void *)dnf_package_get_installtime},
-    {(char*)"installed", (getter)get_bool, NULL, NULL, (void *)dnf_package_installed},
-    {(char*)"medianr", (getter)get_num, NULL, NULL, (void *)dnf_package_get_medianr},
-    {(char*)"rpmdbid", (getter)get_num, NULL, NULL, (void *)dnf_package_get_rpmdbid},
-    {(char*)"size", (getter)get_num, NULL, NULL, (void *)dnf_package_get_size},
-    {(char*)"conflicts",  (getter)get_reldep, NULL, NULL,
-     (void *)dnf_package_get_conflicts},
-    {(char*)"enhances",  (getter)get_reldep, NULL, NULL,
-     (void *)dnf_package_get_enhances},
-    {(char*)"obsoletes",  (getter)get_reldep, NULL, NULL,
-     (void *)dnf_package_get_obsoletes},
-    {(char*)"requires_pre",  (getter)get_reldep, NULL, NULL,
-     (void *)dnf_package_get_requires_pre},
-    {(char*)"provides",  (getter)get_reldep, NULL, NULL,
-     (void *)dnf_package_get_provides},
-    {(char*)"recommends",  (getter)get_reldep, NULL, NULL,
-     (void *)dnf_package_get_recommends},
-    {(char*)"requires",  (getter)get_reldep, NULL, NULL,
-     (void *)dnf_package_get_requires},
-    {(char*)"suggests",  (getter)get_reldep, NULL, NULL,
-     (void *)dnf_package_get_suggests},
-    {(char*)"supplements",  (getter)get_reldep, NULL, NULL,
-     (void *)dnf_package_get_supplements},
-    {NULL}                        /* sentinel */
+    { (char *)"baseurl", (getter)get_str, NULL, NULL, (void *)dnf_package_get_baseurl },
+    { (char *)"files", (getter)get_str_array, NULL, NULL, (void *)dnf_package_get_files },
+    { (char *)"hdr_end", (getter)get_num, NULL, NULL, (void *)dnf_package_get_hdr_end },
+    { (char *)"location", (getter)get_str, NULL, NULL, (void *)dnf_package_get_location },
+    { (char *)"sourcerpm", (getter)get_str, NULL, NULL, (void *)dnf_package_get_sourcerpm },
+    { (char *)"version", (getter)get_str, NULL, NULL, (void *)dnf_package_get_version },
+    { (char *)"release", (getter)get_str, NULL, NULL, (void *)dnf_package_get_release },
+    { (char *)"name", (getter)get_str, NULL, NULL, (void *)dnf_package_get_name },
+    { (char *)"arch", (getter)get_str, NULL, NULL, (void *)dnf_package_get_arch },
+    { (char *)"hdr_chksum", (getter)get_chksum, NULL, NULL, (void *)dnf_package_get_hdr_chksum },
+    { (char *)"chksum", (getter)get_chksum, NULL, NULL, (void *)dnf_package_get_chksum },
+    { (char *)"description", (getter)get_str, NULL, NULL, (void *)dnf_package_get_description },
+    { (char *)"evr", (getter)get_str, NULL, NULL, (void *)dnf_package_get_evr },
+    { (char *)"group", (getter)get_str, NULL, NULL, (void *)dnf_package_get_group },
+    { (char *)"license", (getter)get_str, NULL, NULL, (void *)dnf_package_get_license },
+    { (char *)"packager", (getter)get_str, NULL, NULL, (void *)dnf_package_get_packager },
+    { (char *)"reponame", (getter)get_str, NULL, NULL, (void *)dnf_package_get_reponame },
+    { (char *)"summary", (getter)get_str, NULL, NULL, (void *)dnf_package_get_summary },
+    { (char *)"url", (getter)get_str, NULL, NULL, (void *)dnf_package_get_url },
+    { (char *)"downloadsize", (getter)get_num, NULL, NULL, (void *)dnf_package_get_downloadsize },
+    { (char *)"epoch", (getter)get_num, NULL, NULL, (void *)dnf_package_get_epoch },
+    { (char *)"installsize", (getter)get_num, NULL, NULL, (void *)dnf_package_get_installsize },
+    { (char *)"buildtime", (getter)get_num, NULL, NULL, (void *)dnf_package_get_buildtime },
+    { (char *)"installtime", (getter)get_num, NULL, NULL, (void *)dnf_package_get_installtime },
+    { (char *)"installed", (getter)get_bool, NULL, NULL, (void *)dnf_package_installed },
+    { (char *)"medianr", (getter)get_num, NULL, NULL, (void *)dnf_package_get_medianr },
+    { (char *)"rpmdbid", (getter)get_num, NULL, NULL, (void *)dnf_package_get_rpmdbid },
+    { (char *)"size", (getter)get_num, NULL, NULL, (void *)dnf_package_get_size },
+    { (char *)"conflicts", (getter)get_reldep, NULL, NULL, (void *)dnf_package_get_conflicts },
+    { (char *)"enhances", (getter)get_reldep, NULL, NULL, (void *)dnf_package_get_enhances },
+    { (char *)"obsoletes", (getter)get_reldep, NULL, NULL, (void *)dnf_package_get_obsoletes },
+    { (char *)"requires_pre",
+      (getter)get_reldep,
+      NULL,
+      NULL,
+      (void *)dnf_package_get_requires_pre },
+    { (char *)"provides", (getter)get_reldep, NULL, NULL, (void *)dnf_package_get_provides },
+    { (char *)"recommends", (getter)get_reldep, NULL, NULL, (void *)dnf_package_get_recommends },
+    { (char *)"requires", (getter)get_reldep, NULL, NULL, (void *)dnf_package_get_requires },
+    { (char *)"suggests", (getter)get_reldep, NULL, NULL, (void *)dnf_package_get_suggests },
+    { (char *)"supplements", (getter)get_reldep, NULL, NULL, (void *)dnf_package_get_supplements },
+    { NULL } /* sentinel */
 };
 
 /* object methods */
@@ -362,51 +348,50 @@ get_advisories(_PackageObject *self, PyObject *args)
 }
 
 static struct PyMethodDef package_methods[] = {
-    {"evr_cmp", (PyCFunction)evr_cmp, METH_O, NULL},
-    {"get_delta_from_evr", (PyCFunction)get_delta_from_evr, METH_O, NULL},
-    {"get_advisories", (PyCFunction)get_advisories, METH_VARARGS, NULL},
-    {NULL}                      /* sentinel */
+    { "evr_cmp", (PyCFunction)evr_cmp, METH_O, NULL },
+    { "get_delta_from_evr", (PyCFunction)get_delta_from_evr, METH_O, NULL },
+    { "get_advisories", (PyCFunction)get_advisories, METH_VARARGS, NULL },
+    { NULL } /* sentinel */
 };
 
 PyTypeObject package_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "_hawkey.Package",                /*tp_name*/
-    sizeof(_PackageObject),        /*tp_basicsize*/
-    0,                                /*tp_itemsize*/
-    (destructor) package_dealloc, /*tp_dealloc*/
-    0,                                /*tp_print*/
-    0,                                /*tp_getattr*/
-    0,                                /*tp_setattr*/
-    0,                                /*tp_compare*/
-    (reprfunc)package_repr,        /*tp_repr*/
-    0,                                /*tp_as_number*/
-    0,                                /*tp_as_sequence*/
-    0,                                /*tp_as_mapping*/
-    (hashfunc)package_hash,        /*tp_hash */
-    0,                                /*tp_call*/
-    (reprfunc)package_str,        /*tp_str*/
-    0,                                /*tp_getattro*/
-    0,                                /*tp_setattro*/
-    0,                                /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,        /*tp_flags*/
-    "Package object",                /* tp_doc */
-    0,                                /* tp_traverse */
-    0,                                /* tp_clear */
-    (richcmpfunc) package_py_richcompare,        /* tp_richcompare */
-    0,                                /* tp_weaklistoffset */
-    0,                                /* tp_iter */
-    0,                                 /* tp_iternext */
-    package_methods,                /* tp_methods */
-    0,                                /* tp_members */
-    package_getsetters,                /* tp_getset */
-    0,                                /* tp_base */
-    0,                                /* tp_dict */
-    0,                                /* tp_descr_get */
-    0,                                /* tp_descr_set */
-    0,                                /* tp_dictoffset */
-    (initproc)package_init,        /* tp_init */
-    0,                                /* tp_alloc */
-    package_new,                /* tp_new */
-    0,                                /* tp_free */
-    0,                                /* tp_is_gc */
+    PyVarObject_HEAD_INIT(NULL, 0) "_hawkey.Package", /*tp_name*/
+    sizeof(_PackageObject),                           /*tp_basicsize*/
+    0,                                                /*tp_itemsize*/
+    (destructor)package_dealloc,                      /*tp_dealloc*/
+    0,                                                /*tp_print*/
+    0,                                                /*tp_getattr*/
+    0,                                                /*tp_setattr*/
+    0,                                                /*tp_compare*/
+    (reprfunc)package_repr,                           /*tp_repr*/
+    0,                                                /*tp_as_number*/
+    0,                                                /*tp_as_sequence*/
+    0,                                                /*tp_as_mapping*/
+    (hashfunc)package_hash,                           /*tp_hash */
+    0,                                                /*tp_call*/
+    (reprfunc)package_str,                            /*tp_str*/
+    0,                                                /*tp_getattro*/
+    0,                                                /*tp_setattro*/
+    0,                                                /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,         /*tp_flags*/
+    "Package object",                                 /* tp_doc */
+    0,                                                /* tp_traverse */
+    0,                                                /* tp_clear */
+    (richcmpfunc)package_py_richcompare,              /* tp_richcompare */
+    0,                                                /* tp_weaklistoffset */
+    0,                                                /* tp_iter */
+    0,                                                /* tp_iternext */
+    package_methods,                                  /* tp_methods */
+    0,                                                /* tp_members */
+    package_getsetters,                               /* tp_getset */
+    0,                                                /* tp_base */
+    0,                                                /* tp_dict */
+    0,                                                /* tp_descr_get */
+    0,                                                /* tp_descr_set */
+    0,                                                /* tp_dictoffset */
+    (initproc)package_init,                           /* tp_init */
+    0,                                                /* tp_alloc */
+    package_new,                                      /* tp_new */
+    0,                                                /* tp_free */
+    0,                                                /* tp_is_gc */
 };

@@ -28,20 +28,19 @@
  * This object represents an RPM transaction.
  */
 
-
 #include <rpm/rpmlib.h>
-#include <rpm/rpmts.h>
 #include <rpm/rpmlog.h>
+#include <rpm/rpmts.h>
 
 #include "dnf-db.h"
 #include "dnf-goal.h"
 #include "dnf-keyring.h"
 #include "dnf-package.h"
 #include "dnf-rpmts.h"
+#include "dnf-sack.h"
 #include "dnf-transaction.h"
 #include "dnf-utils.h"
 #include "hy-query.h"
-#include "dnf-sack.h"
 #include "hy-util.h"
 
 typedef enum {
@@ -53,30 +52,30 @@ typedef enum {
 
 typedef struct
 {
-    DnfDb              *db;
-    rpmKeyring          keyring;
-    rpmts               ts;
-    DnfContext         *context;    /* weak reference */
-    GPtrArray          *repos;
-    guint               uid;
+    DnfDb *db;
+    rpmKeyring keyring;
+    rpmts ts;
+    DnfContext *context; /* weak reference */
+    GPtrArray *repos;
+    guint uid;
 
     /* previously in the helper */
-    DnfState            *state;
-    DnfState            *child;
-    FD_t                 fd;
-    DnfTransactionStep   step;
-    GTimer              *timer;
-    guint                last_progress;
-    GPtrArray           *remove;
-    GPtrArray           *remove_helper;
-    GPtrArray           *install;
-    GPtrArray           *pkgs_to_download;
-    GHashTable          *erased_by_package_hash;
-    guint64             flags;
+    DnfState *state;
+    DnfState *child;
+    FD_t fd;
+    DnfTransactionStep step;
+    GTimer *timer;
+    guint last_progress;
+    GPtrArray *remove;
+    GPtrArray *remove_helper;
+    GPtrArray *install;
+    GPtrArray *pkgs_to_download;
+    GHashTable *erased_by_package_hash;
+    guint64 flags;
 } DnfTransactionPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfTransaction, dnf_transaction, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (dnf_transaction_get_instance_private (o))
+#define GET_PRIVATE(o) (dnf_transaction_get_instance_private(o))
 
 /**
  * dnf_transaction_finalize:
@@ -105,8 +104,7 @@ dnf_transaction_finalize(GObject *object)
     if (priv->erased_by_package_hash != NULL)
         g_hash_table_unref(priv->erased_by_package_hash);
     if (priv->context != NULL)
-        g_object_remove_weak_pointer(G_OBJECT(priv->context),
-                                     (void **) &priv->context);
+        g_object_remove_weak_pointer(G_OBJECT(priv->context), (void **)&priv->context);
 
     G_OBJECT_CLASS(dnf_transaction_parent_class)->finalize(object);
 }
@@ -119,7 +117,7 @@ dnf_transaction_init(DnfTransaction *transaction)
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     priv->timer = g_timer_new();
-    priv->pkgs_to_download = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
+    priv->pkgs_to_download = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 }
 
 /**
@@ -249,9 +247,7 @@ dnf_transaction_set_flags(DnfTransaction *transaction, guint64 flags)
  * Since: 0.1.0
  */
 gboolean
-dnf_transaction_ensure_repo(DnfTransaction *transaction,
-                              DnfPackage *pkg,
-                              GError **error)
+dnf_transaction_ensure_repo(DnfTransaction *transaction, DnfPackage *pkg, GError **error)
 {
     DnfRepo *repo;
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
@@ -268,8 +264,7 @@ dnf_transaction_ensure_repo(DnfTransaction *transaction,
     }
 
     /* this is a local file */
-    if (g_strcmp0(dnf_package_get_reponame(pkg),
-                  HY_CMDLINE_REPO_NAME) == 0) {
+    if (g_strcmp0(dnf_package_get_reponame(pkg), HY_CMDLINE_REPO_NAME) == 0) {
         dnf_package_set_filename(pkg, dnf_package_get_location(pkg));
         return TRUE;
     }
@@ -279,8 +274,7 @@ dnf_transaction_ensure_repo(DnfTransaction *transaction,
         return TRUE;
     for (i = 0; i < priv->repos->len; i++) {
         repo = g_ptr_array_index(priv->repos, i);
-        if (g_strcmp0(dnf_package_get_reponame(pkg),
-                      dnf_repo_get_id(repo)) == 0) {
+        if (g_strcmp0(dnf_package_get_reponame(pkg), dnf_repo_get_id(repo)) == 0) {
             dnf_package_set_repo(pkg, repo);
             return TRUE;
         }
@@ -311,15 +305,13 @@ dnf_transaction_ensure_repo(DnfTransaction *transaction,
  * Since: 0.1.0
  */
 gboolean
-dnf_transaction_ensure_repo_list(DnfTransaction *transaction,
-                                   GPtrArray *pkglist,
-                                   GError **error)
+dnf_transaction_ensure_repo_list(DnfTransaction *transaction, GPtrArray *pkglist, GError **error)
 {
     guint i;
     DnfPackage *pkg;
 
     for (i = 0; i < pkglist->len; i++) {
-        pkg = g_ptr_array_index (pkglist, i);
+        pkg = g_ptr_array_index(pkglist, i);
         if (!dnf_transaction_ensure_repo(transaction, pkg, error))
             return FALSE;
     }
@@ -327,9 +319,7 @@ dnf_transaction_ensure_repo_list(DnfTransaction *transaction,
 }
 
 gboolean
-dnf_transaction_gpgcheck_package(DnfTransaction *transaction,
-                                 DnfPackage     *pkg,
-                                 GError        **error)
+dnf_transaction_gpgcheck_package(DnfTransaction *transaction, DnfPackage *pkg, GError **error)
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     GError *error_local = NULL;
@@ -357,9 +347,7 @@ dnf_transaction_gpgcheck_package(DnfTransaction *transaction,
     if (!dnf_keyring_check_untrusted_file(priv->keyring, fn, &error_local)) {
 
         /* probably an i/o error */
-        if (!g_error_matches(error_local,
-                             DNF_ERROR,
-                             DNF_ERROR_GPG_SIGNATURE_INVALID)) {
+        if (!g_error_matches(error_local, DNF_ERROR, DNF_ERROR_GPG_SIGNATURE_INVALID)) {
             g_propagate_error(error, error_local);
             return FALSE;
         }
@@ -401,9 +389,7 @@ dnf_transaction_gpgcheck_package(DnfTransaction *transaction,
  * of @goal.
  */
 gboolean
-dnf_transaction_check_untrusted(DnfTransaction *transaction,
-                                HyGoal goal,
-                                GError **error)
+dnf_transaction_check_untrusted(DnfTransaction *transaction, HyGoal goal, GError **error)
 {
     guint i;
     g_autoptr(GPtrArray) install = NULL;
@@ -422,7 +408,7 @@ dnf_transaction_check_untrusted(DnfTransaction *transaction,
     for (i = 0; i < install->len; i++) {
         DnfPackage *pkg = g_ptr_array_index(install, i);
 
-        if (!dnf_transaction_gpgcheck_package (transaction, pkg, error))
+        if (!dnf_transaction_gpgcheck_package(transaction, pkg, error))
             return FALSE;
     }
     return TRUE;
@@ -515,16 +501,17 @@ dnf_transaction_ts_progress_cb(const void *arg,
                                const rpmCallbackType what,
                                const rpm_loff_t amount,
                                const rpm_loff_t total,
-                               fnpyKey key, void *data)
+                               fnpyKey key,
+                               void *data)
 {
     DnfTransaction *transaction = DNF_TRANSACTION(data);
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
-    const char *filename =(const char *) key;
+    const char *filename = (const char *)key;
     const gchar *name = NULL;
     gboolean ret;
     guint percentage;
     guint speed;
-    Header hdr =(Header) arg;
+    Header hdr = (Header)arg;
     DnfPackage *pkg;
     DnfStateAction action;
     void *rc = NULL;
@@ -534,206 +521,190 @@ dnf_transaction_ts_progress_cb(const void *arg,
         name = headerGetString(hdr, RPMTAG_NAME);
     g_debug("phase: %u(%i/%i, %s/%s)",
             (uint)what,
-           (gint32) amount,
-           (gint32) total,
-           (const gchar *) key,
+            (gint32)amount,
+            (gint32)total,
+            (const gchar *)key,
             name);
 
-    switch(what) {
-    case RPMCALLBACK_INST_OPEN_FILE:
+    switch (what) {
+        case RPMCALLBACK_INST_OPEN_FILE:
 
-        /* valid? */
-        if (filename == NULL || filename[0] == '\0')
-            return NULL;
+            /* valid? */
+            if (filename == NULL || filename[0] == '\0')
+                return NULL;
 
-        /* open the file and return file descriptor */
-        priv->fd = Fopen(filename, "r.ufdio");
-        return(void *) priv->fd;
-        break;
+            /* open the file and return file descriptor */
+            priv->fd = Fopen(filename, "r.ufdio");
+            return (void *)priv->fd;
+            break;
 
-    case RPMCALLBACK_INST_CLOSE_FILE:
+        case RPMCALLBACK_INST_CLOSE_FILE:
 
-        /* just close the file */
-        if (priv->fd != NULL) {
-            Fclose(priv->fd);
-            priv->fd = NULL;
-        }
-        break;
-
-    case RPMCALLBACK_INST_START:
-
-        /* find pkg */
-        pkg = dnf_find_pkg_from_filename_suffix(priv->install,
-                                                filename);
-        if (pkg == NULL)
-            g_assert_not_reached();
-
-        /* map to correct action code */
-        action = dnf_package_get_action(pkg);
-        if (action == DNF_STATE_ACTION_UNKNOWN)
-            action = DNF_STATE_ACTION_INSTALL;
-
-        /* set the pkgid if not already set */
-        if (dnf_package_get_pkgid(pkg) == NULL) {
-            const gchar *pkgid;
-            pkgid = headerGetString(hdr, RPMTAG_SHA1HEADER);
-            if (pkgid != NULL) {
-                g_debug("setting %s pkgid %s", name, pkgid);
-                dnf_package_set_pkgid(pkg, pkgid);
+            /* just close the file */
+            if (priv->fd != NULL) {
+                Fclose(priv->fd);
+                priv->fd = NULL;
             }
-        }
+            break;
 
-        /* install start */
-        priv->step = DNF_TRANSACTION_STEP_WRITING;
-        priv->child = dnf_state_get_child(priv->state);
-        dnf_state_action_start(priv->child,
-                               action,
-                               dnf_package_get_package_id(pkg));
-        g_debug("install start: %s size=%i", filename,(gint32) total);
-        break;
+        case RPMCALLBACK_INST_START:
 
-    case RPMCALLBACK_UNINST_START:
+            /* find pkg */
+            pkg = dnf_find_pkg_from_filename_suffix(priv->install, filename);
+            if (pkg == NULL)
+                g_assert_not_reached();
 
-        /* find pkg */
-        pkg = dnf_find_pkg_from_header(priv->remove, hdr);
-        if (pkg == NULL && filename != NULL) {
-            pkg = dnf_find_pkg_from_filename_suffix(priv->remove,
-                                                    filename);
-        }
-        if (pkg == NULL && name != NULL)
-            pkg = dnf_find_pkg_from_name(priv->remove, name);
-        if (pkg == NULL && name != NULL)
-            pkg = dnf_find_pkg_from_name(priv->remove_helper, name);
-        if (pkg == NULL) {
-            g_warning("cannot find %s in uninst-start", name);
+            /* map to correct action code */
+            action = dnf_package_get_action(pkg);
+            if (action == DNF_STATE_ACTION_UNKNOWN)
+                action = DNF_STATE_ACTION_INSTALL;
+
+            /* set the pkgid if not already set */
+            if (dnf_package_get_pkgid(pkg) == NULL) {
+                const gchar *pkgid;
+                pkgid = headerGetString(hdr, RPMTAG_SHA1HEADER);
+                if (pkgid != NULL) {
+                    g_debug("setting %s pkgid %s", name, pkgid);
+                    dnf_package_set_pkgid(pkg, pkgid);
+                }
+            }
+
+            /* install start */
             priv->step = DNF_TRANSACTION_STEP_WRITING;
-            break;
-        }
-
-        /* map to correct action code */
-        action = dnf_package_get_action(pkg);
-        if (action == DNF_STATE_ACTION_UNKNOWN)
-            action = DNF_STATE_ACTION_REMOVE;
-
-        /* remove start */
-        priv->step = DNF_TRANSACTION_STEP_WRITING;
-        priv->child = dnf_state_get_child(priv->state);
-        dnf_state_action_start(priv->child,
-                               action,
-                               dnf_package_get_package_id(pkg));
-        g_debug("remove start: %s size=%i", filename,(gint32) total);
-        break;
-
-    case RPMCALLBACK_TRANS_PROGRESS:
-    case RPMCALLBACK_INST_PROGRESS:
-
-        /* we're preparing the transaction */
-        if (priv->step == DNF_TRANSACTION_STEP_PREPARING ||
-            priv->step == DNF_TRANSACTION_STEP_IGNORE) {
-            g_debug("ignoring preparing %i / %i",
-                    (gint32) amount,(gint32) total);
-            break;
-        }
-
-        /* work out speed */
-        speed = (amount - priv->last_progress) /
-                    g_timer_elapsed(priv->timer, NULL);
-        dnf_state_set_speed(priv->state, speed);
-        priv->last_progress = amount;
-        g_timer_reset(priv->timer);
-
-        /* progress */
-        percentage =(100.0f /(gfloat) total) *(gfloat) amount;
-        if (priv->child != NULL)
-            dnf_state_set_percentage(priv->child, percentage);
-
-        /* update UI */
-        pkg = dnf_find_pkg_from_header(priv->install, hdr);
-        if (pkg == NULL) {
-            pkg = dnf_find_pkg_from_filename_suffix(priv->install,
-                                                    filename);
-        }
-        if (pkg == NULL) {
-            g_debug("cannot find %s(%s)", filename, name);
-            break;
-        }
-
-        dnf_state_set_package_progress(priv->state,
-                                       dnf_package_get_package_id(pkg),
-                                       DNF_STATE_ACTION_INSTALL,
-                                       percentage);
-        break;
-
-    case RPMCALLBACK_UNINST_PROGRESS:
-
-        /* we're preparing the transaction */
-        if (priv->step == DNF_TRANSACTION_STEP_PREPARING ||
-            priv->step == DNF_TRANSACTION_STEP_IGNORE) {
-            g_debug("ignoring preparing %i / %i",
-                    (gint32) amount,(gint32) total);
-            break;
-        }
-
-        /* progress */
-        percentage =(100.0f /(gfloat) total) *(gfloat) amount;
-        if (priv->child != NULL)
-            dnf_state_set_percentage(priv->child, percentage);
-
-        /* update UI */
-        pkg = dnf_find_pkg_from_header(priv->remove, hdr);
-        if (pkg == NULL && filename != NULL) {
-            pkg = dnf_find_pkg_from_filename_suffix(priv->remove,
-                                                    filename);
-        }
-        if (pkg == NULL && name != NULL)
-            pkg = dnf_find_pkg_from_name(priv->remove, name);
-        if (pkg == NULL && name != NULL)
-            pkg = dnf_find_pkg_from_name(priv->remove_helper, name);
-        if (pkg == NULL) {
-            g_warning("cannot find %s in uninst-progress", name);
-            break;
-        }
-
-        /* map to correct action code */
-        action = dnf_package_get_action(pkg);
-        if (action == DNF_STATE_ACTION_UNKNOWN)
-            action = DNF_STATE_ACTION_REMOVE;
-
-        dnf_state_set_package_progress(priv->state,
-                                       dnf_package_get_package_id(pkg),
-                                       action,
-                                       percentage);
-        break;
-
-    case RPMCALLBACK_TRANS_START:
-
-        /* we setup the state */
-        g_debug("preparing transaction with %i items",(gint32) total);
-        if (priv->step == DNF_TRANSACTION_STEP_IGNORE)
+            priv->child = dnf_state_get_child(priv->state);
+            dnf_state_action_start(priv->child, action, dnf_package_get_package_id(pkg));
+            g_debug("install start: %s size=%i", filename, (gint32)total);
             break;
 
-        dnf_state_set_number_steps(priv->state, total);
-        priv->step = DNF_TRANSACTION_STEP_PREPARING;
-        break;
+        case RPMCALLBACK_UNINST_START:
 
-    case RPMCALLBACK_TRANS_STOP:
+            /* find pkg */
+            pkg = dnf_find_pkg_from_header(priv->remove, hdr);
+            if (pkg == NULL && filename != NULL) {
+                pkg = dnf_find_pkg_from_filename_suffix(priv->remove, filename);
+            }
+            if (pkg == NULL && name != NULL)
+                pkg = dnf_find_pkg_from_name(priv->remove, name);
+            if (pkg == NULL && name != NULL)
+                pkg = dnf_find_pkg_from_name(priv->remove_helper, name);
+            if (pkg == NULL) {
+                g_warning("cannot find %s in uninst-start", name);
+                priv->step = DNF_TRANSACTION_STEP_WRITING;
+                break;
+            }
 
-        /* don't do anything */
-        break;
+            /* map to correct action code */
+            action = dnf_package_get_action(pkg);
+            if (action == DNF_STATE_ACTION_UNKNOWN)
+                action = DNF_STATE_ACTION_REMOVE;
 
-    case RPMCALLBACK_INST_STOP:
-    case RPMCALLBACK_UNINST_STOP:
+            /* remove start */
+            priv->step = DNF_TRANSACTION_STEP_WRITING;
+            priv->child = dnf_state_get_child(priv->state);
+            dnf_state_action_start(priv->child, action, dnf_package_get_package_id(pkg));
+            g_debug("remove start: %s size=%i", filename, (gint32)total);
+            break;
 
-        /* phase complete */
-        ret = dnf_state_done(priv->state, &error_local);
-        if (!ret) {
-            g_warning("state increment failed: %s",
-                      error_local->message);
-        }
-        break;
+        case RPMCALLBACK_TRANS_PROGRESS:
+        case RPMCALLBACK_INST_PROGRESS:
 
-    default:
-        break;
+            /* we're preparing the transaction */
+            if (priv->step == DNF_TRANSACTION_STEP_PREPARING ||
+                priv->step == DNF_TRANSACTION_STEP_IGNORE) {
+                g_debug("ignoring preparing %i / %i", (gint32)amount, (gint32)total);
+                break;
+            }
+
+            /* work out speed */
+            speed = (amount - priv->last_progress) / g_timer_elapsed(priv->timer, NULL);
+            dnf_state_set_speed(priv->state, speed);
+            priv->last_progress = amount;
+            g_timer_reset(priv->timer);
+
+            /* progress */
+            percentage = (100.0f / (gfloat)total) * (gfloat)amount;
+            if (priv->child != NULL)
+                dnf_state_set_percentage(priv->child, percentage);
+
+            /* update UI */
+            pkg = dnf_find_pkg_from_header(priv->install, hdr);
+            if (pkg == NULL) {
+                pkg = dnf_find_pkg_from_filename_suffix(priv->install, filename);
+            }
+            if (pkg == NULL) {
+                g_debug("cannot find %s(%s)", filename, name);
+                break;
+            }
+
+            dnf_state_set_package_progress(
+              priv->state, dnf_package_get_package_id(pkg), DNF_STATE_ACTION_INSTALL, percentage);
+            break;
+
+        case RPMCALLBACK_UNINST_PROGRESS:
+
+            /* we're preparing the transaction */
+            if (priv->step == DNF_TRANSACTION_STEP_PREPARING ||
+                priv->step == DNF_TRANSACTION_STEP_IGNORE) {
+                g_debug("ignoring preparing %i / %i", (gint32)amount, (gint32)total);
+                break;
+            }
+
+            /* progress */
+            percentage = (100.0f / (gfloat)total) * (gfloat)amount;
+            if (priv->child != NULL)
+                dnf_state_set_percentage(priv->child, percentage);
+
+            /* update UI */
+            pkg = dnf_find_pkg_from_header(priv->remove, hdr);
+            if (pkg == NULL && filename != NULL) {
+                pkg = dnf_find_pkg_from_filename_suffix(priv->remove, filename);
+            }
+            if (pkg == NULL && name != NULL)
+                pkg = dnf_find_pkg_from_name(priv->remove, name);
+            if (pkg == NULL && name != NULL)
+                pkg = dnf_find_pkg_from_name(priv->remove_helper, name);
+            if (pkg == NULL) {
+                g_warning("cannot find %s in uninst-progress", name);
+                break;
+            }
+
+            /* map to correct action code */
+            action = dnf_package_get_action(pkg);
+            if (action == DNF_STATE_ACTION_UNKNOWN)
+                action = DNF_STATE_ACTION_REMOVE;
+
+            dnf_state_set_package_progress(
+              priv->state, dnf_package_get_package_id(pkg), action, percentage);
+            break;
+
+        case RPMCALLBACK_TRANS_START:
+
+            /* we setup the state */
+            g_debug("preparing transaction with %i items", (gint32)total);
+            if (priv->step == DNF_TRANSACTION_STEP_IGNORE)
+                break;
+
+            dnf_state_set_number_steps(priv->state, total);
+            priv->step = DNF_TRANSACTION_STEP_PREPARING;
+            break;
+
+        case RPMCALLBACK_TRANS_STOP:
+
+            /* don't do anything */
+            break;
+
+        case RPMCALLBACK_INST_STOP:
+        case RPMCALLBACK_UNINST_STOP:
+
+            /* phase complete */
+            ret = dnf_state_done(priv->state, &error_local);
+            if (!ret) {
+                g_warning("state increment failed: %s", error_local->message);
+            }
+            break;
+
+        default:
+            break;
     }
     return rc;
 }
@@ -763,9 +734,7 @@ dnf_rpm_verbosity_string_to_value(const gchar *value)
  * dnf_transaction_delete_packages:
  **/
 static gboolean
-dnf_transaction_delete_packages(DnfTransaction *transaction,
-                 DnfState *state,
-                 GError **error)
+dnf_transaction_delete_packages(DnfTransaction *transaction, DnfState *state, GError **error)
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     DnfState *state_local;
@@ -782,10 +751,8 @@ dnf_transaction_delete_packages(DnfTransaction *transaction,
      * cache, not local-install packages */
     cachedir = dnf_context_get_cache_dir(priv->context);
     if (cachedir == NULL) {
-        g_set_error_literal(error,
-                            DNF_ERROR,
-                            DNF_ERROR_FAILED_CONFIG_PARSING,
-                            "Failed to get value for CacheDir");
+        g_set_error_literal(
+          error, DNF_ERROR, DNF_ERROR_FAILED_CONFIG_PARSING, "Failed to get value for CacheDir");
         return FALSE;
     }
 
@@ -812,9 +779,7 @@ dnf_transaction_delete_packages(DnfTransaction *transaction,
 }
 
 static gchar *
-dnf_transaction_get_propagated_reason(DnfTransaction *transaction,
-                                      HyGoal goal,
-                                      DnfPackage *pkg)
+dnf_transaction_get_propagated_reason(DnfTransaction *transaction, HyGoal goal, DnfPackage *pkg)
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
 
@@ -828,7 +793,8 @@ dnf_transaction_get_propagated_reason(DnfTransaction *transaction,
         dnf_package_get_action(pkg) == DNF_STATE_ACTION_UPDATE) {
         DnfPackage *erased_package;
 
-        erased_package = g_hash_table_lookup(priv->erased_by_package_hash, dnf_package_get_package_id(pkg));
+        erased_package =
+          g_hash_table_lookup(priv->erased_by_package_hash, dnf_package_get_package_id(pkg));
         if (erased_package != NULL) {
             gchar *reason;
 
@@ -860,11 +826,8 @@ dnf_transaction_get_propagated_reason(DnfTransaction *transaction,
  * avoid the lookup in the rpmdb.
  **/
 static gboolean
-dnf_transaction_write_yumdb_install_item(DnfTransaction *transaction,
-                                         HyGoal goal,
-                                         DnfPackage *pkg,
-                                         DnfState *state,
-                                         GError **error)
+dnf_transaction_write_yumdb_install_item(
+  DnfTransaction *transaction, HyGoal goal, DnfPackage *pkg, DnfState *state, GError **error)
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     const gchar *tmp;
@@ -914,7 +877,7 @@ dnf_transaction_write_yumdb_install_item(DnfTransaction *transaction,
 static guint
 _dnf_state_get_step_multiple_pair(guint first, guint second)
 {
-    return 1 +(first * 98.0 /(first + second));
+    return 1 + (first * 98.0 / (first + second));
 }
 
 /**
@@ -922,9 +885,9 @@ _dnf_state_get_step_multiple_pair(guint first, guint second)
  **/
 static gboolean
 dnf_transaction_write_yumdb(DnfTransaction *transaction,
-                 HyGoal goal,
-                 DnfState *state,
-                 GError **error)
+                            HyGoal goal,
+                            DnfState *state,
+                            GError **error)
 {
     DnfState *state_local;
     DnfState *state_loop;
@@ -947,16 +910,11 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
     /* add all the new entries */
     state_local = dnf_state_get_child(state);
     if (priv->install->len > 0)
-        dnf_state_set_number_steps(state_local,
-                        priv->install->len);
+        dnf_state_set_number_steps(state_local, priv->install->len);
     for (i = 0; i < priv->install->len; i++) {
         pkg = g_ptr_array_index(priv->install, i);
         state_loop = dnf_state_get_child(state_local);
-        ret = dnf_transaction_write_yumdb_install_item(transaction,
-                                                       goal,
-                                                       pkg,
-                                                       state_loop,
-                                                       error);
+        ret = dnf_transaction_write_yumdb_install_item(transaction, goal, pkg, state_loop, error);
         if (!ret)
             return FALSE;
         if (!dnf_state_done(state_local, error))
@@ -994,8 +952,7 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
 }
 
 static gboolean
-dnf_transaction_check_free_space(DnfTransaction *transaction,
-                                 GError **error)
+dnf_transaction_check_free_space(DnfTransaction *transaction, GError **error)
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     const gchar *cachedir;
@@ -1008,15 +965,14 @@ dnf_transaction_check_free_space(DnfTransaction *transaction,
 
     cachedir = dnf_context_get_cache_dir(priv->context);
     if (cachedir == NULL) {
-        g_set_error_literal(error,
-                            DNF_ERROR,
-                            DNF_ERROR_FAILED_CONFIG_PARSING,
-                            "Failed to get value for CacheDir");
+        g_set_error_literal(
+          error, DNF_ERROR, DNF_ERROR_FAILED_CONFIG_PARSING, "Failed to get value for CacheDir");
         return FALSE;
     }
 
     file = g_file_new_for_path(cachedir);
-    filesystem_info = g_file_query_filesystem_info(file, G_FILE_ATTRIBUTE_FILESYSTEM_FREE, NULL, error);
+    filesystem_info =
+      g_file_query_filesystem_info(file, G_FILE_ATTRIBUTE_FILESYSTEM_FREE, NULL, error);
     if (filesystem_info == NULL) {
         g_prefix_error(error, "Failed to get filesystem free size for %s: ", cachedir);
         return FALSE;
@@ -1031,7 +987,8 @@ dnf_transaction_check_free_space(DnfTransaction *transaction,
         return FALSE;
     }
 
-    free_space = g_file_info_get_attribute_uint64(filesystem_info, G_FILE_ATTRIBUTE_FILESYSTEM_FREE);
+    free_space =
+      g_file_info_get_attribute_uint64(filesystem_info, G_FILE_ATTRIBUTE_FILESYSTEM_FREE);
     if (free_space < download_size) {
         g_autofree gchar *formatted_download_size = NULL;
         g_autofree gchar *formatted_free_size = NULL;
@@ -1064,9 +1021,7 @@ dnf_transaction_check_free_space(DnfTransaction *transaction,
  * Since: 0.1.0
  **/
 gboolean
-dnf_transaction_download(DnfTransaction *transaction,
-                         DnfState *state,
-                         GError **error)
+dnf_transaction_download(DnfTransaction *transaction, DnfState *state, GError **error)
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
 
@@ -1075,10 +1030,7 @@ dnf_transaction_download(DnfTransaction *transaction,
         return FALSE;
 
     /* just download the list */
-    return dnf_package_array_download(priv->pkgs_to_download,
-                                      NULL,
-                                      state,
-                                      error);
+    return dnf_package_array_download(priv->pkgs_to_download, NULL, state, error);
 }
 
 /**
@@ -1095,10 +1047,7 @@ dnf_transaction_download(DnfTransaction *transaction,
  * Since: 0.1.0
  **/
 gboolean
-dnf_transaction_depsolve(DnfTransaction *transaction,
-                         HyGoal goal,
-                         DnfState *state,
-                         GError **error)
+dnf_transaction_depsolve(DnfTransaction *transaction, HyGoal goal, DnfState *state, GError **error)
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     DnfPackage *pkg;
@@ -1127,8 +1076,7 @@ dnf_transaction_depsolve(DnfTransaction *transaction,
             return FALSE;
 
         /* this is a local file */
-        if (g_strcmp0(dnf_package_get_reponame(pkg),
-                      HY_CMDLINE_REPO_NAME) == 0) {
+        if (g_strcmp0(dnf_package_get_reponame(pkg), HY_CMDLINE_REPO_NAME) == 0) {
             continue;
         }
 
@@ -1138,8 +1086,7 @@ dnf_transaction_depsolve(DnfTransaction *transaction,
 
         /* package needs to be downloaded */
         if (!valid) {
-            g_ptr_array_add(priv->pkgs_to_download,
-                            g_object_ref(pkg));
+            g_ptr_array_add(priv->pkgs_to_download, g_object_ref(pkg));
         }
     }
     return TRUE;
@@ -1188,8 +1135,7 @@ dnf_transaction_reset(DnfTransaction *transaction)
  * by dnf_transaction_commit().
  **/
 gboolean
-dnf_transaction_import_keys(DnfTransaction *transaction,
-                            GError **error)
+dnf_transaction_import_keys(DnfTransaction *transaction, GError **error)
 {
     guint i;
 
@@ -1217,7 +1163,6 @@ dnf_transaction_import_keys(DnfTransaction *transaction,
     return TRUE;
 }
 
-
 /**
  * dnf_transaction_commit:
  * @transaction: a #DnfTransaction instance.
@@ -1234,10 +1179,7 @@ dnf_transaction_import_keys(DnfTransaction *transaction,
  * Since: 0.1.0
  **/
 gboolean
-dnf_transaction_commit(DnfTransaction *transaction,
-                       HyGoal goal,
-                       DnfState *state,
-                       GError **error)
+dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state, GError **error)
 {
     const gchar *filename;
     const gchar *tmp;
@@ -1259,10 +1201,7 @@ dnf_transaction_commit(DnfTransaction *transaction,
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
 
     /* take lock */
-    ret = dnf_state_take_lock(state,
-                              DNF_LOCK_TYPE_RPMDB,
-                              DNF_LOCK_MODE_PROCESS,
-                              error);
+    ret = dnf_state_take_lock(state, DNF_LOCK_TYPE_RPMDB, DNF_LOCK_MODE_PROCESS, error);
     if (!ret)
         goto out;
 
@@ -1270,20 +1209,20 @@ dnf_transaction_commit(DnfTransaction *transaction,
     if (priv->flags & DNF_TRANSACTION_FLAG_TEST) {
         ret = dnf_state_set_steps(state,
                                   error,
-                                  2, /* install */
-                                  2, /* remove */
+                                  2,  /* install */
+                                  2,  /* remove */
                                   10, /* test-commit */
                                   86, /* commit */
                                   -1);
     } else {
         ret = dnf_state_set_steps(state,
                                   error,
-                                  2, /* install */
-                                  2, /* remove */
+                                  2,  /* install */
+                                  2,  /* remove */
                                   10, /* test-commit */
                                   83, /* commit */
-                                  1, /* write yumDB */
-                                  2, /* delete files */
+                                  1,  /* write yumDB */
+                                  2,  /* delete files */
                                   -1);
     }
     if (!ret)
@@ -1310,15 +1249,10 @@ dnf_transaction_commit(DnfTransaction *transaction,
     rc = rpmtsSetRootDir(priv->ts, tmp);
     if (rc < 0) {
         ret = FALSE;
-        g_set_error_literal(error,
-                            DNF_ERROR,
-                            DNF_ERROR_INTERNAL_ERROR,
-                            "failed to set root");
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "failed to set root");
         goto out;
     }
-    rpmtsSetNotifyCallback(priv->ts,
-                           dnf_transaction_ts_progress_cb,
-                           transaction);
+    rpmtsSetNotifyCallback(priv->ts, dnf_transaction_ts_progress_cb, transaction);
 
     /* add things to install */
     state_local = dnf_state_get_child(state);
@@ -1329,8 +1263,7 @@ dnf_transaction_commit(DnfTransaction *transaction,
                                           DNF_PACKAGE_INFO_UPDATE,
                                           -1);
     if (priv->install->len > 0)
-        dnf_state_set_number_steps(state_local,
-                                   priv->install->len);
+        dnf_state_set_number_steps(state_local, priv->install->len);
     for (i = 0; i < priv->install->len; i++) {
 
         pkg = g_ptr_array_index(priv->install, i);
@@ -1340,14 +1273,10 @@ dnf_transaction_commit(DnfTransaction *transaction,
 
         /* add the install */
         filename = dnf_package_get_filename(pkg);
-        allow_untrusted =(priv->flags & DNF_TRANSACTION_FLAG_ONLY_TRUSTED) == 0;
+        allow_untrusted = (priv->flags & DNF_TRANSACTION_FLAG_ONLY_TRUSTED) == 0;
         is_update = dnf_package_get_action(pkg) == DNF_STATE_ACTION_UPDATE ||
-                dnf_package_get_action(pkg) == DNF_STATE_ACTION_DOWNGRADE;
-        ret = dnf_rpmts_add_install_filename(priv->ts,
-                                             filename,
-                                             allow_untrusted,
-                                             is_update,
-                                             error);
+                    dnf_package_get_action(pkg) == DNF_STATE_ACTION_DOWNGRADE;
+        ret = dnf_rpmts_add_install_filename(priv->ts, filename, allow_untrusted, is_update, error);
         if (!ret)
             goto out;
 
@@ -1363,10 +1292,8 @@ dnf_transaction_commit(DnfTransaction *transaction,
         goto out;
 
     /* add things to remove */
-    priv->remove = dnf_goal_get_packages(goal,
-                                         DNF_PACKAGE_INFO_OBSOLETE,
-                                         DNF_PACKAGE_INFO_REMOVE,
-                                         -1);
+    priv->remove =
+      dnf_goal_get_packages(goal, DNF_PACKAGE_INFO_OBSOLETE, DNF_PACKAGE_INFO_REMOVE, -1);
     for (i = 0; i < priv->remove->len; i++) {
         pkg = g_ptr_array_index(priv->remove, i);
         ret = dnf_rpmts_add_remove_pkg(priv->ts, pkg, error);
@@ -1376,20 +1303,18 @@ dnf_transaction_commit(DnfTransaction *transaction,
         /* pre-get the pkgid, as this isn't possible to get after
          * the sack is invalidated */
         if (dnf_package_get_pkgid(pkg) == NULL) {
-            g_warning("failed to pre-get pkgid for %s",
-                      dnf_package_get_package_id(pkg));
+            g_warning("failed to pre-get pkgid for %s", dnf_package_get_package_id(pkg));
         }
 
         /* are the things being removed actually being upgraded */
-        pkg_tmp = dnf_find_pkg_from_name(priv->install,
-                                         dnf_package_get_name(pkg));
+        pkg_tmp = dnf_find_pkg_from_name(priv->install, dnf_package_get_name(pkg));
         if (pkg_tmp != NULL)
             dnf_package_set_action(pkg, DNF_STATE_ACTION_CLEANUP);
     }
 
     /* add anything that gets obsoleted to a helper array which is used to
      * map removed packages auto-added by rpm to actual DnfPackage's */
-    priv->remove_helper = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
+    priv->remove_helper = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
     for (i = 0; i < priv->install->len; i++) {
         pkg = g_ptr_array_index(priv->install, i);
         is_update = dnf_package_get_action(pkg) == DNF_STATE_ACTION_UPDATE ||
@@ -1398,9 +1323,8 @@ dnf_transaction_commit(DnfTransaction *transaction,
             continue;
         pkglist = hy_goal_list_obsoleted_by_package(goal, pkg);
         for (j = 0; j < pkglist->len; j++) {
-            pkg_tmp = g_ptr_array_index (pkglist, j);
-            g_ptr_array_add(priv->remove_helper,
-                            g_object_ref(pkg_tmp));
+            pkg_tmp = g_ptr_array_index(pkglist, j);
+            g_ptr_array_add(priv->remove_helper, g_object_ref(pkg_tmp));
             dnf_package_set_action(pkg_tmp, DNF_STATE_ACTION_CLEANUP);
         }
         g_ptr_array_unref(pkglist);
@@ -1412,8 +1336,8 @@ dnf_transaction_commit(DnfTransaction *transaction,
         goto out;
 
     /* map updated packages to their previous versions */
-    priv->erased_by_package_hash = g_hash_table_new_full(g_str_hash, g_str_equal,
-                                                         g_free, (GDestroyNotify) g_object_unref);
+    priv->erased_by_package_hash =
+      g_hash_table_new_full(g_str_hash, g_str_equal, g_free, (GDestroyNotify)g_object_unref);
     all_obsoleted = hy_goal_list_obsoleted(goal, NULL);
     for (i = 0; i < priv->install->len; i++) {
         pkg = g_ptr_array_index(priv->install, i);
@@ -1441,9 +1365,7 @@ dnf_transaction_commit(DnfTransaction *transaction,
     /* run the test transaction */
     if (dnf_context_get_check_transaction(priv->context)) {
         g_debug("running test transaction");
-        dnf_state_action_start(state,
-                               DNF_STATE_ACTION_TEST_COMMIT,
-                               NULL);
+        dnf_state_action_start(state, DNF_STATE_ACTION_TEST_COMMIT, NULL);
         priv->state = dnf_state_get_child(state);
         priv->step = DNF_TRANSACTION_STEP_IGNORE;
         /* the output value of rpmtsCheck is not meaningful */
@@ -1460,8 +1382,7 @@ dnf_transaction_commit(DnfTransaction *transaction,
         goto out;
 
     /* no signature checking, we've handled that already */
-    vs_flags = rpmtsSetVSFlags(priv->ts,
-                               _RPMVSF_NOSIGNATURES | _RPMVSF_NODIGESTS);
+    vs_flags = rpmtsSetVSFlags(priv->ts, _RPMVSF_NOSIGNATURES | _RPMVSF_NODIGESTS);
     rpmtsSetVSFlags(priv->ts, vs_flags);
 
     /* filter diskspace */
@@ -1487,10 +1408,8 @@ dnf_transaction_commit(DnfTransaction *transaction,
         rc = rpmtsRun(priv->ts, NULL, problems_filter);
         if (rc < 0) {
             ret = FALSE;
-            g_set_error(error,
-                        DNF_ERROR,
-                        DNF_ERROR_INTERNAL_ERROR,
-                        "Error %i running transaction test", rc);
+            g_set_error(
+              error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "Error %i running transaction test", rc);
             goto out;
         }
         if (rc > 0) {
@@ -1513,10 +1432,7 @@ dnf_transaction_commit(DnfTransaction *transaction,
     rc = rpmtsRun(priv->ts, NULL, problems_filter);
     if (rc < 0) {
         ret = FALSE;
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_INTERNAL_ERROR,
-                    "Error %i running transaction", rc);
+        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "Error %i running transaction", rc);
         goto out;
     }
     if (rc > 0) {
@@ -1544,10 +1460,7 @@ dnf_transaction_commit(DnfTransaction *transaction,
 
     /* write to the yumDB */
     state_local = dnf_state_get_child(state);
-    ret = dnf_transaction_write_yumdb(transaction,
-                                      goal,
-                                      state_local,
-                                      error);
+    ret = dnf_transaction_write_yumdb(transaction, goal, state_local, error);
     if (!ret)
         goto out;
 
@@ -1559,17 +1472,16 @@ dnf_transaction_commit(DnfTransaction *transaction,
     /* remove the files we downloaded */
     if (!dnf_context_get_keep_cache(priv->context)) {
         state_local = dnf_state_get_child(state);
-        ret = dnf_transaction_delete_packages(transaction,
-                                              state_local,
-                                              error);
+        ret = dnf_transaction_delete_packages(transaction, state_local, error);
         if (!ret)
             goto out;
     }
 
     /* all sacks are invalid now */
-    dnf_context_invalidate_full(priv->context, "transaction performed",
+    dnf_context_invalidate_full(priv->context,
+                                "transaction performed",
                                 DNF_CONTEXT_INVALIDATE_FLAG_RPMDB |
-                                DNF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT);
+                                  DNF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT);
 
     /* this section done */
     ret = dnf_state_done(state, error);
@@ -1599,7 +1511,7 @@ dnf_transaction_new(DnfContext *context)
     transaction = g_object_new(DNF_TYPE_TRANSACTION, NULL);
     priv = GET_PRIVATE(transaction);
     priv->context = context;
-    g_object_add_weak_pointer(G_OBJECT(priv->context),(void **) &priv->context);
+    g_object_add_weak_pointer(G_OBJECT(priv->context), (void **)&priv->context);
     priv->ts = rpmtsCreate();
     rpmtsSetRootDir(priv->ts, dnf_context_get_install_root(context));
     priv->keyring = rpmtsGetKeyring(priv->ts, 1);

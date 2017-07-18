@@ -43,14 +43,15 @@
 
 typedef struct
 {
-    GFileMonitor    *monitor_repos;
-    DnfContext      *context;    /* weak reference */
-    GPtrArray       *repos;
-    GVolumeMonitor  *volume_monitor;
-    gboolean         loaded;
+    GFileMonitor *monitor_repos;
+    DnfContext *context; /* weak reference */
+    GPtrArray *repos;
+    GVolumeMonitor *volume_monitor;
+    gboolean loaded;
 } DnfRepoLoaderPrivate;
 
-enum {
+enum
+{
     SIGNAL_CHANGED,
     SIGNAL_LAST
 };
@@ -58,7 +59,7 @@ enum {
 static guint signals[SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfRepoLoader, dnf_repo_loader, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (dnf_repo_loader_get_instance_private (o))
+#define GET_PRIVATE(o) (dnf_repo_loader_get_instance_private(o))
 
 /**
  * dnf_repo_loader_finalize:
@@ -70,8 +71,7 @@ dnf_repo_loader_finalize(GObject *object)
     DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
 
     if (priv->context != NULL)
-        g_object_remove_weak_pointer(G_OBJECT(priv->context),
-                                     (void **) &priv->context);
+        g_object_remove_weak_pointer(G_OBJECT(priv->context), (void **)&priv->context);
     if (priv->monitor_repos != NULL)
         g_object_unref(priv->monitor_repos);
     g_object_unref(priv->volume_monitor);
@@ -88,8 +88,8 @@ dnf_repo_loader_invalidate(DnfRepoLoader *self)
 {
     DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
     priv->loaded = FALSE;
-    dnf_context_invalidate_full(priv->context, "repos.d invalidated",
-                     DNF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT);
+    dnf_context_invalidate_full(
+      priv->context, "repos.d invalidated", DNF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT);
 }
 
 /**
@@ -111,12 +111,12 @@ static void
 dnf_repo_loader_init(DnfRepoLoader *self)
 {
     DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
-    priv->repos = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
+    priv->repos = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
     priv->volume_monitor = g_volume_monitor_get();
-    g_signal_connect(priv->volume_monitor, "mount-added",
-                     G_CALLBACK(dnf_repo_loader_mount_changed_cb), self);
-    g_signal_connect(priv->volume_monitor, "mount-removed",
-                     G_CALLBACK(dnf_repo_loader_mount_changed_cb), self);
+    g_signal_connect(
+      priv->volume_monitor, "mount-added", G_CALLBACK(dnf_repo_loader_mount_changed_cb), self);
+    g_signal_connect(
+      priv->volume_monitor, "mount-removed", G_CALLBACK(dnf_repo_loader_mount_changed_cb), self);
 }
 
 /**
@@ -130,12 +130,15 @@ dnf_repo_loader_class_init(DnfRepoLoaderClass *klass)
     /**
      * DnfRepoLoader::changed:
      **/
-    signals[SIGNAL_CHANGED] =
-        g_signal_new("changed",
-                  G_TYPE_FROM_CLASS(object_class), G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET(DnfRepoLoaderClass, changed),
-                  NULL, NULL, g_cclosure_marshal_VOID__VOID,
-                  G_TYPE_NONE, 0);
+    signals[SIGNAL_CHANGED] = g_signal_new("changed",
+                                           G_TYPE_FROM_CLASS(object_class),
+                                           G_SIGNAL_RUN_LAST,
+                                           G_STRUCT_OFFSET(DnfRepoLoaderClass, changed),
+                                           NULL,
+                                           NULL,
+                                           g_cclosure_marshal_VOID__VOID,
+                                           G_TYPE_NONE,
+                                           0);
 
     object_class->finalize = dnf_repo_loader_finalize;
 }
@@ -144,10 +147,7 @@ dnf_repo_loader_class_init(DnfRepoLoaderClass *klass)
  * dnf_repo_loader_add_media:
  **/
 static gboolean
-dnf_repo_loader_add_media(DnfRepoLoader *self,
-             const gchar *mount_point,
-             guint idx,
-             GError **error)
+dnf_repo_loader_add_media(DnfRepoLoader *self, const gchar *mount_point, guint idx, GError **error)
 {
     DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
     DnfRepo *repo;
@@ -206,7 +206,7 @@ dnf_repo_loader_add_sack_from_mount_point(DnfRepoLoader *self,
     /* add the repodata/repomd.xml as a repo */
     if (!dnf_repo_loader_add_media(self, root, *idx, error))
         return FALSE;
-   (*idx)++;
+    (*idx)++;
     return TRUE;
 }
 
@@ -224,20 +224,18 @@ dnf_repo_loader_get_repos_removable(DnfRepoLoader *self, GError **error)
     /* coldplug the mounts */
     mounts = g_unix_mounts_get(NULL);
     for (l = mounts; l != NULL; l = l->next) {
-        GUnixMountEntry *e =(GUnixMountEntry *) l->data;
+        GUnixMountEntry *e = (GUnixMountEntry *)l->data;
         if (!g_unix_mount_is_readonly(e))
             continue;
         if (g_strcmp0(g_unix_mount_get_fs_type(e), "iso9660") != 0)
             continue;
-        ret = dnf_repo_loader_add_sack_from_mount_point(self,
-                                                  g_unix_mount_get_mount_path(e),
-                                                  &idx,
-                                                  error);
+        ret = dnf_repo_loader_add_sack_from_mount_point(
+          self, g_unix_mount_get_mount_path(e), &idx, error);
         if (!ret)
             goto out;
     }
 out:
-    g_list_foreach(mounts,(GFunc) g_unix_mount_free, NULL);
+    g_list_foreach(mounts, (GFunc)g_unix_mount_free, NULL);
     g_list_free(mounts);
     return ret;
 }
@@ -248,8 +246,8 @@ out:
 static gint
 dnf_repo_loader_repo_cost_fn(gconstpointer a, gconstpointer b)
 {
-    DnfRepo *repo_a = *((DnfRepo **) a);
-    DnfRepo *repo_b = *((DnfRepo **) b);
+    DnfRepo *repo_a = *((DnfRepo **)a);
+    DnfRepo *repo_b = *((DnfRepo **)b);
     if (dnf_repo_get_cost(repo_a) < dnf_repo_get_cost(repo_b))
         return -1;
     if (dnf_repo_get_cost(repo_a) > dnf_repo_get_cost(repo_b))
@@ -314,11 +312,7 @@ dnf_repo_loader_load_multiline_key_file(const gchar *filename, GError **error)
 
     /* load modified lines */
     file = g_key_file_new();
-    ret = g_key_file_load_from_data(file,
-                                    string->str,
-                                    -1,
-                                    G_KEY_FILE_KEEP_COMMENTS,
-                                    error);
+    ret = g_key_file_load_from_data(file, string->str, -1, G_KEY_FILE_KEEP_COMMENTS, error);
     if (!ret) {
         g_key_file_free(file);
         return NULL;
@@ -330,11 +324,8 @@ dnf_repo_loader_load_multiline_key_file(const gchar *filename, GError **error)
  * dnf_repo_loader_repo_parse_id:
  **/
 static gboolean
-dnf_repo_loader_repo_parse_id(DnfRepoLoader *self,
-                              const gchar *id,
-                              const gchar *filename,
-                              GKeyFile *keyfile,
-                              GError **error)
+dnf_repo_loader_repo_parse_id(
+  DnfRepoLoader *self, const gchar *id, const gchar *filename, GKeyFile *keyfile, GError **error)
 {
     DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
     g_autoptr(DnfRepo) repo = NULL;
@@ -358,9 +349,7 @@ dnf_repo_loader_repo_parse_id(DnfRepoLoader *self,
  * dnf_repo_loader_repo_parse:
  **/
 static gboolean
-dnf_repo_loader_repo_parse(DnfRepoLoader *self,
-                           const gchar *filename,
-                           GError **error)
+dnf_repo_loader_repo_parse(DnfRepoLoader *self, const gchar *filename, GError **error)
 {
     gboolean ret = TRUE;
     guint i;
@@ -377,11 +366,7 @@ dnf_repo_loader_repo_parse(DnfRepoLoader *self,
     /* save all the repos listed in the file */
     groups = g_key_file_get_groups(keyfile, NULL);
     for (i = 0; groups[i] != NULL; i++) {
-        ret = dnf_repo_loader_repo_parse_id(self,
-                                            groups[i],
-                                            filename,
-                                            keyfile,
-                                            error);
+        ret = dnf_repo_loader_repo_parse_id(self, groups[i], filename, keyfile, error);
         if (!ret)
             return FALSE;
     }
@@ -506,10 +491,7 @@ dnf_repo_loader_get_repo_by_id(DnfRepoLoader *self, const gchar *id, GError **er
     }
 
     /* we didn't find anything */
-    g_set_error(error,
-                DNF_ERROR,
-                DNF_ERROR_REPO_NOT_FOUND,
-                "failed to find %s", id);
+    g_set_error(error, DNF_ERROR, DNF_ERROR_REPO_NOT_FOUND, "failed to find %s", id);
     return NULL;
 }
 
@@ -518,7 +500,8 @@ dnf_repo_loader_get_repo_by_id(DnfRepoLoader *self, const gchar *id, GError **er
  **/
 static void
 dnf_repo_loader_directory_changed_cb(GFileMonitor *monitor_,
-                                     GFile *file, GFile *other_file,
+                                     GFile *file,
+                                     GFile *other_file,
                                      GFileMonitorEvent event_type,
                                      DnfRepoLoader *self)
 {
@@ -545,16 +528,12 @@ dnf_repo_loader_setup_watch(DnfRepoLoader *self)
         return;
     }
     file_repos = g_file_new_for_path(repo_dir);
-    priv->monitor_repos = g_file_monitor_directory(file_repos,
-                                                   G_FILE_MONITOR_NONE,
-                                                   NULL,
-                                                   &error);
+    priv->monitor_repos = g_file_monitor_directory(file_repos, G_FILE_MONITOR_NONE, NULL, &error);
     if (priv->monitor_repos != NULL) {
-        g_signal_connect(priv->monitor_repos, "changed",
-                         G_CALLBACK(dnf_repo_loader_directory_changed_cb), self);
+        g_signal_connect(
+          priv->monitor_repos, "changed", G_CALLBACK(dnf_repo_loader_directory_changed_cb), self);
     } else {
-        g_warning("failed to setup monitor: %s",
-                  error->message);
+        g_warning("failed to setup monitor: %s", error->message);
     }
 }
 
@@ -576,7 +555,7 @@ dnf_repo_loader_new(DnfContext *context)
     self = g_object_new(DNF_TYPE_REPO_LOADER, NULL);
     priv = GET_PRIVATE(self);
     priv->context = context;
-    g_object_add_weak_pointer(G_OBJECT(priv->context),(void **) &priv->context);
+    g_object_add_weak_pointer(G_OBJECT(priv->context), (void **)&priv->context);
     dnf_repo_loader_setup_watch(self);
     return DNF_REPO_LOADER(self);
 }

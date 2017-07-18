@@ -24,11 +24,11 @@
 #include <solv/util.h>
 
 // hawkey
-#include "hy-iutil.h"
-#include "hy-nevra.h"
-#include "hy-nevra-private.h"
-#include "dnf-sack.h"
 #include "dnf-sack-private.h"
+#include "dnf-sack.h"
+#include "hy-iutil.h"
+#include "hy-nevra-private.h"
+#include "hy-nevra.h"
 #include "hy-subject.h"
 #include "hy-types.h"
 
@@ -41,9 +41,9 @@
 #include "sack-py.h"
 #include "subject-py.h"
 
-typedef struct {
-    PyObject_HEAD
-    HySubject pattern;
+typedef struct
+{
+    PyObject_HEAD HySubject pattern;
 } _SubjectObject;
 
 static PyObject *
@@ -55,18 +55,17 @@ get_pattern(_SubjectObject *self, void *closure)
 }
 
 static PyGetSetDef subject_getsetters[] = {
-    {(char*)"pattern", (getter)get_pattern, NULL, NULL, NULL},
-    {NULL}          /* sentinel */
+    { (char *)"pattern", (getter)get_pattern, NULL, NULL, NULL }, { NULL } /* sentinel */
 };
 
 static PyObject *
 subject_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    _SubjectObject *self = (_SubjectObject*)type->tp_alloc(type, 0);
+    _SubjectObject *self = (_SubjectObject *)type->tp_alloc(type, 0);
     if (self) {
         self->pattern = NULL;
     }
-    return (PyObject*)self;
+    return (PyObject *)self;
 }
 
 static void
@@ -83,7 +82,7 @@ subject_init(_SubjectObject *self, PyObject *args, PyObject *kwds)
     PyObject *tmp_py_str = NULL;
     if (!PyArg_ParseTuple(args, "O", &py_pattern))
         return -1;
-    const char * pattern = pycomp_get_string(py_pattern, &tmp_py_str);
+    const char *pattern = pycomp_get_string(py_pattern, &tmp_py_str);
     self->pattern = g_strdup(pattern);
     Py_XDECREF(tmp_py_str);
     return 0;
@@ -140,7 +139,7 @@ nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *form = NULL;
     const char *kwlist[] = { "form", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", (char**) kwlist, &form)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", (char **)kwlist, &form)) {
         return NULL;
     }
     HyForm *cforms = NULL;
@@ -149,8 +148,7 @@ nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
         if (cforms == NULL)
             return NULL;
     }
-    HyPossibilities iter = hy_subject_nevra_possibilities(self->pattern,
-        cforms);
+    HyPossibilities iter = hy_subject_nevra_possibilities(self->pattern, cforms);
     g_free(cforms);
     return possibilitiesToPyObject(iter, NULL);
 }
@@ -165,8 +163,8 @@ nevra_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
     int flags = 0;
     PyObject *form = NULL;
     const char *kwlist[] = { "sack", "allow_globs", "icase", "form", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|iiO", (char**) kwlist,
-        &sack_Type, &sack, &allow_globs, &icase, &form))
+    if (!PyArg_ParseTupleAndKeywords(
+          args, kwds, "O!|iiO", (char **)kwlist, &sack_Type, &sack, &allow_globs, &icase, &form))
         return NULL;
     csack = sackFromPyObject(sack);
     if (csack == NULL)
@@ -182,8 +180,7 @@ nevra_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
     if (allow_globs)
         flags |= HY_GLOB;
 
-    HyPossibilities iter = hy_subject_nevra_possibilities_real(self->pattern,
-    cforms, csack, flags);
+    HyPossibilities iter = hy_subject_nevra_possibilities_real(self->pattern, cforms, csack, flags);
     g_free(cforms);
     return possibilitiesToPyObject(iter, sack);
 }
@@ -196,8 +193,8 @@ reldep_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
     int icase = 0;
     int flags = 0;
     const char *kwlist[] = { "sack", "icase", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|i", (char**) kwlist,
-        &sack_Type, &sack, &icase))
+    if (!PyArg_ParseTupleAndKeywords(
+          args, kwds, "O!|i", (char **)kwlist, &sack_Type, &sack, &icase))
         return NULL;
     csack = sackFromPyObject(sack);
     if (csack == NULL)
@@ -205,60 +202,61 @@ reldep_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
     if (icase)
         flags |= HY_ICASE;
 
-    HyPossibilities iter = hy_subject_reldep_possibilities_real(self->pattern,
-        csack, flags);
+    HyPossibilities iter = hy_subject_reldep_possibilities_real(self->pattern, csack, flags);
     return possibilitiesToPyObject(iter, sack);
 }
 
 static struct PyMethodDef subject_methods[] = {
-    {"nevra_possibilities", (PyCFunction) nevra_possibilities,
-    METH_VARARGS | METH_KEYWORDS, NULL},
-    {"nevra_possibilities_real", (PyCFunction) nevra_possibilities_real,
-    METH_VARARGS | METH_KEYWORDS, NULL},
-    {"reldep_possibilities_real", (PyCFunction) reldep_possibilities_real,
-    METH_VARARGS | METH_KEYWORDS, NULL},
-    {NULL}                      /* sentinel */
+    { "nevra_possibilities", (PyCFunction)nevra_possibilities, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "nevra_possibilities_real",
+      (PyCFunction)nevra_possibilities_real,
+      METH_VARARGS | METH_KEYWORDS,
+      NULL },
+    { "reldep_possibilities_real",
+      (PyCFunction)reldep_possibilities_real,
+      METH_VARARGS | METH_KEYWORDS,
+      NULL },
+    { NULL } /* sentinel */
 };
 
 PyTypeObject subject_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "_hawkey.Subject",        /*tp_name*/
-    sizeof(_SubjectObject),   /*tp_basicsize*/
-    0,              /*tp_itemsize*/
-    (destructor) subject_dealloc,  /*tp_dealloc*/
-    0,              /*tp_print*/
-    0,              /*tp_getattr*/
-    0,              /*tp_setattr*/
-    0,              /*tp_compare*/
-    0,              /*tp_repr*/
-    0,              /*tp_as_number*/
-    0,              /*tp_as_sequence*/
-    0,              /*tp_as_mapping*/
-    0,              /*tp_hash */
-    0,              /*tp_call*/
-    0,              /*tp_str*/
-    0,              /*tp_getattro*/
-    0,              /*tp_setattro*/
-    0,              /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,     /*tp_flags*/
-    "Subject object",     /* tp_doc */
-    0,              /* tp_traverse */
-    0,              /* tp_clear */
-    0,              /* tp_richcompare */
-    0,              /* tp_weaklistoffset */
-    0,/* tp_iter */
-    0,                          /* tp_iternext */
-    subject_methods,      /* tp_methods */
-    0,              /* tp_members */
-    subject_getsetters,       /* tp_getset */
-    0,              /* tp_base */
-    0,              /* tp_dict */
-    0,              /* tp_descr_get */
-    0,              /* tp_descr_set */
-    0,              /* tp_dictoffset */
-    (initproc)subject_init,   /* tp_init */
-    0,              /* tp_alloc */
-    subject_new,          /* tp_new */
-    0,              /* tp_free */
-    0,              /* tp_is_gc */
+    PyVarObject_HEAD_INIT(NULL, 0) "_hawkey.Subject", /*tp_name*/
+    sizeof(_SubjectObject),                           /*tp_basicsize*/
+    0,                                                /*tp_itemsize*/
+    (destructor)subject_dealloc,                      /*tp_dealloc*/
+    0,                                                /*tp_print*/
+    0,                                                /*tp_getattr*/
+    0,                                                /*tp_setattr*/
+    0,                                                /*tp_compare*/
+    0,                                                /*tp_repr*/
+    0,                                                /*tp_as_number*/
+    0,                                                /*tp_as_sequence*/
+    0,                                                /*tp_as_mapping*/
+    0,                                                /*tp_hash */
+    0,                                                /*tp_call*/
+    0,                                                /*tp_str*/
+    0,                                                /*tp_getattro*/
+    0,                                                /*tp_setattro*/
+    0,                                                /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,         /*tp_flags*/
+    "Subject object",                                 /* tp_doc */
+    0,                                                /* tp_traverse */
+    0,                                                /* tp_clear */
+    0,                                                /* tp_richcompare */
+    0,                                                /* tp_weaklistoffset */
+    0,                                                /* tp_iter */
+    0,                                                /* tp_iternext */
+    subject_methods,                                  /* tp_methods */
+    0,                                                /* tp_members */
+    subject_getsetters,                               /* tp_getset */
+    0,                                                /* tp_base */
+    0,                                                /* tp_dict */
+    0,                                                /* tp_descr_get */
+    0,                                                /* tp_descr_set */
+    0,                                                /* tp_dictoffset */
+    (initproc)subject_init,                           /* tp_init */
+    0,                                                /* tp_alloc */
+    subject_new,                                      /* tp_new */
+    0,                                                /* tp_free */
+    0,                                                /* tp_is_gc */
 };

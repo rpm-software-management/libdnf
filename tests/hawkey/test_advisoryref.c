@@ -18,12 +18,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
-
+#include "fixtures.h"
 #include "libdnf/dnf-advisory.h"
 #include "libdnf/dnf-advisoryref.h"
 #include "libdnf/hy-package.h"
-#include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"
 
@@ -71,13 +69,15 @@ END_TEST
 
 START_TEST(test_title)
 {
-    ck_assert_str_eq(dnf_advisoryref_get_title(reference), "/etc/init.d/clvmd points to /usr/sbin for LVM tools");
+    ck_assert_str_eq(dnf_advisoryref_get_title(reference),
+                     "/etc/init.d/clvmd points to /usr/sbin for LVM tools");
 }
 END_TEST
 
 START_TEST(test_url)
 {
-    ck_assert_str_eq(dnf_advisoryref_get_url(reference), "https://bugzilla.redhat.com/show_bug.cgi?id=472090");
+    ck_assert_str_eq(dnf_advisoryref_get_url(reference),
+                     "https://bugzilla.redhat.com/show_bug.cgi?id=472090");
 }
 END_TEST
 

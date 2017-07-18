@@ -27,14 +27,15 @@ G_BEGIN_DECLS
 
 #define DNF_TYPE_RELDEP_LIST (dnf_reldep_list_get_type())
 
-G_DECLARE_FINAL_TYPE (DnfReldepList, dnf_reldep_list, DNF, RELDEP_LIST, GObject)
+G_DECLARE_FINAL_TYPE(DnfReldepList, dnf_reldep_list, DNF, RELDEP_LIST, GObject)
 
-DnfReldepList *dnf_reldep_list_new   (DnfSack       *sack);
-void           dnf_reldep_list_add   (DnfReldepList *reldep_list,
-                                      DnfReldep     *reldep);
-gint           dnf_reldep_list_count (DnfReldepList *reldep_list);
-DnfReldep     *dnf_reldep_list_index (DnfReldepList *reldep_list,
-                                      gint           index);
-
+DnfReldepList *
+dnf_reldep_list_new(DnfSack *sack);
+void
+dnf_reldep_list_add(DnfReldepList *reldep_list, DnfReldep *reldep);
+gint
+dnf_reldep_list_count(DnfReldepList *reldep_list);
+DnfReldep *
+dnf_reldep_list_index(DnfReldepList *reldep_list, gint index);
 
 G_END_DECLS

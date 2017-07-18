@@ -21,38 +21,38 @@
 #define _GNU_SOURCE
 #include <assert.h>
 #include <errno.h>
-#include <glib.h>
 #include <fcntl.h>
+#include <glib.h>
 #include <linux/limits.h>
 #include <pwd.h>
 #include <regex.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
+#include <unistd.h>
 #include <wordexp.h>
 
 // libsolv
 #include <solv/chksum.h>
 #include <solv/evr.h>
+#include <solv/pool_parserpmrichdep.h>
 #include <solv/solver.h>
 #include <solv/solverdebug.h>
 #include <solv/util.h>
-#include <solv/pool_parserpmrichdep.h>
 
 // glib
 #include <glib.h>
 
 // hawkey
+#include "dnf-reldep-private.h"
+#include "dnf-sack-private.h"
 #include "dnf-types.h"
 #include "hy-iutil.h"
 #include "hy-package-private.h"
 #include "hy-packageset-private.h"
 #include "hy-query.h"
-#include "dnf-sack-private.h"
-#include "dnf-reldep-private.h"
 
 #define BUF_BLOCK 4096
 #define CHKSUM_TYPE REPOKEY_TYPE_SHA256
@@ -80,8 +80,8 @@ glob_for_cachedir(char *path)
     struct stat s;
 
     ret = 2;
-    p[len-6] = '*';
-    p[len-5] = '\0';
+    p[len - 6] = '*';
+    p[len - 5] = '\0';
     if (wordexp(p, &word_vector, 0)) {
         g_free(p);
         return ret;
@@ -90,8 +90,7 @@ glob_for_cachedir(char *path)
         char *entry = word_vector.we_wordv[i];
         if (stat(entry, &s))
             continue;
-        if (S_ISDIR(s.st_mode) &&
-            s.st_uid == getuid()) {
+        if (S_ISDIR(s.st_mode) && s.st_uid == getuid()) {
             assert(strlen(path) == strlen(entry));
             strcpy(path, entry);
             ret = 0;
@@ -131,8 +130,7 @@ checksum_fp(unsigned char *out, FILE *fp)
 int
 checksum_read(unsigned char *csout, FILE *fp)
 {
-    if (fseek(fp, -32, SEEK_END) ||
-        fread(csout, CHKSUM_BYTES, 1, fp) != 1)
+    if (fseek(fp, -32, SEEK_END) || fread(csout, CHKSUM_BYTES, 1, fp) != 1)
         return 1;
     rewind(fp);
     return 0;
@@ -160,10 +158,10 @@ checksum_stat(unsigned char *out, FILE *fp)
 }
 
 /* moves fp to the end of file */
-int checksum_write(const unsigned char *cs, FILE *fp)
+int
+checksum_write(const unsigned char *cs, FILE *fp)
 {
-    if (fseek(fp, 0, SEEK_END) ||
-        fwrite(cs, CHKSUM_BYTES, 1, fp) != 1)
+    if (fseek(fp, 0, SEEK_END) || fwrite(cs, CHKSUM_BYTES, 1, fp) != 1)
         return 1;
     return 0;
 }
@@ -171,8 +169,8 @@ int checksum_write(const unsigned char *cs, FILE *fp)
 void
 checksum_dump(const unsigned char *cs)
 {
-    for (int i = 0; i < CHKSUM_BYTES; i+=4) {
-        printf("%02x%02x%02x%02x", cs[i], cs[i+1], cs[i+2], cs[i+3]);
+    for (int i = 0; i < CHKSUM_BYTES; i += 4) {
+        printf("%02x%02x%02x%02x", cs[i], cs[i + 1], cs[i + 2], cs[i + 3]);
         if (i + 4 >= CHKSUM_BYTES)
             printf("\n");
         else
@@ -183,17 +181,17 @@ checksum_dump(const unsigned char *cs)
 int
 checksum_type2length(int type)
 {
-    switch(type) {
-    case G_CHECKSUM_MD5:
-        return 16;
-    case G_CHECKSUM_SHA1:
-        return 20;
-    case G_CHECKSUM_SHA256:
-        return 32;
-    case G_CHECKSUM_SHA512:
-        return 64;
-    default:
-        return -1;
+    switch (type) {
+        case G_CHECKSUM_MD5:
+            return 16;
+        case G_CHECKSUM_SHA1:
+            return 20;
+        case G_CHECKSUM_SHA256:
+            return 32;
+        case G_CHECKSUM_SHA512:
+            return 64;
+        default:
+            return -1;
     }
 }
 
@@ -201,17 +199,17 @@ int
 checksumt_l2h(int type)
 {
     switch (type) {
-    case REPOKEY_TYPE_MD5:
-        return G_CHECKSUM_MD5;
-    case REPOKEY_TYPE_SHA1:
-        return         G_CHECKSUM_SHA1;
-    case REPOKEY_TYPE_SHA256:
-        return G_CHECKSUM_SHA256;
-    case REPOKEY_TYPE_SHA512:
-        return G_CHECKSUM_SHA512;
-    default:
-        assert(0);
-        return 0;
+        case REPOKEY_TYPE_MD5:
+            return G_CHECKSUM_MD5;
+        case REPOKEY_TYPE_SHA1:
+            return G_CHECKSUM_SHA1;
+        case REPOKEY_TYPE_SHA256:
+            return G_CHECKSUM_SHA256;
+        case REPOKEY_TYPE_SHA512:
+            return G_CHECKSUM_SHA512;
+        default:
+            assert(0);
+            return 0;
     }
 }
 
@@ -284,8 +282,8 @@ mkcachedir(char *path)
 
     char *p = g_strdup(path);
 
-    if (p[len-1] == '/')
-        p[len-1] = '\0';
+    if (p[len - 1] == '/')
+        p[len - 1] = '\0';
 
     if (access(p, X_OK)) {
         *(strrchr(p, '/')) = '\0';
@@ -312,7 +310,9 @@ mv(const char *old, const char *new, GError **error)
                     DNF_ERROR,
                     DNF_ERROR_FILE_INVALID,
                     "Failed renaming %s to %s: %s",
-                    old, new, strerror(errno));
+                    old,
+                    new,
+                    strerror(errno));
         return FALSE;
     }
     if (chmod(new, 0666 & ~get_umask())) {
@@ -320,7 +320,8 @@ mv(const char *old, const char *new, GError **error)
                     DNF_ERROR,
                     DNF_ERROR_FILE_INVALID,
                     "ailed setting perms on %s: %s",
-                    new, strerror(errno));
+                    new,
+                    strerror(errno));
         return FALSE;
     }
     return TRUE;
@@ -336,10 +337,10 @@ this_username(void)
 char *
 read_whole_file(const char *path)
 {
-  char *contents = NULL;
-  if (!g_file_get_contents (path, &contents, NULL, NULL))
-    return NULL;
-  return contents;
+    char *contents = NULL;
+    if (!g_file_get_contents(path, &contents, NULL, NULL))
+        return NULL;
+    return contents;
 }
 
 char *
@@ -402,7 +403,8 @@ repo_by_name(DnfSack *sack, const char *name)
     Repo *repo;
     int repoid;
 
-    FOR_REPOS(repoid, repo) {
+    FOR_REPOS(repoid, repo)
+    {
         if (!strcmp(repo->name, name))
             return repo;
     }
@@ -470,20 +472,17 @@ what_upgrades(Pool *pool, Id pkg)
 
     assert(pool->installed);
     assert(pool->whatprovides);
-    FOR_PROVIDES(p, pp, s->name) {
+    FOR_PROVIDES(p, pp, s->name)
+    {
         updated = pool_id2solvable(pool, p);
-        if (updated->repo != pool->installed ||
-            updated->name != s->name)
+        if (updated->repo != pool->installed || updated->name != s->name)
             continue;
-        if (updated->arch != s->arch &&
-            updated->arch != ARCH_NOARCH &&
-            s->arch != ARCH_NOARCH)
+        if (updated->arch != s->arch && updated->arch != ARCH_NOARCH && s->arch != ARCH_NOARCH)
             continue;
         if (pool_evrcmp(pool, updated->evr, s->evr, EVRCMP_COMPARE) >= 0)
             // >= version installed, this pkg can not be used for upgrade
             return 0;
-        if (l == 0 ||
-            pool_evrcmp(pool, updated->evr, l_evr, EVRCMP_COMPARE) > 0) {
+        if (l == 0 || pool_evrcmp(pool, updated->evr, l_evr, EVRCMP_COMPARE) > 0) {
             l = p;
             l_evr = updated->evr;
         }
@@ -513,17 +512,16 @@ what_downgrades(Pool *pool, Id pkg)
 
     assert(pool->installed);
     assert(pool->whatprovides);
-    FOR_PROVIDES(p, pp, s->name) {
+    FOR_PROVIDES(p, pp, s->name)
+    {
         updated = pool_id2solvable(pool, p);
-        if (updated->repo != pool->installed ||
-            updated->name != s->name ||
+        if (updated->repo != pool->installed || updated->name != s->name ||
             updated->arch != s->arch)
             continue;
         if (pool_evrcmp(pool, updated->evr, s->evr, EVRCMP_COMPARE) <= 0)
             // <= version installed, this pkg can not be used for downgrade
             return 0;
-        if (l == 0 ||
-            pool_evrcmp(pool, updated->evr, l_evr, EVRCMP_COMPARE) < 0) {
+        if (l == 0 || pool_evrcmp(pool, updated->evr, l_evr, EVRCMP_COMPARE) < 0) {
             l = p;
             l_evr = updated->evr;
         }
@@ -557,8 +555,7 @@ pool_get_epoch(Pool *pool, const char *evr)
  * than the pool temp space).
  */
 void
-pool_split_evr(Pool *pool, const char *evr_c, char **epoch, char **version,
-                   char **release)
+pool_split_evr(Pool *pool, const char *evr_c, char **epoch, char **version, char **release)
 {
     char *evr = pool_tmpdup(pool, evr_c);
     char *e, *v, *r;
@@ -592,9 +589,8 @@ pool_split_evr(Pool *pool, const char *evr_c, char **epoch, char **version,
 int
 dump_jobqueue(Pool *pool, Queue *job)
 {
-    for (int i = 0; i < job->count; i+=2)
-            printf("\t%s\n", pool_job2str(pool, job->elements[i],
-                                          job->elements[i+1], 0));
+    for (int i = 0; i < job->count; i += 2)
+        printf("\t%s\n", pool_job2str(pool, job->elements[i], job->elements[i + 1], 0));
     return job->count;
 }
 
@@ -637,21 +633,19 @@ id2nevra(Pool *pool, Id id)
 }
 
 int
-copy_str_from_subexpr(char** target, const char* source,
-    regmatch_t* matches, int i)
+copy_str_from_subexpr(char **target, const char *source, regmatch_t *matches, int i)
 {
     int subexpr_len = matches[i].rm_eo - matches[i].rm_so;
     if (subexpr_len == 0)
         return -1;
-    *target = g_malloc(sizeof(char*) * (subexpr_len + 1));
+    *target = g_malloc(sizeof(char *) * (subexpr_len + 1));
     strncpy(*target, &(source[matches[i].rm_so]), subexpr_len);
     (*target)[subexpr_len] = '\0';
     return 0;
 }
 
 static int
-get_cmp_flags(int *cmp_type, const char* source,
-    regmatch_t* matches, int i)
+get_cmp_flags(int *cmp_type, const char *source, regmatch_t *matches, int i)
 {
     int subexpr_len = matches[i].rm_eo - matches[i].rm_so;
     const char *match_start = &(source[matches[i].rm_so]);
@@ -661,12 +655,10 @@ get_cmp_flags(int *cmp_type, const char* source,
         else if (strncmp(match_start, "<=", 2) == 0) {
             *cmp_type |= HY_LT;
             *cmp_type |= HY_EQ;
-        }
-        else if (strncmp(match_start, ">=", 2) == 0) {
+        } else if (strncmp(match_start, ">=", 2) == 0) {
             *cmp_type |= HY_GT;
             *cmp_type |= HY_EQ;
-        }
-        else
+        } else
             return -1;
     } else if (subexpr_len == 1) {
         if (*match_start == '<')
@@ -688,27 +680,25 @@ get_cmp_flags(int *cmp_type, const char* source,
  * and evr strings need to be freed after usage.
  */
 int
-parse_reldep_str(const char *reldep_str, char **name, char **evr,
-    int *cmp_type)
+parse_reldep_str(const char *reldep_str, char **name, char **evr, int *cmp_type)
 {
     regex_t reg;
-    const char *regex =
-        "^(\\S*)\\s*(<=|>=|!=|<|>|=)?\\s*(.*)$";
+    const char *regex = "^(\\S*)\\s*(<=|>=|!=|<|>|=)?\\s*(.*)$";
     regmatch_t matches[6];
     *cmp_type = 0;
     int ret = 0;
 
     regcomp(&reg, regex, REG_EXTENDED);
 
-    if(regexec(&reg, reldep_str, 6, matches, 0) == 0) {
+    if (regexec(&reg, reldep_str, 6, matches, 0) == 0) {
         if (copy_str_from_subexpr(name, reldep_str, matches, 1) == -1)
             ret = -1;
         // without comparator and evr
         else if ((matches[2].rm_eo - matches[2].rm_so) == 0 &&
-            (matches[3].rm_eo - matches[3].rm_so) == 0)
+                 (matches[3].rm_eo - matches[3].rm_so) == 0)
             ret = 0;
         else if (get_cmp_flags(cmp_type, reldep_str, matches, 2) == -1 ||
-            copy_str_from_subexpr(evr, reldep_str, matches, 3) == -1) {
+                 copy_str_from_subexpr(evr, reldep_str, matches, 3) == -1) {
             g_free(*name);
             ret = -1;
         }
@@ -734,17 +724,17 @@ reldep_from_str(DnfSack *sack, const char *reldep_str)
 {
     if (reldep_str[0] == '(') {
         /* Rich dependency */
-        Pool *pool = dnf_sack_get_pool (sack);
+        Pool *pool = dnf_sack_get_pool(sack);
         Id id = pool_parserpmrichdep(pool, reldep_str);
         if (!id)
             return NULL;
-        return dnf_reldep_from_pool (pool, id);
+        return dnf_reldep_from_pool(pool, id);
     } else {
         char *name, *evr = NULL;
         int cmp_type = 0;
         if (parse_reldep_str(reldep_str, &name, &evr, &cmp_type) == -1)
             return NULL;
-        DnfReldep *reldep = dnf_reldep_new (sack, name, cmp_type, evr);
+        DnfReldep *reldep = dnf_reldep_new(sack, name, cmp_type, evr);
         g_free(name);
         g_free(evr);
         return reldep;
@@ -760,15 +750,15 @@ reldeplist_from_str(DnfSack *sack, const char *reldep_str)
     Dataiterator di;
     Pool *pool = dnf_sack_get_pool(sack);
 
-    DnfReldepList *reldeplist = dnf_reldep_list_new (sack);
+    DnfReldepList *reldeplist = dnf_reldep_list_new(sack);
     parse_reldep_str(reldep_str, &name_glob, &evr, &cmp_type);
 
     dataiterator_init(&di, pool, 0, 0, 0, name_glob, SEARCH_STRING | SEARCH_GLOB);
     while (dataiterator_step(&di)) {
-        DnfReldep *reldep = dnf_reldep_new (sack, di.kv.str, cmp_type, evr);
+        DnfReldep *reldep = dnf_reldep_new(sack, di.kv.str, cmp_type, evr);
         if (reldep) {
-            dnf_reldep_list_add (reldeplist, reldep);
-            g_object_unref (reldep);
+            dnf_reldep_list_add(reldeplist, reldep);
+            g_object_unref(reldep);
         }
     }
 

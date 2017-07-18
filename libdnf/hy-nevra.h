@@ -21,32 +21,45 @@
 #ifndef HY_NEVRA_H
 #define HY_NEVRA_H
 
-#include "hy-types.h"
 #include "dnf-sack.h"
+#include "hy-types.h"
 
 #include <glib.h>
 
 G_BEGIN_DECLS
 
-enum _hy_nevra_param_e {
+enum _hy_nevra_param_e
+{
     HY_NEVRA_NAME = 0,
     HY_NEVRA_VERSION = 1,
     HY_NEVRA_RELEASE = 2,
     HY_NEVRA_ARCH = 3
 };
 
-HyNevra hy_nevra_create(void);
-void hy_nevra_free(HyNevra nevra);
-HyNevra hy_nevra_clone(HyNevra nevra);
-int hy_nevra_cmp(HyNevra nevra1, HyNevra nevra2);
-const char *hy_nevra_get_string(HyNevra nevra, int which);
-int hy_nevra_get_epoch(HyNevra nevra);
-void hy_nevra_set_epoch(HyNevra nevra, int epoch);
-void hy_nevra_set_string(HyNevra nevra, int which, const char* str_val);
-HyQuery hy_nevra_to_query(HyNevra nevra, DnfSack *sack);
-int hy_nevra_evr_cmp(HyNevra nevra1, HyNevra nevra2, DnfSack *sack);
-char *hy_nevra_get_evr(HyNevra nevra);
-gboolean hy_nevra_has_just_name(HyNevra nevra);
+HyNevra
+hy_nevra_create(void);
+void
+hy_nevra_free(HyNevra nevra);
+HyNevra
+hy_nevra_clone(HyNevra nevra);
+int
+hy_nevra_cmp(HyNevra nevra1, HyNevra nevra2);
+const char *
+hy_nevra_get_string(HyNevra nevra, int which);
+int
+hy_nevra_get_epoch(HyNevra nevra);
+void
+hy_nevra_set_epoch(HyNevra nevra, int epoch);
+void
+hy_nevra_set_string(HyNevra nevra, int which, const char *str_val);
+HyQuery
+hy_nevra_to_query(HyNevra nevra, DnfSack *sack);
+int
+hy_nevra_evr_cmp(HyNevra nevra1, HyNevra nevra2, DnfSack *sack);
+char *
+hy_nevra_get_evr(HyNevra nevra);
+gboolean
+hy_nevra_has_just_name(HyNevra nevra);
 
 G_END_DECLS
 

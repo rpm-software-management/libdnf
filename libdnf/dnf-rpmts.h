@@ -22,19 +22,16 @@
 #ifndef __DNF_RPMTS_H
 #define __DNF_RPMTS_H
 
+#include "hy-package.h"
 #include <glib.h>
 #include <rpm/rpmts.h>
-#include "hy-package.h"
 
-gboolean         dnf_rpmts_add_install_filename (rpmts           ts,
-                                                 const gchar    *filename,
-                                                 gboolean        allow_untrusted,
-                                                 gboolean        is_update,
-                                                 GError         **error);
-gboolean         dnf_rpmts_add_remove_pkg       (rpmts           ts,
-                                                 DnfPackage *      pkg,
-                                                 GError         **error);
-gboolean         dnf_rpmts_look_for_problems    (rpmts           ts,
-                                                 GError         **error);
+gboolean
+dnf_rpmts_add_install_filename(
+  rpmts ts, const gchar *filename, gboolean allow_untrusted, gboolean is_update, GError **error);
+gboolean
+dnf_rpmts_add_remove_pkg(rpmts ts, DnfPackage *pkg, GError **error);
+gboolean
+dnf_rpmts_look_for_problems(rpmts ts, GError **error);
 
 #endif /* __DNF_RPMTS_H */

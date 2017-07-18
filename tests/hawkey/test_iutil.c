@@ -19,17 +19,15 @@
  */
 
 #define _GNU_SOURCE
+#include <glib.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <glib.h>
-
 
 #include <solv/pool.h>
 
-
-#include "libdnf/hy-util.h"
-#include "libdnf/hy-iutil.h"
 #include "fixtures.h"
+#include "libdnf/hy-iutil.h"
+#include "libdnf/hy-util.h"
 #include "test_suites.h"
 
 static void
@@ -56,8 +54,7 @@ END_TEST
 START_TEST(test_checksum)
 {
     /* create a new file, edit it a bit */
-    char *new_file = solv_dupjoin(test_globals.tmpdir,
-                                  "/test_checksum", NULL);
+    char *new_file = solv_dupjoin(test_globals.tmpdir, "/test_checksum", NULL);
     build_test_file(new_file);
 
     unsigned char cs1[CHKSUM_BYTES];
@@ -99,8 +96,7 @@ END_TEST
 
 START_TEST(test_checksum_write_read)
 {
-    char *new_file = solv_dupjoin(test_globals.tmpdir,
-                                  "/test_checksum_write_read", NULL);
+    char *new_file = solv_dupjoin(test_globals.tmpdir, "/test_checksum_write_read", NULL);
     build_test_file(new_file);
 
     unsigned char cs_computed[CHKSUM_BYTES];
@@ -125,16 +121,16 @@ END_TEST
 START_TEST(test_mkcachedir)
 {
     const char *workdir = test_globals.tmpdir;
-    char * dir;
+    char *dir;
     fail_if(asprintf(&dir, "%s%s", workdir, "/mkcachedir/sub/deep") == -1);
     fail_if(mkcachedir(dir));
-    fail_if(access(dir, R_OK|X_OK|W_OK));
+    fail_if(access(dir, R_OK | X_OK | W_OK));
     free(dir);
 
     fail_if(asprintf(&dir, "%s%s", workdir, "/mkcachedir/sub2/wd-XXXXXX") == -1);
     fail_if(mkcachedir(dir));
     fail_if(g_str_has_suffix(dir, "XXXXXX")); /* mkcache dir changed the Xs */
-    fail_if(access(dir, R_OK|X_OK|W_OK));
+    fail_if(access(dir, R_OK | X_OK | W_OK));
 
     /* test the globbing capability of mkcachedir */
     char *dir2;

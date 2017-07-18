@@ -26,41 +26,42 @@
 // libsolv
 #include <solv/evr.h>
 #include <solv/policy.h>
+#include <solv/poolid.h>
 #include <solv/selection.h>
 #include <solv/solver.h>
 #include <solv/solverdebug.h>
 #include <solv/testcase.h>
 #include <solv/transaction.h>
 #include <solv/util.h>
-#include <solv/poolid.h>
 
 // hawkey
+#include "dnf-goal.h"
+#include "dnf-package.h"
+#include "dnf-reldep-private.h"
+#include "dnf-sack-private.h"
+#include "dnf-solution-private.h"
 #include "dnf-types.h"
 #include "hy-goal-private.h"
 #include "hy-iutil.h"
 #include "hy-package-private.h"
+#include "hy-package.h"
 #include "hy-packageset-private.h"
 #include "hy-query-private.h"
-#include "dnf-reldep-private.h"
 #include "hy-repo-private.h"
-#include "dnf-sack-private.h"
-#include "dnf-goal.h"
-#include "dnf-package.h"
 #include "hy-selector-private.h"
 #include "hy-util.h"
-#include "dnf-package.h"
-#include "hy-package.h"
-#include "dnf-solution-private.h"
 
 #define BLOCK_SIZE 15
 
-struct _SolutionCallback {
+struct _SolutionCallback
+{
     HyGoal goal;
     hy_solution_callback callback;
     void *callback_data;
 };
 
-struct InstallonliesSortCallback {
+struct InstallonliesSortCallback
+{
     Pool *pool;
     Id running_kernel;
 };
@@ -75,17 +76,16 @@ erase_flags2libsolv(int flags)
 }
 
 static gboolean
-protected_in_removals(HyGoal goal) {
+protected_in_removals(HyGoal goal)
+{
     guint i = 0;
     gboolean ret = FALSE;
     if (goal->removal_of_protected != NULL)
         g_ptr_array_free(goal->removal_of_protected, TRUE);
     if (goal->protected == NULL)
         return FALSE;
-    goal->removal_of_protected = dnf_goal_get_packages(goal,
-                                     DNF_PACKAGE_INFO_REMOVE,
-                                     DNF_PACKAGE_INFO_OBSOLETE,
-                                     -1);
+    goal->removal_of_protected =
+      dnf_goal_get_packages(goal, DNF_PACKAGE_INFO_REMOVE, DNF_PACKAGE_INFO_OBSOLETE, -1);
     while (i < goal->removal_of_protected->len) {
         DnfPackage *pkg = g_ptr_array_index(goal->removal_of_protected, i);
 
@@ -106,8 +106,7 @@ same_name_subqueue(Pool *pool, Queue *in, Queue *out)
     Id name = pool_id2solvable(pool, el)->name;
     queue_empty(out);
     queue_push(out, el);
-    while (in->count &&
-           pool_id2solvable(pool, in->elements[in->count - 1])->name == name)
+    while (in->count && pool_id2solvable(pool, in->elements[in->count - 1])->name == name)
         // reverses the order so packages are sorted by descending version
         queue_push(out, queue_pop(in));
 }
@@ -126,12 +125,12 @@ can_depend_on(Pool *pool, Solvable *sa, Id b)
         Id p, pp;
 
         FOR_PROVIDES(p, pp, req_dep)
-            if (p == b)
-                goto done;
+        if (p == b)
+            goto done;
     }
 
     ret = 0;
- done:
+done:
     queue_free(&requires);
     return ret;
 }
@@ -139,10 +138,10 @@ can_depend_on(Pool *pool, Solvable *sa, Id b)
 static int
 sort_packages(const void *ap, const void *bp, void *s_cb)
 {
-    Id a = *(Id*)ap;
-    Id b = *(Id*)bp;
-    Pool *pool = ((struct InstallonliesSortCallback*) s_cb)->pool;
-    Id kernel = ((struct InstallonliesSortCallback*) s_cb)->running_kernel;
+    Id a = *(Id *)ap;
+    Id b = *(Id *)bp;
+    Pool *pool = ((struct InstallonliesSortCallback *)s_cb)->pool;
+    Id kernel = ((struct InstallonliesSortCallback *)s_cb)->running_kernel;
     Solvable *sa = pool_id2solvable(pool, a);
     Solvable *sb = pool_id2solvable(pool, b);
 
@@ -189,15 +188,15 @@ limit_installonly_packages(HyGoal goal, Solver *solv, Queue *job)
         queue_init(&installing);
 
         FOR_PKG_PROVIDES(p, pp, onlies->elements[i])
-            if (solver_get_decisionlevel(solv, p) > 0)
-                queue_push(&q, p);
-        if (q.count <= (int) dnf_sack_get_installonly_limit(sack)) {
+        if (solver_get_decisionlevel(solv, p) > 0)
+            queue_push(&q, p);
+        if (q.count <= (int)dnf_sack_get_installonly_limit(sack)) {
             queue_free(&q);
             queue_free(&installing);
             continue;
         }
         for (int k = 0; k < q.count; ++k) {
-            Id id  = q.elements[k];
+            Id id = q.elements[k];
             Solvable *s = pool_id2solvable(pool, id);
             if (pool->installed != s->repo) {
                 queue_push(&installing, id);
@@ -210,19 +209,19 @@ limit_installonly_packages(HyGoal goal, Solver *solv, Queue *job)
             continue;
         }
 
-        struct InstallonliesSortCallback s_cb = {pool, dnf_sack_running_kernel(sack)};
+        struct InstallonliesSortCallback s_cb = { pool, dnf_sack_running_kernel(sack) };
         solv_sort(q.elements, q.count, sizeof(q.elements[0]), sort_packages, &s_cb);
         Queue same_names;
         queue_init(&same_names);
         while (q.count > 0) {
             same_name_subqueue(pool, &q, &same_names);
-            if (same_names.count <= (int) dnf_sack_get_installonly_limit(sack))
+            if (same_names.count <= (int)dnf_sack_get_installonly_limit(sack))
                 continue;
             reresolve = 1;
             for (int j = 0; j < same_names.count; ++j) {
-                Id id  = same_names.elements[j];
+                Id id = same_names.elements[j];
                 Id action = SOLVER_ERASE;
-                if (j < (int) dnf_sack_get_installonly_limit(sack))
+                if (j < (int)dnf_sack_get_installonly_limit(sack))
                     action = SOLVER_INSTALL;
                 queue_push2(job, action | SOLVER_SOLVABLE, id);
             }
@@ -237,7 +236,7 @@ limit_installonly_packages(HyGoal goal, Solver *solv, Queue *job)
 static int
 internal_solver_callback(Solver *solv, void *data)
 {
-    struct _SolutionCallback *s_cb = (struct _SolutionCallback*)data;
+    struct _SolutionCallback *s_cb = (struct _SolutionCallback *)data;
     HyGoal goal = s_cb->goal;
 
     assert(goal->solv == solv);
@@ -277,7 +276,8 @@ init_solver(HyGoal goal, DnfGoalActions flags)
 }
 
 static void
-allow_uninstall_all_but_protected(HyGoal goal, Queue *job, DnfGoalActions flags) {
+allow_uninstall_all_but_protected(HyGoal goal, Queue *job, DnfGoalActions flags)
+{
     Pool *pool = dnf_sack_get_pool(goal->sack);
 
     if (goal->protected == NULL) {
@@ -296,14 +296,15 @@ allow_uninstall_all_but_protected(HyGoal goal, Queue *job, DnfGoalActions flags)
             Solvable *s = pool_id2solvable(pool, id);
             if (pool->installed == s->repo) {
                 if (!MAPTST(goal->protected, id) && pool->installed == s->repo)
-                    queue_push2(job, SOLVER_ALLOWUNINSTALL|SOLVER_SOLVABLE, id);
+                    queue_push2(job, SOLVER_ALLOWUNINSTALL | SOLVER_SOLVABLE, id);
             }
         }
 }
 
 static int
-solve(HyGoal goal, Queue *job, DnfGoalActions flags,
-      hy_solution_callback user_cb, void * user_cb_data) {
+solve(
+  HyGoal goal, Queue *job, DnfGoalActions flags, hy_solution_callback user_cb, void *user_cb_data)
+{
     DnfSack *sack = goal->sack;
     struct _SolutionCallback cb_tuple;
 
@@ -318,7 +319,7 @@ solve(HyGoal goal, Queue *job, DnfGoalActions flags,
 
     Solver *solv = init_solver(goal, flags);
     if (user_cb) {
-        cb_tuple = (struct _SolutionCallback){goal, user_cb, user_cb_data};
+        cb_tuple = (struct _SolutionCallback){ goal, user_cb, user_cb_data };
         solv->solution_callback = internal_solver_callback;
         solv->solution_callback_data = &cb_tuple;
     }
@@ -369,14 +370,15 @@ construct_job(HyGoal goal, DnfGoalActions flags)
             job->elements[i] |= SOLVER_FORCEBEST;
 
     /* turn off implicit obsoletes for installonly packages */
-    for (int i = 0; i < (int) dnf_sack_get_installonly(sack)->count; i++)
-        queue_push2(job, SOLVER_MULTIVERSION|SOLVER_SOLVABLE_PROVIDES,
+    for (int i = 0; i < (int)dnf_sack_get_installonly(sack)->count; i++)
+        queue_push2(job,
+                    SOLVER_MULTIVERSION | SOLVER_SOLVABLE_PROVIDES,
                     dnf_sack_get_installonly(sack)->elements[i]);
 
     allow_uninstall_all_but_protected(goal, job, flags);
 
     if (flags & DNF_VERIFY)
-        queue_push2(job, SOLVER_VERIFY|SOLVER_SOLVABLE_ALL, 0);
+        queue_push2(job, SOLVER_VERIFY | SOLVER_SOLVABLE_ALL, 0);
 
     return job;
 }
@@ -398,42 +400,37 @@ list_results(HyGoal goal, Id type_filter1, Id type_filter2, GError **error)
     /* no transaction */
     if (trans == NULL) {
         if (goal->solv == NULL) {
-            g_set_error_literal (error,
-                                 DNF_ERROR,
-                                 DNF_ERROR_INTERNAL_ERROR,
-                                 "no solv in the goal");
+            g_set_error_literal(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "no solv in the goal");
             return NULL;
         } else if (goal->removal_of_protected->len) {
-            g_set_error_literal (error,
-                                 DNF_ERROR,
-                                 DNF_ERROR_REMOVAL_OF_PROTECTED_PKG,
-                                 "no solution, cannot remove protected package");
+            g_set_error_literal(error,
+                                DNF_ERROR,
+                                DNF_ERROR_REMOVAL_OF_PROTECTED_PKG,
+                                "no solution, cannot remove protected package");
             return NULL;
         }
-        g_set_error_literal (error,
-                             DNF_ERROR,
-                             DNF_ERROR_NO_SOLUTION,
-                             "no solution possible");
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_NO_SOLUTION, "no solution possible");
         return NULL;
     }
     queue_init(&transpkgs);
     plist = hy_packagelist_create();
-    const int common_mode = SOLVER_TRANSACTION_SHOW_OBSOLETES |
-        SOLVER_TRANSACTION_CHANGE_IS_REINSTALL;
+    const int common_mode =
+      SOLVER_TRANSACTION_SHOW_OBSOLETES | SOLVER_TRANSACTION_CHANGE_IS_REINSTALL;
 
     for (int i = 0; i < trans->steps.count; ++i) {
         Id p = trans->steps.elements[i];
         Id type;
 
         switch (type_filter1) {
-        case SOLVER_TRANSACTION_OBSOLETED:
-            type =  transaction_type(trans, p, common_mode);
-            break;
-        default:
-            type  = transaction_type(trans, p, common_mode |
-                                     SOLVER_TRANSACTION_SHOW_ACTIVE|
-                                     SOLVER_TRANSACTION_SHOW_ALL);
-            break;
+            case SOLVER_TRANSACTION_OBSOLETED:
+                type = transaction_type(trans, p, common_mode);
+                break;
+            default:
+                type = transaction_type(trans,
+                                        p,
+                                        common_mode | SOLVER_TRANSACTION_SHOW_ACTIVE |
+                                          SOLVER_TRANSACTION_SHOW_ALL);
+                break;
         }
 
         if (type == type_filter1 || (type_filter2 && type == type_filter2))
@@ -470,8 +467,7 @@ filter_arch2job(DnfSack *sack, const struct _Filter *f, Queue *job)
     for (int i = 0; i < job->count; i += 2) {
         Id dep;
         assert((job->elements[i] & SOLVER_SELECTMASK) == SOLVER_SOLVABLE_NAME);
-        dep = pool_rel2id(pool, job->elements[i + 1],
-                          archid, REL_ARCH, 1);
+        dep = pool_rel2id(pool, job->elements[i + 1], archid, REL_ARCH, 1);
         job->elements[i] |= SOLVER_SETARCH;
         job->elements[i + 1] = dep;
     }
@@ -493,8 +489,7 @@ filter_evr2job(DnfSack *sack, const struct _Filter *f, Queue *job)
     for (int i = 0; i < job->count; i += 2) {
         Id dep;
         assert((job->elements[i] & SOLVER_SELECTMASK) == SOLVER_SOLVABLE_NAME);
-        dep = pool_rel2id(pool, job->elements[i + 1],
-                          evr, REL_EQ, 1);
+        dep = pool_rel2id(pool, job->elements[i + 1], evr, REL_EQ, 1);
         job->elements[i] |= constr;
         job->elements[i + 1] = dep;
     }
@@ -537,7 +532,7 @@ filter_pkg2job(DnfSack *sack, const struct _Filter *f, Queue *job)
         queue_push(&pkgs, id);
     }
     what = pool_queuetowhatprovides(pool, &pkgs);
-    queue_push2(job, SOLVER_SOLVABLE_ONE_OF|SOLVER_SETARCH|SOLVER_SETEVR, what);
+    queue_push2(job, SOLVER_SOLVABLE_ONE_OF | SOLVER_SETARCH | SOLVER_SETEVR, what);
     queue_free(&pkgs);
     return 0;
 }
@@ -555,27 +550,27 @@ filter_name2job(DnfSack *sack, const struct _Filter *f, Queue *job)
     Dataiterator di;
 
     switch (f->cmp_type) {
-    case HY_EQ:
-        id = pool_str2id(pool, name, 0);
-        if (id)
-            queue_push2(job, SOLVER_SOLVABLE_NAME, id);
-        break;
-    case HY_GLOB:
-        dataiterator_init(&di, pool, 0, 0, SOLVABLE_NAME, name, SEARCH_GLOB);
-        while (dataiterator_step(&di)) {
-            if (!is_package(pool, pool_id2solvable(pool, di.solvid)))
-                continue;
-            assert(di.idp);
-            id = *di.idp;
-            if (job_has(job, SOLVABLE_NAME, id))
-                continue;
-            queue_push2(job, SOLVER_SOLVABLE_NAME, id);
-        }
-        dataiterator_free(&di);
-        break;
-    default:
-        assert(0);
-        return 1;
+        case HY_EQ:
+            id = pool_str2id(pool, name, 0);
+            if (id)
+                queue_push2(job, SOLVER_SOLVABLE_NAME, id);
+            break;
+        case HY_GLOB:
+            dataiterator_init(&di, pool, 0, 0, SOLVABLE_NAME, name, SEARCH_GLOB);
+            while (dataiterator_step(&di)) {
+                if (!is_package(pool, pool_id2solvable(pool, di.solvid)))
+                    continue;
+                assert(di.idp);
+                id = *di.idp;
+                if (job_has(job, SOLVABLE_NAME, id))
+                    continue;
+                queue_push2(job, SOLVER_SOLVABLE_NAME, id);
+            }
+            dataiterator_free(&di);
+            break;
+        default:
+            assert(0);
+            return 1;
     }
     return 0;
 }
@@ -593,25 +588,25 @@ filter_provides2job(DnfSack *sack, const struct _Filter *f, Queue *job)
     Dataiterator di;
 
     switch (f->cmp_type) {
-    case HY_EQ:
-        id = dnf_reldep_get_id (f->matches[0].reldep);
-        queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
-        break;
-    case HY_GLOB:
-        dataiterator_init(&di, pool, 0, 0, SOLVABLE_PROVIDES, name, SEARCH_GLOB);
-        while (dataiterator_step(&di)) {
-            if (is_package(pool, pool_id2solvable(pool, di.solvid)))
-                break;
-        }
-        assert(di.idp);
-        id = *di.idp;
-        if (!job_has(job, SOLVABLE_PROVIDES, id))
+        case HY_EQ:
+            id = dnf_reldep_get_id(f->matches[0].reldep);
             queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
-        dataiterator_free(&di);
-        break;
-    default:
-        assert(0);
-        return 1;
+            break;
+        case HY_GLOB:
+            dataiterator_init(&di, pool, 0, 0, SOLVABLE_PROVIDES, name, SEARCH_GLOB);
+            while (dataiterator_step(&di)) {
+                if (is_package(pool, pool_id2solvable(pool, di.solvid)))
+                    break;
+            }
+            assert(di.idp);
+            id = *di.idp;
+            if (!job_has(job, SOLVABLE_PROVIDES, id))
+                queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
+            dataiterator_free(&di);
+            break;
+        default:
+            assert(0);
+            return 1;
     }
     return 0;
 }
@@ -632,9 +627,9 @@ filter_reponame2job(DnfSack *sack, const struct _Filter *f, Queue *job)
     queue_init(&repo_sel);
     Pool *pool = dnf_sack_get_pool(sack);
     FOR_REPOS(i, repo)
-        if (!strcmp(f->matches[0].str, repo->name)) {
-            queue_push2(&repo_sel, SOLVER_SOLVABLE_REPO | SOLVER_SETREPO, repo->repoid);
-        }
+    if (!strcmp(f->matches[0].str, repo->name)) {
+        queue_push2(&repo_sel, SOLVER_SOLVABLE_REPO | SOLVER_SETREPO, repo->repoid);
+    }
 
     selection_filter(pool, job, &repo_sel);
 
@@ -690,11 +685,9 @@ sltr2job(const HySelector sltr, Queue *job, int solver_action)
         goto finish;
 
     for (int i = 0; i < job_sltr.count; i += 2)
-         queue_push2(job,
-                     job_sltr.elements[i] | solver_action,
-                     job_sltr.elements[i + 1]);
+        queue_push2(job, job_sltr.elements[i] | solver_action, job_sltr.elements[i + 1]);
 
- finish:
+finish:
     queue_free(&job_sltr);
     return ret;
 }
@@ -742,7 +735,7 @@ int
 hy_goal_distupgrade_all(HyGoal goal)
 {
     goal->actions |= DNF_DISTUPGRADE_ALL;
-    queue_push2(&goal->staging, SOLVER_DISTUPGRADE|SOLVER_SOLVABLE_ALL, 0);
+    queue_push2(&goal->staging, SOLVER_DISTUPGRADE | SOLVER_SOLVABLE_ALL, 0);
     return 0;
 }
 
@@ -750,8 +743,7 @@ int
 hy_goal_distupgrade(HyGoal goal, DnfPackage *new_pkg)
 {
     goal->actions |= DNF_DISTUPGRADE;
-    queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_DISTUPGRADE,
-        dnf_package_get_id(new_pkg));
+    queue_push2(&goal->staging, SOLVER_SOLVABLE | SOLVER_DISTUPGRADE, dnf_package_get_id(new_pkg));
     return 0;
 }
 
@@ -765,22 +757,22 @@ hy_goal_distupgrade_selector(HyGoal goal, HySelector sltr)
 int
 hy_goal_downgrade_to(HyGoal goal, DnfPackage *new_pkg)
 {
-    goal->actions |= DNF_DOWNGRADE|DNF_ALLOW_DOWNGRADE;
+    goal->actions |= DNF_DOWNGRADE | DNF_ALLOW_DOWNGRADE;
     return hy_goal_install(goal, new_pkg);
 }
 
 int
 hy_goal_downgrade_to_selector(HyGoal goal, HySelector sltr)
 {
-    goal->actions |= DNF_DOWNGRADE|DNF_ALLOW_DOWNGRADE;
+    goal->actions |= DNF_DOWNGRADE | DNF_ALLOW_DOWNGRADE;
     return sltr2job(sltr, &goal->staging, SOLVER_INSTALL);
 }
 
 int
 hy_goal_downgrade_to_selector_optional(HyGoal goal, HySelector sltr)
 {
-    goal->actions |= DNF_DOWNGRADE|DNF_ALLOW_DOWNGRADE;
-    return sltr2job(sltr, &goal->staging, SOLVER_INSTALL|SOLVER_WEAK);
+    goal->actions |= DNF_DOWNGRADE | DNF_ALLOW_DOWNGRADE;
+    return sltr2job(sltr, &goal->staging, SOLVER_INSTALL | SOLVER_WEAK);
 }
 
 int
@@ -800,8 +792,8 @@ hy_goal_erase_flags(HyGoal goal, DnfPackage *pkg, int flags)
 #endif
     int additional = erase_flags2libsolv(flags);
     goal->actions |= DNF_ERASE;
-    queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_ERASE|additional,
-                dnf_package_get_id(pkg));
+    queue_push2(
+      &goal->staging, SOLVER_SOLVABLE | SOLVER_ERASE | additional, dnf_package_get_id(pkg));
     return 0;
 }
 
@@ -817,7 +809,7 @@ hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags)
 {
     int additional = erase_flags2libsolv(flags);
     goal->actions |= DNF_ERASE;
-    return sltr2job(sltr, &goal->staging, SOLVER_ERASE|additional);
+    return sltr2job(sltr, &goal->staging, SOLVER_ERASE | additional);
 }
 
 int
@@ -829,17 +821,17 @@ hy_goal_has_actions(HyGoal goal, DnfGoalActions action)
 int
 hy_goal_install(HyGoal goal, DnfPackage *new_pkg)
 {
-    goal->actions |= DNF_INSTALL|DNF_ALLOW_DOWNGRADE;
-    queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_INSTALL, dnf_package_get_id(new_pkg));
+    goal->actions |= DNF_INSTALL | DNF_ALLOW_DOWNGRADE;
+    queue_push2(&goal->staging, SOLVER_SOLVABLE | SOLVER_INSTALL, dnf_package_get_id(new_pkg));
     return 0;
 }
 
 int
 hy_goal_install_optional(HyGoal goal, DnfPackage *new_pkg)
 {
-    goal->actions |= DNF_INSTALL|DNF_ALLOW_DOWNGRADE;
-    queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_INSTALL|SOLVER_WEAK,
-                dnf_package_get_id(new_pkg));
+    goal->actions |= DNF_INSTALL | DNF_ALLOW_DOWNGRADE;
+    queue_push2(
+      &goal->staging, SOLVER_SOLVABLE | SOLVER_INSTALL | SOLVER_WEAK, dnf_package_get_id(new_pkg));
     return 0;
 }
 
@@ -847,13 +839,10 @@ gboolean
 hy_goal_install_selector(HyGoal goal, HySelector sltr, GError **error)
 {
     int rc;
-    goal->actions |= DNF_INSTALL|DNF_ALLOW_DOWNGRADE;
+    goal->actions |= DNF_INSTALL | DNF_ALLOW_DOWNGRADE;
     rc = sltr2job(sltr, &goal->staging, SOLVER_INSTALL);
     if (rc != 0) {
-        g_set_error_literal (error,
-                             DNF_ERROR,
-                             rc,
-                             "failed to install selector");
+        g_set_error_literal(error, DNF_ERROR, rc, "failed to install selector");
         return FALSE;
     }
     return TRUE;
@@ -863,13 +852,10 @@ gboolean
 hy_goal_install_selector_optional(HyGoal goal, HySelector sltr, GError **error)
 {
     int rc;
-    goal->actions |= DNF_INSTALL|DNF_ALLOW_DOWNGRADE;
-    rc = sltr2job(sltr, &goal->staging, SOLVER_INSTALL|SOLVER_WEAK);
+    goal->actions |= DNF_INSTALL | DNF_ALLOW_DOWNGRADE;
+    rc = sltr2job(sltr, &goal->staging, SOLVER_INSTALL | SOLVER_WEAK);
     if (rc != 0) {
-        g_set_error_literal (error,
-                             DNF_ERROR,
-                             rc,
-                             "failed to install optional selector");
+        g_set_error_literal(error, DNF_ERROR, rc, "failed to install optional selector");
         return FALSE;
     }
     return TRUE;
@@ -879,7 +865,7 @@ int
 hy_goal_upgrade_all(HyGoal goal)
 {
     goal->actions |= DNF_UPGRADE_ALL;
-    queue_push2(&goal->staging, SOLVER_UPDATE|SOLVER_SOLVABLE_ALL, 0);
+    queue_push2(&goal->staging, SOLVER_UPDATE | SOLVER_SOLVABLE_ALL, 0);
     return 0;
 }
 
@@ -933,12 +919,12 @@ hy_goal_upgrade_to_flags(HyGoal goal, DnfPackage *new_pkg, int flags)
 int
 hy_goal_userinstalled(HyGoal goal, DnfPackage *pkg)
 {
-    queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_USERINSTALLED,
-                dnf_package_get_id(pkg));
+    queue_push2(&goal->staging, SOLVER_SOLVABLE | SOLVER_USERINSTALLED, dnf_package_get_id(pkg));
     return 0;
 }
 
-int hy_goal_req_length(HyGoal goal)
+int
+hy_goal_req_length(HyGoal goal)
 {
     return goal->staging.count / 2;
 }
@@ -962,8 +948,7 @@ hy_goal_run_all(HyGoal goal, hy_solution_callback cb, void *cb_data)
 }
 
 int
-hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
-                      DnfGoalActions flags)
+hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data, DnfGoalActions flags)
 {
     Queue *job = construct_job(goal, flags);
     goal->actions |= flags;
@@ -991,12 +976,12 @@ hy_goal_conflict_pkgs(HyGoal goal, unsigned i)
     Id rid, source, target, dep;
 
     Queue pq;
-    Queue* conflict = g_malloc(sizeof(Queue));
+    Queue *conflict = g_malloc(sizeof(Queue));
     int j;
     queue_init(&pq);
     queue_init(conflict);
     // this libsolv interface indexes from 1 (we do from 0), so:
-    solver_findallproblemrules(goal->solv, i+1, &pq);
+    solver_findallproblemrules(goal->solv, i + 1, &pq);
     for (j = 0; j < pq.count; j++) {
         rid = pq.elements[j];
         type = solver_ruleinfo(goal->solv, rid, &source, &target, &dep);
@@ -1031,9 +1016,9 @@ hy_goal_conflict_all_pkgs(HyGoal goal, DnfPackageState pkg_type)
             DnfPackage *pkg = dnf_package_new(goal->sack, id);
             if (pkg == NULL)
                 continue;
-            if (pkg_type ==  DNF_PACKAGE_STATE_AVAILABLE && dnf_package_installed(pkg))
+            if (pkg_type == DNF_PACKAGE_STATE_AVAILABLE && dnf_package_installed(pkg))
                 continue;
-            if (pkg_type ==  DNF_PACKAGE_STATE_INSTALLED && !dnf_package_installed(pkg))
+            if (pkg_type == DNF_PACKAGE_STATE_INSTALLED && !dnf_package_installed(pkg))
                 continue;
             dnf_packageset_add(pset, pkg);
         }
@@ -1053,12 +1038,12 @@ hy_goal_broken_dependency_pkgs(HyGoal goal, unsigned i)
     Id rid, source, target, dep;
 
     Queue pq;
-    Queue* broken_dependency = g_malloc(sizeof(Queue));
+    Queue *broken_dependency = g_malloc(sizeof(Queue));
     int j;
     queue_init(&pq);
     queue_init(broken_dependency);
     // this libsolv interface indexes from 1 (we do from 0), so:
-    solver_findallproblemrules(goal->solv, i+1, &pq);
+    solver_findallproblemrules(goal->solv, i + 1, &pq);
     for (j = 0; j < pq.count; j++) {
         rid = pq.elements[j];
         type = solver_ruleinfo(goal->solv, rid, &source, &target, &dep);
@@ -1089,9 +1074,9 @@ hy_goal_broken_dependency_all_pkgs(HyGoal goal, DnfPackageState pkg_type)
             DnfPackage *pkg = dnf_package_new(goal->sack, id);
             if (pkg == NULL)
                 continue;
-            if (pkg_type ==  DNF_PACKAGE_STATE_AVAILABLE && dnf_package_installed(pkg))
+            if (pkg_type == DNF_PACKAGE_STATE_AVAILABLE && dnf_package_installed(pkg))
                 continue;
-            if (pkg_type ==  DNF_PACKAGE_STATE_INSTALLED && !dnf_package_installed(pkg))
+            if (pkg_type == DNF_PACKAGE_STATE_INSTALLED && !dnf_package_installed(pkg))
                 continue;
             dnf_packageset_add(pset, pkg);
         }
@@ -1165,7 +1150,7 @@ hy_goal_describe_problem(HyGoal goal, unsigned i)
     SolverRuleinfo type;
 
     /* internal error */
-    if (i >= (unsigned) hy_goal_count_problems(goal)) {
+    if (i >= (unsigned)hy_goal_count_problems(goal)) {
         return NULL;
     }
     // problem is not in libsolv - removal of protected packages
@@ -1192,14 +1177,14 @@ hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
     char **problist = NULL;
     int p = 0;
     /* internal error */
-    if (i >= (unsigned) hy_goal_count_problems(goal))
+    if (i >= (unsigned)hy_goal_count_problems(goal))
         return NULL;
     // problem is not in libsolv - removal of protected packages
     char *problem = hy_goal_describe_protected_removal(goal);
     if (problem) {
-        problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
+        problist = solv_extend(problist, p, 1, sizeof(char *), BLOCK_SIZE);
         problist[p++] = problem;
-        problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
+        problist = solv_extend(problist, p, 1, sizeof(char *), BLOCK_SIZE);
         problist[p++] = NULL;
         return problist;
     }
@@ -1211,7 +1196,7 @@ hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
     gboolean unique;
     queue_init(&pq);
     // this libsolv interface indexes from 1 (we do from 0), so:
-    solver_findallproblemrules(goal->solv, i+1, &pq);
+    solver_findallproblemrules(goal->solv, i + 1, &pq);
     for (j = 0; j < pq.count; j++) {
         rid = pq.elements[j];
         type = solver_ruleinfo(goal->solv, rid, &source, &target, &dep);
@@ -1227,9 +1212,9 @@ hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
         }
         if (unique) {
             if (problist == NULL)
-                problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
+                problist = solv_extend(problist, p, 1, sizeof(char *), BLOCK_SIZE);
             problist[p++] = g_strdup(problem_str);
-            problist = solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
+            problist = solv_extend(problist, p, 1, sizeof(char *), BLOCK_SIZE);
             problist[p] = NULL;
         }
     }
@@ -1266,30 +1251,25 @@ hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error)
 {
     Solver *solv = goal->solv;
     if (solv == NULL) {
-        g_set_error_literal (error,
-                             DNF_ERROR,
-                             DNF_ERROR_INTERNAL_ERROR,
-                             "no solver set");
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "no solver set");
         return FALSE;
     }
 
     int flags = TESTCASE_RESULT_TRANSACTION | TESTCASE_RESULT_PROBLEMS;
     g_autofree char *absdir = abspath(dir);
     if (absdir == NULL) {
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_FILE_INVALID,
-                     "failed to make %s absolute", dir);
+        g_set_error(error, DNF_ERROR, DNF_ERROR_FILE_INVALID, "failed to make %s absolute", dir);
         return FALSE;
     }
     g_debug("writing solver debugdata to %s", absdir);
     int ret = testcase_write(solv, absdir, flags, NULL, NULL);
     if (!ret) {
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_FILE_INVALID,
-                     "failed writing debugdata to %s: %s",
-                     absdir, strerror(errno));
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_FILE_INVALID,
+                    "failed writing debugdata to %s: %s",
+                    absdir,
+                    strerror(errno));
         return FALSE;
     }
     return TRUE;
@@ -1304,8 +1284,7 @@ hy_goal_list_erasures(HyGoal goal, GError **error)
 GPtrArray *
 hy_goal_list_installs(HyGoal goal, GError **error)
 {
-    return list_results(goal, SOLVER_TRANSACTION_INSTALL,
-                        SOLVER_TRANSACTION_OBSOLETES, error);
+    return list_results(goal, SOLVER_TRANSACTION_INSTALL, SOLVER_TRANSACTION_OBSOLETES, error);
 }
 
 GPtrArray *
@@ -1367,14 +1346,13 @@ hy_goal_list_obsoleted_by_package(HyGoal goal, DnfPackage *pkg)
 int
 hy_goal_get_reason(HyGoal goal, DnfPackage *pkg)
 {
-    //solver_get_recommendations
+    // solver_get_recommendations
     if (goal->solv == NULL)
         return HY_REASON_USER;
     Id info;
     int reason = solver_describe_decision(goal->solv, dnf_package_get_id(pkg), &info);
 
-    if ((reason == SOLVER_REASON_UNIT_RULE ||
-         reason == SOLVER_REASON_RESOLVE_JOB) &&
+    if ((reason == SOLVER_REASON_UNIT_RULE || reason == SOLVER_REASON_RESOLVE_JOB) &&
         (solver_ruleclass(goal->solv, info) == SOLVER_RULE_JOB ||
          solver_ruleclass(goal->solv, info) == SOLVER_RULE_BEST))
         return HY_REASON_USER;
@@ -1409,20 +1387,18 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
     Solvable *s = NULL;
     GPtrArray *slist = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 
-    //Internal error
-    if (problem_id >= (unsigned) hy_goal_count_problems(goal))
-    {
+    // Internal error
+    if (problem_id >= (unsigned)hy_goal_count_problems(goal)) {
         return slist;
     }
     // hawkey problems - removal of protected packages
-    if (problem_id >= (unsigned) solver_problem_count(goal->solv))
-    {
+    if (problem_id >= (unsigned)solver_problem_count(goal->solv)) {
         // what about returning list packages which pull protected
         // packages into transaction?
         return slist;
     }
 
-    problem_id++; //increment problem ID. libsolv indexes at 1, libhif indexes at 0
+    problem_id++; // increment problem ID. libsolv indexes at 1, libhif indexes at 0
 
     scnt = solver_solution_count(solv, problem_id);
     p = 0;
@@ -1430,8 +1406,8 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
 
     for (solution = 1; solution <= scnt; solution++) {
         element = 0;
-        while ((element = solver_next_solutionelement(solv, problem_id, solution,
-                                                      element, &p, &rp)) != 0) {
+        while ((element =
+                  solver_next_solutionelement(solv, problem_id, solution, element, &p, &rp)) != 0) {
             DnfSolution *sol = dnf_solution_new();
             const gchar *old = NULL;
             const gchar *new = NULL;
@@ -1502,8 +1478,8 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
                 action = DNF_SOLUTION_ACTION_BAD_SOLUTION;
             }
 
-            //g_debug("rp=%d, p=%d",rp,p);
-            //g_debug("name: %s",pool_id2str(pool, s->name));
+            // g_debug("rp=%d, p=%d",rp,p);
+            // g_debug("name: %s",pool_id2str(pool, s->name));
 
             dnf_solution_set(sol, action, old, new);
             g_ptr_array_add(slist, sol);

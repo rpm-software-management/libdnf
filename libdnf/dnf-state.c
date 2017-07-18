@@ -80,43 +80,43 @@
  * See also: #DnfLock
  */
 
-
 #include "dnf-state.h"
 #include "dnf-utils.h"
 
 typedef struct
 {
-    gboolean         allow_cancel;
-    gboolean         allow_cancel_changed_state;
-    gboolean         allow_cancel_child;
-    gboolean         enable_profile;
-    gboolean         report_progress;
-    GCancellable    *cancellable;
-    gchar            *action_hint;
-    gchar            *id;
-    gdouble          *step_profile;
-    GTimer           *timer;
-    guint64           speed;
-    guint64          *speed_data;
-    guint             current;
-    guint             last_percentage;
-    guint            *step_data;
-    guint             steps;
-    gulong            action_child_id;
-    gulong            package_progress_child_id;
-    gulong            notify_speed_child_id;
-    gulong            allow_cancel_child_id;
-    gulong            percentage_child_id;
-    DnfStateAction    action;
-    DnfStateAction    last_action;
-    DnfStateAction    child_action;
-    DnfState         *child;
-    DnfState         *parent;
-    GPtrArray        *lock_ids;
-    DnfLock          *lock;
+    gboolean allow_cancel;
+    gboolean allow_cancel_changed_state;
+    gboolean allow_cancel_child;
+    gboolean enable_profile;
+    gboolean report_progress;
+    GCancellable *cancellable;
+    gchar *action_hint;
+    gchar *id;
+    gdouble *step_profile;
+    GTimer *timer;
+    guint64 speed;
+    guint64 *speed_data;
+    guint current;
+    guint last_percentage;
+    guint *step_data;
+    guint steps;
+    gulong action_child_id;
+    gulong package_progress_child_id;
+    gulong notify_speed_child_id;
+    gulong allow_cancel_child_id;
+    gulong percentage_child_id;
+    DnfStateAction action;
+    DnfStateAction last_action;
+    DnfStateAction child_action;
+    DnfState *child;
+    DnfState *parent;
+    GPtrArray *lock_ids;
+    DnfLock *lock;
 } DnfStatePrivate;
 
-enum {
+enum
+{
     SIGNAL_PERCENTAGE_CHANGED,
     SIGNAL_SUBPERCENTAGE_CHANGED,
     SIGNAL_ALLOW_CANCEL_CHANGED,
@@ -125,18 +125,19 @@ enum {
     SIGNAL_LAST
 };
 
-enum {
+enum
+{
     PROP_0,
     PROP_SPEED,
     PROP_LAST
 };
 
-static guint signals [SIGNAL_LAST] = { 0 };
+static guint signals[SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfState, dnf_state, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (dnf_state_get_instance_private (o))
+#define GET_PRIVATE(o) (dnf_state_get_instance_private(o))
 
-#define DNF_STATE_SPEED_SMOOTHING_ITEMS        5
+#define DNF_STATE_SPEED_SMOOTHING_ITEMS 5
 
 /**
  * dnf_state_finalize:
@@ -187,21 +188,18 @@ dnf_state_init(DnfState *state)
  * dnf_state_get_property:
  **/
 static void
-dnf_state_get_property(GObject *object,
-            guint prop_id,
-            GValue *value,
-            GParamSpec *pspec)
+dnf_state_get_property(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
     DnfState *state = DNF_STATE(object);
     DnfStatePrivate *priv = GET_PRIVATE(state);
 
-    switch(prop_id) {
-    case PROP_SPEED:
-        g_value_set_uint64(value, priv->speed);
-        break;
-    default:
-        G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-        break;
+    switch (prop_id) {
+        case PROP_SPEED:
+            g_value_set_uint64(value, priv->speed);
+            break;
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+            break;
     }
 }
 
@@ -209,21 +207,18 @@ dnf_state_get_property(GObject *object,
  * dnf_state_set_property:
  **/
 static void
-dnf_state_set_property(GObject *object,
-            guint prop_id,
-            const GValue *value,
-            GParamSpec *pspec)
+dnf_state_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
     DnfState *state = DNF_STATE(object);
     DnfStatePrivate *priv = GET_PRIVATE(state);
 
-    switch(prop_id) {
-    case PROP_SPEED:
-        priv->speed = g_value_get_uint64(value);
-        break;
-    default:
-        G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-        break;
+    switch (prop_id) {
+        case PROP_SPEED:
+            priv->speed = g_value_get_uint64(value);
+            break;
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+            break;
     }
 }
 
@@ -242,38 +237,58 @@ dnf_state_class_init(DnfStateClass *klass)
     /**
      * DnfState:speed:
      **/
-    pspec = g_param_spec_uint64("speed", NULL, NULL,
-                                0, G_MAXUINT64, 0,
-                                G_PARAM_READABLE);
+    pspec = g_param_spec_uint64("speed", NULL, NULL, 0, G_MAXUINT64, 0, G_PARAM_READABLE);
     g_object_class_install_property(object_class, PROP_SPEED, pspec);
 
-    signals [SIGNAL_PERCENTAGE_CHANGED] =
-        g_signal_new("percentage-changed",
-                     G_TYPE_FROM_CLASS(object_class), G_SIGNAL_RUN_LAST,
-                     G_STRUCT_OFFSET(DnfStateClass, percentage_changed),
-                     NULL, NULL, g_cclosure_marshal_VOID__UINT,
-                     G_TYPE_NONE, 1, G_TYPE_UINT);
+    signals[SIGNAL_PERCENTAGE_CHANGED] =
+      g_signal_new("percentage-changed",
+                   G_TYPE_FROM_CLASS(object_class),
+                   G_SIGNAL_RUN_LAST,
+                   G_STRUCT_OFFSET(DnfStateClass, percentage_changed),
+                   NULL,
+                   NULL,
+                   g_cclosure_marshal_VOID__UINT,
+                   G_TYPE_NONE,
+                   1,
+                   G_TYPE_UINT);
 
-    signals [SIGNAL_ALLOW_CANCEL_CHANGED] =
-        g_signal_new("allow-cancel-changed",
-                     G_TYPE_FROM_CLASS(object_class), G_SIGNAL_RUN_LAST,
-                     G_STRUCT_OFFSET(DnfStateClass, allow_cancel_changed),
-                     NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
-                     G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+    signals[SIGNAL_ALLOW_CANCEL_CHANGED] =
+      g_signal_new("allow-cancel-changed",
+                   G_TYPE_FROM_CLASS(object_class),
+                   G_SIGNAL_RUN_LAST,
+                   G_STRUCT_OFFSET(DnfStateClass, allow_cancel_changed),
+                   NULL,
+                   NULL,
+                   g_cclosure_marshal_VOID__BOOLEAN,
+                   G_TYPE_NONE,
+                   1,
+                   G_TYPE_BOOLEAN);
 
-    signals [SIGNAL_ACTION_CHANGED] =
-        g_signal_new("action-changed",
-                     G_TYPE_FROM_CLASS(object_class), G_SIGNAL_RUN_LAST,
-                     G_STRUCT_OFFSET(DnfStateClass, action_changed),
-                     NULL, NULL, g_cclosure_marshal_generic,
-                     G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+    signals[SIGNAL_ACTION_CHANGED] = g_signal_new("action-changed",
+                                                  G_TYPE_FROM_CLASS(object_class),
+                                                  G_SIGNAL_RUN_LAST,
+                                                  G_STRUCT_OFFSET(DnfStateClass, action_changed),
+                                                  NULL,
+                                                  NULL,
+                                                  g_cclosure_marshal_generic,
+                                                  G_TYPE_NONE,
+                                                  2,
+                                                  G_TYPE_UINT,
+                                                  G_TYPE_STRING);
 
-    signals [SIGNAL_PACKAGE_PROGRESS_CHANGED] =
-        g_signal_new("package-progress-changed",
-                     G_TYPE_FROM_CLASS(object_class), G_SIGNAL_RUN_LAST,
-                     G_STRUCT_OFFSET(DnfStateClass, package_progress_changed),
-                     NULL, NULL, g_cclosure_marshal_generic,
-                     G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT);
+    signals[SIGNAL_PACKAGE_PROGRESS_CHANGED] =
+      g_signal_new("package-progress-changed",
+                   G_TYPE_FROM_CLASS(object_class),
+                   G_SIGNAL_RUN_LAST,
+                   G_STRUCT_OFFSET(DnfStateClass, package_progress_changed),
+                   NULL,
+                   NULL,
+                   g_cclosure_marshal_generic,
+                   G_TYPE_NONE,
+                   3,
+                   G_TYPE_STRING,
+                   G_TYPE_UINT,
+                   G_TYPE_UINT);
 }
 
 /**
@@ -332,26 +347,19 @@ dnf_state_set_enable_profile(DnfState *state, gboolean enable_profile)
  * Since: 0.1.0
  **/
 gboolean
-dnf_state_take_lock(DnfState *state,
-                    DnfLockType lock_type,
-                    DnfLockMode lock_mode,
-                    GError **error)
+dnf_state_take_lock(DnfState *state, DnfLockType lock_type, DnfLockMode lock_mode, GError **error)
 {
     DnfStatePrivate *priv = GET_PRIVATE(state);
     guint lock_id = 0;
 
     /* no custom handler */
-    lock_id = dnf_lock_take(priv->lock,
-                            lock_type,
-                            lock_mode,
-                            error);
+    lock_id = dnf_lock_take(priv->lock, lock_type, lock_mode, error);
     if (lock_id == 0)
         return FALSE;
 
     /* add the lock to an array so we can release on completion */
     g_debug("adding lock %i", lock_id);
-    g_ptr_array_add(priv->lock_ids,
-                    GUINT_TO_POINTER(lock_id));
+    g_ptr_array_add(priv->lock_ids, GUINT_TO_POINTER(lock_id));
     return TRUE;
 }
 
@@ -368,7 +376,7 @@ dnf_state_discrete_to_percent(guint discrete, guint steps)
         g_warning("steps is 0!");
         return 0;
     }
-    return((gfloat) ((gdouble) discrete *(100.0 /(gdouble)(steps))));
+    return ((gfloat)((gdouble)discrete * (100.0 / (gdouble)(steps))));
 }
 
 /**
@@ -380,8 +388,7 @@ dnf_state_print_parent_chain(DnfState *state, guint level)
     DnfStatePrivate *priv = GET_PRIVATE(state);
     if (priv->parent != NULL)
         dnf_state_print_parent_chain(priv->parent, level + 1);
-    g_print("%i) %s(%i/%i)\n",
-            level, priv->id, priv->current, priv->steps);
+    g_print("%i) %s(%i/%i)\n", level, priv->id, priv->current, priv->steps);
 }
 
 /**
@@ -460,7 +467,9 @@ dnf_state_set_allow_cancel(DnfState *state, gboolean allow_cancel)
     priv->allow_cancel = allow_cancel;
 
     /* just emit if both this and child is okay */
-    g_signal_emit(state, signals [SIGNAL_ALLOW_CANCEL_CHANGED], 0,
+    g_signal_emit(state,
+                  signals[SIGNAL_ALLOW_CANCEL_CHANGED],
+                  0,
                   priv->allow_cancel && priv->allow_cancel_child);
 }
 
@@ -512,8 +521,8 @@ dnf_state_set_speed(DnfState *state, guint64 speed)
     guint sum_cnt = 0;
 
     /* move the data down one entry */
-    for (i=DNF_STATE_SPEED_SMOOTHING_ITEMS-1; i > 0; i--)
-        priv->speed_data[i] = priv->speed_data[i-1];
+    for (i = DNF_STATE_SPEED_SMOOTHING_ITEMS - 1; i > 0; i--)
+        priv->speed_data[i] = priv->speed_data[i - 1];
     priv->speed_data[0] = speed;
 
     /* get the average */
@@ -589,8 +598,7 @@ dnf_state_set_percentage(DnfState *state, guint percentage)
     /* is it invalid */
     if (percentage > 100) {
         dnf_state_print_parent_chain(state, 0);
-        g_warning("percentage %i%% is invalid on %p!",
-                  percentage, state);
+        g_warning("percentage %i%% is invalid on %p!", percentage, state);
         return FALSE;
     }
 
@@ -599,7 +607,9 @@ dnf_state_set_percentage(DnfState *state, guint percentage)
         if (priv->enable_profile) {
             dnf_state_print_parent_chain(state, 0);
             g_warning("percentage should not go down from %i to %i on %p!",
-                      priv->last_percentage, percentage, state);
+                      priv->last_percentage,
+                      percentage,
+                      state);
         }
         return FALSE;
     }
@@ -628,7 +638,7 @@ dnf_state_set_percentage(DnfState *state, guint percentage)
     priv->last_percentage = percentage;
 
     /* emit */
-    g_signal_emit(state, signals [SIGNAL_PERCENTAGE_CHANGED], 0, percentage);
+    g_signal_emit(state, signals[SIGNAL_PERCENTAGE_CHANGED], 0, percentage);
 
     /* success */
     return TRUE;
@@ -655,7 +665,8 @@ dnf_state_get_percentage(DnfState *state)
  * dnf_state_action_start:
  * @state: a #DnfState instance.
  * @action: An action, e.g. %DNF_STATE_ACTION_DECOMPRESSING
- * @action_hint: A hint on what the action is doing, e.g. "/var/cache/yum/i386/15/koji/primary.sqlite"
+ * @action_hint: A hint on what the action is doing, e.g.
+ *"/var/cache/yum/i386/15/koji/primary.sqlite"
  *
  * Sets the action which is being performed. This is emitted up the chain
  * to any parent %DnfState objects, using the action-changed signal.
@@ -682,8 +693,7 @@ dnf_state_action_start(DnfState *state, DnfStateAction action, const gchar *acti
     }
 
     /* is different? */
-    if (priv->action == action &&
-        g_strcmp0(action_hint, priv->action_hint) == 0)
+    if (priv->action == action && g_strcmp0(action_hint, priv->action_hint) == 0)
         return FALSE;
 
     /* remember for stop */
@@ -697,7 +707,7 @@ dnf_state_action_start(DnfState *state, DnfStateAction action, const gchar *acti
     priv->action = action;
 
     /* just emit */
-    g_signal_emit(state, signals [SIGNAL_ACTION_CHANGED], 0, action, action_hint);
+    g_signal_emit(state, signals[SIGNAL_ACTION_CHANGED], 0, action, action_hint);
     return TRUE;
 }
 
@@ -714,17 +724,17 @@ dnf_state_action_start(DnfState *state, DnfStateAction action, const gchar *acti
  **/
 void
 dnf_state_set_package_progress(DnfState *state,
-                const gchar *dnf_package_get_id,
-                DnfStateAction action,
-                guint percentage)
+                               const gchar *dnf_package_get_id,
+                               DnfStateAction action,
+                               guint percentage)
 {
     g_return_if_fail(dnf_package_get_id != NULL);
     g_return_if_fail(action != DNF_STATE_ACTION_UNKNOWN);
     g_return_if_fail(percentage <= 100);
 
     /* just emit */
-    g_signal_emit(state, signals [SIGNAL_PACKAGE_PROGRESS_CHANGED], 0,
-               dnf_package_get_id, action, percentage);
+    g_signal_emit(
+      state, signals[SIGNAL_PACKAGE_PROGRESS_CHANGED], 0, dnf_package_get_id, action, percentage);
 }
 
 /**
@@ -758,7 +768,7 @@ dnf_state_action_stop(DnfState *state)
     }
 
     /* just emit */
-    g_signal_emit(state, signals [SIGNAL_ACTION_CHANGED], 0, priv->action, NULL);
+    g_signal_emit(state, signals[SIGNAL_ACTION_CHANGED], 0, priv->action, NULL);
     return TRUE;
 }
 
@@ -831,8 +841,9 @@ dnf_state_child_percentage_changed_cb(DnfState *child, guint percentage, DnfStat
             parent_percentage = percentage * priv->step_data[priv->current] / 100;
         } else {
             /* bilinearly interpolate for speed */
-            parent_percentage =(((100 - percentage) * priv->step_data[priv->current-1]) +
-                        (percentage * priv->step_data[priv->current])) / 100;
+            parent_percentage = (((100 - percentage) * priv->step_data[priv->current - 1]) +
+                                 (percentage * priv->step_data[priv->current])) /
+                                100;
         }
         goto out;
     }
@@ -841,9 +852,10 @@ dnf_state_child_percentage_changed_cb(DnfState *child, guint percentage, DnfStat
     offset = dnf_state_discrete_to_percent(priv->current, priv->steps);
 
     /* get the range between the parent step and the next parent step */
-    range = dnf_state_discrete_to_percent(priv->current+1, priv->steps) - offset;
+    range = dnf_state_discrete_to_percent(priv->current + 1, priv->steps) - offset;
     if (range < 0.01) {
-        g_warning("range=%f(from %i to %i), should be impossible", range, priv->current+1, priv->steps);
+        g_warning(
+          "range=%f(from %i to %i), should be impossible", range, priv->current + 1, priv->steps);
         return;
     }
 
@@ -852,10 +864,10 @@ dnf_state_child_percentage_changed_cb(DnfState *child, guint percentage, DnfStat
         priv->last_action = priv->child_action;
 
     /* get the extra contributed by the child */
-    extra =((gfloat) percentage / 100.0f) * range;
+    extra = ((gfloat)percentage / 100.0f) * range;
 
     /* emit from the parent */
-    parent_percentage =(guint)(offset + extra);
+    parent_percentage = (guint)(offset + extra);
 out:
     dnf_state_set_percentage(state, parent_percentage);
 }
@@ -872,7 +884,9 @@ dnf_state_child_allow_cancel_changed_cb(DnfState *child, gboolean allow_cancel, 
     priv->allow_cancel_child = allow_cancel;
 
     /* just emit if both this and child is okay */
-    g_signal_emit(state, signals [SIGNAL_ALLOW_CANCEL_CHANGED], 0,
+    g_signal_emit(state,
+                  signals[SIGNAL_ALLOW_CANCEL_CHANGED],
+                  0,
                   priv->allow_cancel && priv->allow_cancel_child);
 }
 
@@ -881,16 +895,16 @@ dnf_state_child_allow_cancel_changed_cb(DnfState *child, gboolean allow_cancel, 
  **/
 static void
 dnf_state_child_action_changed_cb(DnfState *child,
-                   DnfStateAction action,
-                   const gchar *action_hint,
-                   DnfState *state)
+                                  DnfStateAction action,
+                                  const gchar *action_hint,
+                                  DnfState *state)
 {
     DnfStatePrivate *priv = GET_PRIVATE(state);
     /* save */
     priv->action = action;
 
     /* just emit */
-    g_signal_emit(state, signals [SIGNAL_ACTION_CHANGED], 0, action, action_hint);
+    g_signal_emit(state, signals[SIGNAL_ACTION_CHANGED], 0, action, action_hint);
 }
 
 /**
@@ -898,14 +912,14 @@ dnf_state_child_action_changed_cb(DnfState *child,
  **/
 static void
 dnf_state_child_package_progress_changed_cb(DnfState *child,
-                         const gchar *dnf_package_get_id,
-                         DnfStateAction action,
-                         guint progress,
-                         DnfState *state)
+                                            const gchar *dnf_package_get_id,
+                                            DnfStateAction action,
+                                            guint progress,
+                                            DnfState *state)
 {
     /* just emit */
-    g_signal_emit(state, signals [SIGNAL_PACKAGE_PROGRESS_CHANGED], 0,
-                  dnf_package_get_id, action, progress);
+    g_signal_emit(
+      state, signals[SIGNAL_PACKAGE_PROGRESS_CHANGED], 0, dnf_package_get_id, action, progress);
 }
 
 /**
@@ -981,12 +995,9 @@ dnf_state_reset(DnfState *state)
  * dnf_state_child_notify_speed_cb:
  **/
 static void
-dnf_state_child_notify_speed_cb(DnfState *child,
-                 GParamSpec *pspec,
-                 DnfState *state)
+dnf_state_child_notify_speed_cb(DnfState *child, GParamSpec *pspec, DnfState *state)
 {
-    dnf_state_set_speed_internal(state,
-                      dnf_state_get_speed(child));
+    dnf_state_set_speed_internal(state, dnf_state_get_speed(child));
 }
 
 /**
@@ -1015,16 +1026,11 @@ dnf_state_get_child(DnfState *state)
 
     /* already set child */
     if (priv->child != NULL) {
-        g_signal_handler_disconnect(priv->child,
-                                    priv->percentage_child_id);
-        g_signal_handler_disconnect(priv->child,
-                                    priv->allow_cancel_child_id);
-        g_signal_handler_disconnect(priv->child,
-                                    priv->action_child_id);
-        g_signal_handler_disconnect(priv->child,
-                                    priv->package_progress_child_id);
-        g_signal_handler_disconnect(priv->child,
-                                    priv->notify_speed_child_id);
+        g_signal_handler_disconnect(priv->child, priv->percentage_child_id);
+        g_signal_handler_disconnect(priv->child, priv->allow_cancel_child_id);
+        g_signal_handler_disconnect(priv->child, priv->action_child_id);
+        g_signal_handler_disconnect(priv->child, priv->package_progress_child_id);
+        g_signal_handler_disconnect(priv->child, priv->notify_speed_child_id);
         g_object_unref(priv->child);
     }
 
@@ -1033,26 +1039,19 @@ dnf_state_get_child(DnfState *state)
     child_priv = GET_PRIVATE(child);
     child_priv->parent = state; /* do not ref! */
     priv->child = child;
-    priv->percentage_child_id =
-        g_signal_connect(child, "percentage-changed",
-                  G_CALLBACK(dnf_state_child_percentage_changed_cb),
-                  state);
-    priv->allow_cancel_child_id =
-        g_signal_connect(child, "allow-cancel-changed",
-                  G_CALLBACK(dnf_state_child_allow_cancel_changed_cb),
-                  state);
-    priv->action_child_id =
-        g_signal_connect(child, "action-changed",
-                  G_CALLBACK(dnf_state_child_action_changed_cb),
-                  state);
+    priv->percentage_child_id = g_signal_connect(
+      child, "percentage-changed", G_CALLBACK(dnf_state_child_percentage_changed_cb), state);
+    priv->allow_cancel_child_id = g_signal_connect(
+      child, "allow-cancel-changed", G_CALLBACK(dnf_state_child_allow_cancel_changed_cb), state);
+    priv->action_child_id = g_signal_connect(
+      child, "action-changed", G_CALLBACK(dnf_state_child_action_changed_cb), state);
     priv->package_progress_child_id =
-        g_signal_connect(child, "package-progress-changed",
-                  G_CALLBACK(dnf_state_child_package_progress_changed_cb),
-                  state);
+      g_signal_connect(child,
+                       "package-progress-changed",
+                       G_CALLBACK(dnf_state_child_package_progress_changed_cb),
+                       state);
     priv->notify_speed_child_id =
-        g_signal_connect(child, "notify::speed",
-                  G_CALLBACK(dnf_state_child_notify_speed_cb),
-                  state);
+      g_signal_connect(child, "notify::speed", G_CALLBACK(dnf_state_child_notify_speed_cb), state);
 
     /* reset child */
     child_priv->current = 0;
@@ -1105,8 +1104,7 @@ dnf_state_set_number_steps_real(DnfState *state, guint steps, const gchar *strlo
 
     /* did we call done on a state that did not have a size set? */
     if (priv->steps != 0) {
-        g_warning("steps already set to %i, can't set %i! [%s]",
-                  priv->steps, steps, strloc);
+        g_warning("steps already set to %i, can't set %i! [%s]", priv->steps, steps, strloc);
         dnf_state_print_parent_chain(state, 0);
         return FALSE;
     }
@@ -1169,34 +1167,27 @@ dnf_state_set_steps_real(DnfState *state, GError **error, const gchar *strloc, g
         value_temp = va_arg(args, gint);
         if (value_temp == -1)
             break;
-        total +=(guint) value_temp;
+        total += (guint)value_temp;
     }
     va_end(args);
 
     /* does not sum to 100% */
     if (total != 100) {
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_INTERNAL_ERROR,
-                    "percentage not 100: %i",
-                    total);
+        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "percentage not 100: %i", total);
         return FALSE;
     }
 
     /* set step number */
-    if (!dnf_state_set_number_steps_real(state, i+1, strloc)) {
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_INTERNAL_ERROR,
-                    "failed to set number steps: %i",
-                    i+1);
+    if (!dnf_state_set_number_steps_real(state, i + 1, strloc)) {
+        g_set_error(
+          error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "failed to set number steps: %i", i + 1);
         return FALSE;
     }
 
     /* save this data */
     total = value;
-    priv->step_data = g_new0(guint, i+2);
-    priv->step_profile = g_new0(gdouble, i+2);
+    priv->step_data = g_new0(guint, i + 2);
+    priv->step_profile = g_new0(gdouble, i + 2);
     priv->step_data[0] = total;
     va_start(args, value);
     for (i = 0;; i++) {
@@ -1205,8 +1196,8 @@ dnf_state_set_steps_real(DnfState *state, GError **error, const gchar *strloc, g
             break;
 
         /* we pre-add the data to make access simpler */
-        total +=(guint) value_temp;
-        priv->step_data[i+1] = total;
+        total += (guint)value_temp;
+        priv->step_data[i + 1] = total;
     }
     va_end(args);
 
@@ -1236,8 +1227,7 @@ dnf_state_show_profile(DnfState *state)
     /* get the total time so we can work out the divisor */
     result = g_string_new("Raw timing data was { ");
     for (i = 0; i < priv->steps; i++) {
-        g_string_append_printf(result, "%.3f, ",
-                               priv->step_profile[i]);
+        g_string_append_printf(result, "%.3f, ", priv->step_profile[i]);
     }
     if (priv->steps > 0)
         g_string_set_size(result, result->len - 2);
@@ -1246,8 +1236,7 @@ dnf_state_show_profile(DnfState *state)
     /* what we set */
     g_string_append(result, "steps were set as [ ");
     for (i = 0; i < priv->steps; i++) {
-        g_string_append_printf(result, "%i, ",
-                               priv->step_data[i] - uncumalitive);
+        g_string_append_printf(result, "%i, ", priv->step_data[i] - uncumalitive);
         uncumalitive = priv->step_data[i];
     }
 
@@ -1255,8 +1244,7 @@ dnf_state_show_profile(DnfState *state)
     g_string_append_printf(result, "-1 ] but should have been: [ ");
     division = total_time / 100.0f;
     for (i = 0; i < priv->steps; i++) {
-        g_string_append_printf(result, "%.0f, ",
-                               priv->step_profile[i] / division);
+        g_string_append_printf(result, "%.0f, ", priv->step_profile[i] / division);
     }
     g_string_append(result, "-1 ]");
     g_printerr("\n\n%s at %s\n\n", result->str, priv->id);
@@ -1284,10 +1272,7 @@ dnf_state_check(DnfState *state, GError **error)
 
     /* are we cancelled */
     if (g_cancellable_is_cancelled(priv->cancellable)) {
-        g_set_error_literal(error,
-                            DNF_ERROR,
-                            DNF_ERROR_CANCELLED,
-                            "cancelled by user action");
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_CANCELLED, "cancelled by user action");
         return FALSE;
     }
     return TRUE;
@@ -1325,9 +1310,12 @@ dnf_state_done_real(DnfState *state, GError **error, const gchar *strloc)
 
     /* did we call done on a state that did not have a size set? */
     if (priv->steps == 0) {
-        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_INTERNAL_ERROR,
                     "done on a state %p that did not have a size set! [%s]",
-                    state, strloc);
+                    state,
+                    strloc);
         dnf_state_print_parent_chain(state, 0);
         return FALSE;
     }
@@ -1337,7 +1325,8 @@ dnf_state_done_real(DnfState *state, GError **error, const gchar *strloc)
         elapsed = g_timer_elapsed(priv->timer, NULL);
         if (!priv->allow_cancel_changed_state && priv->current > 0) {
             if (elapsed > 0.1f) {
-                g_warning("%.1fms between dnf_state_done() and no dnf_state_set_allow_cancel()", elapsed * 1000);
+                g_warning("%.1fms between dnf_state_done() and no dnf_state_set_allow_cancel()",
+                          elapsed * 1000);
                 dnf_state_print_parent_chain(state, 0);
             }
         }
@@ -1350,8 +1339,8 @@ dnf_state_done_real(DnfState *state, GError **error, const gchar *strloc)
 
     /* is already at 100%? */
     if (priv->current >= priv->steps) {
-        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
-                    "already at 100%% state [%s]", strloc);
+        g_set_error(
+          error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "already at 100%% state [%s]", strloc);
         dnf_state_print_parent_chain(state, 0);
         return FALSE;
     }
@@ -1361,7 +1350,9 @@ dnf_state_done_real(DnfState *state, GError **error, const gchar *strloc)
         DnfStatePrivate *child_priv = GET_PRIVATE(priv->child);
         if (child_priv->current != child_priv->steps) {
             g_print("child is at %i/%i steps and parent done [%s]\n",
-                    child_priv->current, child_priv->steps, strloc);
+                    child_priv->current,
+                    child_priv->steps,
+                    strloc);
             dnf_state_print_parent_chain(priv->child, 0);
             /* do not abort, as we want to clean this up */
         }
@@ -1375,18 +1366,15 @@ dnf_state_done_real(DnfState *state, GError **error, const gchar *strloc)
 
     /* find new percentage */
     if (priv->step_data == NULL) {
-        percentage = dnf_state_discrete_to_percent(priv->current,
-                                                   priv->steps);
+        percentage = dnf_state_discrete_to_percent(priv->current, priv->steps);
     } else {
         /* this is cumalative, for speedy access */
         percentage = priv->step_data[priv->current - 1];
     }
-    dnf_state_set_percentage(state,(guint) percentage);
+    dnf_state_set_percentage(state, (guint)percentage);
 
     /* show any profiling stats */
-    if (priv->enable_profile &&
-        priv->current == priv->steps &&
-        priv->step_profile != NULL) {
+    if (priv->enable_profile && priv->current == priv->steps && priv->step_profile != NULL) {
         dnf_state_show_profile(state);
     }
 

@@ -32,8 +32,7 @@
 #include "hy-util.h"
 
 static int
-replace_filter(DnfSack *sack, struct _Filter **fp, int keyname, int cmp_type,
-               const char *match)
+replace_filter(DnfSack *sack, struct _Filter **fp, int keyname, int cmp_type, const char *match)
 {
     if (*fp == NULL)
         *fp = filter_create(1);
@@ -46,7 +45,7 @@ replace_filter(DnfSack *sack, struct _Filter **fp, int keyname, int cmp_type,
     f->cmp_type = cmp_type;
     if (keyname == HY_PKG_PROVIDES && cmp_type != HY_GLOB) {
         f->match_type = _HY_RELDEP;
-        DnfReldep *reldep = reldep_from_str (sack, match);
+        DnfReldep *reldep = reldep_from_str(sack, match);
         if (reldep == NULL) {
             filter_free(*fp);
             *fp = NULL;
@@ -62,8 +61,8 @@ replace_filter(DnfSack *sack, struct _Filter **fp, int keyname, int cmp_type,
 }
 
 static int
-replace_pkg_filter(DnfSack *sack, struct _Filter **fp, int keyname, int cmp_type,
-                   const DnfPackageSet *pset)
+replace_pkg_filter(
+  DnfSack *sack, struct _Filter **fp, int keyname, int cmp_type, const DnfPackageSet *pset)
 {
     if (*fp == NULL)
         *fp = filter_create(1);
@@ -75,7 +74,7 @@ replace_pkg_filter(DnfSack *sack, struct _Filter **fp, int keyname, int cmp_type
     f->keyname = keyname;
     f->cmp_type = cmp_type;
     f->match_type = _HY_PKG;
-    f->matches[0].pset = dnf_packageset_clone((DnfPackageSet*)pset);
+    f->matches[0].pset = dnf_packageset_clone((DnfPackageSet *)pset);
     return 0;
 }
 
@@ -83,18 +82,18 @@ static int
 valid_setting(int keyname, int cmp_type)
 {
     switch (keyname) {
-    case HY_PKG_ARCH:
-    case HY_PKG_EVR:
-    case HY_PKG_REPONAME:
-    case HY_PKG_VERSION:
-        return cmp_type == HY_EQ;
-    case HY_PKG_PROVIDES:
-    case HY_PKG_NAME:
-        return (cmp_type == HY_EQ || cmp_type == HY_GLOB);
-    case HY_PKG_FILE:
-        return 1;
-    default:
-        return 0;
+        case HY_PKG_ARCH:
+        case HY_PKG_EVR:
+        case HY_PKG_REPONAME:
+        case HY_PKG_VERSION:
+            return cmp_type == HY_EQ;
+        case HY_PKG_PROVIDES:
+        case HY_PKG_NAME:
+            return (cmp_type == HY_EQ || cmp_type == HY_GLOB);
+        case HY_PKG_FILE:
+            return 1;
+        default:
+            return 0;
     }
 }
 
@@ -138,27 +137,27 @@ hy_selector_set(HySelector sltr, int keyname, int cmp_type, const char *match)
     DnfSack *sack = selector_sack(sltr);
 
     switch (keyname) {
-    case HY_PKG_ARCH:
-        return replace_filter(sack, &sltr->f_arch, keyname, cmp_type, match);
-    case HY_PKG_EVR:
-    case HY_PKG_VERSION:
-        return replace_filter(sack, &sltr->f_evr, keyname, cmp_type, match);
-    case HY_PKG_NAME:
-        if (sltr->f_provides || sltr->f_file || sltr->f_pkg)
+        case HY_PKG_ARCH:
+            return replace_filter(sack, &sltr->f_arch, keyname, cmp_type, match);
+        case HY_PKG_EVR:
+        case HY_PKG_VERSION:
+            return replace_filter(sack, &sltr->f_evr, keyname, cmp_type, match);
+        case HY_PKG_NAME:
+            if (sltr->f_provides || sltr->f_file || sltr->f_pkg)
+                return DNF_ERROR_BAD_SELECTOR;
+            return replace_filter(sack, &sltr->f_name, keyname, cmp_type, match);
+        case HY_PKG_PROVIDES:
+            if (sltr->f_name || sltr->f_file || sltr->f_pkg)
+                return DNF_ERROR_BAD_SELECTOR;
+            return replace_filter(sack, &sltr->f_provides, keyname, cmp_type, match);
+        case HY_PKG_REPONAME:
+            return replace_filter(sack, &sltr->f_reponame, keyname, cmp_type, match);
+        case HY_PKG_FILE:
+            if (sltr->f_name || sltr->f_provides || sltr->f_pkg)
+                return DNF_ERROR_BAD_SELECTOR;
+            return replace_filter(sack, &sltr->f_file, keyname, cmp_type, match);
+        default:
             return DNF_ERROR_BAD_SELECTOR;
-        return replace_filter(sack, &sltr->f_name, keyname, cmp_type, match);
-    case HY_PKG_PROVIDES:
-        if (sltr->f_name || sltr->f_file || sltr->f_pkg)
-            return DNF_ERROR_BAD_SELECTOR;
-        return replace_filter(sack, &sltr->f_provides, keyname, cmp_type, match);
-    case HY_PKG_REPONAME:
-        return replace_filter(sack, &sltr->f_reponame, keyname, cmp_type, match);
-    case HY_PKG_FILE:
-        if (sltr->f_name || sltr->f_provides || sltr->f_pkg)
-            return DNF_ERROR_BAD_SELECTOR;
-        return replace_filter(sack, &sltr->f_file, keyname, cmp_type, match);
-    default:
-        return DNF_ERROR_BAD_SELECTOR;
     }
 }
 

@@ -19,7 +19,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
 /**
  * SECTION:dnf-advisoryref
  * @short_description: Update advisory reference
@@ -31,7 +30,6 @@
  * See also: #DnfContext
  */
 
-
 #include <solv/repo.h>
 #include <solv/util.h>
 
@@ -39,13 +37,13 @@
 
 typedef struct
 {
-    Pool    *pool;
-    Id       a_id;
-    int      index;
+    Pool *pool;
+    Id a_id;
+    int index;
 } DnfAdvisoryRefPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfAdvisoryRef, dnf_advisoryref, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (dnf_advisoryref_get_instance_private (o))
+#define GET_PRIVATE(o) (dnf_advisoryref_get_instance_private(o))
 
 /**
  * dnf_advisoryref_init:
@@ -142,11 +140,11 @@ dnf_advisoryref_get_kind(DnfAdvisoryRef *advisoryref)
     type = advisoryref_get_str(advisoryref, UPDATE_REFERENCE_TYPE);
     if (type == NULL)
         return DNF_REFERENCE_KIND_UNKNOWN;
-    if (!g_strcmp0 (type, "bugzilla"))
+    if (!g_strcmp0(type, "bugzilla"))
         return DNF_REFERENCE_KIND_BUGZILLA;
-    if (!g_strcmp0 (type, "cve"))
+    if (!g_strcmp0(type, "cve"))
         return DNF_REFERENCE_KIND_CVE;
-    if (!g_strcmp0 (type, "vendor"))
+    if (!g_strcmp0(type, "vendor"))
         return DNF_REFERENCE_KIND_VENDOR;
     return DNF_REFERENCE_KIND_UNKNOWN;
 }

@@ -30,13 +30,12 @@
  * to use objects from librepo, rpm or hawkey directly.
  */
 
-
 #include <gio/gio.h>
+#include <librepo/librepo.h>
+#include <rpm/rpmdb.h>
 #include <rpm/rpmlib.h>
 #include <rpm/rpmmacro.h>
 #include <rpm/rpmts.h>
-#include <rpm/rpmdb.h>
-#include <librepo/librepo.h>
 #ifdef RHSM_SUPPORT
 #include <rhsm/rhsm.h>
 #endif
@@ -48,92 +47,98 @@
 #include "dnf-state.h"
 #include "dnf-transaction.h"
 #include "dnf-utils.h"
-#include "dnf-sack.h"
 #include "hy-query.h"
-#include "hy-subject.h"
 #include "hy-selector.h"
+#include "hy-subject.h"
 
-#define MAX_NATIVE_ARCHES    12
+#define MAX_NATIVE_ARCHES 12
 
 #define RELEASEVER_PROV "system-release(releasever)"
 
 /* data taken from https://github.com/rpm-software-management/dnf/blob/master/dnf/arch.py */
-static const struct {
-    const gchar    *base;
-    const gchar    *native[MAX_NATIVE_ARCHES];
-} arch_map[] =  {
-    { "aarch64",    { "aarch64", NULL } },
-    { "alpha",      { "alpha", "alphaev4", "alphaev45", "alphaev5",
-                      "alphaev56", "alphaev6", "alphaev67",
-                      "alphaev68", "alphaev7", "alphapca56", NULL } },
-    { "arm",        { "armv5tejl", "armv5tel", "armv5tl", "armv6l", "armv7l", NULL } },
-    { "armhfp",     { "armv7hl", "armv7hnl", NULL } },
-    { "i386",       { "i386", "athlon", "geode", "i386",
-                      "i486", "i586", "i686", NULL } },
-    { "ia64",       { "ia64", NULL } },
-    { "noarch",     { "noarch", NULL } },
-    { "ppc",        { "ppc", NULL } },
-    { "ppc64",      { "ppc64", "ppc64iseries", "ppc64p7",
-                      "ppc64pseries", NULL } },
-    { "ppc64le",    { "ppc64le", NULL } },
-    { "s390",       { "s390", NULL } },
-    { "s390x",      { "s390x", NULL } },
-    { "sh3",        { "sh3", NULL } },
-    { "sh4",        { "sh4", "sh4a", NULL } },
-    { "sparc",      { "sparc", "sparc64", "sparc64v", "sparcv8",
-                      "sparcv9", "sparcv9v", NULL } },
-    { "x86_64",     { "x86_64", "amd64", "ia32e", NULL } },
-    { NULL,         { NULL } }
-};
+static const struct
+{
+    const gchar *base;
+    const gchar *native[MAX_NATIVE_ARCHES];
+} arch_map[] = { { "aarch64", { "aarch64", NULL } },
+                 { "alpha",
+                   { "alpha",
+                     "alphaev4",
+                     "alphaev45",
+                     "alphaev5",
+                     "alphaev56",
+                     "alphaev6",
+                     "alphaev67",
+                     "alphaev68",
+                     "alphaev7",
+                     "alphapca56",
+                     NULL } },
+                 { "arm", { "armv5tejl", "armv5tel", "armv5tl", "armv6l", "armv7l", NULL } },
+                 { "armhfp", { "armv7hl", "armv7hnl", NULL } },
+                 { "i386", { "i386", "athlon", "geode", "i386", "i486", "i586", "i686", NULL } },
+                 { "ia64", { "ia64", NULL } },
+                 { "noarch", { "noarch", NULL } },
+                 { "ppc", { "ppc", NULL } },
+                 { "ppc64", { "ppc64", "ppc64iseries", "ppc64p7", "ppc64pseries", NULL } },
+                 { "ppc64le", { "ppc64le", NULL } },
+                 { "s390", { "s390", NULL } },
+                 { "s390x", { "s390x", NULL } },
+                 { "sh3", { "sh3", NULL } },
+                 { "sh4", { "sh4", "sh4a", NULL } },
+                 { "sparc",
+                   { "sparc", "sparc64", "sparc64v", "sparcv8", "sparcv9", "sparcv9v", NULL } },
+                 { "x86_64", { "x86_64", "amd64", "ia32e", NULL } },
+                 { NULL, { NULL } } };
 
 typedef struct
 {
-    gchar            *repo_dir;
-    gchar            *base_arch;
-    gchar            *release_ver;
-    gchar            *cache_dir;
-    gchar            *solv_dir;
-    gchar            *vendor_cache_dir;
-    gchar            *vendor_solv_dir;
-    gchar            *lock_dir;
-    gchar            *os_info;
-    gchar            *arch_info;
-    gchar            *install_root;
-    gchar            *source_root;
-    gchar            *rpm_verbosity;
-    gchar            **native_arches;
-    gchar            *http_proxy;
-    gchar            *user_agent;
-    gboolean         cache_age;
-    gboolean         check_disk_space;
-    gboolean         check_transaction;
-    gboolean         only_trusted;
-    gboolean         enable_yumdb;
-    gboolean         keep_cache;
-    gboolean         enrollment_valid;
-    DnfLock         *lock;
-    DnfTransaction  *transaction;
-    GThread         *transaction_thread;
-    GFileMonitor    *monitor_rpmdb;
-    GHashTable      *override_macros;
+    gchar *repo_dir;
+    gchar *base_arch;
+    gchar *release_ver;
+    gchar *cache_dir;
+    gchar *solv_dir;
+    gchar *vendor_cache_dir;
+    gchar *vendor_solv_dir;
+    gchar *lock_dir;
+    gchar *os_info;
+    gchar *arch_info;
+    gchar *install_root;
+    gchar *source_root;
+    gchar *rpm_verbosity;
+    gchar **native_arches;
+    gchar *http_proxy;
+    gchar *user_agent;
+    gboolean cache_age;
+    gboolean check_disk_space;
+    gboolean check_transaction;
+    gboolean only_trusted;
+    gboolean enable_yumdb;
+    gboolean keep_cache;
+    gboolean enrollment_valid;
+    DnfLock *lock;
+    DnfTransaction *transaction;
+    GThread *transaction_thread;
+    GFileMonitor *monitor_rpmdb;
+    GHashTable *override_macros;
 
     /* used to implement a transaction */
-    DnfRepoLoader   *repo_loader;
-    GPtrArray       *repos;
-    DnfState        *state;        /* used for setup() and run() */
-    HyGoal           goal;
-    DnfSack         *sack;
+    DnfRepoLoader *repo_loader;
+    GPtrArray *repos;
+    DnfState *state; /* used for setup() and run() */
+    HyGoal goal;
+    DnfSack *sack;
 } DnfContextPrivate;
 
-enum {
+enum
+{
     SIGNAL_INVALIDATE,
     SIGNAL_LAST
 };
 
-static guint signals [SIGNAL_LAST] = { 0 };
+static guint signals[SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfContext, dnf_context, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (dnf_context_get_instance_private (o))
+#define GET_PRIVATE(o) (dnf_context_get_instance_private(o))
 
 /**
  * dnf_context_finalize:
@@ -194,15 +199,14 @@ dnf_context_init(DnfContext *context)
     priv->state = dnf_state_new();
     priv->lock = dnf_lock_new();
     priv->cache_age = 60 * 60 * 24 * 7; /* 1 week */
-    priv->override_macros = g_hash_table_new_full(g_str_hash, g_str_equal,
-                                                  g_free, g_free);
+    priv->override_macros = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
     priv->user_agent = g_strdup("libdnf/" PACKAGE_VERSION);
 
     /* Initialize some state that used to happen in
      * dnf_context_setup(), because callers like rpm-ostree want
      * access to the basearch, but before installroot.
      */
-    (void) dnf_context_globals_init(NULL);
+    (void)dnf_context_globals_init(NULL);
 }
 
 /**
@@ -218,26 +222,24 @@ dnf_context_init(DnfContext *context)
  * Since: 0.7.0
  */
 gboolean
-dnf_context_globals_init (GError **error)
+dnf_context_globals_init(GError **error)
 {
     static gsize initialized = 0;
     gboolean ret = TRUE;
 
-    if (g_once_init_enter (&initialized)) {
+    if (g_once_init_enter(&initialized)) {
 
         /* librepo's globals */
         lr_global_init();
 
         /* librpm's globals */
         if (rpmReadConfigFiles(NULL, NULL) != 0) {
-            g_set_error_literal(error,
-                                DNF_ERROR,
-                                DNF_ERROR_INTERNAL_ERROR,
-                                "failed to read rpm config files");
+            g_set_error_literal(
+              error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "failed to read rpm config files");
             ret = FALSE;
         }
 
-        g_once_init_leave (&initialized, 1);
+        g_once_init_leave(&initialized, 1);
     }
     return ret;
 }
@@ -251,12 +253,16 @@ dnf_context_class_init(DnfContextClass *klass)
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
     object_class->finalize = dnf_context_finalize;
 
-    signals [SIGNAL_INVALIDATE] =
-        g_signal_new("invalidate",
-                  G_TYPE_FROM_CLASS(object_class), G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET(DnfContextClass, invalidate),
-                  NULL, NULL, g_cclosure_marshal_VOID__STRING,
-                  G_TYPE_NONE, 1, G_TYPE_STRING);
+    signals[SIGNAL_INVALIDATE] = g_signal_new("invalidate",
+                                              G_TYPE_FROM_CLASS(object_class),
+                                              G_SIGNAL_RUN_LAST,
+                                              G_STRUCT_OFFSET(DnfContextClass, invalidate),
+                                              NULL,
+                                              NULL,
+                                              g_cclosure_marshal_VOID__STRING,
+                                              G_TYPE_NONE,
+                                              1,
+                                              G_TYPE_STRING);
 }
 
 /**
@@ -482,7 +488,7 @@ const gchar **
 dnf_context_get_native_arches(DnfContext *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
-    return(const gchar **) priv->native_arches;
+    return (const gchar **)priv->native_arches;
 }
 
 /**
@@ -602,7 +608,7 @@ dnf_context_get_goal(DnfContext *context)
  *
  * Since: 0.1.2
  **/
-DnfState*
+DnfState *
 dnf_context_get_state(DnfContext *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
@@ -616,7 +622,7 @@ dnf_context_get_state(DnfContext *context)
  * Returns: (transfer none): the user agent
  **/
 const gchar *
-dnf_context_get_user_agent (DnfContext *context)
+dnf_context_get_user_agent(DnfContext *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     return priv->user_agent;
@@ -735,13 +741,12 @@ dnf_context_get_cache_age(DnfContext *context)
 const gchar **
 dnf_context_get_installonly_pkgs(DnfContext *context)
 {
-    static const gchar *installonly_pkgs[] = {
-        "kernel",
-        "kernel-PAE",
-        "installonlypkg(kernel)",
-        "installonlypkg(kernel-module)",
-        "installonlypkg(vm)",
-        NULL };
+    static const gchar *installonly_pkgs[] = { "kernel",
+                                               "kernel-PAE",
+                                               "installonlypkg(kernel)",
+                                               "installonlypkg(kernel-module)",
+                                               "installonlypkg(vm)",
+                                               NULL };
     return installonly_pkgs;
 }
 
@@ -993,7 +998,6 @@ dnf_context_set_only_trusted(DnfContext *context, gboolean only_trusted)
     priv->only_trusted = only_trusted;
 }
 
-
 /**
  * dnf_context_set_yumdb_enabled:
  * @context: a #DnfContext instance.
@@ -1004,8 +1008,7 @@ dnf_context_set_only_trusted(DnfContext *context, gboolean only_trusted)
  * Since: 0.1.9
  **/
 void
-dnf_context_set_yumdb_enabled(DnfContext    *context,
-                   gboolean     enable_yumdb)
+dnf_context_set_yumdb_enabled(DnfContext *context, gboolean enable_yumdb)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     priv->enable_yumdb = enable_yumdb;
@@ -1033,27 +1036,27 @@ dnf_context_set_cache_age(DnfContext *context, guint cache_age)
 static gboolean
 dnf_context_set_os_release(DnfContext *context, GError **error)
 {
-    const char *source_root = dnf_context_get_source_root (context);
+    const char *source_root = dnf_context_get_source_root(context);
 
     gboolean found_in_rpmdb = FALSE;
-    rpmts ts = rpmtsCreate ();
-    rpmtsSetRootDir (ts, source_root);
-    rpmdbMatchIterator mi = rpmtsInitIterator (ts, RPMTAG_PROVIDENAME, RELEASEVER_PROV, 0);
+    rpmts ts = rpmtsCreate();
+    rpmtsSetRootDir(ts, source_root);
+    rpmdbMatchIterator mi = rpmtsInitIterator(ts, RPMTAG_PROVIDENAME, RELEASEVER_PROV, 0);
     Header hdr;
-    while ((hdr = rpmdbNextIterator (mi)) != NULL) {
-        const char *v = headerGetString (hdr, RPMTAG_VERSION);
-        rpmds ds = rpmdsNew (hdr, RPMTAG_PROVIDENAME, 0);
-        while (rpmdsNext (ds) >= 0) {
-            if (strcmp (rpmdsN (ds), RELEASEVER_PROV) == 0 && rpmdsFlags (ds) == RPMSENSE_EQUAL)
-                v = rpmdsEVR (ds);
+    while ((hdr = rpmdbNextIterator(mi)) != NULL) {
+        const char *v = headerGetString(hdr, RPMTAG_VERSION);
+        rpmds ds = rpmdsNew(hdr, RPMTAG_PROVIDENAME, 0);
+        while (rpmdsNext(ds) >= 0) {
+            if (strcmp(rpmdsN(ds), RELEASEVER_PROV) == 0 && rpmdsFlags(ds) == RPMSENSE_EQUAL)
+                v = rpmdsEVR(ds);
         }
         found_in_rpmdb = TRUE;
-        dnf_context_set_release_ver (context, v);
-        rpmdsFree (ds);
+        dnf_context_set_release_ver(context, v);
+        rpmdsFree(ds);
         break;
     }
-    rpmdbFreeIterator (mi);
-    rpmtsFree (ts);
+    rpmdbFreeIterator(mi);
+    rpmtsFree(ts);
     if (found_in_rpmdb)
         return TRUE;
 
@@ -1078,16 +1081,19 @@ dnf_context_set_os_release(DnfContext *context, GError **error)
     }
 
     if (contents == NULL) {
-        g_free (os_release);
+        g_free(os_release);
         os_release = g_build_filename(source_root, "usr/lib/os-release", NULL);
         if (!dnf_get_file_contents_allow_noent(os_release, &contents, NULL, error))
             return FALSE;
     }
 
     if (contents == NULL) {
-        g_set_error(error, DNF_ERROR, DNF_ERROR_FILE_NOT_FOUND,
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_FILE_NOT_FOUND,
                     "Could not find os-release in etc/, usr/etc, or usr/lib "
-                    "under source root '%s'", source_root);
+                    "under source root '%s'",
+                    source_root);
         return FALSE;
     }
 
@@ -1097,17 +1103,11 @@ dnf_context_set_os_release(DnfContext *context, GError **error)
     g_string_prepend(str, "[os-release]\n");
 
     key_file = g_key_file_new();
-    if (!g_key_file_load_from_data(key_file,
-                     str->str, -1,
-                     G_KEY_FILE_NONE,
-                     error))
+    if (!g_key_file_load_from_data(key_file, str->str, -1, G_KEY_FILE_NONE, error))
         return FALSE;
 
     /* get keys */
-    maybe_quoted_version = g_key_file_get_string(key_file,
-                                                 "os-release",
-                                                 "VERSION_ID",
-                                                 error);
+    maybe_quoted_version = g_key_file_get_string(key_file, "os-release", "VERSION_ID", error);
     if (maybe_quoted_version == NULL)
         return FALSE;
     version = g_shell_unquote(maybe_quoted_version, error);
@@ -1123,12 +1123,11 @@ dnf_context_set_os_release(DnfContext *context, GError **error)
  * @user_agent: User-Agent string for HTTP requests
  **/
 void
-dnf_context_set_user_agent (DnfContext  *context,
-                            const gchar *user_agent)
+dnf_context_set_user_agent(DnfContext *context, const gchar *user_agent)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
-    g_free (priv->user_agent);
-    priv->user_agent = g_strdup (user_agent);
+    g_free(priv->user_agent);
+    priv->user_agent = g_strdup(user_agent);
 }
 
 /**
@@ -1136,7 +1135,8 @@ dnf_context_set_user_agent (DnfContext  *context,
  **/
 static void
 dnf_context_rpmdb_changed_cb(GFileMonitor *monitor_,
-                             GFile *file, GFile *other_file,
+                             GFile *file,
+                             GFile *other_file,
                              GFileMonitorEvent event_type,
                              DnfContext *context)
 {
@@ -1186,20 +1186,13 @@ dnf_context_setup_sack(DnfContext *context, DnfState *state, GError **error)
 
     /* add installed packages */
     if (have_existing_install(context)) {
-        if (!dnf_sack_load_system_repo(priv->sack,
-                           NULL,
-                           DNF_SACK_LOAD_FLAG_BUILD_CACHE,
-                           error))
+        if (!dnf_sack_load_system_repo(priv->sack, NULL, DNF_SACK_LOAD_FLAG_BUILD_CACHE, error))
             return FALSE;
     }
 
     /* add remote */
-    ret = dnf_sack_add_repos(priv->sack,
-                             priv->repos,
-                             priv->cache_age,
-                             DNF_SACK_ADD_FLAG_FILELISTS,
-                             state,
-                             error);
+    ret = dnf_sack_add_repos(
+      priv->sack, priv->repos, priv->cache_age, DNF_SACK_ADD_FLAG_FILELISTS, state, error);
     if (!ret)
         return FALSE;
 
@@ -1219,10 +1212,7 @@ dnf_context_ensure_exists(const gchar *directory, GError **error)
     if (g_file_test(directory, G_FILE_TEST_EXISTS))
         return TRUE;
     if (g_mkdir_with_parents(directory, 0755) != 0) {
-        g_set_error(error,
-                 DNF_ERROR,
-                 DNF_ERROR_INTERNAL_ERROR,
-                 "Failed to create: %s", directory);
+        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "Failed to create: %s", directory);
         return FALSE;
     }
     return TRUE;
@@ -1241,10 +1231,7 @@ dnf_utils_copy_files(const gchar *src, const gchar *dest, GError **error)
     /* create destination directory */
     rc = g_mkdir_with_parents(dest, 0755);
     if (rc < 0) {
-        g_set_error(error,
-                 DNF_ERROR,
-                 DNF_ERROR_FAILED,
-                 "failed to create %s", dest);
+        g_set_error(error, DNF_ERROR, DNF_ERROR_FAILED, "failed to create %s", dest);
         return FALSE;
     }
 
@@ -1265,10 +1252,7 @@ dnf_utils_copy_files(const gchar *src, const gchar *dest, GError **error)
             g_autoptr(GFile) file_dest = NULL;
             file_src = g_file_new_for_path(path_src);
             file_dest = g_file_new_for_path(path_dest);
-            if (!g_file_copy(file_src, file_dest,
-                      G_FILE_COPY_NONE,
-                      NULL, NULL, NULL,
-                      error))
+            if (!g_file_copy(file_src, file_dest, G_FILE_COPY_NONE, NULL, NULL, NULL, error))
                 return FALSE;
         }
     }
@@ -1367,14 +1351,11 @@ dnf_context_copy_vendor_solv(DnfContext *context, GError **error)
  * Since: 0.1.9
  **/
 void
-dnf_context_set_rpm_macro(DnfContext    *context,
-                          const gchar    *key,
-                          const gchar  *value)
+dnf_context_set_rpm_macro(DnfContext *context, const gchar *key, const gchar *value)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     g_hash_table_replace(priv->override_macros, g_strdup(key), g_strdup(value));
 }
-
 
 /**
  * dnf_context_get_http_proxy:
@@ -1443,17 +1424,15 @@ dnf_context_setup_enrollments(DnfContext *context, GError **error)
      * root, assume we're running in the test suite, or we're part of
      * e.g. rpm-ostree which is trying to run totally as non-root.
      */
-    if (getuid () != 0)
+    if (getuid() != 0)
         return TRUE;
 
 #ifdef RHSM_SUPPORT
-    g_autoptr(RHSMContext) rhsm_ctx = rhsm_context_new ();
-    g_autofree gchar *repofname = g_build_filename (priv->repo_dir,
-                                                    "redhat.repo",
-                                                    NULL);
-    g_autoptr(GKeyFile) repofile = rhsm_utils_yum_repo_from_context (rhsm_ctx);
+    g_autoptr(RHSMContext) rhsm_ctx = rhsm_context_new();
+    g_autofree gchar *repofname = g_build_filename(priv->repo_dir, "redhat.repo", NULL);
+    g_autoptr(GKeyFile) repofile = rhsm_utils_yum_repo_from_context(rhsm_ctx);
 
-    if (!g_key_file_save_to_file (repofile, repofname, error))
+    if (!g_key_file_save_to_file(repofile, repofname, error))
         return FALSE;
 #endif
 
@@ -1478,9 +1457,7 @@ dnf_context_setup_enrollments(DnfContext *context, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-dnf_context_setup(DnfContext *context,
-           GCancellable *cancellable,
-           GError **error)
+dnf_context_setup(DnfContext *context, GCancellable *cancellable, GError **error)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     guint i;
@@ -1493,10 +1470,7 @@ dnf_context_setup(DnfContext *context,
 
     /* check essential things are set */
     if (priv->solv_dir == NULL) {
-        g_set_error_literal(error,
-                     DNF_ERROR,
-                     DNF_ERROR_INTERNAL_ERROR,
-                     "solv_dir not set");
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "solv_dir not set");
         return FALSE;
     }
 
@@ -1527,16 +1501,16 @@ dnf_context_setup(DnfContext *context,
     if (cancellable != NULL)
         dnf_state_set_cancellable(priv->state, cancellable);
 
-    if (!dnf_context_globals_init (error))
+    if (!dnf_context_globals_init(error))
         return FALSE;
 
     buf = g_string_new("");
     g_hash_table_iter_init(&hashiter, priv->override_macros);
     while (g_hash_table_iter_next(&hashiter, &hashkey, &hashval)) {
         g_string_assign(buf, "%define ");
-        g_string_append(buf,(gchar*)hashkey);
+        g_string_append(buf, (gchar *)hashkey);
         g_string_append_c(buf, ' ');
-        g_string_append(buf,(gchar*)hashval);
+        g_string_append(buf, (gchar *)hashval);
         /* Calling expand with %define (ignoring the return
          * value) is apparently the way to change the global
          * macro context.
@@ -1544,7 +1518,7 @@ dnf_context_setup(DnfContext *context,
         free(rpmExpand(buf->str, NULL));
     }
 
-    (void) dnf_context_get_base_arch(context);
+    (void)dnf_context_get_base_arch(context);
 
     /* find all the native archs */
     priv->native_arches = g_new0(gchar *, MAX_NATIVE_ARCHES);
@@ -1558,22 +1532,18 @@ dnf_context_setup(DnfContext *context,
     }
 
     /* get info from OS release file */
-    if (priv->release_ver == NULL &&
-        !dnf_context_set_os_release(context, error))
+    if (priv->release_ver == NULL && !dnf_context_set_os_release(context, error))
         return FALSE;
 
     /* setup a file monitor on the rpmdb, if we're operating on the native / */
     if (g_strcmp0(priv->install_root, "/") == 0) {
         rpmdb_path = g_build_filename(priv->install_root, "var/lib/rpm/Packages", NULL);
         file_rpmdb = g_file_new_for_path(rpmdb_path);
-        priv->monitor_rpmdb = g_file_monitor_file(file_rpmdb,
-                               G_FILE_MONITOR_NONE,
-                               NULL,
-                               error);
+        priv->monitor_rpmdb = g_file_monitor_file(file_rpmdb, G_FILE_MONITOR_NONE, NULL, error);
         if (priv->monitor_rpmdb == NULL)
             return FALSE;
-        g_signal_connect(priv->monitor_rpmdb, "changed",
-                         G_CALLBACK(dnf_context_rpmdb_changed_cb), context);
+        g_signal_connect(
+          priv->monitor_rpmdb, "changed", G_CALLBACK(dnf_context_rpmdb_changed_cb), context);
     }
 
     /* copy any vendor distributed cached metadata */
@@ -1622,20 +1592,18 @@ dnf_context_run(DnfContext *context, GCancellable *cancellable, GError **error)
     if (cancellable != NULL)
         dnf_state_set_cancellable(priv->state, cancellable);
 
-    ret = dnf_state_set_steps(priv->state, error,
-                              5,        /* depsolve */
-                              50,       /* download */
-                              45,       /* commit */
+    ret = dnf_state_set_steps(priv->state,
+                              error,
+                              5,  /* depsolve */
+                              50, /* download */
+                              45, /* commit */
                               -1);
     if (!ret)
         return FALSE;
 
     /* depsolve */
     state_local = dnf_state_get_child(priv->state);
-    ret = dnf_transaction_depsolve(priv->transaction,
-                                   priv->goal,
-                                   state_local,
-                                   error);
+    ret = dnf_transaction_depsolve(priv->transaction, priv->goal, state_local, error);
     if (!ret)
         return FALSE;
 
@@ -1645,9 +1613,7 @@ dnf_context_run(DnfContext *context, GCancellable *cancellable, GError **error)
 
     /* download */
     state_local = dnf_state_get_child(priv->state);
-    ret = dnf_transaction_download(priv->transaction,
-                                   state_local,
-                                   error);
+    ret = dnf_transaction_download(priv->transaction, state_local, error);
     if (!ret)
         return FALSE;
 
@@ -1657,10 +1623,7 @@ dnf_context_run(DnfContext *context, GCancellable *cancellable, GError **error)
 
     /* commit set up transaction */
     state_local = dnf_state_get_child(priv->state);
-    ret = dnf_transaction_commit(priv->transaction,
-                                 priv->goal,
-                                 state_local,
-                                 error);
+    ret = dnf_transaction_commit(priv->transaction, priv->goal, state_local, error);
     if (!ret)
         return FALSE;
 
@@ -1687,9 +1650,9 @@ dnf_context_run(DnfContext *context, GCancellable *cancellable, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-dnf_context_install (DnfContext *context, const gchar *name, GError **error)
+dnf_context_install(DnfContext *context, const gchar *name, GError **error)
 {
-    DnfContextPrivate *priv = GET_PRIVATE (context);
+    DnfContextPrivate *priv = GET_PRIVATE(context);
     g_autoptr(GPtrArray) selector_matches = NULL;
     HySelector selector = NULL;
     HySubject subject = NULL;
@@ -1697,7 +1660,7 @@ dnf_context_install (DnfContext *context, const gchar *name, GError **error)
 
     /* create sack and add sources */
     if (priv->sack == NULL) {
-        dnf_state_reset (priv->state);
+        dnf_state_reset(priv->state);
         if (!dnf_context_setup_sack(context, priv->state, error))
             goto out;
     }
@@ -1706,10 +1669,7 @@ dnf_context_install (DnfContext *context, const gchar *name, GError **error)
     selector = hy_subject_get_best_selector(subject, priv->sack);
     selector_matches = hy_selector_matches(selector);
     if (selector_matches->len == 0) {
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_PACKAGE_NOT_FOUND,
-                    "No package matches '%s'", name);
+        g_set_error(error, DNF_ERROR, DNF_ERROR_PACKAGE_NOT_FOUND, "No package matches '%s'", name);
         return FALSE;
     }
 
@@ -1717,7 +1677,7 @@ dnf_context_install (DnfContext *context, const gchar *name, GError **error)
         goto out;
 
     ret = TRUE;
- out:
+out:
     if (selector)
         hy_selector_free(selector);
     if (subject)
@@ -1767,7 +1727,7 @@ dnf_context_remove(DnfContext *context, const gchar *name, GError **error)
 
     /* add each package */
     for (i = 0; i < pkglist->len; i++) {
-        pkg = g_ptr_array_index (pkglist, i);
+        pkg = g_ptr_array_index(pkglist, i);
         hy_goal_erase(priv->goal, pkg);
     }
     g_ptr_array_unref(pkglist);
@@ -1809,16 +1769,15 @@ dnf_context_update(DnfContext *context, const gchar *name, GError **error)
     /* find a newest remote package to install */
     query = hy_query_create(priv->sack);
     hy_query_filter_latest_per_arch(query, TRUE);
-    hy_query_filter_in(query, HY_PKG_ARCH, HY_EQ,
-               (const gchar **) priv->native_arches);
+    hy_query_filter_in(query, HY_PKG_ARCH, HY_EQ, (const gchar **)priv->native_arches);
     hy_query_filter(query, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
-    hy_query_filter (query, HY_PKG_ARCH, HY_NEQ, "src");
+    hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
     hy_query_filter(query, HY_PKG_NAME, HY_EQ, name);
     pkglist = hy_query_run(query);
 
     /* add each package */
     for (i = 0; i < pkglist->len; i++) {
-        pkg = g_ptr_array_index (pkglist, i);
+        pkg = g_ptr_array_index(pkglist, i);
         if (dnf_package_is_installonly(pkg))
             hy_goal_install(priv->goal, pkg);
         else
@@ -1840,8 +1799,7 @@ dnf_context_update(DnfContext *context, const gchar *name, GError **error)
  * Since: 0.7.0
  **/
 gboolean
-dnf_context_update_all (DnfContext  *context,
-                        GError     **error)
+dnf_context_update_all(DnfContext *context, GError **error)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
 
@@ -1853,7 +1811,7 @@ dnf_context_update_all (DnfContext  *context,
     }
 
     /* update whole solvables */
-    hy_goal_upgrade_all (priv->goal);
+    hy_goal_upgrade_all(priv->goal);
     return TRUE;
 }
 
@@ -1882,10 +1840,7 @@ dnf_context_repo_set_data(DnfContext *context,
 
     /* nothing found */
     if (repo == NULL) {
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_INTERNAL_ERROR,
-                    "repo %s not found", repo_id);
+        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "repo %s not found", repo_id);
         return FALSE;
     }
 
@@ -1909,13 +1864,10 @@ dnf_context_repo_set_data(DnfContext *context,
  * Since: 0.1.0
  **/
 gboolean
-dnf_context_repo_enable(DnfContext *context,
-                        const gchar *repo_id,
-                        GError **error)
+dnf_context_repo_enable(DnfContext *context, const gchar *repo_id, GError **error)
 {
-    return dnf_context_repo_set_data(context, repo_id,
-                                     DNF_REPO_ENABLED_PACKAGES |
-                                     DNF_REPO_ENABLED_METADATA, error);
+    return dnf_context_repo_set_data(
+      context, repo_id, DNF_REPO_ENABLED_PACKAGES | DNF_REPO_ENABLED_METADATA, error);
 }
 
 /**
@@ -1933,12 +1885,9 @@ dnf_context_repo_enable(DnfContext *context,
  * Since: 0.1.0
  **/
 gboolean
-dnf_context_repo_disable(DnfContext *context,
-                         const gchar *repo_id,
-                         GError **error)
+dnf_context_repo_disable(DnfContext *context, const gchar *repo_id, GError **error)
 {
-    return dnf_context_repo_set_data(context, repo_id,
-                                     DNF_REPO_ENABLED_NONE, error);
+    return dnf_context_repo_set_data(context, repo_id, DNF_REPO_ENABLED_NONE, error);
 }
 
 /**
@@ -1962,10 +1911,7 @@ dnf_context_commit(DnfContext *context, DnfState *state, GError **error)
     dnf_context_ensure_transaction(context);
 
     /* run the transaction */
-    return dnf_transaction_commit(priv->transaction,
-                                  priv->goal,
-                                  state,
-                                  error);
+    return dnf_transaction_commit(priv->transaction, priv->goal, state, error);
 }
 
 /**
@@ -1981,13 +1927,13 @@ dnf_context_commit(DnfContext *context, DnfState *state, GError **error)
  **/
 void
 dnf_context_invalidate_full(DnfContext *context,
-                 const gchar *message,
-                 DnfContextInvalidateFlags flags)
+                            const gchar *message,
+                            DnfContextInvalidateFlags flags)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     g_debug("Msg: %s", message);
     if (flags & DNF_CONTEXT_INVALIDATE_FLAG_RPMDB)
-        g_signal_emit(context, signals [SIGNAL_INVALIDATE], 0, message);
+        g_signal_emit(context, signals[SIGNAL_INVALIDATE], 0, message);
     if (flags & DNF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT)
         priv->enrollment_valid = FALSE;
 }
@@ -2004,8 +1950,7 @@ dnf_context_invalidate_full(DnfContext *context,
 void
 dnf_context_invalidate(DnfContext *context, const gchar *message)
 {
-    dnf_context_invalidate_full(context, message,
-                                DNF_CONTEXT_INVALIDATE_FLAG_RPMDB);
+    dnf_context_invalidate_full(context, message, DNF_CONTEXT_INVALIDATE_FLAG_RPMDB);
 }
 
 /**

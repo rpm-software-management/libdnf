@@ -24,7 +24,8 @@
 #include "hy-types.h"
 
 /* additional Query constants only used in the bindings */
-enum py_key_name_e {
+enum py_key_name_e
+{
     HY_PKG_DOWNGRADABLE = 100,
     HY_PKG_DOWNGRADES,
     HY_PKG_EMPTY,
@@ -36,10 +37,13 @@ enum py_key_name_e {
 
 extern PyTypeObject query_Type;
 
-#define queryObject_Check(o)        PyObject_TypeCheck(o, &query_Type)
+#define queryObject_Check(o) PyObject_TypeCheck(o, &query_Type)
 
-HyQuery queryFromPyObject(PyObject *o);
-PyObject *queryToPyObject(HyQuery query, PyObject *sack);
-int query_converter(PyObject *o, HyQuery *query_ptr);
+HyQuery
+queryFromPyObject(PyObject *o);
+PyObject *
+queryToPyObject(HyQuery query, PyObject *sack);
+int
+query_converter(PyObject *o, HyQuery *query_ptr);
 
 #endif // QUERY_PY_H

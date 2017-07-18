@@ -31,7 +31,6 @@
  * See also: #DnfContext
  */
 
-
 #define _GNU_SOURCE
 #include <assert.h>
 #include <errno.h>
@@ -50,15 +49,16 @@
 #include <solv/repo.h>
 #include <solv/repo_deltainfoxml.h>
 #include <solv/repo_repomdxml.h>
-#include <solv/repo_updateinfoxml.h>
-#include <solv/repo_rpmmd.h>
 #include <solv/repo_rpmdb.h>
+#include <solv/repo_rpmmd.h>
 #include <solv/repo_solv.h>
+#include <solv/repo_updateinfoxml.h>
 #include <solv/repo_write.h>
 #include <solv/solv_xfopen.h>
 #include <solv/solver.h>
 #include <solv/solverdebug.h>
 
+#include "dnf-sack-private.h"
 #include "dnf-types.h"
 #include "dnf-version.h"
 #include "hy-iutil.h"
@@ -66,7 +66,6 @@
 #include "hy-packageset-private.h"
 #include "hy-query.h"
 #include "hy-repo-private.h"
-#include "dnf-sack-private.h"
 #include "hy-util.h"
 
 #define DEFAULT_CACHE_ROOT "/var/cache/hawkey"
@@ -74,25 +73,24 @@
 
 typedef struct
 {
-    Id                   running_kernel_id;
-    Map                 *pkg_excludes;
-    Map                 *pkg_includes;
-    Map                 *repo_excludes;
-    Pool                *pool;
-    Queue                installonly;
-    Repo                *cmdline_repo;
-    gboolean             considered_uptodate;
-    gboolean             have_set_arch;
-    gboolean             all_arch;
-    gboolean             provides_ready;
-    gchar               *cache_dir;
-    dnf_sack_running_kernel_fn_t  running_kernel_fn;
-    guint                installonly_limit;
+    Id running_kernel_id;
+    Map *pkg_excludes;
+    Map *pkg_includes;
+    Map *repo_excludes;
+    Pool *pool;
+    Queue installonly;
+    Repo *cmdline_repo;
+    gboolean considered_uptodate;
+    gboolean have_set_arch;
+    gboolean all_arch;
+    gboolean provides_ready;
+    gchar *cache_dir;
+    dnf_sack_running_kernel_fn_t running_kernel_fn;
+    guint installonly_limit;
 } DnfSackPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfSack, dnf_sack, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (dnf_sack_get_instance_private (o))
-
+#define GET_PRIVATE(o) (dnf_sack_get_instance_private(o))
 
 /**
  * dnf_sack_finalize:
@@ -106,7 +104,8 @@ dnf_sack_finalize(GObject *object)
     Repo *repo;
     int i;
 
-    FOR_REPOS(i, repo) {
+    FOR_REPOS(i, repo)
+    {
         HyRepo hrepo = repo->appdata;
         if (!hrepo)
             continue;
@@ -125,22 +124,22 @@ dnf_sack_finalize(GObject *object)
 }
 
 // log levels (see also SOLV_ERROR etc. in <solv/pool.h>)
-#define HY_LL_INFO  (1 << 20)
+#define HY_LL_INFO (1 << 20)
 #define HY_LL_ERROR (1 << 21)
 
 static void
 log_cb(Pool *pool, void *cb_data, int level, const char *buf)
 {
     /* just proxy this to the GLib logging handler */
-    switch(level) {
+    switch (level) {
         case HY_LL_INFO:
-            g_debug ("%s", buf);
+            g_debug("%s", buf);
             break;
         case HY_LL_ERROR:
-            g_warning ("%s", buf);
+            g_warning("%s", buf);
             break;
         default:
-            g_info ("%s", buf);
+            g_info("%s", buf);
             break;
     }
 }
@@ -162,8 +161,8 @@ dnf_sack_init(DnfSack *sack)
     /* logging up after this*/
     pool_setdebugcallback(priv->pool, log_cb, sack);
     pool_setdebugmask(priv->pool,
-                      SOLV_ERROR | SOLV_FATAL | SOLV_WARN | SOLV_DEBUG_RESULT |
-                      HY_LL_INFO | HY_LL_ERROR);
+                      SOLV_ERROR | SOLV_FATAL | SOLV_WARN | SOLV_DEBUG_RESULT | HY_LL_INFO |
+                        HY_LL_ERROR);
 }
 
 /**
@@ -196,14 +195,13 @@ dnf_sack_new(void)
 static int
 current_rpmdb_checksum(Pool *pool, unsigned char csout[CHKSUM_BYTES])
 {
-    const char *rpmdb_prefix_paths[] = { "/var/lib/rpm/Packages",
-                                         "/usr/share/rpm/Packages" };
+    const char *rpmdb_prefix_paths[] = { "/var/lib/rpm/Packages", "/usr/share/rpm/Packages" };
     unsigned int i;
     const char *fn;
     FILE *fp_rpmdb = NULL;
     int ret = 0;
 
-    for (i = 0; i < sizeof(rpmdb_prefix_paths)/sizeof(*rpmdb_prefix_paths); i++) {
+    for (i = 0; i < sizeof(rpmdb_prefix_paths) / sizeof(*rpmdb_prefix_paths); i++) {
         fn = pool_prepend_rootdir_tmp(pool, rpmdb_prefix_paths[i]);
         fp_rpmdb = fopen(fn, "r");
         if (fp_rpmdb)
@@ -222,9 +220,7 @@ can_use_rpmdb_cache(FILE *fp_solv, unsigned char cs[CHKSUM_BYTES])
 {
     unsigned char cs_cache[CHKSUM_BYTES];
 
-    if (fp_solv &&
-        !checksum_read(cs_cache, fp_solv) &&
-        !checksum_cmp(cs_cache, cs))
+    if (fp_solv && !checksum_read(cs_cache, fp_solv) && !checksum_cmp(cs_cache, cs))
         return 1;
 
     return 0;
@@ -235,16 +231,14 @@ can_use_repomd_cache(FILE *fp_solv, unsigned char cs_repomd[CHKSUM_BYTES])
 {
     unsigned char cs_cache[CHKSUM_BYTES];
 
-    if (fp_solv &&
-        !checksum_read(cs_cache, fp_solv) &&
-        !checksum_cmp(cs_cache, cs_repomd))
+    if (fp_solv && !checksum_read(cs_cache, fp_solv) && !checksum_cmp(cs_cache, cs_repomd))
         return 1;
 
     return 0;
 }
 
 void
-dnf_sack_set_running_kernel_fn (DnfSack *sack, dnf_sack_running_kernel_fn_t fn)
+dnf_sack_set_running_kernel_fn(DnfSack *sack, dnf_sack_running_kernel_fn_t fn)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     priv->running_kernel_fn = fn;
@@ -329,7 +323,8 @@ queue_pkg_name(DnfSack *sack, Queue *queue, const char *provide, int flags)
         if (id == 0)
             return;
         Id p, pp;
-        FOR_PKG_PROVIDES(p, pp, id) {
+        FOR_PKG_PROVIDES(p, pp, id)
+        {
             Solvable *s = pool_id2solvable(pool, p);
             if (s->name == id)
                 queue_push(queue, p);
@@ -351,7 +346,7 @@ queue_provides(DnfSack *sack, Queue *queue, const char *provide, int flags)
             return;
         Id p, pp;
         FOR_PKG_PROVIDES(p, pp, id)
-            queue_push(queue, p);
+        queue_push(queue, p);
         return;
     }
 
@@ -378,9 +373,13 @@ queue_filter_version(DnfSack *sack, Queue *queue, const char *version)
 }
 
 static gboolean
-load_ext(DnfSack *sack, HyRepo hrepo, int which_repodata,
-         const char *suffix, int which_filename,
-         int (*cb)(Repo *, FILE *), GError **error)
+load_ext(DnfSack *sack,
+         HyRepo hrepo,
+         int which_repodata,
+         const char *suffix,
+         int which_filename,
+         int (*cb)(Repo *, FILE *),
+         GError **error)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     int ret = 0;
@@ -392,15 +391,12 @@ load_ext(DnfSack *sack, HyRepo hrepo, int which_repodata,
 
     /* nothing set */
     if (fn == NULL) {
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_NO_CAPABILITY,
-                     "no %d string for %s",
-                     which_filename, name);
+        g_set_error(
+          error, DNF_ERROR, DNF_ERROR_NO_CAPABILITY, "no %d string for %s", which_filename, name);
         return FALSE;
     }
 
-    char *fn_cache =  dnf_sack_give_cache_fn(sack, name, suffix);
+    char *fn_cache = dnf_sack_give_cache_fn(sack, name, suffix);
     fp = fopen(fn_cache, "r");
     assert(hrepo->checksum);
     if (can_use_repomd_cache(fp, hrepo->checksum)) {
@@ -415,10 +411,7 @@ load_ext(DnfSack *sack, HyRepo hrepo, int which_repodata,
         g_debug("%s: using cache file: %s", __func__, fn_cache);
         ret = repo_add_solv(repo, fp, flags);
         if (ret) {
-            g_set_error_literal (error,
-                                 DNF_ERROR,
-                                 DNF_ERROR_INTERNAL_ERROR,
-                                 "failed to add solv");
+            g_set_error_literal(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "failed to add solv");
             return FALSE;
         } else {
             repo_update_state(hrepo, which_repodata, _HY_LOADED_CACHE);
@@ -433,10 +426,7 @@ load_ext(DnfSack *sack, HyRepo hrepo, int which_repodata,
 
     fp = solv_xfopen(fn, "r");
     if (fp == NULL) {
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_FILE_INVALID,
-                     "failed to open: %s", fn);
+        g_set_error(error, DNF_ERROR, DNF_ERROR_FILE_INVALID, "failed to open: %s", fn);
         return FALSE;
     }
     g_debug("%s: loading: %s", __func__, fn);
@@ -446,7 +436,8 @@ load_ext(DnfSack *sack, HyRepo hrepo, int which_repodata,
     fclose(fp);
     if (ret == 0) {
         repo_update_state(hrepo, which_repodata, _HY_LOADED_FETCH);
-        assert(previous_last == repo->nrepodata - 2); (void)previous_last;
+        assert(previous_last == repo->nrepodata - 2);
+        (void)previous_last;
         repo_set_repodata(hrepo, which_repodata, repo->nrepodata - 1);
     }
     priv->provides_ready = 0;
@@ -495,7 +486,7 @@ write_main(DnfSack *sack, HyRepo hrepo, int switchtosolv, GError **error)
     const char *chksum = pool_checksum_str(dnf_sack_get_pool(sack), hrepo->checksum);
     char *fn = dnf_sack_give_cache_fn(sack, name, NULL);
     char *tmp_fn_templ = solv_dupjoin(fn, ".XXXXXX", NULL);
-    int tmp_fd  = mkstemp(tmp_fn_templ);
+    int tmp_fd = mkstemp(tmp_fn_templ);
     gboolean ret = TRUE;
     gint rc;
 
@@ -503,22 +494,19 @@ write_main(DnfSack *sack, HyRepo hrepo, int switchtosolv, GError **error)
 
     if (tmp_fd < 0) {
         ret = FALSE;
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_FILE_INVALID,
-                     "cannot create temporary file: %s",
-                     tmp_fn_templ);
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_FILE_INVALID,
+                    "cannot create temporary file: %s",
+                    tmp_fn_templ);
         goto done;
     }
 
     FILE *fp = fdopen(tmp_fd, "w+");
     if (!fp) {
         ret = FALSE;
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_FILE_INVALID,
-                     "failed opening tmp file: %s",
-                     strerror(errno));
+        g_set_error(
+          error, DNF_ERROR, DNF_ERROR_FILE_INVALID, "failed opening tmp file: %s", strerror(errno));
         goto done;
     }
     rc = repo_write(repo, fp);
@@ -526,10 +514,8 @@ write_main(DnfSack *sack, HyRepo hrepo, int switchtosolv, GError **error)
     rc |= fclose(fp);
     if (rc) {
         ret = FALSE;
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_FILE_INVALID,
-                     "write_main() failed writing data: %i", rc);
+        g_set_error(
+          error, DNF_ERROR, DNF_ERROR_FILE_INVALID, "write_main() failed writing data: %i", rc);
         goto done;
     }
 
@@ -543,11 +529,11 @@ write_main(DnfSack *sack, HyRepo hrepo, int switchtosolv, GError **error)
             if (rc) {
                 /* this is pretty fatal */
                 ret = FALSE;
-                g_set_error_literal (error,
-                                     DNF_ERROR,
-                                     DNF_ERROR_FILE_INVALID,
-                                     "write_main() failed to re-load "
-                                     "written solv file");
+                g_set_error_literal(error,
+                                    DNF_ERROR,
+                                    DNF_ERROR_FILE_INVALID,
+                                    "write_main() failed to re-load "
+                                    "written solv file");
                 goto done;
             }
         }
@@ -558,7 +544,7 @@ write_main(DnfSack *sack, HyRepo hrepo, int switchtosolv, GError **error)
         goto done;
     hrepo->state_main = _HY_WRITTEN;
 
- done:
+done:
     if (!ret && tmp_fd >= 0)
         unlink(tmp_fn_templ);
     g_free(tmp_fn_templ);
@@ -571,7 +557,7 @@ static int
 write_ext_updateinfo_filter(Repo *repo, Repokey *key, void *kfdata)
 {
     Repodata *data = kfdata;
-    if (key->name == 1 && (int) key->size != data->repodataid)
+    if (key->name == 1 && (int)key->size != data->repodataid)
         return -1;
     return repo_write_stdkeyfilter(repo, key, 0);
 }
@@ -605,11 +591,11 @@ write_ext(DnfSack *sack, HyRepo hrepo, int which_repodata, const char *suffix, G
     gboolean success;
     if (tmp_fd < 0) {
         success = FALSE;
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_FILE_INVALID,
-                     "can not create temporary file %s",
-                     tmp_fn_templ);
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_FILE_INVALID,
+                    "can not create temporary file %s",
+                    tmp_fn_templ);
         goto done;
     }
     FILE *fp = fdopen(tmp_fd, "w+");
@@ -623,11 +609,8 @@ write_ext(DnfSack *sack, HyRepo hrepo, int which_repodata, const char *suffix, G
     ret |= fclose(fp);
     if (ret) {
         success = FALSE;
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_FAILED,
-                     "write_ext(%d) has failed: %d",
-                     which_repodata, ret);
+        g_set_error(
+          error, DNF_ERROR, DNF_ERROR_FAILED, "write_ext(%d) has failed: %d", which_repodata, ret);
         goto done;
     }
 
@@ -653,8 +636,8 @@ write_ext(DnfSack *sack, HyRepo hrepo, int which_repodata, const char *suffix, G
     }
     repo_update_state(hrepo, which_repodata, _HY_WRITTEN);
     success = TRUE;
- done:
-    if (ret && tmp_fd >=0 )
+done:
+    if (ret && tmp_fd >= 0)
         unlink(tmp_fn_templ);
     g_free(tmp_fn_templ);
     g_free(fn);
@@ -676,11 +659,12 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
     FILE *fp_cache = fopen(fn_cache, "r");
     FILE *fp_repomd = fopen(fn_repomd, "r");
     if (fp_repomd == NULL) {
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_FILE_INVALID,
-                     "can not read file %s: %s",
-                     fn_repomd, strerror(errno));
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_FILE_INVALID,
+                    "can not read file %s: %s",
+                    fn_repomd,
+                    strerror(errno));
         retval = FALSE;
         goto out;
     }
@@ -690,26 +674,19 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
         const char *chksum = pool_checksum_str(pool, hrepo->checksum);
         g_debug("using cached %s (0x%s)", name, chksum);
         if (repo_add_solv(repo, fp_cache, 0)) {
-            g_set_error (error,
-                         DNF_ERROR,
-                         DNF_ERROR_INTERNAL_ERROR,
-                         "repo_add_solv() has failed.");
+            g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "repo_add_solv() has failed.");
             retval = FALSE;
             goto out;
         }
         hrepo->state_main = _HY_LOADED_CACHE;
     } else {
-        fp_primary = solv_xfopen(hy_repo_get_string(hrepo, HY_REPO_PRIMARY_FN),
-                                 "r");
+        fp_primary = solv_xfopen(hy_repo_get_string(hrepo, HY_REPO_PRIMARY_FN), "r");
         assert(fp_primary);
 
         g_debug("fetching %s", name);
-        if (repo_add_repomdxml(repo, fp_repomd, 0) || \
-            repo_add_rpmmd(repo, fp_primary, 0, 0)) {
-            g_set_error (error,
-                         DNF_ERROR,
-                         DNF_ERROR_INTERNAL_ERROR,
-                         "repo_add_repomdxml/rpmmd() has failed.");
+        if (repo_add_repomdxml(repo, fp_repomd, 0) || repo_add_rpmmd(repo, fp_primary, 0, 0)) {
+            g_set_error(
+              error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "repo_add_repomdxml/rpmmd() has failed.");
             retval = FALSE;
             goto out;
         }
@@ -742,10 +719,10 @@ out:
  * Since: 0.7.0
  */
 void
-dnf_sack_set_cachedir (DnfSack *sack, const gchar *value)
+dnf_sack_set_cachedir(DnfSack *sack, const gchar *value)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
-    g_free (priv->cache_dir);
+    g_free(priv->cache_dir);
     priv->cache_dir = g_strdup(value);
 }
 
@@ -763,7 +740,7 @@ dnf_sack_set_cachedir (DnfSack *sack, const gchar *value)
  * Since: 0.7.0
  */
 gboolean
-dnf_sack_set_arch (DnfSack *sack, const gchar *value, GError **error)
+dnf_sack_set_arch(DnfSack *sack, const gchar *value, GError **error)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     Pool *pool = dnf_sack_get_pool(sack);
@@ -773,10 +750,8 @@ dnf_sack_set_arch (DnfSack *sack, const gchar *value, GError **error)
     /* autodetect */
     if (arch == NULL) {
         if (hy_detect_arch(&detected)) {
-            g_set_error (error,
-                         DNF_ERROR,
-                         DNF_ERROR_INTERNAL_ERROR,
-                         "failed to auto-detect architecture");
+            g_set_error(
+              error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "failed to auto-detect architecture");
             return FALSE;
         }
         arch = detected;
@@ -804,7 +779,7 @@ dnf_sack_set_arch (DnfSack *sack, const gchar *value, GError **error)
  * Since: 0.7.0
  */
 void
-dnf_sack_set_all_arch (DnfSack *sack, gboolean all_arch)
+dnf_sack_set_all_arch(DnfSack *sack, gboolean all_arch)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     priv->all_arch = all_arch;
@@ -819,7 +794,7 @@ dnf_sack_set_all_arch (DnfSack *sack, gboolean all_arch)
  * Since: 0.7.0
  */
 gboolean
-dnf_sack_get_all_arch (DnfSack *sack)
+dnf_sack_get_all_arch(DnfSack *sack)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     return priv->all_arch;
@@ -835,7 +810,7 @@ dnf_sack_get_all_arch (DnfSack *sack)
  * Since: 0.7.0
  */
 void
-dnf_sack_set_rootdir (DnfSack *sack, const gchar *value)
+dnf_sack_set_rootdir(DnfSack *sack, const gchar *value)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     pool_set_rootdir(priv->pool, value);
@@ -880,18 +855,18 @@ dnf_sack_setup(DnfSack *sack, int flags, GError **error)
     /* create the directory */
     if (flags & DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR) {
         if (mkcachedir(priv->cache_dir)) {
-            g_set_error (error,
-                         DNF_ERROR,
-                         DNF_ERROR_FILE_INVALID,
-                         "failed creating cachedir %s",
-                         priv->cache_dir);
+            g_set_error(error,
+                        DNF_ERROR,
+                        DNF_ERROR_FILE_INVALID,
+                        "failed creating cachedir %s",
+                        priv->cache_dir);
             return FALSE;
         }
     }
 
     /* never called dnf_sack_set_arch(), so autodetect */
     if (!priv->have_set_arch && !priv->all_arch) {
-        if (!dnf_sack_set_arch (sack, NULL, error))
+        if (!dnf_sack_set_arch(sack, NULL, error))
             return FALSE;
     }
     return TRUE;
@@ -914,9 +889,9 @@ dnf_sack_evr_cmp(DnfSack *sack, const char *evr1, const char *evr2)
 {
     g_autoptr(DnfSack) _sack = NULL;
     if (!sack)
-        _sack = dnf_sack_new ();
+        _sack = dnf_sack_new();
     else
-        _sack = g_object_ref (sack);
+        _sack = g_object_ref(sack);
     return pool_evrcmp_str(dnf_sack_get_pool(_sack), evr1, evr2, EVRCMP_COMPARE);
 }
 
@@ -1003,10 +978,10 @@ dnf_sack_list_arches(DnfSack *sack)
     for (Id id = 0; id <= pool->lastarch; ++id) {
         if (!pool->id2arch[id])
             continue;
-        ss = solv_extend(ss, c, 1, sizeof(char*), BLOCK_SIZE);
+        ss = solv_extend(ss, c, 1, sizeof(char *), BLOCK_SIZE);
         ss[c++] = pool_id2str(pool, id);
     }
-    ss = solv_extend(ss, c, 1, sizeof(char*), BLOCK_SIZE);
+    ss = solv_extend(ss, c, 1, sizeof(char *), BLOCK_SIZE);
     ss[c++] = NULL;
     return ss;
 }
@@ -1088,12 +1063,12 @@ dnf_sack_setup_cmdline_repo(DnfSack *sack)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     if (!priv->cmdline_repo) {
-         HyRepo hrepo = hy_repo_create(HY_CMDLINE_REPO_NAME);
-         Repo *repo = repo_create(dnf_sack_get_pool(sack), HY_CMDLINE_REPO_NAME);
-         repo->appdata = hrepo;
-         hrepo->libsolv_repo = repo;
-         hrepo->needs_internalizing = 1;
-         priv->cmdline_repo = repo;
+        HyRepo hrepo = hy_repo_create(HY_CMDLINE_REPO_NAME);
+        Repo *repo = repo_create(dnf_sack_get_pool(sack), HY_CMDLINE_REPO_NAME);
+        repo->appdata = hrepo;
+        hrepo->libsolv_repo = repo;
+        hrepo->needs_internalizing = 1;
+        priv->cmdline_repo = repo;
     }
     return priv->cmdline_repo;
 }
@@ -1121,16 +1096,17 @@ dnf_sack_add_cmdline_package(DnfSack *sack, const char *fn)
         g_warning("not a readable RPM file: %s, skipping", fn);
         return NULL;
     }
-    p = repo_add_rpm(repo, fn, REPO_REUSE_REPODATA|REPO_NO_INTERNALIZE|
-                               RPM_ADD_WITH_HDRID|RPM_ADD_WITH_SHA256SUM);
+    p = repo_add_rpm(repo,
+                     fn,
+                     REPO_REUSE_REPODATA | REPO_NO_INTERNALIZE | RPM_ADD_WITH_HDRID |
+                       RPM_ADD_WITH_SHA256SUM);
     if (p == 0) {
-        g_warning ("failed to read RPM: %s, skipping",
-                   pool_errstr (dnf_sack_get_pool (sack)));
+        g_warning("failed to read RPM: %s, skipping", pool_errstr(dnf_sack_get_pool(sack)));
         return NULL;
     }
     HyRepo hrepo = repo->appdata;
     hrepo->needs_internalizing = 1;
-    priv->provides_ready = 0;    /* triggers internalizing later */
+    priv->provides_ready = 0; /* triggers internalizing later */
     return dnf_package_new(sack, p);
 }
 
@@ -1152,7 +1128,7 @@ dnf_sack_count(DnfSack *sack)
     Pool *pool = dnf_sack_get_pool(sack);
 
     FOR_PKG_SOLVABLES(p)
-        cnt++;
+    cnt++;
     return cnt;
 }
 
@@ -1290,10 +1266,8 @@ dnf_sack_repo_enabled(DnfSack *sack, const char *reponame, int enabled)
     Solvable *s;
     if (repo->disabled)
         FOR_REPO_SOLVABLES(repo, p, s)
-            MAPSET(priv->repo_excludes, p);
-    else
-        FOR_REPO_SOLVABLES(repo, p, s)
-            MAPCLR(priv->repo_excludes, p);
+    MAPSET(priv->repo_excludes, p);
+    else FOR_REPO_SOLVABLES(repo, p, s) MAPCLR(priv->repo_excludes, p);
     priv->considered_uptodate = FALSE;
     return 0;
 }
@@ -1332,10 +1306,7 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
     rc = current_rpmdb_checksum(pool, hrepo->checksum);
     if (rc) {
         ret = FALSE;
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_FILE_INVALID,
-                     "failed calculating RPMDB checksum");
+        g_set_error(error, DNF_ERROR, DNF_ERROR_FILE_INVALID, "failed calculating RPMDB checksum");
         goto finish;
     }
 
@@ -1356,10 +1327,7 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
     if (rc) {
         repo_free(repo, 1);
         ret = FALSE;
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_FILE_INVALID,
-                     "failed loading RPMDB");
+        g_set_error(error, DNF_ERROR, DNF_ERROR_FILE_INVALID, "failed loading RPMDB");
         goto finish;
     }
 
@@ -1379,7 +1347,7 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
     hrepo->main_end = repo->end;
     priv->considered_uptodate = FALSE;
 
- finish:
+finish:
     if (cache_fp)
         fclose(cache_fp);
     if (a_hrepo == NULL)
@@ -1418,40 +1386,42 @@ dnf_sack_load_repo(DnfSack *sack, HyRepo repo, int flags, GError **error)
     repo->main_nrepodata = repo->libsolv_repo->nrepodata;
     repo->main_end = repo->libsolv_repo->end;
     if (flags & DNF_SACK_LOAD_FLAG_USE_FILELISTS) {
-        retval = load_ext(sack, repo, _HY_REPODATA_FILENAMES,
-                          HY_EXT_FILENAMES, HY_REPO_FILELISTS_FN,
-                          load_filelists_cb, &error_local);
+        retval = load_ext(sack,
+                          repo,
+                          _HY_REPODATA_FILENAMES,
+                          HY_EXT_FILENAMES,
+                          HY_REPO_FILELISTS_FN,
+                          load_filelists_cb,
+                          &error_local);
         /* allow missing files */
         if (!retval) {
-            if (g_error_matches (error_local,
-                                 DNF_ERROR,
-                                 DNF_ERROR_NO_CAPABILITY)) {
+            if (g_error_matches(error_local, DNF_ERROR, DNF_ERROR_NO_CAPABILITY)) {
                 g_debug("no filelists metadata available for %s", repo->name);
-                g_clear_error (&error_local);
+                g_clear_error(&error_local);
             } else {
-                g_propagate_error (error, error_local);
+                g_propagate_error(error, error_local);
                 return FALSE;
             }
         }
         if (repo->state_filelists == _HY_LOADED_FETCH && build_cache) {
-            if (!write_ext(sack, repo,
-                           _HY_REPODATA_FILENAMES,
-                           HY_EXT_FILENAMES, error))
+            if (!write_ext(sack, repo, _HY_REPODATA_FILENAMES, HY_EXT_FILENAMES, error))
                 return FALSE;
         }
     }
     if (flags & DNF_SACK_LOAD_FLAG_USE_PRESTO) {
-        retval = load_ext(sack, repo, _HY_REPODATA_PRESTO,
-                          HY_EXT_PRESTO, HY_REPO_PRESTO_FN,
-                          load_presto_cb, &error_local);
+        retval = load_ext(sack,
+                          repo,
+                          _HY_REPODATA_PRESTO,
+                          HY_EXT_PRESTO,
+                          HY_REPO_PRESTO_FN,
+                          load_presto_cb,
+                          &error_local);
         if (!retval) {
-            if (g_error_matches (error_local,
-                                 DNF_ERROR,
-                                 DNF_ERROR_NO_CAPABILITY)) {
+            if (g_error_matches(error_local, DNF_ERROR, DNF_ERROR_NO_CAPABILITY)) {
                 g_debug("no presto metadata available for %s", repo->name);
-                g_clear_error (&error_local);
+                g_clear_error(&error_local);
             } else {
-                g_propagate_error (error, error_local);
+                g_propagate_error(error, error_local);
                 return FALSE;
             }
         }
@@ -1462,18 +1432,20 @@ dnf_sack_load_repo(DnfSack *sack, HyRepo repo, int flags, GError **error)
     /* updateinfo must come *after* all other extensions, as it is not a real
        extension, but contains a new set of packages */
     if (flags & DNF_SACK_LOAD_FLAG_USE_UPDATEINFO) {
-        retval = load_ext(sack, repo, _HY_REPODATA_UPDATEINFO,
-                          HY_EXT_UPDATEINFO, HY_REPO_UPDATEINFO_FN,
-                          load_updateinfo_cb, &error_local);
+        retval = load_ext(sack,
+                          repo,
+                          _HY_REPODATA_UPDATEINFO,
+                          HY_EXT_UPDATEINFO,
+                          HY_REPO_UPDATEINFO_FN,
+                          load_updateinfo_cb,
+                          &error_local);
         /* allow missing files */
         if (!retval) {
-            if (g_error_matches (error_local,
-                                 DNF_ERROR,
-                                 DNF_ERROR_NO_CAPABILITY)) {
+            if (g_error_matches(error_local, DNF_ERROR, DNF_ERROR_NO_CAPABILITY)) {
                 g_debug("no updateinfo available for %s", repo->name);
-                g_clear_error (&error_local);
+                g_clear_error(&error_local);
             } else {
-                g_propagate_error (error, error_local);
+                g_propagate_error(error, error_local);
                 return FALSE;
             }
         }
@@ -1505,10 +1477,8 @@ is_superset(Queue *q1, Queue *q2, Map *m)
     return cnt == q2->count;
 }
 
-
 static void
-rewrite_repos(DnfSack *sack, Queue *addedfileprovides,
-              Queue *addedfileprovides_inst)
+rewrite_repos(DnfSack *sack, Queue *addedfileprovides, Queue *addedfileprovides_inst)
 {
     Pool *pool = dnf_sack_get_pool(sack);
     int i;
@@ -1520,7 +1490,8 @@ rewrite_repos(DnfSack *sack, Queue *addedfileprovides,
     queue_init(&fileprovidesq);
 
     Repo *repo;
-    FOR_REPOS(i, repo) {
+    FOR_REPOS(i, repo)
+    {
         HyRepo hrepo = repo->appdata;
         if (!hrepo)
             continue;
@@ -1529,20 +1500,18 @@ rewrite_repos(DnfSack *sack, Queue *addedfileprovides,
         if (hrepo->main_nrepodata < 2)
             continue;
         /* now check if the repo already contains all of our file provides */
-        Queue *addedq = repo == pool->installed && addedfileprovides_inst ?
-            addedfileprovides_inst : addedfileprovides;
+        Queue *addedq = repo == pool->installed && addedfileprovides_inst ? addedfileprovides_inst
+                                                                          : addedfileprovides;
         if (!addedq->count)
             continue;
         Repodata *data = repo_id2repodata(repo, 1);
         queue_empty(&fileprovidesq);
-        if (repodata_lookup_idarray(data, SOLVID_META,
-                                    REPOSITORY_ADDEDFILEPROVIDES,
-                                    &fileprovidesq)) {
+        if (repodata_lookup_idarray(
+              data, SOLVID_META, REPOSITORY_ADDEDFILEPROVIDES, &fileprovidesq)) {
             if (is_superset(&fileprovidesq, addedq, &providedids))
                 continue;
         }
-        repodata_set_idarray(data, SOLVID_META,
-                             REPOSITORY_ADDEDFILEPROVIDES, addedq);
+        repodata_set_idarray(data, SOLVID_META, REPOSITORY_ADDEDFILEPROVIDES, addedq);
         repodata_internalize(data);
         /* re-write main data only */
         int oldnrepodata = repo->nrepodata;
@@ -1581,8 +1550,7 @@ dnf_sack_make_provides_ready(DnfSack *sack)
     Queue addedfileprovides_inst;
     queue_init(&addedfileprovides);
     queue_init(&addedfileprovides_inst);
-    pool_addfileprovides_queue(priv->pool, &addedfileprovides,
-                               &addedfileprovides_inst);
+    pool_addfileprovides_queue(priv->pool, &addedfileprovides, &addedfileprovides_inst);
     if (addedfileprovides.count || addedfileprovides_inst.count)
         rewrite_repos(sack, &addedfileprovides, &addedfileprovides_inst);
     queue_free(&addedfileprovides);
@@ -1632,7 +1600,7 @@ dnf_sack_knows(DnfSack *sack, const char *name, const char *version, int flags)
     int ret;
     int name_only = flags & HY_NAME_ONLY;
 
-    assert((flags & ~(HY_ICASE|HY_NAME_ONLY|HY_GLOB)) == 0);
+    assert((flags & ~(HY_ICASE | HY_NAME_ONLY | HY_GLOB)) == 0);
     queue_init(q);
     dnf_sack_make_provides_ready(sack);
     flags &= ~HY_NAME_ONLY;
@@ -1702,11 +1670,11 @@ process_excludes(DnfSack *sack, DnfRepo *repo)
  */
 gboolean
 dnf_sack_add_repo(DnfSack *sack,
-                    DnfRepo *repo,
-                    guint permissible_cache_age,
-                    DnfSackAddFlags flags,
-                    DnfState *state,
-                    GError **error)
+                  DnfRepo *repo,
+                  guint permissible_cache_age,
+                  DnfSackAddFlags flags,
+                  DnfState *state,
+                  GError **error)
 {
     gboolean ret = TRUE;
     GError *error_local = NULL;
@@ -1714,36 +1682,27 @@ dnf_sack_add_repo(DnfSack *sack,
     int flags_hy = DNF_SACK_LOAD_FLAG_BUILD_CACHE;
 
     /* set state */
-    ret = dnf_state_set_steps(state, error,
-                   5, /* check repo */
-                   95, /* load solv */
-                   -1);
+    ret = dnf_state_set_steps(state,
+                              error,
+                              5,  /* check repo */
+                              95, /* load solv */
+                              -1);
     if (!ret)
         return FALSE;
 
     /* check repo */
     state_local = dnf_state_get_child(state);
-    ret = dnf_repo_check(repo,
-                         permissible_cache_age,
-                         state_local,
-                         &error_local);
+    ret = dnf_repo_check(repo, permissible_cache_age, state_local, &error_local);
     if (!ret) {
-        g_debug("failed to check, attempting update: %s",
-                error_local->message);
+        g_debug("failed to check, attempting update: %s", error_local->message);
         g_clear_error(&error_local);
         dnf_state_reset(state_local);
-        ret = dnf_repo_update(repo,
-                              DNF_REPO_UPDATE_FLAG_FORCE,
-                              state_local,
-                              &error_local);
+        ret = dnf_repo_update(repo, DNF_REPO_UPDATE_FLAG_FORCE, state_local, &error_local);
         if (!ret) {
             if (!dnf_repo_get_required(repo) &&
-                g_error_matches(error_local,
-                                DNF_ERROR,
-                                DNF_ERROR_CANNOT_FETCH_SOURCE)) {
-                g_warning("Skipping refresh of %s: %s",
-                          dnf_repo_get_id(repo),
-                          error_local->message);
+                g_error_matches(error_local, DNF_ERROR, DNF_ERROR_CANNOT_FETCH_SOURCE)) {
+                g_warning(
+                  "Skipping refresh of %s: %s", dnf_repo_get_id(repo), error_local->message);
                 g_error_free(error_local);
                 return dnf_state_finished(state, error);
             }
@@ -1754,8 +1713,7 @@ dnf_sack_add_repo(DnfSack *sack,
 
     /* checking disabled the repo */
     if (dnf_repo_get_enabled(repo) == DNF_REPO_ENABLED_NONE) {
-        g_debug("Skipping %s as repo no longer enabled",
-                dnf_repo_get_id(repo));
+        g_debug("Skipping %s as repo no longer enabled", dnf_repo_get_id(repo));
         return dnf_state_finished(state, error);
     }
 
@@ -1784,11 +1742,11 @@ dnf_sack_add_repo(DnfSack *sack,
  */
 gboolean
 dnf_sack_add_repos(DnfSack *sack,
-                     GPtrArray *repos,
-                     guint permissible_cache_age,
-                     DnfSackAddFlags flags,
-                     DnfState *state,
-                     GError **error)
+                   GPtrArray *repos,
+                   guint permissible_cache_age,
+                   DnfSackAddFlags flags,
+                   DnfState *state,
+                   GError **error)
 {
     gboolean ret;
     guint cnt = 0;
@@ -1826,12 +1784,7 @@ dnf_sack_add_repos(DnfSack *sack,
         }
 
         state_local = dnf_state_get_child(state);
-        ret = dnf_sack_add_repo(sack,
-                                  repo,
-                                  permissible_cache_age,
-                                  flags,
-                                  state_local,
-                                  error);
+        ret = dnf_sack_add_repo(sack, repo, permissible_cache_age, flags, state_local, error);
         if (!ret)
             return FALSE;
 

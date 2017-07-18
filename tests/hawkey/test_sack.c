@@ -21,22 +21,21 @@
 #include <check.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/types.h>
-
+#include <unistd.h>
 
 #include <solv/testcase.h>
 
 #include <glib/gstdio.h>
 
+#include "fixtures.h"
+#include "libdnf/dnf-sack-private.h"
 #include "libdnf/dnf-types.h"
 #include "libdnf/hy-package-private.h"
 #include "libdnf/hy-repo-private.h"
-#include "libdnf/dnf-sack-private.h"
 #include "libdnf/hy-util.h"
-#include "fixtures.h"
-#include "testsys.h"
 #include "test_suites.h"
+#include "testsys.h"
 
 START_TEST(test_environment)
 {
@@ -80,10 +79,10 @@ START_TEST(test_list_arches)
     dnf_sack_set_cachedir(sack, test_globals.tmpdir);
     dnf_sack_set_arch(sack, TEST_FIXED_ARCH, NULL);
     fail_unless(dnf_sack_setup(sack, DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
-    const char ** arches = dnf_sack_list_arches(sack);
+    const char **arches = dnf_sack_list_arches(sack);
 
     /* noarch, x86_64, athlon, i686, i586, i486, i386 */
-    fail_unless(g_strv_length((gchar**)arches), 7);
+    fail_unless(g_strv_length((gchar **)arches), 7);
     ck_assert_str_eq(arches[3], "i686");
 
     g_free(arches);
@@ -102,7 +101,7 @@ START_TEST(test_load_repo_err)
     g_assert(repo != NULL);
     hy_repo_set_string(repo, HY_REPO_MD_FN, "/non/existing");
     fail_unless(!dnf_sack_load_repo(sack, repo, 0, &error));
-    fail_unless(g_error_matches (error, DNF_ERROR, DNF_ERROR_FILE_INVALID));
+    fail_unless(g_error_matches(error, DNF_ERROR, DNF_ERROR_FILE_INVALID));
     hy_repo_free(repo);
     g_object_unref(sack);
 }
@@ -115,7 +114,7 @@ START_TEST(test_repo_written)
     fail_unless(dnf_sack_setup(sack, DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
     char *filename = dnf_sack_give_cache_fn(sack, "test_sack_written", NULL);
 
-    fail_unless(access(filename, R_OK|W_OK));
+    fail_unless(access(filename, R_OK | W_OK));
     setup_yum_sack(sack, "test_sack_written");
 
     HyRepo repo = hrepo_by_name(sack, "test_sack_written");
@@ -123,7 +122,7 @@ START_TEST(test_repo_written)
     fail_unless(repo->state_main == _HY_WRITTEN);
     fail_unless(repo->state_filelists == _HY_WRITTEN);
     fail_unless(repo->state_presto == _HY_WRITTEN);
-    fail_if(access(filename, R_OK|W_OK));
+    fail_if(access(filename, R_OK | W_OK));
 
     g_free(filename);
     g_object_unref(sack);
@@ -135,28 +134,29 @@ START_TEST(test_add_cmdline_package)
     g_autoptr(DnfSack) sack = dnf_sack_new();
     dnf_sack_set_cachedir(sack, test_globals.tmpdir);
 
-    g_autofree gchar *path_mystery = g_build_filename (TESTDATADIR, "/hawkey/yum/mystery-devel-19.67-1.noarch.rpm", NULL);
-    g_autoptr(DnfPackage) pkg_mystery = dnf_sack_add_cmdline_package (sack, path_mystery);
+    g_autofree gchar *path_mystery =
+      g_build_filename(TESTDATADIR, "/hawkey/yum/mystery-devel-19.67-1.noarch.rpm", NULL);
+    g_autoptr(DnfPackage) pkg_mystery = dnf_sack_add_cmdline_package(sack, path_mystery);
     const gchar *location_mystery = dnf_package_get_location(pkg_mystery);
     ck_assert_str_eq(path_mystery, location_mystery);
 
-    g_autofree gchar *path_tour = g_build_filename (TESTDATADIR, "/hawkey/yum/tour-4-6.noarch.rpm", NULL);
-    g_autoptr(DnfPackage) pkg_tour = dnf_sack_add_cmdline_package (sack, path_tour);
+    g_autofree gchar *path_tour =
+      g_build_filename(TESTDATADIR, "/hawkey/yum/tour-4-6.noarch.rpm", NULL);
+    g_autoptr(DnfPackage) pkg_tour = dnf_sack_add_cmdline_package(sack, path_tour);
     const gchar *location_tour = dnf_package_get_location(pkg_tour);
     ck_assert_str_eq(path_tour, location_tour);
 
-    g_autofree gchar *path_null_rpm = g_build_filename (test_globals.tmpdir, "null.rpm", NULL);
-    FILE *fp = g_fopen (path_null_rpm, "w");
-    fail_unless (fp != NULL);
-    fclose (fp);
-    fail_unless (dnf_sack_add_cmdline_package (sack, path_null_rpm) == NULL);
+    g_autofree gchar *path_null_rpm = g_build_filename(test_globals.tmpdir, "null.rpm", NULL);
+    FILE *fp = g_fopen(path_null_rpm, "w");
+    fail_unless(fp != NULL);
+    fclose(fp);
+    fail_unless(dnf_sack_add_cmdline_package(sack, path_null_rpm) == NULL);
 }
 END_TEST
 
 START_TEST(test_repo_load)
 {
-    fail_unless(dnf_sack_count(test_globals.sack) ==
-                TEST_EXPECT_SYSTEM_NSOLVABLES);
+    fail_unless(dnf_sack_count(test_globals.sack) == TEST_EXPECT_SYSTEM_NSOLVABLES);
 }
 END_TEST
 
@@ -166,7 +166,12 @@ check_filelist(Pool *pool)
     Dataiterator di;
     int count;
     Id last_found_solvable = 0;
-    dataiterator_init(&di, pool, 0, 0, SOLVABLE_FILELIST, "/usr/bin/ste",
+    dataiterator_init(&di,
+                      pool,
+                      0,
+                      0,
+                      SOLVABLE_FILELIST,
+                      "/usr/bin/ste",
                       SEARCH_STRING | SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
     for (count = 0; dataiterator_step(&di); ++count)
         last_found_solvable = di.solvid;
@@ -174,17 +179,22 @@ check_filelist(Pool *pool)
     fail_if(last_found_solvable == 0);
     dataiterator_free(&di);
 
-    dataiterator_init(&di, pool, 0, last_found_solvable, SOLVABLE_FILELIST, "/",
-                      SEARCH_STRINGSTART | SEARCH_FILES);
+    dataiterator_init(
+      &di, pool, 0, last_found_solvable, SOLVABLE_FILELIST, "/", SEARCH_STRINGSTART | SEARCH_FILES);
     for (count = 0; dataiterator_step(&di); ++count)
         fail_if(strncmp(di.kv.str, "/usr/bin/", strlen("/usr/bin/")));
     fail_unless(count == 3);
     dataiterator_free(&di);
 
-    dataiterator_init(&di, pool, 0, 0, SOLVABLE_FILELIST,
+    dataiterator_init(&di,
+                      pool,
+                      0,
+                      0,
+                      SOLVABLE_FILELIST,
                       "/usr/lib/python2.7/site-packages/tour/today.pyc",
                       SEARCH_STRING | SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
-    for (count = 0; dataiterator_step(&di); ++count) ;
+    for (count = 0; dataiterator_step(&di); ++count)
+        ;
     fail_unless(count == 1);
     dataiterator_free(&di);
 }
@@ -222,8 +232,7 @@ check_prestoinfo(Pool *pool)
 {
     Dataiterator di;
 
-    dataiterator_init(&di, pool, NULL, SOLVID_META, DELTA_PACKAGE_NAME, "tour",
-                      SEARCH_STRING);
+    dataiterator_init(&di, pool, NULL, SOLVID_META, DELTA_PACKAGE_NAME, "tour", SEARCH_STRING);
     dataiterator_prepend_keyname(&di, REPOSITORY_DELTAINFO);
     fail_unless(dataiterator_step(&di));
     dataiterator_setpos_parent(&di);
@@ -271,7 +280,7 @@ START_TEST(test_dnf_sack_knows)
     DnfSack *sack = test_globals.sack;
 
     fail_if(dnf_sack_knows(sack, "penny-lib-DEVEL", NULL, 0));
-    fail_unless(dnf_sack_knows(sack, "penny-lib-DEVEL", NULL, HY_ICASE|HY_NAME_ONLY));
+    fail_unless(dnf_sack_knows(sack, "penny-lib-DEVEL", NULL, HY_ICASE | HY_NAME_ONLY));
 
     fail_if(dnf_sack_knows(sack, "P", NULL, HY_NAME_ONLY));
     fail_unless(dnf_sack_knows(sack, "P", NULL, 0));
@@ -282,8 +291,8 @@ START_TEST(test_dnf_sack_knows_glob)
 {
     DnfSack *sack = test_globals.sack;
     fail_if(dnf_sack_knows(sack, "penny-l*", "4", HY_NAME_ONLY));
-    fail_unless(dnf_sack_knows(sack, "penny-l*", "4", HY_NAME_ONLY|HY_GLOB));
-    fail_if(dnf_sack_knows(sack, "penny-l*1", "4", HY_NAME_ONLY|HY_GLOB));
+    fail_unless(dnf_sack_knows(sack, "penny-l*", "4", HY_NAME_ONLY | HY_GLOB));
+    fail_if(dnf_sack_knows(sack, "penny-l*1", "4", HY_NAME_ONLY | HY_GLOB));
 }
 END_TEST
 

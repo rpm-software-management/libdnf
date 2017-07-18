@@ -40,19 +40,18 @@
  * decision.
  */
 
-
 #include "dnf-db.h"
 #include "dnf-package.h"
 #include "dnf-utils.h"
 
 typedef struct
 {
-    DnfContext      *context;    /* weak reference */
-    gboolean         enabled;
+    DnfContext *context; /* weak reference */
+    gboolean enabled;
 } DnfDbPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfDb, dnf_db, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (dnf_db_get_instance_private (o))
+#define GET_PRIVATE(o) (dnf_db_get_instance_private(o))
 
 /**
  * dnf_db_finalize:
@@ -64,8 +63,7 @@ dnf_db_finalize(GObject *object)
     DnfDbPrivate *priv = GET_PRIVATE(db);
 
     if (priv->context != NULL)
-        g_object_remove_weak_pointer(G_OBJECT(priv->context),
-                                     (void **) &priv->context);
+        g_object_remove_weak_pointer(G_OBJECT(priv->context), (void **)&priv->context);
 
     G_OBJECT_CLASS(dnf_db_parent_class)->finalize(object);
 }
@@ -87,7 +85,6 @@ dnf_db_class_init(DnfDbClass *klass)
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
     object_class->finalize = dnf_db_finalize;
 }
-
 
 /**
  * dnf_db_create_dir:
@@ -131,14 +128,14 @@ dnf_db_get_dir_for_package(DnfDb *db, DnfPackage *package)
         instroot = "";
 
     return g_strdup_printf("%s%s/%c/%s-%s-%s-%s-%s",
-                          instroot,
-                          yumdb_dir,
-                          dnf_package_get_name(package)[0],
-                          pkgid,
-                          dnf_package_get_name(package),
-                          dnf_package_get_version(package),
-                          dnf_package_get_release(package),
-                          dnf_package_get_arch(package));
+                           instroot,
+                           yumdb_dir,
+                           dnf_package_get_name(package)[0],
+                           pkgid,
+                           dnf_package_get_name(package),
+                           dnf_package_get_version(package),
+                           dnf_package_get_release(package),
+                           dnf_package_get_arch(package));
 }
 
 /**
@@ -181,11 +178,7 @@ dnf_db_get_string(DnfDb *db, DnfPackage *package, const gchar *key, GError **err
 
     /* check it exists */
     if (!g_file_test(filename, G_FILE_TEST_EXISTS)) {
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_FAILED,
-                    "%s key not found",
-                    filename);
+        g_set_error(error, DNF_ERROR, DNF_ERROR_FAILED, "%s key not found", filename);
         return NULL;
     }
 
@@ -210,11 +203,8 @@ dnf_db_get_string(DnfDb *db, DnfPackage *package, const gchar *key, GError **err
  * Since: 0.1.0
  **/
 gboolean
-dnf_db_set_string(DnfDb *db,
-           DnfPackage *package,
-           const gchar *key,
-           const gchar *value,
-           GError **error)
+dnf_db_set_string(
+  DnfDb *db, DnfPackage *package, const gchar *key, const gchar *value, GError **error)
 {
     DnfDbPrivate *priv = GET_PRIVATE(db);
     g_autofree gchar *index_dir = NULL;
@@ -262,10 +252,7 @@ dnf_db_set_string(DnfDb *db,
  * Since: 0.1.0
  **/
 gboolean
-dnf_db_remove(DnfDb *db,
-           DnfPackage *package,
-           const gchar *key,
-           GError **error)
+dnf_db_remove(DnfDb *db, DnfPackage *package, const gchar *key, GError **error)
 {
     DnfDbPrivate *priv = GET_PRIVATE(db);
     g_autofree gchar *index_dir = NULL;
@@ -391,9 +378,7 @@ dnf_db_ensure_origin_pkg(DnfDb *db, DnfPackage *pkg)
     /* set from the database if available */
     tmp = dnf_db_get_string(db, pkg, "from_repo", &error);
     if (tmp == NULL) {
-        g_debug("no origin for %s: %s",
-             dnf_package_get_package_id(pkg),
-             error->message);
+        g_debug("no origin for %s: %s", dnf_package_get_package_id(pkg), error->message);
     } else {
         dnf_package_set_origin(pkg, tmp);
     }
@@ -414,7 +399,7 @@ dnf_db_ensure_origin_pkglist(DnfDb *db, GPtrArray *pkglist)
     DnfPackage *pkg;
     guint i;
     for (i = 0; i < pkglist->len; i++) {
-        pkg = g_ptr_array_index (pkglist, i);
+        pkg = g_ptr_array_index(pkglist, i);
         dnf_db_ensure_origin_pkg(db, pkg);
     }
 }
@@ -437,7 +422,7 @@ dnf_db_new(DnfContext *context)
     db = g_object_new(DNF_TYPE_DB, NULL);
     priv = GET_PRIVATE(db);
     priv->context = context;
-    g_object_add_weak_pointer(G_OBJECT(priv->context),(void **) &priv->context);
+    g_object_add_weak_pointer(G_OBJECT(priv->context), (void **)&priv->context);
     return DNF_DB(db);
 }
 

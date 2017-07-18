@@ -20,18 +20,18 @@
 
 #include <Python.h>
 #include <glib.h>
-#include <structmember.h>
-#include <stddef.h>
 #include <solv/util.h>
+#include <stddef.h>
+#include <structmember.h>
 
-#include "dnf-types.h"
 #include "dnf-solution.h"
+#include "dnf-types.h"
 
 #include "solution-py.h"
 
-typedef struct {
-    PyObject_HEAD
-    DnfSolution *solution;
+typedef struct
+{
+    PyObject_HEAD DnfSolution *solution;
 } _SolutionObject;
 
 PyObject *
@@ -55,7 +55,7 @@ solutionlist_to_pylist(const GPtrArray *slist)
         return NULL;
 
     for (unsigned int i = 0; i < slist->len; ++i) {
-        sol = g_object_ref(g_ptr_array_index(slist,  i));
+        sol = g_object_ref(g_ptr_array_index(slist, i));
         pysol = solutionToPyObject(sol);
         if (pysol == NULL)
             goto fail;
@@ -67,7 +67,7 @@ solutionlist_to_pylist(const GPtrArray *slist)
     }
 
     return list;
- fail:
+fail:
     Py_DECREF(list);
     return NULL;
 }
@@ -108,51 +108,50 @@ get_new(_SolutionObject *self, void *closure)
 }
 
 static PyGetSetDef solution_getsetters[] = {
-    {(char*)"action", (getter)get_action, NULL, NULL, NULL},
-    {(char*)"old",  (getter)get_old, NULL, NULL, NULL},
-    {(char*)"new",  (getter)get_new, NULL, NULL, NULL},
-    {NULL}                      /* sentinel */
+    { (char *)"action", (getter)get_action, NULL, NULL, NULL },
+    { (char *)"old", (getter)get_old, NULL, NULL, NULL },
+    { (char *)"new", (getter)get_new, NULL, NULL, NULL },
+    { NULL } /* sentinel */
 };
 
 PyTypeObject solution_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "_hawkey.Solution",               /*tp_name*/
-    sizeof(_SolutionObject),          /*tp_basicsize*/
-    0,                                /*tp_itemsize*/
-    (destructor) solution_dealloc,    /*tp_dealloc*/
-    0,                                /*tp_print*/
-    0,                                /*tp_getattr*/
-    0,                                /*tp_setattr*/
-    0,                                /*tp_compare*/
-    0,                                /*tp_repr*/
-    0,                                /*tp_as_number*/
-    0,                                /*tp_as_sequence*/
-    0,                                /*tp_as_mapping*/
-    0,                                /*tp_hash */
-    0,                                /*tp_call*/
-    0,                                /*tp_str*/
-    0,                                /*tp_getattr*/
-    0,                                /*tp_setattr*/
-    0,                                /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,        /*tp_flags*/
-    "Solution object",                /* tp_doc */
-    0,                                /* tp_traverse */
-    0,                                /* tp_clear */
-    0,                                /* tp_richcompare */
-    0,                                /* tp_weaklistoffset */
-    0,                                /* tp_iter */
-    0,                                /* tp_iternext */
-    0,                                /* tp_methods */
-    0,                                /* tp_members */
-    solution_getsetters,              /* tp_getset */
-    0,                                /* tp_base */
-    0,                                /* tp_dict */
-    0,                                /* tp_descr_get */
-    0,                                /* tp_descr_set */
-    0,                                /* tp_dictoffset */
-    0,                                /* tp_init */
-    0,                                /* tp_alloc */
-    0,                                /* tp_new */
-    0,                                /* tp_free */
-    0,                                /* tp_is_gc */
+    PyVarObject_HEAD_INIT(NULL, 0) "_hawkey.Solution", /*tp_name*/
+    sizeof(_SolutionObject),                           /*tp_basicsize*/
+    0,                                                 /*tp_itemsize*/
+    (destructor)solution_dealloc,                      /*tp_dealloc*/
+    0,                                                 /*tp_print*/
+    0,                                                 /*tp_getattr*/
+    0,                                                 /*tp_setattr*/
+    0,                                                 /*tp_compare*/
+    0,                                                 /*tp_repr*/
+    0,                                                 /*tp_as_number*/
+    0,                                                 /*tp_as_sequence*/
+    0,                                                 /*tp_as_mapping*/
+    0,                                                 /*tp_hash */
+    0,                                                 /*tp_call*/
+    0,                                                 /*tp_str*/
+    0,                                                 /*tp_getattr*/
+    0,                                                 /*tp_setattr*/
+    0,                                                 /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,          /*tp_flags*/
+    "Solution object",                                 /* tp_doc */
+    0,                                                 /* tp_traverse */
+    0,                                                 /* tp_clear */
+    0,                                                 /* tp_richcompare */
+    0,                                                 /* tp_weaklistoffset */
+    0,                                                 /* tp_iter */
+    0,                                                 /* tp_iternext */
+    0,                                                 /* tp_methods */
+    0,                                                 /* tp_members */
+    solution_getsetters,                               /* tp_getset */
+    0,                                                 /* tp_base */
+    0,                                                 /* tp_dict */
+    0,                                                 /* tp_descr_get */
+    0,                                                 /* tp_descr_set */
+    0,                                                 /* tp_dictoffset */
+    0,                                                 /* tp_init */
+    0,                                                 /* tp_alloc */
+    0,                                                 /* tp_new */
+    0,                                                 /* tp_free */
+    0,                                                 /* tp_is_gc */
 };

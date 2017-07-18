@@ -19,35 +19,34 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-
 #include <gio/gio.h>
 #include <locale.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "libdnf.h"
 #include "dnf-utils.h"
+#include "libdnf.h"
 
-#define DNF_ERROR_INVALID_ARGUMENTS     0
-#define DNF_ERROR_NO_SUCH_CMD           1
+#define DNF_ERROR_INVALID_ARGUMENTS 0
+#define DNF_ERROR_NO_SUCH_CMD 1
 
-typedef struct {
-    DnfContext      *context;
-    GOptionContext  *option_context;
-    GPtrArray       *cmd_array;
-    gboolean         value_only;
-    gchar          **filters;
+typedef struct
+{
+    DnfContext *context;
+    GOptionContext *option_context;
+    GPtrArray *cmd_array;
+    gboolean value_only;
+    gchar **filters;
 } DnfUtilPrivate;
 
-typedef gboolean(*DnfUtilPrivateCb) (DnfUtilPrivate    *cmd,
-                                     gchar        **values,
-                                     GError        **error);
+typedef gboolean (*DnfUtilPrivateCb)(DnfUtilPrivate *cmd, gchar **values, GError **error);
 
-typedef struct {
-    gchar               *name;
-    gchar               *arguments;
-    gchar               *description;
-    DnfUtilPrivateCb     callback;
+typedef struct
+{
+    gchar *name;
+    gchar *arguments;
+    gchar *description;
+    DnfUtilPrivateCb callback;
 } DnfUtilItem;
 
 /**
@@ -68,7 +67,7 @@ dnf_cmd_item_free(DnfUtilItem *item)
 static gint
 dnf_sort_command_name_cb(DnfUtilItem **item1, DnfUtilItem **item2)
 {
-    return g_strcmp0((*item1)->name,(*item2)->name);
+    return g_strcmp0((*item1)->name, (*item2)->name);
 }
 
 /**
@@ -97,8 +96,7 @@ dnf_cmd_add(GPtrArray *array,
         if (i == 0) {
             item->description = g_strdup(description);
         } else {
-            item->description = g_strdup_printf("Alias to %s",
-                                 names[0]);
+            item->description = g_strdup_printf("Alias to %s", names[0]);
         }
         item->arguments = g_strdup(arguments);
         item->callback = callback;
@@ -174,9 +172,8 @@ dnf_cmd_run(DnfUtilPrivate *priv, const gchar *command, gchar **values, GError *
     g_string_append(string, "Command not found, valid commands are:\n");
     for (i = 0; i < priv->cmd_array->len; i++) {
         item = g_ptr_array_index(priv->cmd_array, i);
-        g_string_append_printf(string, " * %s %s\n",
-                               item->name,
-                               item->arguments ? item->arguments : "");
+        g_string_append_printf(
+          string, " * %s %s\n", item->name, item->arguments ? item->arguments : "");
     }
     g_set_error_literal(error, DNF_ERROR, DNF_ERROR_NO_SUCH_CMD, string->str);
     return FALSE;
@@ -300,9 +297,7 @@ dnf_cmd_refresh_source(DnfUtilPrivate *priv, DnfRepo *src, DnfState *state, GErr
         return FALSE;
 
     /* print error to console and continue */
-    g_print("Failed to check %s: %s\n",
-         dnf_repo_get_id(src),
-         error_local->message);
+    g_print("Failed to check %s: %s\n", dnf_repo_get_id(src), error_local->message);
     g_clear_error(&error_local);
     if (!dnf_state_finished(state_local, error))
         return FALSE;
@@ -310,11 +305,8 @@ dnf_cmd_refresh_source(DnfUtilPrivate *priv, DnfRepo *src, DnfState *state, GErr
     /* actually update source */
     state_local = dnf_state_get_child(state);
     g_print("Updating %s\n", dnf_repo_get_id(src));
-    if (!dnf_repo_update(src, DNF_REPO_UPDATE_FLAG_IMPORT_PUBKEY,
-                state_local, &error_local)) {
-        if (g_error_matches(error_local,
-                            DNF_ERROR,
-                            DNF_ERROR_CANNOT_FETCH_SOURCE)) {
+    if (!dnf_repo_update(src, DNF_REPO_UPDATE_FLAG_IMPORT_PUBKEY, state_local, &error_local)) {
+        if (g_error_matches(error_local, DNF_ERROR, DNF_ERROR_CANNOT_FETCH_SOURCE)) {
             g_print("Skipping repo: %s\n", error_local->message);
             return dnf_state_finished(state, error);
         }
@@ -417,8 +409,10 @@ dnf_cmd_update(DnfUtilPrivate *priv, gchar **values, GError **error)
  * dnf_cmd_ignore_cb:
  **/
 static void
-dnf_cmd_ignore_cb(const gchar *log_domain, GLogLevelFlags log_level,
-                  const gchar *message, gpointer user_data)
+dnf_cmd_ignore_cb(const gchar *log_domain,
+                  GLogLevelFlags log_level,
+                  const gchar *message,
+                  gpointer user_data)
 {
 }
 
@@ -439,19 +433,31 @@ main(int argc, char *argv[])
     g_autofree gchar *opt_cachedir = NULL;
 
     const GOptionEntry options[] = {
-        { "reposdir", 0, 0, G_OPTION_ARG_STRING, &opt_reposdir,
-            "Directory for yum repository files", NULL },
-        { "root", 0, 0, G_OPTION_ARG_STRING, &opt_root,
-            "Installation root", NULL },
-        { "cachedir", 0, 0, G_OPTION_ARG_STRING, &opt_cachedir,
-            "Directory for caches", NULL },
-        { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
-            "Show extra debugging information", NULL },
-        { "disable-yumdb", 'v', 0, G_OPTION_ARG_NONE, &opt_disable_yumdb,
-            "Disable writing updates to the yumdb", NULL },
-        { "version", '\0', 0, G_OPTION_ARG_NONE, &version,
-            "Show version", NULL },
-        { NULL}
+        { "reposdir",
+          0,
+          0,
+          G_OPTION_ARG_STRING,
+          &opt_reposdir,
+          "Directory for yum repository files",
+          NULL },
+        { "root", 0, 0, G_OPTION_ARG_STRING, &opt_root, "Installation root", NULL },
+        { "cachedir", 0, 0, G_OPTION_ARG_STRING, &opt_cachedir, "Directory for caches", NULL },
+        { "verbose",
+          'v',
+          0,
+          G_OPTION_ARG_NONE,
+          &verbose,
+          "Show extra debugging information",
+          NULL },
+        { "disable-yumdb",
+          'v',
+          0,
+          G_OPTION_ARG_NONE,
+          &opt_disable_yumdb,
+          "Disable writing updates to the yumdb",
+          NULL },
+        { "version", '\0', 0, G_OPTION_ARG_NONE, &version, "Show version", NULL },
+        { NULL }
     };
     g_autoptr(GError) error = NULL;
     g_autofree gchar *cmd_descriptions = NULL;
@@ -463,35 +469,23 @@ main(int argc, char *argv[])
     priv = g_new0(DnfUtilPrivate, 1);
 
     /* add commands */
-    priv->cmd_array = g_ptr_array_new_with_free_func((GDestroyNotify) dnf_cmd_item_free);
+    priv->cmd_array = g_ptr_array_new_with_free_func((GDestroyNotify)dnf_cmd_item_free);
+    dnf_cmd_add(
+      priv->cmd_array, "install", "[pkgname]", "Install a package or group name", dnf_cmd_install);
     dnf_cmd_add(priv->cmd_array,
-                "install", "[pkgname]",
-                "Install a package or group name",
-                dnf_cmd_install);
-    dnf_cmd_add(priv->cmd_array,
-                "reinstall", "[pkgname]",
+                "reinstall",
+                "[pkgname]",
                 "Reinstall a package or group name",
                 dnf_cmd_reinstall);
-    dnf_cmd_add(priv->cmd_array,
-                "remove", "[pkgname]",
-                "Remove a package or group name",
-                dnf_cmd_remove);
-    dnf_cmd_add(priv->cmd_array,
-                "update", "[pkgname]",
-                "Update a package or group name",
-                dnf_cmd_update);
-    dnf_cmd_add(priv->cmd_array,
-                "refresh", "[force]",
-                "Refresh all the metadata",
-                dnf_cmd_refresh);
-    dnf_cmd_add(priv->cmd_array,
-                "clean", NULL,
-                "Clean all the metadata",
-                dnf_cmd_clean);
+    dnf_cmd_add(
+      priv->cmd_array, "remove", "[pkgname]", "Remove a package or group name", dnf_cmd_remove);
+    dnf_cmd_add(
+      priv->cmd_array, "update", "[pkgname]", "Update a package or group name", dnf_cmd_update);
+    dnf_cmd_add(priv->cmd_array, "refresh", "[force]", "Refresh all the metadata", dnf_cmd_refresh);
+    dnf_cmd_add(priv->cmd_array, "clean", NULL, "Clean all the metadata", dnf_cmd_clean);
 
     /* sort by command name */
-    g_ptr_array_sort(priv->cmd_array,
-             (GCompareFunc) dnf_sort_command_name_cb);
+    g_ptr_array_sort(priv->cmd_array, (GCompareFunc)dnf_sort_command_name_cb);
 
     /* get a list of the commands */
     priv->option_context = g_option_context_new(NULL);
@@ -520,12 +514,9 @@ main(int argc, char *argv[])
         opt_cachedir = g_strdup("/var/cache/PackageKit");
 
     {
-        g_autofree char *metadatadir =
-            g_build_filename(opt_cachedir, "metadata", NULL);
-        g_autofree char *solvdir =
-            g_build_filename(opt_cachedir, "hawkey", NULL);
-        g_autofree char *lockdir =
-            g_build_filename(opt_cachedir, "lock", NULL);
+        g_autofree char *metadatadir = g_build_filename(opt_cachedir, "metadata", NULL);
+        g_autofree char *solvdir = g_build_filename(opt_cachedir, "hawkey", NULL);
+        g_autofree char *lockdir = g_build_filename(opt_cachedir, "lock", NULL);
         dnf_context_set_cache_dir(priv->context, metadatadir);
         dnf_context_set_solv_dir(priv->context, solvdir);
         dnf_context_set_lock_dir(priv->context, lockdir);
@@ -543,8 +534,7 @@ main(int argc, char *argv[])
     if (verbose) {
         g_setenv("G_MESSAGES_DEBUG", "all", FALSE);
     } else {
-        g_log_set_handler(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-                          dnf_cmd_ignore_cb, NULL);
+        g_log_set_handler(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, dnf_cmd_ignore_cb, NULL);
     }
 
     /* get version */
@@ -554,7 +544,7 @@ main(int argc, char *argv[])
     }
 
     /* run the specified command */
-    ret = dnf_cmd_run(priv, argv[1],(gchar**) &argv[2], &error);
+    ret = dnf_cmd_run(priv, argv[1], (gchar **)&argv[2], &error);
     if (!ret) {
         if (g_error_matches(error, DNF_ERROR, DNF_ERROR_NO_SUCH_CMD)) {
             g_autofree gchar *tmp = NULL;
@@ -580,4 +570,3 @@ out:
     }
     return retval;
 }
-

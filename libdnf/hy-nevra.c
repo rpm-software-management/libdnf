@@ -18,16 +18,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <solv/util.h>
-#include "hy-query.h"
 #include "hy-nevra.h"
-#include "hy-nevra-private.h"
 #include "dnf-sack.h"
+#include "hy-nevra-private.h"
+#include "hy-query.h"
 #include "hy-types.h"
-
+#include <solv/util.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 static void
 hy_nevra_clear(HyNevra nevra)
@@ -98,16 +97,16 @@ static inline char **
 get_string(HyNevra nevra, int which)
 {
     switch (which) {
-    case HY_NEVRA_NAME:
-        return &(nevra->name);
-    case HY_NEVRA_VERSION:
-        return &(nevra->version);
-    case HY_NEVRA_RELEASE:
-        return &(nevra->release);
-    case HY_NEVRA_ARCH:
-        return &(nevra->arch);
-    default:
-        return NULL;
+        case HY_NEVRA_NAME:
+            return &(nevra->name);
+        case HY_NEVRA_VERSION:
+            return &(nevra->version);
+        case HY_NEVRA_RELEASE:
+            return &(nevra->release);
+        case HY_NEVRA_ARCH:
+            return &(nevra->arch);
+        default:
+            return NULL;
     }
 }
 
@@ -118,9 +117,9 @@ hy_nevra_get_string(HyNevra nevra, int which)
 }
 
 void
-hy_nevra_set_string(HyNevra nevra, int which, const char* str_val)
+hy_nevra_set_string(HyNevra nevra, int which, const char *str_val)
 {
-    char** attr = get_string(nevra, which);
+    char **attr = get_string(nevra, which);
     g_free(*attr);
     *attr = g_strdup(str_val);
 }
@@ -165,18 +164,17 @@ hy_nevra_evr_cmp(HyNevra nevra1, HyNevra nevra2, DnfSack *sack)
     return cmp;
 }
 
-char *hy_nevra_get_evr(HyNevra nevra)
+char *
+hy_nevra_get_evr(HyNevra nevra)
 {
     if (nevra->epoch == -1)
-        return g_strdup_printf ("%s-%s", nevra->version, nevra->release);
-    return g_strdup_printf ("%d:%s-%s", nevra->epoch, nevra->version, nevra->release);
+        return g_strdup_printf("%s-%s", nevra->version, nevra->release);
+    return g_strdup_printf("%d:%s-%s", nevra->epoch, nevra->version, nevra->release);
 }
 
 gboolean
 hy_nevra_has_just_name(HyNevra nevra)
 {
-  return nevra->name != NULL &&
-    nevra->epoch == -1 &&
-    nevra->version == NULL &&
-    nevra->release == NULL;
+    return nevra->name != NULL && nevra->epoch == -1 && nevra->version == NULL &&
+           nevra->release == NULL;
 }

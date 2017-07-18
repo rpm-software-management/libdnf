@@ -18,12 +18,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
-
+#include "fixtures.h"
 #include "libdnf/dnf-advisory.h"
 #include "libdnf/dnf-advisorypkg.h"
 #include "libdnf/hy-package.h"
-#include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"
 

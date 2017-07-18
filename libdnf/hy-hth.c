@@ -20,40 +20,32 @@
 
 #define _GNU_SOURCE
 #include <assert.h>
+#include <solv/repo_rpmdb.h>
+#include <solv/solver.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <wordexp.h>
-#include <solv/repo_rpmdb.h>
-#include <solv/solver.h>
 
+#include "dnf-reldep-list.h"
+#include "dnf-sack.h"
 #include "hy-goal.h"
 #include "hy-package-private.h"
 #include "hy-package.h"
 #include "hy-packageset.h"
 #include "hy-query.h"
-#include "dnf-reldep-list.h"
 #include "hy-repo.h"
-#include "dnf-sack.h"
 #include "hy-util.h"
 
 #define CFG_FILE "~/.hawkey/main.config"
 
 static const char *installonly[] = {
-    "kernel",
-    "kernel-bigmem",
-    "kernel-enterprise",
-    "kernel-smp",
-    "kernel-modules",
-    "kernel-debug",
-    "kernel-unsupported",
-    "kernel-source",
-    "kernel-devel",
-    "kernel-PAE",
-    "kernel-PAE-debug",
-    NULL
+    "kernel",         "kernel-bigmem", "kernel-enterprise",  "kernel-smp",
+    "kernel-modules", "kernel-debug",  "kernel-unsupported", "kernel-source",
+    "kernel-devel",   "kernel-PAE",    "kernel-PAE-debug",   NULL
 };
 
-static void execute_print(DnfSack *sack, HyQuery q, int show_obsoletes)
+static void
+execute_print(DnfSack *sack, HyQuery q, int show_obsoletes)
 {
     GPtrArray *plist;
 
@@ -67,7 +59,7 @@ static void execute_print(DnfSack *sack, HyQuery q, int show_obsoletes)
         printf("found package: %s [%s]\n", nvra, reponame);
         if (strcmp(reponame, HY_SYSTEM_REPO_NAME) == 0) {
             int type;
-            const unsigned char * hdrid = dnf_package_get_hdr_chksum(pkg, &type);
+            const unsigned char *hdrid = dnf_package_get_hdr_chksum(pkg, &type);
             char *str = hy_chksum_str(hdrid, type);
 
             printf("\tsha1 header id: %s\n", str);
@@ -94,7 +86,8 @@ static void execute_print(DnfSack *sack, HyQuery q, int show_obsoletes)
     g_ptr_array_unref(plist);
 }
 
-static void search_and_print(DnfSack *sack, const char *name)
+static void
+search_and_print(DnfSack *sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
 
@@ -118,7 +111,9 @@ search_filter_files(DnfSack *sack, const char *name)
     hy_query_free(q);
 }
 
-static void search_filter_repos(DnfSack *sack, const char *name) {
+static void
+search_filter_repos(DnfSack *sack, const char *name)
+{
     HyQuery q = hy_query_create(sack);
 
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
@@ -127,8 +122,8 @@ static void search_filter_repos(DnfSack *sack, const char *name) {
     hy_query_free(q);
 }
 
-static void search_anded(DnfSack *sack, const char *name_substr,
-                         const char *summary_substr)
+static void
+search_anded(DnfSack *sack, const char *name_substr, const char *summary_substr)
 {
     HyQuery q = hy_query_create(sack);
 
@@ -138,8 +133,8 @@ static void search_anded(DnfSack *sack, const char *name_substr,
     hy_query_free(q);
 }
 
-static void search_provides(DnfSack *sack, const char *name,
-                            const char *version)
+static void
+search_provides(DnfSack *sack, const char *name, const char *version)
 {
     HyQuery q = hy_query_create(sack);
 
@@ -148,7 +143,8 @@ static void search_provides(DnfSack *sack, const char *name,
     hy_query_free(q);
 }
 
-static void updatables_query_name(DnfSack *sack, const char *name)
+static void
+updatables_query_name(DnfSack *sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
 
@@ -161,7 +157,8 @@ static void updatables_query_name(DnfSack *sack, const char *name)
     hy_query_free(q);
 }
 
-static void obsoletes(DnfSack *sack)
+static void
+obsoletes(DnfSack *sack)
 {
     HyQuery q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
@@ -219,12 +216,13 @@ erase(DnfSack *sack, const char *name)
     }
 
     hy_goal_free(goal);
- finish:
+finish:
     g_ptr_array_unref(plist);
     hy_query_free(q);
 }
 
-static void update(DnfSack *sack, DnfPackage *pkg)
+static void
+update(DnfSack *sack, DnfPackage *pkg)
 {
     HyGoal goal = hy_goal_create(sack);
 
@@ -268,11 +266,12 @@ static void update(DnfSack *sack, DnfPackage *pkg)
     }
     g_ptr_array_unref(plist);
 
- finish:
+finish:
     hy_goal_free(goal);
 }
 
-static void update_local(DnfSack *sack, const char *fn)
+static void
+update_local(DnfSack *sack, const char *fn)
 {
     DnfPackage *pkg;
 
@@ -283,7 +282,8 @@ static void update_local(DnfSack *sack, const char *fn)
     }
 }
 
-static void update_remote(DnfSack *sack, const char *name)
+static void
+update_remote(DnfSack *sack, const char *name)
 {
     HyQuery q = hy_query_create(sack);
     GPtrArray *plist;
@@ -306,8 +306,10 @@ finish:
 }
 
 static HyRepo
-config_repo(const char *name, const char *md_repo,
-            const char *md_primary_xml, const char *md_filelists)
+config_repo(const char *name,
+            const char *md_repo,
+            const char *md_primary_xml,
+            const char *md_filelists)
 {
     HyRepo repo = hy_repo_create(name);
     hy_repo_set_string(repo, HY_REPO_MD_FN, md_repo);
@@ -317,21 +319,25 @@ config_repo(const char *name, const char *md_repo,
 }
 
 static void
-rtrim(char *str) {
+rtrim(char *str)
+{
     int len = strlen(str);
     if (len > 0 && str[len - 1] == '\n')
-        str[len - 1 ] = '\0';
+        str[len - 1] = '\0';
 }
 
 static int
-read_repopaths(char **md_repo, char **md_primary_xml, char **md_filelists,
-               char **md_repo_updates, char **md_primary_updates_xml,
+read_repopaths(char **md_repo,
+               char **md_primary_xml,
+               char **md_filelists,
+               char **md_repo_updates,
+               char **md_primary_updates_xml,
                char **md_filelists_updates)
 {
     wordexp_t word_vector;
 
-    *md_repo = *md_primary_xml = *md_filelists = *md_repo_updates = \
-        *md_primary_updates_xml = *md_filelists_updates = NULL;
+    *md_repo = *md_primary_xml = *md_filelists = *md_repo_updates = *md_primary_updates_xml =
+      *md_filelists_updates = NULL;
 
     if (wordexp(CFG_FILE, &word_vector, 0))
         return 1;
@@ -346,10 +352,8 @@ read_repopaths(char **md_repo, char **md_primary_xml, char **md_filelists,
         return 1;
     }
     size_t size = 0;
-    if ((getline(md_repo, &size, f) < 0) ||
-        (getline(md_primary_xml, &size, f) < 0) ||
-        (getline(md_filelists, &size, f) < 0) ||
-        (getline(md_repo_updates, &size, f) < 0) ||
+    if ((getline(md_repo, &size, f) < 0) || (getline(md_primary_xml, &size, f) < 0) ||
+        (getline(md_filelists, &size, f) < 0) || (getline(md_repo_updates, &size, f) < 0) ||
         (getline(md_primary_updates_xml, &size, f) < 0) ||
         (getline(md_filelists_updates, &size, f) < 0)) {
         free(*md_repo);
@@ -379,9 +383,10 @@ need_filelists(int argc, const char **argv)
     return argc == 3 && !strcmp(argv[1], "-f");
 }
 
-int main(int argc, const char **argv)
+int
+main(int argc, const char **argv)
 {
-    DnfSack *sack = dnf_sack_new ();
+    DnfSack *sack = dnf_sack_new();
     HyRepo repo;
     char *md_repo;
     char *md_primary_xml;
@@ -395,8 +400,12 @@ int main(int argc, const char **argv)
     if (!dnf_sack_setup(sack, DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL))
         return 1;
 
-    if (read_repopaths(&md_repo, &md_primary_xml, &md_filelists, &md_repo_updates,
-                       &md_primary_updates_xml, &md_filelists_updates)) {
+    if (read_repopaths(&md_repo,
+                       &md_primary_xml,
+                       &md_filelists,
+                       &md_repo_updates,
+                       &md_primary_updates_xml,
+                       &md_filelists_updates)) {
         fprintf(stderr,
                 "This is hawkey testing hack, it needs a readable %s file "
                 "containing the following paths on separate lines:\n"
@@ -405,7 +414,8 @@ int main(int argc, const char **argv)
                 "<main filelist.xml.gz path>\n"
                 "<updates repomd.xml path>\n"
                 "<updates primary.xml.gz path>\n"
-                "<updates filelists.xml.gz path>\n", CFG_FILE);
+                "<updates filelists.xml.gz path>\n",
+                CFG_FILE);
         return 1;
     }
     int load_flags = DNF_SACK_LOAD_FLAG_BUILD_CACHE;
@@ -419,13 +429,14 @@ int main(int argc, const char **argv)
     /* Fedora repo */
     repo = config_repo("Fedora", md_repo, md_primary_xml, md_filelists);
     ret = dnf_sack_load_repo(sack, repo, load_flags, &error);
-    assert(ret == 0); (void)ret;
+    assert(ret == 0);
+    (void)ret;
     hy_repo_free(repo);
     /* Fedora updates repo */
-    repo = config_repo("updates", md_repo_updates, md_primary_updates_xml,
-                       md_filelists_updates);
+    repo = config_repo("updates", md_repo_updates, md_primary_updates_xml, md_filelists_updates);
     ret = dnf_sack_load_repo(sack, repo, load_flags, &error);
-    assert(ret == 0); (void)ret;
+    assert(ret == 0);
+    (void)ret;
     hy_repo_free(repo);
     free(md_repo);
     free(md_primary_xml);

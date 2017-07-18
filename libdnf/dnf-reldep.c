@@ -38,10 +38,10 @@ struct _DnfReldep
     Id r_id;
 };
 
-G_DEFINE_TYPE (DnfReldep, dnf_reldep, G_TYPE_OBJECT)
+G_DEFINE_TYPE(DnfReldep, dnf_reldep, G_TYPE_OBJECT)
 
 static gint
-cmptype2relflags2 (DnfComparisonKind cmp_type)
+cmptype2relflags2(DnfComparisonKind cmp_type)
 {
     gint flags = 0;
     if (cmp_type & DNF_COMPARISON_EQ)
@@ -50,7 +50,7 @@ cmptype2relflags2 (DnfComparisonKind cmp_type)
         flags |= REL_LT;
     if (cmp_type & DNF_COMPARISON_GT)
         flags |= REL_GT;
-    g_assert (flags);
+    g_assert(flags);
     return flags;
 }
 
@@ -64,10 +64,9 @@ cmptype2relflags2 (DnfComparisonKind cmp_type)
  * Since: 0.7.0
  */
 DnfReldep *
-dnf_reldep_from_pool (Pool *pool,
-                      Id    r_id)
+dnf_reldep_from_pool(Pool *pool, Id r_id)
 {
-    DnfReldep *reldep = g_object_new (DNF_TYPE_RELDEP, NULL);
+    DnfReldep *reldep = g_object_new(DNF_TYPE_RELDEP, NULL);
     reldep->pool = pool;
     reldep->r_id = r_id;
     return reldep;
@@ -85,40 +84,37 @@ dnf_reldep_from_pool (Pool *pool,
  * Since: 0.7.0
  */
 DnfReldep *
-dnf_reldep_new (DnfSack           *sack,
-                const gchar       *name,
-                DnfComparisonKind  cmp_type,
-                const gchar       *evr)
+dnf_reldep_new(DnfSack *sack, const gchar *name, DnfComparisonKind cmp_type, const gchar *evr)
 {
-    Pool *pool = dnf_sack_get_pool (sack);
-    Id id = pool_str2id (pool, name, 1);
+    Pool *pool = dnf_sack_get_pool(sack);
+    Id id = pool_str2id(pool, name, 1);
 
     if (evr) {
-        g_assert (cmp_type);
-        Id ievr = pool_str2id (pool, evr, 1);
-        int flags = cmptype2relflags2 (cmp_type);
-        id = pool_rel2id (pool, id, ievr, flags, 1);
+        g_assert(cmp_type);
+        Id ievr = pool_str2id(pool, evr, 1);
+        int flags = cmptype2relflags2(cmp_type);
+        id = pool_rel2id(pool, id, ievr, flags, 1);
     }
 
-    return dnf_reldep_from_pool (pool, id);
+    return dnf_reldep_from_pool(pool, id);
 }
 
 static void
-dnf_reldep_finalize (GObject *object)
+dnf_reldep_finalize(GObject *object)
 {
-    G_OBJECT_CLASS (dnf_reldep_parent_class)->finalize (object);
+    G_OBJECT_CLASS(dnf_reldep_parent_class)->finalize(object);
 }
 
 static void
-dnf_reldep_class_init (DnfReldepClass *klass)
+dnf_reldep_class_init(DnfReldepClass *klass)
 {
-    GObjectClass *object_class = G_OBJECT_CLASS (klass);
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
 
     object_class->finalize = dnf_reldep_finalize;
 }
 
 static void
-dnf_reldep_init (DnfReldep *self)
+dnf_reldep_init(DnfReldep *self)
 {
 }
 
@@ -131,13 +127,13 @@ dnf_reldep_init (DnfReldep *self)
  * Since: 0.7.0
  */
 const gchar *
-dnf_reldep_to_string (DnfReldep *reldep)
+dnf_reldep_to_string(DnfReldep *reldep)
 {
     return pool_dep2str(reldep->pool, reldep->r_id);
 }
 
 Id
-dnf_reldep_get_id (DnfReldep *reldep)
+dnf_reldep_get_id(DnfReldep *reldep)
 {
     return reldep->r_id;
 }

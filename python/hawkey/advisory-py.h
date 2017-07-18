@@ -25,6 +25,7 @@
 
 extern PyTypeObject advisory_Type;
 
-PyObject * advisoryToPyObject(DnfAdvisory *advisory, PyObject *sack);
+PyObject *
+advisoryToPyObject(DnfAdvisory *advisory, PyObject *sack);
 
 #endif

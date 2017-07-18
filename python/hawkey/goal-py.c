@@ -20,30 +20,30 @@
 
 #include <Python.h>
 #include <glib.h>
-#include <structmember.h>
-#include <stddef.h>
 #include <solv/util.h>
+#include <stddef.h>
+#include <structmember.h>
 
-#include "dnf-types.h"
 #include "dnf-goal.h"
-#include "hy-goal.h"
+#include "dnf-types.h"
 #include "hy-goal-private.h"
+#include "hy-goal.h"
 #include "hy-package-private.h"
 
 #include "exception-py.h"
 #include "goal-py.h"
 #include "iutil-py.h"
 #include "package-py.h"
-#include "selector-py.h"
-#include "sack-py.h"
-#include "solution-py.h"
 #include "pycomp.h"
+#include "sack-py.h"
+#include "selector-py.h"
+#include "solution-py.h"
 
 #define BLOCK_SIZE 15
 
-typedef struct {
-    PyObject_HEAD
-    HyGoal goal;
+typedef struct
+{
+    PyObject_HEAD HyGoal goal;
     PyObject *sack;
 } _GoalObject;
 
@@ -51,53 +51,55 @@ static int
 args_pkg_sltr_check(DnfPackage *pkg, HySelector sltr)
 {
     if (!(pkg || sltr)) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Requires a Package or a Selector argument.");
+        PyErr_SetString(PyExc_ValueError, "Requires a Package or a Selector argument.");
         return 0;
     }
     if (pkg && sltr) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Does not accept both Package and Selector arguments.");
+        PyErr_SetString(PyExc_ValueError, "Does not accept both Package and Selector arguments.");
         return 0;
     }
     return 1;
 }
 
 static int
-args_pkg_sltr_parse(PyObject *args, PyObject *kwds,
-                     DnfPackage **pkg, HySelector *sltr, int *flags, int flag_mask)
+args_pkg_sltr_parse(
+  PyObject *args, PyObject *kwds, DnfPackage **pkg, HySelector *sltr, int *flags, int flag_mask)
 {
-    const char *kwlist[] = {"package", "select", "clean_deps", "check_installed",
-                      "optional", NULL};
+    const char *kwlist[] = {
+        "package", "select", "clean_deps", "check_installed", "optional", NULL
+    };
     int clean_deps = 0, check_installed = 0, optional = 0;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&O&iii", (char**) kwlist,
-                                     package_converter, pkg,
-                                     selector_converter, sltr,
-                                     &clean_deps, &check_installed,
+    if (!PyArg_ParseTupleAndKeywords(args,
+                                     kwds,
+                                     "|O&O&iii",
+                                     (char **)kwlist,
+                                     package_converter,
+                                     pkg,
+                                     selector_converter,
+                                     sltr,
+                                     &clean_deps,
+                                     &check_installed,
                                      &optional))
         return 0;
     if (!args_pkg_sltr_check(*pkg, *sltr))
         return 0;
     if (clean_deps) {
         if (!(flag_mask & HY_CLEAN_DEPS)) {
-            PyErr_SetString(PyExc_ValueError,
-                            "Does not accept clean_deps keyword") ;
+            PyErr_SetString(PyExc_ValueError, "Does not accept clean_deps keyword");
             return 0;
         }
         *flags |= HY_CLEAN_DEPS;
     }
     if (check_installed) {
-        if  (!(flag_mask & HY_CHECK_INSTALLED)) {
-            PyErr_SetString(PyExc_ValueError,
-                            "Does not accept check_installed keyword") ;
+        if (!(flag_mask & HY_CHECK_INSTALLED)) {
+            PyErr_SetString(PyExc_ValueError, "Does not accept check_installed keyword");
             return 0;
         }
         *flags |= HY_CHECK_INSTALLED;
     }
     if (optional) {
-        if  (!(flag_mask & HY_WEAK_SOLV)) {
-            PyErr_SetString(PyExc_ValueError,
-                            "Does not accept optional keyword");
+        if (!(flag_mask & HY_WEAK_SOLV)) {
+            PyErr_SetString(PyExc_ValueError, "Does not accept optional keyword");
             return 0;
         }
         *flags |= HY_WEAK_SOLV;
@@ -108,8 +110,8 @@ args_pkg_sltr_parse(PyObject *args, PyObject *kwds,
 static int
 args_run_parse(PyObject *args, PyObject *kwds, int *flags, PyObject **callback_p)
 {
-    const char *kwlist[] = {"callback", "allow_uninstall", "force_best", "verify",
-        "ignore_weak_deps", "ignore_weak", NULL};
+    const char *kwlist[] = { "callback",         "allow_uninstall", "force_best", "verify",
+                             "ignore_weak_deps", "ignore_weak",     NULL };
     int ignore_weak = 0;
     int ignore_weak_deps = 0;
     int allow_uninstall = 0;
@@ -117,15 +119,21 @@ args_run_parse(PyObject *args, PyObject *kwds, int *flags, PyObject **callback_p
     int verify = 0;
     PyObject *callback = NULL;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Oiiiii", (char**) kwlist,
-                                     &callback, &allow_uninstall, &force_best,
-                                     &verify, &ignore_weak_deps, &ignore_weak))
+    if (!PyArg_ParseTupleAndKeywords(args,
+                                     kwds,
+                                     "|Oiiiii",
+                                     (char **)kwlist,
+                                     &callback,
+                                     &allow_uninstall,
+                                     &force_best,
+                                     &verify,
+                                     &ignore_weak_deps,
+                                     &ignore_weak))
         return 0;
 
     if (callback) {
         if (!callback_p) {
-            PyErr_SetString(PyExc_ValueError,
-                            "Does not accept a callback argument.");
+            PyErr_SetString(PyExc_ValueError, "Does not accept a callback argument.");
             return 0;
         }
         if (!PyCallable_Check(callback)) {
@@ -158,19 +166,18 @@ op_ret2exc(int ret)
         Py_RETURN_NONE;
 
     switch (ret) {
-    case DNF_ERROR_BAD_SELECTOR:
-        PyErr_SetString(HyExc_Value,
-                        "Ill-formed Selector used for the operation.");
-        return NULL;
-    case DNF_ERROR_INVALID_ARCHITECTURE:
-        PyErr_SetString(HyExc_Arch, "Used arch is unknown.");
-        return NULL;
-    case DNF_ERROR_PACKAGE_NOT_FOUND:
-        PyErr_SetString(HyExc_Validation, "The validation check has failed.");
-        return NULL;
-    default:
-        PyErr_SetString(HyExc_Exception, "Goal operation failed.");
-        return NULL;
+        case DNF_ERROR_BAD_SELECTOR:
+            PyErr_SetString(HyExc_Value, "Ill-formed Selector used for the operation.");
+            return NULL;
+        case DNF_ERROR_INVALID_ARCHITECTURE:
+            PyErr_SetString(HyExc_Arch, "Used arch is unknown.");
+            return NULL;
+        case DNF_ERROR_PACKAGE_NOT_FOUND:
+            PyErr_SetString(HyExc_Validation, "The validation check has failed.");
+            return NULL;
+        default:
+            PyErr_SetString(HyExc_Exception, "Goal operation failed.");
+            return NULL;
     }
 }
 
@@ -179,12 +186,12 @@ op_ret2exc(int ret)
 static PyObject *
 goal_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    _GoalObject *self = (_GoalObject*)type->tp_alloc(type, 0);
+    _GoalObject *self = (_GoalObject *)type->tp_alloc(type, 0);
     if (self) {
         self->goal = NULL;
         self->sack = NULL;
     }
-    return (PyObject*)self;
+    return (PyObject *)self;
 }
 
 static void
@@ -231,8 +238,8 @@ distupgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
     if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, NULL, 0))
         return NULL;
 
-    int ret = pkg ? hy_goal_distupgrade(self->goal, pkg) :
-        hy_goal_distupgrade_selector(self->goal, sltr);
+    int ret =
+      pkg ? hy_goal_distupgrade(self->goal, pkg) : hy_goal_distupgrade_selector(self->goal, sltr);
     return op_ret2exc(ret);
 }
 
@@ -244,8 +251,7 @@ downgrade_to(_GoalObject *self, PyObject *args, PyObject *kwds)
     int flags = 0;
     int ret;
 
-    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr,
-                              &flags, HY_CHECK_INSTALLED|HY_WEAK_SOLV))
+    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, &flags, HY_CHECK_INSTALLED | HY_WEAK_SOLV))
         return NULL;
 
     if (pkg) {
@@ -271,8 +277,8 @@ erase(_GoalObject *self, PyObject *args, PyObject *kwds)
     if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, &flags, HY_CLEAN_DEPS))
         return NULL;
 
-    int ret = pkg ? hy_goal_erase_flags(self->goal, pkg, flags) :
-        hy_goal_erase_selector_flags(self->goal, sltr, flags);
+    int ret = pkg ? hy_goal_erase_flags(self->goal, pkg, flags)
+                  : hy_goal_erase_selector_flags(self->goal, sltr, flags);
     return op_ret2exc(ret);
 }
 
@@ -327,8 +333,7 @@ upgrade_to(_GoalObject *self, PyObject *args, PyObject *kwds)
     int ret;
     int flags = 0;
 
-    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr,
-                              &flags, HY_CHECK_INSTALLED))
+    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, &flags, HY_CHECK_INSTALLED))
         return NULL;
     if (sltr) {
         ret = hy_goal_upgrade_to_selector(self->goal, sltr);
@@ -414,7 +419,8 @@ run(_GoalObject *self, PyObject *args, PyObject *kwds)
     Py_RETURN_FALSE;
 }
 
-struct _PySolutionCallback {
+struct _PySolutionCallback
+{
     PyObject *callback_tuple;
     PyObject *callback;
     int errors;
@@ -423,7 +429,7 @@ struct _PySolutionCallback {
 static int
 py_solver_callback(HyGoal goal, void *data)
 {
-    struct _PySolutionCallback *cb_s = (struct _PySolutionCallback*)data;
+    struct _PySolutionCallback *cb_s = (struct _PySolutionCallback *)data;
 
     PyObject *ret = PyObject_CallObject(cb_s->callback, cb_s->callback_tuple);
     if (ret)
@@ -446,9 +452,8 @@ run_all(_GoalObject *self, PyObject *args, PyObject *kwds)
     if (!callback_tuple)
         return NULL;
 
-    struct _PySolutionCallback cb_s = {callback_tuple, callback, 0};
-    int ret = hy_goal_run_all_flags(self->goal, py_solver_callback, &cb_s,
-                                    flags);
+    struct _PySolutionCallback cb_s = { callback_tuple, callback, 0 };
+    int ret = hy_goal_run_all_flags(self->goal, py_solver_callback, &cb_s, flags);
     Py_DECREF(callback_tuple);
     if (cb_s.errors > 0)
         return NULL;
@@ -522,10 +527,10 @@ problem_conflicts(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *list;
     DnfPackageSet *pset;
-    const char *kwlist[] = {"available", NULL};
+    const char *kwlist[] = { "available", NULL };
     int available = 0;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", (char**) kwlist, &available))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", (char **)kwlist, &available))
         return 0;
 
     DnfPackageState pkg_type = DNF_PACKAGE_STATE_ALL;
@@ -547,10 +552,10 @@ problem_broken_dependency(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *list;
     DnfPackageSet *pset;
-    const char *kwlist[] = {"available", NULL};
+    const char *kwlist[] = { "available", NULL };
     int available = 0;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", (char**) kwlist, &available))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", (char **)kwlist, &available))
         return 0;
 
     DnfPackageState pkg_type = DNF_PACKAGE_STATE_ALL;
@@ -601,14 +606,14 @@ list_generic(_GoalObject *self, GPtrArray *(*func)(HyGoal, GError **))
 
     if (!plist) {
         switch (error->code) {
-        case DNF_ERROR_INTERNAL_ERROR:
-            PyErr_SetString(HyExc_Value, "Goal has not been run yet.");
-            break;
-        case DNF_ERROR_NO_SOLUTION:
-            PyErr_SetString(HyExc_Runtime, "Goal could not find a solution.");
-            break;
-        default:
-            assert(0);
+            case DNF_ERROR_INTERNAL_ERROR:
+                PyErr_SetString(HyExc_Value, "Goal has not been run yet.");
+                break;
+            case DNF_ERROR_NO_SOLUTION:
+                PyErr_SetString(HyExc_Runtime, "Goal could not find a solution.");
+                break;
+            default:
+                assert(0);
         }
         return NULL;
     }
@@ -692,8 +697,7 @@ get_solution(_GoalObject *self, PyObject *index_obj)
         PyErr_SetString(PyExc_TypeError, "An integer value expected.");
         return NULL;
     }
-    g_autoptr(GPtrArray) slist = hy_goal_get_solution(self->goal,
-                                                      PyLong_AsLong(index_obj));
+    g_autoptr(GPtrArray) slist = hy_goal_get_solution(self->goal, PyLong_AsLong(index_obj));
     if (slist == NULL) {
         PyErr_SetString(PyExc_ValueError, "Index out of range.");
         return NULL;
@@ -723,107 +727,95 @@ deepcopy(_GoalObject *self, PyObject *args, PyObject *kwds)
 }
 
 static struct PyMethodDef goal_methods[] = {
-    {"__deepcopy__", (PyCFunction)deepcopy, METH_KEYWORDS|METH_VARARGS,
-     NULL},
-    {"add_protected", (PyCFunction)add_protected, METH_O,
-     NULL},
-    {"distupgrade_all",        (PyCFunction)distupgrade_all,        METH_NOARGS,        NULL},
-    {"distupgrade",                (PyCFunction)distupgrade,
-     METH_VARARGS | METH_KEYWORDS, NULL},
-    {"downgrade_to",        (PyCFunction)downgrade_to,
-     METH_VARARGS | METH_KEYWORDS, NULL},
-    {"erase",                (PyCFunction)erase,
-     METH_VARARGS | METH_KEYWORDS, NULL},
-    {"install",                (PyCFunction)install,
-     METH_VARARGS | METH_KEYWORDS, NULL},
-    {"upgrade",                (PyCFunction)upgrade,
-     METH_VARARGS | METH_KEYWORDS, NULL},
-    {"upgrade_to",        (PyCFunction)upgrade_to,
-     METH_VARARGS | METH_KEYWORDS, NULL},
-    {"upgrade_all",        (PyCFunction)upgrade_all,        METH_NOARGS,        NULL},
-    {"userinstalled",        (PyCFunction)userinstalled,        METH_O,                NULL},
-    {"_has_actions",        (PyCFunction)has_actions,        METH_O, NULL},
+    { "__deepcopy__", (PyCFunction)deepcopy, METH_KEYWORDS | METH_VARARGS, NULL },
+    { "add_protected", (PyCFunction)add_protected, METH_O, NULL },
+    { "distupgrade_all", (PyCFunction)distupgrade_all, METH_NOARGS, NULL },
+    { "distupgrade", (PyCFunction)distupgrade, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "downgrade_to", (PyCFunction)downgrade_to, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "erase", (PyCFunction)erase, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "install", (PyCFunction)install, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "upgrade", (PyCFunction)upgrade, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "upgrade_to", (PyCFunction)upgrade_to, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "upgrade_all", (PyCFunction)upgrade_all, METH_NOARGS, NULL },
+    { "userinstalled", (PyCFunction)userinstalled, METH_O, NULL },
+    { "_has_actions", (PyCFunction)has_actions, METH_O, NULL },
     // deprecated in 0.5.9, will be removed in 1.0.0
     // use goal.actions | hawkey.DISTUPGRADE_ALL instead
-    {"req_has_distupgrade_all",        (PyCFunction)req_has_distupgrade_all,
-     METH_NOARGS,        NULL},
+    { "req_has_distupgrade_all", (PyCFunction)req_has_distupgrade_all, METH_NOARGS, NULL },
     // deprecated in 0.5.9, will be removed in 1.0.0
     // use goal.actions | hawkey.ERASE instead
-    {"req_has_erase",        (PyCFunction)req_has_erase,        METH_NOARGS,        NULL},
+    { "req_has_erase", (PyCFunction)req_has_erase, METH_NOARGS, NULL },
     // deprecated in 0.5.9, will be removed in 1.0.0
     // use goal.actions | hawkey.UPGRADE_ALL instead
-    {"req_has_upgrade_all", (PyCFunction)req_has_upgrade_all,
-     METH_NOARGS,        NULL},
-    {"req_length",        (PyCFunction)req_length,        METH_NOARGS,        NULL},
-    {"run",                (PyCFunction)run,
-     METH_VARARGS | METH_KEYWORDS, NULL},
-    {"run_all",        (PyCFunction)run_all,
-     METH_VARARGS | METH_KEYWORDS, NULL},
-    {"count_problems",        (PyCFunction)count_problems,        METH_NOARGS,        NULL},
-    {"problem_conflicts",(PyCFunction)problem_conflicts,        METH_VARARGS | METH_KEYWORDS,                NULL},
-    {"problem_broken_dependency",(PyCFunction)problem_broken_dependency,        METH_VARARGS | METH_KEYWORDS,                NULL},
-    {"describe_problem",(PyCFunction)describe_problem,        METH_O,                NULL},
-    {"problem_rules", (PyCFunction)problem_rules,        METH_NOARGS,                NULL},
-    {"log_decisions",   (PyCFunction)log_decisions,        METH_NOARGS,        NULL},
-    {"write_debugdata", (PyCFunction)write_debugdata,        METH_O,                NULL},
-    {"list_erasures",        (PyCFunction)list_erasures,        METH_NOARGS,        NULL},
-    {"list_installs",        (PyCFunction)list_installs,        METH_NOARGS,        NULL},
-    {"list_obsoleted",        (PyCFunction)list_obsoleted,        METH_NOARGS,        NULL},
-    {"list_reinstalls",        (PyCFunction)list_reinstalls,        METH_NOARGS,        NULL},
-    {"list_unneeded",        (PyCFunction)list_unneeded,        METH_NOARGS,        NULL},
-    {"list_downgrades",        (PyCFunction)list_downgrades,        METH_NOARGS,        NULL},
-    {"list_upgrades",        (PyCFunction)list_upgrades,        METH_NOARGS,        NULL},
-    {"obsoleted_by_package",(PyCFunction)obsoleted_by_package,
-     METH_O, NULL},
-    {"get_reason",        (PyCFunction)get_reason,        METH_O,                NULL},
-    {"get_solution",      (PyCFunction)get_solution,      METH_O,                NULL},
-    {NULL}                      /* sentinel */
+    { "req_has_upgrade_all", (PyCFunction)req_has_upgrade_all, METH_NOARGS, NULL },
+    { "req_length", (PyCFunction)req_length, METH_NOARGS, NULL },
+    { "run", (PyCFunction)run, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "run_all", (PyCFunction)run_all, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "count_problems", (PyCFunction)count_problems, METH_NOARGS, NULL },
+    { "problem_conflicts", (PyCFunction)problem_conflicts, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "problem_broken_dependency",
+      (PyCFunction)problem_broken_dependency,
+      METH_VARARGS | METH_KEYWORDS,
+      NULL },
+    { "describe_problem", (PyCFunction)describe_problem, METH_O, NULL },
+    { "problem_rules", (PyCFunction)problem_rules, METH_NOARGS, NULL },
+    { "log_decisions", (PyCFunction)log_decisions, METH_NOARGS, NULL },
+    { "write_debugdata", (PyCFunction)write_debugdata, METH_O, NULL },
+    { "list_erasures", (PyCFunction)list_erasures, METH_NOARGS, NULL },
+    { "list_installs", (PyCFunction)list_installs, METH_NOARGS, NULL },
+    { "list_obsoleted", (PyCFunction)list_obsoleted, METH_NOARGS, NULL },
+    { "list_reinstalls", (PyCFunction)list_reinstalls, METH_NOARGS, NULL },
+    { "list_unneeded", (PyCFunction)list_unneeded, METH_NOARGS, NULL },
+    { "list_downgrades", (PyCFunction)list_downgrades, METH_NOARGS, NULL },
+    { "list_upgrades", (PyCFunction)list_upgrades, METH_NOARGS, NULL },
+    { "obsoleted_by_package", (PyCFunction)obsoleted_by_package, METH_O, NULL },
+    { "get_reason", (PyCFunction)get_reason, METH_O, NULL },
+    { "get_solution", (PyCFunction)get_solution, METH_O, NULL },
+    { NULL } /* sentinel */
 };
 
 static struct PyMemberDef goal_members[] = {
-    {(char*)"sack", T_OBJECT, offsetof(_GoalObject, sack), READONLY, NULL},
-    {NULL}
+    { (char *)"sack", T_OBJECT, offsetof(_GoalObject, sack), READONLY, NULL }, { NULL }
 };
 
 PyTypeObject goal_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "_hawkey.Goal",                /*tp_name*/
-    sizeof(_GoalObject),        /*tp_basicsize*/
-    0,                                /*tp_itemsize*/
-    (destructor) goal_dealloc,  /*tp_dealloc*/
-    0,                                /*tp_print*/
-    0,                                /*tp_getattr*/
-    0,                                /*tp_setattr*/
-    0,                                /*tp_compare*/
-    0,                                /*tp_repr*/
-    0,                                /*tp_as_number*/
-    0,                                /*tp_as_sequence*/
-    0,                                /*tp_as_mapping*/
-    0,                                /*tp_hash */
-    0,                                /*tp_call*/
-    0,                                /*tp_str*/
-    PyObject_GenericGetAttr,        /*tp_getattro*/
-    0,                                /*tp_setattro*/
-    0,                                /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,        /*tp_flags*/
-    "Goal object",                /* tp_doc */
-    0,                                /* tp_traverse */
-    0,                                /* tp_clear */
-    0,                                /* tp_richcompare */
-    0,                                /* tp_weaklistoffset */
-    PyObject_SelfIter,                /* tp_iter */
-    0,                                 /* tp_iternext */
-    goal_methods,                /* tp_methods */
-    goal_members,                /* tp_members */
-    0,                                /* tp_getset */
-    0,                                /* tp_base */
-    0,                                /* tp_dict */
-    0,                                /* tp_descr_get */
-    0,                                /* tp_descr_set */
-    0,                                /* tp_dictoffset */
-    (initproc)goal_init,        /* tp_init */
-    0,                                /* tp_alloc */
-    goal_new,                        /* tp_new */
-    0,                                /* tp_free */
-    0,                                /* tp_is_gc */
+    PyVarObject_HEAD_INIT(NULL, 0) "_hawkey.Goal", /*tp_name*/
+    sizeof(_GoalObject),                           /*tp_basicsize*/
+    0,                                             /*tp_itemsize*/
+    (destructor)goal_dealloc,                      /*tp_dealloc*/
+    0,                                             /*tp_print*/
+    0,                                             /*tp_getattr*/
+    0,                                             /*tp_setattr*/
+    0,                                             /*tp_compare*/
+    0,                                             /*tp_repr*/
+    0,                                             /*tp_as_number*/
+    0,                                             /*tp_as_sequence*/
+    0,                                             /*tp_as_mapping*/
+    0,                                             /*tp_hash */
+    0,                                             /*tp_call*/
+    0,                                             /*tp_str*/
+    PyObject_GenericGetAttr,                       /*tp_getattro*/
+    0,                                             /*tp_setattro*/
+    0,                                             /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,      /*tp_flags*/
+    "Goal object",                                 /* tp_doc */
+    0,                                             /* tp_traverse */
+    0,                                             /* tp_clear */
+    0,                                             /* tp_richcompare */
+    0,                                             /* tp_weaklistoffset */
+    PyObject_SelfIter,                             /* tp_iter */
+    0,                                             /* tp_iternext */
+    goal_methods,                                  /* tp_methods */
+    goal_members,                                  /* tp_members */
+    0,                                             /* tp_getset */
+    0,                                             /* tp_base */
+    0,                                             /* tp_dict */
+    0,                                             /* tp_descr_get */
+    0,                                             /* tp_descr_set */
+    0,                                             /* tp_dictoffset */
+    (initproc)goal_init,                           /* tp_init */
+    0,                                             /* tp_alloc */
+    goal_new,                                      /* tp_new */
+    0,                                             /* tp_free */
+    0,                                             /* tp_is_gc */
 };

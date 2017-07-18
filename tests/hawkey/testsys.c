@@ -20,20 +20,18 @@
 
 #define _GNU_SOURCE
 #include <check.h>
-#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
+#include <unistd.h>
 
 #include <solv/repo.h>
 #include <solv/util.h>
 
-
-#include "libdnf/hy-goal.h"
-#include "libdnf/hy-package.h"
-#include "libdnf/hy-package-private.h"
-#include "libdnf/hy-query.h"
 #include "libdnf/dnf-sack-private.h"
+#include "libdnf/hy-goal.h"
+#include "libdnf/hy-package-private.h"
+#include "libdnf/hy-package.h"
+#include "libdnf/hy-query.h"
 #include "libdnf/hy-util.h"
 #include "testsys.h"
 

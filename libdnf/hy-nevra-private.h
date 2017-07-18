@@ -21,13 +21,13 @@
 #ifndef HY_NEVRA_INTERNAL_H
 #define HY_NEVRA_INTERNAL_H
 
-struct _HyNevra {
+struct _HyNevra
+{
     char *name;
     int epoch;
     char *version;
     char *release;
     char *arch;
 };
-
 
 #endif // HY_NEVRA_INTERNAL_H

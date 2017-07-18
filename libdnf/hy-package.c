@@ -29,32 +29,31 @@
  * See also: #DnfContext
  */
 
-
-#include <stdlib.h>
 #include <solv/evr.h>
 #include <solv/pool.h>
-#include <solv/repo.h>
 #include <solv/queue.h>
+#include <solv/repo.h>
+#include <stdlib.h>
 
 #include "dnf-advisory-private.h"
 #include "dnf-packagedelta-private.h"
+#include "dnf-reldep-list-private.h"
 #include "dnf-sack-private.h"
 #include "hy-iutil.h"
 #include "hy-package-private.h"
-#include "dnf-reldep-list-private.h"
 #include "hy-repo-private.h"
 
 #define BLOCK_SIZE 31
 
 typedef struct
 {
-    gboolean         loaded;
-    Id               id;
-    DnfSack         *sack;
+    gboolean loaded;
+    Id id;
+    DnfSack *sack;
 } DnfPackagePrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfPackage, dnf_package, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (dnf_package_get_instance_private (o))
+#define GET_PRIVATE(o) (dnf_package_get_instance_private(o))
 
 /**
  * dnf_package_finalize:
@@ -83,7 +82,6 @@ dnf_package_class_init(DnfPackageClass *klass)
     object_class->finalize = dnf_package_finalize;
 }
 
-
 /**
  * dnf_package_new:
  *
@@ -104,7 +102,6 @@ dnf_package_new(DnfSack *sack, Id id)
     priv->id = id;
     return DNF_PACKAGE(pkg);
 }
-
 
 /* internal */
 static Solvable *
@@ -167,7 +164,7 @@ reldeps_for(DnfPackage *pkg, Id type)
             queue_push(&q_final, rel_id);
     }
 
-    reldeplist = dnf_reldep_list_from_queue (pool, q_final);
+    reldeplist = dnf_reldep_list_from_queue(pool, q_final);
 
     queue_free(&q);
     queue_free(&q_final);
@@ -466,7 +463,9 @@ dnf_package_get_name(DnfPackage *pkg)
  * dnf_package_get_packager:
  * @pkg: a #DnfPackage instance.
  *
- * Gets the XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX for the package.
+ * Gets the
+ * XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ * for the package.
  *
  * Returns: a string, or %NULL
  *
@@ -509,7 +508,7 @@ const unsigned char *
 dnf_package_get_chksum(DnfPackage *pkg, int *type)
 {
     Solvable *s = get_solvable(pkg);
-    const unsigned char* ret;
+    const unsigned char *ret;
 
     repo_internalize_trigger(s->repo);
     ret = solvable_lookup_bin_checksum(s, SOLVABLE_CHECKSUM, type);
@@ -588,7 +587,7 @@ dnf_package_get_evr(DnfPackage *pkg)
 const char *
 dnf_package_get_group(DnfPackage *pkg)
 {
-  return solvable_lookup_str(get_solvable(pkg), SOLVABLE_GROUP);
+    return solvable_lookup_str(get_solvable(pkg), SOLVABLE_GROUP);
 }
 
 /**
@@ -800,8 +799,7 @@ dnf_package_get_rpmdbid(DnfPackage *pkg)
 guint64
 dnf_package_get_size(DnfPackage *pkg)
 {
-    unsigned type = dnf_package_installed(pkg) ? SOLVABLE_INSTALLSIZE :
-                                                 SOLVABLE_DOWNLOADSIZE;
+    unsigned type = dnf_package_installed(pkg) ? SOLVABLE_INSTALLSIZE : SOLVABLE_DOWNLOADSIZE;
     return lookup_num(pkg, type);
 }
 
@@ -912,7 +910,7 @@ dnf_package_get_requires(DnfPackage *pkg)
  * Since: 0.7.0
  */
 DnfReldepList *
-dnf_package_get_requires_pre (DnfPackage *pkg)
+dnf_package_get_requires_pre(DnfPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_PREREQMARKER);
 }
@@ -969,14 +967,19 @@ dnf_package_get_files(DnfPackage *pkg)
     GPtrArray *ret = g_ptr_array_new();
 
     repo_internalize_trigger(s->repo);
-    dataiterator_init(&di, pool, s->repo, priv->id, SOLVABLE_FILELIST, NULL,
+    dataiterator_init(&di,
+                      pool,
+                      s->repo,
+                      priv->id,
+                      SOLVABLE_FILELIST,
+                      NULL,
                       SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
     while (dataiterator_step(&di)) {
         g_ptr_array_add(ret, g_strdup(di.kv.str));
     }
     dataiterator_free(&di);
     g_ptr_array_add(ret, NULL);
-    return (gchar**)g_ptr_array_free (ret, FALSE);
+    return (gchar **)g_ptr_array_free(ret, FALSE);
 }
 
 /**
@@ -997,11 +1000,11 @@ dnf_package_get_advisories(DnfPackage *pkg, int cmp_type)
     int cmp;
     DnfAdvisory *advisory;
     Pool *pool = dnf_package_get_pool(pkg);
-    GPtrArray *advisorylist = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
+    GPtrArray *advisorylist = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
     Solvable *s = get_solvable(pkg);
 
-    dataiterator_init(&di, pool, 0, 0, UPDATE_COLLECTION_NAME,
-                      pool_id2str(pool, s->name), SEARCH_STRING);
+    dataiterator_init(
+      &di, pool, 0, 0, UPDATE_COLLECTION_NAME, pool_id2str(pool, s->name), SEARCH_STRING);
     dataiterator_prepend_keyname(&di, UPDATE_COLLECTION);
     while (dataiterator_step(&di)) {
         dataiterator_setpos_parent(&di);
@@ -1012,8 +1015,7 @@ dnf_package_get_advisories(DnfPackage *pkg, int cmp_type)
             continue;
 
         cmp = pool_evrcmp(pool, evr, s->evr, EVRCMP_COMPARE);
-        if ((cmp > 0 && (cmp_type & HY_GT)) ||
-            (cmp < 0 && (cmp_type & HY_LT)) ||
+        if ((cmp > 0 && (cmp_type & HY_GT)) || (cmp < 0 && (cmp_type & HY_LT)) ||
             (cmp == 0 && (cmp_type & HY_EQ))) {
             advisory = dnf_advisory_new(pool, di.solvid);
             g_ptr_array_add(advisorylist, advisory);
@@ -1044,16 +1046,14 @@ dnf_package_get_delta_from_evr(DnfPackage *pkg, const char *from_evr)
     Dataiterator di;
     const char *name = dnf_package_get_name(pkg);
 
-    dataiterator_init(&di, pool, s->repo, SOLVID_META, DELTA_PACKAGE_NAME, name,
-                      SEARCH_STRING);
+    dataiterator_init(&di, pool, s->repo, SOLVID_META, DELTA_PACKAGE_NAME, name, SEARCH_STRING);
     dataiterator_prepend_keyname(&di, REPOSITORY_DELTAINFO);
     while (dataiterator_step(&di)) {
         dataiterator_setpos_parent(&di);
         if (pool_lookup_id(pool, SOLVID_POS, DELTA_PACKAGE_EVR) != s->evr ||
             pool_lookup_id(pool, SOLVID_POS, DELTA_PACKAGE_ARCH) != s->arch)
             continue;
-        const char * base_evr = pool_id2str(pool, pool_lookup_id(pool, SOLVID_POS,
-                                                                 DELTA_BASE_EVR));
+        const char *base_evr = pool_id2str(pool, pool_lookup_id(pool, SOLVID_POS, DELTA_BASE_EVR));
         if (strcmp(base_evr, from_evr))
             continue;
 

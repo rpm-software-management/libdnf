@@ -28,17 +28,24 @@
 
 G_BEGIN_DECLS
 
-const char *hy_chksum_name(int chksum_type);
-int hy_chksum_type(const char *chksum_name);
-char *hy_chksum_str(const unsigned char *chksum, int type);
+const char *
+hy_chksum_name(int chksum_type);
+int
+hy_chksum_type(const char *chksum_name);
+char *
+hy_chksum_str(const unsigned char *chksum, int type);
 
-int hy_detect_arch(char **arch);
+int
+hy_detect_arch(char **arch);
 
-int hy_split_nevra(const char *nevra, char **name, int *epoch,
-                   char **version, char **release, char **arch);
+int
+hy_split_nevra(
+  const char *nevra, char **name, int *epoch, char **version, char **release, char **arch);
 
-GPtrArray *hy_packagelist_create(void);
-int hy_packagelist_has(GPtrArray *plist, DnfPackage *pkg);
+GPtrArray *
+hy_packagelist_create(void);
+int
+hy_packagelist_has(GPtrArray *plist, DnfPackage *pkg);
 
 G_END_DECLS
 

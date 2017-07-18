@@ -21,10 +21,10 @@
 #ifndef FIXTURES_H
 #define FIXTURES_H
 
-
 #include "libdnf/dnf-sack.h"
 
-struct TestGlobals_s {
+struct TestGlobals_s
+{
     char *repo_dir;
     DnfSack *sack;
     char *tmpdir;
@@ -33,22 +33,39 @@ struct TestGlobals_s {
 /* global data used to pass values from fixtures to tests */
 extern struct TestGlobals_s test_globals;
 
-void fixture_cmdline_only(void);
-void fixture_empty(void);
-void fixture_greedy_only(void);
-void fixture_installonly(void);
-void fixture_system_only(void);
-void fixture_verify(void);
-void fixture_with_change(void);
-void fixture_with_cmdline(void);
-void fixture_with_forcebest(void);
-void fixture_with_main(void);
-void fixture_with_updates(void);
-void fixture_with_vendor(void);
-void fixture_all(void);
-void fixture_yum(void);
-void fixture_reset(void);
-void setup_yum_sack(DnfSack *sack, const char *yum_repo_name);
-void teardown(void);
+void
+fixture_cmdline_only(void);
+void
+fixture_empty(void);
+void
+fixture_greedy_only(void);
+void
+fixture_installonly(void);
+void
+fixture_system_only(void);
+void
+fixture_verify(void);
+void
+fixture_with_change(void);
+void
+fixture_with_cmdline(void);
+void
+fixture_with_forcebest(void);
+void
+fixture_with_main(void);
+void
+fixture_with_updates(void);
+void
+fixture_with_vendor(void);
+void
+fixture_all(void);
+void
+fixture_yum(void);
+void
+fixture_reset(void);
+void
+setup_yum_sack(DnfSack *sack, const char *yum_repo_name);
+void
+teardown(void);
 
 #endif /* FIXTURES_H */

@@ -28,10 +28,9 @@
  * These functions are used internally in libdnf for various things.
  */
 
-
 #include <errno.h>
-#include <stdlib.h>
 #include <glib/gstdio.h>
+#include <stdlib.h>
 
 #include "dnf-types.h"
 #include "dnf-utils.h"
@@ -106,7 +105,8 @@ dnf_remove_recursive(const gchar *directory, GError **error)
                     DNF_ERROR,
                     DNF_ERROR_INTERNAL_ERROR,
                     "cannot open directory %s: %s",
-                    directory, error_local->message);
+                    directory,
+                    error_local->message);
         return FALSE;
     }
 
@@ -120,10 +120,7 @@ dnf_remove_recursive(const gchar *directory, GError **error)
         } else {
             g_debug("deleting file %s", src);
             if ((g_unlink(src) != 0) && errno != ENOENT) {
-                g_set_error(error,
-                            DNF_ERROR,
-                            DNF_ERROR_INTERNAL_ERROR,
-                            "failed to unlink %s", src);
+                g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "failed to unlink %s", src);
                 return FALSE;
             }
         }
@@ -132,10 +129,7 @@ dnf_remove_recursive(const gchar *directory, GError **error)
     /* remove directory */
     g_debug("deleting directory %s", directory);
     if (g_remove(directory) != 0) {
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_INTERNAL_ERROR,
-                    "failed to remove %s", directory);
+        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "failed to remove %s", directory);
         return FALSE;
     }
     return TRUE;
@@ -155,10 +149,10 @@ dnf_remove_recursive(const gchar *directory, GError **error)
  * Since: 0.1.7
  **/
 gboolean
-dnf_get_file_contents_allow_noent(const gchar            *path,
-                                  gchar                  **out_contents,
-                                  gsize                  *out_length,
-                                  GError                 **error)
+dnf_get_file_contents_allow_noent(const gchar *path,
+                                  gchar **out_contents,
+                                  gsize *out_length,
+                                  GError **error)
 {
     gsize length;
     g_autofree gchar *contents = NULL;
@@ -173,7 +167,7 @@ dnf_get_file_contents_allow_noent(const gchar            *path,
     }
 
     if (out_contents != NULL)
-        *out_contents = g_steal_pointer (&contents);
+        *out_contents = g_steal_pointer(&contents);
     if (out_length != NULL)
         *out_length = length;
 

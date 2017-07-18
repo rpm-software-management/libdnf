@@ -27,7 +27,8 @@
 
 G_BEGIN_DECLS
 
-DnfPackageDelta *dnf_packagedelta_new                  (Pool *pool);
+DnfPackageDelta *
+dnf_packagedelta_new(Pool *pool);
 
 G_END_DECLS
 

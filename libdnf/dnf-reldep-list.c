@@ -35,7 +35,7 @@ struct _DnfReldepList
     Queue queue;
 };
 
-G_DEFINE_TYPE (DnfReldepList, dnf_reldep_list, G_TYPE_OBJECT)
+G_DEFINE_TYPE(DnfReldepList, dnf_reldep_list, G_TYPE_OBJECT)
 
 /**
  * dnf_reldep_list_new:
@@ -46,11 +46,11 @@ G_DEFINE_TYPE (DnfReldepList, dnf_reldep_list, G_TYPE_OBJECT)
  * Since: 0.7.0
  */
 DnfReldepList *
-dnf_reldep_list_new (DnfSack *sack)
+dnf_reldep_list_new(DnfSack *sack)
 {
-    DnfReldepList *reldep_list = g_object_new (DNF_TYPE_RELDEP_LIST, NULL);
-    reldep_list->pool = dnf_sack_get_pool (sack);
-    queue_init (&reldep_list->queue);
+    DnfReldepList *reldep_list = g_object_new(DNF_TYPE_RELDEP_LIST, NULL);
+    reldep_list->pool = dnf_sack_get_pool(sack);
+    queue_init(&reldep_list->queue);
     return reldep_list;
 }
 
@@ -64,34 +64,34 @@ dnf_reldep_list_new (DnfSack *sack)
  * Since: 0.7.0
  */
 DnfReldepList *
-dnf_reldep_list_from_queue (Pool *pool, Queue queue)
+dnf_reldep_list_from_queue(Pool *pool, Queue queue)
 {
-    DnfReldepList *reldep_list = g_object_new (DNF_TYPE_RELDEP_LIST, NULL);
+    DnfReldepList *reldep_list = g_object_new(DNF_TYPE_RELDEP_LIST, NULL);
     reldep_list->pool = pool;
-    queue_init_clone (&reldep_list->queue, &queue);
+    queue_init_clone(&reldep_list->queue, &queue);
     return reldep_list;
 }
 
 static void
-dnf_reldep_list_finalize (GObject *object)
+dnf_reldep_list_finalize(GObject *object)
 {
     DnfReldepList *self = (DnfReldepList *)object;
 
-    queue_free (&self->queue);
+    queue_free(&self->queue);
 
-    G_OBJECT_CLASS (dnf_reldep_list_parent_class)->finalize (object);
+    G_OBJECT_CLASS(dnf_reldep_list_parent_class)->finalize(object);
 }
 
 static void
-dnf_reldep_list_class_init (DnfReldepListClass *klass)
+dnf_reldep_list_class_init(DnfReldepListClass *klass)
 {
-    GObjectClass *object_class = G_OBJECT_CLASS (klass);
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
 
     object_class->finalize = dnf_reldep_list_finalize;
 }
 
 static void
-dnf_reldep_list_init (DnfReldepList *self)
+dnf_reldep_list_init(DnfReldepList *self)
 {
 }
 
@@ -105,10 +105,9 @@ dnf_reldep_list_init (DnfReldepList *self)
  * Since: 0.7.0
  */
 void
-dnf_reldep_list_add (DnfReldepList *reldep_list,
-                     DnfReldep     *reldep)
+dnf_reldep_list_add(DnfReldepList *reldep_list, DnfReldep *reldep)
 {
-    queue_push (&reldep_list->queue, dnf_reldep_get_id (reldep));
+    queue_push(&reldep_list->queue, dnf_reldep_get_id(reldep));
 }
 
 /**
@@ -120,7 +119,7 @@ dnf_reldep_list_add (DnfReldepList *reldep_list,
  * Since: 0.7.0
  */
 gint
-dnf_reldep_list_count (DnfReldepList *reldep_list)
+dnf_reldep_list_count(DnfReldepList *reldep_list)
 {
     return reldep_list->queue.count;
 }
@@ -135,11 +134,10 @@ dnf_reldep_list_count (DnfReldepList *reldep_list)
  * Since: 0.7.0
  */
 DnfReldep *
-dnf_reldep_list_index (DnfReldepList *reldep_list,
-                       gint           index)
+dnf_reldep_list_index(DnfReldepList *reldep_list, gint index)
 {
     Id r_id = reldep_list->queue.elements[index];
-    return dnf_reldep_from_pool (reldep_list->pool, r_id);
+    return dnf_reldep_from_pool(reldep_list->pool, r_id);
 }
 
 /**
@@ -154,8 +152,7 @@ dnf_reldep_list_index (DnfReldepList *reldep_list,
  * Since: 0.7.0
  */
 void
-dnf_reldep_list_extend (DnfReldepList *rl1,
-                        DnfReldepList *rl2)
+dnf_reldep_list_extend(DnfReldepList *rl1, DnfReldepList *rl2)
 {
-    queue_insertn (&rl1->queue, 0, rl2->queue.count, rl2->queue.elements);
+    queue_insertn(&rl1->queue, 0, rl2->queue.count, rl2->queue.elements);
 }

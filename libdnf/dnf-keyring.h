@@ -26,13 +26,11 @@
 
 #include <rpm/rpmkeyring.h>
 
-gboolean         dnf_keyring_add_public_key     (rpmKeyring              keyring,
-                                                 const gchar            *filename,
-                                                 GError                 **error);
-gboolean         dnf_keyring_add_public_keys    (rpmKeyring              keyring,
-                                                 GError                 **error);
-gboolean         dnf_keyring_check_untrusted_file (rpmKeyring            keyring,
-                                                 const gchar            *filename,
-                                                 GError                 **error);
+gboolean
+dnf_keyring_add_public_key(rpmKeyring keyring, const gchar *filename, GError **error);
+gboolean
+dnf_keyring_add_public_keys(rpmKeyring keyring, GError **error);
+gboolean
+dnf_keyring_check_untrusted_file(rpmKeyring keyring, const gchar *filename, GError **error);
 
 #endif /* __DNF_KEYRING_H */

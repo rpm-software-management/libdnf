@@ -29,14 +29,13 @@
  * These methods make it easier to deal with rpm keyrings.
  */
 
-
-#include <stdlib.h>
 #include <glib.h>
 #include <rpm/rpmlib.h>
 #include <rpm/rpmts.h>
+#include <stdlib.h>
 
-#include "dnf-types.h"
 #include "dnf-keyring.h"
+#include "dnf-types.h"
 #include "dnf-utils.h"
 
 /**
@@ -52,9 +51,7 @@
  * Since: 0.1.0
  **/
 gboolean
-dnf_keyring_add_public_key(rpmKeyring keyring,
-                           const gchar *filename,
-                           GError **error)
+dnf_keyring_add_public_key(rpmKeyring keyring, const gchar *filename, GError **error)
 {
     gboolean ret = TRUE;
     gint rc;
@@ -187,9 +184,7 @@ dnf_keyring_add_public_keys(rpmKeyring keyring, GError **error)
  * dnf_keyring_check_untrusted_file:
  */
 gboolean
-dnf_keyring_check_untrusted_file(rpmKeyring keyring,
-                                 const gchar *filename,
-                                 GError **error)
+dnf_keyring_check_untrusted_file(rpmKeyring keyring, const gchar *filename, GError **error)
 {
     FD_t fd = NULL;
     gboolean ret = FALSE;
@@ -202,11 +197,7 @@ dnf_keyring_check_untrusted_file(rpmKeyring keyring,
     /* open the file for reading */
     fd = Fopen(filename, "r.fdio");
     if (fd == NULL) {
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_FILE_INVALID,
-                    "failed to open %s",
-                    filename);
+        g_set_error(error, DNF_ERROR, DNF_ERROR_FILE_INVALID, "failed to open %s", filename);
         goto out;
     }
     if (Ferror(fd)) {
@@ -228,11 +219,7 @@ dnf_keyring_check_untrusted_file(rpmKeyring keyring,
     if (rc != RPMRC_OK) {
         /* we only return SHA1 and MD5 failures, as we're not
          * checking signatures at this stage */
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_FILE_INVALID,
-                    "%s could not be verified",
-                    filename);
+        g_set_error(error, DNF_ERROR, DNF_ERROR_FILE_INVALID, "%s could not be verified", filename);
         goto out;
     }
 
@@ -241,16 +228,10 @@ dnf_keyring_check_untrusted_file(rpmKeyring keyring,
 
     /* get RSA key */
     td = rpmtdNew();
-    rc = headerGet(hdr,
-                   RPMTAG_RSAHEADER,
-                   td,
-                   HEADERGET_MINMEM);
+    rc = headerGet(hdr, RPMTAG_RSAHEADER, td, HEADERGET_MINMEM);
     if (rc != 1) {
         /* try to read DSA key as a fallback */
-        rc = headerGet(hdr,
-                       RPMTAG_DSAHEADER,
-                       td,
-                       HEADERGET_MINMEM);
+        rc = headerGet(hdr, RPMTAG_DSAHEADER, td, HEADERGET_MINMEM);
     }
 
     /* the package has no signing key */
@@ -260,7 +241,8 @@ dnf_keyring_check_untrusted_file(rpmKeyring keyring,
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_GPG_SIGNATURE_INVALID,
-                    "package not signed: %s", package_filename);
+                    "package not signed: %s",
+                    package_filename);
         goto out;
     }
 

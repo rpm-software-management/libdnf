@@ -22,23 +22,21 @@
 #include <glib.h>
 #include <stdarg.h>
 
-
+#include "fixtures.h"
+#include "libdnf/dnf-goal.h"
+#include "libdnf/dnf-sack-private.h"
+#include "libdnf/dnf-solution.h"
 #include "libdnf/dnf-types.h"
 #include "libdnf/hy-goal.h"
 #include "libdnf/hy-iutil.h"
 #include "libdnf/hy-package-private.h"
 #include "libdnf/hy-packageset.h"
-#include "libdnf/dnf-sack-private.h"
-#include "libdnf/hy-repo.h"
 #include "libdnf/hy-query.h"
-#include "libdnf/dnf-sack-private.h"
-#include "libdnf/dnf-solution.h"
-#include "libdnf/dnf-goal.h"
+#include "libdnf/hy-repo.h"
 #include "libdnf/hy-selector.h"
 #include "libdnf/hy-util.h"
-#include "fixtures.h"
-#include "testsys.h"
 #include "test_suites.h"
+#include "testsys.h"
 
 static DnfPackage *
 get_latest_pkg(DnfSack *sack, const char *name)
@@ -48,8 +46,7 @@ get_latest_pkg(DnfSack *sack, const char *name)
     hy_query_filter(q, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     hy_query_filter_latest_per_arch(q, 1);
     GPtrArray *plist = hy_query_run(q);
-    fail_unless(plist->len == 1,
-                "get_latest_pkg() failed finding '%s'.", name);
+    fail_unless(plist->len == 1, "get_latest_pkg() failed finding '%s'.", name);
     DnfPackage *pkg = g_object_ref(g_ptr_array_index(plist, 0));
     hy_query_free(q);
     g_ptr_array_unref(plist);
@@ -112,8 +109,8 @@ userinstalled(DnfSack *sack, HyGoal goal, const char *name)
     DnfPackage *pkg;
     guint i;
 
-    for(i = 0; i < plist->len; i++) {
-        pkg = g_ptr_array_index (plist, i);
+    for (i = 0; i < plist->len; i++) {
+        pkg = g_ptr_array_index(plist, i);
         hy_goal_userinstalled(goal, pkg);
     }
 
@@ -136,9 +133,8 @@ START_TEST(test_goal_sanity)
     HyGoal goal = hy_goal_create(test_globals.sack);
     fail_if(goal == NULL);
     fail_unless(dnf_sack_count(test_globals.sack) ==
-                TEST_EXPECT_SYSTEM_NSOLVABLES +
-                TEST_EXPECT_MAIN_NSOLVABLES +
-                TEST_EXPECT_UPDATES_NSOLVABLES);
+                TEST_EXPECT_SYSTEM_NSOLVABLES + TEST_EXPECT_MAIN_NSOLVABLES +
+                  TEST_EXPECT_UPDATES_NSOLVABLES);
     hy_goal_free(goal);
 }
 END_TEST
@@ -405,7 +401,7 @@ START_TEST(test_goal_install_selector_file)
     DnfSack *sack = test_globals.sack;
     HySelector sltr = hy_selector_create(sack);
     HyGoal goal = hy_goal_create(sack);
-    fail_if(hy_selector_set(sltr, HY_PKG_FILE, HY_EQ|HY_GLOB, "/*/answers"));
+    fail_if(hy_selector_set(sltr, HY_PKG_FILE, HY_EQ | HY_GLOB, "/*/answers"));
     fail_if(hy_goal_erase_selector(goal, sltr));
     fail_if(hy_goal_run(goal));
     assert_iueo(goal, 0, 0, 1, 0);
@@ -485,8 +481,7 @@ START_TEST(test_goal_upgrade_all)
     g_ptr_array_unref(plist);
 
     plist = hy_goal_list_upgrades(goal, NULL);
-    assert_list_names(plist, "dog", "flying", "fool", "pilchard", "pilchard",
-                      NULL);
+    assert_list_names(plist, "dog", "flying", "fool", "pilchard", "pilchard", NULL);
 
     // see all obsoletes of fool:
     DnfPackage *pkg = g_ptr_array_index(plist, 2);
@@ -514,13 +509,11 @@ START_TEST(test_goal_downgrade)
     fail_unless(plist->len == 1);
 
     DnfPackage *pkg = g_ptr_array_index(plist, 0);
-    ck_assert_str_eq(dnf_package_get_evr(pkg),
-                     "6:4.9-3");
+    ck_assert_str_eq(dnf_package_get_evr(pkg), "6:4.9-3");
     GPtrArray *obsoleted = hy_goal_list_obsoleted_by_package(goal, pkg);
     fail_unless(obsoleted->len == 1);
     DnfPackage *old_pkg = g_ptr_array_index(obsoleted, 0);
-    ck_assert_str_eq(dnf_package_get_evr(old_pkg),
-                     "6:5.0-11");
+    ck_assert_str_eq(dnf_package_get_evr(old_pkg), "6:5.0-11");
     g_ptr_array_unref(obsoleted);
     g_ptr_array_unref(plist);
 
@@ -540,8 +533,8 @@ START_TEST(test_goal_get_reason)
     GPtrArray *plist = hy_goal_list_installs(goal, NULL);
     guint i;
     int set = 0;
-    for(i = 0; i < plist->len; i++) {
-        pkg = g_ptr_array_index (plist, i);
+    for (i = 0; i < plist->len; i++) {
+        pkg = g_ptr_array_index(plist, i);
         if (!strcmp(dnf_package_get_name(pkg), "walrus")) {
             set |= 1 << 0;
             fail_unless(hy_goal_get_reason(goal, pkg) == HY_REASON_USER);
@@ -617,10 +610,8 @@ START_TEST(test_goal_describe_problem_rules)
     fail_unless(hy_goal_count_problems(goal) > 0);
 
     g_auto(GStrv) problems = hy_goal_describe_problem_rules(goal, 0);
-    const char *expected[] = {
-                "conflicting requests",
-                "nothing provides goodbye needed by hello-1-1.noarch"
-                };
+    const char *expected[] = { "conflicting requests",
+                               "nothing provides goodbye needed by hello-1-1.noarch" };
     for (gint p = 0; p < hy_goal_count_problems(goal); ++p) {
         fail_if(strncmp(problems[p], expected[p], strlen(expected[p])));
     }
@@ -711,7 +702,7 @@ START_TEST(test_goal_protected)
     fail_unless(hy_goal_count_problems(goal) == 1);
     problem = hy_goal_describe_problem(goal, 0);
     expected = "The operation would result in removing "
-        "the following protected packages: flying";
+               "the following protected packages: flying";
     fail_if(g_strcmp0(problem, expected));
     hy_goal_free(goal);
 
@@ -800,7 +791,7 @@ END_TEST
 
 START_TEST(test_goal_installonly)
 {
-    const char *installonly[] = {"fool", NULL};
+    const char *installonly[] = { "fool", NULL };
 
     DnfSack *sack = test_globals.sack;
     dnf_sack_set_installonly(sack, installonly);
@@ -817,7 +808,7 @@ END_TEST
 
 START_TEST(test_goal_installonly_upgrade_all)
 {
-    const char *installonly[] = {"fool", NULL};
+    const char *installonly[] = { "fool", NULL };
     DnfSack *sack = test_globals.sack;
     HyGoal goal = hy_goal_create(sack);
 
@@ -928,7 +919,7 @@ END_TEST
 START_TEST(test_goal_distupgrade_all_excludes)
 {
     HyQuery q = hy_query_create_flags(test_globals.sack, HY_IGNORE_EXCLUDES);
-    hy_query_filter_provides(q, HY_GT|HY_EQ, "flying", "0");
+    hy_query_filter_provides(q, HY_GT | HY_EQ, "flying", "0");
     DnfPackageSet *pset = hy_query_run_set(q);
     dnf_sack_add_excludes(test_globals.sack, pset);
     g_object_unref(pset);
@@ -1078,7 +1069,8 @@ START_TEST(test_goal_unneeded)
 }
 END_TEST
 
-struct Solutions {
+struct Solutions
+{
     int solutions;
     GPtrArray *installs;
 };
@@ -1101,15 +1093,15 @@ solutions_free(struct Solutions *solutions)
 static int
 solution_cb(HyGoal goal, void *data)
 {
-    struct Solutions *solutions = (struct Solutions*)data;
+    struct Solutions *solutions = (struct Solutions *)data;
     solutions->solutions++;
 
     GPtrArray *new_installs = hy_goal_list_installs(goal, NULL);
     DnfPackage *pkg;
     guint i;
 
-    for(i = 0; i < new_installs->len; i++) {
-        pkg = g_ptr_array_index (new_installs, i);
+    for (i = 0; i < new_installs->len; i++) {
+        pkg = g_ptr_array_index(new_installs, i);
         if (!hy_packagelist_has(solutions->installs, pkg))
             g_ptr_array_add(solutions->installs, g_object_ref(pkg));
     }
@@ -1139,7 +1131,7 @@ END_TEST
 
 START_TEST(test_goal_installonly_limit)
 {
-    const char *installonly[] = {"k", NULL};
+    const char *installonly[] = { "k", NULL };
     DnfSack *sack = test_globals.sack;
     dnf_sack_set_installonly(sack, installonly);
     dnf_sack_set_installonly_limit(sack, 3);
@@ -1180,7 +1172,7 @@ START_TEST(test_goal_installonly_limit_disabled)
 {
     // test that setting limit to 0 does not cause all intallonlies to be
     // uninstalled
-    const char *installonly[] = {"k", NULL};
+    const char *installonly[] = { "k", NULL };
     DnfSack *sack = test_globals.sack;
     dnf_sack_set_installonly(sack, installonly);
     dnf_sack_set_installonly_limit(sack, 0);
@@ -1195,10 +1187,9 @@ START_TEST(test_goal_installonly_limit_disabled)
 }
 END_TEST
 
-
 START_TEST(test_goal_installonly_limit_running_kernel)
 {
-    const char *installonly[] = {"k", NULL};
+    const char *installonly[] = { "k", NULL };
     DnfSack *sack = test_globals.sack;
     dnf_sack_set_installonly(sack, installonly);
     dnf_sack_set_installonly_limit(sack, 3);
@@ -1222,7 +1213,7 @@ END_TEST
 START_TEST(test_goal_installonly_limit_with_modules)
 {
     // most complex installonly test case, includes the k-m packages
-    const char *installonly[] = {"k", "k-m", NULL};
+    const char *installonly[] = { "k", "k-m", NULL };
     DnfSack *sack = test_globals.sack;
     dnf_sack_set_installonly(sack, installonly);
     dnf_sack_set_installonly_limit(sack, 3);
@@ -1336,23 +1327,22 @@ START_TEST(test_goal_get_solution)
     HySelector sltr = hy_selector_create(sack);
 
     hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "pilchard");
-    hy_goal_install_selector(goal, sltr,NULL);
+    hy_goal_install_selector(goal, sltr, NULL);
     hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "dog");
-    hy_goal_install_selector(goal, sltr,NULL);
+    hy_goal_install_selector(goal, sltr, NULL);
     hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "custard");
-    hy_goal_install_selector(goal, sltr,NULL);
+    hy_goal_install_selector(goal, sltr, NULL);
     fail_unless(hy_goal_run_flags(goal, DNF_FORCE_BEST));
     fail_unless(hy_goal_count_problems(goal) == 2);
 
-    DnfSolutionAction expected_actions[2][3] = {
-                                   {DNF_SOLUTION_ACTION_DO_NOT_INSTALL, 0, 0},
-                                   {DNF_SOLUTION_ACTION_ALLOW_REMOVE,
-                                    DNF_SOLUTION_ACTION_DO_NOT_REMOVE,
-                                    DNF_SOLUTION_ACTION_DO_NOT_INSTALL}};
-    const gchar *expected_old[2][3] = {{NULL, NULL, NULL},
-                        {"pilchard-1.2.3-1.i686", "pilchard-1.2.3-1.i686", NULL}};
-    const gchar *expected_new[2][3] = {{"custard", NULL, NULL},
-                        {NULL, NULL, "pilchard"}};
+    DnfSolutionAction expected_actions[2][3] = { { DNF_SOLUTION_ACTION_DO_NOT_INSTALL, 0, 0 },
+                                                 { DNF_SOLUTION_ACTION_ALLOW_REMOVE,
+                                                   DNF_SOLUTION_ACTION_DO_NOT_REMOVE,
+                                                   DNF_SOLUTION_ACTION_DO_NOT_INSTALL } };
+    const gchar *expected_old[2][3] = {
+        { NULL, NULL, NULL }, { "pilchard-1.2.3-1.i686", "pilchard-1.2.3-1.i686", NULL }
+    };
+    const gchar *expected_new[2][3] = { { "custard", NULL, NULL }, { NULL, NULL, "pilchard" } };
 
     for (gint p = 0; p < hy_goal_count_problems(goal); ++p) {
         g_autoptr(GPtrArray) slist = hy_goal_get_solution(goal, p);
@@ -1368,7 +1358,6 @@ START_TEST(test_goal_get_solution)
     hy_goal_free(goal);
 }
 END_TEST
-
 
 Suite *
 goal_suite(void)

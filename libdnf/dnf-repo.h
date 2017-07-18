@@ -24,8 +24,8 @@
 
 #include <glib-object.h>
 
-#include "hy-repo.h"
 #include "hy-package.h"
+#include "hy-repo.h"
 
 #include "dnf-context.h"
 #include "dnf-state.h"
@@ -34,21 +34,21 @@
 
 G_BEGIN_DECLS
 
-#define DNF_TYPE_REPO (dnf_repo_get_type ())
-G_DECLARE_DERIVABLE_TYPE (DnfRepo, dnf_repo, DNF, REPO, GObject)
+#define DNF_TYPE_REPO (dnf_repo_get_type())
+G_DECLARE_DERIVABLE_TYPE(DnfRepo, dnf_repo, DNF, REPO, GObject)
 
 struct _DnfRepoClass
 {
-        GObjectClass            parent_class;
-        /*< private >*/
-        void (*_dnf_reserved1)  (void);
-        void (*_dnf_reserved2)  (void);
-        void (*_dnf_reserved3)  (void);
-        void (*_dnf_reserved4)  (void);
-        void (*_dnf_reserved5)  (void);
-        void (*_dnf_reserved6)  (void);
-        void (*_dnf_reserved7)  (void);
-        void (*_dnf_reserved8)  (void);
+    GObjectClass parent_class;
+    /*< private >*/
+    void (*_dnf_reserved1)(void);
+    void (*_dnf_reserved2)(void);
+    void (*_dnf_reserved3)(void);
+    void (*_dnf_reserved4)(void);
+    void (*_dnf_reserved5)(void);
+    void (*_dnf_reserved6)(void);
+    void (*_dnf_reserved7)(void);
+    void (*_dnf_reserved8)(void);
 };
 
 /**
@@ -61,12 +61,12 @@ struct _DnfRepoClass
  * The update flags.
  **/
 typedef enum {
-        DNF_REPO_UPDATE_FLAG_NONE             = 0,
-        DNF_REPO_UPDATE_FLAG_FORCE            = 1,
-        DNF_REPO_UPDATE_FLAG_IMPORT_PUBKEY    = 2,
-        DNF_REPO_UPDATE_FLAG_SIMULATE         = 4,
-        /*< private >*/
-        DNF_REPO_UPDATE_FLAG_LAST
+    DNF_REPO_UPDATE_FLAG_NONE = 0,
+    DNF_REPO_UPDATE_FLAG_FORCE = 1,
+    DNF_REPO_UPDATE_FLAG_IMPORT_PUBKEY = 2,
+    DNF_REPO_UPDATE_FLAG_SIMULATE = 4,
+    /*< private >*/
+    DNF_REPO_UPDATE_FLAG_LAST
 } DnfRepoUpdateFlags;
 
 /**
@@ -78,11 +78,11 @@ typedef enum {
  * The repo kind.
  **/
 typedef enum {
-        DNF_REPO_KIND_REMOTE,
-        DNF_REPO_KIND_MEDIA,
-        DNF_REPO_KIND_LOCAL,
-        /*< private >*/
-        DNF_REPO_KIND_LAST
+    DNF_REPO_KIND_REMOTE,
+    DNF_REPO_KIND_MEDIA,
+    DNF_REPO_KIND_LOCAL,
+    /*< private >*/
+    DNF_REPO_KIND_LAST
 } DnfRepoKind;
 
 /**
@@ -94,108 +94,117 @@ typedef enum {
  * How enabled is the repo.
  **/
 typedef enum {
-        DNF_REPO_ENABLED_NONE                 = 0,
-        DNF_REPO_ENABLED_PACKAGES             = 1,
-        DNF_REPO_ENABLED_METADATA             = 2,
-        /*< private >*/
-        DNF_REPO_ENABLED_LAST
+    DNF_REPO_ENABLED_NONE = 0,
+    DNF_REPO_ENABLED_PACKAGES = 1,
+    DNF_REPO_ENABLED_METADATA = 2,
+    /*< private >*/
+    DNF_REPO_ENABLED_LAST
 } DnfRepoEnabled;
 
-DnfRepo         *dnf_repo_new                   (DnfContext           *context);
+DnfRepo *
+dnf_repo_new(DnfContext *context);
 
 /* getters */
-const gchar     *dnf_repo_get_id                (DnfRepo              *repo);
-const gchar     *dnf_repo_get_location          (DnfRepo              *repo);
-const gchar     *dnf_repo_get_filename          (DnfRepo              *repo);
-const gchar     *dnf_repo_get_packages          (DnfRepo              *repo);
-gchar **         dnf_repo_get_public_keys       (DnfRepo              *repo);
-DnfRepoEnabled   dnf_repo_get_enabled           (DnfRepo              *repo);
-gboolean         dnf_repo_get_required          (DnfRepo              *repo);
-guint            dnf_repo_get_cost              (DnfRepo              *repo);
-guint            dnf_repo_get_metadata_expire   (DnfRepo              *repo);
-DnfRepoKind      dnf_repo_get_kind              (DnfRepo              *repo);
-gchar          **dnf_repo_get_exclude_packages  (DnfRepo              *repo);
-gboolean         dnf_repo_get_gpgcheck          (DnfRepo              *repo);
-gboolean         dnf_repo_get_gpgcheck_md       (DnfRepo              *repo);
-gchar           *dnf_repo_get_description       (DnfRepo              *repo);
-guint64          dnf_repo_get_timestamp_generated(DnfRepo              *repo);
-guint            dnf_repo_get_n_solvables       (DnfRepo              *repo);
-const gchar     *dnf_repo_get_filename_md       (DnfRepo              *repo,
-                                                 const gchar          *md_kind);
+const gchar *
+dnf_repo_get_id(DnfRepo *repo);
+const gchar *
+dnf_repo_get_location(DnfRepo *repo);
+const gchar *
+dnf_repo_get_filename(DnfRepo *repo);
+const gchar *
+dnf_repo_get_packages(DnfRepo *repo);
+gchar **
+dnf_repo_get_public_keys(DnfRepo *repo);
+DnfRepoEnabled
+dnf_repo_get_enabled(DnfRepo *repo);
+gboolean
+dnf_repo_get_required(DnfRepo *repo);
+guint
+dnf_repo_get_cost(DnfRepo *repo);
+DnfRepoKind
+dnf_repo_get_kind(DnfRepo *repo);
+gchar **
+dnf_repo_get_exclude_packages(DnfRepo *repo);
+gboolean
+dnf_repo_get_gpgcheck(DnfRepo *repo);
+gboolean
+dnf_repo_get_gpgcheck_md(DnfRepo *repo);
+gchar *
+dnf_repo_get_description(DnfRepo *repo);
+guint64
+dnf_repo_get_timestamp_generated(DnfRepo *repo);
+guint
+dnf_repo_get_n_solvables(DnfRepo *repo);
+const gchar *
+dnf_repo_get_filename_md(DnfRepo *repo, const gchar *md_kind);
 #ifndef __GI_SCANNER__
-HyRepo           dnf_repo_get_repo              (DnfRepo              *repo);
+HyRepo
+dnf_repo_get_repo(DnfRepo *repo);
 #endif
-gboolean         dnf_repo_is_devel              (DnfRepo              *repo);
-gboolean         dnf_repo_is_local              (DnfRepo              *repo);
-gboolean         dnf_repo_is_repo             (DnfRepo              *repo);
+gboolean
+dnf_repo_is_devel(DnfRepo *repo);
+gboolean
+dnf_repo_is_local(DnfRepo *repo);
+gboolean
+dnf_repo_is_repo(DnfRepo *repo);
 
 /* setters */
-void             dnf_repo_set_id                (DnfRepo              *repo,
-                                                 const gchar          *id);
-void             dnf_repo_set_location          (DnfRepo              *repo,
-                                                 const gchar          *location);
-void             dnf_repo_set_location_tmp      (DnfRepo              *repo,
-                                                 const gchar          *location_tmp);
-void             dnf_repo_set_filename          (DnfRepo              *repo,
-                                                 const gchar          *filename);
-void             dnf_repo_set_packages          (DnfRepo              *repo,
-                                                 const gchar          *packages);
-void             dnf_repo_set_packages_tmp      (DnfRepo              *repo,
-                                                 const gchar          *packages_tmp);
-void             dnf_repo_set_enabled           (DnfRepo              *repo,
-                                                 DnfRepoEnabled        enabled);
-void             dnf_repo_set_required          (DnfRepo              *repo,
-                                                 gboolean              required);
-void             dnf_repo_set_cost              (DnfRepo              *repo,
-                                                 guint                 cost);
-void             dnf_repo_set_kind              (DnfRepo              *repo,
-                                                 DnfRepoKind           kind);
-void             dnf_repo_set_gpgcheck          (DnfRepo              *repo,
-                                                 gboolean              gpgcheck_pkgs);
-void             dnf_repo_set_gpgcheck_md       (DnfRepo              *repo,
-                                                 gboolean              gpgcheck_md);
-void             dnf_repo_set_keyfile           (DnfRepo              *repo,
-                                                 GKeyFile             *keyfile);
-void             dnf_repo_set_metadata_expire   (DnfRepo              *repo,
-                                                 guint                 metadata_expire);
-gboolean         dnf_repo_setup                 (DnfRepo              *repo,
-                                                 GError              **error);
+void
+dnf_repo_set_id(DnfRepo *repo, const gchar *id);
+void
+dnf_repo_set_location(DnfRepo *repo, const gchar *location);
+void
+dnf_repo_set_location_tmp(DnfRepo *repo, const gchar *location_tmp);
+void
+dnf_repo_set_filename(DnfRepo *repo, const gchar *filename);
+void
+dnf_repo_set_packages(DnfRepo *repo, const gchar *packages);
+void
+dnf_repo_set_packages_tmp(DnfRepo *repo, const gchar *packages_tmp);
+void
+dnf_repo_set_enabled(DnfRepo *repo, DnfRepoEnabled enabled);
+void
+dnf_repo_set_required(DnfRepo *repo, gboolean required);
+void
+dnf_repo_set_cost(DnfRepo *repo, guint cost);
+void
+dnf_repo_set_kind(DnfRepo *repo, DnfRepoKind kind);
+void
+dnf_repo_set_gpgcheck(DnfRepo *repo, gboolean gpgcheck_pkgs);
+void
+dnf_repo_set_gpgcheck_md(DnfRepo *repo, gboolean gpgcheck_md);
+void
+dnf_repo_set_keyfile(DnfRepo *repo, GKeyFile *keyfile);
+gboolean
+dnf_repo_setup(DnfRepo *repo, GError **error);
 
 /* object methods */
-gboolean         dnf_repo_check                 (DnfRepo              *repo,
-                                                 guint                 permissible_cache_age,
-                                                 DnfState             *state,
-                                                 GError              **error);
-gboolean         dnf_repo_update                (DnfRepo              *repo,
-                                                 DnfRepoUpdateFlags    flags,
-                                                 DnfState             *state,
-                                                 GError              **error);
-gboolean         dnf_repo_clean                 (DnfRepo              *repo,
-                                                 GError              **error);
-gboolean         dnf_repo_set_data              (DnfRepo              *repo,
-                                                 const gchar          *parameter,
-                                                 const gchar          *value,
-                                                 GError              **error);
-gboolean         dnf_repo_commit                (DnfRepo              *repo,
-                                                 GError              **error);
+gboolean
+dnf_repo_check(DnfRepo *repo, guint permissible_cache_age, DnfState *state, GError **error);
+gboolean
+dnf_repo_update(DnfRepo *repo, DnfRepoUpdateFlags flags, DnfState *state, GError **error);
+gboolean
+dnf_repo_clean(DnfRepo *repo, GError **error);
+gboolean
+dnf_repo_set_data(DnfRepo *repo, const gchar *parameter, const gchar *value, GError **error);
+gboolean
+dnf_repo_commit(DnfRepo *repo, GError **error);
 
 #ifndef __GI_SCANNER__
-LrHandle *       dnf_repo_get_lr_handle         (DnfRepo              *repo);
+LrHandle *
+dnf_repo_get_lr_handle(DnfRepo *repo);
 
-LrResult *       dnf_repo_get_lr_result         (DnfRepo              *repo);
+LrResult *
+dnf_repo_get_lr_result(DnfRepo *repo);
 #endif
 
 #ifndef __GI_SCANNER__
-gchar           *dnf_repo_download_package      (DnfRepo              *repo,
-                                                 DnfPackage *            pkg,
-                                                 const gchar          *directory,
-                                                 DnfState             *state,
-                                                 GError              **error);
-gboolean         dnf_repo_download_packages     (DnfRepo              *repo,
-                                                 GPtrArray            *pkgs,
-                                                 const gchar          *directory,
-                                                 DnfState             *state,
-                                                 GError              **error);
+gchar *
+dnf_repo_download_package(
+  DnfRepo *repo, DnfPackage *pkg, const gchar *directory, DnfState *state, GError **error);
+gboolean
+dnf_repo_download_packages(
+  DnfRepo *repo, GPtrArray *pkgs, const gchar *directory, DnfState *state, GError **error);
 #endif
 
 G_END_DECLS

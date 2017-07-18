@@ -18,19 +18,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
 #include <solv/util.h>
 
-
-#include "libdnf/dnf-advisory.h"
-#include "libdnf/hy-package.h"
-#include "libdnf/hy-package-private.h"
-#include "libdnf/hy-query.h"
-#include "libdnf/dnf-reldep.h"
-#include "libdnf/dnf-reldep-list.h"
-#include "libdnf/dnf-sack-private.h"
-#include "libdnf/hy-util.h"
 #include "fixtures.h"
+#include "libdnf/dnf-advisory.h"
+#include "libdnf/dnf-reldep-list.h"
+#include "libdnf/dnf-reldep.h"
+#include "libdnf/dnf-sack-private.h"
+#include "libdnf/hy-package-private.h"
+#include "libdnf/hy-package.h"
+#include "libdnf/hy-query.h"
+#include "libdnf/hy-util.h"
 #include "test_suites.h"
 #include "testsys.h"
 
@@ -105,10 +103,10 @@ START_TEST(test_get_requires)
     DnfPackage *pkg = by_name(sack, "flying");
     DnfReldepList *reldeplist = dnf_package_get_requires(pkg);
 
-    fail_unless(dnf_reldep_list_count (reldeplist) == 1);
-    DnfReldep *reldep = dnf_reldep_list_index (reldeplist, 0);
+    fail_unless(dnf_reldep_list_count(reldeplist) == 1);
+    DnfReldep *reldep = dnf_reldep_list_index(reldeplist, 0);
 
-    const char *depstr = dnf_reldep_to_string (reldep);
+    const char *depstr = dnf_reldep_to_string(reldep);
     ck_assert_str_eq(depstr, "P-lib >= 3");
 
     g_object_unref(reldep);
@@ -123,7 +121,7 @@ START_TEST(test_get_more_requires)
     DnfPackage *pkg = by_name(sack, "walrus");
     DnfReldepList *reldeplist = dnf_package_get_requires(pkg);
 
-    fail_unless(dnf_reldep_list_count (reldeplist) == 2);
+    fail_unless(dnf_reldep_list_count(reldeplist) == 2);
     g_object_unref(reldeplist);
     g_object_unref(pkg);
 }
@@ -198,12 +196,12 @@ START_TEST(test_get_advisories_none)
     DnfSack *sack = test_globals.sack;
     DnfPackage *pkg = by_name(sack, "mystery-devel");
 
-    advisories = dnf_package_get_advisories(pkg, HY_GT|HY_EQ);
+    advisories = dnf_package_get_advisories(pkg, HY_GT | HY_EQ);
     fail_unless(advisories != NULL);
     ck_assert_int_eq(advisories->len, 1);
     g_ptr_array_unref(advisories);
 
-    advisories = dnf_package_get_advisories(pkg, HY_LT|HY_EQ);
+    advisories = dnf_package_get_advisories(pkg, HY_LT | HY_EQ);
     fail_unless(advisories != NULL);
     ck_assert_int_eq(advisories->len, 1);
     g_ptr_array_unref(advisories);
@@ -226,8 +224,7 @@ END_TEST
 START_TEST(test_installed)
 {
     DnfPackage *pkg1 = by_name_repo(test_globals.sack, "penny-lib", "main");
-    DnfPackage *pkg2 = by_name_repo(test_globals.sack,
-                                  "penny-lib", HY_SYSTEM_REPO_NAME);
+    DnfPackage *pkg2 = by_name_repo(test_globals.sack, "penny-lib", HY_SYSTEM_REPO_NAME);
     int installed1 = dnf_package_installed(pkg1);
     int installed2 = dnf_package_installed(pkg2);
     fail_unless(installed1 == 0);
@@ -248,8 +245,7 @@ START_TEST(test_two_sacks)
     dnf_sack_set_cachedir(sack1, tmpdir);
     fail_unless(dnf_sack_setup(sack1, DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, NULL));
     Pool *pool1 = dnf_sack_get_pool(sack1);
-    const char *path = pool_tmpjoin(pool1, test_globals.repo_dir,
-                                    "change.repo", NULL);
+    const char *path = pool_tmpjoin(pool1, test_globals.repo_dir, "change.repo", NULL);
     fail_if(load_repo(pool1, "change", path, 0));
     DnfPackage *pkg1 = by_name(sack1, "penny-lib");
     fail_if(pkg1 == NULL);
@@ -297,8 +293,9 @@ START_TEST(test_sourcerpm)
 }
 END_TEST
 
-#define TOUR_45_46_DRPM_CHKSUM "\xc3\xc3\xd5\x72\xa4\x6b"\
-    "\x1a\x66\x90\x6d\x42\xca\x17\x63\xef\x36\x20\xf7\x02"\
+#define TOUR_45_46_DRPM_CHKSUM                                                                     \
+    "\xc3\xc3\xd5\x72\xa4\x6b"                                                                     \
+    "\x1a\x66\x90\x6d\x42\xca\x17\x63\xef\x36\x20\xf7\x02"                                         \
     "\x58\xaa\xac\x4c\x14\xbf\x46\x3e\xd5\x37\x16\xd4\x44"
 
 START_TEST(test_presto)
@@ -331,7 +328,7 @@ START_TEST(test_get_files_cmdline)
     gchar **files;
 
     files = dnf_package_get_files(pkg);
-    g_assert_cmpint (6, ==, g_strv_length(files));
+    g_assert_cmpint(6, ==, g_strv_length(files));
     g_strfreev(files);
     g_object_unref(pkg);
 }

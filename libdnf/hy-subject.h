@@ -21,20 +21,22 @@
 #ifndef HY_SUBJECT_H
 #define HY_SUBJECT_H
 
-#include <stdlib.h>
-#include <solv/util.h>
 #include "dnf-types.h"
-#include "hy-types.h"
 #include "hy-nevra.h"
+#include "hy-types.h"
+#include <solv/util.h>
+#include <stdlib.h>
 
 #include <glib.h>
 
 G_BEGIN_DECLS
 
 #ifdef __cplusplus
-enum _HyForm :short {
+enum _HyForm : short
+{
 #else
-enum _HyForm {
+enum _HyForm
+{
 #endif
     HY_FORM_NEVRA = 1,
     HY_FORM_NEVR = 2,
@@ -44,7 +46,8 @@ enum _HyForm {
     _HY_FORM_STOP_ = -1
 };
 
-struct _HyPossibilities {
+struct _HyPossibilities
+{
     HySubject subject;
     DnfSack *sack;
     int flags;
@@ -56,20 +59,27 @@ struct _HyPossibilities {
 extern HyForm HY_FORMS_MOST_SPEC[];
 extern HyForm HY_FORMS_REAL[];
 
-HySubject hy_subject_create(const char * pattern);
-void hy_subject_free(HySubject subject);
-void hy_possibilities_free(HyPossibilities iter);
-HyPossibilities hy_subject_reldep_possibilities_real(HySubject subject,
-    DnfSack *sack, int flags);
-int hy_possibilities_next_reldep(HyPossibilities iter, DnfReldep **out_reldep);
-HyPossibilities hy_subject_nevra_possibilities(HySubject subject,
-    HyForm *forms);
-HyPossibilities hy_subject_nevra_possibilities_real(HySubject subject,
-    HyForm *forms, DnfSack *sack, int flags);
-int hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra);
+HySubject
+hy_subject_create(const char *pattern);
+void
+hy_subject_free(HySubject subject);
+void
+hy_possibilities_free(HyPossibilities iter);
+HyPossibilities
+hy_subject_reldep_possibilities_real(HySubject subject, DnfSack *sack, int flags);
+int
+hy_possibilities_next_reldep(HyPossibilities iter, DnfReldep **out_reldep);
+HyPossibilities
+hy_subject_nevra_possibilities(HySubject subject, HyForm *forms);
+HyPossibilities
+hy_subject_nevra_possibilities_real(HySubject subject, HyForm *forms, DnfSack *sack, int flags);
+int
+hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra);
 
-HyQuery hy_subject_get_best_query(HySubject subject, DnfSack *sack, gboolean with_provides);
-HySelector hy_subject_get_best_selector(HySubject subject, DnfSack *sack);
+HyQuery
+hy_subject_get_best_query(HySubject subject, DnfSack *sack, gboolean with_provides);
+HySelector
+hy_subject_get_best_selector(HySubject subject, DnfSack *sack);
 
 G_END_DECLS
 

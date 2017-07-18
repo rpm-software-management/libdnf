@@ -21,7 +21,6 @@
 #include <check.h>
 #include <stdio.h>
 
-
 #include "libdnf/dnf-types.h"
 #include "libdnf/hy-util.h"
 #include "test_suites.h"
