@@ -21,24 +21,24 @@
 #include <Python.h>
 #include <solv/util.h>
 
+#include "dnf-reldep-list.h"
+#include "dnf-reldep.h"
 #include "hy-package-private.h"
 #include "hy-packageset-private.h"
 #include "hy-query-private.h"
-#include "dnf-reldep.h"
-#include "dnf-reldep-list.h"
 
 #include "exception-py.h"
 #include "hawkey-pysys.h"
 #include "iutil-py.h"
 #include "package-py.h"
+#include "pycomp.h"
 #include "query-py.h"
 #include "reldep-py.h"
 #include "sack-py.h"
-#include "pycomp.h"
 
-typedef struct {
-    PyObject_HEAD
-    HyQuery query;
+typedef struct
+{
+    PyObject_HEAD HyQuery query;
     PyObject *sack;
 } _QueryObject;
 
@@ -97,17 +97,17 @@ query_dealloc(_QueryObject *self)
 }
 
 static int
-query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
+query_init(_QueryObject *self, PyObject *args, PyObject *kwds)
 {
-    const char *kwlist[] = {"sack", "query", NULL};
+    const char *kwlist[] = { "sack", "query", NULL };
     PyObject *sack;
     PyObject *query;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", (char**) kwlist, &sack, &query))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", (char **)kwlist, &sack, &query))
         return -1;
 
     if (query && sack == Py_None && queryObject_Check(query)) {
-        _QueryObject *query_obj = (_QueryObject*)query;
+        _QueryObject *query_obj = (_QueryObject *)query;
         self->sack = query_obj->sack;
         self->query = hy_query_clone(query_obj->query);
     } else if (sack && query == Py_None && sackObject_Check(sack)) {
@@ -134,8 +134,7 @@ get_evaluated(_QueryObject *self, void *unused)
 }
 
 static PyGetSetDef query_getsetters[] = {
-    {(char*)"evaluated",  (getter)get_evaluated, NULL, NULL, NULL},
-    {NULL}                        /* sentinel */
+    { (char *)"evaluated", (getter)get_evaluated, NULL, NULL, NULL }, { NULL } /* sentinel */
 };
 
 /* object methods */
@@ -164,13 +163,9 @@ filter(_QueryObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "iiO", &keyname, &cmp_type, &match))
         return NULL;
-    if (keyname == HY_PKG_DOWNGRADABLE ||
-        keyname == HY_PKG_DOWNGRADES ||
-        keyname == HY_PKG_EMPTY ||
-        keyname == HY_PKG_LATEST_PER_ARCH ||
-        keyname == HY_PKG_LATEST ||
-        keyname == HY_PKG_UPGRADABLE ||
-        keyname == HY_PKG_UPGRADES) {
+    if (keyname == HY_PKG_DOWNGRADABLE || keyname == HY_PKG_DOWNGRADES || keyname == HY_PKG_EMPTY ||
+        keyname == HY_PKG_LATEST_PER_ARCH || keyname == HY_PKG_LATEST ||
+        keyname == HY_PKG_UPGRADABLE || keyname == HY_PKG_UPGRADES) {
         long val;
 
         if (!PyInt_Check(match) || cmp_type != HY_EQ) {
@@ -221,8 +216,7 @@ filter(_QueryObject *self, PyObject *args)
     if (queryObject_Check(match)) {
         HyQuery target = queryFromPyObject(match);
         DnfPackageSet *pset = hy_query_run_set(target);
-        int ret = hy_query_filter_package_in(self->query, keyname,
-                                             cmp_type, pset);
+        int ret = hy_query_filter_package_in(self->query, keyname, cmp_type, pset);
 
         g_object_unref(pset);
         if (ret)
@@ -231,71 +225,69 @@ filter(_QueryObject *self, PyObject *args)
     }
     if (reldepObject_Check(match)) {
         DnfReldep *reldep = reldepFromPyObject(match);
-        if (cmp_type != HY_EQ ||
-            hy_query_filter_reldep(self->query, keyname, reldep))
+        if (cmp_type != HY_EQ || hy_query_filter_reldep(self->query, keyname, reldep))
             return raise_bad_filter();
         Py_RETURN_NONE;
     }
     // match is a sequence now:
     switch (keyname) {
-    case HY_PKG:
-    case HY_PKG_OBSOLETES: {
-        DnfSack *sack = sackFromPyObject(self->sack);
-        assert(sack);
-        DnfPackageSet *pset = pyseq_to_packageset(match, sack);
+        case HY_PKG:
+        case HY_PKG_OBSOLETES: {
+            DnfSack *sack = sackFromPyObject(self->sack);
+            assert(sack);
+            DnfPackageSet *pset = pyseq_to_packageset(match, sack);
 
-        if (pset == NULL)
-            return NULL;
-        int ret = hy_query_filter_package_in(self->query, keyname,
-                                             cmp_type, pset);
-        g_object_unref(pset);
-        if (ret)
-            return raise_bad_filter();
-
-        break;
-    }
-    case HY_PKG_PROVIDES:
-    case HY_PKG_REQUIRES: {
-        DnfSack *sack = sackFromPyObject(self->sack);
-        assert(sack);
-        DnfReldepList *reldeplist = pyseq_to_reldeplist(match, sack, cmp_type);
-        if (reldeplist == NULL)
-            return NULL;
-
-        int ret = hy_query_filter_reldep_in(self->query, keyname, reldeplist);
-        g_object_unref (reldeplist);
-        if (ret)
-            return raise_bad_filter();
-        break;
-    }
-    default: {
-        PyObject *seq = PySequence_Fast(match, "Expected a sequence.");
-        if (seq == NULL)
-            return NULL;
-        const unsigned count = PySequence_Size(seq);
-        const char *matches[count + 1];
-        matches[count] = NULL;
-        PyObject *tmp_py_strs[count];
-        for (unsigned int i = 0; i < count; ++i) {
-            PyObject *item = PySequence_Fast_GET_ITEM(seq, i);
-            tmp_py_strs[i] = NULL;
-            if (PyUnicode_Check(item) || PyString_Check(item)) {
-                matches[i] = pycomp_get_string(item, &tmp_py_strs[i]);
-            } else {
-                PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
-                pycomp_free_tmp_array(tmp_py_strs, i);
-                Py_DECREF(seq);
+            if (pset == NULL)
                 return NULL;
-            }
-        }
-        int filter_in_ret = hy_query_filter_in(self->query, keyname, cmp_type, matches);
-        Py_DECREF(seq);
-        pycomp_free_tmp_array(tmp_py_strs, count - 1);
+            int ret = hy_query_filter_package_in(self->query, keyname, cmp_type, pset);
+            g_object_unref(pset);
+            if (ret)
+                return raise_bad_filter();
 
-        if (filter_in_ret)
-            return raise_bad_filter();
-        break;
-    }
+            break;
+        }
+        case HY_PKG_PROVIDES:
+        case HY_PKG_REQUIRES: {
+            DnfSack *sack = sackFromPyObject(self->sack);
+            assert(sack);
+            DnfReldepList *reldeplist = pyseq_to_reldeplist(match, sack, cmp_type);
+            if (reldeplist == NULL)
+                return NULL;
+
+            int ret = hy_query_filter_reldep_in(self->query, keyname, reldeplist);
+            g_object_unref(reldeplist);
+            if (ret)
+                return raise_bad_filter();
+            break;
+        }
+        default: {
+            PyObject *seq = PySequence_Fast(match, "Expected a sequence.");
+            if (seq == NULL)
+                return NULL;
+            const unsigned count = PySequence_Size(seq);
+            const char *matches[count + 1];
+            matches[count] = NULL;
+            PyObject *tmp_py_strs[count];
+            for (unsigned int i = 0; i < count; ++i) {
+                PyObject *item = PySequence_Fast_GET_ITEM(seq, i);
+                tmp_py_strs[i] = NULL;
+                if (PyUnicode_Check(item) || PyString_Check(item)) {
+                    matches[i] = pycomp_get_string(item, &tmp_py_strs[i]);
+                } else {
+                    PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
+                    pycomp_free_tmp_array(tmp_py_strs, i);
+                    Py_DECREF(seq);
+                    return NULL;
+                }
+            }
+            int filter_in_ret = hy_query_filter_in(self->query, keyname, cmp_type, matches);
+            Py_DECREF(seq);
+            pycomp_free_tmp_array(tmp_py_strs, count - 1);
+
+            if (filter_in_ret)
+                return raise_bad_filter();
+            break;
+        }
     }
     Py_RETURN_NONE;
 }
@@ -315,7 +307,7 @@ run(_QueryObject *self, PyObject *unused)
 static PyObject *
 apply(PyObject *self, PyObject *unused)
 {
-    hy_query_apply(((_QueryObject *) self)->query);
+    hy_query_apply(((_QueryObject *)self)->query);
     Py_INCREF(self);
     return self;
 }
@@ -323,8 +315,8 @@ apply(PyObject *self, PyObject *unused)
 static PyObject *
 q_union(PyObject *self, PyObject *other)
 {
-    HyQuery self_q = ((_QueryObject *) self)->query;
-    HyQuery other_q = ((_QueryObject *) other)->query;
+    HyQuery self_q = ((_QueryObject *)self)->query;
+    HyQuery other_q = ((_QueryObject *)other)->query;
     hy_query_union(self_q, other_q);
     Py_INCREF(self);
     return self;
@@ -333,8 +325,8 @@ q_union(PyObject *self, PyObject *other)
 static PyObject *
 q_intersection(PyObject *self, PyObject *other)
 {
-    HyQuery self_q = ((_QueryObject *) self)->query;
-    HyQuery other_q = ((_QueryObject *) other)->query;
+    HyQuery self_q = ((_QueryObject *)self)->query;
+    HyQuery other_q = ((_QueryObject *)other)->query;
     hy_query_intersection(self_q, other_q);
     Py_INCREF(self);
     return self;
@@ -343,8 +335,8 @@ q_intersection(PyObject *self, PyObject *other)
 static PyObject *
 q_difference(PyObject *self, PyObject *other)
 {
-    HyQuery self_q = ((_QueryObject *) self)->query;
-    HyQuery other_q = ((_QueryObject *) other)->query;
+    HyQuery self_q = ((_QueryObject *)self)->query;
+    HyQuery other_q = ((_QueryObject *)other)->query;
     hy_query_difference(self_q, other_q);
     Py_INCREF(self);
     return self;
@@ -353,7 +345,7 @@ q_difference(PyObject *self, PyObject *other)
 static PyObject *
 q_contains(PyObject *self, PyObject *pypkg)
 {
-    HyQuery q = ((_QueryObject *) self)->query;
+    HyQuery q = ((_QueryObject *)self)->query;
     DnfPackage *pkg = packageFromPyObject(pypkg);
 
     if (pkg) {
@@ -368,7 +360,7 @@ q_contains(PyObject *self, PyObject *pypkg)
 static PyObject *
 q_length(PyObject *self, PyObject *unused)
 {
-    HyQuery q = ((_QueryObject *) self)->query;
+    HyQuery q = ((_QueryObject *)self)->query;
     hy_query_apply(q);
 
     unsigned char *res = q->result->map;
@@ -382,66 +374,56 @@ q_length(PyObject *self, PyObject *unused)
 }
 
 static struct PyMethodDef query_methods[] = {
-    {"clear", (PyCFunction)clear, METH_NOARGS,
-     NULL},
-    {"filter", (PyCFunction)filter, METH_VARARGS,
-     NULL},
-    {"run", (PyCFunction)run, METH_NOARGS,
-     NULL},
-    {"apply", (PyCFunction)apply, METH_NOARGS,
-     NULL},
-    {"union", (PyCFunction)q_union, METH_O,
-     NULL},
-    {"intersection", (PyCFunction)q_intersection, METH_O,
-     NULL},
-    {"difference", (PyCFunction)q_difference, METH_O,
-     NULL},
-    {"__contains__", (PyCFunction)q_contains, METH_O,
-     NULL},
-    {"__len__", (PyCFunction)q_length, METH_NOARGS,
-     NULL},
-    {NULL}                      /* sentinel */
+    { "clear", (PyCFunction)clear, METH_NOARGS, NULL },
+    { "filter", (PyCFunction)filter, METH_VARARGS, NULL },
+    { "run", (PyCFunction)run, METH_NOARGS, NULL },
+    { "apply", (PyCFunction)apply, METH_NOARGS, NULL },
+    { "union", (PyCFunction)q_union, METH_O, NULL },
+    { "intersection", (PyCFunction)q_intersection, METH_O, NULL },
+    { "difference", (PyCFunction)q_difference, METH_O, NULL },
+    { "__contains__", (PyCFunction)q_contains, METH_O, NULL },
+    { "__len__", (PyCFunction)q_length, METH_NOARGS, NULL },
+    { NULL } /* sentinel */
 };
 
 PyTypeObject query_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "_hawkey.Query",                /*tp_name*/
-    sizeof(_QueryObject),        /*tp_basicsize*/
-    0,                                /*tp_itemsize*/
-    (destructor) query_dealloc, /*tp_dealloc*/
-    0,                                /*tp_print*/
-    0,                                /*tp_getattr*/
-    0,                                /*tp_setattr*/
-    0,                                /*tp_compare*/
-    0,                                /*tp_repr*/
-    0,                                /*tp_as_number*/
-    0,                                /*tp_as_sequence*/
-    0,                                /*tp_as_mapping*/
-    0,                                /*tp_hash */
-    0,                                /*tp_call*/
-    0,                                /*tp_str*/
-    0,                                /*tp_getattro*/
-    0,                                /*tp_setattro*/
-    0,                                /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,        /*tp_flags*/
-    "Query object",                /* tp_doc */
-    0,                                /* tp_traverse */
-    0,                                /* tp_clear */
-    0,                                /* tp_richcompare */
-    0,                                /* tp_weaklistoffset */
-    PyObject_SelfIter,                /* tp_iter */
-    0,                                 /* tp_iternext */
-    query_methods,                /* tp_methods */
-    0,                                /* tp_members */
-    query_getsetters,                /* tp_getset */
-    0,                                /* tp_base */
-    0,                                /* tp_dict */
-    0,                                /* tp_descr_get */
-    0,                                /* tp_descr_set */
-    0,                                /* tp_dictoffset */
-    (initproc)query_init,        /* tp_init */
-    0,                                /* tp_alloc */
-    query_new,                        /* tp_new */
-    0,                                /* tp_free */
-    0,                                /* tp_is_gc */
+    PyVarObject_HEAD_INIT(NULL, 0) "_hawkey.Query", /*tp_name*/
+    sizeof(_QueryObject),                           /*tp_basicsize*/
+    0,                                              /*tp_itemsize*/
+    (destructor)query_dealloc,                      /*tp_dealloc*/
+    0,                                              /*tp_print*/
+    0,                                              /*tp_getattr*/
+    0,                                              /*tp_setattr*/
+    0,                                              /*tp_compare*/
+    0,                                              /*tp_repr*/
+    0,                                              /*tp_as_number*/
+    0,                                              /*tp_as_sequence*/
+    0,                                              /*tp_as_mapping*/
+    0,                                              /*tp_hash */
+    0,                                              /*tp_call*/
+    0,                                              /*tp_str*/
+    0,                                              /*tp_getattro*/
+    0,                                              /*tp_setattro*/
+    0,                                              /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,       /*tp_flags*/
+    "Query object",                                 /* tp_doc */
+    0,                                              /* tp_traverse */
+    0,                                              /* tp_clear */
+    0,                                              /* tp_richcompare */
+    0,                                              /* tp_weaklistoffset */
+    PyObject_SelfIter,                              /* tp_iter */
+    0,                                              /* tp_iternext */
+    query_methods,                                  /* tp_methods */
+    0,                                              /* tp_members */
+    query_getsetters,                               /* tp_getset */
+    0,                                              /* tp_base */
+    0,                                              /* tp_dict */
+    0,                                              /* tp_descr_get */
+    0,                                              /* tp_descr_set */
+    0,                                              /* tp_dictoffset */
+    (initproc)query_init,                           /* tp_init */
+    0,                                              /* tp_alloc */
+    query_new,                                      /* tp_new */
+    0,                                              /* tp_free */
+    0,                                              /* tp_is_gc */
 };

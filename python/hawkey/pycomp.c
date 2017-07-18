@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <Python.h>
 #include "pycomp.h"
+#include <Python.h>
 
 /**
  * unicode string in Python 2/3 to c string converter,

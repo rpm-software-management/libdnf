@@ -21,11 +21,10 @@
 #include <check.h>
 #include <string.h>
 
-
-#include "libdnf/hy-repo-private.h"
 #include "fixtures.h"
-#include "testshared.h"
+#include "libdnf/hy-repo-private.h"
 #include "test_suites.h"
+#include "testshared.h"
 
 START_TEST(test_strings)
 {

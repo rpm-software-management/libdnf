@@ -21,25 +21,29 @@
 #ifndef HY_SACK_INTERNAL_H
 #define HY_SACK_INTERNAL_H
 
-#include <stdio.h>
 #include <solv/pool.h>
+#include <stdio.h>
 
 #include "dnf-sack.h"
 
-typedef Id  (*dnf_sack_running_kernel_fn_t) (DnfSack    *sack);
+typedef Id (*dnf_sack_running_kernel_fn_t)(DnfSack *sack);
 
-void         dnf_sack_make_provides_ready   (DnfSack    *sack);
-Id           dnf_sack_running_kernel        (DnfSack    *sack);
-int          dnf_sack_knows                 (DnfSack    *sack,
-                                             const char *name,
-                                             const char *version,
-                                             int         flags);
-void         dnf_sack_recompute_considered  (DnfSack    *sack);
-Pool        *dnf_sack_get_pool              (DnfSack    *sack);
-Id           dnf_sack_last_solvable         (DnfSack    *sack);
+void
+dnf_sack_make_provides_ready(DnfSack *sack);
+Id
+dnf_sack_running_kernel(DnfSack *sack);
+int
+dnf_sack_knows(DnfSack *sack, const char *name, const char *version, int flags);
+void
+dnf_sack_recompute_considered(DnfSack *sack);
+Pool *
+dnf_sack_get_pool(DnfSack *sack);
+Id
+dnf_sack_last_solvable(DnfSack *sack);
 
-Queue       *dnf_sack_get_installonly       (DnfSack    *sack);
-void         dnf_sack_set_running_kernel_fn (DnfSack    *sack,
-                                             dnf_sack_running_kernel_fn_t fn);
+Queue *
+dnf_sack_get_installonly(DnfSack *sack);
+void
+dnf_sack_set_running_kernel_fn(DnfSack *sack, dnf_sack_running_kernel_fn_t fn);
 
 #endif // HY_SACK_INTERNAL_H

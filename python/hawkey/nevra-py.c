@@ -24,9 +24,9 @@
 #include <solv/util.h>
 
 // hawkey
-#include "hy-nevra.h"
-#include "hy-nevra-private.h"
 #include "dnf-sack.h"
+#include "hy-nevra-private.h"
+#include "hy-nevra.h"
 #include "hy-types.h"
 
 // pyhawkey
@@ -36,9 +36,9 @@
 #include "query-py.h"
 #include "sack-py.h"
 
-typedef struct {
-    PyObject_HEAD
-    HyNevra nevra;
+typedef struct
+{
+    PyObject_HEAD HyNevra nevra;
 } _NevraObject;
 
 HyNevra
@@ -77,7 +77,7 @@ static PyObject *
 get_epoch(_NevraObject *self, void *closure)
 {
     if (self->nevra->epoch == -1L)
-    Py_RETURN_NONE;
+        Py_RETURN_NONE;
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(self->nevra->epoch);
 #else
@@ -116,27 +116,22 @@ set_attr(_NevraObject *self, PyObject *value, void *closure)
 }
 
 static PyGetSetDef nevra_getsetters[] = {
-    {(char*)"name", (getter)get_attr, (setter)set_attr, NULL,
-     (void *)HY_NEVRA_NAME},
-    {(char*)"epoch", (getter)get_epoch, (setter)set_epoch, NULL,
-     NULL},
-    {(char*)"version", (getter)get_attr, (setter)set_attr, NULL,
-     (void *)HY_NEVRA_VERSION},
-    {(char*)"release", (getter)get_attr, (setter)set_attr, NULL,
-     (void *)HY_NEVRA_RELEASE},
-    {(char*)"arch", (getter)get_attr, (setter)set_attr, NULL,
-     (void *)HY_NEVRA_ARCH},
-    {NULL}          /* sentinel */
+    { (char *)"name", (getter)get_attr, (setter)set_attr, NULL, (void *)HY_NEVRA_NAME },
+    { (char *)"epoch", (getter)get_epoch, (setter)set_epoch, NULL, NULL },
+    { (char *)"version", (getter)get_attr, (setter)set_attr, NULL, (void *)HY_NEVRA_VERSION },
+    { (char *)"release", (getter)get_attr, (setter)set_attr, NULL, (void *)HY_NEVRA_RELEASE },
+    { (char *)"arch", (getter)get_attr, (setter)set_attr, NULL, (void *)HY_NEVRA_ARCH },
+    { NULL } /* sentinel */
 };
 
 static PyObject *
 nevra_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    _NevraObject *self = (_NevraObject*)type->tp_alloc(type, 0);
+    _NevraObject *self = (_NevraObject *)type->tp_alloc(type, 0);
     if (self) {
         self->nevra = hy_nevra_create();
     }
-    return (PyObject*)self;
+    return (PyObject *)self;
 }
 
 static void
@@ -153,15 +148,22 @@ nevra_init(_NevraObject *self, PyObject *args, PyObject *kwds)
     PyObject *epoch_o = NULL;
     HyNevra cnevra = NULL;
 
-    const char *kwlist[] = {"name", "epoch", "version", "release", "arch",
-        "nevra", NULL};
+    const char *kwlist[] = { "name", "epoch", "version", "release", "arch", "nevra", NULL };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|zOzzzO&", (char**) kwlist,
-        &name, &epoch_o, &version, &release, &arch, nevra_converter, &cnevra))
+    if (!PyArg_ParseTupleAndKeywords(args,
+                                     kwds,
+                                     "|zOzzzO&",
+                                     (char **)kwlist,
+                                     &name,
+                                     &epoch_o,
+                                     &version,
+                                     &release,
+                                     &arch,
+                                     nevra_converter,
+                                     &cnevra))
         return -1;
     if (name == NULL && cnevra == NULL) {
-        PyErr_SetString(PyExc_ValueError,
-            "Name is required parameter.");
+        PyErr_SetString(PyExc_ValueError, "Name is required parameter.");
         return -1;
     }
     if (cnevra != NULL) {
@@ -169,8 +171,7 @@ nevra_init(_NevraObject *self, PyObject *args, PyObject *kwds)
         return 0;
     }
     if (set_epoch(self, epoch_o, NULL) == -1) {
-        PyErr_SetString(PyExc_TypeError,
-            "An integer value or None expected for epoch.");
+        PyErr_SetString(PyExc_TypeError, "An integer value or None expected for epoch.");
         return -1;
     }
     hy_nevra_set_string(self->nevra, HY_NEVRA_NAME, name);
@@ -232,10 +233,10 @@ to_query(_NevraObject *self, PyObject *args, PyObject *kwds)
 }
 
 static struct PyMethodDef nevra_methods[] = {
-    {"evr_cmp",     (PyCFunction) evr_cmp, METH_VARARGS, NULL},
-    {"evr", (PyCFunction) evr, METH_NOARGS,   NULL},
-    {"to_query",     (PyCFunction) to_query, METH_VARARGS, NULL},
-    {NULL}                      /* sentinel */
+    { "evr_cmp", (PyCFunction)evr_cmp, METH_VARARGS, NULL },
+    { "evr", (PyCFunction)evr, METH_NOARGS, NULL },
+    { "to_query", (PyCFunction)to_query, METH_VARARGS, NULL },
+    { NULL } /* sentinel */
 };
 
 static PyObject *
@@ -247,7 +248,7 @@ nevra_richcompare(PyObject *self, PyObject *other, int op)
     self_nevra = nevraFromPyObject(self);
 
     if (!other_nevra) {
-        if(PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError))
+        if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError))
             PyErr_Clear();
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
@@ -256,27 +257,27 @@ nevra_richcompare(PyObject *self, PyObject *other, int op)
     long result = hy_nevra_cmp(self_nevra, other_nevra);
 
     switch (op) {
-    case Py_EQ:
-        v = TEST_COND(result == 0);
-        break;
-    case Py_NE:
-        v = TEST_COND(result != 0);
-        break;
-    case Py_LE:
-        v = TEST_COND(result <= 0);
-        break;
-    case Py_GE:
-        v = TEST_COND(result >= 0);
-        break;
-    case Py_LT:
-        v = TEST_COND(result < 0);
-        break;
-    case Py_GT:
-        v = TEST_COND(result > 0);
-        break;
-    default:
-        PyErr_BadArgument();
-        return NULL;
+        case Py_EQ:
+            v = TEST_COND(result == 0);
+            break;
+        case Py_NE:
+            v = TEST_COND(result != 0);
+            break;
+        case Py_LE:
+            v = TEST_COND(result <= 0);
+            break;
+        case Py_GE:
+            v = TEST_COND(result >= 0);
+            break;
+        case Py_LT:
+            v = TEST_COND(result < 0);
+            break;
+        case Py_GT:
+            v = TEST_COND(result > 0);
+            break;
+        default:
+            PyErr_BadArgument();
+            return NULL;
     }
     Py_INCREF(v);
     return v;
@@ -289,55 +290,54 @@ iter(_NevraObject *self)
     HyNevra nevra = self->nevra;
     if (self->nevra->epoch == -1) {
         Py_INCREF(Py_None);
-        res = Py_BuildValue("zOzzz", nevra->name, Py_None, nevra->version,
-            nevra->release, nevra->arch);
+        res =
+          Py_BuildValue("zOzzz", nevra->name, Py_None, nevra->version, nevra->release, nevra->arch);
     } else
-        res = Py_BuildValue("zizzz", nevra->name, nevra->epoch, nevra->version,
-            nevra->release, nevra->arch);
+        res = Py_BuildValue(
+          "zizzz", nevra->name, nevra->epoch, nevra->version, nevra->release, nevra->arch);
     PyObject *iter = PyObject_GetIter(res);
     Py_DECREF(res);
     return iter;
 }
 
 PyTypeObject nevra_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "_hawkey.NEVRA",        /*tp_name*/
-    sizeof(_NevraObject),   /*tp_basicsize*/
-    0,              /*tp_itemsize*/
-    (destructor) nevra_dealloc,  /*tp_dealloc*/
-    0,              /*tp_print*/
-    0,              /*tp_getattr*/
-    0,              /*tp_setattr*/
-    0,              /*tp_compare*/
-    0,              /*tp_repr*/
-    0,              /*tp_as_number*/
-    0,              /*tp_as_sequence*/
-    0,              /*tp_as_mapping*/
-    0,              /*tp_hash */
-    0,              /*tp_call*/
-    0,              /*tp_str*/
-    0,              /*tp_getattro*/
-    0,              /*tp_setattro*/
-    0,              /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,     /*tp_flags*/
-    "NEVRA object",     /* tp_doc */
-    0,              /* tp_traverse */
-    0,              /* tp_clear */
-    nevra_richcompare,              /* tp_richcompare */
-    0,              /* tp_weaklistoffset */
-    (getiterfunc) iter,/* tp_iter */
-    0,                          /* tp_iternext */
-    nevra_methods,      /* tp_methods */
-    0,              /* tp_members */
-    nevra_getsetters,       /* tp_getset */
-    0,              /* tp_base */
-    0,              /* tp_dict */
-    0,              /* tp_descr_get */
-    0,              /* tp_descr_set */
-    0,              /* tp_dictoffset */
-    (initproc)nevra_init,   /* tp_init */
-    0,              /* tp_alloc */
-    nevra_new,          /* tp_new */
-    0,              /* tp_free */
-    0,              /* tp_is_gc */
+    PyVarObject_HEAD_INIT(NULL, 0) "_hawkey.NEVRA", /*tp_name*/
+    sizeof(_NevraObject),                           /*tp_basicsize*/
+    0,                                              /*tp_itemsize*/
+    (destructor)nevra_dealloc,                      /*tp_dealloc*/
+    0,                                              /*tp_print*/
+    0,                                              /*tp_getattr*/
+    0,                                              /*tp_setattr*/
+    0,                                              /*tp_compare*/
+    0,                                              /*tp_repr*/
+    0,                                              /*tp_as_number*/
+    0,                                              /*tp_as_sequence*/
+    0,                                              /*tp_as_mapping*/
+    0,                                              /*tp_hash */
+    0,                                              /*tp_call*/
+    0,                                              /*tp_str*/
+    0,                                              /*tp_getattro*/
+    0,                                              /*tp_setattro*/
+    0,                                              /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,       /*tp_flags*/
+    "NEVRA object",                                 /* tp_doc */
+    0,                                              /* tp_traverse */
+    0,                                              /* tp_clear */
+    nevra_richcompare,                              /* tp_richcompare */
+    0,                                              /* tp_weaklistoffset */
+    (getiterfunc)iter,                              /* tp_iter */
+    0,                                              /* tp_iternext */
+    nevra_methods,                                  /* tp_methods */
+    0,                                              /* tp_members */
+    nevra_getsetters,                               /* tp_getset */
+    0,                                              /* tp_base */
+    0,                                              /* tp_dict */
+    0,                                              /* tp_descr_get */
+    0,                                              /* tp_descr_set */
+    0,                                              /* tp_dictoffset */
+    (initproc)nevra_init,                           /* tp_init */
+    0,                                              /* tp_alloc */
+    nevra_new,                                      /* tp_new */
+    0,                                              /* tp_free */
+    0,                                              /* tp_is_gc */
 };

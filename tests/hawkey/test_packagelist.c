@@ -18,7 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
 #include "libdnf/hy-package-private.h"
 #include "libdnf/hy-util.h"
 #include "test_suites.h"

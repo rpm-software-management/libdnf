@@ -22,14 +22,20 @@
 #ifndef __HY_PACKAGE_INTERNAL_H
 #define __HY_PACKAGE_INTERNAL_H
 
-#include "hy-package.h"
 #include "dnf-sack.h"
+#include "hy-package.h"
 
-DnfPackage  *dnf_package_clone          (DnfPackage *pkg);
-DnfPackage  *dnf_package_new            (DnfSack    *sack, Id id);
-Id           dnf_package_get_id         (DnfPackage *pkg);
-Pool        *dnf_package_get_pool       (DnfPackage *pkg);
-DnfSack     *dnf_package_get_sack       (DnfPackage *pkg);
-DnfPackage  *dnf_package_from_solvable  (DnfSack    *sack, Solvable *s);
+DnfPackage *
+dnf_package_clone(DnfPackage *pkg);
+DnfPackage *
+dnf_package_new(DnfSack *sack, Id id);
+Id
+dnf_package_get_id(DnfPackage *pkg);
+Pool *
+dnf_package_get_pool(DnfPackage *pkg);
+DnfSack *
+dnf_package_get_sack(DnfPackage *pkg);
+DnfPackage *
+dnf_package_from_solvable(DnfSack *sack, Solvable *s);
 
 #endif // __HY_PACKAGE_INTERNAL_H

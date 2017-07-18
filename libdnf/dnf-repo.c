@@ -21,7 +21,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-
 /**
  * SECTION:dnf-repo
  * @short_description: Object representing a remote repo.
@@ -33,13 +32,12 @@
  * See also: #DnfRepo
  */
 
-
-#include <strings.h>
+#include "hy-util.h"
 #include <fcntl.h>
 #include <glib/gstdio.h>
-#include "hy-util.h"
 #include <librepo/librepo.h>
 #include <rpm/rpmts.h>
+#include <strings.h>
 
 #include "dnf-keyring.h"
 #include "dnf-package.h"
@@ -49,37 +47,36 @@
 
 typedef struct
 {
-    DnfRepoEnabled   enabled;
-    gboolean         required;
-    gboolean         gpgcheck_md;
-    gboolean         gpgcheck_pkgs;
-    gchar          **gpgkeys;
-    gchar          **exclude_packages;
-    guint            cost;
-    guint            metadata_expire;       /*seconds*/
-    gchar           *filename;      /* /etc/yum.repos.d/updates.repo */
-    gchar           *id;
-    gchar           *location;      /* /var/cache/PackageKit/metadata/fedora */
-    gchar           *location_tmp;  /* /var/cache/PackageKit/metadata/fedora.tmp */
-    gchar           *packages;      /* /var/cache/PackageKit/metadata/fedora/packages */
-    gchar           *packages_tmp;  /* /var/cache/PackageKit/metadata/fedora.tmp/packages */
-    gchar           *keyring;       /* /var/cache/PackageKit/metadata/fedora/gpgdir */
-    gchar           *keyring_tmp;   /* /var/cache/PackageKit/metadata/fedora.tmp/gpgdir */
-    gint64           timestamp_generated;   /* µs */
-    gint64           timestamp_modified;    /* µs */
-    GError          *last_check_error;
-    GKeyFile        *keyfile;
-    GHashTable      *filenames_md;          /* key:filename */
-    DnfContext      *context;               /* weak reference */
-    DnfRepoKind      kind;
-    HyRepo           repo;
-    LrHandle        *repo_handle;
-    LrResult        *repo_result;
-    LrUrlVars       *urlvars;
+    DnfRepoEnabled enabled;
+    gboolean required;
+    gboolean gpgcheck_md;
+    gboolean gpgcheck_pkgs;
+    gchar **gpgkeys;
+    gchar **exclude_packages;
+    guint cost;
+    gchar *filename; /* /etc/yum.repos.d/updates.repo */
+    gchar *id;
+    gchar *location;            /* /var/cache/PackageKit/metadata/fedora */
+    gchar *location_tmp;        /* /var/cache/PackageKit/metadata/fedora.tmp */
+    gchar *packages;            /* /var/cache/PackageKit/metadata/fedora/packages */
+    gchar *packages_tmp;        /* /var/cache/PackageKit/metadata/fedora.tmp/packages */
+    gchar *keyring;             /* /var/cache/PackageKit/metadata/fedora/gpgdir */
+    gchar *keyring_tmp;         /* /var/cache/PackageKit/metadata/fedora.tmp/gpgdir */
+    gint64 timestamp_generated; /* µs */
+    gint64 timestamp_modified;  /* µs */
+    GError *last_check_error;
+    GKeyFile *keyfile;
+    GHashTable *filenames_md; /* key:filename */
+    DnfContext *context;      /* weak reference */
+    DnfRepoKind kind;
+    HyRepo repo;
+    LrHandle *repo_handle;
+    LrResult *repo_result;
+    LrUrlVars *urlvars;
 } DnfRepoPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfRepo, dnf_repo, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (dnf_repo_get_instance_private (o))
+#define GET_PRIVATE(o) (dnf_repo_get_instance_private(o))
 
 /**
  * dnf_repo_finalize:
@@ -111,8 +108,7 @@ dnf_repo_finalize(GObject *object)
     if (priv->keyfile != NULL)
         g_key_file_unref(priv->keyfile);
     if (priv->context != NULL)
-        g_object_remove_weak_pointer(G_OBJECT(priv->context),
-                                     (void **) &priv->context);
+        g_object_remove_weak_pointer(G_OBJECT(priv->context), (void **)&priv->context);
 
     G_OBJECT_CLASS(dnf_repo_parent_class)->finalize(object);
 }
@@ -127,11 +123,10 @@ dnf_repo_init(DnfRepo *repo)
     priv->cost = 1000;
     priv->repo_handle = lr_handle_init();
     priv->repo_result = lr_result_init();
-    priv->filenames_md = g_hash_table_new_full(g_str_hash, g_str_equal,
-                                               g_free, g_free);
-    priv->required = FALSE;  /* This is the original default which we're
-                              * keeping for compatibility.
-                              */
+    priv->filenames_md = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+    priv->required = FALSE; /* This is the original default which we're
+                             * keeping for compatibility.
+                             */
 }
 
 /**
@@ -218,7 +213,8 @@ dnf_repo_get_packages(DnfRepo *repo)
  *
  * Gets the public key location.
  *
- * Returns: (transfer full)(array zero-terminated=1): The repo public key location, e.g. "/var/cache/PackageKit/metadata/fedora/repomd.pub"
+ * Returns: (transfer full)(array zero-terminated=1): The repo public key location, e.g.
+ *"/var/cache/PackageKit/metadata/fedora/repomd.pub"
  *
  * Since: 0.8.2
  **/
@@ -233,7 +229,7 @@ dnf_repo_get_public_keys(DnfRepo *repo)
         g_ptr_array_add(ret, g_build_filename(priv->location, key_bn, NULL));
     }
     g_ptr_array_add(ret, NULL);
-    return (gchar**)g_ptr_array_free (g_steal_pointer (&ret), FALSE);
+    return (gchar **)g_ptr_array_free(g_steal_pointer(&ret), FALSE);
 }
 
 /**
@@ -276,10 +272,7 @@ dnf_repo_get_description(DnfRepo *repo)
         if (tmp == NULL)
             return NULL;
     } else {
-        tmp = g_key_file_get_string(priv->keyfile,
-                                    dnf_repo_get_id(repo),
-                                    "name",
-                                    NULL);
+        tmp = g_key_file_get_string(priv->keyfile, dnf_repo_get_id(repo), "name", NULL);
         if (tmp == NULL)
             return NULL;
     }
@@ -295,7 +288,7 @@ dnf_repo_get_description(DnfRepo *repo)
  * Returns: Time in seconds since the epoch (UTC)
  **/
 guint64
-dnf_repo_get_timestamp_generated (DnfRepo *repo)
+dnf_repo_get_timestamp_generated(DnfRepo *repo)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->timestamp_generated;
@@ -308,10 +301,10 @@ dnf_repo_get_timestamp_generated (DnfRepo *repo)
  * Returns: Number of packages in the repo
  **/
 guint
-dnf_repo_get_n_solvables (DnfRepo *repo)
+dnf_repo_get_n_solvables(DnfRepo *repo)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    return hy_repo_get_n_solvables (priv->repo);
+    return hy_repo_get_n_solvables(priv->repo);
 }
 
 /**
@@ -457,9 +450,8 @@ dnf_repo_get_repo(DnfRepo *repo)
 guint
 dnf_repo_get_metadata_expire(DnfRepo *repo)
 {
-	DnfRepoPrivate *priv = GET_PRIVATE(repo);
-	return priv->metadata_expire;
-
+    DnfRepoPrivate *priv = GET_PRIVATE(repo);
+    return priv->metadata_expire;
 }
 
 /**
@@ -497,8 +489,7 @@ dnf_repo_is_local(DnfRepo *repo)
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
 
     /* media or local */
-    if (priv->kind == DNF_REPO_KIND_MEDIA ||
-        priv->kind == DNF_REPO_KIND_LOCAL)
+    if (priv->kind == DNF_REPO_KIND_MEDIA || priv->kind == DNF_REPO_KIND_LOCAL)
         return TRUE;
 
     return FALSE;
@@ -793,17 +784,15 @@ dnf_repo_parse_time_from_str(const gchar *expression, GError **error)
     guint result;
 
     if (!g_strcmp0(expression, "")) {
-        g_set_error_literal(error,
-                            DNF_ERROR,
-                            DNF_ERROR_FILE_INVALID,
-                            "no metadata value specified");
+        g_set_error_literal(
+          error, DNF_ERROR, DNF_ERROR_FILE_INVALID, "no metadata value specified");
         return 0;
     }
 
-    if (g_strcmp0(expression, "-1") == 0 || g_strcmp0(expression,"never") == 0)
+    if (g_strcmp0(expression, "-1") == 0 || g_strcmp0(expression, "never") == 0)
         return G_MAXUINT;
 
-    gchar last_char = expression[ strlen(expression) - 1 ];
+    gchar last_char = expression[strlen(expression) - 1];
 
     /* check if the input ends with h, m ,d ,s as units */
     if (g_ascii_isalpha(last_char)) {
@@ -816,12 +805,10 @@ dnf_repo_parse_time_from_str(const gchar *expression, GError **error)
         else if (last_char == 'd')
             multiplier = 60 * 60 * 24;
         else {
-            g_set_error(error, DNF_ERROR, DNF_ERROR_FILE_INVALID,
-                        "unknown unit %c", last_char);
+            g_set_error(error, DNF_ERROR, DNF_ERROR_FILE_INVALID, "unknown unit %c", last_char);
             return 0;
         }
-    }
-    else
+    } else
         multiplier = 1;
 
     /* convert expression into a double*/
@@ -829,31 +816,33 @@ dnf_repo_parse_time_from_str(const gchar *expression, GError **error)
 
     /* failed to parse */
     if (expression == endptr) {
-        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
-                    "failed to parse time: %s", expression);
+        g_set_error(
+          error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "failed to parse time: %s", expression);
         return 0;
     }
 
     /* time can not be below zero */
     if (parsed_time < 0) {
-        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
-                    "seconds value must not be negative %s",expression );
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_INTERNAL_ERROR,
+                    "seconds value must not be negative %s",
+                    expression);
         return 0;
     }
 
     /* time too large */
-    if (parsed_time > G_MAXDOUBLE || (parsed_time * multiplier) > G_MAXUINT){
-        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
-                    "time too large");
+    if (parsed_time > G_MAXDOUBLE || (parsed_time * multiplier) > G_MAXUINT) {
+        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "time too large");
         return 0;
     }
-    result = (guint) (parsed_time * multiplier);
+    result = (guint)(parsed_time * multiplier);
 
     /* for the case where time is too small (i.e result = 0) */
     if (result == 0) {
-         g_set_error_literal(error,
-                             DNF_ERROR,
-                             DNF_ERROR_FILE_INVALID,
+        g_set_error_literal(error,
+                            DNF_ERROR,
+                            DNF_ERROR_FILE_INVALID,
                             "metadata expire time too small, has to be at least one second");
     }
 
@@ -875,10 +864,7 @@ dnf_repo_get_username_password_string(const gchar *user, const gchar *pass)
 }
 
 static gboolean
-dnf_repo_get_boolean(GKeyFile *keyfile,
-                     const gchar *group_name,
-                     const gchar *key,
-                     GError **error)
+dnf_repo_get_boolean(GKeyFile *keyfile, const gchar *group_name, const gchar *key, GError **error)
 {
     gboolean val;
     g_autofree gchar *str = NULL;
@@ -946,7 +932,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     /* metadata_expire is optional, if shown, we parse the string to add the time */
     metadata_expire_str = g_key_file_get_string(priv->keyfile, priv->id, "metadata_expire", NULL);
     if (metadata_expire_str) {
-        metadata_expire = dnf_repo_parse_time_from_str(metadata_expire_str , error);
+        metadata_expire = dnf_repo_parse_time_from_str(metadata_expire_str, error);
 
         /* we assume zero is default, and when string exist, 0 seconds is assumed to be error */
         if (metadata_expire != 0)
@@ -977,8 +963,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
         return FALSE;
 
     /* file:// */
-    if (baseurls != NULL && baseurls[0] != NULL &&
-        mirrorlisturl == NULL && metalinkurl == NULL) {
+    if (baseurls != NULL && baseurls[0] != NULL && mirrorlisturl == NULL && metalinkurl == NULL) {
         g_autofree gchar *url = NULL;
         url = lr_prepend_url_protocol(baseurls[0]);
         if (url != NULL && strncasecmp(url, "file://", 7) == 0) {
@@ -993,8 +978,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
         return FALSE;
     if (priv->location == NULL) {
         g_autofree gchar *tmp = NULL;
-        tmp = g_build_filename(dnf_context_get_cache_dir(priv->context),
-                               priv->id, NULL);
+        tmp = g_build_filename(dnf_context_get_cache_dir(priv->context), priv->id, NULL);
         dnf_repo_set_location(repo, tmp);
     }
 
@@ -1013,10 +997,10 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     tmp_strval = g_key_file_get_string(priv->keyfile, priv->id, "gpgkey", NULL);
     if (tmp_strval) {
         priv->gpgkeys = g_strsplit_set(tmp_strval, " ,", -1);
-        g_free(g_steal_pointer (&tmp_strval));
+        g_free(g_steal_pointer(&tmp_strval));
         /* Canonicalize the empty list to NULL for ease of checking elsewhere */
         if (priv->gpgkeys && !*priv->gpgkeys)
-            g_strfreev(g_steal_pointer (&priv->gpgkeys));
+            g_strfreev(g_steal_pointer(&priv->gpgkeys));
     }
     /* Currently, we don't have a global configuration file.  The way this worked in yum
      * is that the yum package enabled gpgcheck=1 by default in /etc/yum.conf.  Basically,
@@ -1030,10 +1014,8 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
         priv->gpgcheck_pkgs = dnf_repo_get_boolean(priv->keyfile, priv->id, "gpgcheck", NULL);
     priv->gpgcheck_md = dnf_repo_get_boolean(priv->keyfile, priv->id, "repo_gpgcheck", NULL);
     if (priv->gpgcheck_md && priv->gpgkeys == NULL) {
-        g_set_error_literal(error,
-                            DNF_ERROR,
-                            DNF_ERROR_FILE_INVALID,
-                            "gpgkey not set, yet repo_gpgcheck=1");
+        g_set_error_literal(
+          error, DNF_ERROR, DNF_ERROR_FILE_INVALID, "gpgkey not set, yet repo_gpgcheck=1");
         return FALSE;
     }
 
@@ -1044,7 +1026,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     tmp_strval = g_key_file_get_string(priv->keyfile, priv->id, "exclude", NULL);
     if (tmp_strval) {
         priv->exclude_packages = g_strsplit_set(tmp_strval, " ,", -1);
-        g_free(g_steal_pointer (&tmp_strval));
+        g_free(g_steal_pointer(&tmp_strval));
     }
 
     /* proxy is optional */
@@ -1098,23 +1080,18 @@ dnf_repo_setup(DnfRepo *repo, GError **error)
     if (basearch == NULL)
         basearch = g_strdup(dnf_context_get_base_arch(priv->context));
     if (basearch == NULL) {
-        g_set_error_literal(error,
-                            DNF_ERROR,
-                            DNF_ERROR_INTERNAL_ERROR,
-                            "basearch not set");
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "basearch not set");
         return FALSE;
     }
     release = g_key_file_get_string(priv->keyfile, "general", "version", NULL);
     if (release == NULL)
         release = g_strdup(dnf_context_get_release_ver(priv->context));
     if (release == NULL) {
-        g_set_error_literal(error,
-                            DNF_ERROR,
-                            DNF_ERROR_INTERNAL_ERROR,
-                            "releasever not set");
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "releasever not set");
         return FALSE;
     }
-    if (!lr_handle_setopt(priv->repo_handle, error, LRO_USERAGENT, dnf_context_get_user_agent(priv->context)))
+    if (!lr_handle_setopt(
+          priv->repo_handle, error, LRO_USERAGENT, dnf_context_get_user_agent(priv->context)))
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_REPOTYPE, LR_YUMREPO))
         return FALSE;
@@ -1191,9 +1168,7 @@ typedef struct
  * dnf_repo_update_state_cb:
  */
 static int
-dnf_repo_update_state_cb(void *user_data,
-                         gdouble total_to_download,
-                         gdouble now_downloaded)
+dnf_repo_update_state_cb(void *user_data, gdouble total_to_download, gdouble now_downloaded)
 {
     gboolean ret;
     gdouble percentage;
@@ -1218,9 +1193,7 @@ dnf_repo_update_state_cb(void *user_data,
     percentage = 100.0f * now_downloaded / total_to_download;
     ret = dnf_state_set_percentage(state, percentage);
     if (ret) {
-        g_debug("update state %.0f/%.0f",
-                now_downloaded,
-                total_to_download);
+        g_debug("update state %.0f/%.0f", now_downloaded, total_to_download);
     }
 
     return 0;
@@ -1240,35 +1213,25 @@ dnf_repo_set_timestamp_modified(DnfRepo *repo, GError **error)
     filename = g_build_filename(priv->location, "repodata", "repomd.xml", NULL);
     file = g_file_new_for_path(filename);
     info = g_file_query_info(file,
-                             G_FILE_ATTRIBUTE_TIME_MODIFIED ","
-                             G_FILE_ATTRIBUTE_TIME_MODIFIED_USEC,
+                             G_FILE_ATTRIBUTE_TIME_MODIFIED "," G_FILE_ATTRIBUTE_TIME_MODIFIED_USEC,
                              G_FILE_QUERY_INFO_NONE,
                              NULL,
                              error);
     if (info == NULL)
         return FALSE;
-    priv->timestamp_modified = g_file_info_get_attribute_uint64(info,
-                                    G_FILE_ATTRIBUTE_TIME_MODIFIED) * G_USEC_PER_SEC;
-    priv->timestamp_modified += g_file_info_get_attribute_uint32(info,
-                                    G_FILE_ATTRIBUTE_TIME_MODIFIED_USEC);
+    priv->timestamp_modified =
+      g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED) * G_USEC_PER_SEC;
+    priv->timestamp_modified +=
+      g_file_info_get_attribute_uint32(info, G_FILE_ATTRIBUTE_TIME_MODIFIED_USEC);
     return TRUE;
 }
 
 static gboolean
-dnf_repo_check_internal(DnfRepo *repo,
-                        guint permissible_cache_age,
-                        DnfState *state,
-                        GError **error)
+dnf_repo_check_internal(DnfRepo *repo, guint permissible_cache_age, DnfState *state, GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    const gchar *download_list[] = {
-        "primary",
-        "filelists",
-        "group",
-        "updateinfo",
-        "appstream",
-        "appstream-icons",
-        NULL};
+    const gchar *download_list[] = { "primary",   "filelists",       "group", "updateinfo",
+                                     "appstream", "appstream-icons", NULL };
     const gchar *tmp;
     gboolean ret;
     LrYumRepo *yum_repo;
@@ -1279,24 +1242,18 @@ dnf_repo_check_internal(DnfRepo *repo,
     guint valid_time_allowed;
 
     /* has the media repo vanished? */
-    if (priv->kind == DNF_REPO_KIND_MEDIA &&
-        !g_file_test(priv->location, G_FILE_TEST_EXISTS)) {
+    if (priv->kind == DNF_REPO_KIND_MEDIA && !g_file_test(priv->location, G_FILE_TEST_EXISTS)) {
         priv->enabled = DNF_REPO_ENABLED_NONE;
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_REPO_NOT_AVAILABLE,
-                    "%s was not found", priv->location);
+        g_set_error(
+          error, DNF_ERROR, DNF_ERROR_REPO_NOT_AVAILABLE, "%s was not found", priv->location);
         return FALSE;
     }
 
     /* has the local repo vanished? */
-    if (priv->kind == DNF_REPO_KIND_LOCAL &&
-        !g_file_test(priv->location, G_FILE_TEST_EXISTS)) {
+    if (priv->kind == DNF_REPO_KIND_LOCAL && !g_file_test(priv->location, G_FILE_TEST_EXISTS)) {
         priv->enabled = DNF_REPO_ENABLED_NONE;
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_REPO_NOT_AVAILABLE,
-                    "%s was not found", priv->location);
+        g_set_error(
+          error, DNF_ERROR, DNF_ERROR_REPO_NOT_AVAILABLE, "%s was not found", priv->location);
         return FALSE;
     }
 
@@ -1323,7 +1280,8 @@ dnf_repo_check_internal(DnfRepo *repo,
                     DNF_ERROR,
                     DNF_ERROR_REPO_NOT_AVAILABLE,
                     "repodata %s was not complete: %s",
-                    priv->id, error_local->message);
+                    priv->id,
+                    error_local->message);
         return FALSE;
     }
 
@@ -1338,8 +1296,8 @@ dnf_repo_check_internal(DnfRepo *repo,
     }
 
     /* get timestamp */
-    ret = lr_result_getinfo(priv->repo_result, &error_local,
-                            LRR_YUM_TIMESTAMP, &priv->timestamp_generated);
+    ret = lr_result_getinfo(
+      priv->repo_result, &error_local, LRR_YUM_TIMESTAMP, &priv->timestamp_generated);
     if (!ret) {
         g_set_error(error,
                     DNF_ERROR,
@@ -1353,21 +1311,14 @@ dnf_repo_check_internal(DnfRepo *repo,
     if (priv->kind != DNF_REPO_KIND_LOCAL && permissible_cache_age != G_MAXUINT) {
         if (!dnf_repo_set_timestamp_modified(repo, error))
             return FALSE;
-        age_of_data =(g_get_real_time() - priv->timestamp_modified) / G_USEC_PER_SEC;
-
-        /*choose a lower value between cache and metadata_expire for expired checking */
-        metadata_expire = dnf_repo_get_metadata_expire(repo);
-        if (metadata_expire != 0)
-            valid_time_allowed = metadata_expire <= permissible_cache_age ? metadata_expire  : permissible_cache_age;
-        else
-            valid_time_allowed = permissible_cache_age;
-
-        if (age_of_data > valid_time_allowed) {
+        age_of_data = (g_get_real_time() - priv->timestamp_modified) / G_USEC_PER_SEC;
+        if (age_of_data > permissible_cache_age) {
             g_set_error(error,
                         DNF_ERROR,
                         DNF_ERROR_INTERNAL_ERROR,
-                        "cache too old: %"G_GINT64_FORMAT" > %i",
-                        age_of_data, valid_time_allowed);
+                        "cache too old: %" G_GINT64_FORMAT " > %i",
+                        age_of_data,
+                        permissible_cache_age);
             return FALSE;
         }
     }
@@ -1380,41 +1331,29 @@ dnf_repo_check_internal(DnfRepo *repo,
     tmp = lr_yum_repo_path(yum_repo, "primary");
     if (tmp != NULL) {
         hy_repo_set_string(priv->repo, HY_REPO_PRIMARY_FN, tmp);
-        g_hash_table_insert(priv->filenames_md,
-                            g_strdup("primary"),
-                            g_strdup(tmp));
+        g_hash_table_insert(priv->filenames_md, g_strdup("primary"), g_strdup(tmp));
     }
     tmp = lr_yum_repo_path(yum_repo, "filelists");
     if (tmp != NULL) {
         hy_repo_set_string(priv->repo, HY_REPO_FILELISTS_FN, tmp);
-        g_hash_table_insert(priv->filenames_md,
-                            g_strdup("filelists"),
-                            g_strdup(tmp));
+        g_hash_table_insert(priv->filenames_md, g_strdup("filelists"), g_strdup(tmp));
     }
     tmp = lr_yum_repo_path(yum_repo, "updateinfo");
     if (tmp != NULL) {
         hy_repo_set_string(priv->repo, HY_REPO_UPDATEINFO_FN, tmp);
-        g_hash_table_insert(priv->filenames_md,
-                            g_strdup("updateinfo"),
-                            g_strdup(tmp));
+        g_hash_table_insert(priv->filenames_md, g_strdup("updateinfo"), g_strdup(tmp));
     }
     tmp = lr_yum_repo_path(yum_repo, "group");
     if (tmp != NULL) {
-        g_hash_table_insert(priv->filenames_md,
-                            g_strdup("group"),
-                            g_strdup(tmp));
+        g_hash_table_insert(priv->filenames_md, g_strdup("group"), g_strdup(tmp));
     }
     tmp = lr_yum_repo_path(yum_repo, "appstream");
     if (tmp != NULL) {
-        g_hash_table_insert(priv->filenames_md,
-                            g_strdup("appstream"),
-                            g_strdup(tmp));
+        g_hash_table_insert(priv->filenames_md, g_strdup("appstream"), g_strdup(tmp));
     }
     tmp = lr_yum_repo_path(yum_repo, "appstream-icons");
     if (tmp != NULL) {
-        g_hash_table_insert(priv->filenames_md,
-                            g_strdup("appstream-icons"),
-                            g_strdup(tmp));
+        g_hash_table_insert(priv->filenames_md, g_strdup("appstream-icons"), g_strdup(tmp));
     }
 
     /* ensure we reset the values from the keyfile */
@@ -1427,7 +1366,8 @@ dnf_repo_check_internal(DnfRepo *repo,
 /**
  * dnf_repo_check:
  * @repo: a #DnfRepo instance.
- * @permissible_cache_age: The oldest cache age allowed in seconds(wall clock time); Pass %G_MAXUINT to ignore
+ * @permissible_cache_age: The oldest cache age allowed in seconds(wall clock time); Pass %G_MAXUINT
+ *to ignore
  * @state: a #DnfState instance.
  * @error: a #GError or %NULL.
  *
@@ -1438,22 +1378,17 @@ dnf_repo_check_internal(DnfRepo *repo,
  * Since: 0.1.0
  **/
 gboolean
-dnf_repo_check(DnfRepo *repo,
-               guint permissible_cache_age,
-               DnfState *state,
-               GError **error)
+dnf_repo_check(DnfRepo *repo, guint permissible_cache_age, DnfState *state, GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     g_clear_error(&priv->last_check_error);
-    if (!dnf_repo_check_internal(repo, permissible_cache_age, state,
-                                 &priv->last_check_error)) {
+    if (!dnf_repo_check_internal(repo, permissible_cache_age, state, &priv->last_check_error)) {
         if (error)
             *error = g_error_copy(priv->last_check_error);
         return FALSE;
     }
     return TRUE;
 }
-
 
 /**
  * dnf_repo_get_filename_md:
@@ -1491,8 +1426,7 @@ dnf_repo_clean(DnfRepo *repo, GError **error)
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
 
     /* do not clean media or local repos */
-    if (priv->kind == DNF_REPO_KIND_MEDIA ||
-        priv->kind == DNF_REPO_KIND_LOCAL)
+    if (priv->kind == DNF_REPO_KIND_MEDIA || priv->kind == DNF_REPO_KIND_LOCAL)
         return TRUE;
 
     if (!g_file_test(priv->location, G_FILE_TEST_EXISTS))
@@ -1508,9 +1442,7 @@ dnf_repo_clean(DnfRepo *repo, GError **error)
  * This imports a repodata public key into the default librpm keyring
  **/
 static gboolean
-dnf_repo_add_public_key(DnfRepo *repo,
-                        const char *tmp_path,
-                        GError **error)
+dnf_repo_add_public_key(DnfRepo *repo, const char *tmp_path, GError **error)
 {
     gboolean ret;
     rpmKeyring keyring;
@@ -1544,28 +1476,21 @@ dnf_repo_download_import_public_key(DnfRepo *repo,
 
     /* create the gpgdir location */
     if (g_mkdir_with_parents(priv->keyring_tmp, 0755) != 0) {
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_INTERNAL_ERROR,
-                    "Failed to create %s",
-                    priv->keyring_tmp);
+        g_set_error(
+          error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "Failed to create %s", priv->keyring_tmp);
         return FALSE;
     }
 
     /* set the keyring location */
-    if (!lr_handle_setopt(priv->repo_handle, error,
-                          LRO_GNUPGHOMEDIR, priv->keyring_tmp))
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_GNUPGHOMEDIR, priv->keyring_tmp))
         return FALSE;
 
     /* download to known location */
     g_debug("Downloading %s to %s", gpgkey, key_tmp);
     fd = g_open(key_tmp, O_CLOEXEC | O_CREAT | O_RDWR, 0774);
     if (fd < 0) {
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_INTERNAL_ERROR,
-                    "Failed to open %s: %i",
-                    key_tmp, fd);
+        g_set_error(
+          error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "Failed to open %s: %i", key_tmp, fd);
         return FALSE;
     }
     if (!lr_download_url(priv->repo_handle, gpgkey, fd, &error_local)) {
@@ -1598,7 +1523,7 @@ repo_mirrorlist_failure_cb(void *user_data,
 
     data->last_mirror_url = g_strdup(url);
     data->last_mirror_failure_message = g_strdup(message);
- out:
+out:
     return LR_CB_OK;
 }
 
@@ -1616,10 +1541,7 @@ repo_mirrorlist_failure_cb(void *user_data,
  * Since: 0.1.0
  **/
 gboolean
-dnf_repo_update(DnfRepo *repo,
-                DnfRepoUpdateFlags flags,
-                DnfState *state,
-                GError **error)
+dnf_repo_update(DnfRepo *repo, DnfRepoUpdateFlags flags, DnfState *state, GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     DnfState *state_local;
@@ -1627,14 +1549,14 @@ dnf_repo_update(DnfRepo *repo,
     gint rc;
     gint64 timestamp_new = 0;
     g_autoptr(GError) error_local = NULL;
-    RepoUpdateData updatedata = { 0, };
+    RepoUpdateData updatedata = {
+        0,
+    };
 
     /* cannot change DVD contents */
     if (priv->kind == DNF_REPO_KIND_MEDIA) {
-        g_set_error_literal(error,
-                            DNF_ERROR,
-                            DNF_ERROR_REPO_NOT_AVAILABLE,
-                            "Cannot update read-only repo");
+        g_set_error_literal(
+          error, DNF_ERROR, DNF_ERROR_REPO_NOT_AVAILABLE, "Cannot update read-only repo");
         return FALSE;
     }
 
@@ -1652,11 +1574,8 @@ dnf_repo_update(DnfRepo *repo,
 
     /* this needs to be set */
     if (priv->location_tmp == NULL) {
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_INTERNAL_ERROR,
-                    "location_tmp not set for %s",
-                    priv->id);
+        g_set_error(
+          error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "location_tmp not set for %s", priv->id);
         return FALSE;
     }
 
@@ -1665,17 +1584,15 @@ dnf_repo_update(DnfRepo *repo,
         return FALSE;
 
     /* take lock */
-    ret = dnf_state_take_lock(state,
-                              DNF_LOCK_TYPE_METADATA,
-                              DNF_LOCK_MODE_PROCESS,
-                              error);
+    ret = dnf_state_take_lock(state, DNF_LOCK_TYPE_METADATA, DNF_LOCK_MODE_PROCESS, error);
     if (!ret)
         goto out;
 
     /* set state */
-    ret = dnf_state_set_steps(state, error,
+    ret = dnf_state_set_steps(state,
+                              error,
                               95, /* download */
-                              5, /* check */
+                              5,  /* check */
                               -1);
     if (!ret)
         goto out;
@@ -1694,20 +1611,19 @@ dnf_repo_update(DnfRepo *repo,
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_CANNOT_WRITE_REPO_CONFIG,
-                    "Failed to create %s", priv->location_tmp);
+                    "Failed to create %s",
+                    priv->location_tmp);
         goto out;
     }
 
-    if (priv->gpgkeys &&
-        (priv->gpgcheck_md || priv->gpgcheck_pkgs)) {
+    if (priv->gpgkeys && (priv->gpgcheck_md || priv->gpgcheck_pkgs)) {
         for (char **iter = priv->gpgkeys; iter && *iter; iter++) {
             const char *gpgkey = *iter;
             g_autofree char *gpgkey_name = g_path_get_basename(gpgkey);
             g_autofree char *key_tmp = g_build_filename(priv->location_tmp, gpgkey_name, NULL);
 
             /* download and import public key */
-            if ((g_str_has_prefix(gpgkey, "https://") ||
-                  g_str_has_prefix(gpgkey, "file://"))) {
+            if ((g_str_has_prefix(gpgkey, "https://") || g_str_has_prefix(gpgkey, "file://"))) {
                 g_debug("importing public key %s", gpgkey);
 
                 ret = dnf_repo_download_import_public_key(repo, gpgkey, key_tmp, error);
@@ -1725,41 +1641,34 @@ dnf_repo_update(DnfRepo *repo,
     }
 
     g_debug("Attempting to update %s", priv->id);
-    ret = lr_handle_setopt(priv->repo_handle, error,
-                           LRO_LOCAL, 0L);
+    ret = lr_handle_setopt(priv->repo_handle, error, LRO_LOCAL, 0L);
     if (!ret)
         goto out;
-    ret = lr_handle_setopt(priv->repo_handle, error,
-                           LRO_DESTDIR, priv->location_tmp);
+    ret = lr_handle_setopt(priv->repo_handle, error, LRO_DESTDIR, priv->location_tmp);
     if (!ret)
         goto out;
 
     /* Callback to display progress of downloading */
     state_local = updatedata.state = dnf_state_get_child(state);
-    ret = lr_handle_setopt(priv->repo_handle, error,
-                           LRO_PROGRESSDATA, &updatedata);
+    ret = lr_handle_setopt(priv->repo_handle, error, LRO_PROGRESSDATA, &updatedata);
     if (!ret)
         goto out;
-    ret = lr_handle_setopt(priv->repo_handle, error,
-                           LRO_PROGRESSCB, dnf_repo_update_state_cb);
+    ret = lr_handle_setopt(priv->repo_handle, error, LRO_PROGRESSCB, dnf_repo_update_state_cb);
     if (!ret)
         goto out;
     /* Note this uses the same user data as PROGRESSDATA */
-    ret = lr_handle_setopt(priv->repo_handle, error,
-                           LRO_HMFCB, repo_mirrorlist_failure_cb);
+    ret = lr_handle_setopt(priv->repo_handle, error, LRO_HMFCB, repo_mirrorlist_failure_cb);
     if (!ret)
         goto out;
 
     lr_result_clear(priv->repo_result);
-    dnf_state_action_start(state_local,
-                           DNF_STATE_ACTION_DOWNLOAD_METADATA, NULL);
-    ret = lr_handle_perform(priv->repo_handle,
-                            priv->repo_result,
-                            &error_local);
+    dnf_state_action_start(state_local, DNF_STATE_ACTION_DOWNLOAD_METADATA, NULL);
+    ret = lr_handle_perform(priv->repo_handle, priv->repo_result, &error_local);
     if (!ret) {
         if (updatedata.last_mirror_failure_message) {
             g_autofree gchar *orig_message = error_local->message;
-            error_local->message = g_strconcat(orig_message, "; Last error: ", updatedata.last_mirror_failure_message, NULL);
+            error_local->message = g_strconcat(
+              orig_message, "; Last error: ", updatedata.last_mirror_failure_message, NULL);
         }
 
         g_set_error(error,
@@ -1772,8 +1681,7 @@ dnf_repo_update(DnfRepo *repo,
     }
 
     /* check the newer metadata is newer */
-    ret = lr_result_getinfo(priv->repo_result, &error_local,
-                            LRR_YUM_TIMESTAMP, &timestamp_new);
+    ret = lr_result_getinfo(priv->repo_result, &error_local, LRR_YUM_TIMESTAMP, &timestamp_new);
     if (!ret) {
         g_set_error(error,
                     DNF_ERROR,
@@ -1782,8 +1690,7 @@ dnf_repo_update(DnfRepo *repo,
                     error_local->message);
         goto out;
     }
-    if ((flags & DNF_REPO_UPDATE_FLAG_FORCE) == 0 &&
-        timestamp_new < priv->timestamp_generated) {
+    if ((flags & DNF_REPO_UPDATE_FLAG_FORCE) == 0 && timestamp_new < priv->timestamp_generated) {
         g_debug("fresh metadata was older than what we have, ignoring");
         if (!dnf_state_finished(state, error))
             return FALSE;
@@ -1806,7 +1713,8 @@ dnf_repo_update(DnfRepo *repo,
                         DNF_ERROR,
                         DNF_ERROR_CANNOT_FETCH_SOURCE,
                         "cannot move %s to %s",
-                        priv->packages, priv->packages_tmp);
+                        priv->packages,
+                        priv->packages_tmp);
             goto out;
         }
     }
@@ -1824,15 +1732,14 @@ dnf_repo_update(DnfRepo *repo,
                     DNF_ERROR,
                     DNF_ERROR_CANNOT_FETCH_SOURCE,
                     "cannot move %s to %s",
-                    priv->location_tmp, priv->location);
+                    priv->location_tmp,
+                    priv->location);
         goto out;
     }
-    ret = lr_handle_setopt(priv->repo_handle, error,
-                           LRO_DESTDIR, priv->location);
+    ret = lr_handle_setopt(priv->repo_handle, error, LRO_DESTDIR, priv->location);
     if (!ret)
         goto out;
-    ret = lr_handle_setopt(priv->repo_handle, error,
-                           LRO_GNUPGHOMEDIR, priv->keyring);
+    ret = lr_handle_setopt(priv->repo_handle, error, LRO_GNUPGHOMEDIR, priv->keyring);
     if (!ret)
         goto out;
 
@@ -1848,8 +1755,8 @@ dnf_repo_update(DnfRepo *repo,
         goto out;
 
     /* signal that the vendor platform data is not resyned */
-    dnf_context_invalidate_full(priv->context, "updated repo cache",
-                                DNF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT);
+    dnf_context_invalidate_full(
+      priv->context, "updated repo cache", DNF_CONTEXT_INVALIDATE_FLAG_ENROLLMENT);
 
     /* done */
     ret = dnf_state_done(state, error);
@@ -1884,10 +1791,7 @@ out:
  * Since: 0.1.0
  **/
 gboolean
-dnf_repo_set_data(DnfRepo *repo,
-                  const gchar *parameter,
-                  const gchar *value,
-                  GError **error)
+dnf_repo_set_data(DnfRepo *repo, const gchar *parameter, const gchar *value, GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     g_key_file_set_string(priv->keyfile, priv->id, parameter, value);
@@ -1913,10 +1817,8 @@ dnf_repo_commit(DnfRepo *repo, GError **error)
 
     /* cannot change DVD contents */
     if (priv->kind == DNF_REPO_KIND_MEDIA) {
-        g_set_error_literal(error,
-                            DNF_ERROR,
-                            DNF_ERROR_CANNOT_WRITE_REPO_CONFIG,
-                            "Cannot commit to read-only media");
+        g_set_error_literal(
+          error, DNF_ERROR, DNF_ERROR_CANNOT_WRITE_REPO_CONFIG, "Cannot commit to read-only media");
         return FALSE;
     }
 
@@ -1959,9 +1861,7 @@ typedef struct
 } PackageDownloadData;
 
 static int
-package_download_update_state_cb(void *user_data,
-                                 gdouble total_to_download,
-                                 gdouble now_downloaded)
+package_download_update_state_cb(void *user_data, gdouble total_to_download, gdouble now_downloaded)
 {
     PackageDownloadData *data = user_data;
     GlobalDownloadData *global_data = data->global_download_data;
@@ -1977,9 +1877,8 @@ package_download_update_state_cb(void *user_data,
     if (total_to_download < 0 || now_downloaded < 0)
         return 0;
 
-    dnf_state_action_start(data->state,
-                           DNF_STATE_ACTION_DOWNLOAD_PACKAGES,
-                           dnf_package_get_package_id(data->pkg));
+    dnf_state_action_start(
+      data->state, DNF_STATE_ACTION_DOWNLOAD_PACKAGES, dnf_package_get_package_id(data->pkg));
 
     previously_downloaded = data->downloaded;
     data->downloaded = now_downloaded;
@@ -1990,18 +1889,15 @@ package_download_update_state_cb(void *user_data,
     percentage = 100.0f * global_data->downloaded / global_data->download_size;
     ret = dnf_state_set_percentage(data->state, percentage);
     if (ret) {
-        g_debug("update state %d/%d",
-                (int)global_data->downloaded,
-                (int)global_data->download_size);
+        g_debug(
+          "update state %d/%d", (int)global_data->downloaded, (int)global_data->download_size);
     }
 
     return 0;
 }
 
 static int
-package_download_end_cb(void *user_data,
-                        LrTransferStatus status,
-                        const char *msg)
+package_download_end_cb(void *user_data, LrTransferStatus status, const char *msg)
 {
     PackageDownloadData *data = user_data;
 
@@ -2011,9 +1907,7 @@ package_download_end_cb(void *user_data,
 }
 
 static int
-mirrorlist_failure_cb(void *user_data,
-                      const char *message,
-                      const char *url)
+mirrorlist_failure_cb(void *user_data, const char *message, const char *url)
 {
     PackageDownloadData *data = user_data;
     GlobalDownloadData *global_data = data->global_download_data;
@@ -2030,14 +1924,14 @@ out:
 LrHandle *
 dnf_repo_get_lr_handle(DnfRepo *repo)
 {
-    DnfRepoPrivate *priv = GET_PRIVATE (repo);
+    DnfRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->repo_handle;
 }
 
 LrResult *
 dnf_repo_get_lr_result(DnfRepo *repo)
 {
-    DnfRepoPrivate *priv = GET_PRIVATE (repo);
+    DnfRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->repo_result;
 }
 
@@ -2056,11 +1950,8 @@ dnf_repo_get_lr_result(DnfRepo *repo)
  * Since: 0.1.0
  **/
 gchar *
-dnf_repo_download_package(DnfRepo *repo,
-                          DnfPackage *pkg,
-                          const gchar *directory,
-                          DnfState *state,
-                          GError **error)
+dnf_repo_download_package(
+  DnfRepo *repo, DnfPackage *pkg, const gchar *directory, DnfState *state, GError **error)
 {
     g_autoptr(GPtrArray) packages = g_ptr_array_new();
     g_autofree gchar *basename = NULL;
@@ -2091,17 +1982,16 @@ dnf_repo_download_package(DnfRepo *repo,
  * Since: 0.2.3
  **/
 gboolean
-dnf_repo_download_packages(DnfRepo *repo,
-                           GPtrArray *packages,
-                           const gchar *directory,
-                           DnfState *state,
-                           GError **error)
+dnf_repo_download_packages(
+  DnfRepo *repo, GPtrArray *packages, const gchar *directory, DnfState *state, GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     gboolean ret = FALSE;
     guint i;
     GSList *package_targets = NULL;
-    GlobalDownloadData global_data = { 0, };
+    GlobalDownloadData global_data = {
+        0,
+    };
     g_autoptr(GError) error_local = NULL;
     g_autofree gchar *directory_slash = NULL;
 
@@ -2149,9 +2039,7 @@ dnf_repo_download_packages(DnfRepo *repo,
         int checksum_type;
         g_autofree char *checksum_str = NULL;
 
-        g_debug("downloading %s to %s",
-                dnf_package_get_location(pkg),
-                directory_slash);
+        g_debug("downloading %s to %s", dnf_package_get_location(pkg), directory_slash);
 
         data = g_slice_new0(PackageDownloadData);
         data->pkg = pkg;
@@ -2182,15 +2070,14 @@ dnf_repo_download_packages(DnfRepo *repo,
 
     ret = lr_download_packages(package_targets, LR_PACKAGEDOWNLOAD_FAILFAST, &error_local);
     if (!ret) {
-        if (g_error_matches(error_local,
-                            LR_PACKAGE_DOWNLOADER_ERROR,
-                            LRE_ALREADYDOWNLOADED)) {
+        if (g_error_matches(error_local, LR_PACKAGE_DOWNLOADER_ERROR, LRE_ALREADYDOWNLOADED)) {
             /* ignore */
             g_clear_error(&error_local);
         } else {
             if (global_data.last_mirror_failure_message) {
                 g_autofree gchar *orig_message = error_local->message;
-                error_local->message = g_strconcat(orig_message, "; Last error: ", global_data.last_mirror_failure_message, NULL);
+                error_local->message = g_strconcat(
+                  orig_message, "; Last error: ", global_data.last_mirror_failure_message, NULL);
             }
             g_propagate_error(error, error_local);
             error_local = NULL;
@@ -2226,6 +2113,6 @@ dnf_repo_new(DnfContext *context)
     repo = g_object_new(DNF_TYPE_REPO, NULL);
     priv = GET_PRIVATE(repo);
     priv->context = context;
-    g_object_add_weak_pointer(G_OBJECT(priv->context),(void **) &priv->context);
+    g_object_add_weak_pointer(G_OBJECT(priv->context), (void **)&priv->context);
     return DNF_REPO(repo);
 }

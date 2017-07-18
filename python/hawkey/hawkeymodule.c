@@ -24,14 +24,14 @@
 #include "dnf-advisory.h"
 #include "dnf-advisorypkg.h"
 #include "dnf-advisoryref.h"
+#include "dnf-solution.h"
+#include "dnf-version.h"
 #include "hy-goal.h"
 #include "hy-package.h"
 #include "hy-query.h"
 #include "hy-subject.h"
-#include "dnf-solution.h"
 #include "hy-types.h"
 #include "hy-util.h"
-#include "dnf-version.h"
 
 // pyhawkey
 #include "advisory-py.h"
@@ -126,15 +126,11 @@ split_nevra(PyObject *unused, PyObject *nevra_o)
 }
 
 static struct PyMethodDef hawkey_methods[] = {
-    {"chksum_name",                (PyCFunction)chksum_name,
-     METH_VARARGS,        NULL},
-    {"chksum_type",                (PyCFunction)chksum_type,
-     METH_O,                NULL},
-    {"detect_arch",                (PyCFunction)detect_arch,
-     METH_NOARGS,        NULL},
-    {"split_nevra",                (PyCFunction)split_nevra,
-     METH_O,                NULL},
-    {NULL}                                /* sentinel */
+    { "chksum_name", (PyCFunction)chksum_name, METH_VARARGS, NULL },
+    { "chksum_type", (PyCFunction)chksum_type, METH_O, NULL },
+    { "detect_arch", (PyCFunction)detect_arch, METH_NOARGS, NULL },
+    { "split_nevra", (PyCFunction)split_nevra, METH_O, NULL },
+    { NULL } /* sentinel */
 };
 
 PYCOMP_MOD_INIT(_hawkey)

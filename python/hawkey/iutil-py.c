@@ -20,22 +20,22 @@
 
 #include "Python.h"
 
-#include "dnf-advisory.h"
-#include "dnf-advisorypkg.h"
-#include "dnf-advisoryref.h"
-#include "hy-package-private.h"
-#include "hy-packageset-private.h"
-#include "dnf-reldep-private.h"
-#include "dnf-reldep-list-private.h"
-#include "hy-iutil.h"
 #include "advisory-py.h"
 #include "advisorypkg-py.h"
 #include "advisoryref-py.h"
+#include "dnf-advisory.h"
+#include "dnf-advisorypkg.h"
+#include "dnf-advisoryref.h"
+#include "dnf-reldep-list-private.h"
+#include "dnf-reldep-private.h"
+#include "hy-iutil.h"
+#include "hy-package-private.h"
+#include "hy-packageset-private.h"
 #include "iutil-py.h"
 #include "package-py.h"
+#include "pycomp.h"
 #include "reldep-py.h"
 #include "sack-py.h"
-#include "pycomp.h"
 
 PyObject *
 advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack)
@@ -61,7 +61,7 @@ advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack)
     }
 
     return list;
- fail:
+fail:
     Py_DECREF(list);
     return NULL;
 }
@@ -77,7 +77,7 @@ advisorypkglist_to_pylist(const GPtrArray *advisorypkglist)
         return NULL;
 
     for (unsigned int i = 0; i < advisorypkglist->len; ++i) {
-        cadvisorypkg = g_object_ref(g_ptr_array_index(advisorypkglist,  i));
+        cadvisorypkg = g_object_ref(g_ptr_array_index(advisorypkglist, i));
         advisorypkg = advisorypkgToPyObject(cadvisorypkg);
         if (advisorypkg == NULL)
             goto fail;
@@ -89,7 +89,7 @@ advisorypkglist_to_pylist(const GPtrArray *advisorypkglist)
     }
 
     return list;
- fail:
+fail:
     Py_DECREF(list);
     return NULL;
 }
@@ -105,7 +105,7 @@ advisoryreflist_to_pylist(const GPtrArray *advisoryreflist, PyObject *sack)
         return NULL;
 
     for (unsigned int i = 0; i < advisoryreflist->len; ++i) {
-        cadvisoryref = g_object_ref(g_ptr_array_index(advisoryreflist,  i));
+        cadvisoryref = g_object_ref(g_ptr_array_index(advisoryreflist, i));
         advisoryref = advisoryrefToPyObject(cadvisoryref, sack);
         if (advisoryref == NULL)
             goto fail;
@@ -117,7 +117,7 @@ advisoryreflist_to_pylist(const GPtrArray *advisoryreflist, PyObject *sack)
     }
 
     return list;
- fail:
+fail:
     Py_DECREF(list);
     return NULL;
 }
@@ -135,7 +135,7 @@ packagelist_to_pylist(GPtrArray *plist, PyObject *sack)
     retval = list;
 
     for (unsigned int i = 0; i < plist->len; i++) {
-        cpkg = g_ptr_array_index (plist, i);
+        cpkg = g_ptr_array_index(plist, i);
         PyObject *package = new_package(sack, dnf_package_get_id(cpkg));
         if (package == NULL) {
             retval = NULL;
@@ -178,7 +178,7 @@ packageset_to_pylist(DnfPackageSet *pset, PyObject *sack)
     }
 
     return list;
- fail:
+fail:
     Py_DECREF(list);
     return NULL;
 }
@@ -204,7 +204,7 @@ pyseq_to_packageset(PyObject *obj, DnfSack *sack)
 
     Py_DECREF(sequence);
     return pset;
- fail:
+fail:
     g_object_unref(pset);
     Py_DECREF(sequence);
     return NULL;
@@ -216,7 +216,7 @@ pyseq_to_reldeplist(PyObject *obj, DnfSack *sack, int cmp_type)
     PyObject *sequence = PySequence_Fast(obj, "Expected a sequence.");
     if (sequence == NULL)
         return NULL;
-    DnfReldepList *reldeplist = dnf_reldep_list_new (sack);
+    DnfReldepList *reldeplist = dnf_reldep_list_new(sack);
 
     const unsigned count = PySequence_Size(sequence);
     for (unsigned int i = 0; i < count; ++i) {
@@ -224,37 +224,37 @@ pyseq_to_reldeplist(PyObject *obj, DnfSack *sack, int cmp_type)
         if (item == NULL)
             goto fail;
 
-    if (cmp_type == HY_GLOB) {
-        DnfReldepList *g_reldeplist = NULL;
-        const char *reldep_str = NULL;
-        PyObject *tmp_py_str = NULL;
+        if (cmp_type == HY_GLOB) {
+            DnfReldepList *g_reldeplist = NULL;
+            const char *reldep_str = NULL;
+            PyObject *tmp_py_str = NULL;
 
-        reldep_str = pycomp_get_string(item, &tmp_py_str);
-        if (reldep_str == NULL)
-            goto fail;
+            reldep_str = pycomp_get_string(item, &tmp_py_str);
+            if (reldep_str == NULL)
+                goto fail;
 
-        g_reldeplist = reldeplist_from_str (sack, reldep_str);
-        Py_XDECREF(tmp_py_str);
+            g_reldeplist = reldeplist_from_str(sack, reldep_str);
+            Py_XDECREF(tmp_py_str);
 
-        dnf_reldep_list_extend (reldeplist, g_reldeplist);
-        g_object_unref (g_reldeplist);
+            dnf_reldep_list_extend(reldeplist, g_reldeplist);
+            g_object_unref(g_reldeplist);
 
-    } else {
-        DnfReldep *reldep = NULL;
-        if reldepObject_Check(item)
-            reldep = reldepFromPyObject(item);
-        else
-            reldep = reldep_from_pystr(item, sack);
+        } else {
+            DnfReldep *reldep = NULL;
+            if
+                reldepObject_Check(item) reldep = reldepFromPyObject(item);
+            else
+                reldep = reldep_from_pystr(item, sack);
 
-        if (reldep != NULL)
-            dnf_reldep_list_add (reldeplist, reldep);
-    }
+            if (reldep != NULL)
+                dnf_reldep_list_add(reldeplist, reldep);
+        }
     }
 
     Py_DECREF(sequence);
     return reldeplist;
- fail:
-    g_object_unref (reldeplist);
+fail:
+    g_object_unref(reldeplist);
     Py_DECREF(sequence);
     return NULL;
 }
@@ -277,7 +277,7 @@ strlist_to_pylist(const char **slist)
     }
     return list;
 
- err:
+err:
     Py_DECREF(list);
     return NULL;
 }
@@ -289,12 +289,12 @@ reldeplist_to_pylist(DnfReldepList *reldeplist, PyObject *sack)
     if (list == NULL)
         return NULL;
 
-    const int count = dnf_reldep_list_count (reldeplist);
+    const int count = dnf_reldep_list_count(reldeplist);
     for (int i = 0; i < count; ++i) {
-        DnfReldep *creldep = dnf_reldep_list_index (reldeplist,  i);
-        PyObject *reldep = new_reldep(sack, dnf_reldep_get_id (creldep));
+        DnfReldep *creldep = dnf_reldep_list_index(reldeplist, i);
+        PyObject *reldep = new_reldep(sack, dnf_reldep_get_id(creldep));
 
-        g_object_unref (creldep);
+        g_object_unref(creldep);
         if (reldep == NULL)
             goto fail;
 
@@ -305,7 +305,7 @@ reldeplist_to_pylist(DnfReldepList *reldeplist, PyObject *sack)
     }
 
     return list;
- fail:
+fail:
     Py_DECREF(list);
     return NULL;
 }

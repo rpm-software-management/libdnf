@@ -28,14 +28,16 @@
 #include "hy-iutil.h"
 #include "hy-repo.h"
 
-enum _hy_repo_state {
+enum _hy_repo_state
+{
     _HY_NEW,
     _HY_LOADED_FETCH,
     _HY_LOADED_CACHE,
     _HY_WRITTEN
 };
 
-struct _HyRepo {
+struct _HyRepo
+{
     Repo *libsolv_repo;
     int cost;
     int needs_internalizing;
@@ -62,21 +64,29 @@ struct _HyRepo {
     int main_end;
 };
 
-enum _hy_repo_repodata {
+enum _hy_repo_repodata
+{
     _HY_REPODATA_FILENAMES,
     _HY_REPODATA_PRESTO,
     _HY_REPODATA_UPDATEINFO
 };
 
-HyRepo hy_repo_link(HyRepo repo);
-int hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state);
+HyRepo
+hy_repo_link(HyRepo repo);
+int
+hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state);
 
-void repo_finalize_init(HyRepo hrepo, Repo *repo);
-void repo_internalize_all_trigger(Pool *pool);
-void repo_internalize_trigger(Repo *r);
-void repo_update_state(HyRepo repo, enum _hy_repo_repodata which,
-                       enum _hy_repo_state state);
-Id repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which);
-void repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata);
+void
+repo_finalize_init(HyRepo hrepo, Repo *repo);
+void
+repo_internalize_all_trigger(Pool *pool);
+void
+repo_internalize_trigger(Repo *r);
+void
+repo_update_state(HyRepo repo, enum _hy_repo_repodata which, enum _hy_repo_state state);
+Id
+repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which);
+void
+repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata);
 
 #endif // HY_REPO_INTERNAL_H

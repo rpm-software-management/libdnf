@@ -18,15 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
+#include "fixtures.h"
+#include "libdnf/dnf-types.h"
 #include "libdnf/hy-package-private.h"
 #include "libdnf/hy-query.h"
 #include "libdnf/hy-selector.h"
-#include "libdnf/dnf-types.h"
 #include "libdnf/hy-util.h"
-#include "fixtures.h"
-#include "testsys.h"
 #include "test_suites.h"
+#include "testsys.h"
 
 START_TEST(test_sltr_pkg)
 {

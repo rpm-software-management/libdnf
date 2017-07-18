@@ -31,7 +31,6 @@
  * See also: #DnfContext
  */
 
-
 #include <solv/repodata.h>
 #include <solv/util.h>
 
@@ -40,15 +39,15 @@
 
 typedef struct
 {
-    char            *location;
-    char            *baseurl;
-    guint64          downloadsize;
-    int              checksum_type;
-    unsigned char   *checksum;
+    char *location;
+    char *baseurl;
+    guint64 downloadsize;
+    int checksum_type;
+    unsigned char *checksum;
 } DnfPackageDeltaPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfPackageDelta, dnf_packagedelta, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (dnf_packagedelta_get_instance_private (o))
+#define GET_PRIVATE(o) (dnf_packagedelta_get_instance_private(o))
 
 /**
  * dnf_packagedelta_finalize:
@@ -111,7 +110,7 @@ dnf_packagedelta_new(Pool *pool)
     checksum = pool_lookup_bin_checksum(pool, SOLVID_POS, DELTA_CHECKSUM, &checksum_type);
     if (checksum) {
         priv->checksum_type = checksumt_l2h(checksum_type);
-        priv->checksum = solv_memdup((void*)checksum, checksum_type2length(priv->checksum_type));
+        priv->checksum = solv_memdup((void *)checksum, checksum_type2length(priv->checksum_type));
     }
 
     return DNF_PACKAGEDELTA(delta);

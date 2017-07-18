@@ -22,12 +22,11 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-
+#include "fixtures.h"
+#include "libdnf/dnf-sack-private.h"
+#include "libdnf/hy-iutil.h"
 #include "libdnf/hy-package.h"
 #include "libdnf/hy-repo.h"
-#include "libdnf/hy-iutil.h"
-#include "libdnf/dnf-sack-private.h"
-#include "fixtures.h"
 #include "testsys.h"
 
 /* define the global variable */
@@ -55,10 +54,8 @@ setup_with(DnfSack *sack, ...)
     va_start(names, sack);
     const char *name = va_arg(names, const char *);
     while (name) {
-        const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
-                                        name, ".repo");
-        int installed = !strncmp(name, HY_SYSTEM_REPO_NAME,
-                                 strlen(HY_SYSTEM_REPO_NAME));
+        const char *path = pool_tmpjoin(pool, test_globals.repo_dir, name, ".repo");
+        int installed = !strncmp(name, HY_SYSTEM_REPO_NAME, strlen(HY_SYSTEM_REPO_NAME));
 
         ret |= load_repo(pool, name, path, installed);
         name = va_arg(names, const char *);
@@ -67,12 +64,11 @@ setup_with(DnfSack *sack, ...)
     return ret;
 }
 
-static
-void add_cmdline(DnfSack *sack)
+static void
+add_cmdline(DnfSack *sack)
 {
     Pool *pool = dnf_sack_get_pool(sack);
-    const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
-                                    "yum/tour-4-6.noarch.rpm", NULL);
+    const char *path = pool_tmpjoin(pool, test_globals.repo_dir, "yum/tour-4-6.noarch.rpm", NULL);
     DnfPackage *pkg = dnf_sack_add_cmdline_package(sack, path);
     g_object_unref(pkg);
 }
@@ -168,13 +164,15 @@ fixture_all(void)
     fail_if(setup_with(sack, HY_SYSTEM_REPO_NAME, "main", "updates", NULL));
 }
 
-void fixture_yum(void)
+void
+fixture_yum(void)
 {
     DnfSack *sack = create_ut_sack();
     setup_yum_sack(sack, YUM_REPO_NAME);
 }
 
-void fixture_reset(void)
+void
+fixture_reset(void)
 {
     DnfSack *sack = test_globals.sack;
     dnf_sack_set_installonly(sack, NULL);
@@ -184,19 +182,19 @@ void fixture_reset(void)
     dnf_sack_repo_enabled(sack, "updates", 1);
 }
 
-void setup_yum_sack(DnfSack *sack, const char *yum_repo_name)
+void
+setup_yum_sack(DnfSack *sack, const char *yum_repo_name)
 {
     Pool *pool = dnf_sack_get_pool(sack);
-    const char *repo_path = pool_tmpjoin(pool, test_globals.repo_dir,
-                                         YUM_DIR_SUFFIX, NULL);
+    const char *repo_path = pool_tmpjoin(pool, test_globals.repo_dir, YUM_DIR_SUFFIX, NULL);
     fail_if(access(repo_path, X_OK));
     HyRepo repo = glob_for_repofiles(pool, yum_repo_name, repo_path);
 
-    fail_if(!dnf_sack_load_repo(sack, repo,
-                               DNF_SACK_LOAD_FLAG_BUILD_CACHE |
-                               DNF_SACK_LOAD_FLAG_USE_FILELISTS |
-                               DNF_SACK_LOAD_FLAG_USE_UPDATEINFO |
-                               DNF_SACK_LOAD_FLAG_USE_PRESTO, NULL));
+    fail_if(!dnf_sack_load_repo(sack,
+                                repo,
+                                DNF_SACK_LOAD_FLAG_BUILD_CACHE | DNF_SACK_LOAD_FLAG_USE_FILELISTS |
+                                  DNF_SACK_LOAD_FLAG_USE_UPDATEINFO | DNF_SACK_LOAD_FLAG_USE_PRESTO,
+                                NULL));
     fail_unless(dnf_sack_count(sack) == TEST_EXPECT_YUM_NSOLVABLES);
     hy_repo_free(repo);
 }

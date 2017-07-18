@@ -26,6 +26,7 @@
 
 extern PyTypeObject possibilities_Type;
 
-PyObject *possibilitiesToPyObject(HyPossibilities iter, PyObject *sack);
+PyObject *
+possibilitiesToPyObject(HyPossibilities iter, PyObject *sack);
 
 #endif

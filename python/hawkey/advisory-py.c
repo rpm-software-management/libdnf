@@ -33,12 +33,11 @@
 
 #include "pycomp.h"
 
-typedef struct {
-    PyObject_HEAD
-    DnfAdvisory *advisory;
+typedef struct
+{
+    PyObject_HEAD DnfAdvisory *advisory;
     PyObject *sack;
 } _AdvisoryObject;
-
 
 PyObject *
 advisoryToPyObject(DnfAdvisory *advisory, PyObject *sack)
@@ -61,7 +60,7 @@ advisoryFromPyObject(PyObject *o)
         PyErr_SetString(PyExc_TypeError, "Expected an Advisory object.");
         return NULL;
     }
-    return ((_AdvisoryObject*)o)->advisory;
+    return ((_AdvisoryObject *)o)->advisory;
 }
 
 static int
@@ -90,9 +89,8 @@ advisory_richcompare(PyObject *self, PyObject *other, int op)
     PyObject *result;
     DnfAdvisory *cself, *cother;
 
-    if (!advisory_converter(self, &cself) ||
-        !advisory_converter(other, &cother)) {
-        if(PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError))
+    if (!advisory_converter(self, &cself) || !advisory_converter(other, &cother)) {
+        if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError))
             PyErr_Clear();
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
@@ -100,21 +98,21 @@ advisory_richcompare(PyObject *self, PyObject *other, int op)
 
     int identical = dnf_advisory_compare(cself, cother);
     switch (op) {
-    case Py_EQ:
-        result = TEST_COND(identical);
-        break;
-    case Py_NE:
-        result = TEST_COND(!identical);
-        break;
-    case Py_LE:
-    case Py_GE:
-    case Py_LT:
-    case Py_GT:
-        result = Py_NotImplemented;
-        break;
-    default:
-        PyErr_BadArgument();
-        return NULL;
+        case Py_EQ:
+            result = TEST_COND(identical);
+            break;
+        case Py_NE:
+            result = TEST_COND(!identical);
+            break;
+        case Py_LE:
+        case Py_GE:
+        case Py_LT:
+        case Py_GT:
+            result = Py_NotImplemented;
+            break;
+        default:
+            PyErr_BadArgument();
+            return NULL;
     }
 
     Py_INCREF(result);
@@ -126,10 +124,10 @@ advisory_richcompare(PyObject *self, PyObject *other, int op)
 static PyObject *
 get_str(_AdvisoryObject *self, void *closure)
 {
-    const char *(*func)(DnfAdvisory*);
+    const char *(*func)(DnfAdvisory *);
     const char *cstr;
 
-    func = (const char *(*)(DnfAdvisory*))closure;
+    func = (const char *(*)(DnfAdvisory *))closure;
     cstr = func(self->advisory);
     if (cstr == NULL)
         Py_RETURN_NONE;
@@ -139,10 +137,10 @@ get_str(_AdvisoryObject *self, void *closure)
 static PyObject *
 get_type(_AdvisoryObject *self, void *closure)
 {
-    DnfAdvisoryKind (*func)(DnfAdvisory*);
+    DnfAdvisoryKind (*func)(DnfAdvisory *);
     DnfAdvisoryKind ctype;
 
-    func = (DnfAdvisoryKind (*)(DnfAdvisory*))closure;
+    func = (DnfAdvisoryKind(*)(DnfAdvisory *))closure;
     ctype = func(self->advisory);
     return PyLong_FromLong(ctype);
 }
@@ -150,8 +148,8 @@ get_type(_AdvisoryObject *self, void *closure)
 static PyObject *
 get_datetime(_AdvisoryObject *self, void *closure)
 {
-    guint64 (*func)(DnfAdvisory*);
-    func = (guint64 (*)(DnfAdvisory*))closure;
+    guint64 (*func)(DnfAdvisory *);
+    func = (guint64(*)(DnfAdvisory *))closure;
     PyObject *timestamp = PyLong_FromUnsignedLongLong(func(self->advisory));
     PyObject *args = Py_BuildValue("(O)", timestamp);
     PyDateTime_IMPORT;
@@ -164,11 +162,11 @@ get_datetime(_AdvisoryObject *self, void *closure)
 static PyObject *
 get_advisorypkg_list(_AdvisoryObject *self, void *closure)
 {
-    GPtrArray *(*func)(DnfAdvisory*);
+    GPtrArray *(*func)(DnfAdvisory *);
     GPtrArray *advisorypkgs;
     PyObject *list;
 
-    func = (GPtrArray *(*)(DnfAdvisory*))closure;
+    func = (GPtrArray * (*)(DnfAdvisory *)) closure;
     advisorypkgs = func(self->advisory);
     if (advisorypkgs == NULL)
         Py_RETURN_NONE;
@@ -182,11 +180,11 @@ get_advisorypkg_list(_AdvisoryObject *self, void *closure)
 static PyObject *
 get_advisoryref_list(_AdvisoryObject *self, void *closure)
 {
-    GPtrArray *(*func)(DnfAdvisory*);
+    GPtrArray *(*func)(DnfAdvisory *);
     GPtrArray *advisoryrefs;
     PyObject *list;
 
-    func = (GPtrArray *(*)(DnfAdvisory*))closure;
+    func = (GPtrArray * (*)(DnfAdvisory *)) closure;
     advisoryrefs = func(self->advisory);
     if (advisoryrefs == NULL)
         Py_RETURN_NONE;
@@ -198,57 +196,64 @@ get_advisoryref_list(_AdvisoryObject *self, void *closure)
 }
 
 static PyGetSetDef advisory_getsetters[] = {
-    {(char*)"title", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_title},
-    {(char*)"id", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_id},
-    {(char*)"type", (getter)get_type, NULL, NULL, (void *)dnf_advisory_get_kind},
-    {(char*)"description", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_description},
-    {(char*)"rights", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_rights},
-    {(char*)"severity", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_severity},
-    {(char*)"updated", (getter)get_datetime, NULL, NULL, (void *)dnf_advisory_get_updated},
-    {(char*)"packages", (getter)get_advisorypkg_list, NULL, NULL, (void *)dnf_advisory_get_packages},
-    {(char*)"references", (getter)get_advisoryref_list, NULL, NULL, (void *)dnf_advisory_get_references},
-    {NULL}                      /* sentinel */
+    { (char *)"title", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_title },
+    { (char *)"id", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_id },
+    { (char *)"type", (getter)get_type, NULL, NULL, (void *)dnf_advisory_get_kind },
+    { (char *)"description", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_description },
+    { (char *)"rights", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_rights },
+    { (char *)"severity", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_severity },
+    { (char *)"updated", (getter)get_datetime, NULL, NULL, (void *)dnf_advisory_get_updated },
+    { (char *)"packages",
+      (getter)get_advisorypkg_list,
+      NULL,
+      NULL,
+      (void *)dnf_advisory_get_packages },
+    { (char *)"references",
+      (getter)get_advisoryref_list,
+      NULL,
+      NULL,
+      (void *)dnf_advisory_get_references },
+    { NULL } /* sentinel */
 };
 
 PyTypeObject advisory_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "_hawkey.Advisory",                /*tp_name*/
-    sizeof(_AdvisoryObject),        /*tp_basicsize*/
-    0,                                /*tp_itemsize*/
-    (destructor) advisory_dealloc,        /*tp_dealloc*/
-    0,                                /*tp_print*/
-    0,                                /*tp_getattr*/
-    0,                                /*tp_setattr*/
-    0,                                /*tp_compare*/
-    0,                                /*tp_repr*/
-    0,                                /*tp_as_number*/
-    0,                                /*tp_as_sequence*/
-    0,                                /*tp_as_mapping*/
-    0,                                /*tp_hash */
-    0,                                /*tp_call*/
-    0,                                /*tp_str*/
-    0,                                /*tp_getattro*/
-    0,                                /*tp_setattro*/
-    0,                                /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,        /*tp_flags*/
-    "Advisory object",                /* tp_doc */
-    0,                                /* tp_traverse */
-    0,                                /* tp_clear */
-    advisory_richcompare,        /* tp_richcompare */
-    0,                                /* tp_weaklistoffset */
-    0,                                /* tp_iter */
-    0,                                /* tp_iternext */
-    0,                                /* tp_methods */
-    0,                                /* tp_members */
-    advisory_getsetters,        /* tp_getset */
-    0,                                /* tp_base */
-    0,                                /* tp_dict */
-    0,                                /* tp_descr_get */
-    0,                                /* tp_descr_set */
-    0,                                /* tp_dictoffset */
-    0,                                /* tp_init */
-    0,                                /* tp_alloc */
-    0,                                /* tp_new */
-    0,                                /* tp_free */
-    0,                                /* tp_is_gc */
+    PyVarObject_HEAD_INIT(NULL, 0) "_hawkey.Advisory", /*tp_name*/
+    sizeof(_AdvisoryObject),                           /*tp_basicsize*/
+    0,                                                 /*tp_itemsize*/
+    (destructor)advisory_dealloc,                      /*tp_dealloc*/
+    0,                                                 /*tp_print*/
+    0,                                                 /*tp_getattr*/
+    0,                                                 /*tp_setattr*/
+    0,                                                 /*tp_compare*/
+    0,                                                 /*tp_repr*/
+    0,                                                 /*tp_as_number*/
+    0,                                                 /*tp_as_sequence*/
+    0,                                                 /*tp_as_mapping*/
+    0,                                                 /*tp_hash */
+    0,                                                 /*tp_call*/
+    0,                                                 /*tp_str*/
+    0,                                                 /*tp_getattro*/
+    0,                                                 /*tp_setattro*/
+    0,                                                 /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,          /*tp_flags*/
+    "Advisory object",                                 /* tp_doc */
+    0,                                                 /* tp_traverse */
+    0,                                                 /* tp_clear */
+    advisory_richcompare,                              /* tp_richcompare */
+    0,                                                 /* tp_weaklistoffset */
+    0,                                                 /* tp_iter */
+    0,                                                 /* tp_iternext */
+    0,                                                 /* tp_methods */
+    0,                                                 /* tp_members */
+    advisory_getsetters,                               /* tp_getset */
+    0,                                                 /* tp_base */
+    0,                                                 /* tp_dict */
+    0,                                                 /* tp_descr_get */
+    0,                                                 /* tp_descr_set */
+    0,                                                 /* tp_dictoffset */
+    0,                                                 /* tp_init */
+    0,                                                 /* tp_alloc */
+    0,                                                 /* tp_new */
+    0,                                                 /* tp_free */
+    0,                                                 /* tp_is_gc */
 };

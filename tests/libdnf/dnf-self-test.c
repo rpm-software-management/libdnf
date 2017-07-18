@@ -19,7 +19,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-
 #include <glib-object.h>
 #include <stdlib.h>
 
@@ -67,8 +66,7 @@ dnf_lock_func(void)
     lock = dnf_lock_new();
     dnf_lock_set_lock_dir(lock, "/tmp");
     g_assert(lock != NULL);
-    g_signal_connect(lock, "state-changed",
-              G_CALLBACK(dnf_lock_state_changed_cb), NULL);
+    g_signal_connect(lock, "state-changed", G_CALLBACK(dnf_lock_state_changed_cb), NULL);
 
     /* nothing yet! */
     g_assert_cmpint(dnf_lock_get_state(lock), ==, 0);
@@ -78,34 +76,27 @@ dnf_lock_func(void)
     g_clear_error(&error);
 
     /* take one */
-    lock_id1 = dnf_lock_take(lock,
-                  DNF_LOCK_TYPE_RPMDB,
-                  DNF_LOCK_MODE_PROCESS,
-                  &error);
+    lock_id1 = dnf_lock_take(lock, DNF_LOCK_TYPE_RPMDB, DNF_LOCK_MODE_PROCESS, &error);
     g_assert_no_error(error);
     g_assert(lock_id1 != 0);
     g_assert_cmpint(dnf_lock_get_state(lock), ==, 1 << DNF_LOCK_TYPE_RPMDB);
     g_assert_cmpint(_dnf_lock_state_changed, ==, 1);
 
     /* take a different one */
-    lock_id2 = dnf_lock_take(lock,
-                             DNF_LOCK_TYPE_REPO,
-                             DNF_LOCK_MODE_PROCESS,
-                             &error);
+    lock_id2 = dnf_lock_take(lock, DNF_LOCK_TYPE_REPO, DNF_LOCK_MODE_PROCESS, &error);
     g_assert_no_error(error);
     g_assert(lock_id2 != 0);
     g_assert(lock_id2 != lock_id1);
-    g_assert_cmpint(dnf_lock_get_state(lock), ==, 1 << DNF_LOCK_TYPE_RPMDB | 1 << DNF_LOCK_TYPE_REPO);
+    g_assert_cmpint(
+      dnf_lock_get_state(lock), ==, 1 << DNF_LOCK_TYPE_RPMDB | 1 << DNF_LOCK_TYPE_REPO);
     g_assert_cmpint(_dnf_lock_state_changed, ==, 2);
 
     /* take two */
-    lock_id1 = dnf_lock_take(lock,
-                             DNF_LOCK_TYPE_RPMDB,
-                             DNF_LOCK_MODE_PROCESS,
-                             &error);
+    lock_id1 = dnf_lock_take(lock, DNF_LOCK_TYPE_RPMDB, DNF_LOCK_MODE_PROCESS, &error);
     g_assert_no_error(error);
     g_assert(lock_id1 != 0);
-    g_assert_cmpint(dnf_lock_get_state(lock), ==, 1 << DNF_LOCK_TYPE_RPMDB | 1 << DNF_LOCK_TYPE_REPO);
+    g_assert_cmpint(
+      dnf_lock_get_state(lock), ==, 1 << DNF_LOCK_TYPE_RPMDB | 1 << DNF_LOCK_TYPE_REPO);
 
     /* release one */
     ret = dnf_lock_release(lock, lock_id1, &error);
@@ -141,10 +132,7 @@ dnf_self_test_lock_thread_one(gpointer data)
     DnfLock *lock = DNF_LOCK(data);
 
     g_usleep(G_USEC_PER_SEC / 100);
-    lock_id = dnf_lock_take(lock,
-                            DNF_LOCK_TYPE_REPO,
-                            DNF_LOCK_MODE_PROCESS,
-                            &error);
+    lock_id = dnf_lock_take(lock, DNF_LOCK_TYPE_REPO, DNF_LOCK_MODE_PROCESS, &error);
     g_assert_error(error, DNF_ERROR, DNF_ERROR_CANNOT_GET_LOCK);
     g_assert_cmpint(lock_id, ==, 0);
     g_error_free(error);
@@ -163,17 +151,12 @@ dnf_lock_threads_func(void)
     /* take in master thread */
     lock = dnf_lock_new();
     dnf_lock_set_lock_dir(lock, "/tmp");
-    lock_id = dnf_lock_take(lock,
-                 DNF_LOCK_TYPE_REPO,
-                 DNF_LOCK_MODE_PROCESS,
-                 &error);
+    lock_id = dnf_lock_take(lock, DNF_LOCK_TYPE_REPO, DNF_LOCK_MODE_PROCESS, &error);
     g_assert_no_error(error);
     g_assert_cmpint(lock_id, >, 0);
 
     /* attempt to take in slave thread(should fail) */
-    one = g_thread_new("dnf-lock-one",
-                dnf_self_test_lock_thread_one,
-                lock);
+    one = g_thread_new("dnf-lock-one", dnf_self_test_lock_thread_one, lock);
 
     /* block, waiting for thread */
     g_usleep(G_USEC_PER_SEC);
@@ -225,18 +208,18 @@ dnf_state_test_action_changed_cb(DnfState *state, DnfStateAction action, gpointe
 
 static void
 dnf_state_test_package_progress_changed_cb(DnfState *state,
-                        const gchar *dnf_package_get_id,
-                        DnfStateAction action,
-                        guint percentage,
-                        gpointer data)
+                                           const gchar *dnf_package_get_id,
+                                           DnfStateAction action,
+                                           guint percentage,
+                                           gpointer data)
 {
     g_assert(data == NULL);
     _package_progress_updates++;
 }
 
-#define DNF_STATE_ACTION_DOWNLOAD    1
-#define DNF_STATE_ACTION_DEP_RESOLVE    2
-#define DNF_STATE_ACTION_LOADING_CACHE    3
+#define DNF_STATE_ACTION_DOWNLOAD 1
+#define DNF_STATE_ACTION_DEP_RESOLVE 2
+#define DNF_STATE_ACTION_LOADING_CACHE 3
 
 static void
 dnf_state_func(void)
@@ -247,12 +230,17 @@ dnf_state_func(void)
     _updates = 0;
 
     state = dnf_state_new();
-    g_object_add_weak_pointer(G_OBJECT(state),(gpointer *) &state);
+    g_object_add_weak_pointer(G_OBJECT(state), (gpointer *)&state);
     g_assert(state != NULL);
-    g_signal_connect(state, "percentage-changed", G_CALLBACK(dnf_state_test_percentage_changed_cb), NULL);
-    g_signal_connect(state, "allow-cancel-changed", G_CALLBACK(dnf_state_test_allow_cancel_changed_cb), NULL);
+    g_signal_connect(
+      state, "percentage-changed", G_CALLBACK(dnf_state_test_percentage_changed_cb), NULL);
+    g_signal_connect(
+      state, "allow-cancel-changed", G_CALLBACK(dnf_state_test_allow_cancel_changed_cb), NULL);
     g_signal_connect(state, "action-changed", G_CALLBACK(dnf_state_test_action_changed_cb), NULL);
-    g_signal_connect(state, "package-progress-changed", G_CALLBACK(dnf_state_test_package_progress_changed_cb), NULL);
+    g_signal_connect(state,
+                     "package-progress-changed",
+                     G_CALLBACK(dnf_state_test_package_progress_changed_cb),
+                     NULL);
 
     g_assert(dnf_state_get_allow_cancel(state));
     g_assert_cmpint(dnf_state_get_action(state), ==, DNF_STATE_ACTION_UNKNOWN);
@@ -291,10 +279,7 @@ dnf_state_func(void)
     g_assert(ret);
     ret = dnf_state_done(state, NULL);
     g_assert(ret);
-    dnf_state_set_package_progress(state,
-                    "hal;0.0.1;i386;fedora",
-                    DNF_STATE_ACTION_DOWNLOAD,
-                    50);
+    dnf_state_set_package_progress(state, "hal;0.0.1;i386;fedora", DNF_STATE_ACTION_DOWNLOAD, 50);
     g_assert(dnf_state_done(state, NULL));
 
     g_assert(!dnf_state_done(state, NULL));
@@ -322,13 +307,18 @@ dnf_state_child_func(void)
     _action_updates = 0;
     _package_progress_updates = 0;
     state = dnf_state_new();
-    g_object_add_weak_pointer(G_OBJECT(state),(gpointer *) &state);
+    g_object_add_weak_pointer(G_OBJECT(state), (gpointer *)&state);
     dnf_state_set_allow_cancel(state, TRUE);
     dnf_state_set_number_steps(state, 2);
-    g_signal_connect(state, "percentage-changed", G_CALLBACK(dnf_state_test_percentage_changed_cb), NULL);
-    g_signal_connect(state, "allow-cancel-changed", G_CALLBACK(dnf_state_test_allow_cancel_changed_cb), NULL);
+    g_signal_connect(
+      state, "percentage-changed", G_CALLBACK(dnf_state_test_percentage_changed_cb), NULL);
+    g_signal_connect(
+      state, "allow-cancel-changed", G_CALLBACK(dnf_state_test_allow_cancel_changed_cb), NULL);
     g_signal_connect(state, "action-changed", G_CALLBACK(dnf_state_test_action_changed_cb), NULL);
-    g_signal_connect(state, "package-progress-changed", G_CALLBACK(dnf_state_test_package_progress_changed_cb), NULL);
+    g_signal_connect(state,
+                     "package-progress-changed",
+                     G_CALLBACK(dnf_state_test_package_progress_changed_cb),
+                     NULL);
 
     // state: |-----------------------|-----------------------|
     // step1: |-----------------------|
@@ -344,17 +334,14 @@ dnf_state_child_func(void)
 
     /* set parent state */
     g_debug("setting: depsolving-conflicts");
-    dnf_state_action_start(state,
-                DNF_STATE_ACTION_DEP_RESOLVE,
-                "hal;0.1.0-1;i386;fedora");
+    dnf_state_action_start(state, DNF_STATE_ACTION_DEP_RESOLVE, "hal;0.1.0-1;i386;fedora");
 
     /* now test with a child */
     child = dnf_state_get_child(state);
     dnf_state_set_number_steps(child, 2);
 
     /* check child inherits parents action */
-    g_assert_cmpint(dnf_state_get_action(child), ==,
-             DNF_STATE_ACTION_DEP_RESOLVE);
+    g_assert_cmpint(dnf_state_get_action(child), ==, DNF_STATE_ACTION_DEP_RESOLVE);
 
     /* set child non-cancellable */
     dnf_state_set_allow_cancel(child, FALSE);
@@ -366,16 +353,12 @@ dnf_state_child_func(void)
     /* CHILD UPDATE */
     g_debug("setting: loading-rpmdb");
     g_assert(dnf_state_action_start(child, DNF_STATE_ACTION_LOADING_CACHE, NULL));
-    g_assert_cmpint(dnf_state_get_action(child), ==,
-             DNF_STATE_ACTION_LOADING_CACHE);
+    g_assert_cmpint(dnf_state_get_action(child), ==, DNF_STATE_ACTION_LOADING_CACHE);
 
     g_debug("child update #1");
     ret = dnf_state_done(child, NULL);
     g_assert(ret);
-    dnf_state_set_package_progress(child,
-                    "hal;0.0.1;i386;fedora",
-                    DNF_STATE_ACTION_DOWNLOAD,
-                    50);
+    dnf_state_set_package_progress(child, "hal;0.0.1;i386;fedora", DNF_STATE_ACTION_DOWNLOAD, 50);
 
     g_assert_cmpint(_updates, ==, 2);
     g_assert_cmpint(_last_percent, ==, 75);
@@ -383,23 +366,18 @@ dnf_state_child_func(void)
 
     /* child action */
     g_debug("setting: downloading");
-    g_assert(dnf_state_action_start(child,
-                      DNF_STATE_ACTION_DOWNLOAD,
-                      NULL));
-    g_assert_cmpint(dnf_state_get_action(child), ==,
-             DNF_STATE_ACTION_DOWNLOAD);
+    g_assert(dnf_state_action_start(child, DNF_STATE_ACTION_DOWNLOAD, NULL));
+    g_assert_cmpint(dnf_state_get_action(child), ==, DNF_STATE_ACTION_DOWNLOAD);
 
     /* CHILD UPDATE */
     g_debug("child update #2");
     ret = dnf_state_done(child, NULL);
 
     g_assert(ret);
-    g_assert_cmpint(dnf_state_get_action(state), ==,
-             DNF_STATE_ACTION_DEP_RESOLVE);
+    g_assert_cmpint(dnf_state_get_action(state), ==, DNF_STATE_ACTION_DEP_RESOLVE);
     g_assert(dnf_state_action_stop(state));
     g_assert(!dnf_state_action_stop(state));
-    g_assert_cmpint(dnf_state_get_action(state), ==,
-             DNF_STATE_ACTION_UNKNOWN);
+    g_assert_cmpint(dnf_state_get_action(state), ==, DNF_STATE_ACTION_UNKNOWN);
     g_assert_cmpint(_action_updates, ==, 6);
 
     g_assert_cmpint(_updates, ==, 3);
@@ -431,10 +409,12 @@ dnf_state_parent_one_step_proxy_func(void)
     /* reset */
     _updates = 0;
     state = dnf_state_new();
-    g_object_add_weak_pointer(G_OBJECT(state),(gpointer *) &state);
+    g_object_add_weak_pointer(G_OBJECT(state), (gpointer *)&state);
     dnf_state_set_number_steps(state, 1);
-    g_signal_connect(state, "percentage-changed", G_CALLBACK(dnf_state_test_percentage_changed_cb), NULL);
-    g_signal_connect(state, "allow-cancel-changed", G_CALLBACK(dnf_state_test_allow_cancel_changed_cb), NULL);
+    g_signal_connect(
+      state, "percentage-changed", G_CALLBACK(dnf_state_test_percentage_changed_cb), NULL);
+    g_signal_connect(
+      state, "allow-cancel-changed", G_CALLBACK(dnf_state_test_allow_cancel_changed_cb), NULL);
 
     /* now test with a child */
     child = dnf_state_get_child(state);
@@ -462,7 +442,7 @@ dnf_state_non_equal_steps_func(void)
 
     /* test non-equal steps */
     state = dnf_state_new();
-    g_object_add_weak_pointer(G_OBJECT(state),(gpointer *) &state);
+    g_object_add_weak_pointer(G_OBJECT(state), (gpointer *)&state);
     dnf_state_set_enable_profile(state, TRUE);
     ret = dnf_state_set_steps(state,
                               &error,
@@ -510,11 +490,7 @@ dnf_state_non_equal_steps_func(void)
 
     /* child step should increment according to the custom steps */
     child = dnf_state_get_child(state);
-    ret = dnf_state_set_steps(child,
-                              &error,
-                              25,
-                              75,
-                              -1);
+    ret = dnf_state_set_steps(child, &error, 25, 75, -1);
     g_assert(ret);
 
     /* start child */
@@ -535,11 +511,7 @@ dnf_state_non_equal_steps_func(void)
      *                     |---------------||--|(90%)
      */
     child_child = dnf_state_get_child(child);
-    ret = dnf_state_set_steps(child_child,
-                   &error,
-                   90,
-                   10,
-                   -1);
+    ret = dnf_state_set_steps(child_child, &error, 90, 10, -1);
     g_assert_no_error(error);
     g_assert(ret);
 
@@ -590,7 +562,7 @@ dnf_state_no_progress_func(void)
 
     /* test a state where we don't care about progress */
     state = dnf_state_new();
-    g_object_add_weak_pointer(G_OBJECT(state),(gpointer *) &state);
+    g_object_add_weak_pointer(G_OBJECT(state), (gpointer *)&state);
     dnf_state_set_report_progress(state, FALSE);
 
     dnf_state_set_number_steps(state, 3);
@@ -630,7 +602,7 @@ dnf_state_finish_func(void)
 
     /* check straight finish */
     state = dnf_state_new();
-    g_object_add_weak_pointer(G_OBJECT(state),(gpointer *) &state);
+    g_object_add_weak_pointer(G_OBJECT(state), (gpointer *)&state);
     dnf_state_set_number_steps(state, 3);
 
     child = dnf_state_get_child(state);
@@ -655,7 +627,7 @@ dnf_state_speed_func(void)
 
     /* speed averaging test */
     state = dnf_state_new();
-    g_object_add_weak_pointer(G_OBJECT(state),(gpointer *) &state);
+    g_object_add_weak_pointer(G_OBJECT(state), (gpointer *)&state);
     g_assert_cmpint(dnf_state_get_speed(state), ==, 0);
     dnf_state_set_speed(state, 100);
     g_assert_cmpint(dnf_state_get_speed(state), ==, 100);
@@ -683,18 +655,13 @@ dnf_state_finished_func(void)
     guint i;
 
     state = dnf_state_new();
-    g_object_add_weak_pointer(G_OBJECT(state),(gpointer *) &state);
-    ret = dnf_state_set_steps(state,
-                              &error,
-                              90,
-                              10,
-                              -1);
+    g_object_add_weak_pointer(G_OBJECT(state), (gpointer *)&state);
+    ret = dnf_state_set_steps(state, &error, 90, 10, -1);
     g_assert_no_error(error);
     g_assert(ret);
 
     dnf_state_set_allow_cancel(state, FALSE);
-    dnf_state_action_start(state,
-                DNF_STATE_ACTION_LOADING_CACHE, "/");
+    dnf_state_action_start(state, DNF_STATE_ACTION_LOADING_CACHE, "/");
 
     state_local = dnf_state_get_child(state);
     dnf_state_set_report_progress(state_local, FALSE);
@@ -742,18 +709,12 @@ dnf_state_locking_func(void)
     state = dnf_state_new();
 
     /* lock once */
-    ret = dnf_state_take_lock(state,
-                              DNF_LOCK_TYPE_RPMDB,
-                              DNF_LOCK_MODE_PROCESS,
-                              &error);
+    ret = dnf_state_take_lock(state, DNF_LOCK_TYPE_RPMDB, DNF_LOCK_MODE_PROCESS, &error);
     g_assert_no_error(error);
     g_assert(ret);
 
     /* succeeded, even again */
-    ret = dnf_state_take_lock(state,
-                              DNF_LOCK_TYPE_RPMDB,
-                              DNF_LOCK_MODE_PROCESS,
-                              &error);
+    ret = dnf_state_take_lock(state, DNF_LOCK_TYPE_RPMDB, DNF_LOCK_MODE_PROCESS, &error);
     g_assert_no_error(error);
     g_assert(ret);
 
@@ -772,8 +733,8 @@ dnf_state_small_step_func(void)
     _updates = 0;
 
     state = dnf_state_new();
-    g_signal_connect(state, "percentage-changed",
-            G_CALLBACK(dnf_state_test_percentage_changed_cb), NULL);
+    g_signal_connect(
+      state, "percentage-changed", G_CALLBACK(dnf_state_test_percentage_changed_cb), NULL);
     dnf_state_set_number_steps(state, 100000);
 
     /* process all steps, we should get 100 callbacks */
@@ -833,8 +794,8 @@ dnf_repo_loader_func(void)
     repo = dnf_repo_loader_get_repo_by_id(repo_loader, "local", &error);
     g_assert_no_error(error);
     g_assert(repo != NULL);
-    g_assert_cmpint(dnf_repo_get_enabled(repo), ==, DNF_REPO_ENABLED_METADATA |
-                               DNF_REPO_ENABLED_PACKAGES);
+    g_assert_cmpint(
+      dnf_repo_get_enabled(repo), ==, DNF_REPO_ENABLED_METADATA | DNF_REPO_ENABLED_PACKAGES);
     g_assert_cmpint(dnf_repo_get_kind(repo), ==, DNF_REPO_KIND_LOCAL);
     g_assert(!dnf_repo_get_gpgcheck(repo));
     g_assert(!dnf_repo_get_gpgcheck_md(repo));
@@ -849,7 +810,7 @@ dnf_repo_loader_func(void)
     ret = dnf_repo_update(repo, DNF_REPO_UPDATE_FLAG_NONE, state, &error);
     /* check the metadata expire attribute */
     metadata_expire = dnf_repo_get_metadata_expire(repo);
-    g_assert_cmpuint(metadata_expire, == , 60 * 60 * 24);
+    g_assert_cmpuint(metadata_expire, ==, 60 * 60 * 24);
     g_assert_no_error(error);
     g_assert(ret);
 
@@ -951,13 +912,9 @@ dnf_repo_loader_gpg_no_asc_func(void)
 
     /* update, which should fail as no *remote* repomd.xml.asc exists */
     dnf_state_reset(state);
-    ret = dnf_repo_update(repo,
-                            DNF_REPO_UPDATE_FLAG_FORCE |
-                            DNF_REPO_UPDATE_FLAG_SIMULATE,
-                            state, &error);
-    if (g_error_matches(error,
-                        DNF_ERROR,
-                        DNF_ERROR_CANNOT_WRITE_REPO_CONFIG)) {
+    ret = dnf_repo_update(
+      repo, DNF_REPO_UPDATE_FLAG_FORCE | DNF_REPO_UPDATE_FLAG_SIMULATE, state, &error);
+    if (g_error_matches(error, DNF_ERROR, DNF_ERROR_CANNOT_WRITE_REPO_CONFIG)) {
         g_debug("skipping tests: %s", error->message);
         return;
     }
@@ -998,13 +955,9 @@ dnf_repo_loader_gpg_wrong_asc_func(void)
 
     /* update, which should fail as the repomd.xml.asc key is wrong */
     state = dnf_state_new();
-    ret = dnf_repo_update(repo,
-                            DNF_REPO_UPDATE_FLAG_FORCE |
-                            DNF_REPO_UPDATE_FLAG_SIMULATE,
-                            state, &error);
-    if (g_error_matches(error,
-                        DNF_ERROR,
-                        DNF_ERROR_CANNOT_WRITE_REPO_CONFIG)) {
+    ret = dnf_repo_update(
+      repo, DNF_REPO_UPDATE_FLAG_FORCE | DNF_REPO_UPDATE_FLAG_SIMULATE, state, &error);
+    if (g_error_matches(error, DNF_ERROR, DNF_ERROR_CANNOT_WRITE_REPO_CONFIG)) {
         g_debug("skipping tests: %s", error->message);
         return;
     }
@@ -1052,13 +1005,9 @@ dnf_repo_loader_gpg_asc_func(void)
 
     /* update, which should pass as a valid remote repomd.xml.asc exists */
     dnf_state_reset(state);
-    ret = dnf_repo_update(repo,
-                 DNF_REPO_UPDATE_FLAG_FORCE |
-                 DNF_REPO_UPDATE_FLAG_SIMULATE,
-                 state, &error);
-    if (g_error_matches(error,
-                 DNF_ERROR,
-                 DNF_ERROR_CANNOT_WRITE_REPO_CONFIG)) {
+    ret = dnf_repo_update(
+      repo, DNF_REPO_UPDATE_FLAG_FORCE | DNF_REPO_UPDATE_FLAG_SIMULATE, state, &error);
+    if (g_error_matches(error, DNF_ERROR, DNF_ERROR_CANNOT_WRITE_REPO_CONFIG)) {
         g_debug("skipping tests: %s", error->message);
         return;
     }
@@ -1074,7 +1023,7 @@ main(int argc, char **argv)
     /* Also because we do valgrind testing and there are vast array of
      * "leaks" when we load gio vfs modules.
      */
-    g_setenv ("GIO_USE_VFS", "local", TRUE);
+    g_setenv("GIO_USE_VFS", "local", TRUE);
 
     g_test_init(&argc, &argv, NULL);
 
@@ -1104,4 +1053,3 @@ main(int argc, char **argv)
 
     return g_test_run();
 }
-

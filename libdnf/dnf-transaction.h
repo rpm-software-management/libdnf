@@ -22,8 +22,8 @@
 #ifndef __DNF_TRANSACTION_H
 #define __DNF_TRANSACTION_H
 
-#include <glib-object.h>
 #include <gio/gio.h>
+#include <glib-object.h>
 
 #include "hy-goal.h"
 
@@ -33,21 +33,21 @@
 
 G_BEGIN_DECLS
 
-#define DNF_TYPE_TRANSACTION (dnf_transaction_get_type ())
-G_DECLARE_DERIVABLE_TYPE (DnfTransaction, dnf_transaction, DNF, TRANSACTION, GObject)
+#define DNF_TYPE_TRANSACTION (dnf_transaction_get_type())
+G_DECLARE_DERIVABLE_TYPE(DnfTransaction, dnf_transaction, DNF, TRANSACTION, GObject)
 
 struct _DnfTransactionClass
 {
-        GObjectClass            parent_class;
-        /*< private >*/
-        void (*_dnf_reserved1)  (void);
-        void (*_dnf_reserved2)  (void);
-        void (*_dnf_reserved3)  (void);
-        void (*_dnf_reserved4)  (void);
-        void (*_dnf_reserved5)  (void);
-        void (*_dnf_reserved6)  (void);
-        void (*_dnf_reserved7)  (void);
-        void (*_dnf_reserved8)  (void);
+    GObjectClass parent_class;
+    /*< private >*/
+    void (*_dnf_reserved1)(void);
+    void (*_dnf_reserved2)(void);
+    void (*_dnf_reserved3)(void);
+    void (*_dnf_reserved4)(void);
+    void (*_dnf_reserved5)(void);
+    void (*_dnf_reserved6)(void);
+    void (*_dnf_reserved7)(void);
+    void (*_dnf_reserved8)(void);
 };
 
 /**
@@ -62,60 +62,55 @@ struct _DnfTransactionClass
  * The transaction flags.
  **/
 typedef enum {
-        DNF_TRANSACTION_FLAG_NONE               = 0,
-        DNF_TRANSACTION_FLAG_ONLY_TRUSTED       = 1 << 0,
-        DNF_TRANSACTION_FLAG_ALLOW_REINSTALL    = 1 << 1,
-        DNF_TRANSACTION_FLAG_ALLOW_DOWNGRADE    = 1 << 2,
-        DNF_TRANSACTION_FLAG_NODOCS             = 1 << 3,
-        DNF_TRANSACTION_FLAG_TEST               = 1 << 4,
-        /*< private >*/
-        DNF_TRANSACTION_FLAG_LAST
+    DNF_TRANSACTION_FLAG_NONE = 0,
+    DNF_TRANSACTION_FLAG_ONLY_TRUSTED = 1 << 0,
+    DNF_TRANSACTION_FLAG_ALLOW_REINSTALL = 1 << 1,
+    DNF_TRANSACTION_FLAG_ALLOW_DOWNGRADE = 1 << 2,
+    DNF_TRANSACTION_FLAG_NODOCS = 1 << 3,
+    DNF_TRANSACTION_FLAG_TEST = 1 << 4,
+    /*< private >*/
+    DNF_TRANSACTION_FLAG_LAST
 } DnfTransactionFlag;
 
-DnfTransaction  *dnf_transaction_new                    (DnfContext     *context);
+DnfTransaction *
+dnf_transaction_new(DnfContext *context);
 
 /* getters */
-guint64          dnf_transaction_get_flags              (DnfTransaction *transaction);
-GPtrArray       *dnf_transaction_get_remote_pkgs        (DnfTransaction *transaction);
-DnfDb           *dnf_transaction_get_db                 (DnfTransaction *transaction);
+guint64
+dnf_transaction_get_flags(DnfTransaction *transaction);
+GPtrArray *
+dnf_transaction_get_remote_pkgs(DnfTransaction *transaction);
+DnfDb *
+dnf_transaction_get_db(DnfTransaction *transaction);
 
 /* setters */
-void             dnf_transaction_set_repos            (DnfTransaction *transaction,
-                                                         GPtrArray      *repos);
-void             dnf_transaction_set_uid                (DnfTransaction *transaction,
-                                                         guint           uid);
-void             dnf_transaction_set_flags              (DnfTransaction *transaction,
-                                                         guint64         flags);
+void
+dnf_transaction_set_repos(DnfTransaction *transaction, GPtrArray *repos);
+void
+dnf_transaction_set_uid(DnfTransaction *transaction, guint uid);
+void
+dnf_transaction_set_flags(DnfTransaction *transaction, guint64 flags);
 
 /* object methods */
-gboolean         dnf_transaction_depsolve               (DnfTransaction *transaction,
-                                                         HyGoal          goal,
-                                                         DnfState       *state,
-                                                         GError         **error);
-gboolean         dnf_transaction_download               (DnfTransaction *transaction,
-                                                         DnfState       *state,
-                                                         GError         **error);
+gboolean
+dnf_transaction_depsolve(DnfTransaction *transaction, HyGoal goal, DnfState *state, GError **error);
+gboolean
+dnf_transaction_download(DnfTransaction *transaction, DnfState *state, GError **error);
 
-gboolean         dnf_transaction_import_keys            (DnfTransaction *transaction,
-                                                         GError        **error);
+gboolean
+dnf_transaction_import_keys(DnfTransaction *transaction, GError **error);
 
-gboolean         dnf_transaction_gpgcheck_package       (DnfTransaction *transaction,
-                                                         DnfPackage     *pkg,
-                                                         GError        **error);
-gboolean         dnf_transaction_check_untrusted        (DnfTransaction *transaction,
-                                                         HyGoal          goal,
-                                                         GError        **error);
+gboolean
+dnf_transaction_gpgcheck_package(DnfTransaction *transaction, DnfPackage *pkg, GError **error);
+gboolean
+dnf_transaction_check_untrusted(DnfTransaction *transaction, HyGoal goal, GError **error);
 
-gboolean         dnf_transaction_commit                 (DnfTransaction *transaction,
-                                                         HyGoal          goal,
-                                                         DnfState       *state,
-                                                         GError         **error);
-gboolean         dnf_transaction_ensure_repo          (DnfTransaction *transaction,
-                                                         DnfPackage *      pkg,
-                                                         GError         **error);
-gboolean         dnf_transaction_ensure_repo_list     (DnfTransaction *transaction,
-                                                         GPtrArray *  pkglist,
-                                                         GError         **error);
+gboolean
+dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state, GError **error);
+gboolean
+dnf_transaction_ensure_repo(DnfTransaction *transaction, DnfPackage *pkg, GError **error);
+gboolean
+dnf_transaction_ensure_repo_list(DnfTransaction *transaction, GPtrArray *pkglist, GError **error);
 
 G_END_DECLS
 

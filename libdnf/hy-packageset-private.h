@@ -21,13 +21,16 @@
 #ifndef HY_PACKAGESET_INTERNAL_H
 #define HY_PACKAGESET_INTERNAL_H
 
-#include <solv/pooltypes.h>
 #include <solv/bitmap.h>
+#include <solv/pooltypes.h>
 
 #include "hy-packageset.h"
 
-DnfPackageSet   *dnf_packageset_from_bitmap    (DnfSack *sack, Map *m);
-Map             *dnf_packageset_get_map        (DnfPackageSet *pset);
-Id               dnf_packageset_get_pkgid      (DnfPackageSet *pset, int index, Id previous);
+DnfPackageSet *
+dnf_packageset_from_bitmap(DnfSack *sack, Map *m);
+Map *
+dnf_packageset_get_map(DnfPackageSet *pset);
+Id
+dnf_packageset_get_pkgid(DnfPackageSet *pset, int index, Id previous);
 
 #endif // HY_PACKAGESET_INTERNAL_H

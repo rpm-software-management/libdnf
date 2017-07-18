@@ -20,19 +20,17 @@
 
 #include <check.h>
 
-
 #include <solv/testcase.h>
 
-
-#include "libdnf/hy-query.h"
-#include "libdnf/hy-query-private.h"
+#include "fixtures.h"
+#include "libdnf/dnf-enums.h"
+#include "libdnf/dnf-reldep-list.h"
+#include "libdnf/dnf-reldep.h"
+#include "libdnf/dnf-sack-private.h"
 #include "libdnf/hy-package.h"
 #include "libdnf/hy-packageset.h"
-#include "libdnf/dnf-enums.h"
-#include "libdnf/dnf-reldep.h"
-#include "libdnf/dnf-reldep-list.h"
-#include "libdnf/dnf-sack-private.h"
-#include "fixtures.h"
+#include "libdnf/hy-query-private.h"
+#include "libdnf/hy-query.h"
 #include "test_suites.h"
 #include "testsys.h"
 
@@ -86,7 +84,7 @@ END_TEST
 
 START_TEST(test_query_clone)
 {
-    const char *namelist[] = {"penny", "fool", NULL};
+    const char *namelist[] = { "penny", "fool", NULL };
     HyQuery q = hy_query_create(test_globals.sack);
 
     hy_query_filter_in(q, HY_PKG_NAME, HY_EQ, namelist);
@@ -154,11 +152,11 @@ START_TEST(test_query_evr)
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_EVR, HY_GT|HY_EQ, "5.0-0");
+    hy_query_filter(q, HY_PKG_EVR, HY_GT | HY_EQ, "5.0-0");
     fail_unless(query_count_results(q) == 3);
     hy_query_free(q);
 
-    const char *evrs[] = {"6.0-0", "2-9", "5.0-0", "0-100", NULL};
+    const char *evrs[] = { "6.0-0", "2-9", "5.0-0", "0-100", NULL };
     q = hy_query_create(test_globals.sack);
     hy_query_filter_in(q, HY_PKG_EVR, HY_EQ, evrs);
     fail_unless(query_count_results(q) == 3);
@@ -169,8 +167,8 @@ END_TEST
 START_TEST(test_query_epoch)
 {
     HyQuery q = hy_query_create(test_globals.sack);
-    fail_unless(hy_query_filter(q, HY_PKG_EPOCH, HY_GT|HY_EQ, "1"));
-    fail_if(hy_query_filter_num(q, HY_PKG_EPOCH, HY_GT|HY_EQ, 1));
+    fail_unless(hy_query_filter(q, HY_PKG_EPOCH, HY_GT | HY_EQ, "1"));
+    fail_if(hy_query_filter_num(q, HY_PKG_EPOCH, HY_GT | HY_EQ, 1));
     fail_unless(query_count_results(q) == 1);
     hy_query_free(q);
 }
@@ -189,7 +187,7 @@ START_TEST(test_query_version)
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_VERSION, HY_GT|HY_EQ, "5.");
+    hy_query_filter(q, HY_PKG_VERSION, HY_GT | HY_EQ, "5.");
     fail_unless(query_count_results(q) == 3);
     hy_query_free(q);
 }
@@ -197,21 +195,17 @@ END_TEST
 
 START_TEST(test_query_location)
 {
-     HyQuery q = hy_query_create(test_globals.sack);
-    fail_unless(hy_query_filter(q, HY_PKG_LOCATION, HY_GT,
-                                "tour-4-6.noarch.rpm"));
-    fail_if(hy_query_filter(q, HY_PKG_LOCATION, HY_EQ,
-                            "tour-4-6.noarch.rpm"));
+    HyQuery q = hy_query_create(test_globals.sack);
+    fail_unless(hy_query_filter(q, HY_PKG_LOCATION, HY_GT, "tour-4-6.noarch.rpm"));
+    fail_if(hy_query_filter(q, HY_PKG_LOCATION, HY_EQ, "tour-4-6.noarch.rpm"));
     fail_unless(size_and_free(q) == 1);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_LOCATION, HY_EQ,
-                    "mystery-devel-19.67-1.noarch.rpm");
+    hy_query_filter(q, HY_PKG_LOCATION, HY_EQ, "mystery-devel-19.67-1.noarch.rpm");
     fail_unless(size_and_free(q) == 1);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_LOCATION, HY_EQ,
-                    "mystery-19.67-1.src.rpm");
+    hy_query_filter(q, HY_PKG_LOCATION, HY_EQ, "mystery-19.67-1.src.rpm");
     fail_unless(size_and_free(q) == 0);
 }
 END_TEST
@@ -229,7 +223,7 @@ START_TEST(test_query_release)
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_RELEASE, HY_GT|HY_EQ, "9");
+    hy_query_filter(q, HY_PKG_RELEASE, HY_GT | HY_EQ, "9");
     fail_unless(query_count_results(q) == 2);
     hy_query_free(q);
 }
@@ -252,7 +246,7 @@ START_TEST(test_query_case)
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_NAME, HY_EQ|HY_ICASE, "Penny-lib");
+    hy_query_filter(q, HY_PKG_NAME, HY_EQ | HY_ICASE, "Penny-lib");
     fail_unless(query_count_results(q) == 1);
     hy_query_free(q);
 }
@@ -284,7 +278,7 @@ END_TEST
 START_TEST(test_query_in)
 {
     HyQuery q;
-    const char *namelist[] = {"penny", "fool", NULL};
+    const char *namelist[] = { "penny", "fool", NULL };
 
     q = hy_query_create(test_globals.sack);
     hy_query_filter_in(q, HY_PKG_NAME, HY_EQ, namelist);
@@ -411,9 +405,9 @@ START_TEST(test_query_provides_in)
 {
     DnfPackage *pkg;
     GPtrArray *plist;
-    const char* pkg_names[] = { "P", "fool <= 2.0", "fool-lib > 3-3", NULL };
+    const char *pkg_names[] = { "P", "fool <= 2.0", "fool-lib > 3-3", NULL };
     HyQuery q = hy_query_create(test_globals.sack);
-    hy_query_filter_provides_in(q, (char**) pkg_names);
+    hy_query_filter_provides_in(q, (char **)pkg_names);
     plist = hy_query_run(q);
     pkg = g_ptr_array_index(plist, 0);
     ck_assert_str_eq(dnf_package_get_name(pkg), "fool");
@@ -431,9 +425,9 @@ END_TEST
 START_TEST(test_query_provides_in_not_found)
 {
     GPtrArray *plist;
-    const char* provides[] = { "thisisnotgoingtoexist", NULL };
+    const char *provides[] = { "thisisnotgoingtoexist", NULL };
     HyQuery q = hy_query_create(test_globals.sack);
-    hy_query_filter_provides_in(q, (char**) provides);
+    hy_query_filter_provides_in(q, (char **)provides);
     plist = hy_query_run(q);
     fail_unless(plist->len == 0);
     g_ptr_array_unref(plist);
@@ -453,7 +447,7 @@ END_TEST
 START_TEST(test_query_requires)
 {
     HyQuery q;
-    const char *repolist[] = {"main", NULL};
+    const char *repolist[] = { "main", NULL };
 
     q = hy_query_create(test_globals.sack);
     hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist);
@@ -481,7 +475,7 @@ START_TEST(test_query_requires)
 
     q = hy_query_create(test_globals.sack);
     hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist);
-    hy_query_filter_requires(q, HY_EQ|HY_LT, "semolina", "3.0");
+    hy_query_filter_requires(q, HY_EQ | HY_LT, "semolina", "3.0");
     fail_unless(query_count_results(q) == 1);
     hy_query_free(q);
 
@@ -494,13 +488,13 @@ START_TEST(test_query_requires)
     q = hy_query_create(test_globals.sack);
     hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist);
     hy_query_filter_requires(q, HY_NEQ, "semolina", NULL);
-    fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES-1);
+    fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES - 1);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
     hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist);
     hy_query_filter_requires(q, HY_NEQ, "semolina", "2");
-    fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES-1);
+    fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES - 1);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);
@@ -515,7 +509,8 @@ START_TEST(test_query_conflicts)
 {
     DnfSack *sack = test_globals.sack;
     HyQuery q = hy_query_create(sack);
-    DnfReldep *reldep = dnf_reldep_new(sack, "custard", DNF_COMPARISON_GT|DNF_COMPARISON_EQ, "1.0.1");
+    DnfReldep *reldep =
+      dnf_reldep_new(sack, "custard", DNF_COMPARISON_GT | DNF_COMPARISON_EQ, "1.0.1");
 
     fail_unless(reldep != NULL);
     hy_query_filter_reldep(q, HY_PKG_CONFLICTS, reldep);
@@ -532,8 +527,8 @@ START_TEST(test_upgrades_sanity)
     int i;
 
     FOR_REPOS(i, r)
-        if (!strcmp(r->name, "updates"))
-            break;
+    if (!strcmp(r->name, "updates"))
+        break;
     fail_unless(r != NULL);
     fail_unless(r->nsolvables == TEST_EXPECT_UPDATES_NSOLVABLES);
 }
@@ -541,7 +536,7 @@ END_TEST
 
 START_TEST(test_upgrades)
 {
-    const char *installonly[] = {"fool", NULL};
+    const char *installonly[] = { "fool", NULL };
     dnf_sack_set_installonly(test_globals.sack, installonly);
 
     HyQuery q = hy_query_create(test_globals.sack);
@@ -591,7 +586,6 @@ START_TEST(test_filter_latest2)
 
     hy_query_free(q);
     g_ptr_array_unref(plist);
-
 }
 END_TEST
 
@@ -664,71 +658,71 @@ START_TEST(test_query_provides_str)
 END_TEST
 
 START_TEST(test_query_provides_glob)
-    {
-        HyQuery q = hy_query_create(test_globals.sack);
-        hy_query_filter(q, HY_PKG_PROVIDES, HY_GLOB, "penny*");
-        ck_assert_int_eq(query_count_results(q), 6);
-        hy_query_free(q);
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_PROVIDES, HY_GLOB, "penny*");
+    ck_assert_int_eq(query_count_results(q), 6);
+    hy_query_free(q);
 
-        HyQuery q1 = hy_query_create(test_globals.sack);
-        HyQuery q2 = hy_query_create(test_globals.sack);
-        hy_query_filter(q1, HY_PKG_PROVIDES, HY_GLOB, "P-l*b >= 3");
-        hy_query_filter(q2, HY_PKG_PROVIDES, HY_EQ, "P-lib >= 3");
-        ck_assert_int_eq(query_count_results(q1), query_count_results(q2));
-        hy_query_free(q1);
-        hy_query_free(q2);
+    HyQuery q1 = hy_query_create(test_globals.sack);
+    HyQuery q2 = hy_query_create(test_globals.sack);
+    hy_query_filter(q1, HY_PKG_PROVIDES, HY_GLOB, "P-l*b >= 3");
+    hy_query_filter(q2, HY_PKG_PROVIDES, HY_EQ, "P-lib >= 3");
+    ck_assert_int_eq(query_count_results(q1), query_count_results(q2));
+    hy_query_free(q1);
+    hy_query_free(q2);
 
-        q1 = hy_query_create(test_globals.sack);
-        q2 = hy_query_create(test_globals.sack);
-        hy_query_filter(q1, HY_PKG_PROVIDES, HY_GLOB, "*");
-        fail_unless(query_count_results(q1) == query_count_results(q2));
-        hy_query_free(q1);
-        hy_query_free(q2);
-    }
+    q1 = hy_query_create(test_globals.sack);
+    q2 = hy_query_create(test_globals.sack);
+    hy_query_filter(q1, HY_PKG_PROVIDES, HY_GLOB, "*");
+    fail_unless(query_count_results(q1) == query_count_results(q2));
+    hy_query_free(q1);
+    hy_query_free(q2);
+}
 END_TEST
 
 START_TEST(test_query_rco_glob)
-    {
-        HyQuery q = hy_query_create(test_globals.sack);
-        hy_query_filter(q, HY_PKG_REQUIRES, HY_GLOB, "*");
-        ck_assert_int_eq(query_count_results(q), 5);
-        hy_query_free(q);
+{
+    HyQuery q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_REQUIRES, HY_GLOB, "*");
+    ck_assert_int_eq(query_count_results(q), 5);
+    hy_query_free(q);
 
-        q = hy_query_create(test_globals.sack);
-        hy_query_filter(q, HY_PKG_REQUIRES, HY_GLOB, "*oo*");
-        ck_assert_int_eq(query_count_results(q), 2);
-        hy_query_free(q);
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_REQUIRES, HY_GLOB, "*oo*");
+    ck_assert_int_eq(query_count_results(q), 2);
+    hy_query_free(q);
 
-        q = hy_query_create(test_globals.sack);
-        hy_query_filter(q, HY_PKG_CONFLICTS, HY_GLOB, "*");
-        ck_assert_int_eq(query_count_results(q), 1);
-        hy_query_free(q);
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_CONFLICTS, HY_GLOB, "*");
+    ck_assert_int_eq(query_count_results(q), 1);
+    hy_query_free(q);
 
-        q = hy_query_create(test_globals.sack);
-        hy_query_filter(q, HY_PKG_OBSOLETES, HY_GLOB, "*");
-        ck_assert_int_eq(query_count_results(q), 0);
-        hy_query_free(q);
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_OBSOLETES, HY_GLOB, "*");
+    ck_assert_int_eq(query_count_results(q), 0);
+    hy_query_free(q);
 
-        q = hy_query_create(test_globals.sack);
-        hy_query_filter(q, HY_PKG_ENHANCES, HY_GLOB, "*");
-        ck_assert_int_eq(query_count_results(q), 1);
-        hy_query_free(q);
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_ENHANCES, HY_GLOB, "*");
+    ck_assert_int_eq(query_count_results(q), 1);
+    hy_query_free(q);
 
-        q = hy_query_create(test_globals.sack);
-        hy_query_filter(q, HY_PKG_RECOMMENDS, HY_GLOB, "*");
-        ck_assert_int_eq(query_count_results(q), 1);
-        hy_query_free(q);
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_RECOMMENDS, HY_GLOB, "*");
+    ck_assert_int_eq(query_count_results(q), 1);
+    hy_query_free(q);
 
-        q = hy_query_create(test_globals.sack);
-        hy_query_filter(q, HY_PKG_SUGGESTS, HY_GLOB, "*");
-        ck_assert_int_eq(query_count_results(q), 1);
-        hy_query_free(q);
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_SUGGESTS, HY_GLOB, "*");
+    ck_assert_int_eq(query_count_results(q), 1);
+    hy_query_free(q);
 
-        q = hy_query_create(test_globals.sack);
-        hy_query_filter(q, HY_PKG_SUPPLEMENTS, HY_GLOB, "*");
-        ck_assert_int_eq(query_count_results(q), 1);
-        hy_query_free(q);
-    }
+    q = hy_query_create(test_globals.sack);
+    hy_query_filter(q, HY_PKG_SUPPLEMENTS, HY_GLOB, "*");
+    ck_assert_int_eq(query_count_results(q), 1);
+    hy_query_free(q);
+}
 END_TEST
 
 START_TEST(test_query_reldep)
@@ -743,8 +737,8 @@ START_TEST(test_query_reldep)
     fail_if(hy_query_filter_reldep(q, HY_PKG_PROVIDES, reldep));
     fail_unless(query_count_results(q) == 3);
 
-    g_object_unref (reldep);
-    g_object_unref (reldeplist);
+    g_object_unref(reldep);
+    g_object_unref(reldeplist);
     g_object_unref(flying);
     hy_query_free(q);
 }
@@ -797,8 +791,7 @@ START_TEST(test_filter_sourcerpm)
     fail_unless(size_and_free(q) == 1);
 
     q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_SOURCERPM, HY_EQ,
-                    "mystery-devel-19.67-1.noarch.rpm");
+    hy_query_filter(q, HY_PKG_SOURCERPM, HY_EQ, "mystery-devel-19.67-1.noarch.rpm");
     fail_unless(size_and_free(q) == 0);
 }
 END_TEST
@@ -806,8 +799,8 @@ END_TEST
 START_TEST(test_filter_description)
 {
     HyQuery q = hy_query_create(test_globals.sack);
-    fail_if(hy_query_filter(q, HY_PKG_DESCRIPTION, HY_SUBSTR,
-                            "Magical development files for mystery."));
+    fail_if(
+      hy_query_filter(q, HY_PKG_DESCRIPTION, HY_SUBSTR, "Magical development files for mystery."));
     fail_unless(size_and_free(q) == 1);
 }
 END_TEST
@@ -836,14 +829,14 @@ END_TEST
 START_TEST(test_filter_reponames)
 {
     HyQuery q;
-    const char *repolist[]  = {"main", "updates", NULL};
-    const char *repolist2[] = {"main",  NULL};
-    const char *repolist3[] = {"foo", "bar",  NULL};
+    const char *repolist[] = { "main", "updates", NULL };
+    const char *repolist2[] = { "main", NULL };
+    const char *repolist3[] = { "foo", "bar", NULL };
 
     q = hy_query_create(test_globals.sack);
     hy_query_filter_in(q, HY_PKG_REPONAME, HY_EQ, repolist);
-    fail_unless(query_count_results(q) == TEST_EXPECT_MAIN_NSOLVABLES \
-                                        + TEST_EXPECT_UPDATES_NSOLVABLES);
+    fail_unless(query_count_results(q) ==
+                TEST_EXPECT_MAIN_NSOLVABLES + TEST_EXPECT_UPDATES_NSOLVABLES);
     hy_query_free(q);
 
     q = hy_query_create(test_globals.sack);

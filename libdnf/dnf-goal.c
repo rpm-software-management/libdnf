@@ -30,17 +30,16 @@
  * These methods make it easier to deal with hawkey goals.
  */
 
-
 #include <glib.h>
 
-#include "hy-util.h"
-#include "hy-goal-private.h"
 #include "dnf-goal.h"
 #include "dnf-package.h"
-#include "hy-packageset-private.h"
-#include "hy-iutil.h"
 #include "dnf-sack-private.h"
 #include "dnf-utils.h"
+#include "hy-goal-private.h"
+#include "hy-iutil.h"
+#include "hy-packageset-private.h"
+#include "hy-util.h"
 
 /**
  * dnf_goal_depsolve:
@@ -75,19 +74,14 @@ dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error)
             g_free(tmp);
         }
         g_string_truncate(string, string->len - 1);
-        g_set_error_literal(error,
-                            DNF_ERROR,
-                            DNF_ERROR_PACKAGE_CONFLICTS,
-                            string->str);
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_PACKAGE_CONFLICTS, string->str);
         return FALSE;
     }
 
     /* anything to do? */
     if (hy_goal_req_length(goal) == 0) {
-        g_set_error_literal(error,
-                            DNF_ERROR,
-                            DNF_ERROR_NO_PACKAGES_TO_UPDATE,
-                            "The transaction was empty");
+        g_set_error_literal(
+          error, DNF_ERROR, DNF_ERROR_NO_PACKAGES_TO_UPDATE, "The transaction was empty");
         return FALSE;
     }
     return TRUE;
@@ -108,63 +102,63 @@ dnf_goal_get_packages(HyGoal goal, ...)
 
     /* process the valist */
     va_start(args, goal);
-    array = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
+    array = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
     for (j = 0;; j++) {
         GPtrArray *pkglist = NULL;
         info_tmp = va_arg(args, gint);
         if (info_tmp == -1)
             break;
-        switch(info_tmp) {
-        case DNF_PACKAGE_INFO_REMOVE:
-            pkglist = hy_goal_list_erasures(goal, NULL);
-            for (i = 0; i < pkglist->len; i++) {
-                pkg = g_ptr_array_index (pkglist, i);
-                dnf_package_set_action(pkg, DNF_STATE_ACTION_REMOVE);
-                g_ptr_array_add(array, g_object_ref(pkg));
-            }
-            break;
-        case DNF_PACKAGE_INFO_INSTALL:
-            pkglist = hy_goal_list_installs(goal, NULL);
-            for (i = 0; i < pkglist->len; i++) {
-                pkg = g_ptr_array_index (pkglist, i);
-                dnf_package_set_action(pkg, DNF_STATE_ACTION_INSTALL);
-                g_ptr_array_add(array, g_object_ref(pkg));
-            }
-            break;
-        case DNF_PACKAGE_INFO_OBSOLETE:
-            pkglist = hy_goal_list_obsoleted(goal, NULL);
-            for (i = 0; i < pkglist->len; i++) {
-                pkg = g_ptr_array_index (pkglist, i);
-                dnf_package_set_action(pkg, DNF_STATE_ACTION_OBSOLETE);
-                g_ptr_array_add(array, g_object_ref(pkg));
-            }
-            break;
-        case DNF_PACKAGE_INFO_REINSTALL:
-            pkglist = hy_goal_list_reinstalls(goal, NULL);
-            for (i = 0; i < pkglist->len; i++) {
-                pkg = g_ptr_array_index (pkglist, i);
-                dnf_package_set_action(pkg, DNF_STATE_ACTION_REINSTALL);
-                g_ptr_array_add(array, g_object_ref(pkg));
-            }
-            break;
-        case DNF_PACKAGE_INFO_UPDATE:
-            pkglist = hy_goal_list_upgrades(goal, NULL);
-            for (i = 0; i < pkglist->len; i++) {
-                pkg = g_ptr_array_index (pkglist, i);
-                dnf_package_set_action(pkg, DNF_STATE_ACTION_UPDATE);
-                g_ptr_array_add(array, g_object_ref(pkg));
-            }
-            break;
-        case DNF_PACKAGE_INFO_DOWNGRADE:
-            pkglist = hy_goal_list_downgrades(goal, NULL);
-            for (i = 0; i < pkglist->len; i++) {
-                pkg = g_ptr_array_index (pkglist, i);
-                dnf_package_set_action(pkg, DNF_STATE_ACTION_DOWNGRADE);
-                g_ptr_array_add(array, g_object_ref(pkg));
-            }
-            break;
-        default:
-            g_assert_not_reached();
+        switch (info_tmp) {
+            case DNF_PACKAGE_INFO_REMOVE:
+                pkglist = hy_goal_list_erasures(goal, NULL);
+                for (i = 0; i < pkglist->len; i++) {
+                    pkg = g_ptr_array_index(pkglist, i);
+                    dnf_package_set_action(pkg, DNF_STATE_ACTION_REMOVE);
+                    g_ptr_array_add(array, g_object_ref(pkg));
+                }
+                break;
+            case DNF_PACKAGE_INFO_INSTALL:
+                pkglist = hy_goal_list_installs(goal, NULL);
+                for (i = 0; i < pkglist->len; i++) {
+                    pkg = g_ptr_array_index(pkglist, i);
+                    dnf_package_set_action(pkg, DNF_STATE_ACTION_INSTALL);
+                    g_ptr_array_add(array, g_object_ref(pkg));
+                }
+                break;
+            case DNF_PACKAGE_INFO_OBSOLETE:
+                pkglist = hy_goal_list_obsoleted(goal, NULL);
+                for (i = 0; i < pkglist->len; i++) {
+                    pkg = g_ptr_array_index(pkglist, i);
+                    dnf_package_set_action(pkg, DNF_STATE_ACTION_OBSOLETE);
+                    g_ptr_array_add(array, g_object_ref(pkg));
+                }
+                break;
+            case DNF_PACKAGE_INFO_REINSTALL:
+                pkglist = hy_goal_list_reinstalls(goal, NULL);
+                for (i = 0; i < pkglist->len; i++) {
+                    pkg = g_ptr_array_index(pkglist, i);
+                    dnf_package_set_action(pkg, DNF_STATE_ACTION_REINSTALL);
+                    g_ptr_array_add(array, g_object_ref(pkg));
+                }
+                break;
+            case DNF_PACKAGE_INFO_UPDATE:
+                pkglist = hy_goal_list_upgrades(goal, NULL);
+                for (i = 0; i < pkglist->len; i++) {
+                    pkg = g_ptr_array_index(pkglist, i);
+                    dnf_package_set_action(pkg, DNF_STATE_ACTION_UPDATE);
+                    g_ptr_array_add(array, g_object_ref(pkg));
+                }
+                break;
+            case DNF_PACKAGE_INFO_DOWNGRADE:
+                pkglist = hy_goal_list_downgrades(goal, NULL);
+                for (i = 0; i < pkglist->len; i++) {
+                    pkg = g_ptr_array_index(pkglist, i);
+                    dnf_package_set_action(pkg, DNF_STATE_ACTION_DOWNGRADE);
+                    g_ptr_array_add(array, g_object_ref(pkg));
+                }
+                break;
+            default:
+                g_assert_not_reached();
         }
         g_ptr_array_unref(pkglist);
     }
@@ -187,7 +181,8 @@ dnf_goal_add_protected(HyGoal goal, DnfPackageSet *pset)
     Map *nprotected = dnf_packageset_get_map(pset);
 
     if (protected == NULL) {
-        protected = g_malloc0(sizeof(Map));
+      protected
+        = g_malloc0(sizeof(Map));
         map_init(protected, pool->nsolvables);
         goal->protected = protected;
     } else

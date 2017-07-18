@@ -29,14 +29,15 @@
 #include "hy-iutil.h"
 #include "hy-nevra.h"
 #include "hy-package.h"
-#include "hy-subject.h"
 #include "hy-subject-private.h"
+#include "hy-subject.h"
 #include "hy-util.h"
 
-enum _dnf_sack_cpu_flags {
+enum _dnf_sack_cpu_flags
+{
     ARM_NEON = 1 << 0,
-    ARM_VFP3  = 1 << 1,
-    ARM_VFP  = 1 << 2
+    ARM_VFP3 = 1 << 1,
+    ARM_VFP = 1 << 2
 };
 
 static int
@@ -70,16 +71,16 @@ const char *
 hy_chksum_name(int chksum_type)
 {
     switch (chksum_type) {
-    case G_CHECKSUM_MD5:
-        return "md5";
-    case G_CHECKSUM_SHA1:
-        return "sha1";
-    case G_CHECKSUM_SHA256:
-        return "sha256";
-    case G_CHECKSUM_SHA512:
-        return "sha512";
-    default:
-        return NULL;
+        case G_CHECKSUM_MD5:
+            return "md5";
+        case G_CHECKSUM_SHA1:
+            return "sha1";
+        case G_CHECKSUM_SHA256:
+            return "sha256";
+        case G_CHECKSUM_SHA512:
+            return "sha512";
+        default:
+            return NULL;
     }
 }
 
@@ -101,7 +102,7 @@ char *
 hy_chksum_str(const unsigned char *chksum, int type)
 {
     int length = checksum_type2length(type);
-    if (length==-1)
+    if (length == -1)
         return NULL;
     char *s = g_malloc(2 * length + 1);
     solv_bin2hex(chksum, length, s);
@@ -152,14 +153,14 @@ hy_detect_arch(char **arch)
 #undef MAX_ARCH_LENGTH
 
 int
-hy_split_nevra(const char *nevra, char **name, int *epoch,
-               char **version, char **release, char **arch)
+hy_split_nevra(
+  const char *nevra, char **name, int *epoch, char **version, char **release, char **arch)
 {
     const int len = strlen(nevra);
     if (len <= 0)
         return DNF_ERROR_INTERNAL_ERROR;
     HyNevra out_nevra = hy_nevra_create();
-    if (nevra_possibility((char *) nevra, HY_FORM_NEVRA, out_nevra) == 0) {
+    if (nevra_possibility((char *)nevra, HY_FORM_NEVRA, out_nevra) == 0) {
         *arch = g_strdup(hy_nevra_get_string(out_nevra, HY_NEVRA_ARCH));
         *name = g_strdup(hy_nevra_get_string(out_nevra, HY_NEVRA_NAME));
         *release = g_strdup(hy_nevra_get_string(out_nevra, HY_NEVRA_RELEASE));
@@ -179,13 +180,13 @@ hy_split_nevra(const char *nevra, char **name, int *epoch,
 GPtrArray *
 hy_packagelist_create(void)
 {
-    return (GPtrArray *)g_ptr_array_new_with_free_func ((GDestroyNotify)g_object_unref);
+    return (GPtrArray *)g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 }
 
 int
 hy_packagelist_has(GPtrArray *plist, DnfPackage *pkg)
 {
-    GPtrArray *a = (GPtrArray*)plist;
+    GPtrArray *a = (GPtrArray *)plist;
     for (guint i = 0; i < a->len; ++i)
         if (dnf_package_get_identical(pkg, a->pdata[i]))
             return 1;

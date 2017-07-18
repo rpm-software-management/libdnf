@@ -27,33 +27,33 @@
  * These methods make it easier to get and set extra data on a package.
  */
 
-
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <librepo/librepo.h>
 
 #include "dnf-package.h"
+#include "dnf-reldep-list.h"
+#include "dnf-reldep.h"
 #include "dnf-types.h"
 #include "dnf-utils.h"
-#include "dnf-reldep.h"
-#include "dnf-reldep-list.h"
 #include "hy-util.h"
 
-typedef struct {
-    char            *checksum_str;
-    gboolean         user_action;
-    gchar           *filename;
-    gchar           *origin;
-    gchar           *package_id;
-    DnfPackageInfo   info;
-    DnfStateAction   action;
-    DnfRepo         *repo;
+typedef struct
+{
+    char *checksum_str;
+    gboolean user_action;
+    gchar *filename;
+    gchar *origin;
+    gchar *package_id;
+    DnfPackageInfo info;
+    DnfStateAction action;
+    DnfRepo *repo;
 } DnfPackagePrivate;
 
 /**
@@ -62,7 +62,7 @@ typedef struct {
 static void
 dnf_package_destroy_func(void *userdata)
 {
-    DnfPackagePrivate *priv =(DnfPackagePrivate *) userdata;
+    DnfPackagePrivate *priv = (DnfPackagePrivate *)userdata;
     g_free(priv->filename);
     g_free(priv->origin);
     g_free(priv->package_id);
@@ -112,16 +112,13 @@ dnf_package_get_filename(DnfPackage *pkg)
     /* default cache filename location */
     if (priv->filename == NULL && priv->repo != NULL) {
         if (dnf_repo_is_local(priv->repo)) {
-            priv->filename = g_build_filename(dnf_repo_get_location(priv->repo),
-                                              dnf_package_get_location(pkg),
-                                              NULL);
+            priv->filename = g_build_filename(
+              dnf_repo_get_location(priv->repo), dnf_package_get_location(pkg), NULL);
         } else {
             /* set the filename to cachedir for non-local repos */
             g_autofree gchar *basename = NULL;
             basename = g_path_get_basename(dnf_package_get_location(pkg));
-            priv->filename = g_build_filename(dnf_repo_get_packages(priv->repo),
-                               basename,
-                               NULL);
+            priv->filename = g_build_filename(dnf_repo_get_packages(priv->repo), basename, NULL);
         }
     }
 
@@ -207,16 +204,14 @@ dnf_package_set_pkgid(DnfPackage *pkg, const gchar *pkgid)
  * dnf_package_id_build:
  **/
 static gchar *
-dnf_package_id_build(const gchar *name,
-              const gchar *version,
-              const gchar *arch,
-              const gchar *data)
+dnf_package_id_build(const gchar *name, const gchar *version, const gchar *arch, const gchar *data)
 {
-    return g_strjoin(";", name,
-              version != NULL ? version : "",
-              arch != NULL ? arch : "",
-              data != NULL ? data : "",
-              NULL);
+    return g_strjoin(";",
+                     name,
+                     version != NULL ? version : "",
+                     arch != NULL ? arch : "",
+                     data != NULL ? data : "",
+                     NULL);
 }
 
 /**
@@ -255,10 +250,8 @@ dnf_package_get_package_id(DnfPackage *pkg)
     } else if (g_strcmp0(reponame, HY_CMDLINE_REPO_NAME) == 0) {
         reponame = "local";
     }
-    priv->package_id = dnf_package_id_build(dnf_package_get_name(pkg),
-                        dnf_package_get_evr(pkg),
-                        dnf_package_get_arch(pkg),
-                        reponame);
+    priv->package_id = dnf_package_id_build(
+      dnf_package_get_name(pkg), dnf_package_get_evr(pkg), dnf_package_get_arch(pkg), reponame);
 out:
     return priv->package_id;
 }
@@ -501,18 +494,18 @@ dnf_package_is_gui(DnfPackage *pkg)
     gint size;
 
     /* find if the package depends on GTK or KDE */
-    g_autoptr(DnfReldepList) reldep_list = dnf_package_get_requires (pkg);
-    size = dnf_reldep_list_count (reldep_list);
+    g_autoptr(DnfReldepList) reldep_list = dnf_package_get_requires(pkg);
+    size = dnf_reldep_list_count(reldep_list);
     for (idx = 0; idx < size && !ret; idx++) {
-        reldep = dnf_reldep_list_index (reldep_list, idx);
-        tmp = dnf_reldep_to_string (reldep);
+        reldep = dnf_reldep_list_index(reldep_list, idx);
+        tmp = dnf_reldep_to_string(reldep);
         if (g_strstr_len(tmp, -1, "libgtk") != NULL ||
             g_strstr_len(tmp, -1, "libQt5Gui.so") != NULL ||
             g_strstr_len(tmp, -1, "libQtGui.so") != NULL ||
             g_strstr_len(tmp, -1, "libqt-mt.so") != NULL) {
             ret = TRUE;
         }
-        g_object_unref (reldep);
+        g_object_unref(reldep);
     }
 
     return ret;
@@ -559,8 +552,7 @@ dnf_package_is_downloaded(DnfPackage *pkg)
         return FALSE;
     filename = dnf_package_get_filename(pkg);
     if (filename == NULL) {
-        g_warning("Failed to get cache filename for %s",
-               dnf_package_get_name(pkg));
+        g_warning("Failed to get cache filename for %s", dnf_package_get_name(pkg));
         return FALSE;
     }
     return g_file_test(filename, G_FILE_TEST_EXISTS);
@@ -636,12 +628,13 @@ dnf_package_check_filename(DnfPackage *pkg, gboolean *valid, GError **error)
 
         /* a missing file in a local repo is an error since we can't
            download it. */
-        if (dnf_repo_is_local (dnf_package_get_repo (pkg))) {
+        if (dnf_repo_is_local(dnf_package_get_repo(pkg))) {
             ret = FALSE;
             g_set_error(error,
                         DNF_ERROR,
                         DNF_ERROR_INTERNAL_ERROR,
-                        "File missing in local repository %s", path);
+                        "File missing in local repository %s",
+                        path);
         }
 
         goto out;
@@ -654,18 +647,15 @@ dnf_package_check_filename(DnfPackage *pkg, gboolean *valid, GError **error)
     fd = g_open(path, O_RDONLY, 0);
     if (fd < 0) {
         ret = FALSE;
-        g_set_error(error,
-                 DNF_ERROR,
-                 DNF_ERROR_INTERNAL_ERROR,
-                 "Failed to open %s", path);
+        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "Failed to open %s", path);
         goto out;
     }
     ret = lr_checksum_fd_cmp(checksum_type_lr,
-                 fd,
-                 checksum_valid,
-                 TRUE, /* use xattr value */
-                 valid,
-                 error);
+                             fd,
+                             checksum_valid,
+                             TRUE, /* use xattr value */
+                             valid,
+                             error);
     if (!ret) {
         g_close(fd, NULL);
         goto out;
@@ -677,12 +667,13 @@ dnf_package_check_filename(DnfPackage *pkg, gboolean *valid, GError **error)
     /* A checksum mismatch for a package in a local repository is an
        error.  We can't repair it by downloading a corrected version,
        so let's fail here. */
-    if (!*valid && dnf_repo_is_local (dnf_package_get_repo (pkg))) {
+    if (!*valid && dnf_repo_is_local(dnf_package_get_repo(pkg))) {
         ret = FALSE;
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_INTERNAL_ERROR,
-                    "Checksum mismatch in local repository %s", path);
+                    "Checksum mismatch in local repository %s",
+                    path);
         goto out;
     }
 
@@ -705,18 +696,12 @@ out:
  * Since: 0.1.0
  **/
 gchar *
-dnf_package_download(DnfPackage *pkg,
-              const gchar *directory,
-              DnfState *state,
-              GError **error)
+dnf_package_download(DnfPackage *pkg, const gchar *directory, DnfState *state, GError **error)
 {
     DnfRepo *repo;
     repo = dnf_package_get_repo(pkg);
     if (repo == NULL) {
-        g_set_error_literal(error,
-                     DNF_ERROR,
-                     DNF_ERROR_INTERNAL_ERROR,
-                     "package repo is unset");
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "package repo is unset");
         return NULL;
     }
     return dnf_repo_download_package(repo, pkg, directory, state, error);
@@ -737,9 +722,9 @@ dnf_package_download(DnfPackage *pkg,
  */
 gboolean
 dnf_package_array_download(GPtrArray *packages,
-                const gchar *directory,
-                DnfState *state,
-                GError **error)
+                           const gchar *directory,
+                           DnfState *state,
+                           GError **error)
 {
     DnfState *state_local;
     GHashTableIter hiter;
@@ -756,10 +741,8 @@ dnf_package_array_download(GPtrArray *packages,
 
         repo = dnf_package_get_repo(pkg);
         if (repo == NULL) {
-            g_set_error_literal(error,
-                                DNF_ERROR,
-                                DNF_ERROR_INTERNAL_ERROR,
-                                "package repo is unset");
+            g_set_error_literal(
+              error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, "package repo is unset");
             return FALSE;
         }
         repo_packages = g_hash_table_lookup(repo_to_packages, repo);

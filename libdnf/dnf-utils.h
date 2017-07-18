@@ -24,12 +24,14 @@
 
 #include <glib.h>
 
-gchar           *dnf_realpath                       (const gchar            *path);
-gboolean         dnf_remove_recursive               (const gchar            *directory,
-                                                     GError                 **error);
-gboolean         dnf_get_file_contents_allow_noent  (const gchar            *path,
-                                                     gchar                  **out_contents,
-                                                     gsize                  *length,
-                                                     GError                 **error);
+gchar *
+dnf_realpath(const gchar *path);
+gboolean
+dnf_remove_recursive(const gchar *directory, GError **error);
+gboolean
+dnf_get_file_contents_allow_noent(const gchar *path,
+                                  gchar **out_contents,
+                                  gsize *length,
+                                  GError **error);
 
 #endif /* __DNF_UTILS_H */

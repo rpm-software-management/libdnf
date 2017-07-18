@@ -21,8 +21,11 @@
 #ifndef ADVISORY_PY_H
 #define ADVISORY_PY_H
 
+#include "dnf-advisory.h"
+
 extern PyTypeObject advisory_Type;
 
-PyObject * advisoryToPyObject(DnfAdvisory *advisory, PyObject *sack);
+PyObject *
+advisoryToPyObject(DnfAdvisory *advisory, PyObject *sack);
 
 #endif

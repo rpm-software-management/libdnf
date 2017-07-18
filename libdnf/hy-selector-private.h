@@ -23,7 +23,8 @@
 
 #include "hy-selector.h"
 
-struct _HySelector {
+struct _HySelector
+{
     DnfSack *sack;
     struct _Filter *f_arch;
     struct _Filter *f_evr;
@@ -34,6 +35,10 @@ struct _HySelector {
     struct _Filter *f_pkg;
 };
 
-static inline DnfSack *selector_sack(HySelector sltr) { return sltr->sack; }
+static inline DnfSack *
+selector_sack(HySelector sltr)
+{
+    return sltr->sack;
+}
 
 #endif // HY_SELECTOR_INTERNAL_H

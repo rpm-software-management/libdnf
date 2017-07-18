@@ -21,13 +21,13 @@
 #include "Python.h"
 
 // hawkey
+#include "dnf-sack-private.h"
 #include "dnf-types.h"
+#include "dnf-version.h"
 #include "hy-package-private.h"
 #include "hy-packageset.h"
 #include "hy-repo.h"
-#include "dnf-sack-private.h"
 #include "hy-util.h"
-#include "dnf-version.h"
 
 // pyhawkey
 #include "exception-py.h"
@@ -39,9 +39,9 @@
 
 #include "pycomp.h"
 
-typedef struct {
-    PyObject_HEAD
-    DnfSack *sack;
+typedef struct
+{
+    PyObject_HEAD DnfSack *sack;
     PyObject *custom_package_class;
     PyObject *custom_package_val;
     FILE *log_out;
@@ -56,7 +56,7 @@ new_package(PyObject *sack, Id id)
         PyErr_SetString(PyExc_TypeError, "Expected a _hawkey.Sack object.");
         return NULL;
     }
-    self = (_SackObject*)sack;
+    self = (_SackObject *)sack;
     PyObject *arglist;
     if (self->custom_package_class || self->custom_package_val) {
         arglist = Py_BuildValue("(Oi)O", sack, id, self->custom_package_val);
@@ -69,7 +69,7 @@ new_package(PyObject *sack, Id id)
     if (self->custom_package_class) {
         package = PyObject_CallObject(self->custom_package_class, arglist);
     } else {
-        package = PyObject_CallObject((PyObject*)&package_Type, arglist);
+        package = PyObject_CallObject((PyObject *)&package_Type, arglist);
     }
     Py_DECREF(arglist);
     return package;
@@ -140,35 +140,37 @@ const char *
 log_level_name(int level)
 {
     switch (level) {
-    case G_LOG_FLAG_FATAL:
-        return "FATAL";
-    case G_LOG_LEVEL_ERROR:
-        return "ERROR";
-    case G_LOG_LEVEL_CRITICAL:
-        return "CRITICAL";
-    case G_LOG_LEVEL_WARNING:
-        return "WARN";
-    case G_LOG_LEVEL_DEBUG:
-        return "DEBUG";
-    case G_LOG_LEVEL_INFO:
-        return "INFO";
-    default:
-        return "(level?)";
+        case G_LOG_FLAG_FATAL:
+            return "FATAL";
+        case G_LOG_LEVEL_ERROR:
+            return "ERROR";
+        case G_LOG_LEVEL_CRITICAL:
+            return "CRITICAL";
+        case G_LOG_LEVEL_WARNING:
+            return "WARN";
+        case G_LOG_LEVEL_DEBUG:
+            return "DEBUG";
+        case G_LOG_LEVEL_INFO:
+            return "INFO";
+        default:
+            return "(level?)";
     }
 }
 
 static void
-log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data)
+log_handler(const gchar *log_domain,
+            GLogLevelFlags log_level,
+            const gchar *message,
+            gpointer user_data)
 {
     time_t t = time(NULL);
     struct tm tm;
     char timestr[26];
 
-    FILE *log_out = (FILE*) user_data;
+    FILE *log_out = (FILE *)user_data;
     localtime_r(&t, &tm);
     strftime(timestr, 26, "%b-%d %H:%M:%S ", &tm);
-    gchar *msg = g_strjoin("", log_level_name(log_level), " ",
-                           timestr, message, "\n", NULL);
+    gchar *msg = g_strjoin("", log_level_name(log_level), " ", timestr, message, "\n", NULL);
     fwrite(msg, strlen(msg), 1, log_out);
     fflush(log_out);
     g_free(msg);
@@ -183,8 +185,10 @@ set_logfile(const gchar *path, FILE *log_out)
         return FALSE;
 
     g_log_set_default_handler(log_handler, log_out);
-    g_info("=== Started libdnf-%d.%d.%d ===", LIBDNF_MAJOR_VERSION,
-            LIBDNF_MINOR_VERSION, LIBDNF_MICRO_VERSION);
+    g_info("=== Started libdnf-%d.%d.%d ===",
+           LIBDNF_MAJOR_VERSION,
+           LIBDNF_MINOR_VERSION,
+           LIBDNF_MICRO_VERSION);
     return TRUE;
 }
 
@@ -205,14 +209,21 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     self->log_out = NULL;
     int make_cache_dir = 0;
     gboolean all_arch = FALSE;
-    const char *kwlist[] = {"cachedir", "arch", "rootdir", "pkgcls",
-                      "pkginitval", "make_cache_dir", "logfile", "all_arch",
-                      NULL};
+    const char *kwlist[] = { "cachedir",       "arch",    "rootdir",  "pkgcls", "pkginitval",
+                             "make_cache_dir", "logfile", "all_arch", NULL };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OssOOiOi", (char**) kwlist,
-                                     &cachedir_py, &arch, &rootdir,
-                                     &custom_class, &custom_val,
-                                     &make_cache_dir, &logfile_py, &all_arch))
+    if (!PyArg_ParseTupleAndKeywords(args,
+                                     kwds,
+                                     "|OssOOiOi",
+                                     (char **)kwlist,
+                                     &cachedir_py,
+                                     &arch,
+                                     &rootdir,
+                                     &custom_class,
+                                     &custom_val,
+                                     &make_cache_dir,
+                                     &logfile_py,
+                                     &all_arch))
         return -1;
     if (cachedir_py != NULL)
         cachedir = pycomp_get_string(cachedir_py, &tmp_py_str);
@@ -241,15 +252,14 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     Py_XDECREF(tmp2_py_str);
     if (!dnf_sack_setup(self->sack, flags, &error)) {
         switch (error->code) {
-        case DNF_ERROR_FILE_INVALID:
-            PyErr_SetString(PyExc_IOError,
-                            "Failed creating working files for the Sack.");
-            break;
-        case DNF_ERROR_INVALID_ARCHITECTURE:
-            PyErr_SetString(HyExc_Arch, "Unrecognized arch for the sack.");
-            break;
-        default:
-            assert(0);
+            case DNF_ERROR_FILE_INVALID:
+                PyErr_SetString(PyExc_IOError, "Failed creating working files for the Sack.");
+                break;
+            case DNF_ERROR_INVALID_ARCHITECTURE:
+                PyErr_SetString(HyExc_Arch, "Unrecognized arch for the sack.");
+                break;
+            default:
+                assert(0);
         }
         return -1;
     }
@@ -265,7 +275,6 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     if (custom_val && custom_val != Py_None) {
         Py_INCREF(custom_val);
         self->custom_package_val = custom_val;
-
     }
     return 0;
 }
@@ -326,10 +335,10 @@ set_installonly_limit(_SackObject *self, PyObject *obj, void *unused)
 }
 
 static PyGetSetDef sack_getsetters[] = {
-    {(char*)"cache_dir",        (getter)get_cache_dir, NULL, NULL, NULL},
-    {(char*)"installonly",        NULL, (setter)set_installonly, NULL, NULL},
-    {(char*)"installonly_limit",        NULL, (setter)set_installonly_limit, NULL, NULL},
-    {NULL}                        /* sentinel */
+    { (char *)"cache_dir", (getter)get_cache_dir, NULL, NULL, NULL },
+    { (char *)"installonly", NULL, (setter)set_installonly, NULL, NULL },
+    { (char *)"installonly_limit", NULL, (setter)set_installonly_limit, NULL, NULL },
+    { NULL } /* sentinel */
 };
 
 /* object methods */
@@ -341,10 +350,9 @@ _knows(_SackObject *self, PyObject *args, PyObject *kwds)
     const char *version = NULL;
     int name_only = 0, icase = 0, glob = 0;
 
-    const char *kwlist[] = {"name", "version", "name_only", "icase", "glob",
-                      NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|ziii", (char**) kwlist,
-                                     &name, &version, &name_only, &icase, &glob))
+    const char *kwlist[] = { "name", "version", "name_only", "icase", "glob", NULL };
+    if (!PyArg_ParseTupleAndKeywords(
+          args, kwds, "s|ziii", (char **)kwlist, &name, &version, &name_only, &icase, &glob))
         return NULL;
 
     int flags = 0;
@@ -376,7 +384,7 @@ get_running_kernel(_SackObject *self, PyObject *unused)
 
     if (cpkg == NULL)
         Py_RETURN_NONE;
-    PyObject *pkg = new_package((PyObject*)self, dnf_package_get_id(cpkg));
+    PyObject *pkg = new_package((PyObject *)self, dnf_package_get_id(cpkg));
     g_object_unref(cpkg);
     return pkg;
 }
@@ -390,12 +398,12 @@ create_cmdline_repo(_SackObject *self, PyObject *unused)
 static PyObject *
 create_package(_SackObject *self, PyObject *solvable_id)
 {
-    Id id  = PyLong_AsLong(solvable_id);
+    Id id = PyLong_AsLong(solvable_id);
     if (id <= 0) {
         PyErr_SetString(PyExc_TypeError, "Expected a positive integer.");
         return NULL;
     }
-    return new_package((PyObject*)self, id);
+    return new_package((PyObject *)self, id);
 }
 
 static PyObject *
@@ -417,7 +425,7 @@ add_cmdline_package(_SackObject *self, PyObject *fn_obj)
         return NULL;
     }
     Py_XDECREF(tmp_py_str);
-    pkg = new_package((PyObject*)self, dnf_package_get_id(cpkg));
+    pkg = new_package((PyObject *)self, dnf_package_get_id(cpkg));
     g_object_unref(cpkg);
     return pkg;
 }
@@ -481,15 +489,19 @@ static PyObject *
 load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 {
     g_autoptr(GError) error = NULL;
-    const char *kwlist[] = {"repo", "build_cache", "load_filelists", "load_presto",
-                      NULL};
+    const char *kwlist[] = { "repo", "build_cache", "load_filelists", "load_presto", NULL };
 
     HyRepo crepo = NULL;
     int build_cache = 0, unused_1 = 0, unused_2 = 0;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&iii", (char**) kwlist,
-                                     repo_converter, &crepo,
-                                     &build_cache, &unused_1, &unused_2))
-
+    if (!PyArg_ParseTupleAndKeywords(args,
+                                     kwds,
+                                     "|O&iii",
+                                     (char **)kwlist,
+                                     repo_converter,
+                                     &crepo,
+                                     &build_cache,
+                                     &unused_1,
+                                     &unused_2))
 
         return 0;
 
@@ -506,15 +518,21 @@ load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 {
-    const char *kwlist[] = {"repo", "build_cache", "load_filelists", "load_presto",
-                      "load_updateinfo", NULL};
+    const char *kwlist[] = { "repo",        "build_cache",     "load_filelists",
+                             "load_presto", "load_updateinfo", NULL };
 
     HyRepo crepo = NULL;
     int build_cache = 0, load_filelists = 0, load_presto = 0, load_updateinfo = 0;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|iiii", (char**) kwlist,
-                                     repo_converter, &crepo,
-                                     &build_cache, &load_filelists,
-                                     &load_presto, &load_updateinfo))
+    if (!PyArg_ParseTupleAndKeywords(args,
+                                     kwds,
+                                     "O&|iiii",
+                                     (char **)kwlist,
+                                     repo_converter,
+                                     &crepo,
+                                     &build_cache,
+                                     &load_filelists,
+                                     &load_presto,
+                                     &load_updateinfo))
         return 0;
 
     int flags = 0;
@@ -549,84 +567,67 @@ deepcopy(_SackObject *self, PyObject *args, PyObject *kwds)
     return NULL;
 }
 
-static struct
-PyMethodDef sack_methods[] = {
-    {"__deepcopy__", (PyCFunction)deepcopy, METH_KEYWORDS|METH_VARARGS,
-     NULL},
-    {"_knows",                (PyCFunction)_knows, METH_KEYWORDS|METH_VARARGS,
-     NULL},
-    {"evr_cmp",                (PyCFunction)evr_cmp, METH_VARARGS,
-     NULL},
-    {"get_running_kernel", (PyCFunction)get_running_kernel, METH_NOARGS,
-     NULL},
-    {"create_cmdline_repo", (PyCFunction)create_cmdline_repo, METH_NOARGS,
-     NULL},
-    {"create_package", (PyCFunction)create_package, METH_O,
-     NULL},
-    {"add_cmdline_package", (PyCFunction)add_cmdline_package, METH_O,
-     NULL},
-    {"add_excludes", (PyCFunction)add_excludes, METH_O,
-     NULL},
-    {"add_includes", (PyCFunction)add_includes, METH_O,
-     NULL},
-    {"disable_repo", (PyCFunction)disable_repo, METH_O,
-     NULL},
-    {"enable_repo", (PyCFunction)enable_repo, METH_O,
-     NULL},
-    {"list_arches", (PyCFunction)list_arches, METH_NOARGS,
-     NULL},
-    {"load_system_repo", (PyCFunction)load_system_repo,
-     METH_VARARGS | METH_KEYWORDS, NULL},
-    {"load_repo", (PyCFunction)load_repo, METH_VARARGS | METH_KEYWORDS,
-     NULL},
-    {"load_yum_repo", (PyCFunction)load_repo, METH_VARARGS | METH_KEYWORDS,
-     NULL},
-    {NULL}                      /* sentinel */
+static struct PyMethodDef sack_methods[] = {
+    { "__deepcopy__", (PyCFunction)deepcopy, METH_KEYWORDS | METH_VARARGS, NULL },
+    { "_knows", (PyCFunction)_knows, METH_KEYWORDS | METH_VARARGS, NULL },
+    { "evr_cmp", (PyCFunction)evr_cmp, METH_VARARGS, NULL },
+    { "get_running_kernel", (PyCFunction)get_running_kernel, METH_NOARGS, NULL },
+    { "create_cmdline_repo", (PyCFunction)create_cmdline_repo, METH_NOARGS, NULL },
+    { "create_package", (PyCFunction)create_package, METH_O, NULL },
+    { "add_cmdline_package", (PyCFunction)add_cmdline_package, METH_O, NULL },
+    { "add_excludes", (PyCFunction)add_excludes, METH_O, NULL },
+    { "add_includes", (PyCFunction)add_includes, METH_O, NULL },
+    { "disable_repo", (PyCFunction)disable_repo, METH_O, NULL },
+    { "enable_repo", (PyCFunction)enable_repo, METH_O, NULL },
+    { "list_arches", (PyCFunction)list_arches, METH_NOARGS, NULL },
+    { "load_system_repo", (PyCFunction)load_system_repo, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "load_repo", (PyCFunction)load_repo, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "load_yum_repo", (PyCFunction)load_repo, METH_VARARGS | METH_KEYWORDS, NULL },
+    { NULL } /* sentinel */
 };
 
 PySequenceMethods sack_sequence = {
-    (lenfunc)len,                /* sq_length */
+    (lenfunc)len, /* sq_length */
 };
 
 PyTypeObject sack_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "_hawkey.Sack",                /*tp_name*/
-    sizeof(_SackObject),        /*tp_basicsize*/
-    0,                                /*tp_itemsize*/
-    (destructor) sack_dealloc,  /*tp_dealloc*/
-    0,                                /*tp_print*/
-    0,                                /*tp_getattr*/
-    0,                                /*tp_setattr*/
-    0,                                /*tp_compare*/
-    0,                                /*tp_repr*/
-    0,                                /*tp_as_number*/
-    &sack_sequence,                /*tp_as_sequence*/
-    0,                                /*tp_as_mapping*/
-    0,                                /*tp_hash */
-    0,                                /*tp_call*/
-    0,                                /*tp_str*/
-    0,                                /*tp_getattro*/
-    0,                                /*tp_setattro*/
-    0,                                /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,        /*tp_flags*/
-    "Sack object",                /* tp_doc */
-    0,                                /* tp_traverse */
-    0,                                /* tp_clear */
-    0,                                /* tp_richcompare */
-    0,                                /* tp_weaklistoffset */
-    PyObject_SelfIter,                /* tp_iter */
-    0,                                 /* tp_iternext */
-    sack_methods,                /* tp_methods */
-    0,                                /* tp_members */
-    sack_getsetters,                /* tp_getset */
-    0,                                /* tp_base */
-    0,                                /* tp_dict */
-    0,                                /* tp_descr_get */
-    0,                                /* tp_descr_set */
-    0,                                /* tp_dictoffset */
-    (initproc)sack_init,        /* tp_init */
-    0,                                /* tp_alloc */
-    sack_new,                        /* tp_new */
-    0,                                /* tp_free */
-    0,                                /* tp_is_gc */
+    PyVarObject_HEAD_INIT(NULL, 0) "_hawkey.Sack", /*tp_name*/
+    sizeof(_SackObject),                           /*tp_basicsize*/
+    0,                                             /*tp_itemsize*/
+    (destructor)sack_dealloc,                      /*tp_dealloc*/
+    0,                                             /*tp_print*/
+    0,                                             /*tp_getattr*/
+    0,                                             /*tp_setattr*/
+    0,                                             /*tp_compare*/
+    0,                                             /*tp_repr*/
+    0,                                             /*tp_as_number*/
+    &sack_sequence,                                /*tp_as_sequence*/
+    0,                                             /*tp_as_mapping*/
+    0,                                             /*tp_hash */
+    0,                                             /*tp_call*/
+    0,                                             /*tp_str*/
+    0,                                             /*tp_getattro*/
+    0,                                             /*tp_setattro*/
+    0,                                             /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,      /*tp_flags*/
+    "Sack object",                                 /* tp_doc */
+    0,                                             /* tp_traverse */
+    0,                                             /* tp_clear */
+    0,                                             /* tp_richcompare */
+    0,                                             /* tp_weaklistoffset */
+    PyObject_SelfIter,                             /* tp_iter */
+    0,                                             /* tp_iternext */
+    sack_methods,                                  /* tp_methods */
+    0,                                             /* tp_members */
+    sack_getsetters,                               /* tp_getset */
+    0,                                             /* tp_base */
+    0,                                             /* tp_dict */
+    0,                                             /* tp_descr_get */
+    0,                                             /* tp_descr_set */
+    0,                                             /* tp_dictoffset */
+    (initproc)sack_init,                           /* tp_init */
+    0,                                             /* tp_alloc */
+    sack_new,                                      /* tp_new */
+    0,                                             /* tp_free */
+    0,                                             /* tp_is_gc */
 };

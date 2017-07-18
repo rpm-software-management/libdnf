@@ -26,17 +26,16 @@
  * This object represents a suggestion how to fix a failed goal
  */
 
-
-#include "dnf-solution-private.h"
 #include "dnf-solution.h"
+#include "dnf-solution-private.h"
 
 struct _DnfSolution
 {
-    GObject            parent_instance;
+    GObject parent_instance;
 
-    DnfSolutionAction  action;
-    gchar             *old;
-    gchar             *new;
+    DnfSolutionAction action;
+    gchar *old;
+    gchar *new;
 };
 
 G_DEFINE_TYPE(DnfSolution, dnf_solution, G_TYPE_OBJECT)
@@ -147,8 +146,10 @@ dnf_solution_get_new(DnfSolution *solution)
  * Since: 0.7.0
  */
 void
-dnf_solution_set(DnfSolution *solution, DnfSolutionAction action,
-                 const gchar *old, const gchar *new)
+dnf_solution_set(DnfSolution *solution,
+                 DnfSolutionAction action,
+                 const gchar *old,
+                 const gchar *new)
 {
     solution->action = action;
     g_free(solution->old);

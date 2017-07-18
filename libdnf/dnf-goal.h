@@ -27,14 +27,13 @@
 #include "hy-goal.h"
 #include "hy-package.h"
 
-gboolean         dnf_goal_depsolve                      (HyGoal          goal,
-                                                         DnfGoalActions  flags,
-                                                         GError          **error);
-GPtrArray       *dnf_goal_get_packages                  (HyGoal          goal,
-                                                         ...);
-void             dnf_goal_add_protected                 (HyGoal goal,
-                                                         DnfPackageSet  *pset);
-void             dnf_goal_set_protected                 (HyGoal goal,
-                                                         DnfPackageSet  *pset);
+gboolean
+dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error);
+GPtrArray *
+dnf_goal_get_packages(HyGoal goal, ...);
+void
+dnf_goal_add_protected(HyGoal goal, DnfPackageSet *pset);
+void
+dnf_goal_set_protected(HyGoal goal, DnfPackageSet *pset);
 
 #endif /* __DNF_GOAL_H */

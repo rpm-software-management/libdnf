@@ -26,18 +26,18 @@
 G_BEGIN_DECLS
 
 #ifdef __cplusplus
-enum _HyForm :short ;
+enum _HyForm : short;
 #else
 typedef enum _HyForm HyForm;
 #endif
 
-typedef struct _HyRepo * HyRepo;
-typedef struct _HyGoal * HyGoal;
-typedef struct _HyNevra * HyNevra;
-typedef struct _HyPossibilities * HyPossibilities;
-typedef struct _HyQuery * HyQuery;
-typedef struct _HySelector * HySelector;
-typedef char * HySubject;
+typedef struct _HyRepo *HyRepo;
+typedef struct _HyGoal *HyGoal;
+typedef struct _HyNevra *HyNevra;
+typedef struct _HyPossibilities *HyPossibilities;
+typedef struct _HyQuery *HyQuery;
+typedef struct _HySelector *HySelector;
+typedef char *HySubject;
 
 typedef const unsigned char HyChecksum;
 
@@ -49,7 +49,8 @@ typedef int (*hy_solution_callback)(HyGoal goal, void *callback_data);
 #define HY_EXT_UPDATEINFO "-updateinfo"
 #define HY_EXT_PRESTO "-presto"
 
-enum _hy_key_name_e {
+enum _hy_key_name_e
+{
     HY_PKG = 0,
     HY_PKG_ALL = 1,
     HY_PKG_ARCH = 2,
@@ -81,23 +82,24 @@ enum _hy_key_name_e {
     HY_PKG_ADVISORY_TYPE = 28
 };
 
-enum _hy_comparison_type_e {
+enum _hy_comparison_type_e
+{
     /* part 1: flags that mix with all types */
-    HY_ICASE  = 1 << 0,
-    HY_NOT    = 1 << 1,
+    HY_ICASE = 1 << 0,
+    HY_NOT = 1 << 1,
     HY_COMPARISON_FLAG_MASK = HY_ICASE | HY_NOT,
 
     /* part 2: comparison types that mix with each other */
-    HY_EQ        = (1 << 8),
-    HY_LT        = (1 << 9),
-    HY_GT        = (1 << 10),
+    HY_EQ = (1 << 8),
+    HY_LT = (1 << 9),
+    HY_GT = (1 << 10),
 
     /* part 3: comparison types that only make sense for strings */
-    HY_SUBSTR        = (1 << 11),
-    HY_GLOB     = (1 << 12),
+    HY_SUBSTR = (1 << 11),
+    HY_GLOB = (1 << 12),
 
     /* part 4: frequently used combinations */
-    HY_NEQ        = HY_EQ | HY_NOT,
+    HY_NEQ = HY_EQ | HY_NOT,
 
     /* part 5: additional flags, not necessarily used for queries */
     HY_NAME_ONLY = (1 << 16),

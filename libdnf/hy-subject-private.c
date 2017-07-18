@@ -18,27 +18,48 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "hy-subject-private.h"
+#include "hy-iutil.h"
+#include "hy-nevra-private.h"
+#include "hy-nevra.h"
 #include <regex.h>
 #include <stdlib.h>
-#include "hy-nevra.h"
-#include "hy-nevra-private.h"
-#include "hy-iutil.h"
-#include "hy-subject-private.h"
 
-const char *nevra_form_regex[] = {
-    "^([^:]+)" "-(([0-9]+):)?" "([^-:]+)" "-(.+)" "\\.([^.]+)$",
-    "^([^:]+)" "-(([0-9]+):)?" "([^-:]+)" "-(.+)" "()$",
-    "^([^:]+)" "-(([0-9]+):)?" "([^-:]+)" "()" "()$",
-    "^([^:]+)" "()()" "()" "()" "\\.([^.]+)$",
-    "^([^:]+)()()()()()$"
-};
+const char *nevra_form_regex[] = { "^([^:]+)"
+                                   "-(([0-9]+):)?"
+                                   "([^-:]+)"
+                                   "-(.+)"
+                                   "\\.([^.]+)$",
+                                   "^([^:]+)"
+                                   "-(([0-9]+):)?"
+                                   "([^-:]+)"
+                                   "-(.+)"
+                                   "()$",
+                                   "^([^:]+)"
+                                   "-(([0-9]+):)?"
+                                   "([^-:]+)"
+                                   "()"
+                                   "()$",
+                                   "^([^:]+)"
+                                   "()()"
+                                   "()"
+                                   "()"
+                                   "\\.([^.]+)$",
+                                   "^([^:]+)()()()()()$" };
 
 #define MATCH_EMPTY(i) (matches[i].rm_so >= matches[i].rm_eo)
 
 int
 nevra_possibility(char *nevra_str, int form, HyNevra nevra)
 {
-    enum { NAME = 1, EPOCH = 3, VERSION = 4, RELEASE = 5, ARCH = 6 };
+    enum
+    {
+        NAME = 1,
+        EPOCH = 3,
+        VERSION = 4,
+        RELEASE = 5,
+        ARCH = 6
+    };
     regex_t reg;
     char *epoch = NULL;
 
@@ -48,14 +69,14 @@ nevra_possibility(char *nevra_str, int form, HyNevra nevra)
     int ret = regexec(&reg, nevra_str, 10, matches, 0);
     regfree(&reg);
     if (ret != 0)
-    return -1;
+        return -1;
     if (!MATCH_EMPTY(EPOCH)) {
-    copy_str_from_subexpr(&epoch, nevra_str, matches, EPOCH);
-    nevra->epoch = atoi(epoch);
-    free(epoch);
+        copy_str_from_subexpr(&epoch, nevra_str, matches, EPOCH);
+        nevra->epoch = atoi(epoch);
+        free(epoch);
     }
     if (copy_str_from_subexpr(&(nevra->name), nevra_str, matches, NAME) == -1)
-    return -1;
+        return -1;
     copy_str_from_subexpr(&(nevra->version), nevra_str, matches, VERSION);
     copy_str_from_subexpr(&(nevra->release), nevra_str, matches, RELEASE);
     copy_str_from_subexpr(&(nevra->arch), nevra_str, matches, ARCH);

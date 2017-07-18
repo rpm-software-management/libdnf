@@ -18,13 +18,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
-
+#include "fixtures.h"
 #include "libdnf/dnf-advisory.h"
 #include "libdnf/dnf-advisorypkg.h"
 #include "libdnf/dnf-advisoryref.h"
 #include "libdnf/hy-package.h"
-#include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"
 
@@ -74,9 +72,8 @@ END_TEST
 
 START_TEST(test_description)
 {
-    ck_assert_str_eq(
-            dnf_advisory_get_description(advisory),
-            "An example update to the tour package.");
+    ck_assert_str_eq(dnf_advisory_get_description(advisory),
+                     "An example update to the tour package.");
 }
 END_TEST
 
@@ -98,9 +95,7 @@ START_TEST(test_packages)
 
     ck_assert_int_eq(pkglist->len, 1);
     DnfAdvisoryPkg *package = g_ptr_array_index(pkglist, 0);
-    ck_assert_str_eq(
-            dnf_advisorypkg_get_filename(package),
-            "tour.noarch.rpm");
+    ck_assert_str_eq(dnf_advisorypkg_get_filename(package), "tour.noarch.rpm");
 
     g_ptr_array_unref(pkglist);
 }
@@ -113,13 +108,11 @@ START_TEST(test_refs)
 
     ck_assert_int_eq(reflist->len, 2);
     reference = g_ptr_array_index(reflist, 0);
-    ck_assert_str_eq(
-            dnf_advisoryref_get_url(reference),
-            "https://bugzilla.redhat.com/show_bug.cgi?id=472090");
+    ck_assert_str_eq(dnf_advisoryref_get_url(reference),
+                     "https://bugzilla.redhat.com/show_bug.cgi?id=472090");
     reference = g_ptr_array_index(reflist, 1);
-    ck_assert_str_eq(
-            dnf_advisoryref_get_url(reference),
-            "https://bugzilla.gnome.com/show_bug.cgi?id=472091");
+    ck_assert_str_eq(dnf_advisoryref_get_url(reference),
+                     "https://bugzilla.gnome.com/show_bug.cgi?id=472091");
 
     g_ptr_array_unref(reflist);
 }

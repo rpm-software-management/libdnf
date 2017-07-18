@@ -19,146 +19,149 @@
  */
 
 #define _GNU_SOURCE
-#include <glib.h>
 #include <assert.h>
 #include <fnmatch.h>
-#include <string.h>
+#include <glib.h>
 #include <solv/evr.h>
 #include <solv/repo.h>
 #include <solv/solver.h>
 #include <solv/util.h>
+#include <string.h>
 
-#include "dnf-types.h"
 #include "dnf-advisorypkg.h"
-#include "hy-iutil.h"
-#include "hy-query-private.h"
-#include "hy-package-private.h"
-#include "hy-packageset-private.h"
 #include "dnf-reldep-private.h"
 #include "dnf-sack-private.h"
+#include "dnf-types.h"
+#include "hy-iutil.h"
+#include "hy-package-private.h"
+#include "hy-packageset-private.h"
+#include "hy-query-private.h"
 #include "hy-util.h"
 
 #define BLOCK_SIZE 15
 
 static int
-match_type_num(int keyname) {
+match_type_num(int keyname)
+{
     switch (keyname) {
-    case HY_PKG_EPOCH:
-        return 1;
-    default:
-        return 0;
+        case HY_PKG_EPOCH:
+            return 1;
+        default:
+            return 0;
     }
 }
 
 static int
-match_type_pkg(int keyname) {
+match_type_pkg(int keyname)
+{
     switch (keyname) {
-    case HY_PKG:
-    case HY_PKG_OBSOLETES:
-        return 1;
-    default:
-        return 0;
+        case HY_PKG:
+        case HY_PKG_OBSOLETES:
+            return 1;
+        default:
+            return 0;
     }
 }
 
 static int
-match_type_reldep(int keyname) {
+match_type_reldep(int keyname)
+{
     switch (keyname) {
-    case HY_PKG_CONFLICTS:
-    case HY_PKG_ENHANCES:
-    case HY_PKG_OBSOLETES:
-    case HY_PKG_PROVIDES:
-    case HY_PKG_RECOMMENDS:
-    case HY_PKG_REQUIRES:
-    case HY_PKG_SUGGESTS:
-    case HY_PKG_SUPPLEMENTS:
-        return 1;
-    default:
-        return 0;
+        case HY_PKG_CONFLICTS:
+        case HY_PKG_ENHANCES:
+        case HY_PKG_OBSOLETES:
+        case HY_PKG_PROVIDES:
+        case HY_PKG_RECOMMENDS:
+        case HY_PKG_REQUIRES:
+        case HY_PKG_SUGGESTS:
+        case HY_PKG_SUPPLEMENTS:
+            return 1;
+        default:
+            return 0;
     }
 }
 
 static int
-match_type_str(int keyname) {
+match_type_str(int keyname)
+{
     switch (keyname) {
-    case HY_PKG_ADVISORY:
-    case HY_PKG_ADVISORY_BUG:
-    case HY_PKG_ADVISORY_CVE:
-    case HY_PKG_ADVISORY_SEVERITY:
-    case HY_PKG_ADVISORY_TYPE:
-    case HY_PKG_ARCH:
-    case HY_PKG_DESCRIPTION:
-    case HY_PKG_ENHANCES:
-    case HY_PKG_EVR:
-    case HY_PKG_FILE:
-    case HY_PKG_LOCATION:
-    case HY_PKG_NAME:
-    case HY_PKG_NEVRA:
-    case HY_PKG_PROVIDES:
-    case HY_PKG_RECOMMENDS:
-    case HY_PKG_RELEASE:
-    case HY_PKG_REPONAME:
-    case HY_PKG_REQUIRES:
-    case HY_PKG_SOURCERPM:
-    case HY_PKG_SUGGESTS:
-    case HY_PKG_SUMMARY:
-    case HY_PKG_SUPPLEMENTS:
-    case HY_PKG_OBSOLETES:
-    case HY_PKG_CONFLICTS:
-    case HY_PKG_URL:
-    case HY_PKG_VERSION:
-        return 1;
-    default:
-        return 0;
+        case HY_PKG_ADVISORY:
+        case HY_PKG_ADVISORY_BUG:
+        case HY_PKG_ADVISORY_CVE:
+        case HY_PKG_ADVISORY_SEVERITY:
+        case HY_PKG_ADVISORY_TYPE:
+        case HY_PKG_ARCH:
+        case HY_PKG_DESCRIPTION:
+        case HY_PKG_ENHANCES:
+        case HY_PKG_EVR:
+        case HY_PKG_FILE:
+        case HY_PKG_LOCATION:
+        case HY_PKG_NAME:
+        case HY_PKG_NEVRA:
+        case HY_PKG_PROVIDES:
+        case HY_PKG_RECOMMENDS:
+        case HY_PKG_RELEASE:
+        case HY_PKG_REPONAME:
+        case HY_PKG_REQUIRES:
+        case HY_PKG_SOURCERPM:
+        case HY_PKG_SUGGESTS:
+        case HY_PKG_SUMMARY:
+        case HY_PKG_SUPPLEMENTS:
+        case HY_PKG_OBSOLETES:
+        case HY_PKG_CONFLICTS:
+        case HY_PKG_URL:
+        case HY_PKG_VERSION:
+            return 1;
+        default:
+            return 0;
     }
 }
-
 
 static Id
 di_keyname2id(int keyname)
 {
-    switch(keyname) {
-    case HY_PKG_DESCRIPTION:
-        return SOLVABLE_DESCRIPTION;
-    case HY_PKG_NAME:
-        return SOLVABLE_NAME;
-    case HY_PKG_URL:
-        return SOLVABLE_URL;
-    case HY_PKG_ARCH:
-        return SOLVABLE_ARCH;
-    case HY_PKG_EVR:
-        return SOLVABLE_EVR;
-    case HY_PKG_SUMMARY:
-        return SOLVABLE_SUMMARY;
-    case HY_PKG_FILE:
-        return SOLVABLE_FILELIST;
-    default:
-        assert(0);
-        return 0;
+    switch (keyname) {
+        case HY_PKG_DESCRIPTION:
+            return SOLVABLE_DESCRIPTION;
+        case HY_PKG_NAME:
+            return SOLVABLE_NAME;
+        case HY_PKG_URL:
+            return SOLVABLE_URL;
+        case HY_PKG_ARCH:
+            return SOLVABLE_ARCH;
+        case HY_PKG_EVR:
+            return SOLVABLE_EVR;
+        case HY_PKG_SUMMARY:
+            return SOLVABLE_SUMMARY;
+        case HY_PKG_FILE:
+            return SOLVABLE_FILELIST;
+        default:
+            assert(0);
+            return 0;
     }
 }
 
 static Id
 reldep_keyname2id(int keyname)
 {
-    switch(keyname) {
-    case HY_PKG_CONFLICTS:
-        return SOLVABLE_CONFLICTS;
-    case HY_PKG_ENHANCES:
-        return SOLVABLE_ENHANCES;
-    case HY_PKG_OBSOLETES:
-        return SOLVABLE_OBSOLETES;
-    case HY_PKG_REQUIRES:
-        return SOLVABLE_REQUIRES;
-    case HY_PKG_RECOMMENDS:
-        return SOLVABLE_RECOMMENDS;
-    case HY_PKG_SUGGESTS:
-        return SOLVABLE_SUGGESTS;
-    case HY_PKG_SUPPLEMENTS:
-        return SOLVABLE_SUPPLEMENTS;
-    default:
-        assert(0);
-        return 0;
+    switch (keyname) {
+        case HY_PKG_CONFLICTS:
+            return SOLVABLE_CONFLICTS;
+        case HY_PKG_ENHANCES:
+            return SOLVABLE_ENHANCES;
+        case HY_PKG_OBSOLETES:
+            return SOLVABLE_OBSOLETES;
+        case HY_PKG_REQUIRES:
+            return SOLVABLE_REQUIRES;
+        case HY_PKG_RECOMMENDS:
+            return SOLVABLE_RECOMMENDS;
+        case HY_PKG_SUGGESTS:
+            return SOLVABLE_SUGGESTS;
+        case HY_PKG_SUPPLEMENTS:
+            return SOLVABLE_SUPPLEMENTS;
+        default:
+            assert(0);
+            return 0;
     }
 }
 
@@ -173,15 +176,15 @@ type2flags(int type, int keyname)
 
     type &= ~HY_COMPARISON_FLAG_MASK;
     switch (type) {
-    case HY_EQ:
-        return ret | SEARCH_STRING;
-    case HY_SUBSTR:
-        return ret | SEARCH_SUBSTRING;
-    case HY_GLOB:
-        return ret | SEARCH_GLOB;
-    default:
-        assert(0); // not implemented
-        return 0;
+        case HY_EQ:
+            return ret | SEARCH_STRING;
+        case HY_SUBSTR:
+            return ret | SEARCH_SUBSTRING;
+        case HY_GLOB:
+            return ret | SEARCH_GLOB;
+        default:
+            assert(0); // not implemented
+            return 0;
     }
 }
 
@@ -193,11 +196,11 @@ valid_filter_str(int keyname, int cmp_type)
 
     cmp_type &= ~HY_NOT; // hy_query_run always handles NOT
     switch (keyname) {
-    case HY_PKG_LOCATION:
-    case HY_PKG_SOURCERPM:
-        return cmp_type == HY_EQ;
-    default:
-        return 1;
+        case HY_PKG_LOCATION:
+        case HY_PKG_SOURCERPM:
+            return cmp_type == HY_EQ;
+        default:
+            return 1;
     }
 }
 
@@ -211,10 +214,10 @@ valid_filter_num(int keyname, int cmp_type)
     if (cmp_type & (HY_ICASE | HY_SUBSTR | HY_GLOB))
         return 0;
     switch (keyname) {
-    case HY_PKG:
-        return cmp_type == HY_EQ;
-    default:
-        return 1;
+        case HY_PKG:
+            return cmp_type == HY_EQ;
+        default:
+            return 1;
     }
 }
 
@@ -247,18 +250,18 @@ filter_reinit(struct _Filter *f, int nmatches)
 {
     for (int m = 0; m < f->nmatches; ++m)
         switch (f->match_type) {
-        case _HY_PKG:
-            g_object_unref(f->matches[m].pset);
-            break;
-        case _HY_STR:
-            g_free(f->matches[m].str);
-            break;
-        case _HY_RELDEP:
-            if (f->matches[m].reldep)
-                g_object_unref (f->matches[m].reldep);
-            break;
-        default:
-            break;
+            case _HY_PKG:
+                g_object_unref(f->matches[m].pset);
+                break;
+            case _HY_STR:
+                g_free(f->matches[m].str);
+                break;
+            case _HY_RELDEP:
+                if (f->matches[m].reldep)
+                    g_object_unref(f->matches[m].reldep);
+                break;
+            default:
+                break;
         }
     g_free(f->matches);
     f->match_type = _HY_VOID;
@@ -284,8 +287,7 @@ query_add_filter(HyQuery q, int nmatches)
     struct _Filter filter;
     memset(&filter, 0, sizeof(filter));
     filter_reinit(&filter, nmatches);
-    q->filters = solv_extend(q->filters, q->nfilters, 1, sizeof(filter),
-                             BLOCK_SIZE);
+    q->filters = solv_extend(q->filters, q->nfilters, 1, sizeof(filter), BLOCK_SIZE);
     q->filters[q->nfilters] = filter; /* structure assignment */
     return q->filters + q->nfilters++;
 }
@@ -301,10 +303,7 @@ filter_dataiterator(HyQuery q, struct _Filter *f, Map *m)
     assert(f->match_type == _HY_STR);
     /* do an OR over all matches: */
     for (int i = 0; i < f->nmatches; ++i) {
-        dataiterator_init(&di, pool, 0, 0,
-                          keyname,
-                          f->matches[i].str,
-                          flags);
+        dataiterator_init(&di, pool, 0, 0, keyname, f->matches[i].str, flags);
         while (dataiterator_step(&di))
             MAPSET(m, di.solvid);
         dataiterator_free(&di);
@@ -351,8 +350,7 @@ filter_epoch(HyQuery q, struct _Filter *f, Map *m)
 
             int cmp_type = f->cmp_type;
             if ((pkg_epoch > epoch && cmp_type & HY_GT) ||
-                (pkg_epoch < epoch && cmp_type & HY_LT) ||
-                (pkg_epoch == epoch && cmp_type & HY_EQ))
+                (pkg_epoch < epoch && cmp_type & HY_LT) || (pkg_epoch == epoch && cmp_type & HY_EQ))
                 MAPSET(m, id);
         }
     }
@@ -372,8 +370,7 @@ filter_evr(HyQuery q, struct _Filter *f, Map *m)
             Solvable *s = pool_id2solvable(pool, id);
             int cmp = pool_evrcmp(pool, s->evr, match_evr, EVRCMP_COMPARE);
 
-            if ((cmp > 0 && f->cmp_type & HY_GT) ||
-                (cmp < 0 && f->cmp_type & HY_LT) ||
+            if ((cmp > 0 && f->cmp_type & HY_GT) || (cmp < 0 && f->cmp_type & HY_LT) ||
                 (cmp == 0 && f->cmp_type & HY_EQ))
                 MAPSET(m, id);
         }
@@ -409,8 +406,7 @@ filter_version(HyQuery q, struct _Filter *f, Map *m)
 
             char *vr = pool_tmpjoin(pool, v, "-0", NULL);
             int cmp = pool_evrcmp_str(pool, vr, filter_vr, EVRCMP_COMPARE);
-            if ((cmp > 0 && cmp_type & HY_GT) ||
-                (cmp < 0 && cmp_type & HY_LT) ||
+            if ((cmp > 0 && cmp_type & HY_GT) || (cmp < 0 && cmp_type & HY_LT) ||
                 (cmp == 0 && cmp_type & HY_EQ))
                 MAPSET(m, id);
         }
@@ -449,8 +445,7 @@ filter_release(HyQuery q, struct _Filter *f, Map *m)
 
             int cmp = pool_evrcmp_str(pool, vr, filter_vr, EVRCMP_COMPARE);
 
-            if ((cmp > 0 && f->cmp_type & HY_GT) ||
-                (cmp < 0 && f->cmp_type & HY_LT) ||
+            if ((cmp > 0 && f->cmp_type & HY_GT) || (cmp < 0 && f->cmp_type & HY_LT) ||
                 (cmp == 0 && f->cmp_type & HY_EQ))
                 MAPSET(m, id);
         }
@@ -506,7 +501,8 @@ filter_obsoletes(HyQuery q, struct _Filter *f, Map *m)
         for (Id *r_id = s->repo->idarraydata + s->obsoletes; *r_id; ++r_id) {
             Id r, rr;
 
-            FOR_PROVIDES(r, rr, *r_id) {
+            FOR_PROVIDES(r, rr, *r_id)
+            {
                 if (!MAPTST(target, r))
                     continue;
                 assert(r != SYSTEMSOLVABLE);
@@ -528,9 +524,9 @@ filter_provides_reldep(HyQuery q, struct _Filter *f, Map *m)
 
     dnf_sack_make_provides_ready(q->sack);
     for (int i = 0; i < f->nmatches; ++i) {
-        Id r_id = dnf_reldep_get_id (f->matches[i].reldep);
+        Id r_id = dnf_reldep_get_id(f->matches[i].reldep);
         FOR_PROVIDES(p, pp, r_id)
-            MAPSET(m, p);
+        MAPSET(m, p);
     }
 }
 
@@ -545,7 +541,7 @@ filter_rco_reldep(HyQuery q, struct _Filter *f, Map *m)
 
     queue_init(&rco);
     for (int i = 0; i < f->nmatches; ++i) {
-        Id r_id = dnf_reldep_get_id (f->matches[i].reldep);
+        Id r_id = dnf_reldep_get_id(f->matches[i].reldep);
 
         for (Id s_id = 1; s_id < pool->nsolvables; ++s_id) {
             if (!MAPTST(q->result, s_id))
@@ -579,7 +575,8 @@ filter_reponame(HyQuery q, struct _Filter *f, Map *m)
 
     for (id = 0; id < pool->nrepos; ++id)
         ourids[id] = 0;
-    FOR_REPOS(id, r) {
+    FOR_REPOS(id, r)
+    {
         for (i = 0; i < f->nmatches; i++) {
             if (!strcmp(r->name, f->matches[i].str)) {
                 ourids[id] = 1;
@@ -593,12 +590,12 @@ filter_reponame(HyQuery q, struct _Filter *f, Map *m)
             continue;
         s = pool_id2solvable(pool, i);
         switch (f->cmp_type & ~HY_COMPARISON_FLAG_MASK) {
-        case HY_EQ:
-            if (s->repo && ourids[s->repo->repoid])
-                MAPSET(m, i);
-            break;
-        default:
-            assert(0);
+            case HY_EQ:
+                if (s->repo && ourids[s->repo->repoid])
+                    MAPSET(m, i);
+                break;
+            default:
+                assert(0);
         }
     }
 }
@@ -634,17 +631,17 @@ filter_nevra(HyQuery q, struct _Filter *f, Map *m)
     for (Id id = 1; id < pool->nsolvables; ++id) {
         if (!MAPTST(q->result, id))
             continue;
-        Solvable* s = pool_id2solvable(pool, id);
-        const char* nevra = pool_solvable2str(pool, s);
+        Solvable *s = pool_id2solvable(pool, id);
+        const char *nevra = pool_solvable2str(pool, s);
 
         for (int mi = 0; mi < f->nmatches; ++mi) {
-             const char *nevra_pattern = f->matches[mi].str;
-             if (!(HY_GLOB & f->cmp_type)) {
-                 if (strcmp(nevra_pattern, nevra) == 0)
-                     MAPSET(m, id);
-             } else if (fnmatch(nevra_pattern, nevra, fn_flags) == 0) {
-                 MAPSET(m, id);
-             }
+            const char *nevra_pattern = f->matches[mi].str;
+            if (!(HY_GLOB & f->cmp_type)) {
+                if (strcmp(nevra_pattern, nevra) == 0)
+                    MAPSET(m, id);
+            } else if (fnmatch(nevra_pattern, nevra, fn_flags) == 0) {
+                MAPSET(m, id);
+            }
         }
     }
 }
@@ -687,13 +684,13 @@ filter_updown_able(HyQuery q, int downgradable, Map *res)
     assert(pool->installed);
     dnf_sack_make_provides_ready(q->sack);
     map_init(&m, pool->nsolvables);
-    FOR_PKG_SOLVABLES(p) {
+    FOR_PKG_SOLVABLES(p)
+    {
         s = pool_id2solvable(pool, p);
         if (s->repo == pool->installed)
             continue;
 
-        what = downgradable ? what_downgrades(pool, p) :
-                              what_upgrades(pool, p);
+        what = downgradable ? what_downgrades(pool, p) : what_upgrades(pool, p);
         if (what != 0 && map_tst(res, what))
             map_set(&m, what);
     }
@@ -748,11 +745,10 @@ filter_latest(HyQuery q, Map *res)
     }
 
     if (q->latest_per_arch)
-        solv_sort(samename.elements, samename.count, sizeof(Id),
-                  filter_latest_sortcmp_byarch, pool);
+        solv_sort(
+          samename.elements, samename.count, sizeof(Id), filter_latest_sortcmp_byarch, pool);
     else
-        solv_sort(samename.elements, samename.count, sizeof(Id),
-                  filter_latest_sortcmp, pool);
+        solv_sort(samename.elements, samename.count, sizeof(Id), filter_latest_sortcmp, pool);
 
     Solvable *considered, *highest = 0;
     Id hp = 0;
@@ -767,7 +763,7 @@ filter_latest(HyQuery q, Map *res)
             highest = considered;
             continue;
         }
-        if (pool_evrcmp(pool,highest->evr, considered->evr, EVRCMP_COMPARE) < 0) {
+        if (pool_evrcmp(pool, highest->evr, considered->evr, EVRCMP_COMPARE) < 0) {
             /* new highest found */
             MAPCLR(res, hp);
             hp = p;
@@ -785,7 +781,7 @@ filter_advisory(HyQuery q, struct _Filter *f, Map *m, int keyname)
 {
     Pool *pool = dnf_sack_get_pool(q->sack);
     DnfAdvisory *advisory;
-    g_autoptr(GPtrArray) pkgs = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
+    g_autoptr(GPtrArray) pkgs = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
     Dataiterator di;
     gboolean eq;
 
@@ -798,32 +794,32 @@ filter_advisory(HyQuery q, struct _Filter *f, Map *m, int keyname)
 
         for (int mi = 0; mi < f->nmatches; ++mi) {
             const char *match = f->matches[mi].str;
-            switch(keyname) {
-            case HY_PKG_ADVISORY:
-                eq = dnf_advisory_match_id(advisory, match);
-                break;
-            case HY_PKG_ADVISORY_BUG:
-                eq = dnf_advisory_match_bug(advisory, match);
-                break;
-            case HY_PKG_ADVISORY_CVE:
-                eq = dnf_advisory_match_cve(advisory, match);
-                break;
-            case HY_PKG_ADVISORY_TYPE:
-                eq = dnf_advisory_match_kind(advisory, match);
-                break;
-            case HY_PKG_ADVISORY_SEVERITY:
-                eq = dnf_advisory_match_severity(advisory, match);
-                break;
-            default:
-                eq = FALSE;
+            switch (keyname) {
+                case HY_PKG_ADVISORY:
+                    eq = dnf_advisory_match_id(advisory, match);
+                    break;
+                case HY_PKG_ADVISORY_BUG:
+                    eq = dnf_advisory_match_bug(advisory, match);
+                    break;
+                case HY_PKG_ADVISORY_CVE:
+                    eq = dnf_advisory_match_cve(advisory, match);
+                    break;
+                case HY_PKG_ADVISORY_TYPE:
+                    eq = dnf_advisory_match_kind(advisory, match);
+                    break;
+                case HY_PKG_ADVISORY_SEVERITY:
+                    eq = dnf_advisory_match_severity(advisory, match);
+                    break;
+                default:
+                    eq = FALSE;
             }
             if (eq) {
                 // remember package nevras for matched advisories
                 GPtrArray *apkgs = dnf_advisory_get_packages(advisory);
                 DnfAdvisoryPkg *apkg;
                 for (unsigned int p = 0; p < apkgs->len; ++p) {
-                     apkg = g_ptr_array_index(apkgs, p);
-                     g_ptr_array_add(pkgs, g_object_ref(apkg));
+                    apkg = g_ptr_array_index(apkgs, p);
+                    g_ptr_array_add(pkgs, g_object_ref(apkg));
                 }
                 g_ptr_array_unref(apkgs);
             }
@@ -838,7 +834,7 @@ filter_advisory(HyQuery q, struct _Filter *f, Map *m, int keyname)
             break;
         if (!MAPTST(q->result, id))
             continue;
-        Solvable* s = pool_id2solvable(pool, id);
+        Solvable *s = pool_id2solvable(pool, id);
         for (unsigned int p = 0; p < pkgs->len; ++p) {
             DnfAdvisoryPkg *apkg = g_ptr_array_index(pkgs, p);
             if (dnf_advisorypkg_compare_solvable(apkg, pool, s) == 0) {
@@ -879,7 +875,7 @@ init_result(HyQuery q)
     q->result = g_malloc0(sizeof(Map));
     map_init(q->result, pool->nsolvables);
     FOR_PKG_SOLVABLES(solvid)
-        map_set(q->result, solvid);
+    map_set(q->result, solvid);
     if (!(q->flags & HY_IGNORE_EXCLUDES)) {
         dnf_sack_recompute_considered(q->sack);
         if (pool->considered)
@@ -909,68 +905,68 @@ hy_query_apply(HyQuery q)
 
         map_empty(&m);
         switch (f->keyname) {
-        case HY_PKG:
-            filter_pkg(q, f, &m);
-            break;
-        case HY_PKG_ALL:
-            filter_all(q, f, &m);
-            break;
-        case HY_PKG_CONFLICTS:
-            filter_rco_reldep(q, f, &m);
-            break;
-        case HY_PKG_EPOCH:
-            filter_epoch(q, f, &m);
-            break;
-        case HY_PKG_EVR:
-            filter_evr(q, f, &m);
-            break;
-        case HY_PKG_NEVRA:
-            filter_nevra(q, f, &m);
-            break;
-        case HY_PKG_VERSION:
-            filter_version(q, f, &m);
-            break;
-        case HY_PKG_RELEASE:
-            filter_release(q, f, &m);
-            break;
-        case HY_PKG_SOURCERPM:
-            filter_sourcerpm(q, f, &m);
-            break;
-        case HY_PKG_OBSOLETES:
-            if (f->match_type == _HY_RELDEP)
+            case HY_PKG:
+                filter_pkg(q, f, &m);
+                break;
+            case HY_PKG_ALL:
+                filter_all(q, f, &m);
+                break;
+            case HY_PKG_CONFLICTS:
                 filter_rco_reldep(q, f, &m);
-            else {
-                assert(f->match_type == _HY_PKG);
-                filter_obsoletes(q, f, &m);
-            }
-            break;
-        case HY_PKG_PROVIDES:
-            assert(f->match_type == _HY_RELDEP);
-            filter_provides_reldep(q, f, &m);
-            break;
-        case HY_PKG_ENHANCES:
-        case HY_PKG_RECOMMENDS:
-        case HY_PKG_REQUIRES:
-        case HY_PKG_SUGGESTS:
-        case HY_PKG_SUPPLEMENTS:
-            assert(f->match_type == _HY_RELDEP);
-            filter_rco_reldep(q, f, &m);
-            break;
-        case HY_PKG_REPONAME:
-            filter_reponame(q, f, &m);
-            break;
-        case HY_PKG_LOCATION:
-            filter_location(q, f, &m);
-            break;
-        case HY_PKG_ADVISORY:
-        case HY_PKG_ADVISORY_BUG:
-        case HY_PKG_ADVISORY_CVE:
-        case HY_PKG_ADVISORY_SEVERITY:
-        case HY_PKG_ADVISORY_TYPE:
-            filter_advisory(q, f, &m, f->keyname);
-            break;
-        default:
-            filter_dataiterator(q, f, &m);
+                break;
+            case HY_PKG_EPOCH:
+                filter_epoch(q, f, &m);
+                break;
+            case HY_PKG_EVR:
+                filter_evr(q, f, &m);
+                break;
+            case HY_PKG_NEVRA:
+                filter_nevra(q, f, &m);
+                break;
+            case HY_PKG_VERSION:
+                filter_version(q, f, &m);
+                break;
+            case HY_PKG_RELEASE:
+                filter_release(q, f, &m);
+                break;
+            case HY_PKG_SOURCERPM:
+                filter_sourcerpm(q, f, &m);
+                break;
+            case HY_PKG_OBSOLETES:
+                if (f->match_type == _HY_RELDEP)
+                    filter_rco_reldep(q, f, &m);
+                else {
+                    assert(f->match_type == _HY_PKG);
+                    filter_obsoletes(q, f, &m);
+                }
+                break;
+            case HY_PKG_PROVIDES:
+                assert(f->match_type == _HY_RELDEP);
+                filter_provides_reldep(q, f, &m);
+                break;
+            case HY_PKG_ENHANCES:
+            case HY_PKG_RECOMMENDS:
+            case HY_PKG_REQUIRES:
+            case HY_PKG_SUGGESTS:
+            case HY_PKG_SUPPLEMENTS:
+                assert(f->match_type == _HY_RELDEP);
+                filter_rco_reldep(q, f, &m);
+                break;
+            case HY_PKG_REPONAME:
+                filter_reponame(q, f, &m);
+                break;
+            case HY_PKG_LOCATION:
+                filter_location(q, f, &m);
+                break;
+            case HY_PKG_ADVISORY:
+            case HY_PKG_ADVISORY_BUG:
+            case HY_PKG_ADVISORY_CVE:
+            case HY_PKG_ADVISORY_SEVERITY:
+            case HY_PKG_ADVISORY_TYPE:
+                filter_advisory(q, f, &m, f->keyname);
+                break;
+            default:
+                filter_dataiterator(q, f, &m);
         }
         if (f->cmp_type & HY_NOT)
             map_subtract(q->result, &m);
@@ -1052,23 +1048,23 @@ hy_query_clone(HyQuery q)
             DnfReldep *reldep;
 
             switch (filterp->match_type) {
-            case _HY_NUM:
-                filterp->matches[j].num = q->filters[i].matches[j].num;
-                break;
-            case _HY_PKG:
-                pset = q->filters[i].matches[j].pset;
-                filterp->matches[j].pset = dnf_packageset_clone(pset);
-                break;
-            case _HY_RELDEP:
-                reldep = q->filters[i].matches[j].reldep;
-                filterp->matches[j].reldep = g_object_ref (reldep);
-                break;
-            case _HY_STR:
-                str_copy = g_strdup(q->filters[i].matches[j].str);
-                filterp->matches[j].str = str_copy;
-                break;
-            default:
-                assert(0);
+                case _HY_NUM:
+                    filterp->matches[j].num = q->filters[i].matches[j].num;
+                    break;
+                case _HY_PKG:
+                    pset = q->filters[i].matches[j].pset;
+                    filterp->matches[j].pset = dnf_packageset_clone(pset);
+                    break;
+                case _HY_RELDEP:
+                    reldep = q->filters[i].matches[j].reldep;
+                    filterp->matches[j].reldep = g_object_ref(reldep);
+                    break;
+                case _HY_STR:
+                    str_copy = g_strdup(q->filters[i].matches[j].str);
+                    filterp->matches[j].str = str_copy;
+                    break;
+                default:
+                    assert(0);
             }
         }
     }
@@ -1089,38 +1085,38 @@ hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
     q->applied = 0;
 
     switch (keyname) {
-    case HY_PKG_CONFLICTS:
-    case HY_PKG_ENHANCES:
-    case HY_PKG_OBSOLETES:
-    case HY_PKG_PROVIDES:
-    case HY_PKG_RECOMMENDS:
-    case HY_PKG_REQUIRES:
-    case HY_PKG_SUGGESTS:
-    case HY_PKG_SUPPLEMENTS: {
-        DnfSack *sack = query_sack(q);
+        case HY_PKG_CONFLICTS:
+        case HY_PKG_ENHANCES:
+        case HY_PKG_OBSOLETES:
+        case HY_PKG_PROVIDES:
+        case HY_PKG_RECOMMENDS:
+        case HY_PKG_REQUIRES:
+        case HY_PKG_SUGGESTS:
+        case HY_PKG_SUPPLEMENTS: {
+            DnfSack *sack = query_sack(q);
 
-    if (cmp_type == HY_GLOB) {
-        DnfReldepList *reldeplist = reldeplist_from_str (sack, match);
-        hy_query_filter_reldep_in(q, keyname, reldeplist);
-        g_object_unref (reldeplist);
-        return 0;
-    } else {
-        DnfReldep *reldep = reldep_from_str (sack, match);
-        if (reldep == NULL)
-            return hy_query_filter_empty(q);
-        int ret = hy_query_filter_reldep(q, keyname, reldep);
-        g_object_unref (reldep);
-        return ret;
-    }
-    }
-    default: {
-        struct _Filter *filterp = query_add_filter(q, 1);
-        filterp->cmp_type = cmp_type;
-        filterp->keyname = keyname;
-        filterp->match_type = _HY_STR;
-        filterp->matches[0].str = g_strdup(match);
-        return 0;
-    }
+            if (cmp_type == HY_GLOB) {
+                DnfReldepList *reldeplist = reldeplist_from_str(sack, match);
+                hy_query_filter_reldep_in(q, keyname, reldeplist);
+                g_object_unref(reldeplist);
+                return 0;
+            } else {
+                DnfReldep *reldep = reldep_from_str(sack, match);
+                if (reldep == NULL)
+                    return hy_query_filter_empty(q);
+                int ret = hy_query_filter_reldep(q, keyname, reldep);
+                g_object_unref(reldep);
+                return ret;
+            }
+        }
+        default: {
+            struct _Filter *filterp = query_add_filter(q, 1);
+            filterp->cmp_type = cmp_type;
+            filterp->keyname = keyname;
+            filterp->match_type = _HY_STR;
+            filterp->matches[0].str = g_strdup(match);
+            return 0;
+        }
     }
 }
 
@@ -1136,14 +1132,13 @@ hy_query_filter_empty(HyQuery q)
 }
 
 int
-hy_query_filter_in(HyQuery q, int keyname, int cmp_type,
-                   const char **matches)
+hy_query_filter_in(HyQuery q, int keyname, int cmp_type, const char **matches)
 {
     if (!valid_filter_str(keyname, cmp_type))
         return DNF_ERROR_BAD_QUERY;
     q->applied = 0;
 
-    const unsigned count = g_strv_length((gchar**)matches);
+    const unsigned count = g_strv_length((gchar **)matches);
     struct _Filter *filterp = query_add_filter(q, count);
 
     filterp->cmp_type = cmp_type;
@@ -1170,8 +1165,7 @@ hy_query_filter_num(HyQuery q, int keyname, int cmp_type, int match)
 }
 
 int
-hy_query_filter_num_in(HyQuery q, int keyname, int cmp_type, int nmatches,
-                       const int *matches)
+hy_query_filter_num_in(HyQuery q, int keyname, int cmp_type, int nmatches, const int *matches)
 {
     if (!valid_filter_num(keyname, cmp_type))
         return DNF_ERROR_BAD_QUERY;
@@ -1188,8 +1182,7 @@ hy_query_filter_num_in(HyQuery q, int keyname, int cmp_type, int nmatches,
 }
 
 int
-hy_query_filter_package_in(HyQuery q, int keyname, int cmp_type,
-                           DnfPackageSet *pset)
+hy_query_filter_package_in(HyQuery q, int keyname, int cmp_type, DnfPackageSet *pset)
 {
     if (!valid_filter_pkg(keyname, cmp_type))
         return DNF_ERROR_BAD_QUERY;
@@ -1214,7 +1207,7 @@ hy_query_filter_reldep(HyQuery q, int keyname, DnfReldep *reldep)
     filterp->cmp_type = HY_EQ;
     filterp->keyname = keyname;
     filterp->match_type = _HY_RELDEP;
-    filterp->matches[0].reldep = g_object_ref (reldep);
+    filterp->matches[0].reldep = g_object_ref(reldep);
     return 0;
 }
 
@@ -1225,25 +1218,24 @@ hy_query_filter_reldep_in(HyQuery q, int keyname, DnfReldepList *reldeplist)
         return DNF_ERROR_BAD_QUERY;
     q->applied = 0;
 
-    const int nmatches = dnf_reldep_list_count (reldeplist);
+    const int nmatches = dnf_reldep_list_count(reldeplist);
     struct _Filter *filterp = query_add_filter(q, nmatches);
     filterp->cmp_type = HY_EQ;
     filterp->keyname = keyname;
     filterp->match_type = _HY_RELDEP;
 
     for (int i = 0; i < nmatches; ++i)
-        filterp->matches[i].reldep = dnf_reldep_list_index (reldeplist, i);
+        filterp->matches[i].reldep = dnf_reldep_list_index(reldeplist, i);
     return 0;
 }
 
 int
-hy_query_filter_provides(HyQuery q, int cmp_type, const char *name,
-                         const char *evr)
+hy_query_filter_provides(HyQuery q, int cmp_type, const char *name, const char *evr)
 {
-    DnfReldep *reldep = dnf_reldep_new (query_sack(q), name, cmp_type, evr);
+    DnfReldep *reldep = dnf_reldep_new(query_sack(q), name, cmp_type, evr);
     assert(reldep);
     int ret = hy_query_filter_reldep(q, HY_PKG_PROVIDES, reldep);
-    g_object_unref (reldep);
+    g_object_unref(reldep);
     return ret;
 }
 
@@ -1254,22 +1246,22 @@ hy_query_filter_provides_in(HyQuery q, char **reldep_strs)
     char *name = NULL;
     char *evr = NULL;
     DnfReldep *reldep;
-    DnfReldepList *reldeplist = dnf_reldep_list_new (q->sack);
+    DnfReldepList *reldeplist = dnf_reldep_list_new(q->sack);
     for (int i = 0; reldep_strs[i] != NULL; ++i) {
         if (parse_reldep_str(reldep_strs[i], &name, &evr, &cmp_type) == -1) {
             g_object_unref(reldeplist);
             return DNF_ERROR_BAD_QUERY;
         }
-        reldep = dnf_reldep_new (q->sack, name, cmp_type, evr);
+        reldep = dnf_reldep_new(q->sack, name, cmp_type, evr);
         if (reldep) {
-            dnf_reldep_list_add (reldeplist, reldep);
-            g_object_unref (reldep);
+            dnf_reldep_list_add(reldeplist, reldep);
+            g_object_unref(reldep);
         }
         g_free(name);
         g_free(evr);
     }
     hy_query_filter_reldep_in(q, HY_PKG_PROVIDES, reldeplist);
-    g_object_unref (reldeplist);
+    g_object_unref(reldeplist);
     return 0;
 }
 
@@ -1280,11 +1272,11 @@ hy_query_filter_requires(HyQuery q, int cmp_type, const char *name, const char *
     resolved in hy_query_apply(), we just have to make sure to store it in the
     filter. */
     int not_neg = cmp_type & ~HY_NOT;
-    DnfReldep *reldep = dnf_reldep_new (q->sack, name, not_neg, evr);
+    DnfReldep *reldep = dnf_reldep_new(q->sack, name, not_neg, evr);
     int rc;
     if (reldep) {
         rc = hy_query_filter_reldep(q, HY_PKG_REQUIRES, reldep);
-        g_object_unref (reldep);
+        g_object_unref(reldep);
         q->filters[q->nfilters - 1].cmp_type = cmp_type;
     } else
         rc = hy_query_filter_empty(q);

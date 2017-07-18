@@ -25,7 +25,9 @@
 
 extern PyTypeObject solution_Type;
 
-PyObject *solutionToPyObject(DnfSolution *solution);
-PyObject *solutionlist_to_pylist(const GPtrArray *slist);
+PyObject *
+solutionToPyObject(DnfSolution *solution);
+PyObject *
+solutionlist_to_pylist(const GPtrArray *slist);
 
 #endif

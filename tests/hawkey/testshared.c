@@ -20,14 +20,12 @@
 
 #include <wordexp.h>
 
-
 #include <solv/pool.h>
 #include <solv/repo.h>
 #include <solv/testcase.h>
 
-
-#include "libdnf/hy-repo.h"
 #include "libdnf/hy-repo-private.h"
+#include "libdnf/hy-repo.h"
 #include "testshared.h"
 
 HyRepo
@@ -65,7 +63,7 @@ glob_for_repofiles(Pool *pool, const char *repo_name, const char *path)
     wordfree(&word_vector);
     return repo;
 
- fail:
+fail:
     wordfree(&word_vector);
     hy_repo_free(repo);
     return NULL;
@@ -83,7 +81,7 @@ load_repo(Pool *pool, const char *name, const char *path, int installed)
 
     if (!fp)
         return 1;
-    testcase_add_testtags(r,  fp, 0);
+    testcase_add_testtags(r, fp, 0);
     if (installed)
         pool_set_installed(pool, r);
     fclose(fp);

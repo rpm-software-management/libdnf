@@ -31,22 +31,21 @@
  * See also: #DnfContext
  */
 
-
 #include <solv/bitmap.h>
 #include <solv/util.h>
 
+#include "dnf-sack-private.h"
 #include "hy-package-private.h"
 #include "hy-packageset-private.h"
-#include "dnf-sack-private.h"
 
 typedef struct
 {
-    DnfSack     *sack;
-    Map          map;
+    DnfSack *sack;
+    Map map;
 } DnfPackageSetPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfPackageSet, dnf_packageset, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (dnf_packageset_get_instance_private (o))
+#define GET_PRIVATE(o) (dnf_packageset_get_instance_private(o))
 
 /**
  * dnf_packageset_finalize:
@@ -102,11 +101,10 @@ dnf_packageset_new(DnfSack *sack)
 }
 
 // see http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetTable
-static const unsigned char _BitCountLookup[256] =
-{
-#   define B2(n) n,     n+1,     n+1,     n+2
-#   define B4(n) B2(n), B2(n+1), B2(n+1), B2(n+2)
-#   define B6(n) B4(n), B4(n+1), B4(n+1), B4(n+2)
+static const unsigned char _BitCountLookup[256] = {
+#define B2(n) n, n + 1, n + 1, n + 2
+#define B4(n) B2(n), B2(n + 1), B2(n + 1), B2(n + 2)
+#define B6(n) B4(n), B4(n + 1), B4(n + 1), B4(n + 2)
     B6(0), B6(1), B6(1), B6(2)
 };
 
@@ -120,8 +118,8 @@ map_index2id(Map *map, unsigned index, Id previous)
 
     if (previous >= 0) {
         ti += previous >> 3;
-        unsigned char byte = *ti; // byte with the previous match
-        byte >>= (previous & 7) + 1; // shift away all previous 1 bits
+        unsigned char byte = *ti;        // byte with the previous match
+        byte >>= (previous & 7) + 1;     // shift away all previous 1 bits
         enabled = _BitCountLookup[byte]; // are there any 1 bits left?
 
         for (id = previous + 1; enabled; byte >>= 1, id++)
@@ -134,7 +132,7 @@ map_index2id(Map *map, unsigned index, Id previous)
     while (ti < end) {
         enabled = _BitCountLookup[*ti];
 
-        if (index >= enabled ){
+        if (index >= enabled) {
             index -= enabled;
             ti++;
             continue;

@@ -30,7 +30,6 @@
  * See also: #DnfAdvisory
  */
 
-
 #include <solv/evr.h>
 #include <solv/util.h>
 
@@ -38,14 +37,14 @@
 
 typedef struct
 {
-    char    *name;
-    char    *evr;
-    char    *arch;
-    char    *filename;
+    char *name;
+    char *evr;
+    char *arch;
+    char *filename;
 } DnfAdvisoryPkgPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfAdvisoryPkg, dnf_advisorypkg, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (dnf_advisorypkg_get_instance_private (o))
+#define GET_PRIVATE(o) (dnf_advisorypkg_get_instance_private(o))
 
 /**
  * dnf_advisorypkg_finalize:
@@ -166,11 +165,8 @@ dnf_advisorypkg_compare(DnfAdvisoryPkg *left, DnfAdvisoryPkg *right)
 {
     DnfAdvisoryPkgPrivate *lpriv = GET_PRIVATE(left);
     DnfAdvisoryPkgPrivate *rpriv = GET_PRIVATE(right);
-    return
-        g_strcmp0(lpriv->name, rpriv->name) ||
-        g_strcmp0(lpriv->evr, rpriv->evr) ||
-        g_strcmp0(lpriv->arch, rpriv->arch) ||
-        g_strcmp0(lpriv->filename, rpriv->filename);
+    return g_strcmp0(lpriv->name, rpriv->name) || g_strcmp0(lpriv->evr, rpriv->evr) ||
+           g_strcmp0(lpriv->arch, rpriv->arch) || g_strcmp0(lpriv->filename, rpriv->filename);
 }
 
 /**
@@ -194,10 +190,8 @@ dnf_advisorypkg_compare_solvable(DnfAdvisoryPkg *advisorypkg, Pool *pool, Solvab
     const char *e = pool_id2str(pool, s->evr);
     const char *a = pool_id2str(pool, s->arch);
 
-    return
-        g_strcmp0(priv->name, n) ||
-        pool_evrcmp_str(pool, priv->evr, e, EVRCMP_COMPARE) ||
-        g_strcmp0(priv->arch, a);
+    return g_strcmp0(priv->name, n) || pool_evrcmp_str(pool, priv->evr, e, EVRCMP_COMPARE) ||
+           g_strcmp0(priv->arch, a);
 }
 
 /**

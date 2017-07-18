@@ -25,29 +25,29 @@
 
 #include <glib-object.h>
 
-#include "hy-types.h"
-#include "dnf-sack.h"
 #include "dnf-repo.h"
+#include "dnf-sack.h"
 #include "dnf-state.h"
 #include "hy-packageset.h"
+#include "hy-types.h"
 
 G_BEGIN_DECLS
 
-#define DNF_TYPE_SACK (dnf_sack_get_type ())
-G_DECLARE_DERIVABLE_TYPE (DnfSack, dnf_sack, DNF, SACK, GObject)
+#define DNF_TYPE_SACK (dnf_sack_get_type())
+G_DECLARE_DERIVABLE_TYPE(DnfSack, dnf_sack, DNF, SACK, GObject)
 
 struct _DnfSackClass
 {
-        GObjectClass            parent_class;
-        /*< private >*/
-        void (*_dnf_reserved1)  (void);
-        void (*_dnf_reserved2)  (void);
-        void (*_dnf_reserved3)  (void);
-        void (*_dnf_reserved4)  (void);
-        void (*_dnf_reserved5)  (void);
-        void (*_dnf_reserved6)  (void);
-        void (*_dnf_reserved7)  (void);
-        void (*_dnf_reserved8)  (void);
+    GObjectClass parent_class;
+    /*< private >*/
+    void (*_dnf_reserved1)(void);
+    void (*_dnf_reserved2)(void);
+    void (*_dnf_reserved3)(void);
+    void (*_dnf_reserved4)(void);
+    void (*_dnf_reserved5)(void);
+    void (*_dnf_reserved6)(void);
+    void (*_dnf_reserved7)(void);
+    void (*_dnf_reserved8)(void);
 };
 
 /**
@@ -58,8 +58,8 @@ struct _DnfSackClass
  * Flags to use when setting up the sack.
  **/
 typedef enum {
-    DNF_SACK_SETUP_FLAG_NONE                = 0,
-    DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR      = 1 << 0,
+    DNF_SACK_SETUP_FLAG_NONE = 0,
+    DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR = 1 << 0,
     /*< private >*/
     DNF_SACK_SETUP_FLAG_LAST
 } DnfSackSetupFlags;
@@ -75,66 +75,64 @@ typedef enum {
  * Flags to use when loading from the sack.
  **/
 typedef enum {
-    DNF_SACK_LOAD_FLAG_NONE                 = 0,
-    DNF_SACK_LOAD_FLAG_BUILD_CACHE          = 1 << 0,
-    DNF_SACK_LOAD_FLAG_USE_FILELISTS        = 1 << 1,
-    DNF_SACK_LOAD_FLAG_USE_PRESTO           = 1 << 2,
-    DNF_SACK_LOAD_FLAG_USE_UPDATEINFO       = 1 << 3,
+    DNF_SACK_LOAD_FLAG_NONE = 0,
+    DNF_SACK_LOAD_FLAG_BUILD_CACHE = 1 << 0,
+    DNF_SACK_LOAD_FLAG_USE_FILELISTS = 1 << 1,
+    DNF_SACK_LOAD_FLAG_USE_PRESTO = 1 << 2,
+    DNF_SACK_LOAD_FLAG_USE_UPDATEINFO = 1 << 3,
     /*< private >*/
     DNF_SACK_LOAD_FLAG_LAST
 } DnfSackLoadFlags;
 
-DnfSack     *dnf_sack_new                   (void);
+DnfSack *
+dnf_sack_new(void);
 
-void         dnf_sack_set_cachedir          (DnfSack        *sack,
-                                             const gchar    *value);
-gboolean     dnf_sack_set_arch              (DnfSack        *sack,
-                                             const gchar    *value,
-                                             GError        **error);
-void         dnf_sack_set_all_arch          (DnfSack        *sack,
-                                             gboolean        all_arch);
-gboolean     dnf_sack_get_all_arch          (DnfSack        *sack);
-void         dnf_sack_set_rootdir           (DnfSack        *sack,
-                                             const gchar    *value);
-gboolean     dnf_sack_setup                 (DnfSack        *sack,
-                                             int             flags,
-                                             GError        **error);
-int          dnf_sack_evr_cmp               (DnfSack        *sack,
-                                             const char     *evr1,
-                                             const char     *evr2);
-const char  *dnf_sack_get_cache_dir         (DnfSack        *sack);
-DnfPackage  *dnf_sack_get_running_kernel    (DnfSack        *sack);
-char        *dnf_sack_give_cache_fn         (DnfSack        *sack,
-                                             const char     *reponame,
-                                             const char     *ext);
-const char **dnf_sack_list_arches           (DnfSack        *sack);
-void         dnf_sack_set_installonly       (DnfSack        *sack,
-                                             const char    **installonly);
-void         dnf_sack_set_installonly_limit (DnfSack        *sack,
-                                             guint           limit);
-guint        dnf_sack_get_installonly_limit (DnfSack        *sack);
-DnfPackage  *dnf_sack_add_cmdline_package   (DnfSack        *sack,
-                                             const char     *fn);
-int          dnf_sack_count                 (DnfSack        *sack);
-void         dnf_sack_add_excludes          (DnfSack        *sack,
-                                             DnfPackageSet  *pset);
-void         dnf_sack_add_includes          (DnfSack        *sack,
-                                             DnfPackageSet  *pset);
-void         dnf_sack_set_excludes          (DnfSack        *sack,
-                                             DnfPackageSet  *pset);
-void         dnf_sack_set_includes          (DnfSack        *sack,
-                                             DnfPackageSet  *pset);
-int          dnf_sack_repo_enabled          (DnfSack        *sack,
-                                             const char     *reponame,
-                                             int             enabled);
-gboolean     dnf_sack_load_system_repo      (DnfSack        *sack,
-                                             HyRepo          a_hrepo,
-                                             int             flags,
-                                             GError        **error);
-gboolean     dnf_sack_load_repo             (DnfSack        *sack,
-                                             HyRepo          hrepo,
-                                             int             flags,
-                                             GError        **error);
+void
+dnf_sack_set_cachedir(DnfSack *sack, const gchar *value);
+gboolean
+dnf_sack_set_arch(DnfSack *sack, const gchar *value, GError **error);
+void
+dnf_sack_set_all_arch(DnfSack *sack, gboolean all_arch);
+gboolean
+dnf_sack_get_all_arch(DnfSack *sack);
+void
+dnf_sack_set_rootdir(DnfSack *sack, const gchar *value);
+gboolean
+dnf_sack_setup(DnfSack *sack, int flags, GError **error);
+int
+dnf_sack_evr_cmp(DnfSack *sack, const char *evr1, const char *evr2);
+const char *
+dnf_sack_get_cache_dir(DnfSack *sack);
+DnfPackage *
+dnf_sack_get_running_kernel(DnfSack *sack);
+char *
+dnf_sack_give_cache_fn(DnfSack *sack, const char *reponame, const char *ext);
+const char **
+dnf_sack_list_arches(DnfSack *sack);
+void
+dnf_sack_set_installonly(DnfSack *sack, const char **installonly);
+void
+dnf_sack_set_installonly_limit(DnfSack *sack, guint limit);
+guint
+dnf_sack_get_installonly_limit(DnfSack *sack);
+DnfPackage *
+dnf_sack_add_cmdline_package(DnfSack *sack, const char *fn);
+int
+dnf_sack_count(DnfSack *sack);
+void
+dnf_sack_add_excludes(DnfSack *sack, DnfPackageSet *pset);
+void
+dnf_sack_add_includes(DnfSack *sack, DnfPackageSet *pset);
+void
+dnf_sack_set_excludes(DnfSack *sack, DnfPackageSet *pset);
+void
+dnf_sack_set_includes(DnfSack *sack, DnfPackageSet *pset);
+int
+dnf_sack_repo_enabled(DnfSack *sack, const char *reponame, int enabled);
+gboolean
+dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **error);
+gboolean
+dnf_sack_load_repo(DnfSack *sack, HyRepo hrepo, int flags, GError **error);
 
 /**********************************************************************/
 
@@ -149,27 +147,29 @@ gboolean     dnf_sack_load_repo             (DnfSack        *sack,
  * The error code.
  **/
 typedef enum {
-        DNF_SACK_ADD_FLAG_NONE                  = 0,
-        DNF_SACK_ADD_FLAG_FILELISTS             = 1,
-        DNF_SACK_ADD_FLAG_UPDATEINFO            = 2,
-        DNF_SACK_ADD_FLAG_REMOTE                = 4,
-        DNF_SACK_ADD_FLAG_UNAVAILABLE           = 8,
-        /*< private >*/
-        DNF_SACK_ADD_FLAG_LAST
+    DNF_SACK_ADD_FLAG_NONE = 0,
+    DNF_SACK_ADD_FLAG_FILELISTS = 1,
+    DNF_SACK_ADD_FLAG_UPDATEINFO = 2,
+    DNF_SACK_ADD_FLAG_REMOTE = 4,
+    DNF_SACK_ADD_FLAG_UNAVAILABLE = 8,
+    /*< private >*/
+    DNF_SACK_ADD_FLAG_LAST
 } DnfSackAddFlags;
 
-gboolean         dnf_sack_add_repo            (DnfSack        *sack,
-                                                 DnfRepo      *repo,
-                                                 guint           permissible_cache_age,
-                                                 DnfSackAddFlags flags,
-                                                 DnfState       *state,
-                                                 GError         **error);
-gboolean         dnf_sack_add_repos           (DnfSack        *sack,
-                                                 GPtrArray      *repos,
-                                                 guint           permissible_cache_age,
-                                                 DnfSackAddFlags flags,
-                                                 DnfState       *state,
-                                                 GError         **error);
+gboolean
+dnf_sack_add_repo(DnfSack *sack,
+                  DnfRepo *repo,
+                  guint permissible_cache_age,
+                  DnfSackAddFlags flags,
+                  DnfState *state,
+                  GError **error);
+gboolean
+dnf_sack_add_repos(DnfSack *sack,
+                   GPtrArray *repos,
+                   guint permissible_cache_age,
+                   DnfSackAddFlags flags,
+                   DnfState *state,
+                   GError **error);
 
 G_END_DECLS
 

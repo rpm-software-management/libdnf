@@ -27,13 +27,12 @@ G_BEGIN_DECLS
 
 #define DNF_TYPE_RELDEP (dnf_reldep_get_type())
 
-G_DECLARE_FINAL_TYPE (DnfReldep, dnf_reldep, DNF, RELDEP, GObject)
+G_DECLARE_FINAL_TYPE(DnfReldep, dnf_reldep, DNF, RELDEP, GObject)
 
-DnfReldep   *dnf_reldep_new       (DnfSack           *sack,
-                                   const gchar       *name,
-                                   DnfComparisonKind  cmp_type,
-                                   const gchar       *evr);
+DnfReldep *
+dnf_reldep_new(DnfSack *sack, const gchar *name, DnfComparisonKind cmp_type, const gchar *evr);
 
-const gchar *dnf_reldep_to_string (DnfReldep         *reldep);
+const gchar *
+dnf_reldep_to_string(DnfReldep *reldep);
 
 G_END_DECLS

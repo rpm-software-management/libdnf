@@ -38,16 +38,16 @@ py_load_repo(PyObject *unused, PyObject *args)
     int installed;
 
     if (!PyArg_ParseTuple(args, "Ossi", &sack, &name, &path, &installed))
-	return NULL;
+        return NULL;
 
     DnfSack *csack = sackFromPyObject(sack);
     if (csack == NULL) {
-	PyErr_SetString(PyExc_TypeError, "Expected a DnfSack *object.");
-	return NULL;
+        PyErr_SetString(PyExc_TypeError, "Expected a DnfSack *object.");
+        return NULL;
     }
     if (load_repo(dnf_sack_get_pool(csack), name, path, installed)) {
-	PyErr_SetString(PyExc_IOError, "Can not load a testing repo.");
-	return NULL;
+        PyErr_SetString(PyExc_IOError, "Can not load a testing repo.");
+        return NULL;
     }
     Py_RETURN_NONE;
 }
@@ -58,19 +58,16 @@ py_glob_for_repofiles(PyObject *unused, PyObject *args)
     const char *repo_name, *path;
     DnfSack *sack;
 
-    if (!PyArg_ParseTuple(args, "O&ss",
-			  sack_converter, &sack, &repo_name, &path))
-	return NULL;
+    if (!PyArg_ParseTuple(args, "O&ss", sack_converter, &sack, &repo_name, &path))
+        return NULL;
     HyRepo repo = glob_for_repofiles(dnf_sack_get_pool(sack), repo_name, path);
     return repoToPyObject(repo);
 }
 
 static struct PyMethodDef testmodule_methods[] = {
-    {"load_repo",		(PyCFunction)py_load_repo,
-     METH_VARARGS, NULL},
-    {"glob_for_repofiles",	(PyCFunction)py_glob_for_repofiles,
-     METH_VARARGS, NULL},
-    {NULL}				/* sentinel */
+    { "load_repo", (PyCFunction)py_load_repo, METH_VARARGS, NULL },
+    { "glob_for_repofiles", (PyCFunction)py_glob_for_repofiles, METH_VARARGS, NULL },
+    { NULL } /* sentinel */
 };
 
 PYCOMP_MOD_INIT(_hawkey_test)
@@ -78,15 +75,11 @@ PYCOMP_MOD_INIT(_hawkey_test)
     PyObject *m;
     PYCOMP_MOD_DEF(m, "_hawkey_test", testmodule_methods);
     if (!m)
-	return PYCOMP_MOD_ERROR_VAL;
-    PyModule_AddIntConstant(m, "EXPECT_SYSTEM_NSOLVABLES",
-			    TEST_EXPECT_SYSTEM_NSOLVABLES);
-    PyModule_AddIntConstant(m, "EXPECT_MAIN_NSOLVABLES",
-			    TEST_EXPECT_MAIN_NSOLVABLES);
-    PyModule_AddIntConstant(m, "EXPECT_UPDATES_NSOLVABLES",
-			    TEST_EXPECT_UPDATES_NSOLVABLES);
-    PyModule_AddIntConstant(m, "EXPECT_YUM_NSOLVABLES",
-			    TEST_EXPECT_YUM_NSOLVABLES);
+        return PYCOMP_MOD_ERROR_VAL;
+    PyModule_AddIntConstant(m, "EXPECT_SYSTEM_NSOLVABLES", TEST_EXPECT_SYSTEM_NSOLVABLES);
+    PyModule_AddIntConstant(m, "EXPECT_MAIN_NSOLVABLES", TEST_EXPECT_MAIN_NSOLVABLES);
+    PyModule_AddIntConstant(m, "EXPECT_UPDATES_NSOLVABLES", TEST_EXPECT_UPDATES_NSOLVABLES);
+    PyModule_AddIntConstant(m, "EXPECT_YUM_NSOLVABLES", TEST_EXPECT_YUM_NSOLVABLES);
     PyModule_AddStringConstant(m, "FIXED_ARCH", TEST_FIXED_ARCH);
     PyModule_AddStringConstant(m, "UNITTEST_DIR", UNITTEST_DIR);
     PyModule_AddStringConstant(m, "YUM_DIR_SUFFIX", YUM_DIR_SUFFIX);
