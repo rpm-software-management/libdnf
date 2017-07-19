@@ -200,22 +200,6 @@ START_TEST(combined2)
     hy_nevra_free(nevra);
 
     ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
-    ck_assert_str_eq(nevra->name, "four-of-fish");
-    ck_assert_int_eq(nevra->epoch, -1);
-    ck_assert_str_eq(nevra->version, "3.6.9");
-    ck_assert_str_eq(nevra->release, "11.fc100.x86_64");
-    fail_unless(nevra->arch == NULL);
-    hy_nevra_free(nevra);
-
-    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
-    ck_assert_str_eq(nevra->name, "four-of-fish-3.6.9");
-    ck_assert_int_eq(nevra->epoch, -1);
-    ck_assert_str_eq(nevra->version, "11.fc100.x86_64");
-    fail_unless(nevra->release == NULL);
-    fail_unless(nevra->arch == NULL);
-    hy_nevra_free(nevra);
-
-    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
     ck_assert_str_eq(nevra->name, "four-of-fish-3.6.9-11.fc100");
     ck_assert_int_eq(nevra->epoch, -1);
     fail_unless(nevra->version == NULL);
@@ -227,6 +211,22 @@ START_TEST(combined2)
     ck_assert_str_eq(nevra->name, "four-of-fish-3.6.9-11.fc100.x86_64");
     ck_assert_int_eq(nevra->epoch, -1);
     fail_unless(nevra->version == NULL);
+    fail_unless(nevra->release == NULL);
+    fail_unless(nevra->arch == NULL);
+    hy_nevra_free(nevra);
+
+    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
+    ck_assert_str_eq(nevra->name, "four-of-fish");
+    ck_assert_int_eq(nevra->epoch, -1);
+    ck_assert_str_eq(nevra->version, "3.6.9");
+    ck_assert_str_eq(nevra->release, "11.fc100.x86_64");
+    fail_unless(nevra->arch == NULL);
+    hy_nevra_free(nevra);
+
+    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
+    ck_assert_str_eq(nevra->name, "four-of-fish-3.6.9");
+    ck_assert_int_eq(nevra->epoch, -1);
+    ck_assert_str_eq(nevra->version, "11.fc100.x86_64");
     fail_unless(nevra->release == NULL);
     fail_unless(nevra->arch == NULL);
     hy_nevra_free(nevra);
