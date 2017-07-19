@@ -34,11 +34,11 @@
 
 // most specific to least
 HyForm HY_FORMS_MOST_SPEC[] = {
-    HY_FORM_NEVRA, HY_FORM_NEVR, HY_FORM_NEV, HY_FORM_NA, HY_FORM_NAME, _HY_FORM_STOP_ };
+    HY_FORM_NEVRA, HY_FORM_NA, HY_FORM_NAME, HY_FORM_NEVR, HY_FORM_NEV, _HY_FORM_STOP_ };
 
 // what the user most probably means
 HyForm HY_FORMS_REAL[] = {
-    HY_FORM_NA, HY_FORM_NAME, HY_FORM_NEVRA, HY_FORM_NEV, HY_FORM_NEVR, _HY_FORM_STOP_ };
+    HY_FORM_NEVRA, HY_FORM_NA, HY_FORM_NAME, HY_FORM_NEVR, HY_FORM_NEV, _HY_FORM_STOP_ };
 
 static inline int
 is_glob_pattern(char *str)
