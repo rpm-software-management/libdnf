@@ -30,12 +30,17 @@ SET (LIBDNF_SRCS
     dnf-solution.c
     dnf-state.c
     dnf-transaction.c
-    dnf-utils.c
-    dnf-swdb.c
-    dnf-swdb-db.c
-    dnf-swdb-groups.c
-    dnf-swdb-trans.c
-    dnf-swdb-pkg.c)
+    dnf-utils.c)
+
+IF (WITH_SWDB)
+    SET (SWDB_sources
+        dnf-swdb.c
+        dnf-swdb-db.c
+        dnf-swdb-groups.c
+        dnf-swdb-trans.c
+        dnf-swdb-pkg.c)
+    SET (LIBDNF_SRCS ${LIBDNF_SRCS} ${SWDB_sources})
+ENDIF()
 
 configure_file ("dnf-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/dnf-version.h)
 configure_file ("libdnf.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc @ONLY)
@@ -49,8 +54,10 @@ TARGET_LINK_LIBRARIES(libdnf
                       ${GLIB_GIO_UNIX_LIBRARIES}
                       ${LIBSOLV_LIBRARY}
                       ${LIBSOLV_EXT_LIBRARY}
-                      ${RPMDB_LIBRARY}
-                      ${SQLite3_LIBRARIES})
+                      ${RPMDB_LIBRARY})
+IF (WITH_SWDB)
+    TARGET_LINK_LIBRARIES(libdnf ${SQLite3_LIBRARIES})
+ENDIF()
 
 if (ENABLE_RHSM_SUPPORT)
     target_link_libraries (libdnf ${RHSM_LIBRARIES})
@@ -69,8 +76,7 @@ TARGET_LINK_LIBRARIES(hth libdnf
                       ${LIBSOLV_LIBRARY}
                       ${LIBSOLV_EXT_LIBRARY}
                       ${REPO_LIBRARIES}
-                      ${RPMDB_LIBRARY}
-                      )
+                      ${RPMDB_LIBRARY})
 
 SET(LIBHAWKEY_headers
     hy-goal.h
@@ -110,19 +116,23 @@ SET(LIBDNF_headers
     dnf-types.h
     dnf-utils.h
     dnf-version.h
-    dnf-swdb.h
-    dnf-swdb-sql.h
-    dnf-swdb-obj.h
-    dnf-swdb-db.h
-    dnf-swdb-db-sql.h
-    dnf-swdb-groups.h
-    dnf-swdb-groups-sql.h
-    dnf-swdb-trans.h
-    dnf-swdb-trans-sql.h
-    dnf-swdb-pkg.h
-    dnf-swdb-pkg-sql.h
-    libdnf.h
-    )
+    libdnf.h)
+
+IF (WITH_SWDB)
+    SET (SWDB_headers
+        dnf-swdb.h
+        dnf-swdb-obj.h
+        dnf-swdb-db.h
+        dnf-swdb-groups.h
+        dnf-swdb-trans.h
+        dnf-swdb-pkg.h)
+    SET (LIBDNF_headers ${LIBDNF_headers} ${SWDB_headers}
+        dnf-swdb-pkg-sql.h
+        dnf-swdb-trans-sql.h
+        dnf-swdb-groups-sql.h
+        dnf-swdb-db-sql.h
+        dnf-swdb-sql.h)
+ENDIF()
 
 # gir generation
 # taken from https://github.com/ufo-kit/libuca/blob/master/src/CMakeLists.txt
@@ -175,11 +185,8 @@ if (GOBJECT_INTROSPECTION_FOUND)
                     dnf-repo.c dnf-repo.h
                     dnf-state.h dnf-state.c
                     dnf-version.h
-                    dnf-swdb.h dnf-swdb.c dnf-swdb-obj.h
-                    dnf-swdb-groups.c dnf-swdb-groups.h
-                    dnf-swdb-db.c dnf-swdb-db.h
-                    dnf-swdb-trans.c dnf-swdb-trans.h
-                    dnf-swdb-pkg.c dnf-swdb-pkg.h
+                    ${SWDB_headers}
+                    ${SWDB_sources}
             DEPENDS libdnf
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
