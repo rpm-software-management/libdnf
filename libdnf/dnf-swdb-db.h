@@ -25,7 +25,6 @@
 
 #include <glib-object.h>
 #include <glib.h>
-#include <glib/gstdio.h>
 #include <sqlite3.h>
 
 gint            _create_db          (sqlite3        *db);

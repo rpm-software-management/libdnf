@@ -23,8 +23,7 @@
 #include "dnf-swdb.h"
 #include "dnf-swdb-sql.h"
 #include "dnf-swdb-trans.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include <glib/gstdio.h>
 
 G_DEFINE_TYPE (DnfSwdb, dnf_swdb, G_TYPE_OBJECT)
 G_DEFINE_TYPE (DnfSwdbTransData, dnf_swdb_transdata, G_TYPE_OBJECT) // trans data
@@ -1788,7 +1787,7 @@ dnf_swdb_open (DnfSwdb *self)
     }
 
     if (sqlite3_open (self->path, &self->db)) {
-        fprintf (stderr, "ERROR: %s %s\n", sqlite3_errmsg (self->db), self->path);
+        g_warning ("ERROR: %s %s\n", sqlite3_errmsg (self->db), self->path);
         return 1;
     }
     return _db_exec (self->db, TRUNCATE_EXCLUSIVE, NULL);
@@ -1810,7 +1809,7 @@ dnf_swdb_close (DnfSwdb *self)
                 sqlite3_finalize (res);
             }
             if (sqlite3_close (self->db)) {
-                fprintf (stderr, "ERROR: %s\n", sqlite3_errmsg (self->db));
+                g_warning ("ERROR: %s\n", sqlite3_errmsg (self->db));
             }
         }
         self->db = NULL;
@@ -1833,7 +1832,7 @@ dnf_swdb_create_db (DnfSwdb *self)
 
     int failed = _create_db (self->db);
     if (failed) {
-        fprintf (stderr, "SWDB error: Unable to create %d tables\n", failed);
+        g_warning ("SWDB error: Unable to create %d tables\n", failed);
         sqlite3_close (self->db);
         self->db = NULL;
         return 2;
@@ -1857,7 +1856,7 @@ dnf_swdb_reset_db (DnfSwdb *self)
     if (dnf_swdb_exist (self)) {
         dnf_swdb_close (self);
         if (g_remove (self->path) != 0) {
-            fprintf (stderr, "SWDB error: Database reset failed!\n");
+            g_warning ("SWDB error: Database reset failed!\n");
             return 1;
         }
     }
