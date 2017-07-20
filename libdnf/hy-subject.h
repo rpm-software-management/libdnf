@@ -53,8 +53,7 @@ struct _HyPossibilities {
     int type;
 };
 
-extern HyForm HY_FORMS_MOST_SPEC[];
-extern HyForm HY_FORMS_REAL[];
+extern const HyForm HY_FORMS_MOST_SPEC[];
 
 HySubject hy_subject_create(const char * pattern);
 void hy_subject_free(HySubject subject);
