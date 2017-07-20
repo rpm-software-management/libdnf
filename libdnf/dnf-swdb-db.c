@@ -23,9 +23,6 @@
 #include "dnf-swdb-db.h"
 #include "dnf-swdb-db-sql.h"
 #include "dnf-swdb.h"
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 /**
  * _create_db:
@@ -75,7 +72,7 @@ gint
 _db_step (sqlite3_stmt *res)
 {
     if (sqlite3_step (res) != SQLITE_DONE) {
-        fprintf (stderr, "SQL error: Statement execution failed!\n");
+        g_warning ("SQL error: Statement execution failed!\n");
         sqlite3_finalize (res);
         return 0;
     }
@@ -178,8 +175,8 @@ _db_prepare (sqlite3 *db, const gchar *sql, sqlite3_stmt **res)
 {
     gint rc = sqlite3_prepare_v2 (db, sql, -1, res, NULL);
     if (rc != SQLITE_OK) {
-        fprintf (stderr, "SQL error: %s\n", sqlite3_errmsg (db));
-        fprintf (stderr, "SQL error: Prepare failed!\n");
+        g_warning ("SQL error: %s\n", sqlite3_errmsg (db));
+        g_warning ("SQL error: Prepare failed!\n");
         sqlite3_finalize (*res);
         return 0;
     }
@@ -204,7 +201,7 @@ _db_bind (sqlite3_stmt *res, const gchar *id, const gchar *source)
 
     if (rc) // something went wrong
     {
-        fprintf (stderr, "SQL error: Could not bind parameters(%d|%s|%s)\n", idx, id, source);
+        g_warning ("SQL error: Could not bind parameters(%d|%s|%s)\n", idx, id, source);
         sqlite3_finalize (res);
         return 0;
     }
@@ -229,7 +226,7 @@ _db_bind_int (sqlite3_stmt *res, const gchar *id, gint source)
 
     if (rc) // something went wrong
     {
-        fprintf (stderr, "SQL error: Could not bind parameters(%s|%d)\n", id, source);
+        g_warning ("SQL error: Could not bind parameters(%s|%d)\n", id, source);
         sqlite3_finalize (res);
         return 0;
     }
@@ -252,7 +249,7 @@ _db_exec (sqlite3 *db, const gchar *cmd, int (*callback) (void *, int, char **, 
     gchar *err_msg;
     gint result = sqlite3_exec (db, cmd, callback, 0, &err_msg);
     if (result != SQLITE_OK) {
-        fprintf (stderr, "SQL error: %s\n", err_msg);
+        g_warning ("SQL error: %s\n", err_msg);
         sqlite3_free (err_msg);
         return 1;
     }
