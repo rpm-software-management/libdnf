@@ -33,11 +33,7 @@
 #include "hy-selector.h"
 
 // most specific to least
-HyForm HY_FORMS_MOST_SPEC[] = {
-    HY_FORM_NEVRA, HY_FORM_NA, HY_FORM_NAME, HY_FORM_NEVR, HY_FORM_NEV, _HY_FORM_STOP_ };
-
-// what the user most probably means
-HyForm HY_FORMS_REAL[] = {
+const HyForm HY_FORMS_MOST_SPEC[] = {
     HY_FORM_NEVRA, HY_FORM_NA, HY_FORM_NAME, HY_FORM_NEVR, HY_FORM_NEV, _HY_FORM_STOP_ };
 
 static inline int
@@ -129,7 +125,7 @@ hy_possibilities_free(HyPossibilities iter)
 }
 
 static HyForm *
-forms_dup(HyForm *forms)
+forms_dup(const HyForm *forms)
 {
     if (forms == NULL)
         return NULL;
@@ -146,7 +142,7 @@ forms_dup(HyForm *forms)
 }
 
 static HyPossibilities
-possibilities_create(HySubject subject, HyForm *forms,DnfSack *sack, int flags,
+possibilities_create(HySubject subject, const HyForm *forms, DnfSack *sack, int flags,
     enum poss_type type)
 {
     HyPossibilities poss = g_malloc0(sizeof(*poss));
@@ -191,7 +187,7 @@ int hy_possibilities_next_reldep(HyPossibilities iter, DnfReldep **out_reldep)
 HyPossibilities
 hy_subject_nevra_possibilities(HySubject subject, HyForm *forms)
 {
-    HyForm *default_forms = forms == NULL ? HY_FORMS_MOST_SPEC : forms;
+    const HyForm *default_forms = forms == NULL ? HY_FORMS_MOST_SPEC : forms;
     return possibilities_create(subject, default_forms, NULL, 0, TYPE_NEVRA);
 }
 
@@ -199,7 +195,7 @@ HyPossibilities
 hy_subject_nevra_possibilities_real(HySubject subject, HyForm *forms,
     DnfSack *sack, int flags)
 {
-    HyForm *default_forms = forms == NULL ? HY_FORMS_REAL : forms;
+    const HyForm *default_forms = forms == NULL ? HY_FORMS_MOST_SPEC : forms;
     return possibilities_create(subject, default_forms, sack, flags, TYPE_NEVRA);
 }
 
