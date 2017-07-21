@@ -35,29 +35,7 @@
 gint
 _create_db (sqlite3 *db)
 {
-    gint failed = 0;
-    failed += _db_exec (db, C_PKG_DATA, NULL);
-    failed += _db_exec (db, C_PKG, NULL);
-    failed += _db_exec (db, C_REPO, NULL);
-    failed += _db_exec (db, C_TRANS_DATA, NULL);
-    failed += _db_exec (db, C_TRANS, NULL);
-    failed += _db_exec (db, C_OUTPUT, NULL);
-    failed += _db_exec (db, C_STATE_TYPE, NULL);
-    failed += _db_exec (db, C_REASON_TYPE, NULL);
-    failed += _db_exec (db, C_OUTPUT_TYPE, NULL);
-    failed += _db_exec (db, C_PKG_TYPE, NULL);
-    failed += _db_exec (db, C_GROUPS, NULL);
-    failed += _db_exec (db, C_T_GROUP_DATA, NULL);
-    failed += _db_exec (db, C_GROUPS_PKG, NULL);
-    failed += _db_exec (db, C_GROUPS_EX, NULL);
-    failed += _db_exec (db, C_ENV_GROUPS, NULL);
-    failed += _db_exec (db, C_ENV, NULL);
-    failed += _db_exec (db, C_ENV_EX, NULL);
-    failed += _db_exec (db, C_RPM_DATA, NULL);
-    failed += _db_exec (db, C_TRANS_WITH, NULL);
-    failed += _db_exec (db, C_INDEX_NEVRA, NULL);
-    failed += _db_exec (db, C_INDEX_NVRA, NULL);
-    return failed;
+    return _db_exec (db, CREATE_TABLES, NULL);
 }
 
 /**
