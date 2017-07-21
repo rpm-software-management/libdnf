@@ -39,82 +39,40 @@
 #define FIND_TIDS_FROM_PDID "SELECT T_ID FROM TRANS_DATA WHERE PD_ID=@pdid"
 #define FIND_ALL_PDID_FOR_PID "SELECT PD_ID FROM PACKAGE_DATA WHERE P_ID=@pid"
 
-#define C_PKG_DATA \
-    "CREATE TABLE PACKAGE_DATA ( PD_ID integer PRIMARY KEY," \
-    "P_ID integer, R_ID integer, from_repo_revision text," \
-    "from_repo_timestamp text, installed_by text, changed_by text," \
-    "installonly text, origin_url text)"
-
-#define C_PKG \
-    "CREATE TABLE PACKAGE ( P_ID integer primary key, name text," \
-    "epoch integer, version text, release text, arch text," \
-    "checksum_data text, checksum_type text, type integer)"
-
-#define C_REPO \
-    "CREATE TABLE REPO (R_ID INTEGER PRIMARY KEY, name text," \
-    "last_synced text, is_expired text)"
-
-#define C_TRANS_DATA \
-    "CREATE TABLE TRANS_DATA (TD_ID INTEGER PRIMARY KEY," \
-    "T_ID integer,PD_ID integer, TG_ID integer, done INTEGER," \
-    "ORIGINAL_TD_ID integer, reason integer, state integer)"
-
-#define C_TRANS \
-    "CREATE TABLE TRANS (T_ID integer primary key, beg_timestamp text," \
-    "end_timestamp text, beg_RPMDB_version text, end_RPMDB_version ,cmdline text," \
-    "loginuid text, releasever text, return_code integer)"
-
-#define C_OUTPUT \
-    "CREATE TABLE OUTPUT (O_ID integer primary key,T_ID INTEGER," \
-    "msg text, type integer)"
-
-#define C_STATE_TYPE "CREATE TABLE STATE_TYPE (state INTEGER PRIMARY KEY, description text)"
-#define C_REASON_TYPE "CREATE TABLE REASON_TYPE (reason INTEGER PRIMARY KEY, description text)"
-#define C_OUTPUT_TYPE "CREATE TABLE OUTPUT_TYPE (type INTEGER PRIMARY KEY, description text)"
-#define C_PKG_TYPE "CREATE TABLE PACKAGE_TYPE (type INTEGER PRIMARY KEY, description text)"
-
-#define C_GROUPS \
-    "CREATE TABLE GROUPS (G_ID INTEGER PRIMARY KEY, name_id text, name text," \
-    "ui_name text, is_installed integer, pkg_types integer)"
-
-#define C_T_GROUP_DATA \
-    "CREATE TABLE TRANS_GROUP_DATA (TG_ID INTEGER PRIMARY KEY," \
-    "T_ID integer, G_ID integer, name_id text, name text, ui_name text," \
-    "is_installed integer, pkg_types integer)"
-
-#define C_GROUPS_PKG \
-    "CREATE TABLE GROUPS_PACKAGE (GP_ID INTEGER PRIMARY KEY," \
-    "G_ID integer, name text)"
-
-#define C_GROUPS_EX \
-    "CREATE TABLE GROUPS_EXCLUDE (GE_ID INTEGER PRIMARY KEY," \
-    "G_ID integer, name text)"
-
-#define C_ENV_GROUPS \
-    "CREATE TABLE ENVIRONMENTS_GROUPS (EG_ID INTEGER PRIMARY KEY," \
-    "E_ID integer, G_ID integer)"
-
-#define C_ENV \
-    "CREATE TABLE ENVIRONMENTS (E_ID INTEGER PRIMARY KEY, name_id text," \
-    "name text, ui_name text, pkg_types integer, grp_types integer)"
-
-#define C_ENV_EX \
-    "CREATE TABLE ENVIRONMENTS_EXCLUDE (EE_ID INTEGER PRIMARY KEY," \
-    "E_ID integer, name text)"
-
-#define C_RPM_DATA \
-    "CREATE TABLE RPM_DATA (RPM_ID INTEGER PRIMARY KEY, P_ID INTEGER," \
-    "buildtime TEXT, buildhost TEXT, license TEXT, packager TEXT, size TEXT," \
-    "sourcerpm TEXT, url TEXT, vendor TEXT, committer TEXT, committime TEXT)"
-
-#define C_TRANS_WITH \
-    "CREATE TABLE TRANS_WITH (TW_ID integer PRIMARY KEY, T_ID integer, P_ID integer)"
-
-#define C_INDEX_NEVRA \
-    "create index nevra on PACKAGE(name || '-' || epoch || ':' || version || '-' || release || '.' || arch)"
-
-#define C_INDEX_NVRA \
-    "create index nvra on PACKAGE(name || '-' || version || '-' || release || '.' || arch)"
+#define CREATE_TABLES \
+    "CREATE TABLE PACKAGE_DATA (PD_ID INTEGER PRIMARY KEY, P_ID INTEGER, R_ID INTEGER," \
+    "   from_repo_revision TEXT, from_repo_timestamp TEXT, installed_by TEXT, changed_by TEXT," \
+    "   installonly TEXT, origin_url TEXT);" \
+    "CREATE TABLE PACKAGE ( P_ID INTEGER PRIMARY KEY, name TEXT, epoch INTEGER, version TEXT, " \
+    "   release TEXT, arch TEXT, checksum_data TEXT, checksum_type TEXT, type INTEGER);" \
+    "CREATE TABLE REPO (R_ID INTEGER PRIMARY KEY, name TEXT, last_synced TEXT, is_expired TEXT);" \
+    "CREATE TABLE TRANS_DATA (TD_ID INTEGER PRIMARY KEY, T_ID INTEGER,PD_ID INTEGER, " \
+    "   TG_ID INTEGER, done INTEGER, ORIGINAL_TD_ID INTEGER, reason INTEGER, state INTEGER);" \
+    "CREATE TABLE TRANS (T_ID INTEGER PRIMARY KEY, beg_timestamp TEXT, end_timestamp TEXT, " \
+    "   beg_RPMDB_version TEXT, end_RPMDB_version ,cmdline TEXT,loginuid TEXT, releasever TEXT, " \
+    "   return_code INTEGER);" \
+    "CREATE TABLE OUTPUT (O_ID INTEGER PRIMARY KEY,T_ID INTEGER, msg TEXT, type INTEGER);" \
+    "CREATE TABLE STATE_TYPE (state INTEGER PRIMARY KEY, description TEXT);" \
+    "CREATE TABLE REASON_TYPE (reason INTEGER PRIMARY KEY, description TEXT);" \
+    "CREATE TABLE OUTPUT_TYPE (type INTEGER PRIMARY KEY, description TEXT);" \
+    "CREATE TABLE PACKAGE_TYPE (type INTEGER PRIMARY KEY, description TEXT);" \
+    "CREATE TABLE GROUPS (G_ID INTEGER PRIMARY KEY, name_id TEXT, name TEXT, ui_name TEXT, " \
+    "   is_installed INTEGER, pkg_types INTEGER);" \
+    "CREATE TABLE TRANS_GROUP_DATA (TG_ID INTEGER PRIMARY KEY, T_ID INTEGER, G_ID INTEGER, " \
+    "   name_id TEXT, name TEXT, ui_name TEXT,is_installed INTEGER, pkg_types INTEGER);" \
+    "CREATE TABLE GROUPS_PACKAGE (GP_ID INTEGER PRIMARY KEY, G_ID INTEGER, name TEXT);" \
+    "CREATE TABLE GROUPS_EXCLUDE (GE_ID INTEGER PRIMARY KEY, G_ID INTEGER, name TEXT);" \
+    "CREATE TABLE ENVIRONMENTS_GROUPS (EG_ID INTEGER PRIMARY KEY, E_ID INTEGER, G_ID INTEGER);" \
+    "CREATE TABLE ENVIRONMENTS (E_ID INTEGER PRIMARY KEY, name_id TEXT, name TEXT, ui_name TEXT, " \
+    "   pkg_types INTEGER, grp_types INTEGER);" \
+    "CREATE TABLE ENVIRONMENTS_EXCLUDE (EE_ID INTEGER PRIMARY KEY, E_ID INTEGER, name TEXT);" \
+    "CREATE TABLE RPM_DATA (RPM_ID INTEGER PRIMARY KEY, P_ID INTEGER, buildtime TEXT, buildhost " \
+    "   TEXT, license TEXT, packager TEXT, size TEXT, sourcerpm TEXT, url TEXT, vendor TEXT, " \
+    "   committer TEXT, committime TEXT);" \
+    "CREATE TABLE TRANS_WITH (TW_ID INTEGER PRIMARY KEY, T_ID INTEGER, P_ID INTEGER);" \
+    "CREATE INDEX nevra ON PACKAGE (name || '-' || epoch || ':' || version || '-' || release ||" \
+    "   '.' || arch);" \
+    "CREATE INDEX nvra on PACKAGE (name || '-' || version || '-' || release || '.' || arch);"
 
 #define S_OUTPUT "SELECT msg FROM OUTPUT WHERE T_ID=@tid and type=@type"
 
