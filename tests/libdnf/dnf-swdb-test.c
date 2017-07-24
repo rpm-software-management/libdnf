@@ -577,11 +577,6 @@ main (int argc, char **argv)
 
     g_test_init (&argc, &argv, NULL);
 
-    /*
-     * Tests TODO
-     * - test ORIGINAL_TD_ID in reinstall, erase and update
-     */
-
     // swdb tests
     g_test_add_func ("/libdnf/swdb[setup]", dnf_swdb_setup_func);
     g_test_add_func ("/libdnf/swdb[initial]", dnf_swdb_initial_func);

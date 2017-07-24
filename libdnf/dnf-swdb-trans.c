@@ -682,9 +682,13 @@ dnf_swdb_trans_data (DnfSwdbTrans *self)
     DB_BIND_INT (res, "@tid", self->tid);
 
     while (sqlite3_step (res) == SQLITE_ROW) {
-        gchar *tmp_reason = _get_description (db, sqlite3_column_int (res, 6), S_REASON_TYPE_BY_ID);
+        g_autofree gchar *tmp_reason = _get_description (db,
+                                                         sqlite3_column_int (res, 6),
+                                                         S_REASON_TYPE_BY_ID);
 
-        gchar *tmp_state = _get_description (db, sqlite3_column_int (res, 7), S_STATE_TYPE_BY_ID);
+        g_autofree gchar *tmp_state = _get_description (db,
+                                                        sqlite3_column_int (res, 7),
+                                                        S_STATE_TYPE_BY_ID);
 
         DnfSwdbTransData *data =
           dnf_swdb_transdata_new (sqlite3_column_int (res, 0), // td_id
@@ -697,8 +701,6 @@ dnf_swdb_trans_data (DnfSwdbTrans *self)
                                   tmp_state                    // state
           );
         g_ptr_array_add (node, (gpointer)data);
-        g_free (tmp_reason);
-        g_free (tmp_state);
     }
     sqlite3_finalize (res);
     return node;

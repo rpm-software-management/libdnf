@@ -36,14 +36,14 @@ G_DECLARE_FINAL_TYPE (DnfSwdbPkg, dnf_swdb_pkg, DNF, SWDB_PKG, GObject)
 struct _DnfSwdbPkg
 {
     GObject parent_instance;
-    const gchar *name;
+    gchar *name;
     gint epoch;
-    const gchar *version;
-    const gchar *release;
-    const gchar *arch;
-    const gchar *checksum_data;
-    const gchar *checksum_type;
-    const gchar *type;
+    gchar *version;
+    gchar *release;
+    gchar *arch;
+    gchar *checksum_data;
+    gchar *checksum_type;
+    gchar *type;
     gboolean done;
     gchar *state;
     gint pid;
