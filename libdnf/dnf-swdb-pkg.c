@@ -31,13 +31,13 @@ static void
 dnf_swdb_pkg_finalize (GObject *object)
 {
     DnfSwdbPkg *pkg = (DnfSwdbPkg *)object;
-    g_free ((gchar *)pkg->name);
-    g_free ((gchar *)pkg->version);
-    g_free ((gchar *)pkg->release);
-    g_free ((gchar *)pkg->arch);
-    g_free ((gchar *)pkg->checksum_data);
-    g_free ((gchar *)pkg->checksum_type);
-    g_free ((gchar *)pkg->type);
+    g_free (pkg->name);
+    g_free (pkg->version);
+    g_free (pkg->release);
+    g_free (pkg->arch);
+    g_free (pkg->checksum_data);
+    g_free (pkg->checksum_type);
+    g_free (pkg->type);
     g_free (pkg->state);
     g_free (pkg->ui_from_repo);
     g_free (pkg->nevra);
@@ -165,8 +165,7 @@ dnf_swdb_pkg_get_ui_from_repo (DnfSwdbPkg *self)
 
     // now we find out if package wasnt installed from some other releasever
     if (pdid && self->swdb->releasever) {
-        gchar *cur_releasever = NULL;
-        ;
+        g_autofree gchar *cur_releasever = NULL;
         sql = S_RELEASEVER_FROM_PDID;
         DB_PREP (self->swdb->db, sql, res);
         DB_BIND_INT (res, "@pdid", pdid);
@@ -177,11 +176,9 @@ dnf_swdb_pkg_get_ui_from_repo (DnfSwdbPkg *self)
         if (cur_releasever && g_strcmp0 (cur_releasever, self->swdb->releasever)) {
             gchar *rc = g_strjoin (NULL, "@", r_name, "/", cur_releasever, NULL);
             g_free (r_name);
-            g_free (cur_releasever);
             self->ui_from_repo = rc;
             return g_strdup (rc);
         }
-        g_free (cur_releasever);
     }
     if (r_name) {
         self->ui_from_repo = r_name;

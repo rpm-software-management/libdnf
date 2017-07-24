@@ -359,7 +359,7 @@ dnf_swdb_checksums_by_nevras (DnfSwdb *self, GPtrArray *nevras)
     gchar *buff2;
     gchar *nevra;
     GPtrArray *checksums = g_ptr_array_new ();
-    const gchar *sql = S_CHECKSUM_BY_NEVRA; //TODO
+    const gchar *sql = S_CHECKSUM_BY_NEVRA;
     const gchar *sql2 = S_CHECKSUM_BY_NVRA;
     for (guint i = 0; i < nevras->len; i++) {
         nevra = (gchar *)g_ptr_array_index (nevras, i);

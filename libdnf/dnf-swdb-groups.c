@@ -149,7 +149,7 @@ gint
 _insert_id_name (sqlite3 *db, const gchar *table, gint id, const gchar *name)
 {
     sqlite3_stmt *res;
-    gchar *sql = g_strjoin (" ", "insert into", table, "values (null, @id, @name)", NULL);
+    g_autofree gchar *sql = g_strjoin (" ", "insert into", table, "values(null, @id, @name)", NULL);
 
     DB_PREP (db, sql, res);
 
@@ -160,8 +160,6 @@ _insert_id_name (sqlite3 *db, const gchar *table, gint id, const gchar *name)
     DB_BIND (res, "@name", name);
 
     DB_STEP (res);
-
-    g_free (sql);
     return 0;
 }
 
@@ -357,12 +355,11 @@ dnf_swdb_add_group (DnfSwdb *self, DnfSwdbGroup *group)
 {
     if (dnf_swdb_open (self))
         return 1;
-    DnfSwdbGroup *old = _get_group (self->db, group->name_id);
+    g_autoptr (DnfSwdbGroup) old = _get_group (self->db, group->name_id);
     if (!old) {
         _add_group (self->db, group);
     } else {
         group->gid = old->gid;
-        g_object_unref (old);
         _update_group (self->db, group);
     }
     return 0;
@@ -425,12 +422,11 @@ dnf_swdb_add_env (DnfSwdb *self, DnfSwdbEnv *env)
 {
     if (dnf_swdb_open (self))
         return 1;
-    DnfSwdbEnv *old = _get_env (self->db, env->name_id);
+    g_autoptr (DnfSwdbEnv) old = _get_env (self->db, env->name_id);
     if (!old) {
         _add_env (self->db, env);
     } else {
         env->eid = old->eid;
-        g_object_unref (old);
         _update_env (self->db, env);
     }
     return 0;
@@ -646,11 +642,10 @@ GPtrArray *
 _get_data_list (sqlite3 *db, int gid, const gchar *table)
 {
     sqlite3_stmt *res;
-    gchar *sql = g_strjoin (" ", "SELECT name FROM", table, "where G_ID=@gid", NULL);
+    g_autofree gchar *sql = g_strjoin (" ", "SELECT name FROM", table, "where G_ID=@gid", NULL);
     DB_PREP (db, sql, res);
     DB_BIND_INT (res, "@gid", gid);
     GPtrArray *node = _get_list_from_table (res);
-    g_free (sql);
     return node;
 }
 
@@ -952,7 +947,7 @@ dnf_swdb_removable_pkg (DnfSwdb *self, const gchar *pkg_name)
     const gchar *sql = S_REM_REASON;
     DB_PREP (self->db, sql, res);
     DB_BIND (res, "@name", pkg_name);
-    gchar *reason = DB_FIND_STR (res);
+    g_autofree gchar *reason = DB_FIND_STR (res);
     if (g_strcmp0 (reason, "group")) // null or != "group"
     {
         removable = FALSE;
@@ -967,6 +962,5 @@ dnf_swdb_removable_pkg (DnfSwdb *self, const gchar *pkg_name)
         sqlite3_finalize (res);
         removable = count < 2;
     }
-    g_free (reason);
     return removable;
 }
