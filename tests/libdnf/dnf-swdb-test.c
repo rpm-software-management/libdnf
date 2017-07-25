@@ -50,8 +50,7 @@ static gchar *
 generate_timestamp (void)
 {
     g_autoptr (GDateTime) t_struct = g_date_time_new_now_utc ();
-    gchar *t_stamp = g_strdup_printf ("%ld", g_date_time_to_unix (t_struct));
-    return t_stamp;
+    return g_strdup_printf ("%ld", g_date_time_to_unix (t_struct));
 }
 
 /**
