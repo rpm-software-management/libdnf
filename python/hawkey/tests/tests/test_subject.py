@@ -100,6 +100,22 @@ class SubjectTest(base.TestCase):
                                                      version='3.6.9',
                                                      release='11.fc100.x86_64',
                                                      arch=None))
+        self.assertEqual(next(nevras), NEVRA(name=None, epoch=None,
+                                             version=None,
+                                             release='four-of-fish-8:3.6.9-11.fc100.x86_64',
+                                             arch=None))
+        self.assertEqual(next(nevras), NEVRA(name=None, epoch=None,
+                                             version='four',
+                                             release='of-fish-8:3.6.9-11.fc100',
+                                             arch='x86_64'))
+        self.assertEqual(next(nevras), NEVRA(name=None, epoch=None,
+                                             version='four',
+                                             release='of-fish-8:3.6.9-11.fc100.x86_64',
+                                             arch=None))
+        self.assertEqual(next(nevras), NEVRA(name=None, epoch=None,
+                                             version=None,
+                                             release='four-of-fish-8:3.6.9-11.fc100',
+                                             arch='x86_64'))
         self.assertRaises(StopIteration, next, nevras)
 
         subj = hawkey.Subject(INP_FOF_NOEPOCH)
@@ -120,6 +136,26 @@ class SubjectTest(base.TestCase):
                                                      epoch=None,
                                                      version='11.fc100.x86_64',
                                                      release=None, arch=None))
+        self.assertEqual(next(nevras), NEVRA(name=None, epoch=None,
+                                             version='four-of-fish-3.6.9-11.fc100.x86_64',
+                                             release=None,
+                                             arch=None))
+        self.assertEqual(next(nevras), NEVRA(name=None, epoch=None,
+                                             version=None,
+                                             release='four-of-fish-3.6.9-11.fc100.x86_64',
+                                             arch=None))
+        self.assertEqual(next(nevras), NEVRA(name=None, epoch=None,
+                                             version='four',
+                                             release='of-fish-3.6.9-11.fc100',
+                                             arch='x86_64'))
+        self.assertEqual(next(nevras), NEVRA(name=None, epoch=None,
+                                             version='four',
+                                             release='of-fish-3.6.9-11.fc100.x86_64',
+                                             arch=None))
+        self.assertEqual(next(nevras), NEVRA(name=None, epoch=None,
+                                             version=None,
+                                             release='four-of-fish-3.6.9-11.fc100',
+                                             arch='x86_64'))
         self.assertRaises(StopIteration, next, nevras)
 
 class SubjectRealPossibilitiesTest(base.TestCase):

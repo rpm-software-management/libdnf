@@ -41,6 +41,12 @@ enum _HyForm {
     HY_FORM_NEV = 3,
     HY_FORM_NA = 4,
     HY_FORM_NAME = 5,
+    HY_FORM_VERSION = 6,
+    HY_FORM_RELEASE = 7,
+    HY_FORM_ARCH = 8,
+    HY_FORM_EVRA = 9,
+    HY_FORM_EVR = 10,
+    HY_FORM_RA = 11,
     _HY_FORM_STOP_ = -1
 };
 
