@@ -20,6 +20,7 @@
 
 from __future__ import absolute_import
 from sys import version_info as python_version
+import warnings
 
 from . import _hawkey
 import collections
@@ -432,6 +433,11 @@ class Subject(_hawkey.Subject):
             yield NEVRA(nevra=nevra)
 
     def nevra_possibilities_real(self, *args, **kwargs):
+        warnings.simplefilter('always', DeprecationWarning)
+        msg = "The function 'nevra_possibilities_real' is deprecated. " \
+              "Please use 'nevra_possibilities' instead. The function will be removed on 2018-01-01"
+        warnings.warn(msg, DeprecationWarning)
+
         poss = super(Subject, self).nevra_possibilities_real(*args, **kwargs)
         for nevra in poss:
             yield NEVRA(nevra=nevra)
