@@ -839,7 +839,7 @@ _get_package_by_pid (sqlite3 *db, gint pid)
     DB_BIND_INT (res, "@pid", pid);
     if (sqlite3_step (res) == SQLITE_ROW) {
         DnfSwdbPkg *pkg = dnf_swdb_pkg_new ((gchar *)sqlite3_column_text (res, 1), // name
-                                            sqlite3_column_int (res, 2), // epoch
+                                            sqlite3_column_int (res, 2),           // epoch
                                             (gchar *)sqlite3_column_text (res, 3), // version
                                             (gchar *)sqlite3_column_text (res, 4), // release
                                             (gchar *)sqlite3_column_text (res, 5), // arch
@@ -1516,6 +1516,109 @@ dnf_swdb_last (DnfSwdb *self, gboolean complete_only)
     DnfSwdbTrans *trans = g_ptr_array_index (node, 0);
     g_ptr_array_free (node, TRUE);
     return trans;
+}
+
+static gboolean
+_is_state_installed (const gchar *state)
+{
+    return !g_strcmp0 (state, "Install") || !g_strcmp0 (state, "Reinstall") ||
+           !g_strcmp0 (state, "Update") || !g_strcmp0 (state, "Downgrade");
+}
+
+static gchar *
+_get_erased_reason (sqlite3 *db, gint tid, gint pid)
+{
+    sqlite3_stmt *res;
+    const gchar *sql = S_ERASED_REASON;
+    DB_PREP (db, sql, res);
+    DB_BIND_INT (res, "@tid", tid);
+    DB_BIND_INT (res, "@pid", pid);
+    gchar *reason = DB_FIND_STR (res);
+    return (reason) ? reason : g_strdup ("user");
+}
+
+/**
+ * dnf_swdb_get_erased_reason:
+ * @self: SWDB object
+ * @nevra: nevra or nvra of package being installed
+ * @first_trans: id of first transaction being undone
+ * @rollback: %true if transaction is performing a rollback
+ *
+ * Get package reason before @first_trans. If package altered in the meantime (and we are
+ * not performing a rollback) then keep reason from latest installation.
+ *
+ * Returns: reason before transaction being undone
+ **/
+gchar *
+dnf_swdb_get_erased_reason (DnfSwdb *self, gchar *nevra, gint first_trans, gboolean rollback)
+{
+    // prepare database
+    if (dnf_swdb_open (self)) {
+        // failed to open DB - warning is printed and package is considered user installed
+        return g_strdup ("user");
+    }
+
+    // get package object
+    g_autoptr (DnfSwdbPkg) pkg = dnf_swdb_package_by_nevra (self, nevra);
+
+    if (!pkg) {
+        // package not found - consider it user installed
+        return g_strdup ("user");
+    }
+
+    // get package transactions
+    GPtrArray *patterns = g_ptr_array_new ();
+    g_ptr_array_add (patterns, (gpointer)pkg->name);
+
+    GArray *tids = dnf_swdb_search (self, patterns);
+
+    g_ptr_array_free (patterns, TRUE);
+
+    if (tids->len == 0) {
+        // there are no transactions available for this package, consider it user installed
+        g_array_free (tids, TRUE);
+        return g_strdup ("user");
+    }
+
+    if (!rollback) {
+        // check if package was modified since transaction being undone
+
+        // find the latest transaction
+        gint max = 0;
+        for (guint i = 0; i < tids->len; ++i) {
+            gint act = g_array_index (tids, gint, i);
+            max = (act > max) ? act : max;
+        }
+
+        // resolve package state in the latest transaction
+        _resolve_package_state (self, pkg, max);
+        if (_is_state_installed (pkg->state)) {
+            // package altered since last transaction and is installed in the system
+            // keep its reason
+            g_array_free (tids, TRUE);
+            return _reason_by_pid (self->db, pkg->pid);
+        }
+    }
+
+    // find last transaction before transaction being undone
+    gint last = 0;
+    for (guint i = 0; i < tids->len; ++i) {
+        gint act = g_array_index (tids, gint, i);
+        if (act < first_trans && act > last) {
+            // set may not be ordered
+            last = act;
+        }
+    }
+
+    g_array_free (tids, TRUE);
+
+    if (last == 0) {
+        // no transaction found - keep it user installed
+        return g_strdup ("user");
+    }
+
+    // get pkg reason from that transaction
+    return _get_erased_reason (self->db, last, pkg->pid);
 }
 
 /****************************** OUTPUT PERSISTOR *****************************/

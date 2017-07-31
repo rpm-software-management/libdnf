@@ -143,6 +143,10 @@
 
 #define S_LATEST_PACKAGE "SELECT p_id FROM package WHERE name=@name ORDER BY p_id DESC LIMIT 1"
 
+#define S_ERASED_REASON \
+    "SELECT description FROM TRANS_DATA join PACKAGE_DATA using (PD_ID) " \
+    "join REASON_TYPE using (reason) WHERE T_ID=@tid and P_ID=@pid"
+
 #define U_REASON_BY_PDID "UPDATE TRANS_DATA SET reason=@reason where PD_ID=@pdid"
 
 #define U_REPO_BY_PID "UPDATE PACKAGE_DATA SET R_ID=@rid where P_ID=@pid"
