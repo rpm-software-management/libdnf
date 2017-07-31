@@ -191,10 +191,14 @@ gint            dnf_swdb_pid_by_nevra           (DnfSwdb        *self,
 void            dnf_swdb_trans_with             (DnfSwdb        *self,
                                                  int             tid,
                                                  int             pid);
- DnfSwdbPkg    *_get_package_by_pid             (sqlite3        *db,
+DnfSwdbPkg     *_get_package_by_pid             (sqlite3        *db,
                                                  gint            pid);
 void            dnf_swdb_trans_with_libdnf      (DnfSwdb        *self,
                                                  int             tid);
+gchar          *dnf_swdb_get_erased_reason      (DnfSwdb        *self,
+                                                 gchar          *nevra,
+                                                 gint            first_trans,
+                                                 gboolean        rollback);
 
 G_END_DECLS
 
