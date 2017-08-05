@@ -68,6 +68,7 @@ gboolean            dnf_swdb_pkg___lt__             (DnfSwdbPkg    *first,
                                                      DnfSwdbPkg    *second);
 gboolean            dnf_swdb_pkg___gt__             (DnfSwdbPkg    *first,
                                                      DnfSwdbPkg    *second);
+gchar              *dnf_swdb_pkg___str__            (DnfSwdbPkg    *pkg);
 
 G_END_DECLS
 
