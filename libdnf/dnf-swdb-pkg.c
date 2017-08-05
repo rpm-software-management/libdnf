@@ -269,3 +269,15 @@ dnf_swdb_pkg___gt__ (DnfSwdbPkg *first, DnfSwdbPkg *second)
 {
     return dnf_swdb_pkg_compare (first, second) < 0;
 }
+
+/**
+ * dnf_swdb_pkg___str__:
+ * @pkg: package object
+ *
+ * Returns: text represenation of the package - nevra
+ **/
+gchar *
+dnf_swdb_pkg___str__ (DnfSwdbPkg *pkg)
+{
+    return g_strdup (pkg->nevra);
+}
