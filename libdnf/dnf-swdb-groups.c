@@ -52,7 +52,7 @@ dnf_swdb_group_init (DnfSwdbGroup *self)
 {
     self->gid = 0;
     self->swdb = NULL;
-    self->is_installed = 0;
+    self->installed = FALSE;
 }
 
 /**
@@ -66,7 +66,7 @@ DnfSwdbGroup *
 dnf_swdb_group_new (const gchar *name_id,
                     const gchar *name,
                     const gchar *ui_name,
-                    gint is_installed,
+                    gboolean installed,
                     gint pkg_types,
                     DnfSwdb *swdb)
 {
@@ -74,7 +74,7 @@ dnf_swdb_group_new (const gchar *name_id,
     group->name_id = g_strdup (name_id);
     group->name = g_strdup (name);
     group->ui_name = g_strdup (ui_name);
-    group->is_installed = is_installed;
+    group->installed = installed;
     group->pkg_types = pkg_types;
     group->swdb = swdb;
     return group;
@@ -105,6 +105,7 @@ dnf_swdb_env_init (DnfSwdbEnv *self)
 {
     self->eid = 0;
     self->swdb = NULL;
+    self->installed = FALSE;
 }
 
 /**
@@ -200,6 +201,25 @@ _insert_group_additional (sqlite3 *db, int gid, GPtrArray *data, const gchar *ta
             _insert_id_name (db, table, gid, name);
         }
     }
+}
+
+/**
+ * _env_installed:
+ * @env: environment object
+ *
+ * Resolve if environment is installed by looking at list of installed groups
+ **/
+static void
+_env_installed (sqlite3 *db, DnfSwdbEnv *env)
+{
+    if (!env->eid)
+        return;
+    sqlite3_stmt *res;
+    const gchar *sql = S_installed_BY_EID;
+    DB_PREP (db, sql, res);
+    DB_BIND_INT (res, "@eid", env->eid);
+    env->installed = sqlite3_step (res) == SQLITE_ROW;
+    sqlite3_finalize (res);
 }
 
 /**
@@ -335,7 +355,7 @@ _add_group (sqlite3 *db, DnfSwdbGroup *group)
     DB_BIND (res, "@name_id", group->name_id);
     DB_BIND (res, "@name", group->name);
     DB_BIND (res, "@ui_name", group->ui_name);
-    DB_BIND_INT (res, "@is_installed", group->is_installed);
+    DB_BIND_INT (res, "@installed", group->installed);
     DB_BIND_INT (res, "@pkg_types", group->pkg_types);
     DB_STEP (res);
     group->gid = sqlite3_last_insert_rowid (db);
@@ -452,7 +472,7 @@ _get_group (sqlite3 *db, const gchar *name_id)
         DnfSwdbGroup *group = dnf_swdb_group_new (name_id,                               // name_id
                                                   (gchar *)sqlite3_column_text (res, 2), // name
                                                   (gchar *)sqlite3_column_text (res, 3), // ui_name
-                                                  sqlite3_column_int (res, 4), // is_installed
+                                                  sqlite3_column_int (res, 4), // installed
                                                   sqlite3_column_int (res, 5), // pkg_types
                                                   NULL);                       // swdb
         group->gid = sqlite3_column_int (res, 0);
@@ -509,6 +529,7 @@ _get_env (sqlite3 *db, const gchar *name_id)
                                             NULL);                                 // swdb
         env->eid = sqlite3_column_int (res, 0);
         sqlite3_finalize (res);
+        _env_installed (db, env);
         return env;
     }
     return NULL;
@@ -562,7 +583,7 @@ dnf_swdb_groups_by_pattern (DnfSwdb *self, const gchar *pattern)
           dnf_swdb_group_new ((const gchar *)sqlite3_column_text (res, 1), // name_id
                               (gchar *)sqlite3_column_text (res, 2),       // name
                               (gchar *)sqlite3_column_text (res, 3),       // ui_name
-                              sqlite3_column_int (res, 4),                 // is_installed
+                              sqlite3_column_int (res, 4),                 // installed
                               sqlite3_column_int (res, 5),                 // pkg_types
                               self);                                       // swdb
         group->gid = sqlite3_column_int (res, 0);
@@ -602,9 +623,13 @@ dnf_swdb_env_by_pattern (DnfSwdb *self, const gchar *pattern)
                                             sqlite3_column_int (res, 5), // grp_types
                                             self);                       // swdb
         env->eid = sqlite3_column_int (res, 0);
-        g_ptr_array_add (node, (gpointer)env);
+        g_ptr_array_add (node, (gpointer) env);
     }
     sqlite3_finalize (res);
+    for (guint i = 0; i < node->len; ++i) {
+        DnfSwdbEnv *env = g_ptr_array_index (node, i);
+        _env_installed (self->db, env);
+    }
     return node;
 }
 
@@ -727,7 +752,7 @@ _update_group (sqlite3 *db, DnfSwdbGroup *group)
     DB_PREP (db, sql, res);
     DB_BIND (res, "@name", group->name);
     DB_BIND (res, "@ui_name", group->ui_name);
-    DB_BIND_INT (res, "@is_installed", group->is_installed);
+    DB_BIND_INT (res, "@installed", group->installed);
     DB_BIND_INT (res, "@pkg_types", group->pkg_types);
     DB_BIND_INT (res, "@gid", group->gid);
     DB_STEP (res);
@@ -738,7 +763,7 @@ _update_group (sqlite3 *db, DnfSwdbGroup *group)
  * @self: SWDB object
  * @group: group object
  *
- * Set group is_installed to 0
+ * Set group installed to %false
  *
  * Returns: 0 if successful
  **/
@@ -749,7 +774,7 @@ dnf_swdb_uninstall_group (DnfSwdb *self, DnfSwdbGroup *group)
         return 1;
     if (dnf_swdb_open (self))
         return 1;
-    group->is_installed = 0;
+    group->installed = FALSE;
     _update_group (self->db, group);
     return 0;
 }
@@ -788,30 +813,6 @@ dnf_swdb_env_get_group_list (DnfSwdbEnv *env)
         return NULL;
     GPtrArray *node = _env_get_group_list (env->swdb->db, env->eid);
     return node;
-}
-
-/**
- * dnf_swdb_env_is_installed:
- * @env: environment object
- *
- * Resolve if environment is installed by looking at list of installed groups
- *
- * Returns: %TRUE if @env is installed (1 of more of its groups is installed)
- **/
-gboolean
-dnf_swdb_env_is_installed (DnfSwdbEnv *env)
-{
-    if (!env->eid)
-        return 0;
-    if (dnf_swdb_open (env->swdb))
-        return 0;
-    sqlite3_stmt *res;
-    const gchar *sql = S_IS_INSTALLED_BY_EID;
-    DB_PREP (env->swdb->db, sql, res);
-    DB_BIND_INT (res, "@eid", env->eid);
-    gboolean found = sqlite3_step (res) == SQLITE_ROW;
-    sqlite3_finalize (res);
-    return found;
 }
 
 /**
@@ -882,10 +883,10 @@ dnf_swdb_groups_commit (DnfSwdb *self, GPtrArray *groups)
  * @db: sqlite database handle
  * @tid: transaction ID
  * @groups: list of #DnfSwdbGroup to be installed
- * @is_installed: tag whether groups should be tagged as installed
+ * @installed: tag whether groups should be tagged as installed
  **/
 void
-_log_group_trans (sqlite3 *db, gint tid, GPtrArray *groups, gint is_installed)
+_log_group_trans (sqlite3 *db, gint tid, GPtrArray *groups, gboolean installed)
 {
     const gchar *sql = I_TRANS_GROUP_DATA;
     for (guint i = 0; i < groups->len; ++i) {
@@ -897,7 +898,7 @@ _log_group_trans (sqlite3 *db, gint tid, GPtrArray *groups, gint is_installed)
         DB_BIND (res, "@name_id", group->name_id);
         DB_BIND (res, "@name", group->name);
         DB_BIND (res, "@ui_name", group->ui_name);
-        DB_BIND_INT (res, "@is_installed", is_installed);
+        DB_BIND_INT (res, "@installed", installed);
         DB_BIND_INT (res, "@pkg_types", group->pkg_types);
         DB_STEP (res);
     }

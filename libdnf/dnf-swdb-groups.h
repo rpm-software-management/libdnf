@@ -41,7 +41,7 @@ struct _DnfSwdbGroup
     gchar* name_id;
     gchar* name;
     gchar* ui_name;
-    gint is_installed;
+    gboolean installed;
     gint pkg_types;
     DnfSwdb *swdb;
 };
@@ -54,6 +54,7 @@ struct _DnfSwdbEnv
     gchar* name;
     gchar* ui_name;
     gint pkg_types;
+    gboolean installed;
     gint grp_types;
     DnfSwdb *swdb;
 };
@@ -61,7 +62,7 @@ struct _DnfSwdbEnv
 DnfSwdbGroup       *dnf_swdb_group_new              (const gchar   *name_id,
                                                      const gchar   *name,
                                                      const gchar   *ui_name,
-                                                     gint           is_installed,
+                                                     gboolean       installed,
                                                      gint           pkg_types,
                                                      DnfSwdb       *swdb);
 GPtrArray          *dnf_swdb_group_get_exclude      (DnfSwdbGroup  *self);
@@ -92,7 +93,6 @@ DnfSwdbEnv         *dnf_swdb_env_new                (const gchar   *name_id,
                                                      DnfSwdb       *swdb);
 GPtrArray          *dnf_swdb_env_get_group_list     (DnfSwdbEnv    *env);
 GPtrArray          *dnf_swdb_env_get_exclude        (DnfSwdbEnv    *self);
-gboolean            dnf_swdb_env_is_installed       (DnfSwdbEnv    *env );
 gint                dnf_swdb_env_add_exclude        (DnfSwdbEnv    *env,
                                                      GPtrArray     *exclude);
 gint                dnf_swdb_env_add_group          (DnfSwdbEnv    *env,
@@ -110,7 +110,7 @@ GPtrArray          *_env_get_group_list             (sqlite3       *db,
 void                _log_group_trans                (sqlite3       *db,
                                                      gint           tid,
                                                      GPtrArray     *groups,
-                                                     gint           is_installed);
+                                                     gboolean       installed);
 void                _update_env                     (sqlite3       *db,
                                                      DnfSwdbEnv    *env);
 void                _add_env                        (sqlite3       *db,

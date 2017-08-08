@@ -24,13 +24,13 @@
 #define _DNF_SWDB_GROUPS_SQL
 
 #define I_GROUP \
-    "Insert into GROUPS values(null, @name_id, @name, @ui_name, @is_installed, @pkg_types)"
+    "Insert into GROUPS values(null, @name_id, @name, @ui_name, @installed, @pkg_types)"
 #define I_ENV \
     "Insert into ENVIRONMENTS values(null, @name_id, @name, @ui_name, @pkg_types, @grp_types)"
 #define I_ENV_GROUP "insert into ENVIRONMENTS_GROUPS values(null, @eid, @gid)"
 #define I_TRANS_GROUP_DATA \
     "insert into TRANS_GROUP_DATA values(null,@tid,@gid,@name_id,@name,@ui_name," \
-    "@is_installed,@pkg_types)"
+    "@installed,@pkg_types)"
 
 #define S_GID_BY_NAME_ID "Select G_ID from GROUPS where name_id LIKE @id"
 #define S_GROUP_BY_NAME_ID "select * from GROUPS where name_id LIKE @id"
@@ -40,16 +40,16 @@
 #define S_ENV_BY_PATTERN \
     "SELECT * from ENVIRONMENTS where name_id LIKE @pat or name LIKE @pat or ui_name LIKE @pat"
 #define S_ENV_EXCLUDE_BY_ID "SELECT name FROM ENVIRONMENTS_EXCLUDE where E_ID=@eid"
-#define S_IS_INSTALLED_BY_EID \
+#define S_installed_BY_EID \
     "SELECT E_ID FROM ENVIRONMENTS_GROUPS join GROUPS using(G_ID) where E_ID=@eid and " \
-    "is_installed=1"
+    "installed=1"
 #define S_GROUP_NAME_ID_BY_EID \
     "SELECT name_id FROM ENVIRONMENTS_GROUPS join GROUPS using(G_ID) where E_ID=@eid"
 
-#define U_GROUP_COMMIT "UPDATE GROUPS SET is_installed=1 where name_id=@id"
+#define U_GROUP_COMMIT "UPDATE GROUPS SET installed=1 where name_id=@id"
 #define U_GROUP \
     "UPDATE GROUPS SET " \
-    "name=@name,ui_name=@ui_name,is_installed=@is_installed,pkg_types=@pkg_types where G_ID=@gid"
+    "name=@name,ui_name=@ui_name,installed=@installed,pkg_types=@pkg_types where G_ID=@gid"
 
 #define U_ENV \
     "UPDATE ENVIRONMENTS SET " \
@@ -62,7 +62,7 @@
     "join REASON_TYPE using(reason) where name=@name ORDER BY TD_ID DESC"
 
 #define S_REM \
-    "SELECT G_ID from GROUPS_PACKAGE join GROUPS using(G_ID) where is_installed=1 and " \
+    "SELECT G_ID from GROUPS_PACKAGE join GROUPS using(G_ID) where installed=1 and " \
     "GROUPS_PACKAGE.name=@name"
 
 #endif
