@@ -879,7 +879,7 @@ _dnf_swdb_get_time()
 }
 
 /**
- * _dnf_transaction_transform_to_swdb_pkg:
+ * _get_swdb_pkg:
  * @swdb: Software database object
  * @pkg: Hawkey package object
  *
@@ -887,8 +887,7 @@ _dnf_swdb_get_time()
  * Returns: SWDB Package ID
  **/
 static gint
-_dnf_transaction_transform_to_swdb_pkg(DnfSwdb *swdb,
-                                       DnfPackage *pkg)
+_get_swdb_pkg(DnfSwdb *swdb, DnfPackage *pkg)
 {
     gint pid = 0;
     const gchar *nevra = dnf_package_get_nevra(pkg);
@@ -926,6 +925,78 @@ _dnf_transaction_transform_to_swdb_pkg(DnfSwdb *swdb,
     g_object_unref(spkg);
     return pid;
 }
+
+
+/**
+ * _log_swdb_transaction:
+ *
+ * Create SWDB transaction for package @pkg
+ */
+static void
+_log_swdb_transaction(SwdbHandle *handle,
+                      DnfPackage *pkg,
+                      const gchar *user,
+                      const gchar *reason,
+                      const gchar *state)
+{
+    // save these attributes to swdb if present
+    DnfSwdb *swdb = (DnfSwdb *) handle->swdb;
+
+    if (swdb == NULL) {
+        g_debug("SWDB is not present, skipping write");
+        return;
+    }
+
+    // Insert package to SWDB
+    gint pid = _get_swdb_pkg(swdb, pkg);
+
+    if (pid == 0) {
+        g_warning("Package transformation to SWDB failed");
+        return;
+    }
+
+    g_autoptr (DnfSwdbPkgData) pkg_data = dnf_swdb_pkgdata_new(
+        NULL, //from_repo_revision
+        NULL, //from_repo_timestamp
+        user,
+        NULL, //changed by
+        NULL, //installonly
+        NULL, //origin_url
+        dnf_package_get_reponame(pkg));
+
+    // insert package data
+    dnf_swdb_log_package_data(swdb, pid, pkg_data);
+
+    // insert transaction data
+    dnf_swdb_trans_data_beg(swdb, handle->tid, pid, reason, state);
+
+    // mark transaction as successfull
+    dnf_swdb_trans_data_pid_end(swdb, pid, handle->tid, state);
+}
+
+/**
+ * _log_swdb_removal:
+ *
+ * Create SWDB transaction for @pkg removal
+ */
+static void
+_log_swdb_removal(SwdbHandle *handle,
+                  DnfTransaction *trans,
+                  HyGoal goal,
+                  DnfPackage *pkg)
+{
+    DnfTransactionPrivate *priv = GET_PRIVATE(trans);
+
+    //get user
+    g_autofree gchar *user = g_strdup_printf("%i", priv->uid);
+
+    //get removal reason
+    const gchar *reason = dnf_transaction_get_propagated_reason(trans, goal, pkg);
+
+    //log transaction
+    _log_swdb_transaction(handle, pkg, user, reason, "Erase");
+}
+
 #endif
 
 /**
@@ -982,35 +1053,7 @@ dnf_transaction_write_yumdb_install_item(DnfTransaction *transaction,
         return FALSE;
 
 #if WITH_SWDB
-
-    /* save these attributes to swdb if present */
-    DnfSwdb *swdb = (DnfSwdb *) handle->swdb;
-
-    if (swdb) {
-        /* Insert package to SWDB*/
-        gint pid = _dnf_transaction_transform_to_swdb_pkg(swdb, pkg);
-
-        if (!pid)
-            return FALSE;
-
-        g_autoptr (DnfSwdbPkgData) pkg_data = dnf_swdb_pkgdata_new(
-            NULL, //from_repo_revision
-            NULL, //from_repo_timestamp
-            euid,
-            NULL, //changed by
-            NULL, //installonly
-            NULL, //origin_url
-            tmp);
-
-        /* Insert package data */
-        if (dnf_swdb_log_package_data(swdb, pid, pkg_data))
-            return FALSE;
-
-        /* Insert fake transaction data */
-        if (dnf_swdb_trans_data_beg(swdb, handle->tid, pid, reason, "Installed"))
-            return FALSE;
-    }
-
+    _log_swdb_transaction(handle, pkg, euid, reason, "Install");
 #endif
 
     return TRUE;
@@ -1119,8 +1162,39 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
             return FALSE;
     }
 
-#if WITH_SWDB
+    /* this section done */
+    if (!dnf_state_done(state, error))
+        return FALSE;
 
+    /* remove all the old entries */
+    if ((priv->remove->len + priv->remove_helper->len) > 0)
+        dnf_state_set_number_steps(state_local, priv->remove->len + priv->remove_helper->len);
+    for (i = 0; i < priv->remove->len; i++) {
+        pkg = g_ptr_array_index(priv->remove, i);
+#if WITH_SWDB
+        _log_swdb_removal(&handle, transaction, goal, pkg);
+#endif
+        if (!dnf_transaction_ensure_repo(transaction, pkg, error))
+            return FALSE;
+        if (!dnf_db_remove_all(priv->db, pkg, error))
+            return FALSE;
+        if (!dnf_state_done(state_local, error))
+            return FALSE;
+    }
+    for (i = 0; i < priv->remove_helper->len; i++) {
+        pkg = g_ptr_array_index(priv->remove_helper, i);
+#if WITH_SWDB
+        _log_swdb_removal(&handle, transaction, goal, pkg);
+#endif
+        if (!dnf_transaction_ensure_repo(transaction, pkg, error))
+            return FALSE;
+        if (!dnf_db_remove_all(priv->db, pkg, error))
+            return FALSE;
+        if (!dnf_state_done(state_local, error))
+            return FALSE;
+    }
+
+#if WITH_SWDB
     if (swdb_exists) {
         //get end time
         g_autofree gchar *time_str = _dnf_swdb_get_time ();
@@ -1137,32 +1211,6 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
             0); //return code
     }
 #endif
-
-    /* this section done */
-    if (!dnf_state_done(state, error))
-        return FALSE;
-
-    /* remove all the old entries */
-    if ((priv->remove->len + priv->remove_helper->len) > 0)
-        dnf_state_set_number_steps(state_local, priv->remove->len + priv->remove_helper->len);
-    for (i = 0; i < priv->remove->len; i++) {
-        pkg = g_ptr_array_index(priv->remove, i);
-        if (!dnf_transaction_ensure_repo(transaction, pkg, error))
-            return FALSE;
-        if (!dnf_db_remove_all(priv->db, pkg, error))
-            return FALSE;
-        if (!dnf_state_done(state_local, error))
-            return FALSE;
-    }
-    for (i = 0; i < priv->remove_helper->len; i++) {
-        pkg = g_ptr_array_index(priv->remove_helper, i);
-        if (!dnf_transaction_ensure_repo(transaction, pkg, error))
-            return FALSE;
-        if (!dnf_db_remove_all(priv->db, pkg, error))
-            return FALSE;
-        if (!dnf_state_done(state_local, error))
-            return FALSE;
-    }
 
     /* this section done */
     return dnf_state_done(state, error);
