@@ -17,7 +17,7 @@ def fatal(msg):
 
 childenv = dict(os.environ)
 childenv['PYTHONPATH'] = '${CMAKE_BINARY_DIR}/python/hawkey'
-subprocess.check_call(['nosetests-${PYTHON_MAJOR_DOT_MINOR_VERSION}',
+subprocess.check_call(['${PYTHON_EXECUTABLE}', '-m', 'nose',
                        '--with-xunit', '--xunit-file=xunit.xml',
                        '-s', '-v', '${CMAKE_CURRENT_SOURCE_DIR}'],
                       env=childenv)
