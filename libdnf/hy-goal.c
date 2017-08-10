@@ -993,8 +993,13 @@ hy_goal_conflict_pkgs(HyGoal goal, unsigned i)
     Queue pq;
     Queue* conflict = g_malloc(sizeof(Queue));
     int j;
-    queue_init(&pq);
+
     queue_init(conflict);
+
+    if (i >= solver_problem_count(goal->solv))
+        return conflict;
+
+    queue_init(&pq);
     // this libsolv interface indexes from 1 (we do from 0), so:
     solver_findallproblemrules(goal->solv, i+1, &pq);
     for (j = 0; j < pq.count; j++) {
@@ -1055,8 +1060,10 @@ hy_goal_broken_dependency_pkgs(HyGoal goal, unsigned i)
     Queue pq;
     Queue* broken_dependency = g_malloc(sizeof(Queue));
     int j;
-    queue_init(&pq);
     queue_init(broken_dependency);
+    if (i >= solver_problem_count(goal->solv))
+        return broken_dependency;
+    queue_init(&pq);
     // this libsolv interface indexes from 1 (we do from 0), so:
     solver_findallproblemrules(goal->solv, i+1, &pq);
     for (j = 0; j < pq.count; j++) {
@@ -1209,6 +1216,10 @@ hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
     SolverRuleinfo type;
     int j;
     gboolean unique;
+
+    if (i >= solver_problem_count(goal->solv))
+        return problist;
+
     queue_init(&pq);
     // this libsolv interface indexes from 1 (we do from 0), so:
     solver_findallproblemrules(goal->solv, i+1, &pq);
