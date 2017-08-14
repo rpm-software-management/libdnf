@@ -35,14 +35,18 @@ __all__ = [
     'CHKSUM_MD5', 'CHKSUM_SHA1', 'CHKSUM_SHA256', 'CHKSUM_SHA512', 'ICASE',
     'CMDLINE_REPO_NAME', 'SYSTEM_REPO_NAME', 'REASON_DEP', 'REASON_USER',
     'REASON_CLEAN', 'REASON_WEAKDEP', 'FORM_NEVRA', 'FORM_NEVR', 'FORM_NEV',
-    'FORM_NA', 'FORM_NAME', 'FORM_ALL',
+    'FORM_NA', 'FORM_NAME', 'FORM_ALL', 'MODULE_FORM_NSVCAP', 'MODULE_FORM_NSVCA',
+    'MODULE_FORM_NSVAP', 'MODULE_FORM_NSVA', 'MODULE_FORM_NSAP', 'MODULE_FORM_NSA',
+    'MODULE_FORM_NSVCP', 'MODULE_FORM_NSVP', 'MODULE_FORM_NSVC', 'MODULE_FORM_NSV',
+    'MODULE_FORM_NSP', 'MODULE_FORM_NS', 'MODULE_FORM_NAP', 'MODULE_FORM_NA',
+    'MODULE_FORM_NP', 'MODULE_FORM_N'
     # exceptions
     'ArchException', 'Exception', 'QueryException', 'RuntimeException',
     'ValueException',
     # functions
     'chksum_name', 'chksum_type', 'split_nevra',
     # classes
-    'Goal', 'NEVRA', 'Package', 'Query', 'Repo', 'Sack', 'Selector', 'Subject']
+    'Goal', 'NEVRA', 'ModuleForm', 'Package', 'Query', 'Repo', 'Sack', 'Selector', 'Subject']
 
 _QUERY_KEYNAME_MAP = {
     'pkg': _hawkey.PKG,
@@ -116,6 +120,23 @@ FORM_NEVR = _hawkey.FORM_NEVR
 FORM_NEV = _hawkey.FORM_NEV
 FORM_NA = _hawkey.FORM_NA
 FORM_NAME = _hawkey.FORM_NAME
+
+MODULE_FORM_NSVCAP = _hawkey.MODULE_FORM_NSVCAP
+MODULE_FORM_NSVCA = _hawkey.MODULE_FORM_NSVCA
+MODULE_FORM_NSVAP = _hawkey.MODULE_FORM_NSVAP
+MODULE_FORM_NSVA = _hawkey.MODULE_FORM_NSVA
+MODULE_FORM_NSAP = _hawkey.MODULE_FORM_NSAP
+MODULE_FORM_NSA = _hawkey.MODULE_FORM_NSA
+MODULE_FORM_NSVCP = _hawkey.MODULE_FORM_NSVCP
+MODULE_FORM_NSVP = _hawkey.MODULE_FORM_NSVP
+MODULE_FORM_NSVC = _hawkey.MODULE_FORM_NSVC
+MODULE_FORM_NSV = _hawkey.MODULE_FORM_NSV
+MODULE_FORM_NSP = _hawkey.MODULE_FORM_NSP
+MODULE_FORM_NS = _hawkey.MODULE_FORM_NS
+MODULE_FORM_NAP = _hawkey.MODULE_FORM_NAP
+MODULE_FORM_NA = _hawkey.MODULE_FORM_NA
+MODULE_FORM_NP = _hawkey.MODULE_FORM_NP
+MODULE_FORM_N = _hawkey.MODULE_FORM_N
 
 ICASE = _hawkey.ICASE
 EQ = _hawkey.EQ
@@ -195,6 +216,29 @@ class NEVRA(_hawkey.NEVRA):
     def to_query(self, sack, icase=False):
         _hawkey_query = super(NEVRA, self).to_query(sack, icase=icase)
         return Query(query=_hawkey_query)
+
+
+class ModuleForm(_hawkey.ModuleForm):
+
+    MODULE_FORM_FIELDS = ["name", "stream", "version", "context", "arch", "profile"]
+
+    def _has_just_name(self):
+        return self.name and not self.stream and not self.version and \
+               not self.arch and not self.profile
+
+    def __repr__(self):
+        values = [getattr(self, i) for i in self.MODULE_FORM_FIELDS]
+        items = [(field, value) for field, value in zip(self.MODULE_FORM_FIELDS, values) if value is not None]
+        items_str = ", ".join(["{}={}".format(field, value) for field, value in items])
+        return "<MODULE_FORM: {}>".format(items_str)
+
+    def __eq__(self, other):
+        result = True
+        for field in self.MODULE_FORM_FIELDS:
+            value_self = getattr(self, field)
+            value_other = getattr(other, field)
+            result &= value_self == value_other
+        return result
 
 
 class Goal(_hawkey.Goal):
@@ -391,3 +435,8 @@ class Subject(_hawkey.Subject):
         poss = super(Subject, self).nevra_possibilities_real(*args, **kwargs)
         for nevra in poss:
             yield NEVRA(nevra=nevra)
+
+    def module_form_possibilities(self, *args, **kwargs):
+        poss = super(Subject, self).module_form_possibilities(*args, **kwargs)
+        for module_form in poss:
+            yield ModuleForm(module_form=module_form)

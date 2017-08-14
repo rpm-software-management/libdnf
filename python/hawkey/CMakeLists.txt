@@ -32,6 +32,7 @@ SET (hawkeymodule_SRCS
     hawkeymodule.c
     iutil-py.c
     nevra-py.c
+    module-form-py.c
     package-py.c
     packagedelta-py.c
     possibilities-py.c
