@@ -281,3 +281,81 @@ dnf_swdb_pkg___str__ (DnfSwdbPkg *pkg)
 {
     return g_strdup (pkg->nevra);
 }
+
+/**
+ * dnf_swdb_pkg_match:
+ * @pkg: package object
+ * @pattern: string/regex to match with package
+ *
+ * Accepted forms:
+ * - name
+ * - name.arch
+ * - name-version-release.arch
+ * - name-epoch:version-release.arch
+ * - name-version
+ * - name-version-release
+ * - epoch:name-version-release.arch (depreceated)
+ *
+ * Returns: %true if package can be matched with pattern in any accepted form (case insensitive)
+ **/
+gboolean
+dnf_swdb_pkg_match (DnfSwdbPkg *pkg, const gchar *pattern)
+{
+    const gchar *n = pkg->name;
+    const gchar *v = pkg->version;
+    const gchar *r = pkg->release;
+    const gchar *a = pkg->arch;
+    const gint e = pkg->epoch;
+
+    // create regular expression for pattern
+    GError *err = NULL;
+    g_autoptr (GRegex) regex = g_regex_new (pattern, G_REGEX_CASELESS, 0, &err);
+
+    if (err) {
+        g_warning ("Error parsing regular expression: %s", err->message);
+        return FALSE;
+    }
+
+    // match against name
+    if (g_regex_match (regex, n, 0, NULL)) {
+        return TRUE;
+    }
+
+    //match against name.arch
+    g_autofree gchar *name_arch = g_strjoin (".", n, a, NULL);
+    if (g_regex_match (regex, name_arch, 0, NULL)) {
+        return TRUE;
+    }
+
+    //match against name-version-release.arch
+    g_autofree gchar *nvra = g_strdup_printf ("%s-%s-%s.%s", n, v, r, a);
+    if (g_regex_match (regex, nvra, 0, NULL)) {
+        return TRUE;
+    }
+
+    //match against name-epoch:version-release.arch
+    g_autofree gchar *nevra = g_strdup_printf ("%s-%d:%s-%s.%s", n, e, v, r, a);
+    if (g_regex_match (regex, nvra, 0, NULL)) {
+        return TRUE;
+    }
+
+    //match against name-version
+    g_autofree gchar *name_version = g_strjoin ("-", n, v, NULL);
+    if (g_regex_match (regex, name_version, 0, NULL)) {
+        return TRUE;
+    }
+
+    //match against name-version-release
+    g_autofree gchar *nvr = g_strjoin ("-", n, v, r, NULL);
+    if (g_regex_match (regex, nvr, 0, NULL)) {
+        return TRUE;
+    }
+
+    //match against epoch:name-version-release.arch
+    g_autofree gchar *envra = g_strdup_printf ("%d:%s-%s-%s.%s", e, n, v, r, a);
+    if (g_regex_match (regex, envra, 0, NULL)) {
+        return TRUE;
+    }
+
+    return FALSE;
+}

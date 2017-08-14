@@ -69,6 +69,8 @@ gboolean            dnf_swdb_pkg___lt__             (DnfSwdbPkg    *first,
 gboolean            dnf_swdb_pkg___gt__             (DnfSwdbPkg    *first,
                                                      DnfSwdbPkg    *second);
 gchar              *dnf_swdb_pkg___str__            (DnfSwdbPkg    *pkg);
+gboolean            dnf_swdb_pkg_match              (DnfSwdbPkg    *pkg,
+                                                     const gchar   *pattern);
 
 G_END_DECLS
 
