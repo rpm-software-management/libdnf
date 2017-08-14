@@ -5,6 +5,7 @@ SET (LIBDNF_SRCS
     hy-goal.c
     hy-iutil.c
     hy-nevra.c
+    hy-module-form.c
     dnf-reldep.c
     dnf-reldep-list.c
     hy-package.c
@@ -67,6 +68,7 @@ TARGET_LINK_LIBRARIES(hth libdnf
 SET(LIBHAWKEY_headers
     hy-goal.h
     hy-nevra.h
+    hy-module-form.h
     hy-package.h
     hy-packageset.h
     hy-query.h

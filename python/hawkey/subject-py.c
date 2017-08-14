@@ -110,12 +110,41 @@ forms_from_list(PyObject *list)
     return forms;
 }
 
+static HyModuleFormE *
+module_forms_from_list(PyObject *list)
+{
+    HyModuleFormE *forms = NULL;
+    int i = 0;
+    const int BLOCK_SIZE = 17;
+    while (i < PyList_Size(list)) {
+        PyObject *form = PyList_GetItem(list, i);
+        if (!PyInt_Check(form)) {
+            g_free(forms);
+            return NULL;
+        }
+        forms = solv_extend(forms, i, 1, sizeof(HyModuleFormE), BLOCK_SIZE);
+        forms[i++] = PyLong_AsLong(form);
+    }
+    forms = solv_extend(forms, i, 1, sizeof(HyModuleFormE), BLOCK_SIZE);
+    forms[i] = _HY_MODULE_FORM_STOP_;
+    return forms;
+}
+
 static HyForm *
 forms_from_int(PyObject *num)
 {
     HyForm *forms = g_new0(HyForm, 2);
     forms[0] = PyLong_AsLong(num);
     forms[1] = _HY_FORM_STOP_;
+    return forms;
+}
+
+static HyModuleFormE *
+module_forms_from_int(PyObject *num)
+{
+    HyModuleFormE *forms = g_new0(HyModuleFormE, 2);
+    forms[0] = PyLong_AsLong(num);
+    forms[1] = _HY_MODULE_FORM_STOP_;
     return forms;
 }
 
@@ -127,6 +156,21 @@ fill_form(PyObject *o)
         cforms = forms_from_list(o);
     else if (PyInt_Check(o))
         cforms = forms_from_int(o);
+    if (cforms == NULL) {
+        PyErr_SetString(PyExc_TypeError, "Malformed subject forms.");
+        return NULL;
+    }
+    return cforms;
+}
+
+static HyModuleFormE *
+fill_module_form(PyObject *o)
+{
+    HyModuleFormE *cforms = NULL;
+    if (PyList_Check(o))
+        cforms = module_forms_from_list(o);
+    else if (PyInt_Check(o))
+        cforms = module_forms_from_int(o);
     if (cforms == NULL) {
         PyErr_SetString(PyExc_TypeError, "Malformed subject forms.");
         return NULL;
@@ -187,6 +231,26 @@ nevra_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
     cforms, csack, flags);
     g_free(cforms);
     return possibilitiesToPyObject(iter, sack);
+}
+
+static PyObject *
+module_form_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
+{
+    PyObject *form = NULL;
+    const char *kwlist[] = { "form", NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", (char**) kwlist, &form)) {
+        return NULL;
+    }
+    HyModuleFormE *cforms = NULL;
+    if (form != NULL) {
+        cforms = fill_module_form(form);
+        if (cforms == NULL)
+            return NULL;
+    }
+    HyPossibilities iter = hy_subject_module_form_possibilities(self->pattern,
+                                                                cforms);
+    g_free(cforms);
+    return possibilitiesToPyObject(iter, NULL);
 }
 
 static PyObject *
@@ -261,6 +325,8 @@ static struct PyMethodDef subject_methods[] = {
     {"nevra_possibilities", (PyCFunction) nevra_possibilities,
     METH_VARARGS | METH_KEYWORDS, NULL},
     {"nevra_possibilities_real", (PyCFunction) nevra_possibilities_real,
+    METH_VARARGS | METH_KEYWORDS, NULL},
+    {"module_form_possibilities", (PyCFunction) module_form_possibilities,
     METH_VARARGS | METH_KEYWORDS, NULL},
     {"reldep_possibilities_real", (PyCFunction) reldep_possibilities_real,
     METH_VARARGS | METH_KEYWORDS, NULL},

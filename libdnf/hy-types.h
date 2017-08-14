@@ -31,9 +31,16 @@ enum _HyForm :short ;
 typedef enum _HyForm HyForm;
 #endif
 
+#ifdef __cplusplus
+enum _HyModuleFormE :short ;
+#else
+typedef enum _HyModuleFormE HyModuleFormE;
+#endif
+
 typedef struct _HyRepo * HyRepo;
 typedef struct _HyGoal * HyGoal;
 typedef struct _HyNevra * HyNevra;
+typedef struct _HyModuleForm * HyModuleForm;
 typedef struct _HyPossibilities * HyPossibilities;
 typedef struct _HyQuery * HyQuery;
 typedef struct _HySelector * HySelector;

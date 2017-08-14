@@ -40,6 +40,7 @@
 #include "exception-py.h"
 #include "goal-py.h"
 #include "nevra-py.h"
+#include "module-form-py.h"
 #include "package-py.h"
 #include "packagedelta-py.h"
 #include "possibilities-py.h"
@@ -214,6 +215,11 @@ PYCOMP_MOD_INIT(_hawkey)
         return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&nevra_Type);
     PyModule_AddObject(m, "NEVRA", (PyObject *)&nevra_Type);
+    /* _hawkey.ModuleForm */
+    if (PyType_Ready(&module_form_Type) < 0)
+        return PYCOMP_MOD_ERROR_VAL;
+    Py_INCREF(&module_form_Type);
+    PyModule_AddObject(m, "ModuleForm", (PyObject *)&module_form_Type);
     /* _hawkey.Solution */
     if (PyType_Ready(&solution_Type) < 0)
         return PYCOMP_MOD_ERROR_VAL;
@@ -235,6 +241,23 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "FORM_NEV", HY_FORM_NEV);
     PyModule_AddIntConstant(m, "FORM_NA", HY_FORM_NA);
     PyModule_AddIntConstant(m, "FORM_NAME", HY_FORM_NAME);
+
+    PyModule_AddIntConstant(m, "MODULE_FORM_NSVCAP", HY_MODULE_FORM_NSVCAP);
+    PyModule_AddIntConstant(m, "MODULE_FORM_NSVCA", HY_MODULE_FORM_NSVCA);
+    PyModule_AddIntConstant(m, "MODULE_FORM_NSVAP", HY_MODULE_FORM_NSVAP);
+    PyModule_AddIntConstant(m, "MODULE_FORM_NSVA", HY_MODULE_FORM_NSVA);
+    PyModule_AddIntConstant(m, "MODULE_FORM_NSAP", HY_MODULE_FORM_NSAP);
+    PyModule_AddIntConstant(m, "MODULE_FORM_NSA", HY_MODULE_FORM_NSA);
+    PyModule_AddIntConstant(m, "MODULE_FORM_NSVCP", HY_MODULE_FORM_NSVCP);
+    PyModule_AddIntConstant(m, "MODULE_FORM_NSVP", HY_MODULE_FORM_NSVP);
+    PyModule_AddIntConstant(m, "MODULE_FORM_NSVC", HY_MODULE_FORM_NSVC);
+    PyModule_AddIntConstant(m, "MODULE_FORM_NSV", HY_MODULE_FORM_NSV);
+    PyModule_AddIntConstant(m, "MODULE_FORM_NSP", HY_MODULE_FORM_NSP);
+    PyModule_AddIntConstant(m, "MODULE_FORM_NS", HY_MODULE_FORM_NS);
+    PyModule_AddIntConstant(m, "MODULE_FORM_NAP", HY_MODULE_FORM_NAP);
+    PyModule_AddIntConstant(m, "MODULE_FORM_NA", HY_MODULE_FORM_NA);
+    PyModule_AddIntConstant(m, "MODULE_FORM_NP", HY_MODULE_FORM_NP);
+    PyModule_AddIntConstant(m, "MODULE_FORM_N", HY_MODULE_FORM_N);
 
     PyModule_AddIntConstant(m, "VERSION_MAJOR", LIBDNF_MAJOR_VERSION);
     PyModule_AddIntConstant(m, "VERSION_MINOR", LIBDNF_MINOR_VERSION);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Red Hat, Inc.
+ * Copyright (C) 2017 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -18,21 +18,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "hy-types.h"
+#ifndef LIBDNF_HY_MODULE_FORM_PRIVATE_H
+#define LIBDNF_HY_MODULE_FORM_PRIVATE_H
 
-#ifndef HY_SUBJECT_INTERNAL_H
-#define HY_SUBJECT_INTERNAL_H
-
-enum poss_type {
-    TYPE_MODULE_FORM,
-    TYPE_NEVRA,
-    TYPE_RELDEP_NEW,
-    TYPE_RELDEP_END
+struct _HyModuleForm {
+    char *name;
+    char *stream;
+    int version;
+    char *context;
+    char *arch;
+    char *profile;
 };
 
-extern const char *nevra_form_regex[];
 
-int nevra_possibility(char *nevra_str, int re, HyNevra nevra);
-int module_form_possibility(char *module_form_str, int re, HyModuleForm module_form);
-
-#endif
+#endif //LIBDNF_HY_MODULE_FORM_PRIVATE_H
