@@ -20,9 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "libdnf/dnf-swdb.h"
 #include <glib-object.h>
 #include <glib.h>
+#include "libdnf/libdnf.h"
 
 #define INIT_PACAKGES 10
 #define TRANS_OUT "initial transaction"
@@ -167,7 +167,7 @@ end_trans (DnfSwdb *self, gint tid)
 static void
 check_package_persistor (DnfSwdb *self, DnfSwdbPkg *pkg)
 {
-    g_autofree gchar *repo = dnf_swdb_repo_by_nevra (self, pkg->nevra);
+    g_autofree gchar *repo = dnf_swdb_repo (self, pkg->nevra);
     g_assert_false (g_strcmp0 (pkg->ui_from_repo, repo));
 
     const gchar *new_repo = "testdora";
@@ -175,7 +175,7 @@ check_package_persistor (DnfSwdb *self, DnfSwdbPkg *pkg)
     g_assert_false (dnf_swdb_set_repo (self, pkg->nevra, new_repo));
 
     g_free (repo);
-    repo = dnf_swdb_repo_by_nevra (self, pkg->nevra);
+    repo = dnf_swdb_repo (self, pkg->nevra);
 
     g_assert_false (g_strcmp0 (new_repo, repo));
 
@@ -183,7 +183,7 @@ check_package_persistor (DnfSwdb *self, DnfSwdbPkg *pkg)
     g_assert (pid && pid == pkg->pid);
 
     // test another method how to obtain same package
-    g_autoptr (DnfSwdbPkg) same_pkg = dnf_swdb_package_by_nevra (self, pkg->nevra);
+    g_autoptr (DnfSwdbPkg) same_pkg = dnf_swdb_package (self, pkg->nevra);
     g_assert (same_pkg);
     g_assert (same_pkg->pid == pid);
     g_assert_false (g_strcmp0 (pkg->checksum_data, same_pkg->checksum_data));
@@ -253,7 +253,7 @@ check_initial_transaction (DnfSwdb *self)
 
         // check package trans and package data
         g_autoptr (DnfSwdbTransData) transdata = g_ptr_array_index (trans_data, i);
-        g_autoptr (DnfSwdbPkgData) pkgdata = dnf_swdb_package_data_by_nevra (self, pkg->nevra);
+        g_autoptr (DnfSwdbPkgData) pkgdata = dnf_swdb_package_data (self, pkg->nevra);
 
         g_assert (pkgdata);
         g_assert (pkgdata->from_repo && *pkgdata->from_repo);
@@ -408,7 +408,7 @@ dnf_swdb_get_func (void)
     g_autoptr (DnfSwdbPkg) rpkg = _get_package_by_pid (self->db, INIT_PACAKGES / 2);
 
     // find this package by nevra
-    g_autoptr (DnfSwdbPkg) pkg = dnf_swdb_package_by_nevra (self, rpkg->nevra);
+    g_autoptr (DnfSwdbPkg) pkg = dnf_swdb_package (self, rpkg->nevra);
     g_assert_false (g_strcmp0 (pkg->nevra, rpkg->nevra));
 }
 

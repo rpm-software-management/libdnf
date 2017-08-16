@@ -44,6 +44,12 @@
 #include <libdnf/dnf-utils.h>
 #include <libdnf/dnf-version.h>
 
+#if WITH_SWDB
+
+#include <libdnf/dnf-swdb.h>
+
+#endif
+
 /* In progress conversion to dnf */
 #include <libdnf/hy-goal.h>
 #include <libdnf/hy-nevra.h>

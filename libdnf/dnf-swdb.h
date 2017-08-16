@@ -78,7 +78,7 @@ gint            dnf_swdb_get_reason_type        (DnfSwdb        *self,
                                                  const gchar    *type);
 gchar          *_reason_by_pid                  (sqlite3        *db,
                                                  gint            pid);
-gchar          *dnf_swdb_reason_by_nevra        (DnfSwdb        *self,
+gchar          *dnf_swdb_reason                 (DnfSwdb        *self,
                                                  const gchar    *nevra);
 gint            dnf_swdb_get_state_type         (DnfSwdb        *self,
                                                  const gchar    *type);
@@ -158,16 +158,16 @@ gint            dnf_swdb_log_group_trans        (DnfSwdb        *self,
                                                  GPtrArray      *removing);
 DnfSwdbTrans   *dnf_swdb_last                   (DnfSwdb        *self,
                                                  gboolean        complete_only);
-DnfSwdbPkg     *dnf_swdb_package_by_nevra       (DnfSwdb        *self,
+DnfSwdbPkg     *dnf_swdb_package                (DnfSwdb        *self,
                                                  const gchar    *nevra);
-DnfSwdbPkgData *dnf_swdb_package_data_by_nevra  (DnfSwdb        *self,
+DnfSwdbPkgData *dnf_swdb_package_data           (DnfSwdb        *self,
                                                  const gchar    *nevra);
-gchar          *dnf_swdb_repo_by_nevra          (DnfSwdb        *self,
+gchar          *dnf_swdb_repo                   (DnfSwdb        *self,
                                                  const gchar    *nevra);
 gint            dnf_swdb_mark_user_installed    (DnfSwdb        *self,
                                                  const gchar    *nevra,
                                                  gboolean        user_installed);
-GPtrArray      *dnf_swdb_checksums_by_nevras    (DnfSwdb        *self,
+GPtrArray      *dnf_swdb_checksums              (DnfSwdb        *self,
                                                  GPtrArray      *nevras);
 gint            dnf_swdb_set_reason             (DnfSwdb        *self,
                                                  const gchar    *nevra,

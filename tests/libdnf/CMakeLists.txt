@@ -24,21 +24,10 @@ IF (NOT DISABLE_VALGRIND AND VALGRIND_PROGRAM)
 ENDIF()
 
 IF (WITH_SWDB)
-    SET(SWDB_SOURCES
-        ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb.c
-        ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb.h
-        ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb-db.c
-        ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb-db.h
-        ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb-groups.c
-        ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb-groups.h
-        ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb-trans.c
-        ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb-trans.h
-        ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb-pkg.c
-        ${CMAKE_SOURCE_DIR}/libdnf/dnf-swdb-pkg.h)
-
-    ADD_EXECUTABLE(test_libdnf_swdb dnf-swdb-test.c ${SWDB_SOURCES})
+    ADD_EXECUTABLE(test_libdnf_swdb dnf-swdb-test.c)
 
     TARGET_LINK_LIBRARIES(test_libdnf_swdb
+        libdnf
         ${REPO_LIBRARIES}
         ${GLIB_LIBRARIES}
         ${GLIB_GOBJECT_LIBRARIES}

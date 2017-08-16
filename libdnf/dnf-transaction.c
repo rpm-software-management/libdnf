@@ -891,7 +891,7 @@ _get_swdb_pkg(DnfSwdb *swdb, DnfPackage *pkg)
 {
     gint pid = 0;
     const gchar *nevra = dnf_package_get_nevra(pkg);
-    DnfSwdbPkg *spkg = dnf_swdb_package_by_nevra(swdb, nevra);
+    DnfSwdbPkg *spkg = dnf_swdb_package(swdb, nevra);
 
     if (spkg) {
         pid = spkg->pid;
