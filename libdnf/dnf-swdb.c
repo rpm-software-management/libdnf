@@ -338,47 +338,63 @@ _pid_by_nevra (sqlite3 *db, const gchar *nevra)
 }
 
 /**
- * dnf_swdb_checksums_by_nevras:
+ * dnf_swdb_checksums:
  * @nevras: (element-type utf8) (transfer container): list of patterns
  *
  * Patch packages by name-[epoch:]version-release.arch and return list of their
  * checksums.
  * Output is in format:
- *   [checksum_type, checksum_data, checksum_type, checksum_data, ...]
+ *   [nevra-1, checksum_type-1, checksum_data-1, nevra-2, checksum_type-2, checksum_data-2, ...]
  *
  * Used for performace optimization of rpmdb_version calculation in DNF
  *
  * Returns: (element-type utf8) (transfer container): list of checksums
  **/
 GPtrArray *
-dnf_swdb_checksums_by_nevras (DnfSwdb *self, GPtrArray *nevras)
+dnf_swdb_checksums (DnfSwdb *self, GPtrArray *nevras)
 {
     if (dnf_swdb_open (self))
         return NULL;
     gchar *buff1;
     gchar *buff2;
     gchar *nevra;
+
     GPtrArray *checksums = g_ptr_array_new ();
     const gchar *sql = S_CHECKSUM_BY_NEVRA;
     const gchar *sql2 = S_CHECKSUM_BY_NVRA;
     for (guint i = 0; i < nevras->len; i++) {
+        // get nevra
         nevra = (gchar *)g_ptr_array_index (nevras, i);
+
+        // save nevra to output list
+        g_ptr_array_add (checksums, (gpointer) g_strdup (nevra)); // nevra
+
         sqlite3_stmt *res;
         if (g_strrstr (nevra, ":")) {
             DB_PREP (self->db, sql, res);
         } else {
             DB_PREP (self->db, sql2, res);
         }
+
+        gboolean inserted = FALSE;
+
         DB_BIND (res, "@nevra", nevra);
         if (sqlite3_step (res) == SQLITE_ROW) {
             buff1 = (gchar *)sqlite3_column_text (res, 0);
             buff2 = (gchar *)sqlite3_column_text (res, 1);
             if (buff1 && buff2) {
-                g_ptr_array_add (checksums, (gpointer)g_strdup (buff2)); // type
-                g_ptr_array_add (checksums, (gpointer)g_strdup (buff1)); // data
+                g_ptr_array_add (checksums, (gpointer) g_strdup (buff2)); // type
+                g_ptr_array_add (checksums, (gpointer) g_strdup (buff1)); // data
+                inserted = TRUE;
             }
         }
         sqlite3_finalize (res);
+
+        if (!inserted) {
+            // insert plain checksum data to keep the order correct
+            g_ptr_array_add (checksums, NULL);
+            g_ptr_array_add (checksums, NULL);
+        }
     }
     return checksums;
 }
@@ -531,13 +547,13 @@ _repo_by_pid (sqlite3 *db, gint pid)
 }
 
 /**
- * dnf_swdb_repo_by_nevra:
+ * dnf_swdb_repo:
  * @self: SWDB object
  * @nevra: string in format name-[epoch:]version-release.arch
  * Returns: repository name
  **/
 gchar *
-dnf_swdb_repo_by_nevra (DnfSwdb *self, const gchar *nevra)
+dnf_swdb_repo (DnfSwdb *self, const gchar *nevra)
 {
     if (dnf_swdb_open (self))
         return NULL;
@@ -743,14 +759,14 @@ _reason_by_pid (sqlite3 *db, gint pid)
 }
 
 /**
- * dnf_swdb_reason_by_nevra:
+ * dnf_swdb_reason:
  * @self: SWDB object
  * @nevra: string in format name-[epoch:]version-release.arch
  *
  * Returns: reason string for package matched by @nevra
  **/
 gchar *
-dnf_swdb_reason_by_nevra (DnfSwdb *self, const gchar *nevra)
+dnf_swdb_reason (DnfSwdb *self, const gchar *nevra)
 {
     if (dnf_swdb_open (self))
         return NULL;
@@ -906,14 +922,14 @@ dnf_swdb_pid_by_nevra (DnfSwdb *self, const gchar *nevra)
 }
 
 /**
- * dnf_swdb_package_by_nevra:
+ * dnf_swdb_package:
  * @self: SWDB object
  * @nevra: string in format name-[epoch:]version-release.arch
  *
  * Returns: (transfer full): #DnfSwdbPkg matched by @nevra
  **/
 DnfSwdbPkg *
-dnf_swdb_package_by_nevra (DnfSwdb *self, const gchar *nevra)
+dnf_swdb_package (DnfSwdb *self, const gchar *nevra)
 {
     if (dnf_swdb_open (self))
         return NULL;
@@ -927,14 +943,14 @@ dnf_swdb_package_by_nevra (DnfSwdb *self, const gchar *nevra)
 }
 
 /**
- * dnf_swdb_package_data_by_nevra:
+ * dnf_swdb_package_data:
  * @self: SWDB object
  * @nevra: string in format name-[epoch:]version-release.arch
  *
  * Returns: (transfer full): #DnfSwdbPkgData for package matched by @nevra
  **/
 DnfSwdbPkgData *
-dnf_swdb_package_data_by_nevra (DnfSwdb *self, const gchar *nevra)
+dnf_swdb_package_data (DnfSwdb *self, const gchar *nevra)
 {
     if (dnf_swdb_open (self))
         return NULL;
@@ -1559,7 +1575,7 @@ dnf_swdb_get_erased_reason (DnfSwdb *self, gchar *nevra, gint first_trans, gbool
     }
 
     // get package object
-    g_autoptr (DnfSwdbPkg) pkg = dnf_swdb_package_by_nevra (self, nevra);
+    g_autoptr (DnfSwdbPkg) pkg = dnf_swdb_package (self, nevra);
 
     if (!pkg) {
         // package not found - consider it user installed
