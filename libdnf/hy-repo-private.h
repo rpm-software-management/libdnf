@@ -60,6 +60,7 @@ struct _HyRepo {
     int main_nsolvables;
     int main_nrepodata;
     int main_end;
+    gboolean use_includes; 
 };
 
 enum _hy_repo_repodata {

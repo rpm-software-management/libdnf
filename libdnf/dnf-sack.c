@@ -282,21 +282,40 @@ dnf_sack_recompute_considered(DnfSack *sack)
     if (priv->considered_uptodate)
         return;
     if (!pool->considered) {
-        if (!priv->repo_excludes && !priv->pkg_excludes)
+        if (!priv->repo_excludes && !priv->pkg_excludes && !priv->pkg_includes)
             return;
         pool->considered = g_malloc0(sizeof(Map));
         map_init(pool->considered, pool->nsolvables);
     } else
         map_grow(pool->considered, pool->nsolvables);
 
-    // considered = (all - repo_excludes - pkg_excludes) and pkg_includes
+    // considered = (all - repo_excludes - pkg_excludes) and
+    //              (pkg_includes + all_from_repos_not_using_includes)
     map_setall(pool->considered);
     if (priv->repo_excludes)
         map_subtract(pool->considered, priv->repo_excludes);
     if (priv->pkg_excludes)
         map_subtract(pool->considered, priv->pkg_excludes);
-    if (priv->pkg_includes)
-        map_and(pool->considered, priv->pkg_includes);
+    if (priv->pkg_includes) {
+        Map pkg_includes_tmp;
+        map_init_clone(&pkg_includes_tmp, priv->pkg_includes);
+
+        // Add all solvables from repositories which do not use "includes"
+        Id repoid;
+        Repo *repo;
+        FOR_REPOS(repoid, repo) {
+            HyRepo hyrepo = repo->appdata;
+            if (!hy_repo_get_use_includes(hyrepo)) {
+                Id solvableid;
+                Solvable *solvable;
+                FOR_REPO_SOLVABLES(repo, solvableid, solvable)
+                    MAPSET(&pkg_includes_tmp, solvableid);
+            }
+        }
+
+        map_and(pool->considered, &pkg_includes_tmp);
+        map_free(&pkg_includes_tmp);
+    }
     pool_createwhatprovides(priv->pool);
     priv->considered_uptodate = TRUE;
 }
@@ -1156,6 +1175,23 @@ dnf_sack_count(DnfSack *sack)
     return cnt;
 }
 
+static void
+dnf_sack_add_excludes_or_includes(DnfSack *sack, Map **dest, DnfPackageSet *pkgset)
+{
+    Map *destmap = *dest;
+    if (destmap == NULL) {
+        destmap = g_malloc0(sizeof(Map));
+        Pool *pool = dnf_sack_get_pool(sack);
+        map_init(destmap, pool->nsolvables);
+        *dest = destmap;
+    }
+
+    Map *pkgmap = dnf_packageset_get_map(pkgset);
+    map_or(destmap, pkgmap);
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    priv->considered_uptodate = FALSE;
+}
+
 /**
  * dnf_sack_add_excludes:
  * @sack: a #DnfSack instance.
@@ -1169,17 +1205,7 @@ void
 dnf_sack_add_excludes(DnfSack *sack, DnfPackageSet *pset)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
-    Pool *pool = dnf_sack_get_pool(sack);
-    Map *excl = priv->pkg_excludes;
-    Map *nexcl = dnf_packageset_get_map(pset);
-
-    if (excl == NULL) {
-        excl = g_malloc0(sizeof(Map));
-        map_init(excl, pool->nsolvables);
-        priv->pkg_excludes = excl;
-    }
-    map_or(excl, nexcl);
-    priv->considered_uptodate = FALSE;
+    dnf_sack_add_excludes_or_includes(sack, &priv->pkg_excludes, pset);
 }
 
 /**
@@ -1195,17 +1221,65 @@ void
 dnf_sack_add_includes(DnfSack *sack, DnfPackageSet *pset)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
-    Pool *pool = dnf_sack_get_pool(sack);
-    Map *incl = priv->pkg_includes;
-    Map *nincl = dnf_packageset_get_map(pset);
+    dnf_sack_add_excludes_or_includes(sack, &priv->pkg_includes, pset);
+}
 
-    if (incl == NULL) {
-        incl = g_malloc0(sizeof(Map));
-        map_init(incl, pool->nsolvables);
-        priv->pkg_includes = incl;
+static void
+dnf_sack_remove_excludes_or_includes(DnfSack *sack, Map *from, DnfPackageSet *pkgset)
+{
+    if (from == NULL)
+        return;
+    Map *pkgmap = dnf_packageset_get_map(pkgset);
+    map_subtract(from, pkgmap);
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    priv->considered_uptodate = FALSE;
+}
+
+/**
+ * dnf_sack_remove_excludes:
+ * @sack: a #DnfSack instance.
+ * @pset: a #DnfPackageSet or %NULL.
+ *
+ * Removes excludes from the sack.
+ *
+ * Since: 0.9.4
+ */
+void
+dnf_sack_remove_excludes(DnfSack *sack, DnfPackageSet *pset)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    dnf_sack_remove_excludes_or_includes(sack, priv->pkg_excludes, pset);
+}
+
+/**
+ * dnf_sack_remove_includes:
+ * @sack: a #DnfSack instance.
+ * @pset: a #DnfPackageSet or %NULL.
+ *
+ * Removes includes from the sack.
+ *
+ * Since: 0.9.4
+ */
+void
+dnf_sack_remove_includes(DnfSack *sack, DnfPackageSet *pset)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    dnf_sack_remove_excludes_or_includes(sack, priv->pkg_includes, pset);
+}
+
+static void
+dnf_sack_set_excludes_or_includes(DnfSack *sack, Map **dest, DnfPackageSet *pkgset)
+{
+    if (*dest == NULL && pkgset == NULL)
+        return;
+
+    *dest = free_map_fully(*dest);
+    if (pkgset) {
+        *dest = g_malloc0(sizeof(Map));
+        Map *pkgmap = dnf_packageset_get_map(pkgset);
+        map_init_clone(*dest, pkgmap);
     }
-    assert(incl->size >= nincl->size);
-    map_or(incl, nincl);
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
     priv->considered_uptodate = FALSE;
 }
 
@@ -1222,15 +1296,7 @@ void
 dnf_sack_set_excludes(DnfSack *sack, DnfPackageSet *pset)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
-    priv->pkg_excludes = free_map_fully(priv->pkg_excludes);
-
-    if (pset) {
-        Map *nexcl = dnf_packageset_get_map(pset);
-
-        priv->pkg_excludes = g_malloc0(sizeof(Map));
-        map_init_clone(priv->pkg_excludes, nexcl);
-    }
-    priv->considered_uptodate = FALSE;
+    dnf_sack_set_excludes_or_includes(sack, &priv->pkg_excludes, pset);
 }
 
 /**
@@ -1246,14 +1312,133 @@ void
 dnf_sack_set_includes(DnfSack *sack, DnfPackageSet *pset)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
-    priv->pkg_includes = free_map_fully(priv->pkg_includes);
+    dnf_sack_set_excludes_or_includes(sack, &priv->pkg_includes, pset);
+}
 
-    if (pset) {
-        Map *nincl = dnf_packageset_get_map(pset);
-        priv->pkg_includes = g_malloc0(sizeof(Map));
-        map_init_clone(priv->pkg_includes, nincl);
+/**
+ * dnf_sack_reset_excludes:
+ * @sack: a #DnfSack instance.
+ *
+ * Reset excludes (remove excludes map from memory).
+ *
+ * Since: 0.9.4
+ */
+void
+dnf_sack_reset_excludes(DnfSack *sack)
+{
+    dnf_sack_set_excludes(sack, NULL);
+}
+
+/**
+ * dnf_sack_reset_includes:
+ * @sack: a #DnfSack instance.
+ *
+ * Reset includes (remove includes map from memory).
+ *
+ * Since: 0.9.4
+ */
+void
+dnf_sack_reset_includes(DnfSack *sack)
+{
+    dnf_sack_set_includes(sack, NULL);
+}
+
+/**
+ * dnf_sack_get_excludes:
+ * @sack: a #DnfSack instance.
+ * @pset: a #DnfPackageSet or %NULL.
+ *
+ * Gets sack excludes.
+ *
+ * Since: 0.9.4
+ */
+DnfPackageSet *
+dnf_sack_get_excludes(DnfSack *sack)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    Map *excl = priv->pkg_excludes;
+    return excl ? dnf_packageset_from_bitmap(sack, excl) : NULL;
+}
+
+/**
+ * dnf_sack_get_includes:
+ * @sack: a #DnfSack instance.
+ *
+ * Gets sack includes.
+ *
+ * Since: 0.9.4
+ */
+DnfPackageSet *
+dnf_sack_get_includes(DnfSack *sack)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    Map *incl = priv->pkg_includes;
+    return incl ? dnf_packageset_from_bitmap(sack, incl) : NULL;
+}
+
+/**
+ * dnf_sack_set_use_includes:
+ * @sack: a #DnfSack instance.
+ * @repo_name: a name of repo or %NULL for all repos.
+ * @enabled: a use includes for a repo or all repos.
+ *
+ * Enable/disable usage of includes for repo/all-repos.
+ *
+ * Returns: FALSE if error occured (unknown reponame) else TRUE.
+ *
+ * Since: 0.9.4
+ */
+gboolean
+dnf_sack_set_use_includes(DnfSack *sack, const char *reponame, gboolean enabled)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    Pool *pool = dnf_sack_get_pool(sack);
+
+    if (reponame) {
+        HyRepo hyrepo = hrepo_by_name(sack, reponame);
+        if (!hyrepo)
+            return FALSE;
+        if (hy_repo_get_use_includes(hyrepo) != enabled)
+        {
+            hy_repo_set_use_includes(hyrepo, enabled);
+            priv->considered_uptodate = FALSE;
+        }
+    } else {
+        Id repoid;
+        Repo *repo;
+        FOR_REPOS(repoid, repo) {
+            HyRepo hyrepo = pool->repos[repoid]->appdata;
+            if (hy_repo_get_use_includes(hyrepo) != enabled)
+            {
+                hy_repo_set_use_includes(hyrepo, enabled);
+                priv->considered_uptodate = FALSE;
+            }
+        }
     }
-    priv->considered_uptodate = FALSE;
+    return TRUE;
+}
+
+/**
+ * dnf_sack_get_use_includes:
+ * @sack: a #DnfSack instance.
+ * @repo_name: a name of repo or %NULL for all repos.
+ * @enabled: a returned state of includes for repo
+ *
+ * Enable/disable usage of includes for repo/all-repos.
+ *
+ * Returns: FALSE if error occured (unknown reponame) else TRUE.
+ *
+ * Since: 0.9.4
+ */
+gboolean
+dnf_sack_get_use_includes(DnfSack *sack, const char *reponame, gboolean *enabled)
+{
+    assert(reponame);
+    HyRepo hyrepo = hrepo_by_name(sack, reponame);
+    if (!hyrepo)
+        return FALSE;
+    *enabled = hy_repo_get_use_includes(hyrepo);
+    return TRUE;
 }
 
 /**
