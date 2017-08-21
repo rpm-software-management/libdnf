@@ -758,7 +758,7 @@ dnf_repo_set_keyfile(DnfRepo *repo, GKeyFile *keyfile)
  * @repo: a #DnfRepo instance.
  * @metadata_expire: the expected expiry time for metadata
  *
- * Sets the metadata_expire time, which is default to be 0 days
+ * Sets the metadata_expire time, which defaults to 48h.
  **/
 void
 dnf_repo_set_metadata_expire(DnfRepo *repo, guint metadata_expire)
@@ -770,6 +770,7 @@ dnf_repo_set_metadata_expire(DnfRepo *repo, guint metadata_expire)
 /**
  *  dnf_repo_parse_time_from_str
  *  @expression: a expression to be parsed
+ *  @out_parsed_time: (out): return location for parsed time
  *  @error: error item
  *
  *  Parse String into an integer value of seconds, or a human
@@ -784,24 +785,26 @@ dnf_repo_set_metadata_expire(DnfRepo *repo, guint metadata_expire)
  *  Returns: integer value in seconds
  **/
 
-static guint
-dnf_repo_parse_time_from_str(const gchar *expression, GError **error)
+static gboolean
+dnf_repo_parse_time_from_str(const gchar *expression, guint *out_parsed_time, GError **error)
 {
     gint multiplier;
     gdouble parsed_time;
     gchar *endptr = NULL;
-    guint result;
 
     if (!g_strcmp0(expression, "")) {
         g_set_error_literal(error,
                             DNF_ERROR,
                             DNF_ERROR_FILE_INVALID,
                             "no metadata value specified");
-        return 0;
+        return FALSE;
     }
 
-    if (g_strcmp0(expression, "-1") == 0 || g_strcmp0(expression,"never") == 0)
-        return G_MAXUINT;
+    if (g_strcmp0(expression, "-1") == 0 ||
+        g_strcmp0(expression,"never") == 0) {
+        *out_parsed_time = G_MAXUINT;
+        return TRUE; /* Note early return */
+    }
 
     gchar last_char = expression[ strlen(expression) - 1 ];
 
@@ -818,7 +821,7 @@ dnf_repo_parse_time_from_str(const gchar *expression, GError **error)
         else {
             g_set_error(error, DNF_ERROR, DNF_ERROR_FILE_INVALID,
                         "unknown unit %c", last_char);
-            return 0;
+            return FALSE;
         }
     }
     else
@@ -831,33 +834,25 @@ dnf_repo_parse_time_from_str(const gchar *expression, GError **error)
     if (expression == endptr) {
         g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
                     "failed to parse time: %s", expression);
-        return 0;
+        return FALSE;
     }
 
     /* time can not be below zero */
     if (parsed_time < 0) {
         g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
                     "seconds value must not be negative %s",expression );
-        return 0;
+        return FALSE;
     }
 
     /* time too large */
     if (parsed_time > G_MAXDOUBLE || (parsed_time * multiplier) > G_MAXUINT){
         g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
                     "time too large");
-        return 0;
-    }
-    result = (guint) (parsed_time * multiplier);
-
-    /* for the case where time is too small (i.e result = 0) */
-    if (result == 0) {
-         g_set_error_literal(error,
-                             DNF_ERROR,
-                             DNF_ERROR_FILE_INVALID,
-                            "metadata expire time too small, has to be at least one second");
+        return FALSE;
     }
 
-    return result;
+    *out_parsed_time = (guint) (parsed_time * multiplier);
+    return TRUE;
 }
 /**
  * dnf_repo_get_username_password_string:
@@ -910,7 +905,6 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     guint cost;
-    guint metadata_expire;
     g_autofree gchar *metadata_expire_str = NULL;
     g_autofree gchar *mirrorlist = NULL;
     g_autofree gchar *mirrorlisturl = NULL;
@@ -946,13 +940,13 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     /* metadata_expire is optional, if shown, we parse the string to add the time */
     metadata_expire_str = g_key_file_get_string(priv->keyfile, priv->id, "metadata_expire", NULL);
     if (metadata_expire_str) {
-        metadata_expire = dnf_repo_parse_time_from_str(metadata_expire_str , error);
-
-        /* we assume zero is default, and when string exist, 0 seconds is assumed to be error */
-        if (metadata_expire != 0)
-            dnf_repo_set_metadata_expire(repo, metadata_expire);
-        else
+        guint metadata_expire;
+        if (!dnf_repo_parse_time_from_str(metadata_expire_str, &metadata_expire, error))
             return FALSE;
+        dnf_repo_set_metadata_expire(repo, metadata_expire);
+    } else {
+        /* default to 48h; this is in line with dnf's default */
+        dnf_repo_set_metadata_expire(repo, 60 * 60 * 48);
     }
 
     /* the "mirrorlist" entry could be either a real mirrorlist, or a metalink entry */
@@ -1355,12 +1349,9 @@ dnf_repo_check_internal(DnfRepo *repo,
             return FALSE;
         age_of_data =(g_get_real_time() - priv->timestamp_modified) / G_USEC_PER_SEC;
 
-        /*choose a lower value between cache and metadata_expire for expired checking */
+        /* choose a lower value between cache and metadata_expire for expired checking */
         metadata_expire = dnf_repo_get_metadata_expire(repo);
-        if (metadata_expire != 0)
-            valid_time_allowed = metadata_expire <= permissible_cache_age ? metadata_expire  : permissible_cache_age;
-        else
-            valid_time_allowed = permissible_cache_age;
+        valid_time_allowed = (metadata_expire <= permissible_cache_age ? metadata_expire : permissible_cache_age);
 
         if (age_of_data > valid_time_allowed) {
             g_set_error(error,
