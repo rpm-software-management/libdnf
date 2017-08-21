@@ -32,9 +32,9 @@ typedef enum _HyForm HyForm;
 #endif
 
 #ifdef __cplusplus
-enum _HyModuleFormE :short ;
+enum _HyModuleFormEnum :short ;
 #else
-typedef enum _HyModuleFormE HyModuleFormE;
+typedef enum _HyModuleFormEnum HyModuleFormEnum;
 #endif
 
 typedef struct _HyRepo * HyRepo;

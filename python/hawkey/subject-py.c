@@ -110,10 +110,10 @@ forms_from_list(PyObject *list)
     return forms;
 }
 
-static HyModuleFormE *
+static HyModuleFormEnum *
 module_forms_from_list(PyObject *list)
 {
-    HyModuleFormE *forms = NULL;
+    HyModuleFormEnum *forms = NULL;
     int i = 0;
     const int BLOCK_SIZE = 17;
     while (i < PyList_Size(list)) {
@@ -122,10 +122,10 @@ module_forms_from_list(PyObject *list)
             g_free(forms);
             return NULL;
         }
-        forms = solv_extend(forms, i, 1, sizeof(HyModuleFormE), BLOCK_SIZE);
+        forms = solv_extend(forms, i, 1, sizeof(HyModuleFormEnum), BLOCK_SIZE);
         forms[i++] = PyLong_AsLong(form);
     }
-    forms = solv_extend(forms, i, 1, sizeof(HyModuleFormE), BLOCK_SIZE);
+    forms = solv_extend(forms, i, 1, sizeof(HyModuleFormEnum), BLOCK_SIZE);
     forms[i] = _HY_MODULE_FORM_STOP_;
     return forms;
 }
@@ -139,10 +139,10 @@ forms_from_int(PyObject *num)
     return forms;
 }
 
-static HyModuleFormE *
+static HyModuleFormEnum *
 module_forms_from_int(PyObject *num)
 {
-    HyModuleFormE *forms = g_new0(HyModuleFormE, 2);
+    HyModuleFormEnum *forms = g_new0(HyModuleFormEnum, 2);
     forms[0] = PyLong_AsLong(num);
     forms[1] = _HY_MODULE_FORM_STOP_;
     return forms;
@@ -163,10 +163,10 @@ fill_form(PyObject *o)
     return cforms;
 }
 
-static HyModuleFormE *
+static HyModuleFormEnum *
 fill_module_form(PyObject *o)
 {
-    HyModuleFormE *cforms = NULL;
+    HyModuleFormEnum *cforms = NULL;
     if (PyList_Check(o))
         cforms = module_forms_from_list(o);
     else if (PyInt_Check(o))
@@ -241,7 +241,7 @@ module_form_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", (char**) kwlist, &form)) {
         return NULL;
     }
-    HyModuleFormE *cforms = NULL;
+    HyModuleFormEnum *cforms = NULL;
     if (form != NULL) {
         cforms = fill_module_form(form);
         if (cforms == NULL)
