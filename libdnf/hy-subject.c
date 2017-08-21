@@ -38,7 +38,7 @@
 const HyForm HY_FORMS_MOST_SPEC[] = {
     HY_FORM_NEVRA, HY_FORM_NA, HY_FORM_NAME, HY_FORM_NEVR, HY_FORM_NEV, _HY_FORM_STOP_ };
 
-const HyModuleFormE HY_MODULE_FORMS_MOST_SPEC[] = {
+const HyModuleFormEnum HY_MODULE_FORMS_MOST_SPEC[] = {
         HY_MODULE_FORM_NSVCAP,
         HY_MODULE_FORM_NSVCA,
         HY_MODULE_FORM_NSVAP,
@@ -163,17 +163,17 @@ forms_dup(const HyForm *forms)
     return res;
 }
 
-static HyModuleFormE *
-module_forms_dup(const HyModuleFormE *forms)
+static HyModuleFormEnum *
+module_forms_dup(const HyModuleFormEnum *forms)
 {
     if (forms == NULL)
         return NULL;
-    HyModuleFormE *res = NULL;
+    HyModuleFormEnum *res = NULL;
     const int BLOCK_SIZE = 17;
-    HyModuleFormE form;
+    HyModuleFormEnum form;
     int i = 0;
     do {
-        res = solv_extend(res, i, 1, sizeof(HyModuleFormE), BLOCK_SIZE);
+        res = solv_extend(res, i, 1, sizeof(HyModuleFormEnum), BLOCK_SIZE);
         form = forms[i];
         res[i++] = form;
     } while (form != _HY_MODULE_FORM_STOP_);
@@ -181,7 +181,7 @@ module_forms_dup(const HyModuleFormE *forms)
 }
 
 static HyPossibilities
-possibilities_create(HySubject subject, const HyForm *forms, const HyModuleFormE *module_forms, DnfSack *sack,
+possibilities_create(HySubject subject, const HyForm *forms, const HyModuleFormEnum *module_forms, DnfSack *sack,
                      int flags, enum poss_type type)
 {
     HyPossibilities poss = g_malloc0(sizeof(*poss));
@@ -240,9 +240,9 @@ hy_subject_nevra_possibilities_real(HySubject subject, HyForm *forms,
 }
 
 HyPossibilities
-hy_subject_module_form_possibilities(HySubject subject, HyModuleFormE *forms)
+hy_subject_module_form_possibilities(HySubject subject, HyModuleFormEnum *forms)
 {
-    const HyModuleFormE *default_forms = forms == NULL ? HY_MODULE_FORMS_MOST_SPEC : forms;
+    const HyModuleFormEnum *default_forms = forms == NULL ? HY_MODULE_FORMS_MOST_SPEC : forms;
     return possibilities_create(subject, NULL, default_forms, NULL, 0, TYPE_MODULE_FORM);
 }
 
@@ -272,7 +272,7 @@ hy_possibilities_next_module_form(HyPossibilities iter, HyModuleForm *out_module
 {
     if (iter->type != TYPE_MODULE_FORM || iter->current == -1)
         return -1;
-    HyModuleFormE form = iter->module_forms[iter->current];
+    HyModuleFormEnum form = iter->module_forms[iter->current];
     while (form != _HY_MODULE_FORM_STOP_) {
         iter->current++;
         *out_module_form = hy_module_form_create();
