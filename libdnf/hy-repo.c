@@ -143,6 +143,12 @@ hy_repo_get_priority(HyRepo repo)
     return repo->priority;
 }
 
+gboolean
+hy_repo_get_use_includes(HyRepo repo)
+{
+  return repo->use_includes;
+}
+
 guint
 hy_repo_get_n_solvables(HyRepo repo)
 {
@@ -163,6 +169,12 @@ hy_repo_set_priority(HyRepo repo, int value)
     repo->priority = value;
     if (repo->libsolv_repo)
         repo->libsolv_repo->priority = -value;
+}
+
+void
+hy_repo_set_use_includes(HyRepo repo, gboolean enabled)
+{
+    repo->use_includes = enabled;
 }
 
 void

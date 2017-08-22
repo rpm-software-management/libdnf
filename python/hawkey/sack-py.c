@@ -447,6 +447,133 @@ add_includes(_SackObject *self, PyObject *seq)
 }
 
 static PyObject *
+remove_excludes(_SackObject *self, PyObject *seq)
+{
+    DnfSack *sack = self->sack;
+    DnfPackageSet *pset = pyseq_to_packageset(seq, sack);
+    if (pset == NULL)
+        return NULL;
+    dnf_sack_remove_excludes(sack, pset);
+    g_object_unref(pset);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+remove_includes(_SackObject *self, PyObject *seq)
+{
+    DnfSack *sack = self->sack;
+    DnfPackageSet *pset = pyseq_to_packageset(seq, sack);
+    if (pset == NULL)
+        return NULL;
+    dnf_sack_remove_includes(sack, pset);
+    g_object_unref(pset);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+set_excludes(_SackObject *self, PyObject *seq)
+{
+    DnfSack *sack = self->sack;
+    DnfPackageSet *pset = pyseq_to_packageset(seq, sack);
+    if (pset == NULL)
+        return NULL;
+    dnf_sack_set_excludes(sack, pset);
+    g_object_unref(pset);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+set_includes(_SackObject *self, PyObject *seq)
+{
+    DnfSack *sack = self->sack;
+    DnfPackageSet *pset = pyseq_to_packageset(seq, sack);
+    if (pset == NULL)
+        return NULL;
+    dnf_sack_set_includes(sack, pset);
+    g_object_unref(pset);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+reset_excludes(_SackObject *self)
+{
+    DnfSack *sack = self->sack;
+    dnf_sack_reset_excludes(sack);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+reset_includes(_SackObject *self)
+{
+    DnfSack *sack = self->sack;
+    dnf_sack_reset_includes(sack);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+get_excludes(_SackObject *self)
+{
+    DnfSack *sack = self->sack;
+    DnfPackageSet *pset = dnf_sack_get_excludes(sack);
+    if (!pset)
+        return PyList_New(0);
+    return packageset_to_pylist(pset, (PyObject *)self);
+}
+
+static PyObject *
+get_includes(_SackObject *self)
+{
+    DnfSack *sack = self->sack;
+    DnfPackageSet *pset = dnf_sack_get_includes(sack);
+    if (!pset)
+        return PyList_New(0);
+    return packageset_to_pylist(pset, (PyObject *)self);
+}
+
+static PyObject *
+set_use_includes(_SackObject *self, PyObject *args)
+{
+    PyObject *py_enabled;
+    const char *creponame = NULL;
+    if (!PyArg_ParseTuple(args, "O!|z", &PyBool_Type, &py_enabled, &creponame))
+        return NULL;
+
+    gboolean enabled = PyObject_IsTrue(py_enabled);
+    if (!dnf_sack_set_use_includes(self->sack, creponame, enabled)) {
+        PyErr_SetString(PyExc_ValueError, "Can't set use_includes for repo with given name.");
+        return NULL;
+    }
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+get_use_includes(_SackObject *self, PyObject *reponame)
+{
+    DnfSack *sack = self->sack;
+
+    PyObject *tmp_py_str = NULL;
+    const char *creponame = pycomp_get_string(reponame, &tmp_py_str);
+    if (creponame == NULL) {
+        Py_XDECREF(tmp_py_str);
+        return NULL;
+    }
+
+    gboolean enabled;
+    if (!dnf_sack_get_use_includes(sack, creponame, &enabled)) {
+        Py_XDECREF(tmp_py_str);
+        PyErr_SetString(PyExc_ValueError, "Can't found repo with given name.");
+        return NULL;
+    }
+
+    Py_XDECREF(tmp_py_str);
+    if (enabled)
+        Py_RETURN_TRUE;
+    else
+        Py_RETURN_FALSE;
+}
+
+static PyObject *
 disable_repo(_SackObject *self, PyObject *reponame)
 {
     return repo_enabled(self, reponame, 0);
@@ -568,6 +695,26 @@ PyMethodDef sack_methods[] = {
     {"add_excludes", (PyCFunction)add_excludes, METH_O,
      NULL},
     {"add_includes", (PyCFunction)add_includes, METH_O,
+     NULL},
+    {"remove_excludes", (PyCFunction)remove_excludes, METH_O,
+     NULL},
+    {"remove_includes", (PyCFunction)remove_includes, METH_O,
+     NULL},
+    {"set_excludes", (PyCFunction)set_excludes, METH_O,
+     NULL},
+    {"set_includes", (PyCFunction)set_includes, METH_O,
+     NULL},
+    {"reset_excludes", (PyCFunction)reset_excludes, METH_NOARGS,
+     NULL},
+    {"reset_includes", (PyCFunction)reset_includes, METH_NOARGS,
+     NULL},
+    {"get_excludes", (PyCFunction)get_excludes, METH_NOARGS,
+     NULL},
+    {"get_includes", (PyCFunction)get_includes, METH_NOARGS,
+     NULL},
+    {"set_use_includes", (PyCFunction)set_use_includes, METH_VARARGS,
+     NULL},
+    {"get_use_includes", (PyCFunction)get_use_includes, METH_O,
      NULL},
     {"disable_repo", (PyCFunction)disable_repo, METH_O,
      NULL},

@@ -120,10 +120,24 @@ void         dnf_sack_add_excludes          (DnfSack        *sack,
                                              DnfPackageSet  *pset);
 void         dnf_sack_add_includes          (DnfSack        *sack,
                                              DnfPackageSet  *pset);
+void         dnf_sack_remove_excludes       (DnfSack        *sack,
+                                             DnfPackageSet  *pset);
+void         dnf_sack_remove_includes       (DnfSack        *sack,
+                                             DnfPackageSet  *pset);
 void         dnf_sack_set_excludes          (DnfSack        *sack,
                                              DnfPackageSet  *pset);
 void         dnf_sack_set_includes          (DnfSack        *sack,
                                              DnfPackageSet  *pset);
+void         dnf_sack_reset_excludes        (DnfSack        *sack);
+void         dnf_sack_reset_includes        (DnfSack        *sack);
+DnfPackageSet *dnf_sack_get_includes        (DnfSack        *sack);
+DnfPackageSet *dnf_sack_get_excludes        (DnfSack        *sack);
+gboolean     dnf_sack_set_use_includes      (DnfSack        *sack,
+                                             const char     *reponame,
+                                             gboolean        enabled);
+gboolean     dnf_sack_get_use_includes      (DnfSack        *sack,
+                                             const char     *reponame,
+                                             gboolean       *enabled);
 int          dnf_sack_repo_enabled          (DnfSack        *sack,
                                              const char     *reponame,
                                              int             enabled);
