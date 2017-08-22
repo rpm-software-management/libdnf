@@ -107,7 +107,7 @@ PD_ID
 TG_ID
 done
 ORIGINAL_TD_ID
-/reason/
+reason
 /state/
 
 
@@ -324,18 +324,6 @@ halign=center
     <additional_attributes>10.0;30.0;10.0;10.0</additional_attributes>
   </element>
   <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>810</x>
-      <y>480</y>
-      <w>70</w>
-      <h>220</h>
-    </coordinates>
-    <panel_attributes>lt=..
-</panel_attributes>
-    <additional_attributes>50.0;10.0;50.0;200.0;10.0;200.0</additional_attributes>
-  </element>
-  <element>
     <id>UMLClass</id>
     <coordinates>
       <x>640</x>
@@ -365,24 +353,6 @@ halign=center
 /OUTPUT_TYPE/
 -..
 type
-description
-bg=white
-halign=center
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>640</x>
-      <y>670</y>
-      <w>180</w>
-      <h>70</h>
-    </coordinates>
-    <panel_attributes>lt=..
-/REASON_TYPE/
--..
-reason
 description
 bg=white
 halign=center

@@ -120,14 +120,16 @@ dnf_swdb_pkg_new (const gchar *name,
  * dnf_swdb_pkg_get_reason:
  * @self: package object
  *
- * Returns: package reason string
+ * Returns: package reason ID
  **/
-gchar *
+DnfSwdbReason
 dnf_swdb_pkg_get_reason (DnfSwdbPkg *self)
 {
-    if (!self || dnf_swdb_open (self->swdb))
-        return NULL;
-    gchar *reason = NULL;
+    DnfSwdbReason reason = DNF_SWDB_REASON_UNKNOWN;
+    if (!self || dnf_swdb_open (self->swdb)) {
+        return reason;
+    }
+
     if (self->pid) {
         reason = _reason_by_pid (self->swdb->db, self->pid);
     }

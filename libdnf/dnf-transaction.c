@@ -968,7 +968,7 @@ _log_swdb_transaction(SwdbHandle *handle,
     dnf_swdb_log_package_data(swdb, pid, pkg_data);
 
     // insert transaction data
-    dnf_swdb_trans_data_beg(swdb, handle->tid, pid, reason, state);
+    dnf_swdb_trans_data_beg(swdb, handle->tid, pid, dnf_convert_reason_to_id (reason), state);
 
     // mark transaction as successfull
     dnf_swdb_trans_data_pid_end(swdb, pid, handle->tid, state);

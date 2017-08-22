@@ -23,6 +23,8 @@
 #include <glib-object.h>
 #include <glib.h>
 #include "libdnf/libdnf.h"
+#include "libdnf/dnf-swdb.h"
+
 
 #define INIT_PACAKGES 10
 #define TRANS_OUT "initial transaction"
@@ -199,7 +201,7 @@ check_package_persistor (DnfSwdb *self, DnfSwdbPkg *pkg)
 
     g_assert_false (dnf_swdb_user_installed (self, pkg->nevra));
 
-    g_assert_false (dnf_swdb_set_reason (self, pkg->nevra, "user"));
+    g_assert_false (dnf_swdb_set_reason (self, pkg->nevra, DNF_SWDB_REASON_USER));
 
     g_assert (dnf_swdb_user_installed (self, pkg->nevra));
 }
@@ -264,8 +266,7 @@ check_initial_transaction (DnfSwdb *self)
 
         g_assert (transdata->done);
 
-        g_assert (transdata->reason);
-        g_assert_false (g_strcmp0 (transdata->reason, "user"));
+        g_assert (transdata->reason == DNF_SWDB_REASON_USER);
 
         g_assert (transdata->state);
         g_assert_false (g_strcmp0 (transdata->state, "Install"));
@@ -322,7 +323,7 @@ run_initial_transaction (DnfSwdb *self)
         g_assert_false (dnf_swdb_trans_data_beg (self,
                                                  tid,
                                                  pkg->pid,
-                                                 "user",      // reason
+                                                 DNF_SWDB_REASON_USER, // reason
                                                  "Install")); // state
 
         // package is being installed...
@@ -449,7 +450,7 @@ dnf_swdb_update_func (void)
     g_assert_false (dnf_swdb_trans_data_beg (self,
                                              tid,
                                              pkg->pid,
-                                             "user",     // reason
+                                             DNF_SWDB_REASON_USER, // reason
                                              "Update")); // state
 
     // finalize transaction data
@@ -497,7 +498,7 @@ dnf_swdb_reinstall_func (void)
     g_assert_false (dnf_swdb_trans_data_beg (self,
                                              tid,
                                              pkg->pid,
-                                             "user",        // reason
+                                             DNF_SWDB_REASON_USER, // reason
                                              "Reinstall")); // state
 
     // finalize transaction data
@@ -543,7 +544,7 @@ dnf_swdb_erase_func (void)
     g_assert_false (dnf_swdb_trans_data_beg (self,
                                              tid,
                                              pkg->pid,
-                                             "user",    // reason
+                                             DNF_SWDB_REASON_USER, // reason
                                              "Erase")); // state
 
     // finalize transaction data

@@ -50,6 +50,7 @@ G_DECLARE_FINAL_TYPE (DnfSwdb, dnf_swdb, DNF, SWDB, GObject)
 #include "dnf-swdb-groups.h"
 #include "dnf-swdb-trans.h"
 #include "dnf-swdb-db.h"
+#include "dnf-swdb-types.h"
 
 struct _DnfSwdb
 {
@@ -74,11 +75,9 @@ gint            dnf_swdb_get_package_type       (DnfSwdb        *self,
                                                  const gchar    *type);
 gint            dnf_swdb_get_output_type        (DnfSwdb        *self,
                                                  const gchar    *type);
-gint            dnf_swdb_get_reason_type        (DnfSwdb        *self,
-                                                 const gchar    *type);
-gchar          *_reason_by_pid                  (sqlite3        *db,
+DnfSwdbReason   _reason_by_pid                  (sqlite3        *db,
                                                  gint            pid);
-gchar          *dnf_swdb_reason                 (DnfSwdb        *self,
+DnfSwdbReason   dnf_swdb_reason                 (DnfSwdb        *self,
                                                  const gchar    *nevra);
 gint            dnf_swdb_get_state_type         (DnfSwdb        *self,
                                                  const gchar    *type);
@@ -103,12 +102,12 @@ gint            dnf_swdb_trans_end              (DnfSwdb        *self,
                                                  gint            return_code);
 gint            dnf_swdb_log_package_data       (DnfSwdb        *self,
                                                  gint            pid,
-                                                 DnfSwdbPkgData *pkgdata );
+                                                 DnfSwdbPkgData *pkgdata);
 gint            dnf_swdb_trans_data_beg         (DnfSwdb        *self,
                                                  gint            tid,
                                                  gint            pid,
-                                                 const gchar    *reason,
-                                                 const gchar    *state );
+                                                 DnfSwdbReason   reason,
+                                                 const gchar    *state);
 gint            dnf_swdb_trans_data_pid_end     (DnfSwdb        *self,
                                                  gint            pid,
                                                  gint            tid,
@@ -171,7 +170,7 @@ GPtrArray      *dnf_swdb_checksums              (DnfSwdb        *self,
                                                  GPtrArray      *nevras);
 gint            dnf_swdb_set_reason             (DnfSwdb        *self,
                                                  const gchar    *nevra,
-                                                 const gchar    *reason);
+                                                 DnfSwdbReason   reason);
 gint            dnf_swdb_set_repo               (DnfSwdb        *self,
                                                  const gchar    *nevra,
                                                  const gchar    *repo);
@@ -181,9 +180,6 @@ gchar          *_repo_by_pid                    (sqlite3        *db,
                                                  gint            pid);
 GArray         *dnf_swdb_select_user_installed  (DnfSwdb        *self,
                                                  GPtrArray      *nevras);
-gint            _get_description_id             (sqlite3        *db,
-                                                 const gchar    *desc,
-                                                 const gchar    *sql);
 gint            dnf_swdb_add_rpm_data           (DnfSwdb        *self,
                                                  DnfSwdbRpmData *rpm_data);
 gint            dnf_swdb_pid_by_nevra           (DnfSwdb        *self,
@@ -195,7 +191,7 @@ DnfSwdbPkg     *_get_package_by_pid             (sqlite3        *db,
                                                  gint            pid);
 void            dnf_swdb_trans_with_libdnf      (DnfSwdb        *self,
                                                  int             tid);
-gchar          *dnf_swdb_get_erased_reason      (DnfSwdb        *self,
+DnfSwdbReason   dnf_swdb_get_erased_reason      (DnfSwdb        *self,
                                                  gchar          *nevra,
                                                  gint            first_trans,
                                                  gboolean        rollback);

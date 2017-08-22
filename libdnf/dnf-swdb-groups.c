@@ -948,9 +948,8 @@ dnf_swdb_removable_pkg (DnfSwdb *self, const gchar *pkg_name)
     const gchar *sql = S_REM_REASON;
     DB_PREP (self->db, sql, res);
     DB_BIND (res, "@name", pkg_name);
-    g_autofree gchar *reason = DB_FIND_STR (res);
-    if (g_strcmp0 (reason, "group")) // null or != "group"
-    {
+    gint reason = DB_FIND (res);
+    if (reason != DNF_SWDB_REASON_GROUP) {
         removable = FALSE;
     } else {
         sql = S_REM;

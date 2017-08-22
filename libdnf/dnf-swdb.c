@@ -1,7 +1,7 @@
 /* dnf-swdb.c
  *
  * Copyright (C) 2017 Red Hat, Inc.
- * Author: Eduard Cuba <xcubae00@stud.fit.vutbr.cz>
+ * Author: Eduard Cuba <ecuba@redhat.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -23,7 +23,6 @@
 #include "dnf-swdb.h"
 #include "dnf-swdb-sql.h"
 #include "dnf-swdb-trans.h"
-#include <glib/gstdio.h>
 
 G_DEFINE_TYPE (DnfSwdb, dnf_swdb, G_TYPE_OBJECT)
 G_DEFINE_TYPE (DnfSwdbTransData, dnf_swdb_transdata, G_TYPE_OBJECT) // trans data
@@ -146,7 +145,6 @@ static void
 dnf_swdb_transdata_finalize (GObject *object)
 {
     DnfSwdbTransData *tdata = (DnfSwdbTransData *)object;
-    g_free (tdata->reason);
     g_free (tdata->state);
     G_OBJECT_CLASS (dnf_swdb_transdata_parent_class)->finalize (object);
 }
@@ -179,7 +177,7 @@ dnf_swdb_transdata_new (gint tdid,
                         gint tgid,
                         gint done,
                         gint ORIGINAL_TD_ID,
-                        gchar *reason,
+                        DnfSwdbReason reason,
                         gchar *state)
 {
     DnfSwdbTransData *data = g_object_new (DNF_TYPE_SWDB_TRANSDATA, NULL);
@@ -189,7 +187,7 @@ dnf_swdb_transdata_new (gint tdid,
     data->tgid = tgid;
     data->done = done;
     data->ORIGINAL_TD_ID = ORIGINAL_TD_ID;
-    data->reason = g_strdup (reason);
+    data->reason = reason;
     data->state = g_strdup (state);
     return data;
 }
@@ -419,21 +417,11 @@ dnf_swdb_select_user_installed (DnfSwdb *self, GPtrArray *nevras)
     if (dnf_swdb_open (self))
         return NULL;
 
-    gint depid = _get_description_id (self->db, "dep", S_REASON_TYPE_ID);
-    gint weakid = _get_description_id (self->db, "weak", S_REASON_TYPE_ID);
-
     GArray *usr_ids = g_array_new (0, 0, sizeof (gint));
-    if (!depid && !weakid) {
-        // there are no dependency pacakges - all packages are user installed
-        for (guint i = 0; i < nevras->len; ++i)
-            g_array_append_val (usr_ids, i);
-
-        return usr_ids;
-    }
 
     gint pid = 0;
     gint pdid = 0;
-    gint reason_id = 0;
+    DnfSwdbReason reason_id = DNF_SWDB_REASON_UNKNOWN;
     const gchar *sql = S_REASON_ID_BY_PDID;
     for (guint i = 0; i < nevras->len; ++i) {
         pid = _pid_by_nevra (self->db, (gchar *)g_ptr_array_index (nevras, i));
@@ -452,7 +440,7 @@ dnf_swdb_select_user_installed (DnfSwdb *self, GPtrArray *nevras)
         DB_BIND_INT (res, "@pdid", pdid);
         while (sqlite3_step (res) == SQLITE_ROW) {
             reason_id = sqlite3_column_int (res, 0);
-            if (reason_id != depid && reason_id != weakid) {
+            if (reason_id != DNF_SWDB_REASON_DEP && reason_id != DNF_SWDB_REASON_WEAK) {
                 g_array_append_val (usr_ids, i);
                 break;
             }
@@ -480,11 +468,11 @@ dnf_swdb_user_installed (DnfSwdb *self, const gchar *nevra)
     }
     gboolean rc = TRUE;
     gchar *repo = _repo_by_pid (self->db, pid);
-    gchar *reason = _reason_by_pid (self->db, pid);
-    if (g_strcmp0 ("user", reason) || !g_strcmp0 ("anakonda", repo))
+    DnfSwdbReason reason = _reason_by_pid (self->db, pid);
+    if (reason != DNF_SWDB_REASON_USER || !g_strcmp0 ("anakonda", repo)) {
         rc = FALSE;
+    }
     g_free (repo);
-    g_free (reason);
     return rc;
 }
 
@@ -741,21 +729,16 @@ _pids_by_tid (sqlite3 *db, gint tid)
  * @db: sqlite database handle
  * @pid: package ID
  *
- * Returns: reason string for package with ID @pid
+ * Returns: reason id for package with @pid
  **/
-gchar *
+DnfSwdbReason
 _reason_by_pid (sqlite3 *db, gint pid)
 {
-    gchar *reason = NULL;
     sqlite3_stmt *res;
     const gchar *sql = S_REASON_BY_PID;
     DB_PREP (db, sql, res);
     DB_BIND_INT (res, "@pid", pid);
-    gint reason_id = DB_FIND (res);
-    if (reason_id) {
-        reason = _get_description (db, reason_id, S_REASON_TYPE_BY_ID);
-    }
-    return reason;
+    return DB_FIND (res);
 }
 
 /**
@@ -763,15 +746,15 @@ _reason_by_pid (sqlite3 *db, gint pid)
  * @self: SWDB object
  * @nevra: string in format name-[epoch:]version-release.arch
  *
- * Returns: reason string for package matched by @nevra
+ * Returns: reason ID for package matched by @nevra
  **/
-gchar *
+DnfSwdbReason
 dnf_swdb_reason (DnfSwdb *self, const gchar *nevra)
 {
+    DnfSwdbReason reason = DNF_SWDB_REASON_UNKNOWN;
     if (dnf_swdb_open (self))
-        return NULL;
+        return reason;
     gint pid = _pid_by_nevra (self->db, nevra);
-    gchar *reason = NULL;
     if (pid) {
         reason = _reason_by_pid (self->db, pid);
     }
@@ -985,13 +968,13 @@ _mark_pkg_as (sqlite3 *db, gint pdid, gint mark)
  * dnf_swdb_set_reason:
  * @self: SWDB object
  * @nevra: string in format name-[epoch:]version-release.arch
- * @reason: reason string
+ * @reason: reason id
  *
  * Set reason of package matched by @nevra to @reason
  * Returns: 0 if successfull, else 1
  **/
 gint
-dnf_swdb_set_reason (DnfSwdb *self, const gchar *nevra, const gchar *reason)
+dnf_swdb_set_reason (DnfSwdb *self, const gchar *nevra, DnfSwdbReason reason)
 {
     if (dnf_swdb_open (self))
         return 1;
@@ -1000,9 +983,7 @@ dnf_swdb_set_reason (DnfSwdb *self, const gchar *nevra, const gchar *reason)
         return 1;
     }
     gint pdid = _pdid_from_pid (self->db, pid);
-    gint reason_id;
-    reason_id = dnf_swdb_get_reason_type (self, reason);
-    _mark_pkg_as (self->db, pdid, reason_id);
+    _mark_pkg_as (self->db, pdid, reason);
     return 0;
 }
 
@@ -1021,9 +1002,9 @@ dnf_swdb_mark_user_installed (DnfSwdb *self, const gchar *nevra, gboolean user_i
 {
     gint rc;
     if (user_installed) {
-        rc = dnf_swdb_set_reason (self, nevra, "user");
+        rc = dnf_swdb_set_reason (self, nevra, DNF_SWDB_REASON_USER);
     } else {
-        rc = dnf_swdb_set_reason (self, nevra, "dep");
+        rc = dnf_swdb_set_reason (self, nevra, DNF_SWDB_REASON_DEP);
     }
     return rc;
 }
@@ -1076,7 +1057,7 @@ dnf_swdb_add_rpm_data (DnfSwdb *self, DnfSwdbRpmData *rpm_data)
  * Initialize transaction data
  **/
 static void
-_trans_data_beg_insert (sqlite3 *db, gint tid, gint pdid, gint tgid, gint reason, gint state)
+_trans_data_beg_insert (sqlite3 *db, gint tid, gint pdid, gint tgid, DnfSwdbReason reason, gint state)
 {
     sqlite3_stmt *res;
     const gchar *sql = INSERT_TRANS_DATA_BEG;
@@ -1115,7 +1096,7 @@ _resolve_group_origin (sqlite3 *db, gint tid, gint pid)
  * @self: SWDB object
  * @tid: transaction ID
  * @pid: package ID
- * @reason: reason string
+ * @reason: reason ID
  * @state: state string
  *
  * Initialize transaction data for package with ID @pid in transaction @tid
@@ -1126,20 +1107,20 @@ _resolve_group_origin (sqlite3 *db, gint tid, gint pid)
  * Returns: 0 if successfull
  **/
 gint
-dnf_swdb_trans_data_beg (DnfSwdb *self, gint tid, gint pid, const gchar *reason, const gchar *state)
+dnf_swdb_trans_data_beg (DnfSwdb *self, gint tid, gint pid, DnfSwdbReason reason, const gchar *state)
 {
     if (dnf_swdb_open (self))
         return 1;
     gint pdid = _pdid_from_pid (self->db, pid);
     gint tgid = 0;
-    if (!g_strcmp0 (reason, "group")) {
+    if (reason == DNF_SWDB_REASON_GROUP) {
         tgid = _resolve_group_origin (self->db, tid, pid);
     }
     _trans_data_beg_insert (self->db,
                             tid,
                             pdid,
                             tgid,
-                            dnf_swdb_get_reason_type (self, reason),
+                            reason,
                             dnf_swdb_get_state_type (self, state));
     return 0;
 }
@@ -1541,7 +1522,7 @@ _is_state_installed (const gchar *state)
            !g_strcmp0 (state, "Update") || !g_strcmp0 (state, "Downgrade");
 }
 
-static gchar *
+static DnfSwdbReason
 _get_erased_reason (sqlite3 *db, gint tid, gint pid)
 {
     sqlite3_stmt *res;
@@ -1549,8 +1530,8 @@ _get_erased_reason (sqlite3 *db, gint tid, gint pid)
     DB_PREP (db, sql, res);
     DB_BIND_INT (res, "@tid", tid);
     DB_BIND_INT (res, "@pid", pid);
-    gchar *reason = DB_FIND_STR (res);
-    return (reason) ? reason : g_strdup ("user");
+    DnfSwdbReason reason = DB_FIND (res);
+    return (reason) ? reason : DNF_SWDB_REASON_USER;
 }
 
 /**
@@ -1563,15 +1544,15 @@ _get_erased_reason (sqlite3 *db, gint tid, gint pid)
  * Get package reason before @first_trans. If package altered in the meantime (and we are
  * not performing a rollback) then keep reason from latest installation.
  *
- * Returns: reason before transaction being undone
+ * Returns: reason ID before transaction being undone
  **/
-gchar *
+DnfSwdbReason
 dnf_swdb_get_erased_reason (DnfSwdb *self, gchar *nevra, gint first_trans, gboolean rollback)
 {
     // prepare database
     if (dnf_swdb_open (self)) {
         // failed to open DB - warning is printed and package is considered user installed
-        return g_strdup ("user");
+        return DNF_SWDB_REASON_USER;
     }
 
     // get package object
@@ -1579,7 +1560,7 @@ dnf_swdb_get_erased_reason (DnfSwdb *self, gchar *nevra, gint first_trans, gbool
 
     if (!pkg) {
         // package not found - consider it user installed
-        return g_strdup ("user");
+        return DNF_SWDB_REASON_USER;
     }
 
     // get package transactions
@@ -1593,7 +1574,7 @@ dnf_swdb_get_erased_reason (DnfSwdb *self, gchar *nevra, gint first_trans, gbool
     if (tids->len == 0) {
         // there are no transactions available for this package, consider it user installed
         g_array_free (tids, TRUE);
-        return g_strdup ("user");
+        return DNF_SWDB_REASON_USER;
     }
 
     if (!rollback) {
@@ -1630,7 +1611,7 @@ dnf_swdb_get_erased_reason (DnfSwdb *self, gchar *nevra, gint first_trans, gbool
 
     if (last == 0) {
         // no transaction found - keep it user installed
-        return g_strdup ("user");
+        return DNF_SWDB_REASON_USER;
     }
 
     // get pkg reason from that transaction
@@ -1725,7 +1706,7 @@ dnf_swdb_load_output (DnfSwdb *self, gint tid)
  *
  * Returns: @desc's id from @sql
  **/
-gint
+static gint
 _get_description_id (sqlite3 *db, const gchar *desc, const gchar *sql)
 {
     sqlite3_stmt *res;
@@ -1811,25 +1792,6 @@ dnf_swdb_get_output_type (DnfSwdb *self, const gchar *type)
 }
 
 /**
- * dnf_swdb_get_reason_type:
- * @self: swdb object
- * @type: reason type description
- *
- * Returns: reason @type description id
- **/
-gint
-dnf_swdb_get_reason_type (DnfSwdb *self, const gchar *type)
-{
-    if (dnf_swdb_open (self))
-        return -1;
-    gint id = _get_description_id (self->db, type, S_REASON_TYPE_ID);
-    if (!id) {
-        id = _add_description (self->db, type, I_DESC_REASON);
-    }
-    return id;
-}
-
-/**
  * dnf_swdb_get_state_type:
  * @self: swdb object
  * @type: state type description
@@ -1846,138 +1808,4 @@ dnf_swdb_get_state_type (DnfSwdb *self, const gchar *type)
         id = _add_description (self->db, type, I_DESC_STATE);
     }
     return id;
-}
-
-/**
- * dnf_swdb_get_path:
- * @self: SWDB object
- *
- * Returns: database path
- **/
-const gchar *
-dnf_swdb_get_path (DnfSwdb *self)
-{
-    return self->path;
-}
-
-/**
- * dnf_swdb_set_path:
- * @self: SWDB object
- * @path: new path to sql database
- **/
-void
-dnf_swdb_set_path (DnfSwdb *self, const gchar *path)
-{
-    if (g_strcmp0 (path, self->path) != 0) {
-        g_free (self->path);
-        self->path = g_strdup (path);
-    }
-}
-
-/**
- * dnf_swdb_exist:
- * @self: SWDB object
- *
- * Returns: %TRUE if sqlite database exists
- **/
-gboolean
-dnf_swdb_exist (DnfSwdb *self)
-{
-    return g_file_test (dnf_swdb_get_path (self), G_FILE_TEST_EXISTS);
-}
-
-/**
- * dnf_swdb_open:
- * @self: SWDB object
- *
- * Open SWDB database and set EXCLUSIVE and TRUNCATE pragmas
- *
- * Returns: 0 if successful
- **/
-gint
-dnf_swdb_open (DnfSwdb *self)
-{
-    if (!self) {
-        return 1;
-    }
-
-    if (self->db) {
-        return 0;
-    }
-
-    if (sqlite3_open (self->path, &self->db)) {
-        g_warning ("ERROR: %s %s\n", sqlite3_errmsg (self->db), self->path);
-        return 1;
-    }
-    return _db_exec (self->db, TRUNCATE_EXCLUSIVE, NULL);
-}
-
-/**
- * dnf_swdb_close:
- * @self: SWDB object
- *
- * Finalize all pending statements and close database
- **/
-void
-dnf_swdb_close (DnfSwdb *self)
-{
-    if (self->db) {
-        if (sqlite3_close (self->db) == SQLITE_BUSY) {
-            sqlite3_stmt *res;
-            while ((res = sqlite3_next_stmt (self->db, NULL))) {
-                sqlite3_finalize (res);
-            }
-            if (sqlite3_close (self->db)) {
-                g_warning ("ERROR: %s\n", sqlite3_errmsg (self->db));
-            }
-        }
-        self->db = NULL;
-    }
-}
-
-/**
- * dnf_swdb_create_db:
- * @self: SWDB object
- *
- * Create new database at path set in SWDB object
- *
- * Returns: 0 if successful
- **/
-gint
-dnf_swdb_create_db (DnfSwdb *self)
-{
-    if (dnf_swdb_open (self))
-        return 1;
-
-    int failed = _create_db (self->db);
-    if (failed) {
-        g_warning ("SWDB error: Unable to create %d tables\n", failed);
-        sqlite3_close (self->db);
-        self->db = NULL;
-        return 2;
-    }
-    // close - allow transformer to work with DB
-    dnf_swdb_close (self);
-    return 0;
-}
-
-/***
- * dnf_swdb_reset_db:
- * @self: SWDB object
- *
- * Remove and create new database
- *
- * Returns: 0 if successful
- **/
-gint
-dnf_swdb_reset_db (DnfSwdb *self)
-{
-    if (dnf_swdb_exist (self)) {
-        dnf_swdb_close (self);
-        if (g_remove (self->path) != 0) {
-            g_warning ("SWDB error: Database reset failed!\n");
-            return 1;
-        }
-    }
-    return dnf_swdb_create_db (self);
 }
