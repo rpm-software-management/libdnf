@@ -38,7 +38,9 @@ IF (WITH_SWDB)
         dnf-swdb-db.c
         dnf-swdb-groups.c
         dnf-swdb-trans.c
-        dnf-swdb-pkg.c)
+        dnf-swdb-pkg.c
+        dnf-swdb-types.c
+    )
     SET (LIBDNF_SRCS ${LIBDNF_SRCS} ${SWDB_sources})
 ENDIF()
 
@@ -125,7 +127,9 @@ IF (WITH_SWDB)
         dnf-swdb-db.h
         dnf-swdb-groups.h
         dnf-swdb-trans.h
-        dnf-swdb-pkg.h)
+        dnf-swdb-pkg.h
+        dnf-swdb-types.h
+)
     SET (LIBDNF_headers ${LIBDNF_headers} ${SWDB_headers}
         dnf-swdb-pkg-sql.h
         dnf-swdb-trans-sql.h

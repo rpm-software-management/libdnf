@@ -32,6 +32,7 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE (DnfSwdbPkg, dnf_swdb_pkg, DNF, SWDB_PKG, GObject)
 
 #include "dnf-swdb.h"
+#include "dnf-swdb-types.h"
 
 struct _DnfSwdbPkg
 {
@@ -61,7 +62,7 @@ DnfSwdbPkg          *dnf_swdb_pkg_new               (const gchar   *name,
                                                      const gchar   *checksum_type,
                                                      const gchar   *type);
 gchar              *dnf_swdb_pkg_get_ui_from_repo   (DnfSwdbPkg    *self);
-gchar              *dnf_swdb_pkg_get_reason         (DnfSwdbPkg    *self);
+DnfSwdbReason       dnf_swdb_pkg_get_reason         (DnfSwdbPkg    *self);
 gint64              dnf_swdb_pkg_compare            (DnfSwdbPkg    *pkg1,
                                                      DnfSwdbPkg    *pkg2);
 gboolean            dnf_swdb_pkg___lt__             (DnfSwdbPkg    *first,

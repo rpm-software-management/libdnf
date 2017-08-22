@@ -26,6 +26,7 @@
 #include <glib-object.h>
 #include <glib.h>
 #include <sqlite3.h>
+#include "dnf-swdb.h"
 
 gint            _create_db          (sqlite3        *db);
 gint            _db_step            (sqlite3_stmt   *res);

@@ -36,6 +36,7 @@ G_DECLARE_FINAL_TYPE (DnfSwdbTransData, dnf_swdb_transdata, DNF, SWDB_TRANSDATA,
 G_DECLARE_FINAL_TYPE (DnfSwdbRpmData, dnf_swdb_rpmdata, DNF, SWDB_RPMDATA, GObject)
 
 #include "dnf-swdb.h"
+#include "dnf-swdb-types.h"
 
 struct _DnfSwdbPkgData
 {
@@ -60,7 +61,7 @@ struct _DnfSwdbTransData
     gint tgid;
     gint done;
     gint ORIGINAL_TD_ID;
-    gchar *reason;
+    DnfSwdbReason reason;
     gchar *state;
 };
 
@@ -93,7 +94,7 @@ DnfSwdbTransData   *dnf_swdb_transdata_new          (gint           tdid,
                                                      gint           tgid,
                                                      gint           done,
                                                      gint           ORIGINAL_TD_ID,
-                                                     gchar         *reason,
+                                                     DnfSwdbReason  reason,
                                                      gchar         *state);
 DnfSwdbRpmData     *dnf_swdb_rpmdata_new            (gint           pid,
                                                      const gchar   *buildtime,

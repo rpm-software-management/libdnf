@@ -23,9 +23,6 @@
 #ifndef _DNF_SWDB_SQL
 #define _DNF_SWDB_SQL
 
-#define TRUNCATE_EXCLUSIVE "PRAGMA journal_mode = TRUNCATE; PRAGMA locking_mode = EXCLUSIVE"
-
-#define I_DESC_REASON "INSERT INTO reason_type  VALUES (null, @desc)"
 #define I_DESC_STATE "INSERT INTO state_type   VALUES (null, @desc)"
 #define I_DESC_OUTPUT "INSERT INTO output_type  VALUES (null, @desc)"
 #define I_DESC_PACKAGE "INSERT INTO package_type VALUES (null, @desc)"
@@ -131,12 +128,10 @@
 #define S_REASON_ID_BY_PDID \
     "SELECT reason FROM PACKAGE_DATA join TRANS_DATA using(PD_ID) where PD_ID=@pdid"
 
-#define S_REASON_TYPE_ID "SELECT reason FROM reason_type  WHERE description=@desc"
 #define S_STATE_TYPE_ID "SELECT state  FROM state_type   WHERE description=@desc"
 #define S_OUTPUT_TYPE_ID "SELECT type   FROM output_type  WHERE description=@desc"
 #define S_PACKAGE_TYPE_ID "SELECT type   FROM package_type WHERE description=@desc"
 
-#define S_REASON_TYPE_BY_ID "SELECT description FROM reason_type  WHERE reason=@id"
 #define S_STATE_TYPE_BY_ID "SELECT description FROM state_type   WHERE state=@id"
 #define S_OUTPUT_TYPE_BY_ID "SELECT description FROM output_type  WHERE type=@id"
 #define S_PACKAGE_TYPE_BY_ID "SELECT description FROM package_type WHERE type=@id"
@@ -144,8 +139,7 @@
 #define S_LATEST_PACKAGE "SELECT p_id FROM package WHERE name=@name ORDER BY p_id DESC LIMIT 1"
 
 #define S_ERASED_REASON \
-    "SELECT description FROM TRANS_DATA join PACKAGE_DATA using (PD_ID) " \
-    "join REASON_TYPE using (reason) WHERE T_ID=@tid and P_ID=@pid"
+    "SELECT reason FROM TRANS_DATA join PACKAGE_DATA using (PD_ID) WHERE T_ID=@tid and P_ID=@pid"
 
 #define U_REASON_BY_PDID "UPDATE TRANS_DATA SET reason=@reason where PD_ID=@pdid"
 
