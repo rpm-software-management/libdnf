@@ -44,24 +44,24 @@ struct _DnfSwdbPkg
     gchar *arch;
     gchar *checksum_data;
     gchar *checksum_type;
-    gchar *type;
+    DnfSwdbItem type;
     gboolean done;
     gchar *state;
     gint pid;
-    gchar *ui_from_repo;
+    gchar *_ui_repo;
     gchar *nevra;
     DnfSwdb *swdb;
 };
 
-DnfSwdbPkg          *dnf_swdb_pkg_new               (const gchar   *name,
-                                                     gint           epoch,
-                                                     const gchar   *version,
-                                                     const gchar   *release,
-                                                     const gchar   *arch,
-                                                     const gchar   *checksum_data,
-                                                     const gchar   *checksum_type,
-                                                     const gchar   *type);
-gchar              *dnf_swdb_pkg_get_ui_from_repo   (DnfSwdbPkg    *self);
+DnfSwdbPkg          *dnf_swdb_pkg_new               (const gchar *name,
+                                                     gint         epoch,
+                                                     const gchar *version,
+                                                     const gchar *release,
+                                                     const gchar *arch,
+                                                     const gchar *checksum_data,
+                                                     const gchar *checksum_type,
+                                                     DnfSwdbItem  type);
+gchar              *dnf_swdb_pkg_ui_from_repo       (DnfSwdbPkg    *self);
 DnfSwdbReason       dnf_swdb_pkg_get_reason         (DnfSwdbPkg    *self);
 gint64              dnf_swdb_pkg_compare            (DnfSwdbPkg    *pkg1,
                                                      DnfSwdbPkg    *pkg2);

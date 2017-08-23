@@ -70,10 +70,16 @@ generate_package (void)
     g_autofree gchar *arch = generate_str (4);
     g_autofree gchar *checksum_data = generate_str (32);
     const gchar *checksum_type = g_rand_boolean (r) ? "sha256" : "sha1";
-    const gchar *type = g_rand_boolean (r) ? "rpm" : "source";
 
-    DnfSwdbPkg *pkg =
-      dnf_swdb_pkg_new (name, epoch, version, release, arch, checksum_data, checksum_type, type);
+    DnfSwdbPkg *pkg = dnf_swdb_pkg_new (
+        name,
+        epoch,
+        version,
+        release,
+        arch,
+        checksum_data,
+        checksum_type,
+        DNF_SWDB_ITEM_RPM);
 
     g_assert (pkg);
     return pkg;
@@ -126,14 +132,12 @@ generate_package_data (void)
     const gchar *installed_by = "1000";
     const gchar *changed_by = g_rand_boolean (r) ? NULL : "4242";
     const gchar *installonly = g_rand_boolean (r) ? NULL : "True";
-    const gchar *origin_url = g_rand_boolean (r) ? NULL : "github.com/edynox/dnf";
 
     DnfSwdbPkgData *pkg_data = dnf_swdb_pkgdata_new (from_repo_revision,
                                                      from_repo_timestamp,
                                                      installed_by,
                                                      changed_by,
                                                      installonly,
-                                                     origin_url,
                                                      from_repo);
 
     return pkg_data;
@@ -169,15 +173,11 @@ end_trans (DnfSwdb *self, gint tid)
 static void
 check_package_persistor (DnfSwdb *self, DnfSwdbPkg *pkg)
 {
-    g_autofree gchar *repo = dnf_swdb_repo (self, pkg->nevra);
-    g_assert_false (g_strcmp0 (pkg->ui_from_repo, repo));
-
     const gchar *new_repo = "testdora";
 
     g_assert_false (dnf_swdb_set_repo (self, pkg->nevra, new_repo));
 
-    g_free (repo);
-    repo = dnf_swdb_repo (self, pkg->nevra);
+    g_autofree gchar *repo = dnf_swdb_repo (self, pkg->nevra);
 
     g_assert_false (g_strcmp0 (new_repo, repo));
 
@@ -191,8 +191,12 @@ check_package_persistor (DnfSwdb *self, DnfSwdbPkg *pkg)
     g_assert_false (g_strcmp0 (pkg->checksum_data, same_pkg->checksum_data));
 
     // obtained package should contain new repo settings
-    g_autofree gchar *ui_from_repo = dnf_swdb_pkg_get_ui_from_repo (same_pkg);
-    g_assert_false (g_strcmp0 (ui_from_repo, new_repo));
+    g_autoptr (DnfSwdbPkgData) pkgdata = dnf_swdb_package_data (self, same_pkg->nevra);
+    g_assert_false (g_strcmp0 (pkgdata->from_repo, new_repo));
+
+    g_autofree gchar *ui_from_repo = dnf_swdb_pkg_ui_from_repo (same_pkg);
+    g_autofree gchar *ui_repo = g_strdup_printf ("@%s", new_repo);
+    g_assert_false (g_strcmp0 (ui_repo, ui_from_repo));
 
     // playing with reason
     g_assert (dnf_swdb_user_installed (self, pkg->nevra));
@@ -245,12 +249,12 @@ check_initial_transaction (DnfSwdb *self)
         g_assert (pkg->arch && *pkg->arch);
         g_assert (pkg->checksum_data && *pkg->checksum_data);
         g_assert (pkg->checksum_type && *pkg->checksum_type);
-        g_assert (pkg->type && *pkg->type);
+        g_assert (pkg->type == DNF_SWDB_ITEM_RPM);
         g_assert (pkg->done);
         g_assert (pkg->state && *pkg->state);
         g_assert (pkg->pid);
         g_assert (pkg->nevra && *pkg->nevra);
-        g_autofree gchar *ui_from_repo = dnf_swdb_pkg_get_ui_from_repo (pkg);
+        g_autofree gchar *ui_from_repo = dnf_swdb_pkg_ui_from_repo (pkg);
         g_assert (ui_from_repo);
 
         // check package trans and package data
@@ -262,7 +266,9 @@ check_initial_transaction (DnfSwdb *self)
         g_assert (pkgdata->from_repo_revision && *pkgdata->from_repo_revision);
         g_assert (pkgdata->from_repo_timestamp && *pkgdata->from_repo_timestamp);
         g_assert (pkgdata->installed_by && *pkgdata->installed_by);
-        g_assert_false (g_strcmp0 (pkgdata->from_repo, pkg->ui_from_repo));
+
+        g_autofree gchar *ui_repo = g_strdup_printf("@%s", pkgdata->from_repo);
+        g_assert_false (g_strcmp0 (ui_repo, ui_from_repo));
 
         g_assert (transdata->done);
 

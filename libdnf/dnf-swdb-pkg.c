@@ -37,9 +37,8 @@ dnf_swdb_pkg_finalize (GObject *object)
     g_free (pkg->arch);
     g_free (pkg->checksum_data);
     g_free (pkg->checksum_type);
-    g_free (pkg->type);
     g_free (pkg->state);
-    g_free (pkg->ui_from_repo);
+    g_free (pkg->_ui_repo);
     g_free (pkg->nevra);
     G_OBJECT_CLASS (dnf_swdb_pkg_parent_class)->finalize (object);
 }
@@ -59,9 +58,10 @@ dnf_swdb_pkg_init (DnfSwdbPkg *self)
     self->done = 0;
     self->state = NULL;
     self->pid = 0;
-    self->ui_from_repo = NULL;
+    self->_ui_repo = NULL;
     self->swdb = NULL;
     self->nevra = NULL;
+    self->type = 0;
 }
 
 static gchar *
@@ -97,7 +97,7 @@ dnf_swdb_pkg_new (const gchar *name,
                   const gchar *arch,
                   const gchar *checksum_data,
                   const gchar *checksum_type,
-                  const gchar *type)
+                  DnfSwdbItem  type)
 {
     DnfSwdbPkg *swdbpkg = g_object_new (DNF_TYPE_SWDB_PKG, NULL);
     swdbpkg->name = g_strdup (name);
@@ -108,11 +108,7 @@ dnf_swdb_pkg_new (const gchar *name,
     swdbpkg->checksum_data = g_strdup (checksum_data);
     swdbpkg->checksum_type = g_strdup (checksum_type);
     swdbpkg->nevra = _pkg_make_nevra (swdbpkg);
-    if (type) {
-        swdbpkg->type = g_strdup (type);
-    } else {
-        swdbpkg->type = NULL;
-    }
+    swdbpkg->type = type;
     return swdbpkg;
 }
 
@@ -137,7 +133,7 @@ dnf_swdb_pkg_get_reason (DnfSwdbPkg *self)
 }
 
 /**
- * dnf_swdb_pkg_get_ui_from_repo:
+ * dnf_swdb_pkg_ui_from_repo:
  * @self: package object
  *
  * Get UI reponame for package @self
@@ -147,18 +143,19 @@ dnf_swdb_pkg_get_reason (DnfSwdbPkg *self)
  * Returns: repository UI name
  **/
 gchar *
-dnf_swdb_pkg_get_ui_from_repo (DnfSwdbPkg *self)
+dnf_swdb_pkg_ui_from_repo (DnfSwdbPkg *self)
 {
-    if (self->ui_from_repo)
-        return g_strdup (self->ui_from_repo);
-    if (!self->swdb || !self->pid || dnf_swdb_open (self->swdb))
+    if (self->_ui_repo)
+        return g_strdup (self->_ui_repo);
+    if (!self->swdb || !self->pid || dnf_swdb_open (self->swdb)) {
         return g_strdup ("unknown");
+    }
     sqlite3_stmt *res;
     const gchar *sql = S_REPO_FROM_PID;
     gint pdid = 0;
     DB_PREP (self->swdb->db, sql, res);
     DB_BIND_INT (res, "@pid", self->pid);
-    gchar *r_name = NULL;
+    g_autofree gchar *r_name = NULL;
     if (sqlite3_step (res) == SQLITE_ROW) {
         r_name = g_strdup ((const gchar *)sqlite3_column_text (res, 0));
         pdid = sqlite3_column_int (res, 1);
@@ -176,15 +173,13 @@ dnf_swdb_pkg_get_ui_from_repo (DnfSwdbPkg *self)
         }
         sqlite3_finalize (res);
         if (cur_releasever && g_strcmp0 (cur_releasever, self->swdb->releasever)) {
-            gchar *rc = g_strjoin (NULL, "@", r_name, "/", cur_releasever, NULL);
-            g_free (r_name);
-            self->ui_from_repo = rc;
-            return g_strdup (rc);
+            self->_ui_repo = g_strjoin (NULL, "@", r_name, "/", cur_releasever, NULL);
+            return g_strdup (self->_ui_repo);
         }
     }
     if (r_name) {
-        self->ui_from_repo = r_name;
-        return g_strdup (r_name);
+        self->_ui_repo = g_strjoin(NULL, "@", r_name, NULL);
+        return g_strdup (self->_ui_repo);
     }
     return g_strdup ("unknown");
 }

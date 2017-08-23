@@ -7,7 +7,7 @@
       <x>400</x>
       <y>320</y>
       <w>180</w>
-      <h>210</h>
+      <h>170</h>
     </coordinates>
     <panel_attributes>PACKAGE_DATA
 --
@@ -19,7 +19,6 @@ from_repo_timestamp
 installed_by
 changed_by
 installonly
-origin_url
 
 
 
@@ -210,7 +209,7 @@ release
 arch
 checksum_data
 checksum_type
-/type/
+type
 
 
 
@@ -225,13 +224,13 @@ halign=center
     <id>Relation</id>
     <coordinates>
       <x>480</x>
-      <y>520</y>
+      <y>480</y>
       <w>30</w>
-      <h>160</h>
+      <h>200</h>
     </coordinates>
     <panel_attributes>m1=*
 </panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;140.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;180.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
@@ -271,24 +270,6 @@ halign=center
     <additional_attributes>10.0;50.0;10.0;10.0</additional_attributes>
   </element>
   <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>160</x>
-      <y>520</y>
-      <w>180</w>
-      <h>70</h>
-    </coordinates>
-    <panel_attributes>lt=..
-/PACKAGE_TYPE/
--..
-type
-description
-bg=white
-halign=center
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
     <id>Relation</id>
     <coordinates>
       <x>660</x>
@@ -298,18 +279,6 @@ halign=center
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>40.0;10.0;10.0;10.0;10.0;50.0;70.0;50.0;70.0;40.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>330</x>
-      <y>550</y>
-      <w>110</w>
-      <h>130</h>
-    </coordinates>
-    <panel_attributes>lt=..
-</panel_attributes>
-    <additional_attributes>90.0;110.0;90.0;10.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -629,7 +598,7 @@ halign=center
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>950</x>
+      <x>700</x>
       <y>740</y>
       <w>180</w>
       <h>90</h>
@@ -648,27 +617,27 @@ halign=center
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>920</x>
+      <x>870</x>
       <y>450</y>
-      <w>50</w>
-      <h>350</h>
+      <w>100</w>
+      <h>360</h>
     </coordinates>
     <panel_attributes>m1=*
 
 </panel_attributes>
-    <additional_attributes>30.0;320.0;10.0;320.0;10.0;10.0;30.0;10.0</additional_attributes>
+    <additional_attributes>10.0;330.0;50.0;330.0;50.0;10.0;80.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>570</x>
-      <y>780</y>
-      <w>400</w>
+      <y>770</y>
+      <w>150</w>
       <h>60</h>
     </coordinates>
     <panel_attributes>
 
 </panel_attributes>
-    <additional_attributes>380.0;20.0;10.0;20.0</additional_attributes>
+    <additional_attributes>130.0;20.0;10.0;20.0</additional_attributes>
   </element>
 </diagram>

@@ -71,8 +71,6 @@ gint            dnf_swdb_create_db              (DnfSwdb        *self);
 gint            dnf_swdb_reset_db               (DnfSwdb        *self);
 gint            dnf_swdb_open                   (DnfSwdb        *self);
 void            dnf_swdb_close                  (DnfSwdb        *self);
-gint            dnf_swdb_get_package_type       (DnfSwdb        *self,
-                                                 const gchar    *type);
 gint            dnf_swdb_get_output_type        (DnfSwdb        *self,
                                                  const gchar    *type);
 DnfSwdbReason   _reason_by_pid                  (sqlite3        *db,
