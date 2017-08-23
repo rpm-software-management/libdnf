@@ -25,7 +25,6 @@
 
 #define I_DESC_STATE "INSERT INTO state_type   VALUES (null, @desc)"
 #define I_DESC_OUTPUT "INSERT INTO output_type  VALUES (null, @desc)"
-#define I_DESC_PACKAGE "INSERT INTO package_type VALUES (null, @desc)"
 #define I_TRANS_WITH "INSERT INTO TRANS_WITH   VALUES (null, @tid, @pid)"
 
 #define INSERT_PKG \
@@ -39,12 +38,11 @@
 
 #define UPDATE_PKG_DATA \
     "UPDATE PACKAGE_DATA SET R_ID=@rid,from_repo_revision=@repo_r,from_repo_timestamp=@repo_t," \
-    "installed_by=@installed_by,changed_by=@changed_by,installonly=@installonly," \
-    "origin_url=@origin_url where P_ID=@pid"
+    "installed_by=@installed_by,changed_by=@changed_by,installonly=@installonly where P_ID=@pid"
 
 #define INSERT_PKG_DATA \
     "Insert into PACKAGE_DATA values (null, @pid, @rid, @repo_r, @repo_t," \
-    "@installed_by,@changed_by,@installonly, @origin_url)"
+    "@installed_by,@changed_by,@installonly)"
 
 #define INSERT_RPM_DATA \
     "INSERT into RPM_DATA " \
@@ -61,7 +59,7 @@
     "SELECT PD_ID FROM PACKAGE_DATA WHERE P_ID=@pid ORDER by PD_ID DESC LIMIT 1"
 #define GET_TRANS_CMDLINE "SELECT cmdline FROM TRANS WHERE T_ID=@tid"
 
-#define INSERT_PDID "insert into PACKAGE_DATA values(null,@pid,null,null,null,null,null,null,'#')"
+#define INSERT_PDID "insert into PACKAGE_DATA values(null,@pid,null,null,null,null,null,null)"
 #define PKG_DATA_ATTR_BY_PID "FROM PACKAGE_DATA WHERE P_ID=@pid"
 #define TRANS_DATA_ATTR_BY_PDID "FROM TRANS_DATA WHERE PD_ID=@pdid"
 #define TRANS_ATTR_BY_TID "FROM TRANS WHERE T_ID=@tid"
@@ -94,7 +92,9 @@
 
 #define S_PACKAGE_DATA_BY_PID "SELECT * FROM PACKAGE_DATA WHERE P_ID=@pid ORDER BY PD_ID DESC"
 #define S_REPO_BY_RID "select name from REPO where R_ID=@rid"
-#define S_PREV_AUTO_PD "SELECT PD_ID FROM PACKAGE_DATA where P_ID=@pid and origin_url='#'"
+#define S_PREV_AUTO_PD "SELECT PD_ID FROM PACKAGE_DATA where P_ID=@pid and R_ID=null and " \
+    "from_repo_revision=null and from_repo_timestamp=null and installed_by=null and "\
+    "changed_by=null and installonly=null"
 
 #define S_TRANS "SELECT * from TRANS ORDER BY T_ID DESC"
 #define S_TRANS_W_LIMIT "SELECT * from TRANS ORDER BY T_ID DESC LIMIT @limit"
@@ -130,11 +130,9 @@
 
 #define S_STATE_TYPE_ID "SELECT state  FROM state_type   WHERE description=@desc"
 #define S_OUTPUT_TYPE_ID "SELECT type   FROM output_type  WHERE description=@desc"
-#define S_PACKAGE_TYPE_ID "SELECT type   FROM package_type WHERE description=@desc"
 
 #define S_STATE_TYPE_BY_ID "SELECT description FROM state_type   WHERE state=@id"
 #define S_OUTPUT_TYPE_BY_ID "SELECT description FROM output_type  WHERE type=@id"
-#define S_PACKAGE_TYPE_BY_ID "SELECT description FROM package_type WHERE type=@id"
 
 #define S_LATEST_PACKAGE "SELECT p_id FROM package WHERE name=@name ORDER BY p_id DESC LIMIT 1"
 

@@ -47,7 +47,6 @@ struct _DnfSwdbPkgData
     gchar *installed_by;
     gchar *changed_by;
     gchar *installonly;
-    gchar *origin_url;
     gint pdid;
     gint pid;
 };
@@ -86,7 +85,6 @@ DnfSwdbPkgData     *dnf_swdb_pkgdata_new            (const gchar   *from_repo_re
                                                      const gchar   *installed_by,
                                                      const gchar   *changed_by,
                                                      const gchar   *installonly,
-                                                     const gchar   *origin_url,
                                                      const gchar   *from_repo);
 DnfSwdbTransData   *dnf_swdb_transdata_new          (gint           tdid,
                                                      gint           tid,

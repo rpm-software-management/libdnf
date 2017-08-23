@@ -918,7 +918,7 @@ _get_swdb_pkg(DnfSwdb *swdb, DnfPackage *pkg)
                             arch,
                             chksum,
                             chksum_type,
-                            "rpm");
+                            DNF_SWDB_ITEM_RPM);
 
     pid = dnf_swdb_add_package(swdb, spkg);
 
@@ -961,7 +961,6 @@ _log_swdb_transaction(SwdbHandle *handle,
         user,
         NULL, //changed by
         NULL, //installonly
-        NULL, //origin_url
         dnf_package_get_reponame(pkg));
 
     // insert package data

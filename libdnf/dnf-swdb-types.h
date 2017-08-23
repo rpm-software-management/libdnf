@@ -36,6 +36,11 @@ typedef enum {
     DNF_SWDB_REASON_GROUP = 5
 } DnfSwdbReason;
 
+typedef enum {
+    DNF_SWDB_ITEM_RPM = 0,
+    DNF_SWDB_ITEM_MODULE = 1
+} DnfSwdbItem;
+
 DnfSwdbReason dnf_convert_reason_to_id (const gchar  *reason);
 gchar        *dnf_convert_id_to_reason (DnfSwdbReason reason);
 

@@ -736,6 +736,7 @@ dnf_swdb_trans_performed_with (DnfSwdbTrans *self)
         pid = g_array_index (pids, gint, i);
         DnfSwdbPkg *pkg = _get_package_by_pid (swdb->db, pid);
         if (pkg) {
+            pkg->swdb = swdb;
             g_ptr_array_add (pkgs, (gpointer)pkg);
         }
     }

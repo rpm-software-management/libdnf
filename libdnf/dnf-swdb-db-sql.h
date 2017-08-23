@@ -44,7 +44,7 @@
 #define CREATE_TABLES \
     "CREATE TABLE PACKAGE_DATA (PD_ID INTEGER PRIMARY KEY, P_ID INTEGER, R_ID INTEGER," \
     "   from_repo_revision TEXT, from_repo_timestamp TEXT, installed_by TEXT, changed_by TEXT," \
-    "   installonly TEXT, origin_url TEXT);" \
+    "   installonly TEXT);" \
     "CREATE TABLE PACKAGE ( P_ID INTEGER PRIMARY KEY, name TEXT, epoch INTEGER, version TEXT, " \
     "   release TEXT, arch TEXT, checksum_data TEXT, checksum_type TEXT, type INTEGER);" \
     "CREATE TABLE REPO (R_ID INTEGER PRIMARY KEY, name TEXT, last_synced TEXT, is_expired TEXT);" \
@@ -56,7 +56,6 @@
     "CREATE TABLE OUTPUT (O_ID INTEGER PRIMARY KEY,T_ID INTEGER, msg TEXT, type INTEGER);" \
     "CREATE TABLE STATE_TYPE (state INTEGER PRIMARY KEY, description TEXT);" \
     "CREATE TABLE OUTPUT_TYPE (type INTEGER PRIMARY KEY, description TEXT);" \
-    "CREATE TABLE PACKAGE_TYPE (type INTEGER PRIMARY KEY, description TEXT);" \
     "CREATE TABLE GROUPS (G_ID INTEGER PRIMARY KEY, name_id TEXT, name TEXT, ui_name TEXT, " \
     "   installed INTEGER, pkg_types INTEGER);" \
     "CREATE TABLE TRANS_GROUP_DATA (TG_ID INTEGER PRIMARY KEY, T_ID INTEGER, G_ID INTEGER, " \
