@@ -979,6 +979,32 @@ hy_goal_count_problems(HyGoal goal)
     return solver_problem_count(goal->solv) + MIN(1, goal->removal_of_protected->len);
 }
 
+static DnfPackageSet *
+remove_pkgs_with_same_nevra_from_pset(DnfPackageSet* pset, DnfPackageSet* remove_musters, DnfSack* sack)
+{
+    unsigned int count = dnf_packageset_count(remove_musters);
+    DnfPackageSet *final_pset = dnf_packageset_new(sack);
+    unsigned int count1 = dnf_packageset_count(pset);
+    Id id1 = -1;
+    for (unsigned int i = 0; i < count1; ++i) {
+        id1 = dnf_packageset_get_pkgid(pset, i, id1);
+        DnfPackage *pkg1 = dnf_package_new(sack, id1);
+        Id id2 = -1;
+        gboolean found = FALSE;
+        for (unsigned int j = 0; j < count; ++j) {
+            id2 = dnf_packageset_get_pkgid(remove_musters, j, id2);
+            DnfPackage *pkg2 = dnf_package_new(sack, id2);
+            if (!dnf_package_cmp(pkg1, pkg2)) {
+                found = TRUE;
+                break;
+            }
+        }
+        if (!found)
+            dnf_packageset_add(final_pset, pkg1);
+    }
+    return final_pset;
+}
+
 /**
  * Reports packages that has a conflict
  *
@@ -1015,6 +1041,7 @@ hy_goal_conflict_pkgs(HyGoal goal, unsigned i)
  * Reports packages that has a conflict
  *
  * available - if available it returns set with available packages with conflicts
+ * available - if package installed it also excludes available packages with same NEVRA
  *
  * Returns DnfPackageSet with all packages that have a conflict.
  */
@@ -1022,6 +1049,7 @@ DnfPackageSet *
 hy_goal_conflict_all_pkgs(HyGoal goal, DnfPackageState pkg_type)
 {
     DnfPackageSet *pset = dnf_packageset_new(goal->sack);
+    DnfPackageSet *temporary_pset = dnf_packageset_new(goal->sack);
 
     int count_problems = hy_goal_count_problems(goal);
     for (int i = 0; i < count_problems; i++) {
@@ -1031,15 +1059,27 @@ hy_goal_conflict_all_pkgs(HyGoal goal, DnfPackageState pkg_type)
             DnfPackage *pkg = dnf_package_new(goal->sack, id);
             if (pkg == NULL)
                 continue;
-            if (pkg_type ==  DNF_PACKAGE_STATE_AVAILABLE && dnf_package_installed(pkg))
+            if (pkg_type ==  DNF_PACKAGE_STATE_AVAILABLE && dnf_package_installed(pkg)) {
+                dnf_packageset_add(temporary_pset, pkg);
                 continue;
+            }
             if (pkg_type ==  DNF_PACKAGE_STATE_INSTALLED && !dnf_package_installed(pkg))
                 continue;
             dnf_packageset_add(pset, pkg);
         }
         queue_free(conflict);
     }
-    return pset;
+    unsigned int count = dnf_packageset_count(temporary_pset);
+    if (!count) {
+        g_object_unref(temporary_pset);
+        return pset;
+    }
+
+    DnfPackageSet *final_pset = remove_pkgs_with_same_nevra_from_pset(pset, temporary_pset,
+                                                                      goal->sack);
+    g_object_unref(pset);
+    g_object_unref(temporary_pset);
+    return final_pset;
 }
 /**
  * Reports packages that have broken dependency
@@ -1074,12 +1114,14 @@ hy_goal_broken_dependency_pkgs(HyGoal goal, unsigned i)
 /**
  * Reports all packages that have broken dependency
  * available - if available returns only available packages with broken dependencies
+ * available - if package installed it also excludes available packages with same NEVRA
  * Returns DnfPackageSet with all packages with broken dependency
  */
 DnfPackageSet *
 hy_goal_broken_dependency_all_pkgs(HyGoal goal, DnfPackageState pkg_type)
 {
     DnfPackageSet *pset = dnf_packageset_new(goal->sack);
+    DnfPackageSet *temporary_pset = dnf_packageset_new(goal->sack);
 
     int count_problems = hy_goal_count_problems(goal);
     for (int i = 0; i < count_problems; i++) {
@@ -1089,15 +1131,26 @@ hy_goal_broken_dependency_all_pkgs(HyGoal goal, DnfPackageState pkg_type)
             DnfPackage *pkg = dnf_package_new(goal->sack, id);
             if (pkg == NULL)
                 continue;
-            if (pkg_type ==  DNF_PACKAGE_STATE_AVAILABLE && dnf_package_installed(pkg))
+            if (pkg_type ==  DNF_PACKAGE_STATE_AVAILABLE && dnf_package_installed(pkg)) {
+                dnf_packageset_add(temporary_pset, pkg);
                 continue;
+            }
             if (pkg_type ==  DNF_PACKAGE_STATE_INSTALLED && !dnf_package_installed(pkg))
                 continue;
             dnf_packageset_add(pset, pkg);
         }
         queue_free(broken_dependency);
     }
-    return pset;
+    unsigned int count = dnf_packageset_count(temporary_pset);
+    if (!count) {
+        g_object_unref(temporary_pset);
+        return pset;
+    }
+    DnfPackageSet *final_pset = remove_pkgs_with_same_nevra_from_pset(pset, temporary_pset,
+                                                                      goal->sack);
+    g_object_unref(pset);
+    g_object_unref(temporary_pset);
+    return final_pset;
 }
 
 /**
