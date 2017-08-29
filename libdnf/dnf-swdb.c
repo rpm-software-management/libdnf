@@ -419,6 +419,7 @@ dnf_swdb_select_user_installed (DnfSwdb *self, GPtrArray *nevras)
     gint pdid = 0;
     DnfSwdbReason reason_id = DNF_SWDB_REASON_UNKNOWN;
     const gchar *sql = S_REASON_ID_BY_PDID;
+
     for (guint i = 0; i < nevras->len; ++i) {
         pid = _pid_by_nevra (self->db, (gchar *)g_ptr_array_index (nevras, i));
         if (!pid) {
@@ -434,12 +435,19 @@ dnf_swdb_select_user_installed (DnfSwdb *self, GPtrArray *nevras)
         sqlite3_stmt *res;
         DB_PREP (self->db, sql, res);
         DB_BIND_INT (res, "@pdid", pdid);
+        gboolean push = TRUE;
         while (sqlite3_step (res) == SQLITE_ROW) {
             reason_id = sqlite3_column_int (res, 0);
-            if (reason_id != DNF_SWDB_REASON_DEP && reason_id != DNF_SWDB_REASON_WEAK) {
-                g_array_append_val (usr_ids, i);
-                break;
+            if (reason_id == DNF_SWDB_REASON_DEP || reason_id == DNF_SWDB_REASON_WEAK) {
+                push = FALSE;
+                continue;
             }
+            push = TRUE;
+            break;
+        }
+        // push even in case when no record is found
+        if (push) {
+            g_array_append_val (usr_ids, i);
         }
         sqlite3_finalize (res);
     }
