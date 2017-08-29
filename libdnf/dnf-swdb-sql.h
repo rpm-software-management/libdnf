@@ -92,9 +92,7 @@
 
 #define S_PACKAGE_DATA_BY_PID "SELECT * FROM PACKAGE_DATA WHERE P_ID=@pid ORDER BY PD_ID DESC"
 #define S_REPO_BY_RID "select name from REPO where R_ID=@rid"
-#define S_PREV_AUTO_PD "SELECT PD_ID FROM PACKAGE_DATA where P_ID=@pid and R_ID=null and " \
-    "from_repo_revision=null and from_repo_timestamp=null and installed_by=null and "\
-    "changed_by=null and installonly=null"
+#define S_PREV_AUTO_PD "SELECT PD_ID FROM PACKAGE_DATA where P_ID=@pid and R_ID is null"
 
 #define S_TRANS "SELECT * from TRANS ORDER BY T_ID DESC"
 #define S_TRANS_W_LIMIT "SELECT * from TRANS ORDER BY T_ID DESC LIMIT @limit"
