@@ -100,6 +100,10 @@ class SubjectTest(base.TestCase):
                                                      version='3.6.9',
                                                      release='11.fc100.x86_64',
                                                      arch=None))
+        self.assertEqual(next(nevras), NEVRA(name='four-of-fish', epoch=None,
+                                             version=None,
+                                             release='8:3.6.9-11.fc100.x86_64',
+                                             arch=None))
         self.assertEqual(next(nevras), NEVRA(name=None, epoch=None,
                                              version=None,
                                              release='four-of-fish-8:3.6.9-11.fc100.x86_64',
@@ -136,6 +140,10 @@ class SubjectTest(base.TestCase):
                                                      epoch=None,
                                                      version='11.fc100.x86_64',
                                                      release=None, arch=None))
+        self.assertEqual(next(nevras), NEVRA(name='four-of-fish-3.6.9', epoch=None,
+                                             version=None,
+                                             release='11.fc100.x86_64',
+                                             arch=None))
         self.assertEqual(next(nevras), NEVRA(name=None, epoch=None,
                                              version='four-of-fish-3.6.9-11.fc100.x86_64',
                                              release=None,
@@ -279,7 +287,7 @@ class SubjectRealPossibilitiesTest(base.TestCase):
 
     def test_nonexistent_version(self):
         subj = hawkey.Subject("penny-5")
-        self.assertLength(list(subj.nevra_possibilities_real(self.sack)), 0)
+        self.assertLength(list(subj.nevra_possibilities_real(self.sack)), 1)
 
     def test_glob_arches(self):
         subj = hawkey.Subject("pilchard-1.2.3-1.*6*")

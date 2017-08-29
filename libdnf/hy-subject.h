@@ -47,6 +47,7 @@ enum _HyForm {
     HY_FORM_EVRA = 9,
     HY_FORM_EVR = 10,
     HY_FORM_RA = 11,
+    HY_FORM_NR = 12,
     _HY_FORM_STOP_ = -1
 };
 
