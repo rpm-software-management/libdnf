@@ -105,14 +105,14 @@ hy_module_form_set_string(HyModuleForm module_form, int which, const char* str_v
     *attr = g_strdup(str_val);
 }
 
-int
+long long
 hy_module_form_get_version(HyModuleForm module_form)
 {
     return module_form->version;
 }
 
 void
-hy_module_form_set_version(HyModuleForm module_form, int version)
+hy_module_form_set_version(HyModuleForm module_form, long long version)
 {
     module_form->version = version;
 }

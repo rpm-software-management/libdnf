@@ -118,7 +118,7 @@ int module_form_possibility(char *module_form_str, int form, HyModuleForm module
 
     if (!MATCH_EMPTY(VERSION)) {
         copy_str_from_subexpr(&version, module_form_str, matches, VERSION);
-        module_form->version = atoi(version);
+        module_form->version = atoll(version);
         free(version);
     }
 

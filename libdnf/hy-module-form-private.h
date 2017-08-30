@@ -24,7 +24,7 @@
 struct _HyModuleForm {
     char *name;
     char *stream;
-    int version;
+    long long version;
     char *context;
     char *arch;
     char *profile;
