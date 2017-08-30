@@ -41,8 +41,8 @@ HyModuleForm hy_module_form_create(void);
 void hy_module_form_free(HyModuleForm module_form);
 HyModuleForm hy_module_form_clone(HyModuleForm module_form);
 const char *hy_module_form_get_string(HyModuleForm module_form, int which);
-int hy_module_form_get_version(HyModuleForm module_form);
-void hy_module_form_set_version(HyModuleForm module_form, int epoch);
+long long hy_module_form_get_version(HyModuleForm module_form);
+void hy_module_form_set_version(HyModuleForm module_form, long long version);
 void hy_module_form_set_string(HyModuleForm module_form, int which, const char* str_val);
 
 G_END_DECLS

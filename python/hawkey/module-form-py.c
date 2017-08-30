@@ -58,7 +58,7 @@ moduleFormToPyObject(HyModuleForm module_form)
 }
 
 // getsetters
-static int
+static long long
 set_version(_ModuleFormObject *self, PyObject *value, void *closure)
 {
     if (PyInt_Check(value))
@@ -201,7 +201,7 @@ iter(_ModuleFormObject *self)
         res = Py_BuildValue("zzOzzz", module_form->name, module_form->stream, Py_None,
                             module_form->context, module_form->arch, module_form->profile);
     } else
-        res = Py_BuildValue("zzizzz", module_form->name, module_form->stream, module_form->version,
+        res = Py_BuildValue("zzLzzz", module_form->name, module_form->stream, module_form->version,
                             module_form->context, module_form->arch, module_form->profile);
     PyObject *iter = PyObject_GetIter(res);
     Py_DECREF(res);
