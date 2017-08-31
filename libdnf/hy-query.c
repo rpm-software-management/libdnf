@@ -657,9 +657,15 @@ filter_updown(HyQuery q, int downgrade, Map *res)
     int i;
     Map m;
 
-    assert(pool->installed);
     dnf_sack_make_provides_ready(q->sack);
+
+    if (!pool->installed) {
+        MAPZERO(res);
+        return;
+    }
+
     map_init(&m, pool->nsolvables);
+
     for (i = 1; i < pool->nsolvables; ++i) {
         if (!MAPTST(res, i))
             continue;
@@ -684,8 +690,13 @@ filter_updown_able(HyQuery q, int downgradable, Map *res)
     Map m;
     Pool *pool = dnf_sack_get_pool(q->sack);
 
-    assert(pool->installed);
     dnf_sack_make_provides_ready(q->sack);
+
+    if (!pool->installed) {
+        MAPZERO(res);
+        return;
+    }
+
     map_init(&m, pool->nsolvables);
     FOR_PKG_SOLVABLES(p) {
         s = pool_id2solvable(pool, p);
