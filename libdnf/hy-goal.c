@@ -277,7 +277,8 @@ init_solver(HyGoal goal, DnfGoalActions flags)
 }
 
 static void
-allow_uninstall_all_but_protected(HyGoal goal, Queue *job, DnfGoalActions flags) {
+allow_uninstall_all_but_protected(HyGoal goal, Queue *job, DnfGoalActions flags)
+{
     Pool *pool = dnf_sack_get_pool(goal->sack);
 
     if (goal->protected == NULL) {
@@ -294,9 +295,9 @@ allow_uninstall_all_but_protected(HyGoal goal, Queue *job, DnfGoalActions flags)
     if (DNF_ALLOW_UNINSTALL & flags)
         for (Id id = 1; id < pool->nsolvables; ++id) {
             Solvable *s = pool_id2solvable(pool, id);
-            if (pool->installed == s->repo) {
-                if (!MAPTST(goal->protected, id) && pool->installed == s->repo)
-                    queue_push2(job, SOLVER_ALLOWUNINSTALL|SOLVER_SOLVABLE, id);
+            if (pool->installed == s->repo && !MAPTST(goal->protected, id) &&
+                (pool->considered == NULL || MAPTST(pool->considered, id))) {
+                queue_push2(job, SOLVER_ALLOWUNINSTALL|SOLVER_SOLVABLE, id);
             }
         }
 }
