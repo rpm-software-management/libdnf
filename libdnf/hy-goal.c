@@ -1382,7 +1382,8 @@ hy_goal_get_reason(HyGoal goal, DnfPackage *pkg)
     if (goal->solv == NULL)
         return HY_REASON_USER;
     Id info;
-    int reason = solver_describe_decision(goal->solv, dnf_package_get_id(pkg), &info);
+    const Id pkg_id = dnf_package_get_id(pkg);
+    int reason = solver_describe_decision(goal->solv, pkg_id, &info);
 
     if ((reason == SOLVER_REASON_UNIT_RULE ||
          reason == SOLVER_REASON_RESOLVE_JOB) &&
@@ -1393,6 +1394,16 @@ hy_goal_get_reason(HyGoal goal, DnfPackage *pkg)
         return HY_REASON_CLEAN;
     if (reason == SOLVER_REASON_WEAKDEP)
         return HY_REASON_WEAKDEP;
+    Queue cleandepsq;
+    queue_init(&cleandepsq);
+    solver_get_cleandeps(goal->solv, &cleandepsq);
+    for (int i = 0; i < cleandepsq.count; ++i) {
+        if (cleandepsq.elements[i] == pkg_id) {
+            queue_free(&cleandepsq);
+            return HY_REASON_CLEAN;
+        }
+    }
+    queue_free(&cleandepsq);
     return HY_REASON_DEP;
 }
 
