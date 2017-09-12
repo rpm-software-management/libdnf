@@ -222,11 +222,16 @@ to_query(_NevraObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *sack;
     DnfSack *csack;
-    if (!PyArg_ParseTuple(args, "O!", &sack_Type, &sack)) {
+    const char *kwlist[] = {"sack", "icase", NULL};
+    PyObject *icase = NULL;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O!", (char**) kwlist, &sack_Type, &sack,
+        &PyBool_Type, &icase)) {
         return NULL;
     }
+    gboolean c_icase = icase!=NULL && PyObject_IsTrue(icase);
     csack = sackFromPyObject(sack);
-    HyQuery query = hy_nevra_to_query(self->nevra, csack);
+    HyQuery query = hy_nevra_to_query(self->nevra, csack, c_icase);
     PyObject *q = queryToPyObject(query, sack);
     return q;
 }
@@ -234,7 +239,7 @@ to_query(_NevraObject *self, PyObject *args, PyObject *kwds)
 static struct PyMethodDef nevra_methods[] = {
     {"evr_cmp",     (PyCFunction) evr_cmp, METH_VARARGS, NULL},
     {"evr", (PyCFunction) evr, METH_NOARGS,   NULL},
-    {"to_query",     (PyCFunction) to_query, METH_VARARGS, NULL},
+    {"to_query",     (PyCFunction) to_query, METH_VARARGS | METH_KEYWORDS, NULL},
     {NULL}                      /* sentinel */
 };
 

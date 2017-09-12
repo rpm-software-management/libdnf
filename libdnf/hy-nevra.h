@@ -43,7 +43,7 @@ const char *hy_nevra_get_string(HyNevra nevra, int which);
 int hy_nevra_get_epoch(HyNevra nevra);
 void hy_nevra_set_epoch(HyNevra nevra, int epoch);
 void hy_nevra_set_string(HyNevra nevra, int which, const char* str_val);
-HyQuery hy_nevra_to_query(HyNevra nevra, DnfSack *sack);
+HyQuery hy_nevra_to_query(HyNevra nevra, DnfSack *sack, gboolean icase);
 int hy_nevra_evr_cmp(HyNevra nevra1, HyNevra nevra2, DnfSack *sack);
 char *hy_nevra_get_evr(HyNevra nevra);
 gboolean hy_nevra_has_just_name(HyNevra nevra);

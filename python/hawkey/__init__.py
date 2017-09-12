@@ -192,8 +192,8 @@ def split_nevra(s):
 
 class NEVRA(_hawkey.NEVRA):
 
-    def to_query(self, sack):
-        _hawkey_query = super(NEVRA, self).to_query(sack)
+    def to_query(self, sack, icase=False):
+        _hawkey_query = super(NEVRA, self).to_query(sack, icase=icase)
         return Query(query=_hawkey_query)
 
     def _has_just_name(self):
