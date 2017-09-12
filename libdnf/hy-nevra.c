@@ -138,19 +138,23 @@ hy_nevra_set_epoch(HyNevra nevra, int epoch)
 }
 
 HyQuery
-hy_nevra_to_query(HyNevra nevra, DnfSack *sack)
+hy_nevra_to_query(HyNevra nevra, DnfSack *sack, gboolean icase)
 {
     HyQuery query = hy_query_create(sack);
-    if (nevra->name != NULL)
-        hy_query_filter(query, HY_PKG_NAME, HY_EQ, nevra->name);
+    if (nevra->name != NULL && strcmp(nevra->name, "*") != 0) {
+        if (icase)
+            hy_query_filter(query, HY_PKG_NAME, HY_GLOB|HY_ICASE, nevra->name);
+        else
+            hy_query_filter(query, HY_PKG_NAME, HY_GLOB, nevra->name);
+    }
     if (nevra->epoch != -1)
         hy_query_filter_num(query, HY_PKG_EPOCH, HY_EQ, nevra->epoch);
-    if (nevra->version != NULL)
-        hy_query_filter(query, HY_PKG_VERSION, HY_EQ, nevra->version);
-    if (nevra->release != NULL)
-        hy_query_filter(query, HY_PKG_RELEASE, HY_EQ, nevra->release);
-    if (nevra->arch != NULL)
-        hy_query_filter(query, HY_PKG_ARCH, HY_EQ, nevra->arch);
+    if (nevra->version != NULL && strcmp(nevra->version, "*") != 0)
+        hy_query_filter(query, HY_PKG_VERSION, HY_GLOB, nevra->version);
+    if (nevra->release != NULL && strcmp(nevra->release, "*") != 0)
+        hy_query_filter(query, HY_PKG_RELEASE, HY_GLOB, nevra->release);
+    if (nevra->arch != NULL && strcmp(nevra->arch, "*") != 0)
+        hy_query_filter(query, HY_PKG_ARCH, HY_GLOB, nevra->arch);
     return query;
 }
 
