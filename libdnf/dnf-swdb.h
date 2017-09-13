@@ -161,9 +161,6 @@ DnfSwdbPkgData *dnf_swdb_package_data           (DnfSwdb        *self,
                                                  const gchar    *nevra);
 gchar          *dnf_swdb_repo                   (DnfSwdb        *self,
                                                  const gchar    *nevra);
-gint            dnf_swdb_mark_user_installed    (DnfSwdb        *self,
-                                                 const gchar    *nevra,
-                                                 gboolean        user_installed);
 GPtrArray      *dnf_swdb_checksums              (DnfSwdb        *self,
                                                  GPtrArray      *nevras);
 gint            dnf_swdb_set_reason             (DnfSwdb        *self,
