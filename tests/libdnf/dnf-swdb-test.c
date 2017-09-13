@@ -201,7 +201,7 @@ check_package_persistor (DnfSwdb *self, DnfSwdbPkg *pkg)
     // playing with reason
     g_assert (dnf_swdb_user_installed (self, pkg->nevra));
 
-    g_assert_false (dnf_swdb_mark_user_installed (self, pkg->nevra, FALSE));
+    g_assert_false (dnf_swdb_set_reason (self, pkg->nevra, DNF_SWDB_REASON_DEP));
 
     g_assert_false (dnf_swdb_user_installed (self, pkg->nevra));
 

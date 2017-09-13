@@ -327,8 +327,7 @@ _pid_by_nevra (sqlite3 *db, const gchar *nevra)
     sqlite3_stmt *res;
     DB_PREP (db, sql, res);
     DB_BIND (res, "@nevra", nevra);
-    pid = DB_FIND (res);
-    return pid;
+    return DB_FIND (res);
 }
 
 /**
@@ -553,8 +552,7 @@ dnf_swdb_repo (DnfSwdb *self, const gchar *nevra)
     if (!pid) {
         return g_strdup ("unknown");
     }
-    gchar *r_name = _repo_by_pid (self->db, pid);
-    return r_name;
+    return _repo_by_pid (self->db, pid);
 }
 
 /**
@@ -951,7 +949,7 @@ dnf_swdb_package_data (DnfSwdb *self, const gchar *nevra)
  * Set reason in package data with ID @pdid to @mark
  **/
 static void
-_mark_pkg_as (sqlite3 *db, gint pdid, gint mark)
+_mark_pkg_as (sqlite3 *db, gint pdid, DnfSwdbReason mark)
 {
     sqlite3_stmt *res;
     const gchar *sql = U_REASON_BY_PDID;
@@ -982,28 +980,6 @@ dnf_swdb_set_reason (DnfSwdb *self, const gchar *nevra, DnfSwdbReason reason)
     gint pdid = _pdid_from_pid (self->db, pid);
     _mark_pkg_as (self->db, pdid, reason);
     return 0;
-}
-
-/**
- * dnf_swdb_mark_user_installed:
- * @self: SWDB object
- * @nevra: string in format name-[epoch:]version-release.arch
- * @user_installed: user installed flag (%TRUE if user installed)
- *
- * (Un)mark package as user installed
- *
- * Returns: 0 if successfull
- **/
-gint
-dnf_swdb_mark_user_installed (DnfSwdb *self, const gchar *nevra, gboolean user_installed)
-{
-    gint rc;
-    if (user_installed) {
-        rc = dnf_swdb_set_reason (self, nevra, DNF_SWDB_REASON_USER);
-    } else {
-        rc = dnf_swdb_set_reason (self, nevra, DNF_SWDB_REASON_DEP);
-    }
-    return rc;
 }
 
 /**************************** RPM DATA PERSISTOR *****************************/
