@@ -234,6 +234,64 @@ valid_filter_reldep(int keyname)
     return 1;
 }
 
+static char *
+pool_solvable_epoch_optional_2str(Pool *pool, const Solvable *s, gboolean with_epoch)
+{
+    const char *e;
+    const char *name = pool_id2str(pool, s->name);
+    const char *evr = pool_id2str(pool, s->evr);
+    const char *arch = pool_id2str(pool, s->arch);
+    gboolean present_epoch = FALSE;
+
+    for (e = evr + 1; *e != '-' && *e != '\0'; ++e) {
+        if (*e == ':') {
+            present_epoch = TRUE;
+            break;
+        }
+    }
+    char *output_string;
+    int evr_length, arch_length;
+    int extra_epoch_length = 0;
+    int name_length = strlen(name);
+    evr_length = strlen(evr);
+    arch_length = strlen(arch);
+    if (!present_epoch && with_epoch) {
+        extra_epoch_length = 2;
+    } else if (present_epoch && !with_epoch) {
+        extra_epoch_length = evr - e - 1;
+    }
+
+    output_string = pool_alloctmpspace(
+        pool, name_length + evr_length + extra_epoch_length + arch_length + 3);
+
+    strcpy(output_string, name);
+
+    if (evr_length || extra_epoch_length > 0) {
+        output_string[name_length++] = '-';
+
+        if (extra_epoch_length > 0) {
+            output_string[name_length++] = '0';
+            output_string[name_length++] = ':';
+            output_string[name_length] = '\0';
+        }
+    }
+
+    if (evr_length) {
+        if (extra_epoch_length >= 0) {
+            strcpy(output_string + name_length, evr);
+        } else {
+            strcpy(output_string + name_length, evr - extra_epoch_length);
+            evr_length = evr_length + extra_epoch_length;
+        }
+    }
+
+    if (arch_length) {
+        output_string[name_length + evr_length] = '.';
+        strcpy(output_string + name_length + evr_length + 1, arch);
+    }
+    return output_string;
+}
+
 struct _Filter *
 filter_create(int nmatches)
 {
@@ -626,25 +684,32 @@ filter_location(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
-filter_nevra(HyQuery q, struct _Filter *f, Map *m)
+filter_nevra(HyQuery q, const struct _Filter *f, Map *m)
 {
     Pool *pool = dnf_sack_get_pool(q->sack);
     int fn_flags = (HY_ICASE & f->cmp_type) ? FNM_CASEFOLD : 0;
 
-    for (Id id = 1; id < pool->nsolvables; ++id) {
-        if (!MAPTST(q->result, id))
-            continue;
-        Solvable* s = pool_id2solvable(pool, id);
-        const char* nevra = pool_solvable2str(pool, s);
+    for (int mi = 0; mi < f->nmatches; ++mi) {
+        const char *nevra_pattern = f->matches[mi].str;
+        gboolean present_epoch = strchr(nevra_pattern, ':') != NULL;
 
-        for (int mi = 0; mi < f->nmatches; ++mi) {
-             const char *nevra_pattern = f->matches[mi].str;
-             if (!(HY_GLOB & f->cmp_type)) {
-                 if (strcmp(nevra_pattern, nevra) == 0)
-                     MAPSET(m, id);
-             } else if (fnmatch(nevra_pattern, nevra, fn_flags) == 0) {
-                 MAPSET(m, id);
-             }
+        for (Id id = 1; id < pool->nsolvables; ++id) {
+            if (!MAPTST(q->result, id))
+                continue;
+            Solvable* s = pool_id2solvable(pool, id);
+
+            char* nevra = pool_solvable_epoch_optional_2str(pool, s, present_epoch);
+            if (!(HY_GLOB & f->cmp_type)) {
+                if (HY_ICASE & f->cmp_type) {
+                    if (strcasecmp(nevra_pattern, nevra) == 0)
+                        MAPSET(m, id);
+                } else {
+                    if (strcmp(nevra_pattern, nevra) == 0)
+                        MAPSET(m, id);
+                }
+            } else if (fnmatch(nevra_pattern, nevra, fn_flags) == 0) {
+                MAPSET(m, id);
+            }
         }
     }
 }
