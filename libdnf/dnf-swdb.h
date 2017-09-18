@@ -98,8 +98,9 @@ gint            dnf_swdb_trans_end              (DnfSwdb        *self,
                                                  const gchar    *end_timestamp,
                                                  const gchar    *end_rpmdb_version,
                                                  gint            return_code);
-gint            dnf_swdb_log_package_data       (DnfSwdb        *self,
+gint            dnf_swdb_update_package_data       (DnfSwdb        *self,
                                                  gint            pid,
+                                                 gint            tid,
                                                  DnfSwdbPkgData *pkgdata);
 gint            dnf_swdb_trans_data_beg         (DnfSwdb        *self,
                                                  gint            tid,

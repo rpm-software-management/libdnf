@@ -322,9 +322,6 @@ run_initial_transaction (DnfSwdb *self)
 
         g_autoptr (DnfSwdbPkgData) pkg_data = generate_package_data ();
 
-        // add package data
-        g_assert_false (dnf_swdb_log_package_data (self, pkg->pid, pkg_data));
-
         // dont forget trans data
         g_assert_false (dnf_swdb_trans_data_beg (self,
                                                  tid,
@@ -332,7 +329,8 @@ run_initial_transaction (DnfSwdb *self)
                                                  DNF_SWDB_REASON_USER, // reason
                                                  "Install")); // state
 
-        // package is being installed...
+        // add package data
+        g_assert_false (dnf_swdb_update_package_data (self, pkg->pid, tid, pkg_data));
 
         // package installed successfully
         g_assert_false (dnf_swdb_trans_data_pid_end (self, pkg->pid, tid, "Install"));
@@ -448,16 +446,16 @@ dnf_swdb_update_func (void)
     g_autoptr (DnfSwdbRpmData) rpm_data = generate_rpm_data (pkg->pid);
     g_assert_false (dnf_swdb_add_rpm_data (self, rpm_data));
 
-    // add package data
-    g_autoptr (DnfSwdbPkgData) pkg_data = generate_package_data ();
-    g_assert_false (dnf_swdb_log_package_data (self, pkg->pid, pkg_data));
-
     // initialize transaction data
     g_assert_false (dnf_swdb_trans_data_beg (self,
                                              tid,
                                              pkg->pid,
                                              DNF_SWDB_REASON_USER, // reason
                                              "Update")); // state
+
+     // add package data
+     g_autoptr (DnfSwdbPkgData) pkg_data = generate_package_data ();
+     g_assert_false (dnf_swdb_update_package_data (self, pkg->pid, tid, pkg_data));
 
     // finalize transaction data
     g_assert_false (dnf_swdb_trans_data_pid_end (self, pkg->pid, tid, "Update"));
@@ -496,16 +494,16 @@ dnf_swdb_reinstall_func (void)
     gint tid = begin_trans (self);
     g_assert (tid); // tid not 0
 
-    // insert package data
-    g_autoptr (DnfSwdbPkgData) pkg_data = generate_package_data ();
-    g_assert_false (dnf_swdb_log_package_data (self, pkg->pid, pkg_data));
-
     // initialize transaction data
     g_assert_false (dnf_swdb_trans_data_beg (self,
                                              tid,
                                              pkg->pid,
                                              DNF_SWDB_REASON_USER, // reason
                                              "Reinstall")); // state
+
+    // insert package data
+    g_autoptr (DnfSwdbPkgData) pkg_data = generate_package_data ();
+    g_assert_false (dnf_swdb_update_package_data (self, pkg->pid, tid, pkg_data));
 
     // finalize transaction data
     g_assert_false (dnf_swdb_trans_data_pid_end (self, pkg->pid, tid, "Reinstall"));
@@ -542,16 +540,16 @@ dnf_swdb_erase_func (void)
     gint tid = begin_trans (self);
     g_assert (tid); // tid not 0
 
-    // insert package data
-    g_autoptr (DnfSwdbPkgData) pkg_data = generate_package_data ();
-    g_assert_false (dnf_swdb_log_package_data (self, pkg->pid, pkg_data));
-
     // initialize transaction data
     g_assert_false (dnf_swdb_trans_data_beg (self,
                                              tid,
                                              pkg->pid,
                                              DNF_SWDB_REASON_USER, // reason
                                              "Erase")); // state
+
+    // insert package data
+    g_autoptr (DnfSwdbPkgData) pkg_data = generate_package_data ();
+    g_assert_false (dnf_swdb_update_package_data (self, pkg->pid, tid, pkg_data));
 
     // finalize transaction data
     g_assert_false (dnf_swdb_trans_data_pid_end (self, pkg->pid, tid, "Erase"));

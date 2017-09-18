@@ -963,11 +963,11 @@ _log_swdb_transaction(SwdbHandle *handle,
         NULL, //installonly
         dnf_package_get_reponame(pkg));
 
-    // insert package data
-    dnf_swdb_log_package_data(swdb, pid, pkg_data);
-
     // insert transaction data
     dnf_swdb_trans_data_beg(swdb, handle->tid, pid, dnf_convert_reason_to_id (reason), state);
+
+    // insert package data
+    dnf_swdb_update_package_data(swdb, pid, handle->tid, pkg_data);
 
     // mark transaction as successfull
     dnf_swdb_trans_data_pid_end(swdb, pid, handle->tid, state);
