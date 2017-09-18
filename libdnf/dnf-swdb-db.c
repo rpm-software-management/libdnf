@@ -523,7 +523,7 @@ dnf_swdb_create_db (DnfSwdb *self)
 
     int failed = _create_db (self->db);
     if (failed) {
-        g_warning ("SWDB error: Unable to create %d tables\n", failed);
+        g_warning ("SWDB error: Unable to create SWDB tables\n");
         sqlite3_close (self->db);
         self->db = NULL;
         return 2;

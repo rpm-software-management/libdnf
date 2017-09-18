@@ -42,7 +42,6 @@ typedef enum {
 } DnfSwdbItem;
 
 DnfSwdbReason dnf_convert_reason_to_id (const gchar  *reason);
-gchar        *dnf_convert_id_to_reason (DnfSwdbReason reason);
 
 G_END_DECLS
 
