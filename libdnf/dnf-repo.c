@@ -985,10 +985,16 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     /* set location if currently unset */
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_LOCAL, 0L))
         return FALSE;
+
     if (priv->location == NULL) {
         g_autofree gchar *tmp = NULL;
+        /* make each repo's cache directory name has releasever and basearch as its suffix */
+        g_autofree gchar *file_name  = g_strjoin("-", priv->id,
+                                                 dnf_context_get_release_ver(priv->context),
+                                                 dnf_context_get_base_arch(priv->context), NULL);
+
         tmp = g_build_filename(dnf_context_get_cache_dir(priv->context),
-                               priv->id, NULL);
+                               file_name, NULL);
         dnf_repo_set_location(repo, tmp);
     }
 
