@@ -22,7 +22,7 @@
 
 #include "dnf-swdb-types.h"
 
-static const gchar *_reasons_str[] = {
+static const gchar *const _reasons_str[] = {
     "unknown",  // 0
     "dep",      // 1
     "user",     // 2
