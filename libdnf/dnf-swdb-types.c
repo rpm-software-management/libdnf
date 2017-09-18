@@ -50,15 +50,3 @@ dnf_convert_reason_to_id (const gchar *reason)
     }
     return DNF_SWDB_REASON_UNKNOWN;
 }
-
-/**
- * dnf_convert_id_to_reason:
- *
- * Convert reason ID to string
- * Returns: reason string
- **/
-gchar *
-dnf_convert_id_to_reason (DnfSwdbReason reason)
-{
-    return g_strdup(_reasons_str[reason]);
-}
