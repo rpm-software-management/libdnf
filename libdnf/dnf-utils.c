@@ -119,13 +119,8 @@ dnf_remove_recursive(const gchar *directory, GError **error)
                 return FALSE;
         } else {
             g_debug("deleting file %s", src);
-            if ((g_unlink(src) != 0) && errno != ENOENT) {
-                g_set_error(error,
-                            DNF_ERROR,
-                            DNF_ERROR_INTERNAL_ERROR,
-                            "failed to unlink %s", src);
+            if (!dnf_ensure_file_unlinked(src, error))
                 return FALSE;
-            }
         }
     }
 
@@ -138,6 +133,103 @@ dnf_remove_recursive(const gchar *directory, GError **error)
                     "failed to remove %s", directory);
         return FALSE;
     }
+    return TRUE;
+}
+
+
+/**
+ * dnf_ensure_file_unlinked:
+ * @src_path: the path to the file
+ * @error: A #GError, or %NULL
+ *
+ * Remove a file based on the file path,
+ * refactored from dnf_remove_recursive() function
+ *
+ * Returns: %FALSE if an error was set
+ *
+ * Since 0.9.4
+ **/
+gboolean
+dnf_ensure_file_unlinked(const gchar *src_path, GError **error)
+{
+    if ((unlink(src_path) != 0) && errno != ENOENT) {
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_INTERNAL_ERROR,
+                    "failed to unlink %s", src_path);
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+/**
+ * dnf_delete_files_matching:
+ * @directory_path: the top level directory path to look at
+ * @patterns: the patterns that we are expecting from file/directory's name
+ * @error: a #GError instance, to track error
+ *
+ * Remove recursively all the files/directories that have names
+ * which match the patterns. Use with care
+ *
+ * There are several assumptions that are made in this function:
+ *
+ * 1: We assume the top level path( the path passed in initially)
+ * does not satisfy the criteria of matching the pattern
+ *
+ * 2: We assume the top level path itself is a directory initially
+ *
+ * Returns: %FALSE if failed to delete a file/directory
+ *
+ * Since: 0.9.4
+ **/
+gboolean
+dnf_delete_files_matching(const gchar* directory_path,
+                          const char* const* patterns,
+                          GError **error)
+{
+    const gchar *filename;
+    g_autoptr(GDir) dir = NULL;
+
+    /* try to open the direcotry*/
+    dir = g_dir_open(directory_path, 0, error);
+    if (dir == NULL) {
+        g_prefix_error(error, "Cannot open directory %s: ", directory_path);
+        return FALSE;
+    }
+    /* In the directory, we read each file and check if their name matches one of the patterns */
+    while ((filename = g_dir_read_name(dir))) {
+        g_autofree gchar *src = g_build_filename(directory_path, filename, NULL);
+        if (g_file_test(src, G_FILE_TEST_IS_DIR)) {
+            gboolean matching = FALSE;
+            for (char **iter = (char **) patterns; iter && *iter; iter++) {
+                const char* pattern = *iter;
+                if (g_str_has_suffix(filename, pattern)) {
+                    if (!dnf_remove_recursive(src, error))
+                        return FALSE;
+                    matching = TRUE;
+                    break;
+                }
+            }
+            if (!matching) {
+                /* If the directory does not match pattern, keep looking into it */
+                if (!dnf_delete_files_matching(src, patterns, error))
+                   return FALSE;
+            }
+        }
+        else {
+            /* This is for files in the directory, if matches, we directly delete it */
+            for (char **iter = (char **)patterns; iter && *iter; iter++) {
+                const char* pattern = *iter;
+                if (g_str_has_suffix(filename, pattern)) {
+                    if (!dnf_ensure_file_unlinked(src, error))
+                        return FALSE;
+                    break;
+                }
+            }
+        }
+    }
+
     return TRUE;
 }
 

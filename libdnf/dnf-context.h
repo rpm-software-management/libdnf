@@ -51,6 +51,22 @@ struct _DnfContextClass
 };
 
 /**
+ * DnfContextCleanFlags:
+ * @DNF_CONTEXT_CLEAN_EXPIRE_CACHE:            Clean the indicator file for cache directories' age
+ * @DNF_CONTEXT_CLEAN_PACKAGES:                Clean the packages section for cache
+ * @DNF_CONTEXT_CLEAN_METADATA:                Clean the metadata section for cache directories
+ * @DNF_CONTEXT_CLEAN_ALL:                     Clean out all of the cache directories
+ *
+ * The clean flags for cache directories cleaning.
+ **/
+typedef enum {
+        DNF_CONTEXT_CLEAN_EXPIRE_CACHE          = (1 << 0),
+        DNF_CONTEXT_CLEAN_PACKAGES              = (1 << 1),
+        DNF_CONTEXT_CLEAN_METADATA              = (1 << 2),
+        DNF_CONTEXT_CLEAN_ALL                   = (1 << 3),
+} DnfContextCleanFlags;
+
+/**
  * DnfContextInvalidateFlags:
  * @DNF_CONTEXT_INVALIDATE_FLAG_NONE:           No caches are invalid
  * @DNF_CONTEXT_INVALIDATE_FLAG_RPMDB:          The rpmdb cache is invalid
@@ -161,6 +177,9 @@ void             dnf_context_invalidate                 (DnfContext     *context
 void             dnf_context_invalidate_full            (DnfContext     *context,
                                                          const gchar    *message,
                                                          DnfContextInvalidateFlags flags);
+gboolean         dnf_context_clean_cache                (DnfContext     *context,
+                                                         DnfContextCleanFlags      flags,
+                                                         GError         **error);
 gboolean         dnf_context_install                    (DnfContext     *context,
                                                          const gchar    *name,
                                                          GError         **error);
