@@ -84,7 +84,6 @@ dnf_swdb_pkgdata_finalize (GObject *object)
     DnfSwdbPkgData *pkgdata = (DnfSwdbPkgData *)object;
     g_free (pkgdata->from_repo);
     g_free (pkgdata->from_repo_revision);
-    g_free (pkgdata->from_repo_timestamp);
     g_free (pkgdata->installed_by);
     g_free (pkgdata->changed_by);
     g_free (pkgdata->installonly);
@@ -105,7 +104,7 @@ dnf_swdb_pkgdata_init (DnfSwdbPkgData *self)
 {
     self->from_repo = NULL;
     self->from_repo_revision = NULL;
-    self->from_repo_timestamp = NULL;
+    self->from_repo_timestamp = 0;
     self->installed_by = NULL;
     self->changed_by = NULL;
     self->installonly = NULL;
@@ -120,7 +119,7 @@ dnf_swdb_pkgdata_init (DnfSwdbPkgData *self)
  **/
 DnfSwdbPkgData *
 dnf_swdb_pkgdata_new (const gchar *from_repo_revision,
-                      const gchar *from_repo_timestamp,
+                      gint64 from_repo_timestamp,
                       const gchar *installed_by,
                       const gchar *changed_by,
                       const gchar *installonly,
@@ -128,7 +127,7 @@ dnf_swdb_pkgdata_new (const gchar *from_repo_revision,
 {
     DnfSwdbPkgData *pkgdata = g_object_new (DNF_TYPE_SWDB_PKGDATA, NULL);
     pkgdata->from_repo_revision = g_strdup (from_repo_revision);
-    pkgdata->from_repo_timestamp = g_strdup (from_repo_timestamp);
+    pkgdata->from_repo_timestamp = from_repo_timestamp;
     pkgdata->installed_by = g_strdup (installed_by);
     pkgdata->changed_by = g_strdup (changed_by);
     pkgdata->installonly = g_strdup (installonly);
@@ -193,7 +192,6 @@ static void
 dnf_swdb_rpmdata_finalize (GObject *object)
 {
     DnfSwdbRpmData *rpmdata = (DnfSwdbRpmData *)object;
-    g_free (rpmdata->buildtime);
     g_free (rpmdata->buildhost);
     g_free (rpmdata->license);
     g_free (rpmdata->packager);
@@ -202,7 +200,6 @@ dnf_swdb_rpmdata_finalize (GObject *object)
     g_free (rpmdata->url);
     g_free (rpmdata->vendor);
     g_free (rpmdata->committer);
-    g_free (rpmdata->committime);
     G_OBJECT_CLASS (dnf_swdb_rpmdata_parent_class)->finalize (object);
 }
 
@@ -219,7 +216,7 @@ static void
 dnf_swdb_rpmdata_init (DnfSwdbRpmData *self)
 {
     self->pid = 0;
-    self->buildtime = NULL;
+    self->buildtime = 0;
     self->buildhost = NULL;
     self->license = NULL;
     self->packager = NULL;
@@ -228,7 +225,7 @@ dnf_swdb_rpmdata_init (DnfSwdbRpmData *self)
     self->url = NULL;
     self->vendor = NULL;
     self->committer = NULL;
-    self->committime = NULL;
+    self->committime = 0;
 }
 
 /**
@@ -240,7 +237,7 @@ dnf_swdb_rpmdata_init (DnfSwdbRpmData *self)
  **/
 DnfSwdbRpmData *
 dnf_swdb_rpmdata_new (gint pid,
-                      const gchar *buildtime,
+                      gint64 buildtime,
                       const gchar *buildhost,
                       const gchar *license,
                       const gchar *packager,
@@ -249,11 +246,11 @@ dnf_swdb_rpmdata_new (gint pid,
                       const gchar *url,
                       const gchar *vendor,
                       const gchar *committer,
-                      const gchar *committime)
+                      gint64 committime)
 {
     DnfSwdbRpmData *rpmdata = g_object_new (DNF_TYPE_SWDB_RPMDATA, NULL);
     rpmdata->pid = pid;
-    rpmdata->buildtime = g_strdup (buildtime);
+    rpmdata->buildtime = buildtime;
     rpmdata->buildhost = g_strdup (buildhost);
     rpmdata->license = g_strdup (license);
     rpmdata->packager = g_strdup (packager);
@@ -262,7 +259,7 @@ dnf_swdb_rpmdata_new (gint pid,
     rpmdata->url = g_strdup (url);
     rpmdata->vendor = g_strdup (vendor);
     rpmdata->committer = g_strdup (committer);
-    rpmdata->committime = g_strdup (committime);
+    rpmdata->committime = committime;
     return rpmdata;
 }
 
@@ -670,7 +667,7 @@ dnf_swdb_update_package_data (DnfSwdb *self, gint pid, gint tid, DnfSwdbPkgData 
     DB_BIND_INT (res, "@pid", pid);
     DB_BIND_INT (res, "@rid", rid);
     DB_BIND (res, "@repo_r", pkgdata->from_repo_revision);
-    DB_BIND (res, "@repo_t", pkgdata->from_repo_timestamp);
+    DB_BIND_INT (res, "@repo_t", pkgdata->from_repo_timestamp);
     DB_BIND (res, "@installed_by", pkgdata->installed_by);
     DB_BIND (res, "@changed_by", pkgdata->changed_by);
     DB_BIND (res, "@installonly", pkgdata->installonly);
@@ -826,7 +823,7 @@ _get_package_data_by_pid (sqlite3 *db, gint pid)
     if (sqlite3_step (res) == SQLITE_ROW) {
         DnfSwdbPkgData *pkgdata =
           dnf_swdb_pkgdata_new ((gchar *)sqlite3_column_text (res, 3), // from_repo_revision
-                                (gchar *)sqlite3_column_text (res, 4), // from_repo_timestamp
+                                sqlite3_column_int (res, 4), // from_repo_timestamp
                                 (gchar *)sqlite3_column_text (res, 5), // installed_by
                                 (gchar *)sqlite3_column_text (res, 6), // changed_by
                                 (gchar *)sqlite3_column_text (res, 7), // installonly
@@ -1024,7 +1021,7 @@ dnf_swdb_add_rpm_data (DnfSwdb *self, DnfSwdbRpmData *rpm_data)
     const gchar *sql = INSERT_RPM_DATA;
     DB_PREP (self->db, sql, res);
     DB_BIND_INT (res, "@pid", rpm_data->pid);
-    DB_BIND (res, "@buildtime", rpm_data->buildtime);
+    DB_BIND_INT (res, "@buildtime", rpm_data->buildtime);
     DB_BIND (res, "@buildhost", rpm_data->buildhost);
     DB_BIND (res, "@license", rpm_data->license);
     DB_BIND (res, "@packager", rpm_data->packager);
@@ -1033,7 +1030,7 @@ dnf_swdb_add_rpm_data (DnfSwdb *self, DnfSwdbRpmData *rpm_data)
     DB_BIND (res, "@url", rpm_data->url);
     DB_BIND (res, "@vendor", rpm_data->vendor);
     DB_BIND (res, "@committer", rpm_data->committer);
-    DB_BIND (res, "@committime", rpm_data->committime);
+    DB_BIND_INT (res, "@committime", rpm_data->committime);
     DB_STEP (res);
     return 0;
 }
@@ -1162,7 +1159,7 @@ dnf_swdb_trans_data_pid_end (DnfSwdb *self, gint pid, gint tid, const gchar *sta
  **/
 gint
 dnf_swdb_trans_beg (DnfSwdb *self,
-                    const gchar *timestamp,
+                    gint64 timestamp,
                     const gchar *rpmdb_version,
                     const gchar *cmdline,
                     const gchar *loginuid,
@@ -1174,7 +1171,7 @@ dnf_swdb_trans_beg (DnfSwdb *self,
     sqlite3_stmt *res;
     const gchar *sql = INSERT_TRANS_BEG;
     DB_PREP (self->db, sql, res);
-    DB_BIND (res, "@beg", timestamp);
+    DB_BIND_INT (res, "@beg", timestamp);
     DB_BIND (res, "@rpmdbv", rpmdb_version);
     DB_BIND (res, "@cmdline", cmdline);
     DB_BIND (res, "@loginuid", loginuid);
@@ -1199,7 +1196,7 @@ dnf_swdb_trans_beg (DnfSwdb *self,
 gint
 dnf_swdb_trans_end (DnfSwdb *self,
                     gint tid,
-                    const gchar *end_timestamp,
+                    gint64 end_timestamp,
                     const gchar *end_rpmdb_version,
                     gint return_code)
 {
@@ -1209,7 +1206,7 @@ dnf_swdb_trans_end (DnfSwdb *self,
     const gchar *sql = INSERT_TRANS_END;
     DB_PREP (self->db, sql, res);
     DB_BIND_INT (res, "@tid", tid);
-    DB_BIND (res, "@end", end_timestamp);
+    DB_BIND_INT (res, "@end", end_timestamp);
     DB_BIND (res, "@rpmdbv", end_rpmdb_version);
     DB_BIND_INT (res, "@rc", return_code);
     DB_STEP (res);
@@ -1407,8 +1404,8 @@ dnf_swdb_trans_old (DnfSwdb *self, GArray *tids, gint limit, gboolean complete_o
         }
         DnfSwdbTrans *trans =
           dnf_swdb_trans_new (tid,                                   // tid
-                              (gchar *)sqlite3_column_text (res, 1), // beg_t
-                              (gchar *)sqlite3_column_text (res, 2), // end_t
+                              sqlite3_column_int (res, 1), // beg_t
+                              sqlite3_column_int (res, 2), // end_t
                               (gchar *)sqlite3_column_text (res, 3), // beg_rpmdb_v
                               (gchar *)sqlite3_column_text (res, 4), // end_rpmdb_v
                               (gchar *)sqlite3_column_text (res, 5), // cmdline

@@ -43,7 +43,7 @@ struct _DnfSwdbPkgData
     GObject parent_instance;
     gchar *from_repo;
     gchar *from_repo_revision;
-    gchar *from_repo_timestamp;
+    gint64 from_repo_timestamp;
     gchar *installed_by;
     gchar *changed_by;
     gchar *installonly;
@@ -68,7 +68,7 @@ struct _DnfSwdbRpmData
 {
     GObject parent_instance;
     gint   pid;
-    gchar *buildtime;
+    gint64 buildtime;
     gchar *buildhost;
     gchar *license;
     gchar *packager;
@@ -77,11 +77,11 @@ struct _DnfSwdbRpmData
     gchar *url;
     gchar *vendor;
     gchar *committer;
-    gchar *committime;
+    gint64 committime;
 };
 
 DnfSwdbPkgData     *dnf_swdb_pkgdata_new            (const gchar   *from_repo_revision,
-                                                     const gchar   *from_repo_timestamp,
+                                                     gint64         from_repo_timestamp,
                                                      const gchar   *installed_by,
                                                      const gchar   *changed_by,
                                                      const gchar   *installonly,
@@ -95,7 +95,7 @@ DnfSwdbTransData   *dnf_swdb_transdata_new          (gint           tdid,
                                                      DnfSwdbReason  reason,
                                                      gchar         *state);
 DnfSwdbRpmData     *dnf_swdb_rpmdata_new            (gint           pid,
-                                                     const gchar   *buildtime,
+                                                     gint64         buildtime,
                                                      const gchar   *buildhost,
                                                      const gchar   *license,
                                                      const gchar   *packager,
@@ -104,7 +104,7 @@ DnfSwdbRpmData     *dnf_swdb_rpmdata_new            (gint           pid,
                                                      const gchar   *url,
                                                      const gchar   *vendor,
                                                      const gchar   *committer,
-                                                     const gchar   *committime);
+                                                     gint64         committime);
 G_END_DECLS
 
 #endif

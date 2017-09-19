@@ -43,14 +43,14 @@
 
 #define CREATE_TABLES \
     "CREATE TABLE PACKAGE_DATA (PD_ID INTEGER PRIMARY KEY, P_ID INTEGER, R_ID INTEGER," \
-    "   from_repo_revision TEXT, from_repo_timestamp TEXT, installed_by TEXT, changed_by TEXT," \
-    "   installonly TEXT);" \
+    "   from_repo_revision TEXT, from_repo_timestamp INTEGER, installed_by TEXT," \
+    "   changed_by TEXT, installonly TEXT);" \
     "CREATE TABLE PACKAGE ( P_ID INTEGER PRIMARY KEY, name TEXT, epoch INTEGER, version TEXT, " \
     "   release TEXT, arch TEXT, checksum_data TEXT, checksum_type TEXT, type INTEGER);" \
-    "CREATE TABLE REPO (R_ID INTEGER PRIMARY KEY, name TEXT, last_synced TEXT, is_expired TEXT);" \
+    "CREATE TABLE REPO (R_ID INTEGER PRIMARY KEY,name TEXT,last_synced INTEGER,is_expired TEXT);" \
     "CREATE TABLE TRANS_DATA (TD_ID INTEGER PRIMARY KEY, T_ID INTEGER,PD_ID INTEGER, " \
     "   TG_ID INTEGER, done INTEGER, obsoleting INTEGER, reason INTEGER, state INTEGER);" \
-    "CREATE TABLE TRANS (T_ID INTEGER PRIMARY KEY, beg_timestamp TEXT, end_timestamp TEXT, " \
+    "CREATE TABLE TRANS (T_ID INTEGER PRIMARY KEY, beg_timestamp INTEGER, end_timestamp INTEGER," \
     "   beg_RPMDB_version TEXT, end_RPMDB_version ,cmdline TEXT,loginuid TEXT, releasever TEXT, " \
     "   return_code INTEGER);" \
     "CREATE TABLE OUTPUT (O_ID INTEGER PRIMARY KEY,T_ID INTEGER, msg TEXT, type INTEGER);" \
@@ -66,9 +66,9 @@
     "CREATE TABLE ENVIRONMENTS (E_ID INTEGER PRIMARY KEY, name_id TEXT, name TEXT, ui_name TEXT, " \
     "   pkg_types INTEGER, grp_types INTEGER);" \
     "CREATE TABLE ENVIRONMENTS_EXCLUDE (EE_ID INTEGER PRIMARY KEY, E_ID INTEGER, name TEXT);" \
-    "CREATE TABLE RPM_DATA (RPM_ID INTEGER PRIMARY KEY, P_ID INTEGER, buildtime TEXT, buildhost " \
-    "   TEXT, license TEXT, packager TEXT, size TEXT, sourcerpm TEXT, url TEXT, vendor TEXT, " \
-    "   committer TEXT, committime TEXT);" \
+    "CREATE TABLE RPM_DATA (RPM_ID INTEGER PRIMARY KEY, P_ID INTEGER, buildtime INTEGER," \
+    "   buildhost TEXT, license TEXT, packager TEXT, size TEXT, sourcerpm TEXT, url TEXT," \
+    "   vendor TEXT, committer TEXT, committime INTEGER);" \
     "CREATE TABLE TRANS_WITH (TW_ID INTEGER PRIMARY KEY, T_ID INTEGER, P_ID INTEGER);" \
     "CREATE INDEX nevra ON PACKAGE (name || '-' || epoch || ':' || version || '-' || release ||" \
     "   '.' || arch);" \
