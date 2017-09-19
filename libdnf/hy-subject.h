@@ -66,7 +66,9 @@ HyPossibilities hy_subject_nevra_possibilities(HySubject subject,
 HyPossibilities hy_subject_nevra_possibilities_real(HySubject subject,
     HyForm *forms, DnfSack *sack, int flags);
 int hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra);
-
+HyQuery hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms,
+                                     HyNevra *nevra, gboolean icase, gboolean with_nevra,
+                                     gboolean with_provides, gboolean with_filenames);
 HyQuery hy_subject_get_best_query(HySubject subject, DnfSack *sack, gboolean with_provides);
 HySelector hy_subject_get_best_selector(HySubject subject, DnfSack *sack);
 

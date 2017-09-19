@@ -225,6 +225,49 @@ struct NevraToQuery {
     int query_type;
 };
 
+HyQuery
+hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, HyNevra *nevra,
+                             gboolean icase, gboolean with_nevra, gboolean with_provides,
+                             gboolean with_filenames)
+{
+    int ret = 0;
+    HyQuery query = NULL;
+
+    if (with_nevra) {
+        HyPossibilities iter = hy_subject_nevra_possibilities(subject, forms);
+        while (ret != -1) {
+            ret = hy_possibilities_next_nevra(iter, nevra);
+            if (ret != -1) {
+                query = hy_nevra_to_query(*nevra, sack, icase);
+                if (hy_query_is_not_empty(query)) {
+                    hy_possibilities_free(iter);
+                    return query;
+                }
+                hy_query_free(query);
+            }
+        }
+        hy_possibilities_free(iter);
+        g_clear_pointer(nevra, hy_nevra_free);
+    }
+    if (with_provides) {
+        query = hy_query_create(sack);
+        hy_query_filter(query, HY_PKG_PROVIDES, HY_GLOB, subject);
+        if (hy_query_is_not_empty(query))
+            return query;
+        hy_query_free(query);
+    }
+
+    if (with_filenames) {
+        query = hy_query_create(sack);
+        hy_query_filter(query, HY_PKG_FILE, HY_GLOB, subject);
+        return query;
+    }
+
+    query = hy_query_create(sack);
+    hy_query_filter_empty(query);
+    return query;
+}
+
 /* Given a subject, attempt to create a query choose the first one, and update
  * the query to try to match it.
  *

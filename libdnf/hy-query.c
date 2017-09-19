@@ -1454,3 +1454,17 @@ hy_query_difference(HyQuery q, HyQuery other)
     hy_query_apply(other);
     map_subtract(q->result, other->result);
 }
+
+gboolean
+hy_query_is_not_empty(HyQuery query)
+{
+    hy_query_apply(query);
+    const unsigned char *res = query->result->map;
+    const unsigned char *end = res + query->result->size;
+
+    while (res < end) {
+        if (*res++)
+            return TRUE;
+    }
+    return FALSE;
+}
