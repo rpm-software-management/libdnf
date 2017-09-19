@@ -182,5 +182,6 @@ hy_nevra_has_just_name(HyNevra nevra)
   return nevra->name != NULL &&
     nevra->epoch == -1 &&
     nevra->version == NULL &&
-    nevra->release == NULL;
+    nevra->release == NULL &&
+    nevra->arch == NULL;
 }

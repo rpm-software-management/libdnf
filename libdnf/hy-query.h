@@ -96,6 +96,7 @@ DnfPackageSet *hy_query_run_set(HyQuery q);
 void hy_query_union(HyQuery q, HyQuery other);
 void hy_query_intersection(HyQuery q, HyQuery other);
 void hy_query_difference(HyQuery q, HyQuery other);
+gboolean hy_query_is_not_empty(HyQuery query);
 
 static inline void
 hy_query_autofree (void *v)

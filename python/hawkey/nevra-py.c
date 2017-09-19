@@ -218,6 +218,12 @@ evr_cmp(_NevraObject *self, PyObject *args)
 }
 
 static PyObject *
+has_just_name(_NevraObject *self, PyObject *unused)
+{
+    return hy_nevra_has_just_name(self->nevra) ? Py_True : Py_False;
+}
+
+static PyObject *
 to_query(_NevraObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *sack;
@@ -239,7 +245,9 @@ to_query(_NevraObject *self, PyObject *args, PyObject *kwds)
 static struct PyMethodDef nevra_methods[] = {
     {"evr_cmp",     (PyCFunction) evr_cmp, METH_VARARGS, NULL},
     {"evr", (PyCFunction) evr, METH_NOARGS,   NULL},
+    {"has_just_name",     (PyCFunction) has_just_name, METH_NOARGS, NULL},
     {"to_query",     (PyCFunction) to_query, METH_VARARGS | METH_KEYWORDS, NULL},
+
     {NULL}                      /* sentinel */
 };
 

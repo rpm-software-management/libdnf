@@ -37,6 +37,7 @@
 #include "nevra-py.h"
 #include "possibilities-py.h"
 #include "pycomp.h"
+#include "query-py.h"
 #include "reldep-py.h"
 #include "sack-py.h"
 #include "subject-py.h"
@@ -209,6 +210,52 @@ reldep_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
         csack, flags);
     return possibilitiesToPyObject(iter, sack);
 }
+static PyObject *
+get_best_solution(_SubjectObject *self, PyObject *args, PyObject *kwds)
+{
+    PyObject *sack;
+    DnfSack *csack;
+    PyObject *form = NULL;
+    PyObject *icase = NULL;
+    PyObject *with_nevra = NULL;
+    PyObject *with_provides = NULL;
+    PyObject *with_filenames = NULL;
+    const char *kwlist[] = {"sack", "form", "icase", "with_nevra", "with_provides",
+        "with_filenames", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|OO!O!O!O!", (char**) kwlist, &sack_Type, &sack,
+        &form, &PyBool_Type, &icase, &PyBool_Type, &with_nevra, &PyBool_Type, &with_provides,
+        &PyBool_Type, &with_filenames)) {
+        return NULL;
+    }
+    HyForm *cforms = NULL;
+    if (form != NULL) {
+        cforms = fill_form(form);
+        if (cforms == NULL)
+            return NULL;
+    }
+    gboolean c_icase = icase!=NULL && PyObject_IsTrue(icase);
+    gboolean c_with_nevra = icase == NULL || PyObject_IsTrue(with_nevra);
+    gboolean c_with_provides = icase == NULL || PyObject_IsTrue(with_provides);
+    gboolean c_with_filenames = icase == NULL || PyObject_IsTrue(with_filenames);
+    csack = sackFromPyObject(sack);
+    HyNevra nevra = NULL;
+
+    HyQuery query = hy_subject_get_best_solution(self->pattern, csack, cforms, &nevra, c_icase,
+                                                 c_with_nevra, c_with_provides, c_with_filenames);
+
+    PyObject *q = queryToPyObject(query, sack);
+    PyObject *ret_dict = PyDict_New();
+    PyDict_SetItem(ret_dict, PyString_FromString("query"), q);
+    if (nevra != NULL) {
+        PyObject *n = nevraToPyObject(nevra);
+        PyDict_SetItem(ret_dict, PyString_FromString("nevra"), n);
+    }
+    else
+        PyDict_SetItem(ret_dict, PyString_FromString("nevra"), Py_None);
+    
+    return ret_dict;
+}
 
 static struct PyMethodDef subject_methods[] = {
     {"nevra_possibilities", (PyCFunction) nevra_possibilities,
@@ -216,6 +263,8 @@ static struct PyMethodDef subject_methods[] = {
     {"nevra_possibilities_real", (PyCFunction) nevra_possibilities_real,
     METH_VARARGS | METH_KEYWORDS, NULL},
     {"reldep_possibilities_real", (PyCFunction) reldep_possibilities_real,
+    METH_VARARGS | METH_KEYWORDS, NULL},
+    {"get_best_solution", (PyCFunction) get_best_solution,
     METH_VARARGS | METH_KEYWORDS, NULL},
     {NULL}                      /* sentinel */
 };
