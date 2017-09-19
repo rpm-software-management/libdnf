@@ -46,7 +46,7 @@
     "@vendor,@committer,@committime)"
 
 #define INSERT_TRANS_DATA_BEG \
-    "insert into TRANS_DATA values(null,@tid,@pdid,@tgid,0,null,@reason,@state)"
+    "insert into TRANS_DATA values(null,@tid,@pdid,@tgid,0,@obsoleting,@reason,@state)"
 #define UPDATE_TRANS_DATA_PID_END \
     "UPDATE TRANS_DATA SET done=@done WHERE T_ID=@tid and PD_ID=@pdid and state=@state"
 
@@ -71,9 +71,7 @@
 #define S_REASON_BY_PID \
     "SELECT reason FROM PACKAGE_DATA join TRANS_DATA using (PD_ID) WHERE P_ID=@pid ORDER by " \
     "TD_ID DESC LIMIT 1"
-#define S_PDID_TDID_BY_PID \
-    "SELECT PD_ID,TD_ID from PACKAGE_DATA join TRANS_DATA" \
-    " using (PD_ID) where P_ID=@pid ORDER by PD_ID DESC LIMIT 1"
+
 #define S_PACKAGE_BY_PID "SELECT * FROM PACKAGE WHERE P_ID=@pid"
 #define S_NAME_BY_PID "SELECT name FROM PACKAGE WHERE P_ID=@pid"
 #define S_LAST_TDID_BY_NAME \
@@ -100,8 +98,9 @@
     "LIMIT @limit"
 
 #define S_PACKAGE_STATE \
-    "select done,state from PACKAGE_DATA join TRANS_DATA using (PD_ID) where P_ID=@pid and " \
-    "T_ID=@tid"
+    "select done, state, obsoleting from PACKAGE_DATA join TRANS_DATA using (PD_ID) " \
+    "where P_ID=@pid and T_ID=@tid"
+
 #define S_REPO_FROM_PID2 "SELECT name FROM PACKAGE_DATA join REPO using(R_ID) where P_ID=@pid"
 
 #define S_CHECKSUM_BY_NEVRA \
@@ -137,8 +136,6 @@
 #define U_REASON_BY_PDID "UPDATE TRANS_DATA SET reason=@reason where PD_ID=@pdid"
 
 #define U_REPO_BY_PID "UPDATE PACKAGE_DATA SET R_ID=@rid where P_ID=@pid"
-
-#define U_ORIGINAL_TDID_BY_TDID "UPDATE TRANS_DATA set ORIGINAL_TD_ID=@orig where TD_ID=@tdid"
 
 #define T_OUTPUT "SELECT O_ID FROM OUTPUT WHERE T_ID=@tid and type=@type"
 

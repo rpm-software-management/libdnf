@@ -964,7 +964,8 @@ _log_swdb_transaction(SwdbHandle *handle,
         dnf_package_get_reponame(pkg));
 
     // insert transaction data
-    dnf_swdb_trans_data_beg(swdb, handle->tid, pid, dnf_convert_reason_to_id (reason), state);
+    // XXX obsoleting packages in PackageKit?
+    dnf_swdb_trans_data_beg(swdb, handle->tid, pid, dnf_convert_reason_to_id (reason), state, 0);
 
     // insert package data
     dnf_swdb_update_package_data(swdb, pid, handle->tid, pkg_data);

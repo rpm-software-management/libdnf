@@ -47,6 +47,7 @@ struct _DnfSwdbPkg
     DnfSwdbItem type;
     gboolean done;
     gchar *state;
+    gint obsoleting;
     gint pid;
     gchar *_ui_repo;
     gchar *nevra;

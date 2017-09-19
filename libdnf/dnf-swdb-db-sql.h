@@ -49,7 +49,7 @@
     "   release TEXT, arch TEXT, checksum_data TEXT, checksum_type TEXT, type INTEGER);" \
     "CREATE TABLE REPO (R_ID INTEGER PRIMARY KEY, name TEXT, last_synced TEXT, is_expired TEXT);" \
     "CREATE TABLE TRANS_DATA (TD_ID INTEGER PRIMARY KEY, T_ID INTEGER,PD_ID INTEGER, " \
-    "   TG_ID INTEGER, done INTEGER, ORIGINAL_TD_ID INTEGER, reason INTEGER, state INTEGER);" \
+    "   TG_ID INTEGER, done INTEGER, obsoleting INTEGER, reason INTEGER, state INTEGER);" \
     "CREATE TABLE TRANS (T_ID INTEGER PRIMARY KEY, beg_timestamp TEXT, end_timestamp TEXT, " \
     "   beg_RPMDB_version TEXT, end_RPMDB_version ,cmdline TEXT,loginuid TEXT, releasever TEXT, " \
     "   return_code INTEGER);" \

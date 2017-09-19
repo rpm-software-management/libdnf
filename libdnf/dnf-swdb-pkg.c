@@ -62,6 +62,7 @@ dnf_swdb_pkg_init (DnfSwdbPkg *self)
     self->swdb = NULL;
     self->nevra = NULL;
     self->type = 0;
+    self->obsoleting = 0;
 }
 
 static gchar *
