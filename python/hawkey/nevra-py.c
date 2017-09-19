@@ -159,11 +159,6 @@ nevra_init(_NevraObject *self, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|zOzzzO&", (char**) kwlist,
         &name, &epoch_o, &version, &release, &arch, nevra_converter, &cnevra))
         return -1;
-    if (name == NULL && cnevra == NULL) {
-        PyErr_SetString(PyExc_ValueError,
-            "Name is required parameter.");
-        return -1;
-    }
     if (cnevra != NULL) {
         self->nevra = hy_nevra_clone(cnevra);
         return 0;

@@ -34,7 +34,8 @@
 
 // most specific to least
 const HyForm HY_FORMS_MOST_SPEC[] = {
-    HY_FORM_NEVRA, HY_FORM_NA, HY_FORM_NAME, HY_FORM_NEVR, HY_FORM_NEV, _HY_FORM_STOP_ };
+    HY_FORM_NEVRA, HY_FORM_NA, HY_FORM_NAME, HY_FORM_NEVR, HY_FORM_NEV, HY_FORM_NR, HY_FORM_VERSION,
+    HY_FORM_ARCH, HY_FORM_RELEASE, HY_FORM_EVRA, HY_FORM_EVR, HY_FORM_RA, _HY_FORM_STOP_ };
 
 static inline int
 is_glob_pattern(char *str)
@@ -56,7 +57,7 @@ is_real_name(HyNevra nevra, DnfSack *sack, int flags)
     int glob_version = (flags & HY_GLOB) && is_glob_pattern(nevra->version);
     char *version = nevra->version;
     if (nevra->name == NULL && !glob_version)
-        return 1;
+        return 0;
     if (glob_version)
         version = NULL;
     if (!is_glob_pattern(nevra->name))

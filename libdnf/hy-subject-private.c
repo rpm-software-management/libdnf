@@ -30,7 +30,14 @@ const char *nevra_form_regex[] = {
     "^([^:]+)" "-(([0-9]+):)?" "([^-:]+)" "-(.+)" "()$",
     "^([^:]+)" "-(([0-9]+):)?" "([^-:]+)" "()" "()$",
     "^([^:]+)" "()()" "()" "()" "\\.([^.]+)$",
-    "^([^:]+)()()()()()$"
+    "^([^:]+)()()()()()$",
+    "^()()()([^:]+)()()$",
+    "^()()()()(.+)()$",
+    "^()()()()()([^.]+)$",
+    "^()" "(([0-9]+):)?" "([^-:]+)" "-(.+)" "\\.([^.]+)$",
+    "^()" "(([0-9]+):)?" "([^-:]+)" "-(.+)" "()$",
+    "^()" "()" "()" "()" "(.+)" "\\.([^.]+)$",
+    "^([^:]+)" "()" "()" "()" "-(.+)" "()$"
 };
 
 #define MATCH_EMPTY(i) (matches[i].rm_so >= matches[i].rm_eo)
@@ -54,8 +61,7 @@ nevra_possibility(char *nevra_str, int form, HyNevra nevra)
     nevra->epoch = atoi(epoch);
     free(epoch);
     }
-    if (copy_str_from_subexpr(&(nevra->name), nevra_str, matches, NAME) == -1)
-    return -1;
+    copy_str_from_subexpr(&(nevra->name), nevra_str, matches, NAME);
     copy_str_from_subexpr(&(nevra->version), nevra_str, matches, VERSION);
     copy_str_from_subexpr(&(nevra->release), nevra_str, matches, RELEASE);
     copy_str_from_subexpr(&(nevra->arch), nevra_str, matches, ARCH);
