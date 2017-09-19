@@ -88,14 +88,14 @@ gint            dnf_swdb_log_output             (DnfSwdb        *self,
                                                  gint           tid,
                                                  const gchar    *msg);
 gint            dnf_swdb_trans_beg              (DnfSwdb        *self,
-                                                 const gchar    *timestamp,
+                                                 gint64          timestamp,
                                                  const gchar    *rpmdb_version,
                                                  const gchar    *cmdline,
                                                  const gchar    *loginuid,
                                                  const gchar    *releasever);
 gint            dnf_swdb_trans_end              (DnfSwdb        *self,
                                                  gint            tid,
-                                                 const gchar    *end_timestamp,
+                                                 gint64          end_timestamp,
                                                  const gchar    *end_rpmdb_version,
                                                  gint            return_code);
 gint            dnf_swdb_update_package_data       (DnfSwdb        *self,

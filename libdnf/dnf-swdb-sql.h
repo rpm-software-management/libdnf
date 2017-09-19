@@ -92,9 +92,9 @@
 #define S_TRANS "SELECT * from TRANS ORDER BY T_ID DESC"
 #define S_TRANS_W_LIMIT "SELECT * from TRANS ORDER BY T_ID DESC LIMIT @limit"
 #define S_TRANS_COMP \
-    "SELECT * from TRANS WHERE end_timestamp is not null or end_timestamp!='' ORDER BY T_ID DESC"
+    "SELECT * from TRANS WHERE end_timestamp is not null or end_timestamp!=0 ORDER BY T_ID DESC"
 #define S_TRANS_COMP_W_LIMIT \
-    "SELECT * from TRANS WHERE end_timestamp is not null or end_timestamp!='' ORDER BY T_ID DESC " \
+    "SELECT * from TRANS WHERE end_timestamp is not null or end_timestamp!=0 ORDER BY T_ID DESC " \
     "LIMIT @limit"
 
 #define S_PACKAGE_STATE \

@@ -871,11 +871,11 @@ dnf_transaction_get_propagated_reason(DnfTransaction *transaction,
 
 #if WITH_SWDB
 
-static gchar *
+static gint64
 _dnf_swdb_get_time()
 {
     g_autoptr (GDateTime) t_struct = g_date_time_new_now_utc ();
-    return g_strdup_printf ("%ld", g_date_time_to_unix (t_struct));
+    return g_date_time_to_unix (t_struct);
 }
 
 /**
@@ -957,7 +957,7 @@ _log_swdb_transaction(SwdbHandle *handle,
 
     g_autoptr (DnfSwdbPkgData) pkg_data = dnf_swdb_pkgdata_new(
         NULL, //from_repo_revision
-        NULL, //from_repo_timestamp
+        0, //from_repo_timestamp
         user,
         NULL, //changed by
         NULL, //installonly
@@ -1129,11 +1129,11 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
         g_autofree gchar *uid = g_strdup_printf("%i", priv->uid);
 
         //get time
-        g_autofree gchar *time_str = _dnf_swdb_get_time();
+        gint64 timestamp = _dnf_swdb_get_time();
 
         //initialize transaction
         handle.tid = dnf_swdb_trans_beg(swdb,
-                                        time_str,
+                                        timestamp,
                                         NULL, //beg rpmdb version
                                         NULL, //cmdline
                                         uid, //login ID
@@ -1197,7 +1197,7 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
 #if WITH_SWDB
     if (swdb_exists) {
         //get end time
-        g_autofree gchar *time_str = _dnf_swdb_get_time ();
+        gint64 timestamp = _dnf_swdb_get_time();
 
         //transaction performed with
         dnf_swdb_trans_with_libdnf(swdb, handle.tid);
@@ -1206,7 +1206,7 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
         dnf_swdb_trans_end(
             swdb,
             handle.tid,
-            time_str,
+            timestamp,
             NULL, //end rpmdb version
             0); //return code
     }

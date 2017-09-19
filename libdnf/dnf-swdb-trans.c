@@ -32,8 +32,6 @@ static void
 dnf_swdb_trans_finalize (GObject *object)
 {
     DnfSwdbTrans *trans = (DnfSwdbTrans *)object;
-    g_free (trans->beg_timestamp);
-    g_free (trans->end_timestamp);
     g_free (trans->beg_rpmdb_version);
     g_free (trans->end_rpmdb_version);
     g_free (trans->cmdline);
@@ -71,8 +69,8 @@ dnf_swdb_trans_init (DnfSwdbTrans *self)
  **/
 DnfSwdbTrans *
 dnf_swdb_trans_new (gint tid,
-                    const gchar *beg_timestamp,
-                    const gchar *end_timestamp,
+                    gint64 beg_timestamp,
+                    gint64 end_timestamp,
                     const gchar *beg_rpmdb_version,
                     const gchar *end_rpmdb_version,
                     const gchar *cmdline,
@@ -82,8 +80,8 @@ dnf_swdb_trans_new (gint tid,
 {
     DnfSwdbTrans *trans = g_object_new (DNF_TYPE_SWDB_TRANS, NULL);
     trans->tid = tid;
-    trans->beg_timestamp = g_strdup (beg_timestamp);
-    trans->end_timestamp = g_strdup (end_timestamp);
+    trans->beg_timestamp = beg_timestamp;
+    trans->end_timestamp = end_timestamp;
     trans->beg_rpmdb_version = g_strdup (beg_rpmdb_version);
     trans->end_rpmdb_version = g_strdup (end_rpmdb_version);
     trans->cmdline = g_strdup (cmdline);
@@ -155,26 +153,19 @@ dnf_swdb_trans_merge (DnfSwdbTrans *self, DnfSwdbTrans *other)
         g_array_append_val (merged, other->tid);
     }
 
-    gdouble beg_time = g_ascii_strtod (self->beg_timestamp, NULL);
-    gdouble beg_time_other = g_ascii_strtod (other->beg_timestamp, NULL);
-
     // compare starting timestamps
-    if (beg_time > beg_time_other) {
-        g_free (self->beg_timestamp);
-        self->beg_timestamp = g_strdup (other->beg_timestamp);
+    if (self->beg_timestamp > other->beg_timestamp) {
+        self->beg_timestamp = other->beg_timestamp;
 
         g_free (self->beg_rpmdb_version);
         self->beg_rpmdb_version = g_strdup (other->beg_rpmdb_version);
     }
 
     if (self->end_timestamp && other->end_timestamp) {
-        gdouble end_time = g_ascii_strtod (self->end_timestamp, NULL);
-        gdouble end_time_other = g_ascii_strtod (other->end_timestamp, NULL);
 
         // compare ending timestamps
-        if (end_time < end_time_other) {
-            g_free (self->end_timestamp);
-            self->end_timestamp = g_strdup (other->end_timestamp);
+        if (self->end_timestamp < other->end_timestamp) {
+            self->end_timestamp = other->end_timestamp;
 
             g_free (self->end_rpmdb_version);
             self->end_rpmdb_version = g_strdup (other->end_rpmdb_version);
@@ -780,22 +771,13 @@ dnf_swdb_trans_tids (DnfSwdbTrans *self)
 gint64
 dnf_swdb_trans_compare (DnfSwdbTrans *first, DnfSwdbTrans *second)
 {
-    if (!first || !second) {
-        return 0;
-    }
-    gdouble beg_first = g_ascii_strtod (first->beg_timestamp, NULL);
-    gdouble beg_second = g_ascii_strtod (second->beg_timestamp, NULL);
-
-    if (beg_first == beg_second) {
-        gdouble end_first = g_ascii_strtod (first->end_timestamp, NULL);
-        gdouble end_second = g_ascii_strtod (second->end_timestamp, NULL);
-        if (end_first == end_second) {
+    if (first->beg_timestamp == second->beg_timestamp) {
+        if (first->end_timestamp == second->end_timestamp) {
             return second->tid - first->tid;
         }
-        return end_second - end_first;
+        return second->end_timestamp - first->end_timestamp;
     }
-
-    return beg_second - beg_first;
+    return second->beg_timestamp - first->beg_timestamp;
 }
 
 /**

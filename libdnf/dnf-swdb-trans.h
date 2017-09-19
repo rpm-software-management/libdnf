@@ -37,8 +37,8 @@ struct _DnfSwdbTrans
     GObject parent_instance;
     DnfSwdb *swdb;
     gint tid;
-    gchar *beg_timestamp;
-    gchar *end_timestamp;
+    gint64 beg_timestamp;
+    gint64 end_timestamp;
     gchar *beg_rpmdb_version;
     gchar *end_rpmdb_version;
     gchar *cmdline;
@@ -53,8 +53,8 @@ struct _DnfSwdbTrans
 };
 
 DnfSwdbTrans   *dnf_swdb_trans_new              (gint           tid,
-                                                 const gchar   *beg_timestamp,
-                                                 const gchar   *end_timestamp,
+                                                 gint64         beg_timestamp,
+                                                 gint64         end_timestamp,
                                                  const gchar   *beg_rpmdb_version,
                                                  const gchar   *end_rpmdb_version,
                                                  const gchar   *cmdline,

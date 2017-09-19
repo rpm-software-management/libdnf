@@ -48,11 +48,11 @@ generate_str (guint len)
 /**
  * Get current time in unix timestamp converted to gchar
  */
-static gchar *
+static gint64
 generate_timestamp (void)
 {
     g_autoptr (GDateTime) t_struct = g_date_time_new_now_utc ();
-    return g_strdup_printf ("%ld", g_date_time_to_unix (t_struct));
+    return g_date_time_to_unix (t_struct);
 }
 
 /**
@@ -91,7 +91,8 @@ generate_package (void)
 static DnfSwdbRpmData *
 generate_rpm_data (gint pid)
 {
-    g_autofree gchar *buildtime = generate_str (10);
+    g_autoptr (GRand) r = g_rand_new ();
+    gint64 buildtime = g_rand_int (r);
     g_autofree gchar *buildhost = generate_str (6);
     g_autofree gchar *license = generate_str (4);
     g_autofree gchar *packager = generate_str (6);
@@ -100,7 +101,7 @@ generate_rpm_data (gint pid)
     g_autofree gchar *url = generate_str (16);
     g_autofree gchar *vendor = generate_str (6);
     g_autofree gchar *committer = generate_str (6);
-    g_autofree gchar *committime = generate_str (10);
+    gint64 committime = buildtime + 1;
     DnfSwdbRpmData *data = dnf_swdb_rpmdata_new (pid,
                                                  buildtime,
                                                  buildhost,
@@ -125,7 +126,7 @@ generate_package_data (void)
 {
     const gchar *from_repo = "testaconda";
     g_autofree gchar *from_repo_revision = generate_str (16);
-    g_autofree gchar *from_repo_timestamp = generate_timestamp ();
+    gint64 from_repo_timestamp = generate_timestamp ();
 
     g_autoptr (GRand) r = g_rand_new ();
 
@@ -146,7 +147,7 @@ generate_package_data (void)
 static gint
 begin_trans (DnfSwdb *self)
 {
-    g_autofree gchar *time_str = generate_timestamp ();
+    gint64 time_str = generate_timestamp ();
 
     g_autofree gchar *rpmdb_version = generate_str (32);
     g_autofree gchar *cmdline = generate_str (16);
@@ -161,7 +162,7 @@ static gint
 end_trans (DnfSwdb *self, gint tid)
 {
     gint rc;
-    g_autofree gchar *time_str = generate_timestamp ();
+    gint64 time_str = generate_timestamp ();
     g_autofree gchar *rpmdb_version = generate_str (32);
 
     // close transaction as success
@@ -264,7 +265,7 @@ check_initial_transaction (DnfSwdb *self)
         g_assert (pkgdata);
         g_assert (pkgdata->from_repo && *pkgdata->from_repo);
         g_assert (pkgdata->from_repo_revision && *pkgdata->from_repo_revision);
-        g_assert (pkgdata->from_repo_timestamp && *pkgdata->from_repo_timestamp);
+        g_assert (pkgdata->from_repo_timestamp);
         g_assert (pkgdata->installed_by && *pkgdata->installed_by);
 
         g_autofree gchar *ui_repo = g_strdup_printf("@%s", pkgdata->from_repo);
