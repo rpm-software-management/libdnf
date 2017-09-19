@@ -327,7 +327,8 @@ run_initial_transaction (DnfSwdb *self)
                                                  tid,
                                                  pkg->pid,
                                                  DNF_SWDB_REASON_USER, // reason
-                                                 "Install")); // state
+                                                 "Install", // state
+                                                 0)); // obsoleting
 
         // add package data
         g_assert_false (dnf_swdb_update_package_data (self, pkg->pid, tid, pkg_data));
@@ -451,7 +452,8 @@ dnf_swdb_update_func (void)
                                              tid,
                                              pkg->pid,
                                              DNF_SWDB_REASON_USER, // reason
-                                             "Update")); // state
+                                             "Update", // state
+                                             0)); // obsoleting
 
      // add package data
      g_autoptr (DnfSwdbPkgData) pkg_data = generate_package_data ();
@@ -473,7 +475,6 @@ dnf_swdb_update_func (void)
     // check trans data about package
     g_autoptr (DnfSwdbTransData) trans_data = g_ptr_array_index (trans_data_array, 0);
     g_assert (trans_data);
-    g_assert (trans_data->ORIGINAL_TD_ID);
     g_assert (trans_data->tdid);
 
     g_ptr_array_free (trans_data_array, TRUE);
@@ -499,7 +500,8 @@ dnf_swdb_reinstall_func (void)
                                              tid,
                                              pkg->pid,
                                              DNF_SWDB_REASON_USER, // reason
-                                             "Reinstall")); // state
+                                             "Reinstall", // state
+                                             0)); // obsoleting
 
     // insert package data
     g_autoptr (DnfSwdbPkgData) pkg_data = generate_package_data ();
@@ -519,7 +521,6 @@ dnf_swdb_reinstall_func (void)
     g_autoptr (DnfSwdbTransData) trans_data = g_ptr_array_index (trans_data_array, 0);
 
     g_assert (trans_data);
-    g_assert (trans_data->ORIGINAL_TD_ID);
     g_assert (trans_data->tdid);
 
     g_ptr_array_free (trans_data_array, TRUE);
@@ -545,7 +546,8 @@ dnf_swdb_erase_func (void)
                                              tid,
                                              pkg->pid,
                                              DNF_SWDB_REASON_USER, // reason
-                                             "Erase")); // state
+                                             "Erase", // state
+                                             0)); // obsoleting
 
     // insert package data
     g_autoptr (DnfSwdbPkgData) pkg_data = generate_package_data ();
@@ -567,7 +569,6 @@ dnf_swdb_erase_func (void)
     g_autoptr (DnfSwdbTransData) trans_data = g_ptr_array_index (trans_data_array, 0);
 
     g_assert (trans_data);
-    g_assert (trans_data->ORIGINAL_TD_ID);
     g_assert (trans_data->tdid);
 
     g_ptr_array_free (trans_data_array, TRUE);

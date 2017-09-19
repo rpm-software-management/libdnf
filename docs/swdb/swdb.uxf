@@ -105,7 +105,7 @@ T_ID
 PD_ID
 TG_ID
 done
-ORIGINAL_TD_ID
+obsoleting
 reason
 /state/
 
@@ -268,17 +268,6 @@ halign=center
 
 </panel_attributes>
     <additional_attributes>10.0;50.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>660</x>
-      <y>450</y>
-      <w>90</w>
-      <h>70</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>40.0;10.0;10.0;10.0;10.0;50.0;70.0;50.0;70.0;40.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>

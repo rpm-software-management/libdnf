@@ -691,7 +691,7 @@ dnf_swdb_trans_data (DnfSwdbTrans *self)
                                   sqlite3_column_int (res, 2), // pd_id
                                   sqlite3_column_int (res, 3), // g_id
                                   sqlite3_column_int (res, 4), // done
-                                  sqlite3_column_int (res, 5), // ORIGINAL_TD_ID
+                                  sqlite3_column_int (res, 5), // obsoleting
                                   sqlite3_column_int (res, 6), // reason
                                   tmp_state                    // state
           );

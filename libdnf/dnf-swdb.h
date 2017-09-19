@@ -106,7 +106,8 @@ gint            dnf_swdb_trans_data_beg         (DnfSwdb        *self,
                                                  gint            tid,
                                                  gint            pid,
                                                  DnfSwdbReason   reason,
-                                                 const gchar    *state);
+                                                 const gchar    *state,
+                                                 gint            obsoleting);
 gint            dnf_swdb_trans_data_pid_end     (DnfSwdb        *self,
                                                  gint            pid,
                                                  gint            tid,

@@ -172,7 +172,7 @@ dnf_swdb_transdata_new (gint tdid,
                         gint pdid,
                         gint tgid,
                         gint done,
-                        gint ORIGINAL_TD_ID,
+                        gint obsoleting,
                         DnfSwdbReason reason,
                         gchar *state)
 {
@@ -182,7 +182,7 @@ dnf_swdb_transdata_new (gint tdid,
     data->pdid = pdid;
     data->tgid = tgid;
     data->done = done;
-    data->ORIGINAL_TD_ID = ORIGINAL_TD_ID;
+    data->obsoleting = obsoleting;
     data->reason = reason;
     data->state = g_strdup (state);
     return data;
@@ -801,6 +801,7 @@ _resolve_package_state (DnfSwdb *self, DnfSwdbPkg *pkg, gint tid)
     if (sqlite3_step (res) == SQLITE_ROW) {
         pkg->done = sqlite3_column_int (res, 0);
         gint state_code = sqlite3_column_int (res, 1);
+        pkg->obsoleting = sqlite3_column_int (res, 2);
         sqlite3_finalize (res);
         pkg->state = _get_description (self->db, state_code, S_STATE_TYPE_BY_ID);
     } else {
@@ -1040,31 +1041,6 @@ dnf_swdb_add_rpm_data (DnfSwdb *self, DnfSwdbRpmData *rpm_data)
 /*************************** TRANS DATA PERSISTOR ****************************/
 
 /**
- * _trans_data_beg_insert:
- * @db: sqlite database handler
- * @tid: transaction ID
- * @pdid: pacakge data ID
- * @tgid: transaction group ID
- * @reason: reason ID
- * @state: state ID
- *
- * Initialize transaction data
- **/
-static void
-_trans_data_beg_insert (sqlite3 *db, gint tid, gint pdid, gint tgid, DnfSwdbReason reason, gint state)
-{
-    sqlite3_stmt *res;
-    const gchar *sql = INSERT_TRANS_DATA_BEG;
-    DB_PREP (db, sql, res);
-    DB_BIND_INT (res, "@tid", tid);
-    DB_BIND_INT (res, "@pdid", pdid);
-    DB_BIND_INT (res, "@tgid", tgid);
-    DB_BIND_INT (res, "@reason", reason);
-    DB_BIND_INT (res, "@state", state);
-    DB_STEP (res);
-}
-
-/**
  * _resolve_group_origin:
  * @db: sqlite database handler
  * @tid: transaction ID
@@ -1101,7 +1077,12 @@ _resolve_group_origin (sqlite3 *db, gint tid, gint pid)
  * Returns: 0 if successfull
  **/
 gint
-dnf_swdb_trans_data_beg (DnfSwdb *self, gint tid, gint pid, DnfSwdbReason reason, const gchar *state)
+dnf_swdb_trans_data_beg (DnfSwdb *self,
+                         gint tid,
+                         gint pid,
+                         DnfSwdbReason reason,
+                         const gchar *state,
+                         gint obsoleting)
 {
     if (dnf_swdb_open (self))
         return 1;
@@ -1109,17 +1090,27 @@ dnf_swdb_trans_data_beg (DnfSwdb *self, gint tid, gint pid, DnfSwdbReason reason
     // generate new empty package data entry
     gint pdid = _new_pdid_for_pid (self->db, pid);
 
+    // resolve group orogin
     gint tgid = 0;
     if (reason == DNF_SWDB_REASON_GROUP) {
         tgid = _resolve_group_origin (self->db, tid, pid);
     }
 
-    _trans_data_beg_insert (self->db,
-                            tid,
-                            pdid,
-                            tgid,
-                            reason,
-                            dnf_swdb_get_state_type (self, state));
+    // resolve state
+    gint state_code = dnf_swdb_get_state_type (self, state);
+
+    // insert new entry
+    sqlite3_stmt *res;
+    const gchar *sql = INSERT_TRANS_DATA_BEG;
+    DB_PREP (self->db, sql, res);
+    DB_BIND_INT (res, "@tid", tid);
+    DB_BIND_INT (res, "@pdid", pdid);
+    DB_BIND_INT (res, "@tgid", tgid);
+    DB_BIND_INT (res, "@obsoleting", obsoleting);
+    DB_BIND_INT (res, "@reason", reason);
+    DB_BIND_INT (res, "@state", state_code);
+    DB_STEP (res);
+
     return 0;
 }
 
@@ -1131,7 +1122,6 @@ dnf_swdb_trans_data_beg (DnfSwdb *self, gint tid, gint pid, DnfSwdbReason reason
  * @state: state string
  *
  * Finalize transaction for package with ID @pid
- * Create binding with original package if something is being replaced
  *
  * Returns: 0 if successfull
  **/
@@ -1141,69 +1131,17 @@ dnf_swdb_trans_data_pid_end (DnfSwdb *self, gint pid, gint tid, const gchar *sta
     if (dnf_swdb_open (self))
         return 1;
 
+    gint pdid = _pdid_from_pid (self->db, pid);
+    gint state_code = dnf_swdb_get_state_type (self, state);
+
     sqlite3_stmt *res;
-    const gchar *p_sql = S_PDID_TDID_BY_PID;
-    DB_PREP (self->db, p_sql, res);
-    DB_BIND_INT (res, "@pid", pid);
-    gint pdid = 0;
-    gint tdid = 0;
-    if (sqlite3_step (res) == SQLITE_ROW) {
-        pdid = sqlite3_column_int (res, 0);
-        tdid = sqlite3_column_int (res, 1);
-    }
-    sqlite3_finalize (res);
-
-    gint _state = dnf_swdb_get_state_type (self, state);
-
     const gchar *sql = UPDATE_TRANS_DATA_PID_END;
     DB_PREP (self->db, sql, res);
     DB_BIND_INT (res, "@done", 1);
     DB_BIND_INT (res, "@tid", tid);
     DB_BIND_INT (res, "@pdid", pdid);
-    DB_BIND_INT (res, "@state", _state);
+    DB_BIND_INT (res, "@state", state_code);
     DB_STEP (res);
-
-    // resolve ORIGINAL_TD_ID
-    // this will be little bit problematic
-    if (g_strcmp0 ("Install", state) && g_strcmp0 ("Updated", state) &&
-        g_strcmp0 ("Reinstalled", state) && g_strcmp0 ("Obsoleted", state) &&
-        // FIXME we cant tell which package was obsoleted for now
-        g_strcmp0 ("Obsolete", state)) // other than these
-    {
-        /* get installed package name *sigh* - in future we would want to call
-         * this directly with unified DnfSwdbPkg object, so we could skip this
-         * and there would be no pkg2pid method in DNF XXX
-         * Also, by this method, we cant tell if package was obsoleted
-         */
-
-        const gchar *n_sql = S_NAME_BY_PID;
-        DB_PREP (self->db, n_sql, res);
-        DB_BIND_INT (res, "@pid", pid);
-        gchar *name = DB_FIND_STR (res);
-        if (name) {
-            // find last package with same name in database
-            const gchar *t_sql;
-            if (!g_strcmp0 ("Update", state)) {
-                t_sql = S_LAST_TDID_BY_NAME;
-                DB_PREP (self->db, t_sql, res);
-                DB_BIND_INT (res, "@pid", pid);
-            } else {
-                t_sql = S_LAST_W_TDID_BY_NAME;
-                DB_PREP (self->db, t_sql, res);
-            }
-            DB_BIND_INT (res, "@tid", tid);
-            DB_BIND (res, "@name", name);
-            gint orig = DB_FIND (res);
-            if (orig) {
-                const gchar *s_sql = U_ORIGINAL_TDID_BY_TDID;
-                DB_PREP (self->db, s_sql, res);
-                DB_BIND_INT (res, "@tdid", tdid);
-                DB_BIND_INT (res, "@orig", orig);
-                DB_STEP (res);
-            }
-        }
-        g_free (name);
-    }
     return 0;
 }
 

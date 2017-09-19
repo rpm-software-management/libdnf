@@ -59,7 +59,7 @@ struct _DnfSwdbTransData
     gint pdid;
     gint tgid;
     gint done;
-    gint ORIGINAL_TD_ID;
+    gint obsoleting;
     DnfSwdbReason reason;
     gchar *state;
 };
@@ -91,7 +91,7 @@ DnfSwdbTransData   *dnf_swdb_transdata_new          (gint           tdid,
                                                      gint           pdid,
                                                      gint           tgid,
                                                      gint           done,
-                                                     gint           ORIGINAL_TD_ID,
+                                                     gint           obsoleting,
                                                      DnfSwdbReason  reason,
                                                      gchar         *state);
 DnfSwdbRpmData     *dnf_swdb_rpmdata_new            (gint           pid,
