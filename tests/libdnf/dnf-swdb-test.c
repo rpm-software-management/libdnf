@@ -132,7 +132,7 @@ generate_package_data (void)
 
     const gchar *installed_by = "1000";
     const gchar *changed_by = g_rand_boolean (r) ? NULL : "4242";
-    const gchar *installonly = g_rand_boolean (r) ? NULL : "True";
+    gint installonly = g_rand_boolean (r) ? 0 : 1;
 
     DnfSwdbPkgData *pkg_data = dnf_swdb_pkgdata_new (from_repo_revision,
                                                      from_repo_timestamp,

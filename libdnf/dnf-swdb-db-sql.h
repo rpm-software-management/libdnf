@@ -42,37 +42,127 @@
 #define FIND_ALL_PDID_FOR_PID "SELECT PD_ID FROM PACKAGE_DATA WHERE P_ID=@pid"
 
 #define CREATE_TABLES \
-    "CREATE TABLE PACKAGE_DATA (PD_ID INTEGER PRIMARY KEY, P_ID INTEGER, R_ID INTEGER," \
-    "   from_repo_revision TEXT, from_repo_timestamp INTEGER, installed_by TEXT," \
-    "   changed_by TEXT, installonly TEXT);" \
-    "CREATE TABLE PACKAGE ( P_ID INTEGER PRIMARY KEY, name TEXT, epoch INTEGER, version TEXT, " \
-    "   release TEXT, arch TEXT, checksum_data TEXT, checksum_type TEXT, type INTEGER);" \
-    "CREATE TABLE REPO (R_ID INTEGER PRIMARY KEY,name TEXT,last_synced INTEGER,is_expired TEXT);" \
-    "CREATE TABLE TRANS_DATA (TD_ID INTEGER PRIMARY KEY, T_ID INTEGER,PD_ID INTEGER, " \
-    "   TG_ID INTEGER, done INTEGER, obsoleting INTEGER, reason INTEGER, state INTEGER);" \
-    "CREATE TABLE TRANS (T_ID INTEGER PRIMARY KEY, beg_timestamp INTEGER, end_timestamp INTEGER," \
-    "   beg_RPMDB_version TEXT, end_RPMDB_version ,cmdline TEXT,loginuid TEXT, releasever TEXT, " \
+    "CREATE TABLE repo(" \
+    "   r_id INTEGER PRIMARY KEY," \
+    "   name TEXT NOT NULL," \
+    "   last_synced INTEGER," \
+    "   is_expired INTEGER);" \
+    "CREATE TABLE package(" \
+    "   p_id INTEGER PRIMARY KEY," \
+    "   name TEXT NOT NULL," \
+    "   epoch INTEGER NOT NULL," \
+    "   version TEXT NOT NULL," \
+    "   release TEXT NOT NULL," \
+    "   arch TEXT NOT NULL," \
+    "   checksum_data TEXT NOT NULL," \
+    "   checksum_type TEXT NOT NULL," \
+    "   type INTEGER NOT NULL);" \
+    "CREATE TABLE package_data(" \
+    "   pd_id INTEGER PRIMARY KEY," \
+    "   p_id INTEGER REFERENCES package(p_id)," \
+    "   r_id INTEGER REFERENCES repo(r_id)," \
+    "   from_repo_revision TEXT," \
+    "   from_repo_timestamp INTEGER," \
+    "   installed_by TEXT," \
+    "   changed_by TEXT," \
+    "   installonly INTEGER);" \
+    "CREATE TABLE trans(" \
+    "   t_id INTEGER PRIMARY KEY," \
+    "   beg_timestamp INTEGER NOT NULL," \
+    "   end_timestamp INTEGER," \
+    "   beg_rpmdb_version TEXT," \
+    "   end_rpmdb_version TEXT," \
+    "   cmdline TEXT," \
+    "   loginuid TEXT," \
+    "   releasever TEXT NOT NULL," \
     "   return_code INTEGER);" \
-    "CREATE TABLE OUTPUT (O_ID INTEGER PRIMARY KEY,T_ID INTEGER, msg TEXT, type INTEGER);" \
-    "CREATE TABLE STATE_TYPE (state INTEGER PRIMARY KEY, description TEXT);" \
-    "CREATE TABLE OUTPUT_TYPE (type INTEGER PRIMARY KEY, description TEXT);" \
-    "CREATE TABLE GROUPS (G_ID INTEGER PRIMARY KEY, name_id TEXT, name TEXT, ui_name TEXT, " \
-    "   installed INTEGER, pkg_types INTEGER);" \
-    "CREATE TABLE TRANS_GROUP_DATA (TG_ID INTEGER PRIMARY KEY, T_ID INTEGER, G_ID INTEGER, " \
-    "   name_id TEXT, name TEXT, ui_name TEXT,installed INTEGER, pkg_types INTEGER);" \
-    "CREATE TABLE GROUPS_PACKAGE (GP_ID INTEGER PRIMARY KEY, G_ID INTEGER, name TEXT);" \
-    "CREATE TABLE GROUPS_EXCLUDE (GE_ID INTEGER PRIMARY KEY, G_ID INTEGER, name TEXT);" \
-    "CREATE TABLE ENVIRONMENTS_GROUPS (EG_ID INTEGER PRIMARY KEY, E_ID INTEGER, G_ID INTEGER);" \
-    "CREATE TABLE ENVIRONMENTS (E_ID INTEGER PRIMARY KEY, name_id TEXT, name TEXT, ui_name TEXT, " \
-    "   pkg_types INTEGER, grp_types INTEGER);" \
-    "CREATE TABLE ENVIRONMENTS_EXCLUDE (EE_ID INTEGER PRIMARY KEY, E_ID INTEGER, name TEXT);" \
-    "CREATE TABLE RPM_DATA (RPM_ID INTEGER PRIMARY KEY, P_ID INTEGER, buildtime INTEGER," \
-    "   buildhost TEXT, license TEXT, packager TEXT, size TEXT, sourcerpm TEXT, url TEXT," \
-    "   vendor TEXT, committer TEXT, committime INTEGER);" \
-    "CREATE TABLE TRANS_WITH (TW_ID INTEGER PRIMARY KEY, T_ID INTEGER, P_ID INTEGER);" \
-    "CREATE INDEX nevra ON PACKAGE (name || '-' || epoch || ':' || version || '-' || release ||" \
-    "   '.' || arch);" \
-    "CREATE INDEX nvra on PACKAGE (name || '-' || version || '-' || release || '.' || arch);"
+    "CREATE TABLE groups(" \
+    "   g_id INTEGER PRIMARY KEY," \
+    "   name_id TEXT NOT NULL," \
+    "   name TEXT," \
+    "   ui_name TEXT," \
+    "   installed INTEGER NOT NULL," \
+    "   pkg_types INTEGER NOT NULL);" \
+    "CREATE TABLE environments(" \
+    "   e_id INTEGER PRIMARY KEY," \
+    "   name_id TEXT NOT NULL," \
+    "   name TEXT," \
+    "   ui_name TEXT," \
+    "   pkg_types INTEGER NOT NULL," \
+    "   grp_types INTEGER NOT NULL);" \
+    "CREATE TABLE trans_group_data(" \
+    "   tg_id INTEGER PRIMARY KEY," \
+    "   t_id INTEGER REFERENCES trans(t_id)," \
+    "   g_id INTEGER REFERENCES groups(g_id)," \
+    "   name_id TEXT NOT NULL," \
+    "   name TEXT," \
+    "   ui_name TEXT," \
+    "   installed INTEGER NOT NULL," \
+    "   pkg_types INTEGER NOT NULL);" \
+    "CREATE TABLE state_type(" \
+    "   state INTEGER PRIMARY KEY," \
+    "   description TEXT NOT NULL);" \
+    "CREATE TABLE trans_data(" \
+    "   td_id INTEGER PRIMARY KEY," \
+    "   t_id INTEGER REFERENCES trans(t_id)," \
+    "   pd_id INTEGER REFERENCES package_data(pd_id)," \
+    "   tg_id INTEGER REFERENCES trans_group_data(tg_id)," \
+    "   done INTEGER NOT NULL," \
+    "   obsoleting INTEGER NOT NULL," \
+    "   reason INTEGER NOT NULL," \
+    "   state INTEGER REFERENCES state_type(state));" \
+    "CREATE TABLE output_type(" \
+    "   type INTEGER PRIMARY KEY," \
+    "   description TEXT NOT NULL);" \
+    "CREATE TABLE output(" \
+    "   o_id INTEGER PRIMARY KEY," \
+    "   t_id INTEGER REFERENCES trans(t_id)," \
+    "   msg TEXT," \
+    "   type INTEGER REFERENCES output_type(type));" \
+    "CREATE TABLE groups_package(" \
+    "   gp_id INTEGER PRIMARY KEY," \
+    "   g_id INTEGER REFERENCES groups(g_id)," \
+    "   name TEXT NOT NULL);" \
+    "CREATE TABLE groups_exclude(" \
+    "   ge_id INTEGER PRIMARY KEY," \
+    "   g_id INTEGER REFERENCES groups(g_id)," \
+    "   name TEXT NOT NULL);" \
+    "CREATE TABLE environments_groups(" \
+    "   eg_id INTEGER PRIMARY KEY," \
+    "   e_id INTEGER REFERENCES environments(e_id)," \
+    "   g_id INTEGER REFERENCES groups(g_id));" \
+    "CREATE TABLE environments_exclude(" \
+    "   ee_id INTEGER PRIMARY KEY," \
+    "   e_id INTEGER REFERENCES environments(e_id)," \
+    "   name TEXT NOT NULL);" \
+    "CREATE TABLE rpm_data(" \
+    "   rpm_id INTEGER PRIMARY KEY," \
+    "   p_id INTEGER REFERENCES package(p_id)," \
+    "   buildtime INTEGER," \
+    "   buildhost TEXT," \
+    "   license TEXT," \
+    "   packager TEXT," \
+    "   size TEXT," \
+    "   sourcerpm TEXT," \
+    "   url TEXT," \
+    "   vendor TEXT," \
+    "   committer TEXT," \
+    "   committime INTEGER);" \
+    "CREATE TABLE trans_with(" \
+    "   tw_id INTEGER PRIMARY KEY," \
+    "   t_id INTEGER REFERENCES trans(t_id)," \
+    "   p_id INTEGER REFERENCES package(p_id));" \
+    "CREATE INDEX nevra ON PACKAGE(" \
+    "   name || '-' || epoch || ':' || version || '-' || release || '.' || arch);" \
+    "CREATE INDEX nvra on PACKAGE(" \
+    "   name || '-' || version || '-' || release || '.' || arch);" \
+    "CREATE TABLE config (" \
+    "   key TEXT PRIMARY KEY," \
+    "   value TEXT NOT NULL);" \
+    "INSERT INTO config values("\
+    "   'version',"\
+    "   '1.0');"
+
 
 #define S_OUTPUT "SELECT msg FROM OUTPUT WHERE T_ID=@tid and type=@type"
 

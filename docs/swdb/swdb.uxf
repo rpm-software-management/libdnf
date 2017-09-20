@@ -629,4 +629,23 @@ halign=center
 </panel_attributes>
     <additional_attributes>130.0;20.0;10.0;20.0</additional_attributes>
   </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>160</x>
+      <y>520</y>
+      <w>180</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>config
+--
+key
+value
+
+
+bg=white
+halign=center
+</panel_attributes>
+    <additional_attributes/>
+  </element>
 </diagram>

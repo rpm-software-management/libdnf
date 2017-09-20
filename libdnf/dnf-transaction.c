@@ -960,7 +960,7 @@ _log_swdb_transaction(SwdbHandle *handle,
         0, //from_repo_timestamp
         user,
         NULL, //changed by
-        NULL, //installonly
+        dnf_package_is_installonly(pkg), //installonly
         dnf_package_get_reponame(pkg));
 
     // insert transaction data
@@ -994,6 +994,7 @@ _log_swdb_removal(SwdbHandle *handle,
     const gchar *reason = dnf_transaction_get_propagated_reason(trans, goal, pkg);
 
     //log transaction
+    //FIXME proper state resultion
     _log_swdb_transaction(handle, pkg, user, reason, "Erase");
 }
 
@@ -1053,6 +1054,7 @@ dnf_transaction_write_yumdb_install_item(DnfTransaction *transaction,
         return FALSE;
 
 #if WITH_SWDB
+    //FIXME proper state resultion
     _log_swdb_transaction(handle, pkg, euid, reason, "Install");
 #endif
 

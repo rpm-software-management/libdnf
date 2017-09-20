@@ -86,7 +86,6 @@ dnf_swdb_pkgdata_finalize (GObject *object)
     g_free (pkgdata->from_repo_revision);
     g_free (pkgdata->installed_by);
     g_free (pkgdata->changed_by);
-    g_free (pkgdata->installonly);
     G_OBJECT_CLASS (dnf_swdb_pkgdata_parent_class)->finalize (object);
 }
 
@@ -107,7 +106,7 @@ dnf_swdb_pkgdata_init (DnfSwdbPkgData *self)
     self->from_repo_timestamp = 0;
     self->installed_by = NULL;
     self->changed_by = NULL;
-    self->installonly = NULL;
+    self->installonly = 0;
 }
 
 /**
@@ -122,7 +121,7 @@ dnf_swdb_pkgdata_new (const gchar *from_repo_revision,
                       gint64 from_repo_timestamp,
                       const gchar *installed_by,
                       const gchar *changed_by,
-                      const gchar *installonly,
+                      gint installonly,
                       const gchar *from_repo)
 {
     DnfSwdbPkgData *pkgdata = g_object_new (DNF_TYPE_SWDB_PKGDATA, NULL);
@@ -130,7 +129,7 @@ dnf_swdb_pkgdata_new (const gchar *from_repo_revision,
     pkgdata->from_repo_timestamp = from_repo_timestamp;
     pkgdata->installed_by = g_strdup (installed_by);
     pkgdata->changed_by = g_strdup (changed_by);
-    pkgdata->installonly = g_strdup (installonly);
+    pkgdata->installonly = installonly;
     pkgdata->from_repo = g_strdup (from_repo);
     return pkgdata;
 }
@@ -670,7 +669,7 @@ dnf_swdb_update_package_data (DnfSwdb *self, gint pid, gint tid, DnfSwdbPkgData 
     DB_BIND_INT (res, "@repo_t", pkgdata->from_repo_timestamp);
     DB_BIND (res, "@installed_by", pkgdata->installed_by);
     DB_BIND (res, "@changed_by", pkgdata->changed_by);
-    DB_BIND (res, "@installonly", pkgdata->installonly);
+    DB_BIND_INT (res, "@installonly", pkgdata->installonly);
     DB_STEP (res);
     return 0;
 }
@@ -826,7 +825,7 @@ _get_package_data_by_pid (sqlite3 *db, gint pid)
                                 sqlite3_column_int (res, 4), // from_repo_timestamp
                                 (gchar *)sqlite3_column_text (res, 5), // installed_by
                                 (gchar *)sqlite3_column_text (res, 6), // changed_by
-                                (gchar *)sqlite3_column_text (res, 7), // installonly
+                                sqlite3_column_int (res, 7), // installonly
                                 NULL);                                 // from_repo
         pkgdata->pdid = sqlite3_column_int (res, 0); // pdid
         pkgdata->pid = pid;
