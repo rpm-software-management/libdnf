@@ -1,5 +1,5 @@
 %global libsolv_version 0.6.21-1
-%global dnf_conflict 2.6.2
+%global dnf_conflict 2.7.2
 
 %bcond_with valgrind
 
