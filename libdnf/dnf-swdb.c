@@ -1301,11 +1301,11 @@ _resolve_altered (GPtrArray *trans)
             continue;
 
         if (g_strcmp0 (obj->end_rpmdb_version, las->beg_rpmdb_version)) {
-            obj->altered_lt_rpmdb = 1;
-            las->altered_gt_rpmdb = 1;
+            obj->altered_gt_rpmdb = 1;
+            las->altered_lt_rpmdb = 1;
         } else {
-            las->altered_gt_rpmdb = 0;
-            obj->altered_lt_rpmdb = 0;
+            las->altered_lt_rpmdb = 0;
+            obj->altered_gt_rpmdb = 0;
         }
     }
 }
