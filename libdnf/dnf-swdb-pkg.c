@@ -206,10 +206,13 @@ dnf_swdb_pkg_compare (DnfSwdbPkg *pkg1, DnfSwdbPkg *pkg2)
     // compare versions
 
     // split version string into substrings
-    gchar **version1 = g_strsplit (pkg1->version, ".", 0);
-    gchar **version2 = g_strsplit (pkg2->version, ".", 0);
+    g_auto (GStrv) version1 = g_strsplit (pkg1->version, ".", 0);
+    if (!version1) {
+        return 0;
+    }
 
-    if (!version1 || !version2) {
+    g_auto (GStrv) version2 = g_strsplit (pkg2->version, ".", 0);
+    if (!version2) {
         return 0;
     }
 
@@ -235,9 +238,6 @@ dnf_swdb_pkg_compare (DnfSwdbPkg *pkg1, DnfSwdbPkg *pkg2)
         subv1 = *(version1 + i);
         subv2 = *(version2 + i);
     }
-
-    g_strfreev (version1);
-    g_strfreev (version2);
 
     return res;
 }
