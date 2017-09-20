@@ -220,11 +220,6 @@ hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra)
     return -1;
 }
 
-struct NevraToQuery {
-    int nevra_type;
-    int query_type;
-};
-
 HyQuery
 hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, HyNevra *nevra,
                              gboolean icase, gboolean with_nevra, gboolean with_provides,
@@ -271,70 +266,6 @@ hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, Hy
     query = hy_query_create(sack);
     hy_query_filter_empty(query);
     return query;
-}
-
-/* Given a subject, attempt to create a query choose the first one, and update
- * the query to try to match it.
- *
- * This code is based on rpm-software-management/dnf/subject.py:get_best_query() at git
- * revision: 1d83fdc0280ca4202281ef489afe600e2f51a32a
- */
-HyQuery
-hy_subject_get_best_query(HySubject subject, DnfSack *sack, gboolean with_provides)
-{
-#if 0
-    int ret = -1;
-    HyNevra nevra = NULL;
-    HyPossibilities iter = NULL;
-    HyQuery query = NULL;
-    DnfReldep *reldep = NULL;
-
-    iter = hy_subject_nevra_possibilities_real(subject, NULL, sack, 0);
-
-    if ((ret = hy_possibilities_next_nevra(iter, &nevra)) < 0)
-        goto out;
-
-    if (nevra != NULL) {
-        struct NevraToQuery nevraquerymap[] =
-            { { HY_NEVRA_NAME, HY_PKG_NAME },
-              { HY_NEVRA_VERSION, HY_PKG_VERSION },
-              { HY_NEVRA_RELEASE, HY_PKG_RELEASE },
-              { HY_NEVRA_ARCH, HY_PKG_ARCH }};
-
-        query = hy_query_create(sack);
-
-        for (guint i = 0; i < G_N_ELEMENTS(nevraquerymap); i++) {
-            const char *str = hy_nevra_get_string(nevra, nevraquerymap[i].nevra_type);
-            if (str)
-                hy_query_filter(query, nevraquerymap[i].query_type, HY_EQ, str);
-        }
-    } else if (with_provides) {
-        hy_possibilities_free(iter);
-        iter = hy_subject_reldep_possibilities_real(subject, sack, 0);
-
-        if ((ret = hy_possibilities_next_reldep(iter, &reldep)) < 0)
-            goto out;
-
-        query = hy_query_create(sack);
-        /* TODO(walters) Do we need to split EVR here? */
-        hy_query_filter_provides(query, HY_EQ, dnf_reldep_to_string(reldep), NULL);
-    }
-
-    if (query == NULL) {
-        query = hy_query_create(sack);
-        hy_query_filter_empty(query);
-    }
- out:
-    if (iter)
-        hy_possibilities_free(iter);
-    if (nevra)
-        hy_nevra_free(nevra);
-    g_clear_object(&reldep);
-    return query;
-#else
-    /* At some point, we may use this */
-    g_assert_not_reached ();
-#endif
 }
 
 static HySelector
