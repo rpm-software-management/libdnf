@@ -4,9 +4,9 @@
          xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
          xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
          xmlns:foaf="http://xmlns.com/foaf/0.1/">
-  <Project rdf:about="https://github.com/rpm-software-management/libhif">
+  <Project rdf:about="https://github.com/rpm-software-management/libdnf">
     <name>libdnf</name>
-    <homepage rdf:resource="https://github.com/rpm-software-management/libhif" />
+    <homepage rdf:resource="https://github.com/rpm-software-management/libdnf" />
     <shortdesc>
        Simple package manager
     </shortdesc>
@@ -14,14 +14,14 @@
       This library provides a high level package-manager.
       It uses librepo, libsolv and other libraries under the hood.
     </description>
-    <bug-database rdf:resource="https://github.com/rpm-software-management/libhif/issues" />
+    <bug-database rdf:resource="https://github.com/rpm-software-management/libdnf/issues" />
     <mailing-list rdf:resource="http://lists.rpm.org/mailman/listinfo/rpm-ecosystem" />
-    <download-page rdf:resource="https://github.com/rpm-software-management/libhif/releases" />
+    <download-page rdf:resource="https://github.com/rpm-software-management/libdnf/releases" />
     <programming-language>C</programming-language>
     <repository>
       <GitRepository>
-        <location rdf:resource="git://github.com/rpm-software-management/libhif.git"/>
-        <browse rdf:resource="https://github.com/rpm-software-management/libhif"/>
+        <location rdf:resource="git://github.com/rpm-software-management/libdnf.git"/>
+        <browse rdf:resource="https://github.com/rpm-software-management/libdnf"/>
       </GitRepository>
     </repository>
     <maintainer>
