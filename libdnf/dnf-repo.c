@@ -896,10 +896,7 @@ dnf_repo_get_boolean(GKeyFile *keyfile,
     return FALSE;
 }
 
-/**
- * dnf_repo_set_keyfile_data: initialize (or potentially reset) repo & LrHandle
- * from keyfile values.
- */
+/* Initialize (or potentially reset) repo & LrHandle from keyfile values. */
 static gboolean
 dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 {
