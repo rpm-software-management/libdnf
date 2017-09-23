@@ -459,6 +459,38 @@ filter_release(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
+filter_arch(HyQuery q, const struct _Filter *f, Map *m)
+{
+    Pool *pool = dnf_sack_get_pool(q->sack);
+    Id match_arch_id = 0;
+    for (int mi = 0; mi < f->nmatches; ++mi) {
+        const char *match = f->matches[mi].str;
+        if (f->cmp_type & HY_EQ) {
+            match_arch_id = pool_str2id(pool, match, 0);
+            if (match_arch_id == 0)
+                continue;
+        }
+
+        for (Id id = 1; id < pool->nsolvables; ++id) {
+            if (!MAPTST(q->result, id))
+                continue;
+            Solvable *s = pool_id2solvable(pool, id);
+            if (f->cmp_type & HY_EQ) {
+                if (match_arch_id == s->arch)
+                     MAPSET(m, id);
+                continue;
+            }
+            const char *arch = pool_id2str(pool, s->arch);
+            if (f->cmp_type == HY_GLOB) {
+                if (fnmatch(match, arch, 0) == 0)
+                    MAPSET(m, id);
+                continue;
+            }
+        }
+    }
+}
+
+static void
 filter_sourcerpm(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = dnf_sack_get_pool(q->sack);
@@ -943,6 +975,9 @@ hy_query_apply(HyQuery q)
             break;
         case HY_PKG_RELEASE:
             filter_release(q, f, &m);
+            break;
+        case HY_PKG_ARCH:
+            filter_arch(q, f, &m);
             break;
         case HY_PKG_SOURCERPM:
             filter_sourcerpm(q, f, &m);
