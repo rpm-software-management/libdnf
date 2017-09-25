@@ -68,11 +68,11 @@ DnfSwdbGroup       *dnf_swdb_group_new              (const gchar   *name_id,
 GPtrArray          *dnf_swdb_group_get_exclude      (DnfSwdbGroup  *self);
 GPtrArray          *dnf_swdb_group_get_full_list    (DnfSwdbGroup  *self);
 gint                dnf_swdb_group_update_full_list (DnfSwdbGroup  *group,
-                                                     GPtrArray     *full_list);
+                                                     const GPtrArray *full_list);
 gint                dnf_swdb_group_add_package      (DnfSwdbGroup  *group,
-                                                     GPtrArray     *packages);
+                                                     const GPtrArray *packages);
 gint                dnf_swdb_group_add_exclude      (DnfSwdbGroup  *group,
-                                                     GPtrArray     *exclude);
+                                                     const GPtrArray *exclude);
 void                _update_group                   (sqlite3       *db,
                                                      DnfSwdbGroup  *group);
 gint                _insert_id_name                 (sqlite3       *db,
@@ -94,7 +94,7 @@ DnfSwdbEnv         *dnf_swdb_env_new                (const gchar   *name_id,
 GPtrArray          *dnf_swdb_env_get_group_list     (DnfSwdbEnv    *env);
 GPtrArray          *dnf_swdb_env_get_exclude        (DnfSwdbEnv    *self);
 gint                dnf_swdb_env_add_exclude        (DnfSwdbEnv    *env,
-                                                     GPtrArray     *exclude);
+                                                     const GPtrArray *exclude);
 gint                dnf_swdb_env_add_group          (DnfSwdbEnv    *env,
                                                      GPtrArray     *groups);
 DnfSwdbEnv         *_get_env                        (sqlite3       *db,
@@ -109,7 +109,7 @@ GPtrArray          *_env_get_group_list             (sqlite3       *db,
                                                      gint           eid);
 void                _log_group_trans                (sqlite3       *db,
                                                      gint           tid,
-                                                     GPtrArray     *groups,
+                                                     const GPtrArray *groups,
                                                      gboolean       installed);
 void                _update_env                     (sqlite3       *db,
                                                      DnfSwdbEnv    *env);

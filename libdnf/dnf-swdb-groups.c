@@ -192,11 +192,11 @@ _find_match (const gchar *str, GPtrArray *arr)
  * Bind list of package/group names with group/environment ID in @table
  **/
 static void
-_insert_group_additional (sqlite3 *db, int gid, GPtrArray *data, const gchar *table)
+_insert_group_additional (sqlite3 *db, int gid, const GPtrArray *data, const gchar *table)
 {
     GPtrArray *actualList = _get_data_list (db, gid, table);
     for (guint i = 0; i < data->len; ++i) {
-        const gchar *name = (gchar *)g_ptr_array_index (data, i);
+        const gchar *name = (const gchar *) g_ptr_array_index (data, i);
         if (!_find_match (name, actualList)) {
             _insert_id_name (db, table, gid, name);
         }
@@ -232,7 +232,7 @@ _env_installed (sqlite3 *db, DnfSwdbEnv *env)
  * Returns: 0 if successful
  **/
 gint
-dnf_swdb_group_add_package (DnfSwdbGroup *group, GPtrArray *packages)
+dnf_swdb_group_add_package (DnfSwdbGroup *group, const GPtrArray *packages)
 {
 
     if (!group->gid || dnf_swdb_open (group->swdb))
@@ -251,7 +251,7 @@ dnf_swdb_group_add_package (DnfSwdbGroup *group, GPtrArray *packages)
  * Returns: 0 if successful
  **/
 gint
-dnf_swdb_group_add_exclude (DnfSwdbGroup *group, GPtrArray *exclude)
+dnf_swdb_group_add_exclude (DnfSwdbGroup *group, const GPtrArray *exclude)
 {
     if (!group->gid || dnf_swdb_open (group->swdb))
         return 1;
@@ -269,7 +269,7 @@ dnf_swdb_group_add_exclude (DnfSwdbGroup *group, GPtrArray *exclude)
  * Returns: 0 if successful
  **/
 gint
-dnf_swdb_env_add_exclude (DnfSwdbEnv *env, GPtrArray *exclude)
+dnf_swdb_env_add_exclude (DnfSwdbEnv *env, const GPtrArray *exclude)
 {
     if (!env->eid || dnf_swdb_open (env->swdb))
         return 1;
@@ -717,12 +717,12 @@ dnf_swdb_group_get_full_list (DnfSwdbGroup *self)
  * @group: group object
  * @full_list: (element-type utf8)(transfer container): list of package names
  *
- * Update list of packages installed with group
+ * Insert or update packages installed with group
  *
  * Returns: 0 if successful
  */
 gint
-dnf_swdb_group_update_full_list (DnfSwdbGroup *group, GPtrArray *full_list)
+dnf_swdb_group_update_full_list (DnfSwdbGroup *group, const GPtrArray *full_list)
 {
     if (!group->gid)
         return 1;
@@ -886,7 +886,7 @@ dnf_swdb_groups_commit (DnfSwdb *self, GPtrArray *groups)
  * @installed: tag whether groups should be tagged as installed
  **/
 void
-_log_group_trans (sqlite3 *db, gint tid, GPtrArray *groups, gboolean installed)
+_log_group_trans (sqlite3 *db, gint tid, const GPtrArray *groups, gboolean installed)
 {
     const gchar *sql = I_TRANS_GROUP_DATA;
     for (guint i = 0; i < groups->len; ++i) {
