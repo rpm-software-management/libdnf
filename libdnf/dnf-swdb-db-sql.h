@@ -33,8 +33,8 @@
     "name || '-' || version || '-' || release || '.' || arch AS sql_nvra," \
     "name || '-' || version AS sql_nv," \
     "name || '-' || version || '-' || release AS sql_nvr," \
-    "epoch || ':' || name || '-' || version || '-' || release || '-' || arch AS sql_envra," \
-    "name || '-' || epoch || '-' || version || '-' || release || '-' || arch AS sql_nevra " \
+    "epoch || ':' || name || '-' || version || '-' || release || '.' || arch AS sql_envra," \
+    "name || '-' || epoch || ':' || version || '-' || release || '.' || arch AS sql_nevra " \
     "FROM PACKAGE WHERE sql_na LIKE @pat OR sql_nvra LIKE @pat OR sql_nv LIKE @pat OR" \
     " sql_nvr LIKE @pat OR sql_nevra LIKE @pat OR sql_envra LIKE @pat"
 
