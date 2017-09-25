@@ -135,19 +135,6 @@
     "   ee_id INTEGER PRIMARY KEY," \
     "   e_id INTEGER REFERENCES environments(e_id)," \
     "   name TEXT NOT NULL);" \
-    "CREATE TABLE rpm_data(" \
-    "   rpm_id INTEGER PRIMARY KEY," \
-    "   p_id INTEGER REFERENCES package(p_id)," \
-    "   buildtime INTEGER," \
-    "   buildhost TEXT," \
-    "   license TEXT," \
-    "   packager TEXT," \
-    "   size TEXT," \
-    "   sourcerpm TEXT," \
-    "   url TEXT," \
-    "   vendor TEXT," \
-    "   committer TEXT," \
-    "   committime INTEGER);" \
     "CREATE TABLE trans_with(" \
     "   tw_id INTEGER PRIMARY KEY," \
     "   t_id INTEGER REFERENCES trans(t_id)," \
