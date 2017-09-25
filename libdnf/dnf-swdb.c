@@ -408,6 +408,9 @@ dnf_swdb_user_installed (DnfSwdb *self, const gchar *nevra)
 static gint
 _bind_repo_by_name (sqlite3 *db, const gchar *name)
 {
+    if (!name) {
+        return 0;
+    }
     sqlite3_stmt *res;
     const gchar *sql = FIND_REPO_BY_NAME;
     _db_prepare (db, sql, &res);
