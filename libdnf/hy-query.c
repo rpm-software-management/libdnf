@@ -498,7 +498,7 @@ filter_release(HyQuery q, struct _Filter *f, Map *m)
 
             pool_split_evr(pool, evr, &e, &v, &r);
 
-            if (cmp_type == HY_GLOB) {
+            if (cmp_type & HY_GLOB) {
                 if (fnmatch(match, r, 0))
                     continue;
                 MAPSET(m, id);
@@ -540,7 +540,7 @@ filter_arch(HyQuery q, const struct _Filter *f, Map *m)
                 continue;
             }
             const char *arch = pool_id2str(pool, s->arch);
-            if (f->cmp_type == HY_GLOB) {
+            if (f->cmp_type & HY_GLOB) {
                 if (fnmatch(match, arch, 0) == 0)
                     MAPSET(m, id);
                 continue;
@@ -1192,8 +1192,8 @@ hy_query_clone(HyQuery q)
 int
 hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
 {
-    if (cmp_type == HY_GLOB && !hy_is_glob_pattern(match))
-        cmp_type = HY_EQ;
+    if ((cmp_type & HY_GLOB) && !hy_is_glob_pattern(match))
+        cmp_type = (cmp_type & ~HY_GLOB) | HY_EQ;
 
     if (!valid_filter_str(keyname, cmp_type))
         return DNF_ERROR_BAD_QUERY;
