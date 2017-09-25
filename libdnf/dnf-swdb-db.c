@@ -51,8 +51,9 @@ void
 _db_step (sqlite3_stmt *res)
 {
     if (sqlite3_step (res) != SQLITE_DONE) {
+        sqlite3 *db = sqlite3_db_handle (res);
         sqlite3_finalize (res);
-        g_error ("SQL error: statement execution failed!");
+        g_error ("SWDB statement execution: %s", sqlite3_errmsg (db));
     }
     sqlite3_finalize (res);
 }
@@ -150,9 +151,8 @@ _db_prepare (sqlite3 *db, const gchar *sql, sqlite3_stmt **res)
 {
     gint rc = sqlite3_prepare_v2 (db, sql, -1, res, NULL);
     if (rc != SQLITE_OK) {
-        g_autofree gchar *err = g_strdup (sqlite3_errmsg (db));
         sqlite3_finalize (*res);
-        g_error ("SQL prepare error: %s", err);
+        g_error ("SWDB prepare error: %s", sqlite3_errmsg (db));
     }
 }
 
@@ -170,7 +170,9 @@ _db_bind_str (sqlite3_stmt *res, const gchar *id, const gchar *source)
     gint idx = sqlite3_bind_parameter_index (res, id);
     gint rc = sqlite3_bind_text (res, idx, source, -1, SQLITE_STATIC);
     if (rc) {
-        g_error ("SQL string bind error with arguments: %d|%s|%s", idx, id, source);
+        sqlite3 *db = sqlite3_db_handle (res);
+        const gchar *err = sqlite3_errmsg (db);
+        g_error ("SWDB string bind (args: %d|%s|%s): %s", idx, id, source, err);
     }
 }
 
@@ -190,8 +192,9 @@ _db_bind_int (sqlite3_stmt *res, const gchar *id, gint source)
     gint idx = sqlite3_bind_parameter_index (res, id);
     gint rc = sqlite3_bind_int (res, idx, source);
     if (rc) {
-        g_error ("SQL integer bind error with arguments: %d|%s|%d", idx, id, source);
-    }
+        sqlite3 *db = sqlite3_db_handle (res);
+        const gchar *err = sqlite3_errmsg (db);
+        g_error ("SWDB integer bind (args: %d|%s|%d): %s", idx, id, source, err);    }
 }
 
 /**
@@ -210,7 +213,7 @@ _db_exec (sqlite3 *db, const gchar *cmd, int (*callback) (void *, int, char **, 
     gchar *err_msg;
     gint result = sqlite3_exec (db, cmd, callback, 0, &err_msg);
     if (result != SQLITE_OK) {
-        g_warning ("SQL error: %s\n", err_msg);
+        g_warning ("SWDB error: %s", err_msg);
         sqlite3_free (err_msg);
         return 1;
     }
