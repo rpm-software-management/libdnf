@@ -196,6 +196,10 @@ valid_filter_str(int keyname, int cmp_type)
     case HY_PKG_LOCATION:
     case HY_PKG_SOURCERPM:
         return cmp_type == HY_EQ;
+    case HY_PKG_ARCH:
+        return cmp_type & HY_EQ || cmp_type & HY_GLOB;
+    case HY_PKG_NAME:
+        return cmp_type & HY_EQ || cmp_type & HY_GLOB || cmp_type & HY_SUBSTR;
     default:
         return 1;
     }
