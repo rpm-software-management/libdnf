@@ -29,11 +29,9 @@ G_BEGIN_DECLS
 
 #define DNF_TYPE_SWDB_PKGDATA   dnf_swdb_pkgdata_get_type()
 #define DNF_TYPE_SWDB_TRANSDATA dnf_swdb_transdata_get_type()
-#define DNF_TYPE_SWDB_RPMDATA   dnf_swdb_rpmdata_get_type()
 
 G_DECLARE_FINAL_TYPE (DnfSwdbPkgData, dnf_swdb_pkgdata, DNF, SWDB_PKGDATA, GObject)
 G_DECLARE_FINAL_TYPE (DnfSwdbTransData, dnf_swdb_transdata, DNF, SWDB_TRANSDATA, GObject)
-G_DECLARE_FINAL_TYPE (DnfSwdbRpmData, dnf_swdb_rpmdata, DNF, SWDB_RPMDATA, GObject)
 
 #include "dnf-swdb.h"
 #include "dnf-swdb-types.h"
@@ -64,22 +62,6 @@ struct _DnfSwdbTransData
     gchar *state;
 };
 
-struct _DnfSwdbRpmData
-{
-    GObject parent_instance;
-    gint   pid;
-    gint64 buildtime;
-    gchar *buildhost;
-    gchar *license;
-    gchar *packager;
-    gchar *size;
-    gchar *sourcerpm;
-    gchar *url;
-    gchar *vendor;
-    gchar *committer;
-    gint64 committime;
-};
-
 DnfSwdbPkgData     *dnf_swdb_pkgdata_new            (const gchar   *from_repo_revision,
                                                      gint64         from_repo_timestamp,
                                                      const gchar   *installed_by,
@@ -94,17 +76,6 @@ DnfSwdbTransData   *dnf_swdb_transdata_new          (gint           tdid,
                                                      gint           obsoleting,
                                                      DnfSwdbReason  reason,
                                                      gchar         *state);
-DnfSwdbRpmData     *dnf_swdb_rpmdata_new            (gint           pid,
-                                                     gint64         buildtime,
-                                                     const gchar   *buildhost,
-                                                     const gchar   *license,
-                                                     const gchar   *packager,
-                                                     const gchar   *size,
-                                                     const gchar   *sourcerpm,
-                                                     const gchar   *url,
-                                                     const gchar   *vendor,
-                                                     const gchar   *committer,
-                                                     gint64         committime);
 G_END_DECLS
 
 #endif

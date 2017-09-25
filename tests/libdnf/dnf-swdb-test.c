@@ -86,39 +86,6 @@ generate_package (void)
 }
 
 /**
- * Generate rpm data with some random attributes
- */
-static DnfSwdbRpmData *
-generate_rpm_data (gint pid)
-{
-    g_autoptr (GRand) r = g_rand_new ();
-    gint64 buildtime = g_rand_int (r);
-    g_autofree gchar *buildhost = generate_str (6);
-    g_autofree gchar *license = generate_str (4);
-    g_autofree gchar *packager = generate_str (6);
-    g_autofree gchar *size = generate_str (2);
-    g_autofree gchar *sourcerpm = generate_str (16);
-    g_autofree gchar *url = generate_str (16);
-    g_autofree gchar *vendor = generate_str (6);
-    g_autofree gchar *committer = generate_str (6);
-    gint64 committime = buildtime + 1;
-    DnfSwdbRpmData *data = dnf_swdb_rpmdata_new (pid,
-                                                 buildtime,
-                                                 buildhost,
-                                                 license,
-                                                 packager,
-                                                 size,
-                                                 sourcerpm,
-                                                 url,
-                                                 vendor,
-                                                 committer,
-                                                 committime);
-
-    g_assert (data);
-    return data;
-}
-
-/**
  * Generate some package data with random attributes
  */
 static DnfSwdbPkgData *
@@ -316,11 +283,6 @@ run_initial_transaction (DnfSwdb *self)
         // add pkg to database
         g_assert (dnf_swdb_add_package (self, pkg));
 
-        g_autoptr (DnfSwdbRpmData) rpm_data = generate_rpm_data (pkg->pid);
-
-        // add rpm data to package
-        g_assert_false (dnf_swdb_add_rpm_data (self, rpm_data));
-
         g_autoptr (DnfSwdbPkgData) pkg_data = generate_package_data ();
 
         // dont forget trans data
@@ -443,10 +405,6 @@ dnf_swdb_update_func (void)
 
     // add package
     g_assert (dnf_swdb_add_package (self, pkg));
-
-    // add rpm data
-    g_autoptr (DnfSwdbRpmData) rpm_data = generate_rpm_data (pkg->pid);
-    g_assert_false (dnf_swdb_add_rpm_data (self, rpm_data));
 
     // initialize transaction data
     g_assert_false (dnf_swdb_trans_data_beg (self,

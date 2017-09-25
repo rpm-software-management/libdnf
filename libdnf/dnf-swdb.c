@@ -27,7 +27,6 @@
 G_DEFINE_TYPE (DnfSwdb, dnf_swdb, G_TYPE_OBJECT)
 G_DEFINE_TYPE (DnfSwdbTransData, dnf_swdb_transdata, G_TYPE_OBJECT) // trans data
 G_DEFINE_TYPE (DnfSwdbPkgData, dnf_swdb_pkgdata, G_TYPE_OBJECT)
-G_DEFINE_TYPE (DnfSwdbRpmData, dnf_swdb_rpmdata, G_TYPE_OBJECT)
 
 // SWDB object Destructor
 static void
@@ -184,82 +183,6 @@ dnf_swdb_transdata_new (gint tdid,
     data->reason = reason;
     data->state = g_strdup (state);
     return data;
-}
-
-// SWDB RPM data destructor
-static void
-dnf_swdb_rpmdata_finalize (GObject *object)
-{
-    DnfSwdbRpmData *rpmdata = (DnfSwdbRpmData *)object;
-    g_free (rpmdata->buildhost);
-    g_free (rpmdata->license);
-    g_free (rpmdata->packager);
-    g_free (rpmdata->size);
-    g_free (rpmdata->sourcerpm);
-    g_free (rpmdata->url);
-    g_free (rpmdata->vendor);
-    g_free (rpmdata->committer);
-    G_OBJECT_CLASS (dnf_swdb_rpmdata_parent_class)->finalize (object);
-}
-
-// SWDB RPM data Class initialiser
-static void
-dnf_swdb_rpmdata_class_init (DnfSwdbRpmDataClass *klass)
-{
-    GObjectClass *object_class = G_OBJECT_CLASS (klass);
-    object_class->finalize = dnf_swdb_rpmdata_finalize;
-}
-
-// SWDB RPM data Object initialiser
-static void
-dnf_swdb_rpmdata_init (DnfSwdbRpmData *self)
-{
-    self->pid = 0;
-    self->buildtime = 0;
-    self->buildhost = NULL;
-    self->license = NULL;
-    self->packager = NULL;
-    self->size = NULL;
-    self->sourcerpm = NULL;
-    self->url = NULL;
-    self->vendor = NULL;
-    self->committer = NULL;
-    self->committime = 0;
-}
-
-/**
- * dnf_swdb_rpmdata_new:
- *
- * Creates a new #DnfSwdbRpmData.
- *
- * Returns: a #DnfSwdbRpmData
- **/
-DnfSwdbRpmData *
-dnf_swdb_rpmdata_new (gint pid,
-                      gint64 buildtime,
-                      const gchar *buildhost,
-                      const gchar *license,
-                      const gchar *packager,
-                      const gchar *size,
-                      const gchar *sourcerpm,
-                      const gchar *url,
-                      const gchar *vendor,
-                      const gchar *committer,
-                      gint64 committime)
-{
-    DnfSwdbRpmData *rpmdata = g_object_new (DNF_TYPE_SWDB_RPMDATA, NULL);
-    rpmdata->pid = pid;
-    rpmdata->buildtime = buildtime;
-    rpmdata->buildhost = g_strdup (buildhost);
-    rpmdata->license = g_strdup (license);
-    rpmdata->packager = g_strdup (packager);
-    rpmdata->size = g_strdup (size);
-    rpmdata->sourcerpm = g_strdup (sourcerpm);
-    rpmdata->url = g_strdup (url);
-    rpmdata->vendor = g_strdup (vendor);
-    rpmdata->committer = g_strdup (committer);
-    rpmdata->committime = committime;
-    return rpmdata;
 }
 
 /**
@@ -997,40 +920,6 @@ dnf_swdb_set_reason (DnfSwdb *self, const gchar *nevra, DnfSwdbReason reason)
     }
     gint pdid = _pdid_from_pid (self->db, pid);
     _mark_pkg_as (self->db, pdid, reason);
-    return 0;
-}
-
-/**************************** RPM DATA PERSISTOR *****************************/
-
-/**
- * dnf_swdb_add_rpm_data:
- * @self: SWDB object
- * @rpm_data: RPM data object
- *
- * Add @rpm_data to swdb
- *
- * Returns: 0 if successfull
- **/
-gint
-dnf_swdb_add_rpm_data (DnfSwdb *self, DnfSwdbRpmData *rpm_data)
-{
-    if (dnf_swdb_open (self))
-        return 1;
-    sqlite3_stmt *res;
-    const gchar *sql = INSERT_RPM_DATA;
-    DB_PREP (self->db, sql, res);
-    DB_BIND_INT (res, "@pid", rpm_data->pid);
-    DB_BIND_INT (res, "@buildtime", rpm_data->buildtime);
-    DB_BIND (res, "@buildhost", rpm_data->buildhost);
-    DB_BIND (res, "@license", rpm_data->license);
-    DB_BIND (res, "@packager", rpm_data->packager);
-    DB_BIND (res, "@size", rpm_data->size);
-    DB_BIND (res, "@sourcerpm", rpm_data->sourcerpm);
-    DB_BIND (res, "@url", rpm_data->url);
-    DB_BIND (res, "@vendor", rpm_data->vendor);
-    DB_BIND (res, "@committer", rpm_data->committer);
-    DB_BIND_INT (res, "@committime", rpm_data->committime);
-    DB_STEP (res);
     return 0;
 }
 

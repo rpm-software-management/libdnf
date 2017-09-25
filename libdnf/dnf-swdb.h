@@ -177,8 +177,6 @@ gchar          *_repo_by_pid                    (sqlite3        *db,
                                                  gint            pid);
 GArray         *dnf_swdb_select_user_installed  (DnfSwdb        *self,
                                                  GPtrArray      *nevras);
-gint            dnf_swdb_add_rpm_data           (DnfSwdb        *self,
-                                                 DnfSwdbRpmData *rpm_data);
 gint            dnf_swdb_pid_by_nevra           (DnfSwdb        *self,
                                                  const gchar    *nevra);
 void            dnf_swdb_trans_with             (DnfSwdb        *self,
