@@ -47,26 +47,24 @@ _create_db (sqlite3 *db)
  *
  * Returns: 1 if successful
  **/
-gint
+void
 _db_step (sqlite3_stmt *res)
 {
     if (sqlite3_step (res) != SQLITE_DONE) {
-        g_warning ("SQL error: Statement execution failed!\n");
         sqlite3_finalize (res);
-        return 0;
+        g_error ("SQL error: statement execution failed!");
     }
     sqlite3_finalize (res);
-    return 1; // true because of assert
 }
 
 /**
- * _db_find:
+ * _db_find_int:
  * @res: sqlite statement
  *
  * Returns: first integral result of statement @res or 0 if error occurred
  **/
 gint
-_db_find (sqlite3_stmt *res)
+_db_find_int (sqlite3_stmt *res)
 {
     if (sqlite3_step (res) == SQLITE_ROW) // id for description found
     {
@@ -121,7 +119,7 @@ _db_find_str_multi (sqlite3_stmt *res)
 }
 
 /**
- * _db_find_multi:
+ * _db_find_int_multi:
  * @res: sqlite statement
  *
  * Integral result iterator
@@ -129,7 +127,7 @@ _db_find_str_multi (sqlite3_stmt *res)
  * Returns: next integral or 0 if search hit the bottom
  **/
 gint
-_db_find_multi (sqlite3_stmt *res)
+_db_find_int_multi (sqlite3_stmt *res)
 {
     if (sqlite3_step (res) == SQLITE_ROW) // id for description found
     {
@@ -146,45 +144,34 @@ _db_find_multi (sqlite3_stmt *res)
  * @db: sqlite database handle
  * @sql: sql command in string
  * @res: target sql statement
- *
- * Returns: 1 if successful
  **/
-gint
+void
 _db_prepare (sqlite3 *db, const gchar *sql, sqlite3_stmt **res)
 {
     gint rc = sqlite3_prepare_v2 (db, sql, -1, res, NULL);
     if (rc != SQLITE_OK) {
-        g_warning ("SQL error: %s\n", sqlite3_errmsg (db));
-        g_warning ("SQL error: Prepare failed!\n");
+        g_autofree gchar *err = g_strdup (sqlite3_errmsg (db));
         sqlite3_finalize (*res);
-        return 0;
+        g_error ("SQL prepare error: %s", err);
     }
-    return 1; // true because of assert
 }
 
 /**
- * _db_bind:
+ * _db_bind_str:
  * @res: sqlite statement
  * @id: value placeholder
  * @source: new placeholder value
  *
  * Bind string to placeholder
- *
- * Returns: 1 if successful
  **/
-gint
-_db_bind (sqlite3_stmt *res, const gchar *id, const gchar *source)
+void
+_db_bind_str (sqlite3_stmt *res, const gchar *id, const gchar *source)
 {
     gint idx = sqlite3_bind_parameter_index (res, id);
     gint rc = sqlite3_bind_text (res, idx, source, -1, SQLITE_STATIC);
-
-    if (rc) // something went wrong
-    {
-        g_warning ("SQL error: Could not bind parameters(%d|%s|%s)\n", idx, id, source);
-        sqlite3_finalize (res);
-        return 0;
+    if (rc) {
+        g_error ("SQL string bind error with arguments: %d|%s|%s", idx, id, source);
     }
-    return 1; // true because of assert
 }
 
 /**
@@ -197,19 +184,14 @@ _db_bind (sqlite3_stmt *res, const gchar *id, const gchar *source)
  *
  * Returns: 1 if successful
  **/
-gint
+void
 _db_bind_int (sqlite3_stmt *res, const gchar *id, gint source)
 {
     gint idx = sqlite3_bind_parameter_index (res, id);
     gint rc = sqlite3_bind_int (res, idx, source);
-
-    if (rc) // something went wrong
-    {
-        g_warning ("SQL error: Could not bind parameters(%s|%d)\n", id, source);
-        sqlite3_finalize (res);
-        return 0;
+    if (rc) {
+        g_error ("SQL integer bind error with arguments: %d|%s|%d", idx, id, source);
     }
-    return 1; // true because of assert
 }
 
 /**
@@ -250,8 +232,8 @@ _tids_from_pdid (sqlite3 *db, gint pdid)
     sqlite3_stmt *res;
     GArray *tids = g_array_new (0, 0, sizeof (gint));
     const gchar *sql = FIND_TIDS_FROM_PDID;
-    DB_PREP (db, sql, res);
-    DB_BIND_INT (res, "@pdid", pdid);
+    _db_prepare (db, sql, &res);
+    _db_bind_int (res, "@pdid", pdid);
     gint tid = 0;
     while (sqlite3_step (res) == SQLITE_ROW) {
         tid = sqlite3_column_int (res, 0);
@@ -276,10 +258,10 @@ _all_pdid_for_pid (sqlite3 *db, gint pid)
     GArray *pdids = g_array_new (0, 0, sizeof (gint));
     sqlite3_stmt *res;
     const gchar *sql = FIND_ALL_PDID_FOR_PID;
-    DB_PREP (db, sql, res);
-    DB_BIND_INT (res, "@pid", pid);
+    _db_prepare (db, sql, &res);
+    _db_bind_int (res, "@pid", pid);
     gint pdid;
-    while ((pdid = DB_FIND_MULTI (res))) {
+    while ((pdid = _db_find_int_multi (res))) {
         g_array_append_val (pdids, pdid);
     }
     return pdids;
@@ -300,11 +282,11 @@ _simple_search (sqlite3 *db, const gchar *pattern)
     GArray *tids = g_array_new (0, 0, sizeof (gint));
     sqlite3_stmt *res_simple;
     const gchar *sql_simple = SIMPLE_SEARCH;
-    DB_PREP (db, sql_simple, res_simple);
-    DB_BIND (res_simple, "@pat", pattern);
+    _db_prepare (db, sql_simple, &res_simple);
+    _db_bind_str (res_simple, "@pat", pattern);
     gint pid_simple;
     GArray *simple = g_array_new (0, 0, sizeof (gint));
-    while ((pid_simple = DB_FIND_MULTI (res_simple))) {
+    while ((pid_simple = _db_find_int_multi (res_simple))) {
         g_array_append_val (simple, pid_simple);
     }
     gint pdid;
@@ -344,14 +326,13 @@ _extended_search (sqlite3 *db, const gchar *pattern)
     GArray *tids = g_array_new (0, 0, sizeof (gint));
     sqlite3_stmt *res;
     const gchar *sql = SEARCH_PATTERN;
-    DB_PREP (db, sql, res);
-    // lot of patterns...
-    DB_BIND (res, "@pat", pattern);
-    DB_BIND (res, "@pat", pattern);
-    DB_BIND (res, "@pat", pattern);
-    DB_BIND (res, "@pat", pattern);
-    DB_BIND (res, "@pat", pattern);
-    DB_BIND (res, "@pat", pattern);
+    _db_prepare (db, sql, &res);
+    _db_bind_str (res, "@pat", pattern);
+    _db_bind_str (res, "@pat", pattern);
+    _db_bind_str (res, "@pat", pattern);
+    _db_bind_str (res, "@pat", pattern);
+    _db_bind_str (res, "@pat", pattern);
+    _db_bind_str (res, "@pat", pattern);
     GArray *pids = g_array_new (0, 0, sizeof (gint));
     gint pid;
     while (sqlite3_step (res) == SQLITE_ROW) {
@@ -390,12 +371,12 @@ _load_output (sqlite3 *db, gint tid, gint type)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_OUTPUT;
-    DB_PREP (db, sql, res);
-    DB_BIND_INT (res, "@tid", tid);
-    DB_BIND_INT (res, "@type", type);
+    _db_prepare (db, sql, &res);
+    _db_bind_int (res, "@tid", tid);
+    _db_bind_int (res, "@type", type);
     GPtrArray *l = g_ptr_array_new ();
     gchar *row;
-    while ((row = (gchar *)DB_FIND_STR_MULTI (res))) {
+    while ((row = _db_find_str_multi (res))) {
         g_ptr_array_add (l, row);
     }
     return l;
@@ -413,11 +394,11 @@ _output_insert (sqlite3 *db, gint tid, const gchar *msg, gint type)
 {
     sqlite3_stmt *res;
     const gchar *sql = I_OUTPUT;
-    DB_PREP (db, sql, res);
-    DB_BIND_INT (res, "@tid", tid);
-    DB_BIND (res, "@msg", msg);
-    DB_BIND_INT (res, "@type", type);
-    DB_STEP (res);
+    _db_prepare (db, sql, &res);
+    _db_bind_int (res, "@tid", tid);
+    _db_bind_str (res, "@msg", msg);
+    _db_bind_int (res, "@type", type);
+    _db_step (res);
 }
 
 /**

@@ -152,15 +152,15 @@ _insert_id_name (sqlite3 *db, const gchar *table, gint id, const gchar *name)
     sqlite3_stmt *res;
     g_autofree gchar *sql = g_strjoin (" ", "insert into", table, "values(null, @id, @name)", NULL);
 
-    DB_PREP (db, sql, res);
+    _db_prepare (db, sql, &res);
 
     // entity id
-    DB_BIND_INT (res, "@id", id);
+    _db_bind_int (res, "@id", id);
 
     // package name
-    DB_BIND (res, "@name", name);
+    _db_bind_str (res, "@name", name);
 
-    DB_STEP (res);
+    _db_step (res);
     return 0;
 }
 
@@ -216,8 +216,8 @@ _env_installed (sqlite3 *db, DnfSwdbEnv *env)
         return;
     sqlite3_stmt *res;
     const gchar *sql = S_installed_BY_EID;
-    DB_PREP (db, sql, res);
-    DB_BIND_INT (res, "@eid", env->eid);
+    _db_prepare (db, sql, &res);
+    _db_bind_int (res, "@eid", env->eid);
     env->installed = sqlite3_step (res) == SQLITE_ROW;
     sqlite3_finalize (res);
 }
@@ -296,9 +296,9 @@ _group_id_to_gid (sqlite3 *db, const gchar *group_id)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_GID_BY_NAME_ID;
-    DB_PREP (db, sql, res);
-    DB_BIND (res, "@id", group_id);
-    return DB_FIND (res);
+    _db_prepare (db, sql, &res);
+    _db_bind_str (res, "@id", group_id);
+    return _db_find_int (res);
 }
 
 /**
@@ -331,10 +331,10 @@ dnf_swdb_env_add_group (DnfSwdbEnv *env, GPtrArray *groups)
         if (!gid)
             continue;
         sqlite3_stmt *res;
-        DB_PREP (env->swdb->db, sql, res);
-        DB_BIND_INT (res, "@eid", env->eid);
-        DB_BIND_INT (res, "@gid", gid);
-        DB_STEP (res);
+        _db_prepare (env->swdb->db, sql, &res);
+        _db_bind_int (res, "@eid", env->eid);
+        _db_bind_int (res, "@gid", gid);
+        _db_step (res);
     }
     return 0;
 }
@@ -351,13 +351,13 @@ _add_group (sqlite3 *db, DnfSwdbGroup *group)
 {
     sqlite3_stmt *res;
     const gchar *sql = I_GROUP;
-    DB_PREP (db, sql, res);
-    DB_BIND (res, "@name_id", group->name_id);
-    DB_BIND (res, "@name", group->name);
-    DB_BIND (res, "@ui_name", group->ui_name);
-    DB_BIND_INT (res, "@installed", group->installed);
-    DB_BIND_INT (res, "@pkg_types", group->pkg_types);
-    DB_STEP (res);
+    _db_prepare (db, sql, &res);
+    _db_bind_str (res, "@name_id", group->name_id);
+    _db_bind_str (res, "@name", group->name);
+    _db_bind_str (res, "@ui_name", group->ui_name);
+    _db_bind_int (res, "@installed", group->installed);
+    _db_bind_int (res, "@pkg_types", group->pkg_types);
+    _db_step (res);
     group->gid = sqlite3_last_insert_rowid (db);
 }
 
@@ -397,13 +397,13 @@ _update_env (sqlite3 *db, DnfSwdbEnv *env)
 {
     sqlite3_stmt *res;
     const gchar *sql = U_ENV;
-    DB_PREP (db, sql, res);
-    DB_BIND (res, "@name", env->name);
-    DB_BIND (res, "@ui_name", env->ui_name);
-    DB_BIND_INT (res, "@pkg_types", env->pkg_types);
-    DB_BIND_INT (res, "@grp_types", env->grp_types);
-    DB_BIND_INT (res, "@eid", env->eid);
-    DB_STEP (res);
+    _db_prepare (db, sql, &res);
+    _db_bind_str (res, "@name", env->name);
+    _db_bind_str (res, "@ui_name", env->ui_name);
+    _db_bind_int (res, "@pkg_types", env->pkg_types);
+    _db_bind_int (res, "@grp_types", env->grp_types);
+    _db_bind_int (res, "@eid", env->eid);
+    _db_step (res);
 }
 
 /**
@@ -418,13 +418,13 @@ _add_env (sqlite3 *db, DnfSwdbEnv *env)
 {
     sqlite3_stmt *res;
     const gchar *sql = I_ENV;
-    DB_PREP (db, sql, res);
-    DB_BIND (res, "@name_id", env->name_id);
-    DB_BIND (res, "@name", env->name);
-    DB_BIND (res, "@ui_name", env->ui_name);
-    DB_BIND_INT (res, "@pkg_types", env->pkg_types);
-    DB_BIND_INT (res, "@grp_types", env->grp_types);
-    DB_STEP (res);
+    _db_prepare (db, sql, &res);
+    _db_bind_str (res, "@name_id", env->name_id);
+    _db_bind_str (res, "@name", env->name);
+    _db_bind_str (res, "@ui_name", env->ui_name);
+    _db_bind_int (res, "@pkg_types", env->pkg_types);
+    _db_bind_int (res, "@grp_types", env->grp_types);
+    _db_step (res);
     env->eid = sqlite3_last_insert_rowid (db);
 }
 
@@ -466,8 +466,8 @@ _get_group (sqlite3 *db, const gchar *name_id)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_GROUP_BY_NAME_ID;
-    DB_PREP (db, sql, res);
-    DB_BIND (res, "@id", name_id);
+    _db_prepare (db, sql, &res);
+    _db_bind_str (res, "@id", name_id);
     if (sqlite3_step (res) == SQLITE_ROW) {
         DnfSwdbGroup *group = dnf_swdb_group_new (name_id,                               // name_id
                                                   (gchar *)sqlite3_column_text (res, 2), // name
@@ -518,8 +518,8 @@ _get_env (sqlite3 *db, const gchar *name_id)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_ENV_BY_NAME_ID;
-    DB_PREP (db, sql, res);
-    DB_BIND (res, "@id", name_id);
+    _db_prepare (db, sql, &res);
+    _db_bind_str (res, "@id", name_id);
     if (sqlite3_step (res) == SQLITE_ROW) {
         DnfSwdbEnv *env = dnf_swdb_env_new (name_id,                               // name_id
                                             (gchar *)sqlite3_column_text (res, 2), // name
@@ -574,10 +574,10 @@ dnf_swdb_groups_by_pattern (DnfSwdb *self, const gchar *pattern)
     GPtrArray *node = g_ptr_array_new ();
     sqlite3_stmt *res;
     const gchar *sql = S_GROUPS_BY_PATTERN;
-    DB_PREP (self->db, sql, res);
-    DB_BIND (res, "@pat", pattern);
-    DB_BIND (res, "@pat", pattern);
-    DB_BIND (res, "@pat", pattern);
+    _db_prepare (self->db, sql, &res);
+    _db_bind_str (res, "@pat", pattern);
+    _db_bind_str (res, "@pat", pattern);
+    _db_bind_str (res, "@pat", pattern);
     while (sqlite3_step (res) == SQLITE_ROW) {
         DnfSwdbGroup *group =
           dnf_swdb_group_new ((const gchar *)sqlite3_column_text (res, 1), // name_id
@@ -611,10 +611,10 @@ dnf_swdb_env_by_pattern (DnfSwdb *self, const gchar *pattern)
     GPtrArray *node = g_ptr_array_new ();
     sqlite3_stmt *res;
     const gchar *sql = S_ENV_BY_PATTERN;
-    DB_PREP (self->db, sql, res);
-    DB_BIND (res, "@pat", pattern);
-    DB_BIND (res, "@pat", pattern);
-    DB_BIND (res, "@pat", pattern);
+    _db_prepare (self->db, sql, &res);
+    _db_bind_str (res, "@pat", pattern);
+    _db_bind_str (res, "@pat", pattern);
+    _db_bind_str (res, "@pat", pattern);
     while (sqlite3_step (res) == SQLITE_ROW) {
         DnfSwdbEnv *env = dnf_swdb_env_new ((const gchar *)sqlite3_column_text (res, 1), // name_id
                                             (gchar *)sqlite3_column_text (res, 2),       // name
@@ -668,8 +668,8 @@ _get_data_list (sqlite3 *db, int gid, const gchar *table)
 {
     sqlite3_stmt *res;
     g_autofree gchar *sql = g_strjoin (" ", "SELECT name FROM", table, "where G_ID=@gid", NULL);
-    DB_PREP (db, sql, res);
-    DB_BIND_INT (res, "@gid", gid);
+    _db_prepare (db, sql, &res);
+    _db_bind_int (res, "@gid", gid);
     GPtrArray *node = _get_list_from_table (res);
     return node;
 }
@@ -730,9 +730,9 @@ dnf_swdb_group_update_full_list (DnfSwdbGroup *group, GPtrArray *full_list)
         return 1;
     sqlite3_stmt *res;
     const gchar *sql = R_FULL_LIST_BY_ID;
-    DB_PREP (group->swdb->db, sql, res);
-    DB_BIND_INT (res, "@gid", group->gid);
-    DB_STEP (res);
+    _db_prepare (group->swdb->db, sql, &res);
+    _db_bind_int (res, "@gid", group->gid);
+    _db_step (res);
     _insert_group_additional (group->swdb->db, group->gid, full_list, "GROUPS_PACKAGE");
     return 0;
 }
@@ -749,13 +749,13 @@ _update_group (sqlite3 *db, DnfSwdbGroup *group)
 {
     sqlite3_stmt *res;
     const gchar *sql = U_GROUP;
-    DB_PREP (db, sql, res);
-    DB_BIND (res, "@name", group->name);
-    DB_BIND (res, "@ui_name", group->ui_name);
-    DB_BIND_INT (res, "@installed", group->installed);
-    DB_BIND_INT (res, "@pkg_types", group->pkg_types);
-    DB_BIND_INT (res, "@gid", group->gid);
-    DB_STEP (res);
+    _db_prepare (db, sql, &res);
+    _db_bind_str (res, "@name", group->name);
+    _db_bind_str (res, "@ui_name", group->ui_name);
+    _db_bind_int (res, "@installed", group->installed);
+    _db_bind_int (res, "@pkg_types", group->pkg_types);
+    _db_bind_int (res, "@gid", group->gid);
+    _db_step (res);
 }
 
 /**
@@ -793,8 +793,8 @@ _env_get_group_list (sqlite3 *db, gint eid)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_GROUP_NAME_ID_BY_EID;
-    DB_PREP (db, sql, res);
-    DB_BIND_INT (res, "@eid", eid);
+    _db_prepare (db, sql, &res);
+    _db_bind_int (res, "@eid", eid);
     return _get_list_from_table (res);
 }
 
@@ -829,8 +829,8 @@ _env_get_exclude (sqlite3 *db, int eid)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_ENV_EXCLUDE_BY_ID;
-    DB_PREP (db, sql, res);
-    DB_BIND_INT (res, "@eid", eid);
+    _db_prepare (db, sql, &res);
+    _db_bind_int (res, "@eid", eid);
     return _get_list_from_table (res);
 }
 
@@ -871,9 +871,9 @@ dnf_swdb_groups_commit (DnfSwdb *self, GPtrArray *groups)
     for (guint i = 0; i < groups->len; ++i) {
         DnfSwdbGroup *group = (DnfSwdbGroup *)g_ptr_array_index (groups, i);
         sqlite3_stmt *res;
-        DB_PREP (self->db, sql, res);
-        DB_BIND (res, "@id", group->name_id);
-        DB_STEP (res);
+        _db_prepare (self->db, sql, &res);
+        _db_bind_str (res, "@id", group->name_id);
+        _db_step (res);
     }
     return 0;
 }
@@ -892,15 +892,15 @@ _log_group_trans (sqlite3 *db, gint tid, GPtrArray *groups, gboolean installed)
     for (guint i = 0; i < groups->len; ++i) {
         sqlite3_stmt *res;
         DnfSwdbGroup *group = g_ptr_array_index (groups, i);
-        DB_PREP (db, sql, res);
-        DB_BIND_INT (res, "@tid", tid);
-        DB_BIND_INT (res, "@gid", group->gid);
-        DB_BIND (res, "@name_id", group->name_id);
-        DB_BIND (res, "@name", group->name);
-        DB_BIND (res, "@ui_name", group->ui_name);
-        DB_BIND_INT (res, "@installed", installed);
-        DB_BIND_INT (res, "@pkg_types", group->pkg_types);
-        DB_STEP (res);
+        _db_prepare (db, sql, &res);
+        _db_bind_int (res, "@tid", tid);
+        _db_bind_int (res, "@gid", group->gid);
+        _db_bind_str (res, "@name_id", group->name_id);
+        _db_bind_str (res, "@name", group->name);
+        _db_bind_str (res, "@ui_name", group->ui_name);
+        _db_bind_int (res, "@installed", installed);
+        _db_bind_int (res, "@pkg_types", group->pkg_types);
+        _db_step (res);
     }
 }
 
@@ -946,15 +946,15 @@ dnf_swdb_removable_pkg (DnfSwdb *self, const gchar *pkg_name)
 
     sqlite3_stmt *res;
     const gchar *sql = S_REM_REASON;
-    DB_PREP (self->db, sql, res);
-    DB_BIND (res, "@name", pkg_name);
-    gint reason = DB_FIND (res);
+    _db_prepare (self->db, sql, &res);
+    _db_bind_str (res, "@name", pkg_name);
+    gint reason = _db_find_int (res);
     if (reason != DNF_SWDB_REASON_GROUP) {
         removable = FALSE;
     } else {
         sql = S_REM;
-        DB_PREP (self->db, sql, res);
-        DB_BIND (res, "@name", pkg_name);
+        _db_prepare (self->db, sql, &res);
+        _db_bind_str (res, "@name", pkg_name);
         gint count = 0;
         while (sqlite3_step (res) == SQLITE_ROW && count < 2) {
             count++;

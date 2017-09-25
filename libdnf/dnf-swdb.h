@@ -25,15 +25,6 @@
 
 #define DNF_SWDB_DEFAULT_PATH           "/var/lib/dnf/history/swdb.sqlite"
 
-#define DB_PREP(db, sql, res)           g_assert(_db_prepare(db, sql, &res))
-#define DB_BIND(res, id, source)        g_assert(_db_bind(res, id, source))
-#define DB_BIND_INT(res, id, source)    g_assert(_db_bind_int(res, id, source))
-#define DB_STEP(res)                    g_assert(_db_step(res))
-#define DB_FIND(res)                    _db_find(res)
-#define DB_FIND_MULTI(res)              _db_find_multi(res)
-#define DB_FIND_STR(res)                _db_find_str(res)
-#define DB_FIND_STR_MULTI(res)          _db_find_str_multi(res)
-
 #include <glib-object.h>
 #include <glib.h>
 #include <sqlite3.h>

@@ -669,8 +669,8 @@ dnf_swdb_trans_data (DnfSwdbTrans *self)
     sqlite3_stmt *res;
     const gchar *sql = S_TRANS_DATA_BY_TID;
 
-    DB_PREP (db, sql, res);
-    DB_BIND_INT (res, "@tid", self->tid);
+    _db_prepare (db, sql, &res);
+    _db_bind_int (res, "@tid", self->tid);
 
     while (sqlite3_step (res) == SQLITE_ROW) {
         g_autofree gchar *tmp_state = _get_description (db,
@@ -712,12 +712,12 @@ dnf_swdb_trans_performed_with (DnfSwdbTrans *self)
     // fetch pids
     sqlite3_stmt *res;
     const gchar *sql = S_TRANS_WITH;
-    DB_PREP (swdb->db, sql, res);
-    DB_BIND_INT (res, "@tid", self->tid);
+    _db_prepare (swdb->db, sql, &res);
+    _db_bind_int (res, "@tid", self->tid);
 
     gint pid;
     GArray *pids = g_array_new (0, 0, sizeof (gint));
-    while ((pid = DB_FIND_MULTI (res))) {
+    while ((pid = _db_find_int_multi (res))) {
         g_array_append_val (pids, pid);
     }
 
