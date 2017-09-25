@@ -46,7 +46,7 @@
     "   r_id INTEGER PRIMARY KEY," \
     "   name TEXT NOT NULL," \
     "   last_synced INTEGER," \
-    "   is_expired INTEGER);" \
+    "   is_expired INTEGER NOT NULL);" \
     "CREATE TABLE package(" \
     "   p_id INTEGER PRIMARY KEY," \
     "   name TEXT NOT NULL," \

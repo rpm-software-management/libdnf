@@ -34,7 +34,7 @@
 #define INSERT_TRANS_END \
     "UPDATE TRANS SET end_timestamp=@end,end_RPMDB_version=@rpmdbv, return_code=@rc WHERE " \
     "T_ID=@tid"
-#define INSERT_REPO "insert into REPO values(null,@name,null,null)"
+#define INSERT_REPO "insert into REPO values(null,@name,null,0)"
 
 #define UPDATE_PKG_DATA \
     "UPDATE PACKAGE_DATA SET R_ID=@rid,from_repo_revision=@repo_r,from_repo_timestamp=@repo_t," \

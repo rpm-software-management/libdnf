@@ -154,8 +154,8 @@ dnf_swdb_pkg_ui_from_repo (DnfSwdbPkg *self)
     sqlite3_stmt *res;
     const gchar *sql = S_REPO_FROM_PID;
     gint pdid = 0;
-    DB_PREP (self->swdb->db, sql, res);
-    DB_BIND_INT (res, "@pid", self->pid);
+    _db_prepare (self->swdb->db, sql, &res);
+    _db_bind_int (res, "@pid", self->pid);
     g_autofree gchar *r_name = NULL;
     if (sqlite3_step (res) == SQLITE_ROW) {
         r_name = g_strdup ((const gchar *)sqlite3_column_text (res, 0));
@@ -167,8 +167,8 @@ dnf_swdb_pkg_ui_from_repo (DnfSwdbPkg *self)
     if (pdid && self->swdb->releasever) {
         g_autofree gchar *cur_releasever = NULL;
         sql = S_RELEASEVER_FROM_PDID;
-        DB_PREP (self->swdb->db, sql, res);
-        DB_BIND_INT (res, "@pdid", pdid);
+        _db_prepare (self->swdb->db, sql, &res);
+        _db_bind_int (res, "@pdid", pdid);
         if (sqlite3_step (res) == SQLITE_ROW) {
             cur_releasever = g_strdup ((const gchar *)sqlite3_column_text (res, 0));
         }

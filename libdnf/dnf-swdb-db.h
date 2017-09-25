@@ -29,18 +29,18 @@
 #include "dnf-swdb.h"
 
 gint            _create_db          (sqlite3        *db);
-gint            _db_step            (sqlite3_stmt   *res);
-gint            _db_find            (sqlite3_stmt   *res);
+void            _db_step            (sqlite3_stmt   *res);
+gint            _db_find_int        (sqlite3_stmt   *res);
 gchar          *_db_find_str        (sqlite3_stmt   *res);
 gchar          *_db_find_str_multi  (sqlite3_stmt   *res);
-gint            _db_find_multi      (sqlite3_stmt   *res);
-gint            _db_prepare         (sqlite3        *db,
+gint            _db_find_int_multi  (sqlite3_stmt   *res);
+void            _db_prepare         (sqlite3        *db,
                                      const gchar    *sql,
                                      sqlite3_stmt  **res);
-gint            _db_bind            (sqlite3_stmt   *res,
+void            _db_bind_str        (sqlite3_stmt   *res,
                                      const gchar    *id,
                                      const gchar    *source);
-gint            _db_bind_int        (sqlite3_stmt   *res,
+void            _db_bind_int        (sqlite3_stmt   *res,
                                      const gchar    *id,
                                      gint            source);
 gint            _db_exec            (sqlite3        *db,
