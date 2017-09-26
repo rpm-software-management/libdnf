@@ -27,7 +27,7 @@
 gchar           *dnf_realpath                       (const gchar            *path);
 gboolean         dnf_remove_recursive               (const gchar            *directory,
                                                      GError                 **error);
-gboolean         dnf_file_cleanup                   (const gchar            *src_path,
+gboolean         dnf_ensure_file_unlinked           (const gchar            *src_path,
                                                      GError                 **error);
 gboolean         dnf_delete_files_matching          (const gchar            *directory_path,
                                                      const char* const      *patterns,

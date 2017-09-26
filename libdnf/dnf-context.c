@@ -2026,6 +2026,8 @@ dnf_context_invalidate(DnfContext *context, const gchar *message)
  *
  * Note: when DNF_CONTEXT_CLEAN_ALL flag is seen, the other flags will be ignored
  *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
  * Since: 0.9.4
  **/
 gboolean
@@ -2076,9 +2078,8 @@ dnf_context_clean_cache(DnfContext *context,
     if (flags & DNF_CONTEXT_CLEAN_EXPIRE_CACHE)
         g_ptr_array_add(suffix_list, (char*) "repomd.xml");
 
-    /* Add a NULL terminator and converts array to string list */
+    /* Add a NULL terminator for future looping */
     g_ptr_array_add(suffix_list, NULL);
-    g_autofree gchar** suffix_string_list = (gchar **)g_ptr_array_free(g_steal_pointer(&suffix_list), FALSE);
 
     /* We then start looping all of the repos to perform file deletion */
     for (guint counter = 0; counter < priv->repos->len; counter++) {
@@ -2090,7 +2091,7 @@ dnf_context_clean_cache(DnfContext *context,
         if (deleteable_repo &&
             g_file_test(directory_location, G_FILE_TEST_EXISTS)) {
             ret = dnf_delete_files_matching(directory_location,
-                                            (const char* const*) suffix_string_list,
+                                            (const char* const*) suffix_list->pdata,
                                             error);
             if(!ret)
                 goto out;
