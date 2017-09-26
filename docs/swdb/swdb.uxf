@@ -36,14 +36,12 @@ halign=center
       <x>400</x>
       <y>50</y>
       <w>180</w>
-      <h>100</h>
+      <h>70</h>
     </coordinates>
     <panel_attributes>REPO
 --
 R_ID
 name
-last_synced
-is_expired
 
 
 bg=white
@@ -55,13 +53,13 @@ halign=center
     <id>Relation</id>
     <coordinates>
       <x>480</x>
-      <y>140</y>
+      <y>110</y>
       <w>30</w>
-      <h>110</h>
+      <h>140</h>
     </coordinates>
     <panel_attributes>m1=*
 </panel_attributes>
-    <additional_attributes>10.0;90.0;10.0;10.0</additional_attributes>
+    <additional_attributes>10.0;120.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLNote</id>

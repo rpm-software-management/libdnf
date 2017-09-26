@@ -44,9 +44,7 @@
 #define CREATE_TABLES \
     "CREATE TABLE repo(" \
     "   r_id INTEGER PRIMARY KEY," \
-    "   name TEXT NOT NULL," \
-    "   last_synced INTEGER," \
-    "   is_expired INTEGER NOT NULL);" \
+    "   name TEXT NOT NULL);" \
     "CREATE TABLE package(" \
     "   p_id INTEGER PRIMARY KEY," \
     "   name TEXT NOT NULL," \
