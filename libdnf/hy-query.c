@@ -196,6 +196,10 @@ valid_filter_str(int keyname, int cmp_type)
     case HY_PKG_LOCATION:
     case HY_PKG_SOURCERPM:
         return cmp_type == HY_EQ;
+    case HY_PKG_ARCH:
+        return cmp_type & HY_EQ || cmp_type & HY_GLOB;
+    case HY_PKG_NAME:
+        return cmp_type & HY_EQ || cmp_type & HY_GLOB || cmp_type & HY_SUBSTR;
     default:
         return 1;
     }
@@ -332,6 +336,65 @@ filter_all(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
+filter_name(HyQuery q, const struct _Filter *f, Map *m)
+{
+    Pool *pool = dnf_sack_get_pool(q->sack);
+    Id match_name_id = 0;
+    for (int mi = 0; mi < f->nmatches; ++mi) {
+        const char *match = f->matches[mi].str;
+        if ((f->cmp_type & HY_EQ) && !(f->cmp_type & HY_ICASE)) {
+            match_name_id = pool_str2id(pool, match, 0);
+            if (match_name_id == 0)
+                continue;
+        }
+
+        for (Id id = 1; id < pool->nsolvables; ++id) {
+            if (!MAPTST(q->result, id))
+                continue;
+
+            Solvable *s = pool_id2solvable(pool, id);
+
+            if (f->cmp_type & HY_ICASE) {
+                const char *name = pool_id2str(pool, s->name);
+                if (f->cmp_type & HY_SUBSTR) {
+                    if (strcasestr(name, match) != NULL)
+                        MAPSET(m, id);
+                    continue;
+                }
+                if (f->cmp_type & HY_EQ) {
+                    if (strcasecmp(name, match) == 0)
+                        MAPSET(m, id);
+                    continue;
+                }
+                if (f->cmp_type & HY_GLOB) {
+                    if (fnmatch(match, name, FNM_CASEFOLD) == 0)
+                        MAPSET(m, id);
+                    continue;
+                }
+                continue;
+            }
+
+            if (f->cmp_type & HY_EQ) {
+                if (match_name_id == s->name)
+                     MAPSET(m, id);
+                continue;
+            }
+            const char *name = pool_id2str(pool, s->name);
+            if (f->cmp_type & HY_GLOB) {
+                if (fnmatch(match, name, 0) == 0)
+                    MAPSET(m, id);
+                continue;
+            }
+            if (f->cmp_type & HY_SUBSTR) {
+                if (strstr(name, match) != NULL)
+                    MAPSET(m, id);
+                continue;
+            }
+        }
+    }
+}
+
+static void
 filter_epoch(HyQuery q, struct _Filter *f, Map *m)
 {
     Pool *pool = dnf_sack_get_pool(q->sack);
@@ -439,7 +502,7 @@ filter_release(HyQuery q, struct _Filter *f, Map *m)
 
             pool_split_evr(pool, evr, &e, &v, &r);
 
-            if (cmp_type == HY_GLOB) {
+            if (cmp_type & HY_GLOB) {
                 if (fnmatch(match, r, 0))
                     continue;
                 MAPSET(m, id);
@@ -455,6 +518,38 @@ filter_release(HyQuery q, struct _Filter *f, Map *m)
                 MAPSET(m, id);
         }
         g_free(filter_vr);
+    }
+}
+
+static void
+filter_arch(HyQuery q, const struct _Filter *f, Map *m)
+{
+    Pool *pool = dnf_sack_get_pool(q->sack);
+    Id match_arch_id = 0;
+    for (int mi = 0; mi < f->nmatches; ++mi) {
+        const char *match = f->matches[mi].str;
+        if (f->cmp_type & HY_EQ) {
+            match_arch_id = pool_str2id(pool, match, 0);
+            if (match_arch_id == 0)
+                continue;
+        }
+
+        for (Id id = 1; id < pool->nsolvables; ++id) {
+            if (!MAPTST(q->result, id))
+                continue;
+            Solvable *s = pool_id2solvable(pool, id);
+            if (f->cmp_type & HY_EQ) {
+                if (match_arch_id == s->arch)
+                     MAPSET(m, id);
+                continue;
+            }
+            const char *arch = pool_id2str(pool, s->arch);
+            if (f->cmp_type & HY_GLOB) {
+                if (fnmatch(match, arch, 0) == 0)
+                    MAPSET(m, id);
+                continue;
+            }
+        }
     }
 }
 
@@ -929,6 +1024,9 @@ hy_query_apply(HyQuery q)
         case HY_PKG_CONFLICTS:
             filter_rco_reldep(q, f, &m);
             break;
+        case HY_PKG_NAME:
+            filter_name(q, f, &m);
+            break;
         case HY_PKG_EPOCH:
             filter_epoch(q, f, &m);
             break;
@@ -943,6 +1041,9 @@ hy_query_apply(HyQuery q)
             break;
         case HY_PKG_RELEASE:
             filter_release(q, f, &m);
+            break;
+        case HY_PKG_ARCH:
+            filter_arch(q, f, &m);
             break;
         case HY_PKG_SOURCERPM:
             filter_sourcerpm(q, f, &m);
@@ -1095,8 +1196,8 @@ hy_query_clone(HyQuery q)
 int
 hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
 {
-    if (cmp_type == HY_GLOB && !hy_is_glob_pattern(match))
-        cmp_type = HY_EQ;
+    if ((cmp_type & HY_GLOB) && !hy_is_glob_pattern(match))
+        cmp_type = (cmp_type & ~HY_GLOB) | HY_EQ;
 
     if (!valid_filter_str(keyname, cmp_type))
         return DNF_ERROR_BAD_QUERY;
