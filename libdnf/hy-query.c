@@ -361,15 +361,17 @@ filter_dataiterator(HyQuery q, struct _Filter *f, Map *m)
     int flags = type2flags(f->cmp_type, f->keyname);
 
     assert(f->match_type == _HY_STR);
-    /* do an OR over all matches: */
-    for (int i = 0; i < f->nmatches; ++i) {
-        dataiterator_init(&di, pool, 0, 0,
-                          keyname,
-                          f->matches[i].str,
-                          flags);
-        while (dataiterator_step(&di))
-            MAPSET(m, di.solvid);
-        dataiterator_free(&di);
+
+    for (int mi = 0; mi < f->nmatches; ++mi) {
+        const char *match = f->matches[mi].str;
+        for (Id id = 1; id < pool->nsolvables; ++id) {
+            if (!MAPTST(q->result, id))
+                continue;
+            dataiterator_init(&di, pool, 0, id, keyname, match, flags);
+            while (dataiterator_step(&di))
+                MAPSET(m, di.solvid);
+            dataiterator_free(&di);
+        }
     }
 }
 
