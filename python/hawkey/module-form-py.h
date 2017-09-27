@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2013 Red Hat, Inc.
+ * Copyright (C) 2017 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * version 2.1 of the License, or (at your option) any later version.`
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,21 +18,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "hy-types.h"
+#ifndef LIBDNF_MODULE_FORM_PY_H
+#define LIBDNF_MODULE_FORM_PY_H
 
-#ifndef HY_SUBJECT_INTERNAL_H
-#define HY_SUBJECT_INTERNAL_H
+#include "hy-module-form.h"
 
-enum poss_type {
-    TYPE_MODULE_FORM,
-    TYPE_NEVRA,
-    TYPE_RELDEP_NEW,
-    TYPE_RELDEP_END
-};
+extern PyTypeObject module_form_Type;
 
-extern const char *nevra_form_regex[];
+HyModuleForm moduleFormFromPyObject(PyObject *o);
+PyObject *moduleFormToPyObject(HyModuleForm module_form);
+int module_form_converter(PyObject *o, HyModuleForm *module_form_ptr);
 
-int nevra_possibility(char *nevra_str, int re, HyNevra nevra);
-int module_form_possibility(char *module_form_str, int re, HyModuleForm module_form);
-
-#endif
+#endif //LIBDNF_MODULE_FORM_PY_H

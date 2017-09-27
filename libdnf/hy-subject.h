@@ -26,6 +26,7 @@
 #include "dnf-types.h"
 #include "hy-types.h"
 #include "hy-nevra.h"
+#include "hy-module-form.h"
 
 #include <glib.h>
 
@@ -44,16 +45,42 @@ enum _HyForm {
     _HY_FORM_STOP_ = -1
 };
 
+#ifdef __cplusplus
+enum _HyModuleFormEnum :short {
+#else
+enum _HyModuleFormEnum {
+#endif
+    HY_MODULE_FORM_NSVCAP = 1,
+    HY_MODULE_FORM_NSVCA = 2,
+    HY_MODULE_FORM_NSVAP = 3,
+    HY_MODULE_FORM_NSVA = 4,
+    HY_MODULE_FORM_NSAP = 5,
+    HY_MODULE_FORM_NSA = 6,
+    HY_MODULE_FORM_NSVCP = 7,
+    HY_MODULE_FORM_NSVP = 8,
+    HY_MODULE_FORM_NSVC = 9,
+    HY_MODULE_FORM_NSV = 10,
+    HY_MODULE_FORM_NSP = 11,
+    HY_MODULE_FORM_NS = 12,
+    HY_MODULE_FORM_NAP = 13,
+    HY_MODULE_FORM_NA = 14,
+    HY_MODULE_FORM_NP = 15,
+    HY_MODULE_FORM_N = 16,
+    _HY_MODULE_FORM_STOP_ = -1
+};
+
 struct _HyPossibilities {
     HySubject subject;
     DnfSack *sack;
     int flags;
     HyForm *forms;
+    HyModuleFormEnum *module_forms;
     int current;
     int type;
 };
 
 extern const HyForm HY_FORMS_MOST_SPEC[];
+extern const HyModuleFormEnum HY_MODULE_FORMS_MOST_SPEC[];
 
 HySubject hy_subject_create(const char * pattern);
 void hy_subject_free(HySubject subject);
@@ -65,7 +92,11 @@ HyPossibilities hy_subject_nevra_possibilities(HySubject subject,
     HyForm *forms);
 HyPossibilities hy_subject_nevra_possibilities_real(HySubject subject,
     HyForm *forms, DnfSack *sack, int flags);
+HyPossibilities hy_subject_module_form_possibilities(HySubject subject,
+                                                     HyModuleFormEnum *forms);
 int hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra);
+int hy_possibilities_next_module_form(HyPossibilities iter, HyModuleForm *out_module_form);
+
 HyQuery hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms,
                                      HyNevra *nevra, gboolean icase, gboolean with_nevra,
                                      gboolean with_provides, gboolean with_filenames);

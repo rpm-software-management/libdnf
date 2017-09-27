@@ -25,6 +25,7 @@
 
 // pyhawkey
 #include "nevra-py.h"
+#include "module-form-py.h"
 #include "possibilities-py.h"
 #include "pycomp.h"
 #include "reldep-py.h"
@@ -75,6 +76,10 @@ static PyObject* possibilities_next(_PossibilitiesObject *self)
         HyNevra nevra;
         if (hy_possibilities_next_nevra(iter, &nevra) == 0)
             return nevraToPyObject(nevra);
+    } else if (iter->type == TYPE_MODULE_FORM) {
+        HyModuleForm module_form;
+        if (hy_possibilities_next_module_form(iter, &module_form) == 0)
+            return moduleFormToPyObject(module_form);
     } else {
         DnfReldep *reldep;
         if (hy_possibilities_next_reldep(iter, &reldep) == 0)
