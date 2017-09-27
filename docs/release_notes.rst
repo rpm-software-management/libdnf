@@ -16,8 +16,23 @@
   Red Hat, Inc.
 
 ###################
- DNF Release Notes
+ LIBDNF Release Notes
 ###################
+
+===================
+0.10.1 Release Notes
+===================
+
+It improves query performance with ``name`` and ``arch`` filters. Also ``nevra`` filter will now
+handle string with or without ``epoch``.
+Additionally for python bindings it renames ``NEVRA._has_just_name()`` to ``NEVRA.has_just_name()``
+due to movement of code into c part of library.
+
+Bugs fixed in 0.10.1:
+
+* :rhbug:`1260242`
+* :rhbug:`1485881`
+* :rhbug:`1361187`
 
 ===================
 0.9.3 Release Notes
