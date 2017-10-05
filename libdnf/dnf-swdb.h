@@ -54,14 +54,6 @@ struct _DnfSwdb
 
 DnfSwdb        *dnf_swdb_new                    (const gchar    *db_path,
                                                  const gchar    *releasever);
-const gchar    *dnf_swdb_get_path               (DnfSwdb        *self);
-void            dnf_swdb_set_path               (DnfSwdb        *self,
-                                                 const gchar    *path);
-gboolean        dnf_swdb_exist                  (DnfSwdb        *self);
-gint            dnf_swdb_create_db              (DnfSwdb        *self);
-gint            dnf_swdb_reset_db               (DnfSwdb        *self);
-gint            dnf_swdb_open                   (DnfSwdb        *self);
-void            dnf_swdb_close                  (DnfSwdb        *self);
 gint            dnf_swdb_get_output_type        (DnfSwdb        *self,
                                                  const gchar    *type);
 DnfSwdbReason   _reason_by_pid                  (sqlite3        *db,
@@ -124,28 +116,6 @@ GPtrArray      *dnf_swdb_trans_old              (DnfSwdb        *self,
                                                  GArray         *tids,
                                                  gint            limit,
                                                  gboolean        complete_only);
-gint            dnf_swdb_add_group              (DnfSwdb        *self,
-                                                 DnfSwdbGroup   *group);
-gint            dnf_swdb_add_env                (DnfSwdb        *self,
-                                                 DnfSwdbEnv     *env);
-gboolean        dnf_swdb_removable_pkg          (DnfSwdb        *self,
-                                                 const gchar    *pkg_name);
-DnfSwdbGroup   *dnf_swdb_get_group              (DnfSwdb        *self,
-                                                 const gchar    *name_id);
-GPtrArray      *dnf_swdb_groups_by_pattern      (DnfSwdb        *self,
-                                                 const gchar    *pattern);
-gint            dnf_swdb_uninstall_group        (DnfSwdb        *self,
-                                                 DnfSwdbGroup   *group);
-DnfSwdbEnv     *dnf_swdb_get_env                (DnfSwdb        *self,
-                                                 const gchar    *name_id);
-gint            dnf_swdb_groups_commit          (DnfSwdb        *self,
-                                                 GPtrArray      *groups);
-GPtrArray      *dnf_swdb_env_by_pattern         (DnfSwdb        *self,
-                                                 const gchar    *pattern);
-gint            dnf_swdb_log_group_trans        (DnfSwdb        *self,
-                                                 gint            tid,
-                                                 GPtrArray      *installing,
-                                                 GPtrArray      *removing);
 DnfSwdbTrans   *dnf_swdb_last                   (DnfSwdb        *self,
                                                  gboolean        complete_only);
 DnfSwdbPkg     *dnf_swdb_package                (DnfSwdb        *self,
