@@ -116,6 +116,8 @@ repo_enabled(_SackObject *self, PyObject *reponame, int enabled)
 static void
 sack_dealloc(_SackObject *o)
 {
+    Py_XDECREF(o->custom_package_class);
+    Py_XDECREF(o->custom_package_val);
     if (o->sack)
         g_object_unref(o->sack);
     if (o->log_out)
