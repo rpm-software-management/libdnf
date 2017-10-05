@@ -115,6 +115,30 @@ void                _update_env                     (sqlite3       *db,
                                                      DnfSwdbEnv    *env);
 void                _add_env                        (sqlite3       *db,
                                                      DnfSwdbEnv    *env);
+GPtrArray          *dnf_swdb_groups_by_pattern      (DnfSwdb       *self,
+                                                     const gchar   *pattern);
+gint                dnf_swdb_groups_commit          (DnfSwdb       *self,
+                                                     GPtrArray     *groups);
+GPtrArray          *dnf_swdb_env_by_pattern         (DnfSwdb       *self,
+                                                     const gchar   *pattern);
+gint                dnf_swdb_log_group_trans        (DnfSwdb       *self,
+                                                     gint           tid,
+                                                     GPtrArray     *installing,
+                                                     GPtrArray     *removing);
+DnfSwdbEnv         *dnf_swdb_get_env                (DnfSwdb       *self,
+                                                     const gchar   *name_id);
+DnfSwdbGroup       *dnf_swdb_get_group              (DnfSwdb       *self,
+                                                     const gchar   *name_id);
+gboolean            dnf_swdb_removable_pkg          (DnfSwdb       *self,
+                                                     const gchar   *pkg_name);
+gint                dnf_swdb_uninstall_group        (DnfSwdb       *self,
+                                                     DnfSwdbGroup  *group);
+gint                dnf_swdb_add_group              (DnfSwdb       *self,
+                                                     DnfSwdbGroup  *group);
+gint                dnf_swdb_add_env                (DnfSwdb       *self,
+                                                     DnfSwdbEnv    *env);
+GPtrArray          *dnf_swdb_environments           (DnfSwdb       *self);
+GPtrArray          *dnf_swdb_groups                 (DnfSwdb       *self);
 
 G_END_DECLS
 

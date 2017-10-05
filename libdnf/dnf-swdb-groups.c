@@ -557,6 +557,59 @@ dnf_swdb_get_env (DnfSwdb *self, const gchar *name_id)
 }
 
 /**
+ * _get_environments:
+ * @self: SWDB object
+ * @res: prepared sqlite statement
+ * Helper function to parse environments into GPtrArray from prepared statement
+ **/
+static GPtrArray *
+_get_environments (DnfSwdb *self, sqlite3_stmt *res)
+{
+    GPtrArray *node = g_ptr_array_new ();
+    while (sqlite3_step (res) == SQLITE_ROW) {
+        DnfSwdbEnv *env = dnf_swdb_env_new ((const gchar *)sqlite3_column_text (res, 1), // name_id
+                                            (const gchar *)sqlite3_column_text (res, 2), // name
+                                            (const gchar *)sqlite3_column_text (res, 3), // ui_name
+                                            sqlite3_column_int (res, 4), // pkg_types
+                                            sqlite3_column_int (res, 5), // grp_types
+                                            self);                       // swdb
+        env->eid = sqlite3_column_int (res, 0);
+        g_ptr_array_add (node, (gpointer) env);
+    }
+    sqlite3_finalize (res);
+    for (guint i = 0; i < node->len; ++i) {
+        DnfSwdbEnv *env = g_ptr_array_index (node, i);
+        _env_installed (self->db, env);
+    }
+    return node;
+}
+
+/**
+ * _get_groups:
+ * @self: SWDB object
+ * @res: prepared sqlite statement
+ * Helper function to parse groups into GPtrArray from prepared statement
+ **/
+static GPtrArray *
+_get_groups (DnfSwdb *self, sqlite3_stmt *res)
+{
+    GPtrArray *node = g_ptr_array_new ();
+    while (sqlite3_step (res) == SQLITE_ROW) {
+        DnfSwdbGroup *group =
+          dnf_swdb_group_new ((const gchar *)sqlite3_column_text (res, 1), // name_id
+                              (const gchar *)sqlite3_column_text (res, 2), // name
+                              (const gchar *)sqlite3_column_text (res, 3), // ui_name
+                              sqlite3_column_int (res, 4),                 // installed
+                              sqlite3_column_int (res, 5),                 // pkg_types
+                              self);                                       // swdb
+        group->gid = sqlite3_column_int (res, 0);
+        g_ptr_array_add (node, (gpointer)group);
+    }
+    sqlite3_finalize (res);
+    return node;
+}
+
+/**
  * dnf_swdb_groups_by_pattern:
  * @self: SWDB object
  * @pattern: string pattern
@@ -571,26 +624,13 @@ dnf_swdb_groups_by_pattern (DnfSwdb *self, const gchar *pattern)
 {
     if (dnf_swdb_open (self))
         return NULL;
-    GPtrArray *node = g_ptr_array_new ();
     sqlite3_stmt *res;
     const gchar *sql = S_GROUPS_BY_PATTERN;
     _db_prepare (self->db, sql, &res);
     _db_bind_str (res, "@pat", pattern);
     _db_bind_str (res, "@pat", pattern);
     _db_bind_str (res, "@pat", pattern);
-    while (sqlite3_step (res) == SQLITE_ROW) {
-        DnfSwdbGroup *group =
-          dnf_swdb_group_new ((const gchar *)sqlite3_column_text (res, 1), // name_id
-                              (gchar *)sqlite3_column_text (res, 2),       // name
-                              (gchar *)sqlite3_column_text (res, 3),       // ui_name
-                              sqlite3_column_int (res, 4),                 // installed
-                              sqlite3_column_int (res, 5),                 // pkg_types
-                              self);                                       // swdb
-        group->gid = sqlite3_column_int (res, 0);
-        g_ptr_array_add (node, (gpointer)group);
-    }
-    sqlite3_finalize (res);
-    return node;
+    return _get_groups (self, res);
 }
 
 /**
@@ -608,30 +648,53 @@ dnf_swdb_env_by_pattern (DnfSwdb *self, const gchar *pattern)
 {
     if (dnf_swdb_open (self))
         return NULL;
-    GPtrArray *node = g_ptr_array_new ();
     sqlite3_stmt *res;
     const gchar *sql = S_ENV_BY_PATTERN;
     _db_prepare (self->db, sql, &res);
     _db_bind_str (res, "@pat", pattern);
     _db_bind_str (res, "@pat", pattern);
     _db_bind_str (res, "@pat", pattern);
-    while (sqlite3_step (res) == SQLITE_ROW) {
-        DnfSwdbEnv *env = dnf_swdb_env_new ((const gchar *)sqlite3_column_text (res, 1), // name_id
-                                            (gchar *)sqlite3_column_text (res, 2),       // name
-                                            (gchar *)sqlite3_column_text (res, 3),       // ui_name
-                                            sqlite3_column_int (res, 4), // pkg_types
-                                            sqlite3_column_int (res, 5), // grp_types
-                                            self);                       // swdb
-        env->eid = sqlite3_column_int (res, 0);
-        g_ptr_array_add (node, (gpointer) env);
-    }
-    sqlite3_finalize (res);
-    for (guint i = 0; i < node->len; ++i) {
-        DnfSwdbEnv *env = g_ptr_array_index (node, i);
-        _env_installed (self->db, env);
-    }
-    return node;
+    return _get_environments (self, res);
 }
+
+/**
+ * dnf_swdb_environments:
+ * @self: SWDB object
+ *
+ * Get list of environments in the database
+ *
+ * Returns: (element-type DnfSwdbEnv)(array)(transfer container): list of #DnfSwdbEnv
+ **/
+GPtrArray *
+dnf_swdb_environments (DnfSwdb *self)
+{
+    if (dnf_swdb_open (self))
+        return NULL;
+    sqlite3_stmt *res;
+    const gchar *sql = S_ENVIRONMENTS;
+    _db_prepare (self->db, sql, &res);
+    return _get_environments (self, res);
+}
+
+/**
+ * dnf_swdb_groups:
+ * @self: SWDB object
+ *
+ * Get list of groups in the database
+ *
+ * Returns: (element-type DnfSwdbGroup)(array)(transfer container): list of #DnfSwdbGroup
+ **/
+GPtrArray *
+dnf_swdb_groups (DnfSwdb *self)
+{
+    if (dnf_swdb_open (self))
+        return NULL;
+    sqlite3_stmt *res;
+    const gchar *sql = S_GROUPS;
+    _db_prepare (self->db, sql, &res);
+    return _get_groups (self, res);
+}
+
 
 /**
  * _get_list_from_table:

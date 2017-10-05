@@ -59,4 +59,12 @@ void            _output_insert      (sqlite3        *db,
                                      gint            tid,
                                      const gchar    *msg,
                                      gint            type);
+const gchar    *dnf_swdb_get_path   (DnfSwdb        *self);
+void            dnf_swdb_set_path   (DnfSwdb        *self,
+                                     const gchar    *path);
+gboolean        dnf_swdb_exist      (DnfSwdb        *self);
+gint            dnf_swdb_create_db  (DnfSwdb        *self);
+gint            dnf_swdb_reset_db   (DnfSwdb        *self);
+gint            dnf_swdb_open       (DnfSwdb        *self);
+void            dnf_swdb_close      (DnfSwdb        *self);
 #endif
