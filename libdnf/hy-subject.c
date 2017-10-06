@@ -318,12 +318,12 @@ hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, Hy
             }
         }
         hy_possibilities_free(iter);
+        g_clear_pointer(nevra, hy_nevra_free);
         query = hy_query_create(sack);
         hy_query_filter(query, HY_PKG_NEVRA, HY_GLOB, subject);
         if (hy_query_is_not_empty(query))
             return query;
         hy_query_free(query);
-        g_clear_pointer(nevra, hy_nevra_free);
     }
     if (with_provides) {
         query = hy_query_create(sack);
