@@ -33,6 +33,7 @@
 #include "hy-types.h"
 #include "hy-query.h"
 #include "hy-selector.h"
+#include "hy-util.h"
 
 // most specific to least
 const HyForm HY_FORMS_MOST_SPEC[] = {
@@ -333,7 +334,7 @@ hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, Hy
         hy_query_free(query);
     }
 
-    if (with_filenames) {
+    if (with_filenames && hy_is_file_pattern(subject)) {
         query = hy_query_create(sack);
         hy_query_filter(query, HY_PKG_FILE, HY_GLOB, subject);
         return query;
