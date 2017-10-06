@@ -84,6 +84,40 @@ typedef enum {
     DNF_SACK_LOAD_FLAG_LAST
 } DnfSackLoadFlags;
 
+typedef struct {
+    char *name;
+    unsigned int epoch;
+    char *version;
+    char *release;
+    char *arch;
+} DnfSolvableNevra;
+
+typedef struct {
+    DnfSolvableNevra nevra;
+    int flags;
+} DnfSolvableDependency;
+
+typedef struct {
+    unsigned int count; 
+    DnfSolvableDependency *deps;
+} DnfSolvableDependencies;
+
+typedef struct {
+    DnfSolvableNevra nevra;
+    char *vendor;
+
+    DnfSolvableDependencies provides;
+    DnfSolvableDependencies obsoletes;
+    DnfSolvableDependencies conflicts;
+
+    DnfSolvableDependencies requires;
+    DnfSolvableDependencies recommends;
+    DnfSolvableDependencies suggests;
+
+    DnfSolvableDependencies supplements;
+    DnfSolvableDependencies enhances;
+} DnfSolvable;
+
 DnfSack     *dnf_sack_new                   (void);
 
 void         dnf_sack_set_cachedir          (DnfSack        *sack,
@@ -115,6 +149,9 @@ void         dnf_sack_set_installonly_limit (DnfSack        *sack,
 guint        dnf_sack_get_installonly_limit (DnfSack        *sack);
 DnfPackage  *dnf_sack_add_cmdline_package   (DnfSack        *sack,
                                              const char     *fn);
+Id           dnf_sack_add_solvable          (DnfSack        *sack,
+                                             HyRepo          repo,
+                                             const DnfSolvable *dnf_solvable);
 int          dnf_sack_count                 (DnfSack        *sack);
 void         dnf_sack_add_excludes          (DnfSack        *sack,
                                              DnfPackageSet  *pset);

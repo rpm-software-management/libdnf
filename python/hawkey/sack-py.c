@@ -26,6 +26,7 @@
 #include "hy-packageset.h"
 #include "hy-repo.h"
 #include "dnf-sack-private.h"
+#include "hy-iutil.h"
 #include "hy-util.h"
 #include "dnf-version.h"
 
@@ -422,6 +423,180 @@ add_cmdline_package(_SackObject *self, PyObject *fn_obj)
     return pkg;
 }
 
+static void
+clear_dependencies(DnfSolvableDependencies *deps)
+{
+    if (deps && deps->deps)
+    {
+        for (unsigned int i = 0; i < deps->count; ++i) {
+            g_free(deps->deps[i].nevra.name);
+            g_free(deps->deps[i].nevra.version);
+            g_free(deps->deps[i].nevra.release);
+            g_free(deps->deps[i].nevra.arch);
+        }
+        g_free(deps->deps);
+    }
+}
+
+static gboolean
+parse_dependencies(PyListObject *py_deps, DnfSolvableDependencies *out_deps)
+{
+    DnfSolvableDependencies cdependencies = {.count = 0, .deps = NULL};
+    if (py_deps) {
+        Py_ssize_t len = PyList_GET_SIZE(py_deps);
+        if (len) {
+            cdependencies.deps = g_malloc0(len * sizeof(*cdependencies.deps));
+            for (Py_ssize_t i = 0; i < len; ++i) {
+                PyObject *dependency = PyList_GET_ITEM(py_deps, i);
+                if (PyDict_CheckExact(dependency)) {
+
+                    DnfSolvableDependency *cdep = &cdependencies.deps[cdependencies.count];
+
+                    PyObject *value = PyDict_GetItemString(dependency, "name");
+                    if (!value) {
+                        PyErr_SetString(PyExc_KeyError, "Dependency name is missing");
+                        goto err;
+                    }
+                    cdep->nevra.name = pycomp_get_string_copy(value);
+                    if (!cdep->nevra.name)
+                        goto err;
+
+                    ++cdependencies.count;
+
+                    cdep->flags = 0;
+                    value = PyDict_GetItemString(dependency, "flags");
+                    if (value) {
+                        g_autofree char *flags = pycomp_get_string_copy(value);
+                        if (!flags)
+                            goto err;
+                        if (!strcmp(flags, "="))
+                            cdep->flags = REL_EQ;
+                        else if (!strcmp(flags, ">"))
+                            cdep->flags = REL_GT;
+                        else if (!strcmp(flags, "<"))
+                            cdep->flags = REL_LT;
+                        else if (!strcmp(flags, ">="))
+                            cdep->flags = REL_GT | REL_EQ;
+                        else if (!strcmp(flags, "<="))
+                            cdep->flags = REL_LT | REL_EQ;
+                    }
+
+                    if (cdep->flags) {
+                        value = PyDict_GetItemString(dependency, "epoch");
+                        if (!value) {
+                            PyErr_SetString(PyExc_KeyError, "Dependency epoch is missing");
+                            goto err;
+                        }
+                        cdep->nevra.epoch = PyLong_AsUnsignedLong(value);
+                        if (PyErr_Occurred())
+                            goto err;
+
+                        value = PyDict_GetItemString(dependency, "version");
+                        if (!value) {
+                            PyErr_SetString(PyExc_KeyError, "Dependency version is missing");
+                            goto err;
+                        }
+                        cdep->nevra.version = pycomp_get_string_copy(value);
+                        if (!cdep->nevra.version)
+                            goto err;
+
+                        value = PyDict_GetItemString(dependency, "release");
+                        if (!value) {
+                            PyErr_SetString(PyExc_KeyError, "Dependency release is missing");
+                            goto err;
+                        }
+                        cdep->nevra.release = pycomp_get_string_copy(value);
+                        if (!cdep->nevra.release)
+                            goto err;
+
+                        value = PyDict_GetItemString(dependency, "arch");
+                        if (!value) {
+                            PyErr_SetString(PyExc_KeyError, "Dependency arch is missing");
+                            goto err;
+                        }
+                        cdep->nevra.arch = pycomp_get_string_copy(value);
+                        if (!cdep->nevra.arch)
+                            goto err;
+                    }
+                }
+            }
+        }
+    }
+
+    *out_deps = cdependencies;
+    return TRUE;
+
+    err:
+    clear_dependencies(&cdependencies);
+    return FALSE;
+}
+
+static PyObject *
+add_solvable(_SackObject *self, PyObject *args, PyObject *kwds)
+{
+    const char *kwlist[] = {
+        "repo",
+        "name", "epoch", "version", "release", "arch",
+        "vendor",
+        "provides", "obsoletes", "conflicts",
+        "requires", "recommends", "suggests",
+        "supplements", "enhances",
+        NULL
+    };
+
+    DnfSolvable solvable = {
+        .provides.deps = NULL, .obsoletes.deps = NULL, .conflicts.deps = NULL,
+        .requires.deps = NULL, .recommends.deps = NULL, .suggests.deps = NULL,
+        .supplements.deps = NULL, .enhances.deps = NULL
+    };
+
+
+    PyListObject *py_dependencies[] = {
+        NULL, NULL, NULL,
+        NULL, NULL, NULL,
+        NULL, NULL
+    };
+
+    DnfSolvableDependencies * const solv_dependencies[] = {
+        &solvable.provides, &solvable.obsoletes, &solvable.conflicts,
+        &solvable.requires, &solvable.recommends, &solvable.suggests,
+        &solvable.supplements, &solvable.enhances
+    };
+
+    const char *repo;
+    DnfSolvableNevra *nevra = &solvable.nevra;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ssissss|O!O!O!O!O!O!O!O!", (char**) kwlist,
+                                     &repo, &nevra->name, &nevra->epoch, &nevra->version, &nevra->release, &nevra->arch,
+                                     &solvable.vendor,
+                                     &PyList_Type, &py_dependencies[0], &PyList_Type, &py_dependencies[1], &PyList_Type, &py_dependencies[2],
+                                     &PyList_Type, &py_dependencies[3], &PyList_Type, &py_dependencies[4], &PyList_Type, &py_dependencies[5],
+                                     &PyList_Type, &py_dependencies[6], &PyList_Type, &py_dependencies[7]))
+        return NULL;
+
+    gboolean error = FALSE;
+    for (size_t i = 0; i < sizeof(solv_dependencies)/sizeof(*solv_dependencies); ++i) {
+        if (!parse_dependencies(py_dependencies[i], solv_dependencies[i])) {
+            error = TRUE;
+            break;
+        }
+    }
+
+    Id solv_id;
+    if (!error) {
+        DnfSack *sack = self->sack;
+        HyRepo hyrepo = hrepo_by_name(sack, repo);
+        solv_id = dnf_sack_add_solvable(sack, hyrepo, &solvable);
+    }
+
+    for (size_t i = 0; i < sizeof(solv_dependencies)/sizeof(*solv_dependencies); ++i)
+        clear_dependencies(solv_dependencies[i]);
+
+    if (error)
+        return NULL;
+
+    return PyLong_FromLong(solv_id);
+}
+
 static PyObject *
 add_excludes(_SackObject *self, PyObject *seq)
 {
@@ -691,6 +866,8 @@ PyMethodDef sack_methods[] = {
     {"create_package", (PyCFunction)create_package, METH_O,
      NULL},
     {"add_cmdline_package", (PyCFunction)add_cmdline_package, METH_O,
+     NULL},
+    {"add_solvable", (PyCFunction)add_solvable, METH_KEYWORDS|METH_VARARGS,
      NULL},
     {"add_excludes", (PyCFunction)add_excludes, METH_O,
      NULL},
