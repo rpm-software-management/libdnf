@@ -36,6 +36,18 @@ int hy_detect_arch(char **arch);
 
 gboolean hy_is_glob_pattern(const char *pattern);
 
+
+/**
+ * @brief Test if pattern is file path
+ *
+ * @param pattern Strig to analyze
+ * @return gboolean Return TRUE if pattern start with "/" or pattern[0] == '*' && pattern[1] == '/'
+ */
+static inline gboolean hy_is_file_pattern(const char *pattern)
+{
+    return pattern[0] == '/' || (pattern[0] == '*' && pattern[1] == '/');
+}
+
 int hy_split_nevra(const char *nevra, char **name, int *epoch,
                    char **version, char **release, char **arch);
 
