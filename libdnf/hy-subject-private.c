@@ -28,12 +28,18 @@
 #include "hy-iutil.h"
 #include "hy-subject-private.h"
 
+#define PKG_NAME "([^:]+)"
+#define PKG_EPOCH "(([0-9]+):)?"
+#define PKG_VERSION "([^-:]+)"
+#define PKG_RELEASE "(.+)"
+#define PKG_ARCH "([^.]+)"
+
 const char *nevra_form_regex[] = {
-    "^([^:]+)" "-(([0-9]+):)?" "([^-:]+)" "-(.+)" "\\.([^.]+)$",
-    "^([^:]+)" "-(([0-9]+):)?" "([^-:]+)" "-(.+)" "()$",
-    "^([^:]+)" "-(([0-9]+):)?" "([^-:]+)" "()" "()$",
-    "^([^:]+)" "()()" "()" "()" "\\.([^.]+)$",
-    "^([^:]+)()()()()()$"
+    "^" PKG_NAME "-" PKG_EPOCH PKG_VERSION "-" PKG_RELEASE "\\." PKG_ARCH "$",
+    "^" PKG_NAME "-" PKG_EPOCH PKG_VERSION "-" PKG_RELEASE          "()"  "$",
+    "^" PKG_NAME "-" PKG_EPOCH PKG_VERSION        "()"              "()"  "$",
+    "^" PKG_NAME      "()()"      "()"            "()"     "\\." PKG_ARCH "$",
+    "^" PKG_NAME      "()()"      "()"            "()"              "()"  "$"
 };
 
 #define MODULE_NAME "([-a-zA-Z0-9\\._]+)"
