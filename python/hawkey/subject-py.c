@@ -311,9 +311,11 @@ get_best_solution(_SubjectObject *self, PyObject *args, PyObject *kwds)
     PyObject *q = queryToPyObject(query, sack);
     PyObject *ret_dict = PyDict_New();
     PyDict_SetItem(ret_dict, PyString_FromString("query"), q);
+    Py_DECREF(q);
     if (nevra != NULL) {
         PyObject *n = nevraToPyObject(nevra);
         PyDict_SetItem(ret_dict, PyString_FromString("nevra"), n);
+        Py_DECREF(n);
     }
     else
         PyDict_SetItem(ret_dict, PyString_FromString("nevra"), Py_None);
