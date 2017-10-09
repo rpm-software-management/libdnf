@@ -19,13 +19,15 @@
  */
 
 #include <Python.h>
+
+#include <glib.h>
 #include "pycomp.h"
 
 /**
  * unicode string in Python 2/3 to c string converter,
  * you need to call Py_XDECREF(tmp_py_str) after usage of returned string
  */
-static char *
+static const char *
 pycomp_get_string_from_unicode(PyObject *str_u, PyObject **tmp_py_str)
 {
     *tmp_py_str = PyUnicode_AsUTF8String(str_u);
@@ -39,7 +41,7 @@ pycomp_get_string_from_unicode(PyObject *str_u, PyObject **tmp_py_str)
 const char *
 pycomp_get_string(PyObject *str, PyObject **tmp_py_str)
 {
-    char *res = NULL;
+    const char *res = NULL;
     if (PyUnicode_Check(str))
         res = pycomp_get_string_from_unicode(str, tmp_py_str);
 #if PY_MAJOR_VERSION < 3
@@ -55,6 +57,20 @@ pycomp_get_string(PyObject *str, PyObject **tmp_py_str)
 #endif
 
     return res;
+}
+
+/**
+ * bytes, basic string or unicode string in Python 2/3 to c string converter
+ * New memory is allocated. The returned string should be freed with g_free()
+ * when no longer needed.
+ */
+char *
+pycomp_get_string_copy(PyObject *str)
+{
+    PyObject *tmp_py_str = NULL;
+    char *cstr = g_strdup(pycomp_get_string(str, &tmp_py_str));
+    Py_XDECREF(tmp_py_str);
+    return cstr;
 }
 
 /* release PyObject array from memory */

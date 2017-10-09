@@ -57,6 +57,7 @@
 #endif
 
 const char *pycomp_get_string(PyObject *str_o, PyObject **tmp_py_str);
+char *pycomp_get_string_copy(PyObject *str_o);
 void pycomp_free_tmp_array(PyObject **tmp_py_strs, int count);
 extern PYCOMP_MOD_INIT(_hawkey);
 
