@@ -220,9 +220,7 @@ evr_cmp(_NevraObject *self, PyObject *args)
 static PyObject *
 has_just_name(_NevraObject *self, PyObject *unused)
 {
-    if (hy_nevra_has_just_name(self->nevra))
-        Py_RETURN_TRUE;
-    Py_RETURN_FALSE;
+    return PyBool_FromLong(hy_nevra_has_just_name(self->nevra));
 }
 
 static PyObject *
