@@ -1049,10 +1049,16 @@ init_result(HyQuery q)
     Pool *pool = dnf_sack_get_pool(q->sack);
     Id solvid;
 
-    q->result = g_malloc0(sizeof(Map));
-    map_init(q->result, pool->nsolvables);
-    FOR_PKG_SOLVABLES(solvid)
-        map_set(q->result, solvid);
+    int sack_pool_nsolvables = dnf_sack_get_pool_nsolvables(q->sack);
+    if (sack_pool_nsolvables != 0 && sack_pool_nsolvables == pool->nsolvables)
+        q->result = dnf_sack_get_pkg_solvables(q->sack);
+    else {
+        q->result = g_malloc(sizeof(Map));
+        map_init(q->result, pool->nsolvables);
+        FOR_PKG_SOLVABLES(solvid)
+            map_set(q->result, solvid);
+        dnf_sack_set_pkg_solvables(q->sack, q->result, pool->nsolvables);
+    }
     if (!(q->flags & HY_IGNORE_EXCLUDES)) {
         dnf_sack_recompute_considered(q->sack);
         if (pool->considered)
