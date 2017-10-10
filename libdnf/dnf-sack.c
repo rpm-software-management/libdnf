@@ -78,6 +78,8 @@ typedef struct
     Map                 *pkg_excludes;
     Map                 *pkg_includes;
     Map                 *repo_excludes;
+    Map                 *pkg_solvables;     /* Map representing only solvable pkgs of query */
+    int                  pool_nsolvables;   /* Number of nsolvables for creation of pkg_solvables*/
     Pool                *pool;
     Queue                installonly;
     Repo                *cmdline_repo;
@@ -119,6 +121,7 @@ dnf_sack_finalize(GObject *object)
     free_map_fully(priv->pkg_includes);
     free_map_fully(priv->repo_excludes);
     free_map_fully(pool->considered);
+    free_map_fully(priv->pkg_solvables);
     pool_free(priv->pool);
 
     G_OBJECT_CLASS(dnf_sack_parent_class)->finalize(object);
@@ -248,6 +251,36 @@ dnf_sack_set_running_kernel_fn (DnfSack *sack, dnf_sack_running_kernel_fn_t fn)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     priv->running_kernel_fn = fn;
+}
+
+void
+dnf_sack_set_pkg_solvables(DnfSack *sack, Map *pkg_solvables, int pool_nsolvables)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+
+    Map *pkg_solvables_tmp = g_malloc(sizeof(Map));
+    if (priv->pkg_solvables)
+        free_map_fully(priv->pkg_solvables);
+    map_init_clone(pkg_solvables_tmp, pkg_solvables);
+    priv->pkg_solvables = pkg_solvables_tmp;
+    priv->pool_nsolvables = pool_nsolvables;
+}
+
+int
+dnf_sack_get_pool_nsolvables(DnfSack *sack)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    return priv->pool_nsolvables;
+}
+
+Map *
+dnf_sack_get_pkg_solvables(DnfSack *sack)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    Map *pkg_solvables_tmp = g_malloc(sizeof(Map));
+
+    map_init_clone(pkg_solvables_tmp, priv->pkg_solvables);
+    return pkg_solvables_tmp;
 }
 
 /**
