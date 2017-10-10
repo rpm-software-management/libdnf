@@ -64,7 +64,9 @@ nevraToPyObject(HyNevra nevra)
 static int
 set_epoch(_NevraObject *self, PyObject *value, void *closure)
 {
-    if (PyInt_Check(value))
+    if (value == NULL)
+        self->nevra->epoch = -1;
+    else if (PyInt_Check(value))
         self->nevra->epoch = PyLong_AsLong(value);
     else if (value == Py_None)
         self->nevra->epoch = -1;
