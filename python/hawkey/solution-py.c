@@ -94,7 +94,7 @@ get_old(_SolutionObject *self, void *closure)
 {
     const char *s = dnf_solution_get_old(self->solution);
     if (!s)
-        return Py_None;
+        Py_RETURN_NONE;
     return PyUnicode_FromString(s);
 }
 
@@ -103,7 +103,7 @@ get_new(_SolutionObject *self, void *closure)
 {
     const char *s = dnf_solution_get_new(self->solution);
     if (!s)
-        return Py_None;
+        Py_RETURN_NONE;
     return PyUnicode_FromString(s);
 }
 
