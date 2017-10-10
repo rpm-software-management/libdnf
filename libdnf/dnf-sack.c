@@ -1153,6 +1153,87 @@ dnf_sack_add_cmdline_package(DnfSack *sack, const char *fn)
     return dnf_package_new(sack, p);
 }
 
+static char *
+dnf_sack_nevra2evr(const DnfSolvableNevra *nevra)
+{
+    if (nevra->epoch != 0)
+        return g_strdup_printf("%u:%s-%s", nevra->epoch, nevra->version, nevra->release);
+    else
+        return g_strdup_printf("%s-%s", nevra->version, nevra->release);
+}
+
+static Offset
+dnf_sack_make_deps(Pool *pool, Repo *repo, const DnfSolvableDependencies *deps)
+{
+    if (deps->count) {
+        Offset dep_offset = repo_reserve_ids(repo, 0, deps->count);
+        Id *rel_array_id = repo->idarraydata + dep_offset;
+        for (unsigned int i=0; i<deps->count; ++i)
+        {
+            const DnfSolvableDependency *dependency = &deps->deps[i];
+            Id name_id = pool_str2id(pool, dependency->nevra.name, 1);
+            if (dependency->flags & (REL_LT | REL_EQ | REL_GT)) {
+                Id evr_id = pool_str2id(pool, dnf_sack_nevra2evr(&dependency->nevra), 1);
+                Id rel_id = pool_rel2id(pool, name_id, evr_id, dependency->flags, 1);
+                *rel_array_id++ = rel_id;
+            } else {
+                *rel_array_id++ = name_id;
+            }
+        }
+        *rel_array_id = 0;
+        repo->idarraysize += deps->count + 1;
+        return dep_offset;
+    }
+    return 0;
+}
+
+/**
+ * dnf_sack_add_solvable:
+ *
+ * Adds a new solvable to libsolv_repo.
+ *
+ * Returns: Id of new solvable
+ *
+ * Since: 0.10.2
+ **/
+Id
+dnf_sack_add_solvable(DnfSack *sack, HyRepo repo, const DnfSolvable *dnf_solvable)
+{
+    assert(dnf_solvable);
+    const DnfSolvableNevra *nevra = &dnf_solvable->nevra;
+    assert(nevra->name && *nevra->name);
+    assert(nevra->version && *nevra->version);
+    assert(nevra->release && *nevra->release);
+    assert(nevra->arch && *nevra->arch);
+
+    Repo *solv_repo = repo->libsolv_repo;
+    Id solv_id = repo_add_solvable(solv_repo);
+    Pool *pool = dnf_sack_get_pool(sack);
+    Solvable *solvable = pool_id2solvable(pool, solv_id);
+
+    g_autofree gchar *evr = dnf_sack_nevra2evr(nevra);
+    solvable->name = pool_str2id(pool, nevra->name, 1);
+    solvable->evr = pool_str2id(pool, evr, 1);
+    solvable->arch = pool_str2id(pool, nevra->arch, 1);
+    if (dnf_solvable->vendor && *dnf_solvable->vendor)
+        solvable->vendor = pool_str2id(pool, dnf_solvable->vendor, 1);
+
+    solvable->provides = dnf_sack_make_deps(pool, solv_repo, &dnf_solvable->provides);
+    if (solvable->arch != ARCH_SRC && solvable->arch != ARCH_NOSRC) {
+        const Id rel_id = pool_rel2id(pool, solvable->name, solvable->evr, REL_EQ, 1);
+        solvable->provides = repo_addid_dep(solv_repo, solvable->provides, rel_id, 0);
+    }
+    solvable->obsoletes = dnf_sack_make_deps(pool, solv_repo, &dnf_solvable->obsoletes);
+    solvable->conflicts = dnf_sack_make_deps(pool, solv_repo, &dnf_solvable->conflicts);
+    solvable->requires = dnf_sack_make_deps(pool, solv_repo, &dnf_solvable->requires);
+    solvable->recommends = dnf_sack_make_deps(pool, solv_repo, &dnf_solvable->recommends);
+    solvable->suggests = dnf_sack_make_deps(pool, solv_repo, &dnf_solvable->suggests);
+    solvable->supplements = dnf_sack_make_deps(pool, solv_repo, &dnf_solvable->supplements);
+    solvable->enhances = dnf_sack_make_deps(pool, solv_repo, &dnf_solvable->enhances);
+
+    return solv_id;
+}
+
 /**
  * dnf_sack_count:
  * @sack: a #DnfSack instance.
