@@ -62,8 +62,7 @@
     "   from_repo_revision TEXT," \
     "   from_repo_timestamp INTEGER," \
     "   installed_by TEXT," \
-    "   changed_by TEXT," \
-    "   installonly INTEGER);" \
+    "   changed_by TEXT);" \
     "CREATE TABLE trans(" \
     "   t_id INTEGER PRIMARY KEY," \
     "   beg_timestamp INTEGER NOT NULL," \

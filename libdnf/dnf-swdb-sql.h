@@ -38,7 +38,7 @@
 
 #define UPDATE_PKG_DATA \
     "UPDATE PACKAGE_DATA SET R_ID=@rid,from_repo_revision=@repo_r,from_repo_timestamp=@repo_t," \
-    "installed_by=@installed_by,changed_by=@changed_by,installonly=@installonly where P_ID=@pid"
+    "installed_by=@installed_by,changed_by=@changed_by where P_ID=@pid"
 
 #define INSERT_TRANS_DATA_BEG \
     "insert into TRANS_DATA values(null,@tid,@pdid,@tgid,0,@obsoleting,@reason,@state)"
@@ -50,7 +50,7 @@
     "SELECT PD_ID FROM PACKAGE_DATA WHERE P_ID=@pid ORDER by PD_ID DESC LIMIT 1"
 #define GET_TRANS_CMDLINE "SELECT cmdline FROM TRANS WHERE T_ID=@tid"
 
-#define INSERT_PDID "insert into PACKAGE_DATA values(null,@pid,null,null,null,null,null,null)"
+#define INSERT_PDID "insert into PACKAGE_DATA values(null,@pid,null,null,null,null,null)"
 #define PKG_DATA_ATTR_BY_PID "FROM PACKAGE_DATA WHERE P_ID=@pid"
 #define TRANS_DATA_ATTR_BY_PDID "FROM TRANS_DATA WHERE PD_ID=@pdid"
 #define TRANS_ATTR_BY_TID "FROM TRANS WHERE T_ID=@tid"

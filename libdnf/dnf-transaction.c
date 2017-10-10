@@ -960,7 +960,6 @@ _log_swdb_transaction(SwdbHandle *handle,
         0, //from_repo_timestamp
         user,
         NULL, //changed by
-        dnf_package_is_installonly(pkg), //installonly
         dnf_package_get_reponame(pkg));
 
     // insert transaction data
