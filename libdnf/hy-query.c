@@ -788,6 +788,9 @@ filter_nevra(HyQuery q, const struct _Filter *f, Map *m)
 
     for (int mi = 0; mi < f->nmatches; ++mi) {
         const char *nevra_pattern = f->matches[mi].str;
+        if (strpbrk(nevra_pattern, "(/=<> "))
+            continue;
+
         gboolean present_epoch = strchr(nevra_pattern, ':') != NULL;
 
         for (Id id = 1; id < pool->nsolvables; ++id) {
