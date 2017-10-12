@@ -208,6 +208,7 @@ SOLUTION_DO_NOT_OBSOLETE = _hawkey.SOLUTION_DO_NOT_OBSOLETE
 SOLUTION_DO_NOT_UPGRADE = _hawkey.SOLUTION_DO_NOT_UPGRADE
 SOLUTION_BAD_SOLUTION = _hawkey.SOLUTION_BAD_SOLUTION
 
+PY3 = python_version.major >= 3
 
 logger = logging.getLogger('dnf')
 
@@ -358,7 +359,7 @@ def _encode(obj):
         and potentially face exceptions rather than bizarre results. (Except
         that as long as we stick to UTF-8 it never fails.)
     """
-    if python_version.major < 3 and isinstance(obj, unicode):
+    if not PY3 and isinstance(obj, unicode):
         return obj.encode('utf8', 'strict')
     return obj
 
@@ -373,9 +374,9 @@ def _parse_filter_args(flags, dct):
     for (k, match) in dct.items():
         if isinstance(match, Query):
             pass
-        elif python_version.major < 3 and isinstance(match, basestring):
+        elif not PY3 and isinstance(match, basestring):
             match = _encode(match)
-        elif python_version.major >= 3 and isinstance(match, str):
+        elif PY3 and isinstance(match, str):
             match = _encode(match)
         elif isinstance(match, collections.Iterable):
             match = list(map(_encode, match))
@@ -578,6 +579,21 @@ class Selector(_hawkey.Selector):
         for arg_tuple in _parse_filter_args(set(), kwargs):
             super(Selector, self).set(*arg_tuple)
         return self
+
+    def is_glob_pattern(self, pattern):
+        if (not PY3 and isinstance(pattern, basestring)) or \
+                (PY3 and isinstance(pattern, str)):
+            pattern = [pattern]
+        return (isinstance(pattern, list) and any(set(p) & set("*[?") for p in pattern))
+
+    def _set_autoglob(self, **kwargs):
+        nargs = {}
+        for (key, value) in kwargs.items():
+            if self.is_glob_pattern(value):
+                nargs[key + "__glob"] = value
+            else:
+                nargs[key] = value
+        return self.set(**nargs)
 
 
 class Subject(_hawkey.Subject):
