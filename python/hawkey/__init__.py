@@ -24,7 +24,9 @@ from sys import version_info as python_version
 from . import _hawkey
 import collections
 import functools
+import logging
 import operator
+import time
 
 __all__ = [
     # version info
@@ -206,6 +208,9 @@ SOLUTION_DO_NOT_OBSOLETE = _hawkey.SOLUTION_DO_NOT_OBSOLETE
 SOLUTION_DO_NOT_UPGRADE = _hawkey.SOLUTION_DO_NOT_UPGRADE
 SOLUTION_BAD_SOLUTION = _hawkey.SOLUTION_BAD_SOLUTION
 
+
+logger = logging.getLogger('dnf')
+
 def split_nevra(s):
     t = _hawkey.split_nevra(s)
     return NEVRA(*t)
@@ -254,6 +259,46 @@ class Goal(_hawkey.Goal):
         UPGRADE_ALL
     }
 
+    def __init__(self, sack):
+        super(Goal, self).__init__(sack)
+        self.group_members = set()
+        self._installs = []
+
+    def get_reason(self, pkg):
+        code = super(Goal, self).get_reason(pkg)
+        if code == REASON_DEP:
+            return 'dep'
+        if code == REASON_USER:
+            if pkg.name in self.group_members:
+                return 'group'
+            return 'user'
+        if code == REASON_CLEAN:
+            return 'clean'
+        if code == REASON_WEAKDEP:
+            return 'weak'
+        assert False, 'Unknown reason: %d' % code
+
+    def group_reason(self, pkg, current_reason):
+        if current_reason == 'unknown' and pkg.name in self.group_members:
+            return 'group'
+        return current_reason
+
+    def push_userinstalled(self, query, yumdb):
+        msg = '--> Finding unneeded leftover dependencies' # do translation when available
+        logger.debug(msg)
+        for pkg in query.installed():
+            yumdb_info = yumdb.get_package(pkg)
+            reason = getattr(yumdb_info, 'reason', 'user')
+            if reason not in ('dep', 'weak'):
+                self.userinstalled(pkg)
+
+    def available_updates_diff(self, query):
+        available_updates = set(query.upgrades().filter(arch__neq="src")
+                                .latest().run())
+        installable_updates = set(self.list_upgrades())
+        installs = set(self.list_installs())
+        return (available_updates - installable_updates) - installs
+
     @property
     def actions(self):
         return {f for f in self._goal_actions if self._has_actions(f)}
@@ -288,6 +333,10 @@ class Goal(_hawkey.Goal):
 
     @_auto_selector
     def install(self, *args, **kwargs):
+        if args:
+            self._installs.extend(args)
+        if 'select' in kwargs:
+            self._installs.extend(kwargs['select'].matches())
         super(Goal, self).install(*args, **kwargs)
 
     @_auto_selector
@@ -413,6 +462,115 @@ class Query(_hawkey.Query):
     def union(self, other):
         new_query = type(self)(query=self)
         return super(Query, new_query).union(other)
+
+    def available(self):
+        # :api
+        return self.filter(reponame__neq=SYSTEM_REPO_NAME)
+
+    def downgrades(self):
+        # :api
+        return self.filter(downgrades=True)
+
+    def duplicated(self):
+        # :api
+        installed_name = self.installed()._name_dict()
+        duplicated = []
+        for name, pkgs in installed_name.items():
+            if len(pkgs) > 1:
+                for x in range(0, len(pkgs)):
+                    dups = False
+                    for y in range(x+1, len(pkgs)):
+                        if not ((pkgs[x].evr_cmp(pkgs[y]) == 0)
+                                and (pkgs[x].arch != pkgs[y].arch)):
+                            duplicated.append(pkgs[y])
+                            dups = True
+                    if dups:
+                        duplicated.append(pkgs[x])
+        return self.filter(pkg=duplicated)
+
+    def extras(self):
+        # :api
+        # anything installed but not in a repo is an extra
+        avail_dict = self.available()._pkgtup_dict()
+        inst_dict = self.installed()._pkgtup_dict()
+        extras = []
+        for pkgtup, pkgs in inst_dict.items():
+            if pkgtup not in avail_dict:
+                extras.extend(pkgs)
+        return self.filter(pkg=extras)
+
+    def installed(self):
+        # :api
+        return self.filter(reponame=SYSTEM_REPO_NAME)
+
+    def latest(self, limit=1):
+        # :api
+        if limit == 1:
+            return self.filter(latest_per_arch=True)
+        else:
+            pkgs_na = self._na_dict()
+            latest_pkgs = []
+            for pkg_list in pkgs_na.values():
+                pkg_list.sort(reverse=True)
+                if limit > 0:
+                    latest_pkgs.extend(pkg_list[0:limit])
+                else:
+                    latest_pkgs.extend(pkg_list[-limit:])
+            return self.filter(pkg=latest_pkgs)
+
+    def upgrades(self):
+        # :api
+        return self.filter(upgrades=True)
+
+    def _unneeded(self, sack, yumdb, debug_solver=False):
+        goal = Goal(sack)
+        goal.push_userinstalled(self.installed(), yumdb)
+        solved = goal.run()
+        if debug_solver:
+            goal.write_debugdata('./debugdata-autoremove')
+        assert solved
+        unneeded = goal.list_unneeded()
+        return self.filter(pkg=unneeded)
+
+    def _name_dict(self):
+        d = {}
+        for pkg in self:
+            d.setdefault(pkg.name, []).append(pkg)
+        return d
+
+    def _na_dict(self):
+        d = {}
+        for pkg in self.run():
+            key = (pkg.name, pkg.arch)
+            d.setdefault(key, []).append(pkg)
+        return d
+
+    def _pkgtup_dict(self):
+        d = {}
+        for pkg in self.run():
+            d.setdefault(pkg.pkgtup, []).append(pkg)
+        return d
+
+    def _recent(self, recent):
+        now = time.time()
+        recentlimit = now - (recent*86400)
+        recent = [po for po in self if int(po.buildtime) > recentlimit]
+        return self.filter(pkg=recent)
+
+    def _nevra(self, *args):
+        args_len = len(args)
+        if args_len == 3:
+            return self.filter(name=args[0], evr=args[1], arch=args[2])
+        if args_len == 1:
+            nevra = split_nevra(args[0])
+        elif args_len == 5:
+            nevra = args
+        else:
+            raise TypeError("nevra() takes 1, 3 or 5 str params")
+        return self.filter(
+            name=nevra.name, epoch=nevra.epoch, version=nevra.version,
+            release=nevra.release, arch=nevra.arch)
+
 
 class Selector(_hawkey.Selector):
 
