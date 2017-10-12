@@ -1064,11 +1064,6 @@ init_result(HyQuery q)
         if (pool->considered)
             map_and(q->result, pool->considered);
     }
-
-    // make sure the odd bits are cleared:
-    unsigned total_bits = q->result->size << 3;
-    for (guint i = pool->nsolvables; i < total_bits; ++i)
-        MAPCLR(q->result, i);
 }
 
 void
