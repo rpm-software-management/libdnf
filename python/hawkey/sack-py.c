@@ -24,7 +24,6 @@
 #include "dnf-types.h"
 #include "hy-package-private.h"
 #include "hy-packageset.h"
-#include "hy-query.h"
 #include "hy-repo.h"
 #include "dnf-sack-private.h"
 #include "hy-util.h"
@@ -35,7 +34,6 @@
 #include "hawkey-pysys.h"
 #include "iutil-py.h"
 #include "package-py.h"
-#include "query-py.h"
 #include "repo-py.h"
 #include "sack-py.h"
 
@@ -430,13 +428,7 @@ static PyObject *
 add_excludes(_SackObject *self, PyObject *o)
 {
     DnfSack *sack = self->sack;
-    DnfPackageSet *pset;
-
-    if (queryObject_Check(o)) {
-        HyQuery target = queryFromPyObject(o);
-        pset = hy_query_run_set(target);
-    } else
-        pset = pyseq_to_packageset(o, sack);
+    DnfPackageSet *pset = pyseq_to_packageset(o, sack);
     if (pset == NULL)
         return NULL;
     dnf_sack_add_excludes(sack, pset);
@@ -448,14 +440,7 @@ static PyObject *
 add_includes(_SackObject *self, PyObject *o)
 {
     DnfSack *sack = self->sack;
-
-    DnfPackageSet *pset;
-
-    if (queryObject_Check(o)) {
-        HyQuery target = queryFromPyObject(o);
-        pset = hy_query_run_set(target);
-    } else
-        pset = pyseq_to_packageset(o, sack);
+    DnfPackageSet *pset = pyseq_to_packageset(o, sack);
     if (pset == NULL)
         return NULL;
     dnf_sack_add_includes(sack, pset);
@@ -467,14 +452,7 @@ static PyObject *
 remove_excludes(_SackObject *self, PyObject *o)
 {
     DnfSack *sack = self->sack;
-
-    DnfPackageSet *pset;
-
-    if (queryObject_Check(o)) {
-        HyQuery target = queryFromPyObject(o);
-        pset = hy_query_run_set(target);
-    } else
-        pset = pyseq_to_packageset(o, sack);
+    DnfPackageSet *pset = pyseq_to_packageset(o, sack);
     if (pset == NULL)
         return NULL;
     dnf_sack_remove_excludes(sack, pset);
@@ -486,14 +464,7 @@ static PyObject *
 remove_includes(_SackObject *self, PyObject *o)
 {
     DnfSack *sack = self->sack;
-
-    DnfPackageSet *pset;
-
-    if (queryObject_Check(o)) {
-        HyQuery target = queryFromPyObject(o);
-        pset = hy_query_run_set(target);
-    } else
-        pset = pyseq_to_packageset(o, sack);
+    DnfPackageSet *pset = pyseq_to_packageset(o, sack);
     if (pset == NULL)
         return NULL;
     dnf_sack_remove_includes(sack, pset);
@@ -505,14 +476,7 @@ static PyObject *
 set_excludes(_SackObject *self, PyObject *o)
 {
     DnfSack *sack = self->sack;
-
-    DnfPackageSet *pset;
-
-    if (queryObject_Check(o)) {
-        HyQuery target = queryFromPyObject(o);
-        pset = hy_query_run_set(target);
-    } else
-        pset = pyseq_to_packageset(o, sack);
+    DnfPackageSet *pset = pyseq_to_packageset(o, sack);
     if (pset == NULL)
         return NULL;
     dnf_sack_set_excludes(sack, pset);
@@ -524,14 +488,7 @@ static PyObject *
 set_includes(_SackObject *self, PyObject *o)
 {
     DnfSack *sack = self->sack;
-
-    DnfPackageSet *pset;
-
-    if (queryObject_Check(o)) {
-        HyQuery target = queryFromPyObject(o);
-        pset = hy_query_run_set(target);
-    } else
-        pset = pyseq_to_packageset(o, sack);
+    DnfPackageSet *pset = pyseq_to_packageset(o, sack);
     if (pset == NULL)
         return NULL;
     dnf_sack_set_includes(sack, pset);
