@@ -19,9 +19,20 @@
  LIBDNF Release Notes
 ###################
 
-===================
+====================
+0.11.1 Release Notes
+====================
+
+* Improvement query performance
+* Run file query in hy_subject_get_best_solution only for files (arguments that start with ``/`` or ``*/``)
+
+Bugs fixed in 0.11.1:
+
+* :rhbug:`1498207`
+
+====================
 0.10.1 Release Notes
-===================
+====================
 
 It improves query performance with ``name`` and ``arch`` filters. Also ``nevra`` filter will now
 handle string with or without ``epoch``.
