@@ -25,6 +25,7 @@
 #include "dnf-advisoryref.h"
 #include "hy-package-private.h"
 #include "hy-packageset-private.h"
+#include "hy-query.h"
 #include "dnf-reldep-private.h"
 #include "dnf-reldep-list-private.h"
 #include "hy-iutil.h"
@@ -33,6 +34,7 @@
 #include "advisoryref-py.h"
 #include "iutil-py.h"
 #include "package-py.h"
+#include "query-py.h"
 #include "reldep-py.h"
 #include "sack-py.h"
 #include "pycomp.h"
@@ -186,10 +188,18 @@ packageset_to_pylist(DnfPackageSet *pset, PyObject *sack)
 DnfPackageSet *
 pyseq_to_packageset(PyObject *obj, DnfSack *sack)
 {
+    DnfPackageSet *pset;
+
+    if (queryObject_Check(obj)) {
+        HyQuery target = queryFromPyObject(obj);
+        pset = hy_query_run_set(target);
+        return pset;
+    }
+
     PyObject *sequence = PySequence_Fast(obj, "Expected a sequence.");
     if (sequence == NULL)
         return NULL;
-    DnfPackageSet *pset = dnf_packageset_new(sack);
+    pset = dnf_packageset_new(sack);
 
     const unsigned count = PySequence_Size(sequence);
     for (unsigned int i = 0; i < count; ++i) {
