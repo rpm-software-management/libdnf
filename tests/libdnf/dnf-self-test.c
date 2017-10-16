@@ -22,7 +22,7 @@
 
 #include <glib-object.h>
 #include <stdlib.h>
-
+#include <glib/gstdio.h>
 #include "libdnf/libdnf.h"
 
 /**
@@ -1066,6 +1066,118 @@ dnf_repo_loader_gpg_asc_func(void)
     g_assert(ret);
 }
 
+static void
+dnf_repo_loader_cache_dir_check_func(void)
+{
+    DnfRepoLoader *repo_loader;
+    DnfRepo *repo;
+    gboolean ret;
+    g_autoptr(GError) error = NULL;
+    g_autoptr(DnfContext) ctx = NULL;
+    g_autofree gchar *repos_dir = NULL;
+    g_autofree gchar *cache_dir = NULL;
+    const char *cache_location = NULL;
+    g_autofree gchar *expected_cache_suffix = NULL;
+
+    /* set up local context*/
+    ctx = dnf_context_new();
+    repos_dir = dnf_test_get_filename("cache-test/yum.repos.d");
+    cache_dir = g_build_filename(TESTDATADIR, "cache-test/cache-dir", NULL);
+    dnf_context_set_repo_dir(ctx, repos_dir);
+    dnf_context_set_solv_dir(ctx, "/tmp");
+    dnf_context_set_cache_dir(ctx, cache_dir);
+
+    ret = dnf_context_setup(ctx, NULL, &error);
+    g_assert_no_error(error);
+    g_assert(ret);
+
+    /* get the testing repo */
+    repo_loader = dnf_repo_loader_new(ctx);
+    repo = dnf_repo_loader_get_repo_by_id(repo_loader, "fedora", &error);
+    g_assert_no_error(error);
+    g_assert(repo != NULL);
+
+    /* check the repo location to verify it has the correct suffix */
+    cache_location = dnf_repo_get_location(repo);
+    expected_cache_suffix =  g_strjoin("-", dnf_context_get_release_ver(ctx),
+                                       dnf_context_get_base_arch(ctx), NULL);
+    g_assert(g_str_has_suffix(cache_location, expected_cache_suffix));
+}
+
+
+static void
+dnf_context_cache_clean_check_func(void)
+{
+
+    DnfRepoLoader *repo_loader;
+    DnfRepo *repo;
+    gboolean ret;
+    g_autoptr(GError) error = NULL;
+    g_autoptr(DnfContext) ctx = NULL;
+    g_autofree gchar *repos_dir = NULL;
+    g_autofree gchar *cache_dir = NULL;
+    const gchar* repo_location;
+    guint file_result;
+
+    /* set up local context*/
+    ctx = dnf_context_new();
+    repos_dir = dnf_test_get_filename("cache-test/yum.repos.d");
+    cache_dir = g_build_filename(TESTDATADIR, "cache-test/cache-dir", NULL);
+    dnf_context_set_repo_dir(ctx, repos_dir);
+    dnf_context_set_solv_dir(ctx, "/tmp");
+    dnf_context_set_cache_dir(ctx, cache_dir);
+    dnf_context_set_lock_dir(ctx, cache_dir);
+
+    ret = dnf_context_setup(ctx, NULL, &error);
+    g_assert_no_error(error);
+    g_assert(ret);
+
+    /* get the repo location */
+    repo_loader = dnf_repo_loader_new(ctx);
+    repo = dnf_repo_loader_get_repo_by_id(repo_loader, "fedora", &error);
+    repo_location = dnf_repo_get_location(repo);
+
+    /* Create test files for different flags */
+    g_autofree gchar* package_directory = g_build_filename(repo_location, "packages", NULL);
+    file_result = g_mkdir_with_parents(package_directory, 0777);
+    g_assert(file_result == 0);
+
+    /* File for Cleaning Metadata */
+    g_autofree gchar* repo_data_folder = g_build_filename(repo_location, "repodata", NULL);
+    file_result = g_mkdir_with_parents(repo_data_folder, 0777);
+    g_assert(file_result == 0);
+
+    g_autofree gchar* xml_string = g_build_filename(repo_location, "metalink.xml", NULL);
+    g_fopen(xml_string, "w");
+
+    /* File for Cleaning Expired Cache */
+    g_autofree gchar* expire_cache_file = g_build_filename(repo_location, "repomd.xml", NULL);
+    g_fopen(expire_cache_file, "w");
+
+    /* File that is not for any flag case, used for testing functionality */
+    g_autofree gchar* non_matching_file = g_build_filename(repo_location, "nomatch.xxx", NULL);
+    g_fopen(non_matching_file, "w");
+
+    /* Then we do the cleaning with dnf_clean_cache, to demonstate it works */
+    DnfContextCleanFlags flags = DNF_CONTEXT_CLEAN_EXPIRE_CACHE;
+    flags |= DNF_CONTEXT_CLEAN_PACKAGES;
+    flags |= DNF_CONTEXT_CLEAN_METADATA;
+
+    ret = dnf_context_clean_cache(ctx, flags, &error);
+    g_assert(ret);
+
+    /* Verify the functionality of the function */
+    g_assert(!g_file_test(package_directory, G_FILE_TEST_EXISTS));
+    g_assert(!g_file_test(repo_data_folder, G_FILE_TEST_EXISTS));
+    g_assert(!g_file_test(xml_string, G_FILE_TEST_EXISTS));
+    g_assert(!g_file_test(expire_cache_file, G_FILE_TEST_EXISTS));
+    g_assert(g_file_test(non_matching_file, G_FILE_TEST_EXISTS));
+
+    /* At this stage we clean up the files that we created for testing */
+    dnf_remove_recursive(cache_dir, &error);
+    g_assert_no_error(error);
+}
+
 int
 main(int argc, char **argv)
 {
@@ -1087,7 +1199,9 @@ main(int argc, char **argv)
     g_test_add_func("/libdnf/repo_loader{gpg-no-asc}", dnf_repo_loader_gpg_no_asc_func);
     g_test_add_func("/libdnf/repo_loader", dnf_repo_loader_func);
     g_test_add_func("/libdnf/repo_loader{gpg-no-pubkey}", dnf_repo_loader_gpg_no_pubkey_func);
+    g_test_add_func("/libdnf/repo_loader{cache-dir-check}", dnf_repo_loader_cache_dir_check_func);
     g_test_add_func("/libdnf/context", dnf_context_func);
+    g_test_add_func("/libdnf/context{cache-clean-check}", dnf_context_cache_clean_check_func);
     g_test_add_func("/libdnf/lock", dnf_lock_func);
     g_test_add_func("/libdnf/lock[threads]", dnf_lock_threads_func);
     g_test_add_func("/libdnf/repo", ch_test_repo_func);

@@ -2009,6 +2009,102 @@ dnf_context_invalidate(DnfContext *context, const gchar *message)
 }
 
 /**
+ * dnf_context_clean_cache:
+ * @context: a #DnfContext instance.
+ * @flags: #DnfContextCleanFlags flag, e.g. %DNF_CONTEXT_CLEAN_EXPIRE_CACHE
+ * @error: a #GError instance
+ *
+ * Clean the cache content in the current cache directory based
+ * on the context flags. A valid cache directory and lock directory
+ * is expected to be set prior to using this function. Use it with care.
+ *
+ * Currently support four different clean flags:
+ * 1: DNF_CONTEXT_CLEAN_EXPIRE_CACHE: Elminate the entries that give information about cache entries' age. i.e: 'repomd.xml' will be deleted in libdnf case
+ * 2: DNF_CONTEXT_CLEAN_PACKAGES: Eliminate any cached packages. i.e: 'packages' folder will be deleted
+ * 3: DNF_CONTEXT_CLEAN_METADATA: Eliminate all of the files which libdnf uses to determine remote availability of packages. i.e: 'repodata'folder and 'metalink.xml' will be deleted
+ * 4: DNF_CONTEXT_CLEAN_ALL: Does all the actions above and clean up other files that are generated due to various reasons. e.g: cache directories from previous version of operating system
+ *
+ * Note: when DNF_CONTEXT_CLEAN_ALL flag is seen, the other flags will be ignored
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.9.4
+ **/
+gboolean
+dnf_context_clean_cache(DnfContext *context,
+                        DnfContextCleanFlags flags,
+                        GError **error)
+{
+    DnfRepo *src;
+    g_autoptr(GPtrArray) suffix_list = g_ptr_array_new();
+    const gchar* directory_location;
+    gboolean ret;
+    guint lock_id = 0;
+
+    /* Set up the context if it hasn't been set earlier */
+    if (!dnf_context_setup(context, NULL, error))
+        return FALSE;
+
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    /* We expect cache directories to be set when cleaning cache entries */
+    if (priv->cache_dir == NULL) {
+        g_set_error_literal(error,
+                            DNF_ERROR,
+                            DNF_ERROR_INTERNAL_ERROR,
+                            "No cache dir set");
+        return FALSE;
+    }
+
+    /* When clean all flags show up, we remove everything from cache directory */
+    if (flags & DNF_CONTEXT_CLEAN_ALL) {
+        return dnf_remove_recursive(priv->cache_dir, error);
+    }
+
+    /* We acquire the metadata related lock */
+    lock_id = dnf_lock_take(priv->lock,
+                            DNF_LOCK_TYPE_METADATA,
+                            DNF_LOCK_MODE_PROCESS,
+                            error);
+    if (lock_id == 0)
+        return FALSE;
+
+    /* After the above setup is done, we prepare file extensions based on flag types */
+    if (flags & DNF_CONTEXT_CLEAN_PACKAGES)
+        g_ptr_array_add(suffix_list, (char*) "packages");
+    if (flags & DNF_CONTEXT_CLEAN_METADATA) {
+        g_ptr_array_add(suffix_list, (char*) "metalink.xml");
+        g_ptr_array_add(suffix_list, (char*) "repodata");
+    }
+    if (flags & DNF_CONTEXT_CLEAN_EXPIRE_CACHE)
+        g_ptr_array_add(suffix_list, (char*) "repomd.xml");
+
+    /* Add a NULL terminator for future looping */
+    g_ptr_array_add(suffix_list, NULL);
+
+    /* We then start looping all of the repos to perform file deletion */
+    for (guint counter = 0; counter < priv->repos->len; counter++) {
+        src = g_ptr_array_index(priv->repos, counter);
+        gboolean deleteable_repo = dnf_repo_get_kind(src) == DNF_REPO_KIND_REMOTE;
+        directory_location = dnf_repo_get_location(src);
+
+        /* We check if the repo is qualified to be cleaned */
+        if (deleteable_repo &&
+            g_file_test(directory_location, G_FILE_TEST_EXISTS)) {
+            ret = dnf_delete_files_matching(directory_location,
+                                            (const char* const*) suffix_list->pdata,
+                                            error);
+            if(!ret)
+                goto out;
+            }
+        }
+
+    out:
+        /* release the acquired lock */
+        if (!dnf_lock_release(priv->lock, lock_id, error))
+            return FALSE;
+        return ret;
+}
+/**
  * dnf_context_new:
  *
  * Creates a new #DnfContext.
