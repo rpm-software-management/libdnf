@@ -29,6 +29,8 @@
  */
 
 
+#include <glib/gi18n-lib.h>
+
 #include <rpm/rpmlib.h>
 #include <rpm/rpmts.h>
 #include <rpm/rpmlog.h>
@@ -262,7 +264,7 @@ dnf_transaction_ensure_repo(DnfTransaction *transaction,
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_INTERNAL_ERROR,
-                    "Sources not set when trying to ensure package %s",
+                    _("Sources not set when trying to ensure package %s"),
                     dnf_package_get_name(pkg));
         return FALSE;
     }
@@ -290,8 +292,8 @@ dnf_transaction_ensure_repo(DnfTransaction *transaction,
     g_set_error(error,
                 DNF_ERROR,
                 DNF_ERROR_INTERNAL_ERROR,
-                "Failed to ensure %s as repo %s not "
-                "found(%i repos loaded)",
+                _("Failed to ensure %1$s as repo %2$s not "
+                  "found(%3$i repos loaded)"),
                 dnf_package_get_name(pkg),
                 dnf_package_get_reponame(pkg),
                 priv->repos->len);
@@ -338,7 +340,7 @@ dnf_transaction_gpgcheck_package(DnfTransaction *transaction,
 
     /* ensure the filename is set */
     if (!dnf_transaction_ensure_repo(transaction, pkg, error)) {
-        g_prefix_error(error, "Failed to check untrusted: ");
+        g_prefix_error(error, _("Failed to check untrusted: "));
         return FALSE;
     }
 
@@ -348,7 +350,7 @@ dnf_transaction_gpgcheck_package(DnfTransaction *transaction,
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_FILE_NOT_FOUND,
-                    "Downloaded file for %s not found",
+                    _("Downloaded file for %s not found"),
                     dnf_package_get_name(pkg));
         return FALSE;
     }
@@ -370,8 +372,8 @@ dnf_transaction_gpgcheck_package(DnfTransaction *transaction,
             g_set_error(error,
                         DNF_ERROR,
                         DNF_ERROR_FILE_INVALID,
-                        "package %s cannot be verified "
-                        "and repo %s is GPG enabled: %s",
+                        _("package %1$s cannot be verified "
+                          "and repo %2$s is GPG enabled: %3$s"),
                         dnf_package_get_nevra(pkg),
                         dnf_repo_get_id(repo),
                         error_local->message);
@@ -785,7 +787,7 @@ dnf_transaction_delete_packages(DnfTransaction *transaction,
         g_set_error_literal(error,
                             DNF_ERROR,
                             DNF_ERROR_FAILED_CONFIG_PARSING,
-                            "Failed to get value for CacheDir");
+                            _("Failed to get value for CacheDir"));
         return FALSE;
     }
 
@@ -876,7 +878,7 @@ dnf_transaction_write_yumdb_install_item(DnfTransaction *transaction,
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_INTERNAL_ERROR,
-                    "no yumdb entry for %s as no pkgid",
+                    _("no yumdb entry for %s as no pkgid"),
                     dnf_package_get_package_id(pkg));
         return FALSE;
     }
@@ -1011,14 +1013,14 @@ dnf_transaction_check_free_space(DnfTransaction *transaction,
         g_set_error_literal(error,
                             DNF_ERROR,
                             DNF_ERROR_FAILED_CONFIG_PARSING,
-                            "Failed to get value for CacheDir");
+                            _("Failed to get value for CacheDir"));
         return FALSE;
     }
 
     file = g_file_new_for_path(cachedir);
     filesystem_info = g_file_query_filesystem_info(file, G_FILE_ATTRIBUTE_FILESYSTEM_FREE, NULL, error);
     if (filesystem_info == NULL) {
-        g_prefix_error(error, "Failed to get filesystem free size for %s: ", cachedir);
+        g_prefix_error(error, _("Failed to get filesystem free size for %s: "), cachedir);
         return FALSE;
     }
 
@@ -1026,7 +1028,7 @@ dnf_transaction_check_free_space(DnfTransaction *transaction,
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_FAILED,
-                    "Failed to get filesystem free size for %s",
+                    _("Failed to get filesystem free size for %s"),
                     cachedir);
         return FALSE;
     }
@@ -1041,7 +1043,7 @@ dnf_transaction_check_free_space(DnfTransaction *transaction,
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_NO_SPACE,
-                    "Not enough free space in %s: needed %s, available %s",
+                    _("Not enough free space in %1$s: needed %2$s, available %3$s"),
                     cachedir,
                     formatted_download_size,
                     formatted_free_size);
@@ -1313,7 +1315,7 @@ dnf_transaction_commit(DnfTransaction *transaction,
         g_set_error_literal(error,
                             DNF_ERROR,
                             DNF_ERROR_INTERNAL_ERROR,
-                            "failed to set root");
+                            _("failed to set root"));
         goto out;
     }
     rpmtsSetNotifyCallback(priv->ts,
@@ -1490,7 +1492,7 @@ dnf_transaction_commit(DnfTransaction *transaction,
             g_set_error(error,
                         DNF_ERROR,
                         DNF_ERROR_INTERNAL_ERROR,
-                        "Error %i running transaction test", rc);
+                        _("Error %i running transaction test"), rc);
             goto out;
         }
         if (rc > 0) {
@@ -1516,7 +1518,7 @@ dnf_transaction_commit(DnfTransaction *transaction,
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_INTERNAL_ERROR,
-                    "Error %i running transaction", rc);
+                    _("Error %i running transaction"), rc);
         goto out;
     }
     if (rc > 0) {
@@ -1531,8 +1533,8 @@ dnf_transaction_commit(DnfTransaction *transaction,
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_INTERNAL_ERROR,
-                    "Transaction did not go to writing phase, "
-                    "but returned no error(%i)",
+                    _("Transaction did not go to writing phase, "
+                      "but returned no error(%i)"),
                     priv->step);
         goto out;
     }

@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <glib/gi18n-lib.h>
 
 // libsolv
 #include <solv/evr.h>
@@ -402,19 +403,19 @@ list_results(HyGoal goal, Id type_filter1, Id type_filter2, GError **error)
             g_set_error_literal (error,
                                  DNF_ERROR,
                                  DNF_ERROR_INTERNAL_ERROR,
-                                 "no solv in the goal");
+                                 _("no solv in the goal"));
             return NULL;
         } else if (goal->removal_of_protected->len) {
             g_set_error_literal (error,
                                  DNF_ERROR,
                                  DNF_ERROR_REMOVAL_OF_PROTECTED_PKG,
-                                 "no solution, cannot remove protected package");
+                                 _("no solution, cannot remove protected package"));
             return NULL;
         }
         g_set_error_literal (error,
                              DNF_ERROR,
                              DNF_ERROR_NO_SOLUTION,
-                             "no solution possible");
+                             _("no solution possible"));
         return NULL;
     }
     queue_init(&transpkgs);
@@ -854,7 +855,7 @@ hy_goal_install_selector(HyGoal goal, HySelector sltr, GError **error)
         g_set_error_literal (error,
                              DNF_ERROR,
                              rc,
-                             "failed to install selector");
+                             _("failed to install selector"));
         return FALSE;
     }
     return TRUE;
@@ -870,7 +871,7 @@ hy_goal_install_selector_optional(HyGoal goal, HySelector sltr, GError **error)
         g_set_error_literal (error,
                              DNF_ERROR,
                              rc,
-                             "failed to install optional selector");
+                             _("failed to install optional selector"));
         return FALSE;
     }
     return TRUE;
@@ -1177,8 +1178,8 @@ hy_goal_describe_protected_removal(HyGoal goal)
     Pool *pool = goal->solv->pool;
     Solvable *s;
 
-    string = g_string_new("The operation would result in removing"
-                          " the following protected packages: ");
+    string = g_string_new(_("The operation would result in removing"
+                            " the following protected packages: "));
 
     if ((goal->removal_of_protected != NULL) && (0 < goal->removal_of_protected->len)) {
         for (j = 0; j < goal->removal_of_protected->len; j++) {
@@ -1334,7 +1335,7 @@ hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error)
         g_set_error_literal (error,
                              DNF_ERROR,
                              DNF_ERROR_INTERNAL_ERROR,
-                             "no solver set");
+                             _("no solver set"));
         return FALSE;
     }
 
@@ -1344,7 +1345,7 @@ hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error)
         g_set_error (error,
                      DNF_ERROR,
                      DNF_ERROR_FILE_INVALID,
-                     "failed to make %s absolute", dir);
+                     _("failed to make %s absolute"), dir);
         return FALSE;
     }
     g_debug("writing solver debugdata to %s", absdir);
@@ -1353,7 +1354,7 @@ hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error)
         g_set_error (error,
                      DNF_ERROR,
                      DNF_ERROR_FILE_INVALID,
-                     "failed writing debugdata to %s: %s",
+                     _("failed writing debugdata to %1$s: %2$s"),
                      absdir, strerror(errno));
         return FALSE;
     }

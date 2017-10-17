@@ -32,6 +32,7 @@
 
 
 #include <glib.h>
+#include <glib/gi18n-lib.h>
 #include <rpm/rpmlib.h>
 #include <rpm/rpmlog.h>
 #include <rpm/rpmdb.h>
@@ -83,7 +84,7 @@ dnf_rpmts_add_install_filename(rpmts ts,
             g_set_error(error,
                         DNF_ERROR,
                         DNF_ERROR_INTERNAL_ERROR,
-                        "signature does not verify for %s",
+                        _("signature does not verify for %s"),
                         filename);
             goto out;
         default:
@@ -91,7 +92,7 @@ dnf_rpmts_add_install_filename(rpmts ts,
             g_set_error(error,
                         DNF_ERROR,
                         DNF_ERROR_INTERNAL_ERROR,
-                        "failed to open(generic error): %s",
+                        _("failed to open(generic error): %s"),
                         filename);
             goto out;
         }
@@ -104,7 +105,7 @@ dnf_rpmts_add_install_filename(rpmts ts,
             g_set_error(error,
                         DNF_ERROR,
                         DNF_ERROR_INTERNAL_ERROR,
-                        "failed to verify key for %s",
+                        _("failed to verify key for %s"),
                         filename);
             goto out;
         case RPMRC_NOKEY:
@@ -112,7 +113,7 @@ dnf_rpmts_add_install_filename(rpmts ts,
             g_set_error(error,
                         DNF_ERROR,
                         DNF_ERROR_INTERNAL_ERROR,
-                        "public key unavailable for %s",
+                        _("public key unavailable for %s"),
                         filename);
             goto out;
         case RPMRC_NOTFOUND:
@@ -120,7 +121,7 @@ dnf_rpmts_add_install_filename(rpmts ts,
             g_set_error(error,
                         DNF_ERROR,
                         DNF_ERROR_INTERNAL_ERROR,
-                        "signature not found for %s",
+                        _("signature not found for %s"),
                         filename);
             goto out;
         case RPMRC_FAIL:
@@ -128,7 +129,7 @@ dnf_rpmts_add_install_filename(rpmts ts,
             g_set_error(error,
                         DNF_ERROR,
                         DNF_ERROR_INTERNAL_ERROR,
-                        "signature does not verify for %s",
+                        _("signature does not verify for %s"),
                         filename);
             goto out;
         default:
@@ -136,7 +137,7 @@ dnf_rpmts_add_install_filename(rpmts ts,
             g_set_error(error,
                         DNF_ERROR,
                         DNF_ERROR_INTERNAL_ERROR,
-                        "failed to open(generic error): %s",
+                        _("failed to open(generic error): %s"),
                         filename);
             goto out;
         }
@@ -149,7 +150,7 @@ dnf_rpmts_add_install_filename(rpmts ts,
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_INTERNAL_ERROR,
-                    "failed to add install element: %s [%i]",
+                    _("failed to add install element: %1$s [%2$i]"),
                     filename, res);
         goto out;
     }
@@ -286,7 +287,7 @@ dnf_rpmts_look_for_problems(rpmts ts, GError **error)
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_INTERNAL_ERROR,
-                    "Error running transaction: %s",
+                    _("Error running transaction: %s"),
                     string->str);
         goto out;
     }
@@ -295,7 +296,7 @@ dnf_rpmts_look_for_problems(rpmts ts, GError **error)
     g_set_error_literal(error,
                         DNF_ERROR,
                         DNF_ERROR_INTERNAL_ERROR,
-                        "Error running transaction and no problems were reported!");
+                        _("Error running transaction and no problems were reported!"));
 out:
     rpmpsFree(probs);
     return ret;
@@ -358,7 +359,7 @@ dnf_rpmts_find_package(rpmts ts, DnfPackage *pkg, GError **error)
             g_set_error_literal(error,
                                 DNF_ERROR,
                                 DNF_ERROR_UNFINISHED_TRANSACTION,
-                                "Fatal error, run database recovery");
+                                _("Fatal error, run database recovery"));
         }
         goto out;
     }
@@ -367,7 +368,7 @@ dnf_rpmts_find_package(rpmts ts, DnfPackage *pkg, GError **error)
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_FILE_NOT_FOUND,
-                    "failed to find package %s",
+                    _("failed to find package %s"),
                     dnf_package_get_name(pkg));
         goto out;
     }
@@ -413,7 +414,7 @@ dnf_rpmts_add_remove_pkg(rpmts ts, DnfPackage *pkg, GError **error)
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_INTERNAL_ERROR,
-                    "could not add erase element %s(%i)",
+                    _("could not add erase element %1$s(%2$i)"),
                     dnf_package_get_name(pkg), retval);
         goto out;
     }

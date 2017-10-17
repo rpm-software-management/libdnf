@@ -81,6 +81,8 @@
  */
 
 
+#include <glib/gi18n-lib.h>
+
 #include "dnf-state.h"
 #include "dnf-utils.h"
 
@@ -1178,7 +1180,7 @@ dnf_state_set_steps_real(DnfState *state, GError **error, const gchar *strloc, g
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_INTERNAL_ERROR,
-                    "percentage not 100: %i",
+                    _("percentage not 100: %i"),
                     total);
         return FALSE;
     }
@@ -1188,7 +1190,7 @@ dnf_state_set_steps_real(DnfState *state, GError **error, const gchar *strloc, g
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_INTERNAL_ERROR,
-                    "failed to set number steps: %i",
+                    _("failed to set number steps: %i"),
                     i+1);
         return FALSE;
     }
@@ -1287,7 +1289,7 @@ dnf_state_check(DnfState *state, GError **error)
         g_set_error_literal(error,
                             DNF_ERROR,
                             DNF_ERROR_CANCELLED,
-                            "cancelled by user action");
+                            _("cancelled by user action"));
         return FALSE;
     }
     return TRUE;
@@ -1326,7 +1328,7 @@ dnf_state_done_real(DnfState *state, GError **error, const gchar *strloc)
     /* did we call done on a state that did not have a size set? */
     if (priv->steps == 0) {
         g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
-                    "done on a state %p that did not have a size set! [%s]",
+                    _("done on a state %1$p that did not have a size set! [%2$s]"),
                     state, strloc);
         dnf_state_print_parent_chain(state, 0);
         return FALSE;
@@ -1351,7 +1353,7 @@ dnf_state_done_real(DnfState *state, GError **error, const gchar *strloc)
     /* is already at 100%? */
     if (priv->current >= priv->steps) {
         g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
-                    "already at 100%% state [%s]", strloc);
+                    _("already at 100%% state [%s]"), strloc);
         dnf_state_print_parent_chain(state, 0);
         return FALSE;
     }
