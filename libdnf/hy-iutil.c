@@ -21,7 +21,6 @@
 #define _GNU_SOURCE
 #include <assert.h>
 #include <errno.h>
-#include <glib.h>
 #include <fcntl.h>
 #include <linux/limits.h>
 #include <pwd.h>
@@ -44,6 +43,7 @@
 
 // glib
 #include <glib.h>
+#include <glib/gi18n-lib.h>
 
 // hawkey
 #include "dnf-types.h"
@@ -311,7 +311,7 @@ mv(const char *old, const char *new, GError **error)
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_FILE_INVALID,
-                    "Failed renaming %s to %s: %s",
+                    _("Failed renaming %1$s to %2$s: %3$s"),
                     old, new, strerror(errno));
         return FALSE;
     }
@@ -319,7 +319,7 @@ mv(const char *old, const char *new, GError **error)
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_FILE_INVALID,
-                    "ailed setting perms on %s: %s",
+                    _("Failed setting perms on %1$s: %2$s"),
                     new, strerror(errno));
         return FALSE;
     }

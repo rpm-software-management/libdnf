@@ -31,6 +31,7 @@
 
 #include <errno.h>
 #include <stdlib.h>
+#include <glib/gi18n-lib.h>
 #include <glib/gstdio.h>
 
 #include "dnf-types.h"
@@ -105,7 +106,7 @@ dnf_remove_recursive(const gchar *directory, GError **error)
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_INTERNAL_ERROR,
-                    "cannot open directory %s: %s",
+                    _("cannot open directory %1$s: %2$s"),
                     directory, error_local->message);
         return FALSE;
     }
@@ -130,7 +131,7 @@ dnf_remove_recursive(const gchar *directory, GError **error)
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_INTERNAL_ERROR,
-                    "failed to remove %s", directory);
+                    _("failed to remove %s"), directory);
         return FALSE;
     }
     return TRUE;

@@ -43,6 +43,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+#include <glib/gi18n-lib.h>
 
 #include <solv/evr.h>
 #include <solv/pool.h>
@@ -447,7 +448,7 @@ load_ext(DnfSack *sack, HyRepo hrepo, int which_repodata,
         g_set_error (error,
                      DNF_ERROR,
                      DNF_ERROR_NO_CAPABILITY,
-                     "no %d string for %s",
+                     _("no %1$d string for %2$s"),
                      which_filename, name);
         return FALSE;
     }
@@ -470,7 +471,7 @@ load_ext(DnfSack *sack, HyRepo hrepo, int which_repodata,
             g_set_error_literal (error,
                                  DNF_ERROR,
                                  DNF_ERROR_INTERNAL_ERROR,
-                                 "failed to add solv");
+                                 _("failed to add solv"));
             return FALSE;
         } else {
             repo_update_state(hrepo, which_repodata, _HY_LOADED_CACHE);
@@ -488,7 +489,7 @@ load_ext(DnfSack *sack, HyRepo hrepo, int which_repodata,
         g_set_error (error,
                      DNF_ERROR,
                      DNF_ERROR_FILE_INVALID,
-                     "failed to open: %s", fn);
+                     _("failed to open: %s"), fn);
         return FALSE;
     }
     g_debug("%s: loading: %s", __func__, fn);
@@ -558,7 +559,7 @@ write_main(DnfSack *sack, HyRepo hrepo, int switchtosolv, GError **error)
         g_set_error (error,
                      DNF_ERROR,
                      DNF_ERROR_FILE_INVALID,
-                     "cannot create temporary file: %s",
+                     _("cannot create temporary file: %s"),
                      tmp_fn_templ);
         goto done;
     }
@@ -569,7 +570,7 @@ write_main(DnfSack *sack, HyRepo hrepo, int switchtosolv, GError **error)
         g_set_error (error,
                      DNF_ERROR,
                      DNF_ERROR_FILE_INVALID,
-                     "failed opening tmp file: %s",
+                     _("failed opening tmp file: %s"),
                      strerror(errno));
         goto done;
     }
@@ -581,7 +582,7 @@ write_main(DnfSack *sack, HyRepo hrepo, int switchtosolv, GError **error)
         g_set_error (error,
                      DNF_ERROR,
                      DNF_ERROR_FILE_INVALID,
-                     "write_main() failed writing data: %i", rc);
+                     _("write_main() failed writing data: %i"), rc);
         goto done;
     }
 
@@ -598,8 +599,8 @@ write_main(DnfSack *sack, HyRepo hrepo, int switchtosolv, GError **error)
                 g_set_error_literal (error,
                                      DNF_ERROR,
                                      DNF_ERROR_FILE_INVALID,
-                                     "write_main() failed to re-load "
-                                     "written solv file");
+                                     _("write_main() failed to re-load "
+                                       "written solv file"));
                 goto done;
             }
         }
@@ -660,7 +661,7 @@ write_ext(DnfSack *sack, HyRepo hrepo, int which_repodata, const char *suffix, G
         g_set_error (error,
                      DNF_ERROR,
                      DNF_ERROR_FILE_INVALID,
-                     "can not create temporary file %s",
+                     _("can not create temporary file %s"),
                      tmp_fn_templ);
         goto done;
     }
@@ -678,7 +679,7 @@ write_ext(DnfSack *sack, HyRepo hrepo, int which_repodata, const char *suffix, G
         g_set_error (error,
                      DNF_ERROR,
                      DNF_ERROR_FAILED,
-                     "write_ext(%d) has failed: %d",
+                     _("write_ext(%1$d) has failed: %2$d"),
                      which_repodata, ret);
         goto done;
     }
@@ -731,7 +732,7 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
         g_set_error (error,
                      DNF_ERROR,
                      DNF_ERROR_FILE_INVALID,
-                     "can not read file %s: %s",
+                     _("can not read file %1$s: %2$s"),
                      fn_repomd, strerror(errno));
         retval = FALSE;
         goto out;
@@ -745,7 +746,7 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
             g_set_error (error,
                          DNF_ERROR,
                          DNF_ERROR_INTERNAL_ERROR,
-                         "repo_add_solv() has failed.");
+                         _("repo_add_solv() has failed."));
             retval = FALSE;
             goto out;
         }
@@ -761,7 +762,7 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
             g_set_error (error,
                          DNF_ERROR,
                          DNF_ERROR_INTERNAL_ERROR,
-                         "repo_add_repomdxml/rpmmd() has failed.");
+                         _("repo_add_repomdxml/rpmmd() has failed."));
             retval = FALSE;
             goto out;
         }
@@ -828,7 +829,7 @@ dnf_sack_set_arch (DnfSack *sack, const gchar *value, GError **error)
             g_set_error (error,
                          DNF_ERROR,
                          DNF_ERROR_INTERNAL_ERROR,
-                         "failed to auto-detect architecture");
+                         _("failed to auto-detect architecture"));
             return FALSE;
         }
         arch = detected;
@@ -935,7 +936,7 @@ dnf_sack_setup(DnfSack *sack, int flags, GError **error)
             g_set_error (error,
                          DNF_ERROR,
                          DNF_ERROR_FILE_INVALID,
-                         "failed creating cachedir %s",
+                         _("failed creating cachedir %s"),
                          priv->cache_dir);
             return FALSE;
         }
@@ -1553,7 +1554,7 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
         g_set_error (error,
                      DNF_ERROR,
                      DNF_ERROR_FILE_INVALID,
-                     "failed calculating RPMDB checksum");
+                     _("failed calculating RPMDB checksum"));
         goto finish;
     }
 
@@ -1577,7 +1578,7 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
         g_set_error (error,
                      DNF_ERROR,
                      DNF_ERROR_FILE_INVALID,
-                     "failed loading RPMDB");
+                     _("failed loading RPMDB"));
         goto finish;
     }
 
