@@ -1,7 +1,19 @@
 %global libsolv_version 0.6.21-1
 %global dnf_conflict 2.7.2
 
+%if 0%{?fedora} > 25
+%ifarch %{valgrind_arches}
+%bcond_without valgrind
+%else
+%bconf_with valgrind
+%endif
+%else
+%ifnarch riscv64 s390
+%bcond_without valgrind
+%else
 %bcond_with valgrind
+%endif
+%endif
 
 # Do not build bindings for python3 for RHEL <= 7
 %if 0%{?rhel} && 0%{?rhel} <= 7
