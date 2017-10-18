@@ -110,6 +110,7 @@ SET(LIBDNF_headers
 find_program(INTROSPECTION_SCANNER "g-ir-scanner")
 find_program(INTROSPECTION_COMPILER "g-ir-compiler")
 pkg_check_modules(GOBJECT_INTROSPECTION gobject-introspection-1.0)
+find_program(VAPIGEN "vapigen")
 
 find_package(PkgConfig REQUIRED)
 function(pkg_check_variable _pkg _name)
@@ -129,6 +130,7 @@ endfunction()
 
 if (GOBJECT_INTROSPECTION_FOUND)
     option(WITH_GIR "Build introspection files" ON)
+    option(WITH_VALA "Build vala files. Requires introspection files" ON)
 
     if (WITH_GIR)
         pkg_check_variable(gobject-introspection-1.0 g_ir_scanner)
@@ -167,6 +169,30 @@ if (GOBJECT_INTROSPECTION_FOUND)
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
         add_custom_target(gir ALL
                           DEPENDS ${GIR_XML} ${GIR_TYPELIB})
+
+        if (WITH_VALA)
+            if (NOT VAPIGEN)
+                message(SEND_ERROR "Unable to find the vapigen executable")
+            endif()
+
+            set(VALA_VAPI libdnf.vapi)
+            add_custom_command(OUTPUT ${VALA_VAPI}
+                COMMAND ${VAPIGEN}
+                    --girdir=${CMAKE_CURRENT_BINARY_DIR}
+                    --pkg gio-2.0
+                    --pkg gobject-2.0
+                    --library libdnf
+                    --metadatadir=${CMAKE_CURRENT_SOURCE_DIR}
+                    ${GIR_XML}
+                DEPENDS ${GIR_XML}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            )
+
+            add_custom_target(vala ALL DEPENDS ${GIR_XML} ${VALA_VAPI})
+            install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${VALA_VAPI}
+                          ${CMAKE_CURRENT_SOURCE_DIR}/libdnf.deps
+                    DESTINATION share/vala/vapi)
+        endif()
 
         install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${GIR_XML}
                 DESTINATION share/gir-1.0
