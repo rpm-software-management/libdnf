@@ -694,13 +694,13 @@ parse_reldep_str(const char *reldep_str, char **name, char **evr,
     regex_t reg;
     const char *regex =
         "^([^ \t\r\n\v\f<=>!]*)\\s*(<=|>=|!=|<|>|=)?\\s*(.*)$";
-    regmatch_t matches[6];
+    regmatch_t matches[4];
     *cmp_type = 0;
     int ret = 0;
 
     regcomp(&reg, regex, REG_EXTENDED);
 
-    if(regexec(&reg, reldep_str, 6, matches, 0) == 0) {
+    if(regexec(&reg, reldep_str, 4, matches, 0) == 0) {
         if (copy_str_from_subexpr(name, reldep_str, matches, 1) == -1)
             ret = -1;
         // without comparator and evr
