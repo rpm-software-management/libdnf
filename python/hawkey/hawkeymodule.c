@@ -20,6 +20,8 @@
 
 #include <Python.h>
 
+#include <libintl.h>
+
 // hawkey
 #include "dnf-advisory.h"
 #include "dnf-advisorypkg.h"
@@ -358,6 +360,8 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "REFERENCE_BUGZILLA", DNF_REFERENCE_KIND_BUGZILLA);
     PyModule_AddIntConstant(m, "REFERENCE_CVE", DNF_REFERENCE_KIND_CVE);
     PyModule_AddIntConstant(m, "REFERENCE_VENDOR", DNF_REFERENCE_KIND_VENDOR);
+
+    bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
 
     return PYCOMP_MOD_SUCCESS_VAL(m);
 }
