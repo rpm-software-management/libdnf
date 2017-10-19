@@ -20,6 +20,7 @@
 
 from __future__ import absolute_import
 from sys import version_info as python_version
+import warnings
 
 from . import _hawkey
 import collections
@@ -670,6 +671,9 @@ class Subject(_hawkey.Subject):
 
     def get_best_selector(self, sack, forms=None, obsoletes=True, reponame=None, reports=False):
         # :api
+        warnings.simplefilter('always', DeprecationWarning)
+        msg = "The attribute 'reports' is deprecated and not used any more."
+        warnings.warn(msg, DeprecationWarning)
 
         solution = self._get_nevra_solution(sack, forms=forms)
         if solution['query']:
@@ -678,8 +682,6 @@ class Subject(_hawkey.Subject):
             if obsoletes and solution['nevra'] and solution['nevra'].has_just_name():
                 q = q.union(sack.query().filter(obsoletes=q))
             installed_query = q.installed()
-            if reports:
-                self._report_installed(installed_query)
             if reponame:
                 q = q.filter(reponame=reponame).union(installed_query)
             if q:
