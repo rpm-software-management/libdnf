@@ -257,7 +257,11 @@ filter(_QueryObject *self, PyObject *args)
         break;
     }
     case HY_PKG_PROVIDES:
-    case HY_PKG_REQUIRES: {
+    case HY_PKG_REQUIRES:
+    case HY_PKG_ENHANCES:
+    case HY_PKG_RECOMMENDS:
+    case HY_PKG_SUGGESTS:
+    case HY_PKG_SUPPLEMENTS: {
         DnfSack *sack = sackFromPyObject(self->sack);
         assert(sack);
         DnfReldepList *reldeplist = pyseq_to_reldeplist(match, sack, cmp_type);
