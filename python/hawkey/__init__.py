@@ -397,6 +397,12 @@ def _parse_filter_args(flags, dct):
     return args
 
 
+def is_glob_pattern(pattern):
+    if (not PY3 and isinstance(pattern, basestring)) or \
+            (PY3 and isinstance(pattern, str)):
+        pattern = [pattern]
+    return (isinstance(pattern, list) and any(set(p) & set("*[?") for p in pattern))
+
 class Query(_hawkey.Query):
 
     def __init__(self, sack=None, query=None):
@@ -576,6 +582,15 @@ class Selector(_hawkey.Selector):
         for arg_tuple in _parse_filter_args(set(), kwargs):
             super(Selector, self).set(*arg_tuple)
         return self
+
+    def _set_autoglob(self, **kwargs):
+        nargs = {}
+        for (key, value) in kwargs.items():
+            if is_glob_pattern(value):
+                nargs[key + "__glob"] = value
+            else:
+                nargs[key] = value
+        return self.set(**nargs)
 
 
 class Subject(_hawkey.Subject):
