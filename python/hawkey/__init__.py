@@ -20,14 +20,13 @@
 
 from __future__ import absolute_import
 from sys import version_info as python_version
-import warnings
 
-from . import _hawkey
 import collections
 import functools
 import logging
 import operator
 import time
+import warnings
 
 __all__ = [
     # version info
@@ -403,6 +402,9 @@ def is_glob_pattern(pattern):
         pattern = [pattern]
     return (isinstance(pattern, list) and any(set(p) & set("*[?") for p in pattern))
 
+def _msg_installed(pkg):
+    logger.warning('Package {} is already installed, skipping.'.format(str(pkg))) # translate
+
 class Query(_hawkey.Query):
 
     def __init__(self, sack=None, query=None):
@@ -595,8 +597,9 @@ class Selector(_hawkey.Selector):
 
 class Subject(_hawkey.Subject):
 
-    def __init__(self, *args, **kwargs):
-        super(Subject, self).__init__(*args, **kwargs)
+    def __init__(self, pkg_spec, ignore_case=False):
+        self.icase = ignore_case
+        super(Subject, self).__init__(pkg_spec)
 
     def nevra_possibilities(self, *args, **kwargs):
         for nevra in super(Subject, self).nevra_possibilities(*args, **kwargs):
@@ -616,3 +619,137 @@ class Subject(_hawkey.Subject):
         poss = super(Subject, self).module_form_possibilities(*args, **kwargs)
         for module_form in poss:
             yield ModuleForm(module_form=module_form)
+
+    @property
+    def _filename_pattern(self):
+        return self.pattern.startswith('/') or self.pattern.startswith('*/')
+
+    def _is_arch_specified(self, solution):
+        if solution['nevra'] and solution['nevra'].arch:
+            return is_glob_pattern(solution['nevra'].arch)
+        return False
+
+    def get_nevra_possibilities(self, forms=None):
+        # :api
+        """
+        :param forms: list of hawkey NEVRA forms like [hawkey.FORM_NEVRA, hawkey.FORM_NEVR]
+        :return: generator for every possible nevra. Each possible nevra is represented by Class
+        NEVRA object (libdnf) that have attributes name, epoch, version, release, arch
+        """
+        kwargs = {}
+        if forms:
+            kwargs['form'] = forms
+        return self.nevra_possibilities(**kwargs)
+
+    def _get_nevra_solution(self, sack, with_nevra=True, with_provides=True, with_filenames=True,
+                            forms=None):
+        """
+        Try to find first real solution for subject if it is NEVRA
+        @param sack:
+        @param forms:
+        @return: dict with keys nevra and query
+        """
+        kwargs = {}
+        if forms:
+            kwargs['form'] = forms
+        solution = self.get_best_solution(sack, icase=self.icase, with_nevra=with_nevra,
+                                          with_provides=with_provides,
+                                          with_filenames=with_filenames, **kwargs)
+        solution['query'] = Query(query=solution['query'])
+        return solution
+
+    def get_best_query(self, sack, with_nevra=True, with_provides=True, with_filenames=True,
+                       forms=None):
+        # :api
+
+        solution = self._get_nevra_solution(sack, with_nevra=with_nevra,
+                                            with_provides=with_provides,
+                                            with_filenames=with_filenames,
+                                            forms=forms)
+        return solution['query']
+
+    def get_best_selector(self, sack, forms=None, obsoletes=True, reponame=None, reports=False):
+        # :api
+        warnings.simplefilter('always', DeprecationWarning)
+        msg = "The attribute 'reports' is deprecated and not used any more."
+        warnings.warn(msg, DeprecationWarning)
+
+        solution = self._get_nevra_solution(sack, forms=forms)
+        if solution['query']:
+            q = solution['query']
+            q = q.filter(arch__neq="src")
+            if obsoletes and solution['nevra'] and solution['nevra'].has_just_name():
+                q = q.union(sack.query().filter(obsoletes=q))
+            installed_query = q.installed()
+            if reponame:
+                q = q.filter(reponame=reponame).union(installed_query)
+            if q:
+                return self._list_or_query_to_selector(sack, q)
+
+        return Selector(sack)
+
+    def _get_best_selectors(self, base, forms=None, obsoletes=True, reponame=None, reports=False,
+                            solution=None):
+        if solution is None:
+            solution = self._get_nevra_solution(base.sack, forms=forms)
+        q = solution['query']
+        q = q.filter(arch__neq="src")
+        if len(q) == 0:
+            if reports and not self.icase:
+                base._report_icase_hint(self.pattern)
+            return []
+        q = self._apply_security_filters(q, base)
+        if not q:
+            return []
+
+        if not self._filename_pattern and is_glob_pattern(self.pattern) \
+                or solution['nevra'] and solution['nevra'].name is None:
+            with_obsoletes = False
+
+            if obsoletes and solution['nevra'] and solution['nevra'].has_just_name():
+                with_obsoletes = True
+            installed_query = q.installed()
+            if reponame:
+                q = q.filter(reponame=reponame)
+            available_query = q.available()
+            installed_relevant_query = installed_query.filter(
+                name=[pkg.name for pkg in available_query])
+            if reports:
+                self._report_installed(installed_relevant_query)
+            q = available_query.union(installed_relevant_query)
+            sltrs = []
+            for name, pkgs_list in q._name_dict().items():
+                if with_obsoletes:
+                    pkgs_list = pkgs_list + base.sack.query().filter(
+                        obsoletes=pkgs_list).run()
+                sltrs.append(self._list_or_query_to_selector(base.sack, pkgs_list))
+            return sltrs
+        else:
+            if obsoletes and solution['nevra'] and solution['nevra'].has_just_name():
+                q = q.union(base.sack.query().filter(obsoletes=q))
+            installed_query = q.installed()
+
+            if reports:
+                self._report_installed(installed_query)
+            if reponame:
+                q = q.filter(reponame=reponame).union(installed_query)
+            if not q:
+                return []
+
+            return [self._list_or_query_to_selector(base.sack, q)]
+
+    def _apply_security_filters(self, query, base):
+        query = base._merge_update_filters(query, warning=False)
+        if not query:
+            logger.warning('No security updates for argument "{}"'.format(self.pattern)) # translate
+        return query
+
+    @staticmethod
+    def _report_installed(iterable_packages):
+        for pkg in iterable_packages:
+            _msg_installed(pkg)
+
+    @staticmethod
+    def _list_or_query_to_selector(sack, list_or_query):
+        sltr = Selector(sack)
+        return sltr.set(pkg=list_or_query)
