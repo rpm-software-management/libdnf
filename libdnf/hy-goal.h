@@ -35,6 +35,7 @@ enum _hy_goal_op_flags {
 };
 
 typedef enum {
+    DNF_NONE                     = 0,
     DNF_ERASE                    = 1 << 0,
     DNF_DISTUPGRADE              = 1 << 1,
     DNF_DISTUPGRADE_ALL          = 1 << 2,

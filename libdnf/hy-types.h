@@ -26,15 +26,15 @@
 G_BEGIN_DECLS
 
 #ifdef __cplusplus
-enum _HyForm :short ;
+//enum _HyForm :short HyForm;
 #else
-typedef enum _HyForm HyForm;
+//typedef enum _HyForm HyForm;
 #endif
 
 #ifdef __cplusplus
-enum _HyModuleFormEnum :short ;
+//enum _HyModuleFormEnum :short ;
 #else
-typedef enum _HyModuleFormEnum HyModuleFormEnum;
+//typedef enum _HyModuleFormEnum HyModuleFormEnum;
 #endif
 
 typedef struct _HyRepo * HyRepo;
