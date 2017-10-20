@@ -32,24 +32,16 @@
 
 G_BEGIN_DECLS
 
-#ifdef __cplusplus
-enum _HyForm :short {
-#else
-enum _HyForm {
-#endif
+typedef enum _HyForm {
     HY_FORM_NEVRA = 1,
     HY_FORM_NEVR = 2,
     HY_FORM_NEV = 3,
     HY_FORM_NA = 4,
     HY_FORM_NAME = 5,
     _HY_FORM_STOP_ = -1
-};
+} HyForm;
 
-#ifdef __cplusplus
-enum _HyModuleFormEnum :short {
-#else
-enum _HyModuleFormEnum {
-#endif
+typedef enum _HyModuleFormEnum {
     HY_MODULE_FORM_NSVCAP = 1,
     HY_MODULE_FORM_NSVCA = 2,
     HY_MODULE_FORM_NSVAP = 3,
@@ -67,7 +59,7 @@ enum _HyModuleFormEnum {
     HY_MODULE_FORM_NP = 15,
     HY_MODULE_FORM_N = 16,
     _HY_MODULE_FORM_STOP_ = -1
-};
+} HyModuleFormEnum;
 
 enum poss_type {
     TYPE_MODULE_FORM,
