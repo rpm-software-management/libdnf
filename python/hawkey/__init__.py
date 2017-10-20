@@ -25,6 +25,7 @@ import warnings
 from . import _hawkey
 import collections
 import functools
+import logging
 import operator
 
 __all__ = [
@@ -207,6 +208,10 @@ SOLUTION_DO_NOT_OBSOLETE = _hawkey.SOLUTION_DO_NOT_OBSOLETE
 SOLUTION_DO_NOT_UPGRADE = _hawkey.SOLUTION_DO_NOT_UPGRADE
 SOLUTION_BAD_SOLUTION = _hawkey.SOLUTION_BAD_SOLUTION
 
+PY3 = python_version.major >= 3
+
+logger = logging.getLogger('dnf')
+
 def split_nevra(s):
     t = _hawkey.split_nevra(s)
     return NEVRA(*t)
@@ -261,15 +266,35 @@ class Goal(_hawkey.Goal):
         self._installs = []
 
     def get_reason(self, pkg):
+        #XXX from dnf.db.types import SwdbReason
         code = super(Goal, self).get_reason(pkg)
         if code == REASON_USER and pkg.name in self.group_members:
             return SwdbReason.GROUP
         return SwdbReason(code)
 
     def group_reason(self, pkg, current_reason):
+        #XXX
         if current_reason == SwdbReason.UNKNOWN and pkg.name in self.group_members:
             return SwdbReason.GROUP
         return current_reason
+
+    def push_userinstalled(self, query, history):
+        msg = '--> Finding unneeded leftover dependencies' # translate
+        logger.debug(msg)
+        pkgs = query.installed()
+
+        # get only user installed packages
+        user_installed = history.select_user_installed(pkgs)
+
+        for pkg in user_installed:
+            self.userinstalled(pkg)
+
+    def available_updates_diff(self, query):
+        available_updates = set(query.upgrades().filter(arch__neq="src")
+                                .latest().run())
+        installable_updates = set(self.list_upgrades())
+        installs = set(self.list_installs())
+        return (available_updates - installable_updates) - installs
 
     @property
     def actions(self):
@@ -305,6 +330,10 @@ class Goal(_hawkey.Goal):
 
     @_auto_selector
     def install(self, *args, **kwargs):
+        if args:
+            self._installs.extend(args)
+        if 'select' in kwargs:
+            self._installs.extend(kwargs['select'].matches())
         super(Goal, self).install(*args, **kwargs)
 
     @_auto_selector
