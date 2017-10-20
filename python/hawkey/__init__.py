@@ -255,6 +255,22 @@ class Goal(_hawkey.Goal):
         UPGRADE_ALL
     }
 
+    def __init__(self, sack):
+        super(Goal, self).__init__(sack)
+        self.group_members = set()
+        self._installs = []
+
+    def get_reason(self, pkg):
+        code = super(Goal, self).get_reason(pkg)
+        if code == REASON_USER and pkg.name in self.group_members:
+            return SwdbReason.GROUP
+        return SwdbReason(code)
+
+    def group_reason(self, pkg, current_reason):
+        if current_reason == SwdbReason.UNKNOWN and pkg.name in self.group_members:
+            return SwdbReason.GROUP
+        return current_reason
+
     @property
     def actions(self):
         return {f for f in self._goal_actions if self._has_actions(f)}
