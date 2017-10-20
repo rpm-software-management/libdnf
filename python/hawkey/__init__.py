@@ -27,6 +27,7 @@ import collections
 import functools
 import logging
 import operator
+import time
 
 __all__ = [
     # version info
@@ -355,7 +356,7 @@ def _encode(obj):
         and potentially face exceptions rather than bizarre results. (Except
         that as long as we stick to UTF-8 it never fails.)
     """
-    if python_version.major < 3 and isinstance(obj, unicode):
+    if not PY3 and isinstance(obj, unicode):
         return obj.encode('utf8', 'strict')
     return obj
 
@@ -370,9 +371,9 @@ def _parse_filter_args(flags, dct):
     for (k, match) in dct.items():
         if isinstance(match, Query):
             pass
-        elif python_version.major < 3 and isinstance(match, basestring):
+        elif not PY3 and isinstance(match, basestring):
             match = _encode(match)
-        elif python_version.major >= 3 and isinstance(match, str):
+        elif PY3 and isinstance(match, str):
             match = _encode(match)
         elif isinstance(match, collections.Iterable):
             match = list(map(_encode, match))
@@ -459,6 +460,115 @@ class Query(_hawkey.Query):
     def union(self, other):
         new_query = type(self)(query=self)
         return super(Query, new_query).union(other)
+
+    def available(self):
+        # :api
+        return self.filter(reponame__neq=SYSTEM_REPO_NAME)
+
+    def _unneeded(self, sack, history, debug_solver=False):
+        goal = Goal(sack)
+        goal.push_userinstalled(self.installed(), history)
+        solved = goal.run()
+        if debug_solver:
+            goal.write_debugdata('./debugdata-autoremove')
+        assert solved
+        unneeded = goal.list_unneeded()
+        return self.filter(pkg=unneeded)
+
+    def downgrades(self):
+        # :api
+        return self.filter(downgrades=True)
+
+    def duplicated(self):
+        # :api
+        installed_name = self.installed()._name_dict()
+        duplicated = []
+        for name, pkgs in installed_name.items():
+            if len(pkgs) > 1:
+                for x in range(0, len(pkgs)):
+                    dups = False
+                    for y in range(x+1, len(pkgs)):
+                        if not ((pkgs[x].evr_cmp(pkgs[y]) == 0)
+                                and (pkgs[x].arch != pkgs[y].arch)):
+                            duplicated.append(pkgs[y])
+                            dups = True
+                    if dups:
+                        duplicated.append(pkgs[x])
+        return self.filter(pkg=duplicated)
+
+    def extras(self):
+        # :api
+        # anything installed but not in a repo is an extra
+        avail_dict = self.available()._pkgtup_dict()
+        inst_dict = self.installed()._pkgtup_dict()
+        extras = []
+        for pkgtup, pkgs in inst_dict.items():
+            if pkgtup not in avail_dict:
+                extras.extend(pkgs)
+        return self.filter(pkg=extras)
+
+    def installed(self):
+        # :api
+        return self.filter(reponame=SYSTEM_REPO_NAME)
+
+    def latest(self, limit=1):
+        # :api
+        if limit == 1:
+            return self.filter(latest_per_arch=True)
+        else:
+            pkgs_na = self._na_dict()
+            latest_pkgs = []
+            for pkg_list in pkgs_na.values():
+                pkg_list.sort(reverse=True)
+                if limit > 0:
+                    latest_pkgs.extend(pkg_list[0:limit])
+                else:
+                    latest_pkgs.extend(pkg_list[-limit:])
+            return self.filter(pkg=latest_pkgs)
+
+    def upgrades(self):
+        # :api
+        return self.filter(upgrades=True)
+
+    def _name_dict(self):
+        d = {}
+        for pkg in self:
+            d.setdefault(pkg.name, []).append(pkg)
+        return d
+
+    def _na_dict(self):
+        d = {}
+        for pkg in self.run():
+            key = (pkg.name, pkg.arch)
+            d.setdefault(key, []).append(pkg)
+        return d
+
+    def _pkgtup_dict(self):
+        d = {}
+        for pkg in self.run():
+            d.setdefault(pkg.pkgtup, []).append(pkg)
+        return d
+
+    def _recent(self, recent):
+        now = time.time()
+        recentlimit = now - (recent*86400)
+        recent = [po for po in self if int(po.buildtime) > recentlimit]
+        return self.filter(pkg=recent)
+
+    def _nevra(self, *args):
+        args_len = len(args)
+        if args_len == 3:
+            return self.filter(name=args[0], evr=args[1], arch=args[2])
+        if args_len == 1:
+            nevra = split_nevra(args[0])
+        elif args_len == 5:
+            nevra = args
+        else:
+            raise TypeError("nevra() takes 1, 3 or 5 str params")
+        return self.filter(
+            name=nevra.name, epoch=nevra.epoch, version=nevra.version,
+            release=nevra.release, arch=nevra.arch)
+
 
 class Selector(_hawkey.Selector):
 
