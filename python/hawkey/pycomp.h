@@ -23,6 +23,10 @@
 #ifndef PYCOMP_H
 #define PYCOMP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Python 3 and newer types compatibility
 #if PY_MAJOR_VERSION >= 3
     #define PyInt_Check PyLong_Check
@@ -58,6 +62,10 @@
 
 const char *pycomp_get_string(PyObject *str_o, PyObject **tmp_py_str);
 void pycomp_free_tmp_array(PyObject **tmp_py_strs, int count);
-extern PYCOMP_MOD_INIT(_hawkey);
+PYCOMP_MOD_INIT(_hawkey);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // PYCOMP_H

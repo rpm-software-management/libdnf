@@ -90,8 +90,6 @@ int dump_solvables_queue(Pool *pool, Queue *q);
 int dump_map(Pool *pool, Map *m);
 const char *id2nevra(Pool *pool, Id id);
 
-G_END_DECLS
-
 /* loop over all package providers of d */
 #define FOR_PKG_PROVIDES(v, vp, d)                                      \
     FOR_PROVIDES(v, vp, d)                                              \

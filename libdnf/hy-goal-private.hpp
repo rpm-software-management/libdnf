@@ -18,34 +18,27 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef TESTSHARED_H
-#define TESTSHARED_H
+#ifndef HY_GOAL_INTERNAL_H
+#define HY_GOAL_INTERNAL_H
 
+// libsolv
+#include <solv/queue.h>
+#include <solv/transaction.h>
+#include <solv/solver.h>
 
-#include <solv/pooltypes.h>
+// hawkey
+#include "hy-goal.h"
 
+struct _HyGoal {
+    DnfSack *sack;
+    Queue staging;
+    Solver *solv;
+    Transaction *trans;
+    DnfGoalActions actions;
+    Map *protected_pkgs;
+    GPtrArray *removal_of_protected;
+};
 
-#include "libdnf/hy-repo.h"
+int sltr2job(const HySelector sltr, Queue *job, int solver_action);
 
-#define UNITTEST_DIR "/tmp/hawkeyXXXXXX"
-#define YUM_DIR_SUFFIX "yum/repodata/"
-#define YUM_REPO_NAME "nevermac"
-#define TEST_FIXED_ARCH "x86_64"
-#define TEST_EXPECT_SYSTEM_PKGS 13
-#define TEST_EXPECT_SYSTEM_NSOLVABLES TEST_EXPECT_SYSTEM_PKGS
-#define TEST_EXPECT_MAIN_NSOLVABLES 14
-#define TEST_EXPECT_UPDATES_NSOLVABLES 10
-#define TEST_EXPECT_YUM_NSOLVABLES 2
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-HyRepo glob_for_repofiles(Pool *pool, const char *repo_name, const char *path);
-int load_repo(Pool *pool, const char *name, const char *path, int installed);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* TESTSHARED_H */
+#endif // HY_GOAL_INTERNAL_H

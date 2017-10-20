@@ -14,7 +14,7 @@ set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fno-strict-aliasing")
 set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fno-strict-aliasing")
 
 SET (testmodule_SRCS
-     hawkey_testmodule.c)
+     hawkey_testmodule.cpp)
 
 ADD_LIBRARY(testmodule SHARED ${testmodule_SRCS})
 SET_TARGET_PROPERTIES(testmodule PROPERTIES PREFIX "")

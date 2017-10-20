@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2013 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -18,34 +18,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef TESTSHARED_H
-#define TESTSHARED_H
+#ifndef HY_NEVRA_INTERNAL_H
+#define HY_NEVRA_INTERNAL_H
 
+#include "hy-nevra.h"
 
-#include <solv/pooltypes.h>
+struct _HyNevra {
+    char *name;
+    int epoch;
+    char *version;
+    char *release;
+    char *arch;
+};
 
-
-#include "libdnf/hy-repo.h"
-
-#define UNITTEST_DIR "/tmp/hawkeyXXXXXX"
-#define YUM_DIR_SUFFIX "yum/repodata/"
-#define YUM_REPO_NAME "nevermac"
-#define TEST_FIXED_ARCH "x86_64"
-#define TEST_EXPECT_SYSTEM_PKGS 13
-#define TEST_EXPECT_SYSTEM_NSOLVABLES TEST_EXPECT_SYSTEM_PKGS
-#define TEST_EXPECT_MAIN_NSOLVABLES 14
-#define TEST_EXPECT_UPDATES_NSOLVABLES 10
-#define TEST_EXPECT_YUM_NSOLVABLES 2
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-HyRepo glob_for_repofiles(Pool *pool, const char *repo_name, const char *path);
-int load_repo(Pool *pool, const char *name, const char *path, int installed);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* TESTSHARED_H */
+#endif // HY_NEVRA_INTERNAL_H
