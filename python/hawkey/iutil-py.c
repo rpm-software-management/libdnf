@@ -301,7 +301,7 @@ reldeplist_to_pylist(DnfReldepList *reldeplist, PyObject *sack)
     const int count = dnf_reldep_list_count (reldeplist);
     for (int i = 0; i < count; ++i) {
         DnfReldep *creldep = dnf_reldep_list_index (reldeplist,  i);
-        PyObject *reldep = new_reldep(sack, dnf_reldep_get_id (creldep));
+        PyObject *reldep = new_reldep(sack, creldep);
 
         g_object_unref (creldep);
         if (reldep == NULL)

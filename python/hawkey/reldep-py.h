@@ -21,9 +21,6 @@
 #ifndef RELDEP_PY_H
 #define RELDEP_PY_H
 
-// libsolv
-#include <solv/pooltypes.h>
-
 // hawkey
 #include "hy-types.h"
 
@@ -31,7 +28,7 @@ extern PyTypeObject reldep_Type;
 
 #define reldepObject_Check(o)        PyObject_TypeCheck(o, &reldep_Type)
 
-PyObject *new_reldep(PyObject *sack, Id r_id);
+PyObject *new_reldep(PyObject *sack, DnfReldep *src);
 DnfReldep *reldepFromPyObject(PyObject *o);
 PyObject *reldepToPyObject(DnfReldep *reldep);
 

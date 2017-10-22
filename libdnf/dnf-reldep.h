@@ -31,9 +31,8 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (DnfReldep, dnf_reldep, DNF, RELDEP, GObject)
 
-DnfReldep   *dnf_reldep_from_pool (Pool              *pool,
-                                   Id                 r_id);
-
+DnfReldep   *dnf_reldep_copy      (DnfSack           *sack,
+                                   DnfReldep         *src);
 DnfReldep   *dnf_reldep_new       (DnfSack           *sack,
                                    const gchar       *name,
                                    DnfComparisonKind  cmp_type,
