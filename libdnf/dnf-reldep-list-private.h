@@ -28,7 +28,5 @@ G_BEGIN_DECLS
 
 DnfReldepList *dnf_reldep_list_from_queue (Pool          *pool,
                                            Queue          queue);
-void           dnf_reldep_list_extend     (DnfReldepList *rl1,
-                                           DnfReldepList *rl2);
 
 G_END_DECLS

@@ -35,6 +35,7 @@ void           dnf_reldep_list_add   (DnfReldepList *reldep_list,
 gint           dnf_reldep_list_count (DnfReldepList *reldep_list);
 DnfReldep     *dnf_reldep_list_index (DnfReldepList *reldep_list,
                                       gint           index);
-
+void           dnf_reldep_list_extend(DnfReldepList *rl1,
+                                      DnfReldepList *rl2);
 
 G_END_DECLS
