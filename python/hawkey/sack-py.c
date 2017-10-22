@@ -22,10 +22,8 @@
 
 // hawkey
 #include "dnf-types.h"
-#include "hy-package-private.h"
 #include "hy-packageset.h"
 #include "hy-repo.h"
-#include "dnf-sack-private.h"
 #include "hy-util.h"
 #include "dnf-version.h"
 

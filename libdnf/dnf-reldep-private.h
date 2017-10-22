@@ -23,11 +23,3 @@
 #include <solv/pool.h>
 
 #include "dnf-reldep.h"
-
-G_BEGIN_DECLS
-
-DnfReldep *dnf_reldep_from_pool (Pool      *pool,
-                                 Id         r_id);
-Id dnf_reldep_get_id            (DnfReldep *reldep);
-
-G_END_DECLS

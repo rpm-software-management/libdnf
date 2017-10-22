@@ -1641,3 +1641,15 @@ hy_query_is_not_empty(HyQuery query)
     }
     return FALSE;
 }
+
+gboolean
+hy_query_is_applied(const HyQuery query)
+{
+    return query->applied ? TRUE : FALSE;
+}
+
+const Map *
+hy_query_get_result(const HyQuery query)
+{
+    return query->result;
+}

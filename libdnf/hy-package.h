@@ -46,6 +46,8 @@ struct _DnfPackageClass
         void (*_dnf_reserved8)  (void);
 };
 
+DnfPackage  *dnf_package_new            (DnfSack    *sack, Id id);
+
 gboolean     dnf_package_get_identical  (DnfPackage *pkg1, DnfPackage *pkg2);
 gboolean     dnf_package_installed      (DnfPackage *pkg);
 int          dnf_package_cmp            (DnfPackage *pkg1, DnfPackage *pkg2);
@@ -58,6 +60,7 @@ const char  *dnf_package_get_sourcerpm  (DnfPackage *pkg);
 const char  *dnf_package_get_version    (DnfPackage *pkg);
 const char  *dnf_package_get_release    (DnfPackage *pkg);
 
+Id           dnf_package_get_id         (DnfPackage *pkg);
 const char  *dnf_package_get_name       (DnfPackage *pkg);
 const char  *dnf_package_get_arch       (DnfPackage *pkg);
 const unsigned char *dnf_package_get_chksum(DnfPackage *pkg, int *type);
