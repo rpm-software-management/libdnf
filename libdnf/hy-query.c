@@ -30,6 +30,7 @@
 
 #include "dnf-types.h"
 #include "dnf-advisorypkg.h"
+#include "dnf-advisory-private.h"
 #include "hy-iutil.h"
 #include "hy-query-private.h"
 #include "hy-package-private.h"

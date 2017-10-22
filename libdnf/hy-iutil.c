@@ -46,6 +46,7 @@
 #include <glib/gi18n-lib.h>
 
 // hawkey
+#include "dnf-advisory-private.h"
 #include "dnf-types.h"
 #include "hy-iutil.h"
 #include "hy-package-private.h"
@@ -248,6 +249,12 @@ free_map_fully(Map *m)
     map_free(m);
     g_free(m);
     return NULL;
+}
+
+int
+is_package(const Pool *pool, const Solvable *s)
+{
+    return !g_str_has_prefix(pool_id2str(pool, s->name), SOLVABLE_NAME_ADVISORY_PREFIX);
 }
 
 int

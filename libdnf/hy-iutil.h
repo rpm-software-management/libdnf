@@ -28,7 +28,6 @@
 #include <solv/rules.h>
 #include <solv/transaction.h>
 
-#include "dnf-advisory-private.h"
 #include "dnf-sack.h"
 
 #define CHKSUM_BYTES 32
@@ -67,10 +66,7 @@ void queue2plist(DnfSack *sack, Queue *q, GPtrArray *plist);
 Id what_upgrades(Pool *pool, Id p);
 Id what_downgrades(Pool *pool, Id p);
 Map *free_map_fully(Map *m);
-static inline int is_package(Pool *pool, Solvable *s)
-{
-    return !g_str_has_prefix(pool_id2str(pool, s->name), SOLVABLE_NAME_ADVISORY_PREFIX);
-}
+int is_package(const Pool *pool, const Solvable *s);
 
 /* package version utils */
 unsigned long pool_get_epoch(Pool *pool, const char *evr);
