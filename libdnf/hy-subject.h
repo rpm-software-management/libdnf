@@ -69,6 +69,13 @@ enum _HyModuleFormEnum {
     _HY_MODULE_FORM_STOP_ = -1
 };
 
+enum poss_type {
+    TYPE_MODULE_FORM,
+    TYPE_NEVRA,
+    TYPE_RELDEP_NEW,
+    TYPE_RELDEP_END
+};
+
 struct _HyPossibilities {
     HySubject subject;
     DnfSack *sack;

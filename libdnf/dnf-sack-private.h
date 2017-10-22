@@ -56,12 +56,7 @@ Map *dnf_sack_get_pkg_solvables(DnfSack *sack);
 
 void         dnf_sack_make_provides_ready   (DnfSack    *sack);
 Id           dnf_sack_running_kernel        (DnfSack    *sack);
-int          dnf_sack_knows                 (DnfSack    *sack,
-                                             const char *name,
-                                             const char *version,
-                                             int         flags);
 void         dnf_sack_recompute_considered  (DnfSack    *sack);
-Pool        *dnf_sack_get_pool              (DnfSack    *sack);
 Id           dnf_sack_last_solvable         (DnfSack    *sack);
 
 Queue       *dnf_sack_get_installonly       (DnfSack    *sack);

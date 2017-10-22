@@ -21,7 +21,7 @@
 #include <Python.h>
 
 // hawkey
-#include "dnf-advisoryref-private.h"
+#include "dnf-advisoryref.h"
 
 // pyhawkey
 #include "advisoryref-py.h"

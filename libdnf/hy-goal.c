@@ -740,6 +740,12 @@ hy_goal_free(HyGoal goal)
     g_free(goal);
 }
 
+DnfSack *
+hy_goal_get_sack(HyGoal goal)
+{
+    return goal->sack;
+}
+
 int
 hy_goal_distupgrade_all(HyGoal goal)
 {

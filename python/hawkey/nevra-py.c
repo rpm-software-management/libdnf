@@ -25,7 +25,7 @@
 
 // hawkey
 #include "hy-nevra.h"
-#include "hy-nevra-private.h"
+#include "hy-nevra.h"
 #include "dnf-sack.h"
 #include "hy-types.h"
 
@@ -65,11 +65,11 @@ static int
 set_epoch(_NevraObject *self, PyObject *value, void *closure)
 {
     if (value == NULL)
-        self->nevra->epoch = -1;
+        hy_nevra_set_epoch(self->nevra, -1);
     else if (PyInt_Check(value))
-        self->nevra->epoch = PyLong_AsLong(value);
+        hy_nevra_set_epoch(self->nevra, PyLong_AsLong(value));
     else if (value == Py_None)
-        self->nevra->epoch = -1;
+        hy_nevra_set_epoch(self->nevra, -1);
     else
         return -1;
     return 0;
@@ -78,12 +78,12 @@ set_epoch(_NevraObject *self, PyObject *value, void *closure)
 static PyObject *
 get_epoch(_NevraObject *self, void *closure)
 {
-    if (self->nevra->epoch == -1L)
+    if (hy_nevra_get_epoch(self->nevra) == -1L)
     Py_RETURN_NONE;
 #if PY_MAJOR_VERSION >= 3
-    return PyLong_FromLong(self->nevra->epoch);
+    return PyLong_FromLong(hy_nevra_get_epoch(self->nevra));
 #else
-    return PyInt_FromLong(self->nevra->epoch);
+    return PyInt_FromLong(hy_nevra_get_epoch(self->nevra));
 #endif
 }
 
@@ -302,13 +302,21 @@ iter(_NevraObject *self)
 {
     PyObject *res;
     HyNevra nevra = self->nevra;
-    if (self->nevra->epoch == -1) {
+    if (hy_nevra_get_epoch(nevra) == -1) {
         Py_INCREF(Py_None);
-        res = Py_BuildValue("zOzzz", nevra->name, Py_None, nevra->version,
-            nevra->release, nevra->arch);
+        res = Py_BuildValue("zOzzz",
+                            hy_nevra_get_string(nevra, HY_NEVRA_NAME),
+                            Py_None,
+                            hy_nevra_get_string(nevra, HY_NEVRA_VERSION),
+                            hy_nevra_get_string(nevra, HY_NEVRA_RELEASE),
+                            hy_nevra_get_string(nevra, HY_NEVRA_ARCH));
     } else
-        res = Py_BuildValue("zizzz", nevra->name, nevra->epoch, nevra->version,
-            nevra->release, nevra->arch);
+        res = Py_BuildValue("zizzz",
+                            hy_nevra_get_string(nevra, HY_NEVRA_NAME),
+                            hy_nevra_get_epoch(nevra),
+                            hy_nevra_get_string(nevra, HY_NEVRA_VERSION),
+                            hy_nevra_get_string(nevra, HY_NEVRA_RELEASE),
+                            hy_nevra_get_string(nevra, HY_NEVRA_ARCH));
     PyObject *iter = PyObject_GetIter(res);
     Py_DECREF(res);
     return iter;
