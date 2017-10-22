@@ -33,6 +33,8 @@
 
 #define CHKSUM_BYTES 32
 
+G_BEGIN_DECLS
+
 /* crypto utils */
 int checksum_cmp(const unsigned char *cs1, const unsigned char *cs2);
 int checksum_fp(unsigned char *out, FILE *fp);
@@ -105,5 +107,7 @@ const char *id2nevra(Pool *pool, Id id);
         if (!is_package(pool, pool_id2solvable(pool, p)))               \
             continue;                                                   \
         else
+
+G_END_DECLS
 
 #endif

@@ -24,9 +24,5 @@
 
 #include "dnf-reldep-list.h"
 
-G_BEGIN_DECLS
-
 DnfReldepList *dnf_reldep_list_from_queue (Pool          *pool,
                                            Queue          queue);
-
-G_END_DECLS

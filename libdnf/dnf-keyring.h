@@ -26,6 +26,8 @@
 
 #include <rpm/rpmkeyring.h>
 
+G_BEGIN_DECLS
+
 gboolean         dnf_keyring_add_public_key     (rpmKeyring              keyring,
                                                  const gchar            *filename,
                                                  GError                 **error);
@@ -34,5 +36,7 @@ gboolean         dnf_keyring_add_public_keys    (rpmKeyring              keyring
 gboolean         dnf_keyring_check_untrusted_file (rpmKeyring            keyring,
                                                  const gchar            *filename,
                                                  GError                 **error);
+
+G_END_DECLS
 
 #endif /* __DNF_KEYRING_H */
