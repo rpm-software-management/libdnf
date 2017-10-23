@@ -23,10 +23,16 @@ from sys import version_info as python_version
 
 import collections
 import functools
+import gi
 import logging
 import operator
 import time
 import warnings
+
+gi.require_version('Dnf', '1.0')
+from gi.repository import Dnf
+
+from . import _hawkey
 
 __all__ = [
     # version info
@@ -46,9 +52,22 @@ __all__ = [
     'ArchException', 'Exception', 'QueryException', 'RuntimeException',
     'ValueException',
     # functions
-    'chksum_name', 'chksum_type', 'split_nevra',
+    'chksum_name', 'chksum_type', 'split_nevra', 'convert_reason',
+    # gi classes
+    'Swdb', 'SwdbItem', 'SwdbReason', 'SwdbPkg', 'SwdbPkgData', 'SwdbTrans',
+    'SwdbGroup', 'SwdbEnv',
     # classes
     'Goal', 'NEVRA', 'ModuleForm', 'Package', 'Query', 'Repo', 'Sack', 'Selector', 'Subject']
+
+Swdb = Dnf.Swdb
+SwdbItem = Dnf.SwdbItem
+SwdbReason = Dnf.SwdbReason
+SwdbPkg = Dnf.SwdbPkg
+SwdbPkgData = Dnf.SwdbPkgData
+SwdbTrans = Dnf.SwdbTrans
+SwdbGroup = Dnf.SwdbGroup
+SwdbEnv = Dnf.SwdbEnv
+
 
 _QUERY_KEYNAME_MAP = {
     'pkg': _hawkey.PKG,
@@ -212,6 +231,11 @@ PY3 = python_version.major >= 3
 
 logger = logging.getLogger('dnf')
 
+def convert_reason(reason):
+    if isinstance(reason, Dnf.SwdbReason):
+        return reason
+    return Dnf.convert_reason_to_id(reason)
+
 def split_nevra(s):
     t = _hawkey.split_nevra(s)
     return NEVRA(*t)
@@ -266,16 +290,14 @@ class Goal(_hawkey.Goal):
         self._installs = []
 
     def get_reason(self, pkg):
-        #XXX from dnf.db.types import SwdbReason
         code = super(Goal, self).get_reason(pkg)
         if code == REASON_USER and pkg.name in self.group_members:
-            return SwdbReason.GROUP
-        return SwdbReason(code)
+            return Dnf.SwdbReason.GROUP
+        return Dnf.SwdbReason(code)
 
     def group_reason(self, pkg, current_reason):
-        #XXX
-        if current_reason == SwdbReason.UNKNOWN and pkg.name in self.group_members:
-            return SwdbReason.GROUP
+        if current_reason == Dnf.SwdbReason.UNKNOWN and pkg.name in self.group_members:
+            return Dnf.SwdbReason.GROUP
         return current_reason
 
     def push_userinstalled(self, query, history):
