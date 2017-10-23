@@ -692,9 +692,11 @@ class Subject(_hawkey.Subject):
 
     def get_best_selector(self, sack, forms=None, obsoletes=True, reponame=None, reports=False):
         # :api
-        warnings.simplefilter('always', DeprecationWarning)
-        msg = "The attribute 'reports' is deprecated and not used any more."
-        warnings.warn(msg, DeprecationWarning)
+        if reports:
+            warnings.simplefilter('always', DeprecationWarning)
+            msg = "The attribute 'reports' is deprecated and not used any more. "\
+                  "This attribute will be removed on 2018-01-01"
+            warnings.warn(msg, DeprecationWarning)
 
         solution = self._get_nevra_solution(sack, forms=forms)
         if solution['query']:
