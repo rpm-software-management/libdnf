@@ -28,6 +28,8 @@
 #include <sqlite3.h>
 #include "dnf-swdb.h"
 
+G_BEGIN_DECLS
+
 gint            _create_db          (sqlite3        *db);
 void            _db_step            (sqlite3_stmt   *res);
 gint            _db_find_int        (sqlite3_stmt   *res);
@@ -67,4 +69,7 @@ gint            dnf_swdb_create_db  (DnfSwdb        *self);
 gint            dnf_swdb_reset_db   (DnfSwdb        *self);
 gint            dnf_swdb_open       (DnfSwdb        *self);
 void            dnf_swdb_close      (DnfSwdb        *self);
+
+G_END_DECLS
+
 #endif

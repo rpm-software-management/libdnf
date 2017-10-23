@@ -25,10 +25,6 @@
 
 #include "dnf-packagedelta.h"
 
-G_BEGIN_DECLS
-
 DnfPackageDelta *dnf_packagedelta_new                  (Pool *pool);
-
-G_END_DECLS
 
 #endif /* __DNF_PACKAGEDELTA_PRIVATE_H */
