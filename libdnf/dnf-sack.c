@@ -1184,6 +1184,7 @@ dnf_sack_add_cmdline_package(DnfSack *sack, const char *fn)
     HyRepo hrepo = repo->appdata;
     hrepo->needs_internalizing = 1;
     priv->provides_ready = 0;    /* triggers internalizing later */
+    priv->considered_uptodate = FALSE;   /* triggers recompute_considered later */
     return dnf_package_new(sack, p);
 }
 
