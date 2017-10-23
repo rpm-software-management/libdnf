@@ -66,6 +66,7 @@ typedef enum {
 HyGoal hy_goal_create(DnfSack *sack);
 HyGoal hy_goal_clone(HyGoal goal);
 void hy_goal_free(HyGoal goal);
+DnfSack *hy_goal_get_sack(HyGoal goal);
 
 int hy_goal_distupgrade_all(HyGoal goal);
 int hy_goal_distupgrade(HyGoal goal, DnfPackage *new_pkg);

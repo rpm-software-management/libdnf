@@ -21,7 +21,7 @@
 #include <Python.h>
 
 // hawkey
-#include "dnf-advisorypkg-private.h"
+#include "dnf-advisorypkg.h"
 
 // pyhawkey
 #include "advisorypkg-py.h"

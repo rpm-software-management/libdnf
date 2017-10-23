@@ -20,6 +20,8 @@
 
 #include <glib-object.h>
 
+#include <solv/pooltypes.h>
+
 #include "dnf-enums.h"
 #include "dnf-types.h"
 
@@ -29,11 +31,15 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (DnfReldep, dnf_reldep, DNF, RELDEP, GObject)
 
+DnfReldep   *dnf_reldep_copy      (DnfSack           *sack,
+                                   DnfReldep         *src);
 DnfReldep   *dnf_reldep_new       (DnfSack           *sack,
                                    const gchar       *name,
                                    DnfComparisonKind  cmp_type,
                                    const gchar       *evr);
 
 const gchar *dnf_reldep_to_string (DnfReldep         *reldep);
+
+Id           dnf_reldep_get_id    (DnfReldep         *reldep);
 
 G_END_DECLS

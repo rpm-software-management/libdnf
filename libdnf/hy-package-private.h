@@ -26,8 +26,6 @@
 #include "dnf-sack.h"
 
 DnfPackage  *dnf_package_clone          (DnfPackage *pkg);
-DnfPackage  *dnf_package_new            (DnfSack    *sack, Id id);
-Id           dnf_package_get_id         (DnfPackage *pkg);
 Pool        *dnf_package_get_pool       (DnfPackage *pkg);
 DnfSack     *dnf_package_get_sack       (DnfPackage *pkg);
 DnfPackage  *dnf_package_from_solvable  (DnfSack    *sack, Solvable *s);

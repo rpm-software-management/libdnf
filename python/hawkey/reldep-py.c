@@ -26,8 +26,6 @@
 
 // hawkey
 #include "dnf-reldep.h"
-#include "dnf-sack-private.h"
-#include "dnf-reldep-private.h"
 #include "hy-iutil.h"
 
 // pyhawkey
@@ -56,7 +54,7 @@ reldep_new_core(PyTypeObject *type, PyObject *sack)
 }
 
 PyObject *
-new_reldep(PyObject *sack, Id r_id)
+new_reldep(PyObject *sack, DnfReldep *src)
 {
     DnfSack *csack = sackFromPyObject(sack);
     if (csack == NULL)
@@ -65,7 +63,7 @@ new_reldep(PyObject *sack, Id r_id)
     _ReldepObject *self = reldep_new_core(&reldep_Type, sack);
     if (self == NULL)
         return NULL;
-    self->reldep = dnf_reldep_from_pool (dnf_sack_get_pool(csack), r_id);
+    self->reldep = dnf_reldep_copy(csack, src);
     return (PyObject*)self;
 }
 

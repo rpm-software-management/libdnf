@@ -23,11 +23,10 @@
 #include "dnf-advisory.h"
 #include "dnf-advisorypkg.h"
 #include "dnf-advisoryref.h"
-#include "hy-package-private.h"
-#include "hy-packageset-private.h"
+#include "hy-packageset.h"
 #include "hy-query.h"
-#include "dnf-reldep-private.h"
-#include "dnf-reldep-list-private.h"
+#include "dnf-reldep.h"
+#include "dnf-reldep-list.h"
 #include "hy-iutil.h"
 #include "advisory-py.h"
 #include "advisorypkg-py.h"
@@ -302,7 +301,7 @@ reldeplist_to_pylist(DnfReldepList *reldeplist, PyObject *sack)
     const int count = dnf_reldep_list_count (reldeplist);
     for (int i = 0; i < count; ++i) {
         DnfReldep *creldep = dnf_reldep_list_index (reldeplist,  i);
-        PyObject *reldep = new_reldep(sack, dnf_reldep_get_id (creldep));
+        PyObject *reldep = new_reldep(sack, creldep);
 
         g_object_unref (creldep);
         if (reldep == NULL)

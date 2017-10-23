@@ -52,6 +52,10 @@ void                 dnf_packageset_add         (DnfPackageSet *pset, DnfPackage
 unsigned             dnf_packageset_count       (DnfPackageSet *pset);
 DnfPackage          *dnf_packageset_get_clone   (DnfPackageSet *pset, int index);
 int                  dnf_packageset_has         (DnfPackageSet *pset, DnfPackage *pkg);
+Id                   dnf_packageset_get_pkgid   (DnfPackageSet *pset, int index, Id previous);
+
+DnfPackageSet       *dnf_packageset_from_bitmap (DnfSack *sack, Map *m);
+Map             *dnf_packageset_get_map        (DnfPackageSet *pset);
 
 G_END_DECLS
 

@@ -73,6 +73,13 @@ dnf_reldep_from_pool (Pool *pool,
     return reldep;
 }
 
+DnfReldep *
+dnf_reldep_copy(DnfSack   *sack,
+                DnfReldep *src)
+{
+    return dnf_reldep_from_pool(dnf_sack_get_pool(sack), src->r_id);
+}
+
 /**
  * dnf_reldep_new:
  * @sack: a #DnfSack
