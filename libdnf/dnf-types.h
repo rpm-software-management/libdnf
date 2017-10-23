@@ -37,6 +37,8 @@ typedef struct _DnfPackageSet           DnfPackageSet;
 typedef struct _DnfReldep               DnfReldep;
 typedef struct _DnfReldepList           DnfReldepList;
 
+G_BEGIN_DECLS
+
 /**
  * DnfError:
  * @DNF_ERROR_FAILED:                           Failed with a non-specific error
@@ -96,7 +98,16 @@ typedef enum {
 } DnfError;
 
 #define DNF_ERROR                       (dnf_error_quark ())
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 GQuark           dnf_error_quark        (void);
+#ifdef __cplusplus
+}
+#endif
+
+G_END_DECLS
 
 #endif
 

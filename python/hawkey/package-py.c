@@ -25,9 +25,8 @@
 
 #include "dnf-advisory.h"
 #include "hy-iutil.h"
-#include "hy-package-private.h"
+#include "hy-package.h"
 #include "dnf-reldep.h"
-#include "dnf-sack-private.h"
 
 #include "iutil-py.h"
 #include "package-py.h"

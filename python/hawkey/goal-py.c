@@ -26,9 +26,6 @@
 
 #include "dnf-types.h"
 #include "dnf-goal.h"
-#include "hy-goal.h"
-#include "hy-goal-private.h"
-#include "hy-package-private.h"
 
 #include "exception-py.h"
 #include "goal-py.h"
@@ -393,7 +390,7 @@ static PyObject *
 add_protected(_GoalObject *self, PyObject *seq)
 {
     HyGoal goal = self->goal;
-    DnfPackageSet *pset = pyseq_to_packageset(seq, goal->sack);
+    DnfPackageSet *pset = pyseq_to_packageset(seq, hy_goal_get_sack(goal));
     if (pset == NULL)
         return NULL;
     dnf_goal_add_protected(goal, pset);

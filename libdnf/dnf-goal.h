@@ -27,6 +27,8 @@
 #include "hy-goal.h"
 #include "hy-package.h"
 
+G_BEGIN_DECLS
+
 gboolean         dnf_goal_depsolve                      (HyGoal          goal,
                                                          DnfGoalActions  flags,
                                                          GError          **error);
@@ -36,5 +38,7 @@ void             dnf_goal_add_protected                 (HyGoal goal,
                                                          DnfPackageSet  *pset);
 void             dnf_goal_set_protected                 (HyGoal goal,
                                                          DnfPackageSet  *pset);
+
+G_END_DECLS
 
 #endif /* __DNF_GOAL_H */

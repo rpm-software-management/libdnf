@@ -1,25 +1,25 @@
 SET (hawkeytest_SRCS
-     fixtures.c
-     test_advisory.c
-     test_advisorypkg.c
-     test_advisoryref.c
-     test_goal.c
-     test_iutil.c
-     test_main.c
-     test_package.c
-     test_packagelist.c
-     test_packageset.c
-     test_reldep.c
-     test_repo.c
-     test_query.c
-     test_sack.c
-     test_selector.c
-     test_subject.c
-     test_util.c
-     testshared.c
-     testsys.c)
+     fixtures.cpp
+     test_advisory.cpp
+     test_advisorypkg.cpp
+     test_advisoryref.cpp
+     test_goal.cpp
+     test_iutil.cpp
+     test_main.cpp
+     test_package.cpp
+     test_packagelist.cpp
+     test_packageset.cpp
+     test_reldep.cpp
+     test_repo.cpp
+     test_query.cpp
+     test_sack.cpp
+     test_selector.cpp
+     test_subject.cpp
+     test_util.cpp
+     testshared.cpp
+     testsys.cpp)
 
-ADD_LIBRARY(testshared STATIC testshared.c)
+ADD_LIBRARY(testshared STATIC testshared.cpp)
 SET_TARGET_PROPERTIES(testshared PROPERTIES COMPILE_FLAGS -fPIC)
 
 ADD_EXECUTABLE(test_hawkey_main ${hawkeytest_SRCS})

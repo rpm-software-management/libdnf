@@ -21,9 +21,7 @@
 #include <Python.h>
 #include <solv/util.h>
 
-#include "hy-package-private.h"
-#include "hy-packageset-private.h"
-#include "hy-query-private.h"
+#include "hy-query.h"
 #include "dnf-reldep.h"
 #include "dnf-reldep-list.h"
 
@@ -130,7 +128,7 @@ static PyObject *
 get_evaluated(_QueryObject *self, void *unused)
 {
     HyQuery q = self->query;
-    return PyBool_FromLong((long)q->applied);
+    return PyBool_FromLong((long)hy_query_is_applied(q));
 }
 
 static PyGetSetDef query_getsetters[] = {
@@ -361,7 +359,7 @@ q_contains(PyObject *self, PyObject *pypkg)
     if (pkg) {
         Id id = dnf_package_get_id(pkg);
         hy_query_apply(q);
-        if (MAPTST(q->result, id))
+        if (MAPTST(hy_query_get_result(q), id))
             Py_RETURN_TRUE;
     }
     Py_RETURN_FALSE;
@@ -373,8 +371,8 @@ q_length(PyObject *self, PyObject *unused)
     HyQuery q = ((_QueryObject *) self)->query;
     hy_query_apply(q);
 
-    unsigned char *res = q->result->map;
-    unsigned char *end = res + q->result->size;
+    const unsigned char *res = hy_query_get_result(q)->map;
+    const unsigned char *end = res + hy_query_get_result(q)->size;
     int length = 0;
 
     while (res < end)

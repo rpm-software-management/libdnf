@@ -26,6 +26,8 @@
 #include <rpm/rpmts.h>
 #include "hy-package.h"
 
+G_BEGIN_DECLS
+
 gboolean         dnf_rpmts_add_install_filename (rpmts           ts,
                                                  const gchar    *filename,
                                                  gboolean        allow_untrusted,
@@ -36,5 +38,7 @@ gboolean         dnf_rpmts_add_remove_pkg       (rpmts           ts,
                                                  GError         **error);
 gboolean         dnf_rpmts_look_for_problems    (rpmts           ts,
                                                  GError         **error);
+
+G_END_DECLS
 
 #endif /* __DNF_RPMTS_H */

@@ -24,6 +24,10 @@
 
 #include <glib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 gchar           *dnf_realpath                       (const gchar            *path);
 gboolean         dnf_remove_recursive               (const gchar            *directory,
                                                      GError                 **error);
@@ -36,5 +40,9 @@ gboolean         dnf_get_file_contents_allow_noent  (const gchar            *pat
                                                      gchar                  **out_contents,
                                                      gsize                  *length,
                                                      GError                 **error);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __DNF_UTILS_H */

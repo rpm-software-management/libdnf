@@ -21,7 +21,7 @@
 #ifndef SOLUTION_PY_H
 #define SOLUTION_PY_H
 
-#include "dnf-solution-private.h"
+#include "dnf-solution.h"
 
 extern PyTypeObject solution_Type;
 

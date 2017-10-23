@@ -28,10 +28,11 @@
 #include <solv/rules.h>
 #include <solv/transaction.h>
 
-#include "dnf-advisory-private.h"
 #include "dnf-sack.h"
 
 #define CHKSUM_BYTES 32
+
+G_BEGIN_DECLS
 
 /* crypto utils */
 int checksum_cmp(const unsigned char *cs1, const unsigned char *cs2);
@@ -48,7 +49,7 @@ const char *pool_checksum_str(Pool *pool, const unsigned char *chksum);
 char *abspath(const char *path);
 int is_readable_rpm(const char *fn);
 int mkcachedir(char *path);
-gboolean mv(const char *old, const char *new, GError **error);
+gboolean mv(const char *oldpath, const char *newpath, GError **error);
 char *this_username(void);
 
 /* misc utils */
@@ -65,10 +66,7 @@ void queue2plist(DnfSack *sack, Queue *q, GPtrArray *plist);
 Id what_upgrades(Pool *pool, Id p);
 Id what_downgrades(Pool *pool, Id p);
 Map *free_map_fully(Map *m);
-static inline int is_package(Pool *pool, Solvable *s)
-{
-    return !g_str_has_prefix(pool_id2str(pool, s->name), SOLVABLE_NAME_ADVISORY_PREFIX);
-}
+int is_package(const Pool *pool, const Solvable *s);
 
 /* package version utils */
 unsigned long pool_get_epoch(Pool *pool, const char *evr);
@@ -105,5 +103,7 @@ const char *id2nevra(Pool *pool, Id id);
         if (!is_package(pool, pool_id2solvable(pool, p)))               \
             continue;                                                   \
         else
+
+G_END_DECLS
 
 #endif

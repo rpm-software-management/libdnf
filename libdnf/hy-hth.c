@@ -27,7 +27,7 @@
 #include <solv/solver.h>
 
 #include "hy-goal.h"
-#include "hy-package-private.h"
+#include "hy-package-private.hpp"
 #include "hy-package.h"
 #include "hy-packageset.h"
 #include "hy-query.h"

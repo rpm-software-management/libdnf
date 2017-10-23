@@ -37,7 +37,15 @@
 #define TEST_EXPECT_UPDATES_NSOLVABLES 10
 #define TEST_EXPECT_YUM_NSOLVABLES 2
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 HyRepo glob_for_repofiles(Pool *pool, const char *repo_name, const char *path);
 int load_repo(Pool *pool, const char *name, const char *path, int installed);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* TESTSHARED_H */

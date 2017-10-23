@@ -22,7 +22,7 @@
 #include <datetime.h>
 
 // hawkey
-#include "dnf-advisory-private.h"
+#include "dnf-advisory.h"
 #include "dnf-advisorypkg.h"
 #include "dnf-advisoryref.h"
 #include "hy-package.h"
