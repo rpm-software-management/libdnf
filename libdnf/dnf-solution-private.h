@@ -24,9 +24,4 @@
 
 #include "dnf-solution.h"
 
-G_BEGIN_DECLS
-
 DnfSolution  *dnf_solution_new            (void);
-
-G_END_DECLS
-

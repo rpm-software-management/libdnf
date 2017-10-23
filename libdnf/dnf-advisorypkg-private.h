@@ -26,8 +26,6 @@
 
 #include "dnf-advisorypkg.h"
 
-G_BEGIN_DECLS
-
 DnfAdvisoryPkg  *dnf_advisorypkg_new            (void);
 void             dnf_advisorypkg_set_name       (DnfAdvisoryPkg *advisorypkg,
                                                  const char     *value);
@@ -37,7 +35,5 @@ void             dnf_advisorypkg_set_arch       (DnfAdvisoryPkg *advisorypkg,
                                                  const char     *value);
 void             dnf_advisorypkg_set_filename   (DnfAdvisoryPkg *advisorypkg,
                                                  const char     *value);
-
-G_END_DECLS
 
 #endif /* __DNF_ADVISORYPKG_PRIVATE_H */

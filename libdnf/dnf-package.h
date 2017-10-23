@@ -29,6 +29,8 @@
 #include "dnf-repo.h"
 #include "dnf-state.h"
 
+G_BEGIN_DECLS
+
 /**
  * DnfPackageInfo:
  * @DNF_PACKAGE_INFO_UNKNOWN:                   Unknown state
@@ -95,5 +97,7 @@ gboolean         dnf_package_array_download             (GPtrArray      *package
                                                          DnfState       *state,
                                                          GError         **error);
 guint64          dnf_package_array_get_download_size    (GPtrArray      *packages);
+
+G_END_DECLS
 
 #endif /* __DNF_PACKAGE_H */
