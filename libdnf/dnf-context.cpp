@@ -52,6 +52,7 @@
 #include "hy-query.h"
 #include "hy-subject.h"
 #include "hy-selector.h"
+#include "dnf-repo.hpp"
 
 #define MAX_NATIVE_ARCHES    12
 

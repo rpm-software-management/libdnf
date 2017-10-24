@@ -35,6 +35,7 @@
 #include <rpm/rpmts.h>
 #include <rpm/rpmlog.h>
 
+#include "dnf-context.hpp"
 #include "dnf-db.h"
 #include "dnf-goal.h"
 #include "dnf-keyring.h"

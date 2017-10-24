@@ -23,7 +23,6 @@
 #include <string.h>
 #include <solv/util.h>
 #include "hy-query.h"
-#include "hy-nevra.h"
 #include "hy-nevra-private.hpp"
 #include "dnf-sack.h"
 #include "hy-types.h"

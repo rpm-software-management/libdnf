@@ -39,6 +39,16 @@ struct _HyGoal {
     GPtrArray *removal_of_protected;
 };
 
+inline DnfGoalActions operator|(DnfGoalActions a, DnfGoalActions b)
+{
+    return static_cast<DnfGoalActions>(static_cast<int>(a) | static_cast<int>(b));
+}
+
+inline DnfGoalActions & operator|=(DnfGoalActions & a, DnfGoalActions b)
+{
+    return a = a | b;
+}
+
 int sltr2job(const HySelector sltr, Queue *job, int solver_action);
 
 #endif // HY_GOAL_INTERNAL_H
