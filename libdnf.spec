@@ -64,8 +64,17 @@ Summary:        Python 2 bindings for the hawkey library
 BuildRequires:  python2-devel
 %if 0%{?rhel} && 0%{?rhel} <= 7
 BuildRequires:  python-nose
+BuildRequires:  python-gobject
+Requires:       python-gobject
 %else
 BuildRequires:  python2-nose
+%if 0%{?fedora} && 0%{?fedora} <= 26
+BuildRequires:  python-gobject-base
+Requires:       python-gobject-base
+%else
+BuildRequires:  python2-gobject-base
+Requires:       python2-gobject-base
+%endif
 %endif
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 # Fix problem with hawkey - dnf version incompatibility
@@ -83,6 +92,8 @@ Summary:        Python 3 bindings for the hawkey library
 %{?python_provide:%python_provide python3-hawkey}
 BuildRequires:  python3-devel
 BuildRequires:  python3-nose
+BuildRequires:  python3-gobject-base
+Requires:       python3-gobject-base
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 # Fix problem with hawkey - dnf version incompatibility
 # Can be deleted for distros where only python3-dnf >= 2.0.0
@@ -120,6 +131,9 @@ Please build the package as non-root user.
 ERROR
         exit 1
 fi
+# for SWDB testing
+export GI_TYPELIB_PATH=%{buildroot}%{_libdir}/girepository-1.0
+export LD_LIBRARY_PATH=%{buildroot}%{_libdir}
 pushd build-py2
   make ARGS="-V" test
 popd
