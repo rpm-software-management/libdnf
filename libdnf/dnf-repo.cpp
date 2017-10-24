@@ -43,7 +43,7 @@
 
 #include "dnf-keyring.h"
 #include "dnf-package.h"
-#include "dnf-repo.h"
+#include "dnf-repo.hpp"
 #include "dnf-types.h"
 #include "dnf-utils.h"
 
@@ -1082,7 +1082,7 @@ gboolean
 dnf_repo_setup(DnfRepo *repo, GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    DnfRepoEnabled enabled = 0;
+    DnfRepoEnabled enabled = DNF_REPO_ENABLED_NONE;
     g_autofree gchar *basearch = NULL;
     g_autofree gchar *release = NULL;
     g_autofree gchar *testdatadir = NULL;
