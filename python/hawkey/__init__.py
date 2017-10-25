@@ -623,14 +623,10 @@ class Subject(_hawkey.Subject):
         self.icase = ignore_case
         super(Subject, self).__init__(pkg_spec)
 
-    def nevra_possibilities(self, *args, **kwargs):
-        for nevra in super(Subject, self).nevra_possibilities(*args, **kwargs):
-            yield NEVRA(nevra=nevra)
-
     def nevra_possibilities_real(self, *args, **kwargs):
         warnings.simplefilter('always', DeprecationWarning)
         msg = "The function 'nevra_possibilities_real' is deprecated. " \
-              "Please use 'nevra_possibilities' instead. The function will be removed on 2018-01-01"
+              "Please use 'get_nevra_possibilities' instead. The function will be removed on 2018-01-01"
         warnings.warn(msg, DeprecationWarning)
 
         poss = super(Subject, self).nevra_possibilities_real(*args, **kwargs)
@@ -658,10 +654,12 @@ class Subject(_hawkey.Subject):
         :return: generator for every possible nevra. Each possible nevra is represented by Class
         NEVRA object (libdnf) that have attributes name, epoch, version, release, arch
         """
-        kwargs = {}
+        kwargs = dict()
         if forms:
             kwargs['form'] = forms
-        return self.nevra_possibilities(**kwargs)
+        for nevra in super(Subject, self).nevra_possibilities(**kwargs):
+            yield NEVRA(nevra=nevra)
+
 
     def _get_nevra_solution(self, sack, with_nevra=True, with_provides=True, with_filenames=True,
                             forms=None):
