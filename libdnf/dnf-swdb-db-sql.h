@@ -136,17 +136,13 @@
     "   tw_id INTEGER PRIMARY KEY," \
     "   t_id INTEGER REFERENCES trans(t_id)," \
     "   p_id INTEGER REFERENCES package(p_id));" \
-    "CREATE INDEX nevra ON PACKAGE(" \
-    "   name || '-' || epoch || ':' || version || '-' || release || '.' || arch);" \
-    "CREATE INDEX nvra on PACKAGE(" \
-    "   name || '-' || version || '-' || release || '.' || arch);" \
+    "CREATE INDEX name_index ON PACKAGE(name);" \
     "CREATE TABLE config (" \
     "   key TEXT PRIMARY KEY," \
     "   value TEXT NOT NULL);" \
-    "INSERT INTO config values("\
-    "   'version',"\
+    "INSERT INTO config values(" \
+    "   'version'," \
     "   '1.0');"
-
 
 #define S_OUTPUT "SELECT msg FROM OUTPUT WHERE T_ID=@tid and type=@type"
 

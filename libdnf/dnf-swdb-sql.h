@@ -98,20 +98,12 @@
 #define S_REPO_FROM_PID2 "SELECT name FROM PACKAGE_DATA join REPO using(R_ID) where P_ID=@pid"
 
 #define S_CHECKSUM_BY_NEVRA \
-    "SELECT checksum_data, checksum_type FROM PACKAGE WHERE name || '-' || epoch || ':' || " \
-    "version || '-' || release || '.' || arch=@nevra"
-
-#define S_CHECKSUM_BY_NVRA \
-    "SELECT checksum_data, checksum_type FROM PACKAGE WHERE name || '-' || version || '-' || " \
-    "release || '.' || arch=@nevra"
+    "SELECT checksum_data, checksum_type FROM PACKAGE WHERE name=@n and epoch=@e and version=@v " \
+    "and release=@r and arch=@a"
 
 #define S_PID_BY_NEVRA \
-    "SELECT P_ID FROM PACKAGE WHERE name || '-' || epoch || ':' || version || '-' || release || " \
-    "'.' || arch=@nevra"
-
-#define S_PID_BY_NVRA \
-    "SELECT P_ID FROM PACKAGE WHERE name || '-' || version || '-' || release || '.' || " \
-    "arch=@nevra"
+    "SELECT P_ID FROM PACKAGE WHERE name=@n and epoch=@e and version=@v and release=@r and " \
+    "arch=@a"
 
 #define S_REASON_ID_BY_PDID \
     "SELECT reason FROM PACKAGE_DATA join TRANS_DATA using(PD_ID) where PD_ID=@pdid"

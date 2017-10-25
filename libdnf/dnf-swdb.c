@@ -23,6 +23,10 @@
 #include "dnf-swdb.h"
 #include "dnf-swdb-sql.h"
 #include "dnf-swdb-trans.h"
+#include "hy-nevra.h"
+#include "hy-subject-private.h"
+#include "hy-subject.h"
+#include "hy-types.h"
 
 G_DEFINE_TYPE (DnfSwdb, dnf_swdb, G_TYPE_OBJECT)
 G_DEFINE_TYPE (DnfSwdbTransData, dnf_swdb_transdata, G_TYPE_OBJECT) // trans data
@@ -226,6 +230,31 @@ dnf_swdb_search (DnfSwdb *self, GPtrArray *patterns)
 }
 
 /**
+ * _fill_nevra_res:
+ * Parse nevra and fill SQL expression
+ **/
+static HyNevra
+_fill_nevra_res (sqlite3_stmt *res, const gchar *nevra)
+{
+    HyNevra hnevra = hy_nevra_create ();
+    if (nevra_possibility (nevra, HY_FORM_NEVRA, hnevra)) {
+        return NULL;
+    }
+
+    gint epoch = hy_nevra_get_epoch (hnevra);
+    if (epoch == -1) {
+        epoch = 0;
+    }
+    _db_bind_str (res, "@n", hy_nevra_get_string (hnevra, HY_NEVRA_NAME));
+    _db_bind_int (res, "@e", epoch);
+    _db_bind_str (res, "@v", hy_nevra_get_string (hnevra, HY_NEVRA_VERSION));
+    _db_bind_str (res, "@r", hy_nevra_get_string (hnevra, HY_NEVRA_RELEASE));
+    _db_bind_str (res, "@a", hy_nevra_get_string (hnevra, HY_NEVRA_ARCH));
+
+    return hnevra;
+}
+
+/**
  * _pid_by_nevra:
  * @db: sqlite database handle
  * @nevra: string in format name-[epoch:]version-release.arch
@@ -238,11 +267,19 @@ dnf_swdb_search (DnfSwdb *self, GPtrArray *patterns)
 static gint
 _pid_by_nevra (sqlite3 *db, const gchar *nevra)
 {
-    const gchar *sql = g_strrstr (nevra, ":") ? S_PID_BY_NEVRA : S_PID_BY_NVRA;
+    const gchar *sql = S_PID_BY_NEVRA;
     sqlite3_stmt *res;
     _db_prepare (db, sql, &res);
-    _db_bind_str (res, "@nevra", nevra);
-    return _db_find_int (res);
+
+    HyNevra hnevra = _fill_nevra_res (res, nevra);
+    if (hnevra == NULL) {
+        // failed to parse nevra
+        sqlite3_finalize (res);
+        return 0;
+    }
+    gint rc = _db_find_int (res);
+    hy_nevra_free (hnevra);
+    return rc;
 }
 
 /**
@@ -269,34 +306,35 @@ dnf_swdb_checksums (DnfSwdb *self, GPtrArray *nevras)
 
     GPtrArray *checksums = g_ptr_array_new ();
     const gchar *sql = S_CHECKSUM_BY_NEVRA;
-    const gchar *sql2 = S_CHECKSUM_BY_NVRA;
     for (guint i = 0; i < nevras->len; i++) {
         // get nevra
         nevra = (gchar *)g_ptr_array_index (nevras, i);
 
         // save nevra to output list
-        g_ptr_array_add (checksums, (gpointer) g_strdup (nevra)); // nevra
+        g_ptr_array_add (checksums, (gpointer)g_strdup (nevra)); // nevra
 
+        // prepare the sql statement
         sqlite3_stmt *res;
-        if (g_strrstr (nevra, ":")) {
-            _db_prepare (self->db, sql, &res);
-        } else {
-            _db_prepare (self->db, sql2, &res);
-        }
+        _db_prepare (self->db, sql, &res);
 
         gboolean inserted = FALSE;
 
-        _db_bind_str (res, "@nevra", nevra);
-        if (sqlite3_step (res) == SQLITE_ROW) {
+        HyNevra hnevra = _fill_nevra_res (res, nevra);
+
+        // parse and lookup nevra
+        if (hnevra && sqlite3_step (res) == SQLITE_ROW) {
             buff1 = (gchar *)sqlite3_column_text (res, 0);
             buff2 = (gchar *)sqlite3_column_text (res, 1);
             if (buff1 && buff2) {
-                g_ptr_array_add (checksums, (gpointer) g_strdup (buff2)); // type
-                g_ptr_array_add (checksums, (gpointer) g_strdup (buff1)); // data
+                g_ptr_array_add (checksums, (gpointer)g_strdup (buff2)); // type
+                g_ptr_array_add (checksums, (gpointer)g_strdup (buff1)); // data
                 inserted = TRUE;
             }
         }
         sqlite3_finalize (res);
+        if (hnevra) {
+            hy_nevra_free (hnevra);
+        }
 
         if (!inserted) {
             // insert plain checksum data to keep the order correct
@@ -580,7 +618,7 @@ dnf_swdb_update_package_data (DnfSwdb *self, gint pid, gint tid, DnfSwdbPkgData 
 
     if (!pdid) {
         // field is not available
-        g_warning("Package %d is not available in transation %d", pid, tid);
+        g_warning ("Package %d is not available in transation %d", pid, tid);
         return 1;
     }
 
@@ -744,11 +782,11 @@ _get_package_data_by_pid (sqlite3 *db, gint pid)
     if (sqlite3_step (res) == SQLITE_ROW) {
         DnfSwdbPkgData *pkgdata =
           dnf_swdb_pkgdata_new ((gchar *)sqlite3_column_text (res, 3), // from_repo_revision
-                                sqlite3_column_int (res, 4), // from_repo_timestamp
+                                sqlite3_column_int (res, 4),           // from_repo_timestamp
                                 (gchar *)sqlite3_column_text (res, 5), // installed_by
                                 (gchar *)sqlite3_column_text (res, 6), // changed_by
                                 NULL);                                 // from_repo
-        pkgdata->pdid = sqlite3_column_int (res, 0); // pdid
+        pkgdata->pdid = sqlite3_column_int (res, 0);                   // pdid
         pkgdata->pid = pid;
         gint rid = sqlite3_column_int (res, 2);
         sqlite3_finalize (res);
@@ -960,12 +998,8 @@ _resolve_group_origin (sqlite3 *db, gint tid, gint pid)
  * Returns: 0 if successfull
  **/
 gint
-dnf_swdb_trans_data_beg (DnfSwdb *self,
-                         gint tid,
-                         gint pid,
-                         DnfSwdbReason reason,
-                         const gchar *state,
-                         gint obsoleting)
+dnf_swdb_trans_data_beg (
+  DnfSwdb *self, gint tid, gint pid, DnfSwdbReason reason, const gchar *state, gint obsoleting)
 {
     if (dnf_swdb_open (self))
         return 1;
@@ -1080,11 +1114,8 @@ dnf_swdb_trans_beg (DnfSwdb *self,
  * Returns: 0 if successfull
  **/
 gint
-dnf_swdb_trans_end (DnfSwdb *self,
-                    gint tid,
-                    gint64 end_timestamp,
-                    const gchar *end_rpmdb_version,
-                    gint return_code)
+dnf_swdb_trans_end (
+  DnfSwdb *self, gint tid, gint64 end_timestamp, const gchar *end_rpmdb_version, gint return_code)
 {
     if (dnf_swdb_open (self))
         return 1;
@@ -1290,8 +1321,8 @@ dnf_swdb_trans_old (DnfSwdb *self, GArray *tids, gint limit, gboolean complete_o
         }
         DnfSwdbTrans *trans =
           dnf_swdb_trans_new (tid,                                   // tid
-                              sqlite3_column_int (res, 1), // beg_t
-                              sqlite3_column_int (res, 2), // end_t
+                              sqlite3_column_int (res, 1),           // beg_t
+                              sqlite3_column_int (res, 2),           // end_t
                               (gchar *)sqlite3_column_text (res, 3), // beg_rpmdb_v
                               (gchar *)sqlite3_column_text (res, 4), // end_rpmdb_v
                               (gchar *)sqlite3_column_text (res, 5), // cmdline
