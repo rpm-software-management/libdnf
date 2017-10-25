@@ -1792,39 +1792,28 @@ gboolean
 dnf_context_update(DnfContext *context, const gchar *name, GError **error)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
-    GPtrArray *pkglist;
-    DnfPackage *pkg;
-    hy_autoquery HyQuery query = NULL;
-    gboolean ret = TRUE;
-    guint i;
 
     /* create sack and add repos */
     if (priv->sack == NULL) {
         dnf_state_reset(priv->state);
-        ret = dnf_context_setup_sack(context, priv->state, error);
-        if (!ret)
+        if (!dnf_context_setup_sack(context, priv->state, error))
             return FALSE;
     }
 
-    /* find a newest remote package to install */
-    query = hy_query_create(priv->sack);
-    hy_query_filter_latest_per_arch(query, TRUE);
-    hy_query_filter_in(query, HY_PKG_ARCH, HY_EQ,
-               (const gchar **) priv->native_arches);
-    hy_query_filter(query, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
-    hy_query_filter (query, HY_PKG_ARCH, HY_NEQ, "src");
-    hy_query_filter(query, HY_PKG_NAME, HY_EQ, name);
-    pkglist = hy_query_run(query);
-
-    /* add each package */
-    for (i = 0; i < pkglist->len; i++) {
-        pkg = g_ptr_array_index (pkglist, i);
-        if (dnf_package_is_installonly(pkg))
-            hy_goal_install(priv->goal, pkg);
-        else
-            hy_goal_upgrade_to(priv->goal, pkg);
+    g_auto(HySubject) subject = hy_subject_create(name);
+    g_auto(HySelector) selector = hy_subject_get_best_selector(subject, priv->sack);
+    g_autoptr(GPtrArray) selector_matches = hy_selector_matches(selector);
+    if (selector_matches->len == 0) {
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_PACKAGE_NOT_FOUND,
+                    "No package matches '%s'", name);
+        return FALSE;
     }
-    g_ptr_array_unref(pkglist);
+
+    if (hy_goal_upgrade_to_selector(priv->goal, selector))
+        return FALSE;
+
     return TRUE;
 }
 
