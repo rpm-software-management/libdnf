@@ -190,7 +190,7 @@ PYCOMP_MOD_INIT(_hawkey)
     /* _hawkey.PackageDelta */
     if (PyType_Ready(&packageDelta_Type) < 0)
         return PYCOMP_MOD_ERROR_VAL;
-    Py_INCREF(&package_Type);
+    Py_INCREF(&packageDelta_Type);
     PyModule_AddObject(m, "PackageDelta", (PyObject *)&packageDelta_Type);
     /* _hawkey.Query */
     if (PyType_Ready(&query_Type) < 0)
