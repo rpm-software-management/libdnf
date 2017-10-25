@@ -67,7 +67,7 @@ START_TEST(nevra1)
     HyNevra nevra = hy_nevra_create();
 
     ck_assert_int_eq(
-        nevra_possibility((char *) inp_fof, HY_FORM_NEVRA, nevra), 0);
+        nevra_possibility(inp_fof, HY_FORM_NEVRA, nevra), 0);
     ck_assert_str_eq(hy_nevra_get_string(nevra, HY_NEVRA_NAME), "four-of-fish");
     ck_assert_int_eq(hy_nevra_get_epoch(nevra), 8);
     ck_assert_str_eq(hy_nevra_get_string(nevra, HY_NEVRA_VERSION), "3.6.9");
@@ -112,7 +112,7 @@ START_TEST(nevra2)
     HyNevra nevra = hy_nevra_create();
 
     ck_assert_int_eq(
-        nevra_possibility((char *) inp_fof_noepoch, HY_FORM_NEVRA, nevra), 0);
+        nevra_possibility(inp_fof_noepoch, HY_FORM_NEVRA, nevra), 0);
     ck_assert_str_eq(nevra->name, "four-of-fish");
     ck_assert_int_eq(nevra->epoch, -1);
     ck_assert_str_eq(nevra->version, "3.6.9");
@@ -128,7 +128,7 @@ START_TEST(nevr)
     HyNevra nevra = hy_nevra_create();
 
     ck_assert_int_eq(
-        nevra_possibility((char *) inp_fof, HY_FORM_NEVR, nevra), 0);
+        nevra_possibility(inp_fof, HY_FORM_NEVR, nevra), 0);
     ck_assert_str_eq(nevra->name, "four-of-fish");
     ck_assert_int_eq(nevra->epoch, 8);
     ck_assert_str_eq(nevra->version, "3.6.9");
@@ -144,7 +144,7 @@ START_TEST(nevr_fail)
     HyNevra nevra = hy_nevra_create();
 
     ck_assert_int_eq(
-        nevra_possibility((char *) "four-of", HY_FORM_NEVR, nevra), -1);
+        nevra_possibility("four-of", HY_FORM_NEVR, nevra), -1);
 
     hy_nevra_free(nevra);
 }
@@ -155,7 +155,7 @@ START_TEST(nev)
     HyNevra nevra = hy_nevra_create();
 
     ck_assert_int_eq(
-        nevra_possibility((char *) inp_fof_nev, HY_FORM_NEV, nevra), 0);
+        nevra_possibility(inp_fof_nev, HY_FORM_NEV, nevra), 0);
     ck_assert_str_eq(nevra->name, "four-of-fish");
     ck_assert_int_eq(nevra->epoch, 8);
     ck_assert_str_eq(nevra->version, "3.6.9");
@@ -171,7 +171,7 @@ START_TEST(na)
     HyNevra nevra = hy_nevra_create();
 
     ck_assert_int_eq(
-        nevra_possibility((char *) inp_fof_na, HY_FORM_NA, nevra), 0);
+        nevra_possibility(inp_fof_na, HY_FORM_NA, nevra), 0);
     ck_assert_str_eq(nevra->name, "four-of-fish-3.6.9");
     ck_assert_int_eq(nevra->epoch, -1);
     fail_unless(nevra->version == NULL);

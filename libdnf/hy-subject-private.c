@@ -71,7 +71,7 @@ const char *module_form_regex[] = {
 #define MATCH_EMPTY(i) (matches[i].rm_so >= matches[i].rm_eo)
 
 int
-nevra_possibility(char *nevra_str, int form, HyNevra nevra)
+nevra_possibility(const char *nevra_str, int form, HyNevra nevra)
 {
     enum { NAME = 1, EPOCH = 3, VERSION = 4, RELEASE = 5, ARCH = 6 };
     regex_t reg;
