@@ -40,6 +40,108 @@ typedef struct {
     PyObject *sack;
 } _QueryObject;
 
+static const int keyname_int_matches[] = {
+    HY_PKG,
+    HY_PKG_ADVISORY,
+    HY_PKG_ADVISORY_BUG,
+    HY_PKG_ADVISORY_CVE,
+    HY_PKG_ADVISORY_SEVERITY,
+    HY_PKG_ADVISORY_TYPE,
+    HY_PKG_ARCH,
+    HY_PKG_CONFLICTS,
+    HY_PKG_DESCRIPTION,
+    HY_PKG_DOWNGRADABLE,
+    HY_PKG_DOWNGRADES,
+    HY_PKG_EMPTY,
+    HY_PKG_ENHANCES,
+    HY_PKG_EPOCH,
+    HY_PKG_EVR,
+    HY_PKG_FILE,
+    HY_PKG_LATEST,
+    HY_PKG_LATEST_PER_ARCH,
+    HY_PKG_LOCATION,
+    HY_PKG_NAME,
+    HY_PKG_NEVRA,
+    HY_PKG_OBSOLETES,
+    HY_PKG_PROVIDES,
+    HY_PKG_RECOMMENDS,
+    HY_PKG_RELEASE,
+    HY_PKG_REPONAME,
+    HY_PKG_REQUIRES,
+    HY_PKG_SOURCERPM,
+    HY_PKG_SUGGESTS,
+    HY_PKG_SUMMARY,
+    HY_PKG_SUPPLEMENTS,
+    HY_PKG_UPGRADABLE,
+    HY_PKG_UPGRADES,
+    HY_PKG_URL,
+    HY_PKG_VERSION
+};
+
+static const char * const keyname_char_matches[] = {
+    "pkg",
+    "advisory",
+    "advisory_bug",
+    "advisory_cve",
+    "advisory_severity",
+    "advisory_type",
+    "arch",
+    "conflicts",
+    "description",
+    "downgradable",
+    "downgrades",
+    "empty",
+    "enhances",
+    "epoch",
+    "evr",
+    "file",
+    "latest",
+    "latest_per_arch",
+    "location",
+    "name",
+    "nevra",
+    "obsoletes",
+    "provides",
+    "recommends",
+    "release",
+    "reponame",
+    "requires",
+    "sourcerpm",
+    "suggests",
+    "summary",
+    "supplements",
+    "upgradable",
+    "upgrades",
+    "url",
+    "version",
+    NULL
+};
+
+static const char * const query_cmp_map_char[] = {
+    "eq",
+    "gt",
+    "lt",
+    "neq",
+    "not",
+    "gte",
+    "lte",
+    "substr",
+    "glob",
+    NULL
+};
+
+static const int query_cmp_map_int[] = {
+    HY_EQ,
+    HY_GT,
+    HY_LT,
+    HY_NEQ,
+    HY_NOT,
+    HY_EQ | HY_GT,
+    HY_EQ | HY_LT,
+    HY_SUBSTR,
+    HY_GLOB
+};
+
 HyQuery
 queryFromPyObject(PyObject *o)
 {
@@ -145,23 +247,18 @@ clear(_QueryObject *self, PyObject *unused)
     Py_RETURN_NONE;
 }
 
-static PyObject *
+static int
 raise_bad_filter(void)
 {
     PyErr_SetString(HyExc_Query, "Invalid filter key or match type.");
-    return NULL;
+    return 0;
 }
 
-static PyObject *
-filter(_QueryObject *self, PyObject *args)
+static int
+filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
 {
-    key_t keyname;
-    int cmp_type;
-    PyObject *match;
     const char *cmatch;
 
-    if (!PyArg_ParseTuple(args, "iiO", &keyname, &cmp_type, &match))
-        return NULL;
     if (keyname == HY_PKG_DOWNGRADABLE ||
         keyname == HY_PKG_DOWNGRADES ||
         keyname == HY_PKG_EMPTY ||
@@ -173,38 +270,38 @@ filter(_QueryObject *self, PyObject *args)
 
         if (!PyInt_Check(match) || cmp_type != HY_EQ) {
             PyErr_SetString(HyExc_Value, "Invalid boolean filter query.");
-            return NULL;
+            return 0;
         }
         val = PyLong_AsLong(match);
         if (keyname == HY_PKG_EMPTY) {
             if (!val) {
                 PyErr_SetString(HyExc_Value, "Invalid boolean filter query.");
-                return NULL;
+                return 0;
             }
-            hy_query_filter_empty(self->query);
+            hy_query_filter_empty(query);
         } else if (keyname == HY_PKG_LATEST_PER_ARCH)
-            hy_query_filter_latest_per_arch(self->query, val);
+            hy_query_filter_latest_per_arch(query, val);
         else if (keyname == HY_PKG_LATEST)
-            hy_query_filter_latest(self->query, val);
+            hy_query_filter_latest(query, val);
         else if (keyname == HY_PKG_DOWNGRADABLE)
-            hy_query_filter_downgradable(self->query, val);
+            hy_query_filter_downgradable(query, val);
         else if (keyname == HY_PKG_DOWNGRADES)
-            hy_query_filter_downgrades(self->query, val);
+            hy_query_filter_downgrades(query, val);
         else if (keyname == HY_PKG_UPGRADABLE)
-            hy_query_filter_upgradable(self->query, val);
+            hy_query_filter_upgradable(query, val);
         else
-            hy_query_filter_upgrades(self->query, val);
-        Py_RETURN_NONE;
+            hy_query_filter_upgrades(query, val);
+        return 1;
     }
     if (PyUnicode_Check(match) || PyString_Check(match)) {
         PyObject *tmp_py_str = NULL;
         cmatch = pycomp_get_string(match, &tmp_py_str);
-        int query_filter_ret = hy_query_filter(self->query, keyname, cmp_type, cmatch);
+        int query_filter_ret = hy_query_filter(query, keyname, cmp_type, cmatch);
         Py_XDECREF(tmp_py_str);
 
         if (query_filter_ret)
             return raise_bad_filter();
-        Py_RETURN_NONE;
+        return 1;
     }
     if (PyInt_Check(match)) {
         long val = PyLong_AsLong(match);
@@ -212,41 +309,39 @@ filter(_QueryObject *self, PyObject *args)
             cmp_type = HY_EQ;
         if (val > INT_MAX || val < INT_MIN) {
             PyErr_SetString(HyExc_Value, "Numeric argument out of range.");
-            return NULL;
+            return 0;
         }
-        if (hy_query_filter_num(self->query, keyname, cmp_type, val))
+        if (hy_query_filter_num(query, keyname, cmp_type, val))
             return raise_bad_filter();
-        Py_RETURN_NONE;
+        return 1;
     }
     if (queryObject_Check(match)) {
         HyQuery target = queryFromPyObject(match);
         DnfPackageSet *pset = hy_query_run_set(target);
-        int ret = hy_query_filter_package_in(self->query, keyname,
+        int ret = hy_query_filter_package_in(query, keyname,
                                              cmp_type, pset);
 
         g_object_unref(pset);
         if (ret)
             return raise_bad_filter();
-        Py_RETURN_NONE;
+        return 1;
     }
     if (reldepObject_Check(match)) {
         DnfReldep *reldep = reldepFromPyObject(match);
         if (cmp_type != HY_EQ ||
-            hy_query_filter_reldep(self->query, keyname, reldep))
+            hy_query_filter_reldep(query, keyname, reldep))
             return raise_bad_filter();
-        Py_RETURN_NONE;
+        return 1;
     }
     // match is a sequence now:
     switch (keyname) {
     case HY_PKG:
     case HY_PKG_OBSOLETES: {
-        DnfSack *sack = sackFromPyObject(self->sack);
-        assert(sack);
-        DnfPackageSet *pset = pyseq_to_packageset(match, sack);
+        DnfPackageSet *pset = pyseq_to_packageset(match, query->sack);
 
         if (pset == NULL)
-            return NULL;
-        int ret = hy_query_filter_package_in(self->query, keyname,
+            return 1;
+        int ret = hy_query_filter_package_in(query, keyname,
                                              cmp_type, pset);
         g_object_unref(pset);
         if (ret)
@@ -260,13 +355,11 @@ filter(_QueryObject *self, PyObject *args)
     case HY_PKG_RECOMMENDS:
     case HY_PKG_SUGGESTS:
     case HY_PKG_SUPPLEMENTS: {
-        DnfSack *sack = sackFromPyObject(self->sack);
-        assert(sack);
-        DnfReldepList *reldeplist = pyseq_to_reldeplist(match, sack, cmp_type);
+        DnfReldepList *reldeplist = pyseq_to_reldeplist(match, query->sack, cmp_type);
         if (reldeplist == NULL)
-            return NULL;
+            return 1;
 
-        int ret = hy_query_filter_reldep_in(self->query, keyname, reldeplist);
+        int ret = hy_query_filter_reldep_in(query, keyname, reldeplist);
         g_object_unref (reldeplist);
         if (ret)
             return raise_bad_filter();
@@ -275,7 +368,7 @@ filter(_QueryObject *self, PyObject *args)
     default: {
         PyObject *seq = PySequence_Fast(match, "Expected a sequence.");
         if (seq == NULL)
-            return NULL;
+            return 1;
         const unsigned count = PySequence_Size(seq);
         const char *matches[count + 1];
         matches[count] = NULL;
@@ -289,10 +382,10 @@ filter(_QueryObject *self, PyObject *args)
                 PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
                 pycomp_free_tmp_array(tmp_py_strs, i);
                 Py_DECREF(seq);
-                return NULL;
+                return 0;
             }
         }
-        int filter_in_ret = hy_query_filter_in(self->query, keyname, cmp_type, matches);
+        int filter_in_ret = hy_query_filter_in(query, keyname, cmp_type, matches);
         Py_DECREF(seq);
         pycomp_free_tmp_array(tmp_py_strs, count - 1);
 
@@ -301,7 +394,126 @@ filter(_QueryObject *self, PyObject *args)
         break;
     }
     }
-    Py_RETURN_NONE;
+    return 1;
+}
+
+static char *
+filter_key_splitter(char** key)
+{
+    char *sbegin = *key;
+	char *end;
+
+    if (sbegin == NULL)
+		return NULL;
+    int index;
+
+    for (index = 0; sbegin[index] != '\0'; ++index) {
+        if ((sbegin[index] == '_') &&  (sbegin[index + 1] == '_')) {
+            end = sbegin + index;
+            *end++ = '\0';
+            *key = ++end;
+            return sbegin;
+        }
+    }
+    *key = NULL;
+    return sbegin;
+}
+
+static PyObject *
+filter_internal(HyQuery query, PyObject *sack, PyObject *args, PyObject *kwds)
+{
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+    key_t keyname;
+    int cmp_type;
+    PyObject *tuple_item;
+    const char *cmatch; 
+    int argument_number, presence_cmp_type;
+    int cmp_type_flag = 0;
+
+    if (args != NULL) {
+        Py_ssize_t tuple_size = PyTuple_Size(args);
+        for (int x = 0; x < tuple_size; ++x) {
+            tuple_item = PyTuple_GetItem(args, x);
+            if (PyInt_Check(tuple_item)) {
+                long c_int = PyLong_AsLong(tuple_item);
+                if (c_int == HY_ICASE) {
+                    cmp_type_flag = HY_ICASE;
+                } else {
+                    PyErr_SetString(PyExc_ValueError, "Invalid flag. Only HY_ICASE allowed");
+                    Py_RETURN_NONE;
+                }
+            }
+        }
+    }
+
+    if (kwds != NULL) {
+        while (PyDict_Next(kwds, &pos, &key, &value)) {
+            keyname = -1;
+            argument_number = 0;
+            PyObject *tmp_py_str = NULL;
+            cmatch = pycomp_get_string(key, &tmp_py_str);
+            g_autofree char *parsed_string = strdup(cmatch);
+            char *tmp_string = parsed_string;
+            Py_XDECREF(tmp_py_str);
+            cmp_type = 0;
+            char *parcial_string;
+            while ((parcial_string = filter_key_splitter(&tmp_string)) != NULL) {
+                if (!argument_number) {
+                    for (unsigned int i = 0; keyname_char_matches[i] != NULL; ++i) {
+                        if (strcmp(keyname_char_matches[i], parcial_string) == 0) {
+                            keyname = keyname_int_matches[i];
+                            argument_number = 1;
+                            break;
+                        }
+                    }
+                    if (!argument_number) {
+                        PyErr_SetString(PyExc_ValueError, g_strdup_printf(
+                            "Invalid filter key: %s", parcial_string));
+                        Py_RETURN_NONE;
+                    }
+                } else {
+                    presence_cmp_type = FALSE;
+                    for (unsigned int i = 0; query_cmp_map_char[i] != NULL; ++i) {
+                        if (strcmp(query_cmp_map_char[i], parcial_string) == 0) {
+                            cmp_type |= query_cmp_map_int[i];
+                            presence_cmp_type = TRUE;
+                            break;
+                        }
+                    }
+                    if (!presence_cmp_type) {
+                        PyErr_SetString(PyExc_ValueError, g_strdup_printf(
+                            "Invalid filter match value: %s", parcial_string));
+                        Py_RETURN_NONE;
+                    }
+                }
+            }
+            if (cmp_type == 0)
+                cmp_type = HY_EQ;
+            if (keyname != -1) {
+                if (filter_add(query, keyname, cmp_type|cmp_type_flag, value) == 0)
+                    Py_RETURN_NONE;
+            }
+        }
+    }
+    return queryToPyObject(query, sack);
+}
+
+static PyObject *
+filter(_QueryObject *self, PyObject *args, PyObject *kwds)
+{
+    HyQuery query = hy_query_clone(self->query);
+    PyObject *final_query = filter_internal(query, self->sack, args, kwds);
+    Py_INCREF(final_query);
+    return final_query;
+}
+
+static PyObject *
+filterm(_QueryObject *self, PyObject *args, PyObject *kwds)
+{
+    PyObject *final_query = filter_internal(self->query, self->sack, args, kwds);
+    Py_INCREF(final_query);
+    return final_query;;
 }
 
 static PyObject *
@@ -369,8 +581,8 @@ q_contains(PyObject *self, PyObject *pypkg)
     Py_RETURN_FALSE;
 }
 
-static PyObject *
-q_length(PyObject *self, PyObject *unused)
+static int
+query_len(PyObject *self)
 {
     HyQuery q = ((_QueryObject *) self)->query;
     hy_query_apply(q);
@@ -382,13 +594,71 @@ q_length(PyObject *self, PyObject *unused)
     while (res < end)
         length += __builtin_popcount(*res++);
 
-    return PyLong_FromLong(length);
+    return length;
 }
+
+static PyObject *
+q_length(PyObject *self, PyObject *unused)
+{
+    return PyLong_FromLong(query_len(self));
+}
+
+static PyObject *
+query_get_item(PyObject *self, int index)
+{
+    HyQuery query = ((_QueryObject *) self)->query;
+    Id id = query_get_index_item(query, index);
+    if (!id) {
+        PyErr_SetString(PyExc_IndexError, "list index out of range");
+        return NULL;
+    }
+    PyObject *package = new_package(((_QueryObject *) self)->sack, id);
+    Py_INCREF(package);
+    return package;
+}
+
+static PyObject *
+query_get_item_by_pyindex(PyObject *self, PyObject *index)
+{
+    HyQuery query = ((_QueryObject *) self)->query;
+    Id id = query_get_index_item(query, PyLong_AsLong(index));
+    if (!id) {
+        PyErr_SetString(PyExc_IndexError, "list index out of range");
+        return NULL;
+    }
+    PyObject *package = new_package(((_QueryObject *) self)->sack, id);
+    Py_INCREF(package);
+    return package;
+}
+
+static PyObject *
+query_iter(PyObject *self)
+{
+    PyObject *list;
+    DnfPackageSet *pset;
+
+    pset = hy_query_run_set(((_QueryObject *) self)->query);
+    list = packageset_to_pylist(pset, ((_QueryObject *) self)->sack);
+    g_object_unref(pset);
+    PyObject *iter = PyObject_GetIter(list);
+    Py_DECREF(list);
+    Py_INCREF(iter);
+    return iter;
+}
+
+PySequenceMethods query_sequence = {
+    (lenfunc)query_len,               /* sq_length */
+    0,                                /* sq_concat */
+    0,                                /* sq_repeat */
+    (ssizeargfunc) query_get_item,    /* sq_item */
+};
 
 static struct PyMethodDef query_methods[] = {
     {"clear", (PyCFunction)clear, METH_NOARGS,
      NULL},
-    {"filter", (PyCFunction)filter, METH_VARARGS,
+    {"filter", (PyCFunction)filter, METH_KEYWORDS|METH_VARARGS,
+     NULL},
+    {"filterm", (PyCFunction)filterm, METH_KEYWORDS|METH_VARARGS,
      NULL},
     {"run", (PyCFunction)run, METH_NOARGS,
      NULL},
@@ -402,6 +672,9 @@ static struct PyMethodDef query_methods[] = {
      NULL},
     {"__contains__", (PyCFunction)q_contains, METH_O,
      NULL},
+    {"__getitem__", (PyCFunction)query_get_item_by_pyindex, METH_O,
+     NULL},
+    {"__iter__", (PyCFunction)query_iter, METH_NOARGS, NULL},
     {"__len__", (PyCFunction)q_length, METH_NOARGS,
      NULL},
     {NULL}                      /* sentinel */
@@ -419,7 +692,7 @@ PyTypeObject query_Type = {
     0,                                /*tp_compare*/
     0,                                /*tp_repr*/
     0,                                /*tp_as_number*/
-    0,                                /*tp_as_sequence*/
+    &query_sequence,                  /*tp_as_sequence*/
     0,                                /*tp_as_mapping*/
     0,                                /*tp_hash */
     0,                                /*tp_call*/
@@ -433,8 +706,8 @@ PyTypeObject query_Type = {
     0,                                /* tp_clear */
     0,                                /* tp_richcompare */
     0,                                /* tp_weaklistoffset */
-    PyObject_SelfIter,                /* tp_iter */
-    0,                                 /* tp_iternext */
+    query_iter,                       /* tp_iter */
+    0,                                /* tp_iternext */
     query_methods,                /* tp_methods */
     0,                                /* tp_members */
     query_getsetters,                /* tp_getset */
