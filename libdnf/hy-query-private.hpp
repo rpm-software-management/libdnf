@@ -66,6 +66,7 @@ struct _HyQuery {
 };
 
 struct _Filter *filter_create(int nmatches);
+Id query_get_index_item(HyQuery query, int index);
 void filter_reinit(struct _Filter *f, int nmatches);
 void filter_free(struct _Filter *f);
 

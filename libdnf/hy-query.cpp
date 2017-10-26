@@ -353,6 +353,24 @@ query_add_filter(HyQuery q, int nmatches)
     return q->filters + q->nfilters++;
 }
 
+Id
+query_get_index_item(HyQuery query, int index)
+{
+    Pool *pool = dnf_sack_get_pool(query->sack);
+    int index_counter = 0;
+
+    hy_query_apply(query);
+
+    for (Id id = 1; id < pool->nsolvables; ++id) {
+        if (!MAPTST(query->result, id))
+            continue;
+        if (index_counter == index)
+            return id;
+        ++index_counter;
+    }
+    return 0;
+}
+
 static void
 filter_dataiterator(HyQuery q, struct _Filter *f, Map *m)
 {

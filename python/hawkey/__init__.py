@@ -431,49 +431,21 @@ class Query(_hawkey.Query):
 
     def __init__(self, sack=None, query=None):
         super(Query, self).__init__(sack=sack, query=query)
-        self._result = None
 
     def __add__(self, operand):
         if not isinstance(operand, list):
             raise TypeError("Only a list can be concatenated to a Query")
         return self.run() + operand
 
-    def __iter__(self):
-        """ Iterate over (cached) query result. """
-        return iter(self.run())
-
-    def __getitem__(self, idx):
-        return self.run()[idx]
-
     def count(self):
         return len(self)
 
     @property
     def result(self):
-        assert((self._result is None) or self.evaluated)
-        if not self._result and self.evaluated:
-            self._result = super(Query, self).run()
-        return self._result
-
-    def run(self):
-        """ Execute the query and cache the result.
-
-            This does not force re-evaluation unless neccessary, run() checks
-            that.
-        """
-        self._result = super(Query, self).run()
-        return self._result
-
-    def filter(self, *lst, **kwargs):
-        new_query = type(self)(query=self)
-        return new_query.filterm(*lst, **kwargs)
-
-    def filterm(self, *lst, **kwargs):
-        self._result = None
-        flags = set(lst)
-        for arg_tuple in _parse_filter_args(flags, kwargs):
-            super(Query, self).filter(*arg_tuple)
-        return self
+        #assert((self._result is None) or self.evaluated)
+        #if not self._result and self.evaluated:
+        #    self._result = super(Query, self).run()
+        return self.run()
 
     def provides(self, name, **kwargs):
         raise NotImplementedError(
