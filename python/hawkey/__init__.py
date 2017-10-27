@@ -453,10 +453,6 @@ class Query(_hawkey.Query):
         new_query = type(self)(query=self)
         return super(Query, new_query).union(other)
 
-    def available(self):
-        # :api
-        return self.filter(reponame__neq=SYSTEM_REPO_NAME)
-
     def _unneeded(self, sack, history, debug_solver=False):
         goal = Goal(sack)
         goal.push_userinstalled(self.installed(), history)
@@ -498,10 +494,6 @@ class Query(_hawkey.Query):
             if pkgtup not in avail_dict:
                 extras.extend(pkgs)
         return self.filter(pkg=extras)
-
-    def installed(self):
-        # :api
-        return self.filter(reponame=SYSTEM_REPO_NAME)
 
     def latest(self, limit=1):
         # :api
