@@ -233,13 +233,6 @@ get_evaluated(_QueryObject *self, void *unused)
     return PyBool_FromLong((long)hy_query_is_applied(q));
 }
 
-static PyGetSetDef query_getsetters[] = {
-    {(char*)"evaluated",  (getter)get_evaluated, NULL, NULL, NULL},
-    {NULL}                        /* sentinel */
-};
-
-/* object methods */
-
 static PyObject *
 clear(_QueryObject *self, PyObject *unused)
 {
@@ -645,6 +638,12 @@ query_iter(PyObject *self)
     Py_INCREF(iter);
     return iter;
 }
+
+
+static PyGetSetDef query_getsetters[] = {
+    {(char*)"evaluated",  (getter)get_evaluated, NULL, NULL, NULL},
+    {NULL}                        /* sentinel */
+};
 
 PySequenceMethods query_sequence = {
     (lenfunc)query_len,               /* sq_length */
