@@ -670,6 +670,8 @@ static struct PyMethodDef query_methods[] = {
      NULL},
     {"difference", (PyCFunction)q_difference, METH_O,
      NULL},
+    {"count", (PyCFunction)q_length, METH_NOARGS,
+        NULL},
     {"__contains__", (PyCFunction)q_contains, METH_O,
      NULL},
     {"__getitem__", (PyCFunction)query_get_item_by_pyindex, METH_O,
