@@ -437,9 +437,6 @@ class Query(_hawkey.Query):
             raise TypeError("Only a list can be concatenated to a Query")
         return self.run() + operand
 
-    def count(self):
-        return len(self)
-
     @property
     def result(self):
         #assert((self._result is None) or self.evaluated)
