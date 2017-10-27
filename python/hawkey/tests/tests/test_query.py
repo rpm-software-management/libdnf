@@ -55,16 +55,13 @@ class TestQuery(base.TestCase):
 
     def test_count(self):
         q = hawkey.Query(self.sack).filter(name=["flying", "penny"])
-
-        self.assertIsNone(q.result)
         self.assertEqual(len(q), 2)
-        self.assertIsNotNone(q.result)
         self.assertEqual(len(q), q.count())
         self.assertTrue(q)
 
         q = hawkey.Query(self.sack).filter(name="naturalE")
         self.assertFalse(q)
-        self.assertIsNotNone(q.result)
+        self.assertEqual(len(q.run()), 0)
 
     def test_kwargs_check(self):
         q = hawkey.Query(self.sack)
@@ -118,7 +115,7 @@ class TestQuery(base.TestCase):
         q_clone = hawkey.Query(query=q)
         del q
         self.assertTrue(q_clone.evaluated)
-        self.assertLength(q_clone.result, 2)
+        self.assertLength(q_clone.run(), 2)
 
     def test_immutability(self):
         q = hawkey.Query(self.sack).filter(name="jay")
@@ -128,9 +125,9 @@ class TestQuery(base.TestCase):
 
     def test_copy_lazyness(self):
         q = hawkey.Query(self.sack).filter(name="jay")
-        self.assertIsNone(q.result)
+        self.assertLength(q.run(), 2)
         q2 = q.filter(evr="5.0-0")
-        self.assertIsNone(q.result)
+        self.assertLength(q2.run(), 1)
 
     def test_empty(self):
         q = hawkey.Query(self.sack).filter(empty=True)
@@ -352,10 +349,11 @@ class TestQueryUpdates(base.TestCase):
     def test_subquery_evaluated(self):
         q = hawkey.Query(self.sack).filter(name="penny")
         self.assertFalse(q.evaluated)
-        self.assertIsNone(q.result)
+        self.assertLength(q.run(), 1)
+        self.assertTrue(q.evaluated)
         o = hawkey.Query(self.sack).filter(obsoletes=q)
         self.assertTrue(q.evaluated)
-        self.assertIsInstance(q.result, list)
+        self.assertLength(q.run(), 1)
         self.assertLength(o, 1)
 
 class TestOddArch(base.TestCase):

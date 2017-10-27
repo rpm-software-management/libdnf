@@ -437,13 +437,6 @@ class Query(_hawkey.Query):
             raise TypeError("Only a list can be concatenated to a Query")
         return self.run() + operand
 
-    @property
-    def result(self):
-        #assert((self._result is None) or self.evaluated)
-        #if not self._result and self.evaluated:
-        #    self._result = super(Query, self).run()
-        return self.run()
-
     def provides(self, name, **kwargs):
         raise NotImplementedError(
             "hawkey.Query.provides is not implemented yet")
