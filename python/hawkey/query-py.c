@@ -506,7 +506,27 @@ filterm(_QueryObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *final_query = filter_internal(self->query, self->sack, args, kwds);
     Py_INCREF(final_query);
-    return final_query;;
+    return final_query;
+}
+
+static PyObject *
+add_available_filter(_QueryObject *self, PyObject *unused)
+{
+    HyQuery query = hy_query_clone(self->query);
+    hy_query_filter(query, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    PyObject *final_query = queryToPyObject(query, self->sack);
+    Py_INCREF(final_query);
+    return final_query;
+}
+
+static PyObject *
+add_installed_filter(_QueryObject *self, PyObject *unused)
+{
+    HyQuery query = hy_query_clone(self->query);
+    hy_query_filter(query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    PyObject *final_query = queryToPyObject(query, self->sack);
+    Py_INCREF(final_query);
+    return final_query;
 }
 
 static PyObject *
@@ -663,6 +683,8 @@ static struct PyMethodDef query_methods[] = {
      NULL},
     {"apply", (PyCFunction)apply, METH_NOARGS,
      NULL},
+    {"available", (PyCFunction)add_available_filter, METH_NOARGS, NULL},
+    {"installed", (PyCFunction)add_installed_filter, METH_NOARGS, NULL},
     {"union", (PyCFunction)q_union, METH_O,
      NULL},
     {"intersection", (PyCFunction)q_intersection, METH_O,
