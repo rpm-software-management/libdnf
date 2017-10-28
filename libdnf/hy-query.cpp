@@ -1671,3 +1671,17 @@ hy_query_get_result(const HyQuery query)
 {
     return query->result;
 }
+
+void
+hy_query_to_name_ordered_queue(HyQuery query, Queue *samename)
+{
+    hy_query_apply(query);
+    Pool *pool = dnf_sack_get_pool(query->sack);
+
+    queue_init(samename);
+    for (int i = 1; i < pool->nsolvables; ++i)
+        if (MAPTST(query->result, i))
+            queue_push(samename, i);
+
+    solv_sort(samename->elements, samename->count, sizeof(Id), filter_latest_sortcmp, pool);
+}

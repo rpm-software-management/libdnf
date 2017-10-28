@@ -19,11 +19,13 @@
  */
 
 #include <Python.h>
+#include <solv/poolid.h>
 #include <solv/util.h>
 
 #include "hy-query.h"
 #include "dnf-reldep.h"
 #include "dnf-reldep-list.h"
+#include "dnf-sack-private.h"
 
 #include "exception-py.h"
 #include "hawkey-pysys.h"
@@ -680,6 +682,58 @@ query_iter(PyObject *self)
     return iter;
 }
 
+static PyObject *
+query_to_name_dict(_QueryObject *self, PyObject *unused)
+{
+    HyQuery query = ((_QueryObject *) self)->query;
+    Pool *pool = dnf_sack_get_pool(query->sack);
+
+    Queue samename;
+    queue_init(&samename);
+
+    hy_query_to_name_ordered_queue(query, &samename);
+
+    Solvable *considered;
+    Id name = 0;
+    PyObject *list = PyList_New(0);
+    PyObject *ret_dict = PyDict_New();
+
+    for (int i = 0; i < samename.count; ++i) {
+        Id package_id = samename.elements[i];
+        considered = pool->solvables + package_id;
+        if (name == 0) {
+            name = considered->name;
+        } else if (name != considered->name) {
+            PyDict_SetItemString(ret_dict, pool_id2str(pool, name), list);
+            Py_DECREF(list);
+            list = PyList_New(0);
+            name = considered->name;
+        }
+        PyObject *package = new_package(self->sack, package_id);
+        if (package == NULL) {
+            goto fail;
+        }
+
+        int rc = PyList_Append(list, package);
+        Py_DECREF(package);
+        if (rc == -1) {
+            goto fail;
+        }
+    }
+    queue_free(&samename);
+    if (name) {
+        PyDict_SetItemString(ret_dict, pool_id2str(pool, name), list);
+        Py_DECREF(list);
+    }
+    return ret_dict;
+
+    fail:
+        queue_free(&samename);
+        Py_DECREF(list);
+        Py_DECREF(ret_dict);
+        PyErr_SetString(PyExc_SystemError, "Unable to create name_dict");
+        return NULL;
+}
 
 static PyGetSetDef query_getsetters[] = {
     {(char*)"evaluated",  (getter)get_evaluated, NULL, NULL, NULL},
@@ -716,6 +770,7 @@ static struct PyMethodDef query_methods[] = {
      NULL},
     {"count", (PyCFunction)q_length, METH_NOARGS,
         NULL},
+    {"_name_dict", (PyCFunction)query_to_name_dict, METH_NOARGS, NULL},
     {"__contains__", (PyCFunction)q_contains, METH_O,
      NULL},
     {"__getitem__", (PyCFunction)query_get_item_by_pyindex, METH_O,
