@@ -445,10 +445,6 @@ class Query(_hawkey.Query):
         new_query = type(self)(query=self)
         return super(Query, new_query).intersection(other)
 
-    def union(self, other):
-        new_query = type(self)(query=self)
-        return super(Query, new_query).union(other)
-
     def _unneeded(self, sack, history, debug_solver=False):
         goal = Goal(sack)
         goal.push_userinstalled(self.installed(), history)
