@@ -2,7 +2,7 @@
 
 file (RELATIVE_PATH SRCDIR ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/libdnf)
 ADD_CUSTOM_TARGET (gettext-export
-                   find ${SRCDIR} -iname "*.[ch]" |
+                   find ${SRCDIR} -iname "*.[ch]" -o -iname "*.[ch]pp" |
                    xargs xgettext --from-code=UTF-8 --keyword=_ --keyword=N_ --keyword=C_:1c,2 --keyword=NC_:1c,2 --keyword=g_dgettext:2 --keyword=g_dcgettext:2 --keyword=g_dngettext:2,3 --keyword=g_dpgettext2:2c,3 -c --output=libdnf.pot &&
                    zanata push -f
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
