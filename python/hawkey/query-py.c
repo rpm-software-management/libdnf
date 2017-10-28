@@ -540,6 +540,17 @@ add_installed_filter(_QueryObject *self, PyObject *unused)
 }
 
 static PyObject *
+add_upgrades_filter(_QueryObject *self, PyObject *unused)
+{
+    HyQuery query = hy_query_clone(self->query);
+    hy_query_filter_upgrades(query, 1);
+    PyObject *final_query = queryToPyObject(query, self->sack);
+    Py_INCREF(final_query);
+    return final_query;
+}
+
+
+static PyObject *
 run(_QueryObject *self, PyObject *unused)
 {
     DnfPackageSet *pset;
@@ -698,6 +709,7 @@ static struct PyMethodDef query_methods[] = {
     {"installed", (PyCFunction)add_installed_filter, METH_NOARGS, NULL},
     {"union", (PyCFunction)q_union, METH_O,
      NULL},
+    {"upgrades", (PyCFunction)add_upgrades_filter, METH_NOARGS, NULL},
     {"intersection", (PyCFunction)q_intersection, METH_O,
      NULL},
     {"difference", (PyCFunction)q_difference, METH_O,
