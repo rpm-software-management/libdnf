@@ -502,10 +502,6 @@ class Query(_hawkey.Query):
                     latest_pkgs.extend(pkg_list[-limit:])
             return self.filter(pkg=latest_pkgs)
 
-    def upgrades(self):
-        # :api
-        return self.filter(upgrades=True)
-
     def _name_dict(self):
         d = {}
         for pkg in self:
