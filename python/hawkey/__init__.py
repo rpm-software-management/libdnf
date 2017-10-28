@@ -437,10 +437,6 @@ class Query(_hawkey.Query):
             raise TypeError("Only a list can be concatenated to a Query")
         return self.run() + operand
 
-    def provides(self, name, **kwargs):
-        raise NotImplementedError(
-            "hawkey.Query.provides is not implemented yet")
-
     def difference(self, other):
         new_query = type(self)(query=self)
         return super(Query, new_query).difference(other)
@@ -462,10 +458,6 @@ class Query(_hawkey.Query):
         assert solved
         unneeded = goal.list_unneeded()
         return self.filter(pkg=unneeded)
-
-    def downgrades(self):
-        # :api
-        return self.filter(downgrades=True)
 
     def duplicated(self):
         # :api
