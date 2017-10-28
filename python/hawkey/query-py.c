@@ -597,11 +597,12 @@ q_intersection(PyObject *self, PyObject *other)
 static PyObject *
 q_difference(PyObject *self, PyObject *other)
 {
-    HyQuery self_q = ((_QueryObject *) self)->query;
+    HyQuery self_query_copy = hy_query_clone(((_QueryObject *) self)->query);
     HyQuery other_q = ((_QueryObject *) other)->query;
-    hy_query_difference(self_q, other_q);
-    Py_INCREF(self);
-    return self;
+    hy_query_difference(self_query_copy, other_q);
+    PyObject *final_query = queryToPyObject(self_query_copy, ((_QueryObject *) self)->sack);
+    Py_INCREF(final_query);
+    return final_query;
 }
 
 static PyObject *

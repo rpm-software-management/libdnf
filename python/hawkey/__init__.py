@@ -437,10 +437,6 @@ class Query(_hawkey.Query):
             raise TypeError("Only a list can be concatenated to a Query")
         return self.run() + operand
 
-    def difference(self, other):
-        new_query = type(self)(query=self)
-        return super(Query, new_query).difference(other)
-
     def _unneeded(self, sack, history, debug_solver=False):
         goal = Goal(sack)
         goal.push_userinstalled(self.installed(), history)
