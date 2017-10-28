@@ -502,12 +502,6 @@ class Query(_hawkey.Query):
                     latest_pkgs.extend(pkg_list[-limit:])
             return self.filter(pkg=latest_pkgs)
 
-    def _name_dict(self):
-        d = {}
-        for pkg in self:
-            d.setdefault(pkg.name, []).append(pkg)
-        return d
-
     def _na_dict(self):
         d = {}
         for pkg in self.run():
