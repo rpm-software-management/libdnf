@@ -70,6 +70,7 @@ Id query_get_index_item(HyQuery query, int index);
 void filter_reinit(struct _Filter *f, int nmatches);
 void filter_free(struct _Filter *f);
 void hy_query_to_name_ordered_queue(HyQuery query, Queue *samename);
+void hy_query_to_name_arch_ordered_queue(HyQuery query, Queue *samename);
 static inline DnfSack *query_sack(HyQuery query) { return query->sack; }
 
 #endif // HY_QUERY_INTERNAL_H
