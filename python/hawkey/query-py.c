@@ -735,6 +735,76 @@ query_to_name_dict(_QueryObject *self, PyObject *unused)
         return NULL;
 }
 
+static PyObject *
+query_to_name_arch_dict(_QueryObject *self, PyObject *unused)
+{
+    HyQuery query = ((_QueryObject *) self)->query;
+    Pool *pool = dnf_sack_get_pool(query->sack);
+
+    Queue samename;
+    queue_init(&samename);
+
+    hy_query_to_name_arch_ordered_queue(query, &samename);
+
+    Solvable *considered;
+    Id name = 0;
+    Id arch = 0;
+    PyObject *key = PyTuple_New(2);
+    PyObject *list = PyList_New(0);
+    PyObject *ret_dict = PyDict_New();
+
+    for (int i = 0; i < samename.count; ++i) {
+        Id package_id = samename.elements[i];
+        considered = pool->solvables + package_id;
+        if (name == 0) {
+            name = considered->name;
+            arch = considered->arch;
+        } else if ((name != considered->name) || (arch != considered->arch)) {
+            if (PyTuple_SetItem(key, 0, PyString_FromString(pool_id2str(pool, name))))
+                goto fail;
+            if (PyTuple_SetItem(key, 1, PyString_FromString(pool_id2str(pool, arch))))
+                goto fail;
+            PyDict_SetItem(ret_dict, key, list);
+            Py_DECREF(key);
+            Py_DECREF(list);
+            key = PyTuple_New(2);
+            list = PyList_New(0);
+            name = considered->name;
+            arch = considered->arch;
+        }
+        PyObject *package = new_package(self->sack, package_id);
+        if (package == NULL) {
+            goto fail;
+        }
+
+        int rc = PyList_Append(list, package);
+        Py_DECREF(package);
+        if (rc == -1) {
+            goto fail;
+        }
+    }
+    queue_free(&samename);
+    if (name) {
+        if (PyTuple_SetItem(key, 0, PyString_FromString(pool_id2str(pool, name))))
+            goto fail;
+        if (PyTuple_SetItem(key, 1, PyString_FromString(pool_id2str(pool, arch))))
+            goto fail;
+        PyDict_SetItem(ret_dict, key, list);
+    }
+    Py_DECREF(key);
+    Py_DECREF(list);
+
+    return ret_dict;
+
+    fail:
+        queue_free(&samename);
+        Py_DECREF(key);
+        Py_DECREF(list);
+        Py_DECREF(ret_dict);
+        PyErr_SetString(PyExc_SystemError, "Unable to create name_arch_dict");
+        return NULL;
+}
+
 static PyGetSetDef query_getsetters[] = {
     {(char*)"evaluated",  (getter)get_evaluated, NULL, NULL, NULL},
     {NULL}                        /* sentinel */
@@ -770,6 +840,7 @@ static struct PyMethodDef query_methods[] = {
      NULL},
     {"count", (PyCFunction)q_length, METH_NOARGS,
         NULL},
+    {"_na_dict", (PyCFunction)query_to_name_arch_dict, METH_NOARGS, NULL},
     {"_name_dict", (PyCFunction)query_to_name_dict, METH_NOARGS, NULL},
     {"__contains__", (PyCFunction)q_contains, METH_O,
      NULL},
