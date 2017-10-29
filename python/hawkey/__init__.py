@@ -474,12 +474,6 @@ class Query(_hawkey.Query):
                     latest_pkgs.extend(pkg_list[-limit:])
             return self.filter(pkg=latest_pkgs)
 
-    def _pkgtup_dict(self):
-        d = {}
-        for pkg in self.run():
-            d.setdefault(pkg.pkgtup, []).append(pkg)
-        return d
-
     def _recent(self, recent):
         now = time.time()
         recentlimit = now - (recent*86400)
