@@ -607,6 +607,22 @@ q_difference(PyObject *self, PyObject *other)
 }
 
 static PyObject *
+q_add(_QueryObject *self, PyObject *list)
+{
+    if (!PyList_Check(list)) {
+        PyErr_SetString(PyExc_TypeError, "Only a list can be concatenated to a Query");
+        return NULL;
+    }
+    PyObject *unused = NULL;
+    PyObject *query_list = run(self, unused);
+
+    int list_count = PyList_Size(list);
+    for (int index = 0; index < list_count; ++index)
+        PyList_Append(query_list, PyList_GetItem(list, index));
+    return query_list;
+}
+
+static PyObject *
 q_contains(PyObject *self, PyObject *pypkg)
 {
     HyQuery q = ((_QueryObject *) self)->query;
@@ -884,6 +900,7 @@ static struct PyMethodDef query_methods[] = {
     {"_na_dict", (PyCFunction)query_to_name_arch_dict, METH_NOARGS, NULL},
     {"_name_dict", (PyCFunction)query_to_name_dict, METH_NOARGS, NULL},
     {"_nevra", (PyCFunction)add_nevra_or_other_filter, METH_VARARGS, NULL},
+    {"__add__", (PyCFunction)q_add, METH_O, NULL},
     {"__contains__", (PyCFunction)q_contains, METH_O,
      NULL},
     {"__getitem__", (PyCFunction)query_get_item_by_pyindex, METH_O,
