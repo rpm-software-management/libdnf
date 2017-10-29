@@ -23,6 +23,7 @@
 #include <solv/util.h>
 
 #include "hy-query.h"
+#include "hy-subject.h"
 #include "dnf-reldep.h"
 #include "dnf-reldep-list.h"
 #include "dnf-sack-private.h"
@@ -808,6 +809,43 @@ query_to_name_arch_dict(_QueryObject *self, PyObject *unused)
         return NULL;
 }
 
+static PyObject *
+add_nevra_or_other_filter(_QueryObject *self, PyObject *args)
+{
+    HyQuery self_query_copy = hy_query_clone(((_QueryObject *) self)->query);
+
+    int arguments_count = PyTuple_Size(args);
+    if (arguments_count == 1) {
+        const char *name;
+        if (!PyArg_ParseTuple(args, "s", &name))
+            return NULL;
+
+        HyNevra out_nevra = hy_nevra_create();
+        if (nevra_possibility((char *) name, HY_FORM_NEVRA, out_nevra) == 0) {
+            hy_add_filter_nevra_object(self_query_copy, out_nevra, FALSE);
+        } else {
+            hy_query_filter_empty(self_query_copy);
+        }
+    } else if (arguments_count == 3) {
+        const char *name;
+        const char *evr;
+        const char *arch;
+
+        if (!PyArg_ParseTuple(args, "sss", &name, &evr, &arch))
+            return NULL;
+        hy_query_filter(self_query_copy, HY_PKG_NAME, HY_EQ, name);
+        hy_query_filter(self_query_copy, HY_PKG_EVR, HY_EQ, evr);
+        hy_query_filter(self_query_copy, HY_PKG_ARCH, HY_EQ, arch);
+    } else {
+        PyErr_SetString(PyExc_TypeError,
+                        "nevra() takes 1 (NEVRA), or 3 (name, evr, arch) str params");
+        return NULL;
+    }
+    PyObject *final_query = queryToPyObject(self_query_copy, self->sack);
+    Py_INCREF(final_query);
+    return final_query;
+}
+
 static PyGetSetDef query_getsetters[] = {
     {(char*)"evaluated",  (getter)get_evaluated, NULL, NULL, NULL},
     {NULL}                        /* sentinel */
@@ -845,6 +883,7 @@ static struct PyMethodDef query_methods[] = {
         NULL},
     {"_na_dict", (PyCFunction)query_to_name_arch_dict, METH_NOARGS, NULL},
     {"_name_dict", (PyCFunction)query_to_name_dict, METH_NOARGS, NULL},
+    {"_nevra", (PyCFunction)add_nevra_or_other_filter, METH_VARARGS, NULL},
     {"__contains__", (PyCFunction)q_contains, METH_O,
      NULL},
     {"__getitem__", (PyCFunction)query_get_item_by_pyindex, METH_O,
