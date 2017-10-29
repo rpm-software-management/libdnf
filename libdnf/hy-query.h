@@ -100,7 +100,7 @@ gboolean hy_query_is_not_empty(HyQuery query);
 gboolean hy_query_is_applied(const HyQuery query);
 const Map *hy_query_get_result(const HyQuery query);
 void hy_add_filter_nevra_object(HyQuery query, HyNevra nevra, gboolean icase);
-
+void hy_add_filter_extras(HyQuery query);
 
 static inline void
 hy_query_autofree (void *v)

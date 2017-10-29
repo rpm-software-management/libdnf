@@ -459,17 +459,6 @@ class Query(_hawkey.Query):
                         duplicated.append(pkgs[x])
         return self.filter(pkg=duplicated)
 
-    def extras(self):
-        # :api
-        # anything installed but not in a repo is an extra
-        avail_dict = self.available()._pkgtup_dict()
-        inst_dict = self.installed()._pkgtup_dict()
-        extras = []
-        for pkgtup, pkgs in inst_dict.items():
-            if pkgtup not in avail_dict:
-                extras.extend(pkgs)
-        return self.filter(pkg=extras)
-
     def latest(self, limit=1):
         # :api
         if limit == 1:

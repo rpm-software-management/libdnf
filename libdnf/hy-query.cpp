@@ -1719,3 +1719,44 @@ hy_add_filter_nevra_object(HyQuery query, HyNevra nevra, gboolean icase)
     if (nevra->arch != NULL && strcmp(nevra->arch, "*") != 0)
         hy_query_filter(query, HY_PKG_ARCH, HY_GLOB, nevra->arch);
 }
+
+void
+hy_add_filter_extras(HyQuery query)
+{
+    Pool *pool = dnf_sack_get_pool(query->sack);
+    gboolean matched;
+    Solvable *s_installed, *s_available;
+
+    hy_query_apply(query);
+
+    HyQuery query_installed = hy_query_clone(query);
+    hy_query_filter(query_installed, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    HyQuery query_available = hy_query_clone(query);
+    hy_query_filter(query_available, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+
+    hy_query_apply(query_installed);
+    hy_query_apply(query_available);
+    MAPZERO(query->result);
+
+    for (Id id_installed = 1; id_installed < pool->nsolvables; ++id_installed) {
+        if (!MAPTST(query_installed->result, id_installed)) {
+            continue;
+        }
+        s_installed = pool_id2solvable(pool, id_installed);
+        matched = FALSE;
+        for (Id id_available = 1; id_available < pool->nsolvables; ++id_available) {
+            if (!MAPTST(query_available->result, id_available)) {
+                continue;
+            }
+            s_available = pool_id2solvable(pool, id_available);
+            if ((s_installed->name == s_available->name) && (s_installed->evr == s_available->evr) && (s_installed->arch == s_available->arch)) {
+                matched = TRUE;
+                break;
+            }
+        }
+        if (!matched)
+            MAPSET(query->result, id_installed);
+    }
+    hy_query_free(query_installed);
+    hy_query_free(query_available);
+}
