@@ -432,11 +432,6 @@ class Query(_hawkey.Query):
     def __init__(self, sack=None, query=None):
         super(Query, self).__init__(sack=sack, query=query)
 
-    def __add__(self, operand):
-        if not isinstance(operand, list):
-            raise TypeError("Only a list can be concatenated to a Query")
-        return self.run() + operand
-
     def _unneeded(self, sack, history, debug_solver=False):
         goal = Goal(sack)
         goal.push_userinstalled(self.installed(), history)
