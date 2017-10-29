@@ -502,20 +502,6 @@ class Query(_hawkey.Query):
         recent = [po for po in self if int(po.buildtime) > recentlimit]
         return self.filter(pkg=recent)
 
-    def _nevra(self, *args):
-        args_len = len(args)
-        if args_len == 3:
-            return self.filter(name=args[0], evr=args[1], arch=args[2])
-        if args_len == 1:
-            nevra = split_nevra(args[0])
-        elif args_len == 5:
-            nevra = args
-        else:
-            raise TypeError("nevra() takes 1, 3 or 5 str params")
-        return self.filter(
-            name=nevra.name, epoch=nevra.epoch, version=nevra.version,
-            release=nevra.release, arch=nevra.arch)
-
 
 class Selector(_hawkey.Selector):
 

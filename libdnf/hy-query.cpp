@@ -32,6 +32,7 @@
 #include "dnf-advisorypkg.h"
 #include "dnf-advisory-private.hpp"
 #include "hy-iutil.h"
+#include "hy-nevra-private.hpp"
 #include "hy-query-private.hpp"
 #include "hy-package-private.hpp"
 #include "hy-packageset-private.hpp"
@@ -1698,4 +1699,23 @@ hy_query_to_name_arch_ordered_queue(HyQuery query, Queue *samename)
             queue_push(samename, i);
 
     solv_sort(samename->elements, samename->count, sizeof(Id), filter_latest_sortcmp_byarch, pool);
+}
+
+void
+hy_add_filter_nevra_object(HyQuery query, HyNevra nevra, gboolean icase)
+{
+    if (nevra->name != NULL && strcmp(nevra->name, "*") != 0) {
+        if (icase)
+            hy_query_filter(query, HY_PKG_NAME, HY_GLOB|HY_ICASE, nevra->name);
+        else
+            hy_query_filter(query, HY_PKG_NAME, HY_GLOB, nevra->name);
+    }
+    if (nevra->epoch != -1)
+        hy_query_filter_num(query, HY_PKG_EPOCH, HY_EQ, nevra->epoch);
+    if (nevra->version != NULL && strcmp(nevra->version, "*") != 0)
+        hy_query_filter(query, HY_PKG_VERSION, HY_GLOB, nevra->version);
+    if (nevra->release != NULL && strcmp(nevra->release, "*") != 0)
+        hy_query_filter(query, HY_PKG_RELEASE, HY_GLOB, nevra->release);
+    if (nevra->arch != NULL && strcmp(nevra->arch, "*") != 0)
+        hy_query_filter(query, HY_PKG_ARCH, HY_GLOB, nevra->arch);
 }
