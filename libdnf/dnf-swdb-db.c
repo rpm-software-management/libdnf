@@ -152,7 +152,7 @@ _db_prepare (sqlite3 *db, const gchar *sql, sqlite3_stmt **res)
     gint rc = sqlite3_prepare_v2 (db, sql, -1, res, NULL);
     if (rc != SQLITE_OK) {
         sqlite3_finalize (*res);
-        g_error ("SWDB prepare error: %s", sqlite3_errmsg (db));
+        g_error ("SWDB prepare error: '%s' - %s", sql, sqlite3_errmsg (db));
     }
 }
 
@@ -194,7 +194,8 @@ _db_bind_int (sqlite3_stmt *res, const gchar *id, gint source)
     if (rc) {
         sqlite3 *db = sqlite3_db_handle (res);
         const gchar *err = sqlite3_errmsg (db);
-        g_error ("SWDB integer bind (args: %d|%s|%d): %s", idx, id, source, err);    }
+        g_error ("SWDB integer bind (args: %d|%s|%d): %s", idx, id, source, err);
+    }
 }
 
 /**
