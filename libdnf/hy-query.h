@@ -101,6 +101,7 @@ gboolean hy_query_is_applied(const HyQuery query);
 const Map *hy_query_get_result(const HyQuery query);
 void hy_add_filter_nevra_object(HyQuery query, HyNevra nevra, gboolean icase);
 void hy_add_filter_extras(HyQuery query);
+void hy_filter_recent(HyQuery query, const long unsigned int recent_limit);
 
 static inline void
 hy_query_autofree (void *v)

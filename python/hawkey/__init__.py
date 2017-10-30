@@ -459,12 +459,6 @@ class Query(_hawkey.Query):
                         duplicated.append(pkgs[x])
         return self.filter(pkg=duplicated)
 
-    def _recent(self, recent):
-        now = time.time()
-        recentlimit = now - (recent*86400)
-        recent = [po for po in self if int(po.buildtime) > recentlimit]
-        return self.filter(pkg=recent)
-
 
 class Selector(_hawkey.Selector):
 
