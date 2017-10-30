@@ -442,23 +442,6 @@ class Query(_hawkey.Query):
         unneeded = goal.list_unneeded()
         return self.filter(pkg=unneeded)
 
-    def duplicated(self):
-        # :api
-        installed_name = self.installed()._name_dict()
-        duplicated = []
-        for name, pkgs in installed_name.items():
-            if len(pkgs) > 1:
-                for x in range(0, len(pkgs)):
-                    dups = False
-                    for y in range(x+1, len(pkgs)):
-                        if not ((pkgs[x].evr_cmp(pkgs[y]) == 0)
-                                and (pkgs[x].arch != pkgs[y].arch)):
-                            duplicated.append(pkgs[y])
-                            dups = True
-                    if dups:
-                        duplicated.append(pkgs[x])
-        return self.filter(pkg=duplicated)
-
 
 class Selector(_hawkey.Selector):
 

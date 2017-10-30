@@ -1822,3 +1822,59 @@ hy_filter_recent(HyQuery query, const long unsigned int recent_limit)
         }
     }
 }
+
+static void
+add_duplicates_to_map(Pool *pool, Map *res, Queue samename, int start_block, int stop_block)
+{
+    Solvable *s_first, *s_second;
+    for (int pos = start_block; pos < stop_block; ++pos) {
+        Id id_first = samename.elements[pos];
+        s_first = pool->solvables + id_first;
+        for (int pos2 = pos + 1; pos2 < stop_block; ++pos2) {
+            Id id_second = samename.elements[pos2];
+            s_second = pool->solvables + id_second;
+            if ((s_first->evr == s_second->evr) && (s_first->arch != s_second->arch)) {
+                continue;
+            }
+            MAPSET(res, id_first);
+            MAPSET(res, id_second);
+        }
+    }
+}
+
+void
+hy_filter_duplicated(HyQuery query)
+{
+    Queue samename;
+    Pool *pool = dnf_sack_get_pool(query->sack);
+
+    hy_query_filter(query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    hy_query_apply(query);
+
+    hy_query_to_name_ordered_queue(query, &samename);
+
+    Solvable *considered, *highest = 0;
+    int start_block = -1;
+    int i;
+    MAPZERO(query->result);
+    for (i = 0; i < samename.count; ++i) {
+        Id p = samename.elements[i];
+        considered = pool->solvables + p;
+        if (!highest || highest->name != considered->name) {
+            /* start of a new block */
+            if (start_block == -1) {
+                highest = considered;
+                start_block = i;
+                continue;
+            }
+            if (start_block != i - 1) {
+                add_duplicates_to_map(pool, query->result, samename, start_block, i);
+            }
+            highest = considered;
+            start_block = i;
+        }
+    }
+    if (start_block != -1) {
+        add_duplicates_to_map(pool, query->result, samename, start_block, i);
+    }
+}

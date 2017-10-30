@@ -534,6 +534,16 @@ add_downgrades_filter(_QueryObject *self, PyObject *unused)
 }
 
 static PyObject *
+duplicated_filter(_QueryObject *self, PyObject *unused)
+{
+    HyQuery self_query_copy = hy_query_clone(self->query);
+    hy_filter_duplicated(self_query_copy);
+    PyObject *final_query = queryToPyObject(self_query_copy, self->sack);
+    Py_INCREF(final_query);
+    return final_query;
+}
+
+static PyObject *
 add_filter_extras(_QueryObject *self, PyObject *unused)
 {
     HyQuery self_query_copy = hy_query_clone(self->query);
@@ -930,6 +940,7 @@ static struct PyMethodDef query_methods[] = {
      NULL},
     {"available", (PyCFunction)add_available_filter, METH_NOARGS, NULL},
     {"downgrades", (PyCFunction)add_downgrades_filter, METH_NOARGS, NULL},
+    {"duplicated", (PyCFunction)duplicated_filter, METH_NOARGS, NULL},
     {"extras", (PyCFunction)add_filter_extras, METH_NOARGS, NULL},
     {"installed", (PyCFunction)add_installed_filter, METH_NOARGS, NULL},
     {"latest", (PyCFunction)add_filter_latest, METH_VARARGS, NULL},
