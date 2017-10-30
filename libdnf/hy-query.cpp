@@ -908,6 +908,9 @@ filter_latest_sortcmp(const void *ap, const void *bp, void *dp)
     r = sa->name - sb->name;
     if (r)
         return r;
+    r = pool_evrcmp(pool, sb->evr, sa->evr, EVRCMP_COMPARE);
+    if (r)
+        return r;
     return *(Id *)ap - *(Id *)bp;
 }
 
@@ -924,12 +927,54 @@ filter_latest_sortcmp_byarch(const void *ap, const void *bp, void *dp)
     r = sa->arch - sb->arch;
     if (r)
         return r;
+    r = pool_evrcmp(pool, sb->evr, sa->evr, EVRCMP_COMPARE);
+    if (r)
+        return r;
     return *(Id *)ap - *(Id *)bp;
 }
 
 static void
+remove_non_latest(Pool *pool, Map *res, Queue samename, int start_block, int stop_block,
+                  int versions)
+{
+    Solvable *solv_element, *solv_previous_element;
+    int count_version = 0;
+    solv_previous_element = pool->solvables + samename.elements[start_block];
+    int pos = start_block;
+    while (pos < stop_block) {
+        Id id_element = samename.elements[pos++];
+        solv_element = pool->solvables + id_element;
+        if (solv_previous_element->evr != solv_element->evr) {
+            count_version += 1;
+            solv_previous_element = solv_element;
+        }
+        if (versions < 0) {
+            if (count_version < -versions) {
+                MAPCLR(res, id_element);
+            } else {
+                break;
+            }
+        } else {
+            if (!(count_version < versions)) {
+                MAPCLR(res, id_element);
+                break;
+            }
+        }
+    }
+    if (versions > 0) {
+        while (pos < stop_block) {
+            Id id_element = samename.elements[pos++];
+            MAPCLR(res, id_element);
+        }
+    }
+}
+
+
+static void
 filter_latest(HyQuery q, Map *res)
 {
+    if (q->latest == 0)
+        return;
     Pool *pool = dnf_sack_get_pool(q->sack);
     Queue samename;
 
@@ -951,27 +996,26 @@ filter_latest(HyQuery q, Map *res)
                   filter_latest_sortcmp, pool);
 
     Solvable *considered, *highest = 0;
-    Id hp = 0;
-
-    for (int i = 0; i < samename.count; ++i) {
+    int start_block = -1;
+    int i;
+    for (i = 0; i < samename.count; ++i) {
         Id p = samename.elements[i];
         considered = pool->solvables + p;
         if (!highest || highest->name != considered->name ||
             (q->latest_per_arch && highest->arch != considered->arch)) {
             /* start of a new block */
-            hp = p;
+            if (start_block == -1) {
+                highest = considered;
+                start_block = i;
+                continue;
+            }
+            remove_non_latest(pool, res, samename, start_block, i, q->latest);
             highest = considered;
-            continue;
+            start_block = i;
         }
-        if (pool_evrcmp(pool,highest->evr, considered->evr, EVRCMP_COMPARE) < 0) {
-            /* new highest found */
-            MAPCLR(res, hp);
-            hp = p;
-            highest = considered;
-        } else {
-            /* note this is taken also for the same version case */
-            MAPCLR(res, p);
-        }
+    }
+    if (start_block != -1) {
+        remove_non_latest(pool, res, samename, start_block, i, q->latest);
     }
     queue_free(&samename);
 }

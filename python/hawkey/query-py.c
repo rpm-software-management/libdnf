@@ -553,6 +553,21 @@ add_installed_filter(_QueryObject *self, PyObject *unused)
 }
 
 static PyObject *
+add_filter_latest(_QueryObject *self, PyObject *args)
+{
+    const int value = 1;
+
+    if (!PyArg_ParseTuple(args, "|i", &value))
+        return NULL;
+
+    HyQuery query = hy_query_clone(self->query);
+    hy_query_filter_latest_per_arch(query, value);
+    PyObject *final_query = queryToPyObject(query, self->sack);
+    Py_INCREF(final_query);
+    return final_query;
+}
+
+static PyObject *
 add_upgrades_filter(_QueryObject *self, PyObject *unused)
 {
     HyQuery query = hy_query_clone(self->query);
@@ -899,6 +914,7 @@ static struct PyMethodDef query_methods[] = {
     {"downgrades", (PyCFunction)add_downgrades_filter, METH_NOARGS, NULL},
     {"extras", (PyCFunction)add_filter_extras, METH_NOARGS, NULL},
     {"installed", (PyCFunction)add_installed_filter, METH_NOARGS, NULL},
+    {"latest", (PyCFunction)add_filter_latest, METH_VARARGS, NULL},
     {"union", (PyCFunction)q_union, METH_O,
      NULL},
     {"upgrades", (PyCFunction)add_upgrades_filter, METH_NOARGS, NULL},
