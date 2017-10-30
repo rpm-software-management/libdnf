@@ -21,6 +21,7 @@
 #include <Python.h>
 #include <solv/poolid.h>
 #include <solv/util.h>
+#include <time.h>
 
 #include "hy-query.h"
 #include "hy-subject.h"
@@ -887,6 +888,23 @@ add_nevra_or_other_filter(_QueryObject *self, PyObject *args)
     return final_query;
 }
 
+static PyObject *
+add_filter_recent(_QueryObject *self, PyObject *args)
+{
+    const long recent;
+    if (!PyArg_ParseTuple(args, "l", &recent))
+        return NULL;
+
+    hy_query_apply(self->query);
+    HyQuery self_query_copy = hy_query_clone(self->query);
+    time_t now = time(NULL);
+    time_t recent_limit = now - (recent*86400);
+    hy_filter_recent(self_query_copy, (recent_limit < 0) ? 0 : recent_limit);
+    PyObject *final_query = queryToPyObject(self_query_copy, self->sack);
+    Py_INCREF(final_query);
+    return final_query;
+}
+
 static PyGetSetDef query_getsetters[] = {
     {(char*)"evaluated",  (getter)get_evaluated, NULL, NULL, NULL},
     {NULL}                        /* sentinel */
@@ -927,6 +945,7 @@ static struct PyMethodDef query_methods[] = {
     {"_na_dict", (PyCFunction)query_to_name_arch_dict, METH_NOARGS, NULL},
     {"_name_dict", (PyCFunction)query_to_name_dict, METH_NOARGS, NULL},
     {"_nevra", (PyCFunction)add_nevra_or_other_filter, METH_VARARGS, NULL},
+    {"_recent", (PyCFunction)add_filter_recent, METH_VARARGS, NULL},
     {"__add__", (PyCFunction)q_add, METH_O, NULL},
     {"__contains__", (PyCFunction)q_contains, METH_O,
      NULL},

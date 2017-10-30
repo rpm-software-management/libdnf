@@ -1804,3 +1804,21 @@ hy_add_filter_extras(HyQuery query)
     hy_query_free(query_installed);
     hy_query_free(query_available);
 }
+
+void
+hy_filter_recent(HyQuery query, const long unsigned int recent_limit)
+{
+    Pool *pool = dnf_sack_get_pool(query->sack);
+    hy_query_apply(query);
+
+    for (Id id = 1; id < pool->nsolvables; ++id) {
+        if (!MAPTST(query->result, id)) {
+            continue;
+        }
+        DnfPackage *pkg = dnf_package_new(query->sack, id);
+        guint64 build_time = dnf_package_get_buildtime(pkg);
+        if (build_time <= recent_limit) {
+            MAPCLR(query->result, id);
+        }
+    }
+}
