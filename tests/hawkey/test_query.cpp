@@ -601,7 +601,7 @@ START_TEST(test_filter_latest_archs)
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "penny-lib");
     hy_query_filter_latest_per_arch(q, 1);
     GPtrArray *plist = hy_query_run(q);
-    fail_unless(plist->len == 2); /* both architectures */
+    fail_unless(plist->len == 3); /* both architectures */
     hy_query_free(q);
     g_ptr_array_unref(plist);
 }

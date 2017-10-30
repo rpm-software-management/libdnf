@@ -459,21 +459,6 @@ class Query(_hawkey.Query):
                         duplicated.append(pkgs[x])
         return self.filter(pkg=duplicated)
 
-    def latest(self, limit=1):
-        # :api
-        if limit == 1:
-            return self.filter(latest_per_arch=True)
-        else:
-            pkgs_na = self._na_dict()
-            latest_pkgs = []
-            for pkg_list in pkgs_na.values():
-                pkg_list.sort(reverse=True)
-                if limit > 0:
-                    latest_pkgs.extend(pkg_list[0:limit])
-                else:
-                    latest_pkgs.extend(pkg_list[-limit:])
-            return self.filter(pkg=latest_pkgs)
-
     def _recent(self, recent):
         now = time.time()
         recentlimit = now - (recent*86400)

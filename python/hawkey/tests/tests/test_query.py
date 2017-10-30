@@ -168,7 +168,7 @@ class TestQuery(base.TestCase):
         q.filterm(latest_per_arch=True)
         self.assertEqual(len(q), 2)
         q.filterm(latest=True)
-        self.assertEqual(len(q), 1)
+        self.assertEqual(len(q), 2)
 
     def test_reldep(self):
         flying = base.by_name(self.sack, "flying")
