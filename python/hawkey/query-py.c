@@ -440,8 +440,8 @@ filter_internal(HyQuery query, PyObject *sack, PyObject *args, PyObject *kwds)
                 if (c_int == HY_ICASE) {
                     cmp_type_flag = HY_ICASE;
                 } else {
-                    PyErr_SetString(PyExc_ValueError, "Invalid flag. Only HY_ICASE allowed");
-                    Py_RETURN_NONE;
+                    PyErr_SetString(HyExc_Value, "Invalid flag. Only HY_ICASE allowed");
+                    return NULL;
                 }
             }
         }
@@ -468,9 +468,9 @@ filter_internal(HyQuery query, PyObject *sack, PyObject *args, PyObject *kwds)
                         }
                     }
                     if (!argument_number) {
-                        PyErr_SetString(PyExc_ValueError, g_strdup_printf(
-                            "Invalid filter key: %s", parcial_string));
-                        Py_RETURN_NONE;
+                        PyErr_SetString(HyExc_Value, g_strdup_printf(
+                            "Unrecognized key name: %s", parcial_string));
+                        return NULL;
                     }
                 } else {
                     presence_cmp_type = FALSE;
@@ -482,9 +482,9 @@ filter_internal(HyQuery query, PyObject *sack, PyObject *args, PyObject *kwds)
                         }
                     }
                     if (!presence_cmp_type) {
-                        PyErr_SetString(PyExc_ValueError, g_strdup_printf(
-                            "Invalid filter match value: %s", parcial_string));
-                        Py_RETURN_NONE;
+                        PyErr_SetString(HyExc_Value, g_strdup_printf(
+                            "Unrecognized filter type: %s", parcial_string));
+                        return NULL;
                     }
                 }
             }
@@ -492,7 +492,7 @@ filter_internal(HyQuery query, PyObject *sack, PyObject *args, PyObject *kwds)
                 cmp_type = HY_EQ;
             if (keyname != -1) {
                 if (filter_add(query, keyname, cmp_type|cmp_type_flag, value) == 0)
-                    Py_RETURN_NONE;
+                    return NULL;
             }
         }
     }
@@ -504,6 +504,8 @@ filter(_QueryObject *self, PyObject *args, PyObject *kwds)
 {
     HyQuery query = hy_query_clone(self->query);
     PyObject *final_query = filter_internal(query, self->sack, args, kwds);
+    if (final_query == NULL)
+        return NULL;
     Py_INCREF(final_query);
     return final_query;
 }
@@ -512,6 +514,8 @@ static PyObject *
 filterm(_QueryObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *final_query = filter_internal(self->query, self->sack, args, kwds);
+    if (final_query == NULL)
+        return NULL;
     Py_INCREF(final_query);
     return final_query;
 }

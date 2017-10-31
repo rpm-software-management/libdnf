@@ -65,8 +65,7 @@ class TestQuery(base.TestCase):
 
     def test_kwargs_check(self):
         q = hawkey.Query(self.sack)
-        self.assertRaises(hawkey.ValueException, q.filter,
-                          name="flying", upgrades="maracas")
+        self.assertRaises(hawkey.ValueException, q.filter, name="flying", upgrades="maracas")
 
     def test_kwargs(self):
         q = hawkey.Query(self.sack)
@@ -176,9 +175,7 @@ class TestQuery(base.TestCase):
         q = hawkey.Query(self.sack).filter(provides=requires[0])
         self.assertEqual(len(q), 1)
         self.assertEqual(str(q[0]), "penny-lib-4-1.x86_64")
-
-        self.assertRaises(hawkey.QueryException, q.filter,
-                          provides__gt=requires[0])
+        self.assertRaises(hawkey.QueryException, q.filter, provides__gt=requires[0])
 
         q = hawkey.Query(self.sack).filter(provides="thisisnotgoingtoexist")
         self.assertLength(q.run(), 0)
