@@ -59,6 +59,7 @@ __all__ = [
     # classes
     'Goal', 'NEVRA', 'ModuleForm', 'Package', 'Query', 'Repo', 'Sack', 'Selector', 'Subject']
 
+Query = _hawkey.Query
 Swdb = Dnf.Swdb
 SwdbItem = Dnf.SwdbItem
 SwdbReason = Dnf.SwdbReason
@@ -426,11 +427,6 @@ def is_glob_pattern(pattern):
 
 def _msg_installed(pkg):
     logger.warning('Package {} is already installed, skipping.'.format(str(pkg))) # translate
-
-class Query(_hawkey.Query):
-
-    def __init__(self, sack=None, query=None):
-        super(Query, self).__init__(sack=sack, query=query)
 
 
 class Selector(_hawkey.Selector):

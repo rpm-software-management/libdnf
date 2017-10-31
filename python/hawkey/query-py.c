@@ -207,17 +207,17 @@ static int
 query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
 {
     const char *kwlist[] = {"sack", "query", NULL};
-    PyObject *sack;
-    PyObject *query;
+    PyObject *sack = NULL;
+    PyObject *query = NULL;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", (char**) kwlist, &sack, &query))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", (char**) kwlist, &sack, &query))
         return -1;
 
-    if (query && sack == Py_None && queryObject_Check(query)) {
+    if (query && (!sack || sack == Py_None) && queryObject_Check(query)) {
         _QueryObject *query_obj = (_QueryObject*)query;
         self->sack = query_obj->sack;
         self->query = hy_query_clone(query_obj->query);
-    } else if (sack && query == Py_None && sackObject_Check(sack)) {
+    } else if (sack && (!query || query == Py_None) && sackObject_Check(sack)) {
         DnfSack *csack = sackFromPyObject(sack);
         assert(csack);
         self->sack = sack;
