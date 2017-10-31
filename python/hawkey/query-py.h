@@ -41,5 +41,6 @@ extern PyTypeObject query_Type;
 HyQuery queryFromPyObject(PyObject *o);
 PyObject *queryToPyObject(HyQuery query, PyObject *sack);
 int query_converter(PyObject *o, HyQuery *query_ptr);
+gboolean filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, PyObject *kwds);
 
 #endif // QUERY_PY_H

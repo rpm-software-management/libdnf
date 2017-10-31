@@ -69,66 +69,6 @@ SwdbTrans = Dnf.SwdbTrans
 SwdbGroup = Dnf.SwdbGroup
 SwdbEnv = Dnf.SwdbEnv
 
-
-_QUERY_KEYNAME_MAP = {
-    'pkg': _hawkey.PKG,
-    'advisory': _hawkey.PKG_ADVISORY,
-    'advisory_bug': _hawkey.PKG_ADVISORY_BUG,
-    'advisory_cve': _hawkey.PKG_ADVISORY_CVE,
-    'advisory_severity': _hawkey.PKG_ADVISORY_SEVERITY,
-    'advisory_type': _hawkey.PKG_ADVISORY_TYPE,
-    'arch': _hawkey.PKG_ARCH,
-    'conflicts': _hawkey.PKG_CONFLICTS,
-    'description': _hawkey.PKG_DESCRIPTION,
-    'downgradable': _hawkey.PKG_DOWNGRADABLE,
-    'downgrades': _hawkey.PKG_DOWNGRADES,
-    'empty': _hawkey.PKG_EMPTY,
-    'enhances': _hawkey.PKG_ENHANCES,
-    'epoch': _hawkey.PKG_EPOCH,
-    'evr': _hawkey.PKG_EVR,
-    'file': _hawkey.PKG_FILE,
-    'latest': _hawkey.PKG_LATEST,
-    'latest_per_arch': _hawkey.PKG_LATEST_PER_ARCH,
-    'location': _hawkey.PKG_LOCATION,
-    'name': _hawkey.PKG_NAME,
-    'nevra': _hawkey.PKG_NEVRA,
-    'obsoletes': _hawkey.PKG_OBSOLETES,
-    'provides': _hawkey.PKG_PROVIDES,
-    'recommends': _hawkey.PKG_RECOMMENDS,
-    'release': _hawkey.PKG_RELEASE,
-    'reponame': _hawkey.PKG_REPONAME,
-    'requires': _hawkey.PKG_REQUIRES,
-    'sourcerpm': _hawkey.PKG_SOURCERPM,
-    'suggests': _hawkey.PKG_SUGGESTS,
-    'summary': _hawkey.PKG_SUMMARY,
-    'supplements': _hawkey.PKG_SUPPLEMENTS,
-    'upgradable': _hawkey.PKG_UPGRADABLE,
-    'upgrades': _hawkey.PKG_UPGRADES,
-    'url': _hawkey.PKG_URL,
-    'version': _hawkey.PKG_VERSION,
-}
-
-_CMP_MAP = {
-    '=': _hawkey.EQ,
-    '>': _hawkey.GT,
-    '<': _hawkey.LT,
-    '!=': _hawkey.NEQ,
-    '>=': _hawkey.EQ | _hawkey.GT,
-    '<=': _hawkey.EQ | _hawkey.LT,
-}
-
-_QUERY_CMP_MAP = {
-    'eq': _hawkey.EQ,
-    'gt': _hawkey.GT,
-    'lt': _hawkey.LT,
-    'neq': _hawkey.NEQ,
-    'not': _hawkey.NOT,
-    'gte': _hawkey.EQ | _hawkey.GT,
-    'lte': _hawkey.EQ | _hawkey.LT,
-    'substr': _hawkey.SUBSTR,
-    'glob': _hawkey.GLOB,
-}
-
 VERSION_MAJOR = _hawkey.VERSION_MAJOR
 VERSION_MINOR = _hawkey.VERSION_MINOR
 VERSION_PATCH = _hawkey.VERSION_PATCH
@@ -383,42 +323,6 @@ def _encode(obj):
     return obj
 
 
-def _parse_filter_args(flags, dct):
-    args = []
-    filter_flags = 0
-    for flag in flags:
-        if not flag in [ICASE]:
-            raise ValueException("unrecognized flag: %s" % flag)
-        filter_flags |= flag
-    for (k, match) in dct.items():
-        if isinstance(match, Query):
-            pass
-        elif not PY3 and isinstance(match, basestring):
-            match = _encode(match)
-        elif PY3 and isinstance(match, str):
-            match = _encode(match)
-        elif isinstance(match, collections.Iterable):
-            match = list(map(_encode, match))
-        split = k.split("__")
-        keyname = split[0]
-        if len(split) == 1:
-            cmp_types = ["eq"]
-        else:
-            cmp_types = split[1:]
-        if not keyname in _QUERY_KEYNAME_MAP:
-            raise ValueException("Unrecognized key name: %s" % keyname)
-        for cmp_type in cmp_types:
-            if not cmp_type in _QUERY_CMP_MAP:
-                raise ValueException("Unrecognized filter type: %s" % cmp_type)
-
-        mapped_types = map(_QUERY_CMP_MAP.__getitem__, cmp_types)
-        item_flags = functools.reduce(operator.or_, mapped_types, filter_flags)
-        args.append((_QUERY_KEYNAME_MAP[keyname],
-                     item_flags,
-                     match))
-    return args
-
-
 def is_glob_pattern(pattern):
     if (not PY3 and isinstance(pattern, basestring)) or \
             (PY3 and isinstance(pattern, str)):
@@ -430,11 +334,6 @@ def _msg_installed(pkg):
 
 
 class Selector(_hawkey.Selector):
-
-    def set(self, **kwargs):
-        for arg_tuple in _parse_filter_args(set(), kwargs):
-            super(Selector, self).set(*arg_tuple)
-        return self
 
     def _set_autoglob(self, **kwargs):
         nargs = {}
