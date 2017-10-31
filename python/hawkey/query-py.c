@@ -26,6 +26,7 @@
 #include <pygobject-3.0/pygobject.h>
 
 #include "hy-query.h"
+#include "hy-selector.h"
 #include "hy-subject.h"
 #include "dnf-reldep.h"
 #include "dnf-reldep-list.h"
@@ -419,8 +420,8 @@ filter_key_splitter(char** key)
     return sbegin;
 }
 
-static PyObject *
-filter_internal(HyQuery query, PyObject *sack, PyObject *args, PyObject *kwds)
+gboolean
+filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, PyObject *kwds)
 {
     PyObject *key, *value;
     Py_ssize_t pos = 0;
@@ -441,7 +442,7 @@ filter_internal(HyQuery query, PyObject *sack, PyObject *args, PyObject *kwds)
                     cmp_type_flag = HY_ICASE;
                 } else {
                     PyErr_SetString(HyExc_Value, "Invalid flag. Only HY_ICASE allowed");
-                    return NULL;
+                    return FALSE;
                 }
             }
         }
@@ -470,7 +471,7 @@ filter_internal(HyQuery query, PyObject *sack, PyObject *args, PyObject *kwds)
                     if (!argument_number) {
                         PyErr_SetString(HyExc_Value, g_strdup_printf(
                             "Unrecognized key name: %s", parcial_string));
-                        return NULL;
+                        return FALSE;
                     }
                 } else {
                     presence_cmp_type = FALSE;
@@ -484,40 +485,75 @@ filter_internal(HyQuery query, PyObject *sack, PyObject *args, PyObject *kwds)
                     if (!presence_cmp_type) {
                         PyErr_SetString(HyExc_Value, g_strdup_printf(
                             "Unrecognized filter type: %s", parcial_string));
-                        return NULL;
+                        return FALSE;
                     }
                 }
             }
-            if (cmp_type == 0)
+            if (cmp_type == 0) {
                 cmp_type = HY_EQ;
+            }
             if (keyname != -1) {
-                if (filter_add(query, keyname, cmp_type|cmp_type_flag, value) == 0)
-                    return NULL;
+                if (query != NULL) {
+                    if (filter_add(query, keyname, cmp_type|cmp_type_flag, value) == 0) {
+                        return FALSE;
+                    }
+                } else {
+                    if (keyname == HY_PKG) {
+                        const DnfPackageSet *pset;
+                        if (queryObject_Check(value)) {
+                            HyQuery target = queryFromPyObject(value);
+                            pset = hy_query_run_set(target);
+                        } else if (PyList_Check(value)) {
+                            DnfSack *c_sack = sackFromPyObject(sack);
+                            assert(c_sack);
+                            pset = pyseq_to_packageset(value, c_sack);
+                        }  else {
+                            (ret2e(DNF_ERROR_BAD_SELECTOR, "Invalid value type: Only List and Query supported"));
+                            return FALSE;
+                        }
+
+                        if (ret2e(hy_selector_pkg_set(sltr, keyname, cmp_type, pset),
+                            "Invalid Selector spec." )) {
+                            return FALSE;
+                        }
+                    } else {
+                        const char *c_sltr_match;
+                        PyObject *tmp_py_str_sltr = NULL;
+                        c_sltr_match = pycomp_get_string(value, &tmp_py_str_sltr);
+                        if (ret2e(hy_selector_set(sltr, keyname, cmp_type, c_sltr_match),
+                            "Invalid Selector spec." )) {
+                            Py_XDECREF(tmp_py_str_sltr);
+                            return FALSE;
+                        }
+
+                    }
+                }
             }
         }
     }
-    return queryToPyObject(query, sack);
+    return TRUE;
 }
 
 static PyObject *
 filter(_QueryObject *self, PyObject *args, PyObject *kwds)
 {
     HyQuery query = hy_query_clone(self->query);
-    PyObject *final_query = filter_internal(query, self->sack, args, kwds);
-    if (final_query == NULL)
+    gboolean ret = filter_internal(query, NULL, self->sack, args, kwds);
+    if (!ret)
         return NULL;
+    PyObject *final_query = queryToPyObject(query, self->sack);
     Py_INCREF(final_query);
     return final_query;
 }
 
-static PyObject *
+static _QueryObject *
 filterm(_QueryObject *self, PyObject *args, PyObject *kwds)
 {
-    PyObject *final_query = filter_internal(self->query, self->sack, args, kwds);
-    if (final_query == NULL)
+    gboolean ret = filter_internal(self->query, NULL, self->sack, args, kwds);
+    if (!ret)
         return NULL;
-    Py_INCREF(final_query);
-    return final_query;
+    Py_INCREF(self);
+    return self;
 }
 
 static PyObject *

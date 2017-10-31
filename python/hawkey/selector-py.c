@@ -96,51 +96,21 @@ matches(_SelectorObject *self, PyObject *args)
     return list;
 }
 
-static PyObject *
-set(_SelectorObject *self, PyObject *args)
+static _SelectorObject *
+set(_SelectorObject *self, PyObject *args, PyObject *kwds)
 {
-    key_t keyname;
-    int cmp_type;
-    PyObject *match;
-
-    if (!PyArg_ParseTuple(args, "iiO", &keyname, &cmp_type, &match))
+    gboolean ret = filter_internal(NULL, self->sltr, self->sack, args, kwds);
+    if (!ret) {
         return NULL;
-
-    if (keyname == HY_PKG) {
-        const DnfPackageSet *pset;
-        if (queryObject_Check(match)) {
-            HyQuery target = queryFromPyObject(match);
-            pset = hy_query_run_set(target);
-        } else if (PyList_Check(match)) {
-            DnfSack *sack = sackFromPyObject(self->sack);
-            assert(sack);
-            pset = pyseq_to_packageset(match, sack);
-        }  else {
-            (ret2e(DNF_ERROR_BAD_SELECTOR, "Invalid value type: Only List and Query supported"));
-            return NULL;
-        }
-
-        if (ret2e(hy_selector_pkg_set(self->sltr, keyname, cmp_type, pset),
-                  "Invalid Selector spec." )) {
-               return NULL;
-        }
-    } else {
-        const char *cmatch;
-        PyObject *tmp_py_str = NULL;
-        cmatch = pycomp_get_string(match, &tmp_py_str);
-        if (ret2e(hy_selector_set(self->sltr, keyname, cmp_type, cmatch),
-                  "Invalid Selector spec." ))
-            return NULL;
-
     }
-    Py_RETURN_NONE;
+    Py_INCREF(self);
+    return self;
 }
 
 static struct PyMethodDef selector_methods[] = {
     {"matches", (PyCFunction)matches, METH_NOARGS,
      NULL},
-    {"set", (PyCFunction)set, METH_VARARGS,
-     NULL},
+    {"set", (PyCFunction)set, METH_KEYWORDS|METH_VARARGS, NULL},
     {NULL}                      /* sentinel */
 };
 
