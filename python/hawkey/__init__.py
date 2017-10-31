@@ -60,6 +60,7 @@ __all__ = [
     'Goal', 'NEVRA', 'ModuleForm', 'Package', 'Query', 'Repo', 'Sack', 'Selector', 'Subject']
 
 Query = _hawkey.Query
+Selector = _hawkey.Selector
 Swdb = Dnf.Swdb
 SwdbItem = Dnf.SwdbItem
 SwdbReason = Dnf.SwdbReason
@@ -331,18 +332,6 @@ def is_glob_pattern(pattern):
 
 def _msg_installed(pkg):
     logger.warning('Package {} is already installed, skipping.'.format(str(pkg))) # translate
-
-
-class Selector(_hawkey.Selector):
-
-    def _set_autoglob(self, **kwargs):
-        nargs = {}
-        for (key, value) in kwargs.items():
-            if is_glob_pattern(value):
-                nargs[key + "__glob"] = value
-            else:
-                nargs[key] = value
-        return self.set(**nargs)
 
 
 class Subject(_hawkey.Subject):
