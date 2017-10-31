@@ -432,16 +432,6 @@ class Query(_hawkey.Query):
     def __init__(self, sack=None, query=None):
         super(Query, self).__init__(sack=sack, query=query)
 
-    def _unneeded(self, sack, history, debug_solver=False):
-        goal = Goal(sack)
-        goal.push_userinstalled(self.installed(), history)
-        solved = goal.run()
-        if debug_solver:
-            goal.write_debugdata('./debugdata-autoremove')
-        assert solved
-        unneeded = goal.list_unneeded()
-        return self.filter(pkg=unneeded)
-
 
 class Selector(_hawkey.Selector):
 

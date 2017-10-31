@@ -20,14 +20,17 @@
 
 #include <Python.h>
 #include <solv/poolid.h>
+#include <solv/solver.h>
 #include <solv/util.h>
 #include <time.h>
+#include <pygobject-3.0/pygobject.h>
 
 #include "hy-query.h"
 #include "hy-subject.h"
 #include "dnf-reldep.h"
 #include "dnf-reldep-list.h"
 #include "dnf-sack-private.h"
+#include "dnf-swdb.h"
 
 #include "exception-py.h"
 #include "hawkey-pysys.h"
@@ -643,6 +646,32 @@ q_difference(PyObject *self, PyObject *other)
 }
 
 static PyObject *
+filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    HyQuery self_query_copy = hy_query_clone(((_QueryObject *) self)->query);
+    const char *kwlist[] = {"swdb", "debug_solver", NULL};
+    PyObject *swdb;
+    PyObject *debug_solver = NULL;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O!", (char**) kwlist, &swdb, &PyBool_Type,
+        &debug_solver)) {
+        return NULL;
+    }
+    DnfSwdb *c_swdb = (DnfSwdb *) ((PyGObject *) swdb)->obj;
+    gboolean c_debug_solver = debug_solver != NULL && PyObject_IsTrue(debug_solver);
+
+    int ret = hy_filter_unneeded(self_query_copy, c_swdb, c_debug_solver);
+    if (ret == -1) {
+        PyErr_SetString(PyExc_SystemError, "Unable to provide query with unneded filter");
+        return NULL;
+    }
+    PyObject *final_query = queryToPyObject(self_query_copy, ((_QueryObject *) self)->sack);
+    Py_INCREF(final_query);
+    return final_query;
+}
+
+    
+static PyObject *
 q_add(_QueryObject *self, PyObject *list)
 {
     if (!PyList_Check(list)) {
@@ -957,6 +986,8 @@ static struct PyMethodDef query_methods[] = {
     {"_name_dict", (PyCFunction)query_to_name_dict, METH_NOARGS, NULL},
     {"_nevra", (PyCFunction)add_nevra_or_other_filter, METH_VARARGS, NULL},
     {"_recent", (PyCFunction)add_filter_recent, METH_VARARGS, NULL},
+    {"_unneeded", (PyCFunction)filter_unneeded, METH_KEYWORDS|METH_VARARGS,
+     NULL},
     {"__add__", (PyCFunction)q_add, METH_O, NULL},
     {"__contains__", (PyCFunction)q_contains, METH_O,
      NULL},
