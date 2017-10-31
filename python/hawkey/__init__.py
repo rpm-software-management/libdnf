@@ -59,6 +59,7 @@ __all__ = [
     # classes
     'Goal', 'NEVRA', 'ModuleForm', 'Package', 'Query', 'Repo', 'Sack', 'Selector', 'Subject']
 
+NEVRA = _hawkey.NEVRA
 Query = _hawkey.Query
 Selector = _hawkey.Selector
 Swdb = Dnf.Swdb
@@ -181,13 +182,6 @@ def convert_reason(reason):
 def split_nevra(s):
     t = _hawkey.split_nevra(s)
     return NEVRA(*t)
-
-
-class NEVRA(_hawkey.NEVRA):
-
-    def to_query(self, sack, icase=False):
-        _hawkey_query = super(NEVRA, self).to_query(sack, icase=icase)
-        return Query(query=_hawkey_query)
 
 
 class ModuleForm(_hawkey.ModuleForm):
