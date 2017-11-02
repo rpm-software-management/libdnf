@@ -306,7 +306,7 @@ get_best_solution(_SubjectObject *self, PyObject *args, PyObject *kwds)
     HyQuery query = hy_subject_get_best_solution(self->pattern, csack, cforms, &nevra, c_icase,
                                                  c_with_nevra, c_with_provides, c_with_filenames);
 
-    PyObject *q = queryToPyObject(query, sack);
+    PyObject *q = queryToPyObject(query, sack, &query_Type);
     PyObject *ret_dict = PyDict_New();
     PyDict_SetItem(ret_dict, PyString_FromString("query"), q);
     Py_DECREF(q);

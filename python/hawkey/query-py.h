@@ -39,7 +39,7 @@ extern PyTypeObject query_Type;
 #define queryObject_Check(o)        PyObject_TypeCheck(o, &query_Type)
 
 HyQuery queryFromPyObject(PyObject *o);
-PyObject *queryToPyObject(HyQuery query, PyObject *sack);
+PyObject *queryToPyObject(HyQuery query, PyObject *sack, PyTypeObject *custom_object_type);
 int query_converter(PyObject *o, HyQuery *query_ptr);
 gboolean filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, PyObject *kwds);
 

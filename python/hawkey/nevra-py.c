@@ -240,7 +240,7 @@ to_query(_NevraObject *self, PyObject *args, PyObject *kwds)
     gboolean c_icase = icase!=NULL && PyObject_IsTrue(icase);
     csack = sackFromPyObject(sack);
     HyQuery query = hy_nevra_to_query(self->nevra, csack, c_icase);
-    PyObject *q = queryToPyObject(query, sack);
+    PyObject *q = queryToPyObject(query, sack, &query_Type);
     return q;
 }
 
