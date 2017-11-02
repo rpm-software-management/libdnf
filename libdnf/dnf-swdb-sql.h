@@ -66,6 +66,11 @@
     "SELECT reason FROM PACKAGE_DATA join TRANS_DATA using (PD_ID) WHERE P_ID=@pid ORDER by " \
     "TD_ID DESC LIMIT 1"
 
+#define S_REASON_BY_NEVRA \
+    "SELECT reason FROM PACKAGE join PACKAGE_DATA using (P_ID) join TRANS_DATA using (PD_ID) " \
+    "WHERE name=@n and epoch=@e and version=@v and release=@r and arch=@a ORDER by TD_ID DESC " \
+    "LIMIT 1"
+
 #define S_PACKAGE_BY_PID "SELECT * FROM PACKAGE WHERE P_ID=@pid"
 #define S_NAME_BY_PID "SELECT name FROM PACKAGE WHERE P_ID=@pid"
 #define S_LAST_TDID_BY_NAME \
@@ -104,9 +109,6 @@
 #define S_PID_BY_NEVRA \
     "SELECT P_ID FROM PACKAGE WHERE name=@n and epoch=@e and version=@v and release=@r and " \
     "arch=@a"
-
-#define S_REASON_ID_BY_PDID \
-    "SELECT reason FROM PACKAGE_DATA join TRANS_DATA using(PD_ID) where PD_ID=@pdid"
 
 #define S_STATE_TYPE_ID "SELECT state  FROM state_type   WHERE description=@desc"
 #define S_OUTPUT_TYPE_ID "SELECT type   FROM output_type  WHERE description=@desc"
