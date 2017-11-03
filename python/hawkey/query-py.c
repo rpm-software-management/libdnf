@@ -428,7 +428,7 @@ filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, 
     key_t keyname;
     int cmp_type;
     PyObject *tuple_item;
-    const char *cmatch; 
+    const char *cmatch;
     int argument_number, presence_cmp_type;
     int cmp_type_flag = 0;
 
@@ -653,8 +653,12 @@ apply(PyObject *self, PyObject *unused)
 }
 
 static PyObject *
-q_union(PyObject *self, PyObject *other)
+q_union(PyObject *self, PyObject *args)
 {
+    PyObject *other;
+    if (!PyArg_ParseTuple(args, "O!", &query_Type, &other))
+            return NULL;
+
     HyQuery self_query_copy = hy_query_clone(((_QueryObject *) self)->query);
     HyQuery other_q = ((_QueryObject *) other)->query;
     hy_query_union(self_query_copy, other_q);
@@ -665,8 +669,12 @@ q_union(PyObject *self, PyObject *other)
 }
 
 static PyObject *
-q_intersection(PyObject *self, PyObject *other)
+q_intersection(PyObject *self, PyObject *args)
 {
+    PyObject *other;
+    if (!PyArg_ParseTuple(args, "O!", &query_Type, &other))
+            return NULL;
+
     HyQuery self_query_copy = hy_query_clone(((_QueryObject *) self)->query);
     HyQuery other_q = ((_QueryObject *) other)->query;
     hy_query_intersection(self_query_copy, other_q);
@@ -677,8 +685,12 @@ q_intersection(PyObject *self, PyObject *other)
 }
 
 static PyObject *
-q_difference(PyObject *self, PyObject *other)
+q_difference(PyObject *self, PyObject *args)
 {
+    PyObject *other;
+    if (!PyArg_ParseTuple(args, "O!", &query_Type, &other))
+            return NULL;
+
     HyQuery self_query_copy = hy_query_clone(((_QueryObject *) self)->query);
     HyQuery other_q = ((_QueryObject *) other)->query;
     hy_query_difference(self_query_copy, other_q);
@@ -714,7 +726,6 @@ filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds)
     return final_query;
 }
 
-    
 static PyObject *
 q_add(_QueryObject *self, PyObject *list)
 {
@@ -995,7 +1006,7 @@ static PyGetSetDef query_getsetters[] = {
 
 PySequenceMethods query_sequence = {
     (lenfunc)query_len,               /* sq_length */
-    0,                                /* sq_concat */
+    (binaryfunc)q_add,                /* sq_concat */
     0,                                /* sq_repeat */
     (ssizeargfunc) query_get_item,    /* sq_item */
 };
@@ -1017,13 +1028,10 @@ static struct PyMethodDef query_methods[] = {
     {"extras", (PyCFunction)add_filter_extras, METH_NOARGS, NULL},
     {"installed", (PyCFunction)add_installed_filter, METH_NOARGS, NULL},
     {"latest", (PyCFunction)add_filter_latest, METH_VARARGS, NULL},
-    {"union", (PyCFunction)q_union, METH_O,
-     NULL},
+    {"union", (PyCFunction)q_union, METH_VARARGS, NULL},
     {"upgrades", (PyCFunction)add_upgrades_filter, METH_NOARGS, NULL},
-    {"intersection", (PyCFunction)q_intersection, METH_O,
-     NULL},
-    {"difference", (PyCFunction)q_difference, METH_O,
-     NULL},
+    {"intersection", (PyCFunction)q_intersection, METH_VARARGS, NULL},
+    {"difference", (PyCFunction)q_difference, METH_VARARGS, NULL},
     {"count", (PyCFunction)q_length, METH_NOARGS,
         NULL},
     {"_na_dict", (PyCFunction)query_to_name_arch_dict, METH_NOARGS, NULL},
