@@ -1378,6 +1378,7 @@ hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
 int
 hy_query_filter_empty(HyQuery q)
 {
+    q->applied = 0;
     struct _Filter *filterp = query_add_filter(q, 1);
     filterp->cmp_type = HY_EQ;
     filterp->keyname = HY_PKG_ALL;
