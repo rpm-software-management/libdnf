@@ -796,15 +796,7 @@ query_get_item(PyObject *self, int index)
 static PyObject *
 query_get_item_by_pyindex(PyObject *self, PyObject *index)
 {
-    HyQuery query = ((_QueryObject *) self)->query;
-    Id id = query_get_index_item(query, PyLong_AsLong(index));
-    if (!id) {
-        PyErr_SetString(PyExc_IndexError, "list index out of range");
-        return NULL;
-    }
-    PyObject *package = new_package(((_QueryObject *) self)->sack, id);
-    Py_INCREF(package);
-    return package;
+    return query_get_item(self, (int) PyLong_AsLong(index));
 }
 
 static PyObject *
