@@ -207,13 +207,13 @@ if (GOBJECT_INTROSPECTION_FOUND)
                 DESTINATION share/gir-1.0
                 COMPONENT libraries)
         install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${GIR_TYPELIB}
-                DESTINATION ${LIB_INSTALL_DIR}/girepository-1.0
+                DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/girepository-1.0
                 COMPONENT libraries)
     endif()
 endif()
 
 install (FILES ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc
-         DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
+         DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig)
 INSTALL(FILES ${LIBDNF_headers} DESTINATION include/libdnf)
 INSTALL(FILES ${LIBHAWKEY_headers} DESTINATION include/libdnf)
-INSTALL(TARGETS libdnf LIBRARY DESTINATION ${LIB_INSTALL_DIR})
+INSTALL(TARGETS libdnf LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
