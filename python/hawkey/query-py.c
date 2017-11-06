@@ -23,6 +23,7 @@
 #include <solv/solver.h>
 #include <solv/util.h>
 #include <time.h>
+
 #include <pygobject-3.0/pygobject.h>
 
 #include "hy-query.h"
