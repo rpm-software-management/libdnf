@@ -386,7 +386,6 @@ class Subject(_hawkey.Subject):
         solution = self.get_best_solution(sack, icase=self.icase, with_nevra=with_nevra,
                                           with_provides=with_provides,
                                           with_filenames=with_filenames, **kwargs)
-        solution['query'] = Query(query=solution['query'])
         return solution
 
     def get_best_query(self, sack, with_nevra=True, with_provides=True, with_filenames=True,
