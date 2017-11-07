@@ -137,6 +137,8 @@
     "   t_id INTEGER REFERENCES trans(t_id)," \
     "   p_id INTEGER REFERENCES package(p_id));" \
     "CREATE INDEX name_index ON PACKAGE(name);" \
+    "CREATE INDEX p_id_index ON PACKAGE_DATA(p_id);" \
+    "CREATE UNIQUE INDEX pd_id_index ON TRANS_DATA(pd_id);" \
     "CREATE TABLE config (" \
     "   key TEXT PRIMARY KEY," \
     "   value TEXT NOT NULL);" \

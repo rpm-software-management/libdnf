@@ -367,41 +367,30 @@ dnf_swdb_select_user_installed (DnfSwdb *self, GPtrArray *nevras)
 
     GArray *usr_ids = g_array_new (0, 0, sizeof (gint));
 
-    gint pid = 0;
-    gint pdid = 0;
     DnfSwdbReason reason_id = DNF_SWDB_REASON_UNKNOWN;
-    const gchar *sql = S_REASON_ID_BY_PDID;
+    const gchar *sql = S_REASON_BY_NEVRA;
 
     for (guint i = 0; i < nevras->len; ++i) {
-        pid = _pid_by_nevra (self->db, (gchar *)g_ptr_array_index (nevras, i));
-        if (!pid) {
-            // better not uninstall package when not sure
-            g_array_append_val (usr_ids, i);
-            continue;
-        }
-        pdid = _pdid_from_pid (self->db, pid);
-        if (!pdid) {
-            g_array_append_val (usr_ids, i);
-            continue;
-        }
+        const gchar *nevra = g_ptr_array_index (nevras, i);
         sqlite3_stmt *res;
+
         _db_prepare (self->db, sql, &res);
-        _db_bind_int (res, "@pdid", pdid);
-        gboolean push = TRUE;
-        while (sqlite3_step (res) == SQLITE_ROW) {
-            reason_id = sqlite3_column_int (res, 0);
-            if (reason_id == DNF_SWDB_REASON_DEP || reason_id == DNF_SWDB_REASON_WEAK) {
-                push = FALSE;
-                continue;
-            }
-            push = TRUE;
-            break;
+
+        // fill query with nevra
+        HyNevra hnevra = _fill_nevra_res (res, nevra);
+
+        // find reason
+        reason_id = _db_find_int (res);
+
+        // finalize HyNevra
+        hy_nevra_free (hnevra);
+
+        // continue package is [weak] dependency
+        if (reason_id == DNF_SWDB_REASON_DEP || reason_id == DNF_SWDB_REASON_WEAK) {
+            continue;
         }
-        // push even in case when no record is found
-        if (push) {
-            g_array_append_val (usr_ids, i);
-        }
-        sqlite3_finalize (res);
+
+        g_array_append_val (usr_ids, i);
     }
     return usr_ids;
 }
