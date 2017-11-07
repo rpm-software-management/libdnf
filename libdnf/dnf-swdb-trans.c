@@ -654,42 +654,12 @@ dnf_swdb_trans_error (DnfSwdbTrans *self)
  *
  * Get list of transaction data objects for transaction
  *
- * Returns: (element-type DnfSwdbTransData)(array)(transfer container): list of #DnfSwdbTransData
+ * Returns: (element-type DnfSwdbItemData)(array)(transfer container): list of #DnfSwdbItemData
  */
 GPtrArray *
 dnf_swdb_trans_data (DnfSwdbTrans *self)
 {
-    if (!self->tid || dnf_swdb_open (self->swdb)) {
-        return NULL;
-    }
-
-    sqlite3 *db = self->swdb->db;
-
-    GPtrArray *node = g_ptr_array_new ();
-    sqlite3_stmt *res;
-    const gchar *sql = S_TRANS_DATA_BY_TID;
-
-    _db_prepare (db, sql, &res);
-    _db_bind_int (res, "@tid", self->tid);
-
-    while (sqlite3_step (res) == SQLITE_ROW) {
-        g_autofree gchar *tmp_state = _get_description (db,
-                                                        sqlite3_column_int (res, 7),
-                                                        S_STATE_TYPE_BY_ID);
-        DnfSwdbTransData *data =
-          dnf_swdb_transdata_new (sqlite3_column_int (res, 0), // td_id
-                                  sqlite3_column_int (res, 1), // t_id
-                                  sqlite3_column_int (res, 2), // pd_id
-                                  sqlite3_column_int (res, 3), // g_id
-                                  sqlite3_column_int (res, 4), // done
-                                  sqlite3_column_int (res, 5), // obsoleting
-                                  sqlite3_column_int (res, 6), // reason
-                                  tmp_state                    // state
-          );
-        g_ptr_array_add (node, (gpointer)data);
-    }
-    sqlite3_finalize (res);
-    return node;
+    // TODO use DnfSwdbItemData contructor from swdb.c
 }
 
 /**
@@ -709,29 +679,29 @@ dnf_swdb_trans_performed_with (DnfSwdbTrans *self)
         return NULL;
     }
 
-    // fetch pids
+    // fetch iids
     sqlite3_stmt *res;
     const gchar *sql = S_TRANS_WITH;
     _db_prepare (swdb->db, sql, &res);
     _db_bind_int (res, "@tid", self->tid);
 
-    gint pid;
-    GArray *pids = g_array_new (0, 0, sizeof (gint));
-    while ((pid = _db_find_int_multi (res))) {
-        g_array_append_val (pids, pid);
+    gint iid;
+    GArray *iids = g_array_new (0, 0, sizeof (gint));
+    while ((iid = _db_find_int_multi (res))) {
+        g_array_append_val (iids, iid);
     }
 
-    // get packages for these pids
+    // get packages for these iids
     GPtrArray *pkgs = g_ptr_array_new ();
-    for (guint i = 0; i < pids->len; ++i) {
-        pid = g_array_index (pids, gint, i);
-        DnfSwdbPkg *pkg = _get_package_by_pid (swdb->db, pid);
+    for (guint i = 0; i < iids->len; ++i) {
+        iid = g_array_index (iids, gint, i);
+        DnfSwdbPkg *pkg = _get_package_by_iid (swdb->db, iid);
         if (pkg) {
             pkg->swdb = swdb;
             g_ptr_array_add (pkgs, (gpointer)pkg);
         }
     }
-    g_array_unref (pids);
+    g_array_unref (iids);
     return pkgs;
 }
 

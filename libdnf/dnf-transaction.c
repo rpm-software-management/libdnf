@@ -49,7 +49,7 @@
 #if WITH_SWDB
 
 #include "dnf-swdb.h"
-#include "dnf-swdb-obj.h"
+#include "dnf-swdb-itemdata.h"
 #include "dnf-swdb-trans.h"
 
 #endif
@@ -955,6 +955,7 @@ _log_swdb_transaction(SwdbHandle *handle,
         return;
     }
 
+    //TODO FIX THIS
     g_autoptr (DnfSwdbPkgData) pkg_data = dnf_swdb_pkgdata_new(
         NULL, //from_repo_revision
         0, //from_repo_timestamp

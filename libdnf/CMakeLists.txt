@@ -123,7 +123,7 @@ SET(LIBDNF_headers
 IF (WITH_SWDB)
     SET (SWDB_headers
         dnf-swdb.h
-        dnf-swdb-obj.h
+        dnf-swdb-itemdata.h
         dnf-swdb-db.h
         dnf-swdb-groups.h
         dnf-swdb-trans.h

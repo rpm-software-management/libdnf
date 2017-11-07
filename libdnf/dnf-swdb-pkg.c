@@ -57,7 +57,7 @@ dnf_swdb_pkg_init (DnfSwdbPkg *self)
 {
     self->done = 0;
     self->state = NULL;
-    self->pid = 0;
+    self->iid = 0;
     self->_ui_repo = NULL;
     self->swdb = NULL;
     self->nevra = NULL;
@@ -127,8 +127,8 @@ dnf_swdb_pkg_get_reason (DnfSwdbPkg *self)
         return reason;
     }
 
-    if (self->pid) {
-        reason = _reason_by_pid (self->swdb->db, self->pid);
+    if (self->iid) {
+        reason = _reason_by_iid (self->swdb->db, self->iid);
     }
     return reason;
 }
@@ -148,14 +148,14 @@ dnf_swdb_pkg_ui_from_repo (DnfSwdbPkg *self)
 {
     if (self->_ui_repo)
         return g_strdup (self->_ui_repo);
-    if (!self->swdb || !self->pid || dnf_swdb_open (self->swdb)) {
+    if (!self->swdb || !self->iid || dnf_swdb_open (self->swdb)) {
         return g_strdup ("unknown");
     }
     sqlite3_stmt *res;
-    const gchar *sql = S_REPO_FROM_PID;
+    const gchar *sql = S_REPO_FROM_IID;
     gint pdid = 0;
     _db_prepare (self->swdb->db, sql, &res);
-    _db_bind_int (res, "@pid", self->pid);
+    _db_bind_int (res, "@iid", self->iid);
     g_autofree gchar *r_name = NULL;
     if (sqlite3_step (res) == SQLITE_ROW) {
         r_name = g_strdup ((const gchar *)sqlite3_column_text (res, 0));
@@ -166,9 +166,9 @@ dnf_swdb_pkg_ui_from_repo (DnfSwdbPkg *self)
     // now we find out if package wasnt installed from some other releasever
     if (pdid && self->swdb->releasever) {
         g_autofree gchar *cur_releasever = NULL;
-        sql = S_RELEASEVER_FROM_PDID;
+        sql = S_RELEASEVER_FROM_IDID;
         _db_prepare (self->swdb->db, sql, &res);
-        _db_bind_int (res, "@pdid", pdid);
+        _db_bind_int (res, "@idid", pdid);
         if (sqlite3_step (res) == SQLITE_ROW) {
             cur_releasever = g_strdup ((const gchar *)sqlite3_column_text (res, 0));
         }

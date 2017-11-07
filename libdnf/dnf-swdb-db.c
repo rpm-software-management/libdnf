@@ -222,22 +222,22 @@ _db_exec (sqlite3 *db, const gchar *cmd, int (*callback) (void *, int, char **, 
 }
 
 /**
- * _tids_from_pdid:
+ * _tids_from_idid:
  * @db: sqlite database handle
- * @pdid: package data ID
+ * @idid: item data ID
  *
- * Get transaction data IDs for selected package data ID
+ * Get transaction IDs for selected item data ID
  *
- * Returns: list of transaction data IDs
+ * Returns: list of transaction IDs
  **/
 static GArray *
-_tids_from_pdid (sqlite3 *db, gint pdid)
+_tids_from_idid (sqlite3 *db, gint idid)
 {
     sqlite3_stmt *res;
     GArray *tids = g_array_new (0, 0, sizeof (gint));
-    const gchar *sql = FIND_TIDS_FROM_PDID;
+    const gchar *sql = FIND_TIDS_FROM_IDID;
     _db_prepare (db, sql, &res);
-    _db_bind_int (res, "@pdid", pdid);
+    _db_bind_int (res, "@idid", idid);
     gint tid = 0;
     while (sqlite3_step (res) == SQLITE_ROW) {
         tid = sqlite3_column_int (res, 0);
@@ -248,27 +248,27 @@ _tids_from_pdid (sqlite3 *db, gint pdid)
 }
 
 /**
- * _all_pdid_for_pid:
+ * _all_idid_for_iid:
  * @db: sqlite database handle
- * @pid: package ID
+ * @iid: item ID
  *
- * Get all package data IDs connected with package with ID @pid.
+ * Get all item data IDs connected with package with ID @iid.
  *
  * Returns: list of package data IDs
  **/
 static GArray *
-_all_pdid_for_pid (sqlite3 *db, gint pid)
+_all_idid_for_iid (sqlite3 *db, gint iid)
 {
-    GArray *pdids = g_array_new (0, 0, sizeof (gint));
+    GArray *idids = g_array_new (0, 0, sizeof (gint));
     sqlite3_stmt *res;
-    const gchar *sql = FIND_ALL_PDID_FOR_PID;
+    const gchar *sql = FIND_ALL_IDID_FOR_IID;
     _db_prepare (db, sql, &res);
-    _db_bind_int (res, "@pid", pid);
-    gint pdid;
-    while ((pdid = _db_find_int_multi (res))) {
-        g_array_append_val (pdids, pdid);
+    _db_bind_int (res, "@iid", iid);
+    gint idid;
+    while ((idid = _db_find_int_multi (res))) {
+        g_array_append_val (idids, idid);
     }
-    return pdids;
+    return idids;
 }
 
 /**
@@ -288,22 +288,22 @@ _simple_search (sqlite3 *db, const gchar *pattern)
     const gchar *sql_simple = SIMPLE_SEARCH;
     _db_prepare (db, sql_simple, &res_simple);
     _db_bind_str (res_simple, "@pat", pattern);
-    gint pid_simple;
+    gint iid_simple;
     GArray *simple = g_array_new (0, 0, sizeof (gint));
-    while ((pid_simple = _db_find_int_multi (res_simple))) {
-        g_array_append_val (simple, pid_simple);
+    while ((iid_simple = _db_find_int_multi (res_simple))) {
+        g_array_append_val (simple, iid_simple);
     }
-    gint pdid;
+    gint idid;
     for (guint i = 0; i < simple->len; i++) {
-        pid_simple = g_array_index (simple, gint, i);
-        GArray *pdids = _all_pdid_for_pid (db, pid_simple);
-        for (guint j = 0; j < pdids->len; j++) {
-            pdid = g_array_index (pdids, gint, j);
-            GArray *tids_for_pdid = _tids_from_pdid (db, pdid);
-            tids = g_array_append_vals (tids, tids_for_pdid->data, tids_for_pdid->len);
-            g_array_free (tids_for_pdid, TRUE);
+        iid_simple = g_array_index (simple, gint, i);
+        GArray *idids = _all_idid_for_iid (db, iid_simple);
+        for (guint j = 0; j < idids->len; j++) {
+            idid = g_array_index (idids, gint, j);
+            GArray *tids_for_idid = _tids_from_idid (db, idid);
+            tids = g_array_append_vals (tids, tids_for_idid->data, tids_for_idid->len);
+            g_array_free (tids_for_idid, TRUE);
         }
-        g_array_free (pdids, TRUE);
+        g_array_free (idids, TRUE);
     }
     g_array_free (simple, TRUE);
     return tids;
@@ -337,26 +337,26 @@ _extended_search (sqlite3 *db, const gchar *pattern)
     _db_bind_str (res, "@pat", pattern);
     _db_bind_str (res, "@pat", pattern);
     _db_bind_str (res, "@pat", pattern);
-    GArray *pids = g_array_new (0, 0, sizeof (gint));
-    gint pid;
+    GArray *iids = g_array_new (0, 0, sizeof (gint));
+    gint iid;
     while (sqlite3_step (res) == SQLITE_ROW) {
-        pid = sqlite3_column_int (res, 0);
-        g_array_append_val (pids, pid);
+        iid = sqlite3_column_int (res, 0);
+        g_array_append_val (iids, iid);
     }
     sqlite3_finalize (res);
-    gint pdid;
-    for (guint j = 0; j < pids->len; ++j) {
-        pid = g_array_index (pids, gint, j);
-        GArray *pdids = _all_pdid_for_pid (db, pid);
-        for (guint i = 0; i < pdids->len; ++i) {
-            pdid = g_array_index (pdids, gint, i);
-            GArray *tids_for_pdid = _tids_from_pdid (db, pdid);
-            tids = g_array_append_vals (tids, tids_for_pdid->data, tids_for_pdid->len);
-            g_array_free (tids_for_pdid, TRUE);
+    gint idid;
+    for (guint j = 0; j < iids->len; ++j) {
+        iid = g_array_index (iids, gint, j);
+        GArray *idids = _all_idid_for_iid (db, iid);
+        for (guint i = 0; i < idids->len; ++i) {
+            idid = g_array_index (idids, gint, i);
+            GArray *tids_for_idid = _tids_from_idid (db, idid);
+            tids = g_array_append_vals (tids, tids_for_idid->data, tids_for_idid->len);
+            g_array_free (tids_for_idid, TRUE);
         }
-        g_array_free (pdids, TRUE);
+        g_array_free (idids, TRUE);
     }
-    g_array_free (pids, TRUE);
+    g_array_free (iids, TRUE);
     return tids;
 }
 

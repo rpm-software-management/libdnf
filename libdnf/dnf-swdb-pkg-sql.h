@@ -23,8 +23,8 @@
 #ifndef _DNF_SWDB_PKG_SQL
 #define _DNF_SWDB_PKG_SQL
 
-#define S_REPO_FROM_PID "SELECT name, PD_ID FROM PACKAGE_DATA join REPO using(R_ID) where P_ID=@pid"
-#define S_RELEASEVER_FROM_PDID \
-    "SELECT releasever from TRANS_DATA join TRANS using(T_ID) where PD_ID=@pdid"
+#define S_REPO_FROM_IID "SELECT name, ID_ID FROM ITEM_DATA join REPO using(R_ID) where I_ID=@iid"
+#define S_RELEASEVER_FROM_IDID \
+    "SELECT releasever from ITEM_DATA join TRANS using(T_ID) where ID_ID=@idid"
 
 #endif

@@ -88,11 +88,10 @@ generate_package (void)
 /**
  * Generate some package data with random attributes
  */
-static DnfSwdbPkgData *
+static DnfSwdbItemData *
 generate_package_data (void)
 {
     const gchar *from_repo = "testaconda";
-    g_autofree gchar *from_repo_revision = generate_str (16);
     gint64 from_repo_timestamp = generate_timestamp ();
 
     g_autoptr (GRand) r = g_rand_new ();
@@ -100,7 +99,8 @@ generate_package_data (void)
     const gchar *installed_by = "1000";
     const gchar *changed_by = g_rand_boolean (r) ? NULL : "4242";
 
-    DnfSwdbPkgData *pkg_data = dnf_swdb_pkgdata_new (from_repo_revision,
+    //FIX THIS
+    DnfSwdbItemData *pkg_data = dnf_swdb_pkgdata_new (from_repo_revision,
                                                      from_repo_timestamp,
                                                      installed_by,
                                                      changed_by,
@@ -147,17 +147,17 @@ check_package_persistor (DnfSwdb *self, DnfSwdbPkg *pkg)
 
     g_assert_false (g_strcmp0 (new_repo, repo));
 
-    gint pid = dnf_swdb_pid_by_nevra (self, pkg->nevra);
-    g_assert (pid && pid == pkg->pid);
+    gint iid = dnf_swdb_iid_by_nevra (self, pkg->nevra);
+    g_assert (iid && iid == pkg->iid);
 
     // test another method how to obtain same package
     g_autoptr (DnfSwdbPkg) same_pkg = dnf_swdb_package (self, pkg->nevra);
     g_assert (same_pkg);
-    g_assert (same_pkg->pid == pid);
+    g_assert (same_pkg->iid == iid);
     g_assert_false (g_strcmp0 (pkg->checksum_data, same_pkg->checksum_data));
 
     // obtained package should contain new repo settings
-    g_autoptr (DnfSwdbPkgData) pkgdata = dnf_swdb_package_data (self, same_pkg->nevra);
+    g_autoptr (DnfSwdbPkgData) pkgdata = dnf_swdb_item_data (self, same_pkg->nevra);
     g_assert_false (g_strcmp0 (pkgdata->from_repo, new_repo));
 
     g_autofree gchar *ui_from_repo = dnf_swdb_pkg_ui_from_repo (same_pkg);
@@ -218,14 +218,14 @@ check_initial_transaction (DnfSwdb *self)
         g_assert (pkg->type == DNF_SWDB_ITEM_RPM);
         g_assert (pkg->done);
         g_assert (pkg->state && *pkg->state);
-        g_assert (pkg->pid);
+        g_assert (pkg->iid);
         g_assert (pkg->nevra && *pkg->nevra);
         g_autofree gchar *ui_from_repo = dnf_swdb_pkg_ui_from_repo (pkg);
         g_assert (ui_from_repo);
 
         // check package trans and package data
-        g_autoptr (DnfSwdbTransData) transdata = g_ptr_array_index (trans_data, i);
-        g_autoptr (DnfSwdbPkgData) pkgdata = dnf_swdb_package_data (self, pkg->nevra);
+        g_autoptr (DnfSwdbItemData) transdata = g_ptr_array_index (trans_data, i);
+        g_autoptr (DnfSwdbPkgData) pkgdata = dnf_swdb_item_data (self, pkg->nevra);
 
         g_assert (pkgdata);
         g_assert (pkgdata->from_repo && *pkgdata->from_repo);
@@ -248,8 +248,8 @@ check_initial_transaction (DnfSwdb *self)
         g_assert (transdata->pdid);
         g_assert (pkgdata->pdid == transdata->pdid);
 
-        g_assert (pkgdata->pid);
-        g_assert (pkgdata->pid == pkg->pid);
+        g_assert (pkgdata->iid);
+        g_assert (pkgdata->iid == pkg->iid);
 
         g_assert (transdata->tid);
         g_assert (transdata->tid == trans->tid);
@@ -286,16 +286,16 @@ run_initial_transaction (DnfSwdb *self)
         // dont forget trans data
         g_assert_false (dnf_swdb_trans_data_beg (self,
                                                  tid,
-                                                 pkg->pid,
+                                                 pkg->iid,
                                                  DNF_SWDB_REASON_USER, // reason
                                                  "Install", // state
                                                  0)); // obsoleting
 
         // add package data
-        g_assert_false (dnf_swdb_update_package_data (self, pkg->pid, tid, pkg_data));
+        g_assert_false (dnf_swdb_update_item_data (self, pkg->iid, tid, pkg_data));
 
         // package installed successfully
-        g_assert_false (dnf_swdb_trans_data_pid_end (self, pkg->pid, tid, "Install"));
+        g_assert_false (dnf_swdb_trans_data_iid_end (self, pkg->iid, tid, "Install"));
     }
 
     // check for complete/incomplete transaction
@@ -347,7 +347,7 @@ dnf_swdb_search_func (void)
     g_assert_false (dnf_swdb_open (self));
 
     // get a package
-    g_autoptr (DnfSwdbPkg) pkg = _get_package_by_pid (self->db, INIT_PACAKGES / 2);
+    g_autoptr (DnfSwdbPkg) pkg = _get_package_by_iid (self->db, INIT_PACAKGES / 2);
 
     // find transaction of this package by name
     GPtrArray *patts = g_ptr_array_new ();
@@ -372,7 +372,7 @@ dnf_swdb_get_func (void)
     g_assert_false (dnf_swdb_open (self));
 
     // get a package
-    g_autoptr (DnfSwdbPkg) rpkg = _get_package_by_pid (self->db, INIT_PACAKGES / 2);
+    g_autoptr (DnfSwdbPkg) rpkg = _get_package_by_iid (self->db, INIT_PACAKGES / 2);
 
     // find this package by nevra
     g_autoptr (DnfSwdbPkg) pkg = dnf_swdb_package (self, rpkg->nevra);
@@ -388,7 +388,7 @@ dnf_swdb_update_func (void)
     g_assert_false (dnf_swdb_open (self));
 
     // get a package
-    g_autoptr (DnfSwdbPkg) pkg = _get_package_by_pid (self->db, INIT_PACAKGES / 2);
+    g_autoptr (DnfSwdbPkg) pkg = _get_package_by_iid (self->db, INIT_PACAKGES / 2);
 
     // change package version and checksum
     g_free ((gchar *)pkg->version);
@@ -407,17 +407,17 @@ dnf_swdb_update_func (void)
     // initialize transaction data
     g_assert_false (dnf_swdb_trans_data_beg (self,
                                              tid,
-                                             pkg->pid,
+                                             pkg->iid,
                                              DNF_SWDB_REASON_USER, // reason
                                              "Update", // state
                                              0)); // obsoleting
 
      // add package data
      g_autoptr (DnfSwdbPkgData) pkg_data = generate_package_data ();
-     g_assert_false (dnf_swdb_update_package_data (self, pkg->pid, tid, pkg_data));
+     g_assert_false (dnf_swdb_update_item_data (self, pkg->iid, tid, pkg_data));
 
     // finalize transaction data
-    g_assert_false (dnf_swdb_trans_data_pid_end (self, pkg->pid, tid, "Update"));
+    g_assert_false (dnf_swdb_trans_data_iid_end (self, pkg->iid, tid, "Update"));
 
     g_assert_false (end_trans (self, tid));
 
@@ -430,9 +430,9 @@ dnf_swdb_update_func (void)
     g_assert (trans_data_array || trans_data_array->len);
 
     // check trans data about package
-    g_autoptr (DnfSwdbTransData) trans_data = g_ptr_array_index (trans_data_array, 0);
+    g_autoptr (DnfSwdbItemData) trans_data = g_ptr_array_index (trans_data_array, 0);
     g_assert (trans_data);
-    g_assert (trans_data->tdid);
+    g_assert (trans_data->idid);
 
     g_ptr_array_free (trans_data_array, TRUE);
 }
@@ -446,7 +446,7 @@ dnf_swdb_reinstall_func (void)
     g_assert_false (dnf_swdb_open (self));
 
     // get a package
-    g_autoptr (DnfSwdbPkg) pkg = _get_package_by_pid (self->db, INIT_PACAKGES / 2);
+    g_autoptr (DnfSwdbPkg) pkg = _get_package_by_iid (self->db, INIT_PACAKGES / 2);
 
     // initialize transaction
     gint tid = begin_trans (self);
@@ -455,17 +455,17 @@ dnf_swdb_reinstall_func (void)
     // initialize transaction data
     g_assert_false (dnf_swdb_trans_data_beg (self,
                                              tid,
-                                             pkg->pid,
+                                             pkg->iid,
                                              DNF_SWDB_REASON_USER, // reason
                                              "Reinstall", // state
                                              0)); // obsoleting
 
     // insert package data
     g_autoptr (DnfSwdbPkgData) pkg_data = generate_package_data ();
-    g_assert_false (dnf_swdb_update_package_data (self, pkg->pid, tid, pkg_data));
+    g_assert_false (dnf_swdb_update_item_data (self, pkg->iid, tid, pkg_data));
 
     // finalize transaction data
-    g_assert_false (dnf_swdb_trans_data_pid_end (self, pkg->pid, tid, "Reinstall"));
+    g_assert_false (dnf_swdb_trans_data_iid_end (self, pkg->iid, tid, "Reinstall"));
 
     // finalize transaction
     g_assert_false (end_trans (self, tid));
@@ -475,10 +475,10 @@ dnf_swdb_reinstall_func (void)
     // get trans data of the transaction
     GPtrArray *trans_data_array = dnf_swdb_trans_data (last_trans);
     g_assert (trans_data_array || trans_data_array->len);
-    g_autoptr (DnfSwdbTransData) trans_data = g_ptr_array_index (trans_data_array, 0);
+    g_autoptr (DnfSwdbItemData) trans_data = g_ptr_array_index (trans_data_array, 0);
 
     g_assert (trans_data);
-    g_assert (trans_data->tdid);
+    g_assert (trans_data->idid);
 
     g_ptr_array_free (trans_data_array, TRUE);
 }
@@ -492,7 +492,7 @@ dnf_swdb_erase_func (void)
     g_assert_false (dnf_swdb_open (self));
 
     // get a package
-    g_autoptr (DnfSwdbPkg) pkg = _get_package_by_pid (self->db, INIT_PACAKGES / 2);
+    g_autoptr (DnfSwdbPkg) pkg = _get_package_by_iid (self->db, INIT_PACAKGES / 2);
 
     // initialize transaction
     gint tid = begin_trans (self);
@@ -501,17 +501,17 @@ dnf_swdb_erase_func (void)
     // initialize transaction data
     g_assert_false (dnf_swdb_trans_data_beg (self,
                                              tid,
-                                             pkg->pid,
+                                             pkg->iid,
                                              DNF_SWDB_REASON_USER, // reason
                                              "Erase", // state
                                              0)); // obsoleting
 
     // insert package data
     g_autoptr (DnfSwdbPkgData) pkg_data = generate_package_data ();
-    g_assert_false (dnf_swdb_update_package_data (self, pkg->pid, tid, pkg_data));
+    g_assert_false (dnf_swdb_update_item_data (self, pkg->iid, tid, pkg_data));
 
     // finalize transaction data
-    g_assert_false (dnf_swdb_trans_data_pid_end (self, pkg->pid, tid, "Erase"));
+    g_assert_false (dnf_swdb_trans_data_iid_end (self, pkg->iid, tid, "Erase"));
 
     // finalize transaction
     g_assert_false (end_trans (self, tid));
@@ -523,10 +523,10 @@ dnf_swdb_erase_func (void)
     // get last transaction data
     GPtrArray *trans_data_array = dnf_swdb_trans_data (last_trans);
     g_assert (trans_data_array || trans_data_array->len);
-    g_autoptr (DnfSwdbTransData) trans_data = g_ptr_array_index (trans_data_array, 0);
+    g_autoptr (DnfSwdbItemData) trans_data = g_ptr_array_index (trans_data_array, 0);
 
     g_assert (trans_data);
-    g_assert (trans_data->tdid);
+    g_assert (trans_data->idid);
 
     g_ptr_array_free (trans_data_array, TRUE);
 }
