@@ -25,44 +25,26 @@
 
 #define TRUNCATE_EXCLUSIVE "PRAGMA journal_mode = TRUNCATE; PRAGMA locking_mode = EXCLUSIVE"
 
-#define SIMPLE_SEARCH "SELECT P_ID FROM PACKAGE WHERE name LIKE @pat"
+#define SIMPLE_SEARCH "SELECT I_ID FROM ITEM WHERE name LIKE @pat"
 
 #define SEARCH_PATTERN \
-    "SELECT P_ID,name,epoch,version,release,arch," \
+    "SELECT I_ID,name,epoch,version,release,arch," \
     "name || '.' || arch AS sql_na," \
     "name || '-' || version || '-' || release || '.' || arch AS sql_nvra," \
     "name || '-' || version AS sql_nv," \
     "name || '-' || version || '-' || release AS sql_nvr," \
     "epoch || ':' || name || '-' || version || '-' || release || '.' || arch AS sql_envra," \
     "name || '-' || epoch || ':' || version || '-' || release || '.' || arch AS sql_nevra " \
-    "FROM PACKAGE WHERE sql_na LIKE @pat OR sql_nvra LIKE @pat OR sql_nv LIKE @pat OR" \
+    "FROM ITEM WHERE sql_na LIKE @pat OR sql_nvra LIKE @pat OR sql_nv LIKE @pat OR" \
     " sql_nvr LIKE @pat OR sql_nevra LIKE @pat OR sql_envra LIKE @pat"
 
-#define FIND_TIDS_FROM_PDID "SELECT T_ID FROM TRANS_DATA WHERE PD_ID=@pdid"
-#define FIND_ALL_PDID_FOR_PID "SELECT PD_ID FROM PACKAGE_DATA WHERE P_ID=@pid"
+#define FIND_TIDS_FROM_IDID "SELECT T_ID FROM ITEM_DATA WHERE ID_ID=@idid"
+#define FIND_ALL_IDID_FOR_IID "SELECT ID_ID FROM ITEM_DATA WHERE I_ID=@iid"
 
 #define CREATE_TABLES \
     "CREATE TABLE repo(" \
     "   r_id INTEGER PRIMARY KEY," \
     "   name TEXT NOT NULL);" \
-    "CREATE TABLE package(" \
-    "   p_id INTEGER PRIMARY KEY," \
-    "   name TEXT NOT NULL," \
-    "   epoch INTEGER NOT NULL," \
-    "   version TEXT NOT NULL," \
-    "   release TEXT NOT NULL," \
-    "   arch TEXT NOT NULL," \
-    "   checksum_data TEXT NOT NULL," \
-    "   checksum_type TEXT NOT NULL," \
-    "   type INTEGER NOT NULL);" \
-    "CREATE TABLE package_data(" \
-    "   pd_id INTEGER PRIMARY KEY," \
-    "   p_id INTEGER REFERENCES package(p_id)," \
-    "   r_id INTEGER REFERENCES repo(r_id)," \
-    "   from_repo_revision TEXT," \
-    "   from_repo_timestamp INTEGER," \
-    "   installed_by TEXT," \
-    "   changed_by TEXT);" \
     "CREATE TABLE trans(" \
     "   t_id INTEGER PRIMARY KEY," \
     "   beg_timestamp INTEGER NOT NULL," \
@@ -99,10 +81,21 @@
     "CREATE TABLE state_type(" \
     "   state INTEGER PRIMARY KEY," \
     "   description TEXT NOT NULL);" \
-    "CREATE TABLE trans_data(" \
-    "   td_id INTEGER PRIMARY KEY," \
+    "CREATE TABLE item(" \
+    "   i_id INTEGER PRIMARY KEY," \
+    "   name TEXT NOT NULL," \
+    "   epoch INTEGER NOT NULL," \
+    "   version TEXT NOT NULL," \
+    "   release TEXT NOT NULL," \
+    "   arch TEXT NOT NULL," \
+    "   checksum_data TEXT NOT NULL," \
+    "   checksum_type TEXT NOT NULL," \
+    "   type INTEGER NOT NULL);" \
+    "CREATE TABLE item_data(" \
+    "   id_id INTEGER PRIMARY KEY," \
+    "   i_id INTEGER REFERENCES item(i_id)," \
     "   t_id INTEGER REFERENCES trans(t_id)," \
-    "   pd_id INTEGER REFERENCES package_data(pd_id)," \
+    "   r_id INTEGER REFERENCES repo(r_id)," \
     "   tg_id INTEGER REFERENCES trans_group_data(tg_id)," \
     "   done INTEGER NOT NULL," \
     "   obsoleting INTEGER NOT NULL," \
@@ -135,8 +128,9 @@
     "CREATE TABLE trans_with(" \
     "   tw_id INTEGER PRIMARY KEY," \
     "   t_id INTEGER REFERENCES trans(t_id)," \
-    "   p_id INTEGER REFERENCES package(p_id));" \
-    "CREATE INDEX name_index ON PACKAGE(name);" \
+    "   i_id INTEGER REFERENCES item(i_id));" \
+    "CREATE INDEX name_index ON item(name);" \
+    "CREATE INDEX i_id_index ON item_data(i_id);" \
     "CREATE TABLE config (" \
     "   key TEXT PRIMARY KEY," \
     "   value TEXT NOT NULL);" \

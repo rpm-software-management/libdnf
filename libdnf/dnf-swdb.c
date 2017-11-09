@@ -29,8 +29,6 @@
 #include "hy-types.h"
 
 G_DEFINE_TYPE (DnfSwdb, dnf_swdb, G_TYPE_OBJECT)
-G_DEFINE_TYPE (DnfSwdbTransData, dnf_swdb_transdata, G_TYPE_OBJECT) // trans data
-G_DEFINE_TYPE (DnfSwdbPkgData, dnf_swdb_pkgdata, G_TYPE_OBJECT)
 
 // SWDB object Destructor
 static void
@@ -78,112 +76,6 @@ dnf_swdb_new (const gchar *db_path, const gchar *releasever)
         swdb->path = g_strdup (db_path);
     }
     return swdb;
-}
-
-// SWDB Package Data Destructor
-static void
-dnf_swdb_pkgdata_finalize (GObject *object)
-{
-    DnfSwdbPkgData *pkgdata = (DnfSwdbPkgData *)object;
-    g_free (pkgdata->from_repo);
-    g_free (pkgdata->from_repo_revision);
-    g_free (pkgdata->installed_by);
-    g_free (pkgdata->changed_by);
-    G_OBJECT_CLASS (dnf_swdb_pkgdata_parent_class)->finalize (object);
-}
-
-// SWDB Package Data Class initialiser
-static void
-dnf_swdb_pkgdata_class_init (DnfSwdbPkgDataClass *klass)
-{
-    GObjectClass *object_class = G_OBJECT_CLASS (klass);
-    object_class->finalize = dnf_swdb_pkgdata_finalize;
-}
-
-// SWDB Package Data Object initialiser
-static void
-dnf_swdb_pkgdata_init (DnfSwdbPkgData *self)
-{
-    self->from_repo = NULL;
-    self->from_repo_revision = NULL;
-    self->from_repo_timestamp = 0;
-    self->installed_by = NULL;
-    self->changed_by = NULL;
-}
-
-/**
- * dnf_swdb_pkgdata_new:
- *
- * Creates a new #DnfSwdbPkgData.
- *
- * Returns: a #DnfSwdbPkgData
- **/
-DnfSwdbPkgData *
-dnf_swdb_pkgdata_new (const gchar *from_repo_revision,
-                      gint64 from_repo_timestamp,
-                      const gchar *installed_by,
-                      const gchar *changed_by,
-                      const gchar *from_repo)
-{
-    DnfSwdbPkgData *pkgdata = g_object_new (DNF_TYPE_SWDB_PKGDATA, NULL);
-    pkgdata->from_repo_revision = g_strdup (from_repo_revision);
-    pkgdata->from_repo_timestamp = from_repo_timestamp;
-    pkgdata->installed_by = g_strdup (installed_by);
-    pkgdata->changed_by = g_strdup (changed_by);
-    pkgdata->from_repo = g_strdup (from_repo);
-    return pkgdata;
-}
-
-// SWDB Transaction Data Destructor
-static void
-dnf_swdb_transdata_finalize (GObject *object)
-{
-    DnfSwdbTransData *tdata = (DnfSwdbTransData *)object;
-    g_free (tdata->state);
-    G_OBJECT_CLASS (dnf_swdb_transdata_parent_class)->finalize (object);
-}
-
-// SWDB Transaction Data Class initialiser
-static void
-dnf_swdb_transdata_class_init (DnfSwdbTransDataClass *klass)
-{
-    GObjectClass *object_class = G_OBJECT_CLASS (klass);
-    object_class->finalize = dnf_swdb_transdata_finalize;
-}
-
-// TRANS DATA Object initialiser
-static void
-dnf_swdb_transdata_init (DnfSwdbTransData *self)
-{
-}
-
-/**
- * dnf_swdb_transdata_new:
- *
- * Creates a new #DnfSwdbTransData.
- *
- * Returns: a #DnfSwdbTransData
- **/
-DnfSwdbTransData *
-dnf_swdb_transdata_new (gint tdid,
-                        gint tid,
-                        gint pdid,
-                        gint tgid,
-                        gint done,
-                        gint obsoleting,
-                        DnfSwdbReason reason,
-                        gchar *state)
-{
-    DnfSwdbTransData *data = g_object_new (DNF_TYPE_SWDB_TRANSDATA, NULL);
-    data->tdid = tdid;
-    data->tid = tid;
-    data->pdid = pdid;
-    data->tgid = tgid;
-    data->done = done;
-    data->obsoleting = obsoleting;
-    data->reason = reason;
-    data->state = g_strdup (state);
-    return data;
 }
 
 /**
@@ -255,7 +147,7 @@ _fill_nevra_res (sqlite3_stmt *res, const gchar *nevra)
 }
 
 /**
- * _pid_by_nevra:
+ * _iid_by_nevra:
  * @db: sqlite database handle
  * @nevra: string in format name-[epoch:]version-release.arch
  *
@@ -265,9 +157,9 @@ _fill_nevra_res (sqlite3_stmt *res, const gchar *nevra)
  * Returns: id of package matched by @nevra
  **/
 static gint
-_pid_by_nevra (sqlite3 *db, const gchar *nevra)
+_iid_by_nevra (sqlite3 *db, const gchar *nevra)
 {
-    const gchar *sql = S_PID_BY_NEVRA;
+    const gchar *sql = S_IID_BY_NEVRA;
     sqlite3_stmt *res;
     _db_prepare (db, sql, &res);
 
@@ -367,41 +259,30 @@ dnf_swdb_select_user_installed (DnfSwdb *self, GPtrArray *nevras)
 
     GArray *usr_ids = g_array_new (0, 0, sizeof (gint));
 
-    gint pid = 0;
-    gint pdid = 0;
     DnfSwdbReason reason_id = DNF_SWDB_REASON_UNKNOWN;
-    const gchar *sql = S_REASON_ID_BY_PDID;
+    const gchar *sql = S_REASON_BY_NEVRA;
 
     for (guint i = 0; i < nevras->len; ++i) {
-        pid = _pid_by_nevra (self->db, (gchar *)g_ptr_array_index (nevras, i));
-        if (!pid) {
-            // better not uninstall package when not sure
-            g_array_append_val (usr_ids, i);
-            continue;
-        }
-        pdid = _pdid_from_pid (self->db, pid);
-        if (!pdid) {
-            g_array_append_val (usr_ids, i);
-            continue;
-        }
+        const gchar *nevra = g_ptr_array_index (nevras, i);
         sqlite3_stmt *res;
+
         _db_prepare (self->db, sql, &res);
-        _db_bind_int (res, "@pdid", pdid);
-        gboolean push = TRUE;
-        while (sqlite3_step (res) == SQLITE_ROW) {
-            reason_id = sqlite3_column_int (res, 0);
-            if (reason_id == DNF_SWDB_REASON_DEP || reason_id == DNF_SWDB_REASON_WEAK) {
-                push = FALSE;
-                continue;
-            }
-            push = TRUE;
-            break;
+
+        // fill query with nevra
+        HyNevra hnevra = _fill_nevra_res (res, nevra);
+
+        // find reason
+        reason_id = _db_find_int (res);
+
+        // finalize HyNevra
+        hy_nevra_free (hnevra);
+
+        // continue package is [weak] dependency
+        if (reason_id == DNF_SWDB_REASON_DEP || reason_id == DNF_SWDB_REASON_WEAK) {
+            continue;
         }
-        // push even in case when no record is found
-        if (push) {
-            g_array_append_val (usr_ids, i);
-        }
-        sqlite3_finalize (res);
+
+        g_array_append_val (usr_ids, i);
     }
     return usr_ids;
 }
@@ -418,13 +299,13 @@ dnf_swdb_user_installed (DnfSwdb *self, const gchar *nevra)
     if (dnf_swdb_open (self))
         return TRUE;
 
-    gint pid = _pid_by_nevra (self->db, nevra);
-    if (!pid) {
+    gint iid = _iid_by_nevra (self->db, nevra);
+    if (!iid) {
         return FALSE;
     }
     gboolean rc = TRUE;
-    gchar *repo = _repo_by_pid (self->db, pid);
-    DnfSwdbReason reason = _reason_by_pid (self->db, pid);
+    gchar *repo = _repo_by_iid (self->db, iid);
+    DnfSwdbReason reason = _reason_by_iid (self->db, iid);
     if (reason != DNF_SWDB_REASON_USER || !g_strcmp0 ("anakonda", repo)) {
         rc = FALSE;
     }
@@ -478,18 +359,18 @@ _repo_by_rid (sqlite3 *db, gint rid)
 }
 
 /**
- * _repo_by_pid:
+ * _repo_by_iid:
  * @db: sqlite database handle
- * @pid: package id
+ * @iid: package id
  * Returns: repository name
  **/
 gchar *
-_repo_by_pid (sqlite3 *db, gint pid)
+_repo_by_iid (sqlite3 *db, gint iid)
 {
     sqlite3_stmt *res;
-    const gchar *sql = S_REPO_FROM_PID2;
+    const gchar *sql = S_REPO_FROM_IID2;
     _db_prepare (db, sql, &res);
-    _db_bind_int (res, "@pid", pid);
+    _db_bind_int (res, "@iid", iid);
     return _db_find_str (res);
 }
 
@@ -504,11 +385,11 @@ dnf_swdb_repo (DnfSwdb *self, const gchar *nevra)
 {
     if (dnf_swdb_open (self))
         return NULL;
-    gint pid = _pid_by_nevra (self->db, nevra);
-    if (!pid) {
+    gint iid = _iid_by_nevra (self->db, nevra);
+    if (!iid) {
         return g_strdup ("unknown");
     }
-    return _repo_by_pid (self->db, pid);
+    return _repo_by_iid (self->db, iid);
 }
 
 /**
@@ -526,16 +407,16 @@ dnf_swdb_set_repo (DnfSwdb *self, const gchar *nevra, const gchar *repo)
 {
     if (dnf_swdb_open (self))
         return 1;
-    gint pid = _pid_by_nevra (self->db, nevra);
-    if (!pid) {
+    gint iid = _iid_by_nevra (self->db, nevra);
+    if (!iid) {
         return 1;
     }
     gint rid = _bind_repo_by_name (self->db, repo);
     sqlite3_stmt *res;
-    const gchar *sql = U_REPO_BY_PID;
+    const gchar *sql = U_REPO_BY_IID;
     _db_prepare (self->db, sql, &res);
     _db_bind_int (res, "@rid", rid);
-    _db_bind_int (res, "@pid", pid);
+    _db_bind_int (res, "@iid", iid);
     _db_step (res);
     return 0;
 }
@@ -566,8 +447,8 @@ _package_insert (DnfSwdb *self, DnfSwdbPkg *package)
     _db_bind_str (res, "@ctype", package->checksum_type);
     _db_bind_int (res, "@type", package->type);
     _db_step (res);
-    package->pid = sqlite3_last_insert_rowid (self->db);
-    return package->pid;
+    package->iid = sqlite3_last_insert_rowid (self->db);
+    return package->iid;
 }
 
 /**
@@ -589,96 +470,26 @@ dnf_swdb_add_package (DnfSwdb *self, DnfSwdbPkg *pkg)
 }
 
 /**
- * dnf_swdb_update_package_data:
- * @self: SWDB object
- * @pid: package ID
- * @tid: transation ID
- * @pkgdata: package data object
- *
- * Insert or update pkgdata for package with ID @pid in transation @tid.
- * This method MUST be called after transaction data initialization by `dnf_swdb_trans_data_beg`
- *
- * Returns: 0 if successful
- **/
-gint
-dnf_swdb_update_package_data (DnfSwdb *self, gint pid, gint tid, DnfSwdbPkgData *pkgdata)
-{
-    if (dnf_swdb_open (self))
-        return 1;
-
-    gint rid = _bind_repo_by_name (self->db, pkgdata->from_repo);
-
-    // look for old pid's package data - all values of autogenerated rows are null
-    sqlite3_stmt *res;
-    const gchar *sql = S_PREV_PKG_DATA;
-    _db_prepare (self->db, sql, &res);
-    _db_bind_int (res, "@pid", pid);
-    _db_bind_int (res, "@tid", tid);
-    gint pdid = _db_find_int (res);
-
-    if (!pdid) {
-        // field is not available
-        g_warning ("Package %d is not available in transation %d", pid, tid);
-        return 1;
-    }
-
-    sql = UPDATE_PKG_DATA;
-    _db_prepare (self->db, sql, &res);
-    _db_bind_int (res, "@pid", pid);
-    _db_bind_int (res, "@rid", rid);
-    _db_bind_str (res, "@repo_r", pkgdata->from_repo_revision);
-    _db_bind_int (res, "@repo_t", pkgdata->from_repo_timestamp);
-    _db_bind_str (res, "@installed_by", pkgdata->installed_by);
-    _db_bind_str (res, "@changed_by", pkgdata->changed_by);
-    _db_step (res);
-    return 0;
-}
-
-/**
- * _new_pdid_for_pid:
+ * _idid_from_iid:
  * @db: sqlite database handle
- * @pid: package ID
+ * @iid: item ID
  *
- * Create new record in PACKAGE_DATA table for @pid
- *
- * Returns: new pdid
- **/
-static gint
-_new_pdid_for_pid (sqlite3 *db, gint pid)
-{
-    sqlite3_stmt *res;
-    const gchar *sql = INSERT_PDID;
-    _db_prepare (db, sql, &res);
-    _db_bind_int (res, "@pid", pid);
-    _db_step (res);
-    return sqlite3_last_insert_rowid (db);
-}
-
-/**
- * _pdid_from_pid:
- * @db: sqlite database handle
- * @pid: package ID
- *
- * Get package data ID for package with ID @pid.
- * Create new package data record if unavailable.
+ * Get item data ID for item with ID @iid.
  *
  * Returns: package data ID
  **/
 gint
-_pdid_from_pid (sqlite3 *db, gint pid)
+_idid_from_iid (sqlite3 *db, gint iid)
 {
     sqlite3_stmt *res;
-    const gchar *sql = FIND_PDID_FROM_PID;
+    const gchar *sql = FIND_IDID_FROM_IID;
     _db_prepare (db, sql, &res);
-    _db_bind_int (res, "@pid", pid);
-    gint rc = _db_find_int (res);
-    if (rc)
-        return rc;
-    return _new_pdid_for_pid (db, pid);
+    _db_bind_int (res, "@iid", iid);
+    return _db_find_int (res);
 }
 
 /**
- * _pids_by_tid:
+ * _iids_by_tid:
  * @db: sqlite database handle
  * @tid: transaction ID
  *
@@ -687,34 +498,34 @@ _pdid_from_pid (sqlite3 *db, gint pid)
  * Returns: list od package IDs
  **/
 static GArray *
-_pids_by_tid (sqlite3 *db, gint tid)
+_iids_by_tid (sqlite3 *db, gint tid)
 {
-    GArray *pids = g_array_new (0, 0, sizeof (gint));
+    GArray *iids = g_array_new (0, 0, sizeof (gint));
     sqlite3_stmt *res;
-    const gchar *sql = PID_BY_TID;
+    const gchar *sql = IID_BY_TID;
     _db_prepare (db, sql, &res);
     _db_bind_int (res, "@tid", tid);
-    gint pid;
-    while ((pid = _db_find_int_multi (res))) {
-        g_array_append_val (pids, pid);
+    gint iid;
+    while ((iid = _db_find_int_multi (res))) {
+        g_array_append_val (iids, iid);
     }
-    return pids;
+    return iids;
 }
 
 /**
- * _reason_by_pid:
+ * _reason_by_iid:
  * @db: sqlite database handle
- * @pid: package ID
+ * @iid: package ID
  *
- * Returns: reason id for package with @pid
+ * Returns: reason id for package with @iid
  **/
 DnfSwdbReason
-_reason_by_pid (sqlite3 *db, gint pid)
+_reason_by_iid (sqlite3 *db, gint iid)
 {
     sqlite3_stmt *res;
-    const gchar *sql = S_REASON_BY_PID;
+    const gchar *sql = S_REASON_BY_IID;
     _db_prepare (db, sql, &res);
-    _db_bind_int (res, "@pid", pid);
+    _db_bind_int (res, "@iid", iid);
     return _db_find_int (res);
 }
 
@@ -731,9 +542,9 @@ dnf_swdb_reason (DnfSwdb *self, const gchar *nevra)
     DnfSwdbReason reason = DNF_SWDB_REASON_UNKNOWN;
     if (dnf_swdb_open (self))
         return reason;
-    gint pid = _pid_by_nevra (self->db, nevra);
-    if (pid) {
-        reason = _reason_by_pid (self->db, pid);
+    gint iid = _iid_by_nevra (self->db, nevra);
+    if (iid) {
+        reason = _reason_by_iid (self->db, iid);
     }
     return reason;
 }
@@ -752,7 +563,7 @@ _resolve_package_state (DnfSwdb *self, DnfSwdbPkg *pkg, gint tid)
     sqlite3_stmt *res;
     const gchar *sql = S_PACKAGE_STATE;
     _db_prepare (self->db, sql, &res);
-    _db_bind_int (res, "@pid", pkg->pid);
+    _db_bind_int (res, "@iid", pkg->iid);
     _db_bind_int (res, "@tid", tid);
     if (sqlite3_step (res) == SQLITE_ROW) {
         pkg->done = sqlite3_column_int (res, 0);
@@ -766,51 +577,39 @@ _resolve_package_state (DnfSwdb *self, DnfSwdbPkg *pkg, gint tid)
 }
 
 /**
- * _get_package_data_by_pid:
+ * _get_item_data_by_iid:
  * @db: sqlite database handle
- * @pid: package ID
+ * @iid: item ID
  *
- * Returns: latest package data object for package with ID @pid
+ * Returns: latest item data object for package with ID @iid
  **/
-static DnfSwdbPkgData *
-_get_package_data_by_pid (sqlite3 *db, gint pid)
+static DnfSwdbItemData *
+_get_item_data_by_iid (sqlite3 *db, gint iid)
 {
     sqlite3_stmt *res;
-    const gchar *sql = S_PACKAGE_DATA_BY_PID;
+    const gchar *sql = S_ITEM_DATA_BY_IID;
     _db_prepare (db, sql, &res);
-    _db_bind_int (res, "@pid", pid);
-    if (sqlite3_step (res) == SQLITE_ROW) {
-        DnfSwdbPkgData *pkgdata =
-          dnf_swdb_pkgdata_new ((gchar *)sqlite3_column_text (res, 3), // from_repo_revision
-                                sqlite3_column_int (res, 4),           // from_repo_timestamp
-                                (gchar *)sqlite3_column_text (res, 5), // installed_by
-                                (gchar *)sqlite3_column_text (res, 6), // changed_by
-                                NULL);                                 // from_repo
-        pkgdata->pdid = sqlite3_column_int (res, 0);                   // pdid
-        pkgdata->pid = pid;
-        gint rid = sqlite3_column_int (res, 2);
-        sqlite3_finalize (res);
-        pkgdata->from_repo = _repo_by_rid (db, rid); // from repo
-        return pkgdata;
-    }
+    _db_bind_int (res, "@iid", iid);
+
+    DnfSwdbItemData *data = _itemdata_construct (res);
     sqlite3_finalize (res);
-    return NULL;
+    return data;
 }
 
 /**
- * _get_package_by_pid:
+ * _get_package_by_iid:
  * @db: sqlite database handle
- * @pid: package ID
+ * @iid: package ID
  *
- * Returns: package object for @pid
+ * Returns: package object for @iid
  **/
 DnfSwdbPkg *
-_get_package_by_pid (sqlite3 *db, gint pid)
+_get_package_by_iid (sqlite3 *db, gint iid)
 {
     sqlite3_stmt *res;
-    const gchar *sql = S_PACKAGE_BY_PID;
+    const gchar *sql = S_PACKAGE_BY_iid;
     _db_prepare (db, sql, &res);
-    _db_bind_int (res, "@pid", pid);
+    _db_bind_int (res, "@iid", iid);
     if (sqlite3_step (res) == SQLITE_ROW) {
         DnfSwdbPkg *pkg = dnf_swdb_pkg_new ((gchar *)sqlite3_column_text (res, 1), // name
                                             sqlite3_column_int (res, 2),           // epoch
@@ -820,7 +619,7 @@ _get_package_by_pid (sqlite3 *db, gint pid)
                                             (gchar *)sqlite3_column_text (res, 6), // checksum_data
                                             (gchar *)sqlite3_column_text (res, 7), // checksum_type
                                             sqlite3_column_int (res, 8));          // type
-        pkg->pid = pid;
+        pkg->iid = iid;
         sqlite3_finalize (res);
         return pkg;
     }
@@ -844,36 +643,36 @@ dnf_swdb_get_packages_by_tid (DnfSwdb *self, gint tid)
         return NULL;
 
     GPtrArray *node = g_ptr_array_new ();
-    GArray *pids = _pids_by_tid (self->db, tid);
-    gint pid;
+    GArray *iids = _iids_by_tid (self->db, tid);
+    gint iid;
     DnfSwdbPkg *pkg;
-    for (guint i = 0; i < pids->len; i++) {
-        pid = g_array_index (pids, gint, i);
-        pkg = _get_package_by_pid (self->db, pid);
+    for (guint i = 0; i < iids->len; i++) {
+        iid = g_array_index (iids, gint, i);
+        pkg = _get_package_by_iid (self->db, iid);
         if (pkg) {
             pkg->swdb = self;
             _resolve_package_state (self, pkg, tid);
             g_ptr_array_add (node, (gpointer)pkg);
         }
     }
-    g_array_free (pids, TRUE);
+    g_array_free (iids, TRUE);
     return node;
 }
 
 /**
- * dnf_swdb_pid_by_nevra:
+ * dnf_swdb_iid_by_nevra:
  * @self: SWDB object
  * @nevra: string in format name-[epoch:]version-release.arch
  *
  * Returns: ID of package matched by @nevra or 0
  **/
 gint
-dnf_swdb_pid_by_nevra (DnfSwdb *self, const gchar *nevra)
+dnf_swdb_iid_by_nevra (DnfSwdb *self, const gchar *nevra)
 {
     if (dnf_swdb_open (self))
         return 0;
-    gint pid = _pid_by_nevra (self->db, nevra);
-    return pid;
+    gint iid = _iid_by_nevra (self->db, nevra);
+    return iid;
 }
 
 /**
@@ -888,51 +687,50 @@ dnf_swdb_package (DnfSwdb *self, const gchar *nevra)
 {
     if (dnf_swdb_open (self))
         return NULL;
-    gint pid = _pid_by_nevra (self->db, nevra);
-    if (!pid) {
+    gint iid = _iid_by_nevra (self->db, nevra);
+    if (!iid) {
         return NULL;
     }
-    DnfSwdbPkg *pkg = _get_package_by_pid (self->db, pid);
+    DnfSwdbPkg *pkg = _get_package_by_iid (self->db, iid);
     pkg->swdb = self;
     return pkg;
 }
 
 /**
- * dnf_swdb_package_data:
+ * dnf_swdb_item_data:
  * @self: SWDB object
  * @nevra: string in format name-[epoch:]version-release.arch
  *
- * Returns: (transfer full): #DnfSwdbPkgData for package matched by @nevra
+ * Returns: (transfer full): #DnfSwdbItemData for package matched by @nevra
  **/
-DnfSwdbPkgData *
-dnf_swdb_package_data (DnfSwdb *self, const gchar *nevra)
+DnfSwdbItemData *
+dnf_swdb_item_data (DnfSwdb *self, const gchar *nevra)
 {
     if (dnf_swdb_open (self))
         return NULL;
-    gint pid = _pid_by_nevra (self->db, nevra);
-    if (!pid) {
+    gint iid = _iid_by_nevra (self->db, nevra);
+    if (!iid) {
         return NULL;
     }
-    DnfSwdbPkgData *pkgdata = _get_package_data_by_pid (self->db, pid);
-    return pkgdata;
+    return _get_item_data_by_iid (self->db, iid);
 }
 
 /**
  * _mark_pkg_as:
  * @db: sqlite database handle
- * @pdid: package data ID
+ * @idid: package data ID
  * @mark: reason ID
  *
- * Set reason in package data with ID @pdid to @mark
+ * Set reason in package data with ID @idid to @mark
  **/
 static void
-_mark_pkg_as (sqlite3 *db, gint pdid, DnfSwdbReason mark)
+_mark_pkg_as (sqlite3 *db, gint idid, DnfSwdbReason mark)
 {
     sqlite3_stmt *res;
-    const gchar *sql = U_REASON_BY_PDID;
+    const gchar *sql = U_REASON_BY_IDID;
     _db_prepare (db, sql, &res);
     _db_bind_int (res, "@reason", mark);
-    _db_bind_int (res, "@pdid", pdid);
+    _db_bind_int (res, "@idid", idid);
     _db_step (res);
 }
 
@@ -950,12 +748,12 @@ dnf_swdb_set_reason (DnfSwdb *self, const gchar *nevra, DnfSwdbReason reason)
 {
     if (dnf_swdb_open (self))
         return 1;
-    gint pid = _pid_by_nevra (self->db, nevra);
-    if (!pid) {
+    gint iid = _iid_by_nevra (self->db, nevra);
+    if (!iid) {
         return 1;
     }
-    gint pdid = _pdid_from_pid (self->db, pid);
-    _mark_pkg_as (self->db, pdid, reason);
+    gint idid = _idid_from_iid (self->db, iid);
+    _mark_pkg_as (self->db, idid, reason);
     return 0;
 }
 
@@ -965,98 +763,90 @@ dnf_swdb_set_reason (DnfSwdb *self, const gchar *nevra, DnfSwdbReason reason)
  * _resolve_group_origin:
  * @db: sqlite database handler
  * @tid: transaction ID
- * @pid: package ID
+ * @iid: package ID
  *
  * Get trans group data of package installed with group
  *
- * Returns: trans group data ID for package with ID @pid
+ * Returns: trans group data ID for package with ID @iid
  **/
 static gint
-_resolve_group_origin (sqlite3 *db, gint tid, gint pid)
+_resolve_group_origin (sqlite3 *db, gint tid, gint iid)
 {
     sqlite3_stmt *res;
     const gchar *sql = RESOLVE_GROUP_TRANS;
     _db_prepare (db, sql, &res);
-    _db_bind_int (res, "@pid", pid);
+    _db_bind_int (res, "@iid", iid);
     _db_bind_int (res, "@tid", tid);
     return _db_find_int (res);
 }
 
 /**
- * dnf_swdb_trans_data_beg:
+ * dnf_swdb_item_data_add:
  * @self: SWDB object
- * @tid: transaction ID
- * @pid: package ID
- * @reason: reason ID
- * @state: state string
+ * @data: item data object
  *
- * Initialize transaction data for package with ID @pid in transaction @tid
+ * Initialize transaction data specified by @data object
  *
  * If package was installed with group, create binding between transaction data
  *   and transaction group data
- *
  * Returns: 0 if successfull
  **/
 gint
-dnf_swdb_trans_data_beg (
-  DnfSwdb *self, gint tid, gint pid, DnfSwdbReason reason, const gchar *state, gint obsoleting)
+dnf_swdb_item_data_add (DnfSwdb *self, DnfSwdbItemData *data)
 {
-    if (dnf_swdb_open (self))
+    if (dnf_swdb_open (self)) {
         return 1;
+    }
 
-    // generate new empty package data entry
-    gint pdid = _new_pdid_for_pid (self->db, pid);
+    if (data == NULL || data->tid == 0 || data->iid == 0) {
+        g_warning ("Invalid DnfSwdbItemData object");
+        return 2;
+    }
 
-    // resolve group orogin
-    gint tgid = 0;
-    if (reason == DNF_SWDB_REASON_GROUP) {
-        tgid = _resolve_group_origin (self->db, tid, pid);
+    // resolve group origin
+    if (data->reason == DNF_SWDB_REASON_GROUP) {
+        obj->tgid = _resolve_group_origin (self->db, data->tid, data->iid);
     }
 
     // resolve state
-    gint state_code = dnf_swdb_get_state_type (self, state);
+    obj->state_code = dnf_swdb_get_state_type (self, data->state);
 
     // insert new entry
     sqlite3_stmt *res;
-    const gchar *sql = INSERT_TRANS_DATA_BEG;
+    const gchar *sql = I_ITEM_DATA;
     _db_prepare (self->db, sql, &res);
-    _db_bind_int (res, "@tid", tid);
-    _db_bind_int (res, "@pdid", pdid);
-    _db_bind_int (res, "@tgid", tgid);
-    _db_bind_int (res, "@obsoleting", obsoleting);
-    _db_bind_int (res, "@reason", reason);
-    _db_bind_int (res, "@state", state_code);
+    _itemdata_fill (res, data);
     _db_step (res);
 
     return 0;
 }
 
 /**
- * dnf_swdb_trans_data_pid_end:
+ * dnf_swdb_item_data_iid_end:
  * @self: SWDB object
- * @pid: package ID
+ * @iid: item ID
  * @tid: transaction ID
  * @state: state string
  *
- * Finalize transaction for package with ID @pid
+ * Finalize transaction for package with ID @iid
  *
  * Returns: 0 if successfull
  **/
 gint
-dnf_swdb_trans_data_pid_end (DnfSwdb *self, gint pid, gint tid, const gchar *state)
+dnf_swdb_item_data_iid_end (DnfSwdb *self, gint iid, gint tid, const gchar *state)
 {
     if (dnf_swdb_open (self))
         return 1;
 
-    gint pdid = _pdid_from_pid (self->db, pid);
+    gint idid = _idid_from_iid (self->db, iid);
     gint state_code = dnf_swdb_get_state_type (self, state);
 
     sqlite3_stmt *res;
-    const gchar *sql = UPDATE_TRANS_DATA_PID_END;
+    const gchar *sql = UPDATE_ITEM_DATA_IID_END;
     _db_prepare (self->db, sql, &res);
     _db_bind_int (res, "@done", 1);
     _db_bind_int (res, "@tid", tid);
-    _db_bind_int (res, "@pdid", pdid);
+    _db_bind_int (res, "@idid", idid);
     _db_bind_int (res, "@state", state_code);
     _db_step (res);
     return 0;
@@ -1134,12 +924,12 @@ dnf_swdb_trans_end (
  * dnf_swdb_trans_with:
  * @self: SWDB object
  * @tid: transaction ID
- * @pid: package ID
+ * @iid: package ID
  *
  * Log transaction perforemed with package
  **/
 void
-dnf_swdb_trans_with (DnfSwdb *self, int tid, int pid)
+dnf_swdb_trans_with (DnfSwdb *self, int tid, int iid)
 {
     if (dnf_swdb_open (self)) {
         return;
@@ -1148,7 +938,7 @@ dnf_swdb_trans_with (DnfSwdb *self, int tid, int pid)
     const gchar *sql = I_TRANS_WITH;
     _db_prepare (self->db, sql, &res);
     _db_bind_int (res, "@tid", tid);
-    _db_bind_int (res, "@pid", pid);
+    _db_bind_int (res, "@iid", iid);
     _db_step (res);
 }
 
@@ -1169,15 +959,15 @@ dnf_swdb_trans_with_libdnf (DnfSwdb *self, int tid)
     const gchar *sql = S_LATEST_PACKAGE;
     _db_prepare (self->db, sql, &res);
     _db_bind_str (res, "@name", "libdnf");
-    gint pid = _db_find_int (res);
-    if (pid) {
-        dnf_swdb_trans_with (self, tid, pid);
+    gint iid = _db_find_int (res);
+    if (iid) {
+        dnf_swdb_trans_with (self, tid, iid);
     }
     _db_prepare (self->db, sql, &res);
     _db_bind_str (res, "@name", "rpm");
-    pid = _db_find_int (res);
-    if (pid) {
-        dnf_swdb_trans_with (self, tid, pid);
+    iid = _db_find_int (res);
+    if (iid) {
+        dnf_swdb_trans_with (self, tid, iid);
     }
 }
 
@@ -1373,13 +1163,13 @@ _is_state_installed (const gchar *state)
 }
 
 static DnfSwdbReason
-_get_erased_reason (sqlite3 *db, gint tid, gint pid)
+_get_erased_reason (sqlite3 *db, gint tid, gint iid)
 {
     sqlite3_stmt *res;
     const gchar *sql = S_ERASED_REASON;
     _db_prepare (db, sql, &res);
     _db_bind_int (res, "@tid", tid);
-    _db_bind_int (res, "@pid", pid);
+    _db_bind_int (res, "@iid", iid);
     DnfSwdbReason reason = _db_find_int (res);
     return (reason) ? reason : DNF_SWDB_REASON_USER;
 }
@@ -1443,7 +1233,7 @@ dnf_swdb_get_erased_reason (DnfSwdb *self, gchar *nevra, gint first_trans, gbool
             // package altered since last transaction and is installed in the system
             // keep its reason
             g_array_free (tids, TRUE);
-            return _reason_by_pid (self->db, pkg->pid);
+            return _reason_by_iid (self->db, pkg->iid);
         }
     }
 
@@ -1465,7 +1255,7 @@ dnf_swdb_get_erased_reason (DnfSwdb *self, gchar *nevra, gint first_trans, gbool
     }
 
     // get pkg reason from that transaction
-    return _get_erased_reason (self->db, last, pkg->pid);
+    return _get_erased_reason (self->db, last, pkg->iid);
 }
 
 /****************************** OUTPUT PERSISTOR *****************************/
