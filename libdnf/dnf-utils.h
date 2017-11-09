@@ -24,7 +24,33 @@
 
 #include <glib.h>
 
-G_BEGIN_DECLS
+#ifdef __cplusplus
+    #ifndef __has_cpp_attribute
+        #define __has_cpp_attribute(x) 0
+    #endif
+
+    #if __has_cpp_attribute(deprecated)
+        #define DEPRECATED(msg) [[deprecated(msg)]]
+    #endif
+#endif
+
+#ifndef DEPRECATED
+    #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
+        #define DEPRECATED(msg) __attribute__((__deprecated__(msg)))
+    #elif defined(_MSC_FULL_VER) && (_MSC_FULL_VER > 140050320)
+        #define DEPRECATED(msg) __declspec(deprecated(msg))
+    #elif __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1)
+        #define DEPRECATED(msg) __attribute__((__deprecated__))
+    #elif defined(_MSC_VER) && (_MSC_VER >= 1300)
+        #define DEPRECATED(msg) __declspec(deprecated)
+    #else
+        #define DEPRECATED(msg)
+    #endif
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 gchar           *dnf_realpath                       (const gchar            *path);
 gboolean         dnf_remove_recursive               (const gchar            *directory,
@@ -39,6 +65,8 @@ gboolean         dnf_get_file_contents_allow_noent  (const gchar            *pat
                                                      gsize                  *length,
                                                      GError                 **error);
 
-G_END_DECLS
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __DNF_UTILS_H */

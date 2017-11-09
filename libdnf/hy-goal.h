@@ -27,6 +27,7 @@ G_BEGIN_DECLS
 
 #include "hy-types.h"
 #include "dnf-sack.h"
+#include "dnf-utils.h"
 
 enum _hy_goal_op_flags {
     HY_CHECK_INSTALLED          = 1 << 0,
@@ -125,6 +126,8 @@ GPtrArray *hy_goal_list_upgrades(HyGoal goal, GError **error);
 GPtrArray *hy_goal_list_downgrades(HyGoal goal, GError **error);
 GPtrArray *hy_goal_list_obsoleted_by_package(HyGoal goal, DnfPackage *pkg);
 int hy_goal_get_reason(HyGoal goal, DnfPackage *pkg);
+
+DEPRECATED("Will be removed after 2018-01-01. Use hy_goal_describe_problem() and hy_goal_count_problems() instead.")
 GPtrArray *hy_goal_get_solution(HyGoal goal, guint problem_id);
 
 G_END_DECLS
