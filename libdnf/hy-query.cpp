@@ -904,7 +904,7 @@ filter_latest_sortcmp(const void *ap, const void *bp, void *dp)
 {
     Pool *pool = dp;
     Solvable *sa = pool->solvables + *(Id *)ap;
-    Solvable *sb = pool->solvables + *(Id *)ap;
+    Solvable *sb = pool->solvables + *(Id *)bp;
     int r;
     r = sa->name - sb->name;
     if (r)
