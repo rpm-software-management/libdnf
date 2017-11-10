@@ -1,45 +1,45 @@
 SET (LIBDNF_SRCS
-    dnf-advisorypkg.c
-    dnf-advisoryref.c
-    dnf-advisory.c
-    hy-goal.c
-    hy-iutil.c
-    hy-nevra.c
-    hy-module-form.c
-    dnf-reldep.c
-    dnf-reldep-list.c
-    hy-package.c
-    hy-packageset.c
-    hy-query.c
-    hy-repo.c
-    dnf-sack.c
-    hy-selector.c
-    hy-subject.c
-    hy-subject-private.c
-    hy-util.c
-    dnf-context.c
-    dnf-db.c
-    dnf-goal.c
-    dnf-keyring.c
-    dnf-lock.c
-    dnf-package.c
-    dnf-packagedelta.c
-    dnf-repo-loader.c
-    dnf-rpmts.c
-    dnf-repo.c
-    dnf-solution.c
-    dnf-state.c
-    dnf-transaction.c
-    dnf-utils.c)
+    dnf-advisorypkg.cpp
+    dnf-advisoryref.cpp
+    dnf-advisory.cpp
+    hy-goal.cpp
+    hy-iutil.cpp
+    hy-nevra.cpp
+    hy-module-form.cpp
+    dnf-reldep.cpp
+    dnf-reldep-list.cpp
+    hy-package.cpp
+    hy-packageset.cpp
+    hy-query.cpp
+    hy-repo.cpp
+    dnf-sack.cpp
+    hy-selector.cpp
+    hy-subject.cpp
+    hy-subject-private.cpp
+    hy-util.cpp
+    dnf-context.cpp
+    dnf-db.cpp
+    dnf-goal.cpp
+    dnf-keyring.cpp
+    dnf-lock.cpp
+    dnf-package.cpp
+    dnf-packagedelta.cpp
+    dnf-repo-loader.cpp
+    dnf-rpmts.cpp
+    dnf-repo.cpp
+    dnf-solution.cpp
+    dnf-state.cpp
+    dnf-transaction.cpp
+    dnf-utils.cpp)
 
 IF (WITH_SWDB)
     SET (SWDB_sources
-        dnf-swdb.c
-        dnf-swdb-db.c
-        dnf-swdb-groups.c
-        dnf-swdb-trans.c
-        dnf-swdb-pkg.c
-        dnf-swdb-types.c
+        dnf-swdb.cpp
+        dnf-swdb-db.cpp
+        dnf-swdb-groups.cpp
+        dnf-swdb-trans.cpp
+        dnf-swdb-pkg.cpp
+        dnf-swdb-types.cpp
     )
     SET (LIBDNF_SRCS ${LIBDNF_SRCS} ${SWDB_sources})
 ENDIF()
@@ -185,9 +185,9 @@ if (GOBJECT_INTROSPECTION_FOUND)
                     --pkg=librepo
                     --warn-all
                     --quiet
-                    dnf-context.c dnf-context.h
-                    dnf-repo.c dnf-repo.h
-                    dnf-state.h dnf-state.c
+                    dnf-context.cpp dnf-context.h
+                    dnf-repo.cpp dnf-repo.h
+                    dnf-state.h dnf-state.cpp
                     dnf-version.h
                     ${SWDB_headers}
                     ${SWDB_sources}

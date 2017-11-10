@@ -740,6 +740,12 @@ hy_goal_free(HyGoal goal)
     g_free(goal);
 }
 
+DnfSack *
+hy_goal_get_sack(HyGoal goal)
+{
+    return goal->sack;
+}
+
 int
 hy_goal_distupgrade_all(HyGoal goal)
 {
@@ -1510,8 +1516,8 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
         while ((element = solver_next_solutionelement(solv, problem_id, solution,
                                                       element, &p, &rp)) != 0) {
             DnfSolution *sol = dnf_solution_new();
-            const gchar *old = NULL;
-            const gchar *new = NULL;
+            const gchar *old_str = NULL;
+            const gchar *new_str = NULL;
             DnfSolutionAction action;
             // see libsolv:solver_next_solutionelement() description
             // for possible results and their meaning
@@ -1528,51 +1534,51 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
                 // do not ask to use that dependency
                 // pool_job2str(pool, how, what, 0), 0));
                 action = DNF_SOLUTION_ACTION_DO_NOT_INSTALL;
-                new = solver_select2str(pool, how & SOLVER_SELECTMASK, what);
+                new_str = solver_select2str(pool, how & SOLVER_SELECTMASK, what);
             } else if (p == SOLVER_SOLUTION_INFARCH) {
                 s = pool->solvables + rp;
                 if (pool->installed && s->repo == pool->installed) {
                     // keep package despite the inferior architecture
                     action = DNF_SOLUTION_ACTION_DO_NOT_REMOVE;
-                    old = pool_solvable2str(pool, s);
+                    old_str = pool_solvable2str(pool, s);
                 } else {
                     // install despite the inferior architecture
                     action = DNF_SOLUTION_ACTION_ALLOW_INSTALL;
-                    new = pool_solvable2str(pool, s);
+                    new_str = pool_solvable2str(pool, s);
                 }
             } else if (p == SOLVER_SOLUTION_DISTUPGRADE) {
                 s = pool->solvables + rp;
                 if (pool->installed && s->repo == pool->installed) {
                     // keep obsolete package
                     action = DNF_SOLUTION_ACTION_DO_NOT_OBSOLETE;
-                    old = pool_solvable2str(pool, s);
+                    old_str = pool_solvable2str(pool, s);
                 } else {
                     // installC package from excluded repository
                     action = DNF_SOLUTION_ACTION_ALLOW_INSTALL;
-                    new = pool_solvable2str(pool, s);
+                    new_str = pool_solvable2str(pool, s);
                 }
             } else if (p == SOLVER_SOLUTION_BEST) {
                 s = pool->solvables + rp;
                 if (pool->installed && s->repo == pool->installed) {
                     // keep old package
                     action = DNF_SOLUTION_ACTION_DO_NOT_UPGRADE;
-                    old = pool_solvable2str(pool, s);
+                    old_str = pool_solvable2str(pool, s);
                 } else {
                     // install despite the old version
                     action = DNF_SOLUTION_ACTION_ALLOW_INSTALL;
-                    new = pool_solvable2str(pool, s);
+                    new_str = pool_solvable2str(pool, s);
                 }
             } else if (p > 0 && rp == 0) {
                 s = pool->solvables + p;
                 // allow deinstallation of package
                 action = DNF_SOLUTION_ACTION_ALLOW_REMOVE;
-                old = pool_solvid2str(pool, p);
+                old_str = pool_solvid2str(pool, p);
             } else if (p > 0 && rp > 0) {
                 s = pool->solvables + rp;
                 // allow replacement of old with new
                 action = DNF_SOLUTION_ACTION_ALLOW_REPLACEMENT;
-                old = pool_solvid2str(pool, p);
-                new = pool_solvid2str(pool, rp);
+                old_str = pool_solvid2str(pool, p);
+                new_str = pool_solvid2str(pool, rp);
             } else {
                 s = pool->solvables + rp;
                 // bad solution element
@@ -1582,7 +1588,7 @@ hy_goal_get_solution(HyGoal goal, guint problem_id)
             //g_debug("rp=%d, p=%d",rp,p);
             //g_debug("name: %s",pool_id2str(pool, s->name));
 
-            dnf_solution_set(sol, action, old, new);
+            dnf_solution_set(sol, action, old_str, new_str);
             g_ptr_array_add(slist, sol);
         }
     }

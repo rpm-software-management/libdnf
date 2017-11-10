@@ -1,4 +1,4 @@
-PROJECT (libdnf C)
+PROJECT (libdnf LANGUAGES C CXX)
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8.5)
 CMAKE_POLICY (SET CMP0005 OLD)
 # Avoid a warning because "hth" links to
@@ -9,7 +9,14 @@ CMAKE_POLICY(SET CMP0003 NEW)
 include (VERSION.cmake)
 message ("Building libdnf version: ${LIBDNF_VERSION}")
 
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11 -Wcast-align -Wno-uninitialized -Wmissing-declarations -Wredundant-decls -Wcast-align -Wwrite-strings -Wreturn-type -Wformat-nonliteral -Wmissing-format-attribute -Wsign-compare -Wtype-limits -Wuninitialized -Waggregate-return -Wshadow -Winline -Wall -Werror=implicit-function-declaration -Wl,--as-needed")
+ADD_COMPILE_OPTIONS (-Wcast-align -Wno-uninitialized -Wmissing-declarations -Wredundant-decls -Wcast-align -Wwrite-strings -Wreturn-type -Wformat-nonliteral -Wmissing-format-attribute -Wsign-compare -Wtype-limits -Wuninitialized -Waggregate-return -Wshadow -Winline -Wall -Werror=implicit-function-declaration -Wl,--as-needed)
+
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+# temporary workaround for transition from C, will be removed
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
+
 include (CheckSymbolExists)
 list (APPEND CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
 check_symbol_exists (FNM_CASEFOLD "fnmatch.h" HAS_FNM_CASEFOLD)

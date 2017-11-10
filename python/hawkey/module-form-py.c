@@ -25,7 +25,6 @@
 
 // hawkey
 #include "hy-module-form.h"
-#include "hy-module-form-private.h"
 #include "dnf-sack.h"
 #include "hy-types.h"
 
@@ -62,9 +61,9 @@ static long long
 set_version(_ModuleFormObject *self, PyObject *value, void *closure)
 {
     if (PyInt_Check(value))
-        self->module_form->version = PyLong_AsLong(value);
+        hy_module_form_set_version(self->module_form, PyLong_AsLong(value));
     else if (value == Py_None)
-        self->module_form->version = -1;
+        hy_module_form_set_version(self->module_form, -1);
     else
         return -1;
     return 0;
@@ -73,12 +72,12 @@ set_version(_ModuleFormObject *self, PyObject *value, void *closure)
 static PyObject *
 get_version(_ModuleFormObject *self, void *closure)
 {
-    if (self->module_form->version == -1L)
+    if (hy_module_form_get_version(self->module_form) == -1L)
         Py_RETURN_NONE;
 #if PY_MAJOR_VERSION >= 3
-    return PyLong_FromLong(self->module_form->version);
+    return PyLong_FromLong(hy_module_form_get_version(self->module_form));
 #else
-    return PyInt_FromLong(self->module_form->version);
+    return PyInt_FromLong(hy_module_form_get_version(self->module_form));
 #endif
 }
 
@@ -196,13 +195,23 @@ iter(_ModuleFormObject *self)
 {
     PyObject *res;
     HyModuleForm module_form = self->module_form;
-    if (self->module_form->version == -1) {
+    if (hy_module_form_get_version(self->module_form) == -1) {
         Py_INCREF(Py_None);
-        res = Py_BuildValue("zzOzzz", module_form->name, module_form->stream, Py_None,
-                            module_form->context, module_form->arch, module_form->profile);
+        res = Py_BuildValue("zzOzzz",
+                            hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME),
+                            hy_module_form_get_string(module_form, HY_MODULE_FORM_STREAM),
+                            Py_None,
+                            hy_module_form_get_string(module_form, HY_MODULE_FORM_CONTEXT),
+                            hy_module_form_get_string(module_form, HY_MODULE_FORM_ARCH),
+                            hy_module_form_get_string(module_form, HY_MODULE_FORM_PROFILE));
     } else
-        res = Py_BuildValue("zzLzzz", module_form->name, module_form->stream, module_form->version,
-                            module_form->context, module_form->arch, module_form->profile);
+        res = Py_BuildValue("zzLzzz",
+                            hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME),
+                            hy_module_form_get_string(module_form, HY_MODULE_FORM_STREAM),
+                            hy_module_form_get_string(module_form, HY_MODULE_FORM_VERSION),
+                            hy_module_form_get_string(module_form, HY_MODULE_FORM_CONTEXT),
+                            hy_module_form_get_string(module_form, HY_MODULE_FORM_ARCH),
+                            hy_module_form_get_string(module_form, HY_MODULE_FORM_PROFILE));
     PyObject *iter = PyObject_GetIter(res);
     Py_DECREF(res);
     return iter;

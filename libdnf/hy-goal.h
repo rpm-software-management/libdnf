@@ -36,6 +36,7 @@ enum _hy_goal_op_flags {
 };
 
 typedef enum {
+    DNF_NONE                     = 0,
     DNF_ERASE                    = 1 << 0,
     DNF_DISTUPGRADE              = 1 << 1,
     DNF_DISTUPGRADE_ALL          = 1 << 2,
@@ -67,6 +68,7 @@ typedef enum {
 HyGoal hy_goal_create(DnfSack *sack);
 HyGoal hy_goal_clone(HyGoal goal);
 void hy_goal_free(HyGoal goal);
+DnfSack *hy_goal_get_sack(HyGoal goal);
 
 int hy_goal_distupgrade_all(HyGoal goal);
 int hy_goal_distupgrade(HyGoal goal, DnfPackage *new_pkg);

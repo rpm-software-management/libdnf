@@ -26,8 +26,6 @@
 
 // hawkey
 #include "dnf-reldep.h"
-#include "dnf-sack-private.h"
-#include "dnf-reldep-private.h"
 #include "hy-iutil.h"
 
 // pyhawkey
