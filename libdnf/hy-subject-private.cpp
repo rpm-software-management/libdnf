@@ -70,33 +70,6 @@ const char *module_form_regex[] = {
 
 #define MATCH_EMPTY(i) (matches[i].rm_so >= matches[i].rm_eo)
 
-int
-nevra_possibility(const char *nevra_str, int form, HyNevra nevra)
-{
-    enum { NAME = 1, EPOCH = 3, VERSION = 4, RELEASE = 5, ARCH = 6 };
-    regex_t reg;
-    char *epoch = NULL;
-
-    regmatch_t matches[10];
-
-    regcomp(&reg, nevra_form_regex[form - 1], REG_EXTENDED);
-    int ret = regexec(&reg, nevra_str, 10, matches, 0);
-    regfree(&reg);
-    if (ret != 0)
-    return -1;
-    if (!MATCH_EMPTY(EPOCH)) {
-    copy_str_from_subexpr(&epoch, nevra_str, matches, EPOCH);
-    nevra->epoch = atoi(epoch);
-    free(epoch);
-    }
-    if (copy_str_from_subexpr(&(nevra->name), nevra_str, matches, NAME) == -1)
-    return -1;
-    copy_str_from_subexpr(&(nevra->version), nevra_str, matches, VERSION);
-    copy_str_from_subexpr(&(nevra->release), nevra_str, matches, RELEASE);
-    copy_str_from_subexpr(&(nevra->arch), nevra_str, matches, ARCH);
-    return 0;
-}
-
 int module_form_possibility(char *module_form_str, int form, HyModuleForm module_form)
 {
     enum {

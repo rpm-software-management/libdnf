@@ -31,7 +31,6 @@
 #include "hy-subject.h"
 #include "dnf-reldep.h"
 #include "dnf-reldep-list.h"
-#include "dnf-sack-private.h"
 #include "dnf-swdb.h"
 
 #include "exception-py.h"
@@ -339,7 +338,7 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
     switch (keyname) {
     case HY_PKG:
     case HY_PKG_OBSOLETES: {
-        DnfPackageSet *pset = pyseq_to_packageset(match, query->sack);
+        DnfPackageSet *pset = pyseq_to_packageset(match, hy_query_get_sack(query));
 
         if (pset == NULL)
             return 1;
@@ -357,7 +356,7 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
     case HY_PKG_RECOMMENDS:
     case HY_PKG_SUGGESTS:
     case HY_PKG_SUPPLEMENTS: {
-        DnfReldepList *reldeplist = pyseq_to_reldeplist(match, query->sack, cmp_type);
+        DnfReldepList *reldeplist = pyseq_to_reldeplist(match, hy_query_get_sack(query), cmp_type);
         if (reldeplist == NULL)
             return 1;
 
@@ -819,7 +818,7 @@ static PyObject *
 query_to_name_dict(_QueryObject *self, PyObject *unused)
 {
     HyQuery query = ((_QueryObject *) self)->query;
-    Pool *pool = dnf_sack_get_pool(query->sack);
+    Pool *pool = dnf_sack_get_pool(hy_query_get_sack(query));
 
     Queue samename;
     queue_init(&samename);
@@ -872,7 +871,7 @@ static PyObject *
 query_to_name_arch_dict(_QueryObject *self, PyObject *unused)
 {
     HyQuery query = ((_QueryObject *) self)->query;
-    Pool *pool = dnf_sack_get_pool(query->sack);
+    Pool *pool = dnf_sack_get_pool(hy_query_get_sack(query));
 
     Queue samename;
     queue_init(&samename);
