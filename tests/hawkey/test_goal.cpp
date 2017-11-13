@@ -1147,7 +1147,7 @@ START_TEST(test_goal_installonly_limit)
 
     HyGoal goal = hy_goal_create(sack);
     hy_goal_upgrade_all(goal);
-    fail_if(hy_goal_run_flags(goal, 0));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
 
     assert_iueo(goal, 1, 1, 3, 0); // k-m is just upgraded
     GPtrArray *erasures = hy_goal_list_erasures(goal, NULL);
@@ -1169,7 +1169,7 @@ START_TEST(test_goal_kernel_protected)
 
     HyGoal goal = hy_goal_create(sack);
     hy_goal_erase(goal, kernel);
-    fail_unless(hy_goal_run_flags(goal, 0));
+    fail_unless(hy_goal_run_flags(goal, DNF_NONE));
 
     g_object_unref(kernel);
     hy_goal_free(goal);
@@ -1188,7 +1188,7 @@ START_TEST(test_goal_installonly_limit_disabled)
 
     HyGoal goal = hy_goal_create(sack);
     hy_goal_upgrade_all(goal);
-    fail_if(hy_goal_run_flags(goal, 0));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
 
     assert_iueo(goal, 1, 1, 0, 0);
     hy_goal_free(goal);
@@ -1206,7 +1206,7 @@ START_TEST(test_goal_installonly_limit_running_kernel)
 
     HyGoal goal = hy_goal_create(sack);
     hy_goal_upgrade_all(goal);
-    fail_if(hy_goal_run_flags(goal, 0));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
 
     assert_iueo(goal, 1, 1, 3, 0);
     GPtrArray *erasures = hy_goal_list_erasures(goal, NULL);
@@ -1230,7 +1230,7 @@ START_TEST(test_goal_installonly_limit_with_modules)
 
     HyGoal goal = hy_goal_create(sack);
     hy_goal_upgrade_all(goal);
-    fail_if(hy_goal_run_flags(goal, 0));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
 
     assert_iueo(goal, 2, 0, 5, 0);
     GPtrArray *erasures = hy_goal_list_erasures(goal, NULL);
