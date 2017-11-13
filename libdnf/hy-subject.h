@@ -101,7 +101,7 @@ HyQuery hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *f
                                      gboolean with_provides, gboolean with_filenames);
 HyQuery hy_subject_get_best_query(HySubject subject, DnfSack *sack, gboolean with_provides);
 HySelector hy_subject_get_best_selector(HySubject subject, DnfSack *sack);
-int nevra_possibility(const char *nevra_str, int re, HyNevra nevra);
+int hy_nevra_possibility(const char *nevra_str, int re, HyNevra nevra);
 
 G_END_DECLS
 

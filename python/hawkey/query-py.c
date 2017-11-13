@@ -949,7 +949,7 @@ add_nevra_or_other_filter(_QueryObject *self, PyObject *args)
             return NULL;
 
         HyNevra out_nevra = hy_nevra_create();
-        if (nevra_possibility((char *) name, HY_FORM_NEVRA, out_nevra) == 0) {
+        if (hy_nevra_possibility((char *) name, HY_FORM_NEVRA, out_nevra) == 0) {
             hy_add_filter_nevra_object(self_query_copy, out_nevra, FALSE);
         } else {
             hy_query_filter_empty(self_query_copy);
