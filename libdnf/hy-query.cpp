@@ -1719,6 +1719,12 @@ hy_query_get_result(const HyQuery query)
     return query->result;
 }
 
+DnfSack *
+hy_query_get_sack(HyQuery query)
+{
+    return query->sack;
+}
+
 void
 hy_query_to_name_ordered_queue(HyQuery query, Queue *samename)
 {

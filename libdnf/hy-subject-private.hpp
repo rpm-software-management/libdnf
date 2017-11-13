@@ -25,7 +25,6 @@
 
 extern const char *nevra_form_regex[];
 
-int nevra_possibility(const char *nevra_str, int re, HyNevra nevra);
 int module_form_possibility(char *module_form_str, int re, HyModuleForm module_form);
 
 #endif
