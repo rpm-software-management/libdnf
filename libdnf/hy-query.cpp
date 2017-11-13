@@ -1921,7 +1921,7 @@ hy_filter_unneeded(HyQuery query, DnfSwdb *swdb, const gboolean debug_solver)
     }
     g_array_free(indexes, TRUE);
     queue_free(&id_store);
-    int ret1 = hy_goal_run_flags(goal, 0);
+    int ret1 = hy_goal_run_flags(goal, DNF_NONE);
     if (ret1)
         return -1;
 
