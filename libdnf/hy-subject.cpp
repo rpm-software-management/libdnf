@@ -256,7 +256,7 @@ hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra)
     while (form != _HY_FORM_STOP_) {
         iter->current++;
         *out_nevra = hy_nevra_create();
-        if (nevra_possibility(iter->subject, form, *out_nevra) == 0) {
+        if (hy_nevra_possibility(iter->subject, form, *out_nevra) == 0) {
             if (iter->sack == NULL)
                 return 0;
             if (filter_real(*out_nevra, iter->sack, iter->flags))
@@ -442,7 +442,7 @@ hy_subject_get_best_selector(HySubject subject, DnfSack *sack)
 #define MATCH_EMPTY(i) (matches[i].rm_so >= matches[i].rm_eo)
 
 int
-nevra_possibility(const char *nevra_str, int form, HyNevra nevra)
+hy_nevra_possibility(const char *nevra_str, int form, HyNevra nevra)
 {
     enum { NAME = 1, EPOCH = 3, VERSION = 4, RELEASE = 5, ARCH = 6 };
     regex_t reg;

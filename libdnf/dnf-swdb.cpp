@@ -237,7 +237,7 @@ static HyNevra
 _fill_nevra_res (sqlite3_stmt *res, const gchar *nevra)
 {
     HyNevra hnevra = hy_nevra_create ();
-    if (nevra_possibility (nevra, HY_FORM_NEVRA, hnevra)) {
+    if (hy_nevra_possibility(nevra, HY_FORM_NEVRA, hnevra)) {
         return NULL;
     }
 
