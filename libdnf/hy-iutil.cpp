@@ -171,18 +171,6 @@ int checksum_write(const unsigned char *cs, FILE *fp)
     return 0;
 }
 
-void
-checksum_dump(const unsigned char *cs)
-{
-    for (int i = 0; i < CHKSUM_BYTES; i+=4) {
-        printf("%02x%02x%02x%02x", cs[i], cs[i+1], cs[i+2], cs[i+3]);
-        if (i + 4 >= CHKSUM_BYTES)
-            printf("\n");
-        else
-            printf(" : ");
-    }
-}
-
 int
 checksum_type2length(int type)
 {
