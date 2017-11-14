@@ -35,12 +35,7 @@
 G_BEGIN_DECLS
 
 /* crypto utils */
-int checksum_read(unsigned char *csout, FILE *fp);
-int checksum_stat(unsigned char *out, FILE *fp);
-int checksum_write(const unsigned char *cs, FILE *fp);
 int checksum_type2length(int type);
-int checksumt_l2h(int type);
-const char *pool_checksum_str(Pool *pool, const unsigned char *chksum);
 
 /* filesystem utils */
 char *abspath(const char *path);

@@ -36,7 +36,7 @@
 #include <solv/util.h>
 
 #include "dnf-packagedelta-private.hpp"
-#include "hy-iutil.h"
+#include "hy-iutil-private.hpp"
 
 typedef struct
 {
