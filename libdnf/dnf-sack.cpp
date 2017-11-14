@@ -64,7 +64,7 @@ extern "C" {
 
 #include "dnf-types.h"
 #include "dnf-version.h"
-#include "hy-iutil.h"
+#include "hy-iutil-private.hpp"
 #include "hy-package-private.hpp"
 #include "hy-packageset-private.hpp"
 #include "hy-query.h"

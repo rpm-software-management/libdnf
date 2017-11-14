@@ -29,6 +29,7 @@
 
 #include "libdnf/hy-util.h"
 #include "libdnf/hy-iutil.h"
+#include "libdnf/hy-iutil-private.hpp"
 #include "fixtures.h"
 #include "test_suites.h"
 
