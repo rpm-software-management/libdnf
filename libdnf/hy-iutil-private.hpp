@@ -24,6 +24,8 @@
 #ifndef HY_IUTIL_PRIVATE_HPP
 #define HY_IUTIL_PRIVATE_HPP
 
+/* crypto utils */
+int checksum_cmp(const unsigned char *cs1, const unsigned char *cs2);
 int checksum_fp(unsigned char *out, FILE *fp);
 
 #endif
