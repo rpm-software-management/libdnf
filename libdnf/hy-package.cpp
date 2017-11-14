@@ -39,7 +39,7 @@
 #include "dnf-advisory-private.hpp"
 #include "dnf-packagedelta-private.hpp"
 #include "dnf-sack-private.hpp"
-#include "hy-iutil.h"
+#include "hy-iutil-private.hpp"
 #include "hy-package-private.hpp"
 #include "dnf-reldep-list-private.hpp"
 #include "hy-repo-private.hpp"
