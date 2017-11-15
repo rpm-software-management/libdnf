@@ -603,20 +603,6 @@ dump_solvables_queue(Pool *pool, Queue *q)
     return q->count;
 }
 
-int
-dump_map(Pool *pool, Map *m)
-{
-    unsigned c = 0;
-    printf("(size: %d) ", m->size);
-    for (Id id = 0; id < m->size << 3; ++id)
-        if (MAPTST(m, id)) {
-            c++;
-            printf("%d:", id);
-        }
-    printf("\n");
-    return c;
-}
-
 const char *
 id2nevra(Pool *pool, Id id)
 {
