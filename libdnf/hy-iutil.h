@@ -39,7 +39,6 @@ int checksum_type2length(int type);
 
 /* filesystem utils */
 char *abspath(const char *path);
-int is_readable_rpm(const char *fn);
 int mkcachedir(char *path);
 gboolean mv(const char *old_path, const char *new_path, GError **error);
 char *this_username(void);
