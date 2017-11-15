@@ -73,11 +73,6 @@ int parse_reldep_str(const char *nevra, char **name,
 DnfReldep *reldep_from_str(DnfSack *sack, const char *reldep_str);
 DnfReldepList *reldeplist_from_str(DnfSack *sack, const char *reldep_str);
 
-/* advisory utils */
-
-/* debug utils */
-const char *id2nevra(Pool *pool, Id id);
-
 /* loop over all package providers of d */
 #define FOR_PKG_PROVIDES(v, vp, d)                                      \
     FOR_PROVIDES(v, vp, d)                                              \

@@ -33,4 +33,6 @@ int checksum_write(const unsigned char *cs, FILE *fp);
 int checksumt_l2h(int type);
 const char *pool_checksum_str(Pool *pool, const unsigned char *chksum);
 
+const char *id2nevra(Pool *pool, Id id);
+
 #endif
