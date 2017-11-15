@@ -35,4 +35,7 @@ const char *pool_checksum_str(Pool *pool, const unsigned char *chksum);
 
 const char *id2nevra(Pool *pool, Id id);
 
+/* filesystem utils */
+int is_readable_rpm(const char *fn);
+
 #endif
