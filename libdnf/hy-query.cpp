@@ -39,7 +39,7 @@
 #include "hy-packageset-private.hpp"
 #include "dnf-reldep-private.hpp"
 #include "dnf-sack-private.hpp"
-#include "hy-util.h"
+#include "hy-util-private.hpp"
 
 #define BLOCK_SIZE 15
 

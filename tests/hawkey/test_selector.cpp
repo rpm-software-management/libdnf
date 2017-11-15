@@ -23,7 +23,7 @@
 #include "libdnf/hy-query.h"
 #include "libdnf/hy-selector.h"
 #include "libdnf/dnf-types.h"
-#include "libdnf/hy-util.h"
+#include "libdnf/hy-util-private.hpp"
 #include "fixtures.h"
 #include "testsys.h"
 #include "test_suites.h"

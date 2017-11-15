@@ -45,7 +45,7 @@
 #include "dnf-utils.h"
 #include "hy-query.h"
 #include "dnf-sack.h"
-#include "hy-util.h"
+#include "hy-util-private.hpp"
 
 #if WITH_SWDB
 

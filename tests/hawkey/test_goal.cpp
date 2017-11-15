@@ -35,7 +35,7 @@
 #include "libdnf/dnf-solution.h"
 #include "libdnf/dnf-goal.h"
 #include "libdnf/hy-selector.h"
-#include "libdnf/hy-util.h"
+#include "libdnf/hy-util-private.hpp"
 #include "fixtures.h"
 #include "testsys.h"
 #include "test_suites.h"
