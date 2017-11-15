@@ -1,0 +1,14 @@
+SET(SWDB_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/swdb.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/swdbprivate.cpp
+)
+
+ADD_SUBDIRECTORY ("handle")
+ADD_SUBDIRECTORY ("item")
+ADD_SUBDIRECTORY ("transaction")
+
+SET(LIBDNF_SRCS
+    ${LIBDNF_SRCS}
+    ${SWDB_SRCS}
+    PARENT_SCOPE
+)

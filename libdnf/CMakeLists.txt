@@ -41,6 +41,9 @@ IF (WITH_SWDB)
         dnf-swdb-types.cpp
     )
     SET (LIBDNF_SRCS ${LIBDNF_SRCS} ${SWDB_sources})
+
+    INCLUDE_DIRECTORIES ("swdb")
+    ADD_SUBDIRECTORY ("swdb")
 ENDIF()
 
 configure_file ("dnf-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/dnf-version.h)
