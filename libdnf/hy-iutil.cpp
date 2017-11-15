@@ -339,7 +339,7 @@ read_whole_file(const char *path)
   return contents;
 }
 
-char *
+static char *
 pool_tmpdup(Pool *pool, const char *s)
 {
     char *dup = pool_alloctmpspace(pool, strlen(s) + 1);
