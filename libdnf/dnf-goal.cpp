@@ -38,7 +38,7 @@
 #include "dnf-goal.h"
 #include "dnf-package.h"
 #include "hy-packageset-private.hpp"
-#include "hy-iutil.h"
+#include "hy-iutil-private.hpp"
 #include "dnf-sack-private.hpp"
 #include "dnf-utils.h"
 
