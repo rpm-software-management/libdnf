@@ -21,7 +21,7 @@
 #include <check.h>
 #include <string.h>
 
-
+#include "libdnf/hy-iutil-private.hpp"
 #include "libdnf/hy-repo-private.hpp"
 #include "fixtures.h"
 #include "testshared.h"

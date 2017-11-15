@@ -34,6 +34,7 @@
 #include "libdnf/hy-repo-private.hpp"
 #include "libdnf/dnf-sack-private.hpp"
 #include "libdnf/hy-util.h"
+#include "libdnf/hy-iutil-private.hpp"
 #include "fixtures.h"
 #include "testsys.h"
 #include "test_suites.h"

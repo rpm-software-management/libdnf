@@ -38,7 +38,6 @@ G_BEGIN_DECLS
 int checksum_type2length(int type);
 
 /* libsolv utils */
-HyRepo hrepo_by_name(DnfSack *sack, const char *name);
 Id str2archid(Pool *pool, const char *s);
 void queue2plist(DnfSack *sack, Queue *q, GPtrArray *plist);
 Id what_upgrades(Pool *pool, Id p);

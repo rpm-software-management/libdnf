@@ -48,5 +48,6 @@ Id running_kernel(DnfSack *sack);
 
 /* libsolv utils */
 Repo *repo_by_name(DnfSack *sack, const char *name);
+HyRepo hrepo_by_name(DnfSack *sack, const char *name);
 
 #endif
