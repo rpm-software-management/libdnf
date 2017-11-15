@@ -76,7 +76,6 @@ DnfReldepList *reldeplist_from_str(DnfSack *sack, const char *reldep_str);
 /* advisory utils */
 
 /* debug utils */
-int dump_nullt_array(const char **a);
 int dump_solvables_queue(Pool *pool, Queue *q);
 const char *id2nevra(Pool *pool, Id id);
 

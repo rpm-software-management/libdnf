@@ -587,15 +587,6 @@ pool_split_evr(Pool *pool, const char *evr_c, char **epoch, char **version,
 }
 
 int
-dump_nullt_array(const char **a)
-{
-    const char **strp = a;
-    while (*strp)
-        printf("%s\n", *strp++);
-    return strp - a;
-}
-
-int
 dump_solvables_queue(Pool *pool, Queue *q)
 {
     for (int i = 0; i < q->count; ++i)
