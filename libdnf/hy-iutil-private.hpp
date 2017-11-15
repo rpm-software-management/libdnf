@@ -44,6 +44,6 @@ char *this_username(void);
 
 /* misc utils */
 char *read_whole_file(const char *path);
-
+Id running_kernel(DnfSack *sack);
 
 #endif

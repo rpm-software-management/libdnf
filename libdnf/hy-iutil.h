@@ -37,9 +37,6 @@ G_BEGIN_DECLS
 /* crypto utils */
 int checksum_type2length(int type);
 
-/* misc utils */
-Id running_kernel(DnfSack *sack);
-
 /* libsolv utils */
 int cmptype2relflags(int type);
 Repo *repo_by_name(DnfSack *sack, const char *name);
