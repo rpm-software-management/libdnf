@@ -20,7 +20,7 @@
 
 
 #include "libdnf/hy-package-private.hpp"
-#include "libdnf/hy-util.h"
+#include "libdnf/hy-util-private.hpp"
 #include "test_suites.h"
 
 static DnfPackage *

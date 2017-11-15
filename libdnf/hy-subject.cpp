@@ -33,7 +33,7 @@
 #include "hy-types.h"
 #include "hy-query.h"
 #include "hy-selector.h"
-#include "hy-util.h"
+#include "hy-util-private.hpp"
 
 // most specific to least
 const HyForm HY_FORMS_MOST_SPEC[] = {

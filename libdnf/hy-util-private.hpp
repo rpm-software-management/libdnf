@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
+ * Copyright (C) 2017 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -18,25 +18,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef HY_UTIL_H
-#define HY_UTIL_H
+#include "hy-util.h"
 
-#include <glib.h>
+#ifndef HY_UTIL_PRIVATE_HPP
+#define HY_UTIL_PRIVATE_HPP
 
-#include "hy-package.h"
-#include "hy-types.h"
+gboolean hy_is_glob_pattern(const char *pattern);
 
-G_BEGIN_DECLS
+/**
+ * @brief Test if pattern is file path
+ *
+ * @param pattern Strig to analyze
+ * @return gboolean Return TRUE if pattern start with "/" or pattern[0] == '*' && pattern[1] == '/'
+ */
+static inline gboolean hy_is_file_pattern(const char *pattern)
+{
+    return pattern[0] == '/' || (pattern[0] == '*' && pattern[1] == '/');
+}
 
-const char *hy_chksum_name(int chksum_type);
-int hy_chksum_type(const char *chksum_name);
-char *hy_chksum_str(const unsigned char *chksum, int type);
+GPtrArray *hy_packagelist_create(void);
+int hy_packagelist_has(GPtrArray *plist, DnfPackage *pkg);
 
-int hy_detect_arch(char **arch);
-
-int hy_split_nevra(const char *nevra, char **name, int *epoch,
-                   char **version, char **release, char **arch);
-
-G_END_DECLS
-
-#endif /* HY_UTIL_H */
+#endif

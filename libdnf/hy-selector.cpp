@@ -29,7 +29,7 @@
 #include "hy-package-private.hpp"
 #include "hy-query-private.hpp"
 #include "hy-selector-private.hpp"
-#include "hy-util.h"
+#include "hy-util-private.hpp"
 
 static int
 replace_filter(DnfSack *sack, struct _Filter **fp, int keyname, int cmp_type,

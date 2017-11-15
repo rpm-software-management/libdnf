@@ -50,7 +50,7 @@ extern "C" {
 #include "dnf-goal.h"
 #include "dnf-package.h"
 #include "hy-selector-private.hpp"
-#include "hy-util.h"
+#include "hy-util-private.hpp"
 #include "dnf-package.h"
 #include "hy-package.h"
 #include "dnf-solution-private.hpp"
