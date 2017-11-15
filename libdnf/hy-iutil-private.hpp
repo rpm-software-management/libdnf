@@ -38,5 +38,6 @@ const char *id2nevra(Pool *pool, Id id);
 /* filesystem utils */
 char *abspath(const char *path);
 int is_readable_rpm(const char *fn);
+int mkcachedir(char *path);
 
 #endif
