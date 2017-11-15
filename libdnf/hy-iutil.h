@@ -38,7 +38,6 @@ G_BEGIN_DECLS
 int checksum_type2length(int type);
 
 /* libsolv utils */
-int cmptype2relflags(int type);
 Repo *repo_by_name(DnfSack *sack, const char *name);
 HyRepo hrepo_by_name(DnfSack *sack, const char *name);
 Id str2archid(Pool *pool, const char *s);

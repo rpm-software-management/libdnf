@@ -378,20 +378,6 @@ running_kernel(DnfSack *sack)
     return kernel_id;
 }
 
-int
-cmptype2relflags(int type)
-{
-    int flags = 0;
-    if (type & HY_EQ)
-        flags |= REL_EQ;
-    if (type & HY_LT)
-        flags |= REL_LT;
-    if (type & HY_GT)
-        flags |= REL_GT;
-    assert(flags);
-    return flags;
-}
-
 Repo *
 repo_by_name(DnfSack *sack, const char *name)
 {
