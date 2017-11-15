@@ -37,9 +37,6 @@ G_BEGIN_DECLS
 /* crypto utils */
 int checksum_type2length(int type);
 
-/* filesystem utils */
-char *this_username(void);
-
 /* misc utils */
 char *read_whole_file(const char *path);
 char *pool_tmpdup(Pool *pool, const char *s);
