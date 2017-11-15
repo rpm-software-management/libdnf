@@ -587,15 +587,6 @@ pool_split_evr(Pool *pool, const char *evr_c, char **epoch, char **version,
 }
 
 int
-dump_jobqueue(Pool *pool, Queue *job)
-{
-    for (int i = 0; i < job->count; i+=2)
-            printf("\t%s\n", pool_job2str(pool, job->elements[i],
-                                          job->elements[i+1], 0));
-    return job->count;
-}
-
-int
 dump_nullt_array(const char **a)
 {
     const char **strp = a;
