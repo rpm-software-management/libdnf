@@ -39,5 +39,6 @@ const char *id2nevra(Pool *pool, Id id);
 char *abspath(const char *path);
 int is_readable_rpm(const char *fn);
 int mkcachedir(char *path);
+gboolean mv(const char *old_path, const char *new_path, GError **error);
 
 #endif
