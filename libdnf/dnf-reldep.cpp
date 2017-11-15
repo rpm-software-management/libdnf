@@ -41,7 +41,7 @@ struct _DnfReldep
 G_DEFINE_TYPE (DnfReldep, dnf_reldep, G_TYPE_OBJECT)
 
 static gint
-cmptype2relflags2 (DnfComparisonKind cmp_type)
+cmptype2relflags(DnfComparisonKind cmp_type)
 {
     gint flags = 0;
     if (cmp_type & DNF_COMPARISON_EQ)
@@ -96,7 +96,7 @@ dnf_reldep_new (DnfSack           *sack,
     if (evr) {
         g_assert (cmp_type);
         Id ievr = pool_str2id (pool, evr, 1);
-        int flags = cmptype2relflags2 (cmp_type);
+        int flags = cmptype2relflags(cmp_type);
         id = pool_rel2id (pool, id, ievr, flags, 1);
     }
 
