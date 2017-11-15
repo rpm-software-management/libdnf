@@ -42,4 +42,8 @@ int mkcachedir(char *path);
 gboolean mv(const char *old_path, const char *new_path, GError **error);
 char *this_username(void);
 
+/* misc utils */
+char *read_whole_file(const char *path);
+
+
 #endif

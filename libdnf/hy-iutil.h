@@ -38,7 +38,6 @@ G_BEGIN_DECLS
 int checksum_type2length(int type);
 
 /* misc utils */
-char *read_whole_file(const char *path);
 char *pool_tmpdup(Pool *pool, const char *s);
 Id running_kernel(DnfSack *sack);
 
