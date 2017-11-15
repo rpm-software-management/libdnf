@@ -27,7 +27,7 @@
 #include "hy-subject-private.hpp"
 #include "hy-nevra.h"
 #include "hy-module-form.h"
-#include "hy-iutil.h"
+#include "hy-iutil-private.hpp"
 #include "hy-nevra-private.hpp"
 #include "hy-module-form-private.hpp"
 #include "hy-types.h"

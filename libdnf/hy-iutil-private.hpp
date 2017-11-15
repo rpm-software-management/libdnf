@@ -49,5 +49,34 @@ Id running_kernel(DnfSack *sack);
 /* libsolv utils */
 Repo *repo_by_name(DnfSack *sack, const char *name);
 HyRepo hrepo_by_name(DnfSack *sack, const char *name);
+Id str2archid(Pool *pool, const char *s);
+void queue2plist(DnfSack *sack, Queue *q, GPtrArray *plist);
+Id what_upgrades(Pool *pool, Id p);
+Id what_downgrades(Pool *pool, Id p);
+Map *free_map_fully(Map *m);
+int is_package(const Pool *pool, const Solvable *s);
+
+/* package version utils */
+unsigned long pool_get_epoch(Pool *pool, const char *evr);
+void pool_split_evr(Pool *pool, const char *evr, char **epoch, char **version, char **release);
+
+/* reldep utils */
+int copy_str_from_subexpr(char** target, const char* source, regmatch_t* matches, int i);
+int parse_reldep_str(const char *nevra, char **name, char **evr, int *cmp_type);
+
+/* loop over all package providers of d */
+#define FOR_PKG_PROVIDES(v, vp, d)                                      \
+    FOR_PROVIDES(v, vp, d)                                              \
+        if (!is_package(pool, pool_id2solvable(pool, v)))               \
+            continue;                                                   \
+        else
+
+/* loop over all package solvables */
+#define FOR_PKG_SOLVABLES(p)                                            \
+    FOR_POOL_SOLVABLES(p)                                               \
+        if (!is_package(pool, pool_id2solvable(pool, p)))               \
+            continue;                                                   \
+        else
+
 
 #endif

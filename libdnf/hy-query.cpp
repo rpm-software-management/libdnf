@@ -32,7 +32,7 @@
 #include "dnf-advisorypkg.h"
 #include "dnf-advisory-private.hpp"
 #include "hy-goal-private.hpp"
-#include "hy-iutil.h"
+#include "hy-iutil-private.hpp"
 #include "hy-nevra-private.hpp"
 #include "hy-query-private.hpp"
 #include "hy-package-private.hpp"
