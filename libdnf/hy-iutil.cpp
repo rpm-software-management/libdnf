@@ -586,14 +586,6 @@ pool_split_evr(Pool *pool, const char *evr_c, char **epoch, char **version,
     *release = r;
 }
 
-int
-dump_solvables_queue(Pool *pool, Queue *q)
-{
-    for (int i = 0; i < q->count; ++i)
-        printf("%s\n", pool_solvid2str(pool, q->elements[i]));
-    return q->count;
-}
-
 const char *
 id2nevra(Pool *pool, Id id)
 {
