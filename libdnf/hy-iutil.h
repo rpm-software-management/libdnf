@@ -38,7 +38,6 @@ G_BEGIN_DECLS
 int checksum_type2length(int type);
 
 /* misc utils */
-char *pool_tmpdup(Pool *pool, const char *s);
 Id running_kernel(DnfSack *sack);
 
 /* libsolv utils */
