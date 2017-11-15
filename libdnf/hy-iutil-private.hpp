@@ -46,4 +46,7 @@ char *this_username(void);
 char *read_whole_file(const char *path);
 Id running_kernel(DnfSack *sack);
 
+/* libsolv utils */
+Repo *repo_by_name(DnfSack *sack, const char *name);
+
 #endif
