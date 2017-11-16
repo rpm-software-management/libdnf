@@ -22,7 +22,7 @@
 #define SELECTOR_PY_H
 
 #include "hy-types.h"
-
+PyObject *SelectorToPyObject(HySelector selector, PyObject *sack);
 extern PyTypeObject selector_Type;
 
 int selector_converter(PyObject *o, HySelector *sltr_ptr);

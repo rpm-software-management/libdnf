@@ -37,6 +37,18 @@ typedef struct {
     PyObject *sack;
 } _SelectorObject;
 
+PyObject *
+SelectorToPyObject(HySelector selector, PyObject *sack)
+{
+    _SelectorObject *self = (_SelectorObject *)selector_Type.tp_alloc(&selector_Type, 0);
+    if (self) {
+        self->sltr = selector;
+        self->sack = sack;
+        Py_INCREF(sack);
+    }
+    return (PyObject *) self;
+}
+
 int
 selector_converter(PyObject *o, HySelector *sltr_ptr)
 {
