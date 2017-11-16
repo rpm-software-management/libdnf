@@ -398,28 +398,6 @@ class Subject(_hawkey.Subject):
                                             forms=forms)
         return solution['query']
 
-    def get_best_selector(self, sack, forms=None, obsoletes=True, reponame=None, reports=False):
-        # :api
-        if reports:
-            warnings.simplefilter('always', DeprecationWarning)
-            msg = "The attribute 'reports' is deprecated and not used any more. "\
-                  "This attribute will be removed on 2018-01-01"
-            warnings.warn(msg, DeprecationWarning)
-
-        solution = self._get_nevra_solution(sack, forms=forms)
-        if solution['query']:
-            q = solution['query']
-            q = q.filter(arch__neq="src")
-            if obsoletes and solution['nevra'] and solution['nevra'].has_just_name():
-                q = q.union(sack.query().filter(obsoletes=q))
-            installed_query = q.installed()
-            if reponame:
-                q = q.filter(reponame=reponame).union(installed_query)
-            if q:
-                return self._list_or_query_to_selector(sack, q)
-
-        return Selector(sack)
-
     def _get_best_selectors(self, base, forms=None, obsoletes=True, reponame=None, reports=False,
                             solution=None):
         if solution is None:
