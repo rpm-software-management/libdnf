@@ -36,6 +36,7 @@
 #include "hy-query-private.hpp"
 #include "hy-package-private.hpp"
 #include "hy-packageset-private.hpp"
+#include "hy-selector.h"
 #include "dnf-reldep-private.hpp"
 #include "dnf-sack-private.hpp"
 #include "hy-util-private.hpp"
@@ -1949,4 +1950,14 @@ hy_filter_unneeded(HyQuery query, DnfSwdb *swdb, const gboolean debug_solver)
     map_and(query->result, &result);
     map_free(&result);
     return 0;
+}
+
+HySelector
+hy_query_to_selector(HyQuery query)
+{
+    HySelector selector = hy_selector_create(query->sack);
+    DnfPackageSet *pset = hy_query_run_set(query);
+    hy_selector_pkg_set(selector, HY_PKG, HY_EQ, pset);
+    g_object_unref(pset);
+    return selector;
 }
