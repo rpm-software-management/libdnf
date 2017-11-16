@@ -38,6 +38,7 @@
 #include "query-py.h"
 #include "reldep-py.h"
 #include "sack-py.h"
+#include "selector-py.h"
 #include "subject-py.h"
 
 typedef struct {
@@ -272,6 +273,42 @@ reldep_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
         csack, flags);
     return possibilitiesToPyObject(iter, sack);
 }
+
+static PyObject *
+get_best_selector(_SubjectObject *self, PyObject *args, PyObject *kwds)
+{
+    PyObject *sack;
+    PyObject *forms = NULL;
+    PyObject *obsoletes = NULL;
+    char *reponame = NULL;
+    PyObject *reports = NULL;
+    const char *kwlist[] = {"sack", "forms", "obsoletes", "reponame", "reports", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|OO!zO!", (char**) kwlist, &sack_Type, &sack,
+        &forms, &PyBool_Type, &obsoletes, &reponame, &PyBool_Type, &reports)) {
+        return NULL;
+    }
+    HyForm *cforms = NULL;
+    if ((forms != NULL) && (forms != Py_None)) {
+        cforms = fill_form(forms);
+        if (cforms == NULL)
+            return NULL;
+    }
+
+    bool c_obsoletes = obsoletes == NULL || PyObject_IsTrue(obsoletes);
+    bool c_reports = reports != NULL && PyObject_IsTrue(reports);
+    if (c_reports) {
+        printf("The attribute 'reports' in get_best_selector() is deprecated and not used any more."
+               " This attribute will be removed on 2018-01-01\n");
+    }
+    DnfSack *csack = sackFromPyObject(sack);
+    HySelector c_selector = hy_subject_get_best_sltr(self->pattern, csack, cforms, c_obsoletes,
+                                                     reponame);
+    PyObject *selector = SelectorToPyObject(c_selector, sack);
+    Py_INCREF(selector);
+    return selector;
+}
+
 static PyObject *
 get_best_solution(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
@@ -317,7 +354,7 @@ get_best_solution(_SubjectObject *self, PyObject *args, PyObject *kwds)
     }
     else
         PyDict_SetItem(ret_dict, PyString_FromString("nevra"), Py_None);
-    
+
     return ret_dict;
 }
 
@@ -330,6 +367,7 @@ static struct PyMethodDef subject_methods[] = {
     METH_VARARGS | METH_KEYWORDS, NULL},
     {"reldep_possibilities_real", (PyCFunction) reldep_possibilities_real,
     METH_VARARGS | METH_KEYWORDS, NULL},
+    {"get_best_selector", (PyCFunction) get_best_selector, METH_VARARGS | METH_KEYWORDS, NULL},
     {"get_best_solution", (PyCFunction) get_best_solution,
     METH_VARARGS | METH_KEYWORDS, NULL},
     {NULL}                      /* sentinel */
