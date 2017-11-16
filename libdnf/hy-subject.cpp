@@ -31,7 +31,7 @@
 #include "hy-nevra-private.hpp"
 #include "hy-module-form-private.hpp"
 #include "hy-types.h"
-#include "hy-query.h"
+#include "hy-query-private.hpp"
 #include "hy-selector.h"
 #include "hy-util-private.hpp"
 
@@ -345,6 +345,42 @@ hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, Hy
     hy_query_filter_empty(query);
     return query;
 }
+
+
+HySelector
+hy_subject_get_best_sltr(HySubject subject, DnfSack *sack, HyForm *forms, bool obsoletes,
+                         const char *reponame)
+{
+    HyNevra nevra = NULL;
+    HyQuery query = hy_subject_get_best_solution(subject, sack, forms, &nevra, FALSE, TRUE, TRUE,
+                                                 TRUE);
+    if (hy_query_is_not_empty(query)) {
+        hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
+        if (obsoletes && (nevra != NULL) && hy_nevra_has_just_name(nevra)) {
+            DnfPackageSet *pset;
+            pset = hy_query_run_set(query);
+            HyQuery query_obsoletes = hy_query_clone(query);
+            hy_query_filter_package_in(query_obsoletes, HY_PKG_OBSOLETES, HY_EQ, pset);
+            g_object_unref(pset);
+            hy_query_union(query, query_obsoletes);
+            hy_query_free(query_obsoletes);
+        }
+        if (reponame != NULL) {
+            HyQuery installed_query = hy_query_clone(query);
+            hy_query_filter(installed_query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+            hy_query_filter(query, HY_PKG_REPONAME, HY_EQ, reponame);
+            hy_query_union(query, installed_query);
+            hy_query_free(installed_query);
+        }
+    }
+    if (nevra != NULL) {
+        g_clear_pointer(&nevra, hy_nevra_free);
+    }
+    HySelector selector = hy_query_to_selector(query);
+    hy_query_free(query);
+    return selector;
+}
+
 
 static HySelector
 nevra_to_selector(HyNevra nevra, DnfSack *sack)

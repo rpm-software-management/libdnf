@@ -70,4 +70,12 @@ void filter_reinit(struct _Filter *f, int nmatches);
 void filter_free(struct _Filter *f);
 static inline DnfSack *query_sack(HyQuery query) { return query->sack; }
 
+/**
+* @brief Return HySelector from HyQuery
+*
+* @param query query
+* @return HySelector
+*/
+HySelector hy_query_to_selector(HyQuery query);
+
 #endif // HY_QUERY_INTERNAL_H

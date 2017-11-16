@@ -29,6 +29,7 @@
 #include "hy-module-form.h"
 
 #include <glib.h>
+#include <stdbool.h>
 
 G_BEGIN_DECLS
 
@@ -100,6 +101,21 @@ HyQuery hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *f
                                      HyNevra *nevra, gboolean icase, gboolean with_nevra,
                                      gboolean with_provides, gboolean with_filenames);
 HyQuery hy_subject_get_best_query(HySubject subject, DnfSack *sack, gboolean with_provides);
+
+/**
+* @brief Returns HySelector with packages that represents subject. Subject can be NEVRA, provide,
+* or file provide. Additionally result can be enrich for obsoletes if subject is NEVRA with just
+* name.
+*
+* @param subject subject
+* @param sack DnfSack
+* @param forms HyForm *forms or NULL
+* @param obsoletes If TRUE, obsoletes will be added to result
+* @param reponame Id of repo
+* @return HySelector
+*/
+HySelector hy_subject_get_best_sltr(HySubject subject, DnfSack *sack, HyForm *forms, bool obsoletes,
+                                    const char *reponame);
 HySelector hy_subject_get_best_selector(HySubject subject, DnfSack *sack);
 int hy_nevra_possibility(const char *nevra_str, int re, HyNevra nevra);
 
