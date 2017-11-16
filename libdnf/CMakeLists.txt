@@ -47,6 +47,10 @@ ENDIF()
 configure_file ("dnf-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/dnf-version.h)
 configure_file ("libdnf.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc @ONLY)
 
+ADD_SUBDIRECTORY(utils)
+
+SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${UTILS_SOURCES})
+
 ADD_LIBRARY(libdnf SHARED ${LIBDNF_SRCS})
 TARGET_LINK_LIBRARIES(libdnf
                       ${REPO_LIBRARIES}
@@ -95,6 +99,7 @@ SET(LIBHAWKEY_headers
     )
 
 SET(LIBDNF_headers
+    ${LIBDNF_headers}
     dnf-advisory.h
     dnf-advisorypkg.h
     dnf-advisoryref.h

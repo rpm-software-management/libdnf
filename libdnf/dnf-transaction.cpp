@@ -29,8 +29,6 @@
  */
 
 
-#include <glib/gi18n-lib.h>
-
 #include <rpm/rpmlib.h>
 #include <rpm/rpmts.h>
 #include <rpm/rpmlog.h>
@@ -54,6 +52,8 @@
 #include "dnf-swdb-trans.h"
 
 #endif
+
+#include "utils/bgettext/bgettext-lib.h"
 
 typedef enum {
     DNF_TRANSACTION_STEP_STARTED,

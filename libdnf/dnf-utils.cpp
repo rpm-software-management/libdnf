@@ -31,11 +31,12 @@
 
 #include <errno.h>
 #include <stdlib.h>
-#include <glib/gi18n-lib.h>
 #include <glib/gstdio.h>
 
 #include "dnf-types.h"
 #include "dnf-utils.h"
+
+#include "utils/bgettext/bgettext-lib.h"
 
 /**
  * dnf_error_quark:
