@@ -361,7 +361,7 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "REFERENCE_CVE", DNF_REFERENCE_KIND_CVE);
     PyModule_AddIntConstant(m, "REFERENCE_VENDOR", DNF_REFERENCE_KIND_VENDOR);
 
-    bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+    bind_textdomain_codeset(GETTEXT_DOMAIN, "UTF-8");
 
     return PYCOMP_MOD_SUCCESS_VAL(m);
 }

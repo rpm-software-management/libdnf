@@ -22,7 +22,6 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <glib/gi18n-lib.h>
 
 // libsolv
 extern "C" {
@@ -54,6 +53,8 @@ extern "C" {
 #include "dnf-package.h"
 #include "hy-package.h"
 #include "dnf-solution-private.hpp"
+
+#include "utils/bgettext/bgettext-lib.h"
 
 #define BLOCK_SIZE 15
 

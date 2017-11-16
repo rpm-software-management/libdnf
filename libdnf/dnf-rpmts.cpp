@@ -32,7 +32,6 @@
 
 
 #include <glib.h>
-#include <glib/gi18n-lib.h>
 #include <rpm/rpmlib.h>
 #include <rpm/rpmlog.h>
 #include <rpm/rpmdb.h>
@@ -40,6 +39,8 @@
 #include "dnf-rpmts.h"
 #include "dnf-types.h"
 #include "dnf-utils.h"
+
+#include "utils/bgettext/bgettext-lib.h"
 
 /**
  * dnf_rpmts_add_install_filename:

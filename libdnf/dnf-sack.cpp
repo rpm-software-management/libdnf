@@ -42,7 +42,6 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-#include <glib/gi18n-lib.h>
 
 extern "C" {
 #include <solv/evr.h>
@@ -70,6 +69,8 @@ extern "C" {
 #include "hy-repo-private.hpp"
 #include "dnf-sack-private.hpp"
 #include "hy-util.h"
+
+#include "utils/bgettext/bgettext-lib.h"
 
 #define DEFAULT_CACHE_ROOT "/var/cache/hawkey"
 #define DEFAULT_CACHE_USER "/var/tmp/hawkey"

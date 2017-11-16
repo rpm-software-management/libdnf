@@ -81,10 +81,10 @@
  */
 
 
-#include <glib/gi18n-lib.h>
-
 #include "dnf-state.h"
 #include "dnf-utils.h"
+
+#include "utils/bgettext/bgettext-lib.h"
 
 typedef struct
 {

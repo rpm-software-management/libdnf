@@ -44,7 +44,6 @@ extern "C" {
 
 // glib
 #include <glib.h>
-#include <glib/gi18n-lib.h>
 
 // hawkey
 #include "dnf-advisory-private.hpp"
@@ -55,6 +54,8 @@ extern "C" {
 #include "hy-query.h"
 #include "dnf-sack-private.hpp"
 #include "dnf-reldep-private.hpp"
+
+#include "utils/bgettext/bgettext-lib.h"
 
 #define BUF_BLOCK 4096
 #define CHKSUM_TYPE REPOKEY_TYPE_SHA256
