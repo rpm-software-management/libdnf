@@ -1352,6 +1352,8 @@ hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
 
     if (cmp_type == HY_GLOB) {
         DnfReldepList *reldeplist = reldeplist_from_str (sack, match);
+        if (reldeplist == NULL)
+            return hy_query_filter_empty(q);
         hy_query_filter_reldep_in(q, keyname, reldeplist);
         g_object_unref (reldeplist);
         return 0;

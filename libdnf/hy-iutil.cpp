@@ -766,11 +766,11 @@ reldeplist_from_str(DnfSack *sack, const char *reldep_str)
     int cmp_type;
     char *name_glob = NULL;
     char *evr = NULL;
+    if (parse_reldep_str(reldep_str, &name_glob, &evr, &cmp_type) == -1)
+        return NULL;
     Dataiterator di;
     Pool *pool = dnf_sack_get_pool(sack);
-
     DnfReldepList *reldeplist = dnf_reldep_list_new (sack);
-    parse_reldep_str(reldep_str, &name_glob, &evr, &cmp_type);
 
     dataiterator_init(&di, pool, 0, 0, 0, name_glob, SEARCH_STRING | SEARCH_GLOB);
     while (dataiterator_step(&di)) {
