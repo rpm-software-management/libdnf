@@ -314,22 +314,22 @@ get_best_solution(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *sack;
     DnfSack *csack;
-    PyObject *form = NULL;
+    PyObject *forms = NULL;
     PyObject *icase = NULL;
     PyObject *with_nevra = NULL;
     PyObject *with_provides = NULL;
     PyObject *with_filenames = NULL;
-    const char *kwlist[] = {"sack", "form", "icase", "with_nevra", "with_provides",
+    const char *kwlist[] = {"sack", "forms", "icase", "with_nevra", "with_provides",
         "with_filenames", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|OO!O!O!O!", (char**) kwlist, &sack_Type, &sack,
-        &form, &PyBool_Type, &icase, &PyBool_Type, &with_nevra, &PyBool_Type, &with_provides,
+        &forms, &PyBool_Type, &icase, &PyBool_Type, &with_nevra, &PyBool_Type, &with_provides,
         &PyBool_Type, &with_filenames)) {
         return NULL;
     }
     HyForm *cforms = NULL;
-    if (form != NULL) {
-        cforms = fill_form(form);
+    if ((forms != NULL) && (forms != Py_None)) {
+        cforms = fill_form(forms);
         if (cforms == NULL)
             return NULL;
     }
@@ -376,7 +376,12 @@ static struct PyMethodDef subject_methods[] = {
     "get_best_selector(self, sack, forms=None, obsoletes=True, reponame=None, reports=False)\n"
     "# :api"},
     {"get_best_solution", (PyCFunction) get_best_solution,
-    METH_VARARGS | METH_KEYWORDS, NULL},
+    METH_VARARGS | METH_KEYWORDS,
+    "get_best_solution(self, sack, with_nevra=True, with_provides=True, with_filenames=True,\n"
+    "    forms=None)\n"
+    "# :api\n"
+    "Try to find first real solution for subject if it is NEVRA, provide or file name\n"
+    "return: dict with keys nevra and query"},
     {NULL}                      /* sentinel */
 };
 
