@@ -376,12 +376,9 @@ class Subject(_hawkey.Subject):
         @param forms:
         @return: dict with keys nevra and query
         """
-        kwargs = {}
-        if forms:
-            kwargs['form'] = forms
         solution = self.get_best_solution(sack, icase=self.icase, with_nevra=with_nevra,
                                           with_provides=with_provides,
-                                          with_filenames=with_filenames, **kwargs)
+                                          with_filenames=with_filenames, forms=forms)
         return solution
 
     def get_best_query(self, sack, with_nevra=True, with_provides=True, with_filenames=True,
