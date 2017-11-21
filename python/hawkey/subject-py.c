@@ -367,7 +367,9 @@ static struct PyMethodDef subject_methods[] = {
     METH_VARARGS | METH_KEYWORDS, NULL},
     {"reldep_possibilities_real", (PyCFunction) reldep_possibilities_real,
     METH_VARARGS | METH_KEYWORDS, NULL},
-    {"get_best_selector", (PyCFunction) get_best_selector, METH_VARARGS | METH_KEYWORDS, NULL},
+    {"get_best_selector", (PyCFunction) get_best_selector, METH_VARARGS | METH_KEYWORDS,
+    "get_best_selector(self, sack, forms=None, obsoletes=True, reponame=None, reports=False)\n"
+    "# :api"},
     {"get_best_solution", (PyCFunction) get_best_solution,
     METH_VARARGS | METH_KEYWORDS, NULL},
     {NULL}                      /* sentinel */
