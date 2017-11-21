@@ -180,16 +180,16 @@ fill_module_form(PyObject *o)
 /* object methods */
 
 static PyObject *
-nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
+get_nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
-    PyObject *form = NULL;
-    const char *kwlist[] = { "form", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", (char**) kwlist, &form)) {
+    PyObject *forms = NULL;
+    const char *kwlist[] = { "forms", NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", (char**) kwlist, &forms)) {
         return NULL;
     }
     HyForm *cforms = NULL;
-    if (form != NULL) {
-        cforms = fill_form(form);
+    if ((forms != NULL) && (forms != Py_None)) {
+        cforms = fill_form(forms);
         if (cforms == NULL)
             return NULL;
     }
@@ -359,8 +359,13 @@ get_best_solution(_SubjectObject *self, PyObject *args, PyObject *kwds)
 }
 
 static struct PyMethodDef subject_methods[] = {
-    {"nevra_possibilities", (PyCFunction) nevra_possibilities,
-    METH_VARARGS | METH_KEYWORDS, NULL},
+    {"get_nevra_possibilities", (PyCFunction) get_nevra_possibilities,
+    METH_VARARGS | METH_KEYWORDS,
+    "get_nevra_possibilities(self, forms=None)\n"
+    "# :api\n"
+    "forms: list of hawkey NEVRA forms like [hawkey.FORM_NEVRA, hawkey.FORM_NEVR]\n"
+    "return: object with every possible nevra. Each possible nevra is represented by Class "
+    "NEVRA object (libdnf) that have attributes name, epoch, version, release, arch"},
     {"nevra_possibilities_real", (PyCFunction) nevra_possibilities_real,
     METH_VARARGS | METH_KEYWORDS, NULL},
     {"module_form_possibilities", (PyCFunction) module_form_possibilities,
