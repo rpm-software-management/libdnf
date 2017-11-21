@@ -1,11 +1,13 @@
 ---
-BasedOnStyle: Mozilla
+BasedOnStyle: LLVM
 ---
 Language: Cpp
+AccessModifierOffset: -4
+AlignEscapedNewlines: DontAlign
 AllowAllParametersOfDeclarationOnNextLine: true
-PointerAlignment: Right
-SpaceBeforeParens: Always
+BreakBeforeBraces: Linux
 ColumnLimit: 100
 IndentWidth: 4
-AlignEscapedNewlines: DontAlign
+KeepEmptyLinesAtTheStartOfBlocks: false
+PointerAlignment: Right
 ...
