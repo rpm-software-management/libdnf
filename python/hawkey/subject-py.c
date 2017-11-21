@@ -44,7 +44,16 @@
 typedef struct {
     PyObject_HEAD
     HySubject pattern;
+    bool icase;
 } _SubjectObject;
+
+static PyObject *
+get_icase(_SubjectObject *self, void *closure)
+{
+    if (self->icase)
+        Py_RETURN_TRUE;
+    Py_RETURN_FALSE;
+}
 
 static PyObject *
 get_pattern(_SubjectObject *self, void *closure)
@@ -55,6 +64,7 @@ get_pattern(_SubjectObject *self, void *closure)
 }
 
 static PyGetSetDef subject_getsetters[] = {
+    {(char*)"icase", (getter)get_icase, NULL, NULL, NULL},
     {(char*)"pattern", (getter)get_pattern, NULL, NULL, NULL},
     {NULL}          /* sentinel */
 };
@@ -65,6 +75,7 @@ subject_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     _SubjectObject *self = (_SubjectObject*)type->tp_alloc(type, 0);
     if (self) {
         self->pattern = NULL;
+        self->icase = FALSE;
     }
     return (PyObject*)self;
 }
@@ -79,13 +90,15 @@ subject_dealloc(_SubjectObject *self)
 static int
 subject_init(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
-    PyObject *py_pattern = NULL;
-    PyObject *tmp_py_str = NULL;
-    if (!PyArg_ParseTuple(args, "O", &py_pattern))
+    const char * pattern;
+    PyObject *icase = NULL;
+    const char *kwlist[] = { "pattern", "ignore_case", NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|O!", (char**) kwlist, &pattern,
+        &PyBool_Type, &icase)) {
         return -1;
-    const char * pattern = pycomp_get_string(py_pattern, &tmp_py_str);
+    }
     self->pattern = g_strdup(pattern);
-    Py_XDECREF(tmp_py_str);
+    self->icase = icase != NULL && PyObject_IsTrue(icase);
     return 0;
 }
 
@@ -315,16 +328,14 @@ get_best_solution(_SubjectObject *self, PyObject *args, PyObject *kwds)
     PyObject *sack;
     DnfSack *csack;
     PyObject *forms = NULL;
-    PyObject *icase = NULL;
     PyObject *with_nevra = NULL;
     PyObject *with_provides = NULL;
     PyObject *with_filenames = NULL;
-    const char *kwlist[] = {"sack", "forms", "icase", "with_nevra", "with_provides",
-        "with_filenames", NULL};
+    const char *kwlist[] = {"sack", "with_nevra", "with_provides", "with_filenames", "forms", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|OO!O!O!O!", (char**) kwlist, &sack_Type, &sack,
-        &forms, &PyBool_Type, &icase, &PyBool_Type, &with_nevra, &PyBool_Type, &with_provides,
-        &PyBool_Type, &with_filenames)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O!O!O!O", (char**) kwlist, &sack_Type, &sack,
+        &PyBool_Type, &with_nevra, &PyBool_Type, &with_provides,
+        &PyBool_Type, &with_filenames, &forms)) {
         return NULL;
     }
     HyForm *cforms = NULL;
@@ -333,14 +344,13 @@ get_best_solution(_SubjectObject *self, PyObject *args, PyObject *kwds)
         if (cforms == NULL)
             return NULL;
     }
-    gboolean c_icase = icase!=NULL && PyObject_IsTrue(icase);
-    gboolean c_with_nevra = icase == NULL || PyObject_IsTrue(with_nevra);
-    gboolean c_with_provides = icase == NULL || PyObject_IsTrue(with_provides);
-    gboolean c_with_filenames = icase == NULL || PyObject_IsTrue(with_filenames);
+    gboolean c_with_nevra = with_nevra == NULL || PyObject_IsTrue(with_nevra);
+    gboolean c_with_provides = with_provides == NULL || PyObject_IsTrue(with_provides);
+    gboolean c_with_filenames = with_filenames == NULL || PyObject_IsTrue(with_filenames);
     csack = sackFromPyObject(sack);
     HyNevra nevra = NULL;
 
-    HyQuery query = hy_subject_get_best_solution(self->pattern, csack, cforms, &nevra, c_icase,
+    HyQuery query = hy_subject_get_best_solution(self->pattern, csack, cforms, &nevra, self->icase,
                                                  c_with_nevra, c_with_provides, c_with_filenames);
 
     PyObject *q = queryToPyObject(query, sack, &query_Type);
