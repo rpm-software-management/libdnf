@@ -331,7 +331,6 @@ def _msg_installed(pkg):
 class Subject(_hawkey.Subject):
 
     def __init__(self, pkg_spec, ignore_case=False):
-        self.icase = ignore_case
         super(Subject, self).__init__(pkg_spec, ignore_case=ignore_case)
 
     def nevra_possibilities_real(self, *args, **kwargs):
@@ -380,16 +379,6 @@ class Subject(_hawkey.Subject):
                                           with_provides=with_provides,
                                           with_filenames=with_filenames, forms=forms)
         return solution
-
-    def get_best_query(self, sack, with_nevra=True, with_provides=True, with_filenames=True,
-                       forms=None):
-        # :api
-
-        solution = self._get_nevra_solution(sack, with_nevra=with_nevra,
-                                            with_provides=with_provides,
-                                            with_filenames=with_filenames,
-                                            forms=forms)
-        return solution['query']
 
     def _get_best_selectors(self, base, forms=None, obsoletes=True, reponame=None, reports=False,
                             solution=None):
