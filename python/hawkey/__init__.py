@@ -358,17 +358,13 @@ class Subject(_hawkey.Subject):
             return is_glob_pattern(solution['nevra'].arch)
         return False
 
-    def get_nevra_possibilities(self, forms=None):
-        # :api
-        """
-        :param forms: list of hawkey NEVRA forms like [hawkey.FORM_NEVRA, hawkey.FORM_NEVR]
-        :return: generator for every possible nevra. Each possible nevra is represented by Class
-        NEVRA object (libdnf) that have attributes name, epoch, version, release, arch
-        """
-        kwargs = dict()
-        if forms:
-            kwargs['form'] = forms
-        for nevra in super(Subject, self).nevra_possibilities(**kwargs):
+    def nevra_possibilities(self, form=None):
+        warnings.simplefilter('always', DeprecationWarning)
+        msg = "The function 'nevra_possibilities' is deprecated. " \
+              "Please use 'get_nevra_possibilities' instead. The function will be removed on " \
+              "2018-01-01"
+        warnings.warn(msg, DeprecationWarning)
+        for nevra in super(Subject, self).get_nevra_possibilities(forms=form):
             yield NEVRA(nevra=nevra)
 
 
