@@ -332,7 +332,7 @@ class Subject(_hawkey.Subject):
 
     def __init__(self, pkg_spec, ignore_case=False):
         self.icase = ignore_case
-        super(Subject, self).__init__(pkg_spec)
+        super(Subject, self).__init__(pkg_spec, ignore_case=ignore_case)
 
     def nevra_possibilities_real(self, *args, **kwargs):
         warnings.simplefilter('always', DeprecationWarning)
@@ -376,7 +376,7 @@ class Subject(_hawkey.Subject):
         @param forms:
         @return: dict with keys nevra and query
         """
-        solution = self.get_best_solution(sack, icase=self.icase, with_nevra=with_nevra,
+        solution = self.get_best_solution(sack, with_nevra=with_nevra,
                                           with_provides=with_provides,
                                           with_filenames=with_filenames, forms=forms)
         return solution
