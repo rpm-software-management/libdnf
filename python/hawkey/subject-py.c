@@ -201,7 +201,8 @@ get_nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
     HyForm *cforms = NULL;
-    if ((forms != NULL) && (forms != Py_None)) {
+    if ((forms != NULL) && (forms != Py_None) &&
+        ((!PyList_Check(forms)) || (PyList_Size(forms) > 0))) {
         cforms = fill_form(forms);
         if (cforms == NULL)
             return NULL;
@@ -288,6 +289,52 @@ reldep_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
+get_best_parser(_SubjectObject *self, PyObject *args, PyObject *kwds, HyNevra *nevra)
+{
+    PyObject *sack;
+    DnfSack *csack;
+    PyObject *forms = NULL;
+    PyObject *with_nevra = NULL;
+    PyObject *with_provides = NULL;
+    PyObject *with_filenames = NULL;
+    const char *kwlist[] = {"sack", "with_nevra", "with_provides", "with_filenames", "forms", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O!O!O!O", (char**) kwlist, &sack_Type, &sack,
+        &PyBool_Type, &with_nevra, &PyBool_Type, &with_provides,
+        &PyBool_Type, &with_filenames, &forms)) {
+        return NULL;
+    }
+    HyForm *cforms = NULL;
+    if ((forms != NULL) && (forms != Py_None) &&
+        ((!PyList_Check(forms)) || (PyList_Size(forms) > 0))) {
+        cforms = fill_form(forms);
+        if (cforms == NULL)
+            return NULL;
+    }
+    gboolean c_with_nevra = with_nevra == NULL || PyObject_IsTrue(with_nevra);
+    gboolean c_with_provides = with_provides == NULL || PyObject_IsTrue(with_provides);
+    gboolean c_with_filenames = with_filenames == NULL || PyObject_IsTrue(with_filenames);
+    csack = sackFromPyObject(sack);
+    HyQuery query = hy_subject_get_best_solution(self->pattern, csack, cforms, nevra, self->icase,
+                                                 c_with_nevra, c_with_provides, c_with_filenames);
+
+    return queryToPyObject(query, sack, &query_Type);
+}
+
+static PyObject *
+get_best_query(_SubjectObject *self, PyObject *args, PyObject *kwds)
+{
+    HyNevra nevra = NULL;
+
+    PyObject *py_query = get_best_parser(self, args, kwds, &nevra);
+    if (nevra != NULL) {
+        hy_nevra_free(nevra);
+    }
+    Py_XINCREF(py_query);
+    return py_query;
+}
+
+static PyObject *
 get_best_selector(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *sack;
@@ -302,7 +349,8 @@ get_best_selector(_SubjectObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
     HyForm *cforms = NULL;
-    if ((forms != NULL) && (forms != Py_None)) {
+    if ((forms != NULL) && (forms != Py_None) &&
+        ((!PyList_Check(forms)) || (PyList_Size(forms) > 0))) {
         cforms = fill_form(forms);
         if (cforms == NULL)
             return NULL;
@@ -325,35 +373,11 @@ get_best_selector(_SubjectObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 get_best_solution(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
-    PyObject *sack;
-    DnfSack *csack;
-    PyObject *forms = NULL;
-    PyObject *with_nevra = NULL;
-    PyObject *with_provides = NULL;
-    PyObject *with_filenames = NULL;
-    const char *kwlist[] = {"sack", "with_nevra", "with_provides", "with_filenames", "forms", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O!O!O!O", (char**) kwlist, &sack_Type, &sack,
-        &PyBool_Type, &with_nevra, &PyBool_Type, &with_provides,
-        &PyBool_Type, &with_filenames, &forms)) {
-        return NULL;
-    }
-    HyForm *cforms = NULL;
-    if ((forms != NULL) && (forms != Py_None)) {
-        cforms = fill_form(forms);
-        if (cforms == NULL)
-            return NULL;
-    }
-    gboolean c_with_nevra = with_nevra == NULL || PyObject_IsTrue(with_nevra);
-    gboolean c_with_provides = with_provides == NULL || PyObject_IsTrue(with_provides);
-    gboolean c_with_filenames = with_filenames == NULL || PyObject_IsTrue(with_filenames);
-    csack = sackFromPyObject(sack);
     HyNevra nevra = NULL;
 
-    HyQuery query = hy_subject_get_best_solution(self->pattern, csack, cforms, &nevra, self->icase,
-                                                 c_with_nevra, c_with_provides, c_with_filenames);
-
-    PyObject *q = queryToPyObject(query, sack, &query_Type);
+    PyObject *q = get_best_parser(self, args, kwds, &nevra);
+    if (q == NULL)
+        return NULL;
     PyObject *ret_dict = PyDict_New();
     PyDict_SetItem(ret_dict, PyString_FromString("query"), q);
     Py_DECREF(q);
@@ -382,6 +406,13 @@ static struct PyMethodDef subject_methods[] = {
     METH_VARARGS | METH_KEYWORDS, NULL},
     {"reldep_possibilities_real", (PyCFunction) reldep_possibilities_real,
     METH_VARARGS | METH_KEYWORDS, NULL},
+    {"get_best_query", (PyCFunction) get_best_query,
+    METH_VARARGS | METH_KEYWORDS,
+    "get_best_query(self, sack, with_nevra=True, with_provides=True, with_filenames=True,\n"
+    "    forms=None)\n"
+    "# :api\n"
+    "Try to find first real solution for subject if it is NEVRA, provide or file name\n"
+    "return: query"},
     {"get_best_selector", (PyCFunction) get_best_selector, METH_VARARGS | METH_KEYWORDS,
     "get_best_selector(self, sack, forms=None, obsoletes=True, reponame=None, reports=False)\n"
     "# :api"},
