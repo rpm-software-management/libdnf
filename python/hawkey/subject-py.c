@@ -269,6 +269,8 @@ module_form_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 reldep_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
+    printf("The function 'reldep_possibilities_real()' in Subject() is deprecated and will be "
+           "removed on 2018-01-01\n");
     PyObject *sack = NULL;
     DnfSack *csack = NULL;
     int icase = 0;
@@ -401,11 +403,11 @@ static struct PyMethodDef subject_methods[] = {
     "return: object with every possible nevra. Each possible nevra is represented by Class "
     "NEVRA object (libdnf) that have attributes name, epoch, version, release, arch"},
     {"nevra_possibilities_real", (PyCFunction) nevra_possibilities_real,
-    METH_VARARGS | METH_KEYWORDS, NULL},
+    METH_VARARGS | METH_KEYWORDS, "DEPRECATED!"},
     {"module_form_possibilities", (PyCFunction) module_form_possibilities,
     METH_VARARGS | METH_KEYWORDS, NULL},
     {"reldep_possibilities_real", (PyCFunction) reldep_possibilities_real,
-    METH_VARARGS | METH_KEYWORDS, NULL},
+    METH_VARARGS | METH_KEYWORDS, "DEPRECATED!"},
     {"get_best_query", (PyCFunction) get_best_query,
     METH_VARARGS | METH_KEYWORDS,
     "get_best_query(self, sack, with_nevra=True, with_provides=True, with_filenames=True,\n"
