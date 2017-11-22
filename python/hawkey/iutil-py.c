@@ -242,8 +242,11 @@ pyseq_to_reldeplist(PyObject *obj, DnfSack *sack, int cmp_type)
         if (reldep_str == NULL)
             goto fail;
 
-        g_reldeplist = reldeplist_from_str (sack, reldep_str);
         Py_XDECREF(tmp_py_str);
+
+        g_reldeplist = reldeplist_from_str (sack, reldep_str);
+        if (g_reldeplist == NULL)
+            goto fail;
 
         dnf_reldep_list_extend (reldeplist, g_reldeplist);
         g_object_unref (g_reldeplist);
