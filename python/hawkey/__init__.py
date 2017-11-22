@@ -366,24 +366,10 @@ class Subject(_hawkey.Subject):
         for nevra in super(Subject, self).get_nevra_possibilities(forms=form):
             yield NEVRA(nevra=nevra)
 
-
-    def _get_nevra_solution(self, sack, with_nevra=True, with_provides=True, with_filenames=True,
-                            forms=None):
-        """
-        Try to find first real solution for subject if it is NEVRA
-        @param sack:
-        @param forms:
-        @return: dict with keys nevra and query
-        """
-        solution = self.get_best_solution(sack, with_nevra=with_nevra,
-                                          with_provides=with_provides,
-                                          with_filenames=with_filenames, forms=forms)
-        return solution
-
     def _get_best_selectors(self, base, forms=None, obsoletes=True, reponame=None, reports=False,
                             solution=None):
         if solution is None:
-            solution = self._get_nevra_solution(base.sack, forms=forms)
+            solution = self.get_best_solution(base.sack, forms=forms)
         q = solution['query']
         q = q.filter(arch__neq="src")
         if len(q) == 0:
