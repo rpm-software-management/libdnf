@@ -564,33 +564,32 @@ write_main(DnfSack *sack, HyRepo hrepo, int switchtosolv, GError **error)
                      _("cannot create temporary file: %s"),
                      tmp_fn_templ);
         goto done;
+    } else {
+        FILE *fp = fdopen(tmp_fd, "w+");
+        if (!fp) {
+            ret = FALSE;
+            g_set_error (error,
+                        DNF_ERROR,
+                        DNF_ERROR_FILE_INVALID,
+                        _("failed opening tmp file: %s"),
+                        strerror(errno));
+            goto done;
+        }
+        rc = repo_write(repo, fp);
+        rc |= checksum_write(hrepo->checksum, fp);
+        rc |= fclose(fp);
+        if (rc) {
+            ret = FALSE;
+            g_set_error (error,
+                        DNF_ERROR,
+                        DNF_ERROR_FILE_INVALID,
+                        _("write_main() failed writing data: %i"), rc);
+            goto done;
+        }
     }
-
-    FILE *fp = fdopen(tmp_fd, "w+");
-    if (!fp) {
-        ret = FALSE;
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_FILE_INVALID,
-                     _("failed opening tmp file: %s"),
-                     strerror(errno));
-        goto done;
-    }
-    rc = repo_write(repo, fp);
-    rc |= checksum_write(hrepo->checksum, fp);
-    rc |= fclose(fp);
-    if (rc) {
-        ret = FALSE;
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_FILE_INVALID,
-                     _("write_main() failed writing data: %i"), rc);
-        goto done;
-    }
-
     if (switchtosolv && repo_is_one_piece(repo)) {
         /* switch over to written solv file activate paging */
-        fp = fopen(tmp_fn_templ, "r");
+        FILE *fp = fopen(tmp_fn_templ, "r");
         if (fp) {
             repo_empty(repo, 1);
             rc = repo_add_solv(repo, fp, 0);
@@ -666,29 +665,30 @@ write_ext(DnfSack *sack, HyRepo hrepo, int which_repodata, const char *suffix, G
                      _("can not create temporary file %s"),
                      tmp_fn_templ);
         goto done;
-    }
-    FILE *fp = fdopen(tmp_fd, "w+");
+    } else {
+        FILE *fp = fdopen(tmp_fd, "w+");
 
-    g_debug("%s: storing %s to: %s", __func__, repo->name, tmp_fn_templ);
-    if (which_repodata != _HY_REPODATA_UPDATEINFO)
-        ret |= repodata_write(data, fp);
-    else
-        ret |= write_ext_updateinfo(hrepo, data, fp);
-    ret |= checksum_write(hrepo->checksum, fp);
-    ret |= fclose(fp);
-    if (ret) {
-        success = FALSE;
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_FAILED,
-                     _("write_ext(%1$d) has failed: %2$d"),
-                     which_repodata, ret);
-        goto done;
+        g_debug("%s: storing %s to: %s", __func__, repo->name, tmp_fn_templ);
+        if (which_repodata != _HY_REPODATA_UPDATEINFO)
+            ret |= repodata_write(data, fp);
+        else
+            ret |= write_ext_updateinfo(hrepo, data, fp);
+        ret |= checksum_write(hrepo->checksum, fp);
+        ret |= fclose(fp);
+        if (ret) {
+            success = FALSE;
+            g_set_error (error,
+                        DNF_ERROR,
+                        DNF_ERROR_FAILED,
+                        _("write_ext(%1$d) has failed: %2$d"),
+                        which_repodata, ret);
+            goto done;
+        }
     }
 
     if (repo_is_one_piece(repo) && which_repodata != _HY_REPODATA_UPDATEINFO) {
         /* switch over to written solv file activate paging */
-        fp = fopen(tmp_fn_templ, "r");
+        FILE *fp = fopen(tmp_fn_templ, "r");
         if (fp) {
             int flags = REPO_USE_LOADING | REPO_EXTEND_SOLVABLES;
             /* do not pollute the main pool with directory component ids */
@@ -1543,6 +1543,8 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
     int rc;
     gboolean ret = TRUE;
     HyRepo hrepo = a_hrepo;
+    Repo *repo;
+    const int build_cache = flags & DNF_SACK_LOAD_FLAG_BUILD_CACHE;
 
     g_free(cache_fn);
     if (hrepo)
@@ -1561,7 +1563,7 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
         goto finish;
     }
 
-    Repo *repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
+    repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
     if (can_use_rpmdb_cache(cache_fp, hrepo->checksum)) {
         const char *chksum = pool_checksum_str(pool, hrepo->checksum);
         g_debug("using cached rpmdb (0x%s)", chksum);
@@ -1589,7 +1591,6 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
     pool_set_installed(pool, repo);
     priv->provides_ready = 0;
 
-    const int build_cache = flags & DNF_SACK_LOAD_FLAG_BUILD_CACHE;
     if (hrepo->state_main == _HY_LOADED_FETCH && build_cache) {
         ret = write_main(sack, hrepo, 1, error);
         if (!ret)
