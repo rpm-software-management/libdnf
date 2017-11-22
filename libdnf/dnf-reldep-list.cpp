@@ -48,7 +48,7 @@ G_DEFINE_TYPE (DnfReldepList, dnf_reldep_list, G_TYPE_OBJECT)
 DnfReldepList *
 dnf_reldep_list_new (DnfSack *sack)
 {
-    DnfReldepList *reldep_list = g_object_new (DNF_TYPE_RELDEP_LIST, NULL);
+    auto reldep_list = DNF_RELDEP_LIST(g_object_new(DNF_TYPE_RELDEP_LIST, NULL));
     reldep_list->pool = dnf_sack_get_pool (sack);
     queue_init (&reldep_list->queue);
     return reldep_list;
@@ -66,7 +66,7 @@ dnf_reldep_list_new (DnfSack *sack)
 DnfReldepList *
 dnf_reldep_list_from_queue (Pool *pool, Queue queue)
 {
-    DnfReldepList *reldep_list = g_object_new (DNF_TYPE_RELDEP_LIST, NULL);
+    auto reldep_list = DNF_RELDEP_LIST(g_object_new(DNF_TYPE_RELDEP_LIST, NULL));
     reldep_list->pool = pool;
     queue_init_clone (&reldep_list->queue, &queue);
     return reldep_list;

@@ -61,7 +61,7 @@ dnf_swdb_pkg_init (DnfSwdbPkg *self)
     self->_ui_repo = NULL;
     self->swdb = NULL;
     self->nevra = NULL;
-    self->type = 0;
+    self->type = DNF_SWDB_ITEM_RPM;
     self->obsoleting = 0;
 }
 
@@ -100,7 +100,7 @@ dnf_swdb_pkg_new (const gchar *name,
                   const gchar *checksum_type,
                   DnfSwdbItem  type)
 {
-    DnfSwdbPkg *swdbpkg = g_object_new (DNF_TYPE_SWDB_PKG, NULL);
+    auto swdbpkg = DNF_SWDB_PKG(g_object_new(DNF_TYPE_SWDB_PKG, NULL));
     swdbpkg->name = g_strdup (name);
     swdbpkg->epoch = epoch;
     swdbpkg->version = g_strdup (version);
@@ -307,7 +307,8 @@ dnf_swdb_pkg_match (DnfSwdbPkg *pkg, const gchar *pattern)
 
     // create regular expression for pattern
     GError *err = NULL;
-    g_autoptr (GRegex) regex = g_regex_new (pattern, G_REGEX_CASELESS, 0, &err);
+    g_autoptr (GRegex) regex = g_regex_new(pattern, G_REGEX_CASELESS,
+                                           static_cast<GRegexMatchFlags>(0), &err);
 
     if (err) {
         g_warning ("Error parsing regular expression: %s", err->message);
@@ -315,43 +316,43 @@ dnf_swdb_pkg_match (DnfSwdbPkg *pkg, const gchar *pattern)
     }
 
     // match against name
-    if (g_regex_match (regex, n, 0, NULL)) {
+    if (g_regex_match (regex, n, static_cast<GRegexMatchFlags>(0), NULL)) {
         return TRUE;
     }
 
     //match against name.arch
     g_autofree gchar *name_arch = g_strjoin (".", n, a, NULL);
-    if (g_regex_match (regex, name_arch, 0, NULL)) {
+    if (g_regex_match (regex, name_arch, static_cast<GRegexMatchFlags>(0), NULL)) {
         return TRUE;
     }
 
     //match against name-version-release.arch
     g_autofree gchar *nvra = g_strdup_printf ("%s-%s-%s.%s", n, v, r, a);
-    if (g_regex_match (regex, nvra, 0, NULL)) {
+    if (g_regex_match (regex, nvra, static_cast<GRegexMatchFlags>(0), NULL)) {
         return TRUE;
     }
 
     //match against name-epoch:version-release.arch
     g_autofree gchar *nevra = g_strdup_printf ("%s-%d:%s-%s.%s", n, e, v, r, a);
-    if (g_regex_match (regex, nvra, 0, NULL)) {
+    if (g_regex_match (regex, nvra, static_cast<GRegexMatchFlags>(0), NULL)) {
         return TRUE;
     }
 
     //match against name-version
     g_autofree gchar *name_version = g_strjoin ("-", n, v, NULL);
-    if (g_regex_match (regex, name_version, 0, NULL)) {
+    if (g_regex_match (regex, name_version, static_cast<GRegexMatchFlags>(0), NULL)) {
         return TRUE;
     }
 
     //match against name-version-release
     g_autofree gchar *nvr = g_strjoin ("-", n, v, r, NULL);
-    if (g_regex_match (regex, nvr, 0, NULL)) {
+    if (g_regex_match (regex, nvr, static_cast<GRegexMatchFlags>(0), NULL)) {
         return TRUE;
     }
 
     //match against epoch:name-version-release.arch
     g_autofree gchar *envra = g_strdup_printf ("%d:%s-%s-%s.%s", e, n, v, r, a);
-    if (g_regex_match (regex, envra, 0, NULL)) {
+    if (g_regex_match (regex, envra, static_cast<GRegexMatchFlags>(0), NULL)) {
         return TRUE;
     }
 

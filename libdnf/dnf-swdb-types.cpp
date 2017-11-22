@@ -45,7 +45,7 @@ dnf_convert_reason_to_id (const gchar *reason)
 {
     for (guint i = 0; i < _reasons_len; ++i) {
         if (g_strcmp0(reason, _reasons_str[i]) == 0) {
-            return i;
+            return static_cast<DnfSwdbReason>(i);
         }
     }
     return DNF_SWDB_REASON_UNKNOWN;

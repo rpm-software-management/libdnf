@@ -280,7 +280,5 @@ dnf_advisorypkg_get_filename(DnfAdvisoryPkg *advisorypkg)
 DnfAdvisoryPkg *
 dnf_advisorypkg_new(void)
 {
-    DnfAdvisoryPkg *advisorypkg;
-    advisorypkg = g_object_new(DNF_TYPE_ADVISORY_PKG, NULL);
-    return DNF_ADVISORY_PKG(advisorypkg);
+    return DNF_ADVISORY_PKG(g_object_new(DNF_TYPE_ADVISORY_PKG, NULL));
 }

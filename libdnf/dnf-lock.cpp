@@ -75,11 +75,10 @@ dnf_lock_finalize(GObject *object)
     DnfLock *lock = DNF_LOCK(object);
     DnfLockPrivate *priv = GET_PRIVATE(lock);
     guint i;
-    DnfLockItem *item;
 
     /* unlock if we hold the lock */
     for (i = 0; i < priv->item_array->len; i++) {
-        item = g_ptr_array_index(priv->item_array, i);
+        auto item = static_cast<DnfLockItem *>(g_ptr_array_index(priv->item_array, i));
         if (item->refcount > 0) {
             g_warning("held lock %s at shutdown",
                       dnf_lock_type_to_string(item->type));
@@ -164,13 +163,12 @@ dnf_lock_get_item_by_type_mode(DnfLock *lock,
                 DnfLockType type,
                 DnfLockMode mode)
 {
-    DnfLockItem *item;
     DnfLockPrivate *priv = GET_PRIVATE(lock);
     guint i;
 
     /* search for the item that matches type */
     for (i = 0; i < priv->item_array->len; i++) {
-        item = g_ptr_array_index(priv->item_array, i);
+        auto item = static_cast<DnfLockItem *>(g_ptr_array_index(priv->item_array, i));
         if (item->type == type && item->mode == mode)
             return item;
     }
@@ -183,13 +181,12 @@ dnf_lock_get_item_by_type_mode(DnfLock *lock,
 static DnfLockItem *
 dnf_lock_get_item_by_id(DnfLock *lock, guint id)
 {
-    DnfLockItem *item;
     DnfLockPrivate *priv = GET_PRIVATE(lock);
     guint i;
 
     /* search for the item that matches the ID */
     for (i = 0; i < priv->item_array->len; i++) {
-        item = g_ptr_array_index(priv->item_array, i);
+        auto item = static_cast<DnfLockItem *>(g_ptr_array_index(priv->item_array, i));
         if (item->id == id)
             return item;
     }
@@ -333,7 +330,6 @@ dnf_lock_set_lock_dir(DnfLock *lock, const gchar *lock_dir)
 guint
 dnf_lock_get_state(DnfLock *lock)
 {
-    DnfLockItem *item;
     DnfLockPrivate *priv = GET_PRIVATE(lock);
     guint bitfield = 0;
     guint i;
@@ -341,7 +337,7 @@ dnf_lock_get_state(DnfLock *lock)
     g_return_val_if_fail(DNF_IS_LOCK(lock), FALSE);
 
     for (i = 0; i < priv->item_array->len; i++) {
-        item = g_ptr_array_index(priv->item_array, i);
+        auto item = static_cast<DnfLockItem *>(g_ptr_array_index(priv->item_array, i));
         bitfield += 1 << item->type;
     }
     return bitfield;
@@ -596,7 +592,7 @@ dnf_lock_new(void)
         g_object_ref(dnf_lock_object);
     } else {
         dnf_lock_object = g_object_new(DNF_TYPE_LOCK, NULL);
-        g_object_add_weak_pointer(dnf_lock_object, &dnf_lock_object);
+        g_object_add_weak_pointer(static_cast<GObject *>(dnf_lock_object), &dnf_lock_object);
     }
     return DNF_LOCK(dnf_lock_object);
 }

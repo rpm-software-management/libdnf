@@ -302,7 +302,7 @@ pool_solvable_epoch_optional_2str(Pool *pool, const Solvable *s, gboolean with_e
 struct _Filter *
 filter_create(int nmatches)
 {
-    struct _Filter *f = g_malloc0(sizeof(struct _Filter));
+    auto f = static_cast<_Filter *>(g_malloc0(sizeof(struct _Filter)));
     filter_reinit(f, nmatches);
     return f;
 }
@@ -328,7 +328,7 @@ filter_reinit(struct _Filter *f, int nmatches)
     g_free(f->matches);
     f->match_type = _HY_VOID;
     if (nmatches > 0)
-        f->matches = g_malloc0(nmatches * sizeof(union _Match *));
+        f->matches = static_cast<_Match *>(g_malloc0(nmatches * sizeof(union _Match *)));
     else
         f->matches = NULL;
     f->nmatches = nmatches;
@@ -349,8 +349,8 @@ query_add_filter(HyQuery q, int nmatches)
     struct _Filter filter;
     memset(&filter, 0, sizeof(filter));
     filter_reinit(&filter, nmatches);
-    q->filters = solv_extend(q->filters, q->nfilters, 1, sizeof(filter),
-                             BLOCK_SIZE);
+    q->filters = static_cast<_Filter *>(solv_extend(q->filters, q->nfilters,
+                                                    1, sizeof(filter), BLOCK_SIZE));
     q->filters[q->nfilters] = filter; /* structure assignment */
     return q->filters + q->nfilters++;
 }
@@ -902,7 +902,7 @@ filter_updown_able(HyQuery q, int downgradable, Map *res)
 static int
 filter_latest_sortcmp(const void *ap, const void *bp, void *dp)
 {
-    Pool *pool = dp;
+    auto pool = static_cast<Pool *>(dp);
     Solvable *sa = pool->solvables + *(Id *)ap;
     Solvable *sb = pool->solvables + *(Id *)bp;
     int r;
@@ -918,7 +918,7 @@ filter_latest_sortcmp(const void *ap, const void *bp, void *dp)
 static int
 filter_latest_sortcmp_byarch(const void *ap, const void *bp, void *dp)
 {
-    Pool *pool = dp;
+    auto pool = static_cast<Pool *>(dp);
     Solvable *sa = pool->solvables + *(Id *)ap;
     Solvable *sb = pool->solvables + *(Id *)bp;
     int r;
@@ -1061,9 +1061,8 @@ filter_advisory(HyQuery q, struct _Filter *f, Map *m, int keyname)
             if (eq) {
                 // remember package nevras for matched advisories
                 GPtrArray *apkgs = dnf_advisory_get_packages(advisory);
-                DnfAdvisoryPkg *apkg;
                 for (unsigned int p = 0; p < apkgs->len; ++p) {
-                     apkg = g_ptr_array_index(apkgs, p);
+                     auto apkg = g_ptr_array_index(apkgs, p);
                      g_ptr_array_add(pkgs, g_object_ref(apkg));
                 }
                 g_ptr_array_unref(apkgs);
@@ -1081,7 +1080,7 @@ filter_advisory(HyQuery q, struct _Filter *f, Map *m, int keyname)
             continue;
         Solvable* s = pool_id2solvable(pool, id);
         for (unsigned int p = 0; p < pkgs->len; ++p) {
-            DnfAdvisoryPkg *apkg = g_ptr_array_index(pkgs, p);
+            auto apkg = static_cast<DnfAdvisoryPkg *>(g_ptr_array_index(pkgs, p));
             if (dnf_advisorypkg_compare_solvable(apkg, pool, s) == 0) {
                 MAPSET(m, id);
                 // found it, now remove it from the list to speed up rest of query
@@ -1121,7 +1120,7 @@ init_result(HyQuery q)
     if (sack_pool_nsolvables != 0 && sack_pool_nsolvables == pool->nsolvables)
         q->result = dnf_sack_get_pkg_solvables(q->sack);
     else {
-        q->result = g_malloc(sizeof(Map));
+        q->result = static_cast<Map *>(g_malloc(sizeof(Map)));
         map_init(q->result, pool->nsolvables);
         FOR_PKG_SOLVABLES(solvid)
             map_set(q->result, solvid);
@@ -1250,7 +1249,7 @@ hy_query_create(DnfSack *sack)
 HyQuery
 hy_query_create_flags(DnfSack *sack, int flags)
 {
-    HyQuery q = g_malloc0(sizeof(*q));
+    HyQuery q = static_cast<HyQuery>(g_malloc0(sizeof(*q)));
     q->sack = sack;
     q->flags = flags;
     return q;
@@ -1309,7 +1308,7 @@ hy_query_clone(HyQuery q)
                 break;
             case _HY_RELDEP:
                 reldep = q->filters[i].matches[j].reldep;
-                filterp->matches[j].reldep = g_object_ref (reldep);
+                filterp->matches[j].reldep = static_cast<DnfReldep *>(g_object_ref(reldep));
                 break;
             case _HY_STR:
                 str_copy = g_strdup(q->filters[i].matches[j].str);
@@ -1322,7 +1321,7 @@ hy_query_clone(HyQuery q)
     }
     assert(qn->nfilters == q->nfilters);
     if (q->result) {
-        qn->result = g_malloc0(sizeof(Map));
+        qn->result = static_cast<Map *>(g_malloc0(sizeof(Map)));
         map_init_clone(qn->result, q->result);
     }
 
@@ -1479,7 +1478,7 @@ hy_query_filter_reldep(HyQuery q, int keyname, DnfReldep *reldep)
     filterp->cmp_type = HY_EQ;
     filterp->keyname = keyname;
     filterp->match_type = _HY_RELDEP;
-    filterp->matches[0].reldep = g_object_ref (reldep);
+    filterp->matches[0].reldep = static_cast<DnfReldep *>(g_object_ref(reldep));
     return 0;
 }
 
@@ -1505,7 +1504,8 @@ int
 hy_query_filter_provides(HyQuery q, int cmp_type, const char *name,
                          const char *evr)
 {
-    DnfReldep *reldep = dnf_reldep_new (query_sack(q), name, cmp_type, evr);
+    DnfReldep *reldep = dnf_reldep_new(query_sack(q), name,
+                                       static_cast<DnfComparisonKind>(cmp_type), evr);
     assert(reldep);
     int ret = hy_query_filter_reldep(q, HY_PKG_PROVIDES, reldep);
     g_object_unref (reldep);
@@ -1525,7 +1525,7 @@ hy_query_filter_provides_in(HyQuery q, char **reldep_strs)
             g_object_unref(reldeplist);
             return DNF_ERROR_BAD_QUERY;
         }
-        reldep = dnf_reldep_new (q->sack, name, cmp_type, evr);
+        reldep = dnf_reldep_new(q->sack, name, static_cast<DnfComparisonKind>(cmp_type), evr);
         if (reldep) {
             dnf_reldep_list_add (reldeplist, reldep);
             g_object_unref (reldep);
@@ -1545,7 +1545,7 @@ hy_query_filter_requires(HyQuery q, int cmp_type, const char *name, const char *
     resolved in hy_query_apply(), we just have to make sure to store it in the
     filter. */
     int not_neg = cmp_type & ~HY_NOT;
-    DnfReldep *reldep = dnf_reldep_new (q->sack, name, not_neg, evr);
+    DnfReldep *reldep = dnf_reldep_new(q->sack, name, static_cast<DnfComparisonKind>(not_neg), evr);
     int rc;
     if (reldep) {
         rc = hy_query_filter_reldep(q, HY_PKG_REQUIRES, reldep);

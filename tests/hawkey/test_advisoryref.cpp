@@ -36,14 +36,13 @@ advisoryref_fixture(void)
 
     DnfPackage *pkg;
     GPtrArray *advisories;
-    DnfAdvisory *advisory;
     GPtrArray *reflist;
 
     pkg = by_name(test_globals.sack, "tour");
     advisories = dnf_package_get_advisories(pkg, HY_GT);
-    advisory = g_ptr_array_index(advisories, 0);
+    auto advisory = static_cast<DnfAdvisory *>(g_ptr_array_index(advisories, 0));
     reflist = dnf_advisory_get_references(advisory);
-    reference = g_object_ref(g_ptr_array_index(reflist, 0));
+    reference = static_cast<DnfAdvisoryRef *>(g_object_ref(g_ptr_array_index(reflist, 0)));
 
     g_ptr_array_unref(reflist);
     g_ptr_array_unref(advisories);

@@ -266,7 +266,7 @@ dnf_get_file_contents_allow_noent(const gchar            *path,
     }
 
     if (out_contents != NULL)
-        *out_contents = g_steal_pointer (&contents);
+        *out_contents = static_cast<gchar *>(g_steal_pointer (&contents));
     if (out_length != NULL)
         *out_length = length;
 

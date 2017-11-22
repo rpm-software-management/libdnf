@@ -270,7 +270,6 @@ dnf_transaction_ensure_repo(DnfTransaction *transaction,
                               DnfPackage *pkg,
                               GError **error)
 {
-    DnfRepo *repo;
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     guint i;
 
@@ -295,7 +294,7 @@ dnf_transaction_ensure_repo(DnfTransaction *transaction,
     if (dnf_package_installed(pkg))
         return TRUE;
     for (i = 0; i < priv->repos->len; i++) {
-        repo = g_ptr_array_index(priv->repos, i);
+        auto repo = static_cast<DnfRepo *>(g_ptr_array_index(priv->repos, i));
         if (g_strcmp0(dnf_package_get_reponame(pkg),
                       dnf_repo_get_id(repo)) == 0) {
             dnf_package_set_repo(pkg, repo);
@@ -332,11 +331,8 @@ dnf_transaction_ensure_repo_list(DnfTransaction *transaction,
                                    GPtrArray *pkglist,
                                    GError **error)
 {
-    guint i;
-    DnfPackage *pkg;
-
-    for (i = 0; i < pkglist->len; i++) {
-        pkg = g_ptr_array_index (pkglist, i);
+    for (guint i = 0; i < pkglist->len; i++) {
+        auto pkg = static_cast<DnfPackage *>(g_ptr_array_index (pkglist, i));
         if (!dnf_transaction_ensure_repo(transaction, pkg, error))
             return FALSE;
     }
@@ -437,7 +433,7 @@ dnf_transaction_check_untrusted(DnfTransaction *transaction,
 
     /* find any packages in untrusted repos */
     for (i = 0; i < install->len; i++) {
-        DnfPackage *pkg = g_ptr_array_index(install, i);
+        auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(install, i));
 
         if (!dnf_transaction_gpgcheck_package (transaction, pkg, error))
             return FALSE;
@@ -457,7 +453,6 @@ dnf_find_pkg_from_header(GPtrArray *array, Header hdr)
     const gchar *version;
     guint epoch;
     guint i;
-    DnfPackage *pkg;
 
     /* get details */
     name = headerGetString(hdr, RPMTAG_NAME);
@@ -468,7 +463,7 @@ dnf_find_pkg_from_header(GPtrArray *array, Header hdr)
 
     /* find in array */
     for (i = 0; i < array->len; i++) {
-        pkg = g_ptr_array_index(array, i);
+        auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(array, i));
         if (g_strcmp0(name, dnf_package_get_name(pkg)) != 0)
             continue;
         if (g_strcmp0(version, dnf_package_get_version(pkg)) != 0)
@@ -490,14 +485,10 @@ dnf_find_pkg_from_header(GPtrArray *array, Header hdr)
 static DnfPackage *
 dnf_find_pkg_from_filename_suffix(GPtrArray *array, const gchar *filename_suffix)
 {
-    const gchar *filename;
-    guint i;
-    DnfPackage *pkg;
-
     /* find in array */
-    for (i = 0; i < array->len; i++) {
-        pkg = g_ptr_array_index(array, i);
-        filename = dnf_package_get_filename(pkg);
+    for (guint i = 0; i < array->len; i++) {
+        auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(array, i));
+        auto filename = dnf_package_get_filename(pkg);
         if (filename == NULL)
             continue;
         if (g_str_has_suffix(filename, filename_suffix))
@@ -513,11 +504,10 @@ static DnfPackage *
 dnf_find_pkg_from_name(GPtrArray *array, const gchar *pkgname)
 {
     guint i;
-    DnfPackage *pkg;
 
     /* find in array */
     for (i = 0; i < array->len; i++) {
-        pkg = g_ptr_array_index(array, i);
+        auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(array, i));
         if (g_strcmp0(dnf_package_get_name(pkg), pkgname) == 0)
             return pkg;
     }
@@ -786,8 +776,6 @@ dnf_transaction_delete_packages(DnfTransaction *transaction,
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     DnfState *state_local;
-    DnfPackage *pkg;
-    const gchar *filename;
     const gchar *cachedir;
     guint i;
 
@@ -810,10 +798,10 @@ dnf_transaction_delete_packages(DnfTransaction *transaction,
     state_local = dnf_state_get_child(state);
     dnf_state_set_number_steps(state_local, priv->install->len);
     for (i = 0; i < priv->install->len; i++) {
-        pkg = g_ptr_array_index(priv->install, i);
+        auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(priv->install, i));
 
         /* don't delete files not in the repo */
-        filename = dnf_package_get_filename(pkg);
+        auto filename = dnf_package_get_filename(pkg);
         if (g_str_has_prefix(filename, cachedir)) {
             g_autoptr(GFile) file = NULL;
             file = g_file_new_for_path(filename);
@@ -843,9 +831,9 @@ dnf_transaction_get_propagated_reason(DnfTransaction *transaction,
     if (dnf_package_get_action(pkg) == DNF_STATE_ACTION_DOWNGRADE ||
         dnf_package_get_action(pkg) == DNF_STATE_ACTION_REINSTALL ||
         dnf_package_get_action(pkg) == DNF_STATE_ACTION_UPDATE) {
-        DnfPackage *erased_package;
 
-        erased_package = g_hash_table_lookup(priv->erased_by_package_hash, dnf_package_get_package_id(pkg));
+        auto erased_package = static_cast<DnfPackage *>(
+            g_hash_table_lookup(priv->erased_by_package_hash, dnf_package_get_package_id(pkg)));
         if (erased_package != NULL) {
             gchar *reason;
 
@@ -1150,7 +1138,7 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
         dnf_state_set_number_steps(state_local,
                         priv->install->len);
     for (i = 0; i < priv->install->len; i++) {
-        pkg = g_ptr_array_index(priv->install, i);
+        pkg = static_cast<DnfPackage *>(g_ptr_array_index(priv->install, i));
         state_loop = dnf_state_get_child(state_local);
         ret = dnf_transaction_write_yumdb_install_item(transaction,
                                                        goal,
@@ -1172,7 +1160,7 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
     if ((priv->remove->len + priv->remove_helper->len) > 0)
         dnf_state_set_number_steps(state_local, priv->remove->len + priv->remove_helper->len);
     for (i = 0; i < priv->remove->len; i++) {
-        pkg = g_ptr_array_index(priv->remove, i);
+        pkg = static_cast<DnfPackage *>(g_ptr_array_index(priv->remove, i));
 #if WITH_SWDB
         _log_swdb_removal(&handle, transaction, goal, pkg);
 #endif
@@ -1184,7 +1172,7 @@ dnf_transaction_write_yumdb(DnfTransaction *transaction,
             return FALSE;
     }
     for (i = 0; i < priv->remove_helper->len; i++) {
-        pkg = g_ptr_array_index(priv->remove_helper, i);
+        pkg = static_cast<DnfPackage *>(g_ptr_array_index(priv->remove_helper, i));
 #if WITH_SWDB
         _log_swdb_removal(&handle, transaction, goal, pkg);
 #endif
@@ -1326,9 +1314,7 @@ dnf_transaction_depsolve(DnfTransaction *transaction,
                          GError **error)
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
-    DnfPackage *pkg;
     gboolean valid;
-    guint i;
     g_autoptr(GPtrArray) packages = NULL;
 
     /* depsolve */
@@ -1344,8 +1330,8 @@ dnf_transaction_depsolve(DnfTransaction *transaction,
                                      DNF_PACKAGE_INFO_UPDATE,
                                      -1);
     g_debug("Goal has %u packages", packages->len);
-    for (i = 0; i < packages->len; i++) {
-        pkg = g_ptr_array_index(packages, i);
+    for (guint i = 0; i < packages->len; i++) {
+        auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(packages, i));
 
         /* get correct package repo */
         if (!dnf_transaction_ensure_repo(transaction, pkg, error))
@@ -1425,7 +1411,7 @@ dnf_transaction_import_keys(DnfTransaction *transaction,
 
     /* import downloaded repo GPG keys */
     for (i = 0; i < priv->repos->len; i++) {
-        DnfRepo *repo = g_ptr_array_index(priv->repos, i);
+        auto repo = static_cast<DnfRepo *>(g_ptr_array_index(priv->repos, i));
         g_auto(GStrv) pubkeys = dnf_repo_get_public_keys(repo);
 
         /* does this file actually exist */
@@ -1558,7 +1544,7 @@ dnf_transaction_commit(DnfTransaction *transaction,
                                    priv->install->len);
     for (i = 0; i < priv->install->len; i++) {
 
-        pkg = g_ptr_array_index(priv->install, i);
+        pkg = static_cast<DnfPackage *>(g_ptr_array_index(priv->install, i));
         ret = dnf_transaction_ensure_repo(transaction, pkg, error);
         if (!ret)
             goto out;
@@ -1593,7 +1579,7 @@ dnf_transaction_commit(DnfTransaction *transaction,
                                          DNF_PACKAGE_INFO_REMOVE,
                                          -1);
     for (i = 0; i < priv->remove->len; i++) {
-        pkg = g_ptr_array_index(priv->remove, i);
+        pkg = static_cast<DnfPackage *>(g_ptr_array_index(priv->remove, i));
         ret = dnf_rpmts_add_remove_pkg(priv->ts, pkg, error);
         if (!ret)
             goto out;
@@ -1616,14 +1602,14 @@ dnf_transaction_commit(DnfTransaction *transaction,
      * map removed packages auto-added by rpm to actual DnfPackage's */
     priv->remove_helper = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
     for (i = 0; i < priv->install->len; i++) {
-        pkg = g_ptr_array_index(priv->install, i);
+        pkg = static_cast<DnfPackage *>(g_ptr_array_index(priv->install, i));
         is_update = dnf_package_get_action(pkg) == DNF_STATE_ACTION_UPDATE ||
                     dnf_package_get_action(pkg) == DNF_STATE_ACTION_DOWNGRADE;
         if (!is_update)
             continue;
         pkglist = hy_goal_list_obsoleted_by_package(goal, pkg);
         for (j = 0; j < pkglist->len; j++) {
-            pkg_tmp = g_ptr_array_index (pkglist, j);
+            pkg_tmp = static_cast<DnfPackage *>(g_ptr_array_index (pkglist, j));
             g_ptr_array_add(priv->remove_helper,
                             g_object_ref(pkg_tmp));
             dnf_package_set_action(pkg_tmp, DNF_STATE_ACTION_CLEANUP);
@@ -1641,7 +1627,7 @@ dnf_transaction_commit(DnfTransaction *transaction,
                                                          g_free, (GDestroyNotify) g_object_unref);
     all_obsoleted = hy_goal_list_obsoleted(goal, NULL);
     for (i = 0; i < priv->install->len; i++) {
-        pkg = g_ptr_array_index(priv->install, i);
+        pkg = static_cast<DnfPackage *>(g_ptr_array_index(priv->install, i));
         if (dnf_package_get_action(pkg) != DNF_STATE_ACTION_UPDATE &&
             dnf_package_get_action(pkg) != DNF_STATE_ACTION_DOWNGRADE &&
             dnf_package_get_action(pkg) != DNF_STATE_ACTION_REINSTALL)
@@ -1649,7 +1635,7 @@ dnf_transaction_commit(DnfTransaction *transaction,
 
         pkglist = hy_goal_list_obsoleted_by_package(goal, pkg);
         for (j = 0; j < pkglist->len; j++) {
-            pkg_tmp = g_ptr_array_index(pkglist, j);
+            pkg_tmp = static_cast<DnfPackage *>(g_ptr_array_index(pkglist, j));
             if (!hy_packagelist_has(all_obsoleted, pkg_tmp)) {
                 g_hash_table_insert(priv->erased_by_package_hash,
                                     g_strdup(dnf_package_get_package_id(pkg)),
@@ -1819,10 +1805,8 @@ out:
 DnfTransaction *
 dnf_transaction_new(DnfContext *context)
 {
-    DnfTransaction *transaction;
-    DnfTransactionPrivate *priv;
-    transaction = g_object_new(DNF_TYPE_TRANSACTION, NULL);
-    priv = GET_PRIVATE(transaction);
+    auto transaction = DNF_TRANSACTION(g_object_new(DNF_TYPE_TRANSACTION, NULL));
+    auto priv = GET_PRIVATE(transaction);
     priv->context = context;
     g_object_add_weak_pointer(G_OBJECT(priv->context),(void **) &priv->context);
     priv->ts = rpmtsCreate();
@@ -1831,5 +1815,5 @@ dnf_transaction_new(DnfContext *context)
     priv->db = dnf_db_new(context);
     /* propagate db enablement */
     dnf_db_set_enabled(priv->db, dnf_context_get_yumdb_enabled(context));
-    return DNF_TRANSACTION(transaction);
+    return transaction;
 }

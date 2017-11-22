@@ -50,7 +50,7 @@ get_latest_pkg(DnfSack *sack, const char *name)
     GPtrArray *plist = hy_query_run(q);
     fail_unless(plist->len == 1,
                 "get_latest_pkg() failed finding '%s'.", name);
-    DnfPackage *pkg = g_object_ref(g_ptr_array_index(plist, 0));
+    auto pkg = static_cast<DnfPackage *>(g_object_ref(g_ptr_array_index(plist, 0)));
     hy_query_free(q);
     g_ptr_array_unref(plist);
     return pkg;
@@ -64,7 +64,7 @@ get_available_pkg(DnfSack *sack, const char *name)
     hy_query_filter(q, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     GPtrArray *plist = hy_query_run(q);
     fail_unless(plist->len == 1);
-    DnfPackage *pkg = g_object_ref(g_ptr_array_index(plist, 0));
+    auto pkg = static_cast<DnfPackage *>(g_object_ref(g_ptr_array_index(plist, 0)));
     hy_query_free(q);
     g_ptr_array_unref(plist);
     return pkg;
@@ -86,7 +86,7 @@ mock_running_kernel(DnfSack *sack)
     hy_query_filter(q, HY_PKG_EVR, HY_EQ, "1-1");
     GPtrArray *plist = hy_query_run(q);
     fail_unless(plist->len == 1);
-    DnfPackage *pkg = g_object_ref(g_ptr_array_index(plist, 0));
+    auto pkg = static_cast<DnfPackage *>(g_object_ref(g_ptr_array_index(plist, 0)));
     hy_query_free(q);
     g_ptr_array_unref(plist);
     Id id = dnf_package_get_id(pkg);
@@ -109,11 +109,9 @@ userinstalled(DnfSack *sack, HyGoal goal, const char *name)
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
     hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
     GPtrArray *plist = hy_query_run(q);
-    DnfPackage *pkg;
-    guint i;
 
-    for(i = 0; i < plist->len; i++) {
-        pkg = g_ptr_array_index (plist, i);
+    for(guint i = 0; i < plist->len; i++) {
+        auto pkg = static_cast<DnfPackage *>(g_ptr_array_index (plist, i));
         hy_goal_userinstalled(goal, pkg);
     }
 
@@ -223,7 +221,8 @@ START_TEST(test_goal_install_selector)
     assert_iueo(goal, 1, 0, 0, 0);
 
     GPtrArray *plist = hy_goal_list_installs(goal, NULL);
-    const char *nvra = dnf_package_get_nevra(g_ptr_array_index(plist, 0));
+    const char *nvra = dnf_package_get_nevra(
+        static_cast<DnfPackage *>(g_ptr_array_index(plist, 0)));
     ck_assert_str_eq(nvra, "semolina-2-0.i686");
     g_ptr_array_unref(plist);
     hy_goal_free(goal);
@@ -358,7 +357,7 @@ START_TEST(test_goal_selector_upgrade)
     fail_if(hy_goal_run(goal));
     GPtrArray *plist = hy_goal_list_upgrades(goal, NULL);
     fail_unless(plist->len == 1);
-    assert_nevra_eq(g_ptr_array_index(plist, 0), "dog-1-2.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 0)), "dog-1-2.x86_64");
     g_ptr_array_unref(plist);
     hy_goal_free(goal);
     hy_selector_free(sltr);
@@ -410,7 +409,7 @@ START_TEST(test_goal_install_selector_file)
     fail_if(hy_goal_run(goal));
     assert_iueo(goal, 0, 0, 1, 0);
     GPtrArray *plist = hy_goal_list_erasures(goal, NULL);
-    DnfPackage *pkg = g_ptr_array_index(plist, 0);
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     ck_assert_str_eq("fool", dnf_package_get_name(pkg));
     hy_selector_free(sltr);
     g_ptr_array_unref(plist);
@@ -464,7 +463,7 @@ assert_list_names(GPtrArray *plist, ...)
     while ((name = va_arg(names, char *)) != NULL) {
         if (i >= count)
             fail("assert_list_names(): list too short");
-        DnfPackage *pkg = g_ptr_array_index(plist, i++);
+        auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, i++));
         ck_assert_str_eq(dnf_package_get_name(pkg), name);
     }
     fail_unless(i == count, "assert_list_names(): too many items in the list");
@@ -489,7 +488,7 @@ START_TEST(test_goal_upgrade_all)
                       NULL);
 
     // see all obsoletes of fool:
-    DnfPackage *pkg = g_ptr_array_index(plist, 2);
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 2));
     GPtrArray *plist_obs = hy_goal_list_obsoleted_by_package(goal, pkg);
     assert_list_names(plist_obs, "fool", "penny", NULL);
     g_ptr_array_unref(plist_obs);
@@ -513,12 +512,12 @@ START_TEST(test_goal_downgrade)
     GPtrArray *plist = hy_goal_list_downgrades(goal, NULL);
     fail_unless(plist->len == 1);
 
-    DnfPackage *pkg = g_ptr_array_index(plist, 0);
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     ck_assert_str_eq(dnf_package_get_evr(pkg),
                      "6:4.9-3");
     GPtrArray *obsoleted = hy_goal_list_obsoleted_by_package(goal, pkg);
     fail_unless(obsoleted->len == 1);
-    DnfPackage *old_pkg = g_ptr_array_index(obsoleted, 0);
+    auto old_pkg = static_cast<DnfPackage *>(g_ptr_array_index(obsoleted, 0));
     ck_assert_str_eq(dnf_package_get_evr(old_pkg),
                      "6:5.0-11");
     g_ptr_array_unref(obsoleted);
@@ -541,7 +540,7 @@ START_TEST(test_goal_get_reason)
     guint i;
     int set = 0;
     for(i = 0; i < plist->len; i++) {
-        pkg = g_ptr_array_index (plist, i);
+        pkg = static_cast<DnfPackage *>(g_ptr_array_index (plist, i));
         if (!strcmp(dnf_package_get_name(pkg), "walrus")) {
             set |= 1 << 0;
             fail_unless(hy_goal_get_reason(goal, pkg) == HY_REASON_USER);
@@ -572,7 +571,7 @@ START_TEST(test_goal_get_reason_selector)
 
     GPtrArray *plist = hy_goal_list_installs(goal, NULL);
     fail_unless(plist->len == 2);
-    DnfPackage *pkg = g_ptr_array_index(plist, 0);
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     fail_unless(hy_goal_get_reason(goal, pkg) == HY_REASON_USER);
 
     g_ptr_array_unref(plist);
@@ -914,12 +913,12 @@ START_TEST(test_goal_distupgrade_all)
 
     assert_iueo(goal, 0, 1, 0, 0);
     GPtrArray *plist = hy_goal_list_upgrades(goal, NULL);
-    assert_nevra_eq(g_ptr_array_index(plist, 0), "flying-3-0.noarch");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 0)), "flying-3-0.noarch");
     g_ptr_array_unref(plist);
 
     plist = hy_goal_list_downgrades(goal, NULL);
     fail_unless(plist->len == 1);
-    assert_nevra_eq(g_ptr_array_index(plist, 0), "baby-6:4.9-3.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 0)), "baby-6:4.9-3.x86_64");
     g_ptr_array_unref(plist);
     hy_goal_free(goal);
 }
@@ -942,7 +941,7 @@ START_TEST(test_goal_distupgrade_all_excludes)
 
     GPtrArray *plist = hy_goal_list_downgrades(goal, NULL);
     fail_unless(plist->len == 1);
-    assert_nevra_eq(g_ptr_array_index(plist, 0), "baby-6:4.9-3.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 0)), "baby-6:4.9-3.x86_64");
     g_ptr_array_unref(plist);
     hy_goal_free(goal);
 }
@@ -957,21 +956,23 @@ START_TEST(test_goal_distupgrade_all_keep_arch)
     assert_iueo(goal, 0, 5, 0, 1);
     GPtrArray *plist = hy_goal_list_upgrades(goal, NULL);
     // gun pkg is not upgraded to latest version of different arch
-    assert_nevra_eq(g_ptr_array_index(plist, 0), "dog-1-2.x86_64");
-    assert_nevra_eq(g_ptr_array_index(plist, 1), "pilchard-1.2.4-1.i686");
-    assert_nevra_eq(g_ptr_array_index(plist, 2), "pilchard-1.2.4-1.x86_64");
-    assert_nevra_eq(g_ptr_array_index(plist, 3), "flying-3.1-0.x86_64");
-    assert_nevra_eq(g_ptr_array_index(plist, 4), "fool-1-5.noarch");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 0)), "dog-1-2.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 1)),
+                    "pilchard-1.2.4-1.i686");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 2)),
+                    "pilchard-1.2.4-1.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 3)), "flying-3.1-0.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 4)), "fool-1-5.noarch");
     g_ptr_array_unref(plist);
 
     plist = hy_goal_list_obsoleted(goal, NULL);
     fail_unless(plist->len == 1);
-    assert_nevra_eq(g_ptr_array_index(plist, 0), "penny-4-1.noarch");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 0)), "penny-4-1.noarch");
     g_ptr_array_unref(plist);
 
     plist = hy_goal_list_downgrades(goal, NULL);
     fail_unless(plist->len == 1);
-    assert_nevra_eq(g_ptr_array_index(plist, 0), "baby-6:4.9-3.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 0)), "baby-6:4.9-3.x86_64");
     g_ptr_array_unref(plist);
     hy_goal_free(goal);
 }
@@ -987,7 +988,7 @@ START_TEST(test_goal_distupgrade_selector_upgrade)
 
     assert_iueo(goal, 0, 1, 0, 0);
     GPtrArray *plist = hy_goal_list_upgrades(goal, NULL);
-    assert_nevra_eq(g_ptr_array_index(plist, 0), "flying-3-0.noarch");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 0)), "flying-3-0.noarch");
 
     g_ptr_array_unref(plist);
     hy_goal_free(goal);
@@ -1006,7 +1007,7 @@ START_TEST(test_goal_distupgrade_selector_downgrade)
     assert_iueo(goal, 0, 0, 0, 0);
     GPtrArray *plist = hy_goal_list_downgrades(goal, NULL);
     fail_unless(plist->len == 1);
-    assert_nevra_eq(g_ptr_array_index(plist, 0), "baby-6:4.9-3.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 0)), "baby-6:4.9-3.x86_64");
 
     g_ptr_array_unref(plist);
     hy_goal_free(goal);
@@ -1068,9 +1069,9 @@ START_TEST(test_goal_unneeded)
 
     GPtrArray *plist = hy_goal_list_unneeded(goal, NULL);
     ck_assert_int_eq(plist->len, 4);
-    DnfPackage *pkg = g_ptr_array_index(plist, 0);
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     assert_nevra_eq(pkg, "flying-2-9.noarch");
-    pkg = g_ptr_array_index(plist, 1);
+    pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 1));
     assert_nevra_eq(pkg, "penny-lib-4-1.x86_64");
     g_ptr_array_unref(plist);
 
@@ -1086,7 +1087,7 @@ struct Solutions {
 static struct Solutions *
 solutions_create(void)
 {
-    struct Solutions *solutions = g_malloc0(sizeof(struct Solutions));
+    auto solutions = static_cast<Solutions *>(g_malloc0(sizeof(struct Solutions)));
     solutions->installs = hy_packagelist_create();
     return solutions;
 }
@@ -1105,11 +1106,10 @@ solution_cb(HyGoal goal, void *data)
     solutions->solutions++;
 
     GPtrArray *new_installs = hy_goal_list_installs(goal, NULL);
-    DnfPackage *pkg;
     guint i;
 
     for(i = 0; i < new_installs->len; i++) {
-        pkg = g_ptr_array_index (new_installs, i);
+        auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(new_installs, i));
         if (!hy_packagelist_has(solutions->installs, pkg))
             g_ptr_array_add(solutions->installs, g_object_ref(pkg));
     }
@@ -1151,9 +1151,10 @@ START_TEST(test_goal_installonly_limit)
 
     assert_iueo(goal, 1, 1, 3, 0); // k-m is just upgraded
     GPtrArray *erasures = hy_goal_list_erasures(goal, NULL);
-    assert_nevra_eq(g_ptr_array_index(erasures, 0), "k-1-0.x86_64");
-    assert_nevra_eq(g_ptr_array_index(erasures, 1), "k-freak-1-0-1-0.x86_64");
-    assert_nevra_eq(g_ptr_array_index(erasures, 2), "k-1-1.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(erasures, 0)), "k-1-0.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(erasures, 1)),
+                    "k-freak-1-0-1-0.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(erasures, 2)), "k-1-1.x86_64");
     g_ptr_array_unref(erasures);
 
     hy_goal_free(goal);
@@ -1210,9 +1211,10 @@ START_TEST(test_goal_installonly_limit_running_kernel)
 
     assert_iueo(goal, 1, 1, 3, 0);
     GPtrArray *erasures = hy_goal_list_erasures(goal, NULL);
-    assert_nevra_eq(g_ptr_array_index(erasures, 0), "k-1-0.x86_64");
-    assert_nevra_eq(g_ptr_array_index(erasures, 1), "k-freak-1-0-1-0.x86_64");
-    assert_nevra_eq(g_ptr_array_index(erasures, 2), "k-2-0.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(erasures, 0)), "k-1-0.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(erasures, 1)),
+                    "k-freak-1-0-1-0.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(erasures, 2)), "k-2-0.x86_64");
     g_ptr_array_unref(erasures);
 
     hy_goal_free(goal);
@@ -1234,11 +1236,12 @@ START_TEST(test_goal_installonly_limit_with_modules)
 
     assert_iueo(goal, 2, 0, 5, 0);
     GPtrArray *erasures = hy_goal_list_erasures(goal, NULL);
-    assert_nevra_eq(g_ptr_array_index(erasures, 0), "k-1-0.x86_64");
-    assert_nevra_eq(g_ptr_array_index(erasures, 1), "k-m-1-0.x86_64");
-    assert_nevra_eq(g_ptr_array_index(erasures, 2), "k-freak-1-0-1-0.x86_64");
-    assert_nevra_eq(g_ptr_array_index(erasures, 3), "k-2-0.x86_64");
-    assert_nevra_eq(g_ptr_array_index(erasures, 4), "k-m-2-0.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(erasures, 0)), "k-1-0.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(erasures, 1)), "k-m-1-0.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(erasures, 2)),
+                    "k-freak-1-0-1-0.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(erasures, 3)), "k-2-0.x86_64");
+    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(erasures, 4)), "k-m-2-0.x86_64");
     g_ptr_array_unref(erasures);
 
     hy_goal_free(goal);
@@ -1345,7 +1348,9 @@ START_TEST(test_goal_get_solution)
     fail_unless(hy_goal_count_problems(goal) == 2);
 
     DnfSolutionAction expected_actions[2][3] = {
-                                   {DNF_SOLUTION_ACTION_DO_NOT_INSTALL, 0, 0},
+                                   {DNF_SOLUTION_ACTION_DO_NOT_INSTALL,
+                                    DNF_SOLUTION_ACTION_NONE,
+                                    DNF_SOLUTION_ACTION_NONE},
                                    {DNF_SOLUTION_ACTION_ALLOW_REMOVE,
                                     DNF_SOLUTION_ACTION_DO_NOT_REMOVE,
                                     DNF_SOLUTION_ACTION_DO_NOT_INSTALL}};
@@ -1357,7 +1362,7 @@ START_TEST(test_goal_get_solution)
     for (gint p = 0; p < hy_goal_count_problems(goal); ++p) {
         g_autoptr(GPtrArray) slist = hy_goal_get_solution(goal, p);
         for (guint i = 0; i < slist->len; ++i) {
-            DnfSolution *sol = g_ptr_array_index(slist, i);
+            auto sol = static_cast<DnfSolution *>(g_ptr_array_index(slist, i));
             fail_unless(dnf_solution_get_action(sol) == expected_actions[p][i]);
             fail_unless(g_strcmp0(dnf_solution_get_old(sol), expected_old[p][i]) == 0);
             fail_unless(g_strcmp0(dnf_solution_get_new(sol), expected_new[p][i]) == 0);

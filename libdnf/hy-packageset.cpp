@@ -93,12 +93,11 @@ dnf_packageset_class_init(DnfPackageSetClass *klass)
 DnfPackageSet *
 dnf_packageset_new(DnfSack *sack)
 {
-    DnfPackageSet *pset;
-    pset = g_object_new(DNF_TYPE_PACKAGE_SET, NULL);
-    DnfPackageSetPrivate *priv = GET_PRIVATE(pset);
+    auto pset = DNF_PACKAGE_SET(g_object_new(DNF_TYPE_PACKAGE_SET, NULL));
+    auto priv = GET_PRIVATE(pset);
     priv->sack = sack;
     map_init(&priv->map, dnf_sack_get_pool(sack)->nsolvables);
-    return DNF_PACKAGE_SET(pset);
+    return pset;
 }
 
 // see http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetTable

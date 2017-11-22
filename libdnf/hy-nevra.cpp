@@ -41,7 +41,7 @@ hy_nevra_clear(HyNevra nevra)
 HyNevra
 hy_nevra_create()
 {
-    HyNevra nevra = g_malloc0(sizeof(*nevra));
+    HyNevra nevra = static_cast<HyNevra>(g_malloc0(sizeof(*nevra)));
     hy_nevra_clear(nevra);
     return nevra;
 }

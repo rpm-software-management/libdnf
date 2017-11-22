@@ -420,7 +420,7 @@ dnf_state_set_cancellable(DnfState *state, GCancellable *cancellable)
     if (priv->cancellable != NULL)
         g_clear_object(&priv->cancellable);
     if (cancellable != NULL)
-        priv->cancellable = g_object_ref(cancellable);
+        priv->cancellable = static_cast<GCancellable *>(g_object_ref(cancellable));
 }
 
 /**
@@ -1446,7 +1446,5 @@ dnf_state_finished_real(DnfState *state, GError **error, const gchar *strloc)
 DnfState *
 dnf_state_new(void)
 {
-    DnfState *state;
-    state = g_object_new(DNF_TYPE_STATE, NULL);
-    return DNF_STATE(state);
+    return DNF_STATE(g_object_new(DNF_TYPE_STATE, NULL));
 }
