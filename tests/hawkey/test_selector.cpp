@@ -38,8 +38,8 @@ START_TEST(test_sltr_pkg)
     GPtrArray *plist1 = hy_query_run(q);
     hy_query_free(q);
     fail_unless(plist1->len == 2);
-    DnfPackage *pkg0 = g_object_ref(g_ptr_array_index(plist1, 0));
-    DnfPackage *pkg1 = g_object_ref(g_ptr_array_index(plist1, 1));
+    auto pkg0 = static_cast<DnfPackage *>(g_object_ref(g_ptr_array_index(plist1, 0)));
+    auto pkg1 = static_cast<DnfPackage *>(g_object_ref(g_ptr_array_index(plist1, 1)));
     g_ptr_array_unref(plist1);
     dnf_packageset_add(pset, pkg0);
 

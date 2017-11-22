@@ -53,7 +53,7 @@ G_DEFINE_TYPE(DnfSolution, dnf_solution, G_TYPE_OBJECT)
 DnfSolution *
 dnf_solution_new(void)
 {
-    return g_object_new(DNF_TYPE_SOLUTION, NULL);
+    return DNF_SOLUTION(g_object_new(DNF_TYPE_SOLUTION, NULL));
 }
 
 /**

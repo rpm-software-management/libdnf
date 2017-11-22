@@ -112,7 +112,7 @@ dnf_sack_finalize(GObject *object)
     int i;
 
     FOR_REPOS(i, repo) {
-        HyRepo hrepo = repo->appdata;
+        auto hrepo = static_cast<HyRepo>(repo->appdata);
         if (!hrepo)
             continue;
         hy_repo_free(hrepo);
@@ -194,9 +194,7 @@ dnf_sack_class_init(DnfSackClass *klass)
 DnfSack *
 dnf_sack_new(void)
 {
-    DnfSack *sack;
-    sack = g_object_new(DNF_TYPE_SACK, NULL);
-    return DNF_SACK(sack);
+    return DNF_SACK(g_object_new(DNF_TYPE_SACK, NULL));
 }
 
 static int
@@ -261,7 +259,7 @@ dnf_sack_set_pkg_solvables(DnfSack *sack, Map *pkg_solvables, int pool_nsolvable
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
 
-    Map *pkg_solvables_tmp = g_malloc(sizeof(Map));
+    auto pkg_solvables_tmp = static_cast<Map *>(g_malloc(sizeof(Map)));
     if (priv->pkg_solvables)
         free_map_fully(priv->pkg_solvables);
     map_init_clone(pkg_solvables_tmp, pkg_solvables);
@@ -280,7 +278,7 @@ Map *
 dnf_sack_get_pkg_solvables(DnfSack *sack)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
-    Map *pkg_solvables_tmp = g_malloc(sizeof(Map));
+    auto pkg_solvables_tmp = static_cast<Map *>(g_malloc(sizeof(Map)));
 
     map_init_clone(pkg_solvables_tmp, priv->pkg_solvables);
     return pkg_solvables_tmp;
@@ -320,7 +318,7 @@ dnf_sack_recompute_considered(DnfSack *sack)
     if (!pool->considered) {
         if (!priv->repo_excludes && !priv->pkg_excludes && !priv->pkg_includes)
             return;
-        pool->considered = g_malloc0(sizeof(Map));
+        pool->considered = static_cast<Map *>(g_malloc0(sizeof(Map)));
         map_init(pool->considered, pool->nsolvables);
     } else
         map_grow(pool->considered, pool->nsolvables);
@@ -340,7 +338,7 @@ dnf_sack_recompute_considered(DnfSack *sack)
         Id repoid;
         Repo *repo;
         FOR_REPOS(repoid, repo) {
-            HyRepo hyrepo = repo->appdata;
+            auto hyrepo = static_cast<HyRepo>(repo->appdata);
             if (!hy_repo_get_use_includes(hyrepo)) {
                 Id solvableid;
                 Solvable *solvable;
@@ -433,7 +431,7 @@ queue_filter_version(DnfSack *sack, Queue *queue, const char *version)
 }
 
 static gboolean
-load_ext(DnfSack *sack, HyRepo hrepo, int which_repodata,
+load_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
          const char *suffix, int which_filename,
          int (*cb)(Repo *, FILE *), GError **error)
 {
@@ -624,7 +622,7 @@ write_main(DnfSack *sack, HyRepo hrepo, int switchtosolv, GError **error)
 static int
 write_ext_updateinfo_filter(Repo *repo, Repokey *key, void *kfdata)
 {
-    Repodata *data = kfdata;
+    auto data = static_cast<Repodata *>(kfdata);
     if (key->name == 1 && (int) key->size != data->repodataid)
         return -1;
     return repo_write_stdkeyfilter(repo, key, 0);
@@ -644,7 +642,8 @@ write_ext_updateinfo(HyRepo hrepo, Repodata *data, FILE *fp)
 }
 
 static gboolean
-write_ext(DnfSack *sack, HyRepo hrepo, int which_repodata, const char *suffix, GError **error)
+write_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
+          const char *suffix, GError **error)
 {
     Repo *repo = hrepo->libsolv_repo;
     int ret = 0;
@@ -971,7 +970,7 @@ dnf_sack_evr_cmp(DnfSack *sack, const char *evr1, const char *evr2)
     if (!sack)
         _sack = dnf_sack_new ();
     else
-        _sack = g_object_ref (sack);
+        _sack = static_cast<DnfSack *>(g_object_ref(sack));
     return pool_evrcmp_str(dnf_sack_get_pool(_sack), evr1, evr2, EVRCMP_COMPARE);
 }
 
@@ -1058,10 +1057,10 @@ dnf_sack_list_arches(DnfSack *sack)
     for (Id id = 0; id <= pool->lastarch; ++id) {
         if (!pool->id2arch[id])
             continue;
-        ss = solv_extend(ss, c, 1, sizeof(char*), BLOCK_SIZE);
+        ss = static_cast<const char **>(solv_extend(ss, c, 1, sizeof(char*), BLOCK_SIZE));
         ss[c++] = pool_id2str(pool, id);
     }
-    ss = solv_extend(ss, c, 1, sizeof(char*), BLOCK_SIZE);
+    ss = static_cast<const char **>(solv_extend(ss, c, 1, sizeof(char*), BLOCK_SIZE));
     ss[c++] = NULL;
     return ss;
 }
@@ -1183,7 +1182,7 @@ dnf_sack_add_cmdline_package(DnfSack *sack, const char *fn)
                    pool_errstr (dnf_sack_get_pool (sack)));
         return NULL;
     }
-    HyRepo hrepo = repo->appdata;
+    auto hrepo = static_cast<HyRepo>(repo->appdata);
     hrepo->needs_internalizing = 1;
     priv->provides_ready = 0;    /* triggers internalizing later */
     priv->considered_uptodate = FALSE;   /* triggers recompute_considered later */
@@ -1217,7 +1216,7 @@ dnf_sack_add_excludes_or_includes(DnfSack *sack, Map **dest, DnfPackageSet *pkgs
 {
     Map *destmap = *dest;
     if (destmap == NULL) {
-        destmap = g_malloc0(sizeof(Map));
+        destmap = static_cast<Map *>(g_malloc0(sizeof(Map)));
         Pool *pool = dnf_sack_get_pool(sack);
         map_init(destmap, pool->nsolvables);
         *dest = destmap;
@@ -1312,7 +1311,7 @@ dnf_sack_set_excludes_or_includes(DnfSack *sack, Map **dest, DnfPackageSet *pkgs
 
     *dest = free_map_fully(*dest);
     if (pkgset) {
-        *dest = g_malloc0(sizeof(Map));
+        *dest = static_cast<Map *>(g_malloc0(sizeof(Map)));
         Map *pkgmap = dnf_packageset_get_map(pkgset);
         map_init_clone(*dest, pkgmap);
     }
@@ -1444,7 +1443,7 @@ dnf_sack_set_use_includes(DnfSack *sack, const char *reponame, gboolean enabled)
         Id repoid;
         Repo *repo;
         FOR_REPOS(repoid, repo) {
-            HyRepo hyrepo = pool->repos[repoid]->appdata;
+            auto hyrepo = static_cast<HyRepo>(pool->repos[repoid]->appdata);
             if (hy_repo_get_use_includes(hyrepo) != enabled)
             {
                 hy_repo_set_use_includes(hyrepo, enabled);
@@ -1501,7 +1500,7 @@ dnf_sack_repo_enabled(DnfSack *sack, const char *reponame, int enabled)
     if (repo == NULL)
         return DNF_ERROR_INTERNAL_ERROR;
     if (excl == NULL) {
-        excl = g_malloc0(sizeof(Map));
+        excl = static_cast<Map *>(g_malloc0(sizeof(Map)));
         map_init(excl, pool->nsolvables);
         priv->repo_excludes = excl;
     }
@@ -1744,7 +1743,7 @@ rewrite_repos(DnfSack *sack, Queue *addedfileprovides,
 
     Repo *repo;
     FOR_REPOS(i, repo) {
-        HyRepo hrepo = repo->appdata;
+        auto hrepo = static_cast<HyRepo>(repo->appdata);
         if (!hrepo)
             continue;
         if (!(hrepo->load_flags & DNF_SACK_LOAD_FLAG_BUILD_CACHE))
@@ -1851,7 +1850,7 @@ dnf_sack_running_kernel(DnfSack *sack)
 int
 dnf_sack_knows(DnfSack *sack, const char *name, const char *version, int flags)
 {
-    Queue *q = g_malloc(sizeof(*q));
+    Queue *q = static_cast<Queue *>(g_malloc(sizeof(*q)));
     int ret;
     int name_only = flags & HY_NAME_ONLY;
 
@@ -2022,7 +2021,7 @@ dnf_sack_add_repos(DnfSack *sack,
 
     /* count the enabled repos */
     for (i = 0; i < repos->len; i++) {
-        repo = g_ptr_array_index(repos, i);
+        repo = static_cast<DnfRepo *>(g_ptr_array_index(repos, i));
         if (dnf_repo_get_enabled(repo) == DNF_REPO_ENABLED_NONE)
             continue;
 
@@ -2038,7 +2037,7 @@ dnf_sack_add_repos(DnfSack *sack,
     /* add each repo */
     dnf_state_set_number_steps(state, cnt);
     for (i = 0; i < repos->len; i++) {
-        repo = g_ptr_array_index(repos, i);
+        repo = static_cast<DnfRepo *>(g_ptr_array_index(repos, i));
         if (dnf_repo_get_enabled(repo) == DNF_REPO_ENABLED_NONE)
             continue;
 
@@ -2066,7 +2065,7 @@ dnf_sack_add_repos(DnfSack *sack,
     }
 
     for (i = 0; i < enabled_repos->len; i++) {
-        repo = enabled_repos->pdata[i];
+        repo = static_cast<DnfRepo *>(enabled_repos->pdata[i]);
 
         process_excludes(sack, repo);
     }

@@ -1301,7 +1301,7 @@ dnf_context_copy_vendor_cache(DnfContext *context, GError **error)
     for (i = 0; i < priv->repos->len; i++) {
         g_autofree gchar *path = NULL;
         g_autofree gchar *path_vendor = NULL;
-        repo = g_ptr_array_index(priv->repos, i);
+        repo = static_cast<DnfRepo *>(g_ptr_array_index(priv->repos, i));
         if (dnf_repo_get_enabled(repo) == DNF_REPO_ENABLED_NONE)
             continue;
 
@@ -1745,7 +1745,6 @@ dnf_context_remove(DnfContext *context, const gchar *name, GError **error)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     GPtrArray *pkglist;
-    DnfPackage *pkg;
     hy_autoquery HyQuery query = NULL;
     gboolean ret = TRUE;
     guint i;
@@ -1768,7 +1767,7 @@ dnf_context_remove(DnfContext *context, const gchar *name, GError **error)
 
     /* add each package */
     for (i = 0; i < pkglist->len; i++) {
-        pkg = g_ptr_array_index (pkglist, i);
+        auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(pkglist, i));
         hy_goal_erase(priv->goal, pkg);
     }
     g_ptr_array_unref(pkglist);
@@ -1858,12 +1857,11 @@ dnf_context_repo_set_data(DnfContext *context,
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     DnfRepo *repo = NULL;
-    DnfRepo *repo_tmp;
     guint i;
 
     /* find a repo with a matching ID */
     for (i = 0; i < priv->repos->len; i++) {
-        repo_tmp = g_ptr_array_index(priv->repos, i);
+        auto repo_tmp = static_cast<DnfRepo *>(g_ptr_array_index(priv->repos, i));
         if (g_strcmp0(dnf_repo_get_id(repo_tmp), repo_id) == 0) {
             repo = repo_tmp;
             break;
@@ -2025,7 +2023,6 @@ dnf_context_clean_cache(DnfContext *context,
                         DnfContextCleanFlags flags,
                         GError **error)
 {
-    DnfRepo *src;
     g_autoptr(GPtrArray) suffix_list = g_ptr_array_new();
     const gchar* directory_location;
     gboolean ret;
@@ -2073,7 +2070,7 @@ dnf_context_clean_cache(DnfContext *context,
 
     /* We then start looping all of the repos to perform file deletion */
     for (guint counter = 0; counter < priv->repos->len; counter++) {
-        src = g_ptr_array_index(priv->repos, counter);
+        auto src = static_cast<DnfRepo *>(g_ptr_array_index(priv->repos, counter));
         gboolean deleteable_repo = dnf_repo_get_kind(src) == DNF_REPO_KIND_REMOTE;
         directory_location = dnf_repo_get_location(src);
 
@@ -2106,7 +2103,5 @@ dnf_context_clean_cache(DnfContext *context,
 DnfContext *
 dnf_context_new(void)
 {
-    DnfContext *context;
-    context = g_object_new(DNF_TYPE_CONTEXT, NULL);
-    return DNF_CONTEXT(context);
+    return DNF_CONTEXT(g_object_new(DNF_TYPE_CONTEXT, NULL));
 }

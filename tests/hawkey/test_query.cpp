@@ -354,11 +354,10 @@ END_TEST
 START_TEST(test_query_recommends)
 {
     GPtrArray *plist;
-    DnfPackage *pkg;
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_RECOMMENDS, HY_EQ, "baby");
     plist = hy_query_run(q);
-    pkg = g_ptr_array_index(plist, 0);
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     ck_assert_str_eq(dnf_package_get_name(pkg), "flying");
     hy_query_free(q);
     g_ptr_array_unref(plist);
@@ -368,11 +367,10 @@ END_TEST
 START_TEST(test_query_suggests)
 {
     GPtrArray *plist;
-    DnfPackage *pkg;
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_SUGGESTS, HY_EQ, "walrus");
     plist = hy_query_run(q);
-    pkg = g_ptr_array_index(plist, 0);
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     ck_assert_str_eq(dnf_package_get_name(pkg), "flying");
     hy_query_free(q);
     g_ptr_array_unref(plist);
@@ -382,11 +380,10 @@ END_TEST
 START_TEST(test_query_supplements)
 {
     GPtrArray *plist;
-    DnfPackage *pkg;
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_SUPPLEMENTS, HY_EQ, "flying");
     plist = hy_query_run(q);
-    pkg = g_ptr_array_index(plist, 0);
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     ck_assert_str_eq(dnf_package_get_name(pkg), "baby");
     hy_query_free(q);
     g_ptr_array_unref(plist);
@@ -396,11 +393,10 @@ END_TEST
 START_TEST(test_query_enhances)
 {
     GPtrArray *plist;
-    DnfPackage *pkg;
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter(q, HY_PKG_ENHANCES, HY_EQ, "flying");
     plist = hy_query_run(q);
-    pkg = g_ptr_array_index(plist, 0);
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     ck_assert_str_eq(dnf_package_get_name(pkg), "walrus");
     hy_query_free(q);
     g_ptr_array_unref(plist);
@@ -409,18 +405,17 @@ END_TEST
 
 START_TEST(test_query_provides_in)
 {
-    DnfPackage *pkg;
     GPtrArray *plist;
     const char* pkg_names[] = { "P", "fool <= 2.0", "fool-lib > 3-3", NULL };
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter_provides_in(q, (char**) pkg_names);
     plist = hy_query_run(q);
-    pkg = g_ptr_array_index(plist, 0);
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     ck_assert_str_eq(dnf_package_get_name(pkg), "fool");
     ck_assert_str_eq(dnf_package_get_evr(pkg), "1-3");
-    pkg = g_ptr_array_index(plist, 1);
+    pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 1));
     ck_assert_str_eq(dnf_package_get_name(pkg), "penny");
-    pkg = g_ptr_array_index(plist, 2);
+    pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 2));
     ck_assert_str_eq(dnf_package_get_name(pkg), "fool");
     ck_assert_str_eq(dnf_package_get_evr(pkg), "1-5");
     fail_unless(size_and_free(q) == 3);
@@ -567,7 +562,7 @@ START_TEST(test_filter_latest)
     hy_query_filter_latest_per_arch(q, 1);
     GPtrArray *plist = hy_query_run(q);
     fail_unless(plist->len == 1);
-    DnfPackage *pkg = g_ptr_array_index(plist, 0);
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     fail_if(strcmp(dnf_package_get_name(pkg), "fool"));
     fail_if(strcmp(dnf_package_get_evr(pkg), "1-5"));
     hy_query_free(q);
@@ -582,10 +577,10 @@ START_TEST(test_filter_latest2)
     hy_query_filter_latest_per_arch(q, 1);
     GPtrArray *plist = hy_query_run(q);
     fail_unless(plist->len == 2);
-    DnfPackage *pkg = g_ptr_array_index(plist, 0);
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     fail_if(strcmp(dnf_package_get_name(pkg), "flying"));
     fail_if(strcmp(dnf_package_get_evr(pkg), "3.1-0"));
-    pkg = g_ptr_array_index(plist, 1);
+    pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 1));
     fail_if(strcmp(dnf_package_get_name(pkg), "flying"));
     fail_if(strcmp(dnf_package_get_evr(pkg), "3.2-0"));
 
@@ -628,7 +623,7 @@ START_TEST(test_downgrade)
     hy_query_filter_downgrades(q, 1);
     GPtrArray *plist = hy_query_run(q);
     fail_unless(plist->len == 1);
-    DnfPackage *pkg = g_ptr_array_index(plist, 0);
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     ck_assert_str_eq(dnf_package_get_evr(pkg), "4.9-0");
     hy_query_free(q);
     g_ptr_array_unref(plist);
@@ -771,7 +766,7 @@ START_TEST(test_filter_files)
     hy_query_filter(q, HY_PKG_FILE, HY_EQ, "/etc/takeyouaway");
     GPtrArray *plist = hy_query_run(q);
     fail_unless(plist->len == 1);
-    DnfPackage *pkg = g_ptr_array_index(plist, 0);
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     fail_if(strcmp(dnf_package_get_name(pkg), "tour"));
     g_ptr_array_unref(plist);
     hy_query_free(q);
@@ -915,8 +910,8 @@ START_TEST(test_query_nevra_glob)
     plist = hy_query_run(q);
 
     ck_assert_int_eq(plist->len, 2);
-    DnfPackage *pkg1 = g_ptr_array_index(plist, 0);
-    DnfPackage *pkg2 = g_ptr_array_index(plist, 1);
+    auto pkg1 = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
+    auto pkg2 = static_cast<DnfPackage *>(g_ptr_array_index(plist, 1));
     const char *nevra1 = dnf_package_get_nevra(pkg1);
     const char *nevra2 = dnf_package_get_nevra(pkg2);
     ck_assert_str_eq(nevra1, "penny-4-1.noarch");
@@ -937,7 +932,7 @@ START_TEST(test_query_nevra)
     plist = hy_query_run(q);
 
     ck_assert_int_eq(plist->len, 1);
-    DnfPackage *pkg1 = g_ptr_array_index(plist, 0);
+    auto pkg1 = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     const char *nevra1 = dnf_package_get_nevra(pkg1);
     ck_assert_str_eq(nevra1, "penny-4-1.noarch");
     g_ptr_array_unref(plist);

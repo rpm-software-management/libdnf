@@ -55,7 +55,7 @@ repo_internalize_all_trigger(Pool *pool)
 void
 repo_internalize_trigger(Repo * repo)
 {
-    HyRepo hrepo = repo->appdata;
+    auto hrepo = static_cast<HyRepo>(repo->appdata);
     assert(hrepo->libsolv_repo == repo);
     if (!hrepo->needs_internalizing)
         return;
@@ -125,7 +125,7 @@ HyRepo
 hy_repo_create(const char *name)
 {
     assert(name);
-    HyRepo repo = g_malloc0(sizeof(*repo));
+    HyRepo repo = static_cast<HyRepo>(g_malloc0(sizeof(*repo)));
     repo->nrefs = 1;
     hy_repo_set_string(repo, HY_REPO_NAME, name);
     return repo;

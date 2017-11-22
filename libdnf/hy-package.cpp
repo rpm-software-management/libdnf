@@ -96,13 +96,11 @@ dnf_package_class_init(DnfPackageClass *klass)
 DnfPackage *
 dnf_package_new(DnfSack *sack, Id id)
 {
-    DnfPackage *pkg;
-    DnfPackagePrivate *priv;
-    pkg = g_object_new(DNF_TYPE_PACKAGE, NULL);
-    priv = GET_PRIVATE(pkg);
+    auto pkg = DNF_PACKAGE(g_object_new(DNF_TYPE_PACKAGE, NULL));
+    auto priv = GET_PRIVATE(pkg);
     priv->sack = sack;
     priv->id = id;
-    return DNF_PACKAGE(pkg);
+    return pkg;
 }
 
 

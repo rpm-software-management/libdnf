@@ -233,7 +233,7 @@ dnf_repo_get_public_keys(DnfRepo *repo)
         g_ptr_array_add(ret, g_build_filename(priv->location, key_bn, NULL));
     }
     g_ptr_array_add(ret, NULL);
-    return (gchar**)g_ptr_array_free (g_steal_pointer (&ret), FALSE);
+    return (gchar**)g_ptr_array_free(static_cast<GPtrArray *>(g_steal_pointer(&ret)), FALSE);
 }
 
 /**
@@ -892,7 +892,7 @@ dnf_repo_get_boolean(GKeyFile *keyfile,
     if (g_strcmp0(str, "False") == 0)
         return FALSE;
 
-    g_propagate_error(error, g_steal_pointer(&error_local));
+    g_propagate_error(error, static_cast<GError *>(g_steal_pointer(&error_local)));
     return FALSE;
 }
 
@@ -950,9 +950,9 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     mirrorlist = g_key_file_get_string(priv->keyfile, priv->id, "mirrorlist", NULL);
     if (mirrorlist) {
         if (strstr(mirrorlist, "metalink"))
-            metalinkurl = g_steal_pointer(&mirrorlist);
+            metalinkurl = static_cast<gchar *>(g_steal_pointer(&mirrorlist));
         else /* it really is a mirrorlist */
-            mirrorlisturl = g_steal_pointer(&mirrorlist);
+            mirrorlisturl = static_cast<gchar *>(g_steal_pointer(&mirrorlist));
     }
 
     /* let "metalink" entry override metalink-as-mirrorlist entry */
@@ -1013,7 +1013,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
         g_free(g_steal_pointer (&tmp_strval));
         /* Canonicalize the empty list to NULL for ease of checking elsewhere */
         if (priv->gpgkeys && !*priv->gpgkeys)
-            g_strfreev(g_steal_pointer (&priv->gpgkeys));
+            g_strfreev(static_cast<gchar **>(g_steal_pointer(&priv->gpgkeys)));
     }
     /* Currently, we don't have a global configuration file.  The way this worked in yum
      * is that the yum package enabled gpgcheck=1 by default in /etc/yum.conf.  Basically,
@@ -1194,7 +1194,7 @@ dnf_repo_update_state_cb(void *user_data,
 {
     gboolean ret;
     gdouble percentage;
-    RepoUpdateData *updatedata = user_data;
+    auto updatedata = static_cast<RepoUpdateData *>(user_data);
     DnfState *state = updatedata->state;
 
     /* abort */
@@ -1360,7 +1360,7 @@ dnf_repo_check_internal(DnfRepo *repo,
             g_set_error(error,
                         DNF_ERROR,
                         DNF_ERROR_INTERNAL_ERROR,
-                        "cache too old: %"G_GINT64_FORMAT" > %i",
+                        "cache too old: %" G_GINT64_FORMAT" > %i",
                         age_of_data, valid_time_allowed);
             return FALSE;
         }
@@ -1465,7 +1465,7 @@ dnf_repo_get_filename_md(DnfRepo *repo, const gchar *md_kind)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     g_return_val_if_fail(md_kind != NULL, NULL);
-    return g_hash_table_lookup(priv->filenames_md, md_kind);
+    return static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, md_kind));
 }
 
 /**
@@ -1585,7 +1585,7 @@ repo_mirrorlist_failure_cb(void *user_data,
                            const char *url,
                            const char *metadata)
 {
-    RepoUpdateData *data = user_data;
+    auto data = static_cast<RepoUpdateData *>(user_data);
 
     if (data->last_mirror_url)
         goto out;
@@ -1957,7 +1957,7 @@ package_download_update_state_cb(void *user_data,
                                  gdouble total_to_download,
                                  gdouble now_downloaded)
 {
-    PackageDownloadData *data = user_data;
+    auto data = static_cast<PackageDownloadData *>(user_data);
     GlobalDownloadData *global_data = data->global_download_data;
     gboolean ret;
     gdouble percentage;
@@ -1997,7 +1997,7 @@ package_download_end_cb(void *user_data,
                         LrTransferStatus status,
                         const char *msg)
 {
-    PackageDownloadData *data = user_data;
+    auto data = static_cast<PackageDownloadData *>(user_data);
 
     g_slice_free(PackageDownloadData, data);
 
@@ -2009,8 +2009,8 @@ mirrorlist_failure_cb(void *user_data,
                       const char *message,
                       const char *url)
 {
-    PackageDownloadData *data = user_data;
-    GlobalDownloadData *global_data = data->global_download_data;
+    auto data = static_cast<PackageDownloadData *>(user_data);
+    auto global_data = data->global_download_data;
 
     if (global_data->last_mirror_url)
         goto out;
@@ -2136,7 +2136,7 @@ dnf_repo_download_packages(DnfRepo *repo,
 
     global_data.download_size = dnf_package_array_get_download_size(packages);
     for (i = 0; i < packages->len; i++) {
-        DnfPackage *pkg = packages->pdata[i];
+        auto pkg = static_cast<DnfPackage *>(packages->pdata[i]);
         PackageDownloadData *data;
         LrPackageTarget *target;
         const unsigned char *checksum;
@@ -2215,11 +2215,9 @@ out:
 DnfRepo *
 dnf_repo_new(DnfContext *context)
 {
-    DnfRepo *repo;
-    DnfRepoPrivate *priv;
-    repo = g_object_new(DNF_TYPE_REPO, NULL);
-    priv = GET_PRIVATE(repo);
+    auto repo = DNF_REPO(g_object_new(DNF_TYPE_REPO, NULL));
+    auto priv = GET_PRIVATE(repo);
     priv->context = context;
     g_object_add_weak_pointer(G_OBJECT(priv->context),(void **) &priv->context);
-    return DNF_REPO(repo);
+    return repo;
 }

@@ -41,7 +41,7 @@ advisory_fixture(void)
     pkg = by_name(test_globals.sack, "tour");
     advisories = dnf_package_get_advisories(pkg, HY_GT);
 
-    advisory = g_object_ref(g_ptr_array_index(advisories, 0));
+    advisory = static_cast<DnfAdvisory *>(g_object_ref(g_ptr_array_index(advisories, 0)));
 
     g_ptr_array_unref(advisories);
     g_object_unref(pkg);
@@ -97,7 +97,7 @@ START_TEST(test_packages)
     GPtrArray *pkglist = dnf_advisory_get_packages(advisory);
 
     ck_assert_int_eq(pkglist->len, 1);
-    DnfAdvisoryPkg *package = g_ptr_array_index(pkglist, 0);
+    auto package = static_cast<DnfAdvisoryPkg *>(g_ptr_array_index(pkglist, 0));
     ck_assert_str_eq(
             dnf_advisorypkg_get_filename(package),
             "tour.noarch.rpm");
@@ -112,11 +112,11 @@ START_TEST(test_refs)
     GPtrArray *reflist = dnf_advisory_get_references(advisory);
 
     ck_assert_int_eq(reflist->len, 2);
-    reference = g_ptr_array_index(reflist, 0);
+    reference = static_cast<DnfAdvisoryRef *>(g_ptr_array_index(reflist, 0));
     ck_assert_str_eq(
             dnf_advisoryref_get_url(reference),
             "https://bugzilla.redhat.com/show_bug.cgi?id=472090");
-    reference = g_ptr_array_index(reflist, 1);
+    reference = static_cast<DnfAdvisoryRef *>(g_ptr_array_index(reflist, 1));
     ck_assert_str_eq(
             dnf_advisoryref_get_url(reference),
             "https://bugzilla.gnome.com/show_bug.cgi?id=472091");

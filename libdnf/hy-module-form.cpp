@@ -43,7 +43,7 @@ hy_module_form_clear(HyModuleForm module_form)
 HyModuleForm
 hy_module_form_create()
 {
-    HyModuleForm module_form = g_malloc0(sizeof(*module_form));
+    HyModuleForm module_form = static_cast<HyModuleForm>(g_malloc0(sizeof(*module_form)));
     hy_module_form_clear(module_form);
     return module_form;
 }

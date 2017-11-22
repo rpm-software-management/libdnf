@@ -157,7 +157,7 @@ forms_dup(const HyForm *forms)
     HyForm form;
     int i = 0;
     do {
-        res = solv_extend(res, i, 1, sizeof(HyForm), BLOCK_SIZE);
+        res = static_cast<HyForm *>(solv_extend(res, i, 1, sizeof(HyForm), BLOCK_SIZE));
         form = forms[i];
         res[i++] = form;
     } while (form != _HY_FORM_STOP_);
@@ -174,7 +174,7 @@ module_forms_dup(const HyModuleFormEnum *forms)
     HyModuleFormEnum form;
     int i = 0;
     do {
-        res = solv_extend(res, i, 1, sizeof(HyModuleFormEnum), BLOCK_SIZE);
+        res = static_cast<HyModuleFormEnum *>(solv_extend(res, i, 1, sizeof(HyModuleFormEnum), BLOCK_SIZE));
         form = forms[i];
         res[i++] = form;
     } while (form != _HY_MODULE_FORM_STOP_);
@@ -185,7 +185,7 @@ static HyPossibilities
 possibilities_create(HySubject subject, const HyForm *forms, const HyModuleFormEnum *module_forms, DnfSack *sack,
                      int flags, enum poss_type type)
 {
-    HyPossibilities poss = g_malloc0(sizeof(*poss));
+    HyPossibilities poss = static_cast<HyPossibilities>(g_malloc0(sizeof(*poss)));
     poss->subject = hy_subject_create(subject);
     poss->forms = forms_dup(forms);
     poss->module_forms = module_forms_dup(module_forms);
@@ -215,7 +215,8 @@ int hy_possibilities_next_reldep(HyPossibilities iter, DnfReldep **out_reldep)
     if (parse_reldep_str(iter->subject, &name, &evr, &cmp_type) == -1)
         return -1;
     if (dnf_sack_knows(iter->sack, name, NULL, iter->flags)) {
-        *out_reldep = dnf_reldep_new (iter->sack, name, cmp_type, evr);
+        *out_reldep = dnf_reldep_new(iter->sack, name,
+                                     static_cast<DnfComparisonKind>(cmp_type), evr);
         g_free(name);
         g_free(evr);
         if (*out_reldep == NULL)
@@ -385,7 +386,7 @@ nevra_to_selector(HyNevra nevra, DnfSack *sack)
     }
 
     if (hy_selector_has_matches(selector)) {
-        return g_steal_pointer(&selector);
+        return static_cast<HySelector>(g_steal_pointer(&selector));
     } else {
         hy_selector_free(selector);
         return NULL;

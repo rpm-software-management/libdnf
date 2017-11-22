@@ -103,7 +103,7 @@ hy_chksum_str(const unsigned char *chksum, int type)
     int length = checksum_type2length(type);
     if (length==-1)
         return NULL;
-    char *s = g_malloc(2 * length + 1);
+    char *s = static_cast<char *>(g_malloc(2 * length + 1));
     solv_bin2hex(chksum, length, s);
 
     return s;
@@ -193,7 +193,7 @@ hy_packagelist_has(GPtrArray *plist, DnfPackage *pkg)
 {
     GPtrArray *a = (GPtrArray*)plist;
     for (guint i = 0; i < a->len; ++i)
-        if (dnf_package_get_identical(pkg, a->pdata[i]))
+        if (dnf_package_get_identical(pkg, static_cast<DnfPackage *>(a->pdata[i])))
             return 1;
     return 0;
 }
