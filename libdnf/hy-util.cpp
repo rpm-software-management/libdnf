@@ -30,7 +30,7 @@
 #include "hy-package.h"
 #include "hy-subject.h"
 #include "hy-subject-private.hpp"
-#include "hy-util.h"
+#include "hy-util-private.hpp"
 
 enum _dnf_sack_cpu_flags {
     ARM_NEON = 1 << 0,
