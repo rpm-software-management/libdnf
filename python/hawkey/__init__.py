@@ -247,13 +247,6 @@ class Goal(_hawkey.Goal):
         for pkg in user_installed:
             self.userinstalled(pkg)
 
-    def available_updates_diff(self, query):
-        available_updates = set(query.upgrades().filter(arch__neq="src")
-                                .latest().run())
-        installable_updates = set(self.list_upgrades())
-        installs = set(self.list_installs())
-        return (available_updates - installable_updates) - installs
-
     @property
     def actions(self):
         return {f for f in self._goal_actions if self._has_actions(f)}
