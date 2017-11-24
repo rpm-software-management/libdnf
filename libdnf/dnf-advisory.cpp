@@ -80,13 +80,11 @@ dnf_advisory_class_init(DnfAdvisoryClass *klass)
 DnfAdvisory *
 dnf_advisory_new(Pool *pool, Id a_id)
 {
-    DnfAdvisory *advisory;
-    DnfAdvisoryPrivate *priv;
-    advisory = g_object_new(DNF_TYPE_ADVISORY, NULL);
-    priv = GET_PRIVATE(advisory);
+    auto advisory = DNF_ADVISORY(g_object_new(DNF_TYPE_ADVISORY, NULL));
+    auto priv = GET_PRIVATE(advisory);
     priv->pool = pool;
     priv->a_id = a_id;
-    return DNF_ADVISORY(advisory);
+    return advisory;
 }
 
 /**
@@ -398,7 +396,7 @@ dnf_advisory_match_cve(DnfAdvisory *advisory, const char *s)
     g_autoptr(GPtrArray) refs = dnf_advisory_get_references(advisory);
 
     for (guint r = 0; r < refs->len; ++r) {
-        DnfAdvisoryRef *ref = g_ptr_array_index(refs, r);
+        auto ref = static_cast<DnfAdvisoryRef *>(g_ptr_array_index(refs, r));
         if (dnf_advisoryref_get_kind(ref) == DNF_REFERENCE_KIND_CVE) {
             const char *rid = dnf_advisoryref_get_id(ref);
             if (!g_strcmp0(rid, s)) {
@@ -427,7 +425,7 @@ dnf_advisory_match_bug(DnfAdvisory *advisory, const char *s)
     g_autoptr(GPtrArray) refs = dnf_advisory_get_references(advisory);
 
     for (guint r = 0; r < refs->len; ++r) {
-        DnfAdvisoryRef *ref = g_ptr_array_index(refs, r);
+        auto ref = static_cast<DnfAdvisoryRef *>(g_ptr_array_index(refs, r));
         if (dnf_advisoryref_get_kind(ref) == DNF_REFERENCE_KIND_BUGZILLA) {
             const char *rid = dnf_advisoryref_get_id(ref);
             if (!g_strcmp0(rid, s)) {

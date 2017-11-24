@@ -18,7 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#define _GNU_SOURCE
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,7 +30,7 @@
 #include "hy-package.h"
 #include "hy-subject.h"
 #include "hy-subject-private.hpp"
-#include "hy-util.h"
+#include "hy-util-private.hpp"
 
 enum _dnf_sack_cpu_flags {
     ARM_NEON = 1 << 0,
@@ -103,7 +102,7 @@ hy_chksum_str(const unsigned char *chksum, int type)
     int length = checksum_type2length(type);
     if (length==-1)
         return NULL;
-    char *s = g_malloc(2 * length + 1);
+    char *s = static_cast<char *>(g_malloc(2 * length + 1));
     solv_bin2hex(chksum, length, s);
 
     return s;
@@ -193,7 +192,7 @@ hy_packagelist_has(GPtrArray *plist, DnfPackage *pkg)
 {
     GPtrArray *a = (GPtrArray*)plist;
     for (guint i = 0; i < a->len; ++i)
-        if (dnf_package_get_identical(pkg, a->pdata[i]))
+        if (dnf_package_get_identical(pkg, static_cast<DnfPackage *>(a->pdata[i])))
             return 1;
     return 0;
 }

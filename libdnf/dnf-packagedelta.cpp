@@ -96,25 +96,23 @@ dnf_packagedelta_class_init(DnfPackageDeltaClass *klass)
 DnfPackageDelta *
 dnf_packagedelta_new(Pool *pool)
 {
-    DnfPackageDeltaPrivate *priv;
-    DnfPackageDelta *delta;
     Id checksum_type;
-    const unsigned char *checksum;
 
-    delta = g_object_new(DNF_TYPE_PACKAGEDELTA, NULL);
-    priv = GET_PRIVATE(delta);
+    auto delta = DNF_PACKAGEDELTA(g_object_new(DNF_TYPE_PACKAGEDELTA, NULL));
+    auto priv = GET_PRIVATE(delta);
 
     /* obtain info */
     priv->location = g_strdup(pool_lookup_deltalocation(pool, SOLVID_POS, 0));
     priv->baseurl = g_strdup(pool_lookup_str(pool, SOLVID_POS, DELTA_LOCATION_BASE));
     priv->downloadsize = pool_lookup_num(pool, SOLVID_POS, DELTA_DOWNLOADSIZE, 0);
-    checksum = pool_lookup_bin_checksum(pool, SOLVID_POS, DELTA_CHECKSUM, &checksum_type);
+    auto checksum = pool_lookup_bin_checksum(pool, SOLVID_POS, DELTA_CHECKSUM, &checksum_type);
     if (checksum) {
         priv->checksum_type = checksumt_l2h(checksum_type);
-        priv->checksum = solv_memdup((void*)checksum, checksum_type2length(priv->checksum_type));
+        priv->checksum = static_cast<unsigned char *>(
+            solv_memdup((void*)checksum, checksum_type2length(priv->checksum_type)));
     }
 
-    return DNF_PACKAGEDELTA(delta);
+    return delta;
 }
 
 /**

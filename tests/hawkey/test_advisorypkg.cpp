@@ -41,9 +41,9 @@ advisorypkg_fixture(void)
 
     pkg = by_name(test_globals.sack, "tour");
     advisories = dnf_package_get_advisories(pkg, HY_GT);
-    advisory = g_ptr_array_index(advisories, 0);
+    advisory = static_cast<DnfAdvisory *>(g_ptr_array_index(advisories, 0));
     pkglist = dnf_advisory_get_packages(advisory);
-    advisorypkg = g_object_ref(g_ptr_array_index(pkglist, 0));
+    advisorypkg = static_cast<DnfAdvisoryPkg *>(g_object_ref(g_ptr_array_index(pkglist, 0)));
 
     g_ptr_array_unref(pkglist);
     g_ptr_array_unref(advisories);

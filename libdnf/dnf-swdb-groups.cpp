@@ -70,7 +70,7 @@ dnf_swdb_group_new (const gchar *name_id,
                     gint pkg_types,
                     DnfSwdb *swdb)
 {
-    DnfSwdbGroup *group = g_object_new (DNF_TYPE_SWDB_GROUP, NULL);
+    auto group = DNF_SWDB_GROUP(g_object_new(DNF_TYPE_SWDB_GROUP, NULL));
     group->name_id = g_strdup (name_id);
     group->name = g_strdup (name);
     group->ui_name = g_strdup (ui_name);
@@ -123,7 +123,7 @@ dnf_swdb_env_new (const gchar *name_id,
                   gint grp_types,
                   DnfSwdb *swdb)
 {
-    DnfSwdbEnv *env = g_object_new (DNF_TYPE_SWDB_ENV, NULL);
+    auto env = DNF_SWDB_ENV(g_object_new(DNF_TYPE_SWDB_ENV, NULL));
     env->name_id = g_strdup (name_id);
     env->name = g_strdup (name);
     env->ui_name = g_strdup (ui_name);
@@ -578,7 +578,7 @@ _get_environments (DnfSwdb *self, sqlite3_stmt *res)
     }
     sqlite3_finalize (res);
     for (guint i = 0; i < node->len; ++i) {
-        DnfSwdbEnv *env = g_ptr_array_index (node, i);
+        auto env = static_cast<DnfSwdbEnv *>(g_ptr_array_index(node, i));
         _env_installed (self->db, env);
     }
     return node;
@@ -954,7 +954,7 @@ _log_group_trans (sqlite3 *db, gint tid, const GPtrArray *groups, gboolean insta
     const gchar *sql = I_TRANS_GROUP_DATA;
     for (guint i = 0; i < groups->len; ++i) {
         sqlite3_stmt *res;
-        DnfSwdbGroup *group = g_ptr_array_index (groups, i);
+        auto group = static_cast<DnfSwdbGroup *>(g_ptr_array_index (groups, i));
         _db_prepare (db, sql, &res);
         _db_bind_int (res, "@tid", tid);
         _db_bind_int (res, "@gid", group->gid);

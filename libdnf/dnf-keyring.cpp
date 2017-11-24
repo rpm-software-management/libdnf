@@ -241,20 +241,14 @@ dnf_keyring_check_untrusted_file(rpmKeyring keyring,
 
     /* get RSA key */
     td = rpmtdNew();
-    rc = headerGet(hdr,
-                   RPMTAG_RSAHEADER,
-                   td,
-                   HEADERGET_MINMEM);
-    if (rc != 1) {
+    rc = static_cast<rpmRC>(headerGet(hdr, RPMTAG_RSAHEADER, td, HEADERGET_MINMEM));
+    if (rc != RPMRC_NOTFOUND) {
         /* try to read DSA key as a fallback */
-        rc = headerGet(hdr,
-                       RPMTAG_DSAHEADER,
-                       td,
-                       HEADERGET_MINMEM);
+        rc = static_cast<rpmRC>(headerGet(hdr, RPMTAG_DSAHEADER, td, HEADERGET_MINMEM));
     }
 
     /* the package has no signing key */
-    if (rc != 1) {
+    if (rc != RPMRC_NOTFOUND) {
         g_autofree char *package_filename = g_path_get_basename(filename);
         ret = FALSE;
         g_set_error(error,
@@ -266,8 +260,8 @@ dnf_keyring_check_untrusted_file(rpmKeyring keyring,
 
     /* make it into a digest */
     dig = pgpNewDig();
-    rc = pgpPrtPkts(td->data, td->count, dig, 0);
-    if (rc != 0) {
+    rc = static_cast<rpmRC>(pgpPrtPkts(static_cast<const uint8_t *>(td->data), td->count, dig, 0));
+    if (rc != RPMRC_OK) {
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_FILE_INVALID,

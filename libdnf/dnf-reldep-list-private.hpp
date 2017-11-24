@@ -26,5 +26,3 @@
 
 DnfReldepList *dnf_reldep_list_from_queue (Pool          *pool,
                                            Queue          queue);
-void           dnf_reldep_list_extend     (DnfReldepList *rl1,
-                                           DnfReldepList *rl2);

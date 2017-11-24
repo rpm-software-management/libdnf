@@ -178,14 +178,13 @@ END_TEST
 START_TEST(test_get_advisories)
 {
     GPtrArray *advisories;
-    DnfAdvisory *advisory;
     DnfSack *sack = test_globals.sack;
     DnfPackage *pkg = by_name(sack, "tour");
 
     advisories = dnf_package_get_advisories(pkg, HY_GT);
     fail_unless(advisories != NULL);
     ck_assert_int_eq(advisories->len, 1);
-    advisory = g_ptr_array_index(advisories, 0);
+    auto advisory = static_cast<DnfAdvisory *>(g_ptr_array_index(advisories, 0));
     ck_assert_str_eq(dnf_advisory_get_id(advisory), "FEDORA-2008-9969");
     g_ptr_array_unref(advisories);
     g_object_unref(pkg);

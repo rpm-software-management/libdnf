@@ -18,7 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#define _GNU_SOURCE
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -118,7 +117,7 @@ checksum_fp(unsigned char *out, FILE *fp)
 {
     /* based on calc_checksum_fp in libsolv's solv.c */
     char buf[4096];
-    void *h = solv_chksum_create(CHKSUM_TYPE);
+    auto h = solv_chksum_create(CHKSUM_TYPE);
     int l;
 
     rewind(fp);
@@ -152,7 +151,7 @@ checksum_stat(unsigned char *out, FILE *fp)
         return 1;
 
     /* based on calc_checksum_stat in libsolv's solv.c */
-    void *h = solv_chksum_create(CHKSUM_TYPE);
+    auto h = solv_chksum_create(CHKSUM_TYPE);
     solv_chksum_add(h, CHKSUM_IDENT, strlen(CHKSUM_IDENT));
     solv_chksum_add(h, &stat.st_dev, sizeof(stat.st_dev));
     solv_chksum_add(h, &stat.st_ino, sizeof(stat.st_ino));
@@ -398,7 +397,7 @@ hrepo_by_name(DnfSack *sack, const char *name)
     Repo *repo = repo_by_name(sack, name);
 
     if (repo)
-        return repo->appdata;
+        return static_cast<HyRepo>(repo->appdata);
     return NULL;
 }
 
@@ -586,7 +585,7 @@ copy_str_from_subexpr(char** target, const char* source,
     int subexpr_len = matches[i].rm_eo - matches[i].rm_so;
     if (subexpr_len == 0)
         return -1;
-    *target = g_malloc(sizeof(char*) * (subexpr_len + 1));
+    *target = static_cast<char *>(g_malloc(sizeof(char*) * (subexpr_len + 1)));
     strncpy(*target, &(source[matches[i].rm_so]), subexpr_len);
     (*target)[subexpr_len] = '\0';
     return 0;
@@ -687,7 +686,8 @@ reldep_from_str(DnfSack *sack, const char *reldep_str)
         int cmp_type = 0;
         if (parse_reldep_str(reldep_str, &name, &evr, &cmp_type) == -1)
             return NULL;
-        DnfReldep *reldep = dnf_reldep_new (sack, name, cmp_type, evr);
+        DnfReldep *reldep = dnf_reldep_new(sack, name, 
+                                           static_cast<DnfComparisonKind>(cmp_type), evr);
         g_free(name);
         g_free(evr);
         return reldep;
@@ -708,7 +708,8 @@ reldeplist_from_str(DnfSack *sack, const char *reldep_str)
 
     dataiterator_init(&di, pool, 0, 0, 0, name_glob, SEARCH_STRING | SEARCH_GLOB);
     while (dataiterator_step(&di)) {
-        DnfReldep *reldep = dnf_reldep_new (sack, di.kv.str, cmp_type, evr);
+        DnfReldep *reldep = dnf_reldep_new(sack, di.kv.str,
+                                           static_cast<DnfComparisonKind>(cmp_type), evr);
         if (reldep) {
             dnf_reldep_list_add (reldeplist, reldep);
             g_object_unref (reldep);

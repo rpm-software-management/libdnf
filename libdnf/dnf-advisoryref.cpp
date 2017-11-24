@@ -75,14 +75,12 @@ dnf_advisoryref_class_init(DnfAdvisoryRefClass *klass)
 DnfAdvisoryRef *
 dnf_advisoryref_new(Pool *pool, Id a_id, int index)
 {
-    DnfAdvisoryRef *advisoryref;
-    DnfAdvisoryRefPrivate *priv;
-    advisoryref = g_object_new(DNF_TYPE_ADVISORYREF, NULL);
-    priv = GET_PRIVATE(advisoryref);
+    auto advisoryref = DNF_ADVISORYREF(g_object_new(DNF_TYPE_ADVISORYREF, NULL));
+    auto priv = GET_PRIVATE(advisoryref);
     priv->pool = pool;
     priv->a_id = a_id;
     priv->index = index;
-    return DNF_ADVISORYREF(advisoryref);
+    return advisoryref;
 }
 
 /**

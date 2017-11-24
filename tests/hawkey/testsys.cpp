@@ -18,7 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#define _GNU_SOURCE
 #include <check.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -51,7 +50,7 @@ by_name(DnfSack *sack, const char *name)
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
     GPtrArray *plist = hy_query_run(q);
     hy_query_free(q);
-    DnfPackage *pkg = g_object_ref(g_ptr_array_index(plist, 0));
+    auto pkg = static_cast<DnfPackage *>(g_object_ref(g_ptr_array_index(plist, 0)));
     g_ptr_array_unref(plist);
 
     return pkg;
@@ -65,7 +64,7 @@ by_name_repo(DnfSack *sack, const char *name, const char *repo)
     hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, repo);
     GPtrArray *plist = hy_query_run(q);
     hy_query_free(q);
-    DnfPackage *pkg = g_object_ref(g_ptr_array_index(plist, 0));
+    auto pkg = static_cast<DnfPackage *>(g_object_ref(g_ptr_array_index(plist, 0)));
     g_ptr_array_unref(plist);
 
     return pkg;
@@ -75,7 +74,7 @@ void
 dump_packagelist(GPtrArray *plist, int free)
 {
     for (guint i = 0; i < plist->len; ++i) {
-        DnfPackage *pkg = g_ptr_array_index(plist, i);
+        auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, i));
         Solvable *s = pool_id2solvable(dnf_package_get_pool(pkg), dnf_package_get_id(pkg));
         const char *nvra = dnf_package_get_nevra(pkg);
         printf("\t%s @%s\n", nvra, s->repo->name);

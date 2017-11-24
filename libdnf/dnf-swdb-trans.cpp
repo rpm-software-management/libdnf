@@ -78,7 +78,7 @@ dnf_swdb_trans_new (gint tid,
                     const gchar *releasever,
                     gint return_code)
 {
-    DnfSwdbTrans *trans = g_object_new (DNF_TYPE_SWDB_TRANS, NULL);
+    auto trans = DNF_SWDB_TRANS(g_object_new(DNF_TYPE_SWDB_TRANS, NULL));
     trans->tid = tid;
     trans->beg_timestamp = beg_timestamp;
     trans->end_timestamp = end_timestamp;
@@ -468,7 +468,7 @@ static void
 _merge_package (GHashTable *pkgs, DnfSwdbPkg *pkg)
 {
     // find associate package in map
-    _pkg_pair *prev = g_hash_table_lookup (pkgs, pkg->name);
+    auto prev = static_cast<_pkg_pair *>(g_hash_table_lookup(pkgs, pkg->name));
 
     if (!prev) {
         // package not in transaction set - insert and continue
@@ -564,7 +564,7 @@ dnf_swdb_trans_packages (DnfSwdbTrans *self)
 
         // iterate packages in transaction
         for (guint i = 0; i < tpkgs->len; ++i) {
-            DnfSwdbPkg *pkg = g_ptr_array_index (tpkgs, i);
+            auto pkg = static_cast<DnfSwdbPkg *>(g_ptr_array_index (tpkgs, i));
 
             _merge_package (pkgs, pkg);
         }
@@ -607,8 +607,8 @@ _trans_merged_output (DnfSwdbTrans *self, const gchar *type)
             GPtrArray *tout = _load_output (swdb->db, tid, dnf_swdb_get_output_type (swdb, type));
 
             for (guint o = 0; o < tout->len; ++o) {
-                gchar *out = g_ptr_array_index (tout, o);
-                g_ptr_array_add (data, (gpointer)out);
+                auto out = g_ptr_array_index(tout, o);
+                g_ptr_array_add (data, out);
             }
 
             g_ptr_array_unref (tout);
@@ -683,7 +683,7 @@ dnf_swdb_trans_data (DnfSwdbTrans *self)
                                   sqlite3_column_int (res, 3), // g_id
                                   sqlite3_column_int (res, 4), // done
                                   sqlite3_column_int (res, 5), // obsoleting
-                                  sqlite3_column_int (res, 6), // reason
+                                  static_cast<DnfSwdbReason>(sqlite3_column_int (res, 6)), // reason
                                   tmp_state                    // state
           );
         g_ptr_array_add (node, (gpointer)data);

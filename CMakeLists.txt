@@ -14,9 +14,6 @@ ADD_COMPILE_OPTIONS (-Wcast-align -Wno-uninitialized -Wmissing-declarations -Wre
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-# temporary workaround for transition from C, will be removed
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
-
 include (CheckSymbolExists)
 list (APPEND CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
 check_symbol_exists (FNM_CASEFOLD "fnmatch.h" HAS_FNM_CASEFOLD)

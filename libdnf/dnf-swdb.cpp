@@ -69,7 +69,7 @@ dnf_swdb_init (DnfSwdb *self)
 DnfSwdb *
 dnf_swdb_new (const gchar *db_path, const gchar *releasever)
 {
-    DnfSwdb *swdb = g_object_new (DNF_TYPE_SWDB, NULL);
+    auto swdb = DNF_SWDB(g_object_new(DNF_TYPE_SWDB, NULL));
     if (releasever) {
         swdb->releasever = g_strdup (releasever);
     }
@@ -125,7 +125,7 @@ dnf_swdb_pkgdata_new (const gchar *from_repo_revision,
                       const gchar *changed_by,
                       const gchar *from_repo)
 {
-    DnfSwdbPkgData *pkgdata = g_object_new (DNF_TYPE_SWDB_PKGDATA, NULL);
+    auto pkgdata = DNF_SWDB_PKGDATA(g_object_new (DNF_TYPE_SWDB_PKGDATA, NULL));
     pkgdata->from_repo_revision = g_strdup (from_repo_revision);
     pkgdata->from_repo_timestamp = from_repo_timestamp;
     pkgdata->installed_by = g_strdup (installed_by);
@@ -174,7 +174,7 @@ dnf_swdb_transdata_new (gint tdid,
                         DnfSwdbReason reason,
                         gchar *state)
 {
-    DnfSwdbTransData *data = g_object_new (DNF_TYPE_SWDB_TRANSDATA, NULL);
+    auto data = DNF_SWDB_TRANSDATA(g_object_new (DNF_TYPE_SWDB_TRANSDATA, NULL));
     data->tdid = tdid;
     data->tid = tid;
     data->pdid = pdid;
@@ -209,7 +209,7 @@ dnf_swdb_search (DnfSwdb *self, GPtrArray *patterns)
 
     GArray *tids = g_array_new (0, 0, sizeof (gint));
     for (guint i = 0; i < patterns->len; ++i) {
-        gchar *pattern = g_ptr_array_index (patterns, i);
+        auto pattern = static_cast<const gchar *>(g_ptr_array_index(patterns, i));
 
         // try simple search based on package name
         GArray *simple = _simple_search (self->db, pattern);
@@ -389,7 +389,7 @@ dnf_swdb_select_user_installed (DnfSwdb *self, GPtrArray *nevras)
         _db_bind_int (res, "@pdid", pdid);
         gboolean push = TRUE;
         while (sqlite3_step (res) == SQLITE_ROW) {
-            reason_id = sqlite3_column_int (res, 0);
+            reason_id = static_cast<DnfSwdbReason>(sqlite3_column_int(res, 0));
             if (reason_id == DNF_SWDB_REASON_DEP || reason_id == DNF_SWDB_REASON_WEAK) {
                 push = FALSE;
                 continue;
@@ -715,7 +715,7 @@ _reason_by_pid (sqlite3 *db, gint pid)
     const gchar *sql = S_REASON_BY_PID;
     _db_prepare (db, sql, &res);
     _db_bind_int (res, "@pid", pid);
-    return _db_find_int (res);
+    return static_cast<DnfSwdbReason>(_db_find_int(res));
 }
 
 /**
@@ -819,7 +819,8 @@ _get_package_by_pid (sqlite3 *db, gint pid)
                                             (gchar *)sqlite3_column_text (res, 5), // arch
                                             (gchar *)sqlite3_column_text (res, 6), // checksum_data
                                             (gchar *)sqlite3_column_text (res, 7), // checksum_type
-                                            sqlite3_column_int (res, 8));          // type
+                                            static_cast<DnfSwdbItem>(
+                                                sqlite3_column_int(res, 8))); // type
         pkg->pid = pid;
         sqlite3_finalize (res);
         return pkg;
@@ -1360,7 +1361,7 @@ dnf_swdb_last (DnfSwdb *self, gboolean complete_only)
         g_ptr_array_free (node, TRUE);
         return NULL;
     }
-    DnfSwdbTrans *trans = g_ptr_array_index (node, 0);
+    auto trans = static_cast<DnfSwdbTrans *>(g_ptr_array_index(node, 0));
     g_ptr_array_free (node, TRUE);
     return trans;
 }
@@ -1380,8 +1381,8 @@ _get_erased_reason (sqlite3 *db, gint tid, gint pid)
     _db_prepare (db, sql, &res);
     _db_bind_int (res, "@tid", tid);
     _db_bind_int (res, "@pid", pid);
-    DnfSwdbReason reason = _db_find_int (res);
-    return (reason) ? reason : DNF_SWDB_REASON_USER;
+    auto reason = static_cast<DnfSwdbReason>(_db_find_int (res));
+    return reason != DNF_SWDB_REASON_UNKNOWN ? reason : DNF_SWDB_REASON_USER;
 }
 
 /**

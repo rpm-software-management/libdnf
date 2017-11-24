@@ -67,7 +67,7 @@ DnfReldep *
 dnf_reldep_from_pool (Pool *pool,
                       Id    r_id)
 {
-    DnfReldep *reldep = g_object_new (DNF_TYPE_RELDEP, NULL);
+    auto reldep = DNF_RELDEP(g_object_new(DNF_TYPE_RELDEP, NULL));
     reldep->pool = pool;
     reldep->r_id = r_id;
     return reldep;

@@ -157,7 +157,7 @@ dnf_repo_loader_add_media(DnfRepoLoader *self,
     /* get common things */
     treeinfo_fn = g_build_filename(mount_point, ".treeinfo", NULL);
     treeinfo = g_key_file_new();
-    if (!g_key_file_load_from_file(treeinfo, treeinfo_fn, 0, error))
+    if (!g_key_file_load_from_file(treeinfo, treeinfo_fn, G_KEY_FILE_NONE, error))
         return FALSE;
 
     /* create read-only location */
@@ -442,14 +442,13 @@ gboolean
 dnf_repo_loader_has_removable_repos(DnfRepoLoader *self)
 {
     DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
-    DnfRepo *repo;
     guint i;
 
     g_return_val_if_fail(DNF_IS_REPO_LOADER(self), FALSE);
 
     /* are there any media repos */
     for (i = 0; i < priv->repos->len; i++) {
-        repo = g_ptr_array_index(priv->repos, i);
+        auto repo = static_cast<DnfRepo *>(g_ptr_array_index(priv->repos, i));
         if (dnf_repo_get_kind(repo) == DNF_REPO_KIND_MEDIA)
             return TRUE;
     }
@@ -486,7 +485,6 @@ DnfRepo *
 dnf_repo_loader_get_repo_by_id(DnfRepoLoader *self, const gchar *id, GError **error)
 {
     DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
-    DnfRepo *tmp;
     guint i;
 
     g_return_val_if_fail(DNF_IS_REPO_LOADER(self), NULL);
@@ -500,7 +498,7 @@ dnf_repo_loader_get_repo_by_id(DnfRepoLoader *self, const gchar *id, GError **er
     }
 
     for (i = 0; i < priv->repos->len; i++) {
-        tmp = g_ptr_array_index(priv->repos, i);
+        auto tmp = static_cast<DnfRepo *>(g_ptr_array_index(priv->repos, i));
         if (g_strcmp0(dnf_repo_get_id(tmp), id) == 0)
             return tmp;
     }
@@ -572,8 +570,7 @@ DnfRepoLoader *
 dnf_repo_loader_new(DnfContext *context)
 {
     DnfRepoLoaderPrivate *priv;
-    DnfRepoLoader *self;
-    self = g_object_new(DNF_TYPE_REPO_LOADER, NULL);
+    auto self = DNF_REPO_LOADER(g_object_new(DNF_TYPE_REPO_LOADER, NULL));
     priv = GET_PRIVATE(self);
     priv->context = context;
     g_object_add_weak_pointer(G_OBJECT(priv->context),(void **) &priv->context);
