@@ -185,10 +185,6 @@ if (GOBJECT_INTROSPECTION_FOUND)
                     --pkg=librepo
                     --warn-all
                     --quiet
-                    dnf-context.cpp dnf-context.h
-                    dnf-repo.cpp dnf-repo.h
-                    dnf-state.h dnf-state.cpp
-                    dnf-version.h
                     ${SWDB_headers}
                     ${SWDB_sources}
             DEPENDS libdnf
