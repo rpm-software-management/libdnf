@@ -22,12 +22,12 @@
 
 // hawkey
 #include "dnf-sack-private.hpp"
-extern "C" {
-#include "python/hawkey/repo-py.h"
-#include "python/hawkey/sack-py.h"
+
+#include "python/hawkey/repo-py.hpp"
+#include "python/hawkey/sack-py.hpp"
 #include "tests/hawkey/testshared.h"
 
-#include "python/hawkey/pycomp.h"
+#include "python/hawkey/pycomp.hpp"
 
 
 PYCOMP_MOD_INIT(_hawkey_test);
@@ -94,6 +94,4 @@ PYCOMP_MOD_INIT(_hawkey_test)
     PyModule_AddStringConstant(m, "YUM_DIR_SUFFIX", YUM_DIR_SUFFIX);
 
     return PYCOMP_MOD_SUCCESS_VAL(m);
-}
-
 }

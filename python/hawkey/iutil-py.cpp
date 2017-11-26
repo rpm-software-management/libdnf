@@ -28,29 +28,27 @@
 #include "dnf-reldep.h"
 #include "dnf-reldep-list.h"
 #include "hy-iutil.h"
-#include "advisory-py.h"
-#include "advisorypkg-py.h"
-#include "advisoryref-py.h"
-#include "iutil-py.h"
-#include "package-py.h"
-#include "query-py.h"
-#include "reldep-py.h"
-#include "sack-py.h"
-#include "pycomp.h"
+#include "advisory-py.hpp"
+#include "advisorypkg-py.hpp"
+#include "advisoryref-py.hpp"
+#include "iutil-py.hpp"
+#include "package-py.hpp"
+#include "query-py.hpp"
+#include "reldep-py.hpp"
+#include "sack-py.hpp"
+#include "pycomp.hpp"
 
 PyObject *
 advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack)
 {
-    DnfAdvisory *cadvisory;
-    PyObject *advisory;
-
-    PyObject *list = PyList_New(0);
+    auto list = PyList_New(0);
     if (list == NULL)
         return NULL;
 
     for (unsigned int i = 0; i < advisorylist->len; ++i) {
-        cadvisory = g_object_ref(g_ptr_array_index(advisorylist, i));
-        advisory = advisoryToPyObject(cadvisory, sack);
+        auto cadvisory =
+            static_cast<DnfAdvisory *>(g_object_ref(g_ptr_array_index(advisorylist, i)));
+        auto advisory = advisoryToPyObject(cadvisory, sack);
 
         if (advisory == NULL)
             goto fail;
@@ -70,16 +68,14 @@ advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack)
 PyObject *
 advisorypkglist_to_pylist(const GPtrArray *advisorypkglist)
 {
-    DnfAdvisoryPkg *cadvisorypkg;
-    PyObject *advisorypkg;
-
-    PyObject *list = PyList_New(0);
+    auto list = PyList_New(0);
     if (list == NULL)
         return NULL;
 
     for (unsigned int i = 0; i < advisorypkglist->len; ++i) {
-        cadvisorypkg = g_object_ref(g_ptr_array_index(advisorypkglist,  i));
-        advisorypkg = advisorypkgToPyObject(cadvisorypkg);
+        auto cadvisorypkg = 
+            static_cast<DnfAdvisoryPkg *>(g_object_ref(g_ptr_array_index(advisorypkglist, i)));
+        auto advisorypkg = advisorypkgToPyObject(cadvisorypkg);
         if (advisorypkg == NULL)
             goto fail;
 
@@ -98,16 +94,14 @@ advisorypkglist_to_pylist(const GPtrArray *advisorypkglist)
 PyObject *
 advisoryreflist_to_pylist(const GPtrArray *advisoryreflist, PyObject *sack)
 {
-    DnfAdvisoryRef *cadvisoryref;
-    PyObject *advisoryref;
-
-    PyObject *list = PyList_New(0);
+    auto list = PyList_New(0);
     if (list == NULL)
         return NULL;
 
     for (unsigned int i = 0; i < advisoryreflist->len; ++i) {
-        cadvisoryref = g_object_ref(g_ptr_array_index(advisoryreflist,  i));
-        advisoryref = advisoryrefToPyObject(cadvisoryref, sack);
+        auto cadvisoryref =
+            static_cast<DnfAdvisoryRef *>(g_object_ref(g_ptr_array_index(advisoryreflist,  i)));
+        auto advisoryref = advisoryrefToPyObject(cadvisoryref, sack);
         if (advisoryref == NULL)
             goto fail;
 
@@ -126,17 +120,13 @@ advisoryreflist_to_pylist(const GPtrArray *advisoryreflist, PyObject *sack)
 PyObject *
 packagelist_to_pylist(GPtrArray *plist, PyObject *sack)
 {
-    DnfPackage *cpkg;
-    PyObject *list;
-    PyObject *retval;
-
-    list = PyList_New(0);
+    auto list = PyList_New(0);
     if (list == NULL)
         return NULL;
-    retval = list;
+    auto retval = list;
 
     for (unsigned int i = 0; i < plist->len; i++) {
-        cpkg = g_ptr_array_index (plist, i);
+        auto cpkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, i));
         PyObject *package = new_package(sack, dnf_package_get_id(cpkg));
         if (package == NULL) {
             retval = NULL;

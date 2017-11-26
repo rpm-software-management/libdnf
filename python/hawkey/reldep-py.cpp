@@ -29,11 +29,11 @@
 #include "hy-iutil.h"
 
 // pyhawkey
-#include "exception-py.h"
-#include "sack-py.h"
-#include "reldep-py.h"
+#include "exception-py.hpp"
+#include "sack-py.hpp"
+#include "reldep-py.hpp"
 
-#include "pycomp.h"
+#include "pycomp.hpp"
 
 typedef struct {
     PyObject_HEAD

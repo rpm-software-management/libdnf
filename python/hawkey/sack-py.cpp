@@ -28,14 +28,14 @@
 #include "dnf-version.h"
 
 // pyhawkey
-#include "exception-py.h"
-#include "hawkey-pysys.h"
-#include "iutil-py.h"
-#include "package-py.h"
-#include "repo-py.h"
-#include "sack-py.h"
+#include "exception-py.hpp"
+#include "hawkey-pysys.hpp"
+#include "iutil-py.hpp"
+#include "package-py.hpp"
+#include "repo-py.hpp"
+#include "sack-py.hpp"
 
-#include "pycomp.h"
+#include "pycomp.hpp"
 
 typedef struct {
     PyObject_HEAD

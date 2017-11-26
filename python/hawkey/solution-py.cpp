@@ -27,7 +27,7 @@
 #include "dnf-types.h"
 #include "dnf-solution.h"
 
-#include "solution-py.h"
+#include "solution-py.hpp"
 
 typedef struct {
     PyObject_HEAD
@@ -47,16 +47,13 @@ solutionToPyObject(DnfSolution *solution)
 PyObject *
 solutionlist_to_pylist(const GPtrArray *slist)
 {
-    DnfSolution *sol;
-    PyObject *pysol;
-
-    PyObject *list = PyList_New(0);
+    auto list = PyList_New(0);
     if (list == NULL)
         return NULL;
 
     for (unsigned int i = 0; i < slist->len; ++i) {
-        sol = g_object_ref(g_ptr_array_index(slist,  i));
-        pysol = solutionToPyObject(sol);
+        auto sol = static_cast<DnfSolution *>(g_object_ref(g_ptr_array_index(slist,  i)));
+        auto pysol = solutionToPyObject(sol);
         if (pysol == NULL)
             goto fail;
 
