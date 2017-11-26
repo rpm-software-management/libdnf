@@ -24,11 +24,11 @@
 #include "hy-subject.h"
 
 // pyhawkey
-#include "nevra-py.h"
-#include "module-form-py.h"
-#include "possibilities-py.h"
-#include "pycomp.h"
-#include "reldep-py.h"
+#include "nevra-py.hpp"
+#include "module-form-py.hpp"
+#include "possibilities-py.hpp"
+#include "pycomp.hpp"
+#include "reldep-py.hpp"
 
 typedef struct {
     PyObject_HEAD

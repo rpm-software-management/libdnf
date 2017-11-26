@@ -36,14 +36,14 @@
 #include "dnf-swdb.h"
 #endif
 
-#include "exception-py.h"
-#include "hawkey-pysys.h"
-#include "iutil-py.h"
-#include "package-py.h"
-#include "query-py.h"
-#include "reldep-py.h"
-#include "sack-py.h"
-#include "pycomp.h"
+#include "exception-py.hpp"
+#include "hawkey-pysys.hpp"
+#include "iutil-py.hpp"
+#include "package-py.hpp"
+#include "query-py.hpp"
+#include "reldep-py.hpp"
+#include "sack-py.hpp"
+#include "pycomp.hpp"
 
 typedef struct {
     PyObject_HEAD

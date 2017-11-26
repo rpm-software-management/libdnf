@@ -25,10 +25,10 @@
 #include "hy-repo.h"
 
 // pyhawkey
-#include "hawkey-pysys.h"
-#include "repo-py.h"
+#include "hawkey-pysys.hpp"
+#include "repo-py.hpp"
 
-#include "pycomp.h"
+#include "pycomp.hpp"
 
 typedef struct {
     PyObject_HEAD
@@ -157,15 +157,17 @@ set_str(_RepoObject *self, PyObject *value, void *closure)
     return 0;
 }
 
+static IntGetSetter hy_repo_cost{hy_repo_get_cost, hy_repo_set_cost};
+
+static IntGetSetter hy_repo_priority{hy_repo_get_priority, hy_repo_set_priority};
+
 static PyGetSetDef repo_getsetters[] = {
     {(char*)"cost", (getter)get_int, (setter)set_int, (char*)"repository cost",
-     (void *)&(IntGetSetter){hy_repo_get_cost,
-                             hy_repo_set_cost}},
+     (void *)&hy_repo_cost},
     {(char*)"name", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_NAME},
     {(char*)"priority", (getter)get_int, (setter)set_int, (char*)"repository priority",
-     (void *)&(IntGetSetter){hy_repo_get_priority,
-                             hy_repo_set_priority}},
+     (void *)&hy_repo_priority},
     {(char*)"repomd_fn", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_MD_FN},
     {(char*)"primary_fn", (getter)get_str, (setter)set_str, NULL,

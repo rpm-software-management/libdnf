@@ -27,14 +27,14 @@
 #include "dnf-types.h"
 #include "dnf-goal.h"
 
-#include "exception-py.h"
-#include "goal-py.h"
-#include "iutil-py.h"
-#include "package-py.h"
-#include "selector-py.h"
-#include "sack-py.h"
-#include "solution-py.h"
-#include "pycomp.h"
+#include "exception-py.hpp"
+#include "goal-py.hpp"
+#include "iutil-py.hpp"
+#include "package-py.hpp"
+#include "selector-py.hpp"
+#include "sack-py.hpp"
+#include "solution-py.hpp"
+#include "pycomp.hpp"
 
 #define BLOCK_SIZE 15
 
@@ -359,7 +359,8 @@ userinstalled(_GoalObject *self, PyObject *pkg)
 static PyObject *
 has_actions(_GoalObject *self, PyObject *action)
 {
-    return PyBool_FromLong(hy_goal_has_actions(self->goal, PyLong_AsLong(action)));
+    return PyBool_FromLong(hy_goal_has_actions(
+        self->goal, static_cast<DnfGoalActions>(PyLong_AsLong(action))));
 }
 
 static PyObject *
@@ -405,7 +406,7 @@ run(_GoalObject *self, PyObject *args, PyObject *kwds)
     if (!args_run_parse(args, kwds, &flags, NULL))
         return NULL;
 
-    int ret = hy_goal_run_flags(self->goal, flags);
+    int ret = hy_goal_run_flags(self->goal, static_cast<DnfGoalActions>(flags));
     if (!ret)
         Py_RETURN_TRUE;
     Py_RETURN_FALSE;
@@ -445,7 +446,7 @@ run_all(_GoalObject *self, PyObject *args, PyObject *kwds)
 
     struct _PySolutionCallback cb_s = {callback_tuple, callback, 0};
     int ret = hy_goal_run_all_flags(self->goal, py_solver_callback, &cb_s,
-                                    flags);
+                                    static_cast<DnfGoalActions>(flags));
     Py_DECREF(callback_tuple);
     if (cb_s.errors > 0)
         return NULL;

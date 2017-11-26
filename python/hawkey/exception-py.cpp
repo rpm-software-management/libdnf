@@ -24,7 +24,7 @@
 #include "dnf-types.h"
 
 // pyhawkey
-#include "exception-py.h"
+#include "exception-py.hpp"
 
 PyObject *HyExc_Exception = NULL;
 PyObject *HyExc_Value = NULL;

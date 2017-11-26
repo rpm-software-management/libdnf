@@ -21,44 +21,49 @@
 #include <Python.h>
 
 // hawkey
-#include "dnf-advisorypkg.h"
+#include "dnf-advisoryref.h"
 
 // pyhawkey
-#include "advisorypkg-py.h"
-#include "iutil-py.h"
+#include "advisoryref-py.hpp"
+#include "iutil-py.hpp"
 
-#include "pycomp.h"
+#include "pycomp.hpp"
 
 typedef struct {
     PyObject_HEAD
-    DnfAdvisoryPkg *advisorypkg;
-} _AdvisoryPkgObject;
+    DnfAdvisoryRef *advisoryref;
+    PyObject *sack;
+} _AdvisoryRefObject;
 
 
 PyObject *
-advisorypkgToPyObject(DnfAdvisoryPkg *advisorypkg)
+advisoryrefToPyObject(DnfAdvisoryRef *advisoryref, PyObject *sack)
 {
-    _AdvisoryPkgObject *self = PyObject_New(_AdvisoryPkgObject, &advisorypkg_Type);
+    _AdvisoryRefObject *self = PyObject_New(_AdvisoryRefObject, &advisoryref_Type);
     if (!self)
         return NULL;
-    self->advisorypkg = advisorypkg;
+
+    self->advisoryref = advisoryref;
+    self->sack = sack;
+    Py_INCREF(sack);
+
     return (PyObject *)self;
 }
 
-static DnfAdvisoryPkg *
-advisorypkgFromPyObject(PyObject *o)
+static DnfAdvisoryRef *
+advisoryrefFromPyObject(PyObject *o)
 {
-    if (!PyObject_TypeCheck(o, &advisorypkg_Type)) {
-        PyErr_SetString(PyExc_TypeError, "Expected an AdvisoryPkg object.");
+    if (!PyObject_TypeCheck(o, &advisoryref_Type)) {
+        PyErr_SetString(PyExc_TypeError, "Expected an AdvisoryRef object.");
         return NULL;
     }
-    return ((_AdvisoryPkgObject*)o)->advisorypkg;
+    return ((_AdvisoryRefObject*)o)->advisoryref;
 }
 
 static int
-advisorypkg_converter(PyObject *o, DnfAdvisoryPkg **ref_ptr)
+advisoryref_converter(PyObject *o, DnfAdvisoryRef **ref_ptr)
 {
-    DnfAdvisoryPkg *ref = advisorypkgFromPyObject(o);
+    DnfAdvisoryRef *ref = advisoryrefFromPyObject(o);
     if (ref == NULL)
         return 0;
     *ref_ptr = ref;
@@ -68,27 +73,28 @@ advisorypkg_converter(PyObject *o, DnfAdvisoryPkg **ref_ptr)
 /* functions on the type */
 
 static void
-advisorypkg_dealloc(_AdvisoryPkgObject *self)
+advisoryref_dealloc(_AdvisoryRefObject *self)
 {
-    g_object_unref(self->advisorypkg);
+    g_object_unref(self->advisoryref);
+    Py_XDECREF(self->sack);
     Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject *
-advisorypkg_richcompare(PyObject *self, PyObject *other, int op)
+advisoryref_richcompare(PyObject *self, PyObject *other, int op)
 {
     PyObject *result;
-    DnfAdvisoryPkg *cself, *cother;
+    DnfAdvisoryRef *cself, *cother;
 
-    if (!advisorypkg_converter(self, &cself) ||
-        !advisorypkg_converter(other, &cother)) {
+    if (!advisoryref_converter(self, &cself) ||
+        !advisoryref_converter(other, &cother)) {
         if(PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError))
             PyErr_Clear();
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
-    int identical = dnf_advisorypkg_compare(cself, cother);
+    int identical = dnf_advisoryref_compare(cself, cother);
     switch (op) {
     case Py_EQ:
         result = TEST_COND(identical);
@@ -114,34 +120,43 @@ advisorypkg_richcompare(PyObject *self, PyObject *other, int op)
 /* getsetters */
 
 static PyObject *
-get_attr(_AdvisoryPkgObject *self, void *closure)
+get_type(_AdvisoryRefObject *self, void *closure)
 {
-    intptr_t str_key = (intptr_t)closure;
-    if (str_key == 0)
-        return PyUnicode_FromString(dnf_advisorypkg_get_name(self->advisorypkg));
-    if (str_key == 1)
-        return PyUnicode_FromString(dnf_advisorypkg_get_evr(self->advisorypkg));
-    if (str_key == 2)
-        return PyUnicode_FromString(dnf_advisorypkg_get_arch(self->advisorypkg));
-    if (str_key == 3)
-        return PyUnicode_FromString(dnf_advisorypkg_get_filename(self->advisorypkg));
-    Py_RETURN_NONE;
+    DnfAdvisoryRefKind (*func)(DnfAdvisoryRef*);
+    DnfAdvisoryRefKind ctype;
+
+    func = (DnfAdvisoryRefKind (*)(DnfAdvisoryRef*))closure;
+    ctype = func(self->advisoryref);
+    return PyLong_FromLong(ctype);
 }
 
-static PyGetSetDef advisorypkg_getsetters[] = {
-    {(char*)"name", (getter)get_attr, NULL, NULL, (void *)0},
-    {(char*)"evr", (getter)get_attr, NULL, NULL, (void *)1},
-    {(char*)"arch", (getter)get_attr, NULL, NULL, (void *)2},
-    {(char*)"filename", (getter)get_attr, NULL, NULL, (void *)3},
+static PyObject *
+get_str(_AdvisoryRefObject *self, void *closure)
+{
+    const char *(*func)(DnfAdvisoryRef*);
+    const char *cstr;
+
+    func = (const char *(*)(DnfAdvisoryRef*))closure;
+    cstr = func(self->advisoryref);
+    if (cstr == NULL)
+        Py_RETURN_NONE;
+    return PyUnicode_FromString(cstr);
+}
+
+static PyGetSetDef advisoryref_getsetters[] = {
+    {(char*)"type", (getter)get_type, NULL, NULL, (void *)dnf_advisoryref_get_kind},
+    {(char*)"id", (getter)get_str, NULL, NULL, (void *)dnf_advisoryref_get_id},
+    {(char*)"title", (getter)get_str, NULL, NULL, (void *)dnf_advisoryref_get_title},
+    {(char*)"url", (getter)get_str, NULL, NULL, (void *)dnf_advisoryref_get_url},
     {NULL}                      /* sentinel */
 };
 
-PyTypeObject advisorypkg_Type = {
+PyTypeObject advisoryref_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "_hawkey.AdvisoryPkg",        /*tp_name*/
-    sizeof(_AdvisoryPkgObject),        /*tp_basicsize*/
+    "_hawkey.AdvisoryRef",        /*tp_name*/
+    sizeof(_AdvisoryRefObject),        /*tp_basicsize*/
     0,                                /*tp_itemsize*/
-    (destructor) advisorypkg_dealloc,        /*tp_dealloc*/
+    (destructor) advisoryref_dealloc,        /*tp_dealloc*/
     0,                                /*tp_print*/
     0,                                /*tp_getattr*/
     0,                                /*tp_setattr*/
@@ -157,16 +172,16 @@ PyTypeObject advisorypkg_Type = {
     0,                                /*tp_setattro*/
     0,                                /*tp_as_buffer*/
     Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,        /*tp_flags*/
-    "AdvisoryPkg object",        /* tp_doc */
+    "AdvisoryRef object",        /* tp_doc */
     0,                                /* tp_traverse */
     0,                                /* tp_clear */
-    advisorypkg_richcompare,        /* tp_richcompare */
+    advisoryref_richcompare,        /* tp_richcompare */
     0,                                /* tp_weaklistoffset */
     0,                                /* tp_iter */
     0,                                /* tp_iternext */
     0,                                /* tp_methods */
     0,                                /* tp_members */
-    advisorypkg_getsetters,        /* tp_getset */
+    advisoryref_getsetters,        /* tp_getset */
     0,                                /* tp_base */
     0,                                /* tp_dict */
     0,                                /* tp_descr_get */

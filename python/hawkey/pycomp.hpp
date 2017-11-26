@@ -23,10 +23,6 @@
 #ifndef PYCOMP_H
 #define PYCOMP_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 // Python 3 and newer types compatibility
 #if PY_MAJOR_VERSION >= 3
     #define PyInt_Check PyLong_Check
@@ -48,7 +44,7 @@ extern "C" {
 #else
     #define PYCOMP_MOD_ERROR_VAL
     #define PYCOMP_MOD_SUCCESS_VAL(val)
-    #define PYCOMP_MOD_INIT(name) void init##name(void)
+    #define PYCOMP_MOD_INIT(name) extern "C" void init##name(void)
     #define PYCOMP_MOD_DEF(ob, name, methods) \
           ob = Py_InitModule(name, methods);
 #endif
@@ -63,9 +59,5 @@ extern "C" {
 const char *pycomp_get_string(PyObject *str_o, PyObject **tmp_py_str);
 void pycomp_free_tmp_array(PyObject **tmp_py_strs, int count);
 PYCOMP_MOD_INIT(_hawkey);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // PYCOMP_H

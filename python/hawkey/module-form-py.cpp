@@ -29,8 +29,8 @@
 #include "hy-types.h"
 
 // pyhawkey
-#include "module-form-py.h"
-#include "pycomp.h"
+#include "module-form-py.hpp"
+#include "pycomp.hpp"
 
 typedef struct {
     PyObject_HEAD

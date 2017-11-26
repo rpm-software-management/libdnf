@@ -20,105 +20,118 @@
 
 #include <Python.h>
 
-// hawkey
-#include "hy-iutil.h"
+#include "hy-selector.h"
 
-// pyhawkey
-#include "packagedelta-py.h"
+#include "exception-py.hpp"
+#include "hy-query.h"
+#include "iutil-py.hpp"
+#include "query-py.hpp"
+#include "sack-py.hpp"
+#include "selector-py.hpp"
 
-#include "pycomp.h"
+#include "pycomp.hpp"
 
 typedef struct {
     PyObject_HEAD
-    DnfPackageDelta *delta;
-} _PackageDeltaObject;
+    HySelector sltr;
+    PyObject *sack;
+} _SelectorObject;
 
 PyObject *
-packageDeltaToPyObject(DnfPackageDelta *delta)
+SelectorToPyObject(HySelector selector, PyObject *sack)
 {
-    _PackageDeltaObject *self = PyObject_New(_PackageDeltaObject, &packageDelta_Type);
-    self->delta = delta;
-    return (PyObject *)self;
+    _SelectorObject *self = (_SelectorObject *)selector_Type.tp_alloc(&selector_Type, 0);
+    if (self) {
+        self->sltr = selector;
+        self->sack = sack;
+        Py_INCREF(sack);
+    }
+    return (PyObject *) self;
 }
 
-/* functions on the type */
+int
+selector_converter(PyObject *o, HySelector *sltr_ptr)
+{
+    if (!PyType_IsSubtype(o->ob_type, &selector_Type)) {
+        PyErr_SetString(PyExc_TypeError, "Expected a Selector object.");
+        return 0;
+    }
+    *sltr_ptr = ((_SelectorObject *)o)->sltr;
+
+    return 1;
+}
+
+static PyObject *
+selector_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+    _SelectorObject *self = (_SelectorObject*)type->tp_alloc(type, 0);
+    if (self) {
+        self->sltr = NULL;
+        self->sack = NULL;
+    }
+    return (PyObject*)self;
+}
+
+static int
+selector_init(_SelectorObject *self, PyObject *args, PyObject *kwds)
+{
+    PyObject *sack;
+    DnfSack *csack;
+
+    if (!PyArg_ParseTuple(args, "O!", &sack_Type, &sack))
+        return -1;
+    csack = sackFromPyObject(sack);
+    if (csack == NULL)
+        return -1;
+    self->sack = sack;
+    Py_INCREF(self->sack); // sack has to kept around until we are
+    self->sltr = hy_selector_create(csack);
+    return 0;
+}
 
 static void
-packageDelta_dealloc(_PackageDeltaObject *self)
+selector_dealloc(_SelectorObject *self)
 {
-    g_object_unref(self->delta);
+    if (self->sltr)
+        hy_selector_free(self->sltr);
+
+    Py_XDECREF(self->sack);
     Py_TYPE(self)->tp_free(self);
 }
 
-/* getsetters */
-
 static PyObject *
-get_str(_PackageDeltaObject *self, void *closure)
+matches(_SelectorObject *self, PyObject *args)
 {
-    const char *(*func)(DnfPackageDelta *);
-    const char *cstr;
-
-    func = (const char *(*)(DnfPackageDelta *))closure;
-    cstr = func(self->delta);
-    if (cstr == NULL)
-        Py_RETURN_NONE;
-    return PyString_FromString(cstr);
+    GPtrArray *plist = hy_selector_matches(self->sltr);
+    PyObject *list = packagelist_to_pylist(plist, self->sack);
+    g_ptr_array_unref(plist);
+    return list;
 }
 
-static PyObject *
-get_num(_PackageDeltaObject *self, void *closure)
+static _SelectorObject *
+set(_SelectorObject *self, PyObject *args, PyObject *kwds)
 {
-    guint64 (*func)(DnfPackageDelta *);
-    func = (guint64 (*)(DnfPackageDelta *))closure;
-    return PyLong_FromUnsignedLongLong(func(self->delta));
-}
-
-static PyObject *
-get_chksum(_PackageDeltaObject *self, void *closure)
-{
-    HyChecksum *(*func)(DnfPackageDelta *, int *);
-    int type;
-    HyChecksum *cs;
-
-    func = (HyChecksum *(*)(DnfPackageDelta *, int *))closure;
-    cs = func(self->delta, &type);
-    if (cs == 0) {
-        PyErr_SetString(PyExc_AttributeError, "No such checksum.");
+    gboolean ret = filter_internal(NULL, self->sltr, self->sack, args, kwds);
+    if (!ret) {
         return NULL;
     }
-
-    PyObject *res;
-    int checksum_length = checksum_type2length(type);
-
-#if PY_MAJOR_VERSION < 3
-    res = Py_BuildValue("is#", type, cs, checksum_length);
-#else
-    res = Py_BuildValue("iy#", type, cs, checksum_length);
-#endif
-
-    return res;
+    Py_INCREF(self);
+    return self;
 }
 
-static PyGetSetDef packageDelta_getsetters[] = {
-    {(char*) "location", (getter)get_str, NULL, NULL,
-     (void *)dnf_packagedelta_get_location},
-    {(char*) "baseurl", (getter)get_str, NULL, NULL,
-     (void *)dnf_packagedelta_get_baseurl},
-    {(char*) "downloadsize", (getter)get_num, NULL, NULL,
-     (void *)dnf_packagedelta_get_downloadsize},
-    {(char*) "chksum", (getter)get_chksum, NULL, NULL,
-    (void *)dnf_packagedelta_get_chksum},
-    {NULL}                        /* sentinel */
+static struct PyMethodDef selector_methods[] = {
+    {"matches", (PyCFunction)matches, METH_NOARGS,
+     NULL},
+    {"set", (PyCFunction)set, METH_KEYWORDS|METH_VARARGS, NULL},
+    {NULL}                      /* sentinel */
 };
 
-/* type */
-
-PyTypeObject packageDelta_Type = {
+PyTypeObject selector_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "_hawkey.PackageDelta",        /*tp_name*/
-    sizeof(_PackageDeltaObject),        /*tp_basicsize*/
+    "_hawkey.Selector",                /*tp_name*/
+    sizeof(_SelectorObject),        /*tp_basicsize*/
     0,                                /*tp_itemsize*/
-    (destructor) packageDelta_dealloc, /*tp_dealloc*/
+    (destructor) selector_dealloc, /*tp_dealloc*/
     0,                                /*tp_print*/
     0,                                /*tp_getattr*/
     0,                                /*tp_setattr*/
@@ -134,24 +147,24 @@ PyTypeObject packageDelta_Type = {
     0,                                /*tp_setattro*/
     0,                                /*tp_as_buffer*/
     Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,        /*tp_flags*/
-    "PackageDelta object",        /* tp_doc */
+    "Selector object",                /* tp_doc */
     0,                                /* tp_traverse */
     0,                                /* tp_clear */
     0,                                /* tp_richcompare */
     0,                                /* tp_weaklistoffset */
     PyObject_SelfIter,                /* tp_iter */
     0,                                 /* tp_iternext */
-    0,                                /* tp_methods */
+    selector_methods,                /* tp_methods */
     0,                                /* tp_members */
-    packageDelta_getsetters,        /* tp_getset */
+    0,                                /* tp_getset */
     0,                                /* tp_base */
     0,                                /* tp_dict */
     0,                                /* tp_descr_get */
     0,                                /* tp_descr_set */
     0,                                /* tp_dictoffset */
-    0,                                /* tp_init */
+    (initproc)selector_init,        /* tp_init */
     0,                                /* tp_alloc */
-    0,                                /* tp_new */
+    selector_new,                /* tp_new */
     0,                                /* tp_free */
     0,                                /* tp_is_gc */
 };
