@@ -36,8 +36,6 @@ class GoalTest(base.TestCase):
         self.assertEqual(set(), goal.actions)
         goal.upgrade(select=sltr)
         self.assertEqual(set([hawkey.UPGRADE]), goal.actions)
-        goal.install(name="semolina")
-        self.assertEqual(set([hawkey.UPGRADE, hawkey.INSTALL]), goal.actions)
 
     def test_clone(self):
         pkg = base.by_name(self.sack, "penny-lib")
@@ -83,25 +81,11 @@ class GoalTest(base.TestCase):
         # without checking versioning, the update is accepted:
         self.assertIsNone(hawkey.Goal(self.sack).upgrade(select=sltr))
 
-        goal = hawkey.Goal(self.sack)
-        goal.install(name="semolina")
-        goal.run()
-        self.assertEqual(str(goal.list_installs()[0]), 'semolina-2-0.x86_64')
-
     def test_install_selector_weak(self):
         sltr = hawkey.Selector(self.sack).set(name='hello')
         goal = hawkey.Goal(self.sack)
         goal.install(select=sltr, optional=True)
         self.assertTrue(goal.run())
-
-    def test_erase_selector(self):
-        """ Tests automatic Selector from keyword arguments, with special
-            keywords that don't become a part of the Selector.
-        """
-        goal = hawkey.Goal(self.sack)
-        goal.erase(clean_deps=True, name="flying")
-        goal.run()
-        self.assertEqual(len(goal.list_erasures()), 2)
 
     def test_install_selector_err(self):
         sltr = hawkey.Selector(self.sack)
