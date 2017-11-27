@@ -1889,6 +1889,7 @@ hy_filter_duplicated(HyQuery query)
     }
 }
 
+#if WITH_SWDB
 int
 hy_filter_unneeded(HyQuery query, DnfSwdb *swdb, const gboolean debug_solver)
 {
@@ -1951,6 +1952,7 @@ hy_filter_unneeded(HyQuery query, DnfSwdb *swdb, const gboolean debug_solver)
     map_free(&result);
     return 0;
 }
+#endif
 
 HySelector
 hy_query_to_selector(HyQuery query)

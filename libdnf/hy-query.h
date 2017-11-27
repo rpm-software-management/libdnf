@@ -28,7 +28,9 @@ G_BEGIN_DECLS
 /* hawkey */
 #include "dnf-sack.h"
 #include "dnf-types.h"
+#if WITH_SWDB
 #include "dnf-swdb.h"
+#endif
 #include "hy-types.h"
 
 enum _hy_query_flags {
@@ -108,7 +110,9 @@ void hy_add_filter_nevra_object(HyQuery query, HyNevra nevra, gboolean icase);
 void hy_add_filter_extras(HyQuery query);
 void hy_filter_recent(HyQuery query, const long unsigned int recent_limit);
 void hy_filter_duplicated(HyQuery query);
+#if WITH_SWDB
 int hy_filter_unneeded(HyQuery query, DnfSwdb* swdb, const gboolean debug_solver);
+#endif
 
 static inline void
 hy_query_autofree (void *v)
