@@ -31,7 +31,10 @@
 #include "hy-subject.h"
 #include "dnf-reldep.h"
 #include "dnf-reldep-list.h"
+
+#if WITH_SWDB
 #include "dnf-swdb.h"
+#endif
 
 #include "exception-py.h"
 #include "hawkey-pysys.h"
@@ -703,6 +706,7 @@ q_difference(PyObject *self, PyObject *args)
 static PyObject *
 filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds)
 {
+#if WITH_SWDB
     HyQuery self_query_copy = hy_query_clone(((_QueryObject *) self)->query);
     const char *kwlist[] = {"swdb", "debug_solver", NULL};
     PyObject *swdb;
@@ -724,6 +728,9 @@ filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds)
                                             Py_TYPE(self));
     Py_INCREF(final_query);
     return final_query;
+#else
+    return NULL;
+#endif
 }
 
 static PyObject *
