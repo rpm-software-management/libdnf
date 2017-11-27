@@ -9,9 +9,9 @@ CMAKE_POLICY(SET CMP0003 NEW)
 include (VERSION.cmake)
 message ("Building libdnf version: ${LIBDNF_VERSION}")
 
-ADD_COMPILE_OPTIONS (-Wcast-align -Wno-uninitialized -Wmissing-declarations -Wredundant-decls -Wcast-align -Wwrite-strings -Wreturn-type -Wformat-nonliteral -Wmissing-format-attribute -Wsign-compare -Wtype-limits -Wuninitialized -Waggregate-return -Wshadow -Winline -Wall -Werror=implicit-function-declaration -Wl,--as-needed)
+ADD_COMPILE_OPTIONS (-Wcast-align -Wno-uninitialized -Wmissing-declarations -Wredundant-decls -Wwrite-strings -Wreturn-type -Wformat-nonliteral -Wmissing-format-attribute -Wsign-compare -Wtype-limits -Wuninitialized -Wshadow -Winline -Wall -Werror=implicit-function-declaration -Wl,--as-needed)
 
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11 -Waggregate-return")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 include (CheckSymbolExists)
