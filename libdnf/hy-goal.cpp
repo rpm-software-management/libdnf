@@ -967,12 +967,6 @@ hy_goal_run_flags(HyGoal goal, DnfGoalActions flags)
 }
 
 int
-hy_goal_run_all(HyGoal goal, hy_solution_callback cb, void *cb_data)
-{
-    return hy_goal_run_all_flags(goal, cb, cb_data, DNF_NONE);
-}
-
-int
 hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
                       DnfGoalActions flags)
 {
