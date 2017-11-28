@@ -30,7 +30,6 @@ Handle *Handle::handle = nullptr;
 Handle::~Handle ()
 {
     close ();
-    delete handle;
 }
 
 Handle *
@@ -70,6 +69,7 @@ Handle::exists ()
 {
     return access (path, F_OK) != -1;
 }
+
 void
 Handle::open ()
 {
@@ -78,6 +78,7 @@ Handle::open ()
         // TODO handle error
     }
 }
+
 void
 Handle::close ()
 {
@@ -94,4 +95,10 @@ Handle::close ()
         }
     }
     db = nullptr;
+}
+
+const char *
+Handle::getPath ()
+{
+    return path;
 }

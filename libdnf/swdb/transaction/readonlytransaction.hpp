@@ -48,8 +48,8 @@ class ReadOnlyTransaction
     virtual ~ReadOnlyTransaction () = default;
 
     virtual std::vector<TransactionItem *> listTransactionItems () const;
-    virtual std::vector<std::string> listLogMessages (int fileDescriptor = -1) const;
-    virtual std::vector<RPMItem> getSoftwarePerformedWith () const { return softwarePerformedWith; }
+    virtual std::vector<std::string> listLogMessages (int fileDescriptor) const;
+    virtual std::vector<RPMItem> getSoftwarePerformedWith () const;
     virtual TransactionItem *getTransactionItem (DnfPackage *package) const;
 
   protected:

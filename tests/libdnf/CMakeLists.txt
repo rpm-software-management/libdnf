@@ -43,6 +43,26 @@ IF (WITH_SWDB)
         ADD_TEST(test_libdnf_swdb_valgrind ${VALGRIND_PROGRAM}
                  --error-exitcode=1
                  ${CMAKE_CURRENT_BINARY_DIR}/test_libdnf_swdb)
+
     ENDIF()
+
+    set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
+    FIND_PACKAGE(CPPUNIT REQUIRED)
+
+    INCLUDE_DIRECTORIES(${CPPUNIT_INCLUDE_DIR})
+    INCLUDE_DIRECTORIES(${CPPUNIT_INCLUDE_DIR})
+
+    SET (LIBDNF_TEST_SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/run_tests.cpp
+    )
+
+    INCLUDE_DIRECTORIES(swdb)
+    ADD_SUBDIRECTORY("swdb")
+
+    ADD_EXECUTABLE(run_tests ${LIBDNF_TEST_SOURCES} ${LIBDNF_TEST_HEADERS})
+    SET_TARGET_PROPERTIES(run_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${COMMON_RUNTIME_OUTPUT_DIRECTORY}")
+    TARGET_LINK_LIBRARIES(run_tests libdnf cppunit)
+
+    ADD_TEST(NAME test_cpp COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_tests DEPENDS run_tests COMMENT "Running CPPUNIT tests...")
 
 ENDIF()

@@ -55,3 +55,27 @@ ReadOnlyTransaction::ReadOnlyTransaction (unsigned long id,
   , rpmDBVersionEnd (rpmDBVersionEnd)
 {
 }
+
+std::vector<TransactionItem *>
+ReadOnlyTransaction::listTransactionItems () const
+{
+    return std::vector<TransactionItem *> ();
+}
+
+std::vector<std::string>
+ReadOnlyTransaction::listLogMessages (int fileDescriptor) const
+{
+    return std::vector<std::string> ();
+}
+
+std::vector<RPMItem>
+ReadOnlyTransaction::getSoftwarePerformedWith () const
+{
+    return softwarePerformedWith;
+}
+
+TransactionItem *
+ReadOnlyTransaction::getTransactionItem (DnfPackage *package) const
+{
+    return NULL;
+}

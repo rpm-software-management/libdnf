@@ -30,7 +30,7 @@
 class Handle
 {
   public:
-    virtual ~Handle ();
+    ~Handle ();
 
     static Handle *getInstance (const char *dbPath);
 
@@ -70,6 +70,8 @@ class Handle
 
         return statement;
     }
+
+    const char *getPath ();
 
   protected:
     Handle (const char *dbPath);

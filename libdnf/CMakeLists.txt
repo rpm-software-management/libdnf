@@ -42,7 +42,7 @@ IF (WITH_SWDB)
     )
     SET (LIBDNF_SRCS ${LIBDNF_SRCS} ${SWDB_sources})
 
-    INCLUDE_DIRECTORIES ("swdb")
+    INCLUDE_DIRECTORIES (swdb)
     ADD_SUBDIRECTORY ("swdb")
 ENDIF()
 
