@@ -141,21 +141,6 @@ class Collector(object):
         """ Raises AttributeError. """
         self.pkgs_borked.update(goal.list_erasures())
 
-class GoalRun(base.TestCase):
-    def test_run_callback(self):
-        "Test goal.run() can use callback parameter just as well as run_all()"
-        sack = base.TestSack(repo_dir=self.repo_dir)
-        sack.load_system_repo()
-        sack.load_test_repo("main", "main.repo")
-
-        pkg = base.by_name(sack, "penny-lib")
-        goal = hawkey.Goal(sack)
-        goal.erase(pkg)
-        collector = Collector()
-        self.assertTrue(goal.run(allow_uninstall=True,
-                                 callback=collector.new_solution_cb))
-        self.assertEqual(collector.cnt, 1)
-        self.assertEqual(len(collector.erasures), 2)
 
 class GoalRunAll(base.TestCase):
     def setUp(self):
