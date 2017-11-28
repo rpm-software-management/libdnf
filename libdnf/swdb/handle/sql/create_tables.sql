@@ -1,5 +1,5 @@
 R"***(
-    CREATE TABLE transaction (
+    CREATE TABLE trans (
         id INTEGER PRIMARY KEY,
         dt_begin INTEGER NOT NULL,
         dt_end INTEGER,
@@ -10,15 +10,15 @@ R"***(
         unix_uid INTEGER,
         return_code INTEGER
     );
+    CREATE TABLE repo (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL
+    );
     CREATE TABLE console_output (
         id INTEGER PRIMARY KEY,
-        transaction_id INTEGER REFERENCES transaction(id),
+        trans_id INTEGER REFERENCES trans(id),
         file_descriptor INTEGER,
         line TEXT NOT NULL
-    );
-    CREATE TABLE repo (
-        r_id INTEGER PRIMARY KEY,
-        name TEXT NOT NULL
     );
     CREATE TABLE item_state (
         id INTEGER PRIMARY KEY,
@@ -28,9 +28,9 @@ R"***(
         id INTEGER PRIMARY KEY,
         item_type INTEGER NOT NULL
     );
-    CREATE TABLE transaction_item (
+    CREATE TABLE trans_item (
         id INTEGER PRIMARY KEY,
-        transaction_id INTEGER REFERENCES transaction(id),
+        trans_id INTEGER REFERENCES trans(id),
         item_id INTEGER REFERENCES item(id),
         repo_id INTEGER REFERENCES repo(id),
         done INTEGER NOT NULL,
@@ -40,7 +40,7 @@ R"***(
     );
     CREATE TABLE trans_with (
         id INTEGER PRIMARY KEY,
-        transaction_id INTEGER REFERENCES transaction(id),
+        trans_id INTEGER REFERENCES trans(id),
         item_id INTEGER REFERENCES item(id)
     );
     CREATE TABLE rpm (
@@ -55,7 +55,7 @@ R"***(
         FOREIGN KEY(item_id) REFERENCES item(id)
     );
     CREATE INDEX rpm_name ON rpm(name);
-    CREATE INDEX transaction_item_item_id ON transaction_item(item_id);
+    CREATE INDEX trans_item_item_id ON trans_item(item_id);
 
     CREATE TABLE config (
         key TEXT PRIMERY KEY,

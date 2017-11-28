@@ -60,5 +60,5 @@ unsigned long
 TransactionFactory::getNextTransactionID ()
 {
     // TODO return id of next new transaction
-    return -1;
+    return 0;
 }

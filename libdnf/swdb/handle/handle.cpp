@@ -25,13 +25,14 @@
 #include <cstdio>
 #include <unistd.h>
 
-Handle *Handle::handle = nullptr;
+// Handle *Handle::handle = nullptr;
 
 Handle::~Handle ()
 {
     close ();
 }
 
+/*
 Handle *
 Handle::getInstance (const char *dbPath)
 {
@@ -41,6 +42,7 @@ Handle::getInstance (const char *dbPath)
 
     return handle;
 }
+*/
 
 Handle::Handle (const char *dbPath)
   : path (dbPath)
@@ -52,8 +54,7 @@ void
 Handle::createDB ()
 {
     open ();
-    Statement<> statement = prepare<> (sql_create_tables);
-    statement.exec ();
+    exec (sql_create_tables);
 }
 
 void
@@ -74,8 +75,9 @@ void
 Handle::open ()
 {
     if (db == nullptr) {
-        sqlite3_open (path, &db);
-        // TODO handle error
+        if (sqlite3_open (path, &db) != SQLITE_OK) {
+            throw SQLError ("Open failed", db);
+        }
     }
 }
 
@@ -91,7 +93,7 @@ Handle::close ()
             sqlite3_finalize (res);
         }
         if (sqlite3_close (db)) {
-            /// TODO handle error
+            throw SQLError ("Close failed", db);
         }
     }
     db = nullptr;
@@ -101,4 +103,13 @@ const char *
 Handle::getPath ()
 {
     return path;
+}
+
+void
+Handle::exec (const char *sql)
+{
+    int result = sqlite3_exec (db, sql, nullptr, 0, nullptr);
+    if (result != SQLITE_OK) {
+        throw SQLError ("Exec failed", db);
+    }
 }

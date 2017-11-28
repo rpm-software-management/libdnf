@@ -23,17 +23,10 @@
 #ifndef LIBDNF_SWDB_STATEMENT_HPP
 #define LIBDNF_SWDB_STATEMENT_HPP
 
+#include "sqlerror.hpp"
 #include <sqlite3.h>
 #include <string>
 
-template<typename... Types>
-struct Row
-{
-    // access attributes as E1, E2, E3...
-    bool empty ();
-};
-
-template<typename... Types>
 class Statement
 {
   public:
@@ -42,22 +35,34 @@ class Statement
     {
     }
 
-    Row<Types...> next ();
-    void exec ()
+    ~Statement ()
     {
-        // TODO handle error
-        sqlite3_step (res);
+        if (res) {
+            sqlite3_finalize (res);
+        }
     }
+
+    void getColumn (int pos, int &result) { result = sqlite3_column_int (res, pos); }
+    void getColumn (int pos, std::string &result)
+    {
+        result = reinterpret_cast<const char *> (sqlite3_column_text (res, pos));
+    }
+
+    bool step () { return sqlite3_step (res) == SQLITE_ROW; }
 
     void bind (const int pos, const std::string &val)
     {
-        // TODO handle error
-        sqlite3_bind_text (res, pos, val.c_str (), -1, SQLITE_STATIC);
+        int result = sqlite3_bind_text (res, pos, val.c_str (), -1, SQLITE_STATIC);
+        if (result != SQLITE_OK) {
+            throw SQLError ("Text bind failed", sqlite3_db_handle (res));
+        }
     }
     void bind (const int pos, const int val)
     {
-        // TODO handle error
-        sqlite3_bind_int (res, pos, val);
+        int result = sqlite3_bind_int (res, pos, val);
+        if (result != SQLITE_OK) {
+            throw SQLError ("Integer bind failed", sqlite3_db_handle (res));
+        }
     }
 
   protected:

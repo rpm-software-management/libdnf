@@ -23,6 +23,7 @@
 #ifndef __HANDLE_HPP
 #define __HANDLE_HPP
 
+#include "sqlerror.hpp"
 #include "statement.hpp"
 #include <sqlite3.h>
 #include <string>
@@ -30,9 +31,10 @@
 class Handle
 {
   public:
+    Handle (const char *dbPath); // XXX this should be protected if we want handle as singleton
     ~Handle ();
 
-    static Handle *getInstance (const char *dbPath);
+    // static Handle *getInstance (const char *dbPath);
 
     void createDB ();
     void resetDB ();
@@ -42,25 +44,25 @@ class Handle
     /**
      * template function should be used in following way:
      *
-     * Statement<Int, String> s = prepare<Int, String>("SELECT id, name FROM foo WHERE id=?", 1);
-     *
-     * const Row<Int, String> &row = s.next();
-     * if (!row.empty()) {
-     *     int id = row.E1;
-     *     string name = row.E2;
+     * Statement s = prepare("SELECT id, name FROM foo WHERE id=?", 1);
+     * int id;
+     * string name;
+     * while(s.step()) {
+     *     getColumn(0, id);
+     *     getColumn(1, name);
      * }
      *
      **/
-    template<typename... Types, class... Ts>
-    Statement<Types...> prepare (const char *sql, Ts... args)
+    template<class... Ts>
+    Statement prepare (const char *sql, Ts... args)
     {
         open ();
         sqlite3_stmt *res;
         if (sqlite3_prepare_v2 (db, sql, -1, &res, nullptr) != SQLITE_OK) {
-            // TODO handle error
+            throw SQLError ("Prepare failed", db);
         }
 
-        Statement<Types...> statement (res);
+        Statement statement (res);
 
         // placeholders are indexed from 1
         int pos = 1;
@@ -71,11 +73,11 @@ class Handle
         return statement;
     }
 
+    void exec (const char *sql);
+
     const char *getPath ();
 
   protected:
-    Handle (const char *dbPath);
-
     void open ();
     void close ();
 
