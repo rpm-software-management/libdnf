@@ -253,12 +253,6 @@ class Goal(_hawkey.Goal):
     def problems(self):
         return [self.describe_problem(i) for i in range(0, self.count_problems())]
 
-    def run(self, callback=None, **kwargs):
-        ret = super(Goal, self).run(**kwargs)
-        if callback:
-            callback(self)
-        return ret
-
     def install(self, *args, **kwargs):
         if args:
             self._installs.extend(args)
