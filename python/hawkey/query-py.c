@@ -612,7 +612,7 @@ add_installed_filter(_QueryObject *self, PyObject *unused)
 static PyObject *
 add_filter_latest(_QueryObject *self, PyObject *args)
 {
-    const int value = 1;
+    int value = 1;
 
     if (!PyArg_ParseTuple(args, "|i", &value))
         return NULL;
@@ -984,7 +984,7 @@ add_nevra_or_other_filter(_QueryObject *self, PyObject *args)
 static PyObject *
 add_filter_recent(_QueryObject *self, PyObject *args)
 {
-    const long recent;
+    long recent;
     if (!PyArg_ParseTuple(args, "l", &recent))
         return NULL;
 
