@@ -108,6 +108,7 @@ Handle::getPath ()
 void
 Handle::exec (const char *sql)
 {
+    open ();
     int result = sqlite3_exec (db, sql, nullptr, 0, nullptr);
     if (result != SQLITE_OK) {
         throw SQLError ("Exec failed", db);
