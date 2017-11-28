@@ -126,21 +126,6 @@ class GoalTest(base.TestCase):
         goal.erase(pkg, clean_deps=True)
         self.assertTrue(goal.req_has_erase())
 
-class Collector(object):
-    def __init__(self):
-        self.cnt = 0
-        self.erasures = set()
-        self.pkgs = set()
-
-    def new_solution_cb(self, goal):
-        self.cnt += 1
-        self.erasures.update(goal.list_erasures())
-        self.pkgs.update(goal.list_installs())
-
-    def new_solution_cb_borked(self, goal):
-        """ Raises AttributeError. """
-        self.pkgs_borked.update(goal.list_erasures())
-
 
 class GoalRunAll(base.TestCase):
     def setUp(self):
@@ -148,23 +133,6 @@ class GoalRunAll(base.TestCase):
         self.sack.load_system_repo()
         self.sack.load_test_repo("greedy", "greedy.repo")
         self.goal = hawkey.Goal(self.sack)
-
-    def test_cb(self):
-        pkg_a = base.by_name(self.sack, "A")
-        pkg_b = base.by_name(self.sack, "B")
-        pkg_c = base.by_name(self.sack, "C")
-        self.goal.install(pkg_a)
-
-        collector = Collector()
-        self.assertTrue(self.goal.run_all(collector.new_solution_cb))
-        self.assertItemsEqual(collector.pkgs, [pkg_a, pkg_b, pkg_c])
-
-    def test_cb_borked(self):
-        """ Check exceptions are propagated from the callback. """
-        self.goal.install(base.by_name(self.sack, "A"))
-        collector = Collector()
-        self.assertRaises(AttributeError,
-                          self.goal.run_all, collector.new_solution_cb_borked)
 
     def test_goal_install_weak_deps(self):
         pkg_b = base.by_name(self.sack, "B")
