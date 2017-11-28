@@ -433,29 +433,6 @@ py_solver_callback(HyGoal goal, void *data)
 }
 
 static PyObject *
-run_all(_GoalObject *self, PyObject *args, PyObject *kwds)
-{
-    int flags = 0;
-    PyObject *callback = NULL;
-    if (!args_run_parse(args, kwds, &flags, &callback))
-        return NULL;
-
-    PyObject *callback_tuple = Py_BuildValue("(O)", self);
-    if (!callback_tuple)
-        return NULL;
-
-    struct _PySolutionCallback cb_s = {callback_tuple, callback, 0};
-    int ret = hy_goal_run_all_flags(self->goal, py_solver_callback, &cb_s,
-                                    static_cast<DnfGoalActions>(flags));
-    Py_DECREF(callback_tuple);
-    if (cb_s.errors > 0)
-        return NULL;
-    if (!ret)
-        Py_RETURN_TRUE;
-    Py_RETURN_FALSE;
-}
-
-static PyObject *
 count_problems(_GoalObject *self, PyObject *unused)
 {
     return PyLong_FromLong(hy_goal_count_problems(self->goal));
@@ -754,8 +731,6 @@ static struct PyMethodDef goal_methods[] = {
      METH_NOARGS,        NULL},
     {"req_length",        (PyCFunction)req_length,        METH_NOARGS,        NULL},
     {"run",                (PyCFunction)run,
-     METH_VARARGS | METH_KEYWORDS, NULL},
-    {"run_all",        (PyCFunction)run_all,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"count_problems",        (PyCFunction)count_problems,        METH_NOARGS,        NULL},
     {"problem_conflicts",(PyCFunction)problem_conflicts,        METH_VARARGS | METH_KEYWORDS,                NULL},
