@@ -259,22 +259,12 @@ class Goal(_hawkey.Goal):
             callback(self)
         return ret
 
-    def erase(self, *args, **kwargs):
-        super(Goal, self).erase(*args, **kwargs)
-
     def install(self, *args, **kwargs):
         if args:
             self._installs.extend(args)
         if 'select' in kwargs:
             self._installs.extend(kwargs['select'].matches())
         super(Goal, self).install(*args, **kwargs)
-
-    def downgrade_to(self, *args, **kwargs):
-        super(Goal, self).downgrade_to(*args, **kwargs)
-
-    def upgrade(self, *args, **kwargs):
-        super(Goal, self).upgrade(*args, **kwargs)
-
 
 def _encode(obj):
     """ Identity, except when obj is unicode then return a UTF-8 string.
