@@ -14,7 +14,10 @@ class HandleTest : public CppUnit::TestCase
     CPPUNIT_TEST (testPath);
     CPPUNIT_TEST (testCreate);
     CPPUNIT_TEST (testReset);
+    CPPUNIT_TEST (testExec);
     CPPUNIT_TEST (testPrepare);
+    CPPUNIT_TEST (testInsert);
+    CPPUNIT_TEST (testSelect);
     CPPUNIT_TEST_SUITE_END ();
 
   public:
@@ -24,7 +27,10 @@ class HandleTest : public CppUnit::TestCase
     void testPath ();
     void testCreate ();
     void testReset ();
+    void testExec ();
     void testPrepare ();
+    void testInsert ();
+    void testSelect ();
 
   private:
     Handle *handle;

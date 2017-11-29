@@ -24,7 +24,6 @@
 #define __HANDLE_HPP
 
 #include "sqlerror.hpp"
-#include "statement.hpp"
 #include <sqlite3.h>
 #include <string>
 
@@ -44,38 +43,46 @@ class Handle
     /**
      * template function should be used in following way:
      *
-     * Statement s = prepare("SELECT id, name FROM foo WHERE id=?", 1);
-     * int id;
-     * string name;
-     * while(s.step()) {
-     *     getColumn(0, id);
-     *     getColumn(1, name);
+     * prepare("SELECT id, name FROM foo WHERE id=?", 1);
+     * while(step()) {
+     *     int id = getInt(0);
+     *     std::string id = getString(1);
      * }
      *
      **/
     template<class... Ts>
-    Statement prepare (const char *sql, Ts... args)
+    void prepare (const char *sql, Ts... args)
     {
         open ();
-        sqlite3_stmt *res;
+
+        if (res != nullptr) {
+            sqlite3_finalize (res);
+            res = nullptr;
+        }
+
         if (sqlite3_prepare_v2 (db, sql, -1, &res, nullptr) != SQLITE_OK) {
             throw SQLError ("Prepare failed", db);
         }
 
-        Statement statement (res);
-
         // placeholders are indexed from 1
-        int pos = 1;
+        int pos = sizeof...(args);
 
-        // call bind for each parameter in parameter pack (left to right)
-        [](...) {}((statement.bind (pos++, std::forward<Ts> (args)), 0)...);
-
-        return statement;
+        // call bind for each parameter in parameter pack (right to left)
+        [](...) {}((bind (pos--, std::forward<Ts> (args)), 0)...);
     }
 
+    const char *getPath () const;
+
+    bool step ();
     void exec (const char *sql);
 
-    const char *getPath ();
+    int getInt (int pos);
+    std::string getString (int pos);
+
+    void bind (const int pos, const std::string &val);
+    void bind (const int pos, const int val);
+
+    int64_t lastInsertRowID ();
 
   protected:
     void open ();
@@ -85,6 +92,7 @@ class Handle
 
     static Handle *handle;
     sqlite3 *db;
+    sqlite3_stmt *res;
 };
 
 #endif

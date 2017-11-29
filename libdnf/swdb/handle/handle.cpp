@@ -29,6 +29,9 @@
 
 Handle::~Handle ()
 {
+    if (res != nullptr) {
+        sqlite3_finalize (res);
+    }
     close ();
 }
 
@@ -48,6 +51,7 @@ Handle::Handle (const char *dbPath)
   : path (dbPath)
 {
     db = nullptr;
+    res = nullptr;
 }
 
 void
@@ -100,7 +104,7 @@ Handle::close ()
 }
 
 const char *
-Handle::getPath ()
+Handle::getPath () const
 {
     return path;
 }
@@ -113,4 +117,67 @@ Handle::exec (const char *sql)
     if (result != SQLITE_OK) {
         throw SQLError ("Exec failed", db);
     }
+}
+
+int
+Handle::getInt (int pos)
+{
+    if (res == nullptr) {
+        return 0;
+    }
+    return sqlite3_column_int (res, pos);
+}
+
+std::string
+Handle::getString (int pos)
+{
+    if (res == nullptr) {
+        return "";
+    }
+    auto result = reinterpret_cast<const char *> (sqlite3_column_text (res, pos));
+    return result ? result : "";
+}
+
+bool
+Handle::step ()
+{
+    if (res == nullptr) {
+        return false;
+    }
+    int result = sqlite3_step (res);
+    if (result == SQLITE_OK || result == SQLITE_ROW || result == SQLITE_DONE) {
+        return result == SQLITE_ROW;
+    }
+    throw SQLError ("Step failed", db);
+}
+
+void
+Handle::bind (const int pos, const std::string &val)
+{
+    if (res == nullptr) {
+        return;
+    }
+    int result = sqlite3_bind_text (res, pos, val.c_str (), -1, SQLITE_TRANSIENT);
+    if (result != SQLITE_OK) {
+        throw SQLError ("Text bind failed", sqlite3_db_handle (res));
+    }
+}
+
+void
+Handle::bind (const int pos, const int val)
+{
+    if (res == nullptr) {
+        return;
+    }
+    int result = sqlite3_bind_int (res, pos, val);
+    if (result != SQLITE_OK) {
+        throw SQLError ("Integer bind failed", sqlite3_db_handle (res));
+    }
+}
+
+int64_t
+Handle::lastInsertRowID ()
+{
+    open ();
+    return sqlite3_last_insert_rowid (db);
 }
