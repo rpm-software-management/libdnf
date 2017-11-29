@@ -36,8 +36,6 @@ class GoalTest(base.TestCase):
         self.assertEqual(set(), goal.actions)
         goal.upgrade(select=sltr)
         self.assertEqual(set([hawkey.UPGRADE]), goal.actions)
-        goal.install(name="semolina")
-        self.assertEqual(set([hawkey.UPGRADE, hawkey.INSTALL]), goal.actions)
 
     def test_clone(self):
         pkg = base.by_name(self.sack, "penny-lib")
@@ -83,25 +81,11 @@ class GoalTest(base.TestCase):
         # without checking versioning, the update is accepted:
         self.assertIsNone(hawkey.Goal(self.sack).upgrade(select=sltr))
 
-        goal = hawkey.Goal(self.sack)
-        goal.install(name="semolina")
-        goal.run()
-        self.assertEqual(str(goal.list_installs()[0]), 'semolina-2-0.x86_64')
-
     def test_install_selector_weak(self):
         sltr = hawkey.Selector(self.sack).set(name='hello')
         goal = hawkey.Goal(self.sack)
         goal.install(select=sltr, optional=True)
         self.assertTrue(goal.run())
-
-    def test_erase_selector(self):
-        """ Tests automatic Selector from keyword arguments, with special
-            keywords that don't become a part of the Selector.
-        """
-        goal = hawkey.Goal(self.sack)
-        goal.erase(clean_deps=True, name="flying")
-        goal.run()
-        self.assertEqual(len(goal.list_erasures()), 2)
 
     def test_install_selector_err(self):
         sltr = hawkey.Selector(self.sack)
@@ -142,36 +126,6 @@ class GoalTest(base.TestCase):
         goal.erase(pkg, clean_deps=True)
         self.assertTrue(goal.req_has_erase())
 
-class Collector(object):
-    def __init__(self):
-        self.cnt = 0
-        self.erasures = set()
-        self.pkgs = set()
-
-    def new_solution_cb(self, goal):
-        self.cnt += 1
-        self.erasures.update(goal.list_erasures())
-        self.pkgs.update(goal.list_installs())
-
-    def new_solution_cb_borked(self, goal):
-        """ Raises AttributeError. """
-        self.pkgs_borked.update(goal.list_erasures())
-
-class GoalRun(base.TestCase):
-    def test_run_callback(self):
-        "Test goal.run() can use callback parameter just as well as run_all()"
-        sack = base.TestSack(repo_dir=self.repo_dir)
-        sack.load_system_repo()
-        sack.load_test_repo("main", "main.repo")
-
-        pkg = base.by_name(sack, "penny-lib")
-        goal = hawkey.Goal(sack)
-        goal.erase(pkg)
-        collector = Collector()
-        self.assertTrue(goal.run(allow_uninstall=True,
-                                 callback=collector.new_solution_cb))
-        self.assertEqual(collector.cnt, 1)
-        self.assertEqual(len(collector.erasures), 2)
 
 class GoalRunAll(base.TestCase):
     def setUp(self):
@@ -179,23 +133,6 @@ class GoalRunAll(base.TestCase):
         self.sack.load_system_repo()
         self.sack.load_test_repo("greedy", "greedy.repo")
         self.goal = hawkey.Goal(self.sack)
-
-    def test_cb(self):
-        pkg_a = base.by_name(self.sack, "A")
-        pkg_b = base.by_name(self.sack, "B")
-        pkg_c = base.by_name(self.sack, "C")
-        self.goal.install(pkg_a)
-
-        collector = Collector()
-        self.assertTrue(self.goal.run_all(collector.new_solution_cb))
-        self.assertItemsEqual(collector.pkgs, [pkg_a, pkg_b, pkg_c])
-
-    def test_cb_borked(self):
-        """ Check exceptions are propagated from the callback. """
-        self.goal.install(base.by_name(self.sack, "A"))
-        collector = Collector()
-        self.assertRaises(AttributeError,
-                          self.goal.run_all, collector.new_solution_cb_borked)
 
     def test_goal_install_weak_deps(self):
         pkg_b = base.by_name(self.sack, "B")

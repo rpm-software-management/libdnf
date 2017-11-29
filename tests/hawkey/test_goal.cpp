@@ -1118,25 +1118,6 @@ solution_cb(HyGoal goal, void *data)
     return 0;
 }
 
-START_TEST(test_goal_run_all)
-{
-    DnfSack *sack = test_globals.sack;
-    HyGoal goal = hy_goal_create(sack);
-    DnfPackage *pkg = get_available_pkg(sack, "A");
-
-    fail_if(hy_goal_install(goal, pkg));
-
-    struct Solutions *solutions = solutions_create();
-    fail_if(hy_goal_run_all(goal, solution_cb, solutions));
-    fail_unless(solutions->solutions == 2);
-    fail_unless(solutions->installs->len == 3);
-    solutions_free(solutions);
-
-    hy_goal_free(goal);
-    g_object_unref(pkg);
-}
-END_TEST
-
 START_TEST(test_goal_installonly_limit)
 {
     const char *installonly[] = {"k", NULL};
@@ -1439,7 +1420,6 @@ goal_suite(void)
 
     tc = tcase_create("Greedy");
     tcase_add_unchecked_fixture(tc, fixture_greedy_only, teardown);
-    tcase_add_test(tc, test_goal_run_all);
     tcase_add_test(tc, test_goal_install_weak_deps);
     suite_add_tcase(s, tc);
 
