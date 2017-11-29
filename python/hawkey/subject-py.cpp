@@ -31,15 +31,15 @@
 #include "hy-types.h"
 
 // pyhawkey
-#include "iutil-py.h"
-#include "nevra-py.h"
-#include "possibilities-py.h"
-#include "pycomp.h"
-#include "query-py.h"
-#include "reldep-py.h"
-#include "sack-py.h"
-#include "selector-py.h"
-#include "subject-py.h"
+#include "iutil-py.hpp"
+#include "nevra-py.hpp"
+#include "possibilities-py.hpp"
+#include "pycomp.hpp"
+#include "query-py.hpp"
+#include "reldep-py.hpp"
+#include "sack-py.hpp"
+#include "selector-py.hpp"
+#include "subject-py.hpp"
 
 typedef struct {
     PyObject_HEAD
@@ -114,10 +114,10 @@ forms_from_list(PyObject *list)
             g_free(forms);
             return NULL;
         }
-        forms = solv_extend(forms, i, 1, sizeof(HyForm), BLOCK_SIZE);
-        forms[i++] = PyLong_AsLong(form);
+        forms = static_cast<HyForm *>(solv_extend(forms, i, 1, sizeof(HyForm), BLOCK_SIZE));
+        forms[i++] = static_cast<HyForm>(PyLong_AsLong(form));
     }
-    forms = solv_extend(forms, i, 1, sizeof(HyForm), BLOCK_SIZE);
+    forms = static_cast<HyForm *>(solv_extend(forms, i, 1, sizeof(HyForm), BLOCK_SIZE));
     forms[i] = _HY_FORM_STOP_;
     return forms;
 }
@@ -134,10 +134,10 @@ module_forms_from_list(PyObject *list)
             g_free(forms);
             return NULL;
         }
-        forms = solv_extend(forms, i, 1, sizeof(HyModuleFormEnum), BLOCK_SIZE);
-        forms[i++] = PyLong_AsLong(form);
+        forms = static_cast<HyModuleFormEnum *>(solv_extend(forms, i, 1, sizeof(HyModuleFormEnum), BLOCK_SIZE));
+        forms[i++] = static_cast<HyModuleFormEnum>(PyLong_AsLong(form));
     }
-    forms = solv_extend(forms, i, 1, sizeof(HyModuleFormEnum), BLOCK_SIZE);
+    forms = static_cast<HyModuleFormEnum *>(solv_extend(forms, i, 1, sizeof(HyModuleFormEnum), BLOCK_SIZE));
     forms[i] = _HY_MODULE_FORM_STOP_;
     return forms;
 }
@@ -146,7 +146,7 @@ static HyForm *
 forms_from_int(PyObject *num)
 {
     HyForm *forms = g_new0(HyForm, 2);
-    forms[0] = PyLong_AsLong(num);
+    forms[0] = static_cast<HyForm>(PyLong_AsLong(num));
     forms[1] = _HY_FORM_STOP_;
     return forms;
 }
@@ -155,7 +155,7 @@ static HyModuleFormEnum *
 module_forms_from_int(PyObject *num)
 {
     HyModuleFormEnum *forms = g_new0(HyModuleFormEnum, 2);
-    forms[0] = PyLong_AsLong(num);
+    forms[0] = static_cast<HyModuleFormEnum>(PyLong_AsLong(num));
     forms[1] = _HY_MODULE_FORM_STOP_;
     return forms;
 }

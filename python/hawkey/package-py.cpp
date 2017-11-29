@@ -28,11 +28,11 @@
 #include "hy-package.h"
 #include "dnf-reldep.h"
 
-#include "iutil-py.h"
-#include "package-py.h"
-#include "packagedelta-py.h"
-#include "sack-py.h"
-#include "pycomp.h"
+#include "iutil-py.hpp"
+#include "package-py.hpp"
+#include "packagedelta-py.hpp"
+#include "sack-py.hpp"
+#include "pycomp.hpp"
 
 typedef struct {
     PyObject_HEAD

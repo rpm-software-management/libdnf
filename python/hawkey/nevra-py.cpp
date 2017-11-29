@@ -30,11 +30,11 @@
 #include "hy-types.h"
 
 // pyhawkey
-#include "iutil-py.h"
-#include "nevra-py.h"
-#include "pycomp.h"
-#include "query-py.h"
-#include "sack-py.h"
+#include "iutil-py.hpp"
+#include "nevra-py.hpp"
+#include "pycomp.hpp"
+#include "query-py.hpp"
+#include "sack-py.hpp"
 
 typedef struct {
     PyObject_HEAD

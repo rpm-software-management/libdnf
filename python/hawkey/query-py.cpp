@@ -36,14 +36,14 @@
 #include "dnf-swdb.h"
 #endif
 
-#include "exception-py.h"
-#include "hawkey-pysys.h"
-#include "iutil-py.h"
-#include "package-py.h"
-#include "query-py.h"
-#include "reldep-py.h"
-#include "sack-py.h"
-#include "pycomp.h"
+#include "exception-py.hpp"
+#include "hawkey-pysys.hpp"
+#include "iutil-py.hpp"
+#include "package-py.hpp"
+#include "query-py.hpp"
+#include "reldep-py.hpp"
+#include "sack-py.hpp"
+#include "pycomp.hpp"
 
 typedef struct {
     PyObject_HEAD
@@ -612,7 +612,7 @@ add_installed_filter(_QueryObject *self, PyObject *unused)
 static PyObject *
 add_filter_latest(_QueryObject *self, PyObject *args)
 {
-    const int value = 1;
+    int value = 1;
 
     if (!PyArg_ParseTuple(args, "|i", &value))
         return NULL;
@@ -984,7 +984,7 @@ add_nevra_or_other_filter(_QueryObject *self, PyObject *args)
 static PyObject *
 add_filter_recent(_QueryObject *self, PyObject *args)
 {
-    const long recent;
+    long recent;
     if (!PyArg_ParseTuple(args, "l", &recent))
         return NULL;
 

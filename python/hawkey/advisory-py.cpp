@@ -28,10 +28,10 @@
 #include "hy-package.h"
 
 // pyhawkey
-#include "advisory-py.h"
-#include "iutil-py.h"
+#include "advisory-py.hpp"
+#include "iutil-py.hpp"
 
-#include "pycomp.h"
+#include "pycomp.hpp"
 
 typedef struct {
     PyObject_HEAD
