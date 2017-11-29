@@ -20,8 +20,7 @@
 
 #include <Python.h>
 
-// libsolv
-#include <solv/util.h>
+#include <vector>
 
 // hawkey
 #include "hy-iutil.h"
@@ -102,92 +101,32 @@ subject_init(_SubjectObject *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-static HyForm *
-forms_from_list(PyObject *list)
-{
-    HyForm *forms = NULL;
-    int i = 0;
-    const int BLOCK_SIZE = 6;
-    while (i < PyList_Size(list)) {
-        PyObject *form = PyList_GetItem(list, i);
-        if (!PyInt_Check(form)) {
-            g_free(forms);
-            return NULL;
-        }
-        forms = static_cast<HyForm *>(solv_extend(forms, i, 1, sizeof(HyForm), BLOCK_SIZE));
-        forms[i++] = static_cast<HyForm>(PyLong_AsLong(form));
-    }
-    forms = static_cast<HyForm *>(solv_extend(forms, i, 1, sizeof(HyForm), BLOCK_SIZE));
-    forms[i] = _HY_FORM_STOP_;
-    return forms;
-}
-
-static HyModuleFormEnum *
-module_forms_from_list(PyObject *list)
-{
-    HyModuleFormEnum *forms = NULL;
-    int i = 0;
-    const int BLOCK_SIZE = 17;
-    while (i < PyList_Size(list)) {
-        PyObject *form = PyList_GetItem(list, i);
-        if (!PyInt_Check(form)) {
-            g_free(forms);
-            return NULL;
-        }
-        forms = static_cast<HyModuleFormEnum *>(solv_extend(forms, i, 1, sizeof(HyModuleFormEnum), BLOCK_SIZE));
-        forms[i++] = static_cast<HyModuleFormEnum>(PyLong_AsLong(form));
-    }
-    forms = static_cast<HyModuleFormEnum *>(solv_extend(forms, i, 1, sizeof(HyModuleFormEnum), BLOCK_SIZE));
-    forms[i] = _HY_MODULE_FORM_STOP_;
-    return forms;
-}
-
-static HyForm *
-forms_from_int(PyObject *num)
-{
-    HyForm *forms = g_new0(HyForm, 2);
-    forms[0] = static_cast<HyForm>(PyLong_AsLong(num));
-    forms[1] = _HY_FORM_STOP_;
-    return forms;
-}
-
-static HyModuleFormEnum *
-module_forms_from_int(PyObject *num)
-{
-    HyModuleFormEnum *forms = g_new0(HyModuleFormEnum, 2);
-    forms[0] = static_cast<HyModuleFormEnum>(PyLong_AsLong(num));
-    forms[1] = _HY_MODULE_FORM_STOP_;
-    return forms;
-}
-
-static HyForm *
+template<typename T, T last_element>
+static std::vector<T>
 fill_form(PyObject *o)
 {
-    HyForm *cforms = NULL;
-    if (PyList_Check(o))
-        cforms = forms_from_list(o);
-    else if (PyInt_Check(o))
-        cforms = forms_from_int(o);
-    if (cforms == NULL) {
-        PyErr_SetString(PyExc_TypeError, "Malformed subject forms.");
-        return NULL;
+    if (PyList_Check(o)) {
+        std::vector<T> cforms;
+        cforms.reserve(PyList_Size(o) + 1);
+        bool error{false};
+        for (Py_ssize_t i = 0; i < PyList_Size(o); ++i) {
+            PyObject *form = PyList_GetItem(o, i);
+            if (!PyInt_Check(form)) {
+                error = true;
+                break;
+            }
+            cforms.push_back(static_cast<T>(PyLong_AsLong(form)));
+        }
+        if (!error) {
+            cforms.push_back(last_element);
+            return cforms;
+        }
     }
-    return cforms;
-}
+    else if (PyInt_Check(o))
+        return {static_cast<T>(PyLong_AsLong(o)), last_element};
 
-static HyModuleFormEnum *
-fill_module_form(PyObject *o)
-{
-    HyModuleFormEnum *cforms = NULL;
-    if (PyList_Check(o))
-        cforms = module_forms_from_list(o);
-    else if (PyInt_Check(o))
-        cforms = module_forms_from_int(o);
-    if (cforms == NULL) {
-        PyErr_SetString(PyExc_TypeError, "Malformed subject forms.");
-        return NULL;
-    }
-    return cforms;
+    PyErr_SetString(PyExc_TypeError, "Malformed subject forms.");
+    return {};
 }
 
 /* object methods */
@@ -200,16 +139,15 @@ get_nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", (char**) kwlist, &forms)) {
         return NULL;
     }
-    HyForm *cforms = NULL;
+    std::vector<HyForm> cforms;
     if ((forms != NULL) && (forms != Py_None) &&
-        ((!PyList_Check(forms)) || (PyList_Size(forms) > 0))) {
-        cforms = fill_form(forms);
-        if (cforms == NULL)
+        (!PyList_Check(forms) || PyList_Size(forms)>0)) {
+        cforms = fill_form<HyForm, _HY_FORM_STOP_>(forms);
+        if (cforms.empty())
             return NULL;
     }
     HyPossibilities iter = hy_subject_nevra_possibilities(self->pattern,
-        cforms);
-    g_free(cforms);
+        cforms.empty() ? NULL : cforms.data());
     return possibilitiesToPyObject(iter, NULL);
 }
 
@@ -229,10 +167,10 @@ nevra_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
     csack = sackFromPyObject(sack);
     if (csack == NULL)
         return NULL;
-    HyForm *cforms = NULL;
+    std::vector<HyForm> cforms;
     if (form != NULL) {
-        cforms = fill_form(form);
-        if (cforms == NULL)
+        cforms = fill_form<HyForm, _HY_FORM_STOP_>(form);
+        if (cforms.empty())
             return NULL;
     }
     if (icase)
@@ -241,8 +179,7 @@ nevra_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
         flags |= HY_GLOB;
 
     HyPossibilities iter = hy_subject_nevra_possibilities_real(self->pattern,
-    cforms, csack, flags);
-    g_free(cforms);
+        cforms.empty() ? NULL : cforms.data(), csack, flags);
     return possibilitiesToPyObject(iter, sack);
 }
 
@@ -254,15 +191,14 @@ module_form_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", (char**) kwlist, &form)) {
         return NULL;
     }
-    HyModuleFormEnum *cforms = NULL;
+    std::vector<HyModuleFormEnum> cforms;
     if (form != NULL) {
-        cforms = fill_module_form(form);
-        if (cforms == NULL)
+        cforms = fill_form<HyModuleFormEnum, _HY_MODULE_FORM_STOP_>(form);
+        if (cforms.empty())
             return NULL;
     }
     HyPossibilities iter = hy_subject_module_form_possibilities(self->pattern,
-                                                                cforms);
-    g_free(cforms);
+        cforms.empty() ? NULL : cforms.data());
     return possibilitiesToPyObject(iter, NULL);
 }
 
@@ -306,19 +242,20 @@ get_best_parser(_SubjectObject *self, PyObject *args, PyObject *kwds, HyNevra *n
         &PyBool_Type, &with_filenames, &forms)) {
         return NULL;
     }
-    HyForm *cforms = NULL;
+    std::vector<HyForm> cforms;
     if ((forms != NULL) && (forms != Py_None) &&
         ((!PyList_Check(forms)) || (PyList_Size(forms) > 0))) {
-        cforms = fill_form(forms);
-        if (cforms == NULL)
+        cforms = fill_form<HyForm, _HY_FORM_STOP_>(forms);
+        if (cforms.empty())
             return NULL;
     }
     gboolean c_with_nevra = with_nevra == NULL || PyObject_IsTrue(with_nevra);
     gboolean c_with_provides = with_provides == NULL || PyObject_IsTrue(with_provides);
     gboolean c_with_filenames = with_filenames == NULL || PyObject_IsTrue(with_filenames);
     csack = sackFromPyObject(sack);
-    HyQuery query = hy_subject_get_best_solution(self->pattern, csack, cforms, nevra, self->icase,
-                                                 c_with_nevra, c_with_provides, c_with_filenames);
+    HyQuery query = hy_subject_get_best_solution(self->pattern, csack,
+        cforms.empty() ? NULL : cforms.data(), nevra, self->icase, c_with_nevra,
+        c_with_provides, c_with_filenames);
 
     return queryToPyObject(query, sack, &query_Type);
 }
@@ -350,11 +287,11 @@ get_best_selector(_SubjectObject *self, PyObject *args, PyObject *kwds)
         &forms, &PyBool_Type, &obsoletes, &reponame, &PyBool_Type, &reports)) {
         return NULL;
     }
-    HyForm *cforms = NULL;
+    std::vector<HyForm> cforms;
     if ((forms != NULL) && (forms != Py_None) &&
         ((!PyList_Check(forms)) || (PyList_Size(forms) > 0))) {
-        cforms = fill_form(forms);
-        if (cforms == NULL)
+        cforms = fill_form<HyForm, _HY_FORM_STOP_>(forms);
+        if (cforms.empty())
             return NULL;
     }
 
@@ -365,8 +302,8 @@ get_best_selector(_SubjectObject *self, PyObject *args, PyObject *kwds)
                " This attribute will be removed on 2018-01-01\n");
     }
     DnfSack *csack = sackFromPyObject(sack);
-    HySelector c_selector = hy_subject_get_best_sltr(self->pattern, csack, cforms, c_obsoletes,
-                                                     reponame);
+    HySelector c_selector = hy_subject_get_best_sltr(self->pattern, csack,
+        cforms.empty() ? NULL : cforms.data(), c_obsoletes, reponame);
     PyObject *selector = SelectorToPyObject(c_selector, sack);
     Py_INCREF(selector);
     return selector;
