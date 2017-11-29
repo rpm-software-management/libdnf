@@ -24,7 +24,6 @@
 #include <solv/util.h>
 #include <time.h>
 
-#include <pygobject-3.0/pygobject.h>
 
 #include "hy-query.h"
 #include "hy-selector.h"
@@ -33,6 +32,7 @@
 #include "dnf-reldep-list.h"
 
 #if WITH_SWDB
+#include <pygobject-3.0/pygobject.h>
 #include "dnf-swdb.h"
 #endif
 
