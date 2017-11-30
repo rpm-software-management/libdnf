@@ -152,38 +152,6 @@ get_nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
-nevra_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
-{
-    PyObject *sack = NULL;
-    DnfSack *csack = NULL;
-    int allow_globs = 0;
-    int icase = 0;
-    int flags = 0;
-    PyObject *form = NULL;
-    const char *kwlist[] = { "sack", "allow_globs", "icase", "form", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|iiO", (char**) kwlist,
-        &sack_Type, &sack, &allow_globs, &icase, &form))
-        return NULL;
-    csack = sackFromPyObject(sack);
-    if (csack == NULL)
-        return NULL;
-    std::vector<HyForm> cforms;
-    if (form != NULL) {
-        cforms = fill_form<HyForm, _HY_FORM_STOP_>(form);
-        if (cforms.empty())
-            return NULL;
-    }
-    if (icase)
-        flags |= HY_ICASE;
-    if (allow_globs)
-        flags |= HY_GLOB;
-
-    HyPossibilities iter = hy_subject_nevra_possibilities_real(self->pattern,
-        cforms.empty() ? NULL : cforms.data(), csack, flags);
-    return possibilitiesToPyObject(iter, sack);
-}
-
-static PyObject *
 module_form_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *form = NULL;
@@ -339,8 +307,6 @@ static struct PyMethodDef subject_methods[] = {
     "forms: list of hawkey NEVRA forms like [hawkey.FORM_NEVRA, hawkey.FORM_NEVR]\n"
     "return: object with every possible nevra. Each possible nevra is represented by Class "
     "NEVRA object (libdnf) that have attributes name, epoch, version, release, arch"},
-    {"nevra_possibilities_real", (PyCFunction) nevra_possibilities_real,
-    METH_VARARGS | METH_KEYWORDS, "DEPRECATED!"},
     {"module_form_possibilities", (PyCFunction) module_form_possibilities,
     METH_VARARGS | METH_KEYWORDS, NULL},
     {"reldep_possibilities_real", (PyCFunction) reldep_possibilities_real,

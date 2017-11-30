@@ -93,8 +93,6 @@ int hy_possibilities_next_reldep(HyPossibilities iter, DnfReldep **out_reldep);
 HyPossibilities hy_subject_nevra_possibilities(HySubject subject,
     HyForm *forms);
 DEPRECATED("Will be removed after 2018-01-01. Use hy_query functions instead")
-HyPossibilities hy_subject_nevra_possibilities_real(HySubject subject,
-    HyForm *forms, DnfSack *sack, int flags);
 HyPossibilities hy_subject_module_form_possibilities(HySubject subject,
                                                      HyModuleFormEnum *forms);
 int hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra);

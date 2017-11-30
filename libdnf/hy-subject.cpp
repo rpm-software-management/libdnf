@@ -234,14 +234,6 @@ hy_subject_nevra_possibilities(HySubject subject, HyForm *forms)
 }
 
 HyPossibilities
-hy_subject_nevra_possibilities_real(HySubject subject, HyForm *forms,
-    DnfSack *sack, int flags)
-{
-    const HyForm *default_forms = forms == NULL ? HY_FORMS_MOST_SPEC : forms;
-    return possibilities_create(subject, default_forms, NULL, sack, flags, TYPE_NEVRA);
-}
-
-HyPossibilities
 hy_subject_module_form_possibilities(HySubject subject, HyModuleFormEnum *forms)
 {
     const HyModuleFormEnum *default_forms = forms == NULL ? HY_MODULE_FORMS_MOST_SPEC : forms;
