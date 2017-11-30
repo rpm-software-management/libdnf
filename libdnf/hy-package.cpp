@@ -339,7 +339,9 @@ dnf_package_evr_cmp(DnfPackage *pkg1, DnfPackage *pkg2)
  * dnf_package_get_location:
  * @pkg: a #DnfPackage instance.
  *
- * Gets the location (XXX??) for the package.
+ * Gets the location (XXX??) for the package. Note that the returned string has
+ * an undefined lifetime and may become invalid at a later time. You should copy
+ * the string if storing it into a long-lived data structure.
  *
  * Returns: (transfer none): string
  *
@@ -376,7 +378,9 @@ dnf_package_get_baseurl(DnfPackage *pkg)
  * dnf_package_get_nevra:
  * @pkg: a #DnfPackage instance.
  *
- * Gets the package NEVRA.
+ * Gets the package NEVRA. Note that the returned string has an undefined
+ * lifetime and may become invalid at a later time. You should copy the string
+ * if storing it into a long-lived data structure.
  *
  * Returns: (transfer none): a string, or %NULL
  *
