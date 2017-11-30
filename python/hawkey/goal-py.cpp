@@ -412,26 +412,6 @@ run(_GoalObject *self, PyObject *args, PyObject *kwds)
     Py_RETURN_FALSE;
 }
 
-struct _PySolutionCallback {
-    PyObject *callback_tuple;
-    PyObject *callback;
-    int errors;
-};
-
-static int
-py_solver_callback(HyGoal goal, void *data)
-{
-    struct _PySolutionCallback *cb_s = (struct _PySolutionCallback*)data;
-
-    PyObject *ret = PyObject_CallObject(cb_s->callback, cb_s->callback_tuple);
-    if (ret)
-        Py_DECREF(ret);
-    else
-        cb_s->errors++;
-
-    return 0; /* solution_callback() result is ignored in libsolv */
-}
-
 static PyObject *
 count_problems(_GoalObject *self, PyObject *unused)
 {
