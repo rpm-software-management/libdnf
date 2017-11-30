@@ -1084,40 +1084,6 @@ struct Solutions {
     GPtrArray *installs;
 };
 
-static struct Solutions *
-solutions_create(void)
-{
-    auto solutions = static_cast<Solutions *>(g_malloc0(sizeof(struct Solutions)));
-    solutions->installs = hy_packagelist_create();
-    return solutions;
-}
-
-static void
-solutions_free(struct Solutions *solutions)
-{
-    g_ptr_array_unref(solutions->installs);
-    g_free(solutions);
-}
-
-static int
-solution_cb(HyGoal goal, void *data)
-{
-    struct Solutions *solutions = (struct Solutions*)data;
-    solutions->solutions++;
-
-    GPtrArray *new_installs = hy_goal_list_installs(goal, NULL);
-    guint i;
-
-    for(i = 0; i < new_installs->len; i++) {
-        auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(new_installs, i));
-        if (!hy_packagelist_has(solutions->installs, pkg))
-            g_ptr_array_add(solutions->installs, g_object_ref(pkg));
-    }
-    g_ptr_array_unref(new_installs);
-
-    return 0;
-}
-
 START_TEST(test_goal_installonly_limit)
 {
     const char *installonly[] = {"k", NULL};
