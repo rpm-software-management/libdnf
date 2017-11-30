@@ -64,15 +64,11 @@ typedef enum _HyModuleFormEnum {
 
 enum poss_type {
     TYPE_MODULE_FORM,
-    TYPE_NEVRA,
-    TYPE_RELDEP_NEW,
-    TYPE_RELDEP_END
+    TYPE_NEVRA
 };
 
 struct _HyPossibilities {
     HySubject subject;
-    DnfSack *sack;
-    int flags;
     HyForm *forms;
     HyModuleFormEnum *module_forms;
     int current;
@@ -85,11 +81,8 @@ extern const HyModuleFormEnum HY_MODULE_FORMS_MOST_SPEC[];
 HySubject hy_subject_create(const char * pattern);
 void hy_subject_free(HySubject subject);
 void hy_possibilities_free(HyPossibilities iter);
-DEPRECATED("Will be removed after 2018-01-01. Use hy_query functions instead")
-int hy_possibilities_next_reldep(HyPossibilities iter, DnfReldep **out_reldep);
 HyPossibilities hy_subject_nevra_possibilities(HySubject subject,
     HyForm *forms);
-DEPRECATED("Will be removed after 2018-01-01. Use hy_query functions instead")
 HyPossibilities hy_subject_module_form_possibilities(HySubject subject,
                                                      HyModuleFormEnum *forms);
 int hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra);
