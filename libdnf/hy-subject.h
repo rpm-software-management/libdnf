@@ -86,9 +86,6 @@ HySubject hy_subject_create(const char * pattern);
 void hy_subject_free(HySubject subject);
 void hy_possibilities_free(HyPossibilities iter);
 DEPRECATED("Will be removed after 2018-01-01. Use hy_query functions instead")
-HyPossibilities hy_subject_reldep_possibilities_real(HySubject subject,
-    DnfSack *sack, int flags);
-DEPRECATED("Will be removed after 2018-01-01. Use hy_query functions instead")
 int hy_possibilities_next_reldep(HyPossibilities iter, DnfReldep **out_reldep);
 HyPossibilities hy_subject_nevra_possibilities(HySubject subject,
     HyForm *forms);

@@ -199,12 +199,6 @@ possibilities_create(HySubject subject, const HyForm *forms, const HyModuleFormE
     return poss;
 }
 
-HyPossibilities
-hy_subject_reldep_possibilities_real(HySubject subject, DnfSack *sack, int flags)
-{
-    return possibilities_create(subject, NULL, NULL, sack, flags, TYPE_RELDEP_NEW);
-}
-
 int hy_possibilities_next_reldep(HyPossibilities iter, DnfReldep **out_reldep)
 {
     if (iter->type != TYPE_RELDEP_NEW)
