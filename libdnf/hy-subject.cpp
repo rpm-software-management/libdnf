@@ -58,67 +58,6 @@ const HyModuleFormEnum HY_MODULE_FORMS_MOST_SPEC[] = {
         HY_MODULE_FORM_N,
         _HY_MODULE_FORM_STOP_};
 
-static inline int
-is_glob_pattern(char *str)
-{
-    if (str == NULL)
-        return 0;
-    while (*str != '\0') {
-        if (*str == '*' || *str == '[' || *str == '?')
-            return 1;
-        str++;
-    }
-    return 0;
-}
-
-static inline int
-is_real_name(HyNevra nevra, DnfSack *sack, int flags)
-{
-    flags |= HY_NAME_ONLY;
-    int glob_version = (flags & HY_GLOB) && is_glob_pattern(nevra->version);
-    char *version = nevra->version;
-    if (nevra->name == NULL && !glob_version)
-        return 1;
-    if (glob_version)
-        version = NULL;
-    if (!is_glob_pattern(nevra->name))
-        flags &= ~HY_GLOB;
-    if (dnf_sack_knows(sack, nevra->name, version, flags) == 0)
-        return 0;
-    return 1;
-}
-
-static inline int
-arch_exist(char *arch, const char *existing_arch, int is_glob)
-{
-    if (is_glob) {
-        if (fnmatch(arch, existing_arch, 0) == 0)
-            return 1;
-        return 0;
-    }
-    if (strcmp(arch, existing_arch) == 0)
-        return 1;
-    return 0;
-}
-
-static inline int
-is_real_arch(HyNevra nevra, DnfSack *sack, int flags)
-{
-    int check_glob = (flags & HY_GLOB) && is_glob_pattern(nevra->arch);
-    if (nevra->arch == NULL)
-        return 1;
-    if (arch_exist(nevra->arch, "src", check_glob))
-        return 1;
-    const char **existing_arches = dnf_sack_list_arches(sack);
-    int ret = 0;
-    for (int i = 0; existing_arches[i] != NULL; ++i) {
-        if ((ret = arch_exist(nevra->arch, existing_arches[i], check_glob)))
-            break;
-    }
-    g_free(existing_arches);
-    return ret;
-}
-
 HySubject
 hy_subject_create(const char * pattern)
 {

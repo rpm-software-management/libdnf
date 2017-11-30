@@ -1835,44 +1835,6 @@ dnf_sack_running_kernel(DnfSack *sack)
 }
 
 /**
- * dnf_sack_knows:
- * @sack: a #DnfSack instance.
- * @name: a package name.
- * @version: a package version, or %NULL.
- * @flags: options to use, e.g. %HY_NAME_ONLY.
- *
- * Checks for a package in a sack.
- *
- * Returns: %TRUE for success
- *
- * Since: 0.7.0
- */
-int
-dnf_sack_knows(DnfSack *sack, const char *name, const char *version, int flags)
-{
-    Queue *q = static_cast<Queue *>(g_malloc(sizeof(*q)));
-    int ret;
-    int name_only = flags & HY_NAME_ONLY;
-
-    assert((flags & ~(HY_ICASE|HY_NAME_ONLY|HY_GLOB)) == 0);
-    queue_init(q);
-    dnf_sack_make_provides_ready(sack);
-    flags &= ~HY_NAME_ONLY;
-
-    if (name_only) {
-        queue_pkg_name(sack, q, name, flags);
-        if (version != NULL)
-            queue_filter_version(sack, q, version);
-    } else
-        queue_provides(sack, q, name, flags);
-
-    ret = q->count > 0;
-    queue_free(q);
-    g_free(q);
-    return ret;
-}
-
-/**
  * dnf_sack_get_pool: (skip)
  * @sack: a #DnfSack instance.
  *
