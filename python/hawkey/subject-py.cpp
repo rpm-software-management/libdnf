@@ -224,11 +224,10 @@ get_best_selector(_SubjectObject *self, PyObject *args, PyObject *kwds)
     PyObject *forms = NULL;
     PyObject *obsoletes = NULL;
     char *reponame = NULL;
-    PyObject *reports = NULL;
-    const char *kwlist[] = {"sack", "forms", "obsoletes", "reponame", "reports", NULL};
+    const char *kwlist[] = {"sack", "forms", "obsoletes", "reponame", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|OO!zO!", (char**) kwlist, &sack_Type, &sack,
-        &forms, &PyBool_Type, &obsoletes, &reponame, &PyBool_Type, &reports)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|OO!z", (char**) kwlist, &sack_Type, &sack,
+        &forms, &PyBool_Type, &obsoletes, &reponame)) {
         return NULL;
     }
     std::vector<HyForm> cforms;
@@ -240,11 +239,6 @@ get_best_selector(_SubjectObject *self, PyObject *args, PyObject *kwds)
     }
 
     bool c_obsoletes = obsoletes == NULL || PyObject_IsTrue(obsoletes);
-    bool c_reports = reports != NULL && PyObject_IsTrue(reports);
-    if (c_reports) {
-        printf("The attribute 'reports' in get_best_selector() is deprecated and not used any more."
-               " This attribute will be removed on 2018-01-01\n");
-    }
     DnfSack *csack = sackFromPyObject(sack);
     HySelector c_selector = hy_subject_get_best_sltr(self->pattern, csack,
         cforms.empty() ? NULL : cforms.data(), c_obsoletes, reponame);
