@@ -260,34 +260,6 @@ START_TEST(combined2)
 }
 END_TEST
 
-START_TEST(reldep)
-{
-    DnfReldep *reldep = NULL;
-    HySubject subject = hy_subject_create("P-lib");
-    HyPossibilities iter = hy_subject_reldep_possibilities_real(subject,
-        test_globals.sack, 0);
-    ck_assert_int_eq(hy_possibilities_next_reldep(iter, &reldep), 0);
-    const gchar *reldep_str = dnf_reldep_to_string (reldep);
-    ck_assert_str_eq(reldep_str, "P-lib");
-    g_object_unref(reldep);
-    ck_assert_int_eq(hy_possibilities_next_reldep(iter, &reldep), -1);
-    hy_possibilities_free(iter);
-    hy_subject_free(subject);
-}
-END_TEST
-
-START_TEST(reldep_fail)
-{
-    DnfReldep *reldep;
-    HySubject subject = hy_subject_create("Package not exist");
-    HyPossibilities iter = hy_subject_reldep_possibilities_real(subject,
-        test_globals.sack, 0);
-    ck_assert_int_eq(hy_possibilities_next_reldep(iter, &reldep), -1);
-    hy_possibilities_free(iter);
-    hy_subject_free(subject);
-}
-END_TEST
-
 START_TEST(module_form_nsvcap)
 {
     HyModuleForm module_form = hy_module_form_create();
@@ -543,8 +515,6 @@ subject_suite(void)
 
     tc = tcase_create("Full");
     tcase_add_unchecked_fixture(tc, fixture_all, teardown);
-    tcase_add_test(tc, reldep);
-    tcase_add_test(tc, reldep_fail);
     suite_add_tcase(s, tc);
 
     return s;

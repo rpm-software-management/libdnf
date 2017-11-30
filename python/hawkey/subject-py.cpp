@@ -171,30 +171,6 @@ module_form_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
-reldep_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
-{
-    printf("The function 'reldep_possibilities_real()' in Subject() is deprecated and will be "
-           "removed on 2018-01-01\n");
-    PyObject *sack = NULL;
-    DnfSack *csack = NULL;
-    int icase = 0;
-    int flags = 0;
-    const char *kwlist[] = { "sack", "icase", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|i", (char**) kwlist,
-        &sack_Type, &sack, &icase))
-        return NULL;
-    csack = sackFromPyObject(sack);
-    if (csack == NULL)
-        return NULL;
-    if (icase)
-        flags |= HY_ICASE;
-
-    HyPossibilities iter = hy_subject_reldep_possibilities_real(self->pattern,
-        csack, flags);
-    return possibilitiesToPyObject(iter, sack);
-}
-
-static PyObject *
 get_best_parser(_SubjectObject *self, PyObject *args, PyObject *kwds, HyNevra *nevra)
 {
     PyObject *sack;
@@ -309,8 +285,6 @@ static struct PyMethodDef subject_methods[] = {
     "NEVRA object (libdnf) that have attributes name, epoch, version, release, arch"},
     {"module_form_possibilities", (PyCFunction) module_form_possibilities,
     METH_VARARGS | METH_KEYWORDS, NULL},
-    {"reldep_possibilities_real", (PyCFunction) reldep_possibilities_real,
-    METH_VARARGS | METH_KEYWORDS, "DEPRECATED!"},
     {"get_best_query", (PyCFunction) get_best_query,
     METH_VARARGS | METH_KEYWORDS,
     "get_best_query(self, sack, with_nevra=True, with_provides=True, with_filenames=True,\n"
