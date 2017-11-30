@@ -148,7 +148,7 @@ get_nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
     }
     HyPossibilities iter = hy_subject_nevra_possibilities(self->pattern,
         cforms.empty() ? NULL : cforms.data());
-    return possibilitiesToPyObject(iter, NULL);
+    return possibilitiesToPyObject(iter);
 }
 
 static PyObject *
@@ -167,7 +167,7 @@ module_form_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
     }
     HyPossibilities iter = hy_subject_module_form_possibilities(self->pattern,
         cforms.empty() ? NULL : cforms.data());
-    return possibilitiesToPyObject(iter, NULL);
+    return possibilitiesToPyObject(iter);
 }
 
 static PyObject *

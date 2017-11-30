@@ -276,16 +276,6 @@ class Subject(_hawkey.Subject):
     def __init__(self, pkg_spec, ignore_case=False):
         super(Subject, self).__init__(pkg_spec, ignore_case=ignore_case)
 
-    def nevra_possibilities_real(self, *args, **kwargs):
-        warnings.simplefilter('always', DeprecationWarning)
-        msg = "The function 'nevra_possibilities_real' is deprecated. " \
-              "Please use 'get_nevra_possibilities' instead. The function will be removed on 2018-01-01"
-        warnings.warn(msg, DeprecationWarning)
-
-        poss = super(Subject, self).nevra_possibilities_real(*args, **kwargs)
-        for nevra in poss:
-            yield NEVRA(nevra=nevra)
-
     def module_form_possibilities(self, *args, **kwargs):
         poss = super(Subject, self).module_form_possibilities(*args, **kwargs)
         for module_form in poss:

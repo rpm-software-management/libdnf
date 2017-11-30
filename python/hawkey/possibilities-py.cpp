@@ -33,11 +33,10 @@
 typedef struct {
     PyObject_HEAD
     HyPossibilities possibilities;
-    PyObject *sack;
 } _PossibilitiesObject;
 
 PyObject *
-possibilitiesToPyObject(HyPossibilities possibilities, PyObject* sack)
+possibilitiesToPyObject(HyPossibilities possibilities)
 {
     _PossibilitiesObject *p;
 
@@ -50,8 +49,6 @@ possibilitiesToPyObject(HyPossibilities possibilities, PyObject* sack)
         return NULL;
     }
     p->possibilities = possibilities;
-    p->sack = sack;
-    Py_XINCREF(p->sack);
     return (PyObject *)p;
 }
 
@@ -59,7 +56,6 @@ static void
 possibilities_dealloc(_PossibilitiesObject *self)
 {
     hy_possibilities_free(self->possibilities);
-    Py_XDECREF(self->sack);
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -76,14 +72,10 @@ static PyObject* possibilities_next(_PossibilitiesObject *self)
         HyNevra nevra;
         if (hy_possibilities_next_nevra(iter, &nevra) == 0)
             return nevraToPyObject(nevra);
-    } else if (iter->type == TYPE_MODULE_FORM) {
+    } else {
         HyModuleForm module_form;
         if (hy_possibilities_next_module_form(iter, &module_form) == 0)
             return moduleFormToPyObject(module_form);
-    } else {
-        DnfReldep *reldep;
-        if (hy_possibilities_next_reldep(iter, &reldep) == 0)
-            return reldepToPyObject(reldep);
     }
     PyErr_SetNone(PyExc_StopIteration);
     return NULL;
