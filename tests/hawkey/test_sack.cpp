@@ -267,35 +267,6 @@ START_TEST(test_presto_from_cache)
 }
 END_TEST
 
-START_TEST(test_dnf_sack_knows)
-{
-    DnfSack *sack = test_globals.sack;
-
-    fail_if(dnf_sack_knows(sack, "penny-lib-DEVEL", NULL, 0));
-    fail_unless(dnf_sack_knows(sack, "penny-lib-DEVEL", NULL, HY_ICASE|HY_NAME_ONLY));
-
-    fail_if(dnf_sack_knows(sack, "P", NULL, HY_NAME_ONLY));
-    fail_unless(dnf_sack_knows(sack, "P", NULL, 0));
-}
-END_TEST
-
-START_TEST(test_dnf_sack_knows_glob)
-{
-    DnfSack *sack = test_globals.sack;
-    fail_if(dnf_sack_knows(sack, "penny-l*", "4", HY_NAME_ONLY));
-    fail_unless(dnf_sack_knows(sack, "penny-l*", "4", HY_NAME_ONLY|HY_GLOB));
-    fail_if(dnf_sack_knows(sack, "penny-l*1", "4", HY_NAME_ONLY|HY_GLOB));
-}
-END_TEST
-
-START_TEST(test_dnf_sack_knows_version)
-{
-    DnfSack *sack = test_globals.sack;
-    fail_unless(dnf_sack_knows(sack, "penny", "4", HY_NAME_ONLY));
-    fail_if(dnf_sack_knows(sack, "penny", "5", HY_NAME_ONLY));
-}
-END_TEST
-
 Suite *
 sack_suite(void)
 {
@@ -325,9 +296,6 @@ sack_suite(void)
 
     tc = tcase_create("SackKnows");
     tcase_add_unchecked_fixture(tc, fixture_all, teardown);
-    tcase_add_test(tc, test_dnf_sack_knows);
-    tcase_add_test(tc, test_dnf_sack_knows_glob);
-    tcase_add_test(tc, test_dnf_sack_knows_version);
     suite_add_tcase(s, tc);
 
     return s;

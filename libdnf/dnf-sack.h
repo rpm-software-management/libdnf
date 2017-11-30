@@ -186,10 +186,6 @@ gboolean         dnf_sack_add_repos           (DnfSack        *sack,
                                                  DnfSackAddFlags flags,
                                                  DnfState       *state,
                                                  GError         **error);
-int              dnf_sack_knows               (DnfSack    *sack,
-                                               const char *name,
-                                               const char *version,
-                                               int         flags);
 
 G_END_DECLS
 
