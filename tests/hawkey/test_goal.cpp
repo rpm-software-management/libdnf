@@ -32,7 +32,6 @@
 #include "libdnf/hy-repo.h"
 #include "libdnf/hy-query.h"
 #include "libdnf/dnf-sack-private.hpp"
-#include "libdnf/dnf-solution.h"
 #include "libdnf/dnf-goal.h"
 #include "libdnf/hy-selector.h"
 #include "libdnf/hy-util-private.hpp"
@@ -1278,50 +1277,6 @@ START_TEST(test_cmdline_file_provides)
 }
 END_TEST
 
-START_TEST(test_goal_get_solution)
-{
-
-    DnfSack *sack = test_globals.sack;
-    HyGoal goal = hy_goal_create(sack);
-    HySelector sltr = hy_selector_create(sack);
-
-    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "pilchard");
-    hy_goal_install_selector(goal, sltr,NULL);
-    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "dog");
-    hy_goal_install_selector(goal, sltr,NULL);
-    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "custard");
-    hy_goal_install_selector(goal, sltr,NULL);
-    fail_unless(hy_goal_run_flags(goal, DNF_FORCE_BEST));
-    fail_unless(hy_goal_count_problems(goal) == 2);
-
-    DnfSolutionAction expected_actions[2][3] = {
-                                   {DNF_SOLUTION_ACTION_DO_NOT_INSTALL,
-                                    DNF_SOLUTION_ACTION_NONE,
-                                    DNF_SOLUTION_ACTION_NONE},
-                                   {DNF_SOLUTION_ACTION_ALLOW_REMOVE,
-                                    DNF_SOLUTION_ACTION_DO_NOT_REMOVE,
-                                    DNF_SOLUTION_ACTION_DO_NOT_INSTALL}};
-    const gchar *expected_old[2][3] = {{NULL, NULL, NULL},
-                        {"pilchard-1.2.3-1.i686", "pilchard-1.2.3-1.i686", NULL}};
-    const gchar *expected_new[2][3] = {{"custard", NULL, NULL},
-                        {NULL, NULL, "pilchard"}};
-
-    for (gint p = 0; p < hy_goal_count_problems(goal); ++p) {
-        g_autoptr(GPtrArray) slist = hy_goal_get_solution(goal, p);
-        for (guint i = 0; i < slist->len; ++i) {
-            auto sol = static_cast<DnfSolution *>(g_ptr_array_index(slist, i));
-            fail_unless(dnf_solution_get_action(sol) == expected_actions[p][i]);
-            fail_unless(g_strcmp0(dnf_solution_get_old(sol), expected_old[p][i]) == 0);
-            fail_unless(g_strcmp0(dnf_solution_get_new(sol), expected_new[p][i]) == 0);
-        }
-    }
-
-    hy_selector_free(sltr);
-    hy_goal_free(goal);
-}
-END_TEST
-
-
 Suite *
 goal_suite(void)
 {
@@ -1359,7 +1314,6 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_protected);
     tcase_add_test(tc, test_goal_erase_clean_deps);
     tcase_add_test(tc, test_goal_forcebest);
-    tcase_add_test(tc, test_goal_get_solution);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("ModifiesSackState");
