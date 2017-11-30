@@ -41,7 +41,6 @@ SET (hawkeymodule_SRCS
     repo-py.cpp
     sack-py.cpp
     selector-py.cpp
-    solution-py.cpp
     subject-py.cpp
     pycomp.cpp)
 
