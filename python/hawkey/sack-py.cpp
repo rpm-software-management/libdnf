@@ -726,8 +726,6 @@ PyMethodDef sack_methods[] = {
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"load_repo", (PyCFunction)load_repo, METH_VARARGS | METH_KEYWORDS,
      NULL},
-    {"load_yum_repo", (PyCFunction)load_repo, METH_VARARGS | METH_KEYWORDS,
-     NULL},
     {NULL}                      /* sentinel */
 };
 
