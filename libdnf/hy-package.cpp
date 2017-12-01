@@ -43,6 +43,7 @@
 #include "hy-package-private.hpp"
 #include "dnf-reldep-list-private.hpp"
 #include "hy-repo-private.hpp"
+#include "hy-selector.h"
 
 #define BLOCK_SIZE 31
 
@@ -1067,4 +1068,15 @@ dnf_package_get_delta_from_evr(DnfPackage *pkg, const char *from_evr)
     dataiterator_free(&di);
 
     return delta;
+}
+
+HySelector
+hy_package_to_selector(DnfPackage *pkg)
+{
+    DnfSack *sack = dnf_package_get_sack(pkg);
+    HySelector selector = hy_selector_create(sack);
+    DnfPackageSet *pset = dnf_packageset_new(sack);
+    dnf_packageset_add(pset, pkg);
+    hy_selector_pkg_set(selector, HY_PKG, HY_EQ, pset);
+    return selector;
 }

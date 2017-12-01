@@ -97,6 +97,14 @@ GPtrArray   *dnf_package_get_advisories (DnfPackage *pkg, int cmp_type);
 
 DnfPackageDelta *dnf_package_get_delta_from_evr(DnfPackage *pkg, const char *from_evr);
 
+/**
+* @brief Convert DnfPackage to selector
+*
+* @param pkg p_pkg:...
+* @return HySelector
+*/
+HySelector hy_package_to_selector(DnfPackage *pkg);
+
 G_END_DECLS
 
 #endif /* __HY_PACKAGE_H */
