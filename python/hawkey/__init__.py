@@ -335,6 +335,9 @@ class Subject(_hawkey.Subject):
             return []
         q = self._apply_security_filters(q, base)
         if not q:
+            # we don't report the exact reason why any selector returned - reasons can be only src
+            # found, no package or not in requested repository. We should improve it in libdnf
+            # after movement of base.install() or base.distro_sync()
             return []
 
         if not self._filename_pattern and is_glob_pattern(self.pattern) \
