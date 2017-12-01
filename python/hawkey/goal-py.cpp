@@ -26,6 +26,8 @@
 
 #include "dnf-types.h"
 #include "dnf-goal.h"
+#include "hy-package.h"
+#include "hy-selector.h"
 
 #include "exception-py.hpp"
 #include "goal-py.hpp"
@@ -61,20 +63,25 @@ args_pkg_sltr_check(DnfPackage *pkg, HySelector sltr)
 }
 
 static int
-args_pkg_sltr_parse(PyObject *args, PyObject *kwds,
-                     DnfPackage **pkg, HySelector *sltr, int *flags, int flag_mask)
+args_pkg_sltr_parse(PyObject *args, PyObject *kwds, bool created_selector, HySelector *sltr,
+                    int *flags, int flag_mask)
 {
+    DnfPackage *pkg = NULL;
     const char *kwlist[] = {"package", "select", "clean_deps", "check_installed",
                       "optional", NULL};
     int clean_deps = 0, check_installed = 0, optional = 0;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&O&iii", (char**) kwlist,
-                                     package_converter, pkg,
+                                     package_converter, &pkg,
                                      selector_converter, sltr,
                                      &clean_deps, &check_installed,
                                      &optional))
         return 0;
-    if (!args_pkg_sltr_check(*pkg, *sltr))
+    if (!args_pkg_sltr_check(pkg, *sltr))
         return 0;
+    if (*sltr == NULL) {
+        *sltr = hy_package_to_selector(pkg);
+        created_selector = TRUE;
+    }
     if (clean_deps) {
         if (!(flag_mask & HY_CLEAN_DEPS)) {
             PyErr_SetString(PyExc_ValueError,
@@ -223,115 +230,103 @@ distupgrade_all(_GoalObject *self, PyObject *unused)
 static PyObject *
 distupgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    DnfPackage *pkg = NULL;
+    bool created = FALSE;
     HySelector sltr = NULL;
-    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, NULL, 0))
+    if (!args_pkg_sltr_parse(args, kwds, created, &sltr, NULL, 0))
         return NULL;
 
-    int ret = pkg ? hy_goal_distupgrade(self->goal, pkg) :
-        hy_goal_distupgrade_selector(self->goal, sltr);
+    int ret = hy_goal_distupgrade_selector(self->goal, sltr);
+    if (created)
+        hy_selector_free(sltr);
     return op_ret2exc(ret);
 }
 
 static PyObject *
 downgrade_to(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    DnfPackage *pkg = NULL;
+    bool created = FALSE;
     HySelector sltr = NULL;
     int flags = 0;
     int ret;
 
-    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr,
+    if (!args_pkg_sltr_parse(args, kwds, created, &sltr,
                               &flags, HY_CHECK_INSTALLED|HY_WEAK_SOLV))
         return NULL;
 
-    if (pkg) {
-        if (hy_goal_downgrade_to(self->goal, pkg))
-            Py_RETURN_FALSE;
-        Py_RETURN_TRUE;
+
+    if (flags & HY_WEAK_SOLV) {
+        ret = hy_goal_downgrade_to_selector_optional(self->goal, sltr);
     } else {
-        if (flags & HY_WEAK_SOLV) {
-            ret = hy_goal_downgrade_to_selector_optional(self->goal, sltr);
-        } else {
-            ret = hy_goal_downgrade_to_selector(self->goal, sltr);
-        }
-        return op_ret2exc(ret);
+        ret = hy_goal_downgrade_to_selector(self->goal, sltr);
     }
+    if (created)
+        hy_selector_free(sltr);
+    return op_ret2exc(ret);
 }
 
 static PyObject *
 erase(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    DnfPackage *pkg = NULL;
+    bool created = FALSE;
     HySelector sltr = NULL;
     int flags = 0;
-    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, &flags, HY_CLEAN_DEPS))
+    if (!args_pkg_sltr_parse(args, kwds, created, &sltr, &flags, HY_CLEAN_DEPS))
         return NULL;
 
-    int ret = pkg ? hy_goal_erase_flags(self->goal, pkg, flags) :
-        hy_goal_erase_selector_flags(self->goal, sltr, flags);
+    int ret = hy_goal_erase_selector_flags(self->goal, sltr, flags);
+    if (created)
+        hy_selector_free(sltr);
     return op_ret2exc(ret);
 }
 
 static PyObject *
 install(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    DnfPackage *pkg = NULL;
+    bool created = FALSE;
     HySelector sltr = NULL;
     int flags = 0;
     g_autoptr(GError) error = NULL;
-    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, &flags, HY_WEAK_SOLV))
+    if (!args_pkg_sltr_parse(args, kwds, created, &sltr, &flags, HY_WEAK_SOLV))
         return NULL;
 
     if (flags & HY_WEAK_SOLV) {
-        if (pkg) {
-            hy_goal_install_optional(self->goal, pkg);
-        } else {
-            hy_goal_install_selector_optional(self->goal, sltr, &error);
-        }
+        hy_goal_install_selector_optional(self->goal, sltr, &error);
     } else {
-        if (pkg) {
-            hy_goal_install(self->goal, pkg);
-        } else {
-            hy_goal_install_selector(self->goal, sltr, &error);
-        }
+        hy_goal_install_selector(self->goal, sltr, &error);
     }
+    if (created)
+        hy_selector_free(sltr);
     return op_error2exc(error);
 }
 
 static PyObject *
 upgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    DnfPackage *pkg = NULL;
+    bool created = FALSE;
     HySelector sltr = NULL;
 
-    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, NULL, 0))
+    if (!args_pkg_sltr_parse(args, kwds, created, &sltr, NULL, 0))
         return NULL;
-    if (pkg) {
-        PyErr_SetString(PyExc_NotImplementedError,
-                        "Selecting a package to be upgraded is not implemented.");
-        return NULL;
-    }
     int ret = hy_goal_upgrade_selector(self->goal, sltr);
+    if (created)
+        hy_selector_free(sltr);
     return op_ret2exc(ret);
 }
 
 static PyObject *
 upgrade_to(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    DnfPackage *pkg = NULL;
+    bool created = FALSE;
     HySelector sltr = NULL;
     int ret;
     int flags = 0;
 
-    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr,
+    if (!args_pkg_sltr_parse(args, kwds, created, &sltr,
                               &flags, HY_CHECK_INSTALLED))
         return NULL;
-    if (sltr) {
-        ret = hy_goal_upgrade_to_selector(self->goal, sltr);
-        return op_ret2exc(ret);
-    }
-    ret = hy_goal_upgrade_to_flags(self->goal, pkg, flags);
+    ret = hy_goal_upgrade_to_selector(self->goal, sltr);
+    if (created)
+        hy_selector_free(sltr);
     return op_ret2exc(ret);
 }
 
