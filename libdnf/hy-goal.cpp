@@ -796,7 +796,8 @@ int
 hy_goal_downgrade_to(HyGoal goal, DnfPackage *new_pkg)
 {
     goal->actions |= DNF_DOWNGRADE|DNF_ALLOW_DOWNGRADE;
-    return hy_goal_install(goal, new_pkg);
+    package2job(new_pkg, &goal->staging, SOLVER_INSTALL);
+    return 0;
 }
 
 int
