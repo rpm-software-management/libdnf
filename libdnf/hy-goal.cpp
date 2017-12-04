@@ -919,30 +919,6 @@ hy_goal_upgrade_selector(HyGoal goal, HySelector sltr)
 }
 
 int
-hy_goal_upgrade_to_flags(HyGoal goal, DnfPackage *new_pkg, int flags)
-{
-    int count = 0;
-
-    if (flags & HY_CHECK_INSTALLED) {
-        HyQuery q = hy_query_create(goal->sack);
-        const char *name = dnf_package_get_name(new_pkg);
-        GPtrArray *installed;
-
-        hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
-        hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-        installed = hy_query_run(q);
-        count = installed->len;
-        g_ptr_array_unref(installed);
-        hy_query_free(q);
-        if (!count)
-            return DNF_ERROR_PACKAGE_NOT_FOUND;
-    }
-    goal->actions |= DNF_UPGRADE;
-
-    return hy_goal_install(goal, new_pkg);
-}
-
-int
 hy_goal_userinstalled(HyGoal goal, DnfPackage *pkg)
 {
     queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_USERINSTALLED,

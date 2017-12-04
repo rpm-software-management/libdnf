@@ -92,7 +92,6 @@ gboolean hy_goal_install_selector(HyGoal goal, HySelector sltr, GError **error);
 gboolean hy_goal_install_selector_optional(HyGoal goal, HySelector sltr, GError **error);
 int hy_goal_upgrade_all(HyGoal goal);
 int hy_goal_upgrade_to(HyGoal goal, DnfPackage *new_pkg);
-int hy_goal_upgrade_to_flags(HyGoal goal, DnfPackage *new_pkg, int flags);
 int hy_goal_upgrade_selector(HyGoal goal, HySelector sltr);
 int hy_goal_userinstalled(HyGoal goal, DnfPackage *pkg);
 
