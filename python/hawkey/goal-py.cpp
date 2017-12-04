@@ -316,25 +316,6 @@ upgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
-upgrade_to(_GoalObject *self, PyObject *args, PyObject *kwds)
-{
-    DnfPackage *pkg = NULL;
-    HySelector sltr = NULL;
-    int ret;
-    int flags = 0;
-
-    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr,
-                              &flags, HY_CHECK_INSTALLED))
-        return NULL;
-    if (sltr) {
-        ret = hy_goal_upgrade_to_selector(self->goal, sltr);
-        return op_ret2exc(ret);
-    }
-    ret = hy_goal_upgrade_to_flags(self->goal, pkg, flags);
-    return op_ret2exc(ret);
-}
-
-static PyObject *
 upgrade_all(_GoalObject *self, PyObject *unused)
 {
     int ret = hy_goal_upgrade_all(self->goal);
@@ -671,8 +652,6 @@ static struct PyMethodDef goal_methods[] = {
     {"install",                (PyCFunction)install,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"upgrade",                (PyCFunction)upgrade,
-     METH_VARARGS | METH_KEYWORDS, NULL},
-    {"upgrade_to",        (PyCFunction)upgrade_to,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"upgrade_all",        (PyCFunction)upgrade_all,        METH_NOARGS,        NULL},
     {"userinstalled",        (PyCFunction)userinstalled,        METH_O,                NULL},

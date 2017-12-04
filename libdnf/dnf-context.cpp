@@ -1815,7 +1815,7 @@ dnf_context_update(DnfContext *context, const gchar *name, GError **error)
         return FALSE;
     }
 
-    if (hy_goal_upgrade_to_selector(priv->goal, selector))
+    if (hy_goal_upgrade_selector(priv->goal, selector))
         return FALSE;
 
     return TRUE;

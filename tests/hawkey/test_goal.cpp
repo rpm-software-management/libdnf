@@ -345,32 +345,6 @@ START_TEST(test_goal_selector_provides_glob)
 }
 END_TEST
 
-START_TEST(test_goal_selector_upgrade)
-{
-    HySelector sltr = hy_selector_create(test_globals.sack);
-    HyGoal goal = hy_goal_create(test_globals.sack);
-
-    fail_if(hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "dog"));
-    fail_if(hy_selector_set(sltr, HY_PKG_EVR, HY_EQ, "1-2"));
-    fail_if(hy_goal_upgrade_to_selector(goal, sltr));
-    fail_if(hy_goal_run(goal));
-    GPtrArray *plist = hy_goal_list_upgrades(goal, NULL);
-    fail_unless(plist->len == 1);
-    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 0)), "dog-1-2.x86_64");
-    g_ptr_array_unref(plist);
-    hy_goal_free(goal);
-    hy_selector_free(sltr);
-
-    sltr = hy_selector_create(test_globals.sack);
-    goal = hy_goal_create(test_globals.sack);
-    fail_if(hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "pilchard"));
-    fail_if(hy_goal_upgrade_to_selector(goal, sltr));
-    fail_if(hy_goal_run(goal));
-    assert_iueo(goal, 0, 2, 0, 0);
-    hy_goal_free(goal);
-    hy_selector_free(sltr);
-}
-END_TEST
 
 START_TEST(test_goal_selector_upgrade_provides)
 {
@@ -1298,7 +1272,6 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_install_optional);
     tcase_add_test(tc, test_goal_selector_glob);
     tcase_add_test(tc, test_goal_selector_provides_glob);
-    tcase_add_test(tc, test_goal_selector_upgrade);
     tcase_add_test(tc, test_goal_selector_upgrade_provides);
     tcase_add_test(tc, test_goal_upgrade);
     tcase_add_test(tc, test_goal_upgrade_all);

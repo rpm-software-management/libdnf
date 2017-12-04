@@ -901,15 +901,6 @@ hy_goal_upgrade_to(HyGoal goal, DnfPackage *new_pkg)
 }
 
 int
-hy_goal_upgrade_to_selector(HyGoal goal, HySelector sltr)
-{
-    goal->actions |= DNF_UPGRADE;
-    if (sltr->f_evr == NULL)
-        return sltr2job(sltr, &goal->staging, SOLVER_UPDATE);
-    return sltr2job(sltr, &goal->staging, SOLVER_INSTALL);
-}
-
-int
 hy_goal_upgrade_selector(HyGoal goal, HySelector sltr)
 {
     goal->actions |= DNF_UPGRADE;
