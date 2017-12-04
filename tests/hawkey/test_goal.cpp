@@ -323,7 +323,7 @@ START_TEST(test_goal_selector_provides_glob)
     HyGoal goal = hy_goal_create(test_globals.sack);
 
     fail_if(hy_selector_set(sltr, HY_PKG_PROVIDES, HY_GLOB, "P*"));
-    fail_if(hy_goal_erase_selector(goal, sltr));
+    fail_if(hy_goal_erase_selector_flags(goal, sltr, 0));
     fail_if(hy_goal_run(goal));
     assert_iueo(goal, 0, 0, 1, 0);
 
@@ -365,7 +365,7 @@ START_TEST(test_goal_install_selector_file)
     HySelector sltr = hy_selector_create(sack);
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_selector_set(sltr, HY_PKG_FILE, HY_EQ|HY_GLOB, "/*/answers"));
-    fail_if(hy_goal_erase_selector(goal, sltr));
+    fail_if(hy_goal_erase_selector_flags(goal, sltr, 0));
     fail_if(hy_goal_run(goal));
     assert_iueo(goal, 0, 0, 1, 0);
     GPtrArray *plist = hy_goal_list_erasures(goal, NULL);

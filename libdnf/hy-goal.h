@@ -113,7 +113,6 @@ int hy_goal_erase_flags(HyGoal goal, DnfPackage *pkg, int flags);
  *
  * @returns        0 on success, DNF_ERROR_BAD_SELECTOR for an invalid Selector.
  */
-int hy_goal_erase_selector(HyGoal goal, HySelector sltr);
 int hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags);
 
 /**
