@@ -307,9 +307,8 @@ upgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
     if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr, NULL, 0))
         return NULL;
     if (pkg) {
-        PyErr_SetString(PyExc_NotImplementedError,
-                        "Selecting a package to be upgraded is not implemented.");
-        return NULL;
+        int ret = hy_goal_upgrade_to(self->goal, pkg);
+        return op_ret2exc(ret);
     }
     int ret = hy_goal_upgrade_selector(self->goal, sltr);
     return op_ret2exc(ret);
