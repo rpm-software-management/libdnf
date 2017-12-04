@@ -860,7 +860,7 @@ int
 hy_goal_install(HyGoal goal, DnfPackage *new_pkg)
 {
     goal->actions |= DNF_INSTALL|DNF_ALLOW_DOWNGRADE;
-    queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_INSTALL, dnf_package_get_id(new_pkg));
+    package2job(new_pkg, &goal->staging, SOLVER_INSTALL);
     return 0;
 }
 
@@ -868,8 +868,7 @@ int
 hy_goal_install_optional(HyGoal goal, DnfPackage *new_pkg)
 {
     goal->actions |= DNF_INSTALL|DNF_ALLOW_DOWNGRADE;
-    queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_INSTALL|SOLVER_WEAK,
-                dnf_package_get_id(new_pkg));
+    package2job(new_pkg, &goal->staging, SOLVER_INSTALL|SOLVER_WEAK);
     return 0;
 }
 

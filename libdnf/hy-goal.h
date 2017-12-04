@@ -86,9 +86,51 @@ int hy_goal_erase_flags(HyGoal goal, DnfPackage *pkg, int flags);
  */
 int hy_goal_erase_selector(HyGoal goal, HySelector sltr);
 int hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags);
+
+/**
+* @brief Mark package to install or if installed to downgrade or upgrade. It allows to downgrade
+* dependencies if needed. Return value is always 0.
+*
+* @param goal HyGoal
+* @param new_pkg Package to install
+* @return int
+*/
 int hy_goal_install(HyGoal goal, DnfPackage *new_pkg);
+
+/**
+* @brief Mark package to install or if installed to downgrade or upgrade. In case that package
+* cannot be install, it can be skipped without an error. It allows to downgrade dependencies if
+* needed. Return value is always 0.
+*
+* @param goal HyGoal
+* @param new_pkg Package to install
+* @return int
+*/
 int hy_goal_install_optional(HyGoal goal, DnfPackage *new_pkg);
+
+/**
+* @brief Mark content of HySelector to install or if installed to downgrade or upgrade. Only one
+* option will be choosen. It allows to downgrade dependencies if needed. If not supported
+* combination in selectort, it triggers assertion raice.
+*
+* @param goal HyGoal
+* @param sltr HySelector
+* @param error p_error:...
+* @return gboolean
+*/
 gboolean hy_goal_install_selector(HyGoal goal, HySelector sltr, GError **error);
+
+/**
+* @brief Mark content of HySelector to install or if installed to downgrade or upgrade. In case that
+* any package in selector cannot be install, it can be skipped without an error. Only one option
+* will be choosen. It allows to downgrade dependencies if needed. If not supported combination in
+* selectort, it triggers assertion raice.
+*
+* @param goal HyGoal
+* @param sltr HySelector
+* @param error p_error:...
+* @return gboolean
+*/
 gboolean hy_goal_install_selector_optional(HyGoal goal, HySelector sltr, GError **error);
 int hy_goal_upgrade_all(HyGoal goal);
 int hy_goal_upgrade_to(HyGoal goal, DnfPackage *new_pkg);
