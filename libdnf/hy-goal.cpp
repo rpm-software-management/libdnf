@@ -780,8 +780,7 @@ int
 hy_goal_distupgrade(HyGoal goal, DnfPackage *new_pkg)
 {
     goal->actions |= DNF_DISTUPGRADE;
-    queue_push2(&goal->staging, SOLVER_SOLVABLE|SOLVER_DISTUPGRADE,
-        dnf_package_get_id(new_pkg));
+    package2job(new_pkg, &goal->staging, SOLVER_DISTUPGRADE);
     return 0;
 }
 
