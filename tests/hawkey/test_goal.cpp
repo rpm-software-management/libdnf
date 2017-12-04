@@ -152,19 +152,6 @@ START_TEST(test_goal_actions)
 }
 END_TEST
 
-START_TEST(test_goal_update_impossible)
-{
-    DnfPackage *pkg = get_latest_pkg(test_globals.sack, "walrus");
-    fail_if(pkg == NULL);
-
-    HyGoal goal = hy_goal_create(test_globals.sack);
-    // can not try an update, walrus is not installed:
-    fail_unless(hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED));
-    g_object_unref(pkg);
-    hy_goal_free(goal);
-}
-END_TEST
-
 START_TEST(test_goal_list_err)
 {
     g_autoptr(GError) error = NULL;
@@ -417,7 +404,7 @@ START_TEST(test_goal_upgrade)
 {
     DnfPackage *pkg = get_latest_pkg(test_globals.sack, "fool");
     HyGoal goal = hy_goal_create(test_globals.sack);
-    fail_if(hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED));
+    fail_if(hy_goal_upgrade_to(goal, pkg));
     g_object_unref(pkg);
     fail_if(hy_goal_run(goal));
     assert_iueo(goal, 0, 1, 0, 1);
@@ -779,7 +766,7 @@ START_TEST(test_goal_installonly)
     dnf_sack_set_installonly_limit(sack, 2);
     DnfPackage *pkg = get_latest_pkg(sack, "fool");
     HyGoal goal = hy_goal_create(sack);
-    fail_if(hy_goal_upgrade_to_flags(goal, pkg, HY_CHECK_INSTALLED));
+    fail_if(hy_goal_upgrade_to(goal, pkg));
     g_object_unref(pkg);
     fail_if(hy_goal_run(goal));
     assert_iueo(goal, 1, 0, 1, 0);
@@ -1261,7 +1248,6 @@ goal_suite(void)
     tcase_add_unchecked_fixture(tc, fixture_all, teardown);
     tcase_add_test(tc, test_goal_actions);
     tcase_add_test(tc, test_goal_sanity);
-    tcase_add_test(tc, test_goal_update_impossible);
     tcase_add_test(tc, test_goal_list_err);
     tcase_add_test(tc, test_goal_install);
     tcase_add_test(tc, test_goal_install_multilib);
