@@ -84,27 +84,6 @@ int hy_goal_distupgrade_selector(HyGoal goal, HySelector);
 * @return int
 */
 int hy_goal_downgrade_to(HyGoal goal, DnfPackage *new_pkg);
-
-/**
-* @brief Mark a content of selector to install. It doesn't check if packages have a lower version
-* than installed or even installed. It allows to downgrade dependencies if needed.
-*
-* @param goal HyGoal
-* @param sltr DnfPackage
-* @return int
-*/
-int hy_goal_downgrade_to_selector(HyGoal goal, HySelector sltr);
-
-/**
-* @brief Mark a content of selector to install. It doesn't check if packages have a lower version
-* than installed or even installed. In case that any package in selector can be install, it can be
-* skipped without an error. It allows to downgrade dependencies if needed.
-*
-* @param goal HyGoal
-* @param sltr DnfPackage
-* @return int
-*/
-int hy_goal_downgrade_to_selector_optional(HyGoal goal, HySelector sltr);
 int hy_goal_erase(HyGoal goal, DnfPackage *pkg);
 int hy_goal_erase_flags(HyGoal goal, DnfPackage *pkg, int flags);
 

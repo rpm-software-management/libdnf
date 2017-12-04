@@ -800,20 +800,6 @@ hy_goal_downgrade_to(HyGoal goal, DnfPackage *new_pkg)
 }
 
 int
-hy_goal_downgrade_to_selector(HyGoal goal, HySelector sltr)
-{
-    goal->actions |= DNF_DOWNGRADE|DNF_ALLOW_DOWNGRADE;
-    return sltr2job(sltr, &goal->staging, SOLVER_INSTALL);
-}
-
-int
-hy_goal_downgrade_to_selector_optional(HyGoal goal, HySelector sltr)
-{
-    goal->actions |= DNF_DOWNGRADE|DNF_ALLOW_DOWNGRADE;
-    return sltr2job(sltr, &goal->staging, SOLVER_INSTALL|SOLVER_WEAK);
-}
-
-int
 hy_goal_erase(HyGoal goal, DnfPackage *pkg)
 {
     goal->actions |= DNF_ERASE;

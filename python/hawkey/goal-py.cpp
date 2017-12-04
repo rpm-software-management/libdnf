@@ -233,32 +233,6 @@ distupgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
-downgrade_to(_GoalObject *self, PyObject *args, PyObject *kwds)
-{
-    DnfPackage *pkg = NULL;
-    HySelector sltr = NULL;
-    int flags = 0;
-    int ret;
-
-    if (!args_pkg_sltr_parse(args, kwds, &pkg, &sltr,
-                              &flags, HY_CHECK_INSTALLED|HY_WEAK_SOLV))
-        return NULL;
-
-    if (pkg) {
-        if (hy_goal_downgrade_to(self->goal, pkg))
-            Py_RETURN_FALSE;
-        Py_RETURN_TRUE;
-    } else {
-        if (flags & HY_WEAK_SOLV) {
-            ret = hy_goal_downgrade_to_selector_optional(self->goal, sltr);
-        } else {
-            ret = hy_goal_downgrade_to_selector(self->goal, sltr);
-        }
-        return op_ret2exc(ret);
-    }
-}
-
-static PyObject *
 erase(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     DnfPackage *pkg = NULL;
@@ -643,8 +617,6 @@ static struct PyMethodDef goal_methods[] = {
      NULL},
     {"distupgrade_all",        (PyCFunction)distupgrade_all,        METH_NOARGS,        NULL},
     {"distupgrade",                (PyCFunction)distupgrade,
-     METH_VARARGS | METH_KEYWORDS, NULL},
-    {"downgrade_to",        (PyCFunction)downgrade_to,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"erase",                (PyCFunction)erase,
      METH_VARARGS | METH_KEYWORDS, NULL},
