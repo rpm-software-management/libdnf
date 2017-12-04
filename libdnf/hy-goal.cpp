@@ -897,7 +897,18 @@ int
 hy_goal_upgrade_to(HyGoal goal, DnfPackage *new_pkg)
 {
     goal->actions |= DNF_UPGRADE;
-    return hy_goal_upgrade_to_flags(goal, new_pkg, 0);
+    Queue pkgs;
+    queue_init(&pkgs);
+
+    Pool *pool = dnf_package_get_pool(new_pkg);
+
+    queue_push(&pkgs, dnf_package_get_id(new_pkg));
+
+    Id what = pool_queuetowhatprovides(pool, &pkgs);
+    queue_push2(&goal->staging, SOLVER_SOLVABLE_ONE_OF|SOLVER_SETARCH|SOLVER_SETEVR|SOLVER_UPDATE,
+                what);
+    queue_free(&pkgs);
+    return 0;
 }
 
 int
