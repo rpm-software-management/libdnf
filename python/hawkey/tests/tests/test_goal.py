@@ -55,19 +55,6 @@ class GoalTest(base.TestCase):
         goal = hawkey.Goal(self.sack)
         self.assertRaises(hawkey.ValueException, goal.list_installs)
 
-    def test_upgrade(self):
-        # select the installed "fool":
-        pkg = hawkey.Query(self.sack).filter(name="walrus")[0]
-        # without checking versioning, the update is accepted:
-        self.assertIsNone(hawkey.Goal(self.sack).
-                          upgrade_to(pkg, check_installed=False))
-        # with the check it is not:
-        goal = hawkey.Goal(self.sack)
-        self.assertRaises(hawkey.Exception, goal.upgrade_to, package=pkg,
-                          check_installed=True)
-        # default value for check_installed is False:
-        self.assertIsNone(hawkey.Goal(self.sack).upgrade_to(pkg))
-
     def test_empty_selector(self):
         sltr = hawkey.Selector(self.sack)
         goal = hawkey.Goal(self.sack)
@@ -118,7 +105,7 @@ class GoalTest(base.TestCase):
         self.assertTrue(goal.req_has_erase())
 
         goal = hawkey.Goal(self.sack)
-        goal.upgrade_to(select=sltr)
+        goal.upgrade(select=sltr)
         self.assertFalse(goal.req_has_erase())
 
         goal = hawkey.Goal(self.sack)
