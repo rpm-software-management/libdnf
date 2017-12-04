@@ -836,13 +836,6 @@ hy_goal_erase_flags(HyGoal goal, DnfPackage *pkg, int flags)
 }
 
 int
-hy_goal_erase_selector(HyGoal goal, HySelector sltr)
-{
-    goal->actions |= DNF_ERASE;
-    return hy_goal_erase_selector_flags(goal, sltr, 0);
-}
-
-int
 hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags)
 {
     int additional = erase_flags2libsolv(flags);
