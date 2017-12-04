@@ -748,6 +748,26 @@ hy_goal_get_sack(HyGoal goal)
     return goal->sack;
 }
 
+static void
+package2job(DnfPackage *package, Queue *job, int solver_action)
+{
+    Queue pkgs;
+    queue_init(&pkgs);
+
+    Pool *pool = dnf_package_get_pool(package);
+    DnfSack *sack = dnf_package_get_sack(package);
+
+    dnf_sack_recompute_considered(sack);
+    dnf_sack_make_provides_ready(sack);
+
+    queue_push(&pkgs, dnf_package_get_id(package));
+
+    Id what = pool_queuetowhatprovides(pool, &pkgs);
+    queue_push2(job, SOLVER_SOLVABLE_ONE_OF|SOLVER_SETARCH|SOLVER_SETEVR|solver_action,
+                what);
+    queue_free(&pkgs);
+}
+
 int
 hy_goal_distupgrade_all(HyGoal goal)
 {
@@ -897,17 +917,7 @@ int
 hy_goal_upgrade_to(HyGoal goal, DnfPackage *new_pkg)
 {
     goal->actions |= DNF_UPGRADE;
-    Queue pkgs;
-    queue_init(&pkgs);
-
-    Pool *pool = dnf_package_get_pool(new_pkg);
-
-    queue_push(&pkgs, dnf_package_get_id(new_pkg));
-
-    Id what = pool_queuetowhatprovides(pool, &pkgs);
-    queue_push2(&goal->staging, SOLVER_SOLVABLE_ONE_OF|SOLVER_SETARCH|SOLVER_SETEVR|SOLVER_UPDATE,
-                what);
-    queue_free(&pkgs);
+    package2job(new_pkg, &goal->staging, SOLVER_UPDATE);
     return 0;
 }
 
