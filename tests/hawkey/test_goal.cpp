@@ -465,7 +465,7 @@ START_TEST(test_goal_downgrade)
     DnfPackage *to_be_pkg = get_available_pkg(sack, "baby");
     HyGoal goal = hy_goal_create(sack);
 
-    hy_goal_downgrade_to(goal, to_be_pkg);
+    hy_goal_install(goal, to_be_pkg);
     fail_if(hy_goal_run(goal));
     assert_iueo(goal, 0, 0, 0, 0);
 

@@ -83,6 +83,7 @@ int hy_goal_distupgrade_selector(HyGoal goal, HySelector);
 * @param new_pkg DnfPackage
 * @return int
 */
+DEPRECATED("Will be removed after 2018-03-01. Use hy_goal_install() instead.")
 int hy_goal_downgrade_to(HyGoal goal, DnfPackage *new_pkg);
 int hy_goal_erase(HyGoal goal, DnfPackage *pkg);
 int hy_goal_erase_flags(HyGoal goal, DnfPackage *pkg, int flags);
