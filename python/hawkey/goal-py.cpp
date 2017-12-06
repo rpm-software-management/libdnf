@@ -329,12 +329,6 @@ req_has_erase(_GoalObject *self, PyObject *unused)
 }
 
 static PyObject *
-req_has_upgrade_all(_GoalObject *self, PyObject *unused)
-{
-    return PyBool_FromLong(hy_goal_has_actions(self->goal, DNF_UPGRADE_ALL));
-}
-
-static PyObject *
 req_length(_GoalObject *self, PyObject *unused)
 {
     return PyLong_FromLong(hy_goal_req_length(self->goal));
@@ -634,10 +628,6 @@ static struct PyMethodDef goal_methods[] = {
     // deprecated in 0.5.9, will be removed in 1.0.0
     // use goal.actions | hawkey.ERASE instead
     {"req_has_erase",        (PyCFunction)req_has_erase,        METH_NOARGS,        NULL},
-    // deprecated in 0.5.9, will be removed in 1.0.0
-    // use goal.actions | hawkey.UPGRADE_ALL instead
-    {"req_has_upgrade_all", (PyCFunction)req_has_upgrade_all,
-     METH_NOARGS,        NULL},
     {"req_length",        (PyCFunction)req_length,        METH_NOARGS,        NULL},
     {"run",                (PyCFunction)run,
      METH_VARARGS | METH_KEYWORDS, NULL},
