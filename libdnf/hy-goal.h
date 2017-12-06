@@ -128,9 +128,6 @@ GPtrArray *hy_goal_list_downgrades(HyGoal goal, GError **error);
 GPtrArray *hy_goal_list_obsoleted_by_package(HyGoal goal, DnfPackage *pkg);
 int hy_goal_get_reason(HyGoal goal, DnfPackage *pkg);
 
-DEPRECATED("Will be removed after 2018-01-01. Use hy_goal_describe_problem() and hy_goal_count_problems() instead.")
-GPtrArray *hy_goal_get_solution(HyGoal goal, guint problem_id);
-
 G_END_DECLS
 
 #endif

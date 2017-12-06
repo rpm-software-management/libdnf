@@ -354,82 +354,6 @@ dnf_sack_recompute_considered(DnfSack *sack)
     priv->considered_uptodate = TRUE;
 }
 
-static void
-queue_di(Pool *pool, Queue *queue, const char *str, int di_key, int flags)
-{
-    Dataiterator di;
-    int di_flags = SEARCH_STRING;
-
-    if (flags & HY_ICASE)
-        di_flags |= SEARCH_NOCASE;
-    if (flags & HY_GLOB)
-        di_flags |= SEARCH_GLOB;
-
-    dataiterator_init(&di, pool, 0, 0, di_key, str, di_flags);
-    while (dataiterator_step(&di))
-        if (is_package(pool, pool_id2solvable(pool, di.solvid)))
-            queue_push(queue, di.solvid);
-    dataiterator_free(&di);
-    return;
-}
-
-static void
-queue_pkg_name(DnfSack *sack, Queue *queue, const char *provide, int flags)
-{
-    Pool *pool = dnf_sack_get_pool(sack);
-    if (!flags) {
-        Id id = pool_str2id(pool, provide, 0);
-        if (id == 0)
-            return;
-        Id p, pp;
-        FOR_PKG_PROVIDES(p, pp, id) {
-            Solvable *s = pool_id2solvable(pool, p);
-            if (s->name == id)
-                queue_push(queue, p);
-        }
-        return;
-    }
-
-    queue_di(pool, queue, provide, SOLVABLE_NAME, flags);
-    return;
-}
-
-static void
-queue_provides(DnfSack *sack, Queue *queue, const char *provide, int flags)
-{
-    Pool *pool = dnf_sack_get_pool(sack);
-    if (!flags) {
-        Id id = pool_str2id(pool, provide, 0);
-        if (id == 0)
-            return;
-        Id p, pp;
-        FOR_PKG_PROVIDES(p, pp, id)
-            queue_push(queue, p);
-        return;
-    }
-
-    queue_di(pool, queue, provide, SOLVABLE_PROVIDES, flags);
-    return;
-}
-
-static void
-queue_filter_version(DnfSack *sack, Queue *queue, const char *version)
-{
-    Pool *pool = dnf_sack_get_pool(sack);
-    int j = 0;
-    for (int i = 0; i < queue->count; ++i) {
-        Id p = queue->elements[i];
-        Solvable *s = pool_id2solvable(pool, p);
-        char *e, *v, *r;
-        const char *evr = pool_id2str(pool, s->evr);
-
-        pool_split_evr(pool, evr, &e, &v, &r);
-        if (!strcmp(v, version))
-            queue->elements[j++] = p;
-    }
-    queue_truncate(queue, j);
-}
-
 static gboolean
 load_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
          const char *suffix, int which_filename,
@@ -1832,44 +1756,6 @@ dnf_sack_running_kernel(DnfSack *sack)
     if (priv->running_kernel_fn)
         priv->running_kernel_id = priv->running_kernel_fn(sack);
     return priv->running_kernel_id;
-}
-
-/**
- * dnf_sack_knows:
- * @sack: a #DnfSack instance.
- * @name: a package name.
- * @version: a package version, or %NULL.
- * @flags: options to use, e.g. %HY_NAME_ONLY.
- *
- * Checks for a package in a sack.
- *
- * Returns: %TRUE for success
- *
- * Since: 0.7.0
- */
-int
-dnf_sack_knows(DnfSack *sack, const char *name, const char *version, int flags)
-{
-    Queue *q = static_cast<Queue *>(g_malloc(sizeof(*q)));
-    int ret;
-    int name_only = flags & HY_NAME_ONLY;
-
-    assert((flags & ~(HY_ICASE|HY_NAME_ONLY|HY_GLOB)) == 0);
-    queue_init(q);
-    dnf_sack_make_provides_ready(sack);
-    flags &= ~HY_NAME_ONLY;
-
-    if (name_only) {
-        queue_pkg_name(sack, q, name, flags);
-        if (version != NULL)
-            queue_filter_version(sack, q, version);
-    } else
-        queue_provides(sack, q, name, flags);
-
-    ret = q->count > 0;
-    queue_free(q);
-    g_free(q);
-    return ret;
 }
 
 /**

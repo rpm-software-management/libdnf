@@ -148,39 +148,7 @@ get_nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
     }
     HyPossibilities iter = hy_subject_nevra_possibilities(self->pattern,
         cforms.empty() ? NULL : cforms.data());
-    return possibilitiesToPyObject(iter, NULL);
-}
-
-static PyObject *
-nevra_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
-{
-    PyObject *sack = NULL;
-    DnfSack *csack = NULL;
-    int allow_globs = 0;
-    int icase = 0;
-    int flags = 0;
-    PyObject *form = NULL;
-    const char *kwlist[] = { "sack", "allow_globs", "icase", "form", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|iiO", (char**) kwlist,
-        &sack_Type, &sack, &allow_globs, &icase, &form))
-        return NULL;
-    csack = sackFromPyObject(sack);
-    if (csack == NULL)
-        return NULL;
-    std::vector<HyForm> cforms;
-    if (form != NULL) {
-        cforms = fill_form<HyForm, _HY_FORM_STOP_>(form);
-        if (cforms.empty())
-            return NULL;
-    }
-    if (icase)
-        flags |= HY_ICASE;
-    if (allow_globs)
-        flags |= HY_GLOB;
-
-    HyPossibilities iter = hy_subject_nevra_possibilities_real(self->pattern,
-        cforms.empty() ? NULL : cforms.data(), csack, flags);
-    return possibilitiesToPyObject(iter, sack);
+    return possibilitiesToPyObject(iter);
 }
 
 static PyObject *
@@ -199,31 +167,7 @@ module_form_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
     }
     HyPossibilities iter = hy_subject_module_form_possibilities(self->pattern,
         cforms.empty() ? NULL : cforms.data());
-    return possibilitiesToPyObject(iter, NULL);
-}
-
-static PyObject *
-reldep_possibilities_real(_SubjectObject *self, PyObject *args, PyObject *kwds)
-{
-    printf("The function 'reldep_possibilities_real()' in Subject() is deprecated and will be "
-           "removed on 2018-01-01\n");
-    PyObject *sack = NULL;
-    DnfSack *csack = NULL;
-    int icase = 0;
-    int flags = 0;
-    const char *kwlist[] = { "sack", "icase", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|i", (char**) kwlist,
-        &sack_Type, &sack, &icase))
-        return NULL;
-    csack = sackFromPyObject(sack);
-    if (csack == NULL)
-        return NULL;
-    if (icase)
-        flags |= HY_ICASE;
-
-    HyPossibilities iter = hy_subject_reldep_possibilities_real(self->pattern,
-        csack, flags);
-    return possibilitiesToPyObject(iter, sack);
+    return possibilitiesToPyObject(iter);
 }
 
 static PyObject *
@@ -280,11 +224,10 @@ get_best_selector(_SubjectObject *self, PyObject *args, PyObject *kwds)
     PyObject *forms = NULL;
     PyObject *obsoletes = NULL;
     char *reponame = NULL;
-    PyObject *reports = NULL;
-    const char *kwlist[] = {"sack", "forms", "obsoletes", "reponame", "reports", NULL};
+    const char *kwlist[] = {"sack", "forms", "obsoletes", "reponame", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|OO!zO!", (char**) kwlist, &sack_Type, &sack,
-        &forms, &PyBool_Type, &obsoletes, &reponame, &PyBool_Type, &reports)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|OO!z", (char**) kwlist, &sack_Type, &sack,
+        &forms, &PyBool_Type, &obsoletes, &reponame)) {
         return NULL;
     }
     std::vector<HyForm> cforms;
@@ -296,11 +239,6 @@ get_best_selector(_SubjectObject *self, PyObject *args, PyObject *kwds)
     }
 
     bool c_obsoletes = obsoletes == NULL || PyObject_IsTrue(obsoletes);
-    bool c_reports = reports != NULL && PyObject_IsTrue(reports);
-    if (c_reports) {
-        printf("The attribute 'reports' in get_best_selector() is deprecated and not used any more."
-               " This attribute will be removed on 2018-01-01\n");
-    }
     DnfSack *csack = sackFromPyObject(sack);
     HySelector c_selector = hy_subject_get_best_sltr(self->pattern, csack,
         cforms.empty() ? NULL : cforms.data(), c_obsoletes, reponame);
@@ -339,12 +277,8 @@ static struct PyMethodDef subject_methods[] = {
     "forms: list of hawkey NEVRA forms like [hawkey.FORM_NEVRA, hawkey.FORM_NEVR]\n"
     "return: object with every possible nevra. Each possible nevra is represented by Class "
     "NEVRA object (libdnf) that have attributes name, epoch, version, release, arch"},
-    {"nevra_possibilities_real", (PyCFunction) nevra_possibilities_real,
-    METH_VARARGS | METH_KEYWORDS, "DEPRECATED!"},
     {"module_form_possibilities", (PyCFunction) module_form_possibilities,
     METH_VARARGS | METH_KEYWORDS, NULL},
-    {"reldep_possibilities_real", (PyCFunction) reldep_possibilities_real,
-    METH_VARARGS | METH_KEYWORDS, "DEPRECATED!"},
     {"get_best_query", (PyCFunction) get_best_query,
     METH_VARARGS | METH_KEYWORDS,
     "get_best_query(self, sack, with_nevra=True, with_provides=True, with_filenames=True,\n"

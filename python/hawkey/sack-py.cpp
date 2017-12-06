@@ -335,29 +335,6 @@ static PyGetSetDef sack_getsetters[] = {
 /* object methods */
 
 static PyObject *
-_knows(_SackObject *self, PyObject *args, PyObject *kwds)
-{
-    const char *name;
-    const char *version = NULL;
-    int name_only = 0, icase = 0, glob = 0;
-
-    const char *kwlist[] = {"name", "version", "name_only", "icase", "glob",
-                      NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|ziii", (char**) kwlist,
-                                     &name, &version, &name_only, &icase, &glob))
-        return NULL;
-
-    int flags = 0;
-    if (name_only)
-        flags |= HY_NAME_ONLY;
-    if (icase)
-        flags |= HY_ICASE;
-    if (glob)
-        flags |= HY_GLOB;
-    return PyLong_FromLong(dnf_sack_knows(self->sack, name, version, flags));
-}
-
-static PyObject *
 evr_cmp(_SackObject *self, PyObject *args)
 {
     const char *evr1 = NULL, *evr2 = NULL;
@@ -679,8 +656,6 @@ deepcopy(_SackObject *self, PyObject *args, PyObject *kwds)
 static struct
 PyMethodDef sack_methods[] = {
     {"__deepcopy__", (PyCFunction)deepcopy, METH_KEYWORDS|METH_VARARGS,
-     NULL},
-    {"_knows",                (PyCFunction)_knows, METH_KEYWORDS|METH_VARARGS,
      NULL},
     {"evr_cmp",                (PyCFunction)evr_cmp, METH_VARARGS,
      NULL},

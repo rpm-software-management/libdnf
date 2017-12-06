@@ -156,20 +156,6 @@ FORCE_BEST = _hawkey.FORCE_BEST
 VERIFY = _hawkey.VERIFY
 IGNORE_WEAK_DEPS = _hawkey.IGNORE_WEAK_DEPS
 
-SOLUTION_ALLOW_INSTALL = _hawkey.SOLUTION_ALLOW_INSTALL
-SOLUTION_ALLOW_REINSTALL = _hawkey.SOLUTION_ALLOW_REINSTALL
-SOLUTION_ALLOW_UPGRADE = _hawkey.SOLUTION_ALLOW_UPGRADE
-SOLUTION_ALLOW_DOWNGRADE = _hawkey.SOLUTION_ALLOW_DOWNGRADE
-SOLUTION_ALLOW_CHANGE = _hawkey.SOLUTION_ALLOW_CHANGE
-SOLUTION_ALLOW_OBSOLETE = _hawkey.SOLUTION_ALLOW_OBSOLETE
-SOLUTION_ALLOW_REPLACEMENT = _hawkey.SOLUTION_ALLOW_REPLACEMENT
-SOLUTION_ALLOW_REMOVE = _hawkey.SOLUTION_ALLOW_REMOVE
-SOLUTION_DO_NOT_INSTALL = _hawkey.SOLUTION_DO_NOT_INSTALL
-SOLUTION_DO_NOT_REMOVE = _hawkey.SOLUTION_DO_NOT_REMOVE
-SOLUTION_DO_NOT_OBSOLETE = _hawkey.SOLUTION_DO_NOT_OBSOLETE
-SOLUTION_DO_NOT_UPGRADE = _hawkey.SOLUTION_DO_NOT_UPGRADE
-SOLUTION_BAD_SOLUTION = _hawkey.SOLUTION_BAD_SOLUTION
-
 PY3 = python_version.major >= 3
 
 logger = logging.getLogger('dnf')
@@ -289,16 +275,6 @@ class Subject(_hawkey.Subject):
 
     def __init__(self, pkg_spec, ignore_case=False):
         super(Subject, self).__init__(pkg_spec, ignore_case=ignore_case)
-
-    def nevra_possibilities_real(self, *args, **kwargs):
-        warnings.simplefilter('always', DeprecationWarning)
-        msg = "The function 'nevra_possibilities_real' is deprecated. " \
-              "Please use 'get_nevra_possibilities' instead. The function will be removed on 2018-01-01"
-        warnings.warn(msg, DeprecationWarning)
-
-        poss = super(Subject, self).nevra_possibilities_real(*args, **kwargs)
-        for nevra in poss:
-            yield NEVRA(nevra=nevra)
 
     def module_form_possibilities(self, *args, **kwargs):
         poss = super(Subject, self).module_form_possibilities(*args, **kwargs)

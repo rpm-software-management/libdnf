@@ -30,7 +30,6 @@
 #include "hy-package.h"
 #include "hy-query.h"
 #include "hy-subject.h"
-#include "dnf-solution.h"
 #include "hy-types.h"
 #include "hy-util.h"
 #include "dnf-version.h"
@@ -51,7 +50,6 @@
 #include "repo-py.hpp"
 #include "sack-py.hpp"
 #include "selector-py.hpp"
-#include "solution-py.hpp"
 #include "subject-py.hpp"
 
 #include "pycomp.hpp"
@@ -222,11 +220,6 @@ PYCOMP_MOD_INIT(_hawkey)
         return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&module_form_Type);
     PyModule_AddObject(m, "ModuleForm", (PyObject *)&module_form_Type);
-    /* _hawkey.Solution */
-    if (PyType_Ready(&solution_Type) < 0)
-        return PYCOMP_MOD_ERROR_VAL;
-    Py_INCREF(&solution_Type);
-    PyModule_AddObject(m, "Solution", (PyObject *)&solution_Type);
     /* _hawkey.Subject */
     if (PyType_Ready(&subject_Type) < 0)
         return PYCOMP_MOD_ERROR_VAL;
@@ -316,20 +309,6 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "FORCE_BEST", DNF_FORCE_BEST);
     PyModule_AddIntConstant(m, "VERIFY", DNF_VERIFY);
     PyModule_AddIntConstant(m, "IGNORE_WEAK_DEPS", DNF_IGNORE_WEAK_DEPS);
-
-    PyModule_AddIntConstant(m, "SOLUTION_ALLOW_INSTALL", DNF_SOLUTION_ACTION_ALLOW_INSTALL);
-    PyModule_AddIntConstant(m, "SOLUTION_ALLOW_REINSTALL", DNF_SOLUTION_ACTION_ALLOW_REINSTALL);
-    PyModule_AddIntConstant(m, "SOLUTION_ALLOW_UPGRADE", DNF_SOLUTION_ACTION_ALLOW_UPGRADE);
-    PyModule_AddIntConstant(m, "SOLUTION_ALLOW_DOWNGRADE", DNF_SOLUTION_ACTION_ALLOW_DOWNGRADE);
-    PyModule_AddIntConstant(m, "SOLUTION_ALLOW_CHANGE", DNF_SOLUTION_ACTION_ALLOW_CHANGE);
-    PyModule_AddIntConstant(m, "SOLUTION_ALLOW_OBSOLETE", DNF_SOLUTION_ACTION_ALLOW_OBSOLETE);
-    PyModule_AddIntConstant(m, "SOLUTION_ALLOW_REPLACEMENT", DNF_SOLUTION_ACTION_ALLOW_REPLACEMENT);
-    PyModule_AddIntConstant(m, "SOLUTION_ALLOW_REMOVE", DNF_SOLUTION_ACTION_ALLOW_REMOVE);
-    PyModule_AddIntConstant(m, "SOLUTION_DO_NOT_INSTALL", DNF_SOLUTION_ACTION_DO_NOT_INSTALL);
-    PyModule_AddIntConstant(m, "SOLUTION_DO_NOT_REMOVE", DNF_SOLUTION_ACTION_DO_NOT_REMOVE);
-    PyModule_AddIntConstant(m, "SOLUTION_DO_NOT_OBSOLETE", DNF_SOLUTION_ACTION_DO_NOT_OBSOLETE);
-    PyModule_AddIntConstant(m, "SOLUTION_DO_NOT_UPGRADE", DNF_SOLUTION_ACTION_DO_NOT_UPGRADE);
-    PyModule_AddIntConstant(m, "SOLUTION_BAD_SOLUTION", DNF_SOLUTION_ACTION_BAD_SOLUTION);
 
     PyModule_AddIntConstant(m, "CHKSUM_MD5", G_CHECKSUM_MD5);
     PyModule_AddIntConstant(m, "CHKSUM_SHA1", G_CHECKSUM_SHA1);
