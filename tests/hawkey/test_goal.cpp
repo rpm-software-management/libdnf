@@ -24,7 +24,7 @@
 
 
 #include "libdnf/dnf-types.h"
-#include "libdnf/hy-goal.h"
+#include "libdnf/hy-goal-private.hpp"
 #include "libdnf/hy-iutil.h"
 #include "libdnf/hy-package-private.hpp"
 #include "libdnf/hy-packageset.h"
@@ -168,7 +168,7 @@ START_TEST(test_goal_install)
     HyGoal goal = hy_goal_create(test_globals.sack);
     fail_if(hy_goal_install(goal, pkg));
     g_object_unref(pkg);
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 2, 0, 0, 0);
     hy_goal_free(goal);
 }
@@ -184,7 +184,7 @@ START_TEST(test_goal_install_multilib)
 
     hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "semolina");
     fail_if(!hy_goal_install_selector(goal, sltr, NULL));
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 1, 0, 0, 0);
     hy_selector_free(sltr);
     hy_goal_free(goal);
@@ -203,7 +203,7 @@ START_TEST(test_goal_install_selector)
     fail_if(!hy_goal_install_selector(goal, sltr, NULL));
     hy_selector_free(sltr);
 
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 1, 0, 0, 0);
 
     GPtrArray *plist = hy_goal_list_installs(goal, NULL);
@@ -261,7 +261,7 @@ START_TEST(test_goal_install_selector_two)
     fail_if(hy_goal_upgrade_selector(goal, sltr));
     hy_selector_free(sltr);
 
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 1, 1, 0, 1);
 
     hy_goal_free(goal);
@@ -277,7 +277,7 @@ START_TEST(test_goal_install_selector_nomatch)
     fail_if(!hy_goal_install_selector(goal, sltr, NULL));
     hy_selector_free(sltr);
 
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 0, 0, 0, 0);
     hy_goal_free(goal);
 }
@@ -290,7 +290,7 @@ START_TEST(test_goal_install_weak_deps)
     HyGoal goal = hy_goal_create(test_globals.sack);
     fail_if(!hy_goal_install_selector(goal, sltr, NULL));
     HyGoal goal2 = hy_goal_clone(goal);
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     // recommended package C is installed too
     assert_iueo(goal, 2, 0, 0, 0);
 
@@ -309,7 +309,7 @@ START_TEST(test_goal_selector_glob)
 
     fail_if(hy_selector_set(sltr, HY_PKG_NAME, HY_GLOB, "*emolin*"));
     fail_if(!hy_goal_install_selector(goal, sltr, NULL));
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 1, 0, 0, 0);
 
     hy_goal_free(goal);
@@ -324,7 +324,7 @@ START_TEST(test_goal_selector_provides_glob)
 
     fail_if(hy_selector_set(sltr, HY_PKG_PROVIDES, HY_GLOB, "P*"));
     fail_if(hy_goal_erase_selector_flags(goal, sltr, 0));
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 0, 0, 1, 0);
 
     hy_goal_free(goal);
@@ -343,7 +343,7 @@ START_TEST(test_goal_selector_upgrade_provides)
     fail_if(hy_goal_upgrade_selector(goal, sltr));
     hy_selector_free(sltr);
 
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 0, 1, 0, 1);
     hy_goal_free(goal);
 
@@ -353,7 +353,7 @@ START_TEST(test_goal_selector_upgrade_provides)
     fail_if(hy_goal_upgrade_selector(goal, sltr));
     hy_selector_free(sltr);
 
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 0, 1, 0, 1);
     hy_goal_free(goal);
 }
@@ -366,7 +366,7 @@ START_TEST(test_goal_install_selector_file)
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_selector_set(sltr, HY_PKG_FILE, HY_EQ|HY_GLOB, "/*/answers"));
     fail_if(hy_goal_erase_selector_flags(goal, sltr, 0));
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 0, 0, 1, 0);
     GPtrArray *plist = hy_goal_list_erasures(goal, NULL);
     auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
@@ -386,14 +386,14 @@ START_TEST(test_goal_install_optional)
     sltr = hy_selector_create(test_globals.sack);
     hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "hello");
     fail_if(!hy_goal_install_selector_optional(goal, sltr, NULL));
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     hy_selector_free(sltr);
     assert_iueo(goal, 0, 0, 0, 0);
 
     // test optional package installation
     DnfPackage *pkg = get_latest_pkg(test_globals.sack, "hello");
     fail_if(hy_goal_install_optional(goal, pkg));
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 0, 0, 0, 0);
     g_object_unref(pkg);
     hy_goal_free(goal);
@@ -406,7 +406,7 @@ START_TEST(test_goal_upgrade)
     HyGoal goal = hy_goal_create(test_globals.sack);
     fail_if(hy_goal_upgrade_to(goal, pkg));
     g_object_unref(pkg);
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 0, 1, 0, 1);
     hy_goal_free(goal);
 }
@@ -434,7 +434,7 @@ START_TEST(test_goal_upgrade_all)
 {
     HyGoal goal = hy_goal_create(test_globals.sack);
     hy_goal_upgrade_all(goal);
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
 
     GPtrArray *plist = hy_goal_list_erasures(goal, NULL);
     fail_unless(size_and_free(plist) == 0);
@@ -466,7 +466,7 @@ START_TEST(test_goal_downgrade)
     HyGoal goal = hy_goal_create(sack);
 
     hy_goal_install(goal, to_be_pkg);
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 0, 0, 0, 0);
 
     GPtrArray *plist = hy_goal_list_downgrades(goal, NULL);
@@ -494,7 +494,7 @@ START_TEST(test_goal_get_reason)
     HyGoal goal = hy_goal_create(test_globals.sack);
     hy_goal_install(goal, pkg);
     g_object_unref(pkg);
-    hy_goal_run(goal);
+    hy_goal_run_flags(goal, DNF_NONE);
 
     GPtrArray *plist = hy_goal_list_installs(goal, NULL);
     guint i;
@@ -527,7 +527,7 @@ START_TEST(test_goal_get_reason_selector)
     fail_if(!hy_goal_install_selector(goal, sltr, NULL));
     hy_selector_free(sltr);
 
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
 
     GPtrArray *plist = hy_goal_list_installs(goal, NULL);
     fail_unless(plist->len == 2);
@@ -547,7 +547,7 @@ START_TEST(test_goal_describe_problem)
     HyGoal goal = hy_goal_create(sack);
 
     hy_goal_install(goal, pkg);
-    fail_unless(hy_goal_run(goal));
+    fail_unless(hy_goal_run_flags(goal, DNF_NONE));
     fail_unless(hy_goal_list_installs(goal, &error) == NULL);
     fail_unless(error->code == DNF_ERROR_NO_SOLUTION);
     fail_unless(hy_goal_count_problems(goal) > 0);
@@ -570,7 +570,7 @@ START_TEST(test_goal_describe_problem_rules)
     HyGoal goal = hy_goal_create(sack);
 
     hy_goal_install(goal, pkg);
-    fail_unless(hy_goal_run(goal));
+    fail_unless(hy_goal_run_flags(goal, DNF_NONE));
     fail_unless(hy_goal_list_installs(goal, &error) == NULL);
     fail_unless(error->code == DNF_ERROR_NO_SOLUTION);
     fail_unless(hy_goal_count_problems(goal) > 0);
@@ -596,7 +596,7 @@ START_TEST(test_goal_no_reinstall)
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_goal_install(goal, pkg));
     g_object_unref(pkg);
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 0, 0, 0, 0);
     hy_goal_free(goal);
 }
@@ -609,7 +609,7 @@ START_TEST(test_goal_erase_simple)
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_goal_erase(goal, pkg));
     g_object_unref(pkg);
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 0, 0, 1, 0);
     hy_goal_free(goal);
 }
@@ -623,7 +623,7 @@ START_TEST(test_goal_erase_with_deps)
     // by default can not remove penny-lib, flying depends on it:
     HyGoal goal = hy_goal_create(sack);
     hy_goal_erase(goal, pkg);
-    fail_unless(hy_goal_run(goal));
+    fail_unless(hy_goal_run_flags(goal, DNF_NONE));
     hy_goal_free(goal);
 
     goal = hy_goal_create(sack);
@@ -666,7 +666,7 @@ START_TEST(test_goal_protected)
     goal = hy_goal_create(sack);
     dnf_goal_set_protected(goal, protected_pkgs);
     hy_goal_erase(goal, pp);
-    fail_unless(hy_goal_run(goal));
+    fail_unless(hy_goal_run_flags(goal, DNF_NONE));
     fail_unless(hy_goal_count_problems(goal) == 1);
     problem = hy_goal_describe_problem(goal, 0);
     expected = "The operation would result in removing "
@@ -688,14 +688,14 @@ START_TEST(test_goal_erase_clean_deps)
     // by default, leave dependencies alone:
     HyGoal goal = hy_goal_create(sack);
     hy_goal_erase(goal, pkg);
-    hy_goal_run(goal);
+    hy_goal_run_flags(goal, DNF_NONE);
     assert_iueo(goal, 0, 0, 1, 0);
     hy_goal_free(goal);
 
     // allow deleting dependencies:
     goal = hy_goal_create(sack);
     hy_goal_erase_flags(goal, pkg, HY_CLEAN_DEPS);
-    fail_unless(hy_goal_run(goal) == 0);
+    fail_unless(hy_goal_run_flags(goal, DNF_NONE) == 0);
     assert_iueo(goal, 0, 0, 2, 0);
     hy_goal_free(goal);
 
@@ -706,7 +706,7 @@ START_TEST(test_goal_erase_clean_deps)
     hy_goal_userinstalled(goal, penny_pkg);
     // having the same solvable twice in a goal shouldn't break anything:
     hy_goal_userinstalled(goal, pkg);
-    fail_unless(hy_goal_run(goal) == 0);
+    fail_unless(hy_goal_run_flags(goal, DNF_NONE) == 0);
     assert_iueo(goal, 0, 0, 1, 0);
     hy_goal_free(goal);
     g_object_unref(penny_pkg);
@@ -768,7 +768,7 @@ START_TEST(test_goal_installonly)
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_goal_upgrade_to(goal, pkg));
     g_object_unref(pkg);
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 1, 0, 1, 0);
     hy_goal_free(goal);
 }
@@ -784,7 +784,7 @@ START_TEST(test_goal_installonly_upgrade_all)
     dnf_sack_set_installonly_limit(sack, 2);
 
     hy_goal_upgrade_all(goal);
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
 
     GPtrArray *plist = hy_goal_list_erasures(goal, NULL);
     assert_list_names(plist, "penny", NULL);
@@ -811,7 +811,7 @@ START_TEST(test_goal_upgrade_all_excludes)
 
     HyGoal goal = hy_goal_create(sack);
     hy_goal_upgrade_all(goal);
-    hy_goal_run(goal);
+    hy_goal_run_flags(goal, DNF_NONE);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal, NULL)) == 3);
     hy_goal_free(goal);
 }
@@ -823,14 +823,14 @@ START_TEST(test_goal_upgrade_disabled_repo)
     HyGoal goal = hy_goal_create(sack);
 
     hy_goal_upgrade_all(goal);
-    hy_goal_run(goal);
+    hy_goal_run_flags(goal, DNF_NONE);
     fail_unless(size_and_free(hy_goal_list_upgrades(goal, NULL)) == 5);
     hy_goal_free(goal);
 
     dnf_sack_repo_enabled(sack, "updates", 0);
     goal = hy_goal_create(sack);
     hy_goal_upgrade_all(goal);
-    hy_goal_run(goal);
+    hy_goal_run_flags(goal, DNF_NONE);
     assert_iueo(goal, 0, 1, 0, 0);
     hy_goal_free(goal);
 }
@@ -854,7 +854,7 @@ START_TEST(test_goal_describe_problem_excludes)
     hy_goal_install_selector(goal, sltr, NULL);
     hy_selector_free(sltr);
 
-    fail_unless(hy_goal_run(goal));
+    fail_unless(hy_goal_run_flags(goal, DNF_NONE));
     fail_unless(hy_goal_count_problems(goal) > 0);
 
     char *problem = hy_goal_describe_problem(goal, 0);
@@ -869,7 +869,7 @@ START_TEST(test_goal_distupgrade_all)
 {
     HyGoal goal = hy_goal_create(test_globals.sack);
     fail_if(hy_goal_distupgrade_all(goal));
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
 
     assert_iueo(goal, 0, 1, 0, 0);
     GPtrArray *plist = hy_goal_list_upgrades(goal, NULL);
@@ -895,7 +895,7 @@ START_TEST(test_goal_distupgrade_all_excludes)
 
     HyGoal goal = hy_goal_create(test_globals.sack);
     fail_if(hy_goal_distupgrade_all(goal));
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
 
     assert_iueo(goal, 0, 0, 0, 0);
 
@@ -911,7 +911,7 @@ START_TEST(test_goal_distupgrade_all_keep_arch)
 {
     HyGoal goal = hy_goal_create(test_globals.sack);
     fail_if(hy_goal_distupgrade_all(goal));
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
 
     assert_iueo(goal, 0, 5, 0, 1);
     GPtrArray *plist = hy_goal_list_upgrades(goal, NULL);
@@ -944,7 +944,7 @@ START_TEST(test_goal_distupgrade_selector_upgrade)
     HySelector sltr = hy_selector_create(test_globals.sack);
     hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "flying");
     fail_if(hy_goal_distupgrade_selector(goal, sltr));
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
 
     assert_iueo(goal, 0, 1, 0, 0);
     GPtrArray *plist = hy_goal_list_upgrades(goal, NULL);
@@ -962,7 +962,7 @@ START_TEST(test_goal_distupgrade_selector_downgrade)
     HySelector sltr = hy_selector_create(test_globals.sack);
     hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "baby");
     fail_if(hy_goal_distupgrade_selector(goal, sltr));
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
 
     assert_iueo(goal, 0, 0, 0, 0);
     GPtrArray *plist = hy_goal_list_downgrades(goal, NULL);
@@ -981,7 +981,7 @@ START_TEST(test_goal_distupgrade_selector_nothing)
     HySelector sltr = hy_selector_create(test_globals.sack);
     hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "P-lib");
     fail_if(hy_goal_distupgrade_selector(goal, sltr));
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
 
     assert_iueo(goal, 0, 0, 0, 0);
     GPtrArray *plist = hy_goal_list_downgrades(goal, NULL);
@@ -999,14 +999,14 @@ START_TEST(test_goal_rerun)
     DnfPackage *pkg = get_latest_pkg(sack, "walrus");
 
     hy_goal_install(goal, pkg);
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 2, 0, 0, 0);
     g_object_unref(pkg);
 
     // add an erase:
     pkg = by_name_repo(sack, "dog", HY_SYSTEM_REPO_NAME);
     hy_goal_erase(goal, pkg);
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 2, 0, 1, 0);
     g_object_unref(pkg);
     hy_goal_free(goal);
@@ -1025,7 +1025,7 @@ START_TEST(test_goal_unneeded)
     userinstalled(sack, goal, "jay");
     userinstalled(sack, goal, "penny");
     userinstalled(sack, goal, "pilchard");
-    hy_goal_run(goal);
+    hy_goal_run_flags(goal, DNF_NONE);
 
     GPtrArray *plist = hy_goal_list_unneeded(goal, NULL);
     ck_assert_int_eq(plist->len, 4);
@@ -1166,7 +1166,7 @@ START_TEST(test_goal_update_vendor)
     hy_selector_free(sltr);
 
     /* hy_goal_upgrade_all(goal); */
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 1, 0, 0, 1);
 
     hy_goal_free(goal);
@@ -1198,7 +1198,7 @@ START_TEST(test_goal_change)
 
     hy_goal_upgrade_all(goal);
 
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 0, 1, 0, 0);
     fail_unless(size_and_free(hy_goal_list_reinstalls(goal, NULL)) == 1);
     hy_goal_free(goal);
@@ -1213,12 +1213,12 @@ START_TEST(test_goal_clone)
     hy_goal_upgrade_all(goal);
     HyGoal goal2 = hy_goal_clone(goal);
 
-    fail_if(hy_goal_run(goal));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 0, 1, 0, 0);
     fail_unless(size_and_free(hy_goal_list_reinstalls(goal, NULL)) == 1);
     hy_goal_free(goal);
 
-    fail_if(hy_goal_run(goal2));
+    fail_if(hy_goal_run_flags(goal2, DNF_NONE));
     assert_iueo(goal2, 0, 1, 0, 0);
     fail_unless(size_and_free(hy_goal_list_reinstalls(goal2, NULL)) == 1);
     hy_goal_free(goal2);

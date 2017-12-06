@@ -920,12 +920,6 @@ int hy_goal_req_length(HyGoal goal)
 }
 
 int
-hy_goal_run(HyGoal goal)
-{
-    return hy_goal_run_flags(goal, DNF_NONE);
-}
-
-int
 hy_goal_run_flags(HyGoal goal, DnfGoalActions flags)
 {
     return hy_goal_run_all_flags(goal, NULL, NULL, flags);
