@@ -365,26 +365,6 @@ count_problems(_GoalObject *self, PyObject *unused)
     return PyLong_FromLong(hy_goal_count_problems(self->goal));
 }
 
-static PyObject *
-describe_problem(_GoalObject *self, PyObject *index_obj)
-{
-    char *cstr;
-    PyObject *str;
-
-    if (!PyInt_Check(index_obj)) {
-        PyErr_SetString(PyExc_TypeError, "An integer value expected.");
-        return NULL;
-    }
-    cstr = hy_goal_describe_problem(self->goal, PyLong_AsLong(index_obj));
-    if (cstr == NULL) {
-        PyErr_SetString(PyExc_ValueError, "Index out of range.");
-        return NULL;
-    }
-    str = PyString_FromString(cstr);
-    g_free(cstr);
-    return str;
-}
-
 /**
  * Reports problems described in strings.
  *
@@ -634,7 +614,6 @@ static struct PyMethodDef goal_methods[] = {
     {"count_problems",        (PyCFunction)count_problems,        METH_NOARGS,        NULL},
     {"problem_conflicts",(PyCFunction)problem_conflicts,        METH_VARARGS | METH_KEYWORDS,                NULL},
     {"problem_broken_dependency",(PyCFunction)problem_broken_dependency,        METH_VARARGS | METH_KEYWORDS,                NULL},
-    {"describe_problem",(PyCFunction)describe_problem,        METH_O,                NULL},
     {"problem_rules", (PyCFunction)problem_rules,        METH_NOARGS,                NULL},
     {"log_decisions",   (PyCFunction)log_decisions,        METH_NOARGS,        NULL},
     {"write_debugdata", (PyCFunction)write_debugdata,        METH_O,                NULL},

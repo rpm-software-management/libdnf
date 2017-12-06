@@ -157,7 +157,6 @@ int hy_goal_run_flags(HyGoal goal, DnfGoalActions flags);
 int hy_goal_count_problems(HyGoal goal);
 DnfPackageSet *hy_goal_conflict_all_pkgs(HyGoal goal, DnfPackageState pkg_type);
 DnfPackageSet *hy_goal_broken_dependency_all_pkgs(HyGoal goal, DnfPackageState pkg_type);
-char *hy_goal_describe_problem(HyGoal goal, unsigned i);
 char **hy_goal_describe_problem_rules(HyGoal goal, unsigned i);
 int hy_goal_log_decisions(HyGoal goal);
 gboolean hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error);
