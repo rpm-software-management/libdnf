@@ -55,7 +55,6 @@
 gboolean
 dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error)
 {
-    gchar *tmp;
     gint cnt;
     gint j;
     gint rc;
@@ -70,8 +69,19 @@ dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error)
         else
             g_string_append_printf(string, "%i problems detected:\n", cnt);
         for (j = 0; j < cnt; j++) {
-            tmp = hy_goal_describe_problem(goal, j);
-            g_string_append_printf(string, "%i. %s\n", j, tmp);
+            auto tmp = hy_goal_describe_problem_rules(goal, j);
+            for (auto iter = tmp; *iter; ++iter) {
+                if (tmp == iter) {
+                    if (cnt != 1) {
+                        g_string_append_printf(string, " Problem %i: %s\n", j + 1, *iter);
+                    } else {
+                        g_string_append_printf(string, " Problem: %s\n", *iter);
+                    }
+                } else {
+                    g_string_append_printf(string, "  - %s\n",  *iter);
+                }
+                g_free(*iter);
+            }
             g_free(tmp);
         }
         g_string_truncate(string, string->len - 1);

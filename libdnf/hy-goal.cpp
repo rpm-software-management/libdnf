@@ -1178,34 +1178,6 @@ hy_goal_describe_protected_removal(HyGoal goal)
 }
 
 /**
- * String describing the encountered solving problem 'i'.
- *
- * Caller is responsible for freeing the returned string using g_free().
- */
-char *
-hy_goal_describe_problem(HyGoal goal, unsigned i)
-{
-    Id rid, source, target, dep;
-    SolverRuleinfo type;
-
-    /* internal error */
-    if (i >= (unsigned) hy_goal_count_problems(goal)) {
-        return NULL;
-    }
-    // problem is not in libsolv - removal of protected packages
-    char *problem = hy_goal_describe_protected_removal(goal);
-    if (problem)
-        return problem;
-
-    // this libsolv interface indexes from 1 (we do from 0), so:
-    rid = solver_findproblemrule(goal->solv, i + 1);
-    type = solver_ruleinfo(goal->solv, rid, &source, &target, &dep);
-
-    const char *problem_str = solver_problemruleinfo2str(goal->solv, type, source, target, dep);
-    return g_strdup(problem_str);
-}
-
-/**
  * List describing failed rules in solving problem 'i'.
  *
  * Caller is responsible for freeing the returned string list.

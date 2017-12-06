@@ -235,10 +235,6 @@ class Goal(_hawkey.Goal):
     def actions(self):
         return {f for f in self._goal_actions if self._has_actions(f)}
 
-    @property
-    def problems(self):
-        return [self.describe_problem(i) for i in range(0, self.count_problems())]
-
     def install(self, *args, **kwargs):
         if args:
             self._installs.extend(args)

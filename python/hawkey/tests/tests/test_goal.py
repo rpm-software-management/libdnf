@@ -134,33 +134,3 @@ class GoalRunAll(base.TestCase):
         installs2 = goal2.list_installs()
         self.assertEqual(len(goal2.list_installs()), 1)
         self.assertEqual(str(installs2[0]), "B-1-0.noarch")
-
-
-class Problems(base.TestCase):
-    def setUp(self):
-        self.sack = base.TestSack(repo_dir=self.repo_dir)
-        self.sack.load_system_repo()
-        self.sack.load_test_repo("main", "main.repo")
-        self.goal = hawkey.Goal(self.sack)
-
-    def test_errors(self):
-        pkg = base.by_name(self.sack, "hello")
-        self.goal.install(pkg)
-        self.assertFalse(self.goal.run())
-        self.assertEqual(len(self.goal.problems), 1)
-        self.assertRaises(hawkey.RuntimeException, self.goal.list_erasures)
-        self.assertRaises(ValueError, self.goal.describe_problem, 1);
-
-class Verify(base.TestCase):
-    def setUp(self):
-        self.sack = base.TestSack(repo_dir=self.repo_dir)
-        self.sack.load_test_repo(hawkey.SYSTEM_REPO_NAME, "@System-broken.repo", True)
-        self.goal = hawkey.Goal(self.sack)
-
-    def test_verify(self):
-        self.assertFalse(self.goal.run(verify=True))
-        self.assertEqual(len(self.goal.problems), 2)
-        self.assertEqual(self.goal.problems[0],
-            "nothing provides missing-dep needed by missing-1-0.x86_64")
-        self.assertEqual(self.goal.problems[1],
-            "package conflict-1-0.x86_64 conflicts with ok provided by ok-1-0.x86_64")

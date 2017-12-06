@@ -539,29 +539,6 @@ START_TEST(test_goal_get_reason_selector)
 }
 END_TEST
 
-START_TEST(test_goal_describe_problem)
-{
-    g_autoptr(GError) error = NULL;
-    DnfSack *sack = test_globals.sack;
-    DnfPackage *pkg = get_latest_pkg(sack, "hello");
-    HyGoal goal = hy_goal_create(sack);
-
-    hy_goal_install(goal, pkg);
-    fail_unless(hy_goal_run_flags(goal, DNF_NONE));
-    fail_unless(hy_goal_list_installs(goal, &error) == NULL);
-    fail_unless(error->code == DNF_ERROR_NO_SOLUTION);
-    fail_unless(hy_goal_count_problems(goal) > 0);
-
-    char *problem = hy_goal_describe_problem(goal, 0);
-    const char *expected = "nothing provides goodbye";
-    fail_if(strncmp(problem, expected, strlen(expected)));
-    g_free(problem);
-
-    g_object_unref(pkg);
-    hy_goal_free(goal);
-}
-END_TEST
-
 START_TEST(test_goal_describe_problem_rules)
 {
     g_autoptr(GError) error = NULL;
@@ -642,7 +619,6 @@ START_TEST(test_goal_protected)
     DnfPackage *pkg = by_name_repo(sack, "penny-lib", HY_SYSTEM_REPO_NAME);
     DnfPackage *pp = by_name_repo(sack, "flying", HY_SYSTEM_REPO_NAME);
     const char *expected;
-    g_autofree gchar *problem;
 
     // when protected_packages set is empty it should remove both packages
     HyGoal goal = hy_goal_create(sack);
@@ -668,10 +644,10 @@ START_TEST(test_goal_protected)
     hy_goal_erase(goal, pp);
     fail_unless(hy_goal_run_flags(goal, DNF_NONE));
     fail_unless(hy_goal_count_problems(goal) == 1);
-    problem = hy_goal_describe_problem(goal, 0);
+    auto problem = hy_goal_describe_problem_rules(goal, 0);
     expected = "The operation would result in removing "
         "the following protected packages: flying";
-    fail_if(g_strcmp0(problem, expected));
+    fail_if(g_strcmp0(*problem, expected));
     hy_goal_free(goal);
 
     g_object_unref(protected_pkgs);
@@ -727,32 +703,6 @@ START_TEST(test_goal_forcebest)
     fail_unless(hy_goal_count_problems(goal) == 1);
 
     hy_selector_free(sltr);
-    hy_goal_free(goal);
-}
-END_TEST
-
-START_TEST(test_goal_verify)
-{
-    g_autoptr(GError) error = NULL;
-    DnfSack *sack = test_globals.sack;
-    HyGoal goal = hy_goal_create(sack);
-
-    fail_unless(hy_goal_run_flags(goal, DNF_VERIFY));
-    fail_unless(hy_goal_list_installs(goal, &error) == NULL);
-    fail_unless(error->code == DNF_ERROR_NO_SOLUTION);
-    fail_unless(hy_goal_count_problems(goal) == 2);
-
-    const char *expected;
-    char *problem;
-    problem = hy_goal_describe_problem(goal, 0);
-    expected = "nothing provides missing-dep needed by missing-1-0.x86_64";
-    fail_if(strncmp(problem, expected, strlen(expected)));
-    g_free(problem);
-    problem = hy_goal_describe_problem(goal, 1);
-    expected = "package conflict-1-0.x86_64 conflicts with ok provided by ok-1-0.x86_64";
-    fail_if(strncmp(problem, expected, strlen(expected)));
-    g_free(problem);
-
     hy_goal_free(goal);
 }
 END_TEST
@@ -857,8 +807,8 @@ START_TEST(test_goal_describe_problem_excludes)
     fail_unless(hy_goal_run_flags(goal, DNF_NONE));
     fail_unless(hy_goal_count_problems(goal) > 0);
 
-    char *problem = hy_goal_describe_problem(goal, 0);
-    ck_assert_str_eq(problem, "package semolina does not exist");
+    auto problem = hy_goal_describe_problem_rules(goal, 0);
+    ck_assert_str_eq(*problem, "package semolina does not exist");
     g_free(problem);
 
     hy_goal_free(goal);
@@ -1264,7 +1214,6 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_downgrade);
     tcase_add_test(tc, test_goal_get_reason);
     tcase_add_test(tc, test_goal_get_reason_selector);
-    tcase_add_test(tc, test_goal_describe_problem);
     tcase_add_test(tc, test_goal_describe_problem_rules);
     tcase_add_test(tc, test_goal_distupgrade_all_keep_arch);
     tcase_add_test(tc, test_goal_no_reinstall);
@@ -1335,7 +1284,6 @@ goal_suite(void)
 
     tc = tcase_create("Verify");
     tcase_add_unchecked_fixture(tc, fixture_verify, teardown);
-    tcase_add_test(tc, test_goal_verify);
     suite_add_tcase(s, tc);
 
     return s;
