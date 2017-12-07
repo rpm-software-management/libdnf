@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Red Hat, Inc.
+ * Copyright (C) 2017 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -18,156 +18,89 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <solv/util.h>
-#include "hy-query.h"
-#include "hy-nevra-private.hpp"
+#include "hy-nevra.hpp"
 #include "dnf-sack.h"
-#include "hy-types.h"
 
+class Nevra::Impl {
+public:
+    std::string name;
+    int epoch{IgnoreEpoch};
+    std::string version;
+    std::string release;
+    std::string arch;
+};
 
-static void
-hy_nevra_clear(HyNevra nevra)
+Nevra::Nevra() : pImpl(new Impl) {}
+Nevra::Nevra(const Nevra & src) : pImpl(new Impl(*src.pImpl)) {}
+Nevra::Nevra(Nevra && src) : pImpl(new Impl) { pImpl.swap(src.pImpl); }
+
+Nevra::~Nevra() = default;
+
+Nevra & Nevra::operator=(const Nevra & src) { *pImpl = *src.pImpl; return *this; }
+Nevra & Nevra::operator=(Nevra && src) noexcept { *pImpl = std::move(*src.pImpl); return *this; }
+
+void Nevra::swap(Nevra & nevra) noexcept { pImpl.swap(nevra.pImpl); }
+
+const std::string & Nevra::getName() const noexcept { return pImpl->name; }
+int Nevra::getEpoch() const noexcept { return pImpl->epoch; }
+const std::string & Nevra::getVersion() const noexcept { return pImpl->version; }
+const std::string & Nevra::getRelease() const noexcept { return pImpl->release; }
+const std::string & Nevra::getArch() const noexcept { return pImpl->arch; }
+
+void Nevra::setName(const std::string & name) { pImpl->name = name; }
+void Nevra::setEpoch(int epoch) { pImpl->epoch = epoch; }
+void Nevra::setVersion(const std::string & version) { pImpl->version = version; }
+void Nevra::setRelease(const std::string & release) { pImpl->release = release; }
+void Nevra::setArch(const std::string & arch) { pImpl->arch = arch; }
+
+void Nevra::setName(std::string && name) { pImpl->name = std::move(name); }
+void Nevra::setVersion(std::string && version) { pImpl->version = std::move(version); }
+void Nevra::setRelease(std::string && release) { pImpl->release = std::move(release); }
+void Nevra::setArch(std::string && arch) { pImpl->arch = std::move(arch); }
+
+bool Nevra::operator!=(const Nevra & r) const { return !(*this == r); }
+
+bool Nevra::operator==(const Nevra & r) const
 {
-    nevra->name = NULL;
-    nevra->epoch = -1L;
-    nevra->version = NULL;
-    nevra->release = NULL;
-    nevra->arch = NULL;
+    return pImpl->name == r.pImpl->name && pImpl->epoch == r.pImpl->epoch &&
+        pImpl->version==r.pImpl->version && pImpl->release ==r.pImpl->release &&
+        pImpl->arch==r.pImpl->arch;
 }
 
-HyNevra
-hy_nevra_create()
+void Nevra::clear() noexcept
 {
-    HyNevra nevra = static_cast<HyNevra>(g_malloc0(sizeof(*nevra)));
-    hy_nevra_clear(nevra);
-    return nevra;
+    pImpl->name.clear();
+    pImpl->epoch = IgnoreEpoch;
+    pImpl->version.clear();
+    pImpl->release.clear();
+    pImpl->arch.clear();
 }
 
-static inline int
-string_cmp(const char *s1, const char *s2)
+bool Nevra::hasJustName() const
 {
-    if (s1 == NULL) {
-        if (s2 == NULL)
-            return 0;
-        return -1;
-    } else if (s2 == NULL)
-        return 1;
-    return strcmp(s1, s2);
+    return !pImpl->name.empty() && pImpl->epoch == IgnoreEpoch && 
+        pImpl->version.empty() && pImpl->release.empty() && pImpl->arch.empty();
 }
 
-int
-hy_nevra_cmp(HyNevra nevra1, HyNevra nevra2)
+std::string Nevra::getEvr() const
 {
-    int ret;
-    ret = string_cmp(nevra1->name, nevra2->name);
+    if (pImpl->epoch == IgnoreEpoch)
+        return pImpl->version + "-" + pImpl->release;
+    return std::to_string(pImpl->epoch) + ":" + pImpl->version + "-" + pImpl->release;
+}
+
+int Nevra::compareEvr(const Nevra & nevra2, DnfSack *sack) const
+{
+    return dnf_sack_evr_cmp(sack, getEvr().c_str(), nevra2.getEvr().c_str());
+}
+
+int Nevra::compare(const Nevra & nevra2) const
+{
+    auto ret = pImpl->name.compare(nevra2.pImpl->name);
     if (ret != 0)
         return ret;
-    ret = hy_nevra_evr_cmp(nevra1, nevra2, NULL);
+    ret = compareEvr(nevra2, nullptr);
     if (ret != 0)
         return ret;
-    return string_cmp(nevra1->arch, nevra2->arch);
-}
-
-void
-hy_nevra_free(HyNevra nevra)
-{
-    g_free(nevra->name);
-    g_free(nevra->version);
-    g_free(nevra->release);
-    g_free(nevra->arch);
-    g_free(nevra);
-}
-
-HyNevra
-hy_nevra_clone(HyNevra nevra)
-{
-    HyNevra clone = hy_nevra_create();
-    clone->name = g_strdup(nevra->name);
-    clone->epoch = nevra->epoch;
-    clone->version = g_strdup(nevra->version);
-    clone->release = g_strdup(nevra->release);
-    clone->arch = g_strdup(nevra->arch);
-    return clone;
-}
-
-static inline char **
-get_string(HyNevra nevra, int which)
-{
-    switch (which) {
-    case HY_NEVRA_NAME:
-        return &(nevra->name);
-    case HY_NEVRA_VERSION:
-        return &(nevra->version);
-    case HY_NEVRA_RELEASE:
-        return &(nevra->release);
-    case HY_NEVRA_ARCH:
-        return &(nevra->arch);
-    default:
-        return NULL;
-    }
-}
-
-const char *
-hy_nevra_get_string(HyNevra nevra, int which)
-{
-    return *get_string(nevra, which);
-}
-
-void
-hy_nevra_set_string(HyNevra nevra, int which, const char* str_val)
-{
-    char** attr = get_string(nevra, which);
-    g_free(*attr);
-    *attr = g_strdup(str_val);
-}
-
-int
-hy_nevra_get_epoch(HyNevra nevra)
-{
-    return nevra->epoch;
-}
-
-void
-hy_nevra_set_epoch(HyNevra nevra, int epoch)
-{
-    nevra->epoch = epoch;
-}
-
-HyQuery
-hy_nevra_to_query(HyNevra nevra, DnfSack *sack, gboolean icase)
-{
-    HyQuery query = hy_query_create(sack);
-    hy_add_filter_nevra_object(query, nevra, icase);
-    return query;
-}
-
-int
-hy_nevra_evr_cmp(HyNevra nevra1, HyNevra nevra2, DnfSack *sack)
-{
-    char *self_evr = hy_nevra_get_evr(nevra1);
-    char *other_evr = hy_nevra_get_evr(nevra2);
-    int cmp = dnf_sack_evr_cmp(sack, self_evr, other_evr);
-    g_free(self_evr);
-    g_free(other_evr);
-    return cmp;
-}
-
-char *hy_nevra_get_evr(HyNevra nevra)
-{
-    if (nevra->epoch == -1)
-        return g_strdup_printf ("%s-%s", nevra->version, nevra->release);
-    return g_strdup_printf ("%d:%s-%s", nevra->epoch, nevra->version, nevra->release);
-}
-
-gboolean
-hy_nevra_has_just_name(HyNevra nevra)
-{
-  return nevra->name != NULL &&
-    nevra->epoch == -1 &&
-    nevra->version == NULL &&
-    nevra->release == NULL &&
-    nevra->arch == NULL;
+    return pImpl->arch.compare(nevra2.pImpl->arch);
 }

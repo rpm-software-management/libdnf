@@ -25,10 +25,9 @@
 #include "dnf-sack-private.hpp"
 #include "hy-subject.h"
 #include "hy-subject-private.hpp"
-#include "hy-nevra.h"
 #include "hy-module-form.h"
 #include "hy-iutil-private.hpp"
-#include "hy-nevra-private.hpp"
+#include "hy-nevra.hpp"
 #include "hy-module-form-private.hpp"
 #include "hy-types.h"
 #include "hy-query-private.hpp"
@@ -149,15 +148,17 @@ hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra)
     if (iter->type != TYPE_NEVRA || iter->current == -1)
         return -1;
     HyForm form = iter->forms[iter->current];
+    Nevra nevra;
     while (form != _HY_FORM_STOP_) {
         iter->current++;
-        *out_nevra = hy_nevra_create();
-        if (hy_nevra_possibility(iter->subject, form, *out_nevra) == 0) {
+        if (hy_nevra_possibility(iter->subject, form, &nevra) == 0) {
+            *out_nevra = new Nevra(std::move(nevra));
             return 0;
         }
         form = iter->forms[iter->current];
-        g_clear_pointer(out_nevra, hy_nevra_free);
+        nevra.clear();
     }
+    *out_nevra = nullptr;
     return -1;
 }
 
@@ -203,7 +204,7 @@ hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, Hy
         while (ret != -1) {
             ret = hy_possibilities_next_nevra(iter, nevra);
             if (ret != -1) {
-                query = hy_nevra_to_query(*nevra, sack, icase);
+                query = hy_query_from_nevra(*nevra, sack, icase);
                 if (hy_query_is_not_empty(query)) {
                     hy_possibilities_free(iter);
                     return query;
@@ -212,7 +213,8 @@ hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, Hy
             }
         }
         hy_possibilities_free(iter);
-        g_clear_pointer(nevra, hy_nevra_free);
+        delete *nevra;
+        *nevra = nullptr;
         query = hy_query_create(sack);
         hy_query_filter(query, HY_PKG_NEVRA, HY_GLOB, subject);
         if (hy_query_is_not_empty(query))
@@ -243,12 +245,12 @@ HySelector
 hy_subject_get_best_sltr(HySubject subject, DnfSack *sack, HyForm *forms, bool obsoletes,
                          const char *reponame)
 {
-    HyNevra nevra = NULL;
+    HyNevra nevra{nullptr};
     HyQuery query = hy_subject_get_best_solution(subject, sack, forms, &nevra, FALSE, TRUE, TRUE,
                                                  TRUE);
     if (hy_query_is_not_empty(query)) {
         hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
-        if (obsoletes && (nevra != NULL) && hy_nevra_has_just_name(nevra)) {
+        if (obsoletes && nevra && nevra->hasJustName()) {
             DnfPackageSet *pset;
             pset = hy_query_run_set(query);
             HyQuery query_obsoletes = hy_query_clone(query);
@@ -265,9 +267,7 @@ hy_subject_get_best_sltr(HySubject subject, DnfSack *sack, HyForm *forms, bool o
             hy_query_free(installed_query);
         }
     }
-    if (nevra != NULL) {
-        g_clear_pointer(&nevra, hy_nevra_free);
-    }
+    delete nevra;
     HySelector selector = hy_query_to_selector(query);
     hy_query_free(query);
     return selector;
@@ -284,12 +284,23 @@ hy_subject_get_best_selector(HySubject subject, DnfSack *sack)
 
 #define MATCH_EMPTY(i) (matches[i].rm_so >= matches[i].rm_eo)
 
+static bool
+copy_str_from_subexpr(std::string & target, const char* source,
+    regmatch_t* matches, int i)
+{
+    int subexpr_len = matches[i].rm_eo - matches[i].rm_so;
+    if (subexpr_len == 0)
+        return false;
+    target = std::string(source + matches[i].rm_so, subexpr_len);
+    return true;
+}
+
 int
 hy_nevra_possibility(const char *nevra_str, int form, HyNevra nevra)
 {
     enum { NAME = 1, EPOCH = 3, VERSION = 4, RELEASE = 5, ARCH = 6 };
     regex_t reg;
-    char *epoch = NULL;
+    char *epoch = nullptr;
 
     regmatch_t matches[10];
 
@@ -299,15 +310,20 @@ hy_nevra_possibility(const char *nevra_str, int form, HyNevra nevra)
     if (ret != 0)
     return -1;
     if (!MATCH_EMPTY(EPOCH)) {
-    copy_str_from_subexpr(&epoch, nevra_str, matches, EPOCH);
-    nevra->epoch = atoi(epoch);
-    free(epoch);
+        copy_str_from_subexpr(&epoch, nevra_str, matches, EPOCH);
+        nevra->setEpoch(atoi(epoch));
+        free(epoch);
     }
-    if (copy_str_from_subexpr(&(nevra->name), nevra_str, matches, NAME) == -1)
-    return -1;
-    copy_str_from_subexpr(&(nevra->version), nevra_str, matches, VERSION);
-    copy_str_from_subexpr(&(nevra->release), nevra_str, matches, RELEASE);
-    copy_str_from_subexpr(&(nevra->arch), nevra_str, matches, ARCH);
+    std::string tmp;
+    if (!copy_str_from_subexpr(tmp, nevra_str, matches, NAME))
+        return -1;
+    nevra->setName(tmp);
+    if (copy_str_from_subexpr(tmp, nevra_str, matches, VERSION))
+        nevra->setVersion(tmp);
+    if (copy_str_from_subexpr(tmp, nevra_str, matches, RELEASE))
+        nevra->setRelease(tmp);
+    if (copy_str_from_subexpr(tmp, nevra_str, matches, ARCH))
+        nevra->setArch(tmp);
     return 0;
 }
 

@@ -23,7 +23,7 @@
 #include "dnf-swdb.h"
 #include "dnf-swdb-sql.h"
 #include "dnf-swdb-trans.h"
-#include "hy-nevra.h"
+#include "hy-nevra.hpp"
 #include "hy-subject-private.hpp"
 #include "hy-subject.h"
 #include "hy-types.h"
@@ -236,20 +236,20 @@ dnf_swdb_search (DnfSwdb *self, GPtrArray *patterns)
 static HyNevra
 _fill_nevra_res (sqlite3_stmt *res, const gchar *nevra)
 {
-    HyNevra hnevra = hy_nevra_create ();
+    auto hnevra = new Nevra;
     if (hy_nevra_possibility(nevra, HY_FORM_NEVRA, hnevra)) {
         return NULL;
     }
 
-    gint epoch = hy_nevra_get_epoch (hnevra);
+    gint epoch = hnevra->getEpoch();
     if (epoch == -1) {
         epoch = 0;
     }
-    _db_bind_str (res, "@n", hy_nevra_get_string (hnevra, HY_NEVRA_NAME));
+    _db_bind_str (res, "@n", hnevra->getName().c_str());
     _db_bind_int (res, "@e", epoch);
-    _db_bind_str (res, "@v", hy_nevra_get_string (hnevra, HY_NEVRA_VERSION));
-    _db_bind_str (res, "@r", hy_nevra_get_string (hnevra, HY_NEVRA_RELEASE));
-    _db_bind_str (res, "@a", hy_nevra_get_string (hnevra, HY_NEVRA_ARCH));
+    _db_bind_str (res, "@v", hnevra->getVersion().c_str());
+    _db_bind_str (res, "@r", hnevra->getRelease().c_str());
+    _db_bind_str (res, "@a", hnevra->getArch().c_str());
 
     return hnevra;
 }
@@ -278,7 +278,7 @@ _pid_by_nevra (sqlite3 *db, const gchar *nevra)
         return 0;
     }
     gint rc = _db_find_int (res);
-    hy_nevra_free (hnevra);
+    delete hnevra;
     return rc;
 }
 
@@ -332,9 +332,7 @@ dnf_swdb_checksums (DnfSwdb *self, GPtrArray *nevras)
             }
         }
         sqlite3_finalize (res);
-        if (hnevra) {
-            hy_nevra_free (hnevra);
-        }
+        delete hnevra;
 
         if (!inserted) {
             // insert plain checksum data to keep the order correct

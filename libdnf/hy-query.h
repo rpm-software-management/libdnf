@@ -42,6 +42,7 @@ enum _hy_query_flags {
 void hy_query_apply(HyQuery q);
 HyQuery hy_query_create(DnfSack *sack);
 HyQuery hy_query_create_flags(DnfSack *sack, int flags);
+HyQuery hy_query_from_nevra(HyNevra nevra, DnfSack *sack, gboolean icase);
 void hy_query_free(HyQuery q);
 Id query_get_index_item(HyQuery query, int index);
 void hy_query_clear(HyQuery q);

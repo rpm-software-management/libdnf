@@ -56,7 +56,6 @@ extern "C" {
 
 /* In progress conversion to dnf */
 #include <libdnf/hy-goal.h>
-#include <libdnf/hy-nevra.h>
 #include <libdnf/hy-package.h>
 #include <libdnf/hy-packageset.h>
 #include <libdnf/hy-query.h>

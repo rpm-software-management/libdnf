@@ -24,7 +24,7 @@
 
 // hawkey
 #include "hy-iutil.h"
-#include "hy-nevra.h"
+#include "hy-nevra.hpp"
 #include "dnf-sack.h"
 #include "hy-subject.h"
 #include "hy-types.h"
@@ -207,12 +207,9 @@ get_best_parser(_SubjectObject *self, PyObject *args, PyObject *kwds, HyNevra *n
 static PyObject *
 get_best_query(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
-    HyNevra nevra = NULL;
-
+    HyNevra nevra{nullptr};
     PyObject *py_query = get_best_parser(self, args, kwds, &nevra);
-    if (nevra != NULL) {
-        hy_nevra_free(nevra);
-    }
+    delete nevra;
     Py_XINCREF(py_query);
     return py_query;
 }
@@ -250,7 +247,7 @@ get_best_selector(_SubjectObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 get_best_solution(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
-    HyNevra nevra = NULL;
+    HyNevra nevra{nullptr};
 
     PyObject *q = get_best_parser(self, args, kwds, &nevra);
     if (q == NULL)
@@ -258,7 +255,7 @@ get_best_solution(_SubjectObject *self, PyObject *args, PyObject *kwds)
     PyObject *ret_dict = PyDict_New();
     PyDict_SetItem(ret_dict, PyString_FromString("query"), q);
     Py_DECREF(q);
-    if (nevra != NULL) {
+    if (nevra) {
         PyObject *n = nevraToPyObject(nevra);
         PyDict_SetItem(ret_dict, PyString_FromString("nevra"), n);
         Py_DECREF(n);
