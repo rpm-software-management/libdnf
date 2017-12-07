@@ -1177,11 +1177,6 @@ hy_goal_describe_protected_removal(HyGoal goal)
     return NULL;
 }
 
-/**
- * List describing failed rules in solving problem 'i'.
- *
- * Caller is responsible for freeing the returned string list.
- */
 char **
 hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
 {
