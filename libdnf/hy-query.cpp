@@ -32,7 +32,7 @@
 #include "dnf-advisory-private.hpp"
 #include "hy-goal-private.hpp"
 #include "hy-iutil-private.hpp"
-#include "hy-nevra-private.hpp"
+#include "hy-nevra.hpp"
 #include "hy-query-private.hpp"
 #include "hy-package-private.hpp"
 #include "hy-packageset-private.hpp"
@@ -1255,6 +1255,14 @@ hy_query_create_flags(DnfSack *sack, int flags)
     return q;
 }
 
+HyQuery
+hy_query_from_nevra(HyNevra nevra, DnfSack *sack, gboolean icase)
+{
+    HyQuery query = hy_query_create(sack);
+    hy_add_filter_nevra_object(query, nevra, icase);
+    return query;
+}
+
 void
 hy_query_free(HyQuery q)
 {
@@ -1758,20 +1766,20 @@ hy_query_to_name_arch_ordered_queue(HyQuery query, Queue *samename)
 void
 hy_add_filter_nevra_object(HyQuery query, HyNevra nevra, gboolean icase)
 {
-    if (nevra->name != NULL && strcmp(nevra->name, "*") != 0) {
+    if (!nevra->getName().empty() && nevra->getName() != "*") {
         if (icase)
-            hy_query_filter(query, HY_PKG_NAME, HY_GLOB|HY_ICASE, nevra->name);
+            hy_query_filter(query, HY_PKG_NAME, HY_GLOB|HY_ICASE, nevra->getName().c_str());
         else
-            hy_query_filter(query, HY_PKG_NAME, HY_GLOB, nevra->name);
+            hy_query_filter(query, HY_PKG_NAME, HY_GLOB, nevra->getName().c_str());
     }
-    if (nevra->epoch != -1)
-        hy_query_filter_num(query, HY_PKG_EPOCH, HY_EQ, nevra->epoch);
-    if (nevra->version != NULL && strcmp(nevra->version, "*") != 0)
-        hy_query_filter(query, HY_PKG_VERSION, HY_GLOB, nevra->version);
-    if (nevra->release != NULL && strcmp(nevra->release, "*") != 0)
-        hy_query_filter(query, HY_PKG_RELEASE, HY_GLOB, nevra->release);
-    if (nevra->arch != NULL && strcmp(nevra->arch, "*") != 0)
-        hy_query_filter(query, HY_PKG_ARCH, HY_GLOB, nevra->arch);
+    if (nevra->getEpoch() != -1)
+        hy_query_filter_num(query, HY_PKG_EPOCH, HY_EQ, nevra->getEpoch());
+    if (!nevra->getVersion().empty() && nevra->getVersion() != "*")
+        hy_query_filter(query, HY_PKG_VERSION, HY_GLOB, nevra->getVersion().c_str());
+    if (!nevra->getRelease().empty() && nevra->getRelease() != "*")
+        hy_query_filter(query, HY_PKG_RELEASE, HY_GLOB, nevra->getRelease().c_str());
+    if (!nevra->getArch().empty() && nevra->getArch() != "*")
+        hy_query_filter(query, HY_PKG_ARCH, HY_GLOB, nevra->getArch().c_str());
 }
 
 void

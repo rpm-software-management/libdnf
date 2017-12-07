@@ -21,8 +21,7 @@
 #include <stdio.h>
 #include <regex.h>
 #include <stdlib.h>
-#include "hy-nevra.h"
-#include "hy-nevra-private.hpp"
+#include "hy-nevra.hpp"
 #include "hy-module-form.h"
 #include "hy-module-form-private.hpp"
 #include "hy-iutil-private.hpp"

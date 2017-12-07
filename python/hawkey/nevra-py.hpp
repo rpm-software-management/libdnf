@@ -21,12 +21,12 @@
 #ifndef NEVRA_PY_H
 #define NEVRA_PY_H
 
-#include "hy-nevra.h"
+#include "hy-nevra.hpp"
 
 extern PyTypeObject nevra_Type;
 
-HyNevra nevraFromPyObject(PyObject *o);
-PyObject *nevraToPyObject(HyNevra nevra);
-int nevra_converter(PyObject *o, HyNevra *nevra_ptr);
+Nevra *nevraFromPyObject(PyObject *o);
+PyObject *nevraToPyObject(Nevra *nevra);
+int nevra_converter(PyObject *o, Nevra **nevra_ptr);
 
 #endif

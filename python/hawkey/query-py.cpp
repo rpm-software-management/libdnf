@@ -26,6 +26,7 @@
 
 #include <pygobject-3.0/pygobject.h>
 
+#include "hy-nevra.hpp"
 #include "hy-query.h"
 #include "hy-selector.h"
 #include "hy-subject.h"
@@ -955,7 +956,7 @@ add_nevra_or_other_filter(_QueryObject *self, PyObject *args)
         if (!PyArg_ParseTuple(args, "s", &name))
             return NULL;
 
-        HyNevra out_nevra = hy_nevra_create();
+        HyNevra out_nevra = new Nevra;
         if (hy_nevra_possibility((char *) name, HY_FORM_NEVRA, out_nevra) == 0) {
             hy_add_filter_nevra_object(self_query_copy, out_nevra, FALSE);
         } else {

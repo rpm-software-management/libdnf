@@ -21,13 +21,9 @@
 #ifndef HY_TYPES_H
 #define HY_TYPES_H
 
-#include <glib.h>
-
-G_BEGIN_DECLS
-
 typedef struct _HyRepo * HyRepo;
 typedef struct _HyGoal * HyGoal;
-typedef struct _HyNevra * HyNevra;
+typedef struct Nevra * HyNevra;
 typedef struct _HyModuleForm * HyModuleForm;
 typedef struct _HyPossibilities * HyPossibilities;
 typedef struct _HyQuery * HyQuery;
@@ -97,7 +93,5 @@ enum _hy_comparison_type_e {
     /* part 5: additional flags, not necessarily used for queries */
     HY_NAME_ONLY = (1 << 16),
 };
-
-G_END_DECLS
 
 #endif /* HY_TYPES_H */

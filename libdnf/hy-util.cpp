@@ -26,11 +26,13 @@
 // hawkey
 #include "dnf-types.h"
 #include "hy-iutil-private.hpp"
-#include "hy-nevra.h"
+#include "hy-nevra.hpp"
 #include "hy-package.h"
 #include "hy-subject.h"
 #include "hy-subject-private.hpp"
 #include "hy-util-private.hpp"
+
+#include <memory>
 
 enum _dnf_sack_cpu_flags {
     ARM_NEON = 1 << 0,
@@ -163,21 +165,19 @@ hy_split_nevra(const char *nevra, char **name, int *epoch,
     const int len = strlen(nevra);
     if (len <= 0)
         return DNF_ERROR_INTERNAL_ERROR;
-    HyNevra out_nevra = hy_nevra_create();
-    if (hy_nevra_possibility(nevra, HY_FORM_NEVRA, out_nevra) == 0) {
-        *arch = g_strdup(hy_nevra_get_string(out_nevra, HY_NEVRA_ARCH));
-        *name = g_strdup(hy_nevra_get_string(out_nevra, HY_NEVRA_NAME));
-        *release = g_strdup(hy_nevra_get_string(out_nevra, HY_NEVRA_RELEASE));
-        *version = g_strdup(hy_nevra_get_string(out_nevra, HY_NEVRA_VERSION));
-        *epoch = hy_nevra_get_epoch(out_nevra);
+    auto out_nevra = std::unique_ptr<Nevra>(new Nevra);
+    if (hy_nevra_possibility(nevra, HY_FORM_NEVRA, &*out_nevra) == 0) {
+        *arch = g_strdup(out_nevra->getArch().c_str());
+        *name = g_strdup(out_nevra->getName().c_str());
+        *release = g_strdup(out_nevra->getRelease().c_str());
+        *version = g_strdup(out_nevra->getVersion().c_str());
+        *epoch = out_nevra->getEpoch();
         if (*epoch == -1)
             *epoch = 0;
 
-        hy_nevra_free(out_nevra);
         return 0;
     }
 
-    hy_nevra_free(out_nevra);
     return DNF_ERROR_INTERNAL_ERROR;
 }
 

@@ -84,7 +84,7 @@ TARGET_LINK_LIBRARIES(libdnf
 
 SET(LIBHAWKEY_headers
     hy-goal.h
-    hy-nevra.h
+    hy-nevra.hpp
     hy-module-form.h
     hy-package.h
     hy-packageset.h

@@ -25,7 +25,6 @@
 #include <solv/util.h>
 #include "dnf-types.h"
 #include "hy-types.h"
-#include "hy-nevra.h"
 #include "hy-module-form.h"
 
 #include <glib.h>
