@@ -1,7 +1,5 @@
 /*
  * Copyright (C) 2017 Red Hat, Inc.
- * Author: Eduard Cuba <ecuba@redhat.com>
- *         Martin Hatina <mhatina@redhat.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -20,32 +18,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef LIBDNF_SWDB_HPP
-#define LIBDNF_SWDB_HPP
+#ifndef LIBDNF_SWDB_SWDB_HPP
+#define LIBDNF_SWDB_SWDB_HPP
 
-#include <string>
-#include <vector>
+#include "libdnf/utils/sqlite3/sqlite3.hpp"
 
-#include "transaction/itransactionfactory.hpp"
+// TODO: create if doesn't exist
+void
+SwdbCreateDatabase(SQLite3 & conn);
 
-namespace publicAPI {
-
-class SWDB
-{
-  public:
-    SWDB (ITransactionFactory *transFactory);
-    virtual ~SWDB () = default;
-
-    std::vector<ReadOnlyTransaction *> listTransactions ();
-    std::vector<ReadOnlyTransaction *> listTransactions (std::vector<std::string> &pkgSpecs);
-    std::vector<ReadOnlyTransaction *> listTransactions (
-      std::vector<unsigned long> &transactionIDs);
-    virtual ReadOnlyTransaction *getTransaction (unsigned long transactionID);
-    ReadOnlyTransaction *getLastTransaction ();
-
-  protected:
-    ITransactionFactory *transactionFactory;
-};
-}
-
-#endif // LIBDNF_SWDB_HPP
+#endif // LIBDNF_SWDB_SWDB_HPP

@@ -1,7 +1,5 @@
 /*
  * Copyright (C) 2017 Red Hat, Inc.
- * Author: Eduard Cuba <ecuba@redhat.com>
- *         Martin Hatina <mhatina@redhat.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -22,15 +20,12 @@
 
 #include "swdb.hpp"
 
-using namespace publicAPI;
+static const char * sql_create_tables =
+#include "sql/create_tables.sql"
+    ;
 
-SWDB::SWDB (ITransactionFactory *transFactory)
-  : transactionFactory (transFactory)
+void
+SwdbCreateDatabase(SQLite3 & conn)
 {
-}
-
-ReadOnlyTransaction *
-SWDB::getTransaction (unsigned long transactionID)
-{
-    return transactionFactory->getTransaction (transactionID);
+    conn.exec(sql_create_tables);
 }

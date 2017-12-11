@@ -215,6 +215,21 @@ if (GOBJECT_INTROSPECTION_FOUND)
     endif()
 endif()
 
+
+if (NOT PYTHON_DESIRED)
+    set (PYTHON_DESIRED "3")
+endif()
+
+if (${PYTHON_DESIRED} STREQUAL "2")
+    message("Building for python2")
+    FIND_PACKAGE (PythonInterp 2 REQUIRED)
+    FIND_PACKAGE (PythonLibs 2 REQUIRED)
+else()
+    message("Building for python3")
+    FIND_PACKAGE(PythonInterp 3 REQUIRED)
+    FIND_PACKAGE(PythonLibs 3 REQUIRED)
+endif()
+
 install (FILES ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc
          DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig)
 INSTALL(FILES ${LIBDNF_headers} DESTINATION include/libdnf)

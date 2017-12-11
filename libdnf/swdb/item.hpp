@@ -1,7 +1,5 @@
 /*
  * Copyright (C) 2017 Red Hat, Inc.
- * Author: Eduard Cuba <ecuba@redhat.com>
- *         Martin Hatina <mhatina@redhat.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -20,4 +18,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "transactionitem.hpp"
+#ifndef LIBDNF_SWDB_ITEM_HPP
+#define LIBDNF_SWDB_ITEM_HPP
+
+#include <string>
+
+#include "libdnf/utils/sqlite3/sqlite3.hpp"
+
+class Item {
+public:
+    Item() = default;
+    Item(SQLite3 & conn);
+    virtual ~Item() = default;
+
+    int64_t getId() const noexcept { return id; }
+    void setId(int64_t value) { id = value; }
+
+    virtual const std::string & getItemType() const noexcept { return itemType; }
+    virtual std::string toStr();
+    virtual void save();
+    SQLite3 & conn;
+
+protected:
+    void dbInsert();
+
+    int64_t id = 0;
+    const std::string itemType;
+};
+
+#endif // LIBDNF_SWDB_ITEM_HPP

@@ -1,7 +1,5 @@
 /*
  * Copyright (C) 2017 Red Hat, Inc.
- * Author: Eduard Cuba <ecuba@redhat.com>
- *         Martin Hatina <mhatina@redhat.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -20,4 +18,35 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "rpmitem.hpp"
+#include "item.hpp"
+
+Item::Item(SQLite3 & conn)
+  : conn{conn}
+{
+}
+
+void
+Item::save()
+{
+    dbInsert();
+}
+
+void
+Item::dbInsert()
+{
+    const char * sql =
+        "INSERT INTO "
+        "  item "
+        "VALUES "
+        "  (null, ?)";
+    SQLite3::Statement query(conn, sql);
+    query.bindv(itemType);
+    query.step();
+    setId(conn.lastInsertRowID());
+}
+
+std::string
+Item::toStr()
+{
+    return "";
+}

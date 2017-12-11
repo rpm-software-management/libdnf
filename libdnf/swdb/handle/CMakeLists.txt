@@ -1,5 +1,0 @@
-SET(SWDB_SRCS
-    ${SWDB_SRCS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/handle.cpp
-    PARENT_SCOPE
-)

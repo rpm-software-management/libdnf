@@ -1,15 +1,19 @@
 SET(SWDB_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/item.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/item_rpm.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/repo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/swdb.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/swdbprivate.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/transaction.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/transactionitem.cpp
 )
 
 
-INCLUDE_DIRECTORIES (handle)
-INCLUDE_DIRECTORIES (item)
-INCLUDE_DIRECTORIES (transaction)
-ADD_SUBDIRECTORY ("handle")
-ADD_SUBDIRECTORY ("item")
-ADD_SUBDIRECTORY ("transaction")
+#INCLUDE_DIRECTORIES (handle)
+#INCLUDE_DIRECTORIES (item)
+#INCLUDE_DIRECTORIES (transaction)
+#ADD_SUBDIRECTORY ("handle")
+#ADD_SUBDIRECTORY ("item")
+#ADD_SUBDIRECTORY ("transaction")
 
 
 SET(LIBDNF_SRCS
