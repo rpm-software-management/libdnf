@@ -30,6 +30,7 @@ Source0:        %{url}/archive/%{version}/%{name}-%{version}.tar.gz
 
 BuildRequires:  cmake
 BuildRequires:  gcc
+BuildRequires:  gcc-c++
 BuildRequires:  libsolv-devel >= %{libsolv_version}
 BuildRequires:  pkgconfig(librepo)
 BuildRequires:  pkgconfig(check)
@@ -57,6 +58,30 @@ Requires:       libsolv-devel%{?_isa} >= %{libsolv_version}
 
 %description devel
 Development files for %{name}.
+
+%package -n python2-%{name}
+%{?python_provide:%python_provide python2-%{name}}
+Summary:        Python 2 bindings for the libdnf library.
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+BuildRequires:  python2-devel
+BuildRequires:  swig
+
+%description -n python2-%{name}
+Python 2 bindings for the libdnf library.
+
+
+%if %{with python3}
+%package -n python3-%{name}
+%{?python_provide:%python_provide python3-%{name}}
+Summary:        Python 3 bindings for the libdnf library.
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+BuildRequires:  python3-devel
+BuildRequires:  swig
+
+%description -n python3-%{name}
+Python 3 bindings for the libdnf library.
+%endif
+
 
 %package -n python2-hawkey
 Summary:        Python 2 bindings for the hawkey library
@@ -114,7 +139,7 @@ mkdir build-py3
 
 %build
 pushd build-py2
-  %cmake -DWITH_MAN=OFF ../ %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts}
+  %cmake -DPYTHON_DESIRED:str=2 -DWITH_MAN=OFF ../ %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts}
   %make_build
 popd
 
@@ -172,6 +197,14 @@ popd
 %{_libdir}/pkgconfig/%{name}.pc
 %{_includedir}/%{name}/
 %{_datadir}/gir-1.0/Dnf-*.gir
+
+%files -n python2-libdnf
+%{python2_sitearch}/libdnf/
+
+%if %{with python3}
+%files -n python3-libdnf
+%{python3_sitearch}/libdnf/
+%endif
 
 %files -n python2-hawkey
 %{python2_sitearch}/hawkey/
