@@ -31,6 +31,7 @@ Source0:        %{url}/archive/%{version}/%{name}-%{version}.tar.gz
 
 BuildRequires:  cmake
 BuildRequires:  gcc
+BuildRequires:  gcc-c++
 BuildRequires:  libsolv-devel >= %{libsolv_version}
 BuildRequires:  pkgconfig(librepo)
 BuildRequires:  pkgconfig(check)
@@ -139,7 +140,7 @@ mkdir build-py3
 
 %build
 pushd build-py2
-  %cmake -DWITH_MAN=OFF ../ %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts}
+  %cmake -DPYTHON_DESIRED:str=2 -DWITH_MAN=OFF ../ %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts}
   %make_build
 popd
 
