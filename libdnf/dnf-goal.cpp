@@ -41,6 +41,7 @@
 #include "hy-iutil-private.hpp"
 #include "dnf-sack-private.hpp"
 #include "dnf-utils.h"
+#include "utils/bgettext/bgettext-lib.h"
 
 /**
  * dnf_goal_depsolve:
@@ -62,20 +63,18 @@ dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error)
 
     rc = hy_goal_run_flags(goal, flags);
     if (rc) {
-        string = g_string_new("Could not depsolve transaction; ");
+        string = g_string_new(_("Could not depsolve transaction; "));
         cnt = hy_goal_count_problems(goal);
-        if (cnt == 1)
-            g_string_append_printf(string, "%i problem detected:\n", cnt);
-        else
-            g_string_append_printf(string, "%i problems detected:\n", cnt);
+        g_string_append_printf(string, P_("%i problem detected:\n", "%i problems detected:\n", cnt),
+                               cnt);
         for (j = 0; j < cnt; j++) {
             auto tmp = hy_goal_describe_problem_rules(goal, j);
             for (auto iter = tmp; *iter; ++iter) {
                 if (tmp == iter) {
                     if (cnt != 1) {
-                        g_string_append_printf(string, " Problem %i: %s\n", j + 1, *iter);
+                        g_string_append_printf(string, _(" Problem %1$i: %2$s\n"), j + 1, *iter);
                     } else {
-                        g_string_append_printf(string, " Problem: %s\n", *iter);
+                        g_string_append_printf(string, _(" Problem: %s\n"), *iter);
                     }
                 } else {
                     g_string_append_printf(string, "  - %s\n",  *iter);
