@@ -29,6 +29,7 @@
 
 #include "exception-py.hpp"
 #include "goal-py.hpp"
+#include "hy-goal-private.hpp"
 #include "iutil-py.hpp"
 #include "package-py.hpp"
 #include "selector-py.hpp"
@@ -310,10 +311,10 @@ userinstalled(_GoalObject *self, PyObject *pkg)
 }
 
 static PyObject *
-has_actions(_GoalObject *self, PyObject *action)
+get_actions(_GoalObject *self, void *unused)
 {
-    return PyBool_FromLong(hy_goal_has_actions(
-        self->goal, static_cast<DnfGoalActions>(PyLong_AsLong(action))));
+    HyGoal goal = self->goal;
+    return PyLong_FromLong(goal->actions);
 }
 
 static PyObject *
@@ -600,9 +601,8 @@ static struct PyMethodDef goal_methods[] = {
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"upgrade_all",        (PyCFunction)upgrade_all,        METH_NOARGS,        NULL},
     {"userinstalled",        (PyCFunction)userinstalled,        METH_O,                NULL},
-    {"_has_actions",        (PyCFunction)has_actions,        METH_O, NULL},
     // deprecated in 0.5.9, will be removed in 1.0.0
-    // use goal.actions | hawkey.DISTUPGRADE_ALL instead
+    // use goal.actions & hawkey.DISTUPGRADE_ALL instead
     {"req_has_distupgrade_all",        (PyCFunction)req_has_distupgrade_all,
      METH_NOARGS,        NULL},
     // deprecated in 0.5.9, will be removed in 1.0.0
@@ -635,6 +635,11 @@ static struct PyMemberDef goal_members[] = {
     {NULL}
 };
 
+static PyGetSetDef goal_getsetters[] = {
+    {(char*)"actions",        (getter)get_actions, NULL, NULL, NULL},
+    {NULL}                /* sentinel */
+};
+
 PyTypeObject goal_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "_hawkey.Goal",                /*tp_name*/
@@ -665,7 +670,7 @@ PyTypeObject goal_Type = {
     0,                                 /* tp_iternext */
     goal_methods,                /* tp_methods */
     goal_members,                /* tp_members */
-    0,                                /* tp_getset */
+    goal_getsetters,                                /* tp_getset */
     0,                                /* tp_base */
     0,                                /* tp_dict */
     0,                                /* tp_descr_get */

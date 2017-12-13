@@ -670,9 +670,9 @@ change::
 
 to::
 
-    goal.actions | hawkey.DISTUPGRADE_ALL
-    goal.actions | hawkey.ERASE
-    goal.actions | hawkey.UPGRADE_ALL
+    goal.actions & hawkey.DISTUPGRADE_ALL
+    goal.actions & hawkey.ERASE
+    goal.actions & hawkey.UPGRADE_ALL
 
 respectively
 
