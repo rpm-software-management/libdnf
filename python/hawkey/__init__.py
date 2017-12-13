@@ -230,10 +230,6 @@ class Goal(_hawkey.Goal):
         for pkg in user_installed:
             self.userinstalled(pkg)
 
-    @property
-    def actions(self):
-        return {f for f in self._goal_actions if self._has_actions(f)}
-
 
 def _encode(obj):
     """ Identity, except when obj is unicode then return a UTF-8 string.

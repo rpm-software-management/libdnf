@@ -33,9 +33,12 @@ class GoalTest(base.TestCase):
     def test_actions(self):
         sltr = hawkey.Selector(self.sack).set(name="walrus")
         goal = hawkey.Goal(self.sack)
-        self.assertEqual(set(), goal.actions)
+
+        self.assertEqual(0, goal.actions & (hawkey.ERASE | hawkey.DISTUPGRADE |
+            hawkey.DISTUPGRADE_ALL | hawkey.DOWNGRADE | hawkey.INSTALL | hawkey.UPGRADE |
+            hawkey.UPGRADE_ALL))
         goal.upgrade(select=sltr)
-        self.assertEqual(set([hawkey.UPGRADE]), goal.actions)
+        self.assertEqual(hawkey.UPGRADE, goal.actions)
 
     def test_clone(self):
         pkg = base.by_name(self.sack, "penny-lib")
