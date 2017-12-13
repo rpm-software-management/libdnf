@@ -207,7 +207,6 @@ class Goal(_hawkey.Goal):
     def __init__(self, sack):
         super(Goal, self).__init__(sack)
         self.group_members = set()
-        self._installs = []
 
     def get_reason(self, pkg):
         code = super(Goal, self).get_reason(pkg)
@@ -235,12 +234,6 @@ class Goal(_hawkey.Goal):
     def actions(self):
         return {f for f in self._goal_actions if self._has_actions(f)}
 
-    def install(self, *args, **kwargs):
-        if args:
-            self._installs.extend(args)
-        if 'select' in kwargs:
-            self._installs.extend(kwargs['select'].matches())
-        super(Goal, self).install(*args, **kwargs)
 
 def _encode(obj):
     """ Identity, except when obj is unicode then return a UTF-8 string.
