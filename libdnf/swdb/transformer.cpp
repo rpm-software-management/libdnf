@@ -19,6 +19,7 @@
  */
 
 #include "transformer.hpp"
+#include "item_rpm.hpp"
 #include "swdb.hpp"
 #include <algorithm>
 #include <cstdio>
@@ -39,11 +40,10 @@ void
 Transformer::transform ()
 {
     // perform transformation
-    // (block limits lifetime of the database objects)
+    // block to limit lifetime of database objects
     {
         SQLite3 swdb (transformFile.c_str ());
         SQLite3 history (historyPath ().c_str ());
-
         // create a new database file
         SwdbCreateDatabase (swdb);
 
@@ -65,7 +65,36 @@ Transformer::transform ()
 void
 Transformer::transformRPMItems (SQLite3 &swdb, SQLite3 &history)
 {
-    // history.pkgtups
+    const char *sql = R"**(
+        SELECT
+            pkgtupid, name, epoch, version, release, arch, checksum
+        FROM
+            pkgtups;
+    )**";
+
+    SQLite3::Statement query (history, sql);
+
+    // for every package in the history database
+    while (query.step () == SQLite3::Statement::StepResult::ROW) {
+
+        RPMItem pkg (swdb);
+
+        pkg.setId (query.get<int> (0));
+        pkg.setName (query.get<std::string> (1));
+        pkg.setEpoch (query.get<int> (2));
+        pkg.setVersion (query.get<std::string> (3));
+        pkg.setRelease (query.get<std::string> (4));
+        pkg.setArch (query.get<std::string> (5));
+
+        // checksum in format checksumType:checksumData
+        std::string checksum = query.get<std::string> (6);
+        size_t delimiter = checksum.find (':');
+
+        pkg.setChecksumType (checksum.substr (0, delimiter));
+        pkg.setChecksumData (checksum.substr (delimiter + 1));
+
+        pkg.save ();
+    }
 }
 
 void

@@ -1,4 +1,4 @@
-R"***(
+R"**(
     CREATE TABLE trans (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         dt_begin INTEGER NOT NULL,      /* (unix timestamp) date and time of transaction begin */
@@ -64,4 +64,4 @@ R"***(
         'version',
         '1.1'
     );
-)***"
+)**"

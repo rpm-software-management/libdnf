@@ -43,17 +43,17 @@ class Transformer
     void transform ();
 
   protected:
-    const std::string inputDir;
-    const std::string outputFile;
-    const std::string transformFile;
-
     void transformRPMItems (SQLite3 &swdb, SQLite3 &history);
     void transformTransItems (SQLite3 &swdb, SQLite3 &history);
     void transformTrans (SQLite3 &swdb, SQLite3 &history);
     void transformTransWith (SQLite3 &swdb, SQLite3 &history);
     void transformOutput (SQLite3 &swdb, SQLite3 &history);
 
+  private:
     std::string historyPath ();
+    const std::string inputDir;
+    const std::string outputFile;
+    const std::string transformFile;
 };
 
 #endif
