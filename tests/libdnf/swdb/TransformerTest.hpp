@@ -21,7 +21,7 @@ class TransformerMock : protected Transformer
 class TransformerTest : public CppUnit::TestCase
 {
     CPPUNIT_TEST_SUITE (TransformerTest);
-    CPPUNIT_TEST (testTransformRPMItems);
+    //CPPUNIT_TEST (testTransformRPMItems);
     CPPUNIT_TEST_SUITE_END ();
 
   public:
