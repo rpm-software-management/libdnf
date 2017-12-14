@@ -25,10 +25,10 @@ RPMItem::RPMItem(SQLite3 & conn)
 {
 }
 
-RPMItem::RPMItem(SQLite3 & conn, int64_t rpm_item_id)
+RPMItem::RPMItem(SQLite3 & conn, int64_t pk)
   : Item(conn)
 {
-    dbSelect(rpm_item_id);
+    dbSelect(pk);
 }
 
 void
@@ -43,7 +43,7 @@ RPMItem::save()
 }
 
 void
-RPMItem::dbSelect(int64_t rpm_item_id)
+RPMItem::dbSelect(int64_t pk)
 {
     const char * sql =
         "SELECT "
@@ -59,10 +59,10 @@ RPMItem::dbSelect(int64_t rpm_item_id)
         "WHERE "
         "  item_id = ?";
     SQLite3::Statement query(conn, sql);
-    query.bindv(rpm_item_id);
+    query.bindv(pk);
     query.step();
 
-    id = rpm_item_id;
+    setId(pk);
     setName(query.get<std::string>(0));
     setEpoch(query.get<int>(1));
     setVersion(query.get<std::string>(2));
@@ -120,7 +120,7 @@ RPMItem::getTransactionItems(SQLite3 & conn, int64_t transaction_id)
         "WHERE "
         "  ti.trans_id = ?"
         "  AND ti.item_id = i.item_id";
-    SQLite3::Statement query(conn, sql);
+    SQLite3::Query query(conn, sql);
     query.bindv(transaction_id);
 
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
@@ -129,8 +129,7 @@ RPMItem::getTransactionItems(SQLite3 & conn, int64_t transaction_id)
         trans_item->setItem(item);
 
         trans_item->setId(query.get<int>(0));
-        // TODO: implement query.get<bool>
-        trans_item->setDone(query.get<int>(1) ? true : false);
+        trans_item->setDone(query.get<bool>(1));
         item->setId(query.get<int>(2));
         item->setName(query.get<std::string>(3));
         item->setEpoch(query.get<int>(4));

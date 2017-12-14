@@ -30,7 +30,8 @@
 class RPMItem : public Item {
 public:
     RPMItem(SQLite3 & conn);
-    RPMItem(SQLite3 & conn, int64_t rpm_item_id);
+    RPMItem(SQLite3 & conn, int64_t pk);
+    virtual ~RPMItem() = default;
 
     const std::string & getName() const noexcept { return name; }
     void setName(const std::string & value) { name = value; }
@@ -56,7 +57,6 @@ public:
     std::string getNEVRA();
     virtual std::string toStr();
     virtual const std::string & getItemType() const noexcept { return itemType; }
-
     virtual void save();
     static std::vector<std::shared_ptr<TransactionItem> > getTransactionItems(
         SQLite3 & conn,

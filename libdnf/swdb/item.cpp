@@ -48,5 +48,5 @@ Item::dbInsert()
 std::string
 Item::toStr()
 {
-    return "";
+    return "<Item #" + std::to_string(getId()) + ">";
 }

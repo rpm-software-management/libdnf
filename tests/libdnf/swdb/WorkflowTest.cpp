@@ -3,6 +3,8 @@
 #include <string>
 
 #include "WorkflowTest.hpp"
+#include "libdnf/swdb/item_comps_environment.hpp"
+#include "libdnf/swdb/item_comps_group.hpp"
 #include "libdnf/swdb/item_rpm.hpp"
 #include "libdnf/swdb/swdb.hpp"
 #include "libdnf/swdb/transaction.hpp"
@@ -48,7 +50,7 @@ WorkflowTest::testDefaultWorkflow()
     rpm_bash->setChecksumData("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
     std::string repoid = "base";
     TransactionItemAction action = TransactionItemAction::INSTALL;
-    TransactionItemReason reason = TransactionItemReason::USER;
+    TransactionItemReason reason = TransactionItemReason::GROUP;
     trans.addItem(rpm_bash, repoid, action, reason, NULL);
 
     // systemd-233-6.fc26
@@ -81,6 +83,26 @@ WorkflowTest::testDefaultWorkflow()
     reason = TransactionItemReason::USER;
     trans.addItem(rpm_sysvinit, repoid, action, reason, ti_rpm_systemd);
 
+    auto comps_group_core = std::make_shared<CompsGroupItem>(*conn.get());
+    comps_group_core->setGroupId("core");
+    comps_group_core->setName("Core");
+    comps_group_core->setTranslatedName("Úplný základ");
+    comps_group_core->addPackage("bash", true, false, CompsPackageType::MANDATORY);
+    repoid = "";
+    action = TransactionItemAction::INSTALL;
+    reason = TransactionItemReason::USER;
+    trans.addItem(comps_group_core, repoid, action, reason, NULL);
+
+    auto comps_environment_minimal = std::make_shared<CompsEnvironmentItem>(*conn.get());
+    comps_environment_minimal->setEnvironmentId("minimal");
+    comps_environment_minimal->setName("Minimal");
+    comps_environment_minimal->setTranslatedName("mmm");
+    comps_environment_minimal->addGroup("core", true, false, CompsPackageType::MANDATORY);
+    repoid = "";
+    action = TransactionItemAction::INSTALL;
+    reason = TransactionItemReason::USER;
+    trans.addItem(comps_environment_minimal, repoid, action, reason, NULL);
+
     // STEP 4: save transaction and all associated items
     trans.save();
     trans.saveItems();
@@ -103,11 +125,27 @@ WorkflowTest::testDefaultWorkflow()
     CPPUNIT_ASSERT(trans2.getDone() == true);
 
     trans2.loadItems();
-    CPPUNIT_ASSERT(trans2.getItems().size() == 3);
+    CPPUNIT_ASSERT(trans2.getItems().size() == 5);
 
     for (auto i : trans2.getItems()) {
-        CPPUNIT_ASSERT(i->getItem()->getItemType() == "rpm");
+        // CPPUNIT_ASSERT(i->getItem()->getItemType() == "rpm");
         CPPUNIT_ASSERT(i->getDone() == true);
-        // std::cout << "TransactionItem: " << i->getItem()->toStr() << std::endl;
+        std::cout << "TransactionItem: " << i->getItem()->toStr() << std::endl;
+        if (i->getItem()->getItemType() == "comps-group") {
+            auto grp = std::dynamic_pointer_cast<CompsGroupItem>(i->getItem());
+            grp->loadPackages();
+            CPPUNIT_ASSERT(grp->getPackages().size() == 1);
+            for (auto i : grp->getPackages()) {
+                std::cout << "  CompsGroupPackage: " << i->getName() << std::endl;
+            }
+        }
+        if (i->getItem()->getItemType() == "comps-environment") {
+            auto env = std::dynamic_pointer_cast<CompsEnvironmentItem>(i->getItem());
+            env->loadGroups();
+            CPPUNIT_ASSERT(env->getGroups().size() == 1);
+            for (auto i : env->getGroups()) {
+                std::cout << "  CompsEnvironmentGroup: @" << i->getGroupId() << std::endl;
+            }
+        }
     }
 }

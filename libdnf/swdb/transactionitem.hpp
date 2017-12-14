@@ -125,7 +125,6 @@ Reasons:
 class TransactionItem {
 public:
     TransactionItem(const Transaction & trans);
-    TransactionItem(const Transaction & trans, int64_t transactionItemId);
 
     int64_t getId() const noexcept { return id; }
     void setId(int64_t value) { id = value; }

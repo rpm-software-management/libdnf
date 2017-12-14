@@ -25,11 +25,6 @@ TransactionItem::TransactionItem(const Transaction & trans)
 {
 }
 
-TransactionItem::TransactionItem(const Transaction & trans, int64_t transaction_item_id)
-  : trans{trans}
-{
-}
-
 void
 TransactionItem::save()
 {

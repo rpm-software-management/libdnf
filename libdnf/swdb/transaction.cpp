@@ -19,6 +19,8 @@
  */
 
 #include "transaction.hpp"
+#include "item_comps_environment.hpp"
+#include "item_comps_group.hpp"
 #include "item_rpm.hpp"
 #include "transactionitem.hpp"
 
@@ -29,10 +31,10 @@ Transaction::Transaction(SQLite3 & conn)
 {
 }
 
-Transaction::Transaction(SQLite3 & conn, int64_t transaction_id)
+Transaction::Transaction(SQLite3 & conn, int64_t pk)
   : conn{conn}
 {
-    dbSelect(transaction_id);
+    dbSelect(pk);
 }
 
 void
@@ -47,7 +49,7 @@ Transaction::save()
 }
 
 void
-Transaction::dbSelect(int64_t transaction_id)
+Transaction::dbSelect(int64_t pk)
 {
     const char * sql =
         "SELECT "
@@ -64,10 +66,10 @@ Transaction::dbSelect(int64_t transaction_id)
         "WHERE "
         "  id = ?";
     SQLite3::Query query(conn, sql);
-    query.bindv(transaction_id);
+    query.bindv(pk);
     query.step();
 
-    id = transaction_id;
+    setId(pk);
     setDtBegin(query.get<int>("dt_begin"));
     setDtEnd(query.get<int>("dt_end"));
     setRpmdbVersionBegin(query.get<std::string>("rpmdb_version_begin"));
@@ -170,4 +172,10 @@ Transaction::loadItems()
 {
     auto rpms = RPMItem::getTransactionItems(conn, getId());
     items.insert(items.end(), rpms.begin(), rpms.end());
+
+    auto comps_groups = CompsGroupItem::getTransactionItems(conn, getId());
+    items.insert(items.end(), comps_groups.begin(), comps_groups.end());
+
+    auto comps_environments = CompsEnvironmentItem::getTransactionItems(conn, getId());
+    items.insert(items.end(), comps_environments.begin(), comps_environments.end());
 }

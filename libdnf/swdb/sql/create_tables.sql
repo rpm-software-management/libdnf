@@ -41,6 +41,8 @@ R"**(
         item_id INTEGER REFERENCES item(id),
         CONSTRAINT trans_with_unique_trans_item UNIQUE (trans_id, item_id)
     );
+
+    /* item: rpm */
     CREATE TABLE rpm (
         item_id INTEGER UNIQUE NOT NULL,
         name TEXT NOT NULL,
@@ -53,6 +55,47 @@ R"**(
         FOREIGN KEY(item_id) REFERENCES item(id),
         CONSTRAINT rpm_unique_nevra UNIQUE (name, epoch, version, release, arch)
     );
+
+    /* item: comps-group */
+    CREATE TABLE comps_group (
+        item_id INTEGER UNIQUE NOT NULL,
+        groupid TEXT NOT NULL,
+        name TEXT NOT NULL,
+        translated_name TEXT NOT NULL,
+        pkgs_type INTEGER NOT NULL,
+        FOREIGN KEY(item_id) REFERENCES item(id)
+    );
+    CREATE TABLE comps_group_package (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        group_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        installed INTEGER NOT NULL,
+        excluded INTEGER NOT NULL,
+        pkg_type INTEGER NOT NULL,
+        FOREIGN KEY(group_id) REFERENCES comps_group(item_id),
+        CONSTRAINT comps_group_package_unique_name UNIQUE (group_id, name)
+    );
+
+    /* item: comps-environment */
+    CREATE TABLE comps_environment (
+        item_id INTEGER UNIQUE NOT NULL,
+        environmentid TEXT NOT NULL,
+        name TEXT NOT NULL,
+        translated_name TEXT NOT NULL,
+        groups_type INTEGER NOT NULL,
+        FOREIGN KEY(item_id) REFERENCES item(id)
+    );
+    CREATE TABLE comps_evironment_group (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        environment_id INTEGER NOT NULL,
+        groupid TEXT NOT NULL,
+        installed INTEGER NOT NULL,
+        excluded INTEGER NOT NULL,
+        group_type INTEGER NOT NULL,
+        FOREIGN KEY(environment_id) REFERENCES comps_environment(item_id),
+        CONSTRAINT comps_evironment_group_unique_groupid UNIQUE (environment_id, groupid)
+    );
+
     CREATE INDEX rpm_name ON rpm(name);
     CREATE INDEX trans_item_item_id ON trans_item(item_id);
 

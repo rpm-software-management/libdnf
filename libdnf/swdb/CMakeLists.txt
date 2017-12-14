@@ -1,5 +1,7 @@
 SET(SWDB_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/item.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/item_comps_environment.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/item_comps_group.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/item_rpm.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/repo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/swdb.cpp

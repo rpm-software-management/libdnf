@@ -38,7 +38,7 @@ public:
     // create an empty object, don't read from db
     Transaction(SQLite3 & conn);
     // load from db
-    Transaction(SQLite3 & conn, int64_t id);
+    Transaction(SQLite3 & conn, int64_t pk);
 
     int64_t getId() const noexcept { return id; }
     void setId(int64_t value) { id = value; }
