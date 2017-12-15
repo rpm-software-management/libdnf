@@ -6,10 +6,9 @@
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-class TransformerMock : protected Transformer
-{
-  public:
-    TransformerMock ();
+class TransformerMock : protected Transformer {
+public:
+    TransformerMock();
     using Transformer::transformRPMItems;
     using Transformer::transformTrans;
     using Transformer::transformTransWith;
@@ -18,19 +17,20 @@ class TransformerMock : protected Transformer
     using Transformer::Exception;
 };
 
-class TransformerTest : public CppUnit::TestCase
-{
-    CPPUNIT_TEST_SUITE (TransformerTest);
-    //CPPUNIT_TEST (testTransformRPMItems);
-    CPPUNIT_TEST_SUITE_END ();
+class TransformerTest : public CppUnit::TestCase {
+    CPPUNIT_TEST_SUITE(TransformerTest);
+    CPPUNIT_TEST(testTransformRPMItems);
+    CPPUNIT_TEST(testTransformTrans);
+    CPPUNIT_TEST_SUITE_END();
 
-  public:
-    void setUp () override;
-    void tearDown () override;
+public:
+    void setUp() override;
+    void tearDown() override;
 
-    void testTransformRPMItems ();
+    void testTransformRPMItems();
+    void testTransformTrans();
 
-  protected:
+protected:
     TransformerMock transformer;
     std::unique_ptr<SQLite3> swdb;
     std::unique_ptr<SQLite3> history;
