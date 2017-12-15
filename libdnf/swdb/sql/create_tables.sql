@@ -50,8 +50,6 @@ R"**(
         version TEXT NOT NULL,
         release TEXT NOT NULL,
         arch TEXT NOT NULL,
-        checksum_type TEXT NOT NULL,
-        checksum_data TEXT NOT NULL,
         FOREIGN KEY(item_id) REFERENCES item(id),
         CONSTRAINT rpm_unique_nevra UNIQUE (name, epoch, version, release, arch)
     );

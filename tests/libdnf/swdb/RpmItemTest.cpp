@@ -31,8 +31,6 @@ RpmItemTest::testCreate()
     rpm.setVersion("4.4.12");
     rpm.setRelease("5.fc26");
     rpm.setArch("x86_64");
-    rpm.setChecksumType("sha256");
-    rpm.setChecksumData("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
     rpm.save();
 
     RPMItem rpm2(*conn.get(), rpm.getId());
@@ -41,8 +39,6 @@ RpmItemTest::testCreate()
     CPPUNIT_ASSERT(rpm2.getEpoch() == rpm.getEpoch());
     CPPUNIT_ASSERT(rpm2.getVersion() == rpm.getVersion());
     CPPUNIT_ASSERT(rpm2.getRelease() == rpm.getRelease());
-    CPPUNIT_ASSERT(rpm2.getChecksumType() == rpm.getChecksumType());
-    CPPUNIT_ASSERT(rpm2.getChecksumData() == rpm.getChecksumData());
 }
 
 void

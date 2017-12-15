@@ -46,8 +46,6 @@ WorkflowTest::testDefaultWorkflow()
     rpm_bash->setVersion("4.4.12");
     rpm_bash->setRelease("5.fc26");
     rpm_bash->setArch("x86_64");
-    rpm_bash->setChecksumType("sha256");
-    rpm_bash->setChecksumData("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
     std::string repoid = "base";
     TransactionItemAction action = TransactionItemAction::INSTALL;
     TransactionItemReason reason = TransactionItemReason::GROUP;
@@ -60,9 +58,6 @@ WorkflowTest::testDefaultWorkflow()
     rpm_systemd->setVersion("233");
     rpm_systemd->setRelease("6.fc26");
     rpm_systemd->setArch("x86_64");
-    rpm_systemd->setChecksumType("sha256");
-    rpm_systemd->setChecksumData(
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
     repoid = "base";
     action = TransactionItemAction::OBSOLETE;
     reason = TransactionItemReason::USER;
@@ -75,9 +70,6 @@ WorkflowTest::testDefaultWorkflow()
     rpm_sysvinit->setVersion("2.88");
     rpm_sysvinit->setRelease("14.dsf.fc20");
     rpm_sysvinit->setArch("x86_64");
-    rpm_sysvinit->setChecksumType("sha256");
-    rpm_sysvinit->setChecksumData(
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
     repoid = "f20";
     action = TransactionItemAction::OBSOLETED;
     reason = TransactionItemReason::USER;

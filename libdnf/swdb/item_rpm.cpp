@@ -51,9 +51,7 @@ RPMItem::dbSelect(int64_t pk)
         "  epoch, "
         "  version, "
         "  release, "
-        "  arch, "
-        "  checksum_type, "
-        "  checksum_data "
+        "  arch "
         "FROM "
         "  rpm "
         "WHERE "
@@ -68,8 +66,6 @@ RPMItem::dbSelect(int64_t pk)
     setVersion(query.get<std::string>(2));
     setRelease(query.get<std::string>(3));
     setArch(query.get<std::string>(4));
-    setChecksumType(query.get<std::string>(5));
-    setChecksumData(query.get<std::string>(6));
 }
 
 void
@@ -82,16 +78,14 @@ RPMItem::dbInsert()
         "INSERT INTO "
         "  rpm "
         "VALUES "
-        "  (?, ?, ?, ?, ?, ?, ?, ?)";
+        "  (?, ?, ?, ?, ?, ?)";
     SQLite3::Statement query(conn, sql);
     query.bindv(getId(),
                 getName(),
                 getEpoch(),
                 getVersion(),
                 getRelease(),
-                getArch(),
-                getChecksumType(),
-                getChecksumData());
+                getArch());
     query.step();
 }
 
@@ -111,9 +105,7 @@ RPMItem::getTransactionItems(SQLite3 & conn, int64_t transaction_id)
         "  i.epoch, "
         "  i.version, "
         "  i.release, "
-        "  i.arch, "
-        "  i.checksum_type, "
-        "  i.checksum_data "
+        "  i.arch "
         "FROM "
         "  trans_item ti, "
         "  rpm i "
@@ -136,8 +128,6 @@ RPMItem::getTransactionItems(SQLite3 & conn, int64_t transaction_id)
         item->setVersion(query.get<std::string>(5));
         item->setRelease(query.get<std::string>(6));
         item->setArch(query.get<std::string>(7));
-        item->setChecksumType(query.get<std::string>(8));
-        item->setChecksumData(query.get<std::string>(9));
 
         result.push_back(trans_item);
     }
@@ -170,9 +160,7 @@ RPMItem::dbSelectOrInsert()
         "  AND epoch = ? "
         "  AND version = ? "
         "  AND release = ? "
-        "  AND arch = ? "
-        "  AND checksum_type = ? "
-        "  AND checksum_data = ? ";
+        "  AND arch = ?";
 
     SQLite3::Statement query(conn, sql);
 
@@ -180,9 +168,7 @@ RPMItem::dbSelectOrInsert()
                 getEpoch(),
                 getVersion(),
                 getRelease(),
-                getArch(),
-                getChecksumType(),
-                getChecksumData());
+                getArch());
     SQLite3::Statement::StepResult result = query.step();
 
     if (result == SQLite3::Statement::StepResult::ROW) {

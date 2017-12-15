@@ -48,12 +48,6 @@ public:
     const std::string & getArch() const noexcept { return arch; }
     void setArch(const std::string & value) { arch = value; }
 
-    const std::string & getChecksumType() const noexcept { return checksumType; }
-    void setChecksumType(const std::string & value) { checksumType = value; }
-
-    const std::string & getChecksumData() const noexcept { return checksumData; }
-    void setChecksumData(const std::string & value) { checksumData = value; }
-
     std::string getNEVRA();
     virtual std::string toStr();
     virtual const std::string & getItemType() const noexcept { return itemType; }
@@ -69,8 +63,6 @@ protected:
     std::string version;
     std::string release;
     std::string arch;
-    std::string checksumType;
-    std::string checksumData;
 
 private:
     void dbSelect(int64_t transaction_id);

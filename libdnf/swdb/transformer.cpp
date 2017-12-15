@@ -91,8 +91,8 @@ Transformer::transformRPMItems(SQLite3 & swdb, SQLite3 & history)
         std::string checksum = query.get<std::string>(6);
         size_t delimiter = checksum.find(':');
 
-        pkg.setChecksumType(checksum.substr(0, delimiter));
-        pkg.setChecksumData(checksum.substr(delimiter + 1));
+        // pkg.setChecksumType(checksum.substr(0, delimiter));
+        // pkg.setChecksumData(checksum.substr(delimiter + 1));
 
         pkg.save();
     }

@@ -122,8 +122,8 @@ TransformerTest::testTransformRPMItems()
     CPPUNIT_ASSERT(chrony.getEpoch() == 1);
     CPPUNIT_ASSERT(chrony.getVersion() == "3.1");
     CPPUNIT_ASSERT(chrony.getRelease() == "4.fc26");
-    CPPUNIT_ASSERT(chrony.getChecksumType() == "sha256");
-    CPPUNIT_ASSERT(chrony.getChecksumData() == "6cec2091");
+    // CPPUNIT_ASSERT(chrony.getChecksumType() == "sha256");
+    // CPPUNIT_ASSERT(chrony.getChecksumData() == "6cec2091");
 
     RPMItem kernel(*swdb.get(), 2);
     CPPUNIT_ASSERT(kernel.getId() == 2);
@@ -131,8 +131,8 @@ TransformerTest::testTransformRPMItems()
     CPPUNIT_ASSERT(kernel.getEpoch() == 0);
     CPPUNIT_ASSERT(kernel.getVersion() == "4.11.6");
     CPPUNIT_ASSERT(kernel.getRelease() == "301.fc26");
-    CPPUNIT_ASSERT(kernel.getChecksumType() == "sha256");
-    CPPUNIT_ASSERT(kernel.getChecksumData() == "8dc6bb96");
+    // CPPUNIT_ASSERT(kernel.getChecksumType() == "sha256");
+    // CPPUNIT_ASSERT(kernel.getChecksumData() == "8dc6bb96");
 }
 
 void
