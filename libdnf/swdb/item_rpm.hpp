@@ -64,7 +64,6 @@ protected:
     std::string release;
     std::string arch;
 
-private:
     void dbSelect(int64_t transaction_id);
     void dbInsert();
     void dbUpdate();

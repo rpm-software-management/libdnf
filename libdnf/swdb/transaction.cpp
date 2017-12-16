@@ -93,10 +93,11 @@ Transaction::dbInsert()
         "    releasever, "
         "    user_id, "
         "    cmdline, "
-        "    done "
+        "    done, "
+        "    id "
         "  ) "
         "VALUES "
-        "  (?, ?, ?, ?, ?, ?, ?, ?)";
+        "  (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     SQLite3::Statement query(conn, sql);
     query.bindv(getDtBegin(),
                 getDtEnd(),
@@ -106,6 +107,9 @@ Transaction::dbInsert()
                 getUserId(),
                 getCmdline(),
                 getDone());
+    if (getId() > 0) {
+            query.bind(9, getId());
+    }
     query.step();
     setId(conn.lastInsertRowID());
 }

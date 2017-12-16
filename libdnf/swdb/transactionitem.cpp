@@ -87,8 +87,8 @@ TransactionItem::dbUpdate()
                 getItem()->getId(),
                 Repo::getCached(trans.conn, getRepoid())->getId(),
                 NULL,
-                static_cast<int>(getReason()),
                 static_cast<int>(getAction()),
+                static_cast<int>(getReason()),
                 getDone(),
                 getId());
     query.step();

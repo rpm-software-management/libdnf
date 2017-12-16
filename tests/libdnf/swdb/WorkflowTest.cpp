@@ -120,15 +120,32 @@ WorkflowTest::testDefaultWorkflow()
     CPPUNIT_ASSERT(trans2.getItems().size() == 5);
 
     for (auto i : trans2.getItems()) {
+        if (i->getId() == 1) {
+            CPPUNIT_ASSERT(i->getAction() == TransactionItemAction::INSTALL);
+            CPPUNIT_ASSERT(i->getReason() == TransactionItemReason::GROUP);
+            std::cout << "REPOID " << i->getRepoid() << std::endl;
+            CPPUNIT_ASSERT(i->getRepoid() == "base");
+        }
+        else if (i->getId() == 2) {
+            CPPUNIT_ASSERT(i->getAction() == TransactionItemAction::OBSOLETE);
+            CPPUNIT_ASSERT(i->getReason() == TransactionItemReason::USER);
+            CPPUNIT_ASSERT(i->getRepoid() == "base");
+        }
+        else if (i->getId() == 3) {
+            CPPUNIT_ASSERT(i->getAction() == TransactionItemAction::OBSOLETED);
+            CPPUNIT_ASSERT(i->getReason() == TransactionItemReason::USER);
+            CPPUNIT_ASSERT(i->getRepoid() == "f20");
+        }
+
         // CPPUNIT_ASSERT(i->getItem()->getItemType() == "rpm");
         CPPUNIT_ASSERT(i->getDone() == true);
-        std::cout << "TransactionItem: " << i->getItem()->toStr() << std::endl;
+        // std::cout << "TransactionItem: " << i->getItem()->toStr() << std::endl;
         if (i->getItem()->getItemType() == "comps-group") {
             auto grp = std::dynamic_pointer_cast<CompsGroupItem>(i->getItem());
             grp->loadPackages();
             CPPUNIT_ASSERT(grp->getPackages().size() == 1);
             for (auto i : grp->getPackages()) {
-                std::cout << "  CompsGroupPackage: " << i->getName() << std::endl;
+                // std::cout << "  CompsGroupPackage: " << i->getName() << std::endl;
             }
         }
         if (i->getItem()->getItemType() == "comps-environment") {
@@ -136,7 +153,7 @@ WorkflowTest::testDefaultWorkflow()
             env->loadGroups();
             CPPUNIT_ASSERT(env->getGroups().size() == 1);
             for (auto i : env->getGroups()) {
-                std::cout << "  CompsEnvironmentGroup: @" << i->getGroupId() << std::endl;
+                // std::cout << "  CompsEnvironmentGroup: @" << i->getGroupId() << std::endl;
             }
         }
     }

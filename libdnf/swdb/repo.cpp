@@ -51,13 +51,15 @@ Repo::dbInsert()
 std::shared_ptr<Repo>
 Repo::getCached(SQLite3 & conn, const std::string & repoid)
 {
-    auto it = cache.find(repoid);
+    // HACK: this is kind of ugly - key is generated from repoid and sqlite3 pointer
+    auto key = repoid + "/" + std::to_string(reinterpret_cast<std::size_t>(conn.db));
+    auto it = cache.find(key);
     if (it == cache.end()) {
         // cache miss
         auto repo = std::make_shared<Repo>(conn);
         repo->setRepoId(repoid);
         repo->save();
-        cache[repoid] = repo;
+        cache[key] = repo;
         return repo;
     }
     else {

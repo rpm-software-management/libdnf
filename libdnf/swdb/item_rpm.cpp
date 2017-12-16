@@ -98,7 +98,11 @@ RPMItem::getTransactionItems(SQLite3 & conn, int64_t transaction_id)
         "SELECT "
         // trans_item
         "  ti.id, "
+        "  ti.action, "
+        "  ti.reason, "
         "  ti.done, "
+        // repo
+        "  r.repoid, "
         // rpm
         "  i.item_id, "
         "  i.name, "
@@ -108,9 +112,11 @@ RPMItem::getTransactionItems(SQLite3 & conn, int64_t transaction_id)
         "  i.arch "
         "FROM "
         "  trans_item ti, "
+        "  repo r, "
         "  rpm i "
         "WHERE "
-        "  ti.trans_id = ?"
+        "  ti.trans_id = ? "
+        "  AND ti.repo_id = r.id "
         "  AND ti.item_id = i.item_id";
     SQLite3::Query query(conn, sql);
     query.bindv(transaction_id);
@@ -120,14 +126,17 @@ RPMItem::getTransactionItems(SQLite3 & conn, int64_t transaction_id)
         auto item = std::make_shared<RPMItem>(conn);
         trans_item->setItem(item);
 
-        trans_item->setId(query.get<int>(0));
-        trans_item->setDone(query.get<bool>(1));
-        item->setId(query.get<int>(2));
-        item->setName(query.get<std::string>(3));
-        item->setEpoch(query.get<int>(4));
-        item->setVersion(query.get<std::string>(5));
-        item->setRelease(query.get<std::string>(6));
-        item->setArch(query.get<std::string>(7));
+        trans_item->setId(query.get<int>("id"));
+        trans_item->setAction(static_cast<TransactionItemAction>(query.get<int>("action")));
+        trans_item->setReason(static_cast<TransactionItemReason>(query.get<int>("reason")));
+        trans_item->setRepoid(query.get<std::string>("repoid"));
+        trans_item->setDone(query.get<bool>("done"));
+        item->setId(query.get<int>("item_id"));
+        item->setName(query.get<std::string>("name"));
+        item->setEpoch(query.get<int>("epoch"));
+        item->setVersion(query.get<std::string>("version"));
+        item->setRelease(query.get<std::string>("release"));
+        item->setArch(query.get<std::string>("arch"));
 
         result.push_back(trans_item);
     }

@@ -93,7 +93,6 @@ protected:
     std::vector<std::shared_ptr<TransactionItem> > items;
     // std::vector<RPMItem> softwarePerformedWith;
 
-private:
     void dbSelect(int64_t transaction_id);
     void dbInsert();
     void dbUpdate();

@@ -164,7 +164,6 @@ protected:
     TransactionItemReason reason = TransactionItemReason::UNKNOWN;
     bool done = false;
 
-private:
     void dbInsert();
     void dbUpdate();
 };
