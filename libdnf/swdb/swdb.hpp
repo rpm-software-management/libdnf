@@ -25,6 +25,6 @@
 
 // TODO: create if doesn't exist
 void
-SwdbCreateDatabase(SQLite3 & conn);
+SwdbCreateDatabase(std::shared_ptr<SQLite3> conn);
 
 #endif // LIBDNF_SWDB_SWDB_HPP

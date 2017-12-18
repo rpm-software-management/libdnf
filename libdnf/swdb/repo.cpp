@@ -23,7 +23,7 @@
 // initialize static variable Repo::cache
 std::unordered_map<std::string, std::shared_ptr<Repo> > Repo::cache;
 
-Repo::Repo(SQLite3 & conn)
+Repo::Repo(std::shared_ptr<SQLite3> conn)
   : conn{conn}
 {
 }
@@ -42,17 +42,17 @@ Repo::dbInsert()
         "  repo "
         "VALUES "
         "  (null, ?)";
-    SQLite3::Statement query(conn, sql);
+    SQLite3::Statement query(*conn.get(), sql);
     query.bindv(getRepoId());
     query.step();
-    setId(conn.lastInsertRowID());
+    setId(conn->lastInsertRowID());
 }
 
 std::shared_ptr<Repo>
-Repo::getCached(SQLite3 & conn, const std::string & repoid)
+Repo::getCached(std::shared_ptr<SQLite3> conn, const std::string & repoid)
 {
     // HACK: this is kind of ugly - key is generated from repoid and sqlite3 pointer
-    auto key = repoid + "/" + std::to_string(reinterpret_cast<std::size_t>(conn.db));
+    auto key = repoid + "/" + std::to_string(reinterpret_cast<std::size_t>(conn.get()));
     auto it = cache.find(key);
     if (it == cache.end()) {
         // cache miss
@@ -79,7 +79,7 @@ Repo::dbSelectOrInsert()
         "WHERE "
         "  repoid = ? ";
 
-    SQLite3::Statement query(conn, sql);
+    SQLite3::Statement query(*conn.get(), sql);
     query.bindv(getRepoId());
     SQLite3::Statement::StepResult result = query.step();
 

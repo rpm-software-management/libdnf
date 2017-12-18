@@ -32,8 +32,8 @@ class CompsEnvironmentGroup;
 
 class CompsEnvironmentItem : public Item {
 public:
-    CompsEnvironmentItem(SQLite3 & conn);
-    CompsEnvironmentItem(SQLite3 & conn, int64_t pk);
+    CompsEnvironmentItem(std::shared_ptr<SQLite3> conn);
+    CompsEnvironmentItem(std::shared_ptr<SQLite3> conn, int64_t pk);
     virtual ~CompsEnvironmentItem() = default;
 
 
@@ -59,7 +59,7 @@ public:
     void loadGroups();
     std::vector<std::shared_ptr<CompsEnvironmentGroup> > getGroups() { return groups; }
     static std::vector<std::shared_ptr<TransactionItem> > getTransactionItems(
-        SQLite3 & conn,
+        std::shared_ptr<SQLite3> conn,
         int64_t transactionId);
 
 protected:
@@ -98,7 +98,7 @@ public:
     void setGroupType(CompsPackageType value) { groupType = value; }
 
     // virtual std::string toStr();
-    virtual void save();
+    void save();
 
 protected:
     int64_t id = 0;

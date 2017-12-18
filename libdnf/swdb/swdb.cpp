@@ -25,7 +25,7 @@ static const char * sql_create_tables =
     ;
 
 void
-SwdbCreateDatabase(SQLite3 & conn)
+SwdbCreateDatabase(std::shared_ptr<SQLite3> conn)
 {
-    conn.exec(sql_create_tables);
+    conn->exec(sql_create_tables);
 }

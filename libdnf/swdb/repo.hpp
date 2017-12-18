@@ -29,10 +29,10 @@
 
 class Repo {
 public:
-    static std::shared_ptr<Repo> getCached(SQLite3 & conn, const std::string & repoid);
+    static std::shared_ptr<Repo> getCached(std::shared_ptr<SQLite3> conn, const std::string & repoid);
     static std::unordered_map<std::string, std::shared_ptr<Repo> > cache;
 
-    Repo(SQLite3 & conn);
+    Repo(std::shared_ptr<SQLite3> conn);
 
     int64_t getId() const noexcept { return id; }
     void setId(int64_t value) { id = value; }
@@ -41,7 +41,7 @@ public:
     void setRepoId(const std::string & value) { repoId = value; }
 
     void save();
-    SQLite3 & conn;
+    std::shared_ptr<SQLite3> conn;
 
 protected:
     void dbInsert();

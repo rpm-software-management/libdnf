@@ -39,8 +39,8 @@ class CompsGroupPackage;
 
 class CompsGroupItem : public Item {
 public:
-    CompsGroupItem(SQLite3 & conn);
-    CompsGroupItem(SQLite3 & conn, int64_t pk);
+    CompsGroupItem(std::shared_ptr<SQLite3> conn);
+    CompsGroupItem(std::shared_ptr<SQLite3> conn, int64_t pk);
     virtual ~CompsGroupItem() = default;
 
     const std::string & getGroupId() const noexcept { return groupId; }
@@ -65,7 +65,7 @@ public:
     void loadPackages();
     std::vector<std::shared_ptr<CompsGroupPackage> > getPackages() { return packages; }
     static std::vector<std::shared_ptr<TransactionItem> > getTransactionItems(
-        SQLite3 & conn,
+        std::shared_ptr<SQLite3> conn,
         int64_t transactionId);
 
 protected:
@@ -104,7 +104,7 @@ public:
     void setPackageType(CompsPackageType value) { packageType = value; }
 
     // virtual std::string toStr();
-    virtual void save();
+    void save();
 
 protected:
     int64_t id = 0;

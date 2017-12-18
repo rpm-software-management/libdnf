@@ -19,14 +19,13 @@
  */
 
 #include "item_comps_group.hpp"
-#include <iostream>
 
-CompsGroupItem::CompsGroupItem(SQLite3 & conn)
+CompsGroupItem::CompsGroupItem(std::shared_ptr<SQLite3> conn)
   : Item(conn)
 {
 }
 
-CompsGroupItem::CompsGroupItem(SQLite3 & conn, int64_t pk)
+CompsGroupItem::CompsGroupItem(std::shared_ptr<SQLite3> conn, int64_t pk)
   : Item(conn)
 {
     dbSelect(pk);
@@ -60,7 +59,7 @@ CompsGroupItem::dbSelect(int64_t pk)
         "  comps_group "
         "WHERE "
         "  item_id = ?";
-    SQLite3::Query query(conn, sql);
+    SQLite3::Query query(*conn.get(), sql);
     query.bindv(pk);
     query.step();
 
@@ -88,14 +87,14 @@ CompsGroupItem::dbInsert()
         "  ) "
         "VALUES "
         "  (?, ?, ?, ?, ?)";
-    SQLite3::Statement query(conn, sql);
+    SQLite3::Statement query(*conn.get(), sql);
     query.bindv(
         getId(), getGroupId(), getName(), getTranslatedName(), static_cast<int>(getPackagesType()));
     query.step();
 }
 
 std::vector<std::shared_ptr<TransactionItem> >
-CompsGroupItem::getTransactionItems(SQLite3 & conn, int64_t transactionId)
+CompsGroupItem::getTransactionItems(std::shared_ptr<SQLite3> conn, int64_t transactionId)
 {
     std::vector<std::shared_ptr<TransactionItem> > result;
 
@@ -116,7 +115,7 @@ CompsGroupItem::getTransactionItems(SQLite3 & conn, int64_t transactionId)
         "WHERE "
         "  ti.trans_id = ?"
         "  AND ti.item_id = i.item_id";
-    SQLite3::Query query(conn, sql);
+    SQLite3::Query query(*conn.get(), sql);
     query.bindv(transactionId);
 
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
@@ -153,7 +152,7 @@ CompsGroupItem::loadPackages()
         "  comps_group_package "
         "WHERE "
         "  group_id = ?";
-    SQLite3::Query query(conn, sql);
+    SQLite3::Query query(*conn.get(), sql);
     query.bindv(getId());
 
     packages.clear();
@@ -213,7 +212,7 @@ CompsGroupPackage::dbInsert()
         "  ) "
         "VALUES "
         "  (?, ?, ?, ?, ?)";
-    SQLite3::Statement query(getGroup().conn, sql);
+    SQLite3::Statement query(*getGroup().conn.get(), sql);
     query.bindv(getGroup().getId(),
                 getName(),
                 getInstalled(),
@@ -233,7 +232,7 @@ CompsGroupPackage::dbSelectOrInsert()
         "WHERE "
         "  name = ?";
 
-    SQLite3::Statement query(getGroup().conn, sql);
+    SQLite3::Statement query(*getGroup().conn.get(), sql);
     query.bindv(getName());
     SQLite3::Statement::StepResult result = query.step();
 

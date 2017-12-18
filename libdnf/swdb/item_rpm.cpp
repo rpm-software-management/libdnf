@@ -20,12 +20,12 @@
 
 #include "item_rpm.hpp"
 
-RPMItem::RPMItem(SQLite3 & conn)
+RPMItem::RPMItem(std::shared_ptr<SQLite3> conn)
   : Item(conn)
 {
 }
 
-RPMItem::RPMItem(SQLite3 & conn, int64_t pk)
+RPMItem::RPMItem(std::shared_ptr<SQLite3> conn, int64_t pk)
   : Item(conn)
 {
     dbSelect(pk);
@@ -56,7 +56,7 @@ RPMItem::dbSelect(int64_t pk)
         "  rpm "
         "WHERE "
         "  item_id = ?";
-    SQLite3::Statement query(conn, sql);
+    SQLite3::Statement query(*conn.get(), sql);
     query.bindv(pk);
     query.step();
 
@@ -79,7 +79,7 @@ RPMItem::dbInsert()
         "  rpm "
         "VALUES "
         "  (?, ?, ?, ?, ?, ?)";
-    SQLite3::Statement query(conn, sql);
+    SQLite3::Statement query(*conn.get(), sql);
     query.bindv(getId(),
                 getName(),
                 getEpoch(),
@@ -90,7 +90,7 @@ RPMItem::dbInsert()
 }
 
 std::vector<std::shared_ptr<TransactionItem> >
-RPMItem::getTransactionItems(SQLite3 & conn, int64_t transaction_id)
+RPMItem::getTransactionItems(std::shared_ptr<SQLite3> conn, int64_t transaction_id)
 {
     std::vector<std::shared_ptr<TransactionItem> > result;
 
@@ -118,7 +118,7 @@ RPMItem::getTransactionItems(SQLite3 & conn, int64_t transaction_id)
         "  ti.trans_id = ? "
         "  AND ti.repo_id = r.id "
         "  AND ti.item_id = i.item_id";
-    SQLite3::Query query(conn, sql);
+    SQLite3::Query query(*conn.get(), sql);
     query.bindv(transaction_id);
 
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
@@ -171,7 +171,7 @@ RPMItem::dbSelectOrInsert()
         "  AND release = ? "
         "  AND arch = ?";
 
-    SQLite3::Statement query(conn, sql);
+    SQLite3::Statement query(*conn.get(), sql);
 
     query.bindv(getName(),
                 getEpoch(),

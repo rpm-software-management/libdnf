@@ -54,7 +54,7 @@ TransactionItem::dbInsert()
         "  ) "
         "VALUES "
         "  (null, ?, ?, ?, ?, ?, ?, ?)";
-    SQLite3::Statement query(trans.conn, sql);
+    SQLite3::Statement query(*trans.conn.get(), sql);
     query.bindv(trans.getId(),
                 getItem()->getId(),
                 Repo::getCached(trans.conn, getRepoid())->getId(),
@@ -63,7 +63,7 @@ TransactionItem::dbInsert()
                 static_cast<int>(getReason()),
                 getDone());
     query.step();
-    setId(trans.conn.lastInsertRowID());
+    setId(trans.conn->lastInsertRowID());
 }
 
 void
@@ -82,7 +82,7 @@ TransactionItem::dbUpdate()
         "  done=? "
         "WHERE "
         "  id = ?";
-    SQLite3::Statement query(trans.conn, sql);
+    SQLite3::Statement query(*trans.conn.get(), sql);
     query.bindv(trans.getId(),
                 getItem()->getId(),
                 Repo::getCached(trans.conn, getRepoid())->getId(),

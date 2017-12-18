@@ -26,12 +26,12 @@
 
 class RPMItem;
 
-Transaction::Transaction(SQLite3 & conn)
+Transaction::Transaction(std::shared_ptr<SQLite3> conn)
   : conn{conn}
 {
 }
 
-Transaction::Transaction(SQLite3 & conn, int64_t pk)
+Transaction::Transaction(std::shared_ptr<SQLite3> conn, int64_t pk)
   : conn{conn}
 {
     dbSelect(pk);
@@ -65,7 +65,7 @@ Transaction::dbSelect(int64_t pk)
         "  trans "
         "WHERE "
         "  id = ?";
-    SQLite3::Query query(conn, sql);
+    SQLite3::Query query(*conn.get(), sql);
     query.bindv(pk);
     query.step();
 
@@ -83,7 +83,7 @@ Transaction::dbSelect(int64_t pk)
 void
 Transaction::dbInsert()
 {
-    const std::string sql =
+    const char * sql =
         "INSERT INTO "
         "  trans ("
         "    dt_begin, "
@@ -98,7 +98,7 @@ Transaction::dbInsert()
         "  ) "
         "VALUES "
         "  (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    SQLite3::Statement query(conn, sql);
+    SQLite3::Statement query(*conn.get(), sql);
     query.bindv(getDtBegin(),
                 getDtEnd(),
                 getRpmdbVersionBegin(),
@@ -111,7 +111,7 @@ Transaction::dbInsert()
             query.bind(9, getId());
     }
     query.step();
-    setId(conn.lastInsertRowID());
+    setId(conn->lastInsertRowID());
 }
 
 void
@@ -131,7 +131,7 @@ Transaction::dbUpdate()
         "  done=? "
         "WHERE "
         "  id = ?";
-    SQLite3::Statement query(conn, sql);
+    SQLite3::Statement query(*conn.get(), sql);
     query.bindv(getDtBegin(),
                 getDtEnd(),
                 getRpmdbVersionBegin(),

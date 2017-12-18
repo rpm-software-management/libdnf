@@ -19,14 +19,13 @@
  */
 
 #include "item_comps_environment.hpp"
-#include <iostream>
 
-CompsEnvironmentItem::CompsEnvironmentItem(SQLite3 & conn)
+CompsEnvironmentItem::CompsEnvironmentItem(std::shared_ptr<SQLite3> conn)
   : Item(conn)
 {
 }
 
-CompsEnvironmentItem::CompsEnvironmentItem(SQLite3 & conn, int64_t pk)
+CompsEnvironmentItem::CompsEnvironmentItem(std::shared_ptr<SQLite3> conn, int64_t pk)
   : Item(conn)
 {
     dbSelect(pk);
@@ -59,7 +58,7 @@ CompsEnvironmentItem::dbSelect(int64_t pk)
         "  comps_environment "
         "WHERE "
         "  item_id = ?";
-    SQLite3::Query query(conn, sql);
+    SQLite3::Query query(*conn.get(), sql);
     query.bindv(pk);
     query.step();
 
@@ -87,7 +86,7 @@ CompsEnvironmentItem::dbInsert()
         "  ) "
         "VALUES "
         "  (?, ?, ?, ?, ?)";
-    SQLite3::Statement query(conn, sql);
+    SQLite3::Statement query(*conn.get(), sql);
     query.bindv(getId(),
                 getEnvironmentId(),
                 getName(),
@@ -97,7 +96,7 @@ CompsEnvironmentItem::dbInsert()
 }
 
 std::vector<std::shared_ptr<TransactionItem> >
-CompsEnvironmentItem::getTransactionItems(SQLite3 & conn, int64_t transactionId)
+CompsEnvironmentItem::getTransactionItems(std::shared_ptr<SQLite3> conn, int64_t transactionId)
 {
     std::vector<std::shared_ptr<TransactionItem> > result;
 
@@ -118,7 +117,7 @@ CompsEnvironmentItem::getTransactionItems(SQLite3 & conn, int64_t transactionId)
         "WHERE "
         "  ti.trans_id = ?"
         "  AND ti.item_id = i.item_id";
-    SQLite3::Query query(conn, sql);
+    SQLite3::Query query(*conn.get(), sql);
     query.bindv(transactionId);
 
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
@@ -155,7 +154,7 @@ CompsEnvironmentItem::loadGroups()
         "  comps_evironment_group "
         "WHERE "
         "  environment_id = ?";
-    SQLite3::Query query(conn, sql);
+    SQLite3::Query query(*conn.get(), sql);
     query.bindv(getId());
 
     groups.clear();
@@ -215,7 +214,7 @@ CompsEnvironmentGroup::dbInsert()
         "  ) "
         "VALUES "
         "  (?, ?, ?, ?, ?)";
-    SQLite3::Statement query(getEnvironment().conn, sql);
+    SQLite3::Statement query(*getEnvironment().conn.get(), sql);
     query.bindv(getEnvironment().getId(),
                 getGroupId(),
                 getInstalled(),
@@ -234,9 +233,7 @@ CompsEnvironmentGroup::dbSelectOrInsert()
         "  comps_evironment_group "
         "WHERE "
         "  groupid=?";
-    std::cout << sql << std::endl;
-    std::cout << getGroupId() << std::endl;
-    SQLite3::Query query(getEnvironment().conn, sql);
+    SQLite3::Query query(*getEnvironment().conn.get(), sql);
     query.bindv(getGroupId());
     SQLite3::Statement::StepResult result = query.step();
 

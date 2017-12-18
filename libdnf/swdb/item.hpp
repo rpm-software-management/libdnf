@@ -21,14 +21,14 @@
 #ifndef LIBDNF_SWDB_ITEM_HPP
 #define LIBDNF_SWDB_ITEM_HPP
 
+#include <memory>
 #include <string>
 
 #include "libdnf/utils/sqlite3/sqlite3.hpp"
 
 class Item {
 public:
-    Item() = default;
-    Item(SQLite3 & conn);
+    Item(std::shared_ptr<SQLite3> conn);
     virtual ~Item() = default;
 
     int64_t getId() const noexcept { return id; }
@@ -37,7 +37,7 @@ public:
     virtual const std::string & getItemType() const noexcept { return itemType; }
     virtual std::string toStr();
     virtual void save();
-    SQLite3 & conn;
+    std::shared_ptr<SQLite3> conn;
 
 protected:
     void dbInsert();

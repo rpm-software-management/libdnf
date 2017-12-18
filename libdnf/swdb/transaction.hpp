@@ -21,7 +21,6 @@
 #ifndef LIBDNF_SWDB_TRANSACTION_HPP
 #define LIBDNF_SWDB_TRANSACTION_HPP
 
-#include <bits/stdint-intn.h>
 #include <memory>
 #include <string>
 
@@ -36,9 +35,9 @@ enum class TransactionItemReason;
 class Transaction {
 public:
     // create an empty object, don't read from db
-    Transaction(SQLite3 & conn);
+    Transaction(std::shared_ptr<SQLite3> conn);
     // load from db
-    Transaction(SQLite3 & conn, int64_t pk);
+    Transaction(std::shared_ptr<SQLite3> conn, int64_t pk);
 
     int64_t getId() const noexcept { return id; }
     void setId(int64_t value) { id = value; }
@@ -76,7 +75,7 @@ public:
     std::vector<std::shared_ptr<TransactionItem> > getItems() { return items; }
     void loadItems();
     void saveItems();
-    SQLite3 & conn;
+    std::shared_ptr<SQLite3> conn;
 
 protected:
     int64_t id = 0;

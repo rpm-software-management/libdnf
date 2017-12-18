@@ -20,7 +20,7 @@
 
 #include "item.hpp"
 
-Item::Item(SQLite3 & conn)
+Item::Item(std::shared_ptr<SQLite3> conn)
   : conn{conn}
 {
 }
@@ -39,10 +39,10 @@ Item::dbInsert()
         "  item "
         "VALUES "
         "  (null, ?)";
-    SQLite3::Statement query(conn, sql);
+    SQLite3::Statement query(*conn.get(), sql);
     query.bindv(itemType);
     query.step();
-    setId(conn.lastInsertRowID());
+    setId(conn->lastInsertRowID());
 }
 
 std::string
