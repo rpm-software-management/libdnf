@@ -16,9 +16,10 @@ TransformerMock::TransformerMock()
 void
 TransformerTest::setUp()
 {
-    swdb = std::unique_ptr<SQLite3>(new SQLite3(":memory:"));
-    history = std::unique_ptr<SQLite3>(new SQLite3(":memory:"));
-    SwdbCreateDatabase(*swdb.get());
+    swdb = std::make_shared<SQLite3>(":memory:");
+    history = std::make_shared<SQLite3>(":memory:");
+
+    SwdbCreateDatabase(swdb);
 
     const char * sql = R"**(
         CREATE TABLE pkgtups (
@@ -51,6 +52,11 @@ TransformerTest::setUp()
             pkgtupid INTEGER NOT NULL REFERENCES pkgtups,
             done BOOL NOT NULL DEFAULT FALSE, state TEXT NOT NULL
         );
+        CREATE TABLE pkg_yumdb (
+            pkgtupid INTEGER NOT NULL REFERENCES pkgtups,
+            yumdb_key TEXT NOT NULL,
+            yumdb_val TEXT NOT NULL
+        );
     )**";
 
     history.get()->exec(sql);
@@ -61,6 +67,16 @@ TransformerTest::setUp()
         VALUES
             (1, 'chrony', 'x86_64', 1, '3.1', '4.fc26', 'sha256:6cec2091'),
             (2, 'kernel', 'x86_64', 0, '4.11.6', '301.fc26', 'sha256:8dc6bb96')
+    )**";
+
+    history.get()->exec(sql);
+
+    sql = R"**(
+        INSERT INTO
+            pkg_yumdb
+        VALUES
+            (1, 'releasever', '26'),
+            (2, 'releasever', 'rawhide')
     )**";
 
     history.get()->exec(sql);
@@ -112,39 +128,20 @@ TransformerTest::tearDown()
 }
 
 void
-TransformerTest::testTransformRPMItems()
-{
-    transformer.transformRPMItems(*swdb.get(), *history.get());
-
-    RPMItem chrony(*swdb.get(), 1);
-    CPPUNIT_ASSERT(chrony.getId() == 1);
-    CPPUNIT_ASSERT(chrony.getName() == "chrony");
-    CPPUNIT_ASSERT(chrony.getEpoch() == 1);
-    CPPUNIT_ASSERT(chrony.getVersion() == "3.1");
-    CPPUNIT_ASSERT(chrony.getRelease() == "4.fc26");
-    // CPPUNIT_ASSERT(chrony.getChecksumType() == "sha256");
-    // CPPUNIT_ASSERT(chrony.getChecksumData() == "6cec2091");
-
-    RPMItem kernel(*swdb.get(), 2);
-    CPPUNIT_ASSERT(kernel.getId() == 2);
-    CPPUNIT_ASSERT(kernel.getName() == "kernel");
-    CPPUNIT_ASSERT(kernel.getEpoch() == 0);
-    CPPUNIT_ASSERT(kernel.getVersion() == "4.11.6");
-    CPPUNIT_ASSERT(kernel.getRelease() == "301.fc26");
-    // CPPUNIT_ASSERT(kernel.getChecksumType() == "sha256");
-    // CPPUNIT_ASSERT(kernel.getChecksumData() == "8dc6bb96");
-}
-
-void
 TransformerTest::testTransformTrans()
 {
-    Transaction first(*swdb.get(), 1);
+    auto transactions = transformer.transformTrans(swdb, history);
+    for (auto trans : transactions) {
+        transformer.transformRPMItems(swdb, history, trans);
+    }
 
+    Transaction first(swdb, 1);
     CPPUNIT_ASSERT(first.getId() == 1);
     CPPUNIT_ASSERT(first.getDtBegin() == 1513267401);
     CPPUNIT_ASSERT(first.getDtEnd() == 1513267509);
     CPPUNIT_ASSERT(first.getRpmdbVersionBegin() == "2213:9795b6a4db5e5368628b5240ec63a629833c5594");
     CPPUNIT_ASSERT(first.getRpmdbVersionEnd() == "2213:9eab991133c166f8bcf3ecea9fb422b853f7aebc");
+    CPPUNIT_ASSERT(first.getReleasever() == "26");
     CPPUNIT_ASSERT(first.getUserId() == 1000);
     CPPUNIT_ASSERT(first.getCmdline() == "upgrade -y");
     CPPUNIT_ASSERT(first.getDone() == true);
@@ -154,7 +151,15 @@ TransformerTest::testTransformTrans()
     CPPUNIT_ASSERT(!items.empty());
     for (auto item : items) {
         if (item->getId() == 1) {
+            auto chrony = std::dynamic_pointer_cast<RPMItem>(item->getItem());
+            CPPUNIT_ASSERT(chrony->getId() == 1);
+            CPPUNIT_ASSERT(chrony->getName() == "chrony");
+            CPPUNIT_ASSERT(chrony->getEpoch() == 1);
+            CPPUNIT_ASSERT(chrony->getVersion() == "3.1");
+            CPPUNIT_ASSERT(chrony->getRelease() == "4.fc26");
+
             CPPUNIT_ASSERT(item->getAction() == TransactionItemAction::UPGRADE);
+            CPPUNIT_ASSERT(item->getReason() == TransactionItemReason::UNKNOWN);
             CPPUNIT_ASSERT(item->getDone() == true);
             // TODO reason, repo, replaced
         }
@@ -163,21 +168,7 @@ TransformerTest::testTransformTrans()
         }
     }
 
-    Transaction second(*swdb.get(), 1);
-
-    second.loadItems();
-    items = second.getItems();
-    CPPUNIT_ASSERT(!items.empty());
-    for (auto item : items) {
-        if (item->getId() == 2) {
-            CPPUNIT_ASSERT(item->getAction() == TransactionItemAction::INSTALL);
-            CPPUNIT_ASSERT(item->getDone() == true);
-        }
-        else {
-            CPPUNIT_ASSERT(false);
-        }
-    }
-
+    Transaction second(swdb, 2);
     CPPUNIT_ASSERT(second.getId() == 2);
     CPPUNIT_ASSERT(second.getDtBegin() == 1513267535);
     CPPUNIT_ASSERT(second.getDtEnd() == 1513267539);
@@ -187,4 +178,25 @@ TransformerTest::testTransformTrans()
     CPPUNIT_ASSERT(second.getUserId() == 1000);
     CPPUNIT_ASSERT(second.getCmdline() == "-y install Foo");
     CPPUNIT_ASSERT(second.getDone() == true);
+
+    second.loadItems();
+    items = second.getItems();
+    CPPUNIT_ASSERT(!items.empty());
+    for (auto item : items) {
+        if (item->getId() == 2) {
+            auto kernel = std::dynamic_pointer_cast<RPMItem>(item->getItem());
+            CPPUNIT_ASSERT(kernel->getId() == 2);
+            CPPUNIT_ASSERT(kernel->getName() == "kernel");
+            CPPUNIT_ASSERT(kernel->getEpoch() == 0);
+            CPPUNIT_ASSERT(kernel->getVersion() == "4.11.6");
+            CPPUNIT_ASSERT(kernel->getRelease() == "301.fc26");
+
+            CPPUNIT_ASSERT(item->getAction() == TransactionItemAction::INSTALL);
+            CPPUNIT_ASSERT(item->getReason() == TransactionItemReason::UNKNOWN);
+            CPPUNIT_ASSERT(item->getDone() == true);
+        }
+        else {
+            CPPUNIT_ASSERT(false);
+        }
+    }
 }

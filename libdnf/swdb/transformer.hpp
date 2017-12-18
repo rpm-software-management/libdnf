@@ -21,7 +21,21 @@
 #ifndef LIBDNF_SWDB_TRANSFORMER_HPP
 #define LIBDNF_SWDB_TRANSFORMER_HPP
 
+#include <memory>
+#include <vector>
 #include "libdnf/utils/sqlite3/sqlite3.hpp"
+#include "item_rpm.hpp"
+#include "transaction.hpp"
+#include "transactionitem.hpp"
+
+// following classe override default behavior with
+// inserting rows with explicitly set IDs
+
+class TransformerTransaction : public Transaction {
+public:
+    using Transaction::Transaction;
+    void save() { dbInsert(); }
+};
 
 class Transformer
 {
@@ -43,11 +57,10 @@ class Transformer
     void transform ();
 
   protected:
-    void transformRPMItems (SQLite3 &swdb, SQLite3 &history);
-    void transformTransItems (SQLite3 &swdb, SQLite3 &history);
-    void transformTrans (SQLite3 &swdb, SQLite3 &history);
-    void transformTransWith (SQLite3 &swdb, SQLite3 &history);
-    void transformOutput (SQLite3 &swdb, SQLite3 &history);
+    std::vector<std::shared_ptr<TransformerTransaction> > transformTrans(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQLite3> history);
+    void transformRPMItems(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQLite3> history, std::shared_ptr<TransformerTransaction> trans);
+    void transformTransWith(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQLite3> history);
+    void transformOutput(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQLite3> history);
 
   private:
     std::string historyPath ();
