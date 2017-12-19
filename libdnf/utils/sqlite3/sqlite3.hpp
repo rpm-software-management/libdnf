@@ -155,9 +155,8 @@ public:
                     return StepResult::ROW;
                 case SQLITE_BUSY:
                     return StepResult::BUSY;
-                default:
-                    throw LibException(result, "Step failed");
             }
+            throw LibException(result, "Step failed:" + db.getError());
         }
 
         int getColumnCount() const
@@ -193,7 +192,7 @@ public:
         const char * getExpandedSql()
         {
             expandSql = sqlite3_expanded_sql(stmt);
-            if (!expandSql) 
+            if (!expandSql)
                 throw Exception("getExpandedSql(): insufficient memory or result "
                                 "exceed the the maximum SQLite3 string length");
             return expandSql;
@@ -342,7 +341,7 @@ public:
     {
         auto result = sqlite3_exec(db, sql, nullptr, nullptr, nullptr);
         if (result != SQLITE_OK) {
-            throw LibException(result, "Exec failed");
+            throw LibException(result, "Exec failed: " + getError());
         }
     }
 
@@ -355,6 +354,13 @@ public:
     {
         return sqlite3_last_insert_rowid(db);
     }
+
+    std::string getError()
+    {
+        return sqlite3_errmsg(db);
+    }
+
+    void backup(const std::string &outputFile);
 
   protected:
     void open();

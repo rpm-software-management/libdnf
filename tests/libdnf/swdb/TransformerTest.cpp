@@ -66,56 +66,37 @@ TransformerTest::setUp()
             pkgtups
         VALUES
             (1, 'chrony', 'x86_64', 1, '3.1', '4.fc26', 'sha256:6cec2091'),
-            (2, 'kernel', 'x86_64', 0, '4.11.6', '301.fc26', 'sha256:8dc6bb96')
-    )**";
-
-    history.get()->exec(sql);
-
-    sql = R"**(
+            (2, 'kernel', 'x86_64', 0, '4.11.6', '301.fc26', 'sha256:8dc6bb96'),
+            (3, 'chrony', 'x86_64', 1, '3.2', '4.fc26', 'sha256:6asd1231');
         INSERT INTO
             pkg_yumdb
         VALUES
             (1, 'releasever', '26'),
-            (2, 'releasever', 'rawhide')
-    )**";
-
-    history.get()->exec(sql);
-
-    sql = R"**(
+            (1, 'reason', 'user'),
+            (2, 'releasever', 'rawhide'),
+            (2, 'reason', 'dep'),
+            (3, 'releasever', '26'),
+            (3, 'reason', 'user');
         INSERT INTO
             trans_beg
         VALUES
             (1, 1513267401, '2213:9795b6a4db5e5368628b5240ec63a629833c5594', 1000),
             (2, 1513267535, '2213:9eab991133c166f8bcf3ecea9fb422b853f7aebc', 1000);
-    )**";
-
-    history.get()->exec(sql);
-
-    sql = R"**(
         INSERT INTO
             trans_end
         VALUES
             (1, 1513267509, '2213:9eab991133c166f8bcf3ecea9fb422b853f7aebc', 0),
             (2, 1513267539, '2214:e02004142740afb5b6d148d50bc84be4ab41ad13', 0);
-    )**";
-
-    history.get()->exec(sql);
-
-    sql = R"**(
         INSERT INTO
             trans_cmdline
         VALUES
             (1, 'upgrade -y'),
             (2, '-y install Foo');
-    )**";
-
-    history.get()->exec(sql);
-
-    sql = R"**(
         INSERT INTO
             trans_data_pkgs
         VALUES
-            (1, 1, 'TRUE', 'Upgrade'),
+            (1, 3, 'TRUE', 'Update'),
+            (1, 1, 'TRUE', 'Updated'),
             (2, 2, 'TRUE', 'Install');
     )**";
 
@@ -150,18 +131,30 @@ TransformerTest::testTransformTrans()
     auto items = first.getItems();
     CPPUNIT_ASSERT(!items.empty());
     for (auto item : items) {
-        if (item->getId() == 1) {
+        if (item->getId() == 2) {
             auto chrony = std::dynamic_pointer_cast<RPMItem>(item->getItem());
-            CPPUNIT_ASSERT(chrony->getId() == 1);
+            CPPUNIT_ASSERT(chrony->getId() == 2);
             CPPUNIT_ASSERT(chrony->getName() == "chrony");
             CPPUNIT_ASSERT(chrony->getEpoch() == 1);
             CPPUNIT_ASSERT(chrony->getVersion() == "3.1");
             CPPUNIT_ASSERT(chrony->getRelease() == "4.fc26");
 
-            CPPUNIT_ASSERT(item->getAction() == TransactionItemAction::UPGRADE);
-            CPPUNIT_ASSERT(item->getReason() == TransactionItemReason::UNKNOWN);
+            CPPUNIT_ASSERT(item->getAction() == TransactionItemAction::UPGRADED);
+            CPPUNIT_ASSERT(item->getReason() == TransactionItemReason::USER);
             CPPUNIT_ASSERT(item->getDone() == true);
-            // TODO reason, repo, replaced
+            // TODO repo, replaced
+        } else if (item->getId() == 1) {
+            auto chrony = std::dynamic_pointer_cast<RPMItem>(item->getItem());
+            CPPUNIT_ASSERT(chrony->getId() == 1);
+            CPPUNIT_ASSERT(chrony->getName() == "chrony");
+            CPPUNIT_ASSERT(chrony->getEpoch() == 1);
+            CPPUNIT_ASSERT(chrony->getVersion() == "3.2");
+            CPPUNIT_ASSERT(chrony->getRelease() == "4.fc26");
+
+            CPPUNIT_ASSERT(item->getAction() == TransactionItemAction::UPGRADE);
+            CPPUNIT_ASSERT(item->getReason() == TransactionItemReason::USER);
+            CPPUNIT_ASSERT(item->getDone() == true);
+            // TODO repo, replaced
         }
         else {
             CPPUNIT_ASSERT(false);
@@ -183,16 +176,16 @@ TransformerTest::testTransformTrans()
     items = second.getItems();
     CPPUNIT_ASSERT(!items.empty());
     for (auto item : items) {
-        if (item->getId() == 2) {
+        if (item->getId() == 3) {
             auto kernel = std::dynamic_pointer_cast<RPMItem>(item->getItem());
-            CPPUNIT_ASSERT(kernel->getId() == 2);
+            CPPUNIT_ASSERT(kernel->getId() == 3);
             CPPUNIT_ASSERT(kernel->getName() == "kernel");
             CPPUNIT_ASSERT(kernel->getEpoch() == 0);
             CPPUNIT_ASSERT(kernel->getVersion() == "4.11.6");
             CPPUNIT_ASSERT(kernel->getRelease() == "301.fc26");
 
             CPPUNIT_ASSERT(item->getAction() == TransactionItemAction::INSTALL);
-            CPPUNIT_ASSERT(item->getReason() == TransactionItemReason::UNKNOWN);
+            CPPUNIT_ASSERT(item->getReason() == TransactionItemReason::DEPENDENCY);
             CPPUNIT_ASSERT(item->getDone() == true);
         }
         else {

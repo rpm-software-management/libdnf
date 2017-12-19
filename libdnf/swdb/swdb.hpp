@@ -22,6 +22,7 @@
 #define LIBDNF_SWDB_SWDB_HPP
 
 #include "libdnf/utils/sqlite3/sqlite3.hpp"
+#include <memory>
 
 // TODO: create if doesn't exist
 void
