@@ -47,9 +47,11 @@ configure_file ("libdnf.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc @ONLY)
 
 ADD_SUBDIRECTORY(repo)
 ADD_SUBDIRECTORY(utils)
+ADD_SUBDIRECTORY(conf)
 ADD_SUBDIRECTORY(sack)
 
 SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${UTILS_SOURCES})
+SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${CONF_SOURCES})
 SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${SACK_SOURCES})
 SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${REPO_SOURCES})
 
@@ -142,6 +144,8 @@ IF (WITH_SWDB)
         dnf-swdb-db-sql.h
         dnf-swdb-sql.h)
 ENDIF()
+
+SET(LIBDNF_headers ${LIBDNF_headers} ${CONF_HEADERS})
 
 # gir generation
 # taken from https://github.com/ufo-kit/libuca/blob/master/src/CMakeLists.txt
