@@ -21,6 +21,8 @@
 #include <glib.h>
 #include <assert.h>
 #include <fnmatch.h>
+#include <list>
+#include <map>
 #include <string.h>
 #include <solv/evr.h>
 #include <solv/repo.h>
@@ -47,6 +49,8 @@ static int
 match_type_num(int keyname) {
     switch (keyname) {
     case HY_PKG_EPOCH:
+    case HY_PKG_LATEST:
+    case HY_PKG_LATEST_PER_ARCH:
         return 1;
     default:
         return 0;
@@ -934,91 +938,113 @@ filter_latest_sortcmp_byarch(const void *ap, const void *bp, void *dp)
     return *(Id *)ap - *(Id *)bp;
 }
 
-static void
-remove_non_latest(Pool *pool, Map *res, Queue samename, int start_block, int stop_block,
-                  int versions)
+static std::list<Id>
+create_ordered_version_list(std::map<Id, std::list<Id>> & id_version_map, Pool *pool)
 {
-    Solvable *solv_element, *solv_previous_element;
-    int count_version = 0;
-    solv_previous_element = pool->solvables + samename.elements[start_block];
-    int pos = start_block;
-    while (pos < stop_block) {
-        Id id_element = samename.elements[pos++];
-        solv_element = pool->solvables + id_element;
-        if (solv_previous_element->evr != solv_element->evr) {
-            count_version += 1;
-            solv_previous_element = solv_element;
+    std::list<Id> version_ordered_list;
+    for(auto& item : id_version_map) {
+        Id id_version = item.first;
+        if (version_ordered_list.size() == 0) {
+            version_ordered_list.push_back(id_version);
+            continue;
         }
-        if (versions < 0) {
-            if (count_version < -versions) {
-                MAPCLR(res, id_element);
-            } else {
+        bool version_inserted = FALSE;
+        for (std::list<Id>::iterator iter=version_ordered_list.begin(); iter!=version_ordered_list.end(); ++iter) {
+            Id id_current = *iter;
+            int r = pool_evrcmp(pool, id_version, id_current, EVRCMP_COMPARE);
+            if (r >= 0) {
+                version_ordered_list.insert(iter,id_version);
+                version_inserted = TRUE;
                 break;
             }
-        } else {
-            if (!(count_version < versions)) {
-                MAPCLR(res, id_element);
-                break;
-            }
+        }
+        if (!version_inserted) {
+            version_ordered_list.push_back(id_version);
         }
     }
-    if (versions > 0) {
-        while (pos < stop_block) {
-            Id id_element = samename.elements[pos++];
-            MAPCLR(res, id_element);
+    return version_ordered_list;
+}
+
+static void
+add_latest(std::map<Id, std::list<Id>> & id_version_map, Map *m, long latest, Pool *pool)
+{
+    if (latest > 0) {
+        if (id_version_map.size() <= (unsigned) latest) {
+            for(auto& item : id_version_map) {
+                auto id_list = item.second;
+                for (Id id : id_list) {
+                    MAPSET(m, id);
+                }
+            }
+        } else {
+            auto version_ordered_list = create_ordered_version_list(id_version_map, pool);
+            int counter = 0;
+            for (Id id_version : version_ordered_list) {
+                if (!(counter < latest)) {
+                    break;
+                }
+                counter++;
+                auto id_list = id_version_map[id_version];
+                for (Id id : id_list) {
+                    MAPSET(m, id);
+                }
+            }
+        }
+    } else {
+        if (id_version_map.size() > (unsigned) -latest) {
+            auto version_ordered_list = create_ordered_version_list(id_version_map, pool);
+            int counter = 0;
+            for (Id id_version : version_ordered_list) {
+                if (counter < -latest) {
+                    counter++;
+                    continue;
+                }
+                auto id_list = id_version_map[id_version];
+                for (Id id : id_list) {
+                    MAPSET(m, id);
+                }
+            }
         }
     }
 }
 
-
 static void
-filter_latest(HyQuery q, Map *res)
+filter_latest(HyQuery q, const struct _Filter *f, Map *m)
 {
-    if (q->latest == 0)
-        return;
     Pool *pool = dnf_sack_get_pool(q->sack);
-    Queue samename;
 
-    queue_init(&samename);
-    for (int i = 1; i < pool->nsolvables; ++i)
-        if (MAPTST(res, i))
-            queue_push(&samename, i);
-
-    if (samename.count < 2) {
-        queue_free(&samename);
-        return;
-    }
-
-    if (q->latest_per_arch)
-        solv_sort(samename.elements, samename.count, sizeof(Id),
-                  filter_latest_sortcmp_byarch, pool);
-    else
-        solv_sort(samename.elements, samename.count, sizeof(Id),
-                  filter_latest_sortcmp, pool);
-
-    Solvable *considered, *highest = 0;
-    int start_block = -1;
-    int i;
-    for (i = 0; i < samename.count; ++i) {
-        Id p = samename.elements[i];
-        considered = pool->solvables + p;
-        if (!highest || highest->name != considered->name ||
-            (q->latest_per_arch && highest->arch != considered->arch)) {
-            /* start of a new block */
-            if (start_block == -1) {
-                highest = considered;
-                start_block = i;
-                continue;
+    for (int mi = 0; mi < f->nmatches; ++mi) {
+        long latest = f->matches[mi].num;
+        if (latest == 0)
+            continue;
+        if (f->keyname == HY_PKG_LATEST) {
+            std::map<Id, std::map<Id, std::list<Id>>> samename;
+            for (Id id = 1; id < pool->nsolvables; ++id) {
+                if (!MAPTST(q->result, id))
+                    continue;
+                Solvable* s = pool_id2solvable(pool, id);
+                samename[s->name][s->evr].push_back(id);
             }
-            remove_non_latest(pool, res, samename, start_block, i, q->latest);
-            highest = considered;
-            start_block = i;
+            for(auto& item : samename) {
+                auto id_version_map = item.second;
+                add_latest(id_version_map, m, latest, pool);
+            }
+        } else {
+            std::map<Id, std::map<Id, std::map<Id, std::list<Id>>>> samename;
+            for (Id id = 1; id < pool->nsolvables; ++id) {
+                if (!MAPTST(q->result, id))
+                    continue;
+                Solvable* s = pool_id2solvable(pool, id);
+                samename[s->name][s->arch][s->evr].push_back(id);
+            }
+            for(auto& item_name : samename) {
+                for(auto& item : item_name.second) {
+                    auto id_version_map = item.second;
+                    add_latest(id_version_map, m, latest, pool);
+                }
+            }
         }
     }
-    if (start_block != -1) {
-        remove_non_latest(pool, res, samename, start_block, i, q->latest);
-    }
-    queue_free(&samename);
 }
 
 static void
@@ -1216,6 +1242,10 @@ hy_query_apply(HyQuery q)
         case HY_PKG_ADVISORY_TYPE:
             filter_advisory(q, f, &m, f->keyname);
             break;
+        case HY_PKG_LATEST:
+        case HY_PKG_LATEST_PER_ARCH:
+            filter_latest(q, f, &m);
+            break;
         default:
             filter_dataiterator(q, f, &m);
         }
@@ -1233,8 +1263,6 @@ hy_query_apply(HyQuery q)
         filter_updown_able(q, 0, q->result);
     if (q->updates)
         filter_updown(q, 0, q->result);
-    if (q->latest)
-        filter_latest(q, q->result);
 
     q->applied = 1;
     clear_filters(q);
@@ -1610,9 +1638,7 @@ hy_query_filter_upgrades(HyQuery q, int val)
 void
 hy_query_filter_latest_per_arch(HyQuery q, int val)
 {
-    q->applied = 0;
-    q->latest_per_arch = 1;
-    q->latest = val;
+    hy_query_filter_num(q, HY_PKG_LATEST_PER_ARCH, HY_EQ, val);
 }
 
 /**
@@ -1621,9 +1647,7 @@ hy_query_filter_latest_per_arch(HyQuery q, int val)
 void
 hy_query_filter_latest(HyQuery q, int val)
 {
-    q->applied = 0;
-    q->latest_per_arch = 0;
-    q->latest = val;
+    hy_query_filter_num(q, HY_PKG_LATEST, HY_EQ, val);
 }
 
 GPtrArray *
