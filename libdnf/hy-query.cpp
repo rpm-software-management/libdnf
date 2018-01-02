@@ -47,6 +47,8 @@ static int
 match_type_num(int keyname) {
     switch (keyname) {
     case HY_PKG_EPOCH:
+    case HY_PKG_LATEST:
+    case HY_PKG_LATEST_PER_ARCH:
         return 1;
     default:
         return 0;
@@ -935,90 +937,82 @@ filter_latest_sortcmp_byarch(const void *ap, const void *bp, void *dp)
 }
 
 static void
-remove_non_latest(Pool *pool, Map *res, Queue samename, int start_block, int stop_block,
-                  int versions)
+add_latest_to_map(const Pool *pool, Map *m, Queue *samename,
+                  int start_block, int stop_block, int latest)
 {
     Solvable *solv_element, *solv_previous_element;
-    int count_version = 0;
-    solv_previous_element = pool->solvables + samename.elements[start_block];
-    int pos = start_block;
-    while (pos < stop_block) {
-        Id id_element = samename.elements[pos++];
+    int version_counter = 0;
+    solv_previous_element = pool->solvables + samename->elements[start_block];
+    Id id_previous_evr = solv_previous_element->evr;
+    for (int pos = start_block; pos < stop_block; ++pos) {
+        Id id_element = samename->elements[pos];
         solv_element = pool->solvables + id_element;
-        if (solv_previous_element->evr != solv_element->evr) {
-            count_version += 1;
-            solv_previous_element = solv_element;
+        Id id_current_evr = solv_element->evr;
+        if (id_previous_evr != id_current_evr) {
+            version_counter += 1;
+            id_previous_evr = id_current_evr;
         }
-        if (versions < 0) {
-            if (count_version < -versions) {
-                MAPCLR(res, id_element);
-            } else {
-                break;
+        if (latest > 0) {
+            if (!(version_counter < latest)) {
+                return;
             }
         } else {
-            if (!(count_version < versions)) {
-                MAPCLR(res, id_element);
-                break;
+            if (version_counter < -latest) {
+                continue;
             }
         }
-    }
-    if (versions > 0) {
-        while (pos < stop_block) {
-            Id id_element = samename.elements[pos++];
-            MAPCLR(res, id_element);
-        }
+        MAPSET(m, id_element);
     }
 }
 
-
 static void
-filter_latest(HyQuery q, Map *res)
+filter_latest(HyQuery q, const struct _Filter *f, Map *m)
 {
-    if (q->latest == 0)
-        return;
     Pool *pool = dnf_sack_get_pool(q->sack);
-    Queue samename;
 
-    queue_init(&samename);
-    for (int i = 1; i < pool->nsolvables; ++i)
-        if (MAPTST(res, i))
-            queue_push(&samename, i);
+    for (int mi = 0; mi < f->nmatches; ++mi) {
+        int latest = f->matches[mi].num;
+        if (latest == 0)
+            continue;
+        Queue samename;
 
-    if (samename.count < 2) {
-        queue_free(&samename);
-        return;
-    }
+        queue_init(&samename);
+        for (int i = 1; i < pool->nsolvables; ++i)
+            if (MAPTST(q->result, i))
+                queue_push(&samename, i);
 
-    if (q->latest_per_arch)
-        solv_sort(samename.elements, samename.count, sizeof(Id),
-                  filter_latest_sortcmp_byarch, pool);
-    else
-        solv_sort(samename.elements, samename.count, sizeof(Id),
-                  filter_latest_sortcmp, pool);
+        if (f->keyname == HY_PKG_LATEST_PER_ARCH) {
+            solv_sort(samename.elements, samename.count, sizeof(Id),
+                      filter_latest_sortcmp_byarch, pool);
+        } else {
+            solv_sort(samename.elements, samename.count, sizeof(Id),
+                      filter_latest_sortcmp, pool);
+        }
 
-    Solvable *considered, *highest = 0;
-    int start_block = -1;
-    int i;
-    for (i = 0; i < samename.count; ++i) {
-        Id p = samename.elements[i];
-        considered = pool->solvables + p;
-        if (!highest || highest->name != considered->name ||
-            (q->latest_per_arch && highest->arch != considered->arch)) {
-            /* start of a new block */
-            if (start_block == -1) {
+        Solvable *considered, *highest = 0;
+        int start_block = -1;
+        int i;
+        for (i = 0; i < samename.count; ++i) {
+            Id p = samename.elements[i];
+            considered = pool->solvables + p;
+            if (!highest || highest->name != considered->name ||
+                ((f->keyname == HY_PKG_LATEST_PER_ARCH) && highest->arch != considered->arch)) {
+                /* start of a new block */
+                if (start_block == -1) {
+                    highest = considered;
+                    start_block = i;
+                    continue;
+                }
+                add_latest_to_map(pool, m, &samename, start_block, i, latest);
                 highest = considered;
                 start_block = i;
-                continue;
             }
-            remove_non_latest(pool, res, samename, start_block, i, q->latest);
-            highest = considered;
-            start_block = i;
         }
+        if (start_block != -1) {
+            add_latest_to_map(pool, m, &samename, start_block, i, latest);
+        }
+        queue_free(&samename);
     }
-    if (start_block != -1) {
-        remove_non_latest(pool, res, samename, start_block, i, q->latest);
-    }
-    queue_free(&samename);
 }
 
 static void
@@ -1216,6 +1210,10 @@ hy_query_apply(HyQuery q)
         case HY_PKG_ADVISORY_TYPE:
             filter_advisory(q, f, &m, f->keyname);
             break;
+        case HY_PKG_LATEST:
+        case HY_PKG_LATEST_PER_ARCH:
+            filter_latest(q, f, &m);
+            break;
         default:
             filter_dataiterator(q, f, &m);
         }
@@ -1233,8 +1231,6 @@ hy_query_apply(HyQuery q)
         filter_updown_able(q, 0, q->result);
     if (q->updates)
         filter_updown(q, 0, q->result);
-    if (q->latest)
-        filter_latest(q, q->result);
 
     q->applied = 1;
     clear_filters(q);
@@ -1610,9 +1606,7 @@ hy_query_filter_upgrades(HyQuery q, int val)
 void
 hy_query_filter_latest_per_arch(HyQuery q, int val)
 {
-    q->applied = 0;
-    q->latest_per_arch = 1;
-    q->latest = val;
+    hy_query_filter_num(q, HY_PKG_LATEST_PER_ARCH, HY_EQ, val);
 }
 
 /**
@@ -1621,9 +1615,7 @@ hy_query_filter_latest_per_arch(HyQuery q, int val)
 void
 hy_query_filter_latest(HyQuery q, int val)
 {
-    q->applied = 0;
-    q->latest_per_arch = 0;
-    q->latest = val;
+    hy_query_filter_num(q, HY_PKG_LATEST, HY_EQ, val);
 }
 
 GPtrArray *
