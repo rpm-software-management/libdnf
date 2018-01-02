@@ -23,17 +23,6 @@
 
 #include "hy-types.h"
 
-/* additional Query constants only used in the bindings */
-enum py_key_name_e {
-    HY_PKG_DOWNGRADABLE = 100,
-    HY_PKG_DOWNGRADES,
-    HY_PKG_EMPTY,
-    HY_PKG_LATEST_PER_ARCH,
-    HY_PKG_LATEST,
-    HY_PKG_UPGRADABLE,
-    HY_PKG_UPGRADES
-};
-
 extern PyTypeObject query_Type;
 
 #define queryObject_Check(o)        PyObject_TypeCheck(o, &query_Type)
