@@ -746,6 +746,7 @@ dnf_context_get_installonly_pkgs(DnfContext *context)
         "installonlypkg(kernel)",
         "installonlypkg(kernel-module)",
         "installonlypkg(vm)",
+        "multiversion(kernel)",
         NULL };
     return installonly_pkgs;
 }
