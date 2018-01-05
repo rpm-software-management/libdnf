@@ -785,7 +785,6 @@ guint64
 dnf_package_get_rpmdbid(DnfPackage *pkg)
 {
     guint64 ret = lookup_num(pkg, RPM_RPMDBID);
-    g_assert(ret > 0);
     return ret;
 }
 
