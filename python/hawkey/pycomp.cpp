@@ -28,8 +28,12 @@
 static char *
 pycomp_get_string_from_unicode(PyObject *str_u, PyObject **tmp_py_str)
 {
-    *tmp_py_str = PyUnicode_AsUTF8String(str_u);
-    return PyBytes_AsString(*tmp_py_str);
+    *tmp_py_str = PyUnicode_AsEncodedString(str_u, "utf-8", "ignore");
+    if (*tmp_py_str) {
+        return PyBytes_AsString(*tmp_py_str);
+    } else {
+        return NULL;
+    }
 }
 
 /**
