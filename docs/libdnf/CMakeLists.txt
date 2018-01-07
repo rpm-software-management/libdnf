@@ -1,8 +1,11 @@
-find_package(GtkDoc REQUIRED)
-
 configure_file("version.xml.in"  ${CMAKE_CURRENT_SOURCE_DIR}/version.xml)
 
-if (GTKDOC_FOUND)
+OPTION(WITH_GTKDOC "Enables libdnf GTK-Doc HTML documentation" ON)
+
+if (WITH_GTKDOC)
+    find_package(GtkDoc REQUIRED)
+
+    if (GTKDOC_FOUND)
         add_custom_command(OUTPUT doc-scan
             COMMAND ${GTKDOC_SCAN_EXE}
                     --source-dir=${CMAKE_SOURCE_DIR}/libdnf
@@ -22,9 +25,10 @@ if (GTKDOC_FOUND)
                     libdnf
                     ${CMAKE_SOURCE_DIR}/docs/libdnf/libdnf-docs.sgml
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/html")
-    add_custom_target(doc-gtk DEPENDS doc-scan doc-mkdb doc-mkhtml)
-else ()
-    message (FATAL_ERROR "gtk-doc not found")
-endif ()
+        add_custom_target(doc-gtk DEPENDS doc-scan doc-mkdb doc-mkhtml)
+    else ()
+        message (FATAL_ERROR "gtk-doc not found")
+    endif ()
 
-INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/html DESTINATION share/gtk-doc/html/libdnf)
+    INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/html DESTINATION share/gtk-doc/html/libdnf)
+endif ()
