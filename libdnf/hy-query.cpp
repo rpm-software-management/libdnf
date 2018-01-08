@@ -49,6 +49,8 @@ match_type_num(int keyname) {
     case HY_PKG_EPOCH:
     case HY_PKG_LATEST:
     case HY_PKG_LATEST_PER_ARCH:
+    case HY_PKG_UPGRADABLE:
+    case HY_PKG_DOWNGRADABLE:
         return 1;
     default:
         return 0;
@@ -861,34 +863,32 @@ filter_updown(HyQuery q, int downgrade, Map *res)
 }
 
 static void
-filter_updown_able(HyQuery q, int downgradable, Map *res)
+filter_updown_able(HyQuery q, const struct _Filter *f, Map *m)
 {
     Id p, what;
     Solvable *s;
-    Map m;
     Pool *pool = dnf_sack_get_pool(q->sack);
 
     dnf_sack_make_provides_ready(q->sack);
 
     if (!pool->installed) {
-        MAPZERO(res);
         return;
     }
-
-    map_init(&m, pool->nsolvables);
-    FOR_PKG_SOLVABLES(p) {
-        s = pool_id2solvable(pool, p);
-        if (s->repo == pool->installed)
+    for (int mi = 0; mi < f->nmatches; ++mi) {
+        if (f->matches[mi].num == 0)
             continue;
 
-        what = downgradable ? what_downgrades(pool, p) :
-                              what_upgrades(pool, p);
-        if (what != 0 && map_tst(res, what))
-            map_set(&m, what);
-    }
+        FOR_PKG_SOLVABLES(p) {
+            s = pool_id2solvable(pool, p);
+            if (s->repo == pool->installed)
+                continue;
 
-    map_and(res, &m);
-    map_free(&m);
+            what = (f->keyname == HY_PKG_DOWNGRADABLE) ? what_downgrades(pool, p) :
+                what_upgrades(pool, p);
+            if (what != 0 && map_tst(q->result, what))
+                map_set(m, what);
+        }
+    }
 }
 
 static int
@@ -1086,9 +1086,7 @@ clear_filters(HyQuery q)
     g_free(q->filters);
     q->filters = NULL;
     q->nfilters = 0;
-    q->downgradable = 0;
     q->downgrades = 0;
-    q->updatable = 0;
     q->updates = 0;
     q->latest = 0;
     q->latest_per_arch = 0;
@@ -1131,7 +1129,6 @@ hy_query_apply(HyQuery q)
     assert(m.size == q->result->size);
     for (int i = 0; i < q->nfilters; ++i) {
         struct _Filter *f = q->filters + i;
-
         map_empty(&m);
         switch (f->keyname) {
         case HY_PKG:
@@ -1205,6 +1202,10 @@ hy_query_apply(HyQuery q)
         case HY_PKG_LATEST_PER_ARCH:
             filter_latest(q, f, &m);
             break;
+        case HY_PKG_DOWNGRADABLE:
+        case HY_PKG_UPGRADABLE:
+            filter_updown_able(q, f, &m);
+            break;
         default:
             filter_dataiterator(q, f, &m);
         }
@@ -1214,12 +1215,8 @@ hy_query_apply(HyQuery q)
             map_and(q->result, &m);
     }
     map_free(&m);
-    if (q->downgradable)
-        filter_updown_able(q, 1, q->result);
     if (q->downgrades)
         filter_updown(q, 1, q->result);
-    if (q->updatable)
-        filter_updown_able(q, 0, q->result);
     if (q->updates)
         filter_updown(q, 0, q->result);
 
@@ -1274,9 +1271,7 @@ hy_query_clone(HyQuery q)
     HyQuery qn = hy_query_create(q->sack);
 
     qn->flags = q->flags;
-    qn->downgradable = q->downgradable;
     qn->downgrades = q->downgrades;
-    qn->updatable = q->updatable;
     qn->updates = q->updates;
     qn->latest = q->latest;
     qn->latest_per_arch = q->latest_per_arch;
@@ -1557,8 +1552,7 @@ hy_query_filter_requires(HyQuery q, int cmp_type, const char *name, const char *
 void
 hy_query_filter_downgradable(HyQuery q, int val)
 {
-    q->applied = 0;
-    q->downgradable = val;
+    hy_query_filter_num(q, HY_PKG_DOWNGRADABLE, HY_EQ, val);
 }
 
 /**
@@ -1577,8 +1571,7 @@ hy_query_filter_downgrades(HyQuery q, int val)
 void
 hy_query_filter_upgradable(HyQuery q, int val)
 {
-    q->applied = 0;
-    q->updatable = val;
+    hy_query_filter_num(q, HY_PKG_UPGRADABLE, HY_EQ, val);
 }
 
 /**
