@@ -409,16 +409,6 @@ filter_pkg(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
-filter_all(HyQuery q, struct _Filter *f, Map *m)
-{
-    assert(f->nmatches == 1);
-    assert(f->match_type == _HY_NUM);
-    assert(f->cmp_type == HY_EQ);
-    assert(f->matches[0].num == -1);
-    // just leaves m empty
-}
-
-static void
 filter_name(HyQuery q, const struct _Filter *f, Map *m)
 {
     Pool *pool = dnf_sack_get_pool(q->sack);
@@ -1148,7 +1138,8 @@ hy_query_apply(HyQuery q)
             filter_pkg(q, f, &m);
             break;
         case HY_PKG_ALL:
-            filter_all(q, f, &m);
+        case HY_PKG_EMPTY:
+            /* used to set query empty by keeping Map m empty */
             break;
         case HY_PKG_CONFLICTS:
             filter_rco_reldep(q, f, &m);
@@ -1386,9 +1377,9 @@ hy_query_filter_empty(HyQuery q)
     q->applied = 0;
     struct _Filter *filterp = query_add_filter(q, 1);
     filterp->cmp_type = HY_EQ;
-    filterp->keyname = HY_PKG_ALL;
+    filterp->keyname = HY_PKG_EMPTY;
     filterp->match_type = _HY_NUM;
-    filterp->matches[0].num = -1;
+    filterp->matches[0].num = 1;
     return 0;
 }
 
