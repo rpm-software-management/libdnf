@@ -57,8 +57,6 @@ struct _HyQuery {
     struct _Filter *filters;
     int applied;
     int nfilters;
-    int latest; /* 1 for "only the latest version" */
-    int latest_per_arch; /* 1 for "only the latest version per arch" */
 };
 
 struct _Filter *filter_create(int nmatches);
