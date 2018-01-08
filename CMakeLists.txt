@@ -26,6 +26,9 @@ ADD_DEFINITIONS(-DG_LOG_DOMAIN=\\"libdnf\\")
 
 INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR} libdnf/utils/)
 
+OPTION(WITH_GTKDOC "Enables libdnf GTK-Doc HTML documentation" ON)
+OPTION(WITH_MAN "Enables hawkey man page generation" ON)
+
 OPTION (ENABLE_SOLV_URPMREORDER "Build with support for URPM-like solution reordering?" OFF)
 option (ENABLE_RHSM_SUPPORT "Build with Red Hat Subscription Manager support?" OFF)
 
