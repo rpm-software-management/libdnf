@@ -7,8 +7,6 @@ else()
     SET(SPHINX_BUILD_NAME "sphinx-build-3")
 endif()
 
-OPTION(WITH_MAN "Enables hawkey man page generation" ON)
-
 ADD_CUSTOM_TARGET (doc-html
 		  PYTHONPATH=${CMAKE_BINARY_DIR}/src/python ${SPHINX_BUILD_NAME} -b html
 		  ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/html

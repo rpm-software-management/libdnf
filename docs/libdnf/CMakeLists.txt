@@ -1,7 +1,5 @@
 configure_file("version.xml.in"  ${CMAKE_CURRENT_SOURCE_DIR}/version.xml)
 
-OPTION(WITH_GTKDOC "Enables libdnf GTK-Doc HTML documentation" ON)
-
 if (WITH_GTKDOC)
     find_package(GtkDoc REQUIRED)
 
