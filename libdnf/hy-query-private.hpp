@@ -57,8 +57,6 @@ struct _HyQuery {
     struct _Filter *filters;
     int applied;
     int nfilters;
-    int downgrades; /* 1 for "only downgrades for installed packages" */
-    int updates; /* 1 for "only updates for installed packages" */
     int latest; /* 1 for "only the latest version" */
     int latest_per_arch; /* 1 for "only the latest version per arch" */
 };
