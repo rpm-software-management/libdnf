@@ -1089,8 +1089,6 @@ clear_filters(HyQuery q)
     g_free(q->filters);
     q->filters = NULL;
     q->nfilters = 0;
-    q->latest = 0;
-    q->latest_per_arch = 0;
 }
 
 static void
@@ -1272,8 +1270,6 @@ hy_query_clone(HyQuery q)
     HyQuery qn = hy_query_create(q->sack);
 
     qn->flags = q->flags;
-    qn->latest = q->latest;
-    qn->latest_per_arch = q->latest_per_arch;
     qn->applied = q->applied;
 
     for (int i = 0; i < q->nfilters; ++i) {
