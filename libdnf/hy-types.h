@@ -42,7 +42,7 @@ typedef int (*hy_solution_callback)(HyGoal goal, void *callback_data);
 
 enum _hy_key_name_e {
     HY_PKG = 0,
-    HY_PKG_ALL = 1,
+    HY_PKG_ALL = 1, /* DEPRECATED, used only to make empty query. Replaced by HY_PKG_EMPTY */
     HY_PKG_ARCH = 2,
     HY_PKG_CONFLICTS = 3,
     HY_PKG_DESCRIPTION = 4,
