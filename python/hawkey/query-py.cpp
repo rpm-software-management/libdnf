@@ -271,31 +271,29 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
         keyname == HY_PKG_LATEST ||
         keyname == HY_PKG_UPGRADABLE ||
         keyname == HY_PKG_UPGRADES) {
-        long val;
+        int val;
 
         if (!PyInt_Check(match) || cmp_type != HY_EQ) {
             PyErr_SetString(HyExc_Value, "Invalid boolean filter query.");
             return 0;
         }
-        val = PyLong_AsLong(match);
+        long val_long = PyLong_AsLong(match);
+        if (val_long < INT_MIN) {
+            val = INT_MIN;
+        } else if (val_long > INT_MAX) {
+            val = INT_MAX;
+        } else {
+            val = val_long;
+        }
         if (keyname == HY_PKG_EMPTY) {
             if (!val) {
                 PyErr_SetString(HyExc_Value, "Invalid boolean filter query.");
                 return 0;
             }
             hy_query_filter_empty(query);
-        } else if (keyname == HY_PKG_LATEST_PER_ARCH)
-            hy_query_filter_latest_per_arch(query, val);
-        else if (keyname == HY_PKG_LATEST)
-            hy_query_filter_latest(query, val);
-        else if (keyname == HY_PKG_DOWNGRADABLE)
-            hy_query_filter_downgradable(query, val);
-        else if (keyname == HY_PKG_DOWNGRADES)
-            hy_query_filter_downgrades(query, val);
-        else if (keyname == HY_PKG_UPGRADABLE)
-            hy_query_filter_upgradable(query, val);
-        else
-            hy_query_filter_upgrades(query, val);
+        } else {
+            hy_query_filter_num(query, keyname, HY_EQ, val);
+        }
         return 1;
     }
     if (PyUnicode_Check(match) || PyString_Check(match)) {

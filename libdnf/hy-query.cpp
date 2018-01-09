@@ -46,6 +46,7 @@
 static int
 match_type_num(int keyname) {
     switch (keyname) {
+    case HY_PKG_EMPTY:
     case HY_PKG_EPOCH:
     case HY_PKG_LATEST:
     case HY_PKG_LATEST_PER_ARCH:
@@ -1364,12 +1365,7 @@ hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
 int
 hy_query_filter_empty(HyQuery q)
 {
-    q->applied = 0;
-    struct _Filter *filterp = query_add_filter(q, 1);
-    filterp->cmp_type = HY_EQ;
-    filterp->keyname = HY_PKG_EMPTY;
-    filterp->match_type = _HY_NUM;
-    filterp->matches[0].num = 1;
+    hy_query_filter_num(q, HY_PKG_EMPTY, HY_EQ, 1);
     return 0;
 }
 
