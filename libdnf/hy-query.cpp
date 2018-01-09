@@ -46,7 +46,14 @@
 static int
 match_type_num(int keyname) {
     switch (keyname) {
+    case HY_PKG_EMPTY:
     case HY_PKG_EPOCH:
+    case HY_PKG_LATEST:
+    case HY_PKG_LATEST_PER_ARCH:
+    case HY_PKG_UPGRADABLE:
+    case HY_PKG_UPGRADES:
+    case HY_PKG_DOWNGRADABLE:
+    case HY_PKG_DOWNGRADES:
         return 1;
     default:
         return 0;
@@ -407,16 +414,6 @@ filter_pkg(HyQuery q, struct _Filter *f, Map *m)
 }
 
 static void
-filter_all(HyQuery q, struct _Filter *f, Map *m)
-{
-    assert(f->nmatches == 1);
-    assert(f->match_type == _HY_NUM);
-    assert(f->cmp_type == HY_EQ);
-    assert(f->matches[0].num == -1);
-    // just leaves m empty
-}
-
-static void
 filter_name(HyQuery q, const struct _Filter *f, Map *m)
 {
     Pool *pool = dnf_sack_get_pool(q->sack);
@@ -457,7 +454,7 @@ filter_name(HyQuery q, const struct _Filter *f, Map *m)
 
             if (f->cmp_type & HY_EQ) {
                 if (match_name_id == s->name)
-                     MAPSET(m, id);
+                    MAPSET(m, id);
                 continue;
             }
             const char *name = pool_id2str(pool, s->name);
@@ -518,8 +515,9 @@ filter_evr(HyQuery q, struct _Filter *f, Map *m)
 
             if ((cmp > 0 && f->cmp_type & HY_GT) ||
                 (cmp < 0 && f->cmp_type & HY_LT) ||
-                (cmp == 0 && f->cmp_type & HY_EQ))
+                (cmp == 0 && f->cmp_type & HY_EQ)) {
                 MAPSET(m, id);
+            }
         }
     }
 }
@@ -555,8 +553,9 @@ filter_version(HyQuery q, struct _Filter *f, Map *m)
             int cmp = pool_evrcmp_str(pool, vr, filter_vr, EVRCMP_COMPARE);
             if ((cmp > 0 && cmp_type & HY_GT) ||
                 (cmp < 0 && cmp_type & HY_LT) ||
-                (cmp == 0 && cmp_type & HY_EQ))
+                (cmp == 0 && cmp_type & HY_EQ)) {
                 MAPSET(m, id);
+            }
         }
         g_free(filter_vr);
     }
@@ -595,8 +594,9 @@ filter_release(HyQuery q, struct _Filter *f, Map *m)
 
             if ((cmp > 0 && f->cmp_type & HY_GT) ||
                 (cmp < 0 && f->cmp_type & HY_LT) ||
-                (cmp == 0 && f->cmp_type & HY_EQ))
+                (cmp == 0 && f->cmp_type & HY_EQ)) {
                 MAPSET(m, id);
+            }
         }
         g_free(filter_vr);
     }
@@ -621,7 +621,7 @@ filter_arch(HyQuery q, const struct _Filter *f, Map *m)
             Solvable *s = pool_id2solvable(pool, id);
             if (f->cmp_type & HY_EQ) {
                 if (match_arch_id == s->arch)
-                     MAPSET(m, id);
+                    MAPSET(m, id);
                 continue;
             }
             const char *arch = pool_id2str(pool, s->arch);
@@ -836,67 +836,63 @@ filter_nevra(HyQuery q, const struct _Filter *f, Map *m)
 }
 
 static void
-filter_updown(HyQuery q, int downgrade, Map *res)
+filter_updown(HyQuery q, const struct _Filter *f, Map *m)
 {
     DnfSack *sack = q->sack;
     Pool *pool = dnf_sack_get_pool(sack);
-    int i;
-    Map m;
 
     dnf_sack_make_provides_ready(q->sack);
 
     if (!pool->installed) {
-        MAPZERO(res);
         return;
     }
 
-    map_init(&m, pool->nsolvables);
+    for (int mi = 0; mi < f->nmatches; ++mi) {
+        if (f->matches[mi].num == 0)
+            continue;
 
-    for (i = 1; i < pool->nsolvables; ++i) {
-        if (!MAPTST(res, i))
-            continue;
-        Solvable *s = pool_id2solvable(pool, i);
-        if (s->repo == pool->installed)
-            continue;
-        if (downgrade && what_downgrades(pool, i) > 0)
-            MAPSET(&m, i);
-        else if (!downgrade && what_upgrades(pool, i) > 0)
-            MAPSET(&m, i);
+        for (Id id = 1; id < pool->nsolvables; ++id) {
+            if (!MAPTST(q->result, id))
+                continue;
+            Solvable *s = pool_id2solvable(pool, id);
+            if (s->repo == pool->installed)
+                continue;
+            if (f->keyname == HY_PKG_DOWNGRADES) {
+                if (what_downgrades(pool, id) > 0)
+                    MAPSET(m, id);
+            } else if (what_upgrades(pool, id) > 0)
+                MAPSET(m, id);
+        }
     }
-
-    map_and(res, &m);
-    map_free(&m);
 }
 
 static void
-filter_updown_able(HyQuery q, int downgradable, Map *res)
+filter_updown_able(HyQuery q, const struct _Filter *f, Map *m)
 {
     Id p, what;
     Solvable *s;
-    Map m;
     Pool *pool = dnf_sack_get_pool(q->sack);
 
     dnf_sack_make_provides_ready(q->sack);
 
     if (!pool->installed) {
-        MAPZERO(res);
         return;
     }
-
-    map_init(&m, pool->nsolvables);
-    FOR_PKG_SOLVABLES(p) {
-        s = pool_id2solvable(pool, p);
-        if (s->repo == pool->installed)
+    for (int mi = 0; mi < f->nmatches; ++mi) {
+        if (f->matches[mi].num == 0)
             continue;
 
-        what = downgradable ? what_downgrades(pool, p) :
-                              what_upgrades(pool, p);
-        if (what != 0 && map_tst(res, what))
-            map_set(&m, what);
-    }
+        FOR_PKG_SOLVABLES(p) {
+            s = pool_id2solvable(pool, p);
+            if (s->repo == pool->installed)
+                continue;
 
-    map_and(res, &m);
-    map_free(&m);
+            what = (f->keyname == HY_PKG_DOWNGRADABLE) ? what_downgrades(pool, p) :
+                what_upgrades(pool, p);
+            if (what != 0 && map_tst(q->result, what))
+                map_set(m, what);
+        }
+    }
 }
 
 static int
@@ -935,90 +931,82 @@ filter_latest_sortcmp_byarch(const void *ap, const void *bp, void *dp)
 }
 
 static void
-remove_non_latest(Pool *pool, Map *res, Queue samename, int start_block, int stop_block,
-                  int versions)
+add_latest_to_map(const Pool *pool, Map *m, Queue *samename,
+                  int start_block, int stop_block, int latest)
 {
     Solvable *solv_element, *solv_previous_element;
-    int count_version = 0;
-    solv_previous_element = pool->solvables + samename.elements[start_block];
-    int pos = start_block;
-    while (pos < stop_block) {
-        Id id_element = samename.elements[pos++];
+    int version_counter = 0;
+    solv_previous_element = pool->solvables + samename->elements[start_block];
+    Id id_previous_evr = solv_previous_element->evr;
+    for (int pos = start_block; pos < stop_block; ++pos) {
+        Id id_element = samename->elements[pos];
         solv_element = pool->solvables + id_element;
-        if (solv_previous_element->evr != solv_element->evr) {
-            count_version += 1;
-            solv_previous_element = solv_element;
+        Id id_current_evr = solv_element->evr;
+        if (id_previous_evr != id_current_evr) {
+            version_counter += 1;
+            id_previous_evr = id_current_evr;
         }
-        if (versions < 0) {
-            if (count_version < -versions) {
-                MAPCLR(res, id_element);
-            } else {
-                break;
+        if (latest > 0) {
+            if (!(version_counter < latest)) {
+                return;
             }
         } else {
-            if (!(count_version < versions)) {
-                MAPCLR(res, id_element);
-                break;
+            if (version_counter < -latest) {
+                continue;
             }
         }
-    }
-    if (versions > 0) {
-        while (pos < stop_block) {
-            Id id_element = samename.elements[pos++];
-            MAPCLR(res, id_element);
-        }
+        MAPSET(m, id_element);
     }
 }
 
-
 static void
-filter_latest(HyQuery q, Map *res)
+filter_latest(HyQuery q, const struct _Filter *f, Map *m)
 {
-    if (q->latest == 0)
-        return;
     Pool *pool = dnf_sack_get_pool(q->sack);
-    Queue samename;
 
-    queue_init(&samename);
-    for (int i = 1; i < pool->nsolvables; ++i)
-        if (MAPTST(res, i))
-            queue_push(&samename, i);
+    for (int mi = 0; mi < f->nmatches; ++mi) {
+        int latest = f->matches[mi].num;
+        if (latest == 0)
+            continue;
+        Queue samename;
 
-    if (samename.count < 2) {
-        queue_free(&samename);
-        return;
-    }
+        queue_init(&samename);
+        for (int i = 1; i < pool->nsolvables; ++i)
+            if (MAPTST(q->result, i))
+                queue_push(&samename, i);
 
-    if (q->latest_per_arch)
-        solv_sort(samename.elements, samename.count, sizeof(Id),
-                  filter_latest_sortcmp_byarch, pool);
-    else
-        solv_sort(samename.elements, samename.count, sizeof(Id),
-                  filter_latest_sortcmp, pool);
+        if (f->keyname == HY_PKG_LATEST_PER_ARCH) {
+            solv_sort(samename.elements, samename.count, sizeof(Id),
+                      filter_latest_sortcmp_byarch, pool);
+        } else {
+            solv_sort(samename.elements, samename.count, sizeof(Id),
+                      filter_latest_sortcmp, pool);
+        }
 
-    Solvable *considered, *highest = 0;
-    int start_block = -1;
-    int i;
-    for (i = 0; i < samename.count; ++i) {
-        Id p = samename.elements[i];
-        considered = pool->solvables + p;
-        if (!highest || highest->name != considered->name ||
-            (q->latest_per_arch && highest->arch != considered->arch)) {
-            /* start of a new block */
-            if (start_block == -1) {
+        Solvable *considered, *highest = 0;
+        int start_block = -1;
+        int i;
+        for (i = 0; i < samename.count; ++i) {
+            Id p = samename.elements[i];
+            considered = pool->solvables + p;
+            if (!highest || highest->name != considered->name ||
+                ((f->keyname == HY_PKG_LATEST_PER_ARCH) && highest->arch != considered->arch)) {
+                /* start of a new block */
+                if (start_block == -1) {
+                    highest = considered;
+                    start_block = i;
+                    continue;
+                }
+                add_latest_to_map(pool, m, &samename, start_block, i, latest);
                 highest = considered;
                 start_block = i;
-                continue;
             }
-            remove_non_latest(pool, res, samename, start_block, i, q->latest);
-            highest = considered;
-            start_block = i;
         }
+        if (start_block != -1) {
+            add_latest_to_map(pool, m, &samename, start_block, i, latest);
+        }
+        queue_free(&samename);
     }
-    if (start_block != -1) {
-        remove_non_latest(pool, res, samename, start_block, i, q->latest);
-    }
-    queue_free(&samename);
 }
 
 static void
@@ -1062,8 +1050,8 @@ filter_advisory(HyQuery q, struct _Filter *f, Map *m, int keyname)
                 // remember package nevras for matched advisories
                 GPtrArray *apkgs = dnf_advisory_get_packages(advisory);
                 for (unsigned int p = 0; p < apkgs->len; ++p) {
-                     auto apkg = g_ptr_array_index(apkgs, p);
-                     g_ptr_array_add(pkgs, g_object_ref(apkg));
+                    auto apkg = g_ptr_array_index(apkgs, p);
+                    g_ptr_array_add(pkgs, g_object_ref(apkg));
                 }
                 g_ptr_array_unref(apkgs);
             }
@@ -1102,12 +1090,6 @@ clear_filters(HyQuery q)
     g_free(q->filters);
     q->filters = NULL;
     q->nfilters = 0;
-    q->downgradable = 0;
-    q->downgrades = 0;
-    q->updatable = 0;
-    q->updates = 0;
-    q->latest = 0;
-    q->latest_per_arch = 0;
 }
 
 static void
@@ -1147,14 +1129,14 @@ hy_query_apply(HyQuery q)
     assert(m.size == q->result->size);
     for (int i = 0; i < q->nfilters; ++i) {
         struct _Filter *f = q->filters + i;
-
         map_empty(&m);
         switch (f->keyname) {
         case HY_PKG:
             filter_pkg(q, f, &m);
             break;
         case HY_PKG_ALL:
-            filter_all(q, f, &m);
+        case HY_PKG_EMPTY:
+            /* used to set query empty by keeping Map m empty */
             break;
         case HY_PKG_CONFLICTS:
             filter_rco_reldep(q, f, &m);
@@ -1216,6 +1198,18 @@ hy_query_apply(HyQuery q)
         case HY_PKG_ADVISORY_TYPE:
             filter_advisory(q, f, &m, f->keyname);
             break;
+        case HY_PKG_LATEST:
+        case HY_PKG_LATEST_PER_ARCH:
+            filter_latest(q, f, &m);
+            break;
+        case HY_PKG_DOWNGRADABLE:
+        case HY_PKG_UPGRADABLE:
+            filter_updown_able(q, f, &m);
+            break;
+        case HY_PKG_DOWNGRADES:
+        case HY_PKG_UPGRADES:
+            filter_updown(q, f, &m);
+            break;
         default:
             filter_dataiterator(q, f, &m);
         }
@@ -1225,16 +1219,6 @@ hy_query_apply(HyQuery q)
             map_and(q->result, &m);
     }
     map_free(&m);
-    if (q->downgradable)
-        filter_updown_able(q, 1, q->result);
-    if (q->downgrades)
-        filter_updown(q, 1, q->result);
-    if (q->updatable)
-        filter_updown_able(q, 0, q->result);
-    if (q->updates)
-        filter_updown(q, 0, q->result);
-    if (q->latest)
-        filter_latest(q, q->result);
 
     q->applied = 1;
     clear_filters(q);
@@ -1287,12 +1271,6 @@ hy_query_clone(HyQuery q)
     HyQuery qn = hy_query_create(q->sack);
 
     qn->flags = q->flags;
-    qn->downgradable = q->downgradable;
-    qn->downgrades = q->downgrades;
-    qn->updatable = q->updatable;
-    qn->updates = q->updates;
-    qn->latest = q->latest;
-    qn->latest_per_arch = q->latest_per_arch;
     qn->applied = q->applied;
 
     for (int i = 0; i < q->nfilters; ++i) {
@@ -1347,52 +1325,47 @@ hy_query_filter(HyQuery q, int keyname, int cmp_type, const char *match)
     q->applied = 0;
 
     switch (keyname) {
-    case HY_PKG_CONFLICTS:
-    case HY_PKG_ENHANCES:
-    case HY_PKG_OBSOLETES:
-    case HY_PKG_PROVIDES:
-    case HY_PKG_RECOMMENDS:
-    case HY_PKG_REQUIRES:
-    case HY_PKG_SUGGESTS:
-    case HY_PKG_SUPPLEMENTS: {
-        DnfSack *sack = query_sack(q);
+        case HY_PKG_CONFLICTS:
+        case HY_PKG_ENHANCES:
+        case HY_PKG_OBSOLETES:
+        case HY_PKG_PROVIDES:
+        case HY_PKG_RECOMMENDS:
+        case HY_PKG_REQUIRES:
+        case HY_PKG_SUGGESTS:
+        case HY_PKG_SUPPLEMENTS: {
+            DnfSack *sack = query_sack(q);
 
-    if (cmp_type == HY_GLOB) {
-        DnfReldepList *reldeplist = reldeplist_from_str (sack, match);
-        if (reldeplist == NULL)
-            return hy_query_filter_empty(q);
-        hy_query_filter_reldep_in(q, keyname, reldeplist);
-        g_object_unref (reldeplist);
-        return 0;
-    } else {
-        DnfReldep *reldep = reldep_from_str (sack, match);
-        if (reldep == NULL)
-            return hy_query_filter_empty(q);
-        int ret = hy_query_filter_reldep(q, keyname, reldep);
-        g_object_unref (reldep);
-        return ret;
-    }
-    }
-    default: {
-        struct _Filter *filterp = query_add_filter(q, 1);
-        filterp->cmp_type = cmp_type;
-        filterp->keyname = keyname;
-        filterp->match_type = _HY_STR;
-        filterp->matches[0].str = g_strdup(match);
-        return 0;
-    }
+            if (cmp_type == HY_GLOB) {
+                DnfReldepList *reldeplist = reldeplist_from_str (sack, match);
+                if (reldeplist == NULL)
+                    return hy_query_filter_empty(q);
+                hy_query_filter_reldep_in(q, keyname, reldeplist);
+                g_object_unref (reldeplist);
+                return 0;
+            } else {
+                DnfReldep *reldep = reldep_from_str (sack, match);
+                if (reldep == NULL)
+                    return hy_query_filter_empty(q);
+                int ret = hy_query_filter_reldep(q, keyname, reldep);
+                g_object_unref (reldep);
+                return ret;
+            }
+        }
+        default: {
+            struct _Filter *filterp = query_add_filter(q, 1);
+            filterp->cmp_type = cmp_type;
+            filterp->keyname = keyname;
+            filterp->match_type = _HY_STR;
+            filterp->matches[0].str = g_strdup(match);
+            return 0;
+        }
     }
 }
 
 int
 hy_query_filter_empty(HyQuery q)
 {
-    q->applied = 0;
-    struct _Filter *filterp = query_add_filter(q, 1);
-    filterp->cmp_type = HY_EQ;
-    filterp->keyname = HY_PKG_ALL;
-    filterp->match_type = _HY_NUM;
-    filterp->matches[0].num = -1;
+    hy_query_filter_num(q, HY_PKG_EMPTY, HY_EQ, 1);
     return 0;
 }
 
@@ -1570,8 +1543,7 @@ hy_query_filter_requires(HyQuery q, int cmp_type, const char *name, const char *
 void
 hy_query_filter_downgradable(HyQuery q, int val)
 {
-    q->applied = 0;
-    q->downgradable = val;
+    hy_query_filter_num(q, HY_PKG_DOWNGRADABLE, HY_EQ, val);
 }
 
 /**
@@ -1580,8 +1552,7 @@ hy_query_filter_downgradable(HyQuery q, int val)
 void
 hy_query_filter_downgrades(HyQuery q, int val)
 {
-    q->applied = 0;
-    q->downgrades = val;
+    hy_query_filter_num(q, HY_PKG_DOWNGRADES, HY_EQ, val);
 }
 
 /**
@@ -1590,8 +1561,7 @@ hy_query_filter_downgrades(HyQuery q, int val)
 void
 hy_query_filter_upgradable(HyQuery q, int val)
 {
-    q->applied = 0;
-    q->updatable = val;
+    hy_query_filter_num(q, HY_PKG_UPGRADABLE, HY_EQ, val);
 }
 
 /**
@@ -1600,8 +1570,7 @@ hy_query_filter_upgradable(HyQuery q, int val)
 void
 hy_query_filter_upgrades(HyQuery q, int val)
 {
-    q->applied = 0;
-    q->updates = val;
+    hy_query_filter_num(q, HY_PKG_UPGRADES, HY_EQ, val);
 }
 
 /**
@@ -1610,9 +1579,7 @@ hy_query_filter_upgrades(HyQuery q, int val)
 void
 hy_query_filter_latest_per_arch(HyQuery q, int val)
 {
-    q->applied = 0;
-    q->latest_per_arch = 1;
-    q->latest = val;
+    hy_query_filter_num(q, HY_PKG_LATEST_PER_ARCH, HY_EQ, val);
 }
 
 /**
@@ -1621,9 +1588,7 @@ hy_query_filter_latest_per_arch(HyQuery q, int val)
 void
 hy_query_filter_latest(HyQuery q, int val)
 {
-    q->applied = 0;
-    q->latest_per_arch = 0;
-    q->latest = val;
+    hy_query_filter_num(q, HY_PKG_LATEST, HY_EQ, val);
 }
 
 GPtrArray *

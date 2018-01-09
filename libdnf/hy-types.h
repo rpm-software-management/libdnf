@@ -42,7 +42,7 @@ typedef int (*hy_solution_callback)(HyGoal goal, void *callback_data);
 
 enum _hy_key_name_e {
     HY_PKG = 0,
-    HY_PKG_ALL = 1,
+    HY_PKG_ALL = 1, /* DEPRECATED, used only to make empty query. Replaced by HY_PKG_EMPTY */
     HY_PKG_ARCH = 2,
     HY_PKG_CONFLICTS = 3,
     HY_PKG_DESCRIPTION = 4,
@@ -69,7 +69,14 @@ enum _hy_key_name_e {
     HY_PKG_ADVISORY_BUG = 25,
     HY_PKG_ADVISORY_CVE = 26,
     HY_PKG_ADVISORY_SEVERITY = 27,
-    HY_PKG_ADVISORY_TYPE = 28
+    HY_PKG_ADVISORY_TYPE = 28,
+    HY_PKG_DOWNGRADABLE = 29,
+    HY_PKG_DOWNGRADES = 30,
+    HY_PKG_EMPTY = 31,
+    HY_PKG_LATEST_PER_ARCH = 32,
+    HY_PKG_LATEST = 33,
+    HY_PKG_UPGRADABLE = 34,
+    HY_PKG_UPGRADES = 35
 };
 
 enum _hy_comparison_type_e {
