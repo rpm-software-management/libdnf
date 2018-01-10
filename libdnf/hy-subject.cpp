@@ -205,7 +205,7 @@ hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, Hy
             ret = hy_possibilities_next_nevra(iter, nevra);
             if (ret != -1) {
                 query = hy_query_from_nevra(*nevra, sack, icase);
-                if (hy_query_is_not_empty(query)) {
+                if (!hy_query_is_empty(query)) {
                     hy_possibilities_free(iter);
                     return query;
                 }
@@ -217,14 +217,14 @@ hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, Hy
         *nevra = nullptr;
         query = hy_query_create(sack);
         hy_query_filter(query, HY_PKG_NEVRA, HY_GLOB, subject);
-        if (hy_query_is_not_empty(query))
+        if (!hy_query_is_empty(query))
             return query;
         hy_query_free(query);
     }
     if (with_provides) {
         query = hy_query_create(sack);
         hy_query_filter(query, HY_PKG_PROVIDES, HY_GLOB, subject);
-        if (hy_query_is_not_empty(query))
+        if (!hy_query_is_empty(query))
             return query;
         hy_query_free(query);
     }
@@ -248,7 +248,7 @@ hy_subject_get_best_sltr(HySubject subject, DnfSack *sack, HyForm *forms, bool o
     HyNevra nevra{nullptr};
     HyQuery query = hy_subject_get_best_solution(subject, sack, forms, &nevra, FALSE, TRUE, TRUE,
                                                  TRUE);
-    if (hy_query_is_not_empty(query)) {
+    if (!hy_query_is_empty(query)) {
         hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
         if (obsoletes && nevra && nevra->hasJustName()) {
             DnfPackageSet *pset;

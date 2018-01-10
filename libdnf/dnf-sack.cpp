@@ -278,7 +278,7 @@ Map *
 dnf_sack_get_pkg_solvables(DnfSack *sack)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
-    auto pkg_solvables_tmp = static_cast<Map *>(g_malloc(sizeof(Map)));
+    auto pkg_solvables_tmp = new Map;
 
     map_init_clone(pkg_solvables_tmp, priv->pkg_solvables);
     return pkg_solvables_tmp;

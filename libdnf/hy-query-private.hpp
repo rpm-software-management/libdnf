@@ -62,7 +62,6 @@ struct _HyQuery {
 struct _Filter *filter_create(int nmatches);
 void filter_reinit(struct _Filter *f, int nmatches);
 void filter_free(struct _Filter *f);
-static inline DnfSack *query_sack(HyQuery query) { return query->sack; }
 
 /**
 * @brief Return HySelector from HyQuery

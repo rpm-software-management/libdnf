@@ -26,7 +26,7 @@ typedef struct _HyGoal * HyGoal;
 typedef struct Nevra * HyNevra;
 typedef struct _HyModuleForm * HyModuleForm;
 typedef struct _HyPossibilities * HyPossibilities;
-typedef struct _HyQuery * HyQuery;
+typedef struct Query * HyQuery;
 typedef struct _HySelector * HySelector;
 typedef char * HySubject;
 

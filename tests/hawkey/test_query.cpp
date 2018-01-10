@@ -32,6 +32,7 @@
 #include "libdnf/dnf-reldep.h"
 #include "libdnf/dnf-reldep-list.h"
 #include "libdnf/dnf-sack-private.hpp"
+#include "libdnf/sack/query.hpp"
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"
@@ -903,20 +904,17 @@ START_TEST(test_query_apply)
 
     q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_NOT | HY_GLOB, "j*");
-    struct _HyQuery _q = *q;
-    fail_unless(_q.result == NULL);
-    ck_assert_int_gt(_q.nfilters, 0);
-    ck_assert_int_eq(_q.applied, 0);
+    struct Query _q = *q;
+    fail_unless(_q.getResult() == NULL);
+    ck_assert_int_eq(_q.getApplied(), 0);
     hy_query_apply(q);
     _q = *q;
-    fail_unless(_q.result != NULL);
-    ck_assert_int_eq(_q.nfilters, 0);
-    ck_assert_int_eq(_q.applied, 1);
+    fail_unless(_q.getResult() != NULL);
+    ck_assert_int_eq(_q.getApplied(), 1);
     hy_query_filter(q, HY_PKG_NAME, HY_NOT | HY_GLOB, "p*");
     _q = *q;
-    fail_unless(_q.result != NULL);
-    ck_assert_int_gt(_q.nfilters, 0);
-    ck_assert_int_eq(_q.applied, 0);
+    fail_unless(_q.getResult() != NULL);
+    ck_assert_int_eq(_q.getApplied(), 0);
     plist = hy_query_run(q);
 
     ck_assert_int_eq(plist->len, 6);
