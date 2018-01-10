@@ -47,8 +47,10 @@ configure_file ("dnf-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/dnf-version.h)
 configure_file ("libdnf.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc @ONLY)
 
 ADD_SUBDIRECTORY(utils)
+ADD_SUBDIRECTORY(sack)
 
 SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${UTILS_SOURCES})
+SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${SACK_SOURCES})
 
 ADD_LIBRARY(libdnf SHARED ${LIBDNF_SRCS})
 TARGET_LINK_LIBRARIES(libdnf

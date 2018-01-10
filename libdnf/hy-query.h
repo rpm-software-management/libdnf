@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 Red Hat, Inc.
+ * Copyright (C) 2012-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -22,6 +22,8 @@
 #define HY_QUERY_H
 
 #include <glib.h>
+#include <stdbool.h>
+
 
 G_BEGIN_DECLS
 
@@ -99,8 +101,8 @@ DnfPackageSet *hy_query_run_set(HyQuery q);
 void hy_query_union(HyQuery q, HyQuery other);
 void hy_query_intersection(HyQuery q, HyQuery other);
 void hy_query_difference(HyQuery q, HyQuery other);
-gboolean hy_query_is_not_empty(HyQuery query);
-gboolean hy_query_is_applied(const HyQuery query);
+bool hy_query_is_empty(HyQuery query);
+bool hy_query_is_applied(const HyQuery query);
 const Map *hy_query_get_result(const HyQuery query);
 DnfSack *hy_query_get_sack(HyQuery query);
 void hy_query_to_name_ordered_queue(HyQuery query, Queue *samename);
