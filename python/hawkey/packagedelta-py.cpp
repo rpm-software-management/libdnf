@@ -83,8 +83,7 @@ get_chksum(_PackageDeltaObject *self, void *closure)
     func = (HyChecksum *(*)(DnfPackageDelta *, int *))closure;
     cs = func(self->delta, &type);
     if (cs == 0) {
-        PyErr_SetString(PyExc_AttributeError, "No such checksum.");
-        return NULL;
+        Py_RETURN_NONE;
     }
 
     PyObject *res;
