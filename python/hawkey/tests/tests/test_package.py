@@ -156,8 +156,8 @@ class ChecksumsTest(base.TestCase):
         sack = base.TestSack(repo_dir=self.repo_dir)
         sack.load_system_repo()
         pkg = base.by_name(sack, "fool")
-        self.assertRaises(AttributeError, lambda: pkg.chksum)
-        self.assertRaises(AttributeError, lambda: pkg.hdr_chksum)
+        self.assertIsNone(pkg.chksum)
+        self.assertIsNone(pkg.hdr_chksum)
 
     def test_sizes(self):
         pkg = base.by_name(self.sack, "mystery-devel")
