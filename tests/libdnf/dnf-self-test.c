@@ -22,6 +22,7 @@
 
 #include <glib-object.h>
 #include <stdlib.h>
+#include <fcntl.h>
 #include <glib/gstdio.h>
 #include "libdnf/libdnf.h"
 
@@ -1106,6 +1107,15 @@ dnf_repo_loader_cache_dir_check_func(void)
 
 
 static void
+touch_file(const char *filename)
+{
+    int touch_fd = open(filename, O_CREAT|O_WRONLY|O_NOCTTY, 0644);
+    g_assert_cmpint(touch_fd, !=, -1);
+    g_assert_cmpint(close(touch_fd), ==, 0);
+    g_assert(g_file_test(filename, G_FILE_TEST_EXISTS));
+}
+
+static void
 dnf_context_cache_clean_check_func(void)
 {
 
@@ -1148,15 +1158,15 @@ dnf_context_cache_clean_check_func(void)
     g_assert(file_result == 0);
 
     g_autofree gchar* xml_string = g_build_filename(repo_location, "metalink.xml", NULL);
-    g_fopen(xml_string, "w");
+    touch_file(xml_string);
 
     /* File for Cleaning Expired Cache */
     g_autofree gchar* expire_cache_file = g_build_filename(repo_location, "repomd.xml", NULL);
-    g_fopen(expire_cache_file, "w");
+    touch_file(expire_cache_file);
 
     /* File that is not for any flag case, used for testing functionality */
     g_autofree gchar* non_matching_file = g_build_filename(repo_location, "nomatch.xxx", NULL);
-    g_fopen(non_matching_file, "w");
+    touch_file(non_matching_file);
 
     /* Then we do the cleaning with dnf_clean_cache, to demonstate it works */
     DnfContextCleanFlags flags = DNF_CONTEXT_CLEAN_EXPIRE_CACHE;
