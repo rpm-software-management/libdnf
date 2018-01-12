@@ -64,7 +64,8 @@ TARGET_LINK_LIBRARIES(libdnf
                       ${GLIB_GIO_UNIX_LIBRARIES}
                       ${LIBSOLV_LIBRARY}
                       ${LIBSOLV_EXT_LIBRARY}
-                      ${RPMDB_LIBRARY})
+                      ${RPMDB_LIBRARY}
+                      ${SCOLS_LIBRARIES})
 IF (WITH_SWDB)
     TARGET_LINK_LIBRARIES(libdnf ${SQLite3_LIBRARIES})
 ENDIF()

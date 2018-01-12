@@ -25,6 +25,7 @@
 #include <sqlite3.h>
 
 #include <map>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -67,7 +68,7 @@ public:
         {
             auto result = sqlite3_prepare_v2(db.db, sql, -1, &stmt, nullptr);
             if (result != SQLITE_OK)
-                throw LibException(result, "Statement");
+                throw LibException(result, "Statement: " + std::string(sql));
         };
 
         Statement(SQLite3 & db, const std::string & sql)
@@ -75,7 +76,7 @@ public:
         {
             auto result = sqlite3_prepare_v2(db.db, sql.c_str(), sql.length() + 1, &stmt, nullptr);
             if (result != SQLITE_OK)
-                throw LibException(result, "Statement");
+                throw LibException(result, "Statement: " + std::string(sql));
         };
 
         void bind(int pos, int val)
@@ -155,8 +156,10 @@ public:
                     return StepResult::ROW;
                 case SQLITE_BUSY:
                     return StepResult::BUSY;
+                default:
+                    throw LibException(result, getExpandedSql());
             }
-            throw LibException(result, "Step failed:" + db.getError());
+            throw LibException(result, "Step failed: " + db.getError());
         }
 
         int getColumnCount() const
@@ -337,6 +340,10 @@ public:
 
     const std::string & getPath() const { return path; }
 
+    void open();
+    void close();
+    bool isOpened() { return db != nullptr; };
+
     void exec(const char *sql)
     {
         auto result = sqlite3_exec(db, sql, nullptr, nullptr, nullptr);
@@ -363,9 +370,6 @@ public:
     void backup(const std::string &outputFile);
 
   protected:
-    void open();
-    void close();
-
     std::string path;
 
     sqlite3 *db;

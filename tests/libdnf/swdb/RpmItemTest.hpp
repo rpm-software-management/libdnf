@@ -19,7 +19,7 @@ public:
     void testGetTransactionItems();
 
 private:
-    std::unique_ptr<SQLite3> conn;
+    std::shared_ptr< SQLite3 > conn;
 };
 
 #endif // LIBDNF_SWDB_RPMITEM_TEST_HPP

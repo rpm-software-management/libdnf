@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Red Hat, Inc.
+ * Copyright (C) 2017-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -25,36 +25,47 @@
 #include <vector>
 
 #include "item.hpp"
+#include "swdb_types.hpp"
 #include "transactionitem.hpp"
+
+class Item;
+class TransactionItem;
 
 class RPMItem : public Item {
 public:
-    RPMItem(std::shared_ptr<SQLite3> conn);
-    RPMItem(std::shared_ptr<SQLite3> conn, int64_t pk);
+    RPMItem(std::shared_ptr< SQLite3 > conn);
+    RPMItem(std::shared_ptr< SQLite3 > conn, int64_t pk);
     virtual ~RPMItem() = default;
 
-    const std::string & getName() const noexcept { return name; }
-    void setName(const std::string & value) { name = value; }
+    const std::string &getName() const noexcept { return name; }
+    void setName(const std::string &value) { name = value; }
 
     int32_t getEpoch() const noexcept { return epoch; }
     void setEpoch(int32_t value) { epoch = value; }
 
-    const std::string & getVersion() const noexcept { return version; }
-    void setVersion(const std::string & value) { version = value; }
+    const std::string &getVersion() const noexcept { return version; }
+    void setVersion(const std::string &value) { version = value; }
 
-    const std::string & getRelease() const noexcept { return release; }
-    void setRelease(const std::string & value) { release = value; }
+    const std::string &getRelease() const noexcept { return release; }
+    void setRelease(const std::string &value) { release = value; }
 
-    const std::string & getArch() const noexcept { return arch; }
-    void setArch(const std::string & value) { arch = value; }
+    const std::string &getArch() const noexcept { return arch; }
+    void setArch(const std::string &value) { arch = value; }
 
     std::string getNEVRA();
-    virtual std::string toStr();
-    virtual const std::string & getItemType() const noexcept { return itemType; }
-    virtual void save();
-    static std::vector<std::shared_ptr<TransactionItem> > getTransactionItems(
-        std::shared_ptr<SQLite3> conn,
+    std::string toStr() override;
+    const std::string &getItemType() const noexcept override { return itemType; }
+    void save() override;
+
+    static std::shared_ptr< TransactionItem > getTransactionItem(std::shared_ptr< SQLite3 > conn,
+                                                                 const std::string &nevra);
+    static std::vector< std::shared_ptr< TransactionItem > > getTransactionItems(
+        std::shared_ptr< SQLite3 > conn,
         int64_t transaction_id);
+    static TransactionItemReason resolveTransactionItemReason(std::shared_ptr< SQLite3 > conn,
+                                                              const std::string &name,
+                                                              const std::string arch,
+                                                              int64_t maxTransactionId);
 
 protected:
     const std::string itemType = "rpm";

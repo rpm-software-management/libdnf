@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Red Hat, Inc.
+ * Copyright (C) 2017-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -29,37 +29,38 @@
 #include "transactionitem.hpp"
 
 class CompsEnvironmentGroup;
+enum class CompsPackageType;
+class TransactionItem;
 
 class CompsEnvironmentItem : public Item {
 public:
-    CompsEnvironmentItem(std::shared_ptr<SQLite3> conn);
-    CompsEnvironmentItem(std::shared_ptr<SQLite3> conn, int64_t pk);
+    CompsEnvironmentItem(std::shared_ptr< SQLite3 > conn);
+    CompsEnvironmentItem(std::shared_ptr< SQLite3 > conn, int64_t pk);
     virtual ~CompsEnvironmentItem() = default;
 
+    const std::string &getEnvironmentId() const noexcept { return environmentId; }
+    void setEnvironmentId(const std::string &value) { environmentId = value; }
 
-    const std::string & getEnvironmentId() const noexcept { return environmentId; }
-    void setEnvironmentId(const std::string & value) { environmentId = value; }
+    const std::string &getName() const noexcept { return name; }
+    void setName(const std::string &value) { name = value; }
 
-    const std::string & getName() const noexcept { return name; }
-    void setName(const std::string & value) { name = value; }
-
-    const std::string & getTranslatedName() const noexcept { return translatedName; }
-    void setTranslatedName(const std::string & value) { translatedName = value; }
+    const std::string &getTranslatedName() const noexcept { return translatedName; }
+    void setTranslatedName(const std::string &value) { translatedName = value; }
 
     CompsPackageType getGroupsType() const noexcept { return groupsType; }
     void setGroupsType(CompsPackageType value) { groupsType = value; }
 
     virtual std::string toStr();
-    virtual const std::string & getItemType() const noexcept { return itemType; }
+    virtual const std::string &getItemType() const noexcept { return itemType; }
     virtual void save();
-    std::shared_ptr<CompsEnvironmentGroup> addGroup(std::string groupId,
-                                                    bool installed,
-                                                    bool excluded,
-                                                    CompsPackageType groupType);
+    std::shared_ptr< CompsEnvironmentGroup > addGroup(std::string groupId,
+                                                      bool installed,
+                                                      bool excluded,
+                                                      CompsPackageType groupType);
     void loadGroups();
-    std::vector<std::shared_ptr<CompsEnvironmentGroup> > getGroups() { return groups; }
-    static std::vector<std::shared_ptr<TransactionItem> > getTransactionItems(
-        std::shared_ptr<SQLite3> conn,
+    std::vector< std::shared_ptr< CompsEnvironmentGroup > > getGroups() { return groups; }
+    static std::vector< std::shared_ptr< TransactionItem > > getTransactionItems(
+        std::shared_ptr< SQLite3 > conn,
         int64_t transactionId);
 
 protected:
@@ -69,24 +70,25 @@ protected:
     std::string translatedName;
     CompsPackageType groupsType;
 
-    std::vector<std::shared_ptr<CompsEnvironmentGroup> > groups;
+    std::vector< std::shared_ptr< CompsEnvironmentGroup > > groups;
 
 private:
+    friend class CompsEnvironmentGroup;
     void dbSelect(int64_t pk);
     void dbInsert();
 };
 
 class CompsEnvironmentGroup {
 public:
-    CompsEnvironmentGroup(CompsEnvironmentItem & environment);
+    CompsEnvironmentGroup(CompsEnvironmentItem &environment);
 
     int64_t getId() const noexcept { return id; }
     void setId(int64_t value) { id = value; }
 
-    const CompsEnvironmentItem & getEnvironment() const noexcept { return environment; }
+    const CompsEnvironmentItem &getEnvironment() const noexcept { return environment; }
 
-    const std::string & getGroupId() const noexcept { return groupId; }
-    void setGroupId(const std::string & value) { groupId = value; }
+    const std::string &getGroupId() const noexcept { return groupId; }
+    void setGroupId(const std::string &value) { groupId = value; }
 
     bool getInstalled() const noexcept { return installed; }
     void setInstalled(bool value) { installed = value; }
@@ -102,7 +104,7 @@ public:
 
 protected:
     int64_t id = 0;
-    CompsEnvironmentItem & environment;
+    CompsEnvironmentItem &environment;
     std::string groupId;
     bool installed = false;
     bool excluded = false;

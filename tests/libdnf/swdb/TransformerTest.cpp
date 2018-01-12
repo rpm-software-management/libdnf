@@ -1,10 +1,11 @@
 #include <string>
 
-#include "TransformerTest.hpp"
 #include "libdnf/swdb/item_rpm.hpp"
 #include "libdnf/swdb/swdb.hpp"
 #include "libdnf/swdb/transaction.hpp"
 #include "libdnf/swdb/transactionitem.hpp"
+
+#include "TransformerTest.hpp"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TransformerTest);
 
@@ -16,12 +17,12 @@ TransformerMock::TransformerMock()
 void
 TransformerTest::setUp()
 {
-    swdb = std::make_shared<SQLite3>(":memory:");
-    history = std::make_shared<SQLite3>(":memory:");
+    swdb = std::make_shared< SQLite3 >(":memory:");
+    history = std::make_shared< SQLite3 >(":memory:");
 
     SwdbCreateDatabase(swdb);
 
-    const char * sql = R"**(
+    const char *sql = R"**(
         CREATE TABLE pkgtups (
             pkgtupid INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
@@ -51,6 +52,11 @@ TransformerTest::setUp()
             tid INTEGER NOT NULL REFERENCES trans_beg,
             pkgtupid INTEGER NOT NULL REFERENCES pkgtups,
             done BOOL NOT NULL DEFAULT FALSE, state TEXT NOT NULL
+        );
+        CREATE TABLE trans_script_stdout (
+            lid INTEGER PRIMARY KEY,
+            tid INTEGER NOT NULL REFERENCES trans_beg,
+            line TEXT NOT NULL
         );
         CREATE TABLE pkg_yumdb (
             pkgtupid INTEGER NOT NULL REFERENCES pkgtups,
@@ -93,6 +99,11 @@ TransformerTest::setUp()
             (1, 'upgrade -y'),
             (2, '-y install Foo');
         INSERT INTO
+            trans_script_stdout
+        VALUES
+            (1, 1, 'line1'),
+            (2, 1, 'line2');
+        INSERT INTO
             trans_data_pkgs
         VALUES
             (1, 3, 'TRUE', 'Update'),
@@ -115,6 +126,11 @@ TransformerTest::testTransformTrans()
     for (auto trans : transactions) {
         transformer.transformRPMItems(swdb, history, trans);
     }
+    for (auto trans : transactions) {
+        transformer.transformOutput(swdb, history, trans);
+    }
+
+    return;
 
     Transaction first(swdb, 1);
     CPPUNIT_ASSERT(first.getId() == 1);
@@ -132,7 +148,7 @@ TransformerTest::testTransformTrans()
     CPPUNIT_ASSERT(!items.empty());
     for (auto item : items) {
         if (item->getId() == 2) {
-            auto chrony = std::dynamic_pointer_cast<RPMItem>(item->getItem());
+            auto chrony = std::dynamic_pointer_cast< RPMItem >(item->getItem());
             CPPUNIT_ASSERT(chrony->getId() == 2);
             CPPUNIT_ASSERT(chrony->getName() == "chrony");
             CPPUNIT_ASSERT(chrony->getEpoch() == 1);
@@ -144,7 +160,7 @@ TransformerTest::testTransformTrans()
             CPPUNIT_ASSERT(item->getDone() == true);
             // TODO repo, replaced
         } else if (item->getId() == 1) {
-            auto chrony = std::dynamic_pointer_cast<RPMItem>(item->getItem());
+            auto chrony = std::dynamic_pointer_cast< RPMItem >(item->getItem());
             CPPUNIT_ASSERT(chrony->getId() == 1);
             CPPUNIT_ASSERT(chrony->getName() == "chrony");
             CPPUNIT_ASSERT(chrony->getEpoch() == 1);
@@ -155,8 +171,7 @@ TransformerTest::testTransformTrans()
             CPPUNIT_ASSERT(item->getReason() == TransactionItemReason::USER);
             CPPUNIT_ASSERT(item->getDone() == true);
             // TODO repo, replaced
-        }
-        else {
+        } else {
             CPPUNIT_ASSERT(false);
         }
     }
@@ -177,7 +192,7 @@ TransformerTest::testTransformTrans()
     CPPUNIT_ASSERT(!items.empty());
     for (auto item : items) {
         if (item->getId() == 3) {
-            auto kernel = std::dynamic_pointer_cast<RPMItem>(item->getItem());
+            auto kernel = std::dynamic_pointer_cast< RPMItem >(item->getItem());
             CPPUNIT_ASSERT(kernel->getId() == 3);
             CPPUNIT_ASSERT(kernel->getName() == "kernel");
             CPPUNIT_ASSERT(kernel->getEpoch() == 0);
@@ -187,8 +202,7 @@ TransformerTest::testTransformTrans()
             CPPUNIT_ASSERT(item->getAction() == TransactionItemAction::INSTALL);
             CPPUNIT_ASSERT(item->getReason() == TransactionItemReason::DEPENDENCY);
             CPPUNIT_ASSERT(item->getDone() == true);
-        }
-        else {
+        } else {
             CPPUNIT_ASSERT(false);
         }
     }

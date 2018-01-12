@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Red Hat, Inc.
+ * Copyright (C) 2017-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -21,11 +21,70 @@
 #ifndef LIBDNF_SWDB_SWDB_HPP
 #define LIBDNF_SWDB_SWDB_HPP
 
-#include "libdnf/utils/sqlite3/sqlite3.hpp"
 #include <memory>
+#include <vector>
+
+#include "../hy-query.h"
+#include "../utils/sqlite3/sqlite3.hpp"
+
+#include "item_comps_group.hpp"
+#include "transaction.hpp"
+#include "transactionitem.hpp"
+
+class Swdb {
+public:
+    Swdb(std::shared_ptr< SQLite3 > conn);
+
+    const std::string &getPath() { return conn->getPath(); }
+
+    void createDatabase();
+    void resetDatabase();
+
+    void initTransaction();
+    int64_t beginTransaction(int64_t dtBegin,
+                             std::string rpmdbVersionBegin,
+                             std::string cmdline,
+                             int32_t userId);
+    int64_t endTransaction(int64_t dtEnd, std::string rpmdbVersionEnd, bool done);
+
+    std::shared_ptr< const Transaction > getLastTransaction();
+    std::vector< std::shared_ptr< Transaction > >
+    listTransactions(); // std::vector<long long> transactionIds);
+
+    std::shared_ptr< TransactionItem > addItem(std::shared_ptr< Item > item,
+                                               const std::string &repoid,
+                                               TransactionItemAction action,
+                                               TransactionItemReason reason);
+    // std::shared_ptr<TransactionItem> replacedBy);
+    void setItemDone(std::shared_ptr< TransactionItem > item);
+    void addConsoleOutputLine(int fileDescriptor, std::string line);
+
+    // Item: RPM
+    int resolveRPMTransactionItemReason(const std::string &name,
+                                        const std::string &arch,
+                                        int64_t maxTransactionId);
+    const std::string getRPMRepo(const std::string &nevra);
+    std::shared_ptr< const TransactionItem > getRPMTransactionItem(const std::string &nevra);
+
+    // Item: CompsGroup
+    std::shared_ptr< TransactionItem > getCompsGroupItem(const std::string &groupid);
+    std::vector< std::shared_ptr< TransactionItem > > getCompsGroupItemsByPattern(
+        const std::string &pattern);
+
+    std::vector< std::string > getPackageCompsGroups(const std::string &packageName);
+
+protected:
+    void dbInsert();
+    void dbSelectOrInsert();
+
+    std::shared_ptr< SQLite3 > conn;
+    std::unique_ptr< Transaction > transactionInProgress = nullptr;
+
+private:
+};
 
 // TODO: create if doesn't exist
 void
-SwdbCreateDatabase(std::shared_ptr<SQLite3> conn);
+SwdbCreateDatabase(std::shared_ptr< SQLite3 > conn);
 
 #endif // LIBDNF_SWDB_SWDB_HPP

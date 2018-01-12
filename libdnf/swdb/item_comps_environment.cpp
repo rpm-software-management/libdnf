@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Red Hat, Inc.
+ * Copyright (C) 2017-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -20,12 +20,12 @@
 
 #include "item_comps_environment.hpp"
 
-CompsEnvironmentItem::CompsEnvironmentItem(std::shared_ptr<SQLite3> conn)
+CompsEnvironmentItem::CompsEnvironmentItem(std::shared_ptr< SQLite3 > conn)
   : Item(conn)
 {
 }
 
-CompsEnvironmentItem::CompsEnvironmentItem(std::shared_ptr<SQLite3> conn, int64_t pk)
+CompsEnvironmentItem::CompsEnvironmentItem(std::shared_ptr< SQLite3 > conn, int64_t pk)
   : Item(conn)
 {
     dbSelect(pk);
@@ -36,8 +36,7 @@ CompsEnvironmentItem::save()
 {
     if (getId() == 0) {
         dbInsert();
-    }
-    else {
+    } else {
         // dbUpdate();
     }
     for (auto i : getGroups()) {
@@ -48,7 +47,7 @@ CompsEnvironmentItem::save()
 void
 CompsEnvironmentItem::dbSelect(int64_t pk)
 {
-    const char * sql =
+    const char *sql =
         "SELECT "
         "  environmentid, "
         "  name, "
@@ -63,10 +62,10 @@ CompsEnvironmentItem::dbSelect(int64_t pk)
     query.step();
 
     setId(pk);
-    setEnvironmentId(query.get<std::string>("groupid"));
-    setName(query.get<std::string>("name"));
-    setTranslatedName(query.get<std::string>("translated_name"));
-    setGroupsType(static_cast<CompsPackageType>(query.get<int>("groups_type")));
+    setEnvironmentId(query.get< std::string >("groupid"));
+    setName(query.get< std::string >("name"));
+    setTranslatedName(query.get< std::string >("translated_name"));
+    setGroupsType(static_cast< CompsPackageType >(query.get< int >("groups_type")));
 }
 
 void
@@ -75,7 +74,7 @@ CompsEnvironmentItem::dbInsert()
     // populates this->id
     Item::save();
 
-    const char * sql =
+    const char *sql =
         "INSERT INTO "
         "  comps_environment ( "
         "    item_id, "
@@ -91,16 +90,16 @@ CompsEnvironmentItem::dbInsert()
                 getEnvironmentId(),
                 getName(),
                 getTranslatedName(),
-                static_cast<int>(getGroupsType()));
+                static_cast< int >(getGroupsType()));
     query.step();
 }
 
-std::vector<std::shared_ptr<TransactionItem> >
-CompsEnvironmentItem::getTransactionItems(std::shared_ptr<SQLite3> conn, int64_t transactionId)
+std::vector< std::shared_ptr< TransactionItem > >
+CompsEnvironmentItem::getTransactionItems(std::shared_ptr< SQLite3 > conn, int64_t transactionId)
 {
-    std::vector<std::shared_ptr<TransactionItem> > result;
+    std::vector< std::shared_ptr< TransactionItem > > result;
 
-    const char * sql =
+    const char *sql =
         "SELECT "
         // trans_item
         "  ti.id, "
@@ -121,17 +120,17 @@ CompsEnvironmentItem::getTransactionItems(std::shared_ptr<SQLite3> conn, int64_t
     query.bindv(transactionId);
 
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
-        auto trans_item = std::make_shared<TransactionItem>(conn);
-        auto item = std::make_shared<CompsEnvironmentItem>(conn);
+        auto trans_item = std::make_shared< TransactionItem >(conn);
+        auto item = std::make_shared< CompsEnvironmentItem >(conn);
         trans_item->setItem(item);
 
-        trans_item->setId(query.get<int>(0));
-        trans_item->setDone(query.get<bool>(1));
-        item->setId(query.get<int>(2));
-        item->setEnvironmentId(query.get<std::string>(3));
-        item->setName(query.get<std::string>(4));
-        item->setTranslatedName(query.get<std::string>(5));
-        item->setGroupsType(static_cast<CompsPackageType>(query.get<int>(6)));
+        trans_item->setId(query.get< int >(0));
+        trans_item->setDone(query.get< bool >(1));
+        item->setId(query.get< int >(2));
+        item->setEnvironmentId(query.get< std::string >(3));
+        item->setName(query.get< std::string >(4));
+        item->setTranslatedName(query.get< std::string >(5));
+        item->setGroupsType(static_cast< CompsPackageType >(query.get< int >(6)));
 
         result.push_back(trans_item);
     }
@@ -147,7 +146,7 @@ CompsEnvironmentItem::toStr()
 void
 CompsEnvironmentItem::loadGroups()
 {
-    const char * sql =
+    const char *sql =
         "SELECT "
         "  * "
         "FROM "
@@ -159,23 +158,23 @@ CompsEnvironmentItem::loadGroups()
 
     groups.clear();
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
-        auto pkg = std::make_shared<CompsEnvironmentGroup>(*this);
-        pkg->setId(query.get<int>("id"));
-        pkg->setGroupId(query.get<std::string>("groupid"));
-        pkg->setInstalled(query.get<bool>("installed"));
-        pkg->setExcluded(query.get<bool>("excluded"));
-        pkg->setGroupType(static_cast<CompsPackageType>(query.get<int>("group_type")));
+        auto pkg = std::make_shared< CompsEnvironmentGroup >(*this);
+        pkg->setId(query.get< int >("id"));
+        pkg->setGroupId(query.get< std::string >("groupid"));
+        pkg->setInstalled(query.get< bool >("installed"));
+        pkg->setExcluded(query.get< bool >("excluded"));
+        pkg->setGroupType(static_cast< CompsPackageType >(query.get< int >("group_type")));
         groups.push_back(pkg);
     }
 }
 
-std::shared_ptr<CompsEnvironmentGroup>
+std::shared_ptr< CompsEnvironmentGroup >
 CompsEnvironmentItem::addGroup(std::string groupId,
                                bool installed,
                                bool excluded,
                                CompsPackageType groupType)
 {
-    auto pkg = std::make_shared<CompsEnvironmentGroup>(*this);
+    auto pkg = std::make_shared< CompsEnvironmentGroup >(*this);
     pkg->setGroupId(groupId);
     pkg->setInstalled(installed);
     pkg->setExcluded(excluded);
@@ -184,7 +183,7 @@ CompsEnvironmentItem::addGroup(std::string groupId,
     return pkg;
 }
 
-CompsEnvironmentGroup::CompsEnvironmentGroup(CompsEnvironmentItem & environment)
+CompsEnvironmentGroup::CompsEnvironmentGroup(CompsEnvironmentItem &environment)
   : environment{environment}
 {
 }
@@ -194,8 +193,7 @@ CompsEnvironmentGroup::save()
 {
     if (getId() == 0) {
         dbSelectOrInsert();
-    }
-    else {
+    } else {
         // dbUpdate();
     }
 }
@@ -203,7 +201,7 @@ CompsEnvironmentGroup::save()
 void
 CompsEnvironmentGroup::dbInsert()
 {
-    const char * sql =
+    const char *sql =
         "INSERT INTO "
         "  comps_evironment_group ( "
         "    environment_id, "
@@ -219,14 +217,14 @@ CompsEnvironmentGroup::dbInsert()
                 getGroupId(),
                 getInstalled(),
                 getExcluded(),
-                static_cast<int>(getGroupType()));
+                static_cast< int >(getGroupType()));
     query.step();
 }
 
 void
 CompsEnvironmentGroup::dbSelectOrInsert()
 {
-    const char * sql =
+    const char *sql =
         "SELECT "
         "  id "
         "FROM "
@@ -238,9 +236,8 @@ CompsEnvironmentGroup::dbSelectOrInsert()
     SQLite3::Statement::StepResult result = query.step();
 
     if (result == SQLite3::Statement::StepResult::ROW) {
-        setId(query.get<int>(0));
-    }
-    else {
+        setId(query.get< int >(0));
+    } else {
         // insert and get the ID back
         dbInsert();
     }

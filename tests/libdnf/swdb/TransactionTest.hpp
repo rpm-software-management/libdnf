@@ -24,7 +24,7 @@ public:
     void testAddItem();
 
 private:
-    std::unique_ptr<SQLite3> conn;
+    std::shared_ptr< SQLite3 > conn;
 };
 
 #endif // LIBDNF_SWDB_TRANSACTION_TEST_HPP

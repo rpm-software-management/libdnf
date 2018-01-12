@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Red Hat, Inc.
+ * Copyright (C) 2017-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -26,15 +26,45 @@
 
 class RPMItem;
 
-Transaction::Transaction(std::shared_ptr<SQLite3> conn)
+Transaction::Transaction(std::shared_ptr< SQLite3 > conn)
   : conn{conn}
 {
 }
 
-Transaction::Transaction(std::shared_ptr<SQLite3> conn, int64_t pk)
+Transaction::Transaction(std::shared_ptr< SQLite3 > conn, int64_t pk)
   : conn{conn}
 {
     dbSelect(pk);
+}
+
+bool
+Transaction::operator=(const Transaction &other)
+{
+    if (getId() != other.getId()) {
+        return false;
+    }
+    if (getDtBegin() != other.getDtBegin()) {
+        return false;
+    }
+    if (getRpmdbVersionBegin() != other.getRpmdbVersionBegin()) {
+        return false;
+    }
+    return true;
+}
+
+bool
+Transaction::operator<(const Transaction &other)
+{
+    if (getId() > other.getId()) {
+        return true;
+    }
+    if (getDtBegin() > other.getDtBegin()) {
+        return true;
+    }
+    if (getRpmdbVersionBegin() > other.getRpmdbVersionBegin()) {
+        return true;
+    }
+    return false;
 }
 
 void
@@ -42,8 +72,7 @@ Transaction::save()
 {
     if (id == 0) {
         dbInsert();
-    }
-    else {
+    } else {
         dbUpdate();
     }
 }
@@ -51,7 +80,7 @@ Transaction::save()
 void
 Transaction::dbSelect(int64_t pk)
 {
-    const char * sql =
+    const char *sql =
         "SELECT "
         "  dt_begin, "
         "  dt_end, "
@@ -70,20 +99,20 @@ Transaction::dbSelect(int64_t pk)
     query.step();
 
     setId(pk);
-    setDtBegin(query.get<int>("dt_begin"));
-    setDtEnd(query.get<int>("dt_end"));
-    setRpmdbVersionBegin(query.get<std::string>("rpmdb_version_begin"));
-    setRpmdbVersionEnd(query.get<std::string>("rpmdb_version_end"));
-    setReleasever(query.get<std::string>("releasever"));
-    setUserId(query.get<int>("user_id"));
-    setCmdline(query.get<std::string>("cmdline"));
-    setDone(query.get<bool>("done"));
+    setDtBegin(query.get< int >("dt_begin"));
+    setDtEnd(query.get< int >("dt_end"));
+    setRpmdbVersionBegin(query.get< std::string >("rpmdb_version_begin"));
+    setRpmdbVersionEnd(query.get< std::string >("rpmdb_version_end"));
+    setReleasever(query.get< std::string >("releasever"));
+    setUserId(query.get< int >("user_id"));
+    setCmdline(query.get< std::string >("cmdline"));
+    setDone(query.get< bool >("done"));
 }
 
 void
 Transaction::dbInsert()
 {
-    const char * sql =
+    const char *sql =
         "INSERT INTO "
         "  trans ("
         "    dt_begin, "
@@ -108,7 +137,7 @@ Transaction::dbInsert()
                 getCmdline(),
                 getDone());
     if (getId() > 0) {
-            query.bind(9, getId());
+        query.bind(9, getId());
     }
     query.step();
     setId(conn->lastInsertRowID());
@@ -117,7 +146,7 @@ Transaction::dbInsert()
 void
 Transaction::dbUpdate()
 {
-    const char * sql =
+    const char *sql =
         "UPDATE "
         "  trans "
         "SET "
@@ -144,14 +173,14 @@ Transaction::dbUpdate()
     query.step();
 }
 
-std::shared_ptr<TransactionItem>
-Transaction::addItem(std::shared_ptr<Item> item,
-                     const std::string & repoid,
+std::shared_ptr< TransactionItem >
+Transaction::addItem(std::shared_ptr< Item > item,
+                     const std::string &repoid,
                      TransactionItemAction action,
                      TransactionItemReason reason,
-                     std::shared_ptr<TransactionItem> replacedBy)
+                     std::shared_ptr< TransactionItem > replacedBy)
 {
-    auto trans_item = std::make_shared<TransactionItem>(*this);
+    auto trans_item = std::make_shared< TransactionItem >(*this);
     trans_item->setItem(item);
     trans_item->setRepoid(repoid);
     trans_item->setAction(action);
@@ -182,4 +211,48 @@ Transaction::loadItems()
 
     auto comps_environments = CompsEnvironmentItem::getTransactionItems(conn, getId());
     items.insert(items.end(), comps_environments.begin(), comps_environments.end());
+}
+
+void
+Transaction::addConsoleOutputLine(int fileDescriptor, std::string line)
+{
+    // TODO: make sure transaction is saved and ID is available
+    const char *sql = R"**(
+        INSERT INTO
+            console_output (
+                trans_id,
+                file_descriptor,
+                line
+            )
+        VALUES
+            (?, ?, ?);
+    )**";
+    SQLite3::Statement query(*conn, sql);
+    query.bindv(getId(), fileDescriptor, line);
+    query.step();
+}
+
+std::vector< std::pair< int, std::string > >
+Transaction::getConsoleOutput()
+{
+    const char *sql = R"**(
+        SELECT
+            file_descriptor,
+            line
+        FROM
+            console_output
+        WHERE
+            trans_id = ?
+        ORDER BY
+            id
+    )**";
+    SQLite3::Query query(*conn, sql);
+    query.bindv(getId());
+    std::vector< std::pair< int, std::string > > result;
+    while (query.step() == SQLite3::Statement::StepResult::ROW) {
+        auto fileDescriptor = query.get< int >("file_descriptor");
+        auto line = query.get< std::string >("line");
+        result.push_back(std::make_pair(fileDescriptor, line));
+    }
+    return result;
 }

@@ -8,8 +8,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TransactionTest);
 void
 TransactionTest::setUp()
 {
-    conn = std::unique_ptr<SQLite3>(new SQLite3(":memory:"));
-    SwdbCreateDatabase(*conn.get());
+    conn = std::make_shared< SQLite3 >(":memory:");
+    Swdb swdb(conn);
+    swdb.createDatabase();
 }
 
 void
@@ -20,7 +21,7 @@ TransactionTest::tearDown()
 void
 TransactionTest::testInsert()
 {
-    Transaction trans(*conn.get());
+    Transaction trans(conn);
     trans.setDtBegin(1);
     trans.setDtEnd(2);
     trans.setRpmdbVersionBegin("begin - TransactionTest::testInsert");
@@ -34,7 +35,7 @@ TransactionTest::testInsert()
     trans.save();
 
     // load the saved transaction from database and compare values
-    Transaction trans2(*conn.get(), trans.getId());
+    Transaction trans2(conn, trans.getId());
     CPPUNIT_ASSERT(trans2.getId() == trans.getId());
     CPPUNIT_ASSERT(trans2.getDtBegin() == trans.getDtBegin());
     CPPUNIT_ASSERT(trans2.getDtEnd() == trans.getDtEnd());
@@ -50,7 +51,7 @@ void
 TransactionTest::testInsertWithSpecifiedId()
 {
     // it is not allowed to save a transaction with arbitrary ID
-    Transaction trans(*conn.get());
+    Transaction trans(conn);
     trans.setId(INT64_MAX);
     trans.save();
     // CPPUNIT_ASSERT_THROW(trans.save(), SQLError);
@@ -61,14 +62,14 @@ void
 TransactionTest::testUpdate()
 {
     testInsert();
-    Transaction trans(*conn.get(), 1);
+    Transaction trans(conn, 1);
     trans.setDtBegin(10);
     trans.setDtEnd(20);
     trans.setRpmdbVersionBegin("begin - TransactionTest::testUpdate");
     trans.setRpmdbVersionEnd("end - TransactionTest::testUpdate");
     trans.save();
 
-    Transaction trans2(*conn.get(), trans.getId());
+    Transaction trans2(conn, trans.getId());
     CPPUNIT_ASSERT(trans2.getId() == trans.getId());
     CPPUNIT_ASSERT(trans2.getDtBegin() == trans.getDtBegin());
     CPPUNIT_ASSERT(trans2.getDtEnd() == trans.getDtEnd());

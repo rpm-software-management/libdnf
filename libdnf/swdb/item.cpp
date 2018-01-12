@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Red Hat, Inc.
+ * Copyright (C) 2017-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -20,7 +20,7 @@
 
 #include "item.hpp"
 
-Item::Item(std::shared_ptr<SQLite3> conn)
+Item::Item(std::shared_ptr< SQLite3 > conn)
   : conn{conn}
 {
 }
@@ -34,7 +34,7 @@ Item::save()
 void
 Item::dbInsert()
 {
-    const char * sql =
+    const char *sql =
         "INSERT INTO "
         "  item "
         "VALUES "

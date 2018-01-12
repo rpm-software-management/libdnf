@@ -32,7 +32,7 @@ R"**(
         replaced_by INTEGER REFERENCES trans_item(id),          /* replaced_by is either NULL or points to trans_item in the same transaction */
         action INTEGER NOT NULL,                                /* (enum) */
         reason INTEGER NOT NULL,                                /* (enum) */
-        done INTEGER NOT NULL,                                  /* (bool) 0: not done, 1: done */
+        done INTEGER NOT NULL,                                   /* (bool) 0: not done, 1: done */
         CONSTRAINT trans_item_unique_trans_item UNIQUE (trans_id, item_id)
     );
     CREATE TABLE trans_with (

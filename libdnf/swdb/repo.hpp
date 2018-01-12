@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Red Hat, Inc.
+ * Copyright (C) 2017-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -21,27 +21,28 @@
 #ifndef LIBDNF_SWDB_REPO_HPP
 #define LIBDNF_SWDB_REPO_HPP
 
+#include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
 
-#include "libdnf/utils/sqlite3/sqlite3.hpp"
+#include "../utils/sqlite3/sqlite3.hpp"
 
 class Repo {
 public:
-    static std::shared_ptr<Repo> getCached(std::shared_ptr<SQLite3> conn, const std::string & repoid);
-    static std::unordered_map<std::string, std::shared_ptr<Repo> > cache;
+    static std::shared_ptr< Repo > getCached(std::shared_ptr< SQLite3 > conn,
+                                             const std::string &repoid);
+    static std::map< std::string, std::shared_ptr< Repo > > cache;
 
-    Repo(std::shared_ptr<SQLite3> conn);
+    Repo(std::shared_ptr< SQLite3 > conn);
 
     int64_t getId() const noexcept { return id; }
     void setId(int64_t value) { id = value; }
 
-    const std::string & getRepoId() const noexcept { return repoId; }
-    void setRepoId(const std::string & value) { repoId = value; }
+    const std::string &getRepoId() const noexcept { return repoId; }
+    void setRepoId(const std::string &value) { repoId = value; }
 
     void save();
-    std::shared_ptr<SQLite3> conn;
+    std::shared_ptr< SQLite3 > conn;
 
 protected:
     void dbInsert();

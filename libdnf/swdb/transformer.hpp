@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Red Hat, Inc.
+ * Copyright (C) 2017-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -23,7 +23,9 @@
 
 #include <memory>
 #include <vector>
-#include "libdnf/utils/sqlite3/sqlite3.hpp"
+
+#include "../utils/sqlite3/sqlite3.hpp"
+
 #include "item_rpm.hpp"
 #include "transaction.hpp"
 #include "transactionitem.hpp"
@@ -37,33 +39,37 @@ public:
     void save() { dbInsert(); }
 };
 
-class Transformer
-{
-  public:
-    class Exception : public std::runtime_error
-    {
-      public:
-        Exception (const std::string &msg)
-          : runtime_error (msg)
+class Transformer {
+public:
+    class Exception : public std::runtime_error {
+    public:
+        Exception(const std::string &msg)
+          : runtime_error(msg)
         {
         }
-        Exception (const char *msg)
-          : runtime_error (msg)
+        Exception(const char *msg)
+          : runtime_error(msg)
         {
         }
     };
 
-    Transformer (const std::string &outputFile, const std::string &inputDir);
-    void transform ();
+    Transformer(const std::string &outputFile, const std::string &inputDir);
+    void transform();
 
-  protected:
-    std::vector<std::shared_ptr<TransformerTransaction> > transformTrans(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQLite3> history);
-    void transformRPMItems(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQLite3> history, std::shared_ptr<TransformerTransaction> trans);
-    void transformTransWith(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQLite3> history);
-    void transformOutput(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQLite3> history);
+protected:
+    std::vector< std::shared_ptr< TransformerTransaction > > transformTrans(
+        std::shared_ptr< SQLite3 > swdb,
+        std::shared_ptr< SQLite3 > history);
+    void transformRPMItems(std::shared_ptr< SQLite3 > swdb,
+                           std::shared_ptr< SQLite3 > history,
+                           std::shared_ptr< TransformerTransaction > trans);
+    void transformTransWith(std::shared_ptr< SQLite3 > swdb, std::shared_ptr< SQLite3 > history);
+    void transformOutput(std::shared_ptr< SQLite3 > swdb,
+                         std::shared_ptr< SQLite3 > history,
+                         std::shared_ptr< TransformerTransaction > trans);
 
-  private:
-    std::string historyPath ();
+private:
+    std::string historyPath();
     const std::string inputDir;
     const std::string outputFile;
     const std::string transformFile;

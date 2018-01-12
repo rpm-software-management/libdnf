@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Red Hat, Inc.
+ * Copyright (C) 2017-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -24,8 +24,9 @@
 #include <memory>
 #include <string>
 
+#include "../utils/sqlite3/sqlite3.hpp"
+
 #include "item.hpp"
-#include "libdnf/utils/sqlite3/sqlite3.hpp"
 #include "transactionitem.hpp"
 
 class TransactionItem;
@@ -35,9 +36,12 @@ enum class TransactionItemReason;
 class Transaction {
 public:
     // create an empty object, don't read from db
-    Transaction(std::shared_ptr<SQLite3> conn);
+    Transaction(std::shared_ptr< SQLite3 > conn);
     // load from db
-    Transaction(std::shared_ptr<SQLite3> conn, int64_t pk);
+    Transaction(std::shared_ptr< SQLite3 > conn, int64_t pk);
+
+    bool operator=(const Transaction &other);
+    bool operator<(const Transaction &other);
 
     int64_t getId() const noexcept { return id; }
     void setId(int64_t value) { id = value; }
@@ -48,34 +52,38 @@ public:
     int64_t getDtEnd() const noexcept { return dtEnd; }
     void setDtEnd(int64_t value) { dtEnd = value; }
 
-    const std::string & getRpmdbVersionBegin() const noexcept { return rpmdbVersionBegin; }
-    void setRpmdbVersionBegin(const std::string & value) { rpmdbVersionBegin = value; }
+    const std::string &getRpmdbVersionBegin() const noexcept { return rpmdbVersionBegin; }
+    void setRpmdbVersionBegin(const std::string &value) { rpmdbVersionBegin = value; }
 
-    const std::string & getRpmdbVersionEnd() const noexcept { return rpmdbVersionEnd; }
-    void setRpmdbVersionEnd(const std::string & value) { rpmdbVersionEnd = value; }
+    const std::string &getRpmdbVersionEnd() const noexcept { return rpmdbVersionEnd; }
+    void setRpmdbVersionEnd(const std::string &value) { rpmdbVersionEnd = value; }
 
-    const std::string & getReleasever() const noexcept { return releasever; }
-    void setReleasever(const std::string & value) { releasever = value; }
+    const std::string &getReleasever() const noexcept { return releasever; }
+    void setReleasever(const std::string &value) { releasever = value; }
 
     int32_t getUserId() const noexcept { return userId; }
     void setUserId(int32_t value) { userId = value; }
 
-    const std::string & getCmdline() const noexcept { return cmdline; }
-    void setCmdline(const std::string & value) { cmdline = value; }
+    const std::string &getCmdline() const noexcept { return cmdline; }
+    void setCmdline(const std::string &value) { cmdline = value; }
 
     bool getDone() const noexcept { return done; }
     void setDone(bool value) { done = value; }
 
     void save();
-    std::shared_ptr<TransactionItem> addItem(std::shared_ptr<Item> item,
-                                             const std::string & repoid,
-                                             TransactionItemAction action,
-                                             TransactionItemReason reason,
-                                             std::shared_ptr<TransactionItem> replacedBy);
-    std::vector<std::shared_ptr<TransactionItem> > getItems() { return items; }
+    std::shared_ptr< TransactionItem > addItem(std::shared_ptr< Item > item,
+                                               const std::string &repoid,
+                                               TransactionItemAction action,
+                                               TransactionItemReason reason,
+                                               std::shared_ptr< TransactionItem > replacedBy);
+    std::vector< std::shared_ptr< TransactionItem > > getItems() const { return items; }
     void loadItems();
     void saveItems();
-    std::shared_ptr<SQLite3> conn;
+
+    void addConsoleOutputLine(int fileDescriptor, std::string line);
+    std::vector< std::pair< int, std::string > > getConsoleOutput();
+
+    std::shared_ptr< SQLite3 > conn;
 
 protected:
     int64_t id = 0;
@@ -89,7 +97,7 @@ protected:
     std::string cmdline;
     bool done = false;
 
-    std::vector<std::shared_ptr<TransactionItem> > items;
+    std::vector< std::shared_ptr< TransactionItem > > items;
     // std::vector<RPMItem> softwarePerformedWith;
 
     void dbSelect(int64_t transaction_id);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Red Hat, Inc.
+ * Copyright (C) 2017-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -18,25 +18,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "transformer.hpp"
-#include "item_rpm.hpp"
-#include "swdb.hpp"
-#include "transaction.hpp"
-#include "transactionitem.hpp"
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <dirent.h>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <map>
 
-#include <iostream> // XXX debug only
+#include "item_rpm.hpp"
+#include "swdb.hpp"
+#include "transaction.hpp"
+#include "transactionitem.hpp"
+#include "transformer.hpp"
 
-
-static const std::unordered_map<std::string, TransactionItemAction> actions = {
+static const std::unordered_map< std::string, TransactionItemAction > actions = {
     {"Install", TransactionItemAction::INSTALL},
     {"True-Install", TransactionItemAction::INSTALL},
     {"Dep-Install", TransactionItemAction::INSTALL},
@@ -47,18 +45,18 @@ static const std::unordered_map<std::string, TransactionItemAction> actions = {
     {"Update", TransactionItemAction::UPGRADE},
     {"Updated", TransactionItemAction::UPGRADED},
     {"Erase", TransactionItemAction::REMOVE},
-    {"Reinstall", TransactionItemAction::REINSTALL}
-};
+    {"Reinstall", TransactionItemAction::REINSTALL},
+    {"Reinstalled", TransactionItemAction::REINSTALL}};
 
-static const std::unordered_map<std::string, TransactionItemReason> reasons = {
+static const std::unordered_map< std::string, TransactionItemReason > reasons = {
     {"dep", TransactionItemReason::DEPENDENCY},
     {"user", TransactionItemReason::USER},
     {"clean", TransactionItemReason::CLEAN},
     {"weak", TransactionItemReason::WEAK_DEPENDENCY},
-    {"group", TransactionItemReason::GROUP}
-};
+    {"group", TransactionItemReason::GROUP}};
 
-static TransactionItemReason getReason(std::string reason)
+static TransactionItemReason
+getReason(std::string reason)
 {
     auto it = reasons.find(reason);
     if (it == reasons.end()) {
@@ -67,7 +65,7 @@ static TransactionItemReason getReason(std::string reason)
     return it->second;
 }
 
-Transformer::Transformer(const std::string & outputFile, const std::string & inputDir)
+Transformer::Transformer(const std::string &outputFile, const std::string &inputDir)
   : inputDir(inputDir)
   , outputFile(outputFile)
 {
@@ -76,8 +74,8 @@ Transformer::Transformer(const std::string & outputFile, const std::string & inp
 void
 Transformer::transform()
 {
-    auto swdb = std::make_shared<SQLite3>(":memory:");
-    auto history = std::make_shared<SQLite3>(historyPath().c_str());
+    auto swdb = std::make_shared< SQLite3 >(":memory:");
+    auto history = std::make_shared< SQLite3 >(historyPath().c_str());
 
     // create a new database file
     SwdbCreateDatabase(swdb);
@@ -88,20 +86,22 @@ Transformer::transform()
         transformRPMItems(swdb, history, trans);
     }
     transformTransWith(swdb, history);
-    transformOutput(swdb, history);
+    for (auto trans : transactions) {
+        transformOutput(swdb, history, trans);
+    }
 
     // dump database to a file
     swdb->backup(outputFile);
 }
 
-std::vector<std::shared_ptr<TransformerTransaction> >
-Transformer::transformTrans(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQLite3> history)
+std::vector< std::shared_ptr< TransformerTransaction > >
+Transformer::transformTrans(std::shared_ptr< SQLite3 > swdb, std::shared_ptr< SQLite3 > history)
 {
-    std::vector<std::shared_ptr<TransformerTransaction> > result;
+    std::vector< std::shared_ptr< TransformerTransaction > > result;
 
     // we need to left join with trans_cmdline
     // there is no cmdline for certain transactions (e.g. 1)
-    const char * trans_sql = R"**(
+    const char *trans_sql = R"**(
         SELECT
             tb.tid as id,
             tb.timestamp as dt_begin,
@@ -119,39 +119,40 @@ Transformer::transformTrans(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQLit
             tb.tid
     )**";
 
-    const char * releasever_sql = R"**(
+    const char *releasever_sql = R"**(
         SELECT DISTINCT
             trans_data_pkgs.tid as tid,
             yumdb_val as releasever
         FROM
-            pkg_yumdb,
             trans_data_pkgs
+        JOIN
+            pkg_yumdb USING (pkgtupid)
         WHERE
-            pkg_yumdb.pkgtupid = trans_data_pkgs.pkgtupid
-            AND yumdb_key='releasever';
+            yumdb_key='releasever'
     )**";
 
-    std::map<int64_t, std::string> releasever;
+    std::map< int64_t, std::string > releasever;
     SQLite3::Query releasever_query(*history.get(), releasever_sql);
     while (releasever_query.step() == SQLite3::Statement::StepResult::ROW) {
-        releasever[releasever_query.get<int64_t>("tid")] = releasever_query.get<std::string>("releasever");
+        releasever[releasever_query.get< int64_t >("tid")] =
+            releasever_query.get< std::string >("releasever");
     }
 
     SQLite3::Query query(*history.get(), trans_sql);
 
     // for each transaction
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
-        auto trans = std::make_shared<TransformerTransaction>(swdb);
-        trans->setId(query.get<int>("id"));
-        trans->setDtBegin(query.get<int64_t>("dt_begin"));
-        trans->setDtEnd(query.get<int64_t>("dt_end"));
-        trans->setRpmdbVersionBegin(query.get<std::string>("rpmdb_version_begin"));
-        trans->setRpmdbVersionEnd(query.get<std::string>("rpmdb_version_end"));
+        auto trans = std::make_shared< TransformerTransaction >(swdb);
+        trans->setId(query.get< int >("id"));
+        trans->setDtBegin(query.get< int64_t >("dt_begin"));
+        trans->setDtEnd(query.get< int64_t >("dt_end"));
+        trans->setRpmdbVersionBegin(query.get< std::string >("rpmdb_version_begin"));
+        trans->setRpmdbVersionEnd(query.get< std::string >("rpmdb_version_end"));
         // TODO: what if releasever is not found
         trans->setReleasever(releasever.at(trans->getId()));
-        trans->setUserId(query.get<int>("user_id"));
-        trans->setCmdline(query.get<std::string>("cmdline"));
-        trans->setDone(query.get<int>("done") == 0 ? true : false);
+        trans->setUserId(query.get< int >("user_id"));
+        trans->setCmdline(query.get< std::string >("cmdline"));
+        trans->setDone(query.get< int >("done") == 0 ? true : false);
         trans->save();
         result.push_back(trans);
     }
@@ -159,18 +160,36 @@ Transformer::transformTrans(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQLit
 }
 
 void
-Transformer::transformTransWith(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQLite3> history)
+Transformer::transformTransWith(std::shared_ptr< SQLite3 > swdb, std::shared_ptr< SQLite3 > history)
 {
     // history.trans_with_pkgs
     // TODO support in a Transaction
 }
 
 void
-Transformer::transformOutput(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQLite3> history)
+Transformer::transformOutput(std::shared_ptr< SQLite3 > swdb,
+                             std::shared_ptr< SQLite3 > history,
+                             std::shared_ptr< TransformerTransaction > trans)
 {
     // history.trans_script_stdout
     // history.trans_error
     // TODO support in a Transaction
+
+    const char *sql = R"**(
+        SELECT
+            line
+        FROM
+            trans_script_stdout
+        WHERE
+            tid = ?
+        ORDER BY
+            lid
+    )**";
+    SQLite3::Query query(*history.get(), sql);
+    query.bindv(trans->getId());
+    while (query.step() == SQLite3::Statement::StepResult::ROW) {
+        trans->addConsoleOutputLine(1, query.get< std::string >("line"));
+    }
 }
 
 std::string
@@ -185,11 +204,11 @@ Transformer::historyPath()
     historyDir += "history";
 
     // vector for possible history DB files
-    std::vector<std::string> possibleFiles;
+    std::vector< std::string > possibleFiles;
 
     // open history directory
-    struct dirent * dp;
-    DIR * dirp = opendir(historyDir.c_str());
+    struct dirent *dp;
+    DIR *dirp = opendir(historyDir.c_str());
 
     // iterate over history directory
     while ((dp = readdir(dirp)) != nullptr) {
@@ -213,10 +232,12 @@ Transformer::historyPath()
 }
 
 void
-Transformer::transformRPMItems(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQLite3> history, std::shared_ptr<TransformerTransaction> trans)
+Transformer::transformRPMItems(std::shared_ptr< SQLite3 > swdb,
+                               std::shared_ptr< SQLite3 > history,
+                               std::shared_ptr< TransformerTransaction > trans)
 {
     // the order is important here - its Update, Updated
-    const char * pkg_sql = R"**(
+    const char *pkg_sql = R"**(
         SELECT
             t.state,
             t.done,
@@ -233,7 +254,7 @@ Transformer::transformRPMItems(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQ
             t.tid=?
     )**";
 
-    const char * yumdb_sql = R"**(
+    const char *yumdb_sql = R"**(
         SELECT
             yumdb_key as key,
             yumdb_val as value
@@ -246,23 +267,23 @@ Transformer::transformRPMItems(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQ
     SQLite3::Query query(*history.get(), pkg_sql);
     query.bindv(trans->getId());
 
-    std::map<int64_t, std::shared_ptr<RPMItem> > seen;
-    std::shared_ptr<TransactionItem> last = nullptr;
+    std::map< int64_t, std::shared_ptr< RPMItem > > seen;
+    std::shared_ptr< TransactionItem > last = nullptr;
 
     // for every package in the history database
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
 
         // create RPM item object
-        auto rpm = std::make_shared<RPMItem>(swdb);
-        rpm->setName(query.get<std::string>("name"));
-        rpm->setEpoch(query.get<int64_t>("epoch"));
-        rpm->setVersion(query.get<std::string>("version"));
-        rpm->setRelease(query.get<std::string>("release"));
-        rpm->setArch(query.get<std::string>("arch"));
+        auto rpm = std::make_shared< RPMItem >(swdb);
+        rpm->setName(query.get< std::string >("name"));
+        rpm->setEpoch(query.get< int64_t >("epoch"));
+        rpm->setVersion(query.get< std::string >("version"));
+        rpm->setRelease(query.get< std::string >("release"));
+        rpm->setArch(query.get< std::string >("arch"));
         rpm->save();
 
         // get item state/action
-        std::string stateString = query.get<std::string>("state");
+        std::string stateString = query.get< std::string >("state");
         TransactionItemAction action = actions.at(stateString);
 
         if (action == TransactionItemAction::OBSOLETE) {
@@ -290,18 +311,16 @@ Transformer::transformRPMItems(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQ
               Expected output:
                 ???
             */
-            std::cout << rpm->getName() << " " << stateString << std::endl;
             continue;
         }
         seen[rpm->getId()] = rpm;
 
-
         // get data from yumdb
-        std::map<std::string, std::string> yumdb;
+        std::map< std::string, std::string > yumdb;
         SQLite3::Query yumdb_query(*history.get(), yumdb_sql);
-        yumdb_query.bindv(query.get<int64_t>("id"));
+        yumdb_query.bindv(query.get< int64_t >("id"));
         while (yumdb_query.step() == SQLite3::Statement::StepResult::ROW) {
-            yumdb[yumdb_query.get<std::string>("key")] = yumdb_query.get<std::string>("value");
+            yumdb[yumdb_query.get< std::string >("key")] = yumdb_query.get< std::string >("value");
         }
 
         std::string repoid = yumdb["from_repo"];
@@ -309,7 +328,7 @@ Transformer::transformRPMItems(std::shared_ptr<SQLite3> swdb, std::shared_ptr<SQ
 
         // add TransactionItem object
         auto transItem = trans->addItem(rpm, repoid, action, reason, nullptr);
-        transItem->setDone(query.get<std::string>("done") == "TRUE");
+        transItem->setDone(query.get< std::string >("done") == "TRUE");
 
         // resolve replaced by
         switch (action) {

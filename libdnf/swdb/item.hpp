@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Red Hat, Inc.
+ * Copyright (C) 2017-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -24,7 +24,7 @@
 #include <memory>
 #include <string>
 
-#include "libdnf/utils/sqlite3/sqlite3.hpp"
+#include "../utils/sqlite3/sqlite3.hpp"
 
 /// Class representing a package.
 /**
@@ -36,7 +36,7 @@
  */
 class Item {
 public:
-    /// Default contructor.
+    /// Default constructor.
     /** A more elaborate description of the constructor. */
     Item(std::shared_ptr< SQLite3 > conn);
 
@@ -61,11 +61,11 @@ public:
     virtual const std::string &getItemType() const noexcept { return itemType; }
     virtual std::string toStr();
     virtual void save();
-    std::shared_ptr< SQLite3 > conn;
 
 protected:
     void dbInsert();
 
+    std::shared_ptr< SQLite3 > conn;
     int64_t id = 0;
     const std::string itemType;
 };

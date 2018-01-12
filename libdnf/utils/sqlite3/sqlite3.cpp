@@ -47,9 +47,11 @@ SQLite3::close()
             sqlite3_finalize(res);
         }
         result = sqlite3_close(db);
+    } else {
     }
-    if (result != SQLITE_OK)
+    if (result != SQLITE_OK) {
         throw LibException(result, "Close failed");
+    }
     db = nullptr;
 }
 

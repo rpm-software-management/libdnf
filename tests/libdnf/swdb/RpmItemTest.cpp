@@ -12,8 +12,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION(RpmItemTest);
 void
 RpmItemTest::setUp()
 {
-    conn = std::unique_ptr<SQLite3>(new SQLite3(":memory:"));
-    SwdbCreateDatabase(*conn.get());
+    conn = std::make_shared< SQLite3 >(":memory:");
+    Swdb swdb(conn);
+    swdb.createDatabase();
 }
 
 void
@@ -25,7 +26,7 @@ void
 RpmItemTest::testCreate()
 {
     // bash-4.4.12-5.fc26.x86_64
-    RPMItem rpm(*conn.get());
+    RPMItem rpm(conn);
     rpm.setName("bash");
     rpm.setEpoch(0);
     rpm.setVersion("4.4.12");
@@ -33,7 +34,7 @@ RpmItemTest::testCreate()
     rpm.setArch("x86_64");
     rpm.save();
 
-    RPMItem rpm2(*conn.get(), rpm.getId());
+    RPMItem rpm2(conn, rpm.getId());
     CPPUNIT_ASSERT(rpm2.getId() == rpm.getId());
     CPPUNIT_ASSERT(rpm2.getName() == rpm.getName());
     CPPUNIT_ASSERT(rpm2.getEpoch() == rpm.getEpoch());
@@ -48,11 +49,11 @@ RpmItemTest::testGetTransactionItems()
     // change following constant to modify number of tested RPMItems
     constexpr int num = 10;
 
-    Transaction trans(*conn.get());
+    Transaction trans(conn);
 
     auto create_start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < num; i++) {
-        auto rpm = std::make_shared<RPMItem>(*conn.get());
+        auto rpm = std::make_shared< RPMItem >(conn);
         rpm->setName("name_" + std::to_string(i));
         rpm->setEpoch(0);
         rpm->setVersion("1");
@@ -64,21 +65,21 @@ RpmItemTest::testGetTransactionItems()
     trans.save();
     trans.saveItems();
     auto create_finish = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> create_duration = create_finish - create_start;
+    std::chrono::duration< double > create_duration = create_finish - create_start;
 
     auto read_start = std::chrono::high_resolution_clock::now();
-    auto items = RPMItem::getTransactionItems(*conn.get(), trans.getId());
+    auto items = RPMItem::getTransactionItems(conn, trans.getId());
     for (auto i : items) {
-        auto rpm = std::dynamic_pointer_cast<RPMItem>(i->getItem());
+        auto rpm = std::dynamic_pointer_cast< RPMItem >(i->getItem());
         // std::cout << rpm->getNEVRA() << std::endl;
     }
     auto read_finish = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> read_duration = read_finish - read_start;
+    std::chrono::duration< double > read_duration = read_finish - read_start;
 
     std::cout << "Create RPMItems: "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(create_duration).count()
+              << std::chrono::duration_cast< std::chrono::milliseconds >(create_duration).count()
               << "ms" << std::endl;
     std::cout << "Read RPMItems: "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(read_duration).count()
+              << std::chrono::duration_cast< std::chrono::milliseconds >(read_duration).count()
               << "ms" << std::endl;
 }

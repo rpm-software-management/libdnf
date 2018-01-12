@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Red Hat, Inc.
+ * Copyright (C) 2017-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -18,9 +18,66 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <iostream>
+
 #include "transactionitem.hpp"
 
-TransactionItem::TransactionItem(const Transaction & trans)
+// TODO: translations
+static const std::map< TransactionItemAction, std::string > transactionItemActionName = {
+    {TransactionItemAction::INSTALL, "Install"},
+    {TransactionItemAction::DOWNGRADE, "Downgrade"},
+    {TransactionItemAction::DOWNGRADED, "Downgraded"},
+    {TransactionItemAction::OBSOLETE, "Obsolete"},
+    {TransactionItemAction::OBSOLETED, "Obsoleted"},
+    {TransactionItemAction::UPGRADE, "Upgrade"},
+    {TransactionItemAction::UPGRADED, "Upgraded"},
+    {TransactionItemAction::REMOVE, "Removed"},
+    {TransactionItemAction::REINSTALL, "Reinstall"},
+};
+
+static const std::map< TransactionItemAction, std::string > transactionItemActionShort = {
+    {TransactionItemAction::INSTALL, "I"},
+    {TransactionItemAction::DOWNGRADE, "D"},
+    {TransactionItemAction::DOWNGRADED, "D"},
+    {TransactionItemAction::OBSOLETE, "O"},
+    {TransactionItemAction::OBSOLETED, "O"},
+    {TransactionItemAction::UPGRADE, "U"},
+    {TransactionItemAction::UPGRADED, "U"},
+    // "R" is for Reinstall, therefore use "E" for rEmove (or Erase)
+    {TransactionItemAction::REMOVE, "E"},
+    {TransactionItemAction::REINSTALL, "R"},
+};
+
+/*
+static const std::map<std::string, TransactionItemReason> nameTransactionItemReason = {
+    {, "I"},
+    {TransactionItemAction::DOWNGRADE, "D"},
+    {TransactionItemAction::DOWNGRADED, "D"},
+    {TransactionItemAction::OBSOLETE, "O"},
+    {TransactionItemAction::OBSOLETED, "O"},
+    {TransactionItemAction::UPGRADE, "U"},
+    {TransactionItemAction::UPGRADED, "U"},
+    // "R" is for Reinstall, therefore use "E" for rEmove (or Erase)
+    {TransactionItemAction::REMOVE, "E"},
+    {TransactionItemAction::REINSTALL, "R"},
+};
+TransactionItemReason to_TransactionItemReason(const std::string & s) {
+    return
+*/
+
+const std::string &
+TransactionItem::getActionName()
+{
+    return transactionItemActionName.at(getAction());
+}
+
+const std::string &
+TransactionItem::getActionShort()
+{
+    return transactionItemActionShort.at(getAction());
+}
+
+TransactionItem::TransactionItem(const Transaction &trans)
   : trans{trans}
 {
 }
@@ -31,8 +88,7 @@ TransactionItem::save()
     getItem()->save();
     if (getId() == 0) {
         dbInsert();
-    }
-    else {
+    } else {
         dbUpdate();
     }
 }
@@ -40,7 +96,7 @@ TransactionItem::save()
 void
 TransactionItem::dbInsert()
 {
-    const char * sql =
+    const char *sql =
         "INSERT INTO "
         "  trans_item ( "
         "    id, "
@@ -59,8 +115,8 @@ TransactionItem::dbInsert()
                 getItem()->getId(),
                 Repo::getCached(trans.conn, getRepoid())->getId(),
                 NULL, // replaced_by
-                static_cast<int>(getAction()),
-                static_cast<int>(getReason()),
+                static_cast< int >(getAction()),
+                static_cast< int >(getReason()),
                 getDone());
     query.step();
     setId(trans.conn->lastInsertRowID());
@@ -69,7 +125,7 @@ TransactionItem::dbInsert()
 void
 TransactionItem::dbUpdate()
 {
-    const char * sql =
+    const char *sql =
         "UPDATE "
         "  trans_item "
         "SET "
@@ -87,8 +143,8 @@ TransactionItem::dbUpdate()
                 getItem()->getId(),
                 Repo::getCached(trans.conn, getRepoid())->getId(),
                 NULL,
-                static_cast<int>(getAction()),
-                static_cast<int>(getReason()),
+                static_cast< int >(getAction()),
+                static_cast< int >(getReason()),
                 getDone(),
                 getId());
     query.step();

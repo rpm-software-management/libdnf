@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Red Hat, Inc.
+ * Copyright (C) 2017-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -27,45 +27,54 @@
 #include "item.hpp"
 #include "transactionitem.hpp"
 
-enum class CompsPackageType : int
-{
+class TransactionItem;
+
+enum class CompsPackageType : int {
     MANDATORY = 0,
     DEFAULT = 1,
     OPTIONAL = 2,
     CONDITIONAL = 3,
 };
 
+class Item;
+class CompsGroupItem;
 class CompsGroupPackage;
+class TransactionItem;
 
 class CompsGroupItem : public Item {
 public:
-    CompsGroupItem(std::shared_ptr<SQLite3> conn);
-    CompsGroupItem(std::shared_ptr<SQLite3> conn, int64_t pk);
+    CompsGroupItem(std::shared_ptr< SQLite3 > conn);
+    CompsGroupItem(std::shared_ptr< SQLite3 > conn, int64_t pk);
     virtual ~CompsGroupItem() = default;
 
-    const std::string & getGroupId() const noexcept { return groupId; }
-    void setGroupId(const std::string & value) { groupId = value; }
+    const std::string &getGroupId() const noexcept { return groupId; }
+    void setGroupId(const std::string &value) { groupId = value; }
 
-    const std::string & getName() const noexcept { return name; }
-    void setName(const std::string & value) { name = value; }
+    const std::string &getName() const noexcept { return name; }
+    void setName(const std::string &value) { name = value; }
 
-    const std::string & getTranslatedName() const noexcept { return translatedName; }
-    void setTranslatedName(const std::string & value) { translatedName = value; }
+    const std::string &getTranslatedName() const noexcept { return translatedName; }
+    void setTranslatedName(const std::string &value) { translatedName = value; }
 
     CompsPackageType getPackagesType() const noexcept { return packagesType; }
     void setPackagesType(CompsPackageType value) { packagesType = value; }
 
     virtual std::string toStr();
-    virtual const std::string & getItemType() const noexcept { return itemType; }
+    virtual const std::string &getItemType() const noexcept { return itemType; }
     virtual void save();
-    std::shared_ptr<CompsGroupPackage> addPackage(std::string name,
-                                                  bool installed,
-                                                  bool excluded,
-                                                  CompsPackageType pkgType);
+    std::shared_ptr< CompsGroupPackage > addPackage(std::string name,
+                                                    bool installed,
+                                                    bool excluded,
+                                                    CompsPackageType pkgType);
     void loadPackages();
-    std::vector<std::shared_ptr<CompsGroupPackage> > getPackages() { return packages; }
-    static std::vector<std::shared_ptr<TransactionItem> > getTransactionItems(
-        std::shared_ptr<SQLite3> conn,
+    std::vector< std::shared_ptr< CompsGroupPackage > > getPackages() { return packages; }
+    static std::shared_ptr< TransactionItem > getTransactionItem(std::shared_ptr< SQLite3 > conn,
+                                                                 const std::string &groupid);
+    static std::vector< std::shared_ptr< TransactionItem > > getTransactionItemsByPattern(
+        std::shared_ptr< SQLite3 > conn,
+        const std::string &pattern);
+    static std::vector< std::shared_ptr< TransactionItem > > getTransactionItems(
+        std::shared_ptr< SQLite3 > conn,
         int64_t transactionId);
 
 protected:
@@ -75,24 +84,25 @@ protected:
     std::string translatedName;
     CompsPackageType packagesType;
 
-    std::vector<std::shared_ptr<CompsGroupPackage> > packages;
+    std::vector< std::shared_ptr< CompsGroupPackage > > packages;
 
 private:
+    friend class CompsGroupPackage;
     void dbSelect(int64_t pk);
     void dbInsert();
 };
 
 class CompsGroupPackage {
 public:
-    CompsGroupPackage(CompsGroupItem & group);
+    CompsGroupPackage(CompsGroupItem &group);
 
     int64_t getId() const noexcept { return id; }
     void setId(int64_t value) { id = value; }
 
-    const CompsGroupItem & getGroup() const noexcept { return group; }
+    const CompsGroupItem &getGroup() const noexcept { return group; }
 
-    const std::string & getName() const noexcept { return name; }
-    void setName(const std::string & value) { name = value; }
+    const std::string &getName() const noexcept { return name; }
+    void setName(const std::string &value) { name = value; }
 
     bool getInstalled() const noexcept { return installed; }
     void setInstalled(bool value) { installed = value; }
@@ -108,7 +118,7 @@ public:
 
 protected:
     int64_t id = 0;
-    CompsGroupItem & group;
+    CompsGroupItem &group;
     std::string name;
     bool installed = false;
     bool excluded = false;
