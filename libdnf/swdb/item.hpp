@@ -26,18 +26,42 @@
 
 #include "libdnf/utils/sqlite3/sqlite3.hpp"
 
+/// Class representing a package.
+/**
+ * Here goes the detailed description.
+ * It can span multiple lines in the comment block.
+ *
+ * Paragraphs are delimited with blank lines.
+ * Markdown is supported.
+ */
 class Item {
 public:
-    Item(std::shared_ptr<SQLite3> conn);
+    /// Default contructor.
+    /** A more elaborate description of the constructor. */
+    Item(std::shared_ptr< SQLite3 > conn);
+
+    /// Default destructor.
+    /** A more elaborate description of the destructor. */
     virtual ~Item() = default;
 
+    /// Returns the ID of this item.
+    /**
+     * A more elaborate description of the getter.
+     * \return the ID of this package
+     */
     int64_t getId() const noexcept { return id; }
+
+    /// Sets the ID of this item.
+    /**
+     * A more elaborate description of the setter.
+     * \param value the ID to use as the new ID
+     */
     void setId(int64_t value) { id = value; }
 
     virtual const std::string & getItemType() const noexcept { return itemType; }
     virtual std::string toStr();
     virtual void save();
-    std::shared_ptr<SQLite3> conn;
+    std::shared_ptr< SQLite3 > conn;
 
 protected:
     void dbInsert();
