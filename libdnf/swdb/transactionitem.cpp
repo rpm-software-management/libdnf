@@ -18,8 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <iostream>
-
 #include "transactionitem.hpp"
 
 // TODO: translations
@@ -96,25 +94,26 @@ TransactionItem::save()
 void
 TransactionItem::dbInsert()
 {
-    const char *sql =
-        "INSERT INTO "
-        "  trans_item ( "
-        "    id, "
-        "    trans_id, "
-        "    item_id, "
-        "    repo_id, "
-        "    replaced_by, "
-        "    action, "
-        "    reason, "
-        "    done "
-        "  ) "
-        "VALUES "
-        "  (null, ?, ?, ?, ?, ?, ?, ?)";
+    const char *sql = R"**(
+        INSERT INTO
+          trans_item (
+            id,
+            trans_id,
+            item_id,
+            repo_id,
+            action,
+            reason,
+            done
+          )
+        VALUES
+          (null, ?, ?, ?, ?, ?, ?)
+    )**";
+
+    // save the transaction item
     SQLite3::Statement query(*trans.conn.get(), sql);
     query.bindv(trans.getId(),
                 getItem()->getId(),
                 Repo::getCached(trans.conn, getRepoid())->getId(),
-                NULL, // replaced_by
                 static_cast< int >(getAction()),
                 static_cast< int >(getReason()),
                 getDone());
@@ -123,26 +122,46 @@ TransactionItem::dbInsert()
 }
 
 void
+TransactionItem::saveReplacedBy()
+{
+    if (replacedBy.empty()) {
+        return;
+    }
+    const char *sql = "INSERT INTO item_replaced_by VALUES (?, ?)";
+    SQLite3::Statement replacedByQuery(*trans.conn.get(), sql);
+    bool first = true;
+    for (auto newItem : replacedBy) {
+        if (!first) {
+            // reset the prepared statement, so it can be executed again
+            replacedByQuery.reset();
+        }
+        replacedByQuery.bindv(getId(), newItem->getId());
+        replacedByQuery.step();
+        first = false;
+    }
+}
+
+void
 TransactionItem::dbUpdate()
 {
-    const char *sql =
-        "UPDATE "
-        "  trans_item "
-        "SET "
-        "  trans_id=?, "
-        "  item_id=?, "
-        "  repo_id=?, "
-        "  replaced_by=?, "
-        "  action=?, "
-        "  reason=?, "
-        "  done=? "
-        "WHERE "
-        "  id = ?";
+    const char *sql = R"**(
+        UPDATE
+          trans_item
+        SET
+          trans_id=?,
+          item_id=?,
+          repo_id=?,
+          action=?,
+          reason=?,
+          done=?
+        WHERE
+          id = ?
+    )**";
+
     SQLite3::Statement query(*trans.conn.get(), sql);
     query.bindv(trans.getId(),
                 getItem()->getId(),
                 Repo::getCached(trans.conn, getRepoid())->getId(),
-                NULL,
                 static_cast< int >(getAction()),
                 static_cast< int >(getReason()),
                 getDone(),

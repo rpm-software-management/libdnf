@@ -51,7 +51,7 @@ WorkflowTest::testDefaultWorkflow()
     std::string repoid = "base";
     TransactionItemAction action = TransactionItemAction::INSTALL;
     TransactionItemReason reason = TransactionItemReason::GROUP;
-    trans.addItem(rpm_bash, repoid, action, reason, NULL);
+    trans.addItem(rpm_bash, repoid, action, reason);
 
     // systemd-233-6.fc26
     auto rpm_systemd = std::make_shared< RPMItem >(conn);
@@ -63,7 +63,7 @@ WorkflowTest::testDefaultWorkflow()
     repoid = "base";
     action = TransactionItemAction::OBSOLETE;
     reason = TransactionItemReason::USER;
-    auto ti_rpm_systemd = trans.addItem(rpm_systemd, repoid, action, reason, NULL);
+    auto ti_rpm_systemd = trans.addItem(rpm_systemd, repoid, action, reason);
 
     // sysvinit-2.88-14.dsf.fc20
     auto rpm_sysvinit = std::make_shared< RPMItem >(conn);
@@ -75,7 +75,8 @@ WorkflowTest::testDefaultWorkflow()
     repoid = "f20";
     action = TransactionItemAction::OBSOLETED;
     reason = TransactionItemReason::USER;
-    trans.addItem(rpm_sysvinit, repoid, action, reason, ti_rpm_systemd);
+    auto ti_rpm_sysvinit = trans.addItem(rpm_sysvinit, repoid, action, reason);
+    ti_rpm_sysvinit->addReplacedBy(ti_rpm_systemd);
 
     auto comps_group_core = std::make_shared< CompsGroupItem >(conn);
     comps_group_core->setGroupId("core");
@@ -85,7 +86,7 @@ WorkflowTest::testDefaultWorkflow()
     repoid = "";
     action = TransactionItemAction::INSTALL;
     reason = TransactionItemReason::USER;
-    trans.addItem(comps_group_core, repoid, action, reason, NULL);
+    trans.addItem(comps_group_core, repoid, action, reason);
 
     auto comps_environment_minimal = std::make_shared< CompsEnvironmentItem >(conn);
     comps_environment_minimal->setEnvironmentId("minimal");
@@ -95,7 +96,7 @@ WorkflowTest::testDefaultWorkflow()
     repoid = "";
     action = TransactionItemAction::INSTALL;
     reason = TransactionItemReason::USER;
-    trans.addItem(comps_environment_minimal, repoid, action, reason, NULL);
+    trans.addItem(comps_environment_minimal, repoid, action, reason);
 
     // STEP 4: save transaction and all associated items
     trans.save();

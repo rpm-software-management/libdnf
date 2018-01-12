@@ -177,15 +177,13 @@ std::shared_ptr< TransactionItem >
 Transaction::addItem(std::shared_ptr< Item > item,
                      const std::string &repoid,
                      TransactionItemAction action,
-                     TransactionItemReason reason,
-                     std::shared_ptr< TransactionItem > replacedBy)
+                     TransactionItemReason reason)
 {
     auto trans_item = std::make_shared< TransactionItem >(*this);
     trans_item->setItem(item);
     trans_item->setRepoid(repoid);
     trans_item->setAction(action);
     trans_item->setReason(reason);
-    trans_item->setReplacedBy(replacedBy);
     items.push_back(trans_item);
     return trans_item;
 }
@@ -197,6 +195,13 @@ Transaction::saveItems()
     save();
     for (auto i : items) {
         i->save();
+    }
+
+    /* this has to be done in a separate loop to make sure
+     * that all the items already have ID assigned
+     */
+    for (auto i : items) {
+        i->saveReplacedBy();
     }
 }
 

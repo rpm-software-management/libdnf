@@ -69,8 +69,11 @@ public:
     const std::string &getRepoid() const noexcept { return repoid; }
     void setRepoid(const std::string &value) { repoid = value; }
 
-    std::shared_ptr< TransactionItem > getReplacedBy() const noexcept { return replacedBy; }
-    void setReplacedBy(std::shared_ptr< TransactionItem > value) { replacedBy = value; }
+    const std::vector< std::shared_ptr< TransactionItem > > &getReplacedBy() const noexcept
+    {
+        return replacedBy;
+    }
+    void addReplacedBy(std::shared_ptr< TransactionItem > value) { replacedBy.push_back(value); }
 
     TransactionItemAction getAction() const noexcept { return action; }
     void setAction(TransactionItemAction value) { action = value; }
@@ -85,6 +88,7 @@ public:
     void setDone(bool value) { done = value; }
 
     void save();
+    void saveReplacedBy();
 
 protected:
     int64_t id = 0;
@@ -92,7 +96,7 @@ protected:
     std::shared_ptr< Item > item;
     // TODO: replace with objects? it's just repoid, probably not necessary
     std::string repoid;
-    std::shared_ptr< TransactionItem > replacedBy = NULL;
+    std::vector< std::shared_ptr< TransactionItem > > replacedBy;
     TransactionItemAction action = TransactionItemAction::INSTALL;
     TransactionItemReason reason = TransactionItemReason::UNKNOWN;
     bool done = false;

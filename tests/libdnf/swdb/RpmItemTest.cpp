@@ -59,8 +59,7 @@ RpmItemTest::testGetTransactionItems()
         rpm->setVersion("1");
         rpm->setRelease("2");
         rpm->setArch("x86_64");
-        trans.addItem(
-            rpm, "base", TransactionItemAction::INSTALL, TransactionItemReason::USER, NULL);
+        trans.addItem(rpm, "base", TransactionItemAction::INSTALL, TransactionItemReason::USER);
     }
     trans.save();
     trans.saveItems();

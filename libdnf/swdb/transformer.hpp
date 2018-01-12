@@ -30,15 +30,19 @@
 #include "transaction.hpp"
 #include "transactionitem.hpp"
 
-// following classe override default behavior with
-// inserting rows with explicitly set IDs
-
+/**
+ * Class overrides default behavior with
+ * inserting rows with explicitly set IDs
+ */
 class TransformerTransaction : public Transaction {
 public:
     using Transaction::Transaction;
     void save() { dbInsert(); }
 };
 
+/**
+ * Class providing an interface to the database transformation
+ */
 class Transformer {
 public:
     class Exception : public std::runtime_error {

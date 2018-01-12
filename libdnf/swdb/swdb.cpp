@@ -118,7 +118,7 @@ Swdb::addItem(std::shared_ptr< Item > item,
         throw "Not in progress";
     }
     // auto replacedBy = std::make_shared<TransactionItem>(nullptr);
-    return transactionInProgress->addItem(item, repoid, action, reason, nullptr);
+    return transactionInProgress->addItem(item, repoid, action, reason);
 }
 
 void

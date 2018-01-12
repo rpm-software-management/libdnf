@@ -68,7 +68,7 @@ public:
         {
             auto result = sqlite3_prepare_v2(db.db, sql, -1, &stmt, nullptr);
             if (result != SQLITE_OK)
-                throw LibException(result, "Statement: " + std::string(sql));
+                throw LibException(result, "Statement: " + db.getError() + " in\n" + sql);
         };
 
         Statement(SQLite3 & db, const std::string & sql)
@@ -76,63 +76,63 @@ public:
         {
             auto result = sqlite3_prepare_v2(db.db, sql.c_str(), sql.length() + 1, &stmt, nullptr);
             if (result != SQLITE_OK)
-                throw LibException(result, "Statement: " + std::string(sql));
+                throw LibException(result, "Statement: " + db.getError() + " in\n" + sql);
         };
 
         void bind(int pos, int val)
         {
             auto result = sqlite3_bind_int(stmt, pos, val);
             if (result != SQLITE_OK)
-                throw LibException(result, "Integer bind failed");
+                throw LibException(result, "Integer bind failed: " + db.getError());
         }
 
         void bind(int pos, std::int64_t val)
         {
             auto result = sqlite3_bind_int64(stmt, pos, val);
             if (result != SQLITE_OK)
-                throw LibException(result, "Integer64 bind failed");
+                throw LibException(result, "Integer64 bind failed: " + db.getError());
         }
 
         void bind(int pos, double val)
         {
             auto result = sqlite3_bind_double(stmt, pos, val);
             if (result != SQLITE_OK)
-                throw LibException(result, "Double bind failed");
+                throw LibException(result, "Double bind failed: " + db.getError());
         }
 
         void bind(int pos, bool val)
         {
             auto result = sqlite3_bind_int(stmt, pos, val ? 1 : 0);
             if (result != SQLITE_OK)
-                throw LibException(result, "Bool bind failed");
+                throw LibException(result, "Bool bind failed: " + db.getError());
         }
 
         void bind(int pos, const char * val)
         {
             auto result = sqlite3_bind_text(stmt, pos, val, -1, SQLITE_TRANSIENT);
             if (result != SQLITE_OK)
-                throw LibException(result, "Text bind failed");
+                throw LibException(result, "Text bind failed: " + db.getError());
         }
 
         void bind(int pos, const std::string & val)
         {
             auto result = sqlite3_bind_text(stmt, pos, val.c_str(), -1, SQLITE_TRANSIENT);
             if (result != SQLITE_OK)
-                throw LibException(result, "Text bind failed");
+                throw LibException(result, "Text bind failed: " + db.getError());
         }
 
         void bind(int pos, const Blob & val)
         {
             auto result = sqlite3_bind_blob(stmt, pos, val.data, val.size, SQLITE_TRANSIENT);
             if (result != SQLITE_OK)
-                throw LibException(result, "Blob bind failed");
+                throw LibException(result, "Blob bind failed: " + db.getError());
         }
 
         void bind(int pos, const std::vector<unsigned char> & val)
         {
             auto result = sqlite3_bind_blob(stmt, pos, val.data(), val.size(), SQLITE_TRANSIENT);
             if (result != SQLITE_OK)
-                throw LibException(result, "Blob bind failed");
+                throw LibException(result, "Blob bind failed: " + db.getError());
         }
 
         template<typename... Args>
@@ -157,9 +157,8 @@ public:
                 case SQLITE_BUSY:
                     return StepResult::BUSY;
                 default:
-                    throw LibException(result, getExpandedSql());
+                    throw LibException(result, "Step: " + db.getError() + " in\n" + getExpandedSql());
             }
-            throw LibException(result, "Step failed: " + db.getError());
         }
 
         int getColumnCount() const
@@ -206,6 +205,11 @@ public:
             sqlite3_free(expandSql);
         }
 
+        /**
+         * Reset prepared query to its initial state, ready to be re-executed.
+         * All the bound values remain untouched - retain their values.
+         * Use clearBindings if you need to reset them as well.
+         */
         void reset()
         {
             sqlite3_reset(stmt);

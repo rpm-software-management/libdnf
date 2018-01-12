@@ -29,11 +29,15 @@ R"**(
         trans_id INTEGER REFERENCES trans(id),
         item_id INTEGER REFERENCES item(id),
         repo_id INTEGER REFERENCES repo(id),
-        replaced_by INTEGER REFERENCES trans_item(id),          /* replaced_by is either NULL or points to trans_item in the same transaction */
         action INTEGER NOT NULL,                                /* (enum) */
         reason INTEGER NOT NULL,                                /* (enum) */
         done INTEGER NOT NULL,                                   /* (bool) 0: not done, 1: done */
         CONSTRAINT trans_item_unique_trans_item UNIQUE (trans_id, item_id)
+    );
+    CREATE TABLE item_replaced_by (              /* M:N relationship between transaction items */
+        trans_item_id INTEGER REFERENCES trans_item(id),
+        by_trans_item_id INTEGER REFERENCES trans_item(id),
+        PRIMARY KEY (trans_item_id, by_trans_item_id)
     );
     CREATE TABLE trans_with (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

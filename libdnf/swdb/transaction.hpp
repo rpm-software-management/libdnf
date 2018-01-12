@@ -74,8 +74,7 @@ public:
     std::shared_ptr< TransactionItem > addItem(std::shared_ptr< Item > item,
                                                const std::string &repoid,
                                                TransactionItemAction action,
-                                               TransactionItemReason reason,
-                                               std::shared_ptr< TransactionItem > replacedBy);
+                                               TransactionItemReason reason);
     std::vector< std::shared_ptr< TransactionItem > > getItems() const { return items; }
     void loadItems();
     void saveItems();

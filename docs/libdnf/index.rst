@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-libdnf C++ documentation!
+libdnf C++ documentation
 ==================================
 
 .. toctree::
@@ -19,14 +19,23 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-API Reference
+Public API Reference
 =====================
-
-.. doxygenclass:: Item
-   :members:
 
 .. doxygenclass:: RPMItem
    :members:
 
 .. doxygenclass:: Repo
+   :members:
+
+Internal API Reference
+======================
+
+.. doxygenclass:: Item
+   :members:
+
+.. doxygenclass:: Transformer
+   :members:
+
+.. doxygenclass:: SQLite3
    :members:
