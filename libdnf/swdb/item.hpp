@@ -58,7 +58,7 @@ public:
      */
     void setId(int64_t value) { id = value; }
 
-    virtual const std::string & getItemType() const noexcept { return itemType; }
+    virtual const std::string &getItemType() const noexcept { return itemType; }
     virtual std::string toStr();
     virtual void save();
     std::shared_ptr< SQLite3 > conn;
