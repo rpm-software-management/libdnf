@@ -1519,23 +1519,6 @@ hy_query_filter_provides_in(HyQuery q, char **reldep_strs)
     return 0;
 }
 
-int
-hy_query_filter_requires(HyQuery q, int cmp_type, const char *name, const char *evr)
-{
-    /* convert to a reldep filter. the trick is handling negation right (it gets
-    resolved in hy_query_apply(), we just have to make sure to store it in the
-    filter. */
-    int not_neg = cmp_type & ~HY_NOT;
-    DnfReldep *reldep = dnf_reldep_new(q->sack, name, static_cast<DnfComparisonKind>(not_neg), evr);
-    int rc;
-    if (reldep) {
-        rc = hy_query_filter_reldep(q, HY_PKG_REQUIRES, reldep);
-        g_object_unref (reldep);
-        q->filters[q->nfilters - 1].cmp_type = cmp_type;
-    } else
-        rc = hy_query_filter_empty(q);
-    return rc;
-}
 
 /**
  * Narrows to only those installed packages for which there is a downgrading package.
