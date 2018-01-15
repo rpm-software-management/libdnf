@@ -24,8 +24,6 @@
 #include "item_rpm.hpp"
 #include "transactionitem.hpp"
 
-class RPMItem;
-
 Transaction::Transaction(std::shared_ptr< SQLite3 > conn)
   : conn{conn}
 {
@@ -141,6 +139,29 @@ Transaction::dbInsert()
     }
     query.step();
     setId(conn->lastInsertRowID());
+
+    // add used software - has to be added at initialization state
+    if (!softwarePerformedWith.empty()) {
+        sql = R"**(
+            INSERT INTO
+                trans_with (
+                    trans_id,
+                    item_id
+                )
+            VALUES
+                (?, ?)
+        )**";
+        SQLite3::Statement swQuery(*conn.get(), sql);
+        bool first = true;
+        for (auto software : softwarePerformedWith) {
+            if (!first) {
+                swQuery.reset();
+            }
+            first = false;
+            swQuery.bindv(getId(), software->getId());
+            swQuery.step();
+        }
+    }
 }
 
 void
@@ -218,10 +239,60 @@ Transaction::loadItems()
     items.insert(items.end(), comps_environments.begin(), comps_environments.end());
 }
 
+/**
+ * Append software to softwarePerformedWith list.
+ * Software is saved to the database using save method and therefore
+ * all the software has to be added before transaction is saved.
+ * \param software RPMItem used to perform the transaction
+ */
 void
-Transaction::addConsoleOutputLine(int fileDescriptor, std::string line)
+Transaction::addSoftwarePerformedWith(std::shared_ptr< RPMItem > software)
 {
-    // TODO: make sure transaction is saved and ID is available
+    softwarePerformedWith.insert(software);
+}
+
+/**
+ * Load list of software performed with for current transaction from the database.
+ * Transaction has to be saved in advance, otherwise empty list will be returned.
+ * \return list of RPMItem objects that performed the transaction
+ */
+const std::set< std::shared_ptr< RPMItem > >
+Transaction::getSoftwarePerformedWith() const
+{
+    const char *sql = R"**(
+        SELECT
+            item_id
+        FROM
+            trans_with
+        WHERE
+            trans_id = ?
+    )**";
+
+    std::set< std::shared_ptr< RPMItem > > software;
+
+    SQLite3::Query query(*conn.get(), sql);
+    query.bindv(getId());
+
+    while (query.step() == SQLite3::Statement::StepResult::ROW) {
+        software.insert(std::make_shared< RPMItem >(conn, query.get< int64_t >("item_id")));
+    }
+
+    return software;
+}
+
+/**
+ * Save console output line for current transaction to the database. Transaction has
+ *  to be saved in advance, otherwise an exception will be thrown.
+ * \param fileDescriptor UNIX file descriptor index (1 = stdout, 2 = stderr).
+ * \param line console output content
+ */
+void
+Transaction::addConsoleOutputLine(int fileDescriptor, const std::string &line)
+{
+    if (!getId()) {
+        throw std::runtime_error("Can't add console output to unsaved transaction");
+    }
+
     const char *sql = R"**(
         INSERT INTO
             console_output (

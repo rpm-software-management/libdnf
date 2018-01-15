@@ -67,12 +67,14 @@ protected:
     void transformRPMItems(std::shared_ptr< SQLite3 > swdb,
                            std::shared_ptr< SQLite3 > history,
                            std::shared_ptr< TransformerTransaction > trans);
-    void transformTransWith(std::shared_ptr< SQLite3 > swdb, std::shared_ptr< SQLite3 > history);
-    void transformOutput(std::shared_ptr< SQLite3 > swdb,
-                         std::shared_ptr< SQLite3 > history,
+
+    void transformOutput(std::shared_ptr< SQLite3 > history,
                          std::shared_ptr< TransformerTransaction > trans);
 
 private:
+    void transformTransWith(std::shared_ptr< SQLite3 > swdb,
+                            std::shared_ptr< SQLite3 > history,
+                            std::shared_ptr< TransformerTransaction > trans);
     std::string historyPath();
     const std::string inputDir;
     const std::string outputFile;

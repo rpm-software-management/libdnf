@@ -34,8 +34,6 @@
 #include "transactionitem.hpp"
 #include "transformer.hpp"
 
-#include <iostream> // XXX debug only
-
 /**
  * Map of supported actions (originally states): string -> enum
  */
@@ -105,10 +103,7 @@ Transformer::transform()
     auto transactions = transformTrans(swdb, history);
     for (auto trans : transactions) {
         transformRPMItems(swdb, history, trans);
-    }
-    transformTransWith(swdb, history);
-    for (auto trans : transactions) {
-        transformOutput(swdb, history, trans);
+        transformOutput(history, trans);
     }
 
     // dump database to a file
@@ -185,53 +180,13 @@ Transformer::transformTrans(std::shared_ptr< SQLite3 > swdb, std::shared_ptr< SQ
         trans->setUserId(query.get< int >("user_id"));
         trans->setCmdline(query.get< std::string >("cmdline"));
         trans->setDone(query.get< int >("done") == 0 ? true : false);
+
+        transformTransWith(swdb, history, trans);
+
         trans->save();
         result.push_back(trans);
     }
     return result;
-}
-
-/**
- * Transform binding between a Transaction and packages, which performed the transaction.
- * \param swdb pointer to swdb SQLite3 object
- * \param swdb pointer to history database SQLite3 object
- */
-void
-Transformer::transformTransWith(std::shared_ptr< SQLite3 > swdb, std::shared_ptr< SQLite3 > history)
-{
-    // history.trans_with_pkgs
-    // TODO support in a Transaction
-}
-
-/**
- * Transform transaction console outputs.
- * \param swdb pointer to swdb SQLite3 object
- * \param swdb pointer to history database SQLite3 object
- */
-void
-Transformer::transformOutput(std::shared_ptr< SQLite3 > swdb,
-                             std::shared_ptr< SQLite3 > history,
-                             std::shared_ptr< TransformerTransaction > trans)
-{
-    // history.trans_script_stdout
-    // history.trans_error
-    // TODO support in a Transaction
-
-    const char *sql = R"**(
-        SELECT
-            line
-        FROM
-            trans_script_stdout
-        WHERE
-            tid = ?
-        ORDER BY
-            lid
-    )**";
-    SQLite3::Query query(*history.get(), sql);
-    query.bindv(trans->getId());
-    while (query.step() == SQLite3::Statement::StepResult::ROW) {
-        trans->addConsoleOutputLine(1, query.get< std::string >("line"));
-    }
 }
 
 static void
@@ -243,6 +198,86 @@ fillRPMItem(std::shared_ptr< RPMItem > rpm, SQLite3::Query &query)
     rpm->setRelease(query.get< std::string >("release"));
     rpm->setArch(query.get< std::string >("arch"));
     rpm->save();
+}
+
+/**
+ * Transform binding between a Transaction and packages, which performed the transaction.
+ * \param swdb pointer to swdb SQLite3 object
+ * \param swdb pointer to history database SQLite3 object
+ */
+void
+Transformer::transformTransWith(std::shared_ptr< SQLite3 > swdb,
+                                std::shared_ptr< SQLite3 > history,
+                                std::shared_ptr< TransformerTransaction > trans)
+{
+    const char *sql = R"**(
+        SELECT
+            name,
+            epoch,
+            version,
+            release,
+            arch
+        FROM
+            trans_with_pkgs
+            JOIN pkgtups using (pkgtupid)
+        WHERE
+            tid=?
+    )**";
+
+    // transform stdout
+    SQLite3::Query query(*history.get(), sql);
+    query.bindv(trans->getId());
+    while (query.step() == SQLite3::Statement::StepResult::ROW) {
+        // create RPM item object
+        auto rpm = std::make_shared< RPMItem >(swdb);
+        fillRPMItem(rpm, query);
+        trans->addSoftwarePerformedWith(rpm);
+    }
+}
+
+/**
+ * Transform transaction console outputs.
+ * \param swdb pointer to history database SQLite3 object
+ */
+void
+Transformer::transformOutput(std::shared_ptr< SQLite3 > history,
+                             std::shared_ptr< TransformerTransaction > trans)
+{
+    const char *sql = R"**(
+        SELECT
+            line
+        FROM
+            trans_script_stdout
+        WHERE
+            tid = ?
+        ORDER BY
+            lid
+    )**";
+
+    // transform stdout
+    SQLite3::Query query(*history.get(), sql);
+    query.bindv(trans->getId());
+    while (query.step() == SQLite3::Statement::StepResult::ROW) {
+        trans->addConsoleOutputLine(1, query.get< std::string >("line"));
+    }
+
+    sql = R"**(
+        SELECT
+            msg
+        FROM
+            trans_error
+        WHERE
+            tid = ?
+        ORDER BY
+            mid
+    )**";
+
+    // transform stderr
+    SQLite3::Query errorQuery(*history.get(), sql);
+    errorQuery.bindv(trans->getId());
+    while (errorQuery.step() == SQLite3::Statement::StepResult::ROW) {
+        trans->addConsoleOutputLine(2, errorQuery.get< std::string >("msg"));
+    }
 }
 
 static void

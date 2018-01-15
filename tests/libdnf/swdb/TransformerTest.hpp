@@ -9,11 +9,10 @@
 class TransformerMock : protected Transformer {
 public:
     TransformerMock();
+    using Transformer::Exception;
+    using Transformer::transformOutput;
     using Transformer::transformRPMItems;
     using Transformer::transformTrans;
-    using Transformer::transformTransWith;
-    using Transformer::transformOutput;
-    using Transformer::Exception;
 };
 
 class TransformerTest : public CppUnit::TestCase {

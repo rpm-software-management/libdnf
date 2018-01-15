@@ -1,3 +1,4 @@
+#include <set>
 #include <string>
 
 #include "libdnf/swdb/item_rpm.hpp"
@@ -14,104 +15,17 @@ TransformerMock::TransformerMock()
 {
 }
 
+static const char *create_history_sql =
+#include "sql/create_test_history_db.sql"
+    ;
+
 void
 TransformerTest::setUp()
 {
     swdb = std::make_shared< SQLite3 >(":memory:");
     history = std::make_shared< SQLite3 >(":memory:");
-
     SwdbCreateDatabase(swdb);
-
-    const char *sql = R"**(
-        CREATE TABLE pkgtups (
-            pkgtupid INTEGER PRIMARY KEY,
-            name TEXT NOT NULL,
-            arch TEXT NOT NULL,
-            epoch TEXT NOT NULL,
-            version TEXT NOT NULL,
-            release TEXT NOT NULL,
-            checksum TEXT
-        );
-        CREATE TABLE trans_beg (
-            tid INTEGER PRIMARY KEY,
-            timestamp INTEGER NOT NULL,
-            rpmdb_version TEXT NOT NULL,
-            loginuid INTEGER
-        );
-        CREATE TABLE trans_end (
-            tid INTEGER PRIMARY KEY REFERENCES trans_beg,
-            timestamp INTEGER NOT NULL,
-            rpmdb_version TEXT NOT NULL,
-            return_code INTEGER NOT NULL
-        );
-        CREATE TABLE trans_cmdline (
-            tid INTEGER NOT NULL REFERENCES trans_beg,
-            cmdline TEXT NOT NULL
-        );
-        CREATE TABLE trans_data_pkgs (
-            tid INTEGER NOT NULL REFERENCES trans_beg,
-            pkgtupid INTEGER NOT NULL REFERENCES pkgtups,
-            done BOOL NOT NULL DEFAULT FALSE, state TEXT NOT NULL
-        );
-        CREATE TABLE trans_script_stdout (
-            lid INTEGER PRIMARY KEY,
-            tid INTEGER NOT NULL REFERENCES trans_beg,
-            line TEXT NOT NULL
-        );
-        CREATE TABLE pkg_yumdb (
-            pkgtupid INTEGER NOT NULL REFERENCES pkgtups,
-            yumdb_key TEXT NOT NULL,
-            yumdb_val TEXT NOT NULL
-        );
-    )**";
-
-    history.get()->exec(sql);
-
-    sql = R"**(
-        INSERT INTO
-            pkgtups
-        VALUES
-            (1, 'chrony', 'x86_64', 1, '3.1', '4.fc26', 'sha256:6cec2091'),
-            (2, 'kernel', 'x86_64', 0, '4.11.6', '301.fc26', 'sha256:8dc6bb96'),
-            (3, 'chrony', 'x86_64', 1, '3.2', '4.fc26', 'sha256:6asd1231');
-        INSERT INTO
-            pkg_yumdb
-        VALUES
-            (1, 'releasever', '26'),
-            (1, 'reason', 'user'),
-            (2, 'releasever', 'rawhide'),
-            (2, 'reason', 'dep'),
-            (3, 'releasever', '26'),
-            (3, 'reason', 'user');
-        INSERT INTO
-            trans_beg
-        VALUES
-            (1, 1513267401, '2213:9795b6a4db5e5368628b5240ec63a629833c5594', 1000),
-            (2, 1513267535, '2213:9eab991133c166f8bcf3ecea9fb422b853f7aebc', 1000);
-        INSERT INTO
-            trans_end
-        VALUES
-            (1, 1513267509, '2213:9eab991133c166f8bcf3ecea9fb422b853f7aebc', 0),
-            (2, 1513267539, '2214:e02004142740afb5b6d148d50bc84be4ab41ad13', 0);
-        INSERT INTO
-            trans_cmdline
-        VALUES
-            (1, 'upgrade -y'),
-            (2, '-y install Foo');
-        INSERT INTO
-            trans_script_stdout
-        VALUES
-            (1, 1, 'line1'),
-            (2, 1, 'line2');
-        INSERT INTO
-            trans_data_pkgs
-        VALUES
-            (1, 3, 'TRUE', 'Update'),
-            (1, 1, 'TRUE', 'Updated'),
-            (2, 2, 'TRUE', 'Install');
-    )**";
-
-    history.get()->exec(sql);
+    history.get()->exec(create_history_sql);
 }
 
 void
@@ -122,16 +36,14 @@ TransformerTest::tearDown()
 void
 TransformerTest::testTransformTrans()
 {
+    // perform database transformation
     auto transactions = transformer.transformTrans(swdb, history);
     for (auto trans : transactions) {
         transformer.transformRPMItems(swdb, history, trans);
-    }
-    for (auto trans : transactions) {
-        transformer.transformOutput(swdb, history, trans);
+        transformer.transformOutput(history, trans);
     }
 
-    return;
-
+    // check first transaction attributes
     Transaction first(swdb, 1);
     CPPUNIT_ASSERT(first.getId() == 1);
     CPPUNIT_ASSERT(first.getDtBegin() == 1513267401);
@@ -143,39 +55,48 @@ TransformerTest::testTransformTrans()
     CPPUNIT_ASSERT(first.getCmdline() == "upgrade -y");
     CPPUNIT_ASSERT(first.getDone() == true);
 
+    // check first transaction output
+    auto firstOut = first.getConsoleOutput();
+    CPPUNIT_ASSERT(firstOut.size() == 2);
+    CPPUNIT_ASSERT(firstOut[0].first == 1);
+    CPPUNIT_ASSERT(firstOut[0].second == "line1");
+    CPPUNIT_ASSERT(firstOut[1].first == 1);
+    CPPUNIT_ASSERT(firstOut[1].second == "line2");
+
+    // check software performed with
+    auto firstSoftWith = first.getSoftwarePerformedWith();
+    CPPUNIT_ASSERT(firstSoftWith.size() == 1);
+    for (auto soft : firstSoftWith) {
+        CPPUNIT_ASSERT(soft->getId() == 1);
+    }
+
+    // check first transaction items
     first.loadItems();
     auto items = first.getItems();
-    CPPUNIT_ASSERT(!items.empty());
+    CPPUNIT_ASSERT(items.size() == 2);
     for (auto item : items) {
-        if (item->getId() == 2) {
-            auto chrony = std::dynamic_pointer_cast< RPMItem >(item->getItem());
-            CPPUNIT_ASSERT(chrony->getId() == 2);
-            CPPUNIT_ASSERT(chrony->getName() == "chrony");
-            CPPUNIT_ASSERT(chrony->getEpoch() == 1);
-            CPPUNIT_ASSERT(chrony->getVersion() == "3.1");
-            CPPUNIT_ASSERT(chrony->getRelease() == "4.fc26");
-
+        auto rpm = std::dynamic_pointer_cast< RPMItem >(item->getItem());
+        if (rpm->getName() == "chrony" && rpm->getVersion() == "3.1") {
+            CPPUNIT_ASSERT(rpm->getEpoch() == 1);
+            CPPUNIT_ASSERT(rpm->getRelease() == "4.fc26");
             CPPUNIT_ASSERT(item->getAction() == TransactionItemAction::UPGRADED);
             CPPUNIT_ASSERT(item->getReason() == TransactionItemReason::USER);
             CPPUNIT_ASSERT(item->getDone() == true);
+
             // TODO repo, replaced
-        } else if (item->getId() == 1) {
-            auto chrony = std::dynamic_pointer_cast< RPMItem >(item->getItem());
-            CPPUNIT_ASSERT(chrony->getId() == 1);
-            CPPUNIT_ASSERT(chrony->getName() == "chrony");
-            CPPUNIT_ASSERT(chrony->getEpoch() == 1);
-            CPPUNIT_ASSERT(chrony->getVersion() == "3.2");
-            CPPUNIT_ASSERT(chrony->getRelease() == "4.fc26");
+        } else { // chrony 3.2
+            CPPUNIT_ASSERT(rpm->getEpoch() == 1);
+            CPPUNIT_ASSERT(rpm->getVersion() == "3.2");
+            CPPUNIT_ASSERT(rpm->getRelease() == "4.fc26");
 
             CPPUNIT_ASSERT(item->getAction() == TransactionItemAction::UPGRADE);
             CPPUNIT_ASSERT(item->getReason() == TransactionItemReason::USER);
             CPPUNIT_ASSERT(item->getDone() == true);
             // TODO repo, replaced
-        } else {
-            CPPUNIT_ASSERT(false);
         }
     }
 
+    // check second transaction attributes
     Transaction second(swdb, 2);
     CPPUNIT_ASSERT(second.getId() == 2);
     CPPUNIT_ASSERT(second.getDtBegin() == 1513267535);
@@ -187,23 +108,37 @@ TransformerTest::testTransformTrans()
     CPPUNIT_ASSERT(second.getCmdline() == "-y install Foo");
     CPPUNIT_ASSERT(second.getDone() == true);
 
+    // check second transaction console output
+    auto secondOut = second.getConsoleOutput();
+    CPPUNIT_ASSERT(secondOut.size() == 2);
+    CPPUNIT_ASSERT(secondOut[0].first == 2);
+    CPPUNIT_ASSERT(secondOut[0].second == "msg1");
+    CPPUNIT_ASSERT(secondOut[1].first == 2);
+    CPPUNIT_ASSERT(secondOut[1].second == "msg2");
+
+    // check second transaction performed with software
+    std::set< int64_t > possibleValues = {1, 2};
+    auto secondSoftWith = second.getSoftwarePerformedWith();
+    CPPUNIT_ASSERT(secondSoftWith.size() == 2);
+    for (auto soft : secondSoftWith) {
+        auto it = possibleValues.find(soft->getId());
+        CPPUNIT_ASSERT(it != possibleValues.end());
+        possibleValues.erase(it);
+    }
+
+    // check second transaction items
     second.loadItems();
     items = second.getItems();
-    CPPUNIT_ASSERT(!items.empty());
+    CPPUNIT_ASSERT(items.size() == 1);
     for (auto item : items) {
-        if (item->getId() == 3) {
-            auto kernel = std::dynamic_pointer_cast< RPMItem >(item->getItem());
-            CPPUNIT_ASSERT(kernel->getId() == 3);
-            CPPUNIT_ASSERT(kernel->getName() == "kernel");
-            CPPUNIT_ASSERT(kernel->getEpoch() == 0);
-            CPPUNIT_ASSERT(kernel->getVersion() == "4.11.6");
-            CPPUNIT_ASSERT(kernel->getRelease() == "301.fc26");
+        auto kernel = std::dynamic_pointer_cast< RPMItem >(item->getItem());
+        CPPUNIT_ASSERT(kernel->getName() == "kernel");
+        CPPUNIT_ASSERT(kernel->getEpoch() == 0);
+        CPPUNIT_ASSERT(kernel->getVersion() == "4.11");
+        CPPUNIT_ASSERT(kernel->getRelease() == "301.fc26");
 
-            CPPUNIT_ASSERT(item->getAction() == TransactionItemAction::INSTALL);
-            CPPUNIT_ASSERT(item->getReason() == TransactionItemReason::DEPENDENCY);
-            CPPUNIT_ASSERT(item->getDone() == true);
-        } else {
-            CPPUNIT_ASSERT(false);
-        }
+        CPPUNIT_ASSERT(item->getAction() == TransactionItemAction::INSTALL);
+        CPPUNIT_ASSERT(item->getReason() == TransactionItemReason::DEPENDENCY);
+        CPPUNIT_ASSERT(item->getDone() == true);
     }
 }

@@ -22,6 +22,7 @@
 #define LIBDNF_SWDB_TRANSACTION_HPP
 
 #include <memory>
+#include <set>
 #include <string>
 
 #include "../utils/sqlite3/sqlite3.hpp"
@@ -30,6 +31,7 @@
 #include "transactionitem.hpp"
 
 class TransactionItem;
+class RPMItem;
 enum class TransactionItemAction;
 enum class TransactionItemReason;
 
@@ -79,7 +81,10 @@ public:
     void loadItems();
     void saveItems();
 
-    void addConsoleOutputLine(int fileDescriptor, std::string line);
+    void addConsoleOutputLine(int fileDescriptor, const std::string &line);
+    void addSoftwarePerformedWith(std::shared_ptr< RPMItem > software);
+    const std::set< std::shared_ptr< RPMItem > > getSoftwarePerformedWith() const;
+
     std::vector< std::pair< int, std::string > > getConsoleOutput();
 
     std::shared_ptr< SQLite3 > conn;
@@ -97,7 +102,8 @@ protected:
     bool done = false;
 
     std::vector< std::shared_ptr< TransactionItem > > items;
-    // std::vector<RPMItem> softwarePerformedWith;
+
+    std::set< std::shared_ptr< RPMItem > > softwarePerformedWith;
 
     void dbSelect(int64_t transaction_id);
     void dbInsert();
