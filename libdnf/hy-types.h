@@ -27,7 +27,7 @@ typedef struct Nevra * HyNevra;
 typedef struct _HyModuleForm * HyModuleForm;
 typedef struct _HyPossibilities * HyPossibilities;
 typedef struct Query * HyQuery;
-typedef struct _HySelector * HySelector;
+typedef struct Selector * HySelector;
 typedef char * HySubject;
 
 typedef const unsigned char HyChecksum;

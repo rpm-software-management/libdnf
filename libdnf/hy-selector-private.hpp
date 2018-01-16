@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 Red Hat, Inc.
+ * Copyright (C) 2012-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -21,19 +21,8 @@
 #ifndef HY_SELECTOR_INTERNAL_H
 #define HY_SELECTOR_INTERNAL_H
 
-#include "hy-selector.h"
+#include "sack/selector.hpp"
 
-struct _HySelector {
-    DnfSack *sack;
-    struct _Filter *f_arch;
-    struct _Filter *f_evr;
-    struct _Filter *f_file;
-    struct _Filter *f_name;
-    struct _Filter *f_provides;
-    struct _Filter *f_reponame;
-    struct _Filter *f_pkg;
-};
-
-static inline DnfSack *selector_sack(HySelector sltr) { return sltr->sack; }
+static inline DnfSack *selector_sack(HySelector sltr) { return sltr->getSack(); }
 
 #endif // HY_SELECTOR_INTERNAL_H

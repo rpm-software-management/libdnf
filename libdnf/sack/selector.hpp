@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2018 Red Hat, Inc.
+ * Copyright (C) 2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -18,26 +18,27 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef HY_SELECTOR_H
-#define HY_SELECTOR_H
+#include <memory>
 
-#include <glib.h>
+#include "../hy-selector.h"
+#include "query.hpp"
 
-G_BEGIN_DECLS
-
-#include "dnf-sack.h"
-#include "hy-types.h"
-
-HySelector hy_selector_create(DnfSack *sack);
-void hy_selector_free(HySelector sltr);
-int hy_selector_pkg_set(HySelector sltr, int keyname, int cmp_type, DnfPackageSet* pset);
-int hy_selector_set(HySelector sltr, int keyname, int cmp_type,
-                    const char *match);
-gboolean hy_selector_has_matches(HySelector sltr);
-GPtrArray *hy_selector_matches(HySelector sltr);
-
-G_END_DECLS
-
-G_DEFINE_AUTO_CLEANUP_FREE_FUNC(HySelector, hy_selector_free, NULL)
-
-#endif
+struct Selector {
+public:
+    Selector(DnfSack* sack);
+    ~Selector();
+    DnfSack * getSack();
+    const Filter * getFilterArch() const;
+    const Filter * getFilterEvr() const;
+    const Filter * getFilterFile() const;
+    const Filter * getFilterName() const;
+    const Filter * getFilterPkg() const;
+    const Filter * getFilterProvides() const;
+    const Filter * getFilterReponame() const;
+    int set(int keyname, int cmp_type, DnfPackageSet *pset);
+    int set(int keyname, int cmp_type, const char *match);
+    GPtrArray * matches();
+private:
+    class Impl;
+    std::unique_ptr<Impl> pImpl;
+};

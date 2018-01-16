@@ -501,7 +501,7 @@ filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, 
                     }
                 } else {
                     if (keyname == HY_PKG) {
-                        const DnfPackageSet *pset;
+                        DnfPackageSet *pset;
                         if (queryObject_Check(value)) {
                             HyQuery target = queryFromPyObject(value);
                             pset = hy_query_run_set(target);
