@@ -42,49 +42,6 @@
 #include "hy-util-private.hpp"
 #include "sack/query.hpp"
 
-struct _Filter *
-filter_create(int nmatches)
-{
-    auto f = static_cast<_Filter *>(g_malloc0(sizeof(struct _Filter)));
-    filter_reinit(f, nmatches);
-    return f;
-}
-
-void
-filter_reinit(struct _Filter *f, int nmatches)
-{
-    for (int m = 0; m < f->nmatches; ++m)
-        switch (f->match_type) {
-        case _HY_PKG:
-            g_object_unref(f->matches[m].pset);
-            break;
-        case _HY_STR:
-            g_free(f->matches[m].str);
-            break;
-        case _HY_RELDEP:
-            if (f->matches[m].reldep)
-                g_object_unref (f->matches[m].reldep);
-            break;
-        default:
-            break;
-        }
-    g_free(f->matches);
-    f->match_type = _HY_VOID;
-    if (nmatches > 0)
-        f->matches = static_cast<_Match *>(g_malloc0(nmatches * sizeof(union _Match *)));
-    else
-        f->matches = NULL;
-    f->nmatches = nmatches;
-}
-
-void
-filter_free(struct _Filter *f)
-{
-    if (f) {
-        filter_reinit(f, 0);
-        g_free(f);
-    }
-}
 
 Id
 query_get_index_item(HyQuery query, int index)

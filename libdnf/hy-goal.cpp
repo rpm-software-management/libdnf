@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 Red Hat, Inc.
+ * Copyright (C) 2012-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -458,15 +458,17 @@ job_has(Queue *job, Id what, Id id)
 }
 
 static int
-filter_arch2job(DnfSack *sack, const struct _Filter *f, Queue *job)
+filter_arch2job(DnfSack *sack, const Filter *f, Queue *job)
 {
-    if (f == NULL)
+    if (f == nullptr)
         return 0;
 
-    assert(f->cmp_type == HY_EQ);
-    assert(f->nmatches == 1);
+    auto matches = f->getMatches();
+
+    assert(f->getCmpType() == HY_EQ);
+    assert(matches.size() == 1);
     Pool *pool = dnf_sack_get_pool(sack);
-    const char *arch = f->matches[0].str;
+    const char *arch = matches[0].str;
     Id archid = str2archid(pool, arch);
 
     if (archid == 0)
@@ -483,17 +485,18 @@ filter_arch2job(DnfSack *sack, const struct _Filter *f, Queue *job)
 }
 
 static int
-filter_evr2job(DnfSack *sack, const struct _Filter *f, Queue *job)
+filter_evr2job(DnfSack *sack, const Filter *f, Queue *job)
 {
-    if (f == NULL)
+    if (f == nullptr)
         return 0;
+    auto matches = f->getMatches();
 
-    assert(f->cmp_type == HY_EQ);
-    assert(f->nmatches == 1);
+    assert(f->getCmpType() == HY_EQ);
+    assert(matches.size() == 1);
 
     Pool *pool = dnf_sack_get_pool(sack);
-    Id evr = pool_str2id(pool, f->matches[0].str, 1);
-    Id constr = f->keyname == HY_PKG_VERSION ? SOLVER_SETEV : SOLVER_SETEVR;
+    Id evr = pool_str2id(pool, matches[0].str, 1);
+    Id constr = f->getKeyname() == HY_PKG_VERSION ? SOLVER_SETEV : SOLVER_SETEVR;
     for (int i = 0; i < job->count; i += 2) {
         Id dep;
         assert((job->elements[i] & SOLVER_SELECTMASK) == SOLVER_SOLVABLE_NAME);
@@ -506,17 +509,20 @@ filter_evr2job(DnfSack *sack, const struct _Filter *f, Queue *job)
 }
 
 static int
-filter_file2job(DnfSack *sack, const struct _Filter *f, Queue *job)
+filter_file2job(DnfSack *sack, const Filter *f, Queue *job)
 {
-    if (f == NULL)
+    if (f == nullptr)
         return 0;
-    assert(f->nmatches == 1);
 
-    const char *file = f->matches[0].str;
+    auto matches = f->getMatches();
+
+    assert(matches.size() == 1);
+
+    const char *file = matches[0].str;
     Pool *pool = dnf_sack_get_pool(sack);
 
-    int flags = f->cmp_type & HY_GLOB ? SELECTION_GLOB : 0;
-    if (f->cmp_type & HY_GLOB)
+    int flags = f->getCmpType() & HY_GLOB ? SELECTION_GLOB : 0;
+    if (f->getCmpType() & HY_GLOB)
         flags |= SELECTION_NOCASE;
     if (selection_make(pool, job, file, flags | SELECTION_FILELIST) == 0)
         return 1;
@@ -524,13 +530,13 @@ filter_file2job(DnfSack *sack, const struct _Filter *f, Queue *job)
 }
 
 static int
-filter_pkg2job(DnfSack *sack, const struct _Filter *f, Queue *job)
+filter_pkg2job(DnfSack *sack, const Filter *f, Queue *job)
 {
-    if (f == NULL)
+    if (f == nullptr)
         return 0;
-    assert(f->nmatches == 1);
+    assert(f->getMatches().size() == 1);
     Pool *pool = dnf_sack_get_pool(sack);
-    DnfPackageSet *pset = f->matches[0].pset;
+    DnfPackageSet *pset = f->getMatches()[0].pset;
     unsigned int count = dnf_packageset_count(pset);
     Id what;
     Id id = -1;
@@ -547,18 +553,18 @@ filter_pkg2job(DnfSack *sack, const struct _Filter *f, Queue *job)
 }
 
 static int
-filter_name2job(DnfSack *sack, const struct _Filter *f, Queue *job)
+filter_name2job(DnfSack *sack, const Filter *f, Queue *job)
 {
-    if (f == NULL)
+    if (f == nullptr)
         return 0;
-    assert(f->nmatches == 1);
+    assert(f->getMatches().size() == 1);
 
     Pool *pool = dnf_sack_get_pool(sack);
-    const char *name = f->matches[0].str;
+    const char *name = f->getMatches()[0].str;
     Id id;
     Dataiterator di;
 
-    switch (f->cmp_type) {
+    switch (f->getCmpType()) {
     case HY_EQ:
         id = pool_str2id(pool, name, 0);
         if (id)
@@ -585,58 +591,60 @@ filter_name2job(DnfSack *sack, const struct _Filter *f, Queue *job)
 }
 
 static int
-filter_provides2job(DnfSack *sack, const struct _Filter *f, Queue *job)
+filter_provides2job(DnfSack *sack, const Filter *f, Queue *job)
 {
-    if (f == NULL)
+    if (f == nullptr)
         return 0;
-    assert(f->nmatches == 1);
-
+    auto matches = f->getMatches();
+    assert(matches.size() == 1);
+    const char *name;
     Pool *pool = dnf_sack_get_pool(sack);
-    const char *name = f->matches[0].str;
     Id id;
     Dataiterator di;
 
-    switch (f->cmp_type) {
-    case HY_EQ:
-        id = dnf_reldep_get_id (f->matches[0].reldep);
-        queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
-        break;
-    case HY_GLOB:
-        dataiterator_init(&di, pool, 0, 0, SOLVABLE_PROVIDES, name, SEARCH_GLOB);
-        while (dataiterator_step(&di)) {
-            if (is_package(pool, pool_id2solvable(pool, di.solvid)))
-                break;
-        }
-        assert(di.idp);
-        id = *di.idp;
-        if (!job_has(job, SOLVABLE_PROVIDES, id))
+    switch (f->getCmpType()) {
+        case HY_EQ:
+            id = dnf_reldep_get_id(matches[0].reldep);
             queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
-        dataiterator_free(&di);
-        break;
-    default:
-        assert(0);
-        return 1;
+            break;
+        case HY_GLOB:
+            name = matches[0].str;
+            dataiterator_init(&di, pool, 0, 0, SOLVABLE_PROVIDES, name, SEARCH_GLOB);
+            while (dataiterator_step(&di)) {
+                if (is_package(pool, pool_id2solvable(pool, di.solvid)))
+                    break;
+            }
+            assert(di.idp);
+            id = *di.idp;
+            if (!job_has(job, SOLVABLE_PROVIDES, id))
+                queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
+            dataiterator_free(&di);
+            break;
+        default:
+            assert(0);
+            return 1;
     }
     return 0;
 }
 
 static int
-filter_reponame2job(DnfSack *sack, const struct _Filter *f, Queue *job)
+filter_reponame2job(DnfSack *sack, const Filter *f, Queue *job)
 {
     Queue repo_sel;
     Id i;
     Repo *repo;
 
-    if (f == NULL)
+    if (f == nullptr)
         return 0;
+    auto matches = f->getMatches();
 
-    assert(f->cmp_type == HY_EQ);
-    assert(f->nmatches == 1);
+    assert(f->getCmpType() == HY_EQ);
+    assert(matches.size() == 1);
 
     queue_init(&repo_sel);
     Pool *pool = dnf_sack_get_pool(sack);
     FOR_REPOS(i, repo)
-        if (!strcmp(f->matches[0].str, repo->name)) {
+        if (!strcmp(matches[0].str, repo->name)) {
             queue_push2(&repo_sel, SOLVER_SOLVABLE_REPO | SOLVER_SETREPO, repo->repoid);
         }
 
@@ -657,8 +665,10 @@ sltr2job(const HySelector sltr, Queue *job, int solver_action)
     DnfSack *sack = selector_sack(sltr);
     int ret = 0;
     Queue job_sltr;
-    int any_opt_filter = sltr->f_arch || sltr->f_evr || sltr->f_reponame;
-    int any_req_filter = sltr->f_name || sltr->f_provides || sltr->f_file || sltr->f_pkg;
+    int any_opt_filter = sltr->getFilterArch() || sltr->getFilterEvr()
+        || sltr->getFilterReponame();
+    int any_req_filter = sltr->getFilterName() || sltr->getFilterProvides()
+        || sltr->getFilterFile() || sltr->getFilterPkg();
 
     queue_init(&job_sltr);
 
@@ -671,25 +681,25 @@ sltr2job(const HySelector sltr, Queue *job, int solver_action)
 
     dnf_sack_recompute_considered(sack);
     dnf_sack_make_provides_ready(sack);
-    ret = filter_pkg2job(sack, sltr->f_pkg, &job_sltr);
+    ret = filter_pkg2job(sack, sltr->getFilterPkg(), &job_sltr);
     if (ret)
         goto finish;
-    ret = filter_name2job(sack, sltr->f_name, &job_sltr);
+    ret = filter_name2job(sack, sltr->getFilterName(), &job_sltr);
     if (ret)
         goto finish;
-    ret = filter_file2job(sack, sltr->f_file, &job_sltr);
+    ret = filter_file2job(sack, sltr->getFilterFile(), &job_sltr);
     if (ret)
         goto finish;
-    ret = filter_provides2job(sack, sltr->f_provides, &job_sltr);
+    ret = filter_provides2job(sack, sltr->getFilterProvides(), &job_sltr);
     if (ret)
         goto finish;
-    ret = filter_arch2job(sack, sltr->f_arch, &job_sltr);
+    ret = filter_arch2job(sack, sltr->getFilterArch(), &job_sltr);
     if (ret)
         goto finish;
-    ret = filter_evr2job(sack, sltr->f_evr, &job_sltr);
+    ret = filter_evr2job(sack, sltr->getFilterEvr(), &job_sltr);
     if (ret)
         goto finish;
-    ret = filter_reponame2job(sack, sltr->f_reponame, &job_sltr);
+    ret = filter_reponame2job(sack, sltr->getFilterReponame(), &job_sltr);
     if (ret)
         goto finish;
 

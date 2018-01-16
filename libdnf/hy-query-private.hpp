@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 Red Hat, Inc.
+ * Copyright (C) 2012-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -42,26 +42,6 @@ enum _match_type {
     _HY_STR,
 };
 
-struct _Filter {
-    int cmp_type;
-    int keyname;
-    int match_type;
-    union _Match *matches;
-    int nmatches;
-};
-
-struct _HyQuery {
-    DnfSack *sack;
-    int flags;
-    Map *result;
-    struct _Filter *filters;
-    int applied;
-    int nfilters;
-};
-
-struct _Filter *filter_create(int nmatches);
-void filter_reinit(struct _Filter *f, int nmatches);
-void filter_free(struct _Filter *f);
 
 /**
 * @brief Return HySelector from HyQuery
