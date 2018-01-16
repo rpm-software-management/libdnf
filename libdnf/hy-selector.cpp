@@ -49,16 +49,3 @@ hy_selector_matches(HySelector sltr)
 {
     return sltr->matches();
 }
-
-gboolean
-hy_selector_has_matches(HySelector sltr)
-{
-    /* Doing things this way obviously wastes allocations,
-     * but it avoids code duplication.  All of the callers
-     * seem to really want this, so at some point if that's
-     * true, let's nuke hy_selector_matches().
-     */
-    g_autoptr(GPtrArray) selector_matches = NULL;
-    selector_matches = hy_selector_matches(sltr);
-    return selector_matches->len > 0;
-}
