@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <cstring>
 #include <dirent.h>
+#include <json/json.h>
 #include <map>
 #include <stdexcept>
 #include <string>

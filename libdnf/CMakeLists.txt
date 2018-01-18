@@ -42,6 +42,10 @@ IF (WITH_SWDB)
     )
     SET (LIBDNF_SRCS ${LIBDNF_SRCS} ${SWDB_sources})
 
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(JSONCPP jsoncpp)
+    include_directories(${JSONCPP_INCLUDE_DIRS})
+
     INCLUDE_DIRECTORIES (swdb)
     ADD_SUBDIRECTORY ("swdb")
 ENDIF()
@@ -67,7 +71,7 @@ TARGET_LINK_LIBRARIES(libdnf
                       ${RPMDB_LIBRARY}
                       ${SCOLS_LIBRARIES})
 IF (WITH_SWDB)
-    TARGET_LINK_LIBRARIES(libdnf ${SQLite3_LIBRARIES})
+    TARGET_LINK_LIBRARIES(libdnf ${SQLite3_LIBRARIES} ${JSONCPP_LIBRARIES})
 ENDIF()
 
 if (ENABLE_RHSM_SUPPORT)

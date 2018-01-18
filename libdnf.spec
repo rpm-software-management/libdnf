@@ -45,6 +45,8 @@ BuildRequires:  rpm-devel >= 4.11.0
 BuildRequires:  pkgconfig(librhsm)
 %endif
 BuildRequires:  pkgconfig(sqlite3)
+BuildRequires:  pkgconfig(jsoncpp)
+BuildRequires:  pkgconfig(cppunit)
 
 Requires:       libsolv%{?_isa} >= %{libsolv_version}
 
@@ -158,9 +160,7 @@ Please build the package as non-root user.
 ERROR
         exit 1
 fi
-# for SWDB testing
-export GI_TYPELIB_PATH=%{buildroot}%{_libdir}/girepository-1.0
-export LD_LIBRARY_PATH=%{buildroot}%{_libdir}
+
 pushd build-py2
   make ARGS="-V" test
 popd
