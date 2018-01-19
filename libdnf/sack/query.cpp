@@ -31,6 +31,7 @@
 #include "../dnf-sack-private.hpp"
 #include "../dnf-advisorypkg.h"
 #include "../dnf-advisory-private.hpp"
+#include "packageset.hpp"
 
 static int
 match_type_num(int keyname) {
@@ -469,7 +470,7 @@ Filter::Impl::~Impl()
     for (auto & match : matches) {
         switch (matchType) {
             case _HY_PKG:
-                g_object_unref(match.pset);
+                delete match.pset;
                 break;
             case _HY_STR:
                 g_free(match.str);
@@ -849,7 +850,6 @@ Query::Impl::filterEpoch(const Filter & f, Map *m)
         }
     }
 }
-
 
 void
 Query::Impl::filterEvr(const Filter & f, Map *m)

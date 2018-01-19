@@ -35,6 +35,7 @@
 #include "libdnf/dnf-goal.h"
 #include "libdnf/hy-selector.h"
 #include "libdnf/hy-util-private.hpp"
+#include "libdnf/sack/packageset.hpp"
 #include "fixtures.h"
 #include "testsys.h"
 #include "test_suites.h"
@@ -624,7 +625,7 @@ START_TEST(test_goal_protected)
     HyGoal goal = hy_goal_create(sack);
     DnfPackageSet *empty = dnf_packageset_new(sack);
     dnf_goal_set_protected(goal, empty);
-    g_object_unref(empty);
+    delete empty;
     hy_goal_erase(goal, pkg);
     fail_if(hy_goal_run_flags(goal, DNF_ALLOW_UNINSTALL));
     assert_iueo(goal, 0, 0, 2, 0);
@@ -650,7 +651,7 @@ START_TEST(test_goal_protected)
     fail_if(g_strcmp0(*problem, expected));
     hy_goal_free(goal);
 
-    g_object_unref(protected_pkgs);
+    delete protected_pkgs;
     g_object_unref(pkg);
     g_object_unref(pp);
 }
@@ -756,7 +757,7 @@ START_TEST(test_goal_upgrade_all_excludes)
 
     DnfPackageSet *pset = hy_query_run_set(q);
     dnf_sack_add_excludes(sack, pset);
-    g_object_unref(pset);
+    delete pset;
     hy_query_free(q);
 
     HyGoal goal = hy_goal_create(sack);
@@ -794,7 +795,7 @@ START_TEST(test_goal_describe_problem_excludes)
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "semolina");
     DnfPackageSet *pset = hy_query_run_set(q);
     dnf_sack_add_excludes(sack, pset);
-    g_object_unref(pset);
+    delete pset;
     hy_query_free(q);
 
     HyGoal goal = hy_goal_create(sack);
@@ -840,7 +841,7 @@ START_TEST(test_goal_distupgrade_all_excludes)
     hy_query_filter_provides(q, HY_GT|HY_EQ, "flying", "0");
     DnfPackageSet *pset = hy_query_run_set(q);
     dnf_sack_add_excludes(test_globals.sack, pset);
-    g_object_unref(pset);
+    delete pset;
     hy_query_free(q);
 
     HyGoal goal = hy_goal_create(test_globals.sack);

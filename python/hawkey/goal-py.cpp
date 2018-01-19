@@ -35,6 +35,7 @@
 #include "selector-py.hpp"
 #include "sack-py.hpp"
 #include "pycomp.hpp"
+#include "sack/packageset.hpp"
 
 #define BLOCK_SIZE 15
 
@@ -343,7 +344,7 @@ add_protected(_GoalObject *self, PyObject *seq)
     if (pset == NULL)
         return NULL;
     dnf_goal_add_protected(goal, pset);
-    g_object_unref(pset);
+    delete pset;
     Py_RETURN_NONE;
 }
 

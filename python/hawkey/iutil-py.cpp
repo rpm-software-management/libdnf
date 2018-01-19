@@ -37,6 +37,7 @@
 #include "reldep-py.hpp"
 #include "sack-py.hpp"
 #include "pycomp.hpp"
+#include "sack/packageset.hpp"
 
 PyObject *
 advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack)
@@ -154,10 +155,11 @@ packageset_to_pylist(DnfPackageSet *pset, PyObject *sack)
     if (list == NULL)
         return NULL;
 
-    unsigned int count = dnf_packageset_count(pset);
     Id id = -1;
-    for (unsigned int i = 0; i < count; ++i) {
-        id = dnf_packageset_get_pkgid(pset, i, id);
+    while(true) {
+        id = pset->next(id);
+        if (id == -1)
+            break;
         PyObject *package = new_package(sack, id);
         if (package == NULL)
             goto fail;
@@ -204,7 +206,7 @@ pyseq_to_packageset(PyObject *obj, DnfSack *sack)
     Py_DECREF(sequence);
     return pset;
  fail:
-    g_object_unref(pset);
+    delete pset;
     Py_DECREF(sequence);
     return NULL;
 }

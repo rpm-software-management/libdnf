@@ -24,6 +24,7 @@
 #include "libdnf/hy-selector.h"
 #include "libdnf/dnf-types.h"
 #include "libdnf/hy-util-private.hpp"
+#include "libdnf/sack/packageset.hpp"
 #include "fixtures.h"
 #include "testsys.h"
 #include "test_suites.h"
@@ -51,7 +52,7 @@ START_TEST(test_sltr_pkg)
 
     g_object_unref(pkg0);
     g_object_unref(pkg1);
-    g_object_unref(pset);
+    delete pset;
     g_ptr_array_unref(plist);
     hy_selector_free(sltr);
 }

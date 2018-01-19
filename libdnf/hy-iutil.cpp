@@ -54,6 +54,7 @@ extern "C" {
 #include "hy-query.h"
 #include "dnf-sack-private.hpp"
 #include "dnf-reldep-private.hpp"
+#include "sack/packageset.hpp"
 
 #include "utils/bgettext/bgettext-lib.h"
 
@@ -366,9 +367,8 @@ running_kernel(DnfSack *sack)
     hy_query_filter(q, HY_PKG_FILE, HY_EQ, fn);
     hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
     DnfPackageSet *pset = hy_query_run_set(q);
-    if (dnf_packageset_count(pset) > 0)
-        kernel_id = dnf_packageset_get_pkgid(pset, 0, -1);
-    g_object_unref(pset);
+    kernel_id = pset->next(kernel_id);
+    delete pset;
     hy_query_free(q);
 
     if (kernel_id >= 0)

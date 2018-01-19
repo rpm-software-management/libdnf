@@ -45,6 +45,7 @@
 #include "reldep-py.hpp"
 #include "sack-py.hpp"
 #include "pycomp.hpp"
+#include "sack/packageset.hpp"
 
 typedef struct {
     PyObject_HEAD
@@ -324,7 +325,7 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
         int ret = hy_query_filter_package_in(query, keyname,
                                              cmp_type, pset);
 
-        g_object_unref(pset);
+        delete pset;
         if (ret)
             return raise_bad_filter();
         return 1;
@@ -346,7 +347,7 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
             return 1;
         int ret = hy_query_filter_package_in(query, keyname,
                                              cmp_type, pset);
-        g_object_unref(pset);
+        delete pset;
         if (ret)
             return raise_bad_filter();
 
@@ -642,7 +643,7 @@ run(_QueryObject *self, PyObject *unused)
 
     pset = hy_query_run_set(self->query);
     list = packageset_to_pylist(pset, self->sack);
-    g_object_unref(pset);
+    delete pset;
     return list;
 }
 
@@ -813,7 +814,7 @@ query_iter(PyObject *self)
 
     pset = hy_query_run_set(((_QueryObject *) self)->query);
     list = packageset_to_pylist(pset, ((_QueryObject *) self)->sack);
-    g_object_unref(pset);
+    delete pset;
     PyObject *iter = PyObject_GetIter(list);
     Py_DECREF(list);
     Py_INCREF(iter);

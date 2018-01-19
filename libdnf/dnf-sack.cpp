@@ -69,6 +69,7 @@ extern "C" {
 #include "hy-repo-private.hpp"
 #include "dnf-sack-private.hpp"
 #include "hy-util.h"
+#include "sack/packageset.hpp"
 
 #include "utils/bgettext/bgettext-lib.h"
 
@@ -1801,7 +1802,7 @@ process_excludes(DnfSack *sack, DnfRepo *repo)
             dnf_sack_add_excludes(sack, pkgset);
 
         hy_query_free(query);
-        g_object_unref(pkgset);
+        delete pkgset;
     }
 }
 

@@ -40,6 +40,7 @@
 #include "dnf-reldep-private.hpp"
 #include "dnf-sack-private.hpp"
 #include "hy-util-private.hpp"
+#include "sack/packageset.hpp"
 #include "sack/query.hpp"
 
 
@@ -418,6 +419,6 @@ hy_query_to_selector(HyQuery query)
     HySelector selector = hy_selector_create(query->getSack());
     DnfPackageSet *pset = hy_query_run_set(query);
     hy_selector_pkg_set(selector, HY_PKG, HY_EQ, pset);
-    g_object_unref(pset);
+    delete pset;
     return selector;
 }
