@@ -21,11 +21,14 @@
 #ifndef LIBDNF_SWDB_TRANSFORMER_HPP
 #define LIBDNF_SWDB_TRANSFORMER_HPP
 
+#include <json/json.h>
 #include <memory>
 #include <vector>
 
 #include "../utils/sqlite3/sqlite3.hpp"
 
+#include "item_comps_environment.hpp"
+#include "item_comps_group.hpp"
 #include "item_rpm.hpp"
 #include "transaction.hpp"
 #include "transactionitem.hpp"
@@ -71,10 +74,19 @@ protected:
     void transformOutput(std::shared_ptr< SQLite3 > history,
                          std::shared_ptr< TransformerTransaction > trans);
 
+    void transformGroups(std::shared_ptr< SQLite3 > swdb);
+    void processGroupPersistor(std::shared_ptr< SQLite3 > swdb, const Json::Value &root);
+
 private:
     void transformTransWith(std::shared_ptr< SQLite3 > swdb,
                             std::shared_ptr< SQLite3 > history,
                             std::shared_ptr< TransformerTransaction > trans);
+    std::shared_ptr< CompsGroupItem > processGroup(std::shared_ptr< SQLite3 > swdb,
+                                                   const std::string &groupId,
+                                                   const Json::Value &group);
+    std::shared_ptr< CompsEnvironmentItem > processEnvironment(std::shared_ptr< SQLite3 > swdb,
+                                                               const std::string &envId,
+                                                               const Json::Value &env);
     std::string historyPath();
     const std::string inputDir;
     const std::string outputFile;

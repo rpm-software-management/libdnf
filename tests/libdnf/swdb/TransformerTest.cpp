@@ -1,4 +1,6 @@
+#include <json/json.h>
 #include <set>
+#include <sstream>
 #include <string>
 
 #include "libdnf/swdb/item_rpm.hpp"
@@ -19,6 +21,10 @@ static const char *create_history_sql =
 #include "sql/create_test_history_db.sql"
     ;
 
+static const char *groups_json =
+#include "assets/groups.json"
+    ;
+
 void
 TransformerTest::setUp()
 {
@@ -31,6 +37,73 @@ TransformerTest::setUp()
 void
 TransformerTest::tearDown()
 {
+}
+
+void
+TransformerTest::testGroupTransformation()
+{
+    // load test groups.json
+    Json::Value groupsJson;
+    std::stringstream groupsStream(groups_json);
+    groupsStream >> groupsJson;
+
+    // perform the transformation
+    transformer.processGroupPersistor(swdb, groupsJson);
+
+    swdb->backup("db.sql");
+
+    // check basic stuff in generated transaction
+    Transaction trans(swdb, 1);
+    CPPUNIT_ASSERT_EQUAL((int64_t)1, trans.getId());
+    CPPUNIT_ASSERT(trans.getDone());
+
+    // load transaction items
+    trans.loadItems();
+    auto items = trans.getItems();
+    CPPUNIT_ASSERT_EQUAL(2, (int)items.size());
+
+    // verify items
+    for (auto transItem : items) {
+        auto item = transItem->getItem();
+        auto type = item->getItemType();
+        if (type == "comps-group") {
+            auto group = std::dynamic_pointer_cast< CompsGroupItem >(item);
+
+            CPPUNIT_ASSERT(group->getGroupId() == "core");
+            CPPUNIT_ASSERT("Core" == group->getName());
+            CPPUNIT_ASSERT("Úplný základ" == group->getTranslatedName());
+
+            group->loadPackages();
+            auto packages = group->getPackages();
+
+            CPPUNIT_ASSERT(1 == packages.size());
+
+            auto groupPkg = packages[0];
+            CPPUNIT_ASSERT(groupPkg->getName() == "dnf-yum");
+            CPPUNIT_ASSERT(groupPkg->getInstalled() == true);
+            CPPUNIT_ASSERT(groupPkg->getExcluded() == false);
+            CPPUNIT_ASSERT(groupPkg->getPackageType() == CompsPackageType::MANDATORY);
+
+        } else if (type == "comps-environment") {
+            auto env = std::dynamic_pointer_cast< CompsEnvironmentItem >(item);
+            CPPUNIT_ASSERT("minimal-environment" == env->getEnvironmentId());
+            CPPUNIT_ASSERT("Minimal Install" == env->getName());
+            CPPUNIT_ASSERT("Minimálna inštalácia" == env->getTranslatedName());
+
+            env->loadGroups();
+            auto groups = env->getGroups();
+            CPPUNIT_ASSERT(1 == groups.size());
+
+            auto envGroup = groups[0];
+            CPPUNIT_ASSERT(envGroup->getGroupId() == "core");
+            CPPUNIT_ASSERT(envGroup->getInstalled() == true);
+            CPPUNIT_ASSERT(envGroup->getExcluded() == false);
+            CPPUNIT_ASSERT(envGroup->getGroupType() == CompsPackageType::MANDATORY);
+
+        } else {
+            CPPUNIT_FAIL("Invalid item type: " + type);
+        }
+    }
 }
 
 void

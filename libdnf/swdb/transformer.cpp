@@ -22,7 +22,7 @@
 #include <cstdio>
 #include <cstring>
 #include <dirent.h>
-#include <json/json.h>
+#include <fstream>
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -106,6 +106,9 @@ Transformer::transform()
         transformRPMItems(swdb, history, trans);
         transformOutput(history, trans);
     }
+
+    // transform groups
+    transformGroups(swdb);
 
     // dump database to a file
     swdb->backup(outputFile);
@@ -408,6 +411,145 @@ Transformer::transformRPMItems(std::shared_ptr< SQLite3 > swdb,
         last = transItem;
     }
     trans->saveItems();
+}
+
+/**
+ * Construct CompsGroupItem object from JSON
+ * \param group group json object
+ */
+std::shared_ptr< CompsGroupItem >
+Transformer::processGroup(std::shared_ptr< SQLite3 > swdb,
+                          const std::string &groupId,
+                          const Json::Value &group)
+{
+    // create group
+    auto compsGroup = std::make_shared< CompsGroupItem >(swdb);
+    compsGroup->setGroupId(groupId);
+    compsGroup->setName(group["name"].asString());
+    compsGroup->setTranslatedName(group["ui_name"].asString());
+
+    // add installed packages - TODO pkg_types
+    const Json::Value packages = group["full_list"];
+    for (const auto &package : packages) {
+        // XXX mandatory?
+        compsGroup->addPackage(package.asString(), true, false, CompsPackageType::MANDATORY);
+    }
+
+    // add excluded packages
+    const Json::Value excludes = group["pkg_exclude"];
+    for (const auto &exclude : excludes) {
+        // XXX mandatory?
+        compsGroup->addPackage(exclude.asString(), false, true, CompsPackageType::MANDATORY);
+    }
+
+    compsGroup->save();
+    return compsGroup;
+}
+
+/**
+ * Construct CompsEnvironmentItem object from JSON
+ * \param env environment json object
+ */
+std::shared_ptr< CompsEnvironmentItem >
+Transformer::processEnvironment(std::shared_ptr< SQLite3 > swdb,
+                                const std::string &envId,
+                                const Json::Value &env)
+{
+    // create environment
+    auto compsEnv = std::make_shared< CompsEnvironmentItem >(swdb);
+    compsEnv->setEnvironmentId(envId);
+    compsEnv->setName(env["name"].asString());
+    compsEnv->setTranslatedName(env["ui_name"].asString());
+
+    // add installed groups - TODO pkg_types, grp_types
+    const Json::Value groups = env["full_list"];
+    for (const auto &group : groups) {
+        // XXX mandatory?
+        compsEnv->addGroup(group.asString(), true, false, CompsPackageType::MANDATORY);
+    }
+
+    // add excluded groups/packages
+    const Json::Value excludes = env["pkg_exclude"];
+    for (const auto &exclude : excludes) {
+        // XXX mandatory?
+        compsEnv->addGroup(exclude.asString(), false, true, CompsPackageType::MANDATORY);
+    }
+
+    compsEnv->save();
+
+    return compsEnv;
+}
+
+#include <iostream>
+
+/**
+ * Create fake transaction for groups in persistor
+ * \param swdb pointer to swdb SQLite3 object
+ * \param root group persistor root node
+ */
+void
+Transformer::processGroupPersistor(std::shared_ptr< SQLite3 > swdb, const Json::Value &root)
+{
+    auto trans = Transaction(swdb);
+
+    // load sequences
+    const Json::Value groups = root["GROUPS"];
+    const Json::Value environments = root["ENVIRONMENTS"];
+
+    // add groups
+    for (const auto &groupId : groups.getMemberNames()) {
+        trans.addItem(processGroup(swdb, groupId, groups[groupId]),
+                      {}, // repoid
+                      TransactionItemAction::INSTALL,
+                      TransactionItemReason::USER);
+    }
+
+    // add environments
+    for (const auto &envId : environments.getMemberNames()) {
+        trans.addItem(processEnvironment(swdb, envId, environments[envId]),
+                      {}, // repoid
+                      TransactionItemAction::INSTALL,
+                      TransactionItemReason::USER);
+    }
+
+    trans.save();
+    trans.saveItems();
+
+    for (auto i : trans.getItems()) {
+        i->setDone(true);
+        i->save();
+    }
+
+    trans.setDone(true);
+    trans.save();
+}
+
+/**
+ * Load group persistor into JSON object and perform transformation
+ * \param swdb pointer to swdb SQLite3 object
+ */
+void
+Transformer::transformGroups(std::shared_ptr< SQLite3 > swdb)
+{
+    std::string groupsFile(inputDir);
+
+    // create the groups.json path
+    if (groupsFile.back() != '/') {
+        groupsFile += '/';
+    }
+    groupsFile += "groups.json";
+
+    std::ifstream groupsJsonFile(groupsFile, std::ifstream::binary);
+
+    if (!groupsJsonFile.is_open()) {
+        return;
+    }
+
+    // load the JSON file
+    Json::Value root;
+    groupsJsonFile >> root;
+
+    processGroupPersistor(swdb, root);
 }
 
 /**

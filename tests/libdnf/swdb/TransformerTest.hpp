@@ -10,6 +10,7 @@ class TransformerMock : protected Transformer {
 public:
     TransformerMock();
     using Transformer::Exception;
+    using Transformer::processGroupPersistor;
     using Transformer::transformOutput;
     using Transformer::transformRPMItems;
     using Transformer::transformTrans;
@@ -17,6 +18,7 @@ public:
 
 class TransformerTest : public CppUnit::TestCase {
     CPPUNIT_TEST_SUITE(TransformerTest);
+    CPPUNIT_TEST(testGroupTransformation);
     CPPUNIT_TEST(testTransformTrans);
     CPPUNIT_TEST_SUITE_END();
 
@@ -24,8 +26,8 @@ public:
     void setUp() override;
     void tearDown() override;
 
-    void testTransformRPMItems();
     void testTransformTrans();
+    void testGroupTransformation();
 
 protected:
     TransformerMock transformer;
