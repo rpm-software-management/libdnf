@@ -36,6 +36,7 @@
 #include "sack-py.hpp"
 
 #include "pycomp.hpp"
+#include "sack/packageset.hpp"
 
 typedef struct {
     PyObject_HEAD
@@ -407,7 +408,7 @@ add_excludes(_SackObject *self, PyObject *o)
     if (pset == NULL)
         return NULL;
     dnf_sack_add_excludes(sack, pset);
-    g_object_unref(pset);
+    delete pset;
     Py_RETURN_NONE;
 }
 
@@ -419,7 +420,7 @@ add_includes(_SackObject *self, PyObject *o)
     if (pset == NULL)
         return NULL;
     dnf_sack_add_includes(sack, pset);
-    g_object_unref(pset);
+    delete pset;
     Py_RETURN_NONE;
 }
 
@@ -431,7 +432,7 @@ remove_excludes(_SackObject *self, PyObject *o)
     if (pset == NULL)
         return NULL;
     dnf_sack_remove_excludes(sack, pset);
-    g_object_unref(pset);
+    delete pset;
     Py_RETURN_NONE;
 }
 
@@ -443,7 +444,7 @@ remove_includes(_SackObject *self, PyObject *o)
     if (pset == NULL)
         return NULL;
     dnf_sack_remove_includes(sack, pset);
-    g_object_unref(pset);
+    delete pset;
     Py_RETURN_NONE;
 }
 
@@ -455,7 +456,7 @@ set_excludes(_SackObject *self, PyObject *o)
     if (pset == NULL)
         return NULL;
     dnf_sack_set_excludes(sack, pset);
-    g_object_unref(pset);
+    delete pset;
     Py_RETURN_NONE;
 }
 
@@ -467,7 +468,7 @@ set_includes(_SackObject *self, PyObject *o)
     if (pset == NULL)
         return NULL;
     dnf_sack_set_includes(sack, pset);
-    g_object_unref(pset);
+    delete pset;
     Py_RETURN_NONE;
 }
 

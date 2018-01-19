@@ -33,6 +33,7 @@
 #include "hy-query-private.hpp"
 #include "hy-selector.h"
 #include "hy-util-private.hpp"
+#include "sack/packageset.hpp"
 
 // most specific to least
 const HyForm HY_FORMS_MOST_SPEC[] = {
@@ -255,7 +256,7 @@ hy_subject_get_best_sltr(HySubject subject, DnfSack *sack, HyForm *forms, bool o
             pset = hy_query_run_set(query);
             HyQuery query_obsoletes = hy_query_clone(query);
             hy_query_filter_package_in(query_obsoletes, HY_PKG_OBSOLETES, HY_EQ, pset);
-            g_object_unref(pset);
+            delete pset;
             hy_query_union(query, query_obsoletes);
             hy_query_free(query_obsoletes);
         }

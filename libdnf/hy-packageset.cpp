@@ -38,47 +38,7 @@
 #include "hy-package-private.hpp"
 #include "hy-packageset-private.hpp"
 #include "dnf-sack-private.hpp"
-
-typedef struct
-{
-    DnfSack     *sack;
-    Map          map;
-} DnfPackageSetPrivate;
-
-G_DEFINE_TYPE_WITH_PRIVATE(DnfPackageSet, dnf_packageset, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (static_cast<DnfPackageSetPrivate *>(dnf_packageset_get_instance_private (o)))
-
-/**
- * dnf_packageset_finalize:
- **/
-static void
-dnf_packageset_finalize(GObject *object)
-{
-    DnfPackageSet *pset = DNF_PACKAGE_SET(object);
-    DnfPackageSetPrivate *priv = GET_PRIVATE(pset);
-
-    map_free(&priv->map);
-
-    G_OBJECT_CLASS(dnf_packageset_parent_class)->finalize(object);
-}
-
-/**
- * dnf_packageset_init:
- **/
-static void
-dnf_packageset_init(DnfPackageSet *pset)
-{
-}
-
-/**
- * dnf_packageset_class_init:
- **/
-static void
-dnf_packageset_class_init(DnfPackageSetClass *klass)
-{
-    GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = dnf_packageset_finalize;
-}
+#include "sack/packageset.hpp"
 
 /**
  * dnf_packageset_new:
@@ -93,95 +53,7 @@ dnf_packageset_class_init(DnfPackageSetClass *klass)
 DnfPackageSet *
 dnf_packageset_new(DnfSack *sack)
 {
-    auto pset = DNF_PACKAGE_SET(g_object_new(DNF_TYPE_PACKAGE_SET, NULL));
-    auto priv = GET_PRIVATE(pset);
-    priv->sack = sack;
-    map_init(&priv->map, dnf_sack_get_pool(sack)->nsolvables);
-    return pset;
-}
-
-// see http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetTable
-static const unsigned char _BitCountLookup[256] =
-{
-#   define B2(n) n,     n+1,     n+1,     n+2
-#   define B4(n) B2(n), B2(n+1), B2(n+1), B2(n+2)
-#   define B6(n) B4(n), B4(n+1), B4(n+1), B4(n+2)
-    B6(0), B6(1), B6(1), B6(2)
-};
-
-static Id
-map_index2id(Map *map, unsigned index, Id previous)
-{
-    unsigned char *ti = map->map;
-    unsigned char *end = ti + map->size;
-    unsigned int enabled;
-    Id id;
-
-    if (previous >= 0) {
-        ti += previous >> 3;
-        unsigned char byte = *ti; // byte with the previous match
-        byte >>= (previous & 7) + 1; // shift away all previous 1 bits
-        enabled = _BitCountLookup[byte]; // are there any 1 bits left?
-
-        for (id = previous + 1; enabled; byte >>= 1, id++)
-            if (byte & 0x01)
-                return id;
-        index = 0; // we are looking for the immediately following index
-        ti++;
-    }
-
-    while (ti < end) {
-        enabled = _BitCountLookup[*ti];
-
-        if (index >= enabled ){
-            index -= enabled;
-            ti++;
-            continue;
-        }
-        id = (ti - map->map) << 3;
-
-        index++;
-        for (unsigned char byte = *ti; index; byte >>= 1) {
-            if ((byte & 0x01))
-                index--;
-            if (index)
-                id++;
-        }
-        return id;
-    }
-    return -1;
-}
-
-/**
- * dnf_packageset_get_pkgid: (skip):
- * @pset: a #DnfPackageSet instance.
- *
- * Gets an internal ID for an id.
- *
- * Returns: %TRUE for success
- *
- * Since: 0.7.0
- */
-Id
-dnf_packageset_get_pkgid(DnfPackageSet *pset, int index, Id previous)
-{
-    DnfPackageSetPrivate *priv = GET_PRIVATE(pset);
-    Id id = map_index2id(&priv->map, index, previous);
-    g_assert(id >= 0);
-    return id;
-}
-
-static unsigned
-map_count(Map *m)
-{
-    unsigned char *ti = m->map;
-    unsigned char *end = ti + m->size;
-    unsigned c = 0;
-
-    while (ti < end)
-        c += _BitCountLookup[*ti++];
-
-    return c;
+    return new PackageSet(sack);
 }
 
 /**
@@ -195,13 +67,9 @@ map_count(Map *m)
  * Since: 0.7.0
  */
 DnfPackageSet *
-dnf_packageset_from_bitmap(DnfSack *sack, Map *m)
+dnf_packageset_from_bitmap(DnfSack *sack, Map *map)
 {
-    DnfPackageSet *pset = dnf_packageset_new(sack);
-    DnfPackageSetPrivate *priv = GET_PRIVATE(pset);
-    map_free(&priv->map);
-    map_init_clone(&priv->map, m);
-    return pset;
+    return new PackageSet(sack, map);
 }
 
 /**
@@ -217,8 +85,7 @@ dnf_packageset_from_bitmap(DnfSack *sack, Map *m)
 Map *
 dnf_packageset_get_map(DnfPackageSet *pset)
 {
-    DnfPackageSetPrivate *priv = GET_PRIVATE(pset);
-    return &priv->map;
+    return pset->getMap();
 }
 
 /**
@@ -234,12 +101,7 @@ dnf_packageset_get_map(DnfPackageSet *pset)
 DnfPackageSet *
 dnf_packageset_clone(DnfPackageSet *pset)
 {
-    DnfPackageSetPrivate *priv = GET_PRIVATE(pset);
-    DnfPackageSet *new_pkgset = dnf_packageset_new(priv->sack);
-    DnfPackageSetPrivate *priv_new = GET_PRIVATE(new_pkgset);
-    map_free(&priv_new->map);
-    map_init_clone(&priv_new->map, &priv->map);
-    return new_pkgset;
+    return new PackageSet(*pset);
 }
 
 /**
@@ -256,8 +118,7 @@ dnf_packageset_clone(DnfPackageSet *pset)
 void
 dnf_packageset_add(DnfPackageSet *pset, DnfPackage *pkg)
 {
-    DnfPackageSetPrivate *priv = GET_PRIVATE(pset);
-    MAPSET(&priv->map, dnf_package_get_id(pkg));
+    pset->set(pkg);
 }
 
 /**
@@ -266,35 +127,14 @@ dnf_packageset_add(DnfPackageSet *pset, DnfPackage *pkg)
  *
  * Returns the size of the set.
  *
- * Returns: integer, or 0 for empty
+ * Returns: size_t, or 0 for empty
  *
  * Since: 0.7.0
  */
-unsigned
+size_t
 dnf_packageset_count(DnfPackageSet *pset)
 {
-    DnfPackageSetPrivate *priv = GET_PRIVATE(pset);
-    return map_count(&priv->map);
-}
-
-/**
- * dnf_packageset_get_clone:
- * @pset: a #DnfPackageSet instance.
- *
- * Gets the package in the set.
- *
- * Returns: (transfer full): a #DnfPackage, or %NULL for invalid
- *
- * Since: 0.7.0
- */
-DnfPackage *
-dnf_packageset_get_clone(DnfPackageSet *pset, int index)
-{
-    DnfPackageSetPrivate *priv = GET_PRIVATE(pset);
-    Id id = map_index2id(&priv->map, index, -1);
-    if (id < 0)
-        return NULL;
-    return dnf_package_new(priv->sack, id);
+    return pset->size();
 }
 
 /**
@@ -311,6 +151,11 @@ dnf_packageset_get_clone(DnfPackageSet *pset, int index)
 int
 dnf_packageset_has(DnfPackageSet *pset, DnfPackage *pkg)
 {
-    DnfPackageSetPrivate *priv = GET_PRIVATE(pset);
-    return MAPTST(&priv->map, dnf_package_get_id(pkg));
+    return pset->has(pkg);
+}
+
+void
+dnf_packageset_free(DnfPackageSet *pset)
+{
+    delete pset;
 }

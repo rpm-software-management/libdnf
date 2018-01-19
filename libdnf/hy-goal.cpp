@@ -52,6 +52,7 @@ extern "C" {
 #include "hy-util-private.hpp"
 #include "dnf-package.h"
 #include "hy-package.h"
+#include "sack/packageset.hpp"
 
 #include "utils/bgettext/bgettext-lib.h"
 
@@ -537,13 +538,14 @@ filter_pkg2job(DnfSack *sack, const Filter *f, Queue *job)
     assert(f->getMatches().size() == 1);
     Pool *pool = dnf_sack_get_pool(sack);
     DnfPackageSet *pset = f->getMatches()[0].pset;
-    unsigned int count = dnf_packageset_count(pset);
     Id what;
     Id id = -1;
     Queue pkgs;
     queue_init(&pkgs);
-    for (unsigned int i = 0; i < count; ++i) {
-        id = dnf_packageset_get_pkgid(pset, i, id);
+    while(true) {
+        id = pset->next(id);
+        if (id == -1)
+            break;
         queue_push(&pkgs, id);
     }
     what = pool_queuetowhatprovides(pool, &pkgs);
@@ -956,17 +958,19 @@ hy_goal_count_problems(HyGoal goal)
 static DnfPackageSet *
 remove_pkgs_with_same_nevra_from_pset(DnfPackageSet* pset, DnfPackageSet* remove_musters, DnfSack* sack)
 {
-    unsigned int count = dnf_packageset_count(remove_musters);
     DnfPackageSet *final_pset = dnf_packageset_new(sack);
-    unsigned int count1 = dnf_packageset_count(pset);
     Id id1 = -1;
-    for (unsigned int i = 0; i < count1; ++i) {
-        id1 = dnf_packageset_get_pkgid(pset, i, id1);
+    while(true) {
+        id1 = pset->next(id1);
+        if (id1 == -1)
+            break;
         DnfPackage *pkg1 = dnf_package_new(sack, id1);
         Id id2 = -1;
         gboolean found = FALSE;
-        for (unsigned int j = 0; j < count; ++j) {
-            id2 = dnf_packageset_get_pkgid(remove_musters, j, id2);
+        while(true) {
+            id2 = remove_musters->next(id2);
+            if (id2 == -1)
+                break;
             DnfPackage *pkg2 = dnf_package_new(sack, id2);
             if (!dnf_package_cmp(pkg1, pkg2)) {
                 found = TRUE;
@@ -1050,14 +1054,14 @@ hy_goal_conflict_all_pkgs(HyGoal goal, DnfPackageState pkg_type)
     }
     unsigned int count = dnf_packageset_count(temporary_pset);
     if (!count) {
-        g_object_unref(temporary_pset);
+        delete temporary_pset;
         return pset;
     }
 
     DnfPackageSet *final_pset = remove_pkgs_with_same_nevra_from_pset(pset, temporary_pset,
                                                                       goal->sack);
-    g_object_unref(pset);
-    g_object_unref(temporary_pset);
+    delete pset;
+    delete temporary_pset;
     return final_pset;
 }
 /**
@@ -1124,13 +1128,13 @@ hy_goal_broken_dependency_all_pkgs(HyGoal goal, DnfPackageState pkg_type)
     }
     unsigned int count = dnf_packageset_count(temporary_pset);
     if (!count) {
-        g_object_unref(temporary_pset);
+        delete temporary_pset;
         return pset;
     }
     DnfPackageSet *final_pset = remove_pkgs_with_same_nevra_from_pset(pset, temporary_pset,
                                                                       goal->sack);
-    g_object_unref(pset);
-    g_object_unref(temporary_pset);
+    delete pset;
+    delete temporary_pset;
     return final_pset;
 }
 
@@ -1166,11 +1170,12 @@ hy_goal_describe_protected_removal(HyGoal goal)
         return g_strdup(string->str);
     }
     pset = hy_goal_broken_dependency_all_pkgs(goal, DNF_PACKAGE_STATE_INSTALLED);
-    unsigned int count = dnf_packageset_count(pset);
     Id id = -1;
     gboolean found = FALSE;
-    for (unsigned int i = 0; i < count; ++i) {
-        id = dnf_packageset_get_pkgid(pset, i, id);
+    while(true) {
+        id = pset->next(id);
+        if (id == -1)
+            break;
         if (MAPTST(goal->protected_pkgs, id)) {
             s = pool_id2solvable(pool, id);
             name = pool_id2str(pool, s->name);

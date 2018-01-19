@@ -36,6 +36,28 @@ static inline gboolean hy_is_file_pattern(const char *pattern)
     return pattern[0] == '/' || (pattern[0] == '*' && pattern[1] == '/');
 }
 
+// see http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetTable
+static const unsigned char _BitCountLookup[256] =
+{
+#   define B2(n) n,     n+1,     n+1,     n+2
+#   define B4(n) B2(n), B2(n+1), B2(n+1), B2(n+2)
+#   define B6(n) B4(n), B4(n+1), B4(n+1), B4(n+2)
+    B6(0), B6(1), B6(1), B6(2)
+};
+
+inline size_t
+map_count(Map *m)
+{
+    unsigned char *ti = m->map;
+    unsigned char *end = ti + m->size;
+    unsigned c = 0;
+
+    while (ti < end)
+        c += _BitCountLookup[*ti++];
+
+    return c;
+}
+
 GPtrArray *hy_packagelist_create(void);
 int hy_packagelist_has(GPtrArray *plist, DnfPackage *pkg);
 

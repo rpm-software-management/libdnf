@@ -32,6 +32,7 @@
 #include "libdnf/dnf-reldep.h"
 #include "libdnf/dnf-reldep-list.h"
 #include "libdnf/dnf-sack-private.hpp"
+#include "libdnf/sack/packageset.hpp"
 #include "libdnf/sack/query.hpp"
 #include "fixtures.h"
 #include "test_suites.h"
@@ -67,7 +68,7 @@ START_TEST(test_query_run_set_sanity)
     // make sure we are testing with some odd bits in the underlying map:
     fail_unless(TEST_EXPECT_SYSTEM_NSOLVABLES % 8);
     fail_unless(dnf_packageset_count(pset) == TEST_EXPECT_SYSTEM_NSOLVABLES);
-    g_object_unref(pset);
+    delete pset;
     hy_query_free(q);
 }
 END_TEST
@@ -312,7 +313,7 @@ START_TEST(test_query_pkg)
     fail_unless(hy_query_filter_package_in(q, HY_PKG, HY_GT, pset));
     // add the filter:
     fail_if(hy_query_filter_package_in(q, HY_PKG, HY_EQ, pset));
-    g_object_unref(pset);
+    delete pset;
 
     // cloning must work
     q2 = hy_query_clone(q);
@@ -323,12 +324,12 @@ START_TEST(test_query_pkg)
     hy_query_filter_latest_per_arch(q2, 1);
     pset = hy_query_run_set(q2);
     fail_unless(dnf_packageset_count(pset) == 1);
-    DnfPackage *pkg = dnf_packageset_get_clone(pset, 0);
+    DnfPackage *pkg = dnf_package_new(pset->getSack(), (*pset)[0]);
     const char *nvra = dnf_package_get_nevra(pkg);
     ck_assert_str_eq(nvra, "jay-6.0-0.x86_64");
     g_object_unref(pkg);
 
-    g_object_unref(pset);
+    delete pset;
     hy_query_free(q2);
 }
 END_TEST
@@ -764,7 +765,7 @@ START_TEST(test_filter_obsoletes)
     fail_unless(query_count_results(q) == 1);
 
     hy_query_free(q);
-    g_object_unref(pset);
+    delete pset;
 }
 END_TEST
 
@@ -801,7 +802,7 @@ START_TEST(test_excluded)
 
     DnfPackageSet *pset = hy_query_run_set(q);
     dnf_sack_add_excludes(sack, pset);
-    g_object_unref(pset);
+    delete pset;
     hy_query_free(q);
 
     q = hy_query_create_flags(sack, 0);

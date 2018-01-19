@@ -27,36 +27,22 @@
 #include "hy-types.h"
 #include "hy-package.h"
 
-G_BEGIN_DECLS
-
-#define DNF_TYPE_PACKAGE_SET (dnf_packageset_get_type ())
-G_DECLARE_DERIVABLE_TYPE (DnfPackageSet, dnf_packageset, DNF, PACKAGE_SET, GObject)
-
-struct _DnfPackageSetClass
-{
-        GObjectClass            parent_class;
-        /*< private >*/
-        void (*_dnf_reserved1)  (void);
-        void (*_dnf_reserved2)  (void);
-        void (*_dnf_reserved3)  (void);
-        void (*_dnf_reserved4)  (void);
-        void (*_dnf_reserved5)  (void);
-        void (*_dnf_reserved6)  (void);
-        void (*_dnf_reserved7)  (void);
-        void (*_dnf_reserved8)  (void);
-};
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 DnfPackageSet       *dnf_packageset_new         (DnfSack *sack);
+void                 dnf_packageset_free        (DnfPackageSet *pset);
 DnfPackageSet       *dnf_packageset_clone       (DnfPackageSet *pset);
 void                 dnf_packageset_add         (DnfPackageSet *pset, DnfPackage *pkg);
-unsigned             dnf_packageset_count       (DnfPackageSet *pset);
-DnfPackage          *dnf_packageset_get_clone   (DnfPackageSet *pset, int index);
+size_t               dnf_packageset_count       (DnfPackageSet *pset);
 int                  dnf_packageset_has         (DnfPackageSet *pset, DnfPackage *pkg);
-Id                   dnf_packageset_get_pkgid   (DnfPackageSet *pset, int index, Id previous);
 
 DnfPackageSet       *dnf_packageset_from_bitmap (DnfSack *sack, Map *m);
 Map             *dnf_packageset_get_map        (DnfPackageSet *pset);
 
-G_END_DECLS
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __DNF_PACKAGESET_H */
