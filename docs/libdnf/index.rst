@@ -22,11 +22,36 @@ Indices and tables
 Public API Reference
 =====================
 
+.. doxygenclass:: Swdb
+   :members:
+
+.. doxygenclass:: Transaction
+   :members:
+
 .. doxygenclass:: RPMItem
    :members:
 
 .. doxygenclass:: Repo
    :members:
+
+.. doxygenclass:: TransactionItem
+   :members:
+
+.. doxygenclass:: CompsGroupItem
+   :members:
+
+.. doxygenclass:: CompsGroupPackage
+   :members:
+
+.. doxygenclass:: CompsEnvironmentItem
+   :members:
+
+.. doxygenclass:: CompsEnvironmentGroup
+   :members:
+
+.. doxygenenum:: TransactionItemReason
+
+.. doxygenenum:: TransactionItemAction
 
 Internal API Reference
 ======================
