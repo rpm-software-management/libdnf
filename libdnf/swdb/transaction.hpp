@@ -77,8 +77,7 @@ public:
                                                const std::string &repoid,
                                                TransactionItemAction action,
                                                TransactionItemReason reason);
-    std::vector< std::shared_ptr< TransactionItem > > getItems() const { return items; }
-    void loadItems();
+    std::vector< std::shared_ptr< TransactionItem > > getItems();
     void saveItems();
 
     void addConsoleOutputLine(int fileDescriptor, const std::string &line);
@@ -101,6 +100,7 @@ protected:
     std::string cmdline;
     bool done = false;
 
+    void loadItems();
     std::vector< std::shared_ptr< TransactionItem > > items;
 
     std::set< std::shared_ptr< RPMItem > > softwarePerformedWith;

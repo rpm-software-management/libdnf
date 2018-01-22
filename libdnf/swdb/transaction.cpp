@@ -226,6 +226,19 @@ Transaction::saveItems()
     }
 }
 
+/**
+ * Lazy loader for the transaction items.
+ * \return list of transaction items associated with the transaction
+ */
+std::vector< std::shared_ptr< TransactionItem > >
+Transaction::getItems()
+{
+    if (items.empty()) {
+        loadItems();
+    }
+    return items;
+}
+
 void
 Transaction::loadItems()
 {

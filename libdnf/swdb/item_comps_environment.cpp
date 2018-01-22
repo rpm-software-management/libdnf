@@ -240,6 +240,19 @@ CompsEnvironmentItem::toStr()
     return "@" + getEnvironmentId();
 }
 
+/**
+ * Lazy loader for groups associaded with the environment.
+ * \return vector of groups associated with the environment
+ */
+std::vector< std::shared_ptr< CompsEnvironmentGroup > >
+CompsEnvironmentItem::getGroups()
+{
+    if (groups.empty()) {
+        loadGroups();
+    }
+    return groups;
+}
+
 void
 CompsEnvironmentItem::loadGroups()
 {
@@ -251,19 +264,19 @@ CompsEnvironmentItem::loadGroups()
         WHERE
             environment_id = ?
         ORDER BY
-            groupid
+            groupid ASC
     )**";
     SQLite3::Query query(*conn.get(), sql);
     query.bindv(getId());
 
-    groups.clear();
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
-        auto pkg = std::make_shared< CompsEnvironmentGroup >(*this);
-        pkg->setId(query.get< int >("id"));
-        pkg->setGroupId(query.get< std::string >("groupid"));
-        pkg->setInstalled(query.get< bool >("installed"));
-        pkg->setGroupType(static_cast< CompsPackageType >(query.get< int >("group_type")));
-        groups.push_back(pkg);
+        auto group = std::make_shared< CompsEnvironmentGroup >(*this);
+        group->setId(query.get< int >("id"));
+        group->setGroupId(query.get< std::string >("groupid"));
+
+        group->setInstalled(query.get< bool >("installed"));
+        group->setGroupType(static_cast< CompsPackageType >(query.get< int >("group_type")));
+        groups.push_back(group);
     }
 }
 

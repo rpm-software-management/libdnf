@@ -59,7 +59,6 @@ TransformerTest::testGroupTransformation()
     CPPUNIT_ASSERT(trans.getDone());
 
     // load transaction items
-    trans.loadItems();
     auto items = trans.getItems();
     CPPUNIT_ASSERT_EQUAL(2, static_cast< int >(items.size()));
 
@@ -74,7 +73,6 @@ TransformerTest::testGroupTransformation()
             CPPUNIT_ASSERT("Core" == group->getName());
             CPPUNIT_ASSERT("Úplný základ" == group->getTranslatedName());
 
-            group->loadPackages();
             auto packages = group->getPackages();
 
             CPPUNIT_ASSERT(1 == packages.size());
@@ -90,7 +88,6 @@ TransformerTest::testGroupTransformation()
             CPPUNIT_ASSERT("Minimal Install" == env->getName());
             CPPUNIT_ASSERT("Minimálna inštalácia" == env->getTranslatedName());
 
-            env->loadGroups();
             auto groups = env->getGroups();
             CPPUNIT_ASSERT(1 == groups.size());
 
@@ -143,7 +140,6 @@ TransformerTest::testTransformTrans()
     }
 
     // check first transaction items
-    first.loadItems();
     auto items = first.getItems();
     CPPUNIT_ASSERT(items.size() == 2);
     for (auto item : items) {
@@ -199,7 +195,6 @@ TransformerTest::testTransformTrans()
     }
 
     // check second transaction items
-    second.loadItems();
     items = second.getItems();
     CPPUNIT_ASSERT(items.size() == 1);
     for (auto item : items) {

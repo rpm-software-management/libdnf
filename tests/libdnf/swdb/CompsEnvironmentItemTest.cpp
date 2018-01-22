@@ -43,7 +43,6 @@ CompsEnvironmentItemTest::testCreate()
     auto env = createCompsEnvironment(conn);
 
     CompsEnvironmentItem env2(conn, env->getId());
-    env2.loadGroups();
     CPPUNIT_ASSERT(env2.getId() == env->getId());
     CPPUNIT_ASSERT(env2.getEnvironmentId() == env->getEnvironmentId());
     CPPUNIT_ASSERT(env2.getName() == env->getName());
@@ -71,17 +70,22 @@ CompsEnvironmentItemTest::testGetTransactionItems()
     auto env = createCompsEnvironment(conn);
     trans.addItem(env, "", TransactionItemAction::INSTALL, TransactionItemReason::USER);
     trans.save();
+    trans.saveItems();
 
     Transaction trans2(conn, trans.getId());
-    auto transItem = trans.getItems().at(0);
+
+    auto transItems = trans2.getItems();
+    CPPUNIT_ASSERT_EQUAL(1, static_cast< int >(transItems.size()));
+
+    auto transItem = transItems.at(0);
+
     auto env2 = transItem->getCompsEnvironmentItem();
-    env2->loadGroups();
     {
         auto group = env2->getGroups().at(0);
-        CPPUNIT_ASSERT(group->getGroupId() == "base");
+        CPPUNIT_ASSERT_EQUAL(std::string("base"), group->getGroupId());
     }
     {
         auto group = env2->getGroups().at(1);
-        CPPUNIT_ASSERT(group->getGroupId() == "core");
+        CPPUNIT_ASSERT_EQUAL(std::string("core"), group->getGroupId());
     }
 }

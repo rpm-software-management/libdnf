@@ -65,8 +65,7 @@ public:
     std::shared_ptr< CompsGroupPackage > addPackage(std::string name,
                                                     bool installed,
                                                     CompsPackageType pkgType);
-    void loadPackages();
-    std::vector< std::shared_ptr< CompsGroupPackage > > getPackages() { return packages; }
+    std::vector< std::shared_ptr< CompsGroupPackage > > getPackages();
     static std::shared_ptr< TransactionItem > getTransactionItem(std::shared_ptr< SQLite3 > conn,
                                                                  const std::string &groupid);
     static std::vector< std::shared_ptr< TransactionItem > > getTransactionItemsByPattern(
@@ -83,6 +82,7 @@ protected:
     std::string translatedName;
     CompsPackageType packageTypes;
 
+    void loadPackages();
     std::vector< std::shared_ptr< CompsGroupPackage > > packages;
 
 private:

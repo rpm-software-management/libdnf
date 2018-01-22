@@ -56,8 +56,7 @@ public:
     std::shared_ptr< CompsEnvironmentGroup > addGroup(std::string groupId,
                                                       bool installed,
                                                       CompsPackageType groupType);
-    void loadGroups();
-    std::vector< std::shared_ptr< CompsEnvironmentGroup > > getGroups() { return groups; }
+    std::vector< std::shared_ptr< CompsEnvironmentGroup > > getGroups();
     static std::shared_ptr< TransactionItem > getTransactionItem(std::shared_ptr< SQLite3 > conn,
                                                                  const std::string &envid);
     static std::vector< std::shared_ptr< TransactionItem > > getTransactionItemsByPattern(
@@ -74,6 +73,7 @@ protected:
     std::string translatedName;
     CompsPackageType packageTypes;
 
+    void loadGroups();
     std::vector< std::shared_ptr< CompsEnvironmentGroup > > groups;
 
 private:

@@ -120,7 +120,6 @@ WorkflowTest::testDefaultWorkflow()
     auto trans2 = Transaction(conn, trans.getId());
     CPPUNIT_ASSERT(trans2.getDone() == true);
 
-    trans2.loadItems();
     CPPUNIT_ASSERT(trans2.getItems().size() == 5);
 
     for (auto i : trans2.getItems()) {
@@ -143,7 +142,6 @@ WorkflowTest::testDefaultWorkflow()
         // std::cout << "TransactionItem: " << i->getItem()->toStr() << std::endl;
         if (i->getItem()->getItemType() == ItemType::GROUP) {
             auto grp = std::dynamic_pointer_cast< CompsGroupItem >(i->getItem());
-            grp->loadPackages();
             CPPUNIT_ASSERT(grp->getPackages().size() == 1);
             for (auto i : grp->getPackages()) {
                 // std::cout << "  CompsGroupPackage: " << i->getName() << std::endl;
@@ -151,7 +149,6 @@ WorkflowTest::testDefaultWorkflow()
         }
         if (i->getItem()->getItemType() == ItemType::ENVIRONMENT) {
             auto env = std::dynamic_pointer_cast< CompsEnvironmentItem >(i->getItem());
-            env->loadGroups();
             CPPUNIT_ASSERT(env->getGroups().size() == 1);
             for (auto i : env->getGroups()) {
                 // std::cout << "  CompsEnvironmentGroup: @" << i->getGroupId() << std::endl;

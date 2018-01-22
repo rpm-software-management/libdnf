@@ -229,6 +229,19 @@ CompsGroupItem::toStr()
     return "@" + getGroupId();
 }
 
+/**
+ * Lazy loader for packages associated with the group.
+ * \return list of packages associated with the group (installs and excludes).
+ */
+std::vector< std::shared_ptr< CompsGroupPackage > >
+CompsGroupItem::getPackages()
+{
+    if (packages.empty()) {
+        loadPackages();
+    }
+    return packages;
+}
+
 void
 CompsGroupItem::loadPackages()
 {
@@ -242,7 +255,6 @@ CompsGroupItem::loadPackages()
     SQLite3::Query query(*conn.get(), sql);
     query.bindv(getId());
 
-    packages.clear();
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
         auto pkg = std::make_shared< CompsGroupPackage >(*this);
         pkg->setId(query.get< int >("id"));
