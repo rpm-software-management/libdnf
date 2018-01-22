@@ -5,7 +5,7 @@ includedir=${prefix}/include
 Name: libdnf
 Description: Simple package manager interface using libsolv and librepo
 Version: @LIBDNF_VERSION@
-Requires: glib-2.0, gobject-2.0, librepo, rpm, sqlite3
+Requires: glib-2.0, gobject-2.0, librepo, rpm, @SWDB_PKGCONFIG_DEPS@
 Requires.private: libsolv, libsolvext
 Libs: -L${libdir} -ldnf
 Cflags: -I${includedir}
