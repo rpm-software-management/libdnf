@@ -40,7 +40,7 @@ Item::dbInsert()
         "VALUES "
         "  (null, ?)";
     SQLite3::Statement query(*conn.get(), sql);
-    query.bindv(itemType);
+    query.bindv(static_cast< int >(itemType));
     query.step();
     setId(conn->lastInsertRowID());
 }

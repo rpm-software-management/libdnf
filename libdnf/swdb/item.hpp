@@ -26,6 +26,8 @@
 
 #include "../utils/sqlite3/sqlite3.hpp"
 
+#include "swdb_types.hpp"
+
 /// Class representing a package.
 /**
  * Here goes the detailed description.
@@ -58,7 +60,7 @@ public:
      */
     void setId(int64_t value) { id = value; }
 
-    virtual const std::string &getItemType() const noexcept { return itemType; }
+    virtual const ItemType getItemType() const noexcept { return itemType; }
     virtual std::string toStr();
     virtual void save();
 
@@ -67,7 +69,7 @@ protected:
 
     std::shared_ptr< SQLite3 > conn;
     int64_t id = 0;
-    const std::string itemType;
+    const ItemType itemType = ItemType::UNKNOWN;
 };
 
 #endif // LIBDNF_SWDB_ITEM_HPP

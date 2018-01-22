@@ -5,6 +5,7 @@
 
 #include "libdnf/swdb/item_rpm.hpp"
 #include "libdnf/swdb/swdb.hpp"
+#include "libdnf/swdb/swdb_types.hpp"
 #include "libdnf/swdb/transaction.hpp"
 #include "libdnf/swdb/transactionitem.hpp"
 
@@ -60,13 +61,13 @@ TransformerTest::testGroupTransformation()
     // load transaction items
     trans.loadItems();
     auto items = trans.getItems();
-    CPPUNIT_ASSERT_EQUAL(2, (int)items.size());
+    CPPUNIT_ASSERT_EQUAL(2, static_cast< int >(items.size()));
 
     // verify items
     for (auto transItem : items) {
         auto item = transItem->getItem();
         auto type = item->getItemType();
-        if (type == "comps-group") {
+        if (type == ItemType::GROUP) {
             auto group = std::dynamic_pointer_cast< CompsGroupItem >(item);
 
             CPPUNIT_ASSERT(group->getGroupId() == "core");
@@ -83,7 +84,7 @@ TransformerTest::testGroupTransformation()
             CPPUNIT_ASSERT(groupPkg->getInstalled() == true);
             CPPUNIT_ASSERT(groupPkg->getPackageType() == CompsPackageType::MANDATORY);
 
-        } else if (type == "comps-environment") {
+        } else if (type == ItemType::ENVIRONMENT) {
             auto env = std::dynamic_pointer_cast< CompsEnvironmentItem >(item);
             CPPUNIT_ASSERT("minimal-environment" == env->getEnvironmentId());
             CPPUNIT_ASSERT("Minimal Install" == env->getName());
@@ -99,7 +100,7 @@ TransformerTest::testGroupTransformation()
             CPPUNIT_ASSERT(envGroup->getGroupType() == CompsPackageType::MANDATORY);
 
         } else {
-            CPPUNIT_FAIL("Invalid item type: " + type);
+            CPPUNIT_FAIL("Invalid item type: " + std::to_string(static_cast< int >(type)));
         }
     }
 }

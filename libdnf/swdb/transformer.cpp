@@ -480,8 +480,6 @@ Transformer::processEnvironment(std::shared_ptr< SQLite3 > swdb,
     return compsEnv;
 }
 
-#include <iostream>
-
 /**
  * Create fake transaction for groups in persistor
  * \param swdb pointer to swdb SQLite3 object

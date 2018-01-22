@@ -51,7 +51,7 @@ public:
     void setPackageTypes(CompsPackageType value) { packageTypes = value; }
 
     virtual std::string toStr();
-    virtual const std::string &getItemType() const noexcept { return itemType; }
+    virtual const ItemType getItemType() const noexcept { return itemType; }
     virtual void save();
     std::shared_ptr< CompsEnvironmentGroup > addGroup(std::string groupId,
                                                       bool installed,
@@ -68,7 +68,7 @@ public:
         int64_t transactionId);
 
 protected:
-    const std::string itemType = "comps-environment";
+    const ItemType itemType = ItemType::ENVIRONMENT;
     std::string environmentId;
     std::string name;
     std::string translatedName;

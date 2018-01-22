@@ -30,6 +30,8 @@ enum class TransactionItemReason : int {
     GROUP = 5
 };
 
+enum class ItemType : int { UNKNOWN = 0, RPM = 1, GROUP = 2, ENVIRONMENT = 3 };
+
 // Any time you add a new action, change functions that resolve reasons,
 // because removed items (RPMs) must be excluded from reason resolution:
 // * item_rpm.cpp - RPMItem::resolveTransactionItemReason

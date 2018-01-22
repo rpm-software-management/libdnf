@@ -60,7 +60,7 @@ public:
     void setPackageTypes(CompsPackageType value) { packageTypes = value; }
 
     virtual std::string toStr();
-    virtual const std::string &getItemType() const noexcept { return itemType; }
+    virtual const ItemType getItemType() const noexcept { return itemType; }
     virtual void save();
     std::shared_ptr< CompsGroupPackage > addPackage(std::string name,
                                                     bool installed,
@@ -77,7 +77,7 @@ public:
         int64_t transactionId);
 
 protected:
-    const std::string itemType = "comps-group";
+    const ItemType itemType = ItemType::GROUP;
     std::string groupId;
     std::string name;
     std::string translatedName;

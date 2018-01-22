@@ -54,7 +54,7 @@ public:
 
     std::string getNEVRA();
     std::string toStr() override;
-    const std::string &getItemType() const noexcept override { return itemType; }
+    const ItemType getItemType() const noexcept override { return itemType; }
     void save() override;
 
     static std::shared_ptr< TransactionItem > getTransactionItem(std::shared_ptr< SQLite3 > conn,
@@ -68,7 +68,7 @@ public:
                                                               int64_t maxTransactionId);
 
 protected:
-    const std::string itemType = "rpm";
+    const ItemType itemType = ItemType::RPM;
     std::string name;
     int32_t epoch = 0;
     std::string version;

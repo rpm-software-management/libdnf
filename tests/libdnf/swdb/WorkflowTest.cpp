@@ -7,6 +7,7 @@
 #include "libdnf/swdb/item_comps_group.hpp"
 #include "libdnf/swdb/item_rpm.hpp"
 #include "libdnf/swdb/swdb.hpp"
+#include "libdnf/swdb/swdb_types.hpp"
 #include "libdnf/swdb/transaction.hpp"
 #include "libdnf/swdb/transactionitem.hpp"
 
@@ -140,7 +141,7 @@ WorkflowTest::testDefaultWorkflow()
         // CPPUNIT_ASSERT(i->getItem()->getItemType() == "rpm");
         CPPUNIT_ASSERT(i->getDone() == true);
         // std::cout << "TransactionItem: " << i->getItem()->toStr() << std::endl;
-        if (i->getItem()->getItemType() == "comps-group") {
+        if (i->getItem()->getItemType() == ItemType::GROUP) {
             auto grp = std::dynamic_pointer_cast< CompsGroupItem >(i->getItem());
             grp->loadPackages();
             CPPUNIT_ASSERT(grp->getPackages().size() == 1);
@@ -148,7 +149,7 @@ WorkflowTest::testDefaultWorkflow()
                 // std::cout << "  CompsGroupPackage: " << i->getName() << std::endl;
             }
         }
-        if (i->getItem()->getItemType() == "comps-environment") {
+        if (i->getItem()->getItemType() == ItemType::ENVIRONMENT) {
             auto env = std::dynamic_pointer_cast< CompsEnvironmentItem >(i->getItem());
             env->loadGroups();
             CPPUNIT_ASSERT(env->getGroups().size() == 1);
