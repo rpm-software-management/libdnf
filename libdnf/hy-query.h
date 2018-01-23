@@ -44,7 +44,7 @@ enum _hy_query_flags {
 void hy_query_apply(HyQuery q);
 HyQuery hy_query_create(DnfSack *sack);
 HyQuery hy_query_create_flags(DnfSack *sack, int flags);
-HyQuery hy_query_from_nevra(HyNevra nevra, DnfSack *sack, gboolean icase);
+HyQuery hy_query_from_nevra(HyNevra nevra, DnfSack *sack, bool icase);
 void hy_query_free(HyQuery q);
 Id query_get_index_item(HyQuery query, int index);
 void hy_query_clear(HyQuery q);
@@ -107,7 +107,7 @@ const Map *hy_query_get_result(const HyQuery query);
 DnfSack *hy_query_get_sack(HyQuery query);
 void hy_query_to_name_ordered_queue(HyQuery query, Queue *samename);
 void hy_query_to_name_arch_ordered_queue(HyQuery query, Queue *samename);
-void hy_add_filter_nevra_object(HyQuery query, HyNevra nevra, gboolean icase);
+void hy_add_filter_nevra_object(HyQuery query, HyNevra nevra, bool icase);
 void hy_add_filter_extras(HyQuery query);
 void hy_filter_recent(HyQuery query, const long unsigned int recent_limit);
 void hy_filter_duplicated(HyQuery query);

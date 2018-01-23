@@ -85,7 +85,7 @@ public:
     int addFilter(int keyname, DnfReldepList *reldeplist);
     int addFilter(int keyname, int cmp_type, const char *match);
     int addFilter(int keyname, int cmp_type, const char **matches);
-    int addFilter(HyNevra nevra, gboolean icase);
+    int addFilter(HyNevra nevra, bool icase);
     void apply();
 
     /**
