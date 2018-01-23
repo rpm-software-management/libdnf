@@ -55,6 +55,7 @@ public:
     DnfSack * getSack();
     bool getApplied();
     void clear();
+    size_t size();
     int addFilter(int keyname, int cmp_type, int match);
     int addFilter(int keyname, int cmp_type, int nmatches, const int *matches);
     int addFilter(int keyname, int cmp_type, DnfPackageSet *pset);

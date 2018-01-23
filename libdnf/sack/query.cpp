@@ -491,16 +491,15 @@ const int Filter::getMatchType() const noexcept { return pImpl->matchType; }
 const std::vector< _Match >& Filter::getMatches() const noexcept { return pImpl->matches; }
 
 class Query::Impl {
-public:
-    ~Impl();
 private:
     friend struct Query;
     Impl(DnfSack* sack, int flags = 0);
-    Impl(const Query & src_query);
+    Impl(const Query::Impl & src_query);
+    Impl & operator= (const Impl & src);
     bool applied{0};
     DnfSack *sack;
     int flags;
-    Map *result{nullptr};
+    std::unique_ptr<PackageSet> result;
     std::vector<Filter> filters;
     void apply();
     void initResult();
@@ -523,53 +522,72 @@ private:
     void filterUpdown(const Filter & f, Map *m);
     void filterUpdownAble(const Filter  &f, Map *m);
     void filterDataiterator(const Filter & f, Map *m);
-    
 };
 
 Query::Impl::Impl(DnfSack* sack, int flags)
 : sack(sack), flags(flags) {}
 
-Query::Impl::Impl(const Query & src_query)
-: applied(src_query.pImpl->applied)
-, sack(src_query.pImpl->sack)
-, flags(src_query.pImpl->flags)
-, filters(src_query.pImpl->filters)
+Query::Impl::Impl(const Query::Impl & src)
+: applied(src.applied)
+, sack(src.sack)
+, flags(src.flags)
+, filters(src.filters)
 {
-    if (src_query.pImpl->result) {
-        result = new Map;
-        map_init_clone(result, src_query.pImpl->result);
+    if (src.result) {
+        result.reset(new PackageSet(*src.result.get()));
     }
 }
 
-Query::Impl::~Impl()
+Query::Impl &
+Query::Impl::operator=(const Query::Impl & src)
 {
-    if (result) {
-        map_free(result);
-        delete result;
+    applied = src.applied;
+    sack = src.sack;
+    flags = src.flags;
+    filters = src.filters;
+    if (src.result) {
+        result.reset(new PackageSet(*src.result.get()));
+    } else {
+        result.reset();
     }
+    return *this;
 }
 
-Query::Query(const Query & query_src) : pImpl(new Impl(query_src)) {}
+
+Query::Query(const Query & query_src) : pImpl(new Impl(*query_src.pImpl)) {}
 Query::Query(DnfSack *sack, int flags) : pImpl(new Impl(sack, flags)) {}
 Query::~Query() = default;
 
-Query & Query::operator=(const Query & query_src) { *pImpl = *new Impl(query_src); return *this; }
+Query & Query::operator=(const Query & query_src) { *pImpl = *query_src.pImpl; return *this; }
 
-Map * Query::getResult() noexcept { return pImpl->result; }
-const Map * Query::getResult() const noexcept { return pImpl->result; }
+Map *
+Query::getResult() noexcept
+{
+    if (pImpl->result)
+        return pImpl->result->getMap();
+    else
+        return nullptr;
+}
+
+const Map * Query::getResult() const noexcept { return pImpl->result->getMap(); }
 bool Query::getApplied() { return pImpl->applied; }
 DnfSack * Query::getSack() { return pImpl->sack; }
 
 void
 Query::clear()
 {
-    if (pImpl->result) {
-        map_free(pImpl->result);
-        delete pImpl->result;
-        pImpl->result = nullptr;
-    }
+    pImpl->applied = false;
+    pImpl->result.reset();
     pImpl->filters.clear();
 }
+
+size_t
+Query::size()
+{
+    apply();
+    return pImpl->result->size();
+}
+
 
 int
 Query::addFilter(int keyname, int cmp_type, int match)
@@ -706,18 +724,17 @@ Query::Impl::initResult()
 
     int sack_pool_nsolvables = dnf_sack_get_pool_nsolvables(sack);
     if (sack_pool_nsolvables != 0 && sack_pool_nsolvables == pool->nsolvables)
-        result = dnf_sack_get_pkg_solvables(sack);
+        result.reset(new PackageSet(sack, dnf_sack_get_pkg_solvables(sack)));
     else {
-        result = new Map;
-        map_init(result, pool->nsolvables);
+        result.reset(new PackageSet(sack));
         FOR_PKG_SOLVABLES(solvid)
-            map_set(result, solvid);
-        dnf_sack_set_pkg_solvables(sack, result, pool->nsolvables);
+            result->set(solvid);
+        dnf_sack_set_pkg_solvables(sack, result->getMap(), pool->nsolvables);
     }
     if (!(flags & HY_IGNORE_EXCLUDES)) {
         dnf_sack_recompute_considered(sack);
         if (pool->considered)
-            map_and(result, pool->considered);
+            map_and(result->getMap(), pool->considered);
     }
 }
 
@@ -743,10 +760,11 @@ Query::Impl::filterRcoReldep(const Filter & f, Map *m)
     queue_init(&rco);
     for (auto match : f.getMatches()) {
         Id r_id = dnf_reldep_get_id (match.reldep);
-
-        for (Id s_id = 1; s_id < pool->nsolvables; ++s_id) {
-            if (!MAPTST(result, s_id))
-                continue;
+        Id s_id = -1;
+        while (true) {
+            s_id = result->next(s_id);
+            if (s_id == -1)
+                break;
 
             Solvable *s = pool_id2solvable(pool, s_id);
 
@@ -778,9 +796,11 @@ Query::Impl::filterName(const Filter & f, Map *m)
                 continue;
         }
 
-        for (Id id = 1; id < pool->nsolvables; ++id) {
-            if (!MAPTST(result, id))
-                continue;
+        Id id = -1;
+        while (true) {
+            id = result->next(id);
+            if (id == -1)
+                break;
 
             Solvable *s = pool_id2solvable(pool, id);
 
@@ -833,9 +853,12 @@ Query::Impl::filterEpoch(const Filter & f, Map *m)
     for (auto match : f.getMatches()) {
         unsigned long epoch = match.num;
 
-        for (Id id = 1; id < pool->nsolvables; ++id) {
-            if (!MAPTST(result, id))
-                continue;
+        Id id = -1;
+        while (true) {
+            id = result->next(id);
+            if (id == -1)
+                break;
+
             Solvable *s = pool_id2solvable(pool, id);
             if (s->evr == ID_EMPTY)
                 continue;
@@ -860,9 +883,11 @@ Query::Impl::filterEvr(const Filter & f, Map *m)
     for (auto match : f.getMatches()) {
         Id match_evr = pool_str2id(pool, match.str, 1);
 
-        for (Id id = 1; id < pool->nsolvables; ++id) {
-            if (!MAPTST(result, id))
-                continue;
+        Id id = -1;
+        while (true) {
+            id = result->next(id);
+            if (id == -1)
+                break;
             Solvable *s = pool_id2solvable(pool, id);
             int cmp = pool_evrcmp(pool, s->evr, match_evr, EVRCMP_COMPARE);
 
@@ -888,9 +913,11 @@ Query::Impl::filterNevra(const Filter & f, Map *m)
 
         gboolean present_epoch = strchr(nevra_pattern, ':') != NULL;
 
-        for (Id id = 1; id < pool->nsolvables; ++id) {
-            if (!MAPTST(result, id))
-                continue;
+        Id id = -1;
+        while (true) {
+            id = result->next(id);
+            if (id == -1)
+                break;
             Solvable* s = pool_id2solvable(pool, id);
 
             char* nevra = pool_solvable_epoch_optional_2str(pool, s, present_epoch);
@@ -919,9 +946,11 @@ Query::Impl::filterVersion(const Filter & f, Map *m)
         const char *match = match_in.str;
         char *filter_vr = solv_dupjoin(match, "-0", NULL);
 
-        for (Id id = 1; id < pool->nsolvables; ++id) {
-            if (!MAPTST(result, id))
-                continue;
+        Id id = -1;
+        while (true) {
+            id = result->next(id);
+            if (id == -1)
+                break;
             char *e, *v, *r;
             Solvable *s = pool_id2solvable(pool, id);
             if (s->evr == ID_EMPTY)
@@ -958,9 +987,11 @@ Query::Impl::filterRelease(const Filter & f, Map *m)
         const char *match = match_in.str;
         char *filter_vr = solv_dupjoin("0-", match, NULL);
 
-        for (Id id = 1; id < pool->nsolvables; ++id) {
-            if (!MAPTST(result, id))
-                continue;
+        Id id = -1;
+        while (true) {
+            id = result->next(id);
+            if (id == -1)
+                break;
             char *e, *v, *r;
             Solvable *s = pool_id2solvable(pool, id);
             if (s->evr == ID_EMPTY)
@@ -985,7 +1016,7 @@ Query::Impl::filterRelease(const Filter & f, Map *m)
                 MAPSET(m, id);
             }
         }
-        g_free(filter_vr);
+        solv_free(filter_vr);
     }
 }
 
@@ -1003,9 +1034,11 @@ Query::Impl::filterArch(const Filter & f, Map *m)
                 continue;
         }
 
-        for (Id id = 1; id < pool->nsolvables; ++id) {
-            if (!MAPTST(result, id))
-                continue;
+        Id id = -1;
+        while (true) {
+            id = result->next(id);
+            if (id == -1)
+                break;
             Solvable *s = pool_id2solvable(pool, id);
             if (cmp_type & HY_EQ) {
                 if (match_arch_id == s->arch)
@@ -1030,9 +1063,11 @@ Query::Impl::filterSourcerpm(const Filter & f, Map *m)
     for (auto match_in : f.getMatches()) {
         const char *match = match_in.str;
 
-        for (Id id = 1; id < pool->nsolvables; ++id) {
-            if (!MAPTST(result, id))
-                continue;
+        Id id = -1;
+        while (true) {
+            id = result->next(id);
+            if (id == -1)
+                break;
             Solvable *s = pool_id2solvable(pool, id);
 
             const char *name = solvable_lookup_str(s, SOLVABLE_SOURCENAME);
@@ -1061,10 +1096,12 @@ Query::Impl::filterObsoletes(const Filter & f, Map *m)
     assert(f.getMatches().size() == 1);
     target = dnf_packageset_get_map(f.getMatches()[0].pset);
     dnf_sack_make_provides_ready(sack);
-    for (Id p = 1; p < pool->nsolvables; ++p) {
-        if (!MAPTST(result, p))
-            continue;
-        Solvable *s = pool_id2solvable(pool, p);
+    Id id = -1;
+    while (true) {
+        id = result->next(id);
+        if (id == -1)
+            break;
+        Solvable *s = pool_id2solvable(pool, id);
         if (!s->repo)
             continue;
         for (Id *r_id = s->repo->idarraydata + s->obsoletes; *r_id; ++r_id) {
@@ -1077,7 +1114,7 @@ Query::Impl::filterObsoletes(const Filter & f, Map *m)
                 Solvable *so = pool_id2solvable(pool, r);
                 if (!obsprovides && !pool_match_nevr(pool, so, *r_id))
                     continue; /* only matching pkg names */
-                MAPSET(m, p);
+                MAPSET(m, id);
                 break;
             }
         }
@@ -1102,7 +1139,6 @@ void
 Query::Impl::filterReponame(const Filter & f, Map *m)
 {
     Pool *pool = dnf_sack_get_pool(sack);
-    int i;
     Solvable *s;
     Repo *r;
     Id id, ourids[pool->nrepos];
@@ -1118,14 +1154,16 @@ Query::Impl::filterReponame(const Filter & f, Map *m)
         }
     }
 
-    for (i = 1; i < pool->nsolvables; ++i) {
-        if (!MAPTST(result, i))
-            continue;
-        s = pool_id2solvable(pool, i);
+    id = -1;
+    while (true) {
+        id = result->next(id);
+        if (id == -1)
+            break;
+        s = pool_id2solvable(pool, id);
         switch (f.getCmpType() & ~HY_COMPARISON_FLAG_MASK) {
             case HY_EQ:
                 if (s->repo && ourids[s->repo->repoid])
-                    MAPSET(m, i);
+                    MAPSET(m, id);
                 break;
             default:
                 assert(0);
@@ -1141,9 +1179,11 @@ Query::Impl::filterLocation(const Filter & f, Map *m)
     for (auto match_in : f.getMatches()) {
         const char *match = match_in.str;
 
-        for (Id id = 1; id < pool->nsolvables; ++id) {
-            if (!MAPTST(result, id))
-                continue;
+        Id id = -1;
+        while (true) {
+            id = result->next(id);
+            if (id == -1)
+                break;
             Solvable *s = pool_id2solvable(pool, id);
 
             const char *location = solvable_get_location(s, NULL);
@@ -1207,11 +1247,13 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
     }
 
     // convert nevras (from DnfAdvisoryPkg) to pool ids
-    for (Id id = 1; id < pool->nsolvables; ++id) {
+    Id id = -1;
+    while (true) {
         if (pkgs->len == 0)
             break;
-        if (!MAPTST(result, id))
-            continue;
+        id = result->next(id);
+        if (id == -1)
+            break;
         Solvable* s = pool_id2solvable(pool, id);
         for (unsigned int p = 0; p < pkgs->len; ++p) {
             auto apkg = static_cast<DnfAdvisoryPkg *>(g_ptr_array_index(pkgs, p));
@@ -1239,9 +1281,13 @@ Query::Impl::filterLatest(const Filter & f, Map *m)
         Queue samename;
 
         queue_init(&samename);
-        for (int i = 1; i < pool->nsolvables; ++i)
-            if (MAPTST(result, i))
-                queue_push(&samename, i);
+        Id id = -1;
+        while (true) {
+            id = result->next(id);
+            if (id == -1)
+                break;
+            queue_push(&samename, id);
+        }
 
         if (keyname == HY_PKG_LATEST_PER_ARCH) {
             solv_sort(samename.elements, samename.count, sizeof(Id),
@@ -1292,9 +1338,11 @@ Query::Impl::filterUpdown(const Filter & f, Map *m)
         if (match_in.num == 0)
             continue;
 
-        for (Id id = 1; id < pool->nsolvables; ++id) {
-            if (!MAPTST(result, id))
-                continue;
+        Id id = -1;
+        while (true) {
+            id = result->next(id);
+            if (id == -1)
+                break;
             Solvable *s = pool_id2solvable(pool, id);
             if (s->repo == pool->installed)
                 continue;
@@ -1330,7 +1378,7 @@ Query::Impl::filterUpdownAble(const Filter  &f, Map *m)
 
             what = (f.getKeyname() == HY_PKG_DOWNGRADABLE) ? what_downgrades(pool, p) :
                 what_upgrades(pool, p);
-            if (what != 0 && map_tst(result, what))
+            if (what != 0 && map_tst(result->getMap(), what))
                 map_set(m, what);
         }
     }
@@ -1348,9 +1396,11 @@ Query::Impl::filterDataiterator(const Filter & f, Map *m)
 
     for (auto match_in : f.getMatches()) {
         const char *match = match_in.str;
-        for (Id id = 1; id < pool->nsolvables; ++id) {
-            if (!MAPTST(result, id))
-                continue;
+        Id id = -1;
+        while (true) {
+            id = result->next(id);
+            if (id == -1)
+                break;
             dataiterator_init(&di, pool, 0, id, keyname, match, flags);
             while (dataiterator_step(&di))
                 MAPSET(m, di.solvid);
@@ -1373,7 +1423,7 @@ Query::Impl::apply()
     if (!result)
         initResult();
     map_init(&m, pool->nsolvables);
-    assert(m.size == result->size);
+    assert(m.size == result->getMap()->size);
     for (auto f : filters) {
         map_empty(&m);
         switch (f.getKeyname()) {
@@ -1460,9 +1510,9 @@ Query::Impl::apply()
                 filterDataiterator(f, &m);
         }
         if (f.getCmpType() & HY_NOT)
-            map_subtract(result, &m);
+            map_subtract(result->getMap(), &m);
         else
-            map_and(result, &m);
+            map_and(result->getMap(), &m);
     }
     map_free(&m);
 
@@ -1473,13 +1523,16 @@ Query::Impl::apply()
 GPtrArray *
 Query::run()
 {
-    Pool *pool = dnf_sack_get_pool(pImpl->sack);
     GPtrArray *plist = hy_packagelist_create();
 
     apply();
-    for (int i = 1; i < pool->nsolvables; ++i)
-        if (MAPTST(pImpl->result, i))
-            g_ptr_array_add(plist, dnf_package_new(pImpl->sack, i));
+    Id id = -1;
+    while (true) {
+        id = pImpl->result->next(id);
+        if (id == -1)
+            break;
+        g_ptr_array_add(plist, dnf_package_new(pImpl->sack, id));
+    }
     return plist;
 }
 
@@ -1487,25 +1540,14 @@ DnfPackageSet *
 Query::runSet()
 {
     apply();
-    return dnf_packageset_from_bitmap(pImpl->sack, pImpl->result);
+    return new PackageSet(*pImpl->result.get());
 }
 
 Id
 Query::getIndexItem(int index)
 {
-    Pool *pool = dnf_sack_get_pool(pImpl->sack);
-    int index_counter = 0;
-
     apply();
-
-    for (Id id = 1; id < pool->nsolvables; ++id) {
-        if (!MAPTST(pImpl->result, id))
-            continue;
-        if (index_counter == index)
-            return id;
-        ++index_counter;
-    }
-    return 0;
+    return (*pImpl->result.get())[index];
 }
 
 void
@@ -1513,7 +1555,7 @@ Query::queryUnion(Query other)
 {
     apply();
     other.apply();
-    map_or(pImpl->result, other.getResult());
+    map_or(pImpl->result->getMap(), other.getResult());
 }
 
 void
@@ -1521,7 +1563,7 @@ Query::queryIntersection(Query other)
 {
     apply();
     other.apply();
-    map_and(pImpl->result, other.getResult());
+    map_and(pImpl->result->getMap(), other.getResult());
 }
 
 void
@@ -1529,15 +1571,15 @@ Query::queryDifference(Query other)
 {
     apply();
     other.apply();
-    map_subtract(pImpl->result, other.getResult());
+    map_subtract(pImpl->result->getMap(), other.getResult());
 }
 
 bool
 Query::empty()
 {
     apply();
-    const unsigned char *res = pImpl->result->map;
-    const unsigned char *end = res + pImpl->result->size;
+    const unsigned char *res = pImpl->result->getMap()->map;
+    const unsigned char *end = res + pImpl->result->getMap()->size;
 
     while (res < end) {
         if (*res++)
@@ -1562,18 +1604,21 @@ Query::filterExtras()
 
     query_installed.apply();
     query_available.apply();
-    MAPZERO(pImpl->result);
+    MAPZERO(pImpl->result->getMap());
+    Id id_installed = -1;
+    while (true) {
+        id_installed = query_installed.pImpl->result->next(id_installed);
+        if (id_installed == -1)
+            break;
 
-    for (Id id_installed = 1; id_installed < pool->nsolvables; ++id_installed) {
-        if (!MAPTST(query_installed.getResult(), id_installed)) {
-            continue;
-        }
         s_installed = pool_id2solvable(pool, id_installed);
         matched = false;
-        for (Id id_available = 1; id_available < pool->nsolvables; ++id_available) {
-            if (!MAPTST(query_available.getResult(), id_available)) {
-                continue;
-            }
+        Id id_available = -1;
+        while (true) {
+            id_available = query_available.pImpl->result->next(id_available);
+            if (id_available == -1)
+                break;
+
             s_available = pool_id2solvable(pool, id_available);
             if ((s_installed->name == s_available->name) && (s_installed->evr == s_available->evr)
                 && (s_installed->arch == s_available->arch)) {
@@ -1582,24 +1627,24 @@ Query::filterExtras()
             }
         }
         if (!matched)
-            MAPSET(pImpl->result, id_installed);
+            MAPSET(pImpl->result->getMap(), id_installed);
     }
 }
 
 void
 Query::filterRecent(const long unsigned int recent_limit)
 {
-    Pool *pool = dnf_sack_get_pool(pImpl->sack);
     apply();
 
-    for (Id id = 1; id < pool->nsolvables; ++id) {
-        if (!MAPTST(pImpl->result, id)) {
-            continue;
-        }
+    Id id = -1;
+    while (true) {
+        id = pImpl->result->next(id);
+        if (id == -1)
+                break;
         DnfPackage *pkg = dnf_package_new(pImpl->sack, id);
         guint64 build_time = dnf_package_get_buildtime(pkg);
         if (build_time <= recent_limit) {
-            MAPCLR(pImpl->result, id);
+            MAPCLR(pImpl->result->getMap(), id);
         }
     }
 }
@@ -1618,7 +1663,7 @@ Query::filterDuplicated()
     Solvable *considered, *highest = 0;
     int start_block = -1;
     int i;
-    MAPZERO(pImpl->result);
+    MAPZERO(pImpl->result->getMap());
     for (i = 0; i < samename.count; ++i) {
         Id p = samename.elements[i];
         considered = pool->solvables + p;
@@ -1630,14 +1675,15 @@ Query::filterDuplicated()
                 continue;
             }
             if (start_block != i - 1) {
-                add_duplicates_to_map(pool, pImpl->result, samename, start_block, i);
+                add_duplicates_to_map(pool, pImpl->result->getMap(), samename, start_block,
+                                      i);
             }
             highest = considered;
             start_block = i;
         }
     }
     if (start_block != -1) {
-        add_duplicates_to_map(pool, pImpl->result, samename, start_block, i);
+        add_duplicates_to_map(pool, pImpl->result->getMap(), samename, start_block, i);
     }
 }
 
