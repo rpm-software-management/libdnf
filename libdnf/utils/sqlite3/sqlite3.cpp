@@ -30,6 +30,8 @@ SQLite3::open()
             sqlite3_close(db);
             throw LibException(result, "Open failed");
         }
+        // sqlite doesn't behave correctly in chroots without following line:
+        exec("PRAGMA journal_mode = TRUNCATE; PRAGMA locking_mode = EXCLUSIVE");
     }
 }
 
