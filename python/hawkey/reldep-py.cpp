@@ -27,6 +27,7 @@
 // hawkey
 #include "dnf-reldep.h"
 #include "hy-iutil.h"
+#include "libdnf/repo/solvable/Dependency.hpp"
 
 // pyhawkey
 #include "exception-py.hpp"
@@ -63,7 +64,7 @@ new_reldep(PyObject *sack, Id r_id)
     _ReldepObject *self = reldep_new_core(&reldep_Type, sack);
     if (self == NULL)
         return NULL;
-    self->reldep = dnf_reldep_from_pool (dnf_sack_get_pool(csack), r_id);
+    self->reldep = new Dependency(csack, r_id);
     return (PyObject*)self;
 }
 
@@ -136,7 +137,7 @@ static void
 reldep_dealloc(_ReldepObject *self)
 {
     if (self->reldep)
-        g_object_unref (self->reldep);
+        dnf_reldep_free(self->reldep);
 
     Py_XDECREF(self->sack);
     Py_TYPE(self)->tp_free(self);
@@ -160,7 +161,6 @@ reldep_str(_ReldepObject *self)
     DnfReldep *reldep = self->reldep;
     const char *cstr = dnf_reldep_to_string (reldep);
     PyObject *retval = PyString_FromString(cstr);
-    delete[] cstr;
     return retval;
 }
 

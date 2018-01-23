@@ -41,8 +41,8 @@
 #include "dnf-sack-private.hpp"
 #include "hy-iutil-private.hpp"
 #include "hy-package-private.hpp"
-#include "dnf-reldep-list-private.hpp"
 #include "hy-repo-private.hpp"
+#include "repo/solvable/DependencyContainer.hpp"
 
 #define BLOCK_SIZE 31
 
@@ -140,7 +140,6 @@ lookup_num(DnfPackage *pkg, unsigned type)
 static DnfReldepList *
 reldeps_for(DnfPackage *pkg, Id type)
 {
-    Pool *pool = dnf_package_get_pool(pkg);
     Solvable *s = get_solvable(pkg);
     DnfReldepList *reldeplist;
     Queue q, q_final;
@@ -165,7 +164,7 @@ reldeps_for(DnfPackage *pkg, Id type)
             queue_push(&q_final, rel_id);
     }
 
-    reldeplist = dnf_reldep_list_from_queue (pool, q_final);
+    reldeplist = new DependencyContainer(dnf_package_get_sack(pkg), q_final);
 
     queue_free(&q);
     queue_free(&q_final);

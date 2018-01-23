@@ -43,7 +43,6 @@ extern "C" {
 #include "hy-package-private.hpp"
 #include "hy-packageset-private.hpp"
 #include "hy-query-private.hpp"
-#include "dnf-reldep-private.hpp"
 #include "hy-repo-private.hpp"
 #include "dnf-sack-private.hpp"
 #include "dnf-goal.h"

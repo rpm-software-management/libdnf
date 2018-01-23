@@ -19,6 +19,8 @@
  */
 
 
+#include <memory>
+
 #include "libdnf/hy-package.h"
 #include "libdnf/dnf-reldep.h"
 #include "libdnf/dnf-reldep-list.h"
@@ -26,24 +28,24 @@
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"
+#include "libdnf/repo/solvable/DependencyContainer.hpp"
 
 START_TEST(test_reldeplist_add)
 {
     DnfSack *sack = test_globals.sack;
     DnfPackage *flying = by_name_repo(sack, "fool", "updates");
-    g_autoptr(DnfReldepList) reldeplist = dnf_reldep_list_new (sack);
-    g_autoptr(DnfReldepList) obsoletes = dnf_package_get_obsoletes (flying);
+    std::unique_ptr<DnfReldepList> reldeplist(dnf_reldep_list_new (sack));
+    std::unique_ptr<DnfReldepList> obsoletes(dnf_package_get_obsoletes (flying));
 
-    const int count = dnf_reldep_list_count (obsoletes);
+    const int count = dnf_reldep_list_count (obsoletes.get());
     fail_unless(count == 2);
     for (int i = 0; i < count; ++i) {
-        DnfReldep *reldep = dnf_reldep_list_index (obsoletes, i);
-        dnf_reldep_list_add (reldeplist, reldep);
-        g_object_unref (reldep);
+        DnfReldep *reldep = dnf_reldep_list_index (obsoletes.get(), i);
+        dnf_reldep_list_add (reldeplist.get(), reldep);
     }
 
     g_object_unref (flying);
-    fail_unless(dnf_reldep_list_count (reldeplist) == 2);
+    fail_unless(dnf_reldep_list_count (reldeplist.get()) == 2);
 }
 END_TEST
 

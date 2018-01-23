@@ -16,26 +16,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#pragma once
-
-#include <glib-object.h>
+#ifndef LIBDNF_RELDEPLIST_H
+#define LIBDNF_RELDEPLIST_H
 
 #include "dnf-reldep.h"
 #include "dnf-types.h"
 
-G_BEGIN_DECLS
+#if __cplusplus
+extern "C" {
+#endif
 
-#define DNF_TYPE_RELDEP_LIST (dnf_reldep_list_get_type())
+DnfReldepList *dnf_reldep_list_new(DnfSack *sack);
+DnfReldep *dnf_reldep_list_index(DnfReldepList *reldep_list, gint index);
+gint dnf_reldep_list_count(DnfReldepList *reldep_list);
+void dnf_reldep_list_add(DnfReldepList *reldep_list, DnfReldep *reldep);
+void dnf_reldep_list_extend(DnfReldepList *rl1, DnfReldepList *rl2);
 
-G_DECLARE_FINAL_TYPE (DnfReldepList, dnf_reldep_list, DNF, RELDEP_LIST, GObject)
+#if __cplusplus
+}
+#endif
 
-DnfReldepList *dnf_reldep_list_new   (DnfSack       *sack);
-void           dnf_reldep_list_add   (DnfReldepList *reldep_list,
-                                      DnfReldep     *reldep);
-gint           dnf_reldep_list_count (DnfReldepList *reldep_list);
-DnfReldep     *dnf_reldep_list_index (DnfReldepList *reldep_list,
-                                      gint           index);
-void           dnf_reldep_list_extend(DnfReldepList *rl1,
-                                      DnfReldepList *rl2);
-
-G_END_DECLS
+#endif // LIBDNF_RELDEPLIST_H

@@ -6,6 +6,8 @@ CMAKE_POLICY (SET CMP0005 OLD)
 # GLib.  There may be a better way to do this...
 CMAKE_POLICY(SET CMP0003 NEW)
 
+SET(CMAKE_MACOSX_RPATH 0)
+
 include (VERSION.cmake)
 message ("Building libdnf version: ${LIBDNF_VERSION}")
 
@@ -37,6 +39,9 @@ OPTION (WITH_SWDB "Support for unified software database" ON)
 # hawkey dependencies
 find_package (PkgConfig REQUIRED)
 SET (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+if (APPLE)
+    SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH};/usr/local/share/cmake/Modules/)
+endif(APPLE)
 PKG_CHECK_MODULES(GLIB gio-unix-2.0>=2.46.0 REQUIRED)
 FIND_LIBRARY (RPMDB_LIBRARY NAMES rpmdb)
 find_package (LibSolv 0.6.30 REQUIRED COMPONENTS ext)
@@ -47,6 +52,7 @@ if (ENABLE_RHSM_SUPPORT)
 endif ()
 pkg_check_modules (CHECK REQUIRED check)
 pkg_check_modules (REPO REQUIRED librepo)
+
 FIND_PROGRAM (VALGRIND_PROGRAM NAMES valgrind PATH /usr/bin /usr/local/bin)
 
 # TODO handle yumdb / dnfdb for libdnf
@@ -56,6 +62,9 @@ IF (ENABLE_SOLV_URPMREORDER)
    ADD_DEFINITIONS(-DLIBSOLV_FLAG_URPMREORDER=1)
 ENDIF()
 
+if (APPLE)
+    INCLUDE_DIRECTORIES(/usr/local/include)
+endif(APPLE)
 INCLUDE_DIRECTORIES(${REPO_INCLUDE_DIRS})
 
 IF (WITH_SWDB)
