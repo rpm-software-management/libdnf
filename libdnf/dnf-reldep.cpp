@@ -16,61 +16,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "dnf-reldep-private.hpp"
-
 #include <solv/pool.h>
 
+#include "dnf-types.h"
 #include "dnf-sack-private.hpp"
-#include "hy-iutil.h"
+#include "repo/solvable/Dependency.hpp"
 
-/**
- * SECTION: dnf-reldep
- * @short_description: RelDep
- *
- * #DnfReldep
- */
 
-struct _DnfReldep
+static int transformToLibsolvComparisonType(DnfComparisonKind cmp_type)
 {
-    GObject parent_instance;
-
-    Pool *pool;
-    Id r_id;
-};
-
-G_DEFINE_TYPE (DnfReldep, dnf_reldep, G_TYPE_OBJECT)
-
-static gint
-cmptype2relflags(DnfComparisonKind cmp_type)
-{
-    gint flags = 0;
+    int type = 0;
     if (cmp_type & DNF_COMPARISON_EQ)
-        flags |= REL_EQ;
+        type |= REL_EQ;
     if (cmp_type & DNF_COMPARISON_LT)
-        flags |= REL_LT;
+        type |= REL_LT;
     if (cmp_type & DNF_COMPARISON_GT)
-        flags |= REL_GT;
-    g_assert (flags);
-    return flags;
-}
+        type |= REL_GT;
 
-/**
- * dnf_reldep_from_pool: (constructor)
- * @pool: Pool
- * @r_id: RelDep ID
- *
- * Returns: an #DnfReldep
- *
- * Since: 0.7.0
- */
-DnfReldep *
-dnf_reldep_from_pool (Pool *pool,
-                      Id    r_id)
-{
-    auto reldep = DNF_RELDEP(g_object_new(DNF_TYPE_RELDEP, NULL));
-    reldep->pool = pool;
-    reldep->r_id = r_id;
-    return reldep;
+    return type;
 }
 
 /**
@@ -86,40 +49,12 @@ dnf_reldep_from_pool (Pool *pool,
  */
 DnfReldep *
 dnf_reldep_new (DnfSack           *sack,
-                const gchar       *name,
+                const char       *name,
                 DnfComparisonKind  cmp_type,
-                const gchar       *evr)
+                const char       *evr)
 {
-    Pool *pool = dnf_sack_get_pool (sack);
-    Id id = pool_str2id (pool, name, 1);
-
-    if (evr) {
-        g_assert (cmp_type);
-        Id ievr = pool_str2id (pool, evr, 1);
-        int flags = cmptype2relflags(cmp_type);
-        id = pool_rel2id (pool, id, ievr, flags, 1);
-    }
-
-    return dnf_reldep_from_pool (pool, id);
-}
-
-static void
-dnf_reldep_finalize (GObject *object)
-{
-    G_OBJECT_CLASS (dnf_reldep_parent_class)->finalize (object);
-}
-
-static void
-dnf_reldep_class_init (DnfReldepClass *klass)
-{
-    GObjectClass *object_class = G_OBJECT_CLASS (klass);
-
-    object_class->finalize = dnf_reldep_finalize;
-}
-
-static void
-dnf_reldep_init (DnfReldep *self)
-{
+    int solvComparisonOperator = transformToLibsolvComparisonType(cmp_type);
+    return new Dependency(sack, name, evr, solvComparisonOperator);
 }
 
 /**
@@ -130,14 +65,19 @@ dnf_reldep_init (DnfReldep *self)
  *
  * Since: 0.7.0
  */
-const gchar *
+const char *
 dnf_reldep_to_string (DnfReldep *reldep)
 {
-    return pool_dep2str(reldep->pool, reldep->r_id);
+    return reldep->toString();
 }
 
 Id
 dnf_reldep_get_id (DnfReldep *reldep)
 {
-    return reldep->r_id;
+    return reldep->getId();
+}
+
+void dnf_reldep_free(DnfReldep *reldep)
+{
+    delete reldep;
 }

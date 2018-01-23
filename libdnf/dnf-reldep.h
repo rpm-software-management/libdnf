@@ -16,31 +16,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#pragma once
-
-#include <glib-object.h>
+#ifndef LIBDNF_RELDEP_H
+#define LIBDNF_RELDEP_H
 
 #include <solv/pooltypes.h>
 
 #include "dnf-enums.h"
 #include "dnf-types.h"
 
-G_BEGIN_DECLS
+#if __cplusplus
+extern "C" {
+#endif
 
-#define DNF_TYPE_RELDEP (dnf_reldep_get_type())
+DnfReldep *dnf_reldep_new(DnfSack *sack, const char *name, DnfComparisonKind cmp_type, const char *evr);
+const char *dnf_reldep_to_string(DnfReldep *reldep);
+Id dnf_reldep_get_id(DnfReldep *reldep);
+void dnf_reldep_free(DnfReldep *reldep);
 
-G_DECLARE_FINAL_TYPE (DnfReldep, dnf_reldep, DNF, RELDEP, GObject)
+#if __cplusplus
+}
+#endif
 
-DnfReldep   *dnf_reldep_from_pool (Pool              *pool,
-                                   Id                 r_id);
-
-DnfReldep   *dnf_reldep_new       (DnfSack           *sack,
-                                   const gchar       *name,
-                                   DnfComparisonKind  cmp_type,
-                                   const gchar       *evr);
-
-const gchar *dnf_reldep_to_string (DnfReldep         *reldep);
-
-Id           dnf_reldep_get_id    (DnfReldep         *reldep);
-
-G_END_DECLS
+#endif // LIBDNF_RELDEP_H

@@ -37,13 +37,14 @@
 #include <glib/gstdio.h>
 
 #include <librepo/librepo.h>
+#include <memory>
 
 #include "dnf-package.h"
 #include "dnf-types.h"
 #include "dnf-utils.h"
-#include "dnf-reldep.h"
-#include "dnf-reldep-list.h"
 #include "hy-util.h"
+#include "repo/solvable/Dependency.hpp"
+#include "repo/solvable/DependencyContainer.hpp"
 
 typedef struct {
     char            *checksum_str;
@@ -497,22 +498,20 @@ dnf_package_is_gui(DnfPackage *pkg)
     gboolean ret = FALSE;
     const gchar *tmp;
     gint idx;
-    DnfReldep *reldep;
     gint size;
 
     /* find if the package depends on GTK or KDE */
-    g_autoptr(DnfReldepList) reldep_list = dnf_package_get_requires (pkg);
-    size = dnf_reldep_list_count (reldep_list);
+    std::unique_ptr<DnfReldepList> reldep_list(dnf_package_get_requires(pkg));
+    size = dnf_reldep_list_count (reldep_list.get());
     for (idx = 0; idx < size && !ret; idx++) {
-        reldep = dnf_reldep_list_index (reldep_list, idx);
-        tmp = dnf_reldep_to_string (reldep);
+        std::unique_ptr<DnfReldep> reldep(dnf_reldep_list_index(reldep_list.get(), idx));
+        tmp = dnf_reldep_to_string (reldep.get());
         if (g_strstr_len(tmp, -1, "libgtk") != NULL ||
             g_strstr_len(tmp, -1, "libQt5Gui.so") != NULL ||
             g_strstr_len(tmp, -1, "libQtGui.so") != NULL ||
             g_strstr_len(tmp, -1, "libqt-mt.so") != NULL) {
             ret = TRUE;
         }
-        delete[] tmp;
     }
 
     return ret;

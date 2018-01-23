@@ -197,7 +197,6 @@ get_reldep(_PackageObject *self, void *closure)
     DnfReldepList *reldeplist = func(self->package);
     assert(reldeplist);
     PyObject *list = reldeplist_to_pylist(reldeplist, self->sack);
-    g_object_unref(reldeplist);
 
     return list;
 }

@@ -42,8 +42,8 @@ typedef struct _DnfRepoLoader           DnfRepoLoader;
 typedef struct _DnfRepo                 DnfRepo;
 typedef struct _DnfState                DnfState;
 typedef struct _DnfSack                 DnfSack;
-typedef struct _DnfReldep               DnfReldep;
-typedef struct _DnfReldepList           DnfReldepList;
+typedef struct Dependency DnfReldep;
+typedef struct DependencyContainer DnfReldepList;
 
 /**
  * DnfError:

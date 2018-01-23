@@ -25,6 +25,8 @@
 #include "hy-selector.h"
 #include "sack/packageset.hpp"
 #include "sack/query.hpp"
+#include "repo/solvable/Dependency.hpp"
+#include "repo/solvable/DependencyContainer.hpp"
 
 Id
 query_get_index_item(HyQuery query, int index)
@@ -134,7 +136,6 @@ hy_query_filter_provides(HyQuery q, int cmp_type, const char *name,
                                        static_cast<DnfComparisonKind>(cmp_type), evr);
     assert(reldep);
     int ret = hy_query_filter_reldep(q, HY_PKG_PROVIDES, reldep);
-    g_object_unref(reldep);
     return ret;
 }
 
@@ -148,22 +149,21 @@ hy_query_filter_provides_in(HyQuery q, char **reldep_strs)
     DnfReldepList *reldeplist = dnf_reldep_list_new(q->getSack());
     for (int i = 0; reldep_strs[i] != NULL; ++i) {
         if (parse_reldep_str(reldep_strs[i], &name, &evr, &cmp_type) == -1) {
-            g_object_unref(reldeplist);
+            delete reldeplist;
             return DNF_ERROR_BAD_QUERY;
         }
         reldep = dnf_reldep_new(q->getSack(), name, static_cast<DnfComparisonKind>(cmp_type), evr);
         if (reldep) {
             dnf_reldep_list_add(reldeplist, reldep);
-            g_object_unref(reldep);
+            delete reldep;
         }
         g_free(name);
         g_free(evr);
     }
     q->addFilter(HY_PKG_PROVIDES, reldeplist);
-    g_object_unref(reldeplist);
+    delete reldeplist;
     return 0;
 }
-
 
 /**
  * Narrows to only those installed packages for which there is a downgrading package.

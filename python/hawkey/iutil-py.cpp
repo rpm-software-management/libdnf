@@ -41,6 +41,9 @@
 #include "sack/advisorypkg.hpp"
 #include "sack/packageset.hpp"
 
+#include "../../libdnf/repo/solvable/Dependency.hpp"
+#include "libdnf/repo/solvable/DependencyContainer.hpp"
+
 PyObject *
 advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack)
 {
@@ -239,7 +242,6 @@ pyseq_to_reldeplist(PyObject *obj, DnfSack *sack, int cmp_type)
             goto fail;
 
         dnf_reldep_list_extend (reldeplist, g_reldeplist);
-        g_object_unref (g_reldeplist);
 
     } else {
         DnfReldep *reldep = NULL;
@@ -256,7 +258,7 @@ pyseq_to_reldeplist(PyObject *obj, DnfSack *sack, int cmp_type)
     Py_DECREF(sequence);
     return reldeplist;
  fail:
-    g_object_unref (reldeplist);
+    delete reldeplist;
     Py_DECREF(sequence);
     return NULL;
 }
@@ -296,7 +298,7 @@ reldeplist_to_pylist(DnfReldepList *reldeplist, PyObject *sack)
         DnfReldep *creldep = dnf_reldep_list_index (reldeplist,  i);
         PyObject *reldep = new_reldep(sack, dnf_reldep_get_id (creldep));
 
-        g_object_unref (creldep);
+        dnf_reldep_free(creldep);
         if (reldep == NULL)
             goto fail;
 

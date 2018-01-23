@@ -53,10 +53,11 @@ extern "C" {
 #include "hy-packageset-private.hpp"
 #include "hy-query.h"
 #include "dnf-sack-private.hpp"
-#include "dnf-reldep-private.hpp"
 #include "sack/packageset.hpp"
 
 #include "utils/bgettext/bgettext-lib.h"
+
+#include "repo/solvable/Dependency.hpp"
 
 #define BUF_BLOCK 4096
 #define CHKSUM_TYPE REPOKEY_TYPE_SHA256
@@ -681,13 +682,13 @@ reldep_from_str(DnfSack *sack, const char *reldep_str)
         Id id = pool_parserpmrichdep(pool, reldep_str);
         if (!id)
             return NULL;
-        return dnf_reldep_from_pool (pool, id);
+        return new Dependency(sack, id);
     } else {
         char *name, *evr = NULL;
         int cmp_type = 0;
         if (parse_reldep_str(reldep_str, &name, &evr, &cmp_type) == -1)
             return NULL;
-        DnfReldep *reldep = dnf_reldep_new(sack, name, 
+        DnfReldep *reldep = dnf_reldep_new(sack, name,
                                            static_cast<DnfComparisonKind>(cmp_type), evr);
         g_free(name);
         g_free(evr);
@@ -713,7 +714,7 @@ reldeplist_from_str(DnfSack *sack, const char *reldep_str)
                                            static_cast<DnfComparisonKind>(cmp_type), evr);
         if (reldep) {
             dnf_reldep_list_add (reldeplist, reldep);
-            g_object_unref (reldep);
+            delete reldep;
         }
     }
 

@@ -34,6 +34,9 @@
 #include "test_suites.h"
 #include "testsys.h"
 
+#include "libdnf/repo/solvable/Dependency.hpp"
+#include "libdnf/repo/solvable/DependencyContainer.hpp"
+
 START_TEST(test_package_summary)
 {
     DnfPackage *pkg = by_name(test_globals.sack, "penny-lib");
@@ -111,7 +114,6 @@ START_TEST(test_get_requires)
     const char *depstr = dnf_reldep_to_string (reldep);
     ck_assert_str_eq(depstr, "P-lib >= 3");
 
-    delete[] depstr;
     delete reldep;
     delete reldeplist;
     g_object_unref(pkg);
@@ -125,7 +127,7 @@ START_TEST(test_get_more_requires)
     DnfReldepList *reldeplist = dnf_package_get_requires(pkg);
 
     fail_unless(dnf_reldep_list_count (reldeplist) == 2);
-    g_object_unref(reldeplist);
+    delete reldeplist;
     g_object_unref(pkg);
 }
 END_TEST

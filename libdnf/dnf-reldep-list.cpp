@@ -16,26 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "dnf-reldep-list-private.hpp"
-
-#include "dnf-reldep-private.hpp"
+#include "dnf-reldep-list.h"
 #include "dnf-sack-private.hpp"
-
-/**
- * SECTION: DnfReldepList
- * @short_description: RelDep list
- *
- * #DnfReldepList
- */
-struct _DnfReldepList
-{
-    GObject parent_instance;
-
-    Pool *pool;
-    Queue queue;
-};
-
-G_DEFINE_TYPE (DnfReldepList, dnf_reldep_list, G_TYPE_OBJECT)
+#include "repo/solvable/Dependency.hpp"
+#include "repo/solvable/DependencyContainer.hpp"
 
 /**
  * dnf_reldep_list_new:
@@ -48,51 +32,7 @@ G_DEFINE_TYPE (DnfReldepList, dnf_reldep_list, G_TYPE_OBJECT)
 DnfReldepList *
 dnf_reldep_list_new (DnfSack *sack)
 {
-    auto reldep_list = DNF_RELDEP_LIST(g_object_new(DNF_TYPE_RELDEP_LIST, NULL));
-    reldep_list->pool = dnf_sack_get_pool (sack);
-    queue_init (&reldep_list->queue);
-    return reldep_list;
-}
-
-/**
- * dnf_reldep_list_from_queue: (constructor)
- * @pool: Pool
- * @queue: Queue
- *
- * Returns: an #DnfReldepList
- *
- * Since: 0.7.0
- */
-DnfReldepList *
-dnf_reldep_list_from_queue (Pool *pool, Queue queue)
-{
-    auto reldep_list = DNF_RELDEP_LIST(g_object_new(DNF_TYPE_RELDEP_LIST, NULL));
-    reldep_list->pool = pool;
-    queue_init_clone (&reldep_list->queue, &queue);
-    return reldep_list;
-}
-
-static void
-dnf_reldep_list_finalize (GObject *object)
-{
-    DnfReldepList *self = (DnfReldepList *)object;
-
-    queue_free (&self->queue);
-
-    G_OBJECT_CLASS (dnf_reldep_list_parent_class)->finalize (object);
-}
-
-static void
-dnf_reldep_list_class_init (DnfReldepListClass *klass)
-{
-    GObjectClass *object_class = G_OBJECT_CLASS (klass);
-
-    object_class->finalize = dnf_reldep_list_finalize;
-}
-
-static void
-dnf_reldep_list_init (DnfReldepList *self)
-{
+    return new DependencyContainer(sack);
 }
 
 /**
@@ -100,7 +40,7 @@ dnf_reldep_list_init (DnfReldepList *self)
  * @reldep_list: a #DnfReldepList
  * @reldep: a #DnfReldep
  *
- * Returns: Noting.
+ * Returns: Nothing.
  *
  * Since: 0.7.0
  */
@@ -108,7 +48,7 @@ void
 dnf_reldep_list_add (DnfReldepList *reldep_list,
                      DnfReldep     *reldep)
 {
-    queue_push (&reldep_list->queue, dnf_reldep_get_id (reldep));
+    reldep_list->add(reldep);
 }
 
 /**
@@ -122,7 +62,7 @@ dnf_reldep_list_add (DnfReldepList *reldep_list,
 gint
 dnf_reldep_list_count (DnfReldepList *reldep_list)
 {
-    return reldep_list->queue.count;
+    return reldep_list->count();
 }
 
 /**
@@ -138,8 +78,7 @@ DnfReldep *
 dnf_reldep_list_index (DnfReldepList *reldep_list,
                        gint           index)
 {
-    Id r_id = reldep_list->queue.elements[index];
-    return dnf_reldep_from_pool (reldep_list->pool, r_id);
+    return reldep_list->getPtr(index);
 }
 
 /**
@@ -157,5 +96,5 @@ void
 dnf_reldep_list_extend (DnfReldepList *rl1,
                         DnfReldepList *rl2)
 {
-    queue_insertn (&rl1->queue, 0, rl2->queue.count, rl2->queue.elements);
+    rl1->extend(rl2);
 }

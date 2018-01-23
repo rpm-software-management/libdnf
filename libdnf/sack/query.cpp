@@ -38,6 +38,9 @@
 #include "advisorypkg.hpp"
 #include "packageset.hpp"
 
+#include "libdnf/repo/solvable/Dependency.hpp"
+#include "libdnf/repo/solvable/DependencyContainer.hpp"
+
 namespace libdnf {
 
 static bool
@@ -472,7 +475,7 @@ Filter::Filter(int keyname, int cmp_type, DnfReldep *reldep) : pImpl(new Impl)
     pImpl->cmpType = cmp_type;
     pImpl->matchType = _HY_RELDEP;
     _Match match_in;
-    match_in.reldep = static_cast<DnfReldep *>(g_object_ref(reldep));
+    match_in.reldep = new Dependency(*reldep);
     pImpl->matches.push_back(match_in);
 }
 Filter::Filter(int keyname, int cmp_type, DnfReldepList *reldeplist) : pImpl(new Impl)
@@ -524,8 +527,7 @@ Filter::Impl::~Impl()
                 delete[] match.str;
                 break;
             case _HY_RELDEP:
-                if (match.reldep)
-                    g_object_unref (match.reldep);
+                delete match.reldep;
                 break;
             default:
                 break;
@@ -704,17 +706,19 @@ Query::addFilter(int keyname, int cmp_type, const char *match)
 
             if (cmp_type == HY_GLOB) {
                 DnfReldepList *reldeplist = reldeplist_from_str(sack, match);
-                if (reldeplist == NULL)
+                if (reldeplist == NULL) {
                     return addFilter(HY_PKG_EMPTY, HY_EQ, 1);
+                    delete reldeplist;
+                }
+
                 int ret = addFilter(keyname, reldeplist);
-                g_object_unref (reldeplist);
+                delete reldeplist;
                 return ret;
             } else {
                 DnfReldep *reldep = reldep_from_str(sack, match);
                 if (reldep == NULL)
                     return addFilter(HY_PKG_EMPTY, HY_EQ, 1);
                 int ret = addFilter(keyname, reldep);
-                g_object_unref (reldep);
                 return ret;
             }
         }

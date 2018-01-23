@@ -32,6 +32,7 @@
 #include "hy-subject.h"
 #include "dnf-reldep.h"
 #include "dnf-reldep-list.h"
+#include "repo/solvable/DependencyContainer.hpp"
 
 #if WITH_SWDB
 #include "dnf-swdb.h"
@@ -363,7 +364,6 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
             return 1;
 
         int ret = query->addFilter(keyname, reldeplist);
-        g_object_unref (reldeplist);
         if (ret)
             return raise_bad_filter();
         break;
