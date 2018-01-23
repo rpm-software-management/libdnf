@@ -47,18 +47,22 @@ public:
     const std::string &getTranslatedName() const noexcept { return translatedName; }
     void setTranslatedName(const std::string &value) { translatedName = value; }
 
-    CompsPackageType getGroupsType() const noexcept { return groupsType; }
-    void setGroupsType(CompsPackageType value) { groupsType = value; }
+    CompsPackageType getPackageTypes() const noexcept { return packageTypes; }
+    void setPackageTypes(CompsPackageType value) { packageTypes = value; }
 
     virtual std::string toStr();
     virtual const std::string &getItemType() const noexcept { return itemType; }
     virtual void save();
     std::shared_ptr< CompsEnvironmentGroup > addGroup(std::string groupId,
                                                       bool installed,
-                                                      bool excluded,
                                                       CompsPackageType groupType);
     void loadGroups();
     std::vector< std::shared_ptr< CompsEnvironmentGroup > > getGroups() { return groups; }
+    static std::shared_ptr< TransactionItem > getTransactionItem(std::shared_ptr< SQLite3 > conn,
+                                                                 const std::string &envid);
+    static std::vector< std::shared_ptr< TransactionItem > > getTransactionItemsByPattern(
+        std::shared_ptr< SQLite3 > conn,
+        const std::string &pattern);
     static std::vector< std::shared_ptr< TransactionItem > > getTransactionItems(
         std::shared_ptr< SQLite3 > conn,
         int64_t transactionId);
@@ -68,7 +72,7 @@ protected:
     std::string environmentId;
     std::string name;
     std::string translatedName;
-    CompsPackageType groupsType;
+    CompsPackageType packageTypes;
 
     std::vector< std::shared_ptr< CompsEnvironmentGroup > > groups;
 
@@ -93,9 +97,6 @@ public:
     bool getInstalled() const noexcept { return installed; }
     void setInstalled(bool value) { installed = value; }
 
-    bool getExcluded() const noexcept { return excluded; }
-    void setExcluded(bool value) { excluded = value; }
-
     CompsPackageType getGroupType() const noexcept { return groupType; }
     void setGroupType(CompsPackageType value) { groupType = value; }
 
@@ -107,7 +108,6 @@ protected:
     CompsEnvironmentItem &environment;
     std::string groupId;
     bool installed = false;
-    bool excluded = false;
     CompsPackageType groupType;
 
 private:

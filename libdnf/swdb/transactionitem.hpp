@@ -53,7 +53,7 @@ public:
     void setItem(std::shared_ptr< Item > value) { item = value; }
 
     // typed items - workaround for lack of shared_ptr<> downcast support in SWIG
-    std::shared_ptr< CompsEnvironmentItem > getEnvironmentGroupItem() const noexcept
+    std::shared_ptr< CompsEnvironmentItem > getCompsEnvironmentItem() const noexcept
     {
         return std::dynamic_pointer_cast< CompsEnvironmentItem >(item);
     }

@@ -56,15 +56,14 @@ public:
     const std::string &getTranslatedName() const noexcept { return translatedName; }
     void setTranslatedName(const std::string &value) { translatedName = value; }
 
-    CompsPackageType getPackagesType() const noexcept { return packagesType; }
-    void setPackagesType(CompsPackageType value) { packagesType = value; }
+    CompsPackageType getPackageTypes() const noexcept { return packageTypes; }
+    void setPackageTypes(CompsPackageType value) { packageTypes = value; }
 
     virtual std::string toStr();
     virtual const std::string &getItemType() const noexcept { return itemType; }
     virtual void save();
     std::shared_ptr< CompsGroupPackage > addPackage(std::string name,
                                                     bool installed,
-                                                    bool excluded,
                                                     CompsPackageType pkgType);
     void loadPackages();
     std::vector< std::shared_ptr< CompsGroupPackage > > getPackages() { return packages; }
@@ -82,7 +81,7 @@ protected:
     std::string groupId;
     std::string name;
     std::string translatedName;
-    CompsPackageType packagesType;
+    CompsPackageType packageTypes;
 
     std::vector< std::shared_ptr< CompsGroupPackage > > packages;
 
@@ -107,9 +106,6 @@ public:
     bool getInstalled() const noexcept { return installed; }
     void setInstalled(bool value) { installed = value; }
 
-    bool getExcluded() const noexcept { return excluded; }
-    void setExcluded(bool value) { excluded = value; }
-
     CompsPackageType getPackageType() const noexcept { return packageType; }
     void setPackageType(CompsPackageType value) { packageType = value; }
 
@@ -121,7 +117,6 @@ protected:
     CompsGroupItem &group;
     std::string name;
     bool installed = false;
-    bool excluded = false;
     CompsPackageType packageType;
 
 private:

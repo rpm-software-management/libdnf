@@ -34,12 +34,12 @@ static const std::map< TransactionItemReason, int > reasonPriorities = {
     {TransactionItemReason::USER, 5}};
 
 RPMItem::RPMItem(std::shared_ptr< SQLite3 > conn)
-  : Item(conn)
+  : Item{conn}
 {
 }
 
 RPMItem::RPMItem(std::shared_ptr< SQLite3 > conn, int64_t pk)
-  : Item(conn)
+  : Item{conn}
 {
     dbSelect(pk);
 }

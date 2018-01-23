@@ -64,7 +64,7 @@ R"**(
         groupid TEXT NOT NULL,
         name TEXT NOT NULL,
         translated_name TEXT NOT NULL,
-        pkgs_type INTEGER NOT NULL,
+        pkg_types INTEGER NOT NULL,
         FOREIGN KEY(item_id) REFERENCES item(id)
     );
     CREATE TABLE comps_group_package (
@@ -72,7 +72,6 @@ R"**(
         group_id INTEGER NOT NULL,
         name TEXT NOT NULL,
         installed INTEGER NOT NULL,
-        excluded INTEGER NOT NULL,
         pkg_type INTEGER NOT NULL,
         FOREIGN KEY(group_id) REFERENCES comps_group(item_id),
         CONSTRAINT comps_group_package_unique_name UNIQUE (group_id, name)
@@ -84,18 +83,17 @@ R"**(
         environmentid TEXT NOT NULL,
         name TEXT NOT NULL,
         translated_name TEXT NOT NULL,
-        groups_type INTEGER NOT NULL,
+        pkg_types INTEGER NOT NULL,
         FOREIGN KEY(item_id) REFERENCES item(id)
     );
-    CREATE TABLE comps_evironment_group (
+    CREATE TABLE comps_environment_group (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         environment_id INTEGER NOT NULL,
         groupid TEXT NOT NULL,
         installed INTEGER NOT NULL,
-        excluded INTEGER NOT NULL,
         group_type INTEGER NOT NULL,
         FOREIGN KEY(environment_id) REFERENCES comps_environment(item_id),
-        CONSTRAINT comps_evironment_group_unique_groupid UNIQUE (environment_id, groupid)
+        CONSTRAINT comps_environment_group_unique_groupid UNIQUE (environment_id, groupid)
     );
 
     CREATE INDEX rpm_name ON rpm(name);

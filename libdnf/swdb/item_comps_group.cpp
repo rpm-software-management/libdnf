@@ -24,12 +24,12 @@
 #include "transactionitem.hpp"
 
 CompsGroupItem::CompsGroupItem(std::shared_ptr< SQLite3 > conn)
-  : Item(conn)
+  : Item{conn}
 {
 }
 
 CompsGroupItem::CompsGroupItem(std::shared_ptr< SQLite3 > conn, int64_t pk)
-  : Item(conn)
+  : Item{conn}
 {
     dbSelect(pk);
 }
@@ -55,7 +55,7 @@ CompsGroupItem::dbSelect(int64_t pk)
         "  groupid, "
         "  name, "
         "  translated_name, "
-        "  pkgs_type "
+        "  pkg_types "
         "FROM "
         "  comps_group "
         "WHERE "
@@ -68,7 +68,7 @@ CompsGroupItem::dbSelect(int64_t pk)
     setGroupId(query.get< std::string >("groupid"));
     setName(query.get< std::string >("name"));
     setTranslatedName(query.get< std::string >("translated_name"));
-    setPackagesType(static_cast< CompsPackageType >(query.get< int >("pkgs_type")));
+    setPackageTypes(static_cast< CompsPackageType >(query.get< int >("pkg_types")));
 }
 
 void
@@ -84,7 +84,7 @@ CompsGroupItem::dbInsert()
         "    groupid, "
         "    name, "
         "    translated_name, "
-        "    pkgs_type "
+        "    pkg_types "
         "  ) "
         "VALUES "
         "  (?, ?, ?, ?, ?)";
@@ -93,7 +93,7 @@ CompsGroupItem::dbInsert()
                 getGroupId(),
                 getName(),
                 getTranslatedName(),
-                static_cast< int >(getPackagesType()));
+                static_cast< int >(getPackageTypes()));
     query.step();
 }
 
@@ -112,7 +112,7 @@ compsGroupTransactionItemFromQuery(std::shared_ptr< SQLite3 > conn, SQLite3::Que
     item->setGroupId(query.get< std::string >("groupid"));
     item->setName(query.get< std::string >("name"));
     item->setTranslatedName(query.get< std::string >("translated_name"));
-    item->setPackagesType(static_cast< CompsPackageType >(query.get< int >("pkgs_type")));
+    item->setPackageTypes(static_cast< CompsPackageType >(query.get< int >("pkg_types")));
 
     return trans_item;
 }
@@ -130,7 +130,7 @@ CompsGroupItem::getTransactionItem(std::shared_ptr< SQLite3 > conn, const std::s
             i.groupid,
             i.name,
             i.translated_name,
-            i.pkgs_type
+            i.pkg_types
         FROM
             trans_item ti
         JOIN
@@ -150,6 +150,9 @@ CompsGroupItem::getTransactionItem(std::shared_ptr< SQLite3 > conn, const std::s
     query.bindv(groupid);
     if (query.step() == SQLite3::Statement::StepResult::ROW) {
         auto trans_item = compsGroupTransactionItemFromQuery(conn, query);
+        if (trans_item->getAction() == TransactionItemAction::REMOVE) {
+            return nullptr;
+        }
         return trans_item;
     }
     return nullptr;
@@ -202,7 +205,7 @@ CompsGroupItem::getTransactionItems(std::shared_ptr< SQLite3 > conn, int64_t tra
             i.groupid,
             i.name,
             i.translated_name,
-            i.pkgs_type
+            i.pkg_types
         FROM
             trans_item ti
         JOIN
@@ -245,22 +248,17 @@ CompsGroupItem::loadPackages()
         pkg->setId(query.get< int >("id"));
         pkg->setName(query.get< std::string >("name"));
         pkg->setInstalled(query.get< bool >("installed"));
-        pkg->setExcluded(query.get< bool >("excluded"));
         pkg->setPackageType(static_cast< CompsPackageType >(query.get< int >("pkg_type")));
         packages.push_back(pkg);
     }
 }
 
 std::shared_ptr< CompsGroupPackage >
-CompsGroupItem::addPackage(std::string name,
-                           bool installed,
-                           bool excluded,
-                           CompsPackageType pkgType)
+CompsGroupItem::addPackage(std::string name, bool installed, CompsPackageType pkgType)
 {
     auto pkg = std::make_shared< CompsGroupPackage >(*this);
     pkg->setName(name);
     pkg->setInstalled(installed);
-    pkg->setExcluded(excluded);
     pkg->setPackageType(pkgType);
     packages.push_back(pkg);
     return pkg;
@@ -284,23 +282,20 @@ CompsGroupPackage::save()
 void
 CompsGroupPackage::dbInsert()
 {
-    const char *sql =
-        "INSERT INTO "
-        "  comps_group_package ( "
-        "    group_id, "
-        "    name, "
-        "    installed, "
-        "    excluded, "
-        "    pkg_type "
-        "  ) "
-        "VALUES "
-        "  (?, ?, ?, ?, ?)";
+    const char *sql = R"**(
+        INSERT INTO
+            comps_group_package (
+                group_id,
+                name,
+                installed,
+                pkg_type
+            )
+        VALUES
+            (?, ?, ?, ?)
+    )**";
     SQLite3::Statement query(*getGroup().conn.get(), sql);
-    query.bindv(getGroup().getId(),
-                getName(),
-                getInstalled(),
-                getExcluded(),
-                static_cast< int >(getPackageType()));
+    query.bindv(
+        getGroup().getId(), getName(), getInstalled(), static_cast< int >(getPackageType()));
     query.step();
 }
 

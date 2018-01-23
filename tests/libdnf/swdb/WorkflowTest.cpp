@@ -82,7 +82,7 @@ WorkflowTest::testDefaultWorkflow()
     comps_group_core->setGroupId("core");
     comps_group_core->setName("Core");
     comps_group_core->setTranslatedName("Úplný základ");
-    comps_group_core->addPackage("bash", true, false, CompsPackageType::MANDATORY);
+    comps_group_core->addPackage("bash", true, CompsPackageType::MANDATORY);
     repoid = "";
     action = TransactionItemAction::INSTALL;
     reason = TransactionItemReason::USER;
@@ -92,7 +92,7 @@ WorkflowTest::testDefaultWorkflow()
     comps_environment_minimal->setEnvironmentId("minimal");
     comps_environment_minimal->setName("Minimal");
     comps_environment_minimal->setTranslatedName("mmm");
-    comps_environment_minimal->addGroup("core", true, false, CompsPackageType::MANDATORY);
+    comps_environment_minimal->addGroup("core", true, CompsPackageType::MANDATORY);
     repoid = "";
     action = TransactionItemAction::INSTALL;
     reason = TransactionItemReason::USER;

@@ -24,6 +24,8 @@
 #include "../hy-nevra.hpp"
 #include "../hy-subject.h"
 
+#include "../utils/sqlite3/sqlite3.hpp"
+
 #include "item_rpm.hpp"
 #include "swdb.hpp"
 #include "transactionitem.hpp"
@@ -71,7 +73,7 @@ void
 Swdb::initTransaction()
 {
     if (transactionInProgress) {
-        throw "In progress";
+        throw std::logic_error("In progress");
     }
     transactionInProgress = std::unique_ptr< Transaction >(new Transaction(conn));
 }
@@ -83,7 +85,7 @@ Swdb::beginTransaction(int64_t dtBegin,
                        int32_t userId)
 {
     if (!transactionInProgress) {
-        throw "Not in progress";
+        throw std::logic_error("Not in progress");
     }
     transactionInProgress->setDtBegin(dtBegin);
     transactionInProgress->setRpmdbVersionBegin(rpmdbVersionBegin);
@@ -97,6 +99,9 @@ Swdb::beginTransaction(int64_t dtBegin,
 int64_t
 Swdb::endTransaction(int64_t dtEnd, std::string rpmdbVersionEnd, bool done)
 {
+    if (!transactionInProgress) {
+        throw std::logic_error("Not in progress");
+    }
     transactionInProgress->setDtEnd(dtEnd);
     transactionInProgress->setRpmdbVersionEnd(rpmdbVersionEnd);
     transactionInProgress->setDone(done);
@@ -115,7 +120,7 @@ Swdb::addItem(std::shared_ptr< Item > item,
 //            std::shared_ptr<TransactionItem> replacedBy)
 {
     if (!transactionInProgress) {
-        throw "Not in progress";
+        throw std::logic_error("Not in progress");
     }
     // auto replacedBy = std::make_shared<TransactionItem>(nullptr);
     return transactionInProgress->addItem(item, repoid, action, reason);
@@ -125,7 +130,19 @@ void
 Swdb::setItemDone(std::shared_ptr< TransactionItem > item)
 {
     item->setDone(true);
-    item->save();
+
+    const char *sql = R"**(
+        UPDATE
+          trans_item
+        SET
+          done=1
+        WHERE
+          id = ?
+    )**";
+
+    SQLite3::Statement query(*conn, sql);
+    query.bindv(item->getId());
+    query.step();
 }
 
 int
@@ -159,8 +176,8 @@ Swdb::getRPMRepo(const std::string &nevra)
     if (hy_nevra_possibility(nevra.c_str(), HY_FORM_NEVRA, nevraObject)) {
         return "";
     }
-    // TODO: hy_nevra_possibility should set epoch to 0 if epoch is not specified and HY_FORM_NEVRA
-    // is used
+    // TODO: hy_nevra_possibility should set epoch to 0 if epoch is not specified
+    // and HY_FORM_NEVRA is used
     if (nevraObject->getEpoch() < 0) {
         nevraObject->setEpoch(0);
     }
@@ -250,7 +267,7 @@ void
 Swdb::addConsoleOutputLine(int fileDescriptor, std::string line)
 {
     if (!transactionInProgress) {
-        throw "Not in progress";
+        throw std::logic_error("Not in progress");
     }
     transactionInProgress->addConsoleOutputLine(fileDescriptor, line);
 }
@@ -340,4 +357,91 @@ Swdb::getPackageCompsGroups(const std::string &packageName)
         }
     }
     return result;
+}
+
+std::vector< std::string >
+Swdb::getCompsGroupEnvironments(const std::string &groupId)
+{
+    const char *sql_all_environments = R"**(
+        SELECT DISTINCT
+            e.environmentid
+        FROM
+            comps_environment e
+        JOIN
+            comps_environment_group g ON g.environment_id = e.item_id
+        WHERE
+            g.groupid = ?
+            AND g.installed = 1
+        ORDER BY
+            e.environmentid
+    )**";
+
+    const char *sql_trans_items = R"**(
+        SELECT
+            ti.action as action,
+            ti.reason as reason,
+            i.item_id as environment_id
+        FROM
+            trans_item ti
+        JOIN
+            comps_environment i USING (item_id)
+        JOIN
+            trans t ON ti.trans_id = t.id
+        WHERE
+            t.done = 1
+            AND ti.action not in (3, 5, 7)
+            AND i.environmentid = ?
+        ORDER BY
+            ti.trans_id DESC
+        LIMIT 1
+    )**";
+
+    const char *sql_environment_group = R"**(
+        SELECT
+            g.groupid
+        FROM
+            comps_environment_group g
+        WHERE
+            g.environment_id = ?
+            AND g.installed = 1
+    )**";
+
+    std::vector< std::string > result;
+
+    // list all relevant groups
+    SQLite3::Query query_all_environments(*conn, sql_all_environments);
+    query_all_environments.bindv(groupId);
+
+    while (query_all_environments.step() == SQLite3::Statement::StepResult::ROW) {
+        auto envid = query_all_environments.get< std::string >("environmentid");
+        SQLite3::Query query_trans_items(*conn, sql_trans_items);
+        query_trans_items.bindv(envid);
+        if (query_trans_items.step() == SQLite3::Statement::StepResult::ROW) {
+            auto action =
+                static_cast< TransactionItemAction >(query_trans_items.get< int64_t >("action"));
+            // if the last record is group removal, skip
+            if (action == TransactionItemAction::REMOVE) {
+                continue;
+            }
+            auto envId = query_trans_items.get< int64_t >("environment_id");
+            SQLite3::Query query_environment_group(*conn, sql_environment_group);
+            query_environment_group.bindv(envId);
+            if (query_environment_group.step() == SQLite3::Statement::StepResult::ROW) {
+                result.push_back(envid);
+            }
+        }
+    }
+    return result;
+}
+
+std::shared_ptr< TransactionItem >
+Swdb::getCompsEnvironmentItem(const std::string &envid)
+{
+    return CompsEnvironmentItem::getTransactionItem(conn, envid);
+}
+
+std::vector< std::shared_ptr< TransactionItem > >
+Swdb::getCompsEnvironmentItemsByPattern(const std::string &pattern)
+{
+    return CompsEnvironmentItem::getTransactionItemsByPattern(conn, pattern);
 }

@@ -70,8 +70,13 @@ public:
     std::shared_ptr< TransactionItem > getCompsGroupItem(const std::string &groupid);
     std::vector< std::shared_ptr< TransactionItem > > getCompsGroupItemsByPattern(
         const std::string &pattern);
-
     std::vector< std::string > getPackageCompsGroups(const std::string &packageName);
+
+    // Item: CompsEnvironment
+    std::shared_ptr< TransactionItem > getCompsEnvironmentItem(const std::string &envid);
+    std::vector< std::shared_ptr< TransactionItem > > getCompsEnvironmentItemsByPattern(
+        const std::string &pattern);
+    std::vector< std::string > getCompsGroupEnvironments(const std::string &groupId);
 
 protected:
     void dbInsert();

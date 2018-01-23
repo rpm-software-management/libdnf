@@ -10,8 +10,10 @@
     #include "libdnf/utils/sqlite3/sqlite3.hpp"
 %}
 
+
 %shared_ptr(SQLite3)
 %nocopyctor SQLite3;
+
 
 // make SWIG look into following headers
 class SQLite3 {

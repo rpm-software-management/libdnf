@@ -1,8 +1,8 @@
-//%module(directors="1") swdb
 %module swdb
 
-%include <std_pair.i>
+
 %include <std_map.i>
+%include <std_pair.i>
 %include <std_shared_ptr.i>
 %include <std_string.i>
 %include <std_vector.i>
@@ -26,12 +26,6 @@
 %shared_ptr(Repo)
 
 
-
-//%feature("director") %shared_ptr<Item>;
-//%feature("director") Item;
-//%feature("director") RPMItem;
-//%feature("director") Foo;
-
 %{
     // make SWIG wrap following headers
     #include "libdnf/swdb/item.hpp"
@@ -46,15 +40,6 @@
 %}
 
 
-//%nocopyctor SQLite3;
-
-//%template() enum class TransactionItemReason;
-
-//%typemap(out) TransactionItemReason {
-//   $result = static_cast<int>($1);
-//}
-//typedef int TransactionItemReason;
-
 namespace std {
     %template() std::vector<shared_ptr<Transaction> >;
     %template() std::vector<shared_ptr<TransactionItem> >;
@@ -64,11 +49,8 @@ namespace std {
 
     %template() vector< std::string >;
     %template() std::pair<int,std::string>;
-//    %template() std::pair<std::string,enum class TransactionItemReason>;
-//    %template() std::map<std::string,enum class TransactionItemReason>;
     %template() std::map<std::string,int>;
     %template() std::map<std::string,std::string>;
-//    %template() std::map<std::string,enum TransactionItemReason>;
     %template() std::vector<std::pair<int,std::string> >;
 }
 
