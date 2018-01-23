@@ -432,14 +432,14 @@ Transformer::processGroup(std::shared_ptr< SQLite3 > swdb,
     const Json::Value packages = group["full_list"];
     for (const auto &package : packages) {
         // XXX mandatory?
-        compsGroup->addPackage(package.asString(), true, false, CompsPackageType::MANDATORY);
+        compsGroup->addPackage(package.asString(), true,  CompsPackageType::MANDATORY);
     }
 
     // add excluded packages
     const Json::Value excludes = group["pkg_exclude"];
     for (const auto &exclude : excludes) {
         // XXX mandatory?
-        compsGroup->addPackage(exclude.asString(), false, true, CompsPackageType::MANDATORY);
+        compsGroup->addPackage(exclude.asString(), false,CompsPackageType::MANDATORY);
     }
 
     compsGroup->save();
@@ -465,14 +465,14 @@ Transformer::processEnvironment(std::shared_ptr< SQLite3 > swdb,
     const Json::Value groups = env["full_list"];
     for (const auto &group : groups) {
         // XXX mandatory?
-        compsEnv->addGroup(group.asString(), true, false, CompsPackageType::MANDATORY);
+        compsEnv->addGroup(group.asString(), true, CompsPackageType::MANDATORY);
     }
 
     // add excluded groups/packages
     const Json::Value excludes = env["pkg_exclude"];
     for (const auto &exclude : excludes) {
         // XXX mandatory?
-        compsEnv->addGroup(exclude.asString(), false, true, CompsPackageType::MANDATORY);
+        compsEnv->addGroup(exclude.asString(), false, CompsPackageType::MANDATORY);
     }
 
     compsEnv->save();

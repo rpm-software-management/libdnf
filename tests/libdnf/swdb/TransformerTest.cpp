@@ -81,7 +81,6 @@ TransformerTest::testGroupTransformation()
             auto groupPkg = packages[0];
             CPPUNIT_ASSERT(groupPkg->getName() == "dnf-yum");
             CPPUNIT_ASSERT(groupPkg->getInstalled() == true);
-            CPPUNIT_ASSERT(groupPkg->getExcluded() == false);
             CPPUNIT_ASSERT(groupPkg->getPackageType() == CompsPackageType::MANDATORY);
 
         } else if (type == "comps-environment") {
@@ -97,7 +96,6 @@ TransformerTest::testGroupTransformation()
             auto envGroup = groups[0];
             CPPUNIT_ASSERT(envGroup->getGroupId() == "core");
             CPPUNIT_ASSERT(envGroup->getInstalled() == true);
-            CPPUNIT_ASSERT(envGroup->getExcluded() == false);
             CPPUNIT_ASSERT(envGroup->getGroupType() == CompsPackageType::MANDATORY);
 
         } else {
