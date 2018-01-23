@@ -512,7 +512,7 @@ dnf_package_is_gui(DnfPackage *pkg)
             g_strstr_len(tmp, -1, "libqt-mt.so") != NULL) {
             ret = TRUE;
         }
-        g_object_unref (reldep);
+        delete[] tmp;
     }
 
     return ret;

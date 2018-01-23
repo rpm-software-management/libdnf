@@ -160,6 +160,7 @@ reldep_str(_ReldepObject *self)
     DnfReldep *reldep = self->reldep;
     const char *cstr = dnf_reldep_to_string (reldep);
     PyObject *retval = PyString_FromString(cstr);
+    delete[] cstr;
     return retval;
 }
 

@@ -111,8 +111,9 @@ START_TEST(test_get_requires)
     const char *depstr = dnf_reldep_to_string (reldep);
     ck_assert_str_eq(depstr, "P-lib >= 3");
 
-    g_object_unref(reldep);
-    g_object_unref(reldeplist);
+    delete[] depstr;
+    delete reldep;
+    delete reldeplist;
     g_object_unref(pkg);
 }
 END_TEST
