@@ -46,6 +46,7 @@
 #include "sack-py.hpp"
 #include "pycomp.hpp"
 #include "sack/packageset.hpp"
+#include "sack/query.hpp"
 
 typedef struct {
     PyObject_HEAD
@@ -764,20 +765,11 @@ q_contains(PyObject *self, PyObject *pypkg)
     Py_RETURN_FALSE;
 }
 
-static int
+static size_t
 query_len(PyObject *self)
 {
     HyQuery q = ((_QueryObject *) self)->query;
-    hy_query_apply(q);
-
-    const unsigned char *res = hy_query_get_result(q)->map;
-    const unsigned char *end = res + hy_query_get_result(q)->size;
-    int length = 0;
-
-    while (res < end)
-        length += __builtin_popcount(*res++);
-
-    return length;
+    return q->size();
 }
 
 static PyObject *
