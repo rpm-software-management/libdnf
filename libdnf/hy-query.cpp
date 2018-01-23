@@ -69,7 +69,7 @@ hy_query_create_flags(DnfSack *sack, int flags)
 }
 
 HyQuery
-hy_query_from_nevra(HyNevra nevra, DnfSack *sack, gboolean icase)
+hy_query_from_nevra(HyNevra nevra, DnfSack *sack, bool icase)
 {
     HyQuery query = hy_query_create(sack);
     hy_add_filter_nevra_object(query, nevra, icase);
@@ -325,7 +325,7 @@ hy_query_get_sack(HyQuery query)
 }
 
 void
-hy_add_filter_nevra_object(HyQuery query, HyNevra nevra, gboolean icase)
+hy_add_filter_nevra_object(HyQuery query, HyNevra nevra, bool icase)
 {
     query->addFilter(nevra, icase);
 }

@@ -697,7 +697,7 @@ Query::addFilter(int keyname, int cmp_type, const char **matches)
 }
 
 int
-Query::addFilter(HyNevra nevra, gboolean icase)
+Query::addFilter(HyNevra nevra, bool icase)
 {
     if (!nevra->getName().empty() && nevra->getName() != "*") {
         if (icase)
@@ -973,7 +973,7 @@ Query::Impl::filterVersion(const Filter & f, Map *m)
                 MAPSET(m, id);
             }
         }
-        g_free(filter_vr);
+        solv_free(filter_vr);
     }
 }
 
