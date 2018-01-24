@@ -69,13 +69,13 @@ public:
     bool getDone() const noexcept { return done; }
     void setDone(bool value) { done = value; }
 
-    void save();
+    void begin();
+    void finish(bool success);
     std::shared_ptr< TransactionItem > addItem(std::shared_ptr< Item > item,
                                                const std::string &repoid,
                                                TransactionItemAction action,
                                                TransactionItemReason reason);
     std::vector< std::shared_ptr< TransactionItem > > getItems();
-    void saveItems();
 
     void addConsoleOutputLine(int fileDescriptor, const std::string &line);
     void addSoftwarePerformedWith(std::shared_ptr< RPMItem > software);
@@ -96,9 +96,9 @@ protected:
     bool done = false;
 
     friend class TransactionItem;
-
     std::shared_ptr< SQLite3 > conn;
 
+    void saveItems();
     void loadItems();
     std::vector< std::shared_ptr< TransactionItem > > items;
 

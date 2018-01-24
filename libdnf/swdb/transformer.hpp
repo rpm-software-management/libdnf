@@ -40,7 +40,11 @@
 class TransformerTransaction : public Transaction {
 public:
     using Transaction::Transaction;
-    void save() { dbInsert(); }
+    void begin()
+    {
+        dbInsert();
+        saveItems();
+    }
 };
 
 /**
@@ -64,20 +68,17 @@ public:
     void transform();
 
 protected:
-    std::vector< std::shared_ptr< TransformerTransaction > > transformTrans(
-        std::shared_ptr< SQLite3 > swdb,
-        std::shared_ptr< SQLite3 > history);
-    void transformRPMItems(std::shared_ptr< SQLite3 > swdb,
-                           std::shared_ptr< SQLite3 > history,
-                           std::shared_ptr< TransformerTransaction > trans);
-
-    void transformOutput(std::shared_ptr< SQLite3 > history,
-                         std::shared_ptr< TransformerTransaction > trans);
+    void transformTrans(std::shared_ptr< SQLite3 > swdb, std::shared_ptr< SQLite3 > history);
 
     void transformGroups(std::shared_ptr< SQLite3 > swdb);
     void processGroupPersistor(std::shared_ptr< SQLite3 > swdb, const Json::Value &root);
 
 private:
+    void transformRPMItems(std::shared_ptr< SQLite3 > swdb,
+                           std::shared_ptr< SQLite3 > history,
+                           std::shared_ptr< TransformerTransaction > trans);
+    void transformOutput(std::shared_ptr< SQLite3 > history,
+                         std::shared_ptr< TransformerTransaction > trans);
     void transformTransWith(std::shared_ptr< SQLite3 > swdb,
                             std::shared_ptr< SQLite3 > history,
                             std::shared_ptr< TransformerTransaction > trans);

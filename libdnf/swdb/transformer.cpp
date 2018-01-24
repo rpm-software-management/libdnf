@@ -100,15 +100,11 @@ Transformer::transform()
     // create a new database file
     SwdbCreateDatabase(swdb);
 
-    // transform objects
-    auto transactions = transformTrans(swdb, history);
-    for (auto trans : transactions) {
-        transformRPMItems(swdb, history, trans);
-        transformOutput(history, trans);
-    }
-
     // transform groups
     transformGroups(swdb);
+
+    // transform objects
+    transformTrans(swdb, history);
 
     // dump database to a file
     swdb->backup(outputFile);
@@ -118,9 +114,8 @@ Transformer::transform()
  * Transform transactions from the history database
  * \param swdb pointer to swdb SQLite3 object
  * \param swdb pointer to history database SQLite3 object
- * \return vector of transformed transactions (already saved to the swdb)
  */
-std::vector< std::shared_ptr< TransformerTransaction > >
+void
 Transformer::transformTrans(std::shared_ptr< SQLite3 > swdb, std::shared_ptr< SQLite3 > history)
 {
     std::vector< std::shared_ptr< TransformerTransaction > > result;
@@ -183,14 +178,18 @@ Transformer::transformTrans(std::shared_ptr< SQLite3 > swdb, std::shared_ptr< SQ
 
         trans->setUserId(query.get< int >("user_id"));
         trans->setCmdline(query.get< std::string >("cmdline"));
-        trans->setDone(query.get< int >("done") == 0 ? true : false);
 
+        bool done = query.get< int >("done") == 0 ? true : false;
+
+        transformRPMItems(swdb, history, trans);
         transformTransWith(swdb, history, trans);
 
-        trans->save();
-        result.push_back(trans);
+        trans->begin();
+
+        transformOutput(history, trans);
+
+        trans->finish(done);
     }
-    return result;
 }
 
 static void
@@ -410,7 +409,6 @@ Transformer::transformRPMItems(std::shared_ptr< SQLite3 > swdb,
         // keep the last item in case of obsoletes
         last = transItem;
     }
-    trans->saveItems();
 }
 
 /**
@@ -432,14 +430,14 @@ Transformer::processGroup(std::shared_ptr< SQLite3 > swdb,
     const Json::Value packages = group["full_list"];
     for (const auto &package : packages) {
         // XXX mandatory?
-        compsGroup->addPackage(package.asString(), true,  CompsPackageType::MANDATORY);
+        compsGroup->addPackage(package.asString(), true, CompsPackageType::MANDATORY);
     }
 
     // add excluded packages
     const Json::Value excludes = group["pkg_exclude"];
     for (const auto &exclude : excludes) {
         // XXX mandatory?
-        compsGroup->addPackage(exclude.asString(), false,CompsPackageType::MANDATORY);
+        compsGroup->addPackage(exclude.asString(), false, CompsPackageType::MANDATORY);
     }
 
     compsGroup->save();
@@ -510,16 +508,14 @@ Transformer::processGroupPersistor(std::shared_ptr< SQLite3 > swdb, const Json::
                       TransactionItemReason::USER);
     }
 
-    trans.save();
-    trans.saveItems();
+    trans.begin();
 
     for (auto i : trans.getItems()) {
         i->setDone(true);
         i->save();
     }
 
-    trans.setDone(true);
-    trans.save();
+    trans.finish(true);
 }
 
 /**

@@ -69,8 +69,8 @@ CompsEnvironmentItemTest::testGetTransactionItems()
     Transaction trans(conn);
     auto env = createCompsEnvironment(conn);
     trans.addItem(env, "", TransactionItemAction::INSTALL, TransactionItemReason::USER);
-    trans.save();
-    trans.saveItems();
+    trans.begin();
+    trans.finish(true);
 
     Transaction trans2(conn, trans.getId());
 

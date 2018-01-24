@@ -100,8 +100,7 @@ WorkflowTest::testDefaultWorkflow()
     trans.addItem(comps_environment_minimal, repoid, action, reason);
 
     // STEP 4: save transaction and all associated items
-    trans.save();
-    trans.saveItems();
+    trans.begin();
 
     // STEP 5: run RPM transaction; callback: mark completed items
     for (auto i : trans.getItems()) {
@@ -111,8 +110,7 @@ WorkflowTest::testDefaultWorkflow()
 
     // STEP 6
     // mark completed transaction
-    trans.setDone(true);
-    trans.save();
+    trans.finish(true);
     CPPUNIT_ASSERT(trans.getDone() == true);
 
     // VERIFY

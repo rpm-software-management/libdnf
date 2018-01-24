@@ -30,9 +30,10 @@ TransactionTest::testInsert()
     trans.setUserId(1000);
     trans.setCmdline("dnf install foo");
     trans.setDone(false);
-    trans.save();
-    // 2nd save must pass and do nothing
-    trans.save();
+    trans.begin();
+
+    // 2nd begin must throw an exception
+    CPPUNIT_ASSERT_THROW(trans.begin(), std::runtime_error);
 
     // load the saved transaction from database and compare values
     Transaction trans2(conn, trans.getId());
@@ -53,9 +54,8 @@ TransactionTest::testInsertWithSpecifiedId()
     // it is not allowed to save a transaction with arbitrary ID
     Transaction trans(conn);
     trans.setId(INT64_MAX);
-    trans.save();
-    // CPPUNIT_ASSERT_THROW(trans.save(), SQLError);
-    // TODO: throw a more specific exception
+    trans.begin();
+    CPPUNIT_ASSERT_THROW(trans.begin(), std::runtime_error);
 }
 
 void
@@ -67,7 +67,7 @@ TransactionTest::testUpdate()
     trans.setDtEnd(20);
     trans.setRpmdbVersionBegin("begin - TransactionTest::testUpdate");
     trans.setRpmdbVersionEnd("end - TransactionTest::testUpdate");
-    trans.save();
+    trans.finish(true);
 
     Transaction trans2(conn, trans.getId());
     CPPUNIT_ASSERT(trans2.getId() == trans.getId());
@@ -78,7 +78,7 @@ TransactionTest::testUpdate()
     CPPUNIT_ASSERT(trans2.getReleasever() == trans.getReleasever());
     CPPUNIT_ASSERT(trans2.getUserId() == trans.getUserId());
     CPPUNIT_ASSERT(trans2.getCmdline() == trans.getCmdline());
-    CPPUNIT_ASSERT(trans2.getDone() == trans.getDone());
+    CPPUNIT_ASSERT(trans2.getDone() == true);
 }
 
 void

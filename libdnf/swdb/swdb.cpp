@@ -91,8 +91,7 @@ Swdb::beginTransaction(int64_t dtBegin,
     transactionInProgress->setRpmdbVersionBegin(rpmdbVersionBegin);
     transactionInProgress->setCmdline(cmdline);
     transactionInProgress->setUserId(userId);
-    transactionInProgress->save();
-    transactionInProgress->saveItems();
+    transactionInProgress->begin();
     return transactionInProgress->getId();
 }
 
@@ -104,9 +103,7 @@ Swdb::endTransaction(int64_t dtEnd, std::string rpmdbVersionEnd, bool done)
     }
     transactionInProgress->setDtEnd(dtEnd);
     transactionInProgress->setRpmdbVersionEnd(rpmdbVersionEnd);
-    transactionInProgress->setDone(done);
-    transactionInProgress->save();
-    transactionInProgress->saveItems();
+    transactionInProgress->finish(done);
     int64_t result = transactionInProgress->getId();
     transactionInProgress = std::unique_ptr< Transaction >(nullptr);
     return result;

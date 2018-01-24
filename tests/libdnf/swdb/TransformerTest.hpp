@@ -11,8 +11,6 @@ public:
     TransformerMock();
     using Transformer::Exception;
     using Transformer::processGroupPersistor;
-    using Transformer::transformOutput;
-    using Transformer::transformRPMItems;
     using Transformer::transformTrans;
 };
 

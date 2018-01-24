@@ -66,13 +66,20 @@ Transaction::operator<(const Transaction &other)
 }
 
 void
-Transaction::save()
+Transaction::begin()
 {
-    if (id == 0) {
-        dbInsert();
-    } else {
-        dbUpdate();
+    if (id != 0) {
+        throw std::runtime_error("Transaction has already begun!");
     }
+    dbInsert();
+    saveItems();
+}
+
+void
+Transaction::finish(bool success)
+{
+    setDone(success);
+    dbUpdate();
 }
 
 void
@@ -213,7 +220,6 @@ void
 Transaction::saveItems()
 {
     // TODO: remove all existing items from the database first?
-    save();
     for (auto i : items) {
         i->save();
     }

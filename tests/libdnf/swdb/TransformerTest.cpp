@@ -106,11 +106,7 @@ void
 TransformerTest::testTransformTrans()
 {
     // perform database transformation
-    auto transactions = transformer.transformTrans(swdb, history);
-    for (auto trans : transactions) {
-        transformer.transformRPMItems(swdb, history, trans);
-        transformer.transformOutput(history, trans);
-    }
+    transformer.transformTrans(swdb, history);
 
     // check first transaction attributes
     Transaction first(swdb, 1);
@@ -136,7 +132,7 @@ TransformerTest::testTransformTrans()
     auto firstSoftWith = first.getSoftwarePerformedWith();
     CPPUNIT_ASSERT(firstSoftWith.size() == 1);
     for (auto soft : firstSoftWith) {
-        CPPUNIT_ASSERT(soft->getId() == 1);
+        CPPUNIT_ASSERT(soft->getId() == 2);
     }
 
     // check first transaction items
@@ -185,7 +181,7 @@ TransformerTest::testTransformTrans()
     CPPUNIT_ASSERT(secondOut[1].second == "msg2");
 
     // check second transaction performed with software
-    std::set< int64_t > possibleValues = {1, 2};
+    std::set< int64_t > possibleValues = {2, 3};
     auto secondSoftWith = second.getSoftwarePerformedWith();
     CPPUNIT_ASSERT(secondSoftWith.size() == 2);
     for (auto soft : secondSoftWith) {
@@ -208,4 +204,6 @@ TransformerTest::testTransformTrans()
         CPPUNIT_ASSERT(item->getReason() == TransactionItemReason::DEPENDENCY);
         CPPUNIT_ASSERT(item->getDone() == true);
     }
+
+    swdb->backup("sql.db");
 }

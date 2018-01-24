@@ -61,8 +61,8 @@ RpmItemTest::testGetTransactionItems()
         rpm->setArch("x86_64");
         trans.addItem(rpm, "base", TransactionItemAction::INSTALL, TransactionItemReason::USER);
     }
-    trans.save();
-    trans.saveItems();
+    trans.begin();
+    trans.finish(true);
     auto create_finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration< double > create_duration = create_finish - create_start;
 
