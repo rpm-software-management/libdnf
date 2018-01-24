@@ -24,11 +24,6 @@
 #include <memory>
 #include <vector>
 
-#include "item.hpp"
-#include "transactionitem.hpp"
-
-class TransactionItem;
-
 enum class CompsPackageType : int {
     MANDATORY = 0,
     DEFAULT = 1,
@@ -36,10 +31,11 @@ enum class CompsPackageType : int {
     CONDITIONAL = 3,
 };
 
-class Item;
 class CompsGroupItem;
 class CompsGroupPackage;
-class TransactionItem;
+
+#include "item.hpp"
+#include "transactionitem.hpp"
 
 class CompsGroupItem : public Item {
 public:

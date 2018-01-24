@@ -26,6 +26,8 @@
 
 #include "../utils/sqlite3/sqlite3.hpp"
 
+class TransactionItem;
+
 #include "item.hpp"
 #include "item_comps_environment.hpp"
 #include "item_comps_group.hpp"
@@ -33,12 +35,6 @@
 #include "repo.hpp"
 #include "swdb_types.hpp"
 #include "transaction.hpp"
-
-class Item;
-class CompsEnvironmentItem;
-class CompsGroupItem;
-class RPMItem;
-class Transaction;
 
 class TransactionItem {
 public:

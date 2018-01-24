@@ -27,13 +27,10 @@
 
 #include "../utils/sqlite3/sqlite3.hpp"
 
+class Transaction;
+
 #include "item.hpp"
 #include "transactionitem.hpp"
-
-class TransactionItem;
-class RPMItem;
-enum class TransactionItemAction;
-enum class TransactionItemReason;
 
 class Transaction {
 public:

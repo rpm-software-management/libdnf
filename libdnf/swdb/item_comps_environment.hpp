@@ -24,13 +24,12 @@
 #include <memory>
 #include <vector>
 
+class CompsEnvironmentItem;
+class CompsEnvironmentGroup;
+
 #include "item.hpp"
 #include "item_comps_group.hpp"
 #include "transactionitem.hpp"
-
-class CompsEnvironmentGroup;
-enum class CompsPackageType;
-class TransactionItem;
 
 class CompsEnvironmentItem : public Item {
 public:

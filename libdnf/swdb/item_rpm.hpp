@@ -24,12 +24,11 @@
 #include <memory>
 #include <vector>
 
+class RPMItem;
+
 #include "item.hpp"
 #include "swdb_types.hpp"
 #include "transactionitem.hpp"
-
-class Item;
-class TransactionItem;
 
 class RPMItem : public Item {
 public:
