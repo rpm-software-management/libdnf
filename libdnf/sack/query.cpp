@@ -1402,8 +1402,10 @@ Query::Impl::filterDataiterator(const Filter & f, Map *m)
             if (id == -1)
                 break;
             dataiterator_init(&di, pool, 0, id, keyname, match, flags);
-            while (dataiterator_step(&di))
-                MAPSET(m, di.solvid);
+            while (dataiterator_step(&di)) {
+                MAPSET(m, id);
+                break;
+            }
             dataiterator_free(&di);
         }
     }
