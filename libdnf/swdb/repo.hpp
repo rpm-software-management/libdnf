@@ -42,7 +42,6 @@ public:
     void setRepoId(const std::string &value) { repoId = value; }
 
     void save();
-    std::shared_ptr< SQLite3 > conn;
 
 protected:
     void dbInsert();
@@ -50,8 +49,7 @@ protected:
 
     int64_t id = 0;
     std::string repoId;
-
-private:
+    std::shared_ptr< SQLite3 > conn;
 };
 
 #endif // LIBDNF_SWDB_REPO_HPP

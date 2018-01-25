@@ -83,8 +83,6 @@ public:
 
     std::vector< std::pair< int, std::string > > getConsoleOutput();
 
-    std::shared_ptr< SQLite3 > conn;
-
 protected:
     int64_t id = 0;
     int64_t dtBegin = 0;
@@ -96,6 +94,10 @@ protected:
     int32_t userId = 0;
     std::string cmdline;
     bool done = false;
+
+    friend class TransactionItem;
+
+    std::shared_ptr< SQLite3 > conn;
 
     void loadItems();
     std::vector< std::shared_ptr< TransactionItem > > items;
