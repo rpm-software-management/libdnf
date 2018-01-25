@@ -18,6 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#ifndef __SELECTOR_HPP
+#define __SELECTOR_HPP
+
 #include <memory>
 
 #include "../hy-selector.h"
@@ -42,3 +45,5 @@ private:
     class Impl;
     std::unique_ptr<Impl> pImpl;
 };
+
+#endif /* __SELECTOR_HPP */

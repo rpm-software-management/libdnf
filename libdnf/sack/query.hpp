@@ -18,6 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#ifndef __QUERY_HPP
+#define __QUERY_HPP
+
 #include <memory>
 #include <vector>
 #include "../hy-query-private.hpp"
@@ -138,4 +141,4 @@ private:
     std::unique_ptr<Impl> pImpl;
 };
 
-
+#endif /* __QUERY_HPP */
