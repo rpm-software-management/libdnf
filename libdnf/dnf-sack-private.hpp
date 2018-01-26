@@ -63,5 +63,7 @@ Id           dnf_sack_last_solvable         (DnfSack    *sack);
 Queue       *dnf_sack_get_installonly       (DnfSack    *sack);
 void         dnf_sack_set_running_kernel_fn (DnfSack    *sack,
                                              dnf_sack_running_kernel_fn_t fn);
+DnfPackage  *dnf_sack_add_cmdline_package_flags   (DnfSack *sack,
+                            const char *fn, const int flags);
 
 #endif // HY_SACK_INTERNAL_H

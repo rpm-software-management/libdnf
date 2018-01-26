@@ -1078,6 +1078,31 @@ dnf_sack_setup_cmdline_repo(DnfSack *sack)
     return priv->cmdline_repo;
 }
 
+DnfPackage *
+dnf_sack_add_cmdline_package_flags(DnfSack *sack, const char *fn, const int flags)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    Repo *repo = dnf_sack_setup_cmdline_repo(sack);
+    Id p;
+
+    assert(repo);
+    if (!is_readable_rpm(fn)) {
+        g_warning("not a readable RPM file: %s, skipping", fn);
+        return NULL;
+    }
+    p = repo_add_rpm(repo, fn, flags);
+    if (p == 0) {
+        g_warning ("failed to read RPM: %s, skipping",
+                   pool_errstr (dnf_sack_get_pool (sack)));
+        return NULL;
+    }
+    auto hrepo = static_cast<HyRepo>(repo->appdata);
+    hrepo->needs_internalizing = 1;
+    priv->provides_ready = 0;    /* triggers internalizing later */
+    priv->considered_uptodate = FALSE;   /* triggers recompute_considered later */
+    return dnf_package_new(sack, p);
+}
+
 /**
  * dnf_sack_add_cmdline_package:
  * @sack: a #DnfSack instance.
@@ -1092,27 +1117,16 @@ dnf_sack_setup_cmdline_repo(DnfSack *sack)
 DnfPackage *
 dnf_sack_add_cmdline_package(DnfSack *sack, const char *fn)
 {
-    DnfSackPrivate *priv = GET_PRIVATE(sack);
-    Repo *repo = dnf_sack_setup_cmdline_repo(sack);
-    Id p;
-
-    assert(repo);
-    if (!is_readable_rpm(fn)) {
-        g_warning("not a readable RPM file: %s, skipping", fn);
-        return NULL;
-    }
-    p = repo_add_rpm(repo, fn, REPO_REUSE_REPODATA|REPO_NO_INTERNALIZE|
+    return dnf_sack_add_cmdline_package_flags(sack, fn, 
+                               REPO_REUSE_REPODATA|REPO_NO_INTERNALIZE|
                                RPM_ADD_WITH_HDRID|RPM_ADD_WITH_SHA256SUM);
-    if (p == 0) {
-        g_warning ("failed to read RPM: %s, skipping",
-                   pool_errstr (dnf_sack_get_pool (sack)));
-        return NULL;
-    }
-    auto hrepo = static_cast<HyRepo>(repo->appdata);
-    hrepo->needs_internalizing = 1;
-    priv->provides_ready = 0;    /* triggers internalizing later */
-    priv->considered_uptodate = FALSE;   /* triggers recompute_considered later */
-    return dnf_package_new(sack, p);
+}
+
+DnfPackage *
+dnf_sack_add_cmdline_package_nochecksum(DnfSack *sack, const char *fn)
+{
+    return dnf_sack_add_cmdline_package_flags(sack, fn,
+                               REPO_REUSE_REPODATA|REPO_NO_INTERNALIZE);
 }
 
 /**
