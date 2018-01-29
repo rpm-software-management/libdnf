@@ -79,7 +79,7 @@ advisory_converter(PyObject *o, DnfAdvisory **advisory_ptr)
 static void
 advisory_dealloc(_AdvisoryObject *self)
 {
-    g_object_unref(self->advisory);
+    dnf_advisory_free(self->advisory);
     Py_XDECREF(self->sack);
     Py_TYPE(self)->tp_free(self);
 }

@@ -48,7 +48,7 @@ advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack)
 
     for (unsigned int i = 0; i < advisorylist->len; ++i) {
         auto cadvisory =
-            static_cast<DnfAdvisory *>(g_object_ref(g_ptr_array_index(advisorylist, i)));
+            static_cast<DnfAdvisory *>(g_ptr_array_index(advisorylist, i));
         auto advisory = advisoryToPyObject(cadvisory, sack);
 
         if (advisory == NULL)
@@ -75,7 +75,7 @@ advisorypkglist_to_pylist(const GPtrArray *advisorypkglist)
 
     for (unsigned int i = 0; i < advisorypkglist->len; ++i) {
         auto cadvisorypkg = 
-            static_cast<DnfAdvisoryPkg *>(g_object_ref(g_ptr_array_index(advisorypkglist, i)));
+            static_cast<DnfAdvisoryPkg *>(g_ptr_array_index(advisorypkglist, i));
         auto advisorypkg = advisorypkgToPyObject(cadvisorypkg);
         if (advisorypkg == NULL)
             goto fail;
@@ -101,7 +101,7 @@ advisoryreflist_to_pylist(const GPtrArray *advisoryreflist, PyObject *sack)
 
     for (unsigned int i = 0; i < advisoryreflist->len; ++i) {
         auto cadvisoryref =
-            static_cast<DnfAdvisoryRef *>(g_object_ref(g_ptr_array_index(advisoryreflist,  i)));
+            static_cast<DnfAdvisoryRef *>(g_ptr_array_index(advisoryreflist,  i));
         auto advisoryref = advisoryrefToPyObject(cadvisoryref, sack);
         if (advisoryref == NULL)
             goto fail;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Red Hat, Inc.
+ * Copyright (C) 2014-2018 Red Hat, Inc.
  * Copyright (C) 2015 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
@@ -37,9 +37,11 @@
 #include <solv/util.h>
 
 #include "dnf-advisory-private.hpp"
-#include "dnf-advisorypkg-private.hpp"
+#include "dnf-advisorypkg.h"
 #include "dnf-advisoryref-private.hpp"
 #include "hy-iutil.h"
+#include "sack/advisory.hpp"
+#include "sack/advisoryref.hpp"
 
 typedef struct
 {
@@ -47,26 +49,6 @@ typedef struct
     Id       a_id;
 } DnfAdvisoryPrivate;
 
-G_DEFINE_TYPE_WITH_PRIVATE(DnfAdvisory, dnf_advisory, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (static_cast<DnfAdvisoryPrivate *>(dnf_advisory_get_instance_private (o)))
-
-static DnfAdvisoryKind str2dnf_advisory_kind(const char *str);
-
-/**
- * dnf_advisory_init:
- **/
-static void
-dnf_advisory_init(DnfAdvisory *advisory)
-{
-}
-
-/**
- * dnf_advisory_class_init:
- **/
-static void
-dnf_advisory_class_init(DnfAdvisoryClass *klass)
-{
-}
 
 /**
  * dnf_advisory_new:
@@ -80,11 +62,20 @@ dnf_advisory_class_init(DnfAdvisoryClass *klass)
 DnfAdvisory *
 dnf_advisory_new(Pool *pool, Id a_id)
 {
-    auto advisory = DNF_ADVISORY(g_object_new(DNF_TYPE_ADVISORY, NULL));
-    auto priv = GET_PRIVATE(advisory);
-    priv->pool = pool;
-    priv->a_id = a_id;
-    return advisory;
+    return new Advisory(pool, a_id);
+}
+
+/**
+ * dnf_advisory_free:
+ *
+ * Destructor of #DnfAdvisory.
+ *
+ * Since: 0.13.0
+ **/
+void
+dnf_advisory_free(DnfAdvisory *advisory)
+{
+    return delete advisory;
 }
 
 /**
@@ -101,9 +92,7 @@ dnf_advisory_new(Pool *pool, Id a_id)
 int
 dnf_advisory_compare(DnfAdvisory *left, DnfAdvisory *right)
 {
-    DnfAdvisoryPrivate *lpriv = GET_PRIVATE(left);
-    DnfAdvisoryPrivate *rpriv = GET_PRIVATE(right);
-    return lpriv->a_id == rpriv->a_id;
+    return left == right;
 }
 
 /**
@@ -119,8 +108,7 @@ dnf_advisory_compare(DnfAdvisory *left, DnfAdvisory *right)
 const char *
 dnf_advisory_get_title(DnfAdvisory *advisory)
 {
-    DnfAdvisoryPrivate *priv = GET_PRIVATE(advisory);
-    return pool_lookup_str(priv->pool, priv->a_id, SOLVABLE_SUMMARY);
+    return advisory->getTitle();
 }
 
 /**
@@ -136,15 +124,7 @@ dnf_advisory_get_title(DnfAdvisory *advisory)
 const char *
 dnf_advisory_get_id(DnfAdvisory *advisory)
 {
-    DnfAdvisoryPrivate *priv = GET_PRIVATE(advisory);
-    const char *id;
-
-    id = pool_lookup_str(priv->pool, priv->a_id, SOLVABLE_NAME);
-    g_assert(g_str_has_prefix(id, SOLVABLE_NAME_ADVISORY_PREFIX));
-    //remove the prefix
-    id += strlen(SOLVABLE_NAME_ADVISORY_PREFIX);
-
-    return id;
+    return advisory->getName();
 }
 
 /**
@@ -160,10 +140,7 @@ dnf_advisory_get_id(DnfAdvisory *advisory)
 DnfAdvisoryKind
 dnf_advisory_get_kind(DnfAdvisory *advisory)
 {
-    DnfAdvisoryPrivate *priv = GET_PRIVATE(advisory);
-    const char *type;
-    type = pool_lookup_str(priv->pool, priv->a_id, SOLVABLE_PATCHCATEGORY);
-    return str2dnf_advisory_kind(type);
+    return advisory->getKind();
 }
 
 /**
@@ -179,8 +156,7 @@ dnf_advisory_get_kind(DnfAdvisory *advisory)
 const char *
 dnf_advisory_get_description(DnfAdvisory *advisory)
 {
-    DnfAdvisoryPrivate *priv = GET_PRIVATE(advisory);
-    return pool_lookup_str(priv->pool, priv->a_id, SOLVABLE_DESCRIPTION);
+    return advisory->getDescription();
 }
 
 /**
@@ -196,8 +172,7 @@ dnf_advisory_get_description(DnfAdvisory *advisory)
 const char *
 dnf_advisory_get_rights(DnfAdvisory *advisory)
 {
-    DnfAdvisoryPrivate *priv = GET_PRIVATE(advisory);
-    return pool_lookup_str(priv->pool, priv->a_id, UPDATE_RIGHTS);
+    return advisory->getRights();
 }
 
 /**
@@ -213,8 +188,7 @@ dnf_advisory_get_rights(DnfAdvisory *advisory)
 const char *
 dnf_advisory_get_severity(DnfAdvisory *advisory)
 {
-    DnfAdvisoryPrivate *priv = GET_PRIVATE(advisory);
-    return pool_lookup_str(priv->pool, priv->a_id, UPDATE_SEVERITY);
+    return advisory->getSeverity();
 }
 
 /**
@@ -230,8 +204,7 @@ dnf_advisory_get_severity(DnfAdvisory *advisory)
 guint64
 dnf_advisory_get_updated(DnfAdvisory *advisory)
 {
-    DnfAdvisoryPrivate *priv = GET_PRIVATE(advisory);
-    return pool_lookup_num(priv->pool, priv->a_id, SOLVABLE_BUILDTIME, 0);
+    return advisory->getUpdated();
 }
 
 /**
@@ -247,27 +220,13 @@ dnf_advisory_get_updated(DnfAdvisory *advisory)
 GPtrArray *
 dnf_advisory_get_packages(DnfAdvisory *advisory)
 {
-    DnfAdvisoryPrivate *priv = GET_PRIVATE(advisory);
-    Dataiterator di;
-    DnfAdvisoryPkg *pkg;
-    GPtrArray *pkglist = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
+    std::vector<AdvisoryPkg> pkgsvector;
+    advisory->getPackages(pkgsvector);
 
-    dataiterator_init(&di, priv->pool, 0, priv->a_id, UPDATE_COLLECTION, 0, 0);
-    while (dataiterator_step(&di)) {
-        dataiterator_setpos(&di);
-        pkg = dnf_advisorypkg_new();
-        dnf_advisorypkg_set_name(pkg,
-                pool_lookup_str(priv->pool, SOLVID_POS, UPDATE_COLLECTION_NAME));
-        dnf_advisorypkg_set_evr(pkg,
-                pool_lookup_str(priv->pool, SOLVID_POS, UPDATE_COLLECTION_EVR));
-        dnf_advisorypkg_set_arch(pkg,
-                pool_lookup_str(priv->pool, SOLVID_POS, UPDATE_COLLECTION_ARCH));
-        dnf_advisorypkg_set_filename(pkg,
-                pool_lookup_str(priv->pool, SOLVID_POS, UPDATE_COLLECTION_FILENAME));
-        g_ptr_array_add(pkglist, pkg);
+    GPtrArray *pkglist =  g_ptr_array_new();
+    for (auto& advisorypkg : pkgsvector) {
+        g_ptr_array_add(pkglist, new AdvisoryPkg(advisorypkg.getPool(), advisorypkg.getName(), advisorypkg.getEVR(), advisorypkg.getArch(), advisorypkg.getFileName()));
     }
-    dataiterator_free(&di);
-
     return pkglist;
 }
 
@@ -284,44 +243,16 @@ dnf_advisory_get_packages(DnfAdvisory *advisory)
 GPtrArray *
 dnf_advisory_get_references(DnfAdvisory *advisory)
 {
-    DnfAdvisoryPrivate *priv = GET_PRIVATE(advisory);
-    Dataiterator di;
-    DnfAdvisoryRef *ref;
-    GPtrArray *reflist = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+    std::vector<AdvisoryRef> refsvector;
+    advisory->getReferences(refsvector);
 
-    dataiterator_init(&di, priv->pool, 0, priv->a_id, UPDATE_REFERENCE, 0, 0);
-    for (int index = 0; dataiterator_step(&di); index++) {
-        ref = dnf_advisoryref_new(priv->pool, priv->a_id, index);
-        g_ptr_array_add(reflist, ref);
+    GPtrArray *reflist =  g_ptr_array_new();
+    for (auto& advisoryref : refsvector) {
+        g_ptr_array_add(reflist, new AdvisoryRef(advisoryref.getPool(), advisoryref.getAdvisory(), advisoryref.getIndex()));
     }
-    dataiterator_free(&di);
-
     return reflist;
 }
 
-/**
- * str2dnf_advisory_kind:
- * @str: a string
- *
- * Returns: a #DnfAdvisoryKind, e.g. %DNF_ADVISORY_KIND_BUGFIX
- *
- * Since: 0.7.0
- */
-static DnfAdvisoryKind
-str2dnf_advisory_kind(const char *str)
-{
-    if (str == NULL)
-        return DNF_ADVISORY_KIND_UNKNOWN;
-    if (!strcmp (str, "bugfix"))
-        return DNF_ADVISORY_KIND_BUGFIX;
-    if (!strcmp (str, "enhancement"))
-        return DNF_ADVISORY_KIND_ENHANCEMENT;
-    if (!strcmp (str, "security"))
-        return DNF_ADVISORY_KIND_SECURITY;
-    if (!strcmp (str, "newpackage"))
-        return DNF_ADVISORY_KIND_NEWPACKAGE;
-    return DNF_ADVISORY_KIND_UNKNOWN;
-}
 
 /**
  * dnf_advisory_match_id:
@@ -337,8 +268,7 @@ str2dnf_advisory_kind(const char *str)
 gboolean
 dnf_advisory_match_id(DnfAdvisory *advisory, const char *s)
 {
-    const char *id = dnf_advisory_get_id(advisory);
-    return !g_strcmp0(id, s);
+    return advisory->matchName(s);
 }
 
 /**
@@ -355,9 +285,7 @@ dnf_advisory_match_id(DnfAdvisory *advisory, const char *s)
 gboolean
 dnf_advisory_match_kind(DnfAdvisory *advisory, const char *s)
 {
-    DnfAdvisoryKind kind = dnf_advisory_get_kind(advisory);
-    DnfAdvisoryKind skind = str2dnf_advisory_kind(s);
-    return kind == skind;
+    return advisory->matchKind(s);
 }
 
 /**
@@ -374,8 +302,7 @@ dnf_advisory_match_kind(DnfAdvisory *advisory, const char *s)
 gboolean
 dnf_advisory_match_severity(DnfAdvisory *advisory, const char *s)
 {
-    const char *severity_str = dnf_advisory_get_severity(advisory);
-    return g_strcmp0(severity_str,s) == 0;
+    return advisory->matchSeverity(s);
 }
 
 /**
@@ -393,18 +320,7 @@ dnf_advisory_match_severity(DnfAdvisory *advisory, const char *s)
 gboolean
 dnf_advisory_match_cve(DnfAdvisory *advisory, const char *s)
 {
-    g_autoptr(GPtrArray) refs = dnf_advisory_get_references(advisory);
-
-    for (guint r = 0; r < refs->len; ++r) {
-        auto ref = static_cast<DnfAdvisoryRef *>(g_ptr_array_index(refs, r));
-        if (dnf_advisoryref_get_kind(ref) == DNF_REFERENCE_KIND_CVE) {
-            const char *rid = dnf_advisoryref_get_id(ref);
-            if (!g_strcmp0(rid, s)) {
-                return TRUE;
-            }
-        }
-    }
-    return FALSE;
+    return advisory->matchCVE(s);
 }
 
 /**
@@ -422,16 +338,5 @@ dnf_advisory_match_cve(DnfAdvisory *advisory, const char *s)
 gboolean
 dnf_advisory_match_bug(DnfAdvisory *advisory, const char *s)
 {
-    g_autoptr(GPtrArray) refs = dnf_advisory_get_references(advisory);
-
-    for (guint r = 0; r < refs->len; ++r) {
-        auto ref = static_cast<DnfAdvisoryRef *>(g_ptr_array_index(refs, r));
-        if (dnf_advisoryref_get_kind(ref) == DNF_REFERENCE_KIND_BUGZILLA) {
-            const char *rid = dnf_advisoryref_get_id(ref);
-            if (!g_strcmp0(rid, s)) {
-                return TRUE;
-            }
-        }
-    }
-    return FALSE;
+    return advisory->matchBug(s);
 }

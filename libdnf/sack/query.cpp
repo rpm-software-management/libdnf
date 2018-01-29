@@ -18,12 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <algorithm>
+#include <assert.h>
 #include <fnmatch.h>
+#include <vector>
+
 #include <solv/bitmap.h>
 #include <solv/evr.h>
 #include "query.hpp"
-#include <vector>
-#include <assert.h>
 #include "../hy-iutil-private.hpp"
 #include "../hy-util-private.hpp"
 #include "../hy-iutil.h"
@@ -31,6 +33,7 @@
 #include "../dnf-sack-private.hpp"
 #include "../dnf-advisorypkg.h"
 #include "../dnf-advisory-private.hpp"
+#include "advisory.hpp"
 #include "packageset.hpp"
 
 static int
@@ -376,6 +379,34 @@ add_duplicates_to_map(Pool *pool, Map *res, Queue samename, int start_block, int
             MAPSET(res, id_second);
         }
     }
+}
+
+static bool
+advisoryPkgSort(const AdvisoryPkg &first, const AdvisoryPkg &second)
+{
+    if (first.getName() != second.getName())
+        return first.getName() < second.getName();
+    if (first.getArch() != second.getArch())
+        return first.getArch() < second.getArch();
+    return first.getEVR() < second.getEVR();
+}
+
+static bool
+advisoryPkgCompareSolvable(const AdvisoryPkg &first, const Solvable &s)
+{
+    if (first.getName() != s.name)
+        return first.getName() < s.name;
+    if (first.getEVR() != s.evr)
+        return first.getEVR() < s.evr;
+    return first.getArch() < s.arch;
+}
+
+static bool
+advisoryPkgCompareSolvableNameArch(const AdvisoryPkg &first, const Solvable &s)
+{
+    if (first.getName() != s.name)
+        return first.getName() < s.name;
+    return first.getArch() < s.arch;
 }
 
 class Filter::Impl {
@@ -788,6 +819,7 @@ Query::Impl::filterName(const Filter & f, Map *m)
 {
     Pool *pool = dnf_sack_get_pool(sack);
     Id match_name_id = 0;
+
     for (auto match_union : f.getMatches()) {
         const char *match = match_union.str;
         if ((f.getCmpType() & HY_EQ) && !(f.getCmpType() & HY_ICASE)) {
@@ -1199,69 +1231,77 @@ void
 Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
 {
     Pool *pool = dnf_sack_get_pool(sack);
-    DnfAdvisory *advisory;
-    g_autoptr(GPtrArray) pkgs = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
+    std::vector<AdvisoryPkg> pkgs;
     Dataiterator di;
-    gboolean eq;
+    bool eq;
 
     // iterate over advisories
     dataiterator_init(&di, pool, 0, 0, 0, 0, 0);
     dataiterator_prepend_keyname(&di, UPDATE_COLLECTION);
     while (dataiterator_step(&di)) {
         dataiterator_setpos_parent(&di);
-        advisory = dnf_advisory_new(pool, di.solvid);
+        Advisory advisory(pool, di.solvid);
 
         for (auto match_in : f.getMatches()) {
             const char *match = match_in.str;
             switch(keyname) {
-            case HY_PKG_ADVISORY:
-                eq = dnf_advisory_match_id(advisory, match);
-                break;
-            case HY_PKG_ADVISORY_BUG:
-                eq = dnf_advisory_match_bug(advisory, match);
-                break;
-            case HY_PKG_ADVISORY_CVE:
-                eq = dnf_advisory_match_cve(advisory, match);
-                break;
-            case HY_PKG_ADVISORY_TYPE:
-                eq = dnf_advisory_match_kind(advisory, match);
-                break;
-            case HY_PKG_ADVISORY_SEVERITY:
-                eq = dnf_advisory_match_severity(advisory, match);
-                break;
-            default:
-                eq = FALSE;
+                case HY_PKG_ADVISORY:
+                    eq = advisory.matchName(match);
+                    break;
+                case HY_PKG_ADVISORY_BUG:
+                    eq = advisory.matchBug(match);
+                    break;
+                case HY_PKG_ADVISORY_CVE:
+                    eq = advisory.matchCVE(match);
+                    break;
+                case HY_PKG_ADVISORY_TYPE:
+                    eq = advisory.matchKind(match);
+                    break;
+                case HY_PKG_ADVISORY_SEVERITY:
+                    eq = advisory.matchSeverity(match);
+                    break;
+                default:
+                    eq = false;
             }
             if (eq) {
-                // remember package nevras for matched advisories
-                GPtrArray *apkgs = dnf_advisory_get_packages(advisory);
-                for (unsigned int p = 0; p < apkgs->len; ++p) {
-                    auto apkg = g_ptr_array_index(apkgs, p);
-                    g_ptr_array_add(pkgs, g_object_ref(apkg));
-                }
-                g_ptr_array_unref(apkgs);
+                advisory.getPackages(pkgs, false);
+                break;
             }
         }
-        g_object_unref(advisory);
         dataiterator_skip_solvable(&di);
     }
+    std::sort(pkgs.begin(), pkgs.end(), advisoryPkgSort);
 
     // convert nevras (from DnfAdvisoryPkg) to pool ids
     Id id = -1;
+    int cmp_type = f.getCmpType();
     while (true) {
-        if (pkgs->len == 0)
+        if (pkgs.size() == 0)
             break;
         id = result->next(id);
         if (id == -1)
             break;
         Solvable* s = pool_id2solvable(pool, id);
-        for (unsigned int p = 0; p < pkgs->len; ++p) {
-            auto apkg = static_cast<DnfAdvisoryPkg *>(g_ptr_array_index(pkgs, p));
-            if (dnf_advisorypkg_compare_solvable(apkg, pool, s) == 0) {
+        if (cmp_type == HY_EQ) {
+            auto low = std::lower_bound(pkgs.begin(), pkgs.end(), *s, advisoryPkgCompareSolvable);
+            
+            if (low != pkgs.end() && (*low).nevraEQ(s)) {
                 MAPSET(m, id);
-                // found it, now remove it from the list to speed up rest of query
-                g_ptr_array_remove_index(pkgs, p);
-                break;
+            }
+        } else {
+            auto low = std::lower_bound(pkgs.begin(), pkgs.end(), *s,
+                                        advisoryPkgCompareSolvableNameArch);
+            while (low != pkgs.end() && (*low).getName() == s->name &&
+                (*low).getArch() == s->arch) {
+
+                int cmp = pool_evrcmp(pool, s->evr, (*low).getEVR(), EVRCMP_COMPARE);
+                if ((cmp > 0 && cmp_type & HY_GT) ||
+                    (cmp < 0 && cmp_type & HY_LT) ||
+                    (cmp == 0 && cmp_type & HY_EQ)) {
+                    MAPSET(m, id);
+                    break;
+                }
+                ++low;
             }
         }
     }

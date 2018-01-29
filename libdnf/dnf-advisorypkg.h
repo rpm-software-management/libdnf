@@ -25,25 +25,10 @@
 #include <solv/pool.h>
 #include <glib-object.h>
 
-G_BEGIN_DECLS
+typedef struct AdvisoryPkg DnfAdvisoryPkg;
 
-#define DNF_TYPE_ADVISORY_PKG (dnf_advisorypkg_get_type ())
-G_DECLARE_DERIVABLE_TYPE (DnfAdvisoryPkg, dnf_advisorypkg, DNF, ADVISORY_PKG, GObject)
 
-struct _DnfAdvisoryPkgClass
-{
-        GObjectClass            parent_class;
-        /*< private >*/
-        void (*_dnf_reserved1)  (void);
-        void (*_dnf_reserved2)  (void);
-        void (*_dnf_reserved3)  (void);
-        void (*_dnf_reserved4)  (void);
-        void (*_dnf_reserved5)  (void);
-        void (*_dnf_reserved6)  (void);
-        void (*_dnf_reserved7)  (void);
-        void (*_dnf_reserved8)  (void);
-};
-
+void dnf_advisorypkg_free (DnfAdvisoryPkg *advisorypkg);
 const char      *dnf_advisorypkg_get_name         (DnfAdvisoryPkg *advisorypkg);
 const char      *dnf_advisorypkg_get_evr          (DnfAdvisoryPkg *advisorypkg);
 const char      *dnf_advisorypkg_get_arch         (DnfAdvisoryPkg *advisorypkg);
@@ -55,6 +40,5 @@ gboolean         dnf_advisorypkg_compare_solvable (DnfAdvisoryPkg *advisorypkg,
                                                    Pool           *pool,
                                                    Solvable       *s);
 
-G_END_DECLS
 
 #endif /* __DNF_ADVISORYPKG_H */
