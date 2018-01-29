@@ -70,7 +70,7 @@ advisorypkg_converter(PyObject *o, DnfAdvisoryPkg **ref_ptr)
 static void
 advisorypkg_dealloc(_AdvisoryPkgObject *self)
 {
-    g_object_unref(self->advisorypkg);
+    dnf_advisorypkg_free(self->advisorypkg);
     Py_TYPE(self)->tp_free(self);
 }
 

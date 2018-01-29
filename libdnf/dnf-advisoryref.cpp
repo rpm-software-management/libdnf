@@ -34,34 +34,12 @@
 
 #include <solv/repo.h>
 #include <solv/util.h>
+#include <glib-object.h>
 
 #include "dnf-advisoryref-private.hpp"
+#include "sack/advisoryref.hpp"
 
-typedef struct
-{
-    Pool    *pool;
-    Id       a_id;
-    int      index;
-} DnfAdvisoryRefPrivate;
 
-G_DEFINE_TYPE_WITH_PRIVATE(DnfAdvisoryRef, dnf_advisoryref, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (static_cast<DnfAdvisoryRefPrivate *>(dnf_advisoryref_get_instance_private (o)))
-
-/**
- * dnf_advisoryref_init:
- **/
-static void
-dnf_advisoryref_init(DnfAdvisoryRef *advisoryref)
-{
-}
-
-/**
- * dnf_advisoryref_class_init:
- **/
-static void
-dnf_advisoryref_class_init(DnfAdvisoryRefClass *klass)
-{
-}
 
 /**
  * dnf_advisoryref_new:
@@ -75,12 +53,20 @@ dnf_advisoryref_class_init(DnfAdvisoryRefClass *klass)
 DnfAdvisoryRef *
 dnf_advisoryref_new(Pool *pool, Id a_id, int index)
 {
-    auto advisoryref = DNF_ADVISORYREF(g_object_new(DNF_TYPE_ADVISORYREF, NULL));
-    auto priv = GET_PRIVATE(advisoryref);
-    priv->pool = pool;
-    priv->a_id = a_id;
-    priv->index = index;
-    return advisoryref;
+    return new AdvisoryRef(pool, a_id, index);
+}
+
+/**
+ * dnf_advisoryref_free:
+ *
+ * Destructor of #DnfAdvisoryRef.
+ *
+ * Since: 0.13.0
+ **/
+void
+dnf_advisoryref_free(DnfAdvisoryRef *advisoryref)
+{
+    delete advisoryref;
 }
 
 /**
@@ -97,24 +83,21 @@ dnf_advisoryref_new(Pool *pool, Id a_id, int index)
 int
 dnf_advisoryref_compare(DnfAdvisoryRef *left, DnfAdvisoryRef *right)
 {
-    DnfAdvisoryRefPrivate *lpriv = GET_PRIVATE(left);
-    DnfAdvisoryRefPrivate *rpriv = GET_PRIVATE(right);
-    return (lpriv->a_id == rpriv->a_id) && (lpriv->index == rpriv->index);
+    return *left == *right;
 }
 
 static const char *
 advisoryref_get_str(DnfAdvisoryRef *advisoryref, Id keyname)
 {
-    DnfAdvisoryRefPrivate *priv = GET_PRIVATE(advisoryref);
     Dataiterator di;
     const char *str = NULL;
     int count = 0;
 
-    dataiterator_init(&di, priv->pool, 0, priv->a_id, UPDATE_REFERENCE, 0, 0);
+    dataiterator_init(&di, advisoryref->getPool(), 0, advisoryref->getAdvisory(), UPDATE_REFERENCE, 0, 0);
     while (dataiterator_step(&di)) {
         dataiterator_setpos(&di);
-        if (count++ == priv->index) {
-            str = pool_lookup_str(priv->pool, SOLVID_POS, keyname);
+        if (count++ == advisoryref->getIndex()) {
+            str = pool_lookup_str(advisoryref->getPool(), SOLVID_POS, keyname);
             break;
         }
     }

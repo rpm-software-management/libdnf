@@ -43,7 +43,7 @@ advisorypkg_fixture(void)
     advisories = dnf_package_get_advisories(pkg, HY_GT);
     advisory = static_cast<DnfAdvisory *>(g_ptr_array_index(advisories, 0));
     pkglist = dnf_advisory_get_packages(advisory);
-    advisorypkg = static_cast<DnfAdvisoryPkg *>(g_object_ref(g_ptr_array_index(pkglist, 0)));
+    advisorypkg = static_cast<DnfAdvisoryPkg *>(g_ptr_array_index(pkglist, 0));
 
     g_ptr_array_unref(pkglist);
     g_ptr_array_unref(advisories);
@@ -53,7 +53,7 @@ advisorypkg_fixture(void)
 static void
 advisorypkg_teardown(void)
 {
-    g_object_unref(advisorypkg);
+    dnf_advisorypkg_free(advisorypkg);
     teardown();
 }
 

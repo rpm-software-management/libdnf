@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Red Hat, Inc.
+ * Copyright (C) 2014-2018 Red Hat, Inc.
  * Copyright (C) 2015 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
@@ -24,24 +24,7 @@
 
 #include <glib-object.h>
 
-G_BEGIN_DECLS
-
-#define DNF_TYPE_ADVISORY (dnf_advisory_get_type ())
-G_DECLARE_DERIVABLE_TYPE (DnfAdvisory, dnf_advisory, DNF, ADVISORY, GObject)
-
-struct _DnfAdvisoryClass
-{
-        GObjectClass            parent_class;
-        /*< private >*/
-        void (*_dnf_reserved1)  (void);
-        void (*_dnf_reserved2)  (void);
-        void (*_dnf_reserved3)  (void);
-        void (*_dnf_reserved4)  (void);
-        void (*_dnf_reserved5)  (void);
-        void (*_dnf_reserved6)  (void);
-        void (*_dnf_reserved7)  (void);
-        void (*_dnf_reserved8)  (void);
-};
+typedef struct Advisory DnfAdvisory;
 
 typedef enum {
         DNF_ADVISORY_KIND_UNKNOWN       = 0,        /* ordered by rough importance */
@@ -51,6 +34,7 @@ typedef enum {
         DNF_ADVISORY_KIND_NEWPACKAGE    = 4
 } DnfAdvisoryKind;
 
+void dnf_advisory_free(DnfAdvisory *advisory);
 const char          *dnf_advisory_get_title         (DnfAdvisory *advisory);
 const char          *dnf_advisory_get_id            (DnfAdvisory *advisory);
 DnfAdvisoryKind      dnf_advisory_get_kind          (DnfAdvisory *advisory);
@@ -72,7 +56,5 @@ gboolean             dnf_advisory_match_cve         (DnfAdvisory *advisory,
                                                      const char  *s);
 gboolean             dnf_advisory_match_bug         (DnfAdvisory *advisory,
                                                      const char  *s);
-
-G_END_DECLS
 
 #endif /* __DNF_ADVISORY_H */
