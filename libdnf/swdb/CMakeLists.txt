@@ -6,6 +6,7 @@ SET(SWDB_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/repo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/swdb.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/transaction.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/mergedtransaction.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/transactionitem.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/transformer.cpp
 )

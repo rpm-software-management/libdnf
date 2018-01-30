@@ -60,8 +60,8 @@ public:
     const std::string &getReleasever() const noexcept { return releasever; }
     void setReleasever(const std::string &value) { releasever = value; }
 
-    int32_t getUserId() const noexcept { return userId; }
-    void setUserId(int32_t value) { userId = value; }
+    int64_t getUserId() const noexcept { return userId; }
+    void setUserId(int64_t value) { userId = value; }
 
     const std::string &getCmdline() const noexcept { return cmdline; }
     void setCmdline(const std::string &value) { cmdline = value; }
@@ -81,7 +81,7 @@ public:
     void addSoftwarePerformedWith(std::shared_ptr< RPMItem > software);
     const std::set< std::shared_ptr< RPMItem > > getSoftwarePerformedWith() const;
 
-    std::vector< std::pair< int, std::string > > getConsoleOutput();
+    std::vector< std::pair< int, std::string > > getConsoleOutput() const;
 
 protected:
     int64_t id = 0;
@@ -91,7 +91,7 @@ protected:
     std::string rpmdbVersionEnd;
     // TODO: move to a new "vars" table?
     std::string releasever;
-    int32_t userId = 0;
+    int64_t userId = 0;
     std::string cmdline;
     bool done = false;
 

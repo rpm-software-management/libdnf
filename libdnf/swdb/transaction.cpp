@@ -328,7 +328,7 @@ Transaction::addConsoleOutputLine(int fileDescriptor, const std::string &line)
 }
 
 std::vector< std::pair< int, std::string > >
-Transaction::getConsoleOutput()
+Transaction::getConsoleOutput() const
 {
     const char *sql = R"**(
         SELECT

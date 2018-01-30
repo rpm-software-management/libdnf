@@ -6,6 +6,7 @@ SET (LIBDNF_TEST_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/TransactionTest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/WorkflowTest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TransformerTest.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/MergedTransactionTest.cpp
     PARENT_SCOPE
 )
 

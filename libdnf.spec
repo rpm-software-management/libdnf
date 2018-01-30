@@ -66,6 +66,7 @@ Development files for %{name}.
 Summary:        Python 2 bindings for the libdnf library.
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 BuildRequires:  python2-devel
+BuildRequires:  python2-sphinx
 BuildRequires:  swig
 
 %description -n python2-%{name}
@@ -79,6 +80,7 @@ Summary:        Python 3 bindings for the libdnf library.
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 BuildRequires:  python3-devel
 BuildRequires:  swig
+BuildRequires:  python3-sphinx
 
 %description -n python3-%{name}
 Python 3 bindings for the libdnf library.
