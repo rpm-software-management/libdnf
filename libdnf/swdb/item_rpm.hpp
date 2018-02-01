@@ -25,6 +25,7 @@
 #include <vector>
 
 class RPMItem;
+typedef std::shared_ptr< RPMItem > RPMItemPtr;
 
 #include "item.hpp"
 #include "swdb_types.hpp"
@@ -65,6 +66,8 @@ public:
                                                               const std::string &name,
                                                               const std::string arch,
                                                               int64_t maxTransactionId);
+
+    bool operator<(const RPMItem &other) const;
 
 protected:
     const ItemType itemType = ItemType::RPM;

@@ -26,6 +26,9 @@
 
 #include "../utils/sqlite3/sqlite3.hpp"
 
+class Item;
+typedef std::shared_ptr< Item > ItemPtr;
+
 #include "swdb_types.hpp"
 
 /// Class representing a package.

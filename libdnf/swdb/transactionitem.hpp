@@ -27,6 +27,7 @@
 #include "../utils/sqlite3/sqlite3.hpp"
 
 class TransactionItem;
+typedef std::shared_ptr< TransactionItem > TransactionItemPtr;
 
 #include "item.hpp"
 #include "item_comps_environment.hpp"

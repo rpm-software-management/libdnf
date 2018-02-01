@@ -21,19 +21,48 @@
 #ifndef LIBDNF_SWDB_MERGEDTRANSACTION_HPP
 #define LIBDNF_SWDB_MERGEDTRANSACTION_HPP
 
+#include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 class MergedTransaction;
+class MergedTransactionItem;
+typedef std::shared_ptr< MergedTransaction > MergedTransactionPtr;
+typedef std::shared_ptr< MergedTransactionItem > MergedTransactionItemPtr;
 
 #include "item_rpm.hpp"
 #include "transaction.hpp"
 
+class MergedTransactionItem {
+public:
+    MergedTransactionItem(TransactionItemPtr item)
+      : item{item->getItem()}
+      , repoid{item->getRepoid()}
+      , action{item->getAction()}
+    {
+    }
+
+    ItemPtr getItem() const noexcept { return item; }
+    void setItem(ItemPtr value) { item = value; }
+
+    const std::string &getRepoid() const noexcept { return repoid; }
+    void setRepoid(const std::string &value) { repoid = value; }
+
+    TransactionItemAction getAction() const noexcept { return action; }
+    void setAction(TransactionItemAction value) { action = value; }
+
+protected:
+    ItemPtr item;
+    std::string repoid;
+    TransactionItemAction action = TransactionItemAction::INSTALL;
+};
+
 class MergedTransaction {
 public:
-    MergedTransaction(std::shared_ptr< Transaction > trans);
-    void merge(std::shared_ptr< Transaction > trans);
+    MergedTransaction(TransactionPtr trans);
+    void merge(TransactionPtr trans);
 
     std::vector< int64_t > listIds() const noexcept;
     std::vector< int64_t > listUserIds() const noexcept;
@@ -43,13 +72,30 @@ public:
     int64_t getDtEnd() const noexcept;
     const std::string &getRpmdbVersionBegin() const noexcept;
     const std::string &getRpmdbVersionEnd() const noexcept;
-    std::set< std::shared_ptr< RPMItem > > getSoftwarePerformedWith() const;
+    std::set< RPMItemPtr > getSoftwarePerformedWith() const;
     std::vector< std::pair< int, std::string > > getConsoleOutput();
 
-    // TODO std::vector< std::shared_ptr< TransactionItem > > getItems();
+    std::vector< MergedTransactionItemPtr > getItems();
 
 protected:
-    std::vector< std::shared_ptr< Transaction > > transactions;
+    std::vector< TransactionPtr > transactions;
+
+    struct ItemPair {
+        ItemPair(MergedTransactionItemPtr first, MergedTransactionItemPtr second)
+          : first{first}
+          , second{second}
+        {
+        }
+        ItemPair(){};
+        MergedTransactionItemPtr first = nullptr;
+        MergedTransactionItemPtr second = nullptr;
+    };
+    typedef std::unordered_map< std::string, ItemPair > ItemPairMap;
+
+    void mergeItem(ItemPairMap &itemPairMap, MergedTransactionItemPtr transItem);
+    void resolveRPMDifference(ItemPair &previousItemPair, MergedTransactionItemPtr mTransItem);
+    void resolveErase(ItemPair &previousItemPair, MergedTransactionItemPtr mTransItem);
+    void resolveAltered(ItemPair &previousItemPair, MergedTransactionItemPtr mTransItem);
 };
 
 #endif // LIBDNF_SWDB_TRANSACTION_HPP

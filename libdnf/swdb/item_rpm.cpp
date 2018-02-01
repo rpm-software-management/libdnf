@@ -19,6 +19,7 @@
  */
 
 #include <map>
+#include <sstream>
 
 #include "../hy-nevra.hpp"
 #include "../hy-subject.h"
@@ -325,4 +326,38 @@ RPMItem::resolveTransactionItemReason(std::shared_ptr< SQLite3 > conn,
         return result;
     }
     return TransactionItemReason::UNKNOWN;
+}
+
+/**
+ * Compare RPM packages
+ * This method doesn't care about compare package names
+ * \param other RPMItem to compare with
+ * \return true if other package is newer (has higher version and/or epoch)
+ */
+bool
+RPMItem::operator<(const RPMItem &other) const
+{
+    // compare epochs
+    int32_t epochDif = other.getEpoch() - getEpoch();
+    if (epochDif > 0) {
+        return true;
+    } else if (epoch < 0) {
+        return false;
+    }
+
+    // compare versions
+    std::stringstream versionThis(getVersion());
+    std::stringstream versionOther(other.getVersion());
+
+    std::string bufferThis;
+    std::string bufferOther;
+    while (std::getline(versionThis, bufferThis, '.') &&
+           std::getline(versionOther, bufferOther, '.')) {
+        int subVersionThis = std::stoi(bufferThis);
+        int subVersionOther = std::stoi(bufferOther);
+        if (subVersionOther > subVersionThis) {
+            return true;
+        }
+    }
+    return false;
 }
