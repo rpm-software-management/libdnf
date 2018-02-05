@@ -355,9 +355,10 @@ RPMItem::operator<(const RPMItem &other) const
            std::getline(versionOther, bufferOther, '.')) {
         int subVersionThis = std::stoi(bufferThis);
         int subVersionOther = std::stoi(bufferOther);
-        if (subVersionOther > subVersionThis) {
-            return true;
+        if (subVersionThis == subVersionOther) {
+            continue;
         }
+        return subVersionOther > subVersionThis;
     }
     return false;
 }

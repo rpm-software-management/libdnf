@@ -379,4 +379,6 @@ public:
     sqlite3 *db;
 };
 
+typedef std::shared_ptr<SQLite3> SQLite3Ptr;
+
 #endif
