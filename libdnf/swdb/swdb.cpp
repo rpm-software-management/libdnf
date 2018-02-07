@@ -28,6 +28,7 @@
 
 #include "item_rpm.hpp"
 #include "swdb.hpp"
+#include "transformer.hpp"
 
 static int
 file_exists(const char *path)
@@ -37,25 +38,9 @@ file_exists(const char *path)
     return (stat(path, &buffer) == 0);
 }
 
-static const char *sql_create_tables =
-#include "sql/create_tables.sql"
-    ;
-
-void
-SwdbCreateDatabase(SQLite3Ptr conn)
-{
-    conn->exec(sql_create_tables);
-}
-
 Swdb::Swdb(SQLite3Ptr conn)
   : conn{conn}
 {
-}
-
-void
-Swdb::createDatabase()
-{
-    conn->exec(sql_create_tables);
 }
 
 void
@@ -66,7 +51,7 @@ Swdb::resetDatabase()
         remove(getPath().c_str());
     }
     conn->open();
-    createDatabase();
+    Transformer::createDatabase(conn);
 }
 
 void
@@ -447,4 +432,40 @@ std::vector< TransactionItemPtr >
 Swdb::getCompsEnvironmentItemsByPattern(const std::string &pattern)
 {
     return CompsEnvironmentItem::getTransactionItemsByPattern(conn, pattern);
+}
+
+RPMItem
+Swdb::createRPMItem()
+{
+    return RPMItem(conn);
+}
+
+CompsEnvironmentItem
+Swdb::createCompsEnvironmentItem()
+{
+    return CompsEnvironmentItem(conn);
+}
+
+CompsGroupItem
+Swdb::createCompsGroupItem()
+{
+    return CompsGroupItem(conn);
+}
+
+Swdb::Swdb(const std::string &path)
+  : conn(nullptr)
+{
+    // TODO make dirs if missing
+
+    // check if DB file is present
+    struct stat buffer;
+
+    if (stat(path.c_str(), &buffer)) {
+        // file not present
+        Transformer transformer(path, "/var/lib/dnf/");
+        transformer.transform();
+        conn = std::make_shared< SQLite3 >(path);
+    } else {
+        conn = std::make_shared< SQLite3 >(path);
+    }
 }

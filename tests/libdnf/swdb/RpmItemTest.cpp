@@ -5,7 +5,7 @@
 
 #include "RpmItemTest.hpp"
 #include "libdnf/swdb/item_rpm.hpp"
-#include "libdnf/swdb/swdb.hpp"
+#include "libdnf/swdb/transformer.hpp"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(RpmItemTest);
 
@@ -13,8 +13,7 @@ void
 RpmItemTest::setUp()
 {
     conn = std::make_shared< SQLite3 >(":memory:");
-    Swdb swdb(conn);
-    swdb.createDatabase();
+    Transformer::createDatabase(conn);
 }
 
 void

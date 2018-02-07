@@ -4,7 +4,7 @@
 #include <string>
 
 #include "libdnf/swdb/item_comps_environment.hpp"
-#include "libdnf/swdb/swdb.hpp"
+#include "libdnf/swdb/transformer.hpp"
 
 #include "CompsEnvironmentItemTest.hpp"
 
@@ -14,8 +14,7 @@ void
 CompsEnvironmentItemTest::setUp()
 {
     conn = std::make_shared< SQLite3 >(":memory:");
-    Swdb swdb(conn);
-    swdb.createDatabase();
+    Transformer::createDatabase(conn);
 }
 
 void

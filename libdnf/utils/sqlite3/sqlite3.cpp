@@ -63,7 +63,7 @@ SQLite3::backup(const std::string &outputFile)
     auto result = sqlite3_open(outputFile.c_str(), &backupDB);
     if (result != SQLITE_OK) {
         sqlite3_close(backupDB);
-        throw LibException(result, "Failed to open backup database");
+        throw LibException(result, "Failed to open backup database: " + outputFile);
     }
 
     sqlite3_backup *backupHandle = sqlite3_backup_init(backupDB, "main", db, "main");

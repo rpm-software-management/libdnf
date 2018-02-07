@@ -22,6 +22,7 @@
 #define LIBDNF_SWDB_SWDB_HPP
 
 #include <memory>
+#include <sys/stat.h>
 #include <vector>
 
 #include "../hy-query.h"
@@ -34,10 +35,10 @@
 class Swdb {
 public:
     explicit Swdb(SQLite3Ptr conn);
+    explicit Swdb(const std::string &path);
 
     const std::string &getPath() { return conn->getPath(); }
 
-    void createDatabase();
     void resetDatabase();
     void closeDatabase();
 
@@ -66,6 +67,10 @@ public:
     const std::string getRPMRepo(const std::string &nevra);
     std::shared_ptr< const TransactionItem > getRPMTransactionItem(const std::string &nevra);
 
+    RPMItem createRPMItem();
+    CompsGroupItem createCompsGroupItem();
+    CompsEnvironmentItem createCompsEnvironmentItem();
+
     // Item: CompsGroup
     TransactionItemPtr getCompsGroupItem(const std::string &groupid);
     std::vector< TransactionItemPtr > getCompsGroupItemsByPattern(const std::string &pattern);
@@ -82,9 +87,5 @@ protected:
 
 private:
 };
-
-// TODO: create if doesn't exist
-void
-SwdbCreateDatabase(SQLite3Ptr conn);
 
 #endif // LIBDNF_SWDB_SWDB_HPP

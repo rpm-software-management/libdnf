@@ -35,6 +35,16 @@
 #include "transactionitem.hpp"
 #include "transformer.hpp"
 
+static const char *sql_create_tables =
+#include "sql/create_tables.sql"
+    ;
+
+void
+Transformer::createDatabase(SQLite3Ptr conn)
+{
+    conn->exec(sql_create_tables);
+}
+
 /**
  * Map of supported actions (originally states): string -> enum
  */
@@ -98,7 +108,7 @@ Transformer::transform()
     auto history = std::make_shared< SQLite3 >(historyPath().c_str());
 
     // create a new database file
-    SwdbCreateDatabase(swdb);
+    createDatabase(swdb);
 
     // transform groups
     transformGroups(swdb);
@@ -243,8 +253,7 @@ Transformer::transformTransWith(SQLite3Ptr swdb,
  * \param swdb pointer to history database SQLite3 object
  */
 void
-Transformer::transformOutput(SQLite3Ptr history,
-                             std::shared_ptr< TransformerTransaction > trans)
+Transformer::transformOutput(SQLite3Ptr history, std::shared_ptr< TransformerTransaction > trans)
 {
     const char *sql = R"**(
         SELECT
@@ -284,10 +293,7 @@ Transformer::transformOutput(SQLite3Ptr history,
 }
 
 static void
-getYumdbData(int64_t itemId,
-             SQLite3Ptr history,
-             TransactionItemReason &reason,
-             std::string &repoid)
+getYumdbData(int64_t itemId, SQLite3Ptr history, TransactionItemReason &reason, std::string &repoid)
 {
     const char *sql = R"**(
         SELECT
@@ -416,9 +422,7 @@ Transformer::transformRPMItems(SQLite3Ptr swdb,
  * \param group group json object
  */
 CompsGroupItemPtr
-Transformer::processGroup(SQLite3Ptr swdb,
-                          const std::string &groupId,
-                          const Json::Value &group)
+Transformer::processGroup(SQLite3Ptr swdb, const std::string &groupId, const Json::Value &group)
 {
     // create group
     auto compsGroup = std::make_shared< CompsGroupItem >(swdb);
@@ -449,9 +453,7 @@ Transformer::processGroup(SQLite3Ptr swdb,
  * \param env environment json object
  */
 std::shared_ptr< CompsEnvironmentItem >
-Transformer::processEnvironment(SQLite3Ptr swdb,
-                                const std::string &envId,
-                                const Json::Value &env)
+Transformer::processEnvironment(SQLite3Ptr swdb, const std::string &envId, const Json::Value &env)
 {
     // create environment
     auto compsEnv = std::make_shared< CompsEnvironmentItem >(swdb);

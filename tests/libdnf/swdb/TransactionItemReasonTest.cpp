@@ -8,6 +8,7 @@
 #include "libdnf/swdb/swdb.hpp"
 #include "libdnf/swdb/transaction.hpp"
 #include "libdnf/swdb/transactionitem.hpp"
+#include "libdnf/swdb/transformer.hpp"
 
 #include "TransactionItemReasonTest.hpp"
 
@@ -17,7 +18,7 @@ void
 TransactionItemReasonTest::setUp()
 {
     conn = std::make_shared< SQLite3 >(":memory:");
-    SwdbCreateDatabase(conn);
+    Transformer::createDatabase(conn);
 }
 
 void

@@ -31,7 +31,7 @@ TransformerTest::setUp()
 {
     swdb = std::make_shared< SQLite3 >(":memory:");
     history = std::make_shared< SQLite3 >(":memory:");
-    SwdbCreateDatabase(swdb);
+    Transformer::createDatabase(swdb);
     history.get()->exec(create_history_sql);
 }
 

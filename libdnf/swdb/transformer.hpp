@@ -67,6 +67,8 @@ public:
     Transformer(const std::string &outputFile, const std::string &inputDir);
     void transform();
 
+    static void createDatabase(SQLite3Ptr conn);
+
 protected:
     void transformTrans(SQLite3Ptr swdb, SQLite3Ptr history);
 
@@ -77,14 +79,13 @@ private:
     void transformRPMItems(SQLite3Ptr swdb,
                            SQLite3Ptr history,
                            std::shared_ptr< TransformerTransaction > trans);
-    void transformOutput(SQLite3Ptr history,
-                         std::shared_ptr< TransformerTransaction > trans);
+    void transformOutput(SQLite3Ptr history, std::shared_ptr< TransformerTransaction > trans);
     void transformTransWith(SQLite3Ptr swdb,
                             SQLite3Ptr history,
                             std::shared_ptr< TransformerTransaction > trans);
     CompsGroupItemPtr processGroup(SQLite3Ptr swdb,
-                                                   const std::string &groupId,
-                                                   const Json::Value &group);
+                                   const std::string &groupId,
+                                   const Json::Value &group);
     std::shared_ptr< CompsEnvironmentItem > processEnvironment(SQLite3Ptr swdb,
                                                                const std::string &envId,
                                                                const Json::Value &env);

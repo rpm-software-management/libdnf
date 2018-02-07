@@ -6,10 +6,10 @@
 #include "libdnf/swdb/item_comps_environment.hpp"
 #include "libdnf/swdb/item_comps_group.hpp"
 #include "libdnf/swdb/item_rpm.hpp"
-#include "libdnf/swdb/swdb.hpp"
 #include "libdnf/swdb/swdb_types.hpp"
 #include "libdnf/swdb/transaction.hpp"
 #include "libdnf/swdb/transactionitem.hpp"
+#include "libdnf/swdb/transformer.hpp"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(WorkflowTest);
 
@@ -17,7 +17,7 @@ void
 WorkflowTest::setUp()
 {
     conn = std::make_shared< SQLite3 >(":memory:");
-    SwdbCreateDatabase(conn);
+    Transformer::createDatabase(conn);
 }
 
 void

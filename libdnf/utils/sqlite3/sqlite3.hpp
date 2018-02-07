@@ -331,7 +331,7 @@ public:
     SQLite3(const SQLite3 &) = delete;
     SQLite3 &operator=(const SQLite3 &) = delete;
 
-    SQLite3(const char *dbPath)
+    SQLite3(const std::string &dbPath)
       : path{dbPath}
       , db{nullptr}
     {
