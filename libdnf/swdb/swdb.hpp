@@ -39,6 +39,7 @@ public:
 
     void createDatabase();
     void resetDatabase();
+    void closeDatabase();
 
     void initTransaction();
     int64_t beginTransaction(int64_t dtBegin,

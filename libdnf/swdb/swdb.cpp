@@ -69,6 +69,11 @@ Swdb::resetDatabase()
     createDatabase();
 }
 
+void Swdb::closeDatabase()
+{
+    conn->close();
+}
+
 void
 Swdb::initTransaction()
 {
