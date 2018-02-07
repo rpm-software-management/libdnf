@@ -1,5 +1,8 @@
 %module swdb
 
+%begin %{
+#define SWIG_PYTHON_2_UNICODE
+%}
 
 %include <std_map.i>
 %include <std_pair.i>

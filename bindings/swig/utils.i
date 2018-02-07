@@ -1,5 +1,8 @@
 %module utils
 
+%begin %{
+#define SWIG_PYTHON_2_UNICODE
+%}
 
 %include <exception.i>
 %include <std_shared_ptr.i>
