@@ -75,8 +75,17 @@ TransactionItem::getActionShort()
     return transactionItemActionShort.at(getAction());
 }
 
-TransactionItem::TransactionItem(const Transaction &trans)
-  : trans{trans}
+TransactionItem::TransactionItem(const Transaction *trans)
+  : trans(trans)
+  , transID(0)
+  , conn(trans->conn)
+{
+}
+
+TransactionItem::TransactionItem(SQLite3Ptr conn, int64_t transID)
+  : trans(nullptr)
+  , transID(transID)
+  , conn(conn)
 {
 }
 
@@ -94,6 +103,10 @@ TransactionItem::save()
 void
 TransactionItem::dbInsert()
 {
+    if (trans == nullptr) {
+        throw std::runtime_error("Attempt to insert transaction item into completed transaction");
+    }
+
     const char *sql = R"**(
         INSERT INTO
           trans_item (
@@ -110,15 +123,15 @@ TransactionItem::dbInsert()
     )**";
 
     // save the transaction item
-    SQLite3::Statement query(*trans.conn.get(), sql);
-    query.bindv(trans.getId(),
+    SQLite3::Statement query(*(conn.get()), sql);
+    query.bindv(trans->getId(),
                 getItem()->getId(),
-                Repo::getCached(trans.conn, getRepoid())->getId(),
+                Repo::getCached(conn, getRepoid())->getId(),
                 static_cast< int >(getAction()),
                 static_cast< int >(getReason()),
                 getDone());
     query.step();
-    setId(trans.conn->lastInsertRowID());
+    setId(conn->lastInsertRowID());
 }
 
 void
@@ -128,9 +141,9 @@ TransactionItem::saveReplacedBy()
         return;
     }
     const char *sql = "INSERT INTO item_replaced_by VALUES (?, ?)";
-    SQLite3::Statement replacedByQuery(*trans.conn.get(), sql);
+    SQLite3::Statement replacedByQuery(*(conn.get()), sql);
     bool first = true;
-    for (auto newItem : replacedBy) {
+    for (const auto &newItem : replacedBy) {
         if (!first) {
             // reset the prepared statement, so it can be executed again
             replacedByQuery.reset();
@@ -144,6 +157,10 @@ TransactionItem::saveReplacedBy()
 void
 TransactionItem::dbUpdate()
 {
+    if (trans == nullptr) {
+        throw std::runtime_error("Attempt to update transaction item in completed transaction");
+    }
+
     const char *sql = R"**(
         UPDATE
           trans_item
@@ -158,10 +175,10 @@ TransactionItem::dbUpdate()
           id = ?
     )**";
 
-    SQLite3::Statement query(*trans.conn.get(), sql);
-    query.bindv(trans.getId(),
+    SQLite3::Statement query(*(conn.get()), sql);
+    query.bindv(trans->getId(),
                 getItem()->getId(),
-                Repo::getCached(trans.conn, getRepoid())->getId(),
+                Repo::getCached(trans->conn, getRepoid())->getId(),
                 static_cast< int >(getAction()),
                 static_cast< int >(getReason()),
                 getDone(),

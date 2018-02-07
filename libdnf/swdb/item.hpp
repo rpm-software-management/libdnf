@@ -43,7 +43,7 @@ class Item {
 public:
     /// Default constructor.
     /** A more elaborate description of the constructor. */
-    Item(std::shared_ptr< SQLite3 > conn);
+    explicit Item(SQLite3Ptr conn);
 
     /// Default destructor.
     /** A more elaborate description of the destructor. */
@@ -70,7 +70,7 @@ public:
 protected:
     void dbInsert();
 
-    std::shared_ptr< SQLite3 > conn;
+    SQLite3Ptr conn;
     int64_t id = 0;
     const ItemType itemType = ItemType::UNKNOWN;
 };

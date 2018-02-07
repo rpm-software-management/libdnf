@@ -33,8 +33,8 @@ typedef std::shared_ptr< RPMItem > RPMItemPtr;
 
 class RPMItem : public Item {
 public:
-    RPMItem(std::shared_ptr< SQLite3 > conn);
-    RPMItem(std::shared_ptr< SQLite3 > conn, int64_t pk);
+    explicit RPMItem(SQLite3Ptr conn);
+    RPMItem(SQLite3Ptr conn, int64_t pk);
     virtual ~RPMItem() = default;
 
     const std::string &getName() const noexcept { return name; }
@@ -57,12 +57,10 @@ public:
     const ItemType getItemType() const noexcept override { return itemType; }
     void save() override;
 
-    static std::shared_ptr< TransactionItem > getTransactionItem(std::shared_ptr< SQLite3 > conn,
-                                                                 const std::string &nevra);
-    static std::vector< std::shared_ptr< TransactionItem > > getTransactionItems(
-        std::shared_ptr< SQLite3 > conn,
-        int64_t transaction_id);
-    static TransactionItemReason resolveTransactionItemReason(std::shared_ptr< SQLite3 > conn,
+    static TransactionItemPtr getTransactionItem(SQLite3Ptr conn, const std::string &nevra);
+    static std::vector< TransactionItemPtr > getTransactionItems(SQLite3Ptr conn,
+                                                                 int64_t transaction_id);
+    static TransactionItemReason resolveTransactionItemReason(SQLite3Ptr conn,
                                                               const std::string &name,
                                                               const std::string arch,
                                                               int64_t maxTransactionId);
@@ -79,7 +77,6 @@ protected:
 
     void dbSelect(int64_t transaction_id);
     void dbInsert();
-    void dbUpdate();
     void dbSelectOrInsert();
 };
 

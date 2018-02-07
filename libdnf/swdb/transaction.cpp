@@ -24,19 +24,19 @@
 #include "item_rpm.hpp"
 #include "transactionitem.hpp"
 
-Transaction::Transaction(std::shared_ptr< SQLite3 > conn)
+Transaction::Transaction(SQLite3Ptr conn)
   : conn{conn}
 {
 }
 
-Transaction::Transaction(std::shared_ptr< SQLite3 > conn, int64_t pk)
+Transaction::Transaction(SQLite3Ptr conn, int64_t pk)
   : conn{conn}
 {
     dbSelect(pk);
 }
 
 bool
-Transaction::operator=(const Transaction &other)
+Transaction::operator==(const Transaction &other)
 {
     if (getId() != other.getId()) {
         return false;
@@ -109,7 +109,7 @@ Transaction::dbSelect(int64_t pk)
     setRpmdbVersionBegin(query.get< std::string >("rpmdb_version_begin"));
     setRpmdbVersionEnd(query.get< std::string >("rpmdb_version_end"));
     setReleasever(query.get< std::string >("releasever"));
-    setUserId(query.get< int >("user_id"));
+    setUserId(query.get< uint32_t >("user_id"));
     setCmdline(query.get< std::string >("cmdline"));
     setDone(query.get< bool >("done"));
 }
@@ -201,13 +201,13 @@ Transaction::dbUpdate()
     query.step();
 }
 
-std::shared_ptr< TransactionItem >
+TransactionItemPtr
 Transaction::addItem(std::shared_ptr< Item > item,
                      const std::string &repoid,
                      TransactionItemAction action,
                      TransactionItemReason reason)
 {
-    auto trans_item = std::make_shared< TransactionItem >(*this);
+    auto trans_item = std::make_shared< TransactionItem >(this);
     trans_item->setItem(item);
     trans_item->setRepoid(repoid);
     trans_item->setAction(action);
@@ -236,7 +236,7 @@ Transaction::saveItems()
  * Lazy loader for the transaction items.
  * \return list of transaction items associated with the transaction
  */
-std::vector< std::shared_ptr< TransactionItem > >
+std::vector< TransactionItemPtr >
 Transaction::getItems()
 {
     if (items.empty()) {

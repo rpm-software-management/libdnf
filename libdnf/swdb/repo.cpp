@@ -23,7 +23,7 @@
 // initialize static variable Repo::cache
 std::map< std::string, std::shared_ptr< Repo > > Repo::cache;
 
-Repo::Repo(std::shared_ptr< SQLite3 > conn)
+Repo::Repo(SQLite3Ptr conn)
   : conn{conn}
 {
 }
@@ -49,7 +49,7 @@ Repo::dbInsert()
 }
 
 std::shared_ptr< Repo >
-Repo::getCached(std::shared_ptr< SQLite3 > conn, const std::string &repoid)
+Repo::getCached(SQLite3Ptr conn, const std::string &repoid)
 {
     // HACK: this is kind of ugly - key is generated from repoid and sqlite3 pointer
     auto key = repoid + "/" + std::to_string(reinterpret_cast< std::size_t >(conn.get()));

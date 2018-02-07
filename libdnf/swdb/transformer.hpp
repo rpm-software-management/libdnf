@@ -68,24 +68,24 @@ public:
     void transform();
 
 protected:
-    void transformTrans(std::shared_ptr< SQLite3 > swdb, std::shared_ptr< SQLite3 > history);
+    void transformTrans(SQLite3Ptr swdb, SQLite3Ptr history);
 
-    void transformGroups(std::shared_ptr< SQLite3 > swdb);
-    void processGroupPersistor(std::shared_ptr< SQLite3 > swdb, const Json::Value &root);
+    void transformGroups(SQLite3Ptr swdb);
+    void processGroupPersistor(SQLite3Ptr swdb, const Json::Value &root);
 
 private:
-    void transformRPMItems(std::shared_ptr< SQLite3 > swdb,
-                           std::shared_ptr< SQLite3 > history,
+    void transformRPMItems(SQLite3Ptr swdb,
+                           SQLite3Ptr history,
                            std::shared_ptr< TransformerTransaction > trans);
-    void transformOutput(std::shared_ptr< SQLite3 > history,
+    void transformOutput(SQLite3Ptr history,
                          std::shared_ptr< TransformerTransaction > trans);
-    void transformTransWith(std::shared_ptr< SQLite3 > swdb,
-                            std::shared_ptr< SQLite3 > history,
+    void transformTransWith(SQLite3Ptr swdb,
+                            SQLite3Ptr history,
                             std::shared_ptr< TransformerTransaction > trans);
-    std::shared_ptr< CompsGroupItem > processGroup(std::shared_ptr< SQLite3 > swdb,
+    CompsGroupItemPtr processGroup(SQLite3Ptr swdb,
                                                    const std::string &groupId,
                                                    const Json::Value &group);
-    std::shared_ptr< CompsEnvironmentItem > processEnvironment(std::shared_ptr< SQLite3 > swdb,
+    std::shared_ptr< CompsEnvironmentItem > processEnvironment(SQLite3Ptr swdb,
                                                                const std::string &envId,
                                                                const Json::Value &env);
     std::string historyPath();

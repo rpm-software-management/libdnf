@@ -29,11 +29,11 @@
 
 class Repo {
 public:
-    static std::shared_ptr< Repo > getCached(std::shared_ptr< SQLite3 > conn,
+    static std::shared_ptr< Repo > getCached(SQLite3Ptr conn,
                                              const std::string &repoid);
     static std::map< std::string, std::shared_ptr< Repo > > cache;
 
-    Repo(std::shared_ptr< SQLite3 > conn);
+    Repo(SQLite3Ptr conn);
 
     int64_t getId() const noexcept { return id; }
     void setId(int64_t value) { id = value; }
@@ -49,7 +49,7 @@ protected:
 
     int64_t id = 0;
     std::string repoId;
-    std::shared_ptr< SQLite3 > conn;
+    SQLite3Ptr conn;
 };
 
 #endif // LIBDNF_SWDB_REPO_HPP

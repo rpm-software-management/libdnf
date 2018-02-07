@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stdio.h>
+#include <cstdio>
 #include <sys/stat.h>
 
 #include "../hy-nevra.hpp"
@@ -28,12 +28,12 @@
 
 #include "item_rpm.hpp"
 #include "swdb.hpp"
-#include "transactionitem.hpp"
 
 static int
 file_exists(const char *path)
 {
-    struct stat buffer;
+    struct stat buffer {
+    };
     return (stat(path, &buffer) == 0);
 }
 
@@ -42,12 +42,12 @@ static const char *sql_create_tables =
     ;
 
 void
-SwdbCreateDatabase(std::shared_ptr< SQLite3 > conn)
+SwdbCreateDatabase(SQLite3Ptr conn)
 {
     conn->exec(sql_create_tables);
 }
 
-Swdb::Swdb(std::shared_ptr< SQLite3 > conn)
+Swdb::Swdb(SQLite3Ptr conn)
   : conn{conn}
 {
 }
@@ -69,7 +69,8 @@ Swdb::resetDatabase()
     createDatabase();
 }
 
-void Swdb::closeDatabase()
+void
+Swdb::closeDatabase()
 {
     conn->close();
 }
@@ -87,7 +88,7 @@ int64_t
 Swdb::beginTransaction(int64_t dtBegin,
                        std::string rpmdbVersionBegin,
                        std::string cmdline,
-                       int32_t userId)
+                       uint32_t userId)
 {
     if (!transactionInProgress) {
         throw std::logic_error("Not in progress");
@@ -114,7 +115,7 @@ Swdb::endTransaction(int64_t dtEnd, std::string rpmdbVersionEnd, bool done)
     return result;
 }
 
-std::shared_ptr< TransactionItem >
+TransactionItemPtr
 Swdb::addItem(std::shared_ptr< Item > item,
               const std::string &repoid,
               TransactionItemAction action,
@@ -129,7 +130,7 @@ Swdb::addItem(std::shared_ptr< Item > item,
 }
 
 void
-Swdb::setItemDone(std::shared_ptr< TransactionItem > item)
+Swdb::setItemDone(TransactionItemPtr item)
 {
     item->setDone(true);
 
@@ -244,7 +245,7 @@ Swdb::getLastTransaction()
     return nullptr;
 }
 
-std::vector< std::shared_ptr< Transaction > >
+std::vector< TransactionPtr >
 Swdb::listTransactions()
 {
     const char *sql = R"**(
@@ -256,7 +257,7 @@ Swdb::listTransactions()
             id
     )**";
     SQLite3::Statement query(*conn, sql);
-    std::vector< std::shared_ptr< Transaction > > result;
+    std::vector< TransactionPtr > result;
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
         auto transId = query.get< int64_t >(0);
         auto transaction = std::make_shared< Transaction >(conn, transId);
@@ -274,13 +275,13 @@ Swdb::addConsoleOutputLine(int fileDescriptor, std::string line)
     transactionInProgress->addConsoleOutputLine(fileDescriptor, line);
 }
 
-std::shared_ptr< TransactionItem >
+TransactionItemPtr
 Swdb::getCompsGroupItem(const std::string &groupid)
 {
     return CompsGroupItem::getTransactionItem(conn, groupid);
 }
 
-std::vector< std::shared_ptr< TransactionItem > >
+std::vector< TransactionItemPtr >
 Swdb::getCompsGroupItemsByPattern(const std::string &pattern)
 {
     return CompsGroupItem::getTransactionItemsByPattern(conn, pattern);
@@ -436,13 +437,13 @@ Swdb::getCompsGroupEnvironments(const std::string &groupId)
     return result;
 }
 
-std::shared_ptr< TransactionItem >
+TransactionItemPtr
 Swdb::getCompsEnvironmentItem(const std::string &envid)
 {
     return CompsEnvironmentItem::getTransactionItem(conn, envid);
 }
 
-std::vector< std::shared_ptr< TransactionItem > >
+std::vector< TransactionItemPtr >
 Swdb::getCompsEnvironmentItemsByPattern(const std::string &pattern)
 {
     return CompsEnvironmentItem::getTransactionItemsByPattern(conn, pattern);

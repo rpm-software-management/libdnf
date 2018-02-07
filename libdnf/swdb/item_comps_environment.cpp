@@ -22,13 +22,17 @@
 
 #include "item_comps_environment.hpp"
 
-CompsEnvironmentItem::CompsEnvironmentItem(std::shared_ptr< SQLite3 > conn)
+typedef const char *string;
+
+CompsEnvironmentItem::CompsEnvironmentItem(SQLite3Ptr conn)
   : Item{conn}
+  , packageTypes{CompsPackageType::DEFAULT}
 {
 }
 
-CompsEnvironmentItem::CompsEnvironmentItem(std::shared_ptr< SQLite3 > conn, int64_t pk)
+CompsEnvironmentItem::CompsEnvironmentItem(SQLite3Ptr conn, int64_t pk)
   : Item{conn}
+  , packageTypes{CompsPackageType::DEFAULT}
 {
     dbSelect(pk);
 }
@@ -41,7 +45,7 @@ CompsEnvironmentItem::save()
     } else {
         // dbUpdate();
     }
-    for (auto i : getGroups()) {
+    for (const auto &i : getGroups()) {
         i->save();
     }
 }
@@ -98,13 +102,13 @@ CompsEnvironmentItem::dbInsert()
     query.step();
 }
 
-static std::shared_ptr< TransactionItem >
-compsEnvironmentTransactionItemFromQuery(std::shared_ptr< SQLite3 > conn, SQLite3::Query &query)
+static TransactionItemPtr
+compsEnvironmentTransactionItemFromQuery(SQLite3Ptr conn, SQLite3::Query &query, int64_t transID)
 {
-    auto trans_item = std::make_shared< TransactionItem >(conn);
+    auto trans_item = std::make_shared< TransactionItem >(conn, transID);
     auto item = std::make_shared< CompsEnvironmentItem >(conn);
-    trans_item->setItem(item);
 
+    trans_item->setItem(item);
     trans_item->setId(query.get< int >("ti_id"));
     trans_item->setAction(static_cast< TransactionItemAction >(query.get< int >("ti_action")));
     trans_item->setReason(static_cast< TransactionItemReason >(query.get< int >("ti_reason")));
@@ -118,11 +122,12 @@ compsEnvironmentTransactionItemFromQuery(std::shared_ptr< SQLite3 > conn, SQLite
     return trans_item;
 }
 
-std::shared_ptr< TransactionItem >
-CompsEnvironmentItem::getTransactionItem(std::shared_ptr< SQLite3 > conn, const std::string &envid)
+TransactionItemPtr
+CompsEnvironmentItem::getTransactionItem(SQLite3Ptr conn, const std::string &envid)
 {
     const char *sql = R"**(
         SELECT
+            ti.trans_id,
             ti.id as ti_id,
             ti.done as ti_done,
             ti.action as ti_action,
@@ -151,7 +156,9 @@ CompsEnvironmentItem::getTransactionItem(std::shared_ptr< SQLite3 > conn, const 
     SQLite3::Query query(*conn, sql);
     query.bindv(envid);
     if (query.step() == SQLite3::Statement::StepResult::ROW) {
-        auto trans_item = compsEnvironmentTransactionItemFromQuery(conn, query);
+        auto trans_item =
+            compsEnvironmentTransactionItemFromQuery(conn, query, query.get< int64_t >("trans_id"));
+
         if (trans_item->getAction() == TransactionItemAction::REMOVE) {
             return nullptr;
         }
@@ -160,22 +167,21 @@ CompsEnvironmentItem::getTransactionItem(std::shared_ptr< SQLite3 > conn, const 
     return nullptr;
 }
 
-std::vector< std::shared_ptr< TransactionItem > >
-CompsEnvironmentItem::getTransactionItemsByPattern(std::shared_ptr< SQLite3 > conn,
-                                                   const std::string &pattern)
+std::vector< TransactionItemPtr >
+CompsEnvironmentItem::getTransactionItemsByPattern(SQLite3Ptr conn, const std::string &pattern)
 {
-    const char *sql = R"**(
-        SELECT DISTINCT
-            environmentid
-        FROM
-            comps_environment
-        WHERE
-            environmentid LIKE ?
-            OR name LIKE ?
-            OR translated_name LIKE ?
-    )**";
+    string sql = R"**(
+            SELECT DISTINCT
+                environmentid
+            FROM
+                comps_environment
+            WHERE
+                environmentid LIKE ?
+                OR name LIKE ?
+                OR translated_name LIKE ?
+        )**";
 
-    std::vector< std::shared_ptr< TransactionItem > > result;
+    std::vector< TransactionItemPtr > result;
 
     SQLite3::Query query(*conn, sql);
     std::string pattern_sql = pattern;
@@ -192,10 +198,10 @@ CompsEnvironmentItem::getTransactionItemsByPattern(std::shared_ptr< SQLite3 > co
     return result;
 }
 
-std::vector< std::shared_ptr< TransactionItem > >
-CompsEnvironmentItem::getTransactionItems(std::shared_ptr< SQLite3 > conn, int64_t transactionId)
+std::vector< TransactionItemPtr >
+CompsEnvironmentItem::getTransactionItems(SQLite3Ptr conn, int64_t transactionId)
 {
-    std::vector< std::shared_ptr< TransactionItem > > result;
+    std::vector< TransactionItemPtr > result;
 
     const char *sql = R"**(
         SELECT
@@ -217,7 +223,7 @@ CompsEnvironmentItem::getTransactionItems(std::shared_ptr< SQLite3 > conn, int64
     query.bindv(transactionId);
 
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
-        auto trans_item = std::make_shared< TransactionItem >(conn);
+        auto trans_item = std::make_shared< TransactionItem >(conn, transactionId);
         auto item = std::make_shared< CompsEnvironmentItem >(conn);
         trans_item->setItem(item);
 
@@ -244,7 +250,7 @@ CompsEnvironmentItem::toStr()
  * Lazy loader for groups associaded with the environment.
  * \return vector of groups associated with the environment
  */
-std::vector< std::shared_ptr< CompsEnvironmentGroup > >
+std::vector< CompsEnvironmentGroupPtr >
 CompsEnvironmentItem::getGroups()
 {
     if (groups.empty()) {
@@ -280,7 +286,7 @@ CompsEnvironmentItem::loadGroups()
     }
 }
 
-std::shared_ptr< CompsEnvironmentGroup >
+CompsEnvironmentGroupPtr
 CompsEnvironmentItem::addGroup(std::string groupId, bool installed, CompsPackageType groupType)
 {
     auto pkg = std::make_shared< CompsEnvironmentGroup >(*this);

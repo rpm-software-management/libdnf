@@ -11,19 +11,36 @@
 
 
 %shared_ptr(SQLite3)
+typedef std::shared_ptr< SQLite3 > SQLite3Ptr;
 
 %shared_ptr(Item)
+typedef std::shared_ptr< Item > ItemPtr;
+
 %shared_ptr(RPMItem)
+typedef std::shared_ptr< RPMItem > RPMItemPtr;
 
 %shared_ptr(CompsGroupItem)
+typedef std::shared_ptr< CompsGroupItem > CompsGroupItemPtr;
+
 %shared_ptr(CompsGroupPackage)
+typedef std::shared_ptr< CompsGroupPackage > CompsGroupPackagePtr;
+
 
 %shared_ptr(CompsEnvironmentItem)
+typedef std::shared_ptr< CompsEnvironmentItem > CompsEnvironmentItemPtr;
+
 %shared_ptr(CompsEnvironmentGroup)
+typedef std::shared_ptr< CompsEnvironmentGroup > CompsEnvironmentGroupPtr;
+
 
 %shared_ptr(Transaction)
+typedef std::shared_ptr< Transaction > TransactionPtr;
+
 %shared_ptr(TransactionItem)
+typedef std::shared_ptr< TransactionItem > TransactionItemPtr;
+
 %shared_ptr(Repo)
+typedef std::shared_ptr< Repo > RepoPtr;
 
 
 %{

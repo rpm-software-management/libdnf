@@ -23,13 +23,15 @@
 #include "item_comps_group.hpp"
 #include "transactionitem.hpp"
 
-CompsGroupItem::CompsGroupItem(std::shared_ptr< SQLite3 > conn)
+CompsGroupItem::CompsGroupItem(SQLite3Ptr conn)
   : Item{conn}
+  , packageTypes(CompsPackageType::DEFAULT)
 {
 }
 
-CompsGroupItem::CompsGroupItem(std::shared_ptr< SQLite3 > conn, int64_t pk)
+CompsGroupItem::CompsGroupItem(SQLite3Ptr conn, int64_t pk)
   : Item{conn}
+  , packageTypes(CompsPackageType::DEFAULT)
 {
     dbSelect(pk);
 }
@@ -97,10 +99,11 @@ CompsGroupItem::dbInsert()
     query.step();
 }
 
-static std::shared_ptr< TransactionItem >
-compsGroupTransactionItemFromQuery(std::shared_ptr< SQLite3 > conn, SQLite3::Query &query)
+static TransactionItemPtr
+compsGroupTransactionItemFromQuery(SQLite3Ptr conn, SQLite3::Query &query, int64_t transID)
 {
-    auto trans_item = std::make_shared< TransactionItem >(conn);
+
+    auto trans_item = std::make_shared< TransactionItem >(conn, transID);
     auto item = std::make_shared< CompsGroupItem >(conn);
     trans_item->setItem(item);
 
@@ -117,11 +120,12 @@ compsGroupTransactionItemFromQuery(std::shared_ptr< SQLite3 > conn, SQLite3::Que
     return trans_item;
 }
 
-std::shared_ptr< TransactionItem >
-CompsGroupItem::getTransactionItem(std::shared_ptr< SQLite3 > conn, const std::string &groupid)
+TransactionItemPtr
+CompsGroupItem::getTransactionItem(SQLite3Ptr conn, const std::string &groupid)
 {
     const char *sql = R"**(
         SELECT
+            ti.trans_id,
             ti.id as ti_id,
             ti.done as ti_done,
             ti.action as ti_action,
@@ -149,7 +153,8 @@ CompsGroupItem::getTransactionItem(std::shared_ptr< SQLite3 > conn, const std::s
     SQLite3::Query query(*conn, sql);
     query.bindv(groupid);
     if (query.step() == SQLite3::Statement::StepResult::ROW) {
-        auto trans_item = compsGroupTransactionItemFromQuery(conn, query);
+        auto trans_item =
+            compsGroupTransactionItemFromQuery(conn, query, query.get< int64_t >("trans_id"));
         if (trans_item->getAction() == TransactionItemAction::REMOVE) {
             return nullptr;
         }
@@ -158,9 +163,8 @@ CompsGroupItem::getTransactionItem(std::shared_ptr< SQLite3 > conn, const std::s
     return nullptr;
 }
 
-std::vector< std::shared_ptr< TransactionItem > >
-CompsGroupItem::getTransactionItemsByPattern(std::shared_ptr< SQLite3 > conn,
-                                             const std::string &pattern)
+std::vector< TransactionItemPtr >
+CompsGroupItem::getTransactionItemsByPattern(SQLite3Ptr conn, const std::string &pattern)
 {
     const char *sql = R"**(
         SELECT DISTINCT
@@ -173,7 +177,7 @@ CompsGroupItem::getTransactionItemsByPattern(std::shared_ptr< SQLite3 > conn,
             OR translated_name LIKE ?
     )**";
 
-    std::vector< std::shared_ptr< TransactionItem > > result;
+    std::vector< TransactionItemPtr > result;
 
     SQLite3::Query query(*conn, sql);
     std::string pattern_sql = pattern;
@@ -190,10 +194,10 @@ CompsGroupItem::getTransactionItemsByPattern(std::shared_ptr< SQLite3 > conn,
     return result;
 }
 
-std::vector< std::shared_ptr< TransactionItem > >
-CompsGroupItem::getTransactionItems(std::shared_ptr< SQLite3 > conn, int64_t transactionId)
+std::vector< TransactionItemPtr >
+CompsGroupItem::getTransactionItems(SQLite3Ptr conn, int64_t transactionId)
 {
-    std::vector< std::shared_ptr< TransactionItem > > result;
+    std::vector< TransactionItemPtr > result;
 
     const char *sql = R"**(
         SELECT
@@ -217,7 +221,7 @@ CompsGroupItem::getTransactionItems(std::shared_ptr< SQLite3 > conn, int64_t tra
     query.bindv(transactionId);
 
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
-        auto trans_item = compsGroupTransactionItemFromQuery(conn, query);
+        auto trans_item = compsGroupTransactionItemFromQuery(conn, query, transactionId);
         result.push_back(trans_item);
     }
     return result;
@@ -233,7 +237,7 @@ CompsGroupItem::toStr()
  * Lazy loader for packages associated with the group.
  * \return list of packages associated with the group (installs and excludes).
  */
-std::vector< std::shared_ptr< CompsGroupPackage > >
+std::vector< CompsGroupPackagePtr >
 CompsGroupItem::getPackages()
 {
     if (packages.empty()) {
@@ -265,7 +269,7 @@ CompsGroupItem::loadPackages()
     }
 }
 
-std::shared_ptr< CompsGroupPackage >
+CompsGroupPackagePtr
 CompsGroupItem::addPackage(std::string name, bool installed, CompsPackageType pkgType)
 {
     auto pkg = std::make_shared< CompsGroupPackage >(*this);

@@ -20,7 +20,7 @@
 
 #include "item.hpp"
 
-Item::Item(std::shared_ptr< SQLite3 > conn)
+Item::Item(SQLite3Ptr conn)
   : conn{conn}
 {
 }

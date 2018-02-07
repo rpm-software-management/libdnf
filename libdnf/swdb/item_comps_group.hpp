@@ -34,13 +34,16 @@ enum class CompsPackageType : int {
 class CompsGroupItem;
 class CompsGroupPackage;
 
+typedef std::shared_ptr< CompsGroupItem > CompsGroupItemPtr;
+typedef std::shared_ptr< CompsGroupPackage > CompsGroupPackagePtr;
+
 #include "item.hpp"
 #include "transactionitem.hpp"
 
 class CompsGroupItem : public Item {
 public:
-    CompsGroupItem(std::shared_ptr< SQLite3 > conn);
-    CompsGroupItem(std::shared_ptr< SQLite3 > conn, int64_t pk);
+    explicit CompsGroupItem(SQLite3Ptr conn);
+    CompsGroupItem(SQLite3Ptr conn, int64_t pk);
     virtual ~CompsGroupItem() = default;
 
     const std::string &getGroupId() const noexcept { return groupId; }
@@ -58,18 +61,14 @@ public:
     virtual std::string toStr();
     virtual const ItemType getItemType() const noexcept { return itemType; }
     virtual void save();
-    std::shared_ptr< CompsGroupPackage > addPackage(std::string name,
-                                                    bool installed,
-                                                    CompsPackageType pkgType);
-    std::vector< std::shared_ptr< CompsGroupPackage > > getPackages();
-    static std::shared_ptr< TransactionItem > getTransactionItem(std::shared_ptr< SQLite3 > conn,
-                                                                 const std::string &groupid);
-    static std::vector< std::shared_ptr< TransactionItem > > getTransactionItemsByPattern(
-        std::shared_ptr< SQLite3 > conn,
+    CompsGroupPackagePtr addPackage(std::string name, bool installed, CompsPackageType pkgType);
+    std::vector< CompsGroupPackagePtr > getPackages();
+    static TransactionItemPtr getTransactionItem(SQLite3Ptr conn, const std::string &groupid);
+    static std::vector< TransactionItemPtr > getTransactionItemsByPattern(
+        SQLite3Ptr conn,
         const std::string &pattern);
-    static std::vector< std::shared_ptr< TransactionItem > > getTransactionItems(
-        std::shared_ptr< SQLite3 > conn,
-        int64_t transactionId);
+    static std::vector< TransactionItemPtr > getTransactionItems(SQLite3Ptr conn,
+                                                                 int64_t transactionId);
 
 protected:
     const ItemType itemType = ItemType::GROUP;
@@ -79,7 +78,7 @@ protected:
     CompsPackageType packageTypes;
 
     void loadPackages();
-    std::vector< std::shared_ptr< CompsGroupPackage > > packages;
+    std::vector< CompsGroupPackagePtr > packages;
 
 private:
     friend class CompsGroupPackage;
@@ -89,7 +88,7 @@ private:
 
 class CompsGroupPackage {
 public:
-    CompsGroupPackage(CompsGroupItem &group);
+    explicit CompsGroupPackage(CompsGroupItem &group);
 
     int64_t getId() const noexcept { return id; }
     void setId(int64_t value) { id = value; }
@@ -116,7 +115,6 @@ protected:
     CompsPackageType packageType;
 
 private:
-    void dbSelect(int64_t pk);
     void dbInsert();
     void dbSelectOrInsert();
 };

@@ -116,7 +116,7 @@ Transformer::transform()
  * \param swdb pointer to history database SQLite3 object
  */
 void
-Transformer::transformTrans(std::shared_ptr< SQLite3 > swdb, std::shared_ptr< SQLite3 > history)
+Transformer::transformTrans(SQLite3Ptr swdb, SQLite3Ptr history)
 {
     std::vector< std::shared_ptr< TransformerTransaction > > result;
 
@@ -209,8 +209,8 @@ fillRPMItem(std::shared_ptr< RPMItem > rpm, SQLite3::Query &query)
  * \param swdb pointer to history database SQLite3 object
  */
 void
-Transformer::transformTransWith(std::shared_ptr< SQLite3 > swdb,
-                                std::shared_ptr< SQLite3 > history,
+Transformer::transformTransWith(SQLite3Ptr swdb,
+                                SQLite3Ptr history,
                                 std::shared_ptr< TransformerTransaction > trans)
 {
     const char *sql = R"**(
@@ -243,7 +243,7 @@ Transformer::transformTransWith(std::shared_ptr< SQLite3 > swdb,
  * \param swdb pointer to history database SQLite3 object
  */
 void
-Transformer::transformOutput(std::shared_ptr< SQLite3 > history,
+Transformer::transformOutput(SQLite3Ptr history,
                              std::shared_ptr< TransformerTransaction > trans)
 {
     const char *sql = R"**(
@@ -285,7 +285,7 @@ Transformer::transformOutput(std::shared_ptr< SQLite3 > history,
 
 static void
 getYumdbData(int64_t itemId,
-             std::shared_ptr< SQLite3 > history,
+             SQLite3Ptr history,
              TransactionItemReason &reason,
              std::string &repoid)
 {
@@ -320,8 +320,8 @@ getYumdbData(int64_t itemId,
  * \param trans Transaction whose items should be transformed
  */
 void
-Transformer::transformRPMItems(std::shared_ptr< SQLite3 > swdb,
-                               std::shared_ptr< SQLite3 > history,
+Transformer::transformRPMItems(SQLite3Ptr swdb,
+                               SQLite3Ptr history,
                                std::shared_ptr< TransformerTransaction > trans)
 {
     // the order is important here - its Update, Updated
@@ -345,7 +345,7 @@ Transformer::transformRPMItems(std::shared_ptr< SQLite3 > swdb,
     SQLite3::Query query(*history.get(), pkg_sql);
     query.bindv(trans->getId());
 
-    std::shared_ptr< TransactionItem > last = nullptr;
+    TransactionItemPtr last = nullptr;
 
     /*
      * Item in a single transaction can be both Obsoleted multiple times and Updated.
@@ -355,7 +355,7 @@ Transformer::transformRPMItems(std::shared_ptr< SQLite3 > swdb,
      * so it's always obvious, that particular package was both Obsoleted
      * and Updated. Technically, we could replace action Obsoleted with action Erase.
      */
-    std::map< int64_t, std::shared_ptr< TransactionItem > > obsoletedItems;
+    std::map< int64_t, TransactionItemPtr > obsoletedItems;
 
     // interate over transaction packages in the history database
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
@@ -376,7 +376,7 @@ Transformer::transformRPMItems(std::shared_ptr< SQLite3 > swdb,
         // find out if an item was previously obsoleted
         auto pastObsoleted = obsoletedItems.find(rpm->getId());
 
-        std::shared_ptr< TransactionItem > transItem = nullptr;
+        TransactionItemPtr transItem = nullptr;
 
         if (pastObsoleted == obsoletedItems.end()) {
             // item hasn't been obsoleted yet
@@ -415,8 +415,8 @@ Transformer::transformRPMItems(std::shared_ptr< SQLite3 > swdb,
  * Construct CompsGroupItem object from JSON
  * \param group group json object
  */
-std::shared_ptr< CompsGroupItem >
-Transformer::processGroup(std::shared_ptr< SQLite3 > swdb,
+CompsGroupItemPtr
+Transformer::processGroup(SQLite3Ptr swdb,
                           const std::string &groupId,
                           const Json::Value &group)
 {
@@ -449,7 +449,7 @@ Transformer::processGroup(std::shared_ptr< SQLite3 > swdb,
  * \param env environment json object
  */
 std::shared_ptr< CompsEnvironmentItem >
-Transformer::processEnvironment(std::shared_ptr< SQLite3 > swdb,
+Transformer::processEnvironment(SQLite3Ptr swdb,
                                 const std::string &envId,
                                 const Json::Value &env)
 {
@@ -484,7 +484,7 @@ Transformer::processEnvironment(std::shared_ptr< SQLite3 > swdb,
  * \param root group persistor root node
  */
 void
-Transformer::processGroupPersistor(std::shared_ptr< SQLite3 > swdb, const Json::Value &root)
+Transformer::processGroupPersistor(SQLite3Ptr swdb, const Json::Value &root)
 {
     auto trans = Transaction(swdb);
 
@@ -523,7 +523,7 @@ Transformer::processGroupPersistor(std::shared_ptr< SQLite3 > swdb, const Json::
  * \param swdb pointer to swdb SQLite3 object
  */
 void
-Transformer::transformGroups(std::shared_ptr< SQLite3 > swdb)
+Transformer::transformGroups(SQLite3Ptr swdb)
 {
     std::string groupsFile(inputDir);
 

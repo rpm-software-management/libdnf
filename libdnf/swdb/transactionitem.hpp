@@ -39,38 +39,34 @@ typedef std::shared_ptr< TransactionItem > TransactionItemPtr;
 
 class TransactionItem {
 public:
-    TransactionItem(const Transaction &trans);
+    explicit TransactionItem(const Transaction *trans);
+
+    TransactionItem(SQLite3Ptr conn, int64_t transID);
 
     int64_t getId() const noexcept { return id; }
     void setId(int64_t value) { id = value; }
 
     // int64_t getTransactionId() const noexcept { return trans.getId(); }
 
-    std::shared_ptr< Item > getItem() const noexcept { return item; }
-    void setItem(std::shared_ptr< Item > value) { item = value; }
+    ItemPtr getItem() const noexcept { return item; }
+    void setItem(ItemPtr value) { item = value; }
 
     // typed items - workaround for lack of shared_ptr<> downcast support in SWIG
-    std::shared_ptr< CompsEnvironmentItem > getCompsEnvironmentItem() const noexcept
+    CompsEnvironmentItemPtr getCompsEnvironmentItem() const noexcept
     {
         return std::dynamic_pointer_cast< CompsEnvironmentItem >(item);
     }
-    std::shared_ptr< CompsGroupItem > getCompsGroupItem() const noexcept
+    CompsGroupItemPtr getCompsGroupItem() const noexcept
     {
         return std::dynamic_pointer_cast< CompsGroupItem >(item);
     }
-    std::shared_ptr< RPMItem > getRPMItem() const noexcept
-    {
-        return std::dynamic_pointer_cast< RPMItem >(item);
-    }
+    RPMItemPtr getRPMItem() const noexcept { return std::dynamic_pointer_cast< RPMItem >(item); }
 
     const std::string &getRepoid() const noexcept { return repoid; }
     void setRepoid(const std::string &value) { repoid = value; }
 
-    const std::vector< std::shared_ptr< TransactionItem > > &getReplacedBy() const noexcept
-    {
-        return replacedBy;
-    }
-    void addReplacedBy(std::shared_ptr< TransactionItem > value) { replacedBy.push_back(value); }
+    const std::vector< TransactionItemPtr > &getReplacedBy() const noexcept { return replacedBy; }
+    void addReplacedBy(TransactionItemPtr value) { replacedBy.push_back(value); }
 
     TransactionItemAction getAction() const noexcept { return action; }
     void setAction(TransactionItemAction value) { action = value; }
@@ -89,11 +85,15 @@ public:
 
 protected:
     int64_t id = 0;
-    const Transaction &trans;
-    std::shared_ptr< Item > item;
+    const Transaction *trans;
+
+    const int64_t transID;
+    SQLite3Ptr conn;
+
+    ItemPtr item;
     // TODO: replace with objects? it's just repoid, probably not necessary
     std::string repoid;
-    std::vector< std::shared_ptr< TransactionItem > > replacedBy;
+    std::vector< TransactionItemPtr > replacedBy;
     TransactionItemAction action = TransactionItemAction::INSTALL;
     TransactionItemReason reason = TransactionItemReason::UNKNOWN;
     bool done = false;

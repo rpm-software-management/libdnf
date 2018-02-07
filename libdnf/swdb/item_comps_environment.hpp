@@ -25,7 +25,10 @@
 #include <vector>
 
 class CompsEnvironmentItem;
+typedef std::shared_ptr< CompsEnvironmentItem > CompsEnvironmentItemPtr;
+
 class CompsEnvironmentGroup;
+typedef std::shared_ptr< CompsEnvironmentGroup > CompsEnvironmentGroupPtr;
 
 #include "item.hpp"
 #include "item_comps_group.hpp"
@@ -33,8 +36,10 @@ class CompsEnvironmentGroup;
 
 class CompsEnvironmentItem : public Item {
 public:
-    CompsEnvironmentItem(std::shared_ptr< SQLite3 > conn);
-    CompsEnvironmentItem(std::shared_ptr< SQLite3 > conn, int64_t pk);
+    explicit CompsEnvironmentItem(SQLite3Ptr conn);
+
+    CompsEnvironmentItem(SQLite3Ptr conn, int64_t pk);
+
     virtual ~CompsEnvironmentItem() = default;
 
     const std::string &getEnvironmentId() const noexcept { return environmentId; }
@@ -52,18 +57,16 @@ public:
     virtual std::string toStr();
     virtual const ItemType getItemType() const noexcept { return itemType; }
     virtual void save();
-    std::shared_ptr< CompsEnvironmentGroup > addGroup(std::string groupId,
-                                                      bool installed,
-                                                      CompsPackageType groupType);
-    std::vector< std::shared_ptr< CompsEnvironmentGroup > > getGroups();
-    static std::shared_ptr< TransactionItem > getTransactionItem(std::shared_ptr< SQLite3 > conn,
-                                                                 const std::string &envid);
-    static std::vector< std::shared_ptr< TransactionItem > > getTransactionItemsByPattern(
-        std::shared_ptr< SQLite3 > conn,
+    CompsEnvironmentGroupPtr addGroup(std::string groupId,
+                                      bool installed,
+                                      CompsPackageType groupType);
+    std::vector< CompsEnvironmentGroupPtr > getGroups();
+    static TransactionItemPtr getTransactionItem(SQLite3Ptr conn, const std::string &envid);
+    static std::vector< TransactionItemPtr > getTransactionItemsByPattern(
+        SQLite3Ptr conn,
         const std::string &pattern);
-    static std::vector< std::shared_ptr< TransactionItem > > getTransactionItems(
-        std::shared_ptr< SQLite3 > conn,
-        int64_t transactionId);
+    static std::vector< TransactionItemPtr > getTransactionItems(SQLite3Ptr conn,
+                                                                 int64_t transactionId);
 
 protected:
     const ItemType itemType = ItemType::ENVIRONMENT;
@@ -73,7 +76,7 @@ protected:
     CompsPackageType packageTypes;
 
     void loadGroups();
-    std::vector< std::shared_ptr< CompsEnvironmentGroup > > groups;
+    std::vector< CompsEnvironmentGroupPtr > groups;
 
 private:
     friend class CompsEnvironmentGroup;
@@ -83,7 +86,7 @@ private:
 
 class CompsEnvironmentGroup {
 public:
-    CompsEnvironmentGroup(CompsEnvironmentItem &environment);
+    explicit CompsEnvironmentGroup(CompsEnvironmentItem &environment);
 
     int64_t getId() const noexcept { return id; }
     void setId(int64_t value) { id = value; }
@@ -110,9 +113,7 @@ protected:
     CompsPackageType groupType;
 
 private:
-    void dbSelect(int64_t pk);
     void dbInsert();
-    void dbSelectOrInsert();
 };
 
 #endif // LIBDNF_SWDB_ITEM_COMPS_ENVIRONMENT_HPP

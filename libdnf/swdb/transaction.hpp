@@ -36,11 +36,11 @@ typedef std::shared_ptr< Transaction > TransactionPtr;
 class Transaction {
 public:
     // create an empty object, don't read from db
-    Transaction(std::shared_ptr< SQLite3 > conn);
+    explicit Transaction(SQLite3Ptr conn);
     // load from db
-    Transaction(std::shared_ptr< SQLite3 > conn, int64_t pk);
+    Transaction(SQLite3Ptr conn, int64_t pk);
 
-    bool operator=(const Transaction &other);
+    bool operator==(const Transaction &other);
     bool operator<(const Transaction &other);
 
     int64_t getId() const noexcept { return id; }
@@ -61,8 +61,8 @@ public:
     const std::string &getReleasever() const noexcept { return releasever; }
     void setReleasever(const std::string &value) { releasever = value; }
 
-    int64_t getUserId() const noexcept { return userId; }
-    void setUserId(int64_t value) { userId = value; }
+    uint32_t getUserId() const noexcept { return userId; }
+    void setUserId(uint32_t value) { userId = value; }
 
     const std::string &getCmdline() const noexcept { return cmdline; }
     void setCmdline(const std::string &value) { cmdline = value; }
@@ -72,11 +72,11 @@ public:
 
     void begin();
     void finish(bool success);
-    std::shared_ptr< TransactionItem > addItem(std::shared_ptr< Item > item,
-                                               const std::string &repoid,
-                                               TransactionItemAction action,
-                                               TransactionItemReason reason);
-    std::vector< std::shared_ptr< TransactionItem > > getItems();
+    TransactionItemPtr addItem(std::shared_ptr< Item > item,
+                               const std::string &repoid,
+                               TransactionItemAction action,
+                               TransactionItemReason reason);
+    std::vector< TransactionItemPtr > getItems();
 
     void addConsoleOutputLine(int fileDescriptor, const std::string &line);
     void addSoftwarePerformedWith(std::shared_ptr< RPMItem > software);
@@ -92,16 +92,16 @@ protected:
     std::string rpmdbVersionEnd;
     // TODO: move to a new "vars" table?
     std::string releasever;
-    int64_t userId = 0;
+    uint32_t userId = 0;
     std::string cmdline;
     bool done = false;
 
     friend class TransactionItem;
-    std::shared_ptr< SQLite3 > conn;
+    SQLite3Ptr conn;
 
     void saveItems();
     void loadItems();
-    std::vector< std::shared_ptr< TransactionItem > > items;
+    std::vector< TransactionItemPtr > items;
 
     std::set< std::shared_ptr< RPMItem > > softwarePerformedWith;
 

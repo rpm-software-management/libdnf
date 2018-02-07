@@ -34,12 +34,12 @@ static const std::map< TransactionItemReason, int > reasonPriorities = {
     {TransactionItemReason::GROUP, 4},
     {TransactionItemReason::USER, 5}};
 
-RPMItem::RPMItem(std::shared_ptr< SQLite3 > conn)
+RPMItem::RPMItem(SQLite3Ptr conn)
   : Item{conn}
 {
 }
 
-RPMItem::RPMItem(std::shared_ptr< SQLite3 > conn, int64_t pk)
+RPMItem::RPMItem(SQLite3Ptr conn, int64_t pk)
   : Item{conn}
 {
     dbSelect(pk);
@@ -97,10 +97,10 @@ RPMItem::dbInsert()
     query.step();
 }
 
-static std::shared_ptr< TransactionItem >
-transactionItemFromQuery(std::shared_ptr< SQLite3 > conn, SQLite3::Query &query)
+static TransactionItemPtr
+transactionItemFromQuery(SQLite3Ptr conn, SQLite3::Query &query, int64_t transID)
 {
-    auto trans_item = std::make_shared< TransactionItem >(conn);
+    auto trans_item = std::make_shared< TransactionItem >(conn, transID);
     auto item = std::make_shared< RPMItem >(conn);
     trans_item->setItem(item);
     trans_item->setId(query.get< int >("id"));
@@ -117,10 +117,10 @@ transactionItemFromQuery(std::shared_ptr< SQLite3 > conn, SQLite3::Query &query)
     return trans_item;
 }
 
-std::vector< std::shared_ptr< TransactionItem > >
-RPMItem::getTransactionItems(std::shared_ptr< SQLite3 > conn, int64_t transaction_id)
+std::vector< TransactionItemPtr >
+RPMItem::getTransactionItems(SQLite3Ptr conn, int64_t transaction_id)
 {
-    std::vector< std::shared_ptr< TransactionItem > > result;
+    std::vector< TransactionItemPtr > result;
 
     const char *sql =
         "SELECT "
@@ -150,7 +150,7 @@ RPMItem::getTransactionItems(std::shared_ptr< SQLite3 > conn, int64_t transactio
     query.bindv(transaction_id);
 
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
-        result.push_back(transactionItemFromQuery(conn, query));
+        result.push_back(transactionItemFromQuery(conn, query, transaction_id));
     }
     return result;
 }
@@ -199,8 +199,8 @@ RPMItem::dbSelectOrInsert()
     }
 }
 
-std::shared_ptr< TransactionItem >
-RPMItem::getTransactionItem(std::shared_ptr< SQLite3 > conn, const std::string &nevra)
+TransactionItemPtr
+RPMItem::getTransactionItem(SQLite3Ptr conn, const std::string &nevra)
 {
     auto nevraObject = new Nevra;
     if (hy_nevra_possibility(nevra.c_str(), HY_FORM_NEVRA, nevraObject)) {
@@ -214,6 +214,7 @@ RPMItem::getTransactionItem(std::shared_ptr< SQLite3 > conn, const std::string &
 
     const char *sql = R"**(
         SELECT
+            ti.trans_id,
             ti.id,
             ti.action,
             ti.reason,
@@ -248,13 +249,13 @@ RPMItem::getTransactionItem(std::shared_ptr< SQLite3 > conn, const std::string &
                 nevraObject->getRelease(),
                 nevraObject->getArch());
     if (query.step() == SQLite3::Statement::StepResult::ROW) {
-        return transactionItemFromQuery(conn, query);
+        return transactionItemFromQuery(conn, query, query.get< int64_t >("trans_id"));
     }
     return nullptr;
 }
 
 TransactionItemReason
-RPMItem::resolveTransactionItemReason(std::shared_ptr< SQLite3 > conn,
+RPMItem::resolveTransactionItemReason(SQLite3Ptr conn,
                                       const std::string &name,
                                       const std::string arch,
                                       int64_t maxTransactionId)

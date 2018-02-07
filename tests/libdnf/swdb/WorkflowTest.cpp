@@ -31,7 +31,7 @@ WorkflowTest::testDefaultWorkflow()
     // TODO: init/begin/end trans
 
     // STEP 1: create transaction object
-    auto trans = Transaction(conn);
+    Transaction trans(conn);
     CPPUNIT_ASSERT(trans.getDone() == false);
 
     // STEP 2: set vars

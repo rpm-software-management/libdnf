@@ -33,7 +33,7 @@
 
 class Swdb {
 public:
-    Swdb(std::shared_ptr< SQLite3 > conn);
+    explicit Swdb(SQLite3Ptr conn);
 
     const std::string &getPath() { return conn->getPath(); }
 
@@ -45,19 +45,18 @@ public:
     int64_t beginTransaction(int64_t dtBegin,
                              std::string rpmdbVersionBegin,
                              std::string cmdline,
-                             int32_t userId);
+                             uint32_t userId);
     int64_t endTransaction(int64_t dtEnd, std::string rpmdbVersionEnd, bool done);
 
     std::shared_ptr< const Transaction > getLastTransaction();
-    std::vector< std::shared_ptr< Transaction > >
-    listTransactions(); // std::vector<long long> transactionIds);
+    std::vector< TransactionPtr > listTransactions(); // std::vector<long long> transactionIds);
 
-    std::shared_ptr< TransactionItem > addItem(std::shared_ptr< Item > item,
-                                               const std::string &repoid,
-                                               TransactionItemAction action,
-                                               TransactionItemReason reason);
+    TransactionItemPtr addItem(std::shared_ptr< Item > item,
+                               const std::string &repoid,
+                               TransactionItemAction action,
+                               TransactionItemReason reason);
     // std::shared_ptr<TransactionItem> replacedBy);
-    void setItemDone(std::shared_ptr< TransactionItem > item);
+    void setItemDone(TransactionItemPtr item);
     void addConsoleOutputLine(int fileDescriptor, std::string line);
 
     // Item: RPM
@@ -68,22 +67,17 @@ public:
     std::shared_ptr< const TransactionItem > getRPMTransactionItem(const std::string &nevra);
 
     // Item: CompsGroup
-    std::shared_ptr< TransactionItem > getCompsGroupItem(const std::string &groupid);
-    std::vector< std::shared_ptr< TransactionItem > > getCompsGroupItemsByPattern(
-        const std::string &pattern);
+    TransactionItemPtr getCompsGroupItem(const std::string &groupid);
+    std::vector< TransactionItemPtr > getCompsGroupItemsByPattern(const std::string &pattern);
     std::vector< std::string > getPackageCompsGroups(const std::string &packageName);
 
     // Item: CompsEnvironment
-    std::shared_ptr< TransactionItem > getCompsEnvironmentItem(const std::string &envid);
-    std::vector< std::shared_ptr< TransactionItem > > getCompsEnvironmentItemsByPattern(
-        const std::string &pattern);
+    TransactionItemPtr getCompsEnvironmentItem(const std::string &envid);
+    std::vector< TransactionItemPtr > getCompsEnvironmentItemsByPattern(const std::string &pattern);
     std::vector< std::string > getCompsGroupEnvironments(const std::string &groupId);
 
 protected:
-    void dbInsert();
-    void dbSelectOrInsert();
-
-    std::shared_ptr< SQLite3 > conn;
+    SQLite3Ptr conn;
     std::unique_ptr< Transaction > transactionInProgress = nullptr;
 
 private:
@@ -91,6 +85,6 @@ private:
 
 // TODO: create if doesn't exist
 void
-SwdbCreateDatabase(std::shared_ptr< SQLite3 > conn);
+SwdbCreateDatabase(SQLite3Ptr conn);
 
 #endif // LIBDNF_SWDB_SWDB_HPP
