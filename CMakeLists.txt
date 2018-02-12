@@ -29,8 +29,6 @@ INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR})
 OPTION (ENABLE_SOLV_URPMREORDER "Build with support for URPM-like solution reordering?" OFF)
 option (ENABLE_RHSM_SUPPORT "Build with Red Hat Subscription Manager support?" OFF)
 
-OPTION (WITH_SWDB "Support for unified software database" ON)
-
 # hawkey dependencies
 find_package (PkgConfig REQUIRED)
 SET (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
@@ -55,10 +53,6 @@ ENDIF()
 
 INCLUDE_DIRECTORIES(${REPO_INCLUDE_DIRS})
 
-IF (WITH_SWDB)
-   ADD_DEFINITIONS(-DWITH_SWDB=1)
-ENDIF()
-
 INCLUDE_DIRECTORIES(${GLIB_INCLUDE_DIRS})
 link_directories(${REPO_LIBRARY_DIRS})
 
@@ -76,9 +70,7 @@ IF (RPMIO_LIBRARY)
   SET(RPMDB_LIBRARY ${RPMIO_LIBRARY} ${RPMDB_LIBRARY})
 ENDIF (RPMIO_LIBRARY)
 
-IF (WITH_SWDB)
-    pkg_check_modules(SQLite3 sqlite3 REQUIRED)
-ENDIF()
+pkg_check_modules(SQLite3 sqlite3 REQUIRED)
 
 ADD_DEFINITIONS(-DTESTDATADIR=\\"${CMAKE_SOURCE_DIR}/data/tests\\")
 ADD_DEFINITIONS(-DPACKAGE_VERSION=\\"${LIBDNF_VERSION}\\")
