@@ -19,24 +19,16 @@
  */
 
 #include <cstdio>
-#include <sys/stat.h>
 
 #include "../hy-nevra.hpp"
 #include "../hy-subject.h"
 
+#include "../utils/filesystem.hpp"
 #include "../utils/sqlite3/sqlite3.hpp"
 
 #include "item_rpm.hpp"
 #include "swdb.hpp"
 #include "transformer.hpp"
-
-static int
-file_exists(const char *path)
-{
-    struct stat buffer {
-    };
-    return (stat(path, &buffer) == 0);
-}
 
 Swdb::Swdb(SQLite3Ptr conn)
   : conn{conn}
@@ -47,7 +39,7 @@ void
 Swdb::resetDatabase()
 {
     conn->close();
-    if (file_exists(getPath().c_str())) {
+    if (pathExists(getPath().c_str())) {
         remove(getPath().c_str());
     }
     conn->open();
@@ -455,13 +447,14 @@ Swdb::createCompsGroupItem()
 Swdb::Swdb(const std::string &path)
   : conn(nullptr)
 {
-    // TODO make dirs if missing
-
     // check if DB file is present
-    struct stat buffer;
-
-    if (stat(path.c_str(), &buffer)) {
+    if (!pathExists(path.c_str())) {
         // file not present
+
+        // create directory path if necessary
+        makeDirPath(path);
+
+        /// XXX do we want to always transform from "/var/lib/dnf/"?
         Transformer transformer(path, "/var/lib/dnf/");
         transformer.transform();
         conn = std::make_shared< SQLite3 >(path);
