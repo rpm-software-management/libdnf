@@ -69,6 +69,8 @@ public:
 
     static void createDatabase(SQLite3Ptr conn);
 
+    static TransactionItemReason getReason(const std::string &reason);
+
 protected:
     void transformTrans(SQLite3Ptr swdb, SQLite3Ptr history);
 

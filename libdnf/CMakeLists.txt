@@ -18,7 +18,6 @@ SET (LIBDNF_SRCS
     hy-subject-private.cpp
     hy-util.cpp
     dnf-context.cpp
-    dnf-db.cpp
     dnf-goal.cpp
     dnf-keyring.cpp
     dnf-lock.cpp
@@ -90,7 +89,6 @@ SET(LIBDNF_headers
     dnf-advisoryref.h
     dnf-context.h
     dnf-enums.h
-    dnf-db.h
     dnf-goal.h
     dnf-keyring.h
     dnf-lock.h

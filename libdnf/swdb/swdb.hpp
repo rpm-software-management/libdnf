@@ -23,6 +23,7 @@
 
 #include <memory>
 #include <sys/stat.h>
+#include <unordered_map>
 #include <vector>
 
 #include "../hy-query.h"
@@ -36,12 +37,16 @@ class Swdb {
 public:
     explicit Swdb(SQLite3Ptr conn);
     explicit Swdb(const std::string &path);
+    ~Swdb();
 
+    // Database
+    static constexpr const char *defaultPath =
+        "/var/lib/dnf/history/sw.db"; // FIXME load this from conf
     const std::string &getPath() { return conn->getPath(); }
-
     void resetDatabase();
     void closeDatabase();
 
+    // Transaction
     void initTransaction();
     int64_t beginTransaction(int64_t dtBegin,
                              std::string rpmdbVersionBegin,
@@ -52,24 +57,26 @@ public:
     std::shared_ptr< const Transaction > getLastTransaction();
     std::vector< TransactionPtr > listTransactions(); // std::vector<long long> transactionIds);
 
-    TransactionItemPtr addItem(std::shared_ptr< Item > item,
+    // TransactionItems
+    TransactionItemPtr addItem(ItemPtr item,
                                const std::string &repoid,
                                TransactionItemAction action,
                                TransactionItemReason reason);
     // std::shared_ptr<TransactionItem> replacedBy);
     void setItemDone(TransactionItemPtr item);
-    void addConsoleOutputLine(int fileDescriptor, std::string line);
+    void setItemDone(const std::string &nevra);
+
+    // Item: constructors
+    RPMItemPtr createRPMItem();
+    CompsGroupItemPtr createCompsGroupItem();
+    CompsEnvironmentItemPtr createCompsEnvironmentItem();
 
     // Item: RPM
-    int resolveRPMTransactionItemReason(const std::string &name,
-                                        const std::string &arch,
-                                        int64_t maxTransactionId);
+    TransactionItemReason resolveRPMTransactionItemReason(const std::string &name,
+                                                          const std::string &arch,
+                                                          int64_t maxTransactionId);
     const std::string getRPMRepo(const std::string &nevra);
     std::shared_ptr< const TransactionItem > getRPMTransactionItem(const std::string &nevra);
-
-    RPMItem createRPMItem();
-    CompsGroupItem createCompsGroupItem();
-    CompsEnvironmentItem createCompsEnvironmentItem();
 
     // Item: CompsGroup
     TransactionItemPtr getCompsGroupItem(const std::string &groupid);
@@ -81,9 +88,13 @@ public:
     std::vector< TransactionItemPtr > getCompsEnvironmentItemsByPattern(const std::string &pattern);
     std::vector< std::string > getCompsGroupEnvironments(const std::string &groupId);
 
+    // Console
+    void addConsoleOutputLine(int fileDescriptor, std::string line);
+
 protected:
     SQLite3Ptr conn;
     std::unique_ptr< Transaction > transactionInProgress = nullptr;
+    std::unordered_map< std::string, TransactionItemPtr > itemsInProgress;
 
 private:
 };

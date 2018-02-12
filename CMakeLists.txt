@@ -44,9 +44,6 @@ pkg_check_modules (CHECK REQUIRED check)
 pkg_check_modules (REPO REQUIRED librepo)
 FIND_PROGRAM (VALGRIND_PROGRAM NAMES valgrind PATH /usr/bin /usr/local/bin)
 
-# TODO handle yumdb / dnfdb for libdnf
-ADD_DEFINITIONS(-DBUILDOPT_USE_DNF_YUMDB=1)
-
 IF (ENABLE_SOLV_URPMREORDER)
    ADD_DEFINITIONS(-DLIBSOLV_FLAG_URPMREORDER=1)
 ENDIF()

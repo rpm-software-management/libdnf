@@ -52,6 +52,11 @@ Swdb::closeDatabase()
     conn->close();
 }
 
+Swdb::~Swdb()
+{
+    closeDatabase();
+}
+
 void
 Swdb::initTransaction()
 {
@@ -59,6 +64,7 @@ Swdb::initTransaction()
         throw std::logic_error("In progress");
     }
     transactionInProgress = std::unique_ptr< Transaction >(new Transaction(conn));
+    itemsInProgress.clear();
 }
 
 int64_t
@@ -70,11 +76,24 @@ Swdb::beginTransaction(int64_t dtBegin,
     if (!transactionInProgress) {
         throw std::logic_error("Not in progress");
     }
+
+    // begin transaction
     transactionInProgress->setDtBegin(dtBegin);
     transactionInProgress->setRpmdbVersionBegin(rpmdbVersionBegin);
     transactionInProgress->setCmdline(cmdline);
     transactionInProgress->setUserId(userId);
     transactionInProgress->begin();
+
+    // save rpm items to map to resolve RPM callbacks
+    for (auto item : transactionInProgress->getItems()) {
+        auto transItem = item->getItem();
+        if (transItem->getItemType() != ItemType::RPM) {
+            continue;
+        }
+        auto rpmItem = std::dynamic_pointer_cast< RPMItem >(transItem);
+        itemsInProgress[rpmItem->getNEVRA()] = item;
+    }
+
     return transactionInProgress->getId();
 }
 
@@ -89,6 +108,7 @@ Swdb::endTransaction(int64_t dtEnd, std::string rpmdbVersionEnd, bool done)
     transactionInProgress->finish(done);
     int64_t result = transactionInProgress->getId();
     transactionInProgress = std::unique_ptr< Transaction >(nullptr);
+    itemsInProgress.clear();
     return result;
 }
 
@@ -125,7 +145,17 @@ Swdb::setItemDone(TransactionItemPtr item)
     query.step();
 }
 
-int
+void
+Swdb::setItemDone(const std::string &nevra)
+{
+    if (!transactionInProgress) {
+        throw std::logic_error("No transaction in progress");
+    }
+    auto item = itemsInProgress[nevra];
+    setItemDone(item);
+}
+
+TransactionItemReason
 Swdb::resolveRPMTransactionItemReason(const std::string &name,
                                       const std::string &arch,
                                       int64_t maxTransactionId)
@@ -140,13 +170,12 @@ Swdb::resolveRPMTransactionItemReason(const std::string &name,
                 continue;
             }
             if (rpm->getName() == name && rpm->getArch() == arch) {
-                return static_cast< int >(i->getReason());
+                return i->getReason();
             }
         }
     }
 
-    auto result = RPMItem::resolveTransactionItemReason(conn, name, arch, maxTransactionId);
-    return static_cast< int >(result);
+    return RPMItem::resolveTransactionItemReason(conn, name, arch, maxTransactionId);
 }
 
 const std::string
@@ -426,22 +455,22 @@ Swdb::getCompsEnvironmentItemsByPattern(const std::string &pattern)
     return CompsEnvironmentItem::getTransactionItemsByPattern(conn, pattern);
 }
 
-RPMItem
+RPMItemPtr
 Swdb::createRPMItem()
 {
-    return RPMItem(conn);
+    return std::make_shared< RPMItem >(conn);
 }
 
-CompsEnvironmentItem
+CompsEnvironmentItemPtr
 Swdb::createCompsEnvironmentItem()
 {
-    return CompsEnvironmentItem(conn);
+    return std::make_shared< CompsEnvironmentItem >(conn);
 }
 
-CompsGroupItem
+CompsGroupItemPtr
 Swdb::createCompsGroupItem()
 {
-    return CompsGroupItem(conn);
+    return std::make_shared< CompsGroupItem >(conn);
 }
 
 Swdb::Swdb(const std::string &path)

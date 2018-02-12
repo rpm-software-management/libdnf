@@ -75,8 +75,8 @@ static const std::unordered_map< std::string, TransactionItemReason > reasons = 
 /**
  * Covert string reason into appropriate enumerated variant
  */
-static TransactionItemReason
-getReason(std::string reason)
+TransactionItemReason
+Transformer::getReason(const std::string &reason)
 {
     auto it = reasons.find(reason);
     if (it == reasons.end()) {
@@ -312,7 +312,7 @@ getYumdbData(int64_t itemId, SQLite3Ptr history, TransactionItemReason &reason, 
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
         std::string key = query.get< std::string >("key");
         if (key == "reason") {
-            reason = getReason(query.get< std::string >("value"));
+            reason = Transformer::getReason(query.get< std::string >("value"));
         } else if (key == "from_repo") {
             repoid = query.get< std::string >("value");
         }
