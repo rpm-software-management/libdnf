@@ -24,7 +24,8 @@
 #include <solv/pool.h>
 
 #include "dnf-advisoryref.h"
+#include "dnf-types.h"
 
-DnfAdvisoryRef  *dnf_advisoryref_new        (Pool *pool, Id a_id, int index);
+DnfAdvisoryRef  *dnf_advisoryref_new(DnfSack *sack, Id a_id, int index);
 
 #endif // __DNF_ADVISORYREF_PRIVATE_H

@@ -22,34 +22,15 @@
 
 #include "advisoryref.hpp"
 
-class AdvisoryRef::Impl {
-private:
-    friend AdvisoryRef;
-    Pool *pool;
-    Id advisory;
-    int index;
-};
-
-AdvisoryRef::AdvisoryRef(Pool *pool, Id advisory, int index) : pImpl(new Impl) 
-{
-    pImpl->pool = pool;
-    pImpl->advisory = advisory;
-    pImpl->index = index;
-}
-
-AdvisoryRef::AdvisoryRef(AdvisoryRef && src) : pImpl(new Impl) { pImpl.swap(src.pImpl); }
-
+AdvisoryRef::AdvisoryRef(DnfSack *sack, Id advisory, int index)
+: sack(sack), advisory(advisory), index(index) {}
 
 bool
 AdvisoryRef::operator==(const AdvisoryRef& other) const
 {
-    return pImpl->advisory == other.pImpl->advisory && pImpl->index == other.pImpl->index;
+    return advisory == other.advisory && index == other.index;
 }
 
-Pool * AdvisoryRef::getPool() const { return pImpl->pool; }
-int AdvisoryRef::getIndex() const { return pImpl->index; }
-Id AdvisoryRef::getAdvisory() const { return pImpl->advisory; }
-
-
-
-
+int AdvisoryRef::getIndex() const { return index; }
+Id AdvisoryRef::getAdvisory() const { return advisory; }
+DnfSack * AdvisoryRef::getDnfSack() const { return sack; }

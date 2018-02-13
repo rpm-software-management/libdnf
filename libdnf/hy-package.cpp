@@ -999,6 +999,7 @@ dnf_package_get_advisories(DnfPackage *pkg, int cmp_type)
     int cmp;
     DnfAdvisory *advisory;
     Pool *pool = dnf_package_get_pool(pkg);
+    DnfSack *sack = dnf_package_get_sack(pkg);
     GPtrArray *advisorylist = g_ptr_array_new();
     Solvable *s = get_solvable(pkg);
 
@@ -1017,7 +1018,7 @@ dnf_package_get_advisories(DnfPackage *pkg, int cmp_type)
         if ((cmp > 0 && (cmp_type & HY_GT)) ||
             (cmp < 0 && (cmp_type & HY_LT)) ||
             (cmp == 0 && (cmp_type & HY_EQ))) {
-            advisory = dnf_advisory_new(pool, di.solvid);
+            advisory = dnf_advisory_new(sack, di.solvid);
             g_ptr_array_add(advisorylist, advisory);
             dataiterator_skip_solvable(&di);
         }

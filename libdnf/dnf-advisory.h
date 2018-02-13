@@ -24,6 +24,7 @@
 
 #include <glib-object.h>
 
+
 typedef struct Advisory DnfAdvisory;
 
 typedef enum {

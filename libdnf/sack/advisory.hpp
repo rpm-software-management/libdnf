@@ -27,14 +27,15 @@
 
 #include <solv/pooltypes.h>
 #include "../dnf-advisory.h"
+#include "../dnf-types.h"
 #include "advisorypkg.hpp"
 #include "advisoryref.hpp"
 
 struct Advisory {
 public:
-    Advisory(Pool *pool, Id advisory);
+    Advisory(DnfSack *sack, Id advisory);
     bool operator ==(const Advisory & other) const;
-    const char *getDescription() const;   
+    const char *getDescription() const;
     DnfAdvisoryKind getKind() const;
     const char *getName() const;
     void getPackages(std::vector<AdvisoryPkg> & pkglist, bool withFilemanes = true) const;
@@ -50,9 +51,9 @@ public:
     bool matchSeverity(const char *severity) const;
 
 private:
-    class Impl;
-    std::shared_ptr<Impl> pImpl;
-} ;
-
+    DnfSack *sack;
+    Id advisory;
+    bool matchBugOrCVE(const char *bug, bool withBug) const;
+};
 
 #endif /* __ADVISORY_HPP */

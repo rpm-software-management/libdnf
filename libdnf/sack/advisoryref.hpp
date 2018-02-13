@@ -26,19 +26,20 @@
 
 #include <solv/pooltypes.h>
 
+#include "../dnf-types.h"
 
 struct AdvisoryRef {
 public:
-    AdvisoryRef(Pool *pool, Id advisory, int index);
-    AdvisoryRef(AdvisoryRef && src);
+    AdvisoryRef(DnfSack *sack, Id advisory, int index);
 
     bool operator ==(const AdvisoryRef & other) const;
-    Pool * getPool() const;
     Id getAdvisory() const;
     int getIndex() const;
+    DnfSack * getDnfSack() const;
 private:
-    class Impl;
-    std::shared_ptr<Impl> pImpl;
+    DnfSack *sack;
+    Id advisory;
+    int index;
 };
 
 

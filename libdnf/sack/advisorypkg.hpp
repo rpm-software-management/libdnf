@@ -47,7 +47,7 @@ public:
     Pool * getPool();
 private:
     class Impl;
-    std::shared_ptr<Impl> pImpl;
+    std::unique_ptr<Impl> pImpl;
 };
 
 
