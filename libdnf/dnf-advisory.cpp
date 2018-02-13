@@ -60,9 +60,9 @@ typedef struct
  * Since: 0.7.0
  **/
 DnfAdvisory *
-dnf_advisory_new(Pool *pool, Id a_id)
+dnf_advisory_new(DnfSack *sack, Id a_id)
 {
-    return new Advisory(pool, a_id);
+    return new Advisory(sack, a_id);
 }
 
 /**
@@ -225,7 +225,8 @@ dnf_advisory_get_packages(DnfAdvisory *advisory)
 
     GPtrArray *pkglist =  g_ptr_array_new();
     for (auto& advisorypkg : pkgsvector) {
-        g_ptr_array_add(pkglist, new AdvisoryPkg(advisorypkg.getPool(), advisorypkg.getName(), advisorypkg.getEVR(), advisorypkg.getArch(), advisorypkg.getFileName()));
+        g_ptr_array_add(pkglist, new AdvisoryPkg(advisorypkg.getPool(), advisorypkg.getName(),
+            advisorypkg.getEVR(), advisorypkg.getArch(), advisorypkg.getFileName()));
     }
     return pkglist;
 }
@@ -248,7 +249,9 @@ dnf_advisory_get_references(DnfAdvisory *advisory)
 
     GPtrArray *reflist =  g_ptr_array_new();
     for (auto& advisoryref : refsvector) {
-        g_ptr_array_add(reflist, new AdvisoryRef(advisoryref.getPool(), advisoryref.getAdvisory(), advisoryref.getIndex()));
+        g_ptr_array_add(reflist, new AdvisoryRef(advisoryref.getDnfSack(),
+                                                 advisoryref.getAdvisory(),
+                                                 advisoryref.getIndex()));
     }
     return reflist;
 }

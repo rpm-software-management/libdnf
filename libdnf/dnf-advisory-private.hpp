@@ -25,9 +25,10 @@
 #include <solv/pool.h>
 
 #include "dnf-advisory.h"
+#include "dnf-types.h"
 
 #define SOLVABLE_NAME_ADVISORY_PREFIX "patch:"
 
-DnfAdvisory     *dnf_advisory_new       (Pool *pool, Id a_id);
+DnfAdvisory     *dnf_advisory_new       (DnfSack *sack, Id a_id);
 
 #endif // DNF_ADVISORY_KIND_PRIVATE_H

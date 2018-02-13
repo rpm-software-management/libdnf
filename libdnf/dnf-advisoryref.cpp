@@ -37,6 +37,7 @@
 #include <glib-object.h>
 
 #include "dnf-advisoryref-private.hpp"
+#include "dnf-sack-private.hpp"
 #include "sack/advisoryref.hpp"
 
 
@@ -51,9 +52,9 @@
  * Since: 0.7.0
  **/
 DnfAdvisoryRef *
-dnf_advisoryref_new(Pool *pool, Id a_id, int index)
+dnf_advisoryref_new(DnfSack *sack, Id a_id, int index)
 {
-    return new AdvisoryRef(pool, a_id, index);
+    return new AdvisoryRef(sack, a_id, index);
 }
 
 /**
@@ -92,12 +93,13 @@ advisoryref_get_str(DnfAdvisoryRef *advisoryref, Id keyname)
     Dataiterator di;
     const char *str = NULL;
     int count = 0;
+    Pool *pool = dnf_sack_get_pool(advisoryref->getDnfSack());
 
-    dataiterator_init(&di, advisoryref->getPool(), 0, advisoryref->getAdvisory(), UPDATE_REFERENCE, 0, 0);
+    dataiterator_init(&di, pool, 0, advisoryref->getAdvisory(), UPDATE_REFERENCE, 0, 0);
     while (dataiterator_step(&di)) {
         dataiterator_setpos(&di);
         if (count++ == advisoryref->getIndex()) {
-            str = pool_lookup_str(advisoryref->getPool(), SOLVID_POS, keyname);
+            str = pool_lookup_str(pool, SOLVID_POS, keyname);
             break;
         }
     }

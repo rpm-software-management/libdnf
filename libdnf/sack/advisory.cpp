@@ -26,6 +26,7 @@
 #include "advisoryref.hpp"
 #include "../dnf-advisory-private.hpp"
 #include "../dnf-advisoryref.h"
+#include "../dnf-sack-private.hpp"
 
 /**
  * str2dnf_advisory_kind:
@@ -51,17 +52,10 @@ str2dnf_advisory_kind(const char *str)
     return DNF_ADVISORY_KIND_UNKNOWN;
 }
 
-class Advisory::Impl {
-private:
-    friend Advisory;
-    Pool *pool;
-    Id advisory;
-    bool matchBugOrCVE(const char *bug, bool withBug) const;
-};
-
 bool
-Advisory::Impl::matchBugOrCVE(const char* what, bool matchBug) const
+Advisory::matchBugOrCVE(const char* what, bool matchBug) const
 {
+    Pool *pool = dnf_sack_get_pool(sack);
     const char * whatMatch = matchBug ? "bugzilla" : "cve";
     Dataiterator di;
     dataiterator_init(&di, pool, 0, advisory, UPDATE_REFERENCE, 0, 0);
@@ -78,22 +72,18 @@ Advisory::Impl::matchBugOrCVE(const char* what, bool matchBug) const
     return false;
 }
 
-Advisory::Advisory(Pool *pool, Id advisory) : pImpl(new Impl) 
-{
-    pImpl->pool = pool;
-    pImpl->advisory = advisory;
-}
+Advisory::Advisory(DnfSack *sack, Id advisory) : sack(sack), advisory(advisory) {}
 
 bool
 Advisory::operator==(const Advisory & other) const
 {
-    return pImpl->pool == other.pImpl->pool && pImpl->advisory == other.pImpl->advisory;
+    return sack == other.sack && advisory == other.advisory;
 }
 
 const char *
 Advisory::getDescription() const
 {
-    return pool_lookup_str(pImpl->pool, pImpl->advisory, SOLVABLE_DESCRIPTION);
+    return pool_lookup_str(dnf_sack_get_pool(sack), advisory, SOLVABLE_DESCRIPTION);
 }
 
 
@@ -101,7 +91,7 @@ DnfAdvisoryKind
 Advisory::getKind() const
 {
     const char *type;
-    type = pool_lookup_str(pImpl->pool, pImpl->advisory, SOLVABLE_PATCHCATEGORY);
+    type = pool_lookup_str(dnf_sack_get_pool(sack), advisory, SOLVABLE_PATCHCATEGORY);
     return str2dnf_advisory_kind(type);
 }
 
@@ -110,7 +100,7 @@ Advisory::getName() const
 {
     const char *name;
 
-    name = pool_lookup_str(pImpl->pool, pImpl->advisory, SOLVABLE_NAME);
+    name = pool_lookup_str(dnf_sack_get_pool(sack), advisory, SOLVABLE_NAME);
     size_t prefix_len = strlen(SOLVABLE_NAME_ADVISORY_PREFIX);
     assert(strncmp(SOLVABLE_NAME_ADVISORY_PREFIX, name, prefix_len) == 0);
     //remove the prefix
@@ -124,17 +114,18 @@ Advisory::getPackages(std::vector<AdvisoryPkg> & pkglist, bool withFilemanes) co
 {
     Dataiterator di;
     const char * filename = nullptr;
+    Pool *pool = dnf_sack_get_pool(sack);
 
-    dataiterator_init(&di, pImpl->pool, 0, pImpl->advisory, UPDATE_COLLECTION, 0, 0);
+    dataiterator_init(&di, pool, 0, advisory, UPDATE_COLLECTION, 0, 0);
     while (dataiterator_step(&di)) {
         dataiterator_setpos(&di);
-        Id name = pool_lookup_id(pImpl->pool, SOLVID_POS, UPDATE_COLLECTION_NAME);
-        Id evr = pool_lookup_id(pImpl->pool, SOLVID_POS, UPDATE_COLLECTION_EVR);
-        Id arch = pool_lookup_id(pImpl->pool, SOLVID_POS, UPDATE_COLLECTION_ARCH);
+        Id name = pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_NAME);
+        Id evr = pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_EVR);
+        Id arch = pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_ARCH);
         if (withFilemanes) {
-            filename = pool_lookup_str(pImpl->pool, SOLVID_POS, UPDATE_COLLECTION_FILENAME);
+            filename = pool_lookup_str(pool, SOLVID_POS, UPDATE_COLLECTION_FILENAME);
         }
-        pkglist.emplace_back(pImpl->pool, name, evr, arch, filename);
+        pkglist.emplace_back(pool, name, evr, arch, filename);
     }
     dataiterator_free(&di);
 }
@@ -143,10 +134,11 @@ void
 Advisory::getReferences(std::vector<AdvisoryRef> & reflist) const
 {
     Dataiterator di;
+    Pool *pool = dnf_sack_get_pool(sack);
 
-    dataiterator_init(&di, pImpl->pool, 0, pImpl->advisory, UPDATE_REFERENCE, 0, 0);
+    dataiterator_init(&di, pool, 0, advisory, UPDATE_REFERENCE, 0, 0);
     for (int index = 0; dataiterator_step(&di); index++) {
-        reflist.emplace_back(pImpl->pool, pImpl->advisory, index);
+        reflist.emplace_back(sack, advisory, index);
     }
     dataiterator_free(&di);
 }
@@ -154,44 +146,43 @@ Advisory::getReferences(std::vector<AdvisoryRef> & reflist) const
 const char *
 Advisory::getRights() const
 {
-    return pool_lookup_str(pImpl->pool, pImpl->advisory, UPDATE_RIGHTS);
+    return pool_lookup_str(dnf_sack_get_pool(sack), advisory, UPDATE_RIGHTS);
 }
 
 const char *
 Advisory::getSeverity() const
 {
-    return pool_lookup_str(pImpl->pool, pImpl->advisory, UPDATE_SEVERITY);
+    return pool_lookup_str(dnf_sack_get_pool(sack), advisory, UPDATE_SEVERITY);
 }
 
 const char *
 Advisory::getTitle() const
 {
-    return pool_lookup_str(pImpl->pool, pImpl->advisory, SOLVABLE_SUMMARY);
+    return pool_lookup_str(dnf_sack_get_pool(sack), advisory, SOLVABLE_SUMMARY);
 }
 
 unsigned long long int
 Advisory::getUpdated() const
 {
-    return pool_lookup_num(pImpl->pool, pImpl->advisory, SOLVABLE_BUILDTIME, 0);
+    return pool_lookup_num(dnf_sack_get_pool(sack), advisory, SOLVABLE_BUILDTIME, 0);
 }
 
 bool
 Advisory::matchBug(const char *bug) const
 {
-    return pImpl->matchBugOrCVE(bug, true);
+    return matchBugOrCVE(bug, true);
 }
 
 bool
 Advisory::matchCVE(const char *cve) const
 {
-    
-    return pImpl->matchBugOrCVE(cve, false);
+    return matchBugOrCVE(cve, false);
 }
 
 bool
 Advisory::matchKind(const char *kind) const
 {
-    auto advisoryKind = pool_lookup_str(pImpl->pool, pImpl->advisory, SOLVABLE_PATCHCATEGORY);
+    auto advisoryKind = pool_lookup_str(dnf_sack_get_pool(sack), advisory, SOLVABLE_PATCHCATEGORY);
     return advisoryKind ? strcmp(advisoryKind, kind) == 0 : false;
 }
 
