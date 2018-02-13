@@ -19,9 +19,12 @@
  */
 
 #include <cstdio>
+#include <solv/bitmap.h>
+#include <solv/solvable.h>
 
 #include "../hy-nevra.hpp"
 #include "../hy-subject.h"
+#include "../hy-query-private.hpp"
 
 #include "../utils/filesystem.hpp"
 #include "../utils/sqlite3/sqlite3.hpp"
@@ -63,7 +66,8 @@ Swdb::initTransaction()
     if (transactionInProgress) {
         throw std::logic_error("In progress");
     }
-    transactionInProgress = std::unique_ptr< Transaction >(new Transaction(conn));
+    transactionInProgress =
+        std::unique_ptr< SwdbPrivate::Transaction >(new SwdbPrivate::Transaction(conn));
     itemsInProgress.clear();
 }
 
@@ -107,7 +111,7 @@ Swdb::endTransaction(int64_t dtEnd, std::string rpmdbVersionEnd, bool done)
     transactionInProgress->setRpmdbVersionEnd(rpmdbVersionEnd);
     transactionInProgress->finish(done);
     int64_t result = transactionInProgress->getId();
-    transactionInProgress = std::unique_ptr< Transaction >(nullptr);
+    transactionInProgress = std::unique_ptr< SwdbPrivate::Transaction >(nullptr);
     itemsInProgress.clear();
     return result;
 }
@@ -230,7 +234,7 @@ Swdb::getRPMTransactionItem(const std::string &nevra)
     return RPMItem::getTransactionItem(conn, nevra);
 }
 
-std::shared_ptr< const Transaction >
+libdnf::TransactionPtr
 Swdb::getLastTransaction()
 {
     const char *sql = R"**(
@@ -245,13 +249,13 @@ Swdb::getLastTransaction()
     SQLite3::Statement query(*conn, sql);
     if (query.step() == SQLite3::Statement::StepResult::ROW) {
         auto transId = query.get< int64_t >(0);
-        auto transaction = std::make_shared< const Transaction >(conn, transId);
+        auto transaction = std::make_shared< libdnf::Transaction >(conn, transId);
         return transaction;
     }
     return nullptr;
 }
 
-std::vector< TransactionPtr >
+std::vector< libdnf::TransactionPtr >
 Swdb::listTransactions()
 {
     const char *sql = R"**(
@@ -263,10 +267,10 @@ Swdb::listTransactions()
             id
     )**";
     SQLite3::Statement query(*conn, sql);
-    std::vector< TransactionPtr > result;
+    std::vector< libdnf::TransactionPtr > result;
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
         auto transId = query.get< int64_t >(0);
-        auto transaction = std::make_shared< Transaction >(conn, transId);
+        auto transaction = std::make_shared< libdnf::Transaction >(conn, transId);
         result.push_back(transaction);
     }
     return result;
@@ -490,4 +494,62 @@ Swdb::Swdb(const std::string &path)
     } else {
         conn = std::make_shared< SQLite3 >(path);
     }
+}
+
+/**
+ * Filter unneeded packages from pool
+ *
+ * \return list of user installed package IDs
+ */
+std::vector< Id >
+Swdb::filterUnneeded(HyQuery installed, Pool *pool) const
+{
+
+    const char *sql = R"**(
+        SELECT
+          reason
+        FROM
+          trans_item
+          join rpm using (item_id)
+        WHERE
+          name = ?
+          AND arch = ?
+        ORDER BY
+          trans_item.id DESC
+        LIMIT 1
+    )**";
+
+    SQLite3::Query query(*conn, sql);
+
+    std::vector< Id > userInstalled;
+
+    // iterate over solvables
+    for (Id id = 1; id < pool->nsolvables; ++id) {
+
+        if (!MAPTST(installed->result, id)) {
+            continue;
+        }
+
+        Solvable *s = pool_id2solvable(pool, id);
+        const char *name = pool_id2str(pool, s->name);
+        const char *arch = pool_id2str(pool, s->arch);
+
+        query.bindv(name, arch);
+
+        if (query.step() == SQLite3::Statement::StepResult::ROW) {
+            int reason = query.get< int >("reason");
+
+            // if not dep or weak, than consider it user installed
+            if (reason != static_cast<int>(TransactionItemReason::DEPENDENCY) &&
+                reason != static_cast<int>(TransactionItemReason::WEAK_DEPENDENCY)) {
+                userInstalled.push_back(id);
+            }
+        } else {
+            // rpm not found - consider it user installed
+            userInstalled.push_back(id);
+        }
+
+        query.reset();
+    }
+    return userInstalled;
 }

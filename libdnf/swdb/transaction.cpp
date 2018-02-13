@@ -19,24 +19,30 @@
  */
 
 #include "transaction.hpp"
+#include "private/transaction.hpp"
 #include "item_comps_environment.hpp"
 #include "item_comps_group.hpp"
 #include "item_rpm.hpp"
 #include "transactionitem.hpp"
 
-Transaction::Transaction(SQLite3Ptr conn)
-  : conn{conn}
-{
-}
-
-Transaction::Transaction(SQLite3Ptr conn, int64_t pk)
+libdnf::Transaction::Transaction(SQLite3Ptr conn, int64_t pk)
   : conn{conn}
 {
     dbSelect(pk);
 }
 
+libdnf::Transaction::Transaction(SQLite3Ptr conn)
+  : conn{conn}
+{
+}
+
+SwdbPrivate::Transaction::Transaction(SQLite3Ptr conn)
+  : libdnf::Transaction(conn)
+{
+}
+
 bool
-Transaction::operator==(const Transaction &other)
+libdnf::Transaction::operator==(const libdnf::Transaction &other) const
 {
     if (getId() != other.getId()) {
         return false;
@@ -51,7 +57,7 @@ Transaction::operator==(const Transaction &other)
 }
 
 bool
-Transaction::operator<(const Transaction &other)
+libdnf::Transaction::operator<(const libdnf::Transaction &other) const
 {
     if (getId() > other.getId()) {
         return true;
@@ -66,7 +72,7 @@ Transaction::operator<(const Transaction &other)
 }
 
 void
-Transaction::begin()
+SwdbPrivate::Transaction::begin()
 {
     if (id != 0) {
         throw std::runtime_error("Transaction has already begun!");
@@ -76,14 +82,14 @@ Transaction::begin()
 }
 
 void
-Transaction::finish(bool success)
+SwdbPrivate::Transaction::finish(bool success)
 {
     setDone(success);
     dbUpdate();
 }
 
 void
-Transaction::dbSelect(int64_t pk)
+libdnf::Transaction::dbSelect(int64_t pk)
 {
     const char *sql =
         "SELECT "
@@ -103,19 +109,19 @@ Transaction::dbSelect(int64_t pk)
     query.bindv(pk);
     query.step();
 
-    setId(pk);
-    setDtBegin(query.get< int >("dt_begin"));
-    setDtEnd(query.get< int >("dt_end"));
-    setRpmdbVersionBegin(query.get< std::string >("rpmdb_version_begin"));
-    setRpmdbVersionEnd(query.get< std::string >("rpmdb_version_end"));
-    setReleasever(query.get< std::string >("releasever"));
-    setUserId(query.get< uint32_t >("user_id"));
-    setCmdline(query.get< std::string >("cmdline"));
-    setDone(query.get< bool >("done"));
+    id = pk;
+    dtBegin = query.get< int >("dt_begin");
+    dtEnd = query.get< int >("dt_end");
+    rpmdbVersionBegin = query.get< std::string >("rpmdb_version_begin");
+    rpmdbVersionEnd = query.get< std::string >("rpmdb_version_end");
+    releasever = query.get< std::string >("releasever");
+    userId = query.get< uint32_t >("user_id");
+    cmdline = query.get< std::string >("cmdline");
+    done = query.get< bool >("done");
 }
 
 void
-Transaction::dbInsert()
+SwdbPrivate::Transaction::dbInsert()
 {
     const char *sql =
         "INSERT INTO "
@@ -172,7 +178,7 @@ Transaction::dbInsert()
 }
 
 void
-Transaction::dbUpdate()
+SwdbPrivate::Transaction::dbUpdate()
 {
     const char *sql =
         "UPDATE "
@@ -202,10 +208,10 @@ Transaction::dbUpdate()
 }
 
 TransactionItemPtr
-Transaction::addItem(std::shared_ptr< Item > item,
-                     const std::string &repoid,
-                     TransactionItemAction action,
-                     TransactionItemReason reason)
+SwdbPrivate::Transaction::addItem(std::shared_ptr< Item > item,
+                                  const std::string &repoid,
+                                  TransactionItemAction action,
+                                  TransactionItemReason reason)
 {
     auto trans_item = std::make_shared< TransactionItem >(this);
     trans_item->setItem(item);
@@ -217,7 +223,7 @@ Transaction::addItem(std::shared_ptr< Item > item,
 }
 
 void
-Transaction::saveItems()
+SwdbPrivate::Transaction::saveItems()
 {
     // TODO: remove all existing items from the database first?
     for (auto i : items) {
@@ -233,29 +239,36 @@ Transaction::saveItems()
 }
 
 /**
- * Lazy loader for the transaction items.
+ * Loader for the transaction items.
  * \return list of transaction items associated with the transaction
  */
 std::vector< TransactionItemPtr >
-Transaction::getItems()
+libdnf::Transaction::getItems() const
 {
-    if (items.empty()) {
-        loadItems();
-    }
-    return items;
-}
-
-void
-Transaction::loadItems()
-{
+    std::vector< TransactionItemPtr > result;
     auto rpms = RPMItem::getTransactionItems(conn, getId());
-    items.insert(items.end(), rpms.begin(), rpms.end());
+    result.insert(result.end(), rpms.begin(), rpms.end());
 
     auto comps_groups = CompsGroupItem::getTransactionItems(conn, getId());
-    items.insert(items.end(), comps_groups.begin(), comps_groups.end());
+    result.insert(result.end(), comps_groups.begin(), comps_groups.end());
 
     auto comps_environments = CompsEnvironmentItem::getTransactionItems(conn, getId());
-    items.insert(items.end(), comps_environments.begin(), comps_environments.end());
+    result.insert(result.end(), comps_environments.begin(), comps_environments.end());
+
+    return result;
+}
+
+/**
+ * Loader for the transaction items.
+ * \return list of transaction items associated with the transaction
+ */
+std::vector< TransactionItemPtr >
+SwdbPrivate::Transaction::getItems()
+{
+    if (items.empty()) {
+        items = libdnf::Transaction::getItems();
+    }
+    return items;
 }
 
 /**
@@ -265,7 +278,7 @@ Transaction::loadItems()
  * \param software RPMItem used to perform the transaction
  */
 void
-Transaction::addSoftwarePerformedWith(std::shared_ptr< RPMItem > software)
+SwdbPrivate::Transaction::addSoftwarePerformedWith(std::shared_ptr< RPMItem > software)
 {
     softwarePerformedWith.insert(software);
 }
@@ -276,7 +289,7 @@ Transaction::addSoftwarePerformedWith(std::shared_ptr< RPMItem > software)
  * \return list of RPMItem objects that performed the transaction
  */
 const std::set< std::shared_ptr< RPMItem > >
-Transaction::getSoftwarePerformedWith() const
+libdnf::Transaction::getSoftwarePerformedWith() const
 {
     const char *sql = R"**(
         SELECT
@@ -306,7 +319,7 @@ Transaction::getSoftwarePerformedWith() const
  * \param line console output content
  */
 void
-Transaction::addConsoleOutputLine(int fileDescriptor, const std::string &line)
+SwdbPrivate::Transaction::addConsoleOutputLine(int fileDescriptor, const std::string &line)
 {
     if (!getId()) {
         throw std::runtime_error("Can't add console output to unsaved transaction");
@@ -328,7 +341,7 @@ Transaction::addConsoleOutputLine(int fileDescriptor, const std::string &line)
 }
 
 std::vector< std::pair< int, std::string > >
-Transaction::getConsoleOutput() const
+libdnf::Transaction::getConsoleOutput() const
 {
     const char *sql = R"**(
         SELECT

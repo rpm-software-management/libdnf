@@ -20,8 +20,10 @@
 
 #include "repo.hpp"
 
+using namespace SwdbPrivate;
+
 // initialize static variable Repo::cache
-std::map< std::string, std::shared_ptr< Repo > > Repo::cache;
+std::map< std::string, RepoPtr > Repo::cache;
 
 Repo::Repo(SQLite3Ptr conn)
   : conn{conn}

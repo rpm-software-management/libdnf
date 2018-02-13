@@ -65,13 +65,13 @@ CompsEnvironmentItemTest::testCreate()
 void
 CompsEnvironmentItemTest::testGetTransactionItems()
 {
-    Transaction trans(conn);
+    SwdbPrivate::Transaction trans(conn);
     auto env = createCompsEnvironment(conn);
     trans.addItem(env, "", TransactionItemAction::INSTALL, TransactionItemReason::USER);
     trans.begin();
     trans.finish(true);
 
-    Transaction trans2(conn, trans.getId());
+    libdnf::Transaction trans2(conn, trans.getId());
 
     auto transItems = trans2.getItems();
     CPPUNIT_ASSERT_EQUAL(1, static_cast< int >(transItems.size()));

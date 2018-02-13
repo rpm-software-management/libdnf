@@ -488,7 +488,7 @@ Transformer::processEnvironment(SQLite3Ptr swdb, const std::string &envId, const
 void
 Transformer::processGroupPersistor(SQLite3Ptr swdb, const Json::Value &root)
 {
-    auto trans = Transaction(swdb);
+    auto trans = SwdbPrivate::Transaction(swdb);
 
     // load sequences
     const Json::Value groups = root["GROUPS"];

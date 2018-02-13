@@ -75,7 +75,7 @@ TransactionItem::getActionShort()
     return transactionItemActionShort.at(getAction());
 }
 
-TransactionItem::TransactionItem(const Transaction *trans)
+TransactionItem::TransactionItem(libdnf::Transaction *trans)
   : trans(trans)
   , transID(0)
   , conn(trans->conn)
@@ -126,7 +126,7 @@ TransactionItem::dbInsert()
     SQLite3::Statement query(*(conn.get()), sql);
     query.bindv(trans->getId(),
                 getItem()->getId(),
-                Repo::getCached(conn, getRepoid())->getId(),
+                SwdbPrivate::Repo::getCached(conn, getRepoid())->getId(),
                 static_cast< int >(getAction()),
                 static_cast< int >(getReason()),
                 getDone());
@@ -178,7 +178,7 @@ TransactionItem::dbUpdate()
     SQLite3::Statement query(*(conn.get()), sql);
     query.bindv(trans->getId(),
                 getItem()->getId(),
-                Repo::getCached(trans->conn, getRepoid())->getId(),
+                SwdbPrivate::Repo::getCached(trans->conn, getRepoid())->getId(),
                 static_cast< int >(getAction()),
                 static_cast< int >(getReason()),
                 getDone(),

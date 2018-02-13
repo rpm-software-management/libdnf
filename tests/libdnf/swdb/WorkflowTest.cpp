@@ -31,7 +31,7 @@ WorkflowTest::testDefaultWorkflow()
     // TODO: init/begin/end trans
 
     // STEP 1: create transaction object
-    Transaction trans(conn);
+    SwdbPrivate::Transaction trans(conn);
     CPPUNIT_ASSERT(trans.getDone() == false);
 
     // STEP 2: set vars
@@ -115,7 +115,7 @@ WorkflowTest::testDefaultWorkflow()
 
     // VERIFY
     // verify that data is available via public API
-    auto trans2 = Transaction(conn, trans.getId());
+    auto trans2 = libdnf::Transaction(conn, trans.getId());
     CPPUNIT_ASSERT(trans2.getDone() == true);
 
     CPPUNIT_ASSERT(trans2.getItems().size() == 5);

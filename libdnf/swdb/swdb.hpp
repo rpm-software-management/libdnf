@@ -25,12 +25,16 @@
 #include <sys/stat.h>
 #include <unordered_map>
 #include <vector>
+#include <solv/pooltypes.h>
 
-#include "../hy-query.h"
+class Swdb;
+
+#include "../hy-types.h"
 #include "../utils/sqlite3/sqlite3.hpp"
 
 #include "item_comps_group.hpp"
 #include "transaction.hpp"
+#include "private/transaction.hpp"
 #include "transactionitem.hpp"
 
 class Swdb {
@@ -54,8 +58,8 @@ public:
                              uint32_t userId);
     int64_t endTransaction(int64_t dtEnd, std::string rpmdbVersionEnd, bool done);
 
-    std::shared_ptr< const Transaction > getLastTransaction();
-    std::vector< TransactionPtr > listTransactions(); // std::vector<long long> transactionIds);
+    libdnf::TransactionPtr getLastTransaction();
+    std::vector< libdnf::TransactionPtr > listTransactions(); // std::vector<long long> transactionIds);
 
     // TransactionItems
     TransactionItemPtr addItem(ItemPtr item,
@@ -91,9 +95,12 @@ public:
     // Console
     void addConsoleOutputLine(int fileDescriptor, std::string line);
 
+    // misc
+    std::vector< Id > filterUnneeded(HyQuery installed, Pool *pool) const;
+
 protected:
     SQLite3Ptr conn;
-    std::unique_ptr< Transaction > transactionInProgress = nullptr;
+    std::unique_ptr< SwdbPrivate::Transaction > transactionInProgress = nullptr;
     std::unordered_map< std::string, TransactionItemPtr > itemsInProgress;
 
 private:

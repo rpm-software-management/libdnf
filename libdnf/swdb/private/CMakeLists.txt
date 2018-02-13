@@ -1,0 +1,5 @@
+SET(SWDB_SRCS
+    ${SWDB_SRCS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/repo.cpp
+    PARENT_SCOPE
+)

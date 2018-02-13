@@ -23,7 +23,6 @@ from sys import version_info as python_version
 
 import collections
 import functools
-import gi
 import logging
 import operator
 import time

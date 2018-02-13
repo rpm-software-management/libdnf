@@ -24,7 +24,7 @@
  * Create a new MergedTransaction object with a single transaction
  * \param trans initial transaction
  */
-MergedTransaction::MergedTransaction(TransactionPtr trans)
+MergedTransaction::MergedTransaction(libdnf::TransactionPtr trans)
   : transactions{trans}
 {
 }
@@ -36,7 +36,7 @@ MergedTransaction::MergedTransaction(TransactionPtr trans)
  * \param trans transaction to be merged with
  */
 void
-MergedTransaction::merge(TransactionPtr trans)
+MergedTransaction::merge(libdnf::TransactionPtr trans)
 {
     bool inserted = false;
     for (auto it = transactions.begin(); it < transactions.end(); ++it) {

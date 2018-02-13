@@ -25,13 +25,17 @@
 #include <memory>
 #include <string>
 
-#include "../utils/sqlite3/sqlite3.hpp"
+#include "../../utils/sqlite3/sqlite3.hpp"
+
+namespace SwdbPrivate {
+
+class Repo;
+typedef std::shared_ptr< Repo > RepoPtr;
 
 class Repo {
 public:
-    static std::shared_ptr< Repo > getCached(SQLite3Ptr conn,
-                                             const std::string &repoid);
-    static std::map< std::string, std::shared_ptr< Repo > > cache;
+    static RepoPtr getCached(SQLite3Ptr conn, const std::string &repoid);
+    static std::map< std::string, RepoPtr > cache;
 
     Repo(SQLite3Ptr conn);
 
@@ -50,6 +54,7 @@ protected:
     int64_t id = 0;
     std::string repoId;
     SQLite3Ptr conn;
+};
 };
 
 #endif // LIBDNF_SWDB_REPO_HPP

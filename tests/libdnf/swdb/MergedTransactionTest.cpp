@@ -16,11 +16,11 @@ MergedTransactionTest::setUp()
     Transformer::createDatabase(conn);
 }
 
-static TransactionPtr
+static SwdbPrivate::TransactionPtr
 initTransFirst(SQLite3Ptr conn)
 {
     // create the first transaction
-    auto first = std::make_shared< Transaction >(conn);
+    auto first = std::make_shared< SwdbPrivate::Transaction >(conn);
     first->setDtBegin(1);
     first->setDtEnd(2);
     first->setRpmdbVersionBegin("begin 1");
@@ -37,16 +37,14 @@ initTransFirst(SQLite3Ptr conn)
     dnfRpm->save();
 
     first->addSoftwarePerformedWith(dnfRpm);
-    first->begin();
-
     return first;
 }
 
-static TransactionPtr
+static SwdbPrivate::TransactionPtr
 initTransSecond(SQLite3Ptr conn)
 {
     // create the second transaction
-    auto second = std::make_shared< Transaction >(conn);
+    auto second = std::make_shared< SwdbPrivate::Transaction >(conn);
     second->setDtBegin(3);
     second->setDtEnd(4);
     second->setRpmdbVersionBegin("begin 2");
@@ -63,8 +61,6 @@ initTransSecond(SQLite3Ptr conn)
     rpmRpm->save();
 
     second->addSoftwarePerformedWith(rpmRpm);
-    second->begin();
-
     return second;
 }
 
@@ -77,10 +73,12 @@ void
 MergedTransactionTest::testMerge()
 {
     auto first = initTransFirst(conn);
+    first->begin();
     first->addConsoleOutputLine(1, "Foo");
     first->finish(true);
 
     auto second = initTransSecond(conn);
+    second->begin();
     second->addConsoleOutputLine(1, "Bar");
     second->finish(false);
 
@@ -164,10 +162,12 @@ prepareMergedTransaction(SQLite3Ptr conn,
     }
 
     first->addItem(firstRPM, "base", actionFirst, TransactionItemReason::USER);
+    first->begin();
     first->finish(true);
 
     auto second = initTransSecond(conn);
     second->addItem(secondRPM, "base", actionSecond, TransactionItemReason::USER);
+    second->begin();
     second->finish(true);
 
     auto merged = std::make_shared< MergedTransaction >(first);

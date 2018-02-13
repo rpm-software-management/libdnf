@@ -48,7 +48,7 @@ RpmItemTest::testGetTransactionItems()
     // change following constant to modify number of tested RPMItems
     constexpr int num = 10;
 
-    Transaction trans(conn);
+    SwdbPrivate::Transaction trans(conn);
 
     auto create_start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < num; i++) {

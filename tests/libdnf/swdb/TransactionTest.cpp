@@ -1,6 +1,7 @@
 #include "TransactionTest.hpp"
 #include "libdnf/swdb/item_rpm.hpp"
 #include "libdnf/swdb/transaction.hpp"
+#include "libdnf/swdb/private/transaction.hpp"
 #include "libdnf/swdb/transformer.hpp"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TransactionTest);
@@ -20,7 +21,7 @@ TransactionTest::tearDown()
 void
 TransactionTest::testInsert()
 {
-    Transaction trans(conn);
+    SwdbPrivate::Transaction trans(conn);
     trans.setDtBegin(1);
     trans.setDtEnd(2);
     trans.setRpmdbVersionBegin("begin - TransactionTest::testInsert");
@@ -35,7 +36,7 @@ TransactionTest::testInsert()
     CPPUNIT_ASSERT_THROW(trans.begin(), std::runtime_error);
 
     // load the saved transaction from database and compare values
-    Transaction trans2(conn, trans.getId());
+    libdnf::Transaction trans2(conn, trans.getId());
     CPPUNIT_ASSERT(trans2.getId() == trans.getId());
     CPPUNIT_ASSERT(trans2.getDtBegin() == trans.getDtBegin());
     CPPUNIT_ASSERT(trans2.getDtEnd() == trans.getDtEnd());
@@ -51,7 +52,7 @@ void
 TransactionTest::testInsertWithSpecifiedId()
 {
     // it is not allowed to save a transaction with arbitrary ID
-    Transaction trans(conn);
+    SwdbPrivate::Transaction trans(conn);
     trans.setId(INT64_MAX);
     trans.begin();
     CPPUNIT_ASSERT_THROW(trans.begin(), std::runtime_error);
@@ -60,15 +61,19 @@ TransactionTest::testInsertWithSpecifiedId()
 void
 TransactionTest::testUpdate()
 {
-    testInsert();
-    Transaction trans(conn, 1);
-    trans.setDtBegin(10);
-    trans.setDtEnd(20);
-    trans.setRpmdbVersionBegin("begin - TransactionTest::testUpdate");
-    trans.setRpmdbVersionEnd("end - TransactionTest::testUpdate");
+    SwdbPrivate::Transaction trans(conn);
+    trans.setDtBegin(1);
+    trans.setDtEnd(2);
+    trans.setRpmdbVersionBegin("begin - TransactionTest::testInsert");
+    trans.setRpmdbVersionEnd("end - TransactionTest::testInsert");
+    trans.setReleasever("26");
+    trans.setUserId(1000);
+    trans.setCmdline("dnf install foo");
+    trans.setDone(false);
+    trans.begin();
     trans.finish(true);
 
-    Transaction trans2(conn, trans.getId());
+    libdnf::Transaction trans2(conn, trans.getId());
     CPPUNIT_ASSERT(trans2.getId() == trans.getId());
     CPPUNIT_ASSERT(trans2.getDtBegin() == trans.getDtBegin());
     CPPUNIT_ASSERT(trans2.getDtEnd() == trans.getDtEnd());

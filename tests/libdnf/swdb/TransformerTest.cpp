@@ -7,6 +7,7 @@
 #include "libdnf/swdb/swdb.hpp"
 #include "libdnf/swdb/swdb_types.hpp"
 #include "libdnf/swdb/transaction.hpp"
+#include "libdnf/swdb/private/transaction.hpp"
 #include "libdnf/swdb/transactionitem.hpp"
 
 #include "TransformerTest.hpp"
@@ -54,7 +55,7 @@ TransformerTest::testGroupTransformation()
     swdb->backup("db.sql");
 
     // check basic stuff in generated transaction
-    Transaction trans(swdb, 1);
+    libdnf::Transaction trans(swdb, 1);
     CPPUNIT_ASSERT_EQUAL((int64_t)1, trans.getId());
     CPPUNIT_ASSERT(trans.getDone());
 
@@ -109,7 +110,7 @@ TransformerTest::testTransformTrans()
     transformer.transformTrans(swdb, history);
 
     // check first transaction attributes
-    Transaction first(swdb, 1);
+    libdnf::Transaction first(swdb, 1);
     CPPUNIT_ASSERT(first.getId() == 1);
     CPPUNIT_ASSERT(first.getDtBegin() == 1513267401);
     CPPUNIT_ASSERT(first.getDtEnd() == 1513267509);
@@ -161,7 +162,7 @@ TransformerTest::testTransformTrans()
     }
 
     // check second transaction attributes
-    Transaction second(swdb, 2);
+    libdnf::Transaction second(swdb, 2);
     CPPUNIT_ASSERT(second.getId() == 2);
     CPPUNIT_ASSERT(second.getDtBegin() == 1513267535);
     CPPUNIT_ASSERT(second.getDtEnd() == 1513267539);

@@ -30,16 +30,16 @@
 #include "item_comps_environment.hpp"
 #include "item_comps_group.hpp"
 #include "item_rpm.hpp"
-#include "transaction.hpp"
+#include "private/transaction.hpp"
 #include "transactionitem.hpp"
 
 /**
  * Class overrides default behavior with
  * inserting rows with explicitly set IDs
  */
-class TransformerTransaction : public Transaction {
+class TransformerTransaction : public SwdbPrivate::Transaction {
 public:
-    using Transaction::Transaction;
+    using SwdbPrivate::Transaction::Transaction;
     void begin()
     {
         dbInsert();

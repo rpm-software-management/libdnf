@@ -33,13 +33,13 @@ typedef std::shared_ptr< TransactionItem > TransactionItemPtr;
 #include "item_comps_environment.hpp"
 #include "item_comps_group.hpp"
 #include "item_rpm.hpp"
-#include "repo.hpp"
+#include "private/repo.hpp"
 #include "swdb_types.hpp"
 #include "transaction.hpp"
 
 class TransactionItem {
 public:
-    explicit TransactionItem(const Transaction *trans);
+    explicit TransactionItem(libdnf::Transaction *trans);
 
     TransactionItem(SQLite3Ptr conn, int64_t transID);
 
@@ -85,7 +85,7 @@ public:
 
 protected:
     int64_t id = 0;
-    const Transaction *trans;
+    libdnf::Transaction *trans;
 
     const int64_t transID;
     SQLite3Ptr conn;

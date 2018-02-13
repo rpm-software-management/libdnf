@@ -61,8 +61,8 @@ protected:
 
 class MergedTransaction {
 public:
-    MergedTransaction(TransactionPtr trans);
-    void merge(TransactionPtr trans);
+    MergedTransaction(libdnf::TransactionPtr trans);
+    void merge(libdnf::TransactionPtr trans);
 
     std::vector< int64_t > listIds() const noexcept;
     std::vector< int64_t > listUserIds() const noexcept;
@@ -78,7 +78,7 @@ public:
     std::vector< MergedTransactionItemPtr > getItems();
 
 protected:
-    std::vector< TransactionPtr > transactions;
+    std::vector< libdnf::TransactionPtr > transactions;
 
     struct ItemPair {
         ItemPair(MergedTransactionItemPtr first, MergedTransactionItemPtr second)
