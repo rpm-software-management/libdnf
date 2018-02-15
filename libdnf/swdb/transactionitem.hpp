@@ -94,6 +94,9 @@ public:
     void save();
     void saveReplacedBy();
 
+    std::size_t getHash() { return reinterpret_cast< std::size_t >(this); }
+    bool operator==(TransactionItem & other) { return (other.getHash() == getHash()); }
+
 protected:
     int64_t id = 0;
     libdnf::Transaction *trans;

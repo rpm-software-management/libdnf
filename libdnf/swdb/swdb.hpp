@@ -57,6 +57,7 @@ public:
                              std::string cmdline,
                              uint32_t userId);
     int64_t endTransaction(int64_t dtEnd, std::string rpmdbVersionEnd, bool done);
+    const Transaction getTransactionInProgress() { return *transactionInProgress; }
 
     libdnf::TransactionPtr getLastTransaction();
     std::vector< libdnf::TransactionPtr > listTransactions(); // std::vector<long long> transactionIds);

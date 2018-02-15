@@ -45,7 +45,8 @@ enum class TransactionItemAction : int {
     UPGRADED = 7,      //
     REMOVE = 8,        // a package that was removed from the system
     REINSTALL = 9,     // a package that was reinstalled with the identical version
-    REASON_CHANGE = 10 // a package was kept on the system but it's reason has changed
+    REINSTALLED = 10,  // a package that was reinstalled with the identical version (old repo, for example)
+    REASON_CHANGE = 11 // a package was kept on the system but it's reason has changed
 };
 
 /*
