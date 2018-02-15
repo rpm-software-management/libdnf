@@ -459,7 +459,7 @@ job_has(Queue *job, Id what, Id id)
 }
 
 static int
-filter_arch2job(DnfSack *sack, const Filter *f, Queue *job)
+filter_arch2job(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 {
     if (f == nullptr)
         return 0;
@@ -486,7 +486,7 @@ filter_arch2job(DnfSack *sack, const Filter *f, Queue *job)
 }
 
 static int
-filter_evr2job(DnfSack *sack, const Filter *f, Queue *job)
+filter_evr2job(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 {
     if (f == nullptr)
         return 0;
@@ -510,7 +510,7 @@ filter_evr2job(DnfSack *sack, const Filter *f, Queue *job)
 }
 
 static int
-filter_file2job(DnfSack *sack, const Filter *f, Queue *job)
+filter_file2job(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 {
     if (f == nullptr)
         return 0;
@@ -531,7 +531,7 @@ filter_file2job(DnfSack *sack, const Filter *f, Queue *job)
 }
 
 static int
-filter_pkg2job(DnfSack *sack, const Filter *f, Queue *job)
+filter_pkg2job(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 {
     if (f == nullptr)
         return 0;
@@ -555,7 +555,7 @@ filter_pkg2job(DnfSack *sack, const Filter *f, Queue *job)
 }
 
 static int
-filter_name2job(DnfSack *sack, const Filter *f, Queue *job)
+filter_name2job(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 {
     if (f == nullptr)
         return 0;
@@ -593,7 +593,7 @@ filter_name2job(DnfSack *sack, const Filter *f, Queue *job)
 }
 
 static int
-filter_provides2job(DnfSack *sack, const Filter *f, Queue *job)
+filter_provides2job(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 {
     if (f == nullptr)
         return 0;
@@ -630,7 +630,7 @@ filter_provides2job(DnfSack *sack, const Filter *f, Queue *job)
 }
 
 static int
-filter_reponame2job(DnfSack *sack, const Filter *f, Queue *job)
+filter_reponame2job(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 {
     Queue repo_sel;
     Id i;

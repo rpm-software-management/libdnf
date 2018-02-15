@@ -26,6 +26,8 @@
 #include "../hy-query-private.hpp"
 #include "../dnf-types.h"
 
+namespace libdnf {
+
 struct Filter {
 public:
     Filter(int keyname, int cmp_type, int match);
@@ -140,5 +142,7 @@ private:
     class Impl;
     std::unique_ptr<Impl> pImpl;
 };
+
+}
 
 #endif /* __QUERY_HPP */

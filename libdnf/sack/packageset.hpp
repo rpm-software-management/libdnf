@@ -27,6 +27,8 @@
 #include <solv/pooltypes.h>
 #include "../hy-package.h"
 
+namespace libdnf {
+
 struct PackageSet {
 public:
     PackageSet(DnfSack* sack);
@@ -54,5 +56,7 @@ private:
     class Impl;
     std::unique_ptr<Impl> pImpl;
 };
+
+}
 
 #endif /* __PACKAGE_SET_HPP */

@@ -22,6 +22,8 @@
 
 #include "advisoryref.hpp"
 
+namespace libdnf {
+
 AdvisoryRef::AdvisoryRef(DnfSack *sack, Id advisory, int index)
 : sack(sack), advisory(advisory), index(index) {}
 
@@ -34,3 +36,5 @@ AdvisoryRef::operator==(const AdvisoryRef& other) const
 int AdvisoryRef::getIndex() const { return index; }
 Id AdvisoryRef::getAdvisory() const { return advisory; }
 DnfSack * AdvisoryRef::getDnfSack() const { return sack; }
+
+}

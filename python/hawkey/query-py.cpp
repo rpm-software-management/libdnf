@@ -223,12 +223,12 @@ query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
     if (query && (!sack || sack == Py_None) && queryObject_Check(query)) {
         _QueryObject *query_obj = (_QueryObject*)query;
         self->sack = query_obj->sack;
-        self->query = new Query(*query_obj->query);
+        self->query = new libdnf::Query(*query_obj->query);
     } else if (sack && (!query || query == Py_None) && sackObject_Check(sack)) {
         DnfSack *csack = sackFromPyObject(sack);
         assert(csack);
         self->sack = sack;
-        self->query = new Query(csack);
+        self->query = new libdnf::Query(csack);
     } else {
         const char *msg = "Expected a _hawkey.Sack or a _hawkey.Query object.";
         PyErr_SetString(PyExc_TypeError, msg);
@@ -538,7 +538,7 @@ filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, 
 static PyObject *
 filter(_QueryObject *self, PyObject *args, PyObject *kwds)
 {
-    HyQuery query = new Query(*self->query);
+    HyQuery query = new libdnf::Query(*self->query);
     gboolean ret = filter_internal(query, NULL, self->sack, args, kwds);
     if (!ret)
         return NULL;
@@ -560,7 +560,7 @@ filterm(_QueryObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 add_available_filter(_QueryObject *self, PyObject *unused)
 {
-    HyQuery query = new Query(*self->query);
+    HyQuery query = new libdnf::Query(*self->query);
     query->addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
     Py_INCREF(final_query);
@@ -570,7 +570,7 @@ add_available_filter(_QueryObject *self, PyObject *unused)
 static PyObject *
 add_downgrades_filter(_QueryObject *self, PyObject *unused)
 {
-    HyQuery query = new Query(*self->query);
+    HyQuery query = new libdnf::Query(*self->query);
     query->addFilter(HY_PKG_DOWNGRADES, HY_EQ, 1);
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
     Py_INCREF(final_query);
@@ -580,7 +580,7 @@ add_downgrades_filter(_QueryObject *self, PyObject *unused)
 static PyObject *
 duplicated_filter(_QueryObject *self, PyObject *unused)
 {
-    HyQuery self_query_copy = new Query(*self->query);
+    HyQuery self_query_copy = new libdnf::Query(*self->query);
     self_query_copy->filterDuplicated();
     PyObject *final_query = queryToPyObject(self_query_copy, self->sack, Py_TYPE(self));
     Py_INCREF(final_query);
@@ -590,7 +590,7 @@ duplicated_filter(_QueryObject *self, PyObject *unused)
 static PyObject *
 add_filter_extras(_QueryObject *self, PyObject *unused)
 {
-    HyQuery self_query_copy = new Query(*self->query);
+    HyQuery self_query_copy = new libdnf::Query(*self->query);
     self_query_copy->filterExtras();
     PyObject *final_query = queryToPyObject(self_query_copy, self->sack, Py_TYPE(self));
     Py_INCREF(final_query);
@@ -600,7 +600,7 @@ add_filter_extras(_QueryObject *self, PyObject *unused)
 static PyObject *
 add_installed_filter(_QueryObject *self, PyObject *unused)
 {
-    HyQuery query = new Query(*self->query);
+    HyQuery query = new libdnf::Query(*self->query);
     query->addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
     Py_INCREF(final_query);
@@ -615,7 +615,7 @@ add_filter_latest(_QueryObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "|i", &value))
         return NULL;
 
-    HyQuery query = new Query(*self->query);
+    HyQuery query = new libdnf::Query(*self->query);
     query->addFilter(HY_PKG_LATEST_PER_ARCH, HY_EQ, value);
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
     Py_INCREF(final_query);
@@ -625,7 +625,7 @@ add_filter_latest(_QueryObject *self, PyObject *args)
 static PyObject *
 add_upgrades_filter(_QueryObject *self, PyObject *unused)
 {
-    HyQuery query = new Query(*self->query);
+    HyQuery query = new libdnf::Query(*self->query);
     query->addFilter(HY_PKG_UPGRADES, HY_EQ, 1);
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
     Py_INCREF(final_query);
@@ -660,7 +660,7 @@ q_union(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "O!", &query_Type, &other))
             return NULL;
 
-    HyQuery self_query_copy = new Query(*((_QueryObject *) self)->query);
+    HyQuery self_query_copy = new libdnf::Query(*((_QueryObject *) self)->query);
     HyQuery other_q = ((_QueryObject *) other)->query;
     self_query_copy->queryUnion(*other_q);
     PyObject *final_query = queryToPyObject(self_query_copy, ((_QueryObject *) self)->sack,
@@ -676,7 +676,7 @@ q_intersection(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "O!", &query_Type, &other))
             return NULL;
 
-    HyQuery self_query_copy = new Query(*((_QueryObject *) self)->query);
+    HyQuery self_query_copy = new libdnf::Query(*((_QueryObject *) self)->query);
     HyQuery other_q = ((_QueryObject *) other)->query;
     self_query_copy->queryIntersection(*other_q);
     PyObject *final_query = queryToPyObject(self_query_copy, ((_QueryObject *) self)->sack,
@@ -692,7 +692,7 @@ q_difference(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "O!", &query_Type, &other))
             return NULL;
 
-    HyQuery self_query_copy = new Query(*((_QueryObject *) self)->query);
+    HyQuery self_query_copy = new libdnf::Query(*((_QueryObject *) self)->query);
     HyQuery other_q = ((_QueryObject *) other)->query;
     self_query_copy->queryDifference(*other_q);
     PyObject *final_query = queryToPyObject(self_query_copy, ((_QueryObject *) self)->sack,
@@ -705,7 +705,7 @@ static PyObject *
 filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds)
 {
 #if WITH_SWDB
-    HyQuery self_query_copy = new Query(*((_QueryObject *) self)->query);
+    HyQuery self_query_copy = new libdnf::Query(*((_QueryObject *) self)->query);
     const char *kwlist[] = {"swdb", "debug_solver", NULL};
     PyObject *swdb;
     PyObject *debug_solver = NULL;
@@ -936,7 +936,7 @@ query_to_name_arch_dict(_QueryObject *self, PyObject *unused)
 static PyObject *
 add_nevra_or_other_filter(_QueryObject *self, PyObject *args)
 {
-    HyQuery self_query_copy = new Query(*((_QueryObject *) self)->query);
+    HyQuery self_query_copy = new libdnf::Query(*((_QueryObject *) self)->query);
 
     int arguments_count = PyTuple_Size(args);
     if (arguments_count == 1) {
@@ -978,7 +978,7 @@ add_filter_recent(_QueryObject *self, PyObject *args)
         return NULL;
 
     self->query->apply();
-    HyQuery self_query_copy = new Query(*self->query);
+    HyQuery self_query_copy = new libdnf::Query(*self->query);
     time_t now = time(NULL);
     time_t recent_limit = now - (recent*86400);
     self_query_copy->filterRecent((recent_limit < 0) ? 0 : recent_limit);

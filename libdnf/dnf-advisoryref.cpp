@@ -40,8 +40,6 @@
 #include "dnf-sack-private.hpp"
 #include "sack/advisoryref.hpp"
 
-
-
 /**
  * dnf_advisoryref_new:
  *
@@ -54,7 +52,7 @@
 DnfAdvisoryRef *
 dnf_advisoryref_new(DnfSack *sack, Id a_id, int index)
 {
-    return new AdvisoryRef(sack, a_id, index);
+    return new libdnf::AdvisoryRef(sack, a_id, index);
 }
 
 /**

@@ -21,13 +21,23 @@
 #ifndef HY_TYPES_H
 #define HY_TYPES_H
 
+#ifdef __cplusplus
+namespace libdnf {
+    struct Query;
+    struct Selector;
+}
+typedef struct libdnf::Query * HyQuery;
+typedef struct libdnf::Selector * HySelector;
+#else
+typedef struct Query * HyQuery;
+typedef struct Selector * HySelector;
+#endif
+
 typedef struct _HyRepo * HyRepo;
 typedef struct _HyGoal * HyGoal;
 typedef struct Nevra * HyNevra;
 typedef struct _HyModuleForm * HyModuleForm;
 typedef struct _HyPossibilities * HyPossibilities;
-typedef struct Query * HyQuery;
-typedef struct Selector * HySelector;
 typedef char * HySubject;
 
 typedef const unsigned char HyChecksum;

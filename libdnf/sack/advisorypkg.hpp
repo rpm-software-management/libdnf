@@ -30,6 +30,8 @@
 #include "../dnf-types.h"
 #include "advisory.hpp"
 
+namespace libdnf {
+
 struct AdvisoryPkg {
 public:
     AdvisoryPkg(DnfSack *sack, Id advisory, Id name, Id evr, Id arch, const char * filename);
@@ -54,5 +56,6 @@ private:
     std::unique_ptr<Impl> pImpl;
 };
 
+}
 
 #endif /* __ADVISORY_PKG_HPP */

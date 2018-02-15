@@ -23,7 +23,7 @@
 HySelector
 hy_selector_create(DnfSack *sack)
 {
-    return new Selector(sack);
+    return new libdnf::Selector(sack);
 }
 
 void

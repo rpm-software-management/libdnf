@@ -24,8 +24,14 @@
 
 #include <glib-object.h>
 
-
+#ifdef __cplusplus
+namespace libdnf {
+    struct Advisory;
+}
+typedef struct libdnf::Advisory DnfAdvisory;
+#else
 typedef struct Advisory DnfAdvisory;
+#endif
 
 typedef enum {
         DNF_ADVISORY_KIND_UNKNOWN       = 0,        /* ordered by rough importance */

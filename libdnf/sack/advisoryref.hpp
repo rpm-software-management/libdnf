@@ -28,6 +28,8 @@
 
 #include "../dnf-types.h"
 
+namespace libdnf {
+
 struct AdvisoryRef {
 public:
     AdvisoryRef(DnfSack *sack, Id advisory, int index);
@@ -42,5 +44,6 @@ private:
     int index;
 };
 
+}
 
 #endif /* __ADVISORY_REF_HPP */
