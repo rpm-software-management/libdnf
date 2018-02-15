@@ -34,6 +34,7 @@
 #include "../dnf-advisorypkg.h"
 #include "../dnf-advisory-private.hpp"
 #include "advisory.hpp"
+#include "advisorypkg.hpp"
 #include "packageset.hpp"
 
 static int

@@ -22,23 +22,26 @@
 
 #include <solv/poolid.h>
 
+#include "advisory.hpp"
 #include "advisorypkg.hpp"
+#include "../dnf-sack-private.hpp"
 
 
 class AdvisoryPkg::Impl {
 private:
     friend AdvisoryPkg;
+    DnfSack *sack;
+    Id advisory;
     Id name;
     Id evr;
     Id arch;
     const char * filename;
-    Pool *pool;
 };
 
-AdvisoryPkg::AdvisoryPkg(Pool *pool, Id name, Id evr, Id arch, const char * filename)
-: pImpl(new Impl)
+AdvisoryPkg::AdvisoryPkg(DnfSack *sack, Id advisory, Id name, Id evr, Id arch, const char * filename) : pImpl(new Impl)
 {
-    pImpl->pool = pool;
+    pImpl->sack = sack;
+    pImpl->advisory = advisory;
     pImpl->name = name;
     pImpl->evr = evr;
     pImpl->arch = arch;
@@ -49,8 +52,13 @@ AdvisoryPkg::AdvisoryPkg(AdvisoryPkg && src) : pImpl(new Impl) { pImpl.swap(src.
 AdvisoryPkg::~AdvisoryPkg() = default;
 
 AdvisoryPkg & AdvisoryPkg::operator=(const AdvisoryPkg & src) { *pImpl = *src.pImpl; return *this; }
-AdvisoryPkg & AdvisoryPkg::operator=(AdvisoryPkg && src) noexcept { *pImpl = std::move(*src.pImpl);
-    return *this; }
+
+AdvisoryPkg &
+AdvisoryPkg::operator=(AdvisoryPkg && src) noexcept
+{
+    pImpl.swap(src.pImpl);
+    return *this;
+}
 
 bool
 AdvisoryPkg::nevraEQ(AdvisoryPkg & other)
@@ -66,11 +74,34 @@ AdvisoryPkg::nevraEQ(Solvable *s)
     return s->name == pImpl->name && s->evr == pImpl->evr && s->arch == pImpl->arch;
 }
 
+Advisory * AdvisoryPkg::getAdvisory() const
+{
+    return new Advisory(pImpl->sack, pImpl->advisory);
+}
+
 Id AdvisoryPkg::getName() const { return pImpl->name; }
-const char * AdvisoryPkg::getNameString() const { return pool_id2str(pImpl->pool, pImpl->name); }
+
+const char *
+AdvisoryPkg::getNameString() const
+{
+    return pool_id2str(dnf_sack_get_pool(pImpl->sack), pImpl->name);
+}
+
 Id AdvisoryPkg::getEVR() const { return pImpl->evr; }
-const char * AdvisoryPkg::getEVRString() const { return pool_id2str(pImpl->pool, pImpl->evr); }
+
+const char *
+AdvisoryPkg::getEVRString() const
+{
+    return pool_id2str(dnf_sack_get_pool(pImpl->sack), pImpl->evr);
+}
+
 Id AdvisoryPkg::getArch() const { return pImpl->arch; }
-const char * AdvisoryPkg::getArchString() const { return pool_id2str(pImpl->pool, pImpl->arch); }
+
+const char *
+AdvisoryPkg::getArchString() const
+{
+    return pool_id2str(dnf_sack_get_pool(pImpl->sack), pImpl->arch);
+}
+
 const char * AdvisoryPkg::getFileName() const { return pImpl->filename; }
-Pool * AdvisoryPkg::getPool() { return pImpl->pool; }
+DnfSack * AdvisoryPkg::getSack() { return pImpl->sack; }
