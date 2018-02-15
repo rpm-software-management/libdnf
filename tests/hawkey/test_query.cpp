@@ -905,7 +905,7 @@ START_TEST(test_query_apply)
 
     q = hy_query_create(sack);
     hy_query_filter(q, HY_PKG_NAME, HY_NOT | HY_GLOB, "j*");
-    struct Query _q = *q;
+    struct libdnf::Query _q = *q;
     fail_unless(_q.getResult() == NULL);
     ck_assert_int_eq(_q.getApplied(), 0);
     hy_query_apply(q);

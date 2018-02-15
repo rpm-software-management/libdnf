@@ -26,6 +26,8 @@
 #include "../hy-selector.h"
 #include "query.hpp"
 
+namespace libdnf {
+
 struct Selector {
 public:
     Selector(DnfSack* sack);
@@ -45,5 +47,7 @@ private:
     class Impl;
     std::unique_ptr<Impl> pImpl;
 };
+
+}
 
 #endif /* __SELECTOR_HPP */

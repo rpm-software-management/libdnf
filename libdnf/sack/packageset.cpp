@@ -24,6 +24,8 @@
 #include "../dnf-sack.h"
 #include "../hy-util-private.hpp"
 
+namespace libdnf {
+
 class PackageSet::Impl {
 public:
     Impl(DnfSack* sack);
@@ -126,4 +128,6 @@ Id PackageSet::next(Id previous) const
         }
     }
     return -1;
+}
+
 }

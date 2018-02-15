@@ -32,6 +32,7 @@
 #include "../hy-selector-private.hpp"
 #include "../hy-util-private.hpp"
 
+namespace libdnf {
 
 static bool
 valid_setting(int keyname, int cmp_type)
@@ -159,4 +160,6 @@ Selector::matches()
     queue_free(&solvables);
     queue_free(&job);
     return plist;
+}
+
 }

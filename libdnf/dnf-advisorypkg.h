@@ -25,8 +25,14 @@
 #include <solv/pool.h>
 #include <glib-object.h>
 
+#ifdef __cplusplus
+namespace libdnf {
+    struct AdvisoryPkg;
+}
+typedef struct libdnf::AdvisoryPkg DnfAdvisoryPkg;
+#else
 typedef struct AdvisoryPkg DnfAdvisoryPkg;
-
+#endif
 
 void dnf_advisorypkg_free (DnfAdvisoryPkg *advisorypkg);
 const char      *dnf_advisorypkg_get_name         (DnfAdvisoryPkg *advisorypkg);

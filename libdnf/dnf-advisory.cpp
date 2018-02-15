@@ -63,7 +63,7 @@ typedef struct
 DnfAdvisory *
 dnf_advisory_new(DnfSack *sack, Id a_id)
 {
-    return new Advisory(sack, a_id);
+    return new libdnf::Advisory(sack, a_id);
 }
 
 /**
@@ -221,12 +221,12 @@ dnf_advisory_get_updated(DnfAdvisory *advisory)
 GPtrArray *
 dnf_advisory_get_packages(DnfAdvisory *advisory)
 {
-    std::vector<AdvisoryPkg> pkgsvector;
+    std::vector<libdnf::AdvisoryPkg> pkgsvector;
     advisory->getPackages(pkgsvector);
 
     GPtrArray *pkglist =  g_ptr_array_new();
     for (auto& advisorypkg : pkgsvector) {
-        g_ptr_array_add(pkglist, new AdvisoryPkg(std::move(advisorypkg)));
+        g_ptr_array_add(pkglist, new libdnf::AdvisoryPkg(std::move(advisorypkg)));
     }
     return pkglist;
 }
@@ -244,12 +244,12 @@ dnf_advisory_get_packages(DnfAdvisory *advisory)
 GPtrArray *
 dnf_advisory_get_references(DnfAdvisory *advisory)
 {
-    std::vector<AdvisoryRef> refsvector;
+    std::vector<libdnf::AdvisoryRef> refsvector;
     advisory->getReferences(refsvector);
 
     GPtrArray *reflist =  g_ptr_array_new();
     for (auto& advisoryref : refsvector) {
-        g_ptr_array_add(reflist, new AdvisoryRef(advisoryref.getDnfSack(),
+        g_ptr_array_add(reflist, new libdnf::AdvisoryRef(advisoryref.getDnfSack(),
                                                  advisoryref.getAdvisory(),
                                                  advisoryref.getIndex()));
     }

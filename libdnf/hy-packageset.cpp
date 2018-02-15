@@ -53,7 +53,7 @@
 DnfPackageSet *
 dnf_packageset_new(DnfSack *sack)
 {
-    return new PackageSet(sack);
+    return new libdnf::PackageSet(sack);
 }
 
 /**
@@ -69,7 +69,7 @@ dnf_packageset_new(DnfSack *sack)
 DnfPackageSet *
 dnf_packageset_from_bitmap(DnfSack *sack, Map *map)
 {
-    return new PackageSet(sack, map);
+    return new libdnf::PackageSet(sack, map);
 }
 
 /**
@@ -101,7 +101,7 @@ dnf_packageset_get_map(DnfPackageSet *pset)
 DnfPackageSet *
 dnf_packageset_clone(DnfPackageSet *pset)
 {
-    return new PackageSet(*pset);
+    return new libdnf::PackageSet(*pset);
 }
 
 /**

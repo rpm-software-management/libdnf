@@ -23,7 +23,14 @@
 #ifndef __DNF_ADVISORYREF_H
 #define __DNF_ADVISORYREF_H
 
+#ifdef __cplusplus
+namespace libdnf {
+    struct AdvisoryRef;
+}
+typedef struct libdnf::AdvisoryRef DnfAdvisoryRef;
+#else
 typedef struct AdvisoryRef DnfAdvisoryRef;
+#endif
 
 
 typedef enum {

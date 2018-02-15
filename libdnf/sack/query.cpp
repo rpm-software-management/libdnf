@@ -37,6 +37,8 @@
 #include "advisorypkg.hpp"
 #include "packageset.hpp"
 
+namespace libdnf {
+
 static int
 match_type_num(int keyname) {
     switch (keyname) {
@@ -1787,6 +1789,8 @@ Query::filterDuplicated()
     }
 }
 
+}
+
 void
 hy_query_to_name_ordered_queue(HyQuery query, Queue *samename)
 {
@@ -1798,7 +1802,7 @@ hy_query_to_name_ordered_queue(HyQuery query, Queue *samename)
         if (MAPTST(query->getResult(), i))
             queue_push(samename, i);
 
-    solv_sort(samename->elements, samename->count, sizeof(Id), filter_latest_sortcmp, pool);
+    solv_sort(samename->elements, samename->count, sizeof(Id), libdnf::filter_latest_sortcmp, pool);
 }
 
 void
@@ -1812,5 +1816,6 @@ hy_query_to_name_arch_ordered_queue(HyQuery query, Queue *samename)
         if (MAPTST(query->getResult(), i))
             queue_push(samename, i);
 
-    solv_sort(samename->elements, samename->count, sizeof(Id), filter_latest_sortcmp_byarch, pool);
+    solv_sort(samename->elements, samename->count, sizeof(Id), libdnf::filter_latest_sortcmp_byarch,
+              pool);
 }

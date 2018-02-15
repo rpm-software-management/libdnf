@@ -30,6 +30,8 @@
 #include "../dnf-types.h"
 #include "advisoryref.hpp"
 
+namespace libdnf {
+
 struct AdvisoryPkg;
 
 struct Advisory {
@@ -56,5 +58,6 @@ private:
     Id advisory;
     bool matchBugOrCVE(const char *bug, bool withBug) const;
 };
+}
 
 #endif /* __ADVISORY_HPP */

@@ -43,7 +43,6 @@
 #include "sack/packageset.hpp"
 #include "sack/query.hpp"
 
-
 Id
 query_get_index_item(HyQuery query, int index)
 {
@@ -59,13 +58,13 @@ hy_query_apply(HyQuery q)
 HyQuery
 hy_query_create(DnfSack *sack)
 {
-    return new Query(sack);
+    return new libdnf::Query(sack);
 }
 
 HyQuery
 hy_query_create_flags(DnfSack *sack, int flags)
 {
-    return new Query(sack, flags);
+    return new libdnf::Query(sack, flags);
 }
 
 HyQuery
@@ -91,7 +90,7 @@ hy_query_clear(HyQuery q)
 HyQuery
 hy_query_clone(HyQuery q)
 {
-    return new Query(*q);
+    return new libdnf::Query(*q);
 }
 
 int

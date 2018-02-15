@@ -29,6 +29,8 @@
 #include "../dnf-advisoryref.h"
 #include "../dnf-sack-private.hpp"
 
+namespace libdnf {
+
 /**
  * str2dnf_advisory_kind:
  * @str: a string
@@ -202,4 +204,4 @@ Advisory::matchSeverity(const char *severity) const
     return advisorySeverity ? strcmp(advisorySeverity, severity) == 0 : false;
 }
 
-
+}

@@ -26,6 +26,7 @@
 #include "advisorypkg.hpp"
 #include "../dnf-sack-private.hpp"
 
+namespace libdnf {
 
 class AdvisoryPkg::Impl {
 private:
@@ -105,3 +106,5 @@ AdvisoryPkg::getArchString() const
 
 const char * AdvisoryPkg::getFileName() const { return pImpl->filename; }
 DnfSack * AdvisoryPkg::getSack() { return pImpl->sack; }
+
+}
