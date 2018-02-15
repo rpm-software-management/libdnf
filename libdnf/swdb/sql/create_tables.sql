@@ -31,8 +31,7 @@ R"**(
         repo_id INTEGER REFERENCES repo(id),
         action INTEGER NOT NULL,                                /* (enum) */
         reason INTEGER NOT NULL,                                /* (enum) */
-        done INTEGER NOT NULL,                                   /* (bool) 0: not done, 1: done */
-        CONSTRAINT trans_item_unique_trans_item UNIQUE (trans_id, item_id)
+        done INTEGER NOT NULL                                   /* (bool) 0: not done, 1: done */
     );
     CREATE TABLE item_replaced_by (              /* M:N relationship between transaction items */
         trans_item_id INTEGER REFERENCES trans_item(id),
