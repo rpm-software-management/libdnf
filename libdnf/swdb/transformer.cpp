@@ -110,11 +110,11 @@ Transformer::transform()
     // create a new database file
     createDatabase(swdb);
 
-    // transform groups
-    transformGroups(swdb);
-
     // transform objects
     transformTrans(swdb, history);
+
+    // transform groups
+    transformGroups(swdb);
 
     // dump database to a file
     swdb->backup(outputFile);
