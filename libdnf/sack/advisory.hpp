@@ -28,8 +28,9 @@
 #include <solv/pooltypes.h>
 #include "../dnf-advisory.h"
 #include "../dnf-types.h"
-#include "advisorypkg.hpp"
 #include "advisoryref.hpp"
+
+struct AdvisoryPkg;
 
 struct Advisory {
 public:

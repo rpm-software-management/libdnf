@@ -42,6 +42,7 @@
 #include "hy-iutil.h"
 #include "sack/advisory.hpp"
 #include "sack/advisoryref.hpp"
+#include "sack/advisorypkg.hpp"
 
 typedef struct
 {
@@ -225,8 +226,7 @@ dnf_advisory_get_packages(DnfAdvisory *advisory)
 
     GPtrArray *pkglist =  g_ptr_array_new();
     for (auto& advisorypkg : pkgsvector) {
-        g_ptr_array_add(pkglist, new AdvisoryPkg(advisorypkg.getPool(), advisorypkg.getName(),
-            advisorypkg.getEVR(), advisorypkg.getArch(), advisorypkg.getFileName()));
+        g_ptr_array_add(pkglist, new AdvisoryPkg(std::move(advisorypkg)));
     }
     return pkglist;
 }

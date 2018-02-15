@@ -27,9 +27,12 @@
 #include <solv/pooltypes.h>
 #include <solv/solvable.h>
 
+#include "../dnf-types.h"
+#include "advisory.hpp"
+
 struct AdvisoryPkg {
 public:
-    AdvisoryPkg(Pool *pool, Id name, Id evr, Id arch, const char * filename);
+    AdvisoryPkg(DnfSack *sack, Id advisory, Id name, Id evr, Id arch, const char * filename);
     AdvisoryPkg(const AdvisoryPkg & src);
     AdvisoryPkg(AdvisoryPkg && src);
     ~AdvisoryPkg();
@@ -37,6 +40,7 @@ public:
     AdvisoryPkg & operator=(AdvisoryPkg && src) noexcept;
     bool nevraEQ(AdvisoryPkg & other);
     bool nevraEQ(Solvable *s);
+    Advisory * getAdvisory() const;
     Id getName() const;
     const char * getNameString() const;
     Id getEVR() const;
@@ -44,7 +48,7 @@ public:
     Id getArch() const;
     const char * getArchString() const;
     const char * getFileName() const;
-    Pool * getPool();
+    DnfSack * getSack();
 private:
     class Impl;
     std::unique_ptr<Impl> pImpl;

@@ -23,6 +23,7 @@
 #include <solv/repo.h>
 
 #include "advisory.hpp"
+#include "advisorypkg.hpp"
 #include "advisoryref.hpp"
 #include "../dnf-advisory-private.hpp"
 #include "../dnf-advisoryref.h"
@@ -125,7 +126,7 @@ Advisory::getPackages(std::vector<AdvisoryPkg> & pkglist, bool withFilemanes) co
         if (withFilemanes) {
             filename = pool_lookup_str(pool, SOLVID_POS, UPDATE_COLLECTION_FILENAME);
         }
-        pkglist.emplace_back(pool, name, evr, arch, filename);
+        pkglist.emplace_back(sack, advisory, name, evr, arch, filename);
     }
     dataiterator_free(&di);
 }
