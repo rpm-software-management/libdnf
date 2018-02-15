@@ -43,6 +43,8 @@ public:
     explicit Swdb(const std::string &path);
     ~Swdb();
 
+    SQLite3Ptr getConn() { return conn; }
+
     // Database
     static constexpr const char *defaultPath =
         "/var/lib/dnf/history/sw.db"; // FIXME load this from conf
