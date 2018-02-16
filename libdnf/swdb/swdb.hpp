@@ -84,6 +84,7 @@ public:
                                                           int64_t maxTransactionId);
     const std::string getRPMRepo(const std::string &nevra);
     std::shared_ptr< const TransactionItem > getRPMTransactionItem(const std::string &nevra);
+    std::vector< int64_t > searchTransactionsByRPM(const std::vector< std::string > &patterns);
 
     // Item: CompsGroup
     TransactionItemPtr getCompsGroupItem(const std::string &groupid);

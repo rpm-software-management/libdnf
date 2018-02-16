@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <algorithm>
 #include <map>
 #include <sstream>
 
@@ -362,4 +363,40 @@ RPMItem::operator<(const RPMItem &other) const
         return subVersionOther > subVersionThis;
     }
     return false;
+}
+
+std::vector< int64_t >
+RPMItem::searchTransactions(SQLite3Ptr conn, const std::vector< std::string > &patterns)
+{
+    std::vector< int64_t > result;
+
+    const char *sql = R"**(
+        SELECT DISTINCT
+            ti.trans_id
+        FROM
+            trans_item ti,
+            rpm i
+        WHERE
+            ti.item_id = i.item_id
+            AND (
+                i.name = ?
+                OR i.epoch = ?
+                OR i.version = ?
+                OR i.release = ?
+                OR i.arch = ?
+            )
+        ORDER BY
+           trans_id DESC
+    )**";
+    SQLite3::Query query(*conn, sql);
+    for (auto pattern : patterns) {
+        query.bindv(pattern, pattern, pattern, pattern, pattern);
+        if (query.step() == SQLite3::Statement::StepResult::ROW) {
+            result.push_back(query.get< int64_t >("trans_id"));
+        }
+    }
+    std::sort(result.begin(), result.end());
+    auto last = std::unique(result.begin(), result.end());
+    result.erase(last, result.end());
+    return result;
 }

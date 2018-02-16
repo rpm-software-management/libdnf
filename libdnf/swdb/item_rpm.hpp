@@ -58,6 +58,7 @@ public:
     void save() override;
 
     static TransactionItemPtr getTransactionItem(SQLite3Ptr conn, const std::string &nevra);
+    static std::vector< int64_t > searchTransactions(SQLite3Ptr conn, const std::vector< std::string > &patterns);
     static std::vector< TransactionItemPtr > getTransactionItems(SQLite3Ptr conn,
                                                                  int64_t transaction_id);
     static TransactionItemReason resolveTransactionItemReason(SQLite3Ptr conn,

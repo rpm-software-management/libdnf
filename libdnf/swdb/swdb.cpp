@@ -488,6 +488,7 @@ Swdb::Swdb(const std::string &path)
         makeDirPath(path);
 
         /// XXX do we want to always transform from "/var/lib/dnf/"?
+        // TODO: installroot?
         Transformer transformer(path, "/var/lib/dnf/");
         transformer.transform();
         conn = std::make_shared< SQLite3 >(path);
@@ -552,4 +553,9 @@ Swdb::filterUnneeded(HyQuery installed, Pool *pool) const
         query.reset();
     }
     return userInstalled;
+
+std::vector< int64_t >
+Swdb::searchTransactionsByRPM(const std::vector< std::string > &patterns)
+{
+    return RPMItem::searchTransactions(conn, patterns);
 }
