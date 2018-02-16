@@ -44,12 +44,6 @@
 #include "sack/advisoryref.hpp"
 #include "sack/advisorypkg.hpp"
 
-typedef struct
-{
-    Pool    *pool;
-    Id       a_id;
-} DnfAdvisoryPrivate;
-
 
 /**
  * dnf_advisory_new:
