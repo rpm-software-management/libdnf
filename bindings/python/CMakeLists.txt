@@ -38,6 +38,7 @@ SWIG_ADD_MODULE (swdb python ../swig/swdb.i)
 SWIG_LINK_LIBRARIES (swdb libdnf)
 SWIG_LINK_LIBRARIES (swdb ${PYTHON_LIBRARY})
 
+configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py COPYONLY)
 
 INSTALL (FILES __init__.py DESTINATION ${PYTHON_INSTALL_DIR}/libdnf)
 
