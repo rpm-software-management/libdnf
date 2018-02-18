@@ -105,16 +105,23 @@ void
 Transformer::transform()
 {
     auto swdb = std::make_shared< SQLite3 >(":memory:");
-    auto history = std::make_shared< SQLite3 >(historyPath().c_str());
 
     // create a new database file
     createDatabase(swdb);
 
-    // transform objects
-    transformTrans(swdb, history);
+    // migrate history db if it exists
+    try {
+        auto history = std::make_shared< SQLite3 >(historyPath().c_str());
 
-    // transform groups
-    transformGroups(swdb);
+        // transform objects
+        transformTrans(swdb, history);
+
+        // transform groups
+        transformGroups(swdb);
+    }
+    catch (Exception ex) {
+        // TODO: use a different (more specific) exception
+    }
 
     // dump database to a file
     swdb->backup(outputFile);

@@ -489,7 +489,9 @@ Swdb::Swdb(const std::string &path)
 
         /// XXX do we want to always transform from "/var/lib/dnf/"?
         // TODO: installroot?
-        Transformer transformer(path, "/var/lib/dnf/");
+        auto found = path.find_last_of("/");
+        found = path.find_last_of("/", found-1);
+        Transformer transformer(path, path.substr(0, found));
         transformer.transform();
         conn = std::make_shared< SQLite3 >(path);
     } else {
