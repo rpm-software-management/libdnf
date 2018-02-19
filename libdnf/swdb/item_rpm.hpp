@@ -63,7 +63,7 @@ public:
                                                                  int64_t transaction_id);
     static TransactionItemReason resolveTransactionItemReason(SQLite3Ptr conn,
                                                               const std::string &name,
-                                                              const std::string arch,
+                                                              const std::string &arch,
                                                               int64_t maxTransactionId);
 
     bool operator<(const RPMItem &other) const;

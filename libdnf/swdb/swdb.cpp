@@ -167,7 +167,7 @@ Swdb::resolveRPMTransactionItemReason(const std::string &name,
     // TODO:
     // -1: latest
     // -2: latest and lastTransaction data in memory
-    if (transactionInProgress != nullptr) {
+    if (maxTransactionId == -2 && transactionInProgress != nullptr) {
         for (auto i : transactionInProgress->getItems()) {
             auto rpm = std::dynamic_pointer_cast< RPMItem >(i->getItem());
             if (!rpm) {

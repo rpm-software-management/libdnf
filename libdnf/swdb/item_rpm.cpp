@@ -258,7 +258,7 @@ RPMItem::getTransactionItem(SQLite3Ptr conn, const std::string &nevra)
 TransactionItemReason
 RPMItem::resolveTransactionItemReason(SQLite3Ptr conn,
                                       const std::string &name,
-                                      const std::string arch,
+                                      const std::string &arch,
                                       int64_t maxTransactionId)
 {
     const char *sql = R"**(
@@ -274,7 +274,7 @@ RPMItem::resolveTransactionItemReason(SQLite3Ptr conn,
         WHERE
             t.done = 1
             /* see comment in transactionitem.hpp - TransactionItemAction */
-            AND ti.action not in (3, 5, 7)
+            AND ti.action not in (3, 5, 7, 10)
             AND i.name = ?
             AND i.arch = ?
         ORDER BY
