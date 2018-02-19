@@ -39,7 +39,7 @@
 
 namespace libdnf {
 
-static int
+static bool
 match_type_num(int keyname) {
     switch (keyname) {
         case HY_PKG_EMPTY:
@@ -50,24 +50,24 @@ match_type_num(int keyname) {
         case HY_PKG_UPGRADES:
         case HY_PKG_DOWNGRADABLE:
         case HY_PKG_DOWNGRADES:
-            return 1;
+            return true;
     default:
-        return 0;
+        return false;
     }
 }
 
-static int
+static bool
 match_type_pkg(int keyname) {
     switch (keyname) {
         case HY_PKG:
         case HY_PKG_OBSOLETES:
-            return 1;
+            return true;
         default:
-            return 0;
+            return false;
     }
 }
 
-static int
+static bool
 match_type_reldep(int keyname) {
     switch (keyname) {
         case HY_PKG_CONFLICTS:
@@ -78,13 +78,13 @@ match_type_reldep(int keyname) {
         case HY_PKG_REQUIRES:
         case HY_PKG_SUGGESTS:
         case HY_PKG_SUPPLEMENTS:
-            return 1;
+            return true;
         default:
-            return 0;
+            return false;
     }
 }
 
-static int
+static bool
 match_type_str(int keyname) {
     switch (keyname) {
         case HY_PKG_ADVISORY:
@@ -113,17 +113,17 @@ match_type_str(int keyname) {
         case HY_PKG_CONFLICTS:
         case HY_PKG_URL:
         case HY_PKG_VERSION:
-            return 1;
+            return true;
         default:
-            return 0;
+            return false;
     }
 }
 
-static int
+static bool
 valid_filter_str(int keyname, int cmp_type)
 {
     if (!match_type_str(keyname))
-        return 0;
+        return false;
 
     cmp_type &= ~HY_NOT; // hy_query_run always handles NOT
     switch (keyname) {
@@ -135,41 +135,39 @@ valid_filter_str(int keyname, int cmp_type)
         case HY_PKG_NAME:
             return cmp_type & HY_EQ || cmp_type & HY_GLOB || cmp_type & HY_SUBSTR;
         default:
-            return 1;
+            return true;
     }
 }
 
-static int
+static bool
 valid_filter_num(int keyname, int cmp_type)
 {
     if (!match_type_num(keyname))
-        return 0;
+        return false;
 
     cmp_type &= ~HY_NOT; // hy_query_run always handles NOT
     if (cmp_type & (HY_ICASE | HY_SUBSTR | HY_GLOB))
-        return 0;
+        return false;
     switch (keyname) {
         case HY_PKG:
             return cmp_type == HY_EQ;
         default:
-            return 1;
+            return true;
     }
 }
 
-static int
+static bool
 valid_filter_pkg(int keyname, int cmp_type)
 {
     if (!match_type_pkg(keyname))
-        return 0;
+        return false;
     return cmp_type == HY_EQ || cmp_type == HY_NEQ;
 }
 
-static int
+static bool
 valid_filter_reldep(int keyname)
 {
-    if (!match_type_reldep(keyname))
-        return 0;
-    return 1;
+    return match_type_reldep(keyname);
 }
 
 static Id
@@ -604,7 +602,7 @@ Query::getResult() noexcept
 }
 
 const Map * Query::getResult() const noexcept { return pImpl->result->getMap(); }
-bool Query::getApplied() { return pImpl->applied; }
+bool Query::getApplied() const noexcept { return pImpl->applied; }
 DnfSack * Query::getSack() { return pImpl->sack; }
 
 void
@@ -1033,9 +1031,9 @@ Query::Impl::filterVersion(const Filter & f, Map *m)
             pool_split_evr(pool, evr, &e, &v, &r);
 
             if (cmp_type == HY_GLOB) {
-                if (fnmatch(match, v, 0))
-                    continue;
-                MAPSET(m, id);
+                if (fnmatch(match, v, 0) == 0)
+                    MAPSET(m, id);
+                continue;
             }
 
             char *vr = pool_tmpjoin(pool, v, "-0", NULL);
@@ -1075,9 +1073,9 @@ Query::Impl::filterRelease(const Filter & f, Map *m)
             pool_split_evr(pool, evr, &e, &v, &r);
 
             if (cmp_type & HY_GLOB) {
-                if (fnmatch(match, r, 0))
-                    continue;
-                MAPSET(m, id);
+                if (fnmatch(match, r, 0) == 0)
+                    MAPSET(m, id);
+                continue;
             }
 
             char *vr = pool_tmpjoin(pool, "0-", r, NULL);
@@ -1219,15 +1217,16 @@ Query::Impl::filterReponame(const Filter & f, Map *m)
     Pool *pool = dnf_sack_get_pool(sack);
     Solvable *s;
     Repo *r;
-    Id id, ourids[pool->nrepos];
+    Id id;
+    bool ourids[pool->nrepos];
     auto resultPset = result.get();
 
     for (id = 0; id < pool->nrepos; ++id)
-        ourids[id] = 0;
+        ourids[id] = false;
     FOR_REPOS(id, r) {
         for (auto match_in : f.getMatches()) {
             if (!strcmp(r->name, match_in.str)) {
-                ourids[id] = 1;
+                ourids[id] = true;
                 break;
             }
         }
@@ -1823,8 +1822,9 @@ hy_query_to_name_ordered_queue(HyQuery query, Queue *samename)
     Pool *pool = dnf_sack_get_pool(query->getSack());
 
     queue_init(samename);
+    const auto result = query->getResult();
     for (int i = 1; i < pool->nsolvables; ++i)
-        if (MAPTST(query->getResult(), i))
+        if (MAPTST(result, i))
             queue_push(samename, i);
 
     solv_sort(samename->elements, samename->count, sizeof(Id), libdnf::filter_latest_sortcmp, pool);
@@ -1837,8 +1837,9 @@ hy_query_to_name_arch_ordered_queue(HyQuery query, Queue *samename)
     Pool *pool = dnf_sack_get_pool(query->getSack());
 
     queue_init(samename);
+    const auto result = query->getResult();
     for (int i = 1; i < pool->nsolvables; ++i)
-        if (MAPTST(query->getResult(), i))
+        if (MAPTST(result, i))
             queue_push(samename, i);
 
     solv_sort(samename->elements, samename->count, sizeof(Id), libdnf::filter_latest_sortcmp_byarch,

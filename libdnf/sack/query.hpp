@@ -69,7 +69,7 @@ public:
     *
     * @return bool
     */
-    bool getApplied();
+    bool getApplied() const noexcept;
 
     /**
     * @brief Remove all filters and reset the result
