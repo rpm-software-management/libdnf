@@ -44,6 +44,7 @@ public:
 
     bool operator==(const Transaction &other) const;
     bool operator<(const Transaction &other) const;
+    bool operator>(const Transaction &other) const;
 
     int64_t getId() const noexcept { return id; }
     int64_t getDtBegin() const noexcept { return dtBegin; }

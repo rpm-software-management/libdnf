@@ -74,10 +74,9 @@ RpmItemTest::testGetTransactionItems()
     auto read_finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration< double > read_duration = read_finish - read_start;
 
-    std::cout << "Create RPMItems: "
-              << std::chrono::duration_cast< std::chrono::milliseconds >(create_duration).count()
-              << "ms" << std::endl;
-    std::cout << "Read RPMItems: "
-              << std::chrono::duration_cast< std::chrono::milliseconds >(read_duration).count()
-              << "ms" << std::endl;
+    auto createMs = std::chrono::duration_cast< std::chrono::milliseconds >(create_duration);
+    auto readMs = std::chrono::duration_cast< std::chrono::milliseconds >(read_duration);
+
+    CPPUNIT_ASSERT(createMs.count() == 0);
+    CPPUNIT_ASSERT(readMs.count() == 0);
 }

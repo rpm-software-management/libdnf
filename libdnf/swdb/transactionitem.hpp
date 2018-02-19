@@ -37,7 +37,33 @@ typedef std::shared_ptr< TransactionItem > TransactionItemPtr;
 #include "swdb_types.hpp"
 #include "transaction.hpp"
 
-class TransactionItem {
+class TransactionItemBase {
+public:
+    ItemPtr getItem() const noexcept { return item; }
+    void setItem(ItemPtr value) { item = value; }
+
+    const std::string &getRepoid() const noexcept { return repoid; }
+    void setRepoid(const std::string &value) { repoid = value; }
+
+    TransactionItemAction getAction() const noexcept { return action; }
+    void setAction(TransactionItemAction value) { action = value; }
+
+    const std::string &getActionName();
+    const std::string &getActionShort();
+
+    bool getDone() const noexcept { return done; }
+    void setDone(bool value) { done = value; }
+
+protected:
+    ItemPtr item;
+    std::string repoid;
+    TransactionItemAction action = TransactionItemAction::INSTALL;
+    bool done = false;
+};
+
+typedef std::shared_ptr< TransactionItemBase > TransactionItemBasePtr;
+
+class TransactionItem : public TransactionItemBase {
 public:
     explicit TransactionItem(libdnf::Transaction *trans);
 
@@ -47,9 +73,6 @@ public:
     void setId(int64_t value) { id = value; }
 
     // int64_t getTransactionId() const noexcept { return trans.getId(); }
-
-    ItemPtr getItem() const noexcept { return item; }
-    void setItem(ItemPtr value) { item = value; }
 
     // typed items - workaround for lack of shared_ptr<> downcast support in SWIG
     CompsEnvironmentItemPtr getCompsEnvironmentItem() const noexcept
@@ -62,23 +85,11 @@ public:
     }
     RPMItemPtr getRPMItem() const noexcept { return std::dynamic_pointer_cast< RPMItem >(item); }
 
-    const std::string &getRepoid() const noexcept { return repoid; }
-    void setRepoid(const std::string &value) { repoid = value; }
-
     const std::vector< TransactionItemPtr > &getReplacedBy() const noexcept { return replacedBy; }
     void addReplacedBy(TransactionItemPtr value) { replacedBy.push_back(value); }
 
-    TransactionItemAction getAction() const noexcept { return action; }
-    void setAction(TransactionItemAction value) { action = value; }
-
-    const std::string &getActionName();
-    const std::string &getActionShort();
-
     TransactionItemReason getReason() const noexcept { return reason; }
     void setReason(TransactionItemReason value) { reason = value; }
-
-    bool getDone() const noexcept { return done; }
-    void setDone(bool value) { done = value; }
 
     void save();
     void saveReplacedBy();
@@ -90,13 +101,9 @@ protected:
     const int64_t transID;
     SQLite3Ptr conn;
 
-    ItemPtr item;
     // TODO: replace with objects? it's just repoid, probably not necessary
-    std::string repoid;
     std::vector< TransactionItemPtr > replacedBy;
-    TransactionItemAction action = TransactionItemAction::INSTALL;
     TransactionItemReason reason = TransactionItemReason::UNKNOWN;
-    bool done = false;
 
     void dbInsert();
     void dbUpdate();

@@ -54,7 +54,6 @@ TransactionTest::testInsertWithSpecifiedId()
     // it is not allowed to save a transaction with arbitrary ID
     SwdbPrivate::Transaction trans(conn);
     trans.setId(INT64_MAX);
-    trans.begin();
     CPPUNIT_ASSERT_THROW(trans.begin(), std::runtime_error);
 }
 
@@ -86,6 +85,33 @@ TransactionTest::testUpdate()
 }
 
 void
-TransactionTest::testAddItem()
+TransactionTest::testComparison()
 {
+    // test operator ==, > and <
+    SwdbPrivate::Transaction first(conn);
+    SwdbPrivate::Transaction second(conn);
+
+    // id comparison test
+    first.setId(1);
+    second.setId(2);
+    CPPUNIT_ASSERT(first > second);
+    CPPUNIT_ASSERT(second < first);
+
+    // begin timestamp comparison test
+    second.setId(1);
+    first.setDtBegin(1);
+    second.setDtBegin(2);
+    CPPUNIT_ASSERT(first > second);
+    CPPUNIT_ASSERT(second < first);
+
+    // rpmdb comparison test
+    second.setDtBegin(1);
+    first.setRpmdbVersionBegin("0");
+    second.setRpmdbVersionBegin("1");
+    CPPUNIT_ASSERT(first > second);
+    CPPUNIT_ASSERT(second < first);
+
+    // equality
+    second.setRpmdbVersionBegin("0");
+    CPPUNIT_ASSERT(first == second);
 }

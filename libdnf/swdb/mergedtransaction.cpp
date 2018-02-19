@@ -69,10 +69,10 @@ MergedTransaction::listIds() const noexcept
  * Get UNIX IDs of users who performed the transaction.
  * \return list of user IDs sorted by transaction ID in ascending order
  */
-std::vector< int64_t >
+std::vector< uint32_t >
 MergedTransaction::listUserIds() const noexcept
 {
-    std::vector< int64_t > users;
+    std::vector< uint32_t > users;
     for (auto t : transactions) {
         users.push_back(t->getUserId());
     }
@@ -171,7 +171,7 @@ MergedTransaction::getConsoleOutput()
  *      With complete transaction pair we need to get a new Upgrade/Downgrade package and
  *      compare versions with original package from pair.
  */
-std::vector< MergedTransactionItemPtr >
+std::vector< TransactionItemBasePtr >
 MergedTransaction::getItems()
 {
     ItemPairMap itemPairMap;
@@ -182,12 +182,12 @@ MergedTransaction::getItems()
         // iterate over transaction items
         for (auto transItem : transItems) {
             // get item and its type
-            auto mTransItem = std::make_shared< MergedTransactionItem >(transItem);
+            auto mTransItem = std::dynamic_pointer_cast< TransactionItemBase >(transItem);
             mergeItem(itemPairMap, mTransItem);
         }
     }
 
-    std::vector< MergedTransactionItemPtr > items;
+    std::vector< TransactionItemBasePtr > items;
     for (const auto &row : itemPairMap) {
         ItemPair itemPair = row.second;
         items.push_back(itemPair.first);
@@ -225,7 +225,7 @@ getItemIdentifier(ItemPtr item)
  */
 void
 MergedTransaction::resolveRPMDifference(ItemPair &previousItemPair,
-                                        MergedTransactionItemPtr mTransItem)
+                                        TransactionItemBasePtr mTransItem)
 {
     auto firstItem = previousItemPair.first->getItem();
     auto secondItem = mTransItem->getItem();
@@ -253,7 +253,7 @@ MergedTransaction::resolveRPMDifference(ItemPair &previousItemPair,
 }
 
 void
-MergedTransaction::resolveErase(ItemPair &previousItemPair, MergedTransactionItemPtr mTransItem)
+MergedTransaction::resolveErase(ItemPair &previousItemPair, TransactionItemBasePtr mTransItem)
 {
     /*
      * The original item has been removed - it has to be installed now unless the rpmdb
@@ -284,7 +284,7 @@ MergedTransaction::resolveErase(ItemPair &previousItemPair, MergedTransactionIte
  * \param mTransItem new transaction item
  */
 void
-MergedTransaction::resolveAltered(ItemPair &previousItemPair, MergedTransactionItemPtr mTransItem)
+MergedTransaction::resolveAltered(ItemPair &previousItemPair, TransactionItemBasePtr mTransItem)
 {
     auto newState = mTransItem->getAction();
     auto firstState = previousItemPair.first->getAction();
@@ -343,7 +343,7 @@ MergedTransaction::resolveAltered(ItemPair &previousItemPair, MergedTransactionI
  * \param mTransItem transaction item
  */
 void
-MergedTransaction::mergeItem(ItemPairMap &itemPairMap, MergedTransactionItemPtr mTransItem)
+MergedTransaction::mergeItem(ItemPairMap &itemPairMap, TransactionItemBasePtr mTransItem)
 {
     // get item identifier
     std::string name = getItemIdentifier(mTransItem->getItem());

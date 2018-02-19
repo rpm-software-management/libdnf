@@ -9,9 +9,9 @@
 class TransactionTest : public CppUnit::TestCase {
     CPPUNIT_TEST_SUITE(TransactionTest);
     CPPUNIT_TEST(testInsert);
-    // CPPUNIT_TEST(testInsertWithSpecifiedId);
+    CPPUNIT_TEST(testInsertWithSpecifiedId);
     CPPUNIT_TEST(testUpdate);
-    // CPPUNIT_TEST(testAddItem);
+    CPPUNIT_TEST(testComparison);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -21,7 +21,7 @@ public:
     void testInsert();
     void testInsertWithSpecifiedId();
     void testUpdate();
-    void testAddItem();
+    void testComparison();
 
 private:
     std::shared_ptr< SQLite3 > conn;

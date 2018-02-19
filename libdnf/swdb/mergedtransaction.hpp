@@ -28,36 +28,11 @@
 #include <vector>
 
 class MergedTransaction;
-class MergedTransactionItem;
 typedef std::shared_ptr< MergedTransaction > MergedTransactionPtr;
-typedef std::shared_ptr< MergedTransactionItem > MergedTransactionItemPtr;
 
 #include "item_rpm.hpp"
 #include "transaction.hpp"
-
-class MergedTransactionItem {
-public:
-    MergedTransactionItem(TransactionItemPtr item)
-      : item{item->getItem()}
-      , repoid{item->getRepoid()}
-      , action{item->getAction()}
-    {
-    }
-
-    ItemPtr getItem() const noexcept { return item; }
-    void setItem(ItemPtr value) { item = value; }
-
-    const std::string &getRepoid() const noexcept { return repoid; }
-    void setRepoid(const std::string &value) { repoid = value; }
-
-    TransactionItemAction getAction() const noexcept { return action; }
-    void setAction(TransactionItemAction value) { action = value; }
-
-protected:
-    ItemPtr item;
-    std::string repoid;
-    TransactionItemAction action = TransactionItemAction::INSTALL;
-};
+#include "transactionitem.hpp"
 
 class MergedTransaction {
 public:
@@ -65,7 +40,7 @@ public:
     void merge(libdnf::TransactionPtr trans);
 
     std::vector< int64_t > listIds() const noexcept;
-    std::vector< int64_t > listUserIds() const noexcept;
+    std::vector< uint32_t > listUserIds() const noexcept;
     std::vector< std::string > listCmdlines() const noexcept;
     std::vector< bool > listDone() const noexcept;
     int64_t getDtBegin() const noexcept;
@@ -75,27 +50,28 @@ public:
     std::set< RPMItemPtr > getSoftwarePerformedWith() const;
     std::vector< std::pair< int, std::string > > getConsoleOutput();
 
-    std::vector< MergedTransactionItemPtr > getItems();
+    std::vector< TransactionItemBasePtr > getItems();
 
 protected:
     std::vector< libdnf::TransactionPtr > transactions;
 
     struct ItemPair {
-        ItemPair(MergedTransactionItemPtr first, MergedTransactionItemPtr second)
+        ItemPair(TransactionItemBasePtr first, TransactionItemBasePtr second)
           : first{first}
           , second{second}
         {
         }
         ItemPair(){};
-        MergedTransactionItemPtr first = nullptr;
-        MergedTransactionItemPtr second = nullptr;
+        TransactionItemBasePtr first = nullptr;
+        TransactionItemBasePtr second = nullptr;
     };
+
     typedef std::unordered_map< std::string, ItemPair > ItemPairMap;
 
-    void mergeItem(ItemPairMap &itemPairMap, MergedTransactionItemPtr transItem);
-    void resolveRPMDifference(ItemPair &previousItemPair, MergedTransactionItemPtr mTransItem);
-    void resolveErase(ItemPair &previousItemPair, MergedTransactionItemPtr mTransItem);
-    void resolveAltered(ItemPair &previousItemPair, MergedTransactionItemPtr mTransItem);
+    void mergeItem(ItemPairMap &itemPairMap, TransactionItemBasePtr transItem);
+    void resolveRPMDifference(ItemPair &previousItemPair, TransactionItemBasePtr mTransItem);
+    void resolveErase(ItemPair &previousItemPair, TransactionItemBasePtr mTransItem);
+    void resolveAltered(ItemPair &previousItemPair, TransactionItemBasePtr mTransItem);
 };
 
 #endif // LIBDNF_SWDB_TRANSACTION_HPP

@@ -64,13 +64,13 @@ TransactionItemReason to_TransactionItemReason(const std::string & s) {
 */
 
 const std::string &
-TransactionItem::getActionName()
+TransactionItemBase::getActionName()
 {
     return transactionItemActionName.at(getAction());
 }
 
 const std::string &
-TransactionItem::getActionShort()
+TransactionItemBase::getActionShort()
 {
     return transactionItemActionShort.at(getAction());
 }

@@ -88,8 +88,8 @@ MergedTransactionTest::testMerge()
     CPPUNIT_ASSERT_EQUAL((int64_t)1, merged.listIds().at(0));
     CPPUNIT_ASSERT_EQUAL((int64_t)2, merged.listIds().at(1));
 
-    CPPUNIT_ASSERT_EQUAL((int64_t)1000, merged.listUserIds().at(0));
-    CPPUNIT_ASSERT_EQUAL((int64_t)1001, merged.listUserIds().at(1));
+    CPPUNIT_ASSERT_EQUAL((uint32_t)1000, merged.listUserIds().at(0));
+    CPPUNIT_ASSERT_EQUAL((uint32_t)1001, merged.listUserIds().at(1));
 
     CPPUNIT_ASSERT_EQUAL(std::string("dnf install foo"), merged.listCmdlines().at(0));
     CPPUNIT_ASSERT_EQUAL(std::string("dnf install bar"), merged.listCmdlines().at(1));
