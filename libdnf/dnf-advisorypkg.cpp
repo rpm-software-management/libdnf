@@ -30,10 +30,6 @@
  * See also: #DnfAdvisory
  */
 
-
-#include <solv/evr.h>
-#include <solv/util.h>
-
 #include "dnf-advisorypkg.h"
 #include "sack/advisorypkg.hpp"
 

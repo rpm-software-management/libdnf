@@ -25,7 +25,6 @@
 
 #include "dnf-sack.h"
 #include "hy-types.h"
-#include "hy-package.h"
 
 #ifdef __cplusplus
 extern "C" {

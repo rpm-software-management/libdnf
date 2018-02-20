@@ -27,13 +27,6 @@
 // hawkey
 #include "hy-query.h"
 
-union _Match {
-    int num;
-    DnfPackageSet *pset;
-    DnfReldep *reldep;
-    char *str;
-};
-
 enum _match_type {
     _HY_VOID,
     _HY_NUM,

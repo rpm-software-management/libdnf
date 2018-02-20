@@ -18,28 +18,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <glib.h>
 #include <assert.h>
-#include <fnmatch.h>
-#include <string.h>
-#include <solv/evr.h>
-#include <solv/repo.h>
-#include <solv/solver.h>
-#include <solv/util.h>
-
-#include "dnf-types.h"
-#include "dnf-advisorypkg.h"
-#include "dnf-advisory-private.hpp"
 #include "hy-goal-private.hpp"
 #include "hy-iutil-private.hpp"
-#include "hy-nevra.hpp"
 #include "hy-query-private.hpp"
-#include "hy-package-private.hpp"
-#include "hy-packageset-private.hpp"
 #include "hy-selector.h"
-#include "dnf-reldep-private.hpp"
-#include "dnf-sack-private.hpp"
-#include "hy-util-private.hpp"
 #include "sack/packageset.hpp"
 #include "sack/query.hpp"
 

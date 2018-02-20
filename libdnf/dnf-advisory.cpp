@@ -31,15 +31,7 @@
  */
 
 
-#include <glib.h>
-
-#include <solv/repo.h>
-#include <solv/util.h>
-
 #include "dnf-advisory-private.hpp"
-#include "dnf-advisorypkg.h"
-#include "dnf-advisoryref-private.hpp"
-#include "hy-iutil.h"
 #include "sack/advisory.hpp"
 #include "sack/advisoryref.hpp"
 #include "sack/advisorypkg.hpp"
@@ -70,7 +62,7 @@ dnf_advisory_new(DnfSack *sack, Id a_id)
 void
 dnf_advisory_free(DnfAdvisory *advisory)
 {
-    return delete advisory;
+    delete advisory;
 }
 
 /**
@@ -242,10 +234,8 @@ dnf_advisory_get_references(DnfAdvisory *advisory)
     advisory->getReferences(refsvector);
 
     GPtrArray *reflist =  g_ptr_array_new();
-    for (auto& advisoryref : refsvector) {
-        g_ptr_array_add(reflist, new libdnf::AdvisoryRef(advisoryref.getDnfSack(),
-                                                 advisoryref.getAdvisory(),
-                                                 advisoryref.getIndex()));
+    for (const auto& advisoryref : refsvector) {
+        g_ptr_array_add(reflist, new libdnf::AdvisoryRef(advisoryref));
     }
     return reflist;
 }

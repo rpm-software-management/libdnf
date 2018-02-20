@@ -45,8 +45,6 @@ typedef struct _DnfSack                 DnfSack;
 typedef struct _DnfReldep               DnfReldep;
 typedef struct _DnfReldepList           DnfReldepList;
 
-G_BEGIN_DECLS
-
 /**
  * DnfError:
  * @DNF_ERROR_FAILED:                           Failed with a non-specific error
@@ -114,8 +112,6 @@ GQuark           dnf_error_quark        (void);
 #ifdef __cplusplus
 }
 #endif
-
-G_END_DECLS
 
 #endif
 
