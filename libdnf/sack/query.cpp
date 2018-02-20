@@ -30,6 +30,7 @@
 #include "../hy-util-private.hpp"
 #include "../hy-iutil.h"
 #include "../hy-nevra.hpp"
+#include "../hy-query-private.hpp"
 #include "../dnf-sack-private.hpp"
 #include "../dnf-advisorypkg.h"
 #include "../dnf-advisory-private.hpp"

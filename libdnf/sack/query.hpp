@@ -23,10 +23,17 @@
 
 #include <memory>
 #include <vector>
-#include "../hy-query-private.hpp"
+#include "../hy-types.h"
 #include "../dnf-types.h"
 
 namespace libdnf {
+
+union _Match {
+    int num;
+    DnfPackageSet *pset;
+    DnfReldep *reldep;
+    char *str;
+};
 
 struct Filter {
 public:

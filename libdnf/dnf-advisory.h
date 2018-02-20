@@ -41,6 +41,10 @@ typedef enum {
         DNF_ADVISORY_KIND_NEWPACKAGE    = 4
 } DnfAdvisoryKind;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void dnf_advisory_free(DnfAdvisory *advisory);
 const char          *dnf_advisory_get_title         (DnfAdvisory *advisory);
 const char          *dnf_advisory_get_id            (DnfAdvisory *advisory);
@@ -63,5 +67,9 @@ gboolean             dnf_advisory_match_cve         (DnfAdvisory *advisory,
                                                      const char  *s);
 gboolean             dnf_advisory_match_bug         (DnfAdvisory *advisory,
                                                      const char  *s);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __DNF_ADVISORY_H */

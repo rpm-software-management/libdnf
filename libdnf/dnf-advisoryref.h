@@ -40,6 +40,10 @@ typedef enum {
         DNF_REFERENCE_KIND_VENDOR     = 3
 } DnfAdvisoryRefKind;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void dnf_advisoryref_free(DnfAdvisoryRef *advisoryref);
 DnfAdvisoryRefKind       dnf_advisoryref_get_kind       (DnfAdvisoryRef *advisoryref);
 const char              *dnf_advisoryref_get_id         (DnfAdvisoryRef *advisoryref);
@@ -47,5 +51,9 @@ const char              *dnf_advisoryref_get_title      (DnfAdvisoryRef *advisor
 const char              *dnf_advisoryref_get_url        (DnfAdvisoryRef *advisoryref);
 int                      dnf_advisoryref_compare        (DnfAdvisoryRef *left,
                                                          DnfAdvisoryRef *right);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __DNF_ADVISORYREF_H */

@@ -32,11 +32,6 @@
  */
 
 
-#include <solv/bitmap.h>
-#include <solv/util.h>
-
-#include "hy-package-private.hpp"
-#include "hy-packageset-private.hpp"
 #include "dnf-sack-private.hpp"
 #include "sack/packageset.hpp"
 

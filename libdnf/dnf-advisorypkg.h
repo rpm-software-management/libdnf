@@ -34,6 +34,10 @@ typedef struct libdnf::AdvisoryPkg DnfAdvisoryPkg;
 typedef struct AdvisoryPkg DnfAdvisoryPkg;
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void dnf_advisorypkg_free (DnfAdvisoryPkg *advisorypkg);
 const char      *dnf_advisorypkg_get_name         (DnfAdvisoryPkg *advisorypkg);
 const char      *dnf_advisorypkg_get_evr          (DnfAdvisoryPkg *advisorypkg);
@@ -45,6 +49,8 @@ int              dnf_advisorypkg_compare          (DnfAdvisoryPkg *left,
 gboolean         dnf_advisorypkg_compare_solvable (DnfAdvisoryPkg *advisorypkg,
                                                    Pool           *pool,
                                                    Solvable       *s);
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __DNF_ADVISORYPKG_H */

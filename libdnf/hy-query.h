@@ -33,7 +33,6 @@ G_BEGIN_DECLS
 #if WITH_SWDB
 #include "dnf-swdb.h"
 #endif
-#include "hy-types.h"
 
 enum _hy_query_flags {
     HY_IGNORE_EXCLUDES        = 1 << 0
