@@ -555,6 +555,7 @@ Swdb::filterUnneeded(HyQuery installed, Pool *pool) const
         query.reset();
     }
     return userInstalled;
+}
 
 std::vector< int64_t >
 Swdb::searchTransactionsByRPM(const std::vector< std::string > &patterns)

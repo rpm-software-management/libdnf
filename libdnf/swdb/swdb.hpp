@@ -52,14 +52,15 @@ public:
     void resetDatabase();
     void closeDatabase();
 
-    // Transaction
+    // Transaction in progress
     void initTransaction();
     int64_t beginTransaction(int64_t dtBegin,
                              std::string rpmdbVersionBegin,
                              std::string cmdline,
                              uint32_t userId);
     int64_t endTransaction(int64_t dtEnd, std::string rpmdbVersionEnd, bool done);
-    const Transaction getTransactionInProgress() { return *transactionInProgress; }
+    // TODO:
+    std::vector< TransactionItemPtr > getItems() { return transactionInProgress->getItems(); }
 
     libdnf::TransactionPtr getLastTransaction();
     std::vector< libdnf::TransactionPtr > listTransactions(); // std::vector<long long> transactionIds);

@@ -12,6 +12,25 @@
 // %include <stdint.i>
 %include <typemaps.i>
 
+
+%rename ("__hash__", fullname=1) "TransactionItem::getHash";
+
+
+%exception {
+    try {
+        $action
+    }
+    catch (const std::exception & e)
+    {
+       SWIG_exception(SWIG_RuntimeError, (std::string("C++ std::exception: ") + e.what()).c_str());
+    }
+    catch (...)
+    {
+       SWIG_exception(SWIG_UnknownError, "C++ anonymous exception");
+    }
+}
+
+
 %shared_ptr(SQLite3)
 typedef std::shared_ptr< SQLite3 > SQLite3Ptr;
 
