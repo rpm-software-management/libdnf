@@ -22,12 +22,15 @@
 
 // hawkey
 #include "dnf-advisorypkg.h"
+#include "sack/advisorypkg.hpp"
 
 // pyhawkey
 #include "advisorypkg-py.hpp"
 #include "iutil-py.hpp"
 
 #include "pycomp.hpp"
+#include "sack-py.hpp"
+#include "advisory-py.hpp"
 
 typedef struct {
     PyObject_HEAD
@@ -128,6 +131,21 @@ get_attr(_AdvisoryPkgObject *self, void *closure)
     Py_RETURN_NONE;
 }
 
+static PyObject *
+get_advisory(_AdvisoryPkgObject *self, PyObject *args)
+{
+    PyObject *sack = NULL;
+    if (!PyArg_ParseTuple(args, "O!", &sack_Type, &sack))
+        return NULL;
+    auto advisory = self->advisorypkg->getAdvisory();
+    return advisoryToPyObject(advisory, sack);
+}
+
+static struct PyMethodDef advisorypkg_methods[] = {
+    {"get_advisory", (PyCFunction)get_advisory, METH_VARARGS, NULL},
+    {NULL}                      /* sentinel */
+};
+
 static PyGetSetDef advisorypkg_getsetters[] = {
     {(char*)"name", (getter)get_attr, NULL, NULL, (void *)0},
     {(char*)"evr", (getter)get_attr, NULL, NULL, (void *)1},
@@ -164,7 +182,7 @@ PyTypeObject advisorypkg_Type = {
     0,                                /* tp_weaklistoffset */
     0,                                /* tp_iter */
     0,                                /* tp_iternext */
-    0,                                /* tp_methods */
+    advisorypkg_methods,              /* tp_methods */
     0,                                /* tp_members */
     advisorypkg_getsetters,        /* tp_getset */
     0,                                /* tp_base */

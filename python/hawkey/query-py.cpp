@@ -45,6 +45,7 @@
 #include "reldep-py.hpp"
 #include "sack-py.hpp"
 #include "pycomp.hpp"
+#include "sack/advisorypkg.hpp"
 #include "sack/packageset.hpp"
 #include "sack/selector.hpp"
 
@@ -702,6 +703,20 @@ q_difference(PyObject *self, PyObject *args)
 }
 
 static PyObject *
+get_advisory_pkgs(_QueryObject *self, PyObject *args)
+{
+    int cmpType;
+
+    if (!PyArg_ParseTuple(args, "i", &cmpType))
+        return NULL;
+
+    std::vector<libdnf::AdvisoryPkg> advisoryPkgs;
+
+    self->query->getAdvisoryPkgs(cmpType, advisoryPkgs);
+    return advisoryPkgVectorToPylist(advisoryPkgs);
+}
+
+static PyObject *
 filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds)
 {
 #if WITH_SWDB
@@ -1022,6 +1037,7 @@ static struct PyMethodDef query_methods[] = {
     {"difference", (PyCFunction)q_difference, METH_VARARGS, NULL},
     {"count", (PyCFunction)q_length, METH_NOARGS,
         NULL},
+    {"get_advisory_pkgs", (PyCFunction)get_advisory_pkgs, METH_VARARGS, NULL},
     {"_na_dict", (PyCFunction)query_to_name_arch_dict, METH_NOARGS, NULL},
     {"_name_dict", (PyCFunction)query_to_name_dict, METH_NOARGS, NULL},
     {"_nevra", (PyCFunction)add_nevra_or_other_filter, METH_VARARGS, NULL},
