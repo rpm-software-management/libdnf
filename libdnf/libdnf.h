@@ -69,7 +69,7 @@ extern "C" {
 #undef __LIBDNF_H_INSIDE__
 
 #ifdef __cplusplus
-extern "C" {
+}
 #endif
 
 #endif /* __LIBDNF_H */
