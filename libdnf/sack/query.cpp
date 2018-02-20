@@ -518,9 +518,9 @@ Filter::Impl::~Impl()
     }
 };
 
-const int Filter::getKeyname() const noexcept { return pImpl->keyname; }
-const int Filter::getCmpType() const noexcept { return pImpl->cmpType; }
-const int Filter::getMatchType() const noexcept { return pImpl->matchType; }
+int Filter::getKeyname() const noexcept { return pImpl->keyname; }
+int Filter::getCmpType() const noexcept { return pImpl->cmpType; }
+int Filter::getMatchType() const noexcept { return pImpl->matchType; }
 const std::vector< _Match >& Filter::getMatches() const noexcept { return pImpl->matches; }
 
 class Query::Impl {
@@ -1342,9 +1342,9 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
             break;
         Solvable* s = pool_id2solvable(pool, id);
         auto low = std::lower_bound(pkgs.begin(), pkgs.end(), *s, advisoryPkgCompareSolvable);
-        if (low != pkgs.end() && (*low).nevraEQ(s)) {
+        if (low != pkgs.end() && low->nevraEQ(s)) {
             if (cmpTypeGreaterOrLower) {
-                pkgsSecondRun.push_back(AdvisoryPkg(*low));
+                pkgsSecondRun.push_back(*low);
             } else {
                 MAPSET(m, id);
             }
@@ -1364,10 +1364,10 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
         Solvable* s = pool_id2solvable(pool, id);
         auto low = std::lower_bound(pkgsSecondRun.begin(), pkgsSecondRun.end(), *s,
                                     advisoryPkgCompareSolvableNameArch);
-        while (low != pkgsSecondRun.end() && (*low).getName() == s->name &&
-            (*low).getArch() == s->arch) {
+        while (low != pkgsSecondRun.end() && low->getName() == s->name &&
+            low->getArch() == s->arch) {
 
-            int cmp = pool_evrcmp(pool, s->evr, (*low).getEVR(), EVRCMP_COMPARE);
+            int cmp = pool_evrcmp(pool, s->evr, low->getEVR(), EVRCMP_COMPARE);
             if ((cmp > 0 && cmp_type & HY_GT) ||
                 (cmp < 0 && cmp_type & HY_LT) ||
                 (cmp == 0 && cmp_type & HY_EQ)) {
@@ -1811,6 +1811,49 @@ Query::filterDuplicated()
     }
     if (start_block != -1) {
         add_duplicates_to_map(pool, resultMap, samename, start_block, i);
+    }
+}
+
+void
+Query::getAdvisoryPkgs(int cmpType, std::vector<AdvisoryPkg> & advisoryPkgs)
+{
+    apply();
+    Pool *pool = dnf_sack_get_pool(pImpl->sack);
+    std::vector<AdvisoryPkg> pkgs;
+    Dataiterator di;
+    auto resultPset = pImpl->result.get();
+
+    // iterate over advisories
+    dataiterator_init(&di, pool, 0, 0, 0, 0, 0);
+    dataiterator_prepend_keyname(&di, UPDATE_COLLECTION);
+    while (dataiterator_step(&di)) {
+        Advisory advisory(pImpl->sack, di.solvid);
+
+        advisory.getPackages(pkgs);
+        dataiterator_skip_solvable(&di);
+    }
+    dataiterator_free(&di);
+    std::sort(pkgs.begin(), pkgs.end(), advisoryPkgSort);
+    // convert nevras (from DnfAdvisoryPkg) to pool ids
+    Id id = -1;
+    while (true) {
+        if (pkgs.size() == 0)
+            break;
+        id = resultPset->next(id);
+        if (id == -1)
+            break;
+        Solvable* s = pool_id2solvable(pool, id);
+        auto low = std::lower_bound(pkgs.begin(), pkgs.end(), *s,
+                                    advisoryPkgCompareSolvableNameArch);
+        while (low != pkgs.end() && low->getName() == s->name && low->getArch() == s->arch) {
+            int cmp = pool_evrcmp(pool, low->getEVR(), s->evr, EVRCMP_COMPARE);
+            if ((cmp > 0 && cmpType & HY_GT) ||
+                (cmp < 0 && cmpType & HY_LT) ||
+                (cmp == 0 && cmpType & HY_EQ)) {
+                advisoryPkgs.push_back(*low);
+            }
+            ++low;
+        }
     }
 }
 

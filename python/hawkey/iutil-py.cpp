@@ -19,6 +19,7 @@
  */
 
 #include "Python.h"
+#include <vector>
 
 #include "dnf-advisory.h"
 #include "dnf-advisorypkg.h"
@@ -37,6 +38,7 @@
 #include "reldep-py.hpp"
 #include "sack-py.hpp"
 #include "pycomp.hpp"
+#include "sack/advisorypkg.hpp"
 #include "sack/packageset.hpp"
 
 PyObject *
@@ -64,6 +66,30 @@ advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack)
  fail:
     Py_DECREF(list);
     return NULL;
+}
+
+PyObject *
+advisoryPkgVectorToPylist(const std::vector<libdnf::AdvisoryPkg> & advisorypkgs)
+{
+    auto list = PyList_New(0);
+    if (list == NULL)
+        return NULL;
+
+    for (auto& advisorypkg : advisorypkgs) {
+        auto pyAdvisoryPkg = advisorypkgToPyObject(new libdnf::AdvisoryPkg(advisorypkg));
+        if (pyAdvisoryPkg == NULL)
+            goto fail;
+        int rc = PyList_Append(list, pyAdvisoryPkg);
+        Py_DECREF(pyAdvisoryPkg);
+        if (rc == -1)
+            goto fail;
+    }
+
+    return list;
+
+    fail:
+        Py_DECREF(list);
+        return NULL;
 }
 
 PyObject *

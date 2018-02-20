@@ -21,13 +21,17 @@
 #ifndef IUTIL_PY_H
 #define IUTIL_PY_H
 
+#include <vector>
+
 #include "hy-types.h"
 #include "dnf-sack.h"
+#include "sack/advisorypkg.hpp"
 
 #define TEST_COND(cond) \
     ((cond) ? Py_True : Py_False)
 
 PyObject *advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack);
+PyObject *advisoryPkgVectorToPylist(const std::vector<libdnf::AdvisoryPkg> & advisorypkgs);
 PyObject *advisorypkglist_to_pylist(const GPtrArray *advisorypkglist);
 PyObject *advisoryreflist_to_pylist(const GPtrArray *advisoryreflist, PyObject *sack);
 PyObject *packagelist_to_pylist(GPtrArray *plist, PyObject *sack);

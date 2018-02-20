@@ -25,6 +25,7 @@
 #include <vector>
 #include "../hy-types.h"
 #include "../dnf-types.h"
+#include "advisorypkg.hpp"
 
 namespace libdnf {
 
@@ -45,9 +46,9 @@ public:
     Filter(int keyname, int cmp_type, const char *match);
     Filter(int keyname, int cmp_type, const char **matches);
     ~Filter();
-    const int getKeyname() const noexcept;
-    const int getCmpType() const noexcept;
-    const int getMatchType() const noexcept;
+    int getKeyname() const noexcept;
+    int getCmpType() const noexcept;
+    int getMatchType() const noexcept;
     const std::vector<_Match> & getMatches() const noexcept;
 private:
     class Impl;
@@ -145,6 +146,7 @@ public:
     void filterExtras();
     void filterRecent(const long unsigned int recent_limit);
     void filterDuplicated();
+    void getAdvisoryPkgs(int cmpType,  std::vector<AdvisoryPkg> & advisoryPkgs);
 private:
     class Impl;
     std::unique_ptr<Impl> pImpl;
