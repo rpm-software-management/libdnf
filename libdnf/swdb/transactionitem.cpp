@@ -31,6 +31,8 @@ static const std::map< TransactionItemAction, std::string > transactionItemActio
     {TransactionItemAction::UPGRADED, "Upgraded"},
     {TransactionItemAction::REMOVE, "Removed"},
     {TransactionItemAction::REINSTALL, "Reinstall"},
+    {TransactionItemAction::REINSTALLED, "Reinstalled"},
+    {TransactionItemAction::REASON_CHANGE, "Reason Change"},
 };
 
 static const std::map< TransactionItemAction, std::string > transactionItemActionShort = {
@@ -44,6 +46,9 @@ static const std::map< TransactionItemAction, std::string > transactionItemActio
     // "R" is for Reinstall, therefore use "E" for rEmove (or Erase)
     {TransactionItemAction::REMOVE, "E"},
     {TransactionItemAction::REINSTALL, "R"},
+    {TransactionItemAction::REINSTALLED, "R"},
+    // TODO: replace "?" with something better
+    {TransactionItemAction::REASON_CHANGE, "?"},
 };
 
 /*
