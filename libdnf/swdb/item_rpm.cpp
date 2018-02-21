@@ -372,12 +372,14 @@ RPMItem::searchTransactions(SQLite3Ptr conn, const std::vector< std::string > &p
 
     const char *sql = R"**(
         SELECT DISTINCT
-            ti.trans_id
+            t.id
         FROM
+            trans t,
             trans_item ti,
             rpm i
         WHERE
-            ti.item_id = i.item_id
+            t.done = 1
+            AND ti.item_id = i.item_id
             AND (
                 i.name = ?
                 OR i.epoch = ?
@@ -391,8 +393,8 @@ RPMItem::searchTransactions(SQLite3Ptr conn, const std::vector< std::string > &p
     SQLite3::Query query(*conn, sql);
     for (auto pattern : patterns) {
         query.bindv(pattern, pattern, pattern, pattern, pattern);
-        if (query.step() == SQLite3::Statement::StepResult::ROW) {
-            result.push_back(query.get< int64_t >("trans_id"));
+        while (query.step() == SQLite3::Statement::StepResult::ROW) {
+            result.push_back(query.get< int64_t >("id"));
         }
     }
     std::sort(result.begin(), result.end());
