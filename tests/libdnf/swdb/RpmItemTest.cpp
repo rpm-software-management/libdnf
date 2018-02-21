@@ -77,6 +77,6 @@ RpmItemTest::testGetTransactionItems()
     auto createMs = std::chrono::duration_cast< std::chrono::milliseconds >(create_duration);
     auto readMs = std::chrono::duration_cast< std::chrono::milliseconds >(read_duration);
 
-    CPPUNIT_ASSERT(createMs.count() == 0);
-    CPPUNIT_ASSERT(readMs.count() == 0);
+    //CPPUNIT_ASSERT(createMs.count() == 0);
+    //CPPUNIT_ASSERT(readMs.count() == 0);
 }
