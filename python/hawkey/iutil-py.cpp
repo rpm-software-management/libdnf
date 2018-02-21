@@ -93,55 +93,27 @@ advisoryPkgVectorToPylist(const std::vector<libdnf::AdvisoryPkg> & advisorypkgs)
 }
 
 PyObject *
-advisorypkglist_to_pylist(const GPtrArray *advisorypkglist)
+advisoryRefVectorToPylist(const std::vector<libdnf::AdvisoryRef> & advisoryRefs, PyObject *sack)
 {
     auto list = PyList_New(0);
     if (list == NULL)
         return NULL;
 
-    for (unsigned int i = 0; i < advisorypkglist->len; ++i) {
-        auto cadvisorypkg = 
-            static_cast<DnfAdvisoryPkg *>(g_ptr_array_index(advisorypkglist, i));
-        auto advisorypkg = advisorypkgToPyObject(cadvisorypkg);
-        if (advisorypkg == NULL)
+    for (auto& advisoryRef : advisoryRefs) {
+        auto pyAdvisoryRef = advisoryrefToPyObject(new libdnf::AdvisoryRef(advisoryRef), sack);
+        if (pyAdvisoryRef == NULL)
             goto fail;
-
-        int rc = PyList_Append(list, advisorypkg);
-        Py_DECREF(advisorypkg);
+        int rc = PyList_Append(list, pyAdvisoryRef);
+        Py_DECREF(pyAdvisoryRef);
         if (rc == -1)
             goto fail;
     }
 
     return list;
- fail:
-    Py_DECREF(list);
-    return NULL;
-}
 
-PyObject *
-advisoryreflist_to_pylist(const GPtrArray *advisoryreflist, PyObject *sack)
-{
-    auto list = PyList_New(0);
-    if (list == NULL)
+    fail:
+        Py_DECREF(list);
         return NULL;
-
-    for (unsigned int i = 0; i < advisoryreflist->len; ++i) {
-        auto cadvisoryref =
-            static_cast<DnfAdvisoryRef *>(g_ptr_array_index(advisoryreflist,  i));
-        auto advisoryref = advisoryrefToPyObject(cadvisoryref, sack);
-        if (advisoryref == NULL)
-            goto fail;
-
-        int rc = PyList_Append(list, advisoryref);
-        Py_DECREF(advisoryref);
-        if (rc == -1)
-            goto fail;
-    }
-
-    return list;
- fail:
-    Py_DECREF(list);
-    return NULL;
 }
 
 PyObject *

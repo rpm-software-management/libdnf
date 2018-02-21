@@ -32,8 +32,8 @@
 
 PyObject *advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack);
 PyObject *advisoryPkgVectorToPylist(const std::vector<libdnf::AdvisoryPkg> & advisorypkgs);
-PyObject *advisorypkglist_to_pylist(const GPtrArray *advisorypkglist);
-PyObject *advisoryreflist_to_pylist(const GPtrArray *advisoryreflist, PyObject *sack);
+PyObject *advisoryRefVectorToPylist(const std::vector<libdnf::AdvisoryRef> & advisoryRefs,
+                                    PyObject *sack);
 PyObject *packagelist_to_pylist(GPtrArray *plist, PyObject *sack);
 PyObject *packageset_to_pylist(DnfPackageSet *pset, PyObject *sack);
 DnfPackageSet *pyseq_to_packageset(PyObject *sequence, DnfSack *sack);
