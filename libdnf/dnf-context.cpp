@@ -719,6 +719,8 @@ dnf_context_get_yumdb_enabled(DnfContext *context)
  * @context: a #DnfContext instance.
  *
  * Returns: %TRUE if filelists are enabled
+ *
+ * Since: 0.13.0
  */
 gboolean
 dnf_context_get_enable_filelists (DnfContext     *context)
@@ -1004,6 +1006,8 @@ dnf_context_set_keep_cache(DnfContext *context, gboolean keep_cache)
  * @enable_filelists: %TRUE to download and parse filelist metadata
  *
  * Enables or disables download and parsing of filelists.
+ *
+ * Since: 0.13.0
  **/
 void
 dnf_context_set_enable_filelists (DnfContext     *context,
