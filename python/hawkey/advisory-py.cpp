@@ -164,37 +164,17 @@ get_datetime(_AdvisoryObject *self, void *closure)
 static PyObject *
 get_advisorypkg_list(_AdvisoryObject *self, void *closure)
 {
-    GPtrArray *(*func)(DnfAdvisory*);
-    GPtrArray *advisorypkgs;
-    PyObject *list;
-
-    func = (GPtrArray *(*)(DnfAdvisory*))closure;
-    advisorypkgs = func(self->advisory);
-    if (advisorypkgs == NULL)
-        Py_RETURN_NONE;
-
-    list = advisorypkglist_to_pylist(advisorypkgs);
-    g_ptr_array_unref(advisorypkgs);
-
-    return list;
+    std::vector<libdnf::AdvisoryPkg> advisoryPkgs;
+    self->advisory->getPackages(advisoryPkgs);
+    return advisoryPkgVectorToPylist(advisoryPkgs);
 }
 
 static PyObject *
 get_advisoryref_list(_AdvisoryObject *self, void *closure)
 {
-    GPtrArray *(*func)(DnfAdvisory*);
-    GPtrArray *advisoryrefs;
-    PyObject *list;
-
-    func = (GPtrArray *(*)(DnfAdvisory*))closure;
-    advisoryrefs = func(self->advisory);
-    if (advisoryrefs == NULL)
-        Py_RETURN_NONE;
-
-    list = advisoryreflist_to_pylist(advisoryrefs, self->sack);
-    g_ptr_array_unref(advisoryrefs);
-
-    return list;
+    std::vector<libdnf::AdvisoryRef> advisoryRefs;
+    self->advisory->getReferences(advisoryRefs);
+    return advisoryRefVectorToPylist(advisoryRefs, self->sack);
 }
 
 static PyGetSetDef advisory_getsetters[] = {
@@ -205,8 +185,8 @@ static PyGetSetDef advisory_getsetters[] = {
     {(char*)"rights", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_rights},
     {(char*)"severity", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_severity},
     {(char*)"updated", (getter)get_datetime, NULL, NULL, (void *)dnf_advisory_get_updated},
-    {(char*)"packages", (getter)get_advisorypkg_list, NULL, NULL, (void *)dnf_advisory_get_packages},
-    {(char*)"references", (getter)get_advisoryref_list, NULL, NULL, (void *)dnf_advisory_get_references},
+    {(char*)"packages", (getter)get_advisorypkg_list, NULL, NULL, NULL},
+    {(char*)"references", (getter)get_advisoryref_list, NULL, NULL, NULL},
     {NULL}                      /* sentinel */
 };
 
