@@ -1210,6 +1210,30 @@ have_existing_install(DnfContext *context)
 gboolean
 dnf_context_setup_sack(DnfContext *context, DnfState *state, GError **error)
 {
+    return dnf_context_setup_sack_with_flags(context, state,
+                                             DNF_CONTEXT_SETUP_SACK_FLAG_NONE, error);
+}
+
+/**
+ * dnf_context_setup_sack_with_flags:(skip)
+ * @context: a #DnfContext instance.
+ * @state: A #DnfState
+ * @flags: A #DnfContextSetupSackFlags
+ * @error: A #GError or %NULL
+ *
+ * Sets up the internal sack ready for use. This provides the same functionality as
+ * dnf_context_setup_sack but allows finer control on its behaviour.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.13.0
+ **/
+gboolean
+dnf_context_setup_sack_with_flags(DnfContext               *context,
+                                  DnfState                 *state,
+                                  DnfContextSetupSackFlags  flags,
+                                  GError                  **error)
+{
     DnfContextPrivate *priv = GET_PRIVATE(context);
     gboolean ret;
     g_autofree gchar *solv_dir_real = NULL;
@@ -1225,7 +1249,8 @@ dnf_context_setup_sack(DnfContext *context, DnfState *state, GError **error)
     dnf_sack_set_installonly_limit(priv->sack, dnf_context_get_installonly_limit(context));
 
     /* add installed packages */
-    if (have_existing_install(context)) {
+    const gboolean skip_rpmdb = ((flags & DNF_CONTEXT_SETUP_SACK_FLAG_SKIP_RPMDB) > 0);
+    if (!skip_rpmdb && have_existing_install(context)) {
         if (!dnf_sack_load_system_repo(priv->sack,
                            NULL,
                            DNF_SACK_LOAD_FLAG_BUILD_CACHE,
@@ -1233,11 +1258,17 @@ dnf_context_setup_sack(DnfContext *context, DnfState *state, GError **error)
             return FALSE;
     }
 
+    DnfSackAddFlags add_flags = DNF_SACK_ADD_FLAG_NONE;
+    if ((flags & DNF_CONTEXT_SETUP_SACK_FLAG_LOAD_UPDATEINFO) > 0)
+        add_flags = static_cast<DnfSackAddFlags>(add_flags | DNF_SACK_ADD_FLAG_UPDATEINFO);
+    if (priv->enable_filelists && !((flags & DNF_CONTEXT_SETUP_SACK_FLAG_SKIP_FILELISTS) > 0))
+        add_flags = static_cast<DnfSackAddFlags>(add_flags | DNF_SACK_ADD_FLAG_FILELISTS);
+
     /* add remote */
     ret = dnf_sack_add_repos(priv->sack,
                              priv->repos,
                              priv->cache_age,
-                             priv->enable_filelists ? DNF_SACK_ADD_FLAG_FILELISTS : DNF_SACK_ADD_FLAG_NONE,
+                             add_flags,
                              state,
                              error);
     if (!ret)

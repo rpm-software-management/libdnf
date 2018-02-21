@@ -162,7 +162,7 @@ Pool        *dnf_sack_get_pool              (DnfSack    *sack);
  * @DNF_SACK_ADD_FLAG_REMOTE:                   Use remote repos
  * @DNF_SACK_ADD_FLAG_UNAVAILABLE:              Add repos that are unavailable
  *
- * The error code.
+ * Flags to control repo loading into the sack.
  **/
 typedef enum {
         DNF_SACK_ADD_FLAG_NONE                  = 0,
