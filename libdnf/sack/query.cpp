@@ -712,7 +712,7 @@ Query::addFilter(int keyname, int cmp_type, const char *match)
 int
 Query::addFilter(int keyname, int cmp_type, const char **matches)
 {
-    if (cmp_type == HY_GLOB) {
+    if (cmp_type & HY_GLOB) {
         bool is_glob = false;
         for (const char **match = matches; *match != NULL; match++) {
             if (hy_is_glob_pattern(*match)) {
@@ -720,7 +720,9 @@ Query::addFilter(int keyname, int cmp_type, const char **matches)
                 break;
             }
         }
-        if (!is_glob) cmp_type = HY_EQ;
+        if (!is_glob) {
+            cmp_type = (cmp_type & ~HY_GLOB) | HY_EQ;
+        }
     }
     if (!valid_filter_str(keyname, cmp_type))
         return DNF_ERROR_BAD_QUERY;
@@ -1031,7 +1033,7 @@ Query::Impl::filterVersion(const Filter & f, Map *m)
 
             pool_split_evr(pool, evr, &e, &v, &r);
 
-            if (cmp_type == HY_GLOB) {
+            if (cmp_type & HY_GLOB) {
                 if (fnmatch(match, v, 0) == 0)
                     MAPSET(m, id);
                 continue;
