@@ -82,6 +82,24 @@ typedef enum {
         DNF_CONTEXT_INVALIDATE_FLAG_LAST
 } DnfContextInvalidateFlags;
 
+/**
+ * DnfContextSetupSackFlags:
+ * @DNF_CONTEXT_SETUP_SACK_FLAG_NONE:             No special behaviours
+ * @DNF_CONTEXT_SETUP_SACK_FLAG_SKIP_RPMDB:       Don't load system's rpmdb
+ * @DNF_CONTEXT_SETUP_SACK_FLAG_SKIP_FILELISTS:   Don't load filelists
+ * @DNF_CONTEXT_SETUP_SACK_FLAG_LOAD_UPDATEINFO:  Load updateinfo if available
+ *
+ * The sack setup flags.
+ *
+ * Since: 0.13.0
+ **/
+typedef enum {
+        DNF_CONTEXT_SETUP_SACK_FLAG_NONE            = (1 << 0),
+        DNF_CONTEXT_SETUP_SACK_FLAG_SKIP_RPMDB      = (1 << 1),
+        DNF_CONTEXT_SETUP_SACK_FLAG_SKIP_FILELISTS  = (1 << 2),
+        DNF_CONTEXT_SETUP_SACK_FLAG_LOAD_UPDATEINFO = (1 << 3),
+} DnfContextSetupSackFlags;
+
 gboolean         dnf_context_globals_init               (GError **error);
 
 DnfContext      *dnf_context_new                        (void);
@@ -172,6 +190,10 @@ gboolean         dnf_context_setup_enrollments          (DnfContext     *context
 gboolean         dnf_context_setup_sack                 (DnfContext     *context,
                                                          DnfState       *state,
                                                          GError         **error);
+gboolean         dnf_context_setup_sack_with_flags      (DnfContext      *context,
+                                                         DnfState        *state,
+                                                         DnfContextSetupSackFlags flags,
+                                                         GError          **error);
 gboolean         dnf_context_commit                     (DnfContext     *context,
                                                          DnfState       *state,
                                                          GError         **error);

@@ -69,7 +69,7 @@ typedef struct
     gint64           timestamp_modified;    /* µs */
     GError          *last_check_error;
     GKeyFile        *keyfile;
-    GHashTable      *filenames_md;          /* key:filename */
+    GHashTable      *filenames_md;          /* md filename (e.g. "primary") -> file path */
     DnfContext      *context;               /* weak reference */
     DnfRepoKind      kind;
     HyRepo           repo;
