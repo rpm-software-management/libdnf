@@ -291,7 +291,7 @@ CompsGroupPackage::save()
     if (getId() == 0) {
         dbSelectOrInsert();
     } else {
-        // dbUpdate();
+        dbUpdate();
     }
 }
 
@@ -316,6 +316,26 @@ CompsGroupPackage::dbInsert()
 }
 
 void
+CompsGroupPackage::dbUpdate()
+{
+    const char *sql = R"**(
+        UPDATE
+            comps_group_package
+        SET
+            name=?,
+            installed=?,
+            pkg_type=?
+        WHERE
+            id = ?
+    )**";
+    SQLite3::Statement query(*getGroup().conn.get(), sql);
+    query.bindv(
+        getName(), getInstalled(), static_cast< int >(getPackageType()), getId());
+    query.step();
+}
+
+
+void
 CompsGroupPackage::dbSelectOrInsert()
 {
     const char *sql = R"**(
@@ -334,6 +354,7 @@ CompsGroupPackage::dbSelectOrInsert()
 
     if (result == SQLite3::Statement::StepResult::ROW) {
         setId(query.get< int >(0));
+        dbUpdate();
     } else {
         // insert and get the ID back
         dbInsert();

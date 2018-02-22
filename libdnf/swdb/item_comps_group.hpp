@@ -117,6 +117,7 @@ protected:
 private:
     void dbInsert();
     void dbSelectOrInsert();
+    void dbUpdate();
 };
 
 #endif // LIBDNF_SWDB_ITEM_COMPS_GROUP_HPP
