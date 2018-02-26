@@ -529,7 +529,7 @@ Swdb::filterUnneeded(HyQuery installed, Pool *pool) const
     // iterate over solvables
     for (Id id = 1; id < pool->nsolvables; ++id) {
 
-        if (!MAPTST(installed->result, id)) {
+        if (!MAPTST(installed->getResult(), id)) {
             continue;
         }
 

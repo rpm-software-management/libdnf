@@ -30,6 +30,7 @@
 class Swdb;
 
 #include "../hy-types.h"
+#include "../sack/query.hpp"
 #include "../utils/sqlite3/sqlite3.hpp"
 
 #include "item_comps_group.hpp"
