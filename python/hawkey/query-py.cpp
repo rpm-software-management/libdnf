@@ -544,7 +544,6 @@ filter(_QueryObject *self, PyObject *args, PyObject *kwds)
     if (!ret)
         return NULL;
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
-    Py_INCREF(final_query);
     return final_query;
 }
 
@@ -564,7 +563,6 @@ add_available_filter(_QueryObject *self, PyObject *unused)
     HyQuery query = new libdnf::Query(*self->query);
     query->addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
-    Py_INCREF(final_query);
     return final_query;
 }
 
@@ -574,7 +572,6 @@ add_downgrades_filter(_QueryObject *self, PyObject *unused)
     HyQuery query = new libdnf::Query(*self->query);
     query->addFilter(HY_PKG_DOWNGRADES, HY_EQ, 1);
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
-    Py_INCREF(final_query);
     return final_query;
 }
 
@@ -584,7 +581,6 @@ duplicated_filter(_QueryObject *self, PyObject *unused)
     HyQuery self_query_copy = new libdnf::Query(*self->query);
     self_query_copy->filterDuplicated();
     PyObject *final_query = queryToPyObject(self_query_copy, self->sack, Py_TYPE(self));
-    Py_INCREF(final_query);
     return final_query;
 }
 
@@ -594,7 +590,6 @@ add_filter_extras(_QueryObject *self, PyObject *unused)
     HyQuery self_query_copy = new libdnf::Query(*self->query);
     self_query_copy->filterExtras();
     PyObject *final_query = queryToPyObject(self_query_copy, self->sack, Py_TYPE(self));
-    Py_INCREF(final_query);
     return final_query;
 }
 
@@ -604,7 +599,6 @@ add_installed_filter(_QueryObject *self, PyObject *unused)
     HyQuery query = new libdnf::Query(*self->query);
     query->addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
-    Py_INCREF(final_query);
     return final_query;
 }
 
@@ -619,7 +613,6 @@ add_filter_latest(_QueryObject *self, PyObject *args)
     HyQuery query = new libdnf::Query(*self->query);
     query->addFilter(HY_PKG_LATEST_PER_ARCH, HY_EQ, value);
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
-    Py_INCREF(final_query);
     return final_query;
 }
 
@@ -629,7 +622,6 @@ add_upgrades_filter(_QueryObject *self, PyObject *unused)
     HyQuery query = new libdnf::Query(*self->query);
     query->addFilter(HY_PKG_UPGRADES, HY_EQ, 1);
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
-    Py_INCREF(final_query);
     return final_query;
 }
 
@@ -666,7 +658,6 @@ q_union(PyObject *self, PyObject *args)
     self_query_copy->queryUnion(*other_q);
     PyObject *final_query = queryToPyObject(self_query_copy, ((_QueryObject *) self)->sack,
                                             Py_TYPE(self));
-    Py_INCREF(final_query);
     return final_query;
 }
 
@@ -682,7 +673,6 @@ q_intersection(PyObject *self, PyObject *args)
     self_query_copy->queryIntersection(*other_q);
     PyObject *final_query = queryToPyObject(self_query_copy, ((_QueryObject *) self)->sack,
                                             Py_TYPE(self));
-    Py_INCREF(final_query);
     return final_query;
 }
 
@@ -698,7 +688,6 @@ q_difference(PyObject *self, PyObject *args)
     self_query_copy->queryDifference(*other_q);
     PyObject *final_query = queryToPyObject(self_query_copy, ((_QueryObject *) self)->sack,
                                             Py_TYPE(self));
-    Py_INCREF(final_query);
     return final_query;
 }
 
@@ -739,7 +728,6 @@ filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds)
     }
     PyObject *final_query = queryToPyObject(self_query_copy, ((_QueryObject *) self)->sack,
                                             Py_TYPE(self));
-    Py_INCREF(final_query);
     return final_query;
 #else
     return NULL;
@@ -981,7 +969,6 @@ add_nevra_or_other_filter(_QueryObject *self, PyObject *args)
         return NULL;
     }
     PyObject *final_query = queryToPyObject(self_query_copy, self->sack, Py_TYPE(self));
-    Py_INCREF(final_query);
     return final_query;
 }
 
@@ -998,7 +985,6 @@ add_filter_recent(_QueryObject *self, PyObject *args)
     time_t recent_limit = now - (recent*86400);
     self_query_copy->filterRecent((recent_limit < 0) ? 0 : recent_limit);
     PyObject *final_query = queryToPyObject(self_query_copy, self->sack, Py_TYPE(self));
-    Py_INCREF(final_query);
     return final_query;
 }
 
