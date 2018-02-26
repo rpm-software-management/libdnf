@@ -2,3 +2,5 @@
 # show up in a srcdir != builddir build.
 /docs/libdnf/version.xml
 /libdnf/dnf-version.h
+build
+**.pyc

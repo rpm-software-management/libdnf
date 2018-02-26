@@ -27,6 +27,9 @@
 // hawkey
 #include "hy-query.h"
 
+// swdb
+#include "swdb/Swdb.hpp"
+
 enum _match_type {
     _HY_VOID,
     _HY_NUM,
@@ -35,6 +38,7 @@ enum _match_type {
     _HY_STR,
 };
 
+int hy_filter_unneeded(HyQuery query, const Swdb &swdb, const gboolean debug_solver);
 
 /**
 * @brief Return HySelector from HyQuery

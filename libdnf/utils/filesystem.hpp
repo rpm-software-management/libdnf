@@ -1,0 +1,66 @@
+/*
+ * Libdnf helper functions for file system operations
+ *
+ * Copyright (C) 2017-2018 Red Hat, Inc.
+ *
+ * Licensed under the GNU Lesser General Public License Version 2.1
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+#ifndef LIBDNF_FILESYSTEM_HPP
+#define LIBDNF_FILESYSTEM_HPP
+
+#include <string>
+#include <sys/stat.h>
+
+bool
+pathExists(const char *path);
+
+void
+makeDirPath(std::string filePath);
+
+/**
+ * Verify if path exists
+ * \param path file or directory path
+ * \return true if path exists
+ */
+bool
+pathExists(const char *path)
+{
+    struct stat buffer {
+    };
+    return stat(path, &buffer) == 0;
+}
+
+/**
+ * Create a directory tree for a file
+ * \param path path to the directory
+ */
+void
+makeDirPath(std::string filePath)
+{
+    size_t position = 0, previous = 1; // skip leading slash
+    while ((position = filePath.find_first_of('/', previous)) != filePath.npos) {
+        std::string directory = filePath.substr(0, position++);
+        previous = position;
+        // create directory if necessary
+        if (!pathExists(directory.c_str())) {
+            mkdir(directory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        }
+    }
+}
+
+#endif

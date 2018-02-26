@@ -24,19 +24,15 @@
 #include <solv/util.h>
 #include <time.h>
 
-#include <pygobject-3.0/pygobject.h>
-
 #include "nevra.hpp"
 #include "hy-query.h"
+#include "hy-query-private.hpp"
 #include "hy-selector.h"
 #include "hy-subject.h"
 #include "dnf-reldep.h"
 #include "dnf-reldep-list.h"
 #include "repo/solvable/DependencyContainer.hpp"
-
-#if WITH_SWDB
-#include "dnf-swdb.h"
-#endif
+#include "swdb/Swdb.hpp"
 
 #include "exception-py.hpp"
 #include "hawkey-pysys.hpp"
@@ -676,6 +672,14 @@ q_difference(PyObject *self, PyObject *args)
     return final_query;
 }
 
+typedef struct {
+    PyObject_HEAD
+    Swdb *ptr;
+    void *ty;
+    int own;
+    PyObject *next;
+} SwdbSwigPyObject;
+
 static PyObject *
 get_advisory_pkgs(_QueryObject *self, PyObject *args)
 {
@@ -693,30 +697,40 @@ get_advisory_pkgs(_QueryObject *self, PyObject *args)
 static PyObject *
 filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds)
 {
-#if WITH_SWDB
     HyQuery self_query_copy = new libdnf::Query(*((_QueryObject *) self)->query);
     const char *kwlist[] = {"swdb", "debug_solver", NULL};
-    PyObject *swdb;
+    PyObject *pySwdb;
     PyObject *debug_solver = NULL;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O!", (char**) kwlist, &swdb, &PyBool_Type,
-        &debug_solver)) {
+    if (!PyArg_ParseTupleAndKeywords(
+            args, kwds, "O|O!", (char **)kwlist, &pySwdb, &PyBool_Type, &debug_solver)) {
         return NULL;
     }
-    DnfSwdb *c_swdb = (DnfSwdb *) ((PyGObject *) swdb)->obj;
+    auto swigSwdb = reinterpret_cast< SwdbSwigPyObject * >(PyObject_GetAttrString(pySwdb, "this"));
+
+    if (swigSwdb == nullptr) {
+        PyErr_SetString(PyExc_SystemError, "Unable to parse SwigPyObject");
+        return NULL;
+    }
+
+    Swdb *swdb = swigSwdb->ptr;
+
+    if (swdb == NULL) {
+        PyErr_SetString(PyExc_SystemError, "Unable to parse swig object");
+        return NULL;
+    }
+
     gboolean c_debug_solver = debug_solver != NULL && PyObject_IsTrue(debug_solver);
 
-    int ret = hy_filter_unneeded(self_query_copy, c_swdb, c_debug_solver);
+    int ret = hy_filter_unneeded(self_query_copy, *swdb, c_debug_solver);
     if (ret == -1) {
         PyErr_SetString(PyExc_SystemError, "Unable to provide query with unneded filter");
         return NULL;
     }
+
     PyObject *final_query = queryToPyObject(self_query_copy, ((_QueryObject *) self)->sack,
                                             Py_TYPE(self));
     return final_query;
-#else
-    return NULL;
-#endif
 }
 
 static PyObject *

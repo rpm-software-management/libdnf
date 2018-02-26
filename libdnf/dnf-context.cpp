@@ -700,21 +700,6 @@ dnf_context_get_only_trusted(DnfContext *context)
 }
 
 /**
- * dnf_context_get_yumdb_enabled:
- * @context: a #DnfContext instance.
- *
- * Returns: %TRUE if yum database is enabled
- *
- * Since: 0.1.9
- **/
-gboolean
-dnf_context_get_yumdb_enabled(DnfContext *context)
-{
-    DnfContextPrivate *priv = GET_PRIVATE(context);
-    return priv->enable_yumdb;
-}
-
-/**
  * dnf_context_get_enable_filelists:
  * @context: a #DnfContext instance.
  *

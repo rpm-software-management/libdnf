@@ -330,41 +330,24 @@ hy_filter_duplicated(HyQuery query)
     query->filterDuplicated();
 }
 
-#if WITH_SWDB
 int
-hy_filter_unneeded(HyQuery query, DnfSwdb *swdb, const gboolean debug_solver)
+hy_filter_unneeded(HyQuery query, const Swdb &swdb, const gboolean debug_solver)
 {
     hy_query_apply(query);
-    GPtrArray *nevras = g_ptr_array_new_with_free_func(g_free);
-    Queue id_store;
     HyGoal goal = hy_goal_create(query->getSack());
     Pool *pool = dnf_sack_get_pool(query->getSack());
 
     HyQuery installed = hy_query_create(query->getSack());
     hy_query_filter(installed, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
     hy_query_apply(installed);
-    queue_init(&id_store);
 
-    for (Id id = 1; id < pool->nsolvables; ++id) {
-        if (!MAPTST(installed->getResult(), id))
-            continue;
-        Solvable* s = pool_id2solvable(pool, id);
-        const char* nevra = pool_solvable2str(pool, s);
-        g_ptr_array_add(nevras, (gpointer)g_strdup(nevra));
-        queue_push(&id_store, id);
-    }
+    auto userInstalled = swdb.filterUnneeded(installed, pool);
 
-    GArray *indexes = dnf_swdb_select_user_installed(swdb, nevras);
-    g_ptr_array_free(nevras, TRUE);
-
-    for (guint i = 0; i < indexes->len; ++i) {
-        guint index = g_array_index(indexes, gint, i);
-        Id pkg_id = id_store.elements[index];
+    for (const auto &pkg_id: userInstalled) {
         DnfPackage *pkg = dnf_package_new(query->getSack(), pkg_id);
         hy_goal_userinstalled(goal, pkg);
     }
-    g_array_free(indexes, TRUE);
-    queue_free(&id_store);
+
     int ret1 = hy_goal_run_flags(goal, DNF_NONE);
     if (ret1)
         return -1;
@@ -393,7 +376,6 @@ hy_filter_unneeded(HyQuery query, DnfSwdb *swdb, const gboolean debug_solver)
     map_free(&result);
     return 0;
 }
-#endif
 
 HySelector
 hy_query_to_selector(HyQuery query)
