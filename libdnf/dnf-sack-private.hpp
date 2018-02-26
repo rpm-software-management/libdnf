@@ -25,6 +25,7 @@
 #include <solv/pool.h>
 
 #include "dnf-sack.h"
+#include "sack/packageset.hpp"
 
 typedef Id  (*dnf_sack_running_kernel_fn_t) (DnfSack    *sack);
 
@@ -47,12 +48,12 @@ void dnf_sack_set_pkg_solvables(DnfSack *sack, Map *pkg_solvables, int pool_nsol
 int dnf_sack_get_pool_nsolvables(DnfSack *sack);
 
 /**
- * @brief Returns Map with every package solvable in pool
+ * @brief Returns pointer PackageSet with every package solvable in pool
  *
  * @param sack p_sack:...
  * @return Map*
  */
-Map *dnf_sack_get_pkg_solvables(DnfSack *sack);
+libdnf::PackageSet *dnf_sack_get_pkg_solvables(DnfSack *sack);
 
 void         dnf_sack_make_provides_ready   (DnfSack    *sack);
 Id           dnf_sack_running_kernel        (DnfSack    *sack);
