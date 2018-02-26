@@ -114,7 +114,6 @@ typedef struct
     gboolean         check_transaction;
     gboolean         only_trusted;
     gboolean         enable_filelists;
-    gboolean         enable_yumdb;
     gboolean         keep_cache;
     gboolean         enrollment_valid;
     DnfLock         *lock;
@@ -196,7 +195,6 @@ dnf_context_init(DnfContext *context)
     priv->install_root = g_strdup("/");
     priv->check_disk_space = TRUE;
     priv->check_transaction = TRUE;
-    priv->enable_yumdb = TRUE;
     priv->enable_filelists = TRUE;
     priv->state = dnf_state_new();
     priv->lock = dnf_lock_new();
@@ -700,21 +698,6 @@ dnf_context_get_only_trusted(DnfContext *context)
 }
 
 /**
- * dnf_context_get_yumdb_enabled:
- * @context: a #DnfContext instance.
- *
- * Returns: %TRUE if yum database is enabled
- *
- * Since: 0.1.9
- **/
-gboolean
-dnf_context_get_yumdb_enabled(DnfContext *context)
-{
-    DnfContextPrivate *priv = GET_PRIVATE(context);
-    return priv->enable_yumdb;
-}
-
-/**
  * dnf_context_get_enable_filelists:
  * @context: a #DnfContext instance.
  *
@@ -1031,24 +1014,6 @@ dnf_context_set_only_trusted(DnfContext *context, gboolean only_trusted)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     priv->only_trusted = only_trusted;
-}
-
-
-/**
- * dnf_context_set_yumdb_enabled:
- * @context: a #DnfContext instance.
- * @enable_yumdb: %FALSE to disable yum database(default is %TRUE)
- *
- * Enables or disables writing the yum database.
- *
- * Since: 0.1.9
- **/
-void
-dnf_context_set_yumdb_enabled(DnfContext    *context,
-                   gboolean     enable_yumdb)
-{
-    DnfContextPrivate *priv = GET_PRIVATE(context);
-    priv->enable_yumdb = enable_yumdb;
 }
 
 /**
