@@ -69,7 +69,6 @@ extern "C" {
 #include "hy-repo-private.hpp"
 #include "dnf-sack-private.hpp"
 #include "hy-util.h"
-#include "sack/packageset.hpp"
 
 #include "utils/bgettext/bgettext-lib.h"
 
@@ -275,14 +274,11 @@ dnf_sack_get_pool_nsolvables(DnfSack *sack)
     return priv->pool_nsolvables;
 }
 
-Map *
+libdnf::PackageSet *
 dnf_sack_get_pkg_solvables(DnfSack *sack)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
-    auto pkg_solvables_tmp = new Map;
-
-    map_init_clone(pkg_solvables_tmp, priv->pkg_solvables);
-    return pkg_solvables_tmp;
+    return new libdnf::PackageSet(sack, priv->pkg_solvables);
 }
 
 /**

@@ -759,7 +759,7 @@ Query::Impl::initResult()
 
     int sack_pool_nsolvables = dnf_sack_get_pool_nsolvables(sack);
     if (sack_pool_nsolvables != 0 && sack_pool_nsolvables == pool->nsolvables)
-        result.reset(new PackageSet(sack, dnf_sack_get_pkg_solvables(sack)));
+        result.reset(dnf_sack_get_pkg_solvables(sack));
     else {
         result.reset(new PackageSet(sack));
         FOR_PKG_SOLVABLES(solvid)
