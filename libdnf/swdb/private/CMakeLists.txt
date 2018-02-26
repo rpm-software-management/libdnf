@@ -1,0 +1,6 @@
+SET(SWDB_SRCS
+    ${SWDB_SRCS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/Repo.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Transaction.cpp
+    PARENT_SCOPE
+)

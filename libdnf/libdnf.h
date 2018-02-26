@@ -32,35 +32,28 @@ extern "C" {
 #include <libdnf/dnf-advisorypkg.h>
 #include <libdnf/dnf-advisoryref.h>
 #include <libdnf/dnf-context.h>
-#include <libdnf/dnf-db.h>
 #include <libdnf/dnf-goal.h>
 #include <libdnf/dnf-keyring.h>
 #include <libdnf/dnf-lock.h>
 #include <libdnf/dnf-package.h>
 #include <libdnf/dnf-packagedelta.h>
 #include <libdnf/dnf-repo-loader.h>
+#include <libdnf/dnf-repo.h>
 #include <libdnf/dnf-rpmts.h>
 #include <libdnf/dnf-sack.h>
-#include <libdnf/dnf-repo.h>
 #include <libdnf/dnf-state.h>
 #include <libdnf/dnf-transaction.h>
 #include <libdnf/dnf-types.h>
 #include <libdnf/dnf-utils.h>
 #include <libdnf/dnf-version.h>
 
-#if WITH_SWDB
-
-#include <libdnf/dnf-swdb.h>
-
-#endif
-
 /* In progress conversion to dnf */
+#include <libdnf/dnf-reldep-list.h>
+#include <libdnf/dnf-reldep.h>
 #include <libdnf/hy-goal.h>
 #include <libdnf/hy-package.h>
 #include <libdnf/hy-packageset.h>
 #include <libdnf/hy-query.h>
-#include <libdnf/dnf-reldep.h>
-#include <libdnf/dnf-reldep-list.h>
 #include <libdnf/hy-repo.h>
 #include <libdnf/hy-selector.h>
 #include <libdnf/hy-subject.h>

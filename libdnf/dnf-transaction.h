@@ -28,7 +28,6 @@
 #include "hy-goal.h"
 
 #include "dnf-context.h"
-#include "dnf-db.h"
 #include "dnf-state.h"
 
 G_BEGIN_DECLS
@@ -77,7 +76,6 @@ DnfTransaction  *dnf_transaction_new                    (DnfContext     *context
 /* getters */
 guint64          dnf_transaction_get_flags              (DnfTransaction *transaction);
 GPtrArray       *dnf_transaction_get_remote_pkgs        (DnfTransaction *transaction);
-DnfDb           *dnf_transaction_get_db                 (DnfTransaction *transaction);
 
 /* setters */
 void             dnf_transaction_set_repos            (DnfTransaction *transaction,

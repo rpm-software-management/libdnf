@@ -42,7 +42,6 @@ typedef struct DependencyContainer DnfReldepList;
 #endif
 
 typedef struct _DnfContext              DnfContext;
-typedef struct _DnfDb                   DnfDb;
 typedef struct _DnfTransaction          DnfTransaction;
 typedef struct _DnfRepoLoader           DnfRepoLoader;
 typedef struct _DnfRepo                 DnfRepo;
@@ -118,4 +117,3 @@ GQuark           dnf_error_quark        (void);
 #endif
 
 #endif
-

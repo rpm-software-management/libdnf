@@ -34,7 +34,6 @@
       </para>
     </partintro>
     <xi:include href="xml/dnf-context.xml"/>
-    <xi:include href="xml/dnf-db.xml"/>
     <xi:include href="xml/dnf-lock.xml"/>
     <xi:include href="xml/dnf-repos.xml"/>
     <xi:include href="xml/dnf-repo.xml"/>
