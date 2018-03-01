@@ -26,7 +26,6 @@
 #include "libdnf/dnf-types.h"
 #include "libdnf/hy-goal-private.hpp"
 #include "libdnf/hy-iutil.h"
-#include "libdnf/hy-package-private.hpp"
 #include "libdnf/hy-packageset.h"
 #include "libdnf/dnf-sack-private.hpp"
 #include "libdnf/hy-repo.h"
@@ -36,6 +35,7 @@
 #include "libdnf/hy-selector.h"
 #include "libdnf/hy-util-private.hpp"
 #include "libdnf/sack/packageset.hpp"
+#include "libdnf/repo/RpmPackage.hpp"
 #include "fixtures.h"
 #include "testsys.h"
 #include "test_suites.h"
@@ -50,7 +50,7 @@ get_latest_pkg(DnfSack *sack, const char *name)
     GPtrArray *plist = hy_query_run(q);
     fail_unless(plist->len == 1,
                 "get_latest_pkg() failed finding '%s'.", name);
-    auto pkg = static_cast<DnfPackage *>(g_object_ref(g_ptr_array_index(plist, 0)));
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     hy_query_free(q);
     g_ptr_array_unref(plist);
     return pkg;
@@ -64,7 +64,7 @@ get_available_pkg(DnfSack *sack, const char *name)
     hy_query_filter(q, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     GPtrArray *plist = hy_query_run(q);
     fail_unless(plist->len == 1);
-    auto pkg = static_cast<DnfPackage *>(g_object_ref(g_ptr_array_index(plist, 0)));
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     hy_query_free(q);
     g_ptr_array_unref(plist);
     return pkg;
@@ -86,11 +86,11 @@ mock_running_kernel(DnfSack *sack)
     hy_query_filter(q, HY_PKG_EVR, HY_EQ, "1-1");
     GPtrArray *plist = hy_query_run(q);
     fail_unless(plist->len == 1);
-    auto pkg = static_cast<DnfPackage *>(g_object_ref(g_ptr_array_index(plist, 0)));
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     hy_query_free(q);
     g_ptr_array_unref(plist);
     Id id = dnf_package_get_id(pkg);
-    g_object_unref(pkg);
+    delete pkg;
     return id;
 }
 
@@ -148,7 +148,7 @@ START_TEST(test_goal_actions)
     fail_if(hy_goal_has_actions(goal, DNF_INSTALL));
     fail_if(hy_goal_install(goal, pkg));
     fail_unless(hy_goal_has_actions(goal, DNF_INSTALL));
-    g_object_unref(pkg);
+    delete pkg;
     hy_goal_free(goal);
 }
 END_TEST
@@ -168,7 +168,7 @@ START_TEST(test_goal_install)
     DnfPackage *pkg = get_latest_pkg(test_globals.sack, "walrus");
     HyGoal goal = hy_goal_create(test_globals.sack);
     fail_if(hy_goal_install(goal, pkg));
-    g_object_unref(pkg);
+    delete pkg;
     fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 2, 0, 0, 0);
     hy_goal_free(goal);
@@ -396,7 +396,7 @@ START_TEST(test_goal_install_optional)
     fail_if(hy_goal_install_optional(goal, pkg));
     fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 0, 0, 0, 0);
-    g_object_unref(pkg);
+    delete pkg;
     hy_goal_free(goal);
 }
 END_TEST
@@ -406,7 +406,7 @@ START_TEST(test_goal_upgrade)
     DnfPackage *pkg = get_latest_pkg(test_globals.sack, "fool");
     HyGoal goal = hy_goal_create(test_globals.sack);
     fail_if(hy_goal_upgrade_to(goal, pkg));
-    g_object_unref(pkg);
+    delete pkg;
     fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 0, 1, 0, 1);
     hy_goal_free(goal);
@@ -510,7 +510,7 @@ START_TEST(test_goal_get_reason)
     DnfPackage *pkg = get_latest_pkg(test_globals.sack, "walrus");
     HyGoal goal = hy_goal_create(test_globals.sack);
     hy_goal_install(goal, pkg);
-    g_object_unref(pkg);
+    delete pkg;
     hy_goal_run_flags(goal, DNF_NONE);
 
     GPtrArray *plist = hy_goal_list_installs(goal, NULL);
@@ -578,7 +578,7 @@ START_TEST(test_goal_describe_problem_rules)
         fail_if(strncmp(problems[p], expected[p], strlen(expected[p])));
     }
 
-    g_object_unref(pkg);
+    delete pkg;
     hy_goal_free(goal);
 }
 END_TEST
@@ -589,7 +589,7 @@ START_TEST(test_goal_no_reinstall)
     DnfPackage *pkg = get_latest_pkg(sack, "penny");
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_goal_install(goal, pkg));
-    g_object_unref(pkg);
+    delete pkg;
     fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 0, 0, 0, 0);
     hy_goal_free(goal);
@@ -602,7 +602,7 @@ START_TEST(test_goal_erase_simple)
     DnfPackage *pkg = by_name_repo(sack, "penny", HY_SYSTEM_REPO_NAME);
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_goal_erase(goal, pkg));
-    g_object_unref(pkg);
+    delete pkg;
     fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 0, 0, 1, 0);
     hy_goal_free(goal);
@@ -625,7 +625,7 @@ START_TEST(test_goal_erase_with_deps)
     fail_if(hy_goal_run_flags(goal, DNF_ALLOW_UNINSTALL));
     assert_iueo(goal, 0, 0, 2, 0);
     hy_goal_free(goal);
-    g_object_unref(pkg);
+    delete pkg;
 }
 END_TEST
 
@@ -668,7 +668,7 @@ START_TEST(test_goal_protected)
     hy_goal_free(goal);
 
     dnf_packageset_free(protected_pkgs);
-    g_object_unref(pkg);
+    delete pkg;
     g_object_unref(pp);
 }
 END_TEST
@@ -704,7 +704,7 @@ START_TEST(test_goal_erase_clean_deps)
     hy_goal_free(goal);
     g_object_unref(penny_pkg);
 
-    g_object_unref(pkg);
+    delete pkg;
 }
 END_TEST
 
@@ -734,7 +734,7 @@ START_TEST(test_goal_installonly)
     DnfPackage *pkg = get_latest_pkg(sack, "fool");
     HyGoal goal = hy_goal_create(sack);
     fail_if(hy_goal_upgrade_to(goal, pkg));
-    g_object_unref(pkg);
+    delete pkg;
     fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 1, 0, 1, 0);
     hy_goal_free(goal);
@@ -968,14 +968,14 @@ START_TEST(test_goal_rerun)
     hy_goal_install(goal, pkg);
     fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 2, 0, 0, 0);
-    g_object_unref(pkg);
+    delete pkg;
 
     // add an erase:
     pkg = by_name_repo(sack, "dog", HY_SYSTEM_REPO_NAME);
     hy_goal_erase(goal, pkg);
     fail_if(hy_goal_run_flags(goal, DNF_NONE));
     assert_iueo(goal, 2, 0, 1, 0);
-    g_object_unref(pkg);
+    delete pkg;
     hy_goal_free(goal);
 }
 END_TEST
@@ -1046,7 +1046,7 @@ START_TEST(test_goal_kernel_protected)
     hy_goal_erase(goal, kernel);
     fail_unless(hy_goal_run_flags(goal, DNF_NONE));
 
-    g_object_unref(kernel);
+    delete kernel;
     hy_goal_free(goal);
 }
 END_TEST

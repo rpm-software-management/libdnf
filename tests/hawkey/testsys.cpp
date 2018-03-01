@@ -19,22 +19,15 @@
  */
 
 #include <check.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
-
 #include <solv/repo.h>
-#include <solv/util.h>
-
 
 #include "libdnf/hy-goal.h"
-#include "libdnf/hy-package.h"
-#include "libdnf/hy-package-private.hpp"
 #include "libdnf/hy-query.h"
-#include "libdnf/dnf-sack-private.hpp"
-#include "libdnf/hy-util.h"
 #include "testsys.h"
+
+#include "libdnf/repo/RpmPackage.hpp"
+#include "libdnf/sack/query.hpp"
+#include "libdnf/sack/packageset.hpp"
 
 void
 assert_nevra_eq(DnfPackage *pkg, const char *nevra)
@@ -46,12 +39,14 @@ assert_nevra_eq(DnfPackage *pkg, const char *nevra)
 DnfPackage *
 by_name(DnfSack *sack, const char *name)
 {
-    HyQuery q = hy_query_create(sack);
-    hy_query_filter(q, HY_PKG_NAME, HY_EQ, name);
-    GPtrArray *plist = hy_query_run(q);
-    hy_query_free(q);
-    auto pkg = static_cast<DnfPackage *>(g_object_ref(g_ptr_array_index(plist, 0)));
-    g_ptr_array_unref(plist);
+    auto q = new libdnf::Query(sack);
+    q->addFilter(HY_PKG_NAME, HY_EQ, name);
+    auto plist = q->runSet();
+
+    auto pkg = new libdnf::RpmPackage(sack, plist->operator[](0));
+
+    delete q;
+    delete plist;
 
     return pkg;
 }
@@ -64,7 +59,7 @@ by_name_repo(DnfSack *sack, const char *name, const char *repo)
     hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, repo);
     GPtrArray *plist = hy_query_run(q);
     hy_query_free(q);
-    auto pkg = static_cast<DnfPackage *>(g_object_ref(g_ptr_array_index(plist, 0)));
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
     g_ptr_array_unref(plist);
 
     return pkg;
@@ -75,7 +70,7 @@ dump_packagelist(GPtrArray *plist, int free)
 {
     for (guint i = 0; i < plist->len; ++i) {
         auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, i));
-        Solvable *s = pool_id2solvable(dnf_package_get_pool(pkg), dnf_package_get_id(pkg));
+        Solvable *s = pool_id2solvable(pkg->getPool(), dnf_package_get_id(pkg));
         const char *nvra = dnf_package_get_nevra(pkg);
         printf("\t%s @%s\n", nvra, s->repo->name);
     }

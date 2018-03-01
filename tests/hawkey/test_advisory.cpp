@@ -21,14 +21,16 @@
 
 
 #include "libdnf/dnf-advisory.h"
+#include "libdnf/sack/advisory.hpp"
 #include "libdnf/dnf-advisorypkg.h"
 #include "libdnf/dnf-advisoryref.h"
 #include "libdnf/hy-package.h"
+#include "libdnf/repo/RpmPackage.hpp"
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"
 
-static DnfAdvisory *advisory;
+static std::shared_ptr<libdnf::Advisory> advisory;
 
 static void
 advisory_fixture(void)
@@ -36,65 +38,61 @@ advisory_fixture(void)
     fixture_yum();
 
     DnfPackage *pkg;
-    GPtrArray *advisories;
 
     pkg = by_name(test_globals.sack, "tour");
-    advisories = dnf_package_get_advisories(pkg, HY_GT);
+    auto advisories = pkg->getAdvisories(HY_GT);
+    advisory = advisories.at(0);
 
-    advisory = static_cast<DnfAdvisory *>(g_ptr_array_index(advisories, 0));
-
-    g_ptr_array_unref(advisories);
-    g_object_unref(pkg);
+    delete pkg;
 }
 
 static void
 advisory_teardown(void)
 {
-    dnf_advisory_free(advisory);
     teardown();
 }
 
 START_TEST(test_title)
 {
-    ck_assert_str_eq(dnf_advisory_get_title(advisory), "lvm2-2.02.39-7.fc10");
+    ck_assert_str_eq(advisory->getTitle(), "lvm2-2.02.39-7.fc10");
 }
 END_TEST
 
 START_TEST(test_id)
 {
-    ck_assert_str_eq(dnf_advisory_get_id(advisory), "FEDORA-2008-9969");
+    ck_assert_str_eq(advisory->getName(), "FEDORA-2008-9969");
 }
 END_TEST
 
 START_TEST(test_type)
 {
-    ck_assert_int_eq(dnf_advisory_get_kind(advisory), DNF_ADVISORY_KIND_BUGFIX);
+    ck_assert_int_eq(advisory->getKind(), DNF_ADVISORY_KIND_BUGFIX);
 }
 END_TEST
 
 START_TEST(test_description)
 {
     ck_assert_str_eq(
-            dnf_advisory_get_description(advisory),
+            advisory->getDescription(),
             "An example update to the tour package.");
 }
 END_TEST
 
 START_TEST(test_rights)
 {
-    fail_if(dnf_advisory_get_rights(advisory));
+    fail_if(advisory->getRights());
 }
 END_TEST
 
 START_TEST(test_updated)
 {
-    ck_assert_int_eq(dnf_advisory_get_updated(advisory), 1228822286);
+    ck_assert_int_eq(advisory->getUpdated(), 1228822286);
 }
 END_TEST
 
 START_TEST(test_packages)
 {
-    GPtrArray *pkglist = dnf_advisory_get_packages(advisory);
+    GPtrArray *pkglist = dnf_advisory_get_packages(advisory.get());
 
     ck_assert_int_eq(pkglist->len, 1);
     auto package = static_cast<DnfAdvisoryPkg *>(g_ptr_array_index(pkglist, 0));
@@ -109,7 +107,7 @@ END_TEST
 START_TEST(test_refs)
 {
     DnfAdvisoryRef *reference;
-    GPtrArray *reflist = dnf_advisory_get_references(advisory);
+    GPtrArray *reflist = dnf_advisory_get_references(advisory.get());
 
     ck_assert_int_eq(reflist->len, 2);
     reference = static_cast<DnfAdvisoryRef *>(g_ptr_array_index(reflist, 0));

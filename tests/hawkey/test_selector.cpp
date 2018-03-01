@@ -19,12 +19,14 @@
  */
 
 
-#include "libdnf/hy-package-private.hpp"
 #include "libdnf/hy-query.h"
 #include "libdnf/hy-selector.h"
 #include "libdnf/dnf-types.h"
 #include "libdnf/hy-util-private.hpp"
+#include "libdnf/sack/query.hpp"
 #include "libdnf/sack/packageset.hpp"
+#include "libdnf/sack/selector.hpp"
+#include "libdnf/repo/RpmPackage.hpp"
 #include "fixtures.h"
 #include "testsys.h"
 #include "test_suites.h"
@@ -34,25 +36,25 @@ START_TEST(test_sltr_pkg)
     HySelector sltr = hy_selector_create(test_globals.sack);
     DnfPackageSet *pset = dnf_packageset_new(test_globals.sack);
 
-    HyQuery q = hy_query_create(test_globals.sack);
-    hy_query_filter(q, HY_PKG_NAME, HY_EQ, "penny");
-    GPtrArray *plist1 = hy_query_run(q);
-    hy_query_free(q);
-    fail_unless(plist1->len == 2);
-    auto pkg0 = static_cast<DnfPackage *>(g_object_ref(g_ptr_array_index(plist1, 0)));
-    auto pkg1 = static_cast<DnfPackage *>(g_object_ref(g_ptr_array_index(plist1, 1)));
-    g_ptr_array_unref(plist1);
-    dnf_packageset_add(pset, pkg0);
+    auto q = new libdnf::Query(test_globals.sack);
+    q->addFilter(HY_PKG_NAME, HY_EQ, "penny");
+    auto plist1 = q->runSet();
+
+    fail_unless(plist1->size() == 2);
+    auto pkg0 = new libdnf::RpmPackage(test_globals.sack, plist1->operator[](0));
+    auto pkg1 = new libdnf::RpmPackage(test_globals.sack, plist1->operator[](1));
+    pset->set(pkg0);
 
     fail_if(hy_selector_pkg_set(sltr, HY_PKG, HY_EQ, pset));
-    GPtrArray *plist = hy_selector_matches(sltr);
+    GPtrArray *plist = sltr->matches();
     fail_unless(plist->len == 1);
     fail_unless(hy_packagelist_has(plist, pkg0));
     fail_if(hy_packagelist_has(plist, pkg1));
 
-    g_object_unref(pkg0);
-    g_object_unref(pkg1);
+    delete pkg0;
+    delete pkg1;
     delete pset;
+    delete q;
     g_ptr_array_unref(plist);
     hy_selector_free(sltr);
 }

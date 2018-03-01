@@ -19,8 +19,8 @@
  */
 
 
-#include "libdnf/hy-package-private.hpp"
 #include "libdnf/hy-packageset-private.hpp"
+#include "libdnf/repo/RpmPackage.hpp"
 #include "libdnf/dnf-sack-private.hpp"
 #include "fixtures.h"
 #include "test_suites.h"
@@ -34,10 +34,10 @@ packageset_fixture(void)
     fixture_all();
 
     DnfSack *sack = test_globals.sack;
-    g_autoptr(DnfPackage) pkg0 = dnf_package_new(sack, 0);
-    g_autoptr(DnfPackage) pkg9 = dnf_package_new(sack, 9);
+    DnfPackage *pkg0 = dnf_package_new(sack, 0);
+    DnfPackage *pkg9 = dnf_package_new(sack, 9);
     int max = dnf_sack_last_solvable(sack);
-    g_autoptr(DnfPackage) pkg_max = dnf_package_new(sack, max);
+    DnfPackage *pkg_max = dnf_package_new(sack, max);
 
     // init the global var
     pset = dnf_packageset_new(sack);
@@ -46,6 +46,9 @@ packageset_fixture(void)
     dnf_packageset_add(pset, pkg9);
     dnf_packageset_add(pset, pkg_max);
 
+    delete pkg0;
+    delete pkg9;
+    delete pkg_max;
 }
 
 static void
@@ -66,8 +69,8 @@ START_TEST(test_clone)
     fail_if(dnf_packageset_has(pset2.get(), pkg8));
     fail_unless(dnf_packageset_has(pset2.get(), pkg9));
 
-    g_object_unref(pkg8);
-    g_object_unref(pkg9);
+    delete pkg8;
+    delete pkg9;
 }
 END_TEST
 
@@ -89,12 +92,12 @@ START_TEST(test_has)
     fail_if(dnf_packageset_has(pset, pkg8));
     fail_if(dnf_packageset_has(pset, pkg15));
 
-    g_object_unref(pkg0);
-    g_object_unref(pkg9);
-    g_object_unref(pkg_max);
-    g_object_unref(pkg7);
-    g_object_unref(pkg8);
-    g_object_unref(pkg15);
+    delete pkg0;
+    delete pkg9;
+    delete pkg_max;
+    delete pkg7;
+    delete pkg8;
+    delete pkg15;
 
 }
 END_TEST
@@ -113,16 +116,16 @@ START_TEST(test_get_clone)
     fail_unless(dnf_package_get_id(pkg_max) == max);
     //fail_unless(dnf_package_new(pset->getSack(), (*pset)[3]) == NULL);
 
-    g_object_unref(pkg0);
-    g_object_unref(pkg9);
-    g_object_unref(pkg_max);
+    delete pkg0;
+    delete pkg9;
+    delete pkg_max;
 
     DnfPackage *pkg8 = dnf_package_new(sack, 8);
     DnfPackage *pkg11 = dnf_package_new(sack, 11);
     dnf_packageset_add(pset, pkg8);
     dnf_packageset_add(pset, pkg11);
-    g_object_unref(pkg8);
-    g_object_unref(pkg11);
+    delete pkg8;
+    delete pkg11;
     pkg8 = dnf_package_new(pset->getSack(), (*pset)[1]);
     pkg9 = dnf_package_new(pset->getSack(), (*pset)[2]);
     pkg11 = dnf_package_new(pset->getSack(), (*pset)[3]);
@@ -130,9 +133,9 @@ START_TEST(test_get_clone)
     fail_unless(dnf_package_get_id(pkg9) == 9);
     fail_unless(dnf_package_get_id(pkg11) == 11);
 
-    g_object_unref(pkg8);
-    g_object_unref(pkg9);
-    g_object_unref(pkg11);
+    delete pkg8;
+    delete pkg9;
+    delete pkg11;
 }
 END_TEST
 
@@ -145,13 +148,13 @@ START_TEST(test_get_pkgid)
     DnfPackage *pkg;
     pkg = dnf_package_new(sack, 7);
     dnf_packageset_add(pset, pkg);
-    g_object_unref(pkg);
+    delete pkg;
     pkg = dnf_package_new(sack, 8);
     dnf_packageset_add(pset, pkg);
-    g_object_unref(pkg);
+    delete pkg;
     pkg = dnf_package_new(sack, 15);
     dnf_packageset_add(pset, pkg);
-    g_object_unref(pkg);
+    delete pkg;
 
     Id id = -1;
     id = pset->next(id);

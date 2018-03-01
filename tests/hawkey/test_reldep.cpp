@@ -20,6 +20,7 @@
 
 
 #include <memory>
+#include <vector>
 
 #include "libdnf/hy-package.h"
 #include "libdnf/dnf-reldep.h"
@@ -29,6 +30,7 @@
 #include "test_suites.h"
 #include "testsys.h"
 #include "libdnf/repo/solvable/DependencyContainer.hpp"
+#include "libdnf/repo/RpmPackage.hpp"
 
 START_TEST(test_reldeplist_add)
 {
@@ -37,15 +39,18 @@ START_TEST(test_reldeplist_add)
     std::unique_ptr<DnfReldepList> reldeplist(dnf_reldep_list_new (sack));
     std::unique_ptr<DnfReldepList> obsoletes(dnf_package_get_obsoletes (flying));
 
-    const int count = dnf_reldep_list_count (obsoletes.get());
+    fail_unless(flying != nullptr);
+
+    const int count = obsoletes->count();
     fail_unless(count == 2);
     for (int i = 0; i < count; ++i) {
-        DnfReldep *reldep = dnf_reldep_list_index (obsoletes.get(), i);
-        dnf_reldep_list_add (reldeplist.get(), reldep);
+        auto reldep = obsoletes->get(i);
+        reldeplist->add(reldep.get());
     }
 
-    g_object_unref (flying);
-    fail_unless(dnf_reldep_list_count (reldeplist.get()) == 2);
+    fail_unless(reldeplist->count() == 2);
+
+    delete flying;
 }
 END_TEST
 

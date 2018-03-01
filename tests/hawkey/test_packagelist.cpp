@@ -19,31 +19,31 @@
  */
 
 
-#include "libdnf/hy-package-private.hpp"
 #include "libdnf/hy-util-private.hpp"
+#include "libdnf/repo/RpmPackage.hpp"
 #include "test_suites.h"
 
 static DnfPackage *
 mock_package(Id id)
 {
-    return dnf_package_new(NULL, id);
+    return dnf_package_new(nullptr, id);
 }
 
-static GPtrArray *fixture_plist;
+static std::vector<libdnf::RpmPackage *> fixture_plist;
 
 static void
 create_fixture(void)
 {
-    fixture_plist = hy_packagelist_create();
-    g_ptr_array_add(fixture_plist, mock_package(10));
-    g_ptr_array_add(fixture_plist, mock_package(11));
-    g_ptr_array_add(fixture_plist, mock_package(12));
+    fixture_plist.emplace_back(mock_package(10));
+    fixture_plist.emplace_back(mock_package(11));
+    fixture_plist.emplace_back(mock_package(12));
 }
 
 static void
 free_fixture(void)
 {
-    g_ptr_array_unref(fixture_plist);
+    for (auto package : fixture_plist)
+        delete package;
 }
 
 START_TEST(test_has)
@@ -51,11 +51,21 @@ START_TEST(test_has)
     DnfPackage *pkg1 = mock_package(10);
     DnfPackage *pkg2 = mock_package(1);
 
-    fail_unless(hy_packagelist_has(fixture_plist, pkg1));
-    fail_if(hy_packagelist_has(fixture_plist, pkg2));
+    bool hasPkg1 = false;
+    bool hasPkg2 = false;
 
-    g_object_unref(pkg1);
-    g_object_unref(pkg2);
+    for (auto package : fixture_plist) {
+        if (*pkg1 == *package)
+            hasPkg1 = true;
+        else if (*pkg1 == *package)
+            hasPkg2 = true;
+    }
+
+    fail_unless(hasPkg1);
+    fail_if(hasPkg2);
+
+    delete pkg1;
+    delete pkg2;
 }
 END_TEST
 

@@ -20,63 +20,57 @@
 
 
 
+#include "libdnf/sack/advisory.hpp"
+#include "libdnf/sack/advisoryref.hpp"
 #include "libdnf/dnf-advisory.h"
 #include "libdnf/dnf-advisoryref.h"
 #include "libdnf/hy-package.h"
+#include "libdnf/repo/RpmPackage.hpp"
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"
 
-static DnfAdvisoryRef *reference;
+static std::shared_ptr<libdnf::Advisory> advisory;
+static libdnf::RpmPackage *package;
 
 static void
 advisoryref_fixture(void)
 {
     fixture_yum();
 
-    DnfPackage *pkg;
-    GPtrArray *advisories;
-    GPtrArray *reflist;
-
-    pkg = by_name(test_globals.sack, "tour");
-    advisories = dnf_package_get_advisories(pkg, HY_GT);
-    auto advisory = static_cast<DnfAdvisory *>(g_ptr_array_index(advisories, 0));
-    reflist = dnf_advisory_get_references(advisory);
-    reference = static_cast<DnfAdvisoryRef *>(g_ptr_array_index(reflist, 0));
-
-    g_ptr_array_unref(reflist);
-    g_ptr_array_unref(advisories);
-    g_object_unref(pkg);
+    package = by_name(test_globals.sack, "tour");
+    auto advisories = package->getAdvisories(HY_GT);
+    advisory = advisories.at(0);
 }
 
 static void
 advisoryref_teardown(void)
 {
-    dnf_advisoryref_free(reference);
+    delete package;
     teardown();
 }
 
 START_TEST(test_type)
 {
-    ck_assert_int_eq(dnf_advisoryref_get_kind(reference), DNF_REFERENCE_KIND_BUGZILLA);
+    ck_assert_int_eq(dnf_advisoryref_get_kind(&advisory->getReferences().at(0)), DNF_REFERENCE_KIND_BUGZILLA);
 }
 END_TEST
 
 START_TEST(test_id)
 {
-    ck_assert_str_eq(dnf_advisoryref_get_id(reference), "472090");
+    ck_assert_str_eq(dnf_advisoryref_get_id(&advisory->getReferences().at(0)), "472090");
 }
 END_TEST
 
 START_TEST(test_title)
 {
-    ck_assert_str_eq(dnf_advisoryref_get_title(reference), "/etc/init.d/clvmd points to /usr/sbin for LVM tools");
+    ck_assert_str_eq(dnf_advisoryref_get_title(&advisory->getReferences().at(0)), "/etc/init.d/clvmd points to /usr/sbin for LVM tools");
 }
 END_TEST
 
 START_TEST(test_url)
 {
-    ck_assert_str_eq(dnf_advisoryref_get_url(reference), "https://bugzilla.redhat.com/show_bug.cgi?id=472090");
+    ck_assert_str_eq(dnf_advisoryref_get_url(&advisory->getReferences().at(0)), "https://bugzilla.redhat.com/show_bug.cgi?id=472090");
 }
 END_TEST
 

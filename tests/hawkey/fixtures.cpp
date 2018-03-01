@@ -20,12 +20,14 @@
 
 #include <check.h>
 #include <stdarg.h>
+#include <memory>
 #include <unistd.h>
 
 
 #include "libdnf/hy-package.h"
 #include "libdnf/hy-repo.h"
 #include "libdnf/hy-iutil.h"
+#include "libdnf/repo/RpmPackage.hpp"
 #include "libdnf/dnf-sack-private.hpp"
 #include "fixtures.h"
 #include "testsys.h"
@@ -74,13 +76,13 @@ void add_cmdline(DnfSack *sack)
     const char *path = pool_tmpjoin(pool, test_globals.repo_dir,
                                     "yum/tour-4-6.noarch.rpm", NULL);
     DnfPackage *pkg = dnf_sack_add_cmdline_package(sack, path);
-    g_object_unref(pkg);
+    delete pkg;
 }
 
 void
 fixture_cmdline_only(void)
 {
-    DnfSack *sack = create_ut_sack();
+    auto sack = create_ut_sack();
     add_cmdline(sack);
 }
 

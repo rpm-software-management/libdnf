@@ -21,10 +21,15 @@
 
 
 #include <glib-object.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <glib/gstdio.h>
-#include "libdnf/libdnf.h"
+
+#include "libdnf/dnf-context.h"
+#include "libdnf/dnf-lock.h"
+#include "libdnf/dnf-repo-loader.h"
+#include "libdnf/dnf-state.h"
 
 /**
  * cd_test_get_filename:

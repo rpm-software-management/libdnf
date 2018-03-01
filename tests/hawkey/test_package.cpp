@@ -24,7 +24,6 @@
 
 #include "libdnf/dnf-advisory.h"
 #include "libdnf/hy-package.h"
-#include "libdnf/hy-package-private.hpp"
 #include "libdnf/hy-query.h"
 #include "libdnf/dnf-reldep.h"
 #include "libdnf/dnf-reldep-list.h"
@@ -36,12 +35,14 @@
 
 #include "libdnf/repo/solvable/Dependency.hpp"
 #include "libdnf/repo/solvable/DependencyContainer.hpp"
+#include "libdnf/sack/advisory.hpp"
+#include "libdnf/repo/RpmPackage.hpp"
 
 START_TEST(test_package_summary)
 {
     DnfPackage *pkg = by_name(test_globals.sack, "penny-lib");
-    fail_if(strcmp(dnf_package_get_summary(pkg), "in my ears"));
-    g_object_unref(pkg);
+    fail_if(strcmp(pkg->getSummary(), "in my ears") != 0);
+    delete pkg;
 }
 END_TEST
 
@@ -52,42 +53,34 @@ START_TEST(test_identical)
     DnfPackage *pkg2 = by_name(sack, "flying");
     DnfPackage *pkg3 = by_name(sack, "penny-lib");
 
-    fail_unless(dnf_package_get_identical(pkg1, pkg3));
-    fail_if(dnf_package_get_identical(pkg2, pkg3));
+    fail_unless(*pkg1 == *pkg3);
+    fail_if(*pkg2 == *pkg3);
 
-    g_object_unref(pkg1);
-    g_object_unref(pkg2);
-    g_object_unref(pkg3);
+    delete pkg1;
+    delete pkg2;
+    delete pkg3;
 }
 END_TEST
 
 START_TEST(test_versions)
 {
     DnfSack *sack = test_globals.sack;
-    unsigned epoch;
-    const char *version, *release;
     DnfPackage *pkg;
 
     pkg = by_name(sack, "baby");
-    ck_assert_str_eq(dnf_package_get_evr(pkg), "6:5.0-11");
-    epoch = dnf_package_get_epoch(pkg);
-    fail_unless(epoch == 6);
-    version = dnf_package_get_version(pkg);
-    ck_assert_str_eq(version, "5.0");
-    release = dnf_package_get_release(pkg);
-    ck_assert_str_eq(release, "11");
-    g_object_unref(pkg);
+    ck_assert_str_eq(pkg->getEvr(), "6:5.0-11");
+    fail_unless(pkg->getEpoch() == 6);
+    ck_assert_str_eq(pkg->getVersion(), "5.0");
+    ck_assert_str_eq(pkg->getRelease(), "11");
+    delete pkg;
 
     pkg = by_name(sack, "jay");
     // epoch missing if it's 0:
-    ck_assert_str_eq(dnf_package_get_evr(pkg), "5.0-0");
-    epoch = dnf_package_get_epoch(pkg);
-    fail_unless(epoch == 0);
-    version = dnf_package_get_version(pkg);
-    ck_assert_str_eq(version, "5.0");
-    release = dnf_package_get_release(pkg);
-    ck_assert_str_eq(release, "0");
-    g_object_unref(pkg);
+    ck_assert_str_eq(pkg->getEvr(), "5.0-0");
+    fail_unless(pkg->getEpoch() == 0);
+    ck_assert_str_eq(pkg->getVersion(), "5.0");
+    ck_assert_str_eq(pkg->getRelease(), "0");
+    delete pkg;
 }
 END_TEST
 
@@ -95,10 +88,10 @@ START_TEST(test_no_sourcerpm)
 {
     DnfSack *sack = test_globals.sack;
     DnfPackage *pkg = by_name(sack, "baby");
-    const char *src = dnf_package_get_sourcerpm(pkg);
+    auto src = pkg->getSourceRpm();
 
-    fail_unless(src == NULL);
-    g_object_unref(pkg);
+    fail_unless(src == nullptr);
+    delete pkg;
 }
 END_TEST
 
@@ -106,17 +99,14 @@ START_TEST(test_get_requires)
 {
     DnfSack *sack = test_globals.sack;
     DnfPackage *pkg = by_name(sack, "flying");
-    DnfReldepList *reldeplist = dnf_package_get_requires(pkg);
+    auto reldeplist = pkg->getRequires();
 
-    fail_unless(dnf_reldep_list_count (reldeplist) == 1);
-    DnfReldep *reldep = dnf_reldep_list_index (reldeplist, 0);
+    fail_unless(reldeplist->count() == 1);
+    auto reldep = reldeplist->get(0);
 
-    const char *depstr = dnf_reldep_to_string (reldep);
-    ck_assert_str_eq(depstr, "P-lib >= 3");
+    ck_assert_str_eq(reldep->toString(), "P-lib >= 3");
 
-    delete reldep;
-    delete reldeplist;
-    g_object_unref(pkg);
+    delete pkg;
 }
 END_TEST
 
@@ -124,11 +114,10 @@ START_TEST(test_get_more_requires)
 {
     DnfSack *sack = test_globals.sack;
     DnfPackage *pkg = by_name(sack, "walrus");
-    DnfReldepList *reldeplist = dnf_package_get_requires(pkg);
+    auto reldeplist = pkg->getRequires();
 
-    fail_unless(dnf_reldep_list_count (reldeplist) == 2);
-    delete reldeplist;
-    g_object_unref(pkg);
+    fail_unless(reldeplist->count() == 2);
+    delete pkg;
 }
 END_TEST
 
@@ -136,28 +125,26 @@ START_TEST(test_chksum_fail)
 {
     DnfSack *sack = test_globals.sack;
     DnfPackage *pkg = by_name(sack, "walrus");
-    int type;
 
-    const unsigned char *chksum = dnf_package_get_chksum(pkg, &type);
-    fail_unless(chksum == NULL);
-    chksum = dnf_package_get_hdr_chksum(pkg, &type);
-    fail_unless(chksum == NULL);
-    g_object_unref(pkg);
+    auto chksum = pkg->getChecksum();
+    fail_unless(std::get<0>(chksum) == nullptr);
+    chksum = pkg->getHeaderChecksum();
+    fail_unless(std::get<0>(chksum) == nullptr);
+    delete pkg;
 }
 END_TEST
 
 START_TEST(test_checksums)
 {
     DnfPackage *pkg = by_name(test_globals.sack, "mystery-devel");
-    int i;
-    HyChecksum *csum = dnf_package_get_chksum(pkg, &i);
-    fail_unless(i == G_CHECKSUM_SHA256);
+    auto checksum = pkg->getChecksum();
+    fail_unless(std::get<1>(checksum) == G_CHECKSUM_SHA256);
     // Check the first and last bytes. Those need to match against information
     // in primary.xml.gz.
-    fail_unless(csum[0] == 0x2e);
-    fail_unless(csum[31] == 0xf5);
+    fail_unless(std::get<0>(checksum)[0] == 0x2e);
+    fail_unless(std::get<0>(checksum)[31] == 0xf5);
 
-    g_object_unref(pkg);
+    delete pkg;
 }
 END_TEST
 
@@ -166,31 +153,23 @@ START_TEST(test_get_files)
     DnfSack *sack = test_globals.sack;
 
     DnfPackage *pkg = by_name(sack, "tour");
-    gchar **files = dnf_package_get_files(pkg);
-    int i = 0;
-    char **iter;
+    auto files = pkg->getFiles();
 
-    for (iter = files; iter && *iter; iter++)
-        i++;
-    g_assert_cmpint(i, ==, 6);
-    g_strfreev(files);
-    g_object_unref(pkg);
+    g_assert_cmpint(files.size(), ==, 6);
+    delete pkg;
 }
 END_TEST
 
 START_TEST(test_get_advisories)
 {
-    GPtrArray *advisories;
     DnfSack *sack = test_globals.sack;
     DnfPackage *pkg = by_name(sack, "tour");
 
-    advisories = dnf_package_get_advisories(pkg, HY_GT);
-    fail_unless(advisories != NULL);
-    ck_assert_int_eq(advisories->len, 1);
-    auto advisory = static_cast<DnfAdvisory *>(g_ptr_array_index(advisories, 0));
-    ck_assert_str_eq(dnf_advisory_get_id(advisory), "FEDORA-2008-9969");
-    g_ptr_array_unref(advisories);
-    g_object_unref(pkg);
+    auto advisories = pkg->getAdvisories(HY_GT);
+    ck_assert_int_eq(advisories.size(), 1);
+    auto advisory = advisories.at(0);
+    ck_assert_str_eq(advisory->getName(), "FEDORA-2008-9969");
+    delete pkg;
 }
 END_TEST
 
@@ -210,7 +189,7 @@ START_TEST(test_get_advisories_none)
     ck_assert_int_eq(advisories->len, 1);
     g_ptr_array_unref(advisories);
 
-    g_object_unref(pkg);
+    delete pkg;
 }
 END_TEST
 
@@ -221,7 +200,7 @@ START_TEST(test_lookup_num)
     fail_unless(buildtime > 1330473600); // after 2012-02-29
     fail_unless(buildtime < 1456704000); // before 2016-02-29
 
-    g_object_unref(pkg);
+    delete pkg;
 }
 END_TEST
 
@@ -235,8 +214,8 @@ START_TEST(test_installed)
     fail_unless(installed1 == 0);
     fail_unless(installed2 == 1);
 
-    g_object_unref(pkg1);
-    g_object_unref(pkg2);
+    delete pkg1;
+    delete pkg2;
 }
 END_TEST
 
@@ -268,8 +247,8 @@ START_TEST(test_two_sacks)
 
     fail_if(dnf_package_cmp(pkg1, pkg2) != 0);
 
-    g_object_unref(pkg1);
-    g_object_unref(pkg2);
+    delete pkg1;
+    delete pkg2;
 
     g_object_unref(sack1);
     g_free(tmpdir);
@@ -279,23 +258,21 @@ END_TEST
 START_TEST(test_packager)
 {
     DnfPackage *pkg = by_name(test_globals.sack, "tour");
-    ck_assert_str_eq(dnf_package_get_packager(pkg), "roll up <roll@up.net>");
-    g_object_unref(pkg);
+    ck_assert_str_eq(pkg->getPackager(), "roll up <roll@up.net>");
+    delete pkg;
 }
 END_TEST
 
 START_TEST(test_sourcerpm)
 {
     DnfPackage *pkg = by_name(test_globals.sack, "tour");
-    const char *sourcerpm = dnf_package_get_sourcerpm(pkg);
 
-    ck_assert_str_eq(sourcerpm, "tour-4-6.src.rpm");
-    g_object_unref(pkg);
+    ck_assert_str_eq(pkg->getSourceRpm(), "tour-4-6.src.rpm");
+    delete pkg;
 
     pkg = by_name(test_globals.sack, "mystery-devel");
-    sourcerpm = dnf_package_get_sourcerpm(pkg);
-    ck_assert_str_eq(sourcerpm, "mystery-19.67-1.src.rpm");
-    g_object_unref(pkg);
+    ck_assert_str_eq(pkg->getSourceRpm(), "mystery-19.67-1.src.rpm");
+    delete pkg;
 }
 END_TEST
 
@@ -307,21 +284,20 @@ START_TEST(test_presto)
 {
     DnfSack *sack = test_globals.sack;
     DnfPackage *tour = by_name(sack, "tour");
-    fail_if(tour == NULL);
+    fail_if(tour == nullptr);
 
-    DnfPackageDelta *delta = dnf_package_get_delta_from_evr(tour, "4-5");
-    const char *location = dnf_packagedelta_get_location(delta);
+    auto delta = tour->getDelta("4-5");
+    const char *location = dnf_packagedelta_get_location(delta.get());
     ck_assert_str_eq(location, "drpms/tour-4-5_4-6.noarch.drpm");
-    const char *baseurl = dnf_packagedelta_get_baseurl(delta);
-    fail_unless(baseurl == NULL);
-    guint64 size = dnf_packagedelta_get_downloadsize(delta);
+    const char *baseurl = dnf_packagedelta_get_baseurl(delta.get());
+    fail_unless(baseurl == nullptr);
+    guint64 size = dnf_packagedelta_get_downloadsize(delta.get());
     ck_assert_int_eq(size, 3132);
     int type;
-    HyChecksum *csum = dnf_packagedelta_get_chksum(delta, &type);
+    HyChecksum *csum = dnf_packagedelta_get_chksum(delta.get(), &type);
     fail_unless(type == G_CHECKSUM_SHA256);
     ck_assert(!memcmp(csum, TOUR_45_46_DRPM_CHKSUM, 32));
-    g_object_unref(delta);
-    g_object_unref(tour);
+    delete tour;
 }
 END_TEST
 
@@ -330,12 +306,10 @@ START_TEST(test_get_files_cmdline)
     DnfSack *sack = test_globals.sack;
 
     DnfPackage *pkg = by_name(sack, "tour");
-    gchar **files;
 
-    files = dnf_package_get_files(pkg);
-    g_assert_cmpint (6, ==, g_strv_length(files));
-    g_strfreev(files);
-    g_object_unref(pkg);
+    auto files = pkg->getFiles();
+    g_assert_cmpint (6, ==, files.size());
+    delete pkg;
 }
 END_TEST
 
