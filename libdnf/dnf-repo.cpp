@@ -1749,7 +1749,7 @@ dnf_repo_update(DnfRepo *repo,
         goto out;
 
     /* see dnf_repo_check_internal */
-    if (dnf_context_get_enable_filelists(priv->context)) {
+    if (!dnf_context_get_enable_filelists(priv->context)) {
         const gchar *blacklist[] = { "filelists", NULL };
         ret = lr_handle_setopt(priv->repo_handle, error,
                                LRO_YUMBLIST, blacklist);
