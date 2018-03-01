@@ -32,6 +32,7 @@
 #include "hy-util-private.hpp"
 
 #include <memory>
+#include <libdnf/repo/RpmPackage.hpp>
 
 enum _dnf_sack_cpu_flags {
     ARM_NEON = 1 << 0,
@@ -180,15 +181,15 @@ hy_split_nevra(const char *nevra, char **name, int *epoch,
 GPtrArray *
 hy_packagelist_create(void)
 {
-    return (GPtrArray *)g_ptr_array_new_with_free_func ((GDestroyNotify)g_object_unref);
+    return (GPtrArray *)g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 }
 
 int
 hy_packagelist_has(GPtrArray *plist, DnfPackage *pkg)
 {
-    GPtrArray *a = (GPtrArray*)plist;
+    GPtrArray *a = plist;
     for (guint i = 0; i < a->len; ++i)
-        if (dnf_package_get_identical(pkg, static_cast<DnfPackage *>(a->pdata[i])))
+        if (*pkg == *static_cast<DnfPackage *>(a->pdata[i]))
             return 1;
     return 0;
 }

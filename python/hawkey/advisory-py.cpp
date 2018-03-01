@@ -163,7 +163,7 @@ static PyObject *
 get_advisorypkg_list(_AdvisoryObject *self, void *closure)
 {
     std::vector<libdnf::AdvisoryPkg> advisoryPkgs;
-    self->advisory->getPackages(advisoryPkgs);
+    self->advisory->getPackages();
     return advisoryPkgVectorToPylist(advisoryPkgs);
 }
 
@@ -171,7 +171,7 @@ static PyObject *
 get_advisoryref_list(_AdvisoryObject *self, void *closure)
 {
     std::vector<libdnf::AdvisoryRef> advisoryRefs;
-    self->advisory->getReferences(advisoryRefs);
+    self->advisory->getReferences();
     return advisoryRefVectorToPylist(advisoryRefs, self->sack);
 }
 

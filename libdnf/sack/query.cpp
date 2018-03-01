@@ -40,6 +40,7 @@ extern "C" {
 #include "../dnf-advisory-private.hpp"
 #include "../goal/IdQueue.hpp"
 #include "../goal/Goal-private.hpp"
+#include "../repo/RpmPackage.hpp"
 #include "advisory.hpp"
 #include "advisorypkg.hpp"
 #include "packageset.hpp"
@@ -1353,7 +1354,7 @@ Query::Impl::filterSourcerpm(const Filter & f, Map *m)
             const char *srcrpm = dnf_package_get_sourcerpm(pkg);
             if (srcrpm && !strcmp(match, srcrpm))
                 MAPSET(m, id);
-            g_object_unref(pkg);
+            delete pkg;
         }
     }
 }
@@ -1518,7 +1519,9 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
                     eq = false;
             }
             if (eq) {
-                advisory.getPackages(pkgs, false);
+                auto advisoryPkgs = advisory.getPackages(false);
+                pkgs.insert(pkgs.end(), std::make_move_iterator(advisoryPkgs.begin()),
+                            std::make_move_iterator(advisoryPkgs.end()));
                 break;
             }
         }
@@ -2067,7 +2070,7 @@ Query::getAdvisoryPkgs(int cmpType, std::vector<AdvisoryPkg> & advisoryPkgs)
     while (dataiterator_step(&di)) {
         Advisory advisory(pImpl->sack, di.solvid);
 
-        advisory.getPackages(pkgs);
+        advisory.getPackages();
         dataiterator_skip_solvable(&di);
     }
     dataiterator_free(&di);

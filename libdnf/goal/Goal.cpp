@@ -32,9 +32,9 @@ extern "C" {
 }
 
 #include "Goal-private.hpp"
+#include "../repo/RpmPackage.hpp"
 #include "../hy-goal-private.hpp"
 #include "../hy-iutil-private.hpp"
-#include "../hy-package-private.hpp"
 #include "../dnf-sack-private.hpp"
 #include "../sack/packageset.hpp"
 #include "../sack/query.hpp"
@@ -55,8 +55,8 @@ packageToJob(DnfPackage * package, Queue * job, int solver_action)
 {
     libdnf::IdQueue pkgs;
 
-    Pool *pool = dnf_package_get_pool(package);
-    DnfSack *sack = dnf_package_get_sack(package);
+    Pool *pool = package->getPool();
+    DnfSack *sack = package->getSack();
 
     dnf_sack_recompute_considered(sack);
     dnf_sack_make_provides_ready(sack);

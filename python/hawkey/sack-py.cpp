@@ -36,6 +36,7 @@
 #include "sack-py.hpp"
 
 #include "pycomp.hpp"
+#include "repo/RpmPackage.hpp"
 #include "sack/packageset.hpp"
 
 typedef struct {
@@ -341,7 +342,7 @@ get_running_kernel(_SackObject *self, PyObject *unused)
     if (cpkg == NULL)
         Py_RETURN_NONE;
     PyObject *pkg = new_package((PyObject*)self, dnf_package_get_id(cpkg));
-    g_object_unref(cpkg);
+    delete cpkg;
     return pkg;
 }
 
@@ -377,7 +378,7 @@ add_cmdline_package(_SackObject *self, PyObject *fn_obj)
         return NULL;
     }
     pkg = new_package((PyObject*)self, dnf_package_get_id(cpkg));
-    g_object_unref(cpkg);
+    delete cpkg;
     return pkg;
 }
 

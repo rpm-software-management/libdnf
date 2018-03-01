@@ -27,7 +27,6 @@
 #include "../dnf-types.h"
 #include "../hy-goal-private.hpp"
 #include "../hy-iutil.h"
-#include "../hy-package-private.hpp"
 #include "../hy-query-private.hpp"
 #include "../hy-selector-private.hpp"
 #include "../hy-util-private.hpp"

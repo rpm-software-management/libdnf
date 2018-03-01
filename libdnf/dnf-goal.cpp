@@ -130,7 +130,7 @@ dnf_goal_get_packages(HyGoal goal, ...)
             for (i = 0; i < pkglist->len; i++) {
                 pkg = (DnfPackage*)g_ptr_array_index (pkglist, i);
                 dnf_package_set_action(pkg, DNF_STATE_ACTION_REMOVE);
-                g_ptr_array_add(array, g_object_ref(pkg));
+                g_ptr_array_add(array, pkg);
             }
             break;
         case DNF_PACKAGE_INFO_INSTALL:
@@ -138,7 +138,7 @@ dnf_goal_get_packages(HyGoal goal, ...)
             for (i = 0; i < pkglist->len; i++) {
                 pkg = (DnfPackage*)g_ptr_array_index (pkglist, i);
                 dnf_package_set_action(pkg, DNF_STATE_ACTION_INSTALL);
-                g_ptr_array_add(array, g_object_ref(pkg));
+                g_ptr_array_add(array, pkg);
             }
             break;
         case DNF_PACKAGE_INFO_OBSOLETE:
@@ -146,7 +146,7 @@ dnf_goal_get_packages(HyGoal goal, ...)
             for (i = 0; i < pkglist->len; i++) {
                 pkg = (DnfPackage*)g_ptr_array_index (pkglist, i);
                 dnf_package_set_action(pkg, DNF_STATE_ACTION_OBSOLETE);
-                g_ptr_array_add(array, g_object_ref(pkg));
+                g_ptr_array_add(array, pkg);
             }
             break;
         case DNF_PACKAGE_INFO_REINSTALL:
@@ -154,7 +154,7 @@ dnf_goal_get_packages(HyGoal goal, ...)
             for (i = 0; i < pkglist->len; i++) {
                 pkg = (DnfPackage*)g_ptr_array_index (pkglist, i);
                 dnf_package_set_action(pkg, DNF_STATE_ACTION_REINSTALL);
-                g_ptr_array_add(array, g_object_ref(pkg));
+                g_ptr_array_add(array, pkg);
             }
             break;
         case DNF_PACKAGE_INFO_UPDATE:
@@ -162,7 +162,7 @@ dnf_goal_get_packages(HyGoal goal, ...)
             for (i = 0; i < pkglist->len; i++) {
                 pkg = (DnfPackage*)g_ptr_array_index (pkglist, i);
                 dnf_package_set_action(pkg, DNF_STATE_ACTION_UPDATE);
-                g_ptr_array_add(array, g_object_ref(pkg));
+                g_ptr_array_add(array, pkg);
             }
             break;
         case DNF_PACKAGE_INFO_DOWNGRADE:
@@ -170,7 +170,7 @@ dnf_goal_get_packages(HyGoal goal, ...)
             for (i = 0; i < pkglist->len; i++) {
                 pkg = (DnfPackage*)g_ptr_array_index (pkglist, i);
                 dnf_package_set_action(pkg, DNF_STATE_ACTION_DOWNGRADE);
-                g_ptr_array_add(array, g_object_ref(pkg));
+                g_ptr_array_add(array, pkg);
             }
             break;
         default:
