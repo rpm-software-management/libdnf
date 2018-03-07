@@ -128,7 +128,7 @@ HyRepo           dnf_repo_get_repo              (DnfRepo              *repo);
 #endif
 gboolean         dnf_repo_is_devel              (DnfRepo              *repo);
 gboolean         dnf_repo_is_local              (DnfRepo              *repo);
-gboolean         dnf_repo_is_repo             (DnfRepo              *repo);
+gboolean         dnf_repo_is_source             (DnfRepo              *repo);
 
 /* setters */
 void             dnf_repo_set_id                (DnfRepo              *repo,

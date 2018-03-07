@@ -524,18 +524,18 @@ dnf_repo_is_local(DnfRepo *repo)
 }
 
 /**
- * dnf_repo_is_repo:
+ * dnf_repo_is_source:
  * @repo: a #DnfRepo instance.
  *
- * Returns: %TRUE if the repo is a repo repo
+ * Returns: %TRUE if the repo is a source repo
  *
  * Since: 0.1.0
  **/
 gboolean
-dnf_repo_is_repo(DnfRepo *repo)
+dnf_repo_is_source(DnfRepo *repo)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    if (g_str_has_suffix(priv->id, "-repo"))
+    if (g_str_has_suffix(priv->id, "-source"))
         return TRUE;
     return FALSE;
 }
