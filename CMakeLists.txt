@@ -105,6 +105,7 @@ include (GNUInstallDirs)
 
 ADD_SUBDIRECTORY (libdnf)
 ADD_SUBDIRECTORY (po)
+ADD_SUBDIRECTORY (bindings/python)
 ENABLE_TESTING()
 ADD_SUBDIRECTORY (tests)
 ADD_SUBDIRECTORY (python/hawkey)
