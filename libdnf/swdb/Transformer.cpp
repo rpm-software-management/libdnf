@@ -29,6 +29,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "../utils/bgettext/bgettext-lib.h"
+
 #include "RPMItem.hpp"
 #include "Swdb.hpp"
 #include "Transaction.hpp"
@@ -577,6 +579,10 @@ Transformer::historyPath()
     struct dirent *dp;
     DIR *dirp = opendir(historyDir.c_str());
 
+    if (!dirp) {
+        throw Exception(_("Transformer: can't open history persist dir"));
+    }
+
     // iterate over history directory
     while ((dp = readdir(dirp)) != nullptr) {
         std::string fileName(dp->d_name);
@@ -588,7 +594,7 @@ Transformer::historyPath()
     }
 
     if (possibleFiles.empty()) {
-        throw Exception("Couldn't find a history database");
+        throw Exception(_("Couldn't find a history database"));
     }
 
     // find the latest DB file

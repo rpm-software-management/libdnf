@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "../utils/bgettext/bgettext-lib.h"
+
 #include "TransactionItem.hpp"
 
 // TODO: translations
@@ -109,7 +111,8 @@ void
 TransactionItem::dbInsert()
 {
     if (trans == nullptr) {
-        throw std::runtime_error("Attempt to insert transaction item into completed transaction");
+        throw std::runtime_error(
+            _("Attempt to insert transaction item into completed transaction"));
     }
 
     const char *sql = R"**(
@@ -172,7 +175,7 @@ TransactionItem::saveState()
     )**";
 
     SQLite3::Statement query(*conn, sql);
-    query.bindv(static_cast<int>(getState()), getId());
+    query.bindv(static_cast< int >(getState()), getId());
     query.step();
 }
 
@@ -180,7 +183,7 @@ void
 TransactionItem::dbUpdate()
 {
     if (trans == nullptr) {
-        throw std::runtime_error("Attempt to update transaction item in completed transaction");
+        throw std::runtime_error(_("Attempt to update transaction item in completed transaction"));
     }
 
     const char *sql = R"**(

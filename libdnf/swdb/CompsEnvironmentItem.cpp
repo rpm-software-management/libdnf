@@ -241,7 +241,7 @@ CompsEnvironmentItem::getTransactionItems(SQLite3Ptr conn, int64_t transactionId
 }
 
 std::string
-CompsEnvironmentItem::toStr()
+CompsEnvironmentItem::toStr() const
 {
     return "@" + getEnvironmentId();
 }

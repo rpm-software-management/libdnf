@@ -29,6 +29,7 @@
 #include "../utils/bgettext/bgettext-lib.h"
 #include "../utils/filesystem.hpp"
 #include "../utils/sqlite3/Sqlite3.hpp"
+#include "../utils/bgettext/bgettext-lib.h"
 
 #include "RPMItem.hpp"
 #include "Swdb.hpp"
@@ -65,7 +66,7 @@ void
 Swdb::initTransaction()
 {
     if (transactionInProgress) {
-        throw std::logic_error("In progress");
+        throw std::logic_error(_("In progress"));
     }
     transactionInProgress =
         std::unique_ptr< libdnf::swdb_private::Transaction >(new libdnf::swdb_private::Transaction(conn));
@@ -79,7 +80,7 @@ Swdb::beginTransaction(int64_t dtBegin,
                        uint32_t userId)
 {
     if (!transactionInProgress) {
-        throw std::logic_error("Not in progress");
+        throw std::logic_error(_("Not in progress"));
     }
 
     // begin transaction
@@ -106,7 +107,7 @@ int64_t
 Swdb::endTransaction(int64_t dtEnd, std::string rpmdbVersionEnd, TransactionState state)
 {
     if (!transactionInProgress) {
-        throw std::logic_error("Not in progress");
+        throw std::logic_error(_("Not in progress"));
     }
     transactionInProgress->setDtEnd(dtEnd);
     transactionInProgress->setRpmdbVersionEnd(rpmdbVersionEnd);
@@ -125,7 +126,7 @@ Swdb::addItem(std::shared_ptr< Item > item,
 //            std::shared_ptr<TransactionItem> replacedBy)
 {
     if (!transactionInProgress) {
-        throw std::logic_error("Not in progress");
+        throw std::logic_error(_("Not in progress"));
     }
     // auto replacedBy = std::make_shared<TransactionItem>(nullptr);
     return transactionInProgress->addItem(item, repoid, action, reason);
@@ -135,7 +136,7 @@ void
 Swdb::setItemDone(const std::string &nevra)
 {
     if (!transactionInProgress) {
-        throw std::logic_error("No transaction in progress");
+        throw std::logic_error(_("No transaction in progress"));
     }
     auto item = itemsInProgress[nevra];
     item->setState(TransactionItemState::DONE);
@@ -263,7 +264,7 @@ void
 Swdb::addConsoleOutputLine(int fileDescriptor, std::string line)
 {
     if (!transactionInProgress) {
-        throw std::logic_error("Not in progress");
+        throw std::logic_error(_("Not in progress"));
     }
     transactionInProgress->addConsoleOutputLine(fileDescriptor, line);
 }
@@ -472,6 +473,8 @@ Swdb::Swdb(const std::string &path)
 
         /// XXX do we want to always transform from "/var/lib/dnf/"?
         // TODO: installroot?
+
+        // FIXME this is very dirty - to be replaced with conf
         auto found = path.find_last_of("/");
         found = path.find_last_of("/", found-1);
         Transformer transformer(path, path.substr(0, found));

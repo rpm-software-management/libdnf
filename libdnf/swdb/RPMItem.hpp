@@ -52,9 +52,9 @@ public:
     const std::string &getArch() const noexcept { return arch; }
     void setArch(const std::string &value) { arch = value; }
 
-    std::string getNEVRA();
-    std::string toStr() override;
-    const ItemType getItemType() const noexcept override { return itemType; }
+    std::string getNEVRA() const;
+    std::string toStr() const override;
+    ItemType getItemType() const noexcept override { return itemType; }
     void save() override;
 
     static TransactionItemPtr getTransactionItem(SQLite3Ptr conn, const std::string &nevra);

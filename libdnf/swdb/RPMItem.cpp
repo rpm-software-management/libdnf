@@ -157,7 +157,7 @@ RPMItem::getTransactionItems(SQLite3Ptr conn, int64_t transaction_id)
 }
 
 std::string
-RPMItem::getNEVRA()
+RPMItem::getNEVRA() const
 {
     // TODO: use string formatting
     if (epoch > 0) {
@@ -167,7 +167,7 @@ RPMItem::getNEVRA()
 }
 
 std::string
-RPMItem::toStr()
+RPMItem::toStr() const
 {
     return getNEVRA();
 }
