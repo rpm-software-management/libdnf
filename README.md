@@ -80,5 +80,5 @@ Useful links
 
 Bug database:
 
-[libdnf github issues](https://github.com/rpm-software-management/libdnf/issues)
-[bugzilla](https://bugzilla.redhat.com/buglist.cgi?bug_status=NEW&bug_status=ASSIGNED&bug_status=POST&bug_status=MODIFIED&bug_status=ON_DEV&bug_status=ON_QA&bug_status=VERIFIED&bug_status=RELEASE_PENDING&bug_status=CLOSED&component=libdnf&list_id=8513553&product=Fedora&query_format=advanced)
+ * [libdnf github issues](https://github.com/rpm-software-management/libdnf/issues)
+ * [bugzilla](https://bugzilla.redhat.com/buglist.cgi?bug_status=NEW&bug_status=ASSIGNED&bug_status=POST&bug_status=MODIFIED&bug_status=ON_DEV&bug_status=ON_QA&bug_status=VERIFIED&bug_status=RELEASE_PENDING&bug_status=CLOSED&component=libdnf&list_id=8513553&product=Fedora&query_format=advanced)
