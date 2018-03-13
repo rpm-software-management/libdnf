@@ -38,46 +38,34 @@ libdnf::Transaction::Transaction(SQLite3Ptr conn)
 bool
 libdnf::Transaction::operator==(const libdnf::Transaction &other) const
 {
-    if (getId() != other.getId()) {
-        return false;
-    }
-    if (getDtBegin() != other.getDtBegin()) {
-        return false;
-    }
-    if (getRpmdbVersionBegin() != other.getRpmdbVersionBegin()) {
-        return false;
-    }
-    return true;
+    return getId() == other.getId() && getDtBegin() == other.getDtBegin() &&
+           getRpmdbVersionBegin() == other.getRpmdbVersionBegin();
 }
 
+/**
+ * Compare two transactions on:
+ *  transaction ID
+ *  begin timestamp
+ *  packages in the system at the time of transaction
+ * \param other transaction to compare with
+ * \return true if other transaction is older
+ */
 bool
 libdnf::Transaction::operator<(const libdnf::Transaction &other) const
 {
-    if (getId() > other.getId()) {
-        return true;
-    }
-    if (getDtBegin() > other.getDtBegin()) {
-        return true;
-    }
-    if (getRpmdbVersionBegin() > other.getRpmdbVersionBegin()) {
-        return true;
-    }
-    return false;
+    return getId() > other.getId() || getDtBegin() > other.getDtBegin() ||
+           getRpmdbVersionBegin() > other.getRpmdbVersionBegin();
 }
 
+/**
+ * \param other transaction to compare with
+ * \return true if other transaction is newer
+ */
 bool
 libdnf::Transaction::operator>(const libdnf::Transaction &other) const
 {
-    if (getId() < other.getId()) {
-        return true;
-    }
-    if (getDtBegin() < other.getDtBegin()) {
-        return true;
-    }
-    if (getRpmdbVersionBegin() < other.getRpmdbVersionBegin()) {
-        return true;
-    }
-    return false;
+    return getId() < other.getId() || getDtBegin() < other.getDtBegin() ||
+           getRpmdbVersionBegin() < other.getRpmdbVersionBegin();
 }
 
 void

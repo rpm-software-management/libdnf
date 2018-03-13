@@ -228,7 +228,7 @@ CompsGroupItem::getTransactionItems(SQLite3Ptr conn, int64_t transactionId)
 }
 
 std::string
-CompsGroupItem::toStr()
+CompsGroupItem::toStr() const
 {
     return "@" + getGroupId();
 }

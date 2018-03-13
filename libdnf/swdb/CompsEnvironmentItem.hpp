@@ -54,8 +54,8 @@ public:
     CompsPackageType getPackageTypes() const noexcept { return packageTypes; }
     void setPackageTypes(CompsPackageType value) { packageTypes = value; }
 
-    virtual std::string toStr();
-    virtual const ItemType getItemType() const noexcept { return itemType; }
+    virtual std::string toStr() const override;
+    virtual ItemType getItemType() const noexcept { return itemType; }
     virtual void save();
     CompsEnvironmentGroupPtr addGroup(std::string groupId,
                                       bool installed,
