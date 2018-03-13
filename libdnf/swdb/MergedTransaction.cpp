@@ -56,7 +56,7 @@ MergedTransaction::merge(libdnf::TransactionPtr trans)
  * \return list of transaction IDs sorted in ascending order
  */
 std::vector< int64_t >
-MergedTransaction::listIds() const noexcept
+MergedTransaction::listIds() const
 {
     std::vector< int64_t > ids;
     for (auto t : transactions) {
@@ -70,7 +70,7 @@ MergedTransaction::listIds() const noexcept
  * \return list of user IDs sorted by transaction ID in ascending order
  */
 std::vector< uint32_t >
-MergedTransaction::listUserIds() const noexcept
+MergedTransaction::listUserIds() const
 {
     std::vector< uint32_t > users;
     for (auto t : transactions) {
@@ -84,7 +84,7 @@ MergedTransaction::listUserIds() const noexcept
  * \return list of commands sorted by transaction ID in ascending order
  */
 std::vector< std::string >
-MergedTransaction::listCmdlines() const noexcept
+MergedTransaction::listCmdlines() const
 {
     std::vector< std::string > cmdLines;
     for (auto t : transactions) {
@@ -94,7 +94,7 @@ MergedTransaction::listCmdlines() const noexcept
 }
 
 std::vector< TransactionState >
-MergedTransaction::listStates() const noexcept
+MergedTransaction::listStates() const
 {
     std::vector< TransactionState > result;
     for (auto t : transactions) {

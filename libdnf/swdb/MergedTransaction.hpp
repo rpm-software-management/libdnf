@@ -39,10 +39,10 @@ public:
     explicit MergedTransaction(libdnf::TransactionPtr trans);
     void merge(libdnf::TransactionPtr trans);
 
-    std::vector< int64_t > listIds() const noexcept;
-    std::vector< uint32_t > listUserIds() const noexcept;
-    std::vector< std::string > listCmdlines() const noexcept;
-    std::vector< TransactionState > listStates() const noexcept;
+    std::vector< int64_t > listIds() const;
+    std::vector< uint32_t > listUserIds() const;
+    std::vector< std::string > listCmdlines() const;
+    std::vector< TransactionState > listStates() const;
     int64_t getDtBegin() const noexcept;
     int64_t getDtEnd() const noexcept;
     const std::string &getRpmdbVersionBegin() const noexcept;

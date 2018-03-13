@@ -31,40 +31,22 @@ typedef std::shared_ptr< Item > ItemPtr;
 
 #include "SwdbTypes.hpp"
 
-/// Class representing a package.
-/**
- * Here goes the detailed description.
- * It can span multiple lines in the comment block.
- *
- * Paragraphs are delimited with blank lines.
- * Markdown is supported.
- */
 class Item {
 public:
     /// Default constructor.
-    /** A more elaborate description of the constructor. */
     explicit Item(SQLite3Ptr conn);
 
     /// Default destructor.
-    /** A more elaborate description of the destructor. */
     virtual ~Item() = default;
 
     /// Returns the ID of this item.
-    /**
-     * A more elaborate description of the getter.
-     * \return the ID of this package
-     */
     int64_t getId() const noexcept { return id; }
 
     /// Sets the ID of this item.
-    /**
-     * A more elaborate description of the setter.
-     * \param value the ID to use as the new ID
-     */
     void setId(int64_t value) { id = value; }
 
-    virtual const ItemType getItemType() const noexcept { return itemType; }
-    virtual std::string toStr();
+    virtual ItemType getItemType() const noexcept { return itemType; }
+    virtual std::string toStr() const;
     virtual void save();
 
 protected:

@@ -18,12 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "Transaction.hpp"
+#include "../../utils/bgettext/bgettext-lib.h"
+#include "../../utils/tinyformat/tinyformat.hpp"
+
 #include "CompsEnvironmentItem.hpp"
 #include "CompsGroupItem.hpp"
 #include "RPMItem.hpp"
+#include "Transaction.hpp"
 #include "TransactionItem.hpp"
-
 
 libdnf::swdb_private::Transaction::Transaction(SQLite3Ptr conn)
   : libdnf::Transaction(conn)
@@ -34,7 +36,7 @@ void
 libdnf::swdb_private::Transaction::begin()
 {
     if (id != 0) {
-        throw std::runtime_error("Transaction has already begun!");
+        throw std::runtime_error(_("Transaction has already began!"));
     }
     dbInsert();
     saveItems();
@@ -50,7 +52,8 @@ libdnf::swdb_private::Transaction::finish(TransactionState state)
 
     for (auto i : getItems()) {
         if (i->getState() == TransactionItemState::UNKNOWN) {
-            throw std::runtime_error("TransactionItem state is not set: " + i->getItem()->toStr());
+            throw std::runtime_error(
+                tfm::format(_("TransactionItem state is not set: %s"), i->getItem()->toStr()));
         }
     }
 
@@ -84,7 +87,7 @@ libdnf::swdb_private::Transaction::dbInsert()
                 getReleasever(),
                 getUserId(),
                 getCmdline(),
-                static_cast<int>(getState()));
+                static_cast< int >(getState()));
     if (getId() > 0) {
         query.bind(9, getId());
     }
@@ -140,16 +143,16 @@ libdnf::swdb_private::Transaction::dbUpdate()
                 getReleasever(),
                 getUserId(),
                 getCmdline(),
-                static_cast<int>(getState()),
+                static_cast< int >(getState()),
                 getId());
     query.step();
 }
 
 TransactionItemPtr
 libdnf::swdb_private::Transaction::addItem(std::shared_ptr< Item > item,
-                                  const std::string &repoid,
-                                  TransactionItemAction action,
-                                  TransactionItemReason reason)
+                                           const std::string &repoid,
+                                           TransactionItemAction action,
+                                           TransactionItemReason reason)
 {
     auto trans_item = std::make_shared< TransactionItem >(this);
     trans_item->setItem(item);
@@ -211,7 +214,7 @@ void
 libdnf::swdb_private::Transaction::addConsoleOutputLine(int fileDescriptor, const std::string &line)
 {
     if (!getId()) {
-        throw std::runtime_error("Can't add console output to unsaved transaction");
+        throw std::runtime_error(_("Can't add console output to unsaved transaction"));
     }
 
     const char *sql = R"**(
