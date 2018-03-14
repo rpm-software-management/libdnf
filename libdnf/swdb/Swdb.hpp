@@ -23,7 +23,7 @@
 
 #include <memory>
 #include <sys/stat.h>
-#include <unordered_map>
+#include <map>
 #include <vector>
 #include <solv/pooltypes.h>
 
@@ -108,7 +108,7 @@ public:
 protected:
     SQLite3Ptr conn;
     std::unique_ptr< libdnf::swdb_private::Transaction > transactionInProgress = nullptr;
-    std::unordered_map< std::string, TransactionItemPtr > itemsInProgress;
+    std::map< std::string, TransactionItemPtr > itemsInProgress;
 
 private:
 };

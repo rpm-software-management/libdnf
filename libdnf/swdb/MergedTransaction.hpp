@@ -24,7 +24,7 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 class MergedTransaction;
@@ -66,7 +66,7 @@ protected:
         TransactionItemBasePtr second = nullptr;
     };
 
-    typedef std::unordered_map< std::string, ItemPair > ItemPairMap;
+    typedef std::map< std::string, ItemPair > ItemPairMap;
 
     void mergeItem(ItemPairMap &itemPairMap, TransactionItemBasePtr transItem);
     void resolveRPMDifference(ItemPair &previousItemPair, TransactionItemBasePtr mTransItem);
