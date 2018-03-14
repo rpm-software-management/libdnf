@@ -26,7 +26,7 @@
 #include <map>
 #include <stdexcept>
 #include <string>
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 #include "../utils/bgettext/bgettext-lib.h"
@@ -50,7 +50,7 @@ Transformer::createDatabase(SQLite3Ptr conn)
 /**
  * Map of supported actions (originally states): string -> enum
  */
-static const std::unordered_map< std::string, TransactionItemAction > actions = {
+static const std::map<std::string, TransactionItemAction > actions = {
     {"Install", TransactionItemAction::INSTALL},
     {"True-Install", TransactionItemAction::INSTALL},
     {"Dep-Install", TransactionItemAction::INSTALL},
@@ -67,7 +67,7 @@ static const std::unordered_map< std::string, TransactionItemAction > actions = 
 /**
  * Map of supported reasons: string -> enum
  */
-static const std::unordered_map< std::string, TransactionItemReason > reasons = {
+static const std::map< std::string, TransactionItemReason > reasons = {
     {"dep", TransactionItemReason::DEPENDENCY},
     {"user", TransactionItemReason::USER},
     {"clean", TransactionItemReason::CLEAN},
