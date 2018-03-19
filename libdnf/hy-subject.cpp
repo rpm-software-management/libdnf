@@ -211,11 +211,13 @@ hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, Hy
         hy_possibilities_free(iter);
         delete *nevra;
         *nevra = nullptr;
-        query = hy_query_create(sack);
-        hy_query_filter(query, HY_PKG_NEVRA, HY_GLOB, subject);
-        if (!hy_query_is_empty(query))
-            return query;
-        hy_query_free(query);
+        if (!forms) {
+            query = hy_query_create(sack);
+            hy_query_filter(query, HY_PKG_NEVRA, HY_GLOB, subject);
+            if (!hy_query_is_empty(query))
+                return query;
+            hy_query_free(query);
+        }
     }
     if (with_provides) {
         query = hy_query_create(sack);
