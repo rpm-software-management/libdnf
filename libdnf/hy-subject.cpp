@@ -181,11 +181,6 @@ hy_possibilities_next_module_form(HyPossibilities iter, HyModuleForm *out_module
     return -1;
 }
 
-struct NevraToQuery {
-    int nevra_type;
-    int query_type;
-};
-
 /* Given a subject, attempt to create a query choose the first one, and update
  * the query to try to match it.
  *
