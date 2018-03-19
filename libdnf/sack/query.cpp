@@ -411,6 +411,21 @@ advisoryPkgCompareSolvableNameArch(const AdvisoryPkg &first, const Solvable &s)
     return first.getArch() < s.arch;
 }
 
+static char *
+copyFilterChar(const char * match, int keyname)
+{
+    if (!match)
+        throw std::runtime_error("Query can not accept NULL for STR match");
+    size_t len = strlen(match);
+    char * matchNew = new char[len + 1];
+    if (keyname == HY_PKG_FILE && len > 1 && match[--len] == '/') {
+        strncpy(matchNew, match, len);
+        matchNew[len] = '\0';
+        return matchNew;
+    }
+    return strcpy(matchNew, match);
+}
+
 class Filter::Impl {
 public:
     ~Impl();
@@ -479,7 +494,7 @@ Filter::Filter(int keyname, int cmp_type, const char *match) : pImpl(new Impl)
     pImpl->cmpType = cmp_type;
     pImpl->matchType = _HY_STR;
     _Match match_in;
-    match_in.str = g_strdup(match);
+    match_in.str = copyFilterChar(match, keyname);
     pImpl->matches.push_back(match_in);
 }
 Filter::Filter(int keyname, int cmp_type, const char **matches) : pImpl(new Impl)
@@ -491,7 +506,7 @@ Filter::Filter(int keyname, int cmp_type, const char **matches) : pImpl(new Impl
     pImpl->matches.reserve(nmatches);
     for (unsigned int i = 0; i < nmatches; ++i) {
         _Match match_in;
-        match_in.str = g_strdup(matches[i]);
+        match_in.str = copyFilterChar(matches[i], keyname);
         pImpl->matches.push_back(match_in);
     }
 }
@@ -506,7 +521,7 @@ Filter::Impl::~Impl()
                 delete match.pset;
                 break;
             case _HY_STR:
-                g_free(match.str);
+                delete[] match.str;
                 break;
             case _HY_RELDEP:
                 if (match.reldep)
