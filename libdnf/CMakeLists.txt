@@ -37,11 +37,13 @@ configure_file ("libdnf.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc @ONLY)
 
 ADD_SUBDIRECTORY(goal)
 ADD_SUBDIRECTORY(repo)
+ADD_SUBDIRECTORY(module)
 ADD_SUBDIRECTORY(utils)
 ADD_SUBDIRECTORY(conf)
 ADD_SUBDIRECTORY(sack)
 
 SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${GOAL_SOURCES})
+SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${MODULE_SOURCES})
 SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${UTILS_SOURCES})
 SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${CONF_SOURCES})
 SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${SACK_SOURCES})
@@ -59,7 +61,8 @@ TARGET_LINK_LIBRARIES(libdnf
                       ${RPMDB_LIBRARY}
                       ${SCOLS_LIBRARIES}
                       ${SQLite3_LIBRARIES}
-                      ${JSONC_LIBRARIES})
+                      ${JSONC_LIBRARIES}
+                      ${LIBMODULEMD_LIBRARIES})
 
 if (ENABLE_RHSM_SUPPORT)
     target_link_libraries (libdnf ${RHSM_LIBRARIES})

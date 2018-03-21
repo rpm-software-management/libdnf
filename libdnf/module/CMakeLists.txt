@@ -1,0 +1,6 @@
+ADD_SUBDIRECTORY(modulemd)
+
+SET (MODULE_SOURCES
+        ${MODULE_SOURCES}
+        PARENT_SCOPE
+        )

@@ -38,6 +38,7 @@ option (ENABLE_RHSM_SUPPORT "Build with Red Hat Subscription Manager support?" O
 find_package (PkgConfig REQUIRED)
 SET (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 if (APPLE)
+    SET(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/usr/local/lib64/pkgconfig")
     SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH};/usr/local/share/cmake/Modules/)
 endif(APPLE)
 PKG_CHECK_MODULES(GLIB gio-unix-2.0>=2.46.0 REQUIRED)
@@ -50,6 +51,7 @@ if (ENABLE_RHSM_SUPPORT)
 endif ()
 pkg_check_modules (CHECK REQUIRED check)
 pkg_check_modules (REPO REQUIRED librepo)
+pkg_check_modules (LIBMODULEMD REQUIRED modulemd)
 
 FIND_PROGRAM (VALGRIND_PROGRAM NAMES valgrind PATH /usr/bin /usr/local/bin)
 

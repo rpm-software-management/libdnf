@@ -106,4 +106,3 @@ Dependency::getReldepId(DnfSack *sack, const char * reldepStr)
     }
 }
 
-}
