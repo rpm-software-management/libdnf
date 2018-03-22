@@ -200,7 +200,8 @@ dnf_sack_new(void)
 static int
 current_rpmdb_checksum(Pool *pool, unsigned char csout[CHKSUM_BYTES])
 {
-    const char *rpmdb_prefix_paths[] = { "/var/lib/rpm/Packages",
+    const char *rpmdb_prefix_paths[] = { "/var/lib/rpm/data.mdb",
+                                         "/var/lib/rpm/Packages",
                                          "/usr/share/rpm/Packages" };
     unsigned int i;
     const char *fn;

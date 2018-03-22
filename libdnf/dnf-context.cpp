@@ -1570,14 +1570,22 @@ dnf_context_setup(DnfContext *context,
 
     /* setup a file monitor on the rpmdb, if we're operating on the native / */
     if (g_strcmp0(priv->install_root, "/") == 0) {
-        rpmdb_path = g_build_filename(priv->install_root, "var/lib/rpm/Packages", NULL);
+        rpmdb_path = g_build_filename(priv->install_root, "var/lib/rpm/data.mdb", NULL);
         file_rpmdb = g_file_new_for_path(rpmdb_path);
         priv->monitor_rpmdb = g_file_monitor_file(file_rpmdb,
                                G_FILE_MONITOR_NONE,
                                NULL,
                                error);
-        if (priv->monitor_rpmdb == NULL)
-            return FALSE;
+        if (priv->monitor_rpmdb == NULL) {
+            rpmdb_path = g_build_filename(priv->install_root, "var/lib/rpm/Packages", NULL);
+            file_rpmdb = g_file_new_for_path(rpmdb_path);
+            priv->monitor_rpmdb = g_file_monitor_file(file_rpmdb,
+                                   G_FILE_MONITOR_NONE,
+                                   NULL,
+                                   error);
+            if (priv->monitor_rpmdb == NULL)
+                return FALSE;
+        }
         g_signal_connect(priv->monitor_rpmdb, "changed",
                          G_CALLBACK(dnf_context_rpmdb_changed_cb), context);
     }
