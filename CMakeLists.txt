@@ -29,8 +29,6 @@ INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR} libdnf/utils/)
 OPTION (ENABLE_SOLV_URPMREORDER "Build with support for URPM-like solution reordering?" OFF)
 option (ENABLE_RHSM_SUPPORT "Build with Red Hat Subscription Manager support?" OFF)
 
-OPTION (WITH_SWDB "Support for unified software database" ON)
-
 # hawkey dependencies
 find_package (PkgConfig REQUIRED)
 SET (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
@@ -46,24 +44,17 @@ pkg_check_modules (CHECK REQUIRED check)
 pkg_check_modules (REPO REQUIRED librepo)
 FIND_PROGRAM (VALGRIND_PROGRAM NAMES valgrind PATH /usr/bin /usr/local/bin)
 
-# TODO handle yumdb / dnfdb for libdnf
-ADD_DEFINITIONS(-DBUILDOPT_USE_DNF_YUMDB=1)
-
 IF (ENABLE_SOLV_URPMREORDER)
    ADD_DEFINITIONS(-DLIBSOLV_FLAG_URPMREORDER=1)
 ENDIF()
 
 INCLUDE_DIRECTORIES(${REPO_INCLUDE_DIRS})
 
-IF (WITH_SWDB)
-   ADD_DEFINITIONS(-DWITH_SWDB=1)
-ENDIF()
-
 INCLUDE_DIRECTORIES(${GLIB_INCLUDE_DIRS})
 link_directories(${REPO_LIBRARY_DIRS})
 
 if (NOT PYTHON_DESIRED)
-    set (PYTHON_DESIRED "2")
+    set (PYTHON_DESIRED "3")
 endif()
 
 # rpm:
@@ -76,9 +67,7 @@ IF (RPMIO_LIBRARY)
   SET(RPMDB_LIBRARY ${RPMIO_LIBRARY} ${RPMDB_LIBRARY})
 ENDIF (RPMIO_LIBRARY)
 
-IF (WITH_SWDB)
-    pkg_check_modules(SQLite3 sqlite3 REQUIRED)
-ENDIF()
+pkg_check_modules(SQLite3 sqlite3 REQUIRED)
 
 ADD_DEFINITIONS(-DTESTDATADIR=\\"${CMAKE_SOURCE_DIR}/data/tests\\")
 ADD_DEFINITIONS(-DPACKAGE_VERSION=\\"${LIBDNF_VERSION}\\")
@@ -87,6 +76,8 @@ include (GNUInstallDirs)
 
 ADD_SUBDIRECTORY (libdnf)
 ADD_SUBDIRECTORY (po)
+# ADD_SUBDIRECTORY (bindings/perl)
+ADD_SUBDIRECTORY (bindings/python)
 ENABLE_TESTING()
 ADD_SUBDIRECTORY (tests)
 ADD_SUBDIRECTORY (python/hawkey)

@@ -23,14 +23,12 @@ from sys import version_info as python_version
 
 import collections
 import functools
-import gi
 import logging
 import operator
 import time
 import warnings
 
-gi.require_version('Dnf', '1.0')
-from gi.repository import Dnf
+import libdnf.swdb
 
 from . import _hawkey
 
@@ -52,24 +50,13 @@ __all__ = [
     'ArchException', 'Exception', 'QueryException', 'RuntimeException',
     'ValueException',
     # functions
-    'chksum_name', 'chksum_type', 'split_nevra', 'convert_reason',
-    # gi classes
-    'Swdb', 'SwdbItem', 'SwdbReason', 'SwdbPkg', 'SwdbPkgData', 'SwdbTrans',
-    'SwdbGroup', 'SwdbEnv',
+    'chksum_name', 'chksum_type', 'split_nevra', 'convert_hawkey_reason',
     # classes
     'Goal', 'NEVRA', 'ModuleForm', 'Package', 'Query', 'Repo', 'Sack', 'Selector', 'Subject']
 
 NEVRA = _hawkey.NEVRA
 Query = _hawkey.Query
 Selector = _hawkey.Selector
-Swdb = Dnf.Swdb
-SwdbItem = Dnf.SwdbItem
-SwdbReason = Dnf.SwdbReason
-SwdbPkg = Dnf.SwdbPkg
-SwdbPkgData = Dnf.SwdbPkgData
-SwdbTrans = Dnf.SwdbTrans
-SwdbGroup = Dnf.SwdbGroup
-SwdbEnv = Dnf.SwdbEnv
 
 VERSION_MAJOR = _hawkey.VERSION_MAJOR
 VERSION_MINOR = _hawkey.VERSION_MINOR
@@ -117,6 +104,17 @@ REASON_USER = _hawkey.REASON_USER
 REASON_CLEAN = _hawkey.REASON_CLEAN
 REASON_WEAKDEP = _hawkey.REASON_WEAKDEP
 
+def convert_hawkey_reason(hawkey_reason):
+    if hawkey_reason == REASON_USER:
+        return libdnf.swdb.TransactionItemReason_USER
+    if hawkey_reason == REASON_DEP:
+        return libdnf.swdb.TransactionItemReason_DEPENDENCY
+    if hawkey_reason == REASON_CLEAN:
+        return libdnf.swdb.TransactionItemReason_CLEAN
+    if hawkey_reason == REASON_WEAKDEP:
+        return libdnf.swdb.TransactionItemReason_WEAK_DEPENDENCY
+    return libdnf.swdb.TransactionItemReason_UNKNOWN
+
 ADVISORY_UNKNOWN = _hawkey.ADVISORY_UNKNOWN
 ADVISORY_SECURITY = _hawkey.ADVISORY_SECURITY
 ADVISORY_BUGFIX = _hawkey.ADVISORY_BUGFIX
@@ -159,11 +157,6 @@ IGNORE_WEAK_DEPS = _hawkey.IGNORE_WEAK_DEPS
 PY3 = python_version.major >= 3
 
 logger = logging.getLogger('dnf')
-
-def convert_reason(reason):
-    if isinstance(reason, Dnf.SwdbReason):
-        return reason
-    return Dnf.convert_reason_to_id(reason)
 
 def split_nevra(s):
     t = _hawkey.split_nevra(s)
@@ -211,12 +204,12 @@ class Goal(_hawkey.Goal):
     def get_reason(self, pkg):
         code = super(Goal, self).get_reason(pkg)
         if code == REASON_USER and pkg.name in self.group_members:
-            return Dnf.SwdbReason.GROUP
-        return Dnf.SwdbReason(code)
+            return libdnf.swdb.TransactionItemReason_GROUP
+        return convert_hawkey_reason(code)
 
     def group_reason(self, pkg, current_reason):
-        if current_reason == Dnf.SwdbReason.UNKNOWN and pkg.name in self.group_members:
-            return Dnf.SwdbReason.GROUP
+        if current_reason == libdnf.swdb.TransactionItemReason_UNKNOWN and pkg.name in self.group_members:
+            return libdnf.swdb.TransactionItemReason_GROUP
         return current_reason
 
     def push_userinstalled(self, query, history):
