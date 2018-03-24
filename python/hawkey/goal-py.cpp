@@ -418,6 +418,7 @@ problem_conflicts(_GoalObject *self, PyObject *args, PyObject *kwds)
 
     pset = hy_goal_conflict_all_pkgs(self->goal, pkg_type);
     list = packageset_to_pylist(pset, self->sack);
+    delete pset;
     return list;
 }
 
@@ -444,6 +445,7 @@ problem_broken_dependency(_GoalObject *self, PyObject *args, PyObject *kwds)
 
     pset = hy_goal_broken_dependency_all_pkgs(self->goal, pkg_type);
     list = packageset_to_pylist(pset, self->sack);
+    delete pset;
     return list;
 }
 
