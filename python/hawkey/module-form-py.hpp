@@ -21,8 +21,6 @@
 #ifndef LIBDNF_MODULE_FORM_PY_H
 #define LIBDNF_MODULE_FORM_PY_H
 
-#include "hy-module-form.h"
-
 extern PyTypeObject module_form_Type;
 
 HyModuleForm moduleFormFromPyObject(PyObject *o);

@@ -24,7 +24,6 @@
 #include "dnf-swdb-sql.h"
 #include "dnf-swdb-trans.h"
 #include "hy-nevra.hpp"
-#include "hy-subject-private.hpp"
 #include "hy-subject.h"
 #include "hy-types.h"
 

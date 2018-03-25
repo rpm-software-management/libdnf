@@ -29,7 +29,6 @@
 #include "hy-nevra.hpp"
 #include "hy-package.h"
 #include "hy-subject.h"
-#include "hy-subject-private.hpp"
 #include "hy-util-private.hpp"
 
 #include <memory>

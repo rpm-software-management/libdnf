@@ -24,7 +24,7 @@
 #include <solv/util.h>
 
 // hawkey
-#include "hy-module-form.h"
+#include "hy-module-form.hpp"
 #include "dnf-sack.h"
 #include "hy-types.h"
 
@@ -57,73 +57,68 @@ moduleFormToPyObject(HyModuleForm module_form)
 }
 
 // getsetters
-static long long
+static bool
 set_version(_ModuleFormObject *self, PyObject *value, void *closure)
 {
     if (PyInt_Check(value))
-        hy_module_form_set_version(self->module_form, PyLong_AsLong(value));
+        self->module_form->setVersion(PyLong_AsLongLong(value));
     else if (value == Py_None)
-        hy_module_form_set_version(self->module_form, -1);
+        self->module_form->setVersion(libdnf::ModuleForm::VersionNotSet);
     else
-        return -1;
-    return 0;
+        return false;
+    return true;
 }
 
 static PyObject *
 get_version(_ModuleFormObject *self, void *closure)
 {
-    if (hy_module_form_get_version(self->module_form) == -1L)
+    if (self->module_form->getVersion() == libdnf::ModuleForm::VersionNotSet)
         Py_RETURN_NONE;
-#if PY_MAJOR_VERSION >= 3
-    return PyLong_FromLong(hy_module_form_get_version(self->module_form));
-#else
-    return PyInt_FromLong(hy_module_form_get_version(self->module_form));
-#endif
+    return PyLong_FromLongLong(self->module_form->getVersion());
 }
 
+template<const std::string & (libdnf::ModuleForm::*getMethod)() const>
 static PyObject *
 get_attr(_ModuleFormObject *self, void *closure)
 {
-    intptr_t str_key = (intptr_t)closure;
-    const char *str;
+    auto str = (self->module_form->*getMethod)();
 
-    str = hy_module_form_get_string(self->module_form, str_key);
-    if (str == NULL)
+    if (str.empty())
         Py_RETURN_NONE;
     else
-        return PyString_FromString(str);
+        return PyString_FromString(str.c_str());
 }
 
+template<void (libdnf::ModuleForm::*setMethod)(std::string &&)>
 static int
 set_attr(_ModuleFormObject *self, PyObject *value, void *closure)
 {
-    intptr_t str_key = (intptr_t)closure;
     PyObject *tmp_py_str = NULL;
     const char *str_value = pycomp_get_string(value, &tmp_py_str);
 
-    if (str_value == NULL) {
+    if (!str_value) {
         Py_XDECREF(tmp_py_str);
         return -1;
     }
-    hy_module_form_set_string(self->module_form, str_key, str_value);
+    (self->module_form->*setMethod)(str_value);
     Py_XDECREF(tmp_py_str);
 
     return 0;
 }
 
 static PyGetSetDef module_form_getsetters[] = {
-        {(char*)"name", (getter)get_attr, (setter)set_attr, NULL,
-                (void *)HY_MODULE_FORM_NAME},
-        {(char*)"stream", (getter)get_attr, (setter)set_attr, NULL,
-                (void *)HY_MODULE_FORM_STREAM},
+        {(char*)"name", (getter)get_attr<&libdnf::ModuleForm::getName>,
+         (setter)set_attr<&libdnf::ModuleForm::setName>, NULL, NULL},
+        {(char*)"stream", (getter)get_attr<&libdnf::ModuleForm::getStream>,
+         (setter)set_attr<&libdnf::ModuleForm::setStream>, NULL, NULL},
         {(char*)"version", (getter)get_version, (setter)set_version, NULL,
                 NULL},
-        {(char*)"context", (getter)get_attr, (setter)set_attr, NULL,
-                (void *)HY_MODULE_FORM_CONTEXT},
-        {(char*)"arch", (getter)get_attr, (setter)set_attr, NULL,
-                (void *)HY_MODULE_FORM_ARCH},
-        {(char*)"profile", (getter)get_attr, (setter)set_attr, NULL,
-                (void *)HY_MODULE_FORM_PROFILE},
+        {(char*)"context", (getter)get_attr<&libdnf::ModuleForm::getContext>,
+         (setter)set_attr<&libdnf::ModuleForm::setContext>, NULL, NULL},
+        {(char*)"arch", (getter)get_attr<&libdnf::ModuleForm::getArch>,
+         (setter)set_attr<&libdnf::ModuleForm::setArch>, NULL, NULL},
+        {(char*)"profile", (getter)get_attr<&libdnf::ModuleForm::getProfile>,
+         (setter)set_attr<&libdnf::ModuleForm::setProfile>, NULL, NULL},
         {NULL}          /* sentinel */
 };
 
@@ -131,16 +126,15 @@ static PyObject *
 module_form_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     _ModuleFormObject *self = (_ModuleFormObject*)type->tp_alloc(type, 0);
-    if (self) {
-        self->module_form = hy_module_form_create();
-    }
+    if (self)
+        self->module_form = new libdnf::ModuleForm;
     return (PyObject*)self;
 }
 
 static void
 module_form_dealloc(_ModuleFormObject *self)
 {
-    hy_module_form_free(self->module_form);
+    delete self->module_form;
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -158,23 +152,23 @@ module_form_init(_ModuleFormObject *self, PyObject *args, PyObject *kwds)
                                      &name, &stream, &version_o, &context, &arch, &profile, module_form_converter,
                                      &cmodule_form))
         return -1;
-    if (name == NULL && cmodule_form == NULL) {
+    if (!name && !cmodule_form) {
         PyErr_SetString(PyExc_ValueError, "Name is required parameter.");
         return -1;
     }
-    if (cmodule_form != NULL) {
-        self->module_form = hy_module_form_clone(cmodule_form);
+    if (cmodule_form) {
+        *self->module_form = *cmodule_form;
         return 0;
     }
-    if (set_version(self, version_o, NULL) == -1) {
+    if (!set_version(self, version_o, NULL)) {
         PyErr_SetString(PyExc_TypeError, "An integer value or None expected for version.");
         return -1;
     }
-    hy_module_form_set_string(self->module_form, HY_MODULE_FORM_NAME, name);
-    hy_module_form_set_string(self->module_form, HY_MODULE_FORM_STREAM, stream);
-    hy_module_form_set_string(self->module_form, HY_MODULE_FORM_CONTEXT, context);
-    hy_module_form_set_string(self->module_form, HY_MODULE_FORM_ARCH, arch);
-    hy_module_form_set_string(self->module_form, HY_MODULE_FORM_PROFILE, profile);
+    self->module_form->setName(name ? name : "");
+    self->module_form->setStream(stream ? stream : "");
+    self->module_form->setContext(context ? context : "");
+    self->module_form->setArch(arch ? arch : "");
+    self->module_form->setProfile(profile ? profile : "");
     return 0;
 }
 
@@ -194,24 +188,24 @@ static PyObject *
 iter(_ModuleFormObject *self)
 {
     PyObject *res;
-    HyModuleForm module_form = self->module_form;
-    if (hy_module_form_get_version(self->module_form) == -1) {
+    HyModuleForm mform = self->module_form;
+    if (mform->getVersion() == libdnf::ModuleForm::VersionNotSet) {
         Py_INCREF(Py_None);
         res = Py_BuildValue("zzOzzz",
-                            hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME),
-                            hy_module_form_get_string(module_form, HY_MODULE_FORM_STREAM),
+                            mform->getName().empty() ? nullptr : mform->getName().c_str(),
+                            mform->getStream().empty() ? nullptr : mform->getStream().c_str(),
                             Py_None,
-                            hy_module_form_get_string(module_form, HY_MODULE_FORM_CONTEXT),
-                            hy_module_form_get_string(module_form, HY_MODULE_FORM_ARCH),
-                            hy_module_form_get_string(module_form, HY_MODULE_FORM_PROFILE));
+                            mform->getContext().empty() ? nullptr : mform->getContext().c_str(),
+                            mform->getArch().empty() ? nullptr : mform->getArch().c_str(),
+                            mform->getProfile().empty() ? nullptr : mform->getProfile().c_str());
     } else
         res = Py_BuildValue("zzLzzz",
-                            hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME),
-                            hy_module_form_get_string(module_form, HY_MODULE_FORM_STREAM),
-                            hy_module_form_get_string(module_form, HY_MODULE_FORM_VERSION),
-                            hy_module_form_get_string(module_form, HY_MODULE_FORM_CONTEXT),
-                            hy_module_form_get_string(module_form, HY_MODULE_FORM_ARCH),
-                            hy_module_form_get_string(module_form, HY_MODULE_FORM_PROFILE));
+                            mform->getName().empty() ? nullptr : mform->getName().c_str(),
+                            mform->getStream().empty() ? nullptr : mform->getStream().c_str(),
+                            mform->getVersion(),
+                            mform->getContext().empty() ? nullptr : mform->getContext().c_str(),
+                            mform->getArch().empty() ? nullptr : mform->getArch().c_str(),
+                            mform->getProfile().empty() ? nullptr : mform->getProfile().c_str());
     PyObject *iter = PyObject_GetIter(res);
     Py_DECREF(res);
     return iter;

@@ -24,11 +24,9 @@
 #include "dnf-reldep.h"
 #include "dnf-sack-private.hpp"
 #include "hy-subject.h"
-#include "hy-subject-private.hpp"
-#include "hy-module-form.h"
 #include "hy-iutil-private.hpp"
 #include "hy-nevra.hpp"
-#include "hy-module-form-private.hpp"
+#include "hy-module-form.hpp"
 #include "hy-types.h"
 #include "hy-query-private.hpp"
 #include "hy-selector.h"
@@ -167,16 +165,17 @@ hy_possibilities_next_module_form(HyPossibilities iter, HyModuleForm *out_module
 {
     if (iter->type != TYPE_MODULE_FORM || iter->current == -1)
         return -1;
-    HyModuleFormEnum form = iter->module_forms[iter->current];
+    auto form = iter->module_forms[iter->current];
+    libdnf::ModuleForm moduleForm;
     while (form != _HY_MODULE_FORM_STOP_) {
         iter->current++;
-        *out_module_form = hy_module_form_create();
-        if (module_form_possibility(iter->subject, form, *out_module_form) == 0) {
+        if (moduleForm.parse(iter->subject, form)) {
+            *out_module_form = new libdnf::ModuleForm(std::move(moduleForm));
             return 0;
         }
         form = iter->module_forms[iter->current];
-        g_clear_pointer(out_module_form, hy_module_form_free);
     }
+    *out_module_form = nullptr;
     return -1;
 }
 

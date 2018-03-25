@@ -15,7 +15,6 @@ SET (LIBDNF_SRCS
     dnf-sack.cpp
     hy-selector.cpp
     hy-subject.cpp
-    hy-subject-private.cpp
     hy-util.cpp
     dnf-context.cpp
     dnf-db.cpp
@@ -87,7 +86,7 @@ TARGET_LINK_LIBRARIES(libdnf
 SET(LIBHAWKEY_headers
     hy-goal.h
     hy-nevra.hpp
-    hy-module-form.h
+    hy-module-form.hpp
     hy-package.h
     hy-packageset.h
     hy-query.h
