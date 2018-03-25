@@ -61,7 +61,9 @@ detect_arch(PyObject *unused, PyObject *args)
 
     if (ret2e(hy_detect_arch(&arch), "Failed detecting architecture."))
         return NULL;
-    return PyString_FromString(arch);
+    PyObject * pyArch = PyString_FromString(arch);
+    g_free(arch);
+    return pyArch;
 }
 
 static PyObject *
