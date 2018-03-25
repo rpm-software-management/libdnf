@@ -22,6 +22,7 @@
 #define HY_NEVRA_HPP
 
 #include "dnf-types.h"
+#include "hy-subject.h"
 
 #include <string>
 #include <utility>
@@ -32,6 +33,9 @@ struct Nevra {
 public:
     static constexpr int EpochNotSet = -1;
 
+    Nevra();
+
+    bool parse(const char * nevraStr, HyForm form);
     void clear() noexcept;
 
     const std::string & getName() const noexcept;
@@ -58,11 +62,14 @@ public:
 
 private:
     std::string name;
-    int epoch{EpochNotSet};
+    int epoch;
     std::string version;
     std::string release;
     std::string arch;
 };
+
+inline Nevra::Nevra()
+: epoch(EpochNotSet) {}
 
 inline const std::string & Nevra::getName() const noexcept
 {
