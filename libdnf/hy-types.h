@@ -23,14 +23,17 @@
 
 #ifdef __cplusplus
 namespace libdnf {
+    struct ModuleForm;
     struct Nevra;
     struct Query;
     struct Selector;
 }
+typedef struct libdnf::ModuleForm * HyModuleForm;
 typedef struct libdnf::Nevra * HyNevra;
 typedef struct libdnf::Query * HyQuery;
 typedef struct libdnf::Selector * HySelector;
 #else
+typedef struct ModuleForm * HyModuleForm;
 typedef struct Nevra * HyNevra;
 typedef struct Query * HyQuery;
 typedef struct Selector * HySelector;
@@ -38,7 +41,6 @@ typedef struct Selector * HySelector;
 
 typedef struct _HyRepo * HyRepo;
 typedef struct _HyGoal * HyGoal;
-typedef struct _HyModuleForm * HyModuleForm;
 typedef struct _HyPossibilities * HyPossibilities;
 typedef char * HySubject;
 

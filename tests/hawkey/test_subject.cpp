@@ -25,12 +25,10 @@
 
 
 #include "libdnf/hy-nevra.hpp"
-#include "libdnf/hy-module-form.h"
-#include "libdnf/hy-module-form-private.hpp"
+#include "libdnf/hy-module-form.hpp"
 #include "libdnf/dnf-reldep.h"
 #include "libdnf/dnf-sack.h"
 #include "libdnf/hy-subject.h"
-#include "libdnf/hy-subject-private.hpp"
 #include "fixtures.h"
 #include "testshared.h"
 #include "test_suites.h"
@@ -236,202 +234,157 @@ END_TEST
 
 START_TEST(module_form_nsvcap)
 {
-    HyModuleForm module_form = hy_module_form_create();
-
-    ck_assert_int_eq(module_form_possibility((char *) module_nsvcap, HY_MODULE_FORM_NSVCAP, module_form), 0);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME), "module-name");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_STREAM), "stream");
-    ck_assert_int_eq(hy_module_form_get_version(module_form), 1);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_CONTEXT), "b86c854");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_ARCH), "x86_64");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_PROFILE), "profile");
-
-    hy_module_form_free(module_form);
+    libdnf::ModuleForm module_form;
+    ck_assert(module_form.parse(module_nsvcap, HY_MODULE_FORM_NSVCAP));
+    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
+    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
+    ck_assert_int_eq(module_form.getVersion(), 1);
+    ck_assert_str_eq(module_form.getContext().c_str(), "b86c854");
+    ck_assert_str_eq(module_form.getArch().c_str(), "x86_64");
+    ck_assert_str_eq(module_form.getProfile().c_str(), "profile");
 }
 END_TEST
 
 START_TEST(module_form_nsvap)
 {
-    HyModuleForm module_form = hy_module_form_create();
-
-    ck_assert_int_eq(module_form_possibility((char *) module_nsvap, HY_MODULE_FORM_NSVAP, module_form), 0);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME), "module-name");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_STREAM), "stream");
-    ck_assert_int_eq(hy_module_form_get_version(module_form), 1);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_ARCH), "x86_64");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_PROFILE), "profile");
-
-    hy_module_form_free(module_form);
+    libdnf::ModuleForm module_form;
+    ck_assert(module_form.parse(module_nsvap, HY_MODULE_FORM_NSVAP));
+    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
+    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
+    ck_assert_int_eq(module_form.getVersion(), 1);
+    ck_assert_str_eq(module_form.getArch().c_str(), "x86_64");
+    ck_assert_str_eq(module_form.getProfile().c_str(), "profile");
 }
 END_TEST
 
 START_TEST(module_form_nsvca)
 {
-    HyModuleForm module_form = hy_module_form_create();
-
-    ck_assert_int_eq(module_form_possibility((char *) module_nsvca, HY_MODULE_FORM_NSVCA, module_form), 0);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME), "module-name");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_STREAM), "stream");
-    ck_assert_int_eq(hy_module_form_get_version(module_form), 1);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_CONTEXT), "b86c854");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_ARCH), "x86_64");
-
-    hy_module_form_free(module_form);
+    libdnf::ModuleForm module_form;
+    ck_assert(module_form.parse(module_nsvca, HY_MODULE_FORM_NSVCA));
+    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
+    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
+    ck_assert_int_eq(module_form.getVersion(), 1);
+    ck_assert_str_eq(module_form.getContext().c_str(), "b86c854");
+    ck_assert_str_eq(module_form.getArch().c_str(), "x86_64");
 }
 END_TEST
 
 START_TEST(module_form_nsva)
 {
-    HyModuleForm module_form = hy_module_form_create();
-
-    ck_assert_int_eq(module_form_possibility((char *) module_nsva, HY_MODULE_FORM_NSVA, module_form), 0);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME), "module-name");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_STREAM), "stream");
-    ck_assert_int_eq(hy_module_form_get_version(module_form), 1);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_ARCH), "x86_64");
-
-    hy_module_form_free(module_form);
+    libdnf::ModuleForm module_form;
+    ck_assert(module_form.parse(module_nsva, HY_MODULE_FORM_NSVA));
+    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
+    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
+    ck_assert_int_eq(module_form.getVersion(), 1);
+    ck_assert_str_eq(module_form.getArch().c_str(), "x86_64");
 }
 END_TEST
 
 START_TEST(module_form_nsvp)
 {
-    HyModuleForm module_form = hy_module_form_create();
-
-    ck_assert_int_eq(module_form_possibility((char *) module_nsvp, HY_MODULE_FORM_NSVP, module_form), 0);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME), "module-name");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_STREAM), "stream");
-    ck_assert_int_eq(hy_module_form_get_version(module_form), 1);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_PROFILE), "profile");
-
-    hy_module_form_free(module_form);
+    libdnf::ModuleForm module_form;
+    ck_assert(module_form.parse(module_nsvp, HY_MODULE_FORM_NSVP));
+    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
+    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
+    ck_assert_int_eq(module_form.getVersion(), 1);
+    ck_assert_str_eq(module_form.getProfile().c_str(), "profile");
 }
 END_TEST
 
 START_TEST(module_form_nsvc)
 {
-    HyModuleForm module_form = hy_module_form_create();
-
-    ck_assert_int_eq(module_form_possibility((char *) module_nsvc, HY_MODULE_FORM_NSVC, module_form), 0);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME), "module-name");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_STREAM), "stream");
-    ck_assert_int_eq(hy_module_form_get_version(module_form), 1);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_CONTEXT), "b86c854");
-
-    hy_module_form_free(module_form);
+    libdnf::ModuleForm module_form;
+    ck_assert(module_form.parse(module_nsvc, HY_MODULE_FORM_NSVC));
+    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
+    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
+    ck_assert_int_eq(module_form.getVersion(), 1);
+    ck_assert_str_eq(module_form.getContext().c_str(), "b86c854");
 }
 END_TEST
 
 START_TEST(module_form_nsv)
 {
-    HyModuleForm module_form = hy_module_form_create();
-
-    ck_assert_int_eq(module_form_possibility((char *) module_nsv, HY_MODULE_FORM_NSV, module_form), 0);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME), "module-name");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_STREAM), "stream");
-    ck_assert_int_eq(hy_module_form_get_version(module_form), 1);
-
-    hy_module_form_free(module_form);
+    libdnf::ModuleForm module_form;
+    ck_assert(module_form.parse(module_nsv, HY_MODULE_FORM_NSV));
+    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
+    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
+    ck_assert_int_eq(module_form.getVersion(), 1);
 }
 END_TEST
 
 START_TEST(module_form_nsap)
 {
-    HyModuleForm module_form = hy_module_form_create();
-
-    ck_assert_int_eq(module_form_possibility((char *) module_nsap, HY_MODULE_FORM_NSAP, module_form), 0);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME), "module-name");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_STREAM), "stream");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_ARCH), "x86_64");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_PROFILE), "profile");
-
-    hy_module_form_free(module_form);
+    libdnf::ModuleForm module_form;
+    ck_assert(module_form.parse(module_nsap, HY_MODULE_FORM_NSAP));
+    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
+    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
+    ck_assert_str_eq(module_form.getArch().c_str(), "x86_64");
+    ck_assert_str_eq(module_form.getProfile().c_str(), "profile");
 }
 END_TEST
 
 START_TEST(module_form_nsa)
 {
-    HyModuleForm module_form = hy_module_form_create();
-
-    ck_assert_int_eq(module_form_possibility((char *) module_nsa, HY_MODULE_FORM_NSA, module_form), 0);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME), "module-name");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_STREAM), "stream");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_ARCH), "x86_64");
-
-    hy_module_form_free(module_form);
+    libdnf::ModuleForm module_form;
+    ck_assert(module_form.parse(module_nsa, HY_MODULE_FORM_NSA));
+    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
+    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
+    ck_assert_str_eq(module_form.getArch().c_str(), "x86_64");
 }
 END_TEST
 
 START_TEST(module_form_nsp)
 {
-    HyModuleForm module_form = hy_module_form_create();
-
-    ck_assert_int_eq(module_form_possibility((char *) module_nsp, HY_MODULE_FORM_NSP, module_form), 0);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME), "module-name");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_STREAM), "stream");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_PROFILE), "profile");
-
-    hy_module_form_free(module_form);
+    libdnf::ModuleForm module_form;
+    ck_assert(module_form.parse(module_nsp, HY_MODULE_FORM_NSP));
+    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
+    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
+    ck_assert_str_eq(module_form.getProfile().c_str(), "profile");
 }
 END_TEST
 
 START_TEST(module_form_ns)
 {
-    HyModuleForm module_form = hy_module_form_create();
-
-    ck_assert_int_eq(module_form_possibility((char *) module_ns, HY_MODULE_FORM_NS, module_form), 0);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME), "module-name");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_STREAM), "stream");
-
-    hy_module_form_free(module_form);
+    libdnf::ModuleForm module_form;
+    ck_assert(module_form.parse(module_ns, HY_MODULE_FORM_NS));
+    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
+    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
 }
 END_TEST
 
 START_TEST(module_form_nap)
 {
-    HyModuleForm module_form = hy_module_form_create();
-
-    ck_assert_int_eq(module_form_possibility((char *) module_nap, HY_MODULE_FORM_NAP, module_form), 0);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME), "module-name");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_ARCH), "x86_64");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_PROFILE), "profile");
-
-    hy_module_form_free(module_form);
+    libdnf::ModuleForm module_form;
+    ck_assert(module_form.parse(module_nap, HY_MODULE_FORM_NAP));
+    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
+    ck_assert_str_eq(module_form.getArch().c_str(), "x86_64");
+    ck_assert_str_eq(module_form.getProfile().c_str(), "profile");
 }
 END_TEST
 
 START_TEST(module_form_na)
 {
-    HyModuleForm module_form = hy_module_form_create();
-
-    ck_assert_int_eq(module_form_possibility((char *) module_na, HY_MODULE_FORM_NA, module_form), 0);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME), "module-name");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_ARCH), "x86_64");
-
-    hy_module_form_free(module_form);
+    libdnf::ModuleForm module_form;
+    ck_assert(module_form.parse(module_na, HY_MODULE_FORM_NA));
+    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
+    ck_assert_str_eq(module_form.getArch().c_str(), "x86_64");
 }
 END_TEST
 
 START_TEST(module_form_np)
 {
-    HyModuleForm module_form = hy_module_form_create();
-
-    ck_assert_int_eq(module_form_possibility((char *) module_np, HY_MODULE_FORM_NP, module_form), 0);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME), "module-name");
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_PROFILE), "profile");
-
-    hy_module_form_free(module_form);
+    libdnf::ModuleForm module_form;
+    ck_assert(module_form.parse(module_np, HY_MODULE_FORM_NP));
+    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
+    ck_assert_str_eq(module_form.getProfile().c_str(), "profile");
 }
 END_TEST
 
 START_TEST(module_form_n)
 {
-    HyModuleForm module_form = hy_module_form_create();
-
-    ck_assert_int_eq(module_form_possibility((char *) module_n, HY_MODULE_FORM_N, module_form), 0);
-    ck_assert_str_eq(hy_module_form_get_string(module_form, HY_MODULE_FORM_NAME), "module-name");
-
-    hy_module_form_free(module_form);
+    libdnf::ModuleForm module_form;
+    ck_assert(module_form.parse(module_n, HY_MODULE_FORM_N));
+    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
 }
 END_TEST
 
@@ -442,13 +395,13 @@ START_TEST(module_form_combined)
     HyPossibilities iter = hy_subject_module_form_possibilities(subject, NULL);
 
     ck_assert_int_eq(hy_possibilities_next_module_form(iter, &module_form), 0);
-    ck_assert_str_eq(module_form->name, "module-name");
-    ck_assert_str_eq(module_form->stream, "stream");
-    ck_assert_int_eq(module_form->version, 1);
-    fail_unless(module_form->context == NULL);
-    ck_assert_str_eq(module_form->arch, "x86_64");
-    ck_assert_str_eq(module_form->profile, "profile");
-    hy_module_form_free(module_form);
+    ck_assert_str_eq(module_form->getName().c_str(), "module-name");
+    ck_assert_str_eq(module_form->getStream().c_str(), "stream");
+    ck_assert_int_eq(module_form->getVersion(), 1);
+    ck_assert_str_eq(module_form->getContext().c_str(), "");
+    ck_assert_str_eq(module_form->getArch().c_str(), "x86_64");
+    ck_assert_str_eq(module_form->getProfile().c_str(), "profile");
+    delete module_form;
 
     ck_assert_int_eq(hy_possibilities_next_module_form(iter, &module_form), -1);
     hy_possibilities_free(iter);

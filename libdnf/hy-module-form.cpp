@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Red Hat, Inc.
+ * Copyright (C) 2017-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -18,101 +18,66 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <solv/util.h>
-#include "hy-query.h"
-#include "hy-module-form.h"
-#include "hy-module-form-private.hpp"
-#include "dnf-sack.h"
-#include "hy-types.h"
+#include "hy-module-form.hpp"
 
+#include <regex/regex.hpp>
 
-static void
-hy_module_form_clear(HyModuleForm module_form)
+namespace libdnf {
+
+#define MODULE_NAME "([-a-zA-Z0-9\\._]+)"
+#define MODULE_STREAM MODULE_NAME
+#define MODULE_VERSION "([0-9]+)"
+#define MODULE_CONTEXT "([0-9a-f]+)"
+#define MODULE_ARCH MODULE_NAME
+#define MODULE_PROFILE MODULE_NAME
+
+constexpr const char * module_form_regex[] = {
+    "^" MODULE_NAME ":" MODULE_STREAM ":" MODULE_VERSION ":" MODULE_CONTEXT "::?" MODULE_ARCH "\\/"  MODULE_PROFILE "$",
+    "^" MODULE_NAME ":" MODULE_STREAM ":" MODULE_VERSION ":" MODULE_CONTEXT "::?" MODULE_ARCH "\\/?" "()"           "$",
+    "^" MODULE_NAME ":" MODULE_STREAM ":" MODULE_VERSION     "()"           "::"  MODULE_ARCH "\\/"  MODULE_PROFILE "$",
+    "^" MODULE_NAME ":" MODULE_STREAM ":" MODULE_VERSION     "()"           "::"  MODULE_ARCH "\\/?" "()"           "$",
+    "^" MODULE_NAME ":" MODULE_STREAM     "()"               "()"           "::"  MODULE_ARCH "\\/"  MODULE_PROFILE "$",
+    "^" MODULE_NAME ":" MODULE_STREAM     "()"               "()"           "::"  MODULE_ARCH "\\/?" "()"           "$",
+    "^" MODULE_NAME ":" MODULE_STREAM ":" MODULE_VERSION ":" MODULE_CONTEXT       "()"        "\\/"  MODULE_PROFILE "$",
+    "^" MODULE_NAME ":" MODULE_STREAM ":" MODULE_VERSION     "()"                 "()"        "\\/"  MODULE_PROFILE "$",
+    "^" MODULE_NAME ":" MODULE_STREAM ":" MODULE_VERSION ":" MODULE_CONTEXT       "()"        "\\/?" "()"           "$",
+    "^" MODULE_NAME ":" MODULE_STREAM ":" MODULE_VERSION     "()"                 "()"        "\\/?" "()"           "$",
+    "^" MODULE_NAME ":" MODULE_STREAM     "()"               "()"                 "()"        "\\/"  MODULE_PROFILE "$",
+    "^" MODULE_NAME ":" MODULE_STREAM     "()"               "()"                 "()"        "\\/?" "()"           "$",
+    "^" MODULE_NAME     "()"              "()"               "()"           "::"  MODULE_ARCH "\\/"  MODULE_PROFILE "$",
+    "^" MODULE_NAME     "()"              "()"               "()"           "::"  MODULE_ARCH "\\/?" "()"           "$",
+    "^" MODULE_NAME     "()"              "()"               "()"                 "()"        "\\/"  MODULE_PROFILE "$",
+    "^" MODULE_NAME     "()"              "()"               "()"                 "()"        "\\/?" "()"           "$"
+};
+
+bool ModuleForm::parse(const char *moduleFormStr, HyModuleFormEnum form)
 {
-    module_form->name = NULL;
-    module_form->stream = NULL;
-    module_form->version = -1L;
-    module_form->context = NULL;
-    module_form->arch = NULL;
-    module_form->profile = NULL;
-}
-
-HyModuleForm
-hy_module_form_create()
-{
-    HyModuleForm module_form = static_cast<HyModuleForm>(g_malloc0(sizeof(*module_form)));
-    hy_module_form_clear(module_form);
-    return module_form;
-}
-
-void
-hy_module_form_free(HyModuleForm module_form)
-{
-    g_free(module_form->name);
-    g_free(module_form->stream);
-    g_free(module_form->context);
-    g_free(module_form->arch);
-    g_free(module_form->profile);
-    g_free(module_form);
-}
-
-HyModuleForm
-hy_module_form_clone(HyModuleForm module_form)
-{
-    HyModuleForm clone = hy_module_form_create();
-    clone->name = g_strdup(module_form->name);
-    clone->stream = g_strdup(module_form->stream);
-    clone->version = module_form->version;
-    clone->context = g_strdup(module_form->context);
-    clone->arch = g_strdup(module_form->arch);
-    clone->profile = g_strdup(module_form->profile);
-    return clone;
-}
-
-static inline char **
-get_string(HyModuleForm module_form, int which)
-{
-    switch (which) {
-        case HY_MODULE_FORM_NAME:
-            return &(module_form->name);
-        case HY_MODULE_FORM_STREAM:
-            return &(module_form->stream);
-        case HY_MODULE_FORM_CONTEXT:
-            return &(module_form->context);
-        case HY_MODULE_FORM_ARCH:
-            return &(module_form->arch);
-        case HY_MODULE_FORM_PROFILE:
-            return &(module_form->profile);
-        default:
-            return NULL;
-    }
-}
-
-const char *
-hy_module_form_get_string(HyModuleForm module_form, int which)
-{
-    return *get_string(module_form, which);
+    enum { NAME = 1, STREAM = 2, VERSION = 3, CONTEXT = 4, ARCH = 5, PROFILE = 6, _LAST_ };
+    Regex reg(module_form_regex[form - 1], REG_EXTENDED);
+    auto matchResult = reg.match(moduleFormStr, false, _LAST_);
+    if (!matchResult.isMatched() || matchResult.getMatchedLen(NAME) == 0)
+        return false;
+    name = matchResult.getMatchedString(NAME);
+    if (matchResult.getMatchedLen(VERSION) > 0)
+        version = atoll(matchResult.getMatchedString(VERSION).c_str());
+    else
+        version = VersionNotSet;
+    stream = matchResult.getMatchedString(STREAM);
+    context = matchResult.getMatchedString(CONTEXT);
+    arch = matchResult.getMatchedString(ARCH);
+    profile = matchResult.getMatchedString(PROFILE);
+    return true;
 }
 
 void
-hy_module_form_set_string(HyModuleForm module_form, int which, const char* str_val)
+ModuleForm::clear()
 {
-    char** attr = get_string(module_form, which);
-    g_free(*attr);
-    *attr = g_strdup(str_val);
+    name.clear();
+    stream.clear();
+    version = VersionNotSet;
+    context.clear();
+    arch.clear();
+    profile.clear();
 }
 
-long long
-hy_module_form_get_version(HyModuleForm module_form)
-{
-    return module_form->version;
-}
-
-void
-hy_module_form_set_version(HyModuleForm module_form, long long version)
-{
-    module_form->version = version;
 }
