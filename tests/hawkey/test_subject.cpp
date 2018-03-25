@@ -63,7 +63,7 @@ const char module_na[] = "module-name::x86_64";
 
 START_TEST(nevra1)
 {
-    auto nevra = new Nevra;
+    auto nevra = new libdnf::Nevra;
 
     ck_assert_int_eq(
         hy_nevra_possibility(inp_fof, HY_FORM_NEVRA, nevra), 0);
@@ -74,7 +74,7 @@ START_TEST(nevra1)
     ck_assert_str_eq(nevra->getArch().c_str(), "x86_64");
 
     // NEVRA comparison tests
-    auto nevra2 = new Nevra;
+    auto nevra2 = new libdnf::Nevra;
     nevra2->setEpoch(8);
     nevra2->setName("four-of-fish");
     nevra2->setVersion("3.6.9");
@@ -108,7 +108,7 @@ END_TEST
 
 START_TEST(nevra2)
 {
-    auto nevra = new Nevra;
+    auto nevra = new libdnf::Nevra;
 
     ck_assert_int_eq(
         hy_nevra_possibility(inp_fof_noepoch, HY_FORM_NEVRA, nevra), 0);
@@ -124,7 +124,7 @@ END_TEST
 
 START_TEST(nevr)
 {
-    auto nevra = new Nevra;
+    auto nevra = new libdnf::Nevra;
 
     ck_assert_int_eq(
         hy_nevra_possibility(inp_fof, HY_FORM_NEVR, nevra), 0);
@@ -140,7 +140,7 @@ END_TEST
 
 START_TEST(nevr_fail)
 {
-    auto nevra = new Nevra;
+    auto nevra = new libdnf::Nevra;
 
     ck_assert_int_eq(
         hy_nevra_possibility("four-of", HY_FORM_NEVR, nevra), -1);
@@ -151,7 +151,7 @@ END_TEST
 
 START_TEST(nev)
 {
-    auto nevra = new Nevra;
+    auto nevra = new libdnf::Nevra;
 
     ck_assert_int_eq(
         hy_nevra_possibility(inp_fof_nev, HY_FORM_NEV, nevra), 0);
@@ -167,7 +167,7 @@ END_TEST
 
 START_TEST(na)
 {
-    auto nevra = new Nevra;
+    auto nevra = new libdnf::Nevra;
 
     ck_assert_int_eq(
         hy_nevra_possibility(inp_fof_na, HY_FORM_NA, nevra), 0);
@@ -182,7 +182,7 @@ END_TEST
 
 START_TEST(combined1)
 {
-    Nevra *nevra;
+    libdnf::Nevra *nevra;
     HySubject subject = hy_subject_create(inp_fof);
     HyPossibilities iter = hy_subject_nevra_possibilities(subject, NULL);
     ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
@@ -209,7 +209,7 @@ END_TEST
 
 START_TEST(combined2)
 {
-    Nevra *nevra;
+    libdnf::Nevra *nevra;
     HySubject subject = hy_subject_create(inp_fof_noepoch);
     HyPossibilities iter = hy_subject_nevra_possibilities(subject, NULL);
 

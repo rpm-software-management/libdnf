@@ -25,8 +25,8 @@
 
 extern PyTypeObject nevra_Type;
 
-Nevra *nevraFromPyObject(PyObject *o);
-PyObject *nevraToPyObject(Nevra *nevra);
-int nevra_converter(PyObject *o, Nevra **nevra_ptr);
+libdnf::Nevra *nevraFromPyObject(PyObject *o);
+PyObject *nevraToPyObject(libdnf::Nevra *nevra);
+int nevra_converter(PyObject *o, libdnf::Nevra **nevra_ptr);
 
 #endif

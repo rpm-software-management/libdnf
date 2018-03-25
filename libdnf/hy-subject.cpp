@@ -149,11 +149,11 @@ hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra)
     if (iter->type != TYPE_NEVRA || iter->current == -1)
         return -1;
     HyForm form = iter->forms[iter->current];
-    Nevra nevra;
+    libdnf::Nevra nevra;
     while (form != _HY_FORM_STOP_) {
         iter->current++;
         if (hy_nevra_possibility(iter->subject, form, &nevra) == 0) {
-            *out_nevra = new Nevra(std::move(nevra));
+            *out_nevra = new libdnf::Nevra(std::move(nevra));
             return 0;
         }
         form = iter->forms[iter->current];

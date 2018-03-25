@@ -947,7 +947,7 @@ add_nevra_or_other_filter(_QueryObject *self, PyObject *args)
         if (!PyArg_ParseTuple(args, "s", &name))
             return NULL;
 
-        HyNevra out_nevra = new Nevra;
+        HyNevra out_nevra = new libdnf::Nevra;
         if (hy_nevra_possibility((char *) name, HY_FORM_NEVRA, out_nevra) == 0) {
             self_query_copy->addFilter(out_nevra, false);
         } else {

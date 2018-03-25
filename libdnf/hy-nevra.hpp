@@ -26,6 +26,8 @@
 #include <memory>
 #include <string>
 
+namespace libdnf {
+
 struct Nevra {
 public:
     static constexpr int IgnoreEpoch = -1;
@@ -70,5 +72,7 @@ private:
     class Impl;
     std::unique_ptr<Impl> pImpl;
 };
+
+}
 
 #endif // HY_NEVRA_HPP
