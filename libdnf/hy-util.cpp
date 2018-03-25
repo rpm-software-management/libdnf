@@ -165,7 +165,7 @@ hy_split_nevra(const char *nevra, char **name, int *epoch,
     const int len = strlen(nevra);
     if (len <= 0)
         return DNF_ERROR_INTERNAL_ERROR;
-    auto out_nevra = std::unique_ptr<Nevra>(new Nevra);
+    auto out_nevra = std::unique_ptr<libdnf::Nevra>(new libdnf::Nevra);
     if (hy_nevra_possibility(nevra, HY_FORM_NEVRA, &*out_nevra) == 0) {
         *arch = g_strdup(out_nevra->getArch().c_str());
         *name = g_strdup(out_nevra->getName().c_str());

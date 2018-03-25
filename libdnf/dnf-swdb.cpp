@@ -236,7 +236,7 @@ dnf_swdb_search (DnfSwdb *self, GPtrArray *patterns)
 static HyNevra
 _fill_nevra_res (sqlite3_stmt *res, const gchar *nevra)
 {
-    auto hnevra = new Nevra;
+    auto hnevra = new libdnf::Nevra;
     if (hy_nevra_possibility(nevra, HY_FORM_NEVRA, hnevra)) {
         return NULL;
     }

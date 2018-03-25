@@ -21,6 +21,8 @@
 #include "hy-nevra.hpp"
 #include "dnf-sack.h"
 
+namespace libdnf {
+
 class Nevra::Impl {
 public:
     std::string name;
@@ -103,4 +105,6 @@ int Nevra::compare(const Nevra & nevra2) const
     if (ret != 0)
         return ret;
     return pImpl->arch.compare(nevra2.pImpl->arch);
+}
+
 }

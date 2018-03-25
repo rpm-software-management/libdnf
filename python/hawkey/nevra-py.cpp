@@ -37,10 +37,10 @@
 
 typedef struct {
     PyObject_HEAD
-    Nevra *nevra;
+    libdnf::Nevra *nevra;
 } _NevraObject;
 
-Nevra *
+libdnf::Nevra *
 nevraFromPyObject(PyObject *o)
 {
     if (!PyObject_TypeCheck(o, &nevra_Type)) {
@@ -51,7 +51,7 @@ nevraFromPyObject(PyObject *o)
 }
 
 PyObject *
-nevraToPyObject(Nevra *nevra)
+nevraToPyObject(libdnf::Nevra *nevra)
 {
     _NevraObject *self = (_NevraObject *)nevra_Type.tp_alloc(&nevra_Type, 0);
     if (self)
@@ -86,7 +86,7 @@ get_epoch(_NevraObject *self, void *closure)
 #endif
 }
 
-template<const std::string & (Nevra::*getMethod)() const>
+template<const std::string & (libdnf::Nevra::*getMethod)() const>
 static PyObject *
 get_attr(_NevraObject *self, void *closure)
 {
@@ -97,7 +97,7 @@ get_attr(_NevraObject *self, void *closure)
         return PyString_FromString(str.c_str());
 }
 
-template<void (Nevra::*setMethod)(std::string &&)>
+template<void (libdnf::Nevra::*setMethod)(std::string &&)>
 static int
 set_attr(_NevraObject *self, PyObject *value, void *closure)
 {
@@ -116,16 +116,16 @@ set_attr(_NevraObject *self, PyObject *value, void *closure)
 }
 
 static PyGetSetDef nevra_getsetters[] = {
-    {(char*)"name", (getter)get_attr<&Nevra::getName>, (setter)set_attr<&Nevra::setName>,
-        NULL, NULL},
+    {(char*)"name", (getter)get_attr<&libdnf::Nevra::getName>,
+        (setter)set_attr<&libdnf::Nevra::setName>, NULL, NULL},
     {(char*)"epoch", (getter)get_epoch, (setter)set_epoch,
         NULL, NULL},
-    {(char*)"version", (getter)get_attr<&Nevra::getVersion>, (setter)set_attr<&Nevra::setVersion>,
-        NULL, NULL},
-    {(char*)"release", (getter)get_attr<&Nevra::getRelease>, (setter)set_attr<&Nevra::setRelease>,
-        NULL, NULL},
-    {(char*)"arch", (getter)get_attr<&Nevra::getArch>, (setter)set_attr<&Nevra::setArch>,
-        NULL, NULL},
+    {(char*)"version", (getter)get_attr<&libdnf::Nevra::getVersion>,
+        (setter)set_attr<&libdnf::Nevra::setVersion>, NULL, NULL},
+    {(char*)"release", (getter)get_attr<&libdnf::Nevra::getRelease>,
+        (setter)set_attr<&libdnf::Nevra::setRelease>, NULL, NULL},
+    {(char*)"arch", (getter)get_attr<&libdnf::Nevra::getArch>,
+        (setter)set_attr<&libdnf::Nevra::setArch>, NULL, NULL},
     {NULL}          /* sentinel */
 };
 
@@ -133,9 +133,8 @@ static PyObject *
 nevra_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     _NevraObject *self = (_NevraObject*)type->tp_alloc(type, 0);
-    if (self) {
-        self->nevra = new Nevra;
-    }
+    if (self)
+        self->nevra = new libdnf::Nevra;
     return (PyObject*)self;
 }
 
@@ -151,7 +150,7 @@ nevra_init(_NevraObject *self, PyObject *args, PyObject *kwds)
 {
     char *name = NULL, *version = NULL, *release = NULL, *arch = NULL;
     PyObject *epoch_o = NULL;
-    Nevra * cnevra = NULL;
+    libdnf::Nevra * cnevra = NULL;
 
     const char *kwlist[] = {"name", "epoch", "version", "release", "arch",
         "nevra", NULL};
@@ -165,7 +164,7 @@ nevra_init(_NevraObject *self, PyObject *args, PyObject *kwds)
         return -1;
     }
     if (cnevra) {
-        self->nevra = new Nevra(*cnevra);
+        self->nevra = new libdnf::Nevra(*cnevra);
         return 0;
     }
     if (set_epoch(self, epoch_o, NULL) == -1) {
@@ -193,7 +192,7 @@ evr(_NevraObject *self, PyObject *unused)
 }
 
 int
-nevra_converter(PyObject *o, Nevra **nevra_ptr)
+nevra_converter(PyObject *o, libdnf::Nevra **nevra_ptr)
 {
     auto nevra = nevraFromPyObject(o);
     if (nevra == NULL)
@@ -206,7 +205,7 @@ static PyObject *
 evr_cmp(_NevraObject *self, PyObject *args)
 {
     DnfSack *sack;
-    Nevra *nevra;
+    libdnf::Nevra *nevra;
     if (!PyArg_ParseTuple(args, "O&O&", nevra_converter, &nevra, sack_converter, &sack)) {
         return NULL;
     }
@@ -254,7 +253,7 @@ static PyObject *
 nevra_richcompare(PyObject *self, PyObject *other, int op)
 {
     PyObject *v;
-    Nevra *other_nevra, *self_nevra;
+    libdnf::Nevra *other_nevra, *self_nevra;
     other_nevra = nevraFromPyObject(other);
     self_nevra = nevraFromPyObject(self);
 
