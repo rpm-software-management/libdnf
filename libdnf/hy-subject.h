@@ -87,7 +87,7 @@ int hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra);
 int hy_possibilities_next_module_form(HyPossibilities iter, HyModuleForm *out_module_form);
 
 HyQuery hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms,
-                                     HyNevra *nevra, gboolean icase, gboolean with_nevra,
+                                     HyNevra *out_nevra, gboolean icase, gboolean with_nevra,
                                      gboolean with_provides, gboolean with_filenames);
 HyQuery hy_subject_get_best_query(HySubject subject, DnfSack *sack, gboolean with_provides);
 
