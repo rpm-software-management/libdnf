@@ -108,6 +108,7 @@ gboolean         dnf_context_get_yumdb_enabled          (DnfContext     *context
 guint            dnf_context_get_cache_age              (DnfContext     *context);
 guint            dnf_context_get_installonly_limit      (DnfContext     *context);
 const gchar     *dnf_context_get_http_proxy             (DnfContext     *context);
+gboolean         dnf_context_get_enable_filelists       (DnfContext     *context);
 GPtrArray       *dnf_context_get_repos                  (DnfContext     *context);
 #ifndef __GI_SCANNER__
 DnfRepoLoader   *dnf_context_get_repo_loader            (DnfContext     *context);
@@ -145,6 +146,8 @@ void             dnf_context_set_check_transaction      (DnfContext     *context
                                                          gboolean        check_transaction);
 void             dnf_context_set_keep_cache             (DnfContext     *context,
                                                          gboolean        keep_cache);
+void             dnf_context_set_enable_filelists       (DnfContext     *context,
+                                                         gboolean        enable_filelists);
 void             dnf_context_set_only_trusted           (DnfContext     *context,
                                                          gboolean        only_trusted);
 void             dnf_context_set_yumdb_enabled          (DnfContext     *context,
