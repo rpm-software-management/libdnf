@@ -186,39 +186,35 @@ hy_possibilities_next_module_form(HyPossibilities iter, HyModuleForm *out_module
  * revision: 1d83fdc0280ca4202281ef489afe600e2f51a32a
  */
 HyQuery
-hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, HyNevra *nevra,
+hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, HyNevra *out_nevra,
                              gboolean icase, gboolean with_nevra, gboolean with_provides,
                              gboolean with_filenames)
 {
-    int ret = 0;
-    HyQuery query = NULL;
-
     if (with_nevra) {
-        HyPossibilities iter = hy_subject_nevra_possibilities(subject, forms);
-        while (ret != -1) {
-            ret = hy_possibilities_next_nevra(iter, nevra);
-            if (ret != -1) {
-                query = hy_query_from_nevra(*nevra, sack, icase);
+        libdnf::Nevra nevraObj;
+        const auto tryForms = !forms ? HY_FORMS_MOST_SPEC : forms;
+        for (std::size_t i = 0; tryForms[i] != _HY_FORM_STOP_; ++i) {
+            if (nevraObj.parse(subject, tryForms[i])) {
+                auto query = hy_query_from_nevra(&nevraObj, sack, icase);
                 if (!hy_query_is_empty(query)) {
-                    hy_possibilities_free(iter);
+                    *out_nevra = new libdnf::Nevra(std::move(nevraObj));
                     return query;
                 }
                 hy_query_free(query);
             }
         }
-        hy_possibilities_free(iter);
-        delete *nevra;
-        *nevra = nullptr;
+        *out_nevra = nullptr;
         if (!forms) {
-            query = hy_query_create(sack);
+            auto query = hy_query_create(sack);
             hy_query_filter(query, HY_PKG_NEVRA, HY_GLOB, subject);
             if (!hy_query_is_empty(query))
                 return query;
             hy_query_free(query);
         }
     }
+
     if (with_provides) {
-        query = hy_query_create(sack);
+        auto query = hy_query_create(sack);
         hy_query_filter(query, HY_PKG_PROVIDES, HY_GLOB, subject);
         if (!hy_query_is_empty(query))
             return query;
@@ -226,12 +222,12 @@ hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, Hy
     }
 
     if (with_filenames && hy_is_file_pattern(subject)) {
-        query = hy_query_create(sack);
+        auto query = hy_query_create(sack);
         hy_query_filter(query, HY_PKG_FILE, HY_GLOB, subject);
         return query;
     }
 
-    query = hy_query_create(sack);
+    auto query = hy_query_create(sack);
     hy_query_filter_empty(query);
     return query;
 }
