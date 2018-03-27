@@ -31,21 +31,8 @@
 #include "CompsGroupItem.hpp"
 #include "RPMItem.hpp"
 #include "private/Transaction.hpp"
+#include "private/TransformerTransaction.hpp"
 #include "TransactionItem.hpp"
-
-/**
- * Class overrides default behavior with
- * inserting rows with explicitly set IDs
- */
-class TransformerTransaction : public libdnf::swdb_private::Transaction {
-public:
-    using libdnf::swdb_private::Transaction::Transaction;
-    void begin()
-    {
-        dbInsert();
-        saveItems();
-    }
-};
 
 /**
  * Class providing an interface to the database transformation
@@ -64,7 +51,7 @@ public:
         }
     };
 
-    Transformer(const std::string &outputFile, const std::string &inputDir);
+    Transformer(const std::string &inputDir, const std::string &outputFile);
     void transform();
 
     static void createDatabase(SQLite3Ptr conn);

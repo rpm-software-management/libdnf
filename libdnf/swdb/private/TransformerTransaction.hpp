@@ -1,6 +1,4 @@
 /*
- * Libdnf helper functions for file system operations
- *
  * Copyright (C) 2017-2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
@@ -20,15 +18,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef LIBDNF_FILESYSTEM_HPP
-#define LIBDNF_FILESYSTEM_HPP
+#ifndef LIBDNF_SWDB_TRANSFORMER_TRANSACTION_HPP
+#define LIBDNF_SWDB_TRANSFORMER_TRANSACTION_HPP
 
-#include <string>
+#include "Transaction.hpp"
 
-bool
-pathExists(const char *path);
-
-void
-makeDirPath(std::string filePath);
+/**
+ * Class overrides default behavior with
+ * inserting rows with explicitly set IDs
+ */
+class TransformerTransaction : public libdnf::swdb_private::Transaction {
+public:
+    using libdnf::swdb_private::Transaction::Transaction;
+    void begin()
+    {
+        dbInsert();
+        saveItems();
+    }
+};
 
 #endif

@@ -29,7 +29,6 @@
 #include "../utils/bgettext/bgettext-lib.h"
 #include "../utils/filesystem.hpp"
 #include "../utils/sqlite3/Sqlite3.hpp"
-#include "../utils/bgettext/bgettext-lib.h"
 
 #include "RPMItem.hpp"
 #include "Swdb.hpp"
@@ -68,8 +67,8 @@ Swdb::initTransaction()
     if (transactionInProgress) {
         throw std::logic_error(_("In progress"));
     }
-    transactionInProgress =
-        std::unique_ptr< libdnf::swdb_private::Transaction >(new libdnf::swdb_private::Transaction(conn));
+    transactionInProgress = std::unique_ptr< libdnf::swdb_private::Transaction >(
+        new libdnf::swdb_private::Transaction(conn));
     itemsInProgress.clear();
 }
 
@@ -468,17 +467,13 @@ Swdb::Swdb(const std::string &path)
     if (!pathExists(path.c_str())) {
         // file not present
 
-        // create directory path if necessary
-        makeDirPath(path);
-
-        /// XXX do we want to always transform from "/var/lib/dnf/"?
-        // TODO: installroot?
-
-        // FIXME this is very dirty - to be replaced with conf
+        // FIXME this is dirty - to be replaced with conf
         auto found = path.find_last_of("/");
-        found = path.find_last_of("/", found-1);
-        Transformer transformer(path, path.substr(0, found));
+        found = path.find_last_of("/", found - 1);
+
+        Transformer transformer(path.substr(0, found), path);
         transformer.transform();
+
         conn = std::make_shared< SQLite3 >(path);
     } else {
         conn = std::make_shared< SQLite3 >(path);
@@ -529,8 +524,8 @@ Swdb::filterUnneeded(HyQuery installed, Pool *pool) const
             int reason = query.get< int >("reason");
 
             // if not dep or weak, than consider it user installed
-            if (reason != static_cast<int>(TransactionItemReason::DEPENDENCY) &&
-                reason != static_cast<int>(TransactionItemReason::WEAK_DEPENDENCY)) {
+            if (reason != static_cast< int >(TransactionItemReason::DEPENDENCY) &&
+                reason != static_cast< int >(TransactionItemReason::WEAK_DEPENDENCY)) {
                 userInstalled.push_back(id);
             }
         } else {

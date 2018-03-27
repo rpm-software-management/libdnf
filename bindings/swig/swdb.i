@@ -75,6 +75,7 @@ typedef std::shared_ptr< TransactionItemBase > TransactionItemBasePtr;
     #include "libdnf/swdb/Transaction.hpp"
     #include "libdnf/swdb/TransactionItem.hpp"
     #include "libdnf/swdb/MergedTransaction.hpp"
+    #include "libdnf/swdb/Transformer.hpp"
 %}
 
 
@@ -109,3 +110,4 @@ typedef std::shared_ptr< TransactionItemBase > TransactionItemBasePtr;
 %include "libdnf/swdb/Transaction.hpp"
 %include "libdnf/swdb/TransactionItem.hpp"
 %include "libdnf/swdb/MergedTransaction.hpp"
+%include "libdnf/swdb/Transformer.hpp"
