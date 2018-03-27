@@ -21,11 +21,11 @@
 #ifndef LIBDNF_SWDB_SWDB_HPP
 #define LIBDNF_SWDB_SWDB_HPP
 
-#include <memory>
-#include <sys/stat.h>
 #include <map>
-#include <vector>
+#include <memory>
 #include <solv/pooltypes.h>
+#include <sys/stat.h>
+#include <vector>
 
 class Swdb;
 
@@ -35,8 +35,8 @@ class Swdb;
 
 #include "CompsGroupItem.hpp"
 #include "Transaction.hpp"
-#include "private/Transaction.hpp"
 #include "TransactionItem.hpp"
+#include "private/Transaction.hpp"
 
 class Swdb {
 public:
@@ -64,7 +64,8 @@ public:
     std::vector< TransactionItemPtr > getItems() { return transactionInProgress->getItems(); }
 
     libdnf::TransactionPtr getLastTransaction();
-    std::vector< libdnf::TransactionPtr > listTransactions(); // std::vector<long long> transactionIds);
+    std::vector< libdnf::TransactionPtr >
+    listTransactions(); // std::vector<long long> transactionIds);
 
     // TransactionItems
     TransactionItemPtr addItem(ItemPtr item,

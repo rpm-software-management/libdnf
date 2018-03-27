@@ -30,6 +30,7 @@
 #include <vector>
 
 #include "../utils/bgettext/bgettext-lib.h"
+#include "../utils/filesystem.hpp"
 
 #include "RPMItem.hpp"
 #include "Swdb.hpp"
@@ -92,7 +93,7 @@ Transformer::getReason(const std::string &reason)
  * \param outputFile path to output SQLite3 database
  * \param inputDir directory to load data from (e.g. `/var/lib/dnf/`)
  */
-Transformer::Transformer(const std::string &outputFile, const std::string &inputDir)
+Transformer::Transformer(const std::string &inputDir, const std::string &outputFile)
   : inputDir(inputDir)
   , outputFile(outputFile)
 {
@@ -107,6 +108,13 @@ void
 Transformer::transform()
 {
     auto swdb = std::make_shared< SQLite3 >(":memory:");
+
+    if (pathExists(outputFile.c_str())) {
+        throw std::runtime_error("DB file already exists:" + outputFile);
+    }
+
+    // create directory path if necessary
+    makeDirPath(outputFile);
 
     // create a new database file
     createDatabase(swdb);

@@ -20,15 +20,37 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef LIBDNF_FILESYSTEM_HPP
-#define LIBDNF_FILESYSTEM_HPP
+#include <sys/stat.h>
 
-#include <string>
+#include "filesystem.hpp"
 
+/**
+ * Verify if path exists
+ * \param path file or directory path
+ * \return true if path exists
+ */
 bool
-pathExists(const char *path);
+pathExists(const char *path)
+{
+    struct stat buffer {
+    };
+    return stat(path, &buffer) == 0;
+}
 
+/**
+ * Create a directory tree for a file
+ * \param path path to the directory
+ */
 void
-makeDirPath(std::string filePath);
-
-#endif
+makeDirPath(std::string filePath)
+{
+    size_t position = 0, previous = 1; // skip leading slash
+    while ((position = filePath.find_first_of('/', previous)) != filePath.npos) {
+        std::string directory = filePath.substr(0, position++);
+        previous = position;
+        // create directory if necessary
+        if (!pathExists(directory.c_str())) {
+            mkdir(directory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        }
+    }
+}
