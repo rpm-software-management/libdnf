@@ -33,7 +33,7 @@ INP_FOF_NA="four-of-fish-3.6.9.i686"
 class SubjectTest(base.TestCase):
     def test_nevra(self):
         subj = hawkey.Subject(INP_FOF)
-        result = list(subj.get_nevra_possibilities(forms=hawkey.FORM_NEVRA))
+        result = subj.get_nevra_possibilities(forms=hawkey.FORM_NEVRA)
         self.assertLength(result, 1)
         self.assertEqual(result[0], NEVRA(name='four-of-fish', epoch=8,
                                                  version='3.6.9',
@@ -41,7 +41,7 @@ class SubjectTest(base.TestCase):
                                                  arch='x86_64'))
 
         subj = hawkey.Subject(INP_FOF_NOEPOCH)
-        result = list(subj.get_nevra_possibilities(forms=hawkey.FORM_NEVRA))
+        result = subj.get_nevra_possibilities(forms=hawkey.FORM_NEVRA)
         self.assertEqual(result[0], NEVRA(name='four-of-fish', epoch=None,
                                                  version='3.6.9',
                                                  release='11.fc100',
@@ -51,17 +51,17 @@ class SubjectTest(base.TestCase):
         subj = hawkey.Subject(INP_FOF)
         expect = NEVRA(name='four-of-fish', epoch=8, version='3.6.9',
                               release='11.fc100.x86_64', arch=None)
-        self.assertEqual(list(subj.get_nevra_possibilities(forms=hawkey.FORM_NEVR))[0],
+        self.assertEqual(subj.get_nevra_possibilities(forms=hawkey.FORM_NEVR)[0],
                          expect)
 
     def test_nevr_fail(self):
         subj = hawkey.Subject("four-of")
-        self.assertLength(list(subj.get_nevra_possibilities(forms=hawkey.FORM_NEVR)),
+        self.assertLength(subj.get_nevra_possibilities(forms=hawkey.FORM_NEVR),
                           0)
 
     def test_nev(self):
         subj = hawkey.Subject(INP_FOF_NEV)
-        nevra_possibilities = list(subj.get_nevra_possibilities(forms=hawkey.FORM_NEV))
+        nevra_possibilities = subj.get_nevra_possibilities(forms=hawkey.FORM_NEV)
         self.assertLength(nevra_possibilities, 1)
         self.assertEqual(nevra_possibilities[0],
                          NEVRA(name='four-of-fish', epoch=8,
@@ -69,7 +69,7 @@ class SubjectTest(base.TestCase):
 
     def test_na(self):
         subj = hawkey.Subject(INP_FOF_NA)
-        nevra_possibilities = list(subj.get_nevra_possibilities(forms=hawkey.FORM_NA))
+        nevra_possibilities = subj.get_nevra_possibilities(forms=hawkey.FORM_NA)
         self.assertLength(nevra_possibilities, 1)
         self.assertEqual(nevra_possibilities[0],
                          NEVRA(name='four-of-fish-3.6.9', epoch=None,
@@ -77,8 +77,8 @@ class SubjectTest(base.TestCase):
 
     def test_custom_list(self):
         subj = hawkey.Subject(INP_FOF)
-        result = list(subj.get_nevra_possibilities(forms=[hawkey.FORM_NEVRA,
-            hawkey.FORM_NEVR]))
+        result = subj.get_nevra_possibilities(forms=[hawkey.FORM_NEVRA,
+                                              hawkey.FORM_NEVR])
         self.assertLength(result, 2)
         self.assertEqual(result[0], NEVRA(name='four-of-fish', epoch=8,
                                                  version='3.6.9',
@@ -90,34 +90,32 @@ class SubjectTest(base.TestCase):
     def test_combined(self):
         """ Test we get all the possible NEVRA parses. """
         subj = hawkey.Subject(INP_FOF)
-        nevras = subj.get_nevra_possibilities()
         # the epoch in INP_FOF nicely limits the nevra_possibilities:
-        self.assertEqual(next(nevras), NEVRA(name='four-of-fish', epoch=8,
-                                                     version='3.6.9',
-                                                     release='11.fc100',
-                                                     arch='x86_64'))
-        self.assertEqual(next(nevras), NEVRA(name='four-of-fish', epoch=8,
-                                                     version='3.6.9',
-                                                     release='11.fc100.x86_64',
-                                                     arch=None))
-        self.assertRaises(StopIteration, next, nevras)
+        expect = (
+            NEVRA(name='four-of-fish', epoch=8, version='3.6.9', release='11.fc100', arch='x86_64'),
+            NEVRA(name='four-of-fish', epoch=8, version='3.6.9', release='11.fc100.x86_64',
+                  arch=None)
+        )
+        result = subj.get_nevra_possibilities()
+        self.assertEqual(len(result), len(expect))
+        for idx in range(0, len(expect)):
+            self.assertEqual(expect[idx], result[idx])
 
         subj = hawkey.Subject(INP_FOF_NOEPOCH)
-        nevras = subj.get_nevra_possibilities()
-        self.assertEqual(next(nevras), NEVRA(name='four-of-fish',
-                                                     epoch=None, version='3.6.9',
-                                                     release='11.fc100',
-                                                     arch='x86_64'))
-        self.assertEqual(next(nevras), NEVRA(name='four-of-fish-3.6.9-11.fc100', epoch=None,
-                                             version=None, release=None, arch='x86_64'))
-        self.assertEqual(next(nevras), NEVRA(name='four-of-fish-3.6.9-11.fc100.x86_64', epoch=None,
-                                             version=None, release=None, arch=None))
-        self.assertEqual(next(nevras), NEVRA(name='four-of-fish',
-                                                     epoch=None, version='3.6.9',
-                                                     release='11.fc100.x86_64',
-                                                     arch=None))
-        self.assertEqual(next(nevras), NEVRA(name='four-of-fish-3.6.9',
-                                                     epoch=None,
-                                                     version='11.fc100.x86_64',
-                                                     release=None, arch=None))
-        self.assertRaises(StopIteration, next, nevras)
+        expect = (
+            NEVRA(name='four-of-fish', epoch=None, version='3.6.9',
+                  release='11.fc100', arch='x86_64'),
+            NEVRA(name='four-of-fish-3.6.9-11.fc100', epoch=None, version=None,
+                  release=None, arch='x86_64'),
+            NEVRA(name='four-of-fish-3.6.9-11.fc100.x86_64', epoch=None, version=None,
+                  release=None, arch=None),
+            NEVRA(name='four-of-fish', epoch=None, version='3.6.9',
+                  release='11.fc100.x86_64', arch=None),
+            NEVRA(name='four-of-fish-3.6.9', epoch=None, version='11.fc100.x86_64',
+                  release=None, arch=None)
+        )
+        result = subj.get_nevra_possibilities()
+        self.assertEqual(len(result), len(expect))
+        for idx in range(0, len(expect)):
+            self.assertEqual(expect[idx], result[idx])
+
