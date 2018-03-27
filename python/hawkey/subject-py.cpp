@@ -25,6 +25,7 @@
 // hawkey
 #include "hy-iutil.h"
 #include "hy-nevra.hpp"
+#include "hy-module-form.hpp"
 #include "dnf-sack.h"
 #include "hy-subject.h"
 #include "hy-types.h"
@@ -32,7 +33,7 @@
 // pyhawkey
 #include "iutil-py.hpp"
 #include "nevra-py.hpp"
-#include "possibilities-py.hpp"
+#include "module-form-py.hpp"
 #include "pycomp.hpp"
 #include "query-py.hpp"
 #include "reldep-py.hpp"
@@ -138,6 +139,22 @@ fill_form(PyObject *o)
 
 /* object methods */
 
+static bool
+addNevraToPyList(PyObject * pyList, libdnf::Nevra & nevraObj)
+{
+    auto cNevra = new libdnf::Nevra(std::move(nevraObj));
+    auto nevra = nevraToPyObject(cNevra);
+    if (!nevra) {
+        delete cNevra;
+        return false;
+    }
+    int rc = PyList_Append(pyList, nevra);
+    Py_DECREF(nevra);
+    if (rc == -1)
+        return false;
+    return true;
+}
+
 static PyObject *
 get_nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
@@ -146,35 +163,127 @@ get_nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", (char**) kwlist, &forms)) {
         return NULL;
     }
-    std::vector<HyForm> cforms;
-    if ((forms != NULL) && (forms != Py_None) &&
-        (!PyList_Check(forms) || PyList_Size(forms)>0)) {
-        cforms = fill_form<HyForm, _HY_FORM_STOP_>(forms);
-        if (cforms.empty())
-            return NULL;
+
+    auto list = PyList_New(0);
+    if (!list)
+        return NULL;
+    libdnf::Nevra nevraObj;
+    if (forms && forms != Py_None) {
+        if (PyInt_Check(forms)) {
+            if (nevraObj.parse(self->pattern, static_cast<HyForm>(PyLong_AsLong(forms)))) {
+                if (!addNevraToPyList(list, nevraObj)) {
+                    Py_DECREF(list);
+                    return NULL;
+                }
+            }
+            return list;
+        }
+        else if (PyList_Check(forms)) {
+            bool error = false;
+            for (Py_ssize_t i = 0; i < PyList_Size(forms); ++i) {
+                PyObject *form = PyList_GetItem(forms, i);
+                if (!PyInt_Check(form)) {
+                    error = true;
+                    break;
+                }
+                if (nevraObj.parse(self->pattern, static_cast<HyForm>(PyLong_AsLong(form)))) {
+                    if (!addNevraToPyList(list, nevraObj)) {
+                        Py_DECREF(list);
+                        return NULL;
+                    }
+                }
+            }
+            if (!error) 
+                return list;
+        }
+        PyErr_SetString(PyExc_TypeError, "Malformed subject forms.");
+        Py_DECREF(list);
+        return NULL;
+    } else {
+        for (std::size_t i = 0; HY_FORMS_MOST_SPEC[i] != _HY_FORM_STOP_; ++i) {
+            if (nevraObj.parse(self->pattern, HY_FORMS_MOST_SPEC[i])) {
+                if (!addNevraToPyList(list, nevraObj)) {
+                    Py_DECREF(list);
+                    return NULL;
+                }
+            }
+        }
     }
-    HyPossibilities iter = hy_subject_nevra_possibilities(self->pattern,
-        cforms.empty() ? NULL : cforms.data());
-    return possibilitiesToPyObject(iter);
+    return list;
+}
+
+static bool
+addModuleFormToPyList(PyObject * pyList, libdnf::ModuleForm & nevraObj)
+{
+    auto cModuleForm = new libdnf::ModuleForm(std::move(nevraObj));
+    auto moduleForm = moduleFormToPyObject(cModuleForm);
+    if (!moduleForm) {
+        delete cModuleForm;
+        return false;
+    }
+    int rc = PyList_Append(pyList, moduleForm);
+    Py_DECREF(moduleForm);
+    if (rc == -1)
+        return false;
+    return true;
 }
 
 static PyObject *
 module_form_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
-    PyObject *form = NULL;
+    PyObject *forms = NULL;
     const char *kwlist[] = { "form", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", (char**) kwlist, &form)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", (char**) kwlist, &forms)) {
         return NULL;
     }
-    std::vector<HyModuleFormEnum> cforms;
-    if (form != NULL) {
-        cforms = fill_form<HyModuleFormEnum, _HY_MODULE_FORM_STOP_>(form);
-        if (cforms.empty())
-            return NULL;
+
+    auto list = PyList_New(0);
+    if (!list)
+        return NULL;
+    libdnf::ModuleForm moduleFormObj;
+    if (forms && forms != Py_None) {
+        if (PyInt_Check(forms)) {
+            if (moduleFormObj.parse(self->pattern, static_cast<HyModuleFormEnum>(PyLong_AsLong(forms)))) {
+                if (!addModuleFormToPyList(list, moduleFormObj)) {
+                    Py_DECREF(list);
+                    return NULL;
+                }
+            }
+            return list;
+        }
+        else if (PyList_Check(forms)) {
+            bool error = false;
+            for (Py_ssize_t i = 0; i < PyList_Size(forms); ++i) {
+                PyObject *form = PyList_GetItem(forms, i);
+                if (!PyInt_Check(form)) {
+                    error = true;
+                    break;
+                }
+                if (moduleFormObj.parse(self->pattern, static_cast<HyModuleFormEnum>(PyLong_AsLong(form)))) {
+                    if (!addModuleFormToPyList(list, moduleFormObj)) {
+                        Py_DECREF(list);
+                        return NULL;
+                    }
+                }
+            }
+            if (!error) 
+                return list;
+        }
+        PyErr_SetString(PyExc_TypeError, "Malformed subject forms.");
+        Py_DECREF(list);
+        return NULL;
+    } else {
+        for (std::size_t i = 0; HY_FORMS_MOST_SPEC[i] != _HY_FORM_STOP_; ++i) {
+            if (moduleFormObj.parse(self->pattern, HY_MODULE_FORMS_MOST_SPEC[i])) {
+                if (!addModuleFormToPyList(list, moduleFormObj)) {
+                    Py_DECREF(list);
+                    return NULL;
+                }
+            }
+        }
     }
-    HyPossibilities iter = hy_subject_module_form_possibilities(self->pattern,
-        cforms.empty() ? NULL : cforms.data());
-    return possibilitiesToPyObject(iter);
+    return list;
+
 }
 
 static PyObject *
