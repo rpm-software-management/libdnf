@@ -5,5 +5,6 @@ ADD_SUBDIRECTORY (sqlite3)
 
 SET (UTILS_SOURCES
         ${UTILS_SOURCES}
+        ${CMAKE_CURRENT_SOURCE_DIR}/filesystem.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/utils.cpp
         PARENT_SCOPE)
