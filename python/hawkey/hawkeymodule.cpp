@@ -44,7 +44,6 @@
 #include "module-form-py.hpp"
 #include "package-py.hpp"
 #include "packagedelta-py.hpp"
-#include "possibilities-py.hpp"
 #include "query-py.hpp"
 #include "reldep-py.hpp"
 #include "repo-py.hpp"
@@ -225,11 +224,6 @@ PYCOMP_MOD_INIT(_hawkey)
         return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&subject_Type);
     PyModule_AddObject(m, "Subject", (PyObject *)&subject_Type);
-    /* _hawkey._Possibilities */
-    possibilities_Type.tp_new = PyType_GenericNew;
-    if (PyType_Ready(&possibilities_Type) < 0)
-        return PYCOMP_MOD_ERROR_VAL;
-    Py_INCREF(&possibilities_Type);
 
     PyModule_AddIntConstant(m, "FORM_NEVRA", HY_FORM_NEVRA);
     PyModule_AddIntConstant(m, "FORM_NEVR", HY_FORM_NEVR);
