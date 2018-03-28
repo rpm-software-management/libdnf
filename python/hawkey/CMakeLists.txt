@@ -35,7 +35,6 @@ SET (hawkeymodule_SRCS
     nevra-py.cpp
     package-py.cpp
     packagedelta-py.cpp
-    possibilities-py.cpp
     query-py.cpp
     reldep-py.cpp
     repo-py.cpp
