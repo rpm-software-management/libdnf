@@ -1,7 +1,7 @@
 #ifndef LIBDNF_SWDB_RPMITEM_TEST_HPP
 #define LIBDNF_SWDB_RPMITEM_TEST_HPP
 
-#include "libdnf/swdb/Transformer.hpp"
+#include "libdnf/transaction/Transformer.hpp"
 #include "libdnf/utils/sqlite3/Sqlite3.hpp"
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>

@@ -18,32 +18,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef LIBDNF_SWDB_ITEM_COMPS_ENVIRONMENT_HPP
-#define LIBDNF_SWDB_ITEM_COMPS_ENVIRONMENT_HPP
+#ifndef LIBDNF_TRANSACTION_COMPSGROUPITEM_HPP
+#define LIBDNF_TRANSACTION_COMPSGROUPITEM_HPP
 
 #include <memory>
 #include <vector>
 
-class CompsEnvironmentItem;
-typedef std::shared_ptr< CompsEnvironmentItem > CompsEnvironmentItemPtr;
+enum class CompsPackageType : int {
+    MANDATORY = 0,
+    DEFAULT = 1,
+    OPTIONAL = 2,
+    CONDITIONAL = 3,
+};
 
-class CompsEnvironmentGroup;
-typedef std::shared_ptr< CompsEnvironmentGroup > CompsEnvironmentGroupPtr;
+class CompsGroupItem;
+class CompsGroupPackage;
+
+typedef std::shared_ptr< CompsGroupItem > CompsGroupItemPtr;
+typedef std::shared_ptr< CompsGroupPackage > CompsGroupPackagePtr;
 
 #include "Item.hpp"
-#include "CompsGroupItem.hpp"
 #include "TransactionItem.hpp"
 
-class CompsEnvironmentItem : public Item {
+class CompsGroupItem : public Item {
 public:
-    explicit CompsEnvironmentItem(SQLite3Ptr conn);
+    explicit CompsGroupItem(SQLite3Ptr conn);
+    CompsGroupItem(SQLite3Ptr conn, int64_t pk);
+    virtual ~CompsGroupItem() = default;
 
-    CompsEnvironmentItem(SQLite3Ptr conn, int64_t pk);
-
-    virtual ~CompsEnvironmentItem() = default;
-
-    const std::string &getEnvironmentId() const noexcept { return environmentId; }
-    void setEnvironmentId(const std::string &value) { environmentId = value; }
+    const std::string &getGroupId() const noexcept { return groupId; }
+    void setGroupId(const std::string &value) { groupId = value; }
 
     const std::string &getName() const noexcept { return name; }
     void setName(const std::string &value) { name = value; }
@@ -57,11 +61,9 @@ public:
     virtual std::string toStr() const override;
     virtual ItemType getItemType() const noexcept { return itemType; }
     virtual void save();
-    CompsEnvironmentGroupPtr addGroup(std::string groupId,
-                                      bool installed,
-                                      CompsPackageType groupType);
-    std::vector< CompsEnvironmentGroupPtr > getGroups();
-    static TransactionItemPtr getTransactionItem(SQLite3Ptr conn, const std::string &envid);
+    CompsGroupPackagePtr addPackage(std::string name, bool installed, CompsPackageType pkgType);
+    std::vector< CompsGroupPackagePtr > getPackages();
+    static TransactionItemPtr getTransactionItem(SQLite3Ptr conn, const std::string &groupid);
     static std::vector< TransactionItemPtr > getTransactionItemsByPattern(
         SQLite3Ptr conn,
         const std::string &pattern);
@@ -69,51 +71,53 @@ public:
                                                                  int64_t transactionId);
 
 protected:
-    const ItemType itemType = ItemType::ENVIRONMENT;
-    std::string environmentId;
+    const ItemType itemType = ItemType::GROUP;
+    std::string groupId;
     std::string name;
     std::string translatedName;
     CompsPackageType packageTypes;
 
-    void loadGroups();
-    std::vector< CompsEnvironmentGroupPtr > groups;
+    void loadPackages();
+    std::vector< CompsGroupPackagePtr > packages;
 
 private:
-    friend class CompsEnvironmentGroup;
+    friend class CompsGroupPackage;
     void dbSelect(int64_t pk);
     void dbInsert();
 };
 
-class CompsEnvironmentGroup {
+class CompsGroupPackage {
 public:
-    explicit CompsEnvironmentGroup(CompsEnvironmentItem &environment);
+    explicit CompsGroupPackage(CompsGroupItem &group);
 
     int64_t getId() const noexcept { return id; }
     void setId(int64_t value) { id = value; }
 
-    const CompsEnvironmentItem &getEnvironment() const noexcept { return environment; }
+    const CompsGroupItem &getGroup() const noexcept { return group; }
 
-    const std::string &getGroupId() const noexcept { return groupId; }
-    void setGroupId(const std::string &value) { groupId = value; }
+    const std::string &getName() const noexcept { return name; }
+    void setName(const std::string &value) { name = value; }
 
     bool getInstalled() const noexcept { return installed; }
     void setInstalled(bool value) { installed = value; }
 
-    CompsPackageType getGroupType() const noexcept { return groupType; }
-    void setGroupType(CompsPackageType value) { groupType = value; }
+    CompsPackageType getPackageType() const noexcept { return packageType; }
+    void setPackageType(CompsPackageType value) { packageType = value; }
 
     // virtual std::string toStr();
     void save();
 
 protected:
     int64_t id = 0;
-    CompsEnvironmentItem &environment;
-    std::string groupId;
+    CompsGroupItem &group;
+    std::string name;
     bool installed = false;
-    CompsPackageType groupType;
+    CompsPackageType packageType;
 
 private:
     void dbInsert();
+    void dbSelectOrInsert();
+    void dbUpdate();
 };
 
-#endif // LIBDNF_SWDB_ITEM_COMPS_ENVIRONMENT_HPP
+#endif // LIBDNF_TRANSACTION_COMPSGROUPITEM_HPP

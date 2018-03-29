@@ -33,8 +33,8 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)
 include_directories(${JSONCPP_INCLUDE_DIRS})
 
-INCLUDE_DIRECTORIES (swdb)
-ADD_SUBDIRECTORY ("swdb")
+INCLUDE_DIRECTORIES (transaction)
+ADD_SUBDIRECTORY ("transaction")
 
 configure_file ("dnf-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/dnf-version.h)
 configure_file ("libdnf.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc @ONLY)

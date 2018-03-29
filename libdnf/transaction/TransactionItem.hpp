@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef LIBDNF_SWDB_TRANSACTIONITEM_HPP
-#define LIBDNF_SWDB_TRANSACTIONITEM_HPP
+#ifndef LIBDNF_TRANSACTION_TRANSACTIONITEM_HPP
+#define LIBDNF_TRANSACTION_TRANSACTIONITEM_HPP
 
 #include <memory>
 #include <string>
@@ -34,8 +34,8 @@ typedef std::shared_ptr< TransactionItem > TransactionItemPtr;
 #include "CompsGroupItem.hpp"
 #include "RPMItem.hpp"
 #include "private/Repo.hpp"
-#include "SwdbTypes.hpp"
 #include "Transaction.hpp"
+#include "Types.hpp"
 
 class TransactionItemBase {
 public:
@@ -114,4 +114,4 @@ protected:
     void dbUpdate();
 };
 
-#endif // LIBDNF_SWDB_TRANSACTIONITEM_HPP
+#endif // LIBDNF_TRANSACTION_TRANSACTIONITEM_HPP

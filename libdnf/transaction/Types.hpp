@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef LIBDNF_SWDB_TYPES_HPP
-#define LIBDNF_SWDB_TYPES_HPP
+#ifndef LIBDNF_TRANSACTION_TYPES_HPP
+#define LIBDNF_TRANSACTION_TYPES_HPP
 
 enum class TransactionState : int {
     UNKNOWN = 0,
@@ -136,4 +136,4 @@ Reasons:
 * inherited = a package was installed in the past, re-use it's reason in existing transaction
 */
 
-#endif // LIBDNF_SWDB_TYPES_HPP
+#endif // LIBDNF_TRANSACTION_TYPES_HPP

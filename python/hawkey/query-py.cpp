@@ -32,7 +32,7 @@
 #include "dnf-reldep.h"
 #include "dnf-reldep-list.h"
 #include "repo/solvable/DependencyContainer.hpp"
-#include "swdb/Swdb.hpp"
+#include "transaction/Swdb.hpp"
 
 #include "exception-py.hpp"
 #include "hawkey-pysys.hpp"

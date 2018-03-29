@@ -28,7 +28,7 @@ import operator
 import time
 import warnings
 
-import libdnf.swdb
+import libdnf.transaction
 
 from . import _hawkey
 
@@ -106,14 +106,14 @@ REASON_WEAKDEP = _hawkey.REASON_WEAKDEP
 
 def convert_hawkey_reason(hawkey_reason):
     if hawkey_reason == REASON_USER:
-        return libdnf.swdb.TransactionItemReason_USER
+        return libdnf.transaction.TransactionItemReason_USER
     if hawkey_reason == REASON_DEP:
-        return libdnf.swdb.TransactionItemReason_DEPENDENCY
+        return libdnf.transaction.TransactionItemReason_DEPENDENCY
     if hawkey_reason == REASON_CLEAN:
-        return libdnf.swdb.TransactionItemReason_CLEAN
+        return libdnf.transaction.TransactionItemReason_CLEAN
     if hawkey_reason == REASON_WEAKDEP:
-        return libdnf.swdb.TransactionItemReason_WEAK_DEPENDENCY
-    return libdnf.swdb.TransactionItemReason_UNKNOWN
+        return libdnf.transaction.TransactionItemReason_WEAK_DEPENDENCY
+    return libdnf.transaction.TransactionItemReason_UNKNOWN
 
 ADVISORY_UNKNOWN = _hawkey.ADVISORY_UNKNOWN
 ADVISORY_SECURITY = _hawkey.ADVISORY_SECURITY
@@ -204,12 +204,12 @@ class Goal(_hawkey.Goal):
     def get_reason(self, pkg):
         code = super(Goal, self).get_reason(pkg)
         if code == REASON_USER and pkg.name in self.group_members:
-            return libdnf.swdb.TransactionItemReason_GROUP
+            return libdnf.transaction.TransactionItemReason_GROUP
         return convert_hawkey_reason(code)
 
     def group_reason(self, pkg, current_reason):
-        if current_reason == libdnf.swdb.TransactionItemReason_UNKNOWN and pkg.name in self.group_members:
-            return libdnf.swdb.TransactionItemReason_GROUP
+        if current_reason == libdnf.transaction.TransactionItemReason_UNKNOWN and pkg.name in self.group_members:
+            return libdnf.transaction.TransactionItemReason_GROUP
         return current_reason
 
     def push_userinstalled(self, query, history):

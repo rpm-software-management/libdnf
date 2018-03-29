@@ -3,8 +3,8 @@
 #include <iostream>
 #include <string>
 
-#include "libdnf/swdb/CompsEnvironmentItem.hpp"
-#include "libdnf/swdb/Transformer.hpp"
+#include "libdnf/transaction/CompsEnvironmentItem.hpp"
+#include "libdnf/transaction/Transformer.hpp"
 
 #include "CompsEnvironmentItemTest.hpp"
 
