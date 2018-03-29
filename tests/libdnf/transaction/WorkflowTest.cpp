@@ -3,13 +3,13 @@
 #include <string>
 
 #include "WorkflowTest.hpp"
-#include "libdnf/swdb/CompsEnvironmentItem.hpp"
-#include "libdnf/swdb/CompsGroupItem.hpp"
-#include "libdnf/swdb/RPMItem.hpp"
-#include "libdnf/swdb/SwdbTypes.hpp"
-#include "libdnf/swdb/Transaction.hpp"
-#include "libdnf/swdb/TransactionItem.hpp"
-#include "libdnf/swdb/Transformer.hpp"
+#include "libdnf/transaction/CompsEnvironmentItem.hpp"
+#include "libdnf/transaction/CompsGroupItem.hpp"
+#include "libdnf/transaction/RPMItem.hpp"
+#include "libdnf/transaction/Transaction.hpp"
+#include "libdnf/transaction/TransactionItem.hpp"
+#include "libdnf/transaction/Transformer.hpp"
+#include "libdnf/transaction/Types.hpp"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(WorkflowTest);
 

@@ -1,4 +1,4 @@
-%module swdb
+%module transaction
 
 %begin %{
 #define SWIG_PYTHON_2_UNICODE
@@ -66,21 +66,21 @@ typedef std::shared_ptr< TransactionItemBase > TransactionItemBasePtr;
 
 %{
     // make SWIG wrap following headers
-    #include "libdnf/swdb/Item.hpp"
-    #include "libdnf/swdb/CompsEnvironmentItem.hpp"
-    #include "libdnf/swdb/CompsGroupItem.hpp"
-    #include "libdnf/swdb/RPMItem.hpp"
-    #include "libdnf/swdb/Swdb.hpp"
-    #include "libdnf/swdb/SwdbTypes.hpp"
-    #include "libdnf/swdb/Transaction.hpp"
-    #include "libdnf/swdb/TransactionItem.hpp"
-    #include "libdnf/swdb/MergedTransaction.hpp"
-    #include "libdnf/swdb/Transformer.hpp"
+    #include "libdnf/transaction/Item.hpp"
+    #include "libdnf/transaction/CompsEnvironmentItem.hpp"
+    #include "libdnf/transaction/CompsGroupItem.hpp"
+    #include "libdnf/transaction/RPMItem.hpp"
+    #include "libdnf/transaction/Swdb.hpp"
+    #include "libdnf/transaction/Transaction.hpp"
+    #include "libdnf/transaction/TransactionItem.hpp"
+    #include "libdnf/transaction/MergedTransaction.hpp"
+    #include "libdnf/transaction/Transformer.hpp"
+    #include "libdnf/transaction/Types.hpp"
 %}
 
 
 // This include has to be before %template definitions. SWIG is fragile :(
-%include "libdnf/swdb/SwdbTypes.hpp"
+%include "libdnf/transaction/Types.hpp"
 
 
 %template() std::vector<std::shared_ptr<libdnf::Transaction> >;
@@ -102,12 +102,12 @@ typedef std::shared_ptr< TransactionItemBase > TransactionItemBasePtr;
 
 
 // make SWIG look into following headers
-%include "libdnf/swdb/Item.hpp"
-%include "libdnf/swdb/CompsEnvironmentItem.hpp"
-%include "libdnf/swdb/CompsGroupItem.hpp"
-%include "libdnf/swdb/RPMItem.hpp"
-%include "libdnf/swdb/Swdb.hpp"
-%include "libdnf/swdb/Transaction.hpp"
-%include "libdnf/swdb/TransactionItem.hpp"
-%include "libdnf/swdb/MergedTransaction.hpp"
-%include "libdnf/swdb/Transformer.hpp"
+%include "libdnf/transaction/Item.hpp"
+%include "libdnf/transaction/CompsEnvironmentItem.hpp"
+%include "libdnf/transaction/CompsGroupItem.hpp"
+%include "libdnf/transaction/RPMItem.hpp"
+%include "libdnf/transaction/Swdb.hpp"
+%include "libdnf/transaction/Transaction.hpp"
+%include "libdnf/transaction/TransactionItem.hpp"
+%include "libdnf/transaction/MergedTransaction.hpp"
+%include "libdnf/transaction/Transformer.hpp"

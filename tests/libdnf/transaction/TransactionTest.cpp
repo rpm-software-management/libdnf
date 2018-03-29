@@ -1,8 +1,8 @@
 #include "TransactionTest.hpp"
-#include "libdnf/swdb/RPMItem.hpp"
-#include "libdnf/swdb/Transaction.hpp"
-#include "libdnf/swdb/private/Transaction.hpp"
-#include "libdnf/swdb/Transformer.hpp"
+#include "libdnf/transaction/RPMItem.hpp"
+#include "libdnf/transaction/Transaction.hpp"
+#include "libdnf/transaction/private/Transaction.hpp"
+#include "libdnf/transaction/Transformer.hpp"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TransactionTest);
 

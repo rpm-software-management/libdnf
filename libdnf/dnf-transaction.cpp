@@ -43,8 +43,8 @@
 #include "hy-query.h"
 #include "hy-util-private.hpp"
 
-#include "swdb/Swdb.hpp"
-#include "swdb/Transformer.hpp"
+#include "transaction/Swdb.hpp"
+#include "transaction/Transformer.hpp"
 #include "utils/bgettext/bgettext-lib.h"
 
 typedef enum {

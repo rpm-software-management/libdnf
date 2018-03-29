@@ -4,8 +4,8 @@
 #include <string>
 
 #include "RpmItemTest.hpp"
-#include "libdnf/swdb/RPMItem.hpp"
-#include "libdnf/swdb/Transformer.hpp"
+#include "libdnf/transaction/RPMItem.hpp"
+#include "libdnf/transaction/Transformer.hpp"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(RpmItemTest);
 

@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef LIBDNF_SWDB_SWDB_HPP
-#define LIBDNF_SWDB_SWDB_HPP
+#ifndef LIBDNF_TRANSACTION_SWDB_HPP
+#define LIBDNF_TRANSACTION_SWDB_HPP
 
 #include <map>
 #include <memory>
@@ -114,4 +114,4 @@ protected:
 private:
 };
 
-#endif // LIBDNF_SWDB_SWDB_HPP
+#endif // LIBDNF_TRANSACTION_SWDB_HPP

@@ -28,7 +28,7 @@
 #include "hy-query.h"
 
 // swdb
-#include "swdb/Swdb.hpp"
+#include "transaction/Swdb.hpp"
 
 enum _match_type {
     _HY_VOID,

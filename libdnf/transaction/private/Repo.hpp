@@ -18,43 +18,45 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef LIBDNF_SWDB_ITEM_HPP
-#define LIBDNF_SWDB_ITEM_HPP
+#ifndef LIBDNF_TRANSACTION_REPO_HPP
+#define LIBDNF_TRANSACTION_REPO_HPP
 
+#include <map>
 #include <memory>
 #include <string>
 
-#include "../utils/sqlite3/Sqlite3.hpp"
+#include "../../utils/sqlite3/Sqlite3.hpp"
 
-class Item;
-typedef std::shared_ptr< Item > ItemPtr;
+namespace libdnf {
+namespace swdb_private {
 
-#include "SwdbTypes.hpp"
+class Repo;
+typedef std::shared_ptr< Repo > RepoPtr;
 
-class Item {
+class Repo {
 public:
-    /// Default constructor.
-    explicit Item(SQLite3Ptr conn);
+    static RepoPtr getCached(SQLite3Ptr conn, const std::string &repoid);
+    static std::map< std::string, RepoPtr > cache;
 
-    /// Default destructor.
-    virtual ~Item() = default;
+    Repo(SQLite3Ptr conn);
 
-    /// Returns the ID of this item.
     int64_t getId() const noexcept { return id; }
-
-    /// Sets the ID of this item.
     void setId(int64_t value) { id = value; }
 
-    virtual ItemType getItemType() const noexcept { return itemType; }
-    virtual std::string toStr() const;
-    virtual void save();
+    const std::string &getRepoId() const noexcept { return repoId; }
+    void setRepoId(const std::string &value) { repoId = value; }
+
+    void save();
 
 protected:
     void dbInsert();
+    void dbSelectOrInsert();
 
-    SQLite3Ptr conn;
     int64_t id = 0;
-    const ItemType itemType = ItemType::UNKNOWN;
+    std::string repoId;
+    SQLite3Ptr conn;
+};
+};
 };
 
-#endif // LIBDNF_SWDB_ITEM_HPP
+#endif // LIBDNF_TRANSACTION_REPO_HPP
