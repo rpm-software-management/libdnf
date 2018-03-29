@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef LIBDNF_SWDB_ITEM_RPM_HPP
-#define LIBDNF_SWDB_ITEM_RPM_HPP
+#ifndef LIBDNF_TRANSACTION_RPMITEM_HPP
+#define LIBDNF_TRANSACTION_RPMITEM_HPP
 
 #include <memory>
 #include <vector>
@@ -28,8 +28,8 @@ class RPMItem;
 typedef std::shared_ptr< RPMItem > RPMItemPtr;
 
 #include "Item.hpp"
-#include "SwdbTypes.hpp"
 #include "TransactionItem.hpp"
+#include "Types.hpp"
 
 class RPMItem : public Item {
 public:
@@ -81,4 +81,4 @@ protected:
     void dbSelectOrInsert();
 };
 
-#endif // LIBDNF_SWDB_ITEM_RPM_HPP
+#endif // LIBDNF_TRANSACTION_RPMITEM_HPP

@@ -1,4 +1,4 @@
-SET(SWDB_SRCS
+SET(TRANSACTION_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/Item.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CompsEnvironmentItem.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CompsGroupItem.cpp
@@ -14,6 +14,6 @@ add_subdirectory(private)
 
 SET(LIBDNF_SRCS
     ${LIBDNF_SRCS}
-    ${SWDB_SRCS}
+    ${TRANSACTION_SRCS}
     PARENT_SCOPE
 )

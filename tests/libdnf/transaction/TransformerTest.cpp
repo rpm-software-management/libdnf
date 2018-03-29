@@ -3,12 +3,12 @@
 #include <sstream>
 #include <string>
 
-#include "libdnf/swdb/RPMItem.hpp"
-#include "libdnf/swdb/Swdb.hpp"
-#include "libdnf/swdb/SwdbTypes.hpp"
-#include "libdnf/swdb/Transaction.hpp"
-#include "libdnf/swdb/private/Transaction.hpp"
-#include "libdnf/swdb/TransactionItem.hpp"
+#include "libdnf/transaction/RPMItem.hpp"
+#include "libdnf/transaction/Swdb.hpp"
+#include "libdnf/transaction/Transaction.hpp"
+#include "libdnf/transaction/private/Transaction.hpp"
+#include "libdnf/transaction/TransactionItem.hpp"
+#include "libdnf/transaction/Types.hpp"
 
 #include "TransformerTest.hpp"
 

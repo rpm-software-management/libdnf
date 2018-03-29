@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef LIBDNF_SWDB_MERGEDTRANSACTION_HPP
-#define LIBDNF_SWDB_MERGEDTRANSACTION_HPP
+#ifndef LIBDNF_TRANSACTION_MERGEDTRANSACTION_HPP
+#define LIBDNF_TRANSACTION_MERGEDTRANSACTION_HPP
 
 #include <memory>
 #include <set>
@@ -74,4 +74,4 @@ protected:
     void resolveAltered(ItemPair &previousItemPair, TransactionItemBasePtr mTransItem);
 };
 
-#endif // LIBDNF_SWDB_TRANSACTION_HPP
+#endif // LIBDNF_TRANSACTION_TRANSACTION_HPP

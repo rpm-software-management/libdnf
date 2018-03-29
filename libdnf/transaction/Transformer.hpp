@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef LIBDNF_SWDB_TRANSFORMER_HPP
-#define LIBDNF_SWDB_TRANSFORMER_HPP
+#ifndef LIBDNF_TRANSACTION_TRANSFORMER_HPP
+#define LIBDNF_TRANSACTION_TRANSFORMER_HPP
 
 #include <json/json.h>
 #include <memory>

@@ -3,10 +3,10 @@
 
 #include "libdnf/hy-subject.h"
 #include "libdnf/nevra.hpp"
-#include "libdnf/swdb/RPMItem.hpp"
-#include "libdnf/swdb/MergedTransaction.hpp"
-#include "libdnf/swdb/Transaction.hpp"
-#include "libdnf/swdb/Transformer.hpp"
+#include "libdnf/transaction/RPMItem.hpp"
+#include "libdnf/transaction/MergedTransaction.hpp"
+#include "libdnf/transaction/Transaction.hpp"
+#include "libdnf/transaction/Transformer.hpp"
 
 #include "MergedTransactionTest.hpp"
 
