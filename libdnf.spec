@@ -162,7 +162,7 @@ popd
 
 %files
 %license COPYING
-%doc README.md AUTHORS NEWS
+%doc README.md AUTHORS
 %{_libdir}/%{name}.so.*
 %{_libdir}/girepository-1.0/Dnf-*.typelib
 
