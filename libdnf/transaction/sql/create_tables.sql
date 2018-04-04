@@ -17,7 +17,7 @@ R"**(
     CREATE TABLE console_output (
         id INTEGER PRIMARY KEY,
         trans_id INTEGER REFERENCES trans(id),
-        file_descriptor INTEGER NOT NULL,
+        file_descriptor INTEGER NOT NULL,       /* stdout: 1, stderr : 2 */
         line TEXT NOT NULL
     );
     CREATE TABLE item (
