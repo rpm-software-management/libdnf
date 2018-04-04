@@ -31,7 +31,7 @@ SET (hawkeymodule_SRCS
     goal-py.cpp
     hawkeymodule.cpp
     iutil-py.cpp
-    module-form-py.cpp
+    nsvcap-py.cpp
     nevra-py.cpp
     package-py.cpp
     packagedelta-py.cpp

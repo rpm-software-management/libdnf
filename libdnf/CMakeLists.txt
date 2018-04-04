@@ -5,7 +5,7 @@ SET (LIBDNF_SRCS
     hy-goal.cpp
     hy-iutil.cpp
     hy-nevra.cpp
-    hy-module-form.cpp
+    nsvcap.cpp
     dnf-reldep.cpp
     dnf-reldep-list.cpp
     hy-package.cpp
@@ -88,7 +88,6 @@ TARGET_LINK_LIBRARIES(libdnf
 SET(LIBHAWKEY_headers
     hy-goal.h
     hy-nevra.hpp
-    hy-module-form.hpp
     hy-package.h
     hy-packageset.h
     hy-query.h
@@ -101,6 +100,7 @@ SET(LIBHAWKEY_headers
 
 SET(LIBDNF_headers
     ${LIBDNF_headers}
+    nsvcap.hpp
     dnf-advisory.h
     dnf-advisorypkg.h
     dnf-advisoryref.h

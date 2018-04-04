@@ -25,7 +25,7 @@
 
 
 #include "libdnf/hy-nevra.hpp"
-#include "libdnf/hy-module-form.hpp"
+#include "libdnf/nsvcap.hpp"
 #include "libdnf/dnf-reldep.h"
 #include "libdnf/dnf-sack.h"
 #include "libdnf/hy-subject.h"
@@ -155,157 +155,157 @@ END_TEST
 
 START_TEST(module_form_nsvcap)
 {
-    libdnf::ModuleForm module_form;
-    ck_assert(module_form.parse(module_nsvcap, HY_MODULE_FORM_NSVCAP));
-    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
-    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
-    ck_assert_int_eq(module_form.getVersion(), 1);
-    ck_assert_str_eq(module_form.getContext().c_str(), "b86c854");
-    ck_assert_str_eq(module_form.getArch().c_str(), "x86_64");
-    ck_assert_str_eq(module_form.getProfile().c_str(), "profile");
+    libdnf::Nsvcap nsvcap;
+    ck_assert(nsvcap.parse(module_nsvcap, HY_MODULE_FORM_NSVCAP));
+    ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
+    ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
+    ck_assert_int_eq(nsvcap.getVersion(), 1);
+    ck_assert_str_eq(nsvcap.getContext().c_str(), "b86c854");
+    ck_assert_str_eq(nsvcap.getArch().c_str(), "x86_64");
+    ck_assert_str_eq(nsvcap.getProfile().c_str(), "profile");
 }
 END_TEST
 
 START_TEST(module_form_nsvap)
 {
-    libdnf::ModuleForm module_form;
-    ck_assert(module_form.parse(module_nsvap, HY_MODULE_FORM_NSVAP));
-    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
-    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
-    ck_assert_int_eq(module_form.getVersion(), 1);
-    ck_assert_str_eq(module_form.getArch().c_str(), "x86_64");
-    ck_assert_str_eq(module_form.getProfile().c_str(), "profile");
+    libdnf::Nsvcap nsvcap;
+    ck_assert(nsvcap.parse(module_nsvap, HY_MODULE_FORM_NSVAP));
+    ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
+    ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
+    ck_assert_int_eq(nsvcap.getVersion(), 1);
+    ck_assert_str_eq(nsvcap.getArch().c_str(), "x86_64");
+    ck_assert_str_eq(nsvcap.getProfile().c_str(), "profile");
 }
 END_TEST
 
 START_TEST(module_form_nsvca)
 {
-    libdnf::ModuleForm module_form;
-    ck_assert(module_form.parse(module_nsvca, HY_MODULE_FORM_NSVCA));
-    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
-    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
-    ck_assert_int_eq(module_form.getVersion(), 1);
-    ck_assert_str_eq(module_form.getContext().c_str(), "b86c854");
-    ck_assert_str_eq(module_form.getArch().c_str(), "x86_64");
+    libdnf::Nsvcap nsvcap;
+    ck_assert(nsvcap.parse(module_nsvca, HY_MODULE_FORM_NSVCA));
+    ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
+    ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
+    ck_assert_int_eq(nsvcap.getVersion(), 1);
+    ck_assert_str_eq(nsvcap.getContext().c_str(), "b86c854");
+    ck_assert_str_eq(nsvcap.getArch().c_str(), "x86_64");
 }
 END_TEST
 
 START_TEST(module_form_nsva)
 {
-    libdnf::ModuleForm module_form;
-    ck_assert(module_form.parse(module_nsva, HY_MODULE_FORM_NSVA));
-    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
-    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
-    ck_assert_int_eq(module_form.getVersion(), 1);
-    ck_assert_str_eq(module_form.getArch().c_str(), "x86_64");
+    libdnf::Nsvcap nsvcap;
+    ck_assert(nsvcap.parse(module_nsva, HY_MODULE_FORM_NSVA));
+    ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
+    ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
+    ck_assert_int_eq(nsvcap.getVersion(), 1);
+    ck_assert_str_eq(nsvcap.getArch().c_str(), "x86_64");
 }
 END_TEST
 
 START_TEST(module_form_nsvp)
 {
-    libdnf::ModuleForm module_form;
-    ck_assert(module_form.parse(module_nsvp, HY_MODULE_FORM_NSVP));
-    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
-    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
-    ck_assert_int_eq(module_form.getVersion(), 1);
-    ck_assert_str_eq(module_form.getProfile().c_str(), "profile");
+    libdnf::Nsvcap nsvcap;
+    ck_assert(nsvcap.parse(module_nsvp, HY_MODULE_FORM_NSVP));
+    ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
+    ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
+    ck_assert_int_eq(nsvcap.getVersion(), 1);
+    ck_assert_str_eq(nsvcap.getProfile().c_str(), "profile");
 }
 END_TEST
 
 START_TEST(module_form_nsvc)
 {
-    libdnf::ModuleForm module_form;
-    ck_assert(module_form.parse(module_nsvc, HY_MODULE_FORM_NSVC));
-    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
-    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
-    ck_assert_int_eq(module_form.getVersion(), 1);
-    ck_assert_str_eq(module_form.getContext().c_str(), "b86c854");
+    libdnf::Nsvcap nsvcap;
+    ck_assert(nsvcap.parse(module_nsvc, HY_MODULE_FORM_NSVC));
+    ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
+    ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
+    ck_assert_int_eq(nsvcap.getVersion(), 1);
+    ck_assert_str_eq(nsvcap.getContext().c_str(), "b86c854");
 }
 END_TEST
 
 START_TEST(module_form_nsv)
 {
-    libdnf::ModuleForm module_form;
-    ck_assert(module_form.parse(module_nsv, HY_MODULE_FORM_NSV));
-    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
-    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
-    ck_assert_int_eq(module_form.getVersion(), 1);
+    libdnf::Nsvcap nsvcap;
+    ck_assert(nsvcap.parse(module_nsv, HY_MODULE_FORM_NSV));
+    ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
+    ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
+    ck_assert_int_eq(nsvcap.getVersion(), 1);
 }
 END_TEST
 
 START_TEST(module_form_nsap)
 {
-    libdnf::ModuleForm module_form;
-    ck_assert(module_form.parse(module_nsap, HY_MODULE_FORM_NSAP));
-    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
-    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
-    ck_assert_str_eq(module_form.getArch().c_str(), "x86_64");
-    ck_assert_str_eq(module_form.getProfile().c_str(), "profile");
+    libdnf::Nsvcap nsvcap;
+    ck_assert(nsvcap.parse(module_nsap, HY_MODULE_FORM_NSAP));
+    ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
+    ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
+    ck_assert_str_eq(nsvcap.getArch().c_str(), "x86_64");
+    ck_assert_str_eq(nsvcap.getProfile().c_str(), "profile");
 }
 END_TEST
 
 START_TEST(module_form_nsa)
 {
-    libdnf::ModuleForm module_form;
-    ck_assert(module_form.parse(module_nsa, HY_MODULE_FORM_NSA));
-    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
-    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
-    ck_assert_str_eq(module_form.getArch().c_str(), "x86_64");
+    libdnf::Nsvcap nsvcap;
+    ck_assert(nsvcap.parse(module_nsa, HY_MODULE_FORM_NSA));
+    ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
+    ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
+    ck_assert_str_eq(nsvcap.getArch().c_str(), "x86_64");
 }
 END_TEST
 
 START_TEST(module_form_nsp)
 {
-    libdnf::ModuleForm module_form;
-    ck_assert(module_form.parse(module_nsp, HY_MODULE_FORM_NSP));
-    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
-    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
-    ck_assert_str_eq(module_form.getProfile().c_str(), "profile");
+    libdnf::Nsvcap nsvcap;
+    ck_assert(nsvcap.parse(module_nsp, HY_MODULE_FORM_NSP));
+    ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
+    ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
+    ck_assert_str_eq(nsvcap.getProfile().c_str(), "profile");
 }
 END_TEST
 
 START_TEST(module_form_ns)
 {
-    libdnf::ModuleForm module_form;
-    ck_assert(module_form.parse(module_ns, HY_MODULE_FORM_NS));
-    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
-    ck_assert_str_eq(module_form.getStream().c_str(), "stream");
+    libdnf::Nsvcap nsvcap;
+    ck_assert(nsvcap.parse(module_ns, HY_MODULE_FORM_NS));
+    ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
+    ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
 }
 END_TEST
 
 START_TEST(module_form_nap)
 {
-    libdnf::ModuleForm module_form;
-    ck_assert(module_form.parse(module_nap, HY_MODULE_FORM_NAP));
-    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
-    ck_assert_str_eq(module_form.getArch().c_str(), "x86_64");
-    ck_assert_str_eq(module_form.getProfile().c_str(), "profile");
+    libdnf::Nsvcap nsvcap;
+    ck_assert(nsvcap.parse(module_nap, HY_MODULE_FORM_NAP));
+    ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
+    ck_assert_str_eq(nsvcap.getArch().c_str(), "x86_64");
+    ck_assert_str_eq(nsvcap.getProfile().c_str(), "profile");
 }
 END_TEST
 
 START_TEST(module_form_na)
 {
-    libdnf::ModuleForm module_form;
-    ck_assert(module_form.parse(module_na, HY_MODULE_FORM_NA));
-    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
-    ck_assert_str_eq(module_form.getArch().c_str(), "x86_64");
+    libdnf::Nsvcap nsvcap;
+    ck_assert(nsvcap.parse(module_na, HY_MODULE_FORM_NA));
+    ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
+    ck_assert_str_eq(nsvcap.getArch().c_str(), "x86_64");
 }
 END_TEST
 
 START_TEST(module_form_np)
 {
-    libdnf::ModuleForm module_form;
-    ck_assert(module_form.parse(module_np, HY_MODULE_FORM_NP));
-    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
-    ck_assert_str_eq(module_form.getProfile().c_str(), "profile");
+    libdnf::Nsvcap nsvcap;
+    ck_assert(nsvcap.parse(module_np, HY_MODULE_FORM_NP));
+    ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
+    ck_assert_str_eq(nsvcap.getProfile().c_str(), "profile");
 }
 END_TEST
 
 START_TEST(module_form_n)
 {
-    libdnf::ModuleForm module_form;
-    ck_assert(module_form.parse(module_n, HY_MODULE_FORM_N));
-    ck_assert_str_eq(module_form.getName().c_str(), "module-name");
+    libdnf::Nsvcap nsvcap;
+    ck_assert(nsvcap.parse(module_n, HY_MODULE_FORM_N));
+    ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
 }
 END_TEST
 

@@ -25,7 +25,7 @@
 // hawkey
 #include "hy-iutil.h"
 #include "hy-nevra.hpp"
-#include "hy-module-form.hpp"
+#include "nsvcap.hpp"
 #include "dnf-sack.h"
 #include "hy-subject.h"
 #include "hy-types.h"
@@ -33,7 +33,7 @@
 // pyhawkey
 #include "iutil-py.hpp"
 #include "nevra-py.hpp"
-#include "module-form-py.hpp"
+#include "nsvcap-py.hpp"
 #include "pycomp.hpp"
 #include "query-py.hpp"
 #include "reldep-py.hpp"
@@ -213,23 +213,23 @@ get_nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
 }
 
 static bool
-addModuleFormToPyList(PyObject * pyList, libdnf::ModuleForm & nevraObj)
+addNsvcapToPyList(PyObject * pyList, libdnf::Nsvcap & nevraObj)
 {
-    auto cModuleForm = new libdnf::ModuleForm(std::move(nevraObj));
-    auto moduleForm = moduleFormToPyObject(cModuleForm);
-    if (!moduleForm) {
-        delete cModuleForm;
+    auto cNsvcap = new libdnf::Nsvcap(std::move(nevraObj));
+    auto nsvcap = nsvcapToPyObject(cNsvcap);
+    if (!nsvcap) {
+        delete cNsvcap;
         return false;
     }
-    int rc = PyList_Append(pyList, moduleForm);
-    Py_DECREF(moduleForm);
+    int rc = PyList_Append(pyList, nsvcap);
+    Py_DECREF(nsvcap);
     if (rc == -1)
         return false;
     return true;
 }
 
 static PyObject *
-module_form_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
+nsvcap_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *forms = NULL;
     const char *kwlist[] = { "form", NULL };
@@ -240,11 +240,11 @@ module_form_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
     auto list = PyList_New(0);
     if (!list)
         return NULL;
-    libdnf::ModuleForm moduleFormObj;
+    libdnf::Nsvcap nsvcapObj;
     if (forms && forms != Py_None) {
         if (PyInt_Check(forms)) {
-            if (moduleFormObj.parse(self->pattern, static_cast<HyModuleFormEnum>(PyLong_AsLong(forms)))) {
-                if (!addModuleFormToPyList(list, moduleFormObj)) {
+            if (nsvcapObj.parse(self->pattern, static_cast<HyModuleForm>(PyLong_AsLong(forms)))) {
+                if (!addNsvcapToPyList(list, nsvcapObj)) {
                     Py_DECREF(list);
                     return NULL;
                 }
@@ -259,8 +259,8 @@ module_form_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
                     error = true;
                     break;
                 }
-                if (moduleFormObj.parse(self->pattern, static_cast<HyModuleFormEnum>(PyLong_AsLong(form)))) {
-                    if (!addModuleFormToPyList(list, moduleFormObj)) {
+                if (nsvcapObj.parse(self->pattern, static_cast<HyModuleForm>(PyLong_AsLong(form)))) {
+                    if (!addNsvcapToPyList(list, nsvcapObj)) {
                         Py_DECREF(list);
                         return NULL;
                     }
@@ -274,8 +274,8 @@ module_form_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     } else {
         for (std::size_t i = 0; HY_FORMS_MOST_SPEC[i] != _HY_FORM_STOP_; ++i) {
-            if (moduleFormObj.parse(self->pattern, HY_MODULE_FORMS_MOST_SPEC[i])) {
-                if (!addModuleFormToPyList(list, moduleFormObj)) {
+            if (nsvcapObj.parse(self->pattern, HY_MODULE_FORMS_MOST_SPEC[i])) {
+                if (!addNsvcapToPyList(list, nsvcapObj)) {
                     Py_DECREF(list);
                     return NULL;
                 }
@@ -390,7 +390,7 @@ static struct PyMethodDef subject_methods[] = {
     "forms: list of hawkey NEVRA forms like [hawkey.FORM_NEVRA, hawkey.FORM_NEVR]\n"
     "return: object with every possible nevra. Each possible nevra is represented by Class "
     "NEVRA object (libdnf) that have attributes name, epoch, version, release, arch"},
-    {"module_form_possibilities", (PyCFunction) module_form_possibilities,
+    {"nsvcap_possibilities", (PyCFunction) nsvcap_possibilities,
     METH_VARARGS | METH_KEYWORDS, NULL},
     {"get_best_query", (PyCFunction) get_best_query,
     METH_VARARGS | METH_KEYWORDS,

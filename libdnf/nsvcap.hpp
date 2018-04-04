@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef LIBDNF_HY_MODULE_FORM_HPP
-#define LIBDNF_HY_MODULE_FORM_HPP
+#ifndef LIBDNF_NSVCAP_HPP
+#define LIBDNF_NSVCAP_HPP
 
 #include "hy-subject.h"
 
@@ -27,13 +27,13 @@
 
 namespace libdnf {
 
-struct ModuleForm {
+struct Nsvcap {
 public:
     static constexpr long long VersionNotSet = -1;
 
-    ModuleForm();
+    Nsvcap();
 
-    bool parse(const char *moduleFormStr, HyModuleFormEnum form);
+    bool parse(const char *nsvcapStr, HyModuleForm form);
     void clear();
 
     const std::string & getName() const noexcept;
@@ -65,94 +65,94 @@ private:
     std::string profile;
 };
 
-inline ModuleForm::ModuleForm()
+inline Nsvcap::Nsvcap()
 : version(VersionNotSet) {}
 
-inline const std::string & ModuleForm::getName() const noexcept
+inline const std::string & Nsvcap::getName() const noexcept
 {
     return name;
 }
 
-inline const std::string & ModuleForm::getStream() const noexcept
+inline const std::string & Nsvcap::getStream() const noexcept
 {
     return stream;
 }
 
-inline long long ModuleForm::getVersion() const noexcept
+inline long long Nsvcap::getVersion() const noexcept
 {
     return version;
 }
 
-inline const std::string & ModuleForm::getContext() const noexcept
+inline const std::string & Nsvcap::getContext() const noexcept
 {
     return context;
 }
 
-inline const std::string & ModuleForm::getArch() const noexcept
+inline const std::string & Nsvcap::getArch() const noexcept
 {
     return arch;
 }
 
-inline const std::string & ModuleForm::getProfile() const noexcept
+inline const std::string & Nsvcap::getProfile() const noexcept
 {
     return profile;
 }
 
-inline void ModuleForm::setName(const std::string & name)
+inline void Nsvcap::setName(const std::string & name)
 {
     this->name = name;
 }
 
-inline void ModuleForm::setStream(const std::string & stream)
+inline void Nsvcap::setStream(const std::string & stream)
 {
     this->stream = stream;
 }
 
-inline void ModuleForm::setVersion(long long version)
+inline void Nsvcap::setVersion(long long version)
 {
     this->version = version;
 }
 
-inline void ModuleForm::setContext(const std::string & context)
+inline void Nsvcap::setContext(const std::string & context)
 {
     this->context = context;
 }
 
-inline void ModuleForm::setArch(const std::string & arch)
+inline void Nsvcap::setArch(const std::string & arch)
 {
     this->arch = arch;
 }
 
-inline void ModuleForm::setProfile(const std::string & profile)
+inline void Nsvcap::setProfile(const std::string & profile)
 {
     this->profile = profile;
 }
 
-inline void ModuleForm::setName(std::string && name)
+inline void Nsvcap::setName(std::string && name)
 {
     this->name = std::move(name);
 }
 
-inline void ModuleForm::setStream(std::string && stream)
+inline void Nsvcap::setStream(std::string && stream)
 {
     this->stream = std::move(stream);
 }
 
-inline void ModuleForm::setContext(std::string && context)
+inline void Nsvcap::setContext(std::string && context)
 {
     this->context = std::move(context);
 }
 
-inline void ModuleForm::setArch(std::string && arch)
+inline void Nsvcap::setArch(std::string && arch)
 {
     this->arch = std::move(arch);
 }
 
-inline void ModuleForm::setProfile(std::string && profile)
+inline void Nsvcap::setProfile(std::string && profile)
 {
     this->profile = std::move(profile);
 }
 
 }
 
-#endif //LIBDNF_HY_MODULE_FORM_HPP
+#endif //LIBDNF_NSVCAP_HPP

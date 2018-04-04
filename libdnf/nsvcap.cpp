@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "hy-module-form.hpp"
+#include "nsvcap.hpp"
 
 #include <regex/regex.hpp>
 
@@ -31,7 +31,7 @@ namespace libdnf {
 #define MODULE_ARCH MODULE_NAME
 #define MODULE_PROFILE MODULE_NAME
 
-constexpr const char * module_form_regex[] = {
+static constexpr const char * NSVCAP_FORM_REGEX[] = {
     "^" MODULE_NAME ":" MODULE_STREAM ":" MODULE_VERSION ":" MODULE_CONTEXT "::?" MODULE_ARCH "\\/"  MODULE_PROFILE "$",
     "^" MODULE_NAME ":" MODULE_STREAM ":" MODULE_VERSION ":" MODULE_CONTEXT "::?" MODULE_ARCH "\\/?" "()"           "$",
     "^" MODULE_NAME ":" MODULE_STREAM ":" MODULE_VERSION     "()"           "::"  MODULE_ARCH "\\/"  MODULE_PROFILE "$",
@@ -50,11 +50,11 @@ constexpr const char * module_form_regex[] = {
     "^" MODULE_NAME     "()"              "()"               "()"                 "()"        "\\/?" "()"           "$"
 };
 
-bool ModuleForm::parse(const char *moduleFormStr, HyModuleFormEnum form)
+bool Nsvcap::parse(const char *nsvcapStr, HyModuleForm form)
 {
     enum { NAME = 1, STREAM = 2, VERSION = 3, CONTEXT = 4, ARCH = 5, PROFILE = 6, _LAST_ };
-    Regex reg(module_form_regex[form - 1], REG_EXTENDED);
-    auto matchResult = reg.match(moduleFormStr, false, _LAST_);
+    Regex reg(NSVCAP_FORM_REGEX[form - 1], REG_EXTENDED);
+    auto matchResult = reg.match(nsvcapStr, false, _LAST_);
     if (!matchResult.isMatched() || matchResult.getMatchedLen(NAME) == 0)
         return false;
     name = matchResult.getMatchedString(NAME);
@@ -70,7 +70,7 @@ bool ModuleForm::parse(const char *moduleFormStr, HyModuleFormEnum form)
 }
 
 void
-ModuleForm::clear()
+Nsvcap::clear()
 {
     name.clear();
     stream.clear();

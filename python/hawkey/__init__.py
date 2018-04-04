@@ -57,7 +57,7 @@ __all__ = [
     'Swdb', 'SwdbItem', 'SwdbReason', 'SwdbPkg', 'SwdbPkgData', 'SwdbTrans',
     'SwdbGroup', 'SwdbEnv',
     # classes
-    'Goal', 'NEVRA', 'ModuleForm', 'Package', 'Query', 'Repo', 'Sack', 'Selector', 'Subject']
+    'Goal', 'NEVRA', 'NSVCAP', 'Package', 'Query', 'Repo', 'Sack', 'Selector', 'Subject']
 
 NEVRA = _hawkey.NEVRA
 Query = _hawkey.Query
@@ -170,23 +170,23 @@ def split_nevra(s):
     return NEVRA(*t)
 
 
-class ModuleForm(_hawkey.ModuleForm):
+class NSVCAP(_hawkey.NSVCAP):
 
-    MODULE_FORM_FIELDS = ["name", "stream", "version", "context", "arch", "profile"]
+    NSVCAP_FIELDS = ["name", "stream", "version", "context", "arch", "profile"]
 
     def _has_just_name(self):
         return self.name and not self.stream and not self.version and \
                not self.arch and not self.profile
 
     def __repr__(self):
-        values = [getattr(self, i) for i in self.MODULE_FORM_FIELDS]
-        items = [(field, value) for field, value in zip(self.MODULE_FORM_FIELDS, values) if value is not None]
+        values = [getattr(self, i) for i in self.NSVCAP_FIELDS]
+        items = [(field, value) for field, value in zip(self.NSVCAP_FIELDS, values) if value is not None]
         items_str = ", ".join(["{}={}".format(field, value) for field, value in items])
-        return "<MODULE_FORM: {}>".format(items_str)
+        return "<NSVCAP: {}>".format(items_str)
 
     def __eq__(self, other):
         result = True
-        for field in self.MODULE_FORM_FIELDS:
+        for field in self.NSVCAP_FIELDS:
             value_self = getattr(self, field)
             value_other = getattr(other, field)
             result &= value_self == value_other
@@ -261,10 +261,10 @@ class Subject(_hawkey.Subject):
     def __init__(self, pkg_spec, ignore_case=False):
         super(Subject, self).__init__(pkg_spec, ignore_case=ignore_case)
 
-    def module_form_possibilities(self, *args, **kwargs):
-        poss = super(Subject, self).module_form_possibilities(*args, **kwargs)
-        for module_form in poss:
-            yield ModuleForm(module_form=module_form)
+    def nsvcap_possibilities(self, *args, **kwargs):
+        poss = super(Subject, self).nsvcap_possibilities(*args, **kwargs)
+        for nsvcap in poss:
+            yield NSVCAP(nsvcap=nsvcap)
 
     @property
     def _filename_pattern(self):

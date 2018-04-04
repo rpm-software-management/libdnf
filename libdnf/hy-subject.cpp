@@ -26,7 +26,7 @@
 #include "hy-subject.h"
 #include "hy-iutil-private.hpp"
 #include "hy-nevra.hpp"
-#include "hy-module-form.hpp"
+#include "nsvcap.hpp"
 #include "hy-types.h"
 #include "hy-query-private.hpp"
 #include "hy-selector.h"
@@ -37,7 +37,7 @@
 const HyForm HY_FORMS_MOST_SPEC[] = {
     HY_FORM_NEVRA, HY_FORM_NA, HY_FORM_NAME, HY_FORM_NEVR, HY_FORM_NEV, _HY_FORM_STOP_ };
 
-const HyModuleFormEnum HY_MODULE_FORMS_MOST_SPEC[] = {
+const HyModuleForm HY_MODULE_FORMS_MOST_SPEC[] = {
         HY_MODULE_FORM_NSVCAP,
         HY_MODULE_FORM_NSVCA,
         HY_MODULE_FORM_NSVAP,

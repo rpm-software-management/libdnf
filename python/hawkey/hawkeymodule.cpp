@@ -41,7 +41,7 @@
 #include "exception-py.hpp"
 #include "goal-py.hpp"
 #include "nevra-py.hpp"
-#include "module-form-py.hpp"
+#include "nsvcap-py.hpp"
 #include "package-py.hpp"
 #include "packagedelta-py.hpp"
 #include "query-py.hpp"
@@ -216,11 +216,11 @@ PYCOMP_MOD_INIT(_hawkey)
         return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&nevra_Type);
     PyModule_AddObject(m, "NEVRA", (PyObject *)&nevra_Type);
-    /* _hawkey.ModuleForm */
-    if (PyType_Ready(&module_form_Type) < 0)
+    /* _hawkey.NSVCAP */
+    if (PyType_Ready(&nsvcap_Type) < 0)
         return PYCOMP_MOD_ERROR_VAL;
-    Py_INCREF(&module_form_Type);
-    PyModule_AddObject(m, "ModuleForm", (PyObject *)&module_form_Type);
+    Py_INCREF(&nsvcap_Type);
+    PyModule_AddObject(m, "NSVCAP", (PyObject *)&nsvcap_Type);
     /* _hawkey.Subject */
     if (PyType_Ready(&subject_Type) < 0)
         return PYCOMP_MOD_ERROR_VAL;
