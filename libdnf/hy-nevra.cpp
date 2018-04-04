@@ -26,7 +26,7 @@ namespace libdnf {
 class Nevra::Impl {
 public:
     std::string name;
-    int epoch{IgnoreEpoch};
+    int epoch{EpochNotSet};
     std::string version;
     std::string release;
     std::string arch;
@@ -72,7 +72,7 @@ bool Nevra::operator==(const Nevra & r) const
 void Nevra::clear() noexcept
 {
     pImpl->name.clear();
-    pImpl->epoch = IgnoreEpoch;
+    pImpl->epoch = EpochNotSet;
     pImpl->version.clear();
     pImpl->release.clear();
     pImpl->arch.clear();
@@ -80,13 +80,13 @@ void Nevra::clear() noexcept
 
 bool Nevra::hasJustName() const
 {
-    return !pImpl->name.empty() && pImpl->epoch == IgnoreEpoch && 
+    return !pImpl->name.empty() && pImpl->epoch == EpochNotSet && 
         pImpl->version.empty() && pImpl->release.empty() && pImpl->arch.empty();
 }
 
 std::string Nevra::getEvr() const
 {
-    if (pImpl->epoch == IgnoreEpoch)
+    if (pImpl->epoch == EpochNotSet)
         return pImpl->version + "-" + pImpl->release;
     return std::to_string(pImpl->epoch) + ":" + pImpl->version + "-" + pImpl->release;
 }

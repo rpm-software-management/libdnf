@@ -113,7 +113,7 @@ START_TEST(nevra2)
     ck_assert_int_eq(
         hy_nevra_possibility(inp_fof_noepoch, HY_FORM_NEVRA, nevra), 0);
     ck_assert_str_eq(nevra->getName().c_str(), "four-of-fish");
-    ck_assert_int_eq(nevra->getEpoch(), -1);
+    ck_assert_int_eq(nevra->getEpoch(), libdnf::Nevra::EpochNotSet);
     ck_assert_str_eq(nevra->getVersion().c_str(), "3.6.9");
     ck_assert_str_eq(nevra->getRelease().c_str(), "11.fc100");
     ck_assert_str_eq(nevra->getArch().c_str(), "x86_64");
@@ -172,7 +172,7 @@ START_TEST(na)
     ck_assert_int_eq(
         hy_nevra_possibility(inp_fof_na, HY_FORM_NA, nevra), 0);
     ck_assert_str_eq(nevra->getName().c_str(), "four-of-fish-3.6.9");
-    ck_assert_int_eq(nevra->getEpoch(), -1);
+    ck_assert_int_eq(nevra->getEpoch(), libdnf::Nevra::EpochNotSet);
     fail_unless(nevra->getVersion().empty());
     ck_assert_str_eq(nevra->getArch().c_str(), "i686");
 
@@ -215,7 +215,7 @@ START_TEST(combined2)
 
     ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
     ck_assert_str_eq(nevra->getName().c_str(), "four-of-fish");
-    ck_assert_int_eq(nevra->getEpoch(), -1);
+    ck_assert_int_eq(nevra->getEpoch(), libdnf::Nevra::EpochNotSet);
     ck_assert_str_eq(nevra->getVersion().c_str(), "3.6.9");
     ck_assert_str_eq(nevra->getRelease().c_str(), "11.fc100");
     ck_assert_str_eq(nevra->getArch().c_str(), "x86_64");
@@ -223,7 +223,7 @@ START_TEST(combined2)
 
     ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
     ck_assert_str_eq(nevra->getName().c_str(), "four-of-fish-3.6.9-11.fc100");
-    ck_assert_int_eq(nevra->getEpoch(), -1);
+    ck_assert_int_eq(nevra->getEpoch(), libdnf::Nevra::EpochNotSet);
     fail_unless(nevra->getVersion().empty());
     fail_unless(nevra->getRelease().empty());
     ck_assert_str_eq(nevra->getArch().c_str(), "x86_64");
@@ -231,7 +231,7 @@ START_TEST(combined2)
 
     ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
     ck_assert_str_eq(nevra->getName().c_str(), "four-of-fish-3.6.9-11.fc100.x86_64");
-    ck_assert_int_eq(nevra->getEpoch(), -1);
+    ck_assert_int_eq(nevra->getEpoch(), libdnf::Nevra::EpochNotSet);
     fail_unless(nevra->getVersion().empty());
     fail_unless(nevra->getRelease().empty());
     fail_unless(nevra->getArch().empty());
@@ -239,7 +239,7 @@ START_TEST(combined2)
 
     ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
     ck_assert_str_eq(nevra->getName().c_str(), "four-of-fish");
-    ck_assert_int_eq(nevra->getEpoch(), -1);
+    ck_assert_int_eq(nevra->getEpoch(), libdnf::Nevra::EpochNotSet);
     ck_assert_str_eq(nevra->getVersion().c_str(), "3.6.9");
     ck_assert_str_eq(nevra->getRelease().c_str(), "11.fc100.x86_64");
     fail_unless(nevra->getArch().empty());
@@ -247,7 +247,7 @@ START_TEST(combined2)
 
     ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
     ck_assert_str_eq(nevra->getName().c_str(), "four-of-fish-3.6.9");
-    ck_assert_int_eq(nevra->getEpoch(), -1);
+    ck_assert_int_eq(nevra->getEpoch(), libdnf::Nevra::EpochNotSet);
     ck_assert_str_eq(nevra->getVersion().c_str(), "11.fc100.x86_64");
     fail_unless(nevra->getRelease().empty());
     fail_unless(nevra->getArch().empty());

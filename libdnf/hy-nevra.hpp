@@ -30,7 +30,7 @@ namespace libdnf {
 
 struct Nevra {
 public:
-    static constexpr int IgnoreEpoch = -1;
+    static constexpr int EpochNotSet = -1;
 
     Nevra();
     Nevra(const Nevra & src);

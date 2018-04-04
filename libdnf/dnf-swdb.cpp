@@ -242,7 +242,7 @@ _fill_nevra_res (sqlite3_stmt *res, const gchar *nevra)
     }
 
     gint epoch = hnevra->getEpoch();
-    if (epoch == -1) {
+    if (epoch == libdnf::Nevra::EpochNotSet) {
         epoch = 0;
     }
     _db_bind_str (res, "@n", hnevra->getName().c_str());
