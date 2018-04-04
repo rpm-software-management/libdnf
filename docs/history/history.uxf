@@ -1,0 +1,691 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.2">
+  <zoom_level>8</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>904</x>
+      <y>480</y>
+      <w>144</w>
+      <h>144</h>
+    </coordinates>
+    <panel_attributes>&lt;TRANS_ITEM&gt;
+--
+id
+trans_id
+item_id
+repo_id
+action
+reason
+state
+
+bg=yellow
+halign=center
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>808</x>
+      <y>344</y>
+      <w>144</w>
+      <h>56</h>
+    </coordinates>
+    <panel_attributes>REPO
+--
+id
+repoid
+
+bg=yellow
+halign=center
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1120</x>
+      <y>480</y>
+      <w>144</w>
+      <h>144</h>
+    </coordinates>
+    <panel_attributes>TRANS
+--
+id
+dt_begin
+dt_end
+rpmdb_version_begin
+rpmdb_version_end
+releasever
+user_id
+cmdline 
+state
+
+bg=yellow
+halign=center
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1040</x>
+      <y>512</y>
+      <w>96</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>m1=0..n
+m2=1
+
+</panel_attributes>
+    <additional_attributes>10.0;20.0;100.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>696</x>
+      <y>480</y>
+      <w>144</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>ITEM
+--
+id
+item_type
+
+bg=yellow
+halign=center
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>832</x>
+      <y>520</y>
+      <w>88</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>m1=1
+m2=0..n</panel_attributes>
+    <additional_attributes>10.0;10.0;90.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1120</x>
+      <y>688</y>
+      <w>144</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>CONSOLE_OUTPUT
+--
+id
+trans_id
+file_descriptor 
+line
+
+bg=yellow
+halign=center
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1184</x>
+      <y>616</y>
+      <w>24</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>m1=*
+
+</panel_attributes>
+    <additional_attributes>10.0;90.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>984</x>
+      <y>344</y>
+      <w>144</w>
+      <h>56</h>
+    </coordinates>
+    <panel_attributes>ITEM_STATE
+--
+id
+name
+
+bg=yellow
+halign=center
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1008</x>
+      <y>392</y>
+      <w>40</w>
+      <h>104</h>
+    </coordinates>
+    <panel_attributes>m1=0..n
+m2=1</panel_attributes>
+    <additional_attributes>10.0;110.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1120</x>
+      <y>248</y>
+      <w>144</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>TRANS_WITH
+--
+id
+trans_id
+item_id
+
+bg=yellow
+halign=center
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1192</x>
+      <y>312</y>
+      <w>40</w>
+      <h>184</h>
+    </coordinates>
+    <panel_attributes>m1=0..n
+m2=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;210.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>760</x>
+      <y>280</y>
+      <w>376</w>
+      <h>216</h>
+    </coordinates>
+    <panel_attributes>m1=0..n
+m2=1</panel_attributes>
+    <additional_attributes>450.0;10.0;10.0;10.0;10.0;250.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>688</x>
+      <y>128</y>
+      <w>144</w>
+      <h>48</h>
+    </coordinates>
+    <panel_attributes>config
+--
+key
+value
+
+
+bg=white
+halign=center
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>416</x>
+      <y>464</y>
+      <w>144</w>
+      <h>112</h>
+    </coordinates>
+    <panel_attributes>RPM
+--
+item_id
+name
+epoch
+version
+release
+arch
+
+bg=yellow
+halign=center
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>552</x>
+      <y>512</y>
+      <w>88</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>m1=0..1</panel_attributes>
+    <additional_attributes>10.0;10.0;90.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>168</x>
+      <y>656</y>
+      <w>144</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>MODULEMD
+-
+id
+modulemd_stream_id
+version
+context
+arch
+
+
+halign=center
+lt=.
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>928</x>
+      <y>392</y>
+      <w>40</w>
+      <h>104</h>
+    </coordinates>
+    <panel_attributes>m1=0..n
+m2=1</panel_attributes>
+    <additional_attributes>10.0;110.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>392</x>
+      <y>800</y>
+      <w>216</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>&lt;MODULEMD_TRANSACTION_ITEM&gt;
+-
+id
+modulemd_stream_id
+modulemd_profile_id (NULL)
+transaction_item_id
+
+
+halign=center
+lt=.</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>496</x>
+      <y>720</y>
+      <w>40</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>m1=0..1
+m2=0..n
+lt=.</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;100.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>600</x>
+      <y>592</y>
+      <w>320</w>
+      <h>272</h>
+    </coordinates>
+    <panel_attributes>m1=1
+m2=0..n
+lt=.
+</panel_attributes>
+    <additional_attributes>380.0;10.0;140.0;10.0;140.0;310.0;10.0;310.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>432</x>
+      <y>304</y>
+      <w>144</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>COMPS_GROUP
+--
+item_id
+groupid
+name
+translated_name
+// pkg_types: mandatory, default, optional
+pkg_types
+// pkg_types -&gt; rpm_types?
+
+bg=yellow
+halign=center
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLSpecialState</id>
+    <coordinates>
+      <x>624</x>
+      <y>504</y>
+      <w>32</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>type=decision</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>504</y>
+      <w>64</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>m1=1
+</panel_attributes>
+    <additional_attributes>60.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>568</x>
+      <y>344</y>
+      <w>88</w>
+      <h>176</h>
+    </coordinates>
+    <panel_attributes>m1=0..1</panel_attributes>
+    <additional_attributes>10.0;10.0;90.0;10.0;90.0;200.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>544</x>
+      <y>528</y>
+      <w>112</w>
+      <h>184</h>
+    </coordinates>
+    <panel_attributes>m1=0..1
+lt=.</panel_attributes>
+    <additional_attributes>10.0;200.0;120.0;200.0;120.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>432</x>
+      <y>144</y>
+      <w>144</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>COMPS_ENVIRONMENT
+--
+item_id
+environmentid
+name
+translated_name
+pkg_types
+
+bg=yellow
+halign=center
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>392</x>
+      <y>656</y>
+      <w>160</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>MODULEMD_PROFILE
+-
+item_id
+modulemd_id
+name
+
+
+halign=center
+lt=.</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>304</x>
+      <y>680</y>
+      <w>104</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>m1=1
+m2=0..n
+lt=.</panel_attributes>
+    <additional_attributes>10.0;10.0;110.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>168</x>
+      <y>808</y>
+      <w>144</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>MODULEMD_STREAM
+-
+id
+name
+stream
+
+
+halign=center
+lt=.</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>232</x>
+      <y>744</y>
+      <w>40</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=.
+m1=1
+m2=0..n
+</panel_attributes>
+    <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>304</x>
+      <y>832</y>
+      <w>104</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.
+m1=0..n
+m2=0..1</panel_attributes>
+    <additional_attributes>10.0;10.0;110.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>160</x>
+      <y>608</y>
+      <w>456</w>
+      <h>304</h>
+    </coordinates>
+    <panel_attributes>Modules
+--
+bg=#FFFFFF
+layer=-1
+lt=.
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>160</x>
+      <y>120</y>
+      <w>456</w>
+      <h>288</h>
+    </coordinates>
+    <panel_attributes>Comps Groups
+--
+bg=#d0d0d0
+layer=-1
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>568</x>
+      <y>184</y>
+      <w>88</w>
+      <h>336</h>
+    </coordinates>
+    <panel_attributes>m1=0..1</panel_attributes>
+    <additional_attributes>10.0;10.0;90.0;10.0;90.0;400.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>176</x>
+      <y>304</y>
+      <w>184</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>COMPS_GROUP_PACKAGE
+--
+id
+group_id
+name
+installed
+pkg_type
+
+bg=yellow
+halign=center
+
+layer=1</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>352</x>
+      <y>344</y>
+      <w>96</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>m1=1
+m2=0..n</panel_attributes>
+    <additional_attributes>10.0;10.0;100.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>176</x>
+      <y>144</y>
+      <w>184</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>COMPS_ENVIRONMENT_GROUP
+--
+id
+environment_id
+groupid
+installed
+group_type
+
+bg=yellow
+halign=center
+
+layer=1</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>352</x>
+      <y>184</y>
+      <w>96</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>m1=1
+m2=0..n</panel_attributes>
+    <additional_attributes>10.0;10.0;100.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>160</x>
+      <y>432</y>
+      <w>456</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>RPMs
+--
+bg=#d0d0d0
+layer=-1
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>688</x>
+      <y>216</y>
+      <w>584</w>
+      <h>560</h>
+    </coordinates>
+    <panel_attributes>Transaction
+--
+bg=#d0d0d0
+layer=-1
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>904</x>
+      <y>688</y>
+      <w>144</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>ITEM_REPLACED_BY
+--
+trans_item_id
+by_trans_item_id
+
+bg=yellow
+halign=center
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>968</x>
+      <y>616</y>
+      <w>40</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>m1=0..n
+m2=0..n</panel_attributes>
+    <additional_attributes>10.0;90.0;10.0;10.0</additional_attributes>
+  </element>
+</diagram>
