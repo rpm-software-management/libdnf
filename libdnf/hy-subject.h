@@ -40,7 +40,7 @@ typedef enum _HyForm {
     _HY_FORM_STOP_ = -1
 } HyForm;
 
-typedef enum _HyModuleFormEnum {
+typedef enum _HyModuleForm {
     HY_MODULE_FORM_NSVCAP = 1,
     HY_MODULE_FORM_NSVCA = 2,
     HY_MODULE_FORM_NSVAP = 3,
@@ -58,10 +58,10 @@ typedef enum _HyModuleFormEnum {
     HY_MODULE_FORM_NP = 15,
     HY_MODULE_FORM_N = 16,
     _HY_MODULE_FORM_STOP_ = -1
-} HyModuleFormEnum;
+} HyModuleForm;
 
 extern const HyForm HY_FORMS_MOST_SPEC[];
-extern const HyModuleFormEnum HY_MODULE_FORMS_MOST_SPEC[];
+extern const HyModuleForm HY_MODULE_FORMS_MOST_SPEC[];
 
 HySubject hy_subject_create(const char * pattern);
 void hy_subject_free(HySubject subject);

@@ -1,0 +1,247 @@
+/*
+ * Copyright (C) 2017 Red Hat, Inc.
+ *
+ * Licensed under the GNU Lesser General Public License Version 2.1
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+#include <Python.h>
+
+// pyhawkey
+#include "nsvcap-py.hpp"
+#include "pycomp.hpp"
+
+typedef struct {
+    PyObject_HEAD
+    libdnf::Nsvcap * nsvcap;
+} _NsvcapObject;
+
+libdnf::Nsvcap *
+nsvcapFromPyObject(PyObject *o)
+{
+    if (!PyObject_TypeCheck(o, &nsvcap_Type)) {
+        PyErr_SetString(PyExc_TypeError, "Expected a _hawkey.Nsvcap object.");
+        return NULL;
+    }
+    return ((_NsvcapObject *)o)->nsvcap;
+}
+
+PyObject *
+nsvcapToPyObject(libdnf::Nsvcap * nsvcap)
+{
+    _NsvcapObject *self = (_NsvcapObject *)nsvcap_Type.tp_alloc(&nsvcap_Type, 0);
+    if (self)
+        self->nsvcap = nsvcap;
+    return (PyObject *)self;
+}
+
+// getsetters
+static bool
+set_version(_NsvcapObject *self, PyObject *value, void *closure)
+{
+    if (PyInt_Check(value))
+        self->nsvcap->setVersion(PyLong_AsLongLong(value));
+    else if (value == Py_None)
+        self->nsvcap->setVersion(libdnf::Nsvcap::VersionNotSet);
+    else
+        return false;
+    return true;
+}
+
+static PyObject *
+get_version(_NsvcapObject *self, void *closure)
+{
+    if (self->nsvcap->getVersion() == libdnf::Nsvcap::VersionNotSet)
+        Py_RETURN_NONE;
+    return PyLong_FromLongLong(self->nsvcap->getVersion());
+}
+
+template<const std::string & (libdnf::Nsvcap::*getMethod)() const>
+static PyObject *
+get_attr(_NsvcapObject *self, void *closure)
+{
+    auto str = (self->nsvcap->*getMethod)();
+
+    if (str.empty())
+        Py_RETURN_NONE;
+    else
+        return PyString_FromString(str.c_str());
+}
+
+template<void (libdnf::Nsvcap::*setMethod)(std::string &&)>
+static int
+set_attr(_NsvcapObject *self, PyObject *value, void *closure)
+{
+    PyObject *tmp_py_str = NULL;
+    const char *str_value = pycomp_get_string(value, &tmp_py_str);
+
+    if (!str_value) {
+        Py_XDECREF(tmp_py_str);
+        return -1;
+    }
+    (self->nsvcap->*setMethod)(str_value);
+    Py_XDECREF(tmp_py_str);
+
+    return 0;
+}
+
+static PyGetSetDef nsvcap_getsetters[] = {
+        {(char*)"name", (getter)get_attr<&libdnf::Nsvcap::getName>,
+         (setter)set_attr<&libdnf::Nsvcap::setName>, NULL, NULL},
+        {(char*)"stream", (getter)get_attr<&libdnf::Nsvcap::getStream>,
+         (setter)set_attr<&libdnf::Nsvcap::setStream>, NULL, NULL},
+        {(char*)"version", (getter)get_version, (setter)set_version, NULL,
+                NULL},
+        {(char*)"context", (getter)get_attr<&libdnf::Nsvcap::getContext>,
+         (setter)set_attr<&libdnf::Nsvcap::setContext>, NULL, NULL},
+        {(char*)"arch", (getter)get_attr<&libdnf::Nsvcap::getArch>,
+         (setter)set_attr<&libdnf::Nsvcap::setArch>, NULL, NULL},
+        {(char*)"profile", (getter)get_attr<&libdnf::Nsvcap::getProfile>,
+         (setter)set_attr<&libdnf::Nsvcap::setProfile>, NULL, NULL},
+        {NULL}          /* sentinel */
+};
+
+static PyObject *
+nsvcap_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+    _NsvcapObject *self = (_NsvcapObject*)type->tp_alloc(type, 0);
+    if (self)
+        self->nsvcap = new libdnf::Nsvcap;
+    return (PyObject*)self;
+}
+
+static void
+nsvcap_dealloc(_NsvcapObject *self)
+{
+    delete self->nsvcap;
+    Py_TYPE(self)->tp_free(self);
+}
+
+static int
+nsvcap_init(_NsvcapObject *self, PyObject *args, PyObject *kwds)
+{
+    char *name = NULL, *stream = NULL, *context = NULL, *arch = NULL, *profile = NULL;
+    PyObject *version_o = NULL;
+    libdnf::Nsvcap * cNsvcap = NULL;
+
+    const char *kwlist[] = {"name", "stream", "version", "context", "arch", "profile",
+                            "nsvcap", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|zzOzzzO&", (char**) kwlist,
+                                     &name, &stream, &version_o, &context, &arch, &profile, nsvcapConverter,
+                                     &cNsvcap))
+        return -1;
+    if (!name && !cNsvcap) {
+        PyErr_SetString(PyExc_ValueError, "Name is required parameter.");
+        return -1;
+    }
+    if (cNsvcap) {
+        *self->nsvcap = *cNsvcap;
+        return 0;
+    }
+    if (!set_version(self, version_o, NULL)) {
+        PyErr_SetString(PyExc_TypeError, "An integer value or None expected for version.");
+        return -1;
+    }
+    self->nsvcap->setName(name ? name : "");
+    self->nsvcap->setStream(stream ? stream : "");
+    self->nsvcap->setContext(context ? context : "");
+    self->nsvcap->setArch(arch ? arch : "");
+    self->nsvcap->setProfile(profile ? profile : "");
+    return 0;
+}
+
+/* object methods */
+
+int
+nsvcapConverter(PyObject *o, libdnf::Nsvcap ** nsvcap_ptr)
+{
+    libdnf::Nsvcap * nsvcap = nsvcapFromPyObject(o);
+    if (!nsvcap)
+        return 0;
+    *nsvcap_ptr = nsvcap;
+    return 1;
+}
+
+static PyObject *
+iter(_NsvcapObject *self)
+{
+    PyObject *res;
+    libdnf::Nsvcap * nsvcap = self->nsvcap;
+    if (nsvcap->getVersion() == libdnf::Nsvcap::VersionNotSet) {
+        Py_INCREF(Py_None);
+        res = Py_BuildValue("zzOzzz",
+                            nsvcap->getName().empty() ? nullptr : nsvcap->getName().c_str(),
+                            nsvcap->getStream().empty() ? nullptr : nsvcap->getStream().c_str(),
+                            Py_None,
+                            nsvcap->getContext().empty() ? nullptr : nsvcap->getContext().c_str(),
+                            nsvcap->getArch().empty() ? nullptr : nsvcap->getArch().c_str(),
+                            nsvcap->getProfile().empty() ? nullptr : nsvcap->getProfile().c_str());
+    } else
+        res = Py_BuildValue("zzLzzz",
+                            nsvcap->getName().empty() ? nullptr : nsvcap->getName().c_str(),
+                            nsvcap->getStream().empty() ? nullptr : nsvcap->getStream().c_str(),
+                            nsvcap->getVersion(),
+                            nsvcap->getContext().empty() ? nullptr : nsvcap->getContext().c_str(),
+                            nsvcap->getArch().empty() ? nullptr : nsvcap->getArch().c_str(),
+                            nsvcap->getProfile().empty() ? nullptr : nsvcap->getProfile().c_str());
+    PyObject *iter = PyObject_GetIter(res);
+    Py_DECREF(res);
+    return iter;
+}
+
+PyTypeObject nsvcap_Type = {
+        PyVarObject_HEAD_INIT(NULL, 0)
+        "_hawkey.NSVCAP",        /*tp_name*/
+        sizeof(_NsvcapObject),   /*tp_basicsize*/
+        0,              /*tp_itemsize*/
+        (destructor) nsvcap_dealloc,  /*tp_dealloc*/
+        0,              /*tp_print*/
+        0,              /*tp_getattr*/
+        0,              /*tp_setattr*/
+        0,              /*tp_compare*/
+        0,              /*tp_repr*/
+        0,              /*tp_as_number*/
+        0,              /*tp_as_sequence*/
+        0,              /*tp_as_mapping*/
+        0,              /*tp_hash */
+        0,              /*tp_call*/
+        0,              /*tp_str*/
+        0,              /*tp_getattro*/
+        0,              /*tp_setattro*/
+        0,              /*tp_as_buffer*/
+        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,     /*tp_flags*/
+        "NSVCAP object",     /* tp_doc */
+        0,              /* tp_traverse */
+        0,              /* tp_clear */
+        0,              /* tp_richcompare */
+        0,              /* tp_weaklistoffset */
+        (getiterfunc) iter,/* tp_iter */
+        0,              /* tp_iternext */
+        0,              /* tp_methods */
+        0,              /* tp_members */
+        nsvcap_getsetters,       /* tp_getset */
+        0,              /* tp_base */
+        0,              /* tp_dict */
+        0,              /* tp_descr_get */
+        0,              /* tp_descr_set */
+        0,              /* tp_dictoffset */
+        (initproc) nsvcap_init,   /* tp_init */
+        0,              /* tp_alloc */
+        nsvcap_new,     /* tp_new */
+        0,              /* tp_free */
+        0,              /* tp_is_gc */
+};
