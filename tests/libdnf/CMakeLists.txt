@@ -1,8 +1,20 @@
 ADD_EXECUTABLE(test_libdnf_main dnf-self-test.c)
+ADD_EXECUTABLE(loadtest loadtest.c)
 
 
 
 TARGET_LINK_LIBRARIES(test_libdnf_main
+                      libdnf
+                      ${REPO_LIBRARIES}
+                      ${GLIB_LIBRARIES}
+                      ${GLIB_GOBJECT_LIBRARIES}
+                      ${GLIB_GIO_LIBRARIES}
+                      ${GLIB_GIO_UNIX_LIBRARIES}
+                      ${SOLV_LIBRARY}
+                      ${SOLVEXT_LIBRARY}
+                      ${RPMDB_LIBRARY})
+
+TARGET_LINK_LIBRARIES(loadtest
                       libdnf
                       ${REPO_LIBRARIES}
                       ${GLIB_LIBRARIES}

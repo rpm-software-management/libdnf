@@ -1,0 +1,9 @@
+hy_repo_load
+    * hy_repo_load_cache(repo, spec, cachedir)
+        * create local LR handle
+        * h.perform()
+        * set paths on repo
+    #* if not expired (by conf), return hyrepo
+    #* try_revive (by metalink & repomd)
+    #* if not expired (by conf), return hyrepo
+    #* download

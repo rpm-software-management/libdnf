@@ -131,6 +131,52 @@ hy_repo_create(const char *name)
     return repo;
 }
 
+void
+hy_repo_load_cache(HyRepo repo, HySpec *spec, const char *cachedir)
+{
+    LrYumRepo *md;
+    GError *err = NULL;
+    const char *urls[] = {cachedir, NULL};
+    char *download_list[] = LR_YUM_HAWKEY;
+
+    LrHandle *h = lr_handle_init();
+    LrResult *r = lr_result_init();
+
+    lr_handle_setopt(h, NULL, LRO_REPOTYPE, LR_YUMREPO);
+    lr_handle_setopt(h, NULL, LRO_URLS, urls);
+    lr_handle_setopt(h, NULL, LRO_YUMDLIST, download_list);
+    lr_handle_setopt(h, NULL, LRO_DESTDIR, cachedir);
+    lr_handle_setopt(h, NULL, LRO_LOCAL, 1L);
+
+    lr_handle_perform(h, r, &err);
+    lr_result_getinfo(r, NULL, LRR_YUM_REPO, &md);
+
+    const char *primary_fn = lr_yum_repo_path(md, "primary");
+    hy_repo_set_string(repo, HY_REPO_PRIMARY_FN, primary_fn);
+
+    lr_handle_free(h);
+    lr_result_free(r);
+}
+
+/**
+ * hy_repo_load:
+ * @repo: a #HyRepo instance.
+ * @spec: a #HySpec instance. TODO maybe rename?
+ *
+ * Initializes the repo according to the spec.
+ * Fetches new metadata from the remote or just reuses local cache if valid.
+ *
+ * FIXME: This attempts to be a C rewrite of Repo.load() in DNF.  This function
+ * will be moved to a more appropriate place later.
+ *
+ * Returns: %TRUE for success
+ **/
+void
+hy_repo_load(HyRepo repo, HySpec *spec, const char *cachedir)
+{
+    hy_repo_load_cache(repo, spec, cachedir);
+}
+
 int
 hy_repo_get_cost(HyRepo repo)
 {

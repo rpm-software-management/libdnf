@@ -37,7 +37,14 @@ enum _hy_repo_param_e {
     HY_REPO_UPDATEINFO_FN = 5
 };
 
+typedef struct HySpec
+{
+    const char *url;
+} HySpec;
+
 HyRepo hy_repo_create(const char *name);
+void hy_repo_load_cache(HyRepo repo, HySpec *spec, const char *cachedir);
+void hy_repo_load(HyRepo repo, HySpec *spec, const char *cachedir);
 int hy_repo_get_cost(HyRepo repo);
 int hy_repo_get_priority(HyRepo repo);
 gboolean hy_repo_get_use_includes(HyRepo repo);
