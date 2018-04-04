@@ -60,31 +60,11 @@ typedef enum _HyModuleFormEnum {
     _HY_MODULE_FORM_STOP_ = -1
 } HyModuleFormEnum;
 
-enum poss_type {
-    TYPE_MODULE_FORM,
-    TYPE_NEVRA
-};
-
-struct _HyPossibilities {
-    HySubject subject;
-    HyForm *forms;
-    HyModuleFormEnum *module_forms;
-    int current;
-    int type;
-};
-
 extern const HyForm HY_FORMS_MOST_SPEC[];
 extern const HyModuleFormEnum HY_MODULE_FORMS_MOST_SPEC[];
 
 HySubject hy_subject_create(const char * pattern);
 void hy_subject_free(HySubject subject);
-void hy_possibilities_free(HyPossibilities iter);
-HyPossibilities hy_subject_nevra_possibilities(HySubject subject,
-    HyForm *forms);
-HyPossibilities hy_subject_module_form_possibilities(HySubject subject,
-                                                     HyModuleFormEnum *forms);
-int hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra);
-int hy_possibilities_next_module_form(HyPossibilities iter, HyModuleForm *out_module_form);
 
 HyQuery hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms,
                                      HyNevra *out_nevra, gboolean icase, gboolean with_nevra,
@@ -110,6 +90,5 @@ HySelector hy_subject_get_best_selector(HySubject subject, DnfSack *sack);
 G_END_DECLS
 
 G_DEFINE_AUTO_CLEANUP_FREE_FUNC(HySubject, hy_subject_free, NULL)
-G_DEFINE_AUTO_CLEANUP_FREE_FUNC(HyPossibilities, hy_possibilities_free, NULL)
 
 #endif

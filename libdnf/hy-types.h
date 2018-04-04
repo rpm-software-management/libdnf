@@ -41,7 +41,6 @@ typedef struct Selector * HySelector;
 
 typedef struct _HyRepo * HyRepo;
 typedef struct _HyGoal * HyGoal;
-typedef struct _HyPossibilities * HyPossibilities;
 typedef char * HySubject;
 
 typedef const unsigned char HyChecksum;

@@ -153,85 +153,6 @@ START_TEST(na)
 }
 END_TEST
 
-START_TEST(combined1)
-{
-    libdnf::Nevra *nevra;
-    HySubject subject = hy_subject_create(inp_fof);
-    HyPossibilities iter = hy_subject_nevra_possibilities(subject, NULL);
-    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
-    ck_assert_str_eq(nevra->getName().c_str(), "four-of-fish");
-    ck_assert_int_eq(nevra->getEpoch(), 8);
-    ck_assert_str_eq(nevra->getVersion().c_str(), "3.6.9");
-    ck_assert_str_eq(nevra->getRelease().c_str(), "11.fc100");
-    ck_assert_str_eq(nevra->getArch().c_str(), "x86_64");
-    delete nevra;
-
-    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
-    ck_assert_str_eq(nevra->getName().c_str(), "four-of-fish");
-    ck_assert_int_eq(nevra->getEpoch(), 8);
-    ck_assert_str_eq(nevra->getVersion().c_str(), "3.6.9");
-    ck_assert_str_eq(nevra->getRelease().c_str(), "11.fc100.x86_64");
-    fail_unless(nevra->getArch().empty());
-    delete nevra;
-
-    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), -1);
-    hy_possibilities_free(iter);
-    hy_subject_free(subject);
-}
-END_TEST
-
-START_TEST(combined2)
-{
-    libdnf::Nevra *nevra;
-    HySubject subject = hy_subject_create(inp_fof_noepoch);
-    HyPossibilities iter = hy_subject_nevra_possibilities(subject, NULL);
-
-    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
-    ck_assert_str_eq(nevra->getName().c_str(), "four-of-fish");
-    ck_assert_int_eq(nevra->getEpoch(), libdnf::Nevra::EpochNotSet);
-    ck_assert_str_eq(nevra->getVersion().c_str(), "3.6.9");
-    ck_assert_str_eq(nevra->getRelease().c_str(), "11.fc100");
-    ck_assert_str_eq(nevra->getArch().c_str(), "x86_64");
-    delete nevra;
-
-    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
-    ck_assert_str_eq(nevra->getName().c_str(), "four-of-fish-3.6.9-11.fc100");
-    ck_assert_int_eq(nevra->getEpoch(), libdnf::Nevra::EpochNotSet);
-    fail_unless(nevra->getVersion().empty());
-    fail_unless(nevra->getRelease().empty());
-    ck_assert_str_eq(nevra->getArch().c_str(), "x86_64");
-    delete nevra;
-
-    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
-    ck_assert_str_eq(nevra->getName().c_str(), "four-of-fish-3.6.9-11.fc100.x86_64");
-    ck_assert_int_eq(nevra->getEpoch(), libdnf::Nevra::EpochNotSet);
-    fail_unless(nevra->getVersion().empty());
-    fail_unless(nevra->getRelease().empty());
-    fail_unless(nevra->getArch().empty());
-    delete nevra;
-
-    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
-    ck_assert_str_eq(nevra->getName().c_str(), "four-of-fish");
-    ck_assert_int_eq(nevra->getEpoch(), libdnf::Nevra::EpochNotSet);
-    ck_assert_str_eq(nevra->getVersion().c_str(), "3.6.9");
-    ck_assert_str_eq(nevra->getRelease().c_str(), "11.fc100.x86_64");
-    fail_unless(nevra->getArch().empty());
-    delete nevra;
-
-    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), 0);
-    ck_assert_str_eq(nevra->getName().c_str(), "four-of-fish-3.6.9");
-    ck_assert_int_eq(nevra->getEpoch(), libdnf::Nevra::EpochNotSet);
-    ck_assert_str_eq(nevra->getVersion().c_str(), "11.fc100.x86_64");
-    fail_unless(nevra->getRelease().empty());
-    fail_unless(nevra->getArch().empty());
-    delete nevra;
-
-    ck_assert_int_eq(hy_possibilities_next_nevra(iter, &nevra), -1);
-    hy_possibilities_free(iter);
-    hy_subject_free(subject);
-}
-END_TEST
-
 START_TEST(module_form_nsvcap)
 {
     libdnf::ModuleForm module_form;
@@ -388,27 +309,6 @@ START_TEST(module_form_n)
 }
 END_TEST
 
-START_TEST(module_form_combined)
-{
-    HyModuleForm module_form;
-    HySubject subject = hy_subject_create(module_nsvap);
-    HyPossibilities iter = hy_subject_module_form_possibilities(subject, NULL);
-
-    ck_assert_int_eq(hy_possibilities_next_module_form(iter, &module_form), 0);
-    ck_assert_str_eq(module_form->getName().c_str(), "module-name");
-    ck_assert_str_eq(module_form->getStream().c_str(), "stream");
-    ck_assert_int_eq(module_form->getVersion(), 1);
-    ck_assert_str_eq(module_form->getContext().c_str(), "");
-    ck_assert_str_eq(module_form->getArch().c_str(), "x86_64");
-    ck_assert_str_eq(module_form->getProfile().c_str(), "profile");
-    delete module_form;
-
-    ck_assert_int_eq(hy_possibilities_next_module_form(iter, &module_form), -1);
-    hy_possibilities_free(iter);
-    hy_subject_free(subject);
-}
-END_TEST
-
 Suite *
 subject_suite(void)
 {
@@ -420,8 +320,6 @@ subject_suite(void)
     tcase_add_test(tc, nevr_fail);
     tcase_add_test(tc, nev);
     tcase_add_test(tc, na);
-    tcase_add_test(tc, combined1);
-    tcase_add_test(tc, combined2);
     tcase_add_test(tc, module_form_nsvcap);
     tcase_add_test(tc, module_form_nsvap);
     tcase_add_test(tc, module_form_nsvca);
@@ -437,7 +335,6 @@ subject_suite(void)
     tcase_add_test(tc, module_form_na);
     tcase_add_test(tc, module_form_np);
     tcase_add_test(tc, module_form_n);
-    tcase_add_test(tc, module_form_combined);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("Full");
