@@ -152,12 +152,11 @@ hy_possibilities_next_nevra(HyPossibilities iter, HyNevra *out_nevra)
     libdnf::Nevra nevra;
     while (form != _HY_FORM_STOP_) {
         iter->current++;
-        if (hy_nevra_possibility(iter->subject, form, &nevra) == 0) {
+        if (nevra.parse(iter->subject, form)) {
             *out_nevra = new libdnf::Nevra(std::move(nevra));
             return 0;
         }
         form = iter->forms[iter->current];
-        nevra.clear();
     }
     *out_nevra = nullptr;
     return -1;
@@ -279,50 +278,3 @@ hy_subject_get_best_selector(HySubject subject, DnfSack *sack)
 {
     return hy_subject_get_best_sltr(subject, sack, NULL, FALSE, NULL);
 }
-
-#define MATCH_EMPTY(i) (matches[i].rm_so >= matches[i].rm_eo)
-
-static bool
-copy_str_from_subexpr(std::string & target, const char* source,
-    regmatch_t* matches, int i)
-{
-    int subexpr_len = matches[i].rm_eo - matches[i].rm_so;
-    if (subexpr_len == 0)
-        return false;
-    target = std::string(source + matches[i].rm_so, subexpr_len);
-    return true;
-}
-
-int
-hy_nevra_possibility(const char *nevra_str, int form, HyNevra nevra)
-{
-    enum { NAME = 1, EPOCH = 3, VERSION = 4, RELEASE = 5, ARCH = 6 };
-    regex_t reg;
-    char *epoch = nullptr;
-
-    regmatch_t matches[10];
-
-    regcomp(&reg, nevra_form_regex[form - 1], REG_EXTENDED);
-    int ret = regexec(&reg, nevra_str, 10, matches, 0);
-    regfree(&reg);
-    if (ret != 0)
-    return -1;
-    if (!MATCH_EMPTY(EPOCH)) {
-        copy_str_from_subexpr(&epoch, nevra_str, matches, EPOCH);
-        nevra->setEpoch(atoi(epoch));
-        free(epoch);
-    }
-    std::string tmp;
-    if (!copy_str_from_subexpr(tmp, nevra_str, matches, NAME))
-        return -1;
-    nevra->setName(tmp);
-    if (copy_str_from_subexpr(tmp, nevra_str, matches, VERSION))
-        nevra->setVersion(tmp);
-    if (copy_str_from_subexpr(tmp, nevra_str, matches, RELEASE))
-        nevra->setRelease(tmp);
-    if (copy_str_from_subexpr(tmp, nevra_str, matches, ARCH))
-        nevra->setArch(tmp);
-    return 0;
-}
-
-#undef MATCH_EMPTY

@@ -27,20 +27,6 @@
 #include "hy-iutil-private.hpp"
 #include "hy-subject-private.hpp"
 
-#define PKG_NAME "([^:(/=<> ]+)"
-#define PKG_EPOCH "(([0-9]+):)?"
-#define PKG_VERSION "([^-:(/=<> ]+)"
-#define PKG_RELEASE PKG_VERSION
-#define PKG_ARCH "([^-:.(/=<> ]+)"
-
-const char *nevra_form_regex[] = {
-    "^" PKG_NAME "-" PKG_EPOCH PKG_VERSION "-" PKG_RELEASE "\\." PKG_ARCH "$",
-    "^" PKG_NAME "-" PKG_EPOCH PKG_VERSION "-" PKG_RELEASE          "()"  "$",
-    "^" PKG_NAME "-" PKG_EPOCH PKG_VERSION        "()"              "()"  "$",
-    "^" PKG_NAME      "()()"      "()"            "()"     "\\." PKG_ARCH "$",
-    "^" PKG_NAME      "()()"      "()"            "()"              "()"  "$"
-};
-
 #define MODULE_NAME "([-a-zA-Z0-9\\._]+)"
 #define MODULE_STREAM MODULE_NAME
 #define MODULE_VERSION "([0-9]+)"

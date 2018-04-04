@@ -23,8 +23,6 @@
 #ifndef HY_SUBJECT_INTERNAL_H
 #define HY_SUBJECT_INTERNAL_H
 
-extern const char *nevra_form_regex[];
-
 int module_form_possibility(char *module_form_str, int re, HyModuleForm module_form);
 
 #endif
