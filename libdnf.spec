@@ -44,6 +44,7 @@ BuildRequires:  rpm-devel >= 4.11.0
 BuildRequires:  pkgconfig(librhsm)
 %endif
 BuildRequires:  pkgconfig(sqlite3)
+BuildRequires:  pkgconfig(cppunit)
 
 Requires:       libsolv%{?_isa} >= %{libsolv_version}
 
