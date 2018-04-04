@@ -236,22 +236,21 @@ dnf_swdb_search (DnfSwdb *self, GPtrArray *patterns)
 static HyNevra
 _fill_nevra_res (sqlite3_stmt *res, const gchar *nevra)
 {
-    auto hnevra = new libdnf::Nevra;
-    if (hy_nevra_possibility(nevra, HY_FORM_NEVRA, hnevra)) {
-        return NULL;
+    libdnf::Nevra tmpNevra;
+    if (tmpNevra.parse(nevra, HY_FORM_NEVRA)) {
+        auto hnevra = new libdnf::Nevra(std::move(tmpNevra));
+        gint epoch = hnevra->getEpoch();
+        if (epoch == libdnf::Nevra::EpochNotSet) {
+            epoch = 0;
+        }
+        _db_bind_str(res, "@n", hnevra->getName().c_str());
+        _db_bind_int(res, "@e", epoch);
+        _db_bind_str(res, "@v", hnevra->getVersion().c_str());
+        _db_bind_str(res, "@r", hnevra->getRelease().c_str());
+        _db_bind_str(res, "@a", hnevra->getArch().c_str());
+        return hnevra;
     }
-
-    gint epoch = hnevra->getEpoch();
-    if (epoch == libdnf::Nevra::EpochNotSet) {
-        epoch = 0;
-    }
-    _db_bind_str (res, "@n", hnevra->getName().c_str());
-    _db_bind_int (res, "@e", epoch);
-    _db_bind_str (res, "@v", hnevra->getVersion().c_str());
-    _db_bind_str (res, "@r", hnevra->getRelease().c_str());
-    _db_bind_str (res, "@a", hnevra->getArch().c_str());
-
-    return hnevra;
+    return nullptr;
 }
 
 /**

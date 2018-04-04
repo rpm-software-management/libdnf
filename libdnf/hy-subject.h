@@ -107,7 +107,6 @@ HyQuery hy_subject_get_best_query(HySubject subject, DnfSack *sack, gboolean wit
 HySelector hy_subject_get_best_sltr(HySubject subject, DnfSack *sack, HyForm *forms, bool obsoletes,
                                     const char *reponame);
 HySelector hy_subject_get_best_selector(HySubject subject, DnfSack *sack);
-int hy_nevra_possibility(const char *nevra_str, int re, HyNevra nevra);
 
 G_END_DECLS
 
