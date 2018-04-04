@@ -21,10 +21,12 @@
 #ifndef LIBDNF_MODULE_FORM_PY_H
 #define LIBDNF_MODULE_FORM_PY_H
 
+#include "hy-module-form.hpp"
+
 extern PyTypeObject module_form_Type;
 
-HyModuleForm moduleFormFromPyObject(PyObject *o);
-PyObject *moduleFormToPyObject(HyModuleForm module_form);
-int module_form_converter(PyObject *o, HyModuleForm *module_form_ptr);
+libdnf::ModuleForm * moduleFormFromPyObject(PyObject *o);
+PyObject *moduleFormToPyObject(libdnf::ModuleForm * module_form);
+int module_form_converter(PyObject *o, libdnf::ModuleForm ** module_form_ptr);
 
 #endif //LIBDNF_MODULE_FORM_PY_H

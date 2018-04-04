@@ -20,24 +20,16 @@
 
 #include <Python.h>
 
-// libsolv
-#include <solv/util.h>
-
-// hawkey
-#include "hy-module-form.hpp"
-#include "dnf-sack.h"
-#include "hy-types.h"
-
 // pyhawkey
 #include "module-form-py.hpp"
 #include "pycomp.hpp"
 
 typedef struct {
     PyObject_HEAD
-    HyModuleForm module_form;
+    libdnf::ModuleForm * module_form;
 } _ModuleFormObject;
 
-HyModuleForm
+libdnf::ModuleForm *
 moduleFormFromPyObject(PyObject *o)
 {
     if (!PyObject_TypeCheck(o, &module_form_Type)) {
@@ -48,7 +40,7 @@ moduleFormFromPyObject(PyObject *o)
 }
 
 PyObject *
-moduleFormToPyObject(HyModuleForm module_form)
+moduleFormToPyObject(libdnf::ModuleForm * module_form)
 {
     _ModuleFormObject *self = (_ModuleFormObject *)module_form_Type.tp_alloc(&module_form_Type, 0);
     if (self)
@@ -143,7 +135,7 @@ module_form_init(_ModuleFormObject *self, PyObject *args, PyObject *kwds)
 {
     char *name = NULL, *stream = NULL, *context = NULL, *arch = NULL, *profile = NULL;
     PyObject *version_o = NULL;
-    HyModuleForm cmodule_form = NULL;
+    libdnf::ModuleForm * cmodule_form = NULL;
 
     const char *kwlist[] = {"name", "stream", "version", "context", "arch", "profile",
                             "module_form", NULL};
@@ -175,10 +167,10 @@ module_form_init(_ModuleFormObject *self, PyObject *args, PyObject *kwds)
 /* object methods */
 
 int
-module_form_converter(PyObject *o, HyModuleForm *module_form_ptr)
+module_form_converter(PyObject *o, libdnf::ModuleForm ** module_form_ptr)
 {
-    HyModuleForm module_form = moduleFormFromPyObject(o);
-    if (module_form == NULL)
+    libdnf::ModuleForm * module_form = moduleFormFromPyObject(o);
+    if (!module_form)
         return 0;
     *module_form_ptr = module_form;
     return 1;
@@ -188,7 +180,7 @@ static PyObject *
 iter(_ModuleFormObject *self)
 {
     PyObject *res;
-    HyModuleForm mform = self->module_form;
+    libdnf::ModuleForm * mform = self->module_form;
     if (mform->getVersion() == libdnf::ModuleForm::VersionNotSet) {
         Py_INCREF(Py_None);
         res = Py_BuildValue("zzOzzz",
