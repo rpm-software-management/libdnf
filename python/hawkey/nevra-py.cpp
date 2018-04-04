@@ -164,7 +164,7 @@ nevra_init(_NevraObject *self, PyObject *args, PyObject *kwds)
         return -1;
     }
     if (cnevra) {
-        self->nevra = new libdnf::Nevra(*cnevra);
+        *self->nevra = *cnevra;
         return 0;
     }
     if (set_epoch(self, epoch_o, NULL) == -1) {
