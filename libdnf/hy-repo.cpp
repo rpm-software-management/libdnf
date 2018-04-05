@@ -19,6 +19,7 @@
  */
 
 #include <assert.h>
+#include <sys/stat.h>
 
 // libsolv
 #include <solv/util.h>
@@ -131,8 +132,22 @@ hy_repo_create(const char *name)
     return repo;
 }
 
-void
-hy_repo_load_cache(HyRepo repo, HySpec *spec, const char *cachedir)
+int
+mtime(const char *filename)
+{
+    struct stat st;
+    stat(filename, &st);
+    return st.st_mtime;
+}
+
+unsigned long
+age(const char *filename)
+{
+    return time(NULL) - mtime(filename);
+}
+
+int
+hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir)
 {
     LrYumRepo *md;
     GError *err = NULL;
@@ -151,11 +166,18 @@ hy_repo_load_cache(HyRepo repo, HySpec *spec, const char *cachedir)
     lr_handle_perform(h, r, &err);
     lr_result_getinfo(r, NULL, LRR_YUM_REPO, &md);
 
+    // Populate repo
     const char *primary_fn = lr_yum_repo_path(md, "primary");
     hy_repo_set_string(repo, HY_REPO_PRIMARY_FN, primary_fn);
 
+    // Populate meta
+    /* lr_result_getinfo(r, NULL, LRR_YUM_TIMESTAMP, &meta->timestamp); */
+    meta->age = age(primary_fn);
+
     lr_handle_free(h);
     lr_result_free(r);
+
+    return 1;
 }
 
 /**
@@ -174,7 +196,13 @@ hy_repo_load_cache(HyRepo repo, HySpec *spec, const char *cachedir)
 void
 hy_repo_load(HyRepo repo, HySpec *spec, const char *cachedir)
 {
-    hy_repo_load_cache(repo, spec, cachedir);
+    HyMeta meta;
+    int cached = hy_repo_load_cache(repo, &meta, cachedir);
+    if (cached && meta.age <= spec->maxage) {
+        printf("using cache, age: %i\n", meta.age);
+        return;
+    }
+    printf("try_revive\n");
 }
 
 int
