@@ -24,7 +24,7 @@
 
 // hawkey
 #include "hy-iutil.h"
-#include "hy-nevra.hpp"
+#include "nevra.hpp"
 #include "nsvcap.hpp"
 #include "dnf-sack.h"
 #include "hy-subject.h"

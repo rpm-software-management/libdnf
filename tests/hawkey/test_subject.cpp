@@ -24,7 +24,7 @@
 #include <string.h>
 
 
-#include "libdnf/hy-nevra.hpp"
+#include "libdnf/nevra.hpp"
 #include "libdnf/nsvcap.hpp"
 #include "libdnf/dnf-reldep.h"
 #include "libdnf/dnf-sack.h"

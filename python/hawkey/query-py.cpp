@@ -26,7 +26,7 @@
 
 #include <pygobject-3.0/pygobject.h>
 
-#include "hy-nevra.hpp"
+#include "nevra.hpp"
 #include "hy-query.h"
 #include "hy-selector.h"
 #include "hy-subject.h"

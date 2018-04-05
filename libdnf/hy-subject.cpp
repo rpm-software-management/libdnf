@@ -25,7 +25,7 @@
 #include "dnf-sack-private.hpp"
 #include "hy-subject.h"
 #include "hy-iutil-private.hpp"
-#include "hy-nevra.hpp"
+#include "nevra.hpp"
 #include "nsvcap.hpp"
 #include "hy-types.h"
 #include "hy-query-private.hpp"
