@@ -281,7 +281,7 @@ hy_repo_load(HyRepo repo, HyRemote *remote)
     int cached = hy_repo_load_cache(repo, &meta, remote->cachedir);
     if (cached) {
         if (meta.age <= remote->maxage) {
-            printf("using cache, age: %i\n", meta.age);
+            printf("using cache, age: %is\n", meta.age);
             return;
         }
         printf("try to reuse\n");
