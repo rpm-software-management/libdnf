@@ -200,6 +200,8 @@ hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir)
     LrResult *r = lr_result_init();
 
     lr_handle_perform(h, r, &err);
+    if (err)
+        return 0;
     lr_result_getinfo(r, NULL, LRR_YUM_REPO, &md);
 
     // Populate repo
@@ -293,6 +295,7 @@ hy_repo_load(HyRepo repo, HySpec *spec)
 
     printf("fetch\n");
     hy_repo_fetch(spec);
+    hy_repo_load_cache(repo, &meta, remote->cachedir);
 }
 
 int

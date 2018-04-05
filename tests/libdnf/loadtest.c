@@ -15,6 +15,8 @@ int main(void)
     spec.maxage = 60;
 
     hy_repo_load(repo, &spec);
+    printf("repomd_fn: %s\n", repo->repomd_fn);
+    printf("primary_fn: %s\n", repo->primary_fn);
     hy_repo_free(repo);
 
     return 0;
