@@ -240,7 +240,9 @@ hy_repo_can_reuse(HyRepo repo, HySpec *spec)
     // FIXME create custom function
     dnf_remove_recursive(tmpdir, NULL);
 
-    return nck == ock;
+    if (strcmp(ock, nck) == 0)
+        return 1;
+    return 0;
 }
 
 void
@@ -282,7 +284,7 @@ hy_repo_load(HyRepo repo, HySpec *spec)
         printf("try to reuse\n");
         int ok = hy_repo_can_reuse(repo, spec);
         if (ok) {
-            printf("reusing existing cache\n");
+            printf("reusing expired cache\n");
             return;
         }
     }
