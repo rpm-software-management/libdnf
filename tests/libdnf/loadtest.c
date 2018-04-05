@@ -12,7 +12,6 @@ int main(void)
 
     spec.url = "http://download.fedoraproject.org/pub/fedora/linux/releases/27/Everything/x86_64/os/";
     spec.cachedir = "/var/tmp/loadtest";
-    /* spec.maxage = 6 * 24 * 3600; */
     spec.maxage = 60;
 
     hy_repo_load(repo, &spec);

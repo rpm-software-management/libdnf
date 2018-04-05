@@ -20,6 +20,7 @@
 
 #include <assert.h>
 #include <sys/stat.h>
+#include <utime.h>
 
 // libsolv
 #include <solv/util.h>
@@ -285,6 +286,7 @@ hy_repo_load(HyRepo repo, HySpec *spec)
         int ok = hy_repo_can_reuse(repo, spec);
         if (ok) {
             printf("reusing expired cache\n");
+            utime(repo->primary_fn, NULL);
             return;
         }
     }
