@@ -132,9 +132,10 @@ hy_repo_create(const char *name)
     return repo;
 }
 
-void
-conf_lr_handle_local(LrHandle *h, const char *cachedir)
+LrHandle *
+lr_handle_init_local(const char *cachedir)
 {
+    LrHandle *h = lr_handle_init();
     const char *urls[] = {cachedir, NULL};
     char *download_list[] = LR_YUM_HAWKEY;
     lr_handle_setopt(h, NULL, LRO_REPOTYPE, LR_YUMREPO);
@@ -142,6 +143,20 @@ conf_lr_handle_local(LrHandle *h, const char *cachedir)
     lr_handle_setopt(h, NULL, LRO_YUMDLIST, download_list);
     lr_handle_setopt(h, NULL, LRO_DESTDIR, cachedir);
     lr_handle_setopt(h, NULL, LRO_LOCAL, 1L);
+    return h;
+}
+
+LrHandle *
+lr_handle_init_remote(HySpec *spec, const char *destdir)
+{
+    LrHandle *h = lr_handle_init();
+    const char *urls[] = {spec->url, NULL};
+    char *download_list[] = LR_YUM_HAWKEY;
+    lr_handle_setopt(h, NULL, LRO_REPOTYPE, LR_YUMREPO);
+    lr_handle_setopt(h, NULL, LRO_URLS, urls);
+    lr_handle_setopt(h, NULL, LRO_YUMDLIST, download_list);
+    lr_handle_setopt(h, NULL, LRO_DESTDIR, destdir);
+    return h;
 }
 
 int
@@ -158,31 +173,83 @@ age(const char *filename)
     return time(NULL) - mtime(filename);
 }
 
+const char *
+cksum(const char *filename, GChecksumType ctype)
+{
+    FILE *fp;
+    if (!(fp = fopen(filename, "rb")))
+        return "";
+    guchar buffer[4096];
+    gssize len = 0;
+    GChecksum *csum = g_checksum_new(ctype);
+    while ((len = fread(buffer, 1, sizeof(buffer), fp)) > 0)
+        g_checksum_update(csum, buffer, len);
+    gchar *result = g_strdup(g_checksum_get_string(csum));
+    g_checksum_free(csum);
+    return result;
+}
+
 int
 hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir)
 {
     LrYumRepo *md;
     GError *err = NULL;
 
-    LrHandle *h = lr_handle_init();
+    LrHandle *h = lr_handle_init_local(cachedir);
     LrResult *r = lr_result_init();
 
-    conf_lr_handle_local(h, cachedir);
     lr_handle_perform(h, r, &err);
     lr_result_getinfo(r, NULL, LRR_YUM_REPO, &md);
 
     // Populate repo
     const char *primary_fn = lr_yum_repo_path(md, "primary");
+    hy_repo_set_string(repo, HY_REPO_MD_FN, md->repomd);
     hy_repo_set_string(repo, HY_REPO_PRIMARY_FN, primary_fn);
 
     // Populate meta
-    /* lr_result_getinfo(r, NULL, LRR_YUM_TIMESTAMP, &meta->timestamp); */
     meta->age = age(primary_fn);
 
     lr_handle_free(h);
     lr_result_free(r);
 
     return 1;
+}
+
+int
+hy_repo_can_reuse(HyRepo repo, HySpec *spec)
+{
+    LrYumRepo *md;
+    GError *err = NULL;
+    char tpt[] = "/tmp/tmpdir.XXXXXX";
+    char *tmpdir = mkdtemp(tpt);
+    char *download_list[] = LR_YUM_REPOMDONLY;
+
+    LrHandle *h = lr_handle_init_remote(spec, tmpdir);
+    LrResult *r = lr_result_init();
+
+    lr_handle_setopt(h, NULL, LRO_YUMDLIST, download_list);
+
+    lr_handle_perform(h, r, &err);
+    lr_result_getinfo(r, NULL, LRR_YUM_REPO, &md);
+
+    const char *ock = cksum(repo->repomd_fn, G_CHECKSUM_SHA256);
+    const char *nck = cksum(md->repomd, G_CHECKSUM_SHA256);
+
+    lr_handle_free(h);
+    lr_result_free(r);
+
+    return nck == ock;
+}
+
+void
+hy_repo_fetch(HySpec *spec, const char *destdir)
+{
+    GError *err = NULL;
+    LrHandle *h = lr_handle_init_remote(spec, destdir);
+    LrResult *r = lr_result_init();
+    lr_handle_perform(h, r, &err);
+    lr_handle_free(h);
+    lr_result_free(r);
 }
 
 /**
@@ -199,15 +266,27 @@ hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir)
  * Returns: %TRUE for success
  **/
 void
-hy_repo_load(HyRepo repo, HySpec *spec, const char *cachedir)
+hy_repo_load(HyRepo repo, HySpec *spec)
 {
     HyMeta meta;
-    int cached = hy_repo_load_cache(repo, &meta, cachedir);
-    if (cached && meta.age <= spec->maxage) {
-        printf("using cache, age: %i\n", meta.age);
-        return;
+
+    printf("check if cache present\n");
+    int cached = hy_repo_load_cache(repo, &meta, spec->cachedir);
+    if (cached) {
+        if (meta.age <= spec->maxage) {
+            printf("using cache, age: %i\n", meta.age);
+            return;
+        }
+        printf("try to reuse\n");
+        int ok = hy_repo_can_reuse(repo, spec);
+        if (ok) {
+            printf("reusing existing cache\n");
+            return;
+        }
     }
-    printf("try_revive\n");
+
+    printf("fetch\n");
+    //TODO
 }
 
 int

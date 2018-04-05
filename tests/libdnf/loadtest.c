@@ -9,9 +9,10 @@ int main(void)
 {
     HyRepo repo = hy_repo_create("test");
     HySpec spec;
-    spec.url = "foo";
+    spec.url = "http://download.fedoraproject.org/pub/fedora/linux/releases/27/Everything/x86_64/os/";
+    spec.cachedir = "/var/cache/dnf/fedora-6dbd63560daef6bf";
     spec.maxage = 6 * 24 * 3600;
-    hy_repo_load(repo, &spec, "/var/cache/dnf/fedora-6dbd63560daef6bf");
+    hy_repo_load(repo, &spec);
     hy_repo_free(repo);
     return 0;
 }

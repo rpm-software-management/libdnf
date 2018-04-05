@@ -42,6 +42,7 @@ enum _hy_repo_param_e {
 typedef struct HySpec
 {
     const char *url;
+    const char *cachedir;
     int maxage;
 } HySpec;
 
@@ -52,10 +53,14 @@ typedef struct HyMeta
 
 HyRepo hy_repo_create(const char *name);
 int hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir);
-void conf_lr_handle_local(LrHandle *h, const char *cachedir);
+int hy_repo_can_reuse(HyRepo repo, HySpec *spec);
+void hy_repo_fetch(HySpec *spec, const char *destdir);
+LrHandle *lr_handle_init_local(const char *cachedir);
+LrHandle *lr_handle_init_remote(HySpec *spec, const char *destdir);
 int mtime(const char *filename);
 unsigned long age(const char *filename);
-void hy_repo_load(HyRepo repo, HySpec *spec, const char *cachedir);
+const char *cksum(const char *filename, GChecksumType ctype);
+void hy_repo_load(HyRepo repo, HySpec *spec);
 int hy_repo_get_cost(HyRepo repo);
 int hy_repo_get_priority(HyRepo repo);
 gboolean hy_repo_get_use_includes(HyRepo repo);
