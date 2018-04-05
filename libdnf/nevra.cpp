@@ -31,7 +31,7 @@ namespace libdnf {
 #define PKG_RELEASE PKG_VERSION
 #define PKG_ARCH "([^-:.(/=<> ]+)"
 
-constexpr const char * nevra_form_regex[] = {
+static constexpr const char * NEVRA_FORM_REGEX[] = {
     "^" PKG_NAME "-" PKG_EPOCH PKG_VERSION "-" PKG_RELEASE "\\." PKG_ARCH "$",
     "^" PKG_NAME "-" PKG_EPOCH PKG_VERSION "-" PKG_RELEASE          "()"  "$",
     "^" PKG_NAME "-" PKG_EPOCH PKG_VERSION        "()"              "()"  "$",
@@ -42,7 +42,7 @@ constexpr const char * nevra_form_regex[] = {
 bool Nevra::parse(const char * nevraStr, HyForm form)
 {
     enum { NAME = 1, EPOCH = 3, VERSION = 4, RELEASE = 5, ARCH = 6, _LAST_ };
-    Regex reg(nevra_form_regex[form - 1], REG_EXTENDED);
+    Regex reg(NEVRA_FORM_REGEX[form - 1], REG_EXTENDED);
     auto matchResult = reg.match(nevraStr, false, _LAST_);
     if (!matchResult.isMatched() || matchResult.getMatchedLen(NAME) == 0)
         return false;
@@ -50,7 +50,7 @@ bool Nevra::parse(const char * nevraStr, HyForm form)
     if (matchResult.getMatchedLen(EPOCH) > 0)
         epoch = atoi(matchResult.getMatchedString(EPOCH).c_str());
     else
-        epoch = EpochNotSet;
+        epoch = EPOCH_NOT_SET;
     version = matchResult.getMatchedString(VERSION);
     release = matchResult.getMatchedString(RELEASE);
     arch = matchResult.getMatchedString(ARCH);
@@ -61,7 +61,7 @@ void
 Nevra::clear() noexcept
 {
     name.clear();
-    epoch = EpochNotSet;
+    epoch = EPOCH_NOT_SET;
     version.clear();
     release.clear();
     arch.clear();
@@ -70,7 +70,7 @@ Nevra::clear() noexcept
 std::string
 Nevra::getEvr() const
 {
-    if (epoch == EpochNotSet)
+    if (epoch == EPOCH_NOT_SET)
         return version + "-" + release;
     return std::to_string(epoch) + ":" + version + "-" + release;
 }
@@ -78,7 +78,7 @@ Nevra::getEvr() const
 bool
 Nevra::hasJustName() const
 {
-    return !name.empty() && epoch == EpochNotSet && 
+    return !name.empty() && epoch == EPOCH_NOT_SET && 
         version.empty() && release.empty() && arch.empty();
 }
 

@@ -55,7 +55,7 @@ set_version(_NsvcapObject *self, PyObject *value, void *closure)
     if (PyInt_Check(value))
         self->nsvcap->setVersion(PyLong_AsLongLong(value));
     else if (value == Py_None)
-        self->nsvcap->setVersion(libdnf::Nsvcap::VersionNotSet);
+        self->nsvcap->setVersion(libdnf::Nsvcap::VERSION_NOT_SET);
     else
         return false;
     return true;
@@ -64,7 +64,7 @@ set_version(_NsvcapObject *self, PyObject *value, void *closure)
 static PyObject *
 get_version(_NsvcapObject *self, void *closure)
 {
-    if (self->nsvcap->getVersion() == libdnf::Nsvcap::VersionNotSet)
+    if (self->nsvcap->getVersion() == libdnf::Nsvcap::VERSION_NOT_SET)
         Py_RETURN_NONE;
     return PyLong_FromLongLong(self->nsvcap->getVersion());
 }
@@ -181,7 +181,7 @@ iter(_NsvcapObject *self)
 {
     PyObject *res;
     libdnf::Nsvcap * nsvcap = self->nsvcap;
-    if (nsvcap->getVersion() == libdnf::Nsvcap::VersionNotSet) {
+    if (nsvcap->getVersion() == libdnf::Nsvcap::VERSION_NOT_SET) {
         Py_INCREF(Py_None);
         res = Py_BuildValue("zzOzzz",
                             nsvcap->getName().empty() ? nullptr : nsvcap->getName().c_str(),

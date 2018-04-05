@@ -31,7 +31,7 @@ namespace libdnf {
 
 struct Nevra {
 public:
-    static constexpr int EpochNotSet = -1;
+    static constexpr int EPOCH_NOT_SET = -1;
 
     Nevra();
 
@@ -69,7 +69,7 @@ private:
 };
 
 inline Nevra::Nevra()
-: epoch(EpochNotSet) {}
+: epoch(EPOCH_NOT_SET) {}
 
 inline const std::string & Nevra::getName() const noexcept
 {

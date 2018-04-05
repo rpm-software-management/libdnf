@@ -63,11 +63,11 @@ static int
 set_epoch(_NevraObject *self, PyObject *value, void *closure)
 {
     if (value == NULL)
-        self->nevra->setEpoch(libdnf::Nevra::EpochNotSet);
+        self->nevra->setEpoch(libdnf::Nevra::EPOCH_NOT_SET);
     else if (PyInt_Check(value))
         self->nevra->setEpoch(PyLong_AsLong(value));
     else if (value == Py_None)
-        self->nevra->setEpoch(libdnf::Nevra::EpochNotSet);
+        self->nevra->setEpoch(libdnf::Nevra::EPOCH_NOT_SET);
     else
         return -1;
     return 0;
@@ -76,7 +76,7 @@ set_epoch(_NevraObject *self, PyObject *value, void *closure)
 static PyObject *
 get_epoch(_NevraObject *self, void *closure)
 {
-    if (self->nevra->getEpoch() == libdnf::Nevra::EpochNotSet)
+    if (self->nevra->getEpoch() == libdnf::Nevra::EPOCH_NOT_SET)
         Py_RETURN_NONE;
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(self->nevra->getEpoch());
@@ -297,7 +297,7 @@ iter(_NevraObject *self)
 {
     PyObject *res;
     auto nevra = self->nevra;
-    if (nevra->getEpoch() == libdnf::Nevra::EpochNotSet) {
+    if (nevra->getEpoch() == libdnf::Nevra::EPOCH_NOT_SET) {
         Py_INCREF(Py_None);
         res = Py_BuildValue("zOzzz",
                             nevra->getName().c_str(),

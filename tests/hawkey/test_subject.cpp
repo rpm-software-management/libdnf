@@ -104,7 +104,7 @@ START_TEST(nevra2)
     libdnf::Nevra nevra;
     ck_assert(nevra.parse(inp_fof_noepoch, HY_FORM_NEVRA));
     ck_assert_str_eq(nevra.getName().c_str(), "four-of-fish");
-    ck_assert_int_eq(nevra.getEpoch(), libdnf::Nevra::EpochNotSet);
+    ck_assert_int_eq(nevra.getEpoch(), libdnf::Nevra::EPOCH_NOT_SET);
     ck_assert_str_eq(nevra.getVersion().c_str(), "3.6.9");
     ck_assert_str_eq(nevra.getRelease().c_str(), "11.fc100");
     ck_assert_str_eq(nevra.getArch().c_str(), "x86_64");
@@ -147,7 +147,7 @@ START_TEST(na)
     libdnf::Nevra nevra;
     ck_assert(nevra.parse(inp_fof_na, HY_FORM_NA));
     ck_assert_str_eq(nevra.getName().c_str(), "four-of-fish-3.6.9");
-    ck_assert_int_eq(nevra.getEpoch(), libdnf::Nevra::EpochNotSet);
+    ck_assert_int_eq(nevra.getEpoch(), libdnf::Nevra::EPOCH_NOT_SET);
     fail_unless(nevra.getVersion().empty());
     ck_assert_str_eq(nevra.getArch().c_str(), "i686");
 }
