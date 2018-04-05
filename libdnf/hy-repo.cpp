@@ -237,6 +237,8 @@ hy_repo_can_reuse(HyRepo repo, HySpec *spec)
 
     lr_handle_free(h);
     lr_result_free(r);
+    // FIXME create custom function
+    dnf_remove_recursive(tmpdir, NULL);
 
     return nck == ock;
 }
@@ -286,7 +288,7 @@ hy_repo_load(HyRepo repo, HySpec *spec)
     }
 
     printf("fetch\n");
-    //TODO
+    hy_repo_fetch(spec, spec->cachedir);
 }
 
 int
