@@ -26,7 +26,7 @@
 // hawkey
 #include "dnf-types.h"
 #include "hy-iutil-private.hpp"
-#include "hy-nevra.hpp"
+#include "nevra.hpp"
 #include "hy-package.h"
 #include "hy-subject.h"
 #include "hy-util-private.hpp"

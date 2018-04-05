@@ -23,7 +23,7 @@
 #include "dnf-swdb.h"
 #include "dnf-swdb-sql.h"
 #include "dnf-swdb-trans.h"
-#include "hy-nevra.hpp"
+#include "nevra.hpp"
 #include "hy-subject.h"
 #include "hy-types.h"
 

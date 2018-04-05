@@ -24,7 +24,6 @@
 #include <solv/util.h>
 
 // hawkey
-#include "hy-nevra.hpp"
 #include "hy-query.h"
 #include "dnf-sack.h"
 

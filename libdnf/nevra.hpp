@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef HY_NEVRA_HPP
-#define HY_NEVRA_HPP
+#ifndef LIBDNF_NEVRA_HPP
+#define LIBDNF_NEVRA_HPP
 
 #include "dnf-types.h"
 #include "hy-subject.h"
@@ -142,4 +142,4 @@ inline void Nevra::setArch(std::string && arch)
 
 }
 
-#endif // HY_NEVRA_HPP
+#endif // LIBDNF_NEVRA_HPP
