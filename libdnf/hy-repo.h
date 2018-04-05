@@ -54,7 +54,7 @@ typedef struct HyMeta
 HyRepo hy_repo_create(const char *name);
 int hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir);
 int hy_repo_can_reuse(HyRepo repo, HySpec *spec);
-void hy_repo_fetch(HySpec *spec, const char *destdir);
+void hy_repo_fetch(HySpec *spec);
 LrHandle *lr_handle_init_local(const char *cachedir);
 LrHandle *lr_handle_init_remote(HySpec *spec, const char *destdir);
 int mtime(const char *filename);

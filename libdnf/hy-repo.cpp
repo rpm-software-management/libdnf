@@ -247,10 +247,10 @@ hy_repo_can_reuse(HyRepo repo, HySpec *spec)
 }
 
 void
-hy_repo_fetch(HySpec *spec, const char *destdir)
+hy_repo_fetch(HySpec *spec)
 {
     GError *err = NULL;
-    LrHandle *h = lr_handle_init_remote(spec, destdir);
+    LrHandle *h = lr_handle_init_remote(spec, spec->cachedir);
     LrResult *r = lr_result_init();
     lr_handle_perform(h, r, &err);
     lr_handle_free(h);
@@ -292,7 +292,7 @@ hy_repo_load(HyRepo repo, HySpec *spec)
     }
 
     printf("fetch\n");
-    hy_repo_fetch(spec, spec->cachedir);
+    hy_repo_fetch(spec);
 }
 
 int
