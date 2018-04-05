@@ -29,7 +29,7 @@ namespace libdnf {
 
 struct Nsvcap {
 public:
-    static constexpr long long VersionNotSet = -1;
+    static constexpr long long VERSION_NOT_SET = -1;
 
     Nsvcap();
 
@@ -66,7 +66,7 @@ private:
 };
 
 inline Nsvcap::Nsvcap()
-: version(VersionNotSet) {}
+: version(VERSION_NOT_SET) {}
 
 inline const std::string & Nsvcap::getName() const noexcept
 {
