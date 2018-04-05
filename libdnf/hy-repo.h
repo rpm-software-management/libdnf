@@ -39,12 +39,12 @@ enum _hy_repo_param_e {
     HY_REPO_UPDATEINFO_FN = 5
 };
 
-typedef struct HySpec
+typedef struct HyRemote
 {
     const char *url;
     const char *cachedir;
     int maxage;
-} HySpec;
+} HyRemote;
 
 typedef struct HyMeta
 {
@@ -53,14 +53,14 @@ typedef struct HyMeta
 
 HyRepo hy_repo_create(const char *name);
 int hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir);
-int hy_repo_can_reuse(HyRepo repo, HySpec *spec);
-void hy_repo_fetch(HySpec *spec);
+int hy_repo_can_reuse(HyRepo repo, HyRemote *remote);
+void hy_repo_fetch(HyRemote *remote);
 LrHandle *lr_handle_init_local(const char *cachedir);
-LrHandle *lr_handle_init_remote(HySpec *spec, const char *destdir);
+LrHandle *lr_handle_init_remote(HyRemote *remote, const char *destdir);
 int mtime(const char *filename);
 unsigned long age(const char *filename);
 const char *cksum(const char *filename, GChecksumType ctype);
-void hy_repo_load(HyRepo repo, HySpec *spec);
+void hy_repo_load(HyRepo repo, HyRemote *remote);
 int hy_repo_get_cost(HyRepo repo);
 int hy_repo_get_priority(HyRepo repo);
 gboolean hy_repo_get_use_includes(HyRepo repo);

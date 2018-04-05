@@ -148,10 +148,10 @@ lr_handle_init_local(const char *cachedir)
 }
 
 LrHandle *
-lr_handle_init_remote(HySpec *spec, const char *destdir)
+lr_handle_init_remote(HyRemote *remote, const char *destdir)
 {
     LrHandle *h = lr_handle_init();
-    const char *urls[] = {spec->url, NULL};
+    const char *urls[] = {remote->url, NULL};
     char *download_list[] = LR_YUM_HAWKEY;
     lr_handle_setopt(h, NULL, LRO_REPOTYPE, LR_YUMREPO);
     lr_handle_setopt(h, NULL, LRO_URLS, urls);
@@ -219,7 +219,7 @@ hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir)
 }
 
 int
-hy_repo_can_reuse(HyRepo repo, HySpec *spec)
+hy_repo_can_reuse(HyRepo repo, HyRemote *remote)
 {
     LrYumRepo *md;
     GError *err = NULL;
@@ -227,7 +227,7 @@ hy_repo_can_reuse(HyRepo repo, HySpec *spec)
     char *tmpdir = mkdtemp(tpt);
     char *download_list[] = LR_YUM_REPOMDONLY;
 
-    LrHandle *h = lr_handle_init_remote(spec, tmpdir);
+    LrHandle *h = lr_handle_init_remote(remote, tmpdir);
     LrResult *r = lr_result_init();
 
     lr_handle_setopt(h, NULL, LRO_YUMDLIST, download_list);
@@ -249,10 +249,10 @@ hy_repo_can_reuse(HyRepo repo, HySpec *spec)
 }
 
 void
-hy_repo_fetch(HySpec *spec)
+hy_repo_fetch(HyRemote *remote)
 {
     GError *err = NULL;
-    LrHandle *h = lr_handle_init_remote(spec, spec->cachedir);
+    LrHandle *h = lr_handle_init_remote(remote, remote->cachedir);
     LrResult *r = lr_result_init();
     lr_handle_perform(h, r, &err);
     lr_handle_free(h);
@@ -262,9 +262,9 @@ hy_repo_fetch(HySpec *spec)
 /**
  * hy_repo_load:
  * @repo: a #HyRepo instance.
- * @spec: a #HySpec instance. TODO maybe rename?
+ * @remote: a #HyRemote instance.
  *
- * Initializes the repo according to the spec.
+ * Initializes the repo according to the remote spec.
  * Fetches new metadata from the remote or just reuses local cache if valid.
  *
  * FIXME: This attempts to be a C rewrite of Repo.load() in DNF.  This function
@@ -273,19 +273,19 @@ hy_repo_fetch(HySpec *spec)
  * Returns: %TRUE for success
  **/
 void
-hy_repo_load(HyRepo repo, HySpec *spec)
+hy_repo_load(HyRepo repo, HyRemote *remote)
 {
     HyMeta meta;
 
     printf("check if cache present\n");
-    int cached = hy_repo_load_cache(repo, &meta, spec->cachedir);
+    int cached = hy_repo_load_cache(repo, &meta, remote->cachedir);
     if (cached) {
-        if (meta.age <= spec->maxage) {
+        if (meta.age <= remote->maxage) {
             printf("using cache, age: %i\n", meta.age);
             return;
         }
         printf("try to reuse\n");
-        int ok = hy_repo_can_reuse(repo, spec);
+        int ok = hy_repo_can_reuse(repo, remote);
         if (ok) {
             printf("reusing expired cache\n");
             utime(repo->primary_fn, NULL);
@@ -294,7 +294,7 @@ hy_repo_load(HyRepo repo, HySpec *spec)
     }
 
     printf("fetch\n");
-    hy_repo_fetch(spec);
+    hy_repo_fetch(remote);
     hy_repo_load_cache(repo, &meta, remote->cachedir);
 }
 
