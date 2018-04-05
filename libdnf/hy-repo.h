@@ -28,6 +28,8 @@ G_BEGIN_DECLS
 // hawkey
 #include "hy-types.h"
 
+#include <librepo/librepo.h>
+
 enum _hy_repo_param_e {
     HY_REPO_NAME = 0,
     HY_REPO_MD_FN = 1,
@@ -50,6 +52,7 @@ typedef struct HyMeta
 
 HyRepo hy_repo_create(const char *name);
 int hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir);
+void conf_lr_handle_local(LrHandle *h, const char *cachedir);
 int mtime(const char *filename);
 unsigned long age(const char *filename);
 void hy_repo_load(HyRepo repo, HySpec *spec, const char *cachedir);

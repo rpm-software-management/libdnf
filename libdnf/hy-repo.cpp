@@ -132,6 +132,18 @@ hy_repo_create(const char *name)
     return repo;
 }
 
+void
+conf_lr_handle_local(LrHandle *h, const char *cachedir)
+{
+    const char *urls[] = {cachedir, NULL};
+    char *download_list[] = LR_YUM_HAWKEY;
+    lr_handle_setopt(h, NULL, LRO_REPOTYPE, LR_YUMREPO);
+    lr_handle_setopt(h, NULL, LRO_URLS, urls);
+    lr_handle_setopt(h, NULL, LRO_YUMDLIST, download_list);
+    lr_handle_setopt(h, NULL, LRO_DESTDIR, cachedir);
+    lr_handle_setopt(h, NULL, LRO_LOCAL, 1L);
+}
+
 int
 mtime(const char *filename)
 {
@@ -151,18 +163,11 @@ hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir)
 {
     LrYumRepo *md;
     GError *err = NULL;
-    const char *urls[] = {cachedir, NULL};
-    char *download_list[] = LR_YUM_HAWKEY;
 
     LrHandle *h = lr_handle_init();
     LrResult *r = lr_result_init();
 
-    lr_handle_setopt(h, NULL, LRO_REPOTYPE, LR_YUMREPO);
-    lr_handle_setopt(h, NULL, LRO_URLS, urls);
-    lr_handle_setopt(h, NULL, LRO_YUMDLIST, download_list);
-    lr_handle_setopt(h, NULL, LRO_DESTDIR, cachedir);
-    lr_handle_setopt(h, NULL, LRO_LOCAL, 1L);
-
+    conf_lr_handle_local(h, cachedir);
     lr_handle_perform(h, r, &err);
     lr_result_getinfo(r, NULL, LRR_YUM_REPO, &md);
 
