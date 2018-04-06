@@ -265,7 +265,7 @@ hy_repo_fetch(HyRemote *remote)
     lr_handle_perform(h, r, &err);
 
     dnf_remove_recursive(repodir, NULL);
-    mkdir(repodir, NULL);
+    g_mkdir_with_parents(repodir, NULL);
     rename(tmprepodir, repodir);
     dnf_remove_recursive(tmpdir, NULL);
 
