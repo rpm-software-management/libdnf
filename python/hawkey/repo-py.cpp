@@ -100,6 +100,18 @@ repo_dealloc(_RepoObject *self)
     Py_TYPE(self)->tp_free(self);
 }
 
+/* object methods */
+
+static PyObject *
+load(_RepoObject *self, PyObject *args)
+{
+    HyRemote r;
+    if (!PyArg_ParseTuple(args, "ssi", &r.url, &r.cachedir, &r.maxage))
+        return Py_None;
+    hy_repo_load(self->repo, &r);
+    Py_RETURN_NONE;
+}
+
 /* getsetters */
 
 static PyObject *
@@ -181,6 +193,11 @@ static PyGetSetDef repo_getsetters[] = {
     {NULL}                        /* sentinel */
 };
 
+static PyMethodDef repo_methods[] = {
+    {"load", (PyCFunction)load, METH_VARARGS, "load metadata"},
+    {NULL, NULL, 0, NULL}        /* Sentinel */
+};
+
 PyTypeObject repo_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "_hawkey.Repo",                /*tp_name*/
@@ -209,7 +226,7 @@ PyTypeObject repo_Type = {
     0,                                /* tp_weaklistoffset */
     PyObject_SelfIter,                /* tp_iter */
     0,                                 /* tp_iternext */
-    0,                                /* tp_methods */
+    repo_methods,                                /* tp_methods */
     0,                                /* tp_members */
     repo_getsetters,                /* tp_getset */
     0,                                /* tp_base */
