@@ -252,9 +252,23 @@ void
 hy_repo_fetch(HyRemote *remote)
 {
     GError *err = NULL;
-    LrHandle *h = lr_handle_init_remote(remote, remote->cachedir);
+    char tpt[] = "/var/tmp/tmpdir.XXXXXX";
+    char *tmpdir = mkdtemp(tpt);
+    char tmprepodir[strlen(tpt) + 11];
+    char repodir[strlen(remote->cachedir) + 11];
+
+    sprintf(repodir, "%s/repodata", remote->cachedir);
+    sprintf(tmprepodir, "%s/repodata", tmpdir);
+
+    LrHandle *h = lr_handle_init_remote(remote, tmpdir);
     LrResult *r = lr_result_init();
     lr_handle_perform(h, r, &err);
+
+    dnf_remove_recursive(repodir, NULL);
+    mkdir(repodir, NULL);
+    rename(tmprepodir, repodir);
+    dnf_remove_recursive(tmpdir, NULL);
+
     lr_handle_free(h);
     lr_result_free(r);
 }
