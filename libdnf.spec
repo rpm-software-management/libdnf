@@ -49,6 +49,7 @@ BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  pkgconfig(json-c)
 BuildRequires:  pkgconfig(cppunit)
 BuildRequires:  pkgconfig(modulemd) >= %{libmodulemd_version}
+BuildRequires:  pkgconfig(smartcols)
 BuildRequires:  gettext
 
 Requires:       libmodulemd%{?_isa} >= %{libmodulemd_version}
