@@ -19,7 +19,6 @@
  */
 
 #include <assert.h>
-#include <sys/stat.h>
 #include <utime.h>
 
 // libsolv
@@ -27,6 +26,7 @@
 
 // hawkey
 #include "hy-repo-private.hpp"
+#include "hy-util.h"
 
 HyRepo
 hy_repo_link(HyRepo repo)
@@ -121,18 +121,6 @@ repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata)
     }
 }
 
-// public functions
-
-HyRepo
-hy_repo_create(const char *name)
-{
-    assert(name);
-    HyRepo repo = static_cast<HyRepo>(g_malloc0(sizeof(*repo)));
-    repo->nrefs = 1;
-    hy_repo_set_string(repo, HY_REPO_NAME, name);
-    return repo;
-}
-
 LrHandle *
 lr_handle_init_local(const char *cachedir)
 {
@@ -159,36 +147,6 @@ lr_handle_init_remote(HyRemote *remote, const char *destdir)
     lr_handle_setopt(h, NULL, LRO_YUMDLIST, download_list);
     lr_handle_setopt(h, NULL, LRO_DESTDIR, destdir);
     return h;
-}
-
-int
-mtime(const char *filename)
-{
-    struct stat st;
-    stat(filename, &st);
-    return st.st_mtime;
-}
-
-unsigned long
-age(const char *filename)
-{
-    return time(NULL) - mtime(filename);
-}
-
-const char *
-cksum(const char *filename, GChecksumType ctype)
-{
-    FILE *fp;
-    if (!(fp = fopen(filename, "rb")))
-        return "";
-    guchar buffer[4096];
-    gssize len = 0;
-    GChecksum *csum = g_checksum_new(ctype);
-    while ((len = fread(buffer, 1, sizeof(buffer), fp)) > 0)
-        g_checksum_update(csum, buffer, len);
-    gchar *result = g_strdup(g_checksum_get_string(csum));
-    g_checksum_free(csum);
-    return result;
 }
 
 int
@@ -272,6 +230,18 @@ hy_repo_fetch(HyRemote *remote)
 
     lr_handle_free(h);
     lr_result_free(r);
+}
+
+// public functions
+
+HyRepo
+hy_repo_create(const char *name)
+{
+    assert(name);
+    HyRepo repo = static_cast<HyRepo>(g_malloc0(sizeof(*repo)));
+    repo->nrefs = 1;
+    hy_repo_set_string(repo, HY_REPO_NAME, name);
+    return repo;
 }
 
 /**

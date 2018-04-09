@@ -22,13 +22,12 @@
 #define HY_REPO_H
 
 #include <glib.h>
+#include <librepo/librepo.h>
 
 G_BEGIN_DECLS
 
 // hawkey
 #include "hy-types.h"
-
-#include <librepo/librepo.h>
 
 enum _hy_repo_param_e {
     HY_REPO_NAME = 0,
@@ -46,20 +45,7 @@ typedef struct HyRemote
     int maxage;
 } HyRemote;
 
-typedef struct HyMeta
-{
-    int age;
-} HyMeta;
-
 HyRepo hy_repo_create(const char *name);
-int hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir);
-int hy_repo_can_reuse(HyRepo repo, HyRemote *remote);
-void hy_repo_fetch(HyRemote *remote);
-LrHandle *lr_handle_init_local(const char *cachedir);
-LrHandle *lr_handle_init_remote(HyRemote *remote, const char *destdir);
-int mtime(const char *filename);
-unsigned long age(const char *filename);
-const char *cksum(const char *filename, GChecksumType ctype);
 void hy_repo_load(HyRepo repo, HyRemote *remote);
 int hy_repo_get_cost(HyRepo repo);
 int hy_repo_get_priority(HyRepo repo);

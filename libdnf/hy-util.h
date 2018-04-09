@@ -37,6 +37,10 @@ int hy_detect_arch(char **arch);
 int hy_split_nevra(const char *nevra, char **name, int *epoch,
                    char **version, char **release, char **arch);
 
+int mtime(const char *filename);
+unsigned long age(const char *filename);
+const char *cksum(const char *filename, GChecksumType ctype);
+
 G_END_DECLS
 
 #endif /* HY_UTIL_H */

@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/utsname.h>
+#include <sys/stat.h>
 
 // hawkey
 #include "dnf-types.h"
@@ -191,4 +192,34 @@ hy_packagelist_has(GPtrArray *plist, DnfPackage *pkg)
         if (dnf_package_get_identical(pkg, static_cast<DnfPackage *>(a->pdata[i])))
             return 1;
     return 0;
+}
+
+int
+mtime(const char *filename)
+{
+    struct stat st;
+    stat(filename, &st);
+    return st.st_mtime;
+}
+
+unsigned long
+age(const char *filename)
+{
+    return time(NULL) - mtime(filename);
+}
+
+const char *
+cksum(const char *filename, GChecksumType ctype)
+{
+    FILE *fp;
+    if (!(fp = fopen(filename, "rb")))
+        return "";
+    guchar buffer[4096];
+    gssize len = 0;
+    GChecksum *csum = g_checksum_new(ctype);
+    while ((len = fread(buffer, 1, sizeof(buffer), fp)) > 0)
+        g_checksum_update(csum, buffer, len);
+    gchar *result = g_strdup(g_checksum_get_string(csum));
+    g_checksum_free(csum);
+    return result;
 }

@@ -69,6 +69,11 @@ enum _hy_repo_repodata {
     _HY_REPODATA_UPDATEINFO
 };
 
+typedef struct HyMeta
+{
+    int age;
+} HyMeta;
+
 HyRepo hy_repo_link(HyRepo repo);
 int hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state);
 
@@ -79,5 +84,11 @@ void repo_update_state(HyRepo repo, enum _hy_repo_repodata which,
                        enum _hy_repo_state state);
 Id repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which);
 void repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata);
+
+LrHandle *lr_handle_init_local(const char *cachedir);
+LrHandle *lr_handle_init_remote(HyRemote *remote, const char *destdir);
+int hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir);
+int hy_repo_can_reuse(HyRepo repo, HyRemote *remote);
+void hy_repo_fetch(HyRemote *remote);
 
 #endif // HY_REPO_INTERNAL_H
