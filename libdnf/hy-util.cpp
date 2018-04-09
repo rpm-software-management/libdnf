@@ -194,6 +194,7 @@ hy_packagelist_has(GPtrArray *plist, DnfPackage *pkg)
     return 0;
 }
 
+// [WIP]
 int
 mtime(const char *filename)
 {
@@ -202,12 +203,14 @@ mtime(const char *filename)
     return st.st_mtime;
 }
 
+// [WIP]
 unsigned long
 age(const char *filename)
 {
     return time(NULL) - mtime(filename);
 }
 
+// [WIP]
 const char *
 cksum(const char *filename, GChecksumType ctype)
 {
@@ -222,4 +225,12 @@ cksum(const char *filename, GChecksumType ctype)
     gchar *result = g_strdup(g_checksum_get_string(csum));
     g_checksum_free(csum);
     return result;
+}
+
+// [WIP]
+void
+rmtree(const char *dir)
+{
+    // FIXME: Implement our own version?
+    dnf_remove_recursive(dir, NULL);
 }

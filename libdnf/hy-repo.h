@@ -38,6 +38,9 @@ enum _hy_repo_param_e {
     HY_REPO_UPDATEINFO_FN = 5
 };
 
+// [WIP] Represents a remote repository specification (much like RepoConf in
+// dnf).  This is a preliminary struct for passing RepoConf stuff from dnf to
+// libdnf; we'll have a better class for this.
 typedef struct HyRemote
 {
     const char *url;

@@ -121,6 +121,7 @@ repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata)
     }
 }
 
+// [WIP]
 LrHandle *
 lr_handle_init_local(const char *cachedir)
 {
@@ -135,6 +136,7 @@ lr_handle_init_local(const char *cachedir)
     return h;
 }
 
+// [WIP]
 LrHandle *
 lr_handle_init_remote(HyRemote *remote, const char *destdir)
 {
@@ -149,6 +151,7 @@ lr_handle_init_remote(HyRemote *remote, const char *destdir)
     return h;
 }
 
+// [WIP]
 int
 hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir)
 {
@@ -177,6 +180,7 @@ hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir)
     return 1;
 }
 
+// [WIP]
 int
 hy_repo_can_reuse(HyRepo repo, HyRemote *remote)
 {
@@ -199,14 +203,14 @@ hy_repo_can_reuse(HyRepo repo, HyRemote *remote)
 
     lr_handle_free(h);
     lr_result_free(r);
-    // FIXME create custom function
-    dnf_remove_recursive(tmpdir, NULL);
+    rmtree(tmpdir);
 
     if (strcmp(ock, nck) == 0)
         return 1;
     return 0;
 }
 
+// [WIP]
 void
 hy_repo_fetch(HyRemote *remote)
 {
@@ -223,10 +227,10 @@ hy_repo_fetch(HyRemote *remote)
     LrResult *r = lr_result_init();
     lr_handle_perform(h, r, &err);
 
-    dnf_remove_recursive(repodir, NULL);
+    rmtree(repodir);
     g_mkdir_with_parents(repodir, NULL);
     rename(tmprepodir, repodir);
-    dnf_remove_recursive(tmpdir, NULL);
+    rmtree(tmpdir);
 
     lr_handle_free(h);
     lr_result_free(r);
@@ -244,6 +248,7 @@ hy_repo_create(const char *name)
     return repo;
 }
 
+// [WIP]
 /**
  * hy_repo_load:
  * @repo: a #HyRepo instance.
@@ -253,7 +258,7 @@ hy_repo_create(const char *name)
  * Fetches new metadata from the remote or just reuses local cache if valid.
  *
  * FIXME: This attempts to be a C rewrite of Repo.load() in DNF.  This function
- * will be moved to a more appropriate place later.
+ * may be moved to a more appropriate place later.
  *
  * Returns: %TRUE for success
  **/

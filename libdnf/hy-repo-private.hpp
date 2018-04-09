@@ -69,6 +69,7 @@ enum _hy_repo_repodata {
     _HY_REPODATA_UPDATEINFO
 };
 
+// [WIP] Represents locally cached repodata
 typedef struct HyMeta
 {
     int age;
@@ -85,10 +86,12 @@ void repo_update_state(HyRepo repo, enum _hy_repo_repodata which,
 Id repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which);
 void repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata);
 
+// [WIP] ==========
 LrHandle *lr_handle_init_local(const char *cachedir);
 LrHandle *lr_handle_init_remote(HyRemote *remote, const char *destdir);
 int hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir);
 int hy_repo_can_reuse(HyRepo repo, HyRemote *remote);
 void hy_repo_fetch(HyRemote *remote);
+// [WIP] ==========
 
 #endif // HY_REPO_INTERNAL_H
