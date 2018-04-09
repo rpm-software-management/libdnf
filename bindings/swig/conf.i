@@ -14,6 +14,7 @@
     // make SWIG wrap following headers
     #include <iterator>
     #include "libdnf/conf/ConfigRepo.hpp"
+    #include "libdnf/conf/ConfigParser.hpp"
     using namespace libdnf;
 %}
 
@@ -86,6 +87,76 @@ public:
 %include "libdnf/conf/ConfigRepo.hpp"
 
 %template(OptionBindsIterator) Iterator<libdnf::OptionBinds>;
+
+%exception libdnf::ConfigParser::read {
+    try
+    {
+        $action
+    }
+    catch (const libdnf::ConfigParser::CantOpenFile & e)
+    {
+        SWIG_exception(SWIG_IOError, e.what());
+    }
+    catch (const libdnf::ConfigParser::Exception & e)
+    {
+       SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+    catch (const std::exception & e)
+    {
+       SWIG_exception(SWIG_RuntimeError, (std::string("C++ std::exception: ") + e.what()).c_str());
+    }
+}
+
+%exception libdnf::ConfigParser::getValue {
+    try
+    {
+        $action
+    }
+    catch (const libdnf::ConfigParser::MissingSection & e)
+    {
+        SWIG_exception(SWIG_IndexError, e.what());
+    }
+    catch (const libdnf::ConfigParser::MissingOption & e)
+    {
+        SWIG_exception(SWIG_IndexError, e.what());
+    }
+    catch (const libdnf::ConfigParser::Exception & e)
+    {
+       SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+    catch (const std::exception & e)
+    {
+       SWIG_exception(SWIG_RuntimeError, (std::string("C++ std::exception: ") + e.what()).c_str());
+    }
+}
+
+%exception libdnf::ConfigParser::getSubstitutedValue {
+    try
+    {
+        $action
+    }
+    catch (const libdnf::ConfigParser::MissingSection & e)
+    {
+        SWIG_exception(SWIG_IndexError, e.what());
+    }
+    catch (const libdnf::ConfigParser::MissingOption & e)
+    {
+        SWIG_exception(SWIG_IndexError, e.what());
+    }
+    catch (const libdnf::ConfigParser::Exception & e)
+    {
+       SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+    catch (const std::exception & e)
+    {
+       SWIG_exception(SWIG_RuntimeError, (std::string("C++ std::exception: ") + e.what()).c_str());
+    }
+}
+
+%apply std::string & INOUT { std::string & text }
+%include "libdnf/conf/ConfigParser.hpp"
+%clear std::string & text;
+%template(MapStringMapStringString) std::map<std::string, std::map<std::string, std::string>>;
 
 %exception __next__() {
     try
