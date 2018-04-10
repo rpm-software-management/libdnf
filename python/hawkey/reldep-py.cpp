@@ -33,6 +33,7 @@
 #include "exception-py.hpp"
 #include "sack-py.hpp"
 #include "reldep-py.hpp"
+#include "iutil-py.hpp"
 
 #include "pycomp.hpp"
 
@@ -174,6 +175,54 @@ reldep_hash(_ReldepObject *self)
     return dnf_reldep_get_id (self->reldep);
 }
 
+static int
+reldep_converter(PyObject *o, DnfReldep **reldep_ptr)
+{
+    DnfReldep *reldep = reldepFromPyObject(o);
+    if (reldep == NULL)
+        return 0;
+    *reldep_ptr = reldep;
+    return 1;
+}
+
+static PyObject *
+reldep_richcompare(PyObject *self, PyObject *other, int op)
+{
+    PyObject *result = NULL;
+    DnfReldep *cself, *cother;
+
+    if (!reldep_converter(self, &cself) ||
+        !reldep_converter(other, &cother)) {
+        if(PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError))
+            PyErr_Clear();
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    Id s_id = dnf_reldep_get_id(cself);
+    Id o_id = dnf_reldep_get_id(cother);
+    switch (op) {
+    case Py_EQ:
+        result = TEST_COND(s_id == o_id);
+        break;
+    case Py_NE:
+        result = TEST_COND(s_id != o_id);
+        break;
+    case Py_LT:
+    case Py_LE:
+    case Py_GT:
+    case Py_GE:
+        result = Py_NotImplemented;
+        break;
+    default:
+        PyErr_BadArgument();
+        return NULL;
+    }
+
+    Py_INCREF(result);
+    return result;
+}
+
 PyTypeObject reldep_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "_hawkey.Reldep",                /*tp_name*/
@@ -198,7 +247,7 @@ PyTypeObject reldep_Type = {
     "Reldep object",                /* tp_doc */
     0,                                /* tp_traverse */
     0,                                /* tp_clear */
-    0,                                /* tp_richcompare */
+    (richcmpfunc)reldep_richcompare, /* tp_richcompare */
     0,                                /* tp_weaklistoffset */
     0,                                /* tp_iter */
     0,                                 /* tp_iternext */
