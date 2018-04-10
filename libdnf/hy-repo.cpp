@@ -155,7 +155,7 @@ lr_handle_init_remote(HyRemote *remote, const char *destdir)
 int
 hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir)
 {
-    LrYumRepo *md;
+    LrYumRepo *yum_repo;
     GError *err = NULL;
 
     LrHandle *h = lr_handle_init_local(cachedir);
@@ -164,18 +164,27 @@ hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir)
     lr_handle_perform(h, r, &err);
     if (err)
         return 0;
-    lr_result_getinfo(r, NULL, LRR_YUM_REPO, &md);
+    lr_result_getinfo(r, NULL, LRR_YUM_REPO, &yum_repo);
+    const char *repomd_fn = yum_repo->repomd;
+    const char *primary_fn = lr_yum_repo_path(yum_repo, "primary");
+    const char *filelists_fn = lr_yum_repo_path(yum_repo, "filelists");
+    const char *presto_fn = lr_yum_repo_path(yum_repo, "prestodelta");
+    const char *updateinfo_fn = lr_yum_repo_path(yum_repo, "updateinfo");
 
     // Populate repo
-    const char *primary_fn = lr_yum_repo_path(md, "primary");
-    hy_repo_set_string(repo, HY_REPO_MD_FN, md->repomd);
+    hy_repo_set_string(repo, HY_REPO_MD_FN, repomd_fn);
     hy_repo_set_string(repo, HY_REPO_PRIMARY_FN, primary_fn);
+    hy_repo_set_string(repo, HY_REPO_FILELISTS_FN, filelists_fn);
+    hy_repo_set_string(repo, HY_REPO_PRESTO_FN, presto_fn);
+    hy_repo_set_string(repo, HY_REPO_UPDATEINFO_FN, updateinfo_fn);
 
     // Populate meta
     meta->age = age(primary_fn);
+    // These are for DNF compatiblity
+    meta->result = r;
 
     lr_handle_free(h);
-    lr_result_free(r);
+    /* lr_result_free(r); */
 
     return 1;
 }
@@ -253,9 +262,11 @@ hy_repo_create(const char *name)
  * hy_repo_load:
  * @repo: a #HyRepo instance.
  * @remote: a #HyRemote instance.
+ * @meta: a #HyMeta instance.
  *
  * Initializes the repo according to the remote spec.
  * Fetches new metadata from the remote or just reuses local cache if valid.
+ * Populates the meta struct with additional metadata.
  *
  * FIXME: This attempts to be a C rewrite of Repo.load() in DNF.  This function
  * may be moved to a more appropriate place later.
@@ -263,15 +274,13 @@ hy_repo_create(const char *name)
  * Returns: %TRUE for success
  **/
 void
-hy_repo_load(HyRepo repo, HyRemote *remote)
+hy_repo_load(HyRepo repo, HyRemote *remote, HyMeta *meta)
 {
-    HyMeta meta;
-
     printf("check if cache present\n");
-    int cached = hy_repo_load_cache(repo, &meta, remote->cachedir);
+    int cached = hy_repo_load_cache(repo, meta, remote->cachedir);
     if (cached) {
-        if (meta.age <= remote->maxage) {
-            printf("using cache, age: %is\n", meta.age);
+        if (meta->age <= remote->maxage) {
+            printf("using cache, age: %is\n", meta->age);
             return;
         }
         printf("try to reuse\n");
@@ -285,7 +294,7 @@ hy_repo_load(HyRepo repo, HyRemote *remote)
 
     printf("fetch\n");
     hy_repo_fetch(remote);
-    hy_repo_load_cache(repo, &meta, remote->cachedir);
+    hy_repo_load_cache(repo, meta, remote->cachedir);
 }
 
 int

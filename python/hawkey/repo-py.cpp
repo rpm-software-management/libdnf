@@ -102,14 +102,35 @@ repo_dealloc(_RepoObject *self)
 
 /* object methods */
 
+extern "C"
+{
+    PyObject * PyObject_FromYumRepo(LrYumRepo *repo);
+    PyObject * PyObject_FromYumRepoMd(LrYumRepoMd *repomd);
+}
+
+// [WIP]
 static PyObject *
 load(_RepoObject *self, PyObject *args)
 {
+    HyRepo repo = self->repo;
     HyRemote r;
+    HyMeta m;
+    PyObject *ret = PyTuple_New(2);
+    LrYumRepo *yum_repo;
+    LrYumRepoMd *yum_repomd;
+
     if (!PyArg_ParseTuple(args, "ssi", &r.url, &r.cachedir, &r.maxage))
         return Py_None;
-    hy_repo_load(self->repo, &r);
-    Py_RETURN_NONE;
+
+    hy_repo_load(repo, &r, &m);
+
+    lr_result_getinfo(m.result, NULL, LRR_YUM_REPO, &yum_repo);
+    lr_result_getinfo(m.result, NULL, LRR_YUM_REPOMD, &yum_repomd);
+
+    PyTuple_SetItem(ret, 0, PyObject_FromYumRepo(yum_repo));
+    PyTuple_SetItem(ret, 1, PyObject_FromYumRepoMd(yum_repomd));
+
+    return ret;
 }
 
 /* getsetters */

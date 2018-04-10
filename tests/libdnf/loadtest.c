@@ -9,14 +9,16 @@ int main(void)
 {
     HyRepo repo = hy_repo_create("test");
     HyRemote remote;
+    HyMeta meta;
 
     remote.url = "http://download.fedoraproject.org/pub/fedora/linux/releases/27/Everything/x86_64/os/";
     remote.cachedir = "/var/tmp/loadtest";
     remote.maxage = 60;
 
-    hy_repo_load(repo, &remote);
+    hy_repo_load(repo, &remote, &meta);
     printf("repomd_fn: %s\n", repo->repomd_fn);
     printf("primary_fn: %s\n", repo->primary_fn);
+    printf("age: %i\n", meta.age);
     hy_repo_free(repo);
 
     return 0;

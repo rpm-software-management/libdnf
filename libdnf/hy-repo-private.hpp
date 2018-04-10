@@ -69,12 +69,6 @@ enum _hy_repo_repodata {
     _HY_REPODATA_UPDATEINFO
 };
 
-// [WIP] Represents locally cached repodata
-typedef struct HyMeta
-{
-    int age;
-} HyMeta;
-
 HyRepo hy_repo_link(HyRepo repo);
 int hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state);
 

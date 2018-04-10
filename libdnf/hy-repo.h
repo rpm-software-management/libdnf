@@ -48,8 +48,16 @@ typedef struct HyRemote
     int maxage;
 } HyRemote;
 
+// [WIP] Represents cached metadata not used by libsolv (should probably be
+// merged with HyRepo later)
+typedef struct HyMeta
+{
+    int age;
+    LrResult *result;
+} HyMeta;
+
 HyRepo hy_repo_create(const char *name);
-void hy_repo_load(HyRepo repo, HyRemote *remote);
+void hy_repo_load(HyRepo repo, HyRemote *remote, HyMeta *meta);
 int hy_repo_get_cost(HyRepo repo);
 int hy_repo_get_priority(HyRepo repo);
 gboolean hy_repo_get_use_includes(HyRepo repo);
