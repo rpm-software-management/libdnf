@@ -21,8 +21,10 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <sys/utsname.h>
 #include <sys/stat.h>
+#include <sys/auxv.h>
 
 // hawkey
 #include "dnf-types.h"
@@ -34,38 +36,20 @@
 
 #include <memory>
 
-enum _dnf_sack_cpu_flags {
-    ARM_NEON = 1 << 0,
-    ARM_VFP3  = 1 << 1,
-    ARM_VFP  = 1 << 2
-};
-
-static int
-parse_cpu_flags(int *flags, const char *section)
-{
-    char *cpuinfo = read_whole_file("/proc/cpuinfo");
-    if (cpuinfo == NULL)
-        return DNF_ERROR_FAILED;
-
-    char *features = strstr(cpuinfo, section);
-    if (features != NULL) {
-        char *saveptr;
-        features = strtok_r(features, "\n", &saveptr);
-        char *tok = strtok_r(features, " ", &saveptr);
-        while (tok) {
-            if (!strcmp(tok, "neon"))
-                *flags |= ARM_NEON;
-            else if (!strcmp(tok, "vfpv3"))
-                *flags |= ARM_VFP3;
-            else if (!strcmp(tok, "vfp"))
-                *flags |= ARM_VFP;
-            tok = strtok_r(NULL, " ", &saveptr);
-        }
-    }
-
-    g_free(cpuinfo);
-    return 0;
-}
+/* ARM specific HWCAP defines may be missing on non-ARM devices,
+ * AT_HWCAP2 is missing on old glibc (<2.18) */
+#ifndef AT_HWCAP2
+#define AT_HWCAP2	26
+#endif
+#ifndef HWCAP_ARM_VFP
+#define HWCAP_ARM_VFP	(1<<6)
+#endif
+#ifndef HWCAP_ARM_NEON
+#define HWCAP_ARM_NEON	(1<<12)
+#endif
+#ifndef HWCAP2_AES
+#define HWCAP2_AES	(1<<0)
+#endif
 
 const char *
 hy_chksum_name(int chksum_type)
@@ -120,25 +104,22 @@ hy_detect_arch(char **arch)
     if (uname(&un) < 0)
         return DNF_ERROR_FAILED;
 
-    if (!strcmp(un.machine, "armv6l")) {
-        int flags = 0;
-        int ret = parse_cpu_flags(&flags, "Features");
-        if (ret)
-            return ret;
-        if (flags & ARM_VFP)
-            strcpy(un.machine, "armv6hl");
-    }
-    if (!strcmp(un.machine, "armv7l")) {
-        int flags = 0;
-        int ret = parse_cpu_flags(&flags, "Features");
-        if (ret)
-            return ret;
-        if (flags & ARM_VFP3) {
-            if (flags & ARM_NEON)
-                strcpy(un.machine, "armv7hnl");
-            else
-                strcpy(un.machine, "armv7hl");
-        }
+    if (!strncmp(un.machine, "armv", 4)) {
+        /* un.machine is armvXE, where X is version number and E is
+         * endianness (b or l); we need to add modifiers such as
+         * h (hardfloat), n (neon), c (crypto extensions) */
+        char endian = un.machine[strlen(un.machine)-1];
+        char *modifier = un.machine + 5;
+        while(isdigit(*modifier)) /* keep armv7, armv8, armv9, armv10, armv100, ... */
+            modifier++;
+        if (getauxval(AT_HWCAP) & HWCAP_ARM_VFP)
+            *modifier++ = 'h';
+        if (getauxval(AT_HWCAP2) & HWCAP2_AES)
+            *modifier++ = 'c';
+        if (getauxval(AT_HWCAP) & HWCAP_ARM_NEON)
+            *modifier++ = 'n';
+        *modifier++ = endian;
+        *modifier = 0;
     }
 #ifdef __MIPSEL__
     if (!strcmp(un.machine, "mips"))
