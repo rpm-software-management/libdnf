@@ -49,6 +49,7 @@ public:
     // Database
     // FIXME load this from conf
     static constexpr const char *defaultPath = "/var/lib/dnf/history.sqlite";
+    static constexpr const char *defaultDatabaseName = "history.sqlite";
 
     const std::string &getPath() { return conn->getPath(); }
     void resetDatabase();
