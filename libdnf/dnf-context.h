@@ -167,8 +167,6 @@ void             dnf_context_set_enable_filelists       (DnfContext     *context
                                                          gboolean        enable_filelists);
 void             dnf_context_set_only_trusted           (DnfContext     *context,
                                                          gboolean        only_trusted);
-void             dnf_context_set_yumdb_enabled          (DnfContext     *context,
-                                                         gboolean        enable_yumdb);
 void             dnf_context_set_cache_age              (DnfContext     *context,
                                                          guint           cache_age);
 

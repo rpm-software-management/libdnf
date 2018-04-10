@@ -432,7 +432,6 @@ main(int argc, char *argv[])
     gboolean ret;
     gboolean verbose = FALSE;
     gboolean version = FALSE;
-    gboolean opt_disable_yumdb = FALSE;
     guint retval = 1;
     g_autofree gchar *opt_root = NULL;
     g_autofree gchar *opt_reposdir = NULL;
@@ -447,8 +446,6 @@ main(int argc, char *argv[])
             "Directory for caches", NULL },
         { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
             "Show extra debugging information", NULL },
-        { "disable-yumdb", 'v', 0, G_OPTION_ARG_NONE, &opt_disable_yumdb,
-            "Disable writing updates to the yumdb", NULL },
         { "version", '\0', 0, G_OPTION_ARG_NONE, &version,
             "Show version", NULL },
         { NULL}
@@ -537,7 +534,6 @@ main(int argc, char *argv[])
     dnf_context_set_check_transaction(priv->context, TRUE);
     dnf_context_set_keep_cache(priv->context, FALSE);
     dnf_context_set_cache_age(priv->context, 24 * 60 * 60);
-    dnf_context_set_yumdb_enabled(priv->context, !opt_disable_yumdb);
 
     /* set verbose? */
     if (verbose) {
