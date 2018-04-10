@@ -1,0 +1,8 @@
+WARNING: libdnf/transaction has no stable API
+
+The code is still under development.
+Consolidation with DNF hasn't fully finished.
+No stable API is guaranteed.
+
+The database schema is considered stable (no major changes expected).
+Avoid using database direcly, tell us your API requirements instead.
