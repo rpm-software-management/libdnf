@@ -47,8 +47,9 @@ public:
     SQLite3Ptr getConn() { return conn; }
 
     // Database
-    static constexpr const char *defaultPath =
-        "/var/lib/dnf/history/sw.db"; // FIXME load this from conf
+    // FIXME load this from conf
+    static constexpr const char *defaultPath = "/var/lib/dnf/history.sqlite";
+
     const std::string &getPath() { return conn->getPath(); }
     void resetDatabase();
     void closeDatabase();
