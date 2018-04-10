@@ -467,9 +467,8 @@ Swdb::Swdb(const std::string &path)
     if (!pathExists(path.c_str())) {
         // file not present
 
-        // FIXME this is dirty - to be replaced with conf
+        // extract persistdir from path - "/var/lib/dnf/"
         auto found = path.find_last_of("/");
-        found = path.find_last_of("/", found - 1);
 
         Transformer transformer(path.substr(0, found), path);
         transformer.transform();
