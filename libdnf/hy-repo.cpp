@@ -142,7 +142,7 @@ lr_handle_init_remote(HyRemote *remote, const char *destdir)
 {
     LrHandle *h = lr_handle_init();
     const char *urls[] = {remote->url, NULL};
-    char *download_list[] = {"primary", "filelists", "prestodelta", "group_gz",
+    const char *download_list[] = {"primary", "filelists", "prestodelta", "group_gz",
                              "updateinfo", NULL};
     lr_handle_setopt(h, NULL, LRO_REPOTYPE, LR_YUMREPO);
     lr_handle_setopt(h, NULL, LRO_URLS, urls);
@@ -237,7 +237,7 @@ hy_repo_fetch(HyRemote *remote)
     lr_handle_perform(h, r, &err);
 
     rmtree(repodir);
-    g_mkdir_with_parents(repodir, NULL);
+    g_mkdir_with_parents(repodir, 0);
     rename(tmprepodir, repodir);
     rmtree(tmpdir);
 
