@@ -53,7 +53,8 @@ typedef struct HyRemote
 typedef struct HyMeta
 {
     int age;
-    LrResult *result;
+    LrYumRepo *yum_repo;
+    LrYumRepoMd *yum_repomd;
 } HyMeta;
 
 HyRepo hy_repo_create(const char *name);

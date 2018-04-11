@@ -156,6 +156,7 @@ int
 hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir)
 {
     LrYumRepo *yum_repo;
+    LrYumRepoMd *yum_repomd;
     GError *err = NULL;
 
     LrHandle *h = lr_handle_init_local(cachedir);
@@ -165,6 +166,7 @@ hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir)
     if (err)
         return 0;
     lr_result_getinfo(r, NULL, LRR_YUM_REPO, &yum_repo);
+    lr_result_getinfo(r, NULL, LRR_YUM_REPOMD, &yum_repomd);
     const char *repomd_fn = yum_repo->repomd;
     const char *primary_fn = lr_yum_repo_path(yum_repo, "primary");
     const char *filelists_fn = lr_yum_repo_path(yum_repo, "filelists");
@@ -181,10 +183,13 @@ hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir)
     // Populate meta
     meta->age = age(primary_fn);
     // These are for DNF compatiblity
-    meta->result = r;
+    meta->yum_repo = lr_yum_repo_init();
+    meta->yum_repomd = lr_yum_repomd_init();
+    copy_yum_repo(meta->yum_repo, yum_repo);
+    copy_yum_repomd(meta->yum_repomd, yum_repomd);
 
     lr_handle_free(h);
-    /* lr_result_free(r); */
+    lr_result_free(r);
 
     return 1;
 }

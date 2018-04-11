@@ -25,6 +25,7 @@
 
 #include "hy-package.h"
 #include "hy-types.h"
+#include <librepo/librepo.h>
 
 G_BEGIN_DECLS
 
@@ -42,6 +43,8 @@ int mtime(const char *filename);
 unsigned long age(const char *filename);
 const char *cksum(const char *filename, GChecksumType ctype);
 void rmtree(const char *dir);
+void copy_yum_repo(LrYumRepo *dst, LrYumRepo *src);
+void copy_yum_repomd(LrYumRepoMd *dst, LrYumRepoMd *src);
 // [WIP] ==========
 
 G_END_DECLS
