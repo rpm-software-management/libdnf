@@ -38,15 +38,6 @@ int hy_detect_arch(char **arch);
 int hy_split_nevra(const char *nevra, char **name, int *epoch,
                    char **version, char **release, char **arch);
 
-// [WIP] ==========
-int mtime(const char *filename);
-unsigned long age(const char *filename);
-const char *cksum(const char *filename, GChecksumType ctype);
-void rmtree(const char *dir);
-void copy_yum_repo(LrYumRepo *dst, LrYumRepo *src);
-void copy_yum_repomd(LrYumRepoMd *dst, LrYumRepoMd *src);
-// [WIP] ==========
-
 G_END_DECLS
 
 #endif /* HY_UTIL_H */

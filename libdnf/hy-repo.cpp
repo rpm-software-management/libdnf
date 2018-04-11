@@ -26,7 +26,7 @@
 
 // hawkey
 #include "hy-repo-private.hpp"
-#include "hy-util.h"
+#include "hy-util-private.hpp"
 
 HyRepo
 hy_repo_link(HyRepo repo)
