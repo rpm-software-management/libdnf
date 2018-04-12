@@ -783,8 +783,12 @@ int
 hy_goal_distupgrade_all(HyGoal goal)
 {
     goal->actions |= DNF_DISTUPGRADE_ALL;
-    queue_push2(&goal->staging, SOLVER_DISTUPGRADE|SOLVER_SOLVABLE_ALL, 0);
-    return 0;
+    DnfSack * sack = hy_goal_get_sack(goal);
+    libdnf::Query query(sack);
+    query.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    libdnf::Selector selector(sack);
+    selector.set(HY_PKG, HY_EQ, query.runSet());
+    return sltr2job(&selector, &goal->staging, SOLVER_DISTUPGRADE);
 }
 
 int

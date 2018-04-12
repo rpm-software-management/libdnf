@@ -323,6 +323,7 @@ dnf_sack_recompute_considered(DnfSack *sack)
     // considered = (all - repo_excludes - pkg_excludes) and
     //              (pkg_includes + all_from_repos_not_using_includes)
     map_setall(pool->considered);
+    dnf_sack_make_provides_ready(sack);
     if (priv->repo_excludes)
         map_subtract(pool->considered, priv->repo_excludes);
     if (priv->pkg_excludes)
@@ -347,7 +348,6 @@ dnf_sack_recompute_considered(DnfSack *sack)
         map_and(pool->considered, &pkg_includes_tmp);
         map_free(&pkg_includes_tmp);
     }
-    pool_createwhatprovides(priv->pool);
     priv->considered_uptodate = TRUE;
 }
 
