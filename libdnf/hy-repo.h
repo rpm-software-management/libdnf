@@ -46,6 +46,9 @@ typedef struct HyRemote
     const char *url;
     const char *cachedir;
     int maxage;
+    int gpgcheck;
+    int max_mirror_tries;
+    int max_parallel_downloads;
 } HyRemote;
 
 // [WIP] Represents cached metadata not used by libsolv (should probably be

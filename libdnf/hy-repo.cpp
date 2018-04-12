@@ -123,15 +123,31 @@ repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata)
 
 // [WIP]
 LrHandle *
-lr_handle_init_local(const char *cachedir)
+lr_handle_init_base(HyRemote *remote)
 {
     LrHandle *h = lr_handle_init();
-    const char *urls[] = {cachedir, NULL};
-    char *download_list[] = LR_YUM_HAWKEY;
+    char *download_list[] = {"primary", "filelists", "prestodelta", "group_gz",
+                             "updateinfo", NULL};
     lr_handle_setopt(h, NULL, LRO_REPOTYPE, LR_YUMREPO);
-    lr_handle_setopt(h, NULL, LRO_URLS, urls);
+    lr_handle_setopt(h, NULL, LRO_USERAGENT, "libdnf/1.0"); //FIXME
     lr_handle_setopt(h, NULL, LRO_YUMDLIST, download_list);
-    lr_handle_setopt(h, NULL, LRO_DESTDIR, cachedir);
+    lr_handle_setopt(h, NULL, LRO_INTERRUPTIBLE, 1L);
+    lr_handle_setopt(h, NULL, LRO_GPGCHECK, remote->gpgcheck);
+    lr_handle_setopt(h, NULL, LRO_MAXMIRRORTRIES, remote->max_mirror_tries);
+    lr_handle_setopt(h, NULL, LRO_MAXPARALLELDOWNLOADS,
+                     remote->max_parallel_downloads);
+    return h;
+}
+
+// [WIP]
+LrHandle *
+lr_handle_init_local(HyRemote *remote)
+{
+    LrHandle *h = lr_handle_init_base(remote);
+    const char *urls[] = {remote->cachedir, NULL};
+    //TODO set LRO_VARSUB
+    lr_handle_setopt(h, NULL, LRO_URLS, urls);
+    lr_handle_setopt(h, NULL, LRO_DESTDIR, remote->cachedir);
     lr_handle_setopt(h, NULL, LRO_LOCAL, 1L);
     return h;
 }
@@ -140,27 +156,23 @@ lr_handle_init_local(const char *cachedir)
 LrHandle *
 lr_handle_init_remote(HyRemote *remote, const char *destdir)
 {
-    LrHandle *h = lr_handle_init();
+    LrHandle *h = lr_handle_init_base(remote);
     const char *urls[] = {remote->url, NULL};
-    const char *download_list[] = {"primary", "filelists", "prestodelta", "group_gz",
-                             "updateinfo", NULL};
-    lr_handle_setopt(h, NULL, LRO_REPOTYPE, LR_YUMREPO);
     lr_handle_setopt(h, NULL, LRO_URLS, urls);
-    lr_handle_setopt(h, NULL, LRO_YUMDLIST, download_list);
     lr_handle_setopt(h, NULL, LRO_DESTDIR, destdir);
     return h;
 }
 
 // [WIP]
 int
-hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir)
+hy_repo_load_cache(HyRepo repo, HyRemote *remote, HyMeta *meta)
 {
     LrYumRepo *yum_repo;
     LrYumRepoMd *yum_repomd;
     char **mirrors;
     GError *err = NULL;
 
-    LrHandle *h = lr_handle_init_local(cachedir);
+    LrHandle *h = lr_handle_init_local(remote);
     LrResult *r = lr_result_init();
 
     lr_handle_perform(h, r, &err);
@@ -285,7 +297,7 @@ void
 hy_repo_load(HyRepo repo, HyRemote *remote, HyMeta *meta)
 {
     printf("check if cache present\n");
-    int cached = hy_repo_load_cache(repo, meta, remote->cachedir);
+    int cached = hy_repo_load_cache(repo, remote, meta);
     if (cached) {
         if (meta->age <= remote->maxage) {
             printf("using cache, age: %is\n", meta->age);
@@ -302,7 +314,7 @@ hy_repo_load(HyRepo repo, HyRemote *remote, HyMeta *meta)
 
     printf("fetch\n");
     hy_repo_fetch(remote);
-    hy_repo_load_cache(repo, meta, remote->cachedir);
+    hy_repo_load_cache(repo, remote, meta);
 }
 
 int

@@ -119,7 +119,9 @@ load(_RepoObject *self, PyObject *args)
     PyObject *ret = PyTuple_New(3);
     PyObject *mirrors = PyList_New(0);
 
-    if (!PyArg_ParseTuple(args, "ssi", &r.url, &r.cachedir, &r.maxage))
+    if (!PyArg_ParseTuple(args, "ssippp", &r.url, &r.cachedir, &r.maxage,
+                          &r.gpgcheck, &r.max_mirror_tries,
+                          &r.max_parallel_downloads))
         return Py_None;
     hy_repo_load(repo, &r, &m);
 
