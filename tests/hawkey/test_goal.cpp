@@ -808,9 +808,16 @@ START_TEST(test_goal_describe_problem_excludes)
     fail_unless(hy_goal_run_flags(goal, DNF_NONE));
     fail_unless(hy_goal_count_problems(goal) > 0);
 
-    auto problem = hy_goal_describe_problem_rules(goal, 0);
-    ck_assert_str_eq(*problem, "package semolina does not exist");
-    g_free(problem);
+    auto problems = hy_goal_describe_problem_rules(goal, 0);
+    const char *expected[] = {
+                "conflicting requests",
+                "package semolina does not exist"
+                };
+    for (gint p = 0; p < hy_goal_count_problems(goal); ++p) {
+        fail_if(strncmp(problems[p], expected[p], strlen(expected[p])));
+    }
+
+    g_free(problems);
 
     hy_goal_free(goal);
 }
