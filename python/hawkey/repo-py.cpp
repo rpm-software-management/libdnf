@@ -106,6 +106,7 @@ extern "C"
 {
     PyObject * PyObject_FromYumRepo(LrYumRepo *repo);
     PyObject * PyObject_FromYumRepoMd(LrYumRepoMd *repomd);
+    PyObject * PyStringOrNone_FromString(const char *str);
 }
 
 // [WIP]
@@ -115,14 +116,23 @@ load(_RepoObject *self, PyObject *args)
     HyRepo repo = self->repo;
     HyRemote r;
     HyMeta m;
-    PyObject *ret = PyTuple_New(2);
+    PyObject *ret = PyTuple_New(3);
+    PyObject *mirrors = PyList_New(0);
 
     if (!PyArg_ParseTuple(args, "ssi", &r.url, &r.cachedir, &r.maxage))
         return Py_None;
     hy_repo_load(repo, &r, &m);
 
+    if (m.mirrors) {
+        for (int x=0; m.mirrors[x] != NULL; x++) {
+            PyList_Append(mirrors, PyStringOrNone_FromString(m.mirrors[x]));
+        }
+        g_strfreev(m.mirrors);
+    }
+
     PyTuple_SetItem(ret, 0, PyObject_FromYumRepo(m.yum_repo));
     PyTuple_SetItem(ret, 1, PyObject_FromYumRepoMd(m.yum_repomd));
+    PyTuple_SetItem(ret, 2, mirrors);
 
     return ret;
 }

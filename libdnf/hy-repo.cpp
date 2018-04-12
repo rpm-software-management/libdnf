@@ -157,6 +157,7 @@ hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir)
 {
     LrYumRepo *yum_repo;
     LrYumRepoMd *yum_repomd;
+    char **mirrors;
     GError *err = NULL;
 
     LrHandle *h = lr_handle_init_local(cachedir);
@@ -165,6 +166,7 @@ hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir)
     lr_handle_perform(h, r, &err);
     if (err)
         return 0;
+    lr_handle_getinfo(h, NULL, LRI_MIRRORS, &mirrors);
     lr_result_getinfo(r, NULL, LRR_YUM_REPO, &yum_repo);
     lr_result_getinfo(r, NULL, LRR_YUM_REPOMD, &yum_repomd);
     const char *repomd_fn = yum_repo->repomd;
@@ -183,6 +185,7 @@ hy_repo_load_cache(HyRepo repo, HyMeta *meta, const char *cachedir)
     // Populate meta
     meta->age = age(primary_fn);
     // These are for DNF compatiblity
+    meta->mirrors = mirrors;
     meta->yum_repo = lr_yum_repo_init();
     meta->yum_repomd = lr_yum_repomd_init();
     copy_yum_repo(meta->yum_repo, yum_repo);
