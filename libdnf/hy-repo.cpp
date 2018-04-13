@@ -126,11 +126,11 @@ LrHandle *
 lr_handle_init_base(HyRemote *remote)
 {
     LrHandle *h = lr_handle_init();
-    char *download_list[] = {"primary", "filelists", "prestodelta", "group_gz",
-                             "updateinfo", NULL};
+    const char *dlist[] = {"primary", "filelists", "prestodelta", "group_gz",
+                           "updateinfo", NULL};
     lr_handle_setopt(h, NULL, LRO_REPOTYPE, LR_YUMREPO);
     lr_handle_setopt(h, NULL, LRO_USERAGENT, "libdnf/1.0"); //FIXME
-    lr_handle_setopt(h, NULL, LRO_YUMDLIST, download_list);
+    lr_handle_setopt(h, NULL, LRO_YUMDLIST, dlist);
     lr_handle_setopt(h, NULL, LRO_INTERRUPTIBLE, 1L);
     lr_handle_setopt(h, NULL, LRO_GPGCHECK, remote->gpgcheck);
     lr_handle_setopt(h, NULL, LRO_MAXMIRRORTRIES, remote->max_mirror_tries);
@@ -213,22 +213,22 @@ hy_repo_load_cache(HyRepo repo, HyRemote *remote, HyMeta *meta)
 int
 hy_repo_can_reuse(HyRepo repo, HyRemote *remote)
 {
-    LrYumRepo *md;
+    LrYumRepo *yum_repo;
     GError *err = NULL;
-    char tpt[] = "/tmp/tmpdir.XXXXXX";
-    char *tmpdir = mkdtemp(tpt);
-    char *download_list[] = LR_YUM_REPOMDONLY;
+    char templt[] = "/tmp/tmpdir.XXXXXX";
+    char *tmpdir = mkdtemp(templt);
+    const char *dlist[] = LR_YUM_REPOMDONLY;
 
     LrHandle *h = lr_handle_init_remote(remote, tmpdir);
     LrResult *r = lr_result_init();
 
-    lr_handle_setopt(h, NULL, LRO_YUMDLIST, download_list);
+    lr_handle_setopt(h, NULL, LRO_YUMDLIST, dlist);
 
     lr_handle_perform(h, r, &err);
-    lr_result_getinfo(r, NULL, LRR_YUM_REPO, &md);
+    lr_result_getinfo(r, NULL, LRR_YUM_REPO, &yum_repo);
 
     const char *ock = cksum(repo->repomd_fn, G_CHECKSUM_SHA256);
-    const char *nck = cksum(md->repomd, G_CHECKSUM_SHA256);
+    const char *nck = cksum(yum_repo->repomd, G_CHECKSUM_SHA256);
 
     lr_handle_free(h);
     lr_result_free(r);
@@ -244,13 +244,13 @@ void
 hy_repo_fetch(HyRemote *remote)
 {
     GError *err = NULL;
-    char tpt[] = "/var/tmp/tmpdir.XXXXXX";
-    char *tmpdir = mkdtemp(tpt);
-    char tmprepodir[strlen(tpt) + 11];
+    char templt[] = "/var/tmp/tmpdir.XXXXXX";
+    char *tmpdir = mkdtemp(templt);
+    char tmprepodir[strlen(templt) + 11];
     char repodir[strlen(remote->cachedir) + 11];
 
-    sprintf(repodir, "%s/repodata", remote->cachedir);
     sprintf(tmprepodir, "%s/repodata", tmpdir);
+    sprintf(repodir, "%s/repodata", remote->cachedir);
 
     LrHandle *h = lr_handle_init_remote(remote, tmpdir);
     LrResult *r = lr_result_init();
