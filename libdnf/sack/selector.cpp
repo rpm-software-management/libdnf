@@ -84,7 +84,7 @@ const Filter *Selector::getFilterProvides() const { return pImpl->filterProvides
 const Filter *Selector::getFilterReponame() const { return pImpl->filterReponame.get(); }
 
 int
-Selector::set(int keyname, int cmp_type, DnfPackageSet *pset)
+Selector::set(int keyname, int cmp_type, const DnfPackageSet *pset)
 {
     if (pImpl->filterName.get() || pImpl->filterProvides.get() || pImpl->filterFile.get()) {
         return DNF_ERROR_BAD_SELECTOR;

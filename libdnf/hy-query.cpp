@@ -228,7 +228,7 @@ hy_query_run(HyQuery q)
 DnfPackageSet *
 hy_query_run_set(HyQuery q)
 {
-    return q->runSet();
+    return new libdnf::PackageSet(*q->runSet());
 }
 
 /**

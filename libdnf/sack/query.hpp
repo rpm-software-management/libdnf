@@ -40,7 +40,7 @@ struct Filter {
 public:
     Filter(int keyname, int cmp_type, int match);
     Filter(int keyname, int cmp_type, int nmatches, const int *matches);
-    Filter(int keyname, int cmp_type, DnfPackageSet *pset);
+    Filter(int keyname, int cmp_type, const DnfPackageSet * pset);
     Filter(int keyname, int cmp_type, DnfReldep *reldep);
     Filter(int keyname, int cmp_type, DnfReldepList *reldeplist);
     Filter(int keyname, int cmp_type, const char *match);
@@ -93,7 +93,7 @@ public:
     size_t size();
     int addFilter(int keyname, int cmp_type, int match);
     int addFilter(int keyname, int cmp_type, int nmatches, const int *matches);
-    int addFilter(int keyname, int cmp_type, DnfPackageSet *pset);
+    int addFilter(int keyname, int cmp_type, const DnfPackageSet *pset);
     int addFilter(int keyname, DnfReldep *reldep);
     int addFilter(int keyname, DnfReldepList *reldeplist);
     int addFilter(int keyname, int cmp_type, const char *match);
@@ -113,7 +113,7 @@ public:
     *
     * @return DnfPackageSet*
     */
-    DnfPackageSet * runSet();
+    const DnfPackageSet * runSet();
     Id getIndexItem(int index);
 
     /**

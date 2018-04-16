@@ -460,13 +460,13 @@ Filter::Filter(int keyname, int cmp_type, int nmatches, const int *matches) : pI
         pImpl->matches.push_back(match_in);
     }
 }
-Filter::Filter(int keyname, int cmp_type, DnfPackageSet *pset) : pImpl(new Impl)
+Filter::Filter(int keyname, int cmp_type, const DnfPackageSet *pset) : pImpl(new Impl)
 {
     pImpl->keyname = keyname;
     pImpl->cmpType = cmp_type;
     pImpl->matchType = _HY_PKG;
     _Match match_in;
-    match_in.pset = dnf_packageset_clone(pset);
+    match_in.pset = new libdnf::PackageSet(*pset);
     pImpl->matches.push_back(match_in);
 }
 Filter::Filter(int keyname, int cmp_type, DnfReldep *reldep) : pImpl(new Impl)
@@ -658,7 +658,7 @@ Query::addFilter(int keyname, int cmp_type, int nmatches, const int *matches)
     return 0;
 }
 int
-Query::addFilter(int keyname, int cmp_type, DnfPackageSet *pset)
+Query::addFilter(int keyname, int cmp_type, const DnfPackageSet *pset)
 {
     if (!valid_filter_pkg(keyname, cmp_type))
         return DNF_ERROR_BAD_QUERY;
@@ -1677,11 +1677,11 @@ Query::run()
     return plist;
 }
 
-DnfPackageSet *
+const DnfPackageSet *
 Query::runSet()
 {
     apply();
-    return new PackageSet(*pImpl->result.get());
+    return pImpl->result.get();
 }
 
 Id

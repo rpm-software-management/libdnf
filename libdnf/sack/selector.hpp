@@ -40,7 +40,7 @@ public:
     const Filter * getFilterPkg() const;
     const Filter * getFilterProvides() const;
     const Filter * getFilterReponame() const;
-    int set(int keyname, int cmp_type, DnfPackageSet *pset);
+    int set(int keyname, int cmp_type, const DnfPackageSet * pset);
     int set(int keyname, int cmp_type, const char *match);
     GPtrArray * matches();
 private:
