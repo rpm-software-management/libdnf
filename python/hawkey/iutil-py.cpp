@@ -150,7 +150,7 @@ packagelist_to_pylist(GPtrArray *plist, PyObject *sack)
 }
 
 PyObject *
-packageset_to_pylist(DnfPackageSet *pset, PyObject *sack)
+packageset_to_pylist(const DnfPackageSet *pset, PyObject *sack)
 {
     PyObject *list = PyList_New(0);
     if (list == NULL)

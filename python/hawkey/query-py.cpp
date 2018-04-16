@@ -324,10 +324,9 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
     }
     if (queryObject_Check(match)) {
         HyQuery target = queryFromPyObject(match);
-        DnfPackageSet *pset = target->runSet();
+        const DnfPackageSet * pset = target->runSet();
         int ret = query->addFilter(keyname, cmp_type, pset);
 
-        delete pset;
         if (ret)
             return raise_bad_filter();
         return 1;
@@ -501,20 +500,14 @@ filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, 
                     }
                 } else {
                     if (keyname == HY_PKG) {
-                        DnfPackageSet *pset;
-                        if (queryObject_Check(value)) {
-                            HyQuery target = queryFromPyObject(value);
-                            pset = target->runSet();
-                        } else if (PyList_Check(value)) {
-                            DnfSack *c_sack = sackFromPyObject(sack);
-                            assert(c_sack);
-                            pset = pyseq_to_packageset(value, c_sack);
-                        }  else {
+                        DnfSack *c_sack = sackFromPyObject(sack);
+                        assert(c_sack);
+                        auto pset = std::unique_ptr <DnfPackageSet> (pyseq_to_packageset(value, c_sack));
+                        if (!pset) {
                             (ret2e(DNF_ERROR_BAD_SELECTOR, "Invalid value type: Only List and Query supported"));
                             return FALSE;
                         }
-
-                        if (ret2e(sltr->set(keyname, cmp_type, pset),
+                        if (ret2e(sltr->set(keyname, cmp_type, pset.get()),
                             "Invalid Selector spec." )) {
                             return FALSE;
                         }
@@ -629,12 +622,10 @@ add_upgrades_filter(_QueryObject *self, PyObject *unused)
 static PyObject *
 run(_QueryObject *self, PyObject *unused)
 {
-    DnfPackageSet *pset;
     PyObject *list;
 
-    pset = self->query->runSet();
+    const DnfPackageSet * pset = self->query->runSet();
     list = packageset_to_pylist(pset, self->sack);
-    delete pset;
     return list;
 }
 
@@ -802,11 +793,9 @@ static PyObject *
 query_iter(PyObject *self)
 {
     PyObject *list;
-    DnfPackageSet *pset;
 
-    pset = ((_QueryObject *) self)->query->runSet();
+    const DnfPackageSet * pset = ((_QueryObject *) self)->query->runSet();
     list = packageset_to_pylist(pset, ((_QueryObject *) self)->sack);
-    delete pset;
     PyObject *iter = PyObject_GetIter(list);
     Py_DECREF(list);
     Py_INCREF(iter);
