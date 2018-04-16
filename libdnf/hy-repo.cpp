@@ -196,6 +196,7 @@ hy_repo_load_cache(HyRepo repo, HyRemote *remote, HyMeta *meta)
 
     // Populate meta
     meta->age = age(primary_fn);
+    meta->expired = meta->age > remote->maxage;
     // These are for DNF compatiblity
     meta->mirrors = mirrors;
     meta->yum_repo = lr_yum_repo_init();
@@ -299,7 +300,7 @@ hy_repo_load(HyRepo repo, HyRemote *remote, HyMeta *meta)
     printf("check if cache present\n");
     int cached = hy_repo_load_cache(repo, remote, meta);
     if (cached) {
-        if (meta->age <= remote->maxage) {
+        if (!meta->expired) {
             printf("using cache, age: %is\n", meta->age);
             return;
         }

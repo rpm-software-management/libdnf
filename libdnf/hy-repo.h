@@ -56,6 +56,7 @@ typedef struct HyRemote
 typedef struct HyMeta
 {
     int age;
+    int expired;
     char **mirrors;
     LrYumRepo *yum_repo;
     LrYumRepoMd *yum_repomd;
