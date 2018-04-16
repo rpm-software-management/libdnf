@@ -196,7 +196,8 @@ hy_repo_load_cache(HyRepo repo, HyRemote *remote, HyMeta *meta)
 
     // Populate meta
     meta->age = age(primary_fn);
-    meta->expired = meta->age > remote->maxage;
+    // Negative maxage means never expire
+    meta->expired = (remote->maxage >= 0) && (meta->age > remote->maxage);
     // These are for DNF compatiblity
     meta->mirrors = mirrors;
     meta->yum_repo = lr_yum_repo_init();
