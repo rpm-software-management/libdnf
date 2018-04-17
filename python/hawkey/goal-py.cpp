@@ -340,11 +340,10 @@ static PyObject *
 add_protected(_GoalObject *self, PyObject *seq)
 {
     HyGoal goal = self->goal;
-    DnfPackageSet *pset = pyseq_to_packageset(seq, hy_goal_get_sack(goal));
-    if (pset == NULL)
+    auto pset = pyseq_to_packageset(seq, hy_goal_get_sack(goal));
+    if (!pset)
         return NULL;
-    dnf_goal_add_protected(goal, pset);
-    delete pset;
+    dnf_goal_add_protected(goal, pset.get());
     Py_RETURN_NONE;
 }
 

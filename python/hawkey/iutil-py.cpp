@@ -25,7 +25,6 @@
 #include "dnf-advisorypkg.h"
 #include "dnf-advisoryref.h"
 #include "hy-packageset.h"
-#include "hy-query.h"
 #include "dnf-reldep.h"
 #include "dnf-reldep-list.h"
 #include "hy-iutil.h"
@@ -40,6 +39,7 @@
 #include "pycomp.hpp"
 #include "sack/advisorypkg.hpp"
 #include "sack/packageset.hpp"
+#include "sack/query.hpp"
 
 #include "../../libdnf/repo/solvable/Dependency.hpp"
 #include "libdnf/repo/solvable/DependencyContainer.hpp"
@@ -177,21 +177,18 @@ packageset_to_pylist(const DnfPackageSet *pset, PyObject *sack)
     return NULL;
 }
 
-DnfPackageSet *
+std::unique_ptr<DnfPackageSet>
 pyseq_to_packageset(PyObject *obj, DnfSack *sack)
 {
-    DnfPackageSet *pset;
-
     if (queryObject_Check(obj)) {
         HyQuery target = queryFromPyObject(obj);
-        pset = hy_query_run_set(target);
-        return pset;
+        return std::unique_ptr<DnfPackageSet>(new libdnf::PackageSet(*target->runSet()));
     }
 
-    PyObject *sequence = PySequence_Fast(obj, "Expected a sequence.");
+    PyObject * sequence = PySequence_Fast(obj, "Expected a sequence.");
     if (sequence == NULL)
         return NULL;
-    pset = dnf_packageset_new(sack);
+    auto pset = std::unique_ptr<DnfPackageSet>(new libdnf::PackageSet(sack));
 
     const unsigned count = PySequence_Size(sequence);
     for (unsigned int i = 0; i < count; ++i) {
@@ -201,13 +198,12 @@ pyseq_to_packageset(PyObject *obj, DnfSack *sack)
         DnfPackage *pkg = packageFromPyObject(item);
         if (pkg == NULL)
             goto fail;
-        dnf_packageset_add(pset, pkg);
+        pset->set(pkg);
     }
 
     Py_DECREF(sequence);
     return pset;
  fail:
-    delete pset;
     Py_DECREF(sequence);
     return NULL;
 }
