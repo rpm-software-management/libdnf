@@ -404,11 +404,10 @@ static PyObject *
 add_excludes(_SackObject *self, PyObject *o)
 {
     DnfSack *sack = self->sack;
-    DnfPackageSet *pset = pyseq_to_packageset(o, sack);
-    if (pset == NULL)
+    auto pset = pyseq_to_packageset(o, sack);
+    if (!pset)
         return NULL;
-    dnf_sack_add_excludes(sack, pset);
-    delete pset;
+    dnf_sack_add_excludes(sack, pset.get());
     Py_RETURN_NONE;
 }
 
@@ -416,11 +415,10 @@ static PyObject *
 add_includes(_SackObject *self, PyObject *o)
 {
     DnfSack *sack = self->sack;
-    DnfPackageSet *pset = pyseq_to_packageset(o, sack);
-    if (pset == NULL)
+    auto pset = pyseq_to_packageset(o, sack);
+    if (!pset)
         return NULL;
-    dnf_sack_add_includes(sack, pset);
-    delete pset;
+    dnf_sack_add_includes(sack, pset.get());
     Py_RETURN_NONE;
 }
 
@@ -428,11 +426,10 @@ static PyObject *
 remove_excludes(_SackObject *self, PyObject *o)
 {
     DnfSack *sack = self->sack;
-    DnfPackageSet *pset = pyseq_to_packageset(o, sack);
-    if (pset == NULL)
+    auto pset = pyseq_to_packageset(o, sack);
+    if (!pset)
         return NULL;
-    dnf_sack_remove_excludes(sack, pset);
-    delete pset;
+    dnf_sack_remove_excludes(sack, pset.get());
     Py_RETURN_NONE;
 }
 
@@ -440,11 +437,10 @@ static PyObject *
 remove_includes(_SackObject *self, PyObject *o)
 {
     DnfSack *sack = self->sack;
-    DnfPackageSet *pset = pyseq_to_packageset(o, sack);
-    if (pset == NULL)
+    auto pset = pyseq_to_packageset(o, sack);
+    if (!pset)
         return NULL;
-    dnf_sack_remove_includes(sack, pset);
-    delete pset;
+    dnf_sack_remove_includes(sack, pset.get());
     Py_RETURN_NONE;
 }
 
@@ -452,11 +448,10 @@ static PyObject *
 set_excludes(_SackObject *self, PyObject *o)
 {
     DnfSack *sack = self->sack;
-    DnfPackageSet *pset = pyseq_to_packageset(o, sack);
-    if (pset == NULL)
+    auto pset = pyseq_to_packageset(o, sack);
+    if (!pset)
         return NULL;
-    dnf_sack_set_excludes(sack, pset);
-    delete pset;
+    dnf_sack_set_excludes(sack, pset.get());
     Py_RETURN_NONE;
 }
 
@@ -464,11 +459,10 @@ static PyObject *
 set_includes(_SackObject *self, PyObject *o)
 {
     DnfSack *sack = self->sack;
-    DnfPackageSet *pset = pyseq_to_packageset(o, sack);
-    if (pset == NULL)
+    auto pset = pyseq_to_packageset(o, sack);
+    if (!pset)
         return NULL;
-    dnf_sack_set_includes(sack, pset);
-    delete pset;
+    dnf_sack_set_includes(sack, pset.get());
     Py_RETURN_NONE;
 }
 

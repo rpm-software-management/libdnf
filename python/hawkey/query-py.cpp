@@ -341,12 +341,11 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
     switch (keyname) {
     case HY_PKG:
     case HY_PKG_OBSOLETES: {
-        DnfPackageSet *pset = pyseq_to_packageset(match, query->getSack());
+        auto pset = pyseq_to_packageset(match, query->getSack());
 
-        if (pset == NULL)
+        if (!pset)
             return 1;
-        int ret = query->addFilter(keyname, cmp_type, pset);
-        delete pset;
+        int ret = query->addFilter(keyname, cmp_type, pset.get());
         if (ret)
             return raise_bad_filter();
 
@@ -502,7 +501,7 @@ filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, 
                     if (keyname == HY_PKG) {
                         DnfSack *c_sack = sackFromPyObject(sack);
                         assert(c_sack);
-                        auto pset = std::unique_ptr <DnfPackageSet> (pyseq_to_packageset(value, c_sack));
+                        auto pset = pyseq_to_packageset(value, c_sack);
                         if (!pset) {
                             (ret2e(DNF_ERROR_BAD_SELECTOR, "Invalid value type: Only List and Query supported"));
                             return FALSE;
