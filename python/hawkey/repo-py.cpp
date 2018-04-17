@@ -117,14 +117,14 @@ load(_RepoObject *self, PyObject *args)
     HyRemote remote;
     char *cachedir;
     char **mirrors;
-    int maxage;
+    int max_age;
     PyObject *obj;
     PyObject *tuple = PyTuple_New(3);
     PyObject *mirrorlist = PyList_New(0);
 
     if (!PyArg_ParseTuple(args, "sispiO",
                           &cachedir,
-                          &maxage,
+                          &max_age,
                           &remote.url,
                           &remote.gpgcheck,
                           &remote.max_mirror_tries,
@@ -133,7 +133,7 @@ load(_RepoObject *self, PyObject *args)
     }
 
     hy_repo_set_string(repo, HY_REPO_CACHEDIR, cachedir);
-    hy_repo_set_maxage(repo, maxage);
+    hy_repo_set_max_age(repo, max_age);
     if (obj == Py_None) {
         remote.max_parallel_downloads = LRO_MAXPARALLELDOWNLOADS_DEFAULT;
     } else {

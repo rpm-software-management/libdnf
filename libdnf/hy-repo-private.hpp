@@ -42,7 +42,7 @@ struct _HyRepo {
     int nrefs;
     int priority;
     int age;
-    int maxage;
+    int max_age;
     int expired;
     char *name;
     char *repomd_fn;

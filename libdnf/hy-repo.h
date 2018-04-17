@@ -59,7 +59,7 @@ gboolean hy_repo_get_use_includes(HyRepo repo);
 guint hy_repo_get_n_solvables(HyRepo repo);
 void hy_repo_set_cost(HyRepo repo, int value);
 void hy_repo_set_priority(HyRepo repo, int value);
-void hy_repo_set_maxage(HyRepo repo, int value);
+void hy_repo_set_max_age(HyRepo repo, int value);
 void hy_repo_set_use_includes(HyRepo repo, gboolean enabled);
 void hy_repo_set_string(HyRepo repo, int which, const char *str_val);
 const char *hy_repo_get_string(HyRepo repo, int which);

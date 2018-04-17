@@ -191,8 +191,8 @@ hy_repo_load_cache(HyRepo repo, HyRemote *remote)
     hy_repo_set_string(repo, HY_REPO_PRESTO_FN, presto_fn);
     hy_repo_set_string(repo, HY_REPO_UPDATEINFO_FN, updateinfo_fn);
     repo->age = age(primary_fn);
-    // Negative maxage means never expire
-    repo->expired = (repo->maxage >= 0) && (repo->age > repo->maxage);
+    // Negative max_age means never expire
+    repo->expired = (repo->max_age >= 0) && (repo->age > repo->max_age);
     // These are for DNF compatibility
     repo->mirrors = mirrors;
     repo->yum_repo = lr_yum_repo_init();
@@ -365,9 +365,9 @@ hy_repo_set_priority(HyRepo repo, int value)
 }
 
 void
-hy_repo_set_maxage(HyRepo repo, int value)
+hy_repo_set_max_age(HyRepo repo, int value)
 {
-    repo->maxage = value;
+    repo->max_age = value;
 }
 
 void

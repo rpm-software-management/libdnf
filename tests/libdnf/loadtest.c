@@ -10,7 +10,7 @@ int main(void)
     HyRemote remote;
 
     hy_repo_set_string(repo, HY_REPO_CACHEDIR, "/var/tmp/loadtest");
-    hy_repo_set_maxage(repo, 60);
+    hy_repo_set_max_age(repo, 60);
 
     remote.url = "http://download.fedoraproject.org/pub/fedora/linux/releases/27/Everything/x86_64/os/";
     remote.gpgcheck = 0;
