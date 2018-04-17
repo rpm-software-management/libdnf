@@ -41,12 +41,16 @@ struct _HyRepo {
     int needs_internalizing;
     int nrefs;
     int priority;
+    int age;
+    int maxage;
+    int expired;
     char *name;
     char *repomd_fn;
     char *primary_fn;
     char *filelists_fn;
     char *presto_fn;
     char *updateinfo_fn;
+    char *cachedir;
     enum _hy_repo_state state_main;
     enum _hy_repo_state state_filelists;
     enum _hy_repo_state state_presto;
@@ -61,6 +65,10 @@ struct _HyRepo {
     int main_nrepodata;
     int main_end;
     gboolean use_includes; 
+    /* the following three elements are needed for DNF compatibility */
+    char **mirrors;
+    LrYumRepo *yum_repo;
+    LrYumRepoMd *yum_repomd;
 };
 
 enum _hy_repo_repodata {
@@ -72,6 +80,13 @@ enum _hy_repo_repodata {
 HyRepo hy_repo_link(HyRepo repo);
 int hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state);
 
+LrHandle *lr_handle_init_base(HyRemote *remote);
+LrHandle *lr_handle_init_local(HyRemote *remote, const char *cachedir);
+LrHandle *lr_handle_init_remote(HyRemote *remote, const char *destdir);
+int hy_repo_load_cache(HyRepo repo, HyRemote *remote);
+int hy_repo_can_reuse(HyRepo repo, HyRemote *remote);
+void hy_repo_fetch(HyRepo repo, HyRemote *remote);
+
 void repo_finalize_init(HyRepo hrepo, Repo *repo);
 void repo_internalize_all_trigger(Pool *pool);
 void repo_internalize_trigger(Repo *r);
@@ -79,14 +94,5 @@ void repo_update_state(HyRepo repo, enum _hy_repo_repodata which,
                        enum _hy_repo_state state);
 Id repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which);
 void repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata);
-
-// [WIP] ==========
-LrHandle *lr_handle_init_base(HyRemote *remote);
-LrHandle *lr_handle_init_local(HyRemote *remote);
-LrHandle *lr_handle_init_remote(HyRemote *remote, const char *destdir);
-int hy_repo_load_cache(HyRepo repo, HyRemote *remote, HyMeta *meta);
-int hy_repo_can_reuse(HyRepo repo, HyRemote *remote);
-void hy_repo_fetch(HyRemote *remote);
-// [WIP] ==========
 
 #endif // HY_REPO_INTERNAL_H

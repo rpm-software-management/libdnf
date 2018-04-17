@@ -114,29 +114,48 @@ static PyObject *
 load(_RepoObject *self, PyObject *args)
 {
     HyRepo repo = self->repo;
-    HyRemote r;
-    HyMeta m;
-    PyObject *ret = PyTuple_New(3);
-    PyObject *mirrors = PyList_New(0);
+    HyRemote remote;
+    char *cachedir;
+    char **mirrors;
+    int maxage;
+    PyObject *obj;
+    PyObject *tuple = PyTuple_New(3);
+    PyObject *mirrorlist = PyList_New(0);
 
-    if (!PyArg_ParseTuple(args, "ssippp", &r.url, &r.cachedir, &r.maxage,
-                          &r.gpgcheck, &r.max_mirror_tries,
-                          &r.max_parallel_downloads))
+    if (!PyArg_ParseTuple(args, "sispiO",
+                          &cachedir,
+                          &maxage,
+                          &remote.url,
+                          &remote.gpgcheck,
+                          &remote.max_mirror_tries,
+                          &obj)) {
         return Py_None;
-    hy_repo_load(repo, &r, &m);
-
-    if (m.mirrors) {
-        for (int x=0; m.mirrors[x] != NULL; x++) {
-            PyList_Append(mirrors, PyStringOrNone_FromString(m.mirrors[x]));
-        }
-        g_strfreev(m.mirrors);
     }
 
-    PyTuple_SetItem(ret, 0, PyObject_FromYumRepo(m.yum_repo));
-    PyTuple_SetItem(ret, 1, PyObject_FromYumRepoMd(m.yum_repomd));
-    PyTuple_SetItem(ret, 2, mirrors);
+    hy_repo_set_string(repo, HY_REPO_CACHEDIR, cachedir);
+    hy_repo_set_maxage(repo, maxage);
+    if (obj == Py_None) {
+        remote.max_parallel_downloads = LRO_MAXPARALLELDOWNLOADS_DEFAULT;
+    } else {
+        remote.max_parallel_downloads = PyLong_AsLong(obj);
+    }
+    hy_repo_load(repo, &remote);
 
-    return ret;
+    mirrors = hy_repo_get_mirrors(repo);
+    if (mirrors) {
+        for (int x=0; mirrors[x] != NULL; x++) {
+            PyList_Append(mirrorlist, PyStringOrNone_FromString(mirrors[x]));
+        }
+        g_strfreev(mirrors);
+    }
+
+    PyTuple_SetItem(tuple, 0,
+                    PyObject_FromYumRepo(hy_repo_get_yum_repo(repo)));
+    PyTuple_SetItem(tuple, 1,
+                    PyObject_FromYumRepoMd(hy_repo_get_yum_repomd(repo)));
+    PyTuple_SetItem(tuple, 2, mirrorlist);
+
+    return tuple;
 }
 
 /* getsetters */

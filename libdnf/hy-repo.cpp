@@ -121,7 +121,6 @@ repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata)
     }
 }
 
-// [WIP]
 LrHandle *
 lr_handle_init_base(HyRemote *remote)
 {
@@ -139,20 +138,18 @@ lr_handle_init_base(HyRemote *remote)
     return h;
 }
 
-// [WIP]
 LrHandle *
-lr_handle_init_local(HyRemote *remote)
+lr_handle_init_local(HyRemote *remote, const char *cachedir)
 {
     LrHandle *h = lr_handle_init_base(remote);
-    const char *urls[] = {remote->cachedir, NULL};
+    const char *urls[] = {cachedir, NULL};
     //TODO set LRO_VARSUB
     lr_handle_setopt(h, NULL, LRO_URLS, urls);
-    lr_handle_setopt(h, NULL, LRO_DESTDIR, remote->cachedir);
+    lr_handle_setopt(h, NULL, LRO_DESTDIR, cachedir);
     lr_handle_setopt(h, NULL, LRO_LOCAL, 1L);
     return h;
 }
 
-// [WIP]
 LrHandle *
 lr_handle_init_remote(HyRemote *remote, const char *destdir)
 {
@@ -163,18 +160,18 @@ lr_handle_init_remote(HyRemote *remote, const char *destdir)
     return h;
 }
 
-// [WIP]
 int
-hy_repo_load_cache(HyRepo repo, HyRemote *remote, HyMeta *meta)
+hy_repo_load_cache(HyRepo repo, HyRemote *remote)
 {
+    GError *err = NULL;
+    char **mirrors;
     LrYumRepo *yum_repo;
     LrYumRepoMd *yum_repomd;
-    char **mirrors;
-    GError *err = NULL;
 
-    LrHandle *h = lr_handle_init_local(remote);
+    LrHandle *h = lr_handle_init_local(remote, repo->cachedir);
     LrResult *r = lr_result_init();
 
+    // Fetch data
     lr_handle_perform(h, r, &err);
     if (err)
         return 0;
@@ -193,17 +190,15 @@ hy_repo_load_cache(HyRepo repo, HyRemote *remote, HyMeta *meta)
     hy_repo_set_string(repo, HY_REPO_FILELISTS_FN, filelists_fn);
     hy_repo_set_string(repo, HY_REPO_PRESTO_FN, presto_fn);
     hy_repo_set_string(repo, HY_REPO_UPDATEINFO_FN, updateinfo_fn);
-
-    // Populate meta
-    meta->age = age(primary_fn);
+    repo->age = age(primary_fn);
     // Negative maxage means never expire
-    meta->expired = (remote->maxage >= 0) && (meta->age > remote->maxage);
-    // These are for DNF compatiblity
-    meta->mirrors = mirrors;
-    meta->yum_repo = lr_yum_repo_init();
-    meta->yum_repomd = lr_yum_repomd_init();
-    copy_yum_repo(meta->yum_repo, yum_repo);
-    copy_yum_repomd(meta->yum_repomd, yum_repomd);
+    repo->expired = (repo->maxage >= 0) && (repo->age > repo->maxage);
+    // These are for DNF compatibility
+    repo->mirrors = mirrors;
+    repo->yum_repo = lr_yum_repo_init();
+    repo->yum_repomd = lr_yum_repomd_init();
+    copy_yum_repo(repo->yum_repo, yum_repo);
+    copy_yum_repomd(repo->yum_repomd, yum_repomd);
 
     lr_handle_free(h);
     lr_result_free(r);
@@ -211,7 +206,6 @@ hy_repo_load_cache(HyRepo repo, HyRemote *remote, HyMeta *meta)
     return 1;
 }
 
-// [WIP]
 int
 hy_repo_can_reuse(HyRepo repo, HyRemote *remote)
 {
@@ -241,18 +235,17 @@ hy_repo_can_reuse(HyRepo repo, HyRemote *remote)
     return 0;
 }
 
-// [WIP]
 void
-hy_repo_fetch(HyRemote *remote)
+hy_repo_fetch(HyRepo repo, HyRemote *remote)
 {
     GError *err = NULL;
     char templt[] = "/var/tmp/tmpdir.XXXXXX";
     char *tmpdir = mkdtemp(templt);
     char tmprepodir[strlen(templt) + 11];
-    char repodir[strlen(remote->cachedir) + 11];
+    char repodir[strlen(repo->cachedir) + 11];
 
     sprintf(tmprepodir, "%s/repodata", tmpdir);
-    sprintf(repodir, "%s/repodata", remote->cachedir);
+    sprintf(repodir, "%s/repodata", repo->cachedir);
 
     LrHandle *h = lr_handle_init_remote(remote, tmpdir);
     LrResult *r = lr_result_init();
@@ -279,16 +272,13 @@ hy_repo_create(const char *name)
     return repo;
 }
 
-// [WIP]
 /**
  * hy_repo_load:
  * @repo: a #HyRepo instance.
  * @remote: a #HyRemote instance.
- * @meta: a #HyMeta instance.
  *
  * Initializes the repo according to the remote spec.
  * Fetches new metadata from the remote or just reuses local cache if valid.
- * Populates the meta struct with additional metadata.
  *
  * FIXME: This attempts to be a C rewrite of Repo.load() in DNF.  This function
  * may be moved to a more appropriate place later.
@@ -296,13 +286,13 @@ hy_repo_create(const char *name)
  * Returns: %TRUE for success
  **/
 void
-hy_repo_load(HyRepo repo, HyRemote *remote, HyMeta *meta)
+hy_repo_load(HyRepo repo, HyRemote *remote)
 {
     printf("check if cache present\n");
-    int cached = hy_repo_load_cache(repo, remote, meta);
+    int cached = hy_repo_load_cache(repo, remote);
     if (cached) {
-        if (!meta->expired) {
-            printf("using cache, age: %is\n", meta->age);
+        if (!repo->expired) {
+            printf("using cache, age: %is\n", repo->age);
             return;
         }
         printf("try to reuse\n");
@@ -315,8 +305,8 @@ hy_repo_load(HyRepo repo, HyRemote *remote, HyMeta *meta)
     }
 
     printf("fetch\n");
-    hy_repo_fetch(remote);
-    hy_repo_load_cache(repo, remote, meta);
+    hy_repo_fetch(repo, remote);
+    hy_repo_load_cache(repo, remote);
 }
 
 int
@@ -343,6 +333,21 @@ hy_repo_get_n_solvables(HyRepo repo)
   return (guint)repo->libsolv_repo->nsolvables;
 }
 
+LrYumRepo *hy_repo_get_yum_repo(HyRepo repo)
+{
+    return repo->yum_repo;
+}
+
+LrYumRepoMd *hy_repo_get_yum_repomd(HyRepo repo)
+{
+    return repo->yum_repomd;
+}
+
+char **hy_repo_get_mirrors(HyRepo repo)
+{
+    return repo->mirrors;
+}
+
 void
 hy_repo_set_cost(HyRepo repo, int value)
 {
@@ -357,6 +362,12 @@ hy_repo_set_priority(HyRepo repo, int value)
     repo->priority = value;
     if (repo->libsolv_repo)
         repo->libsolv_repo->priority = -value;
+}
+
+void
+hy_repo_set_maxage(HyRepo repo, int value)
+{
+    repo->maxage = value;
 }
 
 void
@@ -393,6 +404,10 @@ hy_repo_set_string(HyRepo repo, int which, const char *str_val)
         g_free(repo->updateinfo_fn);
         repo->updateinfo_fn = g_strdup(str_val);
         break;
+    case HY_REPO_CACHEDIR:
+        g_free(repo->cachedir);
+        repo->cachedir = g_strdup(str_val);
+        break;
     default:
         assert(0);
     }
@@ -414,6 +429,8 @@ hy_repo_get_string(HyRepo repo, int which)
         return repo->presto_fn;
     case HY_REPO_UPDATEINFO_FN:
         return repo->updateinfo_fn;
+    case HY_REPO_CACHEDIR:
+        return repo->cachedir;
     default:
         assert(0);
     }
@@ -434,5 +451,6 @@ hy_repo_free(HyRepo repo)
     g_free(repo->filelists_fn);
     g_free(repo->presto_fn);
     g_free(repo->updateinfo_fn);
+    g_free(repo->cachedir);
     g_free(repo);
 }
