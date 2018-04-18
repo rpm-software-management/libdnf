@@ -79,7 +79,7 @@ IniParser::ItemType IniParser::next()
         }
 
         // remove UTF-8 BOM
-        if (lineNumber == 1 &&
+        if (lineNumber == 1 && line.length() >= 3 &&
             static_cast<unsigned char>(line[0]) == 0xEF &&
             static_cast<unsigned char>(line[1]) == 0xBB &&
             static_cast<unsigned char>(line[2]) == 0xBF)
@@ -135,7 +135,10 @@ IniParser::ItemType IniParser::next()
             auto endkeypos = line.find_last_not_of(" \t", eqlpos - 1);
             auto valuepos = line.find_first_not_of(" \t", eqlpos + 1);
             key = line.substr(start, endkeypos - start + 1);
-            value = line.substr(valuepos, end - valuepos + 1);
+            if (valuepos != line.npos)
+                value = line.substr(valuepos, end - valuepos + 1);
+            else
+                value.clear();
             previousLineWithKeyVal = true;
             line.clear();
         }
