@@ -43,7 +43,9 @@ void ConfigParser::substitute(std::string & text,
             bracket = false;
         auto it = std::find_if_not(text.begin()+variable, text.end(),
             [](char c){return std::isalnum(c) || c=='_';});
-        auto pastVariable = it != text.end() ? it - text.begin() : text.length();
+        if (bracket && it == text.end())
+            break;
+        auto pastVariable = std::distance(text.begin(), it);
         if (bracket && *it != '}') {
             start = text.find_first_of("$", pastVariable);
             continue;
@@ -53,7 +55,7 @@ void ConfigParser::substitute(std::string & text,
             if (bracket)
                 ++pastVariable;
             text.replace(start, pastVariable - start, subst->second);
-            start = text.find_first_of("$", variable + subst->second.length());
+            start = text.find_first_of("$", start + subst->second.length());
         } else {
             start = text.find_first_of("$", pastVariable);
         }
@@ -73,7 +75,7 @@ void ConfigParser::read(const std::string & filePath)
                 data[section][std::move(parser.getKey())] = std::move(parser.getValue());
         }
     } catch (const IniParser::CantOpenFile & e) {
-        throw CantOpenFile(e.what() + std::string(" at line ") + std::to_string(e.getLineNumber()));
+        throw CantOpenFile(e.what());
     } catch (const IniParser::Exception & e) {
         throw ParsingError(e.what() + std::string(" at line ") + std::to_string(e.getLineNumber()));
     }
