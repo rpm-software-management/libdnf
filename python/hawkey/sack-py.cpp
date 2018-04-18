@@ -412,6 +412,17 @@ add_excludes(_SackObject *self, PyObject *o)
 }
 
 static PyObject *
+add_module_excludes(_SackObject *self, PyObject *o)
+{
+    DnfSack *sack = self->sack;
+    auto pset = pyseq_to_packageset(o, sack);
+    if (!pset)
+        return NULL;
+    dnf_sack_add_module_excludes(sack, pset.get());
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 add_includes(_SackObject *self, PyObject *o)
 {
     DnfSack *sack = self->sack;
@@ -456,6 +467,17 @@ set_excludes(_SackObject *self, PyObject *o)
 }
 
 static PyObject *
+set_module_excludes(_SackObject *self, PyObject *o)
+{
+    DnfSack *sack = self->sack;
+    auto pset = pyseq_to_packageset(o, sack);
+    if (!pset)
+        return NULL;
+    dnf_sack_set_module_excludes(sack, pset.get());
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 set_includes(_SackObject *self, PyObject *o)
 {
     DnfSack *sack = self->sack;
@@ -475,6 +497,14 @@ reset_excludes(_SackObject *self)
 }
 
 static PyObject *
+reset_module_excludes(_SackObject *self)
+{
+    DnfSack *sack = self->sack;
+    dnf_sack_reset_module_excludes(sack);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 reset_includes(_SackObject *self)
 {
     DnfSack *sack = self->sack;
@@ -487,6 +517,16 @@ get_excludes(_SackObject *self)
 {
     DnfSack *sack = self->sack;
     DnfPackageSet *pset = dnf_sack_get_excludes(sack);
+    if (!pset)
+        return PyList_New(0);
+    return packageset_to_pylist(pset, (PyObject *)self);
+}
+
+static PyObject *
+get_module_excludes(_SackObject *self)
+{
+    DnfSack *sack = self->sack;
+    DnfPackageSet *pset = dnf_sack_get_module_excludes(sack);
     if (!pset)
         return PyList_New(0);
     return packageset_to_pylist(pset, (PyObject *)self);
@@ -664,6 +704,7 @@ PyMethodDef sack_methods[] = {
      NULL},
     {"add_excludes", (PyCFunction)add_excludes, METH_O,
      NULL},
+    {"add_module_excludes", (PyCFunction)add_module_excludes, METH_O, NULL},
     {"add_includes", (PyCFunction)add_includes, METH_O,
      NULL},
     {"remove_excludes", (PyCFunction)remove_excludes, METH_O,
@@ -672,14 +713,17 @@ PyMethodDef sack_methods[] = {
      NULL},
     {"set_excludes", (PyCFunction)set_excludes, METH_O,
      NULL},
+    {"set_module_excludes", (PyCFunction)set_module_excludes, METH_O, NULL},
     {"set_includes", (PyCFunction)set_includes, METH_O,
      NULL},
     {"reset_excludes", (PyCFunction)reset_excludes, METH_NOARGS,
      NULL},
+    {"reset_module_excludes", (PyCFunction)reset_module_excludes, METH_NOARGS, NULL},
     {"reset_includes", (PyCFunction)reset_includes, METH_NOARGS,
      NULL},
     {"get_excludes", (PyCFunction)get_excludes, METH_NOARGS,
      NULL},
+    {"get_module_excludes", (PyCFunction)get_module_excludes, METH_NOARGS, NULL},
     {"get_includes", (PyCFunction)get_includes, METH_NOARGS,
      NULL},
     {"set_use_includes", (PyCFunction)set_use_includes, METH_VARARGS,

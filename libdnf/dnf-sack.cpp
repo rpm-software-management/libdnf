@@ -81,6 +81,7 @@ typedef struct
     Map                 *pkg_excludes;
     Map                 *pkg_includes;
     Map                 *repo_excludes;
+    Map                 *module_excludes;
     Map                 *pkg_solvables;     /* Map representing only solvable pkgs of query */
     int                  pool_nsolvables;   /* Number of nsolvables for creation of pkg_solvables*/
     Pool                *pool;
@@ -123,6 +124,7 @@ dnf_sack_finalize(GObject *object)
     free_map_fully(priv->pkg_excludes);
     free_map_fully(priv->pkg_includes);
     free_map_fully(priv->repo_excludes);
+    free_map_fully(priv->module_excludes);
     free_map_fully(pool->considered);
     free_map_fully(priv->pkg_solvables);
     pool_free(priv->pool);
@@ -313,7 +315,8 @@ dnf_sack_recompute_considered(DnfSack *sack)
     if (priv->considered_uptodate)
         return;
     if (!pool->considered) {
-        if (!priv->repo_excludes && !priv->pkg_excludes && !priv->pkg_includes)
+        if (!priv->repo_excludes && !priv->module_excludes && !priv->pkg_excludes &&
+            !priv->pkg_includes)
             return;
         pool->considered = static_cast<Map *>(g_malloc0(sizeof(Map)));
         map_init(pool->considered, pool->nsolvables);
@@ -328,6 +331,8 @@ dnf_sack_recompute_considered(DnfSack *sack)
         map_subtract(pool->considered, priv->repo_excludes);
     if (priv->pkg_excludes)
         map_subtract(pool->considered, priv->pkg_excludes);
+    if (priv->module_excludes)
+        map_subtract(pool->considered, priv->module_excludes);
     if (priv->pkg_includes) {
         Map pkg_includes_tmp;
         map_init_clone(&pkg_includes_tmp, priv->pkg_includes);
@@ -1166,6 +1171,22 @@ dnf_sack_add_excludes(DnfSack *sack, DnfPackageSet *pset)
 }
 
 /**
+ * dnf_sack_add_module_excludes:
+ * @sack: a #DnfSack instance.
+ * @pset: a #DnfPackageSet or %NULL.
+ *
+ * Adds excludes to the sack.
+ *
+ * Since: 0.13.4
+ */
+void
+dnf_sack_add_module_excludes(DnfSack *sack, DnfPackageSet *pset)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    dnf_sack_add_excludes_or_includes(sack, &priv->module_excludes, pset);
+}
+
+/**
  * dnf_sack_add_includes:
  * @sack: a #DnfSack instance.
  * @pset: a #DnfPackageSet or %NULL.
@@ -1257,6 +1278,22 @@ dnf_sack_set_excludes(DnfSack *sack, DnfPackageSet *pset)
 }
 
 /**
+ * dnf_sack_set_module_excludes:
+ * @sack: a #DnfSack instance.
+ * @pset: a #DnfPackageSet or %NULL.
+ *
+ * Set excludes for the sack.
+ *
+ * Since: 0.13.4
+ */
+void
+dnf_sack_set_module_excludes(DnfSack *sack, DnfPackageSet *pset)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    dnf_sack_set_excludes_or_includes(sack, &priv->module_excludes, pset);
+}
+
+/**
  * dnf_sack_set_includes:
  * @sack: a #DnfSack instance.
  * @pset: a #DnfPackageSet or %NULL.
@@ -1287,6 +1324,20 @@ dnf_sack_reset_excludes(DnfSack *sack)
 }
 
 /**
+ * dnf_sack_reset_module_excludes:
+ * @sack: a #DnfSack instance.
+ *
+ * Reset excludes (remove excludes map from memory).
+ *
+ * Since: 0.13.4
+ */
+void
+dnf_sack_reset_module_excludes(DnfSack *sack)
+{
+    dnf_sack_set_module_excludes(sack, NULL);
+}
+
+/**
  * dnf_sack_reset_includes:
  * @sack: a #DnfSack instance.
  *
@@ -1314,6 +1365,23 @@ dnf_sack_get_excludes(DnfSack *sack)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     Map *excl = priv->pkg_excludes;
+    return excl ? dnf_packageset_from_bitmap(sack, excl) : NULL;
+}
+
+/**
+ * dnf_sack_get_module_excludes:
+ * @sack: a #DnfSack instance.
+ * @pset: a #DnfPackageSet or %NULL.
+ *
+ * Gets sack excludes.
+ *
+ * Since: 0.13.4
+ */
+DnfPackageSet *
+dnf_sack_get_module_excludes(DnfSack *sack)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    Map *excl = priv->module_excludes;
     return excl ? dnf_packageset_from_bitmap(sack, excl) : NULL;
 }
 
