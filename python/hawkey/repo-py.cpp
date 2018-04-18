@@ -109,7 +109,6 @@ extern "C"
     PyObject * PyStringOrNone_FromString(const char *str);
 }
 
-// [WIP]
 static PyObject *
 load(_RepoObject *self, PyObject *args)
 {

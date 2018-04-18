@@ -194,7 +194,6 @@ hy_packagelist_has(GPtrArray *plist, DnfPackage *pkg)
     return 0;
 }
 
-// [WIP]
 int
 mtime(const char *filename)
 {
@@ -203,14 +202,12 @@ mtime(const char *filename)
     return st.st_mtime;
 }
 
-// [WIP]
 unsigned long
 age(const char *filename)
 {
     return time(NULL) - mtime(filename);
 }
 
-// [WIP]
 const char *
 cksum(const char *filename, GChecksumType ctype)
 {
@@ -227,7 +224,6 @@ cksum(const char *filename, GChecksumType ctype)
     return result;
 }
 
-// [WIP]
 void
 rmtree(const char *dir)
 {
@@ -235,7 +231,6 @@ rmtree(const char *dir)
     dnf_remove_recursive(dir, NULL);
 }
 
-// [WIP]
 void
 copy_yum_repo(LrYumRepo *dst, LrYumRepo *src)
 {
@@ -262,7 +257,6 @@ copy_yum_repo(LrYumRepo *dst, LrYumRepo *src)
     }
 }
 
-// [WIP]
 void
 copy_yum_repomd(LrYumRepoMd *dst, LrYumRepoMd *src)
 {
