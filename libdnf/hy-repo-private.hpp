@@ -86,6 +86,7 @@ LrHandle *lr_handle_init_remote(HyRemote *remote, const char *destdir);
 int hy_repo_load_cache(HyRepo repo, HyRemote *remote);
 int hy_repo_can_reuse(HyRepo repo, HyRemote *remote);
 void hy_repo_fetch(HyRepo repo, HyRemote *remote);
+void hy_repo_reset_age(HyRepo repo);
 
 void repo_finalize_init(HyRepo hrepo, Repo *repo);
 void repo_internalize_all_trigger(Pool *pool);

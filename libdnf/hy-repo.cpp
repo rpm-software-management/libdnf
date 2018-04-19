@@ -296,10 +296,10 @@ hy_repo_load(HyRepo repo, HyRemote *remote)
             return;
         }
         printf("try to reuse\n");
-        int ok = hy_repo_can_reuse(repo, remote);
-        if (ok) {
+        int reuse = hy_repo_can_reuse(repo, remote);
+        if (reuse) {
             printf("reusing expired cache\n");
-            utime(repo->primary_fn, NULL);
+            hy_repo_reset_age(repo);
             return;
         }
     }
@@ -368,6 +368,12 @@ void
 hy_repo_set_max_age(HyRepo repo, int value)
 {
     repo->max_age = value;
+}
+
+void
+hy_repo_reset_age(HyRepo repo)
+{
+    utime(repo->primary_fn, NULL);
 }
 
 void
