@@ -191,8 +191,6 @@ hy_repo_load_cache(HyRepo repo, HyRemote *remote)
     hy_repo_set_string(repo, HY_REPO_PRESTO_FN, presto_fn);
     hy_repo_set_string(repo, HY_REPO_UPDATEINFO_FN, updateinfo_fn);
     repo->age = age(primary_fn);
-    // Negative max_age means never expire
-    repo->expired = (repo->max_age >= 0) && (repo->age > repo->max_age);
     // These are for DNF compatibility
     repo->mirrors = mirrors;
     repo->yum_repo = lr_yum_repo_init();
@@ -291,7 +289,7 @@ hy_repo_load(HyRepo repo, HyRemote *remote)
     printf("check if cache present\n");
     int cached = hy_repo_load_cache(repo, remote);
     if (cached) {
-        if (!repo->expired) {
+        if (!hy_repo_expired(repo)) {
             printf("using cache, age: %is\n", repo->age);
             return;
         }
@@ -368,6 +366,22 @@ void
 hy_repo_set_max_age(HyRepo repo, int value)
 {
     repo->max_age = value;
+}
+
+int
+hy_repo_expired(HyRepo repo)
+{
+    // Negative age means always expire, negative max_age means never expire,
+    // with the former taking precedence
+    return repo->age < 0 || (repo->max_age >= 0 && repo->age > repo->max_age);
+}
+
+void
+hy_repo_expire(HyRepo repo)
+{
+    // Modifying age is a conventional way of forcing expiration, see e.g.
+    // "chage -d 0 [username]"
+    repo->age = -1;
 }
 
 void

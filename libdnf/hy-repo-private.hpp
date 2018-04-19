@@ -43,7 +43,6 @@ struct _HyRepo {
     int priority;
     int age;
     int max_age;
-    int expired;
     char *name;
     char *repomd_fn;
     char *primary_fn;
@@ -87,6 +86,7 @@ int hy_repo_load_cache(HyRepo repo, HyRemote *remote);
 int hy_repo_can_reuse(HyRepo repo, HyRemote *remote);
 void hy_repo_fetch(HyRepo repo, HyRemote *remote);
 void hy_repo_reset_age(HyRepo repo);
+int hy_repo_expired(HyRepo repo);
 
 void repo_finalize_init(HyRepo hrepo, Repo *repo);
 void repo_internalize_all_trigger(Pool *pool);
