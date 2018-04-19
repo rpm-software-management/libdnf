@@ -61,7 +61,6 @@ map_count(Map *m)
 GPtrArray *hy_packagelist_create(void);
 int hy_packagelist_has(GPtrArray *plist, DnfPackage *pkg);
 int mtime(const char *filename);
-unsigned long age(const char *filename);
 const char *cksum(const char *filename, GChecksumType ctype);
 void rmtree(const char *dir);
 void copy_yum_repo(LrYumRepo *dst, LrYumRepo *src);

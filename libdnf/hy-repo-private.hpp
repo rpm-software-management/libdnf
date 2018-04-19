@@ -41,7 +41,7 @@ struct _HyRepo {
     int needs_internalizing;
     int nrefs;
     int priority;
-    int age;
+    int timestamp;
     int max_age;
     char *name;
     char *repomd_fn;
@@ -85,7 +85,8 @@ LrHandle *lr_handle_init_remote(HyRemote *remote, const char *destdir);
 int hy_repo_load_cache(HyRepo repo, HyRemote *remote);
 int hy_repo_can_reuse(HyRepo repo, HyRemote *remote);
 void hy_repo_fetch(HyRepo repo, HyRemote *remote);
-void hy_repo_reset_age(HyRepo repo);
+void hy_repo_reset_timestamp(HyRepo repo);
+int hy_repo_get_age(HyRepo repo);
 int hy_repo_expired(HyRepo repo);
 
 void repo_finalize_init(HyRepo hrepo, Repo *repo);

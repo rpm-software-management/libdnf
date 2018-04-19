@@ -202,12 +202,6 @@ mtime(const char *filename)
     return st.st_mtime;
 }
 
-unsigned long
-age(const char *filename)
-{
-    return time(NULL) - mtime(filename);
-}
-
 const char *
 cksum(const char *filename, GChecksumType ctype)
 {
