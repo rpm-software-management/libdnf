@@ -400,146 +400,38 @@ add_cmdline_package(_SackObject *self, PyObject *fn_obj)
     return pkg;
 }
 
+template<void (*sackExcludeIncludeFunc)(DnfSack *, DnfPackageSet*)>
 static PyObject *
-add_excludes(_SackObject *self, PyObject *o)
+modify_excl_incl(_SackObject *self, PyObject *o)
 {
     DnfSack *sack = self->sack;
     auto pset = pyseq_to_packageset(o, sack);
     if (!pset)
         return NULL;
-    dnf_sack_add_excludes(sack, pset.get());
+    sackExcludeIncludeFunc(sack, pset.get());
     Py_RETURN_NONE;
 }
 
+template<void (*sackExcludeIncludeFunc)(DnfSack *)>
 static PyObject *
-add_module_excludes(_SackObject *self, PyObject *o)
+reset_excl_incl(_SackObject *self)
 {
     DnfSack *sack = self->sack;
-    auto pset = pyseq_to_packageset(o, sack);
-    if (!pset)
-        return NULL;
-    dnf_sack_add_module_excludes(sack, pset.get());
+    sackExcludeIncludeFunc(sack);
     Py_RETURN_NONE;
 }
 
+template<DnfPackageSet * (*sackExcludeIncludeFunc)(DnfSack *)>
 static PyObject *
-add_includes(_SackObject *self, PyObject *o)
+get_excl_incl(_SackObject *self)
 {
     DnfSack *sack = self->sack;
-    auto pset = pyseq_to_packageset(o, sack);
-    if (!pset)
-        return NULL;
-    dnf_sack_add_includes(sack, pset.get());
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-remove_excludes(_SackObject *self, PyObject *o)
-{
-    DnfSack *sack = self->sack;
-    auto pset = pyseq_to_packageset(o, sack);
-    if (!pset)
-        return NULL;
-    dnf_sack_remove_excludes(sack, pset.get());
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-remove_includes(_SackObject *self, PyObject *o)
-{
-    DnfSack *sack = self->sack;
-    auto pset = pyseq_to_packageset(o, sack);
-    if (!pset)
-        return NULL;
-    dnf_sack_remove_includes(sack, pset.get());
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-set_excludes(_SackObject *self, PyObject *o)
-{
-    DnfSack *sack = self->sack;
-    auto pset = pyseq_to_packageset(o, sack);
-    if (!pset)
-        return NULL;
-    dnf_sack_set_excludes(sack, pset.get());
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-set_module_excludes(_SackObject *self, PyObject *o)
-{
-    DnfSack *sack = self->sack;
-    auto pset = pyseq_to_packageset(o, sack);
-    if (!pset)
-        return NULL;
-    dnf_sack_set_module_excludes(sack, pset.get());
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-set_includes(_SackObject *self, PyObject *o)
-{
-    DnfSack *sack = self->sack;
-    auto pset = pyseq_to_packageset(o, sack);
-    if (!pset)
-        return NULL;
-    dnf_sack_set_includes(sack, pset.get());
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-reset_excludes(_SackObject *self)
-{
-    DnfSack *sack = self->sack;
-    dnf_sack_reset_excludes(sack);
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-reset_module_excludes(_SackObject *self)
-{
-    DnfSack *sack = self->sack;
-    dnf_sack_reset_module_excludes(sack);
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-reset_includes(_SackObject *self)
-{
-    DnfSack *sack = self->sack;
-    dnf_sack_reset_includes(sack);
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-get_excludes(_SackObject *self)
-{
-    DnfSack *sack = self->sack;
-    DnfPackageSet *pset = dnf_sack_get_excludes(sack);
+    DnfPackageSet * pset = sackExcludeIncludeFunc(sack);
     if (!pset)
         return PyList_New(0);
-    return packageset_to_pylist(pset, (PyObject *)self);
-}
-
-static PyObject *
-get_module_excludes(_SackObject *self)
-{
-    DnfSack *sack = self->sack;
-    DnfPackageSet *pset = dnf_sack_get_module_excludes(sack);
-    if (!pset)
-        return PyList_New(0);
-    return packageset_to_pylist(pset, (PyObject *)self);
-}
-
-static PyObject *
-get_includes(_SackObject *self)
-{
-    DnfSack *sack = self->sack;
-    DnfPackageSet *pset = dnf_sack_get_includes(sack);
-    if (!pset)
-        return PyList_New(0);
-    return packageset_to_pylist(pset, (PyObject *)self);
+    PyObject * pyList = packageset_to_pylist(pset, (PyObject *)self);
+    delete pset;
+    return pyList;
 }
 
 static PyObject *
@@ -702,29 +594,27 @@ PyMethodDef sack_methods[] = {
      NULL},
     {"add_cmdline_package", (PyCFunction)add_cmdline_package, METH_O,
      NULL},
-    {"add_excludes", (PyCFunction)add_excludes, METH_O,
+    {"add_excludes", (PyCFunction)modify_excl_incl<&dnf_sack_add_excludes>, METH_O, NULL},
+    {"add_module_excludes", (PyCFunction)modify_excl_incl<&dnf_sack_add_module_excludes>, METH_O,
      NULL},
-    {"add_module_excludes", (PyCFunction)add_module_excludes, METH_O, NULL},
-    {"add_includes", (PyCFunction)add_includes, METH_O,
+    {"add_includes", (PyCFunction)modify_excl_incl<&dnf_sack_add_includes>, METH_O, NULL},
+    {"remove_excludes", (PyCFunction)modify_excl_incl<&dnf_sack_remove_excludes>, METH_O, NULL},
+    {"remove_includes", (PyCFunction)modify_excl_incl<&dnf_sack_remove_includes>, METH_O, NULL},
+    {"set_excludes", (PyCFunction)modify_excl_incl<&dnf_sack_set_excludes>, METH_O, NULL},
+    {"set_module_excludes", (PyCFunction)modify_excl_incl<&dnf_sack_set_module_excludes>, METH_O,
      NULL},
-    {"remove_excludes", (PyCFunction)remove_excludes, METH_O,
+    {"set_includes", (PyCFunction)modify_excl_incl<&dnf_sack_set_includes>, METH_O, NULL},
+    {"reset_excludes", (PyCFunction)reset_excl_incl<&dnf_sack_reset_excludes>, METH_NOARGS,
      NULL},
-    {"remove_includes", (PyCFunction)remove_includes, METH_O,
+    {"reset_module_excludes", (PyCFunction)reset_excl_incl<&dnf_sack_reset_module_excludes>,
+     METH_NOARGS, NULL},
+    {"reset_includes", (PyCFunction)reset_excl_incl<&dnf_sack_reset_includes>, METH_NOARGS,
      NULL},
-    {"set_excludes", (PyCFunction)set_excludes, METH_O,
+    {"get_excludes", (PyCFunction)get_excl_incl<&dnf_sack_get_excludes>, METH_NOARGS,
      NULL},
-    {"set_module_excludes", (PyCFunction)set_module_excludes, METH_O, NULL},
-    {"set_includes", (PyCFunction)set_includes, METH_O,
+    {"get_module_excludes", (PyCFunction)get_excl_incl<&dnf_sack_get_module_excludes>, METH_NOARGS,
      NULL},
-    {"reset_excludes", (PyCFunction)reset_excludes, METH_NOARGS,
-     NULL},
-    {"reset_module_excludes", (PyCFunction)reset_module_excludes, METH_NOARGS, NULL},
-    {"reset_includes", (PyCFunction)reset_includes, METH_NOARGS,
-     NULL},
-    {"get_excludes", (PyCFunction)get_excludes, METH_NOARGS,
-     NULL},
-    {"get_module_excludes", (PyCFunction)get_module_excludes, METH_NOARGS, NULL},
-    {"get_includes", (PyCFunction)get_includes, METH_NOARGS,
+    {"get_includes", (PyCFunction)get_excl_incl<&dnf_sack_get_includes>, METH_NOARGS,
      NULL},
     {"set_use_includes", (PyCFunction)set_use_includes, METH_VARARGS,
      NULL},
