@@ -268,9 +268,9 @@ RPMItem::resolveTransactionItemReason(SQLite3Ptr conn,
         FROM
             trans_item ti
         JOIN
-            rpm i USING (item_id)
-        JOIN
             trans t ON ti.trans_id = t.id
+        JOIN
+            rpm i USING (item_id)
         WHERE
             t.state = 1
             /* see comment in TransactionItem.hpp - TransactionItemAction */

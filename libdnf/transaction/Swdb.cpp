@@ -497,23 +497,6 @@ Swdb::Swdb(const std::string &path)
 std::vector< Id >
 Swdb::filterUnneeded(HyQuery installed, Pool *pool) const
 {
-
-    const char *sql = R"**(
-        SELECT
-          reason
-        FROM
-          trans_item
-          join rpm using (item_id)
-        WHERE
-          name = ?
-          AND arch = ?
-        ORDER BY
-          trans_item.id DESC
-        LIMIT 1
-    )**";
-
-    SQLite3::Query query(*conn, sql);
-
     std::vector< Id > userInstalled;
 
     // iterate over solvables
@@ -527,22 +510,12 @@ Swdb::filterUnneeded(HyQuery installed, Pool *pool) const
         const char *name = pool_id2str(pool, s->name);
         const char *arch = pool_id2str(pool, s->arch);
 
-        query.bindv(name, arch);
-
-        if (query.step() == SQLite3::Statement::StepResult::ROW) {
-            int reason = query.get< int >("reason");
-
-            // if not dep or weak, than consider it user installed
-            if (reason != static_cast< int >(TransactionItemReason::DEPENDENCY) &&
-                reason != static_cast< int >(TransactionItemReason::WEAK_DEPENDENCY)) {
-                userInstalled.push_back(id);
-            }
-        } else {
-            // rpm not found - consider it user installed
+        auto reason = RPMItem::resolveTransactionItemReason(conn, name, arch, -1);
+        // if not dep or weak, than consider it user installed
+        if (reason != TransactionItemReason::DEPENDENCY &&
+            reason != TransactionItemReason::WEAK_DEPENDENCY) {
             userInstalled.push_back(id);
         }
-
-        query.reset();
     }
     return userInstalled;
 }
