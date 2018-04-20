@@ -31,7 +31,8 @@ SQLite3::open()
             throw LibException(result, "Open failed");
         }
         // sqlite doesn't behave correctly in chroots without following line:
-        exec("PRAGMA journal_mode = TRUNCATE; PRAGMA locking_mode = EXCLUSIVE");
+        // turn foreign key checking on
+        exec("PRAGMA journal_mode = TRUNCATE; PRAGMA locking_mode = EXCLUSIVE; PRAGMA foreign_keys = ON;");
     }
 }
 
