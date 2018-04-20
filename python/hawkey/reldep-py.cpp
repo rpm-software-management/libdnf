@@ -120,8 +120,10 @@ reldep_init(_ReldepObject *self, PyObject *args, PyObject *kwds)
     if (csack == NULL)
         return -1;
     reldep_str = pycomp_get_string(reldep_str_py, &tmp_py_str);
-    if (reldep_str == NULL)
+    if (reldep_str == NULL) {
+        Py_XDECREF(tmp_py_str);
         return -1;
+    }
 
     self->reldep = reldep_from_str (csack, reldep_str);
     if (self->reldep == NULL) {

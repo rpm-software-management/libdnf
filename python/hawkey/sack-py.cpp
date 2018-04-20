@@ -215,8 +215,13 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
                                      &custom_class, &custom_val,
                                      &make_cache_dir, &logfile_py, &all_arch))
         return -1;
-    if (cachedir_py != NULL)
+    if (cachedir_py != NULL) {
         cachedir = pycomp_get_string(cachedir_py, &tmp_py_str);
+        if (cachedir == NULL) {
+            Py_XDECREF(tmp_py_str);
+            return -1;
+        }
+    }
     int flags = 0;
     if (make_cache_dir)
         flags |= DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR;
@@ -226,6 +231,7 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     } else {
         if (!dnf_sack_set_arch(self->sack, arch, &error)) {
             PyErr_SetString(HyExc_Arch, "Unrecognized arch for the sack.");
+            Py_XDECREF(tmp_py_str);
             return -1;
         }
     }
@@ -233,8 +239,13 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     dnf_sack_set_cachedir(self->sack, cachedir);
     if (logfile_py != NULL) {
         logfile = pycomp_get_string(logfile_py, &tmp2_py_str);
+        if (logfile == NULL) {
+            Py_XDECREF(tmp_py_str);
+            return -1;
+        }
         if (!set_logfile(logfile, self->log_out)) {
             PyErr_Format(PyExc_IOError, "Failed to open log file: %s", logfile);
+            Py_XDECREF(tmp_py_str);
             return -1;
         }
     }

@@ -303,6 +303,10 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
     if (PyUnicode_Check(match) || PyString_Check(match)) {
         PyObject *tmp_py_str = NULL;
         cmatch = pycomp_get_string(match, &tmp_py_str);
+        if (cmatch == NULL) {
+            Py_XDECREF(tmp_py_str);
+            return 0;
+        }
         int query_filter_ret = query->addFilter(keyname, cmp_type, cmatch);
         Py_XDECREF(tmp_py_str);
 
@@ -379,6 +383,11 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
             tmp_py_strs[i] = NULL;
             if (PyUnicode_Check(item) || PyString_Check(item)) {
                 matches[i] = pycomp_get_string(item, &tmp_py_strs[i]);
+                if (matches[i] == NULL) {
+                    pycomp_free_tmp_array(tmp_py_strs, i);
+                    Py_DECREF(seq);
+                    return 0;
+                }
             } else {
                 PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
                 pycomp_free_tmp_array(tmp_py_strs, i);
@@ -454,6 +463,10 @@ filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, 
             argument_number = 0;
             PyObject *tmp_py_str = NULL;
             cmatch = pycomp_get_string(key, &tmp_py_str);
+            if (cmatch == NULL) {
+                Py_XDECREF(tmp_py_str);
+                return FALSE;
+            }
             g_autofree char *parsed_string = strdup(cmatch);
             char *tmp_string = parsed_string;
             Py_XDECREF(tmp_py_str);
@@ -514,12 +527,16 @@ filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, 
                         const char *c_sltr_match;
                         PyObject *tmp_py_str_sltr = NULL;
                         c_sltr_match = pycomp_get_string(value, &tmp_py_str_sltr);
+                        if (c_sltr_match == NULL) {
+                            Py_XDECREF(tmp_py_str_sltr);
+                            return FALSE;
+                        }
                         if (ret2e(hy_selector_set(sltr, keyname, cmp_type, c_sltr_match),
                             "Invalid Selector spec." )) {
                             Py_XDECREF(tmp_py_str_sltr);
                             return FALSE;
                         }
-
+                        Py_XDECREF(tmp_py_str_sltr);
                     }
                 }
             }
