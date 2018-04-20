@@ -1,6 +1,8 @@
 #include <set>
 #include <string>
 
+#include "../backports.hpp"
+
 #include "libdnf/hy-subject.h"
 #include "libdnf/nevra.hpp"
 #include "libdnf/transaction/RPMItem.hpp"

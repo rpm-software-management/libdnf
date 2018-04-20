@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 
+#include "../backports.hpp"
+
 #include "libdnf/transaction/CompsEnvironmentItem.hpp"
 #include "libdnf/transaction/Transformer.hpp"
 

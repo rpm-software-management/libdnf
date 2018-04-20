@@ -1,8 +1,12 @@
-#include "TransactionTest.hpp"
 #include "libdnf/transaction/RPMItem.hpp"
 #include "libdnf/transaction/Transaction.hpp"
 #include "libdnf/transaction/private/Transaction.hpp"
 #include "libdnf/transaction/Transformer.hpp"
+
+#include "../backports.hpp"
+
+#include "TransactionTest.hpp"
+
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TransactionTest);
 
