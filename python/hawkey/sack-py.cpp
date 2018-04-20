@@ -599,6 +599,8 @@ PyMethodDef sack_methods[] = {
      NULL},
     {"add_includes", (PyCFunction)modify_excl_incl<&dnf_sack_add_includes>, METH_O, NULL},
     {"remove_excludes", (PyCFunction)modify_excl_incl<&dnf_sack_remove_excludes>, METH_O, NULL},
+    {"remove_module_excludes", (PyCFunction)modify_excl_incl<&dnf_sack_remove_module_excludes>,
+     METH_O, NULL},
     {"remove_includes", (PyCFunction)modify_excl_incl<&dnf_sack_remove_includes>, METH_O, NULL},
     {"set_excludes", (PyCFunction)modify_excl_incl<&dnf_sack_set_excludes>, METH_O, NULL},
     {"set_module_excludes", (PyCFunction)modify_excl_incl<&dnf_sack_set_module_excludes>, METH_O,

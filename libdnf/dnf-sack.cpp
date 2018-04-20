@@ -1230,6 +1230,22 @@ dnf_sack_remove_excludes(DnfSack *sack, DnfPackageSet *pset)
 }
 
 /**
+ * dnf_sack_remove_module_excludes:
+ * @sack: a #DnfSack instance.
+ * @pset: a #DnfPackageSet or %NULL.
+ *
+ * Removes excludes from the sack.
+ *
+ * Since: 0.13.4
+ */
+void
+dnf_sack_remove_module_excludes(DnfSack *sack, DnfPackageSet *pset)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    dnf_sack_remove_excludes_or_includes(sack, priv->module_excludes, pset);
+}
+
+/**
  * dnf_sack_remove_includes:
  * @sack: a #DnfSack instance.
  * @pset: a #DnfPackageSet or %NULL.
