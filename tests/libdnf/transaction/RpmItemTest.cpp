@@ -3,9 +3,12 @@
 #include <iostream>
 #include <string>
 
-#include "RpmItemTest.hpp"
+#include "../backports.hpp"
+
 #include "libdnf/transaction/RPMItem.hpp"
 #include "libdnf/transaction/Transformer.hpp"
+
+#include "RpmItemTest.hpp"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(RpmItemTest);
 

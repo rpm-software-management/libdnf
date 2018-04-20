@@ -3,6 +3,8 @@
 #include <sstream>
 #include <string>
 
+#include "../backports.hpp"
+
 #include "libdnf/transaction/RPMItem.hpp"
 #include "libdnf/transaction/Swdb.hpp"
 #include "libdnf/transaction/Transaction.hpp"
