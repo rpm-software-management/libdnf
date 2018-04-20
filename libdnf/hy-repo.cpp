@@ -190,7 +190,10 @@ hy_repo_load_cache(HyRepo repo, HyRemote *remote)
     hy_repo_set_string(repo, HY_REPO_FILELISTS_FN, filelists_fn);
     hy_repo_set_string(repo, HY_REPO_PRESTO_FN, presto_fn);
     hy_repo_set_string(repo, HY_REPO_UPDATEINFO_FN, updateinfo_fn);
-    repo->timestamp = mtime(primary_fn);
+    // Load timestamp unless explicitly expired
+    if (repo->timestamp != 0) {
+        repo->timestamp = mtime(primary_fn);
+    }
     // These are for DNF compatibility
     repo->mirrors = mirrors;
     repo->yum_repo = lr_yum_repo_init();
@@ -254,6 +257,8 @@ hy_repo_fetch(HyRepo repo, HyRemote *remote)
     rename(tmprepodir, repodir);
     rmtree(tmpdir);
 
+    repo->timestamp = -1;
+
     lr_handle_free(h);
     lr_result_free(r);
 }
@@ -266,6 +271,7 @@ hy_repo_create(const char *name)
     assert(name);
     HyRepo repo = static_cast<HyRepo>(g_malloc0(sizeof(*repo)));
     repo->nrefs = 1;
+    repo->timestamp = -1;
     hy_repo_set_string(repo, HY_REPO_NAME, name);
     return repo;
 }
@@ -320,7 +326,7 @@ hy_repo_get_priority(HyRepo repo)
 int
 hy_repo_get_age(HyRepo repo)
 {
-    return time(NULL) - mtime(repo->primary_fn);
+    return time(NULL) - repo->timestamp;
 }
 
 gboolean
@@ -375,26 +381,25 @@ hy_repo_set_max_age(HyRepo repo, int value)
 int
 hy_repo_expired(HyRepo repo)
 {
-    // Zero timestamp means always expire, negative max_age means never expire,
-    // with the former taking precedence
-    int age = hy_repo_get_age(repo);
     return repo->timestamp == 0 ||
-           (repo->max_age >= 0 && age >= repo->max_age);
+           (repo->max_age >= 0 && hy_repo_get_age(repo) > repo->max_age);
 }
 
 void
 hy_repo_expire(HyRepo repo)
 {
-    // Zero-ing the timestamp is a conventional way of forcing expiration, see
-    // for instance "chage -d 0 [username]"
     repo->timestamp = 0;
 }
 
 void
 hy_repo_reset_timestamp(HyRepo repo)
 {
-    utime(repo->primary_fn, NULL);
-    repo->timestamp = mtime(repo->primary_fn);
+    time_t now = time(NULL);
+    struct utimbuf unow;
+    unow.actime = now;
+    unow.modtime = now;
+    repo->timestamp = now;
+    utime(repo->primary_fn, &unow);
 }
 
 void

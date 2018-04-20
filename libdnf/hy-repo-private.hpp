@@ -41,6 +41,7 @@ struct _HyRepo {
     int needs_internalizing;
     int nrefs;
     int priority;
+    // 0 forces expiration on the next hy_repo_load(), -1 means undefined value
     int timestamp;
     int max_age;
     char *name;
