@@ -708,7 +708,6 @@ Query::addFilter(int keyname, int cmp_type, const char *match)
                 DnfReldepList *reldeplist = reldeplist_from_str(sack, match);
                 if (reldeplist == NULL) {
                     return addFilter(HY_PKG_EMPTY, HY_EQ, 1);
-                    delete reldeplist;
                 }
 
                 int ret = addFilter(keyname, reldeplist);
