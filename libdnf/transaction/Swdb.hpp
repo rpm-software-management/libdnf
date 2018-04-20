@@ -102,10 +102,9 @@ public:
     std::vector< TransactionItemPtr > getCompsEnvironmentItemsByPattern(const std::string &pattern);
     std::vector< std::string > getCompsGroupEnvironments(const std::string &groupId);
 
-    // Console
-    void addConsoleOutputLine(int fileDescriptor, std::string line);
-
     // misc
+    void setReleasever(std::string value);
+    void addConsoleOutputLine(int fileDescriptor, std::string line);
     std::vector< Id > filterUnneeded(HyQuery installed, Pool *pool) const;
 
 protected:
