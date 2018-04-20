@@ -330,8 +330,10 @@ reldep_from_pystr(PyObject *o, DnfSack *sack)
     PyObject *tmp_py_str = NULL;
 
     reldep_str = pycomp_get_string(o, &tmp_py_str);
-    if (reldep_str == NULL)
+    if (reldep_str == NULL) {
+        Py_XDECREF(tmp_py_str);
         return NULL;
+    }
 
     reldep = reldep_from_str(sack, reldep_str);
     Py_XDECREF(tmp_py_str);
