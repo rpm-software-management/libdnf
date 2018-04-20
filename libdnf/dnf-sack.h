@@ -124,6 +124,8 @@ void         dnf_sack_add_includes          (DnfSack        *sack,
                                              DnfPackageSet  *pset);
 void         dnf_sack_remove_excludes       (DnfSack        *sack,
                                              DnfPackageSet  *pset);
+void         dnf_sack_remove_module_excludes(DnfSack        *sack,
+                                             DnfPackageSet  *pset);
 void         dnf_sack_remove_includes       (DnfSack        *sack,
                                              DnfPackageSet  *pset);
 void         dnf_sack_set_excludes          (DnfSack        *sack,
