@@ -287,15 +287,13 @@ void
 hy_repo_load(HyRepo repo, HyRemote *remote)
 {
     printf("check if cache present\n");
-    int cached = hy_repo_load_cache(repo, remote);
-    if (cached) {
+    if (hy_repo_load_cache(repo, remote)) {
         if (!hy_repo_expired(repo)) {
             printf("using cache, age: %is\n", hy_repo_get_age(repo));
             return;
         }
         printf("try to reuse\n");
-        int reuse = hy_repo_can_reuse(repo, remote);
-        if (reuse) {
+        if (hy_repo_can_reuse(repo, remote)) {
             printf("reusing expired cache\n");
             hy_repo_reset_timestamp(repo);
             return;
