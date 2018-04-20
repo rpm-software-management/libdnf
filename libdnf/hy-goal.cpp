@@ -1213,7 +1213,7 @@ hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
         return problist;
     }
 
-    Queue pq;
+    Queue pq, rq;
     Id rid, source, target, dep;
     SolverRuleinfo type;
     int j;
@@ -1223,29 +1223,39 @@ hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
         return problist;
 
     queue_init(&pq);
+    queue_init(&rq);
     // this libsolv interface indexes from 1 (we do from 0), so:
     solver_findallproblemrules(goal->solv, i+1, &pq);
     for (j = 0; j < pq.count; j++) {
         rid = pq.elements[j];
-        type = solver_ruleinfo(goal->solv, rid, &source, &target, &dep);
-        const char *problem_str = solver_problemruleinfo2str(goal->solv, type, source, target, dep);
-        unique = TRUE;
-        if (problist != NULL) {
-            for (int k = 0; problist[k] != NULL; k++) {
-                if (g_strcmp0(problem_str, problist[k]) == 0) {
-                    unique = FALSE;
-                    break;
+        if (solver_allruleinfos(goal->solv, rid, &rq)) {
+            for (int ir = 0; ir < rq.count; ir+=4) {
+                type = static_cast<SolverRuleinfo>(rq.elements[ir]);
+                source = rq.elements[ir + 1];
+                target = rq.elements[ir + 2];
+                dep = rq.elements[ir + 3];
+                const char *problem_str = solver_problemruleinfo2str(
+                    goal->solv, type, source, target, dep);
+                unique = TRUE;
+                if (problist != NULL) {
+                    for (int k = 0; problist[k] != NULL; k++) {
+                        if (g_strcmp0(problem_str, problist[k]) == 0) {
+                            unique = FALSE;
+                            break;
+                        }
+                    }
+                }
+                if (unique) {
+                    if (problist == NULL)
+                        problist = (char**)solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
+                    problist[p++] = g_strdup(problem_str);
+                    problist = (char**)solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
+                    problist[p] = NULL;
                 }
             }
         }
-        if (unique) {
-            if (problist == NULL)
-                problist = (char**)solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
-            problist[p++] = g_strdup(problem_str);
-            problist = (char**)solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
-            problist[p] = NULL;
-        }
     }
+    queue_free(&rq);
     queue_free(&pq);
     return problist;
 }
