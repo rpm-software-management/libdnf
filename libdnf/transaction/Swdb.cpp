@@ -260,6 +260,16 @@ Swdb::listTransactions()
 }
 
 void
+Swdb::setReleasever(std::string value)
+{
+    if (!transactionInProgress) {
+        throw std::logic_error(_("Not in progress"));
+    }
+    transactionInProgress->setReleasever(value);
+}
+
+
+void
 Swdb::addConsoleOutputLine(int fileDescriptor, std::string line)
 {
     if (!transactionInProgress) {
