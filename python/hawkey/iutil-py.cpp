@@ -28,6 +28,7 @@
 #include "dnf-reldep.h"
 #include "dnf-reldep-list.h"
 #include "hy-iutil.h"
+#include "hy-util-private.hpp"
 #include "advisory-py.hpp"
 #include "advisorypkg-py.hpp"
 #include "advisoryref-py.hpp"
@@ -221,34 +222,45 @@ pyseq_to_reldeplist(PyObject *obj, DnfSack *sack, int cmp_type)
         PyObject *item = PySequence_Fast_GET_ITEM(sequence, i);
         if (item == NULL)
             goto fail;
+        if reldepObject_Check(item) {
+            DnfReldep * reldep = reldepFromPyObject(item);
+            if (reldep == NULL)
+                goto fail;
+            dnf_reldep_list_add(reldeplist, reldep);
+        } else if (cmp_type == HY_GLOB) {
+            const char *reldep_str = NULL;
+            PyObject *tmp_py_str = NULL;
 
-    if (cmp_type == HY_GLOB) {
-        DnfReldepList *g_reldeplist = NULL;
-        const char *reldep_str = NULL;
-        PyObject *tmp_py_str = NULL;
+            reldep_str = pycomp_get_string(item, &tmp_py_str);
+            if (reldep_str == NULL) {
+                Py_XDECREF(tmp_py_str);
+                goto fail;
+            }
 
-        reldep_str = pycomp_get_string(item, &tmp_py_str);
-        if (reldep_str == NULL)
-            goto fail;
+            if (!hy_is_glob_pattern(reldep_str)) {
+                DnfReldep *reldep = reldep_from_str(sack, reldep_str);
+                Py_XDECREF(tmp_py_str);
+                if (reldep == NULL) {
+                    goto fail;
+                }
+                dnf_reldep_list_add(reldeplist, reldep);
+                delete reldep;
+            } else {
+                DnfReldepList * g_reldeplist = reldeplist_from_str(sack, reldep_str);
+                Py_XDECREF(tmp_py_str);
+                if (g_reldeplist == NULL)
+                    goto fail;
+                dnf_reldep_list_extend(reldeplist, g_reldeplist);
+                delete g_reldeplist;
+            }
 
-        Py_XDECREF(tmp_py_str);
-
-        g_reldeplist = reldeplist_from_str (sack, reldep_str);
-        if (g_reldeplist == NULL)
-            goto fail;
-
-        dnf_reldep_list_extend (reldeplist, g_reldeplist);
-
-    } else {
-        DnfReldep *reldep = NULL;
-        if reldepObject_Check(item)
-            reldep = reldepFromPyObject(item);
-        else
-            reldep = reldep_from_pystr(item, sack);
-
-        if (reldep != NULL)
-            dnf_reldep_list_add (reldeplist, reldep);
-    }
+        } else {
+            DnfReldep * reldep = reldep_from_pystr(item, sack);
+            if (reldep == NULL)
+                goto fail;
+            dnf_reldep_list_add(reldeplist, reldep);
+            delete reldep;
+        }
     }
 
     Py_DECREF(sequence);
