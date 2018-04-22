@@ -117,8 +117,9 @@ load(_RepoObject *self, PyObject *args)
     char *cachedir;
     char **mirrors;
     int max_age;
+    int fresh;
     PyObject *obj;
-    PyObject *tuple = PyTuple_New(3);
+    PyObject *tuple = PyTuple_New(4);
     PyObject *mirrorlist = PyList_New(0);
 
     if (!PyArg_ParseTuple(args, "sispiO",
@@ -138,7 +139,7 @@ load(_RepoObject *self, PyObject *args)
     } else {
         remote.max_parallel_downloads = PyLong_AsLong(obj);
     }
-    hy_repo_load(repo, &remote);
+    fresh = hy_repo_load(repo, &remote);
 
     mirrors = hy_repo_get_mirrors(repo);
     if (mirrors) {
@@ -148,11 +149,12 @@ load(_RepoObject *self, PyObject *args)
         g_strfreev(mirrors);
     }
 
-    PyTuple_SetItem(tuple, 0,
-                    PyObject_FromYumRepo(hy_repo_get_yum_repo(repo)));
+    PyTuple_SetItem(tuple, 0, PyBool_FromLong(fresh));
     PyTuple_SetItem(tuple, 1,
+                    PyObject_FromYumRepo(hy_repo_get_yum_repo(repo)));
+    PyTuple_SetItem(tuple, 2,
                     PyObject_FromYumRepoMd(hy_repo_get_yum_repomd(repo)));
-    PyTuple_SetItem(tuple, 2, mirrorlist);
+    PyTuple_SetItem(tuple, 3, mirrorlist);
 
     return tuple;
 }

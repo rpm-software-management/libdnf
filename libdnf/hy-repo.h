@@ -49,7 +49,7 @@ typedef struct HyRemote
 } HyRemote;
 
 HyRepo hy_repo_create(const char *name);
-void hy_repo_load(HyRepo repo, HyRemote *remote);
+int hy_repo_load(HyRepo repo, HyRemote *remote);
 int hy_repo_get_cost(HyRepo repo);
 int hy_repo_get_priority(HyRepo repo);
 LrYumRepo *hy_repo_get_yum_repo(HyRepo repo);

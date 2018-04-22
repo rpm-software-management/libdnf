@@ -287,28 +287,29 @@ hy_repo_create(const char *name)
  * FIXME: This attempts to be a C rewrite of Repo.load() in DNF.  This function
  * may be moved to a more appropriate place later.
  *
- * Returns: %TRUE for success
+ * Returns 1 if fresh metadata were downloaded, 0 otherwise.
  **/
-void
+int
 hy_repo_load(HyRepo repo, HyRemote *remote)
 {
     printf("check if cache present\n");
     if (hy_repo_load_cache(repo, remote)) {
         if (!hy_repo_expired(repo)) {
             printf("using cache, age: %is\n", hy_repo_get_age(repo));
-            return;
+            return 0;
         }
         printf("try to reuse\n");
         if (hy_repo_can_reuse(repo, remote)) {
             printf("reusing expired cache\n");
             hy_repo_reset_timestamp(repo);
-            return;
+            return 0;
         }
     }
 
     printf("fetch\n");
     hy_repo_fetch(repo, remote);
     hy_repo_load_cache(repo, remote);
+    return 1;
 }
 
 int
