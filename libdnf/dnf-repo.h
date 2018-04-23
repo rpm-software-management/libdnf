@@ -196,6 +196,8 @@ gboolean         dnf_repo_download_packages     (DnfRepo              *repo,
                                                  const gchar          *directory,
                                                  DnfState             *state,
                                                  GError              **error);
+
+HyRepo dnf_repo_get_hy_repo(DnfRepo *repo);
 #endif
 
 G_END_DECLS

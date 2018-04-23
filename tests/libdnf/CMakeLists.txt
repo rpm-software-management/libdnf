@@ -1,5 +1,7 @@
 ADD_EXECUTABLE(test_libdnf_main dnf-self-test.c)
 
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/data/tests/modules/yum.repos.d/test.repo.in ${CMAKE_SOURCE_DIR}/data/tests/modules/yum.repos.d/test.repo @ONLY)
+
 TARGET_LINK_LIBRARIES(test_libdnf_main
                       libdnf
                       ${REPO_LIBRARIES}

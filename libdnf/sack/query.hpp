@@ -48,6 +48,7 @@ public:
     Filter(int keyname, int cmp_type, const DependencyContainer * reldeplist);
     Filter(int keyname, int cmp_type, const char *match);
     Filter(int keyname, int cmp_type, const char **matches);
+    Filter(_hy_key_name_e keyname, int comparisonType, const std::vector<const char *> &matches);
     ~Filter();
     int getKeyname() const noexcept;
     int getCmpType() const noexcept;
@@ -107,6 +108,7 @@ public:
     int addFilter(int keyname, const DependencyContainer * reldeplist);
     int addFilter(int keyname, int cmp_type, const char *match);
     int addFilter(int keyname, int cmp_type, const char **matches);
+    int addFilter(_hy_key_name_e keyname, _hy_comparison_type_e comparisonType, const std::vector<const char *> &matches);
     int addFilter(HyNevra nevra, bool icase);
     void apply();
 

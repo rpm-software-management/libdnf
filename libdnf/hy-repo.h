@@ -34,7 +34,8 @@ enum _hy_repo_param_e {
     HY_REPO_PRESTO_FN = 2,
     HY_REPO_PRIMARY_FN = 3,
     HY_REPO_FILELISTS_FN = 4,
-    HY_REPO_UPDATEINFO_FN = 5
+    HY_REPO_UPDATEINFO_FN = 5,
+    MODULES_FN
 };
 
 HyRepo hy_repo_create(const char *name);

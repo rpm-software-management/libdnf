@@ -1201,7 +1201,7 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     gboolean ret;
-    g_autofree gchar *solv_dir_real = NULL;
+    g_autofree gchar *solv_dir_real = nullptr;
 
     /* create empty sack */
     solv_dir_real = dnf_realpath(priv->solv_dir);
@@ -1217,9 +1217,9 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
     const gboolean skip_rpmdb = ((flags & DNF_CONTEXT_SETUP_SACK_FLAG_SKIP_RPMDB) > 0);
     if (!skip_rpmdb && have_existing_install(context)) {
         if (!dnf_sack_load_system_repo(priv->sack,
-                           NULL,
-                           DNF_SACK_LOAD_FLAG_BUILD_CACHE,
-                           error))
+                                       nullptr,
+                                       DNF_SACK_LOAD_FLAG_BUILD_CACHE,
+                                       error))
             return FALSE;
     }
 
@@ -1239,8 +1239,14 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
     if (!ret)
         return FALSE;
 
+    DnfSack *sack = priv->sack;
+    if (sack != nullptr) {
+        dnf_sack_load_modules(sack, priv->repos);
+        dnf_sack_filter_modules(sack);
+    }
+
     /* create goal */
-    if (priv->goal != NULL)
+    if (priv->goal != nullptr)
         hy_goal_free(priv->goal);
     priv->goal = hy_goal_create(priv->sack);
     return TRUE;

@@ -40,6 +40,7 @@
 #include "hy-util.h"
 #include <librepo/librepo.h>
 #include <rpm/rpmts.h>
+#include <librepo/yum.h>
 
 #include "dnf-keyring.h"
 #include "dnf-package.h"
@@ -1264,6 +1265,7 @@ dnf_repo_check_internal(DnfRepo *repo,
     g_ptr_array_add (download_list, (char*)"updateinfo");
     g_ptr_array_add (download_list, (char*)"appstream");
     g_ptr_array_add (download_list, (char*)"appstream-icons");
+    g_ptr_array_add (download_list, (char*)"modules");
     /* This one is huge, and at least rpm-ostree jigdo mode doesn't require it.
      * https://github.com/projectatomic/rpm-ostree/issues/1127
      */
@@ -1394,6 +1396,13 @@ dnf_repo_check_internal(DnfRepo *repo,
         hy_repo_set_string(priv->repo, HY_REPO_UPDATEINFO_FN, tmp);
         g_hash_table_insert(priv->filenames_md,
                             g_strdup("updateinfo"),
+                            g_strdup(tmp));
+    }
+    tmp = lr_yum_repo_path(yum_repo, "modules");
+    if (tmp != nullptr) {
+        hy_repo_set_string(priv->repo, MODULES_FN, tmp);
+        g_hash_table_insert(priv->filenames_md,
+                            g_strdup("modules"),
                             g_strdup(tmp));
     }
     tmp = lr_yum_repo_path(yum_repo, "group");
@@ -2233,4 +2242,10 @@ dnf_repo_new(DnfContext *context)
     priv->context = context;
     g_object_add_weak_pointer(G_OBJECT(priv->context),(void **) &priv->context);
     return repo;
+}
+
+HyRepo dnf_repo_get_hy_repo(DnfRepo *repo)
+{
+    auto priv = GET_PRIVATE(repo);
+    return priv->repo;
 }

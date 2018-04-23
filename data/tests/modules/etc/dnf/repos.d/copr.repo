@@ -1,0 +1,6 @@
+[copr]
+name=Copr
+baseurl=http://copr-be-dev.cloud.fedoraproject.org/results/frostyx/testmodule/modules/fedora-rawhide-x86_64+httpd-master-20180118000705/latest/x86_64/
+enabled=1
+gpgcheck=0
+metadata_expire=0
