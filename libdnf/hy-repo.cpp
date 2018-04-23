@@ -205,6 +205,10 @@ hy_repo_set_string(HyRepo repo, int which, const char *str_val)
         g_free(repo->updateinfo_fn);
         repo->updateinfo_fn = g_strdup(str_val);
         break;
+    case MODULES_FN:
+        g_free(repo->modules_fn);
+        repo->modules_fn = g_strdup(str_val);
+        break;
     default:
         assert(0);
     }
@@ -226,10 +230,11 @@ hy_repo_get_string(HyRepo repo, int which)
         return repo->presto_fn;
     case HY_REPO_UPDATEINFO_FN:
         return repo->updateinfo_fn;
+    case MODULES_FN:
+        return repo->modules_fn;
     default:
-        assert(0);
+        return nullptr;
     }
-    return NULL;
 }
 
 void

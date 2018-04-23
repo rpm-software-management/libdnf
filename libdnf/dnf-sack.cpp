@@ -32,16 +32,11 @@
  */
 
 
+#include <algorithm>
 #include <assert.h>
 #include <errno.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <time.h>
 #include <unistd.h>
+#include <iostream>
 
 extern "C" {
 #include <solv/evr.h>
@@ -57,20 +52,25 @@ extern "C" {
 #include <solv/repo_write.h>
 #include <solv/solv_xfopen.h>
 #include <solv/solver.h>
-#include <solv/solverdebug.h>
 }
 
 #include "dnf-types.h"
-#include "dnf-version.h"
 #include "hy-iutil-private.hpp"
-#include "hy-package-private.hpp"
-#include "hy-packageset-private.hpp"
 #include "hy-query.h"
 #include "hy-repo-private.hpp"
 #include "dnf-sack-private.hpp"
 #include "hy-util.h"
 
 #include "utils/bgettext/bgettext-lib.h"
+
+#include "sack/query.hpp"
+#include "nevra.hpp"
+#include "conf/ConfigParser.hpp"
+#include "conf/OptionBool.hpp"
+#include "module/modulemd/ModuleDefaultsContainer.hpp"
+#include "module/ModulePackageContainer.hpp"
+#include "utils/File.hpp"
+#include "utils/utils.hpp"
 
 #define DEFAULT_CACHE_ROOT "/var/cache/hawkey"
 #define DEFAULT_CACHE_USER "/var/tmp/hawkey"
@@ -94,6 +94,8 @@ typedef struct
     gchar               *cache_dir;
     dnf_sack_running_kernel_fn_t  running_kernel_fn;
     guint                installonly_limit;
+    ModuleDefaultsContainer *defaults;
+    ModulePackageContainer *modules;
 } DnfSackPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfSack, dnf_sack, G_TYPE_OBJECT)
@@ -128,6 +130,9 @@ dnf_sack_finalize(GObject *object)
     free_map_fully(pool->considered);
     free_map_fully(priv->pkg_solvables);
     pool_free(priv->pool);
+
+    delete priv->defaults;
+    delete priv->modules;
 
     G_OBJECT_CLASS(dnf_sack_parent_class)->finalize(object);
 }
@@ -166,6 +171,8 @@ dnf_sack_init(DnfSack *sack)
     priv->considered_uptodate = TRUE;
     priv->cmdline_repo = NULL;
     queue_init(&priv->installonly);
+    priv->defaults = new ModuleDefaultsContainer();
+    priv->modules = new ModulePackageContainer(sack);
 
     /* logging up after this*/
     pool_setdebugcallback(priv->pool, log_cb, sack);
@@ -2053,4 +2060,171 @@ dnf_sack_add_repos(DnfSack *sack,
 
     /* success */
     return TRUE;
+}
+
+namespace {
+struct ModuleRpms
+{
+    std::set<std::string> excludeRpms;
+    std::set<std::string> includeRpms;
+};
+
+void loadModuleRepodata(DnfSack *sack, const GPtrArray *repos)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+
+    for (unsigned int i = 0; i < repos->len; i++) {
+        auto repo = static_cast<DnfRepo *>(g_ptr_array_index(repos, i));
+        auto hyRepo = dnf_repo_get_hy_repo(repo);
+
+        auto modules_fn = dnf_repo_get_filename_md(repo, "modules");
+        if (modules_fn == nullptr)
+            continue;
+
+        auto yaml = libdnf::File::newFile(modules_fn);
+        yaml->open("r");
+        const auto &yamlContent = yaml->getContent();
+        std::cerr << yamlContent << "\n";
+        yaml->close();
+
+        priv->modules->loadFromString(hyRepo, yamlContent);
+        priv->defaults->fromString(yamlContent);
+    }
+}
+
+void loadDefaultsFromDisk(DnfSack *sack, const std::string &dirPath)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+
+    auto dirContent = filesystem::getDirContent(dirPath);
+    for (const auto &file : dirContent) {
+        auto yaml = libdnf::File::newFile(file);
+
+        yaml->open("r");
+        const auto &yamlContent = yaml->getContent();
+        yaml->close();
+
+        priv->defaults->fromString(yamlContent);
+    }
+
+    try {
+        priv->defaults->resolve();
+    } catch (ModuleDefaultsContainer::ResolveException &exception) {
+        // TODO logger.debug("No module defaults found");
+    }
+}
+
+void enableModules(DnfSack *sack, const std::string &dirPath)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+
+    std::vector<std::string> dirContent = filesystem::getDirContent(dirPath);
+    libdnf::ConfigParser parser{};
+    for (const auto &file : dirContent) {
+        parser.read(file);
+    }
+
+    for (const auto &iter : parser.getData()) {
+        const auto &name = iter.first;
+        libdnf::OptionBool enabled{false};
+
+        if (enabled.fromString(parser.getValue(name, "enabled"))) {
+            const auto &stream = parser.getValue(name, "stream");
+            try {
+                auto modulePackages = priv->modules->getModulePackages(name, stream);
+                for (const auto &modulePackage : modulePackages) {
+                    modulePackage->enable();
+                }
+            } catch (ModulePackageContainer::NoModuleException &exception) {
+                // TODO log invalid config data exception.what() ;
+            } catch (ModulePackageContainer::NoStreamException &exception) {
+                // TODO log exception.what();
+            }
+        }
+    }
+}
+
+ModuleRpms getModuleIncludesExcludes(DnfSack *sack)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    ModuleRpms rpms{};
+
+    for (const auto &name : priv->modules->getModuleNames()) {
+        std::vector<std::shared_ptr<ModulePackage>> modulePackages;
+        try {
+            modulePackages = priv->modules->getEnabledModulePackages(name);
+        } catch (ModulePackageContainer::EnabledStreamException &exception) {
+            try {
+                const auto &defaultStream = priv->defaults->getDefaultStreamFor(name);
+                modulePackages = priv->modules->getModulePackages(name, defaultStream);
+            } catch (ModulePackageContainer::NoStreamException &exception) {
+                for (const auto &modulePackage : priv->modules->getModulePackages(name)) {
+                    auto artifacts = modulePackage->getArtifacts();
+                    copy(artifacts.begin(), artifacts.end(), std::inserter(rpms.excludeRpms, rpms.excludeRpms.end()));
+                }
+                continue;
+            }
+        }
+
+        std::vector<std::shared_ptr<ModulePackage>> includePackages;
+        for (const auto &modulePackage : modulePackages) {
+            auto dependencies = priv->modules->getModuleDependencies(modulePackage);
+            includePackages.insert(includePackages.end(), dependencies.begin(), dependencies.end());
+        }
+        includePackages.insert(includePackages.end(), modulePackages.begin(), modulePackages.end());
+
+        for (const auto &modulePackage : includePackages) {
+            auto artifacts = modulePackage->getArtifacts();
+            copy(artifacts.begin(), artifacts.end(), std::inserter(rpms.includeRpms, rpms.includeRpms.end()));
+        }
+    }
+
+    return rpms;
+}
+
+void applyModuleFilters(DnfSack *sack, const ModuleRpms &rpms)
+{
+    libdnf::Query excludeQuery{sack};
+    libdnf::Query namesQuery{sack};
+    libdnf::Query providesQuery{sack};
+    libdnf::Nevra nevra;
+
+    std::vector<const char *> names;
+    for (const auto &rpm : rpms.includeRpms) {
+        nevra.parse(rpm.c_str(), HY_FORM_NEVRA);
+        names.push_back(nevra.getName().c_str());
+        nevra.clear();
+    }
+
+    std::vector<std::string> difference;
+    set_difference(rpms.excludeRpms.begin(), rpms.excludeRpms.end(),
+                   rpms.includeRpms.begin(), rpms.includeRpms.end(),
+                   inserter(difference, difference.begin()));
+
+    for (const auto &rpm : difference) {
+        nevra.parse(rpm.c_str(), HY_FORM_NEVRA);
+        excludeQuery.addFilter(&nevra, false);
+        nevra.clear();
+    }
+
+    namesQuery.addFilter(HY_PKG_NAME, HY_EQ, names);
+    providesQuery.addFilter(HY_PKG_PROVIDES, HY_EQ, names);
+
+    dnf_sack_add_module_excludes(sack, const_cast<DnfPackageSet *>(excludeQuery.runSet()));
+    dnf_sack_add_module_excludes(sack, const_cast<DnfPackageSet *>(namesQuery.runSet()));
+    dnf_sack_add_module_excludes(sack, const_cast<DnfPackageSet *>(providesQuery.runSet()));
+}
+}
+
+void dnf_sack_load_modules(DnfSack *sack, GPtrArray *repos)
+{
+    loadModuleRepodata(sack, repos);
+    loadDefaultsFromDisk(sack, "/etc/dnf/modules.defaults.d/");
+    enableModules(sack, "/etc/dnf/modules.d/");
+}
+
+void dnf_sack_filter_modules(DnfSack *sack)
+{
+    ModuleRpms rpms = getModuleIncludesExcludes(sack);
+    applyModuleFilters(sack, rpms);
 }

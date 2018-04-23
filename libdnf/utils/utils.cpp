@@ -108,7 +108,16 @@ std::vector<std::string> filesystem::getDirContent(const std::string &dirPath)
 
     if (dir != nullptr) {
         while ((ent = readdir(dir)) != nullptr) {
-            content.emplace_back(ent->d_name);
+            if (strcmp(ent->d_name, "..") == 0 ||
+                    strcmp(ent->d_name, ".") == 0 )
+                continue;
+
+            auto fullPath = dirPath;
+            if (!string::endsWith(fullPath, "/"))
+                fullPath += "/";
+            fullPath += ent->d_name;
+
+            content.emplace_back(fullPath);
         }
         closedir (dir);
     }

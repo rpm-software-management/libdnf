@@ -863,6 +863,46 @@ dnf_repo_loader_func(void)
 }
 
 static void
+dnf_module_repo_loader_func(void)
+{
+    GError *error = NULL;
+    DnfRepo *repo;
+    DnfState *state;
+    gboolean ret;
+    g_autofree gchar *repos_dir = NULL;
+    g_autoptr(DnfContext) ctx = NULL;
+    g_autoptr(DnfRepoLoader) repo_loader = NULL;
+
+    /* set up local context */
+    ctx = dnf_context_new();
+    repos_dir = dnf_test_get_filename("modules/yum.repos.d");
+    dnf_context_set_repo_dir(ctx, repos_dir);
+    dnf_context_set_solv_dir(ctx, "/tmp");
+    ret = dnf_context_setup(ctx, NULL, &error);
+    g_assert_no_error(error);
+    g_assert(ret);
+
+    /* use this as a throw-away */
+    state = dnf_context_get_state(ctx);
+
+    repo_loader = dnf_repo_loader_new(ctx);
+
+    /* load local metadata repo */
+    repo = dnf_repo_loader_get_repo_by_id(repo_loader, "test", &error);
+    g_assert_no_error(error);
+    g_assert(repo != NULL);
+    g_assert_cmpint(dnf_repo_get_enabled(repo), ==, DNF_REPO_ENABLED_METADATA | DNF_REPO_ENABLED_PACKAGES);
+    g_assert_cmpint(dnf_repo_get_kind(repo), ==, DNF_REPO_KIND_LOCAL);
+
+    dnf_context_setup_sack(ctx, state, &error);
+
+    /* try to clean local repo */
+    ret = dnf_repo_clean(repo, &error);
+    g_assert_no_error(error);
+    g_assert(ret);
+}
+
+static void
 dnf_context_func(void)
 {
     GError *error = NULL;
@@ -1208,6 +1248,7 @@ main(int argc, char **argv)
     g_test_add_func("/libdnf/repo_loader{gpg-wrong-asc}", dnf_repo_loader_gpg_wrong_asc_func);
     g_test_add_func("/libdnf/repo_loader{gpg-no-asc}", dnf_repo_loader_gpg_no_asc_func);
     g_test_add_func("/libdnf/repo_loader", dnf_repo_loader_func);
+    g_test_add_func("/libdnf/repo_loader{modules}", dnf_module_repo_loader_func);
     g_test_add_func("/libdnf/repo_loader{gpg-no-pubkey}", dnf_repo_loader_gpg_no_pubkey_func);
     g_test_add_func("/libdnf/repo_loader{cache-dir-check}", dnf_repo_loader_cache_dir_check_func);
     g_test_add_func("/libdnf/context", dnf_context_func);
