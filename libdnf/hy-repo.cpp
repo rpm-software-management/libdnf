@@ -330,6 +330,19 @@ hy_repo_get_age(HyRepo repo)
     return time(NULL) - repo->timestamp;
 }
 
+int
+hy_repo_expired(HyRepo repo)
+{
+    return repo->timestamp == 0 ||
+           (repo->max_age >= 0 && hy_repo_get_age(repo) > repo->max_age);
+}
+
+void
+hy_repo_expire(HyRepo repo)
+{
+    repo->timestamp = 0;
+}
+
 gboolean
 hy_repo_get_use_includes(HyRepo repo)
 {
@@ -377,19 +390,6 @@ void
 hy_repo_set_max_age(HyRepo repo, int value)
 {
     repo->max_age = value;
-}
-
-int
-hy_repo_expired(HyRepo repo)
-{
-    return repo->timestamp == 0 ||
-           (repo->max_age >= 0 && hy_repo_get_age(repo) > repo->max_age);
-}
-
-void
-hy_repo_expire(HyRepo repo)
-{
-    repo->timestamp = 0;
 }
 
 void
