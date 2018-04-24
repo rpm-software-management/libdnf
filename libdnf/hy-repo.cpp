@@ -231,9 +231,7 @@ hy_repo_can_reuse(HyRepo repo, HyRemote *remote)
     lr_result_free(r);
     rmtree(tmpdir);
 
-    if (strcmp(ock, nck) == 0)
-        return 1;
-    return 0;
+    return (strcmp(ock, nck) == 0);
 }
 
 void
