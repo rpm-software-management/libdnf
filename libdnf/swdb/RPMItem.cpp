@@ -22,8 +22,8 @@
 #include <map>
 #include <sstream>
 
-#include "../hy-nevra.hpp"
 #include "../hy-subject.h"
+#include "../nevra.hpp"
 
 #include "RPMItem.hpp"
 
@@ -203,14 +203,14 @@ RPMItem::dbSelectOrInsert()
 TransactionItemPtr
 RPMItem::getTransactionItem(SQLite3Ptr conn, const std::string &nevra)
 {
-    auto nevraObject = new Nevra;
-    if (hy_nevra_possibility(nevra.c_str(), HY_FORM_NEVRA, nevraObject)) {
+    libdnf::Nevra nevraObject;
+    if (!nevraObject.parse(nevra.c_str(), HY_FORM_NEVRA)) {
         return nullptr;
     }
     // TODO: hy_nevra_possibility should set epoch to 0 if epoch is not specified and HY_FORM_NEVRA
     // is used
-    if (nevraObject->getEpoch() < 0) {
-        nevraObject->setEpoch(0);
+    if (nevraObject.getEpoch() < 0) {
+        nevraObject.setEpoch(0);
     }
 
     const char *sql = R"**(
@@ -244,11 +244,11 @@ RPMItem::getTransactionItem(SQLite3Ptr conn, const std::string &nevra)
         LIMIT 1
     )**";
     SQLite3::Query query(*conn, sql);
-    query.bindv(nevraObject->getName(),
-                nevraObject->getEpoch(),
-                nevraObject->getVersion(),
-                nevraObject->getRelease(),
-                nevraObject->getArch());
+    query.bindv(nevraObject.getName(),
+                nevraObject.getEpoch(),
+                nevraObject.getVersion(),
+                nevraObject.getRelease(),
+                nevraObject.getArch());
     if (query.step() == SQLite3::Statement::StepResult::ROW) {
         return transactionItemFromQuery(conn, query, query.get< int64_t >("trans_id"));
     }

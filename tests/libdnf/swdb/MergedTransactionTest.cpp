@@ -1,8 +1,8 @@
 #include <set>
 #include <string>
 
-#include "libdnf/hy-nevra.hpp"
 #include "libdnf/hy-subject.h"
+#include "libdnf/nevra.hpp"
 #include "libdnf/swdb/RPMItem.hpp"
 #include "libdnf/swdb/MergedTransaction.hpp"
 #include "libdnf/swdb/Transaction.hpp"
@@ -327,20 +327,20 @@ MergedTransactionTest::testMergeAlterAlter()
 static RPMItemPtr
 nevraToRPMItem(SQLite3Ptr conn, std::string nevra)
 {
-    auto nevraObject = new Nevra;
-    if (hy_nevra_possibility(nevra.c_str(), HY_FORM_NEVRA, nevraObject)) {
+    libdnf::Nevra nevraObject;
+    if (!nevraObject.parse(nevra.c_str(), HY_FORM_NEVRA)) {
         return nullptr;
     }
-    if (nevraObject->getEpoch() < 0) {
-        nevraObject->setEpoch(0);
+    if (nevraObject.getEpoch() < 0) {
+        nevraObject.setEpoch(0);
     }
 
     auto rpm = std::make_shared< RPMItem >(conn);
-    rpm->setName(nevraObject->getName());
-    rpm->setEpoch(nevraObject->getEpoch());
-    rpm->setVersion(nevraObject->getVersion());
-    rpm->setRelease(nevraObject->getRelease());
-    rpm->setArch(nevraObject->getArch());
+    rpm->setName(nevraObject.getName());
+    rpm->setEpoch(nevraObject.getEpoch());
+    rpm->setVersion(nevraObject.getVersion());
+    rpm->setRelease(nevraObject.getRelease());
+    rpm->setArch(nevraObject.getArch());
     return rpm;
 }
 
@@ -348,12 +348,12 @@ nevraToRPMItem(SQLite3Ptr conn, std::string nevra)
 static TransactionPtr
 createTrans(SQLite3Ptr conn, std::string nevra, std::string repoid, TransactionItemAction action, TransactionItemReason reason, std::vector<std::string> obsoletes)
 {
-    auto nevraObject = new Nevra;
-    if (hy_nevra_possibility(nevra.c_str(), HY_FORM_NEVRA, nevraObject)) {
+    Nevra nevraObject;
+    if (!nevraObject.parse(nevra.c_str(), HY_FORM_NEVRA)) {
         return nullptr;
     }
-    if (nevraObject->getEpoch() < 0) {
-        nevraObject->setEpoch(0);
+    if (nevraObject.getEpoch() < 0) {
+        nevraObject.setEpoch(0);
     }
 
     auto trans = std::make_shared< libdnf::swdb_private::Transaction >(conn);

@@ -22,10 +22,11 @@
 #include <solv/bitmap.h>
 #include <solv/solvable.h>
 
-#include "../hy-nevra.hpp"
-#include "../hy-subject.h"
 #include "../hy-query-private.hpp"
+#include "../hy-subject.h"
+#include "../nevra.hpp"
 
+#include "../utils/bgettext/bgettext-lib.h"
 #include "../utils/filesystem.hpp"
 #include "../utils/sqlite3/Sqlite3.hpp"
 
@@ -167,14 +168,14 @@ Swdb::resolveRPMTransactionItemReason(const std::string &name,
 const std::string
 Swdb::getRPMRepo(const std::string &nevra)
 {
-    auto nevraObject = new Nevra;
-    if (hy_nevra_possibility(nevra.c_str(), HY_FORM_NEVRA, nevraObject)) {
+    libdnf::Nevra nevraObject;
+    if (!nevraObject.parse(nevra.c_str(), HY_FORM_NEVRA)) {
         return "";
     }
     // TODO: hy_nevra_possibility should set epoch to 0 if epoch is not specified
     // and HY_FORM_NEVRA is used
-    if (nevraObject->getEpoch() < 0) {
-        nevraObject->setEpoch(0);
+    if (nevraObject.getEpoch() < 0) {
+        nevraObject.setEpoch(0);
     }
 
     const char *sql = R"**(
@@ -198,11 +199,11 @@ Swdb::getRPMRepo(const std::string &nevra)
     )**";
     // TODO: where trans.done != 0
     SQLite3::Query query(*conn, sql);
-    query.bindv(nevraObject->getName(),
-                nevraObject->getEpoch(),
-                nevraObject->getVersion(),
-                nevraObject->getRelease(),
-                nevraObject->getArch());
+    query.bindv(nevraObject.getName(),
+                nevraObject.getEpoch(),
+                nevraObject.getVersion(),
+                nevraObject.getRelease(),
+                nevraObject.getArch());
     if (query.step() == SQLite3::Statement::StepResult::ROW) {
         auto repoid = query.get< std::string >("repoid");
         return repoid;
