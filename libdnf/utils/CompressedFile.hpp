@@ -1,7 +1,6 @@
 #ifndef LIBDNF_GZFILE_HPP
 #define LIBDNF_GZFILE_HPP
 
-#include <zlib.h>
 #include "File.hpp"
 
 namespace libdnf {

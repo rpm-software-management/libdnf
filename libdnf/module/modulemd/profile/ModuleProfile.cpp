@@ -1,8 +1,7 @@
 #include <regex>
+#include <modulemd/modulemd-simpleset.h>
 
 #include "ModuleProfile.hpp"
-
-#include <modulemd/modulemd.h>
 
 
 ModuleProfile::ModuleProfile(ModulemdProfile *profile)

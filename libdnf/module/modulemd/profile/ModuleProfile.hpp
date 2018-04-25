@@ -6,7 +6,7 @@
 #include "Profile.hpp"
 
 #include <memory>
-#include <modulemd/modulemd.h>
+#include <modulemd/modulemd-profile.h>
 
 class ModuleProfile : public Profile
 {
