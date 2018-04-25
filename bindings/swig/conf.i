@@ -15,6 +15,7 @@
     #include <iterator>
     #include "libdnf/conf/ConfigRepo.hpp"
     #include "libdnf/conf/ConfigParser.hpp"
+    #include "libdnf/repo/Repo.hpp"
     using namespace libdnf;
 %}
 
@@ -159,6 +160,15 @@ public:
 %include "libdnf/conf/ConfigParser.hpp"
 %clear std::string & text;
 %template(MapStringMapStringString) std::map<std::string, std::map<std::string, std::string>>;
+
+%extend libdnf::Repo {
+    Repo(const std::string & id, ConfigRepo * config)
+    {
+        return new Repo(id, std::unique_ptr<libdnf::ConfigRepo>(config));
+    };
+}
+%ignore libdnf::Repo::Repo;
+%include "libdnf/repo/Repo.hpp"
 
 %exception __next__() {
     try
