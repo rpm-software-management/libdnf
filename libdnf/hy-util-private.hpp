@@ -19,6 +19,7 @@
  */
 
 #include "hy-util.h"
+#include <glib.h>
 
 #ifndef HY_UTIL_PRIVATE_HPP
 #define HY_UTIL_PRIVATE_HPP
@@ -60,5 +61,7 @@ map_count(Map *m)
 
 GPtrArray *hy_packagelist_create(void);
 int hy_packagelist_has(GPtrArray *plist, DnfPackage *pkg);
+int mtime(const char *filename);
+const char *cksum(const char *filename, GChecksumType ctype);
 
 #endif
