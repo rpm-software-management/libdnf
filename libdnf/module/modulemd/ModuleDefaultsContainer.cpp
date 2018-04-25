@@ -2,7 +2,12 @@
 #include "ModuleDefaultsContainer.hpp"
 #include "../ModulePackageContainer.hpp"
 
-void ModuleDefaultsContainer::fromString(const std::string &content)
+ModuleDefaultsContainer::ModuleDefaultsContainer()
+{
+    prioritizer = std::shared_ptr<ModulemdPrioritizer>(modulemd_prioritizer_new(), g_object_unref);
+}
+
+void ModuleDefaultsContainer::fromString(const std::string &content, int priority)
 {
     GError *error = nullptr;
     g_autoptr(GPtrArray) failures;
@@ -12,7 +17,7 @@ void ModuleDefaultsContainer::fromString(const std::string &content)
     reportFailures(failures);
 }
 
-void ModuleDefaultsContainer::fromFile(const std::string &path)
+void ModuleDefaultsContainer::fromFile(const std::string &path, int priority)
 {
     GError *error = nullptr;
     g_autoptr(GPtrArray) failures;

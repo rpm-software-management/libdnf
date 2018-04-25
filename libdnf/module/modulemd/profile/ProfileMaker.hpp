@@ -6,7 +6,7 @@
 
 #include "Profile.hpp"
 
-#include <modulemd/modulemd.h>
+#include <modulemd/modulemd-module.h>
 
 class ProfileMaker
 {

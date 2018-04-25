@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <modulemd/modulemd.h>
+#include <modulemd/modulemd-dependencies.h>
 
 class ModuleDependencies
 {
