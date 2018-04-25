@@ -22,6 +22,7 @@
 #define HY_REPO_H
 
 #include <glib.h>
+#include <librepo/librepo.h>
 
 G_BEGIN_DECLS
 
@@ -34,16 +35,32 @@ enum _hy_repo_param_e {
     HY_REPO_PRESTO_FN = 2,
     HY_REPO_PRIMARY_FN = 3,
     HY_REPO_FILELISTS_FN = 4,
-    HY_REPO_UPDATEINFO_FN = 5
+    HY_REPO_UPDATEINFO_FN = 5,
+    HY_REPO_CACHEDIR = 6
 };
 
+// Specifies a remote repository to pull from
+typedef struct HyRemote
+{
+    const char *url;
+    int gpgcheck;
+    int max_mirror_tries;
+    int max_parallel_downloads;
+} HyRemote;
+
 HyRepo hy_repo_create(const char *name);
+int hy_repo_load(HyRepo repo, HyRemote *remote);
 int hy_repo_get_cost(HyRepo repo);
 int hy_repo_get_priority(HyRepo repo);
+LrYumRepo *hy_repo_get_yum_repo(HyRepo repo);
+LrYumRepoMd *hy_repo_get_yum_repomd(HyRepo repo);
+char **hy_repo_get_mirrors(HyRepo repo);
 gboolean hy_repo_get_use_includes(HyRepo repo);
 guint hy_repo_get_n_solvables(HyRepo repo);
 void hy_repo_set_cost(HyRepo repo, int value);
 void hy_repo_set_priority(HyRepo repo, int value);
+void hy_repo_set_max_age(HyRepo repo, int value);
+void hy_repo_expire(HyRepo repo);
 void hy_repo_set_use_includes(HyRepo repo, gboolean enabled);
 void hy_repo_set_string(HyRepo repo, int which, const char *str_val);
 const char *hy_repo_get_string(HyRepo repo, int which);

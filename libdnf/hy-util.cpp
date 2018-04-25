@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/utsname.h>
+#include <sys/stat.h>
 
 // hawkey
 #include "dnf-types.h"
@@ -191,4 +192,125 @@ hy_packagelist_has(GPtrArray *plist, DnfPackage *pkg)
         if (dnf_package_get_identical(pkg, static_cast<DnfPackage *>(a->pdata[i])))
             return 1;
     return 0;
+}
+
+int
+mtime(const char *filename)
+{
+    struct stat st;
+    stat(filename, &st);
+    return st.st_mtime;
+}
+
+const char *
+cksum(const char *filename, GChecksumType ctype)
+{
+    FILE *fp;
+    if (!(fp = fopen(filename, "rb")))
+        return "";
+    guchar buffer[4096];
+    gssize len = 0;
+    GChecksum *csum = g_checksum_new(ctype);
+    while ((len = fread(buffer, 1, sizeof(buffer), fp)) > 0)
+        g_checksum_update(csum, buffer, len);
+    gchar *result = g_strdup(g_checksum_get_string(csum));
+    g_checksum_free(csum);
+    return result;
+}
+
+void
+rmtree(const char *dir)
+{
+    // FIXME: Implement our own version?
+    dnf_remove_recursive(dir, NULL);
+}
+
+void
+copy_yum_repo(LrYumRepo *dst, LrYumRepo *src)
+{
+    // strings
+    dst->repomd = g_strdup(src->repomd);
+    dst->url = g_strdup(src->url);
+    dst->destdir = g_strdup(src->destdir);
+    dst->signature = g_strdup(src->signature);
+    dst->mirrorlist = g_strdup(src->mirrorlist);
+    dst->metalink = g_strdup(src->metalink);
+
+    // paths list
+    GSList *elem_src = src->paths;
+    GSList *elem_dst = g_slist_copy(src->paths);
+    dst->paths = elem_dst;
+    while (elem_src && elem_dst) {
+        elem_dst->data = lr_malloc(sizeof(LrYumRepoPath));
+        LrYumRepoPath *path_src = (LrYumRepoPath *)elem_src->data;
+        LrYumRepoPath *path_dst = (LrYumRepoPath *)elem_dst->data;
+        path_dst->type = g_strdup(path_src->type);
+        path_dst->path = g_strdup(path_src->path);
+        elem_src = g_slist_next(elem_src);
+        elem_dst = g_slist_next(elem_dst);
+    }
+}
+
+void
+copy_yum_repomd(LrYumRepoMd *dst, LrYumRepoMd *src)
+{
+    GSList *elem_src;
+    GSList *elem_dst;
+
+    // strings
+    dst->revision = g_strdup(src->revision);
+    dst->repoid = g_strdup(src->repoid);
+    dst->repoid_type = g_strdup(src->repoid_type);
+    dst->chunk = NULL;
+
+    // string lists
+    dst->repo_tags = g_slist_copy_deep(src->repo_tags,
+                                       (GCopyFunc) g_strdup, NULL);
+    dst->content_tags = g_slist_copy_deep(src->content_tags,
+                                          (GCopyFunc) g_strdup, NULL);
+
+    // distro_tags list
+    elem_src = src->distro_tags;
+    elem_dst = g_slist_copy(src->distro_tags);
+    dst->distro_tags = elem_dst;
+    while (elem_src && elem_dst) {
+        elem_dst->data = lr_malloc(sizeof(LrYumDistroTag));
+        LrYumDistroTag *tag_src = (LrYumDistroTag *)elem_src->data;
+        LrYumDistroTag *tag_dst = (LrYumDistroTag *)elem_dst->data;
+
+        // copy the strings
+        tag_dst->cpeid = g_strdup(tag_src->cpeid);
+        tag_dst->tag = g_strdup(tag_src->tag);
+
+        elem_src = g_slist_next(elem_src);
+        elem_dst = g_slist_next(elem_dst);
+    }
+
+    // records list
+    elem_src = src->records;
+    elem_dst = g_slist_copy(src->records);
+    dst->records = elem_dst;
+    while (elem_src && elem_dst) {
+        elem_dst->data = lr_malloc(sizeof(LrYumRepoMdRecord));
+        LrYumRepoMdRecord *rec_src = (LrYumRepoMdRecord *)elem_src->data;
+        LrYumRepoMdRecord *rec_dst = (LrYumRepoMdRecord *)elem_dst->data;
+
+        // copy the strings
+        rec_dst->type = g_strdup(rec_src->type);
+        rec_dst->location_href = g_strdup(rec_src->location_href);
+        rec_dst->location_base = g_strdup(rec_src->location_base);
+        rec_dst->checksum = g_strdup(rec_src->checksum);
+        rec_dst->checksum_type = g_strdup(rec_src->checksum_type);
+        rec_dst->checksum_open = g_strdup(rec_src->checksum_open);
+        rec_dst->checksum_open_type = g_strdup(rec_src->checksum_open_type);
+        rec_dst->chunk = NULL;
+        // copy the ints
+        rec_dst->timestamp = rec_src->timestamp;
+        rec_dst->size = rec_src->size;
+        rec_dst->size_open = rec_src->size_open;
+        rec_dst->db_version = rec_src->db_version;
+
+        elem_src = g_slist_next(elem_src);
+        elem_dst = g_slist_next(elem_dst);
+    }
 }

@@ -25,6 +25,7 @@
 
 #include "hy-package.h"
 #include "hy-types.h"
+#include <librepo/librepo.h>
 
 G_BEGIN_DECLS
 

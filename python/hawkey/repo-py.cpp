@@ -100,6 +100,65 @@ repo_dealloc(_RepoObject *self)
     Py_TYPE(self)->tp_free(self);
 }
 
+/* object methods */
+
+extern "C"
+{
+    PyObject * PyObject_FromYumRepo(LrYumRepo *repo);
+    PyObject * PyObject_FromYumRepoMd(LrYumRepoMd *repomd);
+    PyObject * PyStringOrNone_FromString(const char *str);
+}
+
+static PyObject *
+load(_RepoObject *self, PyObject *args)
+{
+    HyRepo repo = self->repo;
+    HyRemote remote;
+    char *cachedir;
+    char **mirrors;
+    int max_age;
+    int fresh;
+    PyObject *obj;
+    PyObject *tuple = PyTuple_New(4);
+    PyObject *mirrorlist = PyList_New(0);
+
+    if (!PyArg_ParseTuple(args, "sispiO",
+                          &cachedir,
+                          &max_age,
+                          &remote.url,
+                          &remote.gpgcheck,
+                          &remote.max_mirror_tries,
+                          &obj)) {
+        return Py_None;
+    }
+
+    hy_repo_set_string(repo, HY_REPO_CACHEDIR, cachedir);
+    hy_repo_set_max_age(repo, max_age);
+    if (obj == Py_None) {
+        remote.max_parallel_downloads = LRO_MAXPARALLELDOWNLOADS_DEFAULT;
+    } else {
+        remote.max_parallel_downloads = PyLong_AsLong(obj);
+    }
+    fresh = hy_repo_load(repo, &remote);
+
+    mirrors = hy_repo_get_mirrors(repo);
+    if (mirrors) {
+        for (int x=0; mirrors[x] != NULL; x++) {
+            PyList_Append(mirrorlist, PyStringOrNone_FromString(mirrors[x]));
+        }
+        g_strfreev(mirrors);
+    }
+
+    PyTuple_SetItem(tuple, 0, PyBool_FromLong(fresh));
+    PyTuple_SetItem(tuple, 1,
+                    PyObject_FromYumRepo(hy_repo_get_yum_repo(repo)));
+    PyTuple_SetItem(tuple, 2,
+                    PyObject_FromYumRepoMd(hy_repo_get_yum_repomd(repo)));
+    PyTuple_SetItem(tuple, 3, mirrorlist);
+
+    return tuple;
+}
+
 /* getsetters */
 
 static PyObject *
@@ -181,6 +240,11 @@ static PyGetSetDef repo_getsetters[] = {
     {NULL}                        /* sentinel */
 };
 
+static PyMethodDef repo_methods[] = {
+    {"load", (PyCFunction)load, METH_VARARGS, "load metadata"},
+    {NULL, NULL, 0, NULL}        /* Sentinel */
+};
+
 PyTypeObject repo_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "_hawkey.Repo",                /*tp_name*/
@@ -209,7 +273,7 @@ PyTypeObject repo_Type = {
     0,                                /* tp_weaklistoffset */
     PyObject_SelfIter,                /* tp_iter */
     0,                                 /* tp_iternext */
-    0,                                /* tp_methods */
+    repo_methods,                                /* tp_methods */
     0,                                /* tp_members */
     repo_getsetters,                /* tp_getset */
     0,                                /* tp_base */
