@@ -25,8 +25,15 @@
 #define REPOID_CHARS ASCII_LETTERS DIGITS "-_.:"
 
 #include "Repo.hpp"
+#include "../dnf-utils.h"
+#include "../hy-iutil.h"
+#include "../hy-util-private.hpp"
 
+#include <librepo/librepo.h>
 #include <solv/repo.h>
+#include <utime.h>
+
+#include <map>
 
 namespace libdnf {
 
@@ -35,8 +42,38 @@ public:
     Impl(const std::string & id, std::unique_ptr<ConfigRepo> && config);
     ~Impl();
 
+    bool load();
+    bool loadCache();
+    bool canReuse();
+    void fetch();
+    char ** getMirrors();
+    void setMaxAge(int maxAge);
+    bool expired() const;
+    void expire();
+    void resetTimestamp();
+    int getAge() const;
+    LrHandle * lrHandleInitBase();
+    LrHandle * lrHandleInitLocal(const char *cachedir);
+    LrHandle * lrHandleInitRemote(const char *destdir);
+
     std::string id;
     std::unique_ptr<ConfigRepo> conf;
+
+    // 0 forces expiration on the next hy_repo_load(), -1 means undefined value
+    int timestamp;
+    int maxAge;
+    std::string repomd_fn;
+    std::string primary_fn;
+    std::string filelists_fn;
+    std::string presto_fn;
+    std::string updateinfo_fn;
+    std::string cachedir;
+    unsigned char checksum[CHKSUM_BYTES];
+    bool useIncludes;
+    std::map<std::string, std::string> substitutions;
+
+    /* the following element is needed for DNF compatibility */
+    char ** mirrors;
 };
 
 Repo::Impl::Impl(const std::string & id, std::unique_ptr<ConfigRepo> && config)
@@ -51,10 +88,10 @@ Repo::Repo(const std::string & id, std::unique_ptr<ConfigRepo> && config)
 
 Repo::~Repo() = default;
 
-int Repo::verifyId(const std::string & repoId)
+int Repo::verifyId(const std::string & id)
 {
-    auto idx = repoId.find_first_not_of(REPOID_CHARS);
-    return idx == repoId.npos ? -1 : idx;
+    auto idx = id.find_first_not_of(REPOID_CHARS);
+    return idx == id.npos ? -1 : idx;
 }
 
 ConfigRepo * Repo::getConfig() noexcept
@@ -75,6 +112,218 @@ void Repo::enable()
 void Repo::disable()
 {
     pImpl->conf->enabled().set(Option::Priority::RUNTIME, false);
+}
+
+bool Repo::load() { return pImpl->load(); }
+bool Repo::getUseIncludes() const { return pImpl->useIncludes; }
+void Repo::setUseIncludes(bool enabled) { pImpl->useIncludes = enabled; }
+int Repo::getCost() const { return pImpl->conf->cost().getValue(); }
+int Repo::getPriority() const { return pImpl->conf->priority().getValue(); }
+
+LrHandle * Repo::Impl::lrHandleInitBase()
+{
+    LrHandle *h = lr_handle_init();
+    const char *dlist[] = {"primary", "filelists", "prestodelta", "group_gz",
+                           "updateinfo", NULL};
+    lr_handle_setopt(h, NULL, LRO_REPOTYPE, LR_YUMREPO);
+    lr_handle_setopt(h, NULL, LRO_USERAGENT, "libdnf/1.0"); //FIXME
+    lr_handle_setopt(h, NULL, LRO_YUMDLIST, dlist);
+    lr_handle_setopt(h, NULL, LRO_INTERRUPTIBLE, 1L);
+    lr_handle_setopt(h, NULL, LRO_GPGCHECK, conf->repo_gpgcheck().getValue());
+    lr_handle_setopt(h, NULL, LRO_MAXMIRRORTRIES, 0);
+    lr_handle_setopt(h, NULL, LRO_MAXPARALLELDOWNLOADS,
+                     conf->max_parallel_downloads().getValue());
+
+    LrUrlVars * vars = NULL;
+    vars = lr_urlvars_set(vars, "group_gz", "group");
+    lr_handle_setopt(h, NULL, LRO_YUMSLIST, vars);
+
+    return h;
+}
+
+LrHandle * Repo::Impl::lrHandleInitLocal(const char *cachedir)
+{
+    LrHandle *h = lrHandleInitBase();
+
+    LrUrlVars * vars = NULL;
+    for (const auto & item : substitutions)
+        vars = lr_urlvars_set(vars, item.first.c_str(), item.second.c_str());
+    lr_handle_setopt(h, NULL, LRO_VARSUB, vars);
+
+    const char *urls[] = {cachedir, NULL};
+    lr_handle_setopt(h, NULL, LRO_URLS, urls);
+    lr_handle_setopt(h, NULL, LRO_DESTDIR, cachedir);
+    lr_handle_setopt(h, NULL, LRO_LOCAL, 1L);
+    return h;
+}
+
+LrHandle *
+Repo::Impl::lrHandleInitRemote(const char *destdir)
+{
+    LrHandle *h = lrHandleInitBase();
+
+    LrUrlVars * vars = NULL;
+    for (const auto & item : substitutions)
+        vars = lr_urlvars_set(vars, item.first.c_str(), item.second.c_str());
+    lr_handle_setopt(h, NULL, LRO_VARSUB, vars);
+
+    const char *urls[] = {conf->baseurl().getValue()[0].c_str(), NULL};
+    lr_handle_setopt(h, NULL, LRO_URLS, urls);
+    lr_handle_setopt(h, NULL, LRO_DESTDIR, destdir);
+    return h;
+}
+
+bool Repo::Impl::loadCache()
+{
+    GError *err = NULL;
+    char **mirrors;
+    LrYumRepo *yum_repo;
+    LrYumRepoMd *yum_repomd;
+
+    std::unique_ptr<LrHandle, decltype(&lr_handle_free)> h(lrHandleInitLocal(cachedir.c_str()),
+                                                           &lr_handle_free);
+    std::unique_ptr<LrResult, decltype(&lr_result_free)> r(lr_result_init(),
+                                                           &lr_result_free);
+
+    // Fetch data
+    lr_handle_perform(h.get(), r.get(), &err);
+    if (err)
+        return false;
+    lr_handle_getinfo(h.get(), NULL, LRI_MIRRORS, &mirrors);
+    lr_result_getinfo(r.get(), NULL, LRR_YUM_REPO, &yum_repo);
+    lr_result_getinfo(r.get(), NULL, LRR_YUM_REPOMD, &yum_repomd);
+
+    // Populate repo
+    repomd_fn = yum_repo->repomd;
+    primary_fn = lr_yum_repo_path(yum_repo, "primary");
+    filelists_fn = lr_yum_repo_path(yum_repo, "filelists");
+    presto_fn = lr_yum_repo_path(yum_repo, "prestodelta");
+    updateinfo_fn = lr_yum_repo_path(yum_repo, "updateinfo");
+
+    // Load timestamp unless explicitly expired
+    if (timestamp != 0) {
+        timestamp = mtime(primary_fn.c_str());
+    }
+    // This is for DNF compatibility
+    this->mirrors = mirrors;
+
+    return true;
+}
+
+bool Repo::Impl::canReuse()
+{
+    LrYumRepo *yum_repo;
+    GError *err = NULL;
+    char tmpdir[] = "/tmp/tmpdir.XXXXXX";
+    mkdtemp(tmpdir);
+    const char *dlist[] = LR_YUM_REPOMDONLY;
+
+    std::unique_ptr<LrHandle, decltype(&lr_handle_free)> h(lrHandleInitRemote(tmpdir),
+                                                           &lr_handle_free);
+    std::unique_ptr<LrResult, decltype(&lr_result_free)> r(lr_result_init(),
+                                                           &lr_result_free);
+
+    lr_handle_setopt(h.get(), NULL, LRO_YUMDLIST, dlist);
+
+    lr_handle_perform(h.get(), r.get(), &err);
+    lr_result_getinfo(r.get(), NULL, LRR_YUM_REPO, &yum_repo);
+
+    const char *ock = cksum(repomd_fn.c_str(), G_CHECKSUM_SHA256);
+    const char *nck = cksum(yum_repo->repomd, G_CHECKSUM_SHA256);
+
+    dnf_remove_recursive(tmpdir, NULL);
+
+    return strcmp(ock, nck) == 0;
+}
+
+void Repo::Impl::fetch()
+{
+    GError *err = NULL;
+    char tmpdir[] = "/var/tmp/tmpdir.XXXXXX";
+    mkdtemp(tmpdir);
+    std::string tmprepodir = tmpdir + std::string("/repodata");
+    std::string repodir = cachedir + "/repodata";
+
+    std::unique_ptr<LrHandle, decltype(&lr_handle_free)> h(lrHandleInitRemote(tmpdir),
+                                                           &lr_handle_free);
+    std::unique_ptr<LrResult, decltype(&lr_result_free)> r(lr_result_init(),
+                                                           &lr_result_free);
+    lr_handle_perform(h.get(), r.get(), &err);
+
+    dnf_remove_recursive(repodir.c_str(), NULL);
+    g_mkdir_with_parents(repodir.c_str(), 0);
+    rename(tmprepodir.c_str(), repodir.c_str());
+    dnf_remove_recursive(tmpdir, NULL);
+
+    timestamp = -1;
+}
+
+/**
+ * load:
+ *
+ * Initializes the repo.
+ * Fetches new metadata from the remote or just reuses local cache if valid.
+ *
+ * FIXME: This attempts to be a C rewrite of Repo.load() in DNF.  This function
+ * may be moved to a more appropriate place later.
+ *
+ * Returns true if fresh metadata were downloaded, false otherwise.
+ **/
+bool Repo::Impl::load()
+{
+    printf("check if cache present\n");
+    if (loadCache()) {
+        if (!expired()) {
+            printf("using cache, age: %is\n", getAge());
+            return false;
+        }
+        printf("try to reuse\n");
+        if (canReuse()) {
+            printf("reusing expired cache\n");
+            resetTimestamp();
+            return false;
+        }
+    }
+
+    printf("fetch\n");
+    fetch();
+    loadCache();
+    return true;
+}
+
+int Repo::Impl::getAge() const
+{
+    return time(NULL) - timestamp;
+}
+
+char ** Repo::Impl::getMirrors()
+{
+    return mirrors;
+}
+
+void Repo::Impl::setMaxAge(int maxAge)
+{
+    this->maxAge = maxAge;
+}
+
+bool Repo::Impl::expired() const
+{
+    return timestamp == 0 || (maxAge >= 0 && getAge() > maxAge);
+}
+
+void Repo::Impl::expire()
+{
+    timestamp = 0;
+}
+
+void Repo::Impl::resetTimestamp()
+{
+    time_t now = time(NULL);
+    struct utimbuf unow;
+    unow.actime = now;
+    unow.modtime = now;
+    timestamp = now;
+    utime(primary_fn.c_str(), &unow);
 }
 
 }

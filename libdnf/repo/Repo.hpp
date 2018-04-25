@@ -37,7 +37,6 @@ namespace libdnf {
 */
 struct Repo {
 public:
-
     /**
     * @brief Verify repo ID
     *
@@ -48,7 +47,7 @@ public:
 
     /**
     * @brief Construct the Repo object
-    * 
+    *
     * @param id repo ID to use
     * @param config configuration to use
     */
@@ -58,6 +57,11 @@ public:
     const std::string & getId() const noexcept;
     void enable();
     void disable();
+    bool load();
+    bool getUseIncludes() const;
+    void setUseIncludes(bool enabled);
+    int getCost() const;
+    int getPriority() const;
 
     ~Repo();
 private:
