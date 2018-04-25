@@ -1,5 +1,6 @@
 OPTION(DISABLE_VALGRIND "Disables valgrind tests for hawkey and libdnf" OFF)
 
+ADD_SUBDIRECTORY(libdnf/swdb)
 ADD_SUBDIRECTORY(libdnf/repo)
 ADD_SUBDIRECTORY (hawkey)
 ADD_SUBDIRECTORY (libdnf)
