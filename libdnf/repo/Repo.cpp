@@ -258,17 +258,6 @@ void Repo::Impl::fetch()
     timestamp = -1;
 }
 
-/**
- * load:
- *
- * Initializes the repo.
- * Fetches new metadata from the remote or just reuses local cache if valid.
- *
- * FIXME: This attempts to be a C rewrite of Repo.load() in DNF.  This function
- * may be moved to a more appropriate place later.
- *
- * Returns true if fresh metadata were downloaded, false otherwise.
- **/
 bool Repo::Impl::load()
 {
     printf("check if cache present\n");
