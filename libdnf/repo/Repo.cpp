@@ -47,11 +47,11 @@ public:
     bool canReuse();
     void fetch();
     char ** getMirrors();
-    void setMaxAge(int maxAge);
-    bool expired() const;
-    void expire();
-    void resetTimestamp();
     int getAge() const;
+    void setMaxAge(int maxAge);
+    void expire();
+    bool expired() const;
+    void resetTimestamp();
     LrHandle * lrHandleInitBase();
     LrHandle * lrHandleInitLocal(const char *cachedir);
     LrHandle * lrHandleInitRemote(const char *destdir);
@@ -291,14 +291,14 @@ bool Repo::Impl::load()
     return true;
 }
 
-int Repo::Impl::getAge() const
-{
-    return time(NULL) - timestamp;
-}
-
 char ** Repo::Impl::getMirrors()
 {
     return mirrors;
+}
+
+int Repo::Impl::getAge() const
+{
+    return time(NULL) - timestamp;
 }
 
 void Repo::Impl::setMaxAge(int maxAge)
@@ -306,14 +306,14 @@ void Repo::Impl::setMaxAge(int maxAge)
     this->maxAge = maxAge;
 }
 
-bool Repo::Impl::expired() const
-{
-    return timestamp == 0 || (maxAge >= 0 && getAge() > maxAge);
-}
-
 void Repo::Impl::expire()
 {
     timestamp = 0;
+}
+
+bool Repo::Impl::expired() const
+{
+    return timestamp == 0 || (maxAge >= 0 && getAge() > maxAge);
 }
 
 void Repo::Impl::resetTimestamp()
