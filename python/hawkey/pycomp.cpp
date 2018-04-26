@@ -36,6 +36,48 @@ pycomp_get_string_from_unicode(PyObject *str_u, PyObject **tmp_py_str)
     }
 }
 
+PycompString::PycompString(PyObject * str)
+: cString(nullptr), pyString(nullptr)
+{
+    if (PyUnicode_Check(str))
+        cString = pycomp_get_string_from_unicode(str, &pyString);
+#if PY_MAJOR_VERSION < 3
+    else if (PyString_Check(str))
+        cString = PyString_AsString(str);
+    else
+        PyErr_SetString(PyExc_TypeError, "Expected a string or a unicode object");
+#else
+    else if (PyBytes_Check(str))
+        cString = PyBytes_AsString(str);
+    else
+        PyErr_SetString(PyExc_TypeError, "Expected a string or a unicode object");
+#endif
+}
+
+PycompString::PycompString(PycompString && src) noexcept
+: cString(src.cString), pyString(src.pyString)
+{
+    src.cString = nullptr;
+    src.pyString = nullptr;
+}
+
+PycompString & PycompString::operator =(PycompString && src) noexcept
+{
+    if (this == &src)
+        return *this;
+    Py_XDECREF(pyString);
+    cString = src.cString;
+    pyString = src.pyString;
+    src.cString = nullptr;
+    src.pyString = nullptr;
+    return *this;
+}
+
+PycompString::~PycompString()
+{
+    Py_XDECREF(pyString);
+}
+
 /**
  * bytes, basic string or unicode string in Python 2/3 to c string converter,
  * you need to call Py_XDECREF(tmp_py_str) after usage of returned string

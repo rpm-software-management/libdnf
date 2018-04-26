@@ -56,6 +56,22 @@
         PyObject_HEAD_INIT(type) size,
 #endif
 
+/**
+* @brief bytes, basic string or unicode string in Python 2/3 to c string converter
+*/
+class PycompString {
+public:
+    constexpr PycompString() noexcept : cString(nullptr), pyString(nullptr) {}
+    explicit PycompString(PyObject * str);
+    PycompString(PycompString && src) noexcept;
+    ~PycompString();
+    PycompString & operator =(PycompString && src) noexcept;
+    const char * getCString() const noexcept { return cString; }
+private:
+    const char * cString;
+    PyObject * pyString;
+};
+
 const char *pycomp_get_string(PyObject *str_o, PyObject **tmp_py_str);
 void pycomp_free_tmp_array(PyObject **tmp_py_strs, int count);
 PYCOMP_MOD_INIT(_hawkey);
