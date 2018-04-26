@@ -59,7 +59,8 @@ public:
     std::string id;
     std::unique_ptr<ConfigRepo> conf;
 
-    // 0 forces expiration on the next hy_repo_load(), -1 means undefined value
+    char ** mirrors;
+    // 0 forces expiration on the next call to load(), -1 means undefined value
     int timestamp;
     int maxAge;
     std::string repomd_fn;
@@ -71,9 +72,6 @@ public:
     unsigned char checksum[CHKSUM_BYTES];
     bool useIncludes;
     std::map<std::string, std::string> substitutions;
-
-    /* the following element is needed for DNF compatibility */
-    char ** mirrors;
 };
 
 Repo::Impl::Impl(const std::string & id, std::unique_ptr<ConfigRepo> && config)
@@ -204,7 +202,6 @@ bool Repo::Impl::loadCache()
     if (timestamp != 0) {
         timestamp = mtime(primary_fn.c_str());
     }
-    // This is for DNF compatibility
     this->mirrors = mirrors;
 
     return true;
