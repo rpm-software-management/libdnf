@@ -77,37 +77,3 @@ PycompString::~PycompString()
 {
     Py_XDECREF(pyString);
 }
-
-/**
- * bytes, basic string or unicode string in Python 2/3 to c string converter,
- * you need to call Py_XDECREF(tmp_py_str) after usage of returned string
- */
-const char *
-pycomp_get_string(PyObject *str, PyObject **tmp_py_str)
-{
-    char *res = NULL;
-    if (PyUnicode_Check(str))
-        res = pycomp_get_string_from_unicode(str, tmp_py_str);
-#if PY_MAJOR_VERSION < 3
-    else if (PyString_Check(str))
-        res = PyString_AsString(str);
-    else
-        PyErr_SetString(PyExc_TypeError, "Expected a string or a unicode object");
-#else
-    else if (PyBytes_Check(str))
-        res = PyBytes_AsString(str);
-    else
-        PyErr_SetString(PyExc_TypeError, "Expected a string or a unicode object");
-#endif
-
-    return res;
-}
-
-/* release PyObject array from memory */
-void
-pycomp_free_tmp_array(PyObject **tmp_py_strs, int count)
-{
-    for (int j = count; j >= 0; --j) {
-        Py_XDECREF(tmp_py_strs[j]);
-    }
-}

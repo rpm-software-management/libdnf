@@ -266,8 +266,6 @@ raise_bad_filter(void)
 static int
 filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
 {
-    const char *cmatch;
-
     if (keyname == HY_PKG_DOWNGRADABLE ||
         keyname == HY_PKG_DOWNGRADES ||
         keyname == HY_PKG_EMPTY ||
@@ -301,14 +299,10 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
         return 1;
     }
     if (PyUnicode_Check(match) || PyString_Check(match)) {
-        PyObject *tmp_py_str = NULL;
-        cmatch = pycomp_get_string(match, &tmp_py_str);
-        if (cmatch == NULL) {
-            Py_XDECREF(tmp_py_str);
+        PycompString cmatch(match);
+        if (!cmatch.getCString())
             return 0;
-        }
-        int query_filter_ret = query->addFilter(keyname, cmp_type, cmatch);
-        Py_XDECREF(tmp_py_str);
+        int query_filter_ret = query->addFilter(keyname, cmp_type, cmatch.getCString());
 
         if (query_filter_ret)
             return raise_bad_filter();
@@ -375,29 +369,26 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
         if (seq == NULL)
             return 1;
         const unsigned count = PySequence_Size(seq);
+        PycompString pMatches[count];
         const char *matches[count + 1];
-        matches[count] = NULL;
-        PyObject *tmp_py_strs[count];
         for (unsigned int i = 0; i < count; ++i) {
             PyObject *item = PySequence_Fast_GET_ITEM(seq, i);
-            tmp_py_strs[i] = NULL;
             if (PyUnicode_Check(item) || PyString_Check(item)) {
-                matches[i] = pycomp_get_string(item, &tmp_py_strs[i]);
-                if (matches[i] == NULL) {
-                    pycomp_free_tmp_array(tmp_py_strs, i);
+                pMatches[i] = PycompString(item);
+                if (!pMatches[i].getCString()) {
                     Py_DECREF(seq);
                     return 0;
                 }
+                matches[i] = pMatches[i].getCString();
             } else {
                 PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
-                pycomp_free_tmp_array(tmp_py_strs, i);
                 Py_DECREF(seq);
                 return 0;
             }
         }
+        matches[count] = NULL;
         int filter_in_ret = query->addFilter(keyname, cmp_type, matches);
         Py_DECREF(seq);
-        pycomp_free_tmp_array(tmp_py_strs, count - 1);
 
         if (filter_in_ret)
             return raise_bad_filter();
@@ -437,7 +428,6 @@ filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, 
     key_t keyname;
     int cmp_type;
     PyObject *tuple_item;
-    const char *cmatch;
     int argument_number, presence_cmp_type;
     int cmp_type_flag = 0;
 
@@ -461,15 +451,11 @@ filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, 
         while (PyDict_Next(kwds, &pos, &key, &value)) {
             keyname = -1;
             argument_number = 0;
-            PyObject *tmp_py_str = NULL;
-            cmatch = pycomp_get_string(key, &tmp_py_str);
-            if (cmatch == NULL) {
-                Py_XDECREF(tmp_py_str);
+            PycompString cmatch(key);
+            if (!cmatch.getCString())
                 return FALSE;
-            }
-            g_autofree char *parsed_string = strdup(cmatch);
+            g_autofree char *parsed_string = strdup(cmatch.getCString());
             char *tmp_string = parsed_string;
-            Py_XDECREF(tmp_py_str);
             cmp_type = 0;
             char *parcial_string;
             while ((parcial_string = filter_key_splitter(&tmp_string)) != NULL) {
@@ -524,19 +510,13 @@ filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, 
                             return FALSE;
                         }
                     } else {
-                        const char *c_sltr_match;
-                        PyObject *tmp_py_str_sltr = NULL;
-                        c_sltr_match = pycomp_get_string(value, &tmp_py_str_sltr);
-                        if (c_sltr_match == NULL) {
-                            Py_XDECREF(tmp_py_str_sltr);
+                        PycompString c_sltr_match(value);
+                        if (!c_sltr_match.getCString())
                             return FALSE;
-                        }
-                        if (ret2e(hy_selector_set(sltr, keyname, cmp_type, c_sltr_match),
+                        if (ret2e(hy_selector_set(sltr, keyname, cmp_type, c_sltr_match.getCString()),
                             "Invalid Selector spec." )) {
-                            Py_XDECREF(tmp_py_str_sltr);
                             return FALSE;
                         }
-                        Py_XDECREF(tmp_py_str_sltr);
                     }
                 }
             }

@@ -98,14 +98,10 @@ subject_init(_SubjectObject *self, PyObject *args, PyObject *kwds)
         return -1;
     }
     self->icase = icase != NULL && PyObject_IsTrue(icase);
-    PyObject *tmp_py_str = NULL;
-    const char * pattern = pycomp_get_string(py_pattern, &tmp_py_str);
-    if (!pattern) {
-        Py_XDECREF(tmp_py_str);
+    PycompString pattern(py_pattern);
+    if (!pattern.getCString())
         return -1;
-    }
-    self->pattern = g_strdup(pattern);
-    Py_XDECREF(tmp_py_str);
+    self->pattern = g_strdup(pattern.getCString());
     return 0;
 }
 

@@ -228,26 +228,19 @@ pyseq_to_reldeplist(PyObject *obj, DnfSack *sack, int cmp_type)
                 goto fail;
             dnf_reldep_list_add(reldeplist, reldep);
         } else if (cmp_type == HY_GLOB) {
-            const char *reldep_str = NULL;
-            PyObject *tmp_py_str = NULL;
 
-            reldep_str = pycomp_get_string(item, &tmp_py_str);
-            if (reldep_str == NULL) {
-                Py_XDECREF(tmp_py_str);
+            PycompString reldep_str(item);
+            if (!reldep_str.getCString())
                 goto fail;
-            }
 
-            if (!hy_is_glob_pattern(reldep_str)) {
-                DnfReldep *reldep = reldep_from_str(sack, reldep_str);
-                Py_XDECREF(tmp_py_str);
-                if (reldep == NULL) {
+            if (!hy_is_glob_pattern(reldep_str.getCString())) {
+                DnfReldep *reldep = reldep_from_str(sack, reldep_str.getCString());
+                if (reldep == NULL)
                     goto fail;
-                }
                 dnf_reldep_list_add(reldeplist, reldep);
                 delete reldep;
             } else {
-                DnfReldepList * g_reldeplist = reldeplist_from_str(sack, reldep_str);
-                Py_XDECREF(tmp_py_str);
+                DnfReldepList * g_reldeplist = reldeplist_from_str(sack, reldep_str.getCString());
                 if (g_reldeplist == NULL)
                     goto fail;
                 dnf_reldep_list_extend(reldeplist, g_reldeplist);
@@ -325,18 +318,9 @@ reldeplist_to_pylist(DnfReldepList *reldeplist, PyObject *sack)
 DnfReldep *
 reldep_from_pystr(PyObject *o, DnfSack *sack)
 {
-    DnfReldep *reldep = NULL;
-    const char *reldep_str = NULL;
-    PyObject *tmp_py_str = NULL;
-
-    reldep_str = pycomp_get_string(o, &tmp_py_str);
-    if (reldep_str == NULL) {
-        Py_XDECREF(tmp_py_str);
+    PycompString reldep_str(o);
+    if (!reldep_str.getCString())
         return NULL;
-    }
 
-    reldep = reldep_from_str(sack, reldep_str);
-    Py_XDECREF(tmp_py_str);
-
-    return reldep;
+    return reldep_from_str(sack, reldep_str.getCString());
 }

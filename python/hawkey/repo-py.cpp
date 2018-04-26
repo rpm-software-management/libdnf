@@ -144,16 +144,10 @@ static int
 set_str(_RepoObject *self, PyObject *value, void *closure)
 {
     intptr_t str_key = (intptr_t)closure;
-    PyObject *tmp_py_str = NULL;
-    const char *str_value = pycomp_get_string(value, &tmp_py_str);
-
-    if (str_value == NULL) {
-        Py_XDECREF(tmp_py_str);
+    PycompString str_value(value);
+    if (!str_value.getCString())
         return -1;
-    }
-    hy_repo_set_string(self->repo, str_key, str_value);
-    Py_XDECREF(tmp_py_str);
-
+    hy_repo_set_string(self->repo, str_key, str_value.getCString());
     return 0;
 }
 
