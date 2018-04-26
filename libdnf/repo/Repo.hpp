@@ -57,6 +57,13 @@ public:
     const std::string & getId() const noexcept;
     void enable();
     void disable();
+    /**
+    * @brief Initialize the repo with metadata.
+    *
+    * Fetches new metadata from the origin or just reuses local cache if still valid.
+    *
+    * @return true if fresh metadata were downloaded, false otherwise.
+    */
     bool load();
     bool getUseIncludes() const;
     void setUseIncludes(bool enabled);
