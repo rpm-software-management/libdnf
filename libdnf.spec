@@ -47,6 +47,7 @@ BuildRequires:  pkgconfig(librhsm)
 BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  pkgconfig(json-c)
 BuildRequires:  pkgconfig(cppunit)
+BuildRequires:  pkgconfig(modulemd) >= 1.4.0
 
 Requires:       libsolv%{?_isa} >= %{libsolv_version}
 
