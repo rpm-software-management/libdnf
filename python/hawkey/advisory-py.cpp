@@ -177,6 +177,38 @@ get_advisoryref_list(_AdvisoryObject *self, void *closure)
     return advisoryRefVectorToPylist(advisoryRefs, self->sack);
 }
 
+static PyObject *
+matchBugOrCVE(_AdvisoryObject *self, PyObject *args, bool bug)
+{
+    PyObject *string;
+    if (!PyArg_ParseTuple(args, "O", &string))
+        return NULL;
+
+    PycompString cmatch(string);
+    if (!cmatch.getCString())
+        return NULL;
+
+    bool retValue;
+    if (bug) {
+        retValue = self->advisory->matchBug(cmatch.getCString());
+    } else {
+        retValue = self->advisory->matchCVE(cmatch.getCString());
+    }
+    return PyBool_FromLong(retValue);
+}
+
+static PyObject *
+matchBug(_AdvisoryObject *self, PyObject *args)
+{
+    return matchBugOrCVE(self, args, true);
+}
+
+static PyObject *
+matchCVE(_AdvisoryObject *self, PyObject *args)
+{
+    return matchBugOrCVE(self, args, false);
+}
+
 static PyGetSetDef advisory_getsetters[] = {
     {(char*)"title", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_title},
     {(char*)"id", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_id},
@@ -187,6 +219,12 @@ static PyGetSetDef advisory_getsetters[] = {
     {(char*)"updated", (getter)get_datetime, NULL, NULL, (void *)dnf_advisory_get_updated},
     {(char*)"packages", (getter)get_advisorypkg_list, NULL, NULL, NULL},
     {(char*)"references", (getter)get_advisoryref_list, NULL, NULL, NULL},
+    {NULL}                      /* sentinel */
+};
+
+static struct PyMethodDef advisory_methods[] = {
+    {"match_bug", (PyCFunction)matchBug, METH_VARARGS, NULL},
+    {"match_cve", (PyCFunction)matchCVE, METH_VARARGS, NULL},
     {NULL}                      /* sentinel */
 };
 
@@ -218,7 +256,7 @@ PyTypeObject advisory_Type = {
     0,                                /* tp_weaklistoffset */
     0,                                /* tp_iter */
     0,                                /* tp_iternext */
-    0,                                /* tp_methods */
+    advisory_methods,                 /* tp_methods */
     0,                                /* tp_members */
     advisory_getsetters,        /* tp_getset */
     0,                                /* tp_base */
