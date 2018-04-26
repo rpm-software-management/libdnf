@@ -100,17 +100,10 @@ template<void (libdnf::Nevra::*setMethod)(std::string &&)>
 static int
 set_attr(_NevraObject *self, PyObject *value, void *closure)
 {
-    PyObject *tmp_py_str = NULL;
-    auto str_value = pycomp_get_string(value, &tmp_py_str);
-
-    if (str_value == NULL) {
-        Py_XDECREF(tmp_py_str);
+    PycompString str_value(value);
+    if (!str_value.getCString())
         return -1;
-    }
-
-    (self->nevra->*setMethod)(str_value);
-
-    Py_XDECREF(tmp_py_str);
+    (self->nevra->*setMethod)(str_value.getCString());
     return 0;
 }
 

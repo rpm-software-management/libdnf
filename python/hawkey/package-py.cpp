@@ -328,14 +328,10 @@ evr_cmp(_PackageObject *self, PyObject *other)
 static PyObject *
 get_delta_from_evr(_PackageObject *self, PyObject *evr_str)
 {
-    PyObject *tmp_py_str = NULL;
-    const char *evr = pycomp_get_string(evr_str, &tmp_py_str);
-    if (evr == NULL) {
-        Py_XDECREF(tmp_py_str);
+    PycompString evr(evr_str);
+    if (!evr.getCString())
         return NULL;
-    }
-    DnfPackageDelta *delta_c = dnf_package_get_delta_from_evr(self->package, evr);
-    Py_XDECREF(tmp_py_str);
+    DnfPackageDelta *delta_c = dnf_package_get_delta_from_evr(self->package, evr.getCString());
     if (delta_c)
         return packageDeltaToPyObject(delta_c);
     Py_RETURN_NONE;

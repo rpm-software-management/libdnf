@@ -460,16 +460,12 @@ static PyObject *
 write_debugdata(_GoalObject *self, PyObject *dir_str)
 {
     g_autoptr(GError) error = NULL;
-    PyObject *tmp_py_str = NULL;
-    const char *dir = pycomp_get_string(dir_str, &tmp_py_str);
+    PycompString dir(dir_str);
 
-    if (dir == NULL) {
-        Py_XDECREF(tmp_py_str);
+    if (!dir.getCString())
         return NULL;
-    }
 
-    gboolean ret = hy_goal_write_debugdata(self->goal, dir, &error);
-    Py_XDECREF(tmp_py_str);
+    gboolean ret = hy_goal_write_debugdata(self->goal, dir.getCString(), &error);
     if (!ret) {
         op_error2exc(error);
         return NULL;

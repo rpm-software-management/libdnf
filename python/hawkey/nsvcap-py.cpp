@@ -85,16 +85,10 @@ template<void (libdnf::Nsvcap::*setMethod)(std::string &&)>
 static int
 set_attr(_NsvcapObject *self, PyObject *value, void *closure)
 {
-    PyObject *tmp_py_str = NULL;
-    const char *str_value = pycomp_get_string(value, &tmp_py_str);
-
-    if (!str_value) {
-        Py_XDECREF(tmp_py_str);
+    PycompString str_value(value);
+    if (!str_value.getCString())
         return -1;
-    }
-    (self->nsvcap->*setMethod)(str_value);
-    Py_XDECREF(tmp_py_str);
-
+    (self->nsvcap->*setMethod)(str_value.getCString());
     return 0;
 }
 

@@ -98,15 +98,10 @@ sack_converter(PyObject *o, DnfSack **sack_ptr)
 static PyObject *
 repo_enabled(_SackObject *self, PyObject *reponame, int enabled)
 {
-    PyObject *tmp_py_str = NULL;
-    const char *cname = pycomp_get_string(reponame, &tmp_py_str);
-
-    if (cname == NULL) {
-        Py_XDECREF(tmp_py_str);
+    PycompString cname(reponame);
+    if (!cname.getCString())
         return NULL;
-    }
-    dnf_sack_repo_enabled(self->sack, cname, enabled);
-    Py_XDECREF(tmp_py_str);
+    dnf_sack_repo_enabled(self->sack, cname.getCString(), enabled);
     Py_RETURN_NONE;
 }
 
@@ -195,12 +190,9 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     g_autoptr(GError) error = NULL;
     PyObject *custom_class = NULL;
     PyObject *custom_val = NULL;
-    const char *cachedir = NULL;
+    PycompString cachedir;
     const char *arch = NULL;
     const char *rootdir = NULL;
-    const char *logfile = NULL;
-    PyObject *tmp_py_str = NULL;
-    PyObject *tmp2_py_str = NULL;
     PyObject *cachedir_py = NULL;
     PyObject *logfile_py = NULL;
     self->log_out = NULL;
@@ -216,11 +208,9 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
                                      &make_cache_dir, &logfile_py, &all_arch))
         return -1;
     if (cachedir_py != NULL) {
-        cachedir = pycomp_get_string(cachedir_py, &tmp_py_str);
-        if (cachedir == NULL) {
-            Py_XDECREF(tmp_py_str);
+        cachedir = PycompString(cachedir_py);
+        if (!cachedir.getCString())
             return -1;
-        }
     }
     int flags = 0;
     if (make_cache_dir)
@@ -231,26 +221,20 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     } else {
         if (!dnf_sack_set_arch(self->sack, arch, &error)) {
             PyErr_SetString(HyExc_Arch, "Unrecognized arch for the sack.");
-            Py_XDECREF(tmp_py_str);
             return -1;
         }
     }
     dnf_sack_set_rootdir(self->sack, rootdir);
-    dnf_sack_set_cachedir(self->sack, cachedir);
+    dnf_sack_set_cachedir(self->sack, cachedir.getCString());
     if (logfile_py != NULL) {
-        logfile = pycomp_get_string(logfile_py, &tmp2_py_str);
-        if (logfile == NULL) {
-            Py_XDECREF(tmp_py_str);
+        PycompString logfile(logfile_py);
+        if (!logfile.getCString())
             return -1;
-        }
-        if (!set_logfile(logfile, self->log_out)) {
-            PyErr_Format(PyExc_IOError, "Failed to open log file: %s", logfile);
-            Py_XDECREF(tmp_py_str);
+        if (!set_logfile(logfile.getCString(), self->log_out)) {
+            PyErr_Format(PyExc_IOError, "Failed to open log file: %s", logfile.getCString());
             return -1;
         }
     }
-    Py_XDECREF(tmp_py_str);
-    Py_XDECREF(tmp2_py_str);
     if (!dnf_sack_setup(self->sack, flags, &error)) {
         switch (error->code) {
         case DNF_ERROR_FILE_INVALID:
@@ -302,27 +286,24 @@ set_installonly(_SackObject *self, PyObject *obj, void *unused)
     }
 
     const int len = PySequence_Length(obj);
+    PycompString pStrings[len];
     const char *strings[len + 1];
-    PyObject *tmp_py_str[len];
 
     for (int i = 0; i < len; ++i) {
         PyObject *item = PySequence_GetItem(obj, i);
-        tmp_py_str[i] = NULL;
-        strings[i] = NULL;
         if (PyUnicode_Check(item) || PyString_Check(item)) {
-            strings[i] = pycomp_get_string(item, &tmp_py_str[i]);
-        }
+            pStrings[i] = PycompString(item);
+            strings[i] = pStrings[i].getCString();
+        } else
+            strings[i] = NULL;
         Py_DECREF(item);
-        if (strings[i] == NULL) {
-            pycomp_free_tmp_array(tmp_py_str, i);
+        if (strings[i] == NULL)
             return -1;
-        }
     }
     strings[len] = NULL;
 
     DnfSack *sack = self->sack;
     dnf_sack_set_installonly(sack, strings);
-    pycomp_free_tmp_array(tmp_py_str, len - 1);
 
     return 0;
 }
@@ -392,20 +373,15 @@ add_cmdline_package(_SackObject *self, PyObject *fn_obj)
 {
     DnfPackage *cpkg;
     PyObject *pkg;
-    PyObject *tmp_py_str = NULL;
-    const char *fn = pycomp_get_string(fn_obj, &tmp_py_str);
+    PycompString fn(fn_obj);
 
-    if (fn == NULL) {
-        Py_XDECREF(tmp_py_str);
+    if (!fn.getCString())
         return NULL;
-    }
-    cpkg = dnf_sack_add_cmdline_package(self->sack, fn);
+    cpkg = dnf_sack_add_cmdline_package(self->sack, fn.getCString());
     if (cpkg == NULL) {
-        PyErr_Format(PyExc_IOError, "Can not load RPM file: %s.", fn);
-        Py_XDECREF(tmp_py_str);
+        PyErr_Format(PyExc_IOError, "Can not load RPM file: %s.", fn.getCString());
         return NULL;
     }
-    Py_XDECREF(tmp_py_str);
     pkg = new_package((PyObject*)self, dnf_package_get_id(cpkg));
     g_object_unref(cpkg);
     return pkg;
@@ -467,21 +443,16 @@ get_use_includes(_SackObject *self, PyObject *reponame)
 {
     DnfSack *sack = self->sack;
 
-    PyObject *tmp_py_str = NULL;
-    const char *creponame = pycomp_get_string(reponame, &tmp_py_str);
-    if (creponame == NULL) {
-        Py_XDECREF(tmp_py_str);
+    PycompString creponame(reponame);
+    if (!creponame.getCString())
         return NULL;
-    }
 
     gboolean enabled;
-    if (!dnf_sack_get_use_includes(sack, creponame, &enabled)) {
-        Py_XDECREF(tmp_py_str);
+    if (!dnf_sack_get_use_includes(sack, creponame.getCString(), &enabled)) {
         PyErr_SetString(PyExc_ValueError, "Can't found repo with given name.");
         return NULL;
     }
 
-    Py_XDECREF(tmp_py_str);
     if (enabled)
         Py_RETURN_TRUE;
     else
