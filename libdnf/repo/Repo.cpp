@@ -46,6 +46,7 @@ public:
     bool loadCache();
     bool canReuse();
     void fetch();
+    void setCachedir(std::string & cachedir);
     char ** getMirrors();
     int getAge() const;
     void setMaxAge(int maxAge);
@@ -275,6 +276,11 @@ bool Repo::Impl::load()
     fetch();
     loadCache();
     return true;
+}
+
+void Repo::Impl::setCachedir(std::string & cachedir)
+{
+    this->cachedir = cachedir;
 }
 
 char ** Repo::Impl::getMirrors()
