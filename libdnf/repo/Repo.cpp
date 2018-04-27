@@ -67,6 +67,7 @@ public:
     std::string filelists_fn;
     std::string presto_fn;
     std::string updateinfo_fn;
+    std::string comps_fn;
     unsigned char checksum[CHKSUM_BYTES];
     bool useIncludes;
     std::map<std::string, std::string> substitutions;
@@ -115,6 +116,7 @@ bool Repo::getUseIncludes() const { return pImpl->useIncludes; }
 void Repo::setUseIncludes(bool enabled) { pImpl->useIncludes = enabled; }
 int Repo::getCost() const { return pImpl->conf->cost().getValue(); }
 int Repo::getPriority() const { return pImpl->conf->priority().getValue(); }
+std::string Repo::getCompsFn() { return pImpl->comps_fn; }
 
 LrHandle * Repo::Impl::lrHandleInitBase()
 {
@@ -194,6 +196,7 @@ bool Repo::Impl::loadCache()
     filelists_fn = lr_yum_repo_path(yum_repo, "filelists");
     presto_fn = lr_yum_repo_path(yum_repo, "prestodelta");
     updateinfo_fn = lr_yum_repo_path(yum_repo, "updateinfo");
+    comps_fn = lr_yum_repo_path(yum_repo, "group_gz");  // FIXME: or "group"
 
     // Load timestamp unless explicitly expired
     if (timestamp != 0) {

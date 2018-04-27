@@ -69,6 +69,7 @@ public:
     void setUseIncludes(bool enabled);
     int getCost() const;
     int getPriority() const;
+    std::string getCompsFn();  // this is temporarily made public for DNF compatibility
 
     ~Repo();
 private:
