@@ -85,18 +85,13 @@ chksum_name(PyObject *unused, PyObject *args)
 static PyObject *
 chksum_type(PyObject *unused, PyObject *str_o)
 {
-    PyObject *tmp_py_str = NULL;
-    const char *str = pycomp_get_string(str_o, &tmp_py_str);
-
-    if (str == NULL) {
-        Py_XDECREF(tmp_py_str);
+    PycompString str(str_o);
+    if (!str.getCString())
         return NULL;
-    }
-    int type = hy_chksum_type(str);
-    Py_XDECREF(tmp_py_str);
 
+    int type = hy_chksum_type(str.getCString());
     if (type == 0) {
-        PyErr_Format(PyExc_ValueError, "unrecognized chksum type: %s", str);
+        PyErr_Format(PyExc_ValueError, "unrecognized chksum type: %s", str.getCString());
         return NULL;
     }
     return PyLong_FromLong(type);
@@ -105,25 +100,18 @@ chksum_type(PyObject *unused, PyObject *str_o)
 static PyObject *
 split_nevra(PyObject *unused, PyObject *nevra_o)
 {
-    PyObject *tmp_py_str = NULL;
-    const char *nevra = pycomp_get_string(nevra_o, &tmp_py_str);
-
-    if (nevra == NULL) {
-        Py_XDECREF(tmp_py_str);
+    PycompString nevra(nevra_o);
+    if (!nevra.getCString())
         return NULL;
-    }
+
     int epoch;
     char *name, *version, *release, *arch;
-
-    int split_nevra_ret = hy_split_nevra(nevra, &name, &epoch, &version, &release, &arch);
-    Py_XDECREF(tmp_py_str); // release memory after unicode string conversion
+    int split_nevra_ret = hy_split_nevra(nevra.getCString(), &name, &epoch, &version, &release, &arch);
 
     if (ret2e(split_nevra_ret, "Failed parsing NEVRA."))
         return NULL;
 
     PyObject *ret = Py_BuildValue("slsss", name, epoch, version, release, arch);
-    if (ret == NULL)
-        return NULL;
     return ret;
 }
 
