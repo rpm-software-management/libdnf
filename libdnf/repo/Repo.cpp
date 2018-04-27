@@ -49,7 +49,6 @@ public:
     void setCachedir(std::string & cachedir);
     char ** getMirrors();
     int getAge() const;
-    void setMaxAge(int maxAge);
     void expire();
     bool expired() const;
     void resetTimestamp();
@@ -63,7 +62,6 @@ public:
     char ** mirrors;
     // 0 forces expiration on the next call to load(), -1 means undefined value
     int timestamp;
-    int maxAge;
     std::string repomd_fn;
     std::string primary_fn;
     std::string filelists_fn;
@@ -293,11 +291,6 @@ int Repo::Impl::getAge() const
     return time(NULL) - timestamp;
 }
 
-void Repo::Impl::setMaxAge(int maxAge)
-{
-    this->maxAge = maxAge;
-}
-
 void Repo::Impl::expire()
 {
     timestamp = 0;
@@ -305,6 +298,7 @@ void Repo::Impl::expire()
 
 bool Repo::Impl::expired() const
 {
+    int maxAge = this->conf->metadata_expire().getValue();
     return timestamp == 0 || (maxAge >= 0 && getAge() > maxAge);
 }
 
