@@ -46,14 +46,14 @@ public:
     bool loadCache();
     bool canReuse();
     void fetch();
-    void setCachedir(std::string & cachedir);
+    std::string getCachedir();
     char ** getMirrors();
     int getAge() const;
     void expire();
     bool expired() const;
     void resetTimestamp();
     LrHandle * lrHandleInitBase();
-    LrHandle * lrHandleInitLocal(const char *cachedir);
+    LrHandle * lrHandleInitLocal();
     LrHandle * lrHandleInitRemote(const char *destdir);
 
     std::string id;
@@ -67,7 +67,6 @@ public:
     std::string filelists_fn;
     std::string presto_fn;
     std::string updateinfo_fn;
-    std::string cachedir;
     unsigned char checksum[CHKSUM_BYTES];
     bool useIncludes;
     std::map<std::string, std::string> substitutions;
@@ -138,7 +137,7 @@ LrHandle * Repo::Impl::lrHandleInitBase()
     return h;
 }
 
-LrHandle * Repo::Impl::lrHandleInitLocal(const char *cachedir)
+LrHandle * Repo::Impl::lrHandleInitLocal()
 {
     LrHandle *h = lrHandleInitBase();
 
@@ -147,9 +146,9 @@ LrHandle * Repo::Impl::lrHandleInitLocal(const char *cachedir)
         vars = lr_urlvars_set(vars, item.first.c_str(), item.second.c_str());
     lr_handle_setopt(h, NULL, LRO_VARSUB, vars);
 
-    const char *urls[] = {cachedir, NULL};
+    const char *urls[] = {getCachedir().c_str(), NULL};
     lr_handle_setopt(h, NULL, LRO_URLS, urls);
-    lr_handle_setopt(h, NULL, LRO_DESTDIR, cachedir);
+    lr_handle_setopt(h, NULL, LRO_DESTDIR, getCachedir().c_str());
     lr_handle_setopt(h, NULL, LRO_LOCAL, 1L);
     return h;
 }
@@ -177,8 +176,7 @@ bool Repo::Impl::loadCache()
     LrYumRepo *yum_repo;
     LrYumRepoMd *yum_repomd;
 
-    std::unique_ptr<LrHandle, decltype(&lr_handle_free)> h(lrHandleInitLocal(cachedir.c_str()),
-                                                           &lr_handle_free);
+    std::unique_ptr<LrHandle, decltype(&lr_handle_free)> h(lrHandleInitLocal(), &lr_handle_free);
     std::unique_ptr<LrResult, decltype(&lr_result_free)> r(lr_result_init(),
                                                            &lr_result_free);
 
@@ -238,7 +236,7 @@ void Repo::Impl::fetch()
     char tmpdir[] = "/var/tmp/tmpdir.XXXXXX";
     mkdtemp(tmpdir);
     std::string tmprepodir = tmpdir + std::string("/repodata");
-    std::string repodir = cachedir + "/repodata";
+    std::string repodir = getCachedir() + "/repodata";
 
     std::unique_ptr<LrHandle, decltype(&lr_handle_free)> h(lrHandleInitRemote(tmpdir),
                                                            &lr_handle_free);
@@ -276,9 +274,10 @@ bool Repo::Impl::load()
     return true;
 }
 
-void Repo::Impl::setCachedir(std::string & cachedir)
+std::string Repo::Impl::getCachedir()
 {
-    this->cachedir = cachedir;
+    // FIXME
+    return conf->basecachedir().getValue() + "/test";
 }
 
 char ** Repo::Impl::getMirrors()
@@ -298,7 +297,7 @@ void Repo::Impl::expire()
 
 bool Repo::Impl::expired() const
 {
-    int maxAge = this->conf->metadata_expire().getValue();
+    int maxAge = conf->metadata_expire().getValue();
     return timestamp == 0 || (maxAge >= 0 && getAge() > maxAge);
 }
 
