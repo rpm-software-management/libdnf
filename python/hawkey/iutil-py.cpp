@@ -69,113 +69,89 @@ UniquePtrPyObject::~UniquePtrPyObject()
 PyObject *
 advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack)
 {
-    auto list = PyList_New(0);
-    if (list == NULL)
+    UniquePtrPyObject list(PyList_New(0));
+    if (!list)
         return NULL;
 
     for (unsigned int i = 0; i < advisorylist->len; ++i) {
         auto cadvisory =
             static_cast<DnfAdvisory *>(g_ptr_array_index(advisorylist, i));
-        auto advisory = advisoryToPyObject(cadvisory, sack);
+        UniquePtrPyObject advisory(advisoryToPyObject(cadvisory, sack));
 
-        if (advisory == NULL)
-            goto fail;
+        if (!advisory)
+            return NULL;
 
-        int rc = PyList_Append(list, advisory);
-        Py_DECREF(advisory);
+        int rc = PyList_Append(list.get(), advisory.get());
         if (rc == -1)
-            goto fail;
+            return NULL;
     }
 
-    return list;
- fail:
-    Py_DECREF(list);
-    return NULL;
+    return list.release();
 }
 
 PyObject *
 advisoryPkgVectorToPylist(const std::vector<libdnf::AdvisoryPkg> & advisorypkgs)
 {
-    auto list = PyList_New(0);
-    if (list == NULL)
+    UniquePtrPyObject list(PyList_New(0));
+    if (!list)
         return NULL;
 
     for (auto& advisorypkg : advisorypkgs) {
-        auto pyAdvisoryPkg = advisorypkgToPyObject(new libdnf::AdvisoryPkg(advisorypkg));
-        if (pyAdvisoryPkg == NULL)
-            goto fail;
-        int rc = PyList_Append(list, pyAdvisoryPkg);
-        Py_DECREF(pyAdvisoryPkg);
+        UniquePtrPyObject pyAdvisoryPkg(advisorypkgToPyObject(new libdnf::AdvisoryPkg(advisorypkg)));
+        if (!pyAdvisoryPkg)
+            return NULL;
+        int rc = PyList_Append(list.get(), pyAdvisoryPkg.get());
         if (rc == -1)
-            goto fail;
+            return NULL;
     }
 
-    return list;
-
-    fail:
-        Py_DECREF(list);
-        return NULL;
+    return list.release();
 }
 
 PyObject *
 advisoryRefVectorToPylist(const std::vector<libdnf::AdvisoryRef> & advisoryRefs, PyObject *sack)
 {
-    auto list = PyList_New(0);
-    if (list == NULL)
+    UniquePtrPyObject list(PyList_New(0));
+    if (!list)
         return NULL;
 
     for (auto& advisoryRef : advisoryRefs) {
-        auto pyAdvisoryRef = advisoryrefToPyObject(new libdnf::AdvisoryRef(advisoryRef), sack);
-        if (pyAdvisoryRef == NULL)
-            goto fail;
-        int rc = PyList_Append(list, pyAdvisoryRef);
-        Py_DECREF(pyAdvisoryRef);
+        UniquePtrPyObject pyAdvisoryRef(advisoryrefToPyObject(new libdnf::AdvisoryRef(advisoryRef), sack));
+        if (!pyAdvisoryRef)
+            return NULL;
+        int rc = PyList_Append(list.get(), pyAdvisoryRef.get());
         if (rc == -1)
-            goto fail;
+            return NULL;
     }
 
-    return list;
-
-    fail:
-        Py_DECREF(list);
-        return NULL;
+    return list.release();
 }
 
 PyObject *
 packagelist_to_pylist(GPtrArray *plist, PyObject *sack)
 {
-    auto list = PyList_New(0);
-    if (list == NULL)
+    UniquePtrPyObject list(PyList_New(0));
+    if (!list)
         return NULL;
-    auto retval = list;
 
     for (unsigned int i = 0; i < plist->len; i++) {
         auto cpkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, i));
-        PyObject *package = new_package(sack, dnf_package_get_id(cpkg));
-        if (package == NULL) {
-            retval = NULL;
-            break;
-        }
+        UniquePtrPyObject package(new_package(sack, dnf_package_get_id(cpkg)));
+        if (!package)
+            return NULL;
 
-        int rc = PyList_Append(list, package);
-        Py_DECREF(package);
-        if (rc == -1) {
-            retval = NULL;
-            break;
-        }
+        int rc = PyList_Append(list.get(), package.get());
+        if (rc == -1)
+            return NULL;
     }
-    if (retval)
-        return retval;
-    /* return error */
-    Py_DECREF(list);
-    return NULL;
+    return list.release();
 }
 
 PyObject *
 packageset_to_pylist(const DnfPackageSet *pset, PyObject *sack)
 {
-    PyObject *list = PyList_New(0);
-    if (list == NULL)
+    UniquePtrPyObject list(PyList_New(0));
+    if (!list)
         return NULL;
 
     Id id = -1;
@@ -183,20 +159,16 @@ packageset_to_pylist(const DnfPackageSet *pset, PyObject *sack)
         id = pset->next(id);
         if (id == -1)
             break;
-        PyObject *package = new_package(sack, id);
-        if (package == NULL)
-            goto fail;
+        UniquePtrPyObject package(new_package(sack, id));
+        if (!package)
+            return NULL;
 
-        int rc = PyList_Append(list, package);
-        Py_DECREF(package);
+        int rc = PyList_Append(list.get(), package.get());
         if (rc == -1)
-            goto fail;
+            return NULL;
     }
 
-    return list;
- fail:
-    Py_DECREF(list);
-    return NULL;
+    return list.release();
 }
 
 std::unique_ptr<DnfPackageSet>
@@ -207,40 +179,36 @@ pyseq_to_packageset(PyObject *obj, DnfSack *sack)
         return std::unique_ptr<DnfPackageSet>(new libdnf::PackageSet(*target->runSet()));
     }
 
-    PyObject * sequence = PySequence_Fast(obj, "Expected a sequence.");
-    if (sequence == NULL)
+    UniquePtrPyObject sequence(PySequence_Fast(obj, "Expected a sequence."));
+    if (!sequence)
         return NULL;
-    auto pset = std::unique_ptr<DnfPackageSet>(new libdnf::PackageSet(sack));
+    std::unique_ptr<DnfPackageSet> pset(new libdnf::PackageSet(sack));
 
-    const unsigned count = PySequence_Size(sequence);
+    const unsigned count = PySequence_Size(sequence.get());
     for (unsigned int i = 0; i < count; ++i) {
-        PyObject *item = PySequence_Fast_GET_ITEM(sequence, i);
+        PyObject *item = PySequence_Fast_GET_ITEM(sequence.get(), i);
         if (item == NULL)
-            goto fail;
+            return NULL;
         DnfPackage *pkg = packageFromPyObject(item);
         if (pkg == NULL)
-            goto fail;
+            return NULL;
         pset->set(pkg);
     }
 
-    Py_DECREF(sequence);
     return pset;
- fail:
-    Py_DECREF(sequence);
-    return NULL;
 }
 
 DnfReldepList *
 pyseq_to_reldeplist(PyObject *obj, DnfSack *sack, int cmp_type)
 {
-    PyObject *sequence = PySequence_Fast(obj, "Expected a sequence.");
-    if (sequence == NULL)
+    UniquePtrPyObject sequence(PySequence_Fast(obj, "Expected a sequence."));
+    if (!sequence)
         return NULL;
     DnfReldepList *reldeplist = dnf_reldep_list_new (sack);
 
-    const unsigned count = PySequence_Size(sequence);
+    const unsigned count = PySequence_Size(sequence.get());
     for (unsigned int i = 0; i < count; ++i) {
-        PyObject *item = PySequence_Fast_GET_ITEM(sequence, i);
+        PyObject *item = PySequence_Fast_GET_ITEM(sequence.get(), i);
         if (item == NULL)
             goto fail;
         if reldepObject_Check(item) {
@@ -277,63 +245,52 @@ pyseq_to_reldeplist(PyObject *obj, DnfSack *sack, int cmp_type)
         }
     }
 
-    Py_DECREF(sequence);
     return reldeplist;
  fail:
     delete reldeplist;
-    Py_DECREF(sequence);
     return NULL;
 }
 
 PyObject *
 strlist_to_pylist(const char **slist)
 {
-    PyObject *list = PyList_New(0);
-    if (list == NULL)
+    UniquePtrPyObject list(PyList_New(0));
+    if (!list)
         return NULL;
 
     for (const char **iter = slist; *iter; ++iter) {
-        PyObject *str = PyUnicode_FromString(*iter);
-        if (str == NULL)
-            goto err;
-        int rc = PyList_Append(list, str);
-        Py_DECREF(str);
+        UniquePtrPyObject str(PyUnicode_FromString(*iter));
+        if (!str)
+            return NULL;
+        int rc = PyList_Append(list.get(), str.get());
         if (rc == -1)
-            goto err;
+            return NULL;
     }
-    return list;
-
- err:
-    Py_DECREF(list);
-    return NULL;
+    return list.release();
 }
 
 PyObject *
 reldeplist_to_pylist(DnfReldepList *reldeplist, PyObject *sack)
 {
-    PyObject *list = PyList_New(0);
-    if (list == NULL)
+    UniquePtrPyObject list(PyList_New(0));
+    if (!list)
         return NULL;
 
     const int count = dnf_reldep_list_count (reldeplist);
     for (int i = 0; i < count; ++i) {
         DnfReldep *creldep = dnf_reldep_list_index (reldeplist,  i);
-        PyObject *reldep = new_reldep(sack, dnf_reldep_get_id (creldep));
+        UniquePtrPyObject reldep(new_reldep(sack, dnf_reldep_get_id (creldep)));
 
         dnf_reldep_free(creldep);
-        if (reldep == NULL)
-            goto fail;
+        if (!reldep)
+            return NULL;
 
-        int rc = PyList_Append(list, reldep);
-        Py_DECREF(reldep);
+        int rc = PyList_Append(list.get(), reldep.get());
         if (rc == -1)
-            goto fail;
+            return NULL;
     }
 
-    return list;
- fail:
-    Py_DECREF(list);
-    return NULL;
+    return list.release();
 }
 
 DnfReldep *

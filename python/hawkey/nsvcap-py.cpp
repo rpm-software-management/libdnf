@@ -21,6 +21,7 @@
 #include <Python.h>
 
 // pyhawkey
+#include "iutil-py.hpp"
 #include "nsvcap-py.hpp"
 #include "pycomp.hpp"
 
@@ -173,27 +174,26 @@ nsvcapConverter(PyObject *o, libdnf::Nsvcap ** nsvcap_ptr)
 static PyObject *
 iter(_NsvcapObject *self)
 {
-    PyObject *res;
+    UniquePtrPyObject res;
     libdnf::Nsvcap * nsvcap = self->nsvcap;
     if (nsvcap->getVersion() == libdnf::Nsvcap::VERSION_NOT_SET) {
         Py_INCREF(Py_None);
-        res = Py_BuildValue("zzOzzz",
-                            nsvcap->getName().empty() ? nullptr : nsvcap->getName().c_str(),
-                            nsvcap->getStream().empty() ? nullptr : nsvcap->getStream().c_str(),
-                            Py_None,
-                            nsvcap->getContext().empty() ? nullptr : nsvcap->getContext().c_str(),
-                            nsvcap->getArch().empty() ? nullptr : nsvcap->getArch().c_str(),
-                            nsvcap->getProfile().empty() ? nullptr : nsvcap->getProfile().c_str());
+        res.reset(Py_BuildValue("zzOzzz",
+            nsvcap->getName().empty() ? nullptr : nsvcap->getName().c_str(),
+            nsvcap->getStream().empty() ? nullptr : nsvcap->getStream().c_str(),
+            Py_None,
+            nsvcap->getContext().empty() ? nullptr : nsvcap->getContext().c_str(),
+            nsvcap->getArch().empty() ? nullptr : nsvcap->getArch().c_str(),
+            nsvcap->getProfile().empty() ? nullptr : nsvcap->getProfile().c_str()));
     } else
-        res = Py_BuildValue("zzLzzz",
-                            nsvcap->getName().empty() ? nullptr : nsvcap->getName().c_str(),
-                            nsvcap->getStream().empty() ? nullptr : nsvcap->getStream().c_str(),
-                            nsvcap->getVersion(),
-                            nsvcap->getContext().empty() ? nullptr : nsvcap->getContext().c_str(),
-                            nsvcap->getArch().empty() ? nullptr : nsvcap->getArch().c_str(),
-                            nsvcap->getProfile().empty() ? nullptr : nsvcap->getProfile().c_str());
-    PyObject *iter = PyObject_GetIter(res);
-    Py_DECREF(res);
+        res.reset(Py_BuildValue("zzLzzz",
+            nsvcap->getName().empty() ? nullptr : nsvcap->getName().c_str(),
+            nsvcap->getStream().empty() ? nullptr : nsvcap->getStream().c_str(),
+            nsvcap->getVersion(),
+            nsvcap->getContext().empty() ? nullptr : nsvcap->getContext().c_str(),
+            nsvcap->getArch().empty() ? nullptr : nsvcap->getArch().c_str(),
+            nsvcap->getProfile().empty() ? nullptr : nsvcap->getProfile().c_str()));
+    PyObject *iter = PyObject_GetIter(res.get());
     return iter;
 }
 

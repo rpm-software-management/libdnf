@@ -375,9 +375,8 @@ count_problems(_GoalObject *self, PyObject *unused)
 static PyObject *
 problem_rules(_GoalObject *self, PyObject *unused)
 {
-    PyObject *list_output = PyList_New(0);
-    PyObject *list;
-    if (list_output == NULL)
+    UniquePtrPyObject list_output(PyList_New(0));
+    if (!list_output)
         return NULL;
     int count_problems = hy_goal_count_problems(self->goal);
     for (int i = 0; i < count_problems; i++) {
@@ -386,13 +385,12 @@ problem_rules(_GoalObject *self, PyObject *unused)
             PyErr_SetString(PyExc_ValueError, "Index out of range.");
             continue;
         }
-        list = strlist_to_pylist((const char **)plist);
-        int rc = PyList_Append(list_output, list);
-        Py_DECREF(list);
+        UniquePtrPyObject list(strlist_to_pylist((const char **)plist));
+        int rc = PyList_Append(list_output.get(), list.get());
         if (rc == -1)
             return NULL;
     }
-    return list_output;
+    return list_output.release();
 }
 
 /**

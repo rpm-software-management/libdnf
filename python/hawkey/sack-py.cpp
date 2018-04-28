@@ -56,22 +56,17 @@ new_package(PyObject *sack, Id id)
         return NULL;
     }
     self = (_SackObject*)sack;
-    PyObject *arglist;
+    UniquePtrPyObject arglist;
     if (self->custom_package_class || self->custom_package_val) {
-        arglist = Py_BuildValue("(Oi)O", sack, id, self->custom_package_val);
+        arglist.reset(Py_BuildValue("(Oi)O", sack, id, self->custom_package_val));
     } else {
-        arglist = Py_BuildValue("((Oi))", sack, id);
+        arglist.reset(Py_BuildValue("((Oi))", sack, id));
     }
-    if (arglist == NULL)
+    if (!arglist)
         return NULL;
-    PyObject *package;
-    if (self->custom_package_class) {
-        package = PyObject_CallObject(self->custom_package_class, arglist);
-    } else {
-        package = PyObject_CallObject((PyObject*)&package_Type, arglist);
-    }
-    Py_DECREF(arglist);
-    return package;
+    if (self->custom_package_class)
+        return PyObject_CallObject(self->custom_package_class, arglist.get());
+    return PyObject_CallObject((PyObject*)&package_Type, arglist.get());
 }
 
 DnfSack *
@@ -290,13 +285,12 @@ set_installonly(_SackObject *self, PyObject *obj, void *unused)
     const char *strings[len + 1];
 
     for (int i = 0; i < len; ++i) {
-        PyObject *item = PySequence_GetItem(obj, i);
-        if (PyUnicode_Check(item) || PyString_Check(item)) {
-            pStrings[i] = PycompString(item);
+        UniquePtrPyObject item(PySequence_GetItem(obj, i));
+        if (PyUnicode_Check(item.get()) || PyString_Check(item.get())) {
+            pStrings[i] = PycompString(item.get());
             strings[i] = pStrings[i].getCString();
         } else
             strings[i] = NULL;
-        Py_DECREF(item);
         if (strings[i] == NULL)
             return -1;
     }
