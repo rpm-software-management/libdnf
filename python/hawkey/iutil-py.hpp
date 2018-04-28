@@ -30,6 +30,36 @@
 #define TEST_COND(cond) \
     ((cond) ? Py_True : Py_False)
 
+/**
+* @brief Smart pointer to PyObject
+*
+* Owns and manages PyObject. Decrements the reference count for the PyObject
+* (calls Py_XDECREF on it) when  UniquePtrPyObject goes out of scope.
+*
+* Implements subset of standard std::unique_ptr methods.
+*/
+class UniquePtrPyObject {
+public:
+    constexpr UniquePtrPyObject() noexcept : pyObj(NULL) {}
+    explicit UniquePtrPyObject(PyObject * pyObj) noexcept : pyObj(pyObj) {}
+    UniquePtrPyObject(UniquePtrPyObject && src) noexcept : pyObj(src.pyObj) { src.pyObj = NULL; }
+    UniquePtrPyObject & operator =(UniquePtrPyObject && src) noexcept;
+    explicit operator bool() const noexcept { return pyObj != NULL; }
+    PyObject * get() const noexcept { return pyObj; }
+    PyObject * release() noexcept;
+    void reset(PyObject * pyObj = NULL) noexcept;
+    ~UniquePtrPyObject();
+private:
+    PyObject * pyObj;
+};
+
+inline PyObject * UniquePtrPyObject::release() noexcept
+{
+    auto tmpObj = pyObj;
+    pyObj = NULL;
+    return tmpObj;
+}
+
 PyObject *advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack);
 PyObject *advisoryPkgVectorToPylist(const std::vector<libdnf::AdvisoryPkg> & advisorypkgs);
 PyObject *advisoryRefVectorToPylist(const std::vector<libdnf::AdvisoryRef> & advisoryRefs,
