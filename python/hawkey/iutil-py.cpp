@@ -45,6 +45,27 @@
 #include "../../libdnf/repo/solvable/Dependency.hpp"
 #include "libdnf/repo/solvable/DependencyContainer.hpp"
 
+UniquePtrPyObject & UniquePtrPyObject::operator =(UniquePtrPyObject && src) noexcept
+{
+    if (this == &src)
+        return *this;
+    Py_XDECREF(pyObj);
+    pyObj = src.pyObj;
+    src.pyObj = NULL;
+    return *this;
+}
+
+void UniquePtrPyObject::reset(PyObject * pyObj) noexcept
+{
+    Py_XDECREF(this->pyObj);
+    this->pyObj = pyObj;
+}
+
+UniquePtrPyObject::~UniquePtrPyObject()
+{
+    Py_XDECREF(pyObj);
+}
+
 PyObject *
 advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack)
 {
