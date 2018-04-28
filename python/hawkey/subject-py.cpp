@@ -139,13 +139,12 @@ static bool
 addNevraToPyList(PyObject * pyList, libdnf::Nevra & nevraObj)
 {
     auto cNevra = new libdnf::Nevra(std::move(nevraObj));
-    auto nevra = nevraToPyObject(cNevra);
+    UniquePtrPyObject nevra(nevraToPyObject(cNevra));
     if (!nevra) {
         delete cNevra;
         return false;
     }
-    int rc = PyList_Append(pyList, nevra);
-    Py_DECREF(nevra);
+    int rc = PyList_Append(pyList, nevra.get());
     if (rc == -1)
         return false;
     return true;
@@ -160,19 +159,17 @@ get_nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
 
-    auto list = PyList_New(0);
+    UniquePtrPyObject list(PyList_New(0));
     if (!list)
         return NULL;
     libdnf::Nevra nevraObj;
     if (forms && forms != Py_None) {
         if (PyInt_Check(forms)) {
             if (nevraObj.parse(self->pattern, static_cast<HyForm>(PyLong_AsLong(forms)))) {
-                if (!addNevraToPyList(list, nevraObj)) {
-                    Py_DECREF(list);
+                if (!addNevraToPyList(list.get(), nevraObj))
                     return NULL;
-                }
             }
-            return list;
+            return list.release();
         }
         else if (PyList_Check(forms)) {
             bool error = false;
@@ -183,42 +180,36 @@ get_nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
                     break;
                 }
                 if (nevraObj.parse(self->pattern, static_cast<HyForm>(PyLong_AsLong(form)))) {
-                    if (!addNevraToPyList(list, nevraObj)) {
-                        Py_DECREF(list);
+                    if (!addNevraToPyList(list.get(), nevraObj))
                         return NULL;
-                    }
                 }
             }
             if (!error) 
-                return list;
+                return list.release();
         }
         PyErr_SetString(PyExc_TypeError, "Malformed subject forms.");
-        Py_DECREF(list);
         return NULL;
     } else {
         for (std::size_t i = 0; HY_FORMS_MOST_SPEC[i] != _HY_FORM_STOP_; ++i) {
             if (nevraObj.parse(self->pattern, HY_FORMS_MOST_SPEC[i])) {
-                if (!addNevraToPyList(list, nevraObj)) {
-                    Py_DECREF(list);
+                if (!addNevraToPyList(list.get(), nevraObj))
                     return NULL;
-                }
             }
         }
     }
-    return list;
+    return list.release();
 }
 
 static bool
 addNsvcapToPyList(PyObject * pyList, libdnf::Nsvcap & nevraObj)
 {
     auto cNsvcap = new libdnf::Nsvcap(std::move(nevraObj));
-    auto nsvcap = nsvcapToPyObject(cNsvcap);
+    UniquePtrPyObject nsvcap(nsvcapToPyObject(cNsvcap));
     if (!nsvcap) {
         delete cNsvcap;
         return false;
     }
-    int rc = PyList_Append(pyList, nsvcap);
-    Py_DECREF(nsvcap);
+    int rc = PyList_Append(pyList, nsvcap.get());
     if (rc == -1)
         return false;
     return true;
@@ -233,19 +224,17 @@ nsvcap_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
 
-    auto list = PyList_New(0);
+    UniquePtrPyObject list(PyList_New(0));
     if (!list)
         return NULL;
     libdnf::Nsvcap nsvcapObj;
     if (forms && forms != Py_None) {
         if (PyInt_Check(forms)) {
             if (nsvcapObj.parse(self->pattern, static_cast<HyModuleForm>(PyLong_AsLong(forms)))) {
-                if (!addNsvcapToPyList(list, nsvcapObj)) {
-                    Py_DECREF(list);
+                if (!addNsvcapToPyList(list.get(), nsvcapObj))
                     return NULL;
-                }
             }
-            return list;
+            return list.release();
         }
         else if (PyList_Check(forms)) {
             bool error = false;
@@ -256,29 +245,24 @@ nsvcap_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
                     break;
                 }
                 if (nsvcapObj.parse(self->pattern, static_cast<HyModuleForm>(PyLong_AsLong(form)))) {
-                    if (!addNsvcapToPyList(list, nsvcapObj)) {
-                        Py_DECREF(list);
+                    if (!addNsvcapToPyList(list.get(), nsvcapObj))
                         return NULL;
-                    }
                 }
             }
             if (!error) 
-                return list;
+                return list.release();
         }
         PyErr_SetString(PyExc_TypeError, "Malformed subject forms.");
-        Py_DECREF(list);
         return NULL;
     } else {
         for (std::size_t i = 0; HY_FORMS_MOST_SPEC[i] != _HY_FORM_STOP_; ++i) {
             if (nsvcapObj.parse(self->pattern, HY_MODULE_FORMS_MOST_SPEC[i])) {
-                if (!addNsvcapToPyList(list, nsvcapObj)) {
-                    Py_DECREF(list);
+                if (!addNsvcapToPyList(list.get(), nsvcapObj))
                     return NULL;
-                }
             }
         }
     }
-    return list;
+    return list.release();
 
 }
 
@@ -361,16 +345,14 @@ get_best_solution(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
     HyNevra nevra{nullptr};
 
-    PyObject *q = get_best_parser(self, args, kwds, &nevra);
-    if (q == NULL)
+    UniquePtrPyObject q(get_best_parser(self, args, kwds, &nevra));
+    if (!q)
         return NULL;
     PyObject *ret_dict = PyDict_New();
-    PyDict_SetItem(ret_dict, PyString_FromString("query"), q);
-    Py_DECREF(q);
+    PyDict_SetItem(ret_dict, PyString_FromString("query"), q.get());
     if (nevra) {
-        PyObject *n = nevraToPyObject(nevra);
-        PyDict_SetItem(ret_dict, PyString_FromString("nevra"), n);
-        Py_DECREF(n);
+        UniquePtrPyObject n(nevraToPyObject(nevra));
+        PyDict_SetItem(ret_dict, PyString_FromString("nevra"), n.get());
     }
     else
         PyDict_SetItem(ret_dict, PyString_FromString("nevra"), Py_None);

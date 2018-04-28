@@ -365,30 +365,26 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
         break;
     }
     default: {
-        PyObject *seq = PySequence_Fast(match, "Expected a sequence.");
-        if (seq == NULL)
+        UniquePtrPyObject seq(PySequence_Fast(match, "Expected a sequence."));
+        if (!seq)
             return 1;
-        const unsigned count = PySequence_Size(seq);
+        const unsigned count = PySequence_Size(seq.get());
         PycompString pMatches[count];
         const char *matches[count + 1];
         for (unsigned int i = 0; i < count; ++i) {
-            PyObject *item = PySequence_Fast_GET_ITEM(seq, i);
+            PyObject *item = PySequence_Fast_GET_ITEM(seq.get(), i);
             if (PyUnicode_Check(item) || PyString_Check(item)) {
                 pMatches[i] = PycompString(item);
-                if (!pMatches[i].getCString()) {
-                    Py_DECREF(seq);
+                if (!pMatches[i].getCString())
                     return 0;
-                }
                 matches[i] = pMatches[i].getCString();
             } else {
                 PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
-                Py_DECREF(seq);
                 return 0;
             }
         }
         matches[count] = NULL;
         int filter_in_ret = query->addFilter(keyname, cmp_type, matches);
-        Py_DECREF(seq);
 
         if (filter_in_ret)
             return raise_bad_filter();
@@ -788,12 +784,9 @@ query_get_item_by_pyindex(PyObject *self, PyObject *index)
 static PyObject *
 query_iter(PyObject *self)
 {
-    PyObject *list;
-
     const DnfPackageSet * pset = ((_QueryObject *) self)->query->runSet();
-    list = packageset_to_pylist(pset, ((_QueryObject *) self)->sack);
-    PyObject *iter = PyObject_GetIter(list);
-    Py_DECREF(list);
+    UniquePtrPyObject list(packageset_to_pylist(pset, ((_QueryObject *) self)->sack));
+    PyObject *iter = PyObject_GetIter(list.get());
     Py_INCREF(iter);
     return iter;
 }
@@ -811,8 +804,8 @@ query_to_name_dict(_QueryObject *self, PyObject *unused)
 
     Solvable *considered;
     Id name = 0;
-    PyObject *list = PyList_New(0);
-    PyObject *ret_dict = PyDict_New();
+    UniquePtrPyObject list(PyList_New(0));
+    UniquePtrPyObject ret_dict(PyDict_New());
 
     for (int i = 0; i < samename.count; ++i) {
         Id package_id = samename.elements[i];
@@ -820,33 +813,25 @@ query_to_name_dict(_QueryObject *self, PyObject *unused)
         if (name == 0) {
             name = considered->name;
         } else if (name != considered->name) {
-            PyDict_SetItemString(ret_dict, pool_id2str(pool, name), list);
-            Py_DECREF(list);
-            list = PyList_New(0);
+            PyDict_SetItemString(ret_dict.get(), pool_id2str(pool, name), list.get());
+            list.reset(PyList_New(0));
             name = considered->name;
         }
-        PyObject *package = new_package(self->sack, package_id);
-        if (package == NULL) {
+        UniquePtrPyObject package(new_package(self->sack, package_id));
+        if (!package)
             goto fail;
-        }
 
-        int rc = PyList_Append(list, package);
-        Py_DECREF(package);
-        if (rc == -1) {
+        int rc = PyList_Append(list.get(), package.get());
+        if (rc == -1)
             goto fail;
-        }
     }
     queue_free(&samename);
-    if (name) {
-        PyDict_SetItemString(ret_dict, pool_id2str(pool, name), list);
-        Py_DECREF(list);
-    }
-    return ret_dict;
+    if (name)
+        PyDict_SetItemString(ret_dict.get(), pool_id2str(pool, name), list.get());
+    return ret_dict.release();
 
     fail:
         queue_free(&samename);
-        Py_DECREF(list);
-        Py_DECREF(ret_dict);
         PyErr_SetString(PyExc_SystemError, "Unable to create name_dict");
         return NULL;
 }
@@ -865,9 +850,9 @@ query_to_name_arch_dict(_QueryObject *self, PyObject *unused)
     Solvable *considered;
     Id name = 0;
     Id arch = 0;
-    PyObject *key = PyTuple_New(2);
-    PyObject *list = PyList_New(0);
-    PyObject *ret_dict = PyDict_New();
+    UniquePtrPyObject key(PyTuple_New(2));
+    UniquePtrPyObject list(PyList_New(0));
+    UniquePtrPyObject ret_dict(PyDict_New());
 
     for (int i = 0; i < samename.count; ++i) {
         Id package_id = samename.elements[i];
@@ -876,47 +861,37 @@ query_to_name_arch_dict(_QueryObject *self, PyObject *unused)
             name = considered->name;
             arch = considered->arch;
         } else if ((name != considered->name) || (arch != considered->arch)) {
-            if (PyTuple_SetItem(key, 0, PyString_FromString(pool_id2str(pool, name))))
+            if (PyTuple_SetItem(key.get(), 0, PyString_FromString(pool_id2str(pool, name))))
                 goto fail;
-            if (PyTuple_SetItem(key, 1, PyString_FromString(pool_id2str(pool, arch))))
+            if (PyTuple_SetItem(key.get(), 1, PyString_FromString(pool_id2str(pool, arch))))
                 goto fail;
-            PyDict_SetItem(ret_dict, key, list);
-            Py_DECREF(key);
-            Py_DECREF(list);
-            key = PyTuple_New(2);
-            list = PyList_New(0);
+            PyDict_SetItem(ret_dict.get(), key.get(), list.get());
+            key.reset(PyTuple_New(2));
+            list.reset(PyList_New(0));
             name = considered->name;
             arch = considered->arch;
         }
-        PyObject *package = new_package(self->sack, package_id);
-        if (package == NULL) {
+        UniquePtrPyObject package(new_package(self->sack, package_id));
+        if (!package)
             goto fail;
-        }
 
-        int rc = PyList_Append(list, package);
-        Py_DECREF(package);
-        if (rc == -1) {
+        int rc = PyList_Append(list.get(), package.get());
+        if (rc == -1)
             goto fail;
-        }
     }
     queue_free(&samename);
     if (name) {
-        if (PyTuple_SetItem(key, 0, PyString_FromString(pool_id2str(pool, name))))
+        if (PyTuple_SetItem(key.get(), 0, PyString_FromString(pool_id2str(pool, name))))
             goto fail;
-        if (PyTuple_SetItem(key, 1, PyString_FromString(pool_id2str(pool, arch))))
+        if (PyTuple_SetItem(key.get(), 1, PyString_FromString(pool_id2str(pool, arch))))
             goto fail;
-        PyDict_SetItem(ret_dict, key, list);
+        PyDict_SetItem(ret_dict.get(), key.get(), list.get());
     }
-    Py_DECREF(key);
-    Py_DECREF(list);
 
-    return ret_dict;
+    return ret_dict.release();
 
     fail:
         queue_free(&samename);
-        Py_DECREF(key);
-        Py_DECREF(list);
-        Py_DECREF(ret_dict);
         PyErr_SetString(PyExc_SystemError, "Unable to create name_arch_dict");
         return NULL;
 }

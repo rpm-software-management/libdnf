@@ -152,12 +152,10 @@ get_datetime(_AdvisoryObject *self, void *closure)
 {
     guint64 (*func)(DnfAdvisory*);
     func = (guint64 (*)(DnfAdvisory*))closure;
-    PyObject *timestamp = PyLong_FromUnsignedLongLong(func(self->advisory));
-    PyObject *args = Py_BuildValue("(O)", timestamp);
+    UniquePtrPyObject timestamp(PyLong_FromUnsignedLongLong(func(self->advisory)));
+    UniquePtrPyObject args(Py_BuildValue("(O)", timestamp.get()));
     PyDateTime_IMPORT;
-    PyObject *datetime = PyDateTime_FromTimestamp(args);
-    Py_DECREF(args);
-    Py_DECREF(timestamp);
+    PyObject *datetime = PyDateTime_FromTimestamp(args.get());
     return datetime;
 }
 

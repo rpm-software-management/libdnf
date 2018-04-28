@@ -288,25 +288,24 @@ nevra_richcompare(PyObject *self, PyObject *other, int op)
 static PyObject *
 iter(_NevraObject *self)
 {
-    PyObject *res;
+    UniquePtrPyObject res;
     auto nevra = self->nevra;
     if (nevra->getEpoch() == libdnf::Nevra::EPOCH_NOT_SET) {
         Py_INCREF(Py_None);
-        res = Py_BuildValue("zOzzz",
-                            nevra->getName().c_str(),
-                            Py_None,
-                            nevra->getVersion().c_str(),
-                            nevra->getRelease().c_str(),
-                            nevra->getArch().c_str());
+        res.reset(Py_BuildValue("zOzzz",
+            nevra->getName().c_str(),
+            Py_None,
+            nevra->getVersion().c_str(),
+            nevra->getRelease().c_str(),
+            nevra->getArch().c_str()));
     } else
-        res = Py_BuildValue("zizzz",
-                            nevra->getName().c_str(),
-                            nevra->getEpoch(),
-                            nevra->getVersion().c_str(),
-                            nevra->getRelease().c_str(),
-                            nevra->getArch().c_str());
-    PyObject *iter = PyObject_GetIter(res);
-    Py_DECREF(res);
+        res.reset(Py_BuildValue("zizzz",
+            nevra->getName().c_str(),
+            nevra->getEpoch(),
+            nevra->getVersion().c_str(),
+            nevra->getRelease().c_str(),
+            nevra->getArch().c_str()));
+    PyObject *iter = PyObject_GetIter(res.get());
     return iter;
 }
 
