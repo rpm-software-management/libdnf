@@ -39,37 +39,31 @@ init_exceptions(void)
      HyExc_Exception = PyErr_NewException((char*) "_hawkey.Exception", NULL, NULL);
      if (!HyExc_Exception)
          return 0;
-     Py_INCREF(HyExc_Exception);
 
      HyExc_Value = PyErr_NewException((char*) "_hawkey.ValueException", HyExc_Exception,
                                       NULL);
      if (!HyExc_Value)
          return 0;
-     Py_INCREF(HyExc_Value);
 
      HyExc_Query = PyErr_NewException((char*) "_hawkey.QueryException", HyExc_Value,
                                       NULL);
      if (!HyExc_Query)
          return 0;
-     Py_INCREF(HyExc_Query);
 
      HyExc_Arch = PyErr_NewException((char*) "_hawkey.ArchException", HyExc_Value,
                                       NULL);
      if (!HyExc_Arch)
          return 0;
-     Py_INCREF(HyExc_Arch);
 
      HyExc_Runtime = PyErr_NewException((char*) "_hawkey.RuntimeException",
                                         HyExc_Exception, NULL);
      if (!HyExc_Runtime)
          return 0;
-     Py_INCREF(HyExc_Runtime);
 
      HyExc_Validation = PyErr_NewException((char*) "_hawkey.ValidationException",
                                         HyExc_Exception, NULL);
      if (!HyExc_Validation)
          return 0;
-     Py_INCREF(HyExc_Validation);
 
      return 1;
 }

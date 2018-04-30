@@ -771,7 +771,6 @@ query_get_item(PyObject *self, int index)
         return NULL;
     }
     PyObject *package = new_package(((_QueryObject *) self)->sack, id);
-    Py_INCREF(package);
     return package;
 }
 

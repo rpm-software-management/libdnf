@@ -291,7 +291,6 @@ iter(_NevraObject *self)
     UniquePtrPyObject res;
     auto nevra = self->nevra;
     if (nevra->getEpoch() == libdnf::Nevra::EPOCH_NOT_SET) {
-        Py_INCREF(Py_None);
         res.reset(Py_BuildValue("zOzzz",
             nevra->getName().c_str(),
             Py_None,
