@@ -35,6 +35,7 @@
 #include <utime.h>
 
 #include <map>
+#include <glib.h>
 
 namespace libdnf {
 
@@ -63,6 +64,7 @@ public:
     char ** mirrors;
     // 0 forces expiration on the next call to load(), -1 means undefined value
     int timestamp;
+    int max_timestamp;
     std::string repomd_fn;
     std::string primary_fn;
     std::string filelists_fn;
@@ -184,8 +186,7 @@ bool Repo::Impl::loadCache()
     LrYumRepoMd *yum_repomd;
 
     std::unique_ptr<LrHandle, decltype(&lr_handle_free)> h(lrHandleInitLocal(), &lr_handle_free);
-    std::unique_ptr<LrResult, decltype(&lr_result_free)> r(lr_result_init(),
-                                                           &lr_result_free);
+    std::unique_ptr<LrResult, decltype(&lr_result_free)> r(lr_result_init(), &lr_result_free);
 
     // Fetch data
     lr_handle_perform(h.get(), r.get(), &err);
@@ -207,6 +208,7 @@ bool Repo::Impl::loadCache()
     content_tags = yum_repomd->content_tags;
     distro_tags = yum_repomd->distro_tags;
     revision = yum_repomd->revision;
+    max_timestamp = lr_yum_repomd_get_highest_timestamp(yum_repomd, NULL);
 
     // Load timestamp unless explicitly expired
     if (timestamp != 0) {
@@ -322,6 +324,21 @@ void Repo::Impl::resetTimestamp()
     unow.modtime = now;
     timestamp = now;
     utime(primary_fn.c_str(), &unow);
+}
+
+int Repo::getMaxTimestamp()
+{
+    return pImpl->max_timestamp;
+}
+
+GSList * Repo::getContentTags()
+{
+    return pImpl->content_tags;
+}
+
+GSList * Repo::getDistroTags()
+{
+    return pImpl->distro_tags;
 }
 
 void Repo::initHyRepo(HyRepo hrepo)
