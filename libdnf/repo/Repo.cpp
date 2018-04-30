@@ -148,9 +148,10 @@ LrHandle * Repo::Impl::lrHandleInitLocal()
         vars = lr_urlvars_set(vars, item.first.c_str(), item.second.c_str());
     lr_handle_setopt(h, NULL, LRO_VARSUB, vars);
 
-    const char *urls[] = {getCachedir().c_str(), NULL};
+    std::string cachedir = getCachedir();
+    const char *urls[] = {cachedir.c_str(), NULL};
     lr_handle_setopt(h, NULL, LRO_URLS, urls);
-    lr_handle_setopt(h, NULL, LRO_DESTDIR, getCachedir().c_str());
+    lr_handle_setopt(h, NULL, LRO_DESTDIR, cachedir.c_str());
     lr_handle_setopt(h, NULL, LRO_LOCAL, 1L);
     return h;
 }
