@@ -74,7 +74,7 @@ public:
 };
 
 Repo::Impl::Impl(const std::string & id, std::unique_ptr<ConfigRepo> && config)
-: id(id), conf(std::move(config)) {}
+: id(id), conf(std::move(config)), timestamp(-1) {}
 
 Repo::Impl::~Impl()
 {
@@ -184,8 +184,9 @@ bool Repo::Impl::loadCache()
 
     // Fetch data
     lr_handle_perform(h.get(), r.get(), &err);
-    if (err)
+    if (err) {
         return false;
+    }
     lr_handle_getinfo(h.get(), NULL, LRI_MIRRORS, &mirrors);
     lr_result_getinfo(r.get(), NULL, LRR_YUM_REPO, &yum_repo);
     lr_result_getinfo(r.get(), NULL, LRR_YUM_REPOMD, &yum_repomd);
