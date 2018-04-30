@@ -25,6 +25,7 @@
 #include "../hy-types.h"
 
 #include <memory>
+#include <glib.h>
 
 namespace libdnf {
 
@@ -72,6 +73,9 @@ public:
     int getPriority() const;
     std::string getCompsFn();  // this is temporarily made public for DNF compatibility
     void initHyRepo(HyRepo hrepo);
+    int getMaxTimestamp();
+    GSList * getContentTags();
+    GSList * getDistroTags();
 
     ~Repo();
 private:
