@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <ctime>
 #include <dirent.h>
 #include <fstream>
 #include <map>
@@ -528,6 +529,10 @@ Transformer::processGroupPersistor(SQLite3Ptr swdb, const Json::Value &root)
     }
 
     trans.begin();
+
+    auto now = time(NULL);
+    trans.setDtBegin(now);
+    trans.setDtEnd(now);
 
     for (auto i : trans.getItems()) {
         i->setState(TransactionItemState::DONE);
