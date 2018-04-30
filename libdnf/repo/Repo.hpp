@@ -22,6 +22,7 @@
 #define _LIBDNF_REPO_HPP
 
 #include "../conf/ConfigRepo.hpp"
+#include "../hy-types.h"
 
 #include <memory>
 
@@ -70,6 +71,7 @@ public:
     int getCost() const;
     int getPriority() const;
     std::string getCompsFn();  // this is temporarily made public for DNF compatibility
+    void initHyRepo(HyRepo hrepo);
 
     ~Repo();
 private:

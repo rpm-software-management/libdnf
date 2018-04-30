@@ -28,6 +28,7 @@
 #include "../dnf-utils.h"
 #include "../hy-iutil.h"
 #include "../hy-util-private.hpp"
+#include "../hy-types.h"
 
 #include <librepo/librepo.h>
 #include <solv/repo.h>
@@ -321,6 +322,13 @@ void Repo::Impl::resetTimestamp()
     unow.modtime = now;
     timestamp = now;
     utime(primary_fn.c_str(), &unow);
+}
+
+void Repo::initHyRepo(HyRepo hrepo)
+{
+    hy_repo_set_string(hrepo, HY_REPO_MD_FN, pImpl->repomd_fn.c_str());
+    hy_repo_set_string(hrepo, HY_REPO_PRIMARY_FN, pImpl->primary_fn.c_str());
+    // TODO finish
 }
 
 }
