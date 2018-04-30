@@ -16,8 +16,16 @@
     #include "libdnf/conf/ConfigRepo.hpp"
     #include "libdnf/conf/ConfigParser.hpp"
     #include "libdnf/repo/Repo.hpp"
+    typedef struct {
+        PyObject_HEAD
+        HyRepo repo;
+    } _RepoObject;
     using namespace libdnf;
 %}
+
+%typemap(in) HyRepo {
+    $1 = ((_RepoObject *)$input)->repo;
+}
 
 %include <exception.i>
 %exception {
