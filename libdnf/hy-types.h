@@ -86,7 +86,12 @@ enum _hy_key_name_e {
     HY_PKG_LATEST_PER_ARCH = 32,
     HY_PKG_LATEST = 33,
     HY_PKG_UPGRADABLE = 34,
-    HY_PKG_UPGRADES = 35
+    HY_PKG_UPGRADES = 35,
+    /**
+    * @brief Use for strings of whole NEVRA (missing epoch is handled as epoch 0)
+    * Allowed compare types - only HY_EQ or HY_NEQ
+    */
+    HY_PKG_NEVRA_STRICT = 36
 };
 
 enum _hy_comparison_type_e {
