@@ -68,6 +68,9 @@ public:
     std::string presto_fn;
     std::string updateinfo_fn;
     std::string comps_fn;
+    std::string revision;
+    GSList * content_tags;
+    GSList * distro_tags;
     unsigned char checksum[CHKSUM_BYTES];
     bool useIncludes;
     std::map<std::string, std::string> substitutions;
@@ -196,9 +199,13 @@ bool Repo::Impl::loadCache()
     repomd_fn = yum_repo->repomd;
     primary_fn = lr_yum_repo_path(yum_repo, "primary");
     filelists_fn = lr_yum_repo_path(yum_repo, "filelists");
-    presto_fn = lr_yum_repo_path(yum_repo, "prestodelta");
-    updateinfo_fn = lr_yum_repo_path(yum_repo, "updateinfo");
+    // FIXME this crashes:
+    /* presto_fn = lr_yum_repo_path(yum_repo, "prestodelta"); */
+    /* updateinfo_fn = lr_yum_repo_path(yum_repo, "updateinfo"); */
     comps_fn = lr_yum_repo_path(yum_repo, "group_gz");  // FIXME: or "group"
+    content_tags = yum_repomd->content_tags;
+    distro_tags = yum_repomd->distro_tags;
+    revision = yum_repomd->revision;
 
     // Load timestamp unless explicitly expired
     if (timestamp != 0) {
