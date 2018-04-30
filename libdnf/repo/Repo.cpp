@@ -326,6 +326,11 @@ void Repo::Impl::resetTimestamp()
     utime(primary_fn.c_str(), &unow);
 }
 
+int Repo::getTimestamp()
+{
+    return pImpl->timestamp;
+}
+
 int Repo::getMaxTimestamp()
 {
     return pImpl->max_timestamp;
@@ -339,6 +344,11 @@ GSList * Repo::getContentTags()
 GSList * Repo::getDistroTags()
 {
     return pImpl->distro_tags;
+}
+
+std::string Repo::getRevision()
+{
+    return pImpl->revision;
 }
 
 void Repo::initHyRepo(HyRepo hrepo)

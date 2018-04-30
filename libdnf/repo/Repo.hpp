@@ -72,7 +72,9 @@ public:
     int getCost() const;
     int getPriority() const;
     std::string getCompsFn();  // this is temporarily made public for DNF compatibility
+    std::string getRevision();
     void initHyRepo(HyRepo hrepo);
+    int getTimestamp();
     int getMaxTimestamp();
     GSList * getContentTags();
     GSList * getDistroTags();
