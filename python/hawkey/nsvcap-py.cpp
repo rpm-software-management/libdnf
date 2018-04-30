@@ -177,7 +177,6 @@ iter(_NsvcapObject *self)
     UniquePtrPyObject res;
     libdnf::Nsvcap * nsvcap = self->nsvcap;
     if (nsvcap->getVersion() == libdnf::Nsvcap::VERSION_NOT_SET) {
-        Py_INCREF(Py_None);
         res.reset(Py_BuildValue("zzOzzz",
             nsvcap->getName().empty() ? nullptr : nsvcap->getName().c_str(),
             nsvcap->getStream().empty() ? nullptr : nsvcap->getStream().c_str(),

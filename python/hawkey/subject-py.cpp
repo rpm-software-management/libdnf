@@ -306,7 +306,6 @@ get_best_query(_SubjectObject *self, PyObject *args, PyObject *kwds)
     HyNevra nevra{nullptr};
     PyObject *py_query = get_best_parser(self, args, kwds, &nevra);
     delete nevra;
-    Py_XINCREF(py_query);
     return py_query;
 }
 
@@ -336,7 +335,6 @@ get_best_selector(_SubjectObject *self, PyObject *args, PyObject *kwds)
     HySelector c_selector = hy_subject_get_best_sltr(self->pattern, csack,
         cforms.empty() ? NULL : cforms.data(), c_obsoletes, reponame);
     PyObject *selector = SelectorToPyObject(c_selector, sack);
-    Py_INCREF(selector);
     return selector;
 }
 
