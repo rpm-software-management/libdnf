@@ -152,7 +152,7 @@ LrHandle * Repo::Impl::lrHandleInitLocal()
         vars = lr_urlvars_set(vars, item.first.c_str(), item.second.c_str());
     lr_handle_setopt(h, NULL, LRO_VARSUB, vars);
 
-    std::string cachedir = getCachedir();
+    std::string cachedir = getCachedir();  // FIXME
     const char *urls[] = {cachedir.c_str(), NULL};
     lr_handle_setopt(h, NULL, LRO_URLS, urls);
     lr_handle_setopt(h, NULL, LRO_DESTDIR, cachedir.c_str());
