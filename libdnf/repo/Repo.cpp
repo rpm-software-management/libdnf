@@ -119,6 +119,7 @@ void Repo::disable()
 }
 
 bool Repo::load() { return pImpl->load(); }
+bool Repo::loadCache() { return pImpl->loadCache(); }
 bool Repo::getUseIncludes() const { return pImpl->useIncludes; }
 void Repo::setUseIncludes(bool enabled) { pImpl->useIncludes = enabled; }
 int Repo::getCost() const { return pImpl->conf->cost().getValue(); }
