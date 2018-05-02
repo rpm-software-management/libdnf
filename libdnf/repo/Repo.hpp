@@ -76,6 +76,7 @@ public:
     std::string getRevision();
     void initHyRepo(HyRepo hrepo);
     int getAge() const;
+    void expire();
     bool expired() const;
     int expiresIn();
     bool fresh();
