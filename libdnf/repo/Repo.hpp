@@ -75,6 +75,7 @@ public:
     std::string getRevision();
     void initHyRepo(HyRepo hrepo);
     int expiresIn();
+    bool fresh();
     int getTimestamp();
     int getMaxTimestamp();
     GSList * getContentTags();
