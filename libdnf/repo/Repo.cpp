@@ -323,6 +323,11 @@ int Repo::Impl::expiresIn()
     return conf->metadata_expire().getValue() - getAge();
 }
 
+bool Repo::fresh()
+{
+    return pImpl->timestamp >= 0;
+}
+
 void Repo::Impl::resetTimestamp()
 {
     time_t now = time(NULL);
