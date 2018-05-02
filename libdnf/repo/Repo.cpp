@@ -368,6 +368,9 @@ void Repo::initHyRepo(HyRepo hrepo)
 {
     hy_repo_set_string(hrepo, HY_REPO_MD_FN, pImpl->repomd_fn.c_str());
     hy_repo_set_string(hrepo, HY_REPO_PRIMARY_FN, pImpl->primary_fn.c_str());
+    hy_repo_set_string(hrepo, HY_REPO_FILELISTS_FN, pImpl->filelists_fn.c_str());
+    hy_repo_set_cost(hrepo, pImpl->conf->cost().getValue());
+    hy_repo_set_priority(hrepo, pImpl->conf->priority().getValue());
     // TODO finish
 }
 
