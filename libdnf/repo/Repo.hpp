@@ -75,6 +75,7 @@ public:
     std::string getCompsFn();  // this is temporarily made public for DNF compatibility
     std::string getRevision();
     void initHyRepo(HyRepo hrepo);
+    int getAge() const;
     bool expired() const;
     int expiresIn();
     bool fresh();
