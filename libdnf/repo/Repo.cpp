@@ -53,6 +53,7 @@ public:
     int getAge() const;
     void expire();
     bool expired() const;
+    int expiresIn();
     void resetTimestamp();
     LrHandle * lrHandleInitBase();
     LrHandle * lrHandleInitLocal();
@@ -123,6 +124,7 @@ void Repo::setUseIncludes(bool enabled) { pImpl->useIncludes = enabled; }
 int Repo::getCost() const { return pImpl->conf->cost().getValue(); }
 int Repo::getPriority() const { return pImpl->conf->priority().getValue(); }
 std::string Repo::getCompsFn() { return pImpl->comps_fn; }
+int Repo::expiresIn() { return pImpl->expiresIn(); }
 
 LrHandle * Repo::Impl::lrHandleInitBase()
 {
@@ -314,6 +316,11 @@ bool Repo::Impl::expired() const
 {
     int maxAge = conf->metadata_expire().getValue();
     return timestamp == 0 || (maxAge >= 0 && getAge() > maxAge);
+}
+
+int Repo::Impl::expiresIn()
+{
+    return conf->metadata_expire().getValue() - getAge();
 }
 
 void Repo::Impl::resetTimestamp()
