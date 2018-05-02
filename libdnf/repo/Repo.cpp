@@ -126,6 +126,7 @@ int Repo::getCost() const { return pImpl->conf->cost().getValue(); }
 int Repo::getPriority() const { return pImpl->conf->priority().getValue(); }
 std::string Repo::getCompsFn() { return pImpl->comps_fn; }
 int Repo::getAge() const { return pImpl->getAge(); }
+void Repo::expire() { pImpl->expire(); }
 bool Repo::expired() const { return pImpl->expired(); }
 int Repo::expiresIn() { return pImpl->expiresIn(); }
 
