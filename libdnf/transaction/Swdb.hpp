@@ -28,6 +28,7 @@
 #include <vector>
 
 class Swdb;
+class Transformer;
 
 #include "../hy-types.h"
 #include "../sack/query.hpp"
@@ -108,7 +109,11 @@ public:
     std::vector< Id > filterUnneeded(HyQuery installed, Pool *pool) const;
 
 protected:
+    friend class Transformer;
+
+    explicit Swdb(SQLite3Ptr conn, bool autoClose);
     SQLite3Ptr conn;
+    bool autoClose;
     std::unique_ptr< libdnf::swdb_private::Transaction > transactionInProgress = nullptr;
     std::map< std::string, TransactionItemPtr > itemsInProgress;
 
