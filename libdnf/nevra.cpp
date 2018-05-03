@@ -31,19 +31,18 @@ namespace libdnf {
 #define PKG_RELEASE PKG_VERSION
 #define PKG_ARCH "([^-:.(/=<> ]+)"
 
-static constexpr const char * NEVRA_FORM_REGEX[] = {
-    "^" PKG_NAME "-" PKG_EPOCH PKG_VERSION "-" PKG_RELEASE "\\." PKG_ARCH "$",
-    "^" PKG_NAME "-" PKG_EPOCH PKG_VERSION "-" PKG_RELEASE          "()"  "$",
-    "^" PKG_NAME "-" PKG_EPOCH PKG_VERSION        "()"              "()"  "$",
-    "^" PKG_NAME      "()()"      "()"            "()"     "\\." PKG_ARCH "$",
-    "^" PKG_NAME      "()()"      "()"            "()"              "()"  "$"
+static const Regex NEVRA_FORM_REGEX[]{
+    Regex("^" PKG_NAME "-" PKG_EPOCH PKG_VERSION "-" PKG_RELEASE "\\." PKG_ARCH "$", REG_EXTENDED),
+    Regex("^" PKG_NAME "-" PKG_EPOCH PKG_VERSION "-" PKG_RELEASE          "()"  "$", REG_EXTENDED),
+    Regex("^" PKG_NAME "-" PKG_EPOCH PKG_VERSION        "()"              "()"  "$", REG_EXTENDED),
+    Regex("^" PKG_NAME      "()()"      "()"            "()"     "\\." PKG_ARCH "$", REG_EXTENDED),
+    Regex("^" PKG_NAME      "()()"      "()"            "()"              "()"  "$", REG_EXTENDED)
 };
 
 bool Nevra::parse(const char * nevraStr, HyForm form)
 {
     enum { NAME = 1, EPOCH = 3, VERSION = 4, RELEASE = 5, ARCH = 6, _LAST_ };
-    Regex reg(NEVRA_FORM_REGEX[form - 1], REG_EXTENDED);
-    auto matchResult = reg.match(nevraStr, false, _LAST_);
+    auto matchResult = NEVRA_FORM_REGEX[form - 1].match(nevraStr, false, _LAST_);
     if (!matchResult.isMatched() || matchResult.getMatchedLen(NAME) == 0)
         return false;
     name = matchResult.getMatchedString(NAME);
