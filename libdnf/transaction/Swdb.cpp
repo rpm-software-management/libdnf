@@ -36,6 +36,13 @@
 
 Swdb::Swdb(SQLite3Ptr conn)
   : conn{conn}
+  , autoClose(true)
+{
+}
+
+Swdb::Swdb(SQLite3Ptr conn, bool autoClose)
+  : conn{conn}
+  , autoClose(autoClose)
 {
 }
 
@@ -58,7 +65,9 @@ Swdb::closeDatabase()
 
 Swdb::~Swdb()
 {
-    closeDatabase();
+    if (autoClose) {
+        closeDatabase();
+    }
 }
 
 void
@@ -472,6 +481,7 @@ Swdb::createCompsGroupItem()
 
 Swdb::Swdb(const std::string &path)
   : conn(nullptr)
+  , autoClose(true)
 {
     // check if DB file is present
     if (!pathExists(path.c_str())) {

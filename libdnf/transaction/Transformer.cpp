@@ -506,6 +506,11 @@ Transformer::processEnvironment(SQLite3Ptr swdb, const std::string &envId, const
 void
 Transformer::processGroupPersistor(SQLite3Ptr swdb, const Json::Value &root)
 {
+    // there is no rpmdb change in this transaction,
+    // use rpmdb version from the last converted transaction
+    Swdb swdbObj(swdb, false);
+    auto lastTrans = swdbObj.getLastTransaction();
+
     auto trans = libdnf::swdb_private::Transaction(swdb);
 
     // load sequences
@@ -533,6 +538,15 @@ Transformer::processGroupPersistor(SQLite3Ptr swdb, const Json::Value &root)
     auto now = time(NULL);
     trans.setDtBegin(now);
     trans.setDtEnd(now);
+
+    if (lastTrans) {
+        trans.setRpmdbVersionBegin(lastTrans->getRpmdbVersionEnd());
+        trans.setRpmdbVersionEnd(trans.getRpmdbVersionBegin());
+    } else {
+        // no transaction found -> use 0 packages + hash for an empty string
+        trans.setRpmdbVersionBegin("0:da39a3ee5e6b4b0d3255bfef95601890afd80709");
+        trans.setRpmdbVersionEnd(trans.getRpmdbVersionBegin());
+    }
 
     for (auto i : trans.getItems()) {
         i->setState(TransactionItemState::DONE);
