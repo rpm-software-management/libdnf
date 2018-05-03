@@ -44,11 +44,76 @@
 namespace libdnf {
 
 struct NevraID {
-public:
     Id name;
     Id arch;
     Id evr;
+    /**
+    * @brief Parsing function for nevra string into name, evr, arch and transorming it into libsolv
+    * Id
+    *
+    * @return bool Returns true if parsing succesfull and all elements is known to pool
+    */
+    bool parse(Pool * pool, const char * nevraPattern);
 };
+
+bool
+NevraID::parse(Pool * pool, const char * nevraPattern)
+{
+    size_t nevraPatternLength =  strlen(nevraPattern);
+    if (nevraPatternLength > LONG_MAX) {
+        return false;
+    }
+
+    char * evrStart = NULL;
+    const char * archStr = NULL;
+    long possition;
+
+    for (possition = ((long)nevraPatternLength)-2; possition > 0; --possition) {
+        if (nevraPattern[possition] == '.') {
+            archStr = nevraPattern + possition + 1;
+            break;
+        }
+    }
+    if (!archStr)
+        return false;
+
+    arch = pool_str2id(pool, archStr, 0);
+    if (!arch)
+        return false;
+
+    char nevra[possition+1];
+    memcpy(nevra, nevraPattern, possition);
+    nevra[possition] = '\0';
+
+    while (--possition > 0 && nevra[possition] != '-');
+
+    for (--possition; possition > 0; --possition) {
+        if (nevra[possition] == '-') {
+            if (nevra[possition + 1] == '0' && nevra[possition + 2] == ':') {
+                if (nevra[possition + 3] == '-') {
+                    return false;
+                }
+                evrStart = nevra + possition + 3;
+            } else {
+                evrStart = nevra + possition + 1;
+            }
+            nevra[possition] = '\0';
+            break;
+        }
+    }
+
+    if (!evrStart)
+        return false;
+
+    name = pool_str2id(pool, nevra, 0);
+    if (!name)
+        return false;
+    evr = pool_str2id(pool, evrStart, 0);
+    if (!evr)
+        return false;
+
+    return true;
+}
 
 static bool
 nevraIDSorter(const NevraID & first, const NevraID & second)
@@ -834,64 +899,12 @@ Query::Impl::filterNevraStrict(int cmpType, const char **matches)
     std::vector<NevraID> compareSet;
     const unsigned nmatches = g_strv_length((gchar**)matches);
     compareSet.reserve(nmatches);
+    NevraID nevraId;
     for (unsigned int i = 0; i < nmatches; ++i) {
         const char * nevraPattern = matches[i];
         if (!nevraPattern)
             throw std::runtime_error("Query can not accept NULL for STR match");
-        size_t nevraPatternLength =  strlen(nevraPattern);
-        const char * evrStart = NULL;
-        const char * arch = NULL;
-        bool evrDeliminator = false;
-        bool epochDeliminator = false;
-        size_t possition;
-        for (possition = nevraPatternLength-2; possition != 0; --possition) {
-            if (arch == NULL) {
-                if (nevraPattern[possition] == '.') {
-                    arch = nevraPattern + possition + 1;
-                }
-            } else if (evrStart == NULL) {
-                if (nevraPattern[possition] == ':') {
-                    if (epochDeliminator)
-                        break;
-                    epochDeliminator = true;
-                    if (possition > 2) {
-                        if (nevraPattern[possition - 1] == '0' and
-                            nevraPattern[possition - 2] == '-') {
-                            evrStart = nevraPattern + possition + 1;
-                            possition -= 2;
-                            break;
-                        }
-                    } else {
-                        possition = 0;
-                        break;
-                    }
-                } else if (nevraPattern[possition] == '-') {
-                    if (evrDeliminator) {
-                        evrStart = nevraPattern + possition + 1;
-                        break;
-                    }
-                    evrDeliminator = true;
-                }
-            }
-        }
-        if (arch != NULL && evrStart != NULL && possition > 0) {
-            char name[possition + 1];
-            strncpy(name, nevraPattern, possition);
-            name[possition] = '\0';
-            int evrLength = arch - evrStart;
-            char evr[evrLength--];
-            strncpy(evr, evrStart, evrLength);
-            evr[evrLength] = '\0';
-            NevraID nevraId;
-            nevraId.name = pool_str2id(pool, name, 0);
-            if (nevraId.name == 0)
-                continue;
-            nevraId.evr = pool_str2id(pool, evr, 0);
-            if (nevraId.evr == 0)
-                continue;
-            nevraId.arch = pool_str2id(pool, arch, 0);
-            if (nevraId.arch == 0)
-                continue;
+        if (nevraId.parse(pool, nevraPattern)) {
             compareSet.push_back(nevraId);
         }
     }
