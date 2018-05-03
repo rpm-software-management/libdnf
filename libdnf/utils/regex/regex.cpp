@@ -47,7 +47,7 @@ Regex::operator=(Regex && src) noexcept
 }
 
 Regex::Result
-Regex::match(const char * str, bool copyStr, std::size_t count)
+Regex::match(const char * str, bool copyStr, std::size_t count) const
 {
     if (freed)
         throw InvalidException();

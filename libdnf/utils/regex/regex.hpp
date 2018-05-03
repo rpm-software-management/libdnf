@@ -155,7 +155,7 @@ public:
     * @param str string to match
     * @return true if string is matched
     */
-    bool match(const char * str);
+    bool match(const char * str) const;
 
     /**
     * @brief Match input string to precompiled regular expression
@@ -167,7 +167,7 @@ public:
     * @param count Max number of matches we want to get
     * @return object providing information regarding the location of any matches
     */
-    Result match(const char * str, bool copyStr, std::size_t count);
+    Result match(const char * str, bool copyStr, std::size_t count) const;
     ~Regex();
 private:
     void free() noexcept;
@@ -188,7 +188,7 @@ inline std::size_t Regex::getSubexprCount() const
     return exp.re_nsub; 
 }
 
-inline bool Regex::match(const char * str)
+inline bool Regex::match(const char * str) const
 {
     if (freed)
         throw InvalidException();
