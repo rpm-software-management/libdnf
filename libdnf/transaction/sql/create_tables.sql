@@ -96,6 +96,7 @@ R"**(
     );
 
     CREATE INDEX rpm_name ON rpm(name);
+    CREATE INDEX trans_item_trans_id ON trans_item(trans_id);
     CREATE INDEX trans_item_item_id ON trans_item(item_id);
 
     CREATE TABLE config (
