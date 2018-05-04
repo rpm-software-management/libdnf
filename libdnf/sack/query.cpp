@@ -43,6 +43,85 @@
 
 namespace libdnf {
 
+struct NevraID {
+    Id name;
+    Id arch;
+    Id evr;
+    /**
+    * @brief Parsing function for nevra string into name, evr, arch and transorming it into libsolv
+    * Id
+    *
+    * @return bool Returns true if parsing succesfull and all elements is known to pool
+    */
+    bool parse(Pool * pool, const char * nevraPattern);
+};
+
+bool
+NevraID::parse(Pool * pool, const char * nevraPattern)
+{
+    const char * evrDelim = nullptr;
+    const char * releaseDelim = nullptr;
+    const char * archDelim = nullptr;
+    const char * end;
+
+    // parse nevra
+    for (end = nevraPattern; *end != '\0'; ++end) {
+        if (*end == '-') {
+            evrDelim = releaseDelim;
+            releaseDelim = end;
+        } else if (*end == '.') {
+            archDelim = end;
+        }
+    }
+
+    // test name presence
+    if (!evrDelim || evrDelim == nevraPattern)
+        return false;
+
+    auto nameLen = evrDelim - nevraPattern;
+
+    // strip epoch "0:"
+    if (evrDelim[1] == '0' && evrDelim[2] == ':')
+        evrDelim += 2;
+
+    // test version and arch presence
+    if (releaseDelim - evrDelim <= 1 ||
+        !archDelim || archDelim <= releaseDelim + 1 || archDelim == end - 1)
+        return false;
+
+    // convert strings to Ids
+    if (!(name = pool_strn2id(pool, nevraPattern, nameLen, 0)))
+        return false;
+    ++evrDelim;
+    if (!(evr = pool_strn2id(pool, evrDelim, archDelim - evrDelim, 0)))
+        return false;
+    ++archDelim;
+    if (!(arch = pool_strn2id(pool, archDelim, end - archDelim, 0)))
+        return false;
+
+    return true;
+}
+
+static bool
+nevraIDSorter(const NevraID & first, const NevraID & second)
+{
+    if (first.name != second.name)
+        return first.name < second.name;
+    if (first.arch != second.arch)
+        return first.arch < second.arch;
+    return first.evr < second.evr;
+}
+
+static bool
+nevraCompareLowerSolvable(const NevraID &first, const Solvable &s)
+{
+    if (first.name != s.name)
+        return first.name < s.name;
+    if (first.arch != s.arch)
+        return first.arch < s.arch;
+    return first.evr < s.evr;
+}
+
 static bool
 match_type_num(int keyname) {
     switch (keyname) {
@@ -104,6 +183,7 @@ match_type_str(int keyname) {
         case HY_PKG_LOCATION:
         case HY_PKG_NAME:
         case HY_PKG_NEVRA:
+        case HY_PKG_NEVRA_STRICT:
         case HY_PKG_PROVIDES:
         case HY_PKG_RECOMMENDS:
         case HY_PKG_RELEASE:
@@ -133,6 +213,7 @@ valid_filter_str(int keyname, int cmp_type)
     switch (keyname) {
         case HY_PKG_LOCATION:
         case HY_PKG_SOURCERPM:
+        case HY_PKG_NEVRA_STRICT:
             return cmp_type == HY_EQ;
         case HY_PKG_ARCH:
             return cmp_type & HY_EQ || cmp_type & HY_GLOB;
@@ -552,6 +633,18 @@ private:
     std::unique_ptr<PackageSet> result;
     std::vector<Filter> filters;
     void apply();
+
+    /**
+    * @brief It accepts strings of whole NEVRA and apply them to the query. It requires full
+    * NEVRA without globs.
+    * For dnf-2.8.9-1.fc27.noarch it accepts dnf-0:2.8.9-1.fc27.noarch or dnf-2.8.9-1.fc27.noarch
+    * But for package gedit-3:3.22.1-2.fc27.x86_64 the string gedit-3.22.1-2.fc27.x86_64 is
+    * incorrect and there will be no result for the query.
+    *
+    * @param cmpType p_cmpType: Allowed compare types - only HY_EQ or HY_NEQ
+    * @param matches p_matches: Patterns to match
+    */
+    void filterNevraStrict(int cmpType, const char **matches);
     void initResult();
     void filterPkg(const Filter & f, Map *m);
     void filterRcoReldep(const Filter & f, Map *m);
@@ -687,6 +780,15 @@ Query::addFilter(int keyname, DnfReldepList *reldeplist)
 int
 Query::addFilter(int keyname, int cmp_type, const char *match)
 {
+    if (keyname == HY_PKG_NEVRA_STRICT) {
+        if (!(cmp_type & HY_EQ))
+            return DNF_ERROR_BAD_QUERY;
+        pImpl->apply();
+        const char * matches[2]{match, nullptr};
+        pImpl->filterNevraStrict(cmp_type, matches);
+        return 0;
+    }
+
     if ((cmp_type & HY_GLOB) && !hy_is_glob_pattern(match))
         cmp_type = (cmp_type & ~HY_GLOB) | HY_EQ;
 
@@ -730,6 +832,14 @@ Query::addFilter(int keyname, int cmp_type, const char *match)
 int
 Query::addFilter(int keyname, int cmp_type, const char **matches)
 {
+    if (keyname == HY_PKG_NEVRA_STRICT) {
+        if (!(cmp_type & HY_EQ))
+            return DNF_ERROR_BAD_QUERY;
+        pImpl->apply();
+        pImpl->filterNevraStrict(cmp_type, matches);
+        return 0;
+    }
+
     if (cmp_type & HY_GLOB) {
         bool is_glob = false;
         for (const char **match = matches; *match != NULL; match++) {
@@ -767,6 +877,66 @@ Query::addFilter(HyNevra nevra, bool icase)
     if (!nevra->getArch().empty() && nevra->getArch() != "*")
         addFilter(HY_PKG_ARCH, HY_GLOB, nevra->getArch().c_str());
     return 0;
+}
+
+void
+Query::Impl::filterNevraStrict(int cmpType, const char **matches)
+{
+    Pool *pool = dnf_sack_get_pool(sack);
+    std::vector<NevraID> compareSet;
+    const unsigned nmatches = g_strv_length((gchar**)matches);
+    compareSet.reserve(nmatches);
+    NevraID nevraId;
+    for (unsigned int i = 0; i < nmatches; ++i) {
+        const char * nevraPattern = matches[i];
+        if (!nevraPattern)
+            throw std::runtime_error("Query can not accept NULL for STR match");
+        if (nevraId.parse(pool, nevraPattern)) {
+            compareSet.push_back(nevraId);
+        }
+    }
+    if (compareSet.empty()) {
+        if (!(cmpType & HY_NOT))
+            map_empty(result->getMap());
+        return;
+    }
+    Map nevraResult;
+    map_init(&nevraResult, pool->nsolvables);
+
+    if (compareSet.size() > 1) {
+        std::sort(compareSet.begin(), compareSet.end(), nevraIDSorter);
+
+        Id id = -1;
+        while (true) {
+            id = result->next(id);
+            if (id == -1)
+                break;
+            Solvable* s = pool_id2solvable(pool, id);
+            auto low = std::lower_bound(compareSet.begin(), compareSet.end(), *s,
+                                        nevraCompareLowerSolvable);
+            if (low != compareSet.end() && low->name == s->name && low->evr == s->evr &&
+                low->arch == s->arch) {
+                MAPSET(&nevraResult, id);
+            }
+        }
+    } else {
+        auto nevraId = compareSet[0];
+        Id id = -1;
+        while (true) {
+            id = result->next(id);
+            if (id == -1)
+                break;
+            Solvable* s = pool_id2solvable(pool, id);
+            if (nevraId.name == s->name && nevraId.evr == s->evr && nevraId.arch == s->arch) {
+                MAPSET(&nevraResult, id);
+            }
+        }
+    }
+    if (cmpType & HY_NOT)
+        map_subtract(result->getMap(), &nevraResult);
+    else
+        map_and(result->getMap(), &nevraResult);
+    map_free(&nevraResult);
 }
 
 void
