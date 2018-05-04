@@ -82,3 +82,30 @@ SQLite3::backup(const std::string &outputFile)
         throw LibException(result, "Database backup failed");
     }
 }
+
+void
+SQLite3::restore(const std::string &inputFile)
+{
+    sqlite3 *backupDB;
+
+    auto result = sqlite3_open(inputFile.c_str(), &backupDB);
+    if (result != SQLITE_OK) {
+        sqlite3_close(backupDB);
+        throw LibException(result, "Failed to open backup database: " + inputFile);
+    }
+
+    sqlite3_backup *backupHandle = sqlite3_backup_init(db, "main", backupDB, "main");
+
+    if (backupHandle) {
+        sqlite3_backup_step(backupHandle, -1);
+        sqlite3_backup_finish(backupHandle);
+    }
+
+    result = sqlite3_errcode(backupDB);
+
+    sqlite3_close(backupDB);
+
+    if (result != SQLITE_OK) {
+        throw LibException(result, "Database restore failed");
+    }
+}
