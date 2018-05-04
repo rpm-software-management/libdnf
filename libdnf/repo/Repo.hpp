@@ -32,9 +32,10 @@ namespace libdnf {
 /**
 * @class Repo
 *
-* @brief Holds repo configuration options
+* @brief Package repository
 *
-* Default values of some options are inherited from ConfigMain.
+* Represents a repository used to download packages.
+* Remote metadata is cached locally.
 *
 */
 struct Repo {
@@ -43,7 +44,7 @@ public:
     * @brief Verify repo ID
     *
     * @param id repo ID to verify
-    * @return index of the first invalid character in the repo ID (if present) or -1
+    * @return   index of the first invalid character in the repo ID (if present) or -1
     */
     static int verifyId(const std::string & id);
 
@@ -60,7 +61,7 @@ public:
     void enable();
     void disable();
     /**
-    * @brief Initialize the repo with metadata.
+    * @brief Initialize the repo with metadata
     *
     * Fetches new metadata from the origin or just reuses local cache if still valid.
     *
