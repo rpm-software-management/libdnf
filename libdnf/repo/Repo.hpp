@@ -50,10 +50,10 @@ public:
     /**
     * @brief Construct the Repo object
     *
-    * @param id repo ID to use
-    * @param config configuration to use
+    * @param id     repo ID to use
+    * @param conf   configuration to use
     */
-    Repo(const std::string & id, std::unique_ptr<ConfigRepo> && config);
+    Repo(const std::string & id, std::unique_ptr<ConfigRepo> && conf);
 
     ConfigRepo * getConfig() noexcept;
     const std::string & getId() const noexcept;
