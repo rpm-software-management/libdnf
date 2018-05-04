@@ -157,6 +157,21 @@ class TestQuery(base.TestCase):
         self.assertEqual(len(query), 1)
         self.assertEqual(str(query[0]), "penny-lib-4-1.x86_64")
 
+    def test_nevra_strict_match(self):
+        query = hawkey.Query(self.sack).filter(nevra_strict="penny-lib-4-1.x86_64")
+        self.assertEqual(len(query), 1)
+        self.assertEqual(str(query[0]), "penny-lib-4-1.x86_64")
+
+    def test_nevra_strict_list_match(self):
+        query = hawkey.Query(self.sack).filter(nevra_strict=["penny-lib-4-1.x86_64"])
+        self.assertEqual(len(query), 1)
+        self.assertEqual(str(query[0]), "penny-lib-4-1.x86_64")
+
+    def test_nevra_strict_epoch0_match(self):
+        query = hawkey.Query(self.sack).filter(nevra_strict="penny-lib-0:4-1.x86_64")
+        self.assertEqual(len(query), 1)
+        self.assertEqual(str(query[0]), "penny-lib-4-1.x86_64")
+
     def test_repeated(self):
         q = hawkey.Query(self.sack).filter(name="jay")
         q.filterm(latest_per_arch=True)
