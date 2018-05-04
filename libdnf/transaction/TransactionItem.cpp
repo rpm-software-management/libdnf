@@ -148,7 +148,7 @@ TransactionItem::saveReplacedBy()
     if (replacedBy.empty()) {
         return;
     }
-    const char *sql = "INSERT INTO item_replaced_by VALUES (?, ?)";
+    const char *sql = "INSERT OR REPLACE INTO item_replaced_by VALUES (?, ?)";
     SQLite3::Statement replacedByQuery(*(conn.get()), sql);
     bool first = true;
     for (const auto &newItem : replacedBy) {
