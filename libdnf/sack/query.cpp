@@ -59,57 +59,44 @@ struct NevraID {
 bool
 NevraID::parse(Pool * pool, const char * nevraPattern)
 {
-    size_t nevraPatternLength =  strlen(nevraPattern);
-    if (nevraPatternLength > LONG_MAX) {
-        return false;
-    }
+    const char * evrDelim = nullptr;
+    const char * releaseDelim = nullptr;
+    const char * archDelim = nullptr;
+    const char * end;
 
-    char * evrStart = NULL;
-    const char * archStr = NULL;
-    long possition;
-
-    for (possition = ((long)nevraPatternLength)-2; possition > 0; --possition) {
-        if (nevraPattern[possition] == '.') {
-            archStr = nevraPattern + possition + 1;
-            break;
-        }
-    }
-    if (!archStr)
-        return false;
-
-    arch = pool_str2id(pool, archStr, 0);
-    if (!arch)
-        return false;
-
-    char nevra[possition+1];
-    memcpy(nevra, nevraPattern, possition);
-    nevra[possition] = '\0';
-
-    while (--possition > 0 && nevra[possition] != '-');
-
-    for (--possition; possition > 0; --possition) {
-        if (nevra[possition] == '-') {
-            if (nevra[possition + 1] == '0' && nevra[possition + 2] == ':') {
-                if (nevra[possition + 3] == '-') {
-                    return false;
-                }
-                evrStart = nevra + possition + 3;
-            } else {
-                evrStart = nevra + possition + 1;
-            }
-            nevra[possition] = '\0';
-            break;
+    // parse nevra
+    for (end = nevraPattern; *end != '\0'; ++end) {
+        if (*end == '-') {
+            evrDelim = releaseDelim;
+            releaseDelim = end;
+        } else if (*end == '.') {
+            archDelim = end;
         }
     }
 
-    if (!evrStart)
+    // test name presence
+    if (!evrDelim || evrDelim == nevraPattern)
         return false;
 
-    name = pool_str2id(pool, nevra, 0);
-    if (!name)
+    auto nameLen = evrDelim - nevraPattern;
+
+    // strip epoch "0:"
+    if (evrDelim[1] == '0' && evrDelim[2] == ':')
+        evrDelim += 2;
+
+    // test version and arch presence
+    if (releaseDelim - evrDelim <= 1 ||
+        !archDelim || archDelim <= releaseDelim + 1 || archDelim == end - 1)
         return false;
-    evr = pool_str2id(pool, evrStart, 0);
-    if (!evr)
+
+    // convert strings to Ids
+    if (!(name = pool_strn2id(pool, nevraPattern, nameLen, 0)))
+        return false;
+    ++evrDelim;
+    if (!(evr = pool_strn2id(pool, evrDelim, archDelim - evrDelim, 0)))
+        return false;
+    ++archDelim;
+    if (!(arch = pool_strn2id(pool, archDelim, end - archDelim, 0)))
         return false;
 
     return true;
