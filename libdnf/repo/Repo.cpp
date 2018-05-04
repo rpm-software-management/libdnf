@@ -41,7 +41,7 @@ namespace libdnf {
 
 class Repo::Impl {
 public:
-    Impl(const std::string & id, std::unique_ptr<ConfigRepo> && config);
+    Impl(const std::string & id, std::unique_ptr<ConfigRepo> && conf);
     ~Impl();
 
     bool load();
@@ -80,15 +80,15 @@ public:
     std::map<std::string, std::string> substitutions;
 };
 
-Repo::Impl::Impl(const std::string & id, std::unique_ptr<ConfigRepo> && config)
-: id(id), conf(std::move(config)), timestamp(-1) {}
+Repo::Impl::Impl(const std::string & id, std::unique_ptr<ConfigRepo> && conf)
+: id(id), conf(std::move(conf)), timestamp(-1) {}
 
 Repo::Impl::~Impl()
 {
 }
 
-Repo::Repo(const std::string & id, std::unique_ptr<ConfigRepo> && config)
-: pImpl(new Impl(id, std::move(config))) {}
+Repo::Repo(const std::string & id, std::unique_ptr<ConfigRepo> && conf)
+: pImpl(new Impl(id, std::move(conf))) {}
 
 Repo::~Repo() = default;
 
