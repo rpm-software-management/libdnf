@@ -122,7 +122,15 @@ Transformer::transform()
 
     // migrate history db if it exists
     try {
-        auto history = std::make_shared< SQLite3 >(historyPath().c_str());
+        // make a copy of source database to make creating indexes temporary
+        auto history = std::make_shared< SQLite3 >(":memory:");
+        history->restore(historyPath().c_str());
+
+        // create additional indexes in the source database to increase conversion speed
+        history->exec("CREATE INDEX IF NOT EXISTS i_trans_cmdline_tid ON trans_cmdline(tid);");
+        history->exec("CREATE INDEX IF NOT EXISTS i_trans_data_pkgs_tid ON trans_data_pkgs(tid);");
+        history->exec("CREATE INDEX IF NOT EXISTS i_trans_script_stdout_tid ON trans_script_stdout(tid);");
+        history->exec("CREATE INDEX IF NOT EXISTS i_trans_with_pkgs_tid_pkgtupid ON trans_with_pkgs(tid, pkgtupid);");
 
         // transform objects
         transformTrans(swdb, history);
