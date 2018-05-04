@@ -361,6 +361,7 @@ public:
     std::string getError() { return sqlite3_errmsg(db); }
 
     void backup(const std::string &outputFile);
+    void restore(const std::string &inputFile);
 
 protected:
     std::string path;
