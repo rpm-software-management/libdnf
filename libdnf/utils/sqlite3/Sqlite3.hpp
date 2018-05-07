@@ -157,11 +157,9 @@ public:
         template< typename... Args >
         Statement &bindv(Args &&... args)
         {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsequence-point"
-            size_t pos{1};
-            Pass{(bind(pos++, args), 0)...};
-#pragma GCC diagnostic pop
+            using Pass = int[];
+            size_t pos{0};
+            (void)Pass{(bind(++pos, args), 0)...};
             return *this;
         }
 
@@ -236,13 +234,6 @@ public:
         };
 
     protected:
-        struct Pass {
-            template< typename... T >
-            Pass(T...)
-            {
-            }
-        };
-
         template< typename T >
         struct identity {
             typedef T type;
