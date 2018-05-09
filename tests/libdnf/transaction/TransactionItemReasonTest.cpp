@@ -14,6 +14,8 @@
 
 #include "TransactionItemReasonTest.hpp"
 
+using namespace libdnf;
+
 CPPUNIT_TEST_SUITE_REGISTRATION(TransactionItemReasonTest);
 
 void

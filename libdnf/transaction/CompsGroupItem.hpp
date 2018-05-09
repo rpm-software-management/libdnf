@@ -24,6 +24,8 @@
 #include <memory>
 #include <vector>
 
+namespace libdnf {
+
 enum class CompsPackageType : int {
     MANDATORY = 0,
     DEFAULT = 1,
@@ -37,8 +39,12 @@ class CompsGroupPackage;
 typedef std::shared_ptr< CompsGroupItem > CompsGroupItemPtr;
 typedef std::shared_ptr< CompsGroupPackage > CompsGroupPackagePtr;
 
+}
+
 #include "Item.hpp"
 #include "TransactionItem.hpp"
+
+namespace libdnf {
 
 class CompsGroupItem : public Item {
 public:
@@ -119,5 +125,7 @@ private:
     void dbSelectOrInsert();
     void dbUpdate();
 };
+
+} // namespace libdnf
 
 #endif // LIBDNF_TRANSACTION_COMPSGROUPITEM_HPP

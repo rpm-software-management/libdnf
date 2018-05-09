@@ -44,7 +44,7 @@ public:
     void setCmdline(const std::string &value) { cmdline = value; }
     void setState(TransactionState value) { state = value; }
 
-    virtual std::vector< TransactionItemPtr > getItems();
+    std::vector< TransactionItemPtr > getItems() override;
 
     void begin();
     void finish(TransactionState state);
@@ -63,7 +63,8 @@ protected:
     void dbInsert();
     void dbUpdate();
 };
-};
-};
+
+}
+}
 
 #endif // LIBDNF_TRANSACTION_TRANSACTION_PRIVATE_HPP

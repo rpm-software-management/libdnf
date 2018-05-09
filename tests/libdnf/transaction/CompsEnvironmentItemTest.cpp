@@ -12,6 +12,8 @@
 
 CPPUNIT_TEST_SUITE_REGISTRATION(CompsEnvironmentItemTest);
 
+using namespace libdnf;
+
 void
 CompsEnvironmentItemTest::setUp()
 {

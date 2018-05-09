@@ -22,6 +22,8 @@
 
 #include "CompsEnvironmentItem.hpp"
 
+namespace libdnf {
+
 typedef const char *string;
 
 CompsEnvironmentItem::CompsEnvironmentItem(SQLite3Ptr conn)
@@ -332,3 +334,5 @@ CompsEnvironmentGroup::dbInsert()
     query.step();
     setId(getEnvironment().conn->lastInsertRowID());
 }
+
+} // namespace libdnf

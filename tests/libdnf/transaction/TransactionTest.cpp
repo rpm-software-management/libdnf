@@ -7,6 +7,7 @@
 
 #include "TransactionTest.hpp"
 
+using namespace libdnf;
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TransactionTest);
 

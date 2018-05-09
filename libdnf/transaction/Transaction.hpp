@@ -28,15 +28,15 @@
 #include "../utils/sqlite3/Sqlite3.hpp"
 
 namespace libdnf {
-
 class Transaction;
 typedef std::shared_ptr< Transaction > TransactionPtr;
-};
+}
 
 #include "Item.hpp"
 #include "TransactionItem.hpp"
 
 namespace libdnf {
+
 class Transaction {
 public:
     // load from db
@@ -56,7 +56,7 @@ public:
     const std::string &getCmdline() const noexcept { return cmdline; }
     TransactionState getState() const noexcept { return state; }
 
-    virtual std::vector< TransactionItemPtr > getItems() const;
+    virtual std::vector< TransactionItemPtr > getItems();
     const std::set< std::shared_ptr< RPMItem > > getSoftwarePerformedWith() const;
     std::vector< std::pair< int, std::string > > getConsoleOutput() const;
 
@@ -65,7 +65,7 @@ protected:
     void dbSelect(int64_t transaction_id);
     std::set< std::shared_ptr< RPMItem > > softwarePerformedWith;
 
-    friend class ::TransactionItem;
+    friend class TransactionItem;
     SQLite3Ptr conn;
 
     int64_t id = 0;
@@ -79,6 +79,7 @@ protected:
     std::string cmdline;
     TransactionState state = TransactionState::UNKNOWN;
 };
-};
+
+} // namespace libdnf
 
 #endif // LIBDNF_TRANSACTION_TRANSACTION_HPP

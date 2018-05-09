@@ -27,13 +27,15 @@
 #include "Transaction.hpp"
 #include "TransactionItem.hpp"
 
-libdnf::swdb_private::Transaction::Transaction(SQLite3Ptr conn)
+namespace libdnf {
+
+swdb_private::Transaction::Transaction(SQLite3Ptr conn)
   : libdnf::Transaction(conn)
 {
 }
 
 void
-libdnf::swdb_private::Transaction::begin()
+swdb_private::Transaction::begin()
 {
     if (id != 0) {
         throw std::runtime_error(_("Transaction has already began!"));
@@ -43,7 +45,7 @@ libdnf::swdb_private::Transaction::begin()
 }
 
 void
-libdnf::swdb_private::Transaction::finish(TransactionState state)
+swdb_private::Transaction::finish(TransactionState state)
 {
     // save states to the database before checking for UNKNOWN state
     for (auto i : getItems()) {
@@ -62,7 +64,7 @@ libdnf::swdb_private::Transaction::finish(TransactionState state)
 }
 
 void
-libdnf::swdb_private::Transaction::dbInsert()
+swdb_private::Transaction::dbInsert()
 {
     const char *sql =
         "INSERT INTO "
@@ -119,7 +121,7 @@ libdnf::swdb_private::Transaction::dbInsert()
 }
 
 void
-libdnf::swdb_private::Transaction::dbUpdate()
+swdb_private::Transaction::dbUpdate()
 {
     const char *sql =
         "UPDATE "
@@ -149,7 +151,7 @@ libdnf::swdb_private::Transaction::dbUpdate()
 }
 
 TransactionItemPtr
-libdnf::swdb_private::Transaction::addItem(std::shared_ptr< Item > item,
+swdb_private::Transaction::addItem(std::shared_ptr< Item > item,
                                            const std::string &repoid,
                                            TransactionItemAction action,
                                            TransactionItemReason reason)
@@ -164,7 +166,7 @@ libdnf::swdb_private::Transaction::addItem(std::shared_ptr< Item > item,
 }
 
 void
-libdnf::swdb_private::Transaction::saveItems()
+swdb_private::Transaction::saveItems()
 {
     // TODO: remove all existing items from the database first?
     for (auto i : items) {
@@ -184,7 +186,7 @@ libdnf::swdb_private::Transaction::saveItems()
  * \return list of transaction items associated with the transaction
  */
 std::vector< TransactionItemPtr >
-libdnf::swdb_private::Transaction::getItems()
+swdb_private::Transaction::getItems()
 {
     if (items.empty()) {
         items = libdnf::Transaction::getItems();
@@ -199,7 +201,7 @@ libdnf::swdb_private::Transaction::getItems()
  * \param software RPMItem used to perform the transaction
  */
 void
-libdnf::swdb_private::Transaction::addSoftwarePerformedWith(std::shared_ptr< RPMItem > software)
+swdb_private::Transaction::addSoftwarePerformedWith(std::shared_ptr< RPMItem > software)
 {
     softwarePerformedWith.insert(software);
 }
@@ -211,7 +213,7 @@ libdnf::swdb_private::Transaction::addSoftwarePerformedWith(std::shared_ptr< RPM
  * \param line console output content
  */
 void
-libdnf::swdb_private::Transaction::addConsoleOutputLine(int fileDescriptor, const std::string &line)
+swdb_private::Transaction::addConsoleOutputLine(int fileDescriptor, const std::string &line)
 {
     if (!getId()) {
         throw std::runtime_error(_("Can't add console output to unsaved transaction"));
@@ -231,3 +233,5 @@ libdnf::swdb_private::Transaction::addConsoleOutputLine(int fileDescriptor, cons
     query.bindv(getId(), fileDescriptor, line);
     query.step();
 }
+
+} // namespace libdnf

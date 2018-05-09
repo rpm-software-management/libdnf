@@ -26,10 +26,14 @@
 
 #include "../utils/sqlite3/Sqlite3.hpp"
 
+namespace libdnf {
 class Item;
 typedef std::shared_ptr< Item > ItemPtr;
+}
 
 #include "Types.hpp"
+
+namespace libdnf {
 
 class Item {
 public:
@@ -56,5 +60,7 @@ protected:
     int64_t id = 0;
     const ItemType itemType = ItemType::UNKNOWN;
 };
+
+} // namespace libdnf
 
 #endif // LIBDNF_TRANSACTION_ITEM_HPP

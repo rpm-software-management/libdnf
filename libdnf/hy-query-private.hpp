@@ -38,7 +38,7 @@ enum _match_type {
     _HY_STR,
 };
 
-int hy_filter_unneeded(HyQuery query, const Swdb &swdb, const gboolean debug_solver);
+int hy_filter_unneeded(HyQuery query, const libdnf::Swdb &swdb, const gboolean debug_solver);
 
 /**
 * @brief Return HySelector from HyQuery

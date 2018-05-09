@@ -27,8 +27,10 @@
 #include <sys/stat.h>
 #include <vector>
 
+namespace libdnf {
 class Swdb;
 class Transformer;
+}
 
 #include "../hy-types.h"
 #include "../sack/query.hpp"
@@ -38,6 +40,8 @@ class Transformer;
 #include "Transaction.hpp"
 #include "TransactionItem.hpp"
 #include "private/Transaction.hpp"
+
+namespace libdnf {
 
 class Swdb {
 public:
@@ -66,8 +70,8 @@ public:
     // TODO:
     std::vector< TransactionItemPtr > getItems() { return transactionInProgress->getItems(); }
 
-    libdnf::TransactionPtr getLastTransaction();
-    std::vector< libdnf::TransactionPtr >
+    TransactionPtr getLastTransaction();
+    std::vector< TransactionPtr >
     listTransactions(); // std::vector<long long> transactionIds);
 
     // TransactionItems
@@ -90,7 +94,7 @@ public:
                                                           const std::string &arch,
                                                           int64_t maxTransactionId);
     const std::string getRPMRepo(const std::string &nevra);
-    std::shared_ptr< const TransactionItem > getRPMTransactionItem(const std::string &nevra);
+    TransactionItemPtr getRPMTransactionItem(const std::string &nevra);
     std::vector< int64_t > searchTransactionsByRPM(const std::vector< std::string > &patterns);
 
     // Item: CompsGroup
@@ -114,10 +118,12 @@ protected:
     explicit Swdb(SQLite3Ptr conn, bool autoClose);
     SQLite3Ptr conn;
     bool autoClose;
-    std::unique_ptr< libdnf::swdb_private::Transaction > transactionInProgress = nullptr;
+    std::unique_ptr< swdb_private::Transaction > transactionInProgress = nullptr;
     std::map< std::string, TransactionItemPtr > itemsInProgress;
 
 private:
 };
+
+} // namespace libdnf
 
 #endif // LIBDNF_TRANSACTION_SWDB_HPP
