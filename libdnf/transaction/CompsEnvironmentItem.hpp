@@ -24,15 +24,20 @@
 #include <memory>
 #include <vector>
 
+namespace libdnf {
+
 class CompsEnvironmentItem;
 typedef std::shared_ptr< CompsEnvironmentItem > CompsEnvironmentItemPtr;
 
 class CompsEnvironmentGroup;
 typedef std::shared_ptr< CompsEnvironmentGroup > CompsEnvironmentGroupPtr;
+}
 
 #include "Item.hpp"
 #include "CompsGroupItem.hpp"
 #include "TransactionItem.hpp"
+
+namespace libdnf {
 
 class CompsEnvironmentItem : public Item {
 public:
@@ -115,5 +120,7 @@ protected:
 private:
     void dbInsert();
 };
+
+} // namespace libdnf
 
 #endif // LIBDNF_TRANSACTION_COMPSENVIRONMENTITEM_HPP

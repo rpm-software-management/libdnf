@@ -34,6 +34,8 @@
 #include "Swdb.hpp"
 #include "Transformer.hpp"
 
+namespace libdnf {
+
 Swdb::Swdb(SQLite3Ptr conn)
   : conn{conn}
   , autoClose(true)
@@ -76,8 +78,8 @@ Swdb::initTransaction()
     if (transactionInProgress) {
         throw std::logic_error(_("In progress"));
     }
-    transactionInProgress = std::unique_ptr< libdnf::swdb_private::Transaction >(
-        new libdnf::swdb_private::Transaction(conn));
+    transactionInProgress = std::unique_ptr< swdb_private::Transaction >(
+        new swdb_private::Transaction(conn));
     itemsInProgress.clear();
 }
 
@@ -121,7 +123,7 @@ Swdb::endTransaction(int64_t dtEnd, std::string rpmdbVersionEnd, TransactionStat
     transactionInProgress->setRpmdbVersionEnd(rpmdbVersionEnd);
     transactionInProgress->finish(state);
     int64_t result = transactionInProgress->getId();
-    transactionInProgress = std::unique_ptr< libdnf::swdb_private::Transaction >(nullptr);
+    transactionInProgress = std::unique_ptr< swdb_private::Transaction >(nullptr);
     itemsInProgress.clear();
     return result;
 }
@@ -177,7 +179,7 @@ Swdb::resolveRPMTransactionItemReason(const std::string &name,
 const std::string
 Swdb::getRPMRepo(const std::string &nevra)
 {
-    libdnf::Nevra nevraObject;
+    Nevra nevraObject;
     if (!nevraObject.parse(nevra.c_str(), HY_FORM_NEVRA)) {
         return "";
     }
@@ -220,13 +222,13 @@ Swdb::getRPMRepo(const std::string &nevra)
     return "";
 }
 
-std::shared_ptr< const TransactionItem >
+TransactionItemPtr
 Swdb::getRPMTransactionItem(const std::string &nevra)
 {
     return RPMItem::getTransactionItem(conn, nevra);
 }
 
-libdnf::TransactionPtr
+TransactionPtr
 Swdb::getLastTransaction()
 {
     const char *sql = R"**(
@@ -241,13 +243,13 @@ Swdb::getLastTransaction()
     SQLite3::Statement query(*conn, sql);
     if (query.step() == SQLite3::Statement::StepResult::ROW) {
         auto transId = query.get< int64_t >(0);
-        auto transaction = std::make_shared< libdnf::Transaction >(conn, transId);
+        auto transaction = std::make_shared< Transaction >(conn, transId);
         return transaction;
     }
     return nullptr;
 }
 
-std::vector< libdnf::TransactionPtr >
+std::vector< TransactionPtr >
 Swdb::listTransactions()
 {
     const char *sql = R"**(
@@ -259,10 +261,10 @@ Swdb::listTransactions()
             id
     )**";
     SQLite3::Statement query(*conn, sql);
-    std::vector< libdnf::TransactionPtr > result;
+    std::vector< TransactionPtr > result;
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
         auto transId = query.get< int64_t >(0);
-        auto transaction = std::make_shared< libdnf::Transaction >(conn, transId);
+        auto transaction = std::make_shared< Transaction >(conn, transId);
         result.push_back(transaction);
     }
     return result;
@@ -535,3 +537,5 @@ Swdb::searchTransactionsByRPM(const std::vector< std::string > &patterns)
 {
     return RPMItem::searchTransactions(conn, patterns);
 }
+
+} // namespace libdnf

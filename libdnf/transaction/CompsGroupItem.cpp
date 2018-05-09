@@ -23,6 +23,8 @@
 #include "CompsGroupItem.hpp"
 #include "TransactionItem.hpp"
 
+namespace libdnf {
+
 CompsGroupItem::CompsGroupItem(SQLite3Ptr conn)
   : Item{conn}
   , packageTypes(CompsPackageType::DEFAULT)
@@ -360,3 +362,5 @@ CompsGroupPackage::dbSelectOrInsert()
         dbInsert();
     }
 }
+
+} // namespace libdnf

@@ -20,11 +20,13 @@
 
 #include "MergedTransaction.hpp"
 
+namespace libdnf {
+
 /**
  * Create a new MergedTransaction object with a single transaction
  * \param trans initial transaction
  */
-MergedTransaction::MergedTransaction(libdnf::TransactionPtr trans)
+MergedTransaction::MergedTransaction(TransactionPtr trans)
   : transactions{trans}
 {
 }
@@ -36,7 +38,7 @@ MergedTransaction::MergedTransaction(libdnf::TransactionPtr trans)
  * \param trans transaction to be merged with
  */
 void
-MergedTransaction::merge(libdnf::TransactionPtr trans)
+MergedTransaction::merge(TransactionPtr trans)
 {
     bool inserted = false;
     for (auto it = transactions.begin(); it < transactions.end(); ++it) {
@@ -391,3 +393,5 @@ MergedTransaction::mergeItem(ItemPairMap &itemPairMap, TransactionItemBasePtr mT
             break;
     }
 }
+
+} // namespace libdnf

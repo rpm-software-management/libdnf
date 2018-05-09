@@ -14,6 +14,8 @@
 
 #include "TransformerTest.hpp"
 
+using namespace libdnf;
+
 CPPUNIT_TEST_SUITE_REGISTRATION(TransformerTest);
 
 TransformerMock::TransformerMock()

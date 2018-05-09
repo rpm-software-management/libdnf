@@ -23,18 +23,22 @@
 
 #include "Transaction.hpp"
 
+namespace libdnf {
+
 /**
  * Class overrides default behavior with
  * inserting rows with explicitly set IDs
  */
-class TransformerTransaction : public libdnf::swdb_private::Transaction {
+class TransformerTransaction : public swdb_private::Transaction {
 public:
-    using libdnf::swdb_private::Transaction::Transaction;
+    using swdb_private::Transaction::Transaction;
     void begin()
     {
         dbInsert();
         saveItems();
     }
 };
+
+} // namespace libdnf
 
 #endif // LIBDNF_TRANSACTION_TRANSFORMERTRANSACTION_HPP

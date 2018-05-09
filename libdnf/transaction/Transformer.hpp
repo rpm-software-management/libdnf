@@ -34,6 +34,8 @@
 #include "private/TransformerTransaction.hpp"
 #include "TransactionItem.hpp"
 
+namespace libdnf {
+
 /**
  * Class providing an interface to the database transformation
  */
@@ -83,5 +85,7 @@ private:
     const std::string outputFile;
     const std::string transformFile;
 };
+
+} // namespace libdnf
 
 #endif

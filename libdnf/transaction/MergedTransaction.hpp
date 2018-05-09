@@ -27,17 +27,22 @@
 #include <map>
 #include <vector>
 
+namespace libdnf {
+
 class MergedTransaction;
 typedef std::shared_ptr< MergedTransaction > MergedTransactionPtr;
+}
 
 #include "RPMItem.hpp"
 #include "Transaction.hpp"
 #include "TransactionItem.hpp"
 
+namespace libdnf {
+
 class MergedTransaction {
 public:
-    explicit MergedTransaction(libdnf::TransactionPtr trans);
-    void merge(libdnf::TransactionPtr trans);
+    explicit MergedTransaction(TransactionPtr trans);
+    void merge(TransactionPtr trans);
 
     std::vector< int64_t > listIds() const;
     std::vector< uint32_t > listUserIds() const;
@@ -53,7 +58,7 @@ public:
     std::vector< TransactionItemBasePtr > getItems();
 
 protected:
-    std::vector< libdnf::TransactionPtr > transactions;
+    std::vector< TransactionPtr > transactions;
 
     struct ItemPair {
         ItemPair(TransactionItemBasePtr first, TransactionItemBasePtr second)
@@ -73,5 +78,7 @@ protected:
     void resolveErase(ItemPair &previousItemPair, TransactionItemBasePtr mTransItem);
     void resolveAltered(ItemPair &previousItemPair, TransactionItemBasePtr mTransItem);
 };
+
+} // namespace libdnf
 
 #endif // LIBDNF_TRANSACTION_TRANSACTION_HPP

@@ -315,7 +315,7 @@ hy_filter_duplicated(HyQuery query)
 }
 
 int
-hy_filter_unneeded(HyQuery query, const Swdb &swdb, const gboolean debug_solver)
+hy_filter_unneeded(HyQuery query, const libdnf::Swdb &swdb, const gboolean debug_solver)
 {
     hy_query_apply(query);
     HyGoal goal = hy_goal_create(query->getSack());

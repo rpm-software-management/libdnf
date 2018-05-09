@@ -674,7 +674,7 @@ q_difference(PyObject *self, PyObject *args)
 
 typedef struct {
     PyObject_HEAD
-    Swdb *ptr;
+    libdnf::Swdb *ptr;
     void *ty;
     int own;
     PyObject *next;
@@ -713,7 +713,7 @@ filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
 
-    Swdb *swdb = swigSwdb->ptr;
+    libdnf::Swdb *swdb = swigSwdb->ptr;
 
     if (swdb == NULL) {
         PyErr_SetString(PyExc_SystemError, "Unable to parse swig object");

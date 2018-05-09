@@ -74,7 +74,7 @@ typedef struct {
     GPtrArray *pkgs_to_download;
     GHashTable *erased_by_package_hash;
     guint64 flags;
-    Swdb *swdb;
+    libdnf::Swdb *swdb;
 } DnfTransactionPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfTransaction, dnf_transaction, G_TYPE_OBJECT)
@@ -471,7 +471,7 @@ dnf_find_pkg_from_name(GPtrArray *array, const gchar *pkgname)
 }
 
 static void
-_swdb_transaction_item_progress(Swdb *swdb, DnfPackage *pkg)
+_swdb_transaction_item_progress(libdnf::Swdb *swdb, DnfPackage *pkg)
 {
     if (pkg == NULL) {
         return;
@@ -505,7 +505,7 @@ dnf_transaction_ts_progress_cb(const void *arg,
     DnfPackage *pkg = NULL;
     DnfStateAction action;
     void *rc = NULL;
-    Swdb *swdb = priv->swdb;
+    libdnf::Swdb *swdb = priv->swdb;
     g_autoptr(GError) error_local = NULL;
 
     if (hdr != NULL)
@@ -810,7 +810,7 @@ _get_current_time()
  * avoid the lookup in the rpmdb.
  **/
 static void
-_history_write_item(DnfPackage *pkg, Swdb *swdb, TransactionItemAction action)
+_history_write_item(DnfPackage *pkg, libdnf::Swdb *swdb, libdnf::TransactionItemAction action)
 {
     auto rpm = swdb->createRPMItem();
     rpm->setName(dnf_package_get_name(pkg));
@@ -820,11 +820,11 @@ _history_write_item(DnfPackage *pkg, Swdb *swdb, TransactionItemAction action)
     rpm->setArch(dnf_package_get_arch(pkg));
     rpm->save();
 
-    TransactionItemReason reason =
+    libdnf::TransactionItemReason reason =
         swdb->resolveRPMTransactionItemReason(rpm->getName(), rpm->getArch(), -2);
 
     auto transItem = swdb->addItem(
-        std::dynamic_pointer_cast< Item >(rpm), dnf_package_get_reponame(pkg), action, reason);
+        std::dynamic_pointer_cast< libdnf::Item >(rpm), dnf_package_get_reponame(pkg), action, reason);
 }
 
 static gboolean
@@ -1075,7 +1075,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     rpmprobFilterFlags problems_filter = 0;
     rpmtransFlags rpmts_flags = RPMTRANS_FLAG_NONE;
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
-    Swdb *swdb = priv->swdb;
+    libdnf::Swdb *swdb = priv->swdb;
 
     /* take lock */
     ret = dnf_state_take_lock(state, DNF_LOCK_TYPE_RPMDB, DNF_LOCK_MODE_PROCESS, error);
@@ -1162,13 +1162,13 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
             goto out;
 
         // resolve swdb reason
-        TransactionItemAction swdbAction = TransactionItemAction::INSTALL;
+        libdnf::TransactionItemAction swdbAction = libdnf::TransactionItemAction::INSTALL;
         if (action == DNF_STATE_ACTION_UPDATE) {
-            swdbAction = TransactionItemAction::UPGRADE;
+            swdbAction = libdnf::TransactionItemAction::UPGRADE;
         } else if (action == DNF_STATE_ACTION_DOWNGRADE) {
-            swdbAction = TransactionItemAction::DOWNGRADE;
+            swdbAction = libdnf::TransactionItemAction::DOWNGRADE;
         } else if (action == DNF_STATE_ACTION_REINSTALL) {
-            swdbAction = TransactionItemAction::REINSTALL;
+            swdbAction = libdnf::TransactionItemAction::REINSTALL;
         }
 
         // add item to swdb transaction
@@ -1200,16 +1200,16 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
             g_warning("failed to pre-get pkgid for %s", dnf_package_get_package_id(pkg));
         }
 
-        TransactionItemAction swdbAction = TransactionItemAction::REMOVE;
+        libdnf::TransactionItemAction swdbAction = libdnf::TransactionItemAction::REMOVE;
 
         /* are the things being removed actually being upgraded */
         pkg_tmp = dnf_find_pkg_from_name(priv->install, dnf_package_get_name(pkg));
         if (pkg_tmp != NULL) {
             dnf_package_set_action(pkg, DNF_STATE_ACTION_CLEANUP);
             if (dnf_package_evr_cmp(pkg, pkg_tmp)) {
-                swdbAction = TransactionItemAction::UPGRADED;
+                swdbAction = libdnf::TransactionItemAction::UPGRADED;
             } else {
-                swdbAction = TransactionItemAction::DOWNGRADED;
+                swdbAction = libdnf::TransactionItemAction::DOWNGRADED;
             }
         }
         _history_write_item(pkg, priv->swdb, swdbAction);
@@ -1240,13 +1240,13 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
                 continue;
             }
 
-            TransactionItemAction swdbAction = TransactionItemAction::OBSOLETED;
+            libdnf::TransactionItemAction swdbAction = libdnf::TransactionItemAction::OBSOLETED;
             if (g_strcmp0(pkg_name, pkg_tmp_name) == 0) {
                 // names are identical - package is upgraded/downgraded
                 if (dnf_package_evr_cmp(pkg, pkg_tmp)) {
-                    swdbAction = TransactionItemAction::UPGRADED;
+                    swdbAction = libdnf::TransactionItemAction::UPGRADED;
                 } else {
-                    swdbAction = TransactionItemAction::DOWNGRADED;
+                    swdbAction = libdnf::TransactionItemAction::DOWNGRADED;
                 }
             }
 
@@ -1393,7 +1393,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
 
     // finalize swdb transaction
     // FIXME get rpmdb version
-    swdb->endTransaction(_get_current_time(), "", TransactionState::DONE);
+    swdb->endTransaction(_get_current_time(), "", libdnf::TransactionState::DONE);
 
     /* this section done */
     ret = dnf_state_done(state, error);
@@ -1439,7 +1439,7 @@ dnf_transaction_new(DnfContext *context)
 {
     auto transaction = DNF_TRANSACTION(g_object_new(DNF_TYPE_TRANSACTION, NULL));
     auto priv = GET_PRIVATE(transaction);
-    priv->swdb = new Swdb(Swdb::defaultPath);
+    priv->swdb = new libdnf::Swdb(libdnf::Swdb::defaultPath);
     priv->context = context;
     g_object_add_weak_pointer(G_OBJECT(priv->context), (void **)&priv->context);
     priv->ts = rpmtsCreate();

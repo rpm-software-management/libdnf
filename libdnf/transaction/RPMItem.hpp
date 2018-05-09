@@ -24,12 +24,16 @@
 #include <memory>
 #include <vector>
 
+namespace libdnf {
 class RPMItem;
 typedef std::shared_ptr< RPMItem > RPMItemPtr;
+}
 
 #include "Item.hpp"
 #include "TransactionItem.hpp"
 #include "Types.hpp"
+
+namespace libdnf {
 
 class RPMItem : public Item {
 public:
@@ -80,5 +84,7 @@ protected:
     void dbInsert();
     void dbSelectOrInsert();
 };
+
+} // namespace libdnf
 
 #endif // LIBDNF_TRANSACTION_RPMITEM_HPP

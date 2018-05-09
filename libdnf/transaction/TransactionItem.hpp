@@ -26,8 +26,10 @@
 
 #include "../utils/sqlite3/Sqlite3.hpp"
 
+namespace libdnf {
 class TransactionItem;
 typedef std::shared_ptr< TransactionItem > TransactionItemPtr;
+}
 
 #include "Item.hpp"
 #include "CompsEnvironmentItem.hpp"
@@ -36,6 +38,8 @@ typedef std::shared_ptr< TransactionItem > TransactionItemPtr;
 #include "private/Repo.hpp"
 #include "Transaction.hpp"
 #include "Types.hpp"
+
+namespace libdnf {
 
 class TransactionItemBase {
 public:
@@ -80,7 +84,7 @@ typedef std::shared_ptr< TransactionItemBase > TransactionItemBasePtr;
 
 class TransactionItem : public TransactionItemBase {
 public:
-    explicit TransactionItem(libdnf::Transaction *trans);
+    explicit TransactionItem(Transaction *trans);
 
     TransactionItem(SQLite3Ptr conn, int64_t transID);
 
@@ -102,7 +106,7 @@ public:
 
 protected:
     int64_t id = 0;
-    libdnf::Transaction *trans;
+    Transaction *trans;
 
     const int64_t transID;
     SQLite3Ptr conn;
@@ -113,5 +117,7 @@ protected:
     void dbInsert();
     void dbUpdate();
 };
+
+} // namespace libdnf
 
 #endif // LIBDNF_TRANSACTION_TRANSACTIONITEM_HPP

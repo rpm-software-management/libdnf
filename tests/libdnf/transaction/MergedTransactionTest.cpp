@@ -12,6 +12,8 @@
 
 #include "MergedTransactionTest.hpp"
 
+using namespace libdnf;
+
 CPPUNIT_TEST_SUITE_REGISTRATION(MergedTransactionTest);
 
 void
