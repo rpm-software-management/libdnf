@@ -10,6 +10,8 @@
 
 #include "RpmItemTest.hpp"
 
+using namespace libdnf;
+
 CPPUNIT_TEST_SUITE_REGISTRATION(RpmItemTest);
 
 void

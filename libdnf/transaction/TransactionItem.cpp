@@ -22,6 +22,8 @@
 
 #include "TransactionItem.hpp"
 
+namespace libdnf {
+
 // TODO: translations
 static const std::map< TransactionItemAction, std::string > transactionItemActionName = {
     {TransactionItemAction::INSTALL, "Install"},
@@ -82,7 +84,7 @@ TransactionItemBase::getActionShort()
     return transactionItemActionShort.at(getAction());
 }
 
-TransactionItem::TransactionItem(libdnf::Transaction *trans)
+TransactionItem::TransactionItem(Transaction *trans)
   : trans(trans)
   , transID(0)
   , conn(trans->conn)
@@ -134,7 +136,7 @@ TransactionItem::dbInsert()
     SQLite3::Statement query(*(conn.get()), sql);
     query.bindv(trans->getId(),
                 getItem()->getId(),
-                libdnf::swdb_private::Repo::getCached(conn, getRepoid())->getId(),
+                swdb_private::Repo::getCached(conn, getRepoid())->getId(),
                 static_cast< int >(getAction()),
                 static_cast< int >(getReason()),
                 static_cast< int >(getState()));
@@ -203,10 +205,12 @@ TransactionItem::dbUpdate()
     SQLite3::Statement query(*(conn.get()), sql);
     query.bindv(trans->getId(),
                 getItem()->getId(),
-                libdnf::swdb_private::Repo::getCached(trans->conn, getRepoid())->getId(),
+                swdb_private::Repo::getCached(trans->conn, getRepoid())->getId(),
                 static_cast< int >(getAction()),
                 static_cast< int >(getReason()),
                 static_cast< int >(getState()),
                 getId());
     query.step();
 }
+
+} // namespace libdnf

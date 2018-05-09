@@ -13,7 +13,7 @@
 %include <typemaps.i>
 
 
-%rename ("__hash__", fullname=1) "TransactionItem::getHash";
+%rename ("__hash__", fullname=1) "libdnf::TransactionItem::getHash";
 
 
 %exception {
@@ -34,35 +34,38 @@
 %shared_ptr(SQLite3)
 typedef std::shared_ptr< SQLite3 > SQLite3Ptr;
 
-%shared_ptr(Item)
-typedef std::shared_ptr< Item > ItemPtr;
+%shared_ptr(libdnf::Item)
+typedef std::shared_ptr< libdnf::Item > ItemPtr;
 
-%shared_ptr(RPMItem)
-typedef std::shared_ptr< RPMItem > RPMItemPtr;
+%shared_ptr(libdnf::RPMItem)
+typedef std::shared_ptr< libdnf::RPMItem > RPMItemPtr;
 
-%shared_ptr(CompsGroupItem)
-typedef std::shared_ptr< CompsGroupItem > CompsGroupItemPtr;
+%shared_ptr(libdnf::CompsGroupItem)
+typedef std::shared_ptr< libdnf::CompsGroupItem > CompsGroupItemPtr;
 
-%shared_ptr(CompsGroupPackage)
-typedef std::shared_ptr< CompsGroupPackage > CompsGroupPackagePtr;
+%shared_ptr(libdnf::CompsGroupPackage)
+typedef std::shared_ptr< libdnf::CompsGroupPackage > CompsGroupPackagePtr;
 
-%shared_ptr(CompsEnvironmentItem)
-typedef std::shared_ptr< CompsEnvironmentItem > CompsEnvironmentItemPtr;
+%shared_ptr(libdnf::CompsEnvironmentItem)
+typedef std::shared_ptr< libdnf::CompsEnvironmentItem > CompsEnvironmentItemPtr;
 
-%shared_ptr(CompsEnvironmentGroup)
-typedef std::shared_ptr< CompsEnvironmentGroup > CompsEnvironmentGroupPtr;
+%shared_ptr(libdnf::CompsEnvironmentGroup)
+typedef std::shared_ptr< libdnf::CompsEnvironmentGroup > CompsEnvironmentGroupPtr;
 
 %shared_ptr(libdnf::Transaction)
 typedef std::shared_ptr< libdnf::Transaction > TransactionPtr;
 
-%shared_ptr(TransactionItem)
-typedef std::shared_ptr< TransactionItem > TransactionItemPtr;
+%shared_ptr(libdnf::TransactionItem)
+typedef std::shared_ptr< libdnf::TransactionItem > TransactionItemPtr;
 
-%shared_ptr(MergedTransaction)
-typedef std::shared_ptr< MergedTransaction > MergedTransactionPtr;
+%shared_ptr(libdnf::MergedTransaction)
+typedef std::shared_ptr< libdnf::MergedTransaction > MergedTransactionPtr;
 
-%shared_ptr(TransactionItemBase)
-typedef std::shared_ptr< TransactionItemBase > TransactionItemBasePtr;
+%shared_ptr(libdnf::TransactionItemBase)
+typedef std::shared_ptr< libdnf::TransactionItemBase > TransactionItemBasePtr;
+
+// XXX workaround - because SWIG...
+typedef libdnf::CompsPackageType CompsPackageType;
 
 %{
     // make SWIG wrap following headers
@@ -76,6 +79,7 @@ typedef std::shared_ptr< TransactionItemBase > TransactionItemBasePtr;
     #include "libdnf/transaction/MergedTransaction.hpp"
     #include "libdnf/transaction/Transformer.hpp"
     #include "libdnf/transaction/Types.hpp"
+    using namespace libdnf;
 %}
 
 
@@ -84,11 +88,11 @@ typedef std::shared_ptr< TransactionItemBase > TransactionItemBasePtr;
 
 
 %template() std::vector<std::shared_ptr<libdnf::Transaction> >;
-%template() std::vector<std::shared_ptr<TransactionItem> >;
-%template() std::vector<std::shared_ptr<TransactionItemBase> >;
-%template() std::vector<std::shared_ptr<CompsGroupPackage> >;
-%template() std::vector<std::shared_ptr<CompsEnvironmentGroup> >;
-%template(TransactionStateVector) std::vector<TransactionState>;
+%template() std::vector<std::shared_ptr<libdnf::TransactionItem> >;
+%template() std::vector<std::shared_ptr<libdnf::TransactionItemBase> >;
+%template() std::vector<std::shared_ptr<libdnf::CompsGroupPackage> >;
+%template() std::vector<std::shared_ptr<libdnf::CompsEnvironmentGroup> >;
+%template(TransactionStateVector) std::vector<libdnf::TransactionState>;
 
 %template() std::vector<uint32_t>;
 %template() std::vector<int64_t>;

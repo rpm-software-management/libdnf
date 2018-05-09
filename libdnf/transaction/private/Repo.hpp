@@ -56,7 +56,8 @@ protected:
     std::string repoId;
     SQLite3Ptr conn;
 };
-};
-};
+
+} // namespace swdb_private
+} // namespace libdnf
 
 #endif // LIBDNF_TRANSACTION_REPO_HPP

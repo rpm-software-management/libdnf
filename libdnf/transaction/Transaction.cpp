@@ -24,19 +24,21 @@
 #include "RPMItem.hpp"
 #include "TransactionItem.hpp"
 
-libdnf::Transaction::Transaction(SQLite3Ptr conn, int64_t pk)
+namespace libdnf {
+
+Transaction::Transaction(SQLite3Ptr conn, int64_t pk)
   : conn{conn}
 {
     dbSelect(pk);
 }
 
-libdnf::Transaction::Transaction(SQLite3Ptr conn)
+Transaction::Transaction(SQLite3Ptr conn)
   : conn{conn}
 {
 }
 
 bool
-libdnf::Transaction::operator==(const libdnf::Transaction &other) const
+Transaction::operator==(const Transaction &other) const
 {
     return getId() == other.getId() && getDtBegin() == other.getDtBegin() &&
            getRpmdbVersionBegin() == other.getRpmdbVersionBegin();
@@ -51,7 +53,7 @@ libdnf::Transaction::operator==(const libdnf::Transaction &other) const
  * \return true if other transaction is older
  */
 bool
-libdnf::Transaction::operator<(const libdnf::Transaction &other) const
+Transaction::operator<(const Transaction &other) const
 {
     return getId() > other.getId() || getDtBegin() > other.getDtBegin() ||
            getRpmdbVersionBegin() > other.getRpmdbVersionBegin();
@@ -62,14 +64,14 @@ libdnf::Transaction::operator<(const libdnf::Transaction &other) const
  * \return true if other transaction is newer
  */
 bool
-libdnf::Transaction::operator>(const libdnf::Transaction &other) const
+Transaction::operator>(const Transaction &other) const
 {
     return getId() < other.getId() || getDtBegin() < other.getDtBegin() ||
            getRpmdbVersionBegin() < other.getRpmdbVersionBegin();
 }
 
 void
-libdnf::Transaction::dbSelect(int64_t pk)
+Transaction::dbSelect(int64_t pk)
 {
     const char *sql =
         "SELECT "
@@ -105,7 +107,7 @@ libdnf::Transaction::dbSelect(int64_t pk)
  * \return list of transaction items associated with the transaction
  */
 std::vector< TransactionItemPtr >
-libdnf::Transaction::getItems() const
+Transaction::getItems()
 {
     std::vector< TransactionItemPtr > result;
     auto rpms = RPMItem::getTransactionItems(conn, getId());
@@ -126,7 +128,7 @@ libdnf::Transaction::getItems() const
  * \return list of RPMItem objects that performed the transaction
  */
 const std::set< std::shared_ptr< RPMItem > >
-libdnf::Transaction::getSoftwarePerformedWith() const
+Transaction::getSoftwarePerformedWith() const
 {
     const char *sql = R"**(
         SELECT
@@ -150,7 +152,7 @@ libdnf::Transaction::getSoftwarePerformedWith() const
 }
 
 std::vector< std::pair< int, std::string > >
-libdnf::Transaction::getConsoleOutput() const
+Transaction::getConsoleOutput() const
 {
     const char *sql = R"**(
         SELECT
@@ -173,3 +175,5 @@ libdnf::Transaction::getConsoleOutput() const
     }
     return result;
 }
+
+} // namespace libdnf

@@ -27,6 +27,8 @@
 
 #include "RPMItem.hpp"
 
+namespace libdnf {
+
 static const std::map< TransactionItemReason, int > reasonPriorities = {
     {TransactionItemReason::UNKNOWN, 0},
     {TransactionItemReason::CLEAN, 1},
@@ -203,7 +205,7 @@ RPMItem::dbSelectOrInsert()
 TransactionItemPtr
 RPMItem::getTransactionItem(SQLite3Ptr conn, const std::string &nevra)
 {
-    libdnf::Nevra nevraObject;
+    Nevra nevraObject;
     if (!nevraObject.parse(nevra.c_str(), HY_FORM_NEVRA)) {
         return nullptr;
     }
@@ -402,3 +404,5 @@ RPMItem::searchTransactions(SQLite3Ptr conn, const std::vector< std::string > &p
     result.erase(last, result.end());
     return result;
 }
+
+} // namespace libdnf

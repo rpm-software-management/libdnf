@@ -21,6 +21,8 @@
 #ifndef LIBDNF_TRANSACTION_TYPES_HPP
 #define LIBDNF_TRANSACTION_TYPES_HPP
 
+namespace libdnf {
+
 enum class TransactionState : int {
     UNKNOWN = 0,
     DONE = 1,
@@ -61,6 +63,7 @@ enum class TransactionItemAction : int {
     REASON_CHANGE = 11 // a package was kept on the system but it's reason has changed
 };
 
+} // namespace libdnf
 /*
 Install
 -------

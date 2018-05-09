@@ -39,6 +39,8 @@
 #include "TransactionItem.hpp"
 #include "Transformer.hpp"
 
+namespace libdnf {
+
 static const char *sql_create_tables =
 #include "sql/create_tables.sql"
     ;
@@ -519,7 +521,7 @@ Transformer::processGroupPersistor(SQLite3Ptr swdb, const Json::Value &root)
     Swdb swdbObj(swdb, false);
     auto lastTrans = swdbObj.getLastTransaction();
 
-    auto trans = libdnf::swdb_private::Transaction(swdb);
+    auto trans = swdb_private::Transaction(swdb);
 
     // load sequences
     const Json::Value groups = root["GROUPS"];
@@ -638,3 +640,5 @@ Transformer::historyPath()
     // return the path
     return historyDir + "/" + possibleFiles.back();
 }
+
+} // namespace libdnf

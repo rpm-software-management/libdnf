@@ -14,6 +14,8 @@
 
 #include "WorkflowTest.hpp"
 
+using namespace libdnf;
+
 CPPUNIT_TEST_SUITE_REGISTRATION(WorkflowTest);
 
 void
