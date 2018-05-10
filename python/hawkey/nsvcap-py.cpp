@@ -171,31 +171,6 @@ nsvcapConverter(PyObject *o, libdnf::Nsvcap ** nsvcap_ptr)
     return 1;
 }
 
-static PyObject *
-iter(_NsvcapObject *self)
-{
-    UniquePtrPyObject res;
-    libdnf::Nsvcap * nsvcap = self->nsvcap;
-    if (nsvcap->getVersion() == libdnf::Nsvcap::VERSION_NOT_SET) {
-        res.reset(Py_BuildValue("zzOzzz",
-            nsvcap->getName().empty() ? nullptr : nsvcap->getName().c_str(),
-            nsvcap->getStream().empty() ? nullptr : nsvcap->getStream().c_str(),
-            Py_None,
-            nsvcap->getContext().empty() ? nullptr : nsvcap->getContext().c_str(),
-            nsvcap->getArch().empty() ? nullptr : nsvcap->getArch().c_str(),
-            nsvcap->getProfile().empty() ? nullptr : nsvcap->getProfile().c_str()));
-    } else
-        res.reset(Py_BuildValue("zzLzzz",
-            nsvcap->getName().empty() ? nullptr : nsvcap->getName().c_str(),
-            nsvcap->getStream().empty() ? nullptr : nsvcap->getStream().c_str(),
-            nsvcap->getVersion(),
-            nsvcap->getContext().empty() ? nullptr : nsvcap->getContext().c_str(),
-            nsvcap->getArch().empty() ? nullptr : nsvcap->getArch().c_str(),
-            nsvcap->getProfile().empty() ? nullptr : nsvcap->getProfile().c_str()));
-    PyObject *iter = PyObject_GetIter(res.get());
-    return iter;
-}
-
 PyTypeObject nsvcap_Type = {
         PyVarObject_HEAD_INIT(NULL, 0)
         "_hawkey.NSVCAP",        /*tp_name*/
@@ -222,7 +197,7 @@ PyTypeObject nsvcap_Type = {
         0,              /* tp_clear */
         0,              /* tp_richcompare */
         0,              /* tp_weaklistoffset */
-        (getiterfunc) iter,/* tp_iter */
+        0,              /* tp_iter */
         0,              /* tp_iternext */
         0,              /* tp_methods */
         0,              /* tp_members */
