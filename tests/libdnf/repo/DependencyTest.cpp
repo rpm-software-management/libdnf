@@ -11,7 +11,7 @@ void DependencyTest::setUp()
 {
     sack = dnf_sack_new();
 
-    dependency = std::unique_ptr<Dependency>(new Dependency(sack, "foo == 1.0"));
+    dependency = std::unique_ptr<Dependency>(new Dependency(sack, "foo = 1.0"));
 }
 
 void DependencyTest::testName()

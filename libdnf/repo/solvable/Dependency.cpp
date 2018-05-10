@@ -1,36 +1,74 @@
+/*
+ * Copyright (C) 2018 Red Hat, Inc.
+ *
+ * Licensed under the GNU Lesser General Public License Version 2.1
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
 #include "Dependency.hpp"
 #include "libdnf/utils/utils.hpp"
+#include <libdnf/hy-iutil-private.hpp>
 
 /* workaround, libsolv lacks 'extern "C"' in its header file */
 extern "C" {
-#   include <solv/pool_parserpmrichdep.h>
+#include <solv/pool_parserpmrichdep.h>
+#include <solv/util.h>
 }
 
 
 #define NUMBER_OF_ITEMS_IN_RELATIONAL_DEPENDENCY 3
+
+static int transformToLibsolvComparisonType(int cmp_type)
+{
+    int type = 0;
+    if (cmp_type & HY_EQ)
+        type |= REL_EQ;
+    if (cmp_type & HY_LT)
+        type |= REL_LT;
+    if (cmp_type & HY_GT)
+        type |= REL_GT;
+
+    return type;
+}
 
 Dependency::Dependency(DnfSack *sack, Id id)
         : sack(sack)
         , id(id)
 {}
 
-Dependency::Dependency(DnfSack *sack, const char *name, const char *version, int solvComparisonOperator)
+Dependency::Dependency(DnfSack *sack, const char *name, const char *version,
+    int solvComparisonOperator)
         : sack(sack)
 {
-    Pool *pool = dnf_sack_get_pool(sack);
-    id = pool_str2id(pool, name, 1);
-
-    if (version) {
-        Id evrId = pool_str2id(pool, version, 1);
-        id = pool_rel2id(pool, id, evrId, solvComparisonOperator, 1);
-    }
+    
+    setSolvId(name, version, transformToLibsolvComparisonType(solvComparisonOperator));
 }
 
 Dependency::Dependency(DnfSack *sack, const std::string &dependency)
         : sack(sack)
 {
-    parseAndCreateDependency(dependency);
+    char *name = NULL;
+    char *evr = NULL;
+    int cmp_type;
+    if (parse_reldep_str(dependency.c_str(), &name, &evr, &cmp_type) == -1)
+        throw std::runtime_error("Cannot parse a dependency string");
+    int solvComparisonOperator = transformToLibsolvComparisonType(cmp_type);
+    setSolvId(name, evr, solvComparisonOperator);
 }
+
 
 Dependency::Dependency(const Dependency &dependency)
         : sack(dependency.sack)
@@ -41,52 +79,22 @@ Dependency::~Dependency() = default;
 const char *Dependency::getName() const { return pool_id2str(dnf_sack_get_pool(sack), id); }
 const char *Dependency::getRelation() const { return pool_id2rel(dnf_sack_get_pool(sack), id); }
 const char *Dependency::getVersion() const { return pool_id2evr(dnf_sack_get_pool(sack), id); }
-
 const char *Dependency::toString() const { return pool_dep2str(dnf_sack_get_pool(sack), id); }
 
-void Dependency::parseAndCreateDependency(const std::string &dependency)
+void
+Dependency::setSolvId(const char *name, const char *version, int solvComparisonOperator)
 {
-    std::vector<std::string> results = string::split(dependency, " ");
-
     Pool *pool = dnf_sack_get_pool(sack);
-    if (isRichDependency(dependency)) {
-        id = pool_parserpmrichdep(pool, dependency.c_str());
-    } else if (results.size() == NUMBER_OF_ITEMS_IN_RELATIONAL_DEPENDENCY) { // hasRelationalOperator
-        createRelationalDependency(results);
-    } else {
-        id = pool_str2id(pool, results[0].c_str(), 1 /* create */);
+    id = pool_str2id(pool, name, 1);
+
+    if (version) {
+        Id evrId = pool_str2id(pool, version, 1);
+        id = pool_rel2id(pool, id, evrId, solvComparisonOperator, 1);
     }
 }
 
-void Dependency::createRelationalDependency(const std::vector<std::string> &results)
-{
-    Pool *pool = dnf_sack_get_pool(sack);
-    id = pool_str2id(pool, results[0].c_str(), 1);
-
-    if (!results[2].empty()) {
-        Id evrId = pool_str2id(pool, results[2].c_str(), 1);
-        id = pool_rel2id(pool, id, evrId, determineComparisonType(results[1]), 1);
-    }
-}
-
-bool Dependency::isRichDependency(const std::string &dependency) const
+bool
+Dependency::isRichDependency(const std::string &dependency) const
 {
     return dependency.find('(', 0) != std::string::npos;
-}
-
-int Dependency::determineComparisonType(const std::string &type)
-{
-    if (type == "<=") {
-        return REL_LT | REL_EQ;
-    } else if (type == ">=") {
-        return REL_GT | REL_EQ;
-    } else if (type == "==") {
-        return REL_EQ;
-    } else if (type == ">") {
-        return REL_GT;
-    } else if (type == "<") {
-        return REL_LT;
-    }
-
-    throw "Unknown comparison: " + type;
 }

@@ -12,7 +12,7 @@ void DependencyContainerTest::setUp()
 
 void DependencyContainerTest::testAdd()
 {
-    auto dependency = new Dependency(sack, "foo", "1.0", REL_EQ);
+    auto dependency = new Dependency(sack, "foo", "1.0", DNF_COMPARISON_EQ);
 
     container->add(dependency);
     Dependency *actual = container->getPtr(0);
@@ -24,8 +24,8 @@ void DependencyContainerTest::testAdd()
 void DependencyContainerTest::testExtend()
 {
     auto otherContainer = new DependencyContainer(sack);
-    auto dependency = new Dependency(sack, "foo", "1.0", REL_EQ);
-    auto otherDependency = new Dependency(sack, "bar", "1.1", REL_EQ);
+    auto dependency = new Dependency(sack, "foo", "1.0", DNF_COMPARISON_EQ);
+    auto otherDependency = new Dependency(sack, "bar", "1.1", DNF_COMPARISON_EQ);
 
     container->add(dependency);
     CPPUNIT_ASSERT_EQUAL(1, container->count());
@@ -45,8 +45,8 @@ void DependencyContainerTest::testExtend()
 
 void DependencyContainerTest::testGet()
 {
-    auto dependency = new Dependency(sack, "foo", "1.0", REL_EQ);
-    auto otherDependency = new Dependency(sack, "bar", "1.1", REL_EQ);
+    auto dependency = new Dependency(sack, "foo", "1.0", DNF_COMPARISON_EQ);
+    auto otherDependency = new Dependency(sack, "bar", "1.1", DNF_COMPARISON_EQ);
 
     container->add(dependency);
     container->add(otherDependency);
@@ -65,7 +65,7 @@ void DependencyContainerTest::testGet()
 void DependencyContainerTest::testCount()
 {
     auto otherContainer = new DependencyContainer(sack);
-    auto dependency = new Dependency(sack, "foo", "1.0", REL_EQ);
+    auto dependency = new Dependency(sack, "foo", "1.0", DNF_COMPARISON_EQ);
 
     CPPUNIT_ASSERT_EQUAL(0, container->count());
     container->add(dependency);

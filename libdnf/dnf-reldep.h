@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-DnfReldep *dnf_reldep_new(DnfSack *sack, const char *name, DnfComparisonKind cmp_type, const char *evr);
+DnfReldep *dnf_reldep_new(DnfSack *sack, const char *name, int cmp_type, const char *evr);
 const char *dnf_reldep_to_string(DnfReldep *reldep);
 Id dnf_reldep_get_id(DnfReldep *reldep);
 void dnf_reldep_free(DnfReldep *reldep);

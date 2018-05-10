@@ -7,7 +7,7 @@ PackageInstantiable::PackageInstantiable(DnfSack *sack,
                                  const char *arch)
         : Package(sack, repo, name, version, arch)
 {
-    addProvides(std::make_shared<Dependency>(sack, "rpm == 1.0"));
+    addProvides(std::make_shared<Dependency>(sack, "rpm = 1.0"));
 }
 
 const char *PackageInstantiable::getName() const
