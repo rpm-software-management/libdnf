@@ -23,10 +23,12 @@ public:
     bool operator!=(const DependencyContainer &r) const;
 
     void add(Dependency *dependency);
+    void add(Id id);
     void extend(DependencyContainer *container);
 
     std::shared_ptr<Dependency> get(int index) const noexcept;
     Dependency *getPtr(int index) const noexcept;
+    Id getId(int index) const noexcept;
     int count() const noexcept;
 
     const Queue &getQueue() const noexcept;
@@ -35,5 +37,10 @@ private:
     DnfSack *sack;
     Queue queue;
 };
+
+inline Id DependencyContainer::getId(int index) const noexcept
+{
+    return queue.elements[index];
+}
 
 #endif //LIBDNF_DEPENDENCYCONTAINER_HPP

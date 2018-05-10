@@ -11,7 +11,7 @@
 struct Dependency
 {
 public:
-    Dependency(DnfSack *sack, int id);
+    Dependency(DnfSack *sack, Id id);
     Dependency(DnfSack *sack, const char *name, const char *version, int solvComparisonOperator);
     Dependency(DnfSack *sack, const std::string &dependency);
     Dependency(const Dependency &dependency);
@@ -21,7 +21,7 @@ public:
     const char *getRelation() const;
     const char *getVersion() const;
     const char *toString() const;
-    Id getId() const;
+    Id getId() const noexcept;
 
 private:
     void parseAndCreateDependency(const std::string &dependency);
@@ -32,5 +32,7 @@ private:
     DnfSack *sack;
     Id id;
 };
+
+inline Id Dependency::getId() const noexcept { return id; }
 
 #endif //LIBDNF_DEPENDENCY_HPP

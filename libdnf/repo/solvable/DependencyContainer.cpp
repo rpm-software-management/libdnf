@@ -58,6 +58,11 @@ void DependencyContainer::add(Dependency *dependency)
     queue_push(&queue, dependency->getId());
 }
 
+void DependencyContainer::add(Id id)
+{
+    queue_push(&queue, id);
+}
+
 void DependencyContainer::extend(DependencyContainer *container)
 {
     queue_insertn(&queue, 0, container->queue.count, container->queue.elements);
