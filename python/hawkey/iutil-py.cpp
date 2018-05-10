@@ -223,11 +223,14 @@ pyseq_to_reldeplist(PyObject *obj, DnfSack *sack, int cmp_type)
                 goto fail;
 
             if (!hy_is_glob_pattern(reldep_str.getCString())) {
-                DnfReldep *reldep = reldep_from_str(sack, reldep_str.getCString());
-                if (reldep == NULL)
+                try {
+                    Dependency reldep(sack, reldep_str.getCString());
+                    dnf_reldep_list_add(reldeplist, &reldep);
+                }
+                catch (...)
+                {
                     goto fail;
-                dnf_reldep_list_add(reldeplist, reldep);
-                delete reldep;
+                }
             } else {
                 DnfReldepList * g_reldeplist = reldeplist_from_str(sack, reldep_str.getCString());
                 if (g_reldeplist == NULL)
@@ -300,5 +303,5 @@ reldep_from_pystr(PyObject *o, DnfSack *sack)
     if (!reldep_str.getCString())
         return NULL;
 
-    return reldep_from_str(sack, reldep_str.getCString());
+    return new Dependency(sack, reldep_str.getCString());
 }

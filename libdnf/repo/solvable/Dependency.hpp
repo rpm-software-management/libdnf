@@ -46,7 +46,6 @@ public:
 
 private:
     void setSolvId(const char *name, const char *version, int solvComparisonOperator);
-    bool isRichDependency(const std::string &dependency) const;
 
     DnfSack *sack;
     Id id;

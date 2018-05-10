@@ -31,6 +31,7 @@
 #include "../hy-query-private.hpp"
 #include "../hy-selector-private.hpp"
 #include "../hy-util-private.hpp"
+#include "../repo/solvable/Dependency.hpp"
 
 namespace libdnf {
 
@@ -117,13 +118,16 @@ Selector::set(int keyname, int cmp_type, const char *match)
             if (pImpl->filterName.get() || pImpl->filterFile.get() || pImpl->filterPkg.get())
                 return DNF_ERROR_BAD_SELECTOR;
             if (cmp_type != HY_GLOB) {
-                DnfReldep *reldep = reldep_from_str (pImpl->sack, match);
-                if (reldep == NULL) {
+                try {
+                    Dependency reldep(pImpl->sack, match);
+                    pImpl->filterProvides.reset(new Filter(keyname, cmp_type, &reldep));
+                    return 0;
+                }
+                catch (...)
+                {
                     pImpl->filterProvides.reset();
                     return DNF_ERROR_BAD_SELECTOR;
                 }
-                pImpl->filterProvides.reset(new Filter(keyname, cmp_type, reldep));
-                return 0;
             }
             pImpl->filterProvides.reset(new Filter(keyname, cmp_type, match));
             return 0;
