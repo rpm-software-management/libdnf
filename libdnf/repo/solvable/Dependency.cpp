@@ -9,7 +9,7 @@ extern "C" {
 
 #define NUMBER_OF_ITEMS_IN_RELATIONAL_DEPENDENCY 3
 
-Dependency::Dependency(DnfSack *sack, int id)
+Dependency::Dependency(DnfSack *sack, Id id)
         : sack(sack)
         , id(id)
 {}
@@ -41,7 +41,6 @@ Dependency::~Dependency() = default;
 const char *Dependency::getName() const { return pool_id2str(dnf_sack_get_pool(sack), id); }
 const char *Dependency::getRelation() const { return pool_id2rel(dnf_sack_get_pool(sack), id); }
 const char *Dependency::getVersion() const { return pool_id2evr(dnf_sack_get_pool(sack), id); }
-Id Dependency::getId() const { return id; }
 
 const char *Dependency::toString() const { return pool_dep2str(dnf_sack_get_pool(sack), id); }
 
