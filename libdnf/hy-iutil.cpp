@@ -663,38 +663,6 @@ parse_reldep_str(const char *reldep_str, char **name, char **evr,
     return ret;
 }
 
-/**
- * reldep_from_str:
- * @sack: #DnfSack
- * @reldep_str: Reldep string
- *
- * Creates new #DnfReldep from @reldep_str. Returns %NULL
- * if string can't be parsed.
- *
- * Returns: (transfer full): new #DnfReldep, or %NULL
- */
-DnfReldep *
-reldep_from_str(DnfSack *sack, const char *reldep_str)
-{
-    if (reldep_str[0] == '(') {
-        /* Rich dependency */
-        Pool *pool = dnf_sack_get_pool (sack);
-        Id id = pool_parserpmrichdep(pool, reldep_str);
-        if (!id)
-            return NULL;
-        return new Dependency(sack, id);
-    } else {
-        char *name, *evr = NULL;
-        int cmp_type = 0;
-        if (parse_reldep_str(reldep_str, &name, &evr, &cmp_type) == -1)
-            return NULL;
-        DnfReldep *reldep = dnf_reldep_new(sack, name, cmp_type, evr);
-        g_free(name);
-        g_free(evr);
-        return reldep;
-    }
-}
-
 DnfReldepList *
 reldeplist_from_str(DnfSack *sack, const char *reldep_str)
 {

@@ -38,7 +38,6 @@ G_BEGIN_DECLS
 int checksum_type2length(int type);
 
 /* reldep utils */
-DnfReldep *reldep_from_str(DnfSack *sack, const char *reldep_str);
 DnfReldepList *reldeplist_from_str(DnfSack *sack, const char *reldep_str);
 
 G_END_DECLS

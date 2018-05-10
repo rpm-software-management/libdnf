@@ -60,13 +60,25 @@ Dependency::Dependency(DnfSack *sack, const char *name, const char *version,
 Dependency::Dependency(DnfSack *sack, const std::string &dependency)
         : sack(sack)
 {
-    char *name = NULL;
-    char *evr = NULL;
-    int cmp_type;
-    if (parse_reldep_str(dependency.c_str(), &name, &evr, &cmp_type) == -1)
-        throw std::runtime_error("Cannot parse a dependency string");
-    int solvComparisonOperator = transformToLibsolvComparisonType(cmp_type);
-    setSolvId(name, evr, solvComparisonOperator);
+    const char * reldep_str = dependency.c_str();
+    if (dependency.c_str()[0] == '(') {
+        /* Rich dependency */
+        Pool *pool = dnf_sack_get_pool (sack);
+        id = pool_parserpmrichdep(pool, reldep_str);
+        if (!id)
+            throw std::runtime_error("Cannot parse a dependency string");
+        return;
+    } else {
+        char *name = NULL;
+        char *evr = NULL;
+        int cmp_type;
+        if (parse_reldep_str(reldep_str, &name, &evr, &cmp_type) == -1)
+            throw std::runtime_error("Cannot parse a dependency string");
+        int solvComparisonOperator = transformToLibsolvComparisonType(cmp_type);
+        setSolvId(name, evr, solvComparisonOperator);
+        g_free(name);
+        g_free(evr);
+    }
 }
 
 
@@ -91,10 +103,4 @@ Dependency::setSolvId(const char *name, const char *version, int solvComparisonO
         Id evrId = pool_str2id(pool, version, 1);
         id = pool_rel2id(pool, id, evrId, solvComparisonOperator, 1);
     }
-}
-
-bool
-Dependency::isRichDependency(const std::string &dependency) const
-{
-    return dependency.find('(', 0) != std::string::npos;
 }

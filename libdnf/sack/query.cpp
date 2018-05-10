@@ -550,7 +550,7 @@ Filter::Filter(int keyname, int cmp_type, const DnfPackageSet *pset) : pImpl(new
     match_in.pset = new libdnf::PackageSet(*pset);
     pImpl->matches.push_back(match_in);
 }
-Filter::Filter(int keyname, int cmp_type, DnfReldep *reldep) : pImpl(new Impl)
+Filter::Filter(int keyname, int cmp_type, Dependency * reldep) : pImpl(new Impl)
 {
     pImpl->keyname = keyname;
     pImpl->cmpType = cmp_type;
@@ -760,7 +760,7 @@ Query::addFilter(int keyname, int cmp_type, const DnfPackageSet *pset)
     return 0;
 }
 int
-Query::addFilter(int keyname, DnfReldep *reldep)
+Query::addFilter(int keyname, Dependency * reldep)
 {
     if (!valid_filter_reldep(keyname))
         return DNF_ERROR_BAD_QUERY;
@@ -816,11 +816,15 @@ Query::addFilter(int keyname, int cmp_type, const char *match)
                 delete reldeplist;
                 return ret;
             } else {
-                DnfReldep *reldep = reldep_from_str(sack, match);
-                if (reldep == NULL)
+                try {
+                    Dependency reldep(sack, match);
+                    int ret = addFilter(keyname, &reldep);
+                    return ret;
+                }
+                catch (...)
+                {
                     return addFilter(HY_PKG_EMPTY, HY_EQ, 1);
-                int ret = addFilter(keyname, reldep);
-                return ret;
+                }
             }
         }
         default: {

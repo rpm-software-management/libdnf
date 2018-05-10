@@ -121,12 +121,14 @@ reldep_init(_ReldepObject *self, PyObject *args, PyObject *kwds)
     if (!reldep_str.getCString())
         return -1;
 
-    self->reldep = reldep_from_str(csack, reldep_str.getCString());
-    if (self->reldep == NULL) {
+    try {
+        self->reldep = new Dependency(csack, reldep_str.getCString());
+    }
+    catch (...)
+    {
         PyErr_Format(HyExc_Value, "Wrong reldep format: %s", reldep_str.getCString());
         return -1;
     }
-
     return 0;
 }
 
