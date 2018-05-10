@@ -453,7 +453,7 @@ START_TEST(test_query_conflicts)
 {
     DnfSack *sack = test_globals.sack;
     HyQuery q = hy_query_create(sack);
-    DnfReldep *reldep = dnf_reldep_new(sack, "custard", DNF_COMPARISON_GT|DNF_COMPARISON_EQ, "1.0.1");
+    DnfReldep *reldep = dnf_reldep_new(sack, "custard", HY_GT|HY_EQ, "1.0.1");
 
     fail_unless(reldep != NULL);
     hy_query_filter_reldep(q, HY_PKG_CONFLICTS, reldep);
@@ -690,7 +690,7 @@ START_TEST(test_query_reldep_arbitrary)
 {
     DnfSack *sack = test_globals.sack;
     HyQuery query = hy_query_create(sack);
-    DnfReldep *reldep = dnf_reldep_new(sack, "P-lib", DNF_COMPARISON_GT, "3-0");
+    DnfReldep *reldep = dnf_reldep_new(sack, "P-lib", HY_GT, "3-0");
 
     fail_if(reldep == NULL);
     hy_query_filter_reldep(query, HY_PKG_PROVIDES, reldep);

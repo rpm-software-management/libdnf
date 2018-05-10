@@ -688,8 +688,7 @@ reldep_from_str(DnfSack *sack, const char *reldep_str)
         int cmp_type = 0;
         if (parse_reldep_str(reldep_str, &name, &evr, &cmp_type) == -1)
             return NULL;
-        DnfReldep *reldep = dnf_reldep_new(sack, name,
-                                           static_cast<DnfComparisonKind>(cmp_type), evr);
+        DnfReldep *reldep = dnf_reldep_new(sack, name, cmp_type, evr);
         g_free(name);
         g_free(evr);
         return reldep;
@@ -710,8 +709,7 @@ reldeplist_from_str(DnfSack *sack, const char *reldep_str)
 
     dataiterator_init(&di, pool, 0, 0, 0, name_glob, SEARCH_STRING | SEARCH_GLOB);
     while (dataiterator_step(&di)) {
-        DnfReldep *reldep = dnf_reldep_new(sack, di.kv.str,
-                                           static_cast<DnfComparisonKind>(cmp_type), evr);
+        DnfReldep *reldep = dnf_reldep_new(sack, di.kv.str, cmp_type, evr);
         if (reldep) {
             dnf_reldep_list_add (reldeplist, reldep);
             delete reldep;

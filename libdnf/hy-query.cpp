@@ -132,8 +132,7 @@ int
 hy_query_filter_provides(HyQuery q, int cmp_type, const char *name,
                          const char *evr)
 {
-    DnfReldep *reldep = dnf_reldep_new(q->getSack(), name,
-                                       static_cast<DnfComparisonKind>(cmp_type), evr);
+    DnfReldep *reldep = dnf_reldep_new(q->getSack(), name, cmp_type, evr);
     assert(reldep);
     int ret = hy_query_filter_reldep(q, HY_PKG_PROVIDES, reldep);
     return ret;
@@ -152,7 +151,7 @@ hy_query_filter_provides_in(HyQuery q, char **reldep_strs)
             delete reldeplist;
             return DNF_ERROR_BAD_QUERY;
         }
-        reldep = dnf_reldep_new(q->getSack(), name, static_cast<DnfComparisonKind>(cmp_type), evr);
+        reldep = dnf_reldep_new(q->getSack(), name, cmp_type, evr);
         if (reldep) {
             dnf_reldep_list_add(reldeplist, reldep);
             delete reldep;
