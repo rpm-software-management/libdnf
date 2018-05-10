@@ -285,29 +285,6 @@ nevra_richcompare(PyObject *self, PyObject *other, int op)
     return v;
 }
 
-static PyObject *
-iter(_NevraObject *self)
-{
-    UniquePtrPyObject res;
-    auto nevra = self->nevra;
-    if (nevra->getEpoch() == libdnf::Nevra::EPOCH_NOT_SET) {
-        res.reset(Py_BuildValue("zOzzz",
-            nevra->getName().c_str(),
-            Py_None,
-            nevra->getVersion().c_str(),
-            nevra->getRelease().c_str(),
-            nevra->getArch().c_str()));
-    } else
-        res.reset(Py_BuildValue("zizzz",
-            nevra->getName().c_str(),
-            nevra->getEpoch(),
-            nevra->getVersion().c_str(),
-            nevra->getRelease().c_str(),
-            nevra->getArch().c_str()));
-    PyObject *iter = PyObject_GetIter(res.get());
-    return iter;
-}
-
 PyTypeObject nevra_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "_hawkey.NEVRA",        /*tp_name*/
@@ -334,7 +311,7 @@ PyTypeObject nevra_Type = {
     0,              /* tp_clear */
     nevra_richcompare,              /* tp_richcompare */
     0,              /* tp_weaklistoffset */
-    (getiterfunc) iter,/* tp_iter */
+    0,              /* tp_iter */
     0,                          /* tp_iternext */
     nevra_methods,      /* tp_methods */
     0,              /* tp_members */
