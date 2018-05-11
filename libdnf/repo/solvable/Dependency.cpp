@@ -49,32 +49,17 @@ Dependency::Dependency(DnfSack *sack, Id id)
         , id(id)
 {}
 
-Dependency::Dependency(DnfSack *sack, const char *name, const char *version,
-    int solvComparisonOperator)
+Dependency::Dependency(DnfSack *sack, const char *name, const char *version, int cmpType)
         : sack(sack)
 {
     
-    setSolvId(name, version, transformToLibsolvComparisonType(solvComparisonOperator));
+    id = getReldepId(sack, name, version, cmpType);
 }
 
 Dependency::Dependency(DnfSack *sack, const std::string &dependency)
         : sack(sack)
 {
-    const char * reldep_str = dependency.c_str();
-    if (dependency.c_str()[0] == '(') {
-        /* Rich dependency */
-        Pool *pool = dnf_sack_get_pool (sack);
-        id = pool_parserpmrichdep(pool, reldep_str);
-        if (!id)
-            throw std::runtime_error("Cannot parse a dependency string");
-        return;
-    } else {
-        libdnf::DependencySplitter depSplitter;
-        if(!depSplitter.parse(reldep_str))
-            throw std::runtime_error("Cannot parse a dependency string");
-        int solvComparisonOperator = transformToLibsolvComparisonType(depSplitter.getCmpType());
-        setSolvId(depSplitter.getNameCStr(), depSplitter.getEVRCStr(), solvComparisonOperator);
-    }
+    id = getReldepId(sack, dependency.c_str());
 }
 
 
@@ -89,14 +74,36 @@ const char *Dependency::getRelation() const { return pool_id2rel(dnf_sack_get_po
 const char *Dependency::getVersion() const { return pool_id2evr(dnf_sack_get_pool(sack), id); }
 const char *Dependency::toString() const { return pool_dep2str(dnf_sack_get_pool(sack), id); }
 
-void
-Dependency::setSolvId(const char *name, const char *version, int solvComparisonOperator)
+Id
+Dependency::getReldepId(DnfSack *sack, const char *name, const char *version, int cmpType)
 {
+    Id id;
+    int solvComparisonOperator = transformToLibsolvComparisonType(cmpType);
     Pool *pool = dnf_sack_get_pool(sack);
     id = pool_str2id(pool, name, 1);
 
     if (version) {
         Id evrId = pool_str2id(pool, version, 1);
         id = pool_rel2id(pool, id, evrId, solvComparisonOperator, 1);
+    }
+    return id;
+}
+
+Id
+Dependency::getReldepId(DnfSack *sack, const char * reldepStr)
+{
+    if (reldepStr[0] == '(') {
+        /* Rich dependency */
+        Pool *pool = dnf_sack_get_pool (sack);
+        Id id = pool_parserpmrichdep(pool, reldepStr);
+        if (!id)
+            throw std::runtime_error("Cannot parse a dependency string");
+        return id;
+    } else {
+        libdnf::DependencySplitter depSplitter;
+        if(!depSplitter.parse(reldepStr))
+            throw std::runtime_error("Cannot parse a dependency string");
+        return getReldepId(sack, depSplitter.getNameCStr(), depSplitter.getEVRCStr(),
+                           depSplitter.getCmpType());
     }
 }

@@ -56,9 +56,6 @@ extern "C" {
 
 #include "utils/bgettext/bgettext-lib.h"
 
-#include "repo/DependencySplitter.hpp"
-#include "repo/solvable/Dependency.hpp"
-
 #define BUF_BLOCK 4096
 #define CHKSUM_TYPE REPOKEY_TYPE_SHA256
 #define CHKSUM_IDENT "H000"
@@ -578,24 +575,4 @@ id2nevra(Pool *pool, Id id)
 {
     Solvable *s = pool_id2solvable(pool, id);
     return pool_solvable2str(pool, s);
-}
-
-DnfReldepList *
-reldeplist_from_str(DnfSack *sack, const char *reldep_str)
-{
-    libdnf::DependencySplitter depSplitter;
-    if(!depSplitter.parse(reldep_str))
-        return NULL;
-    Dataiterator di;
-    Pool *pool = dnf_sack_get_pool(sack);
-    DnfReldepList *reldeplist = dnf_reldep_list_new (sack);
-
-    dataiterator_init(&di, pool, 0, 0, 0, depSplitter.getNameCStr(),
-                      SEARCH_STRING | SEARCH_GLOB);
-    while (dataiterator_step(&di)) {
-        Dependency reldep(sack, di.kv.str, depSplitter.getEVRCStr(), depSplitter.getCmpType());
-        dnf_reldep_list_add(reldeplist, &reldep);
-    }
-    dataiterator_free(&di);
-    return reldeplist;
 }

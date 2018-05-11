@@ -143,16 +143,7 @@ hy_query_filter_provides_in(HyQuery q, char **reldep_strs)
     DependencyContainer reldeplist(q->getSack());
     libdnf::DependencySplitter depSplitter;
     for (int i = 0; reldep_strs[i] != NULL; ++i) {
-        if(!depSplitter.parse(reldep_strs[i])) {
-            return DNF_ERROR_BAD_QUERY;
-        }
-        try {
-            Dependency reldep(q->getSack(), depSplitter.getNameCStr(),
-                              depSplitter.getEVRCStr(), depSplitter.getCmpType());
-            reldeplist.add(&reldep);
-        }
-        catch(...)
-        {
+        if (!reldeplist.addReldep(reldep_strs[i])) {
             return DNF_ERROR_BAD_QUERY;
         }
     }
