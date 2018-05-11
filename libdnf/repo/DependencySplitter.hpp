@@ -1,0 +1,62 @@
+/*
+ * Copyright (C) 2018 Red Hat, Inc.
+ *
+ * Licensed under the GNU Lesser General Public License Version 2.1
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+#ifndef LIBDNF_DEPENDENCY_SPLITTER_HPP
+#define LIBDNF_DEPENDENCY_SPLITTER_HPP
+
+#include <string>
+
+#include "../dnf-types.h"
+
+namespace libdnf {
+
+struct DependencySplitter
+{
+public:
+    bool parse(const char * reldepStr);
+    const std::string & getName() const noexcept;
+    const std::string & getEVR() const noexcept;
+    int getCmpType() const noexcept;
+
+private:
+    std::string name;
+    std::string evr;
+    int cmpType{0};
+};
+
+inline const std::string & DependencySplitter::getName() const noexcept
+{
+    return name;
+}
+
+inline const std::string & DependencySplitter::getEVR() const noexcept
+{
+    return evr;
+}
+
+inline int DependencySplitter::getCmpType() const noexcept
+{
+    return cmpType;
+}
+
+
+}
+
+#endif // LIBDNF_DEPENDENCY_SPLITTER_HPP
