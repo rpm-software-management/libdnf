@@ -362,6 +362,7 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
             return 1;
 
         int ret = query->addFilter(keyname, reldeplist);
+        delete reldeplist;
         if (ret)
             return raise_bad_filter();
         break;
