@@ -24,6 +24,8 @@
 #include <memory>
 #include <vector>
 #include "../hy-types.h"
+#include "../repo/solvable/Dependency.hpp"
+#include "../repo/solvable/DependencyContainer.hpp"
 #include "../dnf-types.h"
 #include "advisorypkg.hpp"
 
@@ -42,7 +44,7 @@ public:
     Filter(int keyname, int cmp_type, int nmatches, const int *matches);
     Filter(int keyname, int cmp_type, const DnfPackageSet * pset);
     Filter(int keyname, int cmp_type, Dependency * reldep);
-    Filter(int keyname, int cmp_type, DnfReldepList *reldeplist);
+    Filter(int keyname, int cmp_type, DependencyContainer * reldeplist);
     Filter(int keyname, int cmp_type, const char *match);
     Filter(int keyname, int cmp_type, const char **matches);
     ~Filter();
@@ -95,7 +97,7 @@ public:
     int addFilter(int keyname, int cmp_type, int nmatches, const int *matches);
     int addFilter(int keyname, int cmp_type, const DnfPackageSet *pset);
     int addFilter(int keyname, Dependency * reldep);
-    int addFilter(int keyname, DnfReldepList *reldeplist);
+    int addFilter(int keyname, DependencyContainer * reldeplist);
     int addFilter(int keyname, int cmp_type, const char *match);
     int addFilter(int keyname, int cmp_type, const char **matches);
     int addFilter(HyNevra nevra, bool icase);

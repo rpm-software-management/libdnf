@@ -211,7 +211,7 @@ pyseq_to_reldeplist(PyObject *obj, DnfSack *sack, int cmp_type)
         PyObject *item = PySequence_Fast_GET_ITEM(sequence.get(), i);
         if (item == NULL)
             goto fail;
-        if reldepObject_Check(item) {
+        if (reldepObject_Check(item)) {
             DnfReldep * reldep = reldepFromPyObject(item);
             if (reldep == NULL)
                 goto fail;
@@ -223,28 +223,19 @@ pyseq_to_reldeplist(PyObject *obj, DnfSack *sack, int cmp_type)
                 goto fail;
 
             if (!hy_is_glob_pattern(reldep_str.getCString())) {
-                try {
-                    Dependency reldep(sack, reldep_str.getCString());
-                    dnf_reldep_list_add(reldeplist, &reldep);
-                }
-                catch (...)
-                {
+                if (!reldeplist->addReldep(reldep_str.getCString()))
                     goto fail;
-                }
             } else {
-                DnfReldepList * g_reldeplist = reldeplist_from_str(sack, reldep_str.getCString());
-                if (g_reldeplist == NULL)
+                if (!reldeplist->addReldepWithGlob(reldep_str.getCString()))
                     goto fail;
-                dnf_reldep_list_extend(reldeplist, g_reldeplist);
-                delete g_reldeplist;
             }
 
         } else {
-            DnfReldep * reldep = reldep_from_pystr(item, sack);
-            if (reldep == NULL)
+            PycompString reldepStr(item);
+            if (!reldepStr.getCString())
                 goto fail;
-            dnf_reldep_list_add(reldeplist, reldep);
-            delete reldep;
+            if (!reldeplist->addReldep(reldepStr.getCString()))
+                goto fail;
         }
     }
 
@@ -294,14 +285,4 @@ reldeplist_to_pylist(DnfReldepList *reldeplist, PyObject *sack)
     }
 
     return list.release();
-}
-
-DnfReldep *
-reldep_from_pystr(PyObject *o, DnfSack *sack)
-{
-    PycompString reldep_str(o);
-    if (!reldep_str.getCString())
-        return NULL;
-
-    return new Dependency(sack, reldep_str.getCString());
 }

@@ -559,7 +559,7 @@ Filter::Filter(int keyname, int cmp_type, Dependency * reldep) : pImpl(new Impl)
     match_in.reldep = new Dependency(*reldep);
     pImpl->matches.push_back(match_in);
 }
-Filter::Filter(int keyname, int cmp_type, DnfReldepList *reldeplist) : pImpl(new Impl)
+Filter::Filter(int keyname, int cmp_type, DependencyContainer * reldeplist) : pImpl(new Impl)
 {
     pImpl->keyname = keyname;
     pImpl->cmpType = cmp_type;
@@ -769,7 +769,7 @@ Query::addFilter(int keyname, Dependency * reldep)
     return 0;
 }
 int
-Query::addFilter(int keyname, DnfReldepList *reldeplist)
+Query::addFilter(int keyname, DependencyContainer * reldeplist)
 {
     if (!valid_filter_reldep(keyname))
         return DNF_ERROR_BAD_QUERY;
@@ -807,14 +807,11 @@ Query::addFilter(int keyname, int cmp_type, const char *match)
             DnfSack *sack = pImpl->sack;
 
             if (cmp_type == HY_GLOB) {
-                DnfReldepList *reldeplist = reldeplist_from_str(sack, match);
-                if (reldeplist == NULL) {
+                DependencyContainer reldeplist(sack);
+                if (!reldeplist.addReldepWithGlob(match)) {
                     return addFilter(HY_PKG_EMPTY, HY_EQ, 1);
                 }
-
-                int ret = addFilter(keyname, reldeplist);
-                delete reldeplist;
-                return ret;
+                return addFilter(keyname, &reldeplist);
             } else {
                 try {
                     Dependency reldep(sack, match);

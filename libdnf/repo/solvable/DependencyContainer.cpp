@@ -1,5 +1,32 @@
+/*
+ * Copyright (C) 2018 Red Hat, Inc.
+ *
+ * Licensed under the GNU Lesser General Public License Version 2.1
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+// libsolv
+extern "C" {
+#include <solv/dataiterator.h>
+}
+
 #include "DependencyContainer.hpp"
 #include "Dependency.hpp"
+#include "../DependencySplitter.hpp"
+
 
 DependencyContainer::DependencyContainer()
         : sack(nullptr)
@@ -61,6 +88,38 @@ void DependencyContainer::add(Dependency *dependency)
 void DependencyContainer::add(Id id)
 {
     queue_push(&queue, id);
+}
+
+bool DependencyContainer::addReldepWithGlob(const char *reldepStr)
+{
+    libdnf::DependencySplitter depSplitter;
+    if(!depSplitter.parse(reldepStr))
+        return false;
+    Dataiterator di;
+    Pool *pool = dnf_sack_get_pool(sack);
+
+    dataiterator_init(&di, pool, 0, 0, 0, depSplitter.getNameCStr(),
+                      SEARCH_STRING | SEARCH_GLOB);
+    while (dataiterator_step(&di)) {
+        Id id = Dependency::getReldepId(sack, di.kv.str, depSplitter.getEVRCStr(),
+                                        depSplitter.getCmpType());
+        add(id);
+    }
+    dataiterator_free(&di);
+    return true;
+}
+
+bool DependencyContainer::addReldep(const char *reldepStr)
+{
+    try {
+        Id id = Dependency::getReldepId(sack, reldepStr);
+        add(id);
+        return true;
+    }
+    catch (...)
+        {
+        return false;
+    }
 }
 
 void DependencyContainer::extend(DependencyContainer *container)

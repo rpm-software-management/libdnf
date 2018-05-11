@@ -32,8 +32,7 @@ struct Dependency
 {
 public:
     Dependency(DnfSack *sack, Id id);
-    Dependency(DnfSack *sack, const char *name, const char *version,
-        int solvComparisonOperator);
+    Dependency(DnfSack *sack, const char *name, const char *version, int cmpType);
     Dependency(DnfSack *sack, const std::string &dependency);
     Dependency(const Dependency &dependency);
     ~Dependency();
@@ -45,7 +44,9 @@ public:
     Id getId() const noexcept;
 
 private:
-    void setSolvId(const char *name, const char *version, int solvComparisonOperator);
+    friend DependencyContainer;
+    static Id getReldepId(DnfSack *sack, const char *name, const char *version, int cmpType);
+    static Id getReldepId(DnfSack *sack, const char * reldepStr);
 
     DnfSack *sack;
     Id id;
