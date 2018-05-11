@@ -32,7 +32,9 @@ struct DependencySplitter
 public:
     bool parse(const char * reldepStr);
     const std::string & getName() const noexcept;
+    const char * getNameCStr() const noexcept;
     const std::string & getEVR() const noexcept;
+    const char * getEVRCStr() const noexcept;
     int getCmpType() const noexcept;
 
 private:
@@ -56,6 +58,15 @@ inline int DependencySplitter::getCmpType() const noexcept
     return cmpType;
 }
 
+inline const char * DependencySplitter::getNameCStr() const noexcept
+{
+    return name.empty() ? NULL : name.c_str();
+}
+
+inline const char * DependencySplitter::getEVRCStr() const noexcept
+{
+    return evr.empty() ? NULL : evr.c_str();
+}
 
 }
 

@@ -65,14 +65,17 @@ DependencySplitter::parse(const char * reldepStr)
 {
     enum { NAME = 1, CMP_TYPE = 2, EVR = 3, _LAST_ };
     auto matchResult = RELDEP_REGEX.match(reldepStr, false, _LAST_);
-    if (!matchResult.isMatched() || matchResult.getMatchedLen(NAME) == 0)
-         return false;
+    if (!matchResult.isMatched() || matchResult.getMatchedLen(NAME) == 0) {
+        return false;
+    }
     name = matchResult.getMatchedString(NAME);
     evr = matchResult.getMatchedString(EVR);
     cmpType = 0;
-    if (!matchResult.getMatchedLen(EVR) && !matchResult.getMatchedLen(CMP_TYPE))
+    int evrLen = matchResult.getMatchedLen(EVR);
+    int cmpTypeLen = matchResult.getMatchedLen(CMP_TYPE);
+    if (evrLen < 1 && cmpTypeLen < 1)
         return true;
-    if (!(matchResult.getMatchedLen(EVR) && matchResult.getMatchedLen(CMP_TYPE)))
+    if (!(evrLen > 0 && cmpTypeLen > 0))
         return false;
 
     return getCmpFlags(&cmpType, matchResult.getMatchedString(CMP_TYPE));

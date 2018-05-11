@@ -20,7 +20,7 @@
 
 #include "Dependency.hpp"
 #include "libdnf/utils/utils.hpp"
-#include <libdnf/hy-iutil-private.hpp>
+#include "libdnf/repo/DependencySplitter.hpp"
 
 /* workaround, libsolv lacks 'extern "C"' in its header file */
 extern "C" {
@@ -69,15 +69,11 @@ Dependency::Dependency(DnfSack *sack, const std::string &dependency)
             throw std::runtime_error("Cannot parse a dependency string");
         return;
     } else {
-        char *name = NULL;
-        char *evr = NULL;
-        int cmp_type;
-        if (parse_reldep_str(reldep_str, &name, &evr, &cmp_type) == -1)
+        libdnf::DependencySplitter depSplitter;
+        if(!depSplitter.parse(reldep_str))
             throw std::runtime_error("Cannot parse a dependency string");
-        int solvComparisonOperator = transformToLibsolvComparisonType(cmp_type);
-        setSolvId(name, evr, solvComparisonOperator);
-        g_free(name);
-        g_free(evr);
+        int solvComparisonOperator = transformToLibsolvComparisonType(depSplitter.getCmpType());
+        setSolvId(depSplitter.getNameCStr(), depSplitter.getEVRCStr(), solvComparisonOperator);
     }
 }
 

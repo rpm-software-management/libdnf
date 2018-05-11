@@ -61,7 +61,6 @@ unsigned long pool_get_epoch(Pool *pool, const char *evr);
 void pool_split_evr(Pool *pool, const char *evr, char **epoch, char **version, char **release);
 
 /* reldep utils */
-int copy_str_from_subexpr(char** target, const char* source, regmatch_t* matches, int i);
 int parse_reldep_str(const char *nevra, char **name, char **evr, int *cmp_type);
 
 /* loop over all package providers of d */
