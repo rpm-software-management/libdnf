@@ -23,7 +23,6 @@
 #include <fcntl.h>
 #include <linux/limits.h>
 #include <pwd.h>
-#include <regex.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,6 +56,7 @@ extern "C" {
 
 #include "utils/bgettext/bgettext-lib.h"
 
+#include "repo/DependencySplitter.hpp"
 #include "repo/solvable/Dependency.hpp"
 
 #define BUF_BLOCK 4096
@@ -580,112 +580,22 @@ id2nevra(Pool *pool, Id id)
     return pool_solvable2str(pool, s);
 }
 
-int
-copy_str_from_subexpr(char** target, const char* source,
-    regmatch_t* matches, int i)
-{
-    int subexpr_len = matches[i].rm_eo - matches[i].rm_so;
-    if (subexpr_len == 0)
-        return -1;
-    *target = static_cast<char *>(g_malloc(sizeof(char*) * (subexpr_len + 1)));
-    strncpy(*target, &(source[matches[i].rm_so]), subexpr_len);
-    (*target)[subexpr_len] = '\0';
-    return 0;
-}
-
-static int
-get_cmp_flags(int *cmp_type, const char* source,
-    regmatch_t* matches, int i)
-{
-    int subexpr_len = matches[i].rm_eo - matches[i].rm_so;
-    const char *match_start = &(source[matches[i].rm_so]);
-    if (subexpr_len == 2) {
-        if (strncmp(match_start, "!=", 2) == 0)
-            *cmp_type |= HY_NEQ;
-        else if (strncmp(match_start, "<=", 2) == 0) {
-            *cmp_type |= HY_LT;
-            *cmp_type |= HY_EQ;
-        }
-        else if (strncmp(match_start, ">=", 2) == 0) {
-            *cmp_type |= HY_GT;
-            *cmp_type |= HY_EQ;
-        }
-        else
-            return -1;
-    } else if (subexpr_len == 1) {
-        if (*match_start == '<')
-            *cmp_type |= HY_LT;
-        else if (*match_start == '>')
-            *cmp_type |= HY_GT;
-        else if (*match_start == '=')
-            *cmp_type |= HY_EQ;
-        else
-            return -1;
-    } else
-        return -1;
-    return 0;
-}
-
-/**
- * Copies parsed name and evr from reldep_str. If reldep_str is valid
- * returns 0, otherwise returns -1. When parsing is successful, name
- * and evr strings need to be freed after usage.
- */
-int
-parse_reldep_str(const char *reldep_str, char **name, char **evr,
-    int *cmp_type)
-{
-    regex_t reg;
-    const char *regex =
-        "^([^ \t\r\n\v\f<=>!]*)\\s*(<=|>=|!=|<|>|=)?\\s*(.*)$";
-    regmatch_t matches[4];
-    *cmp_type = 0;
-    int ret = 0;
-
-    regcomp(&reg, regex, REG_EXTENDED);
-
-    if(regexec(&reg, reldep_str, 4, matches, 0) == 0) {
-        if (copy_str_from_subexpr(name, reldep_str, matches, 1) == -1)
-            ret = -1;
-        // without comparator and evr
-        else if ((matches[2].rm_eo - matches[2].rm_so) == 0 &&
-            (matches[3].rm_eo - matches[3].rm_so) == 0)
-            ret = 0;
-        else if (get_cmp_flags(cmp_type, reldep_str, matches, 2) == -1 ||
-            copy_str_from_subexpr(evr, reldep_str, matches, 3) == -1) {
-            g_free(*name);
-            ret = -1;
-        }
-    } else
-        ret = -1;
-
-    regfree(&reg);
-    return ret;
-}
-
 DnfReldepList *
 reldeplist_from_str(DnfSack *sack, const char *reldep_str)
 {
-    int cmp_type;
-    char *name_glob = NULL;
-    char *evr = NULL;
-    if (parse_reldep_str(reldep_str, &name_glob, &evr, &cmp_type) == -1)
+    libdnf::DependencySplitter depSplitter;
+    if(!depSplitter.parse(reldep_str))
         return NULL;
     Dataiterator di;
     Pool *pool = dnf_sack_get_pool(sack);
     DnfReldepList *reldeplist = dnf_reldep_list_new (sack);
 
-    dataiterator_init(&di, pool, 0, 0, 0, name_glob, SEARCH_STRING | SEARCH_GLOB);
+    dataiterator_init(&di, pool, 0, 0, 0, depSplitter.getNameCStr(),
+                      SEARCH_STRING | SEARCH_GLOB);
     while (dataiterator_step(&di)) {
-        DnfReldep *reldep = dnf_reldep_new(sack, di.kv.str, cmp_type, evr);
-        if (reldep) {
-            dnf_reldep_list_add (reldeplist, reldep);
-            delete reldep;
-        }
+        Dependency reldep(sack, di.kv.str, depSplitter.getEVRCStr(), depSplitter.getCmpType());
+        dnf_reldep_list_add(reldeplist, &reldep);
     }
-
     dataiterator_free(&di);
-    g_free(name_glob);
-    g_free(evr);
     return reldeplist;
 }
