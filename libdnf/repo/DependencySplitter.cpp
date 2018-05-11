@@ -32,9 +32,7 @@ getCmpFlags(int *cmp_type, std::string matchCmpType)
     int subexpr_len = matchCmpType.size();
     auto match_start = matchCmpType.c_str();
     if (subexpr_len == 2) {
-        if (strncmp(match_start, "!=", 2) == 0)
-            *cmp_type |= HY_NEQ;
-        else if (strncmp(match_start, "<=", 2) == 0) {
+        if (strncmp(match_start, "<=", 2) == 0) {
             *cmp_type |= HY_LT;
             *cmp_type |= HY_EQ;
         }
