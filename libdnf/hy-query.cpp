@@ -132,10 +132,8 @@ int
 hy_query_filter_provides(HyQuery q, int cmp_type, const char *name,
                          const char *evr)
 {
-    DnfReldep *reldep = dnf_reldep_new(q->getSack(), name, cmp_type, evr);
-    assert(reldep);
-    int ret = hy_query_filter_reldep(q, HY_PKG_PROVIDES, reldep);
-    return ret;
+    Dependency reldep(q->getSack(), name, evr, cmp_type);
+    return q->addFilter(HY_PKG_PROVIDES, &reldep);
 }
 
 int
