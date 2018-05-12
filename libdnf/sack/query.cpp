@@ -556,7 +556,7 @@ Filter::Filter(int keyname, int cmp_type, Dependency * reldep) : pImpl(new Impl)
     pImpl->cmpType = cmp_type;
     pImpl->matchType = _HY_RELDEP;
     _Match match_in;
-    match_in.reldep = new Dependency(*reldep);
+    match_in.reldep = reldep->getId();
     pImpl->matches.push_back(match_in);
 }
 Filter::Filter(int keyname, int cmp_type, DependencyContainer * reldeplist) : pImpl(new Impl)
@@ -568,7 +568,7 @@ Filter::Filter(int keyname, int cmp_type, DependencyContainer * reldeplist) : pI
     pImpl->matches.reserve(nmatches);
     for (int i = 0; i < nmatches; ++i) {
         _Match match_in;
-        match_in.reldep = dnf_reldep_list_index(reldeplist, i);
+        match_in.reldep = reldeplist->getId(i);
         pImpl->matches.push_back(match_in);
     }
 }
@@ -606,9 +606,6 @@ Filter::Impl::~Impl()
                 break;
             case _HY_STR:
                 delete[] match.str;
-                break;
-            case _HY_RELDEP:
-                delete match.reldep;
                 break;
             default:
                 break;
@@ -984,7 +981,7 @@ Query::Impl::filterRcoReldep(const Filter & f, Map *m)
 
     queue_init(&rco);
     for (auto match : f.getMatches()) {
-        Id r_id = dnf_reldep_get_id (match.reldep);
+        Id r_id = match.reldep;
         Id s_id = -1;
         while (true) {
             s_id = resultPset->next(s_id);
@@ -1397,7 +1394,7 @@ Query::Impl::filterProvidesReldep(const Filter & f, Map *m)
 
     dnf_sack_make_provides_ready(sack);
     for (auto match_in : f.getMatches()) {
-        Id r_id = dnf_reldep_get_id (match_in.reldep);
+        Id r_id = match_in.reldep;
         FOR_PROVIDES(p, pp, r_id)
             MAPSET(m, p);
     }

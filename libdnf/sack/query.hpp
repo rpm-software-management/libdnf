@@ -34,7 +34,7 @@ namespace libdnf {
 union _Match {
     int num;
     DnfPackageSet *pset;
-    DnfReldep *reldep;
+    Id reldep;
     char *str;
 };
 
