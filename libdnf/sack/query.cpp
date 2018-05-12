@@ -980,27 +980,24 @@ Query::Impl::filterRcoReldep(const Filter & f, Map *m)
     auto resultPset = result.get();
 
     queue_init(&rco);
-    for (auto match : f.getMatches()) {
-        Id r_id = match.reldep;
-        Id s_id = -1;
-        while (true) {
-            s_id = resultPset->next(s_id);
-            if (s_id == -1)
-                break;
-
-            Solvable *s = pool_id2solvable(pool, s_id);
+    Id resultId = -1;
+    while ((resultId = resultPset->next(resultId)) != -1) {
+        Solvable *s = pool_id2solvable(pool, resultId );
+        for (auto match : f.getMatches()) {
+            Id reldepFilterId = match.reldep;
 
             queue_empty(&rco);
             solvable_lookup_idarray(s, rco_key, &rco);
             for (int j = 0; j < rco.count; ++j) {
-                Id r_id2 = rco.elements[j];
+                Id reldepIdFromSolvable = rco.elements[j];
 
-                if (pool_match_dep(pool, r_id, r_id2)) {
-                    MAPSET(m, s_id);
-                    break;
+                if (pool_match_dep(pool, reldepFilterId, reldepIdFromSolvable )) {
+                    MAPSET(m, resultId );
+                    goto nextId;
                 }
             }
         }
+        nextId:;
     }
     queue_free(&rco);
 }
