@@ -605,7 +605,7 @@ filter_provides2job(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 
     switch (f->getCmpType()) {
         case HY_EQ:
-            id = dnf_reldep_get_id(matches[0].reldep);
+            id = matches[0].reldep;
             queue_push2(job, SOLVER_SOLVABLE_PROVIDES, id);
             break;
         case HY_GLOB:
