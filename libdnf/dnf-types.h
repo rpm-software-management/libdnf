@@ -29,10 +29,16 @@
 #ifdef __cplusplus
 namespace libdnf {
     struct PackageSet;
+    struct Dependency;
+    struct DependencyContainer;
 }
 typedef struct libdnf::PackageSet DnfPackageSet;
+typedef struct libdnf::Dependency DnfReldep;
+typedef struct libdnf::DependencyContainer DnfReldepList;
 #else
 typedef struct PackageSet DnfPackageSet;
+typedef struct Dependency DnfReldep;
+typedef struct DependencyContainer DnfReldepList;
 #endif
 
 typedef struct _DnfContext              DnfContext;
@@ -42,8 +48,6 @@ typedef struct _DnfRepoLoader           DnfRepoLoader;
 typedef struct _DnfRepo                 DnfRepo;
 typedef struct _DnfState                DnfState;
 typedef struct _DnfSack                 DnfSack;
-typedef struct Dependency DnfReldep;
-typedef struct DependencyContainer DnfReldepList;
 
 /**
  * DnfError:

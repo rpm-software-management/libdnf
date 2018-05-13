@@ -164,7 +164,7 @@ reldeps_for(DnfPackage *pkg, Id type)
             queue_push(&q_final, rel_id);
     }
 
-    reldeplist = new DependencyContainer(dnf_package_get_sack(pkg), q_final);
+    reldeplist = new libdnf::DependencyContainer(dnf_package_get_sack(pkg), q_final);
 
     queue_free(&q);
     queue_free(&q_final);

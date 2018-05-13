@@ -130,17 +130,16 @@ hy_query_filter_reldep_in(HyQuery q, int keyname, DnfReldepList *reldeplist)
 }
 
 int
-hy_query_filter_provides(HyQuery q, int cmp_type, const char *name,
-                         const char *evr)
+hy_query_filter_provides(HyQuery q, int cmp_type, const char *name, const char *evr)
 {
-    Dependency reldep(q->getSack(), name, evr, cmp_type);
+    libdnf::Dependency reldep(q->getSack(), name, evr, cmp_type);
     return q->addFilter(HY_PKG_PROVIDES, &reldep);
 }
 
 int
 hy_query_filter_provides_in(HyQuery q, char **reldep_strs)
 {
-    DependencyContainer reldeplist(q->getSack());
+    libdnf::DependencyContainer reldeplist(q->getSack());
     libdnf::DependencySplitter depSplitter;
     for (int i = 0; reldep_strs[i] != NULL; ++i) {
         if (!reldeplist.addReldep(reldep_strs[i])) {

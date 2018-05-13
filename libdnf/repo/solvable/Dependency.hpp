@@ -28,6 +28,8 @@
 
 #include "libdnf/dnf-sack.h"
 
+namespace libdnf {
+
 struct Dependency
 {
 public:
@@ -53,5 +55,7 @@ private:
 };
 
 inline Id Dependency::getId() const noexcept { return id; }
+
+}
 
 #endif //LIBDNF_DEPENDENCY_HPP

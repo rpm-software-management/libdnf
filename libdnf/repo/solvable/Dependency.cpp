@@ -28,8 +28,7 @@ extern "C" {
 #include <solv/util.h>
 }
 
-
-#define NUMBER_OF_ITEMS_IN_RELATIONAL_DEPENDENCY 3
+namespace libdnf {
 
 static int transformToLibsolvComparisonType(int cmp_type)
 {
@@ -106,4 +105,6 @@ Dependency::getReldepId(DnfSack *sack, const char * reldepStr)
         return getReldepId(sack, depSplitter.getNameCStr(), depSplitter.getEVRCStr(),
                            depSplitter.getCmpType());
     }
+}
+
 }
