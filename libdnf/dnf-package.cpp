@@ -502,10 +502,10 @@ dnf_package_is_gui(DnfPackage *pkg)
 
     /* find if the package depends on GTK or KDE */
     std::unique_ptr<DnfReldepList> reldep_list(dnf_package_get_requires(pkg));
-    size = dnf_reldep_list_count (reldep_list.get());
+    size = reldep_list->count();
     for (idx = 0; idx < size && !ret; idx++) {
-        std::unique_ptr<DnfReldep> reldep(dnf_reldep_list_index(reldep_list.get(), idx));
-        tmp = dnf_reldep_to_string (reldep.get());
+        auto reldep = reldep_list->get(idx);
+        tmp = reldep->toString();
         if (g_strstr_len(tmp, -1, "libgtk") != NULL ||
             g_strstr_len(tmp, -1, "libQt5Gui.so") != NULL ||
             g_strstr_len(tmp, -1, "libQtGui.so") != NULL ||
