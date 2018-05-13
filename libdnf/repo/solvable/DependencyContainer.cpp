@@ -127,10 +127,10 @@ void DependencyContainer::extend(DependencyContainer *container)
     queue_insertn(&queue, 0, container->queue.count, container->queue.elements);
 }
 
-std::shared_ptr<Dependency> DependencyContainer::get(int index) const noexcept
+std::unique_ptr<Dependency> DependencyContainer::get(int index) const noexcept
 {
     Id id = queue.elements[index];
-    return std::make_shared<Dependency>(sack, id);
+    return std::unique_ptr<Dependency> (new Dependency(sack, id));
 }
 
 Dependency *DependencyContainer::getPtr(int index) const noexcept

@@ -48,7 +48,7 @@ public:
     bool addReldep(const char *reldepStr);
     void extend(DependencyContainer *container);
 
-    std::shared_ptr<Dependency> get(int index) const noexcept;
+    std::unique_ptr<Dependency> get(int index) const noexcept;
     Dependency *getPtr(int index) const noexcept;
     Id getId(int index) const noexcept;
     int count() const noexcept;
