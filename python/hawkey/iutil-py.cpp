@@ -198,51 +198,48 @@ pyseq_to_packageset(PyObject *obj, DnfSack *sack)
     return pset;
 }
 
-DnfReldepList *
+std::unique_ptr<DependencyContainer>
 pyseq_to_reldeplist(PyObject *obj, DnfSack *sack, int cmp_type)
 {
     UniquePtrPyObject sequence(PySequence_Fast(obj, "Expected a sequence."));
     if (!sequence)
         return NULL;
-    DnfReldepList *reldeplist = dnf_reldep_list_new (sack);
+    std::unique_ptr<DependencyContainer> reldeplist(new DependencyContainer(sack));
 
     const unsigned count = PySequence_Size(sequence.get());
     for (unsigned int i = 0; i < count; ++i) {
         PyObject *item = PySequence_Fast_GET_ITEM(sequence.get(), i);
         if (item == NULL)
-            goto fail;
+            return NULL;
         if (reldepObject_Check(item)) {
             DnfReldep * reldep = reldepFromPyObject(item);
             if (reldep == NULL)
-                goto fail;
-            dnf_reldep_list_add(reldeplist, reldep);
+                return NULL;
+            reldeplist->add(reldep);
         } else if (cmp_type == HY_GLOB) {
 
             PycompString reldep_str(item);
             if (!reldep_str.getCString())
-                goto fail;
+                return NULL;
 
             if (!hy_is_glob_pattern(reldep_str.getCString())) {
                 if (!reldeplist->addReldep(reldep_str.getCString()))
-                    goto fail;
+                    return NULL;
             } else {
                 if (!reldeplist->addReldepWithGlob(reldep_str.getCString()))
-                    goto fail;
+                    return NULL;
             }
 
         } else {
             PycompString reldepStr(item);
             if (!reldepStr.getCString())
-                goto fail;
+                return NULL;
             if (!reldeplist->addReldep(reldepStr.getCString()))
-                goto fail;
+                return NULL;
         }
     }
 
     return reldeplist;
- fail:
-    delete reldeplist;
-    return NULL;
 }
 
 PyObject *
