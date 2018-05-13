@@ -65,7 +65,7 @@ new_reldep(PyObject *sack, Id r_id)
     _ReldepObject *self = reldep_new_core(&reldep_Type, sack);
     if (self == NULL)
         return NULL;
-    self->reldep = new Dependency(csack, r_id);
+    self->reldep = new libdnf::Dependency(csack, r_id);
     return (PyObject*)self;
 }
 
@@ -122,7 +122,7 @@ reldep_init(_ReldepObject *self, PyObject *args, PyObject *kwds)
         return -1;
 
     try {
-        self->reldep = new Dependency(csack, reldep_str.getCString());
+        self->reldep = new libdnf::Dependency(csack, reldep_str.getCString());
     }
     catch (...)
     {

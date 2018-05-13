@@ -27,6 +27,7 @@ extern "C" {
 #include "Dependency.hpp"
 #include "../DependencySplitter.hpp"
 
+namespace libdnf {
 
 DependencyContainer::DependencyContainer()
         : sack(nullptr)
@@ -141,3 +142,5 @@ Dependency *DependencyContainer::getPtr(int index) const noexcept
 
 int DependencyContainer::count() const noexcept { return queue.count; }
 const Queue &DependencyContainer::getQueue() const noexcept { return queue; }
+
+}

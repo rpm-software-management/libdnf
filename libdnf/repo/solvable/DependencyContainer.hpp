@@ -26,6 +26,8 @@
 #include <memory>
 #include "libdnf/dnf-sack.h"
 
+namespace libdnf {
+
 struct Dependency;
 
 struct DependencyContainer
@@ -63,6 +65,8 @@ private:
 inline Id DependencyContainer::getId(int index) const noexcept
 {
     return queue.elements[index];
+}
+
 }
 
 #endif //LIBDNF_DEPENDENCYCONTAINER_HPP

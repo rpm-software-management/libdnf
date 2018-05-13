@@ -11,7 +11,7 @@ void DependencyTest::setUp()
 {
     sack = dnf_sack_new();
 
-    dependency = std::unique_ptr<Dependency>(new Dependency(sack, "foo = 1.0"));
+    dependency = std::unique_ptr<libdnf::Dependency>(new libdnf::Dependency(sack, "foo = 1.0"));
 }
 
 void DependencyTest::testName()
@@ -26,7 +26,8 @@ void DependencyTest::testVersion()
 
 void DependencyTest::testParse()
 {
-    std::unique_ptr<Dependency> dependency = std::unique_ptr<Dependency>(new Dependency(sack, "bar"));
+    std::unique_ptr<libdnf::Dependency> dependency = std::unique_ptr<libdnf::Dependency>(
+        new libdnf::Dependency(sack, "bar"));
 
     CPPUNIT_ASSERT(strcmp("bar", dependency->getName()) == 0);
     CPPUNIT_ASSERT(strcmp("", dependency->getVersion()) == 0);

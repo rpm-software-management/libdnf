@@ -198,13 +198,13 @@ pyseq_to_packageset(PyObject *obj, DnfSack *sack)
     return pset;
 }
 
-std::unique_ptr<DependencyContainer>
+std::unique_ptr<libdnf::DependencyContainer>
 pyseq_to_reldeplist(PyObject *obj, DnfSack *sack, int cmp_type)
 {
     UniquePtrPyObject sequence(PySequence_Fast(obj, "Expected a sequence."));
     if (!sequence)
         return NULL;
-    std::unique_ptr<DependencyContainer> reldeplist(new DependencyContainer(sack));
+    std::unique_ptr<libdnf::DependencyContainer> reldeplist(new libdnf::DependencyContainer(sack));
 
     const unsigned count = PySequence_Size(sequence.get());
     for (unsigned int i = 0; i < count; ++i) {
@@ -269,10 +269,8 @@ reldeplist_to_pylist(DnfReldepList *reldeplist, PyObject *sack)
 
     const int count = dnf_reldep_list_count (reldeplist);
     for (int i = 0; i < count; ++i) {
-        DnfReldep *creldep = dnf_reldep_list_index (reldeplist,  i);
-        UniquePtrPyObject reldep(new_reldep(sack, dnf_reldep_get_id (creldep)));
+        UniquePtrPyObject reldep(new_reldep(sack, reldeplist->getId(i)));
 
-        dnf_reldep_free(creldep);
         if (!reldep)
             return NULL;
 

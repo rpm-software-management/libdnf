@@ -7,15 +7,15 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DependencyContainerTest);
 void DependencyContainerTest::setUp()
 {
     sack = dnf_sack_new();
-    container = std::unique_ptr<DependencyContainer>(new DependencyContainer(sack));
+    container = std::unique_ptr<libdnf::DependencyContainer>(new libdnf::DependencyContainer(sack));
 }
 
 void DependencyContainerTest::testAdd()
 {
-    auto dependency = new Dependency(sack, "foo", "1.0", DNF_COMPARISON_EQ);
+    auto dependency = new libdnf::Dependency(sack, "foo", "1.0", DNF_COMPARISON_EQ);
 
     container->add(dependency);
-    Dependency *actual = container->getPtr(0);
+    libdnf::Dependency *actual = container->getPtr(0);
 
     CPPUNIT_ASSERT(strcmp(dependency->toString(), actual->toString()) == 0);
     delete actual;
@@ -23,9 +23,9 @@ void DependencyContainerTest::testAdd()
 
 void DependencyContainerTest::testExtend()
 {
-    auto otherContainer = new DependencyContainer(sack);
-    auto dependency = new Dependency(sack, "foo", "1.0", DNF_COMPARISON_EQ);
-    auto otherDependency = new Dependency(sack, "bar", "1.1", DNF_COMPARISON_EQ);
+    auto otherContainer = new libdnf::DependencyContainer(sack);
+    auto dependency = new libdnf::Dependency(sack, "foo", "1.0", DNF_COMPARISON_EQ);
+    auto otherDependency = new libdnf::Dependency(sack, "bar", "1.1", DNF_COMPARISON_EQ);
 
     container->add(dependency);
     CPPUNIT_ASSERT_EQUAL(1, container->count());
@@ -34,7 +34,7 @@ void DependencyContainerTest::testExtend()
     CPPUNIT_ASSERT_EQUAL(1, otherContainer->count());
 
     container->extend(otherContainer);
-    Dependency *actual = container->getPtr(0);
+    libdnf::Dependency *actual = container->getPtr(0);
     CPPUNIT_ASSERT(strcmp(otherDependency->toString(), actual->toString()) == 0);
 
     delete otherContainer;
@@ -45,13 +45,13 @@ void DependencyContainerTest::testExtend()
 
 void DependencyContainerTest::testGet()
 {
-    auto dependency = new Dependency(sack, "foo", "1.0", DNF_COMPARISON_EQ);
-    auto otherDependency = new Dependency(sack, "bar", "1.1", DNF_COMPARISON_EQ);
+    auto dependency = new libdnf::Dependency(sack, "foo", "1.0", DNF_COMPARISON_EQ);
+    auto otherDependency = new libdnf::Dependency(sack, "bar", "1.1", DNF_COMPARISON_EQ);
 
     container->add(dependency);
     container->add(otherDependency);
 
-    Dependency *actual = container->getPtr(0);
+    libdnf::Dependency *actual = container->getPtr(0);
     CPPUNIT_ASSERT(strcmp(dependency->toString(), actual->toString()) == 0);
 
     actual = container->getPtr(1);
@@ -64,8 +64,8 @@ void DependencyContainerTest::testGet()
 
 void DependencyContainerTest::testCount()
 {
-    auto otherContainer = new DependencyContainer(sack);
-    auto dependency = new Dependency(sack, "foo", "1.0", DNF_COMPARISON_EQ);
+    auto otherContainer = new libdnf::DependencyContainer(sack);
+    auto dependency = new libdnf::Dependency(sack, "foo", "1.0", DNF_COMPARISON_EQ);
 
     CPPUNIT_ASSERT_EQUAL(0, container->count());
     container->add(dependency);

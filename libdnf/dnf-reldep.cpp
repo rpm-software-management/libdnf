@@ -35,12 +35,9 @@
  * Since: 0.7.0
  */
 DnfReldep *
-dnf_reldep_new (DnfSack           *sack,
-                const char       *name,
-                int  cmp_type,
-                const char       *evr)
+dnf_reldep_new (DnfSack *sack, const char *name, int  cmp_type, const char *evr)
 {
-    return new Dependency(sack, name, evr, cmp_type);
+    return new libdnf::Dependency(sack, name, evr, cmp_type);
 }
 
 /**

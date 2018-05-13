@@ -18,15 +18,15 @@ public:
     Package(const Package &package);
     virtual ~Package();
 
-    std::shared_ptr<DependencyContainer> getConflicts() const;
-    std::shared_ptr<DependencyContainer> getEnhances() const;
-    std::shared_ptr<DependencyContainer> getObsoletes() const;
-    std::shared_ptr<DependencyContainer> getProvides() const;
-    std::shared_ptr<DependencyContainer> getRecommends() const;
-    std::shared_ptr<DependencyContainer> getRequires() const;
-    std::shared_ptr<DependencyContainer> getRequiresPre() const;
-    std::shared_ptr<DependencyContainer> getSuggests() const;
-    std::shared_ptr<DependencyContainer> getSupplements() const;
+    std::shared_ptr<libdnf::DependencyContainer> getConflicts() const;
+    std::shared_ptr<libdnf::DependencyContainer> getEnhances() const;
+    std::shared_ptr<libdnf::DependencyContainer> getObsoletes() const;
+    std::shared_ptr<libdnf::DependencyContainer> getProvides() const;
+    std::shared_ptr<libdnf::DependencyContainer> getRecommends() const;
+    std::shared_ptr<libdnf::DependencyContainer> getRequires() const;
+    std::shared_ptr<libdnf::DependencyContainer> getRequiresPre() const;
+    std::shared_ptr<libdnf::DependencyContainer> getSuggests() const;
+    std::shared_ptr<libdnf::DependencyContainer> getSupplements() const;
     Id getId() const;
 
     virtual const char *getName() const = 0;
@@ -37,15 +37,15 @@ protected:
     Package(DnfSack *sack, HyRepo repo, const char *name, const char *version, const char *arch);
     Package(DnfSack *sack, HyRepo repo, const std::string &name, const std::string &version, const std::string &arch);
 
-    void addConflicts(std::shared_ptr<Dependency> dependency);
-    void addEnhances(std::shared_ptr<Dependency> dependency);
-    void addObsoletes(std::shared_ptr<Dependency> dependency);
-    void addProvides(std::shared_ptr<Dependency> dependency);
-    void addRecommends(std::shared_ptr<Dependency> dependency);
-    void addRequires(std::shared_ptr<Dependency> dependency);
-    void addRequiresPre(std::shared_ptr<Dependency> dependency);
-    void addSuggests(std::shared_ptr<Dependency> dependency);
-    void addSupplements(std::shared_ptr<Dependency> dependency);
+    void addConflicts(std::shared_ptr<libdnf::Dependency> dependency);
+    void addEnhances(std::shared_ptr<libdnf::Dependency> dependency);
+    void addObsoletes(std::shared_ptr<libdnf::Dependency> dependency);
+    void addProvides(std::shared_ptr<libdnf::Dependency> dependency);
+    void addRecommends(std::shared_ptr<libdnf::Dependency> dependency);
+    void addRequires(std::shared_ptr<libdnf::Dependency> dependency);
+    void addRequiresPre(std::shared_ptr<libdnf::Dependency> dependency);
+    void addSuggests(std::shared_ptr<libdnf::Dependency> dependency);
+    void addSupplements(std::shared_ptr<libdnf::Dependency> dependency);
 
     const char *getSolvableName() const;
     const char *getSolvableEvr() const;
@@ -55,8 +55,8 @@ protected:
 private:
     void createSolvable(HyRepo repo);
     void fillSolvableData(const char *name, const char *version, const char *arch) const;
-    std::shared_ptr<DependencyContainer> getDependencies(Id type, Id marker = -1) const;
-    void addDependency(std::shared_ptr<Dependency> dependency, int type, Id marker = -1);
+    std::shared_ptr<libdnf::DependencyContainer> getDependencies(Id type, Id marker = -1) const;
+    void addDependency(std::shared_ptr<libdnf::Dependency> dependency, int type, Id marker = -1);
     Queue *getDependencyQueue(Id type, Id marker) const;
 
     DnfSack *sack;
