@@ -43,8 +43,8 @@ public:
     Filter(int keyname, int cmp_type, int match);
     Filter(int keyname, int cmp_type, int nmatches, const int *matches);
     Filter(int keyname, int cmp_type, const DnfPackageSet * pset);
-    Filter(int keyname, int cmp_type, Dependency * reldep);
-    Filter(int keyname, int cmp_type, DependencyContainer * reldeplist);
+    Filter(int keyname, int cmp_type, const Dependency * reldep);
+    Filter(int keyname, int cmp_type, const DependencyContainer * reldeplist);
     Filter(int keyname, int cmp_type, const char *match);
     Filter(int keyname, int cmp_type, const char **matches);
     ~Filter();
@@ -96,8 +96,8 @@ public:
     int addFilter(int keyname, int cmp_type, int match);
     int addFilter(int keyname, int cmp_type, int nmatches, const int *matches);
     int addFilter(int keyname, int cmp_type, const DnfPackageSet *pset);
-    int addFilter(int keyname, Dependency * reldep);
-    int addFilter(int keyname, DependencyContainer * reldeplist);
+    int addFilter(int keyname, const Dependency * reldep);
+    int addFilter(int keyname, const DependencyContainer * reldeplist);
     int addFilter(int keyname, int cmp_type, const char *match);
     int addFilter(int keyname, int cmp_type, const char **matches);
     int addFilter(HyNevra nevra, bool icase);

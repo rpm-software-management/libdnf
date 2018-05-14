@@ -124,8 +124,7 @@ reldep_init(_ReldepObject *self, PyObject *args, PyObject *kwds)
     try {
         self->reldep = new libdnf::Dependency(csack, reldep_str.getCString());
     }
-    catch (...)
-    {
+    catch (...) {
         PyErr_Format(HyExc_Value, "Wrong reldep format: %s", reldep_str.getCString());
         return -1;
     }

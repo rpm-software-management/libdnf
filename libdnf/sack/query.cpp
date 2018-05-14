@@ -550,7 +550,7 @@ Filter::Filter(int keyname, int cmp_type, const DnfPackageSet *pset) : pImpl(new
     match_in.pset = new libdnf::PackageSet(*pset);
     pImpl->matches.push_back(match_in);
 }
-Filter::Filter(int keyname, int cmp_type, Dependency * reldep) : pImpl(new Impl)
+Filter::Filter(int keyname, int cmp_type, const Dependency * reldep) : pImpl(new Impl)
 {
     pImpl->keyname = keyname;
     pImpl->cmpType = cmp_type;
@@ -559,7 +559,7 @@ Filter::Filter(int keyname, int cmp_type, Dependency * reldep) : pImpl(new Impl)
     match_in.reldep = reldep->getId();
     pImpl->matches.push_back(match_in);
 }
-Filter::Filter(int keyname, int cmp_type, DependencyContainer * reldeplist) : pImpl(new Impl)
+Filter::Filter(int keyname, int cmp_type, const DependencyContainer * reldeplist) : pImpl(new Impl)
 {
     pImpl->keyname = keyname;
     pImpl->cmpType = cmp_type;
@@ -757,7 +757,7 @@ Query::addFilter(int keyname, int cmp_type, const DnfPackageSet *pset)
     return 0;
 }
 int
-Query::addFilter(int keyname, Dependency * reldep)
+Query::addFilter(int keyname, const Dependency * reldep)
 {
     if (!valid_filter_reldep(keyname))
         return DNF_ERROR_BAD_QUERY;
@@ -766,7 +766,7 @@ Query::addFilter(int keyname, Dependency * reldep)
     return 0;
 }
 int
-Query::addFilter(int keyname, DependencyContainer * reldeplist)
+Query::addFilter(int keyname, const DependencyContainer * reldeplist)
 {
     if (!valid_filter_reldep(keyname))
         return DNF_ERROR_BAD_QUERY;
@@ -815,8 +815,7 @@ Query::addFilter(int keyname, int cmp_type, const char *match)
                     int ret = addFilter(keyname, &reldep);
                     return ret;
                 }
-                catch (...)
-                {
+                catch (...) {
                     return addFilter(HY_PKG_EMPTY, HY_EQ, 1);
                 }
             }
