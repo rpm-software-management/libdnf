@@ -33,8 +33,27 @@ namespace libdnf {
 struct Dependency
 {
 public:
+    /**
+    * @brief Creates a reldep from Id
+    */
     Dependency(DnfSack *sack, Id id);
+
+    /**
+    * @brief Creates a reldep from name, version, and comparison type.
+    *
+    * @param sack p_sack: DnfSack*
+    * @param name p_name: Required
+    * @param version p_version: Can be also NULL
+    * @param cmpType p_cmpType: Can be 0 or HY_EQ, HY_LT, HY_GT, and their combinations
+    */
     Dependency(DnfSack *sack, const char *name, const char *version, int cmpType);
+
+    /**
+    * @brief Creates a reldep from Char*. If parsing fails it raises std::runtime_error.
+    *
+    * @param sack p_sack:...
+    * @param dependency p_dependency:...
+    */
     Dependency(DnfSack *sack, const std::string &dependency);
     Dependency(const Dependency &dependency);
     ~Dependency();
@@ -47,7 +66,25 @@ public:
 
 private:
     friend DependencyContainer;
+
+    /**
+    * @brief Returns Id of reldep
+    *
+    * @param sack p_sack: DnfSack*
+    * @param name p_name: Required
+    * @param version p_version: Can be also NULL
+    * @param cmpType p_cmpType: Can be 0 or HY_EQ, HY_LT, HY_GT, and their combinations
+    * @return Id
+    */
     static Id getReldepId(DnfSack *sack, const char *name, const char *version, int cmpType);
+
+    /**
+    * @brief Returns Id of reldep or raises std::runtime_error if parsing fails
+    *
+    * @param sack p_sack:DnfSack
+    * @param reldepStr p_reldepStr: const Char* of reldep
+    * @return Id
+    */
     static Id getReldepId(DnfSack *sack, const char * reldepStr);
 
     DnfSack *sack;

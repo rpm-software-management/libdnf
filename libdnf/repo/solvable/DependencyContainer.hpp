@@ -34,7 +34,6 @@ struct DependencyContainer
 {
 public:
     DependencyContainer(const DependencyContainer &src);
-
     explicit DependencyContainer(DnfSack *sack);
     DependencyContainer(DnfSack *sack, Queue queue);
     ~DependencyContainer();
@@ -45,7 +44,22 @@ public:
 
     void add(Dependency *dependency);
     void add(Id id);
+
+    /**
+    * @brief Adds a reldep from Char*. Only globs in name are proccessed. The proccess is slow
+    * therefore if reldepStr is not a glob please use addReldep() instead.
+    *
+    * @param reldepStr p_reldepStr: Char*
+    * @return bool - false if parsing or reldep creation fails
+    */
     bool addReldepWithGlob(const char *reldepStr);
+
+    /**
+    * @brief Adds a reldep from Char*. It does not support globs.
+    *
+    * @param reldepStr p_reldepStr: Char*
+    * @return bool false if parsing or reldep creation fails
+    */
     bool addReldep(const char *reldepStr);
     void extend(DependencyContainer *container);
 
