@@ -123,8 +123,7 @@ Selector::set(int keyname, int cmp_type, const char *match)
                     pImpl->filterProvides.reset(new Filter(keyname, cmp_type, &reldep));
                     return 0;
                 }
-                catch (...)
-                {
+                catch (...) {
                     pImpl->filterProvides.reset();
                     return DNF_ERROR_BAD_SELECTOR;
                 }

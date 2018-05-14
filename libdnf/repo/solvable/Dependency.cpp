@@ -51,7 +51,6 @@ Dependency::Dependency(DnfSack *sack, Id id)
 Dependency::Dependency(DnfSack *sack, const char *name, const char *version, int cmpType)
         : sack(sack)
 {
-    
     id = getReldepId(sack, name, version, cmpType);
 }
 

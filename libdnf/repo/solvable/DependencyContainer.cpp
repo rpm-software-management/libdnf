@@ -111,8 +111,7 @@ bool DependencyContainer::addReldep(const char *reldepStr)
         add(id);
         return true;
     }
-    catch (...)
-        {
+    catch (...) {
         return false;
     }
 }

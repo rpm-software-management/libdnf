@@ -140,7 +140,6 @@ int
 hy_query_filter_provides_in(HyQuery q, char **reldep_strs)
 {
     libdnf::DependencyContainer reldeplist(q->getSack());
-    libdnf::DependencySplitter depSplitter;
     for (int i = 0; reldep_strs[i] != NULL; ++i) {
         if (!reldeplist.addReldep(reldep_strs[i])) {
             return DNF_ERROR_BAD_QUERY;
