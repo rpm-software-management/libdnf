@@ -30,6 +30,13 @@ namespace libdnf {
 struct DependencySplitter
 {
 public:
+    /**
+    * @brief Parse realdep char* into thee elements (name, evr, and comparison type), and transforms
+    * into int (HY_EQ, HY_LT, HY_GT, and their combinations).
+    *
+    * @param reldepStr p_reldepStr: Char * that represent reldep
+    * @return bool - true if parsing was succesfull
+    */
     bool parse(const char * reldepStr);
     const std::string & getName() const noexcept;
     const char * getNameCStr() const noexcept;

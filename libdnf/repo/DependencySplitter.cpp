@@ -22,6 +22,7 @@
 #include "../dnf-sack.h"
 #include "../utils/regex/regex.hpp"
 
+namespace libdnf {
 
 static const Regex RELDEP_REGEX = 
     Regex("^([^ \t\r\n\v\f<=>!]*)\\s*(<=|>=|!=|<|>|=)?\\s*(.*)$", REG_EXTENDED);
@@ -55,8 +56,6 @@ getCmpFlags(int *cmp_type, std::string matchCmpType)
         return false;
     return true;
 }
-
-namespace libdnf {
 
 bool
 DependencySplitter::parse(const char * reldepStr)
