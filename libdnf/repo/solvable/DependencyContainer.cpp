@@ -29,12 +29,6 @@ extern "C" {
 
 namespace libdnf {
 
-DependencyContainer::DependencyContainer()
-        : sack(nullptr)
-{
-    queue_init(&queue);
-}
-
 DependencyContainer::DependencyContainer(const DependencyContainer &src)
         : sack(src.sack)
 {

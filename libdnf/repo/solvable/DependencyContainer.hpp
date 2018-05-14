@@ -33,7 +33,6 @@ struct Dependency;
 struct DependencyContainer
 {
 public:
-    DependencyContainer();
     DependencyContainer(const DependencyContainer &src);
 
     explicit DependencyContainer(DnfSack *sack);
