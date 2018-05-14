@@ -158,7 +158,7 @@ static PyObject *
 reldep_str(_ReldepObject *self)
 {
     DnfReldep *reldep = self->reldep;
-    const char *cstr = dnf_reldep_to_string (reldep);
+    const char *cstr = reldep->toString();
     PyObject *retval = PyString_FromString(cstr);
     return retval;
 }
@@ -170,7 +170,7 @@ reldep_hash(_ReldepObject *self)
         PyErr_SetString(HyExc_Value, "Invalid Reldep has no hash.");
         return -1;
     }
-    return dnf_reldep_get_id (self->reldep);
+    return self->reldep->getId();
 }
 
 static int
@@ -197,8 +197,8 @@ reldep_richcompare(PyObject *self, PyObject *other, int op)
         return Py_NotImplemented;
     }
 
-    Id s_id = dnf_reldep_get_id(cself);
-    Id o_id = dnf_reldep_get_id(cother);
+    Id s_id = cself->getId();
+    Id o_id = cother->getId();
     switch (op) {
     case Py_EQ:
         result = TEST_COND(s_id == o_id);

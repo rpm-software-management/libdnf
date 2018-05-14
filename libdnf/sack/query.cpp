@@ -564,7 +564,7 @@ Filter::Filter(int keyname, int cmp_type, DependencyContainer * reldeplist) : pI
     pImpl->keyname = keyname;
     pImpl->cmpType = cmp_type;
     pImpl->matchType = _HY_RELDEP;
-    const int nmatches = dnf_reldep_list_count(reldeplist);
+    const int nmatches = reldeplist->count();
     pImpl->matches.reserve(nmatches);
     for (int i = 0; i < nmatches; ++i) {
         _Match match_in;
