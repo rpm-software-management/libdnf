@@ -267,7 +267,7 @@ reldeplist_to_pylist(DnfReldepList *reldeplist, PyObject *sack)
     if (!list)
         return NULL;
 
-    const int count = dnf_reldep_list_count (reldeplist);
+    const int count = reldeplist->count();
     for (int i = 0; i < count; ++i) {
         UniquePtrPyObject reldep(new_reldep(sack, reldeplist->getId(i)));
 
