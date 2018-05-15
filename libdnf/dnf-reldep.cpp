@@ -23,19 +23,6 @@
 #include "repo/solvable/Dependency.hpp"
 
 
-static int transformToLibsolvComparisonType(DnfComparisonKind cmp_type)
-{
-    int type = 0;
-    if (cmp_type & DNF_COMPARISON_EQ)
-        type |= REL_EQ;
-    if (cmp_type & DNF_COMPARISON_LT)
-        type |= REL_LT;
-    if (cmp_type & DNF_COMPARISON_GT)
-        type |= REL_GT;
-
-    return type;
-}
-
 /**
  * dnf_reldep_new:
  * @sack: a #DnfSack
@@ -48,13 +35,9 @@ static int transformToLibsolvComparisonType(DnfComparisonKind cmp_type)
  * Since: 0.7.0
  */
 DnfReldep *
-dnf_reldep_new (DnfSack           *sack,
-                const char       *name,
-                DnfComparisonKind  cmp_type,
-                const char       *evr)
+dnf_reldep_new (DnfSack *sack, const char *name, int  cmp_type, const char *evr)
 {
-    int solvComparisonOperator = transformToLibsolvComparisonType(cmp_type);
-    return new Dependency(sack, name, evr, solvComparisonOperator);
+    return new libdnf::Dependency(sack, name, evr, cmp_type);
 }
 
 /**

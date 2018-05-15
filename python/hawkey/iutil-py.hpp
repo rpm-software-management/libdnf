@@ -67,9 +67,8 @@ PyObject *advisoryRefVectorToPylist(const std::vector<libdnf::AdvisoryRef> & adv
 PyObject *packagelist_to_pylist(GPtrArray *plist, PyObject *sack);
 PyObject * packageset_to_pylist(const DnfPackageSet * pset, PyObject * sack);
 std::unique_ptr<DnfPackageSet> pyseq_to_packageset(PyObject * sequence, DnfSack * sack);
-DnfReldepList *pyseq_to_reldeplist(PyObject *sequence, DnfSack *sack, int cmp_type);
+std::unique_ptr<DnfReldepList> pyseq_to_reldeplist(PyObject *sequence, DnfSack *sack, int cmp_type);
 PyObject *strlist_to_pylist(const char **slist);
 PyObject *reldeplist_to_pylist(DnfReldepList *reldeplist, PyObject *sack);
-DnfReldep *reldep_from_pystr(PyObject *o, DnfSack *sack);
 
 #endif // IUTIL_PY_H

@@ -24,7 +24,7 @@ public:
     void testCount();
 
 private:
-    std::unique_ptr<DependencyContainer> container;
+    std::unique_ptr<libdnf::DependencyContainer> container;
     DnfSack *sack;
 };
 

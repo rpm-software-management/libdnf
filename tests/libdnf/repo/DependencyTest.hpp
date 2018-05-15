@@ -23,7 +23,7 @@ public:
     void testParse();
 
 private:
-    std::unique_ptr<Dependency> dependency;
+    std::unique_ptr<libdnf::Dependency> dependency;
     DnfSack *sack;
 };
 

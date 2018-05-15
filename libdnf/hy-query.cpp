@@ -25,6 +25,7 @@
 #include "hy-selector.h"
 #include "sack/packageset.hpp"
 #include "sack/query.hpp"
+#include "repo/DependencySplitter.hpp"
 #include "repo/solvable/Dependency.hpp"
 #include "repo/solvable/DependencyContainer.hpp"
 
@@ -129,39 +130,22 @@ hy_query_filter_reldep_in(HyQuery q, int keyname, DnfReldepList *reldeplist)
 }
 
 int
-hy_query_filter_provides(HyQuery q, int cmp_type, const char *name,
-                         const char *evr)
+hy_query_filter_provides(HyQuery q, int cmp_type, const char *name, const char *evr)
 {
-    DnfReldep *reldep = dnf_reldep_new(q->getSack(), name,
-                                       static_cast<DnfComparisonKind>(cmp_type), evr);
-    assert(reldep);
-    int ret = hy_query_filter_reldep(q, HY_PKG_PROVIDES, reldep);
-    return ret;
+    libdnf::Dependency reldep(q->getSack(), name, evr, cmp_type);
+    return q->addFilter(HY_PKG_PROVIDES, &reldep);
 }
 
 int
 hy_query_filter_provides_in(HyQuery q, char **reldep_strs)
 {
-    int cmp_type;
-    char *name = NULL;
-    char *evr = NULL;
-    DnfReldep *reldep;
-    DnfReldepList *reldeplist = dnf_reldep_list_new(q->getSack());
+    libdnf::DependencyContainer reldeplist(q->getSack());
     for (int i = 0; reldep_strs[i] != NULL; ++i) {
-        if (parse_reldep_str(reldep_strs[i], &name, &evr, &cmp_type) == -1) {
-            delete reldeplist;
+        if (!reldeplist.addReldep(reldep_strs[i])) {
             return DNF_ERROR_BAD_QUERY;
         }
-        reldep = dnf_reldep_new(q->getSack(), name, static_cast<DnfComparisonKind>(cmp_type), evr);
-        if (reldep) {
-            dnf_reldep_list_add(reldeplist, reldep);
-            delete reldep;
-        }
-        g_free(name);
-        g_free(evr);
     }
-    q->addFilter(HY_PKG_PROVIDES, reldeplist);
-    delete reldeplist;
+    q->addFilter(HY_PKG_PROVIDES, &reldeplist);
     return 0;
 }
 

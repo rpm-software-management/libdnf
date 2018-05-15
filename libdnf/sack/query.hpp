@@ -24,6 +24,8 @@
 #include <memory>
 #include <vector>
 #include "../hy-types.h"
+#include "../repo/solvable/Dependency.hpp"
+#include "../repo/solvable/DependencyContainer.hpp"
 #include "../dnf-types.h"
 #include "advisorypkg.hpp"
 
@@ -32,7 +34,7 @@ namespace libdnf {
 union _Match {
     int num;
     DnfPackageSet *pset;
-    DnfReldep *reldep;
+    Id reldep;
     char *str;
 };
 
@@ -41,8 +43,8 @@ public:
     Filter(int keyname, int cmp_type, int match);
     Filter(int keyname, int cmp_type, int nmatches, const int *matches);
     Filter(int keyname, int cmp_type, const DnfPackageSet * pset);
-    Filter(int keyname, int cmp_type, DnfReldep *reldep);
-    Filter(int keyname, int cmp_type, DnfReldepList *reldeplist);
+    Filter(int keyname, int cmp_type, const Dependency * reldep);
+    Filter(int keyname, int cmp_type, const DependencyContainer * reldeplist);
     Filter(int keyname, int cmp_type, const char *match);
     Filter(int keyname, int cmp_type, const char **matches);
     ~Filter();
@@ -94,8 +96,8 @@ public:
     int addFilter(int keyname, int cmp_type, int match);
     int addFilter(int keyname, int cmp_type, int nmatches, const int *matches);
     int addFilter(int keyname, int cmp_type, const DnfPackageSet *pset);
-    int addFilter(int keyname, DnfReldep *reldep);
-    int addFilter(int keyname, DnfReldepList *reldeplist);
+    int addFilter(int keyname, const Dependency * reldep);
+    int addFilter(int keyname, const DependencyContainer * reldeplist);
     int addFilter(int keyname, int cmp_type, const char *match);
     int addFilter(int keyname, int cmp_type, const char **matches);
     int addFilter(HyNevra nevra, bool icase);

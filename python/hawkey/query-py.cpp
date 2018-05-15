@@ -357,11 +357,11 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
     case HY_PKG_RECOMMENDS:
     case HY_PKG_SUGGESTS:
     case HY_PKG_SUPPLEMENTS: {
-        DnfReldepList *reldeplist = pyseq_to_reldeplist(match, query->getSack(), cmp_type);
+        auto reldeplist = pyseq_to_reldeplist(match, query->getSack(), cmp_type);
         if (reldeplist == NULL)
             return 1;
 
-        int ret = query->addFilter(keyname, reldeplist);
+        int ret = query->addFilter(keyname, reldeplist.get());
         if (ret)
             return raise_bad_filter();
         break;

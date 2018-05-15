@@ -32,7 +32,7 @@
 DnfReldepList *
 dnf_reldep_list_new (DnfSack *sack)
 {
-    return new DependencyContainer(sack);
+    return new libdnf::DependencyContainer(sack);
 }
 
 /**

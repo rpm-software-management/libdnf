@@ -550,25 +550,25 @@ Filter::Filter(int keyname, int cmp_type, const DnfPackageSet *pset) : pImpl(new
     match_in.pset = new libdnf::PackageSet(*pset);
     pImpl->matches.push_back(match_in);
 }
-Filter::Filter(int keyname, int cmp_type, DnfReldep *reldep) : pImpl(new Impl)
+Filter::Filter(int keyname, int cmp_type, const Dependency * reldep) : pImpl(new Impl)
 {
     pImpl->keyname = keyname;
     pImpl->cmpType = cmp_type;
     pImpl->matchType = _HY_RELDEP;
     _Match match_in;
-    match_in.reldep = new Dependency(*reldep);
+    match_in.reldep = reldep->getId();
     pImpl->matches.push_back(match_in);
 }
-Filter::Filter(int keyname, int cmp_type, DnfReldepList *reldeplist) : pImpl(new Impl)
+Filter::Filter(int keyname, int cmp_type, const DependencyContainer * reldeplist) : pImpl(new Impl)
 {
     pImpl->keyname = keyname;
     pImpl->cmpType = cmp_type;
     pImpl->matchType = _HY_RELDEP;
-    const int nmatches = dnf_reldep_list_count(reldeplist);
+    const int nmatches = reldeplist->count();
     pImpl->matches.reserve(nmatches);
     for (int i = 0; i < nmatches; ++i) {
         _Match match_in;
-        match_in.reldep = dnf_reldep_list_index(reldeplist, i);
+        match_in.reldep = reldeplist->getId(i);
         pImpl->matches.push_back(match_in);
     }
 }
@@ -606,9 +606,6 @@ Filter::Impl::~Impl()
                 break;
             case _HY_STR:
                 delete[] match.str;
-                break;
-            case _HY_RELDEP:
-                delete match.reldep;
                 break;
             default:
                 break;
@@ -760,7 +757,7 @@ Query::addFilter(int keyname, int cmp_type, const DnfPackageSet *pset)
     return 0;
 }
 int
-Query::addFilter(int keyname, DnfReldep *reldep)
+Query::addFilter(int keyname, const Dependency * reldep)
 {
     if (!valid_filter_reldep(keyname))
         return DNF_ERROR_BAD_QUERY;
@@ -769,7 +766,7 @@ Query::addFilter(int keyname, DnfReldep *reldep)
     return 0;
 }
 int
-Query::addFilter(int keyname, DnfReldepList *reldeplist)
+Query::addFilter(int keyname, const DependencyContainer * reldeplist)
 {
     if (!valid_filter_reldep(keyname))
         return DNF_ERROR_BAD_QUERY;
@@ -807,20 +804,20 @@ Query::addFilter(int keyname, int cmp_type, const char *match)
             DnfSack *sack = pImpl->sack;
 
             if (cmp_type == HY_GLOB) {
-                DnfReldepList *reldeplist = reldeplist_from_str(sack, match);
-                if (reldeplist == NULL) {
+                DependencyContainer reldeplist(sack);
+                if (!reldeplist.addReldepWithGlob(match)) {
                     return addFilter(HY_PKG_EMPTY, HY_EQ, 1);
                 }
-
-                int ret = addFilter(keyname, reldeplist);
-                delete reldeplist;
-                return ret;
+                return addFilter(keyname, &reldeplist);
             } else {
-                DnfReldep *reldep = reldep_from_str(sack, match);
-                if (reldep == NULL)
+                try {
+                    Dependency reldep(sack, match);
+                    int ret = addFilter(keyname, &reldep);
+                    return ret;
+                }
+                catch (...) {
                     return addFilter(HY_PKG_EMPTY, HY_EQ, 1);
-                int ret = addFilter(keyname, reldep);
-                return ret;
+                }
             }
         }
         default: {
@@ -982,27 +979,24 @@ Query::Impl::filterRcoReldep(const Filter & f, Map *m)
     auto resultPset = result.get();
 
     queue_init(&rco);
-    for (auto match : f.getMatches()) {
-        Id r_id = dnf_reldep_get_id (match.reldep);
-        Id s_id = -1;
-        while (true) {
-            s_id = resultPset->next(s_id);
-            if (s_id == -1)
-                break;
-
-            Solvable *s = pool_id2solvable(pool, s_id);
+    Id resultId = -1;
+    while ((resultId = resultPset->next(resultId)) != -1) {
+        Solvable *s = pool_id2solvable(pool, resultId );
+        for (auto match : f.getMatches()) {
+            Id reldepFilterId = match.reldep;
 
             queue_empty(&rco);
             solvable_lookup_idarray(s, rco_key, &rco);
             for (int j = 0; j < rco.count; ++j) {
-                Id r_id2 = rco.elements[j];
+                Id reldepIdFromSolvable = rco.elements[j];
 
-                if (pool_match_dep(pool, r_id, r_id2)) {
-                    MAPSET(m, s_id);
-                    break;
+                if (pool_match_dep(pool, reldepFilterId, reldepIdFromSolvable )) {
+                    MAPSET(m, resultId );
+                    goto nextId;
                 }
             }
         }
+        nextId:;
     }
     queue_free(&rco);
 }
@@ -1396,7 +1390,7 @@ Query::Impl::filterProvidesReldep(const Filter & f, Map *m)
 
     dnf_sack_make_provides_ready(sack);
     for (auto match_in : f.getMatches()) {
-        Id r_id = dnf_reldep_get_id (match_in.reldep);
+        Id r_id = match_in.reldep;
         FOR_PROVIDES(p, pp, r_id)
             MAPSET(m, p);
     }

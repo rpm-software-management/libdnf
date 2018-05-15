@@ -33,6 +33,7 @@
 #include "packagedelta-py.hpp"
 #include "sack-py.hpp"
 #include "pycomp.hpp"
+#include "libdnf/repo/solvable/DependencyContainer.hpp"
 
 typedef struct {
     PyObject_HEAD
@@ -194,9 +195,9 @@ static PyObject *
 get_reldep(_PackageObject *self, void *closure)
 {
     DnfReldepList *(*func)(DnfPackage*) = (DnfReldepList *(*)(DnfPackage*))closure;
-    DnfReldepList *reldeplist = func(self->package);
+    std::unique_ptr<DnfReldepList> reldeplist(func(self->package));
     assert(reldeplist);
-    PyObject *list = reldeplist_to_pylist(reldeplist, self->sack);
+    PyObject *list = reldeplist_to_pylist(reldeplist.get(), self->sack);
 
     return list;
 }
