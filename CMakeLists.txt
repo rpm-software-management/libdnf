@@ -92,6 +92,10 @@ ADD_DEFINITIONS(-DPACKAGE_VERSION=\\"${LIBDNF_VERSION}\\")
 
 include (GNUInstallDirs)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(JSONC json-c)
+include_directories(${JSONC_INCLUDE_DIRS})
+
 ADD_SUBDIRECTORY (libdnf)
 ADD_SUBDIRECTORY (po)
 # ADD_SUBDIRECTORY (bindings/perl)
