@@ -1,4 +1,4 @@
-#include <json/json.h>
+#include <json.h>
 #include <set>
 #include <sstream>
 #include <string>
@@ -49,9 +49,7 @@ void
 TransformerTest::testGroupTransformation()
 {
     // load test groups.json
-    Json::Value groupsJson;
-    std::stringstream groupsStream(groups_json);
-    groupsStream >> groupsJson;
+    struct json_object *groupsJson = json_tokener_parse (groups_json);
 
     // perform the transformation
     transformer.processGroupPersistor(swdb, groupsJson);

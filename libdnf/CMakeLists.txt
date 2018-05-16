@@ -29,10 +29,6 @@ SET (LIBDNF_SRCS
     dnf-transaction.cpp
     dnf-utils.cpp)
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(JSONCPP jsoncpp)
-include_directories(${JSONCPP_INCLUDE_DIRS})
-
 INCLUDE_DIRECTORIES (transaction)
 ADD_SUBDIRECTORY ("transaction")
 
@@ -61,7 +57,7 @@ TARGET_LINK_LIBRARIES(libdnf
                       ${RPMDB_LIBRARY}
                       ${SCOLS_LIBRARIES}
                       ${SQLite3_LIBRARIES}
-                      ${JSONCPP_LIBRARIES})
+                      ${JSONC_LIBRARIES})
 
 if (ENABLE_RHSM_SUPPORT)
     target_link_libraries (libdnf ${RHSM_LIBRARIES})

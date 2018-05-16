@@ -21,7 +21,7 @@
 #ifndef LIBDNF_TRANSACTION_TRANSFORMER_HPP
 #define LIBDNF_TRANSACTION_TRANSFORMER_HPP
 
-#include <json/json.h>
+#include <json.h>
 #include <memory>
 #include <vector>
 
@@ -64,7 +64,7 @@ protected:
     void transformTrans(SQLite3Ptr swdb, SQLite3Ptr history);
 
     void transformGroups(SQLite3Ptr swdb);
-    void processGroupPersistor(SQLite3Ptr swdb, const Json::Value &root);
+    void processGroupPersistor(SQLite3Ptr swdb, struct json_object *root);
 
 private:
     void transformRPMItems(SQLite3Ptr swdb,
@@ -75,11 +75,11 @@ private:
                             SQLite3Ptr history,
                             std::shared_ptr< TransformerTransaction > trans);
     CompsGroupItemPtr processGroup(SQLite3Ptr swdb,
-                                   const std::string &groupId,
-                                   const Json::Value &group);
-    std::shared_ptr< CompsEnvironmentItem > processEnvironment(SQLite3Ptr swdb,
-                                                               const std::string &envId,
-                                                               const Json::Value &env);
+                                   const char *groupId,
+                                   struct json_object *group);
+    std::shared_ptr<CompsEnvironmentItem> processEnvironment(SQLite3Ptr swdb,
+                                                             const char *envId,
+                                                             struct json_object *env);
     std::string historyPath();
     const std::string inputDir;
     const std::string outputFile;
