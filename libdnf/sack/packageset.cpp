@@ -94,6 +94,7 @@ void PackageSet::set(DnfPackage *pkg) { MAPSET(&pImpl->map, dnf_package_get_id(p
 void PackageSet::set(Id id) { MAPSET(&pImpl->map, id); }
 bool PackageSet::has(DnfPackage *pkg) const { return MAPTST(&pImpl->map, dnf_package_get_id(pkg)); }
 bool PackageSet::has(Id id) const { return MAPTST(&pImpl->map, id); }
+void PackageSet::remove(Id id) { MAPCLR(&pImpl->map, id); }
 Map * PackageSet::getMap() { return &pImpl->map; }
 DnfSack * PackageSet::getSack() { return pImpl->sack; }
 size_t PackageSet::size() { return map_count(&pImpl->map); }

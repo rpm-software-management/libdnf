@@ -35,6 +35,7 @@
 #include "selector-py.hpp"
 #include "sack-py.hpp"
 #include "pycomp.hpp"
+#include "goal/Goal.hpp"
 #include "sack/packageset.hpp"
 
 #define BLOCK_SIZE 15
@@ -315,7 +316,7 @@ static PyObject *
 get_actions(_GoalObject *self, void *unused)
 {
     HyGoal goal = self->goal;
-    return PyLong_FromLong(goal->actions);
+    return PyLong_FromLong(goal->getActions());
 }
 
 static PyObject *

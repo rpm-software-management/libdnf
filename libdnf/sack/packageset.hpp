@@ -40,6 +40,7 @@ public:
     void set(Id id);
     bool has(DnfPackage *pkg) const;
     bool has(Id id) const;
+    void remove(Id id);
     Map * getMap();
     DnfSack * getSack();
     size_t size();

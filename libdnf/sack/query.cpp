@@ -1825,19 +1825,8 @@ Query::Impl::apply()
 GPtrArray *
 Query::run()
 {
-    GPtrArray *plist = hy_packagelist_create();
-    apply();
-
-    auto resultPset = pImpl->result.get();
-
-    Id id = -1;
-    while (true) {
-        id = resultPset->next(id);
-        if (id == -1)
-            break;
-        g_ptr_array_add(plist, dnf_package_new(pImpl->sack, id));
-    }
-    return plist;
+    pImpl->apply();
+    return packageSet2GPtrArray(pImpl->result.get());
 }
 
 const DnfPackageSet *

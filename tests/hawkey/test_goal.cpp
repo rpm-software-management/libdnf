@@ -21,7 +21,7 @@
 #include <check.h>
 #include <glib.h>
 #include <stdarg.h>
-
+#include <vector>
 
 #include "libdnf/dnf-types.h"
 #include "libdnf/hy-goal-private.hpp"
@@ -413,19 +413,35 @@ START_TEST(test_goal_upgrade)
 }
 END_TEST
 
+template<const char * (*getCharFromPackage)(DnfPackage*)>
 static void
 assert_list_names(GPtrArray *plist, ...)
 {
     va_list names;
     char *name;
-    int count = plist->len, i = 0;
+    int count = plist->len;
+    int i = 0;
+    std::vector<const char*> stringVector;
+    stringVector.reserve(count);
+
+    for (int j = 0; j < count; ++j) {
+        auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, j));
+        auto string = getCharFromPackage(pkg);
+        stringVector.push_back(string);
+    }
 
     va_start(names, plist);
     while ((name = va_arg(names, char *)) != NULL) {
-        if (i >= count)
+        if (i++ >= count) {
             fail("assert_list_names(): list too short");
-        auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, i++));
-        ck_assert_str_eq(dnf_package_get_name(pkg), name);
+        }
+        for (auto string: stringVector) {
+            if (strcmp(string, name) == 0) {
+                goto nextName;
+            }
+        }
+        fail_unless(false, "assert_list_names(): element '%s' not found '%zu'", name, stringVector.size());
+        nextName:;
     }
     fail_unless(i == count, "assert_list_names(): too many items in the list");
     va_end(names);
@@ -441,17 +457,17 @@ START_TEST(test_goal_upgrade_all)
     fail_unless(size_and_free(plist) == 0);
 
     plist = hy_goal_list_obsoleted(goal, NULL);
-    assert_list_names(plist, "penny", NULL);
+    assert_list_names<&dnf_package_get_name>(plist, "penny", NULL);
     g_ptr_array_unref(plist);
 
     plist = hy_goal_list_upgrades(goal, NULL);
-    assert_list_names(plist, "dog", "flying", "fool", "pilchard", "pilchard",
+    assert_list_names<&dnf_package_get_name>(plist, "dog", "flying", "fool", "pilchard", "pilchard",
                       NULL);
 
     // see all obsoletes of fool:
-    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 2));
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 1));
     GPtrArray *plist_obs = hy_goal_list_obsoleted_by_package(goal, pkg);
-    assert_list_names(plist_obs, "fool", "penny", NULL);
+    assert_list_names<&dnf_package_get_name>(plist_obs, "fool", "penny", NULL);
     g_ptr_array_unref(plist_obs);
     g_ptr_array_unref(plist);
 
@@ -532,7 +548,7 @@ START_TEST(test_goal_get_reason_selector)
 
     GPtrArray *plist = hy_goal_list_installs(goal, NULL);
     fail_unless(plist->len == 2);
-    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 0));
+    auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 1));
     fail_unless(hy_goal_get_reason(goal, pkg) == HY_REASON_USER);
 
     g_ptr_array_unref(plist);
@@ -738,10 +754,10 @@ START_TEST(test_goal_installonly_upgrade_all)
     fail_if(hy_goal_run_flags(goal, DNF_NONE));
 
     GPtrArray *plist = hy_goal_list_erasures(goal, NULL);
-    assert_list_names(plist, "penny", NULL);
+    assert_list_names<&dnf_package_get_name>(plist, "penny", NULL);
     g_ptr_array_unref(plist);
     plist = hy_goal_list_installs(goal, NULL);
-    assert_list_names(plist, "fool", NULL);
+    assert_list_names<&dnf_package_get_name>(plist, "fool", NULL);
     g_ptr_array_unref(plist);
     assert_iueo(goal, 1, 4, 1, 0);
 
@@ -874,22 +890,15 @@ START_TEST(test_goal_distupgrade_all_keep_arch)
     assert_iueo(goal, 0, 5, 0, 1);
     GPtrArray *plist = hy_goal_list_upgrades(goal, NULL);
     // gun pkg is not upgraded to latest version of different arch
-    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 0)), "dog-1-2.x86_64");
-    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 1)),
-                    "pilchard-1.2.4-1.i686");
-    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 2)),
-                    "pilchard-1.2.4-1.x86_64");
-    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 3)), "flying-3.1-0.x86_64");
-    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 4)), "fool-1-5.noarch");
+    assert_list_names<&dnf_package_get_nevra>(plist, "dog-1-2.x86_64", "fool-1-5.noarch",
+        "flying-3.1-0.x86_64", "pilchard-1.2.4-1.x86_64", "pilchard-1.2.4-1.i686", NULL);
     g_ptr_array_unref(plist);
 
     plist = hy_goal_list_obsoleted(goal, NULL);
-    fail_unless(plist->len == 1);
-    assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 0)), "penny-4-1.noarch");
+    assert_list_names<&dnf_package_get_nevra>(plist, "penny-4-1.noarch", NULL);
     g_ptr_array_unref(plist);
 
     plist = hy_goal_list_downgrades(goal, NULL);
-    fail_unless(plist->len == 1);
     assert_nevra_eq(static_cast<DnfPackage *>(g_ptr_array_index(plist, 0)), "baby-6:4.9-3.x86_64");
     g_ptr_array_unref(plist);
     hy_goal_free(goal);
