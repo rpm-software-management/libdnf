@@ -151,7 +151,7 @@ Selector::matches()
     Queue job, solvables;
 
     queue_init(&job);
-    sltr2job(this, &job, 0);
+    sltrToJob(this, &job, 0);
 
     queue_init(&solvables);
     selection_solvables(pool, &job, &solvables);

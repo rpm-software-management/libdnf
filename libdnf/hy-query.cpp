@@ -28,6 +28,7 @@
 #include "repo/DependencySplitter.hpp"
 #include "repo/solvable/Dependency.hpp"
 #include "repo/solvable/DependencyContainer.hpp"
+#include "goal/Goal.hpp"
 
 Id
 query_get_index_item(HyQuery query, int index)
@@ -345,7 +346,7 @@ hy_filter_unneeded(HyQuery query, const libdnf::Swdb &swdb, const gboolean debug
     }
 
     Queue que;
-    Solver *solv = goal->solv;
+    Solver *solv = goal->getSolv();
 
     queue_init(&que);
     solver_get_unneeded(solv, &que, 0);

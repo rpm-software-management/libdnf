@@ -29,16 +29,6 @@
 // hawkey
 #include "hy-goal.h"
 
-struct _HyGoal {
-    DnfSack *sack;
-    Queue staging;
-    Solver *solv;
-    Transaction *trans;
-    DnfGoalActions actions;
-    Map *protected_pkgs;
-    GPtrArray *removal_of_protected;
-};
-
 inline DnfGoalActions operator|(DnfGoalActions a, DnfGoalActions b)
 {
     return static_cast<DnfGoalActions>(static_cast<int>(a) | static_cast<int>(b));
@@ -49,10 +39,6 @@ inline DnfGoalActions & operator|=(DnfGoalActions & a, DnfGoalActions b)
     return a = a | b;
 }
 
-int sltr2job(const HySelector sltr, Queue *job, int solver_action);
-
-/* resolving the goal */
-int hy_goal_run_all_flags(HyGoal goal, hy_solution_callback cb, void *cb_data,
-                          DnfGoalActions flags);
+int sltrToJob(const HySelector sltr, Queue *job, int solver_action);
 
 #endif // HY_GOAL_INTERNAL_H
