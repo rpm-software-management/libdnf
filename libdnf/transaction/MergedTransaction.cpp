@@ -105,6 +105,16 @@ MergedTransaction::listStates() const
     return result;
 }
 
+std::vector< std::string >
+MergedTransaction::listReleasevers() const
+{
+    std::vector< std::string > result;
+    for (auto t : transactions) {
+        result.push_back(t->getReleasever());
+    }
+    return result;
+}
+
 int64_t
 MergedTransaction::getDtBegin() const noexcept
 {
