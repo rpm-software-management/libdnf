@@ -410,6 +410,16 @@ class ConfigMain::Impl {
     OptionString proxy_password{nullptr};
     OptionBinding proxyPasswordBinding{owner, proxy_password, "proxy_password"};
 
+    OptionEnum<std::string> proxy_auth_method{"any", {"any", "none", "basic", "digest",
+        "negotiate", "ntlm", "digest_ie", "ntlm_wb"},
+        [](const std::string & value){
+            auto tmp = value;
+            std::transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
+            return tmp;
+        }
+    };
+    OptionBinding proxyAuthMethodBinding{owner, proxy_auth_method, "proxy_auth_method"};
+
     OptionStringList protected_packages{resolveGlobs("dnf glob:/etc/yum/protected.d/*.conf " \
                                           "glob:/etc/dnf/protected.d/*.conf")};
     OptionBinding protectedPackagesBinding{owner, protected_packages, "protected_packages",
@@ -571,6 +581,7 @@ OptionStringListAppend & ConfigMain::includepkgs() { return pImpl->includepkgs; 
 OptionString & ConfigMain::proxy() { return pImpl->proxy; }
 OptionString & ConfigMain::proxy_username() { return pImpl->proxy_username; }
 OptionString & ConfigMain::proxy_password() { return pImpl->proxy_password; }
+OptionEnum<std::string> & ConfigMain::proxy_auth_method() { return pImpl->proxy_auth_method; }
 OptionStringList & ConfigMain::protected_packages() { return pImpl->protected_packages; }
 OptionString & ConfigMain::username() { return pImpl->username; }
 OptionString & ConfigMain::password() { return pImpl->password; }
