@@ -48,6 +48,7 @@ public:
     std::vector< uint32_t > listUserIds() const;
     std::vector< std::string > listCmdlines() const;
     std::vector< TransactionState > listStates() const;
+    std::vector< std::string > listReleasevers() const;
     int64_t getDtBegin() const noexcept;
     int64_t getDtEnd() const noexcept;
     const std::string &getRpmdbVersionBegin() const noexcept;
