@@ -31,6 +31,14 @@ namespace libdnf {
 
 struct Goal {
 public:
+    struct Exception : public std::runtime_error {
+        Exception(const std::string & msg, int errCode) : runtime_error(msg), errCode(errCode) {}
+        Exception(const char * msg, int errCode) : runtime_error(msg), errCode(errCode) {}
+        int getErrCode() const noexcept { return errCode; }
+    private:
+        int errCode;
+    };
+
     Goal(DnfSack *sack);
     Goal(const Goal & goal_src);
     Goal(Goal && goal_src) = delete;
@@ -46,18 +54,41 @@ public:
 
     void distupgrade();
     void distupgrade(DnfPackage *new_pkg);
+
+    /**
+    * @brief If selector ill formed, it rises std::runtime_error()
+    */
     void distupgrade(HySelector);
-    
     void erase(DnfPackage *pkg, int flags = 0);
+
+    /**
+    * @brief If selector ill formed, it rises std::runtime_error()
+    * 
+    * @param sltr 
+    * @param flags p_flags:...
+    */
     void erase(HySelector sltr, int flags);
-    int install(DnfPackage *new_pkg, bool optional);
-    bool install(HySelector sltr, bool optional, GError **error);
-    int upgrade();
-    int upgrade(DnfPackage *new_pkg);
-    int upgrade(HySelector sltr);
+    void install(DnfPackage *new_pkg, bool optional);
+
+    /**
+    * @brief If selector ill formed, it rises std::runtime_error()
+    * 
+    * @param sltr p_sltr:...
+    * @param optional Set true for optional tasks, false for strict tasks
+    */
+    void install(HySelector sltr, bool optional);
+    void upgrade();
+    void upgrade(DnfPackage *new_pkg);
+
+    /**
+    * @brief If selector ill formed, it rises std::runtime_error()
+    * 
+    * @param sltr p_sltr:...
+    */
+    void upgrade(HySelector sltr);
     void userInstalled(DnfPackage *pkg);
     void userInstalled(PackageSet & pset);
-    
+
     /* introspecting the requests */
     bool hasActions(DnfGoalActions action);
 
@@ -82,17 +113,17 @@ public:
     */
     char ** describeProblemRules(unsigned i);
     int logDecisions();
-    bool writeDebugdata(const char *dir, GError **error);
+    void writeDebugdata(const char *dir);
 
     /* result processing */
-    std::unique_ptr<PackageSet> listErasures(GError **error);
-    std::unique_ptr<PackageSet> listInstalls(GError **error);
-    std::unique_ptr<PackageSet> listObsoleted(GError **error);
-    std::unique_ptr<PackageSet> listReinstalls(GError **error);
-    std::unique_ptr<PackageSet> listUnneeded(GError **error);
-    std::unique_ptr<PackageSet> listUpgrades(GError **error);
-    std::unique_ptr<PackageSet> listDowngrades(GError **error);
-    std::unique_ptr<PackageSet> listObsoletedByPackage(DnfPackage *pkg);
+    libdnf::PackageSet listErasures();
+    libdnf::PackageSet listInstalls();
+    libdnf::PackageSet listObsoleted();
+    libdnf::PackageSet listReinstalls();
+    libdnf::PackageSet listUnneeded();
+    libdnf::PackageSet listUpgrades();
+    libdnf::PackageSet listDowngrades();
+    libdnf::PackageSet listObsoletedByPackage(DnfPackage * pkg);
 
 private:
     class Impl;
