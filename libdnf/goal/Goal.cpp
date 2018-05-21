@@ -72,7 +72,7 @@ jobHas(Queue *job, Id what, Id id)
 static int
 filterArchToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 {
-    if (f == nullptr)
+    if (!f)
         return 0;
 
     auto matches = f->getMatches();
@@ -99,7 +99,7 @@ filterArchToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 static int
 filterEvrToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 {
-    if (f == nullptr)
+    if (!f)
         return 0;
     auto matches = f->getMatches();
 
@@ -123,7 +123,7 @@ filterEvrToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 static int
 filterFileToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 {
-    if (f == nullptr)
+    if (!f)
         return 0;
 
     auto matches = f->getMatches();
@@ -144,7 +144,7 @@ filterFileToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 static int
 filterPkgToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 {
-    if (f == nullptr)
+    if (!f)
         return 0;
     assert(f->getMatches().size() == 1);
     Pool *pool = dnf_sack_get_pool(sack);
@@ -168,7 +168,7 @@ filterPkgToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 static int
 filterNameToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 {
-    if (f == nullptr)
+    if (!f)
         return 0;
     assert(f->getMatches().size() == 1);
 
@@ -190,7 +190,7 @@ filterNameToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
                 continue;
             assert(di.idp);
             id = *di.idp;
-            if ( jobHas(job, SOLVABLE_NAME, id))
+            if (jobHas(job, SOLVABLE_NAME, id))
                 continue;
             queue_push2(job, SOLVER_SOLVABLE_NAME, id);
         }
@@ -206,7 +206,7 @@ filterNameToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 static int
 filterProvidesToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 {
-    if (f == nullptr)
+    if (!f)
         return 0;
     auto matches = f->getMatches();
     assert(matches.size() == 1);
@@ -247,7 +247,7 @@ filterReponameToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
     Id i;
     Repo *repo;
 
-    if (f == nullptr)
+    if (!f)
         return 0;
     auto matches = f->getMatches();
 
@@ -432,14 +432,14 @@ remove_pkgs_with_same_nevra_from_pset(DnfPackageSet* pset, DnfPackageSet* remove
             break;
         DnfPackage *pkg1 = dnf_package_new(sack, id1);
         Id id2 = -1;
-        gboolean found = FALSE;
+        bool found = false;
         while(true) {
             id2 = remove_musters->next(id2);
             if (id2 == -1)
                 break;
             DnfPackage *pkg2 = dnf_package_new(sack, id2);
             if (!dnf_package_cmp(pkg1, pkg2)) {
-                found = TRUE;
+                found = true;
                 break;
             }
         }
@@ -482,7 +482,7 @@ private:
     int limitInstallonlyPackages(Solver *solv, Queue *job);
     Queue * conflictPkgs(unsigned i);
     Queue * brokenDependencyPkgs(unsigned i);
-    gboolean protectedInRemovals();
+    bool protectedInRemovals();
     char * describeProtectedRemoval();
     DnfPackageSet * brokenDependencyAllPkgs(DnfPackageState pkg_type);
     int countProblems();
@@ -621,7 +621,7 @@ Goal::install(DnfPackage *new_pkg, bool optional)
     return 0;
 }
 
-gboolean
+bool
 Goal::install(HySelector sltr, bool optional, GError **error)
 {
     int solverActions = SOLVER_INSTALL;
@@ -636,9 +636,9 @@ Goal::install(HySelector sltr, bool optional, GError **error)
                              DNF_ERROR,
                              rc,
                              _("failed to install optional selector"));
-        return FALSE;
+        return false;
     }
-    return TRUE;
+    return true;
 }
 
 int
@@ -730,7 +730,7 @@ Goal::listConflictPkgs(DnfPackageState pkg_type)
         for (int j = 0; j < conflict->count; j++) {
             Id id = conflict->elements[j];
             DnfPackage *pkg = dnf_package_new(pImpl->sack, id);
-            if (pkg == NULL)
+            if (!pkg)
                 continue;
             if (pkg_type ==  DNF_PACKAGE_STATE_AVAILABLE && dnf_package_installed(pkg)) {
                 dnf_packageset_add(temporary_pset, pkg);
@@ -790,7 +790,7 @@ Goal::describeProblemRules(unsigned i)
     Id rid, source, target, dep;
     SolverRuleinfo type;
     int j;
-    gboolean unique;
+    bool unique;
 
     if (i >= solver_problem_count(pImpl->solv))
         return problist;
@@ -809,17 +809,17 @@ Goal::describeProblemRules(unsigned i)
                 dep = rq.elements[ir + 3];
                 const char *problem_str = solver_problemruleinfo2str(
                     pImpl->solv, type, source, target, dep);
-                unique = TRUE;
+                unique = true;
                 if (problist != NULL) {
                     for (int k = 0; problist[k] != NULL; k++) {
                         if (g_strcmp0(problem_str, problist[k]) == 0) {
-                            unique = FALSE;
+                            unique = false;
                             break;
                         }
                     }
                 }
                 if (unique) {
-                    if (problist == NULL)
+                    if (!problist)
                         problist = (char**)solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
                     problist[p++] = g_strdup(problem_str);
                     problist = (char**)solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
@@ -839,7 +839,7 @@ Goal::describeProblemRules(unsigned i)
 int
 Goal::logDecisions()
 {
-    if (pImpl->solv == NULL)
+    if (!pImpl->solv)
         return 1;
     solver_printdecisionq(pImpl->solv, SOLV_DEBUG_RESULT);
     return 0;
@@ -853,30 +853,30 @@ Goal::logDecisions()
  *
  * Writes details about the testcase to a directory.
  *
- * Returns: %FALSE if an error was set
+ * Returns: %false if an error was set
  *
  * Since: 0.7.0
  */
-gboolean
+bool
 Goal::writeDebugdata(const char *dir, GError **error)
 {
     Solver *solv = pImpl->solv;
-    if (solv == NULL) {
+    if (!solv) {
         g_set_error_literal (error,
                              DNF_ERROR,
                              DNF_ERROR_INTERNAL_ERROR,
                              _("no solver set"));
-        return FALSE;
+        return false;
     }
 
     int flags = TESTCASE_RESULT_TRANSACTION | TESTCASE_RESULT_PROBLEMS;
     g_autofree char *absdir = abspath(dir);
-    if (absdir == NULL) {
+    if (!absdir) {
         g_set_error (error,
                      DNF_ERROR,
                      DNF_ERROR_FILE_INVALID,
                      _("failed to make %s absolute"), dir);
-        return FALSE;
+        return false;
     }
     g_debug("writing solver debugdata to %s", absdir);
     int ret = testcase_write(solv, absdir, flags, NULL, NULL);
@@ -886,9 +886,9 @@ Goal::writeDebugdata(const char *dir, GError **error)
                      DNF_ERROR_FILE_INVALID,
                      _("failed writing debugdata to %1$s: %2$s"),
                      absdir, strerror(errno));
-        return FALSE;
+        return false;
     }
-    return TRUE;
+    return true;
 }
 
 std::unique_ptr<PackageSet>
@@ -1030,7 +1030,7 @@ Goal::Impl::allowUninstallAllButProtected(Queue *job, DnfGoalActions flags)
         for (Id id = 1; id < pool->nsolvables; ++id) {
             Solvable *s = pool_id2solvable(pool, id);
             if (pool->installed == s->repo && !protectedPkgs->has(id) &&
-                (pool->considered == NULL || MAPTST(pool->considered, id))) {
+                (!pool->considered || MAPTST(pool->considered, id))) {
                 queue_push2(job, SOLVER_ALLOWUNINSTALL|SOLVER_SOLVABLE, id);
             }
         }
@@ -1253,7 +1253,7 @@ Goal::Impl::brokenDependencyAllPkgs(DnfPackageState pkg_type)
         for (int j = 0; j < broken_dependency->count; j++) {
             Id id = broken_dependency->elements[j];
             DnfPackage *pkg = dnf_package_new(sack, id);
-            if (pkg == NULL)
+            if (!pkg)
                 continue;
             if (pkg_type ==  DNF_PACKAGE_STATE_AVAILABLE && dnf_package_installed(pkg)) {
                 dnf_packageset_add(temporary_pset, pkg);
@@ -1309,13 +1309,13 @@ Goal::Impl::brokenDependencyPkgs(unsigned i)
     return broken_dependency;
 }
 
-gboolean
+bool
 Goal::Impl::protectedInRemovals()
 {
     guint i = 0;
-    gboolean ret = FALSE;
+    bool ret = false;
     if (!protectedPkgs || !protectedPkgs->size())
-        return FALSE;
+        return false;
     auto pkgRemoveList = std::unique_ptr<PackageSet>(
         listResults(SOLVER_TRANSACTION_ERASE, 0, NULL));
     auto pkgObsoleteList = std::unique_ptr<PackageSet>(
@@ -1330,7 +1330,7 @@ Goal::Impl::protectedInRemovals()
             break;
 
         if (protectedPkgs->has(id)) {
-            ret = TRUE;
+            ret = true;
             i++;
         } else {
             removalOfProtected->remove(id);
@@ -1376,7 +1376,7 @@ Goal::Impl::describeProtectedRemoval()
     }
     pset = brokenDependencyAllPkgs(DNF_PACKAGE_STATE_INSTALLED);
     Id id = -1;
-    gboolean found = FALSE;
+    bool found = false;
     while(true) {
         id = pset->next(id);
         if (id == -1)
@@ -1386,7 +1386,7 @@ Goal::Impl::describeProtectedRemoval()
             name = pool_id2str(pool, s->name);
             if (!found) {
                 g_string_append(string, name);
-                found = TRUE;
+                found = true;
             } else {
                 g_string_append_printf(string, ", %s", name);
             }
