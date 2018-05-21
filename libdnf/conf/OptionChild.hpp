@@ -114,10 +114,11 @@ inline Option::Priority OptionChild<ParentOptionType, typename std::enable_if<st
 template <class ParentOptionType>
 inline void OptionChild<ParentOptionType, typename std::enable_if<std::is_same<typename ParentOptionType::ValueType, std::string>::value>::type>::set(Priority priority, const std::string & value)
 {
+    auto val = parent.fromString(value);
     if (priority >= this->priority) {
-        parent.test(value);
+        parent.test(val);
         this->priority = priority;
-        this->value = value;
+        this->value = val;
     }
 }
 

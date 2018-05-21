@@ -35,6 +35,7 @@ public:
     OptionString(const char * defaultValue, const std::string & regex, bool icase);
     void test(const std::string & value) const;
     void set(Priority priority, const std::string & value) override;
+    std::string fromString(const std::string & value) const;
     const std::string & getValue() const;
     const std::string & getDefaultValue() const noexcept;
     std::string getValueString() const override;
@@ -54,6 +55,11 @@ inline const std::string & OptionString::getDefaultValue() const noexcept
 inline std::string OptionString::getValueString() const
 {
     return getValue();
+}
+
+inline std::string OptionString::fromString(const std::string & value) const
+{
+    return value;
 }
 
 }
