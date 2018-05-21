@@ -60,6 +60,11 @@ extern "C" {
 
 // internal functions to translate Selector into libsolv Job
 
+inline static void
+exceptionToGError(GError **error, const libdnf::Goal::Exception & e)
+{
+    g_set_error_literal(error, DNF_ERROR, e.getErrCode(), e.what());
+}
 
 // public functions
 
@@ -104,14 +109,19 @@ hy_goal_distupgrade(HyGoal goal, DnfPackage *new_pkg)
 int
 hy_goal_distupgrade_selector(HyGoal goal, HySelector sltr)
 {
-    goal->distupgrade(sltr);
+    try {
+        goal->distupgrade(sltr);
+    } catch (libdnf::Goal::Exception & e) {
+        return e.getErrCode();
+    }
     return 0;
 }
 
 int
 hy_goal_downgrade_to(HyGoal goal, DnfPackage *new_pkg)
 {
-    return goal->install(new_pkg, false);
+    goal->install(new_pkg, false);
+    return 0;
 }
 
 int
@@ -131,7 +141,11 @@ hy_goal_erase_flags(HyGoal goal, DnfPackage *pkg, int flags)
 int
 hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags)
 {
-    goal->erase(sltr, flags);
+    try {
+        goal->erase(sltr, flags);
+    } catch (libdnf::Goal::Exception & e) {
+        return e.getErrCode();
+    }
     return 0;
 }
 
@@ -144,43 +158,64 @@ hy_goal_has_actions(HyGoal goal, DnfGoalActions action)
 int
 hy_goal_install(HyGoal goal, DnfPackage *new_pkg)
 {
-    return goal->install(new_pkg, false);
+    goal->install(new_pkg, false);
+    return 0;
 }
 
 int
 hy_goal_install_optional(HyGoal goal, DnfPackage *new_pkg)
 {
-    return goal->install(new_pkg, true);
+    goal->install(new_pkg, true);
+    return 0;
 }
 
 gboolean
 hy_goal_install_selector(HyGoal goal, HySelector sltr, GError **error)
 {
-    return goal->install(sltr, false, error);
+    try {
+        goal->install(sltr, false);
+    } catch (const libdnf::Goal::Exception & e) {
+        exceptionToGError(error, e);
+        return FALSE;
+    }
+    return TRUE;
 }
 
 gboolean
 hy_goal_install_selector_optional(HyGoal goal, HySelector sltr, GError **error)
 {
-    return goal->install(sltr, true, error);
+    try {
+        goal->install(sltr, true);
+    } catch (const libdnf::Goal::Exception & e) {
+        exceptionToGError(error, e);
+        return FALSE;
+    }
+    return TRUE;
 }
 
 int
 hy_goal_upgrade_all(HyGoal goal)
 {
-    return goal->upgrade();
+    goal->upgrade();
+    return 0;
 }
 
 int
 hy_goal_upgrade_to(HyGoal goal, DnfPackage *new_pkg)
 {
-    return goal->upgrade(new_pkg);
+    goal->upgrade(new_pkg);
+    return 0;
 }
 
 int
 hy_goal_upgrade_selector(HyGoal goal, HySelector sltr)
 {
-    return goal->upgrade(sltr);
+    try {
+        goal->upgrade(sltr);
+    } catch (libdnf::Goal::Exception & e) {
+        return e.getErrCode();
+    }
+    return 0;
 }
 
 int
@@ -263,63 +298,104 @@ hy_goal_log_decisions(HyGoal goal)
 gboolean
 hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error)
 {
-    return goal->writeDebugdata(dir, error);
+    try {
+        goal->writeDebugdata(dir);
+    } catch (const libdnf::Goal::Exception & e) {
+        exceptionToGError(error, e);
+        return FALSE;
+    }
+    return true;
 }
 
 GPtrArray *
 hy_goal_list_erasures(HyGoal goal, GError **error)
 {
-    auto pset = goal->listErasures(error);
-    return packageSet2GPtrArray(pset.get());
+    try {
+        auto pset = goal->listErasures();
+        return packageSet2GPtrArray(&pset);
+    } catch (const libdnf::Goal::Exception & e) {
+        exceptionToGError(error, e);
+        return NULL;
+    }
 }
 
 GPtrArray *
 hy_goal_list_installs(HyGoal goal, GError **error)
 {
-    auto pset = goal->listInstalls(error);
-    return packageSet2GPtrArray(pset.get());
+    try {
+        auto pset = goal->listInstalls();
+        return packageSet2GPtrArray(&pset);
+    } catch (const libdnf::Goal::Exception & e) {
+        exceptionToGError(error, e);
+        return NULL;
+    }
 }
 
 GPtrArray *
 hy_goal_list_obsoleted(HyGoal goal, GError **error)
 {
-    auto pset = goal->listObsoleted(error);
-    return packageSet2GPtrArray(pset.get());
+    try {
+        auto pset = goal->listObsoleted();
+        return packageSet2GPtrArray(&pset);
+    } catch (const libdnf::Goal::Exception & e) {
+        exceptionToGError(error, e);
+        return NULL;
+    }
 }
 
 GPtrArray *
 hy_goal_list_reinstalls(HyGoal goal, GError **error)
 {
-    auto pset = goal->listReinstalls(error);
-    return packageSet2GPtrArray(pset.get());
+    try {
+        auto pset = goal->listReinstalls();
+        return packageSet2GPtrArray(&pset);
+    } catch (const libdnf::Goal::Exception & e) {
+        exceptionToGError(error, e);
+        return NULL;
+    }
 }
 
 GPtrArray *
 hy_goal_list_unneeded(HyGoal goal, GError **error)
 {
-    auto pset = goal->listUnneeded(error);
-    return packageSet2GPtrArray(pset.get());
+    try {
+        auto pset = goal->listUnneeded();
+        return packageSet2GPtrArray(&pset);
+    } catch (const libdnf::Goal::Exception & e) {
+        exceptionToGError(error, e);
+        return NULL;
+    }
 }
 
 GPtrArray *
 hy_goal_list_upgrades(HyGoal goal, GError **error)
 {
-    auto pset = goal->listUpgrades(error);
-    return packageSet2GPtrArray(pset.get());
+    try {
+        auto pset = goal->listUpgrades();
+        return packageSet2GPtrArray(&pset);
+    } catch (const libdnf::Goal::Exception & e) {
+        exceptionToGError(error, e);
+        return NULL;
+    }
 }
 
 GPtrArray *
 hy_goal_list_downgrades(HyGoal goal, GError **error)
 {
-    auto pset = goal->listDowngrades(error);
-    return packageSet2GPtrArray(pset.get());
+    try {
+        auto pset = goal->listDowngrades();
+        return packageSet2GPtrArray(&pset);
+    } catch (const libdnf::Goal::Exception & e) {
+        exceptionToGError(error, e);
+        return NULL;
+    }
 }
 
 GPtrArray *
 hy_goal_list_obsoleted_by_package(HyGoal goal, DnfPackage *pkg)
 {
     auto pset = goal->listObsoletedByPackage(pkg);
-    return packageSet2GPtrArray(pset.get());
+    return packageSet2GPtrArray(&pset);
 }
 
 int

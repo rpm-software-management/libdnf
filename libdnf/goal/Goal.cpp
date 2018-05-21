@@ -19,6 +19,7 @@
  */
 
 #include <assert.h>
+#include <map>
 
 extern "C" {
 #include <solv/evr.h>
@@ -31,14 +32,22 @@ extern "C" {
 }
 
 #include "Goal.hpp"
-#include "../hy-goal.h"
+#include "../hy-goal-private.hpp"
 #include "../hy-iutil-private.hpp"
+#include "../hy-package-private.hpp"
+#include "../dnf-sack-private.hpp"
 #include "../sack/packageset.hpp"
 #include "../sack/query.hpp"
 #include "../sack/selector.hpp"
 #include "../utils/bgettext/bgettext-lib.h"
-#include <../hy-package-private.hpp>
-#include <../dnf-sack-private.hpp>
+#include "../utils/tinyformat/tinyformat.hpp"
+
+enum {NO_MATCH=1, MULTIPLE_MATCH_OBJECTS, INCORECT_COMPARISON_TYPE};
+
+static std::map<int, const char *> ERROR_DICT = {
+   {MULTIPLE_MATCH_OBJECTS, M_("Ill-formed Selector, presence of multiple match objects in the filter")},
+   {INCORECT_COMPARISON_TYPE, M_("Ill-formed Selector used for the operation, incorrect comparison type")}
+};
 
 static void
 packageToJob(DnfPackage *package, Queue *job, int solver_action)
@@ -55,8 +64,7 @@ packageToJob(DnfPackage *package, Queue *job, int solver_action)
     queue_push(&pkgs, dnf_package_get_id(package));
 
     Id what = pool_queuetowhatprovides(pool, &pkgs);
-    queue_push2(job, SOLVER_SOLVABLE_ONE_OF|SOLVER_SETARCH|SOLVER_SETEVR|solver_action,
-                what);
+    queue_push2(job, SOLVER_SOLVABLE_ONE_OF|SOLVER_SETARCH|SOLVER_SETEVR|solver_action, what);
     queue_free(&pkgs);
 }
 
@@ -77,14 +85,18 @@ filterArchToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 
     auto matches = f->getMatches();
 
-    assert(f->getCmpType() == HY_EQ);
-    assert(matches.size() == 1);
+    if (f->getCmpType() != HY_EQ) {
+        return INCORECT_COMPARISON_TYPE;
+    }
+    if (matches.size() != 1) {
+        return MULTIPLE_MATCH_OBJECTS;
+    }
     Pool *pool = dnf_sack_get_pool(sack);
     const char *arch = matches[0].str;
     Id archid = str2archid(pool, arch);
 
     if (archid == 0)
-        return DNF_ERROR_INVALID_ARCHITECTURE;
+        return NO_MATCH;
     for (int i = 0; i < job->count; i += 2) {
         Id dep;
         assert((job->elements[i] & SOLVER_SELECTMASK) == SOLVER_SOLVABLE_NAME);
@@ -103,8 +115,12 @@ filterEvrToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
         return 0;
     auto matches = f->getMatches();
 
-    assert(f->getCmpType() == HY_EQ);
-    assert(matches.size() == 1);
+    if (f->getCmpType() != HY_EQ) {
+        return INCORECT_COMPARISON_TYPE;
+    }
+    if (matches.size() != 1) {
+        return MULTIPLE_MATCH_OBJECTS;
+    }
 
     Pool *pool = dnf_sack_get_pool(sack);
     Id evr = pool_str2id(pool, matches[0].str, 1);
@@ -128,7 +144,9 @@ filterFileToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 
     auto matches = f->getMatches();
 
-    assert(matches.size() == 1);
+    if (matches.size() != 1) {
+        return MULTIPLE_MATCH_OBJECTS;
+    }
 
     const char *file = matches[0].str;
     Pool *pool = dnf_sack_get_pool(sack);
@@ -137,7 +155,7 @@ filterFileToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
     if (f->getCmpType() & HY_GLOB)
         flags |= SELECTION_NOCASE;
     if (selection_make(pool, job, file, flags | SELECTION_FILELIST) == 0)
-        return 1;
+        return NO_MATCH;
     return 0;
 }
 
@@ -146,7 +164,8 @@ filterPkgToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 {
     if (!f)
         return 0;
-    assert(f->getMatches().size() == 1);
+    if (f->getMatches().size() != 1)
+        return MULTIPLE_MATCH_OBJECTS;
     Pool *pool = dnf_sack_get_pool(sack);
     DnfPackageSet *pset = f->getMatches()[0].pset;
     Id what;
@@ -170,7 +189,8 @@ filterNameToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 {
     if (!f)
         return 0;
-    assert(f->getMatches().size() == 1);
+    if (f->getMatches().size() != 1)
+        return MULTIPLE_MATCH_OBJECTS;
 
     Pool *pool = dnf_sack_get_pool(sack);
     const char *name = f->getMatches()[0].str;
@@ -197,8 +217,7 @@ filterNameToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
         dataiterator_free(&di);
         break;
     default:
-        assert(0);
-        return 1;
+        return INCORECT_COMPARISON_TYPE;
     }
     return 0;
 }
@@ -209,7 +228,8 @@ filterProvidesToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
     if (!f)
         return 0;
     auto matches = f->getMatches();
-    assert(matches.size() == 1);
+    if (f->getMatches().size() != 1)
+        return MULTIPLE_MATCH_OBJECTS;
     const char *name;
     Pool *pool = dnf_sack_get_pool(sack);
     Id id;
@@ -234,8 +254,7 @@ filterProvidesToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
             dataiterator_free(&di);
             break;
         default:
-            assert(0);
-            return 1;
+            return INCORECT_COMPARISON_TYPE;
     }
     return 0;
 }
@@ -251,8 +270,12 @@ filterReponameToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
         return 0;
     auto matches = f->getMatches();
 
-    assert(f->getCmpType() == HY_EQ);
-    assert(matches.size() == 1);
+    if (f->getCmpType() != HY_EQ) {
+        return INCORECT_COMPARISON_TYPE;
+    }
+    if (matches.size() != 1) {
+        return MULTIPLE_MATCH_OBJECTS;
+    }
 
     queue_init(&repo_sel);
     Pool *pool = dnf_sack_get_pool(sack);
@@ -272,7 +295,7 @@ filterReponameToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
  *
  * Returns an error code
  */
-int
+void
 sltrToJob(const HySelector sltr, Queue *job, int solver_action)
 {
     DnfSack *sack = sltr->getSack();
@@ -286,9 +309,12 @@ sltrToJob(const HySelector sltr, Queue *job, int solver_action)
     queue_init(&job_sltr);
 
     if (!any_req_filter) {
-        if (any_opt_filter)
+        if (any_opt_filter) {
             // no name or provides or file in the selector is an error
-            ret = DNF_ERROR_BAD_SELECTOR;
+            queue_free(&job_sltr);
+            throw libdnf::Goal::Exception("Ill-formed Selector. No name or"
+                "provides or file in the selector.", DNF_ERROR_BAD_SELECTOR);
+        }
         goto finish;
     }
 
@@ -323,7 +349,9 @@ sltrToJob(const HySelector sltr, Queue *job, int solver_action)
 
  finish:
     queue_free(&job_sltr);
-    return ret;
+    if (ret > 1) {
+        throw libdnf::Goal::Exception(TM_(ERROR_DICT[ret], 1), DNF_ERROR_BAD_SELECTOR);
+    }
 }
 
 namespace libdnf {
@@ -474,7 +502,7 @@ private:
     std::unique_ptr<PackageSet> protectedPkgs;
     std::unique_ptr<PackageSet> removalOfProtected;
 
-    std::unique_ptr<PackageSet> listResults(Id type_filter1, Id type_filter2, GError **error);
+    libdnf::PackageSet listResults(Id type_filter1, Id type_filter2);
     void allowUninstallAllButProtected(Queue *job, DnfGoalActions flags);
     Queue * constructJob(DnfGoalActions flags);
     int solve(Queue *job, DnfGoalActions flags);
@@ -609,7 +637,7 @@ Goal::erase(HySelector sltr, int flags)
     sltrToJob(sltr, &pImpl->staging, SOLVER_ERASE|additional);
 }
 
-int
+void
 Goal::install(DnfPackage *new_pkg, bool optional)
 {
     int solverActions = SOLVER_INSTALL;
@@ -618,50 +646,38 @@ Goal::install(DnfPackage *new_pkg, bool optional)
     }
     pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | DNF_INSTALL|DNF_ALLOW_DOWNGRADE);
     packageToJob(new_pkg, &pImpl->staging, solverActions);
-    return 0;
 }
 
-bool
-Goal::install(HySelector sltr, bool optional, GError **error)
+void
+Goal::install(HySelector sltr, bool optional)
 {
     int solverActions = SOLVER_INSTALL;
     if (optional) {
         solverActions |= SOLVER_WEAK;
     }
-    int rc;
     pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | DNF_INSTALL|DNF_ALLOW_DOWNGRADE);
-    rc = sltrToJob(sltr, &pImpl->staging, solverActions);
-    if (rc != 0) {
-        g_set_error_literal (error,
-                             DNF_ERROR,
-                             rc,
-                             _("failed to install optional selector"));
-        return false;
-    }
-    return true;
+    sltrToJob(sltr, &pImpl->staging, solverActions);
 }
 
-int
+void
 Goal::upgrade()
 {
     pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | DNF_UPGRADE_ALL);
     queue_push2(&pImpl->staging, SOLVER_UPDATE|SOLVER_SOLVABLE_ALL, 0);
-    return 0;
 }
 
-int
+void
 Goal::upgrade(DnfPackage *new_pkg)
 {
     pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | DNF_UPGRADE);
     packageToJob(new_pkg, &pImpl->staging, SOLVER_UPDATE);
-    return 0;
 }
 
-int
+void
 Goal::upgrade(HySelector sltr)
 {
     pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | DNF_UPGRADE);
-    return sltrToJob(sltr, &pImpl->staging, SOLVER_UPDATE);
+    sltrToJob(sltr, &pImpl->staging, SOLVER_UPDATE);
 }
 
 void
@@ -857,69 +873,46 @@ Goal::logDecisions()
  *
  * Since: 0.7.0
  */
-bool
-Goal::writeDebugdata(const char *dir, GError **error)
+void
+Goal::writeDebugdata(const char *dir)
 {
     Solver *solv = pImpl->solv;
     if (!solv) {
-        g_set_error_literal (error,
-                             DNF_ERROR,
-                             DNF_ERROR_INTERNAL_ERROR,
-                             _("no solver set"));
-        return false;
+        throw libdnf::Goal::Exception(_("no solver set"), DNF_ERROR_INTERNAL_ERROR);
     }
 
     int flags = TESTCASE_RESULT_TRANSACTION | TESTCASE_RESULT_PROBLEMS;
     g_autofree char *absdir = abspath(dir);
     if (!absdir) {
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_FILE_INVALID,
-                     _("failed to make %s absolute"), dir);
-        return false;
+        std::string msg = tfm::format(_("failed to make %s absolute"), dir);
+        throw libdnf::Goal::Exception(msg, DNF_ERROR_FILE_INVALID);
     }
     g_debug("writing solver debugdata to %s", absdir);
     int ret = testcase_write(solv, absdir, flags, NULL, NULL);
     if (!ret) {
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_FILE_INVALID,
-                     _("failed writing debugdata to %1$s: %2$s"),
-                     absdir, strerror(errno));
-        return false;
+        std::string msg = tfm::format(_("failed writing debugdata to %1$s: %2$s"),
+                                      absdir, strerror(errno));
+        throw libdnf::Goal::Exception(msg, DNF_ERROR_FILE_INVALID);
     }
-    return true;
 }
 
-std::unique_ptr<PackageSet>
-Goal::Impl::listResults(Id type_filter1, Id type_filter2, GError **error)
+libdnf::PackageSet
+Goal::Impl::listResults(Id type_filter1, Id type_filter2)
 {
     Queue transpkgs;
-    
 
     /* no transaction */
     if (!trans) {
         if (!solv) {
-            g_set_error_literal (error,
-                                 DNF_ERROR,
-                                 DNF_ERROR_INTERNAL_ERROR,
-                                 _("no solv in the goal"));
-            return NULL;
+            throw libdnf::Goal::Exception(_("no solv in the goal"), DNF_ERROR_INTERNAL_ERROR);
         } else if (removalOfProtected && removalOfProtected->size()) {
-            g_set_error_literal (error,
-                                 DNF_ERROR,
-                                 DNF_ERROR_REMOVAL_OF_PROTECTED_PKG,
-                                 _("no solution, cannot remove protected package"));
-            return NULL;
+            throw libdnf::Goal::Exception(_("no solution, cannot remove protected package"),
+                                          DNF_ERROR_REMOVAL_OF_PROTECTED_PKG);
         }
-        g_set_error_literal (error,
-                             DNF_ERROR,
-                             DNF_ERROR_NO_SOLUTION,
-                             _("no solution possible"));
-        return NULL;
+        throw libdnf::Goal::Exception(_("no solution possible"), DNF_ERROR_NO_SOLUTION);
     }
     queue_init(&transpkgs);
-    auto plist = std::unique_ptr<PackageSet>(new PackageSet(sack));
+    PackageSet plist(sack);
     const int common_mode = SOLVER_TRANSACTION_SHOW_OBSOLETES |
         SOLVER_TRANSACTION_CHANGE_IS_REINSTALL;
 
@@ -939,74 +932,73 @@ Goal::Impl::listResults(Id type_filter1, Id type_filter2, GError **error)
         }
 
         if (type == type_filter1 || (type_filter2 && type == type_filter2))
-            plist->set(p);
+            plist.set(p);
     }
     return plist;
 }
 
-std::unique_ptr<PackageSet>
-Goal::listErasures(GError **error)
+libdnf::PackageSet
+Goal::listErasures()
 {
-    return pImpl->listResults(SOLVER_TRANSACTION_ERASE, 0, error);
+    return pImpl->listResults(SOLVER_TRANSACTION_ERASE, 0);
 }
 
-std::unique_ptr<PackageSet>
-Goal::listInstalls(GError **error)
+libdnf::PackageSet
+Goal::listInstalls()
 {
-    return pImpl->listResults(SOLVER_TRANSACTION_INSTALL,
-                        SOLVER_TRANSACTION_OBSOLETES, error);
+    return pImpl->listResults(SOLVER_TRANSACTION_INSTALL, SOLVER_TRANSACTION_OBSOLETES);
 }
 
-std::unique_ptr<PackageSet>
-Goal::listObsoleted(GError **error)
+libdnf::PackageSet
+Goal::listObsoleted()
 {
-    return pImpl->listResults(SOLVER_TRANSACTION_OBSOLETED, 0, error);
+    return pImpl->listResults(SOLVER_TRANSACTION_OBSOLETED, 0);
 }
 
-std::unique_ptr<PackageSet>
-Goal::listReinstalls(GError **error)
+libdnf::PackageSet
+Goal::listReinstalls()
 {
-    return pImpl->listResults(SOLVER_TRANSACTION_REINSTALL, 0, error);
+    return pImpl->listResults(SOLVER_TRANSACTION_REINSTALL, 0);
 }
 
-std::unique_ptr<PackageSet>
-Goal::listUnneeded(GError **error)
+libdnf::PackageSet
+Goal::listUnneeded()
 {
-    auto pset = std::unique_ptr<PackageSet>(new PackageSet(pImpl->sack));
+    PackageSet pset(pImpl->sack);
     Queue queue;
     Solver *solv = pImpl->solv;
 
     queue_init(&queue );
     solver_get_unneeded(solv, &queue, 0);
-    queue2pset(&queue, pset.get());
+    queue2pset(&queue, &pset);
     queue_free(&queue );
     return pset;
 }
 
-std::unique_ptr<PackageSet>
-Goal::listUpgrades(GError **error)
+libdnf::PackageSet
+Goal::listUpgrades()
 {
-    return pImpl->listResults(SOLVER_TRANSACTION_UPGRADE, 0, error);
+    return pImpl->listResults(SOLVER_TRANSACTION_UPGRADE, 0);
 }
 
-std::unique_ptr<PackageSet>
-Goal::listDowngrades(GError **error)
+libdnf::PackageSet
+Goal::listDowngrades()
 {
-    return pImpl->listResults(SOLVER_TRANSACTION_DOWNGRADE, 0, error);
+    return pImpl->listResults(SOLVER_TRANSACTION_DOWNGRADE, 0);
 }
 
-std::unique_ptr<PackageSet>
+libdnf::PackageSet
 Goal::listObsoletedByPackage(DnfPackage *pkg)
 {
     Transaction *trans = pImpl->trans;
     Queue obsoletes;
-    auto pset = std::unique_ptr<PackageSet>(new PackageSet(pImpl->sack));
+    PackageSet pset(pImpl->sack);
 
     assert(trans);
     queue_init(&obsoletes);
 
     transaction_all_obs_pkgs(trans, dnf_package_get_id(pkg), &obsoletes);
-    queue2pset(&obsoletes, pset.get());
+    queue2pset(&obsoletes, &pset);
 
     queue_free(&obsoletes);
     return pset;
@@ -1316,13 +1308,11 @@ Goal::Impl::protectedInRemovals()
     bool ret = false;
     if (!protectedPkgs || !protectedPkgs->size())
         return false;
-    auto pkgRemoveList = std::unique_ptr<PackageSet>(
-        listResults(SOLVER_TRANSACTION_ERASE, 0, NULL));
-    auto pkgObsoleteList = std::unique_ptr<PackageSet>(
-        listResults(SOLVER_TRANSACTION_OBSOLETED, 0, NULL));
-    map_or(pkgRemoveList->getMap(), pkgObsoleteList->getMap());
+    auto pkgRemoveList = listResults(SOLVER_TRANSACTION_ERASE, 0);
+    auto pkgObsoleteList = listResults(SOLVER_TRANSACTION_OBSOLETED, 0);
+    map_or(pkgRemoveList.getMap(), pkgObsoleteList.getMap());
 
-    removalOfProtected.reset(new PackageSet(*pkgRemoveList.get()));
+    removalOfProtected.reset(new PackageSet(pkgRemoveList));
     Id id = -1;
     while(true) {
         id = removalOfProtected->next(id);

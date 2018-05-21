@@ -81,10 +81,6 @@ class GoalTest(base.TestCase):
         sltr = hawkey.Selector(self.sack)
         self.assertRaises(hawkey.ValueException, sltr.set, undefined="eapoe")
 
-        sltr = hawkey.Selector(self.sack).set(name="semolina", arch="i666")
-        goal = hawkey.Goal(self.sack)
-        self.assertRaises(hawkey.ArchException, goal.install, select=sltr)
-
     def test_reinstall(self):
         inst = base.by_name_repo(self.sack, "fool", hawkey.SYSTEM_REPO_NAME)
         avail = base.by_name_repo(self.sack, "fool", "main")
