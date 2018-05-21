@@ -77,6 +77,9 @@ class ConfigRepo::Impl {
     OptionChild<OptionString> proxy_password{masterConfig.proxy_password()};
     OptionBinding proxyPasswordBinding{owner, proxy_password, "proxy_password"};
 
+    OptionChild<OptionEnum<std::string> > proxy_auth_method{masterConfig.proxy_auth_method()};
+    OptionBinding proxyAuthMethodBinding{owner, proxy_auth_method, "proxy_auth_method"};
+
     OptionChild<OptionString> username{masterConfig.username()};
     OptionBinding usernameBinding{owner, username, "username"};
 
@@ -171,6 +174,7 @@ OptionChild<OptionBool> & ConfigRepo::fastestmirror() { return pImpl->fastestmir
 OptionChild<OptionString> & ConfigRepo::proxy() { return pImpl->proxy; }
 OptionChild<OptionString> & ConfigRepo::proxy_username() { return pImpl->proxy_username; }
 OptionChild<OptionString> & ConfigRepo::proxy_password() { return pImpl->proxy_password; }
+OptionChild<OptionEnum<std::string> > & ConfigRepo::proxy_auth_method() { return pImpl->proxy_auth_method; }
 OptionChild<OptionString> & ConfigRepo::username() { return pImpl->username; }
 OptionChild<OptionString> & ConfigRepo::password() { return pImpl->password; }
 OptionChild<OptionStringList> & ConfigRepo::protected_packages() { return pImpl->protected_packages; }

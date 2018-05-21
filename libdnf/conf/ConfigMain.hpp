@@ -124,6 +124,7 @@ public:
     OptionString & proxy();
     OptionString & proxy_username();
     OptionString & proxy_password();
+    OptionEnum<std::string> & proxy_auth_method();
     OptionStringList & protected_packages();
     OptionString & username();
     OptionString & password();

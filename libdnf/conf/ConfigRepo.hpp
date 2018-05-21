@@ -57,6 +57,7 @@ public:
     OptionChild<OptionString> & proxy();
     OptionChild<OptionString> & proxy_username();
     OptionChild<OptionString> & proxy_password();
+    OptionChild<OptionEnum<std::string> > & proxy_auth_method();
     OptionChild<OptionString> & username();
     OptionChild<OptionString> & password();
     OptionChild<OptionStringList> & protected_packages();
