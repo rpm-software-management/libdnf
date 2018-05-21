@@ -51,7 +51,7 @@ public:
     void erase(DnfPackage *pkg, int flags = 0);
     void erase(HySelector sltr, int flags);
     int install(DnfPackage *new_pkg, bool optional);
-    gboolean install(HySelector sltr, bool optional, GError **error);
+    bool install(HySelector sltr, bool optional, GError **error);
     int upgrade();
     int upgrade(DnfPackage *new_pkg);
     int upgrade(HySelector sltr);
@@ -82,7 +82,7 @@ public:
     */
     char ** describeProblemRules(unsigned i);
     int logDecisions();
-    gboolean writeDebugdata(const char *dir, GError **error);
+    bool writeDebugdata(const char *dir, GError **error);
 
     /* result processing */
     std::unique_ptr<PackageSet> listErasures(GError **error);
