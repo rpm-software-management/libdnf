@@ -34,8 +34,8 @@ public:
     const char *getArch() const;
 
 protected:
-    Package(DnfSack *sack, HyRepo repo, const char *name, const char *version, const char *arch);
-    Package(DnfSack *sack, HyRepo repo, const std::string &name, const std::string &version, const std::string &arch);
+    Package(DnfSack *sack, HyRepo repo, const char *name, const char *version, const char *arch, bool createSolvable = true);
+    Package(DnfSack *sack, HyRepo repo, const std::string &name, const std::string &version, const std::string &arch, bool createSolvable = true);
 
     void addConflicts(std::shared_ptr<libdnf::Dependency> dependency);
     void addEnhances(std::shared_ptr<libdnf::Dependency> dependency);
