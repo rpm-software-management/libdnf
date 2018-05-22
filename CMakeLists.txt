@@ -11,7 +11,7 @@ SET(CMAKE_MACOSX_RPATH 0)
 include (VERSION.cmake)
 message ("Building libdnf version: ${LIBDNF_VERSION}")
 
-ADD_COMPILE_OPTIONS (-Wcast-align -Wno-uninitialized -Wredundant-decls -Wwrite-strings -Wformat-nonliteral -Wmissing-format-attribute -Wsign-compare -Wtype-limits -Wuninitialized -Winline -Wall -Werror=implicit-function-declaration -Wl,--as-needed)
+ADD_COMPILE_OPTIONS (-Wcast-align -Wno-uninitialized -Wredundant-decls -Wwrite-strings -Wformat-nonliteral -Wmissing-format-attribute -Wsign-compare -Wtype-limits -Wuninitialized -Wall -Werror=implicit-function-declaration -Wl,--as-needed)
 
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11 -Wmissing-prototypes -Waggregate-return -Wshadow")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wmissing-declarations")
