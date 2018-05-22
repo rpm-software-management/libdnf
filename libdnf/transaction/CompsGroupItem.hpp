@@ -27,10 +27,10 @@
 namespace libdnf {
 
 enum class CompsPackageType : int {
-    MANDATORY = 0,
-    DEFAULT = 1,
-    OPTIONAL = 2,
-    CONDITIONAL = 3,
+    CONDITIONAL = 1 << 0,
+    DEFAULT = 1 << 1,
+    MANDATORY = 1 << 2,
+    OPTIONAL = 1 << 3
 };
 
 class CompsGroupItem;
