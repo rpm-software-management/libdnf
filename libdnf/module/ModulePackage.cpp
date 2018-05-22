@@ -5,14 +5,16 @@
 #include <libdnf/module/state/EnabledState.hpp>
 
 ModulePackage::ModulePackage(DnfSack *sack, HyRepo repo, std::shared_ptr<ModuleMetadata> metadata)
-        : Package(sack, repo, metadata->getName(), std::to_string(metadata->getVersion()), metadata->getArchitecture())
+        // TODO metadata->getName() + metadata->getStream()
+        : Package(sack, repo, metadata->getName(), std::to_string(metadata->getVersion()), metadata->getArchitecture(), false)
         , metadata(std::move(metadata))
         , state(std::make_shared<ModuleState>())
         , view(std::make_shared<ModuleView>())
 {}
 
 ModulePackage::ModulePackage(DnfSack *sack, HyRepo repo, std::shared_ptr<ModuleMetadata> metadata, std::shared_ptr<ModuleView> view)
-        : Package(sack, repo, metadata->getName(), std::to_string(metadata->getVersion()), metadata->getArchitecture())
+        // TODO metadata->getName() + metadata->getStream()
+        : Package(sack, repo, metadata->getName(), std::to_string(metadata->getVersion()), metadata->getArchitecture(), false)
         , metadata(metadata)
         , state(std::make_shared<ModuleState>())
         , view(std::move(view))

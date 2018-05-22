@@ -12,22 +12,28 @@ Package::Package(DnfSack *sack,
                  HyRepo repo,
                  const char *name,
                  const char *version,
-                 const char *arch)
+                 const char *arch,
+                 bool createSolvable)
         : sack(sack)
 {
-    createSolvable(repo);
-    fillSolvableData(name, version, arch);
+    if (createSolvable) {
+        this->createSolvable(repo);
+        fillSolvableData(name, version, arch);
+    }
 }
 
 Package::Package(DnfSack *sack,
                  HyRepo repo,
                  const std::string &name,
                  const std::string &version,
-                 const std::string &arch)
+                 const std::string &arch,
+                 bool createSolvable)
         : sack(sack)
 {
-    createSolvable(repo);
-    fillSolvableData(name.c_str(), version.c_str(), arch.c_str());
+    if (createSolvable) {
+        this->createSolvable(repo);
+        fillSolvableData(name.c_str(), version.c_str(), arch.c_str());
+    }
 }
 
 Package::Package(const Package &package)
