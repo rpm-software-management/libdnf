@@ -35,6 +35,7 @@ public:
     const typename ParentOptionType::ValueType getValue() const;
     const typename ParentOptionType::ValueType getDefaultValue() const;
     std::string getValueString() const override;
+    bool empty() const noexcept override;
 
 private:
     const ParentOptionType & parent;
@@ -50,6 +51,7 @@ public:
     const std::string & getValue() const;
     const std::string & getDefaultValue() const;
     std::string getValueString() const override;
+    bool empty() const noexcept override;
 
 private:
     const ParentOptionType & parent;
@@ -101,6 +103,12 @@ inline std::string OptionChild<ParentOptionType, Enable>::getValueString() const
     return priority != Priority::EMPTY ? parent.toString(value) : parent.getValueString();
 }
 
+template <class ParentOptionType, class Enable>
+inline bool OptionChild<ParentOptionType, Enable>::empty() const noexcept
+{
+    return priority == Priority::EMPTY && parent.empty();
+}
+
 template <class ParentOptionType>
 inline OptionChild<ParentOptionType, typename std::enable_if<std::is_same<typename ParentOptionType::ValueType, std::string>::value>::type>::OptionChild(const ParentOptionType & parent)
 : parent(parent) {}
@@ -138,6 +146,12 @@ template <class ParentOptionType>
 inline std::string OptionChild<ParentOptionType, typename std::enable_if<std::is_same<typename ParentOptionType::ValueType, std::string>::value>::type>::getValueString() const
 {
     return priority != Priority::EMPTY ? value : parent.getValue();
+}
+
+template <class ParentOptionType>
+inline bool OptionChild<ParentOptionType, typename std::enable_if<std::is_same<typename ParentOptionType::ValueType, std::string>::value>::type>::empty() const noexcept
+{
+    return priority == Priority::EMPTY && parent.empty();
 }
 
 }

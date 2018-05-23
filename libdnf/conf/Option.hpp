@@ -57,6 +57,7 @@ public:
     virtual Priority getPriority() const;
     virtual void set(Priority priority, const std::string & value) = 0;
     virtual std::string getValueString() const = 0;
+    virtual bool empty() const noexcept;
     virtual ~Option() = default;
 
 protected:
@@ -69,6 +70,11 @@ inline Option::Option(Priority priority)
 inline Option::Priority Option::getPriority() const
 {
     return priority;
+}
+
+inline bool Option::empty() const noexcept
+{
+    return priority == Priority::EMPTY;
 }
 
 }
