@@ -210,8 +210,12 @@ Repo::Impl::lrHandleInitRemote(const char *destdir)
         fastestMirrorCacheDir += "fastestmirror.cache";
         lr_handle_setopt(h, nullptr, LRO_FASTESTMIRRORCACHE, fastestMirrorCacheDir.c_str());
     } else if (!conf->baseurl().getValue().empty()) {
-        const char *urls[] = {conf->baseurl().getValue()[0].c_str(), NULL};
-        lr_handle_setopt(h, NULL, LRO_URLS, urls);
+        size_t len = conf->baseurl().getValue().size();
+        const char * urls[len + 1];
+        for (size_t idx = 0; idx < len; ++idx)
+            urls[idx] = conf->baseurl().getValue()[idx].c_str();
+        urls[len] = nullptr;
+        lr_handle_setopt(h, nullptr, LRO_URLS, urls);
     } else
         throw std::runtime_error(tfm::format(_("Cannot find a valid baseurl for repo: %s"), id));
     return h;
