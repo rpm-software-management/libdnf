@@ -522,11 +522,11 @@ filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, 
 static PyObject *
 filter(_QueryObject *self, PyObject *args, PyObject *kwds)
 {
-    HyQuery query = new libdnf::Query(*self->query);
-    gboolean ret = filter_internal(query, NULL, self->sack, args, kwds);
+    auto query = std::unique_ptr<libdnf::Query>(new libdnf::Query(*self->query));
+    gboolean ret = filter_internal(query.get(), NULL, self->sack, args, kwds);
     if (!ret)
         return NULL;
-    PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
+    PyObject *final_query = queryToPyObject(query.release(), self->sack, Py_TYPE(self));
     return final_query;
 }
 
@@ -695,9 +695,38 @@ get_advisory_pkgs(_QueryObject *self, PyObject *args)
 }
 
 static PyObject *
+filter_userinstalled(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    const char *kwlist[] = {"swdb", NULL};
+    PyObject *pySwdb;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", (char **)kwlist, &pySwdb)) {
+        return NULL;
+    }
+    auto swigSwdb = reinterpret_cast< SwdbSwigPyObject * >(PyObject_GetAttrString(pySwdb, "this"));
+
+    if (swigSwdb == nullptr) {
+        PyErr_SetString(PyExc_SystemError, "Unable to parse SwigPyObject");
+        return NULL;
+    }
+
+    libdnf::Swdb * swdb = swigSwdb->ptr;
+
+    if (swdb == NULL) {
+        PyErr_SetString(PyExc_SystemError, "Unable to parse swig object");
+        return NULL;
+    }
+    HyQuery self_query_copy = new libdnf::Query(*((_QueryObject *) self)->query);
+    self_query_copy->filterUserInstalled(*swdb);
+
+    PyObject *final_query = queryToPyObject(self_query_copy, ((_QueryObject *) self)->sack,
+                                            Py_TYPE(self));
+    return final_query;
+}
+
+static PyObject *
 filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    HyQuery self_query_copy = new libdnf::Query(*((_QueryObject *) self)->query);
     const char *kwlist[] = {"swdb", "debug_solver", NULL};
     PyObject *pySwdb;
     PyObject *debug_solver = NULL;
@@ -719,7 +748,7 @@ filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds)
         PyErr_SetString(PyExc_SystemError, "Unable to parse swig object");
         return NULL;
     }
-
+    HyQuery self_query_copy = new libdnf::Query(*((_QueryObject *) self)->query);
     gboolean c_debug_solver = debug_solver != NULL && PyObject_IsTrue(debug_solver);
 
     int ret = hy_filter_unneeded(self_query_copy, *swdb, c_debug_solver);
@@ -914,7 +943,7 @@ query_to_name_arch_dict(_QueryObject *self, PyObject *unused)
 static PyObject *
 add_nevra_or_other_filter(_QueryObject *self, PyObject *args)
 {
-    HyQuery self_query_copy = new libdnf::Query(*((_QueryObject *) self)->query);
+    auto self_query_copy = std::unique_ptr<libdnf::Query>(new libdnf::Query(*self->query));
 
     int arguments_count = PyTuple_Size(args);
     if (arguments_count == 1) {
@@ -941,7 +970,7 @@ add_nevra_or_other_filter(_QueryObject *self, PyObject *args)
                         "nevra() takes 1 (NEVRA), or 3 (name, evr, arch) str params");
         return NULL;
     }
-    PyObject *final_query = queryToPyObject(self_query_copy, self->sack, Py_TYPE(self));
+    PyObject *final_query = queryToPyObject(self_query_copy.release(), self->sack, Py_TYPE(self));
     return final_query;
 }
 
@@ -997,6 +1026,7 @@ static struct PyMethodDef query_methods[] = {
     {"count", (PyCFunction)q_length, METH_NOARGS,
         NULL},
     {"get_advisory_pkgs", (PyCFunction)get_advisory_pkgs, METH_VARARGS, NULL},
+    {"userinstalled", (PyCFunction)filter_userinstalled, METH_KEYWORDS|METH_VARARGS, NULL},
     {"_na_dict", (PyCFunction)query_to_name_arch_dict, METH_NOARGS, NULL},
     {"_name_dict", (PyCFunction)query_to_name_dict, METH_NOARGS, NULL},
     {"_nevra", (PyCFunction)add_nevra_or_other_filter, METH_VARARGS, NULL},

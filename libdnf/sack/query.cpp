@@ -2035,6 +2035,13 @@ Query::getAdvisoryPkgs(int cmpType, std::vector<AdvisoryPkg> & advisoryPkgs)
     }
 }
 
+void
+Query::filterUserInstalled(const libdnf::Swdb &swdb)
+{
+    addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    swdb.filterUserinstalled(*getResultPset());
+}
+
 }
 
 void
