@@ -710,6 +710,11 @@ Query::getResult() noexcept
 }
 
 const Map * Query::getResult() const noexcept { return pImpl->result->getMap(); }
+PackageSet * Query::getResultPset()
+{
+    pImpl->apply();
+    return pImpl->result.get();
+}
 bool Query::getApplied() const noexcept { return pImpl->applied; }
 DnfSack * Query::getSack() { return pImpl->sack; }
 

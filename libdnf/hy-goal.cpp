@@ -295,14 +295,14 @@ hy_goal_log_decisions(HyGoal goal)
  *
  * Since: 0.7.0
  */
-gboolean
+bool
 hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error)
 {
     try {
         goal->writeDebugdata(dir);
     } catch (const libdnf::Goal::Exception & e) {
         exceptionToGError(error, e);
-        return FALSE;
+        return false;
     }
     return true;
 }

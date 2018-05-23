@@ -72,6 +72,7 @@ public:
     Query & operator=(Query && src_query) = delete;
     Map * getResult() noexcept;
     const Map * getResult() const noexcept;
+    PackageSet * getResultPset();
     DnfSack * getSack();
 
     /**

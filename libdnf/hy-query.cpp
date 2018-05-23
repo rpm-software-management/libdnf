@@ -319,34 +319,29 @@ int
 hy_filter_unneeded(HyQuery query, const libdnf::Swdb &swdb, const gboolean debug_solver)
 {
     hy_query_apply(query);
-    HyGoal goal = hy_goal_create(query->getSack());
+    libdnf::Goal goal(query->getSack());
     Pool *pool = dnf_sack_get_pool(query->getSack());
+    libdnf::Query installed(query->getSack());
+    installed.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    auto userInstalled = installed.getResultPset();
 
-    HyQuery installed = hy_query_create(query->getSack());
-    hy_query_filter(installed, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-    hy_query_apply(installed);
+    swdb.filterUserinstalled(*userInstalled);
+    goal.userInstalled(*userInstalled);
 
-    auto userInstalled = swdb.filterUnneeded(installed, pool);
-
-    for (const auto &pkg_id: userInstalled) {
-        DnfPackage *pkg = dnf_package_new(query->getSack(), pkg_id);
-        hy_goal_userinstalled(goal, pkg);
-    }
-
-    int ret1 = hy_goal_run_flags(goal, DNF_NONE);
+    int ret1 = goal.run(DNF_NONE);
     if (ret1)
         return -1;
 
     if (debug_solver) {
         g_autoptr(GError) error = NULL;
-        gboolean ret = hy_goal_write_debugdata(goal, "./debugdata-autoremove", &error);
+        gboolean ret = hy_goal_write_debugdata(&goal, "./debugdata-autoremove", &error);
         if (!ret) {
             return -1;
         }
     }
 
     Queue que;
-    Solver *solv = goal->getSolv();
+    Solver *solv = goal.getSolv();
 
     queue_init(&que);
     solver_get_unneeded(solv, &que, 0);
