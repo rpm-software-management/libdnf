@@ -30,7 +30,8 @@
 #include "../hy-util-private.hpp"
 #include "../hy-types.h"
 
-#include "../utils/bgettext/bgettext-lib.h"
+#include "bgettext/bgettext-lib.h"
+#include "tinyformat/tinyformat.hpp"
 
 #include <librepo/librepo.h>
 #include <utime.h>
@@ -184,9 +185,35 @@ Repo::Impl::lrHandleInitRemote(const char *destdir)
         vars = lr_urlvars_set(vars, item.first.c_str(), item.second.c_str());
     lr_handle_setopt(h, NULL, LRO_VARSUB, vars);
 
-    const char *urls[] = {conf->baseurl().getValue()[0].c_str(), NULL};
-    lr_handle_setopt(h, NULL, LRO_URLS, urls);
     lr_handle_setopt(h, NULL, LRO_DESTDIR, destdir);
+
+    enum class Source {NONE, METALINK, MIRRORLIST} source{Source::NONE};
+    std::string tmp;
+    if (!conf->metalink().empty() && !(tmp=conf->metalink().getValue()).empty())
+        source = Source::METALINK;
+    else if (!conf->mirrorlist().empty() && !(tmp=conf->mirrorlist().getValue()).empty())
+        source = Source::MIRRORLIST;
+    if (source != Source::NONE) {
+        if (source == Source::METALINK)
+            lr_handle_setopt(h, nullptr, LRO_METALINKURL, tmp.c_str());
+        else {
+            lr_handle_setopt(h, nullptr, LRO_MIRRORLISTURL, tmp.c_str());
+            // YUM-DNF compatibility hack. YUM guessed by content of keyword "metalink" if
+            // mirrorlist is really mirrorlist or metalink)
+            if (tmp.find("metalink") != tmp.npos)
+                lr_handle_setopt(h, nullptr, LRO_METALINKURL, tmp.c_str());
+        }
+        lr_handle_setopt(h, nullptr, LRO_FASTESTMIRROR, conf->fastestmirror().getValue() ? 1L : 0L);
+        auto fastestMirrorCacheDir = conf->basecachedir().getValue();
+        if (fastestMirrorCacheDir.back() != '/')
+            fastestMirrorCacheDir.push_back('/');
+        fastestMirrorCacheDir += "fastestmirror.cache";
+        lr_handle_setopt(h, nullptr, LRO_FASTESTMIRRORCACHE, fastestMirrorCacheDir.c_str());
+    } else if (!conf->baseurl().getValue().empty()) {
+        const char *urls[] = {conf->baseurl().getValue()[0].c_str(), NULL};
+        lr_handle_setopt(h, NULL, LRO_URLS, urls);
+    } else
+        throw std::runtime_error(tfm::format(_("Cannot find a valid baseurl for repo: %s"), id));
     return h;
 }
 
@@ -231,10 +258,6 @@ bool Repo::Impl::loadCache()
         timestamp = mtime(primary_fn.c_str());
     }
     this->mirrors = mirrors;
-
-    std::cout << repomd_fn << std::endl;
-    std::cout << primary_fn << std::endl;
-    std::cout << filelists_fn << std::endl;
     return true;
 }
 
