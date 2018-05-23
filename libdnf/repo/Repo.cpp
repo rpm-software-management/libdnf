@@ -218,6 +218,22 @@ Repo::Impl::lrHandleInitRemote(const char *destdir)
         lr_handle_setopt(h, nullptr, LRO_URLS, urls);
     } else
         throw std::runtime_error(tfm::format(_("Cannot find a valid baseurl for repo: %s"), id));
+
+    // setup username/password if needed
+    auto userpwd = conf->username().getValue();
+    if (!userpwd.empty()) {
+        userpwd = userpwd + ":" + conf->password().getValue();
+        lr_handle_setopt(h, nullptr, LRO_USERPWD, userpwd.c_str());
+    }
+
+    // setup ssl stuff
+    if (!conf->sslcacert().getValue().empty())
+        lr_handle_setopt(h, nullptr, LRO_SSLCACERT, conf->sslcacert().getValue().c_str());
+    if (!conf->sslclientcert().getValue().empty())
+        lr_handle_setopt(h, nullptr, LRO_SSLCLIENTCERT, conf->sslclientcert().getValue().c_str());
+    if (!conf->sslclientkey().getValue().empty())
+        lr_handle_setopt(h, nullptr, LRO_SSLCLIENTKEY, conf->sslclientkey().getValue().c_str());
+
     return h;
 }
 
