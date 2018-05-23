@@ -37,6 +37,8 @@
 #include <map>
 #include <glib.h>
 
+#include <iostream>
+
 namespace libdnf {
 
 class Repo::Impl {
@@ -140,9 +142,6 @@ LrHandle * Repo::Impl::lrHandleInitBase()
     lr_handle_setopt(h, NULL, LRO_YUMDLIST, dlist);
     lr_handle_setopt(h, NULL, LRO_INTERRUPTIBLE, 1L);
     lr_handle_setopt(h, NULL, LRO_GPGCHECK, conf->repo_gpgcheck().getValue());
-    lr_handle_setopt(h, NULL, LRO_MAXMIRRORTRIES, 0);
-    lr_handle_setopt(h, NULL, LRO_MAXPARALLELDOWNLOADS,
-                     conf->max_parallel_downloads().getValue());
 
     LrUrlVars * vars = NULL;
     vars = lr_urlvars_set(vars, "group_gz", "group");
@@ -172,6 +171,9 @@ LrHandle *
 Repo::Impl::lrHandleInitRemote(const char *destdir)
 {
     LrHandle *h = lrHandleInitBase();
+    lr_handle_setopt(h, NULL, LRO_MAXMIRRORTRIES, 0);
+    lr_handle_setopt(h, NULL, LRO_MAXPARALLELDOWNLOADS,
+                     conf->max_parallel_downloads().getValue());
 
     LrUrlVars * vars = NULL;
     for (const auto & item : substitutions)
@@ -207,10 +209,14 @@ bool Repo::Impl::loadCache()
     repomd_fn = yum_repo->repomd;
     primary_fn = lr_yum_repo_path(yum_repo, "primary");
     filelists_fn = lr_yum_repo_path(yum_repo, "filelists");
-    // FIXME this crashes:
-    /* presto_fn = lr_yum_repo_path(yum_repo, "prestodelta"); */
-    /* updateinfo_fn = lr_yum_repo_path(yum_repo, "updateinfo"); */
-    comps_fn = lr_yum_repo_path(yum_repo, "group_gz");  // FIXME: or "group"
+    auto tmp = lr_yum_repo_path(yum_repo, "prestodelta");
+    presto_fn = tmp ? tmp : "";
+    tmp = lr_yum_repo_path(yum_repo, "updateinfo");
+    updateinfo_fn = tmp ? tmp : "";
+    tmp = lr_yum_repo_path(yum_repo, "group_gz");
+    if (!tmp)
+        tmp = lr_yum_repo_path(yum_repo, "group");
+    comps_fn = tmp ? tmp : "";
     content_tags = yum_repomd->content_tags;
     distro_tags = yum_repomd->distro_tags;
     revision = yum_repomd->revision;
@@ -222,6 +228,9 @@ bool Repo::Impl::loadCache()
     }
     this->mirrors = mirrors;
 
+    std::cout << repomd_fn << std::endl;
+    std::cout << primary_fn << std::endl;
+    std::cout << filelists_fn << std::endl;
     return true;
 }
 
@@ -375,6 +384,11 @@ void Repo::initHyRepo(HyRepo hrepo)
     hy_repo_set_cost(hrepo, pImpl->conf->cost().getValue());
     hy_repo_set_priority(hrepo, pImpl->conf->priority().getValue());
     // TODO finish
+    if (!pImpl->presto_fn.empty())
+        hy_repo_set_string(hrepo, HY_REPO_PRESTO_FN, pImpl->presto_fn.c_str());
+    if (!pImpl->updateinfo_fn.empty())
+        hy_repo_set_string(hrepo, HY_REPO_UPDATEINFO_FN, pImpl->updateinfo_fn.c_str());
+
 }
 
 }
