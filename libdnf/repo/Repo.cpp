@@ -30,9 +30,13 @@
 #include "../hy-util-private.hpp"
 #include "../hy-types.h"
 
+#include "../utils/bgettext/bgettext-lib.h"
+
 #include <librepo/librepo.h>
-#include <solv/repo.h>
 #include <utime.h>
+
+#include <solv/chksum.h>
+#include <solv/repo.h>
 
 #include <map>
 #include <glib.h>
@@ -158,8 +162,8 @@ LrHandle * Repo::Impl::lrHandleInitLocal()
     for (const auto & item : substitutions)
         vars = lr_urlvars_set(vars, item.first.c_str(), item.second.c_str());
     lr_handle_setopt(h, NULL, LRO_VARSUB, vars);
-
-    std::string cachedir = getCachedir();  // FIXME
+    auto cachedir = getCachedir();
+    std::cout << "cachedir: " << cachedir << std::endl;
     const char *urls[] = {cachedir.c_str(), NULL};
     lr_handle_setopt(h, NULL, LRO_URLS, urls);
     lr_handle_setopt(h, NULL, LRO_DESTDIR, cachedir.c_str());
@@ -306,8 +310,33 @@ bool Repo::Impl::load()
 
 std::string Repo::Impl::getCachedir()
 {
-    // FIXME
-    return conf->basecachedir().getValue() + "/test";
+    std::string tmp;
+    if (conf->metalink().empty() || (tmp=conf->metalink().getValue()).empty()) {
+        if (conf->mirrorlist().empty() || (tmp=conf->mirrorlist().getValue()).empty()) {
+            if (!conf->baseurl().getValue().empty())
+                tmp = conf->baseurl().getValue()[0];
+            if (tmp.empty())
+                tmp = id;
+        }
+    }
+
+    auto chksumObj = solv_chksum_create(REPOKEY_TYPE_SHA256);
+    solv_chksum_add(chksumObj, tmp.c_str(), tmp.length());
+    int chksumLen;
+    auto chksum = solv_chksum_get(chksumObj, &chksumLen);
+    static constexpr int USE_CHECKSUM_BYTES = 8;
+    if (chksumLen < USE_CHECKSUM_BYTES) {
+        solv_chksum_free(chksumObj, nullptr);
+        throw std::runtime_error(_("getCachedir(): Computation of SHA256 failed"));
+    }
+    char chksumCStr[USE_CHECKSUM_BYTES * 2 + 1];
+    solv_bin2hex(chksum, USE_CHECKSUM_BYTES, chksumCStr);
+    solv_chksum_free(chksumObj, nullptr);
+
+    auto repodir(conf->basecachedir().getValue());
+    if (repodir.back() != '/')
+        repodir.push_back('/');
+    return repodir + id + "-" + chksumCStr;
 }
 
 char ** Repo::Impl::getMirrors()
