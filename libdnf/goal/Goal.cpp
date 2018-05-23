@@ -497,7 +497,7 @@ private:
     DnfSack *sack;
     Queue staging;
     Solver *solv{nullptr};
-    Transaction *trans{nullptr};
+    ::Transaction *trans{nullptr};
     DnfGoalActions actions{DNF_NONE};
     std::unique_ptr<PackageSet> protectedPkgs;
     std::unique_ptr<PackageSet> removalOfProtected;
@@ -990,7 +990,7 @@ Goal::listDowngrades()
 libdnf::PackageSet
 Goal::listObsoletedByPackage(DnfPackage *pkg)
 {
-    Transaction *trans = pImpl->trans;
+    auto trans = pImpl->trans;
     Queue obsoletes;
     PackageSet pset(pImpl->sack);
 
