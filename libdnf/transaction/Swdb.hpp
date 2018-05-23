@@ -34,6 +34,7 @@ class Transformer;
 
 #include "../hy-types.h"
 #include "../sack/query.hpp"
+#include "../sack/packageset.hpp"
 #include "../utils/sqlite3/Sqlite3.hpp"
 
 #include "CompsGroupItem.hpp"
@@ -110,7 +111,11 @@ public:
     // misc
     void setReleasever(std::string value);
     void addConsoleOutputLine(int fileDescriptor, std::string line);
-    std::vector< Id > filterUnneeded(HyQuery installed, Pool *pool) const;
+
+    /**
+    * @brief Remove packages from PackageSet that were installed as Dependency or WEAK_DEPENDENCY
+    */
+    void filterUserinstalled(libdnf::PackageSet & installed) const;
 
 protected:
     friend class Transformer;

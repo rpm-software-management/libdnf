@@ -22,6 +22,7 @@
 #define HY_GOAL_H
 
 #include <glib.h>
+#include <stdbool.h>
 
 G_BEGIN_DECLS
 
@@ -168,7 +169,7 @@ DnfPackageSet *hy_goal_broken_dependency_all_pkgs(HyGoal goal, DnfPackageState p
 */
 char **hy_goal_describe_problem_rules(HyGoal goal, unsigned i);
 int hy_goal_log_decisions(HyGoal goal);
-gboolean hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error);
+bool hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error);
 
 /* result processing */
 GPtrArray *hy_goal_list_erasures(HyGoal goal, GError **error);
