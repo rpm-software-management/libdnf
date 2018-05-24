@@ -502,7 +502,7 @@ private:
     std::unique_ptr<PackageSet> protectedPkgs;
     std::unique_ptr<PackageSet> removalOfProtected;
 
-    libdnf::PackageSet listResults(Id type_filter1, Id type_filter2);
+    PackageSet listResults(Id type_filter1, Id type_filter2);
     void allowUninstallAllButProtected(Queue *job, DnfGoalActions flags);
     Queue * constructJob(DnfGoalActions flags);
     int solve(Queue *job, DnfGoalActions flags);
@@ -600,9 +600,9 @@ Goal::distupgrade()
 {
     pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | DNF_DISTUPGRADE);
     DnfSack * sack = pImpl->sack;
-    libdnf::Query query(sack);
+    Query query(sack);
     query.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-    libdnf::Selector selector(sack);
+    Selector selector(sack);
     selector.set(HY_PKG, HY_EQ, query.runSet());
     sltrToJob(&selector, &pImpl->staging, SOLVER_DISTUPGRADE);
 }
@@ -878,25 +878,25 @@ Goal::writeDebugdata(const char *dir)
 {
     Solver *solv = pImpl->solv;
     if (!solv) {
-        throw libdnf::Goal::Exception(_("no solver set"), DNF_ERROR_INTERNAL_ERROR);
+        throw Goal::Exception(_("no solver set"), DNF_ERROR_INTERNAL_ERROR);
     }
 
     int flags = TESTCASE_RESULT_TRANSACTION | TESTCASE_RESULT_PROBLEMS;
     g_autofree char *absdir = abspath(dir);
     if (!absdir) {
         std::string msg = tfm::format(_("failed to make %s absolute"), dir);
-        throw libdnf::Goal::Exception(msg, DNF_ERROR_FILE_INVALID);
+        throw Goal::Exception(msg, DNF_ERROR_FILE_INVALID);
     }
     g_debug("writing solver debugdata to %s", absdir);
     int ret = testcase_write(solv, absdir, flags, NULL, NULL);
     if (!ret) {
         std::string msg = tfm::format(_("failed writing debugdata to %1$s: %2$s"),
                                       absdir, strerror(errno));
-        throw libdnf::Goal::Exception(msg, DNF_ERROR_FILE_INVALID);
+        throw Goal::Exception(msg, DNF_ERROR_FILE_INVALID);
     }
 }
 
-libdnf::PackageSet
+PackageSet
 Goal::Impl::listResults(Id type_filter1, Id type_filter2)
 {
     Queue transpkgs;
@@ -904,12 +904,12 @@ Goal::Impl::listResults(Id type_filter1, Id type_filter2)
     /* no transaction */
     if (!trans) {
         if (!solv) {
-            throw libdnf::Goal::Exception(_("no solv in the goal"), DNF_ERROR_INTERNAL_ERROR);
+            throw Goal::Exception(_("no solv in the goal"), DNF_ERROR_INTERNAL_ERROR);
         } else if (removalOfProtected && removalOfProtected->size()) {
-            throw libdnf::Goal::Exception(_("no solution, cannot remove protected package"),
+            throw Goal::Exception(_("no solution, cannot remove protected package"),
                                           DNF_ERROR_REMOVAL_OF_PROTECTED_PKG);
         }
-        throw libdnf::Goal::Exception(_("no solution possible"), DNF_ERROR_NO_SOLUTION);
+        throw Goal::Exception(_("no solution possible"), DNF_ERROR_NO_SOLUTION);
     }
     queue_init(&transpkgs);
     PackageSet plist(sack);
@@ -937,31 +937,31 @@ Goal::Impl::listResults(Id type_filter1, Id type_filter2)
     return plist;
 }
 
-libdnf::PackageSet
+PackageSet
 Goal::listErasures()
 {
     return pImpl->listResults(SOLVER_TRANSACTION_ERASE, 0);
 }
 
-libdnf::PackageSet
+PackageSet
 Goal::listInstalls()
 {
     return pImpl->listResults(SOLVER_TRANSACTION_INSTALL, SOLVER_TRANSACTION_OBSOLETES);
 }
 
-libdnf::PackageSet
+PackageSet
 Goal::listObsoleted()
 {
     return pImpl->listResults(SOLVER_TRANSACTION_OBSOLETED, 0);
 }
 
-libdnf::PackageSet
+PackageSet
 Goal::listReinstalls()
 {
     return pImpl->listResults(SOLVER_TRANSACTION_REINSTALL, 0);
 }
 
-libdnf::PackageSet
+PackageSet
 Goal::listUnneeded()
 {
     PackageSet pset(pImpl->sack);
@@ -975,19 +975,19 @@ Goal::listUnneeded()
     return pset;
 }
 
-libdnf::PackageSet
+PackageSet
 Goal::listUpgrades()
 {
     return pImpl->listResults(SOLVER_TRANSACTION_UPGRADE, 0);
 }
 
-libdnf::PackageSet
+PackageSet
 Goal::listDowngrades()
 {
     return pImpl->listResults(SOLVER_TRANSACTION_DOWNGRADE, 0);
 }
 
-libdnf::PackageSet
+PackageSet
 Goal::listObsoletedByPackage(DnfPackage *pkg)
 {
     auto trans = pImpl->trans;
