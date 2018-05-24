@@ -40,11 +40,27 @@
 #include <solv/repo.h>
 
 #include <map>
+#include <cctype>
 #include <glib.h>
 
 #include <iostream>
 
 namespace libdnf {
+
+// Map string from config option proxy_auth_method to librepo LrAuth value
+static constexpr struct {
+    const char * name;
+    LrAuth code;
+} PROXYAUTHMETHODS[] = {
+    {"none", LR_AUTH_NONE},
+    {"basic", LR_AUTH_BASIC},
+    {"digest", LR_AUTH_DIGEST},
+    {"negotiate", LR_AUTH_NEGOTIATE},
+    {"ntlm", LR_AUTH_NTLM},
+    {"digest_ie", LR_AUTH_DIGEST_IE},
+    {"ntlm_wb", LR_AUTH_NTLM_WB},
+    {"any", LR_AUTH_ANY}
+};
 
 class Repo::Impl {
 public:
@@ -86,6 +102,58 @@ public:
     bool useIncludes;
     std::map<std::string, std::string> substitutions;
 };
+
+/**
+* @brief Converts the given input string to a URL encoded string
+*
+* All input characters that are not a-z, A-Z, 0-9, '-', '.', '_' or '~' are converted
+* to their "URL escaped" version (%NN where NN is a two-digit hexadecimal number).
+*
+* @param src String to encode
+* @return URL encoded string
+*/
+static std::string urlEncode(const std::string & src)
+{
+    auto noEncode = [](char ch)
+    {
+        return isalnum(ch) || ch=='-' || ch == '.' || ch == '_' || ch == '~';
+    };
+
+    // compute length of encoded string
+    auto len = src.length();
+    for (auto ch : src) {
+        if (!noEncode(ch))
+            len += 2;
+    }
+
+    // encode the input string
+    std::string encoded;
+    encoded.reserve(len);
+    for (auto ch : src) {
+        if (noEncode(ch))
+            encoded.push_back(ch);
+        else {
+            encoded.push_back('%');
+            unsigned char hex;
+            hex = static_cast<unsigned char>(ch) >> 4;
+            hex += hex <= 9 ? '0' : 'a' - 10;
+            encoded.push_back(hex);
+            hex = static_cast<unsigned char>(ch) & 0x0F;
+            hex += hex <= 9 ? '0' : 'a' - 10;
+            encoded.push_back(hex);
+        }
+    }
+
+    return encoded;
+}
+
+static std::string formatUserPassString(const std::string & user, const std::string & passwd, bool encode)
+{
+    if (encode)
+        return urlEncode(user) + ":" + urlEncode(passwd);
+    else
+        return user + ":" + passwd;
+}
 
 Repo::Impl::Impl(const std::string & id, std::unique_ptr<ConfigRepo> && conf)
 : id(id), conf(std::move(conf)), timestamp(-1) {}
@@ -222,7 +290,8 @@ Repo::Impl::lrHandleInitRemote(const char *destdir)
     // setup username/password if needed
     auto userpwd = conf->username().getValue();
     if (!userpwd.empty()) {
-        userpwd = userpwd + ":" + conf->password().getValue();
+        // TODO Use URL encoded form, needs support in librepo
+        userpwd = formatUserPassString(userpwd, conf->password().getValue(), false);
         lr_handle_setopt(h, nullptr, LRO_USERPWD, userpwd.c_str());
     }
 
@@ -233,6 +302,52 @@ Repo::Impl::lrHandleInitRemote(const char *destdir)
         lr_handle_setopt(h, nullptr, LRO_SSLCLIENTCERT, conf->sslclientcert().getValue().c_str());
     if (!conf->sslclientkey().getValue().empty())
         lr_handle_setopt(h, nullptr, LRO_SSLCLIENTKEY, conf->sslclientkey().getValue().c_str());
+
+    auto minrate = conf->minrate().getValue();
+    lr_handle_setopt(h, nullptr, LRO_LOWSPEEDLIMIT, static_cast<long>(minrate));
+
+    auto maxspeed = conf->throttle().getValue();
+    if (maxspeed > 0 && maxspeed <= 1)
+        maxspeed *= conf->bandwidth().getValue();
+    if (maxspeed != 0 && maxspeed < minrate)
+        throw std::runtime_error(_("Maximum download speed is lower than minimum. "
+                                   "Please change configuration of minrate or throttle"));
+    lr_handle_setopt(h, nullptr, LRO_MAXSPEED, static_cast<int64_t>(maxspeed));
+
+    long timeout = conf->timeout().getValue();
+    if (timeout > 0) {
+        lr_handle_setopt(h, nullptr, LRO_CONNECTTIMEOUT, timeout);
+        lr_handle_setopt(h, nullptr, LRO_LOWSPEEDTIME, timeout);
+    } else {
+        lr_handle_setopt(h, nullptr, LRO_CONNECTTIMEOUT, LRO_CONNECTTIMEOUT_DEFAULT);
+        lr_handle_setopt(h, nullptr, LRO_LOWSPEEDTIME, LRO_LOWSPEEDTIME_DEFAULT);
+    }
+
+    if (!conf->proxy().empty() && !conf->proxy().getValue().empty())
+        lr_handle_setopt(h, nullptr, LRO_PROXY, conf->proxy().getValue().c_str());
+
+    //set proxy autorization method
+    auto proxyAuthMethodStr = conf->proxy_auth_method().getValue();
+    auto proxyAuthMethod = LR_AUTH_ANY;
+    for (auto & auth : PROXYAUTHMETHODS) {
+        if (proxyAuthMethodStr == auth.name) {
+            proxyAuthMethod = auth.code;
+            break;
+        }
+    }
+    lr_handle_setopt(h, nullptr, LRO_PROXYAUTHMETHODS, static_cast<long>(proxyAuthMethod));
+
+    if (!conf->proxy_username().empty()) {
+        userpwd = conf->proxy_username().getValue();
+        if (!userpwd.empty()) {
+            userpwd = formatUserPassString(userpwd, conf->proxy_password().getValue(), true);
+            lr_handle_setopt(h, nullptr, LRO_PROXYUSERPWD, userpwd.c_str());
+        }
+    }
+
+    auto sslverify = conf->sslverify().getValue() ? 1L : 0L;
+    lr_handle_setopt(h, nullptr, LRO_SSLVERIFYHOST, sslverify);
+    lr_handle_setopt(h, nullptr, LRO_SSLVERIFYPEER, sslverify);
 
     return h;
 }
