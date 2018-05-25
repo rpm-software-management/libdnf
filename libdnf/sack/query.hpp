@@ -26,6 +26,7 @@
 #include "../hy-types.h"
 #include "../repo/solvable/Dependency.hpp"
 #include "../repo/solvable/DependencyContainer.hpp"
+#include "../transaction/Swdb.hpp"
 #include "../dnf-types.h"
 #include "advisorypkg.hpp"
 
@@ -72,6 +73,12 @@ public:
     Query & operator=(Query && src_query) = delete;
     Map * getResult() noexcept;
     const Map * getResult() const noexcept;
+    /**
+    * @brief Applies query and returns pointer of PackageSet
+    *
+    * @return libdnf::PackageSet*
+    */
+    PackageSet * getResultPset();
     DnfSack * getSack();
 
     /**
@@ -149,6 +156,7 @@ public:
     void filterRecent(const long unsigned int recent_limit);
     void filterDuplicated();
     void getAdvisoryPkgs(int cmpType,  std::vector<AdvisoryPkg> & advisoryPkgs);
+    void filterUserInstalled(const libdnf::Swdb &swdb);
 private:
     class Impl;
     std::unique_ptr<Impl> pImpl;

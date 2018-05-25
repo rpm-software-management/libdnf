@@ -26,6 +26,8 @@
 #include "../hy-subject.h"
 #include "../nevra.hpp"
 
+#include "../sack/packageset.hpp"
+
 #include "../utils/bgettext/bgettext-lib.h"
 #include "../utils/filesystem.hpp"
 #include "../utils/sqlite3/Sqlite3.hpp"
@@ -506,17 +508,14 @@ Swdb::Swdb(const std::string &path)
  *
  * \return list of user installed package IDs
  */
-std::vector< Id >
-Swdb::filterUnneeded(HyQuery installed, Pool *pool) const
+void
+Swdb::filterUserinstalled(libdnf::PackageSet & installed) const
 {
-    std::vector< Id > userInstalled;
+    Pool * pool = dnf_sack_get_pool(installed.getSack());
 
     // iterate over solvables
-    for (Id id = 1; id < pool->nsolvables; ++id) {
-
-        if (!MAPTST(installed->getResult(), id)) {
-            continue;
-        }
+    Id id = -1;
+    while ((id = installed.next(id)) != -1) {
 
         Solvable *s = pool_id2solvable(pool, id);
         const char *name = pool_id2str(pool, s->name);
@@ -524,12 +523,11 @@ Swdb::filterUnneeded(HyQuery installed, Pool *pool) const
 
         auto reason = RPMItem::resolveTransactionItemReason(conn, name, arch, -1);
         // if not dep or weak, than consider it user installed
-        if (reason != TransactionItemReason::DEPENDENCY &&
-            reason != TransactionItemReason::WEAK_DEPENDENCY) {
-            userInstalled.push_back(id);
+        if (reason == TransactionItemReason::DEPENDENCY ||
+            reason == TransactionItemReason::WEAK_DEPENDENCY) {
+            installed.remove(id);
         }
     }
-    return userInstalled;
 }
 
 std::vector< int64_t >

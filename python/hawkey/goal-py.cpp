@@ -34,7 +34,10 @@
 #include "package-py.hpp"
 #include "selector-py.hpp"
 #include "sack-py.hpp"
+#include "query-py.hpp"
 #include "pycomp.hpp"
+#include "goal/Goal.hpp"
+#include "sack/query.hpp"
 #include "sack/packageset.hpp"
 
 #define BLOCK_SIZE 15
@@ -298,9 +301,16 @@ upgrade_all(_GoalObject *self, PyObject *unused)
 }
 
 static PyObject *
-userinstalled(_GoalObject *self, PyObject *pkg)
+userinstalled(_GoalObject *self, PyObject *obj)
 {
-    DnfPackage *cpkg = packageFromPyObject(pkg);
+    if (queryObject_Check(obj)) {
+        HyQuery query = queryFromPyObject(obj);
+        if (query == NULL)
+            return NULL;
+        self->goal->userInstalled(*query->getResultPset());
+        Py_RETURN_FALSE;
+    }
+    DnfPackage *cpkg = packageFromPyObject(obj);
     int ret;
 
     if (cpkg == NULL)
@@ -315,7 +325,7 @@ static PyObject *
 get_actions(_GoalObject *self, void *unused)
 {
     HyGoal goal = self->goal;
-    return PyLong_FromLong(goal->actions);
+    return PyLong_FromLong(goal->getActions());
 }
 
 static PyObject *

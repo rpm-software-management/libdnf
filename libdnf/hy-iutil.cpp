@@ -51,10 +51,12 @@ extern "C" {
 #include "hy-package-private.hpp"
 #include "hy-packageset-private.hpp"
 #include "hy-query.h"
+#include "hy-util-private.hpp"
 #include "dnf-sack-private.hpp"
 #include "sack/packageset.hpp"
 
 #include "utils/bgettext/bgettext-lib.h"
+#include "sack/packageset.hpp"
 
 #define BUF_BLOCK 4096
 #define CHKSUM_TYPE REPOKEY_TYPE_SHA256
@@ -415,13 +417,6 @@ str2archid(Pool *pool, const char *arch)
     return id;
 }
 
-void
-queue2plist(DnfSack *sack, Queue *q, GPtrArray *plist)
-{
-    for (int i = 0; i < q->count; ++i)
-        g_ptr_array_add(plist, dnf_package_new(sack, q->elements[i]));
-}
-
 /**
  * Return id of a package that can be upgraded with pkg.
  *
@@ -575,4 +570,22 @@ id2nevra(Pool *pool, Id id)
 {
     Solvable *s = pool_id2solvable(pool, id);
     return pool_solvable2str(pool, s);
+}
+
+
+GPtrArray *
+packageSet2GPtrArray(libdnf::PackageSet * pset)
+{
+    if (!pset) {
+        return NULL;
+    }
+    GPtrArray *plist = hy_packagelist_create();
+
+    DnfSack * sack = pset->getSack();
+
+    Id id = -1;
+    while ((id = pset->next(id)) != -1) {
+        g_ptr_array_add(plist, dnf_package_new(sack, id));
+    }
+    return plist;
 }

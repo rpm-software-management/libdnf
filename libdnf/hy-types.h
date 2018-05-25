@@ -23,21 +23,23 @@
 
 #ifdef __cplusplus
 namespace libdnf {
+    struct Goal;
     struct Nevra;
     struct Query;
     struct Selector;
 }
+typedef struct libdnf::Goal * HyGoal;
 typedef struct libdnf::Nevra * HyNevra;
 typedef struct libdnf::Query * HyQuery;
 typedef struct libdnf::Selector * HySelector;
 #else
+typedef struct Goal * HyGoal;
 typedef struct Nevra * HyNevra;
 typedef struct Query * HyQuery;
 typedef struct Selector * HySelector;
 #endif
 
 typedef struct _HyRepo * HyRepo;
-typedef struct _HyGoal * HyGoal;
 typedef char * HySubject;
 
 typedef const unsigned char HyChecksum;

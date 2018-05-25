@@ -42,6 +42,7 @@
 #include "dnf-sack-private.hpp"
 #include "dnf-utils.h"
 #include "utils/bgettext/bgettext-lib.h"
+#include "../goal/Goal.hpp"
 
 /**
  * dnf_goal_depsolve:
@@ -191,18 +192,7 @@ dnf_goal_get_packages(HyGoal goal, ...)
 void
 dnf_goal_add_protected(HyGoal goal, DnfPackageSet *pset)
 {
-    Pool *pool = dnf_sack_get_pool(goal->sack);
-    Map *protected_pkgs = goal->protected_pkgs;
-    Map *nprotected = dnf_packageset_get_map(pset);
-
-    if (protected_pkgs == NULL) {
-        protected_pkgs = (Map*)g_malloc0(sizeof(Map));
-        map_init(protected_pkgs, pool->nsolvables);
-        goal->protected_pkgs = protected_pkgs;
-    } else
-        map_grow(protected_pkgs, pool->nsolvables);
-
-    map_or(protected_pkgs, nprotected);
+    goal->addProtected(*pset);
 }
 
 /**
@@ -215,12 +205,5 @@ dnf_goal_add_protected(HyGoal goal, DnfPackageSet *pset)
 void
 dnf_goal_set_protected(HyGoal goal, DnfPackageSet *pset)
 {
-    goal->protected_pkgs = free_map_fully(goal->protected_pkgs);
-
-    if (pset) {
-        Map *nprotected = dnf_packageset_get_map(pset);
-
-        goal->protected_pkgs = (Map*)g_malloc0(sizeof(Map));
-        map_init_clone(goal->protected_pkgs, nprotected);
-    }
+    goal->setProtected(*pset);
 }

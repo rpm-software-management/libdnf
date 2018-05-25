@@ -710,6 +710,11 @@ Query::getResult() noexcept
 }
 
 const Map * Query::getResult() const noexcept { return pImpl->result->getMap(); }
+PackageSet * Query::getResultPset()
+{
+    pImpl->apply();
+    return pImpl->result.get();
+}
 bool Query::getApplied() const noexcept { return pImpl->applied; }
 DnfSack * Query::getSack() { return pImpl->sack; }
 
@@ -1825,19 +1830,8 @@ Query::Impl::apply()
 GPtrArray *
 Query::run()
 {
-    GPtrArray *plist = hy_packagelist_create();
-    apply();
-
-    auto resultPset = pImpl->result.get();
-
-    Id id = -1;
-    while (true) {
-        id = resultPset->next(id);
-        if (id == -1)
-            break;
-        g_ptr_array_add(plist, dnf_package_new(pImpl->sack, id));
-    }
-    return plist;
+    pImpl->apply();
+    return packageSet2GPtrArray(pImpl->result.get());
 }
 
 const DnfPackageSet *
@@ -2039,6 +2033,13 @@ Query::getAdvisoryPkgs(int cmpType, std::vector<AdvisoryPkg> & advisoryPkgs)
             ++low;
         }
     }
+}
+
+void
+Query::filterUserInstalled(const libdnf::Swdb &swdb)
+{
+    addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    swdb.filterUserinstalled(*getResultPset());
 }
 
 }
