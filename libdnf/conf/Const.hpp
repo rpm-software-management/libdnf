@@ -35,7 +35,8 @@ const std::vector<std::string> GROUP_PACKAGE_TYPES{"mandatory", "default", "cond
 const std::vector<std::string> INSTALLONLYPKGS{"kernel", "kernel-PAE",
                  "installonlypkg(kernel)",
                  "installonlypkg(kernel-module)",
-                 "installonlypkg(vm)"};
+                 "installonlypkg(vm)",
+                 "multiversion(kernel)"};
 
 constexpr const char * BUGTRACKER="https://bugzilla.redhat.com/enter_bug.cgi?product=Fedora&component=dnf";
 
