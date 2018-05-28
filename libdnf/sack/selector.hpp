@@ -24,6 +24,7 @@
 #include <memory>
 
 #include "../hy-selector.h"
+#include "../goal/DnfQueue.hpp"
 #include "query.hpp"
 
 namespace libdnf {
@@ -31,6 +32,7 @@ namespace libdnf {
 struct Selector {
 public:
     Selector(DnfSack* sack);
+    Selector(Selector && src);
     ~Selector();
     DnfSack * getSack();
     const Filter * getFilterArch() const;
@@ -40,7 +42,7 @@ public:
     const Filter * getFilterPkg() const;
     const Filter * getFilterProvides() const;
     const Filter * getFilterReponame() const;
-    int set(int keyname, int cmp_type, const DnfPackageSet * pset);
+    int set(int keyname, const DnfPackageSet * pset);
     int set(int keyname, int cmp_type, const char *match);
     GPtrArray * matches();
 private:

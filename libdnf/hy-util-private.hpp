@@ -23,7 +23,7 @@
 #ifndef HY_UTIL_PRIVATE_HPP
 #define HY_UTIL_PRIVATE_HPP
 
-gboolean hy_is_glob_pattern(const char *pattern);
+bool hy_is_glob_pattern(const char *pattern);
 
 /**
  * @brief Test if pattern is file path

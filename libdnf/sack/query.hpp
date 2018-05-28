@@ -37,6 +37,7 @@ union _Match {
     DnfPackageSet *pset;
     Id reldep;
     char *str;
+    Id id;
 };
 
 struct Filter {
@@ -44,6 +45,7 @@ public:
     Filter(int keyname, int cmp_type, int match);
     Filter(int keyname, int cmp_type, int nmatches, const int *matches);
     Filter(int keyname, int cmp_type, const DnfPackageSet * pset);
+    Filter(int keyname, Id id);
     Filter(int keyname, int cmp_type, const Dependency * reldep);
     Filter(int keyname, int cmp_type, const DependencyContainer * reldeplist);
     Filter(int keyname, int cmp_type, const char *match);

@@ -554,6 +554,17 @@ Filter::Filter(int keyname, int cmp_type, const DnfPackageSet *pset) : pImpl(new
     match_in.pset = new libdnf::PackageSet(*pset);
     pImpl->matches.push_back(match_in);
 }
+
+Filter::Filter(int keyname, Id id)
+{
+    pImpl->keyname = keyname;
+    pImpl->cmpType = HY_EQ;
+    pImpl->matchType = _HY_ID;
+    _Match match_in;
+    match_in.num = id;
+    pImpl->matches.push_back(match_in);
+}
+
 Filter::Filter(int keyname, int cmp_type, const Dependency * reldep) : pImpl(new Impl)
 {
     pImpl->keyname = keyname;

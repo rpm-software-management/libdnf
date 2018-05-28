@@ -40,7 +40,7 @@ typedef struct Selector * HySelector;
 #endif
 
 typedef struct _HyRepo * HyRepo;
-typedef char * HySubject;
+typedef const char * HySubject;
 
 typedef const unsigned char HyChecksum;
 

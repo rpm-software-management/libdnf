@@ -278,6 +278,20 @@ install(_GoalObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
+installSpec(_GoalObject *self, PyObject *args, PyObject *kwds)
+{
+    const char *kwlist[] = {"pkg_spec", "optional", NULL};
+    int clean_deps = 0, check_installed = 0, optional = 0;
+    const char *pkg_spec = NULL;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "si", (char**) kwlist,
+                                     &pkg_spec, &optional))
+        return NULL;
+    std::vector<const char *> installspecs{pkg_spec};
+    self->goal->install(installspecs, optional, false, true, NULL, NULL, NULL);
+    Py_RETURN_FALSE;
+}
+
+static PyObject *
 upgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
     DnfPackage *pkg = NULL;
@@ -602,6 +616,8 @@ static struct PyMethodDef goal_methods[] = {
     {"erase",                (PyCFunction)erase,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"install",                (PyCFunction)install,
+     METH_VARARGS | METH_KEYWORDS, NULL},
+    {"install_spec",                (PyCFunction)installSpec,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"upgrade",                (PyCFunction)upgrade,
      METH_VARARGS | METH_KEYWORDS, NULL},

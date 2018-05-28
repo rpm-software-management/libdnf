@@ -73,6 +73,13 @@ private:
 };
 
 Selector::Selector(DnfSack* sack) : pImpl(new Impl) { pImpl->sack = sack; }
+Selector::Selector(Selector && src)
+{
+    pImpl = std::move(src.pImpl);
+    src.pImpl.reset(new Impl);
+    src.pImpl->sack = pImpl->sack;
+}
+
 Selector::~Selector() = default;
 
 DnfSack *Selector::getSack() { return pImpl->sack; }
@@ -85,12 +92,24 @@ const Filter *Selector::getFilterProvides() const { return pImpl->filterProvides
 const Filter *Selector::getFilterReponame() const { return pImpl->filterReponame.get(); }
 
 int
-Selector::set(int keyname, int cmp_type, const DnfPackageSet *pset)
+Selector::set(int keyname, const DnfPackageSet *pset)
 {
     if (pImpl->filterName.get() || pImpl->filterProvides.get() || pImpl->filterFile.get()) {
         return DNF_ERROR_BAD_SELECTOR;
     }
-    pImpl->filterPkg.reset(new Filter(keyname, cmp_type, pset));
+    dnf_sack_recompute_considered(pImpl->sack);
+    dnf_sack_make_provides_ready(pImpl->sack);
+    Id id = -1;
+    DnfQueue pkgs;
+    while(true) {
+        id = pset->next(id);
+        if (id == -1)
+            break;
+        pkgs.pushBack(id);
+    }
+    Id what = pool_queuetowhatprovides(dnf_sack_get_pool(pImpl->sack),
+        const_cast<Queue *>(pkgs.getQueue()));
+    pImpl->filterPkg.reset(new Filter(keyname, what));
 
     return 0;
 }

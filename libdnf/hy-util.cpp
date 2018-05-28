@@ -151,10 +151,10 @@ hy_detect_arch(char **arch)
 
 #undef MAX_ARCH_LENGTH
 
-gboolean
+bool
 hy_is_glob_pattern(const char *pattern)
 {
-    return strpbrk(pattern, "*[?") != NULL;
+    return strpbrk(pattern, "*[?") != nullptr;
 }
 
 int

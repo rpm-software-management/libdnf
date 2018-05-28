@@ -32,15 +32,20 @@ extern "C" {
 }
 
 #include "Goal.hpp"
+#include "DnfQueue.hpp"
 #include "../hy-goal-private.hpp"
 #include "../hy-iutil-private.hpp"
 #include "../hy-package-private.hpp"
+#include "../hy-query-private.hpp"
 #include "../dnf-sack-private.hpp"
+#include "../nevra.hpp"
+#include "../hy-util-private.hpp"
 #include "../sack/packageset.hpp"
 #include "../sack/query.hpp"
 #include "../sack/selector.hpp"
 #include "../utils/bgettext/bgettext-lib.h"
 #include "../utils/tinyformat/tinyformat.hpp"
+#include "../sack/Solution.hpp"
 
 enum {NO_MATCH=1, MULTIPLE_MATCH_OBJECTS, INCORECT_COMPARISON_TYPE};
 
@@ -48,6 +53,14 @@ static std::map<int, const char *> ERROR_DICT = {
    {MULTIPLE_MATCH_OBJECTS, M_("Ill-formed Selector, presence of multiple match objects in the filter")},
    {INCORECT_COMPARISON_TYPE, M_("Ill-formed Selector used for the operation, incorrect comparison type")}
 };
+
+static void
+addObseletes(libdnf::PackageSet & pset)
+{
+    libdnf::Query obsoletesQuery(pset.getSack());
+    obsoletesQuery.addFilter(HY_PKG_OBSOLETES, HY_EQ, &pset);
+    pset += *obsoletesQuery.runSet();
+}
 
 static void
 packageToJob(DnfPackage *package, Queue *job, int solver_action)
@@ -160,27 +173,14 @@ filterFileToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 }
 
 static int
-filterPkgToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
+filterPkgToJob(const libdnf::Filter *f, Queue *job)
 {
     if (!f)
         return 0;
     if (f->getMatches().size() != 1)
         return MULTIPLE_MATCH_OBJECTS;
-    Pool *pool = dnf_sack_get_pool(sack);
-    DnfPackageSet *pset = f->getMatches()[0].pset;
-    Id what;
-    Id id = -1;
-    Queue pkgs;
-    queue_init(&pkgs);
-    while(true) {
-        id = pset->next(id);
-        if (id == -1)
-            break;
-        queue_push(&pkgs, id);
-    }
-    what = pool_queuetowhatprovides(pool, &pkgs);
+    Id what = f->getMatches()[0].id;
     queue_push2(job, SOLVER_SOLVABLE_ONE_OF|SOLVER_SETARCH|SOLVER_SETEVR, what);
-    queue_free(&pkgs);
     return 0;
 }
 
@@ -320,7 +320,7 @@ sltrToJob(const HySelector sltr, Queue *job, int solver_action)
 
     dnf_sack_recompute_considered(sack);
     dnf_sack_make_provides_ready(sack);
-    ret = filterPkgToJob(sack, sltr->getFilterPkg(), &job_sltr);
+    ret = filterPkgToJob(sltr->getFilterPkg(), &job_sltr);
     if (ret)
         goto finish;
     ret = filterNameToJob(sack, sltr->getFilterName(), &job_sltr);
@@ -353,6 +353,16 @@ sltrToJob(const HySelector sltr, Queue *job, int solver_action)
         throw libdnf::Goal::Exception(TM_(ERROR_DICT[ret], 1), DNF_ERROR_BAD_SELECTOR);
     }
 }
+
+static bool
+hasArchWithGlob(libdnf::Nevra * nevra)
+{
+    if (nevra && !nevra->getArch().empty()) {
+        return hy_is_glob_pattern(nevra->getArch().c_str());
+    }
+    return false;
+}
+
 
 namespace libdnf {
 
@@ -514,6 +524,10 @@ private:
     char * describeProtectedRemoval();
     DnfPackageSet * brokenDependencyAllPkgs(DnfPackageState pkg_type);
     int countProblems();
+    bool installMultilibPolicy(const char * pattern, Query & query, const char ** repoNames,
+        bool obsoletes, bool optional, DnfQueue & samenameTmp, Goal * self);
+    std::vector<Selector> getBestSelectors(const char * pattern, Query & query,
+        const char ** repoNames, bool obsoletes, DnfQueue & samenameTmp);
 
 };
 
@@ -603,7 +617,7 @@ Goal::distupgrade()
     Query query(sack);
     query.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
     Selector selector(sack);
-    selector.set(HY_PKG, HY_EQ, query.runSet());
+    selector.set(HY_PKG, query.runSet());
     sltrToJob(&selector, &pImpl->staging, SOLVER_DISTUPGRADE);
 }
 
@@ -660,6 +674,45 @@ Goal::install(HySelector sltr, bool optional)
 }
 
 void
+Goal::install(std::vector<const char *> installSpecs, bool optional, bool multilibPolicy,
+    bool obsoletes, const char ** repoNames, libdnf::Query * securitySet, HyForm *forms)
+{
+    DnfSack * sack = pImpl->sack;
+    std::unique_ptr<Nevra> nevra;
+    std::unique_ptr<Query> query;
+    Solution solution;
+    DnfQueue samenameTmp;
+    PackageSet samenameArchTemp(sack);
+    
+    for (auto installSpec: installSpecs) {
+        if (!solution.getBestSolution(installSpec, sack, forms, false, true, true, true, false)) {
+            // TODO Report ICASE hints
+            // raise dnf.exceptions.MarkingError(_('No match for argument: %s') % pkg_spec, pkg_spec)
+            continue;
+        }
+        if (securitySet) {
+            query->queryUnion(*securitySet);
+            if (query->empty())
+                // TODO Report security result
+                continue;
+        }
+        nevra.reset(solution.releaseNevra());
+        query.reset(solution.releaseQuery());
+        bool addObsoletes =  obsoletes && nevra && nevra->hasJustName();
+        if (multilibPolicy || hasArchWithGlob(nevra.get())) {
+            pImpl->installMultilibPolicy(installSpec, *query, repoNames, addObsoletes, optional,
+                samenameTmp, this);
+        } else {
+            auto selectors = pImpl->getBestSelectors(installSpec, *query, repoNames, addObsoletes,
+                samenameTmp);
+            for (auto & selector: selectors) {
+                install(&selector, optional);
+            }
+        }
+    }
+}
+
+void
 Goal::upgrade()
 {
     pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | DNF_UPGRADE_ALL);
@@ -678,6 +731,114 @@ Goal::upgrade(HySelector sltr)
 {
     pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | DNF_UPGRADE);
     sltrToJob(sltr, &pImpl->staging, SOLVER_UPDATE);
+}
+
+void
+Goal::upgrade(std::vector<const char *> installSpecs, bool obsoletes, const char ** repoNames, libdnf::Query * securitySet, HyForm *forms)
+{
+    DnfSack * sack = pImpl->sack;
+    std::unique_ptr<Nevra> nevra;
+    std::unique_ptr<Query> query;
+    
+    Query installed(sack);
+    installed.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    installed.apply();
+    Solution solution;
+    
+    for (auto installSpec: installSpecs) {
+        if (!solution.getBestSolution(installSpec, sack, forms, FALSE, TRUE, TRUE, TRUE, FALSE)) {
+        // TODO Report ICASE hints
+        //if (query->empty()) {
+            //         raise dnf.exceptions.MarkingError(_('No match for argument: %s') % pkg_spec, pkg_spec)
+            continue;
+        }
+        nevra.reset(solution.releaseNevra());
+        query.reset(solution.releaseQuery());
+        bool specIsGlogPattern = hy_is_glob_pattern(installSpec);
+        // wildcard shouldn't print not installed packages
+        // only solution with nevra.name provide packages with same name
+        if (!specIsGlogPattern && nevra) {
+            Query testInstalledQuery(installed);
+            testInstalledQuery.addFilter(HY_PKG_NAME, HY_EQ, nevra->getName().c_str());
+            if (testInstalledQuery.empty()) {
+                // msg = _('Package %s available, but not installed.')
+                // logger.warning(msg, pkg_name)
+                // raise dnf.exceptions.PackagesNotInstalledError(
+                // _('No match for argument: %s') % pkg_spec, pkg_spec)
+                continue;
+            }
+            if (!nevra->getArch().empty()) {
+                testInstalledQuery.addFilter(HY_PKG_ARCH, HY_EQ, nevra->getArch().c_str());
+                if (testInstalledQuery.empty()) {
+                    // msg = _('Package %s available, but installed for different architecture.')
+                    //         logger.warning(msg, "{}.{}".format(pkg_name, solution['nevra'].arch))
+                }
+            }
+        }
+        if (obsoletes && nevra && nevra->hasJustName()) {
+            Query obsoletesQuery(sack);
+            obsoletesQuery.addFilter(HY_PKG_OBSOLETES, HY_EQ, query->runSet());
+            query->queryUnion(obsoletesQuery);
+        }
+        // provide only available packages to solver otherwise selection of available
+        // possibilities will be ignored
+        query->addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+        if (securitySet) {
+            query->queryUnion(*securitySet);
+            if (query->empty()) {
+                // report like self._merge_update_filters(q, pkg_spec=pkg_spec)
+                continue;
+            }
+        }
+        if (repoNames) {
+            query->addFilter(HY_PKG_REPONAME, HY_EQ, repoNames);
+            if (query->empty()) {
+                // report raise dnf.exceptions.MarkingError(_('No match for argument: %s') % pkg_spec, pkg_spec)
+                continue;
+            }
+        }
+        Selector selector(sack);
+        selector.set(HY_PKG, query->runSet());
+        upgrade(&selector);
+        
+//                 if q:
+//             wildcard = dnf.util.is_glob_pattern(pkg_spec)
+//             # wildcard shouldn't print not installed packages
+//             # only solution with nevra.name provide packages with same name
+//             if not wildcard and solution['nevra'] and solution['nevra'].name:
+//                 installed = self.sack.query().installed()
+//                 pkg_name = solution['nevra'].name
+//                 installed.filterm(name=pkg_name).apply()
+//                 if not installed:
+//                     msg = _('Package %s available, but not installed.')
+//                     logger.warning(msg, pkg_name)
+//                     raise dnf.exceptions.PackagesNotInstalledError(
+//                         _('No match for argument: %s') % pkg_spec, pkg_spec)
+//                 if solution['nevra'].arch and not dnf.util.is_glob_pattern(solution['nevra'].arch):
+//                     if not installed.filter(arch=solution['nevra'].arch):
+//                         msg = _('Package %s available, but installed for different architecture.')
+//                         logger.warning(msg, "{}.{}".format(pkg_name, solution['nevra'].arch))
+// 
+//             if self.conf.obsoletes and solution['nevra'] and solution['nevra'].has_just_name():
+//                 obsoletes = self.sack.query().filterm(obsoletes=q.installed())
+//                 # provide only available packages to solver otherwise selection of available
+//                 # possibilities will be ignored
+//                 q = q.available()
+//                 # add obsoletes into transaction
+//                 q = q.union(obsoletes)
+//             else:
+//                 q = q.available()
+//             if reponame is not None:
+//                 q.filterm(reponame=reponame)
+//             q = self._merge_update_filters(q, pkg_spec=pkg_spec)
+//             if q:
+//                 sltr = dnf.selector.Selector(self.sack)
+//                 sltr.set(pkg=q)
+//                 self._goal.upgrade(select=sltr)
+//             return 1
+// 
+//         raise dnf.exceptions.MarkingError(_('No match for argument: %s') % pkg_spec, pkg_spec)
+    }
 }
 
 void
@@ -894,6 +1055,139 @@ Goal::writeDebugdata(const char *dir)
                                       absdir, strerror(errno));
         throw Goal::Exception(msg, DNF_ERROR_FILE_INVALID);
     }
+}
+
+bool
+Goal::Impl::installMultilibPolicy(const char * pattern, Query & query, const char ** repoNames,
+    bool obsoletes, bool optional, DnfQueue & samenameTmp, Goal * self)
+{
+    Pool * pool = dnf_sack_get_pool(sack);
+    if (repoNames) {
+        Query installed(query);
+        installed.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+        query.addFilter(HY_PKG_REPONAME, HY_EQ, repoNames);
+        if (query.empty()) {
+            // report raise dnf.exceptions.MarkingError(_('No match for argument: %s') % pkg_spec, pkg_spec)
+            return false;
+        }
+        query.queryUnion(installed);
+    }
+    Id name = 0;
+    Id arch = 0;
+    samenameTmp.clear();
+    Solvable * considered;
+    hy_query_to_name_arch_ordered_queue(&query, &samenameTmp);
+    PackageSet samenameArchTemp(sack);
+    for (int i = 0; i < samenameTmp.size(); ++i) {
+        Id package_id = samenameTmp.get(i);
+        considered = pool_id2solvable(pool, package_id);
+        if (pool->installed == considered->repo) {
+            // report installed
+        }
+        if (name == 0) {
+            name = considered->name;
+            arch = considered->arch;
+        } else if ((name != considered->name) || (arch != considered->arch)) {
+            if (obsoletes) {
+                addObseletes(samenameArchTemp);
+            }
+            Selector selector(sack);
+            selector.set(HY_PKG, &samenameArchTemp);
+            self->install(&selector, optional);
+            samenameArchTemp.clear();
+            name = considered->name;
+            arch = considered->arch;
+        }
+        samenameArchTemp.set(package_id);
+    }
+    if (name) {
+        if (obsoletes) {
+            addObseletes(samenameArchTemp);
+        }
+        Selector selector(sack);
+        selector.set(HY_PKG, &samenameArchTemp);
+        self->install(&selector, optional);
+    }
+    return true;
+}
+
+std::vector<Selector>
+Goal::Impl::getBestSelectors(const char * pattern, Query & query, const char ** repoNames,
+    bool obsoletes, DnfQueue & samenameTmp)
+{
+    Pool * pool = dnf_sack_get_pool(sack);
+    if (!hy_is_file_pattern(pattern) && hy_is_glob_pattern(pattern)) {
+        Query installed(query);
+        installed.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+        if (repoNames) {
+            query.addFilter(HY_PKG_REPONAME, HY_EQ, repoNames);
+        }
+        Query available(query);
+        available.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+        auto lenAvailable = available.size();
+        const char * pkgNames[lenAvailable + 1];
+        Id id = -1;
+        auto availablePset = available.runSet();
+        int index = 0;
+        while ((id = availablePset->next(id)) != -1) {
+            Solvable * considered = pool_id2solvable(pool, id);
+            pkgNames[index++] = pool_id2str(pool, considered->name);
+        }
+        pkgNames[lenAvailable] = NULL;
+        installed.addFilter(HY_PKG_NAME, HY_EQ, pkgNames);
+        // TODO: if reports: self._report_installed(installed)
+        available.queryUnion(installed);
+        hy_query_to_name_ordered_queue(&available, &samenameTmp);
+        Solvable *considered;
+        Id name = 0;
+        std::vector<Selector> outputSet;
+        PackageSet pset(sack);
+        for (int i = 0; i < samenameTmp.size(); ++i) {
+            Id package_id = samenameTmp.get(i);
+            considered = pool_id2solvable(pool, package_id);
+            if (name == 0) {
+                name = considered->name;
+            } else if (name != considered->name) {
+                if (obsoletes) {
+                    addObseletes(pset);
+                }
+                Selector selector(sack);
+                selector.set(HY_PKG, &pset);
+                outputSet.push_back(std::move(selector));
+                name = considered->name;
+                pset.clear();
+            }
+            pset.set(package_id);
+        }
+        if (name) {
+            if (obsoletes) {
+                addObseletes(pset);
+            }
+            Selector selector(sack);
+            selector.set(HY_PKG, &pset);
+            outputSet.push_back(std::move(selector));
+        }
+        return outputSet;
+    }
+    if (obsoletes) {
+        addObseletes(*query.getResultPset());
+    }
+    Query installed(query);
+    installed.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+//  TODO:      if reports:
+//                 self._report_installed(installed)
+    if (repoNames) {
+        query.addFilter(HY_PKG_REPONAME, HY_EQ, repoNames);
+    }
+    if (query.empty()) {
+        return {};
+    }
+    query.queryUnion(installed);
+    std::vector<Selector> outputSet;
+    Selector selector(sack);
+    selector.set(HY_PKG, query.runSet());
+    outputSet.push_back(std::move(selector));
+    return outputSet;
 }
 
 PackageSet

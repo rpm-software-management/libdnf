@@ -22,10 +22,12 @@
 #define __GOAL_HPP
 
 #include <memory>
+#include <vector>
 
 #include "../dnf-types.h"
 #include "../hy-goal.h"
 #include "../hy-package.h"
+#include "../hy-subject.h"
 
 namespace libdnf {
 
@@ -77,8 +79,10 @@ public:
     * @param optional Set true for optional tasks, false for strict tasks
     */
     void install(HySelector sltr, bool optional);
+    void install(std::vector<const char *> installSpecs, bool optional, bool multilibPolicy, bool obsoletes, const char ** repoNames, libdnf::Query * securitySet, HyForm *forms);
     void upgrade();
     void upgrade(DnfPackage *new_pkg);
+    void upgrade(std::vector<const char *> installSpecs, bool obsoletes, const char ** repoNames, libdnf::Query * securitySet, HyForm *forms);
 
     /**
     * @brief If selector ill formed, it rises std::runtime_error()

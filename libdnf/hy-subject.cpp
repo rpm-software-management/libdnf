@@ -60,13 +60,13 @@ const HyModuleForm HY_MODULE_FORMS_MOST_SPEC[] = {
 HySubject
 hy_subject_create(const char * pattern)
 {
-    return g_strdup(pattern);
+    return pattern;
 }
 
 void
 hy_subject_free(HySubject subject)
 {
-    g_free(subject);
+    return;
 }
 
 /* Given a subject, attempt to create a query choose the first one, and update

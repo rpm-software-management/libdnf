@@ -37,6 +37,7 @@ enum _match_type {
     _HY_PKG,
     _HY_RELDEP,
     _HY_STR,
+    _HY_ID,
 };
 
 int hy_filter_unneeded(HyQuery query, const libdnf::Swdb &swdb, const gboolean debug_solver);
