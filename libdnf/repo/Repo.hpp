@@ -38,6 +38,8 @@ namespace libdnf {
 */
 class RepoCB {
 public:
+    virtual void start(const char *what) {}
+    virtual void end() {}
     virtual int progress(double totalToDownload, double downloaded);
     virtual void fastestMirror(int stage, const char *msg);
     virtual int handleMirrorFailure(const char *msg, const char *url, const char *metadata);

@@ -18,6 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#define METADATA_RELATIVE_DIR "repodata"
+#define PACKAGES_RELATIVE_DIR "packages"
+#define METALINK_FILENAME "metalink.xml"
+#define MIRRORLIST_FILENAME  "mirrorlist"
+#define RECOGNIZED_CHKSUMS {"sha512", "sha256"}
+
 #define ASCII_LOWERCASE "abcdefghijklmnopqrstuvwxyz"
 #define ASCII_UPPERCASE "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 #define ASCII_LETTERS ASCII_LOWERCASE ASCII_UPPERCASE
@@ -159,6 +165,9 @@ public:
     std::map<std::string, std::string> substitutions;
 
     std::unique_ptr<RepoCB> callbacks;
+
+private:
+    bool lrHandlePerform(LrHandle * handle, LrResult * result);
 };
 
 /**
@@ -279,6 +288,9 @@ LrHandle * Repo::Impl::lrHandleInitBase()
     lr_handle_setopt(h, NULL, LRO_YUMDLIST, dlist);
     lr_handle_setopt(h, NULL, LRO_INTERRUPTIBLE, 1L);
     lr_handle_setopt(h, NULL, LRO_GPGCHECK, conf->repo_gpgcheck().getValue());
+    lr_handle_setopt(h, NULL, LRO_MAXMIRRORTRIES, 0);
+    lr_handle_setopt(h, NULL, LRO_MAXPARALLELDOWNLOADS,
+                     conf->max_parallel_downloads().getValue());
 
     LrUrlVars * vars = NULL;
     vars = lr_urlvars_set(vars, "group_gz", "group");
@@ -296,10 +308,10 @@ LrHandle * Repo::Impl::lrHandleInitLocal()
         vars = lr_urlvars_set(vars, item.first.c_str(), item.second.c_str());
     lr_handle_setopt(h, NULL, LRO_VARSUB, vars);
     auto cachedir = getCachedir();
-    std::cout << "cachedir: " << cachedir << std::endl;
+    //std::cout << "cachedir: " << cachedir << std::endl;
+    lr_handle_setopt(h, NULL, LRO_DESTDIR, cachedir.c_str());
     const char *urls[] = {cachedir.c_str(), NULL};
     lr_handle_setopt(h, NULL, LRO_URLS, urls);
-    lr_handle_setopt(h, NULL, LRO_DESTDIR, cachedir.c_str());
     lr_handle_setopt(h, NULL, LRO_LOCAL, 1L);
     return h;
 }
@@ -308,9 +320,6 @@ LrHandle *
 Repo::Impl::lrHandleInitRemote(const char *destdir, bool mirrorSetup)
 {
     LrHandle *h = lrHandleInitBase();
-    lr_handle_setopt(h, NULL, LRO_MAXMIRRORTRIES, 0);
-    lr_handle_setopt(h, NULL, LRO_MAXPARALLELDOWNLOADS,
-                     conf->max_parallel_downloads().getValue());
 
     LrUrlVars * vars = NULL;
     for (const auto & item : substitutions)
@@ -318,6 +327,12 @@ Repo::Impl::lrHandleInitRemote(const char *destdir, bool mirrorSetup)
     lr_handle_setopt(h, NULL, LRO_VARSUB, vars);
 
     lr_handle_setopt(h, NULL, LRO_DESTDIR, destdir);
+
+    auto & ipResolve = conf->ip_resolve().getValue();
+    if (ipResolve == "ipv4")
+        lr_handle_setopt(h, NULL, LRO_IPRESOLVE, LR_IPRESOLVE_V4);
+    else if (ipResolve == "ipv6")
+        lr_handle_setopt(h, NULL, LRO_IPRESOLVE, LR_IPRESOLVE_V6);
 
     enum class Source {NONE, METALINK, MIRRORLIST} source{Source::NONE};
     std::string tmp;
@@ -428,9 +443,27 @@ Repo::Impl::lrHandleInitRemote(const char *destdir, bool mirrorSetup)
     return h;
 }
 
-bool Repo::Impl::loadCache()
+bool Repo::Impl::lrHandlePerform(LrHandle * handle, LrResult * result)
 {
     GError *err = NULL;
+
+    if (callbacks)
+        callbacks->start(
+            !conf->name().getValue().empty() ? conf->name().getValue().c_str() :
+            (!id.empty() ? id.c_str() : "unknown")
+        );
+    lr_handle_perform(handle, result, &err);
+    if (callbacks)
+        callbacks->end();
+    if (err) {
+        g_error_free(err);
+        return false;
+    }
+    return true;
+}
+
+bool Repo::Impl::loadCache()
+{
     char **mirrors;
     LrYumRepo *yum_repo;
     LrYumRepoMd *yum_repomd;
@@ -439,10 +472,12 @@ bool Repo::Impl::loadCache()
     std::unique_ptr<LrResult, decltype(&lr_result_free)> r(lr_result_init(), &lr_result_free);
 
     // Fetch data
+    GError *err = NULL;
     lr_handle_perform(h.get(), r.get(), &err);
     if (err) {
         return false;
     }
+
     lr_handle_getinfo(h.get(), NULL, LRI_MIRRORS, &mirrors);
     lr_result_getinfo(r.get(), NULL, LRR_YUM_REPO, &yum_repo);
     lr_result_getinfo(r.get(), NULL, LRR_YUM_REPOMD, &yum_repomd);
@@ -475,7 +510,6 @@ bool Repo::Impl::loadCache()
 bool Repo::Impl::canReuse()
 {
     LrYumRepo *yum_repo;
-    GError *err = NULL;
     char tmpdir[] = "/tmp/tmpdir.XXXXXX";
     mkdtemp(tmpdir);
     const char *dlist[] = LR_YUM_REPOMDONLY;
@@ -487,7 +521,7 @@ bool Repo::Impl::canReuse()
 
     lr_handle_setopt(h.get(), NULL, LRO_YUMDLIST, dlist);
 
-    lr_handle_perform(h.get(), r.get(), &err);
+    lrHandlePerform(h.get(), r.get());
     lr_result_getinfo(r.get(), NULL, LRR_YUM_REPO, &yum_repo);
 
     const char *ock = cksum(repomd_fn.c_str(), G_CHECKSUM_SHA256);
@@ -500,7 +534,6 @@ bool Repo::Impl::canReuse()
 
 void Repo::Impl::fetch()
 {
-    GError *err = NULL;
     char tmpdir[] = "/var/tmp/tmpdir.XXXXXX";
     mkdtemp(tmpdir);
     std::string tmprepodir = tmpdir + std::string("/repodata");
@@ -510,7 +543,7 @@ void Repo::Impl::fetch()
                                                            &lr_handle_free);
     std::unique_ptr<LrResult, decltype(&lr_result_free)> r(lr_result_init(),
                                                            &lr_result_free);
-    lr_handle_perform(h.get(), r.get(), &err);
+    lrHandlePerform(h.get(), r.get());
 
     dnf_remove_recursive(repodir.c_str(), NULL);
     g_mkdir_with_parents(repodir.c_str(), 0);
@@ -522,21 +555,21 @@ void Repo::Impl::fetch()
 
 bool Repo::Impl::load()
 {
-    printf("check if cache present\n");
+    //printf("check if cache present\n");
     if (loadCache()) {
         if (!expired()) {
-            printf("using cache, age: %is\n", getAge());
+            //printf("using cache, age: %is\n", getAge());
             return false;
         }
         printf("try to reuse\n");
         if (canReuse()) {
-            printf("reusing expired cache\n");
+            //printf("reusing expired cache\n");
             resetTimestamp();
             return false;
         }
     }
 
-    printf("fetch\n");
+    //printf("fetch\n");
     fetch();
     loadCache();
     return true;
