@@ -30,6 +30,21 @@
 namespace libdnf {
 
 /**
+* @class RepoCB
+*
+* @brief Base class for Repo callbacks
+*
+* User implements repo callbacks by inheriting this class and overriding its methods.
+*/
+class RepoCB {
+public:
+    virtual int progress(double totalToDownload, double downloaded);
+    virtual void fastestMirror(int stage, const char *msg);
+    virtual int handleMirrorFailure(const char *msg, const char *url, const char *metadata);
+    virtual ~RepoCB() = default;
+};
+
+/**
 * @class Repo
 *
 * @brief Package repository
@@ -40,6 +55,7 @@ namespace libdnf {
 */
 struct Repo {
 public:
+
     /**
     * @brief Verify repo ID
     *
@@ -55,6 +71,8 @@ public:
     * @param conf   configuration to use
     */
     Repo(const std::string & id, std::unique_ptr<ConfigRepo> && conf);
+
+    void setCallbacks(std::unique_ptr<RepoCB> && callbacks);
 
     ConfigRepo * getConfig() noexcept;
     const std::string & getId() const noexcept;

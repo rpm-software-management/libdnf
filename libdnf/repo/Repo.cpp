@@ -47,6 +47,62 @@
 
 namespace libdnf {
 
+/* Callback stuff */
+
+int RepoCB::progress(double totalToDownload, double downloaded) { return 0; }
+void RepoCB::fastestMirror(int stage, const char * ptr) {}
+int RepoCB::handleMirrorFailure(const char * msg, const char * url, const char * metadata) { return 0; }
+
+static int progressCB(void * data, double totalToDownload, double downloaded)
+{
+    if (!data)
+        return 0;
+    auto cbObject = static_cast<RepoCB *>(data);
+    return cbObject->progress(totalToDownload, downloaded);
+    //LB_CB_ERROR
+    /*std::cout << "Progress total downloaded: " << totalToDownload << "now: " << downloaded << std::endl;
+    return static_cast<int>(LR_CB_OK);*/
+}
+
+static void fastestMirrorCB(void * data, LrFastestMirrorStages stage, void *ptr)
+{
+    if (!data)
+        return;
+    auto cbObject = static_cast<RepoCB *>(data);
+//    std::cout << "Fastestmirror stage: " << stage << "data: " << ptr << std::endl;
+    const char * msg;
+    std::string msgString;
+    if (ptr) {
+        switch (stage) {
+            case LR_FMSTAGE_CACHELOADING:
+            case LR_FMSTAGE_CACHELOADINGSTATUS:
+            case LR_FMSTAGE_STATUS:
+                msg = static_cast<const char *>(ptr);
+                break;
+            case LR_FMSTAGE_DETECTION:
+                msgString = std::to_string(*((long *)ptr));
+                msg = msgString.c_str();
+                break;
+            default:
+                msg = nullptr;
+        }
+    } else
+        msg = nullptr;
+    cbObject->fastestMirror(stage, msg);
+}
+
+static int mirrorFailureCB(void * data, const char * msg, const char * url, const char * metadata)
+{
+    if (!data)
+        return 0;
+    auto cbObject = static_cast<RepoCB *>(data);
+    return cbObject->handleMirrorFailure(msg, url, metadata);
+/*    std::cout << "HMF msg: " << msg << "url: " << url << "metadata: "<< metadata << std::endl;
+    return static_cast<int>(LR_CB_OK);*/
+    //LR_CB_ERROR
+};
+
+
 // Map string from config option proxy_auth_method to librepo LrAuth value
 static constexpr struct {
     const char * name;
@@ -101,6 +157,8 @@ public:
     unsigned char checksum[CHKSUM_BYTES];
     bool useIncludes;
     std::map<std::string, std::string> substitutions;
+
+    std::unique_ptr<RepoCB> callbacks;
 };
 
 /**
@@ -166,6 +224,12 @@ Repo::Repo(const std::string & id, std::unique_ptr<ConfigRepo> && conf)
 : pImpl(new Impl(id, std::move(conf))) {}
 
 Repo::~Repo() = default;
+
+void Repo::setCallbacks(std::unique_ptr<RepoCB> && callbacks)
+{
+    pImpl->callbacks = std::move(callbacks);
+}
+
 
 int Repo::verifyId(const std::string & id)
 {
@@ -262,6 +326,8 @@ Repo::Impl::lrHandleInitRemote(const char *destdir, bool mirrorSetup)
     else if (!conf->mirrorlist().empty() && !(tmp=conf->mirrorlist().getValue()).empty())
         source = Source::MIRRORLIST;
     if (source != Source::NONE) {
+        lr_handle_setopt(h, nullptr, LRO_HMFCB, static_cast<LrHandleMirrorFailureCb>(mirrorFailureCB));
+        lr_handle_setopt(h, nullptr, LRO_PROGRESSDATA, callbacks.get());
         if (mirrorSetup) {
             if (source == Source::METALINK)
                 lr_handle_setopt(h, nullptr, LRO_METALINKURL, tmp.c_str());
@@ -307,6 +373,11 @@ Repo::Impl::lrHandleInitRemote(const char *destdir, bool mirrorSetup)
         lr_handle_setopt(h, nullptr, LRO_SSLCLIENTCERT, conf->sslclientcert().getValue().c_str());
     if (!conf->sslclientkey().getValue().empty())
         lr_handle_setopt(h, nullptr, LRO_SSLCLIENTKEY, conf->sslclientkey().getValue().c_str());
+
+    lr_handle_setopt(h, nullptr, LRO_PROGRESSCB, static_cast<LrProgressCb>(progressCB));
+    lr_handle_setopt(h, nullptr, LRO_PROGRESSDATA, callbacks.get());
+    lr_handle_setopt(h, nullptr, LRO_FASTESTMIRRORCB, static_cast<LrFastestMirrorCb>(fastestMirrorCB));
+    lr_handle_setopt(h, nullptr, LRO_FASTESTMIRRORDATA, callbacks.get());
 
     auto minrate = conf->minrate().getValue();
     lr_handle_setopt(h, nullptr, LRO_LOWSPEEDLIMIT, static_cast<long>(minrate));
