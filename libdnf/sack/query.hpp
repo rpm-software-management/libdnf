@@ -132,21 +132,21 @@ public:
     *
     * @param other p_other:...
     */
-    void queryUnion(Query other);
+    void queryUnion(Query & other);
 
     /**
     * @brief Applies both queries and keep only common packages for both queries in this query
     *
     * @param other p_other:...
     */
-    void queryIntersection(Query other);
+    void queryIntersection(Query & other);
 
     /**
     * @brief Applies both queries and keep only packages in this query that are absent in other query
     *
     * @param other p_other:...
     */
-    void queryDifference(Query other);
+    void queryDifference(Query & other);
 
     /**
     * @brief Applies Query and returns true if any package in the query

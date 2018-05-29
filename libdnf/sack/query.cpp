@@ -1862,7 +1862,7 @@ Query::getIndexItem(int index)
 }
 
 void
-Query::queryUnion(Query other)
+Query::queryUnion(Query & other)
 {
     apply();
     other.apply();
@@ -1870,7 +1870,7 @@ Query::queryUnion(Query other)
 }
 
 void
-Query::queryIntersection(Query other)
+Query::queryIntersection(Query & other)
 {
     apply();
     other.apply();
@@ -1878,7 +1878,7 @@ Query::queryIntersection(Query other)
 }
 
 void
-Query::queryDifference(Query other)
+Query::queryDifference(Query & other)
 {
     apply();
     other.apply();
