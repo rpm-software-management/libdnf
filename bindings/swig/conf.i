@@ -1,4 +1,4 @@
-%module conf
+%module(directors="1") conf
 
 %include <stdint.i>
 %include <std_map.i>
@@ -173,9 +173,15 @@ public:
     Repo(const std::string & id, ConfigRepo * config)
     {
         return new Repo(id, std::unique_ptr<libdnf::ConfigRepo>(config));
-    };
+    }
+    void setCallbacks(RepoCB * callbacks)
+    {
+        self->setCallbacks(std::unique_ptr<libdnf::RepoCB>(callbacks));
+    }
 }
 %ignore libdnf::Repo::Repo;
+%ignore libdnf::Repo::setCallbacks;
+%feature("director") libdnf::RepoCB;
 %include "libdnf/repo/Repo.hpp"
 
 %exception __next__() {
