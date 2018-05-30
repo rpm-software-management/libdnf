@@ -79,53 +79,48 @@ hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, Hy
                              gboolean icase, gboolean with_nevra, gboolean with_provides,
                              gboolean with_filenames, gboolean with_src)
 {
+    libdnf::Query baseQuery(sack);
+    if (!with_src) {
+        baseQuery.addFilter(HY_PKG_ARCH, HY_NEQ, "src");
+    }
+    baseQuery.apply();
     if (with_nevra) {
         libdnf::Nevra nevraObj;
         const auto tryForms = !forms ? HY_FORMS_MOST_SPEC : forms;
         for (std::size_t i = 0; tryForms[i] != _HY_FORM_STOP_; ++i) {
             if (nevraObj.parse(subject, tryForms[i])) {
-                auto query = hy_query_from_nevra(&nevraObj, sack, icase);
-                if (!with_src)
-                    hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
-                if (!hy_query_is_empty(query)) {
+                auto query = std::unique_ptr<libdnf::Query>(new libdnf::Query(baseQuery));
+                query->addFilter(&nevraObj, icase);
+                if (!query->empty()) {
                     *out_nevra = new libdnf::Nevra(std::move(nevraObj));
-                    return query;
+                    return query.release();
                 }
-                hy_query_free(query);
             }
         }
         *out_nevra = nullptr;
         if (!forms) {
-            auto query = hy_query_create(sack);
-            if (!with_src)
-                hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
-            hy_query_filter(query, HY_PKG_NEVRA, HY_GLOB, subject);
-            if (!hy_query_is_empty(query))
-                return query;
-            hy_query_free(query);
+            auto query = std::unique_ptr<libdnf::Query>(new libdnf::Query(baseQuery));
+            query->addFilter(HY_PKG_NEVRA, HY_GLOB, subject);
+            if (!query->empty())
+                return query.release();
         }
     }
 
     if (with_provides) {
-        auto query = hy_query_create(sack);
-        if (!with_src)
-            hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
-        hy_query_filter(query, HY_PKG_PROVIDES, HY_GLOB, subject);
-        if (!hy_query_is_empty(query))
-            return query;
-        hy_query_free(query);
+        auto query = std::unique_ptr<libdnf::Query>(new libdnf::Query(baseQuery));
+        query->addFilter(HY_PKG_PROVIDES, HY_GLOB, subject);
+        if (!query->empty())
+            return query.release();
     }
 
     if (with_filenames && hy_is_file_pattern(subject)) {
-        auto query = hy_query_create(sack);
-        if (!with_src)
-            hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
-        hy_query_filter(query, HY_PKG_FILE, HY_GLOB, subject);
+        auto query = new libdnf::Query(baseQuery);
+        query->addFilter(HY_PKG_FILE, HY_GLOB, subject);
         return query;
     }
 
-    auto query = hy_query_create(sack);
-    hy_query_filter_empty(query);
+    auto query = new libdnf::Query(baseQuery);
+    query->addFilter(HY_PKG_EMPTY, HY_EQ, 1);
     return query;
 }
 
