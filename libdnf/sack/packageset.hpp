@@ -37,6 +37,7 @@ public:
     ~PackageSet();
     Id operator [](unsigned int index) const;
     PackageSet & operator +=(const PackageSet & other);
+    void clear();
     void set(DnfPackage *pkg);
     void set(Id id);
     bool has(DnfPackage *pkg) const;
