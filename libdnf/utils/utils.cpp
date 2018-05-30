@@ -6,6 +6,10 @@
 #include <cstring>
 #include <stdexcept>
 
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+
 std::vector<std::string> string::split(const std::string &source, const char *delimiter, int maxSplit)
 {
     if (source.empty())
@@ -92,6 +96,45 @@ bool string::endsWith(const std::string &source, const std::string &toMatch)
            std::all_of(std::next(source.begin(), source.size() - toMatch.size()), source.end(), [&it](const char &c) {
                return c == *(it++);
            });
+}
+
+bool compareFiles(const char * filePath1, const char * filePath2)
+{
+    static constexpr int BLOCK_SIZE = 4096;
+    bool ret = false;
+    int fd1 = -1;
+    int fd2 = -1;
+    do {
+        if ((fd1 = open(filePath1, 0)) == -1)
+            break;
+        if ((fd2 = open(filePath2, 0)) == -1)
+            break;
+        auto len1 = lseek(fd1, 0, SEEK_END);
+        auto len2 = lseek(fd2, 0, SEEK_END);
+        if (len1 != len2)
+            break;
+        ret = true;
+        if (len1 == 0)
+            break;
+        lseek(fd1, 0, SEEK_SET);
+        lseek(fd2, 0, SEEK_SET);
+        char buf1[BLOCK_SIZE], buf2[BLOCK_SIZE];
+        ssize_t readed;
+        do {
+            readed = read(fd1, buf1, BLOCK_SIZE);
+            auto readed2 = read(fd2, buf2, BLOCK_SIZE);
+            if (readed2 != readed || memcmp(buf1, buf2, readed) != 0) {
+                ret = false;
+                break;
+            }
+        } while (readed > BLOCK_SIZE);
+    } while (false);
+
+    if (fd1 != -1)
+        close(fd1);
+    if (fd2 != -1)
+        close(fd2);
+    return ret;
 }
 
 bool filesystem::exists(const std::string &name)
