@@ -71,9 +71,6 @@ hy_subject_free(HySubject subject)
 /* Given a subject, attempt to create a query choose the first one, and update
  * the query to try to match it.
  *
- * This code is based on rpm-software-management/dnf/subject.py:get_best_query() at git
- * revision: 1d83fdc0280ca4202281ef489afe600e2f51a32a
- *
  * Since then, it was amended to add a `with_src` flag to avoid finding source packages
  * from provides.
  */
@@ -134,18 +131,13 @@ hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, Hy
 
 
 HySelector
-hy_subject_get_best_sltr(HySubject subject, DnfSack *sack, HyForm *forms, bool obsoletes,
-                         const char *reponame,
-                         bool with_src)
+hy_subject_get_best_selector(HySubject subject, DnfSack *sack, HyForm *forms, bool obsoletes,
+    const char *reponame)
 {
     HyNevra nevra{nullptr};
     HyQuery query = hy_subject_get_best_solution(subject, sack, forms, &nevra, FALSE, TRUE, TRUE,
-                                                 TRUE, with_src);
+                                                 TRUE, false);
     if (!hy_query_is_empty(query)) {
-        // This inversion is because in the !with_src case, we already
-        // filtered above.
-        if (with_src)
-            hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
         if (obsoletes && nevra && nevra->hasJustName()) {
             DnfPackageSet *pset;
             pset = hy_query_run_set(query);
@@ -167,13 +159,4 @@ hy_subject_get_best_sltr(HySubject subject, DnfSack *sack, HyForm *forms, bool o
     HySelector selector = hy_query_to_selector(query);
     hy_query_free(query);
     return selector;
-}
-
-/* Given a subject, attempt to create a "selector".
- *
- */
-HySelector
-hy_subject_get_best_selector(HySubject subject, DnfSack *sack, bool with_src)
-{
-    return hy_subject_get_best_sltr(subject, sack, NULL, FALSE, NULL, with_src);
 }
