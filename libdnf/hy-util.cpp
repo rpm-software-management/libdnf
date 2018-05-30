@@ -201,21 +201,3 @@ mtime(const char *filename)
     stat(filename, &st);
     return st.st_mtime;
 }
-
-const char *
-cksum(const char *filename, GChecksumType ctype)
-{
-    // FIXME: Move from glib in the future
-    FILE *fp;
-    if (!(fp = fopen(filename, "rb")))
-        return "";
-    guchar buffer[4096];
-    gssize len = 0;
-    GChecksum *csum = g_checksum_new(ctype);
-    while ((len = fread(buffer, 1, sizeof(buffer), fp)) > 0)
-        g_checksum_update(csum, buffer, len);
-    fclose(fp);
-    gchar *result = g_strdup(g_checksum_get_string(csum));
-    g_checksum_free(csum);
-    return result;
-}
