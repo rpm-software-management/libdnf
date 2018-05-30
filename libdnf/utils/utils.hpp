@@ -13,6 +13,8 @@ bool startsWith(const std::string &source, const std::string &toMatch);
 bool endsWith(const std::string &source, const std::string &toMatch);
 }
 
+bool compareFiles(const char * filePath1, const char * filePath2);
+
 namespace filesystem {
 bool exists (const std::string &name);
 std::vector<std::string> getDirContent(const std::string &dirPath);
