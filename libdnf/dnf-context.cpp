@@ -1739,7 +1739,7 @@ dnf_context_install (DnfContext *context, const gchar *name, GError **error)
     }
 
     subject = hy_subject_create(name);
-    selector = hy_subject_get_best_selector(subject, priv->sack, FALSE);
+    selector = hy_subject_get_best_selector(subject, priv->sack, NULL, FALSE, NULL);
     selector_matches = hy_selector_matches(selector);
     if (selector_matches->len == 0) {
         g_set_error(error,
@@ -1836,7 +1836,8 @@ dnf_context_update(DnfContext *context, const gchar *name, GError **error)
     }
 
     g_auto(HySubject) subject = hy_subject_create(name);
-    g_auto(HySelector) selector = hy_subject_get_best_selector(subject, priv->sack, FALSE);
+    g_auto(HySelector) selector = hy_subject_get_best_selector(subject, priv->sack, NULL, FALSE,
+                                                               NULL);
     g_autoptr(GPtrArray) selector_matches = hy_selector_matches(selector);
     if (selector_matches->len == 0) {
         g_set_error(error,

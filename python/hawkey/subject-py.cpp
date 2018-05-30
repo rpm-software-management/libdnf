@@ -275,11 +275,13 @@ get_best_parser(_SubjectObject *self, PyObject *args, PyObject *kwds, HyNevra *n
     PyObject *with_nevra = NULL;
     PyObject *with_provides = NULL;
     PyObject *with_filenames = NULL;
-    const char *kwlist[] = {"sack", "with_nevra", "with_provides", "with_filenames", "forms", NULL};
+    PyObject *with_src = NULL;
+    const char *kwlist[] = {"sack", "with_nevra", "with_provides", "with_filenames", "forms",
+        "with_src", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O!O!O!O", (char**) kwlist, &sack_Type, &sack,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O!O!O!O!O", (char**) kwlist, &sack_Type, &sack,
         &PyBool_Type, &with_nevra, &PyBool_Type, &with_provides,
-        &PyBool_Type, &with_filenames, &forms)) {
+        &PyBool_Type, &with_filenames, &forms, &PyBool_Type, &with_src)) {
         return NULL;
     }
     std::vector<HyForm> cforms;
@@ -292,10 +294,11 @@ get_best_parser(_SubjectObject *self, PyObject *args, PyObject *kwds, HyNevra *n
     gboolean c_with_nevra = with_nevra == NULL || PyObject_IsTrue(with_nevra);
     gboolean c_with_provides = with_provides == NULL || PyObject_IsTrue(with_provides);
     gboolean c_with_filenames = with_filenames == NULL || PyObject_IsTrue(with_filenames);
+    gboolean c_with_src = with_src == NULL || PyObject_IsTrue(with_src);
     csack = sackFromPyObject(sack);
     HyQuery query = hy_subject_get_best_solution(self->pattern, csack,
         cforms.empty() ? NULL : cforms.data(), nevra, self->icase, c_with_nevra,
-        c_with_provides, c_with_filenames, TRUE);
+        c_with_provides, c_with_filenames, c_with_src);
 
     return queryToPyObject(query, sack, &query_Type);
 }
@@ -332,8 +335,8 @@ get_best_selector(_SubjectObject *self, PyObject *args, PyObject *kwds)
 
     bool c_obsoletes = obsoletes == NULL || PyObject_IsTrue(obsoletes);
     DnfSack *csack = sackFromPyObject(sack);
-    HySelector c_selector = hy_subject_get_best_sltr(self->pattern, csack,
-         cforms.empty() ? NULL : cforms.data(), c_obsoletes, reponame, TRUE);
+    HySelector c_selector = hy_subject_get_best_selector(self->pattern, csack,
+         cforms.empty() ? NULL : cforms.data(), c_obsoletes, reponame);
     PyObject *selector = SelectorToPyObject(c_selector, sack);
     return selector;
 }

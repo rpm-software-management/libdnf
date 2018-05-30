@@ -85,9 +85,8 @@ HyQuery hy_subject_get_best_query(HySubject subject, DnfSack *sack, gboolean wit
 * @param with_src Include source packages
 * @return HySelector
 */
-HySelector hy_subject_get_best_sltr(HySubject subject, DnfSack *sack, HyForm *forms, bool obsoletes,
-                                    const char *reponame, bool with_src);
-HySelector hy_subject_get_best_selector(HySubject subject, DnfSack *sack, bool with_src);
+HySelector hy_subject_get_best_selector(HySubject subject, DnfSack *sack, HyForm *forms,
+    bool obsoletes, const char *reponame);
 
 G_END_DECLS
 
