@@ -38,6 +38,7 @@
 
 #include "bgettext/bgettext-lib.h"
 #include "tinyformat/tinyformat.hpp"
+#include <utils.hpp>
 
 #include <librepo/librepo.h>
 #include <utime.h>
@@ -524,12 +525,9 @@ bool Repo::Impl::canReuse()
     lrHandlePerform(h.get(), r.get());
     lr_result_getinfo(r.get(), NULL, LRR_YUM_REPO, &yum_repo);
 
-    const char *ock = cksum(repomd_fn.c_str(), G_CHECKSUM_SHA256);
-    const char *nck = cksum(yum_repo->repomd, G_CHECKSUM_SHA256);
-
     dnf_remove_recursive(tmpdir, NULL);
 
-    return strcmp(ock, nck) == 0;
+    return compareFiles(repomd_fn.c_str(), yum_repo->repomd) == 0;
 }
 
 void Repo::Impl::fetch()
