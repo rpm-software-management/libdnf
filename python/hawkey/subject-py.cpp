@@ -279,7 +279,7 @@ get_best_parser(_SubjectObject *self, PyObject *args, PyObject *kwds, HyNevra *n
     const char *kwlist[] = {"sack", "with_nevra", "with_provides", "with_filenames", "forms",
         "with_src", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O!O!O!O!O", (char**) kwlist, &sack_Type, &sack,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O!O!O!OO!", (char**) kwlist, &sack_Type, &sack,
         &PyBool_Type, &with_nevra, &PyBool_Type, &with_provides,
         &PyBool_Type, &with_filenames, &forms, &PyBool_Type, &with_src)) {
         return NULL;
