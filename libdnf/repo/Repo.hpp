@@ -58,6 +58,16 @@ public:
 struct Repo {
 public:
 
+    enum class SyncStrategy {
+        // use the local cache even if it's expired. download if there's no cache.
+        LAZY,
+        // use the local cache, even if it's expired, never download.
+        ONLY_CACHE,
+        // try the cache, if it is expired download new md.
+        TRY_CACHE
+    };
+
+
     /**
     * @brief Verify repo ID
     *
@@ -98,13 +108,18 @@ public:
     void initHyRepo(HyRepo hrepo);
     int getAge() const;
     void expire();
-    bool expired() const;
-    int expiresIn();
+    bool isExpired() const;
+    int getExpiresIn() const;
     bool fresh();
     int getTimestamp();
     int getMaxTimestamp();
     GSList * getContentTags();
     GSList * getDistroTags();
+
+    void setRepoFilePath(const std::string & path);
+    const std::string & getRepoFilePath() const noexcept;
+    void setSyncStrategy(SyncStrategy strategy);
+    SyncStrategy getSyncStrategy() const noexcept;
 
     ~Repo();
 private:
