@@ -159,6 +159,8 @@ ConfigRepo::ConfigRepo(ConfigMain & masterConfig) : pImpl(new Impl(*this, master
 ConfigRepo::~ConfigRepo() = default;
 ConfigRepo::ConfigRepo(ConfigRepo && src) : pImpl(std::move(src.pImpl)) {}
 
+ConfigMain & ConfigRepo::getMasterConfig() { return pImpl->masterConfig; }
+
 OptionString & ConfigRepo::name() { return pImpl->name; }
 OptionChild<OptionBool> & ConfigRepo::enabled() { return pImpl->enabled; }
 OptionChild<OptionString> & ConfigRepo::basecachedir() { return pImpl->basecachedir; }
