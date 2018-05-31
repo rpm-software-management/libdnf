@@ -33,7 +33,7 @@ public:
     void fromFile(const std::string &path, int priority);
 
     std::string getDefaultStreamFor(std::string moduleName);
-//    std::vector<std::string> getDefaultProfilesFor(std::string moduleName);
+    std::map<std::string, std::string> getDefaultStreams();
 
     void resolve();
 

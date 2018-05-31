@@ -37,6 +37,8 @@
 #include <errno.h>
 #include <unistd.h>
 #include <iostream>
+#include <list>
+#include <set>
 
 extern "C" {
 #include <solv/evr.h>
@@ -68,7 +70,7 @@ extern "C" {
 #include "conf/ConfigParser.hpp"
 #include "conf/OptionBool.hpp"
 #include "module/modulemd/ModuleDefaultsContainer.hpp"
-#include "module/ModulePackageContainer.hpp"
+#include "module/modulemd/ModuleMetadata.hpp"
 #include "utils/File.hpp"
 #include "utils/utils.hpp"
 
@@ -94,8 +96,6 @@ typedef struct
     gchar               *cache_dir;
     dnf_sack_running_kernel_fn_t  running_kernel_fn;
     guint                installonly_limit;
-    ModuleDefaultsContainer *defaults;
-    ModulePackageContainer *modules;
 } DnfSackPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfSack, dnf_sack, G_TYPE_OBJECT)
@@ -130,9 +130,6 @@ dnf_sack_finalize(GObject *object)
     free_map_fully(pool->considered);
     free_map_fully(priv->pkg_solvables);
     pool_free(priv->pool);
-
-    delete priv->defaults;
-    delete priv->modules;
 
     G_OBJECT_CLASS(dnf_sack_parent_class)->finalize(object);
 }
@@ -171,8 +168,6 @@ dnf_sack_init(DnfSack *sack)
     priv->considered_uptodate = TRUE;
     priv->cmdline_repo = NULL;
     queue_init(&priv->installonly);
-    priv->defaults = new ModuleDefaultsContainer();
-    priv->modules = new ModulePackageContainer(sack);
 
     /* logging up after this*/
     pool_setdebugcallback(priv->pool, log_cb, sack);
@@ -2062,73 +2057,16 @@ dnf_sack_add_repos(DnfSack *sack,
     return TRUE;
 }
 
-namespace {
-struct ModuleRpms
+static std::map<std::string, std::string> getEnabledModuleStreams()
 {
-    std::set<std::string> excludeRpms;
-    std::set<std::string> includeRpms;
-};
+    // TODO: remove hard-coded path
+    auto dirPath = "/etc/dnf/modules.d/";
 
-void loadModuleRepodata(DnfSack *sack, const GPtrArray *repos)
-{
-    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    // return {name: stream} map
+    std::map<std::string, std::string> result;
 
-    for (unsigned int i = 0; i < repos->len; i++) {
-        auto repo = static_cast<DnfRepo *>(g_ptr_array_index(repos, i));
-        auto hyRepo = dnf_repo_get_hy_repo(repo);
-
-        auto modules_fn = dnf_repo_get_filename_md(repo, "modules");
-        if (modules_fn == nullptr)
-            continue;
-
-        auto yaml = libdnf::File::newFile(modules_fn);
-        yaml->open("r");
-        const auto &yamlContent = yaml->getContent();
-        std::cerr << yamlContent << "\n";
-        yaml->close();
-
-        priv->modules->loadFromString(hyRepo, yamlContent);
-        try {
-            priv->defaults->fromString(yamlContent, 0);
-        } catch (ModuleDefaultsContainer::ConflictException &exception) {
-            // TODO logger.warning(exception.what());
-        }
-    }
-}
-
-void loadDefaultsFromDisk(DnfSack *sack, const std::string &dirPath)
-{
-    DnfSackPrivate *priv = GET_PRIVATE(sack);
-
-    auto dirContent = filesystem::getDirContent(dirPath);
-    for (const auto &file : dirContent) {
-        auto yaml = libdnf::File::newFile(file);
-
-        yaml->open("r");
-        const auto &yamlContent = yaml->getContent();
-        yaml->close();
-
-        try {
-            priv->defaults->fromString(yamlContent, 1000);
-        } catch (ModuleDefaultsContainer::ConflictException &exception) {
-            // TODO logger.warning(exception.what());
-        }
-    }
-
-    try {
-        priv->defaults->resolve();
-    } catch (ModuleDefaultsContainer::ResolveException &exception) {
-        // TODO logger.debug("No module defaults found");
-    }
-}
-
-void enableModules(DnfSack *sack, const std::string &dirPath)
-{
-    DnfSackPrivate *priv = GET_PRIVATE(sack);
-
-    std::vector<std::string> dirContent = filesystem::getDirContent(dirPath);
     libdnf::ConfigParser parser{};
-    for (const auto &file : dirContent) {
+    for (const auto &file : filesystem::getDirContent(dirPath)) {
         parser.read(file);
     }
 
@@ -2136,80 +2074,215 @@ void enableModules(DnfSack *sack, const std::string &dirPath)
         const auto &name = iter.first;
         libdnf::OptionBool enabled{false};
 
-        if (enabled.fromString(parser.getValue(name, "enabled"))) {
-            const auto &stream = parser.getValue(name, "stream");
-            try {
-                auto modulePackages = priv->modules->getModulePackages(name, stream);
-                for (const auto &modulePackage : modulePackages) {
-                    modulePackage->enable();
-                }
-            } catch (ModulePackageContainer::NoModuleException &exception) {
-                // TODO log invalid config data exception.what() ;
-            } catch (ModulePackageContainer::NoStreamException &exception) {
-                // TODO log exception.what();
-            }
+        if (!enabled.fromString(parser.getValue(name, "enabled"))) {
+            continue;
         }
+        const auto &stream = parser.getValue(name, "stream");
+        result[name] = stream;
     }
+    return result;
 }
 
-ModuleRpms getModuleIncludesExcludes(DnfSack *sack)
+static std::map<std::string, std::string>
+getDependencyModuleStreams(std::vector<std::shared_ptr<ModuleMetadata> > moduleMetadata, std::map<std::string, std::string> activeStreams)
 {
-    DnfSackPrivate *priv = GET_PRIVATE(sack);
-    ModuleRpms rpms{};
-
-    for (const auto &name : priv->modules->getModuleNames()) {
-        std::vector<std::shared_ptr<ModulePackage>> modulePackages;
-        try {
-            modulePackages = priv->modules->getEnabledModulePackages(name);
-        } catch (ModulePackageContainer::EnabledStreamException &exception) {
-            try {
-                const auto &defaultStream = priv->defaults->getDefaultStreamFor(name);
-                modulePackages = priv->modules->getModulePackages(name, defaultStream);
-            } catch (ModulePackageContainer::NoStreamException &exception) {
-                for (const auto &modulePackage : priv->modules->getModulePackages(name)) {
-                    auto artifacts = modulePackage->getArtifacts();
-                    copy(artifacts.begin(), artifacts.end(), std::inserter(rpms.excludeRpms, rpms.excludeRpms.end()));
-                }
-                continue;
-            }
+    // {name-stream: ModuleMetadata}
+    std::map<std::string, std::shared_ptr<ModuleMetadata> > latestModuleVersionsByStream;
+    for (const auto & mod : moduleMetadata) {
+        std::string ns = mod->getName() + ":" + mod->getStream();
+        auto iter = latestModuleVersionsByStream.find(ns);
+        if ((iter != latestModuleVersionsByStream.end()) && (iter->second->getVersion() >= mod->getVersion())) {
+            // there's newer module version in latestModuleVersionsByStream already
+            continue;
         }
-
-        std::vector<std::shared_ptr<ModulePackage>> includePackages;
-        for (const auto &modulePackage : modulePackages) {
-            auto dependencies = priv->modules->getModuleDependencies(modulePackage);
-            includePackages.insert(includePackages.end(), dependencies.begin(), dependencies.end());
-        }
-        includePackages.insert(includePackages.end(), modulePackages.begin(), modulePackages.end());
-
-        for (const auto &modulePackage : includePackages) {
-            auto artifacts = modulePackage->getArtifacts();
-            copy(artifacts.begin(), artifacts.end(), std::inserter(rpms.includeRpms, rpms.includeRpms.end()));
-        }
+        latestModuleVersionsByStream[ns] = mod;
     }
 
-    return rpms;
+    std::map<std::string, std::string> result;
+    std::list<std::pair<std::string, std::string> > input;
+    std::set<std::string> seen;
+//    return result;
+
+    // copy active streams into input buffer
+    for (auto i : activeStreams) {
+        input.push_back({i.first, i.second});
+    }
+
+    while (!input.empty()) {
+        auto pair = input.front();
+        input.pop_front();
+
+        auto name = pair.first;
+        auto stream = pair.second;
+        std::string ns = name + ":" + stream;
+
+        auto it = seen.find(name);
+        if (it != seen.end()) {
+            continue;
+        }
+        seen.insert(name);
+        result[name] = stream;
+
+
+        auto it2 = latestModuleVersionsByStream.find(ns);
+        if (it2 == latestModuleVersionsByStream.end()) {
+            // nothing was found, skip
+            continue;
+        }
+        auto mod = it2->second;
+
+//    std::vector<std::shared_ptr<ModulePackage>> requires;
+        for (const auto &moduleDependency : mod->getDependencies()) {
+            for (const auto &moduleRequires : moduleDependency->getRequires()) {
+                for (const auto &mapIter : moduleRequires) {
+                    const auto & n = mapIter.first;
+                    for (const auto & s : mapIter.second) {
+                        bool isStreamExcluded = string::startsWith(s, "-");
+                        if (isStreamExcluded) {
+                            continue;
+                        }
+                        input.push_back({n, s});
+                    }
+                }
+            }
+        }
+    }
+//    std::map<std::string, std::string> activeStreams
+    return result;
 }
 
-void applyModuleFilters(DnfSack *sack, const ModuleRpms &rpms)
+#include <iostream>
+#include <fstream>
+void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos)
 {
     libdnf::Query excludeQuery{sack};
     libdnf::Query namesQuery{sack};
     libdnf::Query providesQuery{sack};
     libdnf::Nevra nevra;
 
+    // read module metadata and defaults from repos
+    ModuleDefaultsContainer moduleDefaults;
+    std::vector<std::shared_ptr<ModuleMetadata> > moduleMetadata;
+
+
+    for (unsigned int i = 0; i < repos->len; i++) {
+        auto repo = static_cast<DnfRepo *>(g_ptr_array_index(repos, i));
+
+        auto modules_fn = dnf_repo_get_filename_md(repo, "modules");
+        if (modules_fn == nullptr)
+            continue;
+
+        // TODO: open file right in the constructor?
+        std::ofstream f("/tmp/yaml");
+        f << modules_fn << std::endl;
+        auto yaml = libdnf::File::newFile(modules_fn);
+        yaml->open("r");
+        const auto &yamlContent = yaml->getContent();
+        std::cout << "BEGIN" << std::endl;
+        std::cout << yamlContent << std::endl;
+        f << yamlContent;
+        std::cout << "END" << std::endl;
+        yaml->close();
+
+        // update list of module metadata from repo
+        try {
+            auto repoModuleMetadata = ModuleMetadata::metadataFromString(yamlContent);
+            moduleMetadata.insert(moduleMetadata.end(), repoModuleMetadata.begin(), repoModuleMetadata.end());
+        }
+        catch (std::bad_alloc) {
+            std::cout << "ERR --------------" << std::endl;
+            throw;
+        }
+
+        // update defaults from repo
+        try {
+            moduleDefaults.fromString(yamlContent, 0);
+        } catch (ModuleDefaultsContainer::ConflictException &exception) {
+            // TODO logger.warning(exception.what());
+        }
+        catch (std::bad_alloc) {
+            std::cout << "ERR2 --------------" << std::endl;
+            throw;
+        }
+    }
+
+    // TODO: remove hard-coded path
+    auto dirPath = "/etc/dnf/modules.defaults.d/";
+
+    // read module defaults from disk
+    for (const auto &file : filesystem::getDirContent(dirPath)) {
+        auto yaml = libdnf::File::newFile(file);
+        yaml->open("r");
+        const auto &yamlContent = yaml->getContent();
+        yaml->close();
+
+        try {
+            moduleDefaults.fromString(yamlContent, 1000);
+        } catch (ModuleDefaultsContainer::ConflictException &exception) {
+            // TODO logger.warning(exception.what());
+        }
+    }
+
+    try {
+        moduleDefaults.resolve();
+    } catch (ModuleDefaultsContainer::ResolveException &exception) {
+        // TODO logger.debug("No module defaults found");
+    }
+
+    // get default module streams from repos and disk
+    auto defaultStreams = moduleDefaults.getDefaultStreams();
+
+    // read enabled module streams from program configuration
+    auto enabledStreams = getEnabledModuleStreams();
+
+
+    // merge default and enabled streams into active streams
+    std::map<std::string, std::string> activeStreams;
+    for (auto i : defaultStreams) {
+        activeStreams.insert(i);
+    }
+    for (auto i : enabledStreams) {
+        activeStreams.insert(i);
+    }
+
+    // resolve module dependencies, enable additional streams
+    auto dependencyStreams = getDependencyModuleStreams(moduleMetadata, activeStreams);
+    for (auto i : dependencyStreams) {
+        activeStreams.insert(i);
+    }
+
+    // collect NEVRAs for active and inactive modules for applying excludes
+    // TODO: turn into std::vector<const char *> to prevent unecessary conversion?
+    std::vector<std::string> activeNEVRAs;
+    std::vector<std::string> inactiveNEVRAs;
+
+    for (auto & mod : moduleMetadata) {
+        auto iter = activeStreams.find(mod->getName());
+        bool isActiveStream = (iter == activeStreams.end()) ? false : (iter->second == mod->getStream());
+        auto artifacts = mod->getArtifacts();
+        if (isActiveStream) {
+            copy(artifacts.begin(), artifacts.end(), std::inserter(activeNEVRAs, activeNEVRAs.end()));
+        } else {
+            copy(artifacts.begin(), artifacts.end(), std::inserter(inactiveNEVRAs, inactiveNEVRAs.end()));
+        }
+    }
+
+    // remove activeNEVRAs from inactiveNEVRAs to prevent excluding them
+    std::vector<std::string> excludeNEVRAs;
+    set_difference(
+        inactiveNEVRAs.begin(), inactiveNEVRAs.end(),
+        activeNEVRAs.begin(), activeNEVRAs.end(),
+        inserter(excludeNEVRAs, excludeNEVRAs.begin())
+    );
+
     std::vector<const char *> names;
-    for (const auto &rpm : rpms.includeRpms) {
+    for (const auto &rpm : activeNEVRAs) {
         nevra.parse(rpm.c_str(), HY_FORM_NEVRA);
         names.push_back(nevra.getName().c_str());
         nevra.clear();
     }
 
-    std::vector<std::string> difference;
-    set_difference(rpms.excludeRpms.begin(), rpms.excludeRpms.end(),
-                   rpms.includeRpms.begin(), rpms.includeRpms.end(),
-                   inserter(difference, difference.begin()));
-
-    for (const auto &rpm : difference) {
+    for (const auto &rpm : excludeNEVRAs) {
         nevra.parse(rpm.c_str(), HY_FORM_NEVRA);
         excludeQuery.addFilter(&nevra, false);
         nevra.clear();
@@ -2221,18 +2294,4 @@ void applyModuleFilters(DnfSack *sack, const ModuleRpms &rpms)
     dnf_sack_add_module_excludes(sack, const_cast<DnfPackageSet *>(excludeQuery.runSet()));
     dnf_sack_add_module_excludes(sack, const_cast<DnfPackageSet *>(namesQuery.runSet()));
     dnf_sack_add_module_excludes(sack, const_cast<DnfPackageSet *>(providesQuery.runSet()));
-}
-}
-
-void dnf_sack_load_modules(DnfSack *sack, GPtrArray *repos)
-{
-    loadModuleRepodata(sack, repos);
-    loadDefaultsFromDisk(sack, "/etc/dnf/modules.defaults.d/");
-    enableModules(sack, "/etc/dnf/modules.d/");
-}
-
-void dnf_sack_filter_modules(DnfSack *sack)
-{
-    ModuleRpms rpms = getModuleIncludesExcludes(sack);
-    applyModuleFilters(sack, rpms);
 }

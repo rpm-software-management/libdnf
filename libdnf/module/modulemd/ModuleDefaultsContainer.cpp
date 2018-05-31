@@ -1,6 +1,5 @@
 #include <iostream>
 #include "ModuleDefaultsContainer.hpp"
-#include "../ModulePackageContainer.hpp"
 
 ModuleDefaultsContainer::ModuleDefaultsContainer()
 {
@@ -31,7 +30,9 @@ std::string ModuleDefaultsContainer::getDefaultStreamFor(std::string moduleName)
 {
     auto moduleDefaults = defaults[moduleName];
     if (!moduleDefaults)
-        throw ModulePackageContainer::NoStreamException("Missing default for " + moduleName);
+        return "";
+        // TODO: get the exception back
+        // throw ModulePackageContainer::NoStreamException("Missing default for " + moduleName);
     return modulemd_defaults_peek_default_stream(moduleDefaults.get());
 }
 
@@ -80,4 +81,23 @@ void ModuleDefaultsContainer::reportFailures(const GPtrArray *failures) const
         auto item = static_cast<ModulemdSubdocument *>(g_ptr_array_index(failures, i));
         std::cerr << "Module defaults error: " << modulemd_subdocument_get_gerror(item)->message << "\n";
     }
+}
+
+std::map<std::string, std::string> ModuleDefaultsContainer::getDefaultStreams()
+{
+    // TODO: make sure resolve() was called first
+
+    // return {name: stream} map
+    std::map<std::string, std::string> result;
+    for (auto const & iter : defaults) {
+        auto name = iter.first;
+        auto moduleDefaults = iter.second;
+        auto defaultStream = modulemd_defaults_peek_default_stream(moduleDefaults.get());
+        if (!defaultStream) {
+            // if default stream is not set, then the default is disabled -> skip
+            continue;
+        }
+        result[name] = defaultStream;
+    }
+    return result;
 }
