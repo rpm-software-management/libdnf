@@ -25,16 +25,19 @@ std::string libdnf::CompressedFile::getContent()
         throw NotOpenedException(filePath);
     }
 
+    constexpr size_t bufferSize = 4096;
+    char buffer[bufferSize + 1];
+
     while (true) {
-        constexpr size_t fileSize = 2048;
-        auto content = new char[fileSize + 1];
-        auto bytesRead = read(content, fileSize);
+        auto bytesRead = read(buffer, bufferSize);
+        buffer[bytesRead] = '\0';
 
-        ss << content;
-        delete [] content;
+        ss << buffer;
 
-        if (bytesRead != fileSize) {
-            return ss.str();
+        if (bytesRead != bufferSize) {
+            break;
         }
     }
+
+    return ss.str();
 }
