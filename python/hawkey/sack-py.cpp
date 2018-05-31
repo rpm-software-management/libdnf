@@ -371,7 +371,7 @@ add_cmdline_package(_SackObject *self, PyObject *fn_obj)
 
     if (!fn.getCString())
         return NULL;
-    cpkg = dnf_sack_add_cmdline_package(self->sack, fn.getCString());
+    cpkg = dnf_sack_add_cmdline_package_nochecksum(self->sack, fn.getCString());
     if (cpkg == NULL) {
         PyErr_Format(PyExc_IOError, "Can not load RPM file: %s.", fn.getCString());
         return NULL;
