@@ -114,14 +114,14 @@ hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, Hy
     }
 
     if (with_filenames && hy_is_file_pattern(subject)) {
-        auto query = new libdnf::Query(baseQuery);
+        auto query = std::unique_ptr<libdnf::Query>(new libdnf::Query(baseQuery));
         query->addFilter(HY_PKG_FILE, HY_GLOB, subject);
-        return query;
+        return query.release();
     }
 
-    auto query = new libdnf::Query(baseQuery);
+    auto query = std::unique_ptr<libdnf::Query>(new libdnf::Query(baseQuery));
     query->addFilter(HY_PKG_EMPTY, HY_EQ, 1);
-    return query;
+    return query.release();
 }
 
 
