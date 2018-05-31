@@ -139,9 +139,8 @@ public:
     char ** getMirrors();
     int getAge() const;
     void expire();
-    bool expired() const;
-    int expiresIn();
-    void resetTimestamp();
+    bool isExpired() const;
+    int getExpiresIn() const;
     LrHandle * lrHandleInitBase();
     LrHandle * lrHandleInitLocal();
     LrHandle * lrHandleInitRemote(const char *destdir, bool mirrorSetup = true);
@@ -167,11 +166,16 @@ public:
     std::map<std::string, std::string> substitutions;
 
     std::unique_ptr<RepoCB> callbacks;
+    std::string repoFilePath;
 
+    SyncStrategy syncStrategy;
 private:
     bool lrHandlePerform(LrHandle * handle, LrResult * result);
     bool isMetalinkInSync();
     bool isRepomdInSync();
+    void resetMetadataExpired();
+
+    bool expired;
 };
 
 /**
@@ -227,7 +231,8 @@ static std::string formatUserPassString(const std::string & user, const std::str
 }
 
 Repo::Impl::Impl(const std::string & id, std::unique_ptr<ConfigRepo> && conf)
-: id(id), conf(std::move(conf)), timestamp(-1) {}
+: id(id), conf(std::move(conf)), timestamp(-1)
+, syncStrategy(SyncStrategy::TRY_CACHE), expired(false) {}
 
 Repo::Impl::~Impl()
 {
@@ -279,8 +284,8 @@ int Repo::getPriority() const { return pImpl->conf->priority().getValue(); }
 std::string Repo::getCompsFn() { return pImpl->comps_fn; }
 int Repo::getAge() const { return pImpl->getAge(); }
 void Repo::expire() { pImpl->expire(); }
-bool Repo::expired() const { return pImpl->expired(); }
-int Repo::expiresIn() { return pImpl->expiresIn(); }
+bool Repo::isExpired() const { return pImpl->isExpired(); }
+int Repo::getExpiresIn() const { return pImpl->getExpiresIn(); }
 
 LrHandle * Repo::Impl::lrHandleInitBase()
 {
@@ -640,16 +645,26 @@ bool Repo::Impl::load()
 {
     //printf("check if cache present\n");
     if (loadCache()) {
-        if (!expired()) {
-            //printf("using cache, age: %is\n", getAge());
+        if (conf->getMasterConfig().check_config_file_age().getValue() &&
+            !repoFilePath.empty() && mtime(repoFilePath.c_str()) > mtime(primary_fn.c_str()))
+            expired = true;
+        if (!expired || syncStrategy == SyncStrategy::ONLY_CACHE || syncStrategy == SyncStrategy::LAZY) {
+            //logger.debug(_('repo: using cache for: %s'), self.id)
             return false;
         }
-        printf("try to reuse\n");
+
         if (isInSync()) {
             //printf("reusing expired cache\n");
-            resetTimestamp();
-            return false;
+            // the expired metadata still reflect the origin:
+            utimes(primary_fn.c_str(), NULL);
+            expired = false;
+            return true;
         }
+    }
+    if (syncStrategy == SyncStrategy::ONLY_CACHE) {
+        //_("Cache-only enabled but no cache for '%s'") % self.id
+        auto msg = "Cache-only enabled but no cache for" + id;
+        throw std::runtime_error(msg);
     }
 
     //printf("fetch\n");
@@ -696,21 +711,21 @@ char ** Repo::Impl::getMirrors()
 
 int Repo::Impl::getAge() const
 {
-    return time(NULL) - timestamp;
+    return time(NULL) - mtime(primary_fn.c_str());
 }
 
 void Repo::Impl::expire()
 {
+    expired = true;
     timestamp = 0;
 }
 
-bool Repo::Impl::expired() const
+bool Repo::Impl::isExpired() const
 {
-    int maxAge = conf->metadata_expire().getValue();
-    return timestamp == 0 || (maxAge >= 0 && getAge() > maxAge);
+    return expired;
 }
 
-int Repo::Impl::expiresIn()
+int Repo::Impl::getExpiresIn() const
 {
     return conf->metadata_expire().getValue() - getAge();
 }
@@ -720,14 +735,15 @@ bool Repo::fresh()
     return pImpl->timestamp >= 0;
 }
 
-void Repo::Impl::resetTimestamp()
+void Repo::Impl::resetMetadataExpired()
 {
-    time_t now = time(NULL);
-    struct utimbuf unow;
-    unow.actime = now;
-    unow.modtime = now;
-    timestamp = now;
-    utime(primary_fn.c_str(), &unow);
+    if (expired)
+        // explicitly requested expired state
+        return;
+    if (conf->metadata_expire().getValue() == -1)
+        expired = false;
+    else
+        expired = time(NULL) - mtime(primary_fn.c_str()) > conf->metadata_expire().getValue();
 }
 
 int Repo::getTimestamp()
@@ -768,6 +784,26 @@ void Repo::initHyRepo(HyRepo hrepo)
     if (!pImpl->updateinfo_fn.empty())
         hy_repo_set_string(hrepo, HY_REPO_UPDATEINFO_FN, pImpl->updateinfo_fn.c_str());
 
+}
+
+void Repo::setRepoFilePath(const std::string & path)
+{
+    pImpl->repoFilePath = path;
+}
+
+const std::string & Repo::getRepoFilePath() const noexcept
+{
+    return pImpl->repoFilePath;
+}
+
+void Repo::setSyncStrategy(SyncStrategy strategy)
+{
+    pImpl->syncStrategy = strategy;
+}
+
+Repo::SyncStrategy Repo::getSyncStrategy() const noexcept
+{
+    return pImpl->syncStrategy;
 }
 
 }
