@@ -50,6 +50,7 @@
 #include <cctype>
 #include <glib.h>
 
+#include <fstream>
 #include <iostream>
 
 namespace libdnf {
@@ -132,7 +133,7 @@ public:
 
     bool load();
     bool loadCache();
-    bool canReuse();
+    bool isInSync();
     void fetch();
     std::string getCachedir();
     char ** getMirrors();
@@ -169,6 +170,8 @@ public:
 
 private:
     bool lrHandlePerform(LrHandle * handle, LrResult * result);
+    bool isMetalinkInSync();
+    bool isRepomdInSync();
 };
 
 /**
@@ -508,7 +511,79 @@ bool Repo::Impl::loadCache()
     return true;
 }
 
-bool Repo::Impl::canReuse()
+// Use metalink to check whether our metadata are still current.
+bool Repo::Impl::isMetalinkInSync()
+{
+    char tmpdir[] = "/tmp/tmpdir.XXXXXX";
+    mkdtemp(tmpdir);
+
+    std::unique_ptr<LrHandle, decltype(&lr_handle_free)> h(lrHandleInitRemote(tmpdir),
+                                                           &lr_handle_free);
+    std::unique_ptr<LrResult, decltype(&lr_result_free)> r(lr_result_init(),
+                                                           &lr_result_free);
+
+    lr_handle_setopt(h.get(), NULL, LRO_FETCHMIRRORS, 1L);
+    lrHandlePerform(h.get(), r.get());
+    LrMetalink * metalink;
+    lr_handle_getinfo(h.get(), NULL, LRI_METALINK, &metalink);
+    if (!metalink) {
+        //logger.debug(_("reviving: repo '%s' skipped, no metalink."), self.id)
+        dnf_remove_recursive(tmpdir, NULL);
+        return false;
+    }
+
+    // check all recognized hashes
+    auto chksumFree = [](Chksum * ptr){solv_chksum_free(ptr, nullptr);};
+    struct hashInfo {
+        const LrMetalinkHash * lrMetalinkHash;
+        std::unique_ptr<Chksum, decltype(chksumFree)> chksum;
+    };
+    std::vector<hashInfo> hashes;
+    for (auto hash = metalink->hashes; hash; hash = hash->next) {
+        auto lrMetalinkHash = static_cast<const LrMetalinkHash *>(hash->data);
+        for (auto algorithm : RECOGNIZED_CHKSUMS) {
+            if (strcmp(lrMetalinkHash->type, algorithm) == 0)
+                hashes.push_back({lrMetalinkHash, {nullptr, chksumFree}});
+        }
+    }
+    if (hashes.empty()) {
+        //logger.debug(_("reviving: repo '%s' skipped, no usable hash."), self.id);
+        dnf_remove_recursive(tmpdir, NULL);
+        return false;
+    }
+
+    for (auto & hash : hashes) {
+        auto chkType = solv_chksum_str2type(hash.lrMetalinkHash->type);
+        hash.chksum.reset(solv_chksum_create(chkType));
+    }
+
+    std::ifstream repomd(repomd_fn, std::ifstream::binary);
+    char buf[4096];
+    int readed;
+    while ((readed = repomd.readsome(buf, sizeof(buf))) > 0) {
+        for (auto & hash : hashes)
+            solv_chksum_add(hash.chksum.get(), buf, readed);
+    }
+
+    for (auto & hash : hashes) {
+        int chksumLen;
+        auto chksum = solv_chksum_get(hash.chksum.get(), &chksumLen);
+        char chksumHex[chksumLen * 2 + 1];
+        solv_bin2hex(chksum, chksumLen, chksumHex);
+        if (strcmp(chksumHex, hash.lrMetalinkHash->value) != 0) {
+            //logger.debug(_("reviving: failed for '%s', mismatched %s sum."), self.id, algo)
+            dnf_remove_recursive(tmpdir, NULL);
+            return false;
+        }
+    }
+
+    dnf_remove_recursive(tmpdir, NULL);
+    //logger.debug(_("reviving: '%s' can be revived - metalink checksums match."), self.id)
+    return true;
+}
+
+// Use repomd to check whether our metadata are still current.
+bool Repo::Impl::isRepomdInSync()
 {
     LrYumRepo *yum_repo;
     char tmpdir[] = "/tmp/tmpdir.XXXXXX";
@@ -521,13 +596,23 @@ bool Repo::Impl::canReuse()
                                                            &lr_result_free);
 
     lr_handle_setopt(h.get(), NULL, LRO_YUMDLIST, dlist);
-
     lrHandlePerform(h.get(), r.get());
     lr_result_getinfo(r.get(), NULL, LRR_YUM_REPO, &yum_repo);
 
+    auto same = compareFiles(repomd_fn.c_str(), yum_repo->repomd) == 0;
     dnf_remove_recursive(tmpdir, NULL);
+    /*if (same)
+        logger.debug(_("reviving: '%s' can be revived - repomd matches."), self.id)
+    else
+        logger.debug(_("reviving: failed for '%s', mismatched repomd."), self.id)*/
+    return same;
+}
 
-    return compareFiles(repomd_fn.c_str(), yum_repo->repomd) == 0;
+bool Repo::Impl::isInSync()
+{
+    if (!conf->metalink().empty() && !conf->metalink().getValue().empty())
+        return isMetalinkInSync();
+    return isRepomdInSync();
 }
 
 void Repo::Impl::fetch()
@@ -560,7 +645,7 @@ bool Repo::Impl::load()
             return false;
         }
         printf("try to reuse\n");
-        if (canReuse()) {
+        if (isInSync()) {
             //printf("reusing expired cache\n");
             resetTimestamp();
             return false;
