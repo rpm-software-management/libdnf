@@ -71,66 +71,68 @@ hy_subject_free(HySubject subject)
 /* Given a subject, attempt to create a query choose the first one, and update
  * the query to try to match it.
  *
- * This code is based on rpm-software-management/dnf/subject.py:get_best_query() at git
- * revision: 1d83fdc0280ca4202281ef489afe600e2f51a32a
+ * Since then, it was amended to add a `with_src` flag to avoid finding source packages
+ * from provides.
  */
 HyQuery
 hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, HyNevra *out_nevra,
                              gboolean icase, gboolean with_nevra, gboolean with_provides,
-                             gboolean with_filenames)
+                             gboolean with_filenames, gboolean with_src)
 {
+    libdnf::Query baseQuery(sack);
+    if (!with_src) {
+        baseQuery.addFilter(HY_PKG_ARCH, HY_NEQ, "src");
+    }
+    baseQuery.apply();
     if (with_nevra) {
         libdnf::Nevra nevraObj;
         const auto tryForms = !forms ? HY_FORMS_MOST_SPEC : forms;
         for (std::size_t i = 0; tryForms[i] != _HY_FORM_STOP_; ++i) {
             if (nevraObj.parse(subject, tryForms[i])) {
-                auto query = hy_query_from_nevra(&nevraObj, sack, icase);
-                if (!hy_query_is_empty(query)) {
+                auto query = std::unique_ptr<libdnf::Query>(new libdnf::Query(baseQuery));
+                query->addFilter(&nevraObj, icase);
+                if (!query->empty()) {
                     *out_nevra = new libdnf::Nevra(std::move(nevraObj));
-                    return query;
+                    return query.release();
                 }
-                hy_query_free(query);
             }
         }
         *out_nevra = nullptr;
         if (!forms) {
-            auto query = hy_query_create(sack);
-            hy_query_filter(query, HY_PKG_NEVRA, HY_GLOB, subject);
-            if (!hy_query_is_empty(query))
-                return query;
-            hy_query_free(query);
+            auto query = std::unique_ptr<libdnf::Query>(new libdnf::Query(baseQuery));
+            query->addFilter(HY_PKG_NEVRA, HY_GLOB, subject);
+            if (!query->empty())
+                return query.release();
         }
     }
 
     if (with_provides) {
-        auto query = hy_query_create(sack);
-        hy_query_filter(query, HY_PKG_PROVIDES, HY_GLOB, subject);
-        if (!hy_query_is_empty(query))
-            return query;
-        hy_query_free(query);
+        auto query = std::unique_ptr<libdnf::Query>(new libdnf::Query(baseQuery));
+        query->addFilter(HY_PKG_PROVIDES, HY_GLOB, subject);
+        if (!query->empty())
+            return query.release();
     }
 
     if (with_filenames && hy_is_file_pattern(subject)) {
-        auto query = hy_query_create(sack);
-        hy_query_filter(query, HY_PKG_FILE, HY_GLOB, subject);
-        return query;
+        auto query = std::unique_ptr<libdnf::Query>(new libdnf::Query(baseQuery));
+        query->addFilter(HY_PKG_FILE, HY_GLOB, subject);
+        return query.release();
     }
 
-    auto query = hy_query_create(sack);
-    hy_query_filter_empty(query);
-    return query;
+    auto query = std::unique_ptr<libdnf::Query>(new libdnf::Query(baseQuery));
+    query->addFilter(HY_PKG_EMPTY, HY_EQ, 1);
+    return query.release();
 }
 
 
 HySelector
-hy_subject_get_best_sltr(HySubject subject, DnfSack *sack, HyForm *forms, bool obsoletes,
-                         const char *reponame)
+hy_subject_get_best_selector(HySubject subject, DnfSack *sack, HyForm *forms, bool obsoletes,
+    const char *reponame)
 {
     HyNevra nevra{nullptr};
     HyQuery query = hy_subject_get_best_solution(subject, sack, forms, &nevra, FALSE, TRUE, TRUE,
-                                                 TRUE);
+                                                 TRUE, false);
     if (!hy_query_is_empty(query)) {
-        hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
         if (obsoletes && nevra && nevra->hasJustName()) {
             DnfPackageSet *pset;
             pset = hy_query_run_set(query);
@@ -152,13 +154,4 @@ hy_subject_get_best_sltr(HySubject subject, DnfSack *sack, HyForm *forms, bool o
     HySelector selector = hy_query_to_selector(query);
     hy_query_free(query);
     return selector;
-}
-
-/* Given a subject, attempt to create a "selector".
- *
- */
-HySelector
-hy_subject_get_best_selector(HySubject subject, DnfSack *sack)
-{
-    return hy_subject_get_best_sltr(subject, sack, NULL, FALSE, NULL);
 }
