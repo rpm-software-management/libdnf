@@ -24,7 +24,7 @@
 #include "dnf-enums.h"
 #include "dnf-types.h"
 
-#if __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -33,7 +33,7 @@ const char *dnf_reldep_to_string(DnfReldep *reldep);
 Id dnf_reldep_get_id(DnfReldep *reldep);
 void dnf_reldep_free(DnfReldep *reldep);
 
-#if __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

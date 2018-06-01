@@ -22,7 +22,7 @@
 #include "dnf-reldep.h"
 #include "dnf-types.h"
 
-#if __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -32,7 +32,7 @@ gint dnf_reldep_list_count(DnfReldepList *reldep_list);
 void dnf_reldep_list_add(DnfReldepList *reldep_list, DnfReldep *reldep);
 void dnf_reldep_list_extend(DnfReldepList *rl1, DnfReldepList *rl2);
 
-#if __cplusplus
+#ifdef __cplusplus
 }
 #endif
 
