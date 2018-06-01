@@ -42,6 +42,8 @@ public:
     ~ConfigRepo();
     ConfigRepo(ConfigRepo && src);
 
+    ConfigMain & getMasterConfig();
+
     OptionString & name();
     OptionChild<OptionBool> & enabled();
     OptionChild<OptionString> & basecachedir();
