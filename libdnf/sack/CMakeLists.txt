@@ -6,5 +6,6 @@ SET (SACK_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/packageset.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/query.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/selector.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/Solution.cpp
         PARENT_SCOPE
         )
