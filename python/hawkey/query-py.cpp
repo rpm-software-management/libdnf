@@ -25,7 +25,6 @@
 #include <time.h>
 
 #include "nevra.hpp"
-#include "hy-query.h"
 #include "hy-query-private.hpp"
 #include "hy-selector.h"
 #include "hy-subject.h"
@@ -841,9 +840,7 @@ query_to_name_dict(_QueryObject *self, PyObject *unused)
     HyQuery query = ((_QueryObject *) self)->query;
     Pool *pool = dnf_sack_get_pool(query->getSack());
 
-    Queue samename;
-    queue_init(&samename);
-
+    libdnf::IdQueue samename;
     hy_query_to_name_ordered_queue(query, &samename);
 
     Solvable *considered;
@@ -851,8 +848,8 @@ query_to_name_dict(_QueryObject *self, PyObject *unused)
     UniquePtrPyObject list(PyList_New(0));
     UniquePtrPyObject ret_dict(PyDict_New());
 
-    for (int i = 0; i < samename.count; ++i) {
-        Id package_id = samename.elements[i];
+    for (int i = 0; i < samename.size(); ++i) {
+        Id package_id = samename[i];
         considered = pool->solvables + package_id;
         if (name == 0) {
             name = considered->name;
@@ -869,13 +866,11 @@ query_to_name_dict(_QueryObject *self, PyObject *unused)
         if (rc == -1)
             goto fail;
     }
-    queue_free(&samename);
     if (name)
         PyDict_SetItemString(ret_dict.get(), pool_id2str(pool, name), list.get());
     return ret_dict.release();
 
     fail:
-        queue_free(&samename);
         PyErr_SetString(PyExc_SystemError, "Unable to create name_dict");
         return NULL;
 }
@@ -886,8 +881,7 @@ query_to_name_arch_dict(_QueryObject *self, PyObject *unused)
     HyQuery query = ((_QueryObject *) self)->query;
     Pool *pool = dnf_sack_get_pool(query->getSack());
 
-    Queue samename;
-    queue_init(&samename);
+    libdnf::IdQueue samename;
 
     hy_query_to_name_arch_ordered_queue(query, &samename);
 
@@ -898,8 +892,8 @@ query_to_name_arch_dict(_QueryObject *self, PyObject *unused)
     UniquePtrPyObject list(PyList_New(0));
     UniquePtrPyObject ret_dict(PyDict_New());
 
-    for (int i = 0; i < samename.count; ++i) {
-        Id package_id = samename.elements[i];
+    for (int i = 0; i < samename.size(); ++i) {
+        Id package_id = samename[i];
         considered = pool->solvables + package_id;
         if (name == 0) {
             name = considered->name;
@@ -923,7 +917,6 @@ query_to_name_arch_dict(_QueryObject *self, PyObject *unused)
         if (rc == -1)
             goto fail;
     }
-    queue_free(&samename);
     if (name) {
         if (PyTuple_SetItem(key.get(), 0, PyString_FromString(pool_id2str(pool, name))))
             goto fail;
@@ -935,7 +928,6 @@ query_to_name_arch_dict(_QueryObject *self, PyObject *unused)
     return ret_dict.release();
 
     fail:
-        queue_free(&samename);
         PyErr_SetString(PyExc_SystemError, "Unable to create name_arch_dict");
         return NULL;
 }
