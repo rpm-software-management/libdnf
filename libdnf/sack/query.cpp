@@ -23,8 +23,11 @@
 #include <fnmatch.h>
 #include <vector>
 
+extern "C" {
 #include <solv/bitmap.h>
 #include <solv/evr.h>
+}
+
 #include "query.hpp"
 #include "../hy-iutil-private.hpp"
 #include "../hy-util-private.hpp"
@@ -34,6 +37,7 @@
 #include "../dnf-sack-private.hpp"
 #include "../dnf-advisorypkg.h"
 #include "../dnf-advisory-private.hpp"
+#include "../goal/DnfQueue.hpp"
 #include "advisory.hpp"
 #include "advisorypkg.hpp"
 #include "packageset.hpp"
@@ -449,14 +453,14 @@ add_latest_to_map(const Pool *pool, Map *m, Queue *samename,
 }
 
 static void
-add_duplicates_to_map(Pool *pool, Map *res, Queue samename, int start_block, int stop_block)
+add_duplicates_to_map(Pool *pool, Map *res, DnfQueue samename, int start_block, int stop_block)
 {
     Solvable *s_first, *s_second;
     for (int pos = start_block; pos < stop_block; ++pos) {
-        Id id_first = samename.elements[pos];
+        Id id_first = samename.get(pos);
         s_first = pool->solvables + id_first;
         for (int pos2 = pos + 1; pos2 < stop_block; ++pos2) {
-            Id id_second = samename.elements[pos2];
+            Id id_second = samename.get(pos2);
             s_second = pool->solvables + id_second;
             if ((s_first->evr == s_second->evr) && (s_first->arch != s_second->arch)) {
                 continue;
@@ -1956,7 +1960,7 @@ Query::filterRecent(const long unsigned int recent_limit)
 void
 Query::filterDuplicated()
 {
-    Queue samename;
+    DnfQueue samename;
     Pool *pool = dnf_sack_get_pool(pImpl->sack);
 
     addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
@@ -1969,8 +1973,8 @@ Query::filterDuplicated()
     int start_block = -1;
     int i;
     MAPZERO(resultMap);
-    for (i = 0; i < samename.count; ++i) {
-        Id p = samename.elements[i];
+    for (i = 0; i < samename.size(); ++i) {
+        Id p = samename.get(i);
         considered = pool->solvables + p;
         if (!highest || highest->name != considered->name) {
             /* start of a new block */
@@ -1980,8 +1984,7 @@ Query::filterDuplicated()
                 continue;
             }
             if (start_block != i - 1) {
-                add_duplicates_to_map(pool, resultMap, samename, start_block,
-                                      i);
+                add_duplicates_to_map(pool, resultMap, samename, start_block, i);
             }
             highest = considered;
             start_block = i;
@@ -2045,32 +2048,32 @@ Query::filterUserInstalled(const libdnf::Swdb &swdb)
 }
 
 void
-hy_query_to_name_ordered_queue(HyQuery query, Queue *samename)
+hy_query_to_name_ordered_queue(HyQuery query, libdnf::DnfQueue * samename)
 {
     hy_query_apply(query);
     Pool *pool = dnf_sack_get_pool(query->getSack());
 
-    queue_init(samename);
     const auto result = query->getResult();
     for (int i = 1; i < pool->nsolvables; ++i)
         if (MAPTST(result, i))
-            queue_push(samename, i);
+            samename->pushBack(i);
 
-    solv_sort(samename->elements, samename->count, sizeof(Id), libdnf::filter_latest_sortcmp, pool);
+    solv_sort(samename->getElements(), samename->size(), sizeof(Id), libdnf::filter_latest_sortcmp,
+        pool);
 }
 
 void
-hy_query_to_name_arch_ordered_queue(HyQuery query, Queue *samename)
+hy_query_to_name_arch_ordered_queue(HyQuery query, libdnf::DnfQueue * samename)
 {
     hy_query_apply(query);
     Pool *pool = dnf_sack_get_pool(query->getSack());
 
-    queue_init(samename);
     const auto result = query->getResult();
     for (int i = 1; i < pool->nsolvables; ++i)
         if (MAPTST(result, i))
-            queue_push(samename, i);
+            samename->pushBack(i);
 
-    solv_sort(samename->elements, samename->count, sizeof(Id), libdnf::filter_latest_sortcmp_byarch,
-              pool);
+    solv_sort(samename->getElements(), samename->size(), sizeof(Id),
+        libdnf::filter_latest_sortcmp_byarch, pool);
 }
+
