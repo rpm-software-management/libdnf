@@ -102,8 +102,6 @@ bool hy_query_is_empty(HyQuery query);
 bool hy_query_is_applied(const HyQuery query);
 const Map *hy_query_get_result(const HyQuery query);
 DnfSack *hy_query_get_sack(HyQuery query);
-void hy_query_to_name_ordered_queue(HyQuery query, Queue *samename);
-void hy_query_to_name_arch_ordered_queue(HyQuery query, Queue *samename);
 void hy_add_filter_nevra_object(HyQuery query, HyNevra nevra, bool icase);
 void hy_add_filter_extras(HyQuery query);
 void hy_filter_recent(HyQuery query, const long unsigned int recent_limit);

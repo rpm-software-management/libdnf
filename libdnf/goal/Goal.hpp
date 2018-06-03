@@ -47,7 +47,6 @@ public:
     DnfGoalActions getActions();
     int getReason(DnfPackage *pkg);
     DnfSack * getSack();
-    Solver * getSolv();
 
     void addProtected(PackageSet & pset);
     void setProtected(const PackageSet & pset);
@@ -126,6 +125,7 @@ public:
     libdnf::PackageSet listObsoletedByPackage(DnfPackage * pkg);
 
 private:
+    friend Query;
     class Impl;
     std::unique_ptr<Impl> pImpl;
 };

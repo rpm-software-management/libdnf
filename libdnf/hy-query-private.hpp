@@ -29,6 +29,7 @@
 
 // swdb
 #include "transaction/Swdb.hpp"
+#include "goal/IdQueue.hpp"
 
 enum _match_type {
     _HY_VOID,
@@ -38,7 +39,9 @@ enum _match_type {
     _HY_STR,
 };
 
-int hy_filter_unneeded(HyQuery query, const libdnf::Swdb &swdb, const gboolean debug_solver);
+int hy_filter_unneeded(HyQuery query, const libdnf::Swdb &swdb, bool debug_solver);
+void hy_query_to_name_ordered_queue(HyQuery query, libdnf::IdQueue * samename);
+void hy_query_to_name_arch_ordered_queue(HyQuery query, libdnf::IdQueue * samename);
 
 /**
 * @brief Return HySelector from HyQuery
