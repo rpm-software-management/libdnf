@@ -27,7 +27,7 @@ namespace libdnf {
 
 struct Base {
 public:
-    Base(Logger * logger)
+    Base(Logger * logger);
 private:
     Logger * logger;
 };
