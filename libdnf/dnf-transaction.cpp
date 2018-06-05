@@ -39,6 +39,7 @@
 #include "dnf-rpmts.h"
 #include "dnf-sack.h"
 #include "dnf-transaction.h"
+#include "dnf-types.h"
 #include "dnf-utils.h"
 #include "hy-query.h"
 #include "hy-util-private.hpp"
@@ -169,6 +170,13 @@ dnf_transaction_get_remote_pkgs(DnfTransaction *transaction)
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     return priv->pkgs_to_download;
+}
+
+DnfDb *
+dnf_transaction_get_db(DnfTransaction *transaction)
+{
+    DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
+    return priv->swdb;
 }
 
 /**
