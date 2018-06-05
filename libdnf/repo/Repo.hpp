@@ -86,10 +86,17 @@ public:
 
     void setCallbacks(std::unique_ptr<RepoCB> && callbacks);
 
+    /**
+    * @brief Verify repo object configuration
+    *
+    * Will throw exception if Repo has no mirror or baseurl set or if Repo type is unsupported.
+    */
+    void verify() const;
     ConfigRepo * getConfig() noexcept;
     const std::string & getId() const noexcept;
     void enable();
     void disable();
+    bool isEnabled() const;
     /**
     * @brief Initialize the repo with metadata
     *
@@ -107,10 +114,27 @@ public:
     std::string getRevision();
     void initHyRepo(HyRepo hrepo);
     int getAge() const;
+
+    /**
+    * @brief Mark whatever is in the current cache expired.
+    *
+    * This repo instance will alway try to fetch a fresh metadata after this
+    * method is called.
+    */
     void expire();
+
     bool isExpired() const;
+
+    /**
+    * @brief Get the number of seconds after which the cached metadata will expire.
+    *
+    * Negative number means the metadata has expired already.
+    *
+    * @return Seconds to expiration
+    */
     int getExpiresIn() const;
     bool fresh();
+    void setMaxMirrorTries(int maxMirrorTries);
     int getTimestamp();
     int getMaxTimestamp();
     GSList * getContentTags();
@@ -120,8 +144,45 @@ public:
     const std::string & getRepoFilePath() const noexcept;
     void setSyncStrategy(SyncStrategy strategy);
     SyncStrategy getSyncStrategy() const noexcept;
+    void downloadUrl(const char * url, int fd);
 
     ~Repo();
+private:
+    friend struct PackageTarget;
+    class Impl;
+    std::unique_ptr<Impl> pImpl;
+};
+
+/**
+* @class PackageTargetCB
+*
+* @brief Base class for PackageTarget callbacks
+*
+* User implements PackageTarget callbacks by inheriting this class and overriding its methods.
+*/
+class PackageTargetCB {
+public:
+    virtual int end(int status, const char * msg);
+    virtual int progress(double totalToDownload, double downloaded);
+    virtual int mirrorFailure(const char *msg, const char *url);
+    virtual ~PackageTargetCB() = default;
+};
+
+/**
+* @class PackageTarget
+*
+* @brief Wraps librepo PackageTarget
+*/
+struct PackageTarget {
+public:
+    static void downloadPackages(std::vector<PackageTarget *> & targets, bool failFast);
+
+    PackageTarget(Repo & repo, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
+    PackageTarget(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
+    ~PackageTarget();
+
+    PackageTargetCB * getCallbacks();
+    const char * getErr();
 private:
     class Impl;
     std::unique_ptr<Impl> pImpl;
