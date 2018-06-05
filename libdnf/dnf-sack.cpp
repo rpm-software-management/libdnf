@@ -2152,8 +2152,6 @@ getDependencyModuleStreams(std::vector<std::shared_ptr<ModuleMetadata> > moduleM
     return result;
 }
 
-#include <iostream>
-#include <fstream>
 void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos)
 {
     libdnf::Query excludeQuery{sack};
@@ -2173,16 +2171,9 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos)
         if (modules_fn == nullptr)
             continue;
 
-        // TODO: open file right in the constructor?
-        std::ofstream f("/tmp/yaml");
-        f << modules_fn << std::endl;
         auto yaml = libdnf::File::newFile(modules_fn);
         yaml->open("r");
         const auto &yamlContent = yaml->getContent();
-        std::cout << "BEGIN" << std::endl;
-        std::cout << yamlContent << std::endl;
-        f << yamlContent;
-        std::cout << "END" << std::endl;
         yaml->close();
 
         // update list of module metadata from repo
@@ -2190,8 +2181,7 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos)
             auto repoModuleMetadata = ModuleMetadata::metadataFromString(yamlContent);
             moduleMetadata.insert(moduleMetadata.end(), repoModuleMetadata.begin(), repoModuleMetadata.end());
         }
-        catch (std::bad_alloc) {
-            std::cout << "ERR --------------" << std::endl;
+        catch (std::bad_alloc &) {
             throw;
         }
 
@@ -2201,8 +2191,7 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos)
         } catch (ModuleDefaultsContainer::ConflictException &exception) {
             // TODO logger.warning(exception.what());
         }
-        catch (std::bad_alloc) {
-            std::cout << "ERR2 --------------" << std::endl;
+        catch (std::bad_alloc &) {
             throw;
         }
     }
