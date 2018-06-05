@@ -41,9 +41,9 @@ public:
     bool has(DnfPackage *pkg) const;
     bool has(Id id) const;
     void remove(Id id);
-    Map * getMap();
-    DnfSack * getSack();
-    size_t size();
+    Map *getMap() const;
+    DnfSack *getSack() const;
+    size_t size() const;
 
     /**
     * @brief Returns next id in packageset or -1 if end of package set reached
