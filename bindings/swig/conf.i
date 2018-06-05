@@ -182,6 +182,9 @@ public:
 %ignore libdnf::Repo::Repo;
 %ignore libdnf::Repo::setCallbacks;
 %feature("director") libdnf::RepoCB;
+%ignore libdnf::PackageTarget::PackageTarget(const PackageTarget & src);
+%template(VectorPPackageTarget) std::vector<libdnf::PackageTarget *>;
+%feature("director") libdnf::PackageTargetCB;
 %include "libdnf/repo/Repo.hpp"
 
 %exception __next__() {

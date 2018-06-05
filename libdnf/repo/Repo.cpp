@@ -61,55 +61,6 @@ int RepoCB::progress(double totalToDownload, double downloaded) { return 0; }
 void RepoCB::fastestMirror(int stage, const char * ptr) {}
 int RepoCB::handleMirrorFailure(const char * msg, const char * url, const char * metadata) { return 0; }
 
-static int progressCB(void * data, double totalToDownload, double downloaded)
-{
-    if (!data)
-        return 0;
-    auto cbObject = static_cast<RepoCB *>(data);
-    return cbObject->progress(totalToDownload, downloaded);
-    //LB_CB_ERROR
-    /*std::cout << "Progress total downloaded: " << totalToDownload << "now: " << downloaded << std::endl;
-    return static_cast<int>(LR_CB_OK);*/
-}
-
-static void fastestMirrorCB(void * data, LrFastestMirrorStages stage, void *ptr)
-{
-    if (!data)
-        return;
-    auto cbObject = static_cast<RepoCB *>(data);
-//    std::cout << "Fastestmirror stage: " << stage << "data: " << ptr << std::endl;
-    const char * msg;
-    std::string msgString;
-    if (ptr) {
-        switch (stage) {
-            case LR_FMSTAGE_CACHELOADING:
-            case LR_FMSTAGE_CACHELOADINGSTATUS:
-            case LR_FMSTAGE_STATUS:
-                msg = static_cast<const char *>(ptr);
-                break;
-            case LR_FMSTAGE_DETECTION:
-                msgString = std::to_string(*((long *)ptr));
-                msg = msgString.c_str();
-                break;
-            default:
-                msg = nullptr;
-        }
-    } else
-        msg = nullptr;
-    cbObject->fastestMirror(stage, msg);
-}
-
-static int mirrorFailureCB(void * data, const char * msg, const char * url, const char * metadata)
-{
-    if (!data)
-        return 0;
-    auto cbObject = static_cast<RepoCB *>(data);
-    return cbObject->handleMirrorFailure(msg, url, metadata);
-/*    std::cout << "HMF msg: " << msg << "url: " << url << "metadata: "<< metadata << std::endl;
-    return static_cast<int>(LR_CB_OK);*/
-    //LR_CB_ERROR
-};
-
 
 // Map string from config option proxy_auth_method to librepo LrAuth value
 static constexpr struct {
@@ -149,6 +100,7 @@ public:
     std::unique_ptr<ConfigRepo> conf;
 
     char ** mirrors;
+    int maxMirrorTries{0}; // try them all
     // 0 forces expiration on the next call to load(), -1 means undefined value
     int timestamp;
     int max_timestamp;
@@ -167,6 +119,7 @@ public:
 
     std::unique_ptr<RepoCB> callbacks;
     std::string repoFilePath;
+    LrHandle * getCachedHandle();
 
     SyncStrategy syncStrategy;
 private:
@@ -175,8 +128,64 @@ private:
     bool isRepomdInSync();
     void resetMetadataExpired();
 
+    static int progressCB(void * data, double totalToDownload, double downloaded);
+    static void fastestMirrorCB(void * data, LrFastestMirrorStages stage, void *ptr);
+    static int mirrorFailureCB(void * data, const char * msg, const char * url, const char * metadata);
+
     bool expired;
+    std::unique_ptr<LrHandle, decltype(&lr_handle_free)> handle{nullptr, &lr_handle_free};
+//    std::unique_ptr<LrHandle, decltype(&lr_handle_free)> handle2;
 };
+
+int Repo::Impl::progressCB(void * data, double totalToDownload, double downloaded)
+{
+    if (!data)
+        return 0;
+    auto cbObject = static_cast<RepoCB *>(data);
+    return cbObject->progress(totalToDownload, downloaded);
+    //LB_CB_ERROR
+    /*std::cout << "Progress total downloaded: " << totalToDownload << "now: " << downloaded << std::endl;
+    return static_cast<int>(LR_CB_OK);*/
+}
+
+void Repo::Impl::fastestMirrorCB(void * data, LrFastestMirrorStages stage, void *ptr)
+{
+    if (!data)
+        return;
+    auto cbObject = static_cast<RepoCB *>(data);
+//    std::cout << "Fastestmirror stage: " << stage << "data: " << ptr << std::endl;
+    const char * msg;
+    std::string msgString;
+    if (ptr) {
+        switch (stage) {
+            case LR_FMSTAGE_CACHELOADING:
+            case LR_FMSTAGE_CACHELOADINGSTATUS:
+            case LR_FMSTAGE_STATUS:
+                msg = static_cast<const char *>(ptr);
+                break;
+            case LR_FMSTAGE_DETECTION:
+                msgString = std::to_string(*((long *)ptr));
+                msg = msgString.c_str();
+                break;
+            default:
+                msg = nullptr;
+        }
+    } else
+        msg = nullptr;
+    cbObject->fastestMirror(stage, msg);
+}
+
+int Repo::Impl::mirrorFailureCB(void * data, const char * msg, const char * url, const char * metadata)
+{
+    if (!data)
+        return 0;
+    auto cbObject = static_cast<RepoCB *>(data);
+    return cbObject->handleMirrorFailure(msg, url, metadata);
+/*    std::cout << "HMF msg: " << msg << "url: " << url << "metadata: "<< metadata << std::endl;
+    return static_cast<int>(LR_CB_OK);*/
+    //LR_CB_ERROR
+};
+
 
 /**
 * @brief Converts the given input string to a URL encoded string
@@ -248,11 +257,28 @@ void Repo::setCallbacks(std::unique_ptr<RepoCB> && callbacks)
     pImpl->callbacks = std::move(callbacks);
 }
 
-
 int Repo::verifyId(const std::string & id)
 {
     auto idx = id.find_first_not_of(REPOID_CHARS);
     return idx == id.npos ? -1 : idx;
+}
+
+void Repo::verify() const
+{
+    if (pImpl->conf->baseurl().empty() &&
+        (pImpl->conf->metalink().empty() || pImpl->conf->metalink().getValue().empty()) &&
+        (pImpl->conf->mirrorlist().empty() || pImpl->conf->mirrorlist().getValue().empty()))
+        throw std::runtime_error(tfm::format(_("Repository %s has no mirror or baseurl set."), pImpl->id));
+
+    const auto & type = pImpl->conf->type().getValue();
+    const char * supportedRepoTypes[]{"rpm-md", "rpm", "repomd", "rpmmd", "yum", "YUM"};
+    if (!type.empty()) {
+        for (auto supported : supportedRepoTypes) {
+            if (type == supported)
+                return;
+        }
+        throw std::runtime_error(tfm::format(_("Repository '%s' has unsupported type: 'type=%s', skipping."), pImpl->id, type));
+    }
 }
 
 ConfigRepo * Repo::getConfig() noexcept
@@ -273,6 +299,11 @@ void Repo::enable()
 void Repo::disable()
 {
     pImpl->conf->enabled().set(Option::Priority::RUNTIME, false);
+}
+
+bool Repo::isEnabled() const
+{
+    return pImpl->conf->enabled().getValue();
 }
 
 bool Repo::load() { return pImpl->load(); }
@@ -297,7 +328,7 @@ LrHandle * Repo::Impl::lrHandleInitBase()
     lr_handle_setopt(h, NULL, LRO_YUMDLIST, dlist);
     lr_handle_setopt(h, NULL, LRO_INTERRUPTIBLE, 1L);
     lr_handle_setopt(h, NULL, LRO_GPGCHECK, conf->repo_gpgcheck().getValue());
-    lr_handle_setopt(h, NULL, LRO_MAXMIRRORTRIES, 0);
+    lr_handle_setopt(h, NULL, LRO_MAXMIRRORTRIES, static_cast<long>(maxMirrorTries));
     lr_handle_setopt(h, NULL, LRO_MAXPARALLELDOWNLOADS,
                      conf->max_parallel_downloads().getValue());
 
@@ -663,7 +694,7 @@ bool Repo::Impl::load()
     }
     if (syncStrategy == SyncStrategy::ONLY_CACHE) {
         //_("Cache-only enabled but no cache for '%s'") % self.id
-        auto msg = "Cache-only enabled but no cache for" + id;
+        auto msg = tfm::format(_("Cache-only enabled but no cache for %s"), id);
         throw std::runtime_error(msg);
     }
 
@@ -746,6 +777,21 @@ void Repo::Impl::resetMetadataExpired()
         expired = time(NULL) - mtime(primary_fn.c_str()) > conf->metadata_expire().getValue();
 }
 
+
+/* Returns a librepo handle, set as per the repo options
+   Note that destdir is None, and the handle is cached.*/
+LrHandle * Repo::Impl::getCachedHandle()
+{
+    if (!handle)
+        handle.reset(lrHandleInitRemote(nullptr));
+    return handle.get();
+}
+
+void Repo::setMaxMirrorTries(int maxMirrorTries)
+{
+    pImpl->maxMirrorTries = maxMirrorTries;
+}
+
 int Repo::getTimestamp()
 {
     return pImpl->timestamp;
@@ -805,5 +851,215 @@ Repo::SyncStrategy Repo::getSyncStrategy() const noexcept
 {
     return pImpl->syncStrategy;
 }
+
+void Repo::downloadUrl(const char * url, int fd)
+{
+    GError *err = NULL;
+    if (pImpl->callbacks)
+        pImpl->callbacks->start(
+            !pImpl->conf->name().getValue().empty() ? pImpl->conf->name().getValue().c_str() :
+            (!pImpl->id.empty() ? pImpl->id.c_str() : "unknown")
+        );
+    auto ret = lr_download_url(pImpl->getCachedHandle(), url, fd, &err);
+    if (pImpl->callbacks)
+        pImpl->callbacks->end();
+
+    std::string msg;
+    if (err) {
+        msg = std::string(err->message) + "  " + std::to_string(err->code);
+        g_error_free(err);
+    }
+    if ((!ret && !err) || (ret && err))
+        throw std::runtime_error("Error in lr_download_url");
+    if (!ret) {
+        throw std::runtime_error(msg);
+    }
+}
+
+int PackageTargetCB::end(int status, const char * msg) { return 0; }
+int PackageTargetCB::progress(double totalToDownload, double downloaded) { return 0; }
+int PackageTargetCB::mirrorFailure(const char *msg, const char *url) { return 0; }
+
+
+class PackageTarget::Impl {
+public:
+    Impl(Repo & repo, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
+
+    Impl(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
+
+    void download();
+
+    ~Impl();
+
+    PackageTargetCB * callbacks;
+
+    std::unique_ptr<LrPackageTarget, decltype(&lr_packagetarget_free)> lrPkgTarget{nullptr, &lr_packagetarget_free};
+
+private:
+    void init(LrHandle * handle, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd);
+    LrHandle * newHandle(ConfigMain * conf);
+
+    static int endCB(void * data, LrTransferStatus status, const char * msg);
+    static int progressCB(void * data, double totalToDownload, double downloaded);
+    static int mirrorFailureCB(void * data, const char * msg, const char * url);
+
+    std::unique_ptr<LrHandle, decltype(&lr_handle_free)> lrHandle{nullptr, &lr_handle_free};
+
+};
+
+
+int PackageTarget::Impl::endCB(void * data, LrTransferStatus status, const char * msg)
+{
+    if (!data)
+        return 0;
+    auto cbObject = static_cast<PackageTargetCB *>(data);
+    return cbObject->end(status, msg);
+}
+
+int PackageTarget::Impl::progressCB(void * data, double totalToDownload, double downloaded)
+{
+    if (!data)
+        return 0;
+    auto cbObject = static_cast<PackageTargetCB *>(data);
+    return cbObject->progress(totalToDownload, downloaded);
+}
+
+int PackageTarget::Impl::mirrorFailureCB(void * data, const char * msg, const char * url)
+{
+    if (!data)
+        return 0;
+    auto cbObject = static_cast<PackageTargetCB *>(data);
+    return cbObject->mirrorFailure(msg, url);
+}
+
+
+LrHandle * PackageTarget::Impl::newHandle(ConfigMain * conf)
+{
+    LrHandle *h = lr_handle_init();
+    lr_handle_setopt(h, NULL, LRO_USERAGENT, "libdnf/1.0"); //FIXME
+    // see dnf.repo.Repo._handle_new_remote() how to pass
+    if (conf) {
+        auto minrate = conf->minrate().getValue();
+        lr_handle_setopt(h, nullptr, LRO_LOWSPEEDLIMIT, static_cast<long>(minrate));
+
+        auto maxspeed = conf->throttle().getValue();
+        if (maxspeed > 0 && maxspeed <= 1)
+            maxspeed *= conf->bandwidth().getValue();
+        if (maxspeed != 0 && maxspeed < minrate)
+            throw std::runtime_error(_("Maximum download speed is lower than minimum. "
+                                       "Please change configuration of minrate or throttle"));
+        lr_handle_setopt(h, nullptr, LRO_MAXSPEED, static_cast<int64_t>(maxspeed));
+
+        if (!conf->proxy().empty() && !conf->proxy().getValue().empty())
+            lr_handle_setopt(h, nullptr, LRO_PROXY, conf->proxy().getValue().c_str());
+
+        //set proxy autorization method
+        auto proxyAuthMethodStr = conf->proxy_auth_method().getValue();
+        auto proxyAuthMethod = LR_AUTH_ANY;
+        for (auto & auth : PROXYAUTHMETHODS) {
+            if (proxyAuthMethodStr == auth.name) {
+                proxyAuthMethod = auth.code;
+                break;
+            }
+        }
+        lr_handle_setopt(h, nullptr, LRO_PROXYAUTHMETHODS, static_cast<long>(proxyAuthMethod));
+
+        if (!conf->proxy_username().empty()) {
+            auto userpwd = conf->proxy_username().getValue();
+            if (!userpwd.empty()) {
+                userpwd = formatUserPassString(userpwd, conf->proxy_password().getValue(), true);
+                lr_handle_setopt(h, nullptr, LRO_PROXYUSERPWD, userpwd.c_str());
+            }
+        }
+
+        auto sslverify = conf->sslverify().getValue() ? 1L : 0L;
+        lr_handle_setopt(h, nullptr, LRO_SSLVERIFYHOST, sslverify);
+        lr_handle_setopt(h, nullptr, LRO_SSLVERIFYPEER, sslverify);
+    }
+    return h;
+}
+
+void PackageTarget::downloadPackages(std::vector<PackageTarget *> & targets, bool failFast)
+{
+    // Convert vector to GSList
+    GSList *list = nullptr;
+    for (auto target : targets)
+        list = g_slist_append(list, target->pImpl->lrPkgTarget.get());
+
+    LrPackageDownloadFlag flags = static_cast<LrPackageDownloadFlag>(0);
+    if (failFast)
+        flags = static_cast<LrPackageDownloadFlag>(flags | LR_PACKAGEDOWNLOAD_FAILFAST);
+
+    GError * err = nullptr;
+    auto ret = lr_download_packages(list, flags, &err);
+
+    g_slist_free(list);
+
+    std::string msg;
+    if (err) {
+        msg = std::string(err->message) + "  " + std::to_string(err->code);
+        g_error_free(err);
+    }
+    if ((!ret && !err) || (ret && err))
+        throw std::runtime_error("Error in lr_download_packages");
+    if (!ret) {
+        throw std::runtime_error(msg);
+    }
+}
+
+
+PackageTarget::Impl::~Impl() {}
+
+PackageTarget::Impl::Impl(Repo & repo, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
+: callbacks(callbacks)
+{
+    init(repo.pImpl->getCachedHandle(), relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume, byteRangeStart, byteRangeEnd);
+}
+
+PackageTarget::Impl::Impl(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
+: callbacks(callbacks)
+{
+    lrHandle.reset(newHandle(cfg));
+    init(lrHandle.get(), relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume, byteRangeStart, byteRangeEnd);
+}
+
+void PackageTarget::Impl::init(LrHandle * handle, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd)
+{
+    LrChecksumType lrChksType = static_cast<LrChecksumType>(chksType);
+
+    if (resume && byteRangeStart) {
+        auto msg = _("resume cannot be used simultaneously with the byterangestart param");
+        throw std::runtime_error(msg);
+    }
+
+    GError * err = NULL;
+    lrPkgTarget.reset(lr_packagetarget_new_v3(handle, relativeUrl, dest, lrChksType, chksum,  expectedSize, baseUrl, resume, progressCB, callbacks, endCB, mirrorFailureCB, byteRangeStart, byteRangeEnd, &err));
+    if (!lrPkgTarget) {
+        auto msg = tfm::format(_("PackageTarget initialization failed: %s"), err->message);
+        g_error_free(err);
+        throw std::runtime_error(msg);
+    }
+}
+
+PackageTarget::PackageTarget(Repo & repo, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
+: pImpl(new Impl(repo, relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume, byteRangeStart, byteRangeEnd, callbacks)) {}
+
+PackageTarget::PackageTarget(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
+: pImpl(new Impl(cfg, relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume, byteRangeStart, byteRangeEnd, callbacks)) {}
+
+
+PackageTarget::~PackageTarget() {}
+
+PackageTargetCB * PackageTarget::getCallbacks()
+{
+    return pImpl->callbacks;
+}
+
+
+const char * PackageTarget::getErr()
+{
+    return pImpl->lrPkgTarget->err;
+}
+
 
 }
