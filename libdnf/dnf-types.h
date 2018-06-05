@@ -28,14 +28,17 @@
 
 #ifdef __cplusplus
 namespace libdnf {
+    struct Swdb;
     struct PackageSet;
     struct Dependency;
     struct DependencyContainer;
 }
+typedef struct libdnf::Swdb DnfDb;
 typedef struct libdnf::PackageSet DnfPackageSet;
 typedef struct libdnf::Dependency DnfReldep;
 typedef struct libdnf::DependencyContainer DnfReldepList;
 #else
+typedef struct Swdb DnfDb;
 typedef struct PackageSet DnfPackageSet;
 typedef struct Dependency DnfReldep;
 typedef struct DependencyContainer DnfReldepList;
