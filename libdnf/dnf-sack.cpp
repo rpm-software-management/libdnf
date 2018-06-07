@@ -2058,10 +2058,10 @@ dnf_sack_add_repos(DnfSack *sack,
     return TRUE;
 }
 
-static std::map<std::string, std::string> getEnabledModuleStreams()
+static std::map<std::string, std::string> getEnabledModuleStreams(const char *install_root)
 {
     // TODO: remove hard-coded path
-    auto dirPath = "/etc/dnf/modules.d/";
+    std::string dirPath = g_build_filename(install_root, "/etc/dnf/modules.d/", NULL);
 
     // return {name: stream} map
     std::map<std::string, std::string> result;
@@ -2152,7 +2152,7 @@ getDependencyModuleStreams(std::vector<std::shared_ptr<ModuleMetadata> > moduleM
     return result;
 }
 
-void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos)
+void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *install_root)
 {
     libdnf::Query excludeQuery{sack};
     libdnf::Query namesQuery{sack};
@@ -2197,7 +2197,7 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos)
     }
 
     // TODO: remove hard-coded path
-    auto dirPath = "/etc/dnf/modules.defaults.d/";
+    std::string dirPath = g_build_filename(install_root, "/etc/dnf/modules.defaults.d/", NULL);
 
     // read module defaults from disk
     for (const auto &file : filesystem::getDirContent(dirPath)) {
@@ -2223,8 +2223,7 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos)
     auto defaultStreams = moduleDefaults.getDefaultStreams();
 
     // read enabled module streams from program configuration
-    auto enabledStreams = getEnabledModuleStreams();
-
+    auto enabledStreams = getEnabledModuleStreams(install_root);
 
     // merge default and enabled streams into active streams
     std::map<std::string, std::string> activeStreams;
