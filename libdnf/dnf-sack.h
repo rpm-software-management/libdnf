@@ -161,7 +161,7 @@ gboolean     dnf_sack_load_repo             (DnfSack        *sack,
                                              GError        **error);
 Pool        *dnf_sack_get_pool              (DnfSack    *sack);
 
-void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos);
+void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *install_root);
 
 
 /**********************************************************************/
