@@ -430,10 +430,11 @@ same_name_subqueue(Pool *pool, Queue *in, Queue *out)
         queue_push(out, queue_pop(in));
 }
 
-static DnfPackageSet *
-remove_pkgs_with_same_nevra_from_pset(DnfPackageSet* pset, DnfPackageSet* remove_musters, DnfSack* sack)
+static std::unique_ptr<PackageSet>
+remove_pkgs_with_same_nevra_from_pset(DnfPackageSet* pset, DnfPackageSet* remove_musters,
+                                      DnfSack* sack)
 {
-    DnfPackageSet *final_pset = dnf_packageset_new(sack);
+    std::unique_ptr<PackageSet> final_pset(new PackageSet(sack));
     Id id1 = -1;
     while(true) {
         id1 = pset->next(id1);
@@ -449,11 +450,15 @@ remove_pkgs_with_same_nevra_from_pset(DnfPackageSet* pset, DnfPackageSet* remove
             DnfPackage *pkg2 = dnf_package_new(sack, id2);
             if (!dnf_package_cmp(pkg1, pkg2)) {
                 found = true;
+                g_object_unref(pkg2);
                 break;
             }
+            g_object_unref(pkg2);
         }
-        if (!found)
-            dnf_packageset_add(final_pset, pkg1);
+        if (!found) {
+            final_pset->set(pkg1);
+        }
+        g_object_unref(pkg1);
     }
     return final_pset;
 }
@@ -681,12 +686,12 @@ Goal::countProblems()
  *
  * Returns DnfPackageSet with all packages that have a conflict.
  */
-DnfPackageSet *
+std::unique_ptr<PackageSet>
 Goal::listConflictPkgs(DnfPackageState pkg_type)
 {
     DnfSack * sack = pImpl->sack;
     Pool * pool = dnf_sack_get_pool(sack);
-    DnfPackageSet *pset = dnf_packageset_new(sack);
+    std::unique_ptr<PackageSet> pset(new PackageSet(sack));
     PackageSet temporary_pset(sack);
 
     int countProblemsValue = pImpl->countProblems();
@@ -709,9 +714,7 @@ Goal::listConflictPkgs(DnfPackageState pkg_type)
         return pset;
     }
 
-    DnfPackageSet *final_pset = remove_pkgs_with_same_nevra_from_pset(pset, &temporary_pset, sack);
-    delete pset;
-    return final_pset;
+    return remove_pkgs_with_same_nevra_from_pset(pset.get(), &temporary_pset, sack);
 }
 
 /**
@@ -720,7 +723,7 @@ Goal::listConflictPkgs(DnfPackageState pkg_type)
  * available - if package installed it also excludes available packages with same NEVRA
  * Returns DnfPackageSet with all packages with broken dependency
  */
-DnfPackageSet *
+std::unique_ptr<PackageSet>
 Goal::listBrokenDependencyPkgs(DnfPackageState pkg_type)
 {
     return pImpl->brokenDependencyAllPkgs(pkg_type);
@@ -964,7 +967,7 @@ Goal::Impl::allowUninstallAllButProtected(Queue *job, DnfGoalActions flags)
 std::unique_ptr<IdQueue>
 Goal::Impl::constructJob(DnfGoalActions flags)
 {
-    auto job = std::unique_ptr<IdQueue>(new IdQueue(staging));
+    std::unique_ptr<IdQueue> job(new IdQueue(staging));
     auto elements = job->data();
     /* apply forcebest */
     if (flags & DNF_FORCE_BEST)
@@ -1120,7 +1123,7 @@ Goal::Impl::conflictPkgs(unsigned i)
 {
     SolverRuleinfo type;
     Id rid, source, target, dep;
-    auto conflict = std::unique_ptr<IdQueue>(new IdQueue);
+    std::unique_ptr<IdQueue> conflict(new IdQueue);
     if (i >= solver_problem_count(solv))
         return conflict;
 
@@ -1148,12 +1151,12 @@ Goal::Impl::countProblems()
     return solver_problem_count(solv) + MIN(1, protectedSize);
 }
 
-DnfPackageSet *
+std::unique_ptr<PackageSet>
 Goal::Impl::brokenDependencyAllPkgs(DnfPackageState pkg_type)
 {
     Pool * pool = dnf_sack_get_pool(sack);
 
-    DnfPackageSet *pset = dnf_packageset_new(sack);
+    std::unique_ptr<PackageSet> pset(new PackageSet(sack));
     PackageSet temporary_pset(sack);
 
     int countProblemsValue = countProblems();
@@ -1175,9 +1178,7 @@ Goal::Impl::brokenDependencyAllPkgs(DnfPackageState pkg_type)
     if (!temporary_pset.size()) {
         return pset;
     }
-    DnfPackageSet *final_pset = remove_pkgs_with_same_nevra_from_pset(pset, &temporary_pset, sack);
-    delete pset;
-    return final_pset;
+    return remove_pkgs_with_same_nevra_from_pset(pset.get(), &temporary_pset, sack);
 }
 
 /**
@@ -1247,7 +1248,6 @@ Goal::Impl::describeProtectedRemoval()
     g_autoptr(GString) string = NULL;
     bool firstElement = true;
     const char *name;
-    DnfPackageSet *pset;
     Pool *pool = solv->pool;
     Solvable *s;
 
@@ -1271,7 +1271,7 @@ Goal::Impl::describeProtectedRemoval()
         }
         return g_strdup(string->str);
     }
-    pset = brokenDependencyAllPkgs(DNF_PACKAGE_STATE_INSTALLED);
+    auto pset = brokenDependencyAllPkgs(DNF_PACKAGE_STATE_INSTALLED);
     Id id = -1;
     bool found = false;
     while(true) {

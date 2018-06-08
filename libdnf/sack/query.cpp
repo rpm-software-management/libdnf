@@ -1966,6 +1966,7 @@ Query::filterRecent(const long unsigned int recent_limit)
                 break;
         DnfPackage *pkg = dnf_package_new(pImpl->sack, id);
         guint64 build_time = dnf_package_get_buildtime(pkg);
+        g_object_unref(pkg);
         if (build_time <= recent_limit) {
             MAPCLR(resultMap, id);
         }
