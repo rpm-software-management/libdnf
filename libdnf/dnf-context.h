@@ -177,7 +177,9 @@ void             dnf_context_set_http_proxy             (DnfContext     *context
                                                          const gchar    *proxyurl);
 void             dnf_context_set_user_agent             (DnfContext     *context,
                                                          const gchar    *user_agent);
-
+DEPRECATED("The functionality removed")
+void             dnf_context_set_yumdb_enabled          (DnfContext    *context,
+                                                         gboolean     enable_yumdb);
 /* object methods */
 gboolean         dnf_context_setup                      (DnfContext     *context,
                                                          GCancellable   *cancellable,
@@ -222,6 +224,8 @@ gboolean         dnf_context_repo_disable               (DnfContext     *context
 gboolean         dnf_context_run                        (DnfContext     *context,
                                                          GCancellable   *cancellable,
                                                          GError         **error);
+
+inline void dnf_context_set_yumdb_enabled(DnfContext *context, gboolean enable_yumdb) {}
 
 G_END_DECLS
 
