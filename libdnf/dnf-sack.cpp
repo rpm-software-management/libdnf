@@ -72,6 +72,7 @@ extern "C" {
 #include "conf/OptionBool.hpp"
 #include "module/modulemd/ModuleDefaultsContainer.hpp"
 #include "module/modulemd/ModuleMetadata.hpp"
+#include "repo/solvable/DependencyContainer.hpp"
 #include "utils/File.hpp"
 #include "utils/utils.hpp"
 
@@ -2085,7 +2086,8 @@ static std::map<std::string, std::string> getEnabledModuleStreams(const char *in
 }
 
 static std::map<std::string, std::string>
-getDependencyModuleStreams(std::vector<std::shared_ptr<ModuleMetadata> > moduleMetadata, std::map<std::string, std::string> activeStreams)
+getDependencyModuleStreams(const std::vector<std::shared_ptr<ModuleMetadata> > &moduleMetadata,
+                           const std::map<std::string, std::string> &activeStreams)
 {
     // {name-stream: ModuleMetadata}
     std::map<std::string, std::shared_ptr<ModuleMetadata> > latestModuleVersionsByStream;
@@ -2105,7 +2107,7 @@ getDependencyModuleStreams(std::vector<std::shared_ptr<ModuleMetadata> > moduleM
 //    return result;
 
     // copy active streams into input buffer
-    for (auto i : activeStreams) {
+    for (auto &i : activeStreams) {
         input.push_back({i.first, i.second});
     }
 
@@ -2113,8 +2115,8 @@ getDependencyModuleStreams(std::vector<std::shared_ptr<ModuleMetadata> > moduleM
         auto pair = input.front();
         input.pop_front();
 
-        auto name = pair.first;
-        auto stream = pair.second;
+        auto name = std::move(pair.first);
+        auto stream = std::move(pair.second);
         std::string ns = name + ":" + stream;
 
         auto it = seen.find(name);
@@ -2154,9 +2156,10 @@ getDependencyModuleStreams(std::vector<std::shared_ptr<ModuleMetadata> > moduleM
 
 void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *install_root)
 {
+    libdnf::Query includeQuery{sack};
     libdnf::Query excludeQuery{sack};
-    libdnf::Query namesQuery{sack};
-    libdnf::Query providesQuery{sack};
+    libdnf::Query excludeNamesQuery{sack};
+    libdnf::Query excludeProvidesQuery{sack};
     libdnf::Nevra nevra;
 
     // read module metadata and defaults from repos
@@ -2169,6 +2172,8 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
 
         auto modules_fn = dnf_repo_get_filename_md(repo, "modules");
         if (modules_fn == nullptr)
+            // no modules -> no module RPM filtering
+            // apply names/Provides filters only (applies to both normal and hybrid repos)
             continue;
 
         auto yaml = libdnf::File::newFile(modules_fn);
@@ -2187,7 +2192,7 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
 
         // update defaults from repo
         try {
-            moduleDefaults.fromString(yamlContent, 0);
+//            moduleDefaults.fromString(yamlContent, 0);
         } catch (ModuleDefaultsContainer::ConflictException &exception) {
             // TODO logger.warning(exception.what());
         }
@@ -2226,59 +2231,68 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
     auto enabledStreams = getEnabledModuleStreams(install_root);
 
     // merge default and enabled streams into active streams
+    // map::insert() inserts only if key wasn't found
     std::map<std::string, std::string> activeStreams;
-    for (auto i : defaultStreams) {
+    for (auto & i : enabledStreams) {
         activeStreams.insert(i);
     }
-    for (auto i : enabledStreams) {
+    for (auto & i : defaultStreams) {
         activeStreams.insert(i);
     }
 
     // resolve module dependencies, enable additional streams
     auto dependencyStreams = getDependencyModuleStreams(moduleMetadata, activeStreams);
-    for (auto i : dependencyStreams) {
+    for (auto & i : dependencyStreams) {
         activeStreams.insert(i);
     }
 
-    // collect NEVRAs for active and inactive modules for applying excludes
+    // collect NEVRAs for to be included or excluded
     // TODO: turn into std::vector<const char *> to prevent unecessary conversion?
-    std::vector<std::string> activeNEVRAs;
-    std::vector<std::string> inactiveNEVRAs;
+    std::vector<std::string> includeNEVRAs;
+    std::vector<std::string> excludeNEVRAs;
 
     for (auto & mod : moduleMetadata) {
         auto iter = activeStreams.find(mod->getName());
         bool isActiveStream = (iter == activeStreams.end()) ? false : (iter->second == mod->getStream());
         auto artifacts = mod->getArtifacts();
         if (isActiveStream) {
-            copy(artifacts.begin(), artifacts.end(), std::inserter(activeNEVRAs, activeNEVRAs.end()));
+            std::copy(artifacts.begin(), artifacts.end(), std::back_inserter(includeNEVRAs));
         } else {
-            copy(artifacts.begin(), artifacts.end(), std::inserter(inactiveNEVRAs, inactiveNEVRAs.end()));
+            std::copy(artifacts.begin(), artifacts.end(), std::back_inserter(excludeNEVRAs));
         }
     }
 
-    // remove activeNEVRAs from inactiveNEVRAs to prevent excluding them
-    std::vector<std::string> excludeNEVRAs;
-    set_difference(
-        inactiveNEVRAs.begin(), inactiveNEVRAs.end(),
-        activeNEVRAs.begin(), activeNEVRAs.end(),
-        inserter(excludeNEVRAs, excludeNEVRAs.begin())
-    );
+    std::vector<const char *> excludeNEVRAsCString(excludeNEVRAs.size() + 1);
+    std::transform(excludeNEVRAs.begin(), excludeNEVRAs.end(), excludeNEVRAsCString.begin(), std::mem_fn(&std::string::c_str));
 
-    std::vector<const char *> names;
-    for (const auto &rpm : activeNEVRAs) {
-        nevra.parse(rpm.c_str(), HY_FORM_NEVRA);
-        names.push_back(nevra.getName().c_str());
-        nevra.clear();
+    std::vector<const char *> includeNEVRAsCString(includeNEVRAs.size() + 1);
+    std::transform(includeNEVRAs.begin(), includeNEVRAs.end(), includeNEVRAsCString.begin(), std::mem_fn(&std::string::c_str));
+
+    std::vector<std::string> names;
+    libdnf::DependencyContainer nameDeps{sack};
+    for (const auto &rpm : includeNEVRAs) {
+        if (nevra.parse(rpm.c_str(), HY_FORM_NEVRA)) {
+            names.push_back(nevra.getName());
+            nameDeps.addReldep(nevra.getName().c_str());
+        }
     }
+    std::vector<const char *> namesCString(names.size());
+    std::transform(names.begin(), names.end(), namesCString.begin(), std::mem_fn(&std::string::c_str));
 
-    std::vector<const char *> excludeNEVRAsChars(excludeNEVRAs.size());
-    std::transform(excludeNEVRAs.begin(), excludeNEVRAs.end(), excludeNEVRAsChars.begin(), std::mem_fn(&std::string::c_str));
+//    includeQuery.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, includeNEVRAsCString);
+    includeQuery.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, includeNEVRAsCString.data());
 
-    excludeQuery.addFilter(HY_PKG_NEVRA, HY_EQ, excludeNEVRAsChars);
-    namesQuery.addFilter(HY_PKG_NAME, HY_EQ, names);
-    providesQuery.addFilter(HY_PKG_PROVIDES, HY_EQ, names);
+//    excludeQuery.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, excludeNEVRAsCString);
+    excludeQuery.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, excludeNEVRAsCString.data());
+    excludeQuery.queryDifference(includeQuery);
+
+    excludeNamesQuery.addFilter(HY_PKG_NAME, HY_EQ, namesCString);
+    excludeNamesQuery.queryDifference(includeQuery);
+
+    excludeProvidesQuery.addFilter(HY_PKG_PROVIDES, &nameDeps);
+    excludeProvidesQuery.queryDifference(includeQuery);
 
     dnf_sack_add_module_excludes(sack, const_cast<DnfPackageSet *>(excludeQuery.runSet()));
-    dnf_sack_add_module_excludes(sack, const_cast<DnfPackageSet *>(namesQuery.runSet()));
-    dnf_sack_add_module_excludes(sack, const_cast<DnfPackageSet *>(providesQuery.runSet()));
+    dnf_sack_add_module_excludes(sack, const_cast<DnfPackageSet *>(excludeNamesQuery.runSet()));
+    dnf_sack_add_module_excludes(sack, const_cast<DnfPackageSet *>(excludeProvidesQuery.runSet()));
 }
