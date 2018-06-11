@@ -880,6 +880,12 @@ Query::addFilter(int keyname, int cmp_type, const char **matches)
 
 int Query::addFilter(_hy_key_name_e keyname, _hy_comparison_type_e comparisonType, const std::vector<const char *> &matches)
 {
+    if (keyname == HY_PKG_NEVRA_STRICT) {
+        throw "Implementation not possible due to filterNevraStrict() C restrictions, use int "
+              "Query::addFilter(int keyname, int cmp_type, const char **matches)";
+        return 0;
+    }
+
     int finalComparisonType = comparisonType;
     if (comparisonType & HY_GLOB && !pImpl->isGlob(matches)) {
         finalComparisonType = (comparisonType & ~HY_GLOB) | HY_EQ;
