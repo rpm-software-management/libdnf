@@ -36,6 +36,18 @@ dnf_reldep_list_new (DnfSack *sack)
 }
 
 /**
+ * dnf_reldep_list_free:
+ * @reldep_list: a #DnfReldepList
+ *
+ * Returns: Nothing
+ */
+void
+dnf_reldep_list_free (DnfReldepList *reldep_list)
+{
+    delete reldep_list;
+}
+
+/**
  * dnf_reldep_list_add:
  * @reldep_list: a #DnfReldepList
  * @reldep: a #DnfReldep

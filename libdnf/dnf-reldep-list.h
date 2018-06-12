@@ -27,6 +27,7 @@ extern "C" {
 #endif
 
 DnfReldepList *dnf_reldep_list_new(DnfSack *sack);
+void dnf_reldep_list_free(DnfReldepList *reldep_list);
 DnfReldep *dnf_reldep_list_index(DnfReldepList *reldep_list, gint index);
 gint dnf_reldep_list_count(DnfReldepList *reldep_list);
 void dnf_reldep_list_add(DnfReldepList *reldep_list, DnfReldep *reldep);
