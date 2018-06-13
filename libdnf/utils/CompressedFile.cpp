@@ -19,25 +19,19 @@ void libdnf::CompressedFile::open(const char *mode)
 
 std::string libdnf::CompressedFile::getContent()
 {
-    std::ostringstream ss;
-
     if (!file) {
         throw NotOpenedException(filePath);
     }
 
     constexpr size_t bufferSize = 4096;
-    char buffer[bufferSize + 1];
+    char buffer[bufferSize];
+    std::ostringstream ss;
+    size_t bytesRead;
 
-    while (true) {
-        auto bytesRead = read(buffer, bufferSize);
-        buffer[bytesRead] = '\0';
-
-        ss << buffer;
-
-        if (bytesRead != bufferSize) {
-            break;
-        }
-    }
+    do {
+        bytesRead = read(buffer, bufferSize);
+        ss.write(buffer, bytesRead);
+    } while (bytesRead == bufferSize);
 
     return ss.str();
 }

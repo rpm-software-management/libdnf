@@ -6,7 +6,7 @@ std::shared_ptr<Profile> ProfileMaker::getProfile(const std::string &profileName
 {
     GHashTable *profiles = modulemd_module_peek_profiles(modulemd.get());
 
-    GHashTableIter iterator{};
+    GHashTableIter iterator;
     gpointer key, value;
 
     g_hash_table_iter_init(&iterator, profiles);

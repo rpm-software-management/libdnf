@@ -2276,17 +2276,15 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
             nameDeps.addReldep(nevra.getName().c_str());
         }
     }
-    std::vector<const char *> namesCString(names.size());
+    std::vector<const char *> namesCString(names.size() + 1);
     std::transform(names.begin(), names.end(), namesCString.begin(), std::mem_fn(&std::string::c_str));
 
-//    includeQuery.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, includeNEVRAsCString);
     includeQuery.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, includeNEVRAsCString.data());
 
-//    excludeQuery.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, excludeNEVRAsCString);
     excludeQuery.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, excludeNEVRAsCString.data());
     excludeQuery.queryDifference(includeQuery);
 
-    excludeNamesQuery.addFilter(HY_PKG_NAME, HY_EQ, namesCString);
+    excludeNamesQuery.addFilter(HY_PKG_NAME, HY_EQ, namesCString.data());
     excludeNamesQuery.queryDifference(includeQuery);
 
     excludeProvidesQuery.addFilter(HY_PKG_PROVIDES, &nameDeps);

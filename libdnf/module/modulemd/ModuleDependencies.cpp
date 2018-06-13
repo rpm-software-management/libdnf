@@ -39,7 +39,7 @@ std::vector<std::map<std::string, std::vector<std::string> > > ModuleDependencie
     std::vector<std::map<std::string, std::vector<std::string>>> requires;
     requires.reserve(g_hash_table_size(requirements));
 
-    GHashTableIter iterator{};
+    GHashTableIter iterator;
     gpointer key, value;
 
     g_hash_table_iter_init (&iterator, requirements);

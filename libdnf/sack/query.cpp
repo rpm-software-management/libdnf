@@ -595,21 +595,6 @@ Filter::Filter(int keyname, int cmp_type, const char **matches) : pImpl(new Impl
     }
 }
 
-Filter::Filter(_hy_key_name_e keyname, int comparisonType, const std::vector<const char *> &matches)
-        : pImpl(new Impl)
-{
-    pImpl->keyname = keyname;
-    pImpl->cmpType = comparisonType;
-    pImpl->matchType = _HY_STR;
-    unsigned long nmatches = matches.size();
-    pImpl->matches.reserve(nmatches);
-    for (auto match : matches) {
-        _Match match_in;
-        match_in.str = copyFilterChar(match, keyname);
-        pImpl->matches.push_back(match_in);
-    }
-}
-
 Filter::~Filter() = default;
 
 Filter::Impl::~Impl()
@@ -876,44 +861,6 @@ Query::addFilter(int keyname, int cmp_type, const char **matches)
     pImpl->applied = false;
     pImpl->filters.push_back(Filter(keyname, cmp_type, matches));
     return 0;
-}
-
-int Query::addFilter(_hy_key_name_e keyname, _hy_comparison_type_e comparisonType, const std::vector<const char *> &matches)
-{
-    if (keyname == HY_PKG_NEVRA_STRICT) {
-        throw "Implementation not possible due to filterNevraStrict() C restrictions, use int "
-              "Query::addFilter(int keyname, int cmp_type, const char **matches)";
-        return 0;
-    }
-
-    int finalComparisonType = comparisonType;
-    if (comparisonType & HY_GLOB && !pImpl->isGlob(matches)) {
-        finalComparisonType = (comparisonType & ~HY_GLOB) | HY_EQ;
-    }
-
-    if (!valid_filter_str(keyname, comparisonType))
-        return DNF_ERROR_BAD_QUERY;
-
-    pImpl->applied = false;
-    switch (keyname) {
-        case HY_PKG_CONFLICTS:
-        case HY_PKG_ENHANCES:
-        case HY_PKG_OBSOLETES:
-        case HY_PKG_PROVIDES:
-        case HY_PKG_RECOMMENDS:
-        case HY_PKG_REQUIRES:
-        case HY_PKG_SUGGESTS:
-        case HY_PKG_SUPPLEMENTS:
-            for (auto match : matches) {
-                if (addFilter(keyname, finalComparisonType, match) == DNF_ERROR_BAD_QUERY)
-                    return DNF_ERROR_BAD_QUERY;
-            }
-            return 0;
-        default: {
-            pImpl->filters.emplace_back(keyname, finalComparisonType, matches);
-            return 0;
-        }
-    }
 }
 
 int

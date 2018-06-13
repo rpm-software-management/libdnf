@@ -133,7 +133,7 @@ std::vector<std::shared_ptr<ModuleProfile>> ModuleMetadata::getProfiles() const
     std::vector<std::shared_ptr<ModuleProfile> > profiles;
     profiles.reserve(g_hash_table_size(cRequires));
 
-    GHashTableIter iterator{};
+    GHashTableIter iterator;
     gpointer key, value;
 
     g_hash_table_iter_init (&iterator, cRequires);

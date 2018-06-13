@@ -50,9 +50,6 @@ public:
 protected:
     std::string filePath;
     FILE *file;
-
-private:
-    off_t getFileSize();
 };
 
 }

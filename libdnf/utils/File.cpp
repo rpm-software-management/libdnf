@@ -75,30 +75,20 @@ bool libdnf::File::readLine(std::string &line)
 
 std::string libdnf::File::getContent()
 {
-    auto fileSize = static_cast<size_t>(getFileSize());
-    char content[fileSize + 1];
-    size_t bytesRead;
-
     if (!file) {
         throw NotOpenedException(filePath);
     }
 
-    bytesRead = read(content, fileSize);
-    content[bytesRead] = '\0';
+    fseek(file, 0, SEEK_END);
+    auto fileSize = static_cast<size_t>(ftell(file));
+    rewind(file);
+    std::string content(fileSize, '\0');
+    auto bytesRead = read(&content.front(), fileSize);
 
     if (bytesRead != fileSize) {
         throw ShortReadException(filePath);
     }
 
-    return std::string(content);
-}
-
-off_t libdnf::File::getFileSize()
-{
-    struct stat sb{};
-    if (stat(filePath.c_str(), &sb) != 0) {
-        return -1;
-    }
-    return sb.st_size;
+    return content;
 }
 
