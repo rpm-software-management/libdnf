@@ -876,6 +876,8 @@ void Repo::downloadUrl(const char * url, int fd)
     }
 }
 
+char ** Repo::getMirrors() { return pImpl->getMirrors(); }
+
 int PackageTargetCB::end(int status, const char * msg) { return 0; }
 int PackageTargetCB::progress(double totalToDownload, double downloaded) { return 0; }
 int PackageTargetCB::mirrorFailure(const char *msg, const char *url) { return 0; }
@@ -883,7 +885,7 @@ int PackageTargetCB::mirrorFailure(const char *msg, const char *url) { return 0;
 
 class PackageTarget::Impl {
 public:
-    Impl(Repo & repo, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
+    Impl(Repo * repo, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
 
     Impl(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
 
@@ -897,7 +899,7 @@ public:
 
 private:
     void init(LrHandle * handle, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd);
-    LrHandle * newHandle(ConfigMain * conf);
+//    LrHandle * newHandle(ConfigMain * conf);
 
     static int endCB(void * data, LrTransferStatus status, const char * msg);
     static int progressCB(void * data, double totalToDownload, double downloaded);
@@ -933,7 +935,7 @@ int PackageTarget::Impl::mirrorFailureCB(void * data, const char * msg, const ch
 }
 
 
-LrHandle * PackageTarget::Impl::newHandle(ConfigMain * conf)
+static LrHandle * newHandle(ConfigMain * conf)
 {
     LrHandle *h = lr_handle_init();
     lr_handle_setopt(h, NULL, LRO_USERAGENT, "libdnf/1.0"); //FIXME
@@ -1010,16 +1012,17 @@ void PackageTarget::downloadPackages(std::vector<PackageTarget *> & targets, boo
 
 PackageTarget::Impl::~Impl() {}
 
-PackageTarget::Impl::Impl(Repo & repo, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
+PackageTarget::Impl::Impl(Repo * repo, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
 : callbacks(callbacks)
 {
-    init(repo.pImpl->getCachedHandle(), relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume, byteRangeStart, byteRangeEnd);
+    init(repo->pImpl->getCachedHandle(), relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume, byteRangeStart, byteRangeEnd);
 }
 
 PackageTarget::Impl::Impl(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
 : callbacks(callbacks)
 {
     lrHandle.reset(newHandle(cfg));
+    lr_handle_setopt(lrHandle.get(), NULL, LRO_REPOTYPE, LR_YUMREPO);
     init(lrHandle.get(), relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume, byteRangeStart, byteRangeEnd);
 }
 
@@ -1041,7 +1044,7 @@ void PackageTarget::Impl::init(LrHandle * handle, const char * relativeUrl, cons
     }
 }
 
-PackageTarget::PackageTarget(Repo & repo, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
+PackageTarget::PackageTarget(Repo * repo, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
 : pImpl(new Impl(repo, relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume, byteRangeStart, byteRangeEnd, callbacks)) {}
 
 PackageTarget::PackageTarget(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
@@ -1061,5 +1064,21 @@ const char * PackageTarget::getErr()
     return pImpl->lrPkgTarget->err;
 }
 
+void Downloader::downloadURL(ConfigMain * cfg, const char * url, int fd)
+{
+    std::unique_ptr<LrHandle, decltype(&lr_handle_free)> lrHandle{newHandle(cfg), &lr_handle_free};
+    GError * err = NULL;
+    auto ret = lr_download_url(lrHandle.get(), url, fd, &err);
+    std::string msg;
+    if (err) {
+        msg = std::string(err->message) + "  " + std::to_string(err->code);
+        g_error_free(err);
+    }
+    if ((!ret && !err) || (ret && err))
+        throw std::runtime_error("Error in lr_download_packages");
+    if (!ret) {
+        throw std::runtime_error(msg);
+    }
+}
 
 }

@@ -145,12 +145,18 @@ public:
     void setSyncStrategy(SyncStrategy strategy);
     SyncStrategy getSyncStrategy() const noexcept;
     void downloadUrl(const char * url, int fd);
+    char ** getMirrors();
 
     ~Repo();
 private:
     friend struct PackageTarget;
     class Impl;
     std::unique_ptr<Impl> pImpl;
+};
+
+struct Downloader {
+public:
+    static void downloadURL(ConfigMain * cfg, const char * url, int fd);
 };
 
 /**
@@ -177,7 +183,7 @@ struct PackageTarget {
 public:
     static void downloadPackages(std::vector<PackageTarget *> & targets, bool failFast);
 
-    PackageTarget(Repo & repo, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
+    PackageTarget(Repo * repo, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
     PackageTarget(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
     ~PackageTarget();
 
