@@ -1192,6 +1192,12 @@ dnf_repo_setup(DnfRepo *repo, GError **error)
             return FALSE;
     }
 
+#ifdef LRO_SUPPORTS_CACHEDIR
+    /* Set cache dir */
+    if(!lr_handle_setopt(priv->repo_handle, error, LRO_CACHEDIR, dnf_context_get_cache_dir(priv->context)))
+       return FALSE;
+#endif
+
     /* enabled is optional */
     if (g_key_file_has_key(priv->keyfile, priv->id, "enabled", NULL)) {
         if (dnf_repo_get_boolean(priv->keyfile, priv->id, "enabled", NULL))
