@@ -34,19 +34,3 @@ std::vector<std::string> ModuleProfile::getContent() const
 
     return rpms;
 }
-
-bool ModuleProfile::hasRpm(const std::string &rpm) const
-{
-    for (auto &&item : getContent()) {
-        if (item.find('*') != std::string::npos) {
-            std::regex regexp(rpm);
-            if (std::regex_search(item, regexp)) {
-                return true;
-            }
-        } else if (item == rpm) {
-            return true;
-        }
-    }
-
-    return false;
-}

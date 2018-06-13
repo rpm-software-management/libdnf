@@ -18,8 +18,6 @@ public:
     std::string getDescription() const override;
     std::vector<std::string> getContent() const override;
 
-    bool hasRpm(const std::string &rpm) const override;
-
 private:
     ModulemdProfile *profile;
 };
