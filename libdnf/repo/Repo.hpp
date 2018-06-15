@@ -25,7 +25,6 @@
 #include "../hy-types.h"
 
 #include <memory>
-#include <glib.h>
 
 namespace libdnf {
 
@@ -137,8 +136,8 @@ public:
     void setMaxMirrorTries(int maxMirrorTries);
     int getTimestamp();
     int getMaxTimestamp();
-    GSList * getContentTags();
-    GSList * getDistroTags();
+    const std::vector<std::string> & getContentTags();
+    const std::vector<std::pair<std::string, std::string>> & getDistroTags();
 
     void setRepoFilePath(const std::string & path);
     const std::string & getRepoFilePath() const noexcept;

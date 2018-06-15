@@ -111,8 +111,8 @@ public:
     std::string updateinfo_fn;
     std::string comps_fn;
     std::string revision;
-    GSList * content_tags;
-    GSList * distro_tags;
+    std::vector<std::string> content_tags;
+    std::vector<std::pair<std::string, std::string>> distro_tags;
     unsigned char checksum[CHKSUM_BYTES];
     bool useIncludes;
     std::map<std::string, std::string> substitutions;
@@ -504,10 +504,6 @@ bool Repo::Impl::lrHandlePerform(LrHandle * handle, LrResult * result)
 
 bool Repo::Impl::loadCache()
 {
-    char **mirrors;
-    LrYumRepo *yum_repo;
-    LrYumRepoMd *yum_repomd;
-
     std::unique_ptr<LrHandle, decltype(&lr_handle_free)> h(lrHandleInitLocal(), &lr_handle_free);
     std::unique_ptr<LrResult, decltype(&lr_result_free)> r(lr_result_init(), &lr_result_free);
 
@@ -518,6 +514,9 @@ bool Repo::Impl::loadCache()
         return false;
     }
 
+    char **mirrors;
+    LrYumRepo *yum_repo;
+    LrYumRepoMd *yum_repomd;
     lr_handle_getinfo(h.get(), NULL, LRI_MIRRORS, &mirrors);
     lr_result_getinfo(r.get(), NULL, LRR_YUM_REPO, &yum_repo);
     lr_result_getinfo(r.get(), NULL, LRR_YUM_REPOMD, &yum_repomd);
@@ -534,8 +533,22 @@ bool Repo::Impl::loadCache()
     if (!tmp)
         tmp = lr_yum_repo_path(yum_repo, "group");
     comps_fn = tmp ? tmp : "";
-    content_tags = yum_repomd->content_tags;
-    distro_tags = yum_repomd->distro_tags;
+
+    content_tags.clear();
+    for (auto elem = yum_repomd->content_tags; elem; elem = g_slist_next(elem)) {
+        if (elem->data)
+            content_tags.emplace_back(static_cast<const char *>(elem->data));
+    }
+
+    distro_tags.clear();
+    for (auto elem = yum_repomd->distro_tags; elem; elem = g_slist_next(elem)) {
+        if (elem->data) {
+            auto distroTag = static_cast<LrYumDistroTag *>(elem->data);
+            if (distroTag->tag)
+                distro_tags.emplace_back(distroTag->cpeid, distroTag->tag);
+        }
+    }
+
     revision = yum_repomd->revision;
     max_timestamp = lr_yum_repomd_get_highest_timestamp(yum_repomd, NULL);
 
@@ -802,12 +815,12 @@ int Repo::getMaxTimestamp()
     return pImpl->max_timestamp;
 }
 
-GSList * Repo::getContentTags()
+const std::vector<std::string> & Repo::getContentTags()
 {
     return pImpl->content_tags;
 }
 
-GSList * Repo::getDistroTags()
+const std::vector<std::pair<std::string, std::string>> & Repo::getDistroTags()
 {
     return pImpl->distro_tags;
 }
