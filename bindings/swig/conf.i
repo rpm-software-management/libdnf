@@ -179,6 +179,7 @@ public:
         self->setCallbacks(std::unique_ptr<libdnf::RepoCB>(callbacks));
     }
 }
+%template(VectorPairStringString) std::vector<std::pair<std::string, std::string>>;
 %ignore libdnf::Repo::Repo;
 %ignore libdnf::Repo::setCallbacks;
 %feature("director") libdnf::RepoCB;
