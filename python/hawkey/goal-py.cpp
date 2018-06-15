@@ -411,8 +411,6 @@ problem_rules(_GoalObject *self, PyObject *unused)
 static PyObject *
 problem_conflicts(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    PyObject *list;
-    DnfPackageSet *pset;
     const char *kwlist[] = {"available", NULL};
     int available = 0;
 
@@ -422,11 +420,8 @@ problem_conflicts(_GoalObject *self, PyObject *args, PyObject *kwds)
     DnfPackageState pkg_type = DNF_PACKAGE_STATE_ALL;
     if (available)
         pkg_type = DNF_PACKAGE_STATE_AVAILABLE;
-
-    pset = hy_goal_conflict_all_pkgs(self->goal, pkg_type);
-    list = packageset_to_pylist(pset, self->sack);
-    delete pset;
-    return list;
+    auto pset = self->goal->listConflictPkgs(pkg_type);
+    return packageset_to_pylist(pset.get(), self->sack);
 }
 
 /**
@@ -437,8 +432,6 @@ problem_conflicts(_GoalObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 problem_broken_dependency(_GoalObject *self, PyObject *args, PyObject *kwds)
 {
-    PyObject *list;
-    DnfPackageSet *pset;
     const char *kwlist[] = {"available", NULL};
     int available = 0;
 
@@ -449,11 +442,9 @@ problem_broken_dependency(_GoalObject *self, PyObject *args, PyObject *kwds)
 
     if (available)
         pkg_type = DNF_PACKAGE_STATE_AVAILABLE;
+    auto pset = self->goal->listBrokenDependencyPkgs(pkg_type);
 
-    pset = hy_goal_broken_dependency_all_pkgs(self->goal, pkg_type);
-    list = packageset_to_pylist(pset, self->sack);
-    delete pset;
-    return list;
+    return packageset_to_pylist(pset.get(), self->sack);
 }
 
 static PyObject *

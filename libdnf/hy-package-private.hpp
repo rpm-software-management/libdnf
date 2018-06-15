@@ -25,9 +25,7 @@
 #include "hy-package.h"
 #include "dnf-sack.h"
 
-DnfPackage  *dnf_package_clone          (DnfPackage *pkg);
 Pool        *dnf_package_get_pool       (DnfPackage *pkg);
 DnfSack     *dnf_package_get_sack       (DnfPackage *pkg);
-DnfPackage  *dnf_package_from_solvable  (DnfSack    *sack, Solvable *s);
 
 #endif // __HY_PACKAGE_INTERNAL_H

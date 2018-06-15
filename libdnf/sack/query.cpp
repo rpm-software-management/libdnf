@@ -23,8 +23,12 @@
 #include <fnmatch.h>
 #include <vector>
 
+extern "C" {
 #include <solv/bitmap.h>
 #include <solv/evr.h>
+#include <solv/solver.h>
+}
+
 #include "query.hpp"
 #include "../hy-iutil-private.hpp"
 #include "../hy-util-private.hpp"
@@ -34,6 +38,8 @@
 #include "../dnf-sack-private.hpp"
 #include "../dnf-advisorypkg.h"
 #include "../dnf-advisory-private.hpp"
+#include "../goal/IdQueue.hpp"
+#include "../goal/Goal-private.hpp"
 #include "advisory.hpp"
 #include "advisorypkg.hpp"
 #include "packageset.hpp"
@@ -449,14 +455,14 @@ add_latest_to_map(const Pool *pool, Map *m, Queue *samename,
 }
 
 static void
-add_duplicates_to_map(Pool *pool, Map *res, Queue samename, int start_block, int stop_block)
+add_duplicates_to_map(Pool *pool, Map *res, IdQueue & samename, int start_block, int stop_block)
 {
     Solvable *s_first, *s_second;
     for (int pos = start_block; pos < stop_block; ++pos) {
-        Id id_first = samename.elements[pos];
+        Id id_first = samename[pos];
         s_first = pool->solvables + id_first;
         for (int pos2 = pos + 1; pos2 < stop_block; ++pos2) {
-            Id id_second = samename.elements[pos2];
+            Id id_second = samename[pos2];
             s_second = pool->solvables + id_second;
             if ((s_first->evr == s_second->evr) && (s_first->arch != s_second->arch)) {
                 continue;
@@ -1862,7 +1868,7 @@ Query::getIndexItem(int index)
 }
 
 void
-Query::queryUnion(Query other)
+Query::queryUnion(Query & other)
 {
     apply();
     other.apply();
@@ -1870,7 +1876,7 @@ Query::queryUnion(Query other)
 }
 
 void
-Query::queryIntersection(Query other)
+Query::queryIntersection(Query & other)
 {
     apply();
     other.apply();
@@ -1878,7 +1884,7 @@ Query::queryIntersection(Query other)
 }
 
 void
-Query::queryDifference(Query other)
+Query::queryDifference(Query & other)
 {
     apply();
     other.apply();
@@ -1960,6 +1966,7 @@ Query::filterRecent(const long unsigned int recent_limit)
                 break;
         DnfPackage *pkg = dnf_package_new(pImpl->sack, id);
         guint64 build_time = dnf_package_get_buildtime(pkg);
+        g_object_unref(pkg);
         if (build_time <= recent_limit) {
             MAPCLR(resultMap, id);
         }
@@ -1969,7 +1976,7 @@ Query::filterRecent(const long unsigned int recent_limit)
 void
 Query::filterDuplicated()
 {
-    Queue samename;
+    IdQueue samename;
     Pool *pool = dnf_sack_get_pool(pImpl->sack);
 
     addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
@@ -1982,8 +1989,8 @@ Query::filterDuplicated()
     int start_block = -1;
     int i;
     MAPZERO(resultMap);
-    for (i = 0; i < samename.count; ++i) {
-        Id p = samename.elements[i];
+    for (i = 0; i < samename.size(); ++i) {
+        Id p = samename[i];
         considered = pool->solvables + p;
         if (!highest || highest->name != considered->name) {
             /* start of a new block */
@@ -1993,8 +2000,7 @@ Query::filterDuplicated()
                 continue;
             }
             if (start_block != i - 1) {
-                add_duplicates_to_map(pool, resultMap, samename, start_block,
-                                      i);
+                add_duplicates_to_map(pool, resultMap, samename, start_block, i);
             }
             highest = considered;
             start_block = i;
@@ -2003,6 +2009,47 @@ Query::filterDuplicated()
     if (start_block != -1) {
         add_duplicates_to_map(pool, resultMap, samename, start_block, i);
     }
+}
+
+int
+Query::filterUnneeded(const libdnf::Swdb &swdb, bool debug_solver)
+{
+    apply();
+    DnfSack * sack = pImpl->sack;
+    libdnf::Goal goal(sack);
+    Pool *pool = dnf_sack_get_pool(sack);
+    libdnf::Query installed(sack);
+    installed.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    auto userInstalled = installed.getResultPset();
+
+    swdb.filterUserinstalled(*userInstalled);
+    goal.userInstalled(*userInstalled);
+
+    int ret1 = goal.run(DNF_NONE);
+    if (ret1)
+        return -1;
+
+    if (debug_solver) {
+        g_autoptr(GError) error = NULL;
+        gboolean ret = hy_goal_write_debugdata(&goal, "./debugdata-autoremove", &error);
+        if (!ret) {
+            return -1;
+        }
+    }
+
+    IdQueue que;
+    Solver *solv = goal.pImpl->solv;
+
+    solver_get_unneeded(solv, que.getQueue(), 0);
+    Map result;
+    map_init(&result, pool->nsolvables);
+
+    for (int i = 0; i < que.size(); ++i) {
+        MAPSET(&result, que[i]);
+    }
+    map_and(getResult(), &result);
+    map_free(&result);
+    return 0;
 }
 
 void
@@ -2058,32 +2105,32 @@ Query::filterUserInstalled(const libdnf::Swdb &swdb)
 }
 
 void
-hy_query_to_name_ordered_queue(HyQuery query, Queue *samename)
+hy_query_to_name_ordered_queue(HyQuery query, libdnf::IdQueue * samename)
 {
     hy_query_apply(query);
     Pool *pool = dnf_sack_get_pool(query->getSack());
 
-    queue_init(samename);
     const auto result = query->getResult();
     for (int i = 1; i < pool->nsolvables; ++i)
         if (MAPTST(result, i))
-            queue_push(samename, i);
+            samename->pushBack(i);
 
-    solv_sort(samename->elements, samename->count, sizeof(Id), libdnf::filter_latest_sortcmp, pool);
+    solv_sort(samename->data(), samename->size(), sizeof(Id), libdnf::filter_latest_sortcmp,
+        pool);
 }
 
 void
-hy_query_to_name_arch_ordered_queue(HyQuery query, Queue *samename)
+hy_query_to_name_arch_ordered_queue(HyQuery query, libdnf::IdQueue * samename)
 {
     hy_query_apply(query);
     Pool *pool = dnf_sack_get_pool(query->getSack());
 
-    queue_init(samename);
     const auto result = query->getResult();
     for (int i = 1; i < pool->nsolvables; ++i)
         if (MAPTST(result, i))
-            queue_push(samename, i);
+            samename->pushBack(i);
 
-    solv_sort(samename->elements, samename->count, sizeof(Id), libdnf::filter_latest_sortcmp_byarch,
-              pool);
+    solv_sort(samename->data(), samename->size(), sizeof(Id),
+        libdnf::filter_latest_sortcmp_byarch, pool);
 }
+

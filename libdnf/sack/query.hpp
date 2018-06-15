@@ -132,21 +132,21 @@ public:
     *
     * @param other p_other:...
     */
-    void queryUnion(Query other);
+    void queryUnion(Query & other);
 
     /**
     * @brief Applies both queries and keep only common packages for both queries in this query
     *
     * @param other p_other:...
     */
-    void queryIntersection(Query other);
+    void queryIntersection(Query & other);
 
     /**
     * @brief Applies both queries and keep only packages in this query that are absent in other query
     *
     * @param other p_other:...
     */
-    void queryDifference(Query other);
+    void queryDifference(Query & other);
 
     /**
     * @brief Applies Query and returns true if any package in the query
@@ -157,6 +157,7 @@ public:
     void filterExtras();
     void filterRecent(const long unsigned int recent_limit);
     void filterDuplicated();
+    int filterUnneeded(const libdnf::Swdb &swdb, bool debug_solver);
     void getAdvisoryPkgs(int cmpType,  std::vector<AdvisoryPkg> & advisoryPkgs);
     void filterUserInstalled(const libdnf::Swdb &swdb);
 private:

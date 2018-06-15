@@ -172,22 +172,6 @@ reldeps_for(DnfPackage *pkg, Id type)
 }
 
 /**
- * dnf_package_clone:
- * @pkg: a #DnfPackage instance.
- *
- * Clones the package.
- *
- * Returns: a #DnfPackage
- *
- * Since: 0.7.0
- */
-DnfPackage *
-dnf_package_clone(DnfPackage *pkg)
-{
-    return dnf_package_new(dnf_package_get_sack(pkg), dnf_package_get_id(pkg));
-}
-
-/**
  * dnf_package_get_id: (skip):
  * @pkg: a #DnfPackage instance.
  *
@@ -219,26 +203,6 @@ dnf_package_get_sack(DnfPackage *pkg)
 {
     DnfPackagePrivate *priv = GET_PRIVATE(pkg);
     return priv->sack;
-}
-
-/**
- * dnf_package_from_solvable: (skip):
- * @pkg: a #DnfPackage instance.
- *
- * Creates a package from a solvable.
- *
- * Returns: a #HyPackage
- *
- * Since: 0.7.0
- */
-DnfPackage *
-dnf_package_from_solvable(DnfSack *sack, Solvable *s)
-{
-    if (!s)
-        return NULL;
-
-    Id p = s - s->repo->pool->solvables;
-    return dnf_package_new(sack, p);
 }
 
 /**

@@ -47,7 +47,6 @@ public:
     DnfGoalActions getActions();
     int getReason(DnfPackage *pkg);
     DnfSack * getSack();
-    Solver * getSolv();
 
     void addProtected(PackageSet & pset);
     void setProtected(const PackageSet & pset);
@@ -99,9 +98,9 @@ public:
 
     /* problems */
     int countProblems();
-    
-    DnfPackageSet * listConflictPkgs(DnfPackageState pkg_type);
-    DnfPackageSet * listBrokenDependencyPkgs(DnfPackageState pkg_type);
+
+    std::unique_ptr<PackageSet> listConflictPkgs(DnfPackageState pkg_type);
+    std::unique_ptr<PackageSet> listBrokenDependencyPkgs(DnfPackageState pkg_type);
 
     /**
     * @brief List describing failed rules in solving problem 'i'. Caller is responsible for freeing the
@@ -126,6 +125,7 @@ public:
     libdnf::PackageSet listObsoletedByPackage(DnfPackage * pkg);
 
 private:
+    friend Query;
     class Impl;
     std::unique_ptr<Impl> pImpl;
 };

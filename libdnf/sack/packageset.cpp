@@ -90,6 +90,19 @@ PackageSet::operator [](unsigned int index) const
     return id;
 }
 
+PackageSet &
+PackageSet::operator +=(const PackageSet & other)
+{
+    map_or(&pImpl->map, &other.pImpl->map);
+    return *this;
+}
+
+void
+PackageSet::clear()
+{
+    map_empty(&pImpl->map);
+}
+
 void PackageSet::set(DnfPackage *pkg) { MAPSET(&pImpl->map, dnf_package_get_id(pkg)); }
 void PackageSet::set(Id id) { MAPSET(&pImpl->map, id); }
 bool PackageSet::has(DnfPackage *pkg) const { return MAPTST(&pImpl->map, dnf_package_get_id(pkg)); }

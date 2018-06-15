@@ -31,7 +31,7 @@ extern "C" {
 #include <solv/transaction.h>
 }
 
-#include "Goal.hpp"
+#include "Goal-private.hpp"
 #include "../hy-goal-private.hpp"
 #include "../hy-iutil-private.hpp"
 #include "../hy-package-private.hpp"
@@ -41,6 +41,7 @@ extern "C" {
 #include "../sack/selector.hpp"
 #include "../utils/bgettext/bgettext-lib.h"
 #include "../utils/tinyformat/tinyformat.hpp"
+#include "IdQueue.hpp"
 
 enum {NO_MATCH=1, MULTIPLE_MATCH_OBJECTS, INCORECT_COMPARISON_TYPE};
 
@@ -50,10 +51,9 @@ static std::map<int, const char *> ERROR_DICT = {
 };
 
 static void
-packageToJob(DnfPackage *package, Queue *job, int solver_action)
+packageToJob(DnfPackage * package, Queue * job, int solver_action)
 {
-    Queue pkgs;
-    queue_init(&pkgs);
+    libdnf::IdQueue pkgs;
 
     Pool *pool = dnf_package_get_pool(package);
     DnfSack *sack = dnf_package_get_sack(package);
@@ -61,11 +61,10 @@ packageToJob(DnfPackage *package, Queue *job, int solver_action)
     dnf_sack_recompute_considered(sack);
     dnf_sack_make_provides_ready(sack);
 
-    queue_push(&pkgs, dnf_package_get_id(package));
+    pkgs.pushBack(dnf_package_get_id(package));
 
-    Id what = pool_queuetowhatprovides(pool, &pkgs);
+    Id what = pool_queuetowhatprovides(pool, pkgs.getQueue());
     queue_push2(job, SOLVER_SOLVABLE_ONE_OF|SOLVER_SETARCH|SOLVER_SETEVR|solver_action, what);
-    queue_free(&pkgs);
 }
 
 static int
@@ -170,17 +169,15 @@ filterPkgToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
     DnfPackageSet *pset = f->getMatches()[0].pset;
     Id what;
     Id id = -1;
-    Queue pkgs;
-    queue_init(&pkgs);
+    libdnf::IdQueue pkgs;
     while(true) {
         id = pset->next(id);
         if (id == -1)
             break;
-        queue_push(&pkgs, id);
+        pkgs.pushBack(id);
     }
-    what = pool_queuetowhatprovides(pool, &pkgs);
+    what = pool_queuetowhatprovides(pool, pkgs.getQueue());
     queue_push2(job, SOLVER_SOLVABLE_ONE_OF|SOLVER_SETARCH|SOLVER_SETEVR, what);
-    queue_free(&pkgs);
     return 0;
 }
 
@@ -262,7 +259,6 @@ filterProvidesToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 static int
 filterReponameToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 {
-    Queue repo_sel;
     Id i;
     Repo *repo;
 
@@ -277,16 +273,15 @@ filterReponameToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
         return MULTIPLE_MATCH_OBJECTS;
     }
 
-    queue_init(&repo_sel);
+    libdnf::IdQueue repo_sel;
     Pool *pool = dnf_sack_get_pool(sack);
     FOR_REPOS(i, repo)
         if (!strcmp(matches[0].str, repo->name)) {
-            queue_push2(&repo_sel, SOLVER_SOLVABLE_REPO | SOLVER_SETREPO, repo->repoid);
+            repo_sel.pushBack(SOLVER_SOLVABLE_REPO | SOLVER_SETREPO, repo->repoid);
         }
 
-    selection_filter(pool, job, &repo_sel);
+    selection_filter(pool, job, repo_sel.getQueue());
 
-    queue_free(&repo_sel);
     return 0;
 }
 
@@ -300,18 +295,17 @@ sltrToJob(const HySelector sltr, Queue *job, int solver_action)
 {
     DnfSack *sack = sltr->getSack();
     int ret = 0;
-    Queue job_sltr;
+
     int any_opt_filter = sltr->getFilterArch() || sltr->getFilterEvr()
         || sltr->getFilterReponame();
     int any_req_filter = sltr->getFilterName() || sltr->getFilterProvides()
         || sltr->getFilterFile() || sltr->getFilterPkg();
 
-    queue_init(&job_sltr);
+    libdnf::IdQueue job_sltr;
 
     if (!any_req_filter) {
         if (any_opt_filter) {
             // no name or provides or file in the selector is an error
-            queue_free(&job_sltr);
             throw libdnf::Goal::Exception("Ill-formed Selector. No name or"
                 "provides or file in the selector.", DNF_ERROR_BAD_SELECTOR);
         }
@@ -320,35 +314,32 @@ sltrToJob(const HySelector sltr, Queue *job, int solver_action)
 
     dnf_sack_recompute_considered(sack);
     dnf_sack_make_provides_ready(sack);
-    ret = filterPkgToJob(sack, sltr->getFilterPkg(), &job_sltr);
+    ret = filterPkgToJob(sack, sltr->getFilterPkg(), job_sltr.getQueue());
     if (ret)
         goto finish;
-    ret = filterNameToJob(sack, sltr->getFilterName(), &job_sltr);
+    ret = filterNameToJob(sack, sltr->getFilterName(), job_sltr.getQueue());
     if (ret)
         goto finish;
-    ret = filterFileToJob(sack, sltr->getFilterFile(), &job_sltr);
+    ret = filterFileToJob(sack, sltr->getFilterFile(), job_sltr.getQueue());
     if (ret)
         goto finish;
-    ret = filterProvidesToJob(sack, sltr->getFilterProvides(), &job_sltr);
+    ret = filterProvidesToJob(sack, sltr->getFilterProvides(), job_sltr.getQueue());
     if (ret)
         goto finish;
-    ret = filterArchToJob(sack, sltr->getFilterArch(), &job_sltr);
+    ret = filterArchToJob(sack, sltr->getFilterArch(), job_sltr.getQueue());
     if (ret)
         goto finish;
-    ret = filterEvrToJob(sack, sltr->getFilterEvr(), &job_sltr);
+    ret = filterEvrToJob(sack, sltr->getFilterEvr(), job_sltr.getQueue());
     if (ret)
         goto finish;
-    ret = filterReponameToJob(sack, sltr->getFilterReponame(), &job_sltr);
+    ret = filterReponameToJob(sack, sltr->getFilterReponame(), job_sltr.getQueue());
     if (ret)
         goto finish;
 
-    for (int i = 0; i < job_sltr.count; i += 2)
-         queue_push2(job,
-                     job_sltr.elements[i] | solver_action,
-                     job_sltr.elements[i + 1]);
+    for (int i = 0; i < job_sltr.size(); i += 2)
+         queue_push2(job, job_sltr[i] | solver_action, job_sltr[i + 1]);
 
  finish:
-    queue_free(&job_sltr);
     if (ret > 1) {
         throw libdnf::Goal::Exception(TM_(ERROR_DICT[ret], 1), DNF_ERROR_BAD_SELECTOR);
     }
@@ -363,42 +354,32 @@ struct InstallonliesSortCallback {
     Id running_kernel;
 };
 
-static void
-queue2pset(Queue *queue, PackageSet * pset)
+static inline void
+queue2pset(const IdQueue & queue, PackageSet * pset)
 {
-    for (int i = 0; i < queue->count; ++i)
-        pset->set(queue->elements[i]);
+    for (int i = 0; i < queue.size(); ++i)
+        pset->set(queue[i]);
 }
 
-static void
-free_job(Queue *job)
-{
-    queue_free(job);
-    g_free(job);
-}
-
-static int
+static bool
+/**
+* @brief return false iff a does not depend on anything from b
+*/
 can_depend_on(Pool *pool, Solvable *sa, Id b)
 {
-    // return 0 iff a does not depend on anything from b
-    Queue requires;
-    int ret = 1;
+    IdQueue requires;
 
-    queue_init(&requires);
-    solvable_lookup_idarray(sa, SOLVABLE_REQUIRES, &requires);
-    for (int i = 0; i < requires.count; ++i) {
-        Id req_dep = requires.elements[i];
+    solvable_lookup_idarray(sa, SOLVABLE_REQUIRES, requires.getQueue());
+    for (int i = 0; i < requires.size(); ++i) {
+        Id req_dep = requires[i];
         Id p, pp;
 
         FOR_PROVIDES(p, pp, req_dep)
             if (p == b)
-                goto done;
+                return true;
     }
 
-    ret = 0;
- done:
-    queue_free(&requires);
-    return ret;
+    return false;
 }
 
 static int
@@ -449,10 +430,11 @@ same_name_subqueue(Pool *pool, Queue *in, Queue *out)
         queue_push(out, queue_pop(in));
 }
 
-static DnfPackageSet *
-remove_pkgs_with_same_nevra_from_pset(DnfPackageSet* pset, DnfPackageSet* remove_musters, DnfSack* sack)
+static std::unique_ptr<PackageSet>
+remove_pkgs_with_same_nevra_from_pset(DnfPackageSet* pset, DnfPackageSet* remove_musters,
+                                      DnfSack* sack)
 {
-    DnfPackageSet *final_pset = dnf_packageset_new(sack);
+    std::unique_ptr<PackageSet> final_pset(new PackageSet(sack));
     Id id1 = -1;
     while(true) {
         id1 = pset->next(id1);
@@ -468,11 +450,15 @@ remove_pkgs_with_same_nevra_from_pset(DnfPackageSet* pset, DnfPackageSet* remove
             DnfPackage *pkg2 = dnf_package_new(sack, id2);
             if (!dnf_package_cmp(pkg1, pkg2)) {
                 found = true;
+                g_object_unref(pkg2);
                 break;
             }
+            g_object_unref(pkg2);
         }
-        if (!found)
-            dnf_packageset_add(final_pset, pkg1);
+        if (!found) {
+            final_pset->set(pkg1);
+        }
+        g_object_unref(pkg1);
     }
     return final_pset;
 }
@@ -485,37 +471,6 @@ erase_flags2libsolv(int flags)
         ret |= SOLVER_CLEANDEPS;
     return ret;
 }
-
-class Goal::Impl {
-public:
-    Impl(DnfSack * sack);
-    Impl(const Goal::Impl & src_goal);
-    ~Impl();
-private:
-    friend Goal;
-
-    DnfSack *sack;
-    Queue staging;
-    Solver *solv{nullptr};
-    ::Transaction *trans{nullptr};
-    DnfGoalActions actions{DNF_NONE};
-    std::unique_ptr<PackageSet> protectedPkgs;
-    std::unique_ptr<PackageSet> removalOfProtected;
-
-    PackageSet listResults(Id type_filter1, Id type_filter2);
-    void allowUninstallAllButProtected(Queue *job, DnfGoalActions flags);
-    Queue * constructJob(DnfGoalActions flags);
-    int solve(Queue *job, DnfGoalActions flags);
-    Solver * initSolver();
-    int limitInstallonlyPackages(Solver *solv, Queue *job);
-    Queue * conflictPkgs(unsigned i);
-    Queue * brokenDependencyPkgs(unsigned i);
-    bool protectedInRemovals();
-    char * describeProtectedRemoval();
-    DnfPackageSet * brokenDependencyAllPkgs(DnfPackageState pkg_type);
-    int countProblems();
-
-};
 
 Goal::Goal(const Goal & goal_src) : pImpl(new Impl(*goal_src.pImpl)) {}
 
@@ -555,8 +510,6 @@ Goal::Impl::~Impl()
 DnfGoalActions Goal::getActions() { return pImpl->actions; }
 
 DnfSack * Goal::getSack() { return pImpl->sack; }
-
-Solver * Goal::getSolv() { return pImpl->solv; }
 
 int
 Goal::getReason(DnfPackage *pkg)
@@ -713,10 +666,9 @@ Goal::jobLength()
 int
 Goal::run(DnfGoalActions flags)
 {
-    Queue *job = pImpl->constructJob(flags);
+    auto job = pImpl->constructJob(flags);
     pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | flags);
-    int ret = pImpl->solve(job, flags);
-    free_job(job);
+    int ret = pImpl->solve(job->getQueue(), flags);
     return ret;
 }
 
@@ -734,41 +686,35 @@ Goal::countProblems()
  *
  * Returns DnfPackageSet with all packages that have a conflict.
  */
-DnfPackageSet *
+std::unique_ptr<PackageSet>
 Goal::listConflictPkgs(DnfPackageState pkg_type)
 {
-    DnfPackageSet *pset = dnf_packageset_new(pImpl->sack);
-    DnfPackageSet *temporary_pset = dnf_packageset_new(pImpl->sack);
+    DnfSack * sack = pImpl->sack;
+    Pool * pool = dnf_sack_get_pool(sack);
+    std::unique_ptr<PackageSet> pset(new PackageSet(sack));
+    PackageSet temporary_pset(sack);
 
     int countProblemsValue = pImpl->countProblems();
     for (int i = 0; i < countProblemsValue; i++) {
-        Queue *conflict = pImpl->conflictPkgs(i);
-        for (int j = 0; j < conflict->count; j++) {
-            Id id = conflict->elements[j];
-            DnfPackage *pkg = dnf_package_new(pImpl->sack, id);
-            if (!pkg)
-                continue;
-            if (pkg_type ==  DNF_PACKAGE_STATE_AVAILABLE && dnf_package_installed(pkg)) {
-                dnf_packageset_add(temporary_pset, pkg);
+        auto conflict = pImpl->conflictPkgs(i);
+        for (int j = 0; j < conflict->size(); j++) {
+            Id id = (*conflict)[j];
+            Solvable *s = pool_id2solvable(pool, id);
+            bool installed = pool->installed == s->repo;
+            if (pkg_type ==  DNF_PACKAGE_STATE_AVAILABLE && installed) {
+                temporary_pset.set(id);
                 continue;
             }
-            if (pkg_type ==  DNF_PACKAGE_STATE_INSTALLED && !dnf_package_installed(pkg))
+            if (pkg_type ==  DNF_PACKAGE_STATE_INSTALLED && !installed)
                 continue;
-            dnf_packageset_add(pset, pkg);
+            pset->set(id);
         }
-        queue_free(conflict);
     }
-    unsigned int count = dnf_packageset_count(temporary_pset);
-    if (!count) {
-        delete temporary_pset;
+    if (!temporary_pset.size()) {
         return pset;
     }
 
-    DnfPackageSet *final_pset = remove_pkgs_with_same_nevra_from_pset(pset, temporary_pset,
-                                                                      pImpl->sack);
-    delete pset;
-    delete temporary_pset;
-    return final_pset;
+    return remove_pkgs_with_same_nevra_from_pset(pset.get(), &temporary_pset, sack);
 }
 
 /**
@@ -777,7 +723,7 @@ Goal::listConflictPkgs(DnfPackageState pkg_type)
  * available - if package installed it also excludes available packages with same NEVRA
  * Returns DnfPackageSet with all packages with broken dependency
  */
-DnfPackageSet *
+std::unique_ptr<PackageSet>
 Goal::listBrokenDependencyPkgs(DnfPackageState pkg_type)
 {
     return pImpl->brokenDependencyAllPkgs(pkg_type);
@@ -802,7 +748,6 @@ Goal::describeProblemRules(unsigned i)
         return problist;
     }
 
-    Queue pq, rq;
     Id rid, source, target, dep;
     SolverRuleinfo type;
     int j;
@@ -811,18 +756,18 @@ Goal::describeProblemRules(unsigned i)
     if (i >= solver_problem_count(pImpl->solv))
         return problist;
 
-    queue_init(&pq);
-    queue_init(&rq);
+    IdQueue pq;
+    IdQueue rq;
     // this libsolv interface indexes from 1 (we do from 0), so:
-    solver_findallproblemrules(pImpl->solv, i+1, &pq);
-    for (j = 0; j < pq.count; j++) {
-        rid = pq.elements[j];
-        if (solver_allruleinfos(pImpl->solv, rid, &rq)) {
-            for (int ir = 0; ir < rq.count; ir+=4) {
-                type = static_cast<SolverRuleinfo>(rq.elements[ir]);
-                source = rq.elements[ir + 1];
-                target = rq.elements[ir + 2];
-                dep = rq.elements[ir + 3];
+    solver_findallproblemrules(pImpl->solv, i+1, pq.getQueue());
+    for (j = 0; j < pq.size(); j++) {
+        rid = pq[j];
+        if (solver_allruleinfos(pImpl->solv, rid, rq.getQueue())) {
+            for (int ir = 0; ir < rq.size(); ir+=4) {
+                type = static_cast<SolverRuleinfo>(rq[ir]);
+                source = rq[ir + 1];
+                target = rq[ir + 2];
+                dep = rq[ir + 3];
                 const char *problem_str = solver_problemruleinfo2str(
                     pImpl->solv, type, source, target, dep);
                 unique = true;
@@ -844,8 +789,6 @@ Goal::describeProblemRules(unsigned i)
             }
         }
     }
-    queue_free(&rq);
-    queue_free(&pq);
     return problist;
 }
 
@@ -899,8 +842,6 @@ Goal::writeDebugdata(const char *dir)
 PackageSet
 Goal::Impl::listResults(Id type_filter1, Id type_filter2)
 {
-    Queue transpkgs;
-
     /* no transaction */
     if (!trans) {
         if (!solv) {
@@ -911,7 +852,6 @@ Goal::Impl::listResults(Id type_filter1, Id type_filter2)
         }
         throw Goal::Exception(_("no solution possible"), DNF_ERROR_NO_SOLUTION);
     }
-    queue_init(&transpkgs);
     PackageSet plist(sack);
     const int common_mode = SOLVER_TRANSACTION_SHOW_OBSOLETES |
         SOLVER_TRANSACTION_CHANGE_IS_REINSTALL;
@@ -965,13 +905,11 @@ PackageSet
 Goal::listUnneeded()
 {
     PackageSet pset(pImpl->sack);
-    Queue queue;
+    IdQueue queue;
     Solver *solv = pImpl->solv;
 
-    queue_init(&queue );
-    solver_get_unneeded(solv, &queue, 0);
-    queue2pset(&queue, &pset);
-    queue_free(&queue );
+    solver_get_unneeded(solv, queue.getQueue(), 0);
+    queue2pset(queue, &pset);
     return pset;
 }
 
@@ -991,16 +929,14 @@ PackageSet
 Goal::listObsoletedByPackage(DnfPackage *pkg)
 {
     auto trans = pImpl->trans;
-    Queue obsoletes;
+    IdQueue obsoletes;
     PackageSet pset(pImpl->sack);
 
     assert(trans);
-    queue_init(&obsoletes);
 
-    transaction_all_obs_pkgs(trans, dnf_package_get_id(pkg), &obsoletes);
-    queue2pset(&obsoletes, &pset);
+    transaction_all_obs_pkgs(trans, dnf_package_get_id(pkg), obsoletes.getQueue());
+    queue2pset(obsoletes, &pset);
 
-    queue_free(&obsoletes);
     return pset;
 }
 
@@ -1028,27 +964,26 @@ Goal::Impl::allowUninstallAllButProtected(Queue *job, DnfGoalActions flags)
         }
 }
 
-Queue *
+std::unique_ptr<IdQueue>
 Goal::Impl::constructJob(DnfGoalActions flags)
 {
-    Queue *job = (Queue*)g_malloc(sizeof(*job));
-
-    queue_init_clone(job, &staging);
-
+    std::unique_ptr<IdQueue> job(new IdQueue(staging));
+    auto elements = job->data();
     /* apply forcebest */
     if (flags & DNF_FORCE_BEST)
-        for (int i = 0; i < job->count; i += 2)
-            job->elements[i] |= SOLVER_FORCEBEST;
+        for (int i = 0; i < job->size(); i += 2) {
+            elements[i] |= SOLVER_FORCEBEST;
+    }
 
     /* turn off implicit obsoletes for installonly packages */
     for (int i = 0; i < (int) dnf_sack_get_installonly(sack)->count; i++)
-        queue_push2(job, SOLVER_MULTIVERSION|SOLVER_SOLVABLE_PROVIDES,
-                    dnf_sack_get_installonly(sack)->elements[i]);
+        job->pushBack(SOLVER_MULTIVERSION|SOLVER_SOLVABLE_PROVIDES,
+            dnf_sack_get_installonly(sack)->elements[i]);
 
-    allowUninstallAllButProtected(job, flags);
+    allowUninstallAllButProtected(job->getQueue(), flags);
 
     if (flags & DNF_VERIFY)
-        queue_push2(job, SOLVER_VERIFY|SOLVER_SOLVABLE_ALL, 0);
+        job->pushBack(SOLVER_VERIFY|SOLVER_SOLVABLE_ALL, 0);
 
     return job;
 }
@@ -1092,52 +1027,42 @@ Goal::Impl::limitInstallonlyPackages(Solver *solv, Queue *job)
 
     for (int i = 0; i < onlies->count; ++i) {
         Id p, pp;
-        Queue q, installing;
-        queue_init(&q);
-        queue_init(&installing);
+        IdQueue q, installing;
 
         FOR_PKG_PROVIDES(p, pp, onlies->elements[i])
             if (solver_get_decisionlevel(solv, p) > 0)
-                queue_push(&q, p);
-        if (q.count <= (int) dnf_sack_get_installonly_limit(sack)) {
-            queue_free(&q);
-            queue_free(&installing);
+                q.pushBack(p);
+        if (q.size() <= (int) dnf_sack_get_installonly_limit(sack)) {
             continue;
         }
-        for (int k = 0; k < q.count; ++k) {
-            Id id  = q.elements[k];
+        for (int k = 0; k < q.size(); ++k) {
+            Id id  = q[k];
             Solvable *s = pool_id2solvable(pool, id);
             if (pool->installed != s->repo) {
-                queue_push(&installing, id);
+                installing.pushBack(id);
                 break;
             }
         }
-        if (!installing.count) {
-            queue_free(&q);
-            queue_free(&installing);
+        if (!installing.size()) {
             continue;
         }
 
         struct InstallonliesSortCallback s_cb = {pool, dnf_sack_running_kernel(sack)};
-        solv_sort(q.elements, q.count, sizeof(q.elements[0]), sort_packages, &s_cb);
-        Queue same_names;
-        queue_init(&same_names);
-        while (q.count > 0) {
-            same_name_subqueue(pool, &q, &same_names);
-            if (same_names.count <= (int) dnf_sack_get_installonly_limit(sack))
+        solv_sort(q.data(), q.size(), sizeof(q[0]), sort_packages, &s_cb);
+        IdQueue same_names;
+        while (q.size() > 0) {
+            same_name_subqueue(pool, q.getQueue(), same_names.getQueue());
+            if (same_names.size() <= (int) dnf_sack_get_installonly_limit(sack))
                 continue;
             reresolve = 1;
-            for (int j = 0; j < same_names.count; ++j) {
-                Id id  = same_names.elements[j];
+            for (int j = 0; j < same_names.size(); ++j) {
+                Id id  = same_names[j];
                 Id action = SOLVER_ERASE;
                 if (j < (int) dnf_sack_get_installonly_limit(sack))
                     action = SOLVER_INSTALL;
                 queue_push2(job, action | SOLVER_SOLVABLE, id);
             }
         }
-        queue_free(&same_names);
-        queue_free(&q);
-        queue_free(&installing);
     }
     return reresolve;
 }
@@ -1193,35 +1118,28 @@ Goal::Impl::solve(Queue *job, DnfGoalActions flags)
  *
  * Returns Queue with Ids of packages with conflict
  */
-Queue *
+std::unique_ptr<IdQueue>
 Goal::Impl::conflictPkgs(unsigned i)
 {
     SolverRuleinfo type;
     Id rid, source, target, dep;
-
-    Queue pq;
-    Queue* conflict = (Queue*)g_malloc(sizeof(Queue));
-    int j;
-
-    queue_init(conflict);
-
+    std::unique_ptr<IdQueue> conflict(new IdQueue);
     if (i >= solver_problem_count(solv))
         return conflict;
 
-    queue_init(&pq);
+    IdQueue pq;
     // this libsolv interface indexes from 1 (we do from 0), so:
-    solver_findallproblemrules(solv, i+1, &pq);
-    for (j = 0; j < pq.count; j++) {
-        rid = pq.elements[j];
+    solver_findallproblemrules(solv, i+1, pq.getQueue());
+    for ( int j = 0; j < pq.size(); j++) {
+        rid = pq[j];
         type = solver_ruleinfo(solv, rid, &source, &target, &dep);
         if (type == SOLVER_RULE_PKG_CONFLICTS)
-            queue_push2(conflict, source, target);
+            conflict->pushBack(source, target);
         else if (type == SOLVER_RULE_PKG_SELF_CONFLICT)
-            queue_push(conflict, source);
+            conflict->pushBack(source);
         else if (type == SOLVER_RULE_PKG_SAME_NAME)
-            queue_push2(conflict, source, target);
+            conflict->pushBack(source, target);
     }
-    queue_free(&pq);
     return conflict;
 }
 
@@ -1233,40 +1151,34 @@ Goal::Impl::countProblems()
     return solver_problem_count(solv) + MIN(1, protectedSize);
 }
 
-DnfPackageSet *
+std::unique_ptr<PackageSet>
 Goal::Impl::brokenDependencyAllPkgs(DnfPackageState pkg_type)
 {
-    DnfPackageSet *pset = dnf_packageset_new(sack);
-    DnfPackageSet *temporary_pset = dnf_packageset_new(sack);
+    Pool * pool = dnf_sack_get_pool(sack);
+
+    std::unique_ptr<PackageSet> pset(new PackageSet(sack));
+    PackageSet temporary_pset(sack);
 
     int countProblemsValue = countProblems();
     for (int i = 0; i < countProblemsValue; i++) {
-        Queue *broken_dependency = brokenDependencyPkgs(i);
-        for (int j = 0; j < broken_dependency->count; j++) {
-            Id id = broken_dependency->elements[j];
-            DnfPackage *pkg = dnf_package_new(sack, id);
-            if (!pkg)
-                continue;
-            if (pkg_type ==  DNF_PACKAGE_STATE_AVAILABLE && dnf_package_installed(pkg)) {
-                dnf_packageset_add(temporary_pset, pkg);
+        auto broken_dependency = brokenDependencyPkgs(i);
+        for (int j = 0; j < broken_dependency->size(); j++) {
+            Id id = (*broken_dependency)[j];
+            Solvable *s = pool_id2solvable(pool, id);
+            bool installed = pool->installed == s->repo;
+            if (pkg_type ==  DNF_PACKAGE_STATE_AVAILABLE && installed) {
+                temporary_pset.set(id);
                 continue;
             }
-            if (pkg_type ==  DNF_PACKAGE_STATE_INSTALLED && !dnf_package_installed(pkg))
+            if (pkg_type ==  DNF_PACKAGE_STATE_INSTALLED && !installed)
                 continue;
-            dnf_packageset_add(pset, pkg);
+            pset->set(id);
         }
-        queue_free(broken_dependency);
     }
-    unsigned int count = dnf_packageset_count(temporary_pset);
-    if (!count) {
-        delete temporary_pset;
+    if (!temporary_pset.size()) {
         return pset;
     }
-    DnfPackageSet *final_pset = remove_pkgs_with_same_nevra_from_pset(pset, temporary_pset,
-                                                                      sack);
-    delete pset;
-    delete temporary_pset;
-    return final_pset;
+    return remove_pkgs_with_same_nevra_from_pset(pset.get(), &temporary_pset, sack);
 }
 
 /**
@@ -1274,30 +1186,26 @@ Goal::Impl::brokenDependencyAllPkgs(DnfPackageState pkg_type)
  *
  * Returns Queue with Ids of packages with broken dependency
  */
-Queue *
+std::unique_ptr<IdQueue>
 Goal::Impl::brokenDependencyPkgs(unsigned i)
 {
     SolverRuleinfo type;
     Id rid, source, target, dep;
 
-    Queue pq;
-    Queue* broken_dependency = (Queue*)g_malloc(sizeof(Queue));
-    int j;
-    queue_init(broken_dependency);
+    auto broken_dependency = std::unique_ptr<IdQueue>(new IdQueue);
     if (i >= solver_problem_count(solv))
         return broken_dependency;
-    queue_init(&pq);
+    IdQueue pq;
     // this libsolv interface indexes from 1 (we do from 0), so:
-    solver_findallproblemrules(solv, i+1, &pq);
-    for (j = 0; j < pq.count; j++) {
-        rid = pq.elements[j];
+    solver_findallproblemrules(solv, i+1, pq.getQueue());
+    for (int j = 0; j < pq.size(); j++) {
+        rid = pq[j];
         type = solver_ruleinfo(solv, rid, &source, &target, &dep);
         if (type == SOLVER_RULE_PKG_NOTHING_PROVIDES_DEP)
-            queue_push(broken_dependency, source);
+            broken_dependency->pushBack(source);
         else if (type == SOLVER_RULE_PKG_REQUIRES)
-            queue_push(broken_dependency, source);
+            broken_dependency->pushBack(source);
     }
-    queue_free(&pq);
     return broken_dependency;
 }
 
@@ -1340,7 +1248,6 @@ Goal::Impl::describeProtectedRemoval()
     g_autoptr(GString) string = NULL;
     bool firstElement = true;
     const char *name;
-    DnfPackageSet *pset;
     Pool *pool = solv->pool;
     Solvable *s;
 
@@ -1364,7 +1271,7 @@ Goal::Impl::describeProtectedRemoval()
         }
         return g_strdup(string->str);
     }
-    pset = brokenDependencyAllPkgs(DNF_PACKAGE_STATE_INSTALLED);
+    auto pset = brokenDependencyAllPkgs(DNF_PACKAGE_STATE_INSTALLED);
     Id id = -1;
     bool found = false;
     while(true) {

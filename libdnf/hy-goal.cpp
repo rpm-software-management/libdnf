@@ -253,7 +253,7 @@ hy_goal_count_problems(HyGoal goal)
 DnfPackageSet *
 hy_goal_conflict_all_pkgs(HyGoal goal, DnfPackageState pkg_type)
 {
-    return goal->listConflictPkgs(pkg_type);
+    return goal->listConflictPkgs(pkg_type).release();
 }
 
 /**
@@ -265,7 +265,7 @@ hy_goal_conflict_all_pkgs(HyGoal goal, DnfPackageState pkg_type)
 DnfPackageSet *
 hy_goal_broken_dependency_all_pkgs(HyGoal goal, DnfPackageState pkg_type)
 {
-    return goal->listBrokenDependencyPkgs(pkg_type);
+    return goal->listBrokenDependencyPkgs(pkg_type).release();
 }
 
 char **

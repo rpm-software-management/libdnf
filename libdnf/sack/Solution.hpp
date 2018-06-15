@@ -18,48 +18,38 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __PACKAGE_SET_HPP
-#define __PACKAGE_SET_HPP
+#ifndef __SOLUTION_HPP
+#define __SOLUTION_HPP
 
 #include <memory>
-#include <solv/bitmap.h>
-#include "../dnf-types.h"
-#include <solv/pooltypes.h>
-#include "../hy-package.h"
+#include "query.hpp"
+#include "../nevra.hpp"
+#include "../hy-subject.h"
 
 namespace libdnf {
 
-struct PackageSet {
+struct Solution {
 public:
-    PackageSet(DnfSack* sack);
-    PackageSet(DnfSack* sack, Map* map);
-    PackageSet(const PackageSet & pset);
-    ~PackageSet();
-    Id operator [](unsigned int index) const;
-    PackageSet & operator +=(const PackageSet & other);
-    void clear();
-    void set(DnfPackage *pkg);
-    void set(Id id);
-    bool has(DnfPackage *pkg) const;
-    bool has(Id id) const;
-    void remove(Id id);
-    Map *getMap() const;
-    DnfSack *getSack() const;
-    size_t size() const;
-
+    const Nevra * getNevra() const noexcept;
+    const Query * getQuery() const noexcept;
+    Nevra * releaseNevra();
+    Query * releaseQuery();
     /**
-    * @brief Returns next id in packageset or -1 if end of package set reached
-    *
-    * @param previous Id of previous element
-    * @return Id
+    * @brief Return true if solution found
     */
-    Id next(Id previous) const;
-
+    bool getBestSolution(const char * subject, DnfSack* sack, HyForm * forms, bool icase,
+        bool with_nevra, bool with_provides, bool with_filenames, bool with_src);
 private:
-    class Impl;
-    std::unique_ptr<Impl> pImpl;
+    std::unique_ptr<Query> query;
+    std::unique_ptr<Nevra> nevra;
 };
+
+inline const Nevra * Solution::getNevra() const noexcept { return nevra.get(); }
+inline const Query * Solution::getQuery() const noexcept { return query.get(); }
+inline Nevra * Solution::releaseNevra() { return nevra.release(); }
+inline Query * Solution::releaseQuery() { return query.release(); }
 
 }
 
-#endif /* __PACKAGE_SET_HPP */
+
+#endif /* __SOLUTION_HPP */

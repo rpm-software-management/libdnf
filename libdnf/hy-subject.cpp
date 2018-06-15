@@ -32,6 +32,7 @@
 #include "hy-selector.h"
 #include "hy-util-private.hpp"
 #include "sack/packageset.hpp"
+#include "sack/Solution.hpp"
 
 // most specific to least
 const HyForm HY_FORMS_MOST_SPEC[] = {
@@ -79,49 +80,11 @@ hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, Hy
                              gboolean icase, gboolean with_nevra, gboolean with_provides,
                              gboolean with_filenames, gboolean with_src)
 {
-    libdnf::Query baseQuery(sack);
-    if (!with_src) {
-        baseQuery.addFilter(HY_PKG_ARCH, HY_NEQ, "src");
-    }
-    baseQuery.apply();
-    if (with_nevra) {
-        libdnf::Nevra nevraObj;
-        const auto tryForms = !forms ? HY_FORMS_MOST_SPEC : forms;
-        for (std::size_t i = 0; tryForms[i] != _HY_FORM_STOP_; ++i) {
-            if (nevraObj.parse(subject, tryForms[i])) {
-                auto query = std::unique_ptr<libdnf::Query>(new libdnf::Query(baseQuery));
-                query->addFilter(&nevraObj, icase);
-                if (!query->empty()) {
-                    *out_nevra = new libdnf::Nevra(std::move(nevraObj));
-                    return query.release();
-                }
-            }
-        }
-        *out_nevra = nullptr;
-        if (!forms) {
-            auto query = std::unique_ptr<libdnf::Query>(new libdnf::Query(baseQuery));
-            query->addFilter(HY_PKG_NEVRA, HY_GLOB, subject);
-            if (!query->empty())
-                return query.release();
-        }
-    }
-
-    if (with_provides) {
-        auto query = std::unique_ptr<libdnf::Query>(new libdnf::Query(baseQuery));
-        query->addFilter(HY_PKG_PROVIDES, HY_GLOB, subject);
-        if (!query->empty())
-            return query.release();
-    }
-
-    if (with_filenames && hy_is_file_pattern(subject)) {
-        auto query = std::unique_ptr<libdnf::Query>(new libdnf::Query(baseQuery));
-        query->addFilter(HY_PKG_FILE, HY_GLOB, subject);
-        return query.release();
-    }
-
-    auto query = std::unique_ptr<libdnf::Query>(new libdnf::Query(baseQuery));
-    query->addFilter(HY_PKG_EMPTY, HY_EQ, 1);
-    return query.release();
+    libdnf::Solution solution;
+    solution.getBestSolution(subject, sack, forms, icase, with_nevra, with_provides, with_filenames,
+        with_src);
+    *out_nevra = solution.releaseNevra();
+    return solution.releaseQuery();
 }
 
 
