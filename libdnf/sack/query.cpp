@@ -2114,7 +2114,7 @@ hy_query_to_name_ordered_queue(HyQuery query, libdnf::IdQueue * samename)
         if (MAPTST(result, i))
             samename->pushBack(i);
 
-    solv_sort(samename->getElements(), samename->size(), sizeof(Id), libdnf::filter_latest_sortcmp,
+    solv_sort(samename->data(), samename->size(), sizeof(Id), libdnf::filter_latest_sortcmp,
         pool);
 }
 
@@ -2129,7 +2129,7 @@ hy_query_to_name_arch_ordered_queue(HyQuery query, libdnf::IdQueue * samename)
         if (MAPTST(result, i))
             samename->pushBack(i);
 
-    solv_sort(samename->getElements(), samename->size(), sizeof(Id),
+    solv_sort(samename->data(), samename->size(), sizeof(Id),
         libdnf::filter_latest_sortcmp_byarch, pool);
 }
 

@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __DNF_QUEUE_HPP
-#define __DNF_QUEUE_HPP
+#ifndef __ID_QUEUE_HPP
+#define __ID_QUEUE_HPP
 
 extern "C" {
 #include <solv/queue.h>
@@ -37,7 +37,7 @@ public:
     void pushBack(Id id);
     void pushBack(Id id1, Id id2);
     Id operator[](int index) const;
-    int * getElements() const noexcept;
+    int * data() const noexcept;
     Queue * getQueue() noexcept;
     int size() const noexcept;
     void clear() noexcept;
@@ -56,12 +56,11 @@ inline IdQueue::~IdQueue() { queue_free(&queue); }
 inline void IdQueue::pushBack(Id id) { queue_push(&queue, id); }
 inline void IdQueue::pushBack(Id id1, Id id2) { queue_push2(&queue, id1, id2); }
 inline Id IdQueue::operator[](int index) const { return queue.elements[index]; }
-inline int * IdQueue::getElements() const noexcept { return queue.elements; }
+inline int * IdQueue::data() const noexcept { return queue.elements; }
 inline Queue * IdQueue::getQueue() noexcept { return &queue; }
 inline int IdQueue::size() const noexcept { return queue.count; }
 inline void IdQueue::clear() noexcept { queue_empty(&queue); }
 
-
 }
 
-#endif /* __DNF_QUEUE_HPP */
+#endif /* __ID_QUEUE_HPP */

@@ -965,7 +965,7 @@ std::unique_ptr<IdQueue>
 Goal::Impl::constructJob(DnfGoalActions flags)
 {
     auto job = std::unique_ptr<IdQueue>(new IdQueue(staging));
-    auto elements = job->getElements();
+    auto elements = job->data();
     /* apply forcebest */
     if (flags & DNF_FORCE_BEST)
         for (int i = 0; i < job->size(); i += 2) {
@@ -1045,7 +1045,7 @@ Goal::Impl::limitInstallonlyPackages(Solver *solv, Queue *job)
         }
 
         struct InstallonliesSortCallback s_cb = {pool, dnf_sack_running_kernel(sack)};
-        solv_sort(q.getElements(), q.size(), sizeof(q[0]), sort_packages, &s_cb);
+        solv_sort(q.data(), q.size(), sizeof(q[0]), sort_packages, &s_cb);
         IdQueue same_names;
         while (q.size() > 0) {
             same_name_subqueue(pool, q.getQueue(), same_names.getQueue());
