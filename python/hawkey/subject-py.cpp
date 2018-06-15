@@ -255,7 +255,7 @@ nsvcap_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
         PyErr_SetString(PyExc_TypeError, "Malformed subject forms.");
         return NULL;
     } else {
-        for (std::size_t i = 0; HY_FORMS_MOST_SPEC[i] != _HY_FORM_STOP_; ++i) {
+        for (std::size_t i = 0; HY_MODULE_FORMS_MOST_SPEC[i] != _HY_MODULE_FORM_STOP_; ++i) {
             if (nsvcapObj.parse(self->pattern, HY_MODULE_FORMS_MOST_SPEC[i])) {
                 if (!addNsvcapToPyList(list.get(), nsvcapObj))
                     return NULL;
