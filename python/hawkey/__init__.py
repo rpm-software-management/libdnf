@@ -277,9 +277,8 @@ class Subject(_hawkey.Subject):
     def _get_best_selectors(self, base, forms=None, obsoletes=True, reponame=None, reports=False,
                             solution=None):
         if solution is None:
-            solution = self.get_best_solution(base.sack, forms=forms)
+            solution = self.get_best_solution(base.sack, forms=forms, with_src=False)
         q = solution['query']
-        q = q.filter(arch__neq="src")
         if len(q) == 0:
             if reports and not self.icase:
                 base._report_icase_hint(self.pattern)

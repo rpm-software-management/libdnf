@@ -31,7 +31,7 @@ libdnf::Solution::getBestSolution(const char * subject, DnfSack* sack, HyForm * 
         baseQuery.addFilter(HY_PKG_ARCH, HY_NEQ, "src");
     }
     baseQuery.apply();
-    std::unique_ptr<libdnf::Query> queryCandidate(new libdnf::Query(sack));
+    std::unique_ptr<libdnf::Query> queryCandidate(new libdnf::Query(baseQuery));
     if (with_nevra) {
         libdnf::Nevra nevraObj;
         const HyForm * tryForms = !forms ? HY_FORMS_MOST_SPEC : forms;
