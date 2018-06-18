@@ -55,6 +55,44 @@
 
 namespace libdnf {
 
+static void
+throwException(GError **err, int rc, const std::string & userMsg)
+{
+    assert(err || rc > 0);
+    assert(!err || *err);
+
+    // Select error message
+    int code;
+    std::string message;
+    if (err) {
+        code = (*err)->code;
+        message = userMsg + (*err)->message;
+    } else {
+        code = rc;
+        message = userMsg + lr_strerror(rc);
+    }
+
+    g_clear_error(err);
+
+    // Throw appropriate exception type
+    switch (code) {
+        case LRE_IO:
+            throw LrIO(message);
+        case LRE_CANNOTCREATEDIR:
+            throw LrCannotCreateDir(message);
+        case LRE_CANNOTCREATETMP:
+            throw LrCannotCreateTmp(message);
+        case LRE_MEMORY:
+            throw LrMemory(message);
+        case LRE_BADFUNCARG:
+            throw LrBadFuncArg(message);
+        case LRE_BADOPTARG:
+            throw LrBadOptArg(message);
+        default:
+            throw LrException(message);
+    }
+}
+
 /* Callback stuff */
 
 int RepoCB::progress(double totalToDownload, double downloaded) { return 0; }
