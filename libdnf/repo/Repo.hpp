@@ -110,7 +110,7 @@ public:
     int getCost() const;
     int getPriority() const;
     std::string getCompsFn();  // this is temporarily made public for DNF compatibility
-    std::string getRevision();
+    const std::string & getRevision() const;
     void initHyRepo(HyRepo hrepo);
     int getAge() const;
 
@@ -134,7 +134,7 @@ public:
     int getExpiresIn() const;
     bool fresh();
     void setMaxMirrorTries(int maxMirrorTries);
-    int getTimestamp();
+    int getTimestamp() const;
     int getMaxTimestamp();
     const std::vector<std::string> & getContentTags();
     const std::vector<std::pair<std::string, std::string>> & getDistroTags();
@@ -144,7 +144,7 @@ public:
     void setSyncStrategy(SyncStrategy strategy);
     SyncStrategy getSyncStrategy() const noexcept;
     void downloadUrl(const char * url, int fd);
-    char ** getMirrors();
+    std::vector<std::string> getMirrors() const;
 
     ~Repo();
 private:

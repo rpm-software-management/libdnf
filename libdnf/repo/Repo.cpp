@@ -87,7 +87,6 @@ public:
     bool isInSync();
     void fetch();
     std::string getCachedir();
-    char ** getMirrors();
     int getAge() const;
     void expire();
     bool isExpired() const;
@@ -99,7 +98,7 @@ public:
     std::string id;
     std::unique_ptr<ConfigRepo> conf;
 
-    char ** mirrors;
+    char ** mirrors{nullptr};
     int maxMirrorTries{0}; // try them all
     // 0 forces expiration on the next call to load(), -1 means undefined value
     int timestamp;
@@ -245,6 +244,7 @@ Repo::Impl::Impl(const std::string & id, std::unique_ptr<ConfigRepo> && conf)
 
 Repo::Impl::~Impl()
 {
+    g_strfreev(mirrors);
 }
 
 Repo::Repo(const std::string & id, std::unique_ptr<ConfigRepo> && conf)
@@ -556,7 +556,9 @@ bool Repo::Impl::loadCache()
     if (timestamp != 0) {
         timestamp = mtime(primary_fn.c_str());
     }
+    g_strfreev(this->mirrors);
     this->mirrors = mirrors;
+    //std::cout << "load(): " << (mirrors ? mirrors[0] : nullptr) << std::endl;
     return true;
 }
 
@@ -748,11 +750,6 @@ std::string Repo::Impl::getCachedir()
     return repodir + id + "-" + chksumCStr;
 }
 
-char ** Repo::Impl::getMirrors()
-{
-    return mirrors;
-}
-
 int Repo::Impl::getAge() const
 {
     return time(NULL) - mtime(primary_fn.c_str());
@@ -805,7 +802,7 @@ void Repo::setMaxMirrorTries(int maxMirrorTries)
     pImpl->maxMirrorTries = maxMirrorTries;
 }
 
-int Repo::getTimestamp()
+int Repo::getTimestamp() const
 {
     return pImpl->timestamp;
 }
@@ -825,7 +822,7 @@ const std::vector<std::pair<std::string, std::string>> & Repo::getDistroTags()
     return pImpl->distro_tags;
 }
 
-std::string Repo::getRevision()
+const std::string & Repo::getRevision() const
 {
     return pImpl->revision;
 }
@@ -889,7 +886,16 @@ void Repo::downloadUrl(const char * url, int fd)
     }
 }
 
-char ** Repo::getMirrors() { return pImpl->getMirrors(); }
+std::vector<std::string> Repo::getMirrors() const
+{
+    std::vector<std::string> mirrors;
+    if (pImpl->mirrors) {
+        for (auto mirror = pImpl->mirrors; *mirror; ++mirror)
+            mirrors.emplace_back(*mirror);
+    }
+    //std::cout << "getMirrors(): " << mirrors.size() << std::endl;
+    return mirrors;
+}
 
 int PackageTargetCB::end(int status, const char * msg) { return 0; }
 int PackageTargetCB::progress(double totalToDownload, double downloaded) { return 0; }
