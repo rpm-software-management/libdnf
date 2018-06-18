@@ -124,7 +124,7 @@ public:
     bool loadCache();
     bool isInSync();
     void fetch();
-    std::string getCachedir();
+    std::string getCachedir() const;
     int getAge() const;
     void expire();
     bool isExpired() const;
@@ -268,6 +268,17 @@ static std::string urlEncode(const std::string & src)
     return encoded;
 }
 
+/**
+* @brief Format user password string
+*
+* Returns user and password in user:password form. If quote is True,
+* special characters in user and password are URL encoded.
+*
+* @param user Username
+* @param passwd Password
+* @param encode If quote is True, special characters in user and password are URL encoded.
+* @return User and password in user:password form
+*/
 static std::string formatUserPassString(const std::string & user, const std::string & passwd, bool encode)
 {
     if (encode)
@@ -342,6 +353,17 @@ void Repo::disable()
 bool Repo::isEnabled() const
 {
     return pImpl->conf->enabled().getValue();
+}
+
+bool Repo::isLocal() const
+{
+    auto & conf = pImpl->conf;
+    if ((!conf->metalink().empty() && !conf->metalink().getValue().empty()) ||
+        (!conf->mirrorlist().empty() && !conf->mirrorlist().getValue().empty()))
+        return false;
+    if (!conf->baseurl().getValue().empty() && conf->baseurl().getValue()[0].compare(0, 7, "file://") == 0)
+        return true;
+    return false;
 }
 
 bool Repo::load() { return pImpl->load(); }
@@ -757,7 +779,7 @@ bool Repo::Impl::load()
     return true;
 }
 
-std::string Repo::Impl::getCachedir()
+std::string Repo::Impl::getCachedir() const
 {
     std::string tmp;
     if (conf->metalink().empty() || (tmp=conf->metalink().getValue()).empty()) {
@@ -878,6 +900,11 @@ void Repo::initHyRepo(HyRepo hrepo)
     if (!pImpl->updateinfo_fn.empty())
         hy_repo_set_string(hrepo, HY_REPO_UPDATEINFO_FN, pImpl->updateinfo_fn.c_str());
 
+}
+
+std::string Repo::getCachedir() const
+{
+    return pImpl->getCachedir();
 }
 
 void Repo::setRepoFilePath(const std::string & path)

@@ -133,6 +133,7 @@ public:
     void enable();
     void disable();
     bool isEnabled() const;
+    bool isLocal() const;
     /**
     * @brief Initialize the repo with metadata
     *
@@ -176,6 +177,7 @@ public:
     const std::vector<std::string> & getContentTags();
     const std::vector<std::pair<std::string, std::string>> & getDistroTags();
 
+    std::string getCachedir() const;
     void setRepoFilePath(const std::string & path);
     const std::string & getRepoFilePath() const noexcept;
     void setSyncStrategy(SyncStrategy strategy);
