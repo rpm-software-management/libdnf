@@ -1,4 +1,5 @@
 %global libsolv_version 0.6.30-1
+%global libmodulemd_version 1.4.0
 %global dnf_conflict 3.0.0
 %global swig_version 3.0.12
 
@@ -47,8 +48,9 @@ BuildRequires:  pkgconfig(librhsm)
 BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  pkgconfig(json-c)
 BuildRequires:  pkgconfig(cppunit)
-BuildRequires:  pkgconfig(modulemd) >= 1.4.0
+BuildRequires:  pkgconfig(modulemd) >= %{libmodulemd_version}
 
+Requires:       libmodulemd >= %{libmodulemd_version}
 Requires:       libsolv%{?_isa} >= %{libsolv_version}
 
 %description
