@@ -31,16 +31,17 @@ namespace libdnf {
 struct Selector {
 public:
     Selector(DnfSack* sack);
+    Selector(Selector && src);
     ~Selector();
     DnfSack * getSack();
     const Filter * getFilterArch() const;
     const Filter * getFilterEvr() const;
     const Filter * getFilterFile() const;
     const Filter * getFilterName() const;
-    const Filter * getFilterPkg() const;
+    Id getPkgs() const;
     const Filter * getFilterProvides() const;
     const Filter * getFilterReponame() const;
-    int set(int keyname, int cmp_type, const DnfPackageSet * pset);
+    int set(const DnfPackageSet * pset);
     int set(int keyname, int cmp_type, const char *match);
     GPtrArray * matches();
 private:

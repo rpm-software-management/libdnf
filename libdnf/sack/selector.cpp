@@ -56,23 +56,31 @@ valid_setting(int keyname, int cmp_type)
 
 class Selector::Impl {
 public:
-    DnfSack *sack;
+    DnfSack * sack;
     std::unique_ptr<Filter> filterArch;
     std::unique_ptr<Filter> filterEvr;
     std::unique_ptr<Filter> filterFile;
     std::unique_ptr<Filter> filterName;
-    std::unique_ptr<Filter> filterPkg;
+    /**
+    * @brief Set pkgs created by pool_queuetowhatprovides
+    */
+    Id pkgs{0};
     std::unique_ptr<Filter> filterProvides;
     std::unique_ptr<Filter> filterReponame;
 private:
     friend struct Filter;
-    int cmp_type;
-    int keyname;
-    int match_type;
     std::vector<_Match> matches;
 };
 
 Selector::Selector(DnfSack* sack) : pImpl(new Impl) { pImpl->sack = sack; }
+
+Selector::Selector(Selector && src)
+{
+    pImpl = std::move(src.pImpl);
+    src.pImpl.reset(new Impl);
+    src.pImpl->sack = pImpl->sack;
+}
+
 Selector::~Selector() = default;
 
 DnfSack *Selector::getSack() { return pImpl->sack; }
@@ -80,17 +88,27 @@ const Filter *Selector::getFilterArch() const { return pImpl->filterArch.get(); 
 const Filter *Selector::getFilterEvr() const { return pImpl->filterEvr.get(); }
 const Filter *Selector::getFilterFile() const { return pImpl->filterFile.get(); }
 const Filter *Selector::getFilterName() const { return pImpl->filterName.get(); }
-const Filter *Selector::getFilterPkg() const { return pImpl->filterPkg.get(); }
+Id Selector::getPkgs() const { return pImpl->pkgs; }
 const Filter *Selector::getFilterProvides() const { return pImpl->filterProvides.get(); }
 const Filter *Selector::getFilterReponame() const { return pImpl->filterReponame.get(); }
 
 int
-Selector::set(int keyname, int cmp_type, const DnfPackageSet *pset)
+Selector::set(const DnfPackageSet *pset)
 {
-    if (pImpl->filterName.get() || pImpl->filterProvides.get() || pImpl->filterFile.get()) {
+    if (pImpl->filterName || pImpl->filterProvides || pImpl->filterFile) {
         return DNF_ERROR_BAD_SELECTOR;
     }
-    pImpl->filterPkg.reset(new Filter(keyname, cmp_type, pset));
+    dnf_sack_recompute_considered(pImpl->sack);
+    dnf_sack_make_provides_ready(pImpl->sack);
+    Id id = -1;
+    IdQueue pkgs;
+    while(true) {
+        id = pset->next(id);
+        if (id == -1)
+            break;
+        pkgs.pushBack(id);
+    }
+    pImpl->pkgs = pool_queuetowhatprovides(dnf_sack_get_pool(pImpl->sack), pkgs.getQueue());
 
     return 0;
 }
@@ -110,12 +128,12 @@ Selector::set(int keyname, int cmp_type, const char *match)
             pImpl->filterEvr.reset(new Filter(keyname, cmp_type, match));
             return 0;
         case HY_PKG_NAME:
-            if (pImpl->filterProvides.get() || pImpl->filterFile.get() || pImpl->filterPkg.get())
+            if (pImpl->filterProvides || pImpl->filterFile || pImpl->pkgs)
                 return DNF_ERROR_BAD_SELECTOR;
             pImpl->filterName.reset(new Filter(keyname, cmp_type, match));
             return 0;
         case HY_PKG_PROVIDES:
-            if (pImpl->filterName.get() || pImpl->filterFile.get() || pImpl->filterPkg.get())
+            if (pImpl->filterName || pImpl->filterFile || pImpl->pkgs)
                 return DNF_ERROR_BAD_SELECTOR;
             if (cmp_type != HY_GLOB) {
                 try {
@@ -134,7 +152,7 @@ Selector::set(int keyname, int cmp_type, const char *match)
             pImpl->filterReponame.reset(new Filter(keyname, cmp_type, match));
             return 0;
         case HY_PKG_FILE:
-            if (pImpl->filterName.get() || pImpl->filterProvides.get() || pImpl->filterPkg.get())
+            if (pImpl->filterName || pImpl->filterProvides || pImpl->pkgs)
                 return DNF_ERROR_BAD_SELECTOR;
             pImpl->filterFile.reset(new Filter(keyname, cmp_type, match));
             return 0;

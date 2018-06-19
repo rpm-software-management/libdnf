@@ -44,7 +44,7 @@ START_TEST(test_sltr_pkg)
     g_ptr_array_unref(plist1);
     dnf_packageset_add(pset, pkg0);
 
-    fail_if(hy_selector_pkg_set(sltr, HY_PKG, HY_EQ, pset));
+    fail_if(hy_selector_pkg_set(sltr, pset));
     GPtrArray *plist = hy_selector_matches(sltr);
     fail_unless(plist->len == 1);
     fail_unless(hy_packagelist_has(plist, pkg0));

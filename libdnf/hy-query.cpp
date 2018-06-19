@@ -326,7 +326,7 @@ hy_query_to_selector(HyQuery query)
 {
     HySelector selector = hy_selector_create(query->getSack());
     DnfPackageSet *pset = hy_query_run_set(query);
-    hy_selector_pkg_set(selector, HY_PKG, HY_EQ, pset);
+    hy_selector_pkg_set(selector, pset);
     delete pset;
     return selector;
 }
