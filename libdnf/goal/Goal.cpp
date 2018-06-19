@@ -159,24 +159,10 @@ filterFileToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 }
 
 static int
-filterPkgToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
+filterPkgToJob(Id what, Queue *job)
 {
-    if (!f)
+    if (!what)
         return 0;
-    if (f->getMatches().size() != 1)
-        return MULTIPLE_MATCH_OBJECTS;
-    Pool *pool = dnf_sack_get_pool(sack);
-    DnfPackageSet *pset = f->getMatches()[0].pset;
-    Id what;
-    Id id = -1;
-    libdnf::IdQueue pkgs;
-    while(true) {
-        id = pset->next(id);
-        if (id == -1)
-            break;
-        pkgs.pushBack(id);
-    }
-    what = pool_queuetowhatprovides(pool, pkgs.getQueue());
     queue_push2(job, SOLVER_SOLVABLE_ONE_OF|SOLVER_SETARCH|SOLVER_SETEVR, what);
     return 0;
 }
@@ -299,7 +285,7 @@ sltrToJob(const HySelector sltr, Queue *job, int solver_action)
     int any_opt_filter = sltr->getFilterArch() || sltr->getFilterEvr()
         || sltr->getFilterReponame();
     int any_req_filter = sltr->getFilterName() || sltr->getFilterProvides()
-        || sltr->getFilterFile() || sltr->getFilterPkg();
+        || sltr->getFilterFile() || sltr->getPkgs();
 
     libdnf::IdQueue job_sltr;
 
@@ -314,7 +300,7 @@ sltrToJob(const HySelector sltr, Queue *job, int solver_action)
 
     dnf_sack_recompute_considered(sack);
     dnf_sack_make_provides_ready(sack);
-    ret = filterPkgToJob(sack, sltr->getFilterPkg(), job_sltr.getQueue());
+    ret = filterPkgToJob(sltr->getPkgs(), job_sltr.getQueue());
     if (ret)
         goto finish;
     ret = filterNameToJob(sack, sltr->getFilterName(), job_sltr.getQueue());
@@ -556,7 +542,7 @@ Goal::distupgrade()
     Query query(sack);
     query.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
     Selector selector(sack);
-    selector.set(HY_PKG, HY_EQ, query.runSet());
+    selector.set(query.runSet());
     sltrToJob(&selector, &pImpl->staging, SOLVER_DISTUPGRADE);
 }
 
