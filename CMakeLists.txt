@@ -92,6 +92,8 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONC json-c)
 include_directories(${JSONC_INCLUDE_DIRS})
 
+FIND_PACKAGE (Log4cxx)
+
 ADD_SUBDIRECTORY (libdnf)
 ADD_SUBDIRECTORY (po)
 # ADD_SUBDIRECTORY (bindings/perl)

@@ -37,6 +37,7 @@ configure_file ("dnf-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/dnf-version.h)
 configure_file ("libdnf.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc @ONLY)
 
 ADD_SUBDIRECTORY(goal)
+ADD_SUBDIRECTORY(log)
 ADD_SUBDIRECTORY(repo)
 ADD_SUBDIRECTORY(module/modulemd)
 ADD_SUBDIRECTORY(utils)
@@ -44,6 +45,7 @@ ADD_SUBDIRECTORY(conf)
 ADD_SUBDIRECTORY(sack)
 
 SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${GOAL_SOURCES})
+SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${LOG_SOURCES})
 SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${MODULE_SOURCES})
 SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${UTILS_SOURCES})
 SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${CONF_SOURCES})
@@ -59,6 +61,7 @@ TARGET_LINK_LIBRARIES(libdnf
                       ${GLIB_GIO_UNIX_LIBRARIES}
                       ${LIBSOLV_LIBRARY}
                       ${LIBSOLV_EXT_LIBRARY}
+                      ${LOG4CXX_LIBRARIES}
                       ${RPMDB_LIBRARY}
                       ${SCOLS_LIBRARIES}
                       ${SQLite3_LIBRARIES}
