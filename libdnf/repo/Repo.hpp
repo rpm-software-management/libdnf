@@ -237,6 +237,13 @@ private:
     std::unique_ptr<Impl> pImpl;
 };
 
+struct LibrepoLog {
+public:
+    static long addHandler(const std::string & filePath);
+    static void removeHandler(long uid);
+    static void removeAllHandlers();
+};
+
 }
 
 #endif
