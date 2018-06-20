@@ -160,6 +160,11 @@ public:
     */
     void expire();
 
+    /**
+    * @brief Return whether the cached metadata is expired.
+    *
+    * @return bool
+    */
     bool isExpired() const;
 
     /**
