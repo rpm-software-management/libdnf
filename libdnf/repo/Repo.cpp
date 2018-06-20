@@ -750,7 +750,7 @@ void Repo::Impl::fetch()
 bool Repo::Impl::load()
 {
     //printf("check if cache present\n");
-    if (loadCache()) {
+    if (!primary_fn.empty() || loadCache()) {
         if (conf->getMasterConfig().check_config_file_age().getValue() &&
             !repoFilePath.empty() && mtime(repoFilePath.c_str()) > mtime(primary_fn.c_str()))
             expired = true;
@@ -776,6 +776,7 @@ bool Repo::Impl::load()
     //printf("fetch\n");
     fetch();
     loadCache();
+    expired = false;
     return true;
 }
 
@@ -823,7 +824,12 @@ void Repo::Impl::expire()
 
 bool Repo::Impl::isExpired() const
 {
-    return expired;
+    if (expired)
+        // explicitly requested expired state
+        return true;
+    if (conf->metadata_expire().getValue() == -1)
+        return false;
+    return getAge() > conf->metadata_expire().getValue();
 }
 
 int Repo::Impl::getExpiresIn() const
@@ -844,7 +850,7 @@ void Repo::Impl::resetMetadataExpired()
     if (conf->metadata_expire().getValue() == -1)
         expired = false;
     else
-        expired = time(NULL) - mtime(primary_fn.c_str()) > conf->metadata_expire().getValue();
+        expired = getAge() > conf->metadata_expire().getValue();
 }
 
 
