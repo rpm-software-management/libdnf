@@ -46,12 +46,19 @@
 #include <solv/chksum.h>
 #include <solv/repo.h>
 
-#include <map>
 #include <cctype>
-#include <glib.h>
-
 #include <fstream>
+#include <iomanip>
 #include <iostream>
+#include <list>
+#include <map>
+#include <mutex>
+#include <sstream>
+
+#include <stdio.h>
+#include <time.h>
+
+#include <glib.h>
 
 namespace libdnf {
 
@@ -968,10 +975,10 @@ std::vector<std::string> Repo::getMirrors() const
     return mirrors;
 }
 
+
 int PackageTargetCB::end(int status, const char * msg) { return 0; }
 int PackageTargetCB::progress(double totalToDownload, double downloaded) { return 0; }
 int PackageTargetCB::mirrorFailure(const char *msg, const char *url) { return 0; }
-
 
 class PackageTarget::Impl {
 public:
@@ -1169,6 +1176,125 @@ void Downloader::downloadURL(ConfigMain * cfg, const char * url, int fd)
     if (!ret) {
         throw std::runtime_error(msg);
     }
+}
+
+// ============ librepo logging ===========
+
+#define LR_LOGDOMAIN "librepo"
+
+class LrHandleLogData {
+public:
+    std::string filePath;
+    long uid;
+    FILE *fd;
+    bool used{false};
+    guint handlerId;
+
+    ~LrHandleLogData();
+};
+
+LrHandleLogData::~LrHandleLogData()
+{
+    if (used)
+        g_log_remove_handler(LR_LOGDOMAIN, handlerId);
+    fclose(fd);
+}
+
+static std::list<std::unique_ptr<LrHandleLogData>> lrLogDatas;
+static std::mutex lrLogDatasMutex;
+
+static const char * lrLogLevelFlagToCStr(GLogLevelFlags logLevelFlag)
+{
+    if (logLevelFlag & G_LOG_LEVEL_ERROR)
+        return "ERROR";
+    if (logLevelFlag & G_LOG_LEVEL_CRITICAL)
+        return "CRITICAL";
+    if (logLevelFlag & G_LOG_LEVEL_WARNING)
+        return "WARNING";
+    if (logLevelFlag & G_LOG_LEVEL_MESSAGE)
+        return "MESSAGE";
+    if (logLevelFlag & G_LOG_LEVEL_INFO)
+        return "INFO";
+    if (logLevelFlag & G_LOG_LEVEL_DEBUG)
+        return "DEBUG";
+    return "USER";
+}
+
+static void librepoLogCB(G_GNUC_UNUSED const gchar *log_domain, GLogLevelFlags log_level, const char *msg, gpointer user_data) noexcept
+{
+    // Ignore exception during logging. Eg. exception generated during logging of exception is not good.
+    try {
+        auto data = static_cast<LrHandleLogData *>(user_data);
+        auto now = time(NULL);
+        struct tm nowTm;
+        gmtime_r(&now, &nowTm);
+
+        std::ostringstream ss;
+        ss << std::setfill('0');
+        ss << std::setw(4) << nowTm.tm_year+1900 << "-" << std::setw(2) << nowTm.tm_mon+1 << "-" << std::setw(2) << nowTm.tm_mday;
+        ss << "T" << std::setw(2) << nowTm.tm_hour << ":" << std::setw(2) << nowTm.tm_min << ":" << std::setw(2) << nowTm.tm_sec << "Z ";
+        ss << lrLogLevelFlagToCStr(log_level) << " " << msg << std::endl;
+        auto str = ss.str();
+        fwrite(str.c_str(), sizeof(char), str.length(), data->fd);
+        fflush(data->fd);
+    } catch (const std::exception &) {
+    }
+}
+
+long LibrepoLog::addHandler(const std::string & filePath)
+{
+    static long uid = 0;
+
+    // Open the file
+    FILE *fd = fopen(filePath.c_str(), "a");
+    if (!fd)
+        throw std::runtime_error(tfm::format(_("Cannot open %s: %s"), filePath, g_strerror(errno)));
+
+    // Setup user data
+    std::unique_ptr<LrHandleLogData> data(new LrHandleLogData);
+    data->filePath = filePath;
+    data->fd = fd;
+
+    // Set handler
+    data->handlerId = g_log_set_handler(LR_LOGDOMAIN, G_LOG_LEVEL_MASK, librepoLogCB, data.get());
+    data->used = true;
+
+    // Save user data (in a thread safe way)
+    {
+        std::lock_guard<std::mutex> guard(lrLogDatasMutex);
+
+        // Get unique ID of the handler
+        data->uid = ++uid;
+
+        // Append the data to the global list
+        lrLogDatas.push_front(std::move(data));
+    }
+
+    // Log librepo version and current time (including timezone)
+    lr_log_librepo_summary();
+
+    // Return unique id of the handler data
+    return uid;
+}
+
+void LibrepoLog::removeHandler(long uid)
+{
+    std::lock_guard<std::mutex> guard(lrLogDatasMutex);
+
+    // Search for the corresponding LogFileData
+    auto it = lrLogDatas.begin();
+    for (; it != lrLogDatas.end() && (*it)->uid != uid; ++it);
+    if (it == lrLogDatas.end())
+        throw std::runtime_error(tfm::format(_("Log handler with id %ld doesn't exist"), uid));
+
+    // Remove the handler and free the data
+    lrLogDatas.erase(it);
+}
+
+void LibrepoLog::removeAllHandlers()
+{
+    std::lock_guard<std::mutex> guard(lrLogDatasMutex);
+    lrLogDatas.clear();
 }
 
 }
