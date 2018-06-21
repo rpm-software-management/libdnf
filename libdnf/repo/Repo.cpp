@@ -103,7 +103,7 @@ throwException(GError **err, int rc, const std::string & userMsg)
 /* Callback stuff */
 
 int RepoCB::progress(double totalToDownload, double downloaded) { return 0; }
-void RepoCB::fastestMirror(int stage, const char * ptr) {}
+void RepoCB::fastestMirror(FastestMirrorStage stage, const char * ptr) {}
 int RepoCB::handleMirrorFailure(const char * msg, const char * url, const char * metadata) { return 0; }
 
 
@@ -216,7 +216,7 @@ void Repo::Impl::fastestMirrorCB(void * data, LrFastestMirrorStages stage, void 
         }
     } else
         msg = nullptr;
-    cbObject->fastestMirror(stage, msg);
+    cbObject->fastestMirror(static_cast<RepoCB::FastestMirrorStage>(stage), msg);
 }
 
 int Repo::Impl::mirrorFailureCB(void * data, const char * msg, const char * url, const char * metadata)
@@ -976,7 +976,7 @@ std::vector<std::string> Repo::getMirrors() const
 }
 
 
-int PackageTargetCB::end(int status, const char * msg) { return 0; }
+int PackageTargetCB::end(TransferStatus status, const char * msg) { return 0; }
 int PackageTargetCB::progress(double totalToDownload, double downloaded) { return 0; }
 int PackageTargetCB::mirrorFailure(const char *msg, const char *url) { return 0; }
 
@@ -1012,7 +1012,7 @@ int PackageTarget::Impl::endCB(void * data, LrTransferStatus status, const char 
     if (!data)
         return 0;
     auto cbObject = static_cast<PackageTargetCB *>(data);
-    return cbObject->end(status, msg);
+    return cbObject->end(static_cast<PackageTargetCB::TransferStatus>(status), msg);
 }
 
 int PackageTarget::Impl::progressCB(void * data, double totalToDownload, double downloaded)
@@ -1076,6 +1076,11 @@ static LrHandle * newHandle(ConfigMain * conf)
         lr_handle_setopt(h, nullptr, LRO_SSLVERIFYPEER, sslverify);
     }
     return h;
+}
+
+PackageTarget::ChecksumType PackageTarget::checksumType(const std::string & name)
+{
+    return static_cast<ChecksumType>(lr_checksum_type(name.c_str()));
 }
 
 void PackageTarget::downloadPackages(std::vector<PackageTarget *> & targets, bool failFast)

@@ -74,10 +74,41 @@ public:
 */
 class RepoCB {
 public:
+    enum class FastestMirrorStage {
+        INIT, /*!<
+            Fastest mirror detection just started.
+            ptr is NULL*/
+
+        CACHELOADING, /*!<
+            ptr is (char *) pointer to string with path to the cache file.
+            (Do not modify or free the string). */
+
+        CACHELOADINGSTATUS, /*!<
+            if cache was loaded successfully, ptr is NULL, otherwise
+            ptr is (char *) string with error message.
+            (Do not modify or free the string) */
+
+        DETECTION, /*!<
+            Detection (pinging) in progress.
+            If all data was loaded from cache, this stage is skiped.
+            ptr is pointer to long. This is the number of how much
+            mirrors have to be "pinged" */
+
+        FINISHING, /*!<
+            Detection is done, sorting mirrors, updating cache, etc.
+            ptr is NULL */
+
+        STATUS, /*!<
+            The very last invocation of fastest mirror callback.
+            If fastest mirror detection was successful ptr is NULL,
+            otherwise ptr contain (char *) string with error message.
+            (Do not modify or free the string) */
+    };
+
     virtual void start(const char *what) {}
     virtual void end() {}
     virtual int progress(double totalToDownload, double downloaded);
-    virtual void fastestMirror(int stage, const char *msg);
+    virtual void fastestMirror(FastestMirrorStage stage, const char *msg);
     virtual int handleMirrorFailure(const char *msg, const char *url, const char *metadata);
     virtual ~RepoCB() = default;
 };
@@ -211,7 +242,14 @@ public:
 */
 class PackageTargetCB {
 public:
-    virtual int end(int status, const char * msg);
+    /** Transfer status codes */
+    enum class TransferStatus {
+        SUCCESSFUL,
+        ALREADYEXISTS,
+        ERROR
+    };
+
+    virtual int end(TransferStatus status, const char * msg);
     virtual int progress(double totalToDownload, double downloaded);
     virtual int mirrorFailure(const char *msg, const char *url);
     virtual ~PackageTargetCB() = default;
@@ -224,6 +262,20 @@ public:
 */
 struct PackageTarget {
 public:
+    /** Enum of supported checksum types.
+    * NOTE! This enum guarantee to be sorted by "hash quality"
+    */
+    enum class ChecksumType {
+        UNKNOWN,
+        MD5,        /*    The most weakest hash */
+        SHA1,       /*  |                       */
+        SHA224,     /*  |                       */
+        SHA256,     /*  |                       */
+        SHA384,     /* \|/                      */
+        SHA512,     /*    The most secure hash  */
+    };
+
+    static ChecksumType checksumType(const std::string & name);
     static void downloadPackages(std::vector<PackageTarget *> & targets, bool failFast);
 
     PackageTarget(Repo * repo, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
