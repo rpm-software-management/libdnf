@@ -127,11 +127,11 @@ public:
 
     enum class SyncStrategy {
         // use the local cache even if it's expired. download if there's no cache.
-        LAZY,
+        LAZY = 1,
         // use the local cache, even if it's expired, never download.
-        ONLY_CACHE,
+        ONLY_CACHE = 2,
         // try the cache, if it is expired download new md.
-        TRY_CACHE
+        TRY_CACHE = 3
     };
 
 
