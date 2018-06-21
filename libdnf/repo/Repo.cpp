@@ -747,7 +747,7 @@ void Repo::Impl::fetch()
     lrHandlePerform(h.get(), r.get());
 
     dnf_remove_recursive(repodir.c_str(), NULL);
-    g_mkdir_with_parents(repodir.c_str(), 0);
+    g_mkdir_with_parents(repodir.c_str(), 0755);
     rename(tmprepodir.c_str(), repodir.c_str());
     dnf_remove_recursive(tmpdir, NULL);
 
