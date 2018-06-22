@@ -1,4 +1,4 @@
-%module(directors="1") conf
+%module conf
 
 %include <stdint.i>
 %include <std_map.i>
@@ -15,17 +15,8 @@
     #include <iterator>
     #include "libdnf/conf/ConfigRepo.hpp"
     #include "libdnf/conf/ConfigParser.hpp"
-    #include "libdnf/repo/Repo.hpp"
-    typedef struct {
-        PyObject_HEAD
-        HyRepo repo;
-    } _RepoObject;
     using namespace libdnf;
 %}
-
-%typemap(in) HyRepo {
-    $1 = ((_RepoObject *)$input)->repo;
-}
 
 %include <exception.i>
 %exception {
@@ -41,10 +32,6 @@
        SWIG_exception(SWIG_UnknownError, "C++ anonymous exception");
     }
 }
-
-// for SWIG < 3.0.0
-//#define override
-//#define noexcept
 
 // make SWIG look into following headers
 %include "libdnf/conf/Option.hpp"
@@ -168,25 +155,6 @@ public:
 %include "libdnf/conf/ConfigParser.hpp"
 %clear std::string & text;
 %template(MapStringMapStringString) std::map<std::string, std::map<std::string, std::string>>;
-
-%extend libdnf::Repo {
-    Repo(const std::string & id, ConfigRepo * config)
-    {
-        return new Repo(id, std::unique_ptr<libdnf::ConfigRepo>(config));
-    }
-    void setCallbacks(RepoCB * callbacks)
-    {
-        self->setCallbacks(std::unique_ptr<libdnf::RepoCB>(callbacks));
-    }
-}
-%template(VectorPairStringString) std::vector<std::pair<std::string, std::string>>;
-%ignore libdnf::Repo::Repo;
-%ignore libdnf::Repo::setCallbacks;
-%feature("director") libdnf::RepoCB;
-%ignore libdnf::PackageTarget::PackageTarget(const PackageTarget & src);
-%template(VectorPPackageTarget) std::vector<libdnf::PackageTarget *>;
-%feature("director") libdnf::PackageTargetCB;
-%include "libdnf/repo/Repo.hpp"
 
 %exception __next__() {
     try
