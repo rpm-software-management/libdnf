@@ -1076,9 +1076,10 @@ PackageTarget::ChecksumType PackageTarget::checksumType(const std::string & name
 void PackageTarget::downloadPackages(std::vector<PackageTarget *> & targets, bool failFast)
 {
     // Convert vector to GSList
-    GSList *list = nullptr;
-    for (auto target : targets)
-        list = g_slist_append(list, target->pImpl->lrPkgTarget.get());
+    GSList * list{nullptr};
+    for (auto it = targets.rbegin(); it != targets.rend(); ++it)
+        list = g_slist_prepend(list, (*it)->pImpl->lrPkgTarget.get());
+    std::unique_ptr<GSList, decltype(&g_slist_free)> listGuard(list, &g_slist_free);
 
     LrPackageDownloadFlag flags = static_cast<LrPackageDownloadFlag>(0);
     if (failFast)
@@ -1087,8 +1088,6 @@ void PackageTarget::downloadPackages(std::vector<PackageTarget *> & targets, boo
     GError * errP{nullptr};
     lr_download_packages(list, flags, &errP);
     std::unique_ptr<GError> err(errP);
-
-    g_slist_free(list);
 
     if (err)
         throwException(std::move(err));
