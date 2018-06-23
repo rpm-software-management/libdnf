@@ -91,6 +91,8 @@ public:
     int64_t getId() const noexcept { return id; }
     void setId(int64_t value) { id = value; }
 
+    uint32_t getInstalledBy() const;
+
     // int64_t getTransactionId() const noexcept { return trans.getId(); }
 
     const std::vector< TransactionItemPtr > &getReplacedBy() const noexcept { return replacedBy; }

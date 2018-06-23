@@ -213,4 +213,14 @@ TransactionItem::dbUpdate()
     query.step();
 }
 
+uint32_t
+TransactionItem::getInstalledBy() const {
+    if (!trans) {
+        // null pointer -> create a local instance to return the user id
+        Transaction t(conn, transID);
+        return t.getUserId();
+    }
+    return trans->getUserId();
+}
+
 } // namespace libdnf
