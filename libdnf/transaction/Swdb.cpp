@@ -195,19 +195,20 @@ Swdb::getRPMRepo(const std::string &nevra)
         SELECT
             repo.repoid as repoid
         FROM
-            trans_item
+            trans_item ti
         JOIN
             rpm USING (item_id)
         JOIN
-            repo ON trans_item.repo_id == repo.id
+            repo ON ti.repo_id == repo.id
         WHERE
-            rpm.name = ?
+            ti.action not in (3, 5, 7, 10)
+            AND rpm.name = ?
             AND rpm.epoch = ?
             AND rpm.version = ?
             AND rpm.release = ?
             AND rpm.arch = ?
         ORDER BY
-            trans_item.id DESC
+            ti.id DESC
         LIMIT 1;
     )**";
     // TODO: where trans.done != 0
