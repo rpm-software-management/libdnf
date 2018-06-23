@@ -60,43 +60,29 @@
 
 #include <glib.h>
 
+template<> struct std::default_delete<GError> {
+    void operator()(GError * ptr) noexcept { g_error_free(ptr); }
+};
+
 namespace libdnf {
 
-static void
-throwException(GError **err, int rc, const std::string & userMsg)
+static void throwException(std::unique_ptr<GError> && err)
 {
-    assert(err || rc > 0);
-    assert(!err || *err);
-
-    // Select error message
-    int code;
-    std::string message;
-    if (err) {
-        code = (*err)->code;
-        message = userMsg + (*err)->message;
-    } else {
-        code = rc;
-        message = userMsg + lr_strerror(rc);
-    }
-
-    g_clear_error(err);
-
-    // Throw appropriate exception type
-    switch (code) {
+    switch (err->code) {
         case LRE_IO:
-            throw LrIO(message);
+            throw LrIO(err->message);
         case LRE_CANNOTCREATEDIR:
-            throw LrCannotCreateDir(message);
+            throw LrCannotCreateDir(err->message);
         case LRE_CANNOTCREATETMP:
-            throw LrCannotCreateTmp(message);
+            throw LrCannotCreateTmp(err->message);
         case LRE_MEMORY:
-            throw LrMemory(message);
+            throw LrMemory(err->message);
         case LRE_BADFUNCARG:
-            throw LrBadFuncArg(message);
+            throw LrBadFuncArg(err->message);
         case LRE_BADOPTARG:
-            throw LrBadOptArg(message);
+            throw LrBadOptArg(err->message);
         default:
-            throw LrException(message);
+            throw LrException(err->message);
     }
 }
 
@@ -167,7 +153,7 @@ public:
 
     SyncStrategy syncStrategy;
 private:
-    bool lrHandlePerform(LrHandle * handle, LrResult * result);
+    void lrHandlePerform(LrHandle * handle, LrResult * result);
     bool isMetalinkInSync();
     bool isRepomdInSync();
     void resetMetadataExpired();
@@ -550,23 +536,23 @@ Repo::Impl::lrHandleInitRemote(const char *destdir, bool mirrorSetup)
     return h;
 }
 
-bool Repo::Impl::lrHandlePerform(LrHandle * handle, LrResult * result)
+void Repo::Impl::lrHandlePerform(LrHandle * handle, LrResult * result)
 {
-    GError *err = NULL;
-
     if (callbacks)
         callbacks->start(
             !conf->name().getValue().empty() ? conf->name().getValue().c_str() :
             (!id.empty() ? id.c_str() : "unknown")
         );
-    lr_handle_perform(handle, result, &err);
+
+    GError * errP{nullptr};
+    bool ret = lr_handle_perform(handle, result, &errP);
+    std::unique_ptr<GError> err(errP);
+
     if (callbacks)
         callbacks->end();
-    if (err) {
-        g_error_free(err);
-        return false;
-    }
-    return true;
+
+    if (!ret)
+        throwException(std::move(err));
 }
 
 bool Repo::Impl::loadCache()
@@ -575,11 +561,11 @@ bool Repo::Impl::loadCache()
     std::unique_ptr<LrResult, decltype(&lr_result_free)> r(lr_result_init(), &lr_result_free);
 
     // Fetch data
-    GError *err = NULL;
-    lr_handle_perform(h.get(), r.get(), &err);
-    if (err) {
+    GError * errP{nullptr};
+    bool ret = lr_handle_perform(h.get(), r.get(), &errP);
+    std::unique_ptr<GError> err(errP);
+    if (!ret)
         return false;
-    }
 
     char **mirrors;
     LrYumRepo *yum_repo;
@@ -776,13 +762,21 @@ bool Repo::Impl::load()
     }
     if (syncStrategy == SyncStrategy::ONLY_CACHE) {
         //_("Cache-only enabled but no cache for '%s'") % self.id
-        auto msg = tfm::format(_("Cache-only enabled but no cache for %s"), id);
+        auto msg = tfm::format(_("Cache-only enabled but no cache for '%s'"), id);
         throw std::runtime_error(msg);
     }
 
     //printf("fetch\n");
-    fetch();
-    loadCache();
+    try {
+        fetch();
+        loadCache();
+    } catch (const std::runtime_error & e) {
+        //dmsg = _("Cannot download '%s': %s.")
+        //logger.log(dnf.logging.DEBUG, dmsg, e.source_url, e.librepo_msg)
+        //log(debug, e.what());
+        auto msg = tfm::format(_("Failed to synchronize cache for repo '%s'"), id);
+        throw std::runtime_error(msg);
+    }
     expired = false;
     return true;
 }
@@ -942,26 +936,23 @@ Repo::SyncStrategy Repo::getSyncStrategy() const noexcept
 
 void Repo::downloadUrl(const char * url, int fd)
 {
-    GError *err = NULL;
     if (pImpl->callbacks)
         pImpl->callbacks->start(
             !pImpl->conf->name().getValue().empty() ? pImpl->conf->name().getValue().c_str() :
             (!pImpl->id.empty() ? pImpl->id.c_str() : "unknown")
         );
-    auto ret = lr_download_url(pImpl->getCachedHandle(), url, fd, &err);
+
+    GError * errP{nullptr};
+    auto ret = lr_download_url(pImpl->getCachedHandle(), url, fd, &errP);
+    std::unique_ptr<GError> err(errP);
+
     if (pImpl->callbacks)
         pImpl->callbacks->end();
 
-    std::string msg;
-    if (err) {
-        msg = std::string(err->message) + "  " + std::to_string(err->code);
-        g_error_free(err);
-    }
-    if ((!ret && !err) || (ret && err))
-        throw std::runtime_error("Error in lr_download_url");
-    if (!ret) {
-        throw std::runtime_error(msg);
-    }
+    assert((ret && !errP) || (!ret && errP));
+
+    if (err)
+        throwException(std::move(err));
 }
 
 std::vector<std::string> Repo::getMirrors() const
@@ -971,7 +962,6 @@ std::vector<std::string> Repo::getMirrors() const
         for (auto mirror = pImpl->mirrors; *mirror; ++mirror)
             mirrors.emplace_back(*mirror);
     }
-    //std::cout << "getMirrors(): " << mirrors.size() << std::endl;
     return mirrors;
 }
 
@@ -1094,21 +1084,14 @@ void PackageTarget::downloadPackages(std::vector<PackageTarget *> & targets, boo
     if (failFast)
         flags = static_cast<LrPackageDownloadFlag>(flags | LR_PACKAGEDOWNLOAD_FAILFAST);
 
-    GError * err = nullptr;
-    auto ret = lr_download_packages(list, flags, &err);
+    GError * errP{nullptr};
+    lr_download_packages(list, flags, &errP);
+    std::unique_ptr<GError> err(errP);
 
     g_slist_free(list);
 
-    std::string msg;
-    if (err) {
-        msg = std::string(err->message) + "  " + std::to_string(err->code);
-        g_error_free(err);
-    }
-    if ((!ret && !err) || (ret && err))
-        throw std::runtime_error("Error in lr_download_packages");
-    if (!ret) {
-        throw std::runtime_error(msg);
-    }
+    if (err)
+        throwException(std::move(err));
 }
 
 
@@ -1137,11 +1120,12 @@ void PackageTarget::Impl::init(LrHandle * handle, const char * relativeUrl, cons
         throw std::runtime_error(msg);
     }
 
-    GError * err = NULL;
-    lrPkgTarget.reset(lr_packagetarget_new_v3(handle, relativeUrl, dest, lrChksType, chksum,  expectedSize, baseUrl, resume, progressCB, callbacks, endCB, mirrorFailureCB, byteRangeStart, byteRangeEnd, &err));
+    GError * errP{nullptr};
+    lrPkgTarget.reset(lr_packagetarget_new_v3(handle, relativeUrl, dest, lrChksType, chksum,  expectedSize, baseUrl, resume, progressCB, callbacks, endCB, mirrorFailureCB, byteRangeStart, byteRangeEnd, &errP));
+    std::unique_ptr<GError> err(errP);
+
     if (!lrPkgTarget) {
         auto msg = tfm::format(_("PackageTarget initialization failed: %s"), err->message);
-        g_error_free(err);
         throw std::runtime_error(msg);
     }
 }
@@ -1160,7 +1144,6 @@ PackageTargetCB * PackageTarget::getCallbacks()
     return pImpl->callbacks;
 }
 
-
 const char * PackageTarget::getErr()
 {
     return pImpl->lrPkgTarget->err;
@@ -1169,18 +1152,12 @@ const char * PackageTarget::getErr()
 void Downloader::downloadURL(ConfigMain * cfg, const char * url, int fd)
 {
     std::unique_ptr<LrHandle, decltype(&lr_handle_free)> lrHandle{newHandle(cfg), &lr_handle_free};
-    GError * err = NULL;
-    auto ret = lr_download_url(lrHandle.get(), url, fd, &err);
-    std::string msg;
-    if (err) {
-        msg = std::string(err->message) + "  " + std::to_string(err->code);
-        g_error_free(err);
-    }
-    if ((!ret && !err) || (ret && err))
-        throw std::runtime_error("Error in lr_download_packages");
-    if (!ret) {
-        throw std::runtime_error(msg);
-    }
+    GError * errP{nullptr};
+    lr_download_url(lrHandle.get(), url, fd, &errP);
+    std::unique_ptr<GError> err(errP);
+
+    if (err)
+        throwException(std::move(err));
 }
 
 // ============ librepo logging ===========
