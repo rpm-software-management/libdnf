@@ -2156,10 +2156,12 @@ getDependencyModuleStreams(const std::vector<std::shared_ptr<ModuleMetadata> > &
 
 void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *install_root)
 {
+    libdnf::Query keepPackages{sack};
+    const char * keepRepo[] = {HY_CMDLINE_REPO_NAME, HY_SYSTEM_REPO_NAME, NULL};
+    keepPackages.addFilter(HY_PKG_REPONAME, HY_NEQ, keepRepo);
     libdnf::Query includeQuery{sack};
-    libdnf::Query excludeQuery{sack};
-    libdnf::Query excludeNamesQuery{sack};
-    libdnf::Query excludeProvidesQuery{sack};
+    libdnf::Query excludeQuery{keepPackages};
+    libdnf::Query excludeProvidesQuery{keepPackages};
     libdnf::Nevra nevra;
 
     // read module metadata and defaults from repos
@@ -2284,13 +2286,11 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
     excludeQuery.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, excludeNEVRAsCString.data());
     excludeQuery.queryDifference(includeQuery);
 
-    excludeNamesQuery.addFilter(HY_PKG_NAME, HY_EQ, namesCString.data());
-    excludeNamesQuery.queryDifference(includeQuery);
-
+    // Exclude packages by their Provides. This also excludes packages by name, because packages
+    // also provide their %name = %version-%release.
     excludeProvidesQuery.addFilter(HY_PKG_PROVIDES, &nameDeps);
     excludeProvidesQuery.queryDifference(includeQuery);
 
-    dnf_sack_add_module_excludes(sack, const_cast<DnfPackageSet *>(excludeQuery.runSet()));
-    dnf_sack_add_module_excludes(sack, const_cast<DnfPackageSet *>(excludeNamesQuery.runSet()));
-    dnf_sack_add_module_excludes(sack, const_cast<DnfPackageSet *>(excludeProvidesQuery.runSet()));
+    dnf_sack_add_module_excludes(sack, excludeQuery.getResultPset());
+    dnf_sack_add_module_excludes(sack, excludeProvidesQuery.getResultPset());
 }
