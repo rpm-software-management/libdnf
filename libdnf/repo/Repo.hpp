@@ -21,6 +21,8 @@
 #ifndef _LIBDNF_REPO_HPP
 #define _LIBDNF_REPO_HPP
 
+#define MODULEMD
+
 #include "../conf/ConfigRepo.hpp"
 #include "../hy-types.h"
 
@@ -179,6 +181,9 @@ public:
     int getCost() const;
     int getPriority() const;
     std::string getCompsFn();  // this is temporarily made public for DNF compatibility
+#ifdef MODULEMD
+    std::string getModulesFn(); // temporary made public
+#endif
     const std::string & getRevision() const;
     void initHyRepo(HyRepo hrepo);
     int getAge() const;

@@ -151,6 +151,9 @@ public:
     std::string presto_fn;
     std::string updateinfo_fn;
     std::string comps_fn;
+#ifdef MODULEMD
+    std::string modules_fn;
+#endif
     std::string revision;
     std::vector<std::string> content_tags;
     std::vector<std::pair<std::string, std::string>> distro_tags;
@@ -376,6 +379,11 @@ void Repo::setUseIncludes(bool enabled) { pImpl->useIncludes = enabled; }
 int Repo::getCost() const { return pImpl->conf->cost().getValue(); }
 int Repo::getPriority() const { return pImpl->conf->priority().getValue(); }
 std::string Repo::getCompsFn() { return pImpl->comps_fn; }
+
+#ifdef MODULEMD
+std::string Repo::getModulesFn() { return pImpl->modules_fn; }
+#endif
+
 int Repo::getAge() const { return pImpl->getAge(); }
 void Repo::expire() { pImpl->expire(); }
 bool Repo::isExpired() const { return pImpl->isExpired(); }
@@ -384,8 +392,13 @@ int Repo::getExpiresIn() const { return pImpl->getExpiresIn(); }
 std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
 {
     std::unique_ptr<LrHandle> h(lr_handle_init());
+#ifdef MODULEMD
+    const char *dlist[] = {"primary", "filelists", "prestodelta", "group_gz",
+                           "updateinfo", "modules", NULL};
+#else
     const char *dlist[] = {"primary", "filelists", "prestodelta", "group_gz",
                            "updateinfo", NULL};
+#endif
     lr_handle_setopt(h.get(), NULL, LRO_REPOTYPE, LR_YUMREPO);
     lr_handle_setopt(h.get(), NULL, LRO_USERAGENT, "libdnf/1.0"); //FIXME
     lr_handle_setopt(h.get(), NULL, LRO_YUMDLIST, dlist);
@@ -595,6 +608,10 @@ bool Repo::Impl::loadCache()
     if (!tmp)
         tmp = lr_yum_repo_path(yum_repo, "group");
     comps_fn = tmp ? tmp : "";
+#ifdef MODULEMD
+    tmp = lr_yum_repo_path(yum_repo, "modules");
+    modules_fn = tmp ? tmp : "";
+#endif
 
     content_tags.clear();
     for (auto elem = yum_repomd->content_tags; elem; elem = g_slist_next(elem)) {
@@ -902,6 +919,9 @@ void Repo::initHyRepo(HyRepo hrepo)
     hy_repo_set_string(hrepo, HY_REPO_MD_FN, pImpl->repomd_fn.c_str());
     hy_repo_set_string(hrepo, HY_REPO_PRIMARY_FN, pImpl->primary_fn.c_str());
     hy_repo_set_string(hrepo, HY_REPO_FILELISTS_FN, pImpl->filelists_fn.c_str());
+#ifdef MODULEMD
+    hy_repo_set_string(hrepo, MODULES_FN, pImpl->modules_fn.c_str());
+#endif
     hy_repo_set_cost(hrepo, pImpl->conf->cost().getValue());
     hy_repo_set_priority(hrepo, pImpl->conf->priority().getValue());
     // TODO finish
