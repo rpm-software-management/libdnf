@@ -46,7 +46,6 @@ by_name(DnfSack *sack, const char *name)
     auto pkg = new libdnf::RpmPackage(sack, plist->operator[](0));
 
     delete q;
-    delete plist;
 
     return pkg;
 }

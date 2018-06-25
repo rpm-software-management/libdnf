@@ -25,7 +25,8 @@
 
 #include "python/hawkey/repo-py.hpp"
 #include "python/hawkey/sack-py.hpp"
-#include "tests/hawkey/testshared.h"
+#include "tests/libdnf/TestSack.hpp"
+#include "tests/libdnf/TestMacros.hpp"
 
 #include "python/hawkey/pycomp.hpp"
 
@@ -47,7 +48,7 @@ py_load_repo(PyObject *unused, PyObject *args)
 	PyErr_SetString(PyExc_TypeError, "Expected a DnfSack *object.");
 	return NULL;
     }
-    if (load_repo(dnf_sack_get_pool(csack), name, path, installed)) {
+    if (TestSack::loadRepo(dnf_sack_get_pool(csack), name, path, installed)) {
 	PyErr_SetString(PyExc_IOError, "Can not load a testing repo.");
 	return NULL;
     }
@@ -63,7 +64,7 @@ py_glob_for_repofiles(PyObject *unused, PyObject *args)
     if (!PyArg_ParseTuple(args, "O&ss",
 			  sack_converter, &sack, &repo_name, &path))
 	return NULL;
-    HyRepo repo = glob_for_repofiles(dnf_sack_get_pool(sack), repo_name, path);
+    HyRepo repo = TestSack::globForRepoFiles(dnf_sack_get_pool(sack), repo_name, path);
     return repoToPyObject(repo);
 }
 

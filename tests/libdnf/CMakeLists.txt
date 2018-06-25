@@ -1,3 +1,13 @@
+ADD_SUBDIRECTORY(module)
+ADD_SUBDIRECTORY(repo)
+ADD_SUBDIRECTORY(transaction)
+
+SET (LIBDNF_TEST_SOURCES
+        ${LIBDNF_TEST_SOURCES}
+        ${CMAKE_CURRENT_SOURCE_DIR}/TestSack.cpp
+        PARENT_SCOPE
+        )
+
 ADD_EXECUTABLE(test_libdnf_main dnf-self-test.c)
 
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/data/tests/modules/yum.repos.d/test.repo.in ${CMAKE_SOURCE_DIR}/data/tests/modules/yum.repos.d/test.repo @ONLY)

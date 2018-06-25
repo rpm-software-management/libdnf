@@ -35,9 +35,9 @@
 START_TEST(test_reldeplist_add)
 {
     DnfSack *sack = test_globals.sack;
-    DnfPackage *flying = by_name_repo(sack, "fool", "updates");
+    libdnf::RpmPackage *flying = by_name_repo(sack, "fool", "updates");
     std::unique_ptr<DnfReldepList> reldeplist(dnf_reldep_list_new (sack));
-    std::unique_ptr<DnfReldepList> obsoletes(dnf_package_get_obsoletes (flying));
+    auto obsoletes = flying->getObsoletes();
 
     fail_unless(flying != nullptr);
 

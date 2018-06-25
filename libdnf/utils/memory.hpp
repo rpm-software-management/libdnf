@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 Red Hat, Inc.
+ * Copyright (C) 2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -18,24 +18,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef TEST_SUITES_H
-#define TEST_SUITES_H
+#ifndef LIBDNF_MEMORY_HPP
+#define LIBDNF_MEMORY_HPP
 
-#include <check.h>
+#include <memory>
 
-Suite *advisory_suite(void);
-Suite *advisorypkg_suite(void);
-Suite *advisoryref_suite(void);
-Suite *goal_suite(void);
-Suite *iutil_suite(void);
-Suite *packagelist_suite(void);
-Suite *packageset_suite(void);
-Suite *query_suite(void);
-Suite *reldep_suite(void);
-Suite *repo_suite(void);
-Suite *sack_suite(void);
-Suite *selector_suite(void);
-Suite *subject_suite(void);
-Suite *util_suite(void);
+namespace std {
 
-#endif // TEST_SUITES_H
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args &&... args)
+{
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
+};
+
+#endif //LIBDNF_MEMORY_HPP

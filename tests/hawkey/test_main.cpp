@@ -73,7 +73,6 @@ main(int argc, const char **argv)
     srunner_add_suite(sr, util_suite());
     srunner_add_suite(sr, reldep_suite());
     srunner_add_suite(sr, repo_suite());
-    srunner_add_suite(sr, package_suite());
     srunner_add_suite(sr, packagelist_suite());
     srunner_add_suite(sr, packageset_suite());
     srunner_add_suite(sr, query_suite());
