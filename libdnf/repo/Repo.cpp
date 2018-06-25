@@ -97,6 +97,29 @@ static void throwException(std::unique_ptr<GError> && err)
     }
 }
 
+template<typename T>
+inline static void handleSetOpt(LrHandle * handle, LrHandleOption option, T value) {
+    GError * errP{nullptr};
+    if (!lr_handle_setopt(handle, &errP, option, value)) {
+        throwException(std::unique_ptr<GError>(errP));
+    }
+}
+
+inline static void handleGetInfo(LrHandle * handle, LrHandleInfoOption option, void * value) {
+    GError * errP{nullptr};
+    if (!lr_handle_getinfo(handle, &errP, option, value)) {
+        throwException(std::unique_ptr<GError>(errP));
+    }
+}
+
+template<typename T>
+inline static void resultGetInfo(LrResult * result, LrResultInfoOption option, T value) {
+    GError * errP{nullptr};
+    if (!lr_result_getinfo(result, &errP, option, value)) {
+        throwException(std::unique_ptr<GError>(errP));
+    }
+}
+
 /* Callback stuff */
 
 int RepoCB::progress(double totalToDownload, double downloaded) { return 0; }
@@ -399,18 +422,18 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
     const char *dlist[] = {"primary", "filelists", "prestodelta", "group_gz",
                            "updateinfo", NULL};
 #endif
-    lr_handle_setopt(h.get(), NULL, LRO_REPOTYPE, LR_YUMREPO);
-    lr_handle_setopt(h.get(), NULL, LRO_USERAGENT, "libdnf/1.0"); //FIXME
-    lr_handle_setopt(h.get(), NULL, LRO_YUMDLIST, dlist);
-    lr_handle_setopt(h.get(), NULL, LRO_INTERRUPTIBLE, 1L);
-    lr_handle_setopt(h.get(), NULL, LRO_GPGCHECK, conf->repo_gpgcheck().getValue());
-    lr_handle_setopt(h.get(), NULL, LRO_MAXMIRRORTRIES, static_cast<long>(maxMirrorTries));
-    lr_handle_setopt(h.get(), NULL, LRO_MAXPARALLELDOWNLOADS,
+    handleSetOpt(h.get(), LRO_REPOTYPE, LR_YUMREPO);
+    handleSetOpt(h.get(), LRO_USERAGENT, "libdnf/1.0"); //FIXME
+    handleSetOpt(h.get(), LRO_YUMDLIST, dlist);
+    handleSetOpt(h.get(), LRO_INTERRUPTIBLE, 1L);
+    handleSetOpt(h.get(), LRO_GPGCHECK, conf->repo_gpgcheck().getValue());
+    handleSetOpt(h.get(), LRO_MAXMIRRORTRIES, static_cast<long>(maxMirrorTries));
+    handleSetOpt(h.get(), LRO_MAXPARALLELDOWNLOADS,
                      conf->max_parallel_downloads().getValue());
 
     LrUrlVars * vars = NULL;
     vars = lr_urlvars_set(vars, "group_gz", "group");
-    lr_handle_setopt(h.get(), NULL, LRO_YUMSLIST, vars);
+    handleSetOpt(h.get(), LRO_YUMSLIST, vars);
 
     return h;
 }
@@ -422,13 +445,13 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitLocal()
     LrUrlVars * vars = NULL;
     for (const auto & item : substitutions)
         vars = lr_urlvars_set(vars, item.first.c_str(), item.second.c_str());
-    lr_handle_setopt(h.get(), NULL, LRO_VARSUB, vars);
+    handleSetOpt(h.get(), LRO_VARSUB, vars);
     auto cachedir = getCachedir();
     //std::cout << "cachedir: " << cachedir << std::endl;
-    lr_handle_setopt(h.get(), NULL, LRO_DESTDIR, cachedir.c_str());
+    handleSetOpt(h.get(), LRO_DESTDIR, cachedir.c_str());
     const char *urls[] = {cachedir.c_str(), NULL};
-    lr_handle_setopt(h.get(), NULL, LRO_URLS, urls);
-    lr_handle_setopt(h.get(), NULL, LRO_LOCAL, 1L);
+    handleSetOpt(h.get(), LRO_URLS, urls);
+    handleSetOpt(h.get(), LRO_LOCAL, 1L);
     return h;
 }
 
@@ -439,15 +462,15 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bo
     LrUrlVars * vars = NULL;
     for (const auto & item : substitutions)
         vars = lr_urlvars_set(vars, item.first.c_str(), item.second.c_str());
-    lr_handle_setopt(h.get(), NULL, LRO_VARSUB, vars);
+    handleSetOpt(h.get(), LRO_VARSUB, vars);
 
-    lr_handle_setopt(h.get(), NULL, LRO_DESTDIR, destdir);
+    handleSetOpt(h.get(), LRO_DESTDIR, destdir);
 
     auto & ipResolve = conf->ip_resolve().getValue();
     if (ipResolve == "ipv4")
-        lr_handle_setopt(h.get(), NULL, LRO_IPRESOLVE, LR_IPRESOLVE_V4);
+        handleSetOpt(h.get(), LRO_IPRESOLVE, LR_IPRESOLVE_V4);
     else if (ipResolve == "ipv6")
-        lr_handle_setopt(h.get(), NULL, LRO_IPRESOLVE, LR_IPRESOLVE_V6);
+        handleSetOpt(h.get(), LRO_IPRESOLVE, LR_IPRESOLVE_V6);
 
     enum class Source {NONE, METALINK, MIRRORLIST} source{Source::NONE};
     std::string tmp;
@@ -456,27 +479,27 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bo
     else if (!conf->mirrorlist().empty() && !(tmp=conf->mirrorlist().getValue()).empty())
         source = Source::MIRRORLIST;
     if (source != Source::NONE) {
-        lr_handle_setopt(h.get(), nullptr, LRO_HMFCB, static_cast<LrHandleMirrorFailureCb>(mirrorFailureCB));
-        lr_handle_setopt(h.get(), nullptr, LRO_PROGRESSDATA, callbacks.get());
+        handleSetOpt(h.get(), LRO_HMFCB, static_cast<LrHandleMirrorFailureCb>(mirrorFailureCB));
+        handleSetOpt(h.get(), LRO_PROGRESSDATA, callbacks.get());
         if (mirrorSetup) {
             if (source == Source::METALINK)
-                lr_handle_setopt(h.get(), nullptr, LRO_METALINKURL, tmp.c_str());
+                handleSetOpt(h.get(), LRO_METALINKURL, tmp.c_str());
             else {
-                lr_handle_setopt(h.get(), nullptr, LRO_MIRRORLISTURL, tmp.c_str());
+                handleSetOpt(h.get(), LRO_MIRRORLISTURL, tmp.c_str());
                 // YUM-DNF compatibility hack. YUM guessed by content of keyword "metalink" if
                 // mirrorlist is really mirrorlist or metalink)
                 if (tmp.find("metalink") != tmp.npos)
-                    lr_handle_setopt(h.get(), nullptr, LRO_METALINKURL, tmp.c_str());
+                    handleSetOpt(h.get(), LRO_METALINKURL, tmp.c_str());
             }
-            lr_handle_setopt(h.get(), nullptr, LRO_FASTESTMIRROR, conf->fastestmirror().getValue() ? 1L : 0L);
+            handleSetOpt(h.get(), LRO_FASTESTMIRROR, conf->fastestmirror().getValue() ? 1L : 0L);
             auto fastestMirrorCacheDir = conf->basecachedir().getValue();
             if (fastestMirrorCacheDir.back() != '/')
                 fastestMirrorCacheDir.push_back('/');
             fastestMirrorCacheDir += "fastestmirror.cache";
-            lr_handle_setopt(h.get(), nullptr, LRO_FASTESTMIRRORCACHE, fastestMirrorCacheDir.c_str());
+            handleSetOpt(h.get(), LRO_FASTESTMIRRORCACHE, fastestMirrorCacheDir.c_str());
         } else {
             // use already resolved mirror list
-            lr_handle_setopt(h.get(), nullptr, LRO_URLS, mirrors);
+            handleSetOpt(h.get(), LRO_URLS, mirrors);
         }
     } else if (!conf->baseurl().getValue().empty()) {
         size_t len = conf->baseurl().getValue().size();
@@ -484,7 +507,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bo
         for (size_t idx = 0; idx < len; ++idx)
             urls[idx] = conf->baseurl().getValue()[idx].c_str();
         urls[len] = nullptr;
-        lr_handle_setopt(h.get(), nullptr, LRO_URLS, urls);
+        handleSetOpt(h.get(), LRO_URLS, urls);
     } else
         throw std::runtime_error(tfm::format(_("Cannot find a valid baseurl for repo: %s"), id));
 
@@ -493,24 +516,24 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bo
     if (!userpwd.empty()) {
         // TODO Use URL encoded form, needs support in librepo
         userpwd = formatUserPassString(userpwd, conf->password().getValue(), false);
-        lr_handle_setopt(h.get(), nullptr, LRO_USERPWD, userpwd.c_str());
+        handleSetOpt(h.get(), LRO_USERPWD, userpwd.c_str());
     }
 
     // setup ssl stuff
     if (!conf->sslcacert().getValue().empty())
-        lr_handle_setopt(h.get(), nullptr, LRO_SSLCACERT, conf->sslcacert().getValue().c_str());
+        handleSetOpt(h.get(), LRO_SSLCACERT, conf->sslcacert().getValue().c_str());
     if (!conf->sslclientcert().getValue().empty())
-        lr_handle_setopt(h.get(), nullptr, LRO_SSLCLIENTCERT, conf->sslclientcert().getValue().c_str());
+        handleSetOpt(h.get(), LRO_SSLCLIENTCERT, conf->sslclientcert().getValue().c_str());
     if (!conf->sslclientkey().getValue().empty())
-        lr_handle_setopt(h.get(), nullptr, LRO_SSLCLIENTKEY, conf->sslclientkey().getValue().c_str());
+        handleSetOpt(h.get(), LRO_SSLCLIENTKEY, conf->sslclientkey().getValue().c_str());
 
-    lr_handle_setopt(h.get(), nullptr, LRO_PROGRESSCB, static_cast<LrProgressCb>(progressCB));
-    lr_handle_setopt(h.get(), nullptr, LRO_PROGRESSDATA, callbacks.get());
-    lr_handle_setopt(h.get(), nullptr, LRO_FASTESTMIRRORCB, static_cast<LrFastestMirrorCb>(fastestMirrorCB));
-    lr_handle_setopt(h.get(), nullptr, LRO_FASTESTMIRRORDATA, callbacks.get());
+    handleSetOpt(h.get(), LRO_PROGRESSCB, static_cast<LrProgressCb>(progressCB));
+    handleSetOpt(h.get(), LRO_PROGRESSDATA, callbacks.get());
+    handleSetOpt(h.get(), LRO_FASTESTMIRRORCB, static_cast<LrFastestMirrorCb>(fastestMirrorCB));
+    handleSetOpt(h.get(), LRO_FASTESTMIRRORDATA, callbacks.get());
 
     auto minrate = conf->minrate().getValue();
-    lr_handle_setopt(h.get(), nullptr, LRO_LOWSPEEDLIMIT, static_cast<long>(minrate));
+    handleSetOpt(h.get(), LRO_LOWSPEEDLIMIT, static_cast<long>(minrate));
 
     auto maxspeed = conf->throttle().getValue();
     if (maxspeed > 0 && maxspeed <= 1)
@@ -518,19 +541,19 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bo
     if (maxspeed != 0 && maxspeed < minrate)
         throw std::runtime_error(_("Maximum download speed is lower than minimum. "
                                    "Please change configuration of minrate or throttle"));
-    lr_handle_setopt(h.get(), nullptr, LRO_MAXSPEED, static_cast<int64_t>(maxspeed));
+    handleSetOpt(h.get(), LRO_MAXSPEED, static_cast<int64_t>(maxspeed));
 
     long timeout = conf->timeout().getValue();
     if (timeout > 0) {
-        lr_handle_setopt(h.get(), nullptr, LRO_CONNECTTIMEOUT, timeout);
-        lr_handle_setopt(h.get(), nullptr, LRO_LOWSPEEDTIME, timeout);
+        handleSetOpt(h.get(), LRO_CONNECTTIMEOUT, timeout);
+        handleSetOpt(h.get(), LRO_LOWSPEEDTIME, timeout);
     } else {
-        lr_handle_setopt(h.get(), nullptr, LRO_CONNECTTIMEOUT, LRO_CONNECTTIMEOUT_DEFAULT);
-        lr_handle_setopt(h.get(), nullptr, LRO_LOWSPEEDTIME, LRO_LOWSPEEDTIME_DEFAULT);
+        handleSetOpt(h.get(), LRO_CONNECTTIMEOUT, LRO_CONNECTTIMEOUT_DEFAULT);
+        handleSetOpt(h.get(), LRO_LOWSPEEDTIME, LRO_LOWSPEEDTIME_DEFAULT);
     }
 
     if (!conf->proxy().empty() && !conf->proxy().getValue().empty())
-        lr_handle_setopt(h.get(), nullptr, LRO_PROXY, conf->proxy().getValue().c_str());
+        handleSetOpt(h.get(), LRO_PROXY, conf->proxy().getValue().c_str());
 
     //set proxy autorization method
     auto proxyAuthMethodStr = conf->proxy_auth_method().getValue();
@@ -541,19 +564,19 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bo
             break;
         }
     }
-    lr_handle_setopt(h.get(), nullptr, LRO_PROXYAUTHMETHODS, static_cast<long>(proxyAuthMethod));
+    handleSetOpt(h.get(), LRO_PROXYAUTHMETHODS, static_cast<long>(proxyAuthMethod));
 
     if (!conf->proxy_username().empty()) {
         userpwd = conf->proxy_username().getValue();
         if (!userpwd.empty()) {
             userpwd = formatUserPassString(userpwd, conf->proxy_password().getValue(), true);
-            lr_handle_setopt(h.get(), nullptr, LRO_PROXYUSERPWD, userpwd.c_str());
+            handleSetOpt(h.get(), LRO_PROXYUSERPWD, userpwd.c_str());
         }
     }
 
     auto sslverify = conf->sslverify().getValue() ? 1L : 0L;
-    lr_handle_setopt(h.get(), nullptr, LRO_SSLVERIFYHOST, sslverify);
-    lr_handle_setopt(h.get(), nullptr, LRO_SSLVERIFYPEER, sslverify);
+    handleSetOpt(h.get(), LRO_SSLVERIFYHOST, sslverify);
+    handleSetOpt(h.get(), LRO_SSLVERIFYPEER, sslverify);
 
     return h;
 }
@@ -592,9 +615,9 @@ bool Repo::Impl::loadCache()
     char **mirrors;
     LrYumRepo *yum_repo;
     LrYumRepoMd *yum_repomd;
-    lr_handle_getinfo(h.get(), NULL, LRI_MIRRORS, &mirrors);
-    lr_result_getinfo(r.get(), NULL, LRR_YUM_REPO, &yum_repo);
-    lr_result_getinfo(r.get(), NULL, LRR_YUM_REPOMD, &yum_repomd);
+    handleGetInfo(h.get(), LRI_MIRRORS, &mirrors);
+    resultGetInfo(r.get(), LRR_YUM_REPO, &yum_repo);
+    resultGetInfo(r.get(), LRR_YUM_REPOMD, &yum_repomd);
 
     // Populate repo
     repomd_fn = yum_repo->repomd;
@@ -650,10 +673,10 @@ bool Repo::Impl::isMetalinkInSync()
     std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir));
     std::unique_ptr<LrResult> r(lr_result_init());
 
-    lr_handle_setopt(h.get(), NULL, LRO_FETCHMIRRORS, 1L);
+    handleSetOpt(h.get(), LRO_FETCHMIRRORS, 1L);
     lrHandlePerform(h.get(), r.get());
     LrMetalink * metalink;
-    lr_handle_getinfo(h.get(), NULL, LRI_METALINK, &metalink);
+    handleGetInfo(h.get(), LRI_METALINK, &metalink);
     if (!metalink) {
         //logger.debug(_("reviving: repo '%s' skipped, no metalink."), self.id)
         dnf_remove_recursive(tmpdir, NULL);
@@ -721,9 +744,9 @@ bool Repo::Impl::isRepomdInSync()
     std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir));
     std::unique_ptr<LrResult> r(lr_result_init());
 
-    lr_handle_setopt(h.get(), NULL, LRO_YUMDLIST, dlist);
+    handleSetOpt(h.get(), LRO_YUMDLIST, dlist);
     lrHandlePerform(h.get(), r.get());
-    lr_result_getinfo(r.get(), NULL, LRR_YUM_REPO, &yum_repo);
+    resultGetInfo(r.get(), LRR_YUM_REPO, &yum_repo);
 
     auto same = compareFiles(repomd_fn.c_str(), yum_repo->repomd) == 0;
     dnf_remove_recursive(tmpdir, NULL);
@@ -1048,11 +1071,11 @@ int PackageTarget::Impl::mirrorFailureCB(void * data, const char * msg, const ch
 static LrHandle * newHandle(ConfigMain * conf)
 {
     LrHandle *h = lr_handle_init();
-    lr_handle_setopt(h, NULL, LRO_USERAGENT, "libdnf/1.0"); //FIXME
+    handleSetOpt(h, LRO_USERAGENT, "libdnf/1.0"); //FIXME
     // see dnf.repo.Repo._handle_new_remote() how to pass
     if (conf) {
         auto minrate = conf->minrate().getValue();
-        lr_handle_setopt(h, nullptr, LRO_LOWSPEEDLIMIT, static_cast<long>(minrate));
+        handleSetOpt(h, LRO_LOWSPEEDLIMIT, static_cast<long>(minrate));
 
         auto maxspeed = conf->throttle().getValue();
         if (maxspeed > 0 && maxspeed <= 1)
@@ -1060,10 +1083,10 @@ static LrHandle * newHandle(ConfigMain * conf)
         if (maxspeed != 0 && maxspeed < minrate)
             throw std::runtime_error(_("Maximum download speed is lower than minimum. "
                                        "Please change configuration of minrate or throttle"));
-        lr_handle_setopt(h, nullptr, LRO_MAXSPEED, static_cast<int64_t>(maxspeed));
+        handleSetOpt(h, LRO_MAXSPEED, static_cast<int64_t>(maxspeed));
 
         if (!conf->proxy().empty() && !conf->proxy().getValue().empty())
-            lr_handle_setopt(h, nullptr, LRO_PROXY, conf->proxy().getValue().c_str());
+            handleSetOpt(h, LRO_PROXY, conf->proxy().getValue().c_str());
 
         //set proxy autorization method
         auto proxyAuthMethodStr = conf->proxy_auth_method().getValue();
@@ -1074,19 +1097,19 @@ static LrHandle * newHandle(ConfigMain * conf)
                 break;
             }
         }
-        lr_handle_setopt(h, nullptr, LRO_PROXYAUTHMETHODS, static_cast<long>(proxyAuthMethod));
+        handleSetOpt(h, LRO_PROXYAUTHMETHODS, static_cast<long>(proxyAuthMethod));
 
         if (!conf->proxy_username().empty()) {
             auto userpwd = conf->proxy_username().getValue();
             if (!userpwd.empty()) {
                 userpwd = formatUserPassString(userpwd, conf->proxy_password().getValue(), true);
-                lr_handle_setopt(h, nullptr, LRO_PROXYUSERPWD, userpwd.c_str());
+                handleSetOpt(h, LRO_PROXYUSERPWD, userpwd.c_str());
             }
         }
 
         auto sslverify = conf->sslverify().getValue() ? 1L : 0L;
-        lr_handle_setopt(h, nullptr, LRO_SSLVERIFYHOST, sslverify);
-        lr_handle_setopt(h, nullptr, LRO_SSLVERIFYPEER, sslverify);
+        handleSetOpt(h, LRO_SSLVERIFYHOST, sslverify);
+        handleSetOpt(h, LRO_SSLVERIFYPEER, sslverify);
     }
     return h;
 }
@@ -1129,7 +1152,7 @@ PackageTarget::Impl::Impl(ConfigMain * cfg, const char * relativeUrl, const char
 : callbacks(callbacks)
 {
     lrHandle.reset(newHandle(cfg));
-    lr_handle_setopt(lrHandle.get(), NULL, LRO_REPOTYPE, LR_YUMREPO);
+    handleSetOpt(lrHandle.get(), LRO_REPOTYPE, LR_YUMREPO);
     init(lrHandle.get(), relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume, byteRangeStart, byteRangeEnd);
 }
 
