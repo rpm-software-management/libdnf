@@ -148,7 +148,7 @@ public:
     ~Impl();
 
     bool load();
-    bool loadCache();
+    bool loadCache(bool throwExcept);
     bool isInSync();
     void fetch();
     std::string getCachedir() const;
@@ -396,7 +396,7 @@ bool Repo::isLocal() const
 }
 
 bool Repo::load() { return pImpl->load(); }
-bool Repo::loadCache() { return pImpl->loadCache(); }
+bool Repo::loadCache(bool throwExcept) { return pImpl->loadCache(throwExcept); }
 bool Repo::getUseIncludes() const { return pImpl->useIncludes; }
 void Repo::setUseIncludes(bool enabled) { pImpl->useIncludes = enabled; }
 int Repo::getCost() const { return pImpl->conf->cost().getValue(); }
@@ -600,7 +600,7 @@ void Repo::Impl::lrHandlePerform(LrHandle * handle, LrResult * result)
         throwException(std::move(err));
 }
 
-bool Repo::Impl::loadCache()
+bool Repo::Impl::loadCache(bool throwExcept)
 {
     std::unique_ptr<LrHandle> h(lrHandleInitLocal());
     std::unique_ptr<LrResult> r(lr_result_init());
@@ -609,8 +609,11 @@ bool Repo::Impl::loadCache()
     GError * errP{nullptr};
     bool ret = lr_handle_perform(h.get(), r.get(), &errP);
     std::unique_ptr<GError> err(errP);
-    if (!ret)
+    if (!ret) {
+        if (throwExcept)
+            throwException(std::move(err));
         return false;
+    }
 
     char **mirrors;
     LrYumRepo *yum_repo;
@@ -786,7 +789,7 @@ void Repo::Impl::fetch()
 bool Repo::Impl::load()
 {
     //printf("check if cache present\n");
-    if (!primary_fn.empty() || loadCache()) {
+    if (!primary_fn.empty() || loadCache(false)) {
         if (conf->getMasterConfig().check_config_file_age().getValue() &&
             !repoFilePath.empty() && mtime(repoFilePath.c_str()) > mtime(primary_fn.c_str()))
             expired = true;
@@ -812,7 +815,7 @@ bool Repo::Impl::load()
     //printf("fetch\n");
     try {
         fetch();
-        loadCache();
+        loadCache(true);
     } catch (const std::runtime_error & e) {
         //dmsg = _("Cannot download '%s': %s.")
         //logger.log(dnf.logging.DEBUG, dmsg, e.source_url, e.librepo_msg)

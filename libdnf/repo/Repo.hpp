@@ -175,7 +175,7 @@ public:
     * @return true if fresh metadata were downloaded, false otherwise.
     */
     bool load();
-    bool loadCache();
+    bool loadCache(bool throwExcept);
     bool getUseIncludes() const;
     void setUseIncludes(bool enabled);
     int getCost() const;
