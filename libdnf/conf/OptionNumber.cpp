@@ -114,6 +114,8 @@ std::string OptionNumber<T>::toString(ValueType value) const
 
 template class OptionNumber<std::int32_t>;
 template class OptionNumber<std::uint32_t>;
+template class OptionNumber<std::int64_t>;
+template class OptionNumber<std::uint64_t>;
 template class OptionNumber<float>;
 
 }

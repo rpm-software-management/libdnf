@@ -46,6 +46,8 @@
 %include "libdnf/conf/OptionNumber.hpp"
 %template(OptionNumberInt32) libdnf::OptionNumber<std::int32_t>;
 %template(OptionNumberUInt32) libdnf::OptionNumber<std::uint32_t>;
+%template(OptionNumberInt64) libdnf::OptionNumber<std::int64_t>;
+%template(OptionNumberUInt64) libdnf::OptionNumber<std::uint64_t>;
 %template(OptionNumberFloat) libdnf::OptionNumber<float>;
 %include "libdnf/conf/OptionSeconds.hpp"
 %include "libdnf/conf/OptionString.hpp"

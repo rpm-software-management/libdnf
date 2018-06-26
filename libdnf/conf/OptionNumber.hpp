@@ -77,6 +77,8 @@ inline std::string OptionNumber<T>::getValueString() const
 
 extern template class OptionNumber<std::int32_t>;
 extern template class OptionNumber<std::uint32_t>;
+extern template class OptionNumber<std::int64_t>;
+extern template class OptionNumber<std::uint64_t>;
 extern template class OptionNumber<float>;
 
 }
