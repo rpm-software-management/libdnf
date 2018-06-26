@@ -55,6 +55,7 @@
 #include <mutex>
 #include <sstream>
 
+#include <errno.h>
 #include <stdio.h>
 #include <time.h>
 
@@ -779,8 +780,14 @@ void Repo::Impl::fetch()
     lrHandlePerform(h.get(), r.get());
 
     dnf_remove_recursive(repodir.c_str(), NULL);
-    g_mkdir_with_parents(repodir.c_str(), 0755);
-    rename(tmprepodir.c_str(), repodir.c_str());
+    if (g_mkdir_with_parents(repodir.c_str(), 0755) == -1) {
+        const char * errTxt = strerror(errno);
+        throw std::runtime_error(tfm::format(_("Cannot create directory \"%s\": %s"), repodir, errTxt));
+    }
+    if (rename(tmprepodir.c_str(), repodir.c_str()) == -1) {
+        const char * errTxt = strerror(errno);
+        throw std::runtime_error(tfm::format(_("Cannot rename directory \"%s\" to \"%s\": %s"), tmprepodir, repodir, errTxt));
+    }
     dnf_remove_recursive(tmpdir, NULL);
 
     timestamp = -1;
