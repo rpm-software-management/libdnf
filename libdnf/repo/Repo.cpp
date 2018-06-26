@@ -770,12 +770,20 @@ bool Repo::Impl::isInSync()
 
 void Repo::Impl::fetch()
 {
-    char tmpdir[] = "/var/tmp/tmpdir.XXXXXX";
-    mkdtemp(tmpdir);
-    std::string tmprepodir = tmpdir + std::string("/repodata");
-    std::string repodir = getCachedir() + "/repodata";
+    const auto cacheDir = getCachedir();
+    auto repodir = cacheDir + "/repodata";
+    if (g_mkdir_with_parents(cacheDir.c_str(), 0755) == -1) {
+        const char * errTxt = strerror(errno);
+        throw std::runtime_error(tfm::format(_("Cannot create repo cache directory \"%s\": %s"), cacheDir, errTxt));
+    }
+    auto tmpdir = cacheDir + "/tmpdir.XXXXXX";
+    if (!mkdtemp(&tmpdir.front())) {
+        const char * errTxt = strerror(errno);
+        throw std::runtime_error(tfm::format(_("Cannot create repo temporary directory \"%s\": %s"), tmpdir.c_str(), errTxt));
+    }
+    auto tmprepodir = tmpdir + "/repodata";
 
-    std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir));
+    std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir.c_str()));
     std::unique_ptr<LrResult> r(lr_result_init());
     lrHandlePerform(h.get(), r.get());
 
@@ -788,7 +796,7 @@ void Repo::Impl::fetch()
         const char * errTxt = strerror(errno);
         throw std::runtime_error(tfm::format(_("Cannot rename directory \"%s\" to \"%s\": %s"), tmprepodir, repodir, errTxt));
     }
-    dnf_remove_recursive(tmpdir, NULL);
+    dnf_remove_recursive(tmpdir.c_str(), NULL);
 
     timestamp = -1;
 }
