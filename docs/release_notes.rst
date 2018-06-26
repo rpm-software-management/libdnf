@@ -20,6 +20,29 @@
 ###################
 
 ====================
+0.15.0 Release Notes
+====================
+
+* Filtering rpms by module metadata
+* New SWIG bindings
+* New history database
+* New config classes
+* Query performance improvements
+* New query filter nevra_strict
+
+Bugs fixed in 0.15.0:
+
+* :rhbug:`1498207`
+* :rhbug:`1500361`
+* :rhbug:`1486749`
+* :rhbug:`1525542`
+* :rhbug:`1550030`
+* :rhbug:`1576749`
+* :rhbug:`1537981`
+* :rhbug:`1588443`
+* :rhbug:`1565647`
+
+====================
 0.11.1 Release Notes
 ====================
 
