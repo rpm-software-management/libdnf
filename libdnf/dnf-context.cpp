@@ -109,6 +109,7 @@ typedef struct
     gchar            **native_arches;
     gchar            *http_proxy;
     gchar            *user_agent;
+    gchar            *arch;
     guint            cache_age;     /*seconds*/
     gboolean         check_disk_space;
     gboolean         check_transaction;
@@ -164,6 +165,7 @@ dnf_context_finalize(GObject *object)
     g_free(priv->arch_info);
     g_free(priv->http_proxy);
     g_free(priv->user_agent);
+    g_free(priv->arch);
     g_strfreev(priv->native_arches);
     g_object_unref(priv->lock);
     g_object_unref(priv->state);
@@ -386,6 +388,22 @@ dnf_context_get_cache_dir(DnfContext *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     return priv->cache_dir;
+}
+
+/**
+ * dnf_context_get_arch:
+ * @context: a #DnfContext instance.
+ *
+ * Gets the arch that was previously setted by dnf_context_set_arch().
+ *
+ * Returns: arch
+ * Since: 0.15.0
+ **/
+const gchar *
+dnf_context_get_arch(DnfContext *context)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    return priv->arch;
 }
 
 /**
@@ -817,6 +835,23 @@ dnf_context_set_cache_dir(DnfContext *context, const gchar *cache_dir)
 }
 
 /**
+ * dnf_context_set_arch:
+ * @context: a #DnfContext instance.
+ * @base_arch: the base_arch, e.g. "x86_64"
+ *
+ * Sets the base arch of sack.
+ *
+ * Since: 0.15.0
+ **/
+void
+dnf_context_set_arch(DnfContext *context, const gchar *arch)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    g_free(priv->cache_dir);
+    priv->arch = g_strdup(arch);
+}
+
+/**
  * dnf_context_set_solv_dir:
  * @context: a #DnfContext instance.
  * @solv_dir: the solve cache, e.g. "/var/cache/PackageKit/hawkey"
@@ -1208,6 +1243,11 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
     priv->sack = dnf_sack_new();
     dnf_sack_set_cachedir(priv->sack, solv_dir_real);
     dnf_sack_set_rootdir(priv->sack, priv->install_root);
+    if (priv->arch) {
+        if(!dnf_sack_set_arch(priv->sack, priv->arch, error)) {
+            return FALSE;
+        }
+    }
     if (!dnf_sack_setup(priv->sack, DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, error))
         return FALSE;
     dnf_sack_set_installonly(priv->sack, dnf_context_get_installonly_pkgs(context));

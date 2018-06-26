@@ -30,6 +30,7 @@ void ContextTest::testLoadModules()
     /* set up local context */
     // set releasever to avoid crashing on missing /etc/os-release in the test data
     dnf_context_set_release_ver(context, "26");
+    dnf_context_set_arch(context, "x86_64");
     constexpr auto install_root = TESTDATADIR "/modules/";
     dnf_context_set_install_root(context, install_root);
     constexpr auto repos_dir = TESTDATADIR "/modules/yum.repos.d/";
