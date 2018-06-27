@@ -33,9 +33,9 @@ hy_selector_free(HySelector sltr)
 }
 
 int
-hy_selector_pkg_set(HySelector sltr, int keyname, int cmp_type, DnfPackageSet *pset)
+hy_selector_pkg_set(HySelector sltr, DnfPackageSet *pset)
 {
-    return sltr->set(keyname, cmp_type, pset);
+    return sltr->set(pset);
 }
 
 int

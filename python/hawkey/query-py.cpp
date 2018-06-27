@@ -498,7 +498,7 @@ filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, 
                             (ret2e(DNF_ERROR_BAD_SELECTOR, "Invalid value type: Only List and Query supported"));
                             return FALSE;
                         }
-                        if (ret2e(sltr->set(keyname, cmp_type, pset.get()),
+                        if (ret2e(sltr->set(pset.get()),
                             "Invalid Selector spec." )) {
                             return FALSE;
                         }
