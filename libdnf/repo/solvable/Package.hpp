@@ -28,6 +28,8 @@ public:
     std::shared_ptr<libdnf::DependencyContainer> getSuggests() const;
     std::shared_ptr<libdnf::DependencyContainer> getSupplements() const;
     Id getId() const;
+    DnfSack *getSack() const;
+    Pool *getPool() const;
 
     virtual const char *getName() const = 0;
     virtual const char *getVersion() const = 0;

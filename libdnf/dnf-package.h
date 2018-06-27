@@ -22,82 +22,43 @@
 #ifndef __DNF_PACKAGE_H
 #define __DNF_PACKAGE_H
 
-#include <glib.h>
-
 #include "hy-package.h"
 
+#include "dnf-utils.h"
 #include "dnf-repo.h"
 #include "dnf-state.h"
+#include "libdnf/repo/RpmPackage.hpp"
 
-G_BEGIN_DECLS
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/**
- * DnfPackageInfo:
- * @DNF_PACKAGE_INFO_UNKNOWN:                   Unknown state
- * @DNF_PACKAGE_INFO_UPDATE:                    Package update
- * @DNF_PACKAGE_INFO_INSTALL:                   Package install
- * @DNF_PACKAGE_INFO_REMOVE:                    Package remove
- * @DNF_PACKAGE_INFO_CLEANUP:                   Package cleanup
- * @DNF_PACKAGE_INFO_OBSOLETE:                  Package obsolete
- * @DNF_PACKAGE_INFO_REINSTALL:                 Package re-install
- * @DNF_PACKAGE_INFO_DOWNGRADE:                 Package downgrade
- *
- * The info enum code.
- **/
-typedef enum {
-        DNF_PACKAGE_INFO_UNKNOWN                        = 0,
-        DNF_PACKAGE_INFO_UPDATE                         = 11,
-        DNF_PACKAGE_INFO_INSTALL                        = 12,
-        DNF_PACKAGE_INFO_REMOVE                         = 13,
-        DNF_PACKAGE_INFO_CLEANUP                        = 14,
-        DNF_PACKAGE_INFO_OBSOLETE                       = 15,
-        DNF_PACKAGE_INFO_REINSTALL                      = 19,
-        DNF_PACKAGE_INFO_DOWNGRADE                      = 20,
-        /*< private >*/
-        DNF_PACKAGE_INFO_LAST
-} DnfPackageInfo;
+DnfRepo *dnf_package_get_repo(DnfPackage *pkg);
+void dnf_package_set_repo(DnfPackage *pkg, DnfRepo *repo);
+const char *dnf_package_get_filename(DnfPackage *pkg);
+DEPRECATED() void dnf_package_set_filename(DnfPackage *pkg, const char *filename);
+DEPRECATED() const char *dnf_package_get_origin(DnfPackage *pkg);
+DEPRECATED() void dnf_package_set_origin(DnfPackage *pkg, const char *origin);
+const char *dnf_package_get_package_id(DnfPackage *pkg);
+DnfStateAction dnf_package_get_action(DnfPackage *pkg);
+void dnf_package_set_action(DnfPackage *pkg, DnfStateAction action);
+const char *dnf_package_get_pkgid(DnfPackage *pkg);
+void dnf_package_set_pkgid(DnfPackage *pkg, const char *pkgid);
+bool dnf_package_check_filename(DnfPackage *pkg, bool *valid, GError **error);
+DEPRECATED() int dnf_package_get_info(DnfPackage *pkg);
+DEPRECATED() void dnf_package_set_info(DnfPackage *pkg, int info);
+DEPRECATED() bool dnf_package_is_gui(DnfPackage *pkg);
+DEPRECATED() bool dnf_package_is_devel(DnfPackage *pkg);
+DEPRECATED() bool dnf_package_is_downloaded(DnfPackage *pkg);
+DEPRECATED() bool dnf_package_is_installonly(DnfPackage *pkg);
+DEPRECATED() unsigned int dnf_package_get_cost(DnfPackage *pkg);
+DEPRECATED() char *dnf_package_download(DnfPackage *pkg, const char *directory, DnfState *state, GError **error);
 
-DnfRepo         *dnf_package_get_repo                   (DnfPackage     *pkg);
-void             dnf_package_set_repo                   (DnfPackage     *pkg,
-                                                         DnfRepo        *repo);
-const gchar     *dnf_package_get_filename               (DnfPackage     *pkg);
-void             dnf_package_set_filename               (DnfPackage     *pkg,
-                                                         const gchar    *filename);
-const gchar     *dnf_package_get_origin                 (DnfPackage     *pkg);
-void             dnf_package_set_origin                 (DnfPackage     *pkg,
-                                                         const gchar    *origin);
-const gchar     *dnf_package_get_package_id             (DnfPackage     *pkg);
-DnfPackageInfo   dnf_package_get_info                   (DnfPackage     *pkg);
-void             dnf_package_set_info                   (DnfPackage     *pkg,
-                                                         DnfPackageInfo  info);
-DnfStateAction   dnf_package_get_action                 (DnfPackage     *pkg);
-void             dnf_package_set_action                 (DnfPackage     *pkg,
-                                                         DnfStateAction  action);
-gboolean         dnf_package_get_user_action            (DnfPackage     *pkg);
-void             dnf_package_set_user_action            (DnfPackage     *pkg,
-                                                         gboolean        user_action);
-gboolean         dnf_package_is_gui                     (DnfPackage     *pkg);
-gboolean         dnf_package_is_devel                   (DnfPackage     *pkg);
-gboolean         dnf_package_is_downloaded              (DnfPackage     *pkg);
-gboolean         dnf_package_is_installonly             (DnfPackage     *pkg);
-const gchar     *dnf_package_get_pkgid                  (DnfPackage     *pkg);
-void             dnf_package_set_pkgid                  (DnfPackage     *pkg,
-                                                         const gchar    *pkgid);
-guint            dnf_package_get_cost                   (DnfPackage     *pkg);
-gchar           *dnf_package_download                   (DnfPackage     *pkg,
-                                                         const gchar    *directory,
-                                                         DnfState       *state,
-                                                         GError         **error);
-gboolean         dnf_package_check_filename             (DnfPackage     *pkg,
-                                                         gboolean       *valid,
-                                                         GError         **error);
+bool dnf_package_array_download(GPtrArray *packages, const char *directory, DnfState *state, GError **error);
+unsigned long dnf_package_array_get_download_size(GPtrArray *packages);
 
-gboolean         dnf_package_array_download             (GPtrArray      *packages,
-                                                         const gchar    *directory,
-                                                         DnfState       *state,
-                                                         GError         **error);
-guint64          dnf_package_array_get_download_size    (GPtrArray      *packages);
-
-G_END_DECLS
+#ifdef __cplusplus
+};
+#endif
 
 #endif /* __DNF_PACKAGE_H */

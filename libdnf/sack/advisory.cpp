@@ -112,9 +112,10 @@ Advisory::getName() const
     return name;
 }
 
-void
-Advisory::getPackages(std::vector<AdvisoryPkg> & pkglist, bool withFilemanes) const
+std::vector<AdvisoryPkg>
+Advisory::getPackages(bool withFilemanes) const
 {
+    std::vector<libdnf::AdvisoryPkg> pkgsvector;
     Dataiterator di;
     const char * filename = nullptr;
     Pool *pool = dnf_sack_get_pool(sack);
@@ -128,22 +129,27 @@ Advisory::getPackages(std::vector<AdvisoryPkg> & pkglist, bool withFilemanes) co
         if (withFilemanes) {
             filename = pool_lookup_str(pool, SOLVID_POS, UPDATE_COLLECTION_FILENAME);
         }
-        pkglist.emplace_back(sack, advisory, name, evr, arch, filename);
+        pkgsvector.emplace_back(sack, advisory, name, evr, arch, filename);
     }
     dataiterator_free(&di);
+
+    return pkgsvector;
 }
 
-void
-Advisory::getReferences(std::vector<AdvisoryRef> & reflist) const
+std::vector<AdvisoryRef>
+Advisory::getReferences() const
 {
+    std::vector<libdnf::AdvisoryRef> refsvector;
     Dataiterator di;
     Pool *pool = dnf_sack_get_pool(sack);
 
     dataiterator_init(&di, pool, 0, advisory, UPDATE_REFERENCE, 0, 0);
     for (int index = 0; dataiterator_step(&di); index++) {
-        reflist.emplace_back(sack, advisory, index);
+        refsvector.emplace_back(sack, advisory, index);
     }
     dataiterator_free(&di);
+
+    return refsvector;
 }
 
 const char *

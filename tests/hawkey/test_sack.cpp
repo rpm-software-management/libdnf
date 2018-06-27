@@ -28,13 +28,14 @@
 #include <solv/testcase.h>
 
 #include <glib/gstdio.h>
+#include <memory>
 
 #include "libdnf/dnf-types.h"
-#include "libdnf/hy-package-private.hpp"
 #include "libdnf/hy-repo-private.hpp"
 #include "libdnf/dnf-sack-private.hpp"
 #include "libdnf/hy-util.h"
 #include "libdnf/hy-iutil-private.hpp"
+#include "libdnf/repo/RpmPackage.hpp"
 #include "fixtures.h"
 #include "testsys.h"
 #include "test_suites.h"
@@ -137,20 +138,22 @@ START_TEST(test_add_cmdline_package)
     dnf_sack_set_cachedir(sack, test_globals.tmpdir);
 
     g_autofree gchar *path_mystery = g_build_filename (TESTDATADIR, "/hawkey/yum/mystery-devel-19.67-1.noarch.rpm", NULL);
-    g_autoptr(DnfPackage) pkg_mystery = dnf_sack_add_cmdline_package (sack, path_mystery);
-    const gchar *location_mystery = dnf_package_get_location(pkg_mystery);
+    auto pkg_mystery = std::unique_ptr<DnfPackage>(dnf_sack_add_cmdline_package (sack, path_mystery));
+    const gchar *location_mystery = pkg_mystery->getLocation();
     ck_assert_str_eq(path_mystery, location_mystery);
 
     g_autofree gchar *path_tour = g_build_filename (TESTDATADIR, "/hawkey/yum/tour-4-6.noarch.rpm", NULL);
-    g_autoptr(DnfPackage) pkg_tour = dnf_sack_add_cmdline_package (sack, path_tour);
-    const gchar *location_tour = dnf_package_get_location(pkg_tour);
+    auto pkg_tour = std::unique_ptr<DnfPackage>(dnf_sack_add_cmdline_package (sack, path_tour));
+    const gchar *location_tour = pkg_tour->getLocation();
     ck_assert_str_eq(path_tour, location_tour);
 
     g_autofree gchar *path_null_rpm = g_build_filename (test_globals.tmpdir, "null.rpm", NULL);
     FILE *fp = g_fopen (path_null_rpm, "w");
     fail_unless (fp != NULL);
     fclose (fp);
-    fail_unless (dnf_sack_add_cmdline_package (sack, path_null_rpm) == NULL);
+    auto pkg = dnf_sack_add_cmdline_package (sack, path_null_rpm);
+    fail_unless (pkg == NULL);
+    delete pkg;
 }
 END_TEST
 

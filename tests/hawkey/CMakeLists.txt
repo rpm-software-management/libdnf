@@ -6,7 +6,6 @@ SET (hawkeytest_SRCS
      test_goal.cpp
      test_iutil.cpp
      test_main.cpp
-     test_package.cpp
      test_packagelist.cpp
      test_packageset.cpp
      test_reldep.cpp

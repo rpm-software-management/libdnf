@@ -41,8 +41,8 @@ public:
     const char *getDescription() const;
     DnfAdvisoryKind getKind() const;
     const char *getName() const;
-    void getPackages(std::vector<AdvisoryPkg> & pkglist, bool withFilemanes = true) const;
-    void getReferences(std::vector<AdvisoryRef> & reflist) const;
+    std::vector<AdvisoryPkg> getPackages(bool withFilemanes = true) const;
+    std::vector<AdvisoryRef> getReferences() const;
     const char *getRights() const;
     const char *getSeverity() const;
     const char *getTitle() const;

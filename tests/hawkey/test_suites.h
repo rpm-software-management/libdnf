@@ -28,7 +28,6 @@ Suite *advisorypkg_suite(void);
 Suite *advisoryref_suite(void);
 Suite *goal_suite(void);
 Suite *iutil_suite(void);
-Suite *package_suite(void);
 Suite *packagelist_suite(void);
 Suite *packageset_suite(void);
 Suite *query_suite(void);

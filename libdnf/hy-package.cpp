@@ -30,59 +30,17 @@
  */
 
 
-#include <stdlib.h>
 #include <solv/evr.h>
 #include <solv/pool.h>
 #include <solv/repo.h>
-#include <solv/queue.h>
+#include <tuple>
 
 #include "dnf-advisory-private.hpp"
 #include "dnf-packagedelta-private.hpp"
 #include "dnf-sack-private.hpp"
 #include "hy-iutil-private.hpp"
-#include "hy-package-private.hpp"
-#include "hy-repo-private.hpp"
-#include "repo/solvable/DependencyContainer.hpp"
 
-#define BLOCK_SIZE 31
-
-typedef struct
-{
-    gboolean         loaded;
-    Id               id;
-    DnfSack         *sack;
-} DnfPackagePrivate;
-
-G_DEFINE_TYPE_WITH_PRIVATE(DnfPackage, dnf_package, G_TYPE_OBJECT)
-#define GET_PRIVATE(o) (static_cast<DnfPackagePrivate *>(dnf_package_get_instance_private (o)))
-
-/**
- * dnf_package_finalize:
- **/
-static void
-dnf_package_finalize(GObject *object)
-{
-    G_OBJECT_CLASS(dnf_package_parent_class)->finalize(object);
-}
-
-/**
- * dnf_package_init:
- **/
-static void
-dnf_package_init(DnfPackage *package)
-{
-}
-
-/**
- * dnf_package_class_init:
- **/
-static void
-dnf_package_class_init(DnfPackageClass *klass)
-{
-    GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = dnf_package_finalize;
-}
-
+#include "libdnf/repo/RpmPackage.hpp"
 
 /**
  * dnf_package_new:
@@ -96,79 +54,7 @@ dnf_package_class_init(DnfPackageClass *klass)
 DnfPackage *
 dnf_package_new(DnfSack *sack, Id id)
 {
-    auto pkg = DNF_PACKAGE(g_object_new(DNF_TYPE_PACKAGE, NULL));
-    auto priv = GET_PRIVATE(pkg);
-    priv->sack = sack;
-    priv->id = id;
-    return pkg;
-}
-
-
-/* internal */
-static Solvable *
-get_solvable(DnfPackage *pkg)
-{
-    DnfPackagePrivate *priv = GET_PRIVATE(pkg);
-    return pool_id2solvable(dnf_package_get_pool(pkg), priv->id);
-}
-
-/**
- * dnf_package_get_pool: (skip)
- * @pkg: a #DnfPackage instance.
- *
- * Gets the pool used for storage.
- *
- * Returns: (transfer none): a %Pool
- *
- * Since: 0.7.0
- */
-Pool *
-dnf_package_get_pool(DnfPackage *pkg)
-{
-    DnfPackagePrivate *priv = GET_PRIVATE(pkg);
-    return dnf_sack_get_pool(priv->sack);
-}
-
-static guint64
-lookup_num(DnfPackage *pkg, unsigned type)
-{
-    Solvable *s = get_solvable(pkg);
-    repo_internalize_trigger(s->repo);
-    return solvable_lookup_num(s, type, 0);
-}
-
-static DnfReldepList *
-reldeps_for(DnfPackage *pkg, Id type)
-{
-    Solvable *s = get_solvable(pkg);
-    DnfReldepList *reldeplist;
-    Queue q, q_final;
-    Id marker = -1;
-    Id solv_type = type;
-    Id rel_id;
-
-    if (type == SOLVABLE_REQUIRES)
-        marker = 0;
-
-    if (type == SOLVABLE_PREREQMARKER) {
-        solv_type = SOLVABLE_REQUIRES;
-        marker = 1;
-    }
-    queue_init(&q);
-    queue_init(&q_final);
-    solvable_lookup_deparray(s, solv_type, &q, marker);
-
-    for (int i = 0; i < q.count; i++) {
-        rel_id = q.elements[i];
-        if (rel_id != SOLVABLE_PREREQMARKER)
-            queue_push(&q_final, rel_id);
-    }
-
-    reldeplist = new libdnf::DependencyContainer(dnf_package_get_sack(pkg), q_final);
-
-    queue_free(&q);
-    queue_free(&q_final);
-    return reldeplist;
+    return new libdnf::RpmPackage(sack, id);
 }
 
 /**
@@ -184,44 +70,7 @@ reldeps_for(DnfPackage *pkg, Id type)
 Id
 dnf_package_get_id(DnfPackage *pkg)
 {
-    DnfPackagePrivate *priv = GET_PRIVATE(pkg);
-    return priv->id;
-}
-
-/**
- * dnf_package_get_sack:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the package sack for the package.
- *
- * Returns: a #DnfSack, or %NULL
- *
- * Since: 0.7.0
- */
-DnfSack *
-dnf_package_get_sack(DnfPackage *pkg)
-{
-    DnfPackagePrivate *priv = GET_PRIVATE(pkg);
-    return priv->sack;
-}
-
-/**
- * dnf_package_get_identical:
- * @pkg1: a #DnfPackage instance.
- * @pkg2: another #DnfPackage instance.
- *
- * Tests two packages for equality.
- *
- * Returns: %TRUE if the packages are the same
- *
- * Since: 0.7.0
- */
-gboolean
-dnf_package_get_identical(DnfPackage *pkg1, DnfPackage *pkg2)
-{
-    DnfPackagePrivate *priv1 = GET_PRIVATE(pkg1);
-    DnfPackagePrivate *priv2 = GET_PRIVATE(pkg2);
-    return priv1->id == priv2->id;
+    return pkg->getId();
 }
 
 /**
@@ -234,11 +83,10 @@ dnf_package_get_identical(DnfPackage *pkg1, DnfPackage *pkg2)
  *
  * Since: 0.7.0
  */
-gboolean
+bool
 dnf_package_installed(DnfPackage *pkg)
 {
-    Solvable *s = get_solvable(pkg);
-    return (dnf_package_get_pool(pkg)->installed == s->repo);
+    return pkg->isInstalled();
 }
 
 /**
@@ -255,23 +103,7 @@ dnf_package_installed(DnfPackage *pkg)
 int
 dnf_package_cmp(DnfPackage *pkg1, DnfPackage *pkg2)
 {
-    Pool *pool1 = dnf_package_get_pool(pkg1);
-    Pool *pool2 = dnf_package_get_pool(pkg2);
-    Solvable *s1 = pool_id2solvable(pool1, dnf_package_get_id(pkg1));
-    Solvable *s2 = pool_id2solvable(pool2, dnf_package_get_id(pkg2));
-    const char *str1 = pool_id2str(pool1, s1->name);
-    const char *str2 = pool_id2str(pool2, s2->name);
-    int ret = strcmp(str1, str2);
-    if (ret)
-        return ret;
-
-    ret = dnf_package_evr_cmp(pkg1, pkg2);
-    if (ret)
-        return ret;
-
-    str1 = pool_id2str(pool1, s1->arch);
-    str2 = pool_id2str(pool2, s2->arch);
-    return strcmp(str1, str2);
+    return pkg1->compare(*pkg2);
 }
 
 /**
@@ -288,14 +120,7 @@ dnf_package_cmp(DnfPackage *pkg1, DnfPackage *pkg2)
 int
 dnf_package_evr_cmp(DnfPackage *pkg1, DnfPackage *pkg2)
 {
-    Pool *pool1 = dnf_package_get_pool(pkg1);
-    Pool *pool2 = dnf_package_get_pool(pkg2);
-    Solvable *s1 = get_solvable(pkg1);
-    Solvable *s2 = get_solvable(pkg2);
-    const char *str1 = pool_id2str(pool1, s1->evr);
-    const char *str2 = pool_id2str(pool2, s2->evr);
-
-    return pool_evrcmp_str(dnf_package_get_pool(pkg1), str1, str2, EVRCMP_COMPARE);
+    return pkg1->evrCompare(*pkg2);
 }
 
 /**
@@ -313,11 +138,7 @@ dnf_package_evr_cmp(DnfPackage *pkg1, DnfPackage *pkg2)
 const char *
 dnf_package_get_location(DnfPackage *pkg)
 {
-    Solvable *s = get_solvable(pkg);
-    if (s->repo) {
-        repo_internalize_trigger(s->repo);
-    }
-    return solvable_get_location(s, NULL);
+    return pkg->getLocation();
 }
 
 /**
@@ -333,8 +154,7 @@ dnf_package_get_location(DnfPackage *pkg)
 const char *
 dnf_package_get_baseurl(DnfPackage *pkg)
 {
-    Solvable *s = get_solvable(pkg);
-    return solvable_lookup_str(s, SOLVABLE_MEDIABASE);
+    return pkg->getBaseurl();
 }
 
 /**
@@ -352,8 +172,7 @@ dnf_package_get_baseurl(DnfPackage *pkg)
 const char *
 dnf_package_get_nevra(DnfPackage *pkg)
 {
-    Solvable *s = get_solvable(pkg);
-    return pool_solvable2str(dnf_package_get_pool(pkg), s);
+    return pkg->getNevra();
 }
 
 /**
@@ -369,9 +188,7 @@ dnf_package_get_nevra(DnfPackage *pkg)
 const char *
 dnf_package_get_sourcerpm(DnfPackage *pkg)
 {
-    Solvable *s = get_solvable(pkg);
-    repo_internalize_trigger(s->repo);
-    return solvable_lookup_sourcepkg(s);
+    return pkg->getSourceRpm();
 }
 
 /**
@@ -387,9 +204,7 @@ dnf_package_get_sourcerpm(DnfPackage *pkg)
 const char *
 dnf_package_get_version(DnfPackage *pkg)
 {
-    char *e, *v, *r;
-    pool_split_evr(dnf_package_get_pool(pkg), dnf_package_get_evr(pkg), &e, &v, &r);
-    return v;
+    return pkg->getVersion();
 }
 
 /**
@@ -405,9 +220,7 @@ dnf_package_get_version(DnfPackage *pkg)
 const char *
 dnf_package_get_release(DnfPackage *pkg)
 {
-    char *e, *v, *r;
-    pool_split_evr(dnf_package_get_pool(pkg), dnf_package_get_evr(pkg), &e, &v, &r);
-    return r;
+    return pkg->getRelease();
 }
 
 /**
@@ -423,15 +236,14 @@ dnf_package_get_release(DnfPackage *pkg)
 const char *
 dnf_package_get_name(DnfPackage *pkg)
 {
-    Pool *pool = dnf_package_get_pool(pkg);
-    return pool_id2str(pool, get_solvable(pkg)->name);
+    return pkg->getName();
 }
 
 /**
  * dnf_package_get_packager:
  * @pkg: a #DnfPackage instance.
  *
- * Gets the XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX for the package.
+ * Gets the packager for the package.
  *
  * Returns: a string, or %NULL
  *
@@ -440,7 +252,7 @@ dnf_package_get_name(DnfPackage *pkg)
 const char *
 dnf_package_get_packager(DnfPackage *pkg)
 {
-    return solvable_lookup_str(get_solvable(pkg), SOLVABLE_PACKAGER);
+    return pkg->getPackager();
 }
 
 /**
@@ -456,8 +268,7 @@ dnf_package_get_packager(DnfPackage *pkg)
 const char *
 dnf_package_get_arch(DnfPackage *pkg)
 {
-    Pool *pool = dnf_package_get_pool(pkg);
-    return pool_id2str(pool, get_solvable(pkg)->arch);
+    return pkg->getArch();
 }
 
 /**
@@ -473,14 +284,9 @@ dnf_package_get_arch(DnfPackage *pkg)
 const unsigned char *
 dnf_package_get_chksum(DnfPackage *pkg, int *type)
 {
-    Solvable *s = get_solvable(pkg);
-    const unsigned char* ret;
-
-    repo_internalize_trigger(s->repo);
-    ret = solvable_lookup_bin_checksum(s, SOLVABLE_CHECKSUM, type);
-    if (ret)
-        *type = checksumt_l2h(*type);
-    return ret;
+    auto checksum = pkg->getChecksum();
+    *type = std::get<1>(checksum);
+    return std::get<0>(checksum);
 }
 
 /**
@@ -497,14 +303,9 @@ dnf_package_get_chksum(DnfPackage *pkg, int *type)
 const unsigned char *
 dnf_package_get_hdr_chksum(DnfPackage *pkg, int *type)
 {
-    Solvable *s = get_solvable(pkg);
-    const unsigned char *ret;
-
-    repo_internalize_trigger(s->repo);
-    ret = solvable_lookup_bin_checksum(s, SOLVABLE_HDRID, type);
-    if (ret)
-        *type = checksumt_l2h(*type);
-    return ret;
+    auto checksum = pkg->getHeaderChecksum();
+    *type = std::get<1>(checksum);
+    return std::get<0>(checksum);
 }
 
 /**
@@ -520,7 +321,7 @@ dnf_package_get_hdr_chksum(DnfPackage *pkg, int *type)
 const char *
 dnf_package_get_description(DnfPackage *pkg)
 {
-    return solvable_lookup_str(get_solvable(pkg), SOLVABLE_DESCRIPTION);
+    return pkg->getDescription();
 }
 
 /**
@@ -536,8 +337,7 @@ dnf_package_get_description(DnfPackage *pkg)
 const char *
 dnf_package_get_evr(DnfPackage *pkg)
 {
-    Pool *pool = dnf_package_get_pool(pkg);
-    return pool_id2str(pool, get_solvable(pkg)->evr);
+    return pkg->getEvr();
 }
 
 /**
@@ -553,7 +353,7 @@ dnf_package_get_evr(DnfPackage *pkg)
 const char *
 dnf_package_get_group(DnfPackage *pkg)
 {
-  return solvable_lookup_str(get_solvable(pkg), SOLVABLE_GROUP);
+  return pkg->getGroup();
 }
 
 /**
@@ -569,7 +369,7 @@ dnf_package_get_group(DnfPackage *pkg)
 const char *
 dnf_package_get_license(DnfPackage *pkg)
 {
-    return solvable_lookup_str(get_solvable(pkg), SOLVABLE_LICENSE);
+    return pkg->getLicense();
 }
 
 /**
@@ -585,8 +385,7 @@ dnf_package_get_license(DnfPackage *pkg)
 const char *
 dnf_package_get_reponame(DnfPackage *pkg)
 {
-    Solvable *s = get_solvable(pkg);
-    return s->repo->name;
+    return pkg->getReponame();
 }
 
 /**
@@ -602,8 +401,7 @@ dnf_package_get_reponame(DnfPackage *pkg)
 const char *
 dnf_package_get_summary(DnfPackage *pkg)
 {
-    Solvable *s = get_solvable(pkg);
-    return solvable_lookup_str(s, SOLVABLE_SUMMARY);
+    return pkg->getSummary();
 }
 
 /**
@@ -619,7 +417,7 @@ dnf_package_get_summary(DnfPackage *pkg)
 const char *
 dnf_package_get_url(DnfPackage *pkg)
 {
-    return solvable_lookup_str(get_solvable(pkg), SOLVABLE_URL);
+    return pkg->getUrl();
 }
 
 /**
@@ -632,10 +430,10 @@ dnf_package_get_url(DnfPackage *pkg)
  *
  * Since: 0.7.0
  */
-guint64
+unsigned long
 dnf_package_get_downloadsize(DnfPackage *pkg)
 {
-    return lookup_num(pkg, SOLVABLE_DOWNLOADSIZE);
+    return pkg->getDownloadSize();
 }
 
 /**
@@ -648,10 +446,10 @@ dnf_package_get_downloadsize(DnfPackage *pkg)
  *
  * Since: 0.7.0
  */
-guint64
+unsigned long
 dnf_package_get_epoch(DnfPackage *pkg)
 {
-    return pool_get_epoch(dnf_package_get_pool(pkg), dnf_package_get_evr(pkg));
+    return pkg->getEpoch();
 }
 
 /**
@@ -664,10 +462,10 @@ dnf_package_get_epoch(DnfPackage *pkg)
  *
  * Since: 0.7.0
  */
-guint64
+unsigned long
 dnf_package_get_hdr_end(DnfPackage *pkg)
 {
-    return lookup_num(pkg, SOLVABLE_HEADEREND);
+    return pkg->getHeaderEndIndex();
 }
 
 /**
@@ -680,10 +478,10 @@ dnf_package_get_hdr_end(DnfPackage *pkg)
  *
  * Since: 0.7.0
  */
-guint64
+unsigned long
 dnf_package_get_installsize(DnfPackage *pkg)
 {
-    return lookup_num(pkg, SOLVABLE_INSTALLSIZE);
+    return pkg->getInstallSize();
 }
 
 /**
@@ -696,10 +494,10 @@ dnf_package_get_installsize(DnfPackage *pkg)
  *
  * Since: 0.7.0
  */
-guint64
+unsigned long
 dnf_package_get_buildtime(DnfPackage *pkg)
 {
-    return lookup_num(pkg, SOLVABLE_BUILDTIME);
+    return pkg->getBuildTime();
 }
 
 /**
@@ -712,10 +510,10 @@ dnf_package_get_buildtime(DnfPackage *pkg)
  *
  * Since: 0.7.0
  */
-guint64
+unsigned long
 dnf_package_get_installtime(DnfPackage *pkg)
 {
-    return lookup_num(pkg, SOLVABLE_INSTALLTIME);
+    return pkg->getInstallTime();
 }
 
 /**
@@ -728,10 +526,10 @@ dnf_package_get_installtime(DnfPackage *pkg)
  *
  * Since: 0.7.0
  */
-guint64
+unsigned long
 dnf_package_get_medianr(DnfPackage *pkg)
 {
-    return lookup_num(pkg, SOLVABLE_MEDIANR);
+    return pkg->getMediaNumber();
 }
 
 /**
@@ -744,11 +542,10 @@ dnf_package_get_medianr(DnfPackage *pkg)
  *
  * Since: 0.7.0
  */
-guint64
+unsigned long
 dnf_package_get_rpmdbid(DnfPackage *pkg)
 {
-    guint64 ret = lookup_num(pkg, RPM_RPMDBID);
-    return ret;
+    return pkg->getRpmdbId();
 }
 
 /**
@@ -761,12 +558,10 @@ dnf_package_get_rpmdbid(DnfPackage *pkg)
  *
  * Since: 0.7.0
  */
-guint64
+unsigned long
 dnf_package_get_size(DnfPackage *pkg)
 {
-    unsigned type = dnf_package_installed(pkg) ? SOLVABLE_INSTALLSIZE :
-                                                 SOLVABLE_DOWNLOADSIZE;
-    return lookup_num(pkg, type);
+    return pkg->getSize();
 }
 
 /**
@@ -782,7 +577,7 @@ dnf_package_get_size(DnfPackage *pkg)
 DnfReldepList *
 dnf_package_get_conflicts(DnfPackage *pkg)
 {
-    return reldeps_for(pkg, SOLVABLE_CONFLICTS);
+    return pkg->getConflicts().get();
 }
 
 /**
@@ -798,7 +593,7 @@ dnf_package_get_conflicts(DnfPackage *pkg)
 DnfReldepList *
 dnf_package_get_enhances(DnfPackage *pkg)
 {
-    return reldeps_for(pkg, SOLVABLE_ENHANCES);
+    return pkg->getEnhances().get();
 }
 
 /**
@@ -814,7 +609,7 @@ dnf_package_get_enhances(DnfPackage *pkg)
 DnfReldepList *
 dnf_package_get_obsoletes(DnfPackage *pkg)
 {
-    return reldeps_for(pkg, SOLVABLE_OBSOLETES);
+    return pkg->getObsoletes().get();
 }
 
 /**
@@ -830,7 +625,7 @@ dnf_package_get_obsoletes(DnfPackage *pkg)
 DnfReldepList *
 dnf_package_get_provides(DnfPackage *pkg)
 {
-    return reldeps_for(pkg, SOLVABLE_PROVIDES);
+    return pkg->getProvides().get();
 }
 
 /**
@@ -846,7 +641,7 @@ dnf_package_get_provides(DnfPackage *pkg)
 DnfReldepList *
 dnf_package_get_recommends(DnfPackage *pkg)
 {
-    return reldeps_for(pkg, SOLVABLE_RECOMMENDS);
+    return pkg->getRecommends().get();
 }
 
 /**
@@ -862,7 +657,7 @@ dnf_package_get_recommends(DnfPackage *pkg)
 DnfReldepList *
 dnf_package_get_requires(DnfPackage *pkg)
 {
-    return reldeps_for(pkg, SOLVABLE_REQUIRES);
+    return pkg->getRequires().get();
 }
 
 /**
@@ -878,7 +673,7 @@ dnf_package_get_requires(DnfPackage *pkg)
 DnfReldepList *
 dnf_package_get_requires_pre (DnfPackage *pkg)
 {
-    return reldeps_for(pkg, SOLVABLE_PREREQMARKER);
+    return pkg->getRequiresPre().get();
 }
 
 /**
@@ -894,7 +689,7 @@ dnf_package_get_requires_pre (DnfPackage *pkg)
 DnfReldepList *
 dnf_package_get_suggests(DnfPackage *pkg)
 {
-    return reldeps_for(pkg, SOLVABLE_SUGGESTS);
+    return pkg->getSuggests().get();
 }
 
 /**
@@ -910,7 +705,7 @@ dnf_package_get_suggests(DnfPackage *pkg)
 DnfReldepList *
 dnf_package_get_supplements(DnfPackage *pkg)
 {
-    return reldeps_for(pkg, SOLVABLE_SUPPLEMENTS);
+    return pkg->getSupplements().get();
 }
 
 /**
@@ -923,24 +718,10 @@ dnf_package_get_supplements(DnfPackage *pkg)
  *
  * Since: 0.7.0
  */
-gchar **
+char **
 dnf_package_get_files(DnfPackage *pkg)
 {
-    DnfPackagePrivate *priv = GET_PRIVATE(pkg);
-    Pool *pool = dnf_package_get_pool(pkg);
-    Solvable *s = get_solvable(pkg);
-    Dataiterator di;
-    GPtrArray *ret = g_ptr_array_new();
-
-    repo_internalize_trigger(s->repo);
-    dataiterator_init(&di, pool, s->repo, priv->id, SOLVABLE_FILELIST, NULL,
-                      SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
-    while (dataiterator_step(&di)) {
-        g_ptr_array_add(ret, g_strdup(di.kv.str));
-    }
-    dataiterator_free(&di);
-    g_ptr_array_add(ret, NULL);
-    return (gchar**)g_ptr_array_free (ret, FALSE);
+    return pkg->getFiles().data();
 }
 
 /**
@@ -956,37 +737,13 @@ dnf_package_get_files(DnfPackage *pkg)
 GPtrArray *
 dnf_package_get_advisories(DnfPackage *pkg, int cmp_type)
 {
-    Dataiterator di;
-    Id evr;
-    int cmp;
-    DnfAdvisory *advisory;
-    Pool *pool = dnf_package_get_pool(pkg);
-    DnfSack *sack = dnf_package_get_sack(pkg);
-    GPtrArray *advisorylist = g_ptr_array_new();
-    Solvable *s = get_solvable(pkg);
+    auto advisories = pkg->getAdvisories(cmp_type);
+    GPtrArray *array = g_ptr_array_new();
 
-    dataiterator_init(&di, pool, 0, 0, UPDATE_COLLECTION_NAME,
-                      pool_id2str(pool, s->name), SEARCH_STRING);
-    dataiterator_prepend_keyname(&di, UPDATE_COLLECTION);
-    while (dataiterator_step(&di)) {
-        dataiterator_setpos_parent(&di);
-        if (pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_ARCH) != s->arch)
-            continue;
-        evr = pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_EVR);
-        if (!evr)
-            continue;
+    for (const auto &advisory : advisories)
+        g_ptr_array_add(array, advisory.get());
 
-        cmp = pool_evrcmp(pool, evr, s->evr, EVRCMP_COMPARE);
-        if ((cmp > 0 && (cmp_type & HY_GT)) ||
-            (cmp < 0 && (cmp_type & HY_LT)) ||
-            (cmp == 0 && (cmp_type & HY_EQ))) {
-            advisory = dnf_advisory_new(sack, di.solvid);
-            g_ptr_array_add(advisorylist, advisory);
-            dataiterator_skip_solvable(&di);
-        }
-    }
-    dataiterator_free(&di);
-    return advisorylist;
+    return array;
 }
 
 /**
@@ -1003,31 +760,5 @@ dnf_package_get_advisories(DnfPackage *pkg, int cmp_type)
 DnfPackageDelta *
 dnf_package_get_delta_from_evr(DnfPackage *pkg, const char *from_evr)
 {
-    Pool *pool = dnf_package_get_pool(pkg);
-    Solvable *s = get_solvable(pkg);
-    DnfPackageDelta *delta = NULL;
-    Dataiterator di;
-    const char *name = dnf_package_get_name(pkg);
-
-    dataiterator_init(&di, pool, s->repo, SOLVID_META, DELTA_PACKAGE_NAME, name,
-                      SEARCH_STRING);
-    dataiterator_prepend_keyname(&di, REPOSITORY_DELTAINFO);
-    while (dataiterator_step(&di)) {
-        dataiterator_setpos_parent(&di);
-        if (pool_lookup_id(pool, SOLVID_POS, DELTA_PACKAGE_EVR) != s->evr ||
-            pool_lookup_id(pool, SOLVID_POS, DELTA_PACKAGE_ARCH) != s->arch)
-            continue;
-        const char * base_evr = pool_id2str(pool, pool_lookup_id(pool, SOLVID_POS,
-                                                                 DELTA_BASE_EVR));
-        if (strcmp(base_evr, from_evr))
-            continue;
-
-        // we have the right delta info, set up DnfPackageDelta *and break out:
-        delta = dnf_packagedelta_new(pool);
-
-        break;
-    }
-    dataiterator_free(&di);
-
-    return delta;
+    return pkg->getDelta(from_evr).get();
 }

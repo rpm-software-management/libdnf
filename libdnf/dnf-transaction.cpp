@@ -259,7 +259,6 @@ dnf_transaction_ensure_repo(DnfTransaction *transaction, DnfPackage *pkg, GError
 
     /* this is a local file */
     if (g_strcmp0(dnf_package_get_reponame(pkg), HY_CMDLINE_REPO_NAME) == 0) {
-        dnf_package_set_filename(pkg, dnf_package_get_location(pkg));
         return TRUE;
     }
 
@@ -936,7 +935,7 @@ gboolean
 dnf_transaction_depsolve(DnfTransaction *transaction, HyGoal goal, DnfState *state, GError **error)
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
-    gboolean valid;
+    bool valid;
     g_autoptr(GPtrArray) packages = NULL;
 
     /* depsolve */
@@ -970,7 +969,7 @@ dnf_transaction_depsolve(DnfTransaction *transaction, HyGoal goal, DnfState *sta
 
         /* package needs to be downloaded */
         if (!valid) {
-            g_ptr_array_add(priv->pkgs_to_download, g_object_ref(pkg));
+            g_ptr_array_add(priv->pkgs_to_download, pkg);
         }
     }
     return TRUE;
@@ -1237,8 +1236,8 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
         const char *pkg_name = dnf_package_get_name(pkg);
 
         for (j = 0; j < pkglist->len; j++) {
-            pkg_tmp = static_cast< DnfPackage * >(g_ptr_array_index(pkglist, j));
-            g_ptr_array_add(priv->remove_helper, g_object_ref(pkg_tmp));
+            pkg_tmp = static_cast<DnfPackage *>(g_ptr_array_index (pkglist, j));
+            g_ptr_array_add(priv->remove_helper, pkg_tmp);
             dnf_package_set_action(pkg_tmp, DNF_STATE_ACTION_CLEANUP);
 
             const char *pkg_tmp_name = dnf_package_get_name(pkg_tmp);
@@ -1285,8 +1284,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
             pkg_tmp = static_cast< DnfPackage * >(g_ptr_array_index(pkglist, j));
             if (!hy_packagelist_has(all_obsoleted, pkg_tmp)) {
                 g_hash_table_insert(priv->erased_by_package_hash,
-                                    g_strdup(dnf_package_get_package_id(pkg)),
-                                    g_object_ref(pkg_tmp));
+                                    g_strdup(dnf_package_get_package_id(pkg)), pkg_tmp);
             }
         }
         g_ptr_array_unref(pkglist);

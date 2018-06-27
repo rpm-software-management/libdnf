@@ -48,7 +48,6 @@ extern "C" {
 #include "dnf-advisory-private.hpp"
 #include "dnf-types.h"
 #include "hy-iutil-private.hpp"
-#include "hy-package-private.hpp"
 #include "hy-packageset-private.hpp"
 #include "hy-query.h"
 #include "hy-util-private.hpp"

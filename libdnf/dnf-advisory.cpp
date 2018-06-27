@@ -207,8 +207,7 @@ dnf_advisory_get_updated(DnfAdvisory *advisory)
 GPtrArray *
 dnf_advisory_get_packages(DnfAdvisory *advisory)
 {
-    std::vector<libdnf::AdvisoryPkg> pkgsvector;
-    advisory->getPackages(pkgsvector);
+    auto pkgsvector = advisory->getPackages();
 
     GPtrArray *pkglist =  g_ptr_array_new();
     for (auto& advisorypkg : pkgsvector) {
@@ -230,8 +229,7 @@ dnf_advisory_get_packages(DnfAdvisory *advisory)
 GPtrArray *
 dnf_advisory_get_references(DnfAdvisory *advisory)
 {
-    std::vector<libdnf::AdvisoryRef> refsvector;
-    advisory->getReferences(refsvector);
+    auto refsvector = advisory->getReferences();
 
     GPtrArray *reflist =  g_ptr_array_new();
     for (const auto& advisoryref : refsvector) {

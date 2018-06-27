@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Red Hat, Inc.
- * Copyright (C) 2015 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2018 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -19,13 +18,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __HY_PACKAGE_INTERNAL_H
-#define __HY_PACKAGE_INTERNAL_H
+#ifndef LIBDNF_MEMORY_HPP
+#define LIBDNF_MEMORY_HPP
 
-#include "hy-package.h"
-#include "dnf-sack.h"
+#include <memory>
 
-Pool        *dnf_package_get_pool       (DnfPackage *pkg);
-DnfSack     *dnf_package_get_sack       (DnfPackage *pkg);
+namespace std {
 
-#endif // __HY_PACKAGE_INTERNAL_H
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args &&... args)
+{
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
+};
+
+#endif //LIBDNF_MEMORY_HPP

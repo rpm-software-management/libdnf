@@ -27,16 +27,19 @@ namespace libdnf {
     struct Nevra;
     struct Query;
     struct Selector;
+    struct RpmPackage;
 }
 typedef struct libdnf::Goal * HyGoal;
 typedef struct libdnf::Nevra * HyNevra;
 typedef struct libdnf::Query * HyQuery;
 typedef struct libdnf::Selector * HySelector;
+typedef struct libdnf::RpmPackage DnfPackage;
 #else
 typedef struct Goal * HyGoal;
 typedef struct Nevra * HyNevra;
 typedef struct Query * HyQuery;
 typedef struct Selector * HySelector;
+typedef struct RpmPackage DnfPackage;
 #endif
 
 typedef struct _HyRepo * HyRepo;
