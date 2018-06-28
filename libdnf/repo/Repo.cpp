@@ -673,6 +673,9 @@ bool Repo::Impl::isMetalinkInSync()
 {
     char tmpdir[] = "/tmp/tmpdir.XXXXXX";
     mkdtemp(tmpdir);
+    Finalizer tmpDirRemover([&tmpdir](){
+        dnf_remove_recursive(tmpdir, NULL);
+    });
 
     std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir));
     std::unique_ptr<LrResult> r(lr_result_init());
@@ -683,7 +686,6 @@ bool Repo::Impl::isMetalinkInSync()
     handleGetInfo(h.get(), LRI_METALINK, &metalink);
     if (!metalink) {
         //logger.debug(_("reviving: repo '%s' skipped, no metalink."), self.id)
-        dnf_remove_recursive(tmpdir, NULL);
         return false;
     }
 
@@ -703,7 +705,6 @@ bool Repo::Impl::isMetalinkInSync()
     }
     if (hashes.empty()) {
         //logger.debug(_("reviving: repo '%s' skipped, no usable hash."), self.id);
-        dnf_remove_recursive(tmpdir, NULL);
         return false;
     }
 
@@ -727,12 +728,10 @@ bool Repo::Impl::isMetalinkInSync()
         solv_bin2hex(chksum, chksumLen, chksumHex);
         if (strcmp(chksumHex, hash.lrMetalinkHash->value) != 0) {
             //logger.debug(_("reviving: failed for '%s', mismatched %s sum."), self.id, algo)
-            dnf_remove_recursive(tmpdir, NULL);
             return false;
         }
     }
 
-    dnf_remove_recursive(tmpdir, NULL);
     //logger.debug(_("reviving: '%s' can be revived - metalink checksums match."), self.id)
     return true;
 }
@@ -743,6 +742,10 @@ bool Repo::Impl::isRepomdInSync()
     LrYumRepo *yum_repo;
     char tmpdir[] = "/tmp/tmpdir.XXXXXX";
     mkdtemp(tmpdir);
+    Finalizer tmpDirRemover([&tmpdir](){
+        dnf_remove_recursive(tmpdir, NULL);
+    });
+
     const char *dlist[] = LR_YUM_REPOMDONLY;
 
     std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir));
@@ -753,7 +756,6 @@ bool Repo::Impl::isRepomdInSync()
     resultGetInfo(r.get(), LRR_YUM_REPO, &yum_repo);
 
     auto same = compareFiles(repomd_fn.c_str(), yum_repo->repomd) == 0;
-    dnf_remove_recursive(tmpdir, NULL);
     /*if (same)
         logger.debug(_("reviving: '%s' can be revived - repomd matches."), self.id)
     else
@@ -781,6 +783,9 @@ void Repo::Impl::fetch()
         const char * errTxt = strerror(errno);
         throw std::runtime_error(tfm::format(_("Cannot create repo temporary directory \"%s\": %s"), tmpdir.c_str(), errTxt));
     }
+    Finalizer tmpDirRemover([&tmpdir](){
+        dnf_remove_recursive(tmpdir.c_str(), NULL);
+    });
     auto tmprepodir = tmpdir + "/repodata";
 
     std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir.c_str()));
@@ -796,7 +801,6 @@ void Repo::Impl::fetch()
         const char * errTxt = strerror(errno);
         throw std::runtime_error(tfm::format(_("Cannot rename directory \"%s\" to \"%s\": %s"), tmprepodir, repodir, errTxt));
     }
-    dnf_remove_recursive(tmpdir.c_str(), NULL);
 
     timestamp = -1;
 }
