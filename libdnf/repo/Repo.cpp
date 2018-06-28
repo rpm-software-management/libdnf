@@ -76,6 +76,11 @@ struct std::default_delete<LrResult> {
     void operator()(LrResult * ptr) noexcept { lr_result_free(ptr); }
 };
 
+template<>
+struct std::default_delete<LrPackageTarget> {
+    void operator()(LrPackageTarget * ptr) noexcept { lr_packagetarget_free(ptr); }
+};
+
 namespace libdnf {
 
 static void throwException(std::unique_ptr<GError> && err)
@@ -1050,7 +1055,7 @@ public:
 
     PackageTargetCB * callbacks;
 
-    std::unique_ptr<LrPackageTarget, decltype(&lr_packagetarget_free)> lrPkgTarget{nullptr, &lr_packagetarget_free};
+    std::unique_ptr<LrPackageTarget> lrPkgTarget;
 
 private:
     void init(LrHandle * handle, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd);
