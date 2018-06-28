@@ -2194,12 +2194,9 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
 
         // update defaults from repo
         try {
-//            moduleDefaults.fromString(yamlContent, 0);
+            moduleDefaults.fromString(yamlContent, 0);
         } catch (ModuleDefaultsContainer::ConflictException &exception) {
             // TODO logger.warning(exception.what());
-        }
-        catch (std::bad_alloc &) {
-            throw;
         }
     }
 
