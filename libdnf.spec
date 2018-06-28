@@ -120,6 +120,8 @@ Requires:       python3-%{name} = %{version}-%{release}
 # Fix problem with hawkey - dnf version incompatibility
 # Can be deleted for distros where only python3-dnf >= 2.0.0
 Conflicts:      python3-dnf < %{dnf_conflict}
+# Obsoletes F27 packages
+Obsoletes:      platform-python-hawkey < %{version}-%{release}
 
 %description -n python3-hawkey
 Python 3 bindings for the hawkey library.
@@ -175,8 +177,12 @@ pushd build-py3
 popd
 %endif
 
+%if 0%{?rhel} && 0%{?rhel} <= 7
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
+%else
+%ldconfig_scriptlets
+%endif
 
 %files
 %license COPYING
