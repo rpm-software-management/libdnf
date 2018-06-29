@@ -15,9 +15,17 @@
   License and may only be used or replicated with the express permission of
   Red Hat, Inc.
 
-###################
+######################
  LIBDNF Release Notes
-###################
+######################
+
+====================
+0.15.2 Release Notes
+====================
+
+Bugs fixed in 0.15.2:
+
+* :rhbug:`1595487`
 
 ====================
 0.15.0 Release Notes
