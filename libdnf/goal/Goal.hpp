@@ -120,6 +120,7 @@ public:
     libdnf::PackageSet listObsoleted();
     libdnf::PackageSet listReinstalls();
     libdnf::PackageSet listUnneeded();
+    libdnf::PackageSet listSuggested();
     libdnf::PackageSet listUpgrades();
     libdnf::PackageSet listDowngrades();
     libdnf::PackageSet listObsoletedByPackage(DnfPackage * pkg);

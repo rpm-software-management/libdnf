@@ -838,6 +838,7 @@ Goal::Impl::listResults(Id type_filter1, Id type_filter2)
         }
         throw Goal::Exception(_("no solution possible"), DNF_ERROR_NO_SOLUTION);
     }
+
     PackageSet plist(sack);
     const int common_mode = SOLVER_TRANSACTION_SHOW_OBSOLETES |
         SOLVER_TRANSACTION_CHANGE_IS_REINSTALL;
@@ -895,6 +896,18 @@ Goal::listUnneeded()
     Solver *solv = pImpl->solv;
 
     solver_get_unneeded(solv, queue.getQueue(), 0);
+    queue2pset(queue, &pset);
+    return pset;
+}
+
+PackageSet
+Goal::listSuggested()
+{
+    PackageSet pset(pImpl->sack);
+    IdQueue queue;
+    Solver *solv = pImpl->solv;
+
+    solver_get_recommendations(solv, NULL, queue.getQueue(), 0);
     queue2pset(queue, &pset);
     return pset;
 }
