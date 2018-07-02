@@ -146,6 +146,10 @@ public:
     OptionBool & deltarpm();
     OptionNumber<std::uint32_t> & deltarpm_percentage();
 
+    // Modules main config
+    OptionPath & modulesdir();
+    OptionPath & moduledefaultsdir();
+
 private:
     class Impl;
     std::unique_ptr<Impl> pImpl;

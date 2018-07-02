@@ -31,6 +31,9 @@ constexpr const char * PROXY_URL_REGEX = "^((https?|ftp|socks5h?|socks4a?):\\/\\
 
 constexpr const char * CONF_FILENAME = "/etc/dnf/dnf.conf";
 
+constexpr const char * CONF_MODULESDIR = "/etc/dnf/modules.d";
+constexpr const char * CONF_MODULEDEFAULTSDIR = "/etc/dnf/modules.defaults.d";
+
 const std::vector<std::string> GROUP_PACKAGE_TYPES{"mandatory", "default", "conditional"};
 const std::vector<std::string> INSTALLONLYPKGS{"kernel", "kernel-PAE",
                  "installonlypkg(kernel)",
