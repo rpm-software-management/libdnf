@@ -368,6 +368,18 @@ hy_goal_list_unneeded(HyGoal goal, GError **error)
 }
 
 GPtrArray *
+hy_goal_list_suggested(HyGoal goal, GError **error)
+{
+    try {
+        auto pset = goal->listSuggested();
+        return packageSet2GPtrArray(&pset);
+    } catch (const libdnf::Goal::Exception & e) {
+        exceptionToGError(error, e);
+        return NULL;
+    }
+}
+
+GPtrArray *
 hy_goal_list_upgrades(HyGoal goal, GError **error)
 {
     try {

@@ -177,6 +177,7 @@ GPtrArray *hy_goal_list_installs(HyGoal goal, GError **error);
 GPtrArray *hy_goal_list_obsoleted(HyGoal goal, GError **error);
 GPtrArray *hy_goal_list_reinstalls(HyGoal goal, GError **error);
 GPtrArray *hy_goal_list_unneeded(HyGoal goal, GError **error);
+GPtrArray *hy_goal_list_suggested(HyGoal goal, GError **error);
 GPtrArray *hy_goal_list_upgrades(HyGoal goal, GError **error);
 GPtrArray *hy_goal_list_downgrades(HyGoal goal, GError **error);
 GPtrArray *hy_goal_list_obsoleted_by_package(HyGoal goal, DnfPackage *pkg);
