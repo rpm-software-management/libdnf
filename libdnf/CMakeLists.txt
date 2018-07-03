@@ -22,6 +22,7 @@ SET (LIBDNF_SRCS
     dnf-goal.cpp
     dnf-keyring.cpp
     dnf-lock.cpp
+    dnf-module.cpp
     dnf-package.cpp
     dnf-packagedelta.cpp
     dnf-repo-loader.cpp
@@ -102,6 +103,7 @@ SET(LIBDNF_headers
     dnf-goal.h
     dnf-keyring.h
     dnf-lock.h
+    dnf-module.h
     dnf-package.h
     dnf-packagedelta.h
     dnf-repo-loader.h
