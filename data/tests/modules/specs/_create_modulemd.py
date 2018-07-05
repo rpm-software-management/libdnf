@@ -1,5 +1,16 @@
 #!/usr/bin/python
 
+"""
+Generate module metadata for modularity tests.
+
+Input:
+
+RPMs built under ../modules/$name-$stream-$version/$arch
+profiles defined in $name-$stream-$version/profiles.json
+Output:
+
+../modules/$name-$stream-$version/$arch/$name-$stream-$version.$arch.yaml
+"""
 
 import os
 import json
@@ -62,15 +73,15 @@ for module_id in os.listdir(MODULES_DIR):
         sset.add("LGPLv2")
         mmd.set_module_licenses(sset)
         mmd.set_summary("Fake module")
-        mmd.set_description(mmd.get_summary())
+        mmd.set_description(mmd.peek_summary())
         artifacts = Modulemd.SimpleSet()
         for rpm in rpms:
-            #mmd.add_module_component(rpm.rsplit("-", 2)[0], "")
             artifacts.add(rpm[:-4])
         mmd.set_rpm_artifacts(artifacts)
         for profile_name in profiles:
             profile = Modulemd.Profile()
             profile.set_name(profile_name)
+            profile.set_description("Description for profile %s." % profile_name)
             profile_rpms = Modulemd.SimpleSet()
             profile_rpms.set(profiles[profile_name]["rpms"])
             profile.set_rpms(profile_rpms)
