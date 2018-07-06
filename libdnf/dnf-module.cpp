@@ -33,6 +33,42 @@
 
 static auto logger(libdnf::Log::getLogger());
 
+namespace {
+
+void dnf_module_parse_spec(const std::string specStr, libdnf::Nsvcap & parsed)
+{
+    std::ostringstream oss;
+    oss << "Parsing module_spec=" << specStr;
+    logger->debug(oss.str());
+
+    parsed.clear();
+
+    for (std::size_t i = 0;
+         HY_MODULE_FORMS_MOST_SPEC[i] != _HY_MODULE_FORM_STOP_;
+         ++i) {
+        if (parsed.parse(specStr.c_str(), HY_MODULE_FORMS_MOST_SPEC[i])) {
+            std::ostringstream().swap(oss);
+            oss << "N:S:V:C:A/P = ";
+            oss << parsed.getName() << ":";
+            oss << parsed.getStream() << ":";
+            oss << parsed.getVersion() << ":";
+            oss << parsed.getArch() << "/";
+            oss << parsed.getProfile();
+
+            logger->debug(oss.str());
+            return;
+        }
+    }
+
+    std::ostringstream().swap(oss);
+    oss << "Invalid spec '";
+    oss << specStr << "'";
+    logger->debug(oss.str());
+    throw std::runtime_error(oss.str());
+}
+
+}
+
 namespace libdnf {
 
 /**
@@ -75,24 +111,8 @@ bool dnf_module_enable(const std::vector<std::string> & module_list)
         oss << "Parsing spec '" << spec << "'";
         logger->debug(oss.str());
 
-        bool is_valid{false};
-        for (std::size_t i = 0; HY_MODULE_FORMS_MOST_SPEC[i] != _HY_MODULE_FORM_STOP_; ++i) {
-            auto form = HY_MODULE_FORMS_MOST_SPEC[i];
-
-            if (specParsed.parse(spec.c_str(), form)) {
-                is_valid = true;
-                break;
-            }
-        }
-
         /* FIXME: accummulate all the exceptions */
-        if (!is_valid) {
-            std::ostringstream oss;
-            oss << "Invalid spec '";
-            oss << spec << "'";
-            logger->debug(oss.str());
-            throw std::runtime_error(oss.str());
-        }
+        dnf_module_parse_spec(spec, specParsed);
 
         std::ostringstream().swap(oss);
         oss << "Name = " << specParsed.getName() << "\n";
@@ -100,7 +120,6 @@ bool dnf_module_enable(const std::vector<std::string> & module_list)
         oss << "Profile = " << specParsed.getProfile() << "\n";
         oss << "Version = " << specParsed.getVersion() << "\n";
         logger->debug(oss.str());
-
     }
 
     return true;
