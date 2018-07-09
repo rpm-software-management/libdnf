@@ -43,7 +43,7 @@ BuildRequires:  pkgconfig(gio-unix-2.0) >= 2.46.0
 BuildRequires:  pkgconfig(gtk-doc)
 BuildRequires:  rpm-devel >= 4.11.0
 %if %{with rhsm}
-BuildRequires:  pkgconfig(librhsm)
+BuildRequires:  pkgconfig(librhsm) >= 0.0.3
 %endif
 BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  pkgconfig(json-c)
