@@ -760,7 +760,7 @@ bool Repo::Impl::isRepomdInSync()
     lrHandlePerform(h.get(), r.get());
     resultGetInfo(r.get(), LRR_YUM_REPO, &yum_repo);
 
-    auto same = compareFiles(repomd_fn.c_str(), yum_repo->repomd) == 0;
+    auto same = haveFilesSameContent(repomd_fn.c_str(), yum_repo->repomd);
     /*if (same)
         logger.debug(_("reviving: '%s' can be revived - repomd matches."), self.id)
     else
