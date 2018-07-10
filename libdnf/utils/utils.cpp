@@ -98,7 +98,7 @@ bool string::endsWith(const std::string &source, const std::string &toMatch)
            });
 }
 
-bool compareFiles(const char * filePath1, const char * filePath2)
+bool haveFilesSameContent(const char * filePath1, const char * filePath2)
 {
     static constexpr int BLOCK_SIZE = 4096;
     bool ret = false;
