@@ -18,25 +18,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "ProfileMaker.hpp"
-#include "ModuleProfile.hpp"
-#include "NullProfile.hpp"
+#ifndef LIBDNF_MODULEPACKAGEMAKER_HPP
+#define LIBDNF_MODULEPACKAGEMAKER_HPP
 
-std::shared_ptr<Profile> ProfileMaker::getProfile(const std::string &profileName, std::shared_ptr<ModulemdModule> modulemd)
+#include <map>
+#include <string>
+
+#include "ModulePackage.hpp"
+
+class ModulePackageMaker
 {
-    GHashTable *profiles = modulemd_module_peek_profiles(modulemd.get());
+public:
+    static std::map<Id, std::shared_ptr<ModulePackage>> fromString(Pool *pool, HyRepo repo, const std::string &fileContent);
 
-    GHashTableIter iterator;
-    gpointer key, value;
+private:
+    static std::map<Id, std::shared_ptr<ModulePackage>> createModulePackages(Pool *pool, HyRepo repo, const std::vector<std::shared_ptr<ModuleMetadata>> &metadata);
+};
 
-    g_hash_table_iter_init(&iterator, profiles);
-    while (g_hash_table_iter_next(&iterator, &key, &value)) {
-        std::string keyStr = static_cast<char *>(key);
-        if (profileName == keyStr) {
-            auto *profile = (ModulemdProfile *) value;
-            return std::make_shared<ModuleProfile>(profile);
-        }
-    }
 
-    return std::make_shared<NullProfile>();
-}
+#endif //LIBDNF_MODULEPACKAGEMAKER_HPP
