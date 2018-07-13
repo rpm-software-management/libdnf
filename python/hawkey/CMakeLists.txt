@@ -1,12 +1,8 @@
-if (${PYTHON_DESIRED} STREQUAL "2")
+if (${PYTHON_VERSION_MAJOR} STREQUAL "2")
     message("Building for python2")
-    FIND_PACKAGE (PythonInterp 2 REQUIRED)
-    FIND_PACKAGE (PythonLibs 2 REQUIRED)
     SET(HAWKEY_MODULE_NAME "_hawkeymodule")
 else()
     message("Building for python3")
-    FIND_PACKAGE(PythonInterp 3 REQUIRED)
-    FIND_PACKAGE(PythonLibs 3 REQUIRED)
     SET(HAWKEY_MODULE_NAME "_hawkey")
 endif()
 
