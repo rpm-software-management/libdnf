@@ -14,7 +14,6 @@
 class ModuleMetadata
 {
 public:
-    static std::vector<std::shared_ptr<ModuleMetadata> > metadataFromFile(const std::string &filePath);
     static std::vector<std::shared_ptr<ModuleMetadata> > metadataFromString(const std::string &fileContent);
 
 public:

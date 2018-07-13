@@ -16,16 +16,6 @@ void ModuleDefaultsContainer::fromString(const std::string &content, int priorit
     reportFailures(failures);
 }
 
-void ModuleDefaultsContainer::fromFile(const std::string &path, int priority)
-{
-    GError *error = nullptr;
-    g_autoptr(GPtrArray) failures;
-    g_autoptr(GPtrArray) data = modulemd_objects_from_file_ext(path.c_str(), &failures, &error);
-
-    saveDefaults(data, priority);
-    reportFailures(failures);
-}
-
 std::string ModuleDefaultsContainer::getDefaultStreamFor(std::string moduleName)
 {
     auto moduleDefaults = defaults[moduleName];

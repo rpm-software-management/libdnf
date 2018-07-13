@@ -30,7 +30,6 @@ public:
     ~ModuleDefaultsContainer() = default;
 
     void fromString(const std::string &content, int priority);
-    void fromFile(const std::string &path, int priority);
 
     std::string getDefaultStreamFor(std::string moduleName);
     std::map<std::string, std::string> getDefaultStreams();

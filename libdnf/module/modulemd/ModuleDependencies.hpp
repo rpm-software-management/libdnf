@@ -13,7 +13,6 @@ class ModuleDependencies
 public:
     explicit ModuleDependencies(ModulemdDependencies *dependencies);
 
-    std::vector<std::map<std::string, std::vector<std::string> > > getBuildRequires();
     std::vector<std::map<std::string, std::vector<std::string> > > getRequires();
 
 private:

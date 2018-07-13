@@ -16,51 +16,6 @@ set -e
 
 DIR=$(dirname $(readlink -f $0))
 ARCHES="i686 x86_64 s390x"
-rm -rf $DIR/../modules
-mkdir -p $DIR/../modules
-
-for module in $DIR/*-*-*; do
-    module_name=$(basename $module)
-    for spec in $module/*.spec; do
-        echo
-        echo "Building $spec..."
-        for target in $ARCHES; do
-            rpmbuild --quiet --target=$target -ba --nodeps --define "_srcrpmdir $DIR/../modules/$module_name/src" --define "_rpmdir $DIR/../modules/$module_name/" $spec
-        done
-    done
-done
-
-
-# include noarch RPMs into arch dirs to get them included in module metadata
-for module in $DIR/*-*-*; do
-    module_name=$(basename $module)
-    repo_path_noarch=$DIR/../modules/$module_name/noarch
-
-    for target in $ARCHES; do
-        repo_path=$DIR/../modules/$module_name/$target
-        if [ -d $repo_path_noarch ]; then
-            cp $repo_path_noarch/* $repo_path/ || :
-        fi
-    done
-done
-
-
-for spec in _non-modular/*.spec; do
-    echo
-    echo "Building NON-MODULAR $spec..."
-    for target in $ARCHES; do
-        rpmbuild --quiet --target=$target -ba --nodeps --define "_srcrpmdir $DIR/../modules/_non-modular/src" --define "_rpmdir $DIR/../modules/_non-modular/" $spec
-    done
-done
-
-
-repo_path_noarch=$DIR/../modules/_non-modular/noarch
-for target in $ARCHES; do
-    repo_path=$DIR/../modules/_non-modular/$target
-    if [ -d $repo_path_noarch ]; then
-        cp $repo_path_noarch/* $repo_path/ || :
-    fi
-done
 
 
 ./_create_modulemd.py

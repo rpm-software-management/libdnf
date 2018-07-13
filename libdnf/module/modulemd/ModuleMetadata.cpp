@@ -6,16 +6,6 @@
 #include "profile/ProfileMaker.hpp"
 #include "profile/ModuleProfile.hpp"
 
-std::vector<std::shared_ptr<ModuleMetadata> > ModuleMetadata::metadataFromFile(const std::string &filePath)
-{
-    GError *error = nullptr;
-    g_autoptr(GPtrArray) failures;
-    g_autoptr(GPtrArray) data = modulemd_objects_from_file_ext(filePath.c_str(), &failures, &error);
-
-    reportFailures(failures);
-    return wrapModulemdModule(data);
-}
-
 std::vector<std::shared_ptr<ModuleMetadata> > ModuleMetadata::metadataFromString(const std::string &fileContent)
 {
     GError *error = nullptr;

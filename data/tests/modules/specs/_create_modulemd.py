@@ -3,6 +3,7 @@
 
 import os
 import json
+import hashlib
 
 import gi
 
@@ -54,10 +55,12 @@ for module_id in os.listdir(MODULES_DIR):
         rpms = rpms_with_epoch
 
         mmd = Modulemd.Module()
-        mmd.set_mdversion(int(1))
+        mmd.set_mdversion(int(2))
         mmd.set_name(name)
         mmd.set_stream(stream)
         mmd.set_version(int(version))
+        # context is set later, computed from runtime deps
+        mmd.set_arch(arch)
         sset = Modulemd.SimpleSet()
         sset.add("LGPLv2")
         mmd.set_module_licenses(sset)
@@ -75,5 +78,24 @@ for module_id in os.listdir(MODULES_DIR):
             profile_rpms.set(profiles[profile_name]["rpms"])
             profile.set_rpms(profile_rpms)
             mmd.add_profile(profile)
+
+        if name == "httpd":
+            dependencies = Modulemd.Dependencies()
+            if stream == "2.4":
+                dependencies.add_requires_single("base-runtime", "f26")
+            elif stream == "2.2":
+                dependencies.add_requires("base-runtime", [])
+            mmd.add_dependencies(dependencies)
+
+        # iterate through all deps and create context hash in a repeatable manner
+        context_hash = hashlib.sha256()
+        for dependencies in mmd.peek_dependencies():
+            for dep_name, dep_streams in dependencies.peek_requires().items():
+                if dep_streams:
+                    for dep_stream in dep_streams.get():
+                        context_hash.update("%s:%s" % (dep_name, dep_stream))
+                else:
+                    context_hash.update(dep_name)
+        mmd.set_context(context_hash.hexdigest()[:8])
 
         Modulemd.dump([mmd], os.path.join(module_dir, "%s.%s.yaml" % (module_id, arch)))

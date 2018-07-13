@@ -7,14 +7,7 @@ ModuleDependencies::ModuleDependencies(ModulemdDependencies *dependencies)
         : dependencies(dependencies)
 {}
 
-std::vector <std::map<std::string, std::vector<std::string> > > ModuleDependencies::getBuildRequires()
-{
-    auto cBuildRequires = modulemd_dependencies_peek_buildrequires(dependencies);
-    return getRequirements(cBuildRequires);
-
-}
-
-std::vector <std::map<std::string, std::vector<std::string> > > ModuleDependencies::getRequires()
+std::vector <std::map<std::string, std::vector<std::string>>> ModuleDependencies::getRequires()
 {
     auto cRequires = modulemd_dependencies_peek_requires(dependencies);
     return getRequirements(cRequires);
@@ -34,7 +27,7 @@ std::map<std::string, std::vector<std::string>> ModuleDependencies::wrapModuleDe
     return moduleRequirements;
 }
 
-std::vector<std::map<std::string, std::vector<std::string> > > ModuleDependencies::getRequirements(GHashTable *requirements) const
+std::vector<std::map<std::string, std::vector<std::string>>> ModuleDependencies::getRequirements(GHashTable *requirements) const
 {
     std::vector<std::map<std::string, std::vector<std::string>>> requires;
     requires.reserve(g_hash_table_size(requirements));
