@@ -73,6 +73,21 @@ public:
     * @param filePath Name (with path) of file to read
     */
     void read(const std::string & filePath);
+    /**
+    * @brief Writes all data (all sections) to INI file
+    *
+    * @param filePath Name (with path) of file to write
+    * @param append If true, existent file will be appended, otherwise overwritten
+    */
+    void write(const std::string & filePath, bool append) const;
+    /**
+    * @brief Writes one section data to INI file
+    *
+    * @param filePath Name (with path) of file to write
+    * @param append If true, existent file will be appended, otherwise overwritten
+    * @param section Section to write
+    */
+    void write(const std::string & filePath, bool append, const std::string & section) const;
     bool hasSection(const std::string & section) const;
     const std::string & getValue(const std::string & section, const std::string & key) const;
     std::string getSubstitutedValue(const std::string & section, const std::string & key) const;
