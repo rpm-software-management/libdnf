@@ -33,6 +33,7 @@ INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR} libdnf/utils/)
 
 OPTION(WITH_GTKDOC "Enables libdnf GTK-Doc HTML documentation" ON)
 OPTION(WITH_MAN "Enables hawkey man page generation" ON)
+OPTION(WITH_HTML "Enables hawkey HTML generation" ON)
 
 OPTION(WITH_BINDINGS "Enables python/SWIG bindings" ON)
 
