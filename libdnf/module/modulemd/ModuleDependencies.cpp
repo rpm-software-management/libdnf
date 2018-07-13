@@ -1,3 +1,23 @@
+/*
+ * Copyright (C) 2018 Red Hat, Inc.
+ *
+ * Licensed under the GNU Lesser General Public License Version 2.1
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
 #include "libdnf/utils/utils.hpp"
 #include "ModuleDependencies.hpp"
 
@@ -5,14 +25,7 @@ ModuleDependencies::ModuleDependencies(ModulemdDependencies *dependencies)
         : dependencies(dependencies)
 {}
 
-std::vector <std::map<std::string, std::vector<std::string> > > ModuleDependencies::getBuildRequires()
-{
-    auto cBuildRequires = modulemd_dependencies_peek_buildrequires(dependencies);
-    return getRequirements(cBuildRequires);
-
-}
-
-std::vector <std::map<std::string, std::vector<std::string> > > ModuleDependencies::getRequires()
+std::vector <std::map<std::string, std::vector<std::string>>> ModuleDependencies::getRequires()
 {
     auto cRequires = modulemd_dependencies_peek_requires(dependencies);
     return getRequirements(cRequires);
@@ -32,7 +45,7 @@ std::map<std::string, std::vector<std::string>> ModuleDependencies::wrapModuleDe
     return moduleRequirements;
 }
 
-std::vector<std::map<std::string, std::vector<std::string> > > ModuleDependencies::getRequirements(GHashTable *requirements) const
+std::vector<std::map<std::string, std::vector<std::string>>> ModuleDependencies::getRequirements(GHashTable *requirements) const
 {
     std::vector<std::map<std::string, std::vector<std::string>>> requires;
     requires.reserve(g_hash_table_size(requirements));

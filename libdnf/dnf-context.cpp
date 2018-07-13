@@ -1281,7 +1281,7 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
 
     DnfSack *sack = priv->sack;
     if (sack != nullptr) {
-        dnf_sack_filter_modules(sack, priv->repos, priv->install_root);
+        dnf_sack_filter_modules(sack, priv->repos, priv->install_root, NULL);
     }
 
     /* create goal */

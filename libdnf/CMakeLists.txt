@@ -39,7 +39,7 @@ configure_file ("libdnf.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc @ONLY)
 
 ADD_SUBDIRECTORY(goal)
 ADD_SUBDIRECTORY(repo)
-ADD_SUBDIRECTORY(module/modulemd)
+ADD_SUBDIRECTORY(module)
 ADD_SUBDIRECTORY(utils)
 ADD_SUBDIRECTORY(conf)
 ADD_SUBDIRECTORY(sack)
