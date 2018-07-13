@@ -22,6 +22,7 @@
 #include "iniparser/iniparser.hpp"
 
 #include <algorithm>
+#include <fstream>
 
 namespace libdnf {
 
@@ -100,6 +101,47 @@ ConfigParser::getSubstitutedValue(const std::string & section, const std::string
     auto ret = getValue(section, key);
     substitute(ret, substitutions);
     return ret;
+}
+
+static void writeKeyVals(std::ostream & out, const std::map<std::string, std::string> & keyValMap)
+{
+    for (const auto & keyVal : keyValMap) {
+        out << keyVal.first << "=";
+        for (const auto chr : keyVal.second) {
+            out << chr;
+            if (chr == '\n')
+                out << " ";
+        }
+        out << "\n";
+    }
+}
+
+void ConfigParser::write(const std::string & filePath, bool append) const
+{
+    bool first{true};
+    std::ofstream ofs;
+    ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+    ofs.open(filePath, append ? std::ofstream::app : std::ofstream::trunc);
+    for (const auto & section : data) {
+        if (first)
+            first = false;
+        else
+            ofs << "\n";
+        ofs << "[" << section.first << "]" << "\n";
+        writeKeyVals(ofs, section.second);
+    }
+}
+
+void ConfigParser::write(const std::string & filePath, bool append, const std::string & section) const
+{
+    auto sit = data.find(section);
+    if (sit == data.end())
+        throw MissingSection("ConfigParser::write(): Missing section " + section);
+    std::ofstream ofs;
+    ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+    ofs.open(filePath, append ? std::ofstream::app : std::ofstream::trunc);
+    ofs << "[" << section << "]" << "\n";
+    writeKeyVals(ofs, sit->second);
 }
 
 }
