@@ -1,7 +1,7 @@
 # html and man documentation are separate targets, apparently there's no way to
 # tell sphinx-build to do them both in one go:
 
-if (${PYTHON_DESIRED} STREQUAL "2")
+if (${PYTHON_VERSION_MAJOR} STREQUAL "2")
     SET(SPHINX_BUILD_NAME "sphinx-build")
 else()
     SET(SPHINX_BUILD_NAME "sphinx-build-3")

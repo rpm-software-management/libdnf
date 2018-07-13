@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!${PYTHON_EXECUTABLE}
 
 # Run the appropriate version of nosetests, setting PYTHONPATH
 # to point to our just built libraries.  Also use xunit output,

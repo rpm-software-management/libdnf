@@ -1,4 +1,4 @@
-if (${PYTHON_DESIRED} STREQUAL "2")
+if (${PYTHON_VERSION_MAJOR} STREQUAL "2")
     SET(TEST_MODULE_NAME "_hawkey_testmodule")
 else()
     SET(TEST_MODULE_NAME "_hawkey_test")
