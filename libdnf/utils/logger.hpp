@@ -59,4 +59,10 @@ private:
     static constexpr const char * levelCStr[]{"CRITICAL", "ERROR", "WARNING", "NOTICE", "INFO", "DEBUG", "TRACE"};
 };
 
+class NullLogger : public Logger {
+public:
+    void write(int, Level, const std::string &) override {}
+    void write(int, time_t, pid_t, Level, const std::string &) override {}
+};
+
 #endif // _LOGGER_HPP_
