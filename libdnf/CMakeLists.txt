@@ -4,6 +4,7 @@ SET (LIBDNF_SRCS
     dnf-advisory.cpp
     hy-goal.cpp
     hy-iutil.cpp
+    log.cpp
     nevra.cpp
     nsvcap.cpp
     dnf-reldep.cpp
@@ -89,6 +90,7 @@ SET(LIBHAWKEY_headers
 
 SET(LIBDNF_headers
     ${LIBDNF_headers}
+    log.hpp
     nevra.hpp
     nsvcap.hpp
     dnf-advisory.h
