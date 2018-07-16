@@ -32,6 +32,25 @@ public:
     enum class Level {CRITICAL, ERROR, WARNING, NOTICE, INFO, DEBUG, TRACE};
     static constexpr const char * levelToCStr(Level level) noexcept { return level<Level::CRITICAL || level>Level::TRACE ? "USER" : levelCStr[static_cast<int>(level)]; }
 
+    void critical(const std::string & message) { write(Level::CRITICAL, message); }
+    void error(const std::string & message) { write(Level::ERROR, message); }
+    void warning(const std::string & message) { write(Level::WARNING, message); }
+    void notice(const std::string & message) { write(Level::NOTICE, message); }
+    void info(const std::string & message) { write(Level::INFO, message); }
+    void debug(const std::string & message) { write(Level::DEBUG, message); }
+    void trace(const std::string & message) { write(Level::TRACE, message); }
+
+    void critical(int source, const std::string & message) { write(source, Level::CRITICAL, message); }
+    void error(int source, const std::string & message) { write(source, Level::ERROR, message); }
+    void warning(int source, const std::string & message) { write(source, Level::WARNING, message); }
+    void notice(int source, const std::string & message) { write(source, Level::NOTICE, message); }
+    void info(int source, const std::string & message) { write(source, Level::INFO, message); }
+    void debug(int source, const std::string & message) { write(source, Level::DEBUG, message); }
+    void trace(int source, const std::string & message) { write(source, Level::TRACE, message); }
+
+    void write(Level level, const std::string & message) { write(0, level, message); }
+    void write(time_t time, pid_t pid, Level level, const std::string & message) { write(0, time, pid, level, message); }
+
     virtual void write(int source, Level level, const std::string & message);
     virtual void write(int source, time_t time, pid_t pid, Level level, const std::string & message) = 0;
     virtual ~Logger() = default;
