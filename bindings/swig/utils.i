@@ -13,6 +13,7 @@
     // make SWIG wrap following headers
     #include "libdnf/utils/sqlite3/Sqlite3.hpp"
     #include "libdnf/utils/logger.hpp"
+    #include "libdnf/log.hpp"
 %}
 
 
@@ -48,3 +49,5 @@ typedef long pid_t;
 
 %feature("director") Logger;
 %include "libdnf/utils/logger.hpp"
+
+%include "libdnf/log.hpp"
