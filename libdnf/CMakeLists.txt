@@ -4,6 +4,7 @@ SET (LIBDNF_SRCS
     dnf-advisory.cpp
     hy-goal.cpp
     hy-iutil.cpp
+    log.cpp
     nevra.cpp
     nsvcap.cpp
     dnf-reldep.cpp
@@ -50,6 +51,8 @@ SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${CONF_SOURCES})
 SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${SACK_SOURCES})
 SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${REPO_SOURCES})
 
+SET(LIBDNF_headers ${LIBDNF_headers} ${UTILS_headers})
+
 ADD_LIBRARY(libdnf SHARED ${LIBDNF_SRCS})
 TARGET_LINK_LIBRARIES(libdnf
                       ${REPO_LIBRARIES}
@@ -87,6 +90,7 @@ SET(LIBHAWKEY_headers
 
 SET(LIBDNF_headers
     ${LIBDNF_headers}
+    log.hpp
     nevra.hpp
     nsvcap.hpp
     dnf-advisory.h

@@ -1,4 +1,4 @@
-%module utils
+%module(directors="1") utils
 
 %begin %{
 #define SWIG_PYTHON_2_UNICODE
@@ -12,6 +12,8 @@
 %{
     // make SWIG wrap following headers
     #include "libdnf/utils/sqlite3/Sqlite3.hpp"
+    #include "libdnf/utils/logger.hpp"
+    #include "libdnf/log.hpp"
 %}
 
 
@@ -41,3 +43,11 @@ public:
     SQLite3(const char *dbPath);
     void close();
 };
+
+typedef long time_t;
+typedef long pid_t;
+
+%feature("director") Logger;
+%include "libdnf/utils/logger.hpp"
+
+%include "libdnf/log.hpp"
