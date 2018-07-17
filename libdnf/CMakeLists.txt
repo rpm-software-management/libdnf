@@ -117,19 +117,7 @@ SET(LIBDNF_headers
     dnf-version.h
     libdnf.h)
 
-if (NOT PYTHON_DESIRED)
-    set (PYTHON_DESIRED "3")
-endif()
-
-if (${PYTHON_DESIRED} STREQUAL "2")
-    message("Building for python2")
-    FIND_PACKAGE (PythonInterp 2 REQUIRED)
-    FIND_PACKAGE (PythonLibs 2 REQUIRED)
-else()
-    message("Building for python3")
-    FIND_PACKAGE(PythonInterp 3 REQUIRED)
-    FIND_PACKAGE(PythonLibs 3 REQUIRED)
-endif()
+MESSAGE (STATUS "Building for python${PYTHON_VERSION_MAJOR}")
 
 install (FILES ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc
          DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig)
