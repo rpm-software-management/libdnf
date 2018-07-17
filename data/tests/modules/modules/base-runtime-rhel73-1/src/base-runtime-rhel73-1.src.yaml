@@ -1,10 +1,12 @@
 ---
 document: modulemd
-version: 1
+version: 2
 data:
   name: base-runtime
   stream: rhel73
   version: 1
+  context: e3b0c442
+  arch: src
   summary: Fake module
   description: >-
     Fake module
@@ -21,6 +23,8 @@ data:
     minimal:
       rpms:
       - glibc
+  buildopts:
+    rpms: {}
   artifacts:
     rpms:
     - basesystem-0:10.0-7.noarch
