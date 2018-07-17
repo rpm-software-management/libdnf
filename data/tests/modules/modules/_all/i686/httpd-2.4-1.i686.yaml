@@ -1,16 +1,21 @@
 ---
 document: modulemd
-version: 1
+version: 2
 data:
   name: httpd
   stream: 2.4
   version: 1
+  context: 3b6beaf8
+  arch: i686
   summary: Fake module
   description: >-
     Fake module
   license:
     module:
     - LGPLv2
+  dependencies:
+  - requires:
+      base-runtime: [f26]
   profiles:
     default:
       rpms:
@@ -18,6 +23,8 @@ data:
     doc:
       rpms:
       - httpd-doc
+  buildopts:
+    rpms: {}
   artifacts:
     rpms:
     - httpd-0:2.4.25-7.i686
