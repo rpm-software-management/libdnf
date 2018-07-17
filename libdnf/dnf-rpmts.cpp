@@ -162,87 +162,6 @@ out:
 }
 
 /**
- * dnf_rpmts_get_problem_str:
- **/
-static gchar *
-dnf_rpmts_get_problem_str(rpmProblem prob)
-{
-    const char *generic_str;
-    const char *pkg_nevr;
-    const char *pkg_nevr_alt;
-    goffset diskspace;
-    rpmProblemType type;
-    gchar *str = NULL;
-
-    /* get data from the problem object */
-    type = rpmProblemGetType(prob);
-    pkg_nevr = rpmProblemGetPkgNEVR(prob);
-    pkg_nevr_alt = rpmProblemGetAltNEVR(prob);
-    generic_str = rpmProblemGetStr(prob);
-
-    switch(type) {
-    case RPMPROB_BADARCH:
-        str = g_strdup_printf("package %s is for a different architecture",
-                              pkg_nevr);
-        break;
-    case RPMPROB_BADOS:
-        str = g_strdup_printf("package %s is for a different operating system",
-                              pkg_nevr);
-        break;
-    case RPMPROB_PKG_INSTALLED:
-        str = g_strdup_printf("package %s is already installed",
-                              pkg_nevr);
-        break;
-    case RPMPROB_BADRELOCATE:
-        str = g_strdup_printf("path %s is not relocatable for package %s",
-                              generic_str,
-                              pkg_nevr);
-        break;
-    case RPMPROB_REQUIRES:
-        str = g_strdup_printf("package %s has unsatisfied Requires: %s",
-                              pkg_nevr,
-                              generic_str);
-        break;
-    case RPMPROB_CONFLICT:
-        str = g_strdup_printf("package %s has unsatisfied Conflicts: %s",
-                              pkg_nevr,
-                              generic_str);
-        break;
-    case RPMPROB_NEW_FILE_CONFLICT:
-        str = g_strdup_printf("file %s conflicts between attemped installs of %s",
-                              generic_str,
-                              pkg_nevr);
-        break;
-    case RPMPROB_FILE_CONFLICT:
-        str = g_strdup_printf("file %s from install of %s conflicts with file from %s",
-                              generic_str,
-                              pkg_nevr,
-                              pkg_nevr_alt);
-        break;
-    case RPMPROB_OLDPACKAGE:
-        str = g_strdup_printf("package %s(newer than %s) is already installed",
-                              pkg_nevr_alt,
-                              pkg_nevr);
-        break;
-    case RPMPROB_DISKSPACE:
-    case RPMPROB_DISKNODES:
-        diskspace = rpmProblemGetDiskNeed(prob);
-        str = g_strdup_printf("installing package %s needs %" G_GOFFSET_FORMAT
-                              " on the %s filesystem",
-                              pkg_nevr,
-                              diskspace,
-                              generic_str);
-        break;
-    case RPMPROB_OBSOLETES:
-        str = g_strdup_printf("package %s is obsoleted by %s",
-                              pkg_nevr,
-                              pkg_nevr_alt);
-        break;
-    }
-    return str;
-}
-
-/**
  * dnf_rpmts_look_for_problems:
  * @ts: a #rpmts instance.
  * @error: a #GError or %NULL..
@@ -273,7 +192,7 @@ dnf_rpmts_look_for_problems(rpmts ts, GError **error)
     while (rpmpsNextIterator(psi) >= 0) {
         g_autofree gchar *msg = NULL;
         prob = rpmpsGetProblem(psi);
-        msg = dnf_rpmts_get_problem_str(prob);
+        msg = rpmProblemString(prob);
         g_string_append(string, msg);
         g_string_append(string, "\n");
     }
