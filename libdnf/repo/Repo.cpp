@@ -30,6 +30,7 @@
 #define DIGITS "0123456789"
 #define REPOID_CHARS ASCII_LETTERS DIGITS "-_.:"
 
+#include "../log.hpp"
 #include "Repo.hpp"
 #include "../dnf-utils.h"
 #include "../hy-iutil.h"
@@ -676,6 +677,7 @@ bool Repo::Impl::loadCache(bool throwExcept)
 // Use metalink to check whether our metadata are still current.
 bool Repo::Impl::isMetalinkInSync()
 {
+    auto logger(Log::getLogger());
     char tmpdir[] = "/tmp/tmpdir.XXXXXX";
     mkdtemp(tmpdir);
     Finalizer tmpDirRemover([&tmpdir](){
@@ -690,7 +692,7 @@ bool Repo::Impl::isMetalinkInSync()
     LrMetalink * metalink;
     handleGetInfo(h.get(), LRI_METALINK, &metalink);
     if (!metalink) {
-        //logger.debug(_("reviving: repo '%s' skipped, no metalink."), self.id)
+        logger->debug(tfm::format(_("reviving: repo '%s' skipped, no metalink."), id));
         return false;
     }
 
@@ -709,7 +711,7 @@ bool Repo::Impl::isMetalinkInSync()
         }
     }
     if (hashes.empty()) {
-        //logger.debug(_("reviving: repo '%s' skipped, no usable hash."), self.id);
+        logger->debug(tfm::format(_("reviving: repo '%s' skipped, no usable hash."), id));
         return false;
     }
 
@@ -732,18 +734,19 @@ bool Repo::Impl::isMetalinkInSync()
         char chksumHex[chksumLen * 2 + 1];
         solv_bin2hex(chksum, chksumLen, chksumHex);
         if (strcmp(chksumHex, hash.lrMetalinkHash->value) != 0) {
-            //logger.debug(_("reviving: failed for '%s', mismatched %s sum."), self.id, algo)
+            logger->debug(tfm::format(_("reviving: failed for '%s', mismatched %s sum."), id, hash.lrMetalinkHash->type));
             return false;
         }
     }
 
-    //logger.debug(_("reviving: '%s' can be revived - metalink checksums match."), self.id)
+    logger->debug(tfm::format(_("reviving: '%s' can be revived - metalink checksums match."), id));
     return true;
 }
 
 // Use repomd to check whether our metadata are still current.
 bool Repo::Impl::isRepomdInSync()
 {
+    auto logger(Log::getLogger());
     LrYumRepo *yum_repo;
     char tmpdir[] = "/tmp/tmpdir.XXXXXX";
     mkdtemp(tmpdir);
@@ -761,10 +764,10 @@ bool Repo::Impl::isRepomdInSync()
     resultGetInfo(r.get(), LRR_YUM_REPO, &yum_repo);
 
     auto same = haveFilesSameContent(repomd_fn.c_str(), yum_repo->repomd);
-    /*if (same)
-        logger.debug(_("reviving: '%s' can be revived - repomd matches."), self.id)
+    if (same)
+        logger->debug(tfm::format(_("reviving: '%s' can be revived - repomd matches."), id));
     else
-        logger.debug(_("reviving: failed for '%s', mismatched repomd."), self.id)*/
+        logger->debug(tfm::format(_("reviving: failed for '%s', mismatched repomd."), id));
     return same;
 }
 
@@ -812,18 +815,17 @@ void Repo::Impl::fetch()
 
 bool Repo::Impl::load()
 {
-    //printf("check if cache present\n");
+    auto logger(Log::getLogger());
     if (!primary_fn.empty() || loadCache(false)) {
         if (conf->getMasterConfig().check_config_file_age().getValue() &&
             !repoFilePath.empty() && mtime(repoFilePath.c_str()) > mtime(primary_fn.c_str()))
             expired = true;
         if (!expired || syncStrategy == SyncStrategy::ONLY_CACHE || syncStrategy == SyncStrategy::LAZY) {
-            //logger.debug(_('repo: using cache for: %s'), self.id)
+            logger->debug(tfm::format(_("repo: using cache for: %s"), id));
             return false;
         }
 
         if (isInSync()) {
-            //printf("reusing expired cache\n");
             // the expired metadata still reflect the origin:
             utimes(primary_fn.c_str(), NULL);
             expired = false;
@@ -831,19 +833,29 @@ bool Repo::Impl::load()
         }
     }
     if (syncStrategy == SyncStrategy::ONLY_CACHE) {
-        //_("Cache-only enabled but no cache for '%s'") % self.id
         auto msg = tfm::format(_("Cache-only enabled but no cache for '%s'"), id);
         throw std::runtime_error(msg);
     }
 
-    //printf("fetch\n");
     try {
+        logger->debug(tfm::format(_("repo: downloading from remote: %s"), id));
         fetch();
         loadCache(true);
     } catch (const std::runtime_error & e) {
-        //dmsg = _("Cannot download '%s': %s.")
-        //logger.log(dnf.logging.DEBUG, dmsg, e.source_url, e.librepo_msg)
-        //log(debug, e.what());
+        std::string source;
+        if (conf->metalink().empty() || (source=conf->metalink().getValue()).empty()) {
+            if (conf->mirrorlist().empty() || (source=conf->mirrorlist().getValue()).empty()) {
+                bool first = true;
+                for (const auto & url : conf->baseurl().getValue()) {
+                    if (first)
+                        first = false;
+                    else
+                        source += ", ";
+                    source += url;
+                }
+            }
+        }
+        logger->debug(tfm::format(_("Cannot download '%s': %s."), source, e.what()));
         auto msg = tfm::format(_("Failed to synchronize cache for repo '%s'"), id);
         throw std::runtime_error(msg);
     }
@@ -966,20 +978,29 @@ const std::string & Repo::getRevision() const
 
 void Repo::initHyRepo(HyRepo hrepo)
 {
+    auto logger(Log::getLogger());
     hy_repo_set_string(hrepo, HY_REPO_MD_FN, pImpl->repomd_fn.c_str());
     hy_repo_set_string(hrepo, HY_REPO_PRIMARY_FN, pImpl->primary_fn.c_str());
-    hy_repo_set_string(hrepo, HY_REPO_FILELISTS_FN, pImpl->filelists_fn.c_str());
+    if (pImpl->filelists_fn.empty())
+        logger->debug(tfm::format(_("not found filelist for: %s"), pImpl->conf->name().getValue()));
+    else
+        hy_repo_set_string(hrepo, HY_REPO_FILELISTS_FN, pImpl->filelists_fn.c_str());
 #ifdef MODULEMD
-    hy_repo_set_string(hrepo, MODULES_FN, pImpl->modules_fn.c_str());
+    if (pImpl->modules_fn.empty())
+        logger->debug(tfm::format(_("not found modules for: %s"), pImpl->conf->name().getValue()));
+    else
+        hy_repo_set_string(hrepo, MODULES_FN, pImpl->modules_fn.c_str());
 #endif
     hy_repo_set_cost(hrepo, pImpl->conf->cost().getValue());
     hy_repo_set_priority(hrepo, pImpl->conf->priority().getValue());
-    // TODO finish
-    if (!pImpl->presto_fn.empty())
+    if (pImpl->presto_fn.empty())
+        logger->debug(tfm::format(_("not found deltainfo for: %s"), pImpl->conf->name().getValue()));
+    else
         hy_repo_set_string(hrepo, HY_REPO_PRESTO_FN, pImpl->presto_fn.c_str());
-    if (!pImpl->updateinfo_fn.empty())
+    if (pImpl->updateinfo_fn.empty())
+        logger->debug(tfm::format(_("not found updateinfo for: %s"), pImpl->conf->name().getValue()));
+    else
         hy_repo_set_string(hrepo, HY_REPO_UPDATEINFO_FN, pImpl->updateinfo_fn.c_str());
-
 }
 
 std::string Repo::getCachedir() const
