@@ -72,10 +72,9 @@ std::string ModuleMetadata::getContext() const
     return context ? context : "";
 }
 
-std::string ModuleMetadata::getArchitecture() const
+const char * ModuleMetadata::getArchitecture() const
 {
-    const char *arch = modulemd_module_peek_arch(modulemd.get());
-    return arch ? arch : "";
+    return modulemd_module_peek_arch(modulemd.get());
 }
 
 std::string ModuleMetadata::getDescription() const

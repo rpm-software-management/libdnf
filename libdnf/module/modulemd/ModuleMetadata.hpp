@@ -24,7 +24,7 @@ public:
     std::string getStream() const;
     long long getVersion() const;
     std::string getContext() const;
-    std::string getArchitecture() const;
+    const char * getArchitecture() const;
     std::string getDescription() const;
     std::string getSummary() const;
     std::vector<std::shared_ptr<ModuleDependencies> > getDependencies() const;

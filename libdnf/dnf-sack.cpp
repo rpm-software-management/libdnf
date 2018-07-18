@@ -73,7 +73,6 @@ extern "C" {
 #include "module/ModulePackageMaker.hpp"
 #include "module/ModulePackageContainer.hpp"
 #include "module/ModulePackage.hpp"
-#include "module/PlatformModulePackage.hpp"
 #include "module/modulemd/ModuleDefaultsContainer.hpp"
 #include "module/modulemd/ModuleMetadata.hpp"
 #include "repo/solvable/DependencyContainer.hpp"
@@ -2099,16 +2098,17 @@ std::string getFileContent(const std::string &filePath)
 
 void createConflictsBetweenStreams(const std::map<Id, std::shared_ptr<ModulePackage>> &modules)
 {
+    // TODO Use libdnf::Query for filtering
     for (const auto &iter : modules) {
-            const auto &modulePackage = iter.second;
+        const auto &modulePackage = iter.second;
 
-            for (const auto &innerIter : modules) {
-                if (modulePackage->getName() == innerIter.second->getName()
-                    && modulePackage->getStream() != innerIter.second->getStream()) {
-                    modulePackage->addStreamConflict(innerIter.second);
-                }
+        for (const auto &innerIter : modules) {
+            if (modulePackage->getName() == innerIter.second->getName()
+                && modulePackage->getStream() != innerIter.second->getStream()) {
+                modulePackage->addStreamConflict(innerIter.second);
             }
         }
+    }
 }
 
 void readModuleMetadataFromRepo(const GPtrArray *repos,
@@ -2116,18 +2116,12 @@ void readModuleMetadataFromRepo(const GPtrArray *repos,
                                 ModuleDefaultsContainer &moduleDefaults)
 {
     auto pool = modulePackages.getPool();
-    DnfRepo *systemRepo = nullptr;
 
     for (unsigned int i = 0; i < repos->len; i++) {
         auto repo = static_cast<DnfRepo *>(g_ptr_array_index(repos, i));
-        if (strcmp(dnf_repo_get_id(repo), HY_SYSTEM_REPO_NAME) == 0) {
-            systemRepo = repo;
-        }
-
         auto modules_fn = dnf_repo_get_filename_md(repo, "modules");
         if (modules_fn == nullptr)
             continue;
-
         std::string yamlContent = getFileContent(modules_fn);
 
         auto modules = ModulePackageMaker::fromString(pool.get(), dnf_repo_get_repo(repo), yamlContent);
@@ -2142,15 +2136,8 @@ void readModuleMetadataFromRepo(const GPtrArray *repos,
             // TODO logger.warning(exception.what());
         }
     }
-
-    if (systemRepo != nullptr) {
-        char *arch;
-        hy_detect_arch(&arch);
-
-        // TODO remove hard-coded path
-        PlatformModulePackage::createSolvable(pool.get(), dnf_repo_get_repo(systemRepo), "/etc/os-release", arch);
-        g_free(arch);
-    }
+    // TODO remove hard-coded path
+    createPlatformSolvable(pool.get(), "/etc/os-release");
 }
 
 void readModuleDefaultsFromDisk(const std::string &dirPath, ModuleDefaultsContainer &moduleDefaults)
@@ -2250,8 +2237,7 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
     auto defaultStreams = moduleDefaults.getDefaultStreams();
     enableModuleStreams(modulePackages, install_root);
 
-    std::vector<std::shared_ptr<ModulePackage>> activeModulePackages{
-            modulePackages.getActiveModulePackages(defaultStreams)};
+    auto activeModulePackages = modulePackages.getActiveModulePackages(defaultStreams);
     auto nevraTuple = collectNevraForInclusionExclusion(modulePackages, activeModulePackages);
     addModuleExcludes(sack, std::get<0>(nevraTuple), std::get<1>(nevraTuple));
 

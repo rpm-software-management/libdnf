@@ -8,6 +8,7 @@
 #include "modulemd/ModuleMetadata.hpp"
 #include "modulemd/profile/ModuleProfile.hpp"
 #include "libdnf/repo/solvable/Package.hpp"
+#include "../goal/IdQueue.hpp"
 
 class ModulePackageMaker;
 
@@ -21,13 +22,16 @@ public:
 
     ModulePackage(Pool *pool, Repo *repo, const std::shared_ptr<ModuleMetadata> &metadata);
 
+    /**
+    * @brief Create module provides based on modulemd metadata.
+    */
     std::string getName() const;
     std::string getStream() const;
     std::string getNameStream() const;
     std::string getNameStreamVersion() const;
     std::string getVersion() const;
     std::string getContext() const;
-    std::string getArchitecture() const;
+    const char * getArchitecture() const;
     std::string getFullIdentifier() const;
 
     std::string getSummary() const;
@@ -47,6 +51,7 @@ public:
     void enable();
 
     Id getId() const { return id; };
+    Pool * getPool();
 
 private:
     void createDependencies(Solvable *solvable) const;
@@ -57,8 +62,11 @@ private:
     // TODO: remove after inheriting from Package
     Pool *pool;
     Id id;
-    void createProvisions(Solvable *solvable) const;
 };
 
+inline Pool * ModulePackage::getPool() { return pool;}
+
+Id createPlatformSolvable(Pool *pool, const std::string &osReleasePath);
+std::unique_ptr<libdnf::IdQueue> moduleSolve(const std::vector<std::shared_ptr<ModulePackage>> & modules);
 
 #endif //LIBDNF_MODULEPACKAGE_HPP

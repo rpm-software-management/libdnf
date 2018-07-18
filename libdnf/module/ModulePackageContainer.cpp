@@ -3,11 +3,13 @@
 
 #include "libdnf/utils/utils.hpp"
 #include "libdnf/utils/File.hpp"
-#include "ModuleSolver.hpp"
 
 #include <algorithm>
 #include <set>
+extern "C" {
 #include <solv/poolarch.h>
+}
+
 
 ModulePackageContainer::ModulePackageContainer(const std::shared_ptr<Pool> &pool, const std::string &arch)
         : pool(pool)
@@ -66,24 +68,23 @@ std::vector<std::shared_ptr<ModulePackage>> ModulePackageContainer::getActiveMod
             packages.push_back(module);
         }
     }
-
     return getActiveModulePackages(packages);
 }
 
 std::vector<std::shared_ptr<ModulePackage>> ModulePackageContainer::getActiveModulePackages(const std::vector<std::shared_ptr<ModulePackage>> &modulePackages)
 {
     std::vector<std::shared_ptr<ModulePackage>> packages;
+    auto ids = moduleSolve(modulePackages);
 
-    ModuleSolver solver{pool};
-    for (const auto &modulePackage : modulePackages)
-        solver.addModulePackage(modulePackage);
-
-    auto ids = solver.solve();
-
-    packages.reserve(ids.size());
-    for (const auto &id : ids)
+    packages.reserve(ids->size());
+    for (int i = 0; i < ids->size(); ++i) {
+        Id id = (*ids)[i];
+        auto solvable = pool_id2solvable(pool.get(), id);
+        // TODO use Goal::listInstalls() to not requires filtering out Platform
+        if (strcmp(solvable->repo->name, HY_SYSTEM_REPO_NAME) == 0)
+            continue;
         packages.push_back(modules[id]);
-
+    }
     return packages;
 }
 
