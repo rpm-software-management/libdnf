@@ -24,6 +24,8 @@
 #define MIRRORLIST_FILENAME  "mirrorlist"
 #define RECOGNIZED_CHKSUMS {"sha512", "sha256"}
 
+#define GPG_HOME_ENV "GNUPGHOME"
+
 #define ASCII_LOWERCASE "abcdefghijklmnopqrstuvwxyz"
 #define ASCII_UPPERCASE "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 #define ASCII_LETTERS ASCII_LOWERCASE ASCII_UPPERCASE
@@ -42,6 +44,7 @@
 #include <utils.hpp>
 
 #include <librepo/librepo.h>
+#include <stdlib.h>
 #include <utime.h>
 
 #include <solv/chksum.h>
@@ -197,7 +200,7 @@ public:
 
     SyncStrategy syncStrategy;
 private:
-    void lrHandlePerform(LrHandle * handle, LrResult * result);
+    void lrHandlePerform(LrHandle * handle, LrResult * result, bool setGPGHomeEnv);
     bool isMetalinkInSync();
     bool isRepomdInSync();
     void resetMetadataExpired();
@@ -588,9 +591,32 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bo
     return h;
 }
 
-void Repo::Impl::lrHandlePerform(LrHandle * handle, LrResult * result)
+void Repo::Impl::lrHandlePerform(LrHandle * handle, LrResult * result, bool setGPGHomeEnv)
 {
-    if (callbacks)
+    bool isOrigGPGHomeEnvSet;
+    std::string origGPGHomeEnv;
+    if (setGPGHomeEnv) {
+            const char * orig = getenv(GPG_HOME_ENV);
+            isOrigGPGHomeEnvSet = orig;
+            if (isOrigGPGHomeEnvSet)
+                origGPGHomeEnv = orig;
+            auto pubringdir = getCachedir() + "/pubring";
+            setenv(GPG_HOME_ENV, pubringdir.c_str(), 1);
+    }
+    Finalizer gpgHomeEnvRecover([setGPGHomeEnv, isOrigGPGHomeEnvSet, &origGPGHomeEnv](){
+        if (setGPGHomeEnv) {
+            if (isOrigGPGHomeEnvSet)
+                setenv(GPG_HOME_ENV, origGPGHomeEnv.c_str(), 1);
+            else
+                unsetenv(GPG_HOME_ENV);
+        }
+    });
+
+    // Start and end is called only if progress callback is set in handle.
+    LrProgressCb progressFunc;
+    handleGetInfo(handle, LRI_PROGRESSCB, &progressFunc);
+
+    if (callbacks && progressFunc)
         callbacks->start(
             !conf->name().getValue().empty() ? conf->name().getValue().c_str() :
             (!id.empty() ? id.c_str() : "unknown")
@@ -600,7 +626,7 @@ void Repo::Impl::lrHandlePerform(LrHandle * handle, LrResult * result)
     bool ret = lr_handle_perform(handle, result, &errP);
     std::unique_ptr<GError> err(errP);
 
-    if (callbacks)
+    if (callbacks && progressFunc)
         callbacks->end();
 
     if (!ret)
@@ -613,12 +639,11 @@ bool Repo::Impl::loadCache(bool throwExcept)
     std::unique_ptr<LrResult> r(lr_result_init());
 
     // Fetch data
-    GError * errP{nullptr};
-    bool ret = lr_handle_perform(h.get(), r.get(), &errP);
-    std::unique_ptr<GError> err(errP);
-    if (!ret) {
+    try {
+        lrHandlePerform(h.get(), r.get(), conf->repo_gpgcheck().getValue());
+    } catch (std::exception & ex) {
         if (throwExcept)
-            throwException(std::move(err));
+            throw;
         return false;
     }
 
@@ -688,7 +713,7 @@ bool Repo::Impl::isMetalinkInSync()
     std::unique_ptr<LrResult> r(lr_result_init());
 
     handleSetOpt(h.get(), LRO_FETCHMIRRORS, 1L);
-    lrHandlePerform(h.get(), r.get());
+    lrHandlePerform(h.get(), r.get(), false);
     LrMetalink * metalink;
     handleGetInfo(h.get(), LRI_METALINK, &metalink);
     if (!metalink) {
@@ -760,7 +785,7 @@ bool Repo::Impl::isRepomdInSync()
     std::unique_ptr<LrResult> r(lr_result_init());
 
     handleSetOpt(h.get(), LRO_YUMDLIST, dlist);
-    lrHandlePerform(h.get(), r.get());
+    lrHandlePerform(h.get(), r.get(), false);
     resultGetInfo(r.get(), LRR_YUM_REPO, &yum_repo);
 
     auto same = haveFilesSameContent(repomd_fn.c_str(), yum_repo->repomd);
@@ -798,7 +823,7 @@ void Repo::Impl::fetch()
 
     std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir.c_str()));
     std::unique_ptr<LrResult> r(lr_result_init());
-    lrHandlePerform(h.get(), r.get());
+    lrHandlePerform(h.get(), r.get(), conf->repo_gpgcheck().getValue());
 
     dnf_remove_recursive(repodir.c_str(), NULL);
     if (g_mkdir_with_parents(repodir.c_str(), 0755) == -1) {
