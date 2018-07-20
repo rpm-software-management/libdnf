@@ -33,38 +33,11 @@ namespace libdnf {
 
 class LrException : public std::runtime_error {
 public:
-    LrException(const char * msg) : runtime_error(msg) {}
-    LrException(const std::string & msg) : runtime_error(msg) {}
-};
-
-class LrIO : public LrException {
-public:
-    LrIO(const std::string & msg) : LrException(msg) {}
-};
-
-class LrCannotCreateDir : public LrException {
-public:
-    LrCannotCreateDir(const std::string & msg) : LrException(msg) {}
-};
-
-class LrCannotCreateTmp : public LrException {
-public:
-    LrCannotCreateTmp(const std::string & msg) : LrException(msg) {}
-};
-
-class LrMemory : public LrException {
-public:
-    LrMemory(const std::string & msg) : LrException(msg) {}
-};
-
-class LrBadFuncArg : public LrException {
-public:
-    LrBadFuncArg(const std::string & msg) : LrException(msg) {}
-};
-
-class LrBadOptArg : public LrException {
-public:
-    LrBadOptArg(const std::string & msg) : LrException(msg) {}
+    LrException(int code, const char * msg) : runtime_error(msg), code(code) {}
+    LrException(int code, const std::string & msg) : runtime_error(msg), code(code) {}
+    int getCode() const noexcept { return code; }
+private:
+    int code;
 };
 
 /**
