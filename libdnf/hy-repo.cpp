@@ -251,5 +251,6 @@ hy_repo_free(HyRepo repo)
     g_free(repo->filelists_fn);
     g_free(repo->presto_fn);
     g_free(repo->updateinfo_fn);
+    g_free(repo->modules_fn);
     g_free(repo);
 }
