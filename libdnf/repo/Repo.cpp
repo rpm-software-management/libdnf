@@ -87,24 +87,18 @@ struct std::default_delete<LrPackageTarget> {
 
 namespace libdnf {
 
+class LrExceptionWithSourceUrl : public LrException {
+public:
+    LrExceptionWithSourceUrl(int code, const std::string & msg, const std::string & sourceUrl) : LrException(code, msg), sourceUrl(sourceUrl) {}
+    const std::string & getSourceUrl() const { return sourceUrl; }
+private:
+    std::string sourceUrl;
+};
+
+
 static void throwException(std::unique_ptr<GError> && err)
 {
-    switch (err->code) {
-        case LRE_IO:
-            throw LrIO(err->message);
-        case LRE_CANNOTCREATEDIR:
-            throw LrCannotCreateDir(err->message);
-        case LRE_CANNOTCREATETMP:
-            throw LrCannotCreateTmp(err->message);
-        case LRE_MEMORY:
-            throw LrMemory(err->message);
-        case LRE_BADFUNCARG:
-            throw LrBadFuncArg(err->message);
-        case LRE_BADOPTARG:
-            throw LrBadOptArg(err->message);
-        default:
-            throw LrException(err->message);
-    }
+    throw LrException(err->code, err->message);
 }
 
 template<typename T>
@@ -629,8 +623,22 @@ void Repo::Impl::lrHandlePerform(LrHandle * handle, LrResult * result, bool setG
     if (callbacks && progressFunc)
         callbacks->end();
 
-    if (!ret)
-        throwException(std::move(err));
+    if (!ret) {
+        std::string source;
+        if (conf->metalink().empty() || (source=conf->metalink().getValue()).empty()) {
+            if (conf->mirrorlist().empty() || (source=conf->mirrorlist().getValue()).empty()) {
+                bool first = true;
+                for (const auto & url : conf->baseurl().getValue()) {
+                    if (first)
+                        first = false;
+                    else
+                        source += ", ";
+                    source += url;
+                }
+            }
+        }
+        throw LrExceptionWithSourceUrl(err->code, err->message, source);
+    }
 }
 
 bool Repo::Impl::loadCache(bool throwExcept)
@@ -841,46 +849,33 @@ void Repo::Impl::fetch()
 bool Repo::Impl::load()
 {
     auto logger(Log::getLogger());
-    if (!primary_fn.empty() || loadCache(false)) {
-        if (conf->getMasterConfig().check_config_file_age().getValue() &&
-            !repoFilePath.empty() && mtime(repoFilePath.c_str()) > mtime(primary_fn.c_str()))
-            expired = true;
-        if (!expired || syncStrategy == SyncStrategy::ONLY_CACHE || syncStrategy == SyncStrategy::LAZY) {
-            logger->debug(tfm::format(_("repo: using cache for: %s"), id));
-            return false;
-        }
-
-        if (isInSync()) {
-            // the expired metadata still reflect the origin:
-            utimes(primary_fn.c_str(), NULL);
-            expired = false;
-            return true;
-        }
-    }
-    if (syncStrategy == SyncStrategy::ONLY_CACHE) {
-        auto msg = tfm::format(_("Cache-only enabled but no cache for '%s'"), id);
-        throw std::runtime_error(msg);
-    }
-
     try {
+        if (!primary_fn.empty() || loadCache(false)) {
+            if (conf->getMasterConfig().check_config_file_age().getValue() &&
+                !repoFilePath.empty() && mtime(repoFilePath.c_str()) > mtime(primary_fn.c_str()))
+                expired = true;
+            if (!expired || syncStrategy == SyncStrategy::ONLY_CACHE || syncStrategy == SyncStrategy::LAZY) {
+                logger->debug(tfm::format(_("repo: using cache for: %s"), id));
+                return false;
+            }
+
+            if (isInSync()) {
+                // the expired metadata still reflect the origin:
+                utimes(primary_fn.c_str(), NULL);
+                expired = false;
+                return true;
+            }
+        }
+        if (syncStrategy == SyncStrategy::ONLY_CACHE) {
+            auto msg = tfm::format(_("Cache-only enabled but no cache for '%s'"), id);
+            throw std::runtime_error(msg);
+        }
+
         logger->debug(tfm::format(_("repo: downloading from remote: %s"), id));
         fetch();
         loadCache(true);
-    } catch (const std::runtime_error & e) {
-        std::string source;
-        if (conf->metalink().empty() || (source=conf->metalink().getValue()).empty()) {
-            if (conf->mirrorlist().empty() || (source=conf->mirrorlist().getValue()).empty()) {
-                bool first = true;
-                for (const auto & url : conf->baseurl().getValue()) {
-                    if (first)
-                        first = false;
-                    else
-                        source += ", ";
-                    source += url;
-                }
-            }
-        }
-        logger->debug(tfm::format(_("Cannot download '%s': %s."), source, e.what()));
+    } catch (const LrExceptionWithSourceUrl & e) {
+        logger->debug(tfm::format(_("Cannot download '%s': %s."), e.getSourceUrl(), e.what()));
         auto msg = tfm::format(_("Failed to synchronize cache for repo '%s'"), id);
         throw std::runtime_error(msg);
     }
