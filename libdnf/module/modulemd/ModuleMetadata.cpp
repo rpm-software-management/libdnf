@@ -1,4 +1,3 @@
-#include <modulemd/modulemd-simpleset.h>
 #include <utility>
 #include <iostream>
 

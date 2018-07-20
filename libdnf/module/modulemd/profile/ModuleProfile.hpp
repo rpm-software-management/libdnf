@@ -1,4 +1,3 @@
-
 #ifndef LIBDNF_MODULEPROFILE_HPP
 #define LIBDNF_MODULEPROFILE_HPP
 
@@ -6,7 +5,7 @@
 #include "Profile.hpp"
 
 #include <memory>
-#include <modulemd/modulemd-profile.h>
+#include <modulemd/modulemd.h>
 
 class ModuleProfile : public Profile
 {

@@ -1,5 +1,4 @@
 #include <regex>
-#include <modulemd/modulemd-simpleset.h>
 
 #include "ModuleProfile.hpp"
 
