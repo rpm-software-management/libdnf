@@ -89,6 +89,7 @@ typedef struct
     Map                 *pkg_includes;
     Map                 *repo_excludes;
     Map                 *module_excludes;
+    Map                 *module_includes;   /* To fast identify enabled modular packages */
     Map                 *pkg_solvables;     /* Map representing only solvable pkgs of query */
     int                  pool_nsolvables;   /* Number of nsolvables for creation of pkg_solvables*/
     Pool                *pool;
@@ -102,6 +103,7 @@ typedef struct
     char                *arch;
     dnf_sack_running_kernel_fn_t  running_kernel_fn;
     guint                installonly_limit;
+    ModulePackageContainer * moduleContainer;
 } DnfSackPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfSack, dnf_sack, G_TYPE_OBJECT)
@@ -134,9 +136,13 @@ dnf_sack_finalize(GObject *object)
     free_map_fully(priv->pkg_includes);
     free_map_fully(priv->repo_excludes);
     free_map_fully(priv->module_excludes);
+    free_map_fully(priv->module_includes);
     free_map_fully(pool->considered);
     free_map_fully(priv->pkg_solvables);
     pool_free(priv->pool);
+    if (priv->moduleContainer) {
+        delete priv->moduleContainer;
+    }
 
     G_OBJECT_CLASS(dnf_sack_parent_class)->finalize(object);
 }
@@ -1302,6 +1308,19 @@ dnf_sack_set_excludes_or_includes(DnfSack *sack, Map **dest, DnfPackageSet *pkgs
     priv->considered_uptodate = FALSE;
 }
 
+void
+dnf_sack_set_module_includes(DnfSack *sack, DnfPackageSet *pset)
+{
+    if (!pset) {
+        return;
+    }
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    free_map_fully(priv->module_includes);
+    priv->module_includes = static_cast<Map *>(g_malloc0(sizeof(Map)));
+    Map *pkgmap = dnf_packageset_get_map(pset);
+    map_init_clone(priv->module_includes, pkgmap);
+}
+
 /**
  * dnf_sack_set_excludes:
  * @sack: a #DnfSack instance.
@@ -1420,6 +1439,21 @@ dnf_sack_get_excludes(DnfSack *sack)
  */
 DnfPackageSet *
 dnf_sack_get_module_excludes(DnfSack *sack)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    Map *excl = priv->module_excludes;
+    return excl ? dnf_packageset_from_bitmap(sack, excl) : NULL;
+}
+
+/**
+ * dnf_sack_get_module_includes:
+ * @sack: a #DnfSack instance.
+ * @pset: a #DnfPackageSet or %NULL.
+ *
+ * Since: 0.16.1
+ */
+DnfPackageSet *
+dnf_sack_get_module_includes(DnfSack *sack)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     Map *excl = priv->module_excludes;
@@ -2157,8 +2191,8 @@ void readModuleDefaultsFromDisk(const std::string &dirPath, ModuleDefaultsContai
     }
 }
 
-std::tuple<std::vector<std::string>, std::vector<std::string>> collectNevraForInclusionExclusion(
-        ModulePackageContainer &modulePackageContainer, std::vector<std::shared_ptr<ModulePackage>> &activeModulePackages)
+static std::tuple<std::vector<std::string>, std::vector<std::string>> collectNevraForInclusionExclusion(
+        ModulePackageContainer &modulePackageContainer)
 {
     std::vector<std::string> includeNEVRAs;
     std::vector<std::string> excludeNEVRAs;
@@ -2166,7 +2200,7 @@ std::tuple<std::vector<std::string>, std::vector<std::string>> collectNevraForIn
     // TODO: turn into std::vector<const char *> to prevent unecessary conversion?
     for (const auto &module : modulePackageContainer.getModulePackages()) {
         auto artifacts = module->getArtifacts();
-        if (std::find(begin(activeModulePackages), end(activeModulePackages), module) != end(activeModulePackages)) {
+        if (modulePackageContainer.isModuleActive(module->getId())) {
             copy(std::begin(artifacts), std::end(artifacts), std::back_inserter(includeNEVRAs));
         } else {
             copy(std::begin(artifacts), std::end(artifacts), std::back_inserter(excludeNEVRAs));
@@ -2215,20 +2249,39 @@ static void setModuleExcludes(DnfSack *sack, std::vector<std::string> &includeNE
 
     dnf_sack_set_module_excludes(sack, excludeQuery.getResultPset());
     dnf_sack_add_module_excludes(sack, excludeProvidesQuery.getResultPset());
+    dnf_sack_set_module_includes(sack, includeQuery.getResultPset());
 }
 
+}
+
+std::vector<std::shared_ptr<ModulePackage>> requiresModuleEnablement(DnfSack * sack, const libdnf::PackageSet * installSet)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    if (!priv->module_includes) {
+        return {};
+    }
+    libdnf::PackageSet tmp(sack);
+    tmp += *const_cast<libdnf::PackageSet*>(installSet);
+    tmp /= priv->module_includes;
+
+    if (tmp.empty()) {
+        return {};
+    }
+    auto toEnable = priv->moduleContainer->requiresModuleEnablement(*installSet);
+    return toEnable;
 }
 
 void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *install_root)
 {
     // TODO: remove hard-coded path
-    std::string defaultsDirPath = g_build_filename(install_root, "/etc/dnf/modules.defaults.d/", NULL);
+    std::string defaultsDirPath = g_build_filename(
+        install_root, "/etc/dnf/modules.defaults.d/", NULL);
     DnfSackPrivate *priv = GET_PRIVATE(sack);
-
-    ModulePackageContainer modulePackages{std::shared_ptr<Pool>(pool_create(), &pool_free), priv->arch};
+    priv->moduleContainer = new ModulePackageContainer(
+        std::shared_ptr<Pool>(pool_create(), &pool_free), priv->arch);
     ModuleDefaultsContainer moduleDefaults;
 
-    readModuleMetadataFromRepo(repos, modulePackages, moduleDefaults);
+    readModuleMetadataFromRepo(repos, *priv->moduleContainer, moduleDefaults);
     readModuleDefaultsFromDisk(defaultsDirPath, moduleDefaults);
 
     try {
@@ -2238,9 +2291,9 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
     }
 
     auto defaultStreams = moduleDefaults.getDefaultStreams();
-    enableModuleStreams(modulePackages, install_root);
+    enableModuleStreams(*priv->moduleContainer, install_root);
 
-    auto activeModulePackages = modulePackages.getActiveModulePackages(defaultStreams);
-    auto nevraTuple = collectNevraForInclusionExclusion(modulePackages, activeModulePackages);
+    priv->moduleContainer->resolveActiveModulePackages(defaultStreams);
+    auto nevraTuple = collectNevraForInclusionExclusion(*priv->moduleContainer);
     setModuleExcludes(sack, std::get<0>(nevraTuple), std::get<1>(nevraTuple));
 }

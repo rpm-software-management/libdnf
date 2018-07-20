@@ -97,11 +97,60 @@ PackageSet::operator +=(const PackageSet & other)
     return *this;
 }
 
+PackageSet &
+PackageSet::operator -=(const PackageSet & other)
+{
+    map_subtract(&pImpl->map, &other.pImpl->map);
+    return *this;
+}
+
+PackageSet &
+PackageSet::operator /=(const PackageSet & other)
+{
+    map_and(&pImpl->map, &other.pImpl->map);
+    return *this;
+}
+
+PackageSet &
+PackageSet::operator +=(const Map * other)
+{
+    map_or(&pImpl->map, other);
+    return *this;
+}
+
+PackageSet &
+PackageSet::operator -=(const Map * other)
+{
+    map_subtract(&pImpl->map, other);
+    return *this;
+}
+
+PackageSet &
+PackageSet::operator /=(const Map * other)
+{
+    map_and(&pImpl->map, other);
+    return *this;
+}
+
 void
 PackageSet::clear()
 {
     map_empty(&pImpl->map);
 }
+
+bool
+PackageSet::empty()
+{
+    const unsigned char *res = pImpl->map.map;
+    const unsigned char *end = res + pImpl->map.size;
+
+    while (res < end) {
+        if (*res++)
+            return false;
+    }
+    return true;
+}
+
 
 void PackageSet::set(DnfPackage *pkg) { MAPSET(&pImpl->map, dnf_package_get_id(pkg)); }
 void PackageSet::set(Id id) { MAPSET(&pImpl->map, id); }

@@ -1895,14 +1895,7 @@ bool
 Query::empty()
 {
     apply();
-    const unsigned char *res = pImpl->result->getMap()->map;
-    const unsigned char *end = res + pImpl->result->getMap()->size;
-
-    while (res < end) {
-        if (*res++)
-            return false;
-    }
-    return true;
+    return pImpl->result->empty();
 }
 
 void
