@@ -38,7 +38,8 @@ class ModulePackage // TODO inherit in future; : public Package
 public:
     enum class ModuleState {
         UNKNOWN,
-        ENABLED
+        ENABLED,
+        DEFAULT
     };
 
     ModulePackage(Pool *pool, Repo *repo, const std::shared_ptr<ModuleMetadata> &metadata);
@@ -70,6 +71,8 @@ public:
     void addStreamConflict(const std::shared_ptr<ModulePackage> &package);
 
     void enable();
+    ModuleState getState();
+    void setState(ModuleState newState);
 
     Id getId() const { return id; };
     Pool * getPool();
@@ -86,6 +89,10 @@ private:
 };
 
 inline Pool * ModulePackage::getPool() { return pool;}
+
+inline ModulePackage::ModuleState ModulePackage::getState() { return state; }
+
+inline void ModulePackage::setState(ModulePackage::ModuleState newState) { state = newState; }
 
 Id createPlatformSolvable(Pool *pool, const std::string &osReleasePath,
     const std::string install_root, const char *  platformModule);

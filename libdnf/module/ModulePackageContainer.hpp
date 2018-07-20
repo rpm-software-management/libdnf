@@ -53,7 +53,7 @@ public:
     };
 
     explicit ModulePackageContainer(const std::shared_ptr<Pool> &pool, const char * arch);
-    ~ModulePackageContainer() = default;
+    ~ModulePackageContainer();
 
     void add(const std::shared_ptr<ModulePackage> &package);
     void add(const std::vector<std::shared_ptr<ModulePackage>> &packages);
@@ -61,18 +61,19 @@ public:
     std::shared_ptr<ModulePackage> getModulePackage(Id id);
     std::vector<std::shared_ptr<ModulePackage>> getModulePackages();
 
+    std::vector<std::shared_ptr<ModulePackage>> requiresModuleEnablement(const libdnf::PackageSet & packages);
     void enable(const std::string &name, const std::string &stream);
 
-    std::vector<std::shared_ptr<ModulePackage>> getActiveModulePackages(const std::map<std::string, std::string> &defaultStreams);
+    void resolveActiveModulePackages(const std::map<std::string, std::string> &defaultStreams);
+    bool isModuleActive(Id id);
 
 
     std::shared_ptr<Pool> getPool() { return pool; };
 
 private:
-    std::vector<std::shared_ptr<ModulePackage>> getActiveModulePackages(const std::vector<std::shared_ptr<ModulePackage>> &modulePackages);
-
     std::map<Id, std::shared_ptr<ModulePackage>> modules;
     std::shared_ptr<Pool> pool;
+    Map * activatedModules;
 };
 
 

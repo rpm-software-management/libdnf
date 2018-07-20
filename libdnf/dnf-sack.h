@@ -134,6 +134,8 @@ void         dnf_sack_set_excludes          (DnfSack        *sack,
                                              DnfPackageSet  *pset);
 void         dnf_sack_set_module_excludes   (DnfSack *sack,
                                              DnfPackageSet *pset);
+void         dnf_sack_set_module_includes   (DnfSack *sack,
+                                             DnfPackageSet *pset);
 void         dnf_sack_set_includes          (DnfSack        *sack,
                                              DnfPackageSet  *pset);
 void         dnf_sack_reset_excludes        (DnfSack        *sack);
@@ -142,6 +144,7 @@ void         dnf_sack_reset_includes        (DnfSack        *sack);
 DnfPackageSet *dnf_sack_get_includes        (DnfSack        *sack);
 DnfPackageSet *dnf_sack_get_excludes        (DnfSack        *sack);
 DnfPackageSet *dnf_sack_get_module_excludes (DnfSack        *sack);
+DnfPackageSet *dnf_sack_get_module_includes (DnfSack        *sack);
 gboolean     dnf_sack_set_use_includes      (DnfSack        *sack,
                                              const char     *reponame,
                                              gboolean        enabled);
