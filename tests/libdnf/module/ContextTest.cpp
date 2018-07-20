@@ -1,4 +1,3 @@
-#include <modulemd/modulemd-simpleset.h>
 #include "ContextTest.hpp"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ContextTest);

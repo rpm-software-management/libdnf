@@ -1,5 +1,3 @@
-#include <modulemd/modulemd-simpleset.h>
-
 #include "libdnf/utils/utils.hpp"
 #include "ModuleDependencies.hpp"
 
