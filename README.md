@@ -18,31 +18,15 @@ LGPLv2+
 Building for Fedora
 ===================
 
-Packages needed for the build, or the build requires:
+To install build requirements, run following command:
 
-* make
-* check-devel
-* cmake
-* gcc
-* libsolv-devel
-* libsolv-tools
-* librepo-devel
-* python2-devel (or python3-devel for Python 3 build)
-* python2-nose (or python3-nose for Python 3 build)
-* rpm-devel
-* sqlite-devel
-* glib2-devel
-* gtk-doc
-* gobject-introspection-devel
-* python2-sphinx (or python3-sphinx for Python 3 build)
-* pygobject3-devel
-* valgrind (optional)
+    dnf install check-devel cmake cppunit-devel gcc gcc-c++ glib2-devel gtk-doc json-c-devel libmodulemd-devel librepo-devel libsolv-devel libsolv-tools make python2-devel python3-devel python2-nose python3-nose python2-sphinx python3-sphinx rpm-devel sqlite-devel swig
 
 From the checkout dir:
 
     mkdir build
     cd build/
-    cmake .. # add '-DPYTHON_DESIRED="3"' option for Python 3 build
+    cmake .. -DPYTHON_DESIRED=3
     make
 
 Building the documentation, from the build/ directory::
@@ -85,3 +69,4 @@ Bug database:
 
  * [libdnf github issues](https://github.com/rpm-software-management/libdnf/issues)
  * [bugzilla](https://bugzilla.redhat.com/buglist.cgi?bug_status=NEW&bug_status=ASSIGNED&bug_status=POST&bug_status=MODIFIED&bug_status=ON_DEV&bug_status=ON_QA&bug_status=VERIFIED&bug_status=RELEASE_PENDING&bug_status=CLOSED&component=libdnf&list_id=8513553&product=Fedora&query_format=advanced)
+ 
