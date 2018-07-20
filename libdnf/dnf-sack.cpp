@@ -2176,7 +2176,7 @@ std::tuple<std::vector<std::string>, std::vector<std::string>> collectNevraForIn
     return std::tuple<std::vector<std::string>, std::vector<std::string>>{includeNEVRAs, excludeNEVRAs};
 }
 
-void addModuleExcludes(DnfSack *sack, std::vector<std::string> &includeNEVRAs, std::vector<std::string> &excludeNEVRAs)
+static void setModuleExcludes(DnfSack *sack, std::vector<std::string> &includeNEVRAs, std::vector<std::string> &excludeNEVRAs)
 {
     std::vector<std::string> names;
     libdnf::DependencyContainer nameDependencies{sack};
@@ -2213,7 +2213,7 @@ void addModuleExcludes(DnfSack *sack, std::vector<std::string> &includeNEVRAs, s
     excludeProvidesQuery.addFilter(HY_PKG_PROVIDES, &nameDependencies);
     excludeProvidesQuery.queryDifference(includeQuery);
 
-    dnf_sack_add_module_excludes(sack, excludeQuery.getResultPset());
+    dnf_sack_set_module_excludes(sack, excludeQuery.getResultPset());
     dnf_sack_add_module_excludes(sack, excludeProvidesQuery.getResultPset());
 }
 
@@ -2242,5 +2242,5 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
 
     auto activeModulePackages = modulePackages.getActiveModulePackages(defaultStreams);
     auto nevraTuple = collectNevraForInclusionExclusion(modulePackages, activeModulePackages);
-    addModuleExcludes(sack, std::get<0>(nevraTuple), std::get<1>(nevraTuple));
+    setModuleExcludes(sack, std::get<0>(nevraTuple), std::get<1>(nevraTuple));
 }
