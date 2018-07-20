@@ -52,7 +52,7 @@ public:
         explicit EnabledStreamException(const std::string &moduleName) : Exception("No enabled stream for module: " + moduleName) {}
     };
 
-    explicit ModulePackageContainer(const std::shared_ptr<Pool> &pool, const std::string &arch);
+    explicit ModulePackageContainer(const std::shared_ptr<Pool> &pool, const char * arch);
     ~ModulePackageContainer() = default;
 
     void add(const std::shared_ptr<ModulePackage> &package);

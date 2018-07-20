@@ -30,10 +30,12 @@ extern "C" {
 #include "libdnf/utils/utils.hpp"
 #include "libdnf/utils/File.hpp"
 
-ModulePackageContainer::ModulePackageContainer(const std::shared_ptr<Pool> &pool, const std::string &arch)
+ModulePackageContainer::ModulePackageContainer(const std::shared_ptr<Pool> &pool, const char *arch)
         : pool(pool)
 {
-    pool_setarch(pool.get(), arch.c_str());
+    if (arch) {
+        pool_setarch(pool.get(), arch);
+    }
 }
 
 void ModulePackageContainer::add(const std::shared_ptr<ModulePackage> &package)

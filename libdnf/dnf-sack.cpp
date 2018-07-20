@@ -99,6 +99,7 @@ typedef struct
     gboolean             all_arch;
     gboolean             provides_ready;
     gchar               *cache_dir;
+    char                *arch;
     dnf_sack_running_kernel_fn_t  running_kernel_fn;
     guint                installonly_limit;
 } DnfSackPrivate;
@@ -126,6 +127,7 @@ dnf_sack_finalize(GObject *object)
         hy_repo_free(hrepo);
     }
     g_free(priv->cache_dir);
+    g_free(priv->arch);
     queue_free(&priv->installonly);
 
     free_map_fully(priv->pkg_excludes);
@@ -770,6 +772,8 @@ dnf_sack_set_arch (DnfSack *sack, const gchar *value, GError **error)
     }
 
     g_debug("Architecture is: %s", arch);
+    g_free (priv->arch);
+    priv->arch = g_strdup(arch);
     pool_setarch(pool, arch);
 
     /* Since one of commits after 0.6.20 libsolv allowes custom arches
@@ -2219,10 +2223,9 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
 {
     // TODO: remove hard-coded path
     std::string defaultsDirPath = g_build_filename(install_root, "/etc/dnf/modules.defaults.d/", NULL);
-    char *arch;
-    hy_detect_arch(&arch);
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
 
-    ModulePackageContainer modulePackages{std::shared_ptr<Pool>(pool_create(), &pool_free), arch};
+    ModulePackageContainer modulePackages{std::shared_ptr<Pool>(pool_create(), &pool_free), priv->arch};
     ModuleDefaultsContainer moduleDefaults;
 
     readModuleMetadataFromRepo(repos, modulePackages, moduleDefaults);
@@ -2240,6 +2243,4 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
     auto activeModulePackages = modulePackages.getActiveModulePackages(defaultStreams);
     auto nevraTuple = collectNevraForInclusionExclusion(modulePackages, activeModulePackages);
     addModuleExcludes(sack, std::get<0>(nevraTuple), std::get<1>(nevraTuple));
-
-    g_free(arch);
 }
