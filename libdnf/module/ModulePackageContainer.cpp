@@ -29,6 +29,8 @@ extern "C" {
 
 #include "libdnf/utils/utils.hpp"
 #include "libdnf/utils/File.hpp"
+#include <functional>
+#include <../sack/query.hpp>
 
 ModulePackageContainer::ModulePackageContainer(const std::shared_ptr<Pool> &pool, const char *arch)
         : pool(pool)
@@ -37,6 +39,15 @@ ModulePackageContainer::ModulePackageContainer(const std::shared_ptr<Pool> &pool
         pool_setarch(pool.get(), arch);
     }
 }
+
+ModulePackageContainer::~ModulePackageContainer()
+{
+    if (activatedModules) {
+        map_free(activatedModules);
+        delete activatedModules;
+    }
+}
+
 
 void ModulePackageContainer::add(const std::shared_ptr<ModulePackage> &package)
 {
@@ -60,6 +71,36 @@ std::shared_ptr<ModulePackage> ModulePackageContainer::getModulePackage(Id id)
     return modules[id];
 }
 
+std::vector<std::shared_ptr<ModulePackage>>
+ModulePackageContainer::requiresModuleEnablement(const libdnf::PackageSet & packages)
+{
+    std::vector<std::shared_ptr<ModulePackage>> output;
+    libdnf::Query baseQuery(packages.getSack());
+    baseQuery.addFilter(HY_PKG, HY_EQ, &packages);
+    baseQuery.apply();
+    libdnf::Query testQuery(baseQuery);
+    auto moduleMapSize = pool->nsolvables;
+    for (Id id = 0; id < moduleMapSize; ++id) {
+        if (!MAPTST(activatedModules, id)) {
+            continue;
+        }
+        auto module = modules[id];
+        if (module->isEnabled()) {
+            continue;
+        }
+        auto includeNEVRAs = module->getArtifacts();
+        std::vector<const char *> includeNEVRAsCString(includeNEVRAs.size() + 1);
+        transform(includeNEVRAs.begin(), includeNEVRAs.end(), includeNEVRAsCString.begin(), std::mem_fn(&std::string::c_str));
+        testQuery.queryUnion(baseQuery);
+        testQuery.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, includeNEVRAsCString.data());
+        if (testQuery.empty()) {
+            continue;
+        }
+        output.push_back(module);
+    }
+    return output;
+}
+
 void ModulePackageContainer::enable(const std::string &name, const std::string &stream)
 {
     for (const auto &iter : modules) {
@@ -70,10 +111,11 @@ void ModulePackageContainer::enable(const std::string &name, const std::string &
     }
 }
 
-std::vector<std::shared_ptr<ModulePackage>> ModulePackageContainer::getActiveModulePackages(const std::map<std::string, std::string> &defaultStreams)
+void ModulePackageContainer::resolveActiveModulePackages(const std::map<std::string, std::string> &defaultStreams)
 {
     std::vector<std::shared_ptr<ModulePackage>> packages;
 
+    // Use only Enabled or Default modules for transaction
     for (const auto &iter : modules) {
         auto module = iter.second;
 
@@ -84,30 +126,38 @@ std::vector<std::shared_ptr<ModulePackage>> ModulePackageContainer::getActiveMod
             hasDefaultStream = false;
             // TODO logger.debug(exception.what())
         }
-
-        if (module->isEnabled() || hasDefaultStream) {
+        if (module->isEnabled()) {
+            packages.push_back(module);
+        } else if (hasDefaultStream) {
+            module->setState(ModulePackage::ModuleState::DEFAULT);
             packages.push_back(module);
         }
     }
-    return getActiveModulePackages(packages);
-}
-
-std::vector<std::shared_ptr<ModulePackage>> ModulePackageContainer::getActiveModulePackages(const std::vector<std::shared_ptr<ModulePackage>> &modulePackages)
-{
-    std::vector<std::shared_ptr<ModulePackage>> packages;
-    auto ids = moduleSolve(modulePackages);
-
-    packages.reserve(ids->size());
+    auto ids = moduleSolve(packages);
+    if (activatedModules) {
+        map_free(activatedModules);
+    } else {
+        activatedModules = new Map;
+    }
+    map_init(activatedModules, pool->nsolvables);
     for (int i = 0; i < ids->size(); ++i) {
         Id id = (*ids)[i];
         auto solvable = pool_id2solvable(pool.get(), id);
         // TODO use Goal::listInstalls() to not requires filtering out Platform
         if (strcmp(solvable->repo->name, HY_SYSTEM_REPO_NAME) == 0)
             continue;
-        packages.push_back(modules[id]);
+        MAPSET(activatedModules, id);
     }
-    return packages;
 }
+
+bool ModulePackageContainer::isModuleActive(Id id)
+{
+    if (activatedModules) {
+        return MAPTST(activatedModules, id);
+    }
+    return false;
+}
+
 
 std::vector<std::shared_ptr<ModulePackage>> ModulePackageContainer::getModulePackages()
 {
