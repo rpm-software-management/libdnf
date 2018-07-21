@@ -70,6 +70,9 @@ extern "C" {
 #include "nevra.hpp"
 #include "conf/ConfigParser.hpp"
 #include "conf/OptionBool.hpp"
+#include "module/ModulePackageMaker.hpp"
+#include "module/ModulePackageContainer.hpp"
+#include "module/ModulePackage.hpp"
 #include "module/modulemd/ModuleDefaultsContainer.hpp"
 #include "module/modulemd/ModuleMetadata.hpp"
 #include "repo/solvable/DependencyContainer.hpp"
@@ -86,6 +89,7 @@ typedef struct
     Map                 *pkg_includes;
     Map                 *repo_excludes;
     Map                 *module_excludes;
+    Map                 *module_includes;   /* To fast identify enabled modular packages */
     Map                 *pkg_solvables;     /* Map representing only solvable pkgs of query */
     int                  pool_nsolvables;   /* Number of nsolvables for creation of pkg_solvables*/
     Pool                *pool;
@@ -96,8 +100,10 @@ typedef struct
     gboolean             all_arch;
     gboolean             provides_ready;
     gchar               *cache_dir;
+    char                *arch;
     dnf_sack_running_kernel_fn_t  running_kernel_fn;
     guint                installonly_limit;
+    ModulePackageContainer * moduleContainer;
 } DnfSackPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfSack, dnf_sack, G_TYPE_OBJECT)
@@ -123,15 +129,20 @@ dnf_sack_finalize(GObject *object)
         hy_repo_free(hrepo);
     }
     g_free(priv->cache_dir);
+    g_free(priv->arch);
     queue_free(&priv->installonly);
 
     free_map_fully(priv->pkg_excludes);
     free_map_fully(priv->pkg_includes);
     free_map_fully(priv->repo_excludes);
     free_map_fully(priv->module_excludes);
+    free_map_fully(priv->module_includes);
     free_map_fully(pool->considered);
     free_map_fully(priv->pkg_solvables);
     pool_free(priv->pool);
+    if (priv->moduleContainer) {
+        delete priv->moduleContainer;
+    }
 
     G_OBJECT_CLASS(dnf_sack_parent_class)->finalize(object);
 }
@@ -767,6 +778,8 @@ dnf_sack_set_arch (DnfSack *sack, const gchar *value, GError **error)
     }
 
     g_debug("Architecture is: %s", arch);
+    g_free (priv->arch);
+    priv->arch = g_strdup(arch);
     pool_setarch(pool, arch);
 
     /* Since one of commits after 0.6.20 libsolv allowes custom arches
@@ -1295,6 +1308,19 @@ dnf_sack_set_excludes_or_includes(DnfSack *sack, Map **dest, DnfPackageSet *pkgs
     priv->considered_uptodate = FALSE;
 }
 
+void
+dnf_sack_set_module_includes(DnfSack *sack, DnfPackageSet *pset)
+{
+    if (!pset) {
+        return;
+    }
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    free_map_fully(priv->module_includes);
+    priv->module_includes = static_cast<Map *>(g_malloc0(sizeof(Map)));
+    Map *pkgmap = dnf_packageset_get_map(pset);
+    map_init_clone(priv->module_includes, pkgmap);
+}
+
 /**
  * dnf_sack_set_excludes:
  * @sack: a #DnfSack instance.
@@ -1413,6 +1439,21 @@ dnf_sack_get_excludes(DnfSack *sack)
  */
 DnfPackageSet *
 dnf_sack_get_module_excludes(DnfSack *sack)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    Map *excl = priv->module_excludes;
+    return excl ? dnf_packageset_from_bitmap(sack, excl) : NULL;
+}
+
+/**
+ * dnf_sack_get_module_includes:
+ * @sack: a #DnfSack instance.
+ * @pset: a #DnfPackageSet or %NULL.
+ *
+ * Since: 0.16.1
+ */
+DnfPackageSet *
+dnf_sack_get_module_includes(DnfSack *sack)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     Map *excl = priv->module_excludes;
@@ -2059,13 +2100,11 @@ dnf_sack_add_repos(DnfSack *sack,
     return TRUE;
 }
 
-static std::map<std::string, std::string> getEnabledModuleStreams(const char *install_root)
+namespace {
+void enableModuleStreams(ModulePackageContainer &modulePackages, const char *install_root)
 {
     // TODO: remove hard-coded path
     std::string dirPath = g_build_filename(install_root, "/etc/dnf/modules.d/", NULL);
-
-    // return {name: stream} map
-    std::map<std::string, std::string> result;
 
     libdnf::ConfigParser parser{};
     for (const auto &file : filesystem::getDirContent(dirPath)) {
@@ -2080,117 +2119,53 @@ static std::map<std::string, std::string> getEnabledModuleStreams(const char *in
             continue;
         }
         const auto &stream = parser.getValue(name, "stream");
-        result[name] = stream;
+        modulePackages.enable(name, stream);
     }
-    return result;
 }
 
-static std::map<std::string, std::string>
-getDependencyModuleStreams(const std::vector<std::shared_ptr<ModuleMetadata> > &moduleMetadata,
-                           const std::map<std::string, std::string> &activeStreams)
+std::string getFileContent(const std::string &filePath)
 {
-    // {name-stream: ModuleMetadata}
-    std::map<std::string, std::shared_ptr<ModuleMetadata> > latestModuleVersionsByStream;
-    for (const auto & mod : moduleMetadata) {
-        std::string ns = mod->getName() + ":" + mod->getStream();
-        auto iter = latestModuleVersionsByStream.find(ns);
-        if ((iter != latestModuleVersionsByStream.end()) && (iter->second->getVersion() >= mod->getVersion())) {
-            // there's newer module version in latestModuleVersionsByStream already
-            continue;
-        }
-        latestModuleVersionsByStream[ns] = mod;
-    }
+    auto yaml = libdnf::File::newFile(filePath);
 
-    std::map<std::string, std::string> result;
-    std::list<std::pair<std::string, std::string> > input;
-    std::set<std::string> seen;
-//    return result;
+    yaml->open("r");
+    const auto &yamlContent = yaml->getContent();
+    yaml->close();
 
-    // copy active streams into input buffer
-    for (auto &i : activeStreams) {
-        input.push_back({i.first, i.second});
-    }
+    return yamlContent;
+}
 
-    while (!input.empty()) {
-        auto pair = input.front();
-        input.pop_front();
+void createConflictsBetweenStreams(const std::map<Id, std::shared_ptr<ModulePackage>> &modules)
+{
+    // TODO Use libdnf::Query for filtering
+    for (const auto &iter : modules) {
+        const auto &modulePackage = iter.second;
 
-        auto name = std::move(pair.first);
-        auto stream = std::move(pair.second);
-        std::string ns = name + ":" + stream;
-
-        auto it = seen.find(name);
-        if (it != seen.end()) {
-            continue;
-        }
-        seen.insert(name);
-        result[name] = stream;
-
-
-        auto it2 = latestModuleVersionsByStream.find(ns);
-        if (it2 == latestModuleVersionsByStream.end()) {
-            // nothing was found, skip
-            continue;
-        }
-        auto mod = it2->second;
-
-//    std::vector<std::shared_ptr<ModulePackage>> requires;
-        for (const auto &moduleDependency : mod->getDependencies()) {
-            for (const auto &moduleRequires : moduleDependency->getRequires()) {
-                for (const auto &mapIter : moduleRequires) {
-                    const auto & n = mapIter.first;
-                    for (const auto & s : mapIter.second) {
-                        bool isStreamExcluded = string::startsWith(s, "-");
-                        if (isStreamExcluded) {
-                            continue;
-                        }
-                        input.push_back({n, s});
-                    }
-                }
+        for (const auto &innerIter : modules) {
+            if (modulePackage->getName() == innerIter.second->getName()
+                && modulePackage->getStream() != innerIter.second->getStream()) {
+                modulePackage->addStreamConflict(innerIter.second);
             }
         }
     }
-//    std::map<std::string, std::string> activeStreams
-    return result;
 }
 
-void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *install_root)
+void readModuleMetadataFromRepo(const GPtrArray *repos,
+                                ModulePackageContainer &modulePackages,
+                                ModuleDefaultsContainer &moduleDefaults)
 {
-    libdnf::Query keepPackages{sack};
-    const char * keepRepo[] = {HY_CMDLINE_REPO_NAME, HY_SYSTEM_REPO_NAME, NULL};
-    keepPackages.addFilter(HY_PKG_REPONAME, HY_NEQ, keepRepo);
-    libdnf::Query includeQuery{sack};
-    libdnf::Query excludeQuery{keepPackages};
-    libdnf::Query excludeProvidesQuery{keepPackages};
-    libdnf::Nevra nevra;
-
-    // read module metadata and defaults from repos
-    ModuleDefaultsContainer moduleDefaults;
-    std::vector<std::shared_ptr<ModuleMetadata> > moduleMetadata;
-
+    auto pool = modulePackages.getPool();
 
     for (unsigned int i = 0; i < repos->len; i++) {
         auto repo = static_cast<DnfRepo *>(g_ptr_array_index(repos, i));
-
         auto modules_fn = dnf_repo_get_filename_md(repo, "modules");
         if (modules_fn == nullptr)
-            // no modules -> no module RPM filtering
-            // apply names/Provides filters only (applies to both normal and hybrid repos)
             continue;
+        std::string yamlContent = getFileContent(modules_fn);
 
-        auto yaml = libdnf::File::newFile(modules_fn);
-        yaml->open("r");
-        const auto &yamlContent = yaml->getContent();
-        yaml->close();
+        auto modules = ModulePackageMaker::fromString(pool.get(), dnf_repo_get_repo(repo), yamlContent);
+        createConflictsBetweenStreams(modules);
 
-        // update list of module metadata from repo
-        try {
-            auto repoModuleMetadata = ModuleMetadata::metadataFromString(yamlContent);
-            moduleMetadata.insert(moduleMetadata.end(), repoModuleMetadata.begin(), repoModuleMetadata.end());
-        }
-        catch (std::bad_alloc &) {
-            throw;
-        }
+        modulePackages.add(modules);
 
         // update defaults from repo
         try {
@@ -2199,16 +2174,14 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
             // TODO logger.warning(exception.what());
         }
     }
+    // TODO remove hard-coded path
+    createPlatformSolvable(pool.get(), "/etc/os-release");
+}
 
-    // TODO: remove hard-coded path
-    std::string dirPath = g_build_filename(install_root, "/etc/dnf/modules.defaults.d/", NULL);
-
-    // read module defaults from disk
+void readModuleDefaultsFromDisk(const std::string &dirPath, ModuleDefaultsContainer &moduleDefaults)
+{
     for (const auto &file : filesystem::getDirContent(dirPath)) {
-        auto yaml = libdnf::File::newFile(file);
-        yaml->open("r");
-        const auto &yamlContent = yaml->getContent();
-        yaml->close();
+        std::string yamlContent = getFileContent(file);
 
         try {
             moduleDefaults.fromString(yamlContent, 1000);
@@ -2216,68 +2189,54 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
             // TODO logger.warning(exception.what());
         }
     }
+}
 
-    try {
-        moduleDefaults.resolve();
-    } catch (ModuleDefaultsContainer::ResolveException &exception) {
-        // TODO logger.debug("No module defaults found");
-    }
-
-    // get default module streams from repos and disk
-    auto defaultStreams = moduleDefaults.getDefaultStreams();
-
-    // read enabled module streams from program configuration
-    auto enabledStreams = getEnabledModuleStreams(install_root);
-
-    // merge default and enabled streams into active streams
-    // map::insert() inserts only if key wasn't found
-    std::map<std::string, std::string> activeStreams;
-    for (auto & i : enabledStreams) {
-        activeStreams.insert(i);
-    }
-    for (auto & i : defaultStreams) {
-        activeStreams.insert(i);
-    }
-
-    // resolve module dependencies, enable additional streams
-    auto dependencyStreams = getDependencyModuleStreams(moduleMetadata, activeStreams);
-    for (auto & i : dependencyStreams) {
-        activeStreams.insert(i);
-    }
-
-    // collect NEVRAs for to be included or excluded
-    // TODO: turn into std::vector<const char *> to prevent unecessary conversion?
+static std::tuple<std::vector<std::string>, std::vector<std::string>> collectNevraForInclusionExclusion(
+        ModulePackageContainer &modulePackageContainer)
+{
     std::vector<std::string> includeNEVRAs;
     std::vector<std::string> excludeNEVRAs;
 
-    for (auto & mod : moduleMetadata) {
-        auto iter = activeStreams.find(mod->getName());
-        bool isActiveStream = (iter == activeStreams.end()) ? false : (iter->second == mod->getStream());
-        auto artifacts = mod->getArtifacts();
-        if (isActiveStream) {
-            std::copy(artifacts.begin(), artifacts.end(), std::back_inserter(includeNEVRAs));
+    // TODO: turn into std::vector<const char *> to prevent unecessary conversion?
+    for (const auto &module : modulePackageContainer.getModulePackages()) {
+        auto artifacts = module->getArtifacts();
+        if (modulePackageContainer.isModuleActive(module->getId())) {
+            copy(std::begin(artifacts), std::end(artifacts), std::back_inserter(includeNEVRAs));
         } else {
-            std::copy(artifacts.begin(), artifacts.end(), std::back_inserter(excludeNEVRAs));
+            copy(std::begin(artifacts), std::end(artifacts), std::back_inserter(excludeNEVRAs));
         }
     }
 
-    std::vector<const char *> excludeNEVRAsCString(excludeNEVRAs.size() + 1);
-    std::transform(excludeNEVRAs.begin(), excludeNEVRAs.end(), excludeNEVRAsCString.begin(), std::mem_fn(&std::string::c_str));
+    return std::tuple<std::vector<std::string>, std::vector<std::string>>{includeNEVRAs, excludeNEVRAs};
+}
 
-    std::vector<const char *> includeNEVRAsCString(includeNEVRAs.size() + 1);
-    std::transform(includeNEVRAs.begin(), includeNEVRAs.end(), includeNEVRAsCString.begin(), std::mem_fn(&std::string::c_str));
-
+static void setModuleExcludes(DnfSack *sack, std::vector<std::string> &includeNEVRAs, std::vector<std::string> &excludeNEVRAs)
+{
     std::vector<std::string> names;
-    libdnf::DependencyContainer nameDeps{sack};
+    libdnf::DependencyContainer nameDependencies{sack};
+    libdnf::Nevra nevra;
     for (const auto &rpm : includeNEVRAs) {
         if (nevra.parse(rpm.c_str(), HY_FORM_NEVRA)) {
             names.push_back(nevra.getName());
-            nameDeps.addReldep(nevra.getName().c_str());
+            nameDependencies.addReldep(nevra.getName().c_str());
         }
     }
-    std::vector<const char *> namesCString(names.size() + 1);
-    std::transform(names.begin(), names.end(), namesCString.begin(), std::mem_fn(&std::string::c_str));
 
+    std::vector<const char *> namesCString(names.size() + 1);
+    std::vector<const char *> excludeNEVRAsCString(excludeNEVRAs.size() + 1);
+    std::vector<const char *> includeNEVRAsCString(includeNEVRAs.size() + 1);
+
+    transform(names.begin(), names.end(), namesCString.begin(), std::mem_fn(&std::string::c_str));
+    transform(excludeNEVRAs.begin(), excludeNEVRAs.end(), excludeNEVRAsCString.begin(), std::mem_fn(&std::string::c_str));
+    transform(includeNEVRAs.begin(), includeNEVRAs.end(), includeNEVRAsCString.begin(), std::mem_fn(&std::string::c_str));
+
+    libdnf::Query keepPackages{sack};
+    const char *keepRepo[] = {HY_CMDLINE_REPO_NAME, HY_SYSTEM_REPO_NAME, nullptr};
+    keepPackages.addFilter(HY_PKG_REPONAME, HY_NEQ, keepRepo);
+
+    libdnf::Query includeQuery{sack};
+    libdnf::Query excludeQuery{keepPackages};
+    libdnf::Query excludeProvidesQuery{keepPackages};
     includeQuery.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, includeNEVRAsCString.data());
 
     excludeQuery.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, excludeNEVRAsCString.data());
@@ -2285,9 +2244,56 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
 
     // Exclude packages by their Provides. This also excludes packages by name, because packages
     // also provide their %name = %version-%release.
-    excludeProvidesQuery.addFilter(HY_PKG_PROVIDES, &nameDeps);
+    excludeProvidesQuery.addFilter(HY_PKG_PROVIDES, &nameDependencies);
     excludeProvidesQuery.queryDifference(includeQuery);
 
-    dnf_sack_add_module_excludes(sack, excludeQuery.getResultPset());
+    dnf_sack_set_module_excludes(sack, excludeQuery.getResultPset());
     dnf_sack_add_module_excludes(sack, excludeProvidesQuery.getResultPset());
+    dnf_sack_set_module_includes(sack, includeQuery.getResultPset());
+}
+
+}
+
+std::vector<std::shared_ptr<ModulePackage>> requiresModuleEnablement(DnfSack * sack, const libdnf::PackageSet * installSet)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    if (!priv->module_includes) {
+        return {};
+    }
+    libdnf::PackageSet tmp(sack);
+    tmp += *const_cast<libdnf::PackageSet*>(installSet);
+    tmp /= priv->module_includes;
+
+    if (tmp.empty()) {
+        return {};
+    }
+    auto toEnable = priv->moduleContainer->requiresModuleEnablement(*installSet);
+    return toEnable;
+}
+
+void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *install_root)
+{
+    // TODO: remove hard-coded path
+    std::string defaultsDirPath = g_build_filename(
+        install_root, "/etc/dnf/modules.defaults.d/", NULL);
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    priv->moduleContainer = new ModulePackageContainer(
+        std::shared_ptr<Pool>(pool_create(), &pool_free), priv->arch);
+    ModuleDefaultsContainer moduleDefaults;
+
+    readModuleMetadataFromRepo(repos, *priv->moduleContainer, moduleDefaults);
+    readModuleDefaultsFromDisk(defaultsDirPath, moduleDefaults);
+
+    try {
+        moduleDefaults.resolve();
+    } catch (ModuleDefaultsContainer::ResolveException &exception) {
+        // TODO logger.debug("No module defaults found");
+    }
+
+    auto defaultStreams = moduleDefaults.getDefaultStreams();
+    enableModuleStreams(*priv->moduleContainer, install_root);
+
+    priv->moduleContainer->resolveActiveModulePackages(defaultStreams);
+    auto nevraTuple = collectNevraForInclusionExclusion(*priv->moduleContainer);
+    setModuleExcludes(sack, std::get<0>(nevraTuple), std::get<1>(nevraTuple));
 }

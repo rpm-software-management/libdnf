@@ -23,9 +23,11 @@
 
 #include <stdio.h>
 #include <solv/pool.h>
+#include <vector>
 
 #include "dnf-sack.h"
 #include "sack/packageset.hpp"
+#include "module/ModulePackage.hpp"
 
 typedef Id  (*dnf_sack_running_kernel_fn_t) (DnfSack    *sack);
 
@@ -65,5 +67,6 @@ void         dnf_sack_set_running_kernel_fn (DnfSack    *sack,
                                              dnf_sack_running_kernel_fn_t fn);
 DnfPackage  *dnf_sack_add_cmdline_package_flags   (DnfSack *sack,
                             const char *fn, const int flags);
+std::vector<std::shared_ptr<ModulePackage>> requiresModuleEnablement(DnfSack * sack, const libdnf::PackageSet * installSet);
 
 #endif // HY_SACK_INTERNAL_H
