@@ -1,4 +1,5 @@
 #include <iostream>
+#include <modulemd/modulemd.h>
 #include "ModuleDefaultsContainer.hpp"
 
 ModuleDefaultsContainer::ModuleDefaultsContainer()
