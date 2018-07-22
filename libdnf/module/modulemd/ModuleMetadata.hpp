@@ -9,7 +9,7 @@
 #include "profile/ModuleProfile.hpp"
 #include "ModuleDependencies.hpp"
 
-#include <modulemd/modulemd-module.h>
+#include <modulemd/modulemd.h>
 
 class ModuleMetadata
 {

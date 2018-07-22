@@ -5,8 +5,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <modulemd/modulemd-defaults.h>
-#include <modulemd/modulemd-prioritizer.h>
+#include <modulemd/modulemd.h>
 
 class ModuleDefaultsContainer
 {
