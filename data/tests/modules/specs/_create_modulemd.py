@@ -3,6 +3,7 @@
 
 import os
 import json
+import random
 
 import gi
 
@@ -54,10 +55,12 @@ for module_id in os.listdir(MODULES_DIR):
         rpms = rpms_with_epoch
 
         mmd = Modulemd.Module()
-        mmd.set_mdversion(int(1))
+        mmd.set_mdversion(int(2))
         mmd.set_name(name)
         mmd.set_stream(stream)
         mmd.set_version(int(version))
+        mmd.set_context("%8x" % random.getrandbits(32))
+        mmd.set_arch(arch)
         sset = Modulemd.SimpleSet()
         sset.add("LGPLv2")
         mmd.set_module_licenses(sset)
@@ -75,5 +78,13 @@ for module_id in os.listdir(MODULES_DIR):
             profile_rpms.set(profiles[profile_name]["rpms"])
             profile.set_rpms(profile_rpms)
             mmd.add_profile(profile)
+
+        if name == "httpd":
+            dependencies = Modulemd.Dependencies()
+            if stream == "2.4":
+                dependencies.add_requires_single("base-runtime", "f26")
+            elif stream == "2.2":
+                dependencies.add_requires("base-runtime", [])
+            mmd.add_dependencies(dependencies)
 
         Modulemd.dump([mmd], os.path.join(module_dir, "%s.%s.yaml" % (module_id, arch)))
