@@ -1,22 +1,20 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
+# Qi Fan <fun224@gmail.com>, 2016. #zanata
+# Tommy He <lovenemesis@fedoraproject.org>, 2016. #zanata
+# Jerry Lee <lchopn@gmail.com>, 2017. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-07-22 12:20+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"PO-Revision-Date: 2017-04-11 09:46+0000\n"
+"Last-Translator: Jerry Lee <lchopn@gmail.com>\n"
+"Language-Team: Chinese (China)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+"X-Generator: Zanata 4.5.0\n"
 
 #: ../libdnf/dnf-goal.cpp:67
 msgid "Could not depsolve transaction; "
@@ -27,7 +25,6 @@ msgstr ""
 msgid "%i problem detected:\n"
 msgid_plural "%i problems detected:\n"
 msgstr[0] ""
-msgstr[1] ""
 
 #: ../libdnf/dnf-goal.cpp:76
 #, c-format
@@ -132,7 +129,7 @@ msgstr ""
 
 #: ../libdnf/transaction/Swdb.cpp:81
 msgid "In progress"
-msgstr ""
+msgstr "进行中"
 
 #: ../libdnf/transaction/Swdb.cpp:95 ../libdnf/transaction/Swdb.cpp:122
 #: ../libdnf/transaction/Swdb.cpp:141 ../libdnf/transaction/Swdb.cpp:280
@@ -306,12 +303,12 @@ msgstr ""
 
 #: ../libdnf/conf/OptionSeconds.cpp:40 ../libdnf/conf/ConfigMain.cpp:57
 msgid "no value specified"
-msgstr ""
+msgstr "未指定值"
 
 #: ../libdnf/conf/OptionSeconds.cpp:48 ../libdnf/conf/ConfigMain.cpp:62
 #, c-format
 msgid "seconds value '%s' must not be negative"
-msgstr ""
+msgstr "第二个值“%s”必须不能为负"
 
 #: ../libdnf/conf/OptionSeconds.cpp:52
 #, c-format
@@ -321,7 +318,7 @@ msgstr ""
 #: ../libdnf/conf/OptionSeconds.cpp:66 ../libdnf/conf/ConfigMain.cpp:78
 #, c-format
 msgid "unknown unit '%s'"
-msgstr ""
+msgstr "未知单元 “%s”"
 
 #: ../libdnf/conf/ConfigMain.cpp:66
 #, c-format
@@ -331,18 +328,18 @@ msgstr ""
 #: ../libdnf/conf/ConfigMain.cpp:473
 #, c-format
 msgid "percentage '%s' is out of range"
-msgstr ""
+msgstr "百分数 '%s' 超出范围"
 
 #: ../libdnf/conf/OptionStringList.cpp:59 ../libdnf/conf/OptionEnum.cpp:72
 #: ../libdnf/conf/OptionEnum.cpp:158 ../libdnf/conf/OptionString.cpp:59
 #, c-format
 msgid "'%s' is not an allowed value"
-msgstr ""
+msgstr "'%s'  不是一个允许的值"
 
 #: ../libdnf/conf/OptionBool.cpp:47
 #, c-format
 msgid "invalid boolean value '%s'"
-msgstr ""
+msgstr "无效的布尔值“%s”"
 
 #: ../libdnf/conf/OptionEnum.cpp:83 ../libdnf/conf/OptionNumber.cpp:88
 msgid "invalid value"
@@ -351,12 +348,12 @@ msgstr ""
 #: ../libdnf/conf/OptionPath.cpp:78
 #, c-format
 msgid "given path '%s' is not absolute."
-msgstr ""
+msgstr "给定的路径 “%s” 不是绝对路径。"
 
 #: ../libdnf/conf/OptionPath.cpp:82
 #, c-format
 msgid "given path '%s' does not exist."
-msgstr ""
+msgstr "给定的路径 “%s” 不存在。"
 
 #: ../libdnf/conf/OptionString.cpp:74
 msgid "GetValue(): Value not set"
@@ -375,12 +372,12 @@ msgstr ""
 #: ../libdnf/conf/OptionNumber.cpp:73
 #, c-format
 msgid "given value [%d] should be less than allowed value [%d]."
-msgstr ""
+msgstr "给定的值 [%d] 应小于允许的值 [%d]。"
 
 #: ../libdnf/conf/OptionNumber.cpp:76
 #, c-format
 msgid "given value [%d] should be greater than allowed value [%d]."
-msgstr ""
+msgstr "给定的值 [%d] 应大于允许的值 [%d]。"
 
 #: ../libdnf/dnf-utils.cpp:110
 #, c-format
@@ -434,28 +431,28 @@ msgstr ""
 #: ../libdnf/repo/Repo.cpp:357
 #, c-format
 msgid "Repository %s has no mirror or baseurl set."
-msgstr ""
+msgstr "软件仓库 %s 没有设置镜像或者 baseurl。"
 
 #: ../libdnf/repo/Repo.cpp:515
 #, c-format
 msgid "Cannot find a valid baseurl for repo: %s"
-msgstr ""
+msgstr "无法为仓库 %s 找到一个有效的 baseurl"
 
 #: ../libdnf/repo/Repo.cpp:544 ../libdnf/repo/Repo.cpp:1144
 msgid ""
-"Maximum download speed is lower than minimum. Please change configuration of "
-"minrate or throttle"
+"Maximum download speed is lower than minimum. Please change configuration of"
+" minrate or throttle"
 msgstr ""
 
 #: ../libdnf/repo/Repo.cpp:726
 #, c-format
 msgid "reviving: repo '%s' skipped, no metalink."
-msgstr ""
+msgstr "恢复中： 仓库 '%s' 已被跳过，无 metalink。"
 
 #: ../libdnf/repo/Repo.cpp:745
 #, c-format
 msgid "reviving: repo '%s' skipped, no usable hash."
-msgstr ""
+msgstr "恢复中： 仓库 '%s' 已被跳过，无可用 hash。"
 
 #: ../libdnf/repo/Repo.cpp:768
 #, c-format
@@ -465,7 +462,7 @@ msgstr ""
 #: ../libdnf/repo/Repo.cpp:773
 #, c-format
 msgid "reviving: '%s' can be revived - metalink checksums match."
-msgstr ""
+msgstr "恢复中： '%s' 可以被恢复 - metalink 校验和匹配。"
 
 #: ../libdnf/repo/Repo.cpp:799
 #, c-format
@@ -500,12 +497,12 @@ msgstr ""
 #: ../libdnf/repo/Repo.cpp:856
 #, c-format
 msgid "repo: using cache for: %s"
-msgstr ""
+msgstr "仓库： 正在为 %s 使用缓存"
 
 #: ../libdnf/repo/Repo.cpp:868
 #, c-format
 msgid "Cache-only enabled but no cache for '%s'"
-msgstr ""
+msgstr "仅使用缓存已开启但没有 '%s' 的缓存"
 
 #: ../libdnf/repo/Repo.cpp:872
 #, c-format
@@ -515,12 +512,12 @@ msgstr ""
 #: ../libdnf/repo/Repo.cpp:876
 #, c-format
 msgid "Cannot download '%s': %s."
-msgstr ""
+msgstr "无法下载 '%s': %s."
 
 #: ../libdnf/repo/Repo.cpp:877
 #, c-format
 msgid "Failed to synchronize cache for repo '%s'"
-msgstr ""
+msgstr "同步仓库 '%s' 缓存失败"
 
 #: ../libdnf/repo/Repo.cpp:903
 msgid "getCachedir(): Computation of SHA256 failed"

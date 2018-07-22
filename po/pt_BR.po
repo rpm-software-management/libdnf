@@ -1,22 +1,21 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
+# Daniel Lara <danniel@fedoraproject.org>, 2016. #zanata
+# Bruno Furtado <bffurtado@gmail.com>, 2017. #zanata
+# Daniel Lara <danniel@fedoraproject.org>, 2017. #zanata
+# Frederico Henrique Gonçalves Lima <fred@fredericolima.com.br>, 2017. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-07-22 12:20+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"PO-Revision-Date: 2017-06-15 05:11+0000\n"
+"Last-Translator: Bruno Furtado <bffurtado@gmail.com>\n"
+"Language-Team: Portuguese (Brazil)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"Language: pt_BR\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"X-Generator: Zanata 4.5.0\n"
 
 #: ../libdnf/dnf-goal.cpp:67
 msgid "Could not depsolve transaction; "
@@ -27,7 +26,6 @@ msgstr ""
 msgid "%i problem detected:\n"
 msgid_plural "%i problems detected:\n"
 msgstr[0] ""
-msgstr[1] ""
 
 #: ../libdnf/dnf-goal.cpp:76
 #, c-format
@@ -132,7 +130,7 @@ msgstr ""
 
 #: ../libdnf/transaction/Swdb.cpp:81
 msgid "In progress"
-msgstr ""
+msgstr "Em andamento"
 
 #: ../libdnf/transaction/Swdb.cpp:95 ../libdnf/transaction/Swdb.cpp:122
 #: ../libdnf/transaction/Swdb.cpp:141 ../libdnf/transaction/Swdb.cpp:280
@@ -306,12 +304,12 @@ msgstr ""
 
 #: ../libdnf/conf/OptionSeconds.cpp:40 ../libdnf/conf/ConfigMain.cpp:57
 msgid "no value specified"
-msgstr ""
+msgstr "nenhum valor especificado"
 
 #: ../libdnf/conf/OptionSeconds.cpp:48 ../libdnf/conf/ConfigMain.cpp:62
 #, c-format
 msgid "seconds value '%s' must not be negative"
-msgstr ""
+msgstr "valor de segundos '%s' não deve ser negativo"
 
 #: ../libdnf/conf/OptionSeconds.cpp:52
 #, c-format
@@ -321,7 +319,7 @@ msgstr ""
 #: ../libdnf/conf/OptionSeconds.cpp:66 ../libdnf/conf/ConfigMain.cpp:78
 #, c-format
 msgid "unknown unit '%s'"
-msgstr ""
+msgstr "unidade desconhecida '%s'"
 
 #: ../libdnf/conf/ConfigMain.cpp:66
 #, c-format
@@ -331,18 +329,18 @@ msgstr ""
 #: ../libdnf/conf/ConfigMain.cpp:473
 #, c-format
 msgid "percentage '%s' is out of range"
-msgstr ""
+msgstr "porcentagem '%s' está fora do intervalo"
 
 #: ../libdnf/conf/OptionStringList.cpp:59 ../libdnf/conf/OptionEnum.cpp:72
 #: ../libdnf/conf/OptionEnum.cpp:158 ../libdnf/conf/OptionString.cpp:59
 #, c-format
 msgid "'%s' is not an allowed value"
-msgstr ""
+msgstr "'%s' não é um valor permitido"
 
 #: ../libdnf/conf/OptionBool.cpp:47
 #, c-format
 msgid "invalid boolean value '%s'"
-msgstr ""
+msgstr "valor booleano inválido '%s'"
 
 #: ../libdnf/conf/OptionEnum.cpp:83 ../libdnf/conf/OptionNumber.cpp:88
 msgid "invalid value"
@@ -351,12 +349,12 @@ msgstr ""
 #: ../libdnf/conf/OptionPath.cpp:78
 #, c-format
 msgid "given path '%s' is not absolute."
-msgstr ""
+msgstr "caminho informado '%s' não é absoluto."
 
 #: ../libdnf/conf/OptionPath.cpp:82
 #, c-format
 msgid "given path '%s' does not exist."
-msgstr ""
+msgstr "caminho informado '%s' não existe."
 
 #: ../libdnf/conf/OptionString.cpp:74
 msgid "GetValue(): Value not set"
@@ -375,12 +373,12 @@ msgstr ""
 #: ../libdnf/conf/OptionNumber.cpp:73
 #, c-format
 msgid "given value [%d] should be less than allowed value [%d]."
-msgstr ""
+msgstr "valor dado [%d] deveria ser menor que o valor permitido [%d]."
 
 #: ../libdnf/conf/OptionNumber.cpp:76
 #, c-format
 msgid "given value [%d] should be greater than allowed value [%d]."
-msgstr ""
+msgstr "valor dado [%d] deveria ser maior que o valor permitido [%d]."
 
 #: ../libdnf/dnf-utils.cpp:110
 #, c-format
@@ -434,48 +432,50 @@ msgstr ""
 #: ../libdnf/repo/Repo.cpp:357
 #, c-format
 msgid "Repository %s has no mirror or baseurl set."
-msgstr ""
+msgstr "Repositório %s não possui espelho ou baseurl definido."
 
 #: ../libdnf/repo/Repo.cpp:515
 #, c-format
 msgid "Cannot find a valid baseurl for repo: %s"
-msgstr ""
+msgstr "Impossível encontrar uma baseurl válida para o repo: %s"
 
 #: ../libdnf/repo/Repo.cpp:544 ../libdnf/repo/Repo.cpp:1144
 msgid ""
-"Maximum download speed is lower than minimum. Please change configuration of "
-"minrate or throttle"
+"Maximum download speed is lower than minimum. Please change configuration of"
+" minrate or throttle"
 msgstr ""
+"Velocidade máxima de download é menor que o mínimo. Altere a configuração de"
+" minrate ou throttle."
 
 #: ../libdnf/repo/Repo.cpp:726
 #, c-format
 msgid "reviving: repo '%s' skipped, no metalink."
-msgstr ""
+msgstr "reativando: repo '%s' ignorado, sem metalink."
 
 #: ../libdnf/repo/Repo.cpp:745
 #, c-format
 msgid "reviving: repo '%s' skipped, no usable hash."
-msgstr ""
+msgstr "reativando: repo '%s' ignorado, nenhum hash utilizável."
 
 #: ../libdnf/repo/Repo.cpp:768
 #, c-format
 msgid "reviving: failed for '%s', mismatched %s sum."
-msgstr ""
+msgstr "reativando: falhou por '%s', checksum %s não coincide."
 
 #: ../libdnf/repo/Repo.cpp:773
 #, c-format
 msgid "reviving: '%s' can be revived - metalink checksums match."
-msgstr ""
+msgstr "reativando: '%s' pode ser reativado - checksum do metalink coincide."
 
 #: ../libdnf/repo/Repo.cpp:799
 #, c-format
 msgid "reviving: '%s' can be revived - repomd matches."
-msgstr ""
+msgstr "reativando: '%s' pode ser reativado - repomd coincide."
 
 #: ../libdnf/repo/Repo.cpp:801
 #, c-format
 msgid "reviving: failed for '%s', mismatched repomd."
-msgstr ""
+msgstr "reativando: falhou por '%s', repomd não coincide."
 
 #: ../libdnf/repo/Repo.cpp:818
 #, c-format
@@ -500,12 +500,12 @@ msgstr ""
 #: ../libdnf/repo/Repo.cpp:856
 #, c-format
 msgid "repo: using cache for: %s"
-msgstr ""
+msgstr "repo: utilizando cache para: %s"
 
 #: ../libdnf/repo/Repo.cpp:868
 #, c-format
 msgid "Cache-only enabled but no cache for '%s'"
-msgstr ""
+msgstr "Cache-only habilitado mas sem cache para '%s'"
 
 #: ../libdnf/repo/Repo.cpp:872
 #, c-format
@@ -515,12 +515,12 @@ msgstr ""
 #: ../libdnf/repo/Repo.cpp:876
 #, c-format
 msgid "Cannot download '%s': %s."
-msgstr ""
+msgstr "Não foi possível baixar '%s':%s."
 
 #: ../libdnf/repo/Repo.cpp:877
 #, c-format
 msgid "Failed to synchronize cache for repo '%s'"
-msgstr ""
+msgstr "Falha ao sincronizar cache para o repo '%s'"
 
 #: ../libdnf/repo/Repo.cpp:903
 msgid "getCachedir(): Computation of SHA256 failed"
