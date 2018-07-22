@@ -1,22 +1,18 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
+# Valentin Laskov <laskov@festa.bg>, 2016. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-07-22 12:20+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"PO-Revision-Date: 2016-11-21 05:57+0000\n"
+"Last-Translator: Valentin Laskov <laskov@festa.bg>\n"
+"Language-Team: Bulgarian\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"Language: bg\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"X-Generator: Zanata 4.5.0\n"
 
 #: ../libdnf/dnf-goal.cpp:67
 msgid "Could not depsolve transaction; "
@@ -27,7 +23,6 @@ msgstr ""
 msgid "%i problem detected:\n"
 msgid_plural "%i problems detected:\n"
 msgstr[0] ""
-msgstr[1] ""
 
 #: ../libdnf/dnf-goal.cpp:76
 #, c-format
@@ -306,7 +301,7 @@ msgstr ""
 
 #: ../libdnf/conf/OptionSeconds.cpp:40 ../libdnf/conf/ConfigMain.cpp:57
 msgid "no value specified"
-msgstr ""
+msgstr "не е зададена стойност"
 
 #: ../libdnf/conf/OptionSeconds.cpp:48 ../libdnf/conf/ConfigMain.cpp:62
 #, c-format
@@ -342,7 +337,7 @@ msgstr ""
 #: ../libdnf/conf/OptionBool.cpp:47
 #, c-format
 msgid "invalid boolean value '%s'"
-msgstr ""
+msgstr "невалидна двоична стойност '%s'"
 
 #: ../libdnf/conf/OptionEnum.cpp:83 ../libdnf/conf/OptionNumber.cpp:88
 msgid "invalid value"
@@ -351,12 +346,12 @@ msgstr ""
 #: ../libdnf/conf/OptionPath.cpp:78
 #, c-format
 msgid "given path '%s' is not absolute."
-msgstr ""
+msgstr "зададеният път '%s' не е абсолютен."
 
 #: ../libdnf/conf/OptionPath.cpp:82
 #, c-format
 msgid "given path '%s' does not exist."
-msgstr ""
+msgstr "зададеният път '%s' не съществува."
 
 #: ../libdnf/conf/OptionString.cpp:74
 msgid "GetValue(): Value not set"
@@ -443,8 +438,8 @@ msgstr ""
 
 #: ../libdnf/repo/Repo.cpp:544 ../libdnf/repo/Repo.cpp:1144
 msgid ""
-"Maximum download speed is lower than minimum. Please change configuration of "
-"minrate or throttle"
+"Maximum download speed is lower than minimum. Please change configuration of"
+" minrate or throttle"
 msgstr ""
 
 #: ../libdnf/repo/Repo.cpp:726
@@ -515,12 +510,12 @@ msgstr ""
 #: ../libdnf/repo/Repo.cpp:876
 #, c-format
 msgid "Cannot download '%s': %s."
-msgstr ""
+msgstr "Не мога да сваля '%s': %s."
 
 #: ../libdnf/repo/Repo.cpp:877
 #, c-format
 msgid "Failed to synchronize cache for repo '%s'"
-msgstr ""
+msgstr "Провал при синхронизиране кеша за хранилище '%s'"
 
 #: ../libdnf/repo/Repo.cpp:903
 msgid "getCachedir(): Computation of SHA256 failed"
