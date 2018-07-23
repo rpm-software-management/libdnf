@@ -35,3 +35,25 @@ void ModuleTest::testDummy()
     CPPUNIT_ASSERT(ret == true);
 }
 
+void ModuleTest::testEnable()
+{
+    logger->debug("called ModuleTest::testEnable()");
+
+    /* call with empty module list should throw error */
+    {
+        std::vector<std::string> module_list;
+        CPPUNIT_ASSERT_THROW(libdnf::dnf_module_enable(module_list), std::runtime_error);
+    }
+
+    /* call with invalid specs should fail */
+    {
+        std::vector<std::string> module_list{"moduleA:"};
+        CPPUNIT_ASSERT_THROW(libdnf::dnf_module_enable(module_list), std::runtime_error);
+    }
+
+    /* call with valid specs should succeed */
+    {
+        std::vector<std::string> module_list{"moduleA", "moduleB:streamB", "moduleC:streamC/profileC"};
+        CPPUNIT_ASSERT(libdnf::dnf_module_enable(module_list));
+    }
+}

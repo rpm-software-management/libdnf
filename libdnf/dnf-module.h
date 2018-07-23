@@ -28,6 +28,7 @@
 namespace libdnf {
 
 bool dnf_module_dummy(const std::vector<std::string> & module_list);
+bool dnf_module_enable(const std::vector<std::string> & module_list);
 
 }
 
