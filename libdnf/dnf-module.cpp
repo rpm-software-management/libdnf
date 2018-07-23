@@ -64,7 +64,7 @@ void dnf_module_parse_spec(const std::string specStr, libdnf::Nsvcap & parsed)
     oss << "Invalid spec '";
     oss << specStr << "'";
     logger->debug(oss.str());
-    throw std::runtime_error(oss.str());
+    throw ModulePackageContainer::Exception(oss.str());
 }
 
 }
@@ -101,8 +101,10 @@ bool dnf_module_dummy(const std::vector<std::string> & module_list)
 
 bool dnf_module_enable(const std::vector<std::string> & module_list)
 {
+    ModuleExceptionList exList;
+
     if (module_list.empty())
-        throw std::runtime_error("module list cannot be empty");
+        exList.add("module list cannot be empty");
 
     for (const auto & spec : module_list) {
         Nsvcap specParsed;
@@ -111,8 +113,12 @@ bool dnf_module_enable(const std::vector<std::string> & module_list)
         oss << "Parsing spec '" << spec << "'";
         logger->debug(oss.str());
 
-        /* FIXME: accummulate all the exceptions */
-        dnf_module_parse_spec(spec, specParsed);
+        try {
+            dnf_module_parse_spec(spec, specParsed);
+        } catch (ModulePackageContainer::Exception &e) {
+            exList.add(e);
+            continue;
+        }
 
         std::ostringstream().swap(oss);
         oss << "Name = " << specParsed.getName() << "\n";
@@ -121,6 +127,9 @@ bool dnf_module_enable(const std::vector<std::string> & module_list)
         oss << "Version = " << specParsed.getVersion() << "\n";
         logger->debug(oss.str());
     }
+
+    if (!exList.empty())
+        throw exList;
 
     return true;
 }

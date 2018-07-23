@@ -24,8 +24,21 @@
 #include <vector>
 
 #include "dnf-types.h"
+#include "module/ModulePackageContainer.hpp"
 
 namespace libdnf {
+
+class ModuleExceptionList : public std::exception {
+public:
+    explicit ModuleExceptionList() {}
+    const std::vector<ModulePackageContainer::Exception> & list() const noexcept { return _list; }
+    void add(const ModulePackageContainer::Exception &what) { _list.push_back(what); }
+    void add(const std::string &what) { _list.push_back(ModulePackageContainer::Exception(what)); }
+    bool empty() { return _list.empty(); }
+
+private:
+    std::vector<ModulePackageContainer::Exception> _list;
+};
 
 bool dnf_module_dummy(const std::vector<std::string> & module_list);
 bool dnf_module_enable(const std::vector<std::string> & module_list);

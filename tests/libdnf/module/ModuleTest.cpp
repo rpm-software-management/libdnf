@@ -42,13 +42,13 @@ void ModuleTest::testEnable()
     /* call with empty module list should throw error */
     {
         std::vector<std::string> module_list;
-        CPPUNIT_ASSERT_THROW(libdnf::dnf_module_enable(module_list), std::runtime_error);
+        CPPUNIT_ASSERT_THROW(libdnf::dnf_module_enable(module_list), libdnf::ModuleExceptionList);
     }
 
     /* call with invalid specs should fail */
     {
         std::vector<std::string> module_list{"moduleA:"};
-        CPPUNIT_ASSERT_THROW(libdnf::dnf_module_enable(module_list), std::runtime_error);
+        CPPUNIT_ASSERT_THROW(libdnf::dnf_module_enable(module_list), libdnf::ModuleExceptionList);
     }
 
     /* call with valid specs should succeed */
