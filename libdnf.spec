@@ -49,6 +49,7 @@ BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  pkgconfig(json-c)
 BuildRequires:  pkgconfig(cppunit)
 BuildRequires:  pkgconfig(modulemd) >= %{libmodulemd_version}
+BuildRequires:  gettext
 
 Requires:       libmodulemd%{?_isa} >= %{libmodulemd_version}
 Requires:       libsolv%{?_isa} >= %{libsolv_version}
@@ -177,6 +178,8 @@ pushd build-py3
 popd
 %endif
 
+%find_lang %{name}
+
 %if 0%{?rhel} && 0%{?rhel} <= 7
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
@@ -184,7 +187,7 @@ popd
 %ldconfig_scriptlets
 %endif
 
-%files
+%files -f %{name}.lang
 %license COPYING
 %doc README.md AUTHORS
 %{_libdir}/%{name}.so.*
