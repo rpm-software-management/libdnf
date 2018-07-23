@@ -5,6 +5,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "libdnf/dnf-module.h"
+#include "libdnf/dnf-context.h"
 
 class ModuleTest : public CppUnit::TestCase
 {
@@ -21,6 +22,7 @@ public:
     void testEnable();
 
 private:
+    DnfContext *context;
 };
 
 #endif //LIBDNF_MODULETEST_HPP

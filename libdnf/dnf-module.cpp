@@ -28,12 +28,13 @@
 #include <sstream>
 
 #include "dnf-module.h"
+#include "dnf-sack-private.hpp"
 #include "log.hpp"
 #include "nsvcap.hpp"
 
-static auto logger(libdnf::Log::getLogger());
-
 namespace {
+
+auto logger(libdnf::Log::getLogger());
 
 void dnf_module_parse_spec(const std::string specStr, libdnf::Nsvcap & parsed)
 {
@@ -99,37 +100,58 @@ bool dnf_module_dummy(const std::vector<std::string> & module_list)
     return true;
 }
 
-bool dnf_module_enable(const std::vector<std::string> & module_list)
+/**
+ * dnf_module_enable
+ * @module_list: The list of module specs to enable
+ * @sack: DnfSack instance
+ * @repos: the list of repositories where to load modules from
+ * @install_root
+ *
+ * Enable module method
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.0.0
+ */
+bool dnf_module_enable(const std::vector<std::string> & module_list,
+                       DnfSack *sack, GPtrArray *repos,
+                       const char *install_root, const char *platformModule)
 {
     ModuleExceptionList exList;
 
     if (module_list.empty())
         exList.add("module list cannot be empty");
 
-    for (const auto & spec : module_list) {
-        Nsvcap specParsed;
-        std::ostringstream oss;
+    auto modulesContainer = dnf_sack_get_module_container(sack);
 
-        oss << "Parsing spec '" << spec << "'";
-        logger->debug(oss.str());
-
+    for (const auto &spec : module_list) {
+        libdnf::Nsvcap parsed;
         try {
-            dnf_module_parse_spec(spec, specParsed);
-        } catch (ModulePackageContainer::Exception &e) {
+            dnf_module_parse_spec(spec, parsed);
+        } catch (const ModulePackageContainer::Exception &e) {
             exList.add(e);
             continue;
         }
 
-        std::ostringstream().swap(oss);
-        oss << "Name = " << specParsed.getName() << "\n";
-        oss << "Stream = " << specParsed.getStream() << "\n";
-        oss << "Profile = " << specParsed.getProfile() << "\n";
-        oss << "Version = " << specParsed.getVersion() << "\n";
-        logger->debug(oss.str());
+        const auto &modName = parsed.getName();
+        auto stream = parsed.getStream();
+        /* find appropriate stream */
+        if (stream == "") {
+            stream = modulesContainer->getEnabledStream(modName);
+            if (stream == "")
+                stream = modulesContainer->getDefaultStream(modName);
+        }
+        g_assert(stream != "");
+
+        modulesContainer->enable(modName, stream);
     }
 
     if (!exList.empty())
         throw exList;
+
+    /* Only save if all modules were enabled */
+    modulesContainer->save();
+    dnf_sack_filter_modules(sack, repos, install_root, platformModule);
 
     return true;
 }
