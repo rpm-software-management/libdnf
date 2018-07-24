@@ -1872,7 +1872,7 @@ Query::queryUnion(Query & other)
 {
     apply();
     other.apply();
-    map_or(pImpl->result->getMap(), other.getResult());
+    *(pImpl->result.get()) += *(other.pImpl->result.get());
 }
 
 void
@@ -1880,7 +1880,7 @@ Query::queryIntersection(Query & other)
 {
     apply();
     other.apply();
-    map_and(pImpl->result->getMap(), other.getResult());
+    *(pImpl->result.get()) /= *(other.pImpl->result.get());
 }
 
 void
@@ -1888,21 +1888,14 @@ Query::queryDifference(Query & other)
 {
     apply();
     other.apply();
-    map_subtract(pImpl->result->getMap(), other.getResult());
+    *(pImpl->result.get()) -= *(other.pImpl->result.get());
 }
 
 bool
 Query::empty()
 {
     apply();
-    const unsigned char *res = pImpl->result->getMap()->map;
-    const unsigned char *end = res + pImpl->result->getMap()->size;
-
-    while (res < end) {
-        if (*res++)
-            return false;
-    }
-    return true;
+    return pImpl->result->empty();
 }
 
 void
