@@ -110,6 +110,7 @@ const gchar     *dnf_context_get_base_arch              (DnfContext     *context
 const gchar     *dnf_context_get_os_info                (DnfContext     *context);
 const gchar     *dnf_context_get_arch_info              (DnfContext     *context);
 const gchar     *dnf_context_get_release_ver            (DnfContext     *context);
+const gchar     *dnf_context_get_platform_module        (DnfContext     *context);
 const gchar     *dnf_context_get_cache_dir              (DnfContext     *context);
 const gchar     *dnf_context_get_arch                   (DnfContext     *context);
 const gchar     *dnf_context_get_solv_dir               (DnfContext     *context);
@@ -142,6 +143,8 @@ void             dnf_context_set_repo_dir               (DnfContext     *context
                                                          const gchar    *repo_dir);
 void             dnf_context_set_release_ver            (DnfContext     *context,
                                                          const gchar    *release_ver);
+void             dnf_context_set_platform_module        (DnfContext     *context,
+                                                         const gchar    *platform_module);
 void             dnf_context_set_cache_dir              (DnfContext     *context,
                                                          const gchar    *cache_dir);
 void             dnf_context_set_arch                   (DnfContext     *context,
