@@ -96,6 +96,7 @@ typedef struct
     gchar            *repo_dir;
     gchar            *base_arch;
     gchar            *release_ver;
+    gchar            *platform_module;
     gchar            *cache_dir;
     gchar            *solv_dir;
     gchar            *vendor_cache_dir;
@@ -153,6 +154,7 @@ dnf_context_finalize(GObject *object)
     g_free(priv->repo_dir);
     g_free(priv->base_arch);
     g_free(priv->release_ver);
+    g_free(priv->platform_module);
     g_free(priv->cache_dir);
     g_free(priv->solv_dir);
     g_free(priv->vendor_cache_dir);
@@ -371,6 +373,23 @@ dnf_context_get_release_ver(DnfContext *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     return priv->release_ver;
+}
+
+/**
+ * dnf_context_get_platform_module:
+ * @context: a #DnfContext instance.
+ *
+ * Gets the platform module seted in context (not autodetected)
+ *
+ * Returns: the name:stream, e.g. "platform:f28"
+ *
+ * Since: 0.16.1
+ **/
+const gchar *
+dnf_context_get_platform_module(DnfContext *context)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    return priv->platform_module;
 }
 
 /**
@@ -815,6 +834,23 @@ dnf_context_set_release_ver(DnfContext *context, const gchar *release_ver)
     DnfContextPrivate *priv = GET_PRIVATE(context);
     g_free(priv->release_ver);
     priv->release_ver = g_strdup(release_ver);
+}
+
+/**
+ * dnf_context_set_platform_module:
+ * @context: a #DnfContext instance.
+ * @release_ver: the platform name:stream, e.g. "platform:28"
+ *
+ * Sets the platform module. If value is set it disable autodetection of platform module.
+ *
+ * Since: 0.16.1
+ **/
+void
+dnf_context_set_platform_module(DnfContext *context, const gchar *platform_module)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    g_free(priv->platform_module);
+    priv->platform_module = g_strdup(platform_module);
 }
 
 /**
@@ -1281,7 +1317,7 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
 
     DnfSack *sack = priv->sack;
     if (sack != nullptr) {
-        dnf_sack_filter_modules(sack, priv->repos, priv->install_root, NULL);
+        dnf_sack_filter_modules(sack, priv->repos, priv->install_root, priv->platform_module);
     }
 
     /* create goal */
