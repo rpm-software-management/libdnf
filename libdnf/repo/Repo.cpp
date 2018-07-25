@@ -44,8 +44,14 @@
 #include <utils.hpp>
 
 #include <librepo/librepo.h>
+#include <fcntl.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <utime.h>
+
+#include <gpgme.h>
 
 #include <solv/chksum.h>
 #include <solv/repo.h>
@@ -58,9 +64,11 @@
 #include <map>
 #include <mutex>
 #include <sstream>
+#include <type_traits>
 
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 
 #include <glib.h>
@@ -83,6 +91,11 @@ struct std::default_delete<LrResult> {
 template<>
 struct std::default_delete<LrPackageTarget> {
     void operator()(LrPackageTarget * ptr) noexcept { lr_packagetarget_free(ptr); }
+};
+
+template<>
+struct std::default_delete<std::remove_pointer<gpgme_ctx_t>::type> {
+    void operator()(gpgme_ctx_t ptr) noexcept { gpgme_release(ptr); }
 };
 
 namespace libdnf {
@@ -130,6 +143,12 @@ int RepoCB::progress(double totalToDownload, double downloaded) { return 0; }
 void RepoCB::fastestMirror(FastestMirrorStage stage, const char * ptr) {}
 int RepoCB::handleMirrorFailure(const char * msg, const char * url, const char * metadata) { return 0; }
 
+bool RepoCB::repokeyImport(const std::string & id, const std::string & userId, const std::string & fingerprint,
+    const std::string & url, long int timestamp)
+{
+    return true;
+}
+
 
 // Map string from config option proxy_auth_method to librepo LrAuth value
 static constexpr struct {
@@ -144,6 +163,30 @@ static constexpr struct {
     {"digest_ie", LR_AUTH_DIGEST_IE},
     {"ntlm_wb", LR_AUTH_NTLM_WB},
     {"any", LR_AUTH_ANY}
+};
+
+class Key {
+public:
+    Key(gpgme_key_t key, gpgme_subkey_t subkey) {
+        id = subkey->keyid;
+        fingerprint = subkey->fpr;
+        timestamp = subkey->timestamp;
+        userid = key->uids->uid;
+    }
+
+    std::string getId() const { return id; }
+    std::string getUserId() const { return userid; }
+    std::string getFingerprint() const { return fingerprint; }
+    long int getTimestamp() const { return timestamp; }
+
+    std::vector<char> rawKey;
+    std::string url;
+
+private:
+    std::string id;
+    std::string fingerprint;
+    std::string userid;
+    long int timestamp;
 };
 
 class Repo::Impl {
@@ -196,10 +239,12 @@ public:
 
     SyncStrategy syncStrategy;
 private:
-    std::unique_ptr<LrResult> lrHandlePerform(LrHandle * handle, bool setGPGHomeEnv);
+    std::unique_ptr<LrResult> lrHandlePerform(LrHandle * handle, const std::string & destDirectory, bool setGPGHomeEnv);
     bool isMetalinkInSync();
     bool isRepomdInSync();
     void resetMetadataExpired();
+    std::vector<Key> retrieve(const std::string & url);
+    void importRepoKeys();
 
     static int progressCB(void * data, double totalToDownload, double downloaded);
     static void fastestMirrorCB(void * data, LrFastestMirrorStages stage, void *ptr);
@@ -587,7 +632,241 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bo
     return h;
 }
 
-std::unique_ptr<LrResult> Repo::Impl::lrHandlePerform(LrHandle * handle, bool setGPGHomeEnv)
+static void gpgImportKey(gpgme_ctx_t context, int keyFd)
+{
+    auto logger(Log::getLogger());
+    gpg_error_t gpgErr;
+    gpgme_data_t keyData;
+
+    gpgErr = gpgme_data_new_from_fd(&keyData, keyFd);
+    if (gpgErr != GPG_ERR_NO_ERROR) {
+        auto msg = tfm::format(_("%s: gpgme_data_new_from_fd(): %s"), __func__, gpgme_strerror(gpgErr));
+        logger->debug(msg);
+        throw LrException(LRE_GPGERROR, msg);
+    }
+
+    gpgErr = gpgme_op_import(context, keyData);
+    gpgme_data_release(keyData);
+    if (gpgErr != GPG_ERR_NO_ERROR) {
+        auto msg = tfm::format(_("%s: gpgme_op_import(): %s"), __func__, gpgme_strerror(gpgErr));
+        logger->debug(msg);
+        throw LrException(LRE_GPGERROR, msg);
+    }
+}
+
+static void gpgImportKey(gpgme_ctx_t context, std::vector<char> key)
+{
+    auto logger(Log::getLogger());
+    gpg_error_t gpgErr;
+    gpgme_data_t keyData;
+
+    gpgErr = gpgme_data_new_from_mem(&keyData, key.data(), key.size(), 0);
+    if (gpgErr != GPG_ERR_NO_ERROR) {
+        auto msg = tfm::format(_("%s: gpgme_data_new_from_fd(): %s"), __func__, gpgme_strerror(gpgErr));
+        logger->debug(msg);
+        throw LrException(LRE_GPGERROR, msg);
+    }
+
+    gpgErr = gpgme_op_import(context, keyData);
+    gpgme_data_release(keyData);
+    if (gpgErr != GPG_ERR_NO_ERROR) {
+        auto msg = tfm::format(_("%s: gpgme_op_import(): %s"), __func__, gpgme_strerror(gpgErr));
+        logger->debug(msg);
+        throw LrException(LRE_GPGERROR, msg);
+    }
+}
+
+static std::vector<Key> rawkey2infos(int fd) {
+    auto logger(Log::getLogger());
+    gpg_error_t gpgErr;
+
+    std::vector<Key> keyInfos;
+    gpgme_ctx_t ctx;
+    gpgme_new(&ctx);
+    std::unique_ptr<std::remove_pointer<gpgme_ctx_t>::type> context(ctx);
+
+    // set GPG home dir
+    char tmpdir[] = "/tmp/tmpdir.XXXXXX";
+    mkdtemp(tmpdir);
+    Finalizer tmpDirRemover([&tmpdir](){
+        dnf_remove_recursive(tmpdir, NULL);
+    });
+    gpgErr = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OpenPGP, NULL, tmpdir);
+    if (gpgErr != GPG_ERR_NO_ERROR) {
+        auto msg = tfm::format(_("%s: gpgme_ctx_set_engine_info(): %s"), __func__, gpgme_strerror(gpgErr));
+        logger->debug(msg);
+        throw LrException(LRE_GPGERROR, msg);
+    }
+
+    gpgImportKey(ctx, fd);
+
+    gpgme_key_t key;
+    gpgErr = gpgme_op_keylist_start(ctx, NULL, 0);
+    while (!gpgErr)
+    {
+        gpgErr = gpgme_op_keylist_next(ctx, &key);
+        if (gpgErr)
+            break;
+
+        // _extract_signing_subkey
+        auto subkey = key->subkeys;
+        while (subkey && !key->subkeys->can_sign) {
+            subkey = subkey->next;
+        }
+        if (subkey)
+            keyInfos.emplace_back(key, subkey);
+        gpgme_key_release(key);
+    }
+    if (gpg_err_code(gpgErr) != GPG_ERR_EOF)
+    {
+        gpgme_op_keylist_end(ctx);
+        auto msg = tfm::format(_("can not list keys: %s"), gpgme_strerror(gpgErr));
+        logger->debug(msg);
+        throw LrException(LRE_GPGERROR, msg);
+    }
+    gpgme_set_armor(ctx, 1);
+    for (auto & keyInfo : keyInfos) {
+        gpgme_data_t sink;
+        gpgme_data_new(&sink);
+        gpgme_op_export(ctx, keyInfo.getId().c_str(), 0, sink);
+        gpgme_data_rewind(sink);
+
+        char buf[4096];
+        ssize_t readed;
+        do {
+            readed = gpgme_data_read(sink, buf, sizeof(buf));
+            if (readed > 0)
+                keyInfo.rawKey.insert(keyInfo.rawKey.end(), buf, buf + sizeof(buf));
+        } while (readed == sizeof(buf));
+    }
+    return keyInfos;
+}
+
+static std::vector<std::string> keyidsFromPubring(const std::string & gpgDir)
+{
+    auto logger(Log::getLogger());
+    gpg_error_t gpgErr;
+
+    std::vector<std::string> keyids;
+
+    struct stat sb;
+    if (stat(gpgDir.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode)) {
+
+        gpgme_ctx_t ctx;
+        gpgme_new(&ctx);
+        std::unique_ptr<std::remove_pointer<gpgme_ctx_t>::type> context(ctx);
+
+        // set GPG home dir
+        gpgErr = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OpenPGP, NULL, gpgDir.c_str());
+        if (gpgErr != GPG_ERR_NO_ERROR) {
+            auto msg = tfm::format(_("%s: gpgme_ctx_set_engine_info(): %s"), __func__, gpgme_strerror(gpgErr));
+            logger->debug(msg);
+            throw LrException(LRE_GPGERROR, msg);
+        }
+
+        gpgme_key_t key;
+        gpgErr = gpgme_op_keylist_start(ctx, NULL, 0);
+        while (!gpgErr)
+        {
+            gpgErr = gpgme_op_keylist_next(ctx, &key);
+            if (gpgErr)
+                break;
+
+            // _extract_signing_subkey
+            auto subkey = key->subkeys;
+            while (subkey && !key->subkeys->can_sign) {
+                subkey = subkey->next;
+            }
+            if (subkey)
+                keyids.push_back(subkey->keyid);
+            gpgme_key_release(key);
+        }
+        if (gpg_err_code(gpgErr) != GPG_ERR_EOF)
+        {
+            gpgme_op_keylist_end(ctx);
+            auto msg = tfm::format(_("can not list keys: %s"), gpgme_strerror(gpgErr));
+            logger->debug(msg);
+            throw LrException(LRE_GPGERROR, msg);
+        }
+    }
+    return keyids;
+}
+
+// download key from URL
+std::vector<Key> Repo::Impl::retrieve(const std::string & url)
+{
+    auto logger(Log::getLogger());
+    char tmpKeyFile[] = "/tmp/repokey.XXXXXX";
+    auto fd = mkstemp(tmpKeyFile);
+    if (fd == -1) {
+        char buf[1024];
+        (void)strerror_r(errno, buf, sizeof(buf));
+        auto msg = tfm::format("%s: mkstemp(): %s", __func__, buf);
+        logger->debug(msg);
+        throw LrException(LRE_GPGERROR, msg);
+    }
+    unlink(tmpKeyFile);
+    Finalizer tmpFileCloser([fd](){
+        close(fd);
+    });
+
+    //Downloader::downloadURL(nullptr, gpgkeyUrl.c_str(), fd);
+    downloadUrl(url.c_str(), fd);
+    lseek(fd, SEEK_SET, 0);
+    auto keyInfos = rawkey2infos(fd);
+    for (auto & key : keyInfos)
+        key.url = url;
+    return keyInfos;
+}
+
+void Repo::Impl::importRepoKeys()
+{
+    auto logger(Log::getLogger());
+
+    auto gpgDir = getCachedir() + "/pubring";
+    auto knownKeys = keyidsFromPubring(gpgDir);
+    for (const auto & gpgkeyUrl : conf->gpgkey().getValue()) {
+        auto keyInfos = retrieve(gpgkeyUrl);
+        for (auto & keyInfo : keyInfos) {
+            if (std::find(knownKeys.begin(), knownKeys.end(), keyInfo.getId()) != knownKeys.end()) {
+                logger->debug(tfm::format(_("repo %s: 0x%s already imported"), id, keyInfo.getId()));
+                continue;
+            }
+
+            if (callbacks) {
+                if (!callbacks->repokeyImport(keyInfo.getId(), keyInfo.getUserId(), keyInfo.getFingerprint(),
+                                              keyInfo.url, keyInfo.getTimestamp()))
+                    continue;
+            }
+
+            struct stat sb;
+            if (stat(gpgDir.c_str(), &sb) != 0 || !S_ISDIR(sb.st_mode))
+                mkdir(gpgDir.c_str(), 0777);
+            auto confFd = open((gpgDir + "/gpg.conf").c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            if (confFd != -1)
+                close(confFd);
+
+            gpgme_ctx_t ctx;
+            gpgme_new(&ctx);
+            std::unique_ptr<std::remove_pointer<gpgme_ctx_t>::type> context(ctx);
+
+            // set GPG home dir
+            auto gpgErr = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OpenPGP, NULL, gpgDir.c_str());
+            if (gpgErr != GPG_ERR_NO_ERROR) {
+                auto msg = tfm::format(_("%s: gpgme_ctx_set_engine_info(): %s"), __func__, gpgme_strerror(gpgErr));
+                logger->debug(msg);
+                throw LrException(LRE_GPGERROR, msg);
+            }
+
+            gpgImportKey(ctx, keyInfo.rawKey);
+
+            logger->debug(tfm::format(_("repo %s: imported key 0x%s."), id, keyInfo.getId()));
+        }
+
+    }
+}
+
+std::unique_ptr<LrResult> Repo::Impl::lrHandlePerform(LrHandle * handle, const std::string & destDirectory, bool setGPGHomeEnv)
 {
     bool isOrigGPGHomeEnvSet;
     std::string origGPGHomeEnv;
@@ -612,37 +891,47 @@ std::unique_ptr<LrResult> Repo::Impl::lrHandlePerform(LrHandle * handle, bool se
     LrProgressCb progressFunc;
     handleGetInfo(handle, LRI_PROGRESSCB, &progressFunc);
 
-    std::unique_ptr<LrResult> result(lr_result_init());
+    std::unique_ptr<LrResult> result;
+    bool ret;
+    bool badGPG = false;
+    do {
+        if (callbacks && progressFunc)
+            callbacks->start(
+                !conf->name().getValue().empty() ? conf->name().getValue().c_str() :
+                (!id.empty() ? id.c_str() : "unknown")
+            );
 
-    if (callbacks && progressFunc)
-        callbacks->start(
-            !conf->name().getValue().empty() ? conf->name().getValue().c_str() :
-            (!id.empty() ? id.c_str() : "unknown")
-        );
+        GError * errP{nullptr};
+        result.reset(lr_result_init());
+        ret = lr_handle_perform(handle, result.get(), &errP);
+        std::unique_ptr<GError> err(errP);
 
-    GError * errP{nullptr};
-    bool ret = lr_handle_perform(handle, result.get(), &errP);
-    std::unique_ptr<GError> err(errP);
+        if (callbacks && progressFunc)
+            callbacks->end();
 
-    if (callbacks && progressFunc)
-        callbacks->end();
-
-    if (!ret) {
-        std::string source;
-        if (conf->metalink().empty() || (source=conf->metalink().getValue()).empty()) {
-            if (conf->mirrorlist().empty() || (source=conf->mirrorlist().getValue()).empty()) {
-                bool first = true;
-                for (const auto & url : conf->baseurl().getValue()) {
-                    if (first)
-                        first = false;
-                    else
-                        source += ", ";
-                    source += url;
+        if (ret || badGPG || errP->code != LRE_BADGPG) {
+            if (!ret) {
+                std::string source;
+                if (conf->metalink().empty() || (source=conf->metalink().getValue()).empty()) {
+                    if (conf->mirrorlist().empty() || (source=conf->mirrorlist().getValue()).empty()) {
+                        bool first = true;
+                        for (const auto & url : conf->baseurl().getValue()) {
+                            if (first)
+                                first = false;
+                            else
+                                source += ", ";
+                            source += url;
+                        }
+                    }
                 }
+                throw LrExceptionWithSourceUrl(err->code, err->message, source);
             }
+            break;
         }
-        throw LrExceptionWithSourceUrl(err->code, err->message, source);
-    }
+        badGPG = true;
+        importRepoKeys();
+        dnf_remove_recursive((destDirectory + "/repodata").c_str(), NULL);
+    } while (true);
 
     return result;
 }
@@ -654,7 +943,7 @@ bool Repo::Impl::loadCache(bool throwExcept)
 
     // Fetch data
     try {
-        r = lrHandlePerform(h.get(), conf->repo_gpgcheck().getValue());
+        r = lrHandlePerform(h.get(), getCachedir(), conf->repo_gpgcheck().getValue());
     } catch (std::exception & ex) {
         if (throwExcept)
             throw;
@@ -726,7 +1015,7 @@ bool Repo::Impl::isMetalinkInSync()
     std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir));
 
     handleSetOpt(h.get(), LRO_FETCHMIRRORS, 1L);
-    auto r = lrHandlePerform(h.get(), false);
+    auto r = lrHandlePerform(h.get(), tmpdir, false);
     LrMetalink * metalink;
     handleGetInfo(h.get(), LRI_METALINK, &metalink);
     if (!metalink) {
@@ -797,7 +1086,7 @@ bool Repo::Impl::isRepomdInSync()
     std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir));
 
     handleSetOpt(h.get(), LRO_YUMDLIST, dlist);
-    auto r = lrHandlePerform(h.get(), false);
+    auto r = lrHandlePerform(h.get(), tmpdir, false);
     resultGetInfo(r.get(), LRR_YUM_REPO, &yum_repo);
 
     auto same = haveFilesSameContent(repomd_fn.c_str(), yum_repo->repomd);
@@ -834,7 +1123,7 @@ void Repo::Impl::fetch()
     auto tmprepodir = tmpdir + "/repodata";
 
     std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir.c_str()));
-    auto r = lrHandlePerform(h.get(), conf->repo_gpgcheck().getValue());
+    auto r = lrHandlePerform(h.get(), tmpdir, conf->repo_gpgcheck().getValue());
 
     dnf_remove_recursive(repodir.c_str(), NULL);
     if (g_mkdir_with_parents(repodir.c_str(), 0755) == -1) {

@@ -85,6 +85,8 @@ public:
     virtual int progress(double totalToDownload, double downloaded);
     virtual void fastestMirror(FastestMirrorStage stage, const char *msg);
     virtual int handleMirrorFailure(const char *msg, const char *url, const char *metadata);
+    virtual bool repokeyImport(const std::string & id, const std::string & userId, const std::string & fingerprint,
+                               const std::string & url, long int timestamp);
     virtual ~RepoCB() = default;
 };
 
