@@ -21,10 +21,6 @@
 #include <iostream>
 #include <sstream>
 #include <utility>
-extern "C" {
-#include <solv/solver.h>
-#include <solv/transaction.h>
-}
 
 #include "ModulePackage.hpp"
 #include "libdnf/utils/File.hpp"
@@ -326,8 +322,9 @@ static std::pair<std::string, std::string> getPlatformStream(const std::string &
     throw std::runtime_error("Missing PLATFORM_ID in " + osReleasePath);
 }
 
-Id createPlatformSolvable(Pool *pool, const std::string &osReleasePath,
-    const std::string install_root, const char * platformModule)
+Id
+ModulePackage::createPlatformSolvable(Pool * pool, const std::string & osReleasePath,
+    const std::string install_root, const char* platformModule)
 {
     Repo *repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
     Id id = repo_add_solvable(repo);
@@ -365,31 +362,4 @@ Id createPlatformSolvable(Pool *pool, const std::string &osReleasePath,
     setSovable(pool, solvable, name, stream, version, context, "noarch");
 
     return id;
-}
-
-std::unique_ptr<libdnf::IdQueue> moduleSolve(const std::vector<std::shared_ptr<ModulePackage>> & modules)
-{
-    if (modules.empty()) {
-        return {};
-    }
-    Pool * pool = modules[0]->getPool();
-    pool_createwhatprovides(pool);
-    std::vector<Id> solvedIds;
-    libdnf::IdQueue job;
-    for (const auto &module : modules) {
-        std::ostringstream ss;
-        ss << "module(" << module->getName() << ":" << module->getStream() << ":" << module->getVersion() << ")";
-        Id dep = pool_str2id(pool, ss.str().c_str(), 1);
-        job.pushBack(SOLVER_SOLVABLE_PROVIDES | SOLVER_INSTALL | SOLVER_WEAK, dep);
-    }
-    auto solver = solver_create(pool);
-    solver_solve(solver, job.getQueue());
-    auto transaction = solver_create_transaction(solver);
-    // TODO Use Goal to allow debuging
-
-    std::unique_ptr<libdnf::IdQueue> installed(new libdnf::IdQueue);
-    transaction_installedresult(transaction, installed->getQueue());
-    transaction_free(transaction);
-    solver_free(solver);
-    return installed;
 }

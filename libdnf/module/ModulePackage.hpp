@@ -25,13 +25,12 @@
 #include <string>
 
 #include <modulemd/modulemd-module.h>
-
 #include "modulemd/ModuleMetadata.hpp"
 #include "modulemd/profile/ModuleProfile.hpp"
 #include "libdnf/repo/solvable/Package.hpp"
 #include "../goal/IdQueue.hpp"
 
-class ModulePackageMaker;
+class ModulePackageContainer;
 
 class ModulePackage // TODO inherit in future; : public Package
 {
@@ -75,9 +74,11 @@ public:
     void setState(ModuleState newState);
 
     Id getId() const { return id; };
-    Pool * getPool();
 
 private:
+    friend ModulePackageContainer;
+    static Id createPlatformSolvable(Pool *pool, const std::string &osReleasePath,
+        const std::string install_root, const char *  platformModule);
     void createDependencies(Solvable *solvable) const;
 
     std::shared_ptr<ModuleMetadata> metadata;
@@ -88,14 +89,8 @@ private:
     Id id;
 };
 
-inline Pool * ModulePackage::getPool() { return pool;}
-
 inline ModulePackage::ModuleState ModulePackage::getState() { return state; }
 
 inline void ModulePackage::setState(ModulePackage::ModuleState newState) { state = newState; }
-
-Id createPlatformSolvable(Pool *pool, const std::string &osReleasePath,
-    const std::string install_root, const char *  platformModule);
-std::unique_ptr<libdnf::IdQueue> moduleSolve(const std::vector<std::shared_ptr<ModulePackage>> & modules);
 
 #endif //LIBDNF_MODULEPACKAGE_HPP

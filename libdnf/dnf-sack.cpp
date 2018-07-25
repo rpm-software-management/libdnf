@@ -2145,31 +2145,34 @@ std::string getFileContent(const std::string &filePath)
     return yamlContent;
 }
 
-void readModuleMetadataFromRepo(const GPtrArray *repos, ModulePackageContainer & modulePackages,
-    ModuleDefaultsContainer & moduleDefaults, const char * install_root,
-    const char * platformModule)
+void readModuleMetadataFromRepo(DnfSack * sack, ModuleDefaultsContainer & moduleDefaults,
+    const char * install_root, const char * platformModule)
 {
-    auto pool = modulePackages.getPool();
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    auto modulePackages = priv->moduleContainer;
+    Pool * pool = dnf_sack_get_pool(sack);
+    Repo * r;
+    Id id;
 
-    for (unsigned int i = 0; i < repos->len; i++) {
-        auto repo = static_cast<DnfRepo *>(g_ptr_array_index(repos, i));
-        auto modules_fn = dnf_repo_get_filename_md(repo, "modules");
-        if (modules_fn == nullptr)
+    FOR_REPOS(id, r) {
+        HyRepo hyRepo = static_cast<HyRepo>(r->appdata);
+        auto modules_fn = hy_repo_get_string(hyRepo, MODULES_FN);
+        if (!modules_fn) {
             continue;
+        }
         std::string yamlContent = getFileContent(modules_fn);
-
-        modulePackages.add(dnf_repo_get_repo(repo), yamlContent);
+        modulePackages->add(hyRepo, yamlContent);
         // update defaults from repo
         try {
             moduleDefaults.fromString(yamlContent, 0);
-        } catch (ModuleDefaultsContainer::ConflictException &exception) {
+        } catch (const ModuleDefaultsContainer::ConflictException & exception) {
             logger->warning(exception.what());
         }
     }
-    modulePackages.createConflictsBetweenStreams();
+    modulePackages->createConflictsBetweenStreams();
     // TODO remove hard-coded path
     try {
-        createPlatformSolvable(pool, "/etc/os-release", install_root, platformModule);
+        modulePackages->addPlatformPackage("/etc/os-release", install_root, platformModule);
     } catch (const std::exception & except) {
         logger->critical("Detection of Platform Module failed: " + std::string(except.what()));
     }
@@ -2207,7 +2210,9 @@ static std::tuple<std::vector<std::string>, std::vector<std::string>> collectNev
     return std::tuple<std::vector<std::string>, std::vector<std::string>>{includeNEVRAs, excludeNEVRAs};
 }
 
-static void setModuleExcludes(DnfSack *sack, const std::vector<std::string> &hotfixRepos, const std::vector<std::string> &includeNEVRAs, const std::vector<std::string> &excludeNEVRAs)
+static void
+setModuleExcludes(DnfSack *sack, const char ** hotfixRepos,
+    const std::vector<std::string> &includeNEVRAs, const std::vector<std::string> &excludeNEVRAs)
 {
     std::vector<std::string> names;
     libdnf::DependencyContainer nameDependencies{sack};
@@ -2228,14 +2233,9 @@ static void setModuleExcludes(DnfSack *sack, const std::vector<std::string> &hot
     transform(includeNEVRAs.begin(), includeNEVRAs.end(), includeNEVRAsCString.begin(), std::mem_fn(&std::string::c_str));
 
     libdnf::Query keepPackages{sack};
-    std::vector<const char *> keepRepo;
-    keepRepo.push_back(HY_CMDLINE_REPO_NAME);
-    keepRepo.push_back(HY_SYSTEM_REPO_NAME);
-    for (auto & repoid : hotfixRepos) {
-        keepRepo.push_back(repoid.c_str());
-    }
-    keepRepo.push_back(nullptr);
-    keepPackages.addFilter(HY_PKG_REPONAME, HY_NEQ, keepRepo.data());
+    const char *keepRepo[] = {HY_CMDLINE_REPO_NAME, HY_SYSTEM_REPO_NAME, nullptr};
+    keepPackages.addFilter(HY_PKG_REPONAME, HY_NEQ, keepRepo);
+    keepPackages.addFilter(HY_PKG_REPONAME, HY_NEQ, hotfixRepos);
 
     libdnf::Query includeQuery{sack};
     libdnf::Query excludeQuery{keepPackages};
@@ -2274,7 +2274,7 @@ std::vector<std::shared_ptr<ModulePackage>> requiresModuleEnablement(DnfSack * s
     return toEnable;
 }
 
-void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *install_root,
+void dnf_sack_filter_modules(DnfSack * sack, const char ** hotfixRepos, const char * install_root,
     const char * platformModule)
 {
     // TODO: remove hard-coded path
@@ -2287,7 +2287,7 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
     priv->moduleContainer = new ModulePackageContainer(priv->arch);
     ModuleDefaultsContainer moduleDefaults;
 
-    readModuleMetadataFromRepo(repos, *priv->moduleContainer, moduleDefaults, install_root, platformModule);
+    readModuleMetadataFromRepo(sack, moduleDefaults, install_root, platformModule);
     readModuleDefaultsFromDisk(defaultsDirPath, moduleDefaults);
 
     try {
@@ -2301,15 +2301,6 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
 
     priv->moduleContainer->resolveActiveModulePackages(defaultStreams);
     auto nevraTuple = collectNevraForInclusionExclusion(*priv->moduleContainer);
-
-    std::vector<std::string> hotfixRepos;
-    // don't filter RPMs from repos with the 'module_hotfixes' flag set
-    for (unsigned int i = 0; i < repos->len; i++) {
-        auto repo = static_cast<DnfRepo *>(g_ptr_array_index(repos, i));
-        if (dnf_repo_get_module_hotfixes(repo)) {
-            hotfixRepos.push_back(dnf_repo_get_id(repo));
-        }
-    }
 
     setModuleExcludes(sack, hotfixRepos, std::get<0>(nevraTuple), std::get<1>(nevraTuple));
 }
