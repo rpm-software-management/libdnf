@@ -160,6 +160,8 @@ public:
     void expire();
     bool isExpired() const;
     int getExpiresIn() const;
+    void downloadUrl(const char * url, int fd);
+
     std::unique_ptr<LrHandle> lrHandleInitBase();
     std::unique_ptr<LrHandle> lrHandleInitLocal();
     std::unique_ptr<LrHandle> lrHandleInitRemote(const char *destdir, bool mirrorSetup = true);
@@ -941,6 +943,25 @@ int Repo::Impl::getExpiresIn() const
     return conf->metadata_expire().getValue() - getAge();
 }
 
+void Repo::Impl::downloadUrl(const char * url, int fd)
+{
+    if (callbacks)
+        callbacks->start(
+            !conf->name().getValue().empty() ? conf->name().getValue().c_str() :
+            (!id.empty() ? id.c_str() : "unknown")
+        );
+
+    GError * errP{nullptr};
+    lr_download_url(getCachedHandle(), url, fd, &errP);
+    std::unique_ptr<GError> err(errP);
+
+    if (callbacks)
+        callbacks->end();
+
+    if (err)
+        throwException(std::move(err));
+}
+
 bool Repo::fresh()
 {
     return pImpl->timestamp >= 0;
@@ -1051,23 +1072,7 @@ Repo::SyncStrategy Repo::getSyncStrategy() const noexcept
 
 void Repo::downloadUrl(const char * url, int fd)
 {
-    if (pImpl->callbacks)
-        pImpl->callbacks->start(
-            !pImpl->conf->name().getValue().empty() ? pImpl->conf->name().getValue().c_str() :
-            (!pImpl->id.empty() ? pImpl->id.c_str() : "unknown")
-        );
-
-    GError * errP{nullptr};
-    auto ret = lr_download_url(pImpl->getCachedHandle(), url, fd, &errP);
-    std::unique_ptr<GError> err(errP);
-
-    if (pImpl->callbacks)
-        pImpl->callbacks->end();
-
-    assert((ret && !errP) || (!ret && errP));
-
-    if (err)
-        throwException(std::move(err));
+    pImpl->downloadUrl(url, fd);
 }
 
 std::vector<std::string> Repo::getMirrors() const
