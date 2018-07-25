@@ -25,8 +25,6 @@ extern "C" {
 }
 
 #include "ModulePackageContainer.hpp"
-#include "ModulePackageMaker.hpp"
-
 #include "libdnf/utils/utils.hpp"
 #include "libdnf/utils/File.hpp"
 #include <functional>
@@ -61,22 +59,32 @@ ModulePackageContainer::Impl::~Impl()
     pool_free(pool);
 }
 
-
-void ModulePackageContainer::add(const std::shared_ptr<ModulePackage> &package)
+void ModulePackageContainer::add(HyRepo repo, const std::string &fileContent)
 {
-    pImpl->modules.insert(std::make_pair(package->getId(), package));
-}
+    auto metadata = ModuleMetadata::metadataFromString(fileContent);
 
-void ModulePackageContainer::add(const std::vector<std::shared_ptr<ModulePackage>> &packages)
-{
-    for (const auto &package : packages) {
-        add(package);
+    Repo *solvRepo = repo->libsolv_repo;
+    Repo *clonedRepo = repo_create(pImpl->pool, solvRepo->name);
+
+    for (auto data : metadata) {
+        auto modulePackage = std::make_shared<ModulePackage>(pImpl->pool, clonedRepo, data);
+        pImpl->modules.insert(std::make_pair(modulePackage->getId(), modulePackage));
     }
 }
 
-void ModulePackageContainer::add(const std::map<Id, std::shared_ptr<ModulePackage>> &packages)
+void ModulePackageContainer::createConflictsBetweenStreams()
 {
-    pImpl->modules.insert(std::begin(packages), std::end(packages));
+    // TODO Use libdnf::Query for filtering
+    for (const auto &iter : pImpl->modules) {
+        const auto &modulePackage = iter.second;
+
+        for (const auto &innerIter : pImpl->modules) {
+            if (modulePackage->getName() == innerIter.second->getName()
+                && modulePackage->getStream() != innerIter.second->getStream()) {
+                modulePackage->addStreamConflict(innerIter.second);
+            }
+        }
+    }
 }
 
 std::shared_ptr<ModulePackage> ModulePackageContainer::getModulePackage(Id id)

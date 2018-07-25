@@ -55,9 +55,8 @@ public:
     explicit ModulePackageContainer(const char * arch);
     ~ModulePackageContainer();
 
-    void add(const std::shared_ptr<ModulePackage> &package);
-    void add(const std::vector<std::shared_ptr<ModulePackage>> &packages);
-    void add(const std::map<Id, std::shared_ptr<ModulePackage>> &packages);
+    void add(HyRepo repo, const std::string &fileContent);
+    void createConflictsBetweenStreams();
     std::shared_ptr<ModulePackage> getModulePackage(Id id);
     std::vector<std::shared_ptr<ModulePackage>> getModulePackages();
 
