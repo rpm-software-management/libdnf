@@ -29,7 +29,7 @@
 
 #include "ModulePackage.hpp"
 
-class ModulePackageContainer
+struct ModulePackageContainer
 {
 public:
     struct Exception : public std::runtime_error
@@ -52,7 +52,7 @@ public:
         explicit EnabledStreamException(const std::string &moduleName) : Exception("No enabled stream for module: " + moduleName) {}
     };
 
-    explicit ModulePackageContainer(const std::shared_ptr<Pool> &pool, const char * arch);
+    explicit ModulePackageContainer(const char * arch);
     ~ModulePackageContainer();
 
     void add(const std::shared_ptr<ModulePackage> &package);
@@ -66,14 +66,11 @@ public:
 
     void resolveActiveModulePackages(const std::map<std::string, std::string> &defaultStreams);
     bool isModuleActive(Id id);
-
-
-    std::shared_ptr<Pool> getPool() { return pool; };
+    Pool * getPool();
 
 private:
-    std::map<Id, std::shared_ptr<ModulePackage>> modules;
-    std::shared_ptr<Pool> pool;
-    Map * activatedModules;
+    class Impl;
+    std::unique_ptr<Impl> pImpl;
 };
 
 

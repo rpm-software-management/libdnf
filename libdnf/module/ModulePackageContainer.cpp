@@ -32,26 +32,39 @@ extern "C" {
 #include <functional>
 #include <../sack/query.hpp>
 
-ModulePackageContainer::ModulePackageContainer(const std::shared_ptr<Pool> &pool, const char *arch)
-        : pool(pool)
+class ModulePackageContainer::Impl {
+public:
+    ~Impl();
+private:
+    friend struct ModulePackageContainer;
+    std::map<Id, std::shared_ptr<ModulePackage>> modules;
+    Pool * pool;
+    Map * activatedModules{nullptr};
+};
+
+ModulePackageContainer::ModulePackageContainer(const char * arch) : pImpl(new Impl)
 {
+    pImpl->pool = pool_create();
     if (arch) {
-        pool_setarch(pool.get(), arch);
+        pool_setarch(pImpl->pool, arch);
     }
 }
 
-ModulePackageContainer::~ModulePackageContainer()
+ModulePackageContainer::~ModulePackageContainer() = default;
+
+ModulePackageContainer::Impl::~Impl()
 {
     if (activatedModules) {
         map_free(activatedModules);
         delete activatedModules;
     }
+    pool_free(pool);
 }
 
 
 void ModulePackageContainer::add(const std::shared_ptr<ModulePackage> &package)
 {
-    modules.insert(std::make_pair(package->getId(), package));
+    pImpl->modules.insert(std::make_pair(package->getId(), package));
 }
 
 void ModulePackageContainer::add(const std::vector<std::shared_ptr<ModulePackage>> &packages)
@@ -63,23 +76,28 @@ void ModulePackageContainer::add(const std::vector<std::shared_ptr<ModulePackage
 
 void ModulePackageContainer::add(const std::map<Id, std::shared_ptr<ModulePackage>> &packages)
 {
-    modules.insert(std::begin(packages), std::end(packages));
+    pImpl->modules.insert(std::begin(packages), std::end(packages));
 }
 
 std::shared_ptr<ModulePackage> ModulePackageContainer::getModulePackage(Id id)
 {
-    return modules[id];
+    return pImpl->modules[id];
 }
 
 std::vector<std::shared_ptr<ModulePackage>>
 ModulePackageContainer::requiresModuleEnablement(const libdnf::PackageSet & packages)
 {
+    auto activatedModules = pImpl->activatedModules;
+    if (!activatedModules) {
+        return {};
+    }
     std::vector<std::shared_ptr<ModulePackage>> output;
     libdnf::Query baseQuery(packages.getSack());
     baseQuery.addFilter(HY_PKG, HY_EQ, &packages);
     baseQuery.apply();
     libdnf::Query testQuery(baseQuery);
-    auto moduleMapSize = pool->nsolvables;
+    auto modules = pImpl->modules;
+    auto moduleMapSize = pImpl->pool->nsolvables;
     for (Id id = 0; id < moduleMapSize; ++id) {
         if (!MAPTST(activatedModules, id)) {
             continue;
@@ -103,7 +121,7 @@ ModulePackageContainer::requiresModuleEnablement(const libdnf::PackageSet & pack
 
 void ModulePackageContainer::enable(const std::string &name, const std::string &stream)
 {
-    for (const auto &iter : modules) {
+    for (const auto &iter : pImpl->modules) {
         auto modulePackage = iter.second;
         if (modulePackage->getName() == name && modulePackage->getStream() == stream) {
             modulePackage->enable();
@@ -116,7 +134,7 @@ void ModulePackageContainer::resolveActiveModulePackages(const std::map<std::str
     std::vector<std::shared_ptr<ModulePackage>> packages;
 
     // Use only Enabled or Default modules for transaction
-    for (const auto &iter : modules) {
+    for (const auto &iter : pImpl->modules) {
         auto module = iter.second;
 
         bool hasDefaultStream;
@@ -134,15 +152,16 @@ void ModulePackageContainer::resolveActiveModulePackages(const std::map<std::str
         }
     }
     auto ids = moduleSolve(packages);
-    if (activatedModules) {
-        map_free(activatedModules);
+    if (pImpl->activatedModules) {
+        map_free(pImpl->activatedModules);
     } else {
-        activatedModules = new Map;
+        pImpl->activatedModules = new Map;
     }
-    map_init(activatedModules, pool->nsolvables);
+    map_init(pImpl->activatedModules, pImpl->pool->nsolvables);
+    auto activatedModules = pImpl->activatedModules;
     for (int i = 0; i < ids->size(); ++i) {
         Id id = (*ids)[i];
-        auto solvable = pool_id2solvable(pool.get(), id);
+        auto solvable = pool_id2solvable(pImpl->pool, id);
         // TODO use Goal::listInstalls() to not requires filtering out Platform
         if (strcmp(solvable->repo->name, HY_SYSTEM_REPO_NAME) == 0)
             continue;
@@ -152,8 +171,8 @@ void ModulePackageContainer::resolveActiveModulePackages(const std::map<std::str
 
 bool ModulePackageContainer::isModuleActive(Id id)
 {
-    if (activatedModules) {
-        return MAPTST(activatedModules, id);
+    if (pImpl->activatedModules) {
+        return MAPTST(pImpl->activatedModules, id);
     }
     return false;
 }
@@ -162,11 +181,14 @@ bool ModulePackageContainer::isModuleActive(Id id)
 std::vector<std::shared_ptr<ModulePackage>> ModulePackageContainer::getModulePackages()
 {
     std::vector<std::shared_ptr<ModulePackage>> values;
-
+    auto modules = pImpl->modules;
     std::transform(std::begin(modules), std::end(modules), std::back_inserter(values),
                    [](const std::map<Id, std::shared_ptr<ModulePackage>>::value_type &pair){ return pair.second; });
 
     return values;
 }
 
-
+Pool * ModulePackageContainer::getPool()
+{
+    return pImpl->pool;
+}
