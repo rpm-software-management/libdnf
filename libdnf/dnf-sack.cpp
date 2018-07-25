@@ -70,7 +70,6 @@ extern "C" {
 #include "nevra.hpp"
 #include "conf/ConfigParser.hpp"
 #include "conf/OptionBool.hpp"
-#include "module/ModulePackageMaker.hpp"
 #include "module/ModulePackageContainer.hpp"
 #include "module/ModulePackage.hpp"
 #include "module/modulemd/ModuleDefaultsContainer.hpp"
@@ -2146,21 +2145,6 @@ std::string getFileContent(const std::string &filePath)
     return yamlContent;
 }
 
-void createConflictsBetweenStreams(const std::map<Id, std::shared_ptr<ModulePackage>> &modules)
-{
-    // TODO Use libdnf::Query for filtering
-    for (const auto &iter : modules) {
-        const auto &modulePackage = iter.second;
-
-        for (const auto &innerIter : modules) {
-            if (modulePackage->getName() == innerIter.second->getName()
-                && modulePackage->getStream() != innerIter.second->getStream()) {
-                modulePackage->addStreamConflict(innerIter.second);
-            }
-        }
-    }
-}
-
 void readModuleMetadataFromRepo(const GPtrArray *repos, ModulePackageContainer & modulePackages,
     ModuleDefaultsContainer & moduleDefaults, const char * install_root,
     const char * platformModule)
@@ -2174,18 +2158,15 @@ void readModuleMetadataFromRepo(const GPtrArray *repos, ModulePackageContainer &
             continue;
         std::string yamlContent = getFileContent(modules_fn);
 
-        auto modules = ModulePackageMaker::fromString(pool, dnf_repo_get_repo(repo), yamlContent);
-        createConflictsBetweenStreams(modules);
-
-        modulePackages.add(modules);
-
+        modulePackages.add(dnf_repo_get_repo(repo), yamlContent);
         // update defaults from repo
         try {
             moduleDefaults.fromString(yamlContent, 0);
         } catch (ModuleDefaultsContainer::ConflictException &exception) {
-            // TODO logger.warning(exception.what());
+            logger->warning(exception.what());
         }
     }
+    modulePackages.createConflictsBetweenStreams();
     // TODO remove hard-coded path
     try {
         createPlatformSolvable(pool, "/etc/os-release", install_root, platformModule);
