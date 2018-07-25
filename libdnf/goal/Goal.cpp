@@ -537,10 +537,10 @@ Goal::setProtected(const PackageSet & pset)
 void
 Goal::distupgrade()
 {
-    pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | DNF_DISTUPGRADE);
+    pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | DNF_DISTUPGRADE|DNF_ALLOW_DOWNGRADE);
     DnfSack * sack = pImpl->sack;
     Query query(sack);
-    query.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     Selector selector(sack);
     selector.set(query.runSet());
     sltrToJob(&selector, &pImpl->staging, SOLVER_DISTUPGRADE);
@@ -549,14 +549,14 @@ Goal::distupgrade()
 void
 Goal::distupgrade(DnfPackage *new_pkg)
 {
-    pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | DNF_DISTUPGRADE);
+    pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | DNF_DISTUPGRADE|DNF_ALLOW_DOWNGRADE);
     packageToJob(new_pkg, &pImpl->staging, SOLVER_DISTUPGRADE);
 }
 
 void
 Goal::distupgrade(HySelector sltr)
 {
-    pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | DNF_DISTUPGRADE);
+    pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | DNF_DISTUPGRADE|DNF_ALLOW_DOWNGRADE);
     sltrToJob(sltr, &pImpl->staging, SOLVER_DISTUPGRADE);
 }
 
