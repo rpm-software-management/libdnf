@@ -56,6 +56,8 @@ public:
     ~ModulePackageContainer();
 
     void add(HyRepo repo, const std::string &fileContent);
+    Id addPlatformPackage(const std::string &osReleasePath, const std::string install_root,
+        const char *  platformModule);
     void createConflictsBetweenStreams();
     std::shared_ptr<ModulePackage> getModulePackage(Id id);
     std::vector<std::shared_ptr<ModulePackage>> getModulePackages();
@@ -65,7 +67,6 @@ public:
 
     void resolveActiveModulePackages(const std::map<std::string, std::string> &defaultStreams);
     bool isModuleActive(Id id);
-    Pool * getPool();
 
 private:
     class Impl;

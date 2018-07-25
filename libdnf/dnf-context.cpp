@@ -30,7 +30,8 @@
  * to use objects from librepo, rpm or hawkey directly.
  */
 
-
+#include <string>
+#include <vector>
 #include <gio/gio.h>
 #include <rpm/rpmlib.h>
 #include <rpm/rpmmacro.h>
@@ -1317,7 +1318,16 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
 
     DnfSack *sack = priv->sack;
     if (sack != nullptr) {
-        dnf_sack_filter_modules(sack, priv->repos, priv->install_root, priv->platform_module);
+        std::vector<const char *> hotfixRepos;
+        // don't filter RPMs from repos with the 'module_hotfixes' flag set
+        for (unsigned int i = 0; i < priv->repos->len; i++) {
+            auto repo = static_cast<DnfRepo *>(g_ptr_array_index(priv->repos, i));
+            if (dnf_repo_get_module_hotfixes(repo)) {
+                hotfixRepos.push_back(dnf_repo_get_id(repo));
+            }
+        }
+        hotfixRepos.push_back(nullptr);
+        dnf_sack_filter_modules(sack, hotfixRepos.data(), priv->install_root, priv->platform_module);
     }
 
     /* create goal */

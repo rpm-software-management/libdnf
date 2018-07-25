@@ -20,8 +20,11 @@
 
 #include <algorithm>
 #include <set>
+#include <sstream>
+
 extern "C" {
 #include <solv/poolarch.h>
+#include <solv/solver.h>
 }
 
 #include "ModulePackageContainer.hpp"
@@ -30,9 +33,12 @@ extern "C" {
 #include <functional>
 #include <../sack/query.hpp>
 
+
 class ModulePackageContainer::Impl {
 public:
     ~Impl();
+    std::unique_ptr<libdnf::IdQueue> moduleSolve(
+        const std::vector<std::shared_ptr<ModulePackage>> & modules);
 private:
     friend struct ModulePackageContainer;
     std::map<Id, std::shared_ptr<ModulePackage>> modules;
@@ -59,7 +65,8 @@ ModulePackageContainer::Impl::~Impl()
     pool_free(pool);
 }
 
-void ModulePackageContainer::add(HyRepo repo, const std::string &fileContent)
+void
+ModulePackageContainer::add(HyRepo repo, const std::string &fileContent)
 {
     auto metadata = ModuleMetadata::metadataFromString(fileContent);
 
@@ -70,6 +77,14 @@ void ModulePackageContainer::add(HyRepo repo, const std::string &fileContent)
         auto modulePackage = std::make_shared<ModulePackage>(pImpl->pool, clonedRepo, data);
         pImpl->modules.insert(std::make_pair(modulePackage->getId(), modulePackage));
     }
+}
+
+Id
+ModulePackageContainer::addPlatformPackage(const std::string& osReleasePath,
+    const std::string install_root, const char* platformModule)
+{
+    return ModulePackage::createPlatformSolvable(pImpl->pool, osReleasePath, install_root,
+                                                 platformModule);
 }
 
 void ModulePackageContainer::createConflictsBetweenStreams()
@@ -137,6 +152,33 @@ void ModulePackageContainer::enable(const std::string &name, const std::string &
     }
 }
 
+std::unique_ptr<libdnf::IdQueue>
+ModulePackageContainer::Impl::moduleSolve(const std::vector<std::shared_ptr<ModulePackage>> & modules)
+{
+    if (modules.empty()) {
+        return {};
+    }
+    pool_createwhatprovides(pool);
+    std::vector<Id> solvedIds;
+    libdnf::IdQueue job;
+    for (const auto &module : modules) {
+        std::ostringstream ss;
+        ss << "module(" << module->getName() << ":" << module->getStream() << ":" << module->getVersion() << ")";
+        Id dep = pool_str2id(pool, ss.str().c_str(), 1);
+        job.pushBack(SOLVER_SOLVABLE_PROVIDES | SOLVER_INSTALL | SOLVER_WEAK, dep);
+    }
+    auto solver = solver_create(pool);
+    solver_solve(solver, job.getQueue());
+    auto transaction = solver_create_transaction(solver);
+    // TODO Use Goal to allow debuging
+
+    std::unique_ptr<libdnf::IdQueue> installed(new libdnf::IdQueue);
+    transaction_installedresult(transaction, installed->getQueue());
+    transaction_free(transaction);
+    solver_free(solver);
+    return installed;
+}
+
 void ModulePackageContainer::resolveActiveModulePackages(const std::map<std::string, std::string> &defaultStreams)
 {
     std::vector<std::shared_ptr<ModulePackage>> packages;
@@ -159,7 +201,7 @@ void ModulePackageContainer::resolveActiveModulePackages(const std::map<std::str
             packages.push_back(module);
         }
     }
-    auto ids = moduleSolve(packages);
+    auto ids = pImpl->moduleSolve(packages);
     if (pImpl->activatedModules) {
         map_free(pImpl->activatedModules);
     } else {
@@ -194,9 +236,4 @@ std::vector<std::shared_ptr<ModulePackage>> ModulePackageContainer::getModulePac
                    [](const std::map<Id, std::shared_ptr<ModulePackage>>::value_type &pair){ return pair.second; });
 
     return values;
-}
-
-Pool * ModulePackageContainer::getPool()
-{
-    return pImpl->pool;
 }
