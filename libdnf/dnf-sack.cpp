@@ -2073,7 +2073,7 @@ namespace {
 void enableModuleStreams(ModulePackageContainer &modulePackages, const char *install_root)
 {
     // TODO: remove hard-coded path
-    std::string dirPath = g_build_filename(install_root, "/etc/dnf/modules.d/", NULL);
+    g_autofree gchar *dirPath = g_build_filename(install_root, "/etc/dnf/modules.d/", NULL);
 
     libdnf::ConfigParser parser{};
     for (const auto &file : filesystem::getDirContent(dirPath)) {
@@ -2230,7 +2230,7 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
     const char * platformModule)
 {
     // TODO: remove hard-coded path
-    std::string defaultsDirPath = g_build_filename(install_root, "/etc/dnf/modules.defaults.d/", NULL);
+    g_autofree gchar *defaultsDirPath = g_build_filename(install_root, "/etc/dnf/modules.defaults.d/", NULL);
     DnfSackPrivate *priv = GET_PRIVATE(sack);
 
     ModulePackageContainer modulePackages{std::shared_ptr<Pool>(pool_create(), &pool_free), priv->arch};
