@@ -78,6 +78,9 @@ repo_update_state(HyRepo repo, enum _hy_repo_repodata which,
     case _HY_REPODATA_UPDATEINFO:
         repo->state_updateinfo = state;
         return;
+    case _HY_REPODATA_OTHER:
+        repo->state_other = state;
+        return;
     default:
         assert(0);
     }
@@ -94,6 +97,8 @@ repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which)
         return repo->presto_repodata;
     case _HY_REPODATA_UPDATEINFO:
         return repo->updateinfo_repodata;
+    case _HY_REPODATA_OTHER:
+        return repo->other_repodata;
     default:
         assert(0);
         return 0;
@@ -112,6 +117,9 @@ repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata)
         return;
     case _HY_REPODATA_UPDATEINFO:
         repo->updateinfo_repodata = repodata;
+        return;
+    case _HY_REPODATA_OTHER:
+        repo->other_repodata = repodata;
         return;
     default:
         assert(0);

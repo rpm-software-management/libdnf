@@ -47,15 +47,17 @@ struct _HyRepo {
     char *filelists_fn;
     char *presto_fn;
     char *updateinfo_fn;
-    char *modules_fn;
     char *other_fn;
+    char *modules_fn;
     enum _hy_repo_state state_main;
     enum _hy_repo_state state_filelists;
     enum _hy_repo_state state_presto;
     enum _hy_repo_state state_updateinfo;
+    enum _hy_repo_state state_other;
     Id filenames_repodata;
     Id presto_repodata;
     Id updateinfo_repodata;
+    Id other_repodata;
     unsigned char checksum[CHKSUM_BYTES];
     int load_flags;
     /* the following three elements are needed for repo rewriting */
@@ -68,7 +70,8 @@ struct _HyRepo {
 enum _hy_repo_repodata {
     _HY_REPODATA_FILENAMES,
     _HY_REPODATA_PRESTO,
-    _HY_REPODATA_UPDATEINFO
+    _HY_REPODATA_UPDATEINFO,
+    _HY_REPODATA_OTHER
 };
 
 HyRepo hy_repo_link(HyRepo repo);

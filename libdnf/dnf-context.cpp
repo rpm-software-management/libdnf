@@ -124,6 +124,7 @@ typedef struct
     gboolean         check_transaction;
     gboolean         only_trusted;
     gboolean         enable_filelists;
+    gboolean         enable_other;
     gboolean         keep_cache;
     gboolean         enrollment_valid;
     DnfLock         *lock;
@@ -208,6 +209,7 @@ dnf_context_init(DnfContext *context)
     priv->check_disk_space = TRUE;
     priv->check_transaction = TRUE;
     priv->enable_filelists = TRUE;
+    priv->enable_other = FALSE;
     priv->state = dnf_state_new();
     priv->lock = dnf_lock_new();
     priv->cache_age = 60 * 60 * 24 * 7; /* 1 week */
@@ -758,6 +760,21 @@ dnf_context_get_enable_filelists (DnfContext     *context)
 }
 
 /**
+ * dnf_context_get_enable_other:
+ * @context: a #DnfContext instance.
+ *
+ * Returns: %TRUE if other are enabled
+ *
+ * Since: 0.16.2
+ */
+gboolean
+dnf_context_get_enable_other (DnfContext     *context)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    return priv->enable_other;
+}
+
+/**
  * dnf_context_get_cache_age:
  * @context: a #DnfContext instance.
  *
@@ -1080,6 +1097,23 @@ dnf_context_set_enable_filelists (DnfContext     *context,
 }
 
 /**
+ * dnf_context_set_enable_other:
+ * @context: a #DnfContext instance.
+ * @enable_other: %TRUE to download and parse other metadata
+ *
+ * Enables or disables download and parsing of other metadata.
+ *
+ * Since: 0.16.2
+ **/
+void
+dnf_context_set_enable_other (DnfContext     *context,
+                              gboolean        enable_other)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    priv->enable_other = enable_other;
+}
+
+/**
  * dnf_context_set_only_trusted:
  * @context: a #DnfContext instance.
  * @only_trusted: %TRUE keep the packages after installing or updating
@@ -1312,6 +1346,8 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
         add_flags = static_cast<DnfSackAddFlags>(add_flags | DNF_SACK_ADD_FLAG_UPDATEINFO);
     if (priv->enable_filelists && !((flags & DNF_CONTEXT_SETUP_SACK_FLAG_SKIP_FILELISTS) > 0))
         add_flags = static_cast<DnfSackAddFlags>(add_flags | DNF_SACK_ADD_FLAG_FILELISTS);
+    if (priv->enable_other && !((flags & DNF_CONTEXT_SETUP_SACK_FLAG_SKIP_OTHER) > 0))
+        add_flags = static_cast<DnfSackAddFlags>(add_flags | DNF_SACK_ADD_FLAG_OTHER);
 
     /* add remote */
     ret = dnf_sack_add_repos(priv->sack,

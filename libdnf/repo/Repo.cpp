@@ -482,8 +482,9 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
 #ifdef MODULEMD
     dlist.push_back("modules");
 #endif
-    //TODO conditionalize according config option extra_metadata
-    dlist.push_back("other");
+    for (auto &mdname : conf->extra_metadata().getValue()) {
+        dlist.push_back(mdname.c_str());
+    }
     dlist.push_back(NULL);
     handleSetOpt(h.get(), LRO_REPOTYPE, LR_YUMREPO);
     handleSetOpt(h.get(), LRO_USERAGENT, "libdnf/1.0"); //FIXME
