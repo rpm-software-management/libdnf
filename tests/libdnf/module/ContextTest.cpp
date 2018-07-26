@@ -85,6 +85,7 @@ void ContextTest::testLoadModules()
         CPPUNIT_ASSERT(dnf_packageset_count(packageSet) >= 1);
         auto package = dnf_package_new(sack, packageSet->operator[](0));
         CPPUNIT_ASSERT(dnf_package_get_nevra(package) == nevra);
+        g_object_unref(package);
         query.clear();
     }
 
@@ -131,6 +132,7 @@ void ContextTest::sackHas(DnfSack *sack, const std::shared_ptr<ModuleMetadata> &
         CPPUNIT_ASSERT(dnf_packageset_count(packageSet) >= 1);
         auto package = dnf_package_new(sack, packageSet->operator[](0));
         CPPUNIT_ASSERT(dnf_package_get_nevra(package) == artifact);
+        g_object_unref(package);
 
         query.clear();
     }

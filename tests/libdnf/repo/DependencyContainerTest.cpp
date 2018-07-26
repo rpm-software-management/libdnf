@@ -10,6 +10,11 @@ void DependencyContainerTest::setUp()
     container = std::unique_ptr<libdnf::DependencyContainer>(new libdnf::DependencyContainer(sack));
 }
 
+void DependencyContainerTest::tearDown()
+{
+    g_object_unref(sack);
+}
+
 void DependencyContainerTest::testAdd()
 {
     auto dependency = new libdnf::Dependency(sack, "foo", "1.0", DNF_COMPARISON_EQ);
@@ -19,6 +24,7 @@ void DependencyContainerTest::testAdd()
 
     CPPUNIT_ASSERT(strcmp(dependency->toString(), actual->toString()) == 0);
     delete actual;
+    delete dependency;
 }
 
 void DependencyContainerTest::testExtend()
@@ -53,6 +59,7 @@ void DependencyContainerTest::testGet()
 
     libdnf::Dependency *actual = container->getPtr(0);
     CPPUNIT_ASSERT(strcmp(dependency->toString(), actual->toString()) == 0);
+    delete actual;
 
     actual = container->getPtr(1);
     CPPUNIT_ASSERT(strcmp(otherDependency->toString(), actual->toString()) == 0);

@@ -17,6 +17,7 @@ class DependencyTest : public CppUnit::TestCase
 
 public:
     void setUp() override;
+    void tearDown() override;
 
     void testName();
     void testVersion();
