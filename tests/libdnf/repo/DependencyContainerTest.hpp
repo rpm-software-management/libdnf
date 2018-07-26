@@ -17,6 +17,7 @@ class DependencyContainerTest : public CppUnit::TestCase
 
 public:
     void setUp() override;
+    void tearDown() override;
 
     void testAdd();
     void testExtend();
