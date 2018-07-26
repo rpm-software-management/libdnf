@@ -20,6 +20,15 @@
 ######################
 
 ====================
+0.16.1 Release Notes
+====================
+* Implement 'module_hotfixes' conf option to skip filtering RPMs from hotfix repos.
+* Fix distupgrade filter, allow downgrades.
+* Module dependency resolution
+* Platform pseudo-module based on /etc/os-release
+* Add Goal::listSuggested()
+
+====================
 0.16.0 Release Notes
 ====================
 * Fix RHSM plugin
