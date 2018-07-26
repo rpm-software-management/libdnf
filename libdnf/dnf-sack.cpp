@@ -665,8 +665,17 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
     char *fn_cache = dnf_sack_give_cache_fn(sack, name, NULL);
 
     FILE *fp_primary = NULL;
+    FILE *fp_repomd = NULL;
     FILE *fp_cache = fopen(fn_cache, "r");
-    FILE *fp_repomd = fopen(fn_repomd, "r");
+    if (!fn_repomd) {
+        g_set_error (error,
+                     DNF_ERROR,
+                     DNF_ERROR_FILE_INVALID,
+                     _("null repo md file"));
+        retval = FALSE;
+        goto out;
+    }
+    fp_repomd = fopen(fn_repomd, "r");
     if (fp_repomd == NULL) {
         g_set_error (error,
                      DNF_ERROR,
