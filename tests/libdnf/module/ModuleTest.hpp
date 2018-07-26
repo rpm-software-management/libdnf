@@ -11,6 +11,7 @@ class ModuleTest : public CppUnit::TestCase
 {
     CPPUNIT_TEST_SUITE(ModuleTest);
         CPPUNIT_TEST(testDummy);
+        CPPUNIT_TEST(testDisable);
         CPPUNIT_TEST(testEnable);
     CPPUNIT_TEST_SUITE_END();
 
@@ -20,6 +21,7 @@ public:
 
     void testDummy();
     void testEnable();
+    void testDisable();
 
 private:
     DnfContext *context;

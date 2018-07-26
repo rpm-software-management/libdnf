@@ -101,3 +101,48 @@ void ModuleTest::testEnable()
         CPPUNIT_ASSERT(parser.getValue("httpd", "stream") == "2.4");
     }
 }
+
+void ModuleTest::testDisable()
+{
+    GPtrArray *repos = dnf_context_get_repos(context);
+    auto sack = dnf_context_get_sack(context);
+    auto install_root = dnf_context_get_install_root(context);
+    auto platformModule = dnf_context_get_platform_module(context);
+
+    logger->debug("called ModuleTest::testDisable()");
+
+    /* call with empty module list should throw error */
+    {
+        std::vector<std::string> module_list;
+        CPPUNIT_ASSERT_THROW(libdnf::dnf_module_disable(module_list, sack, repos, install_root, platformModule), libdnf::ModuleExceptionList);
+    }
+
+    /* call with invalid specs should fail */
+    {
+        std::vector<std::string> module_list{"moduleA:", "moduleB#streamB", "moduleC:streamC#profileC"};
+        CPPUNIT_ASSERT_THROW(libdnf::dnf_module_disable(module_list, sack, repos, install_root, platformModule), libdnf::ModuleExceptionList);
+    }
+
+    /* call with valid specs should succeed */
+    {
+        std::vector<std::string> module_list{"httpd:2.4", "base-runtime"};
+        CPPUNIT_ASSERT(libdnf::dnf_module_disable(module_list, sack, repos, install_root, platformModule));
+        libdnf::ConfigParser parser{};
+        parser.read(TESTDATADIR "/modules/etc/dnf/modules.d/httpd.module");
+        CPPUNIT_ASSERT(parser.getValue("httpd", "state") == "disabled");
+        CPPUNIT_ASSERT(parser.getValue("httpd", "stream") == "");
+        parser.read(TESTDATADIR "/modules/etc/dnf/modules.d/base-runtime.module");
+        CPPUNIT_ASSERT(parser.getValue("base-runtime", "state") == "disabled");
+        CPPUNIT_ASSERT(parser.getValue("base-runtime", "stream") == "");
+    }
+
+    /* call with disabled module should succeed */
+    {
+        std::vector<std::string> module_list{"httpd:2.4"};
+        CPPUNIT_ASSERT(libdnf::dnf_module_disable(module_list, sack, repos, install_root, platformModule));
+        libdnf::ConfigParser parser{};
+        parser.read(TESTDATADIR "/modules/etc/dnf/modules.d/httpd.module");
+        CPPUNIT_ASSERT(parser.getValue("httpd", "state") == "disabled");
+        CPPUNIT_ASSERT(parser.getValue("httpd", "stream") == "");
+    }
+}

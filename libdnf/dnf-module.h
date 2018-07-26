@@ -42,6 +42,7 @@ private:
 
 bool dnf_module_dummy(const std::vector<std::string> & module_list);
 bool dnf_module_enable(const std::vector<std::string> & module_list, DnfSack *sack, GPtrArray *repos, const char *install_root, const char *platformModule);
+bool dnf_module_disable(const std::vector<std::string> & module_list, DnfSack *sack, GPtrArray *repos, const char *install_root, const char *platformModule);
 
 }
 

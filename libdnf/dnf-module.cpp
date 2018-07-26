@@ -156,4 +156,54 @@ bool dnf_module_enable(const std::vector<std::string> & module_list,
     return true;
 }
 
+/**
+ * dnf_module_disable
+ * @module_list: The list of module specs to disable
+ * @sack: DnfSack instance
+ * @repos: the list of repositories where to load modules from
+ * @install_root
+ *
+ * Disable module method
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.0.0
+ */
+bool dnf_module_disable(const std::vector<std::string> & module_list,
+                        DnfSack *sack, GPtrArray *repos,
+                        const char *install_root, const char *platformModule)
+{
+    ModuleExceptionList exList;
+
+    if (module_list.empty())
+        exList.add("module list cannot be empty");
+
+    auto modulesContainer = dnf_sack_get_module_container(sack);
+
+    for (const auto & spec : module_list) {
+        libdnf::Nsvcap parsed;
+        try {
+            dnf_module_parse_spec(spec, parsed);
+        } catch (const ModulePackageContainer::Exception &e) {
+            exList.add(e);
+            continue;
+        }
+
+        auto stream = parsed.getStream();
+        if (stream == "") {
+            stream = modulesContainer->getEnabledStream(parsed.getName());
+        }
+
+        modulesContainer->disable(parsed.getName(), stream);
+    }
+
+    if (!exList.empty())
+        throw exList;
+
+    modulesContainer->save();
+    dnf_sack_filter_modules(sack, repos, install_root, platformModule);
+
+    return true;
+}
+
 }
