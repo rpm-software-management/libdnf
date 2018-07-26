@@ -23,6 +23,7 @@
 #include <utility>
 extern "C" {
 #include <solv/solver.h>
+#include <solv/transaction.h>
 }
 
 #include "ModulePackage.hpp"
@@ -388,6 +389,7 @@ std::unique_ptr<libdnf::IdQueue> moduleSolve(const std::vector<std::shared_ptr<M
 
     std::unique_ptr<libdnf::IdQueue> installed(new libdnf::IdQueue);
     transaction_installedresult(transaction, installed->getQueue());
+    transaction_free(transaction);
     solver_free(solver);
     return installed;
 }
