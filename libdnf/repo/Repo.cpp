@@ -216,15 +216,15 @@ public:
     int maxMirrorTries{0}; // try them all
     // 0 forces expiration on the next call to load(), -1 means undefined value
     int timestamp;
-    int max_timestamp;
-    std::string repomd_fn;
-    std::string primary_fn;
-    std::string filelists_fn;
-    std::string presto_fn;
-    std::string updateinfo_fn;
-    std::string comps_fn;
+    int maxTimestamp;
+    std::string repomdFn;
+    std::string primaryFn;
+    std::string filelistsFn;
+    std::string prestoFn;
+    std::string updateinfoFn;
+    std::string compsFn;
 #ifdef MODULEMD
-    std::string modules_fn;
+    std::string modulesFn;
 #endif
     std::string revision;
     std::vector<std::string> content_tags;
@@ -452,10 +452,10 @@ bool Repo::getUseIncludes() const { return pImpl->useIncludes; }
 void Repo::setUseIncludes(bool enabled) { pImpl->useIncludes = enabled; }
 int Repo::getCost() const { return pImpl->conf->cost().getValue(); }
 int Repo::getPriority() const { return pImpl->conf->priority().getValue(); }
-std::string Repo::getCompsFn() { return pImpl->comps_fn; }
+std::string Repo::getCompsFn() { return pImpl->compsFn; }
 
 #ifdef MODULEMD
-std::string Repo::getModulesFn() { return pImpl->modules_fn; }
+std::string Repo::getModulesFn() { return pImpl->modulesFn; }
 #endif
 
 int Repo::getAge() const { return pImpl->getAge(); }
@@ -958,20 +958,20 @@ bool Repo::Impl::loadCache(bool throwExcept)
     resultGetInfo(r.get(), LRR_YUM_REPOMD, &yum_repomd);
 
     // Populate repo
-    repomd_fn = yum_repo->repomd;
-    primary_fn = lr_yum_repo_path(yum_repo, "primary");
-    filelists_fn = lr_yum_repo_path(yum_repo, "filelists");
+    repomdFn = yum_repo->repomd;
+    primaryFn = lr_yum_repo_path(yum_repo, "primary");
+    filelistsFn = lr_yum_repo_path(yum_repo, "filelists");
     auto tmp = lr_yum_repo_path(yum_repo, "prestodelta");
-    presto_fn = tmp ? tmp : "";
+    prestoFn = tmp ? tmp : "";
     tmp = lr_yum_repo_path(yum_repo, "updateinfo");
-    updateinfo_fn = tmp ? tmp : "";
+    updateinfoFn = tmp ? tmp : "";
     tmp = lr_yum_repo_path(yum_repo, "group_gz");
     if (!tmp)
         tmp = lr_yum_repo_path(yum_repo, "group");
-    comps_fn = tmp ? tmp : "";
+    compsFn = tmp ? tmp : "";
 #ifdef MODULEMD
     tmp = lr_yum_repo_path(yum_repo, "modules");
-    modules_fn = tmp ? tmp : "";
+    modulesFn = tmp ? tmp : "";
 #endif
 
     content_tags.clear();
@@ -990,11 +990,11 @@ bool Repo::Impl::loadCache(bool throwExcept)
     }
 
     revision = yum_repomd->revision;
-    max_timestamp = lr_yum_repomd_get_highest_timestamp(yum_repomd, NULL);
+    maxTimestamp = lr_yum_repomd_get_highest_timestamp(yum_repomd, NULL);
 
     // Load timestamp unless explicitly expired
     if (timestamp != 0) {
-        timestamp = mtime(primary_fn.c_str());
+        timestamp = mtime(primaryFn.c_str());
     }
     g_strfreev(this->mirrors);
     this->mirrors = mirrors;
@@ -1047,7 +1047,7 @@ bool Repo::Impl::isMetalinkInSync()
         hash.chksum.reset(solv_chksum_create(chkType));
     }
 
-    std::ifstream repomd(repomd_fn, std::ifstream::binary);
+    std::ifstream repomd(repomdFn, std::ifstream::binary);
     char buf[4096];
     int readed;
     while ((readed = repomd.readsome(buf, sizeof(buf))) > 0) {
@@ -1089,7 +1089,7 @@ bool Repo::Impl::isRepomdInSync()
     auto r = lrHandlePerform(h.get(), tmpdir, false);
     resultGetInfo(r.get(), LRR_YUM_REPO, &yum_repo);
 
-    auto same = haveFilesSameContent(repomd_fn.c_str(), yum_repo->repomd);
+    auto same = haveFilesSameContent(repomdFn.c_str(), yum_repo->repomd);
     if (same)
         logger->debug(tfm::format(_("reviving: '%s' can be revived - repomd matches."), id));
     else
@@ -1142,9 +1142,9 @@ bool Repo::Impl::load()
 {
     auto logger(Log::getLogger());
     try {
-        if (!primary_fn.empty() || loadCache(false)) {
+        if (!primaryFn.empty() || loadCache(false)) {
             if (conf->getMasterConfig().check_config_file_age().getValue() &&
-                !repoFilePath.empty() && mtime(repoFilePath.c_str()) > mtime(primary_fn.c_str()))
+                !repoFilePath.empty() && mtime(repoFilePath.c_str()) > mtime(primaryFn.c_str()))
                 expired = true;
             if (!expired || syncStrategy == SyncStrategy::ONLY_CACHE || syncStrategy == SyncStrategy::LAZY) {
                 logger->debug(tfm::format(_("repo: using cache for: %s"), id));
@@ -1153,7 +1153,7 @@ bool Repo::Impl::load()
 
             if (isInSync()) {
                 // the expired metadata still reflect the origin:
-                utimes(primary_fn.c_str(), NULL);
+                utimes(primaryFn.c_str(), NULL);
                 expired = false;
                 return true;
             }
@@ -1208,7 +1208,7 @@ std::string Repo::Impl::getCachedir() const
 
 int Repo::Impl::getAge() const
 {
-    return time(NULL) - mtime(primary_fn.c_str());
+    return time(NULL) - mtime(primaryFn.c_str());
 }
 
 void Repo::Impl::expire()
@@ -1289,7 +1289,7 @@ int Repo::getTimestamp() const
 
 int Repo::getMaxTimestamp()
 {
-    return pImpl->max_timestamp;
+    return pImpl->maxTimestamp;
 }
 
 const std::vector<std::string> & Repo::getContentTags()
@@ -1310,28 +1310,28 @@ const std::string & Repo::getRevision() const
 void Repo::initHyRepo(HyRepo hrepo)
 {
     auto logger(Log::getLogger());
-    hy_repo_set_string(hrepo, HY_REPO_MD_FN, pImpl->repomd_fn.c_str());
-    hy_repo_set_string(hrepo, HY_REPO_PRIMARY_FN, pImpl->primary_fn.c_str());
-    if (pImpl->filelists_fn.empty())
+    hy_repo_set_string(hrepo, HY_REPO_MD_FN, pImpl->repomdFn.c_str());
+    hy_repo_set_string(hrepo, HY_REPO_PRIMARY_FN, pImpl->primaryFn.c_str());
+    if (pImpl->filelistsFn.empty())
         logger->debug(tfm::format(_("not found filelist for: %s"), pImpl->conf->name().getValue()));
     else
-        hy_repo_set_string(hrepo, HY_REPO_FILELISTS_FN, pImpl->filelists_fn.c_str());
+        hy_repo_set_string(hrepo, HY_REPO_FILELISTS_FN, pImpl->filelistsFn.c_str());
 #ifdef MODULEMD
-    if (pImpl->modules_fn.empty())
+    if (pImpl->modulesFn.empty())
         logger->debug(tfm::format(_("not found modules for: %s"), pImpl->conf->name().getValue()));
     else
-        hy_repo_set_string(hrepo, MODULES_FN, pImpl->modules_fn.c_str());
+        hy_repo_set_string(hrepo, MODULES_FN, pImpl->modulesFn.c_str());
 #endif
     hy_repo_set_cost(hrepo, pImpl->conf->cost().getValue());
     hy_repo_set_priority(hrepo, pImpl->conf->priority().getValue());
-    if (pImpl->presto_fn.empty())
+    if (pImpl->prestoFn.empty())
         logger->debug(tfm::format(_("not found deltainfo for: %s"), pImpl->conf->name().getValue()));
     else
-        hy_repo_set_string(hrepo, HY_REPO_PRESTO_FN, pImpl->presto_fn.c_str());
-    if (pImpl->updateinfo_fn.empty())
+        hy_repo_set_string(hrepo, HY_REPO_PRESTO_FN, pImpl->prestoFn.c_str());
+    if (pImpl->updateinfoFn.empty())
         logger->debug(tfm::format(_("not found updateinfo for: %s"), pImpl->conf->name().getValue()));
     else
-        hy_repo_set_string(hrepo, HY_REPO_UPDATEINFO_FN, pImpl->updateinfo_fn.c_str());
+        hy_repo_set_string(hrepo, HY_REPO_UPDATEINFO_FN, pImpl->updateinfoFn.c_str());
 }
 
 std::string Repo::getCachedir() const
