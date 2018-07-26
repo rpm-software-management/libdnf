@@ -71,6 +71,7 @@ typedef enum {
  * @DNF_SACK_LOAD_FLAG_USE_FILELISTS:           Use the filelists metadata
  * @DNF_SACK_LOAD_FLAG_USE_PRESTO:              Use presto deltas metadata
  * @DNF_SACK_LOAD_FLAG_USE_UPDATEINFO:          Use updateinfo metadata
+ * @DNF_SACK_LOAD_FLAG_USE_OTHER:               Use other metadata
  *
  * Flags to use when loading from the sack.
  **/
@@ -80,6 +81,7 @@ typedef enum {
     DNF_SACK_LOAD_FLAG_USE_FILELISTS        = 1 << 1,
     DNF_SACK_LOAD_FLAG_USE_PRESTO           = 1 << 2,
     DNF_SACK_LOAD_FLAG_USE_UPDATEINFO       = 1 << 3,
+    DNF_SACK_LOAD_FLAG_USE_OTHER            = 1 << 4,
     /*< private >*/
     DNF_SACK_LOAD_FLAG_LAST
 } DnfSackLoadFlags;
@@ -174,15 +176,17 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
  * @DNF_SACK_ADD_FLAG_UPDATEINFO:               Add the updateinfo
  * @DNF_SACK_ADD_FLAG_REMOTE:                   Use remote repos
  * @DNF_SACK_ADD_FLAG_UNAVAILABLE:              Add repos that are unavailable
+ * @DNF_SACK_ADD_FLAG_OTHER:                    Add the other
  *
  * Flags to control repo loading into the sack.
  **/
 typedef enum {
         DNF_SACK_ADD_FLAG_NONE                  = 0,
-        DNF_SACK_ADD_FLAG_FILELISTS             = 1,
-        DNF_SACK_ADD_FLAG_UPDATEINFO            = 2,
-        DNF_SACK_ADD_FLAG_REMOTE                = 4,
-        DNF_SACK_ADD_FLAG_UNAVAILABLE           = 8,
+        DNF_SACK_ADD_FLAG_FILELISTS             = 1 << 0,
+        DNF_SACK_ADD_FLAG_UPDATEINFO            = 1 << 1,
+        DNF_SACK_ADD_FLAG_REMOTE                = 1 << 2,
+        DNF_SACK_ADD_FLAG_UNAVAILABLE           = 1 << 3,
+        DNF_SACK_ADD_FLAG_OTHER                 = 1 << 4,
         /*< private >*/
         DNF_SACK_ADD_FLAG_LAST
 } DnfSackAddFlags;

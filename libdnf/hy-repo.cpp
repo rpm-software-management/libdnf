@@ -78,6 +78,9 @@ repo_update_state(HyRepo repo, enum _hy_repo_repodata which,
     case _HY_REPODATA_UPDATEINFO:
         repo->state_updateinfo = state;
         return;
+    case _HY_REPODATA_OTHER:
+        repo->state_other = state;
+        return;
     default:
         assert(0);
     }
@@ -94,6 +97,8 @@ repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which)
         return repo->presto_repodata;
     case _HY_REPODATA_UPDATEINFO:
         return repo->updateinfo_repodata;
+    case _HY_REPODATA_OTHER:
+        return repo->other_repodata;
     default:
         assert(0);
         return 0;
@@ -112,6 +117,9 @@ repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata)
         return;
     case _HY_REPODATA_UPDATEINFO:
         repo->updateinfo_repodata = repodata;
+        return;
+    case _HY_REPODATA_OTHER:
+        repo->other_repodata = repodata;
         return;
     default:
         assert(0);
@@ -205,6 +213,10 @@ hy_repo_set_string(HyRepo repo, int which, const char *str_val)
         g_free(repo->updateinfo_fn);
         repo->updateinfo_fn = g_strdup(str_val);
         break;
+    case HY_REPO_OTHER_FN:
+        g_free(repo->other_fn);
+        repo->other_fn = g_strdup(str_val);
+        break;
     case MODULES_FN:
         g_free(repo->modules_fn);
         repo->modules_fn = g_strdup(str_val);
@@ -230,6 +242,8 @@ hy_repo_get_string(HyRepo repo, int which)
         return repo->presto_fn;
     case HY_REPO_UPDATEINFO_FN:
         return repo->updateinfo_fn;
+    case HY_REPO_OTHER_FN:
+        return repo->other_fn;
     case MODULES_FN:
         return repo->modules_fn;
     default:
@@ -252,5 +266,6 @@ hy_repo_free(HyRepo repo)
     g_free(repo->presto_fn);
     g_free(repo->updateinfo_fn);
     g_free(repo->modules_fn);
+    g_free(repo->other_fn);
     g_free(repo);
 }

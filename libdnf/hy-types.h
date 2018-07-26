@@ -51,6 +51,7 @@ typedef int (*hy_solution_callback)(HyGoal goal, void *callback_data);
 #define HY_EXT_FILENAMES "-filenames"
 #define HY_EXT_UPDATEINFO "-updateinfo"
 #define HY_EXT_PRESTO "-presto"
+#define HY_EXT_OTHER "-other"
 
 enum _hy_key_name_e {
     HY_PKG = 0,
