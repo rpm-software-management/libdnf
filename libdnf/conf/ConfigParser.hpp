@@ -92,6 +92,7 @@ public:
     const std::string & getValue(const std::string & section, const std::string & key) const;
     std::string getSubstitutedValue(const std::string & section, const std::string & key) const;
     const std::map<std::string, std::map<std::string, std::string>> & getData() const noexcept;
+    std::map<std::string, std::map<std::string, std::string>> & getData() noexcept;
 
 private:
     std::map<std::string, std::string> substitutions;
@@ -120,6 +121,12 @@ inline bool ConfigParser::hasSection(const std::string & section) const
 
 inline const std::map<std::string,
     std::map<std::string, std::string>> & ConfigParser::getData() const noexcept
+{
+    return data;
+}
+
+inline std::map<std::string,
+    std::map<std::string, std::string>> & ConfigParser::getData() noexcept
 {
     return data;
 }
