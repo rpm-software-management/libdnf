@@ -34,6 +34,11 @@ extern "C" {
 #include <functional>
 #include <../sack/query.hpp>
 
+static std::string
+stringFormater(std::string imput)
+{
+    return imput.empty() ? "*" : imput;
+}
 
 class ModulePackageContainer::Impl {
 public:
@@ -183,6 +188,32 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<std::shared_ptr<Modu
     solver_free(solver);
     return installed;
 }
+
+std::vector<std::shared_ptr<ModulePackage>>
+ModulePackageContainer::query(libdnf::Nsvcap& moduleNevra)
+{
+    // Alternativally a search using module provides could be performed
+    std::vector<std::shared_ptr<ModulePackage>> result;
+    libdnf::Query query(pImpl->moduleSack);
+    // platform modules are installed and not in modules std::Map.
+    query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    std::ostringstream ss;
+    ss << stringFormater(moduleNevra.getName()) << ":" << stringFormater(moduleNevra.getStream());
+    ss << ":" << stringFormater(std::to_string(moduleNevra.getVersion())) << ":";
+    ss << stringFormater(moduleNevra.getContext());
+    query.addFilter(HY_PKG_NAME, HY_GLOB, ss.str().c_str());
+    auto arch = moduleNevra.getArch();
+    if (!arch.empty()) {
+        query.addFilter(HY_PKG_ARCH, HY_GLOB, arch.c_str());
+    }
+    auto pset = query.runSet();
+    Id moduleId = -1;
+    while ((moduleId = pset->next(moduleId)) != -1) {
+        result.push_back(pImpl->modules.at(moduleId));
+    }
+    return result;
+}
+
 
 void ModulePackageContainer::resolveActiveModulePackages(const std::map<std::string, std::string> &defaultStreams)
 {
