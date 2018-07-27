@@ -41,13 +41,13 @@ namespace libdnf {
 
 /**
 * @brief Converts a friendly bandwidth option to bytes
-* 
+*
 * Function converts a friendly bandwidth option to bytes.  The input
 * should be a string containing a (possibly floating point)
 * number followed by an optional single character unit. Valid
 * units are 'k', 'M', 'G'. Case is ignored. The convention that
 * 1k = 1024 bytes is used.
-* 
+*
 * @param str Bandwidth as user friendly string
 * @return int Number of bytes
 */
@@ -118,7 +118,7 @@ static void addFromFiles(std::ostream & out, const std::string & globPath)
 
 /**
 * @brief Replaces globs (like /etc/foo.d/\\*.foo) by content of matching files.
-* 
+*
 * Ignores comment lines (start with '#') and blank lines in files.
 * Result:
 * Words delimited by spaces. Characters ',' and '\n' are replaced by spaces.
@@ -506,6 +506,9 @@ class ConfigMain::Impl {
 
     OptionNumber<std::uint32_t> deltarpm_percentage{75};
     OptionBinding deltaRpmPercentageBinding{owner, deltarpm_percentage, "deltarpm_percentage"};
+
+    OptionStringList extra_metadata{std::vector<std::string>{}};
+    OptionBinding extraMetadataBinding{owner, extra_metadata, "extra_metadata"};
 };
 
 ConfigMain::ConfigMain() { pImpl = std::unique_ptr<Impl>(new Impl(*this)); }
@@ -606,5 +609,6 @@ OptionString & ConfigMain::sslclientcert() { return pImpl->sslclientcert; }
 OptionString & ConfigMain::sslclientkey() { return pImpl->sslclientkey; }
 OptionBool & ConfigMain::deltarpm() { return pImpl->deltarpm; }
 OptionNumber<std::uint32_t> & ConfigMain::deltarpm_percentage() { return pImpl->deltarpm_percentage; }
+OptionStringList & ConfigMain::extra_metadata() { return pImpl->extra_metadata; }
 
 }

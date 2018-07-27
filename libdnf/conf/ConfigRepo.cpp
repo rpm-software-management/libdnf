@@ -149,6 +149,9 @@ class ConfigRepo::Impl {
     OptionChild<OptionNumber<std::uint32_t> > deltarpm_percentage{masterConfig.deltarpm_percentage()};
     OptionBinding deltaRpmPercentageBinding{owner, deltarpm_percentage, "deltarpm_percentage"};
 
+    OptionChild<OptionStringList> extra_metadata{masterConfig.extra_metadata()};
+    OptionBinding extraMetadataBinding{owner, extra_metadata, "extra_metadata"};
+
     OptionBool skip_if_unavailable{true};
     OptionBinding skipIfUnavailableBinding{owner, skip_if_unavailable, "skip_if_unavailable"};
 
@@ -203,6 +206,7 @@ OptionChild<OptionString> & ConfigRepo::sslclientcert() { return pImpl->sslclien
 OptionChild<OptionString> & ConfigRepo::sslclientkey() { return pImpl->sslclientkey; }
 OptionChild<OptionBool> & ConfigRepo::deltarpm() { return pImpl->deltarpm; }
 OptionChild<OptionNumber<std::uint32_t> > & ConfigRepo::deltarpm_percentage() { return pImpl->deltarpm_percentage; }
+OptionChild<OptionStringList> & ConfigRepo::extra_metadata() { return pImpl->extra_metadata; }
 OptionBool & ConfigRepo::skip_if_unavailable() { return pImpl->skip_if_unavailable; }
 OptionString & ConfigRepo::enabled_metadata() { return pImpl->enabled_metadata; }
 OptionEnum<std::string> & ConfigRepo::failovermethod() { return pImpl->failovermethod; }
