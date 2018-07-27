@@ -128,6 +128,9 @@ class ConfigRepo::Impl {
     OptionNumber<std::int32_t> priority{99};
     OptionBinding priorityBinding{owner, priority, "priority"};
 
+    OptionBool module_hotfixes{false};
+    OptionBinding moduleHotfixesBinding{owner, module_hotfixes, "module_hotfixes"};
+
     OptionChild<OptionString> sslcacert{masterConfig.sslcacert()};
     OptionBinding sslCaCertBinding{owner, sslcacert, "sslcacert"};
 
@@ -193,6 +196,7 @@ OptionChild<OptionNumber<std::uint32_t> > & ConfigRepo::max_parallel_downloads()
 OptionChild<OptionSeconds> & ConfigRepo::metadata_expire() { return pImpl->metadata_expire; }
 OptionNumber<std::int32_t> & ConfigRepo::cost() { return pImpl->cost; }
 OptionNumber<std::int32_t> & ConfigRepo::priority() { return pImpl->priority; }
+OptionBool & ConfigRepo::module_hotfixes() { return pImpl->module_hotfixes; }
 OptionChild<OptionString> & ConfigRepo::sslcacert() { return pImpl->sslcacert; }
 OptionChild<OptionBool> & ConfigRepo::sslverify() { return pImpl->sslverify; }
 OptionChild<OptionString> & ConfigRepo::sslclientcert() { return pImpl->sslclientcert; }

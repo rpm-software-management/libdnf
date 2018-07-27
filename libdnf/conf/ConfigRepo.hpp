@@ -76,6 +76,7 @@ public:
     OptionChild<OptionSeconds> & metadata_expire();
     OptionNumber<std::int32_t> & cost();
     OptionNumber<std::int32_t> & priority();
+    OptionBool & module_hotfixes();
     OptionChild<OptionString> & sslcacert();
     OptionChild<OptionBool> & sslverify();
     OptionChild<OptionString> & sslclientcert();

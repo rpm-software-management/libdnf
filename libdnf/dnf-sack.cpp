@@ -2183,7 +2183,7 @@ std::tuple<std::vector<std::string>, std::vector<std::string>> collectNevraForIn
     return std::tuple<std::vector<std::string>, std::vector<std::string>>{includeNEVRAs, excludeNEVRAs};
 }
 
-static void setModuleExcludes(DnfSack *sack, std::vector<std::string> &includeNEVRAs, std::vector<std::string> &excludeNEVRAs)
+static void setModuleExcludes(DnfSack *sack, const std::vector<std::string> &hotfixRepos, const std::vector<std::string> &includeNEVRAs, const std::vector<std::string> &excludeNEVRAs)
 {
     std::vector<std::string> names;
     libdnf::DependencyContainer nameDependencies{sack};
@@ -2204,8 +2204,14 @@ static void setModuleExcludes(DnfSack *sack, std::vector<std::string> &includeNE
     transform(includeNEVRAs.begin(), includeNEVRAs.end(), includeNEVRAsCString.begin(), std::mem_fn(&std::string::c_str));
 
     libdnf::Query keepPackages{sack};
-    const char *keepRepo[] = {HY_CMDLINE_REPO_NAME, HY_SYSTEM_REPO_NAME, nullptr};
-    keepPackages.addFilter(HY_PKG_REPONAME, HY_NEQ, keepRepo);
+    std::vector<const char *> keepRepo;
+    keepRepo.push_back(HY_CMDLINE_REPO_NAME);
+    keepRepo.push_back(HY_SYSTEM_REPO_NAME);
+    for (auto & repoid : hotfixRepos) {
+        keepRepo.push_back(repoid.c_str());
+    }
+    keepRepo.push_back(nullptr);
+    keepPackages.addFilter(HY_PKG_REPONAME, HY_NEQ, keepRepo.data());
 
     libdnf::Query includeQuery{sack};
     libdnf::Query excludeQuery{keepPackages};
@@ -2250,5 +2256,15 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
 
     auto activeModulePackages = modulePackages.getActiveModulePackages(defaultStreams);
     auto nevraTuple = collectNevraForInclusionExclusion(modulePackages, activeModulePackages);
-    setModuleExcludes(sack, std::get<0>(nevraTuple), std::get<1>(nevraTuple));
+
+    std::vector<std::string> hotfixRepos;
+    // don't filter RPMs from repos with the 'module_hotfixes' flag set
+    for (unsigned int i = 0; i < repos->len; i++) {
+        auto repo = static_cast<DnfRepo *>(g_ptr_array_index(repos, i));
+        if (dnf_repo_get_module_hotfixes(repo)) {
+            hotfixRepos.push_back(dnf_repo_get_id(repo));
+        }
+    }
+
+    setModuleExcludes(sack, hotfixRepos, std::get<0>(nevraTuple), std::get<1>(nevraTuple));
 }

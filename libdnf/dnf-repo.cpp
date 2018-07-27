@@ -57,6 +57,7 @@ typedef struct
     gchar          **gpgkeys;
     gchar          **exclude_packages;
     guint            cost;
+    gboolean         module_hotfixes;
     guint            metadata_expire;       /*seconds*/
     gchar           *filename;      /* /etc/yum.repos.d/updates.repo */
     gchar           *id;
@@ -362,6 +363,23 @@ dnf_repo_get_cost(DnfRepo *repo)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->cost;
+}
+
+/**
+ * dnf_repo_get_module_hotfixes:
+ * @repo: a #DnfRepo instance.
+ *
+ * Gets the repo hotfixes flag for module RPMs filtering.
+ *
+ * Returns: the repo module_hotfixes flag, where false is default
+ *
+ * Since: 0.16.1
+ **/
+gboolean
+dnf_repo_get_module_hotfixes(DnfRepo *repo)
+{
+    DnfRepoPrivate *priv = GET_PRIVATE(repo);
+    return priv->module_hotfixes;
 }
 
 /**
@@ -689,6 +707,22 @@ dnf_repo_set_cost(DnfRepo *repo, guint cost)
 }
 
 /**
+ * dnf_repo_set_module_hotfixes:
+ * @repo: a #DnfRepo instance.
+ * @module_hotfixes: hotfixes flag for module RPMs filtering
+ *
+ * Sets the repo hotfixes flag for module RPMs filtering.
+ *
+ * Since: 0.16.1
+ **/
+void
+dnf_repo_set_module_hotfixes(DnfRepo *repo, gboolean module_hotfixes)
+{
+    DnfRepoPrivate *priv = GET_PRIVATE(repo);
+    priv->module_hotfixes = module_hotfixes;
+}
+
+/**
  * dnf_repo_set_kind:
  * @repo: a #DnfRepo instance.
  * @kind: the #DnfRepoKind
@@ -903,6 +937,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     guint cost;
+    gboolean module_hotfixes = false;
     g_autofree gchar *metadata_expire_str = NULL;
     g_autofree gchar *mirrorlist = NULL;
     g_autofree gchar *mirrorlisturl = NULL;
@@ -929,6 +964,9 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     cost = g_key_file_get_integer(priv->keyfile, priv->id, "cost", NULL);
     if (cost != 0)
         dnf_repo_set_cost(repo, cost);
+
+    module_hotfixes = g_key_file_get_boolean(priv->keyfile, priv->id, "module_hotfixes", NULL);
+    dnf_repo_set_module_hotfixes(repo, module_hotfixes);
 
     /* baseurl is optional; if missing, unset it */
     baseurls = g_key_file_get_string_list(priv->keyfile, priv->id, "baseurl", NULL, NULL);
