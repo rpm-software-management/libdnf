@@ -30,6 +30,7 @@ extern "C" {
 #include "ModulePackageContainer.hpp"
 #include "libdnf/utils/utils.hpp"
 #include "libdnf/utils/File.hpp"
+#include "libdnf/dnf-sack-private.hpp"
 #include <functional>
 #include <../sack/query.hpp>
 
@@ -42,15 +43,17 @@ public:
 private:
     friend struct ModulePackageContainer;
     std::map<Id, std::shared_ptr<ModulePackage>> modules;
-    Pool * pool;
+    DnfSack * moduleSack;
     Map * activatedModules{nullptr};
 };
 
-ModulePackageContainer::ModulePackageContainer(const char * arch) : pImpl(new Impl)
+ModulePackageContainer::ModulePackageContainer(DnfSack * sack) : pImpl(new Impl)
 {
-    pImpl->pool = pool_create();
-    if (arch) {
-        pool_setarch(pImpl->pool, arch);
+    pImpl->moduleSack = dnf_sack_new();
+    if (dnf_sack_get_all_arch(sack)) {
+        dnf_sack_set_all_arch(pImpl->moduleSack, TRUE);
+    } else {
+        dnf_sack_set_arch(pImpl->moduleSack, dnf_sack_get_arch(sack), NULL);
     }
 }
 
@@ -62,19 +65,20 @@ ModulePackageContainer::Impl::~Impl()
         map_free(activatedModules);
         delete activatedModules;
     }
-    pool_free(pool);
+    g_object_unref(moduleSack);
 }
 
 void
 ModulePackageContainer::add(HyRepo repo, const std::string &fileContent)
 {
+    Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
     auto metadata = ModuleMetadata::metadataFromString(fileContent);
 
     Repo *solvRepo = repo->libsolv_repo;
-    Repo *clonedRepo = repo_create(pImpl->pool, solvRepo->name);
+    Repo *clonedRepo = repo_create(pool, solvRepo->name);
 
     for (auto data : metadata) {
-        auto modulePackage = std::make_shared<ModulePackage>(pImpl->pool, clonedRepo, data);
+        auto modulePackage = std::make_shared<ModulePackage>(pImpl->moduleSack, clonedRepo, data);
         pImpl->modules.insert(std::make_pair(modulePackage->getId(), modulePackage));
     }
 }
@@ -83,8 +87,8 @@ Id
 ModulePackageContainer::addPlatformPackage(const std::string& osReleasePath,
     const std::string install_root, const char* platformModule)
 {
-    return ModulePackage::createPlatformSolvable(pImpl->pool, osReleasePath, install_root,
-                                                 platformModule);
+    return ModulePackage::createPlatformSolvable(pImpl->moduleSack, osReleasePath, install_root,
+        platformModule);
 }
 
 void ModulePackageContainer::createConflictsBetweenStreams()
@@ -120,7 +124,7 @@ ModulePackageContainer::requiresModuleEnablement(const libdnf::PackageSet & pack
     baseQuery.apply();
     libdnf::Query testQuery(baseQuery);
     auto modules = pImpl->modules;
-    auto moduleMapSize = pImpl->pool->nsolvables;
+    auto moduleMapSize = dnf_sack_get_pool(pImpl->moduleSack)->nsolvables;
     for (Id id = 0; id < moduleMapSize; ++id) {
         if (!MAPTST(activatedModules, id)) {
             continue;
@@ -158,6 +162,7 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<std::shared_ptr<Modu
     if (modules.empty()) {
         return {};
     }
+    Pool * pool = dnf_sack_get_pool(moduleSack);
     pool_createwhatprovides(pool);
     std::vector<Id> solvedIds;
     libdnf::IdQueue job;
@@ -181,6 +186,7 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<std::shared_ptr<Modu
 
 void ModulePackageContainer::resolveActiveModulePackages(const std::map<std::string, std::string> &defaultStreams)
 {
+    Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
     std::vector<std::shared_ptr<ModulePackage>> packages;
 
     // Use only Enabled or Default modules for transaction
@@ -207,11 +213,11 @@ void ModulePackageContainer::resolveActiveModulePackages(const std::map<std::str
     } else {
         pImpl->activatedModules = new Map;
     }
-    map_init(pImpl->activatedModules, pImpl->pool->nsolvables);
+    map_init(pImpl->activatedModules, pool->nsolvables);
     auto activatedModules = pImpl->activatedModules;
     for (int i = 0; i < ids->size(); ++i) {
         Id id = (*ids)[i];
-        auto solvable = pool_id2solvable(pImpl->pool, id);
+        auto solvable = pool_id2solvable(pool, id);
         // TODO use Goal::listInstalls() to not requires filtering out Platform
         if (strcmp(solvable->repo->name, HY_SYSTEM_REPO_NAME) == 0)
             continue;

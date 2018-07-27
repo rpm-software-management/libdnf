@@ -25,7 +25,8 @@
 #include "ModulePackage.hpp"
 #include "libdnf/utils/File.hpp"
 
-static void setSovable(Pool *pool, Solvable *solvable, std::string name, std::string stream, std::string version, std::string context, const char * arch)
+static void setSovable(Pool * pool, Solvable *solvable, std::string name,
+    std::string stream, std::string version, std::string context, const char * arch)
 {
     std::ostringstream ss;
     // create solvable with:
@@ -56,15 +57,18 @@ static void setSovable(Pool *pool, Solvable *solvable, std::string name, std::st
     solvable_add_deparray(solvable, SOLVABLE_PROVIDES, depId, -1);
 }
 
-ModulePackage::ModulePackage(Pool *pool, Repo *repo, const std::shared_ptr<ModuleMetadata> &metadata)
+ModulePackage::ModulePackage(DnfSack * moduleSack, Repo * repo,
+    const std::shared_ptr<ModuleMetadata> &metadata)
         : metadata(metadata)
         , state(ModuleState::UNKNOWN)
-        , pool(pool)
+        , moduleSack(moduleSack)
 {
+    Pool * pool = dnf_sack_get_pool(moduleSack);
     id = repo_add_solvable(repo);
     Solvable *solvable = pool_id2solvable(pool, id);
 
-    setSovable(pool, solvable, getName(), getStream(), getVersion(), getContext(), metadata->getArchitecture());
+    setSovable(pool, solvable, getName(), getStream(), getVersion(), getContext(),
+        metadata->getArchitecture());
     createDependencies(solvable);
 }
 
@@ -75,6 +79,7 @@ void ModulePackage::createDependencies(Solvable *solvable) const
 {
     std::ostringstream ss;
     Id depId;
+    Pool * pool = dnf_sack_get_pool(moduleSack);
 
     for (const auto &dependency : getModuleDependencies()) {
         for (const auto &requires : dependency->getRequires()) {
@@ -279,6 +284,7 @@ void ModulePackage::enable()
  */
 void ModulePackage::addStreamConflict(const std::shared_ptr<ModulePackage> &package)
 {
+    Pool * pool = dnf_sack_get_pool(moduleSack);
     std::ostringstream ss;
     Solvable *solvable = pool_id2solvable(pool, id);
 
@@ -323,9 +329,10 @@ static std::pair<std::string, std::string> getPlatformStream(const std::string &
 }
 
 Id
-ModulePackage::createPlatformSolvable(Pool * pool, const std::string & osReleasePath,
-    const std::string install_root, const char* platformModule)
+ModulePackage::createPlatformSolvable(DnfSack * moduleSack, const std::string & osReleasePath,
+    const std::string install_root, const char * platformModule)
 {
+    Pool * pool = dnf_sack_get_pool(moduleSack);
     Repo *repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
     Id id = repo_add_solvable(repo);
     Solvable *solvable = pool_id2solvable(pool, id);

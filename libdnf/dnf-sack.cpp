@@ -834,6 +834,21 @@ dnf_sack_get_all_arch (DnfSack *sack)
 }
 
 /**
+ * dnf_sack_get_arch
+ * @sack: a #DnfSack instance.
+ *
+ * Returns: the state of all_arch.
+ *
+ * Since: 0.16.2
+ */
+const char *
+dnf_sack_get_arch (DnfSack *sack)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    return priv->arch;
+}
+
+/**
  * dnf_sack_set_rootdir:
  * @sack: a #DnfSack instance.
  * @value: a directory path, or %NULL.
@@ -2284,7 +2299,7 @@ void dnf_sack_filter_modules(DnfSack * sack, const char ** hotfixRepos, const ch
     if (priv->moduleContainer) {
         delete priv->moduleContainer;
     }
-    priv->moduleContainer = new ModulePackageContainer(priv->arch);
+    priv->moduleContainer = new ModulePackageContainer(sack);
     ModuleDefaultsContainer moduleDefaults;
 
     readModuleMetadataFromRepo(sack, moduleDefaults, install_root, platformModule);
