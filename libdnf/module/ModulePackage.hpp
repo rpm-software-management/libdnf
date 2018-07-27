@@ -41,7 +41,7 @@ public:
         DEFAULT
     };
 
-    ModulePackage(Pool *pool, Repo *repo, const std::shared_ptr<ModuleMetadata> &metadata);
+    ModulePackage(DnfSack * moduleSack, Repo *repo, const std::shared_ptr<ModuleMetadata> &metadata);
 
     /**
     * @brief Create module provides based on modulemd metadata.
@@ -77,7 +77,7 @@ public:
 
 private:
     friend ModulePackageContainer;
-    static Id createPlatformSolvable(Pool *pool, const std::string &osReleasePath,
+    static Id createPlatformSolvable(DnfSack * moduleSack, const std::string &osReleasePath,
         const std::string install_root, const char *  platformModule);
     void createDependencies(Solvable *solvable) const;
 
@@ -85,7 +85,7 @@ private:
     ModuleState state;
 
     // TODO: remove after inheriting from Package
-    Pool *pool;
+    DnfSack * moduleSack;
     Id id;
 };
 

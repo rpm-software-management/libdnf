@@ -61,6 +61,7 @@ void         dnf_sack_make_provides_ready   (DnfSack    *sack);
 Id           dnf_sack_running_kernel        (DnfSack    *sack);
 void         dnf_sack_recompute_considered  (DnfSack    *sack);
 Id           dnf_sack_last_solvable         (DnfSack    *sack);
+const char * dnf_sack_get_arch              (DnfSack    *sack);
 
 Queue       *dnf_sack_get_installonly       (DnfSack    *sack);
 void         dnf_sack_set_running_kernel_fn (DnfSack    *sack,

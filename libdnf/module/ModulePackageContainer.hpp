@@ -52,7 +52,7 @@ public:
         explicit EnabledStreamException(const std::string &moduleName) : Exception("No enabled stream for module: " + moduleName) {}
     };
 
-    explicit ModulePackageContainer(const char * arch);
+    explicit ModulePackageContainer(DnfSack * sack);
     ~ModulePackageContainer();
 
     void add(HyRepo repo, const std::string &fileContent);
