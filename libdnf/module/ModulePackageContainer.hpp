@@ -28,6 +28,7 @@
 #include <set>
 
 #include "ModulePackage.hpp"
+#include "libdnf/nsvcap.hpp"
 
 struct ModulePackageContainer
 {
@@ -64,6 +65,11 @@ public:
 
     std::vector<std::shared_ptr<ModulePackage>> requiresModuleEnablement(const libdnf::PackageSet & packages);
     void enable(const std::string &name, const std::string &stream);
+    /**
+    * @brief Query modules according libdnf::Nsvcap. But the search ignores profiles
+    *
+    */
+    std::vector<std::shared_ptr<ModulePackage>> query(libdnf::Nsvcap & moduleNevra);
 
     void resolveActiveModulePackages(const std::map<std::string, std::string> &defaultStreams);
     bool isModuleActive(Id id);
