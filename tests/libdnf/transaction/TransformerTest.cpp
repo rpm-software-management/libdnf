@@ -103,6 +103,8 @@ TransformerTest::testGroupTransformation()
             CPPUNIT_FAIL("Invalid item type: " + std::to_string(static_cast< int >(type)));
         }
     }
+
+    json_object_put(groupsJson);
 }
 
 void

@@ -14,6 +14,11 @@ void DependencyTest::setUp()
     dependency = std::unique_ptr<libdnf::Dependency>(new libdnf::Dependency(sack, "foo = 1.0"));
 }
 
+void DependencyTest::tearDown()
+{
+    g_object_unref(sack);
+}
+
 void DependencyTest::testName()
 {
     CPPUNIT_ASSERT(strcmp("foo", dependency->getName()) == 0);

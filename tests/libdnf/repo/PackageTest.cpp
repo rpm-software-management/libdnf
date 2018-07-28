@@ -18,6 +18,7 @@ void PackageTest::setUp()
 
 void PackageTest::tearDown()
 {
+    hy_repo_free(repo);
     g_object_unref(sack);
 }
 
