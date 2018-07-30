@@ -39,6 +39,7 @@
 #include "sack-py.hpp"
 #include "pycomp.hpp"
 #include "sack/advisorypkg.hpp"
+#include "sack/changelog.hpp"
 #include "sack/packageset.hpp"
 #include "sack/query.hpp"
 
@@ -121,6 +122,31 @@ advisoryRefVectorToPylist(const std::vector<libdnf::AdvisoryRef> & advisoryRefs,
             return NULL;
         int rc = PyList_Append(list.get(), pyAdvisoryRef.get());
         if (rc == -1)
+            return NULL;
+    }
+
+    return list.release();
+}
+
+PyObject *
+changelogslist_to_pylist(const GPtrArray *changelogslist)
+{
+    UniquePtrPyObject list(PyList_New(0));
+    if (!list)
+        return NULL;
+
+    for (unsigned int i = 0; i < changelogslist->len; ++i) {
+        auto citem = static_cast<libdnf::Changelog *>(g_ptr_array_index(changelogslist, i));
+        PyObject *d = PyDict_New();
+        if (!d)
+            return NULL;
+        if (PyDict_SetItemString(d, "author", PyUnicode_FromString(citem->author)) == -1)
+            return NULL;
+        if (PyDict_SetItemString(d, "text", PyUnicode_FromString(citem->text)) == -1)
+            return NULL;
+        if (PyDict_SetItemString(d, "timestamp", PyLong_FromUnsignedLongLong(citem->timestamp)) == -1)
+            return NULL;
+        if (PyList_Append(list.get(), d) == -1)
             return NULL;
     }
 

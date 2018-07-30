@@ -30,6 +30,7 @@
  */
 
 
+#include <ctime>
 #include <stdlib.h>
 #include <solv/evr.h>
 #include <solv/pool.h>
@@ -43,6 +44,7 @@
 #include "hy-package-private.hpp"
 #include "hy-repo-private.hpp"
 #include "repo/solvable/DependencyContainer.hpp"
+#include "sack/changelog.hpp"
 
 #define BLOCK_SIZE 31
 
@@ -941,6 +943,40 @@ dnf_package_get_files(DnfPackage *pkg)
     dataiterator_free(&di);
     g_ptr_array_add(ret, NULL);
     return (gchar**)g_ptr_array_free (ret, FALSE);
+}
+
+/**
+ * dnf_package_get_changelogs:
+ * @pkg: a #DnfPackage instance.
+ *
+ * Gets the list of changelogs for the package.
+ *
+ * Returns: (transfer container) (element-type ): a list
+ *
+ * Since: 0.16.3
+ */
+GPtrArray *
+dnf_package_get_changelogs(DnfPackage *pkg)
+{
+    DnfPackagePrivate *priv = GET_PRIVATE(pkg);
+    Pool *pool = dnf_package_get_pool(pkg);
+    Solvable *s = get_solvable(pkg);
+    Dataiterator di;
+    GPtrArray *changelogslist = g_ptr_array_new();
+
+    dataiterator_init(&di, pool, s->repo, priv->id, SOLVABLE_CHANGELOG_AUTHOR, NULL, 0);
+    dataiterator_prepend_keyname(&di, SOLVABLE_CHANGELOG);
+    while (dataiterator_step(&di)) {
+        dataiterator_setpos_parent(&di);
+        libdnf::Changelog *chlog = new libdnf::Changelog{
+            static_cast<time_t>(pool_lookup_num(pool, SOLVID_POS, SOLVABLE_CHANGELOG_TIME, 0)),
+            pool_lookup_str(pool, SOLVID_POS, SOLVABLE_CHANGELOG_AUTHOR),
+            pool_lookup_str(pool, SOLVID_POS, SOLVABLE_CHANGELOG_TEXT)};
+        g_ptr_array_add(changelogslist, chlog);
+    }
+    dataiterator_free(&di);
+
+    return changelogslist;
 }
 
 /**

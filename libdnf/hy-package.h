@@ -94,6 +94,7 @@ DnfReldepList *dnf_package_get_suggests     (DnfPackage *pkg);
 DnfReldepList *dnf_package_get_supplements  (DnfPackage *pkg);
 char       **dnf_package_get_files      (DnfPackage *pkg);
 GPtrArray   *dnf_package_get_advisories (DnfPackage *pkg, int cmp_type);
+GPtrArray   *dnf_package_get_changelogs (DnfPackage *pkg);
 
 DnfPackageDelta *dnf_package_get_delta_from_evr(DnfPackage *pkg, const char *from_evr);
 

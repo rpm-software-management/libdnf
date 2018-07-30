@@ -254,11 +254,25 @@ get_chksum(_PackageObject *self, void *closure)
     return res;
 }
 
+static PyObject *
+get_changelogs(_PackageObject *self, void *closure)
+{
+    GPtrArray *changelogs;
+    PyObject *list;
+
+    changelogs = dnf_package_get_changelogs(self->package);
+    list = changelogslist_to_pylist(changelogs);
+    g_ptr_array_unref(changelogs);
+
+    return list;
+}
+
 static PyGetSetDef package_getsetters[] = {
     {(char*)"baseurl",        (getter)get_str, NULL, NULL,
      (void *)dnf_package_get_baseurl},
     {(char*)"files",        (getter)get_str_array, NULL, NULL,
      (void *)dnf_package_get_files},
+    {(char*)"changelogs", (getter)get_changelogs, NULL, NULL, NULL},
     {(char*)"hdr_end", (getter)get_num, NULL, NULL, (void *)dnf_package_get_hdr_end},
     {(char*)"location",  (getter)get_str, NULL, NULL,
      (void *)dnf_package_get_location},
@@ -354,6 +368,7 @@ get_advisories(_PackageObject *self, PyObject *args)
 
     return list;
 }
+
 
 static struct PyMethodDef package_methods[] = {
     {"evr_cmp", (PyCFunction)evr_cmp, METH_O, NULL},
