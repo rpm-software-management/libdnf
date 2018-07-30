@@ -43,7 +43,7 @@ typedef struct PackageSet DnfPackageSet;
 typedef struct Dependency DnfReldep;
 typedef struct DependencyContainer DnfReldepList;
 #endif
-
+typedef struct ModulePackageContainer   DnfModulePackageContainer;
 typedef struct _DnfContext              DnfContext;
 typedef struct _DnfTransaction          DnfTransaction;
 typedef struct _DnfRepoLoader           DnfRepoLoader;

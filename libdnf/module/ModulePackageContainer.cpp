@@ -264,6 +264,9 @@ void ModulePackageContainer::resolveActiveModulePackages(const std::map<std::str
         }
     }
     auto ids = pImpl->moduleSolve(packages);
+    if (!ids || ids->size() == 0) {
+        return;
+    }
     if (pImpl->activatedModules) {
         map_free(pImpl->activatedModules);
     } else {
