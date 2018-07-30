@@ -8,7 +8,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PackageTest);
 
 void PackageTest::setUp()
 {
-    GError *error = nullptr;
+    g_autoptr(GError) error = nullptr;
     sack = dnf_sack_new();
     repo = hy_repo_create("repo");
     repo_finalize_init(repo, repo_create(dnf_sack_get_pool(sack), "repo"));
