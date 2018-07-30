@@ -168,6 +168,8 @@ static PyGetSetDef repo_getsetters[] = {
      (void *)HY_REPO_PRIMARY_FN},
     {(char*)"filelists_fn", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_FILELISTS_FN},
+    {(char*)"modules_fn", (getter)get_str, (setter)set_str, NULL,
+     (void *)MODULES_FN},
     {(char*)"presto_fn", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_PRESTO_FN},
     {(char*)"updateinfo_fn", (getter)get_str, (setter)set_str, NULL,

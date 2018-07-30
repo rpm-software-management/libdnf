@@ -362,27 +362,13 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
         break;
     }
     default: {
-        UniquePtrPyObject seq(PySequence_Fast(match, "Expected a sequence."));
-        if (!seq)
-            return 1;
-        const unsigned count = PySequence_Size(seq.get());
-        PycompString pMatches[count];
-        const char *matches[count + 1];
-        for (unsigned int i = 0; i < count; ++i) {
-            PyObject *item = PySequence_Fast_GET_ITEM(seq.get(), i);
-            if (PyUnicode_Check(item) || PyString_Check(item)) {
-                pMatches[i] = PycompString(item);
-                if (!pMatches[i].getCString())
-                    return 0;
-                matches[i] = pMatches[i].getCString();
-            } else {
-                PyErr_SetString(PyExc_TypeError, "Invalid filter match value.");
-                return 0;
-            }
+        std::vector<const char *> matches;
+        try {
+            matches = pySequenceConverter(match);
+        } catch (std::runtime_error) {
+            return 0;
         }
-        matches[count] = NULL;
-        int filter_in_ret = query->addFilter(keyname, cmp_type, matches);
-
+        int filter_in_ret = query->addFilter(keyname, cmp_type, matches.data());\
         if (filter_in_ret)
             return raise_bad_filter();
         break;

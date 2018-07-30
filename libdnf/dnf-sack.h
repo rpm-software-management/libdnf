@@ -164,8 +164,8 @@ gboolean     dnf_sack_load_repo             (DnfSack        *sack,
                                              GError        **error);
 Pool        *dnf_sack_get_pool              (DnfSack    *sack);
 
-void dnf_sack_filter_modules(DnfSack *sack, const char ** hotfixRepos, const char *install_root,
-    const char * platformModule);
+void dnf_sack_filter_modules(DnfSack *sack, DnfModulePackageContainer * moduleContainer,
+    const char ** hotfixRepos, const char *install_root, const char * platformModule);
 
 
 /**********************************************************************/

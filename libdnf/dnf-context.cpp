@@ -1327,7 +1327,8 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
             }
         }
         hotfixRepos.push_back(nullptr);
-        dnf_sack_filter_modules(sack, hotfixRepos.data(), priv->install_root, priv->platform_module);
+        dnf_sack_filter_modules(sack, nullptr, hotfixRepos.data(), priv->install_root,
+                                priv->platform_module);
     }
 
     /* create goal */

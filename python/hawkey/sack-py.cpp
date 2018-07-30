@@ -46,6 +46,14 @@ typedef struct {
     FILE *log_out;
 } _SackObject;
 
+typedef struct {
+    PyObject_HEAD
+    ModulePackageContainer * ptr;
+    void * ty;
+    int own;
+    PyObject * next;
+} ModulePackageContainerPyObject;
+
 PyObject *
 new_package(PyObject *sack, Id id)
 {
@@ -485,6 +493,35 @@ list_arches(_SackObject *self, PyObject *unused)
 }
 
 static PyObject *
+filter_modules(_SackObject *self, PyObject *args, PyObject *kwds)
+{
+    const char *kwlist[] = {"module_container", "hotfix_repos", "install_root", "platform_module",
+        NULL};
+    PyObject * pyModuleContainer;
+    PyObject * pyHotfixRepos;
+    char * installRoot = nullptr;
+    char * platformModule = nullptr;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOzz", (char**) kwlist, &pyModuleContainer,
+                                     &pyHotfixRepos, &installRoot, &platformModule))
+        return 0;
+
+    auto swigContainer = reinterpret_cast< ModulePackageContainerPyObject * >(
+        PyObject_GetAttrString(pyModuleContainer, "this"));
+    auto moduleContainer = swigContainer->ptr;
+    std::vector<const char *> hotfixRepos;
+    try {
+        hotfixRepos = pySequenceConverter(pyHotfixRepos);
+    } catch (std::runtime_error) {
+        return NULL;
+    }
+    dnf_sack_filter_modules(self->sack, moduleContainer, hotfixRepos.data(), installRoot,
+        platformModule);
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
 load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 {
     g_autoptr(GError) error = NULL;
@@ -604,6 +641,7 @@ PyMethodDef sack_methods[] = {
      NULL},
     {"list_arches", (PyCFunction)list_arches, METH_NOARGS,
      NULL},
+    {"filter_modules", (PyCFunction)filter_modules, METH_VARARGS | METH_KEYWORDS, NULL},
     {"load_system_repo", (PyCFunction)load_system_repo,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"load_repo", (PyCFunction)load_repo, METH_VARARGS | METH_KEYWORDS,

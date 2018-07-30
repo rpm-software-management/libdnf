@@ -60,6 +60,7 @@ inline PyObject * UniquePtrPyObject::release() noexcept
     return tmpObj;
 }
 
+std::vector<const char *> pySequenceConverter(PyObject * pySequence);
 PyObject *advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack);
 PyObject *advisoryPkgVectorToPylist(const std::vector<libdnf::AdvisoryPkg> & advisorypkgs);
 PyObject *advisoryRefVectorToPylist(const std::vector<libdnf::AdvisoryRef> & advisoryRefs,

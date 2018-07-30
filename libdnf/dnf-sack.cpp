@@ -2160,11 +2160,11 @@ std::string getFileContent(const std::string &filePath)
     return yamlContent;
 }
 
-void readModuleMetadataFromRepo(DnfSack * sack, ModuleDefaultsContainer & moduleDefaults,
-    const char * install_root, const char * platformModule)
+void readModuleMetadataFromRepo(DnfSack * sack, ModulePackageContainer * modulePackages,
+    ModuleDefaultsContainer & moduleDefaults, const char * install_root,
+    const char * platformModule)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
-    auto modulePackages = priv->moduleContainer;
     Pool * pool = dnf_sack_get_pool(sack);
     Repo * r;
     Id id;
@@ -2229,6 +2229,7 @@ static void
 setModuleExcludes(DnfSack *sack, const char ** hotfixRepos,
     const std::vector<std::string> &includeNEVRAs, const std::vector<std::string> &excludeNEVRAs)
 {
+    dnf_sack_set_module_excludes(sack, nullptr);
     std::vector<std::string> names;
     libdnf::DependencyContainer nameDependencies{sack};
     libdnf::Nevra nevra;
@@ -2289,21 +2290,25 @@ std::vector<std::shared_ptr<ModulePackage>> requiresModuleEnablement(DnfSack * s
     return toEnable;
 }
 
-void dnf_sack_filter_modules(DnfSack * sack, const char ** hotfixRepos, const char * install_root,
-    const char * platformModule)
+void dnf_sack_filter_modules(DnfSack * sack, DnfModulePackageContainer * moduleContainer,
+    const char ** hotfixRepos, const char * install_root, const char * platformModule)
 {
     // TODO: remove hard-coded path
     g_autofree gchar *defaultsDirPath = g_build_filename(
         install_root, "/etc/dnf/modules.defaults.d/", NULL);
     DnfSackPrivate *priv = GET_PRIVATE(sack);
-    if (priv->moduleContainer) {
-        delete priv->moduleContainer;
+    if (!moduleContainer) {
+        if (priv->moduleContainer) {
+            delete priv->moduleContainer;
+        }
+        priv->moduleContainer = new ModulePackageContainer(dnf_sack_get_all_arch(sack),
+                                                           dnf_sack_get_arch(sack));
+        moduleContainer = priv->moduleContainer;
     }
-    priv->moduleContainer = new ModulePackageContainer(dnf_sack_get_all_arch(sack),
-                                                       dnf_sack_get_arch(sack));
+
     ModuleDefaultsContainer moduleDefaults;
 
-    readModuleMetadataFromRepo(sack, moduleDefaults, install_root, platformModule);
+    readModuleMetadataFromRepo(sack, moduleContainer, moduleDefaults, install_root, platformModule);
     readModuleDefaultsFromDisk(defaultsDirPath, moduleDefaults);
 
     try {
@@ -2313,10 +2318,10 @@ void dnf_sack_filter_modules(DnfSack * sack, const char ** hotfixRepos, const ch
     }
 
     auto defaultStreams = moduleDefaults.getDefaultStreams();
-    enableModuleStreams(*priv->moduleContainer, install_root);
+    enableModuleStreams(*moduleContainer, install_root);
 
-    priv->moduleContainer->resolveActiveModulePackages(defaultStreams);
-    auto nevraTuple = collectNevraForInclusionExclusion(*priv->moduleContainer);
+    moduleContainer->resolveActiveModulePackages(defaultStreams);
+    auto nevraTuple = collectNevraForInclusionExclusion(*moduleContainer);
 
     setModuleExcludes(sack, hotfixRepos, std::get<0>(nevraTuple), std::get<1>(nevraTuple));
 }
