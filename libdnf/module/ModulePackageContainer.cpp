@@ -52,14 +52,16 @@ private:
     Map * activatedModules{nullptr};
 };
 
-ModulePackageContainer::ModulePackageContainer(DnfSack * sack) : pImpl(new Impl)
+ModulePackageContainer::ModulePackageContainer(bool allArch, const char * arch) : pImpl(new Impl)
 {
     pImpl->moduleSack = dnf_sack_new();
-    if (dnf_sack_get_all_arch(sack)) {
+    if (allArch) {
         dnf_sack_set_all_arch(pImpl->moduleSack, TRUE);
     } else {
-        dnf_sack_set_arch(pImpl->moduleSack, dnf_sack_get_arch(sack), NULL);
+        dnf_sack_set_arch(pImpl->moduleSack, arch, NULL);
     }
+    Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
+    repo_create(pool, "available");
 }
 
 ModulePackageContainer::~ModulePackageContainer() = default;
@@ -74,17 +76,21 @@ ModulePackageContainer::Impl::~Impl()
 }
 
 void
-ModulePackageContainer::add(HyRepo repo, const std::string &fileContent)
+ModulePackageContainer::add(const std::string &fileContent)
 {
     Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
     auto metadata = ModuleMetadata::metadataFromString(fileContent);
+    Repo * r;
+    Id id;
 
-    Repo *solvRepo = repo->libsolv_repo;
-    Repo *clonedRepo = repo_create(pool, solvRepo->name);
-
-    for (auto data : metadata) {
-        auto modulePackage = std::make_shared<ModulePackage>(pImpl->moduleSack, clonedRepo, data);
-        pImpl->modules.insert(std::make_pair(modulePackage->getId(), modulePackage));
+    FOR_REPOS(id, r) {
+        if (strcmp(r->name, "available") == 0) {
+            for (auto data : metadata) {
+                auto modulePackage = std::make_shared<ModulePackage>(pImpl->moduleSack, r, data);
+                pImpl->modules.insert(std::make_pair(modulePackage->getId(), modulePackage));
+            }
+            return;
+        }
     }
 }
 
@@ -214,6 +220,24 @@ ModulePackageContainer::query(libdnf::Nsvcap& moduleNevra)
     return result;
 }
 
+std::vector<std::shared_ptr<ModulePackage>>
+ModulePackageContainer::query(std::string subject)
+{
+    // Alternativally a search using module provides could be performed
+    std::vector<std::shared_ptr<ModulePackage>> result;
+    libdnf::Query query(pImpl->moduleSack);
+    // platform modules are installed and not in modules std::Map.
+    query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    std::ostringstream ss;
+    ss << "module(" << subject << ")";
+    query.addFilter(HY_PKG_PROVIDES, HY_GLOB, ss.str().c_str());
+    auto pset = query.runSet();
+    Id moduleId = -1;
+    while ((moduleId = pset->next(moduleId)) != -1) {
+        result.push_back(pImpl->modules.at(moduleId));
+    }
+    return result;
+}
 
 void ModulePackageContainer::resolveActiveModulePackages(const std::map<std::string, std::string> &defaultStreams)
 {

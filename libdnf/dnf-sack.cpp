@@ -2176,7 +2176,7 @@ void readModuleMetadataFromRepo(DnfSack * sack, ModuleDefaultsContainer & module
             continue;
         }
         std::string yamlContent = getFileContent(modules_fn);
-        modulePackages->add(hyRepo, yamlContent);
+        modulePackages->add(yamlContent);
         // update defaults from repo
         try {
             moduleDefaults.fromString(yamlContent, 0);
@@ -2299,7 +2299,8 @@ void dnf_sack_filter_modules(DnfSack * sack, const char ** hotfixRepos, const ch
     if (priv->moduleContainer) {
         delete priv->moduleContainer;
     }
-    priv->moduleContainer = new ModulePackageContainer(sack);
+    priv->moduleContainer = new ModulePackageContainer(dnf_sack_get_all_arch(sack),
+                                                       dnf_sack_get_arch(sack));
     ModuleDefaultsContainer moduleDefaults;
 
     readModuleMetadataFromRepo(sack, moduleDefaults, install_root, platformModule);
