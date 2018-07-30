@@ -86,7 +86,8 @@ ModulePackageContainer::add(const std::string &fileContent)
     FOR_REPOS(id, r) {
         if (strcmp(r->name, "available") == 0) {
             for (auto data : metadata) {
-                auto modulePackage = std::make_shared<ModulePackage>(pImpl->moduleSack, r, data);
+                std::shared_ptr<ModulePackage> modulePackage(new ModulePackage(
+                    pImpl->moduleSack, r, data));
                 pImpl->modules.insert(std::make_pair(modulePackage->getId(), modulePackage));
             }
             return;
