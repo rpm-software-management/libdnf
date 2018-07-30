@@ -53,10 +53,10 @@ public:
         explicit EnabledStreamException(const std::string &moduleName) : Exception("No enabled stream for module: " + moduleName) {}
     };
 
-    explicit ModulePackageContainer(DnfSack * sack);
+    explicit ModulePackageContainer(bool allArch, const char * arch);
     ~ModulePackageContainer();
 
-    void add(HyRepo repo, const std::string &fileContent);
+    void add(const std::string &fileContent);
     Id addPlatformPackage(const std::string &osReleasePath, const std::string install_root,
         const char *  platformModule);
     void createConflictsBetweenStreams();
@@ -70,7 +70,13 @@ public:
     *
     */
     std::vector<std::shared_ptr<ModulePackage>> query(libdnf::Nsvcap & moduleNevra);
-
+    /**
+    * @brief Requiers subject in format <name>, <name>:<stream>, or <name>:<stream>:<version>
+    *
+    * @param subject p_subject:...
+    * @return std::vector< std::shared_ptr< ModulePackage > >
+    */
+    std::vector<std::shared_ptr<ModulePackage>> query(std::string subject);
     void resolveActiveModulePackages(const std::map<std::string, std::string> &defaultStreams);
     bool isModuleActive(Id id);
 
