@@ -24,11 +24,14 @@
 #include <memory>
 #include <string>
 
-#include <modulemd/modulemd-module.h>
+#include "libdnf/dnf-types.h"
 #include "modulemd/ModuleMetadata.hpp"
 #include "modulemd/profile/ModuleProfile.hpp"
 #include "libdnf/repo/solvable/Package.hpp"
 #include "../goal/IdQueue.hpp"
+
+class ModulePackage;
+typedef std::shared_ptr< ModulePackage > ModulePackagePtr;
 
 class ModulePackageContainer;
 
@@ -40,8 +43,6 @@ public:
         ENABLED,
         DEFAULT
     };
-
-    ModulePackage(DnfSack * moduleSack, Repo *repo, const std::shared_ptr<ModuleMetadata> &metadata);
 
     /**
     * @brief Create module provides based on modulemd metadata.
@@ -76,7 +77,10 @@ public:
     Id getId() const { return id; };
 
 private:
-    friend ModulePackageContainer;
+    friend struct ModulePackageContainer;
+
+    ModulePackage(DnfSack * moduleSack, Repo *repo, const std::shared_ptr<ModuleMetadata> &metadata);
+
     static Id createPlatformSolvable(DnfSack * moduleSack, const std::string &osReleasePath,
         const std::string install_root, const char *  platformModule);
     void createDependencies(Solvable *solvable) const;

@@ -30,6 +30,9 @@
 #include "ModulePackage.hpp"
 #include "libdnf/nsvcap.hpp"
 
+//class ModulePackageContainer;
+//typedef std::shared_ptr<ModulePackageContainer> ModulePackageContainerPtr;
+
 struct ModulePackageContainer
 {
 public:
