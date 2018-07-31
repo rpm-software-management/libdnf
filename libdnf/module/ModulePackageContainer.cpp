@@ -50,9 +50,11 @@ private:
     std::map<Id, std::shared_ptr<ModulePackage>> modules;
     DnfSack * moduleSack;
     Map * activatedModules{nullptr};
+    std::string installRoot;
 };
 
-ModulePackageContainer::ModulePackageContainer(bool allArch, const char * arch) : pImpl(new Impl)
+ModulePackageContainer::ModulePackageContainer(bool allArch, std::string installRoot,
+    const char * arch) : pImpl(new Impl)
 {
     pImpl->moduleSack = dnf_sack_new();
     if (allArch) {
@@ -62,6 +64,7 @@ ModulePackageContainer::ModulePackageContainer(bool allArch, const char * arch) 
     }
     Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
     repo_create(pool, "available");
+    pImpl->installRoot = installRoot;
 }
 
 ModulePackageContainer::~ModulePackageContainer() = default;
@@ -97,10 +100,10 @@ ModulePackageContainer::add(const std::string &fileContent)
 
 Id
 ModulePackageContainer::addPlatformPackage(const std::string& osReleasePath,
-    const std::string install_root, const char* platformModule)
+    const char* platformModule)
 {
-    return ModulePackage::createPlatformSolvable(pImpl->moduleSack, osReleasePath, install_root,
-        platformModule);
+    return ModulePackage::createPlatformSolvable(pImpl->moduleSack, osReleasePath,
+        pImpl->installRoot, platformModule);
 }
 
 void ModulePackageContainer::createConflictsBetweenStreams()
