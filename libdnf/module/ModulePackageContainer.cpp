@@ -63,7 +63,11 @@ ModulePackageContainer::ModulePackageContainer(bool allArch, std::string install
         dnf_sack_set_arch(pImpl->moduleSack, arch, NULL);
     }
     Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
-    repo_create(pool, "available");
+    HyRepo hrepo = hy_repo_create("available");
+    Repo *repo = repo_create(pool, "available");
+    repo->appdata = hrepo;
+    hrepo->libsolv_repo = repo;
+    hrepo->needs_internalizing = 1;
     pImpl->installRoot = installRoot;
 }
 

@@ -333,7 +333,11 @@ ModulePackage::createPlatformSolvable(DnfSack * moduleSack, const std::string & 
     const std::string install_root, const char * platformModule)
 {
     Pool * pool = dnf_sack_get_pool(moduleSack);
+    HyRepo hrepo = hy_repo_create(HY_SYSTEM_REPO_NAME);
     Repo *repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
+    repo->appdata = hrepo;
+    hrepo->libsolv_repo = repo;
+    hrepo->needs_internalizing = 1;
     Id id = repo_add_solvable(repo);
     Solvable *solvable = pool_id2solvable(pool, id);
     std::string name;
