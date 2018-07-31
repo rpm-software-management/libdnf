@@ -56,12 +56,11 @@ public:
         explicit EnabledStreamException(const std::string &moduleName) : Exception("No enabled stream for module: " + moduleName) {}
     };
 
-    explicit ModulePackageContainer(bool allArch, const char * arch);
+    explicit ModulePackageContainer(bool allArch, std::string installRoot, const char * arch);
     ~ModulePackageContainer();
 
     void add(const std::string &fileContent);
-    Id addPlatformPackage(const std::string &osReleasePath, const std::string install_root,
-        const char *  platformModule);
+    Id addPlatformPackage(const std::string &osReleasePath, const char *  platformModule);
     void createConflictsBetweenStreams();
     std::shared_ptr<ModulePackage> getModulePackage(Id id);
     std::vector<std::shared_ptr<ModulePackage>> getModulePackages();
