@@ -951,7 +951,7 @@ dnf_package_get_files(DnfPackage *pkg)
  *
  * Gets the list of changelogs for the package.
  *
- * Returns: (transfer container) (element-type ): a list
+ * Returns: (transfer container) (element-type Changelog): a list
  *
  * Since: 0.16.3
  */
