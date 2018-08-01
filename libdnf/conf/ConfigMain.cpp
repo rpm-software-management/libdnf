@@ -556,7 +556,7 @@ OptionString & ConfigMain::color_list_available_reinstall() { return pImpl->colo
 OptionString & ConfigMain::color_list_available_install() { return pImpl->color_list_available_install; }
 OptionString & ConfigMain::color_update_installed() { return pImpl->color_update_installed; }
 OptionString & ConfigMain::color_update_local() { return pImpl->color_update_local; }
-OptionString & ConfigMain::colorUpdateRemote() { return pImpl->color_update_remote; }
+OptionString & ConfigMain::color_update_remote() { return pImpl->color_update_remote; }
 OptionString & ConfigMain::color_search_match() { return pImpl->color_search_match; }
 OptionBool & ConfigMain::history_record() { return pImpl->history_record; }
 OptionStringList & ConfigMain::history_record_packages() { return pImpl->history_record_packages; }

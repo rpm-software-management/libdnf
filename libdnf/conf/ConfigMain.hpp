@@ -99,7 +99,7 @@ public:
     OptionString & color_list_available_install();
     OptionString & color_update_installed();
     OptionString & color_update_local();
-    OptionString & colorUpdateRemote();
+    OptionString & color_update_remote();
     OptionString & color_search_match();
     OptionBool & history_record();
     OptionStringList & history_record_packages();
