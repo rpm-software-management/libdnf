@@ -33,12 +33,339 @@ extern "C" {
 #include "libdnf/dnf-sack-private.hpp"
 #include <functional>
 #include <../sack/query.hpp>
+#include "libdnf/conf/ConfigParser.hpp"
+#include "libdnf/conf/OptionStringList.hpp"
 
 static std::string
 stringFormater(std::string imput)
 {
     return imput.empty() ? "*" : imput;
 }
+
+enum class ModuleState {
+    UNKNOWN,
+    ENABLED,
+    DISABLED,
+    DEFAULT
+};
+
+class ModulePackageContainer::Persistor {
+public:
+    ~Persistor() = default;
+
+    const std::string & getStream(const std::string &name);
+    const std::vector<std::string> & getProfiles(const std::string &name);
+    const ModuleState & getState(const std::string &name);
+
+    std::map<std::string, std::string> getEnabledStreams();
+    std::map<std::string, std::string> getDisabledStreams();
+    std::map<std::string, std::pair<std::string, std::string>> getSwitchedStreams();
+    std::map<std::string, std::vector<std::string>> getInstalledProfiles();
+    std::map<std::string, std::vector<std::string>> getRemovedProfiles();
+
+    bool changeStream(const std::string &name, const std::string &stream);
+    bool addProfile(const std::string &name, const std::string &profile);
+    bool removeProfile(const std::string &name, const std::string &profile);
+    bool changeState(const std::string &name, ModuleState state);
+
+    bool insert(const std::string &moduleName, const char *path);
+    void rollback();
+    void save(const std::string &installRoot, const std::string &modulesPath);
+
+private:
+    friend struct ModulePackageContainer;
+
+    struct Config {
+        std::string stream;
+        std::vector<std::string> profiles;
+        ModuleState state;
+        bool locked;
+    };
+    std::map<std::string, std::pair<libdnf::ConfigParser, struct Config>> configs;
+
+    bool update(const std::string &name);
+    void reset(const std::string &name);
+    ModuleState fromString(const std::string &str);
+    std::string toString(const ModuleState &state);
+};
+
+ModuleState ModulePackageContainer::Persistor::fromString(const std::string &str) {
+    if (str == "" || str == "default")
+        return ModuleState::DEFAULT;
+    if (str == "1" || str == "true" || str == "enabled")
+        return ModuleState::ENABLED;
+    if (str == "0" || str == "false" || str == "disabled")
+        return ModuleState::DISABLED;
+
+    return ModuleState::UNKNOWN;
+}
+
+std::string ModulePackageContainer::Persistor::toString(const ModuleState &state) {
+    switch (state) {
+        case ModuleState::ENABLED:
+            return "enabled";
+        case ModuleState::DISABLED:
+            return "disabled";
+        case ModuleState::DEFAULT:
+            return "";
+        default:
+            return "unknown";
+    }
+}
+
+const std::string & ModulePackageContainer::Persistor::getStream(const std::string &name)
+{
+    return configs[name].second.stream;
+}
+
+bool ModulePackageContainer::Persistor::changeStream(const std::string &name, const std::string &stream)
+{
+    if (getStream(name) == stream)
+        return false;
+
+    configs[name].second.stream = stream;
+    return true;
+}
+
+const std::vector<std::string> & ModulePackageContainer::Persistor::getProfiles(const std::string &name)
+{
+    return configs[name].second.profiles;
+}
+
+bool ModulePackageContainer::Persistor::addProfile(const std::string &name, const std::string &profile)
+{
+    auto &profiles = configs[name].second.profiles;
+    const auto &it = std::find(std::begin(profiles), std::end(profiles), name);
+    if (it != std::end(profiles))
+        return false;
+
+    profiles.push_back(profile);
+    return true;
+}
+
+bool ModulePackageContainer::Persistor::removeProfile(const std::string &name, const std::string &profile)
+{
+    auto &profiles = configs[name].second.profiles;
+
+    for (auto it = profiles.begin(); it != profiles.end(); it++) {
+        if (*it == profile) {
+            profiles.erase(it);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+const ModuleState & ModulePackageContainer::Persistor::getState(const std::string &name)
+{
+    return configs[name].second.state;
+}
+
+bool ModulePackageContainer::Persistor::changeState(const std::string &name, ModuleState state)
+{
+    if (configs[name].second.state == state)
+        return false;
+
+    configs[name].second.state = state;
+    return true;
+}
+
+bool ModulePackageContainer::Persistor::insert(const std::string &moduleName, const char *path)
+{
+    /* There can only be one config file per module */
+    if (configs.find(moduleName) != configs.end()) {
+        return false;
+    }
+
+    configs.emplace(moduleName, std::make_pair(libdnf::ConfigParser{}, Config()));
+
+    auto &parser = configs[moduleName].first;
+    parser.read(std::string(path) + "/" + moduleName + ".module");
+    auto &data = parser.getData();
+
+    auto &newConfig = configs[moduleName].second;
+    libdnf::OptionStringList slist{std::vector<std::string>()};
+    const auto &plist = parser.getValue(moduleName, "profiles");
+    newConfig.profiles = std::move(slist.fromString(plist));
+
+    std::string stateStr;
+    const auto it = data[moduleName].find("enabled");
+    if (it != data[moduleName].end()) { /* old format */
+        stateStr = it->second;
+    } else {
+        stateStr = data[moduleName].find("state")->second;
+    }
+
+    newConfig.state = fromString(stateStr);
+    data[moduleName]["state"] = toString(newConfig.state); /* save new format */
+    data[moduleName].erase("enabled"); /* remove option from old format */
+    data[moduleName]["name"] = moduleName;
+
+    newConfig.stream = data[moduleName]["stream"];
+
+    return true;
+}
+
+bool ModulePackageContainer::Persistor::update(const std::string &name)
+{
+    bool changed = false;
+    auto &data = configs[name].first.getData();
+
+    const auto &state = toString(getState(name));
+    if (data[name]["state"] != state) {
+        data[name]["state"] = state;
+        changed = true;
+    }
+
+    if (data[name]["stream"] != getStream(name)) {
+        data[name]["stream"] = getStream(name);
+        changed = true;
+    }
+
+    libdnf::OptionStringList slist{std::vector<std::string>()};
+    auto profiles = std::move(slist.toString(getProfiles(name)));
+    profiles = profiles.substr(1, profiles.size()-2);
+    if (data[name]["profiles"] != profiles) {
+        data[name]["profiles"] = std::move(profiles);
+        changed = true;
+    }
+
+    return changed;
+}
+
+void ModulePackageContainer::Persistor::reset(const std::string &name)
+{
+    auto &data = configs[name].first.getData();
+
+    configs[name].second.stream = data[name]["stream"];
+    configs[name].second.state = fromString(data[name]["state"]);
+    libdnf::OptionStringList slist{std::vector<std::string>()};
+    configs[name].second.profiles = slist.fromString(data[name]["profiles"]);
+}
+
+void ModulePackageContainer::Persistor::save(const std::string &installRoot, const std::string &modulesPath)
+{
+    for (auto &iter : configs) {
+        const auto &name = iter.first;
+
+        if (update(name)) {
+            g_autofree gchar *fname = g_build_filename(installRoot.c_str(),
+                    modulesPath.c_str(), (name + ".module").c_str(), NULL);
+            iter.second.first.write(std::string(fname), false);
+        }
+    }
+}
+
+void ModulePackageContainer::Persistor::rollback(void)
+{
+    for (auto &iter : configs) {
+        const auto &name = iter.first;
+        reset(name);
+    }
+}
+
+std::map<std::string, std::string>
+ModulePackageContainer::Persistor::getEnabledStreams()
+{
+    std::map<std::string, std::string> enabled;
+
+    for (const auto &it : configs) {
+        const auto &name = it.first;
+        const auto &newVal = it.second.second.state;
+        const auto &oldVal = fromString(it.second.first.getValue(name, "state"));
+
+        if (oldVal != ModuleState::ENABLED && newVal == ModuleState::ENABLED) {
+            enabled.emplace(name, it.second.second.stream);
+        }
+    }
+
+    return enabled;
+}
+
+std::map<std::string, std::string>
+ModulePackageContainer::Persistor::getDisabledStreams()
+{
+    std::map<std::string, std::string> disabled;
+
+    for (const auto &it : configs) {
+        const auto &name = it.first;
+        const auto &newVal = it.second.second.state;
+        const auto &oldVal = fromString(it.second.first.getValue(name, "state"));
+        if (oldVal != ModuleState::DISABLED && newVal == ModuleState::DISABLED) {
+            disabled.emplace(name, it.second.first.getValue(name, "stream"));
+        }
+    }
+
+    return disabled;
+}
+
+std::map<std::string, std::pair<std::string, std::string>>
+ModulePackageContainer::Persistor::getSwitchedStreams()
+{
+    std::map<std::string, std::pair<std::string, std::string>> switched;
+
+    for (const auto &it : configs) {
+        const auto &name = it.first;
+        const auto &oldVal = it.second.first.getValue(name, "stream");
+        const auto &newVal = it.second.second.stream;
+        if (oldVal != newVal) {
+            switched.emplace(name, std::make_pair(oldVal, newVal));
+        }
+    }
+
+    return switched;
+}
+
+std::map<std::string, std::vector<std::string>>
+ModulePackageContainer::Persistor::getInstalledProfiles()
+{
+    std::map<std::string, std::vector<std::string>> profiles;
+
+    for (const auto &it : configs) {
+        libdnf::OptionStringList slist{std::vector<std::string>()};
+        const auto &name = it.first;
+        const auto &parser = it.second.first;
+        const auto &newConf = it.second.second;
+
+        const auto &vprof = slist.fromString(parser.getValue(name, "profiles"));
+        std::vector<std::string> profDiff;
+        std::set_difference(newConf.profiles.begin(), newConf.profiles.end(),
+                            vprof.begin(), vprof.end(),
+                            std::back_inserter(profDiff));
+
+        if (profDiff.size() > 0) {
+            profiles.emplace(name, std::move(profDiff));
+        }
+    }
+
+    return profiles;
+}
+
+std::map<std::string, std::vector<std::string>>
+ModulePackageContainer::Persistor::getRemovedProfiles()
+{
+    std::map<std::string, std::vector<std::string>> profiles;
+
+    for (const auto &it : configs) {
+        libdnf::OptionStringList slist{std::vector<std::string>()};
+        const auto &name = it.first;
+        const auto &parser = it.second.first;
+        const auto &newConf = it.second.second;
+
+        const auto &vprof = slist.fromString(parser.getValue(name, "profiles"));
+        std::vector<std::string> profDiff;
+        std::set_difference(vprof.begin(), vprof.end(),
+                            newConf.profiles.begin(), newConf.profiles.end(),
+                            std::back_inserter(profDiff));
+        if (profDiff.size() > 0) {
+            profiles.emplace(name, std::move(profDiff));
+        }
+    }
+
+    return profiles;
+}
+
 
 class ModulePackageContainer::Impl {
 public:
@@ -54,7 +381,7 @@ private:
 };
 
 ModulePackageContainer::ModulePackageContainer(bool allArch, std::string installRoot,
-    const char * arch) : pImpl(new Impl)
+    const char * arch) : pImpl(new Impl), persistor(new Persistor)
 {
     pImpl->moduleSack = dnf_sack_new();
     if (allArch) {
@@ -96,6 +423,8 @@ ModulePackageContainer::add(const std::string &fileContent)
                 std::shared_ptr<ModulePackage> modulePackage(new ModulePackage(
                     pImpl->moduleSack, r, data));
                 pImpl->modules.insert(std::make_pair(modulePackage->getId(), modulePackage));
+                g_autofree gchar *path = g_build_filename(pImpl->installRoot.c_str(), "/etc/dnf/modules.d", NULL);
+                persistor->insert(modulePackage->getName(), path);
             }
             return;
         }
@@ -165,12 +494,65 @@ ModulePackageContainer::requiresModuleEnablement(const libdnf::PackageSet & pack
     return output;
 }
 
+/**
+ * @brief Is a ModulePackage part of an enabled stream?
+ *
+ * @return bool
+ */
+bool ModulePackageContainer::isEnabled(const std::string &name, const std::string &stream)
+{
+    return persistor->getState(name) == ModuleState::ENABLED &&
+        persistor->getStream(name) == stream;
+}
+
+/**
+ * @brief Mark ModulePackage as part of an enabled stream.
+ */
 void ModulePackageContainer::enable(const std::string &name, const std::string &stream)
 {
     for (const auto &iter : pImpl->modules) {
         auto modulePackage = iter.second;
         if (modulePackage->getName() == name && modulePackage->getStream() == stream) {
             modulePackage->enable();
+            persistor->changeStream(name, stream);
+            persistor->changeState(name, ModuleState::ENABLED);
+        }
+    }
+}
+
+/**
+ * @brief Mark module as not part of an enabled stream.
+ */
+void ModulePackageContainer::disable(const std::string &name, const std::string &stream)
+{
+    for (const auto &iter : pImpl->modules) {
+        auto modulePackage = iter.second;
+        if (modulePackage->getName() == name && modulePackage->getStream() == stream) {
+            //modulePackage->disable();
+            //persistor->changeStream(name, "");
+            persistor->changeState(name, ModuleState::DISABLED);
+        }
+    }
+}
+
+void ModulePackageContainer::install(const std::string &name, const std::string &stream, const std::string &profile)
+{
+    for (const auto &iter : pImpl->modules) {
+        auto modulePackage = iter.second;
+        if (modulePackage->getName() == name && modulePackage->getStream() == stream) {
+            if (persistor->getStream(name) == stream)
+                persistor->addProfile(name, profile);
+        }
+    }
+}
+
+void ModulePackageContainer::uninstall(const std::string &name, const std::string &stream, const std::string &profile)
+{
+    for (const auto &iter : pImpl->modules) {
+        auto modulePackage = iter.second;
+        if (modulePackage->getName() == name && modulePackage->getStream() == stream) {
+            if (persistor->getStream(name) == stream)
+                persistor->removeProfile(name, profile);
         }
     }
 }
@@ -308,4 +690,35 @@ std::vector<std::shared_ptr<ModulePackage>> ModulePackageContainer::getModulePac
                    [](const std::map<Id, std::shared_ptr<ModulePackage>>::value_type &pair){ return pair.second; });
 
     return values;
+}
+
+void ModulePackageContainer::save(const std::string &modulesPath)
+{
+    persistor->save(pImpl->installRoot, modulesPath);
+}
+
+std::map<std::string, std::string> ModulePackageContainer::getEnabledStreams()
+{
+    return persistor->getEnabledStreams();
+}
+
+std::map<std::string, std::string> ModulePackageContainer::getDisabledStreams()
+{
+    return persistor->getDisabledStreams();
+}
+
+
+std::map<std::string, std::pair<std::string, std::string>> ModulePackageContainer::getSwitchedStreams()
+{
+    return persistor->getSwitchedStreams();
+}
+
+std::map<std::string, std::vector<std::string>> ModulePackageContainer::getInstalledProfiles()
+{
+    return persistor->getInstalledProfiles();
+}
+
+std::map<std::string, std::vector<std::string>> ModulePackageContainer::getRemovedProfiles()
+{
+    return persistor->getRemovedProfiles();
 }

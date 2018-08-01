@@ -67,6 +67,18 @@ public:
 
     std::vector<std::shared_ptr<ModulePackage>> requiresModuleEnablement(const libdnf::PackageSet & packages);
     void enable(const std::string &name, const std::string &stream);
+    void disable(const std::string &name, const std::string &stream);
+    void install(const std::string &name, const std::string &stream, const std::string &profile);
+    void uninstall(const std::string &name, const std::string &stream, const std::string &profile);
+    void save(const std::string &modulesPath);
+
+    bool isEnabled(const std::string &name, const std::string &stream);
+
+    std::map<std::string, std::string> getEnabledStreams();
+    std::map<std::string, std::string> getDisabledStreams();
+    std::map<std::string, std::pair<std::string, std::string>> getSwitchedStreams();
+    std::map<std::string, std::vector<std::string>> getInstalledProfiles();
+    std::map<std::string, std::vector<std::string>> getRemovedProfiles();
     /**
     * @brief Query modules according libdnf::Nsvcap. But the search ignores profiles
     *
@@ -85,6 +97,9 @@ public:
 private:
     class Impl;
     std::unique_ptr<Impl> pImpl;
+
+    class Persistor;
+    std::unique_ptr<Persistor> persistor;
 };
 
 
