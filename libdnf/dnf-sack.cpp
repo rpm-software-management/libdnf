@@ -1124,15 +1124,14 @@ dnf_sack_setup_cmdline_repo(DnfSack *sack)
 DnfPackage *
 dnf_sack_add_cmdline_package_flags(DnfSack *sack, const char *fn, const int flags)
 {
-    DnfSackPrivate *priv = GET_PRIVATE(sack);
-    Repo *repo = dnf_sack_setup_cmdline_repo(sack);
-    Id p;
-
-    assert(repo);
     if (!is_readable_rpm(fn)) {
         g_warning("not a readable RPM file: %s, skipping", fn);
         return NULL;
     }
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    Repo *repo = dnf_sack_setup_cmdline_repo(sack);
+    Id p;
+    priv->provides_ready = 0;    /* triggers internalizing later */
     p = repo_add_rpm(repo, fn, flags);
     if (p == 0) {
         g_warning ("failed to read RPM: %s, skipping",
@@ -1141,7 +1140,6 @@ dnf_sack_add_cmdline_package_flags(DnfSack *sack, const char *fn, const int flag
     }
     auto hrepo = static_cast<HyRepo>(repo->appdata);
     hrepo->needs_internalizing = 1;
-    priv->provides_ready = 0;    /* triggers internalizing later */
     priv->considered_uptodate = FALSE;   /* triggers recompute_considered later */
     return dnf_package_new(sack, p);
 }
