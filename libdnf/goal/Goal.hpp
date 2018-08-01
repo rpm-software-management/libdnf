@@ -62,7 +62,7 @@ public:
 
     /**
     * @brief If selector ill formed, it rises std::runtime_error()
-    * 
+    *
     * @param sltr 
     * @param flags p_flags:...
     */
@@ -71,18 +71,26 @@ public:
 
     /**
     * @brief If selector ill formed, it rises std::runtime_error()
-    * 
+    *
     * @param sltr p_sltr:...
     * @param optional Set true for optional tasks, false for strict tasks
     */
     void install(HySelector sltr, bool optional);
-    void upgrade();
+
+    /**
+    * @brief Add upgrade all packages request to job. It adds obsoletes automatically to transaction
+    * if no parametrer obsoletes provided or setted to true.
+    *
+    * @param obsoletes p_obsoletes: bool parameter to specify if obsoletes should be added to job
+    */
+    void upgrade(bool obsoletes=true);
     void upgrade(DnfPackage *new_pkg);
 
     /**
     * @brief If selector ill formed, it rises std::runtime_error()
-    * 
-    * @param sltr p_sltr:...
+    *
+    * @param sltr p_sltr: It should contain only upgrades with obsoletes otherwise it can try to
+    * reinstall installonly packages.
     */
     void upgrade(HySelector sltr);
     void userInstalled(DnfPackage *pkg);
