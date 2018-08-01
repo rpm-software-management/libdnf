@@ -599,21 +599,12 @@ Goal::install(HySelector sltr, bool optional)
 }
 
 void
-Goal::upgrade(bool obsoletes)
+Goal::upgrade()
 {
     pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | DNF_UPGRADE_ALL);
     DnfSack * sack = pImpl->sack;
     Query query(sack);
-    query.addFilter(HY_PKG_UPGRADES, HY_EQ, 1);
-    if (obsoletes) {
-        Query installed(sack);
-        installed.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-        Query queryObsoletes(sack);
-        queryObsoletes.queryDifference(installed);
-        installed.queryUnion(query);
-        queryObsoletes.addFilter(HY_PKG_OBSOLETES, HY_EQ, installed.runSet());
-        query.queryUnion(queryObsoletes);
-    }
+    query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     Selector selector(sack);
     selector.set(query.runSet());
     sltrToJob(&selector, &pImpl->staging, SOLVER_UPDATE);
