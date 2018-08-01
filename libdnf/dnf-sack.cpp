@@ -2333,7 +2333,7 @@ void dnf_sack_filter_modules_v2(DnfSack * sack, DnfModulePackageContainer * modu
     }
 
     auto defaultStreams = moduleDefaults.getDefaultStreams();
-    enableModuleStreams(*moduleContainer, install_root);
+    //enableModuleStreams(*moduleContainer, install_root);
 
     moduleContainer->resolveActiveModulePackages(defaultStreams);
     auto nevraTuple = collectNevraForInclusionExclusion(*moduleContainer);
