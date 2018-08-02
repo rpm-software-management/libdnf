@@ -45,7 +45,7 @@
 #include "dnf-lock.h"
 #include "dnf-package.h"
 #include "dnf-repo-loader.h"
-#include "dnf-sack.h"
+#include "dnf-sack-private.hpp"
 #include "dnf-state.h"
 #include "dnf-transaction.h"
 #include "dnf-utils.h"
@@ -1327,8 +1327,8 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
             }
         }
         hotfixRepos.push_back(nullptr);
-        dnf_sack_filter_modules(sack, nullptr, hotfixRepos.data(), priv->install_root,
-                                priv->platform_module);
+        dnf_sack_filter_modules_v2(sack, nullptr, hotfixRepos.data(), priv->install_root,
+            priv->platform_module);
     }
 
     /* create goal */
