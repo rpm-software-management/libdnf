@@ -97,3 +97,21 @@ void ModulePackageContainerTest::testEnableModules()
 
     modules->save("/etc/dnf/modules.d");
 }
+
+void ModulePackageContainerTest::testRollback()
+{
+    const char *hotfix = nullptr;
+    auto sack = dnf_context_get_sack(context);
+    dnf_sack_filter_modules_v2(sack, modules, &hotfix, TESTDATADIR "/modules/", "platform:26");
+
+    modules->disable("httpd", "2.4");
+    modules->disable("base-runtime", "f26");
+
+    CPPUNIT_ASSERT(!modules->isEnabled("httpd", "2.4"));
+    CPPUNIT_ASSERT(!modules->isEnabled("base-runtime", "f26"));
+
+    modules->rollback();
+
+    CPPUNIT_ASSERT(modules->isEnabled("httpd", "2.4"));
+    CPPUNIT_ASSERT(modules->isEnabled("base-runtime", "f26"));
+}

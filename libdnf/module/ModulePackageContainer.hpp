@@ -71,6 +71,7 @@ public:
     void install(const std::string &name, const std::string &stream, const std::string &profile);
     void uninstall(const std::string &name, const std::string &stream, const std::string &profile);
     void save(const std::string &modulesPath);
+    void rollback();
 
     bool isEnabled(const std::string &name, const std::string &stream);
 
