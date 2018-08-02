@@ -697,6 +697,11 @@ void ModulePackageContainer::save(const std::string &modulesPath)
     persistor->save(pImpl->installRoot, modulesPath);
 }
 
+void ModulePackageContainer::rollback()
+{
+    persistor->rollback();
+}
+
 std::map<std::string, std::string> ModulePackageContainer::getEnabledStreams()
 {
     return persistor->getEnabledStreams();

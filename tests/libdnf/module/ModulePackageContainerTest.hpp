@@ -14,6 +14,7 @@ class ModulePackageContainerTest : public CppUnit::TestCase
         CPPUNIT_TEST(testDisableModules);
         CPPUNIT_TEST(testDisabledModules);
         CPPUNIT_TEST(testEnableModules);
+        CPPUNIT_TEST(testRollback);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -24,6 +25,7 @@ public:
     void testDisableModules();
     void testDisabledModules();
     void testEnableModules();
+    void testRollback();
 
 private:
     DnfContext *context;
