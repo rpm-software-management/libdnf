@@ -2289,7 +2289,22 @@ std::vector<std::shared_ptr<ModulePackage>> requiresModuleEnablement(DnfSack * s
     return toEnable;
 }
 
-void dnf_sack_filter_modules(DnfSack * sack, DnfModulePackageContainer * moduleContainer,
+void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *install_root,
+    const char * platformModule)
+{
+    std::vector<const char *> hotfixRepos;
+    // don't filter RPMs from repos with the 'module_hotfixes' flag set
+    for (unsigned int i = 0; i < repos->len; i++) {
+        auto repo = static_cast<DnfRepo *>(g_ptr_array_index(repos, i));
+        if (dnf_repo_get_module_hotfixes(repo)) {
+            hotfixRepos.push_back(dnf_repo_get_id(repo));
+        }
+    }
+    hotfixRepos.push_back(nullptr);
+    dnf_sack_filter_modules_v2(sack, nullptr, hotfixRepos.data(), install_root, platformModule);
+}
+
+void dnf_sack_filter_modules_v2(DnfSack * sack, DnfModulePackageContainer * moduleContainer,
     const char ** hotfixRepos, const char * install_root, const char * platformModule)
 {
     if (!install_root) {
