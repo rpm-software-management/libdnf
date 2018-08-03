@@ -20,6 +20,8 @@
 
 #include "Python.h"
 #include <vector>
+#include <ctime>
+#include "datetime.h"
 
 #include "dnf-advisory.h"
 #include "dnf-advisorypkg.h"
@@ -134,6 +136,7 @@ changelogslist_to_pylist(const GPtrArray *changelogslist)
     UniquePtrPyObject list(PyList_New(0));
     if (!list)
         return NULL;
+    PyDateTime_IMPORT;
 
     for (unsigned int i = 0; i < changelogslist->len; ++i) {
         auto citem = static_cast<libdnf::Changelog *>(g_ptr_array_index(changelogslist, i));
@@ -144,7 +147,9 @@ changelogslist_to_pylist(const GPtrArray *changelogslist)
             return NULL;
         if (PyDict_SetItemString(d, "text", PyUnicode_FromString(citem->text)) == -1)
             return NULL;
-        if (PyDict_SetItemString(d, "timestamp", PyLong_FromUnsignedLongLong(citem->timestamp)) == -1)
+        struct tm ts;
+        ts = *localtime(&citem->timestamp);
+        if (PyDict_SetItemString(d, "timestamp", PyDate_FromDate(ts.tm_year+1900, ts.tm_mon+1, ts.tm_mday)) == -1)
             return NULL;
         if (PyList_Append(list.get(), d) == -1)
             return NULL;
