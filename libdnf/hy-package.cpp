@@ -975,8 +975,14 @@ dnf_package_get_changelogs(DnfPackage *pkg)
         g_ptr_array_add(changelogslist, chlog);
     }
     dataiterator_free(&di);
-
-    return changelogslist;
+    GPtrArray *reversed = g_ptr_array_new();
+    if (changelogslist->len) {
+        for (unsigned int i=changelogslist->len; i > 0; --i) {
+            g_ptr_array_add(reversed, g_ptr_array_index(changelogslist, i-1));
+        }
+    }
+    g_ptr_array_free(changelogslist, FALSE);
+    return reversed;
 }
 
 /**
