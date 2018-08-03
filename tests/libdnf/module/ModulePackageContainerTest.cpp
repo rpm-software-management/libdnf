@@ -67,7 +67,7 @@ void ModulePackageContainerTest::testDisableModules()
             CPPUNIT_ASSERT(it.second == "f26");
     }
 
-    modules->save("/etc/dnf/modules.d");
+    modules->save();
 }
 
 void ModulePackageContainerTest::testDisabledModules()
@@ -101,7 +101,7 @@ void ModulePackageContainerTest::testEnableModules()
             CPPUNIT_ASSERT(it.second == "f26");
     }
 
-    modules->save("/etc/dnf/modules.d");
+    modules->save();
 }
 
 void ModulePackageContainerTest::testRollback()

@@ -1543,6 +1543,36 @@ dnf_sack_set_use_includes(DnfSack *sack, const char *reponame, gboolean enabled)
 }
 
 /**
+ * dnf_sack_set_provides_not_ready:
+ * @sack: a #DnfSack instance.
+ *
+ * Mark sack to recompute provides
+ *
+ * Since: 0.16.3
+ */
+void
+dnf_sack_set_provides_not_ready(DnfSack *sack)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    priv->provides_ready = FALSE;
+}
+
+/**
+ * dnf_sack_set_considered_to_update:
+ * @sack: a #DnfSack instance.
+ *
+ * Mark sack to recompute considered
+ *
+ * Since: 0.16.3
+ */
+void
+dnf_sack_set_considered_to_update(DnfSack *sack)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    priv->considered_uptodate = FALSE;
+}
+
+/**
  * dnf_sack_get_use_includes:
  * @sack: a #DnfSack instance.
  * @repo_name: a name of repo or %NULL for all repos.
@@ -1937,6 +1967,23 @@ dnf_sack_get_pool(DnfSack *sack)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     return priv->pool;
+}
+
+/**
+ * dnf_sack_get_module_container: (skip)
+ * @sack: a #DnfSack instance.
+ *
+ * Gets the internal ModulePackageContainer.
+ *
+ * Returns: The ModulePackageContainer, that can be not set
+ *
+ * Since: 0.16.3
+ */
+ModulePackageContainer *
+dnf_sack_get_module_container(DnfSack *sack)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    return priv->moduleContainer;
 }
 
 /**********************************************************************/

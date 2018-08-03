@@ -54,6 +54,7 @@
 #include "hy-subject.h"
 #include "hy-selector.h"
 #include "dnf-repo.hpp"
+#include "goal/Goal.hpp"
 
 #define MAX_NATIVE_ARCHES    12
 
@@ -1791,7 +1792,10 @@ dnf_context_run(DnfContext *context, GCancellable *cancellable, GError **error)
                                  error);
     if (!ret)
         return FALSE;
-
+    auto moduleContainer = dnf_sack_get_module_container(priv->sack);
+    if (moduleContainer) {
+        moduleContainer->save();
+    }
     /* this sack is no longer valid */
     g_object_unref(priv->sack);
     priv->sack = NULL;

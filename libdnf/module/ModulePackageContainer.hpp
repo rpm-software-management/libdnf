@@ -85,7 +85,7 @@ public:
     /**
      * @brief commit module changes to storage
      */
-    void save(const std::string &modulesPath);
+    void save();
     /**
      * @brief discard all module changes and revert to storage state
      */

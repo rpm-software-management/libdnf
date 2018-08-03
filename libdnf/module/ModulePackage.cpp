@@ -24,6 +24,7 @@
 
 #include "ModulePackage.hpp"
 #include "libdnf/utils/File.hpp"
+#include "libdnf/dnf-sack-private.hpp"
 
 static void setSovable(Pool * pool, Solvable *solvable, std::string name,
     std::string stream, std::string version, std::string context, const char * arch)
@@ -57,6 +58,8 @@ static void setSovable(Pool * pool, Solvable *solvable, std::string name,
     solvable_add_deparray(solvable, SOLVABLE_PROVIDES, depId, -1);
 }
 
+ModulePackage::~ModulePackage() = default;
+
 ModulePackage::ModulePackage(DnfSack * moduleSack, Repo * repo,
     const std::shared_ptr<ModuleMetadata> &metadata)
         : metadata(metadata)
@@ -70,6 +73,10 @@ ModulePackage::ModulePackage(DnfSack * moduleSack, Repo * repo,
     setSovable(pool, solvable, getName(), getStream(), getVersion(), getContext(),
         metadata->getArchitecture());
     createDependencies(solvable);
+    HyRepo hyRepo = static_cast<HyRepo>(repo->appdata);
+    hyRepo->needs_internalizing = 1;
+    dnf_sack_set_provides_not_ready(moduleSack);
+    dnf_sack_set_considered_to_update(moduleSack);
 }
 
 /**
@@ -371,6 +378,8 @@ ModulePackage::createPlatformSolvable(DnfSack * moduleSack, const std::string & 
     std::string version = "0";
     std::string context = "00000000";
     setSovable(pool, solvable, name, stream, version, context, "noarch");
-
+    hrepo->needs_internalizing = 1;
+    dnf_sack_set_provides_not_ready(moduleSack);
+    dnf_sack_set_considered_to_update(moduleSack);
     return id;
 }

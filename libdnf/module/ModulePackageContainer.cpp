@@ -319,7 +319,8 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<std::shared_ptr<Modu
         return {};
     }
     Pool * pool = dnf_sack_get_pool(moduleSack);
-    pool_createwhatprovides(pool);
+    dnf_sack_recompute_considered(moduleSack);
+    dnf_sack_make_provides_ready(moduleSack);
     std::vector<Id> solvedIds;
     libdnf::IdQueue job;
     for (const auto &module : modules) {
@@ -374,8 +375,8 @@ ModulePackageContainer::query(std::string subject)
     // platform modules are installed and not in modules std::Map.
     query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     std::ostringstream ss;
-    ss << "module(" << subject << ")";
-    query.addFilter(HY_PKG_PROVIDES, HY_GLOB, ss.str().c_str());
+    ss << subject << "*";
+    query.addFilter(HY_PKG_NAME, HY_GLOB, ss.str().c_str());
     auto pset = query.runSet();
     Id moduleId = -1;
     while ((moduleId = pset->next(moduleId)) != -1) {
@@ -453,9 +454,9 @@ std::vector<std::shared_ptr<ModulePackage>> ModulePackageContainer::getModulePac
     return values;
 }
 
-void ModulePackageContainer::save(const std::string &modulesPath)
+void ModulePackageContainer::save()
 {
-    pImpl->persistor->save(pImpl->installRoot, modulesPath);
+    pImpl->persistor->save(pImpl->installRoot, "/etc/dnf/modules.d");
 }
 
 void ModulePackageContainer::rollback()
