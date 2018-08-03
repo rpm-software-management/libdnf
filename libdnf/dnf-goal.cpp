@@ -100,6 +100,15 @@ dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error)
                             "The transaction was empty");
         return FALSE;
     }
+    DnfSack * sack = hy_goal_get_sack(goal);
+    auto moduleContainer = dnf_sack_get_module_container(sack);
+    if (moduleContainer) {
+        auto installSet = goal->listInstalls();
+        auto modulesToEnable = requiresModuleEnablement(sack, &installSet);
+        for (auto module: modulesToEnable) {
+            moduleContainer->enable(module->getName(), module->getStream());
+        }
+    }
     return TRUE;
 }
 

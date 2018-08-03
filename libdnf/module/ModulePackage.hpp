@@ -35,6 +35,9 @@ typedef std::shared_ptr< ModulePackage > ModulePackagePtr;
 
 class ModulePackageContainer;
 
+class ModulePackage;
+typedef std::shared_ptr< ModulePackage > ModulePackagePtr;
+
 class ModulePackage // TODO inherit in future; : public Package
 {
 public:
@@ -43,6 +46,7 @@ public:
         ENABLED,
         DEFAULT
     };
+    ~ModulePackage();
 
     /**
     * @brief Create module provides based on modulemd metadata.

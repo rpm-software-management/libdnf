@@ -28,6 +28,7 @@
 #include "dnf-sack.h"
 #include "sack/packageset.hpp"
 #include "module/ModulePackage.hpp"
+#include "module/ModulePackageContainer.hpp"
 
 typedef Id  (*dnf_sack_running_kernel_fn_t) (DnfSack    *sack);
 
@@ -57,12 +58,14 @@ int dnf_sack_get_pool_nsolvables(DnfSack *sack);
  */
 libdnf::PackageSet *dnf_sack_get_pkg_solvables(DnfSack *sack);
 
+ModulePackageContainer * dnf_sack_get_module_container(DnfSack *sack);
 void         dnf_sack_make_provides_ready   (DnfSack    *sack);
 Id           dnf_sack_running_kernel        (DnfSack    *sack);
 void         dnf_sack_recompute_considered  (DnfSack    *sack);
 Id           dnf_sack_last_solvable         (DnfSack    *sack);
 const char * dnf_sack_get_arch              (DnfSack    *sack);
-
+void         dnf_sack_set_provides_not_ready(DnfSack    *sack);
+void         dnf_sack_set_considered_to_update(DnfSack * sack);
 Queue       *dnf_sack_get_installonly       (DnfSack    *sack);
 void         dnf_sack_set_running_kernel_fn (DnfSack    *sack,
                                              dnf_sack_running_kernel_fn_t fn);
