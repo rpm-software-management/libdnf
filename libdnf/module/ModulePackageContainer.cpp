@@ -550,10 +550,21 @@ bool ModulePackageContainer::Impl::ModulePersistor::insert(const std::string &mo
     configs.emplace(moduleName, std::make_pair(libdnf::ConfigParser{}, Config()));
 
     auto &parser = configs[moduleName].first;
-    parser.read(std::string(path) + "/" + moduleName + ".module");
+    auto &newConfig = configs[moduleName].second;
     auto &data = parser.getData();
 
-    auto &newConfig = configs[moduleName].second;
+    data[moduleName]["name"] = moduleName;
+    try {
+        parser.read(std::string(path) + "/" + moduleName + ".module");
+    } catch (const libdnf::ConfigParser::CantOpenFile &) {
+        /* No module config file present. Fill values in */
+        data[moduleName]["state"] = "";
+        data[moduleName]["stream"] = newConfig.stream = "";
+        data[moduleName]["profiles"] = "";
+        newConfig.state = fromString("");
+        return true;
+    }
+
     libdnf::OptionStringList slist{std::vector<std::string>()};
     const auto &plist = parser.getValue(moduleName, "profiles");
     newConfig.profiles = std::move(slist.fromString(plist));
@@ -569,7 +580,6 @@ bool ModulePackageContainer::Impl::ModulePersistor::insert(const std::string &mo
     newConfig.state = fromString(stateStr);
     data[moduleName]["state"] = toString(newConfig.state); /* save new format */
     data[moduleName].erase("enabled"); /* remove option from old format */
-    data[moduleName]["name"] = moduleName;
 
     newConfig.stream = data[moduleName]["stream"];
 
