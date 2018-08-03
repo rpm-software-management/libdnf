@@ -69,7 +69,8 @@ void         dnf_sack_set_running_kernel_fn (DnfSack    *sack,
 DnfPackage  *dnf_sack_add_cmdline_package_flags   (DnfSack *sack,
                             const char *fn, const int flags);
 void dnf_sack_filter_modules_v2(DnfSack *sack, DnfModulePackageContainer * moduleContainer,
-    const char ** hotfixRepos, const char *install_root, const char * platformModule);
+    const char ** hotfixRepos, const char *install_root, const char * platformModule,
+    bool updateOnly);
 
 std::vector<std::shared_ptr<ModulePackage>> requiresModuleEnablement(DnfSack * sack, const libdnf::PackageSet * installSet);
 

@@ -37,7 +37,8 @@ void ModulePackageContainerTest::testEnabledModules()
 {
     const char *hotfix = nullptr;
     auto sack = dnf_context_get_sack(context);
-    dnf_sack_filter_modules_v2(sack, modules, &hotfix, TESTDATADIR "/modules/", "platform:26");
+    dnf_sack_filter_modules_v2(sack, modules, &hotfix, TESTDATADIR "/modules/", "platform:26",
+                               false);
 
     const std::vector<std::string> specs = {"httpd:2.4", "base-runtime:f26" };
     for (const auto &spec : specs) {
@@ -51,7 +52,9 @@ void ModulePackageContainerTest::testDisableModules()
 {
     const char *hotfix = nullptr;
     auto sack = dnf_context_get_sack(context);
-    dnf_sack_filter_modules_v2(sack, modules, &hotfix, TESTDATADIR "/modules/", "platform:26");
+    dnf_sack_filter_modules_v2(sack, modules, &hotfix, TESTDATADIR "/modules/", "platform:26",
+        false
+    );
 
     modules->disable("httpd", "2.4");
     modules->disable("base-runtime", "f26");
@@ -71,7 +74,8 @@ void ModulePackageContainerTest::testDisabledModules()
 {
     const char *hotfix = nullptr;
     auto sack = dnf_context_get_sack(context);
-    dnf_sack_filter_modules_v2(sack, modules, &hotfix, TESTDATADIR "/modules/", "platform:26");
+    dnf_sack_filter_modules_v2(sack, modules, &hotfix, TESTDATADIR "/modules/", "platform:26",
+                               false);
 
     CPPUNIT_ASSERT(!modules->isEnabled("httpd", "2.4"));
     CPPUNIT_ASSERT(!modules->isEnabled("httpd", "2.2"));
@@ -82,7 +86,9 @@ void ModulePackageContainerTest::testEnableModules()
 {
     const char *hotfix = nullptr;
     auto sack = dnf_context_get_sack(context);
-    dnf_sack_filter_modules_v2(sack, modules, &hotfix, TESTDATADIR "/modules/", "platform:26");
+    dnf_sack_filter_modules_v2(sack, modules, &hotfix, TESTDATADIR "/modules/", "platform:26",
+        false
+    );
 
     modules->enable("httpd", "2.4");
     modules->enable("base-runtime", "f26");
@@ -102,7 +108,8 @@ void ModulePackageContainerTest::testRollback()
 {
     const char *hotfix = nullptr;
     auto sack = dnf_context_get_sack(context);
-    dnf_sack_filter_modules_v2(sack, modules, &hotfix, TESTDATADIR "/modules/", "platform:26");
+    dnf_sack_filter_modules_v2(sack, modules, &hotfix, TESTDATADIR "/modules/", "platform:26",
+                               false);
 
     modules->disable("httpd", "2.4");
     modules->disable("base-runtime", "f26");

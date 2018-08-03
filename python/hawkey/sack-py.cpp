@@ -497,16 +497,18 @@ static PyObject *
 filter_modules(_SackObject *self, PyObject *args, PyObject *kwds)
 {
     const char *kwlist[] = {"module_container", "hotfix_repos", "install_root", "platform_module",
-        NULL};
+        "update_only", NULL};
     PyObject * pyModuleContainer;
     PyObject * pyHotfixRepos;
     char * installRoot = nullptr;
     char * platformModule = nullptr;
+    PyObject * pyUpdateOnly = nullptr;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOzz", (char**) kwlist, &pyModuleContainer,
-                                     &pyHotfixRepos, &installRoot, &platformModule))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOzz|O!", (char**) kwlist, &pyModuleContainer,
+                                     &pyHotfixRepos, &installRoot, &platformModule,  &PyBool_Type,
+                                     &pyUpdateOnly))
         return 0;
-
+    bool updateOnly = pyUpdateOnly == NULL || PyObject_IsTrue(pyUpdateOnly);
     auto swigContainer = reinterpret_cast< ModulePackageContainerPyObject * >(
         PyObject_GetAttrString(pyModuleContainer, "this"));
     auto moduleContainer = swigContainer->ptr;
@@ -517,7 +519,7 @@ filter_modules(_SackObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
     dnf_sack_filter_modules_v2(self->sack, moduleContainer, hotfixRepos.data(), installRoot,
-        platformModule);
+        platformModule, updateOnly);
     Py_RETURN_NONE;
 }
 

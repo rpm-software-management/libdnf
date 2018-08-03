@@ -92,6 +92,7 @@ private:
     DnfSack * moduleSack;
     Map * activatedModules{nullptr};
     std::string installRoot;
+    std::map<std::string, std::string> moduleDefaults;
 };
 
 class ModulePackageContainer::Impl::ModulePersistor {
@@ -383,8 +384,14 @@ ModulePackageContainer::query(std::string subject)
     return result;
 }
 
-void ModulePackageContainer::resolveActiveModulePackages(const std::map<std::string, std::string> &defaultStreams)
+void ModulePackageContainer::setModuleDefaults(const std::map<std::string, std::string> &defaultStreams)
 {
+    pImpl->moduleDefaults = defaultStreams;
+}
+
+void ModulePackageContainer::resolveActiveModulePackages()
+{
+    auto defaultStreams = pImpl->moduleDefaults;
     Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
     std::vector<std::shared_ptr<ModulePackage>> packages;
 
