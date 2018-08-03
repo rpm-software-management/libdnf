@@ -147,9 +147,11 @@ nsvcap_init(_NsvcapObject *self, PyObject *args, PyObject *kwds)
         *self->nsvcap = *cNsvcap;
         return 0;
     }
-    if (!set_version(self, version_o, NULL)) {
-        PyErr_SetString(PyExc_TypeError, "An integer value or None expected for version.");
-        return -1;
+    if (version_o) {
+        if (!set_version(self, version_o, NULL)) {
+            PyErr_SetString(PyExc_TypeError, "An integer value or None expected for version.");
+            return -1;
+        }
     }
     self->nsvcap->setName(name ? name : "");
     self->nsvcap->setStream(stream ? stream : "");
