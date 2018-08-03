@@ -2299,43 +2299,48 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
         }
     }
     hotfixRepos.push_back(nullptr);
-    dnf_sack_filter_modules_v2(sack, nullptr, hotfixRepos.data(), install_root, platformModule);
+    dnf_sack_filter_modules_v2(sack, nullptr, hotfixRepos.data(), install_root, platformModule,
+                               false);
 }
 
 void dnf_sack_filter_modules_v2(DnfSack * sack, DnfModulePackageContainer * moduleContainer,
-    const char ** hotfixRepos, const char * install_root, const char * platformModule)
+    const char ** hotfixRepos, const char * install_root, const char * platformModule,
+    bool updateOnly)
 {
-    if (!install_root) {
-        throw std::runtime_error("Installroot not provided");
-    }
-    // TODO: remove hard-coded path
-    g_autofree gchar *defaultsDirPath = g_build_filename(
-        install_root, "/etc/dnf/modules.defaults.d/", NULL);
-    DnfSackPrivate *priv = GET_PRIVATE(sack);
-    if (!moduleContainer) {
-        if (priv->moduleContainer) {
-            delete priv->moduleContainer;
+    if (!updateOnly) {
+        if (!install_root) {
+            throw std::runtime_error("Installroot not provided");
         }
-        priv->moduleContainer = new ModulePackageContainer(dnf_sack_get_all_arch(sack),
-            install_root, dnf_sack_get_arch(sack));
-        moduleContainer = priv->moduleContainer;
+        // TODO: remove hard-coded path
+        g_autofree gchar *defaultsDirPath = g_build_filename(
+            install_root, "/etc/dnf/modules.defaults.d/", NULL);
+        DnfSackPrivate *priv = GET_PRIVATE(sack);
+        if (!moduleContainer) {
+            if (priv->moduleContainer) {
+                delete priv->moduleContainer;
+            }
+            priv->moduleContainer = new ModulePackageContainer(dnf_sack_get_all_arch(sack),
+                install_root, dnf_sack_get_arch(sack));
+            moduleContainer = priv->moduleContainer;
+        }
+
+        ModuleDefaultsContainer moduleDefaults;
+
+        readModuleMetadataFromRepo(sack, moduleContainer, moduleDefaults, install_root, platformModule);
+        readModuleDefaultsFromDisk(defaultsDirPath, moduleDefaults);
+
+        try {
+            moduleDefaults.resolve();
+        } catch (ModuleDefaultsContainer::ResolveException &exception) {
+            // TODO logger.debug("No module defaults found");
+        }
+
+        auto defaultStreams = moduleDefaults.getDefaultStreams();
+        //enableModuleStreams(*moduleContainer, install_root);
+        moduleContainer->setModuleDefaults(defaultStreams);
     }
 
-    ModuleDefaultsContainer moduleDefaults;
-
-    readModuleMetadataFromRepo(sack, moduleContainer, moduleDefaults, install_root, platformModule);
-    readModuleDefaultsFromDisk(defaultsDirPath, moduleDefaults);
-
-    try {
-        moduleDefaults.resolve();
-    } catch (ModuleDefaultsContainer::ResolveException &exception) {
-        // TODO logger.debug("No module defaults found");
-    }
-
-    auto defaultStreams = moduleDefaults.getDefaultStreams();
-    //enableModuleStreams(*moduleContainer, install_root);
-
-    moduleContainer->resolveActiveModulePackages(defaultStreams);
+    moduleContainer->resolveActiveModulePackages();
     auto nevraTuple = collectNevraForInclusionExclusion(*moduleContainer);
 
     setModuleExcludes(sack, hotfixRepos, std::get<0>(nevraTuple), std::get<1>(nevraTuple));

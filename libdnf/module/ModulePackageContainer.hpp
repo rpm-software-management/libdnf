@@ -125,7 +125,8 @@ public:
     * @return std::vector< std::shared_ptr< ModulePackage > >
     */
     std::vector<std::shared_ptr<ModulePackage>> query(std::string subject);
-    void resolveActiveModulePackages(const std::map<std::string, std::string> &defaultStreams);
+    void setModuleDefaults(const std::map<std::string, std::string> &defaultStreams);
+    void resolveActiveModulePackages();
     bool isModuleActive(Id id);
 
 private:
