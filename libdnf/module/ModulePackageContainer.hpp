@@ -66,19 +66,52 @@ public:
     std::vector<std::shared_ptr<ModulePackage>> getModulePackages();
 
     std::vector<std::shared_ptr<ModulePackage>> requiresModuleEnablement(const libdnf::PackageSet & packages);
+    /**
+     * @brief mark module 'name' as part of 'stream'
+     */
     void enable(const std::string &name, const std::string &stream);
+    /**
+     * @brief unmark module 'name' from any streams
+     */
     void disable(const std::string &name, const std::string &stream);
+    /**
+     * @brief add profile to name:stream
+     */
     void install(const std::string &name, const std::string &stream, const std::string &profile);
+    /**
+     * @brief remove profile from name:stream
+     */
     void uninstall(const std::string &name, const std::string &stream, const std::string &profile);
+    /**
+     * @brief commit module changes to storage
+     */
     void save(const std::string &modulesPath);
+    /**
+     * @brief discard all module changes and revert to storage state
+     */
     void rollback();
 
     bool isEnabled(const std::string &name, const std::string &stream);
 
+    /**
+     * @brief list of name:stream for module streams that are to be enable
+     */
     std::map<std::string, std::string> getEnabledStreams();
+    /**
+     * @brief list of name:stream for module streams that are to be disabled
+     */
     std::map<std::string, std::string> getDisabledStreams();
+    /**
+     * @brief list of name:<old_stream:new_stream> for modules whose stream has changed
+     */
     std::map<std::string, std::pair<std::string, std::string>> getSwitchedStreams();
+    /**
+     * @brief list of name:[profiles] for module profiles being added
+     */
     std::map<std::string, std::vector<std::string>> getInstalledProfiles();
+    /**
+     * @brief list of name:[profiles] for module profiles being removed
+     */
     std::map<std::string, std::vector<std::string>> getRemovedProfiles();
     /**
     * @brief Query modules according libdnf::Nsvcap. But the search ignores profiles
@@ -98,9 +131,6 @@ public:
 private:
     class Impl;
     std::unique_ptr<Impl> pImpl;
-
-    class Persistor;
-    std::unique_ptr<Persistor> persistor;
 };
 
 
