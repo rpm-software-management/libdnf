@@ -385,6 +385,90 @@ ModulePackageContainer::query(std::string subject)
     return result;
 }
 
+std::string
+ModulePackageContainer::getReport()
+{
+    std::string report;
+    auto enabled = getEnabledStreams();
+    if (!enabled.empty()) {
+        report += "Module Enabling:\n";
+        for (auto & item: enabled) {
+            report += "    ";
+            report += item.first;
+            report += ":";
+            report += item.second;
+            report += "\n";
+        }
+        report += "\n";
+    }
+    auto disabled = getDisabledStreams();
+    if (!disabled.empty()) {
+        report += "Module Disabling:\n";
+        for (auto & item: disabled) {
+            report += "    ";
+            report += item.first;
+            report += ":";
+            report += item.second;
+            report += "\n";
+        }
+        report += "\n";
+    }
+    auto switchedStreams = getSwitchedStreams();
+    if (!switchedStreams.empty()) {
+        std::string switchedReport;
+        bool notEmpty = false;
+        switchedReport += "Module Switched Streams:\n";
+        for (auto & item: switchedStreams) {
+            if (item.second.first.empty()) {
+                continue;
+            }
+            notEmpty = true;
+            switchedReport += "    ";
+            switchedReport += item.first;
+            switchedReport += ":";
+            switchedReport += item.second.first;
+            switchedReport += " > ";
+            switchedReport += item.first;
+            switchedReport += ":";
+            switchedReport += item.second.second;
+            switchedReport += "\n";
+        }
+        if (notEmpty) {
+            report += switchedReport;
+            report += "\n";
+        }
+    }
+    auto installedProfiles = getInstalledProfiles();
+    if (!installedProfiles.empty()) {
+        report += "Module Installing Profiles:\n";
+        for (auto & item: installedProfiles) {
+            for (auto & profile:item.second) {
+                report += "    ";
+                report += item.first;
+                report += ":";
+                report += profile;
+                report += "\n";
+            }
+        }
+        report += "\n";
+    }
+    auto removedProfiles = getRemovedProfiles();
+    if (!removedProfiles.empty()) {
+        report += "Module Removing Profiles:\n";
+        for (auto & item: removedProfiles) {
+            for (auto & profile:item.second) {
+                report += "    ";
+                report += item.first;
+                report += ":";
+                report += profile;
+                report += "\n";
+            }
+        }
+        report += "\n";
+    }
+    return report;
+}
+
 void ModulePackageContainer::setModuleDefaults(const std::map<std::string, std::string> &defaultStreams)
 {
     pImpl->moduleDefaults = defaultStreams;
