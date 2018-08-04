@@ -416,13 +416,8 @@ ModulePackageContainer::getReport()
     auto switchedStreams = getSwitchedStreams();
     if (!switchedStreams.empty()) {
         std::string switchedReport;
-        bool notEmpty = false;
         switchedReport += "Module Switched Streams:\n";
         for (auto & item: switchedStreams) {
-            if (item.second.first.empty()) {
-                continue;
-            }
-            notEmpty = true;
             switchedReport += "    ";
             switchedReport += item.first;
             switchedReport += ":";
@@ -433,10 +428,8 @@ ModulePackageContainer::getReport()
             switchedReport += item.second.second;
             switchedReport += "\n";
         }
-        if (notEmpty) {
-            report += switchedReport;
-            report += "\n";
-        }
+        report += switchedReport;
+        report += "\n";
     }
     auto installedProfiles = getInstalledProfiles();
     if (!installedProfiles.empty()) {
@@ -780,6 +773,10 @@ ModulePackageContainer::Impl::ModulePersistor::getSwitchedStreams()
         const auto &name = it.first;
         const auto &oldVal = it.second.first.getValue(name, "stream");
         const auto &newVal = it.second.second.stream;
+        // Do not report enabled stream as switched
+        if (oldVal.empty()) {
+            continue;
+        }
         if (oldVal != newVal) {
             switched.emplace(name, std::make_pair(oldVal, newVal));
         }
