@@ -92,6 +92,7 @@ public:
     void rollback();
 
     bool isEnabled(const std::string &name, const std::string &stream);
+    std::string getReport();
 
     /**
      * @brief list of name:stream for module streams that are to be enable
