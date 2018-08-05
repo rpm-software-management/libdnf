@@ -70,18 +70,22 @@ public:
      * @brief mark module 'name' as part of 'stream'
      */
     void enable(const std::string &name, const std::string &stream);
+    void enable(const ModulePackagePtr &module);
     /**
      * @brief unmark module 'name' from any streams
      */
     void disable(const std::string &name, const std::string &stream);
+    void disable(const ModulePackagePtr &module);
     /**
      * @brief add profile to name:stream
      */
     void install(const std::string &name, const std::string &stream, const std::string &profile);
+    void install(const ModulePackagePtr &module, const std::string &profile);
     /**
      * @brief remove profile from name:stream
      */
     void uninstall(const std::string &name, const std::string &stream, const std::string &profile);
+    void uninstall(const ModulePackagePtr &module, const std::string &profile);
     /**
      * @brief commit module changes to storage
      */

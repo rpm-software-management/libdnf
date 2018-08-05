@@ -272,11 +272,16 @@ void ModulePackageContainer::enable(const std::string &name, const std::string &
     for (const auto &iter : pImpl->modules) {
         auto modulePackage = iter.second;
         if (modulePackage->getName() == name && modulePackage->getStream() == stream) {
-            pImpl->persistor->changeStream(name, stream);
-            pImpl->persistor->changeState(name, ModuleState::ENABLED);
-            /* TODO: throw error in case of stream change? */
+            enable(modulePackage);
         }
     }
+}
+
+void ModulePackageContainer::enable(const ModulePackagePtr &module)
+{
+    /* TODO: throw error in case of stream change? */
+    pImpl->persistor->changeStream(module->getName(), module->getStream());
+    pImpl->persistor->changeState(module->getName(), ModuleState::ENABLED);
 }
 
 /**
@@ -287,10 +292,15 @@ void ModulePackageContainer::disable(const std::string &name, const std::string 
     for (const auto &iter : pImpl->modules) {
         auto modulePackage = iter.second;
         if (modulePackage->getName() == name && modulePackage->getStream() == stream) {
-            pImpl->persistor->changeState(name, ModuleState::DISABLED);
-            pImpl->persistor->changeStream(name, "");
+            disable(modulePackage);
         }
     }
+}
+
+void ModulePackageContainer::disable(const ModulePackagePtr &module)
+{
+    pImpl->persistor->changeState(module->getName(), ModuleState::DISABLED);
+    pImpl->persistor->changeStream(module->getName(), "");
 }
 
 void ModulePackageContainer::install(const std::string &name, const std::string &stream, const std::string &profile)
@@ -298,10 +308,15 @@ void ModulePackageContainer::install(const std::string &name, const std::string 
     for (const auto &iter : pImpl->modules) {
         auto modulePackage = iter.second;
         if (modulePackage->getName() == name && modulePackage->getStream() == stream) {
-            if (pImpl->persistor->getStream(name) == stream)
-                pImpl->persistor->addProfile(name, profile);
+            install(modulePackage, profile);
         }
     }
+}
+
+void ModulePackageContainer::install(const ModulePackagePtr &module, const std::string &profile)
+{
+    if (pImpl->persistor->getStream(module->getName()) == module->getStream())
+        pImpl->persistor->addProfile(module->getName(), profile);
 }
 
 void ModulePackageContainer::uninstall(const std::string &name, const std::string &stream, const std::string &profile)
@@ -309,10 +324,15 @@ void ModulePackageContainer::uninstall(const std::string &name, const std::strin
     for (const auto &iter : pImpl->modules) {
         auto modulePackage = iter.second;
         if (modulePackage->getName() == name && modulePackage->getStream() == stream) {
-            if (pImpl->persistor->getStream(name) == stream)
-                pImpl->persistor->removeProfile(name, profile);
+            uninstall(modulePackage, profile);
         }
     }
+}
+
+void ModulePackageContainer::uninstall(const ModulePackagePtr &module, const std::string &profile)
+{
+    if (pImpl->persistor->getStream(module->getName()) == module->getStream())
+        pImpl->persistor->removeProfile(module->getName(), profile);
 }
 
 std::unique_ptr<libdnf::IdQueue>
