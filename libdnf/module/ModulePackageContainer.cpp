@@ -344,26 +344,13 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<std::shared_ptr<Modu
 std::vector<std::shared_ptr<ModulePackage>>
 ModulePackageContainer::query(libdnf::Nsvcap& moduleNevra)
 {
-    // Alternativally a search using module provides could be performed
-    std::vector<std::shared_ptr<ModulePackage>> result;
-    libdnf::Query query(pImpl->moduleSack);
-    // platform modules are installed and not in modules std::Map.
-    query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
-    std::ostringstream ss;
-    ss << stringFormater(moduleNevra.getName()) << ":" << stringFormater(moduleNevra.getStream());
-    ss << ":" << stringFormater(std::to_string(moduleNevra.getVersion())) << ":";
-    ss << stringFormater(moduleNevra.getContext());
-    query.addFilter(HY_PKG_NAME, HY_GLOB, ss.str().c_str());
-    auto arch = moduleNevra.getArch();
-    if (!arch.empty()) {
-        query.addFilter(HY_PKG_ARCH, HY_GLOB, arch.c_str());
+    auto version = moduleNevra.getVersion();
+    std::string strinVersion;
+    if (version != -1) {
+        strinVersion = std::to_string(version);
     }
-    auto pset = query.runSet();
-    Id moduleId = -1;
-    while ((moduleId = pset->next(moduleId)) != -1) {
-        result.push_back(pImpl->modules.at(moduleId));
-    }
-    return result;
+    return query(moduleNevra.getName(), moduleNevra.getStream(), strinVersion,
+                 moduleNevra.getContext(), moduleNevra.getArch());
 }
 
 std::vector<std::shared_ptr<ModulePackage>>
@@ -377,6 +364,31 @@ ModulePackageContainer::query(std::string subject)
     std::ostringstream ss;
     ss << subject << "*";
     query.addFilter(HY_PKG_NAME, HY_GLOB, ss.str().c_str());
+    auto pset = query.runSet();
+    Id moduleId = -1;
+    while ((moduleId = pset->next(moduleId)) != -1) {
+        result.push_back(pImpl->modules.at(moduleId));
+    }
+    return result;
+}
+
+std::vector<std::shared_ptr<ModulePackage>>
+ModulePackageContainer::query(std::string name, std::string stream, std::string version,
+    std::string context, std::string arch)
+{
+    // Alternativally a search using module provides could be performed
+    std::vector<std::shared_ptr<ModulePackage>> result;
+    libdnf::Query query(pImpl->moduleSack);
+    // platform modules are installed and not in modules std::Map.
+    query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    std::ostringstream ss;
+    ss << stringFormater(name) << ":" << stringFormater(stream);
+    ss << ":" << stringFormater(version) << ":";
+    ss << stringFormater(context);
+    query.addFilter(HY_PKG_NAME, HY_GLOB, ss.str().c_str());
+    if (!arch.empty()) {
+        query.addFilter(HY_PKG_ARCH, HY_GLOB, arch.c_str());
+    }
     auto pset = query.runSet();
     Id moduleId = -1;
     while ((moduleId = pset->next(moduleId)) != -1) {
