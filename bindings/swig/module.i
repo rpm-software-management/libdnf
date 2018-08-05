@@ -4,10 +4,11 @@
 #define SWIG_PYTHON_2_UNICODE
 %}
 
+%include <std_map.i>
+%include <std_pair.i>
+%include <std_shared_ptr.i>
 %include <std_string.i>
 %include <std_vector.i>
-%include <std_map.i>
-%include <std_shared_ptr.i>
 
 %shared_ptr(ModulePackage)
 typedef std::shared_ptr< ModulePackage > ModulePackagePtr;
@@ -18,10 +19,12 @@ typedef std::shared_ptr< ModulePackage > ModulePackagePtr;
     #include "libdnf/module/ModulePackageContainer.hpp"
 %}
 
-%template() std::vector<std::shared_ptr<ModulePackage>>;
-%template() std::map<std::string, std::string>;
-%template() std::map<std::string, std::pair<std::string, std::string>>;
-%template() std::map<std::string, std::vector<std::string>>;
+%template(VectorModulePackagePtr) std::vector<ModulePackagePtr>;
+%template(MapStringString) std::map<std::string, std::string>;
+%template(MapStringPairStringString) std::map<std::string, std::pair<std::string, std::string>>;
+%template(VectorString) std::vector<std::string>;
+%template(MapStringVectorString) std::map<std::string, std::vector<std::string>>;
+
 
 // make SWIG wrap following headers
 %nodefaultctor ModulePackage;
