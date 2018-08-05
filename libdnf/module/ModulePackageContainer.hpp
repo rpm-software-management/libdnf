@@ -62,10 +62,10 @@ public:
     void add(const std::string &fileContent);
     Id addPlatformPackage(const std::string &osReleasePath, const char *  platformModule);
     void createConflictsBetweenStreams();
-    std::shared_ptr<ModulePackage> getModulePackage(Id id);
-    std::vector<std::shared_ptr<ModulePackage>> getModulePackages();
+    ModulePackagePtr getModulePackage(Id id);
+    std::vector<ModulePackagePtr> getModulePackages();
 
-    std::vector<std::shared_ptr<ModulePackage>> requiresModuleEnablement(const libdnf::PackageSet & packages);
+    std::vector<ModulePackagePtr> requiresModuleEnablement(const libdnf::PackageSet & packages);
     /**
      * @brief mark module 'name' as part of 'stream'
      */
@@ -92,7 +92,7 @@ public:
     void rollback();
 
     bool isEnabled(const std::string &name, const std::string &stream);
-    bool isEnabled(const std::shared_ptr<ModulePackage> &module);
+    bool isEnabled(const ModulePackagePtr &module);
 
     std::string getReport();
 
@@ -120,15 +120,15 @@ public:
     * @brief Query modules according libdnf::Nsvcap. But the search ignores profiles
     *
     */
-    std::vector<std::shared_ptr<ModulePackage>> query(libdnf::Nsvcap & moduleNevra);
+    std::vector<ModulePackagePtr> query(libdnf::Nsvcap & moduleNevra);
     /**
     * @brief Requiers subject in format <name>, <name>:<stream>, or <name>:<stream>:<version>
     *
     * @param subject p_subject:...
     * @return std::vector< std::shared_ptr< ModulePackage > >
     */
-    std::vector<std::shared_ptr<ModulePackage>> query(std::string subject);
-    std::vector<std::shared_ptr<ModulePackage>> query(std::string name, std::string stream,
+    std::vector<ModulePackagePtr> query(std::string subject);
+    std::vector<ModulePackagePtr> query(std::string name, std::string stream,
         std::string version, std::string context, std::string arch);
     void setModuleDefaults(const std::map<std::string, std::string> &defaultStreams);
     void resolveActiveModulePackages();

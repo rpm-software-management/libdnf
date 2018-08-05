@@ -80,7 +80,7 @@ public:
     Impl();
     ~Impl();
     std::unique_ptr<libdnf::IdQueue> moduleSolve(
-        const std::vector<std::shared_ptr<ModulePackage>> & modules);
+        const std::vector<ModulePackagePtr> & modules);
     bool insert(const std::string &moduleName, const char *path);
 
 
@@ -88,7 +88,7 @@ private:
     friend struct ModulePackageContainer;
     class ModulePersistor;
     std::unique_ptr<ModulePersistor> persistor;
-    std::map<Id, std::shared_ptr<ModulePackage>> modules;
+    std::map<Id, ModulePackagePtr> modules;
     DnfSack * moduleSack;
     Map * activatedModules{nullptr};
     std::string installRoot;
@@ -174,7 +174,7 @@ ModulePackageContainer::add(const std::string &fileContent)
     FOR_REPOS(id, r) {
         if (strcmp(r->name, "available") == 0) {
             for (auto data : metadata) {
-                std::shared_ptr<ModulePackage> modulePackage(new ModulePackage(
+                ModulePackagePtr modulePackage(new ModulePackage(
                     pImpl->moduleSack, r, data));
                 pImpl->modules.insert(std::make_pair(modulePackage->getId(), modulePackage));
                 g_autofree gchar *path = g_build_filename(pImpl->installRoot.c_str(), "/etc/dnf/modules.d", NULL);
@@ -208,19 +208,19 @@ void ModulePackageContainer::createConflictsBetweenStreams()
     }
 }
 
-std::shared_ptr<ModulePackage> ModulePackageContainer::getModulePackage(Id id)
+ModulePackagePtr ModulePackageContainer::getModulePackage(Id id)
 {
     return pImpl->modules[id];
 }
 
-std::vector<std::shared_ptr<ModulePackage>>
+std::vector<ModulePackagePtr>
 ModulePackageContainer::requiresModuleEnablement(const libdnf::PackageSet & packages)
 {
     auto activatedModules = pImpl->activatedModules;
     if (!activatedModules) {
         return {};
     }
-    std::vector<std::shared_ptr<ModulePackage>> output;
+    std::vector<ModulePackagePtr> output;
     libdnf::Query baseQuery(packages.getSack());
     baseQuery.addFilter(HY_PKG, HY_EQ, &packages);
     baseQuery.apply();
@@ -259,7 +259,7 @@ bool ModulePackageContainer::isEnabled(const std::string &name, const std::strin
         pImpl->persistor->getStream(name) == stream;
 }
 
-bool ModulePackageContainer::isEnabled(const std::shared_ptr<ModulePackage> &module)
+bool ModulePackageContainer::isEnabled(const ModulePackagePtr &module)
 {
     return isEnabled(module->getName(), module->getStream());
 }
@@ -316,7 +316,7 @@ void ModulePackageContainer::uninstall(const std::string &name, const std::strin
 }
 
 std::unique_ptr<libdnf::IdQueue>
-ModulePackageContainer::Impl::moduleSolve(const std::vector<std::shared_ptr<ModulePackage>> & modules)
+ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackagePtr> & modules)
 {
     if (modules.empty()) {
         return {};
@@ -344,7 +344,7 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<std::shared_ptr<Modu
     return installed;
 }
 
-std::vector<std::shared_ptr<ModulePackage>>
+std::vector<ModulePackagePtr>
 ModulePackageContainer::query(libdnf::Nsvcap& moduleNevra)
 {
     auto version = moduleNevra.getVersion();
@@ -356,11 +356,11 @@ ModulePackageContainer::query(libdnf::Nsvcap& moduleNevra)
                  moduleNevra.getContext(), moduleNevra.getArch());
 }
 
-std::vector<std::shared_ptr<ModulePackage>>
+std::vector<ModulePackagePtr>
 ModulePackageContainer::query(std::string subject)
 {
     // Alternativally a search using module provides could be performed
-    std::vector<std::shared_ptr<ModulePackage>> result;
+    std::vector<ModulePackagePtr> result;
     libdnf::Query query(pImpl->moduleSack);
     // platform modules are installed and not in modules std::Map.
     query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
@@ -375,12 +375,12 @@ ModulePackageContainer::query(std::string subject)
     return result;
 }
 
-std::vector<std::shared_ptr<ModulePackage>>
+std::vector<ModulePackagePtr>
 ModulePackageContainer::query(std::string name, std::string stream, std::string version,
     std::string context, std::string arch)
 {
     // Alternativally a search using module provides could be performed
-    std::vector<std::shared_ptr<ModulePackage>> result;
+    std::vector<ModulePackagePtr> result;
     libdnf::Query query(pImpl->moduleSack);
     // platform modules are installed and not in modules std::Map.
     query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
@@ -486,7 +486,7 @@ void ModulePackageContainer::resolveActiveModulePackages()
 {
     auto defaultStreams = pImpl->moduleDefaults;
     Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
-    std::vector<std::shared_ptr<ModulePackage>> packages;
+    std::vector<ModulePackagePtr> packages;
 
     // Use only Enabled or Default modules for transaction
     for (const auto &iter : pImpl->modules) {
@@ -536,12 +536,12 @@ bool ModulePackageContainer::isModuleActive(Id id)
 }
 
 
-std::vector<std::shared_ptr<ModulePackage>> ModulePackageContainer::getModulePackages()
+std::vector<ModulePackagePtr> ModulePackageContainer::getModulePackages()
 {
-    std::vector<std::shared_ptr<ModulePackage>> values;
+    std::vector<ModulePackagePtr> values;
     auto modules = pImpl->modules;
     std::transform(std::begin(modules), std::end(modules), std::back_inserter(values),
-                   [](const std::map<Id, std::shared_ptr<ModulePackage>>::value_type &pair){ return pair.second; });
+                   [](const std::map<Id, ModulePackagePtr>::value_type &pair){ return pair.second; });
 
     return values;
 }
