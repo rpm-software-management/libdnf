@@ -35,9 +35,6 @@ typedef std::shared_ptr< ModulePackage > ModulePackagePtr;
 
 class ModulePackageContainer;
 
-class ModulePackage;
-typedef std::shared_ptr< ModulePackage > ModulePackagePtr;
-
 class ModulePackage // TODO inherit in future; : public Package
 {
 public:
@@ -65,7 +62,7 @@ public:
 
     std::vector<std::shared_ptr<ModuleDependencies> > getModuleDependencies() const;
 
-    void addStreamConflict(const std::shared_ptr<ModulePackage> &package);
+    void addStreamConflict(const ModulePackagePtr &package);
 
     Id getId() const { return id; };
 
