@@ -41,11 +41,6 @@ typedef std::shared_ptr< ModulePackage > ModulePackagePtr;
 class ModulePackage // TODO inherit in future; : public Package
 {
 public:
-    enum class ModuleState {
-        UNKNOWN,
-        ENABLED,
-        DEFAULT
-    };
     ~ModulePackage();
 
     /**
@@ -70,13 +65,7 @@ public:
 
     std::vector<std::shared_ptr<ModuleDependencies> > getModuleDependencies() const;
 
-    bool isEnabled();
-
     void addStreamConflict(const std::shared_ptr<ModulePackage> &package);
-
-    void enable();
-    ModuleState getState();
-    void setState(ModuleState newState);
 
     Id getId() const { return id; };
 
@@ -90,15 +79,10 @@ private:
     void createDependencies(Solvable *solvable) const;
 
     std::shared_ptr<ModuleMetadata> metadata;
-    ModuleState state;
 
     // TODO: remove after inheriting from Package
     DnfSack * moduleSack;
     Id id;
 };
-
-inline ModulePackage::ModuleState ModulePackage::getState() { return state; }
-
-inline void ModulePackage::setState(ModulePackage::ModuleState newState) { state = newState; }
 
 #endif //LIBDNF_MODULEPACKAGE_HPP

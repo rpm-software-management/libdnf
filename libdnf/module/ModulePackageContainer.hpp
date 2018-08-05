@@ -92,6 +92,8 @@ public:
     void rollback();
 
     bool isEnabled(const std::string &name, const std::string &stream);
+    bool isEnabled(const std::shared_ptr<ModulePackage> &module);
+
     std::string getReport();
 
     /**
