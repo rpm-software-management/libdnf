@@ -865,6 +865,10 @@ ModulePackageContainer::Impl::ModulePersistor::getSwitchedStreams()
         if (oldVal.empty()) {
             continue;
         }
+        // Do not report disabled stream as switched
+        if (newVal.empty()) {
+            continue;
+        }
         if (oldVal != newVal) {
             switched.emplace(name, std::make_pair(oldVal, newVal));
         }
