@@ -232,7 +232,7 @@ ModulePackageContainer::requiresModuleEnablement(const libdnf::PackageSet & pack
             continue;
         }
         auto module = modules[id];
-        if (module->isEnabled()) {
+        if (isEnabled(module)) {
             continue;
         }
         auto includeNEVRAs = module->getArtifacts();
@@ -259,6 +259,11 @@ bool ModulePackageContainer::isEnabled(const std::string &name, const std::strin
         pImpl->persistor->getStream(name) == stream;
 }
 
+bool ModulePackageContainer::isEnabled(const std::shared_ptr<ModulePackage> &module)
+{
+    return isEnabled(module->getName(), module->getStream());
+}
+
 /**
  * @brief Mark ModulePackage as part of an enabled stream.
  */
@@ -267,7 +272,6 @@ void ModulePackageContainer::enable(const std::string &name, const std::string &
     for (const auto &iter : pImpl->modules) {
         auto modulePackage = iter.second;
         if (modulePackage->getName() == name && modulePackage->getStream() == stream) {
-            modulePackage->enable();
             pImpl->persistor->changeStream(name, stream);
             pImpl->persistor->changeState(name, ModuleState::ENABLED);
             /* TODO: throw error in case of stream change? */
@@ -283,7 +287,6 @@ void ModulePackageContainer::disable(const std::string &name, const std::string 
     for (const auto &iter : pImpl->modules) {
         auto modulePackage = iter.second;
         if (modulePackage->getName() == name && modulePackage->getStream() == stream) {
-            //modulePackage->disable();
             pImpl->persistor->changeState(name, ModuleState::DISABLED);
             pImpl->persistor->changeStream(name, "");
         }
@@ -496,10 +499,10 @@ void ModulePackageContainer::resolveActiveModulePackages()
             hasDefaultStream = false;
             // TODO logger.debug(exception.what())
         }
-        if (module->isEnabled()) {
+        if (isEnabled(module)) {
             packages.push_back(module);
         } else if (hasDefaultStream) {
-            module->setState(ModulePackage::ModuleState::DEFAULT);
+            pImpl->persistor->changeState(module->getName(), ModuleState::DEFAULT);
             packages.push_back(module);
         }
     }

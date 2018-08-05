@@ -63,7 +63,6 @@ ModulePackage::~ModulePackage() = default;
 ModulePackage::ModulePackage(DnfSack * moduleSack, Repo * repo,
     const std::shared_ptr<ModuleMetadata> &metadata)
         : metadata(metadata)
-        , state(ModuleState::UNKNOWN)
         , moduleSack(moduleSack)
 {
     Pool * pool = dnf_sack_get_pool(moduleSack);
@@ -266,24 +265,6 @@ std::vector<std::shared_ptr<ModuleProfile>> ModulePackage::getProfiles() const
 std::vector<std::shared_ptr<ModuleDependencies>> ModulePackage::getModuleDependencies() const
 {
     return metadata->getDependencies();
-}
-
-/**
- * @brief Is a ModulePackage part of an enabled stream?
- *
- * @return bool
- */
-bool ModulePackage::isEnabled()
-{
-    return state == ModuleState::ENABLED;
-}
-
-/**
- * @brief Mark ModulePackage as part of an enabled stream.
- */
-void ModulePackage::enable()
-{
-    state = ModuleState::ENABLED;
 }
 
 /**
