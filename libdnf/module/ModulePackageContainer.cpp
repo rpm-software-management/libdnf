@@ -322,6 +322,29 @@ void ModulePackageContainer::disable(const ModulePackagePtr &module)
     pImpl->persistor->changeStream(module->getName(), "");
 }
 
+/**
+ * @brief Are there any changes to be saved?
+ */
+bool ModulePackageContainer::isChanged()
+{
+    if (!getEnabledStreams().empty()) {
+        return true;
+    }
+    if (!getDisabledStreams().empty()) {
+        return true;
+    }
+    if (!getSwitchedStreams().empty()) {
+        return true;
+    }
+    if (!getInstalledProfiles().empty()) {
+        return true;
+    }
+    if (!getRemovedProfiles().empty()) {
+        return true;
+    }
+    return false;
+}
+
 void ModulePackageContainer::install(const std::string &name, const std::string &stream, const std::string &profile)
 {
     for (const auto &iter : pImpl->modules) {

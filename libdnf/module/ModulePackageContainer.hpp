@@ -94,6 +94,10 @@ public:
      * @brief discard all module changes and revert to storage state
      */
     void rollback();
+    /**
+     * @brief Are there any changes to be saved?
+     */
+    bool isChanged();
 
     bool isEnabled(const std::string &name, const std::string &stream);
     bool isEnabled(const ModulePackagePtr &module);
