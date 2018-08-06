@@ -5,6 +5,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ModulePackageContainerTest);
 #include "libdnf/log.hpp"
 #include "libdnf/dnf-sack-private.hpp"
 
+#include <algorithm>
+
 auto logger(libdnf::Log::getLogger());
 
 void ModulePackageContainerTest::setUp()
@@ -95,4 +97,58 @@ void ModulePackageContainerTest::testRollback()
 
     CPPUNIT_ASSERT(modules->isEnabled("httpd", "2.4"));
     CPPUNIT_ASSERT(modules->isEnabled("base-runtime", "f26"));
+}
+
+void ModulePackageContainerTest::testInstallProfile()
+{
+    modules->install("httpd", "2.4", "default");
+    {
+        auto installed = modules->getInstalledProfiles()["httpd"];
+        auto it = std::find(installed.begin(), installed.end(), "default");
+        CPPUNIT_ASSERT(it != installed.end());
+    }
+
+    modules->install("httpd", "2.4", "doc");
+    {
+        auto installed = modules->getInstalledProfiles()["httpd"];
+        auto it = std::find(installed.begin(), installed.end(), "doc");
+        CPPUNIT_ASSERT(it != installed.end());
+    }
+
+    modules->install("httpd", "2.4", "default");
+    {
+        auto installed = modules->getInstalledProfiles()["httpd"];
+        CPPUNIT_ASSERT(installed.size() == 2);
+    }
+
+    modules->save();
+}
+
+
+void ModulePackageContainerTest::testRemoveProfile()
+{
+    modules->uninstall("httpd", "2.4", "default");
+    {
+        auto installed = modules->getInstalledProfiles()["httpd"];
+        auto it = std::find(installed.begin(), installed.end(), "default");
+        CPPUNIT_ASSERT(it == installed.end());
+        auto removed = modules->getRemovedProfiles()["httpd"];
+        it = std::find(removed.begin(), removed.end(), "default");
+        CPPUNIT_ASSERT(it != removed.end());
+    }
+
+    modules->uninstall("httpd", "2.4", "doc");
+    {
+        auto installed = modules->getInstalledProfiles()["httpd"];
+        auto it = std::find(installed.begin(), installed.end(), "doc");
+        CPPUNIT_ASSERT(it == installed.end());
+        auto removed = modules->getRemovedProfiles()["httpd"];
+        it = std::find(removed.begin(), removed.end(), "doc");
+        CPPUNIT_ASSERT(it != removed.end());
+    }
+
+    auto installed = modules->getInstalledProfiles()["httpd"];
+    CPPUNIT_ASSERT(installed.empty());
+
+    modules->save();
 }
