@@ -36,6 +36,10 @@ extern "C" {
 #include "libdnf/conf/ConfigParser.hpp"
 #include "libdnf/conf/OptionStringList.hpp"
 
+static constexpr auto EMPTY_STREAM = "";
+static constexpr auto EMPTY_PROFILES = "";
+static constexpr auto DEFAULT_STATE = "";
+
 static std::string
 stringFormater(std::string imput)
 {
@@ -660,6 +664,67 @@ bool ModulePackageContainer::Impl::ModulePersistor::changeState(const std::strin
     return true;
 }
 
+static bool isConfigValid(std::map<std::string, std::string> &config, const std::string &name)
+{
+    /* name = <module_name> */
+    if (config.find("name") == config.end() || config["name"] != name) {
+        return false;
+    }
+    /* stream = <stream_name> */
+    if (config.find("stream") == config.end()) {
+        return false;
+    }
+    /* profiles = <list of profiles> */
+    if (config.find("profiles") == config.end()) {
+        return false;
+    }
+    /* state = <state> || enabled = <1|0> */
+    if (config.find("state") == config.end() &&
+        config.find("enabled") == config.end()) {
+        return false;
+    }
+
+    return true;
+}
+
+static inline void initConfig(std::map<std::string, std::string> &config, const std::string &name)
+{
+    config["name"] = name;
+    config["stream"] = EMPTY_STREAM;
+    config["profiles"] = EMPTY_PROFILES;
+    config["state"] = DEFAULT_STATE;
+}
+
+static inline void parseConfig(libdnf::ConfigParser &parser, const std::string &name, const char *path)
+{
+    auto &data = parser.getData();
+
+    try {
+        const auto fname = name + ".module";
+        g_autofree gchar *cfn = g_build_filename(path, fname.c_str(), NULL);
+        parser.read(cfn);
+    } catch (const libdnf::ConfigParser::CantOpenFile &) {
+        /* No module config file present. Fill values in */
+        initConfig(data[name], name);
+        return;
+    }
+
+    /* Old config files might not have an option 'name' */
+    data[name]["name"] = name;
+
+    /* FIXME: init empty config or throw error? */
+    if (!isConfigValid(data[name], name)) {
+        //logger->debug("Invalid config file for " + name);
+        initConfig(data[name], name);
+    }
+
+    /* Replace old 'enabled' format by 'state' */
+    if (data[name].find("enabled") != data[name].end()) {
+        data[name]["state"] = data[name]["enabled"];
+        data[name].erase("enabled");
+    }
+}
+
 bool ModulePackageContainer::Impl::ModulePersistor::insert(const std::string &moduleName, const char *path)
 {
     /* There can only be one config file per module */
@@ -671,37 +736,15 @@ bool ModulePackageContainer::Impl::ModulePersistor::insert(const std::string &mo
 
     auto &parser = configs[moduleName].first;
     auto &newConfig = configs[moduleName].second;
-    auto &data = parser.getData();
 
-    data[moduleName]["name"] = moduleName;
-    try {
-        parser.read(std::string(path) + "/" + moduleName + ".module");
-    } catch (const libdnf::ConfigParser::CantOpenFile &) {
-        /* No module config file present. Fill values in */
-        data[moduleName]["state"] = "";
-        data[moduleName]["stream"] = newConfig.stream = "";
-        data[moduleName]["profiles"] = "";
-        newConfig.state = fromString("");
-        return true;
-    }
+    parseConfig(parser, moduleName, path);
 
     libdnf::OptionStringList slist{std::vector<std::string>()};
     const auto &plist = parser.getValue(moduleName, "profiles");
     newConfig.profiles = std::move(slist.fromString(plist));
 
-    std::string stateStr;
-    const auto it = data[moduleName].find("enabled");
-    if (it != data[moduleName].end()) { /* old format */
-        stateStr = it->second;
-    } else {
-        stateStr = data[moduleName].find("state")->second;
-    }
-
-    newConfig.state = fromString(stateStr);
-    data[moduleName]["state"] = toString(newConfig.state); /* save new format */
-    data[moduleName].erase("enabled"); /* remove option from old format */
-
-    newConfig.stream = data[moduleName]["stream"];
+    newConfig.state = fromString(parser.getValue(moduleName, "state"));
+    newConfig.stream = parser.getValue(moduleName, "stream");
 
     return true;
 }
