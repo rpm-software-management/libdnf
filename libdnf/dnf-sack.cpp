@@ -2172,28 +2172,6 @@ dnf_sack_add_repos(DnfSack *sack,
 }
 
 namespace {
-void enableModuleStreams(ModulePackageContainer &modulePackages, const char *install_root)
-{
-    // TODO: remove hard-coded path
-    g_autofree gchar *dirPath = g_build_filename(install_root, "/etc/dnf/modules.d/", NULL);
-
-    libdnf::ConfigParser parser{};
-    for (const auto &file : filesystem::getDirContent(dirPath)) {
-        parser.read(file);
-    }
-
-    for (const auto &iter : parser.getData()) {
-        const auto &name = iter.first;
-        libdnf::OptionBool enabled{false};
-
-        if (!enabled.fromString(parser.getValue(name, "enabled"))) {
-            continue;
-        }
-        const auto &stream = parser.getValue(name, "stream");
-        modulePackages.enable(name, stream);
-    }
-}
-
 std::string getFileContent(const std::string &filePath)
 {
     auto yaml = libdnf::File::newFile(filePath);
@@ -2383,7 +2361,6 @@ void dnf_sack_filter_modules_v2(DnfSack * sack, DnfModulePackageContainer * modu
         }
 
         auto defaultStreams = moduleDefaults.getDefaultStreams();
-        //enableModuleStreams(*moduleContainer, install_root);
         moduleContainer->setModuleDefaults(defaultStreams);
     }
 
