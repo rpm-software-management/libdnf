@@ -517,8 +517,8 @@ void ModulePackageContainer::resolveActiveModulePackages()
     // Use only Enabled or Default modules for transaction
     for (const auto &iter : pImpl->modules) {
         auto module = iter.second;
-        auto state = pImpl->persistor->getState(module->getName());
-        if (state == ModuleState::DISABLED) {
+        auto moduleState = pImpl->persistor->getState(module->getName());
+        if (moduleState == ModuleState::DISABLED) {
             excludes.set(module->getId());
             continue;
         }
@@ -533,8 +533,10 @@ void ModulePackageContainer::resolveActiveModulePackages()
         if (isEnabled(module)) {
             packages.push_back(module);
         } else if (hasDefaultStream) {
-            pImpl->persistor->changeState(module->getName(), ModuleState::DEFAULT);
-            packages.push_back(module);
+            if (moduleState != ModuleState::ENABLED) {
+                pImpl->persistor->changeState(module->getName(), ModuleState::DEFAULT);
+                packages.push_back(module);
+            }
         }
     }
     dnf_sack_add_excludes(pImpl->moduleSack, &excludes);
