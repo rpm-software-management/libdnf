@@ -14,6 +14,7 @@ void ModulePackageContainerTest::setUp()
     context = dnf_context_new();
     dnf_context_set_release_ver(context, "26");
     dnf_context_set_arch(context, "x86_64");
+    dnf_context_set_platform_module(context, "platform:26");
     dnf_context_set_install_root(context, TESTDATADIR "/modules/");
     dnf_context_set_repo_dir(context, TESTDATADIR "/modules/yum.repos.d/");
     dnf_context_set_solv_dir(context, "/tmp");
@@ -24,22 +25,17 @@ void ModulePackageContainerTest::setUp()
     dnf_context_setup_sack(context, state, &error);
     g_assert_no_error(error);
 
-    modules = new ModulePackageContainer(false, TESTDATADIR "/modules/", "x86_64");
+    auto sack = dnf_context_get_sack(context);
+    modules = dnf_sack_get_module_container(sack);
 }
 
 void ModulePackageContainerTest::tearDown()
 {
     g_object_unref(context);
-    delete modules;
 }
 
 void ModulePackageContainerTest::testEnabledModules()
 {
-    const char *hotfix = nullptr;
-    auto sack = dnf_context_get_sack(context);
-    dnf_sack_filter_modules_v2(sack, modules, &hotfix, TESTDATADIR "/modules/", "platform:26",
-                               false);
-
     const std::vector<std::string> specs = {"httpd:2.4", "base-runtime:f26" };
     for (const auto &spec : specs) {
         const auto &qRes = modules->query(spec);
@@ -50,12 +46,6 @@ void ModulePackageContainerTest::testEnabledModules()
 
 void ModulePackageContainerTest::testDisableModules()
 {
-    const char *hotfix = nullptr;
-    auto sack = dnf_context_get_sack(context);
-    dnf_sack_filter_modules_v2(sack, modules, &hotfix, TESTDATADIR "/modules/", "platform:26",
-        false
-    );
-
     modules->disable("httpd", "2.4");
     modules->disable("base-runtime", "f26");
 
@@ -72,11 +62,6 @@ void ModulePackageContainerTest::testDisableModules()
 
 void ModulePackageContainerTest::testDisabledModules()
 {
-    const char *hotfix = nullptr;
-    auto sack = dnf_context_get_sack(context);
-    dnf_sack_filter_modules_v2(sack, modules, &hotfix, TESTDATADIR "/modules/", "platform:26",
-                               false);
-
     CPPUNIT_ASSERT(!modules->isEnabled("httpd", "2.4"));
     CPPUNIT_ASSERT(!modules->isEnabled("httpd", "2.2"));
     CPPUNIT_ASSERT(!modules->isEnabled("base-runtime", "f26"));
@@ -84,12 +69,6 @@ void ModulePackageContainerTest::testDisabledModules()
 
 void ModulePackageContainerTest::testEnableModules()
 {
-    const char *hotfix = nullptr;
-    auto sack = dnf_context_get_sack(context);
-    dnf_sack_filter_modules_v2(sack, modules, &hotfix, TESTDATADIR "/modules/", "platform:26",
-        false
-    );
-
     modules->enable("httpd", "2.4");
     modules->enable("base-runtime", "f26");
 
@@ -106,11 +85,6 @@ void ModulePackageContainerTest::testEnableModules()
 
 void ModulePackageContainerTest::testRollback()
 {
-    const char *hotfix = nullptr;
-    auto sack = dnf_context_get_sack(context);
-    dnf_sack_filter_modules_v2(sack, modules, &hotfix, TESTDATADIR "/modules/", "platform:26",
-                               false);
-
     modules->disable("httpd", "2.4");
     modules->disable("base-runtime", "f26");
 
