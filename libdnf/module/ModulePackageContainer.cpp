@@ -600,7 +600,7 @@ ModulePackageContainer::Impl::ModulePersistor::getProfiles(const std::string &na
 bool ModulePackageContainer::Impl::ModulePersistor::addProfile(const std::string &name, const std::string &profile)
 {
     auto &profiles = configs[name].second.profiles;
-    const auto &it = std::find(std::begin(profiles), std::end(profiles), name);
+    const auto &it = std::find(std::begin(profiles), std::end(profiles), profile);
     if (it != std::end(profiles))
         return false;
 
