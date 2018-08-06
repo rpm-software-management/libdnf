@@ -525,6 +525,31 @@ filter_modules(_SackObject *self, PyObject *args, PyObject *kwds)
 
 
 static PyObject *
+set_modules_enabled_by_pkgset(_SackObject *self, PyObject *args, PyObject *kwds)
+{
+    const char *kwlist[] = {"module_container", "pkgs", NULL};
+    PyObject * pyModuleContainer;
+    PyObject * pyPkgSet;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", (char**) kwlist, &pyModuleContainer,
+                                     &pyPkgSet))
+        return NULL;
+    auto pset = pyseq_to_packageset(pyPkgSet, self->sack);
+    if (!pset) {
+        return NULL;
+    }
+
+    auto swigContainer = reinterpret_cast< ModulePackageContainerPyObject * >(
+        PyObject_GetAttrString(pyModuleContainer, "this"));
+    auto moduleContainer = swigContainer->ptr;
+    auto modules = moduleContainer->requiresModuleEnablement(*pset.get());
+    for (auto module: modules) {
+        moduleContainer->enable(module->getName(), module->getStream());
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 {
     g_autoptr(GError) error = NULL;
@@ -645,6 +670,8 @@ PyMethodDef sack_methods[] = {
     {"list_arches", (PyCFunction)list_arches, METH_NOARGS,
      NULL},
     {"filter_modules", (PyCFunction)filter_modules, METH_VARARGS | METH_KEYWORDS, NULL},
+    {"set_modules_enabled_by_pkgset", (PyCFunction)set_modules_enabled_by_pkgset,
+        METH_VARARGS | METH_KEYWORDS, NULL},
     {"load_system_repo", (PyCFunction)load_system_repo,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"load_repo", (PyCFunction)load_repo, METH_VARARGS | METH_KEYWORDS,
