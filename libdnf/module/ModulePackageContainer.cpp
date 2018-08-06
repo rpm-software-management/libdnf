@@ -510,11 +510,18 @@ void ModulePackageContainer::resolveActiveModulePackages()
 {
     auto defaultStreams = pImpl->moduleDefaults;
     Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
+    dnf_sack_reset_excludes(pImpl->moduleSack);
     std::vector<ModulePackagePtr> packages;
 
+    libdnf::PackageSet excludes(pImpl->moduleSack);
     // Use only Enabled or Default modules for transaction
     for (const auto &iter : pImpl->modules) {
         auto module = iter.second;
+        auto state = pImpl->persistor->getState(module->getName());
+        if (state == ModuleState::DISABLED) {
+            excludes.set(module->getId());
+            continue;
+        }
 
         bool hasDefaultStream;
         try {
@@ -530,6 +537,7 @@ void ModulePackageContainer::resolveActiveModulePackages()
             packages.push_back(module);
         }
     }
+    dnf_sack_add_excludes(pImpl->moduleSack, &excludes);
     auto ids = pImpl->moduleSolve(packages);
     if (!ids || ids->size() == 0) {
         return;
