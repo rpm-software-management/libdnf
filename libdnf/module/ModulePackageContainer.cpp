@@ -269,6 +269,21 @@ bool ModulePackageContainer::isEnabled(const ModulePackagePtr &module)
 }
 
 /**
+ * @brief Is a ModulePackage part of a disabled module?
+ *
+ * @return bool
+ */
+bool ModulePackageContainer::isDisabled(const std::string &name)
+{
+    return pImpl->persistor->getState(name) == ModuleState::DISABLED;
+}
+
+bool ModulePackageContainer::isDisabled(const ModulePackagePtr &module)
+{
+    return isDisabled(module->getName());
+}
+
+/**
  * @brief Mark ModulePackage as part of an enabled stream.
  */
 void ModulePackageContainer::enable(const std::string &name, const std::string &stream)
@@ -530,7 +545,10 @@ void ModulePackageContainer::resolveActiveModulePackages()
             hasDefaultStream = false;
             // TODO logger.debug(exception.what())
         }
-        if (isEnabled(module)) {
+        if (isDisabled(module)) {
+            // skip disabled modules
+            continue;
+        } else if (isEnabled(module)) {
             packages.push_back(module);
         } else if (hasDefaultStream) {
             if (moduleState != ModuleState::ENABLED) {
