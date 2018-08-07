@@ -20,6 +20,15 @@
 ######################
 
 ====================
+0.17.0 Release Notes
+====================
+- [conf] Add module_platform_id option.
+- [module] Add ModulePackageContainer class.
+- [module] Add ModulePersistor class.
+- [sack] Module filtering made available in python API
+- [sack] Module auto-enabling according to installed packages
+
+====================
 0.16.1 Release Notes
 ====================
 * Implement 'module_hotfixes' conf option to skip filtering RPMs from hotfix repos.
