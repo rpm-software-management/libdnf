@@ -382,6 +382,8 @@ class ConfigMain::Impl {
     OptionBool ignorearch{false};
     OptionBinding ignoreArchBinding{owner, ignorearch, "ignorearch"};
 
+    OptionString module_platform_id{nullptr};
+    OptionBinding modulePlatformId{owner, module_platform_id, "module_platform_id"};
 
     // Repo main config
 
@@ -571,6 +573,8 @@ OptionPath & ConfigMain::destdir() { return pImpl->destdir; }
 OptionString & ConfigMain::comment() { return pImpl->comment; }
 OptionBool & ConfigMain::downloadonly() { return pImpl->downloadonly; }
 OptionBool & ConfigMain::ignorearch() { return pImpl->ignorearch; }
+
+OptionString & ConfigMain::module_platform_id() { return pImpl->module_platform_id; }
 
 // Repo main config
 OptionNumber<std::uint32_t> & ConfigMain::retries() { return pImpl->retries; }

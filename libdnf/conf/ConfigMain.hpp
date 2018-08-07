@@ -115,6 +115,8 @@ public:
     OptionBool & downloadonly();
     OptionBool & ignorearch();
 
+    OptionString & module_platform_id();
+
     // Repo main config
     OptionNumber<std::uint32_t> & retries();
     OptionString & cachedir();
