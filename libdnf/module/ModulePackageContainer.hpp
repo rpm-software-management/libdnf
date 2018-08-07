@@ -98,6 +98,9 @@ public:
     bool isEnabled(const std::string &name, const std::string &stream);
     bool isEnabled(const ModulePackagePtr &module);
 
+    bool isDisabled(const std::string &name);
+    bool isDisabled(const ModulePackagePtr &module);
+
     std::string getReport();
 
     /**
