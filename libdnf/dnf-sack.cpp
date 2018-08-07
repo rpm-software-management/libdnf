@@ -405,7 +405,7 @@ load_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
         if (which_repodata != _HY_REPODATA_UPDATEINFO)
             flags |= REPO_EXTEND_SOLVABLES;
         /* do not pollute the main pool with directory component ids */
-        if (which_repodata == _HY_REPODATA_FILENAMES)
+        if (which_repodata == _HY_REPODATA_FILENAMES || which_repodata == _HY_REPODATA_OTHER)
             flags |= REPO_LOCALPOOL;
         done = TRUE;
         g_debug("%s: using cache file: %s", __func__, fn_cache);
@@ -469,6 +469,14 @@ static int
 load_updateinfo_cb(Repo *repo, FILE *fp)
 {
     if (repo_add_updateinfoxml(repo, fp, 0))
+        return DNF_ERROR_INTERNAL_ERROR;
+    return 0;
+}
+
+static int
+load_other_cb(Repo *repo, FILE *fp)
+{
+    if (repo_add_rpmmd(repo, fp, 0, REPO_EXTEND_SOLVABLES))
         return DNF_ERROR_INTERNAL_ERROR;
     return 0;
 }
@@ -634,7 +642,7 @@ write_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
         if (fp) {
             int flags = REPO_USE_LOADING | REPO_EXTEND_SOLVABLES;
             /* do not pollute the main pool with directory component ids */
-            if (which_repodata == _HY_REPODATA_FILENAMES)
+            if (which_repodata == _HY_REPODATA_FILENAMES || which_repodata == _HY_REPODATA_OTHER)
                 flags |= REPO_LOCALPOOL;
             repodata_extend_block(data, repo->start, repo->end - repo->start);
             data->state = REPODATA_LOADING;
@@ -1780,6 +1788,29 @@ dnf_sack_load_repo(DnfSack *sack, HyRepo repo, int flags, GError **error)
                 return FALSE;
         }
     }
+    if (flags & DNF_SACK_LOAD_FLAG_USE_OTHER) {
+        retval = load_ext(sack, repo, _HY_REPODATA_OTHER,
+                          HY_EXT_OTHER, HY_REPO_OTHER_FN,
+                          load_other_cb, &error_local);
+        /* allow missing files */
+        if (!retval) {
+            if (g_error_matches (error_local,
+                                 DNF_ERROR,
+                                 DNF_ERROR_NO_CAPABILITY)) {
+                g_debug("no other metadata available for %s", repo->name);
+                g_clear_error (&error_local);
+            } else {
+                g_propagate_error (error, error_local);
+                return FALSE;
+            }
+        }
+        if (repo->state_other == _HY_LOADED_FETCH && build_cache) {
+            if (!write_ext(sack, repo,
+                           _HY_REPODATA_OTHER,
+                           HY_EXT_OTHER, error))
+                return FALSE;
+        }
+    }
     if (flags & DNF_SACK_LOAD_FLAG_USE_PRESTO) {
         retval = load_ext(sack, repo, _HY_REPODATA_PRESTO,
                           HY_EXT_PRESTO, HY_REPO_PRESTO_FN,
@@ -2085,6 +2116,8 @@ dnf_sack_add_repo(DnfSack *sack,
     /* only load what's required */
     if ((flags & DNF_SACK_ADD_FLAG_FILELISTS) > 0)
         flags_hy |= DNF_SACK_LOAD_FLAG_USE_FILELISTS;
+    if ((flags & DNF_SACK_ADD_FLAG_OTHER) > 0)
+        flags_hy |= DNF_SACK_LOAD_FLAG_USE_OTHER;
     if ((flags & DNF_SACK_ADD_FLAG_UPDATEINFO) > 0)
         flags_hy |= DNF_SACK_LOAD_FLAG_USE_UPDATEINFO;
 

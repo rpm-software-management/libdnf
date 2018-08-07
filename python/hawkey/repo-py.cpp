@@ -174,6 +174,8 @@ static PyGetSetDef repo_getsetters[] = {
      (void *)HY_REPO_PRESTO_FN},
     {(char*)"updateinfo_fn", (getter)get_str, (setter)set_str, NULL,
      (void *)HY_REPO_UPDATEINFO_FN},
+    {(char*)"other_fn", (getter)get_str, (setter)set_str, NULL,
+     (void *)HY_REPO_OTHER_FN},
     {NULL}                        /* sentinel */
 };
 
