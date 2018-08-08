@@ -79,11 +79,8 @@ public:
 
     /**
     * @brief Add upgrade all packages request to job. It adds obsoletes automatically to transaction
-    * if no parametrer obsoletes provided or setted to true.
-    *
-    * @param obsoletes p_obsoletes: bool parameter to specify if obsoletes should be added to job
     */
-    void upgrade(bool obsoletes=true);
+    void upgrade();
     void upgrade(DnfPackage *new_pkg);
 
     /**
