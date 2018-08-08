@@ -286,6 +286,19 @@ bool ModulePackageContainer::isDisabled(const ModulePackagePtr &module)
     return isDisabled(module->getName());
 }
 
+const std::string & ModulePackageContainer::getDefaultStream(const std::string &name)
+{
+    return pImpl->moduleDefaults.at(name);
+}
+
+const std::string & ModulePackageContainer::getEnabledStream(const std::string &name)
+{
+    return pImpl->persistor->getStream(name);
+}
+
+/**
+ * @brief Mark ModulePackage as part of an enabled stream.
+ */
 bool
 ModulePackageContainer::enable(const std::string &name, const std::string & stream)
 {
