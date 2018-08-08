@@ -108,6 +108,16 @@ public:
     std::string getReport();
 
     /**
+     * @brief Get configured default stream for a module
+     */
+    const std::string & getDefaultStream(const std::string &name);
+
+    /**
+     * @brief get enabled stream for a module
+     */
+    const std::string & getEnabledStream(const std::string &name);
+
+    /**
      * @brief list of name:stream for module streams that are to be enable
      */
     std::map<std::string, std::string> getEnabledStreams();
