@@ -13,6 +13,7 @@ class ModuleTest : public CppUnit::TestCase
         CPPUNIT_TEST(testDummy);
         CPPUNIT_TEST(testDisable);
         CPPUNIT_TEST(testEnable);
+        CPPUNIT_TEST(testQuery);
         CPPUNIT_TEST(testReset);
     CPPUNIT_TEST_SUITE_END();
 
@@ -23,6 +24,7 @@ public:
     void testDummy();
     void testEnable();
     void testDisable();
+    void testQuery();
     void testReset();
 
 private:
