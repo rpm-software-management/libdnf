@@ -77,6 +77,11 @@ public:
     void disable(const std::string &name, const std::string &stream);
     void disable(const ModulePackagePtr &module);
     /**
+     * @brief Reset module state so it's no longer enabled or disabled.
+     */
+    void reset(const std::string &name);
+    void reset(const ModulePackagePtr &module);
+    /**
      * @brief add profile to name:stream
      */
     void install(const std::string &name, const std::string &stream, const std::string &profile);
@@ -115,6 +120,10 @@ public:
      * @brief list of name:stream for module streams that are to be disabled
      */
     std::map<std::string, std::string> getDisabledStreams();
+    /**
+     * @brief list of name:stream for module streams that are to be reset
+     */
+    std::map<std::string, std::string> getResetStreams();
     /**
      * @brief list of name:<old_stream:new_stream> for modules whose stream has changed
      */

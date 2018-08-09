@@ -55,8 +55,6 @@ enum class ModuleState {
 
 static ModuleState
 fromString(const std::string &str) {
-    if (str == "" || str == "default")
-        return ModuleState::DEFAULT;
     if (str == "1" || str == "true" || str == "enabled")
         return ModuleState::ENABLED;
     if (str == "0" || str == "false" || str == "disabled")
@@ -75,7 +73,7 @@ toString(const ModuleState &state) {
         case ModuleState::DEFAULT:
             return "";
         default:
-            return "unknown";
+            return "";
     }
 }
 
@@ -109,6 +107,7 @@ public:
 
     std::map<std::string, std::string> getEnabledStreams();
     std::map<std::string, std::string> getDisabledStreams();
+    std::map<std::string, std::string> getResetStreams();
     std::map<std::string, std::pair<std::string, std::string>> getSwitchedStreams();
     std::map<std::string, std::vector<std::string>> getInstalledProfiles();
     std::map<std::string, std::vector<std::string>> getRemovedProfiles();
@@ -323,6 +322,25 @@ void ModulePackageContainer::disable(const ModulePackagePtr &module)
 }
 
 /**
+ * @brief Reset module state so it's no longer enabled or disabled.
+ */
+void ModulePackageContainer::reset(const std::string &name)
+{
+    for (const auto &iter : pImpl->modules) {
+        auto modulePackage = iter.second;
+        if (modulePackage->getName() == name) {
+            reset(modulePackage);
+        }
+    }
+}
+
+void ModulePackageContainer::reset(const ModulePackagePtr &module)
+{
+    pImpl->persistor->changeState(module->getName(), ModuleState::UNKNOWN);
+    pImpl->persistor->changeStream(module->getName(), "");
+}
+
+/**
  * @brief Are there any changes to be saved?
  */
 bool ModulePackageContainer::isChanged()
@@ -331,6 +349,9 @@ bool ModulePackageContainer::isChanged()
         return true;
     }
     if (!getDisabledStreams().empty()) {
+        return true;
+    }
+    if (!getResetStreams().empty()) {
         return true;
     }
     if (!getSwitchedStreams().empty()) {
@@ -641,6 +662,11 @@ std::map<std::string, std::string> ModulePackageContainer::getDisabledStreams()
     return pImpl->persistor->getDisabledStreams();
 }
 
+std::map<std::string, std::string> ModulePackageContainer::getResetStreams()
+{
+    return pImpl->persistor->getResetStreams();
+}
+
 std::map<std::string, std::pair<std::string, std::string>> ModulePackageContainer::getSwitchedStreams()
 {
     return pImpl->persistor->getSwitchedStreams();
@@ -891,6 +917,29 @@ ModulePackageContainer::Impl::ModulePersistor::getDisabledStreams()
     }
 
     return disabled;
+}
+
+std::map<std::string, std::string>
+ModulePackageContainer::Impl::ModulePersistor::getResetStreams()
+{
+    std::map<std::string, std::string> result;
+
+    for (const auto &it : configs) {
+        const auto &name = it.first;
+        const auto &newVal = it.second.second.state;
+        const auto &oldVal = fromString(it.second.first.getValue(name, "state"));
+        // when resetting module state, UNKNOWN and DEFAULT are treated equally,
+        // because they are both represented as 'state=' in the config file
+        // and the only difference is internal state based on module defaults
+        if (oldVal == ModuleState::UNKNOWN || oldVal == ModuleState::DEFAULT) {
+            continue;
+        }
+        if (newVal == ModuleState::UNKNOWN || newVal == ModuleState::DEFAULT) {
+            result.emplace(name, it.second.first.getValue(name, "stream"));
+        }
+    }
+
+    return result;
 }
 
 std::map<std::string, std::pair<std::string, std::string>>
