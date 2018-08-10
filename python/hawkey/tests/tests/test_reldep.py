@@ -45,6 +45,12 @@ class Reldep(base.TestCase):
         reldep_str = "(foo if bar)"
         reldep = hawkey.Reldep(self.sack, reldep_str)
         self.assertEqual(reldep_str, str(reldep))
+        reldep_str = "take a space.txt"
+        reldep = hawkey.Reldep(self.sack, reldep_str)
+        self.assertEqual(reldep_str, str(reldep))
+        reldep_str = "font(:lang=en)"
+        reldep = hawkey.Reldep(self.sack, reldep_str)
+        self.assertEqual(reldep_str, str(reldep))
 
     def test_custom_creation_fail(self):
         reldep_str = "P-lib >="

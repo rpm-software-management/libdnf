@@ -70,9 +70,15 @@ DependencySplitter::parse(const char * reldepStr)
     cmpType = 0;
     int evrLen = matchResult.getMatchedLen(EVR);
     int cmpTypeLen = matchResult.getMatchedLen(CMP_TYPE);
-    if (evrLen < 1 && cmpTypeLen < 1)
+    if (cmpTypeLen < 1) {
+        if (evrLen > 0) {
+            // name contains the space char, e.g. filename like "hello world.jpg"
+            evr.clear();
+            name = reldepStr;
+        }
         return true;
-    if (!(evrLen > 0 && cmpTypeLen > 0))
+    }
+    if (evrLen < 1)
         return false;
 
     return getCmpFlags(&cmpType, matchResult.getMatchedString(CMP_TYPE));
