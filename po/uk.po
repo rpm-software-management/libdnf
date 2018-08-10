@@ -1,11 +1,12 @@
 # Yuri Chornoivan <yurchor@ukr.net>, 2016. #zanata
 # Yuri Chornoivan <yurchor@ukr.net>, 2017. #zanata
+# Yuri Chornoivan <yurchor@ukr.net>, 2018. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-07-22 12:20+0200\n"
-"PO-Revision-Date: 2017-06-13 01:29+0000\n"
+"PO-Revision-Date: 2018-07-29 05:06+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian\n"
 "MIME-Version: 1.0\n"
@@ -13,118 +14,126 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: uk\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
-"X-Generator: Zanata 4.5.0\n"
+"X-Generator: Zanata 4.6.0\n"
 
 #: ../libdnf/dnf-goal.cpp:67
 msgid "Could not depsolve transaction; "
-msgstr ""
+msgstr "Не вдалося розв'язати залежності операції; "
 
 #: ../libdnf/dnf-goal.cpp:69
 #, c-format
 msgid "%i problem detected:\n"
 msgid_plural "%i problems detected:\n"
-msgstr[0] ""
+msgstr[0] "Виявлено %i проблему:\n"
+msgstr[1] "Виявлено %i проблеми:\n"
+msgstr[2] "Виявлено %i проблем:\n"
 
 #: ../libdnf/dnf-goal.cpp:76
 #, c-format
 msgid " Problem %1$i: %2$s\n"
-msgstr ""
+msgstr " Проблема %1$i: %2$s\n"
 
 #: ../libdnf/dnf-goal.cpp:78
 #, c-format
 msgid " Problem: %s\n"
-msgstr ""
+msgstr " Проблема: %s\n"
 
 #: ../libdnf/dnf-transaction.cpp:255
 #, c-format
 msgid "Sources not set when trying to ensure package %s"
-msgstr ""
+msgstr "Джерела не встановлено під час спроби забезпечити пакунок %s"
 
 #: ../libdnf/dnf-transaction.cpp:281
 #, c-format
 msgid "Failed to ensure %1$s as repo %2$s not found(%3$i repos loaded)"
 msgstr ""
+"Не вдалося забезпечити %1$s, оскільки сховище %2$s не знайдено (завантажено "
+"%3$i сховищ)"
 
 #: ../libdnf/dnf-transaction.cpp:322
 msgid "Failed to check untrusted: "
-msgstr ""
+msgstr "Не вдалося перевірити недовірене: "
 
 #: ../libdnf/dnf-transaction.cpp:332
 #, c-format
 msgid "Downloaded file for %s not found"
-msgstr ""
+msgstr "Отриманий файл для %s не знайдено"
 
 #: ../libdnf/dnf-transaction.cpp:352
 #, c-format
 msgid "package %1$s cannot be verified and repo %2$s is GPG enabled: %3$s"
 msgstr ""
+"не вдалося перевірити пакунок %1$s, а сховище %2$s є сховищем із увімкненим "
+"GPG: %3$s"
 
 #: ../libdnf/dnf-transaction.cpp:783 ../libdnf/dnf-transaction.cpp:855
 msgid "Failed to get value for CacheDir"
-msgstr ""
+msgstr "Не вдалося отримати значення для CacheDir"
 
 #: ../libdnf/dnf-transaction.cpp:863
 #, c-format
 msgid "Failed to get filesystem free size for %s: "
-msgstr ""
+msgstr "Не вдалося отримати дані щодо вільного місця у файловій системі %s: "
 
 #: ../libdnf/dnf-transaction.cpp:871
 #, c-format
 msgid "Failed to get filesystem free size for %s"
-msgstr ""
+msgstr "Не вдалося отримати дані щодо вільного місця у файловій системі %s"
 
 #: ../libdnf/dnf-transaction.cpp:887
 #, c-format
 msgid "Not enough free space in %1$s: needed %2$s, available %3$s"
-msgstr ""
+msgstr "Недостатньо вільного місця у %1$s: потрібно %2$s, доступно %3$s"
 
 #: ../libdnf/dnf-transaction.cpp:1140
 msgid "failed to set root"
-msgstr ""
+msgstr "не вдалося встановити root"
 
 #: ../libdnf/dnf-transaction.cpp:1348
 #, c-format
 msgid "Error %i running transaction test"
-msgstr ""
+msgstr "Помилка %i під час перевірки операції"
 
 #: ../libdnf/dnf-transaction.cpp:1376
 #, c-format
 msgid "Error %i running transaction"
-msgstr ""
+msgstr "Помилка %i під час виконання операції"
 
 #: ../libdnf/dnf-transaction.cpp:1391
 #, c-format
 msgid "Transaction did not go to writing phase, but returned no error(%i)"
 msgstr ""
+"Операція не перейшла у фазу запису, але повідомлення про помилку не "
+"повернуто (%i)"
 
 #: ../libdnf/transaction/Transformer.cpp:651
 msgid "Transformer: can't open history persist dir"
-msgstr ""
+msgstr "Трансформер: не вдалося відкрити сталий каталог журналу"
 
 #: ../libdnf/transaction/Transformer.cpp:665
 msgid "Couldn't find a history database"
-msgstr ""
+msgstr "Не вдалося знайти базу даних журналу"
 
 #: ../libdnf/transaction/private/Transaction.cpp:41
 msgid "Transaction has already began!"
-msgstr ""
+msgstr "Операцію вже розпочато!"
 
 #: ../libdnf/transaction/private/Transaction.cpp:58
 #, c-format
 msgid "TransactionItem state is not set: %s"
-msgstr ""
+msgstr "Стан TransactionItem не встановлено: %s"
 
 #: ../libdnf/transaction/private/Transaction.cpp:219
 msgid "Can't add console output to unsaved transaction"
-msgstr ""
+msgstr "Неможливо додати виведення до консолі до незбереженої операції"
 
 #: ../libdnf/transaction/TransactionItem.cpp:117
 msgid "Attempt to insert transaction item into completed transaction"
-msgstr ""
+msgstr "Спроба вставити пункт операції до завершеної операції"
 
 #: ../libdnf/transaction/TransactionItem.cpp:188
 msgid "Attempt to update transaction item in completed transaction"
-msgstr ""
+msgstr "Спроба оновити запис операції у завершеній операції"
 
 #: ../libdnf/transaction/Swdb.cpp:81
 msgid "In progress"
@@ -134,171 +143,172 @@ msgstr "Триває обробка"
 #: ../libdnf/transaction/Swdb.cpp:141 ../libdnf/transaction/Swdb.cpp:280
 #: ../libdnf/transaction/Swdb.cpp:290
 msgid "Not in progress"
-msgstr ""
+msgstr "Не виконується"
 
 #: ../libdnf/transaction/Swdb.cpp:151
 msgid "No transaction in progress"
-msgstr ""
+msgstr "Немає операції, яка виконується"
 
 #: ../libdnf/dnf-sack.cpp:381
 #, c-format
 msgid "no %1$d string for %2$s"
-msgstr ""
+msgstr "немає рядка %1$d для %2$s"
 
 #: ../libdnf/dnf-sack.cpp:404
 msgid "failed to add solv"
-msgstr ""
+msgstr "не вдалося додати solv"
 
 #: ../libdnf/dnf-sack.cpp:422
 #, c-format
 msgid "failed to open: %s"
-msgstr ""
+msgstr "не вдалося відкрити: %s"
 
 #: ../libdnf/dnf-sack.cpp:492
 #, c-format
 msgid "cannot create temporary file: %s"
-msgstr ""
+msgstr "не вдалося створити тимчасовий файл: %s"
 
 #: ../libdnf/dnf-sack.cpp:502
 #, c-format
 msgid "failed opening tmp file: %s"
-msgstr ""
+msgstr "не вдалося відкрити тимчасовий файл: %s"
 
 #: ../libdnf/dnf-sack.cpp:514
 #, c-format
 msgid "write_main() failed writing data: %i"
-msgstr ""
+msgstr "write_main() не вдалося записати дані: %i"
 
 #: ../libdnf/dnf-sack.cpp:531
 msgid "write_main() failed to re-load written solv file"
-msgstr ""
+msgstr "write_main() не вдалося перезавантажити записаний файл solv"
 
 #: ../libdnf/dnf-sack.cpp:594
 #, c-format
 msgid "can not create temporary file %s"
-msgstr ""
+msgstr "не вдалося створити тимчасовий файл %s"
 
 #: ../libdnf/dnf-sack.cpp:612
 #, c-format
 msgid "write_ext(%1$d) has failed: %2$d"
-msgstr ""
+msgstr "помилка write_ext(%1$d): %2$d"
 
 #: ../libdnf/dnf-sack.cpp:666
 #, c-format
 msgid "can not read file %1$s: %2$s"
-msgstr ""
+msgstr "не вдалося прочитати файл %1$s: %2$s"
 
 #: ../libdnf/dnf-sack.cpp:680
 msgid "repo_add_solv() has failed."
-msgstr ""
+msgstr "помилка repo_add_solv()."
 
 #: ../libdnf/dnf-sack.cpp:696
 msgid "repo_add_repomdxml/rpmmd() has failed."
-msgstr ""
+msgstr "помилка repo_add_repomdxml/rpmmd()."
 
 #: ../libdnf/dnf-sack.cpp:763
 msgid "failed to auto-detect architecture"
-msgstr ""
+msgstr "не вдалося автоматично визначити архітектуру"
 
 #: ../libdnf/dnf-sack.cpp:870
 #, c-format
 msgid "failed creating cachedir %s"
-msgstr ""
+msgstr "не вдалося створити каталог кешу %s"
 
 #: ../libdnf/dnf-sack.cpp:1584
 msgid "failed calculating RPMDB checksum"
-msgstr ""
+msgstr "не вдалося обчислити контрольну суму RPMDB"
 
 #: ../libdnf/dnf-sack.cpp:1608
 msgid "failed loading RPMDB"
-msgstr ""
+msgstr "не вдалося завантажити RPMDB"
 
 #: ../libdnf/dnf-state.cpp:1183
 #, c-format
 msgid "percentage not 100: %i"
-msgstr ""
+msgstr "частка не дорівнює 100 процентам: %i"
 
 #: ../libdnf/dnf-state.cpp:1193
 #, c-format
 msgid "failed to set number steps: %i"
-msgstr ""
+msgstr "не вдалося встановити числові кроки: %i"
 
 #: ../libdnf/dnf-state.cpp:1292
 msgid "cancelled by user action"
-msgstr ""
+msgstr "скасовано дією користувача"
 
 #: ../libdnf/dnf-state.cpp:1331
 #, c-format
 msgid "done on a state %1$p that did not have a size set! [%2$s]"
-msgstr ""
+msgstr "виконано при стані %1$p, для якого не встановлено розміру! [%2$s]"
 
 #: ../libdnf/dnf-state.cpp:1356
 #, c-format
 msgid "already at 100%% state [%s]"
-msgstr ""
+msgstr "вже на рівні 100%% [%s]"
 
 #: ../libdnf/dnf-rpmts.cpp:88 ../libdnf/dnf-rpmts.cpp:133
 #, c-format
 msgid "signature does not verify for %s"
-msgstr ""
+msgstr "не перевірено підпис для %s"
 
 #: ../libdnf/dnf-rpmts.cpp:96 ../libdnf/dnf-rpmts.cpp:141
 #, c-format
 msgid "failed to open(generic error): %s"
-msgstr ""
+msgstr "не вдалося відкрити (загальна помилка): %s"
 
 #: ../libdnf/dnf-rpmts.cpp:109
 #, c-format
 msgid "failed to verify key for %s"
-msgstr ""
+msgstr "не вдалося перевірити ключ для %s"
 
 #: ../libdnf/dnf-rpmts.cpp:117
 #, c-format
 msgid "public key unavailable for %s"
-msgstr ""
+msgstr "відкритий ключ для %s недоступний"
 
 #: ../libdnf/dnf-rpmts.cpp:125
 #, c-format
 msgid "signature not found for %s"
-msgstr ""
+msgstr "не знайдено підпису для %s"
 
 #: ../libdnf/dnf-rpmts.cpp:154
 #, c-format
 msgid "failed to add install element: %1$s [%2$i]"
-msgstr ""
+msgstr "не вдалося додати елемент встановлення: %1$s [%2$i]"
 
 #: ../libdnf/dnf-rpmts.cpp:291
 #, c-format
 msgid "Error running transaction: %s"
-msgstr ""
+msgstr "Помилка під час виконання операції: %s"
 
 #: ../libdnf/dnf-rpmts.cpp:300
 msgid "Error running transaction and no problems were reported!"
 msgstr ""
+"Помилка під час виконання операції, а звітів щодо проблем не надходило!"
 
 #: ../libdnf/dnf-rpmts.cpp:363
 msgid "Fatal error, run database recovery"
-msgstr ""
+msgstr "Критична помилка, виконуємо відновлення бази даних"
 
 #: ../libdnf/dnf-rpmts.cpp:372
 #, c-format
 msgid "failed to find package %s"
-msgstr ""
+msgstr "не вдалося знайти пакунок %s"
 
 #: ../libdnf/dnf-rpmts.cpp:418
 #, c-format
 msgid "could not add erase element %1$s(%2$i)"
-msgstr ""
+msgstr "не вдалося додати елемент вилучення %1$s(%2$i)"
 
 #: ../libdnf/hy-iutil.cpp:312
 #, c-format
 msgid "Failed renaming %1$s to %2$s: %3$s"
-msgstr ""
+msgstr "Не вдалося перейменувати %1$s на %2$s: %3$s"
 
 #: ../libdnf/hy-iutil.cpp:320
 #, c-format
 msgid "Failed setting perms on %1$s: %2$s"
-msgstr ""
+msgstr "Не вдалося встановити права доступу %1$s: %2$s"
 
 #: ../libdnf/conf/OptionSeconds.cpp:40 ../libdnf/conf/ConfigMain.cpp:57
 msgid "no value specified"
@@ -312,7 +322,7 @@ msgstr "значення для секунд, «%s», має бути невід
 #: ../libdnf/conf/OptionSeconds.cpp:52
 #, c-format
 msgid "could not convert '%s' to seconds"
-msgstr ""
+msgstr "не вдалося перетворити «%s» на секунди"
 
 #: ../libdnf/conf/OptionSeconds.cpp:66 ../libdnf/conf/ConfigMain.cpp:78
 #, c-format
@@ -322,7 +332,7 @@ msgstr "невідома одиниця, «%s»"
 #: ../libdnf/conf/ConfigMain.cpp:66
 #, c-format
 msgid "could not convert '%s' to bytes"
-msgstr ""
+msgstr "не вдалося перетворити «%s» на байти"
 
 #: ../libdnf/conf/ConfigMain.cpp:473
 #, c-format
@@ -342,7 +352,7 @@ msgstr "некоректне булеве значення «%s»"
 
 #: ../libdnf/conf/OptionEnum.cpp:83 ../libdnf/conf/OptionNumber.cpp:88
 msgid "invalid value"
-msgstr ""
+msgstr "некоректне значення"
 
 #: ../libdnf/conf/OptionPath.cpp:78
 #, c-format
@@ -356,17 +366,17 @@ msgstr "вказаного шляху, «%s», не існує."
 
 #: ../libdnf/conf/OptionString.cpp:74
 msgid "GetValue(): Value not set"
-msgstr ""
+msgstr "GetValue(): значення не встановлено"
 
 #: ../libdnf/conf/Config.cpp:72
 #, c-format
 msgid "Configuration: OptionBinding with id \"%s\" does not exist"
-msgstr ""
+msgstr "Налаштування: OptionBinding з ідентифікатором «%s» не існує"
 
 #: ../libdnf/conf/Config.cpp:82
 #, c-format
 msgid "Configuration: OptionBinding with id \"%s\" already exists"
-msgstr ""
+msgstr "Налаштування: OptionBinding з ідентифікатором «%s» вже існує"
 
 #: ../libdnf/conf/OptionNumber.cpp:73
 #, c-format
@@ -381,51 +391,54 @@ msgstr "задане значення [%d] має бути більшим за �
 #: ../libdnf/dnf-utils.cpp:110
 #, c-format
 msgid "cannot open directory %1$s: %2$s"
-msgstr ""
+msgstr "не вдалося відкрити каталог %1$s: %2$s"
 
 #: ../libdnf/dnf-utils.cpp:135
 #, c-format
 msgid "failed to remove %s"
-msgstr ""
+msgstr "не вдалося вилучити %s"
 
 #: ../libdnf/goal/Goal.cpp:49
 msgid "Ill-formed Selector, presence of multiple match objects in the filter"
 msgstr ""
+"Помилкове формування Selector, наявність декількох відповідних об'єктів у "
+"фільтрі"
 
 #: ../libdnf/goal/Goal.cpp:50
 msgid "Ill-formed Selector used for the operation, incorrect comparison type"
 msgstr ""
+"Для дії використано помилкове формування Selector, помилковий тип порівняння"
 
 #: ../libdnf/goal/Goal.cpp:810
 msgid "no solver set"
-msgstr ""
+msgstr "не встановлено розв'язувача"
 
 #: ../libdnf/goal/Goal.cpp:816
 #, c-format
 msgid "failed to make %s absolute"
-msgstr ""
+msgstr "не вдалося зробити %s абсолютним"
 
 #: ../libdnf/goal/Goal.cpp:822
 #, c-format
 msgid "failed writing debugdata to %1$s: %2$s"
-msgstr ""
+msgstr "не вдалося записати діагностичні дані до %1$s: %2$s"
 
 #: ../libdnf/goal/Goal.cpp:834
 msgid "no solv in the goal"
-msgstr ""
+msgstr "немає solv у цілі"
 
 #: ../libdnf/goal/Goal.cpp:836
 msgid "no solution, cannot remove protected package"
-msgstr ""
+msgstr "немає розв'язку, неможливо вилучити захищений пакунок"
 
 #: ../libdnf/goal/Goal.cpp:839
 msgid "no solution possible"
-msgstr ""
+msgstr "розв'язання неможливе"
 
 #: ../libdnf/goal/Goal.cpp:1240
 msgid ""
 "The operation would result in removing the following protected packages: "
-msgstr ""
+msgstr "Дія призведе до вилучення таких захищених пакунків: "
 
 #: ../libdnf/repo/Repo.cpp:357
 #, c-format
@@ -479,22 +492,22 @@ msgstr "відновлюємо: помилка обробки «%s», невід
 #: ../libdnf/repo/Repo.cpp:818
 #, c-format
 msgid "Cannot create repo cache directory \"%s\": %s"
-msgstr ""
+msgstr "Не вдалося створити каталог кешу сховища «%s»: %s"
 
 #: ../libdnf/repo/Repo.cpp:823
 #, c-format
 msgid "Cannot create repo temporary directory \"%s\": %s"
-msgstr ""
+msgstr "Не вдалося створити тимчасовий каталог сховища «%s»: %s"
 
 #: ../libdnf/repo/Repo.cpp:837
 #, c-format
 msgid "Cannot create directory \"%s\": %s"
-msgstr ""
+msgstr "Не вдалося створити каталог «%s»: %s"
 
 #: ../libdnf/repo/Repo.cpp:841
 #, c-format
 msgid "Cannot rename directory \"%s\" to \"%s\": %s"
-msgstr ""
+msgstr "Не вдалося перейменувати каталог «%s» на «%s»: %s"
 
 #: ../libdnf/repo/Repo.cpp:856
 #, c-format
@@ -509,7 +522,7 @@ msgstr "Увімкнено отримання даних лише з кешу, �
 #: ../libdnf/repo/Repo.cpp:872
 #, c-format
 msgid "repo: downloading from remote: %s"
-msgstr ""
+msgstr "сховище: отримуємо з віддаленого сховища: %s"
 
 #: ../libdnf/repo/Repo.cpp:876
 #, c-format
@@ -523,38 +536,38 @@ msgstr "Не вдалося синхронізувати кеш для схов�
 
 #: ../libdnf/repo/Repo.cpp:903
 msgid "getCachedir(): Computation of SHA256 failed"
-msgstr ""
+msgstr "getCachedir(): помилка під час обчислення SHA256"
 
 #: ../libdnf/repo/Repo.cpp:1003
 #, c-format
 msgid "not found filelist for: %s"
-msgstr ""
+msgstr "не знайдено filelist для %s"
 
 #: ../libdnf/repo/Repo.cpp:1009
 #, c-format
 msgid "not found deltainfo for: %s"
-msgstr ""
+msgstr "не знайдено deltainfo для %s"
 
 #: ../libdnf/repo/Repo.cpp:1013
 #, c-format
 msgid "not found updateinfo for: %s"
-msgstr ""
+msgstr "не знайдено updateinfo для %s"
 
 #: ../libdnf/repo/Repo.cpp:1226
 msgid "resume cannot be used simultaneously with the byterangestart param"
-msgstr ""
+msgstr "resume не можна використовувати одночасно з параметром byterangestart"
 
 #: ../libdnf/repo/Repo.cpp:1235
 #, c-format
 msgid "PackageTarget initialization failed: %s"
-msgstr ""
+msgstr "Помилка ініціалізації PackageTarget: %s"
 
 #: ../libdnf/repo/Repo.cpp:1341
 #, c-format
 msgid "Cannot open %s: %s"
-msgstr ""
+msgstr "Не вдалося відкрити %s: %s"
 
 #: ../libdnf/repo/Repo.cpp:1378
 #, c-format
 msgid "Log handler with id %ld doesn't exist"
-msgstr ""
+msgstr "Обробника журналу із ідентифікатором %ld не існує"

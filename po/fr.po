@@ -15,7 +15,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
-"X-Generator: Zanata 4.5.0\n"
+"X-Generator: Zanata 4.6.0\n"
 
 #: ../libdnf/dnf-goal.cpp:67
 msgid "Could not depsolve transaction; "
@@ -432,7 +432,7 @@ msgstr ""
 #: ../libdnf/repo/Repo.cpp:357
 #, c-format
 msgid "Repository %s has no mirror or baseurl set."
-msgstr "Le dépôt %s n'a pas de miroir ou d'adresse de base "
+msgstr "Le dépôt %s n'a pas de miroir ou d'adresse de base"
 
 #: ../libdnf/repo/Repo.cpp:515
 #, c-format
