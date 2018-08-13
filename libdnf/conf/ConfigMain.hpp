@@ -79,6 +79,7 @@ public:
     OptionBool & defaultyes();
     OptionBool & diskspacecheck();
     OptionBool & localpkg_gpgcheck();
+    OptionBool & gpgkey_dns_verification();
     OptionBool & obsoletes();
     OptionBool & showdupesfromrepos();
     OptionBool & exit_on_lock();
