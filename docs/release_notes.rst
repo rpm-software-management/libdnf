@@ -1,5 +1,5 @@
 ..
-  Copyright (C) 2017 Red Hat, Inc.
+  Copyright (C) 2014-2018 Red Hat, Inc.
 
   This copyrighted material is made available to anyone wishing to use,
   modify, copy, or redistribute it subject to the terms and conditions of
@@ -18,6 +18,15 @@
 ######################
  LIBDNF Release Notes
 ######################
+
+====================
+0.17.1 Release Notes
+====================
+- [module] Solve a problem in python constructor of NSVCAP if no version.
+- [translations] Update translations from zanata.
+- [transaction] Fix crash after using dnf.comps.CompsQuery and forking the process in Anaconda.
+- [module] Support for resetting module state.
+- [output] Introduce wrapper for smartcols.
 
 ====================
 0.17.0 Release Notes
