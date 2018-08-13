@@ -20,6 +20,12 @@
 ######################
 
 ====================
+0.17.2 Release Notes
+====================
+- [sqlite3] Change db locking mode to DEFAULT.
+- [doc] Add libsmartcols-devel to devel deps.
+
+====================
 0.17.1 Release Notes
 ====================
 - [module] Solve a problem in python constructor of NSVCAP if no version.
