@@ -146,3 +146,23 @@ void ModuleTest::testDisable()
         CPPUNIT_ASSERT(parser.getValue("httpd", "stream") == "");
     }
 }
+
+void ModuleTest::testReset()
+{
+    GPtrArray *repos = dnf_context_get_repos(context);
+    auto sack = dnf_context_get_sack(context);
+    auto install_root = dnf_context_get_install_root(context);
+    auto platformModule = dnf_context_get_platform_module(context);
+
+    logger->debug("called ModuleTest::testReset()");
+
+    /* revert to original state by re-enabling base-runtime module */
+    {
+        std::vector<std::string> module_list{"base-runtime"};
+        CPPUNIT_ASSERT(libdnf::dnf_module_enable(module_list, sack, repos, install_root, platformModule));
+        libdnf::ConfigParser parser{};
+        parser.read(TESTDATADIR "/modules/etc/dnf/modules.d/base-runtime.module");
+        CPPUNIT_ASSERT(parser.getValue("base-runtime", "state") == "enabled");
+        CPPUNIT_ASSERT(parser.getValue("base-runtime", "stream") == "f26");
+    }
+}
