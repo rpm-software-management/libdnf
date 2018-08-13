@@ -254,6 +254,9 @@ class ConfigMain::Impl {
     OptionBool localpkg_gpgcheck{false};
     OptionBinding localPkgGpgCheckBinding{owner, localpkg_gpgcheck, "localpkg_gpgcheck"};
 
+    OptionBool dns_verification{false};
+    OptionBinding dnsVerificationBinding{owner, localpkg_gpgcheck, "localpkg_gpgcheck"};
+
     OptionBool obsoletes{true};
     OptionBinding obsoletesBinding{owner, obsoletes, "obsoletes"};
 
@@ -538,6 +541,7 @@ OptionBool & ConfigMain::check_config_file_age() { return pImpl->check_config_fi
 OptionBool & ConfigMain::defaultyes() { return pImpl->defaultyes; }
 OptionBool & ConfigMain::diskspacecheck() { return pImpl->diskspacecheck; }
 OptionBool & ConfigMain::localpkg_gpgcheck() { return pImpl->localpkg_gpgcheck; }
+OptionBool & ConfigMain::dns_verification() { return pImpl->dns_verification; }
 OptionBool & ConfigMain::obsoletes() { return pImpl->obsoletes; }
 OptionBool & ConfigMain::showdupesfromrepos() { return pImpl->showdupesfromrepos; }
 OptionBool & ConfigMain::exit_on_lock() { return pImpl->exit_on_lock; }
