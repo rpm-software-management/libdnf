@@ -10,7 +10,6 @@
 class ModuleTest : public CppUnit::TestCase
 {
     CPPUNIT_TEST_SUITE(ModuleTest);
-        CPPUNIT_TEST(testDummy);
         CPPUNIT_TEST(testDisable);
         CPPUNIT_TEST(testEnable);
         CPPUNIT_TEST(testQuery);
@@ -21,7 +20,6 @@ public:
     void setUp() override;
     void tearDown() override;
 
-    void testDummy();
     void testEnable();
     void testDisable();
     void testQuery();

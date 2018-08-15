@@ -519,35 +519,6 @@ filterModules(const std::vector<ModulePackagePtr> &modules,
 namespace libdnf {
 
 /**
- * dnf_module_dummy
- * @module_list: The list of modules
- *
- * Dummy module method
- *
- * Returns: %TRUE for success, %FALSE otherwise
- *
- * Since: 0.0.0
- **/
-bool dnf_module_dummy(const std::vector<std::string> & module_list)
-{
-    auto logger = libdnf::Log::getLogger();
-    logger->debug("*** called dnf_module_dummy()");
-
-    if (module_list.size() == 0) {
-        return false;
-    }
-
-    int i = 0;
-    for (const auto &module_spec : module_list) {
-        std::ostringstream oss;
-        oss << "module #" << i++ << " " << module_spec;
-        logger->debug(oss.str());
-    }
-
-    return true;
-}
-
-/**
  * dnf_module_enable
  * @module_list: The list of module specs to enable
  * @sack: DnfSack instance

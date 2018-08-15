@@ -50,27 +50,6 @@ void ModuleTest::tearDown()
     g_object_unref(context);
 }
 
-void ModuleTest::testDummy()
-{
-    auto logger = libdnf::Log::getLogger();
-    std::vector<std::string> module_list;
-    bool ret;
-
-    logger->debug("called ModuleTest::testDummy()");
-
-    /* call with empty module list should fail */
-    ret = libdnf::dnf_module_dummy(module_list);
-    CPPUNIT_ASSERT(ret == false);
-
-    /* add some modules to the list and try again */
-    module_list.push_back("moduleA");
-    module_list.push_back("moduleB");
-    module_list.push_back("moduleC");
-
-    ret = libdnf::dnf_module_dummy(module_list);
-    CPPUNIT_ASSERT(ret == true);
-}
-
 void ModuleTest::testEnable()
 {
     auto logger = libdnf::Log::getLogger();
