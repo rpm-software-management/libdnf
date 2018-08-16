@@ -4,11 +4,28 @@
 #define SWIG_PYTHON_2_UNICODE
 %}
 
+%include <exception.i>
 %include <std_map.i>
 %include <std_pair.i>
 %include <std_shared_ptr.i>
 %include <std_string.i>
 %include <std_vector.i>
+
+
+%exception {
+    try {
+        $action
+    }
+    catch (const std::exception & e)
+    {
+       SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+    catch (...)
+    {
+       SWIG_exception(SWIG_UnknownError, "C++ anonymous exception");
+    }
+}
+
 
 %shared_ptr(ModulePackage)
 typedef std::shared_ptr< ModulePackage > ModulePackagePtr;
