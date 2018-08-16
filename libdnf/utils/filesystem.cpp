@@ -38,7 +38,9 @@ pathExists(const char *path)
 }
 
 /**
- * Create a directory tree for a file
+ * Create a directory tree for a file.
+ * When a path without a file is specified,
+ * make sure to include trailing '/'.
  * \param path path to the directory
  */
 void
