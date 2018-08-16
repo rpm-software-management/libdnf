@@ -1377,6 +1377,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     swdb->beginTransaction(_get_current_time(), "", "", priv->uid);
 
     /* run the transaction */
+    dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION, nullptr, nullptr);
     priv->state = dnf_state_get_child(state);
     priv->step = DNF_TRANSACTION_STEP_STARTED;
     rpmtsSetFlags(priv->ts, rpmts_flags);
@@ -1415,6 +1416,8 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     // finalize swdb transaction
     // FIXME get rpmdb version
     swdb->endTransaction(_get_current_time(), "", libdnf::TransactionState::DONE);
+
+    dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_TRANSACTION, nullptr, nullptr);
 
     /* this section done */
     ret = dnf_state_done(state, error);

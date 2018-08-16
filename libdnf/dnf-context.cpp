@@ -47,6 +47,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #endif
+#include <unistd.h>
 
 #include "dnf-lock.h"
 #include "dnf-package.h"
@@ -61,6 +62,7 @@
 #include "hy-selector.h"
 #include "dnf-repo.hpp"
 #include "goal/Goal.hpp"
+#include "plugin/plugin-private.hpp"
 
 #define MAX_NATIVE_ARCHES    12
 
@@ -138,6 +140,7 @@ typedef struct
     DnfState        *state;        /* used for setup() and run() */
     HyGoal           goal;
     DnfSack         *sack;
+    libdnf::Plugins  plugins;
 } DnfContextPrivate;
 
 enum {
@@ -158,6 +161,8 @@ dnf_context_finalize(GObject *object)
 {
     DnfContext *context = DNF_CONTEXT(object);
     DnfContextPrivate *priv = GET_PRIVATE(context);
+
+    priv->plugins.free();
 
     g_free(priv->repo_dir);
     g_free(priv->base_arch);
@@ -214,6 +219,9 @@ dnf_context_init(DnfContext *context)
     priv->override_macros = g_hash_table_new_full(g_str_hash, g_str_equal,
                                                   g_free, g_free);
     priv->user_agent = g_strdup("libdnf/" PACKAGE_VERSION);
+
+    priv->plugins.loadPlugins("/usr/lib64/libdnf/plugins/");  // TODO determine plugins directory
+    priv->plugins.init(PLUGIN_MODE_CONTEXT, context);
 
     /* Initialize some state that used to happen in
      * dnf_context_setup(), because callers like rpm-ostree want
@@ -2269,4 +2277,11 @@ DnfContext *
 dnf_context_new(void)
 {
     return DNF_CONTEXT(g_object_new(DNF_TYPE_CONTEXT, NULL));
+}
+
+bool
+dnf_context_plugin_hook(DnfContext * context, PluginHookId id, void * hookData, PluginHookError * error)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    return priv->plugins.hook(id, hookData, error);
 }
