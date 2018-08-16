@@ -28,6 +28,7 @@ extern "C" {
 }
 
 #include "ModulePackageContainer.hpp"
+#include "libdnf/utils/filesystem.hpp"
 #include "libdnf/utils/utils.hpp"
 #include "libdnf/utils/File.hpp"
 #include "libdnf/dnf-sack-private.hpp"
@@ -865,6 +866,9 @@ void ModulePackageContainer::Impl::ModulePersistor::reset(const std::string &nam
 
 void ModulePackageContainer::Impl::ModulePersistor::save(const std::string &installRoot, const std::string &modulesPath)
 {
+    g_autofree gchar *dirname = g_build_filename(installRoot.c_str(), modulesPath.c_str(), "/", NULL);
+    makeDirPath(std::string(dirname));
+
     for (auto &iter : configs) {
         const auto &name = iter.first;
 
