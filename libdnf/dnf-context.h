@@ -23,11 +23,14 @@
 #define __DNF_CONTEXT_H
 
 #include "dnf-types.h"
+#include "plugin/plugin.h"
 
 #ifndef __GI_SCANNER__
 #include "dnf-transaction.h"
 #include "dnf-sack.h"
 #endif
+
+#include <stdbool.h>
 
 G_BEGIN_DECLS
 
@@ -228,6 +231,11 @@ gboolean         dnf_context_repo_disable               (DnfContext     *context
 gboolean         dnf_context_run                        (DnfContext     *context,
                                                          GCancellable   *cancellable,
                                                          GError         **error);
+
+bool             dnf_context_plugin_hook                (DnfContext     *context,
+                                                         PluginHookId    id,
+                                                         void           *hookData,
+                                                         PluginHookError *error);
 
 G_END_DECLS
 
