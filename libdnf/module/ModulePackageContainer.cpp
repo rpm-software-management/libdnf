@@ -37,9 +37,15 @@ extern "C" {
 #include "libdnf/conf/ConfigParser.hpp"
 #include "libdnf/conf/OptionStringList.hpp"
 
+#include "bgettext/bgettext-lib.h"
+#include "tinyformat/tinyformat.hpp"
+
 static constexpr auto EMPTY_STREAM = "";
 static constexpr auto EMPTY_PROFILES = "";
 static constexpr auto DEFAULT_STATE = "";
+
+static const char * ENABLE_MULTIPLE_STREAM_EXCEPTION =
+_("Cannot enable more streams from module '%s' at the same time");
 
 static std::string
 stringFormater(std::string imput)
@@ -117,17 +123,21 @@ public:
 
 private:
     friend class Impl;
-    bool update(const std::string &name);
-    void reset(const std::string &name);
-
     struct Config {
         std::string stream;
         std::vector<std::string> profiles;
         ModuleState state;
         bool locked;
     };
+    std::pair<libdnf::ConfigParser, struct Config> & getEntry(const std::string & moduleName);
+    bool update(const std::string &name);
+    void reset(const std::string &name);
+
     std::map<std::string, std::pair<libdnf::ConfigParser, struct Config>> configs;
 };
+
+ModulePackageContainer::EnableMultipleStreamsException::EnableMultipleStreamsException(const std::string & moduleName)
+: Exception(tfm::format(ENABLE_MULTIPLE_STREAM_EXCEPTION, moduleName)) {}
 
 ModulePackageContainer::ModulePackageContainer(bool allArch, std::string installRoot,
     const char * arch) : pImpl(new Impl)
@@ -170,11 +180,11 @@ ModulePackageContainer::add(const std::string &fileContent)
 
     FOR_REPOS(id, r) {
         if (strcmp(r->name, "available") == 0) {
+            g_autofree gchar *path = g_build_filename(pImpl->installRoot.c_str(),
+                                                      "/etc/dnf/modules.d", NULL);
             for (auto data : metadata) {
-                ModulePackagePtr modulePackage(new ModulePackage(
-                    pImpl->moduleSack, r, data));
+                ModulePackagePtr modulePackage(new ModulePackage(pImpl->moduleSack, r, data));
                 pImpl->modules.insert(std::make_pair(modulePackage->getId(), modulePackage));
-                g_autofree gchar *path = g_build_filename(pImpl->installRoot.c_str(), "/etc/dnf/modules.d", NULL);
                 pImpl->persistor->insert(modulePackage->getName(), path);
             }
             return;
@@ -276,24 +286,20 @@ bool ModulePackageContainer::isDisabled(const ModulePackagePtr &module)
     return isDisabled(module->getName());
 }
 
-/**
- * @brief Mark ModulePackage as part of an enabled stream.
- */
-void ModulePackageContainer::enable(const std::string &name, const std::string &stream)
+bool
+ModulePackageContainer::enable(const std::string &name, const std::string & stream)
 {
-    for (const auto &iter : pImpl->modules) {
-        auto modulePackage = iter.second;
-        if (modulePackage->getName() == name && modulePackage->getStream() == stream) {
-            enable(modulePackage);
-        }
+    bool changed = pImpl->persistor->changeStream(name, stream);
+    if (pImpl->persistor->changeState(name, ModuleState::ENABLED)) {
+        changed = true;
     }
+    return changed;
 }
 
-void ModulePackageContainer::enable(const ModulePackagePtr &module)
+bool
+ModulePackageContainer::enable(const ModulePackagePtr &module)
 {
-    /* TODO: throw error in case of stream change? */
-    pImpl->persistor->changeStream(module->getName(), module->getStream());
-    pImpl->persistor->changeState(module->getName(), ModuleState::ENABLED);
+    return enable(module->getName(), module->getStream());
 }
 
 /**
@@ -682,29 +688,46 @@ std::map<std::string, std::vector<std::string>> ModulePackageContainer::getRemov
 {
     return pImpl->persistor->getRemovedProfiles();
 }
-const std::string & ModulePackageContainer::Impl::ModulePersistor::getStream(const std::string &name)
+const std::string & ModulePackageContainer::Impl::ModulePersistor::getStream(const std::string & name)
 {
-    return configs[name].second.stream;
+    return getEntry(name).second.stream;
 }
 
-bool ModulePackageContainer::Impl::ModulePersistor::changeStream(const std::string &name, const std::string &stream)
+inline std::pair<libdnf::ConfigParser, struct ModulePackageContainer::Impl::ModulePersistor::Config> &
+ModulePackageContainer::Impl::ModulePersistor::getEntry(const std::string & moduleName)
 {
-    if (getStream(name) == stream)
-        return false;
+    try {
+        auto & entry = configs.at(moduleName);
+        return entry;
+    } catch (std::out_of_range) {
+        throw NoModuleException(moduleName);
+    }
+}
 
-    configs[name].second.stream = stream;
+bool
+ModulePackageContainer::Impl::ModulePersistor::changeStream(const std::string &name,
+    const std::string &stream)
+{
+    const auto &updatedValue = configs.at(name).second.stream;
+    if (updatedValue == stream)
+        return false;
+    const auto &originValue = configs.at(name).first.getValue(name, "stream");
+    if (originValue != updatedValue) {
+        throw EnableMultipleStreamsException(name);
+    }
+    getEntry(name).second.stream = stream;
     return true;
 }
 
 const std::vector<std::string> &
 ModulePackageContainer::Impl::ModulePersistor::getProfiles(const std::string &name)
 {
-    return configs[name].second.profiles;
+    return getEntry(name).second.profiles;
 }
 
 bool ModulePackageContainer::Impl::ModulePersistor::addProfile(const std::string &name, const std::string &profile)
 {
-    auto &profiles = configs[name].second.profiles;
+    auto & profiles = getEntry(name).second.profiles;
     const auto &it = std::find(std::begin(profiles), std::end(profiles), profile);
     if (it != std::end(profiles))
         return false;
@@ -715,7 +738,7 @@ bool ModulePackageContainer::Impl::ModulePersistor::addProfile(const std::string
 
 bool ModulePackageContainer::Impl::ModulePersistor::removeProfile(const std::string &name, const std::string &profile)
 {
-    auto &profiles = configs[name].second.profiles;
+    auto &profiles = getEntry(name).second.profiles;
 
     for (auto it = profiles.begin(); it != profiles.end(); it++) {
         if (*it == profile) {
@@ -730,15 +753,15 @@ bool ModulePackageContainer::Impl::ModulePersistor::removeProfile(const std::str
 const ModulePackageContainer::ModuleState &
 ModulePackageContainer::Impl::ModulePersistor::getState(const std::string &name)
 {
-    return configs[name].second.state;
+    return getEntry(name).second.state;
 }
 
 bool ModulePackageContainer::Impl::ModulePersistor::changeState(const std::string &name, ModuleState state)
 {
-    if (configs[name].second.state == state)
+    if (getEntry(name).second.state == state)
         return false;
 
-    configs[name].second.state = state;
+    getEntry(name).second.state = state;
     return true;
 }
 
@@ -810,10 +833,9 @@ bool ModulePackageContainer::Impl::ModulePersistor::insert(const std::string &mo
         return false;
     }
 
-    configs.emplace(moduleName, std::make_pair(libdnf::ConfigParser{}, Config()));
-
-    auto &parser = configs[moduleName].first;
-    auto &newConfig = configs[moduleName].second;
+    auto newEntry = configs.emplace(moduleName, std::make_pair(libdnf::ConfigParser{}, Config()));
+    auto & parser = newEntry.first->second.first;
+    auto & newConfig = newEntry.first->second.second;
 
     parseConfig(parser, moduleName, path);
 
@@ -827,10 +849,10 @@ bool ModulePackageContainer::Impl::ModulePersistor::insert(const std::string &mo
     return true;
 }
 
-bool ModulePackageContainer::Impl::ModulePersistor::update(const std::string &name)
+bool ModulePackageContainer::Impl::ModulePersistor::update(const std::string & name)
 {
     bool changed = false;
-    auto &data = configs[name].first.getData();
+    auto &data = getEntry(name).first.getData();
 
     const auto &state = toString(getState(name));
     if (data[name]["state"] != state) {
@@ -854,14 +876,15 @@ bool ModulePackageContainer::Impl::ModulePersistor::update(const std::string &na
     return changed;
 }
 
-void ModulePackageContainer::Impl::ModulePersistor::reset(const std::string &name)
+void ModulePackageContainer::Impl::ModulePersistor::reset(const std::string & name)
 {
-    auto &data = configs[name].first.getData();
+    auto & entry = getEntry(name);
+    auto & data = entry.first.getData();
 
-    configs[name].second.stream = data[name]["stream"];
-    configs[name].second.state = fromString(data[name]["state"]);
+    entry.second.stream = data[name]["stream"];
+    entry.second.state = fromString(data[name]["state"]);
     libdnf::OptionStringList slist{std::vector<std::string>()};
-    configs[name].second.profiles = slist.fromString(data[name]["profiles"]);
+    entry.second.profiles = slist.fromString(data[name]["profiles"]);
 }
 
 void ModulePackageContainer::Impl::ModulePersistor::save(const std::string &installRoot, const std::string &modulesPath)
