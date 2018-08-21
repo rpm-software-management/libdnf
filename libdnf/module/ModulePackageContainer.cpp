@@ -47,31 +47,24 @@ stringFormater(std::string imput)
     return imput.empty() ? "*" : imput;
 }
 
-enum class ModuleState {
-    UNKNOWN,
-    ENABLED,
-    DISABLED,
-    DEFAULT
-};
-
-static ModuleState
+static ModulePackageContainer::ModuleState
 fromString(const std::string &str) {
     if (str == "1" || str == "true" || str == "enabled")
-        return ModuleState::ENABLED;
+        return ModulePackageContainer::ModuleState::ENABLED;
     if (str == "0" || str == "false" || str == "disabled")
-        return ModuleState::DISABLED;
+        return ModulePackageContainer::ModuleState::DISABLED;
 
-    return ModuleState::UNKNOWN;
+    return ModulePackageContainer::ModuleState::UNKNOWN;
 }
 
 static std::string
-toString(const ModuleState &state) {
+toString(const ModulePackageContainer::ModuleState &state) {
     switch (state) {
-        case ModuleState::ENABLED:
+        case ModulePackageContainer::ModuleState::ENABLED:
             return "enabled";
-        case ModuleState::DISABLED:
+        case ModulePackageContainer::ModuleState::DISABLED:
             return "disabled";
-        case ModuleState::DEFAULT:
+        case ModulePackageContainer::ModuleState::DEFAULT:
             return "";
         default:
             return "";
@@ -484,6 +477,13 @@ ModulePackageContainer::query(std::string name, std::string stream, std::string 
     return result;
 }
 
+ModulePackageContainer::ModuleState
+ModulePackageContainer::getModuleState(const std::string& name)
+{
+    return pImpl->persistor->getState(name);
+}
+
+
 std::string
 ModulePackageContainer::getReport()
 {
@@ -727,7 +727,7 @@ bool ModulePackageContainer::Impl::ModulePersistor::removeProfile(const std::str
     return false;
 }
 
-const ModuleState &
+const ModulePackageContainer::ModuleState &
 ModulePackageContainer::Impl::ModulePersistor::getState(const std::string &name)
 {
     return configs[name].second.state;

@@ -36,6 +36,13 @@
 struct ModulePackageContainer
 {
 public:
+    enum class ModuleState {
+        UNKNOWN,
+        ENABLED,
+        DISABLED,
+        DEFAULT
+    };
+    
     struct Exception : public std::runtime_error
     {
         explicit Exception(const std::string &what) : runtime_error(what) {}
@@ -109,6 +116,7 @@ public:
 
     bool isDisabled(const std::string &name);
     bool isDisabled(const ModulePackagePtr &module);
+    ModuleState getModuleState(const std::string & name);
 
     std::string getReport();
 
