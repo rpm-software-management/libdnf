@@ -128,6 +128,7 @@ dnf_sack_finalize(GObject *object)
         auto hrepo = static_cast<HyRepo>(repo->appdata);
         if (!hrepo)
             continue;
+        hrepo->libsolv_repo = NULL;
         hy_repo_free(hrepo);
     }
     g_free(priv->cache_dir);
