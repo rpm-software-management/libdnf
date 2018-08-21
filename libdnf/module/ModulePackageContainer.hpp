@@ -63,6 +63,11 @@ public:
         explicit EnabledStreamException(const std::string &moduleName) : Exception("No enabled stream for module: " + moduleName) {}
     };
 
+    struct EnableMultipleStreamsException : public Exception
+    {
+        explicit EnableMultipleStreamsException(const std::string & moduleName);
+    };
+
     explicit ModulePackageContainer(bool allArch, std::string installRoot, const char * arch);
     ~ModulePackageContainer();
 
@@ -73,11 +78,26 @@ public:
     std::vector<ModulePackagePtr> getModulePackages();
 
     std::vector<ModulePackagePtr> requiresModuleEnablement(const libdnf::PackageSet & packages);
+
     /**
-     * @brief mark module 'name' as part of 'stream'
-     */
-    void enable(const std::string &name, const std::string &stream);
-    void enable(const ModulePackagePtr &module);
+    * @brief Enable module stream. Return true if requested change realy triggers a change in
+    * the persistor.
+    * It can throw ModulePackageContainer::EnableMultipleStreamsException or
+    * ModulePackageContainer::NoModuleException exceprion if module do not exist
+    *
+    * @return bool
+    */
+    bool enable(const std::string &name, const std::string &stream);
+
+    /**
+    * @brief Enable module stream. Return true if requested changes realy triggers a change in
+    * the persistor.
+    * It can throw ModulePackageContainer::EnableMultipleStreamsException or
+    * ModulePackageContainer::NoModuleException exceprion if module do not exist
+    *
+    * @return bool
+    */
+    bool enable(const ModulePackagePtr &module);
     /**
      * @brief unmark module 'name' from any streams
      */
