@@ -18,25 +18,29 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "ProfileMaker.hpp"
-#include "ModuleProfile.hpp"
-#include "NullProfile.hpp"
+#ifndef LIBDNF_MODULEPROFILE_HPP
+#define LIBDNF_MODULEPROFILE_HPP
 
-std::shared_ptr<Profile> ProfileMaker::getProfile(const std::string &profileName, std::shared_ptr<ModulemdModule> modulemd)
+
+#include <memory>
+#include <vector>
+
+#include <modulemd/modulemd.h>
+
+
+class ModuleProfile
 {
-    GHashTable *profiles = modulemd_module_peek_profiles(modulemd.get());
+public:
+    explicit ModuleProfile(ModulemdProfile * profile);
+    ~ModuleProfile() = default;
 
-    GHashTableIter iterator;
-    gpointer key, value;
+    std::string getName() const;
+    std::string getDescription() const;
+    std::vector<std::string> getContent() const;
 
-    g_hash_table_iter_init(&iterator, profiles);
-    while (g_hash_table_iter_next(&iterator, &key, &value)) {
-        std::string keyStr = static_cast<char *>(key);
-        if (profileName == keyStr) {
-            auto *profile = (ModulemdProfile *) value;
-            return std::make_shared<ModuleProfile>(profile);
-        }
-    }
+private:
+    ModulemdProfile *profile;
+};
 
-    return std::make_shared<NullProfile>();
-}
+
+#endif //LIBDNF_MODULEPROFILE_HPP

@@ -26,7 +26,7 @@
 
 #include "libdnf/dnf-types.h"
 #include "modulemd/ModuleMetadata.hpp"
-#include "modulemd/profile/ModuleProfile.hpp"
+#include "modulemd/ModuleProfile.hpp"
 #include "libdnf/repo/solvable/Package.hpp"
 #include "../goal/IdQueue.hpp"
 
@@ -57,8 +57,13 @@ public:
 
     std::vector<std::string> getArtifacts() const;
 
-    std::shared_ptr<Profile> getProfile(const std::string &name) const;
-    std::vector<std::shared_ptr<ModuleProfile> > getProfiles() const;
+    /**
+    * @brief Return profiles matched by name.
+    *
+    * @return std::vector<ModuleProfile>
+    */
+    std::vector<ModuleProfile> getProfiles(const std::string &name) const;
+    std::vector<ModuleProfile> getProfiles() const;
 
     std::vector<std::shared_ptr<ModuleDependencies> > getModuleDependencies() const;
 
