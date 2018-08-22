@@ -370,7 +370,14 @@ Repo::Impl::~Impl()
 }
 
 Repo::Repo(const std::string & id, std::unique_ptr<ConfigRepo> && conf)
-: pImpl(new Impl(id, std::move(conf))) {}
+{
+    auto idx = verifyId(id);
+    if (idx >= 0) {
+        std::string msg = tfm::format(_("Bad id for repo: %s, byte = %s %d"), id, id[idx], idx);
+        throw std::runtime_error(msg);
+    }
+    pImpl.reset(new Impl(id, std::move(conf)));
+}
 
 Repo::~Repo() = default;
 
