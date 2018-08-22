@@ -18,12 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <utility>
+#include <fnmatch.h>
 #include <iostream>
+#include <utility>
 
 #include "ModuleMetadata.hpp"
-#include "profile/ProfileMaker.hpp"
-#include "profile/ModuleProfile.hpp"
+#include "ModuleProfile.hpp"
+#include "../hy-util-private.hpp"
+
 
 std::vector<std::shared_ptr<ModuleMetadata> > ModuleMetadata::metadataFromString(const std::string &fileContent)
 {
@@ -135,25 +137,35 @@ std::vector<std::string> ModuleMetadata::getArtifacts() const
     return artifacts;
 }
 
-std::vector<std::shared_ptr<ModuleProfile>> ModuleMetadata::getProfiles() const
+std::vector<ModuleProfile>
+ModuleMetadata::getProfiles(const std::string & profileName) const
 {
     GHashTable *cRequires = modulemd_module_peek_profiles(modulemd.get());
-    std::vector<std::shared_ptr<ModuleProfile> > profiles;
+    std::vector<ModuleProfile> profiles;
     profiles.reserve(g_hash_table_size(cRequires));
 
     GHashTableIter iterator;
     gpointer key, value;
 
     g_hash_table_iter_init (&iterator, cRequires);
-    while (g_hash_table_iter_next(&iterator, &key, &value)) {
-        auto profile = (ModulemdProfile *) value;
-        profiles.push_back(std::make_shared<ModuleProfile>(profile));
+    if (profileName.empty()) {
+        while (g_hash_table_iter_next(&iterator, &key, &value)) {
+            auto profile = (ModulemdProfile *) value;
+            profiles.push_back(ModuleProfile(profile));
+        }
+    } else {
+        auto profileNameCStr = profileName.c_str();
+        gboolean glob = hy_is_glob_pattern(profileNameCStr);
+        while (g_hash_table_iter_next(&iterator, &key, &value)) {
+            std::string keyStr = static_cast<char *>(key);
+            if (glob && fnmatch(profileNameCStr, static_cast<char *>(key), 0) == 0) {
+                auto profile = (ModulemdProfile *) value;
+                profiles.push_back(ModuleProfile(profile));
+            } else if (strcmp(profileNameCStr, static_cast<char *>(key)) == 0) {
+                auto profile = (ModulemdProfile *) value;
+                profiles.push_back(ModuleProfile(profile));
+            }
+        }
     }
-
     return profiles;
-}
-
-std::shared_ptr<Profile> ModuleMetadata::getProfile(const std::string &profileName) const
-{
-    return ProfileMaker::getProfile(profileName, modulemd);
 }

@@ -27,7 +27,7 @@
 
 #include <modulemd/modulemd.h>
 
-#include "profile/ModuleProfile.hpp"
+#include "ModuleProfile.hpp"
 #include "ModuleDependencies.hpp"
 
 class ModuleMetadata
@@ -48,8 +48,7 @@ public:
     std::string getSummary() const;
     std::vector<std::shared_ptr<ModuleDependencies> > getDependencies() const;
     std::vector<std::string> getArtifacts() const;
-    std::vector<std::shared_ptr<ModuleProfile>> getProfiles() const;
-    std::shared_ptr<Profile> getProfile(const std::string &profileName) const;
+    std::vector<ModuleProfile> getProfiles(const std::string & profileName = "") const;
 
 private:
     static std::vector<std::shared_ptr<ModuleMetadata> > wrapModulemdModule(GPtrArray *data);

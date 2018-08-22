@@ -237,14 +237,10 @@ std::vector<std::string> ModulePackage::getArtifacts() const
     return metadata->getArtifacts();
 }
 
-/**
- * @brief Return a module profile by name.
- *
- * @return std::shared_ptr<ModuleProfile>
- */
-std::shared_ptr<Profile> ModulePackage::getProfile(const std::string &name) const
+std::vector<ModuleProfile>
+ModulePackage::getProfiles(const std::string &name) const
 {
-    return metadata->getProfile(name);
+    return metadata->getProfiles(name);
 }
 
 /**
@@ -252,7 +248,7 @@ std::shared_ptr<Profile> ModulePackage::getProfile(const std::string &name) cons
  *
  * @return std::vector<std::shared_ptr<ModuleProfile>>
  */
-std::vector<std::shared_ptr<ModuleProfile>> ModulePackage::getProfiles() const
+std::vector<ModuleProfile> ModulePackage::getProfiles() const
 {
     return metadata->getProfiles();
 }
