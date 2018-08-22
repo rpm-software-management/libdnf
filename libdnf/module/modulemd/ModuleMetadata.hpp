@@ -27,8 +27,9 @@
 
 #include <modulemd/modulemd.h>
 
-#include "ModuleProfile.hpp"
 #include "ModuleDependencies.hpp"
+
+class ModuleProfile;
 
 class ModuleMetadata
 {

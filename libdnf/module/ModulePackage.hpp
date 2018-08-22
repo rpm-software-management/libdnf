@@ -26,14 +26,14 @@
 
 #include "libdnf/dnf-types.h"
 #include "modulemd/ModuleMetadata.hpp"
-#include "modulemd/ModuleProfile.hpp"
 #include "libdnf/repo/solvable/Package.hpp"
 #include "../goal/IdQueue.hpp"
 
 class ModulePackage;
+
 typedef std::shared_ptr< ModulePackage > ModulePackagePtr;
 
-class ModulePackageContainer;
+struct ModulePackageContainer;
 
 class ModulePackage // TODO inherit in future; : public Package
 {

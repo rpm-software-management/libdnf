@@ -28,16 +28,25 @@ ModuleProfile::ModuleProfile(ModulemdProfile *profile)
 
 std::string ModuleProfile::getName() const
 {
+    if (!profile) {
+        return {};
+    }
     return modulemd_profile_peek_name(profile);
 }
 
 std::string ModuleProfile::getDescription() const
 {
+    if (!profile) {
+        return {};
+    }
     return modulemd_profile_peek_description(profile);
 }
 
 std::vector<std::string> ModuleProfile::getContent() const
 {
+    if (!profile) {
+        return {};
+    }
     ModulemdSimpleSet *profileRpms = modulemd_profile_peek_rpms(profile);
     gchar **cRpms = modulemd_simpleset_dup(profileRpms);
 
