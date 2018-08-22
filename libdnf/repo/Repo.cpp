@@ -260,9 +260,6 @@ int Repo::Impl::progressCB(void * data, double totalToDownload, double downloade
         return 0;
     auto cbObject = static_cast<RepoCB *>(data);
     return cbObject->progress(totalToDownload, downloaded);
-    //LB_CB_ERROR
-    /*std::cout << "Progress total downloaded: " << totalToDownload << "now: " << downloaded << std::endl;
-    return static_cast<int>(LR_CB_OK);*/
 }
 
 void Repo::Impl::fastestMirrorCB(void * data, LrFastestMirrorStages stage, void *ptr)
@@ -270,7 +267,6 @@ void Repo::Impl::fastestMirrorCB(void * data, LrFastestMirrorStages stage, void 
     if (!data)
         return;
     auto cbObject = static_cast<RepoCB *>(data);
-//    std::cout << "Fastestmirror stage: " << stage << "data: " << ptr << std::endl;
     const char * msg;
     std::string msgString;
     if (ptr) {
@@ -298,9 +294,6 @@ int Repo::Impl::mirrorFailureCB(void * data, const char * msg, const char * url,
         return 0;
     auto cbObject = static_cast<RepoCB *>(data);
     return cbObject->handleMirrorFailure(msg, url, metadata);
-/*    std::cout << "HMF msg: " << msg << "url: " << url << "metadata: "<< metadata << std::endl;
-    return static_cast<int>(LR_CB_OK);*/
-    //LR_CB_ERROR
 };
 
 
@@ -498,7 +491,6 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitLocal()
         vars = lr_urlvars_set(vars, item.first.c_str(), item.second.c_str());
     handleSetOpt(h.get(), LRO_VARSUB, vars);
     auto cachedir = getCachedir();
-    //std::cout << "cachedir: " << cachedir << std::endl;
     handleSetOpt(h.get(), LRO_DESTDIR, cachedir.c_str());
     const char *urls[] = {cachedir.c_str(), NULL};
     handleSetOpt(h.get(), LRO_URLS, urls);
@@ -810,7 +802,6 @@ std::vector<Key> Repo::Impl::retrieve(const std::string & url)
         close(fd);
     });
 
-    //Downloader::downloadURL(nullptr, gpgkeyUrl.c_str(), fd);
     downloadUrl(url.c_str(), fd);
     lseek(fd, SEEK_SET, 0);
     auto keyInfos = rawkey2infos(fd);
@@ -998,7 +989,6 @@ bool Repo::Impl::loadCache(bool throwExcept)
     }
     g_strfreev(this->mirrors);
     this->mirrors = mirrors;
-    //std::cout << "load(): " << (mirrors ? mirrors[0] : nullptr) << std::endl;
     return true;
 }
 
@@ -1395,7 +1385,6 @@ public:
 
 private:
     void init(LrHandle * handle, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd);
-//    LrHandle * newHandle(ConfigMain * conf);
 
     static int endCB(void * data, LrTransferStatus status, const char * msg);
     static int progressCB(void * data, double totalToDownload, double downloaded);
