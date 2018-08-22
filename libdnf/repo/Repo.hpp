@@ -85,8 +85,8 @@ public:
     virtual int progress(double totalToDownload, double downloaded);
     virtual void fastestMirror(FastestMirrorStage stage, const char *msg);
     virtual int handleMirrorFailure(const char *msg, const char *url, const char *metadata);
-    virtual bool repokeyImport(const std::string & id, const std::string & userId, const std::string & fingerprint,
-                               const std::string & url, long int timestamp);
+    virtual bool repokeyImport(const std::string & id, const std::string & userId,
+                               const std::string & fingerprint, const std::string & url, long int timestamp);
     virtual ~RepoCB() = default;
 };
 
@@ -258,8 +258,12 @@ public:
     static ChecksumType checksumType(const std::string & name);
     static void downloadPackages(std::vector<PackageTarget *> & targets, bool failFast);
 
-    PackageTarget(Repo * repo, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
-    PackageTarget(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
+    PackageTarget(Repo * repo, const char * relativeUrl, const char * dest, int chksType,
+                  const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume,
+                  int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
+    PackageTarget(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType,
+                  const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume,
+                  int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
     ~PackageTarget();
 
     PackageTargetCB * getCallbacks();
