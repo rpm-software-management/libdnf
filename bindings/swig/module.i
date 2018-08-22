@@ -34,9 +34,11 @@ typedef std::shared_ptr< ModulePackage > ModulePackagePtr;
     // make SWIG wrap following headers
     #include "libdnf/module/ModulePackage.hpp"
     #include "libdnf/module/ModulePackageContainer.hpp"
+    #include "libdnf/module/modulemd/ModuleProfile.hpp"
 %}
 
 %template(VectorModulePackagePtr) std::vector<ModulePackagePtr>;
+%template(VectorModuleProfile) std::vector<ModuleProfile>;
 %template(MapStringString) std::map<std::string, std::string>;
 %template(MapStringPairStringString) std::map<std::string, std::pair<std::string, std::string>>;
 %template(VectorString) std::vector<std::string>;
@@ -45,6 +47,8 @@ typedef std::shared_ptr< ModulePackage > ModulePackagePtr;
 
 // make SWIG wrap following headers
 %nodefaultctor ModulePackage;
+%nodefaultctor ModuleProfile;
 
 %include "libdnf/module/ModulePackage.hpp"
 %include "libdnf/module/ModulePackageContainer.hpp"
+%include "libdnf/module/modulemd/ModuleProfile.hpp"

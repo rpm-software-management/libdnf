@@ -23,6 +23,7 @@
 #include <utility>
 
 #include "ModulePackage.hpp"
+#include "modulemd/ModuleProfile.hpp"
 #include "libdnf/utils/File.hpp"
 #include "libdnf/dnf-sack-private.hpp"
 

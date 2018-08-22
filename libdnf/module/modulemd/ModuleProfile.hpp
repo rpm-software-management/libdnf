@@ -27,18 +27,20 @@
 
 #include <modulemd/modulemd.h>
 
+class ModuleMetadata;
 
 class ModuleProfile
 {
 public:
-    explicit ModuleProfile(ModulemdProfile * profile);
-    ~ModuleProfile() = default;
-
+    ModuleProfile() : profile(nullptr) {}
+    //~ModuleProfile() = default;
     std::string getName() const;
     std::string getDescription() const;
     std::vector<std::string> getContent() const;
 
 private:
+    friend class ModuleMetadata;
+    explicit ModuleProfile(ModulemdProfile * profile);
     ModulemdProfile *profile;
 };
 
