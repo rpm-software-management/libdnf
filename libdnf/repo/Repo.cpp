@@ -102,12 +102,12 @@ namespace libdnf {
 
 class LrExceptionWithSourceUrl : public LrException {
 public:
-    LrExceptionWithSourceUrl(int code, const std::string & msg, const std::string & sourceUrl) : LrException(code, msg), sourceUrl(sourceUrl) {}
+    LrExceptionWithSourceUrl(int code, const std::string & msg, const std::string & sourceUrl)
+        : LrException(code, msg), sourceUrl(sourceUrl) {}
     const std::string & getSourceUrl() const { return sourceUrl; }
 private:
     std::string sourceUrl;
 };
-
 
 static void throwException(std::unique_ptr<GError> && err)
 {
@@ -115,14 +115,16 @@ static void throwException(std::unique_ptr<GError> && err)
 }
 
 template<typename T>
-inline static void handleSetOpt(LrHandle * handle, LrHandleOption option, T value) {
+inline static void handleSetOpt(LrHandle * handle, LrHandleOption option, T value)
+{
     GError * errP{nullptr};
     if (!lr_handle_setopt(handle, &errP, option, value)) {
         throwException(std::unique_ptr<GError>(errP));
     }
 }
 
-inline static void handleGetInfo(LrHandle * handle, LrHandleInfoOption option, void * value) {
+inline static void handleGetInfo(LrHandle * handle, LrHandleInfoOption option, void * value)
+{
     GError * errP{nullptr};
     if (!lr_handle_getinfo(handle, &errP, option, value)) {
         throwException(std::unique_ptr<GError>(errP));
@@ -130,7 +132,8 @@ inline static void handleGetInfo(LrHandle * handle, LrHandleInfoOption option, v
 }
 
 template<typename T>
-inline static void resultGetInfo(LrResult * result, LrResultInfoOption option, T value) {
+inline static void resultGetInfo(LrResult * result, LrResultInfoOption option, T value)
+{
     GError * errP{nullptr};
     if (!lr_result_getinfo(result, &errP, option, value)) {
         throwException(std::unique_ptr<GError>(errP));
@@ -143,8 +146,8 @@ int RepoCB::progress(double totalToDownload, double downloaded) { return 0; }
 void RepoCB::fastestMirror(FastestMirrorStage stage, const char * ptr) {}
 int RepoCB::handleMirrorFailure(const char * msg, const char * url, const char * metadata) { return 0; }
 
-bool RepoCB::repokeyImport(const std::string & id, const std::string & userId, const std::string & fingerprint,
-    const std::string & url, long int timestamp)
+bool RepoCB::repokeyImport(const std::string & id, const std::string & userId,
+                           const std::string & fingerprint, const std::string & url, long int timestamp)
 {
     return true;
 }
@@ -167,7 +170,8 @@ static constexpr struct {
 
 class Key {
 public:
-    Key(gpgme_key_t key, gpgme_subkey_t subkey) {
+    Key(gpgme_key_t key, gpgme_subkey_t subkey)
+    {
         id = subkey->keyid;
         fingerprint = subkey->fpr;
         timestamp = subkey->timestamp;
@@ -239,7 +243,8 @@ public:
 
     SyncStrategy syncStrategy;
 private:
-    std::unique_ptr<LrResult> lrHandlePerform(LrHandle * handle, const std::string & destDirectory, bool setGPGHomeEnv);
+    std::unique_ptr<LrResult> lrHandlePerform(LrHandle * handle, const std::string & destDirectory,
+        bool setGPGHomeEnv);
     bool isMetalinkInSync();
     bool isRepomdInSync();
     void resetMetadataExpired();
@@ -406,7 +411,8 @@ void Repo::verify() const
             if (type == supported)
                 return;
         }
-        throw std::runtime_error(tfm::format(_("Repository '%s' has unsupported type: 'type=%s', skipping."), pImpl->id, type));
+        throw std::runtime_error(tfm::format(_("Repository '%s' has unsupported type: 'type=%s', skipping."),
+                                             pImpl->id, type));
     }
 }
 
@@ -840,7 +846,8 @@ void Repo::Impl::importRepoKeys()
             struct stat sb;
             if (stat(gpgDir.c_str(), &sb) != 0 || !S_ISDIR(sb.st_mode))
                 mkdir(gpgDir.c_str(), 0777);
-            auto confFd = open((gpgDir + "/gpg.conf").c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            auto confFd = open((gpgDir + "/gpg.conf").c_str(),
+                               O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
             if (confFd != -1)
                 close(confFd);
 
@@ -864,7 +871,8 @@ void Repo::Impl::importRepoKeys()
     }
 }
 
-std::unique_ptr<LrResult> Repo::Impl::lrHandlePerform(LrHandle * handle, const std::string & destDirectory, bool setGPGHomeEnv)
+std::unique_ptr<LrResult> Repo::Impl::lrHandlePerform(LrHandle * handle, const std::string & destDirectory,
+    bool setGPGHomeEnv)
 {
     bool isOrigGPGHomeEnvSet;
     std::string origGPGHomeEnv;
@@ -1058,7 +1066,8 @@ bool Repo::Impl::isMetalinkInSync()
         char chksumHex[chksumLen * 2 + 1];
         solv_bin2hex(chksum, chksumLen, chksumHex);
         if (strcmp(chksumHex, hash.lrMetalinkHash->value) != 0) {
-            logger->debug(tfm::format(_("reviving: failed for '%s', mismatched %s sum."), id, hash.lrMetalinkHash->type));
+            logger->debug(tfm::format(_("reviving: failed for '%s', mismatched %s sum."),
+                                      id, hash.lrMetalinkHash->type));
             return false;
         }
     }
@@ -1107,12 +1116,14 @@ void Repo::Impl::fetch()
     auto repodir = cacheDir + "/repodata";
     if (g_mkdir_with_parents(cacheDir.c_str(), 0755) == -1) {
         const char * errTxt = strerror(errno);
-        throw std::runtime_error(tfm::format(_("Cannot create repo cache directory \"%s\": %s"), cacheDir, errTxt));
+        throw std::runtime_error(tfm::format(_("Cannot create repo cache directory \"%s\": %s"),
+                                             cacheDir, errTxt));
     }
     auto tmpdir = cacheDir + "/tmpdir.XXXXXX";
     if (!mkdtemp(&tmpdir.front())) {
         const char * errTxt = strerror(errno);
-        throw std::runtime_error(tfm::format(_("Cannot create repo temporary directory \"%s\": %s"), tmpdir.c_str(), errTxt));
+        throw std::runtime_error(tfm::format(_("Cannot create repo temporary directory \"%s\": %s"),
+                                             tmpdir.c_str(), errTxt));
     }
     Finalizer tmpDirRemover([&tmpdir](){
         dnf_remove_recursive(tmpdir.c_str(), NULL);
@@ -1125,11 +1136,13 @@ void Repo::Impl::fetch()
     dnf_remove_recursive(repodir.c_str(), NULL);
     if (g_mkdir_with_parents(repodir.c_str(), 0755) == -1) {
         const char * errTxt = strerror(errno);
-        throw std::runtime_error(tfm::format(_("Cannot create directory \"%s\": %s"), repodir, errTxt));
+        throw std::runtime_error(tfm::format(_("Cannot create directory \"%s\": %s"),
+                                             repodir, errTxt));
     }
     if (rename(tmprepodir.c_str(), repodir.c_str()) == -1) {
         const char * errTxt = strerror(errno);
-        throw std::runtime_error(tfm::format(_("Cannot rename directory \"%s\" to \"%s\": %s"), tmprepodir, repodir, errTxt));
+        throw std::runtime_error(tfm::format(_("Cannot rename directory \"%s\" to \"%s\": %s"),
+                                             tmprepodir, repodir, errTxt));
     }
 
     timestamp = -1;
@@ -1378,9 +1391,13 @@ int PackageTargetCB::mirrorFailure(const char *msg, const char *url) { return 0;
 
 class PackageTarget::Impl {
 public:
-    Impl(Repo * repo, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
+    Impl(Repo * repo, const char * relativeUrl, const char * dest, int chksType,
+         const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume,
+         int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
 
-    Impl(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
+    Impl(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType,
+         const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume,
+         int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
 
     void download();
 
@@ -1391,7 +1408,9 @@ public:
     std::unique_ptr<LrPackageTarget> lrPkgTarget;
 
 private:
-    void init(LrHandle * handle, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd);
+    void init(LrHandle * handle, const char * relativeUrl, const char * dest, int chksType,
+              const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume,
+              int64_t byteRangeStart, int64_t byteRangeEnd);
 
     static int endCB(void * data, LrTransferStatus status, const char * msg);
     static int progressCB(void * data, double totalToDownload, double downloaded);
@@ -1501,21 +1520,29 @@ void PackageTarget::downloadPackages(std::vector<PackageTarget *> & targets, boo
 
 PackageTarget::Impl::~Impl() {}
 
-PackageTarget::Impl::Impl(Repo * repo, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
+PackageTarget::Impl::Impl(Repo * repo, const char * relativeUrl, const char * dest, int chksType,
+                          const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume,
+                          int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
 : callbacks(callbacks)
 {
-    init(repo->pImpl->getCachedHandle(), relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume, byteRangeStart, byteRangeEnd);
+    init(repo->pImpl->getCachedHandle(), relativeUrl, dest, chksType, chksum, expectedSize,
+         baseUrl, resume, byteRangeStart, byteRangeEnd);
 }
 
-PackageTarget::Impl::Impl(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
+PackageTarget::Impl::Impl(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType,
+                          const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume,
+                          int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
 : callbacks(callbacks)
 {
     lrHandle.reset(newHandle(cfg));
     handleSetOpt(lrHandle.get(), LRO_REPOTYPE, LR_YUMREPO);
-    init(lrHandle.get(), relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume, byteRangeStart, byteRangeEnd);
+    init(lrHandle.get(), relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume,
+         byteRangeStart, byteRangeEnd);
 }
 
-void PackageTarget::Impl::init(LrHandle * handle, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd)
+void PackageTarget::Impl::init(LrHandle * handle, const char * relativeUrl, const char * dest, int chksType,
+                               const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume,
+                               int64_t byteRangeStart, int64_t byteRangeEnd)
 {
     LrChecksumType lrChksType = static_cast<LrChecksumType>(chksType);
 
@@ -1525,7 +1552,9 @@ void PackageTarget::Impl::init(LrHandle * handle, const char * relativeUrl, cons
     }
 
     GError * errP{nullptr};
-    lrPkgTarget.reset(lr_packagetarget_new_v3(handle, relativeUrl, dest, lrChksType, chksum,  expectedSize, baseUrl, resume, progressCB, callbacks, endCB, mirrorFailureCB, byteRangeStart, byteRangeEnd, &errP));
+    lrPkgTarget.reset(lr_packagetarget_new_v3(handle, relativeUrl, dest, lrChksType, chksum,  expectedSize,
+                                              baseUrl, resume, progressCB, callbacks, endCB, mirrorFailureCB,
+                                              byteRangeStart, byteRangeEnd, &errP));
     std::unique_ptr<GError> err(errP);
 
     if (!lrPkgTarget) {
@@ -1534,11 +1563,19 @@ void PackageTarget::Impl::init(LrHandle * handle, const char * relativeUrl, cons
     }
 }
 
-PackageTarget::PackageTarget(Repo * repo, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
-: pImpl(new Impl(repo, relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume, byteRangeStart, byteRangeEnd, callbacks)) {}
+PackageTarget::PackageTarget(Repo * repo, const char * relativeUrl, const char * dest, int chksType,
+                             const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume,
+                             int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
+: pImpl(new Impl(repo, relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume,
+                 byteRangeStart, byteRangeEnd, callbacks))
+{}
 
-PackageTarget::PackageTarget(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType, const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume, int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
-: pImpl(new Impl(cfg, relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume, byteRangeStart, byteRangeEnd, callbacks)) {}
+PackageTarget::PackageTarget(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType,
+                             const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume,
+                             int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
+: pImpl(new Impl(cfg, relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume,
+                 byteRangeStart, byteRangeEnd, callbacks))
+{}
 
 
 PackageTarget::~PackageTarget() {}
@@ -1606,7 +1643,8 @@ static const char * lrLogLevelFlagToCStr(GLogLevelFlags logLevelFlag)
     return "USER";
 }
 
-static void librepoLogCB(G_GNUC_UNUSED const gchar *log_domain, GLogLevelFlags log_level, const char *msg, gpointer user_data) noexcept
+static void librepoLogCB(G_GNUC_UNUSED const gchar *log_domain, GLogLevelFlags log_level,
+                         const char *msg, gpointer user_data) noexcept
 {
     // Ignore exception during logging. Eg. exception generated during logging of exception is not good.
     try {
@@ -1617,8 +1655,10 @@ static void librepoLogCB(G_GNUC_UNUSED const gchar *log_domain, GLogLevelFlags l
 
         std::ostringstream ss;
         ss << std::setfill('0');
-        ss << std::setw(4) << nowTm.tm_year+1900 << "-" << std::setw(2) << nowTm.tm_mon+1 << "-" << std::setw(2) << nowTm.tm_mday;
-        ss << "T" << std::setw(2) << nowTm.tm_hour << ":" << std::setw(2) << nowTm.tm_min << ":" << std::setw(2) << nowTm.tm_sec << "Z ";
+        ss << std::setw(4) << nowTm.tm_year+1900 << "-" << std::setw(2) << nowTm.tm_mon+1;
+        ss << "-" << std::setw(2) << nowTm.tm_mday;
+        ss << "T" << std::setw(2) << nowTm.tm_hour << ":" << std::setw(2) << nowTm.tm_min;
+        ss << ":" << std::setw(2) << nowTm.tm_sec << "Z ";
         ss << lrLogLevelFlagToCStr(log_level) << " " << msg << std::endl;
         auto str = ss.str();
         fwrite(str.c_str(), sizeof(char), str.length(), data->fd);
