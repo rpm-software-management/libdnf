@@ -1373,11 +1373,12 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
         goto out;
     }
 
+    dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION, nullptr, nullptr);
+
     // FIXME get commandline and rpmdb version
     swdb->beginTransaction(_get_current_time(), "", "", priv->uid);
 
     /* run the transaction */
-    dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION, nullptr, nullptr);
     priv->state = dnf_state_get_child(state);
     priv->step = DNF_TRANSACTION_STEP_STARTED;
     rpmtsSetFlags(priv->ts, rpmts_flags);

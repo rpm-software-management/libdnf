@@ -1661,6 +1661,8 @@ dnf_context_setup(DnfContext *context,
     g_autofree char *rpmdb_path = NULL;
     g_autoptr(GFile) file_rpmdb = NULL;
 
+    dnf_context_plugin_hook(context, PLUGIN_HOOK_ID_CONTEXT_PRE_CONF, nullptr, nullptr);
+
     /* check essential things are set */
     if (priv->solv_dir == NULL) {
         g_set_error_literal(error,
@@ -1761,6 +1763,8 @@ dnf_context_setup(DnfContext *context,
     priv->repos = dnf_repo_loader_get_repos(priv->repo_loader, error);
     if (priv->repos == NULL)
         return FALSE;
+
+    dnf_context_plugin_hook(context, PLUGIN_HOOK_ID_CONTEXT_CONF, nullptr, nullptr);
 
     return TRUE;
 }
