@@ -48,9 +48,17 @@ typedef struct _PluginHandle PluginHandle;
 // code below will be implemented in plugins
 struct _PluginHandle;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 const PluginInfo * pluginGetInfo(void);
 PluginHandle * pluginInitHandle(int version, PluginMode mode, void * initData);
 void pluginFreeHandle(PluginHandle * handle);
 int pluginHook(PluginHandle * handle, PluginHookId id, void * hookData, PluginHookError * error);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
