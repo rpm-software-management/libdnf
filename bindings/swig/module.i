@@ -30,6 +30,8 @@
 %shared_ptr(ModulePackage)
 typedef std::shared_ptr< ModulePackage > ModulePackagePtr;
 
+typedef int Id;
+
 %{
     // make SWIG wrap following headers
     #include "libdnf/module/ModulePackage.hpp"

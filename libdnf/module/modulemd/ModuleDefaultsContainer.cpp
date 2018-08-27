@@ -20,7 +20,10 @@
 
 #include <iostream>
 
+#include <modulemd/modulemd.h>
+
 #include "ModuleDefaultsContainer.hpp"
+
 
 ModuleDefaultsContainer::ModuleDefaultsContainer()
 {
@@ -37,14 +40,41 @@ void ModuleDefaultsContainer::fromString(const std::string &content, int priorit
     reportFailures(failures);
 }
 
+std::vector<std::string> ModuleDefaultsContainer::getDefaultProfiles(std::string & moduleName,
+    std::string & moduleStream)
+{
+    auto moduleDefaults = defaults.find(moduleName);
+    if (moduleDefaults == defaults.end())
+        return {};
+    auto defaultsPeek = modulemd_defaults_peek_profile_defaults(moduleDefaults->second.get());
+    GHashTableIter iterator;
+    gpointer key, value;
+    auto moduleStreamCStr = moduleStream.c_str();
+    std::vector<std::string> output;
+    g_hash_table_iter_init(&iterator, defaultsPeek);
+    while (g_hash_table_iter_next(&iterator, &key, &value)) {
+        if (strcmp(moduleStreamCStr, static_cast<char *>(key)) == 0) {
+            auto cValue = static_cast<ModulemdSimpleSet *>(value);
+            auto profileSet = modulemd_simpleset_dup(cValue);
+            for (auto item = profileSet; *item; ++item) {
+                output.emplace_back(*item);
+                g_free(*item);
+            }
+            g_free(profileSet);
+            return output;
+        }
+    }
+    return {};
+}
+
 std::string ModuleDefaultsContainer::getDefaultStreamFor(std::string moduleName)
 {
-    auto moduleDefaults = defaults[moduleName];
-    if (!moduleDefaults)
+    auto moduleDefaults = defaults.find(moduleName);
+    if (moduleDefaults == defaults.end())
         return "";
         // TODO: get the exception back
         // throw ModulePackageContainer::NoStreamException("Missing default for " + moduleName);
-    return modulemd_defaults_peek_default_stream(moduleDefaults.get());
+    return modulemd_defaults_peek_default_stream(moduleDefaults->second.get());
 }
 
 void ModuleDefaultsContainer::saveDefaults(GPtrArray *data, int priority)
@@ -68,11 +98,11 @@ void ModuleDefaultsContainer::resolve()
         auto item = g_ptr_array_index(data, i);
         if (!MODULEMD_IS_DEFAULTS(item))
             continue;
-
         g_object_ref(item);
-        auto moduleDefaults = std::shared_ptr<ModulemdDefaults>((ModulemdDefaults *) item, g_object_unref);
+        auto moduleDefaults = std::unique_ptr<ModulemdDefaults>(
+            (ModulemdDefaults *) item);
         std::string name = modulemd_defaults_peek_module_name(moduleDefaults.get());
-        defaults.insert(std::make_pair(name, moduleDefaults));
+        defaults.insert(std::make_pair(name, std::move(moduleDefaults)));
     }
 }
 
@@ -102,8 +132,8 @@ std::map<std::string, std::string> ModuleDefaultsContainer::getDefaultStreams()
     std::map<std::string, std::string> result;
     for (auto const & iter : defaults) {
         auto name = iter.first;
-        auto moduleDefaults = iter.second;
-        auto defaultStream = modulemd_defaults_peek_default_stream(moduleDefaults.get());
+        auto moduleDefaults = iter.second.get();
+        auto defaultStream = modulemd_defaults_peek_default_stream(moduleDefaults);
         if (!defaultStream) {
             // if default stream is not set, then the default is disabled -> skip
             continue;

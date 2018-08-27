@@ -144,6 +144,11 @@ public:
     std::string getReport();
 
     /**
+    * @brief Get configured default profiles for module stream
+    */
+    std::vector<std::string> getDefaultProfiles(std::string moduleName, std::string moduleStream);
+
+    /**
      * @brief Get configured default stream for a module
      */
     const std::string & getDefaultStream(const std::string &name);

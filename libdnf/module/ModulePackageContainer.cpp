@@ -202,7 +202,6 @@ ModulePackageContainer::add(DnfSack * sack)
         std::string yamlContent = getFileContent(modules_fn);
         add(yamlContent);
         // update defaults from repo
-        auto ss = pImpl->defaultConteiner;
         try {
             pImpl->defaultConteiner.fromString(yamlContent, 0);
         } catch (const ModuleDefaultsContainer::ConflictException & exception) {
@@ -347,6 +346,12 @@ bool ModulePackageContainer::isDisabled(const std::string &name)
 bool ModulePackageContainer::isDisabled(const ModulePackagePtr &module)
 {
     return isDisabled(module->getName());
+}
+
+std::vector<std::string> ModulePackageContainer::getDefaultProfiles(std::string moduleName,
+    std::string moduleStream)
+{
+    return pImpl->defaultConteiner.getDefaultProfiles(moduleName, moduleStream);
 }
 
 const std::string & ModulePackageContainer::getDefaultStream(const std::string &name)
@@ -770,7 +775,7 @@ ModulePackageContainer::Impl::ModulePersistor::getEntry(const std::string & modu
     try {
         auto & entry = configs.at(moduleName);
         return entry;
-    } catch (std::out_of_range) {
+    } catch (std::out_of_range &) {
         throw NoModuleException(moduleName);
     }
 }
