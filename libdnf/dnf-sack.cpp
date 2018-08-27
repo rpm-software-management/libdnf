@@ -79,7 +79,7 @@ extern "C" {
 #include "utils/utils.hpp"
 #include "log.hpp"
 
-auto logger(libdnf::Log::getLogger());
+static auto logger(libdnf::Log::getLogger());
 
 #define DEFAULT_CACHE_ROOT "/var/cache/hawkey"
 #define DEFAULT_CACHE_USER "/var/tmp/hawkey"
@@ -2173,59 +2173,16 @@ dnf_sack_add_repos(DnfSack *sack,
 }
 
 namespace {
-std::string getFileContent(const std::string &filePath)
-{
-    auto yaml = libdnf::File::newFile(filePath);
-
-    yaml->open("r");
-    const auto &yamlContent = yaml->getContent();
-    yaml->close();
-
-    return yamlContent;
-}
-
 void readModuleMetadataFromRepo(DnfSack * sack, ModulePackageContainer * modulePackages,
-    ModuleDefaultsContainer & moduleDefaults, const char * install_root,
     const char * platformModule)
 {
-    Pool * pool = dnf_sack_get_pool(sack);
-    Repo * r;
-    Id id;
-
-    FOR_REPOS(id, r) {
-        HyRepo hyRepo = static_cast<HyRepo>(r->appdata);
-        auto modules_fn = hy_repo_get_string(hyRepo, MODULES_FN);
-        if (!modules_fn) {
-            continue;
-        }
-        std::string yamlContent = getFileContent(modules_fn);
-        modulePackages->add(yamlContent);
-        // update defaults from repo
-        try {
-            moduleDefaults.fromString(yamlContent, 0);
-        } catch (const ModuleDefaultsContainer::ConflictException & exception) {
-            logger->warning(exception.what());
-        }
-    }
+    modulePackages->add(sack);
     modulePackages->createConflictsBetweenStreams();
     // TODO remove hard-coded path
     try {
         modulePackages->addPlatformPackage("/etc/os-release", platformModule);
     } catch (const std::exception & except) {
         logger->critical("Detection of Platform Module failed: " + std::string(except.what()));
-    }
-}
-
-void readModuleDefaultsFromDisk(const std::string &dirPath, ModuleDefaultsContainer &moduleDefaults)
-{
-    for (const auto &file : filesystem::getDirContent(dirPath)) {
-        std::string yamlContent = getFileContent(file);
-
-        try {
-            moduleDefaults.fromString(yamlContent, 1000);
-        } catch (ModuleDefaultsContainer::ConflictException &exception) {
-            // TODO logger.warning(exception.what());
-        }
     }
 }
 
@@ -2337,9 +2294,6 @@ void dnf_sack_filter_modules_v2(DnfSack * sack, DnfModulePackageContainer * modu
         if (!install_root) {
             throw std::runtime_error("Installroot not provided");
         }
-        // TODO: remove hard-coded path
-        g_autofree gchar *defaultsDirPath = g_build_filename(
-            install_root, "/etc/dnf/modules.defaults.d/", NULL);
         DnfSackPrivate *priv = GET_PRIVATE(sack);
         if (!moduleContainer) {
             if (priv->moduleContainer) {
@@ -2349,20 +2303,14 @@ void dnf_sack_filter_modules_v2(DnfSack * sack, DnfModulePackageContainer * modu
                 install_root, dnf_sack_get_arch(sack));
             moduleContainer = priv->moduleContainer;
         }
-
-        ModuleDefaultsContainer moduleDefaults;
-
-        readModuleMetadataFromRepo(sack, moduleContainer, moduleDefaults, install_root, platformModule);
-        readModuleDefaultsFromDisk(defaultsDirPath, moduleDefaults);
+        readModuleMetadataFromRepo(sack, moduleContainer, platformModule);
+        moduleContainer->addDefaultsFromDisk();
 
         try {
-            moduleDefaults.resolve();
-        } catch (ModuleDefaultsContainer::ResolveException &exception) {
-            // TODO logger.debug("No module defaults found");
+            moduleContainer->moduleDefaultsResolve();
+        } catch (ModuleDefaultsContainer::ResolveException & exception) {
+            logger->debug(_("No module defaults found"));
         }
-
-        auto defaultStreams = moduleDefaults.getDefaultStreams();
-        moduleContainer->setModuleDefaults(defaultStreams);
     }
 
     moduleContainer->resolveActiveModulePackages();

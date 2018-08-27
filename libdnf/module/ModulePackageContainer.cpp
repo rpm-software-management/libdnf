@@ -34,11 +34,15 @@ extern "C" {
 #include "libdnf/dnf-sack-private.hpp"
 #include <functional>
 #include <../sack/query.hpp>
+#include "../log.hpp"
 #include "libdnf/conf/ConfigParser.hpp"
 #include "libdnf/conf/OptionStringList.hpp"
 
 #include "bgettext/bgettext-lib.h"
 #include "tinyformat/tinyformat.hpp"
+#include "modulemd/ModuleDefaultsContainer.hpp"
+
+static auto logger(libdnf::Log::getLogger());
 
 static constexpr auto EMPTY_STREAM = "";
 static constexpr auto EMPTY_PROFILES = "";
@@ -77,6 +81,17 @@ toString(const ModulePackageContainer::ModuleState &state) {
     }
 }
 
+static std::string getFileContent(const std::string &filePath)
+{
+    auto yaml = libdnf::File::newFile(filePath);
+
+    yaml->open("r");
+    const auto &yamlContent = yaml->getContent();
+    yaml->close();
+
+    return yamlContent;
+}
+
 class ModulePackageContainer::Impl {
 public:
     Impl();
@@ -94,6 +109,7 @@ private:
     DnfSack * moduleSack;
     Map * activatedModules{nullptr};
     std::string installRoot;
+    ModuleDefaultsContainer defaultConteiner;
     std::map<std::string, std::string> moduleDefaults;
 };
 
@@ -168,6 +184,53 @@ ModulePackageContainer::Impl::~Impl()
         delete activatedModules;
     }
     g_object_unref(moduleSack);
+}
+
+void
+ModulePackageContainer::add(DnfSack * sack)
+{
+    Pool * pool = dnf_sack_get_pool(sack);
+    Repo * r;
+    Id id;
+
+    FOR_REPOS(id, r) {
+        HyRepo hyRepo = static_cast<HyRepo>(r->appdata);
+        auto modules_fn = hy_repo_get_string(hyRepo, MODULES_FN);
+        if (!modules_fn) {
+            continue;
+        }
+        std::string yamlContent = getFileContent(modules_fn);
+        add(yamlContent);
+        // update defaults from repo
+        auto ss = pImpl->defaultConteiner;
+        try {
+            pImpl->defaultConteiner.fromString(yamlContent, 0);
+        } catch (const ModuleDefaultsContainer::ConflictException & exception) {
+            logger->warning(exception.what());
+        }
+    }
+}
+
+void ModulePackageContainer::addDefaultsFromDisk()
+{
+    g_autofree gchar * dirPath = g_build_filename(
+            pImpl->installRoot.c_str(), "/etc/dnf/modules.defaults.d/", NULL);
+
+    for (const auto &file : filesystem::getDirContent(dirPath)) {
+        std::string yamlContent = getFileContent(file);
+
+        try {
+            pImpl->defaultConteiner.fromString(yamlContent, 1000);
+        } catch (ModuleDefaultsContainer::ConflictException &exception) {
+            logger->warning(exception.what());
+        }
+    }
+}
+
+void ModulePackageContainer::moduleDefaultsResolve()
+{
+    pImpl->defaultConteiner.resolve();
+    pImpl->moduleDefaults = pImpl->defaultConteiner.getDefaultStreams();
 }
 
 void
@@ -580,11 +643,6 @@ ModulePackageContainer::getReport()
     return report;
 }
 
-void ModulePackageContainer::setModuleDefaults(const std::map<std::string, std::string> &defaultStreams)
-{
-    pImpl->moduleDefaults = defaultStreams;
-}
-
 void ModulePackageContainer::resolveActiveModulePackages()
 {
     auto defaultStreams = pImpl->moduleDefaults;
@@ -828,7 +886,7 @@ static inline void parseConfig(libdnf::ConfigParser &parser, const std::string &
 
     /* FIXME: init empty config or throw error? */
     if (!isConfigValid(data[name], name)) {
-        //logger->debug("Invalid config file for " + name);
+        logger->debug("Invalid config file for " + name);
         initConfig(data[name], name);
     }
 
