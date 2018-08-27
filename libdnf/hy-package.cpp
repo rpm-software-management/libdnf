@@ -977,11 +977,11 @@ dnf_package_get_changelogs(DnfPackage *pkg)
     dataiterator_free(&di);
     GPtrArray *reversed = g_ptr_array_new();
     if (changelogslist->len) {
-        for (unsigned int i=changelogslist->len; i > 0; --i) {
-            g_ptr_array_add(reversed, g_ptr_array_index(changelogslist, i-1));
+        for (int i=changelogslist->len - 1; i >= 0; --i) {
+            g_ptr_array_add(reversed, g_ptr_array_index(changelogslist, i));
         }
     }
-    g_ptr_array_free(changelogslist, FALSE);
+    g_ptr_array_free(changelogslist, TRUE);
     return reversed;
 }
 
