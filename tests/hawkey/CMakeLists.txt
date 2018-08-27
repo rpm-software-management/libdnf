@@ -23,6 +23,8 @@ ADD_LIBRARY(testshared STATIC testshared.cpp)
 SET_TARGET_PROPERTIES(testshared PROPERTIES COMPILE_FLAGS -fPIC)
 
 ADD_EXECUTABLE(test_hawkey_main ${hawkeytest_SRCS})
+# The binary links in testshared which was built with -fPIC
+SET_TARGET_PROPERTIES(test_hawkey_main PROPERTIES COMPILE_FLAGS -fPIC)
 TARGET_LINK_LIBRARIES(test_hawkey_main
     libdnf
     ${CHECK_LIBRARIES}
