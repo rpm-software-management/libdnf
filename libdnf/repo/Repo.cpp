@@ -994,8 +994,9 @@ bool Repo::Impl::loadCache(bool throwExcept)
                 distro_tags.emplace_back(distroTag->cpeid, distroTag->tag);
         }
     }
-
-    revision = yum_repomd->revision;
+    if (auto cRevision = yum_repomd->revision) {
+        revision = cRevision;
+    }
     maxTimestamp = lr_yum_repomd_get_highest_timestamp(yum_repomd, NULL);
 
     // Load timestamp unless explicitly expired
