@@ -28,6 +28,11 @@
 
 #include <modulemd/modulemd.h>
 
+template<>
+struct std::default_delete<ModulemdDefaults> {
+    void operator()(ModulemdDefaults * ptr) noexcept { g_object_unref(ptr); }
+};
+
 class ModuleDefaultsContainer
 {
 public:
@@ -50,7 +55,7 @@ public:
     ~ModuleDefaultsContainer() = default;
 
     void fromString(const std::string &content, int priority);
-
+    std::vector<std::string> getDefaultProfiles(std::string & name, std::string & stream);
     std::string getDefaultStreamFor(std::string moduleName);
     std::map<std::string, std::string> getDefaultStreams();
 
@@ -63,7 +68,7 @@ private:
     void checkAndThrowException(GError *error);
 
     std::shared_ptr<ModulemdPrioritizer> prioritizer;
-    std::map<std::string, std::shared_ptr<ModulemdDefaults>> defaults;
+    std::map<std::string, std::unique_ptr<ModulemdDefaults>> defaults;
     void reportFailures(const GPtrArray *failures) const;
 };
 
