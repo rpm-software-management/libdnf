@@ -72,6 +72,9 @@ public:
     ~ModulePackageContainer();
 
     void add(const std::string &fileContent);
+    void add(DnfSack * sack);
+    void addDefaultsFromDisk();
+    void moduleDefaultsResolve();
     Id addPlatformPackage(const std::string &osReleasePath, const char *  platformModule);
     void createConflictsBetweenStreams();
     ModulePackagePtr getModulePackage(Id id);
@@ -188,7 +191,6 @@ public:
     std::vector<ModulePackagePtr> query(std::string subject);
     std::vector<ModulePackagePtr> query(std::string name, std::string stream,
         std::string version, std::string context, std::string arch);
-    void setModuleDefaults(const std::map<std::string, std::string> &defaultStreams);
     void resolveActiveModulePackages();
     bool isModuleActive(Id id);
 
