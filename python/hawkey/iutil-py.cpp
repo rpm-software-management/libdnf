@@ -140,18 +140,18 @@ changelogslist_to_pylist(const GPtrArray *changelogslist)
 
     for (unsigned int i = 0; i < changelogslist->len; ++i) {
         auto citem = static_cast<libdnf::Changelog *>(g_ptr_array_index(changelogslist, i));
-        PyObject *d = PyDict_New();
+        UniquePtrPyObject d(PyDict_New());
         if (!d)
             return NULL;
-        if (PyDict_SetItemString(d, "author", PyUnicode_FromString(citem->author)) == -1)
+        if (PyDict_SetItemString(d.get(), "author", PyUnicode_FromString(citem->author)) == -1)
             return NULL;
-        if (PyDict_SetItemString(d, "text", PyUnicode_FromString(citem->text)) == -1)
+        if (PyDict_SetItemString(d.get(), "text", PyUnicode_FromString(citem->text)) == -1)
             return NULL;
         struct tm ts;
         ts = *localtime(&citem->timestamp);
-        if (PyDict_SetItemString(d, "timestamp", PyDate_FromDate(ts.tm_year+1900, ts.tm_mon+1, ts.tm_mday)) == -1)
+        if (PyDict_SetItemString(d.get(), "timestamp", PyDate_FromDate(ts.tm_year+1900, ts.tm_mon+1, ts.tm_mday)) == -1)
             return NULL;
-        if (PyList_Append(list.get(), d) == -1)
+        if (PyList_Append(list.get(), d.release()) == -1)
             return NULL;
     }
 
