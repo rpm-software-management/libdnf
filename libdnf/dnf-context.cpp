@@ -1661,7 +1661,8 @@ dnf_context_setup(DnfContext *context,
     g_autofree char *rpmdb_path = NULL;
     g_autoptr(GFile) file_rpmdb = NULL;
 
-    dnf_context_plugin_hook(context, PLUGIN_HOOK_ID_CONTEXT_PRE_CONF, nullptr, nullptr);
+    if (!dnf_context_plugin_hook(context, PLUGIN_HOOK_ID_CONTEXT_PRE_CONF, nullptr, nullptr))
+        return FALSE;
 
     /* check essential things are set */
     if (priv->solv_dir == NULL) {
@@ -1764,7 +1765,8 @@ dnf_context_setup(DnfContext *context,
     if (priv->repos == NULL)
         return FALSE;
 
-    dnf_context_plugin_hook(context, PLUGIN_HOOK_ID_CONTEXT_CONF, nullptr, nullptr);
+    if (!dnf_context_plugin_hook(context, PLUGIN_HOOK_ID_CONTEXT_CONF, nullptr, nullptr))
+        return FALSE;
 
     return TRUE;
 }
