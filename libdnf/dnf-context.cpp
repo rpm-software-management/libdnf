@@ -30,6 +30,7 @@
  * to use objects from librepo, rpm or hawkey directly.
  */
 
+#include <memory>
 #include <string>
 #include <vector>
 #include <gio/gio.h>
@@ -40,6 +41,11 @@
 #include <librepo/librepo.h>
 #ifdef RHSM_SUPPORT
 #include <rhsm/rhsm.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #endif
 
 #include "dnf-lock.h"
@@ -1582,8 +1588,35 @@ dnf_context_setup_enrollments(DnfContext *context, GError **error)
                                                     NULL);
     g_autoptr(GKeyFile) repofile = rhsm_utils_yum_repo_from_context (rhsm_ctx);
 
-    if (!g_key_file_save_to_file (repofile, repofname, error))
-        return FALSE;
+    bool sameContent = false;
+    do {
+        int fd;
+        if ((fd = open(repofname, O_RDONLY)) == -1)
+            break;
+        gsize length;
+        g_autofree gchar *data = g_key_file_to_data(repofile, &length, NULL);
+        auto fileLen = lseek(fd, 0, SEEK_END);
+        if (fileLen != static_cast<long>(length)) {
+            close(fd);
+            break;
+        }
+        if (fileLen > 0) {
+            std::unique_ptr<char[]> buf(new char[fileLen]);
+            lseek(fd, 0, SEEK_SET);
+            auto readed = read(fd, buf.get(), fileLen);
+            close(fd);
+            if (readed != fileLen || memcmp(buf.get(), data, readed) != 0)
+                break;
+        } else {
+            close(fd);
+        }
+        sameContent = true;
+    } while (false);
+
+    if (!sameContent) {
+        if (!g_key_file_save_to_file(repofile, repofname, error))
+            return FALSE;
+    }
 #endif
 
     priv->enrollment_valid = TRUE;
