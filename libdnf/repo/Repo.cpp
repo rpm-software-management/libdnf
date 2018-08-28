@@ -232,6 +232,7 @@ public:
     std::string prestoFn;
     std::string updateinfoFn;
     std::string compsFn;
+    std::string otherFn;
 #ifdef MODULEMD
     std::string modulesFn;
 #endif
@@ -478,16 +479,17 @@ int Repo::getExpiresIn() const { return pImpl->getExpiresIn(); }
 std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
 {
     std::unique_ptr<LrHandle> h(lr_handle_init());
+    std::vector<const char *> dlist = {"primary", "filelists", "prestodelta", "group_gz", "updateinfo"};
+
 #ifdef MODULEMD
-    const char *dlist[] = {"primary", "filelists", "prestodelta", "group_gz",
-                           "updateinfo", "modules", NULL};
-#else
-    const char *dlist[] = {"primary", "filelists", "prestodelta", "group_gz",
-                           "updateinfo", NULL};
+    dlist.push_back("modules");
 #endif
+    //TODO conditionalize according config option extra_metadata
+    dlist.push_back("other");
+    dlist.push_back(NULL);
     handleSetOpt(h.get(), LRO_REPOTYPE, LR_YUMREPO);
     handleSetOpt(h.get(), LRO_USERAGENT, "libdnf/1.0"); //FIXME
-    handleSetOpt(h.get(), LRO_YUMDLIST, dlist);
+    handleSetOpt(h.get(), LRO_YUMDLIST, &dlist[0]);
     handleSetOpt(h.get(), LRO_INTERRUPTIBLE, 1L);
     handleSetOpt(h.get(), LRO_GPGCHECK, conf->repo_gpgcheck().getValue());
     handleSetOpt(h.get(), LRO_MAXMIRRORTRIES, static_cast<long>(maxMirrorTries));
@@ -977,6 +979,8 @@ bool Repo::Impl::loadCache(bool throwExcept)
     prestoFn = tmp ? tmp : "";
     tmp = lr_yum_repo_path(yum_repo, "updateinfo");
     updateinfoFn = tmp ? tmp : "";
+    tmp = lr_yum_repo_path(yum_repo, "other");
+    otherFn = tmp ? tmp : "";
     tmp = lr_yum_repo_path(yum_repo, "group_gz");
     if (!tmp)
         tmp = lr_yum_repo_path(yum_repo, "group");
@@ -1341,6 +1345,10 @@ void Repo::initHyRepo(HyRepo hrepo)
         logger->debug(tfm::format(_("not found filelist for: %s"), pImpl->conf->name().getValue()));
     else
         hy_repo_set_string(hrepo, HY_REPO_FILELISTS_FN, pImpl->filelistsFn.c_str());
+    if (pImpl->otherFn.empty())
+        logger->debug(tfm::format(_("not found other for: %s"), pImpl->conf->name().getValue()));
+    else
+        hy_repo_set_string(hrepo, HY_REPO_OTHER_FN, pImpl->otherFn.c_str());
 #ifdef MODULEMD
     if (pImpl->modulesFn.empty())
         logger->debug(tfm::format(_("not found modules for: %s"), pImpl->conf->name().getValue()));
