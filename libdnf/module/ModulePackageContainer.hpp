@@ -178,6 +178,11 @@ public:
      * @brief list of name:[profiles] for module profiles being added
      */
     std::map<std::string, std::vector<std::string>> getInstalledProfiles();
+
+    /**
+     * @brief list of installed profiles for module name
+     */
+    std::vector<std::string> getInstalledProfiles(std::string moduleName);
     /**
      * @brief list of name:[profiles] for module profiles being removed
      */
