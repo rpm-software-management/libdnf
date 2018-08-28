@@ -1373,7 +1373,8 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
         goto out;
     }
 
-    dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION, nullptr, nullptr);
+    if (!dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION, nullptr, nullptr))
+        goto out;
 
     // FIXME get commandline and rpmdb version
     swdb->beginTransaction(_get_current_time(), "", "", priv->uid);
@@ -1418,7 +1419,8 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     // FIXME get rpmdb version
     swdb->endTransaction(_get_current_time(), "", libdnf::TransactionState::DONE);
 
-    dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_TRANSACTION, nullptr, nullptr);
+    if (!dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_TRANSACTION, nullptr, nullptr))
+        goto out;
 
     /* this section done */
     ret = dnf_state_done(state, error);
