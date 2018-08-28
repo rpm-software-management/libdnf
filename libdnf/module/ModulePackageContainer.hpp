@@ -140,6 +140,7 @@ public:
     bool isDisabled(const std::string &name);
     bool isDisabled(const ModulePackagePtr &module);
     ModuleState getModuleState(const std::string & name);
+    std::set<std::string> getInstalledPkgNames();
 
     std::string getReport();
 

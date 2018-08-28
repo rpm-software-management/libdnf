@@ -7,6 +7,7 @@
 %include <exception.i>
 %include <std_map.i>
 %include <std_pair.i>
+%include <std_set.i>
 %include <std_shared_ptr.i>
 %include <std_string.i>
 %include <std_vector.i>
@@ -38,7 +39,7 @@ typedef int Id;
     #include "libdnf/module/ModulePackageContainer.hpp"
     #include "libdnf/module/modulemd/ModuleProfile.hpp"
 %}
-
+%template(SetString) std::set<std::string>;
 %template(VectorModulePackagePtr) std::vector<ModulePackagePtr>;
 %template(VectorModuleProfile) std::vector<ModuleProfile>;
 %template(MapStringString) std::map<std::string, std::string>;
