@@ -41,6 +41,7 @@ extern "C" {
 #include "bgettext/bgettext-lib.h"
 #include "tinyformat/tinyformat.hpp"
 #include "modulemd/ModuleDefaultsContainer.hpp"
+#include "modulemd/ModuleProfile.hpp"
 
 static auto logger(libdnf::Log::getLogger());
 
@@ -128,6 +129,7 @@ public:
     std::map<std::string, std::vector<std::string>> getInstalledProfiles();
     std::map<std::string, std::vector<std::string>> getRemovedProfiles();
 
+    std::vector<std::string> getAllModuleNames();
     bool changeStream(const std::string &name, const std::string &stream);
     bool addProfile(const std::string &name, const std::string &profile);
     bool removeProfile(const std::string &name, const std::string &profile);
@@ -570,6 +572,62 @@ ModulePackageContainer::getModuleState(const std::string& name)
     return pImpl->persistor->getState(name);
 }
 
+std::set<std::string> ModulePackageContainer::getInstalledPkgNames()
+{
+    std::map<std::string, std::vector<std::shared_ptr<ModulePackage>>> moduleMap;
+    auto moduleNames = pImpl->persistor->getAllModuleNames();
+    std::set<std::string> pkgNames;
+    for (auto & moduleName: moduleNames) {
+        auto stream = getEnabledStream(moduleName);
+        if (stream.empty()) {
+            continue;
+        }
+        auto profilesInstalled = getInstalledProfiles(moduleName);
+        if (profilesInstalled.empty()) {
+            continue;
+        }
+        std::string nameStream(moduleName);
+        nameStream += ":";
+        nameStream += stream;
+        auto modules = query(nameStream);
+        std::shared_ptr<ModulePackage> latest;
+        for (auto & module: modules) {
+            if (isModuleActive(module->getId())) {
+                if (!latest) {
+                    latest = module;
+                } else {
+                    if (module->getVersion() > latest->getVersion()) {
+                        latest = module;
+                    }
+                }
+            }
+        }
+        if (!latest) {
+            for (auto & module: modules) {
+                if (!latest) {
+                    latest = module;
+                } else {
+                    if (module->getVersion() > latest->getVersion()) {
+                        latest = module;
+                    }
+                }
+            }
+        }
+        if (!latest) {
+            continue;
+        }
+        for (auto & profile: profilesInstalled) {
+            auto profiles = latest->getProfiles(profile);
+            for (auto & profile: profiles) {
+                auto pkgs = profile.getContent();
+                for (auto pkg: pkgs) {
+                    pkgNames.insert(pkg);
+                }
+            }
+        }
+    }
+    return pkgNames;
+}
 
 std::string
 ModulePackageContainer::getReport()
@@ -966,6 +1024,16 @@ void ModulePackageContainer::Impl::ModulePersistor::reset(const std::string & na
     entry.second.state = fromString(data[name]["state"]);
     libdnf::OptionStringList slist{std::vector<std::string>()};
     entry.second.profiles = slist.fromString(data[name]["profiles"]);
+}
+
+std::vector<std::string> ModulePackageContainer::Impl::ModulePersistor::getAllModuleNames()
+{
+    std::vector<std::string> nameOutput;
+    nameOutput.reserve(configs.size());
+    for (auto & item: configs) {
+        nameOutput.push_back(item.first);
+    }
+    return nameOutput;
 }
 
 void ModulePackageContainer::Impl::ModulePersistor::save(const std::string &installRoot, const std::string &modulesPath)
