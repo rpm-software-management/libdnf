@@ -760,6 +760,11 @@ std::map<std::string, std::vector<std::string>> ModulePackageContainer::getInsta
     return pImpl->persistor->getInstalledProfiles();
 }
 
+std::vector<std::string> ModulePackageContainer::getInstalledProfiles(std::string moduleName)
+{
+    return pImpl->persistor->getProfiles(moduleName);
+}
+
 std::map<std::string, std::vector<std::string>> ModulePackageContainer::getRemovedProfiles()
 {
     return pImpl->persistor->getRemovedProfiles();
