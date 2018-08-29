@@ -240,6 +240,7 @@ public:
     std::vector<std::pair<std::string, std::string>> distro_tags;
     unsigned char checksum[CHKSUM_BYTES];
     bool useIncludes;
+    bool loadMetadataOther;
     std::map<std::string, std::string> substitutions;
 
     std::unique_ptr<RepoCB> callbacks;
@@ -371,7 +372,7 @@ static std::string formatUserPassString(const std::string & user, const std::str
 }
 
 Repo::Impl::Impl(const std::string & id, std::unique_ptr<ConfigRepo> && conf)
-: id(id), conf(std::move(conf)), timestamp(-1)
+: id(id), conf(std::move(conf)), timestamp(-1), loadMetadataOther(false)
 , syncStrategy(SyncStrategy::TRY_CACHE), expired(false) {}
 
 Repo::Impl::~Impl()
@@ -461,6 +462,8 @@ bool Repo::load() { return pImpl->load(); }
 bool Repo::loadCache(bool throwExcept) { return pImpl->loadCache(throwExcept); }
 bool Repo::getUseIncludes() const { return pImpl->useIncludes; }
 void Repo::setUseIncludes(bool enabled) { pImpl->useIncludes = enabled; }
+bool Repo::getLoadMetadataOther() const { return pImpl->loadMetadataOther; }
+void Repo::setLoadMetadataOther(bool value) { pImpl->loadMetadataOther = value; }
 int Repo::getCost() const { return pImpl->conf->cost().getValue(); }
 int Repo::getPriority() const { return pImpl->conf->priority().getValue(); }
 std::string Repo::getCompsFn() { return pImpl->compsFn; }
@@ -482,8 +485,8 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
 #ifdef MODULEMD
     dlist.push_back("modules");
 #endif
-    for (auto &mdname : conf->_additional_metadata().getValue()) {
-        dlist.push_back(mdname.c_str());
+    if (loadMetadataOther) {
+        dlist.push_back("other");
     }
     dlist.push_back(NULL);
     handleSetOpt(h.get(), LRO_REPOTYPE, LR_YUMREPO);

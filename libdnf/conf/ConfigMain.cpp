@@ -506,9 +506,6 @@ class ConfigMain::Impl {
 
     OptionNumber<std::uint32_t> deltarpm_percentage{75};
     OptionBinding deltaRpmPercentageBinding{owner, deltarpm_percentage, "deltarpm_percentage"};
-
-    OptionStringList _additional_metadata{std::vector<std::string>{}};
-    OptionBinding extraMetadataBinding{owner, _additional_metadata, "_additional_metadata"};
 };
 
 ConfigMain::ConfigMain() { pImpl = std::unique_ptr<Impl>(new Impl(*this)); }
@@ -609,6 +606,5 @@ OptionString & ConfigMain::sslclientcert() { return pImpl->sslclientcert; }
 OptionString & ConfigMain::sslclientkey() { return pImpl->sslclientkey; }
 OptionBool & ConfigMain::deltarpm() { return pImpl->deltarpm; }
 OptionNumber<std::uint32_t> & ConfigMain::deltarpm_percentage() { return pImpl->deltarpm_percentage; }
-OptionStringList & ConfigMain::_additional_metadata() { return pImpl->_additional_metadata; }
 
 }

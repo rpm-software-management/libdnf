@@ -84,7 +84,6 @@ public:
     OptionChild<OptionBool> & deltarpm();
     OptionChild<OptionNumber<std::uint32_t> > & deltarpm_percentage();
     OptionBool & skip_if_unavailable();
-    OptionChild<OptionStringList> & _additional_metadata();
     // option recognized by other tools, e.g. gnome-software, but unused in dnf
     OptionString & enabled_metadata();
     // yum compatibility options
