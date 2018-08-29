@@ -484,7 +484,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
 #ifdef MODULEMD
     dlist.push_back("modules");
 #endif
-    for (auto &mdname : conf->extra_metadata().getValue()) {
+    for (auto &mdname : conf->_additional_metadata().getValue()) {
         dlist.push_back(mdname.c_str());
     }
     dlist.push_back(NULL);
