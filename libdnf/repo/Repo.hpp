@@ -154,6 +154,8 @@ public:
     void downloadMetadata(const std::string & destdir);
     bool getUseIncludes() const;
     void setUseIncludes(bool enabled);
+    bool getLoadMetadataOther() const;
+    void setLoadMetadataOther(bool value);
     int getCost() const;
     int getPriority() const;
     std::string getCompsFn();  // this is temporarily made public for DNF compatibility
