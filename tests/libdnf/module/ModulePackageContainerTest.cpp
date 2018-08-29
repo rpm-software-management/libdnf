@@ -48,8 +48,8 @@ void ModulePackageContainerTest::testEnabledModules()
 
 void ModulePackageContainerTest::testDisableModules()
 {
-    modules->disable("httpd", "2.4");
-    modules->disable("base-runtime", "f26");
+    modules->disable("httpd");
+    modules->disable("base-runtime");
 
     for (const auto &it : modules->getDisabledStreams()) {
         CPPUNIT_ASSERT(it.first == "httpd" || it.first == "base-runtime");
@@ -87,8 +87,8 @@ void ModulePackageContainerTest::testEnableModules()
 
 void ModulePackageContainerTest::testRollback()
 {
-    modules->disable("httpd", "2.4");
-    modules->disable("base-runtime", "f26");
+    modules->disable("httpd");
+    modules->disable("base-runtime");
 
     CPPUNIT_ASSERT(!modules->isEnabled("httpd", "2.4"));
     CPPUNIT_ASSERT(!modules->isEnabled("base-runtime", "f26"));
