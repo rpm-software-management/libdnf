@@ -141,6 +141,7 @@ public:
 
 private:
     friend class Impl;
+    friend struct ModulePackageContainer;
     struct Config {
         std::string stream;
         std::vector<std::string> profiles;
@@ -388,39 +389,31 @@ ModulePackageContainer::enable(const ModulePackagePtr &module)
 /**
  * @brief Mark module as not part of an enabled stream.
  */
-void ModulePackageContainer::disable(const std::string &name, const std::string &stream)
+void ModulePackageContainer::disable(const std::string & name)
 {
-    for (const auto &iter : pImpl->modules) {
-        auto modulePackage = iter.second;
-        if (modulePackage->getName() == name && modulePackage->getStream() == stream) {
-            disable(modulePackage);
-        }
-    }
+    pImpl->persistor->changeState(name, ModuleState::DISABLED);
+    pImpl->persistor->changeStream(name, "");
 }
 
 void ModulePackageContainer::disable(const ModulePackagePtr &module)
 {
-    pImpl->persistor->changeState(module->getName(), ModuleState::DISABLED);
-    pImpl->persistor->changeStream(module->getName(), "");
+    disable(module->getName());
 }
 
 /**
  * @brief Reset module state so it's no longer enabled or disabled.
  */
-void ModulePackageContainer::reset(const std::string &name)
+void ModulePackageContainer::reset(const std::string & name)
 {
-    for (const auto &iter : pImpl->modules) {
-        auto modulePackage = iter.second;
-        if (modulePackage->getName() == name) {
-            reset(modulePackage);
-        }
-    }
+    pImpl->persistor->changeState(name, ModuleState::UNKNOWN);
+    pImpl->persistor->changeStream(name, "");
+    auto & profiles = pImpl->persistor->getEntry(name).second.profiles;
+    profiles.clear();
 }
 
 void ModulePackageContainer::reset(const ModulePackagePtr &module)
 {
-    pImpl->persistor->changeState(module->getName(), ModuleState::UNKNOWN);
-    pImpl->persistor->changeStream(module->getName(), "");
+    reset(module->getName());
 }
 
 /**

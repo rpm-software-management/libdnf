@@ -104,7 +104,7 @@ public:
     /**
      * @brief unmark module 'name' from any streams
      */
-    void disable(const std::string &name, const std::string &stream);
+    void disable(const std::string & name);
     void disable(const ModulePackagePtr &module);
     /**
      * @brief Reset module state so it's no longer enabled or disabled.
