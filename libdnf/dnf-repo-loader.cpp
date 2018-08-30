@@ -399,6 +399,9 @@ dnf_repo_loader_refresh(DnfRepoLoader *self, GError **error)
     const gchar *repo_path;
     g_autoptr(GDir) dir = NULL;
 
+    if (!dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_PRE_REPOS_RELOAD, nullptr, nullptr))
+        return FALSE;
+
     /* no longer loaded */
     dnf_repo_loader_invalidate(self);
     g_ptr_array_set_size(priv->repos, 0);
