@@ -13,7 +13,8 @@ SET (UTILS_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/logger.cpp
         PARENT_SCOPE)
 
-SET (UTILS_headers
-        ${UTILS_headers}
+SET (UTILS_PUBLIC_HEADERS
         ${CMAKE_CURRENT_SOURCE_DIR}/logger.hpp
-        PARENT_SCOPE)
+    )
+
+INSTALL(FILES ${UTILS_PUBLIC_HEADERS} DESTINATION include/libdnf/utils)
