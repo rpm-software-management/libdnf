@@ -21,7 +21,7 @@
 #ifndef _LIBDNF_LOG_HPP_
 #define _LIBDNF_LOG_HPP_
 
-#include "logger.hpp"
+#include "utils/logger.hpp"
 
 namespace libdnf {
 
