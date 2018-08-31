@@ -62,9 +62,10 @@ static void setSovable(Pool * pool, Solvable *solvable, std::string name,
 ModulePackage::~ModulePackage() = default;
 
 ModulePackage::ModulePackage(DnfSack * moduleSack, Repo * repo,
-    const std::shared_ptr<ModuleMetadata> &metadata)
+    const std::shared_ptr<ModuleMetadata> &metadata,  const std::string & repoID)
         : metadata(metadata)
         , moduleSack(moduleSack)
+        , repoID(repoID)
 {
     Pool * pool = dnf_sack_get_pool(moduleSack);
     id = repo_add_solvable(repo);
@@ -153,6 +154,11 @@ std::string ModulePackage::getNameStreamVersion() const
     std::ostringstream ss;
     ss << getNameStream() << ":" << getVersion();
     return ss.str();
+}
+
+const std::string & ModulePackage::getRepoID() const
+{
+    return repoID;
 }
 
 /**

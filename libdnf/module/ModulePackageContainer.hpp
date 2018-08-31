@@ -71,7 +71,7 @@ public:
     explicit ModulePackageContainer(bool allArch, std::string installRoot, const char * arch);
     ~ModulePackageContainer();
 
-    void add(const std::string &fileContent);
+    void add(const std::string & fileContent, const std::string & repoID);
     void add(DnfSack * sack);
     void addDefaultsFromDisk();
     void moduleDefaultsResolve();

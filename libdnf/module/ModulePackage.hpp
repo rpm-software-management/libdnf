@@ -47,6 +47,7 @@ public:
     std::string getStream() const;
     std::string getNameStream() const;
     std::string getNameStreamVersion() const;
+    const std::string & getRepoID() const;
     std::string getVersion() const;
     std::string getContext() const;
     const char * getArchitecture() const;
@@ -74,7 +75,8 @@ public:
 private:
     friend struct ModulePackageContainer;
 
-    ModulePackage(DnfSack * moduleSack, Repo *repo, const std::shared_ptr<ModuleMetadata> &metadata);
+    ModulePackage(DnfSack * moduleSack, Repo * repo,
+        const std::shared_ptr<ModuleMetadata> &metadata, const std::string & repoID);
 
     static Id createPlatformSolvable(DnfSack * moduleSack, const std::string &osReleasePath,
         const std::string install_root, const char *  platformModule);
@@ -84,6 +86,7 @@ private:
 
     // TODO: remove after inheriting from Package
     DnfSack * moduleSack;
+    std::string repoID;
     Id id;
 };
 
