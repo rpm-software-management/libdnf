@@ -23,6 +23,9 @@ if (NOT HAS_FNM_CASEFOLD)
   message (SEND_ERROR "FNM_CASEFOLD is not available")
 endif ()
 
+# LargeFile Support is required by GPGME on 32bit architectures
+ADD_DEFINITIONS(-D_FILE_OFFSET_BITS=64)
+
 ADD_DEFINITIONS(-DGETTEXT_DOMAIN=\\"libdnf\\")
 ADD_DEFINITIONS(-DG_LOG_DOMAIN=\\"libdnf\\")
 
