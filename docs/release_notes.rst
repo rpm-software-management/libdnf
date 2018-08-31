@@ -20,6 +20,16 @@
 ######################
 
 ====================
+0.18.0 Release Notes
+====================
+- [repo] Implement GPG key import
+- [repo] Introduce Repo class replacing dnf.repo.Repo
+- [context] Fix memory corruption in dnf_context
+- [rhsm] Fix: RHSM don't write .repo file with same content (RhBug:1600452)
+- [module] Create /etc/dnf/modules.d if it doesn't exist.
+- [module] Forward C++ exceptions to bindings.
+
+====================
 0.17.2 Release Notes
 ====================
 - [sqlite3] Change db locking mode to DEFAULT.
