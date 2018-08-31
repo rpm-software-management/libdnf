@@ -203,7 +203,7 @@ ModulePackageContainer::add(DnfSack * sack)
             continue;
         }
         std::string yamlContent = getFileContent(modules_fn);
-        add(yamlContent);
+        add(yamlContent, hy_repo_get_string(hyRepo, HY_REPO_NAME));
         // update defaults from repo
         try {
             pImpl->defaultConteiner.fromString(yamlContent, 0);
@@ -236,7 +236,7 @@ void ModulePackageContainer::moduleDefaultsResolve()
 }
 
 void
-ModulePackageContainer::add(const std::string &fileContent)
+ModulePackageContainer::add(const std::string &fileContent, const std::string & repoID)
 {
     Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
     auto metadata = ModuleMetadata::metadataFromString(fileContent);
@@ -248,7 +248,7 @@ ModulePackageContainer::add(const std::string &fileContent)
             g_autofree gchar *path = g_build_filename(pImpl->installRoot.c_str(),
                                                       "/etc/dnf/modules.d", NULL);
             for (auto data : metadata) {
-                ModulePackagePtr modulePackage(new ModulePackage(pImpl->moduleSack, r, data));
+                ModulePackagePtr modulePackage(new ModulePackage(pImpl->moduleSack, r, data, repoID));
                 pImpl->modules.insert(std::make_pair(modulePackage->getId(), modulePackage));
                 pImpl->persistor->insert(modulePackage->getName(), path);
             }
