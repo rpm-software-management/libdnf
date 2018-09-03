@@ -8,6 +8,7 @@
 class RpmItemTest : public CppUnit::TestCase {
     CPPUNIT_TEST_SUITE(RpmItemTest);
     CPPUNIT_TEST(testCreate);
+    CPPUNIT_TEST(testCreateDuplicates);
     CPPUNIT_TEST(testGetTransactionItems);
     CPPUNIT_TEST_SUITE_END();
 
@@ -16,6 +17,7 @@ public:
     void tearDown() override;
 
     void testCreate();
+    void testCreateDuplicates();
     void testGetTransactionItems();
 
 private:
