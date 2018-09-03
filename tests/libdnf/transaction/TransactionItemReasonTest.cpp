@@ -315,3 +315,19 @@ TransactionItemReasonTest::testRemovedPackage()
         TransactionItemReason::GROUP,
         static_cast< TransactionItemReason >(swdb.resolveRPMTransactionItemReason("bash", "", -1)));
 }
+
+void
+TransactionItemReasonTest::testCompareReasons()
+{
+    CPPUNIT_ASSERT(TransactionItemReason::USER == TransactionItemReason::USER);
+    CPPUNIT_ASSERT(TransactionItemReason::USER <= TransactionItemReason::USER);
+    CPPUNIT_ASSERT(TransactionItemReason::USER >= TransactionItemReason::USER);
+
+    CPPUNIT_ASSERT(TransactionItemReason::USER != TransactionItemReason::GROUP);
+    CPPUNIT_ASSERT(TransactionItemReason::USER > TransactionItemReason::GROUP);
+    CPPUNIT_ASSERT(TransactionItemReason::USER >= TransactionItemReason::GROUP);
+
+    CPPUNIT_ASSERT(TransactionItemReason::GROUP != TransactionItemReason::USER);
+    CPPUNIT_ASSERT(TransactionItemReason::GROUP < TransactionItemReason::USER);
+    CPPUNIT_ASSERT(TransactionItemReason::GROUP <= TransactionItemReason::USER);
+}
