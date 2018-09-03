@@ -151,6 +151,7 @@ public:
     */
     bool load();
     bool loadCache(bool throwExcept);
+    void downloadMetadata(const std::string & destdir);
     bool getUseIncludes() const;
     void setUseIncludes(bool enabled);
     int getCost() const;

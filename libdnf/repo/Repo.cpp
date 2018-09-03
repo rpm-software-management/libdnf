@@ -200,8 +200,9 @@ public:
 
     bool load();
     bool loadCache(bool throwExcept);
+    void downloadMetadata(const std::string & destdir);
     bool isInSync();
-    void fetch();
+    void fetch(const std::string & destdir, std::unique_ptr<LrHandle> && h);
     std::string getCachedir() const;
     int getAge() const;
     void expire();
@@ -454,6 +455,7 @@ bool Repo::isLocal() const
 
 bool Repo::load() { return pImpl->load(); }
 bool Repo::loadCache(bool throwExcept) { return pImpl->loadCache(throwExcept); }
+void Repo::downloadMetadata(const std::string & destdir) { pImpl->downloadMetadata(destdir); }
 bool Repo::getUseIncludes() const { return pImpl->useIncludes; }
 void Repo::setUseIncludes(bool enabled) { pImpl->useIncludes = enabled; }
 int Repo::getCost() const { return pImpl->conf->cost().getValue(); }
@@ -936,7 +938,7 @@ std::unique_ptr<LrResult> Repo::Impl::lrHandlePerform(LrHandle * handle, const s
         }
         badGPG = true;
         importRepoKeys();
-        dnf_remove_recursive((destDirectory + "/repodata").c_str(), NULL);
+        dnf_remove_recursive((destDirectory + "/" + METADATA_RELATIVE_DIR).c_str(), NULL);
     } while (true);
 
     return result;
@@ -1111,16 +1113,17 @@ bool Repo::Impl::isInSync()
     return isRepomdInSync();
 }
 
-void Repo::Impl::fetch()
+
+
+void Repo::Impl::fetch(const std::string & destdir, std::unique_ptr<LrHandle> && h)
 {
-    const auto cacheDir = getCachedir();
-    auto repodir = cacheDir + "/repodata";
-    if (g_mkdir_with_parents(cacheDir.c_str(), 0755) == -1) {
+    auto repodir = destdir + "/" + METADATA_RELATIVE_DIR;
+    if (g_mkdir_with_parents(destdir.c_str(), 0755) == -1) {
         const char * errTxt = strerror(errno);
-        throw std::runtime_error(tfm::format(_("Cannot create repo cache directory \"%s\": %s"),
-                                             cacheDir, errTxt));
+        throw std::runtime_error(tfm::format(_("Cannot create repo destination directory \"%s\": %s"),
+                                             destdir, errTxt));
     }
-    auto tmpdir = cacheDir + "/tmpdir.XXXXXX";
+    auto tmpdir = destdir + "/tmpdir.XXXXXX";
     if (!mkdtemp(&tmpdir.front())) {
         const char * errTxt = strerror(errno);
         throw std::runtime_error(tfm::format(_("Cannot create repo temporary directory \"%s\": %s"),
@@ -1129,9 +1132,9 @@ void Repo::Impl::fetch()
     Finalizer tmpDirRemover([&tmpdir](){
         dnf_remove_recursive(tmpdir.c_str(), NULL);
     });
-    auto tmprepodir = tmpdir + "/repodata";
+    auto tmprepodir = tmpdir + "/" + METADATA_RELATIVE_DIR;
 
-    std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir.c_str()));
+    handleSetOpt(h.get(), LRO_DESTDIR, tmpdir.c_str());
     auto r = lrHandlePerform(h.get(), tmpdir, conf->repo_gpgcheck().getValue());
 
     dnf_remove_recursive(repodir.c_str(), NULL);
@@ -1145,8 +1148,13 @@ void Repo::Impl::fetch()
         throw std::runtime_error(tfm::format(_("Cannot rename directory \"%s\" to \"%s\": %s"),
                                              tmprepodir, repodir, errTxt));
     }
+}
 
-    timestamp = -1;
+void Repo::Impl::downloadMetadata(const std::string & destdir)
+{
+    std::unique_ptr<LrHandle> h(lrHandleInitRemote(nullptr));
+    handleSetOpt(h.get(), LRO_YUMDLIST, LR_RPMMD_FULL);
+    fetch(destdir, std::move(h));
 }
 
 bool Repo::Impl::load()
@@ -1175,7 +1183,9 @@ bool Repo::Impl::load()
         }
 
         logger->debug(tfm::format(_("repo: downloading from remote: %s"), id));
-        fetch();
+        const auto cacheDir = getCachedir();
+        fetch(cacheDir, lrHandleInitRemote(nullptr));
+        timestamp = -1;
         loadCache(true);
     } catch (const LrExceptionWithSourceUrl & e) {
         logger->debug(tfm::format(_("Cannot download '%s': %s."), e.getSourceUrl(), e.what()));
