@@ -140,6 +140,7 @@ HyGoal           dnf_context_get_goal                   (DnfContext     *context
 #endif
 DnfState*        dnf_context_get_state                  (DnfContext     *context);
 const char *     dnf_context_get_user_agent             (DnfContext     *context);
+const char *     dnf_context_get_plugins_dir            (DnfContext     *context);
 
 /* setters */
 void             dnf_context_set_repo_dir               (DnfContext     *context,
@@ -186,6 +187,8 @@ void             dnf_context_set_http_proxy             (DnfContext     *context
                                                          const gchar    *proxyurl);
 void             dnf_context_set_user_agent             (DnfContext     *context,
                                                          const gchar    *user_agent);
+void             dnf_context_set_plugins_dir            (DnfContext     *context,
+                                                         const char     *plugins_dir);
 
 /* object methods */
 gboolean         dnf_context_setup                      (DnfContext     *context,
