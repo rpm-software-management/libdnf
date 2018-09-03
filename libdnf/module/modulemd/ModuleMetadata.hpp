@@ -39,11 +39,10 @@ public:
 public:
     explicit ModuleMetadata(const std::shared_ptr<ModulemdModule> &modulemd);
     ~ModuleMetadata();
-
-    std::string getName() const;
-    std::string getStream() const;
+    const char * getName() const;
+    const char * getStream() const;
     long long getVersion() const;
-    std::string getContext() const;
+    const char * getContext() const;
     const char * getArchitecture() const;
     std::string getDescription() const;
     std::string getSummary() const;

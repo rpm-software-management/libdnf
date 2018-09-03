@@ -40,7 +40,8 @@ public:
         UNKNOWN,
         ENABLED,
         DISABLED,
-        DEFAULT
+        DEFAULT,
+        INSTALLED
     };
     
     struct Exception : public std::runtime_error
@@ -79,6 +80,8 @@ public:
     void createConflictsBetweenStreams();
     ModulePackagePtr getModulePackage(Id id);
     std::vector<ModulePackagePtr> getModulePackages();
+    std::vector<std::vector<std::vector<ModulePackagePtr>>> getLatestModulesPerRepo(
+        ModuleState moduleFilter, std::vector<ModulePackagePtr> modulePackages);
 
     std::vector<ModulePackagePtr> requiresModuleEnablement(const libdnf::PackageSet & packages);
 
@@ -152,7 +155,7 @@ public:
     /**
      * @brief Get configured default stream for a module
      */
-    const std::string & getDefaultStream(const std::string &name);
+    const std::string & getDefaultStream(const std::string &name) const;
 
     /**
      * @brief get enabled stream for a module
@@ -204,6 +207,7 @@ public:
         std::string version, std::string context, std::string arch);
     void resolveActiveModulePackages();
     bool isModuleActive(Id id);
+    bool isModuleActive(ModulePackagePtr modulePackage);
 
 private:
     class Impl;

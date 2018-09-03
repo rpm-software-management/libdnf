@@ -41,6 +41,7 @@ typedef int Id;
 %}
 %template(SetString) std::set<std::string>;
 %template(VectorModulePackagePtr) std::vector<ModulePackagePtr>;
+%template(VectorVectorVectorModulePackagePtr) std::vector<std::vector<std::vector<ModulePackagePtr>>>;
 %template(VectorModuleProfile) std::vector<ModuleProfile>;
 %template(MapStringString) std::map<std::string, std::string>;
 %template(MapStringPairStringString) std::map<std::string, std::pair<std::string, std::string>>;
