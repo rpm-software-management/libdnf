@@ -123,6 +123,7 @@ typedef struct
     gchar            *user_agent;
     gchar            *arch;
     guint            cache_age;     /*seconds*/
+    gboolean         cacheOnly{false};
     gboolean         check_disk_space;
     gboolean         check_transaction;
     gboolean         only_trusted;
@@ -685,6 +686,23 @@ dnf_context_get_user_agent (DnfContext *context)
 }
 
 /**
+ * dnf_context_get_cache_only:
+ * @context: a #DnfContext instance.
+ *
+ * Gets cache only mode status.
+ *
+ * Returns: %TRUE if cache only mode is enabled
+ *
+ * Since: 0.21.0
+ **/
+gboolean
+dnf_context_get_cache_only(DnfContext * context)
+{
+    auto priv = GET_PRIVATE(context);
+    return priv->cacheOnly;
+}
+
+/**
  * dnf_context_get_check_disk_space:
  * @context: a #DnfContext instance.
  *
@@ -1025,6 +1043,23 @@ dnf_context_set_source_root(DnfContext *context, const gchar *source_root)
     g_free(priv->source_root);
     priv->source_root = g_strdup(source_root);
 }
+
+/**
+ * dnf_context_set_cache_only:
+ * @context: a #DnfContext instance.
+ * @cache_only: %TRUE to use only metadata from cache
+ *
+ * Enables or disables cache only mode.
+ *
+ * Since: 0.21.0
+ **/
+void
+dnf_context_set_cache_only(DnfContext * context, gboolean cache_only)
+{
+    auto priv = GET_PRIVATE(context);
+    priv->cacheOnly = cache_only;
+}
+
 
 /**
  * dnf_context_set_check_disk_space:
