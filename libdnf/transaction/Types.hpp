@@ -21,6 +21,8 @@
 #ifndef LIBDNF_TRANSACTION_TYPES_HPP
 #define LIBDNF_TRANSACTION_TYPES_HPP
 
+#include "TransactionItemReason.hpp"
+
 namespace libdnf {
 
 enum class TransactionState : int {
@@ -33,15 +35,6 @@ enum class TransactionItemState : int {
     UNKNOWN = 0,  // default state, must be changed before save
     DONE = 1,
     ERROR = 2
-};
-
-enum class TransactionItemReason : int {
-    UNKNOWN = 0,
-    DEPENDENCY = 1,
-    USER = 2,
-    CLEAN = 3, // hawkey compatibility
-    WEAK_DEPENDENCY = 4,
-    GROUP = 5
 };
 
 enum class ItemType : int { UNKNOWN = 0, RPM = 1, GROUP = 2, ENVIRONMENT = 3 };

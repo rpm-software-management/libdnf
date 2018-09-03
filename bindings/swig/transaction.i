@@ -76,6 +76,7 @@ typedef libdnf::CompsPackageType CompsPackageType;
     #include "libdnf/transaction/Swdb.hpp"
     #include "libdnf/transaction/Transaction.hpp"
     #include "libdnf/transaction/TransactionItem.hpp"
+    #include "libdnf/transaction/TransactionItemReason.hpp"
     #include "libdnf/transaction/MergedTransaction.hpp"
     #include "libdnf/transaction/Transformer.hpp"
     #include "libdnf/transaction/Types.hpp"
@@ -84,6 +85,7 @@ typedef libdnf::CompsPackageType CompsPackageType;
 
 
 // This include has to be before %template definitions. SWIG is fragile :(
+%include "libdnf/transaction/TransactionItemReason.hpp"
 %include "libdnf/transaction/Types.hpp"
 
 
