@@ -64,6 +64,7 @@
 #include "goal/Goal.hpp"
 #include "plugin/plugin-private.hpp"
 
+#define DEFAULT_PLUGINS_DIRECTORY "/usr/lib64/libdnf/plugins/"  // TODO determine plugins directory
 #define MAX_NATIVE_ARCHES    12
 
 #define RELEASEVER_PROV "system-release(releasever)"
@@ -148,6 +149,7 @@ enum {
     SIGNAL_LAST
 };
 
+static std::string pluginsDir = DEFAULT_PLUGINS_DIRECTORY;
 static guint signals [SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfContext, dnf_context, G_TYPE_OBJECT)
@@ -220,8 +222,10 @@ dnf_context_init(DnfContext *context)
                                                   g_free, g_free);
     priv->user_agent = g_strdup("libdnf/" PACKAGE_VERSION);
 
-    priv->plugins.loadPlugins("/usr/lib64/libdnf/plugins/");  // TODO determine plugins directory
-    priv->plugins.init(PLUGIN_MODE_CONTEXT, context);
+    if (!pluginsDir.empty()) {
+        priv->plugins.loadPlugins(pluginsDir);
+        priv->plugins.init(PLUGIN_MODE_CONTEXT, context);
+    }
 
     /* Initialize some state that used to happen in
      * dnf_context_setup(), because callers like rpm-ostree want
@@ -2283,6 +2287,38 @@ DnfContext *
 dnf_context_new(void)
 {
     return DNF_CONTEXT(g_object_new(DNF_TYPE_CONTEXT, NULL));
+}
+
+/**
+ * dnf_context_get_plugins_dir:
+ * @context: a #DnfContext instance.
+ *
+ * Gets path to plugin directory.
+ *
+ * Returns: (transfer none): the plugins dir
+ *
+ * Since: 0.21.0
+ **/
+const char *
+dnf_context_get_plugins_dir(DnfContext * context)
+{
+    return pluginsDir.c_str();
+}
+
+/**
+ * dnf_context_get_plugins_dir:
+ * @context: a #DnfContext instance.
+ *
+ * Sets path to plugin directory.
+ * To take effect must be called before dnf_context_init().
+ * Empty path disable loading of plugins at all.
+ *
+ * Since: 0.21.0
+ **/
+void
+dnf_context_set_plugins_dir(DnfContext * context, const char * plugins_dir)
+{
+    pluginsDir = plugins_dir ? plugins_dir : "";
 }
 
 bool
