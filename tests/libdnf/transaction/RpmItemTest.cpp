@@ -47,6 +47,37 @@ RpmItemTest::testCreate()
 }
 
 void
+RpmItemTest::testCreateDuplicates()
+{
+    // bash-4.4.12-5.fc26.x86_64
+    auto rpm = std::make_shared< RPMItem >(conn);
+    rpm->setName("bash");
+    rpm->setEpoch(0);
+    rpm->setVersion("4.4.12");
+    rpm->setRelease("5.fc26");
+    rpm->setArch("x86_64");
+
+    libdnf::swdb_private::Transaction trans(conn);
+
+    // add a RPM twice, but with different reasons
+    auto ti1 = trans.addItem(rpm, "base", TransactionItemAction::INSTALL, TransactionItemReason::GROUP);
+    auto ti2 = trans.addItem(rpm, "base", TransactionItemAction::INSTALL, TransactionItemReason::DEPENDENCY);
+    // test that the duplicate wasn't inserted
+    CPPUNIT_ASSERT(trans.getItems().size() == 1);
+    // test that the best reason (from ti1) was used
+    CPPUNIT_ASSERT(ti1->getReason() == TransactionItemReason::GROUP);
+    CPPUNIT_ASSERT(ti2->getReason() == TransactionItemReason::GROUP);
+
+    auto ti3 = trans.addItem(rpm, "base", TransactionItemAction::INSTALL, TransactionItemReason::USER);
+    // test that the duplicate wasn't inserted
+    CPPUNIT_ASSERT(trans.getItems().size() == 1);
+    // test that the best reason (from ti3) was used
+    CPPUNIT_ASSERT(ti1->getReason() == TransactionItemReason::USER);
+    CPPUNIT_ASSERT(ti2->getReason() == TransactionItemReason::USER);
+    CPPUNIT_ASSERT(ti3->getReason() == TransactionItemReason::USER);
+}
+
+void
 RpmItemTest::testGetTransactionItems()
 {
     // performance looks good: 100k records take roughly 3.3s to write, 0.2s to read

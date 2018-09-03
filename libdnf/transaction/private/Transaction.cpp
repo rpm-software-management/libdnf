@@ -156,6 +156,24 @@ swdb_private::Transaction::addItem(std::shared_ptr< Item > item,
                                            TransactionItemAction action,
                                            TransactionItemReason reason)
 {
+    for (auto & i : items) {
+        if (i->getItem()->toStr() != item->toStr()) {
+            continue;
+        }
+        if (i->getRepoid() != repoid) {
+            continue;
+        }
+        if (i->getAction() != action) {
+            continue;
+        }
+        if (reason > i->getReason()) {
+            // use the more significant reason
+            i->setReason(reason);
+        }
+        // don't add duplicates to the list
+        // return an existing transaction item if exists
+        return i;
+    }
     auto trans_item = std::make_shared< TransactionItem >(this);
     trans_item->setItem(item);
     trans_item->setRepoid(repoid);
