@@ -92,6 +92,9 @@ static bool setupEnrollments(PluginHandle *handle)
 
     auto dnfContext = static_cast<DnfContext *>(handle->initData);
 
+    if (dnf_context_get_cache_only(dnfContext))
+        return true;
+
     /* Let's assume that alternative installation roots don't
      * require entitlement.  We only want to do system things if
      * we're actually affecting the system.  A more accurate test
