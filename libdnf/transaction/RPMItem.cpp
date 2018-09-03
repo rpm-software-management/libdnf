@@ -29,14 +29,6 @@
 
 namespace libdnf {
 
-static const std::map< TransactionItemReason, int > reasonPriorities = {
-    {TransactionItemReason::UNKNOWN, 0},
-    {TransactionItemReason::CLEAN, 1},
-    {TransactionItemReason::WEAK_DEPENDENCY, 2},
-    {TransactionItemReason::DEPENDENCY, 3},
-    {TransactionItemReason::GROUP, 4},
-    {TransactionItemReason::USER, 5}};
-
 RPMItem::RPMItem(SQLite3Ptr conn)
   : Item{conn}
 {
@@ -322,7 +314,7 @@ RPMItem::resolveTransactionItemReason(SQLite3Ptr conn,
                     continue;
                 }
                 auto reason = static_cast< TransactionItemReason >(query.get< int64_t >("reason"));
-                if (reasonPriorities.at(reason) > reasonPriorities.at(result)) {
+                if (reason > result) {
                     result = reason;
                 }
             }
