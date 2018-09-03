@@ -68,11 +68,13 @@ void ContextTest::testLoadModules()
     auto modules = ModuleMetadata::metadataFromString(yamlContent);
     for (const auto &module : modules) {
         // default module:stream
-        if (module->getName() == "httpd" && module->getStream() == "2.4")
+        if ((g_strcmp0(module->getName(), "httpd") == 0) &&
+            (g_strcmp0(module->getStream(), "2.4") == 0))
             sackHas(sack, module);
 
         // disabled stream
-        if (module->getName() == "httpd" && module->getStream() == "2.2")
+        if ((g_strcmp0(module->getName(), "httpd") == 0) &&
+            (g_strcmp0(module->getStream(), "2.2") == 0))
             sackHasNot(sack, module);
     }
 

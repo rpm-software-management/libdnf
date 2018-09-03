@@ -43,14 +43,19 @@ public:
     /**
     * @brief Create module provides based on modulemd metadata.
     */
+    const char * getNameCStr() const;
     std::string getName() const;
+    const char * getStreamCStr() const;
     std::string getStream() const;
     std::string getNameStream() const;
     std::string getNameStreamVersion() const;
     const std::string & getRepoID() const;
     std::string getVersion() const;
+    long long getVersionNum() const;
+    const char * getContextCStr() const;
     std::string getContext() const;
-    const char * getArchitecture() const;
+    const char * getArchCStr() const;
+    std::string getArch() const;
     std::string getFullIdentifier() const;
 
     std::string getSummary() const;

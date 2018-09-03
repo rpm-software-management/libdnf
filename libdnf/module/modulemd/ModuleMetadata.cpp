@@ -70,16 +70,14 @@ ModuleMetadata::ModuleMetadata(const std::shared_ptr<ModulemdModule> &modulemd)
 
 ModuleMetadata::~ModuleMetadata() = default;
 
-std::string ModuleMetadata::getName() const
+const char * ModuleMetadata::getName() const
 {
-    const char *name = modulemd_module_peek_name(modulemd.get());
-    return name ? name : "";
+    return modulemd_module_peek_name(modulemd.get());
 }
 
-std::string ModuleMetadata::getStream() const
+const char * ModuleMetadata::getStream() const
 {
-    const char *stream = modulemd_module_peek_stream(modulemd.get());
-    return stream ? stream : "";
+    return modulemd_module_peek_stream(modulemd.get());
 }
 
 long long ModuleMetadata::getVersion() const
@@ -87,10 +85,9 @@ long long ModuleMetadata::getVersion() const
     return (long long) modulemd_module_peek_version(modulemd.get());
 }
 
-std::string ModuleMetadata::getContext() const
+const char * ModuleMetadata::getContext() const
 {
-    const char *context = modulemd_module_peek_context(modulemd.get());
-    return context ? context : "";
+    return modulemd_module_peek_context(modulemd.get());
 }
 
 const char * ModuleMetadata::getArchitecture() const

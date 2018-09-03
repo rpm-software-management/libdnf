@@ -52,6 +52,8 @@ static constexpr auto DEFAULT_STATE = "";
 static const char * ENABLE_MULTIPLE_STREAM_EXCEPTION =
 _("Cannot enable more streams from module '%s' at the same time");
 
+static const std::string EMPTY_RESULT;
+
 static std::string
 stringFormater(std::string imput)
 {
@@ -357,9 +359,13 @@ std::vector<std::string> ModulePackageContainer::getDefaultProfiles(std::string 
     return pImpl->defaultConteiner.getDefaultProfiles(moduleName, moduleStream);
 }
 
-const std::string & ModulePackageContainer::getDefaultStream(const std::string &name)
+const std::string & ModulePackageContainer::getDefaultStream(const std::string &name) const
 {
-    return pImpl->moduleDefaults.at(name);
+    auto it = pImpl->moduleDefaults.find(name);
+    if (it == pImpl->moduleDefaults.end()) {
+        return EMPTY_RESULT;
+    }
+    return it->second;
 }
 
 const std::string & ModulePackageContainer::getEnabledStream(const std::string &name)
@@ -699,6 +705,103 @@ ModulePackageContainer::getReport()
     return report;
 }
 
+static bool
+modulePackageLatestPerRepoSorter(const ModulePackagePtr & first, const ModulePackagePtr & second)
+{
+    if (first->getRepoID() != second->getRepoID())
+        return first->getRepoID() < second->getRepoID();
+    int cmp = g_strcmp0(first->getNameCStr(), second->getNameCStr());
+    if (cmp != 0)
+        return cmp < 0;
+    cmp = g_strcmp0(first->getStreamCStr(), second->getStreamCStr());
+    if (cmp != 0)
+        return cmp < 0;
+    cmp = g_strcmp0(first->getArchCStr(), second->getArchCStr());
+    if (cmp != 0)
+        return cmp < 0;
+    return first->getVersionNum() > second->getVersionNum();
+}
+
+std::vector<std::vector<std::vector<ModulePackagePtr>>>
+ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
+    std::vector<ModulePackagePtr> modulePackages)
+{
+    if (modulePackages.empty()) {
+        return {};
+    }
+    if (moduleFilter == ModuleState::ENABLED) {
+        std::vector<ModulePackagePtr> enabled;
+        for (auto package: modulePackages) {
+            if (isEnabled(package)) {
+                enabled.push_back(package);
+            }
+        }
+        modulePackages = enabled;
+    } else if (moduleFilter == ModuleState::DISABLED) {
+        std::vector<ModulePackagePtr> disabled;
+        for (auto package: modulePackages) {
+            if (isDisabled(package)) {
+                disabled.push_back(package);
+            }
+        }
+        modulePackages = disabled;
+    } else if (moduleFilter == ModuleState::INSTALLED) {
+        std::vector<ModulePackagePtr> installed;
+        for (auto package: modulePackages) {
+            if ((!getInstalledProfiles(package->getName()).empty()) && isEnabled(package)) {
+                installed.push_back(package);
+            }
+        }
+        modulePackages = installed;
+    }
+    if (modulePackages.empty()) {
+        return {};
+    }
+    auto & packageFirst = modulePackages[0];
+    std::vector<std::vector<std::vector<ModulePackagePtr>>> output;
+    std::sort(modulePackages.begin(), modulePackages.end(), modulePackageLatestPerRepoSorter);
+    auto vectorSize = modulePackages.size();
+    output.push_back(std::vector<std::vector<ModulePackagePtr>>{std::vector<ModulePackagePtr> {packageFirst}});
+    int repoIndex = 0;
+    int nameStreamArchIndex = 0;
+    auto repoID = packageFirst->getRepoID();
+    auto name = packageFirst->getNameCStr();
+    auto stream = packageFirst->getStreamCStr();
+    auto arch = packageFirst->getArchCStr();
+    auto version = packageFirst->getVersionNum();
+
+    for (unsigned int index = 1; index < vectorSize; ++index) {
+        auto & package = modulePackages[index];
+        if (repoID != package->getRepoID()) {
+            repoID = package->getRepoID();
+            name = package->getNameCStr();
+            stream = package->getStreamCStr();
+            arch = package->getArchCStr();
+            version = package->getVersionNum();
+            output.push_back(std::vector<std::vector<ModulePackagePtr>>{std::vector<ModulePackagePtr> {package}});
+            ++repoIndex;
+            nameStreamArchIndex = 0;
+            continue;
+        }
+        if (g_strcmp0(package->getNameCStr(), name) != 0 ||
+            g_strcmp0(package->getStreamCStr(), stream) != 0 ||
+            g_strcmp0(package->getArchCStr(), arch) != 0) {
+            name = package->getNameCStr();
+            stream = package->getStreamCStr();
+            arch = package->getArchCStr();
+            version = package->getVersionNum();
+            output[repoIndex].push_back(std::vector<ModulePackagePtr> {package});
+            ++nameStreamArchIndex;
+            continue;
+        }
+        if (version == package->getVersionNum()) {
+            output[repoIndex][nameStreamArchIndex].push_back(package);
+        }
+    }
+    return output;
+}
+
+
 void ModulePackageContainer::resolveActiveModulePackages()
 {
     auto defaultStreams = pImpl->moduleDefaults;
@@ -765,6 +868,13 @@ bool ModulePackageContainer::isModuleActive(Id id)
     return false;
 }
 
+bool ModulePackageContainer::isModuleActive(ModulePackagePtr modulePackage)
+{
+    if (pImpl->activatedModules) {
+        return MAPTST(pImpl->activatedModules, modulePackage->getId());
+    }
+    return false;
+}
 
 std::vector<ModulePackagePtr> ModulePackageContainer::getModulePackages()
 {
@@ -834,6 +944,16 @@ ModulePackageContainer::Impl::ModulePersistor::getEntry(const std::string & modu
     } catch (std::out_of_range &) {
         throw NoModuleException(moduleName);
     }
+}
+
+std::vector<std::string> ModulePackageContainer::Impl::ModulePersistor::getAllModuleNames()
+{
+    std::vector<std::string> output;
+    output.reserve(configs.size());
+    for (auto & item: configs) {
+        output.push_back(item.first);
+    }
+    return output;
 }
 
 bool
@@ -1017,16 +1137,6 @@ void ModulePackageContainer::Impl::ModulePersistor::reset(const std::string & na
     entry.second.state = fromString(data[name]["state"]);
     libdnf::OptionStringList slist{std::vector<std::string>()};
     entry.second.profiles = slist.fromString(data[name]["profiles"]);
-}
-
-std::vector<std::string> ModulePackageContainer::Impl::ModulePersistor::getAllModuleNames()
-{
-    std::vector<std::string> nameOutput;
-    nameOutput.reserve(configs.size());
-    for (auto & item: configs) {
-        nameOutput.push_back(item.first);
-    }
-    return nameOutput;
 }
 
 void ModulePackageContainer::Impl::ModulePersistor::save(const std::string &installRoot, const std::string &modulesPath)

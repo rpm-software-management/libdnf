@@ -125,11 +125,17 @@ void ModulePackage::createDependencies(Solvable *solvable) const
 /**
  * @brief Return module $name.
  *
- * @return std::string
+ * @return const char *
  */
-std::string ModulePackage::getName() const
+const char * ModulePackage::getNameCStr() const
 {
     return metadata->getName();
+}
+
+std::string ModulePackage::getName() const
+{
+    auto name = metadata->getName();
+    return name ? name : "";
 }
 
 /**
@@ -164,11 +170,17 @@ const std::string & ModulePackage::getRepoID() const
 /**
  * @brief Return module $stream.
  *
- * @return std::string
+ * @return const char *
  */
-std::string ModulePackage::getStream() const
+const char * ModulePackage::getStreamCStr() const
 {
     return metadata->getStream();
+}
+
+std::string ModulePackage::getStream() const
+{
+    auto stream = metadata->getStream();
+    return stream ? stream : "";
 }
 
 /**
@@ -182,23 +194,46 @@ std::string ModulePackage::getVersion() const
 }
 
 /**
+ * @brief Return module $version.
+ *
+ * @return Long Long
+ */
+long long ModulePackage::getVersionNum() const
+{
+    return metadata->getVersion();
+}
+
+/**
  * @brief Return module $context.
  *
  * @return std::string
  */
-std::string ModulePackage::getContext() const
+const char * ModulePackage::getContextCStr() const
 {
     return metadata->getContext();
 }
+
+std::string ModulePackage::getContext() const
+{
+    auto context = metadata->getContext();
+    return context ? context : "";
+}
+
 
 /**
  * @brief Return module $arch.
  *
  * @return std::string
  */
-const char * ModulePackage::getArchitecture() const
+const char * ModulePackage::getArchCStr() const
 {
     return metadata->getArchitecture();
+}
+
+std::string ModulePackage::getArch() const
+{
+    auto arch = metadata->getArchitecture();
+    return arch ? arch : "";
 }
 
 /**
@@ -210,7 +245,7 @@ std::string ModulePackage::getFullIdentifier() const
 {
     std::ostringstream ss;
     ss << getName() << ":" << getStream() << ":" << getVersion() << ":" << getContext() << ":"
-       << getArchitecture();
+       << getArch();
     return ss.str();
 }
 
