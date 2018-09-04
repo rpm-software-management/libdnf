@@ -76,6 +76,7 @@ public:
     void addStreamConflict(const ModulePackagePtr &package);
 
     Id getId() const { return id; };
+    std::string getYaml() const { return metadata->getYaml(); };
 
 private:
     friend struct ModulePackageContainer;

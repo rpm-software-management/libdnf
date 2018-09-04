@@ -166,3 +166,12 @@ ModuleMetadata::getProfiles(const std::string & profileName) const
     }
     return profiles;
 }
+
+std::string
+ModuleMetadata::getYaml() const
+{
+    auto yamlCString = modulemd_module_dumps(modulemd.get());
+    std::string yaml = yamlCString ? yamlCString : "";
+    g_free(yamlCString);
+    return yaml;
+}

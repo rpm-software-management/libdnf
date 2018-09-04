@@ -49,6 +49,7 @@ public:
     std::vector<std::shared_ptr<ModuleDependencies> > getDependencies() const;
     std::vector<std::string> getArtifacts() const;
     std::vector<ModuleProfile> getProfiles(const std::string & profileName = "") const;
+    std::string getYaml() const;
 
 private:
     static std::vector<std::shared_ptr<ModuleMetadata> > wrapModulemdModule(GPtrArray *data);
