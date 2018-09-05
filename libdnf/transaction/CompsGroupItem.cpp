@@ -286,7 +286,7 @@ CompsGroupItem::addPackage(std::string name, bool installed, CompsPackageType pk
 }
 
 CompsGroupPackage::CompsGroupPackage(CompsGroupItem &group)
-  : group{group}
+  : group(group)
 {
 }
 

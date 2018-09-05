@@ -42,6 +42,9 @@ option (ENABLE_RHSM_SUPPORT "Build with Red Hat Subscription Manager support?" O
 # hawkey dependencies
 find_package (PkgConfig REQUIRED)
 SET (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+IF (${CMAKE_VERSION} VERSION_LESS 3)
+    SET (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/cmake/modules-cmake-2)
+ENDIF ()
 if (APPLE)
     SET(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/usr/local/lib64/pkgconfig")
     SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH};/usr/local/share/cmake/Modules/)
