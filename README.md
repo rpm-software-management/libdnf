@@ -20,7 +20,7 @@ Building for Fedora
 
 To install build requirements, run following command:
 
-    dnf install check-devel cmake cppunit-devel gcc gcc-c++ glib2-devel gtk-doc json-c-devel libmodulemd-devel librepo-devel libsolv-devel libsolv-tools make python2-devel python3-devel python2-nose python3-nose python2-sphinx python3-sphinx rpm-devel sqlite-devel swig libsmartcols-devel
+    dnf install check-devel cmake cppunit-devel gcc gcc-c++ glib2-devel gpgme-devel gtk-doc json-c-devel libmodulemd-devel librepo-devel libsolv-devel libsolv-tools make python2-devel python3-devel python2-nose python3-nose python2-sphinx python3-sphinx rpm-devel sqlite-devel swig libsmartcols-devel
 
 From the checkout dir:
 
