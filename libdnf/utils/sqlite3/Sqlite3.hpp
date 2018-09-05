@@ -76,7 +76,7 @@ public:
         Statement &operator=(const Statement &) = delete;
 
         Statement(SQLite3 &db, const char *sql)
-          : db{db}
+          : db(db)
         {
             auto result = sqlite3_prepare_v2(db.db, sql, -1, &stmt, nullptr);
             if (result != SQLITE_OK)
@@ -84,7 +84,7 @@ public:
         };
 
         Statement(SQLite3 &db, const std::string &sql)
-          : db{db}
+          : db(db)
         {
             auto result = sqlite3_prepare_v2(db.db, sql.c_str(), sql.length() + 1, &stmt, nullptr);
             if (result != SQLITE_OK)
@@ -202,12 +202,17 @@ public:
 
         const char *getExpandedSql()
         {
+#if SQLITE_VERSION_NUMBER < 3014000
+            // sqlite3_expanded_sql was added in sqlite 3.14; return sql instead
+            return getSql();
+#else
             expandSql = sqlite3_expanded_sql(stmt);
             if (!expandSql)
                 throw Exception(
                     "getExpandedSql(): insufficient memory or result "
                     "exceed the the maximum SQLite3 string length");
             return expandSql;
+#endif
         }
 
         void freeExpandedSql() { sqlite3_free(expandSql); }

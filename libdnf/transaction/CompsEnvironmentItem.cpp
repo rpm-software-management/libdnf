@@ -303,7 +303,7 @@ CompsEnvironmentItem::addGroup(std::string groupId, bool installed, CompsPackage
 }
 
 CompsEnvironmentGroup::CompsEnvironmentGroup(CompsEnvironmentItem &environment)
-  : environment{environment}
+  : environment(environment)
 {
 }
 

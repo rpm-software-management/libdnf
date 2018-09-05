@@ -73,30 +73,34 @@
 
 #include <glib.h>
 
+namespace std {
+
 template<>
-struct std::default_delete<GError> {
+struct default_delete<GError> {
     void operator()(GError * ptr) noexcept { g_error_free(ptr); }
 };
 
 template<>
-struct std::default_delete<LrHandle> {
+struct default_delete<LrHandle> {
     void operator()(LrHandle * ptr) noexcept { lr_handle_free(ptr); }
 };
 
 template<>
-struct std::default_delete<LrResult> {
+struct default_delete<LrResult> {
     void operator()(LrResult * ptr) noexcept { lr_result_free(ptr); }
 };
 
 template<>
-struct std::default_delete<LrPackageTarget> {
+struct default_delete<LrPackageTarget> {
     void operator()(LrPackageTarget * ptr) noexcept { lr_packagetarget_free(ptr); }
 };
 
 template<>
-struct std::default_delete<std::remove_pointer<gpgme_ctx_t>::type> {
+struct default_delete<std::remove_pointer<gpgme_ctx_t>::type> {
     void operator()(gpgme_ctx_t ptr) noexcept { gpgme_release(ptr); }
 };
+
+} // namespace std
 
 namespace libdnf {
 
