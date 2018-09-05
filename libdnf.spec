@@ -72,8 +72,13 @@ Development files for %{name}.
 Summary:        Python 2 bindings for the libdnf library.
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 BuildRequires:  python2-devel
+%if 0%{?rhel} == 7
+BuildRequires:  python-sphinx
+BuildRequires:  swig3 >= %{swig_version}
+%else
 BuildRequires:  python2-sphinx
 BuildRequires:  swig >= %{swig_version}
+%endif
 
 %description -n python2-%{name}
 Python 2 bindings for the libdnf library.
