@@ -98,7 +98,6 @@ typedef enum {
         DNF_CONTEXT_SETUP_SACK_FLAG_SKIP_RPMDB      = (1 << 1),
         DNF_CONTEXT_SETUP_SACK_FLAG_SKIP_FILELISTS  = (1 << 2),
         DNF_CONTEXT_SETUP_SACK_FLAG_LOAD_UPDATEINFO = (1 << 3),
-        DNF_CONTEXT_SETUP_SACK_FLAG_SKIP_OTHER      = (1 << 4)
 } DnfContextSetupSackFlags;
 
 gboolean         dnf_context_globals_init               (GError **error);
@@ -129,7 +128,6 @@ guint            dnf_context_get_cache_age              (DnfContext     *context
 guint            dnf_context_get_installonly_limit      (DnfContext     *context);
 const gchar     *dnf_context_get_http_proxy             (DnfContext     *context);
 gboolean         dnf_context_get_enable_filelists       (DnfContext     *context);
-gboolean         dnf_context_get_enable_other           (DnfContext     *context);
 GPtrArray       *dnf_context_get_repos                  (DnfContext     *context);
 #ifndef __GI_SCANNER__
 DnfRepoLoader   *dnf_context_get_repo_loader            (DnfContext     *context);
@@ -173,8 +171,6 @@ void             dnf_context_set_keep_cache             (DnfContext     *context
                                                          gboolean        keep_cache);
 void             dnf_context_set_enable_filelists       (DnfContext     *context,
                                                          gboolean        enable_filelists);
-void             dnf_context_set_enable_other           (DnfContext     *context,
-                                                         gboolean        enable_other);
 void             dnf_context_set_only_trusted           (DnfContext     *context,
                                                          gboolean        only_trusted);
 void             dnf_context_set_cache_age              (DnfContext     *context,
