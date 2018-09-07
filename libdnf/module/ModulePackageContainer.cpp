@@ -32,6 +32,7 @@ extern "C" {
 #include "libdnf/utils/utils.hpp"
 #include "libdnf/utils/File.hpp"
 #include "libdnf/dnf-sack-private.hpp"
+#include "libdnf/hy-query.h"
 #include <functional>
 #include <../sack/query.hpp>
 #include "../log.hpp"
@@ -526,7 +527,7 @@ ModulePackageContainer::query(std::string subject)
 {
     // Alternativally a search using module provides could be performed
     std::vector<ModulePackagePtr> result;
-    libdnf::Query query(pImpl->moduleSack);
+    libdnf::Query query(pImpl->moduleSack, HY_IGNORE_EXCLUDES);
     // platform modules are installed and not in modules std::Map.
     query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     std::ostringstream ss;
@@ -546,7 +547,7 @@ ModulePackageContainer::query(std::string name, std::string stream, std::string 
 {
     // Alternativally a search using module provides could be performed
     std::vector<ModulePackagePtr> result;
-    libdnf::Query query(pImpl->moduleSack);
+    libdnf::Query query(pImpl->moduleSack, HY_IGNORE_EXCLUDES);
     // platform modules are installed and not in modules std::Map.
     query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     std::ostringstream ss;
