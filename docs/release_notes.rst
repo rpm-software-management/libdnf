@@ -20,6 +20,15 @@
 ######################
 
 ====================
+0.19.0 Release Notes
+====================
+- [query] Reldeps can contain a space char (RhBug:1612462)
+- [transaction] Avoid adding duplicates via Transaction::addItem()
+- Fix compilation errors on gcc-4.8.5
+- [module] Make available ModuleProfile using SWIG
+- [module] Redesign module disable and reset
+
+====================
 0.18.0 Release Notes
 ====================
 - [repo] Implement GPG key import
