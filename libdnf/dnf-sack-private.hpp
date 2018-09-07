@@ -71,7 +71,7 @@ void         dnf_sack_set_running_kernel_fn (DnfSack    *sack,
                                              dnf_sack_running_kernel_fn_t fn);
 DnfPackage  *dnf_sack_add_cmdline_package_flags   (DnfSack *sack,
                             const char *fn, const int flags);
-void dnf_sack_filter_modules_v2(DnfSack *sack, DnfModulePackageContainer * moduleContainer,
+bool dnf_sack_filter_modules_v2(DnfSack *sack, DnfModulePackageContainer * moduleContainer,
     const char ** hotfixRepos, const char *install_root, const char * platformModule,
     bool updateOnly);
 

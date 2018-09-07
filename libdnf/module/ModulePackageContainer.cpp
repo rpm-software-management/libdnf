@@ -38,6 +38,8 @@ extern "C" {
 #include "../log.hpp"
 #include "libdnf/conf/ConfigParser.hpp"
 #include "libdnf/conf/OptionStringList.hpp"
+#include "libdnf/goal/Goal.hpp"
+#include "libdnf/sack/selector.hpp"
 
 #include "bgettext/bgettext-lib.h"
 #include "tinyformat/tinyformat.hpp"
@@ -100,7 +102,7 @@ class ModulePackageContainer::Impl {
 public:
     Impl();
     ~Impl();
-    std::unique_ptr<libdnf::IdQueue> moduleSolve(
+    bool moduleSolve(
         const std::vector<ModulePackagePtr> & modules);
     bool insert(const std::string &moduleName, const char *path);
 
@@ -111,7 +113,7 @@ private:
     std::unique_ptr<ModulePersistor> persistor;
     std::map<Id, ModulePackagePtr> modules;
     DnfSack * moduleSack;
-    Map * activatedModules{nullptr};
+    std::unique_ptr<libdnf::PackageSet> activatedModules;
     std::string installRoot;
     ModuleDefaultsContainer defaultConteiner;
     std::map<std::string, std::string> moduleDefaults;
@@ -185,10 +187,6 @@ ModulePackageContainer::Impl::Impl() : persistor(new ModulePersistor) {}
 
 ModulePackageContainer::Impl::~Impl()
 {
-    if (activatedModules) {
-        map_free(activatedModules);
-        delete activatedModules;
-    }
     g_object_unref(moduleSack);
 }
 
@@ -291,7 +289,7 @@ ModulePackagePtr ModulePackageContainer::getModulePackage(Id id)
 std::vector<ModulePackagePtr>
 ModulePackageContainer::requiresModuleEnablement(const libdnf::PackageSet & packages)
 {
-    auto activatedModules = pImpl->activatedModules;
+    auto activatedModules = pImpl->activatedModules.get();
     if (!activatedModules) {
         return {};
     }
@@ -301,12 +299,9 @@ ModulePackageContainer::requiresModuleEnablement(const libdnf::PackageSet & pack
     baseQuery.apply();
     libdnf::Query testQuery(baseQuery);
     auto modules = pImpl->modules;
-    auto moduleMapSize = dnf_sack_get_pool(pImpl->moduleSack)->nsolvables;
-    for (Id id = 0; id < moduleMapSize; ++id) {
-        if (!MAPTST(activatedModules, id)) {
-            continue;
-        }
-        auto module = modules[id];
+    Id moduleId = -1;
+    while ((moduleId = activatedModules->next(moduleId)) != -1) {
+        auto module = modules[moduleId];
         if (isEnabled(module)) {
             continue;
         }
@@ -481,33 +476,42 @@ void ModulePackageContainer::uninstall(const ModulePackagePtr &module, const std
         pImpl->persistor->removeProfile(module->getName(), profile);
 }
 
-std::unique_ptr<libdnf::IdQueue>
+bool
 ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackagePtr> & modules)
 {
     if (modules.empty()) {
-        return {};
+        return false;
     }
-    Pool * pool = dnf_sack_get_pool(moduleSack);
     dnf_sack_recompute_considered(moduleSack);
     dnf_sack_make_provides_ready(moduleSack);
-    std::vector<Id> solvedIds;
-    libdnf::IdQueue job;
+    libdnf::Goal goal(moduleSack);
     for (const auto &module : modules) {
         std::ostringstream ss;
-        ss << "module(" << module->getName() << ":" << module->getStream() << ":" << module->getVersion() << ")";
-        Id dep = pool_str2id(pool, ss.str().c_str(), 1);
-        job.pushBack(SOLVER_SOLVABLE_PROVIDES | SOLVER_INSTALL | SOLVER_WEAK, dep);
+        ss << "module(" << module->getName() << ":" << module->getStream() << ":"; 
+        ss << module->getVersion() << ")";
+        libdnf::Selector selector(moduleSack);
+        selector.set(HY_PKG_PROVIDES, HY_EQ, ss.str().c_str());
+        goal.install(&selector, true);
     }
-    auto solver = solver_create(pool);
-    solver_solve(solver, job.getQueue());
-    auto transaction = solver_create_transaction(solver);
-    // TODO Use Goal to allow debuging
-
-    std::unique_ptr<libdnf::IdQueue> installed(new libdnf::IdQueue);
-    transaction_installedresult(transaction, installed->getQueue());
-    transaction_free(transaction);
-    solver_free(solver);
-    return installed;
+    auto ret = goal.run(DNF_IGNORE_WEAK);
+    if (ret) {
+        auto count_problems = goal.countProblems();
+        for (int i = 0; i < count_problems; i++) {
+            auto plist = hy_goal_describe_problem_rules(&goal, i);
+            for (char **iter = plist; *iter; ++iter) {
+                printf("problem %s\n", *iter);
+            }
+        }
+        auto ret1 = goal.run(DNF_NONE);
+        if (ret1) {
+            printf("Modularity filtering totally broken\n");
+        } else {
+            activatedModules.reset(new libdnf::PackageSet(goal.listInstalls()));
+        }
+    } else {
+        activatedModules.reset(new libdnf::PackageSet(goal.listInstalls()));
+    }
+    return ret;
 }
 
 std::vector<ModulePackagePtr>
@@ -803,10 +807,9 @@ ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
 }
 
 
-void ModulePackageContainer::resolveActiveModulePackages()
+bool ModulePackageContainer::resolveActiveModulePackages()
 {
     auto defaultStreams = pImpl->moduleDefaults;
-    Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
     dnf_sack_reset_excludes(pImpl->moduleSack);
     std::vector<ModulePackagePtr> packages;
 
@@ -840,31 +843,14 @@ void ModulePackageContainer::resolveActiveModulePackages()
         }
     }
     dnf_sack_add_excludes(pImpl->moduleSack, &excludes);
-    auto ids = pImpl->moduleSolve(packages);
-    if (!ids || ids->size() == 0) {
-        return;
-    }
-    if (pImpl->activatedModules) {
-        map_free(pImpl->activatedModules);
-    } else {
-        pImpl->activatedModules = new Map;
-    }
-    map_init(pImpl->activatedModules, pool->nsolvables);
-    auto activatedModules = pImpl->activatedModules;
-    for (int i = 0; i < ids->size(); ++i) {
-        Id id = (*ids)[i];
-        auto solvable = pool_id2solvable(pool, id);
-        // TODO use Goal::listInstalls() to not requires filtering out Platform
-        if (strcmp(solvable->repo->name, HY_SYSTEM_REPO_NAME) == 0)
-            continue;
-        MAPSET(activatedModules, id);
-    }
+    auto ret = pImpl->moduleSolve(packages);
+    return ret;
 }
 
 bool ModulePackageContainer::isModuleActive(Id id)
 {
     if (pImpl->activatedModules) {
-        return MAPTST(pImpl->activatedModules, id);
+        return pImpl->activatedModules->has(id);
     }
     return false;
 }
@@ -872,7 +858,7 @@ bool ModulePackageContainer::isModuleActive(Id id)
 bool ModulePackageContainer::isModuleActive(ModulePackagePtr modulePackage)
 {
     if (pImpl->activatedModules) {
-        return MAPTST(pImpl->activatedModules, modulePackage->getId());
+        return pImpl->activatedModules->has(modulePackage->getId());
     }
     return false;
 }

@@ -649,7 +649,7 @@ Goal::jobLength()
     return (&pImpl->staging)->count / 2;
 }
 
-int
+bool
 Goal::run(DnfGoalActions flags)
 {
     auto job = pImpl->constructJob(flags);
@@ -1066,7 +1066,7 @@ Goal::Impl::limitInstallonlyPackages(Solver *solv, Queue *job)
     return reresolve;
 }
 
-int
+bool
 Goal::Impl::solve(Queue *job, DnfGoalActions flags)
 {
     /* apply the excludes */
@@ -1094,7 +1094,7 @@ Goal::Impl::solve(Queue *job, DnfGoalActions flags)
         solver_set_flag(solv, SOLVER_FLAG_ALLOW_DOWNGRADE, 1);
 
     if (solver_solve(solv, job))
-        return 1;
+        return true;
     // either allow solutions callback or installonlies, both at the same time
     // are not supported
     if (limitInstallonlyPackages(solv, job)) {
@@ -1102,14 +1102,14 @@ Goal::Impl::solve(Queue *job, DnfGoalActions flags)
         // to be erased
         allowUninstallAllButProtected(job, DNF_ALLOW_UNINSTALL);
         if (solver_solve(solv, job))
-            return 1;
+            return true;
     }
     trans = solver_create_transaction(solv);
 
     if (protectedInRemovals())
-        return 1;
+        return true;
 
-    return 0;
+    return false;
 }
 
 /**

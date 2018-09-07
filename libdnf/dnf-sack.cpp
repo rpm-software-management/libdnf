@@ -2319,7 +2319,7 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
                                false);
 }
 
-void dnf_sack_filter_modules_v2(DnfSack * sack, DnfModulePackageContainer * moduleContainer,
+bool dnf_sack_filter_modules_v2(DnfSack * sack, DnfModulePackageContainer * moduleContainer,
     const char ** hotfixRepos, const char * install_root, const char * platformModule,
     bool updateOnly)
 {
@@ -2346,8 +2346,9 @@ void dnf_sack_filter_modules_v2(DnfSack * sack, DnfModulePackageContainer * modu
         }
     }
 
-    moduleContainer->resolveActiveModulePackages();
+    auto ret = moduleContainer->resolveActiveModulePackages();
     auto nevraTuple = collectNevraForInclusionExclusion(*moduleContainer);
 
     setModuleExcludes(sack, hotfixRepos, std::get<0>(nevraTuple), std::get<1>(nevraTuple));
+    return ret;
 }
