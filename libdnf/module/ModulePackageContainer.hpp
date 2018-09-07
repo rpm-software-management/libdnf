@@ -205,7 +205,7 @@ public:
     std::vector<ModulePackagePtr> query(std::string subject);
     std::vector<ModulePackagePtr> query(std::string name, std::string stream,
         std::string version, std::string context, std::string arch);
-    void resolveActiveModulePackages();
+    bool resolveActiveModulePackages();
     bool isModuleActive(Id id);
     bool isModuleActive(ModulePackagePtr modulePackage);
 

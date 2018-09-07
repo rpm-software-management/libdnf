@@ -46,7 +46,7 @@ private:
     PackageSet listResults(Id type_filter1, Id type_filter2);
     void allowUninstallAllButProtected(Queue *job, DnfGoalActions flags);
     std::unique_ptr<IdQueue> constructJob(DnfGoalActions flags);
-    int solve(Queue *job, DnfGoalActions flags);
+    bool solve(Queue *job, DnfGoalActions flags);
     Solver * initSolver();
     int limitInstallonlyPackages(Solver *solv, Queue *job);
     std::unique_ptr<IdQueue> conflictPkgs(unsigned i);

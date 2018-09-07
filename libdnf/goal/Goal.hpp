@@ -99,7 +99,7 @@ public:
     int jobLength();
 
     /* resolving the goal */
-    int run(DnfGoalActions flags);
+    bool run(DnfGoalActions flags);
 
     /* problems */
     int countProblems();
