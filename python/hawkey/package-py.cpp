@@ -26,6 +26,7 @@
 #include "dnf-advisory.h"
 #include "hy-iutil.h"
 #include "hy-package.h"
+#include "hy-package-private.hpp"
 #include "dnf-reldep.h"
 
 #include "iutil-py.hpp"
@@ -257,14 +258,7 @@ get_chksum(_PackageObject *self, void *closure)
 static PyObject *
 get_changelogs(_PackageObject *self, void *closure)
 {
-    GPtrArray *changelogs;
-    PyObject *list;
-
-    changelogs = dnf_package_get_changelogs(self->package);
-    list = changelogslist_to_pylist(changelogs);
-    g_ptr_array_unref(changelogs);
-
-    return list;
+    return changelogslist_to_pylist(dnf_package_get_changelogs(self->package));
 }
 
 static PyGetSetDef package_getsetters[] = {

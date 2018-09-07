@@ -131,15 +131,14 @@ advisoryRefVectorToPylist(const std::vector<libdnf::AdvisoryRef> & advisoryRefs,
 }
 
 PyObject *
-changelogslist_to_pylist(const GPtrArray *changelogslist)
+changelogslist_to_pylist(const std::vector<std::unique_ptr<libdnf::Changelog>> & changelogslist)
 {
     UniquePtrPyObject list(PyList_New(0));
     if (!list)
         return NULL;
     PyDateTime_IMPORT;
 
-    for (unsigned int i = 0; i < changelogslist->len; ++i) {
-        auto citem = static_cast<libdnf::Changelog *>(g_ptr_array_index(changelogslist, i));
+    for (auto const & citem: changelogslist) {
         UniquePtrPyObject d(PyDict_New());
         if (!d)
             return NULL;
