@@ -12,6 +12,13 @@
 %bcond_without python3
 %endif
 
+%if 0%{?rhel} > 7
+# Disable python2 build by default
+%bcond_with python2
+%else
+%bcond_without python2
+%endif
+
 %if 0%{?rhel} && ! 0%{?centos}
 %bcond_without rhsm
 %else
@@ -67,6 +74,7 @@ Requires:       libsolv-devel%{?_isa} >= %{libsolv_version}
 %description devel
 Development files for %{name}.
 
+%if %{with python2}
 %package -n python2-%{name}
 %{?python_provide:%python_provide python2-%{name}}
 Summary:        Python 2 bindings for the libdnf library.
@@ -82,7 +90,7 @@ BuildRequires:  swig >= %{swig_version}
 
 %description -n python2-%{name}
 Python 2 bindings for the libdnf library.
-
+%endif # with python2
 
 %if %{with python3}
 %package -n python3-%{name}
@@ -97,6 +105,7 @@ BuildRequires:  swig >= %{swig_version}
 Python 3 bindings for the libdnf library.
 %endif
 
+%if %{with python2}
 %package -n python2-hawkey
 Summary:        Python 2 bindings for the hawkey library
 %{?python_provide:%python_provide python2-hawkey}
@@ -115,11 +124,11 @@ Conflicts:      python-dnf < %{dnf_conflict}
 
 %description -n python2-hawkey
 Python 2 bindings for the hawkey library.
+%endif # with python2
 
 %if %{with python3}
 %package -n python3-hawkey
 Summary:        Python 3 bindings for the hawkey library
-%{?system_python_abi}
 %{?python_provide:%python_provide python3-hawkey}
 BuildRequires:  python3-devel
 BuildRequires:  python3-nose
@@ -137,16 +146,20 @@ Python 3 bindings for the hawkey library.
 
 %prep
 %autosetup
+%if %{with python2}
 mkdir build-py2
+%endif # with python2
 %if %{with python3}
 mkdir build-py3
 %endif
 
 %build
+%if %{with python2}
 pushd build-py2
   %cmake -DPYTHON_DESIRED:FILEPATH=%{__python2} -DWITH_MAN=OFF ../ %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts}
   %make_build
 popd
+%endif # with python2
 
 %if %{with python3}
 pushd build-py3
@@ -164,9 +177,11 @@ ERROR
         exit 1
 fi
 
+%if %{with python2}
 pushd build-py2
   make ARGS="-V" test
 popd
+%endif # with python2
 %if %{with python3}
 # Run just the Python tests, not all of them, since
 # we have coverage of the core from the first build
@@ -176,9 +191,11 @@ popd
 %endif
 
 %install
+%if %{with python2}
 pushd build-py2
   %make_install
 popd
+%endif # with python2
 %if %{with python3}
 pushd build-py3
   %make_install
@@ -205,16 +222,20 @@ popd
 %{_libdir}/pkgconfig/%{name}.pc
 %{_includedir}/%{name}/
 
+%if %{with python2}
 %files -n python2-%{name}
 %{python2_sitearch}/%{name}/
+%endif # with python2
 
 %if %{with python3}
 %files -n python3-%{name}
 %{python3_sitearch}/%{name}/
 %endif
 
+%if %{with python2}
 %files -n python2-hawkey
 %{python2_sitearch}/hawkey/
+%endif # with python2
 
 %if %{with python3}
 %files -n python3-hawkey
