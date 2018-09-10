@@ -400,5 +400,6 @@ ModulePackage::createPlatformSolvable(DnfSack * moduleSack, const std::string & 
     hrepo->needs_internalizing = 1;
     dnf_sack_set_provides_not_ready(moduleSack);
     dnf_sack_set_considered_to_update(moduleSack);
+    pool_set_installed(pool, repo);
     return id;
 }
