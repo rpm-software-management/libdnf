@@ -283,7 +283,7 @@ void ModulePackageContainer::createConflictsBetweenStreams()
 
 ModulePackagePtr ModulePackageContainer::getModulePackage(Id id)
 {
-    return pImpl->modules[id];
+    return pImpl->modules.at(id);
 }
 
 std::vector<ModulePackagePtr>
@@ -301,7 +301,7 @@ ModulePackageContainer::requiresModuleEnablement(const libdnf::PackageSet & pack
     auto modules = pImpl->modules;
     Id moduleId = -1;
     while ((moduleId = activatedModules->next(moduleId)) != -1) {
-        auto module = modules[moduleId];
+        auto module = getModulePackage(moduleId);
         if (isEnabled(module)) {
             continue;
         }
@@ -809,7 +809,6 @@ ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
 
 bool ModulePackageContainer::resolveActiveModulePackages()
 {
-    auto defaultStreams = pImpl->moduleDefaults;
     dnf_sack_reset_excludes(pImpl->moduleSack);
     std::vector<ModulePackagePtr> packages;
 
@@ -824,12 +823,7 @@ bool ModulePackageContainer::resolveActiveModulePackages()
         }
 
         bool hasDefaultStream;
-        try {
-            hasDefaultStream = defaultStreams.at(module->getName()) == module->getStream();
-        } catch (std::out_of_range &exception) {
-            hasDefaultStream = false;
-            // TODO logger.debug(exception.what())
-        }
+        hasDefaultStream = getDefaultStream(module->getName()) == module->getStream();
         if (isDisabled(module)) {
             // skip disabled modules
             continue;
