@@ -2190,7 +2190,7 @@ dnf_context_clean_cache(DnfContext *context,
 {
     g_autoptr(GPtrArray) suffix_list = g_ptr_array_new();
     const gchar* directory_location;
-    gboolean ret;
+    gboolean ret = TRUE;
     guint lock_id = 0;
 
     /* Set up the context if it hasn't been set earlier */
