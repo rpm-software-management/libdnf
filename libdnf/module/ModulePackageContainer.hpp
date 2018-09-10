@@ -78,6 +78,10 @@ public:
     void moduleDefaultsResolve();
     Id addPlatformPackage(const std::string &osReleasePath, const char *  platformModule);
     void createConflictsBetweenStreams();
+
+    /**
+    * @brief Can throw std::out_of_range exception
+    */
     ModulePackagePtr getModulePackage(Id id);
     std::vector<ModulePackagePtr> getModulePackages();
     std::vector<std::vector<std::vector<ModulePackagePtr>>> getLatestModulesPerRepo(
