@@ -365,7 +365,7 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
         std::vector<const char *> matches;
         try {
             matches = pySequenceConverter(match);
-        } catch (std::runtime_error) {
+        } catch (std::runtime_error &) {
             return 0;
         }
         int filter_in_ret = query->addFilter(keyname, cmp_type, matches.data());\
