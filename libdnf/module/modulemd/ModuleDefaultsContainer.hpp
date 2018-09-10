@@ -28,10 +28,14 @@
 
 #include <modulemd/modulemd.h>
 
+namespace std {
+
 template<>
-struct std::default_delete<ModulemdDefaults> {
+struct default_delete<ModulemdDefaults> {
     void operator()(ModulemdDefaults * ptr) noexcept { g_object_unref(ptr); }
 };
+
+} // namespace std
 
 class ModuleDefaultsContainer
 {
