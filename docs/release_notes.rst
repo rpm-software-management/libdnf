@@ -20,6 +20,12 @@
 ######################
 
 ====================
+0.19.1 Release Notes
+====================
+- Fix compilation errors on gcc-4.8.5
+- [module] Allow module queries on disabled modules
+
+====================
 0.19.0 Release Notes
 ====================
 - [query] Reldeps can contain a space char (RhBug:1612462)
