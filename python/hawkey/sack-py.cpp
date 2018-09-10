@@ -515,7 +515,7 @@ filter_modules(_SackObject *self, PyObject *args, PyObject *kwds)
     std::vector<const char *> hotfixRepos;
     try {
         hotfixRepos = pySequenceConverter(pyHotfixRepos);
-    } catch (std::runtime_error) {
+    } catch (std::runtime_error &) {
         return NULL;
     }
     dnf_sack_filter_modules_v2(self->sack, moduleContainer, hotfixRepos.data(), installRoot,

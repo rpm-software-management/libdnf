@@ -141,7 +141,7 @@ Transformer::transform()
         // transform groups
         transformGroups(swdb);
     }
-    catch (Exception ex) {
+    catch (Exception &) {
         // TODO: use a different (more specific) exception
     }
 
