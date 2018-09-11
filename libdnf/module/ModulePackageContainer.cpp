@@ -51,7 +51,7 @@ static constexpr auto EMPTY_PROFILES = "";
 static constexpr auto DEFAULT_STATE = "";
 
 static const char * ENABLE_MULTIPLE_STREAM_EXCEPTION =
-_("Cannot enable more streams from module '%s' at the same time");
+_("Cannot enable multiple streams for module '%s'");
 
 static const std::string EMPTY_RESULT;
 
