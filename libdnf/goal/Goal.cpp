@@ -42,6 +42,7 @@ extern "C" {
 #include "../utils/bgettext/bgettext-lib.h"
 #include "../utils/tinyformat/tinyformat.hpp"
 #include "IdQueue.hpp"
+#include "../utils/filesystem.hpp"
 
 enum {NO_MATCH=1, MULTIPLE_MATCH_OBJECTS, INCORECT_COMPARISON_TYPE};
 
@@ -809,13 +810,13 @@ Goal::writeDebugdata(const char *dir)
     if (!solv) {
         throw Goal::Exception(_("no solver set"), DNF_ERROR_INTERNAL_ERROR);
     }
-
     int flags = TESTCASE_RESULT_TRANSACTION | TESTCASE_RESULT_PROBLEMS;
     g_autofree char *absdir = abspath(dir);
     if (!absdir) {
         std::string msg = tfm::format(_("failed to make %s absolute"), dir);
         throw Goal::Exception(msg, DNF_ERROR_FILE_INVALID);
     }
+    makeDirPath(dir);
     g_debug("writing solver debugdata to %s", absdir);
     int ret = testcase_write(solv, absdir, flags, NULL, NULL);
     if (!ret) {
