@@ -243,7 +243,7 @@ def is_glob_pattern(pattern):
     return (isinstance(pattern, list) and any(set(p) & set("*[?") for p in pattern))
 
 def _msg_installed(pkg):
-    logger.warning('Package {} is already installed, skipping.'.format(str(pkg))) # translate
+    logger.warning('Package {} is already installed.'.format(str(pkg))) # translate
 
 
 class Subject(_hawkey.Subject):
