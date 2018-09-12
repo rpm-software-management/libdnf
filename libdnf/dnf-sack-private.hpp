@@ -73,7 +73,7 @@ DnfPackage  *dnf_sack_add_cmdline_package_flags   (DnfSack *sack,
                             const char *fn, const int flags);
 bool dnf_sack_filter_modules_v2(DnfSack *sack, DnfModulePackageContainer * moduleContainer,
     const char ** hotfixRepos, const char *install_root, const char * platformModule,
-    bool updateOnly);
+    bool updateOnly, bool debugSolver);
 
 std::vector<std::shared_ptr<ModulePackage>> requiresModuleEnablement(DnfSack * sack, const libdnf::PackageSet * installSet);
 

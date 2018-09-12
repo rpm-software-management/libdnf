@@ -102,8 +102,7 @@ class ModulePackageContainer::Impl {
 public:
     Impl();
     ~Impl();
-    bool moduleSolve(
-        const std::vector<ModulePackagePtr> & modules);
+    bool moduleSolve(const std::vector<ModulePackagePtr> & modules, bool debugSolver);
     bool insert(const std::string &moduleName, const char *path);
 
 
@@ -477,7 +476,8 @@ void ModulePackageContainer::uninstall(const ModulePackagePtr &module, const std
 }
 
 bool
-ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackagePtr> & modules)
+ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackagePtr> & modules,
+    bool debugSolver)
 {
     if (modules.empty()) {
         return false;
@@ -494,6 +494,9 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackagePtr> & 
         goal.install(&selector, true);
     }
     auto ret = goal.run(DNF_IGNORE_WEAK);
+    if (debugSolver) {
+        goal.writeDebugdata("debugdata/modules");
+    }
     if (ret) {
         auto count_problems = goal.countProblems();
         for (int i = 0; i < count_problems; i++) {
@@ -807,7 +810,7 @@ ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
 }
 
 
-bool ModulePackageContainer::resolveActiveModulePackages()
+bool ModulePackageContainer::resolveActiveModulePackages(bool debugSolver)
 {
     dnf_sack_reset_excludes(pImpl->moduleSack);
     std::vector<ModulePackagePtr> packages;
@@ -837,7 +840,7 @@ bool ModulePackageContainer::resolveActiveModulePackages()
         }
     }
     dnf_sack_add_excludes(pImpl->moduleSack, &excludes);
-    auto ret = pImpl->moduleSolve(packages);
+    auto ret = pImpl->moduleSolve(packages, debugSolver);
     return ret;
 }
 

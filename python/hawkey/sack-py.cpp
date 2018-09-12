@@ -497,18 +497,20 @@ static PyObject *
 filter_modules(_SackObject *self, PyObject *args, PyObject *kwds)
 {
     const char *kwlist[] = {"module_container", "hotfix_repos", "install_root", "platform_module",
-        "update_only", NULL};
+        "update_only", "debugsolver", NULL};
     PyObject * pyModuleContainer;
     PyObject * pyHotfixRepos;
     char * installRoot = nullptr;
     char * platformModule = nullptr;
     PyObject * pyUpdateOnly = nullptr;
+    PyObject * pyDebugSolver = nullptr;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOzz|O!", (char**) kwlist, &pyModuleContainer,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOzz|O!O!", (char**) kwlist, &pyModuleContainer,
                                      &pyHotfixRepos, &installRoot, &platformModule,  &PyBool_Type,
-                                     &pyUpdateOnly))
+                                     &pyUpdateOnly,  &PyBool_Type, &pyDebugSolver))
         return 0;
     bool updateOnly = pyUpdateOnly == NULL || PyObject_IsTrue(pyUpdateOnly);
+    bool debugSolver = pyDebugSolver != NULL && PyObject_IsTrue(pyDebugSolver);
     auto swigContainer = reinterpret_cast< ModulePackageContainerPyObject * >(
         PyObject_GetAttrString(pyModuleContainer, "this"));
     auto moduleContainer = swigContainer->ptr;
@@ -519,7 +521,7 @@ filter_modules(_SackObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
     auto ret = dnf_sack_filter_modules_v2(self->sack, moduleContainer, hotfixRepos.data(),
-        installRoot, platformModule, updateOnly);
+        installRoot, platformModule, updateOnly, debugSolver);
     if (ret) {
         Py_RETURN_TRUE;
     }
