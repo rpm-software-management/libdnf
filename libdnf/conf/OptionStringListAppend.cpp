@@ -36,10 +36,16 @@ OptionStringListAppend::OptionStringListAppend(const std::string & defaultValue,
 
 void OptionStringListAppend::set(Priority priority, const ValueType & value)
 {
-    if (priority >= this->priority) {
+    if (value.empty()) {
+        if (priority >= this->priority) {
+            this->value.clear();
+            this->priority = priority;
+        }
+    } else {
         test(value);
         this->value.insert(this->value.end(), value.begin(), value.end());
-        this->priority = priority;
+        if (priority >= this->priority)
+            this->priority = priority;
     }
 }
 
