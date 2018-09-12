@@ -20,13 +20,9 @@
 %exception {
     try {
         $action
-    }
-    catch (const std::exception & e)
-    {
-       SWIG_exception(SWIG_RuntimeError, (std::string("C++ std::exception: ") + e.what()).c_str());
-    }
-    catch (...)
-    {
+    } catch (const std::exception & e) {
+       SWIG_exception(SWIG_RuntimeError, e.what());
+    } catch (...) {
        SWIG_exception(SWIG_UnknownError, "C++ anonymous exception");
     }
 }
