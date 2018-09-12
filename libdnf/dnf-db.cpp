@@ -36,8 +36,6 @@
 void
 dnf_db_ensure_origin_pkg(DnfDb *db, DnfPackage *pkg)
 {
-    g_autoptr(GError) error = NULL;
-
     /* already set */
     if (dnf_package_get_origin(pkg) != NULL)
         return;
@@ -47,7 +45,7 @@ dnf_db_ensure_origin_pkg(DnfDb *db, DnfPackage *pkg)
     /* set from the database if available */
     auto tmp = db->getRPMRepo(dnf_package_get_nevra(pkg));
     if (tmp.empty()) {
-        g_debug("no origin for %s: %s", dnf_package_get_package_id(pkg), error->message);
+        g_debug("no origin for %s", dnf_package_get_package_id(pkg));
     } else {
         dnf_package_set_origin(pkg, tmp.c_str());
     }
