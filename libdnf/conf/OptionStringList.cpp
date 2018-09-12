@@ -88,8 +88,7 @@ void OptionStringList::set(Priority priority, const ValueType & value)
 
 void OptionStringList::set(Priority priority, const std::string & value)
 {
-    if (priority >= this->priority)
-        set(priority, fromString(value));
+    set(priority, fromString(value));
 }
 
 std::string OptionStringList::toString(const ValueType & value) const
