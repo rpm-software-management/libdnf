@@ -851,6 +851,44 @@ Goal::listBrokenDependencyPkgs(DnfPackageState pkg_type)
     return pImpl->brokenDependencyAllPkgs(pkg_type);
 }
 
+std::vector<std::vector<std::string>> Goal::describeAllProblemRules(bool pkgs)
+{
+    std::vector<std::vector<std::string>> output;
+    int count_problems = countProblems();
+    for (int i = 0; i < count_problems; i++) {
+        auto problemList = describeProblemRules(i, pkgs);
+        if (problemList.empty()) {
+            continue;
+        }
+        bool unique = true;
+        for (auto & problemsSaved: output) {
+            if (problemList.size() != problemsSaved.size()) {
+                continue;
+            }
+            bool presentElement = false;
+            for (auto & problem: problemList) {
+                presentElement = false;
+                for (auto & problemSaved: problemsSaved) {
+                    if (problemSaved == problem) {
+                        presentElement = true;
+                        break;
+                    }
+                }
+                if (!presentElement) {
+                    break;
+                }
+            }
+            if (presentElement) {
+                unique = false;
+            }
+        }
+        if (unique) {
+            output.push_back(problemList);
+        }
+    }
+    return output;
+}
+
 std::vector<std::string>
 Goal::describeProblemRules(unsigned i, bool pkgs)
 {

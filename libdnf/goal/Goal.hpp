@@ -106,6 +106,7 @@ public:
 
     std::unique_ptr<PackageSet> listConflictPkgs(DnfPackageState pkg_type);
     std::unique_ptr<PackageSet> listBrokenDependencyPkgs(DnfPackageState pkg_type);
+    std::vector<std::vector<std::string>> describeAllProblemRules(bool pkgs);
 
     /**
     * @brief List describing failed rules in solving problem 'i'. Caller is responsible for freeing the
