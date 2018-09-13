@@ -955,23 +955,23 @@ dnf_package_get_files(DnfPackage *pkg)
  *
  * Since: 0.19.1
  */
-std::vector<std::unique_ptr<libdnf::Changelog>>
+std::vector<libdnf::Changelog>
 dnf_package_get_changelogs(DnfPackage *pkg)
 {
     DnfPackagePrivate *priv = GET_PRIVATE(pkg);
     Pool *pool = dnf_package_get_pool(pkg);
     Solvable *s = get_solvable(pkg);
     Dataiterator di;
-    std::vector<std::unique_ptr<libdnf::Changelog>> changelogslist;
+    std::vector<libdnf::Changelog> changelogslist;
 
     dataiterator_init(&di, pool, s->repo, priv->id, SOLVABLE_CHANGELOG_AUTHOR, NULL, 0);
     dataiterator_prepend_keyname(&di, SOLVABLE_CHANGELOG);
     while (dataiterator_step(&di)) {
         dataiterator_setpos_parent(&di);
-        changelogslist.push_back(std::unique_ptr<libdnf::Changelog>(new libdnf::Changelog{
+        changelogslist.push_back(libdnf::Changelog{
             static_cast<time_t>(pool_lookup_num(pool, SOLVID_POS, SOLVABLE_CHANGELOG_TIME, 0)),
             pool_lookup_str(pool, SOLVID_POS, SOLVABLE_CHANGELOG_AUTHOR),
-            pool_lookup_str(pool, SOLVID_POS, SOLVABLE_CHANGELOG_TEXT)}));
+            pool_lookup_str(pool, SOLVID_POS, SOLVABLE_CHANGELOG_TEXT)});
     }
     dataiterator_free(&di);
     std::reverse(changelogslist.begin(), changelogslist.end());

@@ -31,6 +31,6 @@
 
 Pool        *dnf_package_get_pool       (DnfPackage *pkg);
 DnfSack     *dnf_package_get_sack       (DnfPackage *pkg);
-std::vector<std::unique_ptr<libdnf::Changelog>>   dnf_package_get_changelogs (DnfPackage *pkg);
+std::vector<libdnf::Changelog>   dnf_package_get_changelogs (DnfPackage *pkg);
 
 #endif // __HY_PACKAGE_INTERNAL_H
