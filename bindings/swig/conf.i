@@ -213,4 +213,5 @@ public:
 %pythoncode %{
 # Compatible name aliases
 ConfigMain.exclude = ConfigMain.excludepkgs
+ConfigRepo.exclude = ConfigRepo.excludepkgs
 %}
