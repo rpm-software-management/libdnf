@@ -27,12 +27,15 @@
 namespace libdnf {
 
 struct Changelog {
+private:
+    time_t timestamp;
+    const char * author;
+    const char * text;
 public:
     Changelog(time_t timestamp, const char *author, const char *text);
-
-    const time_t timestamp;
-    const char * const author;
-    const char * const text;
+    time_t getTimestamp() const { return timestamp; };
+    const char * getAuthor() const { return author; };
+    const char * getText() const { return text; };
 };
 
 }

@@ -21,7 +21,7 @@
 #include "Python.h"
 #include <vector>
 #include <ctime>
-#include "datetime.h"
+#include <datetime.h>
 
 #include "dnf-advisory.h"
 #include "dnf-advisorypkg.h"
@@ -131,23 +131,24 @@ advisoryRefVectorToPylist(const std::vector<libdnf::AdvisoryRef> & advisoryRefs,
 }
 
 PyObject *
-changelogslist_to_pylist(const std::vector<std::unique_ptr<libdnf::Changelog>> & changelogslist)
+changelogslist_to_pylist(const std::vector<libdnf::Changelog> & changelogslist)
 {
     UniquePtrPyObject list(PyList_New(0));
     if (!list)
         return NULL;
     PyDateTime_IMPORT;
 
-    for (auto const & citem: changelogslist) {
+    for (auto & citem: changelogslist) {
         UniquePtrPyObject d(PyDict_New());
         if (!d)
             return NULL;
-        if (PyDict_SetItemString(d.get(), "author", PyUnicode_FromString(citem->author)) == -1)
+        if (PyDict_SetItemString(d.get(), "author", PyUnicode_FromString(citem.getAuthor())) == -1)
             return NULL;
-        if (PyDict_SetItemString(d.get(), "text", PyUnicode_FromString(citem->text)) == -1)
+        if (PyDict_SetItemString(d.get(), "text", PyUnicode_FromString(citem.getText())) == -1)
             return NULL;
+        time_t itemts=citem.getTimestamp();
         struct tm ts;
-        ts = *localtime(&citem->timestamp);
+        ts = *localtime(&itemts);
         if (PyDict_SetItemString(d.get(), "timestamp", PyDate_FromDate(ts.tm_year+1900, ts.tm_mon+1, ts.tm_mday)) == -1)
             return NULL;
         if (PyList_Append(list.get(), d.release()) == -1)

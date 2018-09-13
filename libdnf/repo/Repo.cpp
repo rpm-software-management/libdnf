@@ -491,7 +491,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
     dlist.push_back(NULL);
     handleSetOpt(h.get(), LRO_REPOTYPE, LR_YUMREPO);
     handleSetOpt(h.get(), LRO_USERAGENT, "libdnf/1.0"); //FIXME
-    handleSetOpt(h.get(), LRO_YUMDLIST, &dlist[0]);
+    handleSetOpt(h.get(), LRO_YUMDLIST, dlist.data());
     handleSetOpt(h.get(), LRO_INTERRUPTIBLE, 1L);
     handleSetOpt(h.get(), LRO_GPGCHECK, conf->repo_gpgcheck().getValue());
     handleSetOpt(h.get(), LRO_MAXMIRRORTRIES, static_cast<long>(maxMirrorTries));
