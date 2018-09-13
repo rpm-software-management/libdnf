@@ -23,6 +23,7 @@
 #include <stdarg.h>
 #include <vector>
 
+#include "libdnf/goal/Goal.hpp"
 #include "libdnf/dnf-types.h"
 #include "libdnf/hy-goal-private.hpp"
 #include "libdnf/hy-iutil.h"
@@ -569,14 +570,14 @@ START_TEST(test_goal_describe_problem_rules)
     fail_unless(error->code == DNF_ERROR_NO_SOLUTION);
     fail_unless(hy_goal_count_problems(goal) > 0);
 
-    g_auto(GStrv) problems = hy_goal_describe_problem_rules(goal, 0);
+    auto problems = goal->describeProblemRules(0, true);
     const char *expected[] = {
                 "conflicting requests",
                 "nothing provides goodbye needed by hello-1-1.noarch"
                 };
-    for (gint p = 0; p < hy_goal_count_problems(goal); ++p) {
-        fail_if(strncmp(problems[p], expected[p], strlen(expected[p])));
-    }
+    fail_unless(problems.size() == 2);
+    fail_unless(problems[0] == expected[0]);
+    fail_unless(problems[1] == expected[1]);
 
     g_object_unref(pkg);
     hy_goal_free(goal);
@@ -661,10 +662,10 @@ START_TEST(test_goal_protected)
     hy_goal_erase(goal, pp);
     fail_unless(hy_goal_run_flags(goal, DNF_NONE));
     fail_unless(hy_goal_count_problems(goal) == 1);
-    auto problem = hy_goal_describe_problem_rules(goal, 0);
+    auto problem = goal->describeProblemRules(0, true);
     expected = "The operation would result in removing "
         "the following protected packages: flying";
-    fail_if(g_strcmp0(*problem, expected));
+    fail_if(g_strcmp0(problem[0].c_str(), expected));
     hy_goal_free(goal);
 
     dnf_packageset_free(protected_pkgs);
@@ -824,16 +825,13 @@ START_TEST(test_goal_describe_problem_excludes)
     fail_unless(hy_goal_run_flags(goal, DNF_NONE));
     fail_unless(hy_goal_count_problems(goal) > 0);
 
-    auto problems = hy_goal_describe_problem_rules(goal, 0);
+    auto problems = goal->describeProblemRules(0, true);
     const char *expected[] = {
                 "conflicting requests",
                 "package semolina does not exist"
                 };
-    for (gint p = 0; p < hy_goal_count_problems(goal); ++p) {
-        fail_if(strncmp(problems[p], expected[p], strlen(expected[p])));
-    }
-
-    g_free(problems);
+    fail_unless(problems.size() >= 2);
+    fail_unless(problems[0] == expected[0]);
 
     hy_goal_free(goal);
 }

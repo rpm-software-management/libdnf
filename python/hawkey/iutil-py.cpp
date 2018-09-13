@@ -295,6 +295,23 @@ strlist_to_pylist(const char **slist)
 }
 
 PyObject *
+strCpplist_to_pylist(const std::vector<std::string> & cppList)
+{
+    UniquePtrPyObject list(PyList_New(0));
+    if (!list)
+        return NULL;
+    for (auto & cStr:cppList) {
+        UniquePtrPyObject str(PyUnicode_FromString(cStr.c_str()));
+        if (!str)
+            return NULL;
+        int rc = PyList_Append(list.get(), str.get());
+        if (rc == -1)
+            return NULL;
+    }
+    return list.release();
+}
+
+PyObject *
 reldeplist_to_pylist(DnfReldepList *reldeplist, PyObject *sack)
 {
     UniquePtrPyObject list(PyList_New(0));

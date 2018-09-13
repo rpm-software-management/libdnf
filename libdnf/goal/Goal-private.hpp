@@ -52,7 +52,7 @@ private:
     std::unique_ptr<IdQueue> conflictPkgs(unsigned i);
     std::unique_ptr<IdQueue> brokenDependencyPkgs(unsigned i);
     bool protectedInRemovals();
-    char * describeProtectedRemoval();
+    std::string describeProtectedRemoval();
     std::unique_ptr<PackageSet> brokenDependencyAllPkgs(DnfPackageState pkg_type);
     int countProblems();
 };

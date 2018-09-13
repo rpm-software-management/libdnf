@@ -390,12 +390,12 @@ problem_rules(_GoalObject *self, PyObject *unused)
         return NULL;
     int count_problems = hy_goal_count_problems(self->goal);
     for (int i = 0; i < count_problems; i++) {
-        g_auto(GStrv) plist = hy_goal_describe_problem_rules(self->goal, i);
-        if (plist == NULL) {
+        auto plist = self->goal->describeProblemRules(i, true);
+        if (plist.empty()) {
             PyErr_SetString(PyExc_ValueError, "Index out of range.");
             continue;
         }
-        UniquePtrPyObject list(strlist_to_pylist((const char **)plist));
+        UniquePtrPyObject list(strCpplist_to_pylist(plist));
         int rc = PyList_Append(list_output.get(), list.get());
         if (rc == -1)
             return NULL;

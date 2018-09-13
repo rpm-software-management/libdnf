@@ -500,9 +500,9 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackagePtr> & 
     if (ret) {
         auto count_problems = goal.countProblems();
         for (int i = 0; i < count_problems; i++) {
-            auto plist = hy_goal_describe_problem_rules(&goal, i);
-            for (char **iter = plist; *iter; ++iter) {
-                printf("problem %s\n", *iter);
+            auto plist = goal.describeProblemRules(i, false);
+            for (auto & iter:plist) {
+                printf("problem %s\n", iter.c_str());
             }
         }
         auto ret1 = goal.run(DNF_NONE);

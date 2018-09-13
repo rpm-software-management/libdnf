@@ -69,20 +69,20 @@ dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error)
         g_string_append_printf(string, P_("%i problem detected:\n", "%i problems detected:\n", cnt),
                                cnt);
         for (j = 0; j < cnt; j++) {
-            auto tmp = hy_goal_describe_problem_rules(goal, j);
-            for (auto iter = tmp; *iter; ++iter) {
-                if (tmp == iter) {
+            auto tmp = goal->describeProblemRules(j, true);
+            bool first = true;
+            for (auto & iter: tmp) {
+                if (first) {
                     if (cnt != 1) {
-                        g_string_append_printf(string, _(" Problem %1$i: %2$s\n"), j + 1, *iter);
+                        g_string_append_printf(string, _(" Problem %1$i: %2$s\n"), j + 1, iter.c_str());
                     } else {
-                        g_string_append_printf(string, _(" Problem: %s\n"), *iter);
+                        g_string_append_printf(string, _(" Problem: %s\n"), iter.c_str());
                     }
+                    first = false;
                 } else {
-                    g_string_append_printf(string, "  - %s\n",  *iter);
+                    g_string_append_printf(string, "  - %s\n",  iter.c_str());
                 }
-                g_free(*iter);
             }
-            g_free(tmp);
         }
         g_string_truncate(string, string->len - 1);
         g_set_error_literal(error,
