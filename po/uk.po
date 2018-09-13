@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-08-29 12:20+0200\n"
-"PO-Revision-Date: 2018-08-15 11:49+0000\n"
+"PO-Revision-Date: 2018-08-30 04:34+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian\n"
 "MIME-Version: 1.0\n"
@@ -93,7 +93,7 @@ msgstr "Дія призведе до вилучення таких захище�
 #: ../libdnf/repo/Repo.cpp:382
 #, c-format
 msgid "Bad id for repo: %s, byte = %s %d"
-msgstr ""
+msgstr "Помилковий ідентифікатор сховища: %s, байт = %s %d"
 
 #: ../libdnf/repo/Repo.cpp:406
 #, c-format
@@ -104,6 +104,7 @@ msgstr "Для сховища %s не встановлено дзеркала а
 #, c-format
 msgid "Repository '%s' has unsupported type: 'type=%s', skipping."
 msgstr ""
+"Сховище «%s» належить до непідтримуваного типу: «type=%s», пропускаємо."
 
 #: ../libdnf/repo/Repo.cpp:571
 #, c-format
@@ -121,33 +122,33 @@ msgstr ""
 #: ../libdnf/repo/Repo.cpp:651 ../libdnf/repo/Repo.cpp:673
 #, c-format
 msgid "%s: gpgme_data_new_from_fd(): %s"
-msgstr ""
+msgstr "%s: gpgme_data_new_from_fd(): %s"
 
 #: ../libdnf/repo/Repo.cpp:659 ../libdnf/repo/Repo.cpp:681
 #, c-format
 msgid "%s: gpgme_op_import(): %s"
-msgstr ""
+msgstr "%s: gpgme_op_import(): %s"
 
 #: ../libdnf/repo/Repo.cpp:704 ../libdnf/repo/Repo.cpp:770
 #: ../libdnf/repo/Repo.cpp:864
 #, c-format
 msgid "%s: gpgme_ctx_set_engine_info(): %s"
-msgstr ""
+msgstr "%s: gpgme_ctx_set_engine_info(): %s"
 
 #: ../libdnf/repo/Repo.cpp:731 ../libdnf/repo/Repo.cpp:795
 #, c-format
 msgid "can not list keys: %s"
-msgstr ""
+msgstr "не вдалося побудувати список ключів: %s"
 
 #: ../libdnf/repo/Repo.cpp:839
 #, c-format
 msgid "repo %s: 0x%s already imported"
-msgstr ""
+msgstr "сховище %s: 0x%s вже імпортовано"
 
 #: ../libdnf/repo/Repo.cpp:871
 #, c-format
 msgid "repo %s: imported key 0x%s."
-msgstr ""
+msgstr "сховище %s: імпортовано ключ 0x%s."
 
 #: ../libdnf/repo/Repo.cpp:1033
 #, c-format
@@ -237,12 +238,12 @@ msgstr "не знайдено filelist для %s"
 #: ../libdnf/repo/Repo.cpp:1336
 #, c-format
 msgid "not found other for: %s"
-msgstr ""
+msgstr "не знайдено іншого для %s"
 
 #: ../libdnf/repo/Repo.cpp:1341
 #, c-format
 msgid "not found modules for: %s"
-msgstr ""
+msgstr "не знайдено модулів для %s"
 
 #: ../libdnf/repo/Repo.cpp:1348
 #, c-format

@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-08-29 12:20+0200\n"
-"PO-Revision-Date: 2018-08-28 05:16+0000\n"
+"PO-Revision-Date: 2018-08-29 04:59+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish (http://www.transifex.com/projects/p/dnf/language/pl/)\n"
 "MIME-Version: 1.0\n"
@@ -249,7 +249,7 @@ msgstr "nie odnaleziono listy plików dla: %s"
 #: ../libdnf/repo/Repo.cpp:1336
 #, c-format
 msgid "not found other for: %s"
-msgstr ""
+msgstr "nie odnaleziono innych dla: %s"
 
 #: ../libdnf/repo/Repo.cpp:1341
 #, c-format
