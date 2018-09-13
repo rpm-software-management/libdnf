@@ -20,6 +20,8 @@
 
 #include <assert.h>
 #include <map>
+#include <vector>
+#include <numeric>
 
 extern "C" {
 #include <solv/evr.h>
@@ -29,6 +31,7 @@ extern "C" {
 #include <solv/solverdebug.h>
 #include <solv/testcase.h>
 #include <solv/transaction.h>
+#include <solv/rules.h>
 }
 
 #include "Goal-private.hpp"
@@ -50,6 +53,138 @@ static std::map<int, const char *> ERROR_DICT = {
    {MULTIPLE_MATCH_OBJECTS, M_("Ill-formed Selector, presence of multiple match objects in the filter")},
    {INCORECT_COMPARISON_TYPE, M_("Ill-formed Selector used for the operation, incorrect comparison type")}
 };
+
+enum {RULE_DISTUPGRADE=1, RULE_INFARCH, RULE_UPDATE, RULE_JOB, RULE_JOB_UNSUPPORTED, RULE_JOB_NOTHING_PROVIDES_DEP,
+    RULE_JOB_UNKNOWN_PACKAGE, RULE_JOB_PROVIDED_BY_SYSTEM, RULE_PKG, RULE_BEST_1, RULE_BEST_2,
+    RULE_PKG_NOT_INSTALLABLE_1, RULE_PKG_NOT_INSTALLABLE_2, RULE_PKG_NOT_INSTALLABLE_3, RULE_PKG_NOTHING_PROVIDES_DEP,
+    RULE_PKG_SAME_NAME, RULE_PKG_CONFLICTS, RULE_PKG_OBSOLETES, RULE_PKG_INSTALLED_OBSOLETES, RULE_PKG_IMPLICIT_OBSOLETES,
+    RULE_PKG_REQUIRES, RULE_PKG_SELF_CONFLICT, RULE_YUMOBS
+};
+
+static const std::map<int, const char *> PKG_PROBLEMS_DICT = {
+    {RULE_DISTUPGRADE, _(" does not belong to a distupgrade repository")},
+    {RULE_INFARCH, _(" has inferior architecture")},
+    {RULE_UPDATE, _("problem with installed package ")},
+    {RULE_JOB, _("conflicting requests")},
+    {RULE_JOB_UNSUPPORTED, _("unsupported request")},
+    {RULE_JOB_NOTHING_PROVIDES_DEP, _("nothing provides requested ")},
+    {RULE_JOB_UNKNOWN_PACKAGE, _("package %s does not exist")},
+    {RULE_JOB_PROVIDED_BY_SYSTEM, _(" is provided by the system")},
+    {RULE_PKG, _("some dependency problem")},
+    {RULE_BEST_1, _("cannot install the best update candidate for package ")},
+    {RULE_BEST_2, _("cannot install the best candidate for the job")},
+    {RULE_PKG_NOT_INSTALLABLE_1, _("package %s is excluded")},
+    {RULE_PKG_NOT_INSTALLABLE_2, _("package %s does not have a compatible architecture")},
+    {RULE_PKG_NOT_INSTALLABLE_3, _("package %s is not installable")},
+    {RULE_PKG_NOTHING_PROVIDES_DEP, _("nothing provides %s needed by %s")},
+    {RULE_PKG_SAME_NAME, _("cannot install both %s and %s")},
+    {RULE_PKG_CONFLICTS, _("package %s conflicts with %s provided by %s")},
+    {RULE_PKG_OBSOLETES, _("package %s obsoletes %s provided by %s")},
+    {RULE_PKG_INSTALLED_OBSOLETES, _("installed package %s obsoletes %s provided by %s")},
+    {RULE_PKG_IMPLICIT_OBSOLETES, _("package %s implicitly obsoletes %s provided by %s")},
+    {RULE_PKG_REQUIRES, _("package %s requires %s, but none of the providers can be installed")},
+    {RULE_PKG_SELF_CONFLICT, _("package %s conflicts with %s provided by itself")},
+    {RULE_YUMOBS, _("both package %s and %s obsolete ")}
+};
+
+static const std::map<int, const char *> MODULE_PROBLEMS_DICT = {
+    {RULE_DISTUPGRADE, _(" does not belong to a distupgrade repository")},
+    {RULE_INFARCH, _(" has inferior architecture")},
+    {RULE_UPDATE, _("problem with installed module ")},
+    {RULE_JOB, _("conflicting requests")},
+    {RULE_JOB_UNSUPPORTED, _("unsupported request")},
+    {RULE_JOB_NOTHING_PROVIDES_DEP, _("nothing provides requested ")},
+    {RULE_JOB_UNKNOWN_PACKAGE, _("module %s does not exist")},
+    {RULE_JOB_PROVIDED_BY_SYSTEM, _(" is provided by the system")},
+    {RULE_PKG, _("some dependency problem")},
+    {RULE_BEST_1, _("cannot install the best update candidate for module ")},
+    {RULE_BEST_2, _("cannot install the best candidate for the job")},
+    {RULE_PKG_NOT_INSTALLABLE_1, _("module %s is disabled")},
+    {RULE_PKG_NOT_INSTALLABLE_2, _("module %s does not have a compatible architecture")},
+    {RULE_PKG_NOT_INSTALLABLE_3, _("module %s is not installable")},
+    {RULE_PKG_NOTHING_PROVIDES_DEP, _("nothing provides %s needed by %s")},
+    {RULE_PKG_SAME_NAME, _("cannot install both %s and %s")},
+    {RULE_PKG_CONFLICTS, _("module %s conflicts with %s provided by %s")},
+    {RULE_PKG_OBSOLETES, _("module %s obsoletes %s provided by %s")},
+    {RULE_PKG_INSTALLED_OBSOLETES, _("installed module %s obsoletes %s provided by %s")},
+    {RULE_PKG_IMPLICIT_OBSOLETES, _("module %s implicitly obsoletes %s provided by %s")},
+    {RULE_PKG_REQUIRES, _("module %s requires %s, but none of the providers can be installed")},
+    {RULE_PKG_SELF_CONFLICT, _("module %s conflicts with %s provided by itself")},
+    {RULE_YUMOBS, _("both module %s and %s obsolete ")}
+};
+
+static std::string
+libdnf_problemruleinfo2str(Solver *solv, SolverRuleinfo type, Id source, Id target, Id dep,
+    std::map<int, const char *> problemDict)
+{
+    Pool *pool = solv->pool;
+    Solvable *ss;
+    switch (type) {
+        case SOLVER_RULE_DISTUPGRADE:
+            return std::string(pool_solvid2str(pool, source)) + problemDict[RULE_DISTUPGRADE];
+        case SOLVER_RULE_INFARCH:
+            return std::string(pool_solvid2str(pool, source)) + problemDict[RULE_INFARCH];
+        case SOLVER_RULE_UPDATE:
+            return std::string(problemDict[RULE_UPDATE]) + pool_solvid2str(pool, source);
+        case SOLVER_RULE_JOB:
+            return std::string(problemDict[RULE_JOB]);
+        case SOLVER_RULE_JOB_UNSUPPORTED:
+            return std::string(problemDict[RULE_JOB_UNSUPPORTED]);
+        case SOLVER_RULE_JOB_NOTHING_PROVIDES_DEP:
+            return std::string(problemDict[RULE_JOB_NOTHING_PROVIDES_DEP]) + pool_dep2str(pool,
+                                                                                          dep);
+        case SOLVER_RULE_JOB_UNKNOWN_PACKAGE:
+            return tfm::format(problemDict[RULE_JOB_UNKNOWN_PACKAGE], pool_dep2str(pool, dep));
+        case SOLVER_RULE_JOB_PROVIDED_BY_SYSTEM:
+            return std::string(pool_dep2str(pool, dep)) + problemDict[RULE_JOB_PROVIDED_BY_SYSTEM]; 
+        case SOLVER_RULE_PKG:
+            return std::string(problemDict[RULE_PKG]);
+        case SOLVER_RULE_BEST:
+            if (source > 0)
+                return std::string(problemDict[RULE_BEST_1]) + pool_solvid2str(pool, source);
+            return std::string(problemDict[RULE_BEST_2]);
+        case SOLVER_RULE_PKG_NOT_INSTALLABLE:
+            ss = pool->solvables + source;
+            if (pool_disabled_solvable(pool, ss))
+                return tfm::format(problemDict[RULE_PKG_NOT_INSTALLABLE_1], pool_solvid2str(
+                    pool, source));
+            if (ss->arch && ss->arch != ARCH_SRC && ss->arch != ARCH_NOSRC &&
+                pool->id2arch && (ss->arch > pool->lastarch || !pool->id2arch[ss->arch]))
+                return tfm::format(problemDict[RULE_PKG_NOT_INSTALLABLE_2], pool_solvid2str(pool, source));
+            return tfm::format(problemDict[RULE_PKG_NOT_INSTALLABLE_3], pool_solvid2str(pool, source));
+        case SOLVER_RULE_PKG_NOTHING_PROVIDES_DEP:
+            return tfm::format(problemDict[RULE_PKG_NOTHING_PROVIDES_DEP], pool_dep2str(pool, dep),
+                               pool_solvid2str(pool, source));
+        case SOLVER_RULE_PKG_SAME_NAME:
+            return tfm::format(problemDict[RULE_PKG_SAME_NAME], pool_solvid2str(pool, source),
+                               pool_solvid2str(pool, target));
+        case SOLVER_RULE_PKG_CONFLICTS:
+            return tfm::format(problemDict[RULE_PKG_CONFLICTS], pool_solvid2str(pool, source),
+                               pool_dep2str(pool, dep), pool_solvid2str(pool, target));
+        case SOLVER_RULE_PKG_OBSOLETES:
+            return tfm::format(problemDict[RULE_PKG_OBSOLETES], pool_solvid2str(pool, source),
+                               pool_dep2str(pool, dep), pool_solvid2str(pool, target));
+        case SOLVER_RULE_PKG_INSTALLED_OBSOLETES:
+            return tfm::format(problemDict[RULE_PKG_INSTALLED_OBSOLETES],
+                               pool_solvid2str(pool, source), pool_dep2str(pool, dep),
+                               pool_solvid2str(pool, target));
+        case SOLVER_RULE_PKG_IMPLICIT_OBSOLETES:
+            return tfm::format(problemDict[RULE_PKG_IMPLICIT_OBSOLETES],
+                               pool_solvid2str(pool, source), pool_dep2str(pool, dep),
+                               pool_solvid2str(pool, target));
+        case SOLVER_RULE_PKG_REQUIRES:
+            return tfm::format(problemDict[RULE_PKG_REQUIRES], pool_solvid2str(pool, source),
+                               pool_dep2str(pool, dep));
+        case SOLVER_RULE_PKG_SELF_CONFLICT:
+            return tfm::format(problemDict[RULE_PKG_SELF_CONFLICT], pool_solvid2str(pool, source),
+                               pool_dep2str(pool, dep));
+        case SOLVER_RULE_YUMOBS:
+            return tfm::format(problemDict[RULE_YUMOBS], pool_solvid2str(pool, source),
+                               pool_solvid2str(pool, target), pool_dep2str(pool, dep));
+        default:
+            return solver_problemruleinfo2str(solv, type, source, target, dep);
+    }
+}
 
 static void
 packageToJob(DnfPackage * package, Queue * job, int solver_action)
@@ -716,23 +851,18 @@ Goal::listBrokenDependencyPkgs(DnfPackageState pkg_type)
     return pImpl->brokenDependencyAllPkgs(pkg_type);
 }
 
-
-char **
-Goal::describeProblemRules(unsigned i)
+std::vector<std::string>
+Goal::describeProblemRules(unsigned i, bool pkgs)
 {
-    char **problist = NULL;
-    int p = 0;
+    std::vector<std::string> output;
     /* internal error */
     if (i >= (unsigned) pImpl->countProblems())
-        return NULL;
+        return output;
     // problem is not in libsolv - removal of protected packages
-    char *problem = pImpl->describeProtectedRemoval();
-    if (problem) {
-        problist = (char**)solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
-        problist[p++] = problem;
-        problist = (char**)solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
-        problist[p++] = NULL;
-        return problist;
+    auto problem = pImpl->describeProtectedRemoval();
+    if (!problem.empty()) {
+        output.push_back(std::move(problem));
+        return output;
     }
 
     Id rid, source, target, dep;
@@ -741,12 +871,18 @@ Goal::describeProblemRules(unsigned i)
     bool unique;
 
     if (i >= solver_problem_count(pImpl->solv))
-        return problist;
+        return output;
 
     IdQueue pq;
     IdQueue rq;
     // this libsolv interface indexes from 1 (we do from 0), so:
     solver_findallproblemrules(pImpl->solv, i+1, pq.getQueue());
+    std::map<int, const char *> problemDict;
+    if (pkgs) {
+        problemDict = PKG_PROBLEMS_DICT;
+    } else {
+        problemDict = MODULE_PROBLEMS_DICT;
+    }
     for (j = 0; j < pq.size(); j++) {
         rid = pq[j];
         if (solver_allruleinfos(pImpl->solv, rid, rq.getQueue())) {
@@ -755,28 +891,22 @@ Goal::describeProblemRules(unsigned i)
                 source = rq[ir + 1];
                 target = rq[ir + 2];
                 dep = rq[ir + 3];
-                const char *problem_str = solver_problemruleinfo2str(
-                    pImpl->solv, type, source, target, dep);
+                auto problem_str = libdnf_problemruleinfo2str(pImpl->solv, type, source, target,
+                                                              dep, problemDict);
                 unique = true;
-                if (problist != NULL) {
-                    for (int k = 0; problist[k] != NULL; k++) {
-                        if (g_strcmp0(problem_str, problist[k]) == 0) {
-                            unique = false;
-                            break;
-                        }
+                for (auto & item: output) {
+                    if (problem_str == item) {
+                        unique = false;
+                        break;
                     }
                 }
                 if (unique) {
-                    if (!problist)
-                        problist = (char**)solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
-                    problist[p++] = g_strdup(problem_str);
-                    problist = (char**)solv_extend(problist, p, 1, sizeof(char*), BLOCK_SIZE);
-                    problist[p] = NULL;
+                    output.push_back(problem_str);
                 }
             }
         }
     }
-    return problist;
+    return output;
 }
 
 /**
@@ -1242,56 +1372,39 @@ Goal::Impl::protectedInRemovals()
  *
  * Caller is responsible for freeing the returned string using g_free().
  */
-char *
+std::string
 Goal::Impl::describeProtectedRemoval()
 {
-    g_autoptr(GString) string = NULL;
-    bool firstElement = true;
-    const char *name;
-    Pool *pool = solv->pool;
-    Solvable *s;
-
-    string = g_string_new(_("The operation would result in removing"
-                            " the following protected packages: "));
+    std::string message(_("The operation would result in removing"
+                          " the following protected packages: "));
+    Pool * pool = solv->pool;
 
     if (removalOfProtected && removalOfProtected->size()) {
         Id id = -1;
-        while(true) {
-            id = removalOfProtected->next(id);
-            if (id == -1)
-                break;
+        std::vector<const char *> names;
+        while((id = removalOfProtected->next(id)) != -1) {
             Solvable * s = pool_id2solvable(pool, id);
-            name = pool_id2str(pool, s->name);
-            if (firstElement) {
-                g_string_append(string, name);
-                firstElement = false;
-            } else {
-                g_string_append_printf(string, ", %s", name);
-            }
+            names.push_back(pool_id2str(pool, s->name));
         }
-        return g_strdup(string->str);
+        if (names.empty()) {
+            return {};
+        }
+        return message + std::accumulate(std::next(names.begin()), names.end(),
+                std::string(names[0]), [](std::string a, std::string b) { return a + ", " + b; });
     }
     auto pset = brokenDependencyAllPkgs(DNF_PACKAGE_STATE_INSTALLED);
     Id id = -1;
-    bool found = false;
-    while(true) {
-        id = pset->next(id);
-        if (id == -1)
-            break;
+    std::vector<const char *> names;
+    while((id = pset->next(id)) != -1) {
         if (protectedPkgs->has(id)) {
-            s = pool_id2solvable(pool, id);
-            name = pool_id2str(pool, s->name);
-            if (!found) {
-                g_string_append(string, name);
-                found = true;
-            } else {
-                g_string_append_printf(string, ", %s", name);
-            }
+            Solvable * s = pool_id2solvable(pool, id);
+            names.push_back(pool_id2str(pool, s->name));
         }
     }
-    if (found)
-        return g_strdup(string->str);
-    return NULL;
+    if (names.empty())
+        return {};
+    return std::accumulate(names.begin(), names.end(), message,
+                           [](std::string a, std::string b) { return a + ", " + b; });
 }
 
 }

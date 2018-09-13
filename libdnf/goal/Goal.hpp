@@ -113,9 +113,10 @@ public:
     *
     * @param goal HyGoal
     * @param i ingex of problem
+    * @param pkgs if true packages problem messages, othewise module messages are used
     * @return char**
     */
-    char ** describeProblemRules(unsigned i);
+    std::vector<std::string> describeProblemRules(unsigned i, bool pkgs);
     int logDecisions();
     void writeDebugdata(const char *dir);
 

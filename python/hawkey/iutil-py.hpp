@@ -72,6 +72,7 @@ PyObject * packageset_to_pylist(const DnfPackageSet * pset, PyObject * sack);
 std::unique_ptr<DnfPackageSet> pyseq_to_packageset(PyObject * sequence, DnfSack * sack);
 std::unique_ptr<DnfReldepList> pyseq_to_reldeplist(PyObject *sequence, DnfSack *sack, int cmp_type);
 PyObject *strlist_to_pylist(const char **slist);
+PyObject * strCpplist_to_pylist(const std::vector<std::string> & cppList);
 PyObject *reldeplist_to_pylist(DnfReldepList *reldeplist, PyObject *sack);
 
 #endif // IUTIL_PY_H

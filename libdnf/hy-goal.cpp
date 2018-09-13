@@ -268,12 +268,6 @@ hy_goal_broken_dependency_all_pkgs(HyGoal goal, DnfPackageState pkg_type)
     return goal->listBrokenDependencyPkgs(pkg_type).release();
 }
 
-char **
-hy_goal_describe_problem_rules(HyGoal goal, unsigned i)
-{
-    return goal->describeProblemRules(i);
-}
-
 /**
  * Write all the solving decisions to the hawkey logfile.
  */
