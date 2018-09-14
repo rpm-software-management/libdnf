@@ -2319,7 +2319,7 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
                                false, false);
 }
 
-bool dnf_sack_filter_modules_v2(DnfSack * sack, DnfModulePackageContainer * moduleContainer,
+std::vector<std::vector<std::string>> dnf_sack_filter_modules_v2(DnfSack * sack, DnfModulePackageContainer * moduleContainer,
     const char ** hotfixRepos, const char * install_root, const char * platformModule,
     bool updateOnly, bool debugSolver)
 {
