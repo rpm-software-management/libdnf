@@ -657,8 +657,86 @@ MergedTransactionTest::test_add_obsoleted_obsoleted()
     CPPUNIT_ASSERT_EQUAL(std::string("repo1"), item->getRepoid());
     CPPUNIT_ASSERT_EQUAL(TransactionItemAction::INSTALL, item->getAction());
     CPPUNIT_ASSERT_EQUAL(TransactionItemReason::DEPENDENCY, item->getReason());
+}
+
+void
+MergedTransactionTest::test_downgrade()
+{
+    auto trans1 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans1->addItem(
+        nevraToRPMItem(conn, "tour-0:4.6-1.noarch"),
+        "repo2",
+        TransactionItemAction::DOWNGRADE,
+        TransactionItemReason::USER
+    );
+    trans1->addItem(
+        nevraToRPMItem(conn, "tour-0:4.8-1.noarch"),
+        "repo1",
+        TransactionItemAction::DOWNGRADED,
+        TransactionItemReason::USER
+    );
+
+    MergedTransaction merged(trans1);
+
+    auto items = merged.getItems();
+    CPPUNIT_ASSERT_EQUAL(2, (int)items.size());
+
+    {
+        auto item = items.at(0);
+        CPPUNIT_ASSERT_EQUAL(std::string("tour-4.8-1.noarch"), item->getItem()->toStr());
+        CPPUNIT_ASSERT_EQUAL(std::string("repo1"), item->getRepoid());
+        CPPUNIT_ASSERT_EQUAL(TransactionItemAction::DOWNGRADED, item->getAction());
+        CPPUNIT_ASSERT_EQUAL(TransactionItemReason::USER, item->getReason());
+    }
+
+    {
+        auto item = items.at(1);
+        CPPUNIT_ASSERT_EQUAL(std::string("tour-4.6-1.noarch"), item->getItem()->toStr());
+        CPPUNIT_ASSERT_EQUAL(std::string("repo2"), item->getRepoid());
+        CPPUNIT_ASSERT_EQUAL(TransactionItemAction::DOWNGRADE, item->getAction());
+        CPPUNIT_ASSERT_EQUAL(TransactionItemReason::USER, item->getReason());
+    }
 
 }
+
+void
+MergedTransactionTest::test_install_downgrade()
+{
+    auto trans1 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans1->addItem(
+        nevraToRPMItem(conn, "tour-0:4.8-1.noarch"),
+        "repo1",
+        TransactionItemAction::INSTALL,
+        TransactionItemReason::USER
+    );
+
+    auto trans2 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans2->addItem(
+        nevraToRPMItem(conn, "tour-0:4.6-1.noarch"),
+        "repo2",
+        TransactionItemAction::DOWNGRADE,
+        TransactionItemReason::USER
+    );
+    trans2->addItem(
+        nevraToRPMItem(conn, "tour-0:4.8-1.noarch"),
+        "repo1",
+        TransactionItemAction::DOWNGRADED,
+        TransactionItemReason::USER
+    );
+
+    MergedTransaction merged(trans1);
+    merged.merge(trans2);
+
+    auto items = merged.getItems();
+    CPPUNIT_ASSERT_EQUAL(1, (int)items.size());
+
+    auto item = items.at(0);
+    CPPUNIT_ASSERT_EQUAL(std::string("tour-4.6-1.noarch"), item->getItem()->toStr());
+    CPPUNIT_ASSERT_EQUAL(std::string("repo2"), item->getRepoid());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemAction::INSTALL, item->getAction());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemReason::USER, item->getReason());
+}
+
 /*
     def test_add_obsoleted_removed(self):
         """Test add with an obsoleted NEVRA which was removed before."""
