@@ -102,7 +102,7 @@ class ModulePackageContainer::Impl {
 public:
     Impl();
     ~Impl();
-    bool moduleSolve(const std::vector<ModulePackagePtr> & modules, bool debugSolver);
+    std::vector<std::vector<std::string>> moduleSolve(const std::vector<ModulePackagePtr> & modules, bool debugSolver);
     bool insert(const std::string &moduleName, const char *path);
 
 
@@ -475,12 +475,12 @@ void ModulePackageContainer::uninstall(const ModulePackagePtr &module, const std
         pImpl->persistor->removeProfile(module->getName(), profile);
 }
 
-bool
+std::vector<std::vector<std::string>>
 ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackagePtr> & modules,
     bool debugSolver)
 {
     if (modules.empty()) {
-        return false;
+        return {};
     }
     dnf_sack_recompute_considered(moduleSack);
     dnf_sack_make_provides_ready(moduleSack);
@@ -497,16 +497,11 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackagePtr> & 
     if (debugSolver) {
         goal.writeDebugdata("debugdata/modules");
     }
+    std::vector<std::vector<std::string>> problems;
     if (ret) {
-        auto count_problems = goal.countProblems();
-        for (int i = 0; i < count_problems; i++) {
-            auto plist = goal.describeProblemRules(i, false);
-            for (auto & iter:plist) {
-                printf("problem %s\n", iter.c_str());
-            }
-        }
-        auto ret1 = goal.run(DNF_NONE);
-        if (ret1) {
+        problems = goal.describeAllProblemRules(false);
+        ret = goal.run(DNF_NONE);
+        if (ret) {
             printf("Modularity filtering totally broken\n");
         } else {
             activatedModules.reset(new libdnf::PackageSet(goal.listInstalls()));
@@ -514,7 +509,7 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackagePtr> & 
     } else {
         activatedModules.reset(new libdnf::PackageSet(goal.listInstalls()));
     }
-    return ret;
+    return problems;
 }
 
 std::vector<ModulePackagePtr>
@@ -810,7 +805,8 @@ ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
 }
 
 
-bool ModulePackageContainer::resolveActiveModulePackages(bool debugSolver)
+std::vector<std::vector<std::string>>
+ModulePackageContainer::resolveActiveModulePackages(bool debugSolver)
 {
     dnf_sack_reset_excludes(pImpl->moduleSack);
     std::vector<ModulePackagePtr> packages;
@@ -840,8 +836,8 @@ bool ModulePackageContainer::resolveActiveModulePackages(bool debugSolver)
         }
     }
     dnf_sack_add_excludes(pImpl->moduleSack, &excludes);
-    auto ret = pImpl->moduleSolve(packages, debugSolver);
-    return ret;
+    auto problems = pImpl->moduleSolve(packages, debugSolver);
+    return problems;
 }
 
 bool ModulePackageContainer::isModuleActive(Id id)

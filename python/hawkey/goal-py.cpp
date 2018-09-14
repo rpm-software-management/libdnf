@@ -385,21 +385,8 @@ count_problems(_GoalObject *self, PyObject *unused)
 static PyObject *
 problem_rules(_GoalObject *self, PyObject *unused)
 {
-    UniquePtrPyObject list_output(PyList_New(0));
-    if (!list_output)
-        return NULL;
     auto allProblems = self->goal->describeAllProblemRules(true);
-    for (auto & problemList: allProblems) {
-        if (problemList.empty()) {
-            PyErr_SetString(PyExc_ValueError, "Index out of range.");
-            continue;
-        }
-        UniquePtrPyObject list(strCpplist_to_pylist(problemList));
-        int rc = PyList_Append(list_output.get(), list.get());
-        if (rc == -1)
-            return NULL;
-    }
-    return list_output.release();
+    return problemRulesPyConverter(allProblems);
 }
 
 /**

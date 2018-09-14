@@ -20,6 +20,7 @@
 
 #include "Python.h"
 #include <vector>
+#include <string>
 #include <ctime>
 #include <datetime.h>
 
@@ -357,4 +358,23 @@ pySequenceConverter(PyObject * pySequence)
         }
     output.push_back(nullptr);
     return output;
+}
+
+PyObject *
+problemRulesPyConverter(std::vector<std::vector<std::string>> & allProblems)
+{
+    UniquePtrPyObject list_output(PyList_New(0));
+    if (!list_output)
+        return NULL;
+    for (auto & problemList: allProblems) {
+        if (problemList.empty()) {
+            PyErr_SetString(PyExc_ValueError, "Index out of range.");
+            continue;
+        }
+        UniquePtrPyObject list(strCpplist_to_pylist(problemList));
+        int rc = PyList_Append(list_output.get(), list.get());
+        if (rc == -1)
+            return NULL;
+    }
+    return list_output.release();
 }

@@ -520,12 +520,9 @@ filter_modules(_SackObject *self, PyObject *args, PyObject *kwds)
     } catch (std::runtime_error &) {
         return NULL;
     }
-    auto ret = dnf_sack_filter_modules_v2(self->sack, moduleContainer, hotfixRepos.data(),
+    auto problems = dnf_sack_filter_modules_v2(self->sack, moduleContainer, hotfixRepos.data(),
         installRoot, platformModule, updateOnly, debugSolver);
-    if (ret) {
-        Py_RETURN_TRUE;
-    }
-    Py_RETURN_FALSE;
+    return problemRulesPyConverter(problems);
 }
 
 

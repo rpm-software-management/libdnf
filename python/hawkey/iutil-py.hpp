@@ -74,5 +74,6 @@ std::unique_ptr<DnfReldepList> pyseq_to_reldeplist(PyObject *sequence, DnfSack *
 PyObject *strlist_to_pylist(const char **slist);
 PyObject * strCpplist_to_pylist(const std::vector<std::string> & cppList);
 PyObject *reldeplist_to_pylist(DnfReldepList *reldeplist, PyObject *sack);
+PyObject * problemRulesPyConverter(std::vector<std::vector<std::string>> & allProblems);
 
 #endif // IUTIL_PY_H
