@@ -72,6 +72,20 @@ public:
     TransactionItemState getState() const noexcept { return state; }
     void setState(TransactionItemState value) { state = value; }
 
+    /**
+     * @brief Has the item appeared on the system during the transaction?
+     *
+     * @return bool
+     */
+    bool isForwardAction() const;
+
+    /**
+     * @brief Has the item got removed from the system during the transaction?
+     *
+     * @return bool
+     */
+    bool isBackwardAction() const;
+
 protected:
     ItemPtr item;
     std::string repoid;
