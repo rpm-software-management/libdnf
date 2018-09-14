@@ -91,6 +91,36 @@ TransactionItem::TransactionItem(Transaction *trans)
 {
 }
 
+bool
+TransactionItemBase::isForwardAction() const
+{
+    switch (action) {
+        case TransactionItemAction::INSTALL:
+        case TransactionItemAction::DOWNGRADE:
+        case TransactionItemAction::OBSOLETE:
+        case TransactionItemAction::UPGRADE:
+        case TransactionItemAction::REINSTALL:
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool
+TransactionItemBase::isBackwardAction() const
+{
+    switch (action) {
+        case TransactionItemAction::REMOVE:
+        case TransactionItemAction::DOWNGRADED:
+        case TransactionItemAction::OBSOLETED:
+        case TransactionItemAction::UPGRADED:
+        case TransactionItemAction::REINSTALLED:
+            return true;
+        default:
+            return false;
+    }
+}
+
 TransactionItem::TransactionItem(SQLite3Ptr conn, int64_t transID)
   : trans(nullptr)
   , transID(transID)
