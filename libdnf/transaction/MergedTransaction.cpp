@@ -371,6 +371,10 @@ MergedTransaction::mergeItem(ItemPairMap &itemPairMap, TransactionItemBasePtr mT
     auto firstState = previousItemPair.first->getAction();
     auto newState = mTransItem->getAction();
 
+    if (firstState == TransactionItemAction::INSTALL && mTransItem->isBackwardAction()) {
+        return;
+    }
+
     switch (firstState) {
         case TransactionItemAction::REMOVE:
         case TransactionItemAction::OBSOLETED:

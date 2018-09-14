@@ -24,6 +24,10 @@ class MergedTransactionTest : public CppUnit::TestCase {
     CPPUNIT_TEST(test_add_install_removed);
     CPPUNIT_TEST(test_add_obsoleted_installed);
     CPPUNIT_TEST(test_add_obsoleted_obsoleted);
+
+    CPPUNIT_TEST(test_downgrade);
+    CPPUNIT_TEST(test_install_downgrade);
+
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -48,6 +52,9 @@ public:
     void test_add_obsoleted_installed();
     void test_add_obsoleted_obsoleted();
     // END: tests ported from DNF unit tests
+
+    void test_downgrade();
+    void test_install_downgrade();
 
 private:
     std::shared_ptr< SQLite3 > conn;
