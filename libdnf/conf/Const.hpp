@@ -26,8 +26,8 @@ namespace libdnf {
 constexpr const char * PERSISTDIR = "/var/lib/dnf";
 constexpr const char * SYSTEM_CACHEDIR = "/var/cache/dnf";
 
-constexpr const char * URL_REGEX = "(https?|ftp|file)://[-a-zA-Z0-9_.\\/?=&#$;%@+~|!:,]+$";
-constexpr const char * PROXY_URL_REGEX = "^((https?|ftp|socks5h?|socks4a?)://[-a-zA-Z0-9_.\\/?=&#$;%@+~|!:,]+)?$";
+constexpr const char * URL_REGEX = "(https?|ftp|file)://[][a-zA-Z0-9_.\\/?=&#$;%@+~|!:,*()'-]+$";
+constexpr const char * PROXY_URL_REGEX = "^((https?|ftp|socks5h?|socks4a?)://[][a-zA-Z0-9_.\\/?=&#$;%@+~|!:,*()'-]+)?$";
 
 constexpr const char * CONF_FILENAME = "/etc/dnf/dnf.conf";
 
