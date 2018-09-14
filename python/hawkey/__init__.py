@@ -242,9 +242,6 @@ def is_glob_pattern(pattern):
         pattern = [pattern]
     return (isinstance(pattern, list) and any(set(p) & set("*[?") for p in pattern))
 
-def _msg_installed(pkg):
-    logger.warning('Package {} is already installed.'.format(str(pkg))) # translate
-
 
 class Subject(_hawkey.Subject):
 
@@ -280,8 +277,6 @@ class Subject(_hawkey.Subject):
             solution = self.get_best_solution(base.sack, forms=forms, with_src=False)
         q = solution['query']
         if len(q) == 0:
-            if reports and not self.icase:
-                base._report_icase_hint(self.pattern)
             return []
         q = self._apply_security_filters(q, base)
         if not q:
@@ -303,7 +298,7 @@ class Subject(_hawkey.Subject):
             installed_relevant_query = installed_query.filter(
                 name=[pkg.name for pkg in available_query])
             if reports:
-                self._report_installed(installed_relevant_query)
+                base._report_already_installed(installed_relevant_query)
             q = available_query.union(installed_relevant_query)
             sltrs = []
             for name, pkgs_list in q._name_dict().items():
@@ -318,7 +313,7 @@ class Subject(_hawkey.Subject):
             installed_query = q.installed()
 
             if reports:
-                self._report_installed(installed_query)
+                base._report_already_installed(installed_query)
             if reponame:
                 q = q.filter(reponame=reponame).union(installed_query)
             if not q:
@@ -331,11 +326,6 @@ class Subject(_hawkey.Subject):
         if not query:
             logger.warning('No security updates for argument "{}"'.format(self.pattern)) # translate
         return query
-
-    @staticmethod
-    def _report_installed(iterable_packages):
-        for pkg in iterable_packages:
-            _msg_installed(pkg)
 
     @staticmethod
     def _list_or_query_to_selector(sack, list_or_query):
