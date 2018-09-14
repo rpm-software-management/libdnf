@@ -142,16 +142,19 @@ changelogslist_to_pylist(const std::vector<libdnf::Changelog> & changelogslist)
         UniquePtrPyObject d(PyDict_New());
         if (!d)
             return NULL;
-        if (PyDict_SetItemString(d.get(), "author", PyUnicode_FromString(citem.getAuthor())) == -1)
+        UniquePtrPyObject author(PyUnicode_FromString(citem.getAuthor()));
+        if (PyDict_SetItemString(d.get(), "author", author.get()) == -1)
             return NULL;
-        if (PyDict_SetItemString(d.get(), "text", PyUnicode_FromString(citem.getText())) == -1)
+        UniquePtrPyObject description(PyUnicode_FromString(citem.getText()));
+        if (PyDict_SetItemString(d.get(), "text", description.get()) == -1)
             return NULL;
         time_t itemts=citem.getTimestamp();
         struct tm ts;
         ts = *localtime(&itemts);
-        if (PyDict_SetItemString(d.get(), "timestamp", PyDate_FromDate(ts.tm_year+1900, ts.tm_mon+1, ts.tm_mday)) == -1)
+        UniquePtrPyObject timestamp(PyDate_FromDate(ts.tm_year+1900, ts.tm_mon+1, ts.tm_mday));
+        if (PyDict_SetItemString(d.get(), "timestamp", timestamp.get()) == -1)
             return NULL;
-        if (PyList_Append(list.get(), d.release()) == -1)
+        if (PyList_Append(list.get(), d.get()) == -1)
             return NULL;
     }
 
