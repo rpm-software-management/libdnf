@@ -2219,8 +2219,8 @@ void readModuleMetadataFromRepo(DnfSack * sack, ModulePackageContainer * moduleP
     }
 }
 
-static std::tuple<std::vector<std::string>, std::vector<std::string>> collectNevraForInclusionExclusion(
-        ModulePackageContainer &modulePackageContainer)
+static std::tuple<std::vector<std::string>, std::vector<std::string>>
+collectNevraForInclusionExclusion(ModulePackageContainer &modulePackageContainer)
 {
     std::vector<std::string> includeNEVRAs;
     std::vector<std::string> excludeNEVRAs;
@@ -2235,7 +2235,8 @@ static std::tuple<std::vector<std::string>, std::vector<std::string>> collectNev
         }
     }
 
-    return std::tuple<std::vector<std::string>, std::vector<std::string>>{includeNEVRAs, excludeNEVRAs};
+    return std::tuple<std::vector<std::string>,
+    std::vector<std::string>>{includeNEVRAs, excludeNEVRAs};
 }
 
 static void
@@ -2258,8 +2259,10 @@ setModuleExcludes(DnfSack *sack, const char ** hotfixRepos,
     std::vector<const char *> includeNEVRAsCString(includeNEVRAs.size() + 1);
 
     transform(names.begin(), names.end(), namesCString.begin(), std::mem_fn(&std::string::c_str));
-    transform(excludeNEVRAs.begin(), excludeNEVRAs.end(), excludeNEVRAsCString.begin(), std::mem_fn(&std::string::c_str));
-    transform(includeNEVRAs.begin(), includeNEVRAs.end(), includeNEVRAsCString.begin(), std::mem_fn(&std::string::c_str));
+    transform(excludeNEVRAs.begin(), excludeNEVRAs.end(), excludeNEVRAsCString.begin(),
+              std::mem_fn(&std::string::c_str));
+    transform(includeNEVRAs.begin(), includeNEVRAs.end(), includeNEVRAsCString.begin(),
+              std::mem_fn(&std::string::c_str));
 
     libdnf::Query keepPackages{sack};
     const char *keepRepo[] = {HY_CMDLINE_REPO_NAME, HY_SYSTEM_REPO_NAME, nullptr};
@@ -2286,7 +2289,8 @@ setModuleExcludes(DnfSack *sack, const char ** hotfixRepos,
 
 }
 
-std::vector<std::shared_ptr<ModulePackage>> requiresModuleEnablement(DnfSack * sack, const libdnf::PackageSet * installSet)
+std::vector<std::shared_ptr<ModulePackage>> requiresModuleEnablement(
+    DnfSack * sack, const libdnf::PackageSet * installSet)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     if (!priv->module_includes || !priv->moduleContainer) {
@@ -2319,9 +2323,9 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
                                false, false);
 }
 
-std::vector<std::vector<std::string>> dnf_sack_filter_modules_v2(DnfSack * sack, DnfModulePackageContainer * moduleContainer,
-    const char ** hotfixRepos, const char * install_root, const char * platformModule,
-    bool updateOnly, bool debugSolver)
+std::vector<std::vector<std::string>> dnf_sack_filter_modules_v2(
+    DnfSack * sack, DnfModulePackageContainer * moduleContainer, const char ** hotfixRepos,
+    const char * install_root, const char * platformModule, bool updateOnly, bool debugSolver)
 {
     if (!updateOnly) {
         if (!install_root) {
