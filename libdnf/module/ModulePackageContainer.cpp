@@ -102,7 +102,8 @@ class ModulePackageContainer::Impl {
 public:
     Impl();
     ~Impl();
-    std::vector<std::vector<std::string>> moduleSolve(const std::vector<ModulePackagePtr> & modules, bool debugSolver);
+    std::vector<std::vector<std::string>> moduleSolve(
+        const std::vector<ModulePackagePtr> & modules, bool debugSolver);
     bool insert(const std::string &moduleName, const char *path);
 
 
@@ -159,7 +160,8 @@ private:
     std::map<std::string, std::pair<libdnf::ConfigParser, struct Config>> configs;
 };
 
-ModulePackageContainer::EnableMultipleStreamsException::EnableMultipleStreamsException(const std::string & moduleName)
+ModulePackageContainer::EnableMultipleStreamsException::EnableMultipleStreamsException(
+    const std::string & moduleName)
 : Exception(tfm::format(ENABLE_MULTIPLE_STREAM_EXCEPTION, moduleName)) {}
 
 ModulePackageContainer::ModulePackageContainer(bool allArch, std::string installRoot,
@@ -248,7 +250,8 @@ ModulePackageContainer::add(const std::string &fileContent, const std::string & 
             g_autofree gchar *path = g_build_filename(pImpl->installRoot.c_str(),
                                                       "/etc/dnf/modules.d", NULL);
             for (auto data : metadata) {
-                ModulePackagePtr modulePackage(new ModulePackage(pImpl->moduleSack, r, data, repoID));
+                ModulePackagePtr modulePackage(new ModulePackage(pImpl->moduleSack, r, data,
+                    repoID));
                 pImpl->modules.insert(std::make_pair(modulePackage->getId(), modulePackage));
                 pImpl->persistor->insert(modulePackage->getName(), path);
             }
@@ -306,7 +309,8 @@ ModulePackageContainer::requiresModuleEnablement(const libdnf::PackageSet & pack
         }
         auto includeNEVRAs = module->getArtifacts();
         std::vector<const char *> includeNEVRAsCString(includeNEVRAs.size() + 1);
-        transform(includeNEVRAs.begin(), includeNEVRAs.end(), includeNEVRAsCString.begin(), std::mem_fn(&std::string::c_str));
+        transform(includeNEVRAs.begin(), includeNEVRAs.end(), includeNEVRAsCString.begin(),
+                  std::mem_fn(&std::string::c_str));
         testQuery.queryUnion(baseQuery);
         testQuery.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, includeNEVRAsCString.data());
         if (testQuery.empty()) {
@@ -443,7 +447,8 @@ bool ModulePackageContainer::isChanged()
     return false;
 }
 
-void ModulePackageContainer::install(const std::string &name, const std::string &stream, const std::string &profile)
+void ModulePackageContainer::install(const std::string &name, const std::string &stream,
+    const std::string &profile)
 {
     for (const auto &iter : pImpl->modules) {
         auto modulePackage = iter.second;
@@ -459,7 +464,8 @@ void ModulePackageContainer::install(const ModulePackagePtr &module, const std::
         pImpl->persistor->addProfile(module->getName(), profile);
 }
 
-void ModulePackageContainer::uninstall(const std::string &name, const std::string &stream, const std::string &profile)
+void ModulePackageContainer::uninstall(const std::string &name, const std::string &stream,
+    const std::string &profile)
 {
     for (const auto &iter : pImpl->modules) {
         auto modulePackage = iter.second;
@@ -764,7 +770,8 @@ ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
     std::vector<std::vector<std::vector<ModulePackagePtr>>> output;
     std::sort(modulePackages.begin(), modulePackages.end(), modulePackageLatestPerRepoSorter);
     auto vectorSize = modulePackages.size();
-    output.push_back(std::vector<std::vector<ModulePackagePtr>>{std::vector<ModulePackagePtr> {packageFirst}});
+    output.push_back(
+        std::vector<std::vector<ModulePackagePtr>>{std::vector<ModulePackagePtr> {packageFirst}});
     int repoIndex = 0;
     int nameStreamArchIndex = 0;
     auto repoID = packageFirst->getRepoID();
@@ -860,8 +867,9 @@ std::vector<ModulePackagePtr> ModulePackageContainer::getModulePackages()
 {
     std::vector<ModulePackagePtr> values;
     auto modules = pImpl->modules;
-    std::transform(std::begin(modules), std::end(modules), std::back_inserter(values),
-                   [](const std::map<Id, ModulePackagePtr>::value_type &pair){ return pair.second; });
+    std::transform(
+        std::begin(modules), std::end(modules), std::back_inserter(values),
+        [](const std::map<Id, ModulePackagePtr>::value_type &pair){ return pair.second; });
 
     return values;
 }
@@ -891,7 +899,8 @@ std::map<std::string, std::string> ModulePackageContainer::getResetStreams()
     return pImpl->persistor->getResetStreams();
 }
 
-std::map<std::string, std::pair<std::string, std::string>> ModulePackageContainer::getSwitchedStreams()
+std::map<std::string, std::pair<std::string, std::string>>
+ModulePackageContainer::getSwitchedStreams()
 {
     return pImpl->persistor->getSwitchedStreams();
 }
@@ -910,7 +919,8 @@ std::map<std::string, std::vector<std::string>> ModulePackageContainer::getRemov
 {
     return pImpl->persistor->getRemovedProfiles();
 }
-const std::string & ModulePackageContainer::Impl::ModulePersistor::getStream(const std::string & name)
+const std::string &
+ModulePackageContainer::Impl::ModulePersistor::getStream(const std::string & name)
 {
     return getEntry(name).second.stream;
 }
@@ -957,7 +967,8 @@ ModulePackageContainer::Impl::ModulePersistor::getProfiles(const std::string &na
     return getEntry(name).second.profiles;
 }
 
-bool ModulePackageContainer::Impl::ModulePersistor::addProfile(const std::string &name, const std::string &profile)
+bool ModulePackageContainer::Impl::ModulePersistor::addProfile(
+    const std::string &name, const std::string &profile)
 {
     auto & profiles = getEntry(name).second.profiles;
     const auto &it = std::find(std::begin(profiles), std::end(profiles), profile);
@@ -968,7 +979,8 @@ bool ModulePackageContainer::Impl::ModulePersistor::addProfile(const std::string
     return true;
 }
 
-bool ModulePackageContainer::Impl::ModulePersistor::removeProfile(const std::string &name, const std::string &profile)
+bool ModulePackageContainer::Impl::ModulePersistor::removeProfile(
+    const std::string &name, const std::string &profile)
 {
     auto &profiles = getEntry(name).second.profiles;
 
@@ -988,7 +1000,8 @@ ModulePackageContainer::Impl::ModulePersistor::getState(const std::string &name)
     return getEntry(name).second.state;
 }
 
-bool ModulePackageContainer::Impl::ModulePersistor::changeState(const std::string &name, ModuleState state)
+bool ModulePackageContainer::Impl::ModulePersistor::changeState(
+    const std::string &name, ModuleState state)
 {
     if (getEntry(name).second.state == state)
         return false;
@@ -1028,7 +1041,8 @@ static inline void initConfig(std::map<std::string, std::string> &config, const 
     config["state"] = DEFAULT_STATE;
 }
 
-static inline void parseConfig(libdnf::ConfigParser &parser, const std::string &name, const char *path)
+static inline void
+parseConfig(libdnf::ConfigParser &parser, const std::string &name, const char *path)
 {
     auto &data = parser.getData();
 
@@ -1058,7 +1072,8 @@ static inline void parseConfig(libdnf::ConfigParser &parser, const std::string &
     }
 }
 
-bool ModulePackageContainer::Impl::ModulePersistor::insert(const std::string &moduleName, const char *path)
+bool ModulePackageContainer::Impl::ModulePersistor::insert(
+    const std::string &moduleName, const char *path)
 {
     /* There can only be one config file per module */
     if (configs.find(moduleName) != configs.end()) {
@@ -1119,9 +1134,11 @@ void ModulePackageContainer::Impl::ModulePersistor::reset(const std::string & na
     entry.second.profiles = slist.fromString(data[name]["profiles"]);
 }
 
-void ModulePackageContainer::Impl::ModulePersistor::save(const std::string &installRoot, const std::string &modulesPath)
+void ModulePackageContainer::Impl::ModulePersistor::save(
+    const std::string &installRoot, const std::string &modulesPath)
 {
-    g_autofree gchar *dirname = g_build_filename(installRoot.c_str(), modulesPath.c_str(), "/", NULL);
+    g_autofree gchar *dirname = g_build_filename(
+        installRoot.c_str(), modulesPath.c_str(), "/", NULL);
     makeDirPath(std::string(dirname));
 
     for (auto &iter : configs) {
