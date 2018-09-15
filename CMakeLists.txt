@@ -61,6 +61,7 @@ endif ()
 pkg_check_modules (CHECK REQUIRED check)
 pkg_check_modules (REPO REQUIRED librepo)
 pkg_check_modules (LIBMODULEMD REQUIRED modulemd)
+FIND_PACKAGE(Gpgme REQUIRED)
 
 FIND_PROGRAM (VALGRIND_PROGRAM NAMES valgrind PATH /usr/bin /usr/local/bin)
 

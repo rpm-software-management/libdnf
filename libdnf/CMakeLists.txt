@@ -65,7 +65,8 @@ TARGET_LINK_LIBRARIES(libdnf
                       ${SQLite3_LIBRARIES}
                       ${JSONC_LIBRARIES}
                       ${LIBMODULEMD_LIBRARIES}
-                      ${SMARTCOLS_LIBRARIES})
+                      ${SMARTCOLS_LIBRARIES}
+                      ${GPGME_VANILLA_LIBRARIES})
 
 if (ENABLE_RHSM_SUPPORT)
     target_link_libraries (libdnf ${RHSM_LIBRARIES})
