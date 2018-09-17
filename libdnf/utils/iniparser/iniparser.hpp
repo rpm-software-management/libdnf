@@ -93,6 +93,7 @@ public:
     std::string & getValue() noexcept;
     const std::string & getLine() const noexcept;
     void clearLine() noexcept;
+    void trimValue() noexcept;
 
 private:
     std::ifstream ifs;
