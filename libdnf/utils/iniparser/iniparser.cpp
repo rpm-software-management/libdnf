@@ -69,6 +69,15 @@ IniParser::IniParser(const std::string & filePath)
     lineNumber = 0;
 }
 
+void IniParser::trimValue() noexcept {
+    if (value.length() > 1 &&
+        value.front() == value.back() &&
+        (value.front() == '\"' || value.front() == '\'')) {
+        value.erase(--value.end());
+        value.erase(value.begin());
+    }
+}
+
 IniParser::ItemType IniParser::next()
 {
     bool previousLineWithKeyVal = false;
@@ -96,8 +105,10 @@ IniParser::ItemType IniParser::next()
         }
         auto end = line.find_last_not_of(" \t\r");
 
-        if (previousLineWithKeyVal && (start == 0 || line[start] == '['))
+        if (previousLineWithKeyVal && (start == 0 || line[start] == '[')) {
+            trimValue();
             return ItemType::KEY_VAL;
+        }
 
         if (line[start] == '[') {
             auto endSectPos = line.find("]", ++start);
@@ -143,5 +154,6 @@ IniParser::ItemType IniParser::next()
             line.clear();
         }
     }
+    trimValue();
     return previousLineWithKeyVal ? ItemType::KEY_VAL : ItemType::END_OF_INPUT;
 }
