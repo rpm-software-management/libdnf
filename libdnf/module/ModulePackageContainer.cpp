@@ -1251,16 +1251,17 @@ std::map<std::string, std::vector<std::string>>
 ModulePackageContainer::Impl::ModulePersistor::getInstalledProfiles()
 {
     std::map<std::string, std::vector<std::string>> profiles;
-
-    for (const auto &it : configs) {
+    for (auto & it : configs) {
         libdnf::OptionStringList slist{std::vector<std::string>()};
-        const auto &name = it.first;
-        const auto &parser = it.second.first;
-        const auto &newConf = it.second.second;
+        const auto & name = it.first;
+        const auto & parser = it.second.first;
+        auto & newProfiles = it.second.second.profiles;
 
-        const auto &vprof = slist.fromString(parser.getValue(name, "profiles"));
+        auto vprof = slist.fromString(parser.getValue(name, "profiles"));
+        std::sort(vprof.begin(), vprof.end());
+        std::sort(newProfiles.begin(), newProfiles.end());
         std::vector<std::string> profDiff;
-        std::set_difference(newConf.profiles.begin(), newConf.profiles.end(),
+        std::set_difference(newProfiles.begin(), newProfiles.end(),
                             vprof.begin(), vprof.end(),
                             std::back_inserter(profDiff));
 
@@ -1277,16 +1278,18 @@ ModulePackageContainer::Impl::ModulePersistor::getRemovedProfiles()
 {
     std::map<std::string, std::vector<std::string>> profiles;
 
-    for (const auto &it : configs) {
+    for (auto & it : configs) {
         libdnf::OptionStringList slist{std::vector<std::string>()};
-        const auto &name = it.first;
-        const auto &parser = it.second.first;
-        const auto &newConf = it.second.second;
+        const auto & name = it.first;
+        const auto & parser = it.second.first;
+        auto & newProfiles = it.second.second.profiles;
 
-        const auto &vprof = slist.fromString(parser.getValue(name, "profiles"));
+        auto vprof = slist.fromString(parser.getValue(name, "profiles"));
+        std::sort(vprof.begin(), vprof.end());
+        std::sort(newProfiles.begin(), newProfiles.end());
         std::vector<std::string> profDiff;
         std::set_difference(vprof.begin(), vprof.end(),
-                            newConf.profiles.begin(), newConf.profiles.end(),
+                            newProfiles.begin(), newProfiles.end(),
                             std::back_inserter(profDiff));
         if (profDiff.size() > 0) {
             profiles.emplace(name, std::move(profDiff));
