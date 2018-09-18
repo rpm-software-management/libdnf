@@ -213,6 +213,8 @@ public:
     bool isExpired() const;
     int getExpiresIn() const;
     void downloadUrl(const char * url, int fd);
+    void setHttpHeaders(const char * headers[]);
+    const char * const * getHttpHeaders() const;
 
     std::unique_ptr<LrHandle> lrHandleInitBase();
     std::unique_ptr<LrHandle> lrHandleInitLocal();
@@ -264,6 +266,12 @@ private:
 
     bool expired;
     std::unique_ptr<LrHandle> handle;
+    std::unique_ptr<char*[], std::function<void(char **)>> httpHeaders{nullptr, [](char ** ptr)
+    {
+        for (auto item = ptr; *item; ++item)
+            delete[] *item;
+        delete[] ptr;
+    }};
 };
 
 int Repo::Impl::progressCB(void * data, double totalToDownload, double downloaded)
@@ -526,6 +534,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitLocal()
 std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bool mirrorSetup)
 {
     std::unique_ptr<LrHandle> h(lrHandleInitBase());
+    handleSetOpt(h.get(), LRO_HTTPHEADER, httpHeaders.get());
 
     LrUrlVars * vars = NULL;
     for (const auto & item : substitutions)
@@ -1284,6 +1293,27 @@ void Repo::Impl::downloadUrl(const char * url, int fd)
         throwException(std::move(err));
 }
 
+void Repo::Impl::setHttpHeaders(const char * headers[])
+{
+    if (!headers) {
+        httpHeaders.reset();
+        return;
+    }
+    size_t headersCount = 0;
+    while (headers[headersCount])
+        ++headersCount;
+    httpHeaders.reset(new char*[headersCount + 1]{});
+    for (size_t i = 0; i < headersCount; ++i) {
+        httpHeaders[i] = new char[strlen(headers[i]) + 1];
+        strcpy(httpHeaders[i], headers[i]);
+    }
+}
+
+const char * const * Repo::Impl::getHttpHeaders() const
+{
+    return httpHeaders.get();
+}
+
 bool Repo::fresh()
 {
     return pImpl->timestamp >= 0;
@@ -1307,6 +1337,7 @@ LrHandle * Repo::Impl::getCachedHandle()
 {
     if (!handle)
         handle = lrHandleInitRemote(nullptr);
+    handleSetOpt(handle.get(), LRO_HTTPHEADER, httpHeaders.get());
     return handle.get();
 }
 
@@ -1401,6 +1432,16 @@ void Repo::downloadUrl(const char * url, int fd)
     pImpl->downloadUrl(url, fd);
 }
 
+void Repo::setHttpHeaders(const char * headers[])
+{
+    pImpl->setHttpHeaders(headers);
+}
+
+const char * const * Repo::getHttpHeaders() const
+{
+    return pImpl->getHttpHeaders();
+}
+
 std::vector<std::string> Repo::getMirrors() const
 {
     std::vector<std::string> mirrors;
@@ -1424,7 +1465,8 @@ public:
 
     Impl(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType,
          const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume,
-         int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
+         int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks,
+         const char * httpHeaders[]);
 
     void download();
 
@@ -1558,10 +1600,12 @@ PackageTarget::Impl::Impl(Repo * repo, const char * relativeUrl, const char * de
 
 PackageTarget::Impl::Impl(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType,
                           const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume,
-                          int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
+                          int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks,
+                          const char * httpHeaders[])
 : callbacks(callbacks)
 {
     lrHandle.reset(newHandle(cfg));
+    handleSetOpt(lrHandle.get(), LRO_HTTPHEADER, httpHeaders);
     handleSetOpt(lrHandle.get(), LRO_REPOTYPE, LR_YUMREPO);
     init(lrHandle.get(), relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume,
          byteRangeStart, byteRangeEnd);
@@ -1599,9 +1643,10 @@ PackageTarget::PackageTarget(Repo * repo, const char * relativeUrl, const char *
 
 PackageTarget::PackageTarget(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType,
                              const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume,
-                             int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks)
+                             int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks,
+                             const char * httpHeaders[])
 : pImpl(new Impl(cfg, relativeUrl, dest, chksType, chksum, expectedSize, baseUrl, resume,
-                 byteRangeStart, byteRangeEnd, callbacks))
+                 byteRangeStart, byteRangeEnd, callbacks, httpHeaders))
 {}
 
 

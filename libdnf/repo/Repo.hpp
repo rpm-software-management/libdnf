@@ -202,6 +202,23 @@ public:
     void setSyncStrategy(SyncStrategy strategy);
     SyncStrategy getSyncStrategy() const noexcept;
     void downloadUrl(const char * url, int fd);
+
+    /**
+    * @brief Set http headers.
+    *
+    * Example:
+    * {"User-Agent: Agent007", "MyMagicHeader: I'm here", nullptr}
+    *
+    * @param headers nullptr terminated array of C strings
+    */
+    void setHttpHeaders(const char * headers[]);
+
+    /**
+    * @brief Get array of added/changed/removed http headers.
+    *
+    * @return nullptr terminated array of C strings
+    */
+    const char * const * getHttpHeaders() const;
     std::vector<std::string> getMirrors() const;
 
     ~Repo();
@@ -266,7 +283,8 @@ public:
                   int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
     PackageTarget(ConfigMain * cfg, const char * relativeUrl, const char * dest, int chksType,
                   const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume,
-                  int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks);
+                  int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks,
+                  const char * httpHeaders[] = nullptr);
     ~PackageTarget();
 
     PackageTargetCB * getCallbacks();
