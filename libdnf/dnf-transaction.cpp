@@ -1258,6 +1258,19 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
                 }
             }
 
+            if (swdbAction == libdnf::TransactionItemAction::OBSOLETED
+                && dnf_find_pkg_from_name(priv->install, pkg_tmp_name) != NULL
+                && g_strcmp0(pkg_name, pkg_tmp_name) != 0) {
+                    // If a package is obsoleted and there's a package with the same name
+                    // in the install set, skip recording the obsolete in the history db
+                    // because the package upgrade prevails over the obsolete.
+                    //
+                    // Example:
+                    // grub2-tools-efi obsoletes grub2-tools  # skip as grub2-tools is also upgraded
+                    // grub2-tools upgrades grub2-tools
+                    continue;
+            }
+
             // TODO SWDB add pkg_tmp replaced_by pkg
             _history_write_item(pkg_tmp, priv->swdb, swdbAction);
         }
