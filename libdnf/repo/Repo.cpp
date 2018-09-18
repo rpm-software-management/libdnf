@@ -23,6 +23,7 @@
 #define METALINK_FILENAME "metalink.xml"
 #define MIRRORLIST_FILENAME  "mirrorlist"
 #define RECOGNIZED_CHKSUMS {"sha512", "sha256"}
+#define USER_AGENT "libdnf"
 
 #define GPG_HOME_ENV "GNUPGHOME"
 
@@ -500,7 +501,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
     }
     dlist.push_back(NULL);
     handleSetOpt(h.get(), LRO_REPOTYPE, LR_YUMREPO);
-    handleSetOpt(h.get(), LRO_USERAGENT, "libdnf/1.0"); //FIXME
+    handleSetOpt(h.get(), LRO_USERAGENT, USER_AGENT);
     handleSetOpt(h.get(), LRO_YUMDLIST, dlist.data());
     handleSetOpt(h.get(), LRO_INTERRUPTIBLE, 1L);
     handleSetOpt(h.get(), LRO_GPGCHECK, conf->repo_gpgcheck().getValue());
@@ -1518,7 +1519,7 @@ int PackageTarget::Impl::mirrorFailureCB(void * data, const char * msg, const ch
 static LrHandle * newHandle(ConfigMain * conf)
 {
     LrHandle *h = lr_handle_init();
-    handleSetOpt(h, LRO_USERAGENT, "libdnf/1.0"); //FIXME
+    handleSetOpt(h, LRO_USERAGENT, USER_AGENT);
     // see dnf.repo.Repo._handle_new_remote() how to pass
     if (conf) {
         auto minrate = conf->minrate().getValue();
