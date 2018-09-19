@@ -56,6 +56,8 @@ class OptionBinds {
 public:
     struct Exception : public std::runtime_error {
         Exception(const std::string & what) : runtime_error(what) {}
+    protected:
+        mutable std::string tmpMsg;
     };
     struct OutOfRange : public Exception {
         OutOfRange(const std::string & id) : Exception(id) {}

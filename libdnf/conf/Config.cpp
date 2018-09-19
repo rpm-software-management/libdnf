@@ -69,8 +69,10 @@ std::string OptionBinding::getValueString() const
 const char * OptionBinds::OutOfRange::what() const noexcept
 {
     try {
-        return tfm::format(_("Configuration: OptionBinding with id \"%s\" does not exist"),
-            Exception::what()).c_str();
+        if (tmpMsg.empty())
+            tmpMsg = tfm::format(_("Configuration: OptionBinding with id \"%s\" does not exist"),
+                Exception::what());
+        return tmpMsg.c_str();
     } catch (...) {
         return Exception::what();
     }
@@ -79,8 +81,10 @@ const char * OptionBinds::OutOfRange::what() const noexcept
 const char * OptionBinds::AlreadyExists::what() const noexcept
 {
     try {
-        return tfm::format(_("Configuration: OptionBinding with id \"%s\" already exists"),
-            Exception::what()).c_str();
+        if (tmpMsg.empty())
+            tmpMsg = tfm::format(_("Configuration: OptionBinding with id \"%s\" already exists"),
+                Exception::what());
+        return tmpMsg.c_str();
     } catch (...) {
         return Exception::what();
     }
