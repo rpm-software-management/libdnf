@@ -134,8 +134,8 @@ bool Plugins::init(PluginMode mode, void * initData)
 
 void Plugins::free()
 {
-    for (auto & pluginWithHandle : pluginsWithHandles)
-        pluginWithHandle.plugin->freeHandle(pluginWithHandle.handle);
+    for (auto it = pluginsWithHandles.rbegin(); it != pluginsWithHandles.rend(); ++it)
+        it->plugin->freeHandle(it->handle);
 }
 
 bool Plugins::hook(PluginHookId id, void * hookData, PluginHookError * error)
