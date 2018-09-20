@@ -403,7 +403,7 @@ class ConfigMain::Impl {
     OptionStringListAppend includepkgs{std::vector<std::string>{}};
     OptionBinding includePkgsBinding{owner, includepkgs, "includepkgs"};
 
-    OptionString proxy{"", PROXY_URL_REGEX, true};
+    OptionString proxy{""};
     OptionBinding proxyBinding{owner, proxy, "proxy"};
 
     OptionString proxy_username{nullptr};

@@ -40,13 +40,13 @@ class ConfigRepo::Impl {
     OptionChild<OptionString> basecachedir{masterConfig.cachedir()};
     OptionBinding baseCacheDirBindings{owner, basecachedir, "cachedir"};
 
-    OptionStringList baseurl{std::vector<std::string>{}, URL_REGEX, true};
+    OptionStringList baseurl{std::vector<std::string>{}};
     OptionBinding baseUrlBinding{owner, baseurl, "baseurl"};
 
-    OptionString mirrorlist{nullptr, URL_REGEX, true};
+    OptionString mirrorlist{nullptr};
     OptionBinding mirrorListBinding{owner, mirrorlist, "mirrorlist"};
 
-    OptionString metalink{nullptr, URL_REGEX, true};
+    OptionString metalink{nullptr};
     OptionBinding metaLinkBinding{owner, metalink, "metalink"};
 
     OptionString type{""};
@@ -55,7 +55,7 @@ class ConfigRepo::Impl {
     OptionString mediaid{""};
     OptionBinding mediaIdBinding{owner, mediaid, "mediaid"};
 
-    OptionStringList gpgkey{std::vector<std::string>{}, URL_REGEX, true};
+    OptionStringList gpgkey{std::vector<std::string>{}};
     OptionBinding gpgKeyBinding{owner, gpgkey, "gpgkey"};
 
     OptionStringListAppend excludepkgs{std::vector<std::string>{}};
