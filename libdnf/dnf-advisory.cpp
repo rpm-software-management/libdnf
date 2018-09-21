@@ -32,6 +32,7 @@
 
 
 #include "dnf-advisory-private.hpp"
+#include "dnf-advisorypkg.h"
 #include "dnf-advisoryref.h"
 #include "sack/advisory.hpp"
 #include "sack/advisoryref.hpp"
@@ -211,7 +212,7 @@ dnf_advisory_get_packages(DnfAdvisory *advisory)
     std::vector<libdnf::AdvisoryPkg> pkgsvector;
     advisory->getPackages(pkgsvector);
 
-    GPtrArray *pkglist =  g_ptr_array_new();
+    GPtrArray *pkglist = g_ptr_array_new_with_free_func((GDestroyNotify) dnf_advisorypkg_free);
     for (auto& advisorypkg : pkgsvector) {
         g_ptr_array_add(pkglist, new libdnf::AdvisoryPkg(std::move(advisorypkg)));
     }
