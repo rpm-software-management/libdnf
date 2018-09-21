@@ -1,3 +1,5 @@
+#include "libdnf/hy-subject.h"
+#include "libdnf/nevra.hpp"
 #include "libdnf/transaction/RPMItem.hpp"
 #include "libdnf/transaction/Transaction.hpp"
 #include "libdnf/transaction/private/Transaction.hpp"
@@ -10,6 +12,26 @@
 using namespace libdnf;
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TransactionTest);
+
+static RPMItemPtr
+nevraToRPMItem(SQLite3Ptr conn, std::string nevra)
+{
+    libdnf::Nevra nevraObject;
+    if (!nevraObject.parse(nevra.c_str(), HY_FORM_NEVRA)) {
+        return nullptr;
+    }
+    if (nevraObject.getEpoch() < 0) {
+        nevraObject.setEpoch(0);
+    }
+
+    auto rpm = std::make_shared< RPMItem >(conn);
+    rpm->setName(nevraObject.getName());
+    rpm->setEpoch(nevraObject.getEpoch());
+    rpm->setVersion(nevraObject.getVersion());
+    rpm->setRelease(nevraObject.getRelease());
+    rpm->setArch(nevraObject.getArch());
+    return rpm;
+}
 
 void
 TransactionTest::setUp()
@@ -35,7 +57,17 @@ TransactionTest::testInsert()
     trans.setUserId(1000);
     trans.setCmdline("dnf install foo");
     trans.setState(TransactionState::DONE);
+
+    trans.addSoftwarePerformedWith(nevraToRPMItem(conn, "rpm-4.14.2-1.fc29.x86_64"));
+    trans.addSoftwarePerformedWith(nevraToRPMItem(conn, "dnf-3.5.1-1.fc29.noarch"));
+    // test adding a duplicate; only a single occurence of the rpm is expected
+    trans.addSoftwarePerformedWith(nevraToRPMItem(conn, "rpm-4.14.2-1.fc29.x86_64"));
+
     trans.begin();
+
+    // getSoftwarePerformedWith returns results directly from the db
+    // that's why it has to be called after begin(), where the records are saved
+    CPPUNIT_ASSERT(trans.getSoftwarePerformedWith().size() == 2);
 
     // 2nd begin must throw an exception
     CPPUNIT_ASSERT_THROW(trans.begin(), std::runtime_error);
@@ -51,6 +83,7 @@ TransactionTest::testInsert()
     CPPUNIT_ASSERT(trans2.getUserId() == trans.getUserId());
     CPPUNIT_ASSERT(trans2.getCmdline() == trans.getCmdline());
     CPPUNIT_ASSERT(trans2.getState() == trans.getState());
+    CPPUNIT_ASSERT(trans2.getSoftwarePerformedWith().size() == 2);
 }
 
 void

@@ -294,12 +294,24 @@ CompsEnvironmentItem::loadGroups()
 CompsEnvironmentGroupPtr
 CompsEnvironmentItem::addGroup(std::string groupId, bool installed, CompsPackageType groupType)
 {
-    auto pkg = std::make_shared< CompsEnvironmentGroup >(*this);
-    pkg->setGroupId(groupId);
-    pkg->setInstalled(installed);
-    pkg->setGroupType(groupType);
-    groups.push_back(pkg);
-    return pkg;
+    // try to find an existing group and override it with the new values
+    CompsEnvironmentGroupPtr grp = nullptr;
+    for (auto & i : groups) {
+        if (i->getGroupId() == groupId) {
+            grp = i;
+            break;
+        }
+    }
+
+    if (grp == nullptr) {
+        grp = std::make_shared< CompsEnvironmentGroup >(*this);
+        groups.push_back(grp);
+    }
+
+    grp->setGroupId(groupId);
+    grp->setInstalled(installed);
+    grp->setGroupType(groupType);
+    return grp;
 }
 
 CompsEnvironmentGroup::CompsEnvironmentGroup(CompsEnvironmentItem &environment)

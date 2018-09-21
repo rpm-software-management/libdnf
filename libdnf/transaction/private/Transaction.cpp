@@ -99,7 +99,7 @@ swdb_private::Transaction::dbInsert()
     // add used software - has to be added at initialization state
     if (!softwarePerformedWith.empty()) {
         sql = R"**(
-            INSERT INTO
+            INSERT OR REPLACE INTO
                 trans_with (
                     trans_id,
                     item_id
@@ -114,6 +114,8 @@ swdb_private::Transaction::dbInsert()
                 swQuery.reset();
             }
             first = false;
+            // save the item to create a database id
+            software->save();
             swQuery.bindv(getId(), software->getId());
             swQuery.step();
         }

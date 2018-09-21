@@ -1,6 +1,7 @@
 SET (LIBDNF_TEST_SOURCES
     ${LIBDNF_TEST_SOURCES}
     ${CMAKE_CURRENT_SOURCE_DIR}/CompsEnvironmentItemTest.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CompsGroupItemTest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/RpmItemTest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TransactionItemReasonTest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TransactionTest.cpp
@@ -13,6 +14,7 @@ SET (LIBDNF_TEST_SOURCES
 SET (LIBDNF_TEST_HEADERS
     ${LIBDNF_TEST_HEADERS}
     ${CMAKE_CURRENT_SOURCE_DIR}/CompsEnvironmentItemTest.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CompsGroupItemTest.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/RpmItemTest.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TransactionItemReasonTest.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TransactionTest.hpp

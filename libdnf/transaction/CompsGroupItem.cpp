@@ -277,11 +277,23 @@ CompsGroupItem::loadPackages()
 CompsGroupPackagePtr
 CompsGroupItem::addPackage(std::string name, bool installed, CompsPackageType pkgType)
 {
-    auto pkg = std::make_shared< CompsGroupPackage >(*this);
+    // try to find an existing package and override it with the new values
+    CompsGroupPackagePtr pkg = nullptr;
+    for (auto & i : packages) {
+        if (i->getName() == name) {
+            pkg = i;
+            break;
+        }
+    }
+
+    if (pkg == nullptr) {
+        pkg = std::make_shared< CompsGroupPackage >(*this);
+        packages.push_back(pkg);
+    }
+
     pkg->setName(name);
     pkg->setInstalled(installed);
     pkg->setPackageType(pkgType);
-    packages.push_back(pkg);
     return pkg;
 }
 
