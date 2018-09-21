@@ -32,6 +32,7 @@
 
 
 #include "dnf-advisory-private.hpp"
+#include "dnf-advisoryref.h"
 #include "sack/advisory.hpp"
 #include "sack/advisoryref.hpp"
 #include "sack/advisorypkg.hpp"
@@ -233,7 +234,7 @@ dnf_advisory_get_references(DnfAdvisory *advisory)
     std::vector<libdnf::AdvisoryRef> refsvector;
     advisory->getReferences(refsvector);
 
-    GPtrArray *reflist =  g_ptr_array_new();
+    GPtrArray *reflist = g_ptr_array_new_with_free_func((GDestroyNotify) dnf_advisoryref_free);
     for (const auto& advisoryref : refsvector) {
         g_ptr_array_add(reflist, new libdnf::AdvisoryRef(advisoryref));
     }
