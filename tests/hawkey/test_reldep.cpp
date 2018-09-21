@@ -42,6 +42,7 @@ START_TEST(test_reldeplist_add)
     for (int i = 0; i < count; ++i) {
         DnfReldep *reldep = dnf_reldep_list_index (obsoletes.get(), i);
         dnf_reldep_list_add (reldeplist.get(), reldep);
+        delete reldep;
     }
 
     g_object_unref (flying);
