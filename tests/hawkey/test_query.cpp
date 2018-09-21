@@ -458,6 +458,8 @@ START_TEST(test_query_conflicts)
     fail_unless(reldep != NULL);
     hy_query_filter_reldep(q, HY_PKG_CONFLICTS, reldep);
     fail_unless(query_count_results(q) == 1);
+
+    delete reldep;
     hy_query_free(q);
 }
 END_TEST
@@ -680,6 +682,7 @@ START_TEST(test_query_reldep)
     fail_if(hy_query_filter_reldep(q, HY_PKG_PROVIDES, reldep));
     fail_unless(query_count_results(q) == 3);
 
+    delete reldep;
     delete reldeplist;
     g_object_unref(flying);
     hy_query_free(q);
@@ -696,6 +699,7 @@ START_TEST(test_query_reldep_arbitrary)
     hy_query_filter_reldep(query, HY_PKG_PROVIDES, reldep);
     fail_unless(query_count_results(query) == 3);
 
+    delete reldep;
     hy_query_free(query);
 }
 END_TEST
