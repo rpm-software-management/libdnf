@@ -997,7 +997,7 @@ dnf_package_get_advisories(DnfPackage *pkg, int cmp_type)
     DnfAdvisory *advisory;
     Pool *pool = dnf_package_get_pool(pkg);
     DnfSack *sack = dnf_package_get_sack(pkg);
-    GPtrArray *advisorylist = g_ptr_array_new();
+    GPtrArray *advisorylist = g_ptr_array_new_with_free_func((GDestroyNotify) dnf_advisory_free);
     Solvable *s = get_solvable(pkg);
 
     dataiterator_init(&di, pool, 0, 0, UPDATE_COLLECTION_NAME,

@@ -79,7 +79,7 @@ advisorylist_to_pylist(const GPtrArray *advisorylist, PyObject *sack)
 
     for (unsigned int i = 0; i < advisorylist->len; ++i) {
         auto cadvisory =
-            static_cast<DnfAdvisory *>(g_ptr_array_index(advisorylist, i));
+            static_cast<DnfAdvisory *>(g_steal_pointer(&g_ptr_array_index(advisorylist, i)));
         UniquePtrPyObject advisory(advisoryToPyObject(cadvisory, sack));
 
         if (!advisory)
