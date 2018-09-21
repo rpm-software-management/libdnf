@@ -42,7 +42,7 @@ advisoryref_fixture(void)
     advisories = dnf_package_get_advisories(pkg, HY_GT);
     auto advisory = static_cast<DnfAdvisory *>(g_ptr_array_index(advisories, 0));
     reflist = dnf_advisory_get_references(advisory);
-    reference = static_cast<DnfAdvisoryRef *>(g_ptr_array_index(reflist, 0));
+    reference = static_cast<DnfAdvisoryRef *>(g_steal_pointer(&g_ptr_array_index(reflist, 0)));
 
     g_ptr_array_unref(reflist);
     g_ptr_array_unref(advisories);
