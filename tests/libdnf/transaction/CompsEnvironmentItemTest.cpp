@@ -64,6 +64,15 @@ CompsEnvironmentItemTest::testCreate()
         CPPUNIT_ASSERT(group->getInstalled() == true);
         CPPUNIT_ASSERT(group->getGroupType() == CompsPackageType::MANDATORY);
     }
+
+    // test adding a duplicate group
+    env2.addGroup("base", true, CompsPackageType::MANDATORY);
+    {
+        auto group = env2.getGroups().at(0);
+        CPPUNIT_ASSERT(group->getGroupId() == "base");
+        CPPUNIT_ASSERT(group->getInstalled() == true);
+        CPPUNIT_ASSERT(group->getGroupType() == CompsPackageType::MANDATORY);
+    }
 }
 
 void
