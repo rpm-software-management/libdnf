@@ -29,6 +29,7 @@
 #include "test_suites.h"
 #include "testsys.h"
 #include "libdnf/repo/solvable/DependencyContainer.hpp"
+#include "libdnf/repo/solvable/Dependency.hpp"
 
 START_TEST(test_reldeplist_add)
 {
