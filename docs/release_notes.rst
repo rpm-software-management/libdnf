@@ -20,6 +20,17 @@
 ######################
 
 ====================
+0.20.0 Release Notes
+====================
+- [module] Report module solver errors
+- [module] Enhance module commands and errors
+- [transaction] Ficed several problems with SWDB
+- Remove unneeded regex URL tests (RhBug:1598336)
+- Allow quoted values in ini files (RhBug:1624056)
+- Filter out not unique set of solver problems (RhBug:1564369)
+- Disable python2 build for Fedora 30+
+
+====================
 0.19.1 Release Notes
 ====================
 - Fix compilation errors on gcc-4.8.5
