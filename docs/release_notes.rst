@@ -24,7 +24,7 @@
 ====================
 - [module] Report module solver errors
 - [module] Enhance module commands and errors
-- [transaction] Ficed several problems with SWDB
+- [transaction] Fixed several problems with SWDB
 - Remove unneeded regex URL tests (RhBug:1598336)
 - Allow quoted values in ini files (RhBug:1624056)
 - Filter out not unique set of solver problems (RhBug:1564369)
