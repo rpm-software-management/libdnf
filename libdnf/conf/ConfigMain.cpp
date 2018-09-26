@@ -165,7 +165,7 @@ class ConfigMain::Impl {
     OptionNumber<std::int32_t> debuglevel{2, 0, 10};
     OptionBinding debugLevelBinding{owner, debuglevel, "debuglevel"};
 
-    OptionNumber<std::int32_t> errorlevel{2, 0, 10};
+    OptionNumber<std::int32_t> errorlevel{3, 0, 10};
     OptionBinding errorLevelBinding{owner, errorlevel, "errorlevel"};
 
     OptionPath installroot{"/"};
