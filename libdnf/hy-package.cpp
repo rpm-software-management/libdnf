@@ -968,10 +968,11 @@ dnf_package_get_changelogs(DnfPackage *pkg)
     dataiterator_prepend_keyname(&di, SOLVABLE_CHANGELOG);
     while (dataiterator_step(&di)) {
         dataiterator_setpos_parent(&di);
+        std::string author(pool_lookup_str(pool, SOLVID_POS, SOLVABLE_CHANGELOG_AUTHOR));
+        std::string text(pool_lookup_str(pool, SOLVID_POS, SOLVABLE_CHANGELOG_TEXT));
         changelogslist.emplace_back(
             static_cast<time_t>(pool_lookup_num(pool, SOLVID_POS, SOLVABLE_CHANGELOG_TIME, 0)),
-            pool_lookup_str(pool, SOLVID_POS, SOLVABLE_CHANGELOG_AUTHOR),
-            pool_lookup_str(pool, SOLVID_POS, SOLVABLE_CHANGELOG_TEXT));
+            std::move(author), std::move(text));
     }
     dataiterator_free(&di);
     std::reverse(changelogslist.begin(), changelogslist.end());

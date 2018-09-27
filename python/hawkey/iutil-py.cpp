@@ -143,10 +143,10 @@ changelogslist_to_pylist(const std::vector<libdnf::Changelog> & changelogslist)
         UniquePtrPyObject d(PyDict_New());
         if (!d)
             return NULL;
-        UniquePtrPyObject author(PyUnicode_FromString(citem.getAuthor()));
+        UniquePtrPyObject author(PyUnicode_FromString(citem.getAuthor().c_str()));
         if (PyDict_SetItemString(d.get(), "author", author.get()) == -1)
             return NULL;
-        UniquePtrPyObject description(PyUnicode_FromString(citem.getText()));
+        UniquePtrPyObject description(PyUnicode_FromString(citem.getText().c_str()));
         if (PyDict_SetItemString(d.get(), "text", description.get()) == -1)
             return NULL;
         time_t itemts=citem.getTimestamp();
