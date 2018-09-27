@@ -55,12 +55,14 @@ repo_internalize_all_trigger(Pool *pool)
 void
 repo_internalize_trigger(Repo * repo)
 {
-    auto hrepo = static_cast<HyRepo>(repo->appdata);
-    assert(hrepo->libsolv_repo == repo);
-    if (!hrepo->needs_internalizing)
-        return;
-    hrepo->needs_internalizing = 0;
-    repo_internalize(repo);
+    if (repo) {
+        auto hrepo = static_cast<HyRepo>(repo->appdata);
+        assert(hrepo->libsolv_repo == repo);
+        if (!hrepo->needs_internalizing)
+            return;
+        hrepo->needs_internalizing = 0;
+        repo_internalize(repo);
+    }
 }
 
 void
