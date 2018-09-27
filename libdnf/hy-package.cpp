@@ -316,9 +316,7 @@ const char *
 dnf_package_get_location(DnfPackage *pkg)
 {
     Solvable *s = get_solvable(pkg);
-    if (s->repo) {
-        repo_internalize_trigger(s->repo);
-    }
+    repo_internalize_trigger(s->repo);
     return solvable_get_location(s, NULL);
 }
 
