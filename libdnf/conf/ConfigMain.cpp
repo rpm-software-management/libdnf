@@ -284,6 +284,9 @@ class ConfigMain::Impl {
     OptionString bugtracker_url{BUGTRACKER};
     OptionBinding bugtrackerUrlBinding{owner, bugtracker_url, "bugtracker_url"};
 
+    OptionBool zchunk{true};
+    OptionBinding zchunkBinding{owner, zchunk, "zchunk"};
+
     OptionEnum<std::string> color{"auto", {"auto", "never", "always"},
         [](const std::string & value){
             const std::array<const char *, 4> always{{"on", "yes", "1", "true"}};
@@ -551,6 +554,7 @@ OptionEnum<std::string> & ConfigMain::multilib_policy() { return pImpl->multilib
 OptionBool & ConfigMain::best() { return pImpl->best; }
 OptionBool & ConfigMain::install_weak_deps() { return pImpl->install_weak_deps; }
 OptionString & ConfigMain::bugtracker_url() { return pImpl->bugtracker_url; }
+OptionBool & ConfigMain::zchunk() { return pImpl->zchunk; }
 OptionEnum<std::string> & ConfigMain::color() { return pImpl->color; }
 OptionString & ConfigMain::color_list_installed_older() { return pImpl->color_list_installed_older; }
 OptionString & ConfigMain::color_list_installed_newer() { return pImpl->color_list_installed_newer; }

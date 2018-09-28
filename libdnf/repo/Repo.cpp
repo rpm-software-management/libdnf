@@ -529,6 +529,11 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitLocal()
     const char *urls[] = {cachedir.c_str(), NULL};
     handleSetOpt(h.get(), LRO_URLS, urls);
     handleSetOpt(h.get(), LRO_LOCAL, 1L);
+#ifdef LRO_SUPPORTS_CACHEDIR
+    /* If zchunk is enabled, set librepo cache dir */
+    if (!conf->getMasterConfig().zchunk().getValue())
+        handleSetOpt(h.get(), LRO_CACHEDIR, conf->basecachedir().getValue().c_str());
+#endif
     return h;
 }
 
@@ -609,6 +614,12 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bo
     handleSetOpt(h.get(), LRO_PROGRESSDATA, callbacks.get());
     handleSetOpt(h.get(), LRO_FASTESTMIRRORCB, static_cast<LrFastestMirrorCb>(fastestMirrorCB));
     handleSetOpt(h.get(), LRO_FASTESTMIRRORDATA, callbacks.get());
+
+#ifdef LRO_SUPPORTS_CACHEDIR
+    /* If zchunk is enabled, set librepo cache dir */
+    if (!conf->getMasterConfig().zchunk().getValue())
+        handleSetOpt(h.get(), LRO_CACHEDIR, conf->basecachedir().getValue().c_str());
+#endif
 
     auto minrate = conf->minrate().getValue();
     handleSetOpt(h.get(), LRO_LOWSPEEDLIMIT, static_cast<long>(minrate));

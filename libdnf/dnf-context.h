@@ -128,6 +128,7 @@ gboolean         dnf_context_get_check_disk_space       (DnfContext     *context
 gboolean         dnf_context_get_check_transaction      (DnfContext     *context);
 gboolean         dnf_context_get_keep_cache             (DnfContext     *context);
 gboolean         dnf_context_get_only_trusted           (DnfContext     *context);
+gboolean         dnf_context_get_zchunk                 (DnfContext     *context);
 guint            dnf_context_get_cache_age              (DnfContext     *context);
 guint            dnf_context_get_installonly_limit      (DnfContext     *context);
 const gchar     *dnf_context_get_http_proxy             (DnfContext     *context);
@@ -179,6 +180,8 @@ void             dnf_context_set_keep_cache             (DnfContext     *context
 void             dnf_context_set_enable_filelists       (DnfContext     *context,
                                                          gboolean        enable_filelists);
 void             dnf_context_set_only_trusted           (DnfContext     *context,
+                                                         gboolean        only_trusted);
+void             dnf_context_set_zchunk                 (DnfContext     *context,
                                                          gboolean        only_trusted);
 void             dnf_context_set_cache_age              (DnfContext     *context,
                                                          guint           cache_age);

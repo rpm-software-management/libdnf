@@ -1194,8 +1194,10 @@ dnf_repo_setup(DnfRepo *repo, GError **error)
 
 #ifdef LRO_SUPPORTS_CACHEDIR
     /* Set cache dir */
-    if(!lr_handle_setopt(priv->repo_handle, error, LRO_CACHEDIR, dnf_context_get_cache_dir(priv->context)))
-       return FALSE;
+    if (dnf_context_get_zchunk(priv->context)) {
+        if(!lr_handle_setopt(priv->repo_handle, error, LRO_CACHEDIR, dnf_context_get_cache_dir(priv->context)))
+           return FALSE;
+    }
 #endif
 
     /* enabled is optional */
