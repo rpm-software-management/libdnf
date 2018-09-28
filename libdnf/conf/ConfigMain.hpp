@@ -88,6 +88,7 @@ public:
     OptionBool & best(); // :api
     OptionBool & install_weak_deps();
     OptionString & bugtracker_url();
+    OptionBool & zchunk();
     OptionEnum<std::string> & color();
     OptionString & color_list_installed_older();
     OptionString & color_list_installed_newer();

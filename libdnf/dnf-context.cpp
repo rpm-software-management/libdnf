@@ -131,6 +131,7 @@ typedef struct
     gboolean         enable_filelists;
     gboolean         keep_cache;
     gboolean         enrollment_valid;
+    gboolean         zchunk;
     DnfLock         *lock;
     DnfTransaction  *transaction;
     GThread         *transaction_thread;
@@ -218,6 +219,7 @@ dnf_context_init(DnfContext *context)
     priv->check_disk_space = TRUE;
     priv->check_transaction = TRUE;
     priv->enable_filelists = TRUE;
+    priv->zchunk = TRUE;
     priv->state = dnf_state_new();
     priv->lock = dnf_lock_new();
     priv->cache_age = 60 * 60 * 24 * 7; /* 1 week */
@@ -776,6 +778,23 @@ dnf_context_get_only_trusted(DnfContext *context)
 }
 
 /**
+ * dnf_context_get_zchunk
+ * @context: a #DnfContext instance.
+ *
+ * Gets whether zchunk is enabled
+ *
+ * Returns: %TRUE if zchunk is enabled
+ *
+ * Since: 0.21.0
+ **/
+gboolean
+dnf_context_get_zchunk(DnfContext *context)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    return priv->zchunk;
+}
+
+/**
  * dnf_context_get_enable_filelists:
  * @context: a #DnfContext instance.
  *
@@ -1143,6 +1162,22 @@ dnf_context_set_only_trusted(DnfContext *context, gboolean only_trusted)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     priv->only_trusted = only_trusted;
+}
+
+/**
+ * dnf_context_set_zchunk:
+ * @context: a #DnfContext instance.
+ * @only_trusted: %TRUE use zchunk metadata if available
+ *
+ * Enables or disables the use of zchunk metadata if available.
+ *
+ * Since: 0.21.0
+ **/
+void
+dnf_context_set_zchunk(DnfContext *context, gboolean zchunk)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    priv->zchunk = zchunk;
 }
 
 /**
