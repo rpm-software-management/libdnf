@@ -1407,8 +1407,6 @@ Goal::Impl::protectedInRemovals()
 
 /**
  * String describing the removal of protected packages.
- *
- * Caller is responsible for freeing the returned string using g_free().
  */
 std::string
 Goal::Impl::describeProtectedRemoval()
@@ -1441,7 +1439,7 @@ Goal::Impl::describeProtectedRemoval()
     }
     if (names.empty())
         return {};
-    return std::accumulate(names.begin(), names.end(), message,
+    return message + std::accumulate(std::next(names.begin()), names.end(), std::string(names[0]),
                            [](std::string a, std::string b) { return a + ", " + b; });
 }
 
