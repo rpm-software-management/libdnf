@@ -382,6 +382,9 @@ nevra_to_selector(HyNevra nevra, DnfSack *sack)
                 hy_selector_set(selector, HY_PKG_EVR, HY_EQ, evrbuf->str);
             }
         }
+        const char * arch = hy_nevra_get_string(nevra, HY_NEVRA_ARCH);
+        if (arch)
+            hy_selector_set(selector, HY_PKG_ARCH, HY_EQ, arch);
     }
 
     if (hy_selector_has_matches(selector)) {
