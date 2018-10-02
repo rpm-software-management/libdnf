@@ -534,8 +534,15 @@ sort_packages(const void *ap, const void *bp, void *s_cb)
             return 1;
         if (b == kernel || can_depend_on(pool, sb, kernel))
             return -1;
+        // if package has same evr as kernel try them to keep (kernel-devel packages)
+        Solvable * kernelSolvable = pool_id2solvable(pool, kernel);
+        if (sa->evr == kernelSolvable->evr) {
+            return 1;
+        }
+        if (sb->evr == kernelSolvable->evr) {
+            return -1;
+        }
     }
-
     return pool_evrcmp(pool, sa->evr, sb->evr, EVRCMP_COMPARE);
 }
 
