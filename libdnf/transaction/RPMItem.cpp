@@ -368,12 +368,13 @@ RPMItem::searchTransactions(SQLite3Ptr conn, const std::vector< std::string > &p
         SELECT DISTINCT
             t.id
         FROM
-            trans t,
-            trans_item ti,
-            rpm i
+            trans t
+        JOIN
+            trans_item ti ON ti.trans_id = t.id
+        JOIN
+            rpm i USING (item_id)
         WHERE
             t.state = 1
-            AND ti.item_id = i.item_id
             AND (
                 i.name = ?
                 OR i.epoch = ?
