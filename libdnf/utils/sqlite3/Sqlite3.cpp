@@ -32,7 +32,7 @@ SQLite3::open()
         }
         // sqlite doesn't behave correctly in chroots without following line:
         // turn foreign key checking on
-        exec("PRAGMA journal_mode = TRUNCATE; PRAGMA locking_mode = NORMAL; PRAGMA foreign_keys = ON;");
+        exec("PRAGMA locking_mode = NORMAL; PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;");
         sqlite3_busy_timeout(db, 10000);
     }
 }
