@@ -34,6 +34,7 @@ public:
     PackageSet(DnfSack* sack);
     PackageSet(DnfSack* sack, Map* map);
     PackageSet(const PackageSet & pset);
+    PackageSet(PackageSet && pset);
     ~PackageSet();
     Id operator [](unsigned int index) const;
     PackageSet & operator +=(const PackageSet & other);
