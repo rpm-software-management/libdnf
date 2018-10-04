@@ -32,6 +32,9 @@
 
 //class ModulePackageContainer;
 //typedef std::shared_ptr<ModulePackageContainer> ModulePackageContainerPtr;
+typedef std::map<std::string, std::vector<ModulePackagePtr>> StreamDict;
+typedef std::map<std::string, StreamDict> ModuleDict;
+
 
 struct ModulePackageContainer
 {
@@ -108,6 +111,18 @@ public:
     * @return bool
     */
     bool enable(const ModulePackagePtr &module);
+
+
+    /**
+     * @brief Enable a list of module specs. Return true if no errors where found.
+     *
+     * @return bool
+     */
+    bool enableSpecs(const std::vector<std::string> &moduleSpecs,
+            std::vector<std::string> &noMatchErrors,
+            std::vector<std::string> &errorSpecs,
+            std::vector<std::vector<std::string>> &solverErrors);
+
     /**
      * @brief unmark module 'name' from any streams
      */
@@ -216,6 +231,12 @@ public:
 private:
     class Impl;
     std::unique_ptr<Impl> pImpl;
+
+    bool getModules(const std::string &spec, std::vector<ModulePackagePtr> &modules, libdnf::Nsvcap &nsvcap);
+
+    std::map<std::string, std::pair<libdnf::Nsvcap, ModuleDict>> resolveSpecsEnableUpdateSack(const std::vector<std::string> &moduleSpecs, std::vector<std::string> &noMatchSpecs, std::vector<std::string> &errorSpec, std::vector<std::vector<std::string>> &solverErrors);
+
+    ModuleDict createModuleDictAndEnable(std::vector<ModulePackagePtr> &module_list, bool enable);
 };
 
 

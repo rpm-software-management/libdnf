@@ -69,6 +69,26 @@ void ModulePackageContainerTest::testDisabledModules()
     CPPUNIT_ASSERT(!modules->isEnabled("base-runtime", "f26"));
 }
 
+void ModulePackageContainerTest::testEnableModuleSpecs()
+{
+    std::vector<std::string> specs = {"httpd:2.4", "base-runtime:f26"};
+    std::vector<std::string> noMatchErrors;
+    std::vector<std::string> errorSpecs;
+    std::vector<std::vector<std::string>> solverErrors;
+
+    CPPUNIT_ASSERT(modules->enableSpecs(specs, noMatchErrors, errorSpecs, solverErrors));
+    CPPUNIT_ASSERT(noMatchErrors.empty());
+    CPPUNIT_ASSERT(errorSpecs.empty());
+    CPPUNIT_ASSERT(solverErrors.empty());
+
+    CPPUNIT_ASSERT(modules->isEnabled("httpd", "2.4"));
+    CPPUNIT_ASSERT(!modules->isEnabled("httpd", "2.2"));
+    CPPUNIT_ASSERT(modules->isEnabled("base-runtime", "f26"));
+    CPPUNIT_ASSERT(!modules->isEnabled("base-runtime", "rhel73"));
+
+    modules->rollback();
+}
+
 void ModulePackageContainerTest::testEnableModules()
 {
     modules->enable("httpd", "2.4");

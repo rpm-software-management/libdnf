@@ -40,6 +40,7 @@ extern "C" {
 #include "libdnf/conf/OptionStringList.hpp"
 #include "libdnf/goal/Goal.hpp"
 #include "libdnf/sack/selector.hpp"
+#include "libdnf/nsvcap.hpp"
 
 #include "bgettext/bgettext-lib.h"
 #include "tinyformat/tinyformat.hpp"
@@ -54,6 +55,12 @@ static constexpr auto DEFAULT_STATE = "";
 
 static const char * ENABLE_MULTIPLE_STREAM_EXCEPTION =
 _("Cannot enable multiple streams for module '%s'");
+
+static const char * IGNORE_PROFILE_MESSAGE =
+_("Ignoring unnecessary profile: '%s/%s'");
+
+static const char * UNABLE_RESOLVE_ARGUMENT =
+_("Unable to resolve argument %s");
 
 static const std::string EMPTY_RESULT;
 
@@ -391,6 +398,111 @@ ModulePackageContainer::enable(const ModulePackagePtr &module)
     return enable(module->getName(), module->getStream());
 }
 
+bool
+ModulePackageContainer::getModules(const std::string &spec, std::vector<ModulePackagePtr> &modules, libdnf::Nsvcap &nsvcap)
+{
+    for (std::size_t i = 0;
+         HY_MODULE_FORMS_MOST_SPEC[i] != _HY_MODULE_FORM_STOP_;
+         i++) {
+        if (!nsvcap.parse(spec.c_str(), HY_MODULE_FORMS_MOST_SPEC[i]))
+            continue;
+        modules = this->query(nsvcap);
+        if (!modules.empty())
+            return true;
+    }
+
+    return false;
+}
+
+ModuleDict
+ModulePackageContainer::createModuleDictAndEnable(std::vector<ModulePackagePtr> &moduleList, bool enable)
+{
+    ModuleDict moduleDict;
+
+    for (const auto &module : moduleList) {
+        moduleDict[module->getName()][module->getStream()].push_back(module);
+    }
+
+    for (auto &modItem : moduleDict) {
+        auto &moduleName = modItem.first;
+        auto &streamDict = modItem.second;
+        if (streamDict.size() > 1) {
+            const auto &state = getModuleState(moduleName);
+            std::string stream;
+            if (state != ModuleState::DEFAULT &&
+                state != ModuleState::ENABLED)
+                throw EnableMultipleStreamsException(moduleName);
+            if (state == ModuleState::ENABLED)
+                stream = getEnabledStream(moduleName);
+            else
+                stream = getDefaultStream(moduleName);
+            if (streamDict.find(stream) == streamDict.end())
+                throw EnableMultipleStreamsException(moduleName);
+            for (auto it = streamDict.begin(); it != streamDict.end(); ++it) {
+                if (it->first == stream) {
+                    if (enable)
+                        this->enable(moduleName, it->first);
+                    continue;
+                }
+                streamDict.erase(it);
+            }
+        }
+        else if (enable) {
+            for (const auto &streamItem : streamDict) {
+                this->enable(moduleName, streamItem.first);
+            }
+        }
+        assert(streamDict.size() == 1);
+    }
+
+    return moduleDict;
+}
+
+std::map<std::string, std::pair<libdnf::Nsvcap, ModuleDict>>
+ModulePackageContainer::resolveSpecsEnableUpdateSack(const std::vector<std::string> &module_specs, std::vector<std::string> &noMatchSpecs, std::vector<std::string> &errorSpec, std::vector<std::vector<std::string>> &solverErrors)
+{
+    std::map<std::string, std::pair<libdnf::Nsvcap, ModuleDict>> moduleDicts;
+
+    for (auto &spec : module_specs) {
+        std::vector<ModulePackagePtr> modules;
+        libdnf::Nsvcap nsvcap;
+        if (!getModules(spec, modules, nsvcap)) {
+            noMatchSpecs.push_back(spec);
+            continue;
+        }
+        try {
+            ModuleDict modDict = createModuleDictAndEnable(modules, true);
+            moduleDicts[spec] = std::make_pair(nsvcap, modDict);
+        } catch (const ModulePackageContainer::Exception& e) {
+            errorSpec.push_back(spec);
+            logger->error(e.what());
+            logger->error(tfm::format(UNABLE_RESOLVE_ARGUMENT, spec));
+        }
+    }
+    /* FIXME: get hotfix repos */
+    const char *hotfixRepos[] = {nullptr};
+    /* FIXME: get debug_solver from conf */
+    bool debugSolver = true;
+    solverErrors = dnf_sack_filter_modules_v2(pImpl->moduleSack, this, hotfixRepos, pImpl->installRoot.c_str(), nullptr, false, debugSolver);
+
+    return moduleDicts;
+}
+
+bool
+ModulePackageContainer::enableSpecs(const std::vector<std::string> &moduleSpecs, std::vector<std::string> &noMatchErrors, std::vector<std::string> &errorSpecs, std::vector<std::vector<std::string>> &solverErrors)
+{
+    const auto &moduleDicts = resolveSpecsEnableUpdateSack(moduleSpecs, noMatchErrors, errorSpecs, solverErrors);
+    for (const auto &item : moduleDicts) {
+        const auto nsvcap = item.second.first;
+        if (nsvcap.getProfile() != "")
+            logger->info("Ignoring unnecessary profile: '" + nsvcap.getName() + "/" + nsvcap.getProfile() + "'");
+    }
+    if (!noMatchErrors.empty() || !errorSpecs.empty() || !solverErrors.empty())
+        return false;
+
+    return true;
+}
+
 /**
  * @brief Mark module as not part of an enabled stream.
  */
@@ -493,7 +605,7 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackagePtr> & 
     libdnf::Goal goal(moduleSack);
     for (const auto &module : modules) {
         std::ostringstream ss;
-        ss << "module(" << module->getName() << ":" << module->getStream() << ":"; 
+        ss << "module(" << module->getName() << ":" << module->getStream() << ":";
         ss << module->getVersion() << ")";
         libdnf::Selector selector(moduleSack);
         selector.set(HY_PKG_PROVIDES, HY_EQ, ss.str().c_str());
