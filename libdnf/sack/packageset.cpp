@@ -42,6 +42,7 @@ private:
 PackageSet::PackageSet(DnfSack* sack) : pImpl(new Impl(sack)) {}
 PackageSet::PackageSet(DnfSack* sack, Map* map_source) : pImpl(new Impl(sack, map_source)) {}
 PackageSet::PackageSet(const PackageSet & pset): pImpl(new Impl(pset)) {}
+PackageSet::PackageSet(PackageSet && pset): pImpl(std::move(pset.pImpl)) {}
 PackageSet::~PackageSet() = default;
 
 PackageSet::Impl::Impl(DnfSack* sack) :
