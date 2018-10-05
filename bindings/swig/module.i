@@ -39,9 +39,9 @@ typedef int Id;
 %template(VectorModuleProfile) std::vector<ModuleProfile>;
 %template(MapStringString) std::map<std::string, std::string>;
 %template(MapStringPairStringString) std::map<std::string, std::pair<std::string, std::string>>;
-%template(VectorString) std::vector<std::string>;
 %template(MapStringVectorString) std::map<std::string, std::vector<std::string>>;
 
+%include <std_vector_ext.i>
 
 // make SWIG wrap following headers
 %nodefaultctor ModulePackage;
