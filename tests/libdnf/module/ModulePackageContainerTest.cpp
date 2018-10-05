@@ -46,6 +46,24 @@ void ModulePackageContainerTest::testEnabledModules()
     }
 }
 
+void ModulePackageContainerTest::testDisableModuleSpecs()
+{
+    const std::vector<std::string> specs = {"httpd", "base-runtime:f26"};
+    std::vector<std::string> noMatchErrors;
+    std::vector<std::vector<std::string>> solverErrors;
+
+    CPPUNIT_ASSERT(modules->disableSpecs(specs, noMatchErrors, solverErrors));
+    CPPUNIT_ASSERT(noMatchErrors.empty());
+    CPPUNIT_ASSERT(solverErrors.empty());
+
+    CPPUNIT_ASSERT(!modules->isEnabled("httpd", "2.4"));
+    CPPUNIT_ASSERT(!modules->isEnabled("httpd", "2.2"));
+    CPPUNIT_ASSERT(!modules->isEnabled("base-runtime", "f26"));
+    CPPUNIT_ASSERT(!modules->isEnabled("base-runtime", "rhel73"));
+
+    modules->rollback();
+}
+
 void ModulePackageContainerTest::testDisableModules()
 {
     modules->disable("httpd");

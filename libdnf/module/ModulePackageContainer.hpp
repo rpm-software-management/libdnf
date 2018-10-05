@@ -128,6 +128,16 @@ public:
      */
     void disable(const std::string & name);
     void disable(const ModulePackagePtr &module);
+
+    /**
+     * @brief Disable a list of module specs. Return true if no errors where found.
+     *
+     * @return bool
+     */
+    bool disableSpecs(const std::vector<std::string> &moduleSpecs,
+            std::vector<std::string> &noMatchSpecs,
+            std::vector<std::vector<std::string>> &solverErrors);
+
     /**
      * @brief Reset module state so it's no longer enabled or disabled.
      */
@@ -237,6 +247,8 @@ private:
     std::map<std::string, std::pair<libdnf::Nsvcap, ModuleDict>> resolveSpecsEnableUpdateSack(const std::vector<std::string> &moduleSpecs, std::vector<std::string> &noMatchSpecs, std::vector<std::string> &errorSpec, std::vector<std::vector<std::string>> &solverErrors);
 
     ModuleDict createModuleDictAndEnable(std::vector<ModulePackagePtr> &module_list, bool enable);
+
+    bool modulesResetOrDisable(const std::vector<std::string> &moduleSpecs, ModuleState toState, std::vector<std::string> &noMatchSpecs, std::vector<std::vector<std::string>> &solverErrors);
 };
 
 

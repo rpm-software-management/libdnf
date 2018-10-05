@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <set>
 #include <sstream>
+#include <iterator>
 
 extern "C" {
 #include <solv/poolarch.h>
@@ -495,7 +496,7 @@ ModulePackageContainer::enableSpecs(const std::vector<std::string> &moduleSpecs,
     for (const auto &item : moduleDicts) {
         const auto nsvcap = item.second.first;
         if (nsvcap.getProfile() != "")
-            logger->info("Ignoring unnecessary profile: '" + nsvcap.getName() + "/" + nsvcap.getProfile() + "'");
+            logger->info(tfm::format(IGNORE_PROFILE_MESSAGE, nsvcap.getName(), nsvcap.getProfile()));
     }
     if (!noMatchErrors.empty() || !errorSpecs.empty() || !solverErrors.empty())
         return false;
@@ -515,6 +516,49 @@ void ModulePackageContainer::disable(const std::string & name)
 void ModulePackageContainer::disable(const ModulePackagePtr &module)
 {
     disable(module->getName());
+}
+
+bool
+ModulePackageContainer::modulesResetOrDisable(const std::vector<std::string> &moduleSpecs, ModuleState toState, std::vector<std::string> &noMatchSpecs, std::vector<std::vector<std::string>> &solverErrors)
+{
+    for (const auto &spec : moduleSpecs) {
+        std::vector<ModulePackagePtr> modules;
+        libdnf::Nsvcap nsvcap;
+
+        if (!getModules(spec, modules, nsvcap)) {
+            logger->error(tfm::format(UNABLE_RESOLVE_ARGUMENT, spec));
+            noMatchSpecs.push_back(spec);
+            continue;
+        }
+        if (nsvcap.getProfile() != "")
+            logger->info(tfm::format(IGNORE_PROFILE_MESSAGE, nsvcap.getName(), nsvcap.getProfile()));
+
+        std::set<std::string> moduleNames;
+        std::transform(modules.begin(), modules.end(),
+                std::inserter(moduleNames, moduleNames.begin()),
+                [](ModulePackagePtr &m) -> std::string { return m->getName(); });
+
+        for (const auto &name : moduleNames) {
+            if (toState == ModuleState::UNKNOWN)
+                reset(name);
+            if (toState == ModuleState::DISABLED)
+                disable(name);
+        }
+    }
+    /* FIXME: get hotfix repos */
+    const char *hotfixRepos[] = {nullptr};
+    /* FIXME: get debug_solver from conf */
+    bool debugSolver = true;
+    solverErrors = dnf_sack_filter_modules_v2(pImpl->moduleSack, this, hotfixRepos, pImpl->installRoot.c_str(), nullptr, true, debugSolver);
+
+
+    return noMatchSpecs.empty() && solverErrors.empty();
+}
+
+bool
+ModulePackageContainer::disableSpecs(const std::vector<std::string> &moduleSpecs, std::vector<std::string> &noMatchSpecs, std::vector<std::vector<std::string>> &solverErrors)
+{
+    return modulesResetOrDisable(moduleSpecs, ModuleState::DISABLED, noMatchSpecs, solverErrors);
 }
 
 /**

@@ -13,6 +13,7 @@ class ModulePackageContainerTest : public CppUnit::TestCase
         CPPUNIT_TEST(testEnabledModules);
         CPPUNIT_TEST(testDisableModules);
         CPPUNIT_TEST(testDisabledModules);
+        CPPUNIT_TEST(testDisableModuleSpecs);
         CPPUNIT_TEST(testEnableModuleSpecs);
         CPPUNIT_TEST(testEnableModules);
         CPPUNIT_TEST(testRollback);
@@ -27,6 +28,7 @@ public:
     void testEnabledModules();
     void testDisableModules();
     void testDisabledModules();
+    void testDisableModuleSpecs();
     void testEnableModuleSpecs();
     void testEnableModules();
     void testRollback();
