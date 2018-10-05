@@ -54,9 +54,10 @@
 %template(OptionChildNumberFloat) libdnf::OptionChild< OptionNumber<float> >;
 %template(OptionChildEnumString) libdnf::OptionChild< OptionEnum<std::string> >;
 %template(OptionChildSeconds) libdnf::OptionChild<OptionSeconds>;
-%template(VectorString) std::vector<std::string>;
 %template(PairStringString) std::pair<std::string, std::string>;
 %template(MapStringString) std::map<std::string, std::string>;
+
+%include <std_vector_ext.i>
 
 %inline %{
 class StopIterator {};
