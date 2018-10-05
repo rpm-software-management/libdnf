@@ -212,11 +212,12 @@ query_dealloc(_QueryObject *self)
 static int
 query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
 {
-    const char *kwlist[] = {"sack", "query", NULL};
+    const char *kwlist[] = {"sack", "flags", "query", NULL};
     PyObject *sack = NULL;
     PyObject *query = NULL;
+    int flags = 0;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", (char**) kwlist, &sack, &query))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OiO", (char**) kwlist, &sack, &flags, &query))
         return -1;
 
     if (query && (!sack || sack == Py_None) && queryObject_Check(query)) {
@@ -227,7 +228,7 @@ query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
         DnfSack *csack = sackFromPyObject(sack);
         assert(csack);
         self->sack = sack;
-        self->query = new libdnf::Query(csack);
+        self->query = new libdnf::Query(csack, flags);
     } else {
         const char *msg = "Expected a _hawkey.Sack or a _hawkey.Query object.";
         PyErr_SetString(PyExc_TypeError, msg);
