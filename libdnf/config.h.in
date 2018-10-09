@@ -21,5 +21,6 @@
 #ifndef _LIBDNF_CONFIG_H_
 #define _LIBDNF_CONFIG_H_
 
+#define DEFAULT_PLUGINS_DIRECTORY "@CMAKE_INSTALL_FULL_LIBDIR@/libdnf/plugins/"
 
 #endif // _LIBDNF_CONFIG_H_
