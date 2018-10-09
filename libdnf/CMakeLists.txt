@@ -34,6 +34,7 @@ SET (LIBDNF_SRCS
 INCLUDE_DIRECTORIES (transaction)
 ADD_SUBDIRECTORY ("transaction")
 
+configure_file ("config.h.in" ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
 configure_file ("dnf-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/dnf-version.h)
 configure_file ("libdnf.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc @ONLY)
 
@@ -91,6 +92,7 @@ SET(LIBHAWKEY_headers
     )
 
 SET(LIBDNF_headers
+    config.h
     log.hpp
     nevra.hpp
     nsvcap.hpp
