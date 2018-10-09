@@ -1117,7 +1117,7 @@ bool Repo::Impl::isRepomdInSync()
     std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir));
 
     handleSetOpt(h.get(), LRO_YUMDLIST, dlist);
-    auto r = lrHandlePerform(h.get(), tmpdir, false);
+    auto r = lrHandlePerform(h.get(), tmpdir, conf->repo_gpgcheck().getValue());
     resultGetInfo(r.get(), LRR_YUM_REPO, &yum_repo);
 
     auto same = haveFilesSameContent(repomdFn.c_str(), yum_repo->repomd);
