@@ -30,6 +30,8 @@
  * to use objects from librepo, rpm or hawkey directly.
  */
 
+#include "config.h"
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -64,7 +66,6 @@
 #include "goal/Goal.hpp"
 #include "plugin/plugin-private.hpp"
 
-#define DEFAULT_PLUGINS_DIRECTORY "/usr/lib64/libdnf/plugins/"  // TODO determine plugins directory
 #define MAX_NATIVE_ARCHES    12
 
 #define RELEASEVER_PROV "system-release(releasever)"
