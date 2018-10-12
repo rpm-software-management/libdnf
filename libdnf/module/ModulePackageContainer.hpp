@@ -209,6 +209,7 @@ public:
     std::vector<ModulePackagePtr> query(std::string subject);
     std::vector<ModulePackagePtr> query(std::string name, std::string stream,
         std::string version, std::string context, std::string arch);
+    void enableDependencyTree(std::vector<ModulePackagePtr> & modulePackages);
     std::vector<std::vector<std::string>> resolveActiveModulePackages(bool debugSolver);
     bool isModuleActive(Id id);
     bool isModuleActive(ModulePackagePtr modulePackage);

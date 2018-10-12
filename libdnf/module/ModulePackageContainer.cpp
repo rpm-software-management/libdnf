@@ -574,6 +574,50 @@ ModulePackageContainer::query(std::string name, std::string stream, std::string 
     return result;
 }
 
+void ModulePackageContainer::enableDependencyTree(std::vector<ModulePackagePtr> & modulePackages)
+{
+    if (!pImpl->activatedModules) {
+        return;
+    }
+    libdnf::PackageSet toEnable(pImpl->moduleSack);
+    libdnf::PackageSet enabled(pImpl->moduleSack);
+    for (auto & modulePackage: modulePackages) {
+        if (!isModuleActive(modulePackage)) {
+            continue;
+        }
+        libdnf::Query query(pImpl->moduleSack);
+        query.addFilter(HY_PKG, HY_EQ, pImpl->activatedModules.get());
+        auto pkg = dnf_package_new(pImpl->moduleSack, modulePackage->getId());
+        auto requires = dnf_package_get_requires(pkg);
+        query.addFilter(HY_PKG_PROVIDES, requires);
+        auto set = query.runSet();
+        toEnable += *set;
+        delete requires;
+        g_object_unref(pkg);
+        enable(modulePackage);
+        enabled.set(modulePackage->getId());
+    }
+    toEnable -= enabled;
+    while (!toEnable.empty()) {
+        Id moduleId = -1;
+        while ((moduleId = toEnable.next(moduleId)) != -1) {
+            enable(pImpl->modules.at(moduleId));
+            enabled.set(moduleId);
+            libdnf::Query query(pImpl->moduleSack);
+            query.addFilter(HY_PKG, HY_EQ, pImpl->activatedModules.get());
+            query.addFilter(HY_PKG, HY_NEQ, &enabled);
+            auto pkg = dnf_package_new(pImpl->moduleSack, moduleId);
+            auto requires = dnf_package_get_requires(pkg);
+            query.addFilter(HY_PKG_PROVIDES, requires);
+            auto set = query.runSet();
+            toEnable += *set;
+            delete requires;
+            g_object_unref(pkg);
+        }
+        toEnable -= enabled;
+    }
+}
+
 ModulePackageContainer::ModuleState
 ModulePackageContainer::getModuleState(const std::string& name)
 {
