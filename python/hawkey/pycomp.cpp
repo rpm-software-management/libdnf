@@ -37,43 +37,32 @@ pycomp_get_string_from_unicode(PyObject *str_u, PyObject **tmp_py_str)
 }
 
 PycompString::PycompString(PyObject * str)
-: cString(nullptr), pyString(nullptr)
 {
-    if (PyUnicode_Check(str))
-        cString = pycomp_get_string_from_unicode(str, &pyString);
+    if (PyUnicode_Check(str)) {
+        PyObject * pyString;
+        auto cString = pycomp_get_string_from_unicode(str, &pyString);
+        if (cString) {
+            cppString = cString;
+            isNull = false;
+        }
+        Py_XDECREF(pyString);
 #if PY_MAJOR_VERSION < 3
-    else if (PyString_Check(str))
-        cString = PyString_AsString(str);
-    else
+    } else if (PyString_Check(str)) {
+        auto cString = PyString_AsString(str);
+        if (cString) {
+            cppString = cString;
+            isNull = false;
+        }
+    } else
         PyErr_SetString(PyExc_TypeError, "Expected a string or a unicode object");
 #else
-    else if (PyBytes_Check(str))
-        cString = PyBytes_AsString(str);
-    else
+    } else if (PyBytes_Check(str)) {
+        auto cString = PyBytes_AsString(str);
+        if (cString) {
+            cppString = cString;
+            isNull = false;
+        }
+    } else
         PyErr_SetString(PyExc_TypeError, "Expected a string or a unicode object");
 #endif
-}
-
-PycompString::PycompString(PycompString && src) noexcept
-: cString(src.cString), pyString(src.pyString)
-{
-    src.cString = nullptr;
-    src.pyString = nullptr;
-}
-
-PycompString & PycompString::operator =(PycompString && src) noexcept
-{
-    if (this == &src)
-        return *this;
-    Py_XDECREF(pyString);
-    cString = src.cString;
-    pyString = src.pyString;
-    src.cString = nullptr;
-    src.pyString = nullptr;
-    return *this;
-}
-
-PycompString::~PycompString()
-{
-    Py_XDECREF(pyString);
 }
