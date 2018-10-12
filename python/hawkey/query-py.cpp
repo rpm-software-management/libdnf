@@ -45,6 +45,9 @@
 #include "sack/packageset.hpp"
 #include "sack/selector.hpp"
 
+#include <algorithm>
+#include <functional>
+
 typedef struct {
     PyObject_HEAD
     HyQuery query;
@@ -363,13 +366,16 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
         break;
     }
     default: {
-        std::vector<const char *> matches;
+        std::vector<std::string> matches;
         try {
             matches = pySequenceConverter(match);
         } catch (std::runtime_error &) {
             return 0;
         }
-        int filter_in_ret = query->addFilter(keyname, cmp_type, matches.data());\
+        std::vector<const char *> matchesCString(matches.size() + 1);
+        std::transform(matches.begin(), matches.end(), matchesCString.begin(),
+            std::mem_fn(&std::string::c_str));
+        int filter_in_ret = query->addFilter(keyname, cmp_type, matchesCString.data());
         if (filter_in_ret)
             return raise_bad_filter();
         break;
