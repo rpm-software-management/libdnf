@@ -39,6 +39,9 @@
 #include "pycomp.hpp"
 #include "sack/packageset.hpp"
 
+#include <algorithm>
+#include <functional>
+
 typedef struct {
     PyObject_HEAD
     DnfSack *sack;
@@ -514,13 +517,16 @@ filter_modules(_SackObject *self, PyObject *args, PyObject *kwds)
     auto swigContainer = reinterpret_cast< ModulePackageContainerPyObject * >(
         PyObject_GetAttrString(pyModuleContainer, "this"));
     auto moduleContainer = swigContainer->ptr;
-    std::vector<const char *> hotfixRepos;
+    std::vector<std::string> hotfixRepos;
     try {
         hotfixRepos = pySequenceConverter(pyHotfixRepos);
     } catch (std::runtime_error &) {
         return NULL;
     }
-    auto problems = dnf_sack_filter_modules_v2(self->sack, moduleContainer, hotfixRepos.data(),
+    std::vector<const char *> hotfixReposCString(hotfixRepos.size() + 1);
+    std::transform(hotfixRepos.begin(), hotfixRepos.end(), hotfixReposCString.begin(),
+        std::mem_fn(&std::string::c_str));
+    auto problems = dnf_sack_filter_modules_v2(self->sack, moduleContainer, hotfixReposCString.data(),
         installRoot, platformModule, updateOnly, debugSolver);
     return problemRulesPyConverter(problems);
 }

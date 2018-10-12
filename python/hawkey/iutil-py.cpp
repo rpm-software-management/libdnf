@@ -334,29 +334,27 @@ reldeplist_to_pylist(DnfReldepList *reldeplist, PyObject *sack)
     return list.release();
 }
 
-std::vector<const char *>
+std::vector<std::string>
 pySequenceConverter(PyObject * pySequence)
 {
     UniquePtrPyObject seq(PySequence_Fast(pySequence, "Expected a sequence."));
     if (!seq)
         throw std::runtime_error("Expected a sequence.");
     const unsigned count = PySequence_Size(seq.get());
-    PycompString pMatches[count];
-    std::vector<const char *> output;
-    output.reserve(count + 1);
+    std::vector<std::string> output;
+    output.reserve(count);
     for (unsigned int i = 0; i < count; ++i) {
         PyObject *item = PySequence_Fast_GET_ITEM(seq.get(), i);
         if (PyUnicode_Check(item) || PyString_Check(item)) {
-            pMatches[i] = PycompString(item);
-            if (!pMatches[i].getCString())
+            PycompString pycomStr(item);
+            if (!pycomStr.getCString())
                 throw std::runtime_error("Invalid value.");
-            output.push_back(pMatches[i].getCString());
-            } else {
-                PyErr_SetString(PyExc_TypeError, "Invalid value.");
-                throw std::runtime_error("Invalid value.");
-            }
+            output.push_back(pycomStr.getCString());
+        } else {
+            PyErr_SetString(PyExc_TypeError, "Invalid value.");
+            throw std::runtime_error("Invalid value.");
         }
-    output.push_back(nullptr);
+    }
     return output;
 }
 
