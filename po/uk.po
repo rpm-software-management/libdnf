@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-09-25 07:59+0200\n"
-"PO-Revision-Date: 2018-08-30 04:34+0000\n"
+"PO-Revision-Date: 2018-09-30 05:11+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian\n"
 "MIME-Version: 1.0\n"
@@ -61,171 +61,175 @@ msgstr ""
 
 #: ../libdnf/goal/Goal.cpp:65 ../libdnf/goal/Goal.cpp:91
 msgid " does not belong to a distupgrade repository"
-msgstr ""
+msgstr " не належить до сховища оновлення дистрибутива"
 
 #: ../libdnf/goal/Goal.cpp:66 ../libdnf/goal/Goal.cpp:92
 msgid " has inferior architecture"
-msgstr ""
+msgstr " належить до гіршої архітектури"
 
 #: ../libdnf/goal/Goal.cpp:67
 msgid "problem with installed package "
-msgstr ""
+msgstr "проблема зі встановленим пакунком "
 
 #: ../libdnf/goal/Goal.cpp:68 ../libdnf/goal/Goal.cpp:94
 msgid "conflicting requests"
-msgstr ""
+msgstr "конфлікт запитів"
 
 #: ../libdnf/goal/Goal.cpp:69 ../libdnf/goal/Goal.cpp:95
 msgid "unsupported request"
-msgstr ""
+msgstr "непідтримуваний запит"
 
 #: ../libdnf/goal/Goal.cpp:70 ../libdnf/goal/Goal.cpp:96
 msgid "nothing provides requested "
-msgstr ""
+msgstr "нічого з пакунків не містить потрібного "
 
 #: ../libdnf/goal/Goal.cpp:71
 #, c-format
 msgid "package %s does not exist"
-msgstr ""
+msgstr "пакунка %s не існує"
 
 #: ../libdnf/goal/Goal.cpp:72 ../libdnf/goal/Goal.cpp:98
 msgid " is provided by the system"
-msgstr ""
+msgstr " надається системою"
 
 #: ../libdnf/goal/Goal.cpp:73 ../libdnf/goal/Goal.cpp:99
 msgid "some dependency problem"
-msgstr ""
+msgstr "якась проблема із залежностями"
 
 #: ../libdnf/goal/Goal.cpp:74
 msgid "cannot install the best update candidate for package "
-msgstr ""
+msgstr "не вдалося встановити найкращий варіант оновлення для пакунка "
 
 #: ../libdnf/goal/Goal.cpp:75 ../libdnf/goal/Goal.cpp:101
 msgid "cannot install the best candidate for the job"
-msgstr ""
+msgstr "не вдалося встановити найкращий варіант для завдання"
 
 #: ../libdnf/goal/Goal.cpp:76
 #, c-format
 msgid "package %s is excluded"
-msgstr ""
+msgstr "пакунок %s виключено"
 
 #: ../libdnf/goal/Goal.cpp:77
 #, c-format
 msgid "package %s does not have a compatible architecture"
-msgstr ""
+msgstr "немає пакунка %s із сумісною архітектурою"
 
 #: ../libdnf/goal/Goal.cpp:78
 #, c-format
 msgid "package %s is not installable"
-msgstr ""
+msgstr "пакунок %s є непридатним до встановлення"
 
 #: ../libdnf/goal/Goal.cpp:79 ../libdnf/goal/Goal.cpp:105
 #, c-format
 msgid "nothing provides %s needed by %s"
-msgstr ""
+msgstr "немає пакунків із %s, потрібним для %s"
 
 #: ../libdnf/goal/Goal.cpp:80 ../libdnf/goal/Goal.cpp:106
 #, c-format
 msgid "cannot install both %s and %s"
-msgstr ""
+msgstr "неможливо встановити одразу %s і %s"
 
 #: ../libdnf/goal/Goal.cpp:81
 #, c-format
 msgid "package %s conflicts with %s provided by %s"
-msgstr ""
+msgstr "пакунок %s конфліктує з %s, що надається %s"
 
 #: ../libdnf/goal/Goal.cpp:82
 #, c-format
 msgid "package %s obsoletes %s provided by %s"
-msgstr ""
+msgstr "пакунок %s робить застарілим %s, що надається %s"
 
 #: ../libdnf/goal/Goal.cpp:83
 #, c-format
 msgid "installed package %s obsoletes %s provided by %s"
-msgstr ""
+msgstr "встановлений пакунок %s робить застарілим %s, що надається %s"
 
 #: ../libdnf/goal/Goal.cpp:84
 #, c-format
 msgid "package %s implicitly obsoletes %s provided by %s"
-msgstr ""
+msgstr "пакунок %s неявним чином робить застарілим %s, що надається %s"
 
 #: ../libdnf/goal/Goal.cpp:85
 #, c-format
 msgid "package %s requires %s, but none of the providers can be installed"
 msgstr ""
+"пакунок %s потребує %s, але жоден з пакунків, які його надають, не може бути"
+" встановлено"
 
 #: ../libdnf/goal/Goal.cpp:86
 #, c-format
 msgid "package %s conflicts with %s provided by itself"
-msgstr ""
+msgstr "пакунок %s конфліктує з %s, що надається самим цим пакунком"
 
 #: ../libdnf/goal/Goal.cpp:87
 #, c-format
 msgid "both package %s and %s obsolete "
-msgstr ""
+msgstr "обидва пакунки, %s і %s, роблять застарілим "
 
 #: ../libdnf/goal/Goal.cpp:93
 msgid "problem with installed module "
-msgstr ""
+msgstr "проблема зі встановленим модулем "
 
 #: ../libdnf/goal/Goal.cpp:97
 #, c-format
 msgid "module %s does not exist"
-msgstr ""
+msgstr "модуля %s не існує"
 
 #: ../libdnf/goal/Goal.cpp:100
 msgid "cannot install the best update candidate for module "
-msgstr ""
+msgstr "не вдалося встановити найкращий варіант оновлення для модуля "
 
 #: ../libdnf/goal/Goal.cpp:102
 #, c-format
 msgid "module %s is disabled"
-msgstr ""
+msgstr "модуль %s вимкнено"
 
 #: ../libdnf/goal/Goal.cpp:103
 #, c-format
 msgid "module %s does not have a compatible architecture"
-msgstr ""
+msgstr "у модуля %s немає сумісної архітектури"
 
 #: ../libdnf/goal/Goal.cpp:104
 #, c-format
 msgid "module %s is not installable"
-msgstr ""
+msgstr "модуль %s є непридатним до встановлення"
 
 #: ../libdnf/goal/Goal.cpp:107
 #, c-format
 msgid "module %s conflicts with %s provided by %s"
-msgstr ""
+msgstr "модуль %s конфліктує з %s, що надається %s"
 
 #: ../libdnf/goal/Goal.cpp:108
 #, c-format
 msgid "module %s obsoletes %s provided by %s"
-msgstr ""
+msgstr "модуль %s робить застарілим %s, що надається %s"
 
 #: ../libdnf/goal/Goal.cpp:109
 #, c-format
 msgid "installed module %s obsoletes %s provided by %s"
-msgstr ""
+msgstr "встановлений модуль %s робить застарілим %s, що надається %s"
 
 #: ../libdnf/goal/Goal.cpp:110
 #, c-format
 msgid "module %s implicitly obsoletes %s provided by %s"
-msgstr ""
+msgstr "модуль %s неявним чином робить застарілим %s, що надається %s"
 
 #: ../libdnf/goal/Goal.cpp:111
 #, c-format
 msgid "module %s requires %s, but none of the providers can be installed"
 msgstr ""
+"модуль %s потребує %s, але жоден з пакунків, які його надають, не може бути "
+"встановлено"
 
 #: ../libdnf/goal/Goal.cpp:112
 #, c-format
 msgid "module %s conflicts with %s provided by itself"
-msgstr ""
+msgstr "модуль %s конфліктує з %s, що надається самим цим пакунком"
 
 #: ../libdnf/goal/Goal.cpp:113
 #, c-format
 msgid "both module %s and %s obsolete "
-msgstr ""
+msgstr "обидва модулі, %s і %s, роблять застарілим "
 
 #: ../libdnf/goal/Goal.cpp:979
 msgid "no solver set"
@@ -352,7 +356,7 @@ msgstr "відновлюємо: помилка обробки «%s», невід
 #: ../libdnf/repo/Repo.cpp:1145
 #, c-format
 msgid "Cannot create repo destination directory \"%s\": %s"
-msgstr ""
+msgstr "Не вдалося створити каталог призначення сховища «%s»: %s"
 
 #: ../libdnf/repo/Repo.cpp:1151
 #, c-format
@@ -547,7 +551,7 @@ msgstr "вже на рівні 100%% [%s]"
 #: ../libdnf/module/ModulePackageContainer.cpp:56
 #, c-format
 msgid "Cannot enable multiple streams for module '%s'"
-msgstr ""
+msgstr "Не вдалося увімкнути декілька потоків для модуля «%s»"
 
 #: ../libdnf/dnf-rpmts.cpp:88 ../libdnf/dnf-rpmts.cpp:133
 #, c-format
@@ -760,7 +764,7 @@ msgstr "не вдалося завантажити RPMDB"
 
 #: ../libdnf/dnf-sack.cpp:2349
 msgid "No module defaults found"
-msgstr ""
+msgstr "Не знайдено типових налаштувань модуля"
 
 #: ../libdnf/transaction/Transformer.cpp:651
 msgid "Transformer: can't open history persist dir"

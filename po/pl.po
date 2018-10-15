@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-09-25 07:59+0200\n"
-"PO-Revision-Date: 2018-08-29 04:59+0000\n"
+"PO-Revision-Date: 2018-09-26 09:09+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish (http://www.transifex.com/projects/p/dnf/language/pl/)\n"
 "MIME-Version: 1.0\n"
@@ -67,171 +67,176 @@ msgstr ""
 
 #: ../libdnf/goal/Goal.cpp:65 ../libdnf/goal/Goal.cpp:91
 msgid " does not belong to a distupgrade repository"
-msgstr ""
+msgstr " nie należy do repozytorium distupgrade"
 
 #: ../libdnf/goal/Goal.cpp:66 ../libdnf/goal/Goal.cpp:92
 msgid " has inferior architecture"
-msgstr ""
+msgstr " ma niższą architekturę"
 
 #: ../libdnf/goal/Goal.cpp:67
 msgid "problem with installed package "
-msgstr ""
+msgstr "problem z zainstalowanym pakietem "
 
 #: ../libdnf/goal/Goal.cpp:68 ../libdnf/goal/Goal.cpp:94
 msgid "conflicting requests"
-msgstr ""
+msgstr "sprzeczne żądania"
 
 #: ../libdnf/goal/Goal.cpp:69 ../libdnf/goal/Goal.cpp:95
 msgid "unsupported request"
-msgstr ""
+msgstr "nieobsługiwane żądanie"
 
 #: ../libdnf/goal/Goal.cpp:70 ../libdnf/goal/Goal.cpp:96
 msgid "nothing provides requested "
-msgstr ""
+msgstr "nic nie dostarcza żądanego "
 
 #: ../libdnf/goal/Goal.cpp:71
 #, c-format
 msgid "package %s does not exist"
-msgstr ""
+msgstr "pakiet %s nie istnieje"
 
 #: ../libdnf/goal/Goal.cpp:72 ../libdnf/goal/Goal.cpp:98
 msgid " is provided by the system"
-msgstr ""
+msgstr " jest dostarczane przez system"
 
 #: ../libdnf/goal/Goal.cpp:73 ../libdnf/goal/Goal.cpp:99
 msgid "some dependency problem"
-msgstr ""
+msgstr "problem zależności"
 
 #: ../libdnf/goal/Goal.cpp:74
 msgid "cannot install the best update candidate for package "
 msgstr ""
+"nie można zainstalować najlepszego kandydata aktualizacji dla pakietu "
 
 #: ../libdnf/goal/Goal.cpp:75 ../libdnf/goal/Goal.cpp:101
 msgid "cannot install the best candidate for the job"
-msgstr ""
+msgstr "nie można zainstalować najlepszego kandydata do zadania"
 
 #: ../libdnf/goal/Goal.cpp:76
 #, c-format
 msgid "package %s is excluded"
-msgstr ""
+msgstr "pakiet %s jest wykluczony"
 
 #: ../libdnf/goal/Goal.cpp:77
 #, c-format
 msgid "package %s does not have a compatible architecture"
-msgstr ""
+msgstr "pakiet %s nie ma zgodnej architektury"
 
 #: ../libdnf/goal/Goal.cpp:78
 #, c-format
 msgid "package %s is not installable"
-msgstr ""
+msgstr "nie można zainstalować pakietu %s"
 
 #: ../libdnf/goal/Goal.cpp:79 ../libdnf/goal/Goal.cpp:105
 #, c-format
 msgid "nothing provides %s needed by %s"
-msgstr ""
+msgstr "nic nie dostarcza %s wymaganego przez %s"
 
 #: ../libdnf/goal/Goal.cpp:80 ../libdnf/goal/Goal.cpp:106
 #, c-format
 msgid "cannot install both %s and %s"
-msgstr ""
+msgstr "nie można zainstalować %s i %s jednocześnie"
 
 #: ../libdnf/goal/Goal.cpp:81
 #, c-format
 msgid "package %s conflicts with %s provided by %s"
-msgstr ""
+msgstr "pakiet %s jest sprzeczny z %s dostarczanym przez %s"
 
 #: ../libdnf/goal/Goal.cpp:82
 #, c-format
 msgid "package %s obsoletes %s provided by %s"
-msgstr ""
+msgstr "pakiet %s zastępuje %s dostarczane przez %s"
 
 #: ../libdnf/goal/Goal.cpp:83
 #, c-format
 msgid "installed package %s obsoletes %s provided by %s"
-msgstr ""
+msgstr "zainstalowany pakiet %s zastępuje %s dostarczane przez %s"
 
 #: ../libdnf/goal/Goal.cpp:84
 #, c-format
 msgid "package %s implicitly obsoletes %s provided by %s"
-msgstr ""
+msgstr "pakiet %s niebezpośrednio zastępuje %s dostarczane przez %s"
 
 #: ../libdnf/goal/Goal.cpp:85
 #, c-format
 msgid "package %s requires %s, but none of the providers can be installed"
 msgstr ""
+"pakiet %s wymaga %s, ale nie można zainstalować żadnego pakietu go "
+"dostarczającego"
 
 #: ../libdnf/goal/Goal.cpp:86
 #, c-format
 msgid "package %s conflicts with %s provided by itself"
-msgstr ""
+msgstr "pakiet %s jest sprzeczny z %s dostarczanym przez samego siebie"
 
 #: ../libdnf/goal/Goal.cpp:87
 #, c-format
 msgid "both package %s and %s obsolete "
-msgstr ""
+msgstr "pakiety %s i %s zastępują "
 
 #: ../libdnf/goal/Goal.cpp:93
 msgid "problem with installed module "
-msgstr ""
+msgstr "problem z zainstalowanym modułem "
 
 #: ../libdnf/goal/Goal.cpp:97
 #, c-format
 msgid "module %s does not exist"
-msgstr ""
+msgstr "moduł %s nie istnieje"
 
 #: ../libdnf/goal/Goal.cpp:100
 msgid "cannot install the best update candidate for module "
-msgstr ""
+msgstr "nie można zainstalować najlepszego kandydata aktualizacji dla modułu "
 
 #: ../libdnf/goal/Goal.cpp:102
 #, c-format
 msgid "module %s is disabled"
-msgstr ""
+msgstr "moduł %s jest wyłączony"
 
 #: ../libdnf/goal/Goal.cpp:103
 #, c-format
 msgid "module %s does not have a compatible architecture"
-msgstr ""
+msgstr "moduł %s nie ma zgodnej architektury"
 
 #: ../libdnf/goal/Goal.cpp:104
 #, c-format
 msgid "module %s is not installable"
-msgstr ""
+msgstr "nie można zainstalować modułu %s"
 
 #: ../libdnf/goal/Goal.cpp:107
 #, c-format
 msgid "module %s conflicts with %s provided by %s"
-msgstr ""
+msgstr "moduł %s jest sprzeczny z %s dostarczanym przez %s"
 
 #: ../libdnf/goal/Goal.cpp:108
 #, c-format
 msgid "module %s obsoletes %s provided by %s"
-msgstr ""
+msgstr "moduł %s zastępuje %s dostarczane przez %s"
 
 #: ../libdnf/goal/Goal.cpp:109
 #, c-format
 msgid "installed module %s obsoletes %s provided by %s"
-msgstr ""
+msgstr "zainstalowany moduł %s zastępuje %s dostarczane przez %s"
 
 #: ../libdnf/goal/Goal.cpp:110
 #, c-format
 msgid "module %s implicitly obsoletes %s provided by %s"
-msgstr ""
+msgstr "moduł %s niebezpośrednio zastępuje %s dostarczane przez %s"
 
 #: ../libdnf/goal/Goal.cpp:111
 #, c-format
 msgid "module %s requires %s, but none of the providers can be installed"
 msgstr ""
+"moduł %s wymaga %s, ale nie można zainstalować żadnego modułu go "
+"dostarczającego"
 
 #: ../libdnf/goal/Goal.cpp:112
 #, c-format
 msgid "module %s conflicts with %s provided by itself"
-msgstr ""
+msgstr "moduł %s jest sprzeczny z %s dostarczanym przez samego siebie"
 
 #: ../libdnf/goal/Goal.cpp:113
 #, c-format
 msgid "both module %s and %s obsolete "
-msgstr ""
+msgstr "moduły %s i %s zastępują "
 
 #: ../libdnf/goal/Goal.cpp:979
 msgid "no solver set"
@@ -362,7 +367,7 @@ msgstr "odnawianie: niepowodzenie dla „%s”, repomd się nie zgadza."
 #: ../libdnf/repo/Repo.cpp:1145
 #, c-format
 msgid "Cannot create repo destination directory \"%s\": %s"
-msgstr ""
+msgstr "Nie można utworzyć katalogu docelowego repozytorium „%s”: %s"
 
 #: ../libdnf/repo/Repo.cpp:1151
 #, c-format
@@ -558,7 +563,7 @@ msgstr "ma już stan 100%% [%s]"
 #: ../libdnf/module/ModulePackageContainer.cpp:56
 #, c-format
 msgid "Cannot enable multiple streams for module '%s'"
-msgstr ""
+msgstr "Nie można włączyć wielu strumieni dla modułu „%s”"
 
 #: ../libdnf/dnf-rpmts.cpp:88 ../libdnf/dnf-rpmts.cpp:133
 #, c-format
@@ -773,7 +778,7 @@ msgstr "wczytanie bazy danych RPM się nie powiodło"
 
 #: ../libdnf/dnf-sack.cpp:2349
 msgid "No module defaults found"
-msgstr ""
+msgstr "Nie odnaleziono domyślnych modułu"
 
 #: ../libdnf/transaction/Transformer.cpp:651
 msgid "Transformer: can't open history persist dir"
