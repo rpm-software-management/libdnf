@@ -1517,7 +1517,7 @@ dnf_sack_get_includes(DnfSack *sack)
  *
  * Enable/disable usage of includes for repo/all-repos.
  *
- * Returns: FALSE if error occured (unknown reponame) else TRUE.
+ * Returns: FALSE if error occurred (unknown reponame) else TRUE.
  *
  * Since: 0.9.4
  */
@@ -1589,7 +1589,7 @@ dnf_sack_set_considered_to_update(DnfSack *sack)
  *
  * Enable/disable usage of includes for repo/all-repos.
  *
- * Returns: FALSE if error occured (unknown reponame) else TRUE.
+ * Returns: FALSE if error occurred (unknown reponame) else TRUE.
  *
  * Since: 0.9.4
  */
@@ -2224,7 +2224,7 @@ collectNevraForInclusionExclusion(ModulePackageContainer &modulePackageContainer
 {
     std::vector<std::string> includeNEVRAs;
     std::vector<std::string> excludeNEVRAs;
-    // TODO: turn into std::vector<const char *> to prevent unecessary conversion?
+    // TODO: turn into std::vector<const char *> to prevent unnecessary conversion?
     for (const auto &module : modulePackageContainer.getModulePackages()) {
         auto artifacts = module->getArtifacts();
         // TODO use Goal::listInstalls() to not requires filtering out Platform

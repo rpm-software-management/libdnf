@@ -252,7 +252,7 @@ CompsEnvironmentItem::toStr() const
 }
 
 /**
- * Lazy loader for groups associaded with the environment.
+ * Lazy loader for groups associated with the environment.
  * \return vector of groups associated with the environment
  */
 std::vector< CompsEnvironmentGroupPtr >

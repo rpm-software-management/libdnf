@@ -533,7 +533,7 @@ ModulePackageContainer::query(libdnf::Nsvcap& moduleNevra)
 std::vector<ModulePackagePtr>
 ModulePackageContainer::query(std::string subject)
 {
-    // Alternativally a search using module provides could be performed
+    // Alternatively a search using module provides could be performed
     std::vector<ModulePackagePtr> result;
     libdnf::Query query(pImpl->moduleSack, HY_IGNORE_EXCLUDES);
     // platform modules are installed and not in modules std::Map.
@@ -553,7 +553,7 @@ std::vector<ModulePackagePtr>
 ModulePackageContainer::query(std::string name, std::string stream, std::string version,
     std::string context, std::string arch)
 {
-    // Alternativally a search using module provides could be performed
+    // Alternatively a search using module provides could be performed
     std::vector<ModulePackagePtr> result;
     libdnf::Query query(pImpl->moduleSack, HY_IGNORE_EXCLUDES);
     // platform modules are installed and not in modules std::Map.

@@ -392,7 +392,7 @@ Transformer::transformRPMItems(SQLite3Ptr swdb,
      */
     std::map< int64_t, TransactionItemPtr > obsoletedItems;
 
-    // interate over transaction packages in the history database
+    // iterate over transaction packages in the history database
     while (query.step() == SQLite3::Statement::StepResult::ROW) {
 
         // create RPM item object
@@ -403,7 +403,7 @@ Transformer::transformRPMItems(SQLite3Ptr swdb,
         std::string stateString = query.get< std::string >("state");
         TransactionItemAction action = actions.at(stateString);
 
-        // `Obsoleting` record is duplicit with previous record (with different action)
+        // `Obsoleting` record is duplicated with previous record (with different action)
         if (action == TransactionItemAction::OBSOLETE) {
             continue;
         }

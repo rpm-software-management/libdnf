@@ -633,7 +633,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bo
     if (!conf->proxy().empty() && !conf->proxy().getValue().empty())
         handleSetOpt(h.get(), LRO_PROXY, conf->proxy().getValue().c_str());
 
-    //set proxy autorization method
+    //set proxy authorization method
     auto proxyAuthMethodStr = conf->proxy_auth_method().getValue();
     auto proxyAuthMethod = LR_AUTH_ANY;
     for (auto & auth : PROXYAUTHMETHODS) {
@@ -1536,7 +1536,7 @@ static LrHandle * newHandle(ConfigMain * conf)
         if (!conf->proxy().empty() && !conf->proxy().getValue().empty())
             handleSetOpt(h, LRO_PROXY, conf->proxy().getValue().c_str());
 
-        //set proxy autorization method
+        //set proxy authorization method
         auto proxyAuthMethodStr = conf->proxy_auth_method().getValue();
         auto proxyAuthMethod = LR_AUTH_ANY;
         for (auto & auth : PROXYAUTHMETHODS) {

@@ -119,8 +119,8 @@ int hy_goal_install_optional(HyGoal goal, DnfPackage *new_pkg);
 
 /**
 * @brief Mark content of HySelector to install or if installed to downgrade or upgrade. Only one
-* option will be choosen. It allows to downgrade dependencies if needed. If not supported
-* combination in selectort, it triggers assertion raice.
+* option will be chosen. It allows to downgrade dependencies if needed. If not supported
+* combination in selectort, it triggers assertion raise.
 *
 * @param goal HyGoal
 * @param sltr HySelector
@@ -132,8 +132,8 @@ gboolean hy_goal_install_selector(HyGoal goal, HySelector sltr, GError **error);
 /**
 * @brief Mark content of HySelector to install or if installed to downgrade or upgrade. In case that
 * any package in selector cannot be install, it can be skipped without an error. Only one option
-* will be choosen. It allows to downgrade dependencies if needed. If not supported combination in
-* selectort, it triggers assertion raice.
+* will be chosen. It allows to downgrade dependencies if needed. If not supported combination in
+* selectort, it triggers assertion raise.
 *
 * @param goal HyGoal
 * @param sltr HySelector

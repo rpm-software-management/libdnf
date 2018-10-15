@@ -520,7 +520,7 @@ dnf_lock_release(DnfLock *lock, guint id, GError **error)
         goto out;
     }
 
-    /* idecrement ref count */
+    /* decrement ref count */
     item->refcount--;
 
     /* delete file for process locks */
