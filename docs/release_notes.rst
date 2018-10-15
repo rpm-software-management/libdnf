@@ -20,6 +20,16 @@
 ######################
 
 ====================
+0.22.0 Release Notes
+====================
+- Fix segfault in repo_internalize_trigger (RhBug:1375895)
+- Change sorting of installonly packages (RhBug:1627685)
+- [swdb] Fixed pattern searching in history db (RhBug:1635542)
+- Check correctly gpg for repomd when refresh is used (RhBug:1636743)
+- [conf] Provide additional VectorString methods for compatibility with Python list.
+- [plugins] add plugin loading and hooks into libdnf
+
+====================
 0.20.0 Release Notes
 ====================
 - [module] Report module solver errors
