@@ -287,10 +287,10 @@ MergedTransaction::resolveErase(ItemPair &previousItemPair, TransactionItemBaseP
 
 /**
  * Resolve altered - Upgrade(d)/Downgrade(d) transaction items.
- * If the new item is Erased or Obsoleted, than its action is transfered to the original pair.
+ * If the new item is Erased or Obsoleted, than its action is transferred to the original pair.
  * When its being Downgraded/Upgraded and the pair is incomplete then we are in the same
  * transaction - new package is used to complete the pair. Items are stored in pairs (Upgrade,
- * Upgrade) or (Downgraded, Downgrade). With complete transactíon pair we need to get the new
+ * Upgrade) or (Downgraded, Downgrade). With complete transaction pair we need to get the new
  * Upgrade/Downgrade item and compare its version with the original item from the pair.
  * \param previousItemPair original item pair
  * \param mTransItem new transaction item
@@ -320,7 +320,7 @@ MergedTransaction::resolveAltered(ItemPair &previousItemPair, TransactionItemBas
         }
         // XXX handle obsoleting state -> state is not supported anymore, so it can't
         // occur anymore - maybe we should set some "Obsoleting" flag or what
-        // state of obsoleting package should be transfeted to a new package
+        // state of obsoleting package should be transferred to a new package
         /*
          * Otherwise we can just drop the package
          * Original package from new transaction should be the same as a new package
@@ -340,7 +340,7 @@ MergedTransaction::resolveAltered(ItemPair &previousItemPair, TransactionItemBas
                 // resolve the difference between RPM packages
                 resolveRPMDifference(previousItemPair, mTransItem);
             } else {
-                // differece between comps can't be resolved
+                // difference between comps can't be resolved
                 previousItemPair.second->setAction(TransactionItemAction::REINSTALL);
                 previousItemPair.first = previousItemPair.second;
                 previousItemPair.second = nullptr;

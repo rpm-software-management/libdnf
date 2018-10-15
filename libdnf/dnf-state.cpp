@@ -734,7 +734,7 @@ dnf_state_set_package_progress(DnfState *state,
  * @state: A #DnfState
  *
  * Returns the DnfState to it's previous value.
- * It is not expected you will ever need to use this funtion.
+ * It is not expected you will ever need to use this function.
  *
  * Returns: %TRUE if the signal was propagated, %FALSE otherwise
  *
@@ -1140,7 +1140,7 @@ dnf_state_set_number_steps_real(DnfState *state, guint steps, const gchar *strlo
  * will take a bigger chunk of time than another.
  *
  * All the values must add up to 100, and the list must end with -1.
- * Do not use this funtion directly, instead use the dnf_state_set_steps() macro.
+ * Do not use this function directly, instead use the dnf_state_set_steps() macro.
  *
  * Returns: %TRUE for success, %FALSE otherwise
  *

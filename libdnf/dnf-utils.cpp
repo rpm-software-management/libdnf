@@ -193,7 +193,7 @@ dnf_delete_files_matching(const gchar* directory_path,
     const gchar *filename;
     g_autoptr(GDir) dir = NULL;
 
-    /* try to open the direcotry*/
+    /* try to open the directory*/
     dir = g_dir_open(directory_path, 0, error);
     if (dir == NULL) {
         g_prefix_error(error, "Cannot open directory %s: ", directory_path);

@@ -26,7 +26,7 @@
  * @include: libdnf.h
  * @stability: Stable
  *
- * This object is a high level interface that does not allow the the user
+ * This object is a high level interface that does not allow the user
  * to use objects from librepo, rpm or hawkey directly.
  */
 
@@ -2226,7 +2226,7 @@ dnf_context_invalidate(DnfContext *context, const gchar *message)
  * is expected to be set prior to using this function. Use it with care.
  *
  * Currently support four different clean flags:
- * 1: DNF_CONTEXT_CLEAN_EXPIRE_CACHE: Elminate the entries that give information about cache entries' age. i.e: 'repomd.xml' will be deleted in libdnf case
+ * 1: DNF_CONTEXT_CLEAN_EXPIRE_CACHE: Eliminate the entries that give information about cache entries' age. i.e: 'repomd.xml' will be deleted in libdnf case
  * 2: DNF_CONTEXT_CLEAN_PACKAGES: Eliminate any cached packages. i.e: 'packages' folder will be deleted
  * 3: DNF_CONTEXT_CLEAN_METADATA: Eliminate all of the files which libdnf uses to determine remote availability of packages. i.e: 'repodata'folder and 'metalink.xml' will be deleted
  * 4: DNF_CONTEXT_CLEAN_ALL: Does all the actions above and clean up other files that are generated due to various reasons. e.g: cache directories from previous version of operating system

@@ -39,7 +39,7 @@
  * @left: a #DnfAdvisoryPkg instance.
  * @right: another #DnfAdvisoryPkg instance.
  *
- * Compares one advisory agains another.
+ * Compares one advisory against another.
  *
  * Returns: 0 if they are the same
  *

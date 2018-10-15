@@ -93,7 +93,7 @@ void Plugins::loadPlugins(std::string dirPath)
 {
     auto logger(Log::getLogger());
     if (dirPath.empty())
-        throw std::runtime_error(_("Plugins::loadPlugins() dirPath connot be empty"));
+        throw std::runtime_error(_("Plugins::loadPlugins() dirPath cannot be empty"));
     if (dirPath.back() != '/')
         dirPath.push_back('/');
     struct dirent **namelist;

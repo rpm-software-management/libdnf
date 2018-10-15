@@ -30,7 +30,7 @@
 extern "C" {
 #endif
 
-// Prefered is use of C_() and CP_() macros. But these macros don't support non-string-literals
+// Preferred is use of C_() and CP_() macros. But these macros don't support non-string-literals
 // as context and msgid arguments. Next functions are intended for this case.
 const char * b_dpgettext(const char * domain, const char * context, const char * msgId);
 const char * b_dnpgettext(const char * domain, const char * context, const char * msgId, const char * msgIdPlural, unsigned long int n);

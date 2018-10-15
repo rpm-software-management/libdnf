@@ -60,7 +60,7 @@ TransactionTest::testInsert()
 
     trans.addSoftwarePerformedWith(nevraToRPMItem(conn, "rpm-4.14.2-1.fc29.x86_64"));
     trans.addSoftwarePerformedWith(nevraToRPMItem(conn, "dnf-3.5.1-1.fc29.noarch"));
-    // test adding a duplicate; only a single occurence of the rpm is expected
+    // test adding a duplicate; only a single occurrence of the rpm is expected
     trans.addSoftwarePerformedWith(nevraToRPMItem(conn, "rpm-4.14.2-1.fc29.x86_64"));
 
     trans.begin();

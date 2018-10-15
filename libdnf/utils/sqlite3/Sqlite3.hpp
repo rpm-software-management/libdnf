@@ -210,7 +210,7 @@ public:
             if (!expandSql)
                 throw Exception(
                     "getExpandedSql(): insufficient memory or result "
-                    "exceed the the maximum SQLite3 string length");
+                    "exceed the maximum SQLite3 string length");
             return expandSql;
 #endif
         }

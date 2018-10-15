@@ -54,10 +54,10 @@ struct NevraID {
     Id arch;
     Id evr;
     /**
-    * @brief Parsing function for nevra string into name, evr, arch and transorming it into libsolv
+    * @brief Parsing function for nevra string into name, evr, arch and transforming it into libsolv
     * Id
     *
-    * @return bool Returns true if parsing succesfull and all elements is known to pool
+    * @return bool Returns true if parsing succesful and all elements is known to pool
     */
     bool parse(Pool * pool, const char * nevraPattern);
 };
