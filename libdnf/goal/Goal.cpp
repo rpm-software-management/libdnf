@@ -647,7 +647,8 @@ Goal::getReason(DnfPackage *pkg)
     if (!pImpl->solv)
         return HY_REASON_USER;
     Id info;
-    int reason = solver_describe_decision(pImpl->solv, dnf_package_get_id(pkg), &info);
+    const Id pkgID = dnf_package_get_id(pkg);
+    int reason = solver_describe_decision(pImpl->solv, pkgID, &info);
 
     if ((reason == SOLVER_REASON_UNIT_RULE ||
          reason == SOLVER_REASON_RESOLVE_JOB) &&
@@ -658,6 +659,13 @@ Goal::getReason(DnfPackage *pkg)
         return HY_REASON_CLEAN;
     if (reason == SOLVER_REASON_WEAKDEP)
         return HY_REASON_WEAKDEP;
+    IdQueue cleanDepsQueue;
+    solver_get_cleandeps(pImpl->solv, cleanDepsQueue.getQueue());
+    for (int i = 0; i < cleanDepsQueue.size(); ++i) {
+        if (cleanDepsQueue[i] == pkgID) {
+            return HY_REASON_CLEAN;
+        }
+    }
     return HY_REASON_DEP;
 }
 
