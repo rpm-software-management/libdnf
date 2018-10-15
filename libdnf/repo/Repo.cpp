@@ -488,6 +488,11 @@ void Repo::expire() { pImpl->expire(); }
 bool Repo::isExpired() const { return pImpl->isExpired(); }
 int Repo::getExpiresIn() const { return pImpl->getExpiresIn(); }
 
+void Repo::setSubstitutions(const std::map<std::string, std::string> & substitutions)
+{
+    pImpl->substitutions = substitutions;
+}
+
 std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
 {
     std::unique_ptr<LrHandle> h(lr_handle_init());
