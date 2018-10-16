@@ -56,6 +56,7 @@ SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${PLUGIN_SOURCES})
 
 ADD_LIBRARY(libdnf SHARED ${LIBDNF_SRCS})
 TARGET_LINK_LIBRARIES(libdnf
+                      ${CMAKE_DL_LIBS}
                       ${REPO_LIBRARIES}
                       ${GLIB_LIBRARIES}
                       ${GLIB_GOBJECT_LIBRARIES}
