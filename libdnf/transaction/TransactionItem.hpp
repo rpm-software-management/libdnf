@@ -110,7 +110,7 @@ public:
     // int64_t getTransactionId() const noexcept { return trans.getId(); }
 
     const std::vector< TransactionItemPtr > &getReplacedBy() const noexcept { return replacedBy; }
-    void addReplacedBy(TransactionItemPtr value) { replacedBy.push_back(value); }
+    void addReplacedBy(TransactionItemPtr value) { if (value) replacedBy.push_back(value); }
 
     void save();
     void saveReplacedBy();
