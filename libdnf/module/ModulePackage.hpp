@@ -24,9 +24,12 @@
 #include <memory>
 #include <string>
 
+extern "C" {
+#include <solv/repo.h>
+}
+
 #include "libdnf/dnf-types.h"
 #include "modulemd/ModuleMetadata.hpp"
-#include "libdnf/repo/solvable/Package.hpp"
 #include "../goal/IdQueue.hpp"
 
 class ModulePackage;

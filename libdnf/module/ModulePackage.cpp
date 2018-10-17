@@ -26,6 +26,7 @@
 #include "modulemd/ModuleProfile.hpp"
 #include "libdnf/utils/File.hpp"
 #include "libdnf/dnf-sack-private.hpp"
+#include "libdnf/hy-repo-private.hpp"
 
 static void setSovable(Pool * pool, Solvable *solvable, std::string name,
     std::string stream, std::string version, std::string context, const char * arch)

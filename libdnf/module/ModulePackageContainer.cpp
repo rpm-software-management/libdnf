@@ -39,6 +39,7 @@ extern "C" {
 #include "libdnf/conf/ConfigParser.hpp"
 #include "libdnf/conf/OptionStringList.hpp"
 #include "libdnf/goal/Goal.hpp"
+#include "libdnf/hy-repo-private.hpp"
 #include "libdnf/sack/selector.hpp"
 
 #include "bgettext/bgettext-lib.h"
