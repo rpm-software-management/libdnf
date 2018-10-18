@@ -29,7 +29,7 @@ void PackageTest::testName()
 
 void PackageTest::testVersion()
 {
-    CPPUNIT_ASSERT(strcmp("1.0", package->getVersion()) == 0);
+    CPPUNIT_ASSERT(strcmp("1.0", package->getEvr()) == 0);
 }
 
 void PackageTest::testArch()

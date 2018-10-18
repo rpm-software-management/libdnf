@@ -29,9 +29,17 @@ public:
     std::shared_ptr<libdnf::DependencyContainer> getSupplements() const;
     Id getId() const;
 
-    virtual const char *getName() const = 0;
-    virtual const char *getVersion() const = 0;
+    const char *getName() const;
+    const char *getEvr() const;
     const char *getArch() const;
+
+    std::string getBaseUrl();
+    std::vector<std::string> getFiles();
+    std::string getSourceRpm();
+    std::string getVersion();
+    std::string getRelease();
+
+    bool isInstalled() const;
 
 protected:
     Package(DnfSack *sack, HyRepo repo, const char *name, const char *version, const char *arch, bool createSolvable = true);
@@ -47,8 +55,6 @@ protected:
     void addSuggests(std::shared_ptr<libdnf::Dependency> dependency);
     void addSupplements(std::shared_ptr<libdnf::Dependency> dependency);
 
-    const char *getSolvableName() const;
-    const char *getSolvableEvr() const;
     const char *getSolvableVendor() const;
     void setSolvableVendor(const char *vendor);
 

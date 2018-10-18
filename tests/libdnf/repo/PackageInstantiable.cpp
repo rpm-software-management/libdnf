@@ -9,13 +9,3 @@ PackageInstantiable::PackageInstantiable(DnfSack *sack,
 {
     addProvides(std::make_shared<libdnf::Dependency>(sack, "rpm = 1.0"));
 }
-
-const char *PackageInstantiable::getName() const
-{
-    return getSolvableName();
-}
-
-const char *PackageInstantiable::getVersion() const
-{
-    return getSolvableEvr();
-}

@@ -2,6 +2,13 @@
 
 #include <utility>
 #include "DependencyContainer.hpp"
+#include <../hy-iutil-private.hpp>
+
+
+inline std::string stringSafeConstructor(const char * value)
+{
+    return value ? value : std::string();
+}
 
 Package::Package(DnfSack *sack, Id id)
         : sack(sack)
@@ -43,14 +50,14 @@ Package::Package(const Package &package)
 
 Package::~Package() = default;
 
-const char *Package::getSolvableName() const
+const char *Package::getName() const
 {
     Pool *pool = dnf_sack_get_pool(sack);
     Solvable *solvable = pool_id2solvable(pool, id);
     return pool_id2str(pool, solvable->name);
 }
 
-const char *Package::getSolvableEvr() const
+const char *Package::getEvr() const
 {
     Pool *pool = dnf_sack_get_pool(sack);
     Solvable *solvable = pool_id2solvable(pool, id);
@@ -81,6 +88,57 @@ Id Package::getId() const
 {
     return id;
 }
+
+std::string Package::getBaseUrl()
+{
+    Solvable * solvable = pool_id2solvable(dnf_sack_get_pool(sack), id);
+    
+    return stringSafeConstructor(solvable_lookup_str(solvable, SOLVABLE_MEDIABASE));
+}
+
+std::vector<std::string> Package::getFiles()
+{
+    Pool *pool = dnf_sack_get_pool(sack);
+    Solvable * solvable = pool_id2solvable(dnf_sack_get_pool(sack), id);
+    Dataiterator di;
+    std::vector<std::string> out;
+    repo_internalize_trigger(solvable->repo);
+    dataiterator_init(&di, pool, solvable->repo, id, SOLVABLE_FILELIST, NULL,
+                      SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
+    while (dataiterator_step(&di)) {
+        out.emplace_back(di.kv.str);
+    }
+    dataiterator_free(&di);
+    return out;
+}
+
+std::string Package::getSourceRpm()
+{
+    Solvable * solvable = pool_id2solvable(dnf_sack_get_pool(sack), id);
+    repo_internalize_trigger(solvable->repo);
+    return stringSafeConstructor(solvable_lookup_sourcepkg(solvable));
+}
+
+std::string Package::getVersion()
+{
+    char *e, *v, *r;
+    pool_split_evr(dnf_sack_get_pool(sack), getEvr(), &e, &v, &r);
+    return stringSafeConstructor(v);
+}
+
+std::string Package::getRelease()
+{
+    char *e, *v, *r;
+    pool_split_evr(dnf_sack_get_pool(sack), getEvr(), &e, &v, &r);
+    return stringSafeConstructor(r);
+}
+
+bool Package::isInstalled() const
+{
+    Solvable * solvable = pool_id2solvable(dnf_sack_get_pool(sack), id);
+    return (dnf_sack_get_pool(sack)->installed == solvable->repo);
+}
+
 
 std::shared_ptr<libdnf::DependencyContainer> Package::getConflicts() const
 {
