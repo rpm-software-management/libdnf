@@ -30,9 +30,17 @@ SQLite3::open()
             sqlite3_close(db);
             throw LibException(result, "Open failed");
         }
-        // sqlite doesn't behave correctly in chroots without following line:
-        // turn foreign key checking on
-        exec("PRAGMA locking_mode = NORMAL; PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;");
+#if SQLITE_VERSION_NUMBER >= 3022000
+        int enabled = 1;
+        sqlite3_file_control(db, "main", SQLITE_FCNTL_PERSIST_WAL, &enabled);
+        if (sqlite3_db_readonly(db, "main") == 1)
+            exec("PRAGMA locking_mode = NORMAL; PRAGMA foreign_keys = ON;");
+        else
+            exec("PRAGMA locking_mode = NORMAL; PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;");
+#else
+        // Journal mode WAL in readonly mode is supported from sqlite version 3.22.0
+        exec("PRAGMA locking_mode = NORMAL; PRAGMA journal_mode = TRUNCATE; PRAGMA foreign_keys = ON;");
+#endif
         sqlite3_busy_timeout(db, 10000);
     }
 }
