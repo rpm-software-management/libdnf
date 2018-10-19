@@ -3,12 +3,15 @@
 #include <utility>
 #include "DependencyContainer.hpp"
 #include <../hy-iutil-private.hpp>
+#include "../../goal/IdQueue.hpp"
 
 
-inline std::string stringSafeConstructor(const char * value)
+inline static std::string stringSafeConstructor(const char * value)
 {
     return value ? value : std::string();
 }
+
+namespace libdnf {
 
 Package::Package(DnfSack *sack, Id id)
         : sack(sack)
@@ -140,47 +143,47 @@ bool Package::isInstalled() const
 }
 
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getConflicts() const
+std::unique_ptr<libdnf::DependencyContainer> Package::getConflicts() const
 {
     return getDependencies(SOLVABLE_CONFLICTS);
 };
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getEnhances() const
+std::unique_ptr<libdnf::DependencyContainer> Package::getEnhances() const
 {
     return getDependencies(SOLVABLE_ENHANCES);
 }
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getObsoletes() const
+std::unique_ptr<libdnf::DependencyContainer> Package::getObsoletes() const
 {
     return getDependencies(SOLVABLE_OBSOLETES);
 }
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getProvides() const
+std::unique_ptr<libdnf::DependencyContainer> Package::getProvides() const
 {
     return getDependencies(SOLVABLE_PROVIDES);
 }
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getRecommends() const
+std::unique_ptr<libdnf::DependencyContainer> Package::getRecommends() const
 {
     return getDependencies(SOLVABLE_RECOMMENDS);
 }
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getRequires() const
+std::unique_ptr<libdnf::DependencyContainer> Package::getRequires() const
 {
     return getDependencies(SOLVABLE_REQUIRES, 0);
 }
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getRequiresPre() const
+std::unique_ptr<libdnf::DependencyContainer> Package::getRequiresPre() const
 {
     return getDependencies(SOLVABLE_REQUIRES, 1);
 }
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getSuggests() const
+std::unique_ptr<libdnf::DependencyContainer> Package::getSuggests() const
 {
     return getDependencies(SOLVABLE_SUGGESTS);
 }
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getSupplements() const
+std::unique_ptr<libdnf::DependencyContainer> Package::getSupplements() const
 {
     return getDependencies(SOLVABLE_SUPPLEMENTS);
 }
@@ -245,40 +248,27 @@ void Package::fillSolvableData(const char *name, const char *version,
     solvable_set_str(solvable, SOLVABLE_ARCH, arch);
 }
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getDependencies(Id type, Id marker) const
+std::unique_ptr<libdnf::DependencyContainer> Package::getDependencies(Id type, Id marker) const
 {
-    auto queue = getDependencyQueue(type, marker);
-    auto container = std::make_shared<libdnf::DependencyContainer>(sack, *queue);
+    IdQueue dependencyQueue;
 
-    queue_free(queue);
-    delete queue;
+    solvable_lookup_deparray(pool_id2solvable(dnf_sack_get_pool(sack), id), type,
+                             dependencyQueue.getQueue(), marker);
+    std::unique_ptr<libdnf::DependencyContainer> container(new libdnf::DependencyContainer(sack));
 
-    return container;
-}
-
-Queue *Package::getDependencyQueue(Id type, Id marker) const
-{
-    Queue dependencyQueue{};
-    auto queue = static_cast<Queue *>(malloc(sizeof(Queue)));
-
-    queue_init(queue);
-    queue_init(&dependencyQueue);
-
-    solvable_lookup_deparray(pool_id2solvable(dnf_sack_get_pool(sack), id), type, &dependencyQueue, marker);
-
-    for (int i = 0; i < dependencyQueue.count; i++) {
-        Id id = dependencyQueue.elements[i];
-        if (id != SOLVABLE_PREREQMARKER)
-            queue_push(queue, id);
+    for (int i = 0; i < dependencyQueue.size(); i++) {
+        Id id = dependencyQueue[i];
+        if (id != SOLVABLE_PREREQMARKER) {
+            container->add(id);
+        }
     }
-
-    queue_free(&dependencyQueue);
-
-    return queue;
+    return container;
 }
 
 void Package::addDependency(std::shared_ptr<libdnf::Dependency> dependency, int type, Id marker)
 {
     Solvable *solvable = pool_id2solvable(dnf_sack_get_pool(sack), id);
     solvable_add_deparray(solvable, type, dependency->getId(), marker);
+}
+
 }
