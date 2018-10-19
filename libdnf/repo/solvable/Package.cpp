@@ -2,7 +2,7 @@
 
 #include <utility>
 #include "DependencyContainer.hpp"
-#include <../hy-iutil-private.hpp>
+#include "../../hy-iutil-private.hpp"
 #include "../../goal/IdQueue.hpp"
 
 
@@ -97,6 +97,40 @@ std::string Package::getBaseUrl()
     Solvable * solvable = pool_id2solvable(dnf_sack_get_pool(sack), id);
     
     return stringSafeConstructor(solvable_lookup_str(solvable, SOLVABLE_MEDIABASE));
+}
+
+std::string Package::getDebugName()
+{
+    return stringSafeConstructor(getName()) + "-debuginfo";
+}
+
+std::string Package::getSourceName()
+{
+    auto sourceRpm = getSourceRpm();
+    if (sourceRpm.empty()) {
+        return sourceRpm;
+    }
+    auto stop1 = sourceRpm.find_last_of('-');
+    if (stop1 == std::string::npos) {
+        return sourceRpm;
+    }
+    if (stop1 == 0) {
+        return {};
+    }
+    auto stop2 = sourceRpm.find_last_of('-', stop1 - 1);
+    if (stop2 == std::string::npos) {
+        return sourceRpm.substr(stop1);
+    }
+    return sourceRpm.substr(stop2);
+}
+
+std::string Package::getSourceDebugName()
+{
+    auto output = getSourceName();
+    if (output.empty()) {
+        return output;
+    }
+    return output + "-debuginfo";
 }
 
 std::vector<std::string> Package::getFiles()

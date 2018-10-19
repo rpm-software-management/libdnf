@@ -36,6 +36,9 @@ public:
     const char *getArch() const;
 
     std::string getBaseUrl();
+    std::string getDebugName();
+    std::string getSourceName();
+    std::string getSourceDebugName();
     std::vector<std::string> getFiles();
     std::string getSourceRpm();
     std::string getVersion();
