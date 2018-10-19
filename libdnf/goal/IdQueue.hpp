@@ -21,6 +21,8 @@
 #ifndef __ID_QUEUE_HPP
 #define __ID_QUEUE_HPP
 
+#include <utility>
+
 extern "C" {
 #include <solv/queue.h>
 }
@@ -30,8 +32,9 @@ namespace libdnf {
 struct IdQueue {
 public:
     IdQueue();
-    IdQueue(IdQueue & src);
-    explicit IdQueue(Queue & src);
+    IdQueue(const IdQueue & src);
+    IdQueue(IdQueue && src);
+    explicit IdQueue(const Queue & src);
     ~IdQueue();
 
     void pushBack(Id id);
@@ -48,8 +51,13 @@ private:
 };
 
 inline IdQueue::IdQueue() { queue_init(&queue); }
-inline IdQueue::IdQueue(IdQueue & src) { queue_init_clone(&queue, &src.queue); }
-inline IdQueue::IdQueue(Queue & src) { queue_init_clone(&queue, &src); }
+inline IdQueue::IdQueue(const IdQueue & src) { queue_init_clone(&queue, &src.queue); }
+inline IdQueue::IdQueue(IdQueue && src)
+{
+    queue_init(&queue);
+    std::swap(queue, src.queue);
+}
+inline IdQueue::IdQueue(const Queue & src) { queue_init_clone(&queue, &src); }
 
 inline IdQueue::~IdQueue() { queue_free(&queue); }
 
