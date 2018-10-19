@@ -2,9 +2,6 @@
 #define LIBDNF_PACKAGE_HPP
 
 #include <vector>
-#include <solv/solvable.h>
-#include <solv/repo.h>
-
 
 #include "libdnf/hy-types.h"
 #include "libdnf/hy-repo-private.hpp"
@@ -34,6 +31,7 @@ public:
     const char *getName() const;
     const char *getEvr() const;
     const char *getArch() const;
+    unsigned long getEpoch();
 
     std::string getBaseUrl();
     std::string getDebugName();
@@ -43,6 +41,24 @@ public:
     std::string getSourceRpm();
     std::string getVersion();
     std::string getRelease();
+    const char * getRepoName();
+    std::string getDescription();
+    std::string getLicense();
+    std::string getPackager();
+    std::string getSummary();
+    std::string getUrl();
+    std::string getGroup();
+    std::string getLocation();
+    unsigned long long getBuildTime();
+    unsigned long long downloadSize();
+    unsigned long long getHeaderEnd();
+    unsigned long long getInstallTime();
+    unsigned long long getInstallSize();
+    unsigned long long getMediaNumber();
+    unsigned long long getRpmdbId();
+    unsigned long long getSize();
+    const unsigned char * getCheckSum(int *type);
+    const unsigned char * getHdrCheckkSum(int *type);
 
     bool isInstalled() const;
 
@@ -64,6 +80,7 @@ protected:
     void setSolvableVendor(const char *vendor);
 
 private:
+    unsigned long long lookup_num(Id type);
     void createSolvable(HyRepo repo);
     void fillSolvableData(const char *name, const char *version, const char *arch) const;
     std::unique_ptr<DependencyContainer> getDependencies(Id type, Id marker = -1) const;
