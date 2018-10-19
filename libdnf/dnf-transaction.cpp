@@ -1437,8 +1437,11 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
             goto out;
     }
 
-    if (auto moduleContainer = dnf_sack_get_module_container(dnf_context_get_sack(priv->context)))
-        moduleContainer->save();
+    if (DnfSack * sack = hy_goal_get_sack(goal)) {
+        if (auto moduleContainer = dnf_sack_get_module_container(sack)) {
+            moduleContainer->save();
+        }
+    }
 
     /* all sacks are invalid now */
     dnf_context_invalidate_full(priv->context,
