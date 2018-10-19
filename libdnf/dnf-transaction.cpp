@@ -38,12 +38,14 @@
 #include "dnf-package.h"
 #include "dnf-rpmts.h"
 #include "dnf-sack.h"
+#include "dnf-sack-private.hpp"
 #include "dnf-transaction.h"
 #include "dnf-types.h"
 #include "dnf-utils.h"
 #include "hy-query.h"
 #include "hy-util-private.hpp"
 
+#include "module/ModulePackageContainer.hpp"
 #include "transaction/Swdb.hpp"
 #include "transaction/Transformer.hpp"
 #include "utils/bgettext/bgettext-lib.h"
@@ -1434,6 +1436,9 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
         if (!ret)
             goto out;
     }
+
+    if (auto moduleContainer = dnf_sack_get_module_container(dnf_context_get_sack(priv->context)))
+        moduleContainer->save();
 
     /* all sacks are invalid now */
     dnf_context_invalidate_full(priv->context,
