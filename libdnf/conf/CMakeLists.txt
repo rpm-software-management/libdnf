@@ -7,7 +7,6 @@ SET (CONF_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionSeconds.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionString.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionStringList.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/OptionStringListAppend.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Config.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/ConfigMain.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/ConfigRepo.cpp
@@ -26,7 +25,6 @@ SET (CONF_HEADERS
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionSeconds.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionString.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionStringList.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/OptionStringListAppend.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Config.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/ConfigMain.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/ConfigRepo.hpp
