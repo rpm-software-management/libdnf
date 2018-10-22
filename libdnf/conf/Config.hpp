@@ -36,7 +36,7 @@ public:
     typedef std::function<const std::string & ()> GetValueStringFunc;
 
     OptionBinding(Config & config, Option & option, const std::string & name,
-                  NewStringFunc && newString, GetValueStringFunc && getValueString);
+                  NewStringFunc && newString, GetValueStringFunc && getValueString, bool addValue);
     OptionBinding(Config & config, Option & option, const std::string & name);
     OptionBinding(const OptionBinding & src) = delete;
 
@@ -46,10 +46,13 @@ public:
     void newString(Option::Priority priority, const std::string & value);
     std::string getValueString() const;
 
+    bool getAddValue() const { return addValue; }
+
 private:
     Option & option;
     NewStringFunc newStr;
     GetValueStringFunc getValueStr;
+    bool addValue{false}; // hint that new value be added
 };
 
 class OptionBinds {

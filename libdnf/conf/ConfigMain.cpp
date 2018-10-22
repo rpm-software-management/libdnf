@@ -20,6 +20,7 @@
 
 #include "ConfigMain.hpp"
 #include "Const.hpp"
+#include "Config-private.hpp"
 
 #include <algorithm>
 #include <array>
@@ -213,8 +214,12 @@ class ConfigMain::Impl {
     OptionBool debug_solver{false};
     OptionBinding debugSolverBinding{owner, debug_solver, "debug_solver"};
 
-    OptionStringListAppend installonlypkgs{INSTALLONLYPKGS};
-    OptionBinding installOnlyPkgsBinding{owner, installonlypkgs, "installonlypkgs"};
+    OptionStringList installonlypkgs{INSTALLONLYPKGS};
+    OptionBinding installOnlyPkgsBinding{owner, installonlypkgs, "installonlypkgs",
+        [&](Option::Priority priority, const std::string & value){
+            optionTListAppend(installonlypkgs, priority, value);
+        }, nullptr, true
+    };
 
     OptionStringList group_package_types{GROUP_PACKAGE_TYPES};
     OptionBinding groupPackageTypesBinding{owner, group_package_types, "group_package_types"};
@@ -233,8 +238,12 @@ class ConfigMain::Impl {
     };
     OptionBinding installOnlyLimitBinding{owner, installonly_limit, "installonly_limit"};
 
-    OptionStringListAppend tsflags{std::vector<std::string>{}};
-    OptionBinding tsFlagsBinding{owner, tsflags, "tsflags"};
+    OptionStringList tsflags{std::vector<std::string>{}};
+    OptionBinding tsFlagsBinding{owner, tsflags, "tsflags",
+        [&](Option::Priority priority, const std::string & value){
+            optionTListAppend(tsflags, priority, value);
+        }, nullptr, true
+    };
 
     OptionBool assumeyes{false};
     OptionBinding assumeYesBinding{owner, assumeyes, "assumeyes"};
@@ -399,12 +408,24 @@ class ConfigMain::Impl {
     OptionBool fastestmirror{false};
     OptionBinding fastestMirrorBinding{owner, fastestmirror, "fastestmirror"};
 
-    OptionStringListAppend excludepkgs{std::vector<std::string>{}};
-    OptionBinding excludePkgsBinding{owner, excludepkgs, "excludepkgs"};
-    OptionBinding excludeBinding{owner, excludepkgs, "exclude"}; //compatibility with yum
+    OptionStringList excludepkgs{std::vector<std::string>{}};
+    OptionBinding excludePkgsBinding{owner, excludepkgs, "excludepkgs",
+        [&](Option::Priority priority, const std::string & value){
+            optionTListAppend(excludepkgs, priority, value);
+        }, nullptr, true
+    };
+    OptionBinding excludeBinding{owner, excludepkgs, "exclude", //compatibility with yum
+        [&](Option::Priority priority, const std::string & value){
+            optionTListAppend(excludepkgs, priority, value);
+        }, nullptr, true
+    };
 
-    OptionStringListAppend includepkgs{std::vector<std::string>{}};
-    OptionBinding includePkgsBinding{owner, includepkgs, "includepkgs"};
+    OptionStringList includepkgs{std::vector<std::string>{}};
+    OptionBinding includePkgsBinding{owner, includepkgs, "includepkgs",
+        [&](Option::Priority priority, const std::string & value){
+            optionTListAppend(includepkgs, priority, value);
+        }, nullptr, true
+    };
 
     OptionString proxy{""};
     OptionBinding proxyBinding{owner, proxy, "proxy"};
@@ -431,7 +452,7 @@ class ConfigMain::Impl {
         [&](Option::Priority priority, const std::string & value){
             if (priority >= protected_packages.getPriority())
                 protected_packages.set(priority, resolveGlobs(value));
-        }, nullptr
+        }, nullptr, false
     };
 
     OptionString username{""};
@@ -531,10 +552,10 @@ OptionBool & ConfigMain::keepcache() { return pImpl->keepcache; }
 OptionString & ConfigMain::logdir() { return pImpl->logdir; }
 OptionStringList & ConfigMain::reposdir() { return pImpl->reposdir; }
 OptionBool & ConfigMain::debug_solver() { return pImpl->debug_solver; }
-OptionStringListAppend & ConfigMain::installonlypkgs() { return pImpl->installonlypkgs; }
+OptionStringList & ConfigMain::installonlypkgs() { return pImpl->installonlypkgs; }
 OptionStringList & ConfigMain::group_package_types() { return pImpl->group_package_types; }
 OptionNumber<std::uint32_t> & ConfigMain::installonly_limit() { return pImpl->installonly_limit; }
-OptionStringListAppend & ConfigMain::tsflags() { return pImpl->tsflags; }
+OptionStringList & ConfigMain::tsflags() { return pImpl->tsflags; }
 OptionBool & ConfigMain::assumeyes() { return pImpl->assumeyes; }
 OptionBool & ConfigMain::assumeno() { return pImpl->assumeno; }
 OptionBool & ConfigMain::check_config_file_age() { return pImpl->check_config_file_age; }
@@ -584,8 +605,8 @@ OptionString & ConfigMain::module_platform_id() { return pImpl->module_platform_
 OptionNumber<std::uint32_t> & ConfigMain::retries() { return pImpl->retries; }
 OptionString & ConfigMain::cachedir() { return pImpl->cachedir; }
 OptionBool & ConfigMain::fastestmirror() { return pImpl->fastestmirror; }
-OptionStringListAppend & ConfigMain::excludepkgs() { return pImpl->excludepkgs; }
-OptionStringListAppend & ConfigMain::includepkgs() { return pImpl->includepkgs; }
+OptionStringList & ConfigMain::excludepkgs() { return pImpl->excludepkgs; }
+OptionStringList & ConfigMain::includepkgs() { return pImpl->includepkgs; }
 OptionString & ConfigMain::proxy() { return pImpl->proxy; }
 OptionString & ConfigMain::proxy_username() { return pImpl->proxy_username; }
 OptionString & ConfigMain::proxy_password() { return pImpl->proxy_password; }

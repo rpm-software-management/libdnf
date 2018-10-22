@@ -30,8 +30,9 @@ namespace libdnf {
 // ========== OptionBinding class ===============
 
 OptionBinding::OptionBinding(Config & config, Option & option, const std::string & name,
-                             NewStringFunc && newString, GetValueStringFunc && getValueString)
-: option(option), newStr(std::move(newString)), getValueStr(std::move(getValueString))
+                             NewStringFunc && newString, GetValueStringFunc && getValueString,
+                             bool addValue)
+: option(option), newStr(std::move(newString)), getValueStr(std::move(getValueString)), addValue(addValue)
 {
     config.optBinds().add(name, *this);
 }
