@@ -29,7 +29,6 @@
 #include "OptionSeconds.hpp"
 #include "OptionString.hpp"
 #include "OptionStringList.hpp"
-#include "OptionStringListAppend.hpp"
 
 #include <memory>
 
@@ -63,7 +62,7 @@ public:
     OptionString & logdir();
     OptionStringList & reposdir();
     OptionBool & debug_solver();
-    OptionStringListAppend & installonlypkgs();
+    OptionStringList & installonlypkgs();
     OptionStringList & group_package_types();
 
     /*  NOTE: If you set this to 2, then because it keeps the current
@@ -72,7 +71,7 @@ public:
     ... if you turn it on. */
     OptionNumber<std::uint32_t> & installonly_limit();
 
-    OptionStringListAppend & tsflags();
+    OptionStringList & tsflags();
     OptionBool & assumeyes();
     OptionBool & assumeno();
     OptionBool & check_config_file_age();
@@ -122,8 +121,8 @@ public:
     OptionNumber<std::uint32_t> & retries();
     OptionString & cachedir();
     OptionBool & fastestmirror();
-    OptionStringListAppend & excludepkgs();
-    OptionStringListAppend & includepkgs();
+    OptionStringList & excludepkgs();
+    OptionStringList & includepkgs();
     OptionString & proxy();
     OptionString & proxy_username();
     OptionString & proxy_password();

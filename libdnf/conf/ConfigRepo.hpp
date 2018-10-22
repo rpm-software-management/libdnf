@@ -53,8 +53,8 @@ public:
     OptionString & type();
     OptionString & mediaid();
     OptionStringList & gpgkey();
-    OptionStringListAppend & excludepkgs();
-    OptionStringListAppend & includepkgs();
+    OptionStringList & excludepkgs();
+    OptionStringList & includepkgs();
     OptionChild<OptionBool> & fastestmirror();
     OptionChild<OptionString> & proxy();
     OptionChild<OptionString> & proxy_username();

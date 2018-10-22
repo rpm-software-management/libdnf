@@ -43,7 +43,6 @@
 %include "libdnf/conf/OptionSeconds.hpp"
 %include "libdnf/conf/OptionString.hpp"
 %include "libdnf/conf/OptionStringList.hpp"
-%include "libdnf/conf/OptionStringListAppend.hpp"
 %include "libdnf/conf/OptionPath.hpp"
 
 %template(OptionChildBool) libdnf::OptionChild<OptionBool>;

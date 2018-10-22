@@ -20,6 +20,7 @@
 
 #include "ConfigRepo.hpp"
 #include "Const.hpp"
+#include "Config-private.hpp"
 
 namespace libdnf {
 
@@ -58,12 +59,24 @@ class ConfigRepo::Impl {
     OptionStringList gpgkey{std::vector<std::string>{}};
     OptionBinding gpgKeyBinding{owner, gpgkey, "gpgkey"};
 
-    OptionStringListAppend excludepkgs{std::vector<std::string>{}};
-    OptionBinding excludePkgsBinding{owner, excludepkgs, "excludepkgs"};
-    OptionBinding excludeBinding{owner, excludepkgs, "exclude"}; //compatibility with yum
+    OptionStringList excludepkgs{std::vector<std::string>{}};
+    OptionBinding excludePkgsBinding{owner, excludepkgs, "excludepkgs",
+        [&](Option::Priority priority, const std::string & value){
+            optionTListAppend(excludepkgs, priority, value);
+        }, nullptr, true
+    };
+    OptionBinding excludeBinding{owner, excludepkgs, "exclude", //compatibility with yum
+        [&](Option::Priority priority, const std::string & value){
+            optionTListAppend(excludepkgs, priority, value);
+        }, nullptr, true
+    };
 
-    OptionStringListAppend includepkgs{std::vector<std::string>{}};
-    OptionBinding includePkgsBinding{owner, includepkgs, "includepkgs"};
+    OptionStringList includepkgs{std::vector<std::string>{}};
+    OptionBinding includePkgsBinding{owner, includepkgs, "includepkgs",
+        [&](Option::Priority priority, const std::string & value){
+            optionTListAppend(includepkgs, priority, value);
+        }, nullptr, true
+    };
 
     OptionChild<OptionBool> fastestmirror{masterConfig.fastestmirror()};
     OptionBinding fastestMirrorBinding{owner, fastestmirror, "fastestmirror"};
@@ -173,8 +186,8 @@ OptionString & ConfigRepo::metalink() { return pImpl->metalink; }
 OptionString & ConfigRepo::type() { return pImpl->type; }
 OptionString & ConfigRepo::mediaid() { return pImpl->mediaid; }
 OptionStringList & ConfigRepo::gpgkey() { return pImpl->gpgkey; }
-OptionStringListAppend & ConfigRepo::excludepkgs() { return pImpl->excludepkgs; }
-OptionStringListAppend & ConfigRepo::includepkgs() { return pImpl->includepkgs; }
+OptionStringList & ConfigRepo::excludepkgs() { return pImpl->excludepkgs; }
+OptionStringList & ConfigRepo::includepkgs() { return pImpl->includepkgs; }
 OptionChild<OptionBool> & ConfigRepo::fastestmirror() { return pImpl->fastestmirror; }
 OptionChild<OptionString> & ConfigRepo::proxy() { return pImpl->proxy; }
 OptionChild<OptionString> & ConfigRepo::proxy_username() { return pImpl->proxy_username; }
