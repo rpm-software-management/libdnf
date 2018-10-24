@@ -1165,10 +1165,32 @@ void Repo::Impl::fetch(const std::string & destdir, std::unique_ptr<LrHandle> &&
         throw std::runtime_error(tfm::format(_("Cannot create directory \"%s\": %s"),
                                              repodir, errTxt));
     }
-    if (rename(tmprepodir.c_str(), repodir.c_str()) == -1) {
-        const char * errTxt = strerror(errno);
-        throw std::runtime_error(tfm::format(_("Cannot rename directory \"%s\" to \"%s\": %s"),
-                                             tmprepodir, repodir, errTxt));
+    DIR *dir;
+    struct dirent *ent;
+    if ((dir = opendir (tmpdir.c_str())) != NULL) {
+        Finalizer tmpDirRemover([&dir](){ closedir(dir); });
+        while ((ent = readdir(dir)) != NULL) {
+            auto elementName = ent->d_name;
+            if (elementName[0] == '.') {
+                if ((elementName[1] == '.' && elementName[2] == '\0') || elementName[1] == '\0') {
+                    continue;
+                }
+            }
+            auto targetElement = destdir + "/" + elementName;
+            if (filesystem::exists(targetElement)) {
+                if (filesystem::isDIR(targetElement.c_str())) {
+                    dnf_remove_recursive(targetElement.c_str(), NULL);
+                } else {
+                    dnf_ensure_file_unlinked(targetElement.c_str(), NULL);
+                }
+            }
+            auto tempElement = tmpdir + "/" + elementName;
+            if (rename(tempElement.c_str(), targetElement.c_str()) == -1) {
+                const char * errTxt = strerror(errno);
+                throw std::runtime_error(tfm::format(
+                    _("Cannot rename directory \"%s\" to \"%s\": %s"), tempElement, targetElement, errTxt));
+            }
+        }
     }
 }
 

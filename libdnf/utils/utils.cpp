@@ -143,6 +143,14 @@ bool filesystem::exists(const std::string &name)
     return stat(name.c_str(), &buffer) == 0;
 }
 
+bool filesystem::isDIR(const std::string& dirPath)
+{
+    struct stat buf;
+    lstat(dirPath.c_str(), &buf);
+    return S_ISDIR(buf.st_mode);
+}
+
+
 std::vector<std::string> filesystem::getDirContent(const std::string &dirPath)
 {
     std::vector<std::string> content{};
