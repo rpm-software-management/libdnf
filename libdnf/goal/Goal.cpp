@@ -110,7 +110,7 @@ static const std::map<int, const char *> MODULE_PROBLEMS_DICT = {
     {RULE_PKG_IMPLICIT_OBSOLETES, _("module %s implicitly obsoletes %s provided by %s")},
     {RULE_PKG_REQUIRES, _("module %s requires %s, but none of the providers can be installed")},
     {RULE_PKG_SELF_CONFLICT, _("module %s conflicts with %s provided by itself")},
-    {RULE_YUMOBS, _("both module %s and %s obsolete ")}
+    {RULE_YUMOBS, _("both module %s and %s obsolete %s")}
 };
 
 static std::string
