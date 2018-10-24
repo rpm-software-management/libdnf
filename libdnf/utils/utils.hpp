@@ -37,6 +37,7 @@ bool haveFilesSameContent(const char * filePath1, const char * filePath2);
 
 namespace filesystem {
 bool exists (const std::string &name);
+bool isDIR(const std::string& dirPath);
 std::vector<std::string> getDirContent(const std::string &dirPath);
 }
 
