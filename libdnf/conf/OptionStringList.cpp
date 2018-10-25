@@ -63,16 +63,19 @@ void OptionStringList::test(const std::vector<std::string> & value) const
 OptionStringList::ValueType OptionStringList::fromString(const std::string & value) const
 {
     std::vector<std::string> tmp;
-    std::string::size_type start{0};
+    auto start = value.find_first_not_of(" ");
+    if (start == value.npos)
+        return tmp;
     while (start < value.length()) {
         auto end = value.find_first_of(" ,\n", start);
-        if (end == std::string::npos) {
+        if (end == value.npos) {
             tmp.push_back(value.substr(start));
             break;
         }
-        if (end-start != 0)
-            tmp.push_back(value.substr(start, end - start));
-        start = end + 1;
+        tmp.push_back(value.substr(start, end - start));
+        start = value.find_first_not_of(" ", end + 1);
+        if (start == value.npos && value[end] == ',')
+            tmp.push_back("");
     }
     return tmp;
 }
