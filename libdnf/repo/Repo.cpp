@@ -1165,18 +1165,15 @@ void Repo::Impl::fetch(const std::string & destdir, std::unique_ptr<LrHandle> &&
         throw std::runtime_error(tfm::format(_("Cannot create directory \"%s\": %s"),
                                              repodir, errTxt));
     }
-    DIR *dir;
-    struct dirent *ent;
-    if ((dir = opendir (tmpdir.c_str())) != NULL) {
-        Finalizer tmpDirRemover([&dir](){ closedir(dir); });
-        while ((ent = readdir(dir)) != NULL) {
-            auto elementName = ent->d_name;
-            if (elementName[0] == '.') {
-                if ((elementName[1] == '.' && elementName[2] == '\0') || elementName[1] == '\0') {
-                    continue;
-                }
+    // move all downloaded object from tmpdir to destdir
+    if (auto * dir = opendir(tmpdir.c_str())) {
+        Finalizer tmpDirRemover([dir](){ closedir(dir); });
+        while (auto ent = readdir(dir)) {
+            auto elName = ent->d_name;
+            if (elName[0] == '.' && (elName[1] == '\0' || (elName[1] == '.' && elName[2] == '\0'))) {
+                continue;
             }
-            auto targetElement = destdir + "/" + elementName;
+            auto targetElement = destdir + "/" + elName;
             if (filesystem::exists(targetElement)) {
                 if (filesystem::isDIR(targetElement.c_str())) {
                     dnf_remove_recursive(targetElement.c_str(), NULL);
@@ -1184,7 +1181,7 @@ void Repo::Impl::fetch(const std::string & destdir, std::unique_ptr<LrHandle> &&
                     dnf_ensure_file_unlinked(targetElement.c_str(), NULL);
                 }
             }
-            auto tempElement = tmpdir + "/" + elementName;
+            auto tempElement = tmpdir + "/" + elName;
             if (rename(tempElement.c_str(), targetElement.c_str()) == -1) {
                 const char * errTxt = strerror(errno);
                 throw std::runtime_error(tfm::format(
