@@ -713,6 +713,9 @@ dnf_transaction_ts_progress_cb(const void *arg,
         case RPMCALLBACK_UNINST_STOP:
 
             pkg = dnf_find_pkg_from_header(priv->remove, hdr);
+            if (pkg == NULL) {
+                pkg = dnf_find_pkg_from_header(priv->remove_helper, hdr);
+            }
             if (pkg == NULL && filename != NULL) {
                 pkg = dnf_find_pkg_from_filename_suffix(priv->remove, filename);
             }
