@@ -397,6 +397,8 @@ class ConfigMain::Impl {
     OptionString module_platform_id{nullptr};
     OptionBinding modulePlatformId{owner, module_platform_id, "module_platform_id"};
 
+    OptionMapStringString substitutions{std::map<std::string, std::string>{}};
+
     // Repo main config
 
     OptionNumber<std::uint32_t> retries{10};
@@ -600,6 +602,8 @@ OptionBool & ConfigMain::downloadonly() { return pImpl->downloadonly; }
 OptionBool & ConfigMain::ignorearch() { return pImpl->ignorearch; }
 
 OptionString & ConfigMain::module_platform_id() { return pImpl->module_platform_id; }
+
+OptionMapStringString & ConfigMain::substitutions() { return pImpl->substitutions; }
 
 // Repo main config
 OptionNumber<std::uint32_t> & ConfigMain::retries() { return pImpl->retries; }

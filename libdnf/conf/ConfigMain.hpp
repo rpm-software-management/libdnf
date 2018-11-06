@@ -24,6 +24,7 @@
 #include "Config.hpp"
 #include "OptionBool.hpp"
 #include "OptionEnum.hpp"
+#include "OptionMapStringString.hpp"
 #include "OptionNumber.hpp"
 #include "OptionPath.hpp"
 #include "OptionSeconds.hpp"
@@ -116,6 +117,8 @@ public:
     OptionBool & ignorearch();
 
     OptionString & module_platform_id();
+
+    OptionMapStringString & substitutions();
 
     // Repo main config
     OptionNumber<std::uint32_t> & retries();
