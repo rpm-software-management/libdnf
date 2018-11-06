@@ -2,6 +2,7 @@ SET (CONF_SOURCES
         ${CONF_SOURCES}
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionBool.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionEnum.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/OptionMapStringString.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionNumber.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionPath.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionSeconds.cpp
@@ -20,6 +21,7 @@ SET (CONF_HEADERS
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionChild.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionBool.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionEnum.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/OptionMapStringString.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionNumber.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionPath.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionSeconds.hpp
