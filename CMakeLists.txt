@@ -34,6 +34,7 @@ option(WITH_MAN "Enables hawkey man page generation" ON)
 option(WITH_ZCHUNK "Build with zchunk support" ON)
 option(ENABLE_RHSM_SUPPORT "Build with Red Hat Subscription Manager support?" OFF)
 option(ENABLE_SOLV_URPMREORDER "Build with support for URPM-like solution reordering?" OFF)
+option(WITH_TESTS "Enables unit tests" ON)
 
 
 # build options - debugging
@@ -175,8 +176,10 @@ endif()
 
 
 # build tests
+IF (WITH_TESTS)
 enable_testing()
 add_subdirectory(tests)
+ENDIF()
 if(WITH_BINDINGS)
     add_subdirectory(python/hawkey)
 endif()
