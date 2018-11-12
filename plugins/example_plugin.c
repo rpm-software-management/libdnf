@@ -34,7 +34,7 @@ static const PluginInfo info = {
 };
 
 // plugin context private data
-// Pointer to instance of this structure is returned by pluginInitContext() as handle.
+// Pointer to instance of this structure is returned by pluginInitHandle() as handle.
 struct _PluginHandle
 {
     PluginMode mode;
