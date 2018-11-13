@@ -5,12 +5,12 @@ Motivation
 ----------
 [DNF](https://github.com/rpm-software-management/dnf) package manager that uses the libdnf library, has plugins support. There are useful DNF plugins and some of them needs to be run during each operation. Of course, DNF plugins are run only if user use DNF. If the user will use another application ([microdnf](https://github.com/rpm-software-management/microdnf), [PackageKit](https://github.com/hughsie/PackageKit), ...) DNF plugins are skipped. This is effort to move plugins into lower level - into libdnf. So the plugins will be running even if another application is used.
 
-The libdnf plugins interface is under development now. We cannot simply copy plugin interface from DNF. DNF is a Pytnon application but libdnf is a C/C++ library. That also means not all DNF plugins can be transferred to libdnf. Moreover there is more ways how application can use the libdnf library. DNF use another way (implements upper logic in python) than microdnf and PackageKit (which use libdnf "context" code). It takes time to unify it. Hooks are inserted in "context" code of libdnf now.
+The libdnf plugins interface is under development now. We cannot simply copy plugin interface from DNF. DNF is a Python application but libdnf is a C/C++ library. That also means not all DNF plugins can be transferred to libdnf. Moreover there is more ways how application can use the libdnf library. DNF use another way (implements upper logic in python) than microdnf and PackageKit (which use libdnf "context" code). It takes time to unify it. Hooks are inserted in "context" code of libdnf now.
 
 Status of prototype
 -------------------
 * Plugins are .so libraries.
-* Plugins are readed from directory (/usr/lib64/libdnf/plugins is hardcoded now).
+* Plugins are read from directory (/usr/lib64/libdnf/plugins is hardcoded now).
 * Plugins are loaded in alphabetical order (sorted by filename).
 * Initializations and hooks are called in the same order as plugins were loaded.
 * Freeing of plugins is in the reverse order as they were loaded.
