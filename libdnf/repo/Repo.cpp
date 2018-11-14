@@ -33,6 +33,15 @@
 #define DIGITS "0123456789"
 #define REPOID_CHARS ASCII_LETTERS DIGITS "-_.:"
 
+#define MD_FILE_PRIMARY "primary"
+#define MD_FILE_FILELISTS "filelists"
+#define MD_FILE_PRESTODELTA "prestodelta"
+#define MD_FILE_GROUP_GZ "group_gz"
+#define MD_FILE_GROUP "group"
+#define MD_FILE_UPDATEINFO "updateinfo"
+#define MD_FILE_MODULES "modules"
+#define MD_FILE_OTHER "other"
+
 #include "../log.hpp"
 #include "Repo.hpp"
 #include "../dnf-utils.h"
@@ -230,15 +239,7 @@ public:
     int timestamp;
     int maxTimestamp;
     std::string repomdFn;
-    std::string primaryFn;
-    std::string filelistsFn;
-    std::string prestoFn;
-    std::string updateinfoFn;
-    std::string compsFn;
-    std::string otherFn;
-#ifdef MODULEMD
-    std::string modulesFn;
-#endif
+    std::map<std::string, std::string> metadata_paths;
     std::string revision;
     std::vector<std::string> content_tags;
     std::vector<std::pair<std::string, std::string>> distro_tags;
@@ -477,10 +478,16 @@ bool Repo::getLoadMetadataOther() const { return pImpl->loadMetadataOther; }
 void Repo::setLoadMetadataOther(bool value) { pImpl->loadMetadataOther = value; }
 int Repo::getCost() const { return pImpl->conf->cost().getValue(); }
 int Repo::getPriority() const { return pImpl->conf->priority().getValue(); }
-std::string Repo::getCompsFn() { return pImpl->compsFn; }
+std::string Repo::getCompsFn() {
+    auto tmp = pImpl->metadata_paths[MD_FILE_GROUP_GZ];
+    if (tmp.empty())
+        tmp = pImpl->metadata_paths[MD_FILE_GROUP];
+    return tmp;
+}
+
 
 #ifdef MODULEMD
-std::string Repo::getModulesFn() { return pImpl->modulesFn; }
+std::string Repo::getModulesFn() { return pImpl->metadata_paths[MD_FILE_MODULES]; }
 #endif
 
 int Repo::getAge() const { return pImpl->getAge(); }
@@ -496,13 +503,14 @@ void Repo::setSubstitutions(const std::map<std::string, std::string> & substitut
 std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
 {
     std::unique_ptr<LrHandle> h(lr_handle_init());
-    std::vector<const char *> dlist = {"primary", "filelists", "prestodelta", "group_gz", "updateinfo"};
+    std::vector<const char *> dlist = {MD_FILE_PRIMARY, MD_FILE_FILELISTS, MD_FILE_PRESTODELTA,
+        MD_FILE_GROUP_GZ, MD_FILE_UPDATEINFO};
 
 #ifdef MODULEMD
-    dlist.push_back("modules");
+    dlist.push_back(MD_FILE_MODULES);
 #endif
     if (loadMetadataOther) {
-        dlist.push_back("other");
+        dlist.push_back(MD_FILE_OTHER);
     }
     dlist.push_back(NULL);
     handleSetOpt(h.get(), LRO_REPOTYPE, LR_YUMREPO);
@@ -515,7 +523,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
                      conf->max_parallel_downloads().getValue());
 
     LrUrlVars * vars = NULL;
-    vars = lr_urlvars_set(vars, "group_gz", "group");
+    vars = lr_urlvars_set(vars, MD_FILE_GROUP_GZ, MD_FILE_GROUP);
     handleSetOpt(h.get(), LRO_YUMSLIST, vars);
 
     return h;
@@ -992,22 +1000,15 @@ bool Repo::Impl::loadCache(bool throwExcept)
 
     // Populate repo
     repomdFn = yum_repo->repomd;
-    primaryFn = lr_yum_repo_path(yum_repo, "primary");
-    filelistsFn = lr_yum_repo_path(yum_repo, "filelists");
-    auto tmp = lr_yum_repo_path(yum_repo, "prestodelta");
-    prestoFn = tmp ? tmp : "";
-    tmp = lr_yum_repo_path(yum_repo, "updateinfo");
-    updateinfoFn = tmp ? tmp : "";
-    tmp = lr_yum_repo_path(yum_repo, "other");
-    otherFn = tmp ? tmp : "";
-    tmp = lr_yum_repo_path(yum_repo, "group_gz");
-    if (!tmp)
-        tmp = lr_yum_repo_path(yum_repo, "group");
-    compsFn = tmp ? tmp : "";
-#ifdef MODULEMD
-    tmp = lr_yum_repo_path(yum_repo, "modules");
-    modulesFn = tmp ? tmp : "";
-#endif
+    metadata_paths.clear();
+    for (auto *elem = yum_repo->paths; elem; elem = g_slist_next(elem)) {
+        if (elem->data) {
+            LrYumRepoPath *yumrepopath = static_cast<LrYumRepoPath *>(elem->data);
+            if (yumrepopath) {
+                metadata_paths.emplace(yumrepopath->type, yumrepopath->path);
+            }
+        }
+    }
 
     content_tags.clear();
     for (auto elem = yum_repomd->content_tags; elem; elem = g_slist_next(elem)) {
@@ -1030,7 +1031,7 @@ bool Repo::Impl::loadCache(bool throwExcept)
 
     // Load timestamp unless explicitly expired
     if (timestamp != 0) {
-        timestamp = mtime(primaryFn.c_str());
+        timestamp = mtime(metadata_paths[MD_FILE_PRIMARY].c_str());
     }
     g_strfreev(this->mirrors);
     this->mirrors = mirrors;
@@ -1207,9 +1208,9 @@ bool Repo::Impl::load()
 {
     auto logger(Log::getLogger());
     try {
-        if (!primaryFn.empty() || loadCache(false)) {
+        if (!metadata_paths[MD_FILE_PRIMARY].empty() || loadCache(false)) {
             if (conf->getMasterConfig().check_config_file_age().getValue() &&
-                !repoFilePath.empty() && mtime(repoFilePath.c_str()) > mtime(primaryFn.c_str()))
+                !repoFilePath.empty() && mtime(repoFilePath.c_str()) > mtime(metadata_paths[MD_FILE_PRIMARY].c_str()))
                 expired = true;
             if (!expired || syncStrategy == SyncStrategy::ONLY_CACHE || syncStrategy == SyncStrategy::LAZY) {
                 logger->debug(tfm::format(_("repo: using cache for: %s"), id));
@@ -1218,7 +1219,7 @@ bool Repo::Impl::load()
 
             if (isInSync()) {
                 // the expired metadata still reflect the origin:
-                utimes(primaryFn.c_str(), NULL);
+                utimes(metadata_paths[MD_FILE_PRIMARY].c_str(), NULL);
                 expired = false;
                 return true;
             }
@@ -1275,7 +1276,7 @@ std::string Repo::Impl::getCachedir() const
 
 int Repo::Impl::getAge() const
 {
-    return time(NULL) - mtime(primaryFn.c_str());
+    return time(NULL) - mtime(metadata_paths.find(MD_FILE_PRIMARY)->second.c_str());
 }
 
 void Repo::Impl::expire()
@@ -1400,31 +1401,31 @@ void Repo::initHyRepo(HyRepo hrepo)
 {
     auto logger(Log::getLogger());
     hy_repo_set_string(hrepo, HY_REPO_MD_FN, pImpl->repomdFn.c_str());
-    hy_repo_set_string(hrepo, HY_REPO_PRIMARY_FN, pImpl->primaryFn.c_str());
-    if (pImpl->filelistsFn.empty())
+    hy_repo_set_string(hrepo, HY_REPO_PRIMARY_FN, pImpl->metadata_paths[MD_FILE_PRIMARY].c_str());
+    if (pImpl->metadata_paths[MD_FILE_FILELISTS].empty())
         logger->debug(tfm::format(_("not found filelist for: %s"), pImpl->conf->name().getValue()));
     else
-        hy_repo_set_string(hrepo, HY_REPO_FILELISTS_FN, pImpl->filelistsFn.c_str());
-    if (pImpl->otherFn.empty())
+        hy_repo_set_string(hrepo, HY_REPO_FILELISTS_FN, pImpl->metadata_paths[MD_FILE_FILELISTS].c_str());
+    if (pImpl->metadata_paths[MD_FILE_OTHER].empty())
         logger->debug(tfm::format(_("not found other for: %s"), pImpl->conf->name().getValue()));
     else
-        hy_repo_set_string(hrepo, HY_REPO_OTHER_FN, pImpl->otherFn.c_str());
+        hy_repo_set_string(hrepo, HY_REPO_OTHER_FN, pImpl->metadata_paths[MD_FILE_OTHER].c_str());
 #ifdef MODULEMD
-    if (pImpl->modulesFn.empty())
+    if (pImpl->metadata_paths[MD_FILE_MODULES].empty())
         logger->debug(tfm::format(_("not found modules for: %s"), pImpl->conf->name().getValue()));
     else
-        hy_repo_set_string(hrepo, MODULES_FN, pImpl->modulesFn.c_str());
+        hy_repo_set_string(hrepo, MODULES_FN, pImpl->metadata_paths[MD_FILE_MODULES].c_str());
 #endif
     hy_repo_set_cost(hrepo, pImpl->conf->cost().getValue());
     hy_repo_set_priority(hrepo, pImpl->conf->priority().getValue());
-    if (pImpl->prestoFn.empty())
+    if (pImpl->metadata_paths[MD_FILE_PRESTODELTA].empty())
         logger->debug(tfm::format(_("not found deltainfo for: %s"), pImpl->conf->name().getValue()));
     else
-        hy_repo_set_string(hrepo, HY_REPO_PRESTO_FN, pImpl->prestoFn.c_str());
-    if (pImpl->updateinfoFn.empty())
+        hy_repo_set_string(hrepo, HY_REPO_PRESTO_FN, pImpl->metadata_paths[MD_FILE_PRESTODELTA].c_str());
+    if (pImpl->metadata_paths[MD_FILE_UPDATEINFO].empty())
         logger->debug(tfm::format(_("not found updateinfo for: %s"), pImpl->conf->name().getValue()));
     else
-        hy_repo_set_string(hrepo, HY_REPO_UPDATEINFO_FN, pImpl->updateinfoFn.c_str());
+        hy_repo_set_string(hrepo, HY_REPO_UPDATEINFO_FN, pImpl->metadata_paths[MD_FILE_UPDATEINFO].c_str());
 }
 
 std::string Repo::getCachedir() const
