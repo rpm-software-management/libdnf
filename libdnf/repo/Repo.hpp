@@ -185,6 +185,17 @@ public:
     std::string getMetadataPath(const std::string &metadata);
 
     /**
+    * @brief Return content of the particular downloaded repository metadata
+    *
+    * Content of compressed metadata files is returned uncompressed
+    *
+    * @param metadata metadata name (filelists, other, productid...)
+    *
+    * @return content of metadata file or empty string in case the requested metadata does not exist
+    */
+    std::string getMetadataContent(const std::string &metadata);
+
+    /**
     * @brief Mark whatever is in the current cache expired.
     *
     * This repo instance will alway try to fetch a fresh metadata after this
