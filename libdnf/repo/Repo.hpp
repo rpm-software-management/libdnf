@@ -176,6 +176,15 @@ public:
     void addToMetadata(const std::string &metadata);
 
     /**
+    * @brief Return path to the particular downloaded repository metadata in cache
+    *
+    * @param metadata metadata name (filelists, other, productid...)
+    *
+    * @return file path or empty string in case the requested metadata does not exist
+    */
+    std::string getMetadataPath(const std::string &metadata);
+
+    /**
     * @brief Mark whatever is in the current cache expired.
     *
     * This repo instance will alway try to fetch a fresh metadata after this

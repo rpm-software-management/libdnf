@@ -506,6 +506,8 @@ void Repo::addToMetadata(const std::string &type)
     pImpl->additional_metadata.push_back(type);
 }
 
+std::string Repo::getMetadataPath(const std::string &type) { return pImpl->metadata_paths[type]; }
+
 std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
 {
     std::unique_ptr<LrHandle> h(lr_handle_init());
