@@ -240,6 +240,7 @@ public:
     int maxTimestamp{0};
     std::string repomdFn;
     std::map<std::string, std::string> metadata_paths;
+    std::vector<std::string> additional_metadata;
     std::string revision;
     std::vector<std::string> content_tags;
     std::vector<std::pair<std::string, std::string>> distro_tags;
@@ -500,6 +501,11 @@ void Repo::setSubstitutions(const std::map<std::string, std::string> & substitut
     pImpl->substitutions = substitutions;
 }
 
+void Repo::addToMetadata(const std::string &type)
+{
+    pImpl->additional_metadata.push_back(type);
+}
+
 std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
 {
     std::unique_ptr<LrHandle> h(lr_handle_init());
@@ -511,6 +517,9 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
 #endif
     if (loadMetadataOther) {
         dlist.push_back(MD_FILE_OTHER);
+    }
+    for (auto &item : additional_metadata) {
+        dlist.push_back(item.c_str());
     }
     dlist.push_back(NULL);
     handleSetOpt(h.get(), LRO_REPOTYPE, LR_YUMREPO);
@@ -1210,7 +1219,8 @@ bool Repo::Impl::load()
     try {
         if (!metadata_paths[MD_FILE_PRIMARY].empty() || loadCache(false)) {
             if (conf->getMasterConfig().check_config_file_age().getValue() &&
-                !repoFilePath.empty() && mtime(repoFilePath.c_str()) > mtime(metadata_paths[MD_FILE_PRIMARY].c_str()))
+                !repoFilePath.empty() &&
+                mtime(repoFilePath.c_str()) > mtime(metadata_paths[MD_FILE_PRIMARY].c_str()))
                 expired = true;
             if (!expired || syncStrategy == SyncStrategy::ONLY_CACHE || syncStrategy == SyncStrategy::LAZY) {
                 logger->debug(tfm::format(_("repo: using cache for: %s"), id));
