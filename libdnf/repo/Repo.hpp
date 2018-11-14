@@ -167,6 +167,15 @@ public:
     int getAge() const;
 
     /**
+    * @brief Ask for additional repository metadata to download
+    *
+    * given metadata are appended to the default metadata set when repository is downloaded
+    *
+    * @param metadata metadata name (filelists, other, productid...)
+    */
+    void addToMetadata(const std::string &metadata);
+
+    /**
     * @brief Mark whatever is in the current cache expired.
     *
     * This repo instance will alway try to fetch a fresh metadata after this
