@@ -48,6 +48,7 @@
 #include "../hy-iutil.h"
 #include "../hy-util-private.hpp"
 #include "../hy-types.h"
+#include "libdnf/utils/File.hpp"
 
 #include "bgettext/bgettext-lib.h"
 #include "tinyformat/tinyformat.hpp"
@@ -506,7 +507,22 @@ void Repo::addToMetadata(const std::string &type)
     pImpl->additional_metadata.push_back(type);
 }
 
-std::string Repo::getMetadataPath(const std::string &type) { return pImpl->metadata_paths[type]; }
+std::string Repo::getMetadataPath(const std::string &metadata)
+{
+    return pImpl->metadata_paths[metadata];
+}
+
+std::string Repo::getMetadataContent(const std::string &metadata)
+{
+    auto path = getMetadataPath(metadata);
+    if (path.empty()) return "";
+
+    auto mdfile = libdnf::File::newFile(path);
+    mdfile->open("r");
+    const auto &content = mdfile->getContent();
+    mdfile->close();
+    return content;
+}
 
 std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
 {
