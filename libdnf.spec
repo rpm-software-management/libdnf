@@ -19,11 +19,7 @@
 %bcond_without python2
 %endif
 
-%if 0%{?rhel} && ! 0%{?centos}
-%bcond_without rhsm
-%else
 %bcond_with rhsm
-%endif
 
 %global _cmake_opts \\\
     -DENABLE_RHSM_SUPPORT=%{?with_rhsm:ON}%{!?with_rhsm:OFF} \\\
