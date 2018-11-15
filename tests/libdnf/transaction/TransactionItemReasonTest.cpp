@@ -50,6 +50,7 @@ TransactionItemReasonTest::testEmptyTransaction()
     swdb.initTransaction();
     swdb.beginTransaction(1, "", "", 0);
     swdb.endTransaction(2, "", TransactionState::DONE);
+    swdb.closeTransaction();
 
     CPPUNIT_ASSERT_EQUAL(static_cast< TransactionItemReason >(
                              swdb.resolveRPMTransactionItemReason("bash", "x86_64", -1)),
@@ -78,6 +79,7 @@ TransactionItemReasonTest::test_OneTransaction_OneTransactionItem()
 
     swdb.beginTransaction(1, "", "", 0);
     swdb.endTransaction(2, "", TransactionState::DONE);
+    swdb.closeTransaction();
 
     // package exists -> $reason
     CPPUNIT_ASSERT_EQUAL(static_cast< TransactionItemReason >(
@@ -117,6 +119,7 @@ TransactionItemReasonTest::test_OneFailedTransaction_OneTransactionItem()
 
     swdb.beginTransaction(1, "", "", 0);
     swdb.endTransaction(2, "", TransactionState::ERROR);
+    swdb.closeTransaction();
 
     // failed transaction -> UNKNOWN
     CPPUNIT_ASSERT_EQUAL(static_cast< TransactionItemReason >(
@@ -172,6 +175,7 @@ TransactionItemReasonTest::test_OneTransaction_TwoTransactionItems()
 
     swdb.beginTransaction(1, "", "", 0);
     swdb.endTransaction(2, "", TransactionState::DONE);
+    swdb.closeTransaction();
 
     // package exists -> $reason
     CPPUNIT_ASSERT_EQUAL(static_cast< TransactionItemReason >(
@@ -212,6 +216,7 @@ TransactionItemReasonTest::test_TwoTransactions_TwoTransactionItems()
 
         swdb.beginTransaction(1, "", "", 0);
         swdb.endTransaction(2, "", TransactionState::DONE);
+        swdb.closeTransaction();
     }
 
     {
@@ -231,6 +236,7 @@ TransactionItemReasonTest::test_TwoTransactions_TwoTransactionItems()
 
         swdb.beginTransaction(1, "", "", 0);
         swdb.endTransaction(2, "", TransactionState::DONE);
+        swdb.closeTransaction();
     }
 
     // package exists -> $reason
@@ -272,6 +278,7 @@ TransactionItemReasonTest::testRemovedPackage()
 
         swdb.beginTransaction(1, "", "", 0);
         swdb.endTransaction(2, "", TransactionState::DONE);
+        swdb.closeTransaction();
     }
 
     {
@@ -291,6 +298,7 @@ TransactionItemReasonTest::testRemovedPackage()
 
         swdb.beginTransaction(1, "", "", 0);
         swdb.endTransaction(2, "", TransactionState::DONE);
+        swdb.closeTransaction();
 
         swdb.initTransaction();
         action = TransactionItemAction::REMOVE;
@@ -298,6 +306,7 @@ TransactionItemReasonTest::testRemovedPackage()
         ti_remove->setState(TransactionItemState::DONE);
         swdb.beginTransaction(1, "", "", 0);
         swdb.endTransaction(2, "", TransactionState::DONE);
+        swdb.closeTransaction();
     }
 
     // package exists -> $reason
