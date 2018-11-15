@@ -78,7 +78,7 @@ protected:
     std::string environmentId;
     std::string name;
     std::string translatedName;
-    CompsPackageType packageTypes;
+    CompsPackageType packageTypes = CompsPackageType::DEFAULT;
 
     void loadGroups();
     std::vector< CompsEnvironmentGroupPtr > groups;

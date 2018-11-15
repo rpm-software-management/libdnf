@@ -167,7 +167,6 @@ ModulePackageContainer::EnableMultipleStreamsException::EnableMultipleStreamsExc
 ModulePackageContainer::ModulePackageContainer(bool allArch, std::string installRoot,
     const char * arch) : pImpl(new Impl)
 {
-    pImpl->moduleSack = dnf_sack_new();
     if (allArch) {
         dnf_sack_set_all_arch(pImpl->moduleSack, TRUE);
     } else {
@@ -184,7 +183,7 @@ ModulePackageContainer::ModulePackageContainer(bool allArch, std::string install
 
 ModulePackageContainer::~ModulePackageContainer() = default;
 
-ModulePackageContainer::Impl::Impl() : persistor(new ModulePersistor) {}
+ModulePackageContainer::Impl::Impl() : persistor(new ModulePersistor), moduleSack(dnf_sack_new()) {}
 
 ModulePackageContainer::Impl::~Impl()
 {

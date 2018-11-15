@@ -118,7 +118,7 @@ protected:
     CompsGroupItem &group;
     std::string name;
     bool installed = false;
-    CompsPackageType packageType;
+    CompsPackageType packageType = CompsPackageType::DEFAULT;
 
 private:
     void dbInsert();
