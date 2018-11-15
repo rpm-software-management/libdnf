@@ -228,7 +228,7 @@ public:
     int maxMirrorTries{0}; // try them all
     // 0 forces expiration on the next call to load(), -1 means undefined value
     int timestamp;
-    int maxTimestamp;
+    int maxTimestamp{0};
     std::string repomdFn;
     std::string primaryFn;
     std::string filelistsFn;
@@ -243,7 +243,7 @@ public:
     std::vector<std::string> content_tags;
     std::vector<std::pair<std::string, std::string>> distro_tags;
     unsigned char checksum[CHKSUM_BYTES];
-    bool useIncludes;
+    bool useIncludes{false};
     bool loadMetadataOther;
     std::map<std::string, std::string> substitutions;
 

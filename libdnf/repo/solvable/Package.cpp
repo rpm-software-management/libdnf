@@ -19,7 +19,8 @@ Package::Package(DnfSack *sack,
     if (createSolvable) {
         this->createSolvable(repo);
         fillSolvableData(name, version, arch);
-    }
+    } else
+        id = 0;
 }
 
 Package::Package(DnfSack *sack,
@@ -33,7 +34,8 @@ Package::Package(DnfSack *sack,
     if (createSolvable) {
         this->createSolvable(repo);
         fillSolvableData(name.c_str(), version.c_str(), arch.c_str());
-    }
+    } else
+        id = 0;
 }
 
 Package::Package(const Package &package)
