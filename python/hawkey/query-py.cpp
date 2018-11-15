@@ -440,8 +440,8 @@ filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, 
             PycompString cmatch(key);
             if (!cmatch.getCString())
                 return FALSE;
-            g_autofree char *parsed_string = strdup(cmatch.getCString());
-            char *tmp_string = parsed_string;
+            auto parsed_string = cmatch.getString();
+            char *tmp_string = &parsed_string.front();
             cmp_type = 0;
             char *parcial_string;
             while ((parcial_string = filter_key_splitter(&tmp_string)) != NULL) {
@@ -488,7 +488,11 @@ filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, 
                         assert(c_sack);
                         auto pset = pyseq_to_packageset(value, c_sack);
                         if (!pset) {
-                            (ret2e(DNF_ERROR_BAD_SELECTOR, "Invalid value type: Only List and Query supported"));
+                            ret2e(DNF_ERROR_BAD_SELECTOR, "Invalid value type: Only List and Query supported");
+                            return FALSE;
+                        }
+                        if (!sltr) {
+                            PyErr_SetString(HyExc_Value, "Selector is nulptr");
                             return FALSE;
                         }
                         if (ret2e(sltr->set(pset.get()),
@@ -740,16 +744,16 @@ filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds)
         PyErr_SetString(PyExc_SystemError, "Unable to parse swig object");
         return NULL;
     }
-    HyQuery self_query_copy = new libdnf::Query(*((_QueryObject *) self)->query);
+    std::unique_ptr<libdnf::Query> self_query_copy(new libdnf::Query(*((_QueryObject *) self)->query));
     gboolean c_debug_solver = debug_solver != NULL && PyObject_IsTrue(debug_solver);
 
-    int ret = hy_filter_unneeded(self_query_copy, *swdb, c_debug_solver);
+    int ret = hy_filter_unneeded(self_query_copy.get(), *swdb, c_debug_solver);
     if (ret == -1) {
         PyErr_SetString(PyExc_SystemError, "Unable to provide query with unneded filter");
         return NULL;
     }
 
-    PyObject *final_query = queryToPyObject(self_query_copy, ((_QueryObject *) self)->sack,
+    PyObject *final_query = queryToPyObject(self_query_copy.release(), ((_QueryObject *) self)->sack,
                                             Py_TYPE(self));
     return final_query;
 }
