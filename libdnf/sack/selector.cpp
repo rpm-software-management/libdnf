@@ -68,7 +68,7 @@ public:
     std::unique_ptr<Filter> filterProvides;
     std::unique_ptr<Filter> filterReponame;
 private:
-    friend struct Filter;
+    friend struct Selector;
     std::vector<_Match> matches;
 };
 

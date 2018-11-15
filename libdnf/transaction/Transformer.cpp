@@ -436,9 +436,12 @@ Transformer::transformRPMItems(SQLite3Ptr swdb,
         switch (action) {
             case TransactionItemAction::OBSOLETED:
                 obsoletedItems[rpm->getId()] = transItem;
+                transItem->addReplacedBy(last);
+                break;
             case TransactionItemAction::DOWNGRADED:
             case TransactionItemAction::UPGRADED:
                 transItem->addReplacedBy(last);
+                break;
             default:
                 break;
         }
