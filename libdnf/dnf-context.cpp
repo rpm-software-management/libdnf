@@ -1907,19 +1907,16 @@ dnf_context_install (DnfContext *context, const gchar *name, GError **error)
 {
     DnfContextPrivate *priv = GET_PRIVATE (context);
     g_autoptr(GPtrArray) selector_matches = NULL;
-    HySelector selector = NULL;
-    HySubject subject = NULL;
-    gboolean ret = FALSE;
 
     /* create sack and add sources */
     if (priv->sack == NULL) {
         dnf_state_reset (priv->state);
         if (!dnf_context_setup_sack(context, priv->state, error))
-            goto out;
+            return FALSE;
     }
 
-    subject = hy_subject_create(name);
-    selector = hy_subject_get_best_selector(subject, priv->sack, NULL, FALSE, NULL);
+    g_auto(HySubject) subject = hy_subject_create(name);
+    g_auto(HySelector) selector = hy_subject_get_best_selector(subject, priv->sack, NULL, FALSE, NULL);
     selector_matches = hy_selector_matches(selector);
     if (selector_matches->len == 0) {
         g_set_error(error,
@@ -1930,15 +1927,9 @@ dnf_context_install (DnfContext *context, const gchar *name, GError **error)
     }
 
     if (!hy_goal_install_selector(priv->goal, selector, error))
-        goto out;
+        return FALSE;
 
-    ret = TRUE;
- out:
-    if (selector)
-        hy_selector_free(selector);
-    if (subject)
-        hy_subject_free(subject);
-    return ret;
+    return TRUE;
 }
 
 /**

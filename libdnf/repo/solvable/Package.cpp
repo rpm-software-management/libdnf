@@ -201,7 +201,7 @@ std::shared_ptr<libdnf::DependencyContainer> Package::getDependencies(Id type, I
 Queue *Package::getDependencyQueue(Id type, Id marker) const
 {
     Queue dependencyQueue{};
-    auto queue = static_cast<Queue *>(malloc(sizeof(Queue)));
+    auto queue = new Queue;
 
     queue_init(queue);
     queue_init(&dependencyQueue);
