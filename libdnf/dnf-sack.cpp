@@ -2350,6 +2350,9 @@ std::vector<std::vector<std::string>> dnf_sack_filter_modules_v2(
         }
     }
 
+    if (!moduleContainer) {
+        throw std::runtime_error("ModuleContainer not provided");
+    }
     auto ret = moduleContainer->resolveActiveModulePackages(debugSolver);
     auto nevraTuple = collectNevraForInclusionExclusion(*moduleContainer);
 
