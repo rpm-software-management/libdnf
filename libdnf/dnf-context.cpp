@@ -1630,6 +1630,13 @@ dnf_context_setup_enrollments(DnfContext *context, GError **error)
         return TRUE;
 
 #ifdef RHSM_SUPPORT
+    /* If /var/lib/rhsm exists, then we can assume that
+     * subscription-manager is installed, and thus don't need to
+     * manage redhat.repo via librhsm.
+     */
+    if (access("/var/lib/rhsm", F_OK) == 0) {
+        return TRUE;
+    }
     g_autoptr(RHSMContext) rhsm_ctx = rhsm_context_new ();
     g_autofree gchar *repofname = g_build_filename (priv->repo_dir,
                                                     "redhat.repo",
