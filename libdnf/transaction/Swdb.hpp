@@ -68,6 +68,7 @@ public:
                              std::string cmdline,
                              uint32_t userId);
     int64_t endTransaction(int64_t dtEnd, std::string rpmdbVersionEnd, TransactionState state);
+    int64_t closeTransaction();
     // TODO:
     std::vector< TransactionItemPtr > getItems() { return transactionInProgress->getItems(); }
 

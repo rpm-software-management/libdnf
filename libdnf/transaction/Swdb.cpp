@@ -126,11 +126,21 @@ Swdb::endTransaction(int64_t dtEnd, std::string rpmdbVersionEnd, TransactionStat
     transactionInProgress->setDtEnd(dtEnd);
     transactionInProgress->setRpmdbVersionEnd(rpmdbVersionEnd);
     transactionInProgress->finish(state);
+    return transactionInProgress->getId();
+}
+
+int64_t
+Swdb::closeTransaction()
+{
+    if (!transactionInProgress) {
+        throw std::logic_error(_("Not in progress"));
+    }
     int64_t result = transactionInProgress->getId();
     transactionInProgress = std::unique_ptr< swdb_private::Transaction >(nullptr);
     itemsInProgress.clear();
     return result;
 }
+
 
 TransactionItemPtr
 Swdb::addItem(std::shared_ptr< Item > item,

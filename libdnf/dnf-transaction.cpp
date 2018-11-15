@@ -1423,6 +1423,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     // finalize swdb transaction
     // FIXME get rpmdb version
     swdb->endTransaction(_get_current_time(), "", libdnf::TransactionState::DONE);
+    swdb->closeTransaction();
 
     if (!dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_TRANSACTION, nullptr, nullptr))
         goto out;
