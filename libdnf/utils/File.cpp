@@ -82,12 +82,14 @@ std::string libdnf::File::getContent()
     }
 
     fseek(file, 0, SEEK_END);
-    auto fileSize = static_cast<size_t>(ftell(file));
+    auto fileSize = ftell(file);
+    if (fileSize == -1)
+        throw IOException(filePath);
     rewind(file);
     std::string content(fileSize, '\0');
     auto bytesRead = read(&content.front(), fileSize);
 
-    if (bytesRead != fileSize) {
+    if (bytesRead != static_cast<size_t>(fileSize)) {
         throw ShortReadException(filePath);
     }
 
