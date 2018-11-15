@@ -24,7 +24,9 @@
 #include <ctime>
 #include <dirent.h>
 #include <fstream>
+#include <functional>
 #include <map>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <map>
@@ -645,14 +647,16 @@ Transformer::historyPath()
 
     // open history directory
     struct dirent *dp;
-    DIR *dirp = opendir(historyDir.c_str());
+    std::unique_ptr<DIR, std::function<void(DIR *)>> dirp(opendir(historyDir.c_str()), [](DIR* ptr){
+        closedir(ptr);
+    });
 
     if (!dirp) {
         throw Exception(_("Transformer: can't open history persist dir"));
     }
 
     // iterate over history directory
-    while ((dp = readdir(dirp)) != nullptr) {
+    while ((dp = readdir(dirp.get())) != nullptr) {
         std::string fileName(dp->d_name);
 
         // push the possible history DB files into vector
