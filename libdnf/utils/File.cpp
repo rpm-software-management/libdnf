@@ -30,7 +30,9 @@ libdnf::File::File(const std::string &filePath)
 
 libdnf::File::~File()
 {
-    close();
+    try {
+        close();
+    } catch (IOException &) {}
 }
 
 void libdnf::File::open(const char *mode)

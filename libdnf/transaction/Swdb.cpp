@@ -70,7 +70,9 @@ Swdb::closeDatabase()
 Swdb::~Swdb()
 {
     if (autoClose) {
-        closeDatabase();
+        try {
+            closeDatabase();
+        } catch(SQLite3::Exception &){}
     }
 }
 
