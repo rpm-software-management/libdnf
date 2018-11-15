@@ -65,6 +65,7 @@ class PycompString {
 public:
     PycompString() = default;
     explicit PycompString(PyObject * str);
+    const std::string & getString() const noexcept { return cppString; }
     const char * getCString() const noexcept { return isNull ? nullptr : cppString.c_str(); }
 private:
     bool isNull{true};
