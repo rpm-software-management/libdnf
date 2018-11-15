@@ -153,7 +153,7 @@ nsvcap_init(_NsvcapObject *self, PyObject *args, PyObject *kwds)
             return -1;
         }
     }
-    self->nsvcap->setName(name ? name : "");
+    self->nsvcap->setName(name);
     self->nsvcap->setStream(stream ? stream : "");
     self->nsvcap->setContext(context ? context : "");
     self->nsvcap->setArch(arch ? arch : "");
