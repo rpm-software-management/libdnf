@@ -167,33 +167,33 @@ public:
     int getAge() const;
 
     /**
-    * @brief Ask for additional repository metadata to download
+    * @brief Ask for additional repository metadata type to download
     *
     * given metadata are appended to the default metadata set when repository is downloaded
     *
-    * @param metadata metadata name (filelists, other, productid...)
+    * @param metadataType metadata type (filelists, other, productid...)
     */
-    void addToMetadata(const std::string &metadata);
+    void addMetadataTypeToDownload(const std::string &metadataType);
 
     /**
     * @brief Return path to the particular downloaded repository metadata in cache
     *
-    * @param metadata metadata name (filelists, other, productid...)
+    * @param metadataType metadata type (filelists, other, productid...)
     *
     * @return file path or empty string in case the requested metadata does not exist
     */
-    std::string getMetadataPath(const std::string &metadata);
+    std::string getMetadataPath(const std::string &metadataType);
 
     /**
     * @brief Return content of the particular downloaded repository metadata
     *
-    * Content of compressed metadata files is returned uncompressed
+    * Content of compressed metadata file is returned uncompressed
     *
-    * @param metadata metadata name (filelists, other, productid...)
+    * @param metadataType metadata type (filelists, other, productid...)
     *
     * @return content of metadata file or empty string in case the requested metadata does not exist
     */
-    std::string getMetadataContent(const std::string &metadata);
+    std::string getMetadataContent(const std::string &metadataType);
 
     /**
     * @brief Mark whatever is in the current cache expired.
