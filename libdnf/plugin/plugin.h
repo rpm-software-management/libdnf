@@ -21,6 +21,9 @@
 #ifndef _LIBDNF_PLUGIN_H
 #define _LIBDNF_PLUGIN_H
 
+#include "../dnf-types.h"
+#include "../hy-types.h"
+
 typedef struct {
     const char * name;
     const char * version;
@@ -46,12 +49,18 @@ typedef struct {
 
 typedef struct _PluginHandle PluginHandle;
 
-// code below will be implemented in plugins
-struct _PluginHandle;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// Functions to access hookData.
+// Usable with PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION and PLUGIN_HOOK_ID_CONTEXT_TRANSACTION,
+DnfTransaction * hookContextTransactionGetTransaction(void * hookData);
+HyGoal hookContextTransactionGetGoal(void * hookData);
+DnfState * hookContextTransactionGetState(void * hookData);
+
+// code below will be implemented in plugins
+struct _PluginHandle;
 
 const PluginInfo * pluginGetInfo(void);
 PluginHandle * pluginInitHandle(int version, PluginMode mode, void * initData);

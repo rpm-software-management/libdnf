@@ -85,6 +85,18 @@ G_DEFINE_TYPE_WITH_PRIVATE(DnfTransaction, dnf_transaction, G_TYPE_OBJECT)
     (static_cast< DnfTransactionPrivate * >(dnf_transaction_get_instance_private(o)))
 
 /**
+* @brief Information about running transaction
+*
+* The structure is passed to pluginHook() as hookData, when id of hook
+* is PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION or PLUGIN_HOOK_ID_CONTEXT_TRANSACTION.
+*/
+typedef struct {
+    DnfTransaction * transaction;
+    HyGoal goal;
+    DnfState * state;
+} PluginHookContextTransactionData;
+
+/**
  * dnf_transaction_finalize:
  **/
 static void
@@ -1089,6 +1101,11 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     rpmtransFlags rpmts_flags = RPMTRANS_FLAG_NONE;
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     libdnf::Swdb *swdb = priv->swdb;
+    PluginHookContextTransactionData data = {
+        .transaction = transaction,
+        .goal = goal,
+        .state = state
+    };
 
     /* take lock */
     ret = dnf_state_take_lock(state, DNF_LOCK_TYPE_RPMDB, DNF_LOCK_MODE_PROCESS, error);
@@ -1378,7 +1395,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
         goto out;
     }
 
-    if (!dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION, nullptr, nullptr))
+    if (!dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION, &data, nullptr))
         goto out;
 
     // FIXME get commandline and rpmdb version
@@ -1425,7 +1442,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     swdb->endTransaction(_get_current_time(), "", libdnf::TransactionState::DONE);
     swdb->closeTransaction();
 
-    if (!dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_TRANSACTION, nullptr, nullptr))
+    if (!dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_TRANSACTION, &data, nullptr))
         goto out;
 
     /* this section done */
@@ -1485,4 +1502,22 @@ dnf_transaction_new(DnfContext *context)
     rpmtsSetRootDir(priv->ts, dnf_context_get_install_root(context));
     priv->keyring = rpmtsGetKeyring(priv->ts, 1);
     return transaction;
+}
+
+DnfTransaction *
+hookContextTransactionGetTransaction(void * hookData)
+{
+    return (static_cast<PluginHookContextTransactionData *>(hookData))->transaction;
+}
+
+HyGoal
+hookContextTransactionGetGoal(void * hookData)
+{
+    return (static_cast<PluginHookContextTransactionData *>(hookData))->goal;
+}
+
+DnfState *
+hookContextTransactionGetState(void * hookData)
+{
+    return (static_cast<PluginHookContextTransactionData *>(hookData))->state;
 }
