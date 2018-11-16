@@ -21,6 +21,9 @@
 #ifndef _LIBDNF_PLUGIN_H
 #define _LIBDNF_PLUGIN_H
 
+#include "../dnf-types.h"
+#include "../hy-types.h"
+
 typedef struct {
     const char * name;
     const char * version;
@@ -43,6 +46,18 @@ typedef struct {
     char * path;
     char * message;
 } PluginHookError;
+
+/**
+* @brief Information about running transaction
+*
+* The structure is passed to pluginHook() as hookData, when id of hook
+* is PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION or PLUGIN_HOOK_ID_CONTEXT_TRANSACTION.
+*/
+typedef struct {
+    DnfTransaction * transaction;
+    HyGoal goal;
+    DnfState * state;
+} PluginHookContextTransactionData;
 
 typedef struct _PluginHandle PluginHandle;
 

@@ -1089,6 +1089,11 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     rpmtransFlags rpmts_flags = RPMTRANS_FLAG_NONE;
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     libdnf::Swdb *swdb = priv->swdb;
+    PluginHookContextTransactionData data = {
+        .transaction = transaction,
+        .goal = goal,
+        .state = state
+    };
 
     /* take lock */
     ret = dnf_state_take_lock(state, DNF_LOCK_TYPE_RPMDB, DNF_LOCK_MODE_PROCESS, error);
@@ -1378,7 +1383,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
         goto out;
     }
 
-    if (!dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION, nullptr, nullptr))
+    if (!dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION, &data, nullptr))
         goto out;
 
     // FIXME get commandline and rpmdb version
@@ -1424,7 +1429,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     // FIXME get rpmdb version
     swdb->endTransaction(_get_current_time(), "", libdnf::TransactionState::DONE);
 
-    if (!dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_TRANSACTION, nullptr, nullptr))
+    if (!dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_TRANSACTION, &data, nullptr))
         goto out;
 
     /* this section done */
