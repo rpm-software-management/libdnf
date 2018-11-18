@@ -89,7 +89,7 @@ void pluginFreeHandle(PluginHandle * handle)
     }
 }
 
-int pluginHook(PluginHandle * handle, PluginHookId id, void * hookData, PluginHookError * error)
+int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * hookData, PluginHookError * error)
 {
     if (!handle)
         return 1;

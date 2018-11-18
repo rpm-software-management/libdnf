@@ -41,6 +41,15 @@ typedef enum {
     PLUGIN_HOOK_ID_CONTEXT_PRE_REPOS_RELOAD
 } PluginHookId;
 
+#ifdef __cplusplus
+namespace libdnf {
+    struct PluginHookData;
+}
+typedef struct libdnf::PluginHookData DnfPluginHookData;
+#else
+typedef struct PluginHookData DnfPluginHookData;
+#endif
+
 typedef struct {
     int code;
     char * path;
@@ -55,9 +64,9 @@ extern "C" {
 
 // Functions to access hookData.
 // Usable with PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION and PLUGIN_HOOK_ID_CONTEXT_TRANSACTION,
-DnfTransaction * hookContextTransactionGetTransaction(void * hookData);
-HyGoal hookContextTransactionGetGoal(void * hookData);
-DnfState * hookContextTransactionGetState(void * hookData);
+DnfTransaction * hookContextTransactionGetTransaction(DnfPluginHookData * data);
+HyGoal hookContextTransactionGetGoal(DnfPluginHookData * data);
+DnfState * hookContextTransactionGetState(DnfPluginHookData * data);
 
 // code below will be implemented in plugins
 struct _PluginHandle;
@@ -65,7 +74,7 @@ struct _PluginHandle;
 const PluginInfo * pluginGetInfo(void);
 PluginHandle * pluginInitHandle(int version, PluginMode mode, void * initData);
 void pluginFreeHandle(PluginHandle * handle);
-int pluginHook(PluginHandle * handle, PluginHookId id, void * hookData, PluginHookError * error);
+int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * data, PluginHookError * error);
 
 #ifdef __cplusplus
 }

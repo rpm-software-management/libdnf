@@ -44,6 +44,7 @@
 #include "dnf-utils.h"
 #include "hy-query.h"
 #include "hy-util-private.hpp"
+#include "plugin/plugin-private.hpp"
 
 #include "module/ModulePackageContainer.hpp"
 #include "transaction/Swdb.hpp"
@@ -90,11 +91,14 @@ G_DEFINE_TYPE_WITH_PRIVATE(DnfTransaction, dnf_transaction, G_TYPE_OBJECT)
 * The structure is passed to pluginHook() as hookData, when id of hook
 * is PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION or PLUGIN_HOOK_ID_CONTEXT_TRANSACTION.
 */
-typedef struct {
+struct PluginHookContextTransactionData : public libdnf::PluginHookData {
+    PluginHookContextTransactionData(DnfTransaction * transaction, HyGoal goal, DnfState * state)
+    : transaction(transaction), goal(goal), state(state) {}
+
     DnfTransaction * transaction;
     HyGoal goal;
     DnfState * state;
-} PluginHookContextTransactionData;
+};
 
 /**
  * dnf_transaction_finalize:
@@ -1101,11 +1105,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     rpmtransFlags rpmts_flags = RPMTRANS_FLAG_NONE;
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     libdnf::Swdb *swdb = priv->swdb;
-    PluginHookContextTransactionData data = {
-        .transaction = transaction,
-        .goal = goal,
-        .state = state
-    };
+    PluginHookContextTransactionData data{transaction, goal, state};
 
     /* take lock */
     ret = dnf_state_take_lock(state, DNF_LOCK_TYPE_RPMDB, DNF_LOCK_MODE_PROCESS, error);
@@ -1505,19 +1505,19 @@ dnf_transaction_new(DnfContext *context)
 }
 
 DnfTransaction *
-hookContextTransactionGetTransaction(void * hookData)
+hookContextTransactionGetTransaction(DnfPluginHookData * data)
 {
-    return (static_cast<PluginHookContextTransactionData *>(hookData))->transaction;
+    return (static_cast<PluginHookContextTransactionData *>(data))->transaction;
 }
 
 HyGoal
-hookContextTransactionGetGoal(void * hookData)
+hookContextTransactionGetGoal(DnfPluginHookData * data)
 {
-    return (static_cast<PluginHookContextTransactionData *>(hookData))->goal;
+    return (static_cast<PluginHookContextTransactionData *>(data))->goal;
 }
 
 DnfState *
-hookContextTransactionGetState(void * hookData)
+hookContextTransactionGetState(DnfPluginHookData * data)
 {
-    return (static_cast<PluginHookContextTransactionData *>(hookData))->state;
+    return (static_cast<PluginHookContextTransactionData *>(data))->state;
 }
