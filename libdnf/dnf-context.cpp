@@ -2390,7 +2390,7 @@ dnf_context_set_plugins_dir(DnfContext * context, const char * plugins_dir)
 }
 
 bool
-dnf_context_plugin_hook(DnfContext * context, PluginHookId id, void * hookData, PluginHookError * error)
+dnf_context_plugin_hook(DnfContext * context, PluginHookId id, DnfPluginHookData * hookData, PluginHookError * error)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     return priv->plugins->hook(id, hookData, error);
