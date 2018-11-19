@@ -44,7 +44,7 @@ static const PluginInfo info = {
 struct _PluginHandle
 {
     PluginMode mode;
-    void * initData;  // store plugin context specific init data
+    DnfContext * context;  // store plugin context specific init data
 };
 
 const PluginInfo * pluginGetInfo(void)
@@ -52,7 +52,7 @@ const PluginInfo * pluginGetInfo(void)
     return &info;
 }
 
-PluginHandle * pluginInitHandle(int version, PluginMode mode, void * initData)
+PluginHandle * pluginInitHandle(int version, PluginMode mode, DnfPluginInitData * initData)
 {
     auto logger(libdnf::Log::getLogger());
     if (version != 1) {
@@ -67,7 +67,7 @@ PluginHandle * pluginInitHandle(int version, PluginMode mode, void * initData)
     }
     auto handle = new PluginHandle;
     handle->mode = mode;
-    handle->initData = initData;
+    handle->context = pluginGetContext(initData);
     return handle;
 }
 
@@ -90,9 +90,7 @@ static bool setupEnrollments(PluginHandle *handle)
 {
     auto logger(libdnf::Log::getLogger());
 
-    auto dnfContext = static_cast<DnfContext *>(handle->initData);
-
-    if (dnf_context_get_cache_only(dnfContext))
+    if (dnf_context_get_cache_only(handle->context))
         return true;
 
     /* Let's assume that alternative installation roots don't
@@ -101,7 +99,7 @@ static bool setupEnrollments(PluginHandle *handle)
      * here would be checking that we're using /etc/yum.repos.d or
      * so, but that can come later.
      */
-    auto installRoot = dnf_context_get_install_root(dnfContext);
+    auto installRoot = dnf_context_get_install_root(handle->context);
     if (installRoot && strcmp(installRoot, "/") != 0)
         return true;
 
@@ -112,7 +110,7 @@ static bool setupEnrollments(PluginHandle *handle)
     if (getuid() != 0)
         return true;
 
-    auto repoDir = dnf_context_get_repo_dir(dnfContext);
+    auto repoDir = dnf_context_get_repo_dir(handle->context);
     g_autofree gchar *repofname = g_build_filename(repoDir, "redhat.repo", NULL);
 
     g_autoptr(RHSMContext) rhsm_ctx = rhsm_context_new();

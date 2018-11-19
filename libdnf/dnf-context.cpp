@@ -51,6 +51,8 @@
 #endif
 #include <unistd.h>
 
+#include "log.hpp"
+#include "tinyformat/tinyformat.hpp"
 #include "dnf-lock.h"
 #include "dnf-package.h"
 #include "dnf-repo-loader.h"
@@ -147,6 +149,13 @@ typedef struct
     libdnf::Plugins *plugins;
 } DnfContextPrivate;
 
+struct PluginHookContextInitData : public libdnf::PluginInitData {
+    PluginHookContextInitData(PluginMode mode, DnfContext * context)
+    : PluginInitData(mode), context(context) {}
+
+    DnfContext * context;
+};
+
 enum {
     SIGNAL_INVALIDATE,
     SIGNAL_LAST
@@ -230,7 +239,8 @@ dnf_context_init(DnfContext *context)
     priv->plugins = new libdnf::Plugins;
     if (!pluginsDir.empty()) {
         priv->plugins->loadPlugins(pluginsDir);
-        priv->plugins->init(PLUGIN_MODE_CONTEXT, context);
+        PluginHookContextInitData initData(PLUGIN_MODE_CONTEXT, context);
+        priv->plugins->init(PLUGIN_MODE_CONTEXT, &initData);
     }
 
     /* Initialize some state that used to happen in
@@ -2394,4 +2404,20 @@ dnf_context_plugin_hook(DnfContext * context, PluginHookId id, DnfPluginHookData
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     return priv->plugins->hook(id, hookData, error);
+}
+
+DnfContext *
+pluginGetContext(DnfPluginInitData * data)
+{
+    if (!data) {
+        auto logger(libdnf::Log::getLogger());
+        logger->error(tfm::format("%s: was called with data == nullptr", __func__));
+        return nullptr;
+    }
+    if (data->mode != PLUGIN_MODE_CONTEXT) {
+        auto logger(libdnf::Log::getLogger());
+        logger->error(tfm::format("%s: was called with pluginMode == %i", __func__, data->mode));
+        return nullptr;
+    }
+    return (static_cast<PluginHookContextInitData *>(data)->context);
 }
