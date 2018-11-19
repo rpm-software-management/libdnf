@@ -32,6 +32,8 @@
 #include <rpm/rpmlog.h>
 #include <rpm/rpmts.h>
 
+#include "log.hpp"
+#include "tinyformat/tinyformat.hpp"
 #include "dnf-context.hpp"
 #include "dnf-goal.h"
 #include "dnf-keyring.h"
@@ -92,8 +94,9 @@ G_DEFINE_TYPE_WITH_PRIVATE(DnfTransaction, dnf_transaction, G_TYPE_OBJECT)
 * is PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION or PLUGIN_HOOK_ID_CONTEXT_TRANSACTION.
 */
 struct PluginHookContextTransactionData : public libdnf::PluginHookData {
-    PluginHookContextTransactionData(DnfTransaction * transaction, HyGoal goal, DnfState * state)
-    : transaction(transaction), goal(goal), state(state) {}
+    PluginHookContextTransactionData(PluginHookId hookId, DnfTransaction * transaction,
+                                     HyGoal goal, DnfState * state)
+    : PluginHookData(hookId), transaction(transaction), goal(goal), state(state) {}
 
     DnfTransaction * transaction;
     HyGoal goal;
@@ -1105,7 +1108,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     rpmtransFlags rpmts_flags = RPMTRANS_FLAG_NONE;
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     libdnf::Swdb *swdb = priv->swdb;
-    PluginHookContextTransactionData data{transaction, goal, state};
+    PluginHookContextTransactionData data{PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION, transaction, goal, state};
 
     /* take lock */
     ret = dnf_state_take_lock(state, DNF_LOCK_TYPE_RPMDB, DNF_LOCK_MODE_PROCESS, error);
@@ -1442,6 +1445,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     swdb->endTransaction(_get_current_time(), "", libdnf::TransactionState::DONE);
     swdb->closeTransaction();
 
+    data.hookId = PLUGIN_HOOK_ID_CONTEXT_TRANSACTION;
     if (!dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_TRANSACTION, &data, nullptr))
         goto out;
 
@@ -1507,17 +1511,50 @@ dnf_transaction_new(DnfContext *context)
 DnfTransaction *
 hookContextTransactionGetTransaction(DnfPluginHookData * data)
 {
+    if (!data) {
+        auto logger(libdnf::Log::getLogger());
+        logger->error(tfm::format("%s: was called with data == nullptr", __func__));
+        return nullptr;
+    }
+    if (data->hookId != PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION &&
+        data->hookId != PLUGIN_HOOK_ID_CONTEXT_TRANSACTION) {
+        auto logger(libdnf::Log::getLogger());
+        logger->error(tfm::format("%s: was called with hookId == %i", __func__, data->hookId));
+        return nullptr;
+    }
     return (static_cast<PluginHookContextTransactionData *>(data))->transaction;
 }
 
 HyGoal
 hookContextTransactionGetGoal(DnfPluginHookData * data)
 {
+    if (!data) {
+        auto logger(libdnf::Log::getLogger());
+        logger->error(tfm::format("%s: was called with data == nullptr", __func__));
+        return nullptr;
+    }
+    if (data->hookId != PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION &&
+        data->hookId != PLUGIN_HOOK_ID_CONTEXT_TRANSACTION) {
+        auto logger(libdnf::Log::getLogger());
+        logger->error(tfm::format("%s: was called with hookId == %i", __func__, data->hookId));
+        return nullptr;
+    }
     return (static_cast<PluginHookContextTransactionData *>(data))->goal;
 }
 
 DnfState *
 hookContextTransactionGetState(DnfPluginHookData * data)
 {
+    if (!data) {
+        auto logger(libdnf::Log::getLogger());
+        logger->error(tfm::format("%s: was called with data == nullptr", __func__));
+        return nullptr;
+    }
+    if (data->hookId != PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION &&
+        data->hookId != PLUGIN_HOOK_ID_CONTEXT_TRANSACTION) {
+        auto logger(libdnf::Log::getLogger());
+        logger->error(tfm::format("%s: was called with hookId == %i", __func__, data->hookId));
+        return nullptr;
+    }
     return (static_cast<PluginHookContextTransactionData *>(data))->state;
 }
