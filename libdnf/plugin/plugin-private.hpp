@@ -39,7 +39,10 @@ protected:
     void * handle;
 };
 
-struct PluginHookData {};
+struct PluginHookData {
+    PluginHookData(PluginHookId hookId) : hookId(hookId) {}
+    PluginHookId hookId;
+};
 
 class Plugin : public Library {
 public:
