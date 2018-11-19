@@ -38,7 +38,7 @@ static const PluginInfo info = {
 struct _PluginHandle
 {
     PluginMode mode;
-    void * initData;  // store plugin context specific init data
+    DnfContext * context;  // store plugin context specific init data
     FILE * outStream; // stream to write output
 };
 
@@ -47,7 +47,7 @@ const PluginInfo * pluginGetInfo(void)
     return &info;
 }
 
-PluginHandle * pluginInitHandle(int version, PluginMode mode, void * initData)
+PluginHandle * pluginInitHandle(int version, PluginMode mode, DnfPluginInitData * initData)
 {
     PluginHandle * handle = NULL;
     FILE * outStream = fopen(OUT_FILE_PATH, "a");
@@ -69,7 +69,7 @@ PluginHandle * pluginInitHandle(int version, PluginMode mode, void * initData)
         }
         handle = malloc(sizeof(*handle));
         handle->mode = mode;
-        handle->initData = initData;
+        handle->context = pluginGetContext(initData);
         handle->outStream = outStream;
     } while (0);
 
@@ -97,11 +97,10 @@ int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * hookD
     switch (id) {
         case PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION:
             fprintf(handle->outStream, "Info before libdnf context transaction run:\n");
-            DnfContext * dnfContext = handle->initData;
 
             // write info about loaded repos
             fprintf(handle->outStream, "Info about loaded repos:\n");
-            GPtrArray * repos = dnf_context_get_repos(dnfContext);
+            GPtrArray * repos = dnf_context_get_repos(handle->context);
             for (unsigned int i = 0; i < repos->len; ++i) {
                 DnfRepo * repo = g_ptr_array_index(repos, i);
                 const gchar * repoId = dnf_repo_get_id(repo);
@@ -112,7 +111,7 @@ int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * hookD
 
             // write info about packages in goal
             fprintf(handle->outStream, "Info about packages in goal:\n");
-            HyGoal goal = dnf_context_get_goal(dnfContext);
+            HyGoal goal = dnf_context_get_goal(handle->context);
             if (goal) {
                 GPtrArray * packages = hy_goal_list_installs(goal, NULL);
                 if (packages) {

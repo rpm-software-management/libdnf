@@ -122,7 +122,7 @@ void Plugins::loadPlugins(std::string dirPath)
         throw std::runtime_error(errorMsgs);
 }
 
-bool Plugins::init(PluginMode mode, void * initData)
+bool Plugins::init(PluginMode mode, PluginInitData * initData)
 {
     for (auto & pluginWithHandle : pluginsWithHandles) {
         pluginWithHandle.handle = pluginWithHandle.plugin->initHandle(PLUGIN_API_VERSION, mode, initData);
