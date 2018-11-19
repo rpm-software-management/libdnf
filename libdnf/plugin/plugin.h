@@ -43,10 +43,13 @@ typedef enum {
 
 #ifdef __cplusplus
 namespace libdnf {
+    struct PluginInitData;
     struct PluginHookData;
 }
+typedef struct libdnf::PluginInitData DnfPluginInitData;
 typedef struct libdnf::PluginHookData DnfPluginHookData;
 #else
+typedef struct PluginInitData DnfPluginInitData;
 typedef struct PluginHookData DnfPluginHookData;
 #endif
 
@@ -62,6 +65,9 @@ typedef struct _PluginHandle PluginHandle;
 extern "C" {
 #endif
 
+// Functions to access initData.
+DnfContext * pluginGetContext(DnfPluginInitData * data);
+
 // Functions to access hookData.
 // Usable with PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION and PLUGIN_HOOK_ID_CONTEXT_TRANSACTION,
 DnfTransaction * hookContextTransactionGetTransaction(DnfPluginHookData * data);
@@ -72,7 +78,7 @@ DnfState * hookContextTransactionGetState(DnfPluginHookData * data);
 struct _PluginHandle;
 
 const PluginInfo * pluginGetInfo(void);
-PluginHandle * pluginInitHandle(int version, PluginMode mode, void * initData);
+PluginHandle * pluginInitHandle(int version, PluginMode mode, DnfPluginInitData * initData);
 void pluginFreeHandle(PluginHandle * handle);
 int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * data, PluginHookError * error);
 
