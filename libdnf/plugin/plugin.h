@@ -43,21 +43,18 @@ typedef enum {
 
 #ifdef __cplusplus
 namespace libdnf {
+    struct PluginError;
     struct PluginInitData;
     struct PluginHookData;
 }
+typedef struct libdnf::PluginError DnfPluginError;
 typedef struct libdnf::PluginInitData DnfPluginInitData;
 typedef struct libdnf::PluginHookData DnfPluginHookData;
 #else
+typedef struct PluginError DnfPluginError;
 typedef struct PluginInitData DnfPluginInitData;
 typedef struct PluginHookData DnfPluginHookData;
 #endif
-
-typedef struct {
-    int code;
-    char * path;
-    char * message;
-} PluginHookError;
 
 typedef struct _PluginHandle PluginHandle;
 
@@ -80,7 +77,7 @@ struct _PluginHandle;
 const PluginInfo * pluginGetInfo(void);
 PluginHandle * pluginInitHandle(int version, PluginMode mode, DnfPluginInitData * initData);
 void pluginFreeHandle(PluginHandle * handle);
-int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * data, PluginHookError * error);
+int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * data, DnfPluginError * error);
 
 #ifdef __cplusplus
 }

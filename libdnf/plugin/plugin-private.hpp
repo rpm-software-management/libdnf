@@ -39,6 +39,12 @@ protected:
     void * handle;
 };
 
+struct PluginError {
+    int code;
+    char * path;
+    char * message;
+};
+
 struct PluginInitData {
     PluginInitData(PluginMode mode) : mode(mode) {}
     PluginMode mode;
@@ -66,7 +72,7 @@ public:
     void loadPlugins(std::string dirPath);
     bool init(PluginMode mode, PluginInitData * initData);
     void free();
-    bool hook(PluginHookId id, PluginHookData * hookData, PluginHookError * error);
+    bool hook(PluginHookId id, PluginHookData * hookData, DnfPluginError * error);
     size_t count() const { return pluginsWithHandles.size(); }
 
 private:
