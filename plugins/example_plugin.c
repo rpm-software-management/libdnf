@@ -111,7 +111,7 @@ int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * hookD
 
             // write info about packages in goal
             fprintf(handle->outStream, "Info about packages in goal:\n");
-            HyGoal goal = dnf_context_get_goal(handle->context);
+            HyGoal goal = hookContextTransactionGetGoal(hookData);
             if (goal) {
                 GPtrArray * packages = hy_goal_list_installs(goal, NULL);
                 if (packages) {
