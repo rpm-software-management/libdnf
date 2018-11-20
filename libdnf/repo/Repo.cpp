@@ -228,6 +228,7 @@ public:
     void downloadUrl(const char * url, int fd);
     void setHttpHeaders(const char * headers[]);
     const char * const * getHttpHeaders() const;
+    std::string getMetadataPath(const std::string &metadataType) const;
 
     std::unique_ptr<LrHandle> lrHandleInitBase();
     std::unique_ptr<LrHandle> lrHandleInitLocal();
@@ -242,7 +243,6 @@ public:
     int timestamp;
     int maxTimestamp{0};
     std::string repomdFn;
-    std::map<std::string, std::string> metadataPaths;
     std::vector<std::string> additionalMetadata;
     std::string revision;
     std::vector<std::string> content_tags;
@@ -272,6 +272,7 @@ private:
 
     bool expired;
     std::unique_ptr<LrHandle> handle;
+    std::map<std::string, std::string> metadataPaths;
     std::unique_ptr<char*[], std::function<void(char **)>> httpHeaders{nullptr, [](char ** ptr)
     {
         for (auto item = ptr; *item; ++item)
@@ -279,6 +280,11 @@ private:
         delete[] ptr;
     }};
 };
+
+std::string Repo::Impl::getMetadataPath(const std::string &metadataType) const {
+    auto it=metadataPaths.find(metadataType);
+    return (it != metadataPaths.end()) ? it->second : "";
+}
 
 int Repo::Impl::progressCB(void * data, double totalToDownload, double downloaded)
 {
@@ -483,15 +489,15 @@ void Repo::setLoadMetadataOther(bool value) { pImpl->loadMetadataOther = value; 
 int Repo::getCost() const { return pImpl->conf->cost().getValue(); }
 int Repo::getPriority() const { return pImpl->conf->priority().getValue(); }
 std::string Repo::getCompsFn() {
-    auto tmp = pImpl->metadataPaths[MD_TYPE_GROUP_GZ];
+    auto tmp = pImpl->getMetadataPath(MD_TYPE_GROUP_GZ);
     if (tmp.empty())
-        tmp = pImpl->metadataPaths[MD_TYPE_GROUP];
+        tmp = pImpl->getMetadataPath(MD_TYPE_GROUP);
     return tmp;
 }
 
 
 #ifdef MODULEMD
-std::string Repo::getModulesFn() { return pImpl->metadataPaths[MD_TYPE_MODULES]; }
+std::string Repo::getModulesFn() { return pImpl->getMetadataPath(MD_TYPE_MODULES); }
 #endif
 
 int Repo::getAge() const { return pImpl->getAge(); }
@@ -511,7 +517,7 @@ void Repo::addMetadataTypeToDownload(const std::string &metadataType)
 
 std::string Repo::getMetadataPath(const std::string &metadataType)
 {
-    return pImpl->metadataPaths[metadataType];
+    return pImpl->getMetadataPath(metadataType);
 }
 
 std::string Repo::getMetadataContent(const std::string &metadataType)
@@ -1060,7 +1066,9 @@ bool Repo::Impl::loadCache(bool throwExcept)
 
     // Load timestamp unless explicitly expired
     if (timestamp != 0) {
-        timestamp = mtime(metadataPaths[MD_TYPE_PRIMARY].c_str());
+        auto primaryPath = getMetadataPath(MD_TYPE_PRIMARY);
+        if (!primaryPath.empty())
+            timestamp = mtime(primaryPath.c_str());
     }
     g_strfreev(this->mirrors);
     this->mirrors = mirrors;
@@ -1237,10 +1245,11 @@ bool Repo::Impl::load()
 {
     auto logger(Log::getLogger());
     try {
-        if (!metadataPaths[MD_TYPE_PRIMARY].empty() || loadCache(false)) {
+        auto primaryPath=getMetadataPath(MD_TYPE_PRIMARY);
+        if (!primaryPath.empty() || loadCache(false)) {
             if (conf->getMasterConfig().check_config_file_age().getValue() &&
-                !repoFilePath.empty() &&
-                mtime(repoFilePath.c_str()) > mtime(metadataPaths[MD_TYPE_PRIMARY].c_str()))
+                !repoFilePath.empty() && !primaryPath.empty() &&
+                mtime(repoFilePath.c_str()) > mtime(primaryPath.c_str()))
                 expired = true;
             if (!expired || syncStrategy == SyncStrategy::ONLY_CACHE || syncStrategy == SyncStrategy::LAZY) {
                 logger->debug(tfm::format(_("repo: using cache for: %s"), id));
@@ -1249,7 +1258,8 @@ bool Repo::Impl::load()
 
             if (isInSync()) {
                 // the expired metadata still reflect the origin:
-                utimes(metadataPaths[MD_TYPE_PRIMARY].c_str(), NULL);
+                if (!primaryPath.empty())
+                    utimes(primaryPath.c_str(), NULL);
                 expired = false;
                 return true;
             }
@@ -1306,7 +1316,7 @@ std::string Repo::Impl::getCachedir() const
 
 int Repo::Impl::getAge() const
 {
-    return time(NULL) - mtime(metadataPaths.find(MD_TYPE_PRIMARY)->second.c_str());
+    return time(NULL) - mtime(getMetadataPath(MD_TYPE_PRIMARY).c_str());
 }
 
 void Repo::Impl::expire()
@@ -1431,31 +1441,36 @@ void Repo::initHyRepo(HyRepo hrepo)
 {
     auto logger(Log::getLogger());
     hy_repo_set_string(hrepo, HY_REPO_MD_FN, pImpl->repomdFn.c_str());
-    hy_repo_set_string(hrepo, HY_REPO_PRIMARY_FN, pImpl->metadataPaths[MD_TYPE_PRIMARY].c_str());
-    if (pImpl->metadataPaths[MD_TYPE_FILELISTS].empty())
+    hy_repo_set_string(hrepo, HY_REPO_PRIMARY_FN, pImpl->getMetadataPath(MD_TYPE_PRIMARY).c_str());
+    auto tmp=pImpl->getMetadataPath(MD_TYPE_FILELISTS);
+    if (tmp.empty())
         logger->debug(tfm::format(_("not found filelist for: %s"), pImpl->conf->name().getValue()));
     else
-        hy_repo_set_string(hrepo, HY_REPO_FILELISTS_FN, pImpl->metadataPaths[MD_TYPE_FILELISTS].c_str());
-    if (pImpl->metadataPaths[MD_TYPE_OTHER].empty())
+        hy_repo_set_string(hrepo, HY_REPO_FILELISTS_FN, tmp.c_str());
+    tmp=pImpl->getMetadataPath(MD_TYPE_OTHER);
+    if (tmp.empty())
         logger->debug(tfm::format(_("not found other for: %s"), pImpl->conf->name().getValue()));
     else
-        hy_repo_set_string(hrepo, HY_REPO_OTHER_FN, pImpl->metadataPaths[MD_TYPE_OTHER].c_str());
+        hy_repo_set_string(hrepo, HY_REPO_OTHER_FN, tmp.c_str());
 #ifdef MODULEMD
-    if (pImpl->metadataPaths[MD_TYPE_MODULES].empty())
+    tmp=pImpl->getMetadataPath(MD_TYPE_MODULES);
+    if (tmp.empty())
         logger->debug(tfm::format(_("not found modules for: %s"), pImpl->conf->name().getValue()));
     else
-        hy_repo_set_string(hrepo, MODULES_FN, pImpl->metadataPaths[MD_TYPE_MODULES].c_str());
+        hy_repo_set_string(hrepo, MODULES_FN, tmp.c_str());
 #endif
     hy_repo_set_cost(hrepo, pImpl->conf->cost().getValue());
     hy_repo_set_priority(hrepo, pImpl->conf->priority().getValue());
-    if (pImpl->metadataPaths[MD_TYPE_PRESTODELTA].empty())
+    tmp=pImpl->getMetadataPath(MD_TYPE_PRESTODELTA);
+    if (tmp.empty())
         logger->debug(tfm::format(_("not found deltainfo for: %s"), pImpl->conf->name().getValue()));
     else
-        hy_repo_set_string(hrepo, HY_REPO_PRESTO_FN, pImpl->metadataPaths[MD_TYPE_PRESTODELTA].c_str());
-    if (pImpl->metadataPaths[MD_TYPE_UPDATEINFO].empty())
+        hy_repo_set_string(hrepo, HY_REPO_PRESTO_FN, tmp.c_str());
+    tmp=pImpl->getMetadataPath(MD_TYPE_UPDATEINFO);
+    if (tmp.empty())
         logger->debug(tfm::format(_("not found updateinfo for: %s"), pImpl->conf->name().getValue()));
     else
-        hy_repo_set_string(hrepo, HY_REPO_UPDATEINFO_FN, pImpl->metadataPaths[MD_TYPE_UPDATEINFO].c_str());
+        hy_repo_set_string(hrepo, HY_REPO_UPDATEINFO_FN, tmp.c_str());
 }
 
 std::string Repo::getCachedir() const
