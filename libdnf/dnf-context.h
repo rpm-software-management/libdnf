@@ -244,7 +244,7 @@ gboolean         dnf_context_run                        (DnfContext     *context
 bool             dnf_context_plugin_hook                (DnfContext     *context,
                                                          PluginHookId    id,
                                                          DnfPluginHookData *hookData,
-                                                         PluginHookError *error);
+                                                         DnfPluginError *error);
 
 G_END_DECLS
 

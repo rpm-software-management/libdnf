@@ -151,7 +151,7 @@ static bool setupEnrollments(PluginHandle *handle)
     return true;
 }
 
-int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * hookData, PluginHookError * error)
+int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * hookData, DnfPluginError * error)
 {
     if (!handle)
         return 1;

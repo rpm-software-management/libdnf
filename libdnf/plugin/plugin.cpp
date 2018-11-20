@@ -138,7 +138,7 @@ void Plugins::free()
         it->plugin->freeHandle(it->handle);
 }
 
-bool Plugins::hook(PluginHookId id, PluginHookData * hookData, PluginHookError * error)
+bool Plugins::hook(PluginHookId id, PluginHookData * hookData, DnfPluginError * error)
 {
     for (auto & pluginWithHandle : pluginsWithHandles) {
         if (!pluginWithHandle.plugin->hook(pluginWithHandle.handle, id, hookData, error))
