@@ -10,17 +10,24 @@ The libdnf plugins interface is under development now. We cannot simply copy plu
 Status of prototype
 -------------------
 * Plugins are .so libraries.
-* Plugins are read from directory (/usr/lib64/libdnf/plugins is hardcoded now).
+* Plugins are read from directory (default /usr/lib64/libdnf/plugins), links are supported but .so suffix is requested.
 * Plugins are loaded in alphabetical order (sorted by filename).
 * Initializations and hooks are called in the same order as plugins were loaded.
 * Freeing of plugins is in the reverse order as they were loaded.
 * Plugins have access to libdnf context and can use libdnf public functions to read and modify it.
-* each plugin must implement 4 functions:
+* Each plugin must implement 4 functions:
 ```
         const PluginInfo * pluginGetInfo(void);
-        PluginHandle * pluginInitHandle(int version, PluginMode mode, void * initData);
+        PluginHandle * pluginInitHandle(int version, PluginMode mode, DnfPluginInitData * initData);
         void pluginFreeHandle(PluginHandle * handle);
-        int pluginHook(PluginHandle * handle, PluginHookId id, void * hookData, PluginHookError * error);
+        int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * hookData, DnfPluginError * error);
+```
+* There are functions to access DnfPluginInitData and DnfPluginHookData:
+```
+        DnfContext * pluginGetContext(DnfPluginInitData * data);
+        DnfTransaction * hookContextTransactionGetTransaction(DnfPluginHookData * data);
+        HyGoal hookContextTransactionGetGoal(DnfPluginHookData * data);
+        DnfState * hookContextTransactionGetState(DnfPluginHookData * data);
 ```
 
 Plugin functions
@@ -28,16 +35,16 @@ Plugin functions
 * `const PluginInfo * pluginGetInfo(void)`
 > Returns information about the plugin.
 
-* `PluginHandle * pluginInitHandle(int version, PluginMode mode, void * initData)`
+* `PluginHandle * pluginInitHandle(int version, PluginMode mode, DnfPluginInitData * initData)`
 > Initialization of new plugin instance. Returns handle to it.
 
 * `void pluginFreeHandle(PluginHandle * handle)`
 > Frees plugin instance.
 
-* `int pluginHook(PluginHandle * handle, PluginHookId id, void * hookData, PluginHookError * error)`
+* `int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * data, DnfPluginError * error)`
 > Called by hook. Each hook is identified by PluginHookId.
 
 Ideas
 -----
 * Only links to plugins .so files will be in the directory.
-* Plugin can be enabled/disabled by adding/removing the link to it. Link name will start with number which defines order of plugin loading. Eg. there are plugins pluginA, pluginB, pluginC, pluginD and we want to use 3 of them in specific order. So we make appropriate links 05pluginA, 10pluginD, 15pluginB.
+* Plugin can be enabled/disabled by adding/removing the link to it. Link name will start with number which defines order of plugin loading. Eg. there are plugins pluginA, pluginB, pluginC, pluginD and we want to use 3 of them in specific order. So we make appropriate links 05pluginA.so, 10pluginD.so, 15pluginB.so.
