@@ -282,7 +282,7 @@ private:
 };
 
 std::string Repo::Impl::getMetadataPath(const std::string &metadataType) const {
-    auto it=metadataPaths.find(metadataType);
+    auto it = metadataPaths.find(metadataType);
     return (it != metadataPaths.end()) ? it->second : "";
 }
 
@@ -1038,10 +1038,8 @@ bool Repo::Impl::loadCache(bool throwExcept)
     metadataPaths.clear();
     for (auto *elem = yum_repo->paths; elem; elem = g_slist_next(elem)) {
         if (elem->data) {
-            LrYumRepoPath *yumrepopath = static_cast<LrYumRepoPath *>(elem->data);
-            if (yumrepopath) {
-                metadataPaths.emplace(yumrepopath->type, yumrepopath->path);
-            }
+            auto yumrepopath = static_cast<LrYumRepoPath *>(elem->data);
+            metadataPaths.emplace(yumrepopath->type, yumrepopath->path);
         }
     }
 
@@ -1066,9 +1064,7 @@ bool Repo::Impl::loadCache(bool throwExcept)
 
     // Load timestamp unless explicitly expired
     if (timestamp != 0) {
-        auto primaryPath = getMetadataPath(MD_TYPE_PRIMARY);
-        if (!primaryPath.empty())
-            timestamp = mtime(primaryPath.c_str());
+        timestamp = mtime(getMetadataPath(MD_TYPE_PRIMARY).c_str());
     }
     g_strfreev(this->mirrors);
     this->mirrors = mirrors;
@@ -1245,11 +1241,10 @@ bool Repo::Impl::load()
 {
     auto logger(Log::getLogger());
     try {
-        auto primaryPath=getMetadataPath(MD_TYPE_PRIMARY);
-        if (!primaryPath.empty() || loadCache(false)) {
+        if (!getMetadataPath(MD_TYPE_PRIMARY).empty() || loadCache(false)) {
             if (conf->getMasterConfig().check_config_file_age().getValue() &&
-                !repoFilePath.empty() && !primaryPath.empty() &&
-                mtime(repoFilePath.c_str()) > mtime(primaryPath.c_str()))
+                !repoFilePath.empty() &&
+                mtime(repoFilePath.c_str()) > mtime(getMetadataPath(MD_TYPE_PRIMARY).c_str()))
                 expired = true;
             if (!expired || syncStrategy == SyncStrategy::ONLY_CACHE || syncStrategy == SyncStrategy::LAZY) {
                 logger->debug(tfm::format(_("repo: using cache for: %s"), id));
@@ -1258,8 +1253,7 @@ bool Repo::Impl::load()
 
             if (isInSync()) {
                 // the expired metadata still reflect the origin:
-                if (!primaryPath.empty())
-                    utimes(primaryPath.c_str(), NULL);
+                utimes(getMetadataPath(MD_TYPE_PRIMARY).c_str(), NULL);
                 expired = false;
                 return true;
             }
@@ -1442,18 +1436,18 @@ void Repo::initHyRepo(HyRepo hrepo)
     auto logger(Log::getLogger());
     hy_repo_set_string(hrepo, HY_REPO_MD_FN, pImpl->repomdFn.c_str());
     hy_repo_set_string(hrepo, HY_REPO_PRIMARY_FN, pImpl->getMetadataPath(MD_TYPE_PRIMARY).c_str());
-    auto tmp=pImpl->getMetadataPath(MD_TYPE_FILELISTS);
+    auto tmp = pImpl->getMetadataPath(MD_TYPE_FILELISTS);
     if (tmp.empty())
         logger->debug(tfm::format(_("not found filelist for: %s"), pImpl->conf->name().getValue()));
     else
         hy_repo_set_string(hrepo, HY_REPO_FILELISTS_FN, tmp.c_str());
-    tmp=pImpl->getMetadataPath(MD_TYPE_OTHER);
+    tmp = pImpl->getMetadataPath(MD_TYPE_OTHER);
     if (tmp.empty())
         logger->debug(tfm::format(_("not found other for: %s"), pImpl->conf->name().getValue()));
     else
         hy_repo_set_string(hrepo, HY_REPO_OTHER_FN, tmp.c_str());
 #ifdef MODULEMD
-    tmp=pImpl->getMetadataPath(MD_TYPE_MODULES);
+    tmp = pImpl->getMetadataPath(MD_TYPE_MODULES);
     if (tmp.empty())
         logger->debug(tfm::format(_("not found modules for: %s"), pImpl->conf->name().getValue()));
     else
@@ -1461,12 +1455,12 @@ void Repo::initHyRepo(HyRepo hrepo)
 #endif
     hy_repo_set_cost(hrepo, pImpl->conf->cost().getValue());
     hy_repo_set_priority(hrepo, pImpl->conf->priority().getValue());
-    tmp=pImpl->getMetadataPath(MD_TYPE_PRESTODELTA);
+    tmp = pImpl->getMetadataPath(MD_TYPE_PRESTODELTA);
     if (tmp.empty())
         logger->debug(tfm::format(_("not found deltainfo for: %s"), pImpl->conf->name().getValue()));
     else
         hy_repo_set_string(hrepo, HY_REPO_PRESTO_FN, tmp.c_str());
-    tmp=pImpl->getMetadataPath(MD_TYPE_UPDATEINFO);
+    tmp = pImpl->getMetadataPath(MD_TYPE_UPDATEINFO);
     if (tmp.empty())
         logger->debug(tfm::format(_("not found updateinfo for: %s"), pImpl->conf->name().getValue()));
     else
