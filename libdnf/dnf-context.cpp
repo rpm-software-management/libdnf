@@ -143,7 +143,7 @@ typedef struct
     DnfState        *state;        /* used for setup() and run() */
     HyGoal           goal;
     DnfSack         *sack;
-    libdnf::Plugins  plugins;
+    libdnf::Plugins *plugins;
 } DnfContextPrivate;
 
 enum {
@@ -166,7 +166,8 @@ dnf_context_finalize(GObject *object)
     DnfContext *context = DNF_CONTEXT(object);
     DnfContextPrivate *priv = GET_PRIVATE(context);
 
-    priv->plugins.free();
+    priv->plugins->free();
+    delete priv->plugins;
 
     g_free(priv->repo_dir);
     g_free(priv->base_arch);
@@ -224,9 +225,10 @@ dnf_context_init(DnfContext *context)
                                                   g_free, g_free);
     priv->user_agent = g_strdup("libdnf/" PACKAGE_VERSION);
 
+    priv->plugins = new libdnf::Plugins;
     if (!pluginsDir.empty()) {
-        priv->plugins.loadPlugins(pluginsDir);
-        priv->plugins.init(PLUGIN_MODE_CONTEXT, context);
+        priv->plugins->loadPlugins(pluginsDir);
+        priv->plugins->init(PLUGIN_MODE_CONTEXT, context);
     }
 
     /* Initialize some state that used to happen in
@@ -2356,5 +2358,5 @@ bool
 dnf_context_plugin_hook(DnfContext * context, PluginHookId id, void * hookData, PluginHookError * error)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
-    return priv->plugins.hook(id, hookData, error);
+    return priv->plugins->hook(id, hookData, error);
 }
