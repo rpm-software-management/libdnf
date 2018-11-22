@@ -20,6 +20,16 @@
 ######################
 
 ====================
+0.22.3 Release Notes
+====================
+- Modify solver_describe_decision to report cleaned (RhBug:1486749)
+- [swdb] create persistent WAL files (RhBug:1640235)
+- Relocate ModuleContainer save hook (RhBug:1632518)
+- [transaction] Fix transaction item lookup for obsoleted packages (RhBug: 1642796)
+- Fix memory leaks and memory allocations
+- [repo] Possibility to extend downloaded repository metadata
+
+====================
 0.22.0 Release Notes
 ====================
 - Fix segfault in repo_internalize_trigger (RhBug:1375895)
