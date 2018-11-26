@@ -79,7 +79,6 @@ extern "C" {
 #include "utils/utils.hpp"
 #include "log.hpp"
 
-static auto logger(libdnf::Log::getLogger());
 
 #define DEFAULT_CACHE_ROOT "/var/cache/hawkey"
 #define DEFAULT_CACHE_USER "/var/tmp/hawkey"
@@ -2215,6 +2214,7 @@ void readModuleMetadataFromRepo(DnfSack * sack, ModulePackageContainer * moduleP
     try {
         modulePackages->addPlatformPackage("/etc/os-release", platformModule);
     } catch (const std::exception & except) {
+        auto logger(libdnf::Log::getLogger());
         logger->critical("Detection of Platform Module failed: " + std::string(except.what()));
     }
 }
@@ -2346,6 +2346,7 @@ std::vector<std::vector<std::string>> dnf_sack_filter_modules_v2(
         try {
             moduleContainer->moduleDefaultsResolve();
         } catch (ModuleDefaultsContainer::ResolveException & exception) {
+            auto logger(libdnf::Log::getLogger());
             logger->debug(_("No module defaults found"));
         }
     }
