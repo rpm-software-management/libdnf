@@ -19,8 +19,13 @@
  */
 
 #include <iostream>
+#include <numeric>
 #include <sstream>
 #include <utility>
+
+extern "C" {
+#include <solv/pool_parserpmrichdep.h>
+}
 
 #include "ModulePackage.hpp"
 #include "modulemd/ModuleProfile.hpp"
@@ -85,7 +90,6 @@ ModulePackage::ModulePackage(DnfSack * moduleSack, Repo * repo,
  */
 void ModulePackage::createDependencies(Solvable *solvable) const
 {
-    std::ostringstream ss;
     Id depId;
     Pool * pool = dnf_sack_get_pool(moduleSack);
 
@@ -93,28 +97,38 @@ void ModulePackage::createDependencies(Solvable *solvable) const
         for (const auto &requires : dependency->getRequires()) {
             for (const auto &singleRequires : requires) {
                 auto moduleName = singleRequires.first;
-
-                ss.str(std::string());
-                ss << "module(" << moduleName;
-
-                bool hasStreamRequires = false;
+                std::vector<std::string> requiresStream;
                 for (const auto &moduleStream : singleRequires.second) {
                     if (moduleStream.find('-', 0) != std::string::npos) {
-                        ss << ":" << moduleStream.substr(1) << ")";
+                        std::ostringstream ss;
+                        ss << "module(" << moduleName << ":" << moduleStream.substr(1) << ")";
                         depId = pool_str2id(pool, ss.str().c_str(), 1);
-                        solvable_add_deparray(solvable, SOLVABLE_CONFLICTS, depId, -1);
+                        solvable_add_deparray(solvable, SOLVABLE_CONFLICTS, depId, 0);
                     } else {
-                        hasStreamRequires = true;
-                        ss << ":" << moduleStream << ")";
-                        depId = pool_str2id(pool, ss.str().c_str(), 1);
-                        solvable_add_deparray(solvable, SOLVABLE_REQUIRES, depId, 0);
+                        std::string reqFormated = "module(" + moduleName + ":" + moduleStream + ")";
+                        requiresStream.push_back(std::move(reqFormated));
                     }
                 }
-
-                if (!hasStreamRequires) {
-                    // without stream; just close parenthesis
-                    ss << ")";
+                if (requiresStream.empty()) {
+                    std::ostringstream ss;
+                    ss << "module(" << moduleName << ")";
                     depId = pool_str2id(pool, ss.str().c_str(), 1);
+                    solvable_add_deparray(solvable, SOLVABLE_REQUIRES, depId, -1);
+                } else if (requiresStream.size() == 1) {
+                    auto & requireFormated = requiresStream[0];
+                    depId = pool_str2id(pool, requireFormated.c_str(), 1);
+                    solvable_add_deparray(solvable, SOLVABLE_REQUIRES, depId, -1);
+                } else {
+                    std::ostringstream ss;
+                    ss << "(";
+                    ss << std::accumulate(std::next(requiresStream.begin()),
+                                            requiresStream.end(), requiresStream[0],
+                                            [](std::string & a, std::string & b)
+                                            { return a + " or " + b; });
+                    ss << ")";
+                    depId = pool_parserpmrichdep(pool, ss.str().c_str());
+                    if (!depId)
+                        throw std::runtime_error("Cannot parse module requires");
                     solvable_add_deparray(solvable, SOLVABLE_REQUIRES, depId, -1);
                 }
             }
@@ -316,7 +330,7 @@ void ModulePackage::addStreamConflict(const ModulePackagePtr &package)
 
     ss << "module(" + package->getNameStream() + ")";
     auto depId = pool_str2id(pool, ss.str().c_str(), 1);
-    solvable_add_deparray(solvable, SOLVABLE_CONFLICTS, depId, -1);
+    solvable_add_deparray(solvable, SOLVABLE_CONFLICTS, depId, 0);
 }
 
 static std::pair<std::string, std::string> getPlatformStream(const std::string &osReleasePath)
