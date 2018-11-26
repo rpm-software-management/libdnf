@@ -2209,13 +2209,15 @@ void readModuleMetadataFromRepo(DnfSack * sack, ModulePackageContainer * moduleP
     const char * platformModule)
 {
     modulePackages->add(sack);
-    modulePackages->createConflictsBetweenStreams();
-    // TODO remove hard-coded path
-    try {
-        modulePackages->addPlatformPackage("/etc/os-release", platformModule);
-    } catch (const std::exception & except) {
-        auto logger(libdnf::Log::getLogger());
-        logger->critical("Detection of Platform Module failed: " + std::string(except.what()));
+    if (!modulePackages->empty()) {
+        modulePackages->createConflictsBetweenStreams();
+        // TODO remove hard-coded path
+        try {
+            modulePackages->addPlatformPackage("/etc/os-release", platformModule);
+        } catch (const std::exception & except) {
+            auto logger(libdnf::Log::getLogger());
+            logger->critical("Detection of Platform Module failed: " + std::string(except.what()));
+        }
     }
 }
 

@@ -282,6 +282,11 @@ void ModulePackageContainer::createConflictsBetweenStreams()
     }
 }
 
+bool ModulePackageContainer::empty() const noexcept
+{
+    return pImpl->modules.empty();
+}
+
 ModulePackagePtr ModulePackageContainer::getModulePackage(Id id)
 {
     return pImpl->modules.at(id);
