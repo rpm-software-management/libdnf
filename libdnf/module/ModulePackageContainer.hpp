@@ -80,6 +80,13 @@ public:
     void createConflictsBetweenStreams();
 
     /**
+     * @brief Return true if no module package in container
+     *
+     * @return bool
+     */
+    bool empty() const noexcept;
+
+    /**
     * @brief Can throw std::out_of_range exception
     */
     ModulePackagePtr getModulePackage(Id id);
