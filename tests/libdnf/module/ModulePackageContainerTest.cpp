@@ -7,8 +7,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ModulePackageContainerTest);
 
 #include <algorithm>
 
-auto logger(libdnf::Log::getLogger());
-
 void ModulePackageContainerTest::setUp()
 {
     g_autoptr(GError) error = nullptr;

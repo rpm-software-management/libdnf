@@ -46,8 +46,6 @@ extern "C" {
 #include "modulemd/ModuleDefaultsContainer.hpp"
 #include "modulemd/ModuleProfile.hpp"
 
-static auto logger(libdnf::Log::getLogger());
-
 static constexpr auto EMPTY_STREAM = "";
 static constexpr auto EMPTY_PROFILES = "";
 static constexpr auto DEFAULT_STATE = "";
@@ -196,6 +194,7 @@ ModulePackageContainer::add(DnfSack * sack)
     Pool * pool = dnf_sack_get_pool(sack);
     Repo * r;
     Id id;
+    auto logger(libdnf::Log::getLogger());
 
     FOR_REPOS(id, r) {
         HyRepo hyRepo = static_cast<HyRepo>(r->appdata);
@@ -216,6 +215,7 @@ ModulePackageContainer::add(DnfSack * sack)
 
 void ModulePackageContainer::addDefaultsFromDisk()
 {
+    auto logger(libdnf::Log::getLogger());
     g_autofree gchar * dirPath = g_build_filename(
             pImpl->installRoot.c_str(), "/etc/dnf/modules.defaults.d/", NULL);
 
@@ -1087,6 +1087,7 @@ static inline void initConfig(std::map<std::string, std::string> &config, const 
 static inline void
 parseConfig(libdnf::ConfigParser &parser, const std::string &name, const char *path)
 {
+    auto logger(libdnf::Log::getLogger());
     auto &data = parser.getData();
 
     try {
