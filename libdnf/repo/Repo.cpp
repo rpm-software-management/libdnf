@@ -1253,10 +1253,7 @@ bool Repo::Impl::load()
     auto logger(Log::getLogger());
     try {
         if (!getMetadataPath(MD_TYPE_PRIMARY).empty() || loadCache(false)) {
-            if (conf->getMasterConfig().check_config_file_age().getValue() &&
-                !repoFilePath.empty() &&
-                mtime(repoFilePath.c_str()) > mtime(getMetadataPath(MD_TYPE_PRIMARY).c_str()))
-                expired = true;
+            resetMetadataExpired();
             if (!expired || syncStrategy == SyncStrategy::ONLY_CACHE || syncStrategy == SyncStrategy::LAZY) {
                 logger->debug(tfm::format(_("repo: using cache for: %s"), id));
                 return false;
@@ -1392,11 +1389,12 @@ bool Repo::fresh()
 
 void Repo::Impl::resetMetadataExpired()
 {
-    if (expired)
-        // explicitly requested expired state
+    if (expired || conf->metadata_expire().getValue() == -1)
         return;
-    if (conf->metadata_expire().getValue() == -1)
-        expired = false;
+    if (conf->getMasterConfig().check_config_file_age().getValue() &&
+        !repoFilePath.empty() &&
+        mtime(repoFilePath.c_str()) > mtime(getMetadataPath(MD_TYPE_PRIMARY).c_str()))
+        expired = true;
     else
         expired = getAge() > conf->metadata_expire().getValue();
 }
