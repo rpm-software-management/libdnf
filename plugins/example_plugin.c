@@ -74,7 +74,9 @@ PluginHandle * pluginInitHandle(int version, PluginMode mode, DnfPluginInitData 
     } while (0);
 
     fprintf(outStream, "%s: %s: exit =========================\n", info.name, __func__);
-    if (!handle)
+    if (handle)
+        fflush(outStream);
+    else
         fclose(outStream);
     return handle;
 }
@@ -167,5 +169,6 @@ int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * hookD
             break;
     }
     fprintf(handle->outStream, "%s: %s: id=%i exit  ========================\n", info.name, __func__, id);
+    fflush(handle->outStream);
     return 1;
 }
