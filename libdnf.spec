@@ -55,6 +55,7 @@ BuildRequires:  pkgconfig(librhsm) >= 0.0.3
 BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  pkgconfig(json-c)
 BuildRequires:  pkgconfig(cppunit)
+BuildRequires:  pkgconfig(libcrypto)
 BuildRequires:  pkgconfig(modulemd) >= %{libmodulemd_version}
 BuildRequires:  pkgconfig(smartcols)
 BuildRequires:  gettext
