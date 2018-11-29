@@ -119,7 +119,8 @@ int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * hookD
                 if (packages) {
                     for (unsigned int i = 0; i < packages->len; ++i) {
                         DnfPackage * pkg = g_ptr_array_index(packages, i);
-                        fprintf(handle->outStream, "Action=%-18s%s\n", "install", dnf_package_get_nevra(pkg));
+                        fprintf(handle->outStream, "Action=%-18s%s@%s\n", "install",
+                                dnf_package_get_nevra(pkg), dnf_package_get_reponame(pkg));
                     }
                     g_ptr_array_unref(packages);
                 }
@@ -127,7 +128,8 @@ int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * hookD
                 if (packages) {
                     for (unsigned int i = 0; i < packages->len; ++i) {
                         DnfPackage * pkg = g_ptr_array_index(packages, i);
-                        fprintf(handle->outStream, "Action=%-18s%s\n", "reinstall", dnf_package_get_nevra(pkg));
+                        fprintf(handle->outStream, "Action=%-18s%s@%s\n", "reinstall",
+                                dnf_package_get_nevra(pkg), dnf_package_get_reponame(pkg));
                     }
                     g_ptr_array_unref(packages);
                 }
@@ -135,7 +137,8 @@ int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * hookD
                 if (packages) {
                     for (unsigned int i = 0; i < packages->len; ++i) {
                         DnfPackage * pkg = g_ptr_array_index(packages, i);
-                        fprintf(handle->outStream, "Action=%-18s%s\n", "downgrade", dnf_package_get_nevra(pkg));
+                        fprintf(handle->outStream, "Action=%-18s%s@%s\n", "downgrade",
+                                dnf_package_get_nevra(pkg), dnf_package_get_reponame(pkg));
                     }
                     g_ptr_array_unref(packages);
                 }
@@ -143,7 +146,8 @@ int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * hookD
                 if (packages) {
                     for (unsigned int i = 0; i < packages->len; ++i) {
                         DnfPackage * pkg = g_ptr_array_index(packages, i);
-                        fprintf(handle->outStream, "Action=%-18s%s\n", "upgrade", dnf_package_get_nevra(pkg));
+                        fprintf(handle->outStream, "Action=%-18s%s@%s\n", "upgrade",
+                                dnf_package_get_nevra(pkg), dnf_package_get_reponame(pkg));
                     }
                     g_ptr_array_unref(packages);
                 }
@@ -151,7 +155,8 @@ int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * hookD
                 if (packages) {
                     for (unsigned int i = 0; i < packages->len; ++i) {
                         DnfPackage * pkg = g_ptr_array_index(packages, i);
-                        fprintf(handle->outStream, "Action=%-18s%s\n", "remove", dnf_package_get_nevra(pkg));
+                        fprintf(handle->outStream, "Action=%-18s%s\n", "remove",
+                                dnf_package_get_nevra(pkg));
                     }
                     g_ptr_array_unref(packages);
                 }
@@ -159,7 +164,8 @@ int pluginHook(PluginHandle * handle, PluginHookId id, DnfPluginHookData * hookD
                 if (packages) {
                     for (unsigned int i = 0; i < packages->len; ++i) {
                         DnfPackage * pkg = g_ptr_array_index(packages, i);
-                        fprintf(handle->outStream, "Action=%-18s%s\n", "obsolete", dnf_package_get_nevra(pkg));
+                        fprintf(handle->outStream, "Action=%-18s%s\n", "obsolete",
+                                dnf_package_get_nevra(pkg));
                     }
                     g_ptr_array_unref(packages);
                 }
