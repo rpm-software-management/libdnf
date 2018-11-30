@@ -1109,6 +1109,10 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     libdnf::Swdb *swdb = priv->swdb;
     PluginHookContextTransactionData data{PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION, transaction, goal, state};
+    DnfSack * sack = hy_goal_get_sack(goal);
+    DnfSack * rpmdb_version_sack = NULL;
+    std::string rpmdb_begin;
+    std::string rpmdb_end;
 
     /* take lock */
     ret = dnf_state_take_lock(state, DNF_LOCK_TYPE_RPMDB, DNF_LOCK_MODE_PROCESS, error);
@@ -1401,8 +1405,18 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     if (!dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION, &data, nullptr))
         goto out;
 
-    // FIXME get commandline and rpmdb version
-    swdb->beginTransaction(_get_current_time(), "", "", priv->uid);
+    // FIXME get commandline
+    if (sack) {
+        rpmdb_begin = dnf_sack_get_rpmdb_version(sack);
+    }
+    else {
+        // if sack is not available, create a custom instance
+        rpmdb_version_sack = dnf_sack_new();
+        dnf_sack_load_system_repo(rpmdb_version_sack, nullptr, DNF_SACK_LOAD_FLAG_BUILD_CACHE, nullptr);
+        rpmdb_begin = dnf_sack_get_rpmdb_version(rpmdb_version_sack);
+        g_object_unref(rpmdb_version_sack);
+    }
+    swdb->beginTransaction(_get_current_time(), rpmdb_begin, "", priv->uid);
 
     /* run the transaction */
     priv->state = dnf_state_get_child(state);
@@ -1441,8 +1455,13 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
         goto out;
 
     // finalize swdb transaction
-    // FIXME get rpmdb version
-    swdb->endTransaction(_get_current_time(), "", libdnf::TransactionState::DONE);
+    // always load a new sack with rpmdb state after the transaction
+    rpmdb_version_sack = dnf_sack_new();
+    dnf_sack_load_system_repo(rpmdb_version_sack, nullptr, DNF_SACK_LOAD_FLAG_BUILD_CACHE, nullptr);
+    rpmdb_end = dnf_sack_get_rpmdb_version(rpmdb_version_sack);
+    g_object_unref(rpmdb_version_sack);
+
+    swdb->endTransaction(_get_current_time(), rpmdb_end.c_str(), libdnf::TransactionState::DONE);
     swdb->closeTransaction();
 
     data.hookId = PLUGIN_HOOK_ID_CONTEXT_TRANSACTION;
@@ -1462,7 +1481,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
             goto out;
     }
 
-    if (DnfSack * sack = hy_goal_get_sack(goal)) {
+    if (sack) {
         if (auto moduleContainer = dnf_sack_get_module_container(sack)) {
             moduleContainer->save();
         }

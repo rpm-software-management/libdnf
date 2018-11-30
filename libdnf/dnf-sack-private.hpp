@@ -77,4 +77,19 @@ std::vector<std::vector<std::string>> dnf_sack_filter_modules_v2(
 
 std::vector<std::shared_ptr<ModulePackage>> requiresModuleEnablement(DnfSack * sack, const libdnf::PackageSet * installSet);
 
+/**
+ * @brief Return fingerprint of installed RPMs.
+ * The format is <count>:<hash>.
+ * <count> is a count of installed RPMs.
+ * <hash> is a sha1 hash of sorted sha1hdr hashes of installed RPMs.
+ *
+ * The count can be computed from the command line by running:
+ * rpm -qa --qf='%{name}\n' | grep -v '^gpg-pubkey$' | wc -l
+ *
+ * The hash can be computed from the command line by running:
+ * rpm -qa --qf='%{name} %{sha1header}\n' | grep -v '^gpg-pubkey ' \
+ * | cut -d ' ' -f 2 | LC_ALL=C sort | tr -d '\n' | sha1sum
+ */
+std::string dnf_sack_get_rpmdb_version(DnfSack *sack);
+
 #endif // HY_SACK_INTERNAL_H
