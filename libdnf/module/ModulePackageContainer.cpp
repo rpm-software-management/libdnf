@@ -763,14 +763,14 @@ ModulePackageContainer::getReport()
 }
 
 static bool
-modulePackageLatestPerRepoSorter(const ModulePackagePtr & first, const ModulePackagePtr & second)
+modulePackageLatestPerRepoSorter(DnfSack * sack, const ModulePackagePtr & first, const ModulePackagePtr & second)
 {
     if (first->getRepoID() != second->getRepoID())
         return first->getRepoID() < second->getRepoID();
     int cmp = g_strcmp0(first->getNameCStr(), second->getNameCStr());
     if (cmp != 0)
         return cmp < 0;
-    cmp = g_strcmp0(first->getStreamCStr(), second->getStreamCStr());
+    cmp = dnf_sack_evr_cmp(sack, first->getStreamCStr(), second->getStreamCStr());
     if (cmp != 0)
         return cmp < 0;
     cmp = g_strcmp0(first->getArchCStr(), second->getArchCStr());
@@ -816,7 +816,10 @@ ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
     }
     auto & packageFirst = modulePackages[0];
     std::vector<std::vector<std::vector<ModulePackagePtr>>> output;
-    std::sort(modulePackages.begin(), modulePackages.end(), modulePackageLatestPerRepoSorter);
+    auto sack = pImpl->moduleSack;
+    std::sort(modulePackages.begin(), modulePackages.end(),
+              [sack](const ModulePackagePtr & first, const ModulePackagePtr & second)
+              {return modulePackageLatestPerRepoSorter(sack, first, second);});
     auto vectorSize = modulePackages.size();
     output.push_back(
         std::vector<std::vector<ModulePackagePtr>>{std::vector<ModulePackagePtr> {packageFirst}});
