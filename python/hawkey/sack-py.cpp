@@ -618,6 +618,13 @@ load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     Py_RETURN_NONE;
 }
 
+static PyObject *
+rpmdb_version(_SackObject *self, PyObject *unused)
+{
+    auto result = dnf_sack_get_rpmdb_version(self->sack);
+    return PyString_FromString(result.c_str());
+}
+
 static Py_ssize_t
 len(_SackObject *self)
 {
@@ -686,6 +693,7 @@ PyMethodDef sack_methods[] = {
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"load_repo", (PyCFunction)load_repo, METH_VARARGS | METH_KEYWORDS,
      NULL},
+    {"_rpmdb_version", (PyCFunction)rpmdb_version, METH_VARARGS | METH_KEYWORDS, NULL},
     {NULL}                      /* sentinel */
 };
 
