@@ -47,6 +47,11 @@
 #include "dnf-repo.hpp"
 #include "dnf-types.h"
 #include "dnf-utils.h"
+#include "utils/File.hpp"
+
+#include <set>
+#include <string>
+#include <vector>
 
 typedef struct
 {
@@ -78,6 +83,7 @@ typedef struct
     LrHandle        *repo_handle;
     LrResult        *repo_result;
     LrUrlVars       *urlvars;
+    std::set<std::string> * additionalMetadata;
 } DnfRepoPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfRepo, dnf_repo, G_TYPE_OBJECT)
@@ -92,6 +98,7 @@ dnf_repo_finalize(GObject *object)
     DnfRepo *repo = DNF_REPO(object);
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
 
+    delete priv->additionalMetadata;
     g_free(priv->id);
     g_free(priv->filename);
     g_strfreev(priv->gpgkeys);
@@ -134,6 +141,7 @@ dnf_repo_init(DnfRepo *repo)
     priv->required = FALSE;  /* This is the original default which we're
                               * keeping for compatibility.
                               */
+    priv->additionalMetadata = new std::set<std::string>;
 }
 
 /**
@@ -1297,19 +1305,18 @@ dnf_repo_check_internal(DnfRepo *repo,
                         GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    g_autoptr(GPtrArray) download_list = g_ptr_array_new ();
-    g_ptr_array_add (download_list, (char*)"primary");
-    g_ptr_array_add (download_list, (char*)"group");
-    g_ptr_array_add (download_list, (char*)"updateinfo");
-    g_ptr_array_add (download_list, (char*)"appstream");
-    g_ptr_array_add (download_list, (char*)"appstream-icons");
-    g_ptr_array_add (download_list, (char*)"modules");
+
+    std::vector<const char *> download_list = {"primary", "group", "updateinfo", "appstream",
+        "appstream-icons", "modules"};
     /* This one is huge, and at least rpm-ostree jigdo mode doesn't require it.
      * https://github.com/projectatomic/rpm-ostree/issues/1127
      */
-    if (dnf_context_get_enable_filelists (priv->context))
-        g_ptr_array_add (download_list, (char*)"filelists");
-    g_ptr_array_add (download_list, NULL);
+    if (dnf_context_get_enable_filelists(priv->context))
+        download_list.push_back("filelists");
+    for (const auto & item : *(priv->additionalMetadata)) {
+        download_list.push_back(item.c_str());
+    }
+    download_list.push_back(NULL);
     const gchar *tmp;
     gboolean ret;
     LrYumRepo *yum_repo;
@@ -1352,7 +1359,7 @@ dnf_repo_check_internal(DnfRepo *repo,
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_CHECKSUM, 1L))
         return FALSE;
-    if (!lr_handle_setopt(priv->repo_handle, error, LRO_YUMDLIST, download_list->pdata))
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_YUMDLIST, download_list.data()))
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_MIRRORLIST, NULL))
         return FALSE;
@@ -1410,57 +1417,28 @@ dnf_repo_check_internal(DnfRepo *repo,
         }
     }
 
+    g_hash_table_remove_all(priv->filenames_md);
+    for (auto *elem = yum_repo->paths; elem; elem = g_slist_next(elem)) {
+        if (elem->data) {
+            auto yumrepopath = static_cast<LrYumRepoPath *>(elem->data);
+            g_hash_table_insert(priv->filenames_md, g_strdup(yumrepopath->type),
+                                g_strdup(yumrepopath->path));
+        }
+    }
+
     /* create a HyRepo */
     if (priv->repo != NULL)
         hy_repo_free(priv->repo);
     priv->repo = hy_repo_create(priv->id);
     hy_repo_set_string(priv->repo, HY_REPO_MD_FN, yum_repo->repomd);
-    tmp = lr_yum_repo_path(yum_repo, "primary");
-    if (tmp != NULL) {
-        hy_repo_set_string(priv->repo, HY_REPO_PRIMARY_FN, tmp);
-        g_hash_table_insert(priv->filenames_md,
-                            g_strdup("primary"),
-                            g_strdup(tmp));
-    }
-    tmp = lr_yum_repo_path(yum_repo, "filelists");
-    if (tmp != NULL) {
-        hy_repo_set_string(priv->repo, HY_REPO_FILELISTS_FN, tmp);
-        g_hash_table_insert(priv->filenames_md,
-                            g_strdup("filelists"),
-                            g_strdup(tmp));
-    }
-    tmp = lr_yum_repo_path(yum_repo, "updateinfo");
-    if (tmp != NULL) {
-        hy_repo_set_string(priv->repo, HY_REPO_UPDATEINFO_FN, tmp);
-        g_hash_table_insert(priv->filenames_md,
-                            g_strdup("updateinfo"),
-                            g_strdup(tmp));
-    }
-    tmp = lr_yum_repo_path(yum_repo, "modules");
-    if (tmp != nullptr) {
-        hy_repo_set_string(priv->repo, MODULES_FN, tmp);
-        g_hash_table_insert(priv->filenames_md,
-                            g_strdup("modules"),
-                            g_strdup(tmp));
-    }
-    tmp = lr_yum_repo_path(yum_repo, "group");
-    if (tmp != NULL) {
-        g_hash_table_insert(priv->filenames_md,
-                            g_strdup("group"),
-                            g_strdup(tmp));
-    }
-    tmp = lr_yum_repo_path(yum_repo, "appstream");
-    if (tmp != NULL) {
-        g_hash_table_insert(priv->filenames_md,
-                            g_strdup("appstream"),
-                            g_strdup(tmp));
-    }
-    tmp = lr_yum_repo_path(yum_repo, "appstream-icons");
-    if (tmp != NULL) {
-        g_hash_table_insert(priv->filenames_md,
-                            g_strdup("appstream-icons"),
-                            g_strdup(tmp));
-    }
+    tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "primary"));
+    hy_repo_set_string(priv->repo, HY_REPO_PRIMARY_FN, tmp);
+    tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "filelists"));
+    hy_repo_set_string(priv->repo, HY_REPO_FILELISTS_FN, tmp);
+    tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "updateinfo"));
+    hy_repo_set_string(priv->repo, HY_REPO_UPDATEINFO_FN, tmp);
+    tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "modules"));
+    hy_repo_set_string(priv->repo, MODULES_FN, tmp);
 
     /* ensure we reset the values from the keyfile */
     if (!dnf_repo_set_keyfile_data(repo, error))
@@ -2286,4 +2264,66 @@ HyRepo dnf_repo_get_hy_repo(DnfRepo *repo)
 {
     auto priv = GET_PRIVATE(repo);
     return priv->repo;
+}
+
+/**
+ * dnf_repo_add_metadata_type_to_download:
+ * @repo: a #DnfRepo instance.
+ * @metadataType: a #gchar, e.g. %"filelist"
+ *
+ * Ask for additional repository metadata type to download.
+ * Given metadata are appended to the default metadata set when repository is downloaded.
+ *
+ * Since: 0.24.0
+ **/
+void
+dnf_repo_add_metadata_type_to_download(DnfRepo * repo, const gchar * metadataType)
+{
+    auto priv = GET_PRIVATE(repo);
+    priv->additionalMetadata->insert(metadataType);
+}
+
+/**
+ * dnf_repo_get_metadata_content:
+ * @repo: a #DnfRepo instance.
+ * @metadataType: a #gchar, e.g. %"filelist"
+ * @content: a #gpointer, a pointer to allocated memory with content of metadata file
+ * @length: a #gsize
+ * @error: a #GError or %NULL.
+ *
+ * Return content of the particular downloaded repository metadata.
+ * Content of compressed metadata file is returned uncompressed.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.24.0
+ **/
+gboolean
+dnf_repo_get_metadata_content(DnfRepo * repo, const gchar * metadataType, gpointer * content,
+                              gsize * length, GError ** error)
+{
+    auto path = dnf_repo_get_filename_md(repo, metadataType);
+    if (!path) {
+        g_set_error(error, DNF_ERROR, DNF_ERROR_FILE_NOT_FOUND,
+                    "Cannot found metadata type \"%s\" for repo \"%s\"",
+                    metadataType, dnf_repo_get_id(repo));
+        return FALSE;
+    }
+
+    try {
+        auto mdfile = libdnf::File::newFile(path);
+        mdfile->open("r");
+        const auto &fcontent = mdfile->getContent();
+        mdfile->close();
+        auto data = g_malloc(fcontent.length());
+        memcpy(data, fcontent.data(), fcontent.length());
+        *content = data;
+        *length = fcontent.length();
+        return TRUE;
+    } catch (std::runtime_error & ex) {
+        g_set_error(error, DNF_ERROR, DNF_ERROR_FAILED,
+                    "Cannot load metadata type \"%s\" for repo \"%s\": %s",
+                    metadataType, dnf_repo_get_id(repo), ex.what());
+        return FALSE;
+    }
 }
