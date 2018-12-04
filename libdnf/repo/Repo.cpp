@@ -76,6 +76,7 @@
 #include <list>
 #include <map>
 #include <mutex>
+#include <set>
 #include <sstream>
 #include <type_traits>
 
@@ -243,7 +244,7 @@ public:
     int timestamp;
     int maxTimestamp{0};
     std::string repomdFn;
-    std::vector<std::string> additionalMetadata;
+    std::set<std::string> additionalMetadata;
     std::string revision;
     std::vector<std::string> content_tags;
     std::vector<std::pair<std::string, std::string>> distro_tags;
@@ -512,7 +513,7 @@ void Repo::setSubstitutions(const std::map<std::string, std::string> & substitut
 
 void Repo::addMetadataTypeToDownload(const std::string &metadataType)
 {
-    pImpl->additionalMetadata.push_back(metadataType);
+    pImpl->additionalMetadata.insert(metadataType);
 }
 
 std::string Repo::getMetadataPath(const std::string &metadataType)
