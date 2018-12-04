@@ -203,6 +203,14 @@ gboolean         dnf_repo_download_packages     (DnfRepo              *repo,
 HyRepo dnf_repo_get_hy_repo(DnfRepo *repo);
 #endif
 
+void   dnf_repo_add_metadata_type_to_download   (DnfRepo              *repo,
+                                                 const gchar          *metadataType);
+gboolean         dnf_repo_get_metadata_content  (DnfRepo              *repo,
+                                                 const gchar          *metadataType,
+                                                 gpointer             *content,
+                                                 gsize                *length,
+                                                 GError              **error);
+
 G_END_DECLS
 
 #endif /* __DNF_REPO_H */
