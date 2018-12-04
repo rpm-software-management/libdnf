@@ -386,6 +386,10 @@ ModulePackageContainer::enable(const std::string &name, const std::string & stre
     if (pImpl->persistor->changeState(name, ModuleState::ENABLED)) {
         changed = true;
     }
+    if (changed) {
+        auto & profiles = pImpl->persistor->getEntry(name).second.profiles;
+        profiles.clear();
+    }
     return changed;
 }
 
@@ -402,6 +406,8 @@ void ModulePackageContainer::disable(const std::string & name)
 {
     pImpl->persistor->changeState(name, ModuleState::DISABLED);
     pImpl->persistor->changeStream(name, "");
+    auto & profiles = pImpl->persistor->getEntry(name).second.profiles;
+    profiles.clear();
 }
 
 void ModulePackageContainer::disable(const ModulePackagePtr &module)
