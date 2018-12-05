@@ -215,6 +215,7 @@ popd
 %license COPYING
 %doc README.md AUTHORS
 %{_libdir}/%{name}.so.*
+%{_libdir}/libdnf/plugins/README
 
 %files devel
 %doc %{_datadir}/gtk-doc/html/%{name}/
