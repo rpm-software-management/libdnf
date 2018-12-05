@@ -1,0 +1,6 @@
+
+This directory holds plugins for the libdnf library.
+Any files in this directory which have the ".so" extension will be
+processed as libdnf plugins.
+
+Files are processed in alphabetical order.
