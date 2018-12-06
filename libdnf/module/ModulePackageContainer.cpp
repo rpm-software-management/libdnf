@@ -194,7 +194,6 @@ ModulePackageContainer::add(DnfSack * sack)
     Pool * pool = dnf_sack_get_pool(sack);
     Repo * r;
     Id id;
-    auto logger(libdnf::Log::getLogger());
 
     FOR_REPOS(id, r) {
         HyRepo hyRepo = static_cast<HyRepo>(r->appdata);
@@ -203,30 +202,27 @@ ModulePackageContainer::add(DnfSack * sack)
             continue;
         }
         std::string yamlContent = getFileContent(modules_fn);
-        add(yamlContent, hy_repo_get_string(hyRepo, HY_REPO_NAME));
+        auto repoName = hy_repo_get_string(hyRepo, HY_REPO_NAME);
+        add(yamlContent, repoName);
         // update defaults from repo
         try {
             pImpl->defaultConteiner.fromString(yamlContent, 0);
         } catch (const ModuleDefaultsContainer::ConflictException & exception) {
-            logger->warning(exception.what());
+            throw ModuleDefaultsContainer::ConflictException(
+                tfm::format(_("Conflicting defaults with repo '%s': %s"), repoName,
+                            exception.what()));
         }
     }
 }
 
 void ModulePackageContainer::addDefaultsFromDisk()
 {
-    auto logger(libdnf::Log::getLogger());
     g_autofree gchar * dirPath = g_build_filename(
             pImpl->installRoot.c_str(), "/etc/dnf/modules.defaults.d/", NULL);
 
     for (const auto &file : filesystem::getDirContent(dirPath)) {
         std::string yamlContent = getFileContent(file);
-
-        try {
-            pImpl->defaultConteiner.fromString(yamlContent, 1000);
-        } catch (ModuleDefaultsContainer::ConflictException &exception) {
-            logger->warning(exception.what());
-        }
+        pImpl->defaultConteiner.fromString(yamlContent, 1000);
     }
 }
 

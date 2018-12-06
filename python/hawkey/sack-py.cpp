@@ -27,6 +27,7 @@
 #include "hy-util.h"
 #include "dnf-version.h"
 #include "dnf-sack-private.hpp"
+#include "libdnf/module/modulemd/ModuleDefaultsContainer.hpp"
 
 // pyhawkey
 #include "exception-py.hpp"
@@ -526,16 +527,21 @@ filter_modules(_SackObject *self, PyObject *args, PyObject *kwds)
     std::vector<const char *> hotfixReposCString(hotfixRepos.size() + 1);
     std::transform(hotfixRepos.begin(), hotfixRepos.end(), hotfixReposCString.begin(),
         std::mem_fn(&std::string::c_str));
-    auto problems = dnf_sack_filter_modules_v2(self->sack, moduleContainer, hotfixReposCString.data(),
-        installRoot, platformModule, updateOnly, debugSolver);
-    if (problems.second == ModulePackageContainer::ModuleErrorType::NO_ERROR) {
-        PyObject * returnTuple = PyTuple_New(0);
+    try {
+        auto problems = dnf_sack_filter_modules_v2(self->sack, moduleContainer, hotfixReposCString.data(),
+            installRoot, platformModule, updateOnly, debugSolver);
+        if (problems.second == ModulePackageContainer::ModuleErrorType::NO_ERROR) {
+            PyObject * returnTuple = PyTuple_New(0);
+            return returnTuple;
+        }
+        PyObject * returnTuple = PyTuple_New(2);
+        PyTuple_SetItem(returnTuple, 0, problemRulesPyConverter(problems.first));
+        PyTuple_SetItem(returnTuple, 1, PyLong_FromLong(int(problems.second)));
         return returnTuple;
+    } catch (ModuleDefaultsContainer::ConflictException & exception) {
+        PyErr_SetString(HyExc_Runtime, exception.what());
+        return NULL;
     }
-    PyObject * returnTuple = PyTuple_New(2);
-    PyTuple_SetItem(returnTuple, 0, problemRulesPyConverter(problems.first));
-    PyTuple_SetItem(returnTuple, 1, PyLong_FromLong(int(problems.second)));
-    return returnTuple;
 }
 
 
