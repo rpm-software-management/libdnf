@@ -100,7 +100,7 @@ class ModulePackageContainer::Impl {
 public:
     Impl();
     ~Impl();
-    std::vector<std::vector<std::string>> moduleSolve(
+    std::pair<std::vector<std::vector<std::string>>, ModulePackageContainer::ModuleErrorType> moduleSolve(
         const std::vector<ModulePackagePtr> & modules, bool debugSolver);
     bool insert(const std::string &moduleName, const char *path);
 
@@ -485,7 +485,7 @@ void ModulePackageContainer::uninstall(const ModulePackagePtr &module, const std
         pImpl->persistor->removeProfile(module->getName(), profile);
 }
 
-std::vector<std::vector<std::string>>
+std::pair<std::vector<std::vector<std::string>>, ModulePackageContainer::ModuleErrorType>
 ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackagePtr> & modules,
     bool debugSolver)
 {
@@ -495,31 +495,45 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackagePtr> & 
     dnf_sack_recompute_considered(moduleSack);
     dnf_sack_make_provides_ready(moduleSack);
     libdnf::Goal goal(moduleSack);
+    libdnf::Goal goalWeak(moduleSack);
     for (const auto &module : modules) {
         std::ostringstream ss;
-        ss << "module(" << module->getName() << ":" << module->getStream() << ":"; 
-        ss << module->getVersion() << ")";
+        auto name = module->getName();
+        ss << "module(" << name << ":" << module->getStream() << ":" << module->getVersion() << ")";
         libdnf::Selector selector(moduleSack);
+        bool optional = persistor->getState(name) == ModuleState::DEFAULT;
         selector.set(HY_PKG_PROVIDES, HY_EQ, ss.str().c_str());
-        goal.install(&selector, true);
+        goal.install(&selector, optional);
+        goalWeak.install(&selector, true);
     }
     auto ret = goal.run(DNF_IGNORE_WEAK);
     if (debugSolver) {
         goal.writeDebugdata("debugdata/modules");
     }
     std::vector<std::vector<std::string>> problems;
+    auto problemType = ModulePackageContainer::ModuleErrorType::NO_ERROR;
     if (ret) {
         problems = goal.describeAllProblemRules(false);
         ret = goal.run(DNF_NONE);
         if (ret) {
-            printf("Modularity filtering totally broken\n");
+            ret = goalWeak.run(DNF_NONE);
+            if (ret) {
+                auto logger(libdnf::Log::getLogger());
+                logger->critical("Modularity filtering totally broken\n");
+                problemType = ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULES;
+                activatedModules.reset();
+            } else {
+                problemType = ModulePackageContainer::ModuleErrorType::ERROR;
+                activatedModules.reset(new libdnf::PackageSet(std::move(goalWeak.listInstalls())));
+            }
         } else {
-            activatedModules.reset(new libdnf::PackageSet(goal.listInstalls()));
+            problemType = ModulePackageContainer::ModuleErrorType::ERROR_IN_DEFAULTS;
+            activatedModules.reset(new libdnf::PackageSet(std::move(goal.listInstalls())));
         }
     } else {
-        activatedModules.reset(new libdnf::PackageSet(goal.listInstalls()));
+        activatedModules.reset(new libdnf::PackageSet(std::move(goal.listInstalls())));
     }
-    return problems;
+    return make_pair(problems, problemType);
 }
 
 std::vector<ModulePackagePtr>
@@ -860,7 +874,7 @@ ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
 }
 
 
-std::vector<std::vector<std::string>>
+std::pair<std::vector<std::vector<std::string>>, ModulePackageContainer::ModuleErrorType>
 ModulePackageContainer::resolveActiveModulePackages(bool debugSolver)
 {
     dnf_sack_reset_excludes(pImpl->moduleSack);

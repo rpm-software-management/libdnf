@@ -528,7 +528,14 @@ filter_modules(_SackObject *self, PyObject *args, PyObject *kwds)
         std::mem_fn(&std::string::c_str));
     auto problems = dnf_sack_filter_modules_v2(self->sack, moduleContainer, hotfixReposCString.data(),
         installRoot, platformModule, updateOnly, debugSolver);
-    return problemRulesPyConverter(problems);
+    if (problems.second == ModulePackageContainer::ModuleErrorType::NO_ERROR) {
+        PyObject * returnTuple = PyTuple_New(0);
+        return returnTuple;
+    }
+    PyObject * returnTuple = PyTuple_New(2);
+    PyTuple_SetItem(returnTuple, 0, problemRulesPyConverter(problems.first));
+    PyTuple_SetItem(returnTuple, 1, PyLong_FromLong(int(problems.second)));
+    return returnTuple;
 }
 
 
