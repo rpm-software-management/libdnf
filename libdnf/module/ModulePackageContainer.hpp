@@ -80,7 +80,17 @@ public:
     ~ModulePackageContainer();
 
     void add(const std::string & fileContent, const std::string & repoID);
+
+    /**
+     * @brief Can raise ModuleDefaultsContainer::ConflictException
+     *
+     */
     void add(DnfSack * sack);
+
+    /**
+     * @brief Can raise ModuleDefaultsContainer::ConflictException
+     *
+     */
     void addDefaultsFromDisk();
     void moduleDefaultsResolve();
     Id addPlatformPackage(const std::string &osReleasePath, const char *  platformModule);
