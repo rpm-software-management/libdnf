@@ -44,6 +44,13 @@ public:
         INSTALLED
     };
     
+    enum class ModuleErrorType {
+        NO_ERROR = 0,
+        ERROR_IN_DEFAULTS,
+        ERROR,
+        CANNOT_RESOLVE_MODULES
+    };
+    
     struct Exception : public std::runtime_error
     {
         explicit Exception(const std::string &what) : runtime_error(what) {}
@@ -217,7 +224,7 @@ public:
     std::vector<ModulePackagePtr> query(std::string name, std::string stream,
         std::string version, std::string context, std::string arch);
     void enableDependencyTree(std::vector<ModulePackagePtr> & modulePackages);
-    std::vector<std::vector<std::string>> resolveActiveModulePackages(bool debugSolver);
+    std::pair<std::vector<std::vector<std::string>>, ModulePackageContainer::ModuleErrorType> resolveActiveModulePackages(bool debugSolver);
     bool isModuleActive(Id id);
     bool isModuleActive(ModulePackagePtr modulePackage);
 
