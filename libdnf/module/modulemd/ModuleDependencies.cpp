@@ -35,9 +35,9 @@ std::map<std::string, std::vector<std::string>> ModuleDependencies::wrapModuleDe
 {
     std::map<std::string, std::vector<std::string> > moduleRequirements;
     auto streamSet = modulemd_simpleset_dup(streams);
-
+    auto & moduleStreamVector = moduleRequirements[moduleName];
     for (auto item = streamSet; *item; ++item) {
-        moduleRequirements[moduleName].emplace_back(*item);
+        moduleStreamVector.emplace_back(*item);
         g_free(*item);
     }
     g_free(streamSet);
