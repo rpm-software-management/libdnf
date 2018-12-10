@@ -1,10 +1,11 @@
 # Igor Gorbounov <igor.gorbounov@gmail.com>, 2017. #zanata
+# Ludek Janda <ljanda@redhat.com>, 2018. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-25 07:59+0200\n"
-"PO-Revision-Date: 2018-08-28 02:38+0000\n"
+"POT-Creation-Date: 2018-10-15 09:13+0200\n"
+"PO-Revision-Date: 2018-11-02 05:26+0000\n"
 "Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
 "Language-Team: Russian\n"
 "MIME-Version: 1.0\n"
@@ -112,12 +113,12 @@ msgstr ""
 msgid "package %s is not installable"
 msgstr ""
 
-#: ../libdnf/goal/Goal.cpp:79 ../libdnf/goal/Goal.cpp:105
+#: ../libdnf/goal/Goal.cpp:79
 #, c-format
 msgid "nothing provides %s needed by %s"
 msgstr ""
 
-#: ../libdnf/goal/Goal.cpp:80 ../libdnf/goal/Goal.cpp:106
+#: ../libdnf/goal/Goal.cpp:80
 #, c-format
 msgid "cannot install both %s and %s"
 msgstr ""
@@ -185,6 +186,16 @@ msgstr ""
 msgid "module %s is not installable"
 msgstr ""
 
+#: ../libdnf/goal/Goal.cpp:105
+#, c-format
+msgid "nothing provides %s needed by module %s"
+msgstr ""
+
+#: ../libdnf/goal/Goal.cpp:106
+#, c-format
+msgid "cannot install both modules %s and %s"
+msgstr ""
+
 #: ../libdnf/goal/Goal.cpp:107
 #, c-format
 msgid "module %s conflicts with %s provided by %s"
@@ -220,33 +231,33 @@ msgstr ""
 msgid "both module %s and %s obsolete "
 msgstr ""
 
-#: ../libdnf/goal/Goal.cpp:979
+#: ../libdnf/goal/Goal.cpp:986
 msgid "no solver set"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:984
-#, c-format
-msgid "failed to make %s absolute"
 msgstr ""
 
 #: ../libdnf/goal/Goal.cpp:991
 #, c-format
+msgid "failed to make %s absolute"
+msgstr ""
+
+#: ../libdnf/goal/Goal.cpp:998
+#, c-format
 msgid "failed writing debugdata to %1$s: %2$s"
 msgstr ""
 
-#: ../libdnf/goal/Goal.cpp:1003
+#: ../libdnf/goal/Goal.cpp:1010
 msgid "no solv in the goal"
 msgstr ""
 
-#: ../libdnf/goal/Goal.cpp:1005
+#: ../libdnf/goal/Goal.cpp:1012
 msgid "no solution, cannot remove protected package"
 msgstr ""
 
-#: ../libdnf/goal/Goal.cpp:1008
+#: ../libdnf/goal/Goal.cpp:1015
 msgid "no solution possible"
 msgstr ""
 
-#: ../libdnf/goal/Goal.cpp:1416
+#: ../libdnf/goal/Goal.cpp:1421
 msgid ""
 "The operation would result in removing the following protected packages: "
 msgstr ""
@@ -282,33 +293,33 @@ msgstr ""
 #: ../libdnf/repo/Repo.cpp:670 ../libdnf/repo/Repo.cpp:692
 #, c-format
 msgid "%s: gpgme_data_new_from_fd(): %s"
-msgstr ""
+msgstr "%s: gpgme_data_new_from_fd(): %s"
 
 #: ../libdnf/repo/Repo.cpp:678 ../libdnf/repo/Repo.cpp:700
 #, c-format
 msgid "%s: gpgme_op_import(): %s"
-msgstr ""
+msgstr "%s: gpgme_op_import(): %s"
 
 #: ../libdnf/repo/Repo.cpp:723 ../libdnf/repo/Repo.cpp:789
 #: ../libdnf/repo/Repo.cpp:883
 #, c-format
 msgid "%s: gpgme_ctx_set_engine_info(): %s"
-msgstr ""
+msgstr "%s: gpgme_ctx_set_engine_info(): %s"
 
 #: ../libdnf/repo/Repo.cpp:750 ../libdnf/repo/Repo.cpp:814
 #, c-format
 msgid "can not list keys: %s"
-msgstr ""
+msgstr "не может перечислить ключи: %s"
 
 #: ../libdnf/repo/Repo.cpp:858
 #, c-format
 msgid "repo %s: 0x%s already imported"
-msgstr ""
+msgstr "Сделки рЕПО %s: 0x%s уже импортировано"
 
 #: ../libdnf/repo/Repo.cpp:890
 #, c-format
 msgid "repo %s: imported key 0x%s."
-msgstr ""
+msgstr "Сделки рЕПО %s: импортированный ключ 0x%s"
 
 #: ../libdnf/repo/Repo.cpp:1052
 #, c-format
@@ -354,17 +365,17 @@ msgstr ""
 #: ../libdnf/repo/Repo.cpp:1151
 #, c-format
 msgid "Cannot create repo temporary directory \"%s\": %s"
-msgstr ""
+msgstr "Невозможно создать временный каталог репо \"%s«: %s"
 
 #: ../libdnf/repo/Repo.cpp:1165
 #, c-format
 msgid "Cannot create directory \"%s\": %s"
-msgstr ""
+msgstr "Невозможно создать каталог \"%s«: %s"
 
 #: ../libdnf/repo/Repo.cpp:1170
 #, c-format
 msgid "Cannot rename directory \"%s\" to \"%s\": %s"
-msgstr ""
+msgstr "Невозможно переименовать каталог \"%s\"to\"%s«: %s"
 
 #: ../libdnf/repo/Repo.cpp:1191
 #, c-format
@@ -379,7 +390,7 @@ msgstr "Использование режима cacheonly включено, но
 #: ../libdnf/repo/Repo.cpp:1207
 #, c-format
 msgid "repo: downloading from remote: %s"
-msgstr ""
+msgstr "РЕПО: загрузка с удаленного устройства: %s"
 
 #: ../libdnf/repo/Repo.cpp:1213
 #, c-format
@@ -393,12 +404,12 @@ msgstr "Не удается синхронизировать кэш для ре�
 
 #: ../libdnf/repo/Repo.cpp:1240
 msgid "getCachedir(): Computation of SHA256 failed"
-msgstr ""
+msgstr "getCachedir (): вычисление SHA256 не выполнено"
 
 #: ../libdnf/repo/Repo.cpp:1381
 #, c-format
 msgid "not found filelist for: %s"
-msgstr ""
+msgstr "не найдено файлов по: %s"
 
 #: ../libdnf/repo/Repo.cpp:1385
 #, c-format
@@ -408,132 +419,172 @@ msgstr ""
 #: ../libdnf/repo/Repo.cpp:1390
 #, c-format
 msgid "not found modules for: %s"
-msgstr ""
+msgstr "не найдены модули для: %s"
 
 #: ../libdnf/repo/Repo.cpp:1397
 #, c-format
 msgid "not found deltainfo for: %s"
-msgstr ""
+msgstr "не найдено deltainfo для: %s"
 
 #: ../libdnf/repo/Repo.cpp:1401
 #, c-format
 msgid "not found updateinfo for: %s"
-msgstr ""
+msgstr "не найден updateinfo для: %s"
 
 #: ../libdnf/repo/Repo.cpp:1622
 msgid "resume cannot be used simultaneously with the byterangestart param"
 msgstr ""
+"резюме не может использоваться одновременно с параметром byterangestart"
 
 #: ../libdnf/repo/Repo.cpp:1633
 #, c-format
 msgid "PackageTarget initialization failed: %s"
-msgstr ""
+msgstr "Не удалось инициализировать PackageTarget: %s"
 
 #: ../libdnf/repo/Repo.cpp:1750
 #, c-format
 msgid "Cannot open %s: %s"
-msgstr ""
+msgstr "Не могу открыть %s: %s"
 
 #: ../libdnf/repo/Repo.cpp:1787
 #, c-format
 msgid "Log handler with id %ld doesn't exist"
-msgstr ""
+msgstr "Обработчик журнала с идентификатором %ld не существует"
 
 #: ../libdnf/dnf-transaction.cpp:255
 #, c-format
 msgid "Sources not set when trying to ensure package %s"
-msgstr ""
+msgstr "Источники не установлены при попытке обеспечить пакет %s"
 
 #: ../libdnf/dnf-transaction.cpp:281
 #, c-format
 msgid "Failed to ensure %1$s as repo %2$s not found(%3$i repos loaded)"
 msgstr ""
+"Не удалось обеспечить %1$s как репо %2$s не найдено(%3$i загружены "
+"репозитории)"
 
 #: ../libdnf/dnf-transaction.cpp:322
 msgid "Failed to check untrusted: "
-msgstr ""
+msgstr "Не удалось проверить недоверенность: "
 
 #: ../libdnf/dnf-transaction.cpp:332
 #, c-format
 msgid "Downloaded file for %s not found"
-msgstr ""
+msgstr "Загруженный файл для %s не найдено"
 
 #: ../libdnf/dnf-transaction.cpp:352
 #, c-format
 msgid "package %1$s cannot be verified and repo %2$s is GPG enabled: %3$s"
-msgstr ""
+msgstr "пакет %1$s не могут быть проверены и репо %2$s включен GPG: %3$s"
 
 #: ../libdnf/dnf-transaction.cpp:783 ../libdnf/dnf-transaction.cpp:855
 msgid "Failed to get value for CacheDir"
-msgstr ""
+msgstr "Не удалось получить значение для CacheDir"
 
 #: ../libdnf/dnf-transaction.cpp:863
 #, c-format
 msgid "Failed to get filesystem free size for %s: "
-msgstr ""
+msgstr "Не удалось получить размер файловой системы для %s: "
 
 #: ../libdnf/dnf-transaction.cpp:871
 #, c-format
 msgid "Failed to get filesystem free size for %s"
-msgstr ""
+msgstr "Не удалось получить размер файловой системы для %s"
 
 #: ../libdnf/dnf-transaction.cpp:887
 #, c-format
 msgid "Not enough free space in %1$s: needed %2$s, available %3$s"
 msgstr ""
+"Недостаточно свободного места в %1$s: необходимо %2$s, имеется в наличии "
+"%3$s"
 
 #: ../libdnf/dnf-transaction.cpp:1140
 msgid "failed to set root"
-msgstr ""
+msgstr "не удалось установить корень"
 
 #: ../libdnf/dnf-transaction.cpp:1361
 #, c-format
 msgid "Error %i running transaction test"
-msgstr ""
+msgstr "ошибка %i проверка транзакции"
 
-#: ../libdnf/dnf-transaction.cpp:1389
+#: ../libdnf/dnf-transaction.cpp:1392
 #, c-format
 msgid "Error %i running transaction"
-msgstr ""
+msgstr "ошибка %i выполняемая транзакция"
 
-#: ../libdnf/dnf-transaction.cpp:1404
+#: ../libdnf/dnf-transaction.cpp:1407
 #, c-format
 msgid "Transaction did not go to writing phase, but returned no error(%i)"
-msgstr ""
+msgstr "Транзакция не перешла на этап написания, но не вернула ошибку (%i)"
 
 #: ../libdnf/dnf-utils.cpp:110
 #, c-format
 msgid "cannot open directory %1$s: %2$s"
-msgstr ""
+msgstr "не удается открыть каталог %1$s: %2$s"
 
 #: ../libdnf/dnf-utils.cpp:135
 #, c-format
 msgid "failed to remove %s"
+msgstr "не удалось удалить %s"
+
+#: ../libdnf/plugin/plugin.cpp:46
+#, c-format
+msgid "Can't load shared library \"%s\": %s"
+msgstr ""
+
+#: ../libdnf/plugin/plugin.cpp:61 ../libdnf/plugin/plugin.cpp:67
+#: ../libdnf/plugin/plugin.cpp:73 ../libdnf/plugin/plugin.cpp:79
+#, c-format
+msgid "Can't obtain address of symbol \"%s\": %s"
+msgstr ""
+
+#: ../libdnf/plugin/plugin.cpp:86
+#, c-format
+msgid "Loading plugin file=\"%s\""
+msgstr ""
+
+#: ../libdnf/plugin/plugin.cpp:89
+#, c-format
+msgid "Loaded plugin name=\"%s\", version=\"%s\""
+msgstr ""
+
+#: ../libdnf/plugin/plugin.cpp:96
+msgid "Plugins::loadPlugins() dirPath connot be empty"
+msgstr ""
+
+#: ../libdnf/plugin/plugin.cpp:105
+#, c-format
+msgid "Can't read plugin directory \"%s\": %s"
+msgstr ""
+
+#: ../libdnf/plugin/plugin.cpp:114
+#, c-format
+msgid "Can't load plugin \"%s\": %s"
 msgstr ""
 
 #: ../libdnf/dnf-state.cpp:1183
 #, c-format
 msgid "percentage not 100: %i"
-msgstr ""
+msgstr "процент не 100: %i"
 
 #: ../libdnf/dnf-state.cpp:1193
 #, c-format
 msgid "failed to set number steps: %i"
-msgstr ""
+msgstr "не удалось установить число шагов: %i"
 
 #: ../libdnf/dnf-state.cpp:1292
 msgid "cancelled by user action"
-msgstr ""
+msgstr "отменено действием пользователя"
 
 #: ../libdnf/dnf-state.cpp:1331
 #, c-format
 msgid "done on a state %1$p that did not have a size set! [%2$s]"
-msgstr ""
+msgstr "сделано в состоянии %1$p у которого не было набора размеров! [%2$s]"
 
 #: ../libdnf/dnf-state.cpp:1356
 #, c-format
 msgid "already at 100%% state [%s]"
-msgstr ""
+msgstr "уже в состоянии 100 %% [%s]"
 
 #: ../libdnf/module/ModulePackageContainer.cpp:56
 #, c-format
@@ -543,55 +594,55 @@ msgstr ""
 #: ../libdnf/dnf-rpmts.cpp:88 ../libdnf/dnf-rpmts.cpp:133
 #, c-format
 msgid "signature does not verify for %s"
-msgstr ""
+msgstr "подпись не проверяет %s"
 
 #: ../libdnf/dnf-rpmts.cpp:96 ../libdnf/dnf-rpmts.cpp:141
 #, c-format
 msgid "failed to open(generic error): %s"
-msgstr ""
+msgstr "не удалось открыть (общая ошибка): %s"
 
 #: ../libdnf/dnf-rpmts.cpp:109
 #, c-format
 msgid "failed to verify key for %s"
-msgstr ""
+msgstr "не удалось проверить ключ для %s"
 
 #: ../libdnf/dnf-rpmts.cpp:117
 #, c-format
 msgid "public key unavailable for %s"
-msgstr ""
+msgstr "открытый ключ недоступен для %s"
 
 #: ../libdnf/dnf-rpmts.cpp:125
 #, c-format
 msgid "signature not found for %s"
-msgstr ""
+msgstr "подпись не найдена для %s"
 
 #: ../libdnf/dnf-rpmts.cpp:154
 #, c-format
 msgid "failed to add install element: %1$s [%2$i]"
-msgstr ""
+msgstr "не удалось добавить элемент установки: %1$s [%2$i]"
+
+#: ../libdnf/dnf-rpmts.cpp:210
+#, c-format
+msgid "Error running transaction: %s"
+msgstr "Ошибка при выполнении транзакции: %s"
+
+#: ../libdnf/dnf-rpmts.cpp:219
+msgid "Error running transaction and no problems were reported!"
+msgstr "Ошибка при выполнении транзакции и никаких проблем не сообщалось!"
+
+#: ../libdnf/dnf-rpmts.cpp:282
+msgid "Fatal error, run database recovery"
+msgstr "Неустранимая ошибка, запустить восстановление базы данных"
 
 #: ../libdnf/dnf-rpmts.cpp:291
 #, c-format
-msgid "Error running transaction: %s"
-msgstr ""
-
-#: ../libdnf/dnf-rpmts.cpp:300
-msgid "Error running transaction and no problems were reported!"
-msgstr ""
-
-#: ../libdnf/dnf-rpmts.cpp:363
-msgid "Fatal error, run database recovery"
-msgstr ""
-
-#: ../libdnf/dnf-rpmts.cpp:372
-#, c-format
 msgid "failed to find package %s"
-msgstr ""
+msgstr "не удалось найти пакет %s"
 
-#: ../libdnf/dnf-rpmts.cpp:418
+#: ../libdnf/dnf-rpmts.cpp:337
 #, c-format
 msgid "could not add erase element %1$s(%2$i)"
-msgstr ""
+msgstr "не удалось добавить элемент стирания %1$s(%2$i)"
 
 #: ../libdnf/conf/OptionString.cpp:59 ../libdnf/conf/OptionStringList.cpp:59
 #: ../libdnf/conf/OptionEnum.cpp:72 ../libdnf/conf/OptionEnum.cpp:158
@@ -601,7 +652,7 @@ msgstr "«%s» не является допустимым значением"
 
 #: ../libdnf/conf/OptionString.cpp:74
 msgid "GetValue(): Value not set"
-msgstr ""
+msgstr "GetValue (): значение не установлено"
 
 #: ../libdnf/conf/OptionPath.cpp:78
 #, c-format
@@ -630,7 +681,7 @@ msgstr "значение для секунд «%s» не должно быть �
 #: ../libdnf/conf/ConfigMain.cpp:66
 #, c-format
 msgid "could not convert '%s' to bytes"
-msgstr ""
+msgstr "не удалось преобразовать '%s'к байтам"
 
 #: ../libdnf/conf/ConfigMain.cpp:78 ../libdnf/conf/OptionSeconds.cpp:66
 #, c-format
@@ -654,99 +705,99 @@ msgstr "данное значение [%d] должно быть больше д
 
 #: ../libdnf/conf/OptionNumber.cpp:88 ../libdnf/conf/OptionEnum.cpp:83
 msgid "invalid value"
-msgstr ""
+msgstr "Неверное значение"
 
 #: ../libdnf/conf/Config.cpp:73
 #, c-format
 msgid "Configuration: OptionBinding with id \"%s\" does not exist"
-msgstr ""
+msgstr "Конфигурация: OptionBinding с идентификатором \"%s\" не существует"
 
 #: ../libdnf/conf/Config.cpp:85
 #, c-format
 msgid "Configuration: OptionBinding with id \"%s\" already exists"
-msgstr ""
+msgstr "Конфигурация: OptionBinding с идентификатором \"%s\" уже существует"
 
 #: ../libdnf/conf/OptionSeconds.cpp:52
 #, c-format
 msgid "could not convert '%s' to seconds"
-msgstr ""
+msgstr "не удалось преобразовать '%s'секунд"
 
 #: ../libdnf/dnf-sack.cpp:395
 #, c-format
 msgid "no %1$d string for %2$s"
-msgstr ""
+msgstr "нет %1$d строка для %2$s"
 
 #: ../libdnf/dnf-sack.cpp:418
 msgid "failed to add solv"
-msgstr ""
+msgstr "не удалось добавить solv"
 
 #: ../libdnf/dnf-sack.cpp:436
 #, c-format
 msgid "failed to open: %s"
-msgstr ""
+msgstr "не удалось открыть: %s"
 
 #: ../libdnf/dnf-sack.cpp:514
 #, c-format
 msgid "cannot create temporary file: %s"
-msgstr ""
+msgstr "не может создать временный файл: %s"
 
 #: ../libdnf/dnf-sack.cpp:524
 #, c-format
 msgid "failed opening tmp file: %s"
-msgstr ""
+msgstr "не удалось открыть файл tmp: %s"
 
 #: ../libdnf/dnf-sack.cpp:536
 #, c-format
 msgid "write_main() failed writing data: %i"
-msgstr ""
+msgstr "write_main () не удалось записать данные: %i"
 
 #: ../libdnf/dnf-sack.cpp:553
 msgid "write_main() failed to re-load written solv file"
-msgstr ""
+msgstr "write_main() failed to re-load written solv file"
 
 #: ../libdnf/dnf-sack.cpp:616
 #, c-format
 msgid "can not create temporary file %s"
-msgstr ""
+msgstr "не удается создать временный файл %s"
 
 #: ../libdnf/dnf-sack.cpp:634
 #, c-format
 msgid "write_ext(%1$d) has failed: %2$d"
-msgstr ""
+msgstr "write_ext(%1$d) has failed: %2$d"
 
 #: ../libdnf/dnf-sack.cpp:688
 msgid "null repo md file"
-msgstr ""
+msgstr "null repo md file"
 
 #: ../libdnf/dnf-sack.cpp:697
 #, c-format
 msgid "can not read file %1$s: %2$s"
-msgstr ""
+msgstr "невозможно прочитать файл %1$s: %2$s"
 
 #: ../libdnf/dnf-sack.cpp:711
 msgid "repo_add_solv() has failed."
-msgstr ""
+msgstr "repo_add_solv() has failed."
 
 #: ../libdnf/dnf-sack.cpp:727
 msgid "repo_add_repomdxml/rpmmd() has failed."
-msgstr ""
+msgstr "repo_add_repomdxml/rpmmd() has failed."
 
 #: ../libdnf/dnf-sack.cpp:794
 msgid "failed to auto-detect architecture"
-msgstr ""
+msgstr "не удалось автоматически определить архитектуру"
 
 #: ../libdnf/dnf-sack.cpp:918
 #, c-format
 msgid "failed creating cachedir %s"
-msgstr ""
+msgstr "не удалось создать кешир %s"
 
 #: ../libdnf/dnf-sack.cpp:1688
 msgid "failed calculating RPMDB checksum"
-msgstr ""
+msgstr "не удалось вычислить контрольную сумму RPMDB"
 
 #: ../libdnf/dnf-sack.cpp:1712
 msgid "failed loading RPMDB"
-msgstr ""
+msgstr "не удалось загрузить RPMDB"
 
 #: ../libdnf/dnf-sack.cpp:2349
 msgid "No module defaults found"
@@ -754,11 +805,11 @@ msgstr ""
 
 #: ../libdnf/transaction/Transformer.cpp:651
 msgid "Transformer: can't open history persist dir"
-msgstr ""
+msgstr "Трансформатор: невозможно открыть историю сохранения"
 
 #: ../libdnf/transaction/Transformer.cpp:665
 msgid "Couldn't find a history database"
-msgstr ""
+msgstr "Не удалось найти базу данных истории"
 
 #: ../libdnf/transaction/Swdb.cpp:81
 msgid "In progress"
@@ -768,29 +819,29 @@ msgstr "В процессе"
 #: ../libdnf/transaction/Swdb.cpp:141 ../libdnf/transaction/Swdb.cpp:280
 #: ../libdnf/transaction/Swdb.cpp:290
 msgid "Not in progress"
-msgstr ""
+msgstr "Не выполняется"
 
 #: ../libdnf/transaction/Swdb.cpp:151
 msgid "No transaction in progress"
-msgstr ""
+msgstr "Никаких транзакций"
 
 #: ../libdnf/transaction/TransactionItem.cpp:147
 msgid "Attempt to insert transaction item into completed transaction"
-msgstr ""
+msgstr "Попытка вставить транзакцию в завершенную транзакцию"
 
 #: ../libdnf/transaction/TransactionItem.cpp:218
 msgid "Attempt to update transaction item in completed transaction"
-msgstr ""
+msgstr "Попытка обновить позицию транзакции в завершенной транзакции"
 
 #: ../libdnf/transaction/private/Transaction.cpp:41
 msgid "Transaction has already began!"
-msgstr ""
+msgstr "Сделка уже началась!"
 
 #: ../libdnf/transaction/private/Transaction.cpp:58
 #, c-format
 msgid "TransactionItem state is not set: %s"
-msgstr ""
+msgstr "Состояние TransactionItem не установлено: %s"
 
 #: ../libdnf/transaction/private/Transaction.cpp:239
 msgid "Can't add console output to unsaved transaction"
-msgstr ""
+msgstr "Невозможно добавить вывод консоли в несохраненную транзакцию"
