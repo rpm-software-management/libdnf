@@ -634,6 +634,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bo
             handleSetOpt(h.get(), LRO_URLS, mirrors);
         }
     } else if (!conf->baseurl().getValue().empty()) {
+        handleSetOpt(h.get(), LRO_HMFCB, static_cast<LrHandleMirrorFailureCb>(mirrorFailureCB));
         size_t len = conf->baseurl().getValue().size();
         const char * urls[len + 1];
         for (size_t idx = 0; idx < len; ++idx)
