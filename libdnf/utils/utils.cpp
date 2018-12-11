@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <string.h>
 
-std::vector<std::string> string::split(const std::string &source, const char *delimiter, int maxSplit)
+std::vector<std::string> libdnf::string::split(const std::string &source, const char *delimiter, int maxSplit)
 {
     if (source.empty())
         throw std::runtime_error{"Source cannot be empty"};
@@ -36,7 +36,7 @@ std::vector<std::string> string::split(const std::string &source, const char *de
     return container;
 }
 
-std::vector<std::string> string::rsplit(const std::string &source, const char *delimiter, int maxSplit)
+std::vector<std::string> libdnf::string::rsplit(const std::string &source, const char *delimiter, int maxSplit)
 {
     if (source.empty())
         throw std::runtime_error{"Source cannot be empty"};
@@ -62,34 +62,34 @@ std::vector<std::string> string::rsplit(const std::string &source, const char *d
     return container;
 }
 
-std::string string::trimSuffix(const std::string &source, const std::string &suffix)
+std::string libdnf::string::trimSuffix(const std::string &source, const std::string &suffix)
 {
     if (source.length() < suffix.length())
         throw std::runtime_error{"Suffix cannot be longer than source"};
 
-    if (string::endsWith(source, suffix))
+    if (libdnf::string::endsWith(source, suffix))
         return source.substr(0, source.length() - suffix.length());
 
     throw std::runtime_error{"Suffix '" + suffix + "' not found"};
 }
 
-std::string string::trimPrefix(const std::string &source, const std::string &prefix)
+std::string libdnf::string::trimPrefix(const std::string &source, const std::string &prefix)
 {
     if (source.length() < prefix.length())
         throw std::runtime_error{"Prefix cannot be longer than source"};
 
-    if (string::startsWith(source, prefix))
+    if (libdnf::string::startsWith(source, prefix))
         return source.substr(prefix.length() - 1);
 
     throw std::runtime_error{"Prefix '" + prefix + "' not found"};
 }
 
-bool string::startsWith(const std::string &source, const std::string &toMatch)
+bool libdnf::string::startsWith(const std::string &source, const std::string &toMatch)
 {
     return source.find(toMatch) == 0;
 }
 
-bool string::endsWith(const std::string &source, const std::string &toMatch)
+bool libdnf::string::endsWith(const std::string &source, const std::string &toMatch)
 {
     auto it = toMatch.begin();
     return source.size() >= toMatch.size() &&
@@ -164,7 +164,7 @@ std::vector<std::string> filesystem::getDirContent(const std::string &dirPath)
                 continue;
 
             auto fullPath = dirPath;
-            if (!string::endsWith(fullPath, "/"))
+            if (!libdnf::string::endsWith(fullPath, "/"))
                 fullPath += "/";
             fullPath += ent->d_name;
 
