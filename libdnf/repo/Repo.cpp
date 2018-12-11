@@ -1360,7 +1360,7 @@ void Repo::Impl::downloadUrl(const char * url, int fd)
         callbacks->end();
 
     if (err)
-        throwException(std::move(err));
+        throw LrExceptionWithSourceUrl(err->code, err->message, url);
 }
 
 void Repo::Impl::setHttpHeaders(const char * headers[])
