@@ -1906,6 +1906,7 @@ out:
     g_free(updatedata.last_mirror_url);
     dnf_state_release_locks(state);
     lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSCB, NULL);
+    lr_handle_setopt(priv->repo_handle, NULL, LRO_HMFCB, NULL);
     lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSDATA, 0xdeadbeef);
     return ret;
 }
