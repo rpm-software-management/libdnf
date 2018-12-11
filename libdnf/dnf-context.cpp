@@ -67,6 +67,7 @@
 #include "dnf-repo.hpp"
 #include "goal/Goal.hpp"
 #include "plugin/plugin-private.hpp"
+#include "module/modulemd/ModuleDefaultsContainer.hpp"
 
 #define MAX_NATIVE_ARCHES    12
 
@@ -1429,8 +1430,13 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
             }
         }
         hotfixRepos.push_back(nullptr);
-        dnf_sack_filter_modules_v2(sack, nullptr, hotfixRepos.data(), priv->install_root,
-            priv->platform_module, false, false);
+        try {
+            dnf_sack_filter_modules_v2(sack, nullptr, hotfixRepos.data(), priv->install_root,
+                priv->platform_module, false, false);
+        } catch (ModuleDefaultsContainer::ConflictException & exception) {
+            g_set_error(error, DNF_ERROR, DNF_ERROR_FAILED, "%s", exception.what());
+            return FALSE;
+        }
     }
 
     /* create goal */
