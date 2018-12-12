@@ -20,6 +20,17 @@
 ######################
 
 ====================
+0.24.1 Release Notes
+====================
+- Add support for zchunk
+- Enhance LIBDNF plugins support
+- Enhance sorting for module list (RhBug:1590358)
+- [repo] Check whether metadata cache is expired (RhBug:1539620,1648274)
+- [DnfRepo] Add methods for alternative repository metadata type and download (RhBug:1656314)
+- Remove installed profile on module  enable or disable (RhBug:1653623)
+- [sack] Implement dnf_sack_get_rpmdb_version()
+
+====================
 0.22.3 Release Notes
 ====================
 - Modify solver_describe_decision to report cleaned (RhBug:1486749)
