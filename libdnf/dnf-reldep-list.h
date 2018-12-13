@@ -33,6 +33,8 @@ gint dnf_reldep_list_count(DnfReldepList *reldep_list);
 void dnf_reldep_list_add(DnfReldepList *reldep_list, DnfReldep *reldep);
 void dnf_reldep_list_extend(DnfReldepList *rl1, DnfReldepList *rl2);
 
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(DnfReldepList, dnf_reldep_list_free)
+
 #ifdef __cplusplus
 }
 #endif
