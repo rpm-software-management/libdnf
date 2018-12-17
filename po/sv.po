@@ -1,11 +1,12 @@
 # Göran Uddeborg <goeran@uddeborg.se>, 2016. #zanata
 # Göran Uddeborg <goeran@uddeborg.se>, 2017. #zanata
+# Göran Uddeborg <goeran@uddeborg.se>, 2018. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-25 07:59+0200\n"
-"PO-Revision-Date: 2017-06-15 04:58+0000\n"
+"POT-Creation-Date: 2018-08-28 14:17+0200\n"
+"PO-Revision-Date: 2018-09-08 03:31+0000\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish\n"
 "MIME-Version: 1.0\n"
@@ -18,261 +19,95 @@ msgstr ""
 #: ../libdnf/hy-iutil.cpp:312
 #, c-format
 msgid "Failed renaming %1$s to %2$s: %3$s"
-msgstr ""
+msgstr "Misslyckades att byta namn på %1$s till %2$s: %3$s"
 
 #: ../libdnf/hy-iutil.cpp:320
 #, c-format
 msgid "Failed setting perms on %1$s: %2$s"
-msgstr ""
+msgstr "Misslyckades att sätta rättigheter på %1$s: %2$s"
 
 #: ../libdnf/dnf-goal.cpp:67
 msgid "Could not depsolve transaction; "
-msgstr ""
+msgstr "Kunde inte göra beroendeupplösning av transaktionen; "
 
 #: ../libdnf/dnf-goal.cpp:69
 #, c-format
 msgid "%i problem detected:\n"
 msgid_plural "%i problems detected:\n"
-msgstr[0] ""
+msgstr[0] "%i problem upptäckt:\n"
+msgstr[1] "%i problem upptäckta:\n"
 
-#: ../libdnf/dnf-goal.cpp:77
+#: ../libdnf/dnf-goal.cpp:76
 #, c-format
 msgid " Problem %1$i: %2$s\n"
-msgstr ""
+msgstr " Problem %1$i: %2$s\n"
 
-#: ../libdnf/dnf-goal.cpp:79
+#: ../libdnf/dnf-goal.cpp:78
 #, c-format
 msgid " Problem: %s\n"
-msgstr ""
+msgstr " Problem: %s\n"
 
-#: ../libdnf/goal/Goal.cpp:53
+#: ../libdnf/goal/Goal.cpp:49
 msgid "Ill-formed Selector, presence of multiple match objects in the filter"
-msgstr ""
+msgstr "Felformaterad selektor, det finns flera matchande objekt i filtret"
 
-#: ../libdnf/goal/Goal.cpp:54
+#: ../libdnf/goal/Goal.cpp:50
 msgid "Ill-formed Selector used for the operation, incorrect comparison type"
-msgstr ""
+msgstr "Felformaterad selektor använd för åtgärden, felaktig jämförelsetyp"
 
-#: ../libdnf/goal/Goal.cpp:65 ../libdnf/goal/Goal.cpp:91
-msgid " does not belong to a distupgrade repository"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:66 ../libdnf/goal/Goal.cpp:92
-msgid " has inferior architecture"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:67
-msgid "problem with installed package "
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:68 ../libdnf/goal/Goal.cpp:94
-msgid "conflicting requests"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:69 ../libdnf/goal/Goal.cpp:95
-msgid "unsupported request"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:70 ../libdnf/goal/Goal.cpp:96
-msgid "nothing provides requested "
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:71
-#, c-format
-msgid "package %s does not exist"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:72 ../libdnf/goal/Goal.cpp:98
-msgid " is provided by the system"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:73 ../libdnf/goal/Goal.cpp:99
-msgid "some dependency problem"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:74
-msgid "cannot install the best update candidate for package "
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:75 ../libdnf/goal/Goal.cpp:101
-msgid "cannot install the best candidate for the job"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:76
-#, c-format
-msgid "package %s is excluded"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:77
-#, c-format
-msgid "package %s does not have a compatible architecture"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:78
-#, c-format
-msgid "package %s is not installable"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:79 ../libdnf/goal/Goal.cpp:105
-#, c-format
-msgid "nothing provides %s needed by %s"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:80 ../libdnf/goal/Goal.cpp:106
-#, c-format
-msgid "cannot install both %s and %s"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:81
-#, c-format
-msgid "package %s conflicts with %s provided by %s"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:82
-#, c-format
-msgid "package %s obsoletes %s provided by %s"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:83
-#, c-format
-msgid "installed package %s obsoletes %s provided by %s"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:84
-#, c-format
-msgid "package %s implicitly obsoletes %s provided by %s"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:85
-#, c-format
-msgid "package %s requires %s, but none of the providers can be installed"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:86
-#, c-format
-msgid "package %s conflicts with %s provided by itself"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:87
-#, c-format
-msgid "both package %s and %s obsolete "
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:93
-msgid "problem with installed module "
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:97
-#, c-format
-msgid "module %s does not exist"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:100
-msgid "cannot install the best update candidate for module "
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:102
-#, c-format
-msgid "module %s is disabled"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:103
-#, c-format
-msgid "module %s does not have a compatible architecture"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:104
-#, c-format
-msgid "module %s is not installable"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:107
-#, c-format
-msgid "module %s conflicts with %s provided by %s"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:108
-#, c-format
-msgid "module %s obsoletes %s provided by %s"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:109
-#, c-format
-msgid "installed module %s obsoletes %s provided by %s"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:110
-#, c-format
-msgid "module %s implicitly obsoletes %s provided by %s"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:111
-#, c-format
-msgid "module %s requires %s, but none of the providers can be installed"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:112
-#, c-format
-msgid "module %s conflicts with %s provided by itself"
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:113
-#, c-format
-msgid "both module %s and %s obsolete "
-msgstr ""
-
-#: ../libdnf/goal/Goal.cpp:979
+#: ../libdnf/goal/Goal.cpp:810
 msgid "no solver set"
-msgstr ""
+msgstr "ingen lösare angiven"
 
-#: ../libdnf/goal/Goal.cpp:984
+#: ../libdnf/goal/Goal.cpp:816
 #, c-format
 msgid "failed to make %s absolute"
-msgstr ""
+msgstr "misslyckades att göra %s absolut"
 
-#: ../libdnf/goal/Goal.cpp:991
+#: ../libdnf/goal/Goal.cpp:822
 #, c-format
 msgid "failed writing debugdata to %1$s: %2$s"
-msgstr ""
+msgstr "misslyckades att skriva felsökningsdata till %1$s: %2$s"
 
-#: ../libdnf/goal/Goal.cpp:1003
+#: ../libdnf/goal/Goal.cpp:834
 msgid "no solv in the goal"
-msgstr ""
+msgstr "ingen lösare i målet"
 
-#: ../libdnf/goal/Goal.cpp:1005
+#: ../libdnf/goal/Goal.cpp:836
 msgid "no solution, cannot remove protected package"
-msgstr ""
+msgstr "ingen lösning, kan inte ta bort skyddat paket"
 
-#: ../libdnf/goal/Goal.cpp:1008
+#: ../libdnf/goal/Goal.cpp:839
 msgid "no solution possible"
-msgstr ""
+msgstr "ingen lösning är möjlig"
 
-#: ../libdnf/goal/Goal.cpp:1416
+#: ../libdnf/goal/Goal.cpp:1253
 msgid ""
 "The operation would result in removing the following protected packages: "
 msgstr ""
+"Åtgärden skulle resultera i att man tog bort följande skyddade paket: "
 
-#: ../libdnf/repo/Repo.cpp:397
+#: ../libdnf/repo/Repo.cpp:381
 #, c-format
 msgid "Bad id for repo: %s, byte = %s %d"
-msgstr ""
+msgstr "Felaktigt id för förrådet: %s, byte = %s %d"
 
-#: ../libdnf/repo/Repo.cpp:421
+#: ../libdnf/repo/Repo.cpp:405
 #, c-format
 msgid "Repository %s has no mirror or baseurl set."
 msgstr "Förrådet %s har ingen spegel eller bas-url satt."
 
-#: ../libdnf/repo/Repo.cpp:430
+#: ../libdnf/repo/Repo.cpp:414
 #, c-format
 msgid "Repository '%s' has unsupported type: 'type=%s', skipping."
-msgstr ""
+msgstr "Förrådet ”%s” har en typ som inte stödjs: ”type=%s”, hoppar över."
 
-#: ../libdnf/repo/Repo.cpp:590
+#: ../libdnf/repo/Repo.cpp:568
 #, c-format
 msgid "Cannot find a valid baseurl for repo: %s"
 msgstr "Kan inte hitta en giltig bas-url för förrådet: %s"
 
-#: ../libdnf/repo/Repo.cpp:620 ../libdnf/repo/Repo.cpp:1532
+#: ../libdnf/repo/Repo.cpp:598 ../libdnf/repo/Repo.cpp:1463
 msgid ""
 "Maximum download speed is lower than minimum. Please change configuration of"
 " minrate or throttle"
@@ -280,314 +115,309 @@ msgstr ""
 "Maximal hämtningshastighet är mindre än minimum.  Ändra konfigurationen av "
 "minrate eller throttle"
 
-#: ../libdnf/repo/Repo.cpp:670 ../libdnf/repo/Repo.cpp:692
+#: ../libdnf/repo/Repo.cpp:648 ../libdnf/repo/Repo.cpp:670
 #, c-format
 msgid "%s: gpgme_data_new_from_fd(): %s"
-msgstr ""
+msgstr "%s: gpgme_data_new_from_fd(): %s"
 
-#: ../libdnf/repo/Repo.cpp:678 ../libdnf/repo/Repo.cpp:700
+#: ../libdnf/repo/Repo.cpp:656 ../libdnf/repo/Repo.cpp:678
 #, c-format
 msgid "%s: gpgme_op_import(): %s"
-msgstr ""
+msgstr "%s: gpgme_op_import(): %s"
 
-#: ../libdnf/repo/Repo.cpp:723 ../libdnf/repo/Repo.cpp:789
-#: ../libdnf/repo/Repo.cpp:883
+#: ../libdnf/repo/Repo.cpp:701 ../libdnf/repo/Repo.cpp:767
+#: ../libdnf/repo/Repo.cpp:861
 #, c-format
 msgid "%s: gpgme_ctx_set_engine_info(): %s"
-msgstr ""
+msgstr "%s: gpgme_ctx_set_engine_info(): %s"
 
-#: ../libdnf/repo/Repo.cpp:750 ../libdnf/repo/Repo.cpp:814
+#: ../libdnf/repo/Repo.cpp:728 ../libdnf/repo/Repo.cpp:792
 #, c-format
 msgid "can not list keys: %s"
-msgstr ""
+msgstr "kan inte lista nycklar: %s"
 
-#: ../libdnf/repo/Repo.cpp:858
+#: ../libdnf/repo/Repo.cpp:836
 #, c-format
 msgid "repo %s: 0x%s already imported"
-msgstr ""
+msgstr "förrådet %s: 0x%s är redan importerad"
 
-#: ../libdnf/repo/Repo.cpp:890
+#: ../libdnf/repo/Repo.cpp:868
 #, c-format
 msgid "repo %s: imported key 0x%s."
-msgstr ""
+msgstr "förrådet %s: importerade nyckeln 0x%s."
 
-#: ../libdnf/repo/Repo.cpp:1052
+#: ../libdnf/repo/Repo.cpp:1028
 #, c-format
 msgid "reviving: repo '%s' skipped, no metalink."
 msgstr "återupplivar: förrådet ”%s” överhoppat, ingen metalink."
 
-#: ../libdnf/repo/Repo.cpp:1071
+#: ../libdnf/repo/Repo.cpp:1047
 #, c-format
 msgid "reviving: repo '%s' skipped, no usable hash."
 msgstr "återupplivar: förrådet ”%s” överhoppat, ingen användbar hash."
 
-#: ../libdnf/repo/Repo.cpp:1094
+#: ../libdnf/repo/Repo.cpp:1070
 #, c-format
 msgid "reviving: failed for '%s', mismatched %s sum."
 msgstr "återupplivar: misslyckades med ”%s”, %s-summor stämmer inte."
 
-#: ../libdnf/repo/Repo.cpp:1100
+#: ../libdnf/repo/Repo.cpp:1076
 #, c-format
 msgid "reviving: '%s' can be revived - metalink checksums match."
 msgstr ""
 "återupplivar: ”%s” kan återupplivas – metalänkens kontrollsummor stämmer."
 
-#: ../libdnf/repo/Repo.cpp:1125
+#: ../libdnf/repo/Repo.cpp:1101
 #, c-format
 msgid "reviving: '%s' can be revived - repomd matches."
 msgstr "återupplivar: ”%s” kan återupplivas – repomd stämmer."
 
-#: ../libdnf/repo/Repo.cpp:1127
+#: ../libdnf/repo/Repo.cpp:1103
 #, c-format
 msgid "reviving: failed for '%s', mismatched repomd."
 msgstr "återupplivar: misslyckades med ”%s”, repomd stämmer inte."
 
-#: ../libdnf/repo/Repo.cpp:1145
+#: ../libdnf/repo/Repo.cpp:1120
 #, c-format
-msgid "Cannot create repo destination directory \"%s\": %s"
-msgstr ""
+msgid "Cannot create repo cache directory \"%s\": %s"
+msgstr "Kan inte skapa förrådscachekatalogen ”%s”: %s"
 
-#: ../libdnf/repo/Repo.cpp:1151
+#: ../libdnf/repo/Repo.cpp:1126
 #, c-format
 msgid "Cannot create repo temporary directory \"%s\": %s"
-msgstr ""
+msgstr "Kaan inte skapa den temporära förrådskatalogen ”%s”: %s"
 
-#: ../libdnf/repo/Repo.cpp:1165
+#: ../libdnf/repo/Repo.cpp:1140
 #, c-format
 msgid "Cannot create directory \"%s\": %s"
-msgstr ""
+msgstr "Kan inte skapa katalogen ”%s”: %s"
 
-#: ../libdnf/repo/Repo.cpp:1170
+#: ../libdnf/repo/Repo.cpp:1145
 #, c-format
 msgid "Cannot rename directory \"%s\" to \"%s\": %s"
-msgstr ""
+msgstr "Kan inte byta namn på katalogen ”%s” till ”%s”: %s"
 
-#: ../libdnf/repo/Repo.cpp:1191
+#: ../libdnf/repo/Repo.cpp:1161
 #, c-format
 msgid "repo: using cache for: %s"
 msgstr "förråd: använder cache för: %s"
 
-#: ../libdnf/repo/Repo.cpp:1203
+#: ../libdnf/repo/Repo.cpp:1173
 #, c-format
 msgid "Cache-only enabled but no cache for '%s'"
 msgstr "Enbart-cache aktiverat men ingen cache för ”%s”"
 
-#: ../libdnf/repo/Repo.cpp:1207
+#: ../libdnf/repo/Repo.cpp:1177
 #, c-format
 msgid "repo: downloading from remote: %s"
-msgstr ""
+msgstr "förråd: hämtar från fjärrförråd: %s"
 
-#: ../libdnf/repo/Repo.cpp:1213
+#: ../libdnf/repo/Repo.cpp:1181
 #, c-format
 msgid "Cannot download '%s': %s."
 msgstr "Kan inte hämta ”%s”: %s."
 
-#: ../libdnf/repo/Repo.cpp:1214
+#: ../libdnf/repo/Repo.cpp:1182
 #, c-format
 msgid "Failed to synchronize cache for repo '%s'"
 msgstr "Misslyckades att synkronisera cachen för förrådet ”%s”"
 
-#: ../libdnf/repo/Repo.cpp:1240
+#: ../libdnf/repo/Repo.cpp:1208
 msgid "getCachedir(): Computation of SHA256 failed"
-msgstr ""
+msgstr "getCachedir(): Beräkningen av SHA256 misslyckades"
 
-#: ../libdnf/repo/Repo.cpp:1381
+#: ../libdnf/repo/Repo.cpp:1327
 #, c-format
 msgid "not found filelist for: %s"
-msgstr ""
+msgstr "fillistan finns inte för: %s"
 
-#: ../libdnf/repo/Repo.cpp:1385
-#, c-format
-msgid "not found other for: %s"
-msgstr ""
-
-#: ../libdnf/repo/Repo.cpp:1390
+#: ../libdnf/repo/Repo.cpp:1332
 #, c-format
 msgid "not found modules for: %s"
-msgstr ""
+msgstr "moduler finns inte för: %s"
 
-#: ../libdnf/repo/Repo.cpp:1397
+#: ../libdnf/repo/Repo.cpp:1339
 #, c-format
 msgid "not found deltainfo for: %s"
-msgstr ""
+msgstr "deltainfo finns inte för: %s"
 
-#: ../libdnf/repo/Repo.cpp:1401
+#: ../libdnf/repo/Repo.cpp:1343
 #, c-format
 msgid "not found updateinfo for: %s"
-msgstr ""
+msgstr "updateinfo finns inte för: %s"
 
-#: ../libdnf/repo/Repo.cpp:1622
+#: ../libdnf/repo/Repo.cpp:1551
 msgid "resume cannot be used simultaneously with the byterangestart param"
-msgstr ""
+msgstr "resume kan inte användas samtidigt med parametern byterangestart"
 
-#: ../libdnf/repo/Repo.cpp:1633
+#: ../libdnf/repo/Repo.cpp:1562
 #, c-format
 msgid "PackageTarget initialization failed: %s"
-msgstr ""
+msgstr "Initiering av PackageTarget misslyckades: %s"
 
-#: ../libdnf/repo/Repo.cpp:1750
+#: ../libdnf/repo/Repo.cpp:1678
 #, c-format
 msgid "Cannot open %s: %s"
-msgstr ""
+msgstr "Kan inte öppna %s: %s"
 
-#: ../libdnf/repo/Repo.cpp:1787
+#: ../libdnf/repo/Repo.cpp:1715
 #, c-format
 msgid "Log handler with id %ld doesn't exist"
-msgstr ""
+msgstr "Logghanterare med id %ld finns inte"
 
 #: ../libdnf/dnf-transaction.cpp:255
 #, c-format
 msgid "Sources not set when trying to ensure package %s"
-msgstr ""
+msgstr "Källor inte angivna vid försök att säkerställa paketet %s"
 
 #: ../libdnf/dnf-transaction.cpp:281
 #, c-format
 msgid "Failed to ensure %1$s as repo %2$s not found(%3$i repos loaded)"
 msgstr ""
+"Misslyckades att säkerställa %1$s eftersom förrådet %2$s inte finns (%3$i "
+"förråd inlästa)"
 
 #: ../libdnf/dnf-transaction.cpp:322
 msgid "Failed to check untrusted: "
-msgstr ""
+msgstr "Misslyckades att kontrollera ej betrodda: "
 
 #: ../libdnf/dnf-transaction.cpp:332
 #, c-format
 msgid "Downloaded file for %s not found"
-msgstr ""
+msgstr "Den hämtade filen för %s finns inte"
 
 #: ../libdnf/dnf-transaction.cpp:352
 #, c-format
 msgid "package %1$s cannot be verified and repo %2$s is GPG enabled: %3$s"
 msgstr ""
+"paketet %1$s kan inte verifieras och förrådet %2$s är GPG-aktiverat: %3$s"
 
 #: ../libdnf/dnf-transaction.cpp:783 ../libdnf/dnf-transaction.cpp:855
 msgid "Failed to get value for CacheDir"
-msgstr ""
+msgstr "Misslyckades att få värdet för CacheDir"
 
 #: ../libdnf/dnf-transaction.cpp:863
 #, c-format
 msgid "Failed to get filesystem free size for %s: "
-msgstr ""
+msgstr "Misslyckades att ta reda på filsystemets fria utrymme för %s: "
 
 #: ../libdnf/dnf-transaction.cpp:871
 #, c-format
 msgid "Failed to get filesystem free size for %s"
-msgstr ""
+msgstr "Misslyckades att ta reda på filsystemets fria utrymme för %s"
 
 #: ../libdnf/dnf-transaction.cpp:887
 #, c-format
 msgid "Not enough free space in %1$s: needed %2$s, available %3$s"
 msgstr ""
+"Inte tillräckligt med fritt utrymme i %1$s: %2$s behövs, %3$s är "
+"tillgängligt"
 
 #: ../libdnf/dnf-transaction.cpp:1140
 msgid "failed to set root"
-msgstr ""
+msgstr "misslyckades att sätta roten"
 
-#: ../libdnf/dnf-transaction.cpp:1361
+#: ../libdnf/dnf-transaction.cpp:1348
 #, c-format
 msgid "Error %i running transaction test"
-msgstr ""
+msgstr "Fel %i när transaktionstesten kördes"
 
-#: ../libdnf/dnf-transaction.cpp:1389
+#: ../libdnf/dnf-transaction.cpp:1376
 #, c-format
 msgid "Error %i running transaction"
-msgstr ""
+msgstr "Fel %i när transaktionen kördes"
 
-#: ../libdnf/dnf-transaction.cpp:1404
+#: ../libdnf/dnf-transaction.cpp:1391
 #, c-format
 msgid "Transaction did not go to writing phase, but returned no error(%i)"
-msgstr ""
+msgstr "Transaktionen kom inte till skrivfasen, men returnerade inget fel(%i)"
 
 #: ../libdnf/dnf-utils.cpp:110
 #, c-format
 msgid "cannot open directory %1$s: %2$s"
-msgstr ""
+msgstr "kan inte öppna katalogen %1$s: %2$s"
 
 #: ../libdnf/dnf-utils.cpp:135
 #, c-format
 msgid "failed to remove %s"
-msgstr ""
+msgstr "misslyckades att ta bort %s"
 
 #: ../libdnf/dnf-state.cpp:1183
 #, c-format
 msgid "percentage not 100: %i"
-msgstr ""
+msgstr "procentsatsen inte 100: %i"
 
 #: ../libdnf/dnf-state.cpp:1193
 #, c-format
 msgid "failed to set number steps: %i"
-msgstr ""
+msgstr "misslyckades att sätta antal steg: %i"
 
 #: ../libdnf/dnf-state.cpp:1292
 msgid "cancelled by user action"
-msgstr ""
+msgstr "inställt enligt användares åtgärd"
 
 #: ../libdnf/dnf-state.cpp:1331
 #, c-format
 msgid "done on a state %1$p that did not have a size set! [%2$s]"
-msgstr ""
+msgstr "klar i tillstånd %1$p som inte hade en storlek satt! [%2$s]"
 
 #: ../libdnf/dnf-state.cpp:1356
 #, c-format
 msgid "already at 100%% state [%s]"
-msgstr ""
-
-#: ../libdnf/module/ModulePackageContainer.cpp:56
-#, c-format
-msgid "Cannot enable multiple streams for module '%s'"
-msgstr ""
+msgstr "reda i 100 %%-tillstånd [%s]"
 
 #: ../libdnf/dnf-rpmts.cpp:88 ../libdnf/dnf-rpmts.cpp:133
 #, c-format
 msgid "signature does not verify for %s"
-msgstr ""
+msgstr "signaturen stämmer inte för %s"
 
 #: ../libdnf/dnf-rpmts.cpp:96 ../libdnf/dnf-rpmts.cpp:141
 #, c-format
 msgid "failed to open(generic error): %s"
-msgstr ""
+msgstr "misslyckades att öppna (allmänt fel): %s"
 
 #: ../libdnf/dnf-rpmts.cpp:109
 #, c-format
 msgid "failed to verify key for %s"
-msgstr ""
+msgstr "misslyckades att verifiera nyckeln för %s"
 
 #: ../libdnf/dnf-rpmts.cpp:117
 #, c-format
 msgid "public key unavailable for %s"
-msgstr ""
+msgstr "den publika nyckeln är inte tillgänglig för %s"
 
 #: ../libdnf/dnf-rpmts.cpp:125
 #, c-format
 msgid "signature not found for %s"
-msgstr ""
+msgstr "signaturen hittades inte för %s"
 
 #: ../libdnf/dnf-rpmts.cpp:154
 #, c-format
 msgid "failed to add install element: %1$s [%2$i]"
-msgstr ""
+msgstr "misslyckades att lägga till installationselement: %1$s [%2$i]"
 
 #: ../libdnf/dnf-rpmts.cpp:291
 #, c-format
 msgid "Error running transaction: %s"
-msgstr ""
+msgstr "Fel när transaktionen kördes: %s"
 
 #: ../libdnf/dnf-rpmts.cpp:300
 msgid "Error running transaction and no problems were reported!"
-msgstr ""
+msgstr "Fel när transaktionen kördes och inga problem rapporterades!"
 
 #: ../libdnf/dnf-rpmts.cpp:363
 msgid "Fatal error, run database recovery"
-msgstr ""
+msgstr "Ödesdigert fel, kör återställning av databasen"
 
 #: ../libdnf/dnf-rpmts.cpp:372
 #, c-format
 msgid "failed to find package %s"
-msgstr ""
+msgstr "misslyckades att hitta paketet %s"
 
 #: ../libdnf/dnf-rpmts.cpp:418
 #, c-format
 msgid "could not add erase element %1$s(%2$i)"
-msgstr ""
+msgstr "kunde inte lägga till borttagningselement %1$s(%2$i)"
 
 #: ../libdnf/conf/OptionString.cpp:59 ../libdnf/conf/OptionStringList.cpp:59
 #: ../libdnf/conf/OptionEnum.cpp:72 ../libdnf/conf/OptionEnum.cpp:158
@@ -597,7 +427,7 @@ msgstr "”%s” är inte ett tillåtet värde"
 
 #: ../libdnf/conf/OptionString.cpp:74
 msgid "GetValue(): Value not set"
-msgstr ""
+msgstr "GetValue(): Värdet är inte satt"
 
 #: ../libdnf/conf/OptionPath.cpp:78
 #, c-format
@@ -626,14 +456,14 @@ msgstr "sekundvärdet ”%s” får inte vara negativt"
 #: ../libdnf/conf/ConfigMain.cpp:66
 #, c-format
 msgid "could not convert '%s' to bytes"
-msgstr ""
+msgstr "kunde inte konvertera ”%s” till byte"
 
 #: ../libdnf/conf/ConfigMain.cpp:78 ../libdnf/conf/OptionSeconds.cpp:66
 #, c-format
 msgid "unknown unit '%s'"
 msgstr "okänd enhet ”%s”"
 
-#: ../libdnf/conf/ConfigMain.cpp:478
+#: ../libdnf/conf/ConfigMain.cpp:475
 #, c-format
 msgid "percentage '%s' is out of range"
 msgstr "procentsatsen ”%s” är utanför intervallet"
@@ -652,111 +482,107 @@ msgstr ""
 
 #: ../libdnf/conf/OptionNumber.cpp:88 ../libdnf/conf/OptionEnum.cpp:83
 msgid "invalid value"
-msgstr ""
+msgstr "ogiltigt värde"
 
-#: ../libdnf/conf/Config.cpp:73
+#: ../libdnf/conf/Config.cpp:72
 #, c-format
 msgid "Configuration: OptionBinding with id \"%s\" does not exist"
-msgstr ""
+msgstr "Konfiguration: OptionBinding med id ”%s” finns inte"
 
-#: ../libdnf/conf/Config.cpp:85
+#: ../libdnf/conf/Config.cpp:82
 #, c-format
 msgid "Configuration: OptionBinding with id \"%s\" already exists"
-msgstr ""
+msgstr "Konfiguration: OptionBinding med id ”%s” finns redan"
 
 #: ../libdnf/conf/OptionSeconds.cpp:52
 #, c-format
 msgid "could not convert '%s' to seconds"
-msgstr ""
+msgstr "kunde inte konvertera ”%s” till sekunder"
 
 #: ../libdnf/dnf-sack.cpp:395
 #, c-format
 msgid "no %1$d string for %2$s"
-msgstr ""
+msgstr "ingen %1$d-sträng för %2$s"
 
 #: ../libdnf/dnf-sack.cpp:418
 msgid "failed to add solv"
-msgstr ""
+msgstr "misslyckades att lägga till lösning"
 
 #: ../libdnf/dnf-sack.cpp:436
 #, c-format
 msgid "failed to open: %s"
-msgstr ""
+msgstr "misslyckades att öppna: %s"
 
-#: ../libdnf/dnf-sack.cpp:514
+#: ../libdnf/dnf-sack.cpp:506
 #, c-format
 msgid "cannot create temporary file: %s"
-msgstr ""
+msgstr "kan inte skapa temporärfil: %s"
 
-#: ../libdnf/dnf-sack.cpp:524
+#: ../libdnf/dnf-sack.cpp:516
 #, c-format
 msgid "failed opening tmp file: %s"
-msgstr ""
+msgstr "misslyckades att öppna temporärfil: %s"
 
-#: ../libdnf/dnf-sack.cpp:536
+#: ../libdnf/dnf-sack.cpp:528
 #, c-format
 msgid "write_main() failed writing data: %i"
-msgstr ""
+msgstr "write_main() misslyckades att skriva data: %i"
 
-#: ../libdnf/dnf-sack.cpp:553
+#: ../libdnf/dnf-sack.cpp:545
 msgid "write_main() failed to re-load written solv file"
-msgstr ""
+msgstr "write_main() misslyckades att läsa om en skriven lösningsfil"
 
-#: ../libdnf/dnf-sack.cpp:616
+#: ../libdnf/dnf-sack.cpp:608
 #, c-format
 msgid "can not create temporary file %s"
-msgstr ""
+msgstr "kan inte skapa den temporära filen %s"
 
-#: ../libdnf/dnf-sack.cpp:634
+#: ../libdnf/dnf-sack.cpp:626
 #, c-format
 msgid "write_ext(%1$d) has failed: %2$d"
-msgstr ""
+msgstr "write_ext(%1$d) har misslyckats: %2$d"
 
-#: ../libdnf/dnf-sack.cpp:688
+#: ../libdnf/dnf-sack.cpp:680
 msgid "null repo md file"
-msgstr ""
+msgstr "null repo-md-fil"
 
-#: ../libdnf/dnf-sack.cpp:697
+#: ../libdnf/dnf-sack.cpp:689
 #, c-format
 msgid "can not read file %1$s: %2$s"
-msgstr ""
+msgstr "kan inte läsa filen %1$s: %2$s"
 
-#: ../libdnf/dnf-sack.cpp:711
+#: ../libdnf/dnf-sack.cpp:703
 msgid "repo_add_solv() has failed."
-msgstr ""
+msgstr "repo_add_solv() har misslyckats."
 
-#: ../libdnf/dnf-sack.cpp:727
+#: ../libdnf/dnf-sack.cpp:719
 msgid "repo_add_repomdxml/rpmmd() has failed."
-msgstr ""
+msgstr "repo_add_repomdxml/rpmmd() har misslyckats."
 
-#: ../libdnf/dnf-sack.cpp:794
+#: ../libdnf/dnf-sack.cpp:786
 msgid "failed to auto-detect architecture"
-msgstr ""
+msgstr "misslyckades att automatdetektera arkitekturen"
 
-#: ../libdnf/dnf-sack.cpp:918
+#: ../libdnf/dnf-sack.cpp:910
 #, c-format
 msgid "failed creating cachedir %s"
-msgstr ""
+msgstr "misslyckades att skapa cache-katalogen %s"
 
-#: ../libdnf/dnf-sack.cpp:1688
+#: ../libdnf/dnf-sack.cpp:1680
 msgid "failed calculating RPMDB checksum"
-msgstr ""
+msgstr "misslyckades att beräkna RPMDB-kontrollsumma"
 
-#: ../libdnf/dnf-sack.cpp:1712
+#: ../libdnf/dnf-sack.cpp:1704
 msgid "failed loading RPMDB"
-msgstr ""
-
-#: ../libdnf/dnf-sack.cpp:2349
-msgid "No module defaults found"
-msgstr ""
+msgstr "misslyckades att läsa in RPMDB"
 
 #: ../libdnf/transaction/Transformer.cpp:651
 msgid "Transformer: can't open history persist dir"
-msgstr ""
+msgstr "Transformerare: kan inte öppna historisk varaktig katalog"
 
 #: ../libdnf/transaction/Transformer.cpp:665
 msgid "Couldn't find a history database"
-msgstr ""
+msgstr "Kan inte hitta en historiedatabas"
 
 #: ../libdnf/transaction/Swdb.cpp:81
 msgid "In progress"
@@ -766,29 +592,29 @@ msgstr "Pågår"
 #: ../libdnf/transaction/Swdb.cpp:141 ../libdnf/transaction/Swdb.cpp:280
 #: ../libdnf/transaction/Swdb.cpp:290
 msgid "Not in progress"
-msgstr ""
+msgstr "Pågår inte"
 
 #: ../libdnf/transaction/Swdb.cpp:151
 msgid "No transaction in progress"
-msgstr ""
+msgstr "Ingen transaktion pågår"
 
-#: ../libdnf/transaction/TransactionItem.cpp:147
+#: ../libdnf/transaction/TransactionItem.cpp:117
 msgid "Attempt to insert transaction item into completed transaction"
-msgstr ""
+msgstr "Försök att infoga transaktionsobjekt i en avslutad transaktion"
 
-#: ../libdnf/transaction/TransactionItem.cpp:218
+#: ../libdnf/transaction/TransactionItem.cpp:188
 msgid "Attempt to update transaction item in completed transaction"
-msgstr ""
+msgstr "Försök att uppdatera transaktionsobjekt i en avslutad transaktion"
 
 #: ../libdnf/transaction/private/Transaction.cpp:41
 msgid "Transaction has already began!"
-msgstr ""
+msgstr "Transaktionen har redan påbörjats!"
 
 #: ../libdnf/transaction/private/Transaction.cpp:58
 #, c-format
 msgid "TransactionItem state is not set: %s"
-msgstr ""
+msgstr "Transaktionsobjektets tillstånd inte satt: %s"
 
-#: ../libdnf/transaction/private/Transaction.cpp:239
+#: ../libdnf/transaction/private/Transaction.cpp:219
 msgid "Can't add console output to unsaved transaction"
-msgstr ""
+msgstr "Kan inte lägga till konsolutdata till en osparad transaktion"
