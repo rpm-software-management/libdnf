@@ -82,7 +82,7 @@ static const std::map< std::string, TransactionItemReason > reasons = {
     {"group", TransactionItemReason::GROUP}};
 
 /**
- * Covert string reason into appropriate enumerated variant
+ * Convert string reason into appropriate enumerated variant
  */
 TransactionItemReason
 Transformer::getReason(const std::string &reason)
