@@ -502,7 +502,7 @@ dnf_find_pkg_from_name(GPtrArray *array, const gchar *pkgname)
 static void
 _swdb_transaction_item_progress(libdnf::Swdb *swdb, DnfPackage *pkg)
 {
-    if (pkg == NULL) {
+    if (swdb == NULL || pkg == NULL) {
         return;
     }
     const char *nevra = dnf_package_get_nevra(pkg);
@@ -844,6 +844,8 @@ _get_current_time()
 static void
 _history_write_item(DnfPackage *pkg, libdnf::Swdb *swdb, libdnf::TransactionItemAction action)
 {
+    // this should be checked before calling
+    g_assert (swdb != NULL);
     auto rpm = swdb->createRPMItem();
     rpm->setName(dnf_package_get_name(pkg));
     rpm->setEpoch(dnf_package_get_epoch(pkg));
@@ -1152,7 +1154,8 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
         goto out;
 
     // initialize SWDB transaction
-    swdb->initTransaction();
+    if (swdb != NULL)
+        swdb->initTransaction();
 
     dnf_state_action_start(state, DNF_STATE_ACTION_REQUEST, NULL);
 
@@ -1199,17 +1202,19 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
             goto out;
 
         // resolve swdb reason
-        libdnf::TransactionItemAction swdbAction = libdnf::TransactionItemAction::INSTALL;
-        if (action == DNF_STATE_ACTION_UPDATE) {
-            swdbAction = libdnf::TransactionItemAction::UPGRADE;
-        } else if (action == DNF_STATE_ACTION_DOWNGRADE) {
-            swdbAction = libdnf::TransactionItemAction::DOWNGRADE;
-        } else if (action == DNF_STATE_ACTION_REINSTALL) {
-            swdbAction = libdnf::TransactionItemAction::REINSTALL;
-        }
+        if (swdb != NULL) {
+            libdnf::TransactionItemAction swdbAction = libdnf::TransactionItemAction::INSTALL;
+            if (action == DNF_STATE_ACTION_UPDATE) {
+                swdbAction = libdnf::TransactionItemAction::UPGRADE;
+            } else if (action == DNF_STATE_ACTION_DOWNGRADE) {
+                swdbAction = libdnf::TransactionItemAction::DOWNGRADE;
+            } else if (action == DNF_STATE_ACTION_REINSTALL) {
+                swdbAction = libdnf::TransactionItemAction::REINSTALL;
+            }
 
-        // add item to swdb transaction
-        _history_write_item(pkg, swdb, swdbAction);
+            // add item to swdb transaction
+            _history_write_item(pkg, swdb, swdbAction);
+        }
 
         /* this section done */
         ret = dnf_state_done(state_local, error);
@@ -1237,19 +1242,20 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
             g_warning("failed to pre-get pkgid for %s", dnf_package_get_package_id(pkg));
         }
 
-        libdnf::TransactionItemAction swdbAction = libdnf::TransactionItemAction::REMOVE;
-
         /* are the things being removed actually being upgraded */
         pkg_tmp = dnf_find_pkg_from_name(priv->install, dnf_package_get_name(pkg));
         if (pkg_tmp != NULL) {
             dnf_package_set_action(pkg, DNF_STATE_ACTION_CLEANUP);
-            if (dnf_package_evr_cmp(pkg, pkg_tmp)) {
-                swdbAction = libdnf::TransactionItemAction::UPGRADED;
-            } else {
-                swdbAction = libdnf::TransactionItemAction::DOWNGRADED;
+            if (swdb != NULL) {
+                libdnf::TransactionItemAction swdbAction = libdnf::TransactionItemAction::REMOVE;
+                if (dnf_package_evr_cmp(pkg, pkg_tmp)) {
+                    swdbAction = libdnf::TransactionItemAction::UPGRADED;
+                } else {
+                    swdbAction = libdnf::TransactionItemAction::DOWNGRADED;
+                }
+                _history_write_item(pkg, swdb, swdbAction);
             }
         }
-        _history_write_item(pkg, swdb, swdbAction);
     }
 
     /* add anything that gets obsoleted to a helper array which is used to
@@ -1269,6 +1275,12 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
             pkg_tmp = static_cast< DnfPackage * >(g_ptr_array_index(pkglist, j));
             g_ptr_array_add(priv->remove_helper, g_object_ref(pkg_tmp));
             dnf_package_set_action(pkg_tmp, DNF_STATE_ACTION_CLEANUP);
+
+            // and now prepare to write this in the db
+
+            // swdb disabled -- we're done!
+            if (swdb == NULL)
+                continue;
 
             const char *pkg_tmp_name = dnf_package_get_name(pkg_tmp);
 
@@ -1415,7 +1427,8 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
         rpmdb_begin = dnf_sack_get_rpmdb_version(rpmdb_version_sack);
         g_object_unref(rpmdb_version_sack);
     }
-    swdb->beginTransaction(_get_current_time(), rpmdb_begin, "", priv->uid);
+    if (swdb != NULL)
+        swdb->beginTransaction(_get_current_time(), rpmdb_begin, "", priv->uid);
 
     /* run the transaction */
     priv->state = dnf_state_get_child(state);
@@ -1460,8 +1473,10 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     rpmdb_end = dnf_sack_get_rpmdb_version(rpmdb_version_sack);
     g_object_unref(rpmdb_version_sack);
 
-    swdb->endTransaction(_get_current_time(), rpmdb_end.c_str(), libdnf::TransactionState::DONE);
-    swdb->closeTransaction();
+    if (swdb != NULL) {
+        swdb->endTransaction(_get_current_time(), rpmdb_end.c_str(), libdnf::TransactionState::DONE);
+        swdb->closeTransaction();
+    }
 
     data.hookId = PLUGIN_HOOK_ID_CONTEXT_TRANSACTION;
     if (!dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_TRANSACTION, &data, nullptr))
@@ -1534,13 +1549,17 @@ dnf_transaction_new_with_flags(DnfContext *context, guint64 flags)
 {
     auto transaction = DNF_TRANSACTION(g_object_new(DNF_TYPE_TRANSACTION, NULL));
     auto priv = GET_PRIVATE(transaction);
-    priv->swdb = new libdnf::Swdb(libdnf::Swdb::defaultPath);
     priv->context = context;
     g_object_add_weak_pointer(G_OBJECT(priv->context), (void **)&priv->context);
     priv->ts = rpmtsCreate();
     rpmtsSetRootDir(priv->ts, dnf_context_get_install_root(context));
     priv->keyring = rpmtsGetKeyring(priv->ts, 1);
     priv->flags = flags;
+
+    if (!(priv->flags & DNF_TRANSACTION_FLAG_DISABLE_SWDB)) {
+        priv->swdb = new libdnf::Swdb(libdnf::Swdb::defaultPath);
+    }
+
     return transaction;
 }
 

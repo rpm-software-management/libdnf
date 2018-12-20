@@ -57,6 +57,7 @@ struct _DnfTransactionClass
  * @DNF_TRANSACTION_FLAG_ALLOW_DOWNGRADE:       Allow package downrades
  * @DNF_TRANSACTION_FLAG_NODOCS:                Don't install documentation
  * @DNF_TRANSACTION_FLAG_TEST:                  Only do a transaction test
+ * @DNF_TRANSACTION_FLAG_DISABLE_SWDB:          Don't write to SWDB
  *
  * The transaction flags.
  **/
@@ -67,6 +68,7 @@ typedef enum {
         DNF_TRANSACTION_FLAG_ALLOW_DOWNGRADE    = 1 << 2,
         DNF_TRANSACTION_FLAG_NODOCS             = 1 << 3,
         DNF_TRANSACTION_FLAG_TEST               = 1 << 4,
+        DNF_TRANSACTION_FLAG_DISABLE_SWDB       = 1 << 5,
         /*< private >*/
         DNF_TRANSACTION_FLAG_LAST
 } DnfTransactionFlag;
