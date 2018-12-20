@@ -956,7 +956,7 @@ void Repo::Impl::importRepoKeys()
 std::unique_ptr<LrResult> Repo::Impl::lrHandlePerform(LrHandle * handle, const std::string & destDirectory,
     bool setGPGHomeEnv)
 {
-    bool isOrigGPGHomeEnvSet;
+    bool isOrigGPGHomeEnvSet = false;
     std::string origGPGHomeEnv;
     if (setGPGHomeEnv) {
             const char * orig = getenv(GPG_HOME_ENV);
