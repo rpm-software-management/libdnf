@@ -1209,7 +1209,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
         }
 
         // add item to swdb transaction
-        _history_write_item(pkg, priv->swdb, swdbAction);
+        _history_write_item(pkg, swdb, swdbAction);
 
         /* this section done */
         ret = dnf_state_done(state_local, error);
@@ -1249,7 +1249,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
                 swdbAction = libdnf::TransactionItemAction::DOWNGRADED;
             }
         }
-        _history_write_item(pkg, priv->swdb, swdbAction);
+        _history_write_item(pkg, swdb, swdbAction);
     }
 
     /* add anything that gets obsoleted to a helper array which is used to
@@ -1301,7 +1301,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
             }
 
             // TODO SWDB add pkg_tmp replaced_by pkg
-            _history_write_item(pkg_tmp, priv->swdb, swdbAction);
+            _history_write_item(pkg_tmp, swdb, swdbAction);
         }
         g_ptr_array_unref(pkglist);
     }
