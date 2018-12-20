@@ -1408,8 +1408,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     // FIXME get commandline
     if (sack) {
         rpmdb_begin = dnf_sack_get_rpmdb_version(sack);
-    }
-    else {
+    } else {
         // if sack is not available, create a custom instance
         rpmdb_version_sack = dnf_sack_new();
         dnf_sack_load_system_repo(rpmdb_version_sack, nullptr, DNF_SACK_LOAD_FLAG_BUILD_CACHE, nullptr);
