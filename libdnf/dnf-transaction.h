@@ -72,6 +72,8 @@ typedef enum {
 } DnfTransactionFlag;
 
 DnfTransaction  *dnf_transaction_new                    (DnfContext     *context);
+DnfTransaction  *dnf_transaction_new_with_flags         (DnfContext     *context,
+                                                         guint64         flags);
 
 /* getters */
 guint64          dnf_transaction_get_flags              (DnfTransaction *transaction);

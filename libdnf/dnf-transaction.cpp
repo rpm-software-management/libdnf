@@ -1515,6 +1515,23 @@ out:
 DnfTransaction *
 dnf_transaction_new(DnfContext *context)
 {
+    return dnf_transaction_new_with_flags (context, DNF_TRANSACTION_FLAG_NONE);
+}
+
+/**
+ * dnf_transaction_new_with_flags:
+ * @context: a #DnfContext instance.
+ * @flags: the flags, e.g. %DNF_TRANSACTION_FLAG_ONLY_TRUSTED
+ *
+ * Creates a new #DnfTransaction with the given flags.
+ *
+ * Returns:(transfer full): a #DnfTransaction
+ *
+ * Since: 0.25.0
+ **/
+DnfTransaction *
+dnf_transaction_new_with_flags(DnfContext *context, guint64 flags)
+{
     auto transaction = DNF_TRANSACTION(g_object_new(DNF_TYPE_TRANSACTION, NULL));
     auto priv = GET_PRIVATE(transaction);
     priv->swdb = new libdnf::Swdb(libdnf::Swdb::defaultPath);
@@ -1523,6 +1540,7 @@ dnf_transaction_new(DnfContext *context)
     priv->ts = rpmtsCreate();
     rpmtsSetRootDir(priv->ts, dnf_context_get_install_root(context));
     priv->keyring = rpmtsGetKeyring(priv->ts, 1);
+    priv->flags = flags;
     return transaction;
 }
 
