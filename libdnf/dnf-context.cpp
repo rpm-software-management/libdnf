@@ -134,6 +134,7 @@ typedef struct
     gboolean         keep_cache;
     gboolean         enrollment_valid;
     gboolean         zchunk;
+    gboolean         enable_swdb;
     DnfLock         *lock;
     DnfTransaction  *transaction;
     GThread         *transaction_thread;
@@ -228,6 +229,7 @@ dnf_context_init(DnfContext *context)
     priv->check_disk_space = TRUE;
     priv->check_transaction = TRUE;
     priv->enable_filelists = TRUE;
+    priv->enable_swdb = TRUE;
     priv->zchunk = TRUE;
     priv->state = dnf_state_new();
     priv->lock = dnf_lock_new();
@@ -607,7 +609,10 @@ dnf_context_ensure_transaction(DnfContext *context)
 
     /* create if not yet created */
     if (priv->transaction == NULL) {
-        priv->transaction = dnf_transaction_new(context);
+        guint64 flags = DNF_TRANSACTION_FLAG_NONE;
+        if (!priv->enable_swdb)
+            flags |= DNF_TRANSACTION_FLAG_DISABLE_SWDB;
+        priv->transaction = dnf_transaction_new_with_flags(context, flags);
         priv->transaction_thread = g_thread_self();
         dnf_transaction_set_repos(priv->transaction, priv->repos);
         return;
@@ -817,6 +822,21 @@ dnf_context_get_enable_filelists (DnfContext     *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     return priv->enable_filelists;
+}
+
+/**
+ * dnf_context_get_enable_swdb:
+ * @context: a #DnfContext instance.
+ *
+ * Returns: %TRUE if SWDB writing is enabled.
+ *
+ * Since: 0.25.0
+ **/
+gboolean
+dnf_context_get_enable_swdb (DnfContext     *context)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    return priv->enable_swdb;
 }
 
 /**
@@ -1156,6 +1176,23 @@ dnf_context_set_enable_filelists (DnfContext     *context,
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     priv->enable_filelists = enable_filelists;
+}
+
+/**
+ * dnf_context_set_enable_swdb:
+ * @context: a #DnfContext instance.
+ * @enable_swdb: %TRUE to enable SWDB writing.
+ *
+ * Enables or disables SWDB writing.
+ *
+ * Since: 0.25.0
+ **/
+void
+dnf_context_set_enable_swdb (DnfContext     *context,
+                             gboolean        enable_swdb)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    priv->enable_swdb = enable_swdb;
 }
 
 /**
