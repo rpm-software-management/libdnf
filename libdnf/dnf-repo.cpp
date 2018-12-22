@@ -1439,14 +1439,33 @@ dnf_repo_check_internal(DnfRepo *repo,
         hy_repo_free(priv->repo);
     priv->repo = hy_repo_create(priv->id);
     hy_repo_set_string(priv->repo, HY_REPO_MD_FN, yum_repo->repomd);
-    tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "primary"));
-    hy_repo_set_string(priv->repo, HY_REPO_PRIMARY_FN, tmp);
-    tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "filelists"));
-    hy_repo_set_string(priv->repo, HY_REPO_FILELISTS_FN, tmp);
-    tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "updateinfo"));
-    hy_repo_set_string(priv->repo, HY_REPO_UPDATEINFO_FN, tmp);
-    tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "modules"));
-    hy_repo_set_string(priv->repo, MODULES_FN, tmp);
+    if (dnf_context_get_zchunk(priv->context)) {
+        tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "primary_zck"));
+        if(!tmp)
+            tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "primary"));
+        hy_repo_set_string(priv->repo, HY_REPO_PRIMARY_FN, tmp);
+        tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "filelists_zck"));
+        if(!tmp)
+            tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "filelists"));
+        hy_repo_set_string(priv->repo, HY_REPO_FILELISTS_FN, tmp);
+        tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "updateinfo_zck"));
+        if(!tmp)
+            tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "updateinfo"));
+        hy_repo_set_string(priv->repo, HY_REPO_UPDATEINFO_FN, tmp);
+        tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "modules_zck"));
+        if(!tmp)
+            tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "modules"));
+        hy_repo_set_string(priv->repo, MODULES_FN, tmp);
+    } else {
+        tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "primary"));
+        hy_repo_set_string(priv->repo, HY_REPO_PRIMARY_FN, tmp);
+        tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "filelists"));
+        hy_repo_set_string(priv->repo, HY_REPO_FILELISTS_FN, tmp);
+        tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "updateinfo"));
+        hy_repo_set_string(priv->repo, HY_REPO_UPDATEINFO_FN, tmp);
+        tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "modules"));
+        hy_repo_set_string(priv->repo, MODULES_FN, tmp);
+    }
 
     /* ensure we reset the values from the keyfile */
     if (!dnf_repo_set_keyfile_data(repo, error))
