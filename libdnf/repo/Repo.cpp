@@ -275,10 +275,25 @@ private:
             delete[] *item;
         delete[] ptr;
     }};
+    bool endsWith(std::string const &str, std::string const &ending) const;
 };
 
+bool Repo::Impl::endsWith(const std::string &str, const std::string &ending) const {
+    if (str.length() >= ending.length())
+        return (str.compare(str.length() - ending.length(), ending.length(), ending) == 0);
+    else
+        return false;
+}
+
 std::string Repo::Impl::getMetadataPath(const std::string &metadataType) const {
-    auto it = metadataPaths.find(metadataType);
+    std::string lookupMetadataType = metadataType;
+    if (conf->getMasterConfig().zchunk().getValue()) {
+        if(!endsWith(metadataType, "_zck"))
+            lookupMetadataType = metadataType + "_zck";
+    }
+    auto it = metadataPaths.find(lookupMetadataType);
+    if(it == metadataPaths.end() && lookupMetadataType != metadataType)
+        it = metadataPaths.find(metadataType);
     return (it != metadataPaths.end()) ? it->second : "";
 }
 
