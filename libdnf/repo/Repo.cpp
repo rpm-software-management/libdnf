@@ -580,7 +580,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitLocal()
     handleSetOpt(h.get(), LRO_LOCAL, 1L);
 #ifdef LRO_SUPPORTS_CACHEDIR
     /* If zchunk is enabled, set librepo cache dir */
-    if (!conf->getMasterConfig().zchunk().getValue())
+    if (conf->getMasterConfig().zchunk().getValue())
         handleSetOpt(h.get(), LRO_CACHEDIR, conf->basecachedir().getValue().c_str());
 #endif
     return h;
@@ -666,7 +666,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bo
 
 #ifdef LRO_SUPPORTS_CACHEDIR
     /* If zchunk is enabled, set librepo cache dir */
-    if (!conf->getMasterConfig().zchunk().getValue())
+    if (conf->getMasterConfig().zchunk().getValue())
         handleSetOpt(h.get(), LRO_CACHEDIR, conf->basecachedir().getValue().c_str());
 #endif
 
