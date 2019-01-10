@@ -38,6 +38,7 @@ public:
     OptionEnum(ValueType defaultValue, std::vector<ValueType> && enumVals);
     OptionEnum(ValueType defaultValue, const std::vector<ValueType> & enumVals, FromStringFunc && fromStringFunc);
     OptionEnum(ValueType defaultValue, std::vector<ValueType> && enumVals, FromStringFunc && fromStringFunc);
+    OptionEnum * clone() const override;
     void test(ValueType value) const;
     ValueType fromString(const std::string & value) const;
     void set(Priority priority, ValueType value);
@@ -64,6 +65,7 @@ public:
     OptionEnum(const std::string & defaultValue, std::vector<ValueType> && enumVals);
     OptionEnum(const std::string & defaultValue, const std::vector<ValueType> & enumVals, FromStringFunc && fromStringFunc);
     OptionEnum(const std::string & defaultValue, std::vector<ValueType> && enumVals, FromStringFunc && fromStringFunc);
+    OptionEnum * clone() const override;
     void test(const std::string & value) const;
     std::string fromString(const std::string & value) const;
     void set(Priority priority, const std::string & value) override;
@@ -78,6 +80,16 @@ protected:
     ValueType value;
 };
 
+template <typename T>
+inline OptionEnum<T> * OptionEnum<T>::clone() const
+{
+    return new OptionEnum<T>(*this);
+}
+
+inline OptionEnum<std::string> * OptionEnum<std::string>::clone() const
+{
+    return new OptionEnum<std::string>(*this);
+}
 
 inline const std::string & OptionEnum<std::string>::getValue() const
 {

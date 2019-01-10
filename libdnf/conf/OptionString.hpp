@@ -33,6 +33,7 @@ public:
     OptionString(const char * defaultValue);
     OptionString(const std::string & defaultValue, const std::string & regex, bool icase);
     OptionString(const char * defaultValue, const std::string & regex, bool icase);
+    OptionString * clone() const override;
     void test(const std::string & value) const;
     void set(Priority priority, const std::string & value) override;
     std::string fromString(const std::string & value) const;
@@ -46,6 +47,11 @@ protected:
     std::string defaultValue;
     std::string value;
 };
+
+inline OptionString * OptionString::clone() const
+{
+    return new OptionString(*this);
+}
 
 inline const std::string & OptionString::getDefaultValue() const noexcept
 {

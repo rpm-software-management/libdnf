@@ -34,6 +34,7 @@ public:
     OptionStringList(const ValueType & defaultValue, const std::string & regex, bool icase);
     OptionStringList(const std::string & defaultValue);
     OptionStringList(const std::string & defaultValue, const std::string & regex, bool icase);
+    OptionStringList * clone() const override;
     void test(const std::vector<std::string> & value) const;
     ValueType fromString(const std::string & value) const;
     virtual void set(Priority priority, const ValueType & value);
@@ -49,6 +50,11 @@ protected:
     ValueType defaultValue;
     ValueType value;
 };
+
+inline OptionStringList * OptionStringList::clone() const
+{
+    return new OptionStringList(*this);
+}
 
 inline const OptionStringList::ValueType & OptionStringList::getValue() const
 {

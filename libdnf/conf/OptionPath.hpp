@@ -37,6 +37,7 @@ public:
     OptionPath(const char * defaultValue, bool exists = false, bool absPath = false);
     OptionPath(const std::string & defaultValue, const std::string & regex, bool icase, bool exists = false, bool absPath = false);
     OptionPath(const char * defaultValue, const std::string & regex, bool icase, bool exists = false, bool absPath = false);
+    OptionPath * clone() const override;
     void test(const std::string & value) const;
     void set(Priority priority, const std::string & value) override;
 
@@ -44,6 +45,11 @@ protected:
     bool exists;
     bool absPath;
 };
+
+inline OptionPath * OptionPath::clone() const
+{
+    return new OptionPath(*this);
+}
 
 }
 

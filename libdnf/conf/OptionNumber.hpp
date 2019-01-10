@@ -39,6 +39,7 @@ public:
     OptionNumber(T defaultValue, T min, T max, FromStringFunc && fromStringFunc);
     OptionNumber(T defaultValue, T min, FromStringFunc && fromStringFunc);
     OptionNumber(T defaultValue, FromStringFunc && fromStringFunc);
+    OptionNumber * clone() const override;
     void test(ValueType value) const;
     T fromString(const std::string & value) const;
     void set(Priority priority, ValueType value);
@@ -56,6 +57,11 @@ protected:
     ValueType value;
 };
 
+template <typename T>
+inline OptionNumber<T> * OptionNumber<T>::clone() const
+{
+    return new OptionNumber<T>(*this);
+}
 
 template <typename T>
 inline T OptionNumber<T>::getValue() const

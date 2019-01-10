@@ -34,6 +34,7 @@ public:
 
     OptionBool(bool defaultValue, const char * const trueVals[], const char * const falseVals[]);
     OptionBool(bool defaultValue);
+    OptionBool * clone() const override;
     void test(bool) const;
     bool fromString(std::string value) const;
     void set(Priority priority, bool value);
@@ -51,6 +52,11 @@ protected:
     bool defaultValue;
     bool value;
 };
+
+inline OptionBool * OptionBool::clone() const
+{
+    return new OptionBool(*this);
+}
 
 inline void OptionBool::test(bool) const {}
 
