@@ -12,10 +12,9 @@ SET (CONF_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/ConfigRepo.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/ConfigParser.cpp
         PARENT_SCOPE
-        )
+    )
 
-SET (CONF_HEADERS
-        ${CONF_HEADERS}
+SET (CONF_PUBLIC_HEADERS
         ${CMAKE_CURRENT_SOURCE_DIR}/Option.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionChild.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionBool.hpp
@@ -25,9 +24,6 @@ SET (CONF_HEADERS
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionSeconds.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionString.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionStringList.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/Config.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/ConfigMain.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/ConfigRepo.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/ConfigParser.hpp
-        PARENT_SCOPE
-        )
+    )
+
+INSTALL(FILES ${CONF_PUBLIC_HEADERS} DESTINATION include/libdnf/conf)
