@@ -54,6 +54,7 @@ public:
     };
 
     Option(Priority priority = Priority::EMPTY);
+    virtual Option * clone() const = 0;
     virtual Priority getPriority() const;
     virtual void set(Priority priority, const std::string & value) = 0;
     virtual std::string getValueString() const = 0;

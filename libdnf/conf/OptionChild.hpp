@@ -29,6 +29,7 @@ template <class ParentOptionType, class Enable = void>
 class OptionChild : public Option {
 public:
     OptionChild(const ParentOptionType & parent);
+    OptionChild * clone() const override;
     Priority getPriority() const override;
     void set(Priority priority, const typename ParentOptionType::ValueType & value);
     void set(Priority priority, const std::string & value) override;
@@ -46,6 +47,7 @@ template <class ParentOptionType>
 class OptionChild<ParentOptionType, typename std::enable_if<std::is_same<typename ParentOptionType::ValueType, std::string>::value>::type> : public Option {
 public:
     OptionChild(const ParentOptionType & parent);
+    OptionChild * clone() const override;
     Priority getPriority() const override;
     void set(Priority priority, const std::string & value) override;
     const std::string & getValue() const;
@@ -61,6 +63,12 @@ private:
 template <class ParentOptionType, class Enable>
 inline OptionChild<ParentOptionType, Enable>::OptionChild(const ParentOptionType & parent)
 : parent(&parent) {}
+
+template <class ParentOptionType, class Enable>
+inline OptionChild<ParentOptionType, Enable> * OptionChild<ParentOptionType, Enable>::clone() const
+{
+    return new OptionChild<ParentOptionType>(*this);
+}
 
 template <class ParentOptionType, class Enable>
 inline Option::Priority OptionChild<ParentOptionType, Enable>::getPriority() const
@@ -112,6 +120,13 @@ inline bool OptionChild<ParentOptionType, Enable>::empty() const noexcept
 template <class ParentOptionType>
 inline OptionChild<ParentOptionType, typename std::enable_if<std::is_same<typename ParentOptionType::ValueType, std::string>::value>::type>::OptionChild(const ParentOptionType & parent)
 : parent(&parent) {}
+
+template <class ParentOptionType>
+inline OptionChild<ParentOptionType, typename std::enable_if<std::is_same<typename ParentOptionType::ValueType, std::string>::value>::type> *
+OptionChild<ParentOptionType, typename std::enable_if<std::is_same<typename ParentOptionType::ValueType, std::string>::value>::type>::clone() const
+{
+    return new OptionChild<ParentOptionType>(*this);
+}
 
 template <class ParentOptionType>
 inline Option::Priority OptionChild<ParentOptionType, typename std::enable_if<std::is_same<typename ParentOptionType::ValueType, std::string>::value>::type>::getPriority() const

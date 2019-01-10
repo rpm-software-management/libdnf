@@ -38,10 +38,16 @@ public:
     OptionSeconds(ValueType defaultValue, ValueType min, ValueType max);
     OptionSeconds(ValueType defaultValue, ValueType min);
     OptionSeconds(ValueType defaultValue);
+    OptionSeconds * clone() const override;
     ValueType fromString(const std::string & value) const;
     using OptionNumber<std::int32_t>::set;
     void set(Priority priority, const std::string & value) override;
 };
+
+inline OptionSeconds * OptionSeconds::clone() const
+{
+    return new OptionSeconds(*this);
+}
 
 }
 
