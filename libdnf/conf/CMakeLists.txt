@@ -7,7 +7,7 @@ SET (CONF_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionSeconds.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionString.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionStringList.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/Config.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/OptionBinds.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/ConfigMain.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/ConfigRepo.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/ConfigParser.cpp

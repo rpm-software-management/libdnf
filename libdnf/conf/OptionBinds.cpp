@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "Config.hpp"
+#include "OptionBinds.hpp"
 
 #include "bgettext/bgettext-lib.h"
 #include "tinyformat/tinyformat.hpp"
@@ -29,23 +29,23 @@ namespace libdnf {
 
 // ========== OptionBinding class ===============
 
-OptionBinding::OptionBinding(Config & config, Option & option, const std::string & name,
+OptionBinding::OptionBinding(OptionBinds & optBinds, Option & option, const std::string & name,
                              NewStringFunc && newString, GetValueStringFunc && getValueString,
                              bool addValue)
-: option(option), newStr(std::move(newString)), getValueStr(std::move(getValueString)), addValue(addValue)
+: option(&option), newStr(std::move(newString)), getValueStr(std::move(getValueString)), addValue(addValue)
 {
-    config.optBinds().add(name, *this);
+    optBinds.add(name, *this);
 }
 
-OptionBinding::OptionBinding(Config & config, Option & option, const std::string & name)
-: option(option)
+OptionBinding::OptionBinding(OptionBinds & optBinds, Option & option, const std::string & name)
+: option(&option)
 {
-    config.optBinds().add(name, *this);
+    optBinds.add(name, *this);
 }
 
 Option::Priority OptionBinding::getPriority() const
 {
-    return option.getPriority();
+    return option->getPriority();
 }
 
 void OptionBinding::newString(Option::Priority priority, const std::string & value)
@@ -53,7 +53,7 @@ void OptionBinding::newString(Option::Priority priority, const std::string & val
     if (newStr)
         newStr(priority, value);
     else
-        option.set(priority, value);
+        option->set(priority, value);
 }
 
 std::string OptionBinding::getValueString() const
@@ -61,7 +61,7 @@ std::string OptionBinding::getValueString() const
     if (getValueStr) {
         return getValueStr();
     }else
-        return option.getValueString();
+        return option->getValueString();
 }
 
 
@@ -96,7 +96,7 @@ OptionBinding & OptionBinds::at(const std::string & id)
     auto item = items.find(id);
     if (item == items.end())
         throw OutOfRange(id);
-    return item->second;
+    return *item->second;
 }
 
 const OptionBinding & OptionBinds::at(const std::string & id) const
@@ -104,7 +104,7 @@ const OptionBinding & OptionBinds::at(const std::string & id) const
     auto item = items.find(id);
     if (item == items.end())
         throw OutOfRange(id);
-    return item->second;
+    return *item->second;
 }
 
 OptionBinds::iterator OptionBinds::add(const std::string & id, OptionBinding & optBind)
@@ -112,7 +112,7 @@ OptionBinds::iterator OptionBinds::add(const std::string & id, OptionBinding & o
     auto item = items.find(id);
     if (item != items.end())
         throw AlreadyExists(id);
-    auto res = items.insert({id, optBind});
+    auto res = items.insert({id, &optBind});
     return res.first;
 }
 
