@@ -33,140 +33,140 @@ class ConfigRepo::Impl {
     ConfigMain & masterConfig;
 
     OptionString name{""};
-    OptionBinding nameBinding{owner, name, "name"};
+    OptionBinding nameBinding{owner.optBinds(), name, "name"};
 
     OptionChild<OptionBool> enabled{masterConfig.enabled()};
-    OptionBinding enabledBinding{owner, enabled, "enabled"};
+    OptionBinding enabledBinding{owner.optBinds(), enabled, "enabled"};
 
     OptionChild<OptionString> basecachedir{masterConfig.cachedir()};
-    OptionBinding baseCacheDirBindings{owner, basecachedir, "cachedir"};
+    OptionBinding baseCacheDirBindings{owner.optBinds(), basecachedir, "cachedir"};
 
     OptionStringList baseurl{std::vector<std::string>{}};
-    OptionBinding baseUrlBinding{owner, baseurl, "baseurl"};
+    OptionBinding baseUrlBinding{owner.optBinds(), baseurl, "baseurl"};
 
     OptionString mirrorlist{nullptr};
-    OptionBinding mirrorListBinding{owner, mirrorlist, "mirrorlist"};
+    OptionBinding mirrorListBinding{owner.optBinds(), mirrorlist, "mirrorlist"};
 
     OptionString metalink{nullptr};
-    OptionBinding metaLinkBinding{owner, metalink, "metalink"};
+    OptionBinding metaLinkBinding{owner.optBinds(), metalink, "metalink"};
 
     OptionString type{""};
-    OptionBinding typeBinding{owner, type, "type"};
+    OptionBinding typeBinding{owner.optBinds(), type, "type"};
 
     OptionString mediaid{""};
-    OptionBinding mediaIdBinding{owner, mediaid, "mediaid"};
+    OptionBinding mediaIdBinding{owner.optBinds(), mediaid, "mediaid"};
 
     OptionStringList gpgkey{std::vector<std::string>{}};
-    OptionBinding gpgKeyBinding{owner, gpgkey, "gpgkey"};
+    OptionBinding gpgKeyBinding{owner.optBinds(), gpgkey, "gpgkey"};
 
     OptionStringList excludepkgs{std::vector<std::string>{}};
-    OptionBinding excludePkgsBinding{owner, excludepkgs, "excludepkgs",
+    OptionBinding excludePkgsBinding{owner.optBinds(), excludepkgs, "excludepkgs",
         [&](Option::Priority priority, const std::string & value){
             optionTListAppend(excludepkgs, priority, value);
         }, nullptr, true
     };
-    OptionBinding excludeBinding{owner, excludepkgs, "exclude", //compatibility with yum
+    OptionBinding excludeBinding{owner.optBinds(), excludepkgs, "exclude", //compatibility with yum
         [&](Option::Priority priority, const std::string & value){
             optionTListAppend(excludepkgs, priority, value);
         }, nullptr, true
     };
 
     OptionStringList includepkgs{std::vector<std::string>{}};
-    OptionBinding includePkgsBinding{owner, includepkgs, "includepkgs",
+    OptionBinding includePkgsBinding{owner.optBinds(), includepkgs, "includepkgs",
         [&](Option::Priority priority, const std::string & value){
             optionTListAppend(includepkgs, priority, value);
         }, nullptr, true
     };
 
     OptionChild<OptionBool> fastestmirror{masterConfig.fastestmirror()};
-    OptionBinding fastestMirrorBinding{owner, fastestmirror, "fastestmirror"};
+    OptionBinding fastestMirrorBinding{owner.optBinds(), fastestmirror, "fastestmirror"};
 
     OptionChild<OptionString> proxy{masterConfig.proxy()};
-    OptionBinding proxyBinding{owner, proxy, "proxy"};
+    OptionBinding proxyBinding{owner.optBinds(), proxy, "proxy"};
 
     OptionChild<OptionString> proxy_username{masterConfig.proxy_username()};
-    OptionBinding proxyUsernameBinding{owner, proxy_username, "proxy_username"};
+    OptionBinding proxyUsernameBinding{owner.optBinds(), proxy_username, "proxy_username"};
 
     OptionChild<OptionString> proxy_password{masterConfig.proxy_password()};
-    OptionBinding proxyPasswordBinding{owner, proxy_password, "proxy_password"};
+    OptionBinding proxyPasswordBinding{owner.optBinds(), proxy_password, "proxy_password"};
 
     OptionChild<OptionEnum<std::string> > proxy_auth_method{masterConfig.proxy_auth_method()};
-    OptionBinding proxyAuthMethodBinding{owner, proxy_auth_method, "proxy_auth_method"};
+    OptionBinding proxyAuthMethodBinding{owner.optBinds(), proxy_auth_method, "proxy_auth_method"};
 
     OptionChild<OptionString> username{masterConfig.username()};
-    OptionBinding usernameBinding{owner, username, "username"};
+    OptionBinding usernameBinding{owner.optBinds(), username, "username"};
 
     OptionChild<OptionString> password{masterConfig.password()};
-    OptionBinding passwordBinding{owner, password, "password"};
+    OptionBinding passwordBinding{owner.optBinds(), password, "password"};
 
     OptionChild<OptionStringList> protected_packages{masterConfig.protected_packages()};
-    OptionBinding protectedPackagesBinding{owner, protected_packages, "protected_packages"};
+    OptionBinding protectedPackagesBinding{owner.optBinds(), protected_packages, "protected_packages"};
 
     OptionChild<OptionBool> gpgcheck{masterConfig.gpgcheck()};
-    OptionBinding gpgCheckBinding{owner, gpgcheck, "gpgcheck"};
+    OptionBinding gpgCheckBinding{owner.optBinds(), gpgcheck, "gpgcheck"};
 
     OptionChild<OptionBool> repo_gpgcheck{masterConfig.repo_gpgcheck()};
-    OptionBinding repoGpgCheckBinding{owner, repo_gpgcheck, "repo_gpgcheck"};
+    OptionBinding repoGpgCheckBinding{owner.optBinds(), repo_gpgcheck, "repo_gpgcheck"};
 
     OptionChild<OptionBool> enablegroups{masterConfig.enablegroups()};
-    OptionBinding enableGroupsBinding{owner, enablegroups, "enablegroups"};
+    OptionBinding enableGroupsBinding{owner.optBinds(), enablegroups, "enablegroups"};
 
     OptionChild<OptionNumber<std::uint32_t> > retries{masterConfig.retries()};
-    OptionBinding retriesBinding{owner, retries, "retries"};
+    OptionBinding retriesBinding{owner.optBinds(), retries, "retries"};
 
     OptionChild<OptionNumber<std::uint32_t> > bandwidth{masterConfig.bandwidth()};
-    OptionBinding bandwidthBinding{owner, bandwidth, "bandwidth"};
+    OptionBinding bandwidthBinding{owner.optBinds(), bandwidth, "bandwidth"};
 
     OptionChild<OptionNumber<std::uint32_t> > minrate{masterConfig.minrate()};
-    OptionBinding minRateBinding{owner, minrate, "minrate"};
+    OptionBinding minRateBinding{owner.optBinds(), minrate, "minrate"};
 
     OptionChild<OptionEnum<std::string> > ip_resolve{masterConfig.ip_resolve()};
-    OptionBinding ipResolveBinding{owner, ip_resolve, "ip_resolve"};
+    OptionBinding ipResolveBinding{owner.optBinds(), ip_resolve, "ip_resolve"};
 
     OptionChild<OptionNumber<float> > throttle{masterConfig.throttle()};
-    OptionBinding throttleBinding{owner, throttle, "throttle"};
+    OptionBinding throttleBinding{owner.optBinds(), throttle, "throttle"};
 
     OptionChild<OptionSeconds> timeout{masterConfig.timeout()};
-    OptionBinding timeoutBinding{owner, timeout, "timeout"};
+    OptionBinding timeoutBinding{owner.optBinds(), timeout, "timeout"};
 
     OptionChild<OptionNumber<std::uint32_t> >  max_parallel_downloads{masterConfig.max_parallel_downloads()};
-    OptionBinding maxParallelDownloadsBinding{owner, max_parallel_downloads, "max_parallel_downloads"};
+    OptionBinding maxParallelDownloadsBinding{owner.optBinds(), max_parallel_downloads, "max_parallel_downloads"};
 
     OptionChild<OptionSeconds> metadata_expire{masterConfig.metadata_expire()};
-    OptionBinding metadataExpireBinding{owner, metadata_expire, "metadata_expire"};
+    OptionBinding metadataExpireBinding{owner.optBinds(), metadata_expire, "metadata_expire"};
 
     OptionNumber<std::int32_t> cost{1000};
-    OptionBinding costBinding{owner, cost, "cost"};
+    OptionBinding costBinding{owner.optBinds(), cost, "cost"};
 
     OptionNumber<std::int32_t> priority{99};
-    OptionBinding priorityBinding{owner, priority, "priority"};
+    OptionBinding priorityBinding{owner.optBinds(), priority, "priority"};
 
     OptionBool module_hotfixes{false};
-    OptionBinding moduleHotfixesBinding{owner, module_hotfixes, "module_hotfixes"};
+    OptionBinding moduleHotfixesBinding{owner.optBinds(), module_hotfixes, "module_hotfixes"};
 
     OptionChild<OptionString> sslcacert{masterConfig.sslcacert()};
-    OptionBinding sslCaCertBinding{owner, sslcacert, "sslcacert"};
+    OptionBinding sslCaCertBinding{owner.optBinds(), sslcacert, "sslcacert"};
 
     OptionChild<OptionBool> sslverify{masterConfig.sslverify()};
-    OptionBinding sslVerifyBinding{owner, sslverify, "sslverify"};
+    OptionBinding sslVerifyBinding{owner.optBinds(), sslverify, "sslverify"};
 
     OptionChild<OptionString> sslclientcert{masterConfig.sslclientcert()};
-    OptionBinding sslClientCertBinding{owner, sslclientcert, "sslclientcert"};
+    OptionBinding sslClientCertBinding{owner.optBinds(), sslclientcert, "sslclientcert"};
 
     OptionChild<OptionString> sslclientkey{masterConfig.sslclientkey()};
-    OptionBinding sslClientKeyBinding{owner, sslclientkey, "sslclientkey"};
+    OptionBinding sslClientKeyBinding{owner.optBinds(), sslclientkey, "sslclientkey"};
 
     OptionChild<OptionBool> deltarpm{masterConfig.deltarpm()};
-    OptionBinding deltaRpmBinding{owner, deltarpm, "deltarpm"};
+    OptionBinding deltaRpmBinding{owner.optBinds(), deltarpm, "deltarpm"};
 
     OptionChild<OptionNumber<std::uint32_t> > deltarpm_percentage{masterConfig.deltarpm_percentage()};
-    OptionBinding deltaRpmPercentageBinding{owner, deltarpm_percentage, "deltarpm_percentage"};
+    OptionBinding deltaRpmPercentageBinding{owner.optBinds(), deltarpm_percentage, "deltarpm_percentage"};
 
     OptionBool skip_if_unavailable{true};
-    OptionBinding skipIfUnavailableBinding{owner, skip_if_unavailable, "skip_if_unavailable"};
+    OptionBinding skipIfUnavailableBinding{owner.optBinds(), skip_if_unavailable, "skip_if_unavailable"};
 
     OptionString enabled_metadata{""};
-    OptionBinding enabledMetadataBinding{owner, enabled_metadata, "enabled_metadata"};
+    OptionBinding enabledMetadataBinding{owner.optBinds(), enabled_metadata, "enabled_metadata"};
 
     OptionEnum<std::string> failovermethod{"priority", {"priority", "roundrobin"}};
 };

@@ -75,6 +75,7 @@ public:
   };
 %}
 
+%include "libdnf/conf/OptionBinds.hpp"
 %include "libdnf/conf/Config.hpp"
 %include "libdnf/conf/ConfigMain.hpp"
 %include "libdnf/conf/ConfigRepo.hpp"
@@ -182,7 +183,7 @@ public:
     {
         if ($self->cur != $self->end) {
             auto & id = $self->cur->first;
-            auto pValue = &($self->cur++)->second;
+            auto pValue = ($self->cur++)->second;
             return {id, pValue};
         }
         throw StopIterator();
@@ -191,7 +192,7 @@ public:
     {
         if ($self->cur != $self->end) {
             auto & id = $self->cur->first;
-            auto pValue = &($self->cur++)->second;
+            auto pValue = ($self->cur++)->second;
             return {id, pValue};
         }
         throw StopIterator();
