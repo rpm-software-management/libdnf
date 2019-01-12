@@ -27,8 +27,12 @@
     }
 }
 
+#define final
 
 // make SWIG look into following headers
+%ignore libdnf::Option::Exception;
+%ignore libdnf::Option::InvalidValue;
+%ignore libdnf::Option::ValueNotSet;
 %include "libdnf/conf/Option.hpp"
 %include "libdnf/conf/OptionChild.hpp"
 %include "libdnf/conf/OptionBool.hpp"
@@ -75,7 +79,14 @@ public:
   };
 %}
 
+%feature ("flatnested", "1");
+%rename (OptionBinds_Item) libdnf::OptionBinds::Item;
+%ignore libdnf::OptionBinds::Exception;
+%ignore libdnf::OptionBinds::OutOfRange;
+%ignore libdnf::OptionBinds::AlreadyExists;
 %include "libdnf/conf/OptionBinds.hpp"
+%feature ("flatnested", "0");
+
 %include "libdnf/conf/Config.hpp"
 %include "libdnf/conf/ConfigMain.hpp"
 %include "libdnf/conf/ConfigRepo.hpp"
@@ -148,6 +159,11 @@ public:
 }
 
 %apply std::string & INOUT { std::string & text }
+%ignore libdnf::ConfigParser::Exception;
+%ignore libdnf::ConfigParser::CantOpenFile;
+%ignore libdnf::ConfigParser::ParsingError;
+%ignore libdnf::ConfigParser::MissingSection;
+%ignore libdnf::ConfigParser::MissingOption;
 %include "libdnf/conf/ConfigParser.hpp"
 %clear std::string & text;
 %template(MapStringMapStringString) std::map<std::string, std::map<std::string, std::string>>;
@@ -177,9 +193,9 @@ public:
     }
 }
 
-%template(PairStringOptionBinding) std::pair<std::string, libdnf::OptionBinding *>;
+%template(PairStringOptionBindsItem) std::pair<std::string, libdnf::OptionBinds::Item *>;
 %extend Iterator<libdnf::OptionBinds> {
-    std::pair<std::string, libdnf::OptionBinding *> __next__()
+    std::pair<std::string, libdnf::OptionBinds::Item *> __next__()
     {
         if ($self->cur != $self->end) {
             auto & id = $self->cur->first;
@@ -188,7 +204,7 @@ public:
         }
         throw StopIterator();
     }
-    std::pair<std::string, libdnf::OptionBinding *> next()
+    std::pair<std::string, libdnf::OptionBinds::Item *> next()
     {
         if ($self->cur != $self->end) {
             auto & id = $self->cur->first;
