@@ -29,26 +29,16 @@ namespace libdnf {
 
 // ========== OptionBinds::Item class ===============
 
-OptionBinds::Item::Item(Option & option,
-                             NewStringFunc && newString, GetValueStringFunc && getValueString, bool addValue)
+OptionBinds::Item::Item(Option & option, const NewStringFunc & newString,
+    const GetValueStringFunc & getValueString, bool addValue)
+: option(&option), newStr(newString), getValueStr(getValueString), addValue(addValue) {}
+
+OptionBinds::Item::Item(Option & option, NewStringFunc && newString,
+    GetValueStringFunc && getValueString, bool addValue)
 : option(&option), newStr(std::move(newString)), getValueStr(std::move(getValueString)), addValue(addValue) {}
 
 OptionBinds::Item::Item(Option & option)
 : option(&option) {}
-
-OptionBinds::Item::Item(OptionBinds & optBinds, Option & option, const std::string & name,
-                             NewStringFunc && newString, GetValueStringFunc && getValueString,
-                             bool addValue)
-: option(&option), newStr(std::move(newString)), getValueStr(std::move(getValueString)), addValue(addValue)
-{
-    optBinds.add(name, *this);
-}
-
-OptionBinds::Item::Item(OptionBinds & optBinds, Option & option, const std::string & name)
-: option(&option)
-{
-    optBinds.add(name, *this);
-}
 
 Option::Priority OptionBinds::Item::getPriority() const
 {
@@ -69,6 +59,11 @@ std::string OptionBinds::Item::getValueString() const
         return getValueStr();
     else
         return option->getValueString();
+}
+
+bool OptionBinds::Item::getAddValue() const
+{
+    return addValue;
 }
 
 
@@ -103,7 +98,7 @@ OptionBinds::Item & OptionBinds::at(const std::string & id)
     auto item = items.find(id);
     if (item == items.end())
         throw OutOfRange(id);
-    return *item->second;
+    return item->second;
 }
 
 const OptionBinds::Item & OptionBinds::at(const std::string & id) const
@@ -111,16 +106,36 @@ const OptionBinds::Item & OptionBinds::at(const std::string & id) const
     auto item = items.find(id);
     if (item == items.end())
         throw OutOfRange(id);
-    return *item->second;
+    return item->second;
 }
 
-OptionBinds::iterator OptionBinds::add(const std::string & id, Item & optBind)
+OptionBinds::Item & OptionBinds::add(const std::string & id, Option & option,
+    const Item::NewStringFunc & newString, const Item::GetValueStringFunc & getValueString, bool addValue)
 {
     auto item = items.find(id);
     if (item != items.end())
         throw AlreadyExists(id);
-    auto res = items.insert({id, &optBind});
-    return res.first;
+    auto res = items.emplace(id, Item(option, newString, getValueString, addValue));
+    return res.first->second;
+}
+
+OptionBinds::Item & OptionBinds::add(const std::string & id, Option & option,
+    Item::NewStringFunc && newString, Item::GetValueStringFunc && getValueString, bool addValue)
+{
+    auto item = items.find(id);
+    if (item != items.end())
+        throw AlreadyExists(id);
+    auto res = items.emplace(id, Item(option, std::move(newString), std::move(getValueString), addValue));
+    return res.first->second;
+}
+
+OptionBinds::Item & OptionBinds::add(const std::string & id, Option & option)
+{
+    auto item = items.find(id);
+    if (item != items.end())
+        throw AlreadyExists(id);
+    auto res = items.emplace(id, Item(option));
+    return res.first->second;
 }
 
 }

@@ -86,6 +86,15 @@ public:
 %ignore libdnf::OptionBinds::Exception;
 %ignore libdnf::OptionBinds::OutOfRange;
 %ignore libdnf::OptionBinds::AlreadyExists;
+%ignore libdnf::OptionBinds::add(const std::string & id, Option & option,
+    const Item::NewStringFunc & newString, const Item::GetValueStringFunc & getValueString, bool addValue);
+%ignore libdnf::OptionBinds::add(const std::string & id, Option & option,
+    Item::NewStringFunc && newString, Item::GetValueStringFunc && getValueString, bool addValue);
+%ignore libdnf::OptionBinds::begin;
+%ignore libdnf::OptionBinds::cbegin;
+%ignore libdnf::OptionBinds::end;
+%ignore libdnf::OptionBinds::cend;
+%ignore libdnf::OptionBinds::find;
 %include "libdnf/conf/OptionBinds.hpp"
 %feature ("flatnested", "0");
 
@@ -209,7 +218,7 @@ public:
     {
         if ($self->cur != $self->end) {
             auto & id = $self->cur->first;
-            auto pValue = ($self->cur++)->second;
+            auto pValue = &($self->cur++)->second;
             return {id, pValue};
         }
         throw StopIterator();
@@ -218,7 +227,7 @@ public:
     {
         if ($self->cur != $self->end) {
             auto & id = $self->cur->first;
-            auto pValue = ($self->cur++)->second;
+            auto pValue = &($self->cur++)->second;
             return {id, pValue};
         }
         throw StopIterator();
