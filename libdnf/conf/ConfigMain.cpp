@@ -164,65 +164,65 @@ class ConfigMain::Impl {
     Config & owner;
 
     OptionNumber<std::int32_t> debuglevel{2, 0, 10};
-    OptionBinding debugLevelBinding{owner.optBinds(), debuglevel, "debuglevel"};
+    OptionBinds::Item debugLevelBinding{owner.optBinds(), debuglevel, "debuglevel"};
 
     OptionNumber<std::int32_t> errorlevel{3, 0, 10};
-    OptionBinding errorLevelBinding{owner.optBinds(), errorlevel, "errorlevel"};
+    OptionBinds::Item errorLevelBinding{owner.optBinds(), errorlevel, "errorlevel"};
 
     OptionPath installroot{"/"};
-    OptionBinding installRootBinding{owner.optBinds(), installroot, "installroot"};
+    OptionBinds::Item installRootBinding{owner.optBinds(), installroot, "installroot"};
 
     OptionPath config_file_path{CONF_FILENAME};
-    OptionBinding configFilePathBinding{owner.optBinds(), config_file_path, "config_file_path"};
+    OptionBinds::Item configFilePathBinding{owner.optBinds(), config_file_path, "config_file_path"};
 
     OptionBool plugins{true};
-    OptionBinding pluginsBinding{owner.optBinds(), plugins, "plugins"};
+    OptionBinds::Item pluginsBinding{owner.optBinds(), plugins, "plugins"};
 
     OptionStringList pluginpath{std::vector<std::string>{}};
-    OptionBinding pluginPathBinding{owner.optBinds(), pluginpath, "pluginpath"};
+    OptionBinds::Item pluginPathBinding{owner.optBinds(), pluginpath, "pluginpath"};
 
     OptionStringList pluginconfpath{std::vector<std::string>{}};
-    OptionBinding pluginConfPathBinding{owner.optBinds(), pluginconfpath, "pluginconfpath"};
+    OptionBinds::Item pluginConfPathBinding{owner.optBinds(), pluginconfpath, "pluginconfpath"};
 
     OptionPath persistdir{PERSISTDIR};
-    OptionBinding persistDirBinding{owner.optBinds(), persistdir, "persistdir"};
+    OptionBinds::Item persistDirBinding{owner.optBinds(), persistdir, "persistdir"};
 
     OptionBool transformdb{true};
-    OptionBinding transformDbBinding{owner.optBinds(), transformdb, "transformdb"};
+    OptionBinds::Item transformDbBinding{owner.optBinds(), transformdb, "transformdb"};
 
     OptionNumber<std::int32_t> recent{7, 0};
-    OptionBinding recentBinding{owner.optBinds(), recent, "recent"};
+    OptionBinds::Item recentBinding{owner.optBinds(), recent, "recent"};
 
     OptionBool reset_nice{true};
-    OptionBinding resetNiceBinding{owner.optBinds(), reset_nice, "reset_nice"};
+    OptionBinds::Item resetNiceBinding{owner.optBinds(), reset_nice, "reset_nice"};
 
     OptionPath system_cachedir{SYSTEM_CACHEDIR};
-    OptionBinding systemCacheDirBindings{owner.optBinds(), system_cachedir, "system_cachedir"};
+    OptionBinds::Item systemCacheDirBindings{owner.optBinds(), system_cachedir, "system_cachedir"};
 
     OptionBool cacheonly{false};
-    OptionBinding cacheOnlyBinding{owner.optBinds(), cacheonly, "cacheonly"};
+    OptionBinds::Item cacheOnlyBinding{owner.optBinds(), cacheonly, "cacheonly"};
 
     OptionBool keepcache{false};
-    OptionBinding keepCacheBinding{owner.optBinds(), keepcache, "keepcache"};
+    OptionBinds::Item keepCacheBinding{owner.optBinds(), keepcache, "keepcache"};
 
     OptionString logdir{"/var/log"};
-    OptionBinding logDirBinding{owner.optBinds(), logdir, "logdir"};
+    OptionBinds::Item logDirBinding{owner.optBinds(), logdir, "logdir"};
 
     OptionStringList reposdir{{"/etc/yum.repos.d", "/etc/yum/repos.d", "/etc/distro.repos.d"}};
-    OptionBinding reposDirBinding{owner.optBinds(), reposdir, "reposdir"};
+    OptionBinds::Item reposDirBinding{owner.optBinds(), reposdir, "reposdir"};
 
     OptionBool debug_solver{false};
-    OptionBinding debugSolverBinding{owner.optBinds(), debug_solver, "debug_solver"};
+    OptionBinds::Item debugSolverBinding{owner.optBinds(), debug_solver, "debug_solver"};
 
     OptionStringList installonlypkgs{INSTALLONLYPKGS};
-    OptionBinding installOnlyPkgsBinding{owner.optBinds(), installonlypkgs, "installonlypkgs",
+    OptionBinds::Item installOnlyPkgsBinding{owner.optBinds(), installonlypkgs, "installonlypkgs",
         [&](Option::Priority priority, const std::string & value){
             optionTListAppend(installonlypkgs, priority, value);
         }, nullptr, true
     };
 
     OptionStringList group_package_types{GROUP_PACKAGE_TYPES};
-    OptionBinding groupPackageTypesBinding{owner.optBinds(), group_package_types, "group_package_types"};
+    OptionBinds::Item groupPackageTypesBinding{owner.optBinds(), group_package_types, "group_package_types"};
 
     OptionNumber<std::uint32_t> installonly_limit{3, 0,
         [](const std::string & value)->std::uint32_t{
@@ -236,65 +236,65 @@ class ConfigMain::Impl {
             }
         }
     };
-    OptionBinding installOnlyLimitBinding{owner.optBinds(), installonly_limit, "installonly_limit"};
+    OptionBinds::Item installOnlyLimitBinding{owner.optBinds(), installonly_limit, "installonly_limit"};
 
     OptionStringList tsflags{std::vector<std::string>{}};
-    OptionBinding tsFlagsBinding{owner.optBinds(), tsflags, "tsflags",
+    OptionBinds::Item tsFlagsBinding{owner.optBinds(), tsflags, "tsflags",
         [&](Option::Priority priority, const std::string & value){
             optionTListAppend(tsflags, priority, value);
         }, nullptr, true
     };
 
     OptionBool assumeyes{false};
-    OptionBinding assumeYesBinding{owner.optBinds(), assumeyes, "assumeyes"};
+    OptionBinds::Item assumeYesBinding{owner.optBinds(), assumeyes, "assumeyes"};
 
     OptionBool assumeno{false};
-    OptionBinding assumeNoBinding{owner.optBinds(), assumeno, "assumeno"};
+    OptionBinds::Item assumeNoBinding{owner.optBinds(), assumeno, "assumeno"};
 
     OptionBool check_config_file_age{true};
-    OptionBinding checkConfigFileAgeBinding{owner.optBinds(), check_config_file_age, "check_config_file_age"};
+    OptionBinds::Item checkConfigFileAgeBinding{owner.optBinds(), check_config_file_age, "check_config_file_age"};
 
     OptionBool defaultyes{false};
-    OptionBinding defaultYesBinding{owner.optBinds(), defaultyes, "defaultyes"};
+    OptionBinds::Item defaultYesBinding{owner.optBinds(), defaultyes, "defaultyes"};
 
     OptionBool diskspacecheck{true};
-    OptionBinding diskSpaceCheckBinding{owner.optBinds(), diskspacecheck, "diskspacecheck"};
+    OptionBinds::Item diskSpaceCheckBinding{owner.optBinds(), diskspacecheck, "diskspacecheck"};
 
     OptionBool localpkg_gpgcheck{false};
-    OptionBinding localPkgGpgCheckBinding{owner.optBinds(), localpkg_gpgcheck, "localpkg_gpgcheck"};
+    OptionBinds::Item localPkgGpgCheckBinding{owner.optBinds(), localpkg_gpgcheck, "localpkg_gpgcheck"};
 
     OptionBool gpgkey_dns_verification{false};
-    OptionBinding GpgkeyDnsVerificationBinding{owner.optBinds(), gpgkey_dns_verification, "gpgkey_dns_verification"};
+    OptionBinds::Item GpgkeyDnsVerificationBinding{owner.optBinds(), gpgkey_dns_verification, "gpgkey_dns_verification"};
 
     OptionBool obsoletes{true};
-    OptionBinding obsoletesBinding{owner.optBinds(), obsoletes, "obsoletes"};
+    OptionBinds::Item obsoletesBinding{owner.optBinds(), obsoletes, "obsoletes"};
 
     OptionBool showdupesfromrepos{false};
-    OptionBinding showDupesFromReposBinding{owner.optBinds(), showdupesfromrepos, "showdupesfromrepos"};
+    OptionBinds::Item showDupesFromReposBinding{owner.optBinds(), showdupesfromrepos, "showdupesfromrepos"};
 
     OptionBool exit_on_lock{false};
-    OptionBinding exitOnLockBinding{owner.optBinds(), exit_on_lock, "exit_on_lock"};
+    OptionBinds::Item exitOnLockBinding{owner.optBinds(), exit_on_lock, "exit_on_lock"};
 
     OptionSeconds metadata_timer_sync{60 * 60 * 3}; // 3 hours
-    OptionBinding metadataTimerSyncBinding{owner.optBinds(), metadata_timer_sync, "metadata_timer_sync"};
+    OptionBinds::Item metadataTimerSyncBinding{owner.optBinds(), metadata_timer_sync, "metadata_timer_sync"};
 
     OptionStringList disable_excludes{std::vector<std::string>{}};
-    OptionBinding disableExcludesBinding{owner.optBinds(), disable_excludes, "disable_excludes"};
+    OptionBinds::Item disableExcludesBinding{owner.optBinds(), disable_excludes, "disable_excludes"};
 
     OptionEnum<std::string> multilib_policy{"best", {"best", "all"}}; // :api
-    OptionBinding multilibPolicyBinding{owner.optBinds(), multilib_policy, "multilib_policy"};
+    OptionBinds::Item multilibPolicyBinding{owner.optBinds(), multilib_policy, "multilib_policy"};
 
     OptionBool best{true}; // :api
-    OptionBinding bestBinding{owner.optBinds(), best, "best"};
+    OptionBinds::Item bestBinding{owner.optBinds(), best, "best"};
 
     OptionBool install_weak_deps{true};
-    OptionBinding installWeakDepsBinding{owner.optBinds(), install_weak_deps, "install_weak_deps"};
+    OptionBinds::Item installWeakDepsBinding{owner.optBinds(), install_weak_deps, "install_weak_deps"};
 
     OptionString bugtracker_url{BUGTRACKER};
-    OptionBinding bugtrackerUrlBinding{owner.optBinds(), bugtracker_url, "bugtracker_url"};
+    OptionBinds::Item bugtrackerUrlBinding{owner.optBinds(), bugtracker_url, "bugtracker_url"};
 
     OptionBool zchunk{true};
-    OptionBinding zchunkBinding{owner.optBinds(), zchunk, "zchunk"};
+    OptionBinds::Item zchunkBinding{owner.optBinds(), zchunk, "zchunk"};
 
     OptionEnum<std::string> color{"auto", {"auto", "never", "always"},
         [](const std::string & value){
@@ -313,64 +313,64 @@ class ConfigMain::Impl {
             return tmp;
         }
     };
-    OptionBinding colorBinding{owner.optBinds(), color, "color"};
+    OptionBinds::Item colorBinding{owner.optBinds(), color, "color"};
 
     OptionString color_list_installed_older{"bold"};
-    OptionBinding colorListInstalledOlderBinding{owner.optBinds(), color_list_installed_older, "color_list_installed_older"};
+    OptionBinds::Item colorListInstalledOlderBinding{owner.optBinds(), color_list_installed_older, "color_list_installed_older"};
 
     OptionString color_list_installed_newer{"bold,yellow"};
-    OptionBinding colorListInstalledNewerBinding{owner.optBinds(), color_list_installed_newer, "color_list_installed_newer"};
+    OptionBinds::Item colorListInstalledNewerBinding{owner.optBinds(), color_list_installed_newer, "color_list_installed_newer"};
 
     OptionString color_list_installed_reinstall{"normal"};
-    OptionBinding colorListInstalledReinstallBinding{owner.optBinds(), color_list_installed_reinstall, "color_list_installed_reinstall"};
+    OptionBinds::Item colorListInstalledReinstallBinding{owner.optBinds(), color_list_installed_reinstall, "color_list_installed_reinstall"};
 
     OptionString color_list_installed_extra{"bold,red"};
-    OptionBinding colorListInstalledExtraBinding{owner.optBinds(), color_list_installed_extra, "color_list_installed_extra"};
+    OptionBinds::Item colorListInstalledExtraBinding{owner.optBinds(), color_list_installed_extra, "color_list_installed_extra"};
 
     OptionString color_list_available_upgrade{"bold,blue"};
-    OptionBinding colorListAvailableUpgradeBinding{owner.optBinds(), color_list_available_upgrade, "color_list_available_upgrade"};
+    OptionBinds::Item colorListAvailableUpgradeBinding{owner.optBinds(), color_list_available_upgrade, "color_list_available_upgrade"};
 
     OptionString color_list_available_downgrade{"dim,cyan"};
-    OptionBinding colorListAvailableDowngradeBinding{owner.optBinds(), color_list_available_downgrade, "color_list_available_downgrade"};
+    OptionBinds::Item colorListAvailableDowngradeBinding{owner.optBinds(), color_list_available_downgrade, "color_list_available_downgrade"};
 
     OptionString color_list_available_reinstall{"bold,underline,green"};
-    OptionBinding colorListAvailableReinstallBinding{owner.optBinds(), color_list_available_reinstall, "color_list_available_reinstall"};
+    OptionBinds::Item colorListAvailableReinstallBinding{owner.optBinds(), color_list_available_reinstall, "color_list_available_reinstall"};
 
     OptionString color_list_available_install{"normal"};
-    OptionBinding colorListAvailableInstallBinding{owner.optBinds(), color_list_available_install, "color_list_available_install"};
+    OptionBinds::Item colorListAvailableInstallBinding{owner.optBinds(), color_list_available_install, "color_list_available_install"};
 
     OptionString color_update_installed{"normal"};
-    OptionBinding colorUpdateInstalledBinding{owner.optBinds(), color_update_installed, "color_update_installed"};
+    OptionBinds::Item colorUpdateInstalledBinding{owner.optBinds(), color_update_installed, "color_update_installed"};
 
     OptionString color_update_local{"bold"};
-    OptionBinding colorUpdateLocalBinding{owner.optBinds(), color_update_local, "color_update_local"};
+    OptionBinds::Item colorUpdateLocalBinding{owner.optBinds(), color_update_local, "color_update_local"};
 
     OptionString color_update_remote{"normal"};
-    OptionBinding colorUpdateRemoteBinding{owner.optBinds(), color_update_remote, "color_update_remote"};
+    OptionBinds::Item colorUpdateRemoteBinding{owner.optBinds(), color_update_remote, "color_update_remote"};
 
     OptionString color_search_match{"bold"};
-    OptionBinding colorSearchMatchBinding{owner.optBinds(), color_search_match, "color_search_match"};
+    OptionBinds::Item colorSearchMatchBinding{owner.optBinds(), color_search_match, "color_search_match"};
 
     OptionBool history_record{true};
-    OptionBinding historyRecordBinding{owner.optBinds(), history_record, "history_record"};
+    OptionBinds::Item historyRecordBinding{owner.optBinds(), history_record, "history_record"};
 
     OptionStringList history_record_packages{std::vector<std::string>{"dnf", "rpm"}};
-    OptionBinding historyRecordPackagesBinding{owner.optBinds(), history_record_packages, "history_record_packages"};
+    OptionBinds::Item historyRecordPackagesBinding{owner.optBinds(), history_record_packages, "history_record_packages"};
 
     OptionString rpmverbosity{"info"};
-    OptionBinding rpmverbosityBinding{owner.optBinds(), rpmverbosity, "rpmverbosity"};
+    OptionBinds::Item rpmverbosityBinding{owner.optBinds(), rpmverbosity, "rpmverbosity"};
 
     OptionBool strict{true}; // :api
-    OptionBinding strictBinding{owner.optBinds(), strict, "strict"};
+    OptionBinds::Item strictBinding{owner.optBinds(), strict, "strict"};
 
     OptionBool skip_broken{false}; // :yum-compatibility
-    OptionBinding skipBrokenBinding{owner.optBinds(), skip_broken, "skip_broken"};
+    OptionBinds::Item skipBrokenBinding{owner.optBinds(), skip_broken, "skip_broken"};
 
     OptionBool autocheck_running_kernel{true}; // :yum-compatibility
-    OptionBinding autocheckRunningKernelBinding{owner.optBinds(), autocheck_running_kernel, "autocheck_running_kernel"};
+    OptionBinds::Item autocheckRunningKernelBinding{owner.optBinds(), autocheck_running_kernel, "autocheck_running_kernel"};
 
     OptionBool clean_requirements_on_remove{true};
-    OptionBinding cleanRequirementsOnRemoveBinding{owner.optBinds(), clean_requirements_on_remove, "clean_requirements_on_remove"};
+    OptionBinds::Item cleanRequirementsOnRemoveBinding{owner.optBinds(), clean_requirements_on_remove, "clean_requirements_on_remove"};
 
     OptionEnum<std::string> history_list_view{"commands", {"single-user-commands", "users", "commands"},
         [](const std::string & value){
@@ -380,64 +380,64 @@ class ConfigMain::Impl {
                 return value;
         }
     };
-    OptionBinding historyListViewBinding{owner.optBinds(), history_list_view, "history_list_view"};
+    OptionBinds::Item historyListViewBinding{owner.optBinds(), history_list_view, "history_list_view"};
 
     OptionBool upgrade_group_objects_upgrade{true}; // :api
-    OptionBinding upgradeGroupObjectsUpgradeBinding{owner.optBinds(), upgrade_group_objects_upgrade, "upgrade_group_objects_upgrade"};
+    OptionBinds::Item upgradeGroupObjectsUpgradeBinding{owner.optBinds(), upgrade_group_objects_upgrade, "upgrade_group_objects_upgrade"};
 
     OptionPath destdir{nullptr};
-    OptionBinding destDirBinding{owner.optBinds(), destdir, "destdir"};
+    OptionBinds::Item destDirBinding{owner.optBinds(), destdir, "destdir"};
 
     OptionString comment{nullptr};
-    OptionBinding commentBinding{owner.optBinds(), comment, "comment"};
+    OptionBinds::Item commentBinding{owner.optBinds(), comment, "comment"};
 
     // runtime only options
     OptionBool downloadonly{false};
 
     OptionBool ignorearch{false};
-    OptionBinding ignoreArchBinding{owner.optBinds(), ignorearch, "ignorearch"};
+    OptionBinds::Item ignoreArchBinding{owner.optBinds(), ignorearch, "ignorearch"};
 
     OptionString module_platform_id{nullptr};
-    OptionBinding modulePlatformId{owner.optBinds(), module_platform_id, "module_platform_id"};
+    OptionBinds::Item modulePlatformId{owner.optBinds(), module_platform_id, "module_platform_id"};
 
     // Repo main config
 
     OptionNumber<std::uint32_t> retries{10};
-    OptionBinding retriesBinding{owner.optBinds(), retries, "retries"};
+    OptionBinds::Item retriesBinding{owner.optBinds(), retries, "retries"};
 
     OptionString cachedir{nullptr};
-    OptionBinding cacheDirBindings{owner.optBinds(), cachedir, "cachedir"};
+    OptionBinds::Item cacheDirBindings{owner.optBinds(), cachedir, "cachedir"};
 
     OptionBool fastestmirror{false};
-    OptionBinding fastestMirrorBinding{owner.optBinds(), fastestmirror, "fastestmirror"};
+    OptionBinds::Item fastestMirrorBinding{owner.optBinds(), fastestmirror, "fastestmirror"};
 
     OptionStringList excludepkgs{std::vector<std::string>{}};
-    OptionBinding excludePkgsBinding{owner.optBinds(), excludepkgs, "excludepkgs",
+    OptionBinds::Item excludePkgsBinding{owner.optBinds(), excludepkgs, "excludepkgs",
         [&](Option::Priority priority, const std::string & value){
             optionTListAppend(excludepkgs, priority, value);
         }, nullptr, true
     };
-    OptionBinding excludeBinding{owner.optBinds(), excludepkgs, "exclude", //compatibility with yum
+    OptionBinds::Item excludeBinding{owner.optBinds(), excludepkgs, "exclude", //compatibility with yum
         [&](Option::Priority priority, const std::string & value){
             optionTListAppend(excludepkgs, priority, value);
         }, nullptr, true
     };
 
     OptionStringList includepkgs{std::vector<std::string>{}};
-    OptionBinding includePkgsBinding{owner.optBinds(), includepkgs, "includepkgs",
+    OptionBinds::Item includePkgsBinding{owner.optBinds(), includepkgs, "includepkgs",
         [&](Option::Priority priority, const std::string & value){
             optionTListAppend(includepkgs, priority, value);
         }, nullptr, true
     };
 
     OptionString proxy{""};
-    OptionBinding proxyBinding{owner.optBinds(), proxy, "proxy"};
+    OptionBinds::Item proxyBinding{owner.optBinds(), proxy, "proxy"};
 
     OptionString proxy_username{nullptr};
-    OptionBinding proxyUsernameBinding{owner.optBinds(), proxy_username, "proxy_username"};
+    OptionBinds::Item proxyUsernameBinding{owner.optBinds(), proxy_username, "proxy_username"};
 
     OptionString proxy_password{nullptr};
-    OptionBinding proxyPasswordBinding{owner.optBinds(), proxy_password, "proxy_password"};
+    OptionBinds::Item proxyPasswordBinding{owner.optBinds(), proxy_password, "proxy_password"};
 
     OptionEnum<std::string> proxy_auth_method{"any", {"any", "none", "basic", "digest",
         "negotiate", "ntlm", "digest_ie", "ntlm_wb"},
@@ -447,11 +447,11 @@ class ConfigMain::Impl {
             return tmp;
         }
     };
-    OptionBinding proxyAuthMethodBinding{owner.optBinds(), proxy_auth_method, "proxy_auth_method"};
+    OptionBinds::Item proxyAuthMethodBinding{owner.optBinds(), proxy_auth_method, "proxy_auth_method"};
 
     OptionStringList protected_packages{resolveGlobs("dnf glob:/etc/yum/protected.d/*.conf " \
                                           "glob:/etc/dnf/protected.d/*.conf")};
-    OptionBinding protectedPackagesBinding{owner.optBinds(), protected_packages, "protected_packages",
+    OptionBinds::Item protectedPackagesBinding{owner.optBinds(), protected_packages, "protected_packages",
         [&](Option::Priority priority, const std::string & value){
             if (priority >= protected_packages.getPriority())
                 protected_packages.set(priority, resolveGlobs(value));
@@ -459,28 +459,28 @@ class ConfigMain::Impl {
     };
 
     OptionString username{""};
-    OptionBinding usernameBinding{owner.optBinds(), username, "username"};
+    OptionBinds::Item usernameBinding{owner.optBinds(), username, "username"};
 
     OptionString password{""};
-    OptionBinding passwordBinding{owner.optBinds(), password, "password"};
+    OptionBinds::Item passwordBinding{owner.optBinds(), password, "password"};
 
     OptionBool gpgcheck{false};
-    OptionBinding gpgCheckBinding{owner.optBinds(), gpgcheck, "gpgcheck"};
+    OptionBinds::Item gpgCheckBinding{owner.optBinds(), gpgcheck, "gpgcheck"};
 
     OptionBool repo_gpgcheck{false};
-    OptionBinding repoGpgCheckBinding{owner.optBinds(), repo_gpgcheck, "repo_gpgcheck"};
+    OptionBinds::Item repoGpgCheckBinding{owner.optBinds(), repo_gpgcheck, "repo_gpgcheck"};
 
     OptionBool enabled{true};
-    OptionBinding enabledBinding{owner.optBinds(), enabled, "enabled"};
+    OptionBinds::Item enabledBinding{owner.optBinds(), enabled, "enabled"};
 
     OptionBool enablegroups{true};
-    OptionBinding enableGroupsBinding{owner.optBinds(), enablegroups, "enablegroups"};
+    OptionBinds::Item enableGroupsBinding{owner.optBinds(), enablegroups, "enablegroups"};
 
     OptionNumber<std::uint32_t> bandwidth{0, strToBytes};
-    OptionBinding bandwidthBinding{owner.optBinds(), bandwidth, "bandwidth"};
+    OptionBinds::Item bandwidthBinding{owner.optBinds(), bandwidth, "bandwidth"};
 
     OptionNumber<std::uint32_t> minrate{1000, strToBytes};
-    OptionBinding minRateBinding{owner.optBinds(), minrate, "minrate"};
+    OptionBinds::Item minRateBinding{owner.optBinds(), minrate, "minrate"};
 
     OptionEnum<std::string> ip_resolve{"whatever", {"ipv4", "ipv6", "whatever"},
         [](const std::string & value){
@@ -491,7 +491,7 @@ class ConfigMain::Impl {
             return tmp;
         }
     };
-    OptionBinding ipResolveBinding{owner.optBinds(), ip_resolve, "ip_resolve"};
+    OptionBinds::Item ipResolveBinding{owner.optBinds(), ip_resolve, "ip_resolve"};
 
     OptionNumber<float> throttle{0, 0,
         [](const std::string & value)->float{
@@ -505,34 +505,34 @@ class ConfigMain::Impl {
             return strToBytes(value);
         }
     };
-    OptionBinding throttleBinding{owner.optBinds(), throttle, "throttle"};
+    OptionBinds::Item throttleBinding{owner.optBinds(), throttle, "throttle"};
 
     OptionSeconds timeout{30};
-    OptionBinding timeoutBinding{owner.optBinds(), timeout, "timeout"};
+    OptionBinds::Item timeoutBinding{owner.optBinds(), timeout, "timeout"};
 
     OptionNumber<std::uint32_t> max_parallel_downloads{3, 1};
-    OptionBinding maxParallelDownloadsBinding{owner.optBinds(), max_parallel_downloads, "max_parallel_downloads"};
+    OptionBinds::Item maxParallelDownloadsBinding{owner.optBinds(), max_parallel_downloads, "max_parallel_downloads"};
 
     OptionSeconds metadata_expire{60 * 60 * 48};
-    OptionBinding metadataExpireBinding{owner.optBinds(), metadata_expire, "metadata_expire"};
+    OptionBinds::Item metadataExpireBinding{owner.optBinds(), metadata_expire, "metadata_expire"};
 
     OptionString sslcacert{""};
-    OptionBinding sslCaCertBinding{owner.optBinds(), sslcacert, "sslcacert"};
+    OptionBinds::Item sslCaCertBinding{owner.optBinds(), sslcacert, "sslcacert"};
 
     OptionBool sslverify{true};
-    OptionBinding sslVerifyBinding{owner.optBinds(), sslverify, "sslverify"};
+    OptionBinds::Item sslVerifyBinding{owner.optBinds(), sslverify, "sslverify"};
 
     OptionString sslclientcert{""};
-    OptionBinding sslClientCertBinding{owner.optBinds(), sslclientcert, "sslclientcert"};
+    OptionBinds::Item sslClientCertBinding{owner.optBinds(), sslclientcert, "sslclientcert"};
 
     OptionString sslclientkey{""};
-    OptionBinding sslClientKeyBinding{owner.optBinds(), sslclientkey, "sslclientkey"};
+    OptionBinds::Item sslClientKeyBinding{owner.optBinds(), sslclientkey, "sslclientkey"};
 
     OptionBool deltarpm{true};
-    OptionBinding deltaRpmBinding{owner.optBinds(), deltarpm, "deltarpm"};
+    OptionBinds::Item deltaRpmBinding{owner.optBinds(), deltarpm, "deltarpm"};
 
     OptionNumber<std::uint32_t> deltarpm_percentage{75};
-    OptionBinding deltaRpmPercentageBinding{owner.optBinds(), deltarpm_percentage, "deltarpm_percentage"};
+    OptionBinds::Item deltaRpmPercentageBinding{owner.optBinds(), deltarpm_percentage, "deltarpm_percentage"};
 };
 
 ConfigMain::ConfigMain() { pImpl = std::unique_ptr<Impl>(new Impl(*this)); }

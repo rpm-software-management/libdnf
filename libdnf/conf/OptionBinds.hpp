@@ -28,33 +28,6 @@
 
 namespace libdnf {
 
-class OptionBinds;
-
-class OptionBinding {
-public:
-    typedef std::function<void(Option::Priority, const std::string &)> NewStringFunc;
-    typedef std::function<const std::string & ()> GetValueStringFunc;
-
-    OptionBinding(OptionBinds & optBinds, Option & option, const std::string & name,
-                  NewStringFunc && newString, GetValueStringFunc && getValueString, bool addValue);
-    OptionBinding(OptionBinds & optBinds, Option & option, const std::string & name);
-    OptionBinding(const OptionBinding &) = delete;
-
-    OptionBinding & operator =(const OptionBinding &) = delete;
-
-    Option::Priority getPriority() const;
-    void newString(Option::Priority priority, const std::string & value);
-    std::string getValueString() const;
-
-    bool getAddValue() const { return addValue; }
-
-private:
-    Option * option;
-    NewStringFunc newStr;
-    GetValueStringFunc getValueStr;
-    bool addValue{false}; // hint that new value be added
-};
-
 class OptionBinds {
 public:
     struct Exception : public std::runtime_error {
@@ -71,16 +44,38 @@ public:
         const char * what() const noexcept override;
     };
 
-    typedef std::map<std::string, OptionBinding *> Container;
+    class Item final {
+    public:
+        typedef std::function<void(Option::Priority, const std::string &)> NewStringFunc;
+        typedef std::function<const std::string & ()> GetValueStringFunc;
+
+        Item(Option & option,
+                    NewStringFunc && newString, GetValueStringFunc && getValueString, bool addValue);
+        Item(Option & option);
+        Item(OptionBinds & optBinds, Option & option, const std::string & name,
+                    NewStringFunc && newString, GetValueStringFunc && getValueString, bool addValue);
+        Item(OptionBinds & optBinds, Option & option, const std::string & name);
+
+        Option::Priority getPriority() const;
+        void newString(Option::Priority priority, const std::string & value);
+        std::string getValueString() const;
+
+        bool getAddValue() const { return addValue; }
+
+    private:
+        Option * option;
+        NewStringFunc newStr;
+        GetValueStringFunc getValueStr;
+        bool addValue{false}; // hint that new value be added
+    };
+
+    typedef std::map<std::string, Item *> Container;
     typedef Container::iterator iterator;
     typedef Container::const_iterator const_iterator;
 
-    OptionBinds() = default;
-    OptionBinds(const OptionBinds &) = delete;
-    OptionBinds & operator=(const OptionBinds &) = delete;
-
-    OptionBinding & at(const std::string & id);
-    const OptionBinding & at(const std::string & id) const;
+    iterator add(const std::string & id, Item & optBind);
+    Item & at(const std::string & id);
+    const Item & at(const std::string & id) const;
     bool empty() const noexcept { return items.empty(); }
     std::size_t size() const noexcept { return items.size(); }
     iterator begin() noexcept { return items.begin(); }
@@ -93,8 +88,6 @@ public:
     const_iterator find(const std::string & id) const { return items.find(id); }
 
 private:
-    friend class OptionBinding;
-    iterator add(const std::string & id, OptionBinding & optBind);
     Container items;
 };
 
