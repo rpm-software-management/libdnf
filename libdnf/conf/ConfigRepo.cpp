@@ -27,149 +27,116 @@ namespace libdnf {
 class ConfigRepo::Impl {
     friend class ConfigRepo;
 
-    Impl(Config & owner, ConfigMain & masterConfig) : owner(owner), masterConfig(masterConfig) {}
+    Impl(Config & owner, ConfigMain & masterConfig);
 
     Config & owner;
     ConfigMain & masterConfig;
 
     OptionString name{""};
-    OptionBinds::Item nameBinding{owner.optBinds(), name, "name"};
-
     OptionChild<OptionBool> enabled{masterConfig.enabled()};
-    OptionBinds::Item enabledBinding{owner.optBinds(), enabled, "enabled"};
-
     OptionChild<OptionString> basecachedir{masterConfig.cachedir()};
-    OptionBinds::Item baseCacheDirBindings{owner.optBinds(), basecachedir, "cachedir"};
-
     OptionStringList baseurl{std::vector<std::string>{}};
-    OptionBinds::Item baseUrlBinding{owner.optBinds(), baseurl, "baseurl"};
-
     OptionString mirrorlist{nullptr};
-    OptionBinds::Item mirrorListBinding{owner.optBinds(), mirrorlist, "mirrorlist"};
-
     OptionString metalink{nullptr};
-    OptionBinds::Item metaLinkBinding{owner.optBinds(), metalink, "metalink"};
-
     OptionString type{""};
-    OptionBinds::Item typeBinding{owner.optBinds(), type, "type"};
-
     OptionString mediaid{""};
-    OptionBinds::Item mediaIdBinding{owner.optBinds(), mediaid, "mediaid"};
-
     OptionStringList gpgkey{std::vector<std::string>{}};
-    OptionBinds::Item gpgKeyBinding{owner.optBinds(), gpgkey, "gpgkey"};
-
     OptionStringList excludepkgs{std::vector<std::string>{}};
-    OptionBinds::Item excludePkgsBinding{owner.optBinds(), excludepkgs, "excludepkgs",
-        [&](Option::Priority priority, const std::string & value){
-            optionTListAppend(excludepkgs, priority, value);
-        }, nullptr, true
-    };
-    OptionBinds::Item excludeBinding{owner.optBinds(), excludepkgs, "exclude", //compatibility with yum
-        [&](Option::Priority priority, const std::string & value){
-            optionTListAppend(excludepkgs, priority, value);
-        }, nullptr, true
-    };
-
     OptionStringList includepkgs{std::vector<std::string>{}};
-    OptionBinds::Item includePkgsBinding{owner.optBinds(), includepkgs, "includepkgs",
+    OptionChild<OptionBool> fastestmirror{masterConfig.fastestmirror()};
+    OptionChild<OptionString> proxy{masterConfig.proxy()};
+    OptionChild<OptionString> proxy_username{masterConfig.proxy_username()};
+    OptionChild<OptionString> proxy_password{masterConfig.proxy_password()};
+    OptionChild<OptionEnum<std::string> > proxy_auth_method{masterConfig.proxy_auth_method()};
+    OptionChild<OptionString> username{masterConfig.username()};
+    OptionChild<OptionString> password{masterConfig.password()};
+    OptionChild<OptionStringList> protected_packages{masterConfig.protected_packages()};
+    OptionChild<OptionBool> gpgcheck{masterConfig.gpgcheck()};
+    OptionChild<OptionBool> repo_gpgcheck{masterConfig.repo_gpgcheck()};
+    OptionChild<OptionBool> enablegroups{masterConfig.enablegroups()};
+    OptionChild<OptionNumber<std::uint32_t> > retries{masterConfig.retries()};
+    OptionChild<OptionNumber<std::uint32_t> > bandwidth{masterConfig.bandwidth()};
+    OptionChild<OptionNumber<std::uint32_t> > minrate{masterConfig.minrate()};
+    OptionChild<OptionEnum<std::string> > ip_resolve{masterConfig.ip_resolve()};
+    OptionChild<OptionNumber<float> > throttle{masterConfig.throttle()};
+    OptionChild<OptionSeconds> timeout{masterConfig.timeout()};
+    OptionChild<OptionNumber<std::uint32_t> >  max_parallel_downloads{masterConfig.max_parallel_downloads()};
+    OptionChild<OptionSeconds> metadata_expire{masterConfig.metadata_expire()};
+    OptionNumber<std::int32_t> cost{1000};
+    OptionNumber<std::int32_t> priority{99};
+    OptionBool module_hotfixes{false};
+    OptionChild<OptionString> sslcacert{masterConfig.sslcacert()};
+    OptionChild<OptionBool> sslverify{masterConfig.sslverify()};
+    OptionChild<OptionString> sslclientcert{masterConfig.sslclientcert()};
+    OptionChild<OptionString> sslclientkey{masterConfig.sslclientkey()};
+    OptionChild<OptionBool> deltarpm{masterConfig.deltarpm()};
+    OptionChild<OptionNumber<std::uint32_t> > deltarpm_percentage{masterConfig.deltarpm_percentage()};
+    OptionBool skip_if_unavailable{true};
+    OptionString enabled_metadata{""};
+    OptionEnum<std::string> failovermethod{"priority", {"priority", "roundrobin"}};
+};
+
+ConfigRepo::Impl::Impl(Config & owner, ConfigMain & masterConfig)
+: owner(owner), masterConfig(masterConfig)
+{
+    owner.optBinds().add("name", name);
+    owner.optBinds().add("enabled", enabled);
+    owner.optBinds().add("cachedir", basecachedir);
+    owner.optBinds().add("baseurl", baseurl);
+    owner.optBinds().add("mirrorlist", mirrorlist);
+    owner.optBinds().add("metalink", metalink);
+    owner.optBinds().add("type", type);
+    owner.optBinds().add("mediaid", mediaid);
+    owner.optBinds().add("gpgkey", gpgkey);
+
+    owner.optBinds().add("excludepkgs", excludepkgs,
+        [&](Option::Priority priority, const std::string & value){
+            optionTListAppend(excludepkgs, priority, value);
+        }, nullptr, true
+    );
+    owner.optBinds().add("exclude", excludepkgs, //compatibility with yum
+        [&](Option::Priority priority, const std::string & value){
+            optionTListAppend(excludepkgs, priority, value);
+        }, nullptr, true
+    );
+
+    owner.optBinds().add("includepkgs", includepkgs,
         [&](Option::Priority priority, const std::string & value){
             optionTListAppend(includepkgs, priority, value);
         }, nullptr, true
-    };
+    );
 
-    OptionChild<OptionBool> fastestmirror{masterConfig.fastestmirror()};
-    OptionBinds::Item fastestMirrorBinding{owner.optBinds(), fastestmirror, "fastestmirror"};
-
-    OptionChild<OptionString> proxy{masterConfig.proxy()};
-    OptionBinds::Item proxyBinding{owner.optBinds(), proxy, "proxy"};
-
-    OptionChild<OptionString> proxy_username{masterConfig.proxy_username()};
-    OptionBinds::Item proxyUsernameBinding{owner.optBinds(), proxy_username, "proxy_username"};
-
-    OptionChild<OptionString> proxy_password{masterConfig.proxy_password()};
-    OptionBinds::Item proxyPasswordBinding{owner.optBinds(), proxy_password, "proxy_password"};
-
-    OptionChild<OptionEnum<std::string> > proxy_auth_method{masterConfig.proxy_auth_method()};
-    OptionBinds::Item proxyAuthMethodBinding{owner.optBinds(), proxy_auth_method, "proxy_auth_method"};
-
-    OptionChild<OptionString> username{masterConfig.username()};
-    OptionBinds::Item usernameBinding{owner.optBinds(), username, "username"};
-
-    OptionChild<OptionString> password{masterConfig.password()};
-    OptionBinds::Item passwordBinding{owner.optBinds(), password, "password"};
-
-    OptionChild<OptionStringList> protected_packages{masterConfig.protected_packages()};
-    OptionBinds::Item protectedPackagesBinding{owner.optBinds(), protected_packages, "protected_packages"};
-
-    OptionChild<OptionBool> gpgcheck{masterConfig.gpgcheck()};
-    OptionBinds::Item gpgCheckBinding{owner.optBinds(), gpgcheck, "gpgcheck"};
-
-    OptionChild<OptionBool> repo_gpgcheck{masterConfig.repo_gpgcheck()};
-    OptionBinds::Item repoGpgCheckBinding{owner.optBinds(), repo_gpgcheck, "repo_gpgcheck"};
-
-    OptionChild<OptionBool> enablegroups{masterConfig.enablegroups()};
-    OptionBinds::Item enableGroupsBinding{owner.optBinds(), enablegroups, "enablegroups"};
-
-    OptionChild<OptionNumber<std::uint32_t> > retries{masterConfig.retries()};
-    OptionBinds::Item retriesBinding{owner.optBinds(), retries, "retries"};
-
-    OptionChild<OptionNumber<std::uint32_t> > bandwidth{masterConfig.bandwidth()};
-    OptionBinds::Item bandwidthBinding{owner.optBinds(), bandwidth, "bandwidth"};
-
-    OptionChild<OptionNumber<std::uint32_t> > minrate{masterConfig.minrate()};
-    OptionBinds::Item minRateBinding{owner.optBinds(), minrate, "minrate"};
-
-    OptionChild<OptionEnum<std::string> > ip_resolve{masterConfig.ip_resolve()};
-    OptionBinds::Item ipResolveBinding{owner.optBinds(), ip_resolve, "ip_resolve"};
-
-    OptionChild<OptionNumber<float> > throttle{masterConfig.throttle()};
-    OptionBinds::Item throttleBinding{owner.optBinds(), throttle, "throttle"};
-
-    OptionChild<OptionSeconds> timeout{masterConfig.timeout()};
-    OptionBinds::Item timeoutBinding{owner.optBinds(), timeout, "timeout"};
-
-    OptionChild<OptionNumber<std::uint32_t> >  max_parallel_downloads{masterConfig.max_parallel_downloads()};
-    OptionBinds::Item maxParallelDownloadsBinding{owner.optBinds(), max_parallel_downloads, "max_parallel_downloads"};
-
-    OptionChild<OptionSeconds> metadata_expire{masterConfig.metadata_expire()};
-    OptionBinds::Item metadataExpireBinding{owner.optBinds(), metadata_expire, "metadata_expire"};
-
-    OptionNumber<std::int32_t> cost{1000};
-    OptionBinds::Item costBinding{owner.optBinds(), cost, "cost"};
-
-    OptionNumber<std::int32_t> priority{99};
-    OptionBinds::Item priorityBinding{owner.optBinds(), priority, "priority"};
-
-    OptionBool module_hotfixes{false};
-    OptionBinds::Item moduleHotfixesBinding{owner.optBinds(), module_hotfixes, "module_hotfixes"};
-
-    OptionChild<OptionString> sslcacert{masterConfig.sslcacert()};
-    OptionBinds::Item sslCaCertBinding{owner.optBinds(), sslcacert, "sslcacert"};
-
-    OptionChild<OptionBool> sslverify{masterConfig.sslverify()};
-    OptionBinds::Item sslVerifyBinding{owner.optBinds(), sslverify, "sslverify"};
-
-    OptionChild<OptionString> sslclientcert{masterConfig.sslclientcert()};
-    OptionBinds::Item sslClientCertBinding{owner.optBinds(), sslclientcert, "sslclientcert"};
-
-    OptionChild<OptionString> sslclientkey{masterConfig.sslclientkey()};
-    OptionBinds::Item sslClientKeyBinding{owner.optBinds(), sslclientkey, "sslclientkey"};
-
-    OptionChild<OptionBool> deltarpm{masterConfig.deltarpm()};
-    OptionBinds::Item deltaRpmBinding{owner.optBinds(), deltarpm, "deltarpm"};
-
-    OptionChild<OptionNumber<std::uint32_t> > deltarpm_percentage{masterConfig.deltarpm_percentage()};
-    OptionBinds::Item deltaRpmPercentageBinding{owner.optBinds(), deltarpm_percentage, "deltarpm_percentage"};
-
-    OptionBool skip_if_unavailable{true};
-    OptionBinds::Item skipIfUnavailableBinding{owner.optBinds(), skip_if_unavailable, "skip_if_unavailable"};
-
-    OptionString enabled_metadata{""};
-    OptionBinds::Item enabledMetadataBinding{owner.optBinds(), enabled_metadata, "enabled_metadata"};
-
-    OptionEnum<std::string> failovermethod{"priority", {"priority", "roundrobin"}};
-};
+    owner.optBinds().add("fastestmirror", fastestmirror);
+    owner.optBinds().add("proxy", proxy);
+    owner.optBinds().add("proxy_username", proxy_username);
+    owner.optBinds().add("proxy_password", proxy_password);
+    owner.optBinds().add("proxy_auth_method", proxy_auth_method);
+    owner.optBinds().add("username", username);
+    owner.optBinds().add("password", password);
+    owner.optBinds().add("protected_packages", protected_packages);
+    owner.optBinds().add("gpgcheck", gpgcheck);
+    owner.optBinds().add("repo_gpgcheck", repo_gpgcheck);
+    owner.optBinds().add("enablegroups", enablegroups);
+    owner.optBinds().add("retries", retries);
+    owner.optBinds().add("bandwidth", bandwidth);
+    owner.optBinds().add("minrate", minrate);
+    owner.optBinds().add("ip_resolve", ip_resolve);
+    owner.optBinds().add("throttle", throttle);
+    owner.optBinds().add("timeout", timeout);
+    owner.optBinds().add("max_parallel_downloads", max_parallel_downloads);
+    owner.optBinds().add("metadata_expire", metadata_expire);
+    owner.optBinds().add("cost", cost);
+    owner.optBinds().add("priority", priority);
+    owner.optBinds().add("module_hotfixes", module_hotfixes);
+    owner.optBinds().add("sslcacert", sslcacert);
+    owner.optBinds().add("sslverify", sslverify);
+    owner.optBinds().add("sslclientcert", sslclientcert);
+    owner.optBinds().add("sslclientkey", sslclientkey);
+    owner.optBinds().add("deltarpm", deltarpm);
+    owner.optBinds().add("deltarpm_percentage", deltarpm_percentage);
+    owner.optBinds().add("skip_if_unavailable", skip_if_unavailable);
+    owner.optBinds().add("enabled_metadata", enabled_metadata);
+}
 
 ConfigRepo::ConfigRepo(ConfigMain & masterConfig) : pImpl(new Impl(*this, masterConfig)) {}
 ConfigRepo::~ConfigRepo() = default;

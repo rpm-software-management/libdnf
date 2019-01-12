@@ -49,31 +49,34 @@ public:
         typedef std::function<void(Option::Priority, const std::string &)> NewStringFunc;
         typedef std::function<const std::string & ()> GetValueStringFunc;
 
-        Item(Option & option,
-                    NewStringFunc && newString, GetValueStringFunc && getValueString, bool addValue);
-        Item(Option & option);
-        Item(OptionBinds & optBinds, Option & option, const std::string & name,
-                    NewStringFunc && newString, GetValueStringFunc && getValueString, bool addValue);
-        Item(OptionBinds & optBinds, Option & option, const std::string & name);
-
         Option::Priority getPriority() const;
         void newString(Option::Priority priority, const std::string & value);
         std::string getValueString() const;
-
-        bool getAddValue() const { return addValue; }
+        bool getAddValue() const;
 
     private:
+        friend class OptionBinds;
+
+        Item(Option & option, const NewStringFunc & newString,
+             const GetValueStringFunc & getValueString, bool addValue);
+        Item(Option & option, NewStringFunc && newString,
+             GetValueStringFunc && getValueString, bool addValue);
+        Item(Option & option);
         Option * option;
         NewStringFunc newStr;
         GetValueStringFunc getValueStr;
         bool addValue{false}; // hint that new value be added
     };
 
-    typedef std::map<std::string, Item *> Container;
+    typedef std::map<std::string, Item> Container;
     typedef Container::iterator iterator;
     typedef Container::const_iterator const_iterator;
 
-    iterator add(const std::string & id, Item & optBind);
+    Item & add(const std::string & id, Option & option, const Item::NewStringFunc & newString,
+                 const Item::GetValueStringFunc & getValueString, bool addValue);
+    Item & add(const std::string & id, Option & option, Item::NewStringFunc && newString,
+                 Item::GetValueStringFunc && getValueString, bool addValue);
+    Item & add(const std::string & id, Option & option);
     Item & at(const std::string & id);
     const Item & at(const std::string & id) const;
     bool empty() const noexcept { return items.empty(); }
