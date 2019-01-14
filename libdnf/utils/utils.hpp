@@ -1,6 +1,12 @@
 #ifndef LIBDNF_UTILS_HPP
 #define LIBDNF_UTILS_HPP
 
+#define ASCII_LOWERCASE "abcdefghijklmnopqrstuvwxyz"
+#define ASCII_UPPERCASE "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+#define ASCII_LETTERS ASCII_LOWERCASE ASCII_UPPERCASE
+#define DIGITS "0123456789"
+#define REPOID_CHARS ASCII_LETTERS DIGITS "-_.:"
+
 #include <functional>
 #include <string>
 #include <vector>

@@ -27,12 +27,6 @@
 
 #define GPG_HOME_ENV "GNUPGHOME"
 
-#define ASCII_LOWERCASE "abcdefghijklmnopqrstuvwxyz"
-#define ASCII_UPPERCASE "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-#define ASCII_LETTERS ASCII_LOWERCASE ASCII_UPPERCASE
-#define DIGITS "0123456789"
-#define REPOID_CHARS ASCII_LETTERS DIGITS "-_.:"
-
 #define MD_TYPE_PRIMARY "primary"
 #define MD_TYPE_FILELISTS "filelists"
 #define MD_TYPE_PRESTODELTA "prestodelta"
@@ -51,6 +45,7 @@
 #include "../hy-util-private.hpp"
 #include "../hy-types.h"
 #include "libdnf/utils/File.hpp"
+#include "libdnf/utils/utils.hpp"
 
 #include "bgettext/bgettext-lib.h"
 #include "tinyformat/tinyformat.hpp"
