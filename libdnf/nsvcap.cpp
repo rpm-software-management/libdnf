@@ -18,16 +18,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#define HEXADECIMAL DIGITS "abcdef"
+#define MODULE_SPECIAL "+._-"
+#define GLOB "][*?!"
+
 #include "nsvcap.hpp"
+
+#include "libdnf/utils/utils.hpp"
 
 #include <regex/regex.hpp>
 
 namespace libdnf {
 
-#define MODULE_NAME "([-a-zA-Z0-9\\._]+)"
+#define MODULE_NAME "([" GLOB ASCII_LETTERS DIGITS MODULE_SPECIAL "]+)"
 #define MODULE_STREAM MODULE_NAME
-#define MODULE_VERSION "([0-9]+)"
-#define MODULE_CONTEXT "([0-9a-f]+)"
+#define MODULE_VERSION "([" GLOB DIGITS "-]+)"
+#define MODULE_CONTEXT "([" GLOB HEXADECIMAL "-]+)"
 #define MODULE_ARCH MODULE_NAME
 #define MODULE_PROFILE MODULE_NAME
 
