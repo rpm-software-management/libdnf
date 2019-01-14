@@ -24,6 +24,10 @@ SET (CONF_PUBLIC_HEADERS
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionSeconds.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionString.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/OptionStringList.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/OptionBinds.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/Config.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ConfigMain.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ConfigRepo.hpp
     )
 
 INSTALL(FILES ${CONF_PUBLIC_HEADERS} DESTINATION include/libdnf/conf)

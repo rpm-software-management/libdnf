@@ -21,6 +21,8 @@
 #ifndef _LIBDNF_OPTION_STRING_HPP
 #define _LIBDNF_OPTION_STRING_HPP
 
+#ifdef LIBDNF_UNSTABLE_API
+
 #include "Option.hpp"
 
 namespace libdnf {
@@ -69,5 +71,7 @@ inline std::string OptionString::fromString(const std::string & value) const
 }
 
 }
+
+#endif
 
 #endif

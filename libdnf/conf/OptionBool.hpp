@@ -21,6 +21,8 @@
 #ifndef _LIBDNF_OPTION_BOOL_HPP
 #define _LIBDNF_OPTION_BOOL_HPP
 
+#ifdef LIBDNF_UNSTABLE_API
+
 #include "Option.hpp"
 
 namespace libdnf {
@@ -86,5 +88,7 @@ inline const char * const * OptionBool::getFalseValues() const noexcept
 }
 
 }
+
+#endif
 
 #endif

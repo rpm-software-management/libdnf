@@ -21,6 +21,8 @@
 #ifndef _LIBDNF_OPTION_SECONDS_HPP
 #define _LIBDNF_OPTION_SECONDS_HPP
 
+#ifdef LIBDNF_UNSTABLE_API
+
 #include "OptionNumber.hpp"
 
 namespace libdnf {
@@ -50,5 +52,7 @@ inline OptionSeconds * OptionSeconds::clone() const
 }
 
 }
+
+#endif
 
 #endif

@@ -21,6 +21,8 @@
 #ifndef _LIBDNF_CONFIG_HPP
 #define _LIBDNF_CONFIG_HPP
 
+#ifdef LIBDNF_UNSTABLE_API
+
 #include "OptionBinds.hpp"
 
 namespace libdnf {
@@ -34,5 +36,7 @@ private:
 };
 
 }
+
+#endif
 
 #endif

@@ -21,6 +21,8 @@
 #ifndef _LIBDNF_CONFIG_REPO_HPP
 #define _LIBDNF_CONFIG_REPO_HPP
 
+#ifdef LIBDNF_UNSTABLE_API
+
 #include "ConfigMain.hpp"
 #include "OptionChild.hpp"
 
@@ -95,5 +97,7 @@ private:
 };
 
 }
+
+#endif
 
 #endif

@@ -21,6 +21,8 @@
 #ifndef _LIBDNF_OPTION_CHILD_HPP
 #define _LIBDNF_OPTION_CHILD_HPP
 
+#ifdef LIBDNF_UNSTABLE_API
+
 #include "Option.hpp"
 
 namespace libdnf {
@@ -170,5 +172,7 @@ inline bool OptionChild<ParentOptionType, typename std::enable_if<std::is_same<t
 }
 
 }
+
+#endif
 
 #endif

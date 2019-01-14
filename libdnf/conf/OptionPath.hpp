@@ -21,6 +21,8 @@
 #ifndef _LIBDNF_OPTION_PATH_HPP
 #define _LIBDNF_OPTION_PATH_HPP
 
+#ifdef LIBDNF_UNSTABLE_API
+
 #include "OptionString.hpp"
 
 namespace libdnf {
@@ -52,5 +54,7 @@ inline OptionPath * OptionPath::clone() const
 }
 
 }
+
+#endif
 
 #endif
