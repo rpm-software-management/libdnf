@@ -21,6 +21,8 @@
 #ifndef _LIBDNF_OPTION_HPP
 #define _LIBDNF_OPTION_HPP
 
+#ifdef LIBDNF_UNSTABLE_API
+
 #include <stdexcept>
 #include <string>
 
@@ -79,5 +81,7 @@ inline bool Option::empty() const noexcept
 }
 
 }
+
+#endif
 
 #endif

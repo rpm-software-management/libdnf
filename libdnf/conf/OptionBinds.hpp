@@ -21,6 +21,8 @@
 #ifndef _LIBDNF_OPTION_BINDS_HPP
 #define _LIBDNF_OPTION_BINDS_HPP
 
+#ifdef LIBDNF_UNSTABLE_API
+
 #include "Option.hpp"
 
 #include <functional>
@@ -95,5 +97,7 @@ private:
 };
 
 }
+
+#endif
 
 #endif

@@ -21,6 +21,8 @@
 #ifndef _LIBDNF_OPTION_STRING_LIST_HPP
 #define _LIBDNF_OPTION_STRING_LIST_HPP
 
+#ifdef LIBDNF_UNSTABLE_API
+
 #include "Option.hpp"
 #include <vector>
 
@@ -72,5 +74,7 @@ inline std::string OptionStringList::getValueString() const
 }
 
 }
+
+#endif
 
 #endif

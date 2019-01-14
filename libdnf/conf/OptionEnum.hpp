@@ -21,6 +21,8 @@
 #ifndef _LIBDNF_OPTION_ENUM_HPP
 #define _LIBDNF_OPTION_ENUM_HPP
 
+#ifdef LIBDNF_UNSTABLE_API
+
 #include "Option.hpp"
 
 #include <functional>
@@ -107,5 +109,7 @@ inline std::string OptionEnum<std::string>::getValueString() const
 }
 
 }
+
+#endif
 
 #endif

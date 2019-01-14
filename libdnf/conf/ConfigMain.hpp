@@ -21,6 +21,8 @@
 #ifndef _LIBDNF_CONFIG_MAIN_HPP
 #define _LIBDNF_CONFIG_MAIN_HPP
 
+#ifdef LIBDNF_UNSTABLE_API
+
 #include "Config.hpp"
 #include "OptionBool.hpp"
 #include "OptionEnum.hpp"
@@ -155,5 +157,7 @@ private:
 };
 
 }
+
+#endif
 
 #endif

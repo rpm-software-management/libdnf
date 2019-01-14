@@ -29,6 +29,9 @@ ADD_DEFINITIONS(-D_FILE_OFFSET_BITS=64)
 ADD_DEFINITIONS(-DGETTEXT_DOMAIN=\\"libdnf\\")
 ADD_DEFINITIONS(-DG_LOG_DOMAIN=\\"libdnf\\")
 
+# The libdnf API is under development now. This enables it for internal usage.
+ADD_DEFINITIONS(-DLIBDNF_UNSTABLE_API)
+
 INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR} libdnf/utils/)
 
 OPTION(WITH_GTKDOC "Enables libdnf GTK-Doc HTML documentation" ON)

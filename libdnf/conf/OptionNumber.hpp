@@ -21,6 +21,8 @@
 #ifndef _LIBDNF_OPTION_NUMBER_HPP
 #define _LIBDNF_OPTION_NUMBER_HPP
 
+#ifdef LIBDNF_UNSTABLE_API
+
 #include "Option.hpp"
 
 #include <functional>
@@ -88,5 +90,7 @@ extern template class OptionNumber<std::uint64_t>;
 extern template class OptionNumber<float>;
 
 }
+
+#endif
 
 #endif
