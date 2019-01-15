@@ -29,29 +29,26 @@ namespace libdnf {
 
 struct Nsvcap {
 public:
-    static constexpr long long VERSION_NOT_SET = -1;
-
-    Nsvcap();
-
     bool parse(const char *nsvcapStr, HyModuleForm form);
     void clear();
 
     const std::string & getName() const noexcept;
     const std::string & getStream() const noexcept;
-    long long getVersion() const noexcept;
+    const std::string & getVersion() const noexcept;
     const std::string & getContext() const noexcept;
     const std::string & getArch() const noexcept;
     const std::string & getProfile() const noexcept;
 
     void setName(const std::string & name);
     void setStream(const std::string & stream);
-    void setVersion(long long version);
+    void setVersion(const std::string & stream);
     void setContext(const std::string & context);
     void setArch(const std::string & arch);
     void setProfile(const std::string & profile);
 
     void setName(std::string && name);
     void setStream(std::string && stream);
+    void setVersion(std::string && stream);
     void setContext(std::string && context);
     void setArch(std::string && arch);
     void setProfile(std::string && profile);
@@ -59,14 +56,11 @@ public:
 private:
     std::string name;
     std::string stream;
-    long long version;
+    std::string version;
     std::string context;
     std::string arch;
     std::string profile;
 };
-
-inline Nsvcap::Nsvcap()
-: version(VERSION_NOT_SET) {}
 
 inline const std::string & Nsvcap::getName() const noexcept
 {
@@ -78,7 +72,7 @@ inline const std::string & Nsvcap::getStream() const noexcept
     return stream;
 }
 
-inline long long Nsvcap::getVersion() const noexcept
+inline const std::string & Nsvcap::getVersion() const noexcept
 {
     return version;
 }
@@ -108,7 +102,7 @@ inline void Nsvcap::setStream(const std::string & stream)
     this->stream = stream;
 }
 
-inline void Nsvcap::setVersion(long long version)
+inline void Nsvcap::setVersion(const std::string & version)
 {
     this->version = version;
 }
@@ -136,6 +130,11 @@ inline void Nsvcap::setName(std::string && name)
 inline void Nsvcap::setStream(std::string && stream)
 {
     this->stream = std::move(stream);
+}
+
+inline void Nsvcap::setVersion(std::string && version)
+{
+    this->version = std::move(version);
 }
 
 inline void Nsvcap::setContext(std::string && context)

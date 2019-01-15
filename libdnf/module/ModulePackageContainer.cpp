@@ -541,12 +541,7 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackagePtr> & 
 std::vector<ModulePackagePtr>
 ModulePackageContainer::query(libdnf::Nsvcap& moduleNevra)
 {
-    auto version = moduleNevra.getVersion();
-    std::string strinVersion;
-    if (version != -1) {
-        strinVersion = std::to_string(version);
-    }
-    return query(moduleNevra.getName(), moduleNevra.getStream(), strinVersion,
+    return query(moduleNevra.getName(), moduleNevra.getStream(), moduleNevra.getVersion(),
                  moduleNevra.getContext(), moduleNevra.getArch());
 }
 

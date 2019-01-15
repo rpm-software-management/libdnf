@@ -63,10 +63,7 @@ bool Nsvcap::parse(const char *nsvcapStr, HyModuleForm form)
     if (!matchResult.isMatched() || matchResult.getMatchedLen(NAME) == 0)
         return false;
     name = matchResult.getMatchedString(NAME);
-    if (matchResult.getMatchedLen(VERSION) > 0)
-        version = atoll(matchResult.getMatchedString(VERSION).c_str());
-    else
-        version = VERSION_NOT_SET;
+    version = matchResult.getMatchedString(VERSION);
     stream = matchResult.getMatchedString(STREAM);
     context = matchResult.getMatchedString(CONTEXT);
     arch = matchResult.getMatchedString(ARCH);
@@ -79,7 +76,7 @@ Nsvcap::clear()
 {
     name.clear();
     stream.clear();
-    version = VERSION_NOT_SET;
+    version.clear();
     context.clear();
     arch.clear();
     profile.clear();
