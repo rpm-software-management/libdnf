@@ -50,26 +50,6 @@ nsvcapToPyObject(libdnf::Nsvcap * nsvcap)
 }
 
 // getsetters
-static bool
-set_version(_NsvcapObject *self, PyObject *value, void *closure)
-{
-    if (PyInt_Check(value))
-        self->nsvcap->setVersion(PyLong_AsLongLong(value));
-    else if (value == Py_None)
-        self->nsvcap->setVersion(libdnf::Nsvcap::VERSION_NOT_SET);
-    else
-        return false;
-    return true;
-}
-
-static PyObject *
-get_version(_NsvcapObject *self, void *closure)
-{
-    if (self->nsvcap->getVersion() == libdnf::Nsvcap::VERSION_NOT_SET)
-        Py_RETURN_NONE;
-    return PyLong_FromLongLong(self->nsvcap->getVersion());
-}
-
 template<const std::string & (libdnf::Nsvcap::*getMethod)() const>
 static PyObject *
 get_attr(_NsvcapObject *self, void *closure)
@@ -98,8 +78,8 @@ static PyGetSetDef nsvcap_getsetters[] = {
          (setter)set_attr<&libdnf::Nsvcap::setName>, NULL, NULL},
         {(char*)"stream", (getter)get_attr<&libdnf::Nsvcap::getStream>,
          (setter)set_attr<&libdnf::Nsvcap::setStream>, NULL, NULL},
-        {(char*)"version", (getter)get_version, (setter)set_version, NULL,
-                NULL},
+        {(char*)"version", (getter)get_attr<&libdnf::Nsvcap::getVersion>,
+         (setter)set_attr<&libdnf::Nsvcap::setVersion>, NULL, NULL},
         {(char*)"context", (getter)get_attr<&libdnf::Nsvcap::getContext>,
          (setter)set_attr<&libdnf::Nsvcap::setContext>, NULL, NULL},
         {(char*)"arch", (getter)get_attr<&libdnf::Nsvcap::getArch>,
@@ -128,15 +108,14 @@ nsvcap_dealloc(_NsvcapObject *self)
 static int
 nsvcap_init(_NsvcapObject *self, PyObject *args, PyObject *kwds)
 {
-    char *name = NULL, *stream = NULL, *context = NULL, *arch = NULL, *profile = NULL;
-    PyObject *version_o = NULL;
+    char *name = NULL, *stream = NULL, *version = NULL, *context = NULL, *arch = NULL, *profile = NULL;
     libdnf::Nsvcap * cNsvcap = NULL;
 
     const char *kwlist[] = {"name", "stream", "version", "context", "arch", "profile",
                             "nsvcap", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|zzOzzzO&", (char**) kwlist,
-                                     &name, &stream, &version_o, &context, &arch, &profile, nsvcapConverter,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|zzzzzzO&", (char**) kwlist,
+                                     &name, &stream, &version, &context, &arch, &profile, nsvcapConverter,
                                      &cNsvcap))
         return -1;
     if (!name && !cNsvcap) {
@@ -147,17 +126,23 @@ nsvcap_init(_NsvcapObject *self, PyObject *args, PyObject *kwds)
         *self->nsvcap = *cNsvcap;
         return 0;
     }
-    if (version_o) {
-        if (!set_version(self, version_o, NULL)) {
-            PyErr_SetString(PyExc_TypeError, "An integer value or None expected for version.");
-            return -1;
-        }
-    }
+    
     self->nsvcap->setName(name);
-    self->nsvcap->setStream(stream ? stream : "");
-    self->nsvcap->setContext(context ? context : "");
-    self->nsvcap->setArch(arch ? arch : "");
-    self->nsvcap->setProfile(profile ? profile : "");
+    if (stream) {
+        self->nsvcap->setStream(stream);
+    }
+    if (version) {
+        self->nsvcap->setVersion(version);
+    }
+    if (context) {
+        self->nsvcap->setContext(context);
+    }
+    if (arch) {
+        self->nsvcap->setArch(arch);
+    }
+    if (profile) {
+        self->nsvcap->setProfile(profile);
+    }
     return 0;
 }
 

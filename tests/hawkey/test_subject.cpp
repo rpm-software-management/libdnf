@@ -159,7 +159,7 @@ START_TEST(module_form_nsvcap)
     ck_assert(nsvcap.parse(module_nsvcap, HY_MODULE_FORM_NSVCAP));
     ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
     ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
-    ck_assert_int_eq(nsvcap.getVersion(), 1);
+    ck_assert_str_eq(nsvcap.getVersion().c_str(), "1");
     ck_assert_str_eq(nsvcap.getContext().c_str(), "b86c854");
     ck_assert_str_eq(nsvcap.getArch().c_str(), "x86_64");
     ck_assert_str_eq(nsvcap.getProfile().c_str(), "profile");
@@ -172,7 +172,7 @@ START_TEST(module_form_nsvap)
     ck_assert(nsvcap.parse(module_nsvap, HY_MODULE_FORM_NSVAP));
     ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
     ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
-    ck_assert_int_eq(nsvcap.getVersion(), 1);
+    ck_assert_str_eq(nsvcap.getVersion().c_str(), "1");
     ck_assert_str_eq(nsvcap.getArch().c_str(), "x86_64");
     ck_assert_str_eq(nsvcap.getProfile().c_str(), "profile");
 }
@@ -184,7 +184,7 @@ START_TEST(module_form_nsvca)
     ck_assert(nsvcap.parse(module_nsvca, HY_MODULE_FORM_NSVCA));
     ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
     ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
-    ck_assert_int_eq(nsvcap.getVersion(), 1);
+    ck_assert_str_eq(nsvcap.getVersion().c_str(), "1");
     ck_assert_str_eq(nsvcap.getContext().c_str(), "b86c854");
     ck_assert_str_eq(nsvcap.getArch().c_str(), "x86_64");
 }
@@ -196,7 +196,7 @@ START_TEST(module_form_nsva)
     ck_assert(nsvcap.parse(module_nsva, HY_MODULE_FORM_NSVA));
     ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
     ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
-    ck_assert_int_eq(nsvcap.getVersion(), 1);
+    ck_assert_str_eq(nsvcap.getVersion().c_str(), "1");
     ck_assert_str_eq(nsvcap.getArch().c_str(), "x86_64");
 }
 END_TEST
@@ -207,7 +207,7 @@ START_TEST(module_form_nsvp)
     ck_assert(nsvcap.parse(module_nsvp, HY_MODULE_FORM_NSVP));
     ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
     ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
-    ck_assert_int_eq(nsvcap.getVersion(), 1);
+    ck_assert_str_eq(nsvcap.getVersion().c_str(), "1");
     ck_assert_str_eq(nsvcap.getProfile().c_str(), "profile");
 }
 END_TEST
@@ -218,7 +218,7 @@ START_TEST(module_form_nsvc)
     ck_assert(nsvcap.parse(module_nsvc, HY_MODULE_FORM_NSVC));
     ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
     ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
-    ck_assert_int_eq(nsvcap.getVersion(), 1);
+    ck_assert_str_eq(nsvcap.getVersion().c_str(), "1");
     ck_assert_str_eq(nsvcap.getContext().c_str(), "b86c854");
 }
 END_TEST
@@ -229,7 +229,7 @@ START_TEST(module_form_nsv)
     ck_assert(nsvcap.parse(module_nsv, HY_MODULE_FORM_NSV));
     ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
     ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
-    ck_assert_int_eq(nsvcap.getVersion(), 1);
+    ck_assert_str_eq(nsvcap.getVersion().c_str(), "1");
 }
 END_TEST
 
