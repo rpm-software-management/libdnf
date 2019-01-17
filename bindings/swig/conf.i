@@ -216,6 +216,16 @@ public:
 }
 
 %extend libdnf::OptionBinds {
+    Item & __getitem__(const std::string & id)
+    {
+        return $self->at(id);
+    }
+
+    size_t __len__()
+    {
+        return $self->size();
+    }
+
     Iterator<libdnf::OptionBinds> __iter__()
     {
         return Iterator<libdnf::OptionBinds>($self->begin(), $self->end());
