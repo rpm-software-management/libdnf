@@ -22,8 +22,10 @@
 %exception {
     try {
         $action
-    } catch (const std::exception & e) {
-       SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+    catch (const std::exception & e)
+    {
+        SWIG_exception(SWIG_RuntimeError, e.what());
     }
 }
 
@@ -71,7 +73,7 @@ public:
     Iterator(typename T::iterator _cur, typename T::iterator _end) : cur(_cur), end(_end) {}
     Iterator* __iter__()
     {
-      return this;
+        return this;
     }
 
     typename T::iterator cur;
@@ -104,11 +106,11 @@ public:
     }
     catch (const libdnf::ConfigParser::Exception & e)
     {
-       SWIG_exception(SWIG_RuntimeError, e.what());
+        SWIG_exception(SWIG_RuntimeError, e.what());
     }
     catch (const std::exception & e)
     {
-       SWIG_exception(SWIG_RuntimeError, (std::string("C++ std::exception: ") + e.what()).c_str());
+        SWIG_exception(SWIG_RuntimeError, e.what());
     }
 }
 
@@ -127,11 +129,11 @@ public:
     }
     catch (const libdnf::ConfigParser::Exception & e)
     {
-       SWIG_exception(SWIG_RuntimeError, e.what());
+        SWIG_exception(SWIG_RuntimeError, e.what());
     }
     catch (const std::exception & e)
     {
-       SWIG_exception(SWIG_RuntimeError, (std::string("C++ std::exception: ") + e.what()).c_str());
+        SWIG_exception(SWIG_RuntimeError, e.what());
     }
 }
 
@@ -150,11 +152,11 @@ public:
     }
     catch (const libdnf::ConfigParser::Exception & e)
     {
-       SWIG_exception(SWIG_RuntimeError, e.what());
+        SWIG_exception(SWIG_RuntimeError, e.what());
     }
     catch (const std::exception & e)
     {
-       SWIG_exception(SWIG_RuntimeError, (std::string("C++ std::exception: ") + e.what()).c_str());
+        SWIG_exception(SWIG_RuntimeError, e.what());
     }
 }
 
@@ -173,10 +175,14 @@ public:
     {
         $action  // calls %extend function next() below
     }
-    catch (StopIterator)
+    catch (const StopIterator &)
     {
         PyErr_SetString(PyExc_StopIteration, "End of iterator");
         return NULL;
+    }
+    catch (const std::exception & e)
+    {
+        SWIG_exception(SWIG_RuntimeError, e.what());
     }
 }
 
@@ -186,10 +192,14 @@ public:
     {
         $action  // calls %extend function next() below
     }
-    catch (StopIterator)
+    catch (const StopIterator &)
     {
         PyErr_SetString(PyExc_StopIteration, "End of iterator");
         return NULL;
+    }
+    catch (const std::exception & e)
+    {
+        SWIG_exception(SWIG_RuntimeError, e.what());
     }
 }
 
@@ -212,6 +222,21 @@ public:
             return {id, pValue};
         }
         throw StopIterator();
+    }
+}
+
+%exception libdnf::OptionBinds::__getitem__ {
+    try
+    {
+        $action
+    }
+    catch (const libdnf::OptionBinds::OutOfRange & e)
+    {
+        SWIG_exception(SWIG_IndexError, e.what());
+    }
+    catch (const std::exception & e)
+    {
+        SWIG_exception(SWIG_RuntimeError, e.what());
     }
 }
 
