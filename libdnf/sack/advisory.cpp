@@ -24,6 +24,7 @@
 
 #include "advisory.hpp"
 #include "advisorypkg.hpp"
+#include "advisorymodule.hpp"
 #include "advisoryref.hpp"
 #include "../dnf-advisory-private.hpp"
 #include "../dnf-advisoryref.h"
@@ -131,6 +132,26 @@ Advisory::getPackages(std::vector<AdvisoryPkg> & pkglist, bool withFilemanes) co
         pkglist.emplace_back(sack, advisory, name, evr, arch, filename);
     }
     dataiterator_free(&di);
+}
+
+std::vector<AdvisoryModule> Advisory::getModules() const
+{
+    std::vector<AdvisoryModule> moduleList;
+    Dataiterator di;
+    Pool *pool = dnf_sack_get_pool(sack);
+
+    dataiterator_init(&di, pool, 0, advisory, UPDATE_MODULE, 0, 0);
+    while (dataiterator_step(&di)) {
+        dataiterator_setpos(&di);
+        Id name = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_NAME);
+        Id stream = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_STREAM);
+        Id version = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_VERSION);
+        Id context = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_CONTEXT);
+        Id arch = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_ARCH);
+        moduleList.emplace_back(sack, advisory, name, stream, version, context, arch);
+    }
+    dataiterator_free(&di);
+    return moduleList;
 }
 
 void
