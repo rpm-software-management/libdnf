@@ -33,6 +33,7 @@
 namespace libdnf {
 
 struct AdvisoryPkg;
+struct AdvisoryModule;
 
 struct Advisory {
 public:
@@ -42,6 +43,7 @@ public:
     DnfAdvisoryKind getKind() const;
     const char *getName() const;
     void getPackages(std::vector<AdvisoryPkg> & pkglist, bool withFilemanes = true) const;
+    std::vector<AdvisoryModule> getModules() const;
     void getReferences(std::vector<AdvisoryRef> & reflist) const;
     const char *getRights() const;
     const char *getSeverity() const;
