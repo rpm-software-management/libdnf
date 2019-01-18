@@ -106,12 +106,12 @@ public:
     /**
     * @brief Can throw std::out_of_range exception
     */
-    ModulePackagePtr getModulePackage(Id id);
-    std::vector<ModulePackagePtr> getModulePackages();
-    std::vector<std::vector<std::vector<ModulePackagePtr>>> getLatestModulesPerRepo(
-        ModuleState moduleFilter, std::vector<ModulePackagePtr> modulePackages);
+    ModulePackage * getModulePackage(Id id);
+    std::vector<ModulePackage *> getModulePackages();
+    std::vector<std::vector<std::vector<ModulePackage *>>> getLatestModulesPerRepo(
+        ModuleState moduleFilter, std::vector<ModulePackage *> modulePackages);
 
-    std::vector<ModulePackagePtr> requiresModuleEnablement(const libdnf::PackageSet & packages);
+    std::vector<ModulePackage *> requiresModuleEnablement(const libdnf::PackageSet & packages);
 
     /**
     * @brief Enable module stream. Return true if requested change realy triggers a change in
@@ -131,27 +131,27 @@ public:
     *
     * @return bool
     */
-    bool enable(const ModulePackagePtr &module);
+    bool enable(const ModulePackage * module);
     /**
      * @brief unmark module 'name' from any streams
      */
     void disable(const std::string & name);
-    void disable(const ModulePackagePtr &module);
+    void disable(const ModulePackage * module);
     /**
      * @brief Reset module state so it's no longer enabled or disabled.
      */
     void reset(const std::string &name);
-    void reset(const ModulePackagePtr &module);
+    void reset(const ModulePackage * module);
     /**
      * @brief add profile to name:stream
      */
     void install(const std::string &name, const std::string &stream, const std::string &profile);
-    void install(const ModulePackagePtr &module, const std::string &profile);
+    void install(const ModulePackage * module, const std::string &profile);
     /**
      * @brief remove profile from name:stream
      */
     void uninstall(const std::string &name, const std::string &stream, const std::string &profile);
-    void uninstall(const ModulePackagePtr &module, const std::string &profile);
+    void uninstall(const ModulePackage * module, const std::string &profile);
     /**
      * @brief commit module changes to storage
      */
@@ -166,10 +166,10 @@ public:
     bool isChanged();
 
     bool isEnabled(const std::string &name, const std::string &stream);
-    bool isEnabled(const ModulePackagePtr &module);
+    bool isEnabled(const ModulePackage * module);
 
     bool isDisabled(const std::string &name);
-    bool isDisabled(const ModulePackagePtr &module);
+    bool isDisabled(const ModulePackage * module);
     ModuleState getModuleState(const std::string & name);
     std::set<std::string> getInstalledPkgNames();
 
@@ -223,20 +223,20 @@ public:
     * @brief Query modules according libdnf::Nsvcap. But the search ignores profiles
     *
     */
-    std::vector<ModulePackagePtr> query(libdnf::Nsvcap & moduleNevra);
+    std::vector<ModulePackage *> query(libdnf::Nsvcap & moduleNevra);
     /**
     * @brief Requiers subject in format <name>, <name>:<stream>, or <name>:<stream>:<version>
     *
     * @param subject p_subject:...
     * @return std::vector< std::shared_ptr< ModulePackage > >
     */
-    std::vector<ModulePackagePtr> query(std::string subject);
-    std::vector<ModulePackagePtr> query(std::string name, std::string stream,
+    std::vector<ModulePackage *> query(std::string subject);
+    std::vector<ModulePackage *> query(std::string name, std::string stream,
         std::string version, std::string context, std::string arch);
-    void enableDependencyTree(std::vector<ModulePackagePtr> & modulePackages);
+    void enableDependencyTree(std::vector<ModulePackage *> & modulePackages);
     std::pair<std::vector<std::vector<std::string>>, ModulePackageContainer::ModuleErrorType> resolveActiveModulePackages(bool debugSolver);
     bool isModuleActive(Id id);
-    bool isModuleActive(ModulePackagePtr modulePackage);
+    bool isModuleActive(const ModulePackage * modulePackage);
 
 private:
     class Impl;
