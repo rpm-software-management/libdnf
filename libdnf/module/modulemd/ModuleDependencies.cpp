@@ -25,7 +25,7 @@ ModuleDependencies::ModuleDependencies(ModulemdDependencies *dependencies)
         : dependencies(dependencies)
 {}
 
-std::vector <std::map<std::string, std::vector<std::string>>> ModuleDependencies::getRequires()
+std::vector <std::map<std::string, std::vector<std::string>>> ModuleDependencies::getRequires() const
 {
     auto cRequires = modulemd_dependencies_peek_requires(dependencies);
     return getRequirements(cRequires);

@@ -31,13 +31,23 @@
 
 class ModuleProfile;
 
+namespace std {
+
+template<>
+struct default_delete<ModulemdModule> {
+    void operator()(ModulemdModule * ptr) noexcept { g_object_unref(ptr); }
+};
+
+}
+
 class ModuleMetadata
 {
 public:
-    static std::vector<std::shared_ptr<ModuleMetadata> > metadataFromString(const std::string &fileContent);
+    static std::vector<ModuleMetadata> metadataFromString(const std::string &fileContent);
 
 public:
-    explicit ModuleMetadata(const std::shared_ptr<ModulemdModule> &modulemd);
+    explicit ModuleMetadata(std::unique_ptr<ModulemdModule> && modulemd);
+    ModuleMetadata(ModuleMetadata && src) = default;
     ~ModuleMetadata();
     const char * getName() const;
     const char * getStream() const;
@@ -46,15 +56,15 @@ public:
     const char * getArchitecture() const;
     std::string getDescription() const;
     std::string getSummary() const;
-    std::vector<std::shared_ptr<ModuleDependencies> > getDependencies() const;
+    std::vector<ModuleDependencies> getDependencies() const;
     std::vector<std::string> getArtifacts() const;
     std::vector<ModuleProfile> getProfiles(const std::string & profileName = "") const;
     std::string getYaml() const;
 
 private:
-    static std::vector<std::shared_ptr<ModuleMetadata> > wrapModulemdModule(GPtrArray *data);
+    static std::vector<ModuleMetadata> wrapModulemdModule(GPtrArray *data);
 
-    std::shared_ptr<ModulemdModule> modulemd;
+    std::unique_ptr<ModulemdModule> modulemd;
     static void reportFailures(const GPtrArray *failures);
 };
 

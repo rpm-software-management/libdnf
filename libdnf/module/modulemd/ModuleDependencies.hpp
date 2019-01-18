@@ -34,7 +34,7 @@ class ModuleDependencies
 public:
     explicit ModuleDependencies(ModulemdDependencies *dependencies);
 
-    std::vector<std::map<std::string, std::vector<std::string> > > getRequires();
+    std::vector<std::map<std::string, std::vector<std::string> > > getRequires() const;
 
 private:
     std::map<std::string, std::vector<std::string>> wrapModuleDependencies(const char *moduleName, ModulemdSimpleSet *streams) const;

@@ -71,24 +71,24 @@ public:
     std::vector<ModuleProfile> getProfiles(const std::string &name) const;
     std::vector<ModuleProfile> getProfiles() const;
 
-    std::vector<std::shared_ptr<ModuleDependencies> > getModuleDependencies() const;
+    std::vector<ModuleDependencies> getModuleDependencies() const;
 
     void addStreamConflict(const ModulePackagePtr &package);
 
     Id getId() const { return id; };
-    std::string getYaml() const { return metadata->getYaml(); };
+    std::string getYaml() const { return metadata.getYaml(); };
 
 private:
     friend struct ModulePackageContainer;
 
     ModulePackage(DnfSack * moduleSack, Repo * repo,
-        const std::shared_ptr<ModuleMetadata> &metadata, const std::string & repoID);
+        ModuleMetadata && metadata, const std::string & repoID);
 
     static Id createPlatformSolvable(DnfSack * moduleSack, const std::string &osReleasePath,
         const std::string install_root, const char *  platformModule);
     void createDependencies(Solvable *solvable) const;
 
-    std::shared_ptr<ModuleMetadata> metadata;
+    ModuleMetadata metadata;
 
     // TODO: remove after inheriting from Package
     DnfSack * moduleSack;

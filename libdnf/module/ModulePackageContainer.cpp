@@ -244,9 +244,9 @@ ModulePackageContainer::add(const std::string &fileContent, const std::string & 
         if (strcmp(r->name, "available") == 0) {
             g_autofree gchar *path = g_build_filename(pImpl->installRoot.c_str(),
                                                       "/etc/dnf/modules.d", NULL);
-            for (auto data : metadata) {
-                ModulePackagePtr modulePackage(new ModulePackage(pImpl->moduleSack, r, data,
-                    repoID));
+            for (auto & data : metadata) {
+                ModulePackagePtr modulePackage(new ModulePackage(pImpl->moduleSack, r
+                    , std::move(data), repoID));
                 pImpl->modules.insert(std::make_pair(modulePackage->getId(), modulePackage));
                 pImpl->persistor->insert(modulePackage->getName(), path);
             }
