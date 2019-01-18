@@ -67,8 +67,8 @@ static void setSovable(Pool * pool, Solvable *solvable, std::string name,
 ModulePackage::~ModulePackage() = default;
 
 ModulePackage::ModulePackage(DnfSack * moduleSack, Repo * repo,
-    const std::shared_ptr<ModuleMetadata> &metadata,  const std::string & repoID)
-        : metadata(metadata)
+    ModuleMetadata && metadata,  const std::string & repoID)
+        : metadata(std::move(metadata))
         , moduleSack(moduleSack)
         , repoID(repoID)
 {
@@ -77,7 +77,7 @@ ModulePackage::ModulePackage(DnfSack * moduleSack, Repo * repo,
     Solvable *solvable = pool_id2solvable(pool, id);
 
     setSovable(pool, solvable, getName(), getStream(), getVersion(), getContext(),
-        metadata->getArchitecture());
+        metadata.getArchitecture());
     createDependencies(solvable);
     HyRepo hyRepo = static_cast<HyRepo>(repo->appdata);
     hyRepo->needs_internalizing = 1;
@@ -94,7 +94,7 @@ void ModulePackage::createDependencies(Solvable *solvable) const
     Pool * pool = dnf_sack_get_pool(moduleSack);
 
     for (const auto &dependency : getModuleDependencies()) {
-        for (const auto &requires : dependency->getRequires()) {
+        for (const auto &requires : dependency.getRequires()) {
             for (const auto &singleRequires : requires) {
                 auto moduleName = singleRequires.first;
                 std::vector<std::string> requiresStream;
@@ -143,12 +143,12 @@ void ModulePackage::createDependencies(Solvable *solvable) const
  */
 const char * ModulePackage::getNameCStr() const
 {
-    return metadata->getName();
+    return metadata.getName();
 }
 
 std::string ModulePackage::getName() const
 {
-    auto name = metadata->getName();
+    auto name = metadata.getName();
     return name ? name : "";
 }
 
@@ -188,12 +188,12 @@ const std::string & ModulePackage::getRepoID() const
  */
 const char * ModulePackage::getStreamCStr() const
 {
-    return metadata->getStream();
+    return metadata.getStream();
 }
 
 std::string ModulePackage::getStream() const
 {
-    auto stream = metadata->getStream();
+    auto stream = metadata.getStream();
     return stream ? stream : "";
 }
 
@@ -204,7 +204,7 @@ std::string ModulePackage::getStream() const
  */
 std::string ModulePackage::getVersion() const
 {
-    return std::to_string(metadata->getVersion());
+    return std::to_string(metadata.getVersion());
 }
 
 /**
@@ -214,7 +214,7 @@ std::string ModulePackage::getVersion() const
  */
 long long ModulePackage::getVersionNum() const
 {
-    return metadata->getVersion();
+    return metadata.getVersion();
 }
 
 /**
@@ -224,12 +224,12 @@ long long ModulePackage::getVersionNum() const
  */
 const char * ModulePackage::getContextCStr() const
 {
-    return metadata->getContext();
+    return metadata.getContext();
 }
 
 std::string ModulePackage::getContext() const
 {
-    auto context = metadata->getContext();
+    auto context = metadata.getContext();
     return context ? context : "";
 }
 
@@ -241,12 +241,12 @@ std::string ModulePackage::getContext() const
  */
 const char * ModulePackage::getArchCStr() const
 {
-    return metadata->getArchitecture();
+    return metadata.getArchitecture();
 }
 
 std::string ModulePackage::getArch() const
 {
-    auto arch = metadata->getArchitecture();
+    auto arch = metadata.getArchitecture();
     return arch ? arch : "";
 }
 
@@ -270,7 +270,7 @@ std::string ModulePackage::getFullIdentifier() const
  */
 std::string ModulePackage::getSummary() const
 {
-    return metadata->getSummary();
+    return metadata.getSummary();
 }
 
 /**
@@ -280,7 +280,7 @@ std::string ModulePackage::getSummary() const
  */
 std::string ModulePackage::getDescription() const
 {
-    return metadata->getDescription();
+    return metadata.getDescription();
 }
 
 /**
@@ -290,13 +290,13 @@ std::string ModulePackage::getDescription() const
  */
 std::vector<std::string> ModulePackage::getArtifacts() const
 {
-    return metadata->getArtifacts();
+    return metadata.getArtifacts();
 }
 
 std::vector<ModuleProfile>
 ModulePackage::getProfiles(const std::string &name) const
 {
-    return metadata->getProfiles(name);
+    return metadata.getProfiles(name);
 }
 
 /**
@@ -306,7 +306,7 @@ ModulePackage::getProfiles(const std::string &name) const
  */
 std::vector<ModuleProfile> ModulePackage::getProfiles() const
 {
-    return metadata->getProfiles();
+    return metadata.getProfiles();
 }
 
 /**
@@ -314,9 +314,9 @@ std::vector<ModuleProfile> ModulePackage::getProfiles() const
  *
  * @return std::vector<std::shared_ptr<ModuleDependencies>>
  */
-std::vector<std::shared_ptr<ModuleDependencies>> ModulePackage::getModuleDependencies() const
+std::vector<ModuleDependencies> ModulePackage::getModuleDependencies() const
 {
-    return metadata->getDependencies();
+    return metadata.getDependencies();
 }
 
 /**

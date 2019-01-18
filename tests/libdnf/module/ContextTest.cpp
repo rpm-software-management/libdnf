@@ -68,13 +68,13 @@ void ContextTest::testLoadModules()
     auto modules = ModuleMetadata::metadataFromString(yamlContent);
     for (const auto &module : modules) {
         // default module:stream
-        if ((g_strcmp0(module->getName(), "httpd") == 0) &&
-            (g_strcmp0(module->getStream(), "2.4") == 0))
+        if ((g_strcmp0(module.getName(), "httpd") == 0) &&
+            (g_strcmp0(module.getStream(), "2.4") == 0))
             sackHas(sack, module);
 
         // disabled stream
-        if ((g_strcmp0(module->getName(), "httpd") == 0) &&
-            (g_strcmp0(module->getStream(), "2.2") == 0))
+        if ((g_strcmp0(module.getName(), "httpd") == 0) &&
+            (g_strcmp0(module.getStream(), "2.2") == 0))
             sackHasNot(sack, module);
     }
 
@@ -122,10 +122,10 @@ void ContextTest::testLoadModules()
     }
 }
 
-void ContextTest::sackHas(DnfSack *sack, const std::shared_ptr<ModuleMetadata> &module) const
+void ContextTest::sackHas(DnfSack * sack, const ModuleMetadata & module) const
 {
     libdnf::Query query{sack};
-    auto artifacts = module->getArtifacts();
+    auto artifacts = module.getArtifacts();
     for (auto artifact : artifacts) {
         artifact = artifact.replace(artifact.find("-0:"), 3, "-");
         query.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, artifact.c_str());
@@ -140,10 +140,10 @@ void ContextTest::sackHas(DnfSack *sack, const std::shared_ptr<ModuleMetadata> &
     }
 }
 
-void ContextTest::sackHasNot(DnfSack *sack, const std::shared_ptr<ModuleMetadata> &module) const
+void ContextTest::sackHasNot(DnfSack * sack, const ModuleMetadata & module) const
 {
     libdnf::Query query{sack};
-    auto artifacts = module->getArtifacts();
+    auto artifacts = module.getArtifacts();
     for (auto artifact : artifacts) {
         artifact = artifact.replace(artifact.find("-0:"), 3, "-");
         query.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, artifact.c_str());

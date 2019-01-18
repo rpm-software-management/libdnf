@@ -26,8 +26,7 @@
 #include "ModuleProfile.hpp"
 #include "../hy-util-private.hpp"
 
-
-std::vector<std::shared_ptr<ModuleMetadata> > ModuleMetadata::metadataFromString(const std::string &fileContent)
+std::vector<ModuleMetadata> ModuleMetadata::metadataFromString(const std::string &fileContent)
 {
     GError *error = nullptr;
     g_autoptr(GPtrArray) failures;
@@ -37,20 +36,20 @@ std::vector<std::shared_ptr<ModuleMetadata> > ModuleMetadata::metadataFromString
     return wrapModulemdModule(data);
 }
 
-std::vector<std::shared_ptr<ModuleMetadata> > ModuleMetadata::wrapModulemdModule(GPtrArray *data)
+std::vector<ModuleMetadata> ModuleMetadata::wrapModulemdModule(GPtrArray *data)
 {
     if (data == nullptr)
         return {};
 
-    std::vector<std::shared_ptr<ModuleMetadata> > moduleCluster;
+    std::vector<ModuleMetadata> moduleCluster;
     for (unsigned int i = 0; i < data->len; i++) {
         auto module = g_ptr_array_index(data, i);
         if (!MODULEMD_IS_MODULE(module))
             continue;
 
         g_object_ref(module);
-        auto modulemd = std::shared_ptr<ModulemdModule>((ModulemdModule *) module, g_object_unref);
-        moduleCluster.push_back(std::make_shared<ModuleMetadata>(modulemd));
+        auto modulemd = std::unique_ptr<ModulemdModule>(static_cast<ModulemdModule *>(module));
+        moduleCluster.emplace_back(ModuleMetadata(std::move(modulemd)));
     }
 
     return moduleCluster;
@@ -64,9 +63,8 @@ void ModuleMetadata::reportFailures(const GPtrArray *failures)
     }
 }
 
-ModuleMetadata::ModuleMetadata(const std::shared_ptr<ModulemdModule> &modulemd)
-        : modulemd(modulemd)
-{}
+ModuleMetadata::ModuleMetadata(std::unique_ptr<ModulemdModule> && modulemd)
+: modulemd(std::move(modulemd)) {}
 
 ModuleMetadata::~ModuleMetadata() = default;
 
@@ -107,13 +105,13 @@ std::string ModuleMetadata::getSummary() const
     return summary ? summary : "";
 }
 
-std::vector<std::shared_ptr<ModuleDependencies> > ModuleMetadata::getDependencies() const
+std::vector<ModuleDependencies> ModuleMetadata::getDependencies() const
 {
     auto cDependencies = modulemd_module_peek_dependencies(modulemd.get());
-    std::vector<std::shared_ptr<ModuleDependencies> > dependencies;
+    std::vector<ModuleDependencies> dependencies;
 
     for (unsigned int i = 0; i < cDependencies->len; i++) {
-        dependencies.push_back(std::make_shared<ModuleDependencies>((ModulemdDependencies *) g_ptr_array_index(cDependencies, i)));
+        dependencies.emplace_back(static_cast<ModulemdDependencies *>(g_ptr_array_index(cDependencies, i)));
     }
 
     return dependencies;
