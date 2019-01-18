@@ -101,7 +101,7 @@ public:
     Impl();
     ~Impl();
     std::pair<std::vector<std::vector<std::string>>, ModulePackageContainer::ModuleErrorType> moduleSolve(
-        const std::vector<ModulePackagePtr> & modules, bool debugSolver);
+        const std::vector<ModulePackage *> & modules, bool debugSolver);
     bool insert(const std::string &moduleName, const char *path);
 
 
@@ -109,7 +109,7 @@ private:
     friend struct ModulePackageContainer;
     class ModulePersistor;
     std::unique_ptr<ModulePersistor> persistor;
-    std::map<Id, ModulePackagePtr> modules;
+    std::map<Id, std::unique_ptr<ModulePackage>> modules;
     DnfSack * moduleSack;
     std::unique_ptr<libdnf::PackageSet> activatedModules;
     std::string installRoot;
@@ -245,10 +245,11 @@ ModulePackageContainer::add(const std::string &fileContent, const std::string & 
             g_autofree gchar *path = g_build_filename(pImpl->installRoot.c_str(),
                                                       "/etc/dnf/modules.d", NULL);
             for (auto & data : metadata) {
-                ModulePackagePtr modulePackage(new ModulePackage(pImpl->moduleSack, r
+                std::unique_ptr<ModulePackage> modulePackage(new ModulePackage(pImpl->moduleSack, r
                     , std::move(data), repoID));
-                pImpl->modules.insert(std::make_pair(modulePackage->getId(), modulePackage));
-                pImpl->persistor->insert(modulePackage->getName(), path);
+                auto modulePackagePtr = modulePackage.get();
+                pImpl->modules.insert(std::make_pair(modulePackage->getId(), std::move(modulePackage)));
+                pImpl->persistor->insert(modulePackagePtr->getName(), path);
             }
             return;
         }
@@ -272,7 +273,7 @@ void ModulePackageContainer::createConflictsBetweenStreams()
         for (const auto &innerIter : pImpl->modules) {
             if (modulePackage->getName() == innerIter.second->getName()
                 && modulePackage->getStream() != innerIter.second->getStream()) {
-                modulePackage->addStreamConflict(innerIter.second);
+                modulePackage->addStreamConflict(innerIter.second.get());
             }
         }
     }
@@ -283,24 +284,23 @@ bool ModulePackageContainer::empty() const noexcept
     return pImpl->modules.empty();
 }
 
-ModulePackagePtr ModulePackageContainer::getModulePackage(Id id)
+ModulePackage * ModulePackageContainer::getModulePackage(Id id)
 {
-    return pImpl->modules.at(id);
+    return pImpl->modules.at(id).get();
 }
 
-std::vector<ModulePackagePtr>
+std::vector<ModulePackage *>
 ModulePackageContainer::requiresModuleEnablement(const libdnf::PackageSet & packages)
 {
     auto activatedModules = pImpl->activatedModules.get();
     if (!activatedModules) {
         return {};
     }
-    std::vector<ModulePackagePtr> output;
+    std::vector<ModulePackage *> output;
     libdnf::Query baseQuery(packages.getSack());
     baseQuery.addFilter(HY_PKG, HY_EQ, &packages);
     baseQuery.apply();
     libdnf::Query testQuery(baseQuery);
-    auto modules = pImpl->modules;
     Id moduleId = -1;
     while ((moduleId = activatedModules->next(moduleId)) != -1) {
         auto module = getModulePackage(moduleId);
@@ -332,7 +332,7 @@ bool ModulePackageContainer::isEnabled(const std::string &name, const std::strin
         pImpl->persistor->getStream(name) == stream;
 }
 
-bool ModulePackageContainer::isEnabled(const ModulePackagePtr &module)
+bool ModulePackageContainer::isEnabled(const ModulePackage * module)
 {
     return isEnabled(module->getName(), module->getStream());
 }
@@ -347,7 +347,7 @@ bool ModulePackageContainer::isDisabled(const std::string &name)
     return pImpl->persistor->getState(name) == ModuleState::DISABLED;
 }
 
-bool ModulePackageContainer::isDisabled(const ModulePackagePtr &module)
+bool ModulePackageContainer::isDisabled(const ModulePackage * module)
 {
     return isDisabled(module->getName());
 }
@@ -390,7 +390,7 @@ ModulePackageContainer::enable(const std::string &name, const std::string & stre
 }
 
 bool
-ModulePackageContainer::enable(const ModulePackagePtr &module)
+ModulePackageContainer::enable(const ModulePackage * module)
 {
     return enable(module->getName(), module->getStream());
 }
@@ -406,7 +406,7 @@ void ModulePackageContainer::disable(const std::string & name)
     profiles.clear();
 }
 
-void ModulePackageContainer::disable(const ModulePackagePtr &module)
+void ModulePackageContainer::disable(const ModulePackage * module)
 {
     disable(module->getName());
 }
@@ -422,7 +422,7 @@ void ModulePackageContainer::reset(const std::string & name)
     profiles.clear();
 }
 
-void ModulePackageContainer::reset(const ModulePackagePtr &module)
+void ModulePackageContainer::reset(const ModulePackage * module)
 {
     reset(module->getName());
 }
@@ -457,14 +457,14 @@ void ModulePackageContainer::install(const std::string &name, const std::string 
     const std::string &profile)
 {
     for (const auto &iter : pImpl->modules) {
-        auto modulePackage = iter.second;
+        auto modulePackage = iter.second.get();
         if (modulePackage->getName() == name && modulePackage->getStream() == stream) {
             install(modulePackage, profile);
         }
     }
 }
 
-void ModulePackageContainer::install(const ModulePackagePtr &module, const std::string &profile)
+void ModulePackageContainer::install(const ModulePackage * module, const std::string &profile)
 {
     if (pImpl->persistor->getStream(module->getName()) == module->getStream())
         pImpl->persistor->addProfile(module->getName(), profile);
@@ -474,21 +474,21 @@ void ModulePackageContainer::uninstall(const std::string &name, const std::strin
     const std::string &profile)
 {
     for (const auto &iter : pImpl->modules) {
-        auto modulePackage = iter.second;
+        auto modulePackage = iter.second.get();
         if (modulePackage->getName() == name && modulePackage->getStream() == stream) {
             uninstall(modulePackage, profile);
         }
     }
 }
 
-void ModulePackageContainer::uninstall(const ModulePackagePtr &module, const std::string &profile)
+void ModulePackageContainer::uninstall(const ModulePackage * module, const std::string &profile)
 {
     if (pImpl->persistor->getStream(module->getName()) == module->getStream())
         pImpl->persistor->removeProfile(module->getName(), profile);
 }
 
 std::pair<std::vector<std::vector<std::string>>, ModulePackageContainer::ModuleErrorType>
-ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackagePtr> & modules,
+ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackage *> & modules,
     bool debugSolver)
 {
     if (modules.empty()) {
@@ -542,18 +542,18 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackagePtr> & 
     return make_pair(problems, problemType);
 }
 
-std::vector<ModulePackagePtr>
+std::vector<ModulePackage *>
 ModulePackageContainer::query(libdnf::Nsvcap& moduleNevra)
 {
     return query(moduleNevra.getName(), moduleNevra.getStream(), moduleNevra.getVersion(),
                  moduleNevra.getContext(), moduleNevra.getArch());
 }
 
-std::vector<ModulePackagePtr>
+std::vector<ModulePackage *>
 ModulePackageContainer::query(std::string subject)
 {
     // Alternatively a search using module provides could be performed
-    std::vector<ModulePackagePtr> result;
+    std::vector<ModulePackage *> result;
     libdnf::Query query(pImpl->moduleSack, HY_IGNORE_EXCLUDES);
     // platform modules are installed and not in modules std::Map.
     query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
@@ -563,17 +563,17 @@ ModulePackageContainer::query(std::string subject)
     auto pset = query.runSet();
     Id moduleId = -1;
     while ((moduleId = pset->next(moduleId)) != -1) {
-        result.push_back(pImpl->modules.at(moduleId));
+        result.push_back(pImpl->modules.at(moduleId).get());
     }
     return result;
 }
 
-std::vector<ModulePackagePtr>
+std::vector<ModulePackage *>
 ModulePackageContainer::query(std::string name, std::string stream, std::string version,
     std::string context, std::string arch)
 {
     // Alternatively a search using module provides could be performed
-    std::vector<ModulePackagePtr> result;
+    std::vector<ModulePackage *> result;
     libdnf::Query query(pImpl->moduleSack, HY_IGNORE_EXCLUDES);
     // platform modules are installed and not in modules std::Map.
     query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
@@ -588,12 +588,12 @@ ModulePackageContainer::query(std::string name, std::string stream, std::string 
     auto pset = query.runSet();
     Id moduleId = -1;
     while ((moduleId = pset->next(moduleId)) != -1) {
-        result.push_back(pImpl->modules.at(moduleId));
+        result.push_back(pImpl->modules.at(moduleId).get());
     }
     return result;
 }
 
-void ModulePackageContainer::enableDependencyTree(std::vector<ModulePackagePtr> & modulePackages)
+void ModulePackageContainer::enableDependencyTree(std::vector<ModulePackage *> & modulePackages)
 {
     if (!pImpl->activatedModules) {
         return;
@@ -620,7 +620,7 @@ void ModulePackageContainer::enableDependencyTree(std::vector<ModulePackagePtr> 
     while (!toEnable.empty()) {
         Id moduleId = -1;
         while ((moduleId = toEnable.next(moduleId)) != -1) {
-            enable(pImpl->modules.at(moduleId));
+            enable(pImpl->modules.at(moduleId).get());
             enabled.set(moduleId);
             libdnf::Query query(pImpl->moduleSack);
             query.addFilter(HY_PKG, HY_EQ, pImpl->activatedModules.get());
@@ -661,8 +661,8 @@ std::set<std::string> ModulePackageContainer::getInstalledPkgNames()
         nameStream += ":";
         nameStream += stream;
         auto modules = query(nameStream);
-        std::shared_ptr<ModulePackage> latest;
-        for (auto & module: modules) {
+        const ModulePackage * latest = nullptr;
+        for (const ModulePackage * module: modules) {
             if (isModuleActive(module->getId())) {
                 if (!latest) {
                     latest = module;
@@ -674,7 +674,7 @@ std::set<std::string> ModulePackageContainer::getInstalledPkgNames()
             }
         }
         if (!latest) {
-            for (auto & module: modules) {
+            for (auto module: modules) {
                 if (!latest) {
                     latest = module;
                 } else {
@@ -778,7 +778,7 @@ ModulePackageContainer::getReport()
 }
 
 static bool
-modulePackageLatestPerRepoSorter(DnfSack * sack, const ModulePackagePtr & first, const ModulePackagePtr & second)
+modulePackageLatestPerRepoSorter(DnfSack * sack, const ModulePackage * first, const ModulePackage * second)
 {
     if (first->getRepoID() != second->getRepoID())
         return first->getRepoID() < second->getRepoID();
@@ -794,15 +794,15 @@ modulePackageLatestPerRepoSorter(DnfSack * sack, const ModulePackagePtr & first,
     return first->getVersionNum() > second->getVersionNum();
 }
 
-std::vector<std::vector<std::vector<ModulePackagePtr>>>
+std::vector<std::vector<std::vector<ModulePackage *>>>
 ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
-    std::vector<ModulePackagePtr> modulePackages)
+    std::vector<ModulePackage *> modulePackages)
 {
     if (modulePackages.empty()) {
         return {};
     }
     if (moduleFilter == ModuleState::ENABLED) {
-        std::vector<ModulePackagePtr> enabled;
+        std::vector<ModulePackage *> enabled;
         for (auto package: modulePackages) {
             if (isEnabled(package)) {
                 enabled.push_back(package);
@@ -810,7 +810,7 @@ ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
         }
         modulePackages = enabled;
     } else if (moduleFilter == ModuleState::DISABLED) {
-        std::vector<ModulePackagePtr> disabled;
+        std::vector<ModulePackage *> disabled;
         for (auto package: modulePackages) {
             if (isDisabled(package)) {
                 disabled.push_back(package);
@@ -818,7 +818,7 @@ ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
         }
         modulePackages = disabled;
     } else if (moduleFilter == ModuleState::INSTALLED) {
-        std::vector<ModulePackagePtr> installed;
+        std::vector<ModulePackage *> installed;
         for (auto package: modulePackages) {
             if ((!getInstalledProfiles(package->getName()).empty()) && isEnabled(package)) {
                 installed.push_back(package);
@@ -830,14 +830,14 @@ ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
         return {};
     }
     auto & packageFirst = modulePackages[0];
-    std::vector<std::vector<std::vector<ModulePackagePtr>>> output;
+    std::vector<std::vector<std::vector<ModulePackage *>>> output;
     auto sack = pImpl->moduleSack;
     std::sort(modulePackages.begin(), modulePackages.end(),
-              [sack](const ModulePackagePtr & first, const ModulePackagePtr & second)
+              [sack](const ModulePackage * first, const ModulePackage * second)
               {return modulePackageLatestPerRepoSorter(sack, first, second);});
     auto vectorSize = modulePackages.size();
     output.push_back(
-        std::vector<std::vector<ModulePackagePtr>>{std::vector<ModulePackagePtr> {packageFirst}});
+        std::vector<std::vector<ModulePackage *>>{std::vector<ModulePackage *> {packageFirst}});
     int repoIndex = 0;
     int nameStreamArchIndex = 0;
     auto repoID = packageFirst->getRepoID();
@@ -854,7 +854,7 @@ ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
             stream = package->getStreamCStr();
             arch = package->getArchCStr();
             version = package->getVersionNum();
-            output.push_back(std::vector<std::vector<ModulePackagePtr>>{std::vector<ModulePackagePtr> {package}});
+            output.push_back(std::vector<std::vector<ModulePackage *>>{std::vector<ModulePackage *> {package}});
             ++repoIndex;
             nameStreamArchIndex = 0;
             continue;
@@ -866,7 +866,7 @@ ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
             stream = package->getStreamCStr();
             arch = package->getArchCStr();
             version = package->getVersionNum();
-            output[repoIndex].push_back(std::vector<ModulePackagePtr> {package});
+            output[repoIndex].push_back(std::vector<ModulePackage *> {package});
             ++nameStreamArchIndex;
             continue;
         }
@@ -882,12 +882,12 @@ std::pair<std::vector<std::vector<std::string>>, ModulePackageContainer::ModuleE
 ModulePackageContainer::resolveActiveModulePackages(bool debugSolver)
 {
     dnf_sack_reset_excludes(pImpl->moduleSack);
-    std::vector<ModulePackagePtr> packages;
+    std::vector<ModulePackage *> packages;
 
     libdnf::PackageSet excludes(pImpl->moduleSack);
     // Use only Enabled or Default modules for transaction
     for (const auto &iter : pImpl->modules) {
-        auto module = iter.second;
+        auto module = iter.second.get();
         auto moduleState = pImpl->persistor->getState(module->getName());
         if (moduleState == ModuleState::DISABLED) {
             excludes.set(module->getId());
@@ -921,7 +921,7 @@ bool ModulePackageContainer::isModuleActive(Id id)
     return false;
 }
 
-bool ModulePackageContainer::isModuleActive(ModulePackagePtr modulePackage)
+bool ModulePackageContainer::isModuleActive(const ModulePackage * modulePackage)
 {
     if (pImpl->activatedModules) {
         return pImpl->activatedModules->has(modulePackage->getId());
@@ -929,13 +929,13 @@ bool ModulePackageContainer::isModuleActive(ModulePackagePtr modulePackage)
     return false;
 }
 
-std::vector<ModulePackagePtr> ModulePackageContainer::getModulePackages()
+std::vector<ModulePackage *> ModulePackageContainer::getModulePackages()
 {
-    std::vector<ModulePackagePtr> values;
-    auto modules = pImpl->modules;
+    std::vector<ModulePackage *> values;
+    const auto & modules = pImpl->modules;
     std::transform(
         std::begin(modules), std::end(modules), std::back_inserter(values),
-        [](const std::map<Id, ModulePackagePtr>::value_type &pair){ return pair.second; });
+        [](const std::map<Id, std::unique_ptr<ModulePackage>>::value_type & pair){ return pair.second.get(); });
 
     return values;
 }

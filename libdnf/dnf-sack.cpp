@@ -2296,7 +2296,7 @@ setModuleExcludes(DnfSack *sack, const char ** hotfixRepos,
 
 }
 
-std::vector<std::shared_ptr<ModulePackage>> requiresModuleEnablement(
+std::vector<ModulePackage *> requiresModuleEnablement(
     DnfSack * sack, const libdnf::PackageSet * installSet)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);

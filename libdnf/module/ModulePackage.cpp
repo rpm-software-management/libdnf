@@ -322,7 +322,7 @@ std::vector<ModuleDependencies> ModulePackage::getModuleDependencies() const
 /**
  * @brief Add conflict with a module stream represented as a ModulePackage.
  */
-void ModulePackage::addStreamConflict(const ModulePackagePtr &package)
+void ModulePackage::addStreamConflict(const ModulePackage * package)
 {
     Pool * pool = dnf_sack_get_pool(moduleSack);
     std::ostringstream ss;

@@ -29,10 +29,6 @@
 #include "libdnf/repo/solvable/Package.hpp"
 #include "../goal/IdQueue.hpp"
 
-class ModulePackage;
-
-typedef std::shared_ptr< ModulePackage > ModulePackagePtr;
-
 struct ModulePackageContainer;
 
 class ModulePackage // TODO inherit in future; : public Package
@@ -73,7 +69,7 @@ public:
 
     std::vector<ModuleDependencies> getModuleDependencies() const;
 
-    void addStreamConflict(const ModulePackagePtr &package);
+    void addStreamConflict(const ModulePackage * package);
 
     Id getId() const { return id; };
     std::string getYaml() const { return metadata.getYaml(); };
