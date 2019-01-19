@@ -65,7 +65,7 @@ TARGET_LINK_LIBRARIES(libdnf
                       ${LIBSOLV_LIBRARY}
                       ${LIBSOLV_EXT_LIBRARY}
                       ${OPENSSL_CRYPTO_LIBRARY}
-                      ${RPMDB_LIBRARY}
+                      ${RPM_LIBRARIES}
                       ${SCOLS_LIBRARIES}
                       ${SQLite3_LIBRARIES}
                       ${JSONC_LIBRARIES}
