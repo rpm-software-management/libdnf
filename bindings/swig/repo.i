@@ -1,10 +1,10 @@
 %module(directors="1") repo
 
 %include <stdint.i>
-%include <std_pair.i>
 %include <std_vector.i>
 %include <std_string.i>
 
+%import(module="libdnf.common_types") "common_types.i"
 %import(module="libdnf.conf") "conf.i"
 
 %begin %{
@@ -18,7 +18,6 @@
         PyObject_HEAD
         HyRepo repo;
     } _RepoObject;
-    using namespace libdnf;
 %}
 
 %typemap(in) HyRepo {
@@ -35,13 +34,12 @@
 }
 
 // make SWIG look into following headers
-%template(VectorPairStringString) std::vector<std::pair<std::string, std::string>>;
 %template(VectorPPackageTarget) std::vector<libdnf::PackageTarget *>;
 
 %extend libdnf::Repo {
     Repo(const std::string & id, ConfigRepo * config)
     {
-        return new Repo(id, std::unique_ptr<libdnf::ConfigRepo>(config));
+        return new libdnf::Repo(id, std::unique_ptr<libdnf::ConfigRepo>(config));
     }
     void setCallbacks(RepoCB * callbacks)
     {
@@ -86,7 +84,7 @@
             cHeaders[i] = httpHeaders[i].c_str();
         cHeaders[httpHeaders.size()] = nullptr;
 
-        return new PackageTarget(cfg, relativeUrl, dest, chksType,
+        return new libdnf::PackageTarget(cfg, relativeUrl, dest, chksType,
             chksum, expectedSize, baseUrl, resume,
             byteRangeStart, byteRangeEnd, callbacks,
             httpHeaders.size() > 0 ? cHeaders : nullptr);
