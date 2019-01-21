@@ -21,6 +21,8 @@
 #ifndef LIBDNF_CONFIG_PARSER_HPP
 #define LIBDNF_CONFIG_PARSER_HPP
 
+#include "../utils/PreserveOrderMap.hpp"
+
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -39,6 +41,8 @@ namespace libdnf {
 */
 struct ConfigParser {
 public:
+    typedef PreserveOrderMap<std::string, PreserveOrderMap<std::string, std::string>> Container;
+
     struct Exception : public std::runtime_error {
         Exception(const std::string & what) : runtime_error(what) {}
     };
@@ -92,12 +96,12 @@ public:
     bool hasSection(const std::string & section) const;
     const std::string & getValue(const std::string & section, const std::string & key) const;
     std::string getSubstitutedValue(const std::string & section, const std::string & key) const;
-    const std::map<std::string, std::map<std::string, std::string>> & getData() const noexcept;
-    std::map<std::string, std::map<std::string, std::string>> & getData() noexcept;
+    const Container & getData() const noexcept;
+    Container & getData() noexcept;
 
 private:
     std::map<std::string, std::string> substitutions;
-    std::map<std::string, std::map<std::string, std::string>> data;
+    Container data;
 };
 
 inline void ConfigParser::setSubstitutions(const std::map<std::string, std::string> & substitutions)
@@ -120,14 +124,12 @@ inline bool ConfigParser::hasSection(const std::string & section) const
     return data.find(section) != data.end();
 }
 
-inline const std::map<std::string,
-    std::map<std::string, std::string>> & ConfigParser::getData() const noexcept
+inline const ConfigParser::Container & ConfigParser::getData() const noexcept
 {
     return data;
 }
 
-inline std::map<std::string,
-    std::map<std::string, std::string>> & ConfigParser::getData() noexcept
+inline ConfigParser::Container & ConfigParser::getData() noexcept
 {
     return data;
 }

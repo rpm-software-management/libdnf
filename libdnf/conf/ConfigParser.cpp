@@ -103,7 +103,7 @@ ConfigParser::getSubstitutedValue(const std::string & section, const std::string
     return ret;
 }
 
-static void writeKeyVals(std::ostream & out, const std::map<std::string, std::string> & keyValMap)
+static void writeKeyVals(std::ostream & out, const ConfigParser::Container::mapped_type & keyValMap)
 {
     for (const auto & keyVal : keyValMap) {
         out << keyVal.first << "=";
