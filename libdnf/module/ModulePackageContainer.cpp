@@ -1076,10 +1076,11 @@ bool ModulePackageContainer::Impl::ModulePersistor::changeState(
     return true;
 }
 
-static bool isConfigValid(std::map<std::string, std::string> &config, const std::string &name)
+static bool isConfigValid(const std::map<std::string, std::string> &config, const std::string &name)
 {
     /* name = <module_name> */
-    if (config.find("name") == config.end() || config["name"] != name) {
+    auto optName = config.find("name");
+    if (optName == config.end() || optName->second != name) {
         return false;
     }
     /* stream = <stream_name> */
