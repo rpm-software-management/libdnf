@@ -1,10 +1,11 @@
 %module conf
 
+%include <exception.i>
 %include <stdint.i>
 %include <std_map.i>
 %include <std_pair.i>
-%include <std_vector.i>
-%include <std_string.i>
+
+%import(module="libdnf.common_types") "common_types.i"
 
 %begin %{
     #define SWIG_PYTHON_2_UNICODE
@@ -15,10 +16,8 @@
     #include <iterator>
     #include "libdnf/conf/ConfigRepo.hpp"
     #include "libdnf/conf/ConfigParser.hpp"
-    using namespace libdnf;
 %}
 
-%include <exception.i>
 %exception {
     try {
         $action
@@ -51,16 +50,14 @@
 %include "libdnf/conf/OptionStringList.hpp"
 %include "libdnf/conf/OptionPath.hpp"
 
-%template(OptionChildBool) libdnf::OptionChild<OptionBool>;
-%template(OptionChildString) libdnf::OptionChild<OptionString>;
-%template(OptionChildStringList) libdnf::OptionChild<OptionStringList>;
-%template(OptionChildNumberInt32) libdnf::OptionChild< OptionNumber<std::int32_t> >;
-%template(OptionChildNumberUInt32) libdnf::OptionChild< OptionNumber<std::uint32_t> >;
-%template(OptionChildNumberFloat) libdnf::OptionChild< OptionNumber<float> >;
-%template(OptionChildEnumString) libdnf::OptionChild< OptionEnum<std::string> >;
-%template(OptionChildSeconds) libdnf::OptionChild<OptionSeconds>;
-%template(PairStringString) std::pair<std::string, std::string>;
-%template(MapStringString) std::map<std::string, std::string>;
+%template(OptionChildBool) libdnf::OptionChild<libdnf::OptionBool>;
+%template(OptionChildString) libdnf::OptionChild<libdnf::OptionString>;
+%template(OptionChildStringList) libdnf::OptionChild<libdnf::OptionStringList>;
+%template(OptionChildNumberInt32) libdnf::OptionChild<libdnf::OptionNumber<std::int32_t>>;
+%template(OptionChildNumberUInt32) libdnf::OptionChild<libdnf::OptionNumber<std::uint32_t>>;
+%template(OptionChildNumberFloat) libdnf::OptionChild<libdnf::OptionNumber<float>>;
+%template(OptionChildEnumString) libdnf::OptionChild<libdnf::OptionEnum<std::string>>;
+%template(OptionChildSeconds) libdnf::OptionChild<libdnf::OptionSeconds>;
 
 %include <std_vector_ext.i>
 
@@ -177,7 +174,6 @@ public:
 %ignore libdnf::ConfigParser::MissingOption;
 %include "libdnf/conf/ConfigParser.hpp"
 %clear std::string & text;
-%template(MapStringMapStringString) std::map<std::string, std::map<std::string, std::string>>;
 
 %exception __next__() {
     try

@@ -6,11 +6,10 @@
 
 %include <exception.i>
 %include <std_map.i>
-%include <std_pair.i>
-%include <std_set.i>
-%include <std_string.i>
 %include <std_vector.i>
+%include <std_string.i>
 
+%import(module="libdnf.common_types") "common_types.i"
 
 %exception {
     try {
@@ -28,12 +27,9 @@ typedef int Id;
     #include "libdnf/module/ModulePackageContainer.hpp"
     #include "libdnf/module/modulemd/ModuleProfile.hpp"
 %}
-%template(SetString) std::set<std::string>;
 %template(VectorModulePackagePtr) std::vector<ModulePackage *>;
 %template(VectorVectorVectorModulePackagePtr) std::vector<std::vector<std::vector<ModulePackage *>>>;
 %template(VectorModuleProfile) std::vector<ModuleProfile>;
-%template(MapStringString) std::map<std::string, std::string>;
-%template(MapStringPairStringString) std::map<std::string, std::pair<std::string, std::string>>;
 
 %include <std_vector_ext.i>
 

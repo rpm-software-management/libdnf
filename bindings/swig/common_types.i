@@ -4,7 +4,19 @@
     #define SWIG_PYTHON_2_UNICODE
 %}
 
+%include <stdint.i>
+%include <std_map.i>
+%include <std_pair.i>
+%include <std_set.i>
 %include <std_string.i>
+%include <std_vector.i>
+
+%template(SetString) std::set<std::string>;
+%template(PairStringString) std::pair<std::string, std::string>;
+%template(VectorPairStringString) std::vector<std::pair<std::string, std::string>>;
+%template(MapStringString) std::map<std::string, std::string>;
+%template(MapStringMapStringString) std::map<std::string, std::map<std::string, std::string>>;
+%template(MapStringPairStringString) std::map<std::string, std::pair<std::string, std::string>>;
 
 %{
     #include "libdnf/utils/PreserveOrderMap.hpp"
