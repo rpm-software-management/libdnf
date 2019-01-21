@@ -1076,7 +1076,8 @@ bool ModulePackageContainer::Impl::ModulePersistor::changeState(
     return true;
 }
 
-static bool isConfigValid(const std::map<std::string, std::string> &config, const std::string &name)
+static bool
+isConfigValid(const libdnf::ConfigParser::Container::mapped_type &config, const std::string &name)
 {
     /* name = <module_name> */
     auto optName = config.find("name");
@@ -1100,7 +1101,8 @@ static bool isConfigValid(const std::map<std::string, std::string> &config, cons
     return true;
 }
 
-static inline void initConfig(std::map<std::string, std::string> &config, const std::string &name)
+static inline void
+initConfig(libdnf::ConfigParser::Container::mapped_type &config, const std::string &name)
 {
     config["name"] = name;
     config["stream"] = EMPTY_STREAM;
