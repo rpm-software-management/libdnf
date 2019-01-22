@@ -11,27 +11,25 @@
 
 %import(module="libdnf.common_types") "common_types.i"
 
-%exception {
+%exception %{
     try {
         $action
     } catch (const std::exception & e) {
        SWIG_exception(SWIG_RuntimeError, e.what());
     }
-}
+%}
 
 typedef int Id;
 
 %{
     // make SWIG wrap following headers
-    #include "libdnf/module/ModulePackage.hpp"
     #include "libdnf/module/ModulePackageContainer.hpp"
-    #include "libdnf/module/modulemd/ModuleProfile.hpp"
 %}
 
-%inline {
+%inline %{
     typedef libdnf::ModuleDependencies ModuleDependencies;
     typedef libdnf::ModuleProfile ModuleProfile;
-}
+%}
 
 %template(VectorModulePackagePtr) std::vector<libdnf::ModulePackage *>;
 %template(VectorVectorVectorModulePackagePtr) std::vector<std::vector<std::vector<libdnf::ModulePackage *>>>;
@@ -47,5 +45,10 @@ typedef int Id;
 %nodefaultctor libdnf::ModuleProfile;
 
 %include "libdnf/module/ModulePackage.hpp"
+%ignore libdnf::ModulePackageContainer::Exception;
+%ignore libdnf::ModulePackageContainer::NoModuleException;
+%ignore libdnf::ModulePackageContainer::NoStreamException;
+%ignore libdnf::ModulePackageContainer::EnabledStreamException;
+%ignore libdnf::ModulePackageContainer::EnableMultipleStreamsException;
 %include "libdnf/module/ModulePackageContainer.hpp"
 %include "libdnf/module/modulemd/ModuleProfile.hpp"
