@@ -21,6 +21,8 @@
 #ifndef LIBDNF_CONFIG_PARSER_HPP
 #define LIBDNF_CONFIG_PARSER_HPP
 
+#ifdef LIBDNF_UNSTABLE_API
+
 #include "../utils/PreserveOrderMap.hpp"
 
 #include <map>
@@ -135,5 +137,7 @@ inline ConfigParser::Container & ConfigParser::getData() noexcept
 }
 
 }
+
+#endif
 
 #endif

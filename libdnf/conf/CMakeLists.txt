@@ -28,6 +28,7 @@ SET (CONF_PUBLIC_HEADERS
         ${CMAKE_CURRENT_SOURCE_DIR}/Config.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/ConfigMain.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/ConfigRepo.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ConfigParser.hpp
     )
 
 INSTALL(FILES ${CONF_PUBLIC_HEADERS} DESTINATION include/libdnf/conf)
