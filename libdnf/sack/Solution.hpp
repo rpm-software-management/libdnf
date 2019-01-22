@@ -51,5 +51,4 @@ inline Query * Solution::releaseQuery() { return query.release(); }
 
 }
 
-
 #endif /* __SOLUTION_HPP */

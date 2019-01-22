@@ -47,6 +47,8 @@ extern "C" {
 #include "IdQueue.hpp"
 #include "../utils/filesystem.hpp"
 
+namespace libdnf {
+
 enum {NO_MATCH=1, MULTIPLE_MATCH_OBJECTS, INCORECT_COMPARISON_TYPE};
 
 static std::map<int, const char *> ERROR_DICT = {
@@ -466,8 +468,6 @@ sltrToJob(const HySelector sltr, Queue *job, int solver_action)
         throw libdnf::Goal::Exception(TM_(ERROR_DICT[ret], 1), DNF_ERROR_BAD_SELECTOR);
     }
 }
-
-namespace libdnf {
 
 #define BLOCK_SIZE 15
 

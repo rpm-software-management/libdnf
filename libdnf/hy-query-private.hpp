@@ -40,8 +40,11 @@ enum _match_type {
 };
 
 int hy_filter_unneeded(HyQuery query, const libdnf::Swdb &swdb, bool debug_solver);
+
+namespace libdnf {
 void hy_query_to_name_ordered_queue(HyQuery query, libdnf::IdQueue * samename);
 void hy_query_to_name_arch_ordered_queue(HyQuery query, libdnf::IdQueue * samename);
+}
 
 /**
 * @brief Return HySelector from HyQuery

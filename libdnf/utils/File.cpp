@@ -14,28 +14,30 @@ extern "C" {
 #   include <solv/solv_xfopen.h>
 };
 
-std::shared_ptr<libdnf::File> libdnf::File::newFile(const std::string &filePath)
+namespace libdnf {
+
+std::shared_ptr<File> File::newFile(const std::string &filePath)
 {
     if (solv_xfopen_iscompressed(filePath.c_str()) == 1) {
-        return std::make_shared<libdnf::CompressedFile>(filePath);
+        return std::make_shared<CompressedFile>(filePath);
     } else {
-        return std::make_shared<libdnf::File>(filePath);
+        return std::make_shared<File>(filePath);
     }
 }
 
-libdnf::File::File(const std::string &filePath)
+File::File(const std::string &filePath)
         : filePath(filePath)
         , file(nullptr)
 {}
 
-libdnf::File::~File()
+File::~File()
 {
     try {
         close();
     } catch (IOException &) {}
 }
 
-void libdnf::File::open(const char *mode)
+void File::open(const char *mode)
 {
     file = fopen(filePath.c_str(), mode);
     if (!file) {
@@ -43,7 +45,7 @@ void libdnf::File::open(const char *mode)
     }
 }
 
-void libdnf::File::close()
+void File::close()
 {
     if (file == nullptr)
         return;
@@ -55,12 +57,12 @@ void libdnf::File::close()
     file = nullptr;
 }
 
-size_t libdnf::File::read(char *buffer, size_t count)
+size_t File::read(char *buffer, size_t count)
 {
     return fread(buffer, sizeof(char), count, file);
 }
 
-bool libdnf::File::readLine(std::string &line)
+bool File::readLine(std::string &line)
 {
     char *buffer = nullptr;
     size_t size = 0;
@@ -75,7 +77,7 @@ bool libdnf::File::readLine(std::string &line)
     return true;
 }
 
-std::string libdnf::File::getContent()
+std::string File::getContent()
 {
     if (!file) {
         throw NotOpenedException(filePath);
@@ -96,3 +98,4 @@ std::string libdnf::File::getContent()
     return content;
 }
 
+}

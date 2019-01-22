@@ -39,6 +39,10 @@ inline DnfGoalActions & operator|=(DnfGoalActions & a, DnfGoalActions b)
     return a = a | b;
 }
 
+namespace libdnf {
+
 void sltrToJob(const HySelector sltr, Queue *job, int solver_action);
+
+}
 
 #endif // HY_GOAL_INTERNAL_H

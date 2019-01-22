@@ -21,26 +21,28 @@
 #include "Solution.hpp"
 #include "../hy-util-private.hpp"
 
+namespace libdnf {
+
 bool
-libdnf::Solution::getBestSolution(const char * subject, DnfSack* sack, HyForm * forms, bool icase,
+Solution::getBestSolution(const char * subject, DnfSack* sack, HyForm * forms, bool icase,
     bool with_nevra, bool with_provides, bool with_filenames, bool with_src)
 {
     nevra.reset();
-    libdnf::Query baseQuery(sack);
+    Query baseQuery(sack);
     if (!with_src) {
         baseQuery.addFilter(HY_PKG_ARCH, HY_NEQ, "src");
     }
     baseQuery.apply();
-    std::unique_ptr<libdnf::Query> queryCandidate(new libdnf::Query(baseQuery));
+    std::unique_ptr<Query> queryCandidate(new Query(baseQuery));
     if (with_nevra) {
-        libdnf::Nevra nevraObj;
+        Nevra nevraObj;
         const HyForm * tryForms = !forms ? HY_FORMS_MOST_SPEC : forms;
         for (std::size_t i = 0; tryForms[i] != _HY_FORM_STOP_; ++i) {
             if (nevraObj.parse(subject, tryForms[i])) {
                 queryCandidate->queryUnion(baseQuery);
                 queryCandidate->addFilter(&nevraObj, icase);
                 if (!queryCandidate->empty()) {
-                    nevra.reset(new libdnf::Nevra(std::move(nevraObj)));
+                    nevra.reset(new Nevra(std::move(nevraObj)));
                     query = std::move(queryCandidate);
                     return true;
                 }
@@ -78,3 +80,4 @@ libdnf::Solution::getBestSolution(const char * subject, DnfSack* sack, HyForm * 
     return false;
 }
 
+}

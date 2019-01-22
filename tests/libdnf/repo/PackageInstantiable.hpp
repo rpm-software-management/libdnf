@@ -3,7 +3,7 @@
 
 #include "libdnf/repo/solvable/Package.hpp"
 
-class PackageInstantiable : public Package
+class PackageInstantiable : public libdnf::Package
 {
 public:
     PackageInstantiable(DnfSack *sack, HyRepo repo, const char *name, const char *version, const char *arch);
