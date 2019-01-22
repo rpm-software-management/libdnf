@@ -24,6 +24,8 @@
 
 #include "filesystem.hpp"
 
+namespace libdnf {
+
 /**
  * Verify if path exists
  * \param path file or directory path
@@ -55,4 +57,6 @@ makeDirPath(std::string filePath)
             mkdir(directory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
         }
     }
+}
+
 }

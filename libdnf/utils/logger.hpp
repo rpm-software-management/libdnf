@@ -27,6 +27,8 @@
 #include <time.h>
 #include <unistd.h>
 
+namespace libdnf {
+
 class Logger {
 public:
     enum class Level {CRITICAL, ERROR, WARNING, NOTICE, INFO, DEBUG, TRACE};
@@ -64,5 +66,7 @@ public:
     void write(int, Level, const std::string &) override {}
     void write(int, time_t, pid_t, Level, const std::string &) override {}
 };
+
+}
 
 #endif // _LOGGER_HPP_

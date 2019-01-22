@@ -20,9 +20,13 @@
 
 #include <logger.hpp>
 
+namespace libdnf {
+
 constexpr const char * Logger::levelCStr[];
 
 void Logger::write(int source, Level level, const std::string & message)
 {
     write(source, time(NULL), getpid(), level, message);
+}
+
 }

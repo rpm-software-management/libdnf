@@ -11,6 +11,8 @@
 
 #include "Dependency.hpp"
 
+namespace libdnf {
+
 struct Package
 {
 public:
@@ -62,5 +64,7 @@ private:
     DnfSack *sack;
     Id id;
 };
+
+}
 
 #endif //LIBDNF_PACKAGE_HPP

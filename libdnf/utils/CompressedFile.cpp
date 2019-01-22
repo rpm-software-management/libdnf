@@ -6,18 +6,19 @@ extern "C" {
 #   include <solv/solv_xfopen.h>
 };
 
-libdnf::CompressedFile::CompressedFile(const std::string &filePath)
-        : File(filePath)
-{}
+namespace libdnf {
 
-libdnf::CompressedFile::~CompressedFile() = default;
+CompressedFile::CompressedFile(const std::string &filePath)
+: File(filePath) {}
 
-void libdnf::CompressedFile::open(const char *mode)
+CompressedFile::~CompressedFile() = default;
+
+void CompressedFile::open(const char *mode)
 {
     file = solv_xfopen(filePath.c_str(), mode);
 }
 
-std::string libdnf::CompressedFile::getContent()
+std::string CompressedFile::getContent()
 {
     if (!file) {
         throw NotOpenedException(filePath);
@@ -34,4 +35,6 @@ std::string libdnf::CompressedFile::getContent()
     } while (bytesRead == bufferSize);
 
     return ss.str();
+}
+
 }

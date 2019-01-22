@@ -25,10 +25,14 @@
 
 #include <string>
 
+namespace libdnf {
+
 bool
 pathExists(const char *path);
 
 void
 makeDirPath(std::string filePath);
+
+}
 
 #endif

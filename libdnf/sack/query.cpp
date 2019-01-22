@@ -2095,8 +2095,6 @@ Query::filterUserInstalled(const libdnf::Swdb &swdb)
     swdb.filterUserinstalled(*getResultPset());
 }
 
-}
-
 void
 hy_query_to_name_ordered_queue(HyQuery query, libdnf::IdQueue * samename)
 {
@@ -2127,3 +2125,4 @@ hy_query_to_name_arch_ordered_queue(HyQuery query, libdnf::IdQueue * samename)
         libdnf::filter_latest_sortcmp_byarch, pool);
 }
 
+}

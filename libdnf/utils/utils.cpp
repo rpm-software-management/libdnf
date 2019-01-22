@@ -10,7 +10,11 @@
 #include <unistd.h>
 #include <string.h>
 
-std::vector<std::string> libdnf::string::split(const std::string &source, const char *delimiter, int maxSplit)
+namespace libdnf {
+
+namespace string {
+
+std::vector<std::string> split(const std::string &source, const char *delimiter, int maxSplit)
 {
     if (source.empty())
         throw std::runtime_error{"Source cannot be empty"};
@@ -18,7 +22,7 @@ std::vector<std::string> libdnf::string::split(const std::string &source, const 
     std::string::size_type tokenBeginIndex = 0;
     std::vector<std::string> container;
 
-    while ((tokenBeginIndex = source.find_first_not_of(delimiter, tokenBeginIndex)) != std::string::npos) {
+    while ((tokenBeginIndex = source.find_first_not_of(delimiter, tokenBeginIndex)) != source.npos) {
         if (maxSplit != -1 && ((int) (container.size() + 1 )) == maxSplit) {
             container.emplace_back(source.substr(tokenBeginIndex));
             break;
@@ -36,7 +40,7 @@ std::vector<std::string> libdnf::string::split(const std::string &source, const 
     return container;
 }
 
-std::vector<std::string> libdnf::string::rsplit(const std::string &source, const char *delimiter, int maxSplit)
+std::vector<std::string> rsplit(const std::string &source, const char *delimiter, int maxSplit)
 {
     if (source.empty())
         throw std::runtime_error{"Source cannot be empty"};
@@ -45,7 +49,7 @@ std::vector<std::string> libdnf::string::rsplit(const std::string &source, const
     std::string::size_type tokenBeginIndex = 0;
     std::vector<std::string> container;
 
-    while ((tokenBeginIndex = sequence.find_last_of(delimiter)) != std::string::npos) {
+    while ((tokenBeginIndex = sequence.find_last_of(delimiter)) != sequence.npos) {
         if (maxSplit != -1 && ((int) (container.size() + 1 )) == maxSplit) {
             container.emplace_back(source.substr(0, tokenBeginIndex));
             break;
@@ -62,40 +66,42 @@ std::vector<std::string> libdnf::string::rsplit(const std::string &source, const
     return container;
 }
 
-std::string libdnf::string::trimSuffix(const std::string &source, const std::string &suffix)
+std::string trimSuffix(const std::string &source, const std::string &suffix)
 {
     if (source.length() < suffix.length())
         throw std::runtime_error{"Suffix cannot be longer than source"};
 
-    if (libdnf::string::endsWith(source, suffix))
+    if (endsWith(source, suffix))
         return source.substr(0, source.length() - suffix.length());
 
     throw std::runtime_error{"Suffix '" + suffix + "' not found"};
 }
 
-std::string libdnf::string::trimPrefix(const std::string &source, const std::string &prefix)
+std::string trimPrefix(const std::string &source, const std::string &prefix)
 {
     if (source.length() < prefix.length())
         throw std::runtime_error{"Prefix cannot be longer than source"};
 
-    if (libdnf::string::startsWith(source, prefix))
+    if (startsWith(source, prefix))
         return source.substr(prefix.length() - 1);
 
     throw std::runtime_error{"Prefix '" + prefix + "' not found"};
 }
 
-bool libdnf::string::startsWith(const std::string &source, const std::string &toMatch)
+bool startsWith(const std::string &source, const std::string &toMatch)
 {
     return source.find(toMatch) == 0;
 }
 
-bool libdnf::string::endsWith(const std::string &source, const std::string &toMatch)
+bool endsWith(const std::string &source, const std::string &toMatch)
 {
     auto it = toMatch.begin();
     return source.size() >= toMatch.size() &&
            std::all_of(std::next(source.begin(), source.size() - toMatch.size()), source.end(), [&it](const char &c) {
                return c == *(it++);
            });
+}
+
 }
 
 bool haveFilesSameContent(const char * filePath1, const char * filePath2)
@@ -137,13 +143,15 @@ bool haveFilesSameContent(const char * filePath1, const char * filePath2)
     return ret;
 }
 
-bool filesystem::exists(const std::string &name)
+namespace filesystem {
+
+bool exists(const std::string &name)
 {
     struct stat buffer;
     return stat(name.c_str(), &buffer) == 0;
 }
 
-bool filesystem::isDIR(const std::string& dirPath)
+bool isDIR(const std::string& dirPath)
 {
     struct stat buf;
     lstat(dirPath.c_str(), &buf);
@@ -151,7 +159,7 @@ bool filesystem::isDIR(const std::string& dirPath)
 }
 
 
-std::vector<std::string> filesystem::getDirContent(const std::string &dirPath)
+std::vector<std::string> getDirContent(const std::string &dirPath)
 {
     std::vector<std::string> content{};
     struct dirent *ent;
@@ -164,7 +172,7 @@ std::vector<std::string> filesystem::getDirContent(const std::string &dirPath)
                 continue;
 
             auto fullPath = dirPath;
-            if (!libdnf::string::endsWith(fullPath, "/"))
+            if (!string::endsWith(fullPath, "/"))
                 fullPath += "/";
             fullPath += ent->d_name;
 
@@ -174,4 +182,8 @@ std::vector<std::string> filesystem::getDirContent(const std::string &dirPath)
     }
 
     return content;
+}
+
+}
+
 }

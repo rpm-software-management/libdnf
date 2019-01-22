@@ -3,6 +3,8 @@
 #include <utility>
 #include "DependencyContainer.hpp"
 
+namespace libdnf {
+
 Package::Package(DnfSack *sack, Id id)
         : sack(sack)
         , id(id)
@@ -225,4 +227,6 @@ void Package::addDependency(std::shared_ptr<libdnf::Dependency> dependency, int 
 {
     Solvable *solvable = pool_id2solvable(dnf_sack_get_pool(sack), id);
     solvable_add_deparray(solvable, type, dependency->getId(), marker);
+}
+
 }
