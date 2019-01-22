@@ -75,7 +75,7 @@ std::pair<std::vector<std::vector<std::string>>, libdnf::ModulePackageContainer:
     DnfSack *sack, libdnf::ModulePackageContainer * moduleContainer, const char ** hotfixRepos,
     const char *install_root, const char * platformModule, bool updateOnly, bool debugSolver);
 
-std::vector<ModulePackage *> requiresModuleEnablement(DnfSack * sack, const libdnf::PackageSet * installSet);
+std::vector<libdnf::ModulePackage *> requiresModuleEnablement(DnfSack * sack, const libdnf::PackageSet * installSet);
 
 /**
  * @brief Return fingerprint of installed RPMs.

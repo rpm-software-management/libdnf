@@ -32,6 +32,8 @@ extern "C" {
 #include "libdnf/utils/File.hpp"
 #include "libdnf/dnf-sack-private.hpp"
 
+namespace libdnf {
+
 static void setSovable(Pool * pool, Solvable *solvable, std::string name,
     std::string stream, std::string version, std::string context, const char * arch)
 {
@@ -416,4 +418,6 @@ ModulePackage::createPlatformSolvable(DnfSack * moduleSack, const std::string & 
     dnf_sack_set_considered_to_update(moduleSack);
     pool_set_installed(pool, repo);
     return id;
+}
+
 }
