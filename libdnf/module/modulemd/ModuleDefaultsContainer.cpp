@@ -25,6 +25,7 @@
 
 #include "ModuleDefaultsContainer.hpp"
 
+namespace libdnf {
 
 ModuleDefaultsContainer::ModuleDefaultsContainer()
 {
@@ -142,4 +143,6 @@ std::map<std::string, std::string> ModuleDefaultsContainer::getDefaultStreams()
         result[name] = defaultStream;
     }
     return result;
+}
+
 }
