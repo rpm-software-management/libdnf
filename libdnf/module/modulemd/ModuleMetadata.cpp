@@ -23,7 +23,6 @@
 #include <utility>
 
 #include "ModuleMetadata.hpp"
-#include "ModuleProfile.hpp"
 #include "../hy-util-private.hpp"
 
 namespace libdnf {

@@ -20,6 +20,7 @@
 
 #include "ModuleProfile.hpp"
 
+namespace libdnf {
 
 ModuleProfile::ModuleProfile(ModulemdProfile *profile)
         : profile(profile)
@@ -59,4 +60,6 @@ std::vector<std::string> ModuleProfile::getContent() const
     g_free(cRpms);
 
     return rpms;
+}
+
 }
