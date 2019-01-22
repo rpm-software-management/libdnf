@@ -28,8 +28,7 @@
 #include <modulemd/modulemd.h>
 
 #include "ModuleDependencies.hpp"
-
-class ModuleProfile;
+#include "ModuleProfile.hpp"
 
 namespace std {
 

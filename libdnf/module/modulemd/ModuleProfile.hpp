@@ -29,8 +29,6 @@
 #include <modulemd/modulemd.h>
 
 namespace libdnf {
-    class ModuleMetadata;
-}
 
 class ModuleProfile
 {
@@ -42,10 +40,11 @@ public:
     std::vector<std::string> getContent() const;
 
 private:
-    friend class libdnf::ModuleMetadata;
+    friend class ModuleMetadata;
     explicit ModuleProfile(ModulemdProfile * profile);
     ModulemdProfile *profile;
 };
 
+}
 
 #endif //LIBDNF_MODULEPROFILE_HPP
