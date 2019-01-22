@@ -58,7 +58,7 @@ int dnf_sack_get_pool_nsolvables(DnfSack *sack);
  */
 libdnf::PackageSet *dnf_sack_get_pkg_solvables(DnfSack *sack);
 
-ModulePackageContainer * dnf_sack_get_module_container(DnfSack *sack);
+libdnf::ModulePackageContainer * dnf_sack_get_module_container(DnfSack *sack);
 void         dnf_sack_make_provides_ready   (DnfSack    *sack);
 Id           dnf_sack_running_kernel        (DnfSack    *sack);
 void         dnf_sack_recompute_considered  (DnfSack    *sack);
@@ -71,8 +71,8 @@ void         dnf_sack_set_running_kernel_fn (DnfSack    *sack,
                                              dnf_sack_running_kernel_fn_t fn);
 DnfPackage  *dnf_sack_add_cmdline_package_flags   (DnfSack *sack,
                             const char *fn, const int flags);
-std::pair<std::vector<std::vector<std::string>>, ModulePackageContainer::ModuleErrorType> dnf_sack_filter_modules_v2(
-    DnfSack *sack, DnfModulePackageContainer * moduleContainer, const char ** hotfixRepos,
+std::pair<std::vector<std::vector<std::string>>, libdnf::ModulePackageContainer::ModuleErrorType> dnf_sack_filter_modules_v2(
+    DnfSack *sack, libdnf::ModulePackageContainer * moduleContainer, const char ** hotfixRepos,
     const char *install_root, const char * platformModule, bool updateOnly, bool debugSolver);
 
 std::vector<ModulePackage *> requiresModuleEnablement(DnfSack * sack, const libdnf::PackageSet * installSet);

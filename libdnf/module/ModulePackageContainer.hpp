@@ -32,6 +32,7 @@
 
 //class ModulePackageContainer;
 //typedef std::shared_ptr<ModulePackageContainer> ModulePackageContainerPtr;
+namespace libdnf {
 
 struct ModulePackageContainer
 {
@@ -243,5 +244,6 @@ private:
     std::unique_ptr<Impl> pImpl;
 };
 
+}
 
 #endif //LIBDNF_MODULEPACKAGECONTAINER_HPP

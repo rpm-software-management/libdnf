@@ -29,8 +29,6 @@
 #include "libdnf/repo/solvable/Package.hpp"
 #include "../goal/IdQueue.hpp"
 
-struct ModulePackageContainer;
-
 class ModulePackage // TODO inherit in future; : public Package
 {
 public:
@@ -75,7 +73,7 @@ public:
     std::string getYaml() const { return metadata.getYaml(); };
 
 private:
-    friend struct ModulePackageContainer;
+    friend struct libdnf::ModulePackageContainer;
 
     ModulePackage(DnfSack * moduleSack, Repo * repo,
         ModuleMetadata && metadata, const std::string & repoID);
