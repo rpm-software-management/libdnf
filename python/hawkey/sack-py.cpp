@@ -538,7 +538,7 @@ filter_modules(_SackObject *self, PyObject *args, PyObject *kwds)
         PyTuple_SetItem(returnTuple, 0, problemRulesPyConverter(problems.first));
         PyTuple_SetItem(returnTuple, 1, PyLong_FromLong(int(problems.second)));
         return returnTuple;
-    } catch (ModuleDefaultsContainer::ConflictException & exception) {
+    } catch (libdnf::ModuleDefaultsContainer::ConflictException & exception) {
         PyErr_SetString(HyExc_Runtime, exception.what());
         return NULL;
     }

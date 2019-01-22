@@ -37,6 +37,8 @@ struct default_delete<ModulemdDefaults> {
 
 } // namespace std
 
+namespace libdnf {
+
 class ModuleDefaultsContainer
 {
 public:
@@ -76,5 +78,6 @@ private:
     void reportFailures(const GPtrArray *failures) const;
 };
 
+}
 
 #endif //LIBDNF_MODULEDEFAULTSCONTAINER_HPP

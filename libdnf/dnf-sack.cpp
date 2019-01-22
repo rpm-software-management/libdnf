@@ -2352,7 +2352,7 @@ std::pair<std::vector<std::vector<std::string>>, libdnf::ModulePackageContainer:
 
         try {
             moduleContainer->moduleDefaultsResolve();
-        } catch (ModuleDefaultsContainer::ResolveException & exception) {
+        } catch (libdnf::ModuleDefaultsContainer::ResolveException & exception) {
             auto logger(libdnf::Log::getLogger());
             logger->debug(_("No module defaults found"));
         }
