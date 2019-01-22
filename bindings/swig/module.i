@@ -27,8 +27,8 @@ typedef int Id;
     #include "libdnf/module/ModulePackageContainer.hpp"
     #include "libdnf/module/modulemd/ModuleProfile.hpp"
 %}
-%template(VectorModulePackagePtr) std::vector<ModulePackage *>;
-%template(VectorVectorVectorModulePackagePtr) std::vector<std::vector<std::vector<ModulePackage *>>>;
+%template(VectorModulePackagePtr) std::vector<libdnf::ModulePackage *>;
+%template(VectorVectorVectorModulePackagePtr) std::vector<std::vector<std::vector<libdnf::ModulePackage *>>>;
 %template(VectorModuleProfile) std::vector<ModuleProfile>;
 
 %include <std_vector_ext.i>
@@ -37,7 +37,7 @@ typedef int Id;
 %template(MapStringVectorString) std::map<std::string, std::vector<std::string>>;
 
 // make SWIG wrap following headers
-%nodefaultctor ModulePackage;
+%nodefaultctor libdnf::ModulePackage;
 %nodefaultctor ModuleProfile;
 
 %include "libdnf/module/ModulePackage.hpp"
