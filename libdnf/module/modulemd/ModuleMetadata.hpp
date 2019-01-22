@@ -40,6 +40,8 @@ struct default_delete<ModulemdModule> {
 
 }
 
+namespace libdnf {
+
 class ModuleMetadata
 {
 public:
@@ -68,5 +70,6 @@ private:
     static void reportFailures(const GPtrArray *failures);
 };
 
+}
 
 #endif //LIBDNF_MODULEMETADATA_HPP

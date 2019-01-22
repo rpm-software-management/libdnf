@@ -20,8 +20,8 @@ public:
 
 private:
     DnfContext *context;
-    void sackHas(DnfSack *sack, const ModuleMetadata & module) const;
-    void sackHasNot(DnfSack *sack, const ModuleMetadata & module) const;
+    void sackHas(DnfSack *sack, const libdnf::ModuleMetadata & module) const;
+    void sackHasNot(DnfSack *sack, const libdnf::ModuleMetadata & module) const;
 };
 
 #endif //LIBDNF_CONTEXTTEST_HPP
