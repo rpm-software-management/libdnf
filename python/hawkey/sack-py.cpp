@@ -53,7 +53,7 @@ typedef struct {
 
 typedef struct {
     PyObject_HEAD
-    ModulePackageContainer * ptr;
+    libdnf::ModulePackageContainer * ptr;
     void * ty;
     int own;
     PyObject * next;
@@ -530,7 +530,7 @@ filter_modules(_SackObject *self, PyObject *args, PyObject *kwds)
     try {
         auto problems = dnf_sack_filter_modules_v2(self->sack, moduleContainer, hotfixReposCString.data(),
             installRoot, platformModule, updateOnly, debugSolver);
-        if (problems.second == ModulePackageContainer::ModuleErrorType::NO_ERROR) {
+        if (problems.second == libdnf::ModulePackageContainer::ModuleErrorType::NO_ERROR) {
             PyObject * returnTuple = PyTuple_New(0);
             return returnTuple;
         }

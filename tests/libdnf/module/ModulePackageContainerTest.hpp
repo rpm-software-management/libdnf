@@ -33,7 +33,7 @@ public:
 
 private:
     DnfContext *context;
-    ModulePackageContainer *modules;
+    libdnf::ModulePackageContainer *modules;
 };
 
 #endif /* LIBDNF_MODULEPACKAGECONTAINERTEST_HPP */

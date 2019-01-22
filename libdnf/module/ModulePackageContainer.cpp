@@ -46,6 +46,8 @@ extern "C" {
 #include "modulemd/ModuleDefaultsContainer.hpp"
 #include "modulemd/ModuleProfile.hpp"
 
+namespace libdnf {
+
 static constexpr auto EMPTY_STREAM = "";
 static constexpr auto EMPTY_PROFILES = "";
 static constexpr auto DEFAULT_STATE = "";
@@ -1363,4 +1365,6 @@ ModulePackageContainer::Impl::ModulePersistor::getRemovedProfiles()
     }
 
     return profiles;
+}
+
 }

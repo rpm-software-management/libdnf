@@ -109,7 +109,7 @@ typedef struct
     char                *arch;
     dnf_sack_running_kernel_fn_t  running_kernel_fn;
     guint                installonly_limit;
-    ModulePackageContainer * moduleContainer;
+    libdnf::ModulePackageContainer * moduleContainer;
 } DnfSackPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfSack, dnf_sack, G_TYPE_OBJECT)
@@ -2015,7 +2015,7 @@ dnf_sack_get_pool(DnfSack *sack)
  *
  * Since: 0.16.3
  */
-ModulePackageContainer *
+libdnf::ModulePackageContainer *
 dnf_sack_get_module_container(DnfSack *sack)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
@@ -2210,7 +2210,7 @@ dnf_sack_add_repos(DnfSack *sack,
 }
 
 namespace {
-void readModuleMetadataFromRepo(DnfSack * sack, ModulePackageContainer * modulePackages,
+void readModuleMetadataFromRepo(DnfSack * sack, libdnf::ModulePackageContainer * modulePackages,
     const char * platformModule)
 {
     modulePackages->add(sack);
@@ -2227,7 +2227,7 @@ void readModuleMetadataFromRepo(DnfSack * sack, ModulePackageContainer * moduleP
 }
 
 static std::tuple<std::vector<std::string>, std::vector<std::string>>
-collectNevraForInclusionExclusion(ModulePackageContainer &modulePackageContainer)
+collectNevraForInclusionExclusion(libdnf::ModulePackageContainer &modulePackageContainer)
 {
     std::vector<std::string> includeNEVRAs;
     std::vector<std::string> excludeNEVRAs;
@@ -2330,7 +2330,7 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
                                false, false);
 }
 
-std::pair<std::vector<std::vector<std::string>>, ModulePackageContainer::ModuleErrorType> dnf_sack_filter_modules_v2(
+std::pair<std::vector<std::vector<std::string>>, libdnf::ModulePackageContainer::ModuleErrorType> dnf_sack_filter_modules_v2(
     DnfSack * sack, DnfModulePackageContainer * moduleContainer, const char ** hotfixRepos,
     const char * install_root, const char * platformModule, bool updateOnly, bool debugSolver)
 {
@@ -2343,7 +2343,7 @@ std::pair<std::vector<std::vector<std::string>>, ModulePackageContainer::ModuleE
             if (priv->moduleContainer) {
                 delete priv->moduleContainer;
             }
-            priv->moduleContainer = new ModulePackageContainer(dnf_sack_get_all_arch(sack),
+            priv->moduleContainer = new libdnf::ModulePackageContainer(dnf_sack_get_all_arch(sack),
                 install_root, dnf_sack_get_arch(sack));
             moduleContainer = priv->moduleContainer;
         }
