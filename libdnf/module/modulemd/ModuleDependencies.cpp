@@ -21,6 +21,8 @@
 #include "libdnf/utils/utils.hpp"
 #include "ModuleDependencies.hpp"
 
+namespace libdnf {
+
 ModuleDependencies::ModuleDependencies(ModulemdDependencies *dependencies)
         : dependencies(dependencies)
 {}
@@ -62,4 +64,6 @@ std::vector<std::map<std::string, std::vector<std::string>>> ModuleDependencies:
     }
 
     return requires;
+}
+
 }

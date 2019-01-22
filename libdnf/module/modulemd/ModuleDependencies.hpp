@@ -29,6 +29,8 @@
 
 #include <modulemd/modulemd.h>
 
+namespace libdnf {
+
 class ModuleDependencies
 {
 public:
@@ -43,5 +45,6 @@ private:
     ModulemdDependencies *dependencies;
 };
 
+}
 
 #endif //LIBDNF_MODULEDEPENDENCIES_HPP

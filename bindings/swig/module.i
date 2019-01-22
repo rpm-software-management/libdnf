@@ -29,6 +29,7 @@ typedef int Id;
 %}
 
 %inline {
+    typedef libdnf::ModuleDependencies ModuleDependencies;
     typedef libdnf::ModuleProfile ModuleProfile;
 }
 
