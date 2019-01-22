@@ -21,6 +21,8 @@
 #ifndef _LIBDNF_PRESERVE_ORDER_MAP_HPP
 #define _LIBDNF_PRESERVE_ORDER_MAP_HPP
 
+#ifdef LIBDNF_UNSTABLE_API
+
 #include <iterator>
 #include <stdexcept>
 #include <vector>
@@ -176,5 +178,7 @@ private:
 };
 
 }
+
+#endif
 
 #endif //_LIBDNF_PRESERVE_ORDER_MAP_HPP
