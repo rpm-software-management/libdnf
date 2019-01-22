@@ -26,6 +26,8 @@
 #include "ModuleProfile.hpp"
 #include "../hy-util-private.hpp"
 
+namespace libdnf {
+
 std::vector<ModuleMetadata> ModuleMetadata::metadataFromString(const std::string &fileContent)
 {
     GError *error = nullptr;
@@ -172,4 +174,6 @@ ModuleMetadata::getYaml() const
     std::string yaml = yamlCString ? yamlCString : "";
     g_free(yamlCString);
     return yaml;
+}
+
 }

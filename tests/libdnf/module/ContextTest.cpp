@@ -65,7 +65,7 @@ void ContextTest::testLoadModules()
     const auto &yamlContent = yaml->getContent();
     yaml->close();
 
-    auto modules = ModuleMetadata::metadataFromString(yamlContent);
+    auto modules = libdnf::ModuleMetadata::metadataFromString(yamlContent);
     for (const auto &module : modules) {
         // default module:stream
         if ((g_strcmp0(module.getName(), "httpd") == 0) &&
@@ -122,7 +122,7 @@ void ContextTest::testLoadModules()
     }
 }
 
-void ContextTest::sackHas(DnfSack * sack, const ModuleMetadata & module) const
+void ContextTest::sackHas(DnfSack * sack, const libdnf::ModuleMetadata & module) const
 {
     libdnf::Query query{sack};
     auto artifacts = module.getArtifacts();
@@ -140,7 +140,7 @@ void ContextTest::sackHas(DnfSack * sack, const ModuleMetadata & module) const
     }
 }
 
-void ContextTest::sackHasNot(DnfSack * sack, const ModuleMetadata & module) const
+void ContextTest::sackHasNot(DnfSack * sack, const libdnf::ModuleMetadata & module) const
 {
     libdnf::Query query{sack};
     auto artifacts = module.getArtifacts();
