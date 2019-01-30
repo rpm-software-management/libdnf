@@ -23,6 +23,7 @@
 
 #include <map>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 namespace libdnf {

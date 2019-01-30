@@ -23,6 +23,7 @@
 
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include <modulemd/modulemd.h>
