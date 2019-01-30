@@ -22,6 +22,7 @@
 #define LIBDNF_CELL_HPP
 
 #include <libsmartcols/libsmartcols.h>
+#include <cerrno>
 #include <string>
 #include <stdexcept>
 

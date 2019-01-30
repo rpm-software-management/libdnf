@@ -23,6 +23,7 @@
 #define __CHANGELOG_HPP
 
 #include <ctime>
+#include <string>
 
 namespace libdnf {
 
