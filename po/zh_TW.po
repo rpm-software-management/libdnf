@@ -27,7 +27,7 @@ msgstr "設定 %1$s 權限失敗：%2$s"
 
 #: ../libdnf/dnf-goal.cpp:67
 msgid "Could not depsolve transaction; "
-msgstr "無法解析處理事項；"
+msgstr "無法解析處理事項； "
 
 #: ../libdnf/dnf-goal.cpp:69
 #, c-format
@@ -38,7 +38,7 @@ msgstr[0] "偵測到 %i 個問題：\n"
 #: ../libdnf/dnf-goal.cpp:77
 #, c-format
 msgid " Problem %1$i: %2$s\n"
-msgstr "第 %1$i 個問題：%2$s\n"
+msgstr " 第 %1$i 個問題：%2$s\n"
 
 #: ../libdnf/dnf-goal.cpp:79
 #, c-format

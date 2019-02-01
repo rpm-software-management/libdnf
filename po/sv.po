@@ -460,7 +460,7 @@ msgstr ""
 
 #: ../libdnf/dnf-transaction.cpp:322
 msgid "Failed to check untrusted: "
-msgstr "Misslyckades att kontrollera ej betrodda:"
+msgstr "Misslyckades att kontrollera ej betrodda: "
 
 #: ../libdnf/dnf-transaction.cpp:332
 #, c-format
