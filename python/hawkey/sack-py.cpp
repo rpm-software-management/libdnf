@@ -27,6 +27,7 @@
 #include "hy-util.h"
 #include "dnf-version.h"
 #include "dnf-sack-private.hpp"
+#include "libdnf/module/ModulePackageContainer.hpp"
 
 // pyhawkey
 #include "exception-py.hpp"
@@ -47,6 +48,7 @@ typedef struct {
     DnfSack *sack;
     PyObject *custom_package_class;
     PyObject *custom_package_val;
+    PyObject * ModulePackageContainerPy;
     FILE *log_out;
 } _SackObject;
 
@@ -119,8 +121,13 @@ sack_dealloc(_SackObject *o)
 {
     Py_XDECREF(o->custom_package_class);
     Py_XDECREF(o->custom_package_val);
-    if (o->sack)
+    if (o->sack) {
+        if (auto moduleContainer = o->ModulePackageContainerPy) {
+            dnf_sack_set_module_container(o->sack, NULL);
+            Py_DECREF(moduleContainer);
+        }
         g_object_unref(o->sack);
+    }
     if (o->log_out)
         fclose(o->log_out);
     Py_TYPE(o)->tp_free(o);
@@ -135,6 +142,7 @@ sack_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         self->sack = NULL;
         self->custom_package_class = NULL;
         self->custom_package_val = NULL;
+        self->ModulePackageContainerPy = NULL;
     }
     return (PyObject *)self;
 }
@@ -324,10 +332,48 @@ set_installonly_limit(_SackObject *self, PyObject *obj, void *unused)
     return 0;
 }
 
+static int
+set_module_container(_SackObject *self, PyObject *obj, void *unused)
+{
+    auto swigContainer = reinterpret_cast< ModulePackageContainerPyObject * >(
+        PyObject_GetAttrString(obj, "this"));
+    if (swigContainer == nullptr) {
+        PyErr_SetString(PyExc_SystemError, "Unable to parse ModuleContainer object");
+        return -1;
+    }
+    auto moduleContainer = swigContainer->ptr;
+    auto sack = self->sack;
+    if (auto oldConteynerPy = self->ModulePackageContainerPy) {
+        Py_XDECREF(oldConteynerPy);
+        auto oldContainer = dnf_sack_set_module_container(sack, moduleContainer);
+    } else {
+        auto oldContainer = dnf_sack_set_module_container(sack, moduleContainer);
+        if (oldContainer) {
+            delete oldContainer;
+        }
+    }
+    self->ModulePackageContainerPy = obj;
+    Py_INCREF(obj);
+
+    return 0;
+}
+
+static PyObject *
+get_module_container(_SackObject *self, void *unused)
+{
+    if (auto moduleConteinerPy = self->ModulePackageContainerPy) {
+        Py_INCREF(moduleConteinerPy);
+        return moduleConteinerPy;
+    }
+    Py_RETURN_NONE;
+}
+
 static PyGetSetDef sack_getsetters[] = {
     {(char*)"cache_dir",        (getter)get_cache_dir, NULL, NULL, NULL},
     {(char*)"installonly",        NULL, (setter)set_installonly, NULL, NULL},
     {(char*)"installonly_limit",        NULL, (setter)set_installonly_limit, NULL, NULL},
+    {(char*)"_moduleContainer",        (getter)get_module_container, (setter)set_module_container,
+        NULL, NULL},
     {NULL}                        /* sentinel */
 };
 

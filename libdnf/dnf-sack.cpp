@@ -2006,6 +2006,25 @@ dnf_sack_get_pool(DnfSack *sack)
 }
 
 /**
+ * dnf_sack_set_module_container: (skip)
+ * @sack: a #DnfSack instance.
+ *
+ * Setss the internal ModulePackageContainer.
+ *
+ * Returns: The old ModulePackageContainer, that has to be freed manually.
+ *
+ * Since: 0.25.0
+ */
+ModulePackageContainer *
+dnf_sack_set_module_container(DnfSack *sack, ModulePackageContainer * newConteiner)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    auto oldConteiner = priv->moduleContainer;
+    priv->moduleContainer = newConteiner;
+    return oldConteiner;
+}
+
+/**
  * dnf_sack_get_module_container: (skip)
  * @sack: a #DnfSack instance.
  *
