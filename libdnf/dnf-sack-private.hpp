@@ -57,7 +57,8 @@ int dnf_sack_get_pool_nsolvables(DnfSack *sack);
  * @return Map*
  */
 libdnf::PackageSet *dnf_sack_get_pkg_solvables(DnfSack *sack);
-
+libdnf::ModulePackageContainer * dnf_sack_set_module_container(
+    DnfSack *sack, libdnf::ModulePackageContainer * newConteiner);
 libdnf::ModulePackageContainer * dnf_sack_get_module_container(DnfSack *sack);
 void         dnf_sack_make_provides_ready   (DnfSack    *sack);
 Id           dnf_sack_running_kernel        (DnfSack    *sack);
