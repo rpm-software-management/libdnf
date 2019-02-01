@@ -11,10 +11,10 @@ msgstr ""
 "PO-Revision-Date: 2018-09-19 03:03+0000\n"
 "Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
 "Language-Team: French\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "X-Generator: Zanata 4.6.2\n"
 
@@ -30,7 +30,7 @@ msgstr "N'a pas pu définir les perms sur %1$s: %2$s"
 
 #: ../libdnf/dnf-goal.cpp:67
 msgid "Could not depsolve transaction; "
-msgstr "N'a pas pu depsolve la transaction; "
+msgstr "N'a pas pu depsolve la transaction;"
 
 #: ../libdnf/dnf-goal.cpp:69
 #, c-format
@@ -269,7 +269,7 @@ msgstr "aucune solution n'est possible"
 msgid ""
 "The operation would result in removing the following protected packages: "
 msgstr ""
-"L'opération résulterait en la suppression des packages protégés suivants : "
+"L'opération résulterait en la suppression des packages protégés suivants :"
 
 #: ../libdnf/repo/Repo.cpp:397
 #, c-format
@@ -381,7 +381,7 @@ msgstr "N'a pas pu créer le répertoire \"%s\": %s"
 #: ../libdnf/repo/Repo.cpp:1170
 #, c-format
 msgid "Cannot rename directory \"%s\" to \"%s\": %s"
-msgstr "N'a pas pu renommer le répertoire \"%s\" en \"%s\": %s"
+msgstr "N'a pas pu renommer le répertoire \"%s\" en \"%s\": %s\n"
 
 #: ../libdnf/repo/Repo.cpp:1191
 #, c-format
@@ -451,7 +451,7 @@ msgstr "L'initialisation de Package Target a échoué : %s"
 #: ../libdnf/repo/Repo.cpp:1750
 #, c-format
 msgid "Cannot open %s: %s"
-msgstr "impossible d'ouvrir %s: %s"
+msgstr "impossible d'ouvrir %s: %s\n"
 
 #: ../libdnf/repo/Repo.cpp:1787
 #, c-format
@@ -470,7 +470,7 @@ msgstr "N'a pu assurer %1$s comme dépôt %2$s non trouvé (%3$i dépôts charg�
 
 #: ../libdnf/dnf-transaction.cpp:322
 msgid "Failed to check untrusted: "
-msgstr "N'a pas pu vérifier untrusted : "
+msgstr "N'a pas pu vérifier untrusted :"
 
 #: ../libdnf/dnf-transaction.cpp:332
 #, c-format
@@ -490,7 +490,7 @@ msgstr "N'a pas pu obtenir la valeur de CacheDir"
 #: ../libdnf/dnf-transaction.cpp:863
 #, c-format
 msgid "Failed to get filesystem free size for %s: "
-msgstr "N'a pas pu obtenir la taille libre du système de fichiers pour %s : "
+msgstr "N'a pas pu obtenir la taille libre du système de fichiers pour %s :"
 
 #: ../libdnf/dnf-transaction.cpp:871
 #, c-format

@@ -8,10 +8,10 @@ msgstr ""
 "PO-Revision-Date: 2018-09-11 12:30+0000\n"
 "Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
 "Language-Team: Japanese\n"
+"Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0\n"
 "X-Generator: Zanata 4.6.2\n"
 
@@ -357,12 +357,12 @@ msgstr ""
 #: ../libdnf/repo/Repo.cpp:1151
 #, c-format
 msgid "Cannot create repo temporary directory \"%s\": %s"
-msgstr "repo 一時ディレクトリー \"%s\" を作成できません: %s"
+msgstr "repo 一時ディレクトリー \"%s\" を作成できません: %s "
 
 #: ../libdnf/repo/Repo.cpp:1165
 #, c-format
 msgid "Cannot create directory \"%s\": %s"
-msgstr "ディレクトリー \"%s\" を作成できません: %s"
+msgstr "ディレクトリー \"%s\" を作成できません: %s "
 
 #: ../libdnf/repo/Repo.cpp:1170
 #, c-format
@@ -492,12 +492,12 @@ msgstr "root の設定に失敗しました"
 #: ../libdnf/dnf-transaction.cpp:1361
 #, c-format
 msgid "Error %i running transaction test"
-msgstr "トランザクションテストの実行中にエラー %i"
+msgstr "トランザクションテストの実行中にエラー %i "
 
 #: ../libdnf/dnf-transaction.cpp:1392
 #, c-format
 msgid "Error %i running transaction"
-msgstr "トランザクションの実行中にエラー %i"
+msgstr "トランザクションの実行中にエラー %i "
 
 #: ../libdnf/dnf-transaction.cpp:1407
 #, c-format
