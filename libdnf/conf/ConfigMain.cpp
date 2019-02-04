@@ -284,7 +284,7 @@ class ConfigMain::Impl {
     OptionEnum<std::string> multilib_policy{"best", {"best", "all"}}; // :api
     OptionBinding multilibPolicyBinding{owner, multilib_policy, "multilib_policy"};
 
-    OptionBool best{false}; // :api
+    OptionBool best{true}; // :api
     OptionBinding bestBinding{owner, best, "best"};
 
     OptionBool install_weak_deps{true};
