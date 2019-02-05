@@ -29,6 +29,7 @@
  * See also: #DnfContext
  */
 
+#include "libdnf/utils/utils.hpp"
 
 #include <algorithm>
 #include <ctime>
@@ -1015,7 +1016,11 @@ dnf_package_get_advisories(DnfPackage *pkg, int cmp_type)
             (cmp < 0 && (cmp_type & HY_LT)) ||
             (cmp == 0 && (cmp_type & HY_EQ))) {
             advisory = dnf_advisory_new(sack, di.solvid);
-            g_ptr_array_add(advisorylist, advisory);
+            if (libdnf::isAdvisoryApplicable(*advisory, sack)) {
+                g_ptr_array_add(advisorylist, advisory);
+            } else {
+                dnf_advisory_free(advisory);
+            }
             dataiterator_skip_solvable(&di);
         }
     }

@@ -1,4 +1,6 @@
 #include "utils.hpp"
+#include "libdnf/dnf-sack-private.hpp"
+#include "libdnf/sack/advisorymodule.hpp"
 
 #include <tinyformat/tinyformat.hpp>
 
@@ -18,6 +20,32 @@ extern "C" {
 #include <string.h>
 
 namespace libdnf {
+
+bool isAdvisoryApplicable(libdnf::Advisory & advisory, DnfSack * sack)
+{
+    auto moduleContainer = dnf_sack_get_module_container(sack);
+    if (!moduleContainer) {
+        return true;
+    }
+    auto moduleAdvisories = advisory.getModules();
+    if (moduleAdvisories.empty()) {
+        return true;
+    }
+    for (auto & moduleAdvisory: moduleAdvisories) {
+        if (const char * name = moduleAdvisory.getName()) {
+            if (const char * stream = moduleAdvisory.getStream()) {
+                try {
+                    if (moduleContainer->isEnabled(name, stream)) {
+                        return true;
+                    }
+                } catch (std::out_of_range &) {
+                    continue;
+                }
+            }
+        }
+    }
+    return false;
+}
 
 namespace string {
 
