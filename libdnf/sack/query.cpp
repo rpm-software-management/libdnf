@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libdnf/utils/utils.hpp"
+
 #include <algorithm>
 #include <assert.h>
 #include <fnmatch.h>
@@ -1518,7 +1520,9 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
                     eq = false;
             }
             if (eq) {
-                advisory.getPackages(pkgs, false);
+                if (isAdvisoryApplicable(advisory, sack)) {
+                    advisory.getPackages(pkgs, false);
+                }
                 break;
             }
         }
@@ -2049,7 +2053,8 @@ void
 Query::getAdvisoryPkgs(int cmpType, std::vector<AdvisoryPkg> & advisoryPkgs)
 {
     apply();
-    Pool *pool = dnf_sack_get_pool(pImpl->sack);
+    auto sack = pImpl->sack;
+    Pool *pool = dnf_sack_get_pool(sack);
     std::vector<AdvisoryPkg> pkgs;
     Dataiterator di;
     auto resultPset = pImpl->result.get();
@@ -2058,9 +2063,10 @@ Query::getAdvisoryPkgs(int cmpType, std::vector<AdvisoryPkg> & advisoryPkgs)
     dataiterator_init(&di, pool, 0, 0, 0, 0, 0);
     dataiterator_prepend_keyname(&di, UPDATE_COLLECTION);
     while (dataiterator_step(&di)) {
-        Advisory advisory(pImpl->sack, di.solvid);
-
-        advisory.getPackages(pkgs);
+        Advisory advisory(sack, di.solvid);
+        if (isAdvisoryApplicable(advisory, sack)) {
+            advisory.getPackages(pkgs);
+        }
         dataiterator_skip_solvable(&di);
     }
     dataiterator_free(&di);
