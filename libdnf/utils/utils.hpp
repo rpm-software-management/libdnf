@@ -7,6 +7,8 @@
 #define DIGITS "0123456789"
 #define REPOID_CHARS ASCII_LETTERS DIGITS "-_.:"
 
+#include "libdnf/sack/advisory.hpp"
+
 #include <functional>
 #include <string>
 #include <vector>
@@ -33,6 +35,8 @@ public:
 private:
     std::function<void()> func;
 };
+
+bool isAdvisoryApplicable(Advisory & advisory, DnfSack * sack);
 
 namespace string {
 inline std::string fromCstring(const char * cstring) { return cstring ? cstring : ""; }
