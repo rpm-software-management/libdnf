@@ -1,6 +1,8 @@
 #ifndef LIBDNF_UTILS_HPP
 #define LIBDNF_UTILS_HPP
 
+#include "libdnf/sack/advisory.hpp"
+
 #include <functional>
 #include <string>
 #include <vector>
@@ -25,6 +27,9 @@ private:
 };
 
 namespace libdnf {
+
+bool isAdvisoryApplicable(Advisory & advisory, DnfSack * sack);
+
 namespace string {
 inline std::string fromCstring(const char * cstring) { return cstring ? cstring : ""; }
 std::vector<std::string> split(const std::string &source, const char *delimiter, int maxSplit = -1);

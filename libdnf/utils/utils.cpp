@@ -1,4 +1,6 @@
 #include "utils.hpp"
+#include "libdnf/dnf-sack-private.hpp"
+#include "libdnf/sack/advisorymodule.hpp"
 
 #include <algorithm>
 #include <sys/stat.h>
@@ -9,6 +11,32 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+
+bool libdnf::isAdvisoryApplicable(libdnf::Advisory & advisory, DnfSack * sack)
+{
+    auto moduleContainer = dnf_sack_get_module_container(sack);
+    if (!moduleContainer) {
+        return true;
+    }
+    auto moduleAdvisories = advisory.getModules();
+    if (moduleAdvisories.empty()) {
+        return true;
+    }
+    for (auto & moduleAdvisory: moduleAdvisories) {
+        if (const char * name = moduleAdvisory.getName()) {
+            if (const char * stream = moduleAdvisory.getStream()) {
+                try {
+                    if (moduleContainer->isEnabled(name, stream)) {
+                        return true;
+                    }
+                } catch (std::out_of_range) {
+                    continue;
+                }
+            }
+        }
+    }
+    return false;
+}
 
 std::vector<std::string> libdnf::string::split(const std::string &source, const char *delimiter, int maxSplit)
 {
