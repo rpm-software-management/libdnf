@@ -25,7 +25,10 @@
 
 #include "../utils/PreserveOrderMap.hpp"
 
+#include <istream>
+#include <ostream>
 #include <map>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -75,11 +78,19 @@ public:
     /**
     * @brief Reads/parse one INI file
     *
-    * Can be called repeately for reading/merge more INI files. 
+    * Can be called repeately for reading/merge more INI files.
     *
     * @param filePath Name (with path) of file to read
     */
     void read(const std::string & filePath);
+    /**
+    * @brief Reads/parse from istream
+    *
+    * Can be called repeately for reading/merge more istreams.
+    *
+    * @param inputStream Stream to read
+    */
+    void read(std::unique_ptr<std::istream> && inputStream);
     /**
     * @brief Writes all data (all sections) to INI file
     *
@@ -95,6 +106,19 @@ public:
     * @param section Section to write
     */
     void write(const std::string & filePath, bool append, const std::string & section) const;
+    /**
+    * @brief Writes one section data to stream
+    *
+    * @param outputStream Stream to write
+    * @param section Section to write
+    */
+    void write(std::ostream & outputStream, const std::string & section) const;
+    /**
+    * @brief Writes all data (all sections) to stream
+    *
+    * @param outputStream Stream to write
+    */
+    void write(std::ostream & outputStream) const;
     bool hasSection(const std::string & section) const;
     const std::string & getValue(const std::string & section, const std::string & key) const;
     std::string getSubstitutedValue(const std::string & section, const std::string & key) const;
