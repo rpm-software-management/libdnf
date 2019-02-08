@@ -104,6 +104,8 @@ IniParser::ItemType IniParser::next()
         }
         auto start = line.find_first_not_of(" \t\r");
         if (start == std::string::npos) {
+            if (previousLineWithKeyVal)
+                value += "\n";
             line.clear();
             continue;
         }
