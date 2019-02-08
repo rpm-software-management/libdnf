@@ -63,11 +63,20 @@ const char * IniParser::MissingEqual::what() const noexcept
 }
 
 IniParser::IniParser(const std::string & filePath)
-: ifs(filePath)
+: is(new std::ifstream(filePath))
 {
-    if (!ifs)
+    if (!(*is))
         throw CantOpenFile();
-    ifs.exceptions(std::ifstream::badbit);
+    is->exceptions(std::ifstream::badbit);
+    lineNumber = 0;
+}
+
+IniParser::IniParser(std::unique_ptr<std::istream> && inputStream)
+: is(std::move(inputStream))
+{
+    if (!(*is))
+        throw CantOpenFile();
+    is->exceptions(std::ifstream::badbit);
     lineNumber = 0;
 }
 
@@ -84,9 +93,9 @@ IniParser::ItemType IniParser::next()
 {
     bool previousLineWithKeyVal = false;
     rawItem.clear();
-    while (!line.empty() || !ifs.eof()) {
+    while (!line.empty() || !is->eof()) {
         if (line.empty()) {
-            std::getline(ifs, line, DELIMITER);
+            std::getline(*is, line, DELIMITER);
             ++lineNumber;
         }
 
