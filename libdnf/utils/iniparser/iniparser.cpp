@@ -20,6 +20,8 @@
 
 #include "iniparser.hpp"
 
+constexpr char DELIMITER = '\n';
+
 const char * IniParser::CantOpenFile::what() const noexcept
 {
     return "IniParser: Can't open file";
@@ -81,9 +83,10 @@ void IniParser::trimValue() noexcept {
 IniParser::ItemType IniParser::next()
 {
     bool previousLineWithKeyVal = false;
+    rawItem.clear();
     while (!line.empty() || !ifs.eof()) {
         if (line.empty()) {
-            std::getline(ifs, line);
+            std::getline(ifs, line, DELIMITER);
             ++lineNumber;
         }
 
@@ -99,15 +102,23 @@ IniParser::ItemType IniParser::next()
                 trimValue();
                 return ItemType::KEY_VAL;
             }
+            if (line.length() == 0)
+                return ItemType::EMPTY_LINE;
+            rawItem = line + DELIMITER;
             line.clear();
-            continue;
+            return ItemType::COMMENT_LINE;
         }
         auto start = line.find_first_not_of(" \t\r");
         if (start == std::string::npos) {
-            if (previousLineWithKeyVal)
-                value += "\n";
+            if (previousLineWithKeyVal) {
+                value += DELIMITER;
+                rawItem += line + DELIMITER;
+                line.clear();
+                continue;
+            }
+            rawItem = line + DELIMITER;
             line.clear();
-            continue;
+            return ItemType::EMPTY_LINE;
         }
         auto end = line.find_last_not_of(" \t\r");
 
@@ -131,6 +142,7 @@ IniParser::ItemType IniParser::next()
                     throw TextAfterSection(lineNumber);
             }
             this->section = line.substr(start, endSectPos - start);
+            rawItem = line + DELIMITER;
             line.clear();
             return ItemType::SECTION;
         }
@@ -141,7 +153,8 @@ IniParser::ItemType IniParser::next()
         if (start > 0) {
             if (!previousLineWithKeyVal)
                 throw IllegalContinuationLine(lineNumber);
-            value += "\n" + line.substr(start, end - start + 1);
+            value += DELIMITER + line.substr(start, end - start + 1);
+            rawItem += line + DELIMITER;
             line.clear();
         } else {
             if (line[start] == '=')
@@ -157,6 +170,7 @@ IniParser::ItemType IniParser::next()
             else
                 value.clear();
             previousLineWithKeyVal = true;
+            rawItem = line + DELIMITER;
             line.clear();
         }
     }
