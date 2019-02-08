@@ -23,6 +23,7 @@
 
 #include <exception>
 #include <fstream>
+#include <memory>
 #include <string>
 
 /**
@@ -83,6 +84,7 @@ public:
     };
 
     IniParser(const std::string & filePath);
+    IniParser(std::unique_ptr<std::istream> && inputStream);
     /**
     * @brief Parse one item from input file
     *
@@ -104,7 +106,7 @@ public:
     void trimValue() noexcept;
 
 private:
-    std::ifstream ifs;
+    std::unique_ptr<std::istream> is;
     int lineNumber;
     std::string section;
     std::string key;
