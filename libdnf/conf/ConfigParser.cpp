@@ -63,18 +63,35 @@ void ConfigParser::substitute(std::string & text,
     }
 }
 
+static void read(IniParser & parser, ConfigParser::Container & data)
+{
+    IniParser::ItemType readedType;
+    while ((readedType = parser.next()) != IniParser::ItemType::END_OF_INPUT) {
+        auto section = parser.getSection();
+        if (readedType == IniParser::ItemType::SECTION && data.find(section) == data.end())
+            data[section] = {};
+        else if (readedType == IniParser::ItemType::KEY_VAL)
+            data[section][std::move(parser.getKey())] = std::move(parser.getValue());
+    }
+}
+
 void ConfigParser::read(const std::string & filePath)
 {
     try {
         IniParser parser(filePath);
-        IniParser::ItemType readedType;
-        while ((readedType = parser.next()) != IniParser::ItemType::END_OF_INPUT) {
-            auto section = parser.getSection();
-            if (readedType == IniParser::ItemType::SECTION && data.find(section) == data.end())
-                data[section] = {};
-            else if (readedType == IniParser::ItemType::KEY_VAL)
-                data[section][std::move(parser.getKey())] = std::move(parser.getValue());
-        }
+        ::libdnf::read(parser, data);
+    } catch (const IniParser::CantOpenFile & e) {
+        throw CantOpenFile(e.what());
+    } catch (const IniParser::Exception & e) {
+        throw ParsingError(e.what() + std::string(" at line ") + std::to_string(e.getLineNumber()));
+    }
+}
+
+void ConfigParser::read(std::unique_ptr<std::istream> && inputStream)
+{
+    try {
+        IniParser parser(std::move(inputStream));
+        ::libdnf::read(parser, data);
     } catch (const IniParser::CantOpenFile & e) {
         throw CantOpenFile(e.what());
     } catch (const IniParser::Exception & e) {
@@ -142,6 +159,28 @@ void ConfigParser::write(const std::string & filePath, bool append, const std::s
     ofs.open(filePath, append ? std::ofstream::app : std::ofstream::trunc);
     ofs << "[" << section << "]" << "\n";
     writeKeyVals(ofs, sit->second);
+}
+
+void ConfigParser::write(std::ostream & outputStream) const
+{
+    bool first{true};
+    for (const auto & section : data) {
+        if (first)
+            first = false;
+        else
+            outputStream << "\n";
+        outputStream << "[" << section.first << "]" << "\n";
+        writeKeyVals(outputStream, section.second);
+    }
+}
+
+void ConfigParser::write(std::ostream & outputStream, const std::string & section) const
+{
+    auto sit = data.find(section);
+    if (sit == data.end())
+        throw MissingSection("ConfigParser::write(): Missing section " + section);
+    outputStream << "[" << section << "]" << "\n";
+    writeKeyVals(outputStream, sit->second);
 }
 
 }
