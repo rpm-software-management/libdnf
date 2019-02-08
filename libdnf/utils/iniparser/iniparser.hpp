@@ -74,7 +74,13 @@ public:
         const char * what() const noexcept override;
     };
 
-    enum class ItemType { SECTION, KEY_VAL, END_OF_INPUT };
+    enum class ItemType {
+        SECTION,        // [section_name]
+        KEY_VAL,        // key = value, (multiline value supported)
+        COMMENT_LINE,   // line starting with '#' or ';' character
+        EMPTY_LINE,     // zero length or only contains whitespace characters
+        END_OF_INPUT
+    };
 
     IniParser(const std::string & filePath);
     /**
@@ -91,6 +97,8 @@ public:
     std::string & getKey() noexcept;
     const std::string & getValue() const noexcept;
     std::string & getValue() noexcept;
+    const std::string & getRawItem() const noexcept;
+    std::string & getRawItem() noexcept;
     const std::string & getLine() const noexcept;
     void clearLine() noexcept;
     void trimValue() noexcept;
@@ -101,6 +109,7 @@ private:
     std::string section;
     std::string key;
     std::string value;
+    std::string rawItem;
     std::string line;
 };
 
@@ -109,6 +118,8 @@ inline const std::string & IniParser::getKey() const noexcept { return key; }
 inline std::string & IniParser::getKey() noexcept { return key; }
 inline const std::string & IniParser::getValue() const noexcept { return value; }
 inline std::string & IniParser::getValue() noexcept { return value; }
+inline const std::string & IniParser::getRawItem() const noexcept { return rawItem; }
+inline std::string & IniParser::getRawItem() noexcept { return rawItem; }
 inline const std::string & IniParser::getLine() const noexcept { return line; }
 inline void IniParser::clearLine() noexcept { line.clear(); }
 
