@@ -94,7 +94,11 @@ IniParser::ItemType IniParser::next()
             static_cast<unsigned char>(line[2]) == 0xBF)
             line.erase(0, 3);
 
-        if (line[0] == '#' || line[0] == ';') {// do not support [rR][eE][mM] comment
+        if (line.length() == 0 || line[0] == '#' || line[0] == ';') {// do not support [rR][eE][mM] comment
+            if (previousLineWithKeyVal) {
+                trimValue();
+                return ItemType::KEY_VAL;
+            }
             line.clear();
             continue;
         }
