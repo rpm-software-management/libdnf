@@ -518,6 +518,10 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackagePtr> & 
         problems = goal.describeAllProblemRules(false);
         ret = goal.run(DNF_NONE);
         if (ret) {
+            // Conflicting modules has to be removed otherwice it could result than one of them will
+            // be active
+            auto conflictingPkgs = goal.listConflictPkgs(DNF_PACKAGE_STATE_AVAILABLE);
+            dnf_sack_add_excludes(moduleSack, conflictingPkgs.get());
             ret = goalWeak.run(DNF_NONE);
             if (ret) {
                 auto logger(libdnf::Log::getLogger());
