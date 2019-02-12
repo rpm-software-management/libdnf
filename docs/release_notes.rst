@@ -20,6 +20,13 @@
 ######################
 
 ====================
+0.26.0 Release Notes
+====================
+- Enhance modular solver to handle enabled and default module streams differently (RhBug:1648839)
+- Add support of wild cards for modules (RhBug:1644588)
+- Add best as default behavior (RhBug:1671683,1670776)
+
+====================
 0.24.1 Release Notes
 ====================
 - Add support for zchunk
