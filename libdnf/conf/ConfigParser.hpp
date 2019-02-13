@@ -40,9 +40,10 @@ namespace libdnf {
 * 
 * @brief Class for parsing dnf/yum .ini configuration files.
 *
-* IniParser is used for parsing file. The class adds support for substitutions.
-* The parsed items are stored into the std::map.
-* User can get both substituded and original parsed value.
+* ConfigParser is used for parsing files. The class adds support for substitutions.
+* User can get both substituded and original parsed values.
+* The parsed items are stored into the PreserveOrderMap.
+* IniParser preserve order of items. Comments and empty lines are kept.
 */
 struct ConfigParser {
 public:
@@ -74,7 +75,7 @@ public:
         const std::map<std::string, std::string> & substitutions);
     void setSubstitutions(const std::map<std::string, std::string> & substitutions);
     void setSubstitutions(std::map<std::string, std::string> && substitutions);
-    const std::map<std::string, std::string> & getSubstitutions();
+    const std::map<std::string, std::string> & getSubstitutions() const;
     /**
     * @brief Reads/parse one INI file
     *
@@ -119,15 +120,33 @@ public:
     * @param outputStream Stream to write
     */
     void write(std::ostream & outputStream) const;
-    bool hasSection(const std::string & section) const;
+    bool addSection(const std::string & section, const std::string & rawLine);
+    bool addSection(const std::string & section);
+    bool addSection(std::string && section, std::string && rawLine);
+    bool addSection(std::string && section);
+    bool hasSection(const std::string & section) const noexcept;
+    bool hasOption(const std::string & section, const std::string & key) const noexcept;
+    void setValue(const std::string & section, const std::string & key, const std::string & value, const std::string & rawItem);
+    void setValue(const std::string & section, const std::string & key, const std::string & value);
+    void setValue(const std::string & section, std::string && key, std::string && value, std::string && rawItem);
+    void setValue(const std::string & section, std::string && key, std::string && value);
+    bool removeSection(const std::string & section);
+    bool removeOption(const std::string & section, const std::string & key);
+    void addCommentLine(const std::string & section, const std::string & comment);
+    void addCommentLine(const std::string & section, std::string && comment);
     const std::string & getValue(const std::string & section, const std::string & key) const;
     std::string getSubstitutedValue(const std::string & section, const std::string & key) const;
+    const std::string & getHeader() const noexcept;
+    std::string & getHeader() noexcept;
     const Container & getData() const noexcept;
     Container & getData() noexcept;
 
 private:
     std::map<std::string, std::string> substitutions;
     Container data;
+    int itemNumber{0};
+    std::string header;
+    std::map<std::string, std::string> rawItems;
 };
 
 inline void ConfigParser::setSubstitutions(const std::map<std::string, std::string> & substitutions)
@@ -140,14 +159,119 @@ inline void ConfigParser::setSubstitutions(std::map<std::string, std::string> &&
     this->substitutions = std::move(substitutions);
 }
 
-inline const std::map<std::string, std::string> & ConfigParser::getSubstitutions()
+inline const std::map<std::string, std::string> & ConfigParser::getSubstitutions() const
 {
     return substitutions;
 }
 
-inline bool ConfigParser::hasSection(const std::string & section) const
+inline bool ConfigParser::addSection(const std::string & section, const std::string & rawLine)
+{
+    if (data.find(section) != data.end())
+        return false;
+    if (!rawLine.empty())
+        rawItems[section] = rawLine;
+    data[section] = {};
+    return true;
+}
+
+inline bool ConfigParser::addSection(const std::string & section)
+{
+    return addSection(section, "");
+}
+
+inline bool ConfigParser::addSection(std::string && section, std::string && rawLine)
+{
+    if (data.find(section) != data.end())
+        return false;
+    if (!rawLine.empty())
+        rawItems[section] = std::move(rawLine);
+    data[std::move(section)] = {};
+    return true;
+}
+
+inline bool ConfigParser::addSection(std::string && section)
+{
+    return addSection(std::move(section), "");
+}
+
+inline bool ConfigParser::hasSection(const std::string & section) const noexcept
 {
     return data.find(section) != data.end();
+}
+
+inline bool ConfigParser::hasOption(const std::string & section, const std::string & key) const noexcept
+{
+    auto sectionIter = data.find(section);
+    return sectionIter != data.end() && sectionIter->second.find(key) != sectionIter->second.end();
+}
+
+inline void ConfigParser::setValue(const std::string & section, const std::string & key, const std::string & value, const std::string & rawItem)
+{
+    auto sectionIter = data.find(section);
+    if (sectionIter == data.end())
+        throw MissingSection(section);
+    if (rawItem.empty())
+        rawItems.erase(section + ']' + key);
+    else
+        rawItems[section + ']' + key] = rawItem;
+    sectionIter->second[key] = value;
+}
+
+inline void ConfigParser::setValue(const std::string & section, std::string && key, std::string && value, std::string && rawItem)
+{
+    auto sectionIter = data.find(section);
+    if (sectionIter == data.end())
+        throw MissingSection(section);
+    if (rawItem.empty())
+        rawItems.erase(section + ']' + key);
+    else
+        rawItems[section + ']' + key] = std::move(rawItem);
+    sectionIter->second[std::move(key)] = std::move(value);
+}
+
+inline bool ConfigParser::removeSection(const std::string & section)
+{
+    auto removed = data.erase(section) > 0;
+    if (removed)
+        rawItems.erase(section);
+    return removed;
+}
+
+inline bool ConfigParser::removeOption(const std::string & section, const std::string & key)
+{
+    auto sectionIter = data.find(section);
+    if (sectionIter == data.end())
+        return false;
+    auto removed = sectionIter->second.erase(key) > 0;
+    if (removed)
+        rawItems.erase(section + ']' + key);
+    return removed;
+}
+
+inline void ConfigParser::addCommentLine(const std::string & section, const std::string & comment)
+{
+    auto sectionIter = data.find(section);
+    if (sectionIter == data.end())
+        throw MissingSection(section);
+    sectionIter->second["#"+std::to_string(++itemNumber)] = comment;
+}
+
+inline void ConfigParser::addCommentLine(const std::string & section, std::string && comment)
+{
+    auto sectionIter = data.find(section);
+    if (sectionIter == data.end())
+        throw MissingSection(section);
+    sectionIter->second["#"+std::to_string(++itemNumber)] = std::move(comment);
+}
+
+inline const std::string & ConfigParser::getHeader() const noexcept
+{
+    return header;
+}
+
+inline std::string & ConfigParser::getHeader() noexcept
+{
+    return header;
 }
 
 inline const ConfigParser::Container & ConfigParser::getData() const noexcept

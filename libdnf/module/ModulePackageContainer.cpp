@@ -1078,69 +1078,47 @@ bool ModulePackageContainer::Impl::ModulePersistor::changeState(
     return true;
 }
 
-static bool
-isConfigValid(const ConfigParser::Container::mapped_type &config, const std::string &name)
-{
-    /* name = <module_name> */
-    auto optName = config.find("name");
-    if (optName == config.end() || optName->second != name) {
-        return false;
-    }
-    /* stream = <stream_name> */
-    if (config.find("stream") == config.end()) {
-        return false;
-    }
-    /* profiles = <list of profiles> */
-    if (config.find("profiles") == config.end()) {
-        return false;
-    }
-    /* state = <state> || enabled = <1|0> */
-    if (config.find("state") == config.end() &&
-        config.find("enabled") == config.end()) {
-        return false;
-    }
-
-    return true;
-}
-
 static inline void
-initConfig(ConfigParser::Container::mapped_type &config, const std::string &name)
+initConfig(ConfigParser & parser, const std::string & name)
 {
-    config["name"] = name;
-    config["stream"] = EMPTY_STREAM;
-    config["profiles"] = EMPTY_PROFILES;
-    config["state"] = DEFAULT_STATE;
+    parser.addSection(name);
+    parser.setValue(name, "name", name);
+    parser.setValue(name, "stream", EMPTY_STREAM);
+    parser.setValue(name, "profiles", EMPTY_PROFILES);
+    parser.setValue(name, "state", DEFAULT_STATE);
 }
 
 static inline void
 parseConfig(ConfigParser &parser, const std::string &name, const char *path)
 {
     auto logger(Log::getLogger());
-    auto &data = parser.getData();
 
     try {
         const auto fname = name + ".module";
         g_autofree gchar *cfn = g_build_filename(path, fname.c_str(), NULL);
         parser.read(cfn);
+
+        /* FIXME: init empty config or throw error? */
+        if (!parser.hasOption(name, "stream") ||    /* stream = <stream_name> */
+            !parser.hasOption(name, "profiles") ||  /* profiles = <list of profiles> */
+            (!parser.hasOption(name, "state") && !parser.hasOption(name, "enabled"))) {
+            logger->debug("Invalid config file for " + name);
+            initConfig(parser, name);
+            return;
+        }
+
+        /* Old config files might not have an option 'name' */
+        parser.setValue(name, "name", name);
+
+        /* Replace old 'enabled' format by 'state' */
+        if (parser.hasOption(name, "enabled")) {
+            parser.setValue(name, "state", parser.getValue(name, "enabled"));
+            parser.removeOption(name, "enabled");
+        }
     } catch (const ConfigParser::CantOpenFile &) {
         /* No module config file present. Fill values in */
-        initConfig(data[name], name);
+        initConfig(parser, name);
         return;
-    }
-
-    /* Old config files might not have an option 'name' */
-    data[name]["name"] = name;
-
-    /* FIXME: init empty config or throw error? */
-    if (!isConfigValid(data[name], name)) {
-        logger->debug("Invalid config file for " + name);
-        initConfig(data[name], name);
-    }
-
-    /* Replace old 'enabled' format by 'state' */
-    if (data[name].find("enabled") != data[name].end()) {
-        data[name]["state"] = data[name]["enabled"];
-        data[name].erase("enabled");
     }
 }
 
@@ -1171,24 +1149,25 @@ bool ModulePackageContainer::Impl::ModulePersistor::insert(
 bool ModulePackageContainer::Impl::ModulePersistor::update(const std::string & name)
 {
     bool changed = false;
-    auto &data = getEntry(name).first.getData();
+    auto & parser = getEntry(name).first;
 
-    const auto &state = toString(getState(name));
-    if (data[name]["state"] != state) {
-        data[name]["state"] = state;
+    const auto & state = toString(getState(name));
+    if (!parser.hasOption(name, "state") || parser.getValue(name, "state") != state) {
+        parser.setValue(name, "state", state);
         changed = true;
     }
 
-    if (data[name]["stream"] != getStream(name)) {
-        data[name]["stream"] = getStream(name);
+    const auto & stream = getStream(name);
+    if (!parser.hasOption(name, "stream") || parser.getValue(name, "stream") != stream) {
+        parser.setValue(name, "stream", stream);
         changed = true;
     }
 
     OptionStringList slist{std::vector<std::string>()};
-    auto profiles = std::move(slist.toString(getProfiles(name)));
+    auto profiles = slist.toString(getProfiles(name));
     profiles = profiles.substr(1, profiles.size()-2);
-    if (data[name]["profiles"] != profiles) {
-        data[name]["profiles"] = std::move(profiles);
+    if (!parser.hasOption(name, "profiles") || parser.getValue(name, "profiles") != profiles) {
+        parser.setValue(name, "profiles", std::move(profiles));
         changed = true;
     }
 
@@ -1198,12 +1177,12 @@ bool ModulePackageContainer::Impl::ModulePersistor::update(const std::string & n
 void ModulePackageContainer::Impl::ModulePersistor::reset(const std::string & name)
 {
     auto & entry = getEntry(name);
-    auto & data = entry.first.getData();
+    auto & parser = entry.first;
 
-    entry.second.stream = data[name]["stream"];
-    entry.second.state = fromString(data[name]["state"]);
+    entry.second.stream = parser.getValue(name, "stream");
+    entry.second.state = fromString(parser.getValue(name, "state"));
     OptionStringList slist{std::vector<std::string>()};
-    entry.second.profiles = slist.fromString(data[name]["profiles"]);
+    entry.second.profiles = slist.fromString(parser.getValue(name, "profiles"));
 }
 
 void ModulePackageContainer::Impl::ModulePersistor::save(
