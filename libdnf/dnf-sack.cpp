@@ -804,6 +804,7 @@ dnf_sack_set_arch (DnfSack *sack, const gchar *value, GError **error)
     g_debug("Architecture is: %s", arch);
     g_free (priv->arch);
     priv->arch = g_strdup(arch);
+    pool_setdisttype(pool, DISTTYPE_RPM);
     pool_setarch(pool, arch);
 
     /* Since one of commits after 0.6.20 libsolv allowes custom arches
