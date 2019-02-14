@@ -44,6 +44,7 @@ std::vector<std::string> split(const std::string &source, const char *delimiter,
 std::vector<std::string> rsplit(const std::string &source, const char *delimiter, int maxSplit = -1);
 std::string trimSuffix(const std::string &source, const std::string &suffix);
 std::string trimPrefix(const std::string &source, const std::string &prefix);
+std::string trim(const std::string &source);
 bool startsWith(const std::string &source, const std::string &toMatch);
 bool endsWith(const std::string &source, const std::string &toMatch);
 }
