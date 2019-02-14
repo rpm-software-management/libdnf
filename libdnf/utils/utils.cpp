@@ -119,6 +119,14 @@ std::string trimPrefix(const std::string &source, const std::string &prefix)
     throw std::runtime_error{"Prefix '" + prefix + "' not found"};
 }
 
+std::string trim(const std::string &source)
+{
+    size_t first = source.find_first_not_of(" \t");
+    if (first == source.npos) return "";
+    size_t last = source.find_last_not_of(" \t");
+    return source.substr(first, (last - first + 1));
+}
+
 bool startsWith(const std::string & source, const std::string & toMatch)
 {
     return source.compare(0, toMatch.size(), toMatch) == 0;
