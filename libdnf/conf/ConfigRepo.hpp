@@ -88,6 +88,7 @@ public:
     OptionBool & skip_if_unavailable();
     // option recognized by other tools, e.g. gnome-software, but unused in dnf
     OptionString & enabled_metadata();
+    OptionChild<OptionString> & user_agent();
     // yum compatibility options
     OptionEnum<std::string> & failovermethod();
 

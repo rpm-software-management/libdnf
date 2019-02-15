@@ -73,6 +73,7 @@ class ConfigRepo::Impl {
     OptionChild<OptionNumber<std::uint32_t> > deltarpm_percentage{masterConfig.deltarpm_percentage()};
     OptionBool skip_if_unavailable{true};
     OptionString enabled_metadata{""};
+    OptionChild<OptionString> user_agent{masterConfig.user_agent()};
     OptionEnum<std::string> failovermethod{"priority", {"priority", "roundrobin"}};
 };
 
@@ -136,6 +137,7 @@ ConfigRepo::Impl::Impl(Config & owner, ConfigMain & masterConfig)
     owner.optBinds().add("deltarpm_percentage", deltarpm_percentage);
     owner.optBinds().add("skip_if_unavailable", skip_if_unavailable);
     owner.optBinds().add("enabled_metadata", enabled_metadata);
+    owner.optBinds().add("user_agent", user_agent);
 }
 
 ConfigRepo::ConfigRepo(ConfigMain & masterConfig) : pImpl(new Impl(*this, masterConfig)) {}
@@ -185,6 +187,7 @@ OptionChild<OptionBool> & ConfigRepo::deltarpm() { return pImpl->deltarpm; }
 OptionChild<OptionNumber<std::uint32_t> > & ConfigRepo::deltarpm_percentage() { return pImpl->deltarpm_percentage; }
 OptionBool & ConfigRepo::skip_if_unavailable() { return pImpl->skip_if_unavailable; }
 OptionString & ConfigRepo::enabled_metadata() { return pImpl->enabled_metadata; }
+OptionChild<OptionString> & ConfigRepo::user_agent() { return pImpl->user_agent; }
 OptionEnum<std::string> & ConfigRepo::failovermethod() { return pImpl->failovermethod; }
 
 }
