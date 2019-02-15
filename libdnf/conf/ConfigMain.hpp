@@ -122,6 +122,7 @@ public:
     OptionBool & ignorearch();
 
     OptionString & module_platform_id();
+    OptionString & user_agent();
 
     // Repo main config
     OptionNumber<std::uint32_t> & retries();
