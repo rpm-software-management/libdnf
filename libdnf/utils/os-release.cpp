@@ -24,12 +24,25 @@
 #include "libdnf/dnf-context.h"
 
 #include <algorithm>
+#include <array>
 #include <map>
 #include <rpm/rpmlib.h>
+#include <sstream>
 #include <string>
 #include <vector>
 
 namespace libdnf {
+
+// whitelists used for sanity-checking the os-release data when constructing a
+// User-Agent string (to avoid reporting rare systems or platforms that could
+// be tracked)
+std::map<std::string, std::vector<std::string>> distros = {
+    // taken from the fedora-release.spec file
+    { "Fedora", { "cinnamon", "cloud", "container", "coreos", "iot", "kde",
+                  "matecompiz", "server", "silverblue", "snappy", "soas",
+                  "workstation", "xfce" } },
+};
+std::array<const std::string, 1> canons = { "Linux" };
 
 std::map<std::string, std::string> getOsReleaseData(const std::vector<std::string> & paths)
 {
@@ -95,6 +108,36 @@ static std::string getCanonOs()
     initLibRpm();
     rpmGetOsInfo(&value, NULL);
     return value;
+}
+
+std::string getUserAgent(const std::map<std::string, std::string> & osReleaseData)
+{
+    std::ostringstream oss;
+    std::string distro = osReleaseData.at("NAME");
+    std::string canon = getCanonOs();
+    std::string arch = getBaseArch();
+
+    // basic libdnf version string
+    oss << USER_AGENT;
+
+    // consult our whitelists
+    if (distros.find(distro) == distros.end()
+        || std::find(canons.begin(), canons.end(), canon) == canons.end()
+        || arch.empty())
+        return oss.str();
+
+    // append OS data
+    oss << " (" << distro << " " << osReleaseData.at("VERSION_ID") << "; ";
+    std::string variant = "generic";
+    if (osReleaseData.find("VARIANT_ID") != osReleaseData.end()) {
+        std::string value = osReleaseData.at("VARIANT_ID");
+        auto list = distros.at(distro);
+        if (std::find(list.begin(), list.end(), value) != list.end())
+            variant = value;
+    }
+    oss << variant << "; " << canon << "." << arch << ")";
+
+    return oss.str();
 }
 
 }
