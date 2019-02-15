@@ -37,6 +37,7 @@
 #define LIBDNF_MAJOR_VERSION				(@LIBDNF_MAJOR_VERSION@)
 #define LIBDNF_MINOR_VERSION				(@LIBDNF_MINOR_VERSION@)
 #define LIBDNF_MICRO_VERSION				(@LIBDNF_MICRO_VERSION@)
+#define LIBDNF_VERSION                                  "@LIBDNF_VERSION@"
 
 /* check whether a As version equal to or greater than
  * major.minor.micro.
