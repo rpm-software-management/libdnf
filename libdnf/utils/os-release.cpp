@@ -89,4 +89,12 @@ static std::string getBaseArch()
     return value ? std::string(value) : "";
 }
 
+static std::string getCanonOs()
+{
+    const char *value;
+    initLibRpm();
+    rpmGetOsInfo(&value, NULL);
+    return value;
+}
+
 }
