@@ -30,3 +30,20 @@
  */
 std::map<std::string, std::string>
 getOsReleaseData(const std::vector<std::string> & paths);
+
+/**
+ * @brief Construct and return the User-Agent string for libdnf to send in HTTP headers.
+ *
+ * The format returned is as follows:
+ *
+ *   libdnf/VERSION (NAME VERSION_ID; [VARIANT_ID; ]OS[.BASEARCH])
+ *
+ * where VERSION is the libdnf version, NAME, VERSION_ID and VARIANT_ID (if available) are OS
+ * identifiers read from the passed os-release data and OS and BASEARCH (if found) are the
+ * canonical OS name and base architecture, respectively, detected using RPM.
+ *
+ * @param  osReleaseData a map containing os-release data
+ * @return               a User-Agent string
+ */
+std::string
+getUserAgent(const std::map<std::string, std::string> & osReleaseData);

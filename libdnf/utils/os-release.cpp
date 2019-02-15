@@ -20,11 +20,12 @@
 
 #include "os-release.hpp"
 #include "File.hpp"
+#include "libdnf/dnf-version.h"
 #include "utils.hpp"
 
 #include <algorithm>
-#include <iostream>
 #include <rpm/rpmlib.h>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -137,4 +138,34 @@ getCanonOs()
     initLibRpm();
     rpmGetOsInfo(&value, NULL);
     return value;
+}
+
+std::string
+getUserAgent(const std::map<std::string, std::string> & osReleaseData)
+{
+    std::ostringstream oss;
+
+    // libdnf version
+    oss << "libdnf/" << LIBDNF_VERSION;
+
+    // OS release
+    oss << " (";
+    oss << osReleaseData.at("NAME") << " " << osReleaseData.at("VERSION_ID") << "; ";
+
+    // variant (if available)
+    if (osReleaseData.find("VARIANT_ID") != osReleaseData.end()) {
+        oss << osReleaseData.at("VARIANT_ID") << "; ";
+    }
+
+    // OS canonical name
+    oss << getCanonOs();
+
+    // basearch (if found)
+    std::string arch = getBaseArch();
+    if (!arch.empty()) {
+        oss << "." << arch;
+    }
+    oss << ")";
+
+    return oss.str();
 }
