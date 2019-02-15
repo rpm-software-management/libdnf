@@ -23,7 +23,6 @@
 #define METALINK_FILENAME "metalink.xml"
 #define MIRRORLIST_FILENAME  "mirrorlist"
 #define RECOGNIZED_CHKSUMS {"sha512", "sha256"}
-#define USER_AGENT "libdnf"
 
 #include "../log.hpp"
 #include "Repo-private.hpp"
@@ -35,6 +34,7 @@
 #include "libdnf/conf/ConfigParser.hpp"
 #include "libdnf/utils/File.hpp"
 #include "libdnf/utils/utils.hpp"
+#include "libdnf/utils/os-release.hpp"
 
 #include "bgettext/bgettext-lib.h"
 #include "tinyformat/tinyformat.hpp"
@@ -457,7 +457,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
     dlist.push_back(NULL);
     handleSetOpt(h.get(), LRO_PRESERVETIME, static_cast<long>(preserveRemoteTime));
     handleSetOpt(h.get(), LRO_REPOTYPE, LR_YUMREPO);
-    handleSetOpt(h.get(), LRO_USERAGENT, USER_AGENT);
+    handleSetOpt(h.get(), LRO_USERAGENT, conf->user_agent().getValue().c_str());
     handleSetOpt(h.get(), LRO_YUMDLIST, dlist.data());
     handleSetOpt(h.get(), LRO_INTERRUPTIBLE, 1L);
     handleSetOpt(h.get(), LRO_GPGCHECK, conf->repo_gpgcheck().getValue());
@@ -1525,9 +1525,10 @@ int PackageTarget::Impl::mirrorFailureCB(void * data, const char * msg, const ch
 static LrHandle * newHandle(ConfigMain * conf)
 {
     LrHandle *h = lr_handle_init();
-    handleSetOpt(h, LRO_USERAGENT, USER_AGENT);
+    const char * user_agent = USER_AGENT;
     // see dnf.repo.Repo._handle_new_remote() how to pass
     if (conf) {
+        user_agent = conf->user_agent().getValue().c_str();
         auto minrate = conf->minrate().getValue();
         handleSetOpt(h, LRO_LOWSPEEDLIMIT, static_cast<long>(minrate));
 
@@ -1565,6 +1566,7 @@ static LrHandle * newHandle(ConfigMain * conf)
         handleSetOpt(h, LRO_SSLVERIFYHOST, sslverify);
         handleSetOpt(h, LRO_SSLVERIFYPEER, sslverify);
     }
+    handleSetOpt(h, LRO_USERAGENT, user_agent);
     return h;
 }
 
