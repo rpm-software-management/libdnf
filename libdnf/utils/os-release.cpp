@@ -126,3 +126,12 @@ getBaseArch()
     // no match found
     return "";
 }
+
+std::string
+getCanonOs()
+{
+    const char *value;
+    initLibRpm();
+    rpmGetOsInfo(&value, NULL);
+    return value;
+}
