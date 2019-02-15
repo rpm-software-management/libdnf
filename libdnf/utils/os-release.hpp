@@ -20,5 +20,13 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
-std::map<std::string, std::string> getOsReleaseData(const std::string & osReleasePath);
+/**
+ * @brief Parse the os-release file and return its contents in a map.
+ *
+ * @param  paths a vector of os-release file locations to try (in the given order)
+ * @return       a map containing os-release data
+ */
+std::map<std::string, std::string>
+getOsReleaseData(const std::vector<std::string> & paths);

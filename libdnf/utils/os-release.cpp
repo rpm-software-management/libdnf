@@ -20,6 +20,7 @@
 
 #include "os-release.hpp"
 #include "File.hpp"
+#include "utils.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -54,9 +55,11 @@ archMap = {
 };
 
 std::map<std::string, std::string>
-getOsReleaseData(const std::string & path)
+getOsReleaseData(const std::vector<std::string> & paths)
 {
     std::map<std::string, std::string> result;
+    // find the first existing file path
+    std::string path = *std::find_if(paths.begin(), paths.end(), libdnf::filesystem::exists);
 
     auto file = libdnf::File::newFile(path);
     file->open("r");
@@ -78,7 +81,7 @@ getOsReleaseData(const std::string & path)
 
         // split string by '=' into key and value
         auto equalCharPosition = line.find('=');
-        if (equalCharPosition == std::string::npos) {
+        if (equalCharPosition == line.npos) {
             throw std::runtime_error("Invalid format (missing '=') " + line);
         }
         auto key = line.substr(0, equalCharPosition);
