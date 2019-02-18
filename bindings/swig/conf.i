@@ -263,6 +263,45 @@ public:
 }
 
 %pythoncode %{
+# Partial compatibility with Python ConfigParser
+ConfigParser.has_section = ConfigParser.hasSection
+ConfigParser.has_option = ConfigParser.hasOption
+
+def ConfigParser__get(self, section, option, raw=False):
+    if raw:
+        return self.getValue(section, option)
+    else:
+        return self.getSubstitutedValue(section, option)
+ConfigParser.get = ConfigParser__get
+
+def ConfigParser__getint(self, section, option, raw=False):
+    return int(self.get(section, option, raw=raw))
+ConfigParser.getint = ConfigParser__getint
+
+def ConfigParser__getfloat(self, section, option, raw=False):
+    return float(self.get(section, option, raw=raw))
+ConfigParser.getfloat = ConfigParser__getfloat
+
+ConfigParser._boolean_states = {'1': True, 'yes': True, 'true': True, 'on': True,
+                                '0': False, 'no': False, 'false': False, 'off': False}
+def ConfigParser__getboolean(self, section, option, raw=False):
+    v = self.get(section, option, raw=raw)
+    if v.lower() not in self._boolean_states:
+        raise ValueError('Not a boolean: %s' % v)
+    return self._boolean_states[v.lower()]
+ConfigParser.getboolean = ConfigParser__getboolean
+
+def ConfigParser__options(self, section):
+    if not self.hasSection(section):
+        raise KeyError('No section: %s' % section)
+    sectObj = self.getData()[section]
+    return [item for item in sectObj if not item.startswith('#')]
+ConfigParser.options = ConfigParser__options
+
+def ConfigParser__sections(self):
+    return list(self.getData())
+ConfigParser.sections = ConfigParser__sections
+
 # Compatible name aliases
 ConfigMain.exclude = ConfigMain.excludepkgs
 ConfigRepo.exclude = ConfigRepo.excludepkgs
